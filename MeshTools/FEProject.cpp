@@ -796,6 +796,7 @@ void FSProject::ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 	ConvertStepConstraints     (log, newStep, oldStep);
 	ConvertStepRigidConstraints(log, newStep, oldStep);
 	ConvertStepRigidConnectors (log, newStep, oldStep);
+	ConvertLinearConstraints   (log, newStep, oldStep);
 }
 
 void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep)
@@ -1293,6 +1294,42 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 				log << "Unable to convert boundary condition " << pb->GetName() << std::endl;
 			}
 		}
+	}
+}
+
+void FSProject::ConvertLinearConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = oldStep.GetFSModel();
+	for (int i = 0; i < oldStep.LinearConstraints(); ++i)
+	{
+		FSLinearConstraintSet& lc = *oldStep.LinearConstraint(i);
+
+		FSModelConstraint* flc = FEBio::CreateNLConstraint("linear constraint", fem);
+		flc->SetParamFloat("tol"    , lc.m_atol   );
+		flc->SetParamFloat("penalty", lc.m_penalty);
+		flc->SetParamInt  ("maxaug" , lc.m_nmaxaug);
+
+		FSProperty& lcp = *flc->FindProperty("linear_constraint");
+		for (int j = 0; j < lc.m_set.size(); ++j)
+		{
+			FSLinearConstraintSet::LinearConstraint& lcj = lc.m_set[j];
+			FSGenericClass* pc = FEBio::CreateGenericClass("linear_constraint", fem);
+
+			FSProperty* node = pc->FindProperty("node");
+			for (int k = 0; k < lcj.m_dof.size(); ++k)
+			{
+				FSLinearConstraintSet::LinearConstraint::DOF& dof = lcj.m_dof[k];
+				FSGenericClass* pn = FEBio::CreateGenericClass("node", fem);
+				pn->SetParamInt("id", dof.node);
+				pn->SetParamInt("bc", dof.bc);
+				pn->SetParamFloat("node", dof.s);
+
+				node->AddComponent(pn);
+			}
+			lcp.AddComponent(pc);
+		}
+
+		newStep.AddConstraint(flc);
 	}
 }
 

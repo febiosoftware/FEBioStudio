@@ -358,7 +358,7 @@ void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				else
 				{
 					int n;
-					tag.value(n);
+					att.value(n);
 					param->SetIntValue(n);
 				}
 			}
@@ -945,16 +945,21 @@ void FEBioFormat4::ParseGeometryElementSet(FEBioInputModel::Part* part, XMLTag& 
 	if (ps) FileReader()->AddLogEntry("An element set named %s is already defined.", szname);
 
 	vector<int> elem;
-	++tag;
-	do 
+	if (tag.isleaf()) tag.value(elem);
+	else
 	{
-		int eid = tag.AttributeValue<int>("id", -1);
-		if (eid == -1) throw XMLReader::InvalidTag(tag);
-		elem.push_back(eid);
-
+		// This is not supported in feb4 format.
+		assert(false);
 		++tag;
+		do
+		{
+			int eid = tag.AttributeValue<int>("id", -1);
+			if (eid == -1) throw XMLReader::InvalidTag(tag);
+			elem.push_back(eid);
+
+			++tag;
+		} while (!tag.isend());
 	}
-	while (!tag.isend());
 
 	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem));
 }
@@ -1843,52 +1848,6 @@ void FEBioFormat4::ParseRigidConnector(FSStep *pstep, XMLTag &tag)
 	}
 	pstep->AddRigidConnector(pi);
 	ParseModelComponent(pi, tag);
-}
-
-//-----------------------------------------------------------------------------
-void FEBioFormat4::ParseLinearConstraint(FSStep* pstep, XMLTag& tag)
-{
-	FSModel& fem = GetFSModel();
-
-	FSLinearConstraintSet* pset = new FSLinearConstraintSet;
-	pstep->AddLinearConstraint(pset);
-
-	// read the linear constraints
-	++tag;
-	do
-	{
-		if (tag == "linear_constraint")
-		{
-			FSLinearConstraintSet::LinearConstraint LC;
-			FSLinearConstraintSet::LinearConstraint::DOF dof;
-			++tag;
-			do
-			{
-				if (tag == "node")
-				{
-					tag.value(dof.s);
-					dof.node = tag.AttributeValue<int>("id", 0);
-
-					const char* szbc = tag.AttributeValue("bc");
-                    int dofcode = fem.GetDOFIndex(szbc);
-					if (dofcode != -1) dof.bc = dofcode;
-					else throw XMLReader::InvalidAttributeValue(tag, "bc", szbc);
-
-					LC.m_dof.push_back(dof);
-				}
-				else throw XMLReader::InvalidTag(tag);
-				++tag;
-			} while (!tag.isend());
-
-			// add the linear constraint to the system
-			pset->m_set.push_back(LC);
-		}
-		else if (tag == "tol") tag.value(pset->m_atol);
-		else if (tag == "penalty") tag.value(pset->m_penalty);
-		else if (tag == "maxaug") tag.value(pset->m_nmaxaug);
-		else throw XMLReader::InvalidTag(tag);
-		++tag;
-	} while (!tag.isend());
 }
 
 //=============================================================================

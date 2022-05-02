@@ -269,7 +269,6 @@ protected:
 	void WriteNodalLoads(FSStep& s);
 	void WriteSurfaceLoads(FSStep& s);
 
-	void WriteLinearConstraints(FSStep& s);
 	void WriteRigidConnectors(FSStep& s);
 	void WriteConstraints(FSStep& s);
 

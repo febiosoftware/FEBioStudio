@@ -543,7 +543,7 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				else
 				{
 					int n;
-					tag.value(n);
+					att.value(n);
 					param->SetIntValue(n);
 				}
 			}
@@ -795,6 +795,15 @@ void FEBioFormat3::ParseSolidDomain(XMLTag& tag)
 			if (strcmp(szelem, "ut4") == 0) szelem = "ut4-solid";
 			eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
 			assert(eform);
+		}
+		else
+		{
+			// if the tag is not empty, we assume this is a three-field-solid domain
+			if (tag.isleaf() == false)
+			{
+				eform = FEBio::CreateSolidFormulation("three-field-solid", &febio.GetFSModel());
+				assert(eform);
+			}
 		}
 
 		dom->m_form = eform;
@@ -3021,45 +3030,23 @@ void FEBioFormat3::ParseALLinearConstraint(FSStep* pstep, XMLTag& tag)
 {
 	FSModel& fem = GetFSModel();
 
-	FSLinearConstraintSet* pset = new FSLinearConstraintSet;
-	pstep->AddLinearConstraint(pset);
+	// This is now a non-linear constraint
+	FSModelConstraint* pmc = FEBio::CreateNLConstraint("linear constraint", &fem); assert(pmc);
 
-	// read the linear constraints
-	++tag;
-	do
+	// get the (optional) name
+	char szbuf[256];
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname == 0)
 	{
-		if (tag == "linear_constraint")
-		{
-			FSLinearConstraintSet::LinearConstraint LC;
-			FSLinearConstraintSet::LinearConstraint::DOF dof;
-			++tag;
-			do
-			{
-				if (tag == "node")
-				{
-					tag.value(dof.s);
-					dof.node = tag.AttributeValue<int>("id", 0);
+		sprintf(szbuf, "LinearConstraint%02d", CountConstraints<FSModelConstraint>(fem) + 1);
+		szname = szbuf;
+	}
+	pmc->SetName(szname);
 
-					const char* szbc = tag.AttributeValue("bc");
-                    int dofcode = fem.GetDOFIndex(szbc);
-					if (dofcode != -1) dof.bc = dofcode;
-					else throw XMLReader::InvalidAttributeValue(tag, "bc", szbc);
+	pstep->AddComponent(pmc);
 
-					LC.m_dof.push_back(dof);
-				}
-				else throw XMLReader::InvalidTag(tag);
-				++tag;
-			} while (!tag.isend());
-
-			// add the linear constraint to the system
-			pset->m_set.push_back(LC);
-		}
-		else if (tag == "tol") tag.value(pset->m_atol);
-		else if (tag == "penalty") tag.value(pset->m_penalty);
-		else if (tag == "maxaug") tag.value(pset->m_nmaxaug);
-		else throw XMLReader::InvalidTag(tag);
-		++tag;
-	} while (!tag.isend());
+	// read parameters
+	ParseModelComponent(pmc, tag);
 }
 
 //=============================================================================

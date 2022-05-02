@@ -180,6 +180,7 @@ protected:
 	void ConvertStepConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 	void ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 	void ConvertStepRigidConnectors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertLinearConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 
 private:
 	string				m_title;	// Project Title

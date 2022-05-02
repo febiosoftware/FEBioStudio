@@ -678,9 +678,8 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// output contact
-			int nci = pstep->Interfaces() - CountInterfaces<FSRigidJoint>(fem);
-			int nLC = pstep->LinearConstraints();
-			if (((nci > 0) || (nLC > 0)) && (m_section[FEBIO_CONTACT]))
+			int nci = pstep->Interfaces();
+			if ((nci > 0) && (m_section[FEBIO_CONTACT]))
 			{
 				m_xml.add_branch("Contact");
 				{
@@ -880,7 +879,8 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 			{
 				if (p.GetEnumNames())
 				{
-					int v = fem.GetEnumValue(p);
+//					int v = fem.GetEnumValue(p);
+					const char* v = fem.GetEnumKey(p, false);
 					el.add_attribute(p.GetShortName(), v);
 				}
 				else el.add_attribute(p.GetShortName(), p.GetIntValue());
@@ -2405,9 +2405,6 @@ void FEBioExport4::WriteContactSection(FSStep& s)
 			WriteModelComponent(pi, ec);
 		}
 	}
-
-	// linear constraints
-	WriteLinearConstraints(s);
 }
 
 //-----------------------------------------------------------------------------
@@ -2561,50 +2558,6 @@ void FEBioExport4::WriteDiscreteSection(FSStep& s)
 			disc.set_attribute(n2, pst->GetName().c_str());
 			m_xml.add_empty(disc, false);
 		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// write linear constraints
-void FEBioExport4::WriteLinearConstraints(FSStep& s)
-{
-	// This list should be consistent with the list of DOFs in FSModel::FSModel()
-	const char* szbc[] = { "x", "y", "z", "u", "v", "w", "p", "T", "wx", "wy", "wz", "ef", "sx", "sy", "sz" };
-
-	for (int i = 0; i < s.LinearConstraints(); ++i)
-	{
-		FSLinearConstraintSet* pset = s.LinearConstraint(i);
-		XMLElement ec("contact");
-		ec.add_attribute("type", "linear constraint");
-		m_xml.add_branch(ec);
-		{
-			m_xml.add_leaf("tol", pset->m_atol);
-			m_xml.add_leaf("penalty", pset->m_penalty);
-			m_xml.add_leaf("maxaug", pset->m_nmaxaug);
-
-			int NC = (int)pset->m_set.size();
-			for (int j = 0; j < NC; ++j)
-			{
-				FSLinearConstraintSet::LinearConstraint& LC = pset->m_set[j];
-				m_xml.add_branch("linear_constraint");
-				{
-					int ND = (int)LC.m_dof.size();
-					XMLElement ed("node");
-					int n1 = ed.add_attribute("id", 0);
-					int n2 = ed.add_attribute("bc", 0);
-					for (int n = 0; n < ND; ++n)
-					{
-						FSLinearConstraintSet::LinearConstraint::DOF& dof = LC.m_dof[n];
-						ed.set_attribute(n1, dof.node);
-						ed.set_attribute(n2, szbc[dof.bc]);
-						ed.value(dof.s);
-						m_xml.add_leaf(ed, false);
-					}
-				}
-				m_xml.close_branch();
-			}
-		}
-		m_xml.close_branch();
 	}
 }
 
@@ -3148,7 +3101,11 @@ void FEBioExport4::WriteStepSection()
 		m_xml.add_branch(e);
 		{
 			// output control section
-			WriteControlSection(step);
+			m_xml.add_branch("Control");
+			{
+				WriteControlSection(step);
+			}
+			m_xml.close_branch();
 
 			// output boundary section
 			int nbc = step.BCs();

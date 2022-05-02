@@ -95,7 +95,6 @@ private:
 private:
 	// contact input functions
 	void ParseContact(FSStep* pstep, XMLTag& tag);
-	void ParseLinearConstraint  (FSStep* pstep, XMLTag& tag);
 
 private:
 	// loads parse functions
