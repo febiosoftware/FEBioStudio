@@ -620,6 +620,73 @@ private:
     FSMaterialProperty* m_reaction;
 };
 
+
+//-----------------------------------------------------------------------------
+// helper class for managing membrane reactions using the FEBio classes
+class FEBioMembraneReactionMaterial
+{
+public:
+    FEBioMembraneReactionMaterial(FSMaterialProperty* reaction);
+
+    void SetReaction(FSMaterialProperty* reaction);
+
+    void SetForwardRate(FSMaterialProperty* fwdRate);
+
+    void SetReverseRate(FSMaterialProperty* revRate);
+
+    int Type() const;
+
+    void SetName(const std::string& name);
+
+    std::string GetName() const;
+
+    operator FSCoreBase* () { return m_reaction; }
+
+    bool IsReversible() const;
+
+    FSMaterialProperty* GetForwardRate();
+
+    FSMaterialProperty* GetReverseRate();
+
+    bool GetOvrd() const;
+
+    void SetOvrd(bool b);
+
+    int Reactants() const;
+    int InternalReactants() const;
+    int ExternalReactants() const;
+
+    int Products() const;
+    int InternalProducts() const;
+    int ExternalProducts() const;
+
+    FSMaterialProperty* Reactant(int n);
+    FSMaterialProperty* InternalReactant(int n);
+    FSMaterialProperty* ExternalReactant(int n);
+
+    FSMaterialProperty* Product(int n);
+    FSMaterialProperty* InternalProduct(int n);
+    FSMaterialProperty* ExternalProduct(int n);
+
+    void AddReactantMaterial(FSMaterialProperty* pm);
+    void AddProductMaterial(FSMaterialProperty* pm);
+
+    void GetSoluteReactants(vector<int>& solR);
+    void GetInternalSoluteReactants(vector<int>& solRi);
+    void GetExternalSoluteReactants(vector<int>& solRe);
+    void GetSBMReactants(vector<int>& sbmR);
+    void GetSoluteProducts(vector<int>& solP);
+    void GetInternalSoluteProducts(vector<int>& solPi);
+    void GetExternalSoluteProducts(vector<int>& solPe);
+    void GetSBMProducts(vector<int>& sbmP);
+
+    void ClearReactants();
+    void ClearProducts();
+
+private:
+    FSMaterialProperty* m_reaction;
+};
+
 //-----------------------------------------------------------------------------
 // helper class for handling FEBio multiphasic materials
 class FEBioMultiphasic

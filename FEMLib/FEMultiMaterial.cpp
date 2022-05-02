@@ -753,6 +753,281 @@ void FEBioReactionMaterial::AddProductMaterial(FSMaterialProperty* pm)
     m_reaction->FindProperty("vP")->AddComponent(pm);
 }
 
+
+//=============================================================================
+FEBioMembraneReactionMaterial::FEBioMembraneReactionMaterial(FSMaterialProperty* reaction)
+{
+    m_reaction = reaction;
+}
+
+void FEBioMembraneReactionMaterial::SetReaction(FSMaterialProperty* reaction)
+{
+    m_reaction = reaction;
+}
+
+void FEBioMembraneReactionMaterial::SetForwardRate(FSMaterialProperty* fwdRate)
+{
+    m_reaction->FindProperty("forward_rate")->SetComponent(fwdRate);
+}
+
+void FEBioMembraneReactionMaterial::SetReverseRate(FSMaterialProperty* revRate)
+{
+    FSProperty* p = m_reaction->FindProperty("reverse_rate");
+    if (p) p->SetComponent(revRate);
+}
+
+void FEBioMembraneReactionMaterial::SetName(const std::string& name)
+{
+    m_reaction->SetName(name);
+}
+
+int FEBioMembraneReactionMaterial::Type() const
+{
+    return m_reaction->Type();
+}
+
+std::string FEBioMembraneReactionMaterial::GetName() const
+{
+    return m_reaction->GetName();
+}
+
+bool FEBioMembraneReactionMaterial::IsReversible() const
+{
+    return (m_reaction->FindProperty("reverse_rate") != nullptr);
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::GetForwardRate()
+{
+    return dynamic_cast<FSMaterialProperty*>(m_reaction->FindProperty("forward_rate")->GetComponent(0));
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::GetReverseRate()
+{
+    FSProperty* revRate = m_reaction->FindProperty("reverse_rate");
+    if (revRate)
+        return dynamic_cast<FSMaterialProperty*>(revRate->GetComponent(0));
+    else
+        return nullptr;
+}
+
+bool FEBioMembraneReactionMaterial::GetOvrd() const
+{
+    // TODO:
+    return false;
+}
+
+void FEBioMembraneReactionMaterial::SetOvrd(bool b)
+{
+    // TODO:
+    assert(false);
+}
+
+int FEBioMembraneReactionMaterial::Reactants() const
+{
+    return m_reaction->FindProperty("vR")->Size();
+}
+
+int FEBioMembraneReactionMaterial::InternalReactants() const
+{
+    return m_reaction->FindProperty("vRi")->Size();
+}
+
+int FEBioMembraneReactionMaterial::ExternalReactants() const
+{
+    return m_reaction->FindProperty("vRe")->Size();
+}
+
+int FEBioMembraneReactionMaterial::Products() const
+{
+    return m_reaction->FindProperty("vP")->Size();
+}
+
+int FEBioMembraneReactionMaterial::InternalProducts() const
+{
+    return m_reaction->FindProperty("vPi")->Size();
+}
+
+int FEBioMembraneReactionMaterial::ExternalProducts() const
+{
+    return m_reaction->FindProperty("vPe")->Size();
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::Reactant(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vR");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::InternalReactant(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vRe");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::ExternalReactant(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vRe");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::Product(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vP");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::InternalProduct(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vPi");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+FSMaterialProperty* FEBioMembraneReactionMaterial::ExternalProduct(int i)
+{
+    FSProperty* pp = m_reaction->FindProperty("vPe");
+    return dynamic_cast<FSMaterialProperty*>(pp->GetComponent(i));
+}
+
+void FEBioMembraneReactionMaterial::GetSoluteReactants(vector<int>& solR)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solR.clear();
+    FSProperty& p = *m_reaction->FindProperty("vR");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solR.push_back(m);
+    }
+}
+
+void FEBioMembraneReactionMaterial::GetInternalSoluteReactants(vector<int>& solRi)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solRi.clear();
+    FSProperty& p = *m_reaction->FindProperty("vRi");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solRi.push_back(m);
+    }
+}
+
+void FEBioMembraneReactionMaterial::GetExternalSoluteReactants(vector<int>& solRe)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solRe.clear();
+    FSProperty& p = *m_reaction->FindProperty("vRe");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solRe.push_back(m);
+    }
+}
+
+void FEBioMembraneReactionMaterial::GetSBMReactants(vector<int>& sbmR)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    sbmR.clear();
+    FSProperty& p = *m_reaction->FindProperty("vR");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m >= nsol)) sbmR.push_back(m - nsol);
+    }
+}
+
+void FEBioMembraneReactionMaterial::GetSoluteProducts(vector<int>& solP)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solP.clear();
+    FSProperty& p = *m_reaction->FindProperty("vP");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solP.push_back(m);
+    }
+}
+
+void FEBioMembraneReactionMaterial::GetInternalSoluteProducts(vector<int>& solPi)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solPi.clear();
+    FSProperty& p = *m_reaction->FindProperty("vPi");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solPi.push_back(m);
+    }
+}
+
+void FEBioMembraneReactionMaterial::GetExternalSoluteProducts(vector<int>& solPe)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    solPe.clear();
+    FSProperty& p = *m_reaction->FindProperty("vP");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m < nsol)) solPe.push_back(m);
+    }
+}
+
+void FEBioMembraneReactionMaterial::GetSBMProducts(vector<int>& sbmP)
+{
+    FSModel* fem = m_reaction->GetFSModel();
+    int nsol = fem->Solutes();
+    sbmP.clear();
+    FSProperty& p = *m_reaction->FindProperty("vP");
+    int N = p.Size();
+    for (int i = 0; i < N; ++i)
+    {
+        FSMaterialProperty* ri = dynamic_cast<FSMaterialProperty*>(p.GetComponent(i)); assert(ri);
+        int m = ri->GetParam("species")->GetIntValue();
+        if ((m >= 0) && (m >= nsol)) sbmP.push_back(m - nsol);
+    }
+}
+
+void FEBioMembraneReactionMaterial::ClearReactants()
+{
+    m_reaction->FindProperty("vR")->Clear();
+}
+
+void FEBioMembraneReactionMaterial::ClearProducts()
+{
+    m_reaction->FindProperty("vP")->Clear();
+}
+
+void FEBioMembraneReactionMaterial::AddReactantMaterial(FSMaterialProperty* pm)
+{
+    m_reaction->FindProperty("vR")->AddComponent(pm);
+}
+
+void FEBioMembraneReactionMaterial::AddProductMaterial(FSMaterialProperty* pm)
+{
+    m_reaction->FindProperty("vP")->AddComponent(pm);
+}
+
 //=============================================================================
 FEBioMultiphasic::FEBioMultiphasic(FSMaterial* mat)
 {
