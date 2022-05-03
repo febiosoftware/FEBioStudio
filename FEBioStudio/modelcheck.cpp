@@ -452,7 +452,7 @@ void check_010(FSProject& prj, std::vector<FSObject*>& objList)
 		for (int j = 0; j < step->BCs(); ++j)
 		{
 			FSBoundaryCondition* pl = step->BC(j);
-			if (pl->GetItemList() == nullptr)
+			if ((pl->GetMeshItemType() != 0) && (pl->GetItemList() == nullptr))
 			{
 				objList.push_back(pl);
 			}

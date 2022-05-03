@@ -177,6 +177,14 @@ void FEBioExport4::AddElemSet(const std::string& name, FEItemListBuilder* pl)
 {
 	assert(pl);
 	if (pl == nullptr) return;
+
+	// make sure we don't have it yet.
+	for (int i = 0; i < m_pESet.size(); ++i)
+	{
+		NamedItemList& l = m_pESet[i];
+		if ((l.m_list == pl) && (name == l.m_name)) return;
+	}
+	
 	m_pESet.push_back(NamedItemList(string(name), pl));
 }
 
@@ -910,6 +918,7 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 		// In order to use this, there can only be one non-attribute parameter with
 		// the same name as the type string. 
 		Param* pp = nullptr;
+		int nonattparam = 0;
 		for (int i = 0; i < pm->Parameters(); ++i)
 		{
 			Param& p = pm->GetParam(i);
@@ -917,15 +926,13 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 			{
 				if (strcmp(p.GetShortName(), sztype) == 0)
 				{
-					if (pp == nullptr) pp = &p;
-					else
-					{
-						pp = nullptr;
-						break;
-					}
+					assert(pp == nullptr);
+					pp = &p;
 				}
+				nonattparam++;
 			}
 		}
+		if (nonattparam != 1) pp = nullptr;
 
 		// If there is only one parameter, and it has the same name
 		// as the type, then write it all on a single line.
@@ -1922,52 +1929,35 @@ void FEBioExport4::WriteNodeDataGenerator(FSNodeDataGenerator* map)
 {
 	XMLElement meshData("NodeData");
 	meshData.add_attribute("name", map->GetName());
-	meshData.add_attribute("type", map->GetTypeString());
 	meshData.add_attribute("node_set", GetNodeSetName(map->GetItemList()));
-	m_xml.add_branch(meshData);
-	{
-		WriteParamList(*map);
-	}
-	m_xml.close_branch();
+	WriteModelComponent(map, meshData);
 }
 
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteEdgeDataGenerator(FSEdgeDataGenerator* map)
 {
 	XMLElement meshData("EdgeData");
-	meshData.add_attribute("generator", map->GetTypeString());
-//	meshData.add_attribute("edge_set", GetEdgeSetName(map->GetItemList()));
-	m_xml.add_branch(meshData);
-	{
-		WriteParamList(*map);
-	}
-	m_xml.close_branch();
+	meshData.add_attribute("name", map->GetName());
+	//	meshData.add_attribute("edge_set", GetEdgeSetName(map->GetItemList()));
+	WriteModelComponent(map, meshData);
 }
 
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteFaceDataGenerator(FSFaceDataGenerator* map)
 {
 	XMLElement meshData("SurfaceData");
-	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("name", map->GetName());
 	meshData.add_attribute("surface", GetSurfaceName(map->GetItemList()));
-	m_xml.add_branch(meshData);
-	{
-		WriteParamList(*map);
-	}
-	m_xml.close_branch();
+	WriteModelComponent(map, meshData);
 }
 
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteElemDataGenerator(FSElemDataGenerator* map)
 {
 	XMLElement meshData("ElementData");
-	meshData.add_attribute("generator", map->GetTypeString());
+	meshData.add_attribute("name", map->GetName());
 	meshData.add_attribute("elem_set", GetElementSetName(map->GetItemList()));
-	m_xml.add_branch(meshData);
-	{
-		WriteParamList(*map);
-	}
-	m_xml.close_branch();
+	WriteModelComponent(map, meshData);
 }
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteMeshDataShellThickness()
@@ -2599,7 +2589,6 @@ void FEBioExport4::WriteBC(FSStep& s, FSBoundaryCondition* pbc)
 
 	XMLElement tag("bc");
 	tag.add_attribute("name", pbc->GetName());
-	tag.add_attribute("type", pbc->GetTypeString());
 
 	if (pbc->GetMeshItemType() != 0)
 	{
@@ -2614,11 +2603,7 @@ void FEBioExport4::WriteBC(FSStep& s, FSBoundaryCondition* pbc)
 	}
 
 	// write the tag
-	m_xml.add_branch(tag);
-	{
-		WriteParamList(*pbc);
-	}
-	m_xml.close_branch();
+	WriteModelComponent(pbc, tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -2638,14 +2623,8 @@ void FEBioExport4::WriteNodalLoads(FSStep& s)
 
 			XMLElement load("nodal_load");
 			load.add_attribute("name", pbc->GetName());
-			load.add_attribute("type", pbc->GetTypeString());
 			load.add_attribute("node_set", GetNodeSetName(pitem));
-
-			m_xml.add_branch(load);
-			{
-				WriteParamList(*pbc);
-			}
-			m_xml.close_branch();
+			WriteModelComponent(pbc, load);
 		}
 	}
 }
@@ -2669,13 +2648,8 @@ void FEBioExport4::WriteSurfaceLoads(FSStep& s)
 			XMLElement load;
 			load.name("surface_load");
 			load.add_attribute("name", psl->GetName());
-			load.add_attribute("type", psl->GetTypeString());
 			load.add_attribute("surface", GetSurfaceName(pitem));
-			m_xml.add_branch(load);
-			{
-				WriteParamList(*psl);
-			}
-			m_xml.close_branch(); // surface_load
+			WriteModelComponent(psl, load);
 		}
 	}
 }
@@ -2698,16 +2672,11 @@ void FEBioExport4::WriteInitialSection()
 
 			XMLElement el("ic");
 			el.add_attribute("name", pic->GetName().c_str());
-			el.add_attribute("type", pic->GetTypeString());
 
 			FEItemListBuilder* pitem = pic->GetItemList();
 			if (pitem) el.add_attribute("node_set", GetNodeSetName(pitem));
 
-			m_xml.add_branch(el);
-			{
-				WriteParamList(*pic);
-			}
-			m_xml.close_branch();
+			WriteModelComponent(pic, el);
 		}
 	}
 }
@@ -2725,13 +2694,9 @@ void FEBioExport4::WriteBodyLoads(FSStep& s)
 			FEItemListBuilder* pitem = pbl->GetItemList();
 
 			XMLElement el("body_load");
-			el.add_attribute("type", pbl->GetTypeString());
+
 			if (pitem) el.add_attribute("elem_set", GetElementSetName(pitem));
-			m_xml.add_branch(el);
-			{
-				WriteParamList(*pbl);
-			}
-			m_xml.close_branch();
+			WriteModelComponent(pbl, el);
 		}
 	}
 }
@@ -2819,14 +2784,8 @@ void FEBioExport4::WriteLoadDataSection()
 		XMLElement el;
 		el.name("load_controller");
 		el.add_attribute("id", i + 1);
-		el.add_attribute("type", plc->GetTypeString());
 		if (plc->GetName().empty() == false) el.add_attribute("name", plc->GetName());
-
-		m_xml.add_branch(el);
-		{
-			WriteParamList(*plc);
-		}
-		m_xml.close_branch(); // load_controller
+		WriteModelComponent(plc, el);
 	}
 }
 

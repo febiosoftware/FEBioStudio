@@ -413,6 +413,13 @@ void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				param->SetIntValue(n);
 			}
 			break;
+			case Param_FLOAT:
+			{
+				double v = 0.0;
+				tag.value(v);
+				param->SetFloatValue(v);
+			}
+			break;
 			case Param_VEC3D:
 			{
 				vec3d v;
@@ -574,7 +581,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 		if (dom) dom->SetMatID(matID);
 
 		FESolidFormulation* eform = nullptr;
-		const char* szelem = tag.AttributeValue("elem_type", true);
+		const char* szelem = tag.AttributeValue("type", true);
 		if (szelem) eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
 
 		// read the domain parameters
@@ -583,7 +590,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 			if (eform)
 				ReadParameters(*eform, tag);
 			else
-				ParseUnknownAttribute(tag, "elem_type");
+				ParseUnknownAttribute(tag, "type");
 		}
 	}
 }
@@ -605,7 +612,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 		if (dom) dom->SetMatID(matID);
 
 		FEShellFormulation* shell = nullptr;
-		const char* szelem = tag.AttributeValue("elem_type", true);
+		const char* szelem = tag.AttributeValue("type", true);
 		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
 		dom->m_form = shell;
@@ -616,7 +623,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 			if (shell)
 				ReadParameters(*shell, tag);
 			else
-				ParseUnknownAttribute(tag, "elem_type");
+				ParseUnknownAttribute(tag, "type");
 		}
 	}
 }
@@ -1420,11 +1427,15 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// get the node set
-	XMLAtt& aset = tag.Attribute("node_set");
+	XMLAtt* aset = tag.Attribute("node_set", true);
 
 	// create the node set
-	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
-	if (pg == 0) FileReader()->AddLogEntry("Unknown node set \"%s\". (line %d)", aset.cvalue(), tag.m_nstart_line);
+	FEItemListBuilder* pg = nullptr;
+	if (aset)
+	{
+		pg = febio.BuildItemList(aset->cvalue());
+		if (pg == 0) FileReader()->AddLogEntry("Unknown node set \"%s\". (line %d)", aset->cvalue(), tag.m_nstart_line);
+	}
 
 	// get the type attribute
 	const char* sztype = tag.AttributeValue("type");
@@ -1446,7 +1457,7 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	pbc->SetName(name);
 	pstep->AddComponent(pbc);
 
-	ReadParameters(*pbc, tag);
+	ParseModelComponent(pbc, tag);
 }
 
 //=============================================================================
@@ -1464,10 +1475,10 @@ bool FEBioFormat4::ParseRigidSection(XMLTag& tag)
 	++tag;
 	do
 	{
-		if      (tag == "rigid_bc"        ) ParseRigidBC(m_pBCStep, tag);
-		if      (tag == "rigid_ic"        ) ParseRigidIC(m_pBCStep, tag);
-		if      (tag == "rigid_load"      ) ParseRigidLoad(m_pBCStep, tag);
-		else if (tag == "rigid_connector" ) ParseRigidConnector (m_pBCStep, tag);
+		if      (tag == "rigid_bc"        ) ParseRigidBC       (m_pBCStep, tag);
+		else if (tag == "rigid_ic"        ) ParseRigidIC       (m_pBCStep, tag);
+		else if (tag == "rigid_load"      ) ParseRigidLoad     (m_pBCStep, tag);
+		else if (tag == "rigid_connector" ) ParseRigidConnector(m_pBCStep, tag);
 		else ParseUnknownTag(tag);
 		++tag;
 	}
@@ -1541,7 +1552,7 @@ void FEBioFormat4::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	pnl->SetItemList(pg);
 	pstep->AddComponent(pnl);
 
-	ReadParameters(*pnl, tag);
+	ParseModelComponent(pnl, tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -1580,7 +1591,7 @@ void FEBioFormat4::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 	pstep->AddComponent(psl);
 
 	// read the parameters
-	ReadParameters(*psl, tag);
+	ParseModelComponent(psl, tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -1609,7 +1620,7 @@ void FEBioFormat4::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 	pbl->SetInfo(comment);
 	if (name.empty() == false) pbl->SetName(name);
 	pstep->AddComponent(pbl);
-	ReadParameters(*pbl, tag);
+	ParseModelComponent(pbl, tag);
 }
 
 //-----------------------------------------------------------------------------
@@ -1655,7 +1666,7 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 				pic->SetItemList(pg);
 				pic->SetName(szname);
 				m_pBCStep->AddComponent(pic);
-				ReadParameters(*pic, tag);
+				ParseModelComponent(pic, tag);
 			}
 		}
 		else ParseUnknownTag(tag);
@@ -1717,7 +1728,7 @@ void FEBioFormat4::ParseContact(FSStep *pstep, XMLTag &tag)
 	pci->SetName(name);
 
 	// read the parameters
-	ReadParameters(*pci, tag);
+	ParseModelComponent(pci, tag);
 
 	// assign surfaces
 	FEBioInputModel::Part* part = surfPair->GetPart();
@@ -1883,7 +1894,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 			fem.GetModel().AddDiscreteObject(pg);
 			set.push_back(pg);
 
-			ReadParameters(*pdm, tag);
+			ParseModelComponent(pdm, tag);
 		}
 		else if (tag == "discrete")
 		{
@@ -1973,7 +1984,7 @@ void FEBioFormat4::ParseNLConstraint(FSStep* pstep, XMLTag& tag)
 	pstep->AddComponent(pi);
 
 	// read parameters
-	ReadParameters(*pi, tag);
+	ParseModelComponent(pi, tag);
 }
 
 //=============================================================================
@@ -2033,7 +2044,7 @@ bool FEBioFormat4::ParseLoadController(XMLTag& tag)
 
 	fem.AddLoadController(plc);
 
-	ReadParameters(*plc, tag);
+	ParseModelComponent(plc, tag);
 
 	return true;
 }

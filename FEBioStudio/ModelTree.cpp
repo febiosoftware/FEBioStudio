@@ -100,8 +100,9 @@ public:
 		m_err = 0;
 		if (m_pbc == 0) { m_err = 1; return false; }
 		FEItemListBuilder* item = m_pbc->GetItemList();
-		if ((item==0) || (item->size() == 0)) { m_err = 1; return false; }
-		if (item->IsValid() == false) { m_err = 2; return false; }
+		if ((m_pbc->GetMeshItemType() != 0) && 
+			((item==0) || (item->size() == 0))) { m_err = 1; return false; }
+		else if (item && (item->IsValid() == false)) { m_err = 2; return false; }
 
 		FSFixedDOF* fix = dynamic_cast<FSFixedDOF*>(m_pbc);
 		if (fix)
