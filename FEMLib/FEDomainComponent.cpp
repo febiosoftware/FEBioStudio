@@ -48,6 +48,9 @@ void FSDomainComponent::Save(OArchive& ar)
 	// write the step
 	ar.WriteChunk(STEP, m_nstepID);
 
+	// write the selection type
+	ar.WriteChunk(SELECTION_TYPE, m_itemType);
+
 	// write the parameters
 	ar.BeginChunk(PARAMS);
 	{
@@ -86,6 +89,7 @@ void FSDomainComponent::Load(IArchive& ar)
 		case NAME: { string name; ar.read(name); SetName(name); } break;
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case STEP: ar.read(m_nstepID); break;
+		case SELECTION_TYPE: ar.read(m_itemType); break;
 		case PARAMS:
 			ParamContainer::Load(ar);
 			break;
