@@ -57,7 +57,7 @@ public:
 	QLineEdit*	taskFile;
 	QCheckBox*	autoSave;
 
-	QComboBox*	febioFile;
+	QComboBox* febioFormat;
 	
 	QCheckBox* editCmd;
 	QLineEdit*	cmd;
@@ -101,11 +101,11 @@ public:
 		jobFolder = new QWidget;
 		jobFolder->setLayout(cwdLayout);
 
-		febioFile = new QComboBox;
-		febioFile->addItem("FEBio 2.5 format");
-		febioFile->addItem("FEBio 3.0 format");
-		febioFile->addItem("FEBio 4.0 format");
-		febioFile->setCurrentIndex(2);
+		febioFormat = new QComboBox;
+		febioFormat->addItem("FEBio 2.5 format");
+		febioFormat->addItem("FEBio 3.0 format");
+		febioFormat->addItem("FEBio 4.0 format");
+		febioFormat->setCurrentIndex(2);
 
 		autoSave = new QCheckBox("Save model before running FEBio");
 		autoSave->setChecked(true);
@@ -132,7 +132,7 @@ public:
 		settings->setLayout(form);
 
 		QFormLayout* febl = new QFormLayout;
-		febl->addRow("FEBio file format:", febioFile);
+		febl->addRow("FEBio file format:", febioFormat);
 		febl->addRow("", writeNotes = new QCheckBox("Write Notes"));
 
 		febops = new QGroupBox("FEBio export settings:");
@@ -324,7 +324,7 @@ void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int nde
 
 void CDlgRun::SetFEBioFileVersion(int fileVersion)
 {
-	ui->febioFile->setCurrentIndex(fileVersion);
+	ui->febioFormat->setCurrentIndex(fileVersion);
 }
 
 QString CDlgRun::GetWorkingDirectory()
@@ -359,7 +359,7 @@ int CDlgRun::GetLaunchConfig()
 
 int CDlgRun::GetFEBioFileVersion()
 {
-	return ui->febioFile->currentIndex();
+	return ui->febioFormat->currentIndex();
 }
 
 bool CDlgRun::WriteNotes()
