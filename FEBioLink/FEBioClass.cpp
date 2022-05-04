@@ -465,6 +465,9 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 				p = po->AddMat3dsParam(m, szname, szlongname)->MakeVariable(true);
 			}
 			break;
+			case FEBio::FEBIO_PARAM_STD_VECTOR_STRING:
+				// TODO: Note sure how to support this. This is used in the FEMathController.
+				break;
 			default:
 				assert(false);
 			}
