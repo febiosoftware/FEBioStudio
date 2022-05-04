@@ -732,16 +732,16 @@ public:
 						FSCoreBase* pc = nullptr;
 						if (classId > 0)
 						{
-							pc = FEBio::CreateClass(classId, GetFSModel());
+							pc = FEBio::CreateClass(classId, GetFSModel(), prop.IsTopLevel());
 						}
 
 						if (pc)
 						{
 							if (m_index >= 0)
-								m_pc->GetProperty(m_propId).SetComponent(pc, m_index);
+								prop.SetComponent(pc, m_index);
 							else
 							{
-								m_pc->GetProperty(m_propId).AddComponent(pc);
+								prop.AddComponent(pc);
 							}
 						}
 					}

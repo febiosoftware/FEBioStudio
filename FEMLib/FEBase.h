@@ -17,7 +17,8 @@ public:
 		EDITABLE = 0x01,			// the property can be edited in the material editor
 		NON_EXTENDABLE = 0x02,		// cannot be modified after created in material editor
 		REQUIRED = 0x04,			// property is required
-		PREFERRED = 0x08			// not required, but default should be allocated when applicable
+		PREFERRED = 0x08,			// not required, but default should be allocated when applicable
+		TOPLEVEL = 0x10				// property is "top level". 
 	};
 
 public:
@@ -73,6 +74,8 @@ public:
 
 	void SetFlags(unsigned int flags) { m_flag = flags; }
 
+	void AddFlag(unsigned int flag) { m_flag |= flag; }
+
 	void SetSuperClassID(int superClassID) { m_nsuperClassID = superClassID; }
 	int GetSuperClassID() const { return m_nsuperClassID; }
 
@@ -84,6 +87,7 @@ public:
 
 	bool IsRequired() const;
 	bool IsPreferred() const;
+	bool IsTopLevel() const;
 
 private:
 	std::string			m_name;			// name of this property
@@ -149,7 +153,11 @@ public:
 	// replace a property of the class
 	void ReplaceProperty(int propID, FSCoreBase* pmat, int matID = 0);
 
+	void SetFlags(unsigned int);
+	unsigned int Flags() const;
+
 private:
 	int		m_classId;				//!< The (FEBio) class ID
+	unsigned int	m_flags;
 	std::vector<FSProperty*>	m_prop;		//!< list of properties
 };

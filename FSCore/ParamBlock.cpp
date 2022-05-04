@@ -169,7 +169,7 @@ Param* Param::MakeVariable(bool b)
 {
 	if (b)
 	{
-		assert((m_ntype == Param_FLOAT) || (m_ntype == Param_VEC3D) || (m_ntype == Param_MAT3D));
+		assert((m_ntype == Param_FLOAT) || (m_ntype == Param_VEC3D) || (m_ntype == Param_MAT3D) || (m_ntype == Param_MAT3DS));
 		m_varType = m_ntype;
 	}
 	else m_varType = Param_UNDEF;

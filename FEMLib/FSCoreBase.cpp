@@ -79,9 +79,19 @@ bool FSProperty::IsPreferred() const
 }
 
 //-----------------------------------------------------------------------------
+bool FSProperty::IsTopLevel() const
+{
+	return ((GetFlags() & FSProperty::TOPLEVEL) != 0);
+}
+
+//-----------------------------------------------------------------------------
 void FSProperty::AddComponent(FSCoreBase* pm)
 {
-	if (pm) pm->SetParent(m_parent);
+	if (pm)
+	{
+		pm->SetParent(m_parent);
+		pm->SetFlags(GetFlags());
+	}
 	if (m_maxSize == NO_FIXED_SIZE)
 		m_cmp.push_back(pm);
 	else
@@ -108,7 +118,11 @@ void FSProperty::AddComponent(FSCoreBase* pm)
 void FSProperty::SetComponent(FSCoreBase* pm, int i)
 {
 	//	if (pm) assert(pm->ClassID() & m_nClassID);
-	if (pm) pm->SetParent(m_parent);
+	if (pm)
+	{
+		pm->SetParent(m_parent);
+		pm->SetFlags(GetFlags());
+	}
 	if (m_cmp.empty() == false)
 	{
 		if (m_cmp[i] != pm)
@@ -186,7 +200,7 @@ void FSProperty::SetSize(int newSize)
 			if ((IsRequired() || IsPreferred()) && (m_defaultType.empty() == false))
 			{
 				FSModel* fem = parent->GetFSModel();
-				FSModelComponent* pmci = FEBio::CreateClass(GetSuperClassID(), m_defaultType, fem);
+				FSModelComponent* pmci = FEBio::CreateClass(GetSuperClassID(), m_defaultType, fem, IsTopLevel());
 				SetComponent(pmci, i);
 			}
 		}
@@ -197,6 +211,17 @@ void FSProperty::SetSize(int newSize)
 FSCoreBase::FSCoreBase()
 {
 	m_classId = -1;
+	m_flags = FSProperty::EDITABLE | FSProperty::TOPLEVEL;
+}
+
+void FSCoreBase::SetFlags(unsigned int flags)
+{
+	m_flags = flags;
+}
+
+unsigned int FSCoreBase::Flags() const
+{
+	return m_flags;
 }
 
 size_t FSCoreBase::Properties() const

@@ -150,20 +150,20 @@ namespace FEBio {
 	FEShellFormulation*  CreateShellFormulation (const std::string& typeStr, FSModel* fem);
 	FESolidFormulation*  CreateSolidFormulation (const std::string& typeStr, FSModel* fem);
 
-	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem);
-	FSModelComponent* CreateClass(int classId, FSModel* fem);
+	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, bool isTopLevel = true);
+	FSModelComponent* CreateClass(int classId, FSModel* fem, bool topLevelOnly = true);
 	FSModelComponent* CreateFSClass(int superClassID, int baseClassId, FSModel* fem);
 
-	template<class T> T* CreateFEBioClass(int classId, FSModel* fem)
+	template<class T> T* CreateFEBioClass(int classId, FSModel* fem, bool isTopLevel = true)
 	{
-		FSModelComponent* pc = CreateClass(classId, fem);
+		FSModelComponent* pc = CreateClass(classId, fem, isTopLevel);
 		T* pt = dynamic_cast<T*>(pc);
 		if (pt == nullptr) { delete pc; return nullptr; }
 		return pt;
 	}
 
 	// this is only used by LoadClassMetaData
-	bool BuildModelComponent(FSModelComponent* pc, const std::string& typeStr);
+	bool BuildModelComponent(FSModelComponent* pc, const std::string& typeStr, bool isTopLevel);
 
 	// Call this to initialize default properties
 	bool InitDefaultProps(FSModelComponent* pc);
@@ -171,7 +171,7 @@ namespace FEBio {
 	void UpdateFEBioMaterial(FEBioMaterial* pm);
 	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);
 
-	bool BuildModelComponent(FSModelComponent* po);
+	bool BuildModelComponent(FSModelComponent* po, bool isTopLevel);
 
 	class FEBioOutputHandler
 	{

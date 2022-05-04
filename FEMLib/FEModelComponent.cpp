@@ -101,7 +101,8 @@ void LoadClassMetaData(FSModelComponent* pc, IArchive& ar)
 			string typeStr;
 			ar.read(typeStr);
 			assert(superClassId != -1);
-			if (FEBio::BuildModelComponent(pc, typeStr) == false)
+			bool isTopLevel = (pc->Flags() & FSProperty::TOPLEVEL);
+			if (FEBio::BuildModelComponent(pc, typeStr, isTopLevel) == false)
 			{
 				const char* szsuperclass = FEBio::GetSuperClassString(superClassId);
 				if (szsuperclass == nullptr) szsuperclass = "(unknown)";

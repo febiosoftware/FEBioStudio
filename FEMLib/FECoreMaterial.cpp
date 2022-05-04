@@ -607,8 +607,20 @@ void FSMaterial::Load(IArchive &ar)
                                 pm = FEMaterialFactory::Create(fem, nid);
                             }
 							assert(pm);
+
+							// Add the component to the property.
+							// Note that we need to do this before we actually load the material!
+							if (prop)
+							{
+								if (prop->maxSize() == FSProperty::NO_FIXED_SIZE)
+									prop->AddComponent(pm);
+								else prop->SetComponent(pm, n);
+							}
+
 							pm->Load(ar);
 
+							// see if we need to convert this material
+							pm = nullptr;
 							if (nid == FE_TRANS_MOONEY_RIVLIN_OLD)
 							{
 								FSTransMooneyRivlin* pnewMat = new FSTransMooneyRivlin(fem);
@@ -676,13 +688,11 @@ void FSMaterial::Load(IArchive &ar)
 								pm = pnewMat;
 							}
 
-							if (prop)
+							if (pm && prop)
 							{
-								if (prop->maxSize() == FSProperty::NO_FIXED_SIZE)
-									prop->AddComponent(pm);
-								else prop->SetComponent(pm, n);
-								n++;
+								prop->SetComponent(pm, n);
 							}
+							n++;
 
 							ar.CloseChunk();
 						}

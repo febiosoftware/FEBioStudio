@@ -309,7 +309,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 }
 
 
-bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
+bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, bool isTopLevel)
 {
 	if (po->GetSuperClassID() != FECLASS_ID)
 	{
@@ -345,7 +345,8 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 		PB.SetActiveGroup(param.GetParamGroup());
 
-		if ((param.GetFlags() & FEParamFlag::FE_PARAM_HIDDEN) == 0)
+		if ((param.IsHidden() == false) &&
+			((param.IsTopLevel() == false) || isTopLevel))
 		{
 			int ndim = param.dim();
 			int type = param.type();
@@ -454,19 +455,11 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 			break;
 			case FEBio::FEBIO_PARAM_MAT3DS_MAPPED:
 			{
-				FEParamMat3ds& v = param.value<FEParamMat3ds>();
-				FEMat3dsValuator* val = v.valuator(); assert(val);
-
-				FSProperty* prop = po->AddProperty(param.name(), baseClassIndex("FEMat3dsValuator"));
-				prop->SetSuperClassID(FEMAT3DSVALUATOR_ID);
-				prop->SetDefaultType("const");
-
-				FSModelComponent* matProp = CreateFSClass(FEMAT3DSVALUATOR_ID, -1, po->GetFSModel());
-
-				// copy the class data
-				BuildModelComponent(matProp, val);
-
-				prop->AddComponent(matProp);
+				assert(ndim == 1);
+				FEParamMat3ds& pm = param.value<FEParamMat3ds>();
+				mat3ds m(1.,1.,1., 0., 0., 0.);
+				if (pm.isConst()) m = pm.constValue();
+				p = po->AddMat3dsParam(m, szname, szlongname)->MakeVariable(true);
 			}
 			break;
 			default:
@@ -490,6 +483,8 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 		int maxSize = (prop.IsArray() ? 0 : 1);
 		int baseClassId = (prop.GetClassName() ? baseClassIndex(prop.GetClassName()) : -1);
 		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
+
+		if (prop.IsTopLevel()) fsp->AddFlag(FSProperty::TOPLEVEL);
 
 		fsp->SetLongName(prop.GetLongName());
 
@@ -539,7 +534,7 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 
 			// allocate the model component
 			FSModelComponent* pmi = CreateFSClass(prop.GetSuperClassID(), -1, nullptr); assert(pmi);
-			BuildModelComponent(pmi, pci);
+			BuildModelComponent(pmi, pci, prop.IsTopLevel());
 			fsp->AddComponent(pmi);
 		}
 	}
@@ -561,13 +556,13 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb)
 	return true;
 }
 
-bool FEBio::BuildModelComponent(FSModelComponent* po)
+bool FEBio::BuildModelComponent(FSModelComponent* po, bool isTopLevel)
 {
 	// create the FEBio class
 	int classId = po->GetClassID();
 	FECoreBase* feb = CreateFECoreClass(classId);
 	if (feb == nullptr) return false;
-	return BuildModelComponent(po, feb);
+	return BuildModelComponent(po, feb, isTopLevel);
 }
 
 vector<FEBio::FEBioModule>	FEBio::GetAllModules()
@@ -781,7 +776,7 @@ bool FEBio::InitDefaultProps(FSModelComponent* pc)
 			if ((fci.size() > 0) && (prop.GetDefaultType().empty() == false))
 			{
 				FSModel* fem = pc->GetFSModel();
-				FSModelComponent* psc = FEBio::CreateClass(prop.GetSuperClassID(), prop.GetDefaultType().c_str(), fem);
+				FSModelComponent* psc = FEBio::CreateClass(prop.GetSuperClassID(), prop.GetDefaultType().c_str(), fem, prop.IsTopLevel());
 				assert(psc);
 				if (psc)
 				{
@@ -796,19 +791,19 @@ bool FEBio::InitDefaultProps(FSModelComponent* pc)
 	return true;
 }
 
-bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po)
+bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po, bool isTopLevel)
 {
 	int classId = FEBio::GetClassId(superClassId, typeStr);
 	po->SetSuperClassID(superClassId);
 	po->SetClassID(classId);
 	po->SetTypeString(typeStr);
-	bool ret = FEBio::BuildModelComponent(po);
+	bool ret = FEBio::BuildModelComponent(po, isTopLevel);
 	return ret;
 }
 
-bool FEBio::BuildModelComponent(FSModelComponent* pc, const std::string& typeStr)
+bool FEBio::BuildModelComponent(FSModelComponent* pc, const std::string& typeStr, bool isTopLevel)
 {
-	return BuildModelComponent(pc->GetSuperClassID(), typeStr, pc);
+	return BuildModelComponent(pc->GetSuperClassID(), typeStr, pc, isTopLevel);
 }
 
 void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
@@ -835,7 +830,7 @@ void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
 */
 }
 
-template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem)
+template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem, bool isTopLevel)
 {
 	int baseClassIndex = GetBaseClassIndex(superClassID, typeStr);
 
@@ -844,7 +839,7 @@ template <class T> T* CreateModelComponent(int superClassID, const std::string& 
 
 	T* mc = dynamic_cast<T*>(pmc);
 	if ((mc == nullptr) ||
-		(BuildModelComponent(superClassID, typeStr, mc) == false))
+		(BuildModelComponent(superClassID, typeStr, mc, isTopLevel) == false))
 	{
 		delete pmc;
 		return nullptr;
@@ -854,122 +849,122 @@ template <class T> T* CreateModelComponent(int superClassID, const std::string& 
 
 FSStep* FEBio::CreateStep(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioAnalysisStep>(FEANALYSIS_ID, typeStr, fem);
+	return CreateModelComponent<FEBioAnalysisStep>(FEANALYSIS_ID, typeStr, fem, true);
 }
 
 FSMaterial* FEBio::CreateMaterial(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr, fem);
+	return CreateModelComponent<FEBioMaterial>(FEMATERIAL_ID, typeStr, fem, true);
 }
 
 FSMaterialProperty* FEBio::CreateMaterialProperty(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioMaterialProperty>(FEMATERIALPROP_ID, typeStr, fem);
+	return CreateModelComponent<FEBioMaterialProperty>(FEMATERIALPROP_ID, typeStr, fem, true);
 }
 
 FSDiscreteMaterial* FEBio::CreateDiscreteMaterial(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioDiscreteMaterial>(FEDISCRETEMATERIAL_ID, typeStr, fem);
+	return CreateModelComponent<FEBioDiscreteMaterial>(FEDISCRETEMATERIAL_ID, typeStr, fem, true);
 }
 
 FSBoundaryCondition* FEBio::CreateBoundaryCondition(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioBoundaryCondition>(FEBC_ID, typeStr, fem);
+	return CreateModelComponent<FEBioBoundaryCondition>(FEBC_ID, typeStr, fem, true);
 }
 
 FSNodalLoad* FEBio::CreateNodalLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioNodalLoad>(FELOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioNodalLoad>(FELOAD_ID, typeStr, fem, true);
 }
 
 FSSurfaceLoad* FEBio::CreateSurfaceLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioSurfaceLoad>(FELOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioSurfaceLoad>(FELOAD_ID, typeStr, fem, true);
 }
 
 FSBodyLoad* FEBio::CreateBodyLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioBodyLoad>(FELOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioBodyLoad>(FELOAD_ID, typeStr, fem, true);
 }
 
 FSPairedInterface* FEBio::CreatePairedInterface(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioInterface>(FESURFACEINTERFACE_ID, typeStr, fem);
+	return CreateModelComponent<FEBioInterface>(FESURFACEINTERFACE_ID, typeStr, fem, true);
 }
 
 FSModelConstraint* FEBio::CreateModelConstraint(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FSModelConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
+	return CreateModelComponent<FSModelConstraint>(FENLCONSTRAINT_ID, typeStr, fem, true);
 }
 
 FSModelConstraint* FEBio::CreateNLConstraint(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioNLConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
+	return CreateModelComponent<FEBioNLConstraint>(FENLCONSTRAINT_ID, typeStr, fem, true);
 }
 
 FSSurfaceConstraint* FEBio::CreateSurfaceConstraint(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioSurfaceConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
+	return CreateModelComponent<FEBioSurfaceConstraint>(FENLCONSTRAINT_ID, typeStr, fem, true);
 }
 
 FSBodyConstraint* FEBio::CreateBodyConstraint(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioBodyConstraint>(FENLCONSTRAINT_ID, typeStr, fem);
+	return CreateModelComponent<FEBioBodyConstraint>(FENLCONSTRAINT_ID, typeStr, fem, true);
 }
 
 FSRigidBC* FEBio::CreateRigidBC(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioRigidBC>(FEBC_ID, typeStr, fem);
+	return CreateModelComponent<FEBioRigidBC>(FEBC_ID, typeStr, fem, true);
 }
 
 FSRigidIC* FEBio::CreateRigidIC(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioRigidIC>(FEIC_ID, typeStr, fem);
+	return CreateModelComponent<FEBioRigidIC>(FEIC_ID, typeStr, fem, true);
 }
 
 FSRigidConnector* FEBio::CreateRigidConnector(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioRigidConnector>(FENLCONSTRAINT_ID, typeStr, fem);
+	return CreateModelComponent<FEBioRigidConnector>(FENLCONSTRAINT_ID, typeStr, fem, true);
 }
 
 FSRigidLoad* FEBio::CreateRigidLoad(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioRigidLoad>(FELOAD_ID, typeStr, fem);
+	return CreateModelComponent<FEBioRigidLoad>(FELOAD_ID, typeStr, fem, true);
 }
 
 FSInitialCondition* FEBio::CreateInitialCondition(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioInitialCondition>(FEIC_ID, typeStr, fem);
+	return CreateModelComponent<FEBioInitialCondition>(FEIC_ID, typeStr, fem, true);
 }
 
 FSLoadController* FEBio::CreateLoadController(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem);
+	return CreateModelComponent<FEBioLoadController>(FELOADCONTROLLER_ID, typeStr, fem, true);
 }
 
 FSMeshDataGenerator* FEBio::CreateNodeDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioNodeDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioNodeDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem, true);
 }
 
 FSMeshDataGenerator* FEBio::CreateEdgeDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioEdgeDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioEdgeDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem, true);
 }
 
 FSMeshDataGenerator* FEBio::CreateFaceDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioFaceDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioFaceDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem, true);
 }
 
 FSMeshDataGenerator* FEBio::CreateElemDataGenerator(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioElemDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
+	return CreateModelComponent<FEBioElemDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem, true);
 }
 
 FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEBioFunction1D>(FEFUNCTION1D_ID, typeStr, fem);
+	return CreateModelComponent<FEBioFunction1D>(FEFUNCTION1D_ID, typeStr, fem, true);
 }
 
 FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
@@ -979,20 +974,20 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 		FSGenericClass* pc = new FSGenericClass(fem);
 		pc->SetSuperClassID(FECLASS_ID);
 	}
-	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr, fem);
+	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr, fem, true);
 }
 
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem);
+	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem, true);
 }
 
 FESolidFormulation* FEBio::CreateSolidFormulation(const std::string& typeStr, FSModel* fem)
 {
-	return CreateModelComponent<FESolidFormulation>(FESOLIDDOMAIN_ID, typeStr, fem);
+	return CreateModelComponent<FESolidFormulation>(FESOLIDDOMAIN_ID, typeStr, fem, false);
 }
 
-FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem)
+FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, bool isTopLevel)
 {
 	switch (superClassID)
 	{
@@ -1010,7 +1005,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEMAT3DSVALUATOR_ID :
 	{
 		FSGenericClass* pc = new FSGenericClass(fem);
-		BuildModelComponent(superClassID, typeStr, pc);
+		BuildModelComponent(superClassID, typeStr, pc, isTopLevel);
 		return pc;
 	}
 	break;
@@ -1028,7 +1023,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	return nullptr;
 }
 
-FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm)
+FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm, bool isTopLevel)
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 
@@ -1044,7 +1039,7 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm)
 	pc->SetTypeString(fac->GetTypeStr());
 
 	// build the model component
-	BuildModelComponent(pc);
+	BuildModelComponent(pc, isTopLevel);
 
 	return pc;
 }
