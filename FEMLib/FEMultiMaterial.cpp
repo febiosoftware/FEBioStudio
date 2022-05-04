@@ -436,8 +436,8 @@ FSReactionMaterial::FSReactionMaterial(int ntype, FSModel* fem) : FSMaterialProp
 	AddProperty("forward_rate", FE_MAT_REACTION_RATE);
 	AddProperty("reverse_rate", FE_MAT_REACTION_RATE);
 
-	AddProperty("vR", FE_MAT_REACTION_REACTANTS, FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
-	AddProperty("vP", FE_MAT_REACTION_PRODUCTS , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vR", FE_MAT_REACTION_REACTANTS, 0);// FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vP", FE_MAT_REACTION_PRODUCTS , 0);// FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
 }
 
 
@@ -1075,12 +1075,12 @@ FSMembraneReactionMaterial::FSMembraneReactionMaterial(int ntype, FSModel* fem) 
     AddProperty("forward_rate", FE_MAT_MREACTION_RATE);
     AddProperty("reverse_rate", FE_MAT_MREACTION_RATE);
     
-    AddProperty("vR" , FE_MAT_REACTION_REACTANTS  , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
-    AddProperty("vP" , FE_MAT_REACTION_PRODUCTS   , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
-    AddProperty("vRi", FE_MAT_MREACTION_IREACTANTS, FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
-    AddProperty("vPi", FE_MAT_MREACTION_IPRODUCTS , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
-    AddProperty("vRe", FE_MAT_MREACTION_EREACTANTS, FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
-    AddProperty("vPe", FE_MAT_MREACTION_EPRODUCTS , FSProperty::NO_FIXED_SIZE, FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vR" , FE_MAT_REACTION_REACTANTS  , FSProperty::NO_FIXED_SIZE, 0);//FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vP" , FE_MAT_REACTION_PRODUCTS   , FSProperty::NO_FIXED_SIZE, 0);//FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vRi", FE_MAT_MREACTION_IREACTANTS, FSProperty::NO_FIXED_SIZE, 0);//FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vPi", FE_MAT_MREACTION_IPRODUCTS , FSProperty::NO_FIXED_SIZE, 0);//FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vRe", FE_MAT_MREACTION_EREACTANTS, FSProperty::NO_FIXED_SIZE, 0);//FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
+    AddProperty("vPe", FE_MAT_MREACTION_EPRODUCTS , FSProperty::NO_FIXED_SIZE, 0);//FSProperty::EDITABLE | FSProperty::NON_EXTENDABLE);
 }
 
 
@@ -1410,10 +1410,10 @@ FSMultiphasicMaterial::FSMultiphasicMaterial(FSModel* fem) : FSMultiMaterial(FE_
 	AddProperty("solid_bound", FE_MAT_SBM, FSProperty::NO_FIXED_SIZE);
 
 	// add reaction material
-	AddProperty("reaction", FE_MAT_REACTION, FSProperty::NO_FIXED_SIZE, FSProperty::NON_EXTENDABLE);
+    AddProperty("reaction", FE_MAT_REACTION, FSProperty::NO_FIXED_SIZE, 0);// FSProperty::NON_EXTENDABLE);
 
     // add reaction material
-    AddProperty("membrane_reaction", FE_MAT_MREACTION, FSProperty::NO_FIXED_SIZE, FSProperty::NON_EXTENDABLE);
+    AddProperty("membrane_reaction", FE_MAT_MREACTION, FSProperty::NO_FIXED_SIZE, 0);// FSProperty::NON_EXTENDABLE);
 }
 
 // set/get elastic component 

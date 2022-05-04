@@ -732,7 +732,7 @@ public:
 						FSCoreBase* pc = nullptr;
 						if (classId > 0)
 						{
-							pc = FEBio::CreateClass(classId, GetFSModel(), prop.IsTopLevel());
+							pc = FEBio::CreateClass(classId, GetFSModel(), prop.GetFlags());
 						}
 
 						if (pc)

@@ -176,11 +176,11 @@ public:
 				int nc = p.Size();
 				for (int j = 0; j < nc; ++j) addChild(pm, -1, i, j);
 
-				if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
+/*				if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
 				{
 					addChild(pm, -1, i, -1);
 				}
-			}
+*/			}
 		}
 
 		FSModel* GetFSModel();

@@ -11,7 +11,7 @@ FSProperty::FSProperty()
 	m_maxSize = NO_FIXED_SIZE;
 	m_nsuperClassID = -1;
 //	m_nbaseClassID = -1;
-	m_flag = EDITABLE;
+	m_flag = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -211,7 +211,7 @@ void FSProperty::SetSize(int newSize)
 FSCoreBase::FSCoreBase()
 {
 	m_classId = -1;
-	m_flags = FSProperty::EDITABLE | FSProperty::TOPLEVEL;
+	m_flags = FSProperty::TOPLEVEL;
 }
 
 void FSCoreBase::SetFlags(unsigned int flags)

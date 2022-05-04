@@ -80,7 +80,7 @@ public:
 			for (int i=0; i<pmat->Properties(); ++i)
 			{
 				FSProperty& mp = pmat->GetProperty(i);
-				if (mp.GetFlags() & FSProperty::EDITABLE)
+				if (true)//mp.GetFlags() & FSProperty::EDITABLE)
 				{
 					if (mp.maxSize() == 1)
 					{

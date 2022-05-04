@@ -13,17 +13,21 @@ class FSProperty
 public:
 	enum { NO_FIXED_SIZE = 0 };
 
+	// NOTE: Should match flags defined in FECore\FEProperty.h
+	//       These flags are not serialized.
 	enum Flags {
-		EDITABLE = 0x01,			// the property can be edited in the material editor
-		NON_EXTENDABLE = 0x02,		// cannot be modified after created in material editor
-		REQUIRED = 0x04,			// property is required
-		PREFERRED = 0x08,			// not required, but default should be allocated when applicable
-		TOPLEVEL = 0x10				// property is "top level". 
+//		OPTIONAL   = 0x00, (had to comment out. Causing compilation error for some files.)
+		REQUIRED   = 0x01,		// the property is required (default)
+		PREFERRED  = 0x02,		// the property is not required, but a default should be allocated when possible.
+		REFERENCE  = 0x04,		// references another class in the model
+		FIXED      = 0x08,		// fixed properties are fixed type class members
+		TOPLEVEL   = 0x10,		// This is a "top-level" property. 
+		RESTRICTED = 0x20		// This is a "restricted" property
 	};
 
 public:
 	FSProperty();
-	FSProperty(const std::string& name, int propType, FSCoreBase* parent, int nsize = 1, unsigned int flags = EDITABLE);
+	FSProperty(const std::string& name, int propType, FSCoreBase* parent, int nsize = 1, unsigned int flags = 0);
 	~FSProperty();
 
 	// clears the component list for this property
@@ -142,7 +146,7 @@ public:
 	FSProperty* FindProperty(FSCoreBase* pm);
 
 	// add a property to the material
-	FSProperty* AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = FSProperty::EDITABLE);
+	FSProperty* AddProperty(const std::string& name, int nClassID, int maxSize = 1, unsigned int flags = 0);
 
 	// add a component to property with index propID
 	int AddProperty(int propID, FSCoreBase* pm);

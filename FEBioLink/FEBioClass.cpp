@@ -309,7 +309,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 }
 
 
-bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, bool isTopLevel)
+bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int flags)
 {
 	if (po->GetSuperClassID() != FECLASS_ID)
 	{
@@ -336,6 +336,9 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, bool isTopLevel)
 		PB.SetActiveGroup(PL.GetParameterGroupName(i));
 	}
 	PB.SetActiveGroup(nullptr);
+
+	bool isTopLevel   = (flags & FEProperty::TopLevel);
+	bool isRestricted = (flags & FEProperty::Restricted);
 
 	const int params = PL.Parameters();
 	FEParamIterator pi = PL.first();
@@ -476,66 +479,69 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, bool isTopLevel)
 	}
 
 	// map the properties
-	for (int i = 0; i < feb->PropertyClasses(); ++i)
+	if (isRestricted == false)
 	{
-		FEProperty& prop = *feb->PropertyClass(i);
-
-		int maxSize = (prop.IsArray() ? 0 : 1);
-		int baseClassId = (prop.GetClassName() ? baseClassIndex(prop.GetClassName()) : -1);
-		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
-
-		if (prop.IsTopLevel()) fsp->AddFlag(FSProperty::TOPLEVEL);
-
-		fsp->SetLongName(prop.GetLongName());
-
-		fsp->SetSuperClassID(prop.GetSuperClassID());
-		if (prop.IsRequired())
-			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
-		if (prop.IsPreferred())
-			fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
-		
-		// set the (optional) default type
-		if (prop.GetDefaultType())
-			fsp->SetDefaultType(prop.GetDefaultType());
-
-		// for solvers we need to set the default type to the module name
-		if (prop.GetSuperClassID() == FESOLVER_ID)
+		for (int i = 0; i < feb->PropertyClasses(); ++i)
 		{
-			int activeMod = GetActiveModule(); assert(activeMod >= 0);
-			const char* szmod = GetModuleName(activeMod); assert(szmod);
-			fsp->SetDefaultType(szmod);
-		}
+			FEProperty& prop = *feb->PropertyClass(i);
 
-		// handle mesh selection properties differently
-		if (prop.GetSuperClassID() == FESURFACE_ID)
-		{
-			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
-			pms->SetMeshItemType(FE_FACE_FLAG);
-			pms->SetSuperClassID(FESURFACE_ID);
-			fsp->AddComponent(pms);
-		}
-/*		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
-		{
-			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
-			if (strcmp(prop.GetName(), "node_set") == 0) pms->SetMeshItemType(FE_NODE_FLAG);
+			int maxSize = (prop.IsArray() ? 0 : 1);
+			int baseClassId = (prop.GetClassName() ? baseClassIndex(prop.GetClassName()) : -1);
+			FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
 
-			// TODO: We need to integrate these IDs.
-			fsp->SetSuperClassID(FEDOMAIN_ID);
-			pms->SetSuperClassID(FEDOMAIN_ID);
-			fsp->AddComponent(pms);
-		}
-*/		else if (prop.size() != 0)
-		{
-			FECoreBase* pci = prop.get(0);
+			fsp->SetFlags(prop.Flags());
 
-			// make sure the property is either a FECLASS_ID, which is not allocated through the kernel
-			// or the super IDs match.
-			assert((prop.GetSuperClassID() == FECLASS_ID) || (pci->GetSuperClassID() == prop.GetSuperClassID()));
+			fsp->SetLongName(prop.GetLongName());
 
-			// allocate the model component
-			FSModelComponent* pmi = CreateFSClass(prop.GetSuperClassID(), -1, nullptr); assert(pmi);
-			BuildModelComponent(pmi, pci, prop.IsTopLevel());
-			fsp->AddComponent(pmi);
+			fsp->SetSuperClassID(prop.GetSuperClassID());
+			if (prop.IsRequired())
+				fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
+			if (prop.IsPreferred())
+				fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
+
+			// set the (optional) default type
+			if (prop.GetDefaultType())
+				fsp->SetDefaultType(prop.GetDefaultType());
+
+			// for solvers we need to set the default type to the module name
+			if (prop.GetSuperClassID() == FESOLVER_ID)
+			{
+				int activeMod = GetActiveModule(); assert(activeMod >= 0);
+				const char* szmod = GetModuleName(activeMod); assert(szmod);
+				fsp->SetDefaultType(szmod);
+			}
+
+			// handle mesh selection properties differently
+			if (prop.GetSuperClassID() == FESURFACE_ID)
+			{
+				FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+				pms->SetMeshItemType(FE_FACE_FLAG);
+				pms->SetSuperClassID(FESURFACE_ID);
+				fsp->AddComponent(pms);
+			}
+			/*		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
+					{
+						FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+						if (strcmp(prop.GetName(), "node_set") == 0) pms->SetMeshItemType(FE_NODE_FLAG);
+
+						// TODO: We need to integrate these IDs.
+						fsp->SetSuperClassID(FEDOMAIN_ID);
+						pms->SetSuperClassID(FEDOMAIN_ID);
+						fsp->AddComponent(pms);
+					}
+			*/		else if (prop.size() != 0)
+			{
+				FECoreBase* pci = prop.get(0);
+
+				// make sure the property is either a FECLASS_ID, which is not allocated through the kernel
+				// or the super IDs match.
+				assert((prop.GetSuperClassID() == FECLASS_ID) || (pci->GetSuperClassID() == prop.GetSuperClassID()));
+
+				// allocate the model component
+				FSModelComponent* pmi = CreateFSClass(prop.GetSuperClassID(), -1, nullptr); assert(pmi);
+				BuildModelComponent(pmi, pci, prop.Flags());
+				fsp->AddComponent(pmi);
+			}
 		}
 	}
 
@@ -556,13 +562,13 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, bool isTopLevel)
 	return true;
 }
 
-bool FEBio::BuildModelComponent(FSModelComponent* po, bool isTopLevel)
+bool FEBio::BuildModelComponent(FSModelComponent* po, unsigned int flags)
 {
 	// create the FEBio class
 	int classId = po->GetClassID();
 	FECoreBase* feb = CreateFECoreClass(classId);
 	if (feb == nullptr) return false;
-	return BuildModelComponent(po, feb, isTopLevel);
+	return BuildModelComponent(po, feb, flags);
 }
 
 vector<FEBio::FEBioModule>	FEBio::GetAllModules()
@@ -776,7 +782,7 @@ bool FEBio::InitDefaultProps(FSModelComponent* pc)
 			if ((fci.size() > 0) && (prop.GetDefaultType().empty() == false))
 			{
 				FSModel* fem = pc->GetFSModel();
-				FSModelComponent* psc = FEBio::CreateClass(prop.GetSuperClassID(), prop.GetDefaultType().c_str(), fem, prop.IsTopLevel());
+				FSModelComponent* psc = FEBio::CreateClass(prop.GetSuperClassID(), prop.GetDefaultType().c_str(), fem, prop.GetFlags());
 				assert(psc);
 				if (psc)
 				{
@@ -791,19 +797,19 @@ bool FEBio::InitDefaultProps(FSModelComponent* pc)
 	return true;
 }
 
-bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po, bool isTopLevel)
+bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelComponent* po, unsigned int flags)
 {
 	int classId = FEBio::GetClassId(superClassId, typeStr);
 	po->SetSuperClassID(superClassId);
 	po->SetClassID(classId);
 	po->SetTypeString(typeStr);
-	bool ret = FEBio::BuildModelComponent(po, isTopLevel);
+	bool ret = FEBio::BuildModelComponent(po, flags);
 	return ret;
 }
 
-bool FEBio::BuildModelComponent(FSModelComponent* pc, const std::string& typeStr, bool isTopLevel)
+bool FEBio::BuildModelComponent(FSModelComponent* pc, const std::string& typeStr, unsigned int flags)
 {
-	return BuildModelComponent(pc->GetSuperClassID(), typeStr, pc, isTopLevel);
+	return BuildModelComponent(pc->GetSuperClassID(), typeStr, pc, flags);
 }
 
 void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
@@ -830,7 +836,7 @@ void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
 */
 }
 
-template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem, bool isTopLevel)
+template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags)
 {
 	int baseClassIndex = GetBaseClassIndex(superClassID, typeStr);
 
@@ -839,7 +845,7 @@ template <class T> T* CreateModelComponent(int superClassID, const std::string& 
 
 	T* mc = dynamic_cast<T*>(pmc);
 	if ((mc == nullptr) ||
-		(BuildModelComponent(superClassID, typeStr, mc, isTopLevel) == false))
+		(BuildModelComponent(superClassID, typeStr, mc, flags) == false))
 	{
 		delete pmc;
 		return nullptr;
@@ -987,7 +993,7 @@ FESolidFormulation* FEBio::CreateSolidFormulation(const std::string& typeStr, FS
 	return CreateModelComponent<FESolidFormulation>(FESOLIDDOMAIN_ID, typeStr, fem, false);
 }
 
-FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, bool isTopLevel)
+FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags)
 {
 	switch (superClassID)
 	{
@@ -1005,7 +1011,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEMAT3DSVALUATOR_ID :
 	{
 		FSGenericClass* pc = new FSGenericClass(fem);
-		BuildModelComponent(superClassID, typeStr, pc, isTopLevel);
+		BuildModelComponent(superClassID, typeStr, pc, flags);
 		return pc;
 	}
 	break;
@@ -1023,7 +1029,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	return nullptr;
 }
 
-FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm, bool isTopLevel)
+FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm, unsigned int flags)
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 
@@ -1039,7 +1045,7 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm, bool isTopLevel)
 	pc->SetTypeString(fac->GetTypeStr());
 
 	// build the model component
-	BuildModelComponent(pc, isTopLevel);
+	BuildModelComponent(pc, flags);
 
 	return pc;
 }
