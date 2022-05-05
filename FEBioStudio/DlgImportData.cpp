@@ -341,7 +341,7 @@ void CDlgImportData::UpdateTable()
                 ui->badValue = true;
 
                 item->setBackground(Qt::red);
-                item->setToolTip(QString("This is not a valid %1.").arg(ui->dataType == DataType::INT ? "integer" : "double"));
+                item->setToolTip(QString("This is not a valid %1.").arg(ui->dataType == DataType::INT ? "integer" : "number"));
             }
 
             ui->table->setItem(row, col, item);
@@ -360,7 +360,7 @@ void CDlgImportData::accept()
     if(ui->badValue)
     {
         err = QString("Some of your values are not valid %1. They will be "
-            "replaced with your default value.").arg(ui->dataType == DataType::INT ? "integers" : "doubles");
+            "replaced with your default value.").arg(ui->dataType == DataType::INT ? "integers" : "numbers");
     }
 
     if(ui->tooManyCols)
