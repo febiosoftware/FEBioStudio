@@ -234,7 +234,7 @@ public slots:
 	void OnZoomToHeight();
 	void OnZoomToFit();
 	void OnShowProps();
-	void OnCopyToClipboard();
+	QString OnCopyToClipboard();
 	void OnBGImage();
 	void OnClearBGImage();
 
@@ -358,7 +358,6 @@ public slots:
 	void on_undo_clicked(bool b);
 	void on_redo_clicked(bool b);
 	void on_math_clicked(bool b);
-	void on_clip_clicked(bool b);
 	void on_copy_clicked(bool b);
 	void on_paste_clicked(bool b);
 	void on_open_clicked(bool b);

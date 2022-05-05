@@ -54,6 +54,8 @@ SOFTWARE.*/
 #include "MainWindow.h"	// for CResource
 #include "DlgFormula.h"
 #include "Command.h"
+#include "DlgImportData.h"
+
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -424,13 +426,13 @@ void CPlotWidget::OnShowProps()
 }
 
 //-----------------------------------------------------------------------------
-void CPlotWidget::OnCopyToClipboard()
+QString CPlotWidget::OnCopyToClipboard()
 {
 	QClipboard* clipboard = QApplication::clipboard();
 
 	// get the number of plots
 	const int nplots = plots();
-	if (nplots == 0) return;
+	if (nplots == 0) return "";
 
 	// if all plots have the same number of data points we'll output x, y1, y2, y3, ...
 	// otherwise we'll output x1,y1,x2,y1,x3, y3
@@ -460,7 +462,7 @@ void CPlotWidget::OnCopyToClipboard()
 	}
 
 	// make sure there is data
-	if (max_size == 0) return;
+	if (max_size == 0) return "";
 
 	if (equalSize)
 	{
@@ -481,6 +483,8 @@ void CPlotWidget::OnCopyToClipboard()
 			s += '\n';
 		}
 		clipboard->setText(s);
+
+        return s;
 	}
 	else
 	{
@@ -506,6 +510,8 @@ void CPlotWidget::OnCopyToClipboard()
 			s += '\n';
 		}
 		clipboard->setText(s);
+
+        return s;
 	}
 }
 
@@ -1814,7 +1820,6 @@ public:
 	QToolButton* undo;
 	QToolButton* redo;
 	QToolButton* math;
-	QToolButton* clip;
 	QToolButton* copy;
 	QToolButton* paste;
 	QToolButton* open;
@@ -1832,13 +1837,11 @@ public:
 	QPointF					m_dragPt;
 	int						m_dragIndex;
 	std::vector<QPointF>	m_p0;	// used by point dragging
-	LoadCurve*				m_plc_copy;
+	QString				m_clipboard_backup;
 
 public:
 	void setup(QWidget* w)
 	{
-		m_plc_copy = nullptr;
-
 		// toolbar
 		lineType = new QComboBox; lineType->setObjectName("lineType");
 		lineType->addItem("Step");
@@ -1863,11 +1866,8 @@ public:
 		math = new QToolButton; math->setObjectName("math");
 		math->setIcon(CResource::Icon("formula"));
 
-		clip = new QToolButton; clip->setObjectName("clip");
-		clip->setIcon(QIcon(":/icons/clipboard.png"));
-
 		copy = new QToolButton; copy->setObjectName("copy");
-		copy->setIcon(QIcon(":/icons/copy.png"));
+		copy->setIcon(QIcon(":/icons/clipboard.png"));
 
 		paste = new QToolButton; paste->setObjectName("paste");
 		paste->setIcon(QIcon(":/icons/paste.png"));
@@ -1886,7 +1886,6 @@ public:
 		curveLayout->addWidget(undo);
 		curveLayout->addWidget(redo);
 		curveLayout->addWidget(math);
-		curveLayout->addWidget(clip);
 		curveLayout->addWidget(copy);
 		curveLayout->addWidget(paste);
 		curveLayout->addStretch();
@@ -2390,29 +2389,60 @@ void CCurveEditWidget::on_math_clicked(bool b)
 	}
 }
 
-void CCurveEditWidget::on_clip_clicked(bool b)
-{
-	ui->plt->OnCopyToClipboard();
-}
-
 void CCurveEditWidget::on_copy_clicked(bool b)
 {
-	LoadCurve* plc = ui->plt->GetLoadCurve();
-	if (plc == nullptr) return;
-
-	if (ui->m_plc_copy == nullptr) ui->m_plc_copy = new LoadCurve;
-	*ui->m_plc_copy = *plc;
+	ui->m_clipboard_backup = ui->plt->OnCopyToClipboard();
 }
 
 void CCurveEditWidget::on_paste_clicked(bool b)
 {
 	LoadCurve* plc = ui->plt->GetLoadCurve();
 	if (plc == nullptr) return;
-	if (ui->m_plc_copy == nullptr) return;
 
-	*plc = *ui->m_plc_copy;
-	SetLoadCurve(plc);
-	emit dataChanged();
+    QClipboard* clipboard = QApplication::clipboard();
+
+    if(!clipboard->mimeData()->hasText()) return;
+
+    QString data = clipboard->text();
+
+    // If this data was copied from the widget itself, we need 
+    // to chop off the first row since it's the row labels
+    bool sameData = false;
+    if(data == ui->m_clipboard_backup)
+    {
+        int pos = data.indexOf("\n");
+        data = data.right(data.size() - pos);
+
+        sameData = true;
+    }
+
+    CDlgImportData dlg(data, DataType::DOUBLE, 2);
+
+    bool getValues = false;
+
+    // If this data was copied from the widget itself, we know its
+    // format is valid, and so we don't need to open the dialog
+    if(sameData)
+    {
+        getValues = true;
+    }
+    else if(dlg.exec())
+    {
+        getValues = true;
+    }
+
+    if(getValues)
+    {
+        QList<QStringList> values = dlg.GetValues();
+
+        for(auto row : values)
+        {
+            plc->Add(row[0].toDouble(), row[1].toDouble());
+        }
+
+        SetLoadCurve(plc);
+	    emit dataChanged();
+    }
 }
 
 class CDlgImportCurve : public QDialog
