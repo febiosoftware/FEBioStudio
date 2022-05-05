@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <QClipboard>
 #include <QApplication>
 #include <QtCore/QMimeData>
+#include "DlgImportData.h"
 
 class Ui::CDlgSelectParam
 {
@@ -493,29 +494,21 @@ void CDlgFEBioOptimize::on_pasteData_clicked()
 
 	if (mimeData->hasText())
 	{
-		QString text = clipboard->text();
-		if (text.isEmpty())
-		{
-			QMessageBox::information(this, "FEBio Studio", "No valid clipboard data found.");
-			return;
-		}
-		ui->dataTable->setRowCount(0);
-		QStringList lines = text.split('\n');
-		for (int i = 0; i < lines.size(); ++i)
-		{
-			QString s = lines.at(i);
-			QStringList pt = s.split('\t');
-			if (pt.size() == 2)
-			{
-				bool bok0, bok1;
-				QString s0 = pt.at(0);
-				QString s1 = pt.at(1);
-				
-				double x = pt.at(0).toDouble(&bok0);
-				double y = pt.at(1).toDouble(&bok1);
-				if (bok0 && bok1) ui->addDataPoint(x, y);
-			}
-		}
+        QString text = clipboard->text();
+        CDlgImportData dlg(text, DataType::DOUBLE, 2);
+        if(dlg.exec())
+        {
+            QList<QStringList> values = dlg.GetValues();
+
+            ui->dataTable->setRowCount(0);
+
+            for(auto row : values)
+            {
+                double x = row.at(0).toDouble();
+                double y = row.at(1).toDouble();
+                ui->addDataPoint(x, y);
+            }
+        }
 	}
 	else
 	{
