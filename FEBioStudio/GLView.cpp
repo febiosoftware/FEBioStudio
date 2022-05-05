@@ -9147,9 +9147,229 @@ void CGLView::RenderRigidLabels()
 	glMatrixMode(GL_MODELVIEW);
 }
 
+GLMesh* CGLView::BuildPlaneCut(FEModel& fem)
+{
+	GModel& mdl = fem.GetModel();
+	VIEW_SETTINGS& vs = GetViewSettings();
+	GObject* poa = m_pWnd->GetActiveObject();
+	double vmin, vmax;
+
+	// set the plane normal
+	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
+	double ref = -m_plane[3];
+
+	int edge[15][2], edgeNode[15][2], etag[15];
+
+	GLMesh* planeCut = new GLMesh;
+
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		if (po->GetFEMesh())
+		{
+			FEMesh* mesh = po->GetFEMesh();
+
+			vec3d ex[8];
+			int en[8];
+			GLColor ec[8];
+
+			bool showContour = false;
+			Mesh_Data& data = mesh->GetMeshData();
+			if ((po == poa) && (vs.m_bcontour))
+			{
+				showContour = (vs.m_bcontour && data.IsValid());
+				if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
+			}
+
+			// repeat over all elements
+			GLColor defaultColor(200, 200, 200);
+			GLColor c(defaultColor);
+			int matId = -1;
+			int NE = mesh->Elements();
+			for (int i = 0; i < NE; ++i)
+			{
+				// render only when visible
+				FEElement& el = mesh->Element(i);
+				GPart* pg = po->Part(el.m_gid);
+				if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
+				{
+					int mid = pg->GetMaterialID();
+					if (mid != matId)
+					{
+						GMaterial* pmat = fem.GetMaterialFromID(mid);
+						if (pmat)
+						{
+							c = fem.GetMaterialFromID(mid)->Diffuse();
+							matId = mid;
+						}
+						else
+						{
+							matId = -1;
+							c = defaultColor;
+						}
+					}
+
+
+					const int* nt = nullptr;
+					switch (el.Type())
+					{
+					case FE_HEX8: nt = HEX_NT; break;
+					case FE_HEX20: nt = HEX_NT; break;
+					case FE_HEX27: nt = HEX_NT; break;
+					case FE_PENTA6: nt = PEN_NT; break;
+					case FE_PENTA15: nt = PEN_NT; break;
+					case FE_TET4: nt = TET_NT; break;
+					case FE_TET5: nt = TET_NT; break;
+					case FE_TET10: nt = TET_NT; break;
+					case FE_TET15: nt = TET_NT; break;
+					case FE_TET20: nt = TET_NT; break;
+					case FE_PYRA5: nt = PYR_NT; break;
+					case FE_PYRA13: nt = PYR_NT; break;
+					default:
+						assert(false);
+					}
+
+					// get the nodal values
+					for (int k = 0; k < 8; ++k)
+					{
+						FENode& node = mesh->Node(el.m_node[nt[k]]);
+						ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
+						en[k] = el.m_node[nt[k]];
+					}
+
+					if (showContour)
+					{
+						for (int k = 0; k < 8; ++k)
+						{
+							if (data.GetElementDataTag(i) > 0)
+								ec[k] = m_colorMap.map(data.GetElementValue(i, nt[k]));
+							else
+								ec[k] = GLColor(212, 212, 212);
+						}
+					}
+
+					// calculate the case of the element
+					int ncase = 0;
+					for (int k = 0; k < 8; ++k)
+						if (norm * ex[k] >= ref) ncase |= (1 << k);
+
+					// loop over faces
+					int* pf = LUT[ncase];
+					int ne = 0;
+					for (int l = 0; l < 5; l++)
+					{
+						if (*pf == -1) break;
+
+						// calculate nodal positions
+						vec3d r[3];
+						float w1, w2, w;
+						for (int k = 0; k < 3; k++)
+						{
+							int n1 = ET_HEX[pf[k]][0];
+							int n2 = ET_HEX[pf[k]][1];
+
+							w1 = norm * ex[n1];
+							w2 = norm * ex[n2];
+
+							if (w2 != w1)
+								w = (ref - w1) / (w2 - w1);
+							else
+								w = 0.f;
+
+							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+						}
+
+						int nf = planeCut->Faces();
+						planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
+						GMesh::FACE& face = planeCut->Face(nf);
+						if (po == poa)
+						{
+							face.eid = i;
+						}
+
+						if (showContour)
+						{
+							GLColor c;
+							for (int k = 0; k < 3; k++)
+							{
+								int n1 = ET_HEX[pf[k]][0];
+								int n2 = ET_HEX[pf[k]][1];
+
+								w1 = norm * ex[n1];
+								w2 = norm * ex[n2];
+
+								if (w2 != w1)
+									w = (ref - w1) / (w2 - w1);
+								else
+									w = 0.f;
+
+								c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
+								c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
+								c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
+
+								face.c[k] = c;
+							}
+						}
+						else
+						{
+							face.c[0] = face.c[1] = face.c[2] = c;
+						}
+
+						// add edges (for mesh rendering)
+						for (int k = 0; k < 3; ++k)
+						{
+							int n1 = pf[k];
+							int n2 = pf[(k + 1) % 3];
+
+							bool badd = true;
+							for (int m = 0; m < ne; ++m)
+							{
+								int m1 = edge[m][0];
+								int m2 = edge[m][1];
+								if (((n1 == m1) && (n2 == m2)) ||
+									((n1 == m2) && (n2 == m1)))
+								{
+									badd = false;
+									etag[m]++;
+									break;
+								}
+							}
+
+							if (badd)
+							{
+								edge[ne][0] = n1;
+								edge[ne][1] = n2;
+								etag[ne] = 0;
+
+								GMesh::FACE& face = planeCut->Face(planeCut->Faces() - 1);
+								edgeNode[ne][0] = face.n[k];
+								edgeNode[ne][1] = face.n[(k + 1) % 3];
+								++ne;
+							}
+						}
+						pf += 3;
+					}
+
+					for (int k = 0; k < ne; ++k)
+					{
+						if (etag[k] == 0)
+						{
+							planeCut->AddEdge(edgeNode[k], 2, (el.IsSelected() ? 1 : 0));
+						}
+					}
+				}
+			}
+		}
+	}
+
+	planeCut->Update();
+
+	return planeCut;
+}
+
 void CGLView::UpdatePlaneCut(bool breset)
 {
-	if (m_planeCut) delete m_planeCut;
+	if (m_planeCut) delete m_planeCut; m_planeCut = nullptr;
 
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
@@ -9163,13 +9383,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
 	double ref = -m_plane[3];
 
-	int edge[15][2], edgeNode[15][2], etag[15];
-
 	VIEW_SETTINGS& vs = GetViewSettings();
-
-	double vmin, vmax;
-
-	m_planeCut = new GLMesh;
 
 	if (breset)
 	{
@@ -9192,209 +9406,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 	if ((m_planeCutMode == 0) && (m_showPlaneCut))
 	{
-		GObject* poa = m_pWnd->GetActiveObject();
-
-		for (int i = 0; i < mdl.Objects(); ++i)
-		{
-			GObject* po = mdl.Object(i);
-			if (po->GetFEMesh())
-			{
-				FEMesh* mesh = po->GetFEMesh();
-
-				vec3d ex[8];
-				int en[8];
-				GLColor ec[8];
-
-				bool showContour = false;
-				Mesh_Data& data = mesh->GetMeshData();
-				if ((po == poa) && (vs.m_bcontour))
-				{
-					showContour = (vs.m_bcontour && data.IsValid());
-					if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
-				}
-
-				// repeat over all elements
-				GLColor defaultColor(200, 200, 200);
-				GLColor c(defaultColor);
-				int matId = -1;
-				int NE = mesh->Elements();
-				for (int i = 0; i < NE; ++i)
-				{
-					// render only when visible
-					FEElement& el = mesh->Element(i);
-					GPart* pg = po->Part(el.m_gid);
-					if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
-					{
-						int mid = pg->GetMaterialID();
-						if (mid != matId)
-						{
-							GMaterial* pmat = fem.GetMaterialFromID(mid);
-							if (pmat)
-							{
-								c = fem.GetMaterialFromID(mid)->Diffuse();
-								matId = mid;
-							}
-							else
-							{
-								matId = -1;
-								c = defaultColor;
-							}
-						}
-
-
-						const int *nt = nullptr;
-						switch (el.Type())
-						{
-						case FE_HEX8: nt = HEX_NT; break;
-						case FE_HEX20: nt = HEX_NT; break;
-						case FE_HEX27: nt = HEX_NT; break;
-						case FE_PENTA6: nt = PEN_NT; break;
-						case FE_PENTA15: nt = PEN_NT; break;
-						case FE_TET4: nt = TET_NT; break;
-						case FE_TET5: nt = TET_NT; break;
-						case FE_TET10: nt = TET_NT; break;
-						case FE_TET15: nt = TET_NT; break;
-						case FE_TET20: nt = TET_NT; break;
-						case FE_PYRA5: nt = PYR_NT; break;
-                        case FE_PYRA13: nt = PYR_NT; break;
-						default:
-							assert(false);
-						}
-
-						// get the nodal values
-						for (int k = 0; k < 8; ++k)
-						{
-							FENode& node = mesh->Node(el.m_node[nt[k]]);
-							ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
-							en[k] = el.m_node[nt[k]];
-						}
-
-						if (showContour)
-						{
-							for (int k = 0; k < 8; ++k)
-							{
-								if (data.GetElementDataTag(i) > 0)
-									ec[k] = m_colorMap.map(data.GetElementValue(i, nt[k]));
-								else
-									ec[k] = GLColor(212, 212, 212);
-							}
-						}
-
-						// calculate the case of the element
-						int ncase = 0;
-						for (int k = 0; k < 8; ++k)
-							if (norm*ex[k] >= ref) ncase |= (1 << k);
-
-						// loop over faces
-						int* pf = LUT[ncase];
-						int ne = 0;
-						for (int l = 0; l < 5; l++)
-						{
-							if (*pf == -1) break;
-
-							// calculate nodal positions
-							vec3d r[3];
-							float w1, w2, w;
-							for (int k = 0; k < 3; k++)
-							{
-								int n1 = ET_HEX[pf[k]][0];
-								int n2 = ET_HEX[pf[k]][1];
-
-								w1 = norm * ex[n1];
-								w2 = norm * ex[n2];
-
-								if (w2 != w1)
-									w = (ref - w1) / (w2 - w1);
-								else
-									w = 0.f;
-
-								r[k] = ex[n1] * (1 - w) + ex[n2] * w;
-							}
-
-							int nf = m_planeCut->Faces();
-							m_planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
-							GMesh::FACE& face = m_planeCut->Face(nf);
-							if (po == poa)
-							{
-								face.eid = i;
-							}
-
-							if (showContour)
-							{
-								GLColor c;
-								for (int k = 0; k < 3; k++)
-								{
-									int n1 = ET_HEX[pf[k]][0];
-									int n2 = ET_HEX[pf[k]][1];
-
-									w1 = norm * ex[n1];
-									w2 = norm * ex[n2];
-
-									if (w2 != w1)
-										w = (ref - w1) / (w2 - w1);
-									else
-										w = 0.f;
-
-									c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
-									c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
-									c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
-
-									face.c[k] = c;
-								}
-							}
-							else
-							{
-								face.c[0] = face.c[1] = face.c[2] = c;
-							}
-
-							// add edges (for mesh rendering)
-							for (int k = 0; k < 3; ++k)
-							{
-								int n1 = pf[k];
-								int n2 = pf[(k + 1) % 3];
-
-								bool badd = true;
-								for (int m = 0; m < ne; ++m)
-								{
-									int m1 = edge[m][0];
-									int m2 = edge[m][1];
-									if (((n1 == m1) && (n2 == m2)) ||
-										((n1 == m2) && (n2 == m1)))
-									{
-										badd = false;
-										etag[m]++;
-										break;
-									}
-								}
-
-								if (badd)
-								{
-									edge[ne][0] = n1;
-									edge[ne][1] = n2;
-									etag[ne] = 0;
-
-									GMesh::FACE& face = m_planeCut->Face(m_planeCut->Faces() - 1);
-									edgeNode[ne][0] = face.n[k];
-									edgeNode[ne][1] = face.n[(k + 1) % 3];
-									++ne;
-								}
-							}
-							pf += 3;
-						}
-
-						for (int k = 0; k < ne; ++k)
-						{
-							if (etag[k] == 0)
-							{
-								m_planeCut->AddEdge(edgeNode[k], 2, (el.IsSelected() ? 1 : 0));
-							}
-						}
-					}
-				}
-			}
-		}
-
-		m_planeCut->Update();
+		m_planeCut = BuildPlaneCut(fem);
 	}
 	else
 	{

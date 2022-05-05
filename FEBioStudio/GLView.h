@@ -47,6 +47,7 @@ class CPostDocument;
 class GMaterial;
 class GDecoration;
 class CGView;
+class FEModel;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -420,6 +421,9 @@ public:
 	void SetPlaneCut(double d[4]);
 	void SetPlaneCutMode(int nmode);
 	void UpdatePlaneCut(bool breset = false);
+
+private:
+	GLMesh* BuildPlaneCut(FEModel& fem);
 
 public:
 	void SetColorMap(Post::CColorMap& map);
