@@ -29,11 +29,77 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
 
-GICPRegistration::GICPRegistration()
+vec3d CenterOfMass(const vector<vec3d>& S)
 {
+	vec3d c(0, 0, 0);
+	int N = (int)S.size();
+	for (int i = 0; i < N; ++i) c += S[i];
+	return (c / N);
 }
 
-Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double tol, const int maxIter)
+mat3d orientation(const vector<vec3d>& P)
+{
+	vec3d cp = CenterOfMass(P);
+
+	matrix cp2(3, 3);
+	cp2[0][0] = cp.x * cp.x; cp2[0][1] = cp.x * cp.y; cp2[0][2] = cp.x * cp.z;
+	cp2[1][0] = cp.y * cp.x; cp2[1][1] = cp.y * cp.y; cp2[1][2] = cp.y * cp.z;
+	cp2[2][0] = cp.z * cp.x; cp2[2][1] = cp.z * cp.y; cp2[2][2] = cp.z * cp.z;
+
+	int NP = (int)P.size();
+	matrix S(3, 3); S.zero();
+	for (int i = 0; i < NP; i++)
+	{
+		const vec3d& pi = P[i];
+
+		matrix temp(3, 3);
+		temp[0][0] = pi.x * pi.x; temp[0][1] = pi.x * pi.y; temp[0][2] = pi.x * pi.z;
+		temp[1][0] = pi.y * pi.x; temp[1][1] = pi.y * pi.y; temp[1][2] = pi.y * pi.z;
+		temp[2][0] = pi.z * pi.x; temp[2][1] = pi.z * pi.y; temp[2][2] = pi.z * pi.z;
+		S += temp;
+	}
+
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j)
+		{
+			double sij = S[i][j];
+			S[i][j] = sij / NP - cp2[i][j];
+		}
+
+	matrix E(3, 3); E.zero();
+	vector<double> l; l.reserve(3);
+	S.eigen_vectors(E, l);
+
+	//Find maximum eigen value
+	double max_eigen = l[0];
+	int m = 0;
+	for (int i = 1; i < 3; i++)
+	{
+		if (max_eigen < l[i])
+		{
+			max_eigen = l[i];
+			m = i;
+		}
+	}
+
+	mat3d Q;
+	Q[0][0] = E[0][m]; Q[0][1] = E[0][(m+1)%3]; Q[0][2] = E[0][(m+2)%3];
+	Q[1][0] = E[1][m]; Q[1][1] = E[1][(m+1)%3]; Q[1][2] = E[1][(m+2)%3];
+	Q[2][0] = E[2][m]; Q[2][1] = E[2][(m+1)%3]; Q[2][2] = E[2][(m+2)%3];
+
+	return Q;
+}
+
+GICPRegistration::GICPRegistration()
+{
+	m_maxiter = 100;
+	m_tol = 0.001;
+
+	m_iters = 0;
+	m_err = 0.0;
+}
+
+Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc)
 {
 	FEMesh& trgMesh = *ptrg->GetFEMesh();
 	FEMesh& srcMesh = *psrc->GetFEMesh();
@@ -44,8 +110,25 @@ Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double 
 	// get the global coordinates
 	vector<vec3d> X(NX);
 	vector<vec3d> P(NP);
-	for (int i=0; i<NX; ++i) X[i] = ptrg->GetTransform().LocalToGlobal(trgMesh.Node(i).r);
-	for (int i=0; i<NP; ++i) P[i] = psrc->GetTransform().LocalToGlobal(srcMesh.Node(i).r);
+	for (int i = 0; i < NX; ++i) X[i] = ptrg->GetTransform().LocalToGlobal(trgMesh.Node(i).r);
+	for (int i = 0; i < NP; ++i) P[i] = psrc->GetTransform().LocalToGlobal(srcMesh.Node(i).r);
+
+	Transform Q = Register(X, P);
+
+	vec3d r_old = psrc->GetTransform().GetPosition();
+	vec3d r_new = Q.GetRotation() * (r_old)+Q.GetPosition();
+
+	Q.SetPosition(r_new - r_old);
+
+	return Q;
+}
+
+Transform GICPRegistration::Register(const vector<vec3d>& X, const vector<vec3d>& S)
+{
+	vector<vec3d> P = S;
+
+	int NX = (int)X.size();
+	int NP = (int)P.size();
 
 	//find center of mass
 	vec3d cp0 = CenterOfMass(P);
@@ -58,6 +141,21 @@ Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double 
 	vec3d t0 = cx0 - cp0;
 	for (int i = 0; i<NP; i++) P[i] += t0;
 
+	// do an initial alignment
+/*	if (m_align)
+	{
+		mat3d QP = orientation(P);
+		mat3d QX = orientation(X);
+		mat3d Q0 = QX * QP.transpose();
+		for (int i = 0; i < NP; ++i)
+		{
+			vec3d pi = P[i] - cx0;
+			vec3d qi = Q0 * pi;
+			P[i] = qi + cx0;
+		}
+	}
+*/
+
 	// estimate the size of the model so we can make the error dimensionless
 	BOX box(P[0], P[0]);
 	for (int i=1; i<NP; ++i) box += P[i];
@@ -67,31 +165,29 @@ Transform GICPRegistration::Register(GObject* ptrg, GObject* psrc, const double 
 	// (stores the closest points in X to P)
 	vector<vec3d> Y(NP);
 
+	m_iters = 0;
+	m_err = 0.0;
+
 	// loop over max iteration
 	Transform Q;
 	double prev_err = 0.0;
-	for (int counter = 0; counter < maxIter; counter++)
+	for (m_iters = 1; m_iters < m_maxiter; m_iters++)
 	{
 		// Compute the closest point set Y
 		ClosestPointSet(X, P, Y);
 
 		// compute the registration
-		double err = 0;
-		Q = Register(P0, Y, &err);
+		Q = Register(P0, Y, &m_err);
 
 		// apply the registration
 		ApplyTransform(P0, Q, P);
 
 		// check convergence
-		if (fabs((err - prev_err)/R) < tol) break;
+		double rel = (m_err - prev_err) / R;
+		if (fabs(rel) < m_tol) break;
 
-		prev_err = err;
+		prev_err = m_err;
 	}
-
-	vec3d r_old = psrc->GetTransform().GetPosition();
-	vec3d r_new = Q.GetRotation()*(r_old) + Q.GetPosition();
-
-	Q.SetPosition(r_new - r_old);
 
 	return Q;
 }
@@ -123,14 +219,6 @@ void GICPRegistration::ClosestPointSet(const vector<vec3d>& X, const vector<vec3
 			}
 		}
 	}
-}
-
-vec3d GICPRegistration::CenterOfMass(const vector<vec3d>& S)
-{
-	vec3d c(0,0,0);
-	int N = (int) S.size();
-	for (int i=0; i<N; ++i) c += S[i];
-	return (c/N);
 }
 
 Transform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d>& Y, double* perr)
@@ -185,7 +273,7 @@ Transform GICPRegistration::Register(const vector<vec3d>& P, const vector<vec3d>
 	matrix Eigen(4, 4);
 	vector<double> eigen_values;
 	eigen_values.reserve(4);
-	Q.eigen_vectors(Eigen, eigen_values);
+	bool b = Q.eigen_vectors(Eigen, eigen_values); assert(b);
 
 	//Find maximum eigen value
 	double max_eigen = eigen_values[0];

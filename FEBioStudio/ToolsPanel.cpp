@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "FiberGeneratorTool.h"
 #include "AreaCalculatorTool.h"
 #include "ImportSpringsTool.h"
+#include "ICPRegistrationTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -67,6 +68,7 @@ void CToolsPanel::initTools()
     tools.push_back(new CAreaCalculatorTool(wnd));
 	tools.push_back(new CImportSpringsTool (wnd));
     tools.push_back(new CQuadricFitTool    (wnd));
+	tools.push_back(new CICPRegistrationTool(wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

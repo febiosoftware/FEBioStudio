@@ -345,6 +345,19 @@ protected:
 	int		m_npos;
 };
 
+//-----------------------------------------------------------------------------
+class CCmdTransformObject : public CCommand
+{
+public:
+	CCmdTransformObject(GObject* po, const Transform& Q);
+
+	void Execute() override;
+	void UnExecute() override;
+
+private:
+	GObject* m_po;
+	Transform	m_oldQ;
+};
 
 //-----------------------------------------------------------------------------
 class CCmdTranslateSelection : public CCommand
