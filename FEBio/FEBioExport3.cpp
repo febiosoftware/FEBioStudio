@@ -4297,6 +4297,7 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_FLUID_NORMAL_VELOCITY    : WriteSurfaceLoad(s, pbc, "fluid normal velocity"); break;
 			case FE_FLUID_VELOCITY           : WriteSurfaceLoad(s, pbc, "fluid velocity"); break;
 			case FE_SOLUTE_FLUX              : WriteSurfaceLoad(s, pbc, "soluteflux"); break;
+            case FE_SOLUTE_NATURAL_FLUX      : WriteSurfaceLoad(s, pbc, "solute natural flux"); break;
 			case FE_CONCENTRATION_FLUX       : WriteSurfaceLoad(s, pbc, "concentration flux"); break;
             case FE_FLUID_PRESSURE_LOAD      : WriteSurfaceLoad(s, pbc, "fluid pressure"); break;
 			// NOTE: Fluid rotational velocity is a boundary condition in FEBio3!

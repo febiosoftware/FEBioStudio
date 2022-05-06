@@ -648,6 +648,7 @@ SOFTWARE.*/
 #define FE_MASSDAMPING_LOAD					0x0036
 #define FE_SURFACE_FORCE                    0x0037
 #define FE_BEARING_LOAD                     0x0038
+#define FE_SOLUTE_NATURAL_FLUX              0x0039
 
 //--------------------------------------------------------
 // Interface types

@@ -116,6 +116,14 @@ void FESoluteFlux::LoadParam(const Param& p)
 }
 
 //-----------------------------------------------------------------------------
+FESoluteNaturalFlux::FESoluteNaturalFlux(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_SOLUTE_NATURAL_FLUX, ps, pi, nstep)
+{
+    SetTypeString("Solute natural flux");
+    AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(Solutes)")->SetOffset(1);
+    AddBoolParam(0, "shell_bottom", "Apply to shell bottom")->SetCheckable(false);
+}
+
+//-----------------------------------------------------------------------------
 
 FEMatchingOsmoticCoefficient::FEMatchingOsmoticCoefficient(FEModel* ps, FEItemListBuilder* pi, int nstep) : FESurfaceLoad(FE_MATCHING_OSM_COEF, ps, pi, nstep)
 {

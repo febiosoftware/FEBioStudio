@@ -1866,6 +1866,7 @@ void FEBioFormat3::ParseSurfaceLoad(FEStep* pstep, XMLTag& tag)
     else if (att == "bearing load"                  ) psl = CREATE_SURFACE_LOAD(FEBearingLoad);
 	else if (att == "fluidflux"                     ) psl = CREATE_SURFACE_LOAD(FEFluidFlux);
 	else if (att == "soluteflux"                    ) psl = CREATE_SURFACE_LOAD(FESoluteFlux);
+    else if (att == "solute natural flux"           ) psl = CREATE_SURFACE_LOAD(FESoluteNaturalFlux);
 	else if (att == "concentration flux"            ) psl = CREATE_SURFACE_LOAD(FEConcentrationFlux);
 	else if (att == "normal_traction"               ) psl = CREATE_SURFACE_LOAD(FEBPNormalTraction);
     else if (att == "matching_osm_coef"             ) psl = CREATE_SURFACE_LOAD(FEMatchingOsmoticCoefficient);

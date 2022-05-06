@@ -117,6 +117,27 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Solute natural flux surface boundary load
+//
+class FESoluteNaturalFlux : public FESurfaceLoad
+{
+public:
+    enum { SID, BSHL };
+    
+public:
+    FESoluteNaturalFlux(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    int GetBC() { return GetIntValue(SID); }
+    void SetBC(int n) { SetIntValue(SID, n); }
+    
+
+    void SetShellBottomFlag(bool b) { SetBoolValue(BSHL, b); }
+    bool GetShellBottomFlag() { return GetBoolValue(BSHL); }
+
+    FELoadCurve* GetLoadCurve() override { return nullptr; }
+};
+
+//-----------------------------------------------------------------------------
 // Matching osmotic coefficient surface boundary load
 //
 class FEMatchingOsmoticCoefficient : public FESurfaceLoad

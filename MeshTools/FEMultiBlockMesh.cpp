@@ -1700,6 +1700,7 @@ bool FEMultiBlockMesh::SetNodeWeights(std::vector<double>& w)
 		}
 		else if (w0 != w1) { assert(false); }
 	}
+    return true;
 }
 
 //==============================================================
