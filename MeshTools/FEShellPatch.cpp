@@ -54,12 +54,12 @@ FEShellPatch::FEShellPatch(GPatch* po)
 
 FEMesh* FEShellPatch::BuildMesh()
 {
-	BuildMultiQuad();
-
 	// get mesh parameters
 	m_nx = GetIntValue(NX);
 	m_ny = GetIntValue(NY);
 	int elemType = GetIntValue(ELEM_TYPE);
+
+	BuildMultiQuad();
 
 	// update the MB data
 	switch (elemType)
