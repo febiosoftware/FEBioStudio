@@ -431,6 +431,25 @@ void CCmdDeleteDiscreteObject::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
+// CCmdTransformObject
+//////////////////////////////////////////////////////////////////////
+
+CCmdTransformObject::CCmdTransformObject(GObject* po, const Transform& Q) : CCommand("Transform")
+{
+	m_po = po;
+	m_oldQ = Q;
+}
+
+void CCmdTransformObject::Execute()
+{
+	Transform Q = m_po->GetTransform();
+	m_po->GetTransform() = m_oldQ;
+	m_oldQ = Q;
+}
+
+void CCmdTransformObject::UnExecute() { Execute(); }
+
+//////////////////////////////////////////////////////////////////////
 // CCmdTranslateSelection
 //////////////////////////////////////////////////////////////////////
 

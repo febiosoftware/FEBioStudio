@@ -256,18 +256,9 @@ void CMaterialPanel::UpdateStates()
 		Post::Material& mat = *fem->GetMaterial(i);
 		QListWidgetItem* pi = ui->m_list->item(i);
 		QFont font = pi->font();
-		if (mat.visible())
-		{
-//			pi->setForeground(Qt::black);
-			font.setBold(mat.enabled());
-			pi->setFont(font);
-		}
-		else 
-		{
-//			pi->setForeground(Qt::gray);
-			font.setBold(mat.enabled());
-			pi->setFont(font);
-		}
+		font.setItalic(!mat.visible());
+		font.setBold(mat.enabled());
+		pi->setFont(font);
 
 //		pi->setBackgroundColor((mat.enabled() ? Qt::white : Qt::yellow));
 	}

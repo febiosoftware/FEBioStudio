@@ -317,6 +317,7 @@ public:
 
 			pointData->AddDataField(dataName);
 		}
+        return true;
 	}
 
 private:

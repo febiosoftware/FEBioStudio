@@ -186,6 +186,7 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "rigid velocity"                    );
     AddPlotVariable(MODULE_MECH, "RVE generations"                   );
     AddPlotVariable(MODULE_MECH, "RVE reforming bonds"               );
+    AddPlotVariable(MODULE_MECH, "RVE strain"                        );
 	AddPlotVariable(MODULE_MECH, "Euler angle"                       );
     AddPlotVariable(MODULE_MECH, "shell director"                    );
     AddPlotVariable(MODULE_MECH, "shell relative volume"             );

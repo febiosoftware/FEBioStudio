@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include <FECore/FETransform.h>
 #include <vector>
-//using namespace std;
 
 class GObject;
 
@@ -38,11 +37,24 @@ public:
 	GICPRegistration();
 
 	// returns the transform from registring source to target
-	Transform Register(GObject* ptrg, GObject* psrc, const double tol = 0.001, const int maxIter = 100);
+	Transform Register(GObject* ptrg, GObject* psrc);
+	Transform Register(const std::vector<vec3d>& trg, const std::vector<vec3d>& src);
+
+	void SetMaxIterations(int n) { m_maxiter = n; }
+	void SetTolerance(double tol) { m_tol = tol; }
+
+	int Iterations() const { return m_iters; }
+	double RelativeError() const { return m_err; }
 
 private:
 	void ClosestPointSet(const std::vector<vec3d>& X, const std::vector<vec3d>& P, std::vector<vec3d>& Y);
-	vec3d CenterOfMass(const std::vector<vec3d>& S);
 	Transform Register(const std::vector<vec3d>& P0, const std::vector<vec3d>& Y, double* err);
 	void ApplyTransform(const std::vector<vec3d>& P0, const Transform& Q, std::vector<vec3d>& P);
+
+private:
+	double	m_tol;
+	int		m_maxiter;
+
+	int		m_iters;
+	double	m_err;
 };
