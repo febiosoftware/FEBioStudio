@@ -67,6 +67,7 @@ FSSurfaceMesh* InsertCurves2::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList
 			if (pco->GetType() == GCURVE)
 			{
 				FECurveMesher curveMesher;
+				curveMesher.SetElementSize(0);
 				ps = curveMesher.BuildMesh(pc);
 				if (ps == 0) return 0;
 			}

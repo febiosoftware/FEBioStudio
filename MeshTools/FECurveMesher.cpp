@@ -39,7 +39,7 @@ FECurveMesher::FECurveMesher()
 //-----------------------------------------------------------------------------
 void FECurveMesher::SetElementSize(double h)
 {
-	assert(h > 0);
+	assert(h >= 0);
 	m_elemSize = h;
 }
 
@@ -80,7 +80,8 @@ FECurveMesh* FECurveMesher::BuildLineMesh(GEdge* edge)
 
 	// get the number of elements, based on element size
 	double L = (rb - ra).Length();
-	int elems = (int) (L / m_elemSize);
+	int elems = 1;
+	if (m_elemSize > 0) elems = (int)(L / m_elemSize);
 	if (elems < 1) elems = 1;
 
 	// generate the nodes and edges
@@ -89,7 +90,7 @@ FECurveMesh* FECurveMesher::BuildLineMesh(GEdge* edge)
 	for (int i=0; i<nodes; ++i)
 	{
 		vec3d ri = ra + (rb - ra)*((double)i / (nodes - 1.0));
-		edgeMesh->AddNode(ri);
+		edgeMesh->AddNode(ri, false);
 	}
 	for (int i=0; i<elems; ++i)
 	{

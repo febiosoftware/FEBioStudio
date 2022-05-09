@@ -130,6 +130,8 @@ void CLogPanel::AddText(const QString& txt, int n)
 	}
 	cursor.setCharFormat(ui->defaultTextCharFormat);
 	cursor.movePosition(QTextCursor::End);
+
+	// NOTE: Calling this sometimes causes a crash. Not sure why. 
 	ui->txt[n]->ensureCursorVisible();
 }
 
