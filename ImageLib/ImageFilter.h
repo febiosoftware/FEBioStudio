@@ -53,6 +53,14 @@ public:
     void ApplyFilter() override;
 };
 
+class DarkenEdgesFilter : public CImageFilter
+{
+public:
+    DarkenEdgesFilter();
+
+    void ApplyFilter() override;
+};
+
 #ifdef HAS_ITK
 
 class MeanImageFilter : public CImageFilter

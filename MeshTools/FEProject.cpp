@@ -428,7 +428,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSMultiphasicContact        , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_MULTIPHASIC_INTERFACE    , "Multiphasic contact");
 	REGISTER_FE_CLASS(FSTiedMultiphasicInterface  , MODULE_MULTIPHASIC, FESURFACEINTERFACE_ID, FE_TIEDMULTIPHASIC_INTERFACE, "Tied multiphasic contact");
 	REGISTER_FE_CLASS(FSSoluteFlux                , MODULE_MULTIPHASIC, FELOAD_ID            , FE_SOLUTE_FLUX              , "Solute flux");
-	REGISTER_FE_CLASS(FSSoluteNaturalFlux         , MODULE_MULTIPHASIC, FELOAD_ID            , FE_SOLUTE_NATURAL_FLUX      , "Solute natural flux", 0);
+	REGISTER_FE_CLASS(FSSoluteNaturalFlux         , MODULE_MULTIPHASIC, FELOAD_ID            , FE_SOLUTE_NATURAL_FLUX      , "Solute natural flux");
 	REGISTER_FE_CLASS(FSMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FELOAD_ID            , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient");
 
 #ifdef _DEBUG

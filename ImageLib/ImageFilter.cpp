@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include <FEBioStudio/ClassDescriptor.h>
 #include <PostLib/ImageModel.h>
 #include <ImageLib/ImageSITK.h>
+#include <math.h>
+#include <algorithm>
 #include <chrono>
 #include <ctime>
 #include <iostream>
@@ -101,6 +103,71 @@ void ThresholdImageFilter::ApplyFilter()
     std::chrono::duration<double> elapsed_seconds = end-start;
 
     std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+}
+
+REGISTER_CLASS(ButterworthFilter, CLASS_IMAGE_FILTER, "Butterworth Filter", 0);
+ButterworthFilter::ButterworthFilter()
+{
+    static int n = 1;
+
+    char sz[64];
+    sprintf(sz, "ButterworthFilter%02d", n);
+    n += 1;
+    SetName(sz);
+
+    AddDoubleParam(0.2, "Radial Fraction");
+    AddDoubleParam(10, "Steepness");
+}
+
+void ButterworthFilter::ApplyFilter()
+{
+    if(!m_model) return;
+
+    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
+
+    if(!image) return;
+
+    double fraction = GetFloatValue(0);
+    double steepness = GetFloatValue(1);
+
+    BOX box = m_model->GetBoundingBox();
+    double radMax = std::min({box.Height(), box.Width(), box.Depth()});
+
+    double decent = radMax - radMax * fraction;
+
+    Byte* originalBytes = image->GetBytes();
+    Byte* filteredBytes = m_model->GetImageSource()->GetImageToFilter(true)->GetBytes();
+
+    int nx = m_model->GetImageSource()->Width();
+    int ny = m_model->GetImageSource()->Height();
+    int nz = m_model->GetImageSource()->Depth();
+
+    double xStep = box.Width()/nx;
+    double yStep = box.Height()/ny;
+    double zStep = box.Depth()/nz;
+
+    int index = 0;
+    for(int z = 0; z < nz; z++)
+    {
+        for(int y = 0; y < ny; y++)
+        {
+            for(int x = 0; x < nx; x++)
+            {
+                int xPos = abs(x - nx/2);
+                int yPos = abs(y - ny/2);
+                int zPos = abs(z - nz/2);
+
+                double rad = sqrt(xPos*xStep*xPos*xStep + yPos*yStep*yPos*yStep + zPos*zStep*zPos*zStep);
+
+                filteredBytes[index] = originalBytes[index]/(1 + pow(rad/decent, 2*steepness));
+
+                index++;
+            }
+        }
+    }
+
+    
+
 }
 
 #ifdef HAS_ITK
