@@ -227,11 +227,11 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 		// This is only done if the material specifies the "user" fiber property
 		bool writeFibers = false;
 
-		FSProperty* fiberProp = pmat->FindProperty("fiber");
+		FSProperty* fiberProp = (pmat ? pmat->FindProperty("fiber") : nullptr);
 		if (fiberProp && fiberProp->Size() == 1)
 		{
 			FSCoreBase* fib = fiberProp->GetComponent(0);
-			if (strcmp(fib->GetTypeString(), "user") == 0)
+			if (fib && (strcmp(fib->GetTypeString(), "user") == 0))
 			{
 				m_bdata = true;
 			}
@@ -2051,7 +2051,7 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 		if (fiberProp && fiberProp->Size() == 1)
 		{
 			FSCoreBase* fib = fiberProp->GetComponent(0);
-			if (strcmp(fib->GetTypeString(), "user") == 0)
+			if (fib && (strcmp(fib->GetTypeString(), "user") == 0))
 			{
 				writeFibers = true;
 			}

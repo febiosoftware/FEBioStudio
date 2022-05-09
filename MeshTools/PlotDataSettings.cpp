@@ -378,7 +378,14 @@ void CPlotDataSettings::Load(IArchive& ar)
 			for (int i=0; i<dom.size(); ++i)
 			{
 				FEItemListBuilder* pl = mdl.FindNamedSelection(dom[i]);
-				if (pl) pv->addDomain(pl);
+				if (pl)
+				{
+					pv->addDomain(pl);
+
+					// The domain type was not store, so we'll have to use
+					// some heuristics to determine it. 
+					if (dynamic_cast<FSSurface*>(pl)) pv->setDomainType(DOMAIN_SURFACE);
+				}
 			}
 		}
 		ar.CloseChunk();

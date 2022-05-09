@@ -1008,7 +1008,7 @@ public:
 
 //-----------------------------------------------------------------------------
 // generation
-class FSGeneration : public FSMaterial
+class FSGeneration : public FSMaterialProp
 {
 public:
     // material parameters

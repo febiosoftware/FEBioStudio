@@ -1552,7 +1552,7 @@ void FSReactionSpecies::Load(IArchive& ar)
 //								REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FSReactantMaterial, MODULE_REACTIONS, FE_REACTANT_MATERIAL, FE_MAT_REACTION_REACTANTS, "Reactant", 0);
+REGISTER_MATERIAL(FSReactantMaterial, MODULE_REACTIONS, FE_REACTANT_MATERIAL, FE_MAT_REACTION_REACTANTS, "vR", 0);
 
 FSReactantMaterial::FSReactantMaterial(FSModel* fem) : FSReactionSpecies(FE_REACTANT_MATERIAL, fem)
 {
@@ -1562,7 +1562,7 @@ FSReactantMaterial::FSReactantMaterial(FSModel* fem) : FSReactionSpecies(FE_REAC
 //								PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FSProductMaterial, MODULE_REACTIONS, FE_PRODUCT_MATERIAL, FE_MAT_REACTION_PRODUCTS, "Product", 0);
+REGISTER_MATERIAL(FSProductMaterial, MODULE_REACTIONS, FE_PRODUCT_MATERIAL, FE_MAT_REACTION_PRODUCTS, "vP", 0);
 
 FSProductMaterial::FSProductMaterial(FSModel* fem) : FSReactionSpecies(FE_PRODUCT_MATERIAL, fem)
 {
@@ -1572,7 +1572,7 @@ FSProductMaterial::FSProductMaterial(FSModel* fem) : FSReactionSpecies(FE_PRODUC
 //                          INTERNAL REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FSInternalReactantMaterial, MODULE_REACTIONS, FE_INT_REACTANT_MATERIAL, FE_MAT_MREACTION_IREACTANTS, "Internal Reactant", 0);
+REGISTER_MATERIAL(FSInternalReactantMaterial, MODULE_REACTIONS, FE_INT_REACTANT_MATERIAL, FE_MAT_MREACTION_IREACTANTS, "vRi", 0);
 
 FSInternalReactantMaterial::FSInternalReactantMaterial(FSModel* fem) : FSReactionSpecies(FE_INT_REACTANT_MATERIAL, fem)
 {
@@ -1582,7 +1582,7 @@ FSInternalReactantMaterial::FSInternalReactantMaterial(FSModel* fem) : FSReactio
 //                           INTERNAL PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FSInternalProductMaterial, MODULE_REACTIONS, FE_INT_PRODUCT_MATERIAL, FE_MAT_MREACTION_IPRODUCTS, "Internal Product", 0);
+REGISTER_MATERIAL(FSInternalProductMaterial, MODULE_REACTIONS, FE_INT_PRODUCT_MATERIAL, FE_MAT_MREACTION_IPRODUCTS, "vPi", 0);
 
 FSInternalProductMaterial::FSInternalProductMaterial(FSModel* fem) : FSReactionSpecies(FE_INT_PRODUCT_MATERIAL, fem)
 {
@@ -1592,7 +1592,7 @@ FSInternalProductMaterial::FSInternalProductMaterial(FSModel* fem) : FSReactionS
 //                          EXTERNAL REACTANT
 //=============================================================================
 
-REGISTER_MATERIAL(FSExternalReactantMaterial, MODULE_REACTIONS, FE_EXT_REACTANT_MATERIAL, FE_MAT_MREACTION_EREACTANTS, "External Reactant", 0);
+REGISTER_MATERIAL(FSExternalReactantMaterial, MODULE_REACTIONS, FE_EXT_REACTANT_MATERIAL, FE_MAT_MREACTION_EREACTANTS, "vRe", 0);
 
 FSExternalReactantMaterial::FSExternalReactantMaterial(FSModel* fem) : FSReactionSpecies(FE_EXT_REACTANT_MATERIAL, fem)
 {
@@ -1602,7 +1602,7 @@ FSExternalReactantMaterial::FSExternalReactantMaterial(FSModel* fem) : FSReactio
 //                           EXTERNAL PRODUCT
 //=============================================================================
 
-REGISTER_MATERIAL(FSExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MATERIAL, FE_MAT_MREACTION_EPRODUCTS, "External Product", 0);
+REGISTER_MATERIAL(FSExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MATERIAL, FE_MAT_MREACTION_EPRODUCTS, "vPe", 0);
 
 FSExternalProductMaterial::FSExternalProductMaterial(FSModel* fem) : FSReactionSpecies(FE_EXT_PRODUCT_MATERIAL, fem)
 {
@@ -1797,7 +1797,7 @@ void FSReactionDiffusionMaterial::AddReactionMaterial(FSReactionMaterial* pm)
 
 REGISTER_MATERIAL(FSGeneration, MODULE_MECH, FE_GENERATION, FE_MAT_GENERATION, "generation", 0);
 
-FSGeneration::FSGeneration(FSModel* fem) : FSMaterial(FE_GENERATION, fem)
+FSGeneration::FSGeneration(FSModel* fem) : FSMaterialProp(FE_GENERATION, fem)
 {
     // add parameters
     AddScienceParam(0, UNIT_TIME, "start_time", "generation start time");

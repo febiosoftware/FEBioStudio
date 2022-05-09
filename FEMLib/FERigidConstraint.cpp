@@ -114,6 +114,8 @@ FSRigidConstraint::~FSRigidConstraint(void)
 FBSRigidConstraint::FBSRigidConstraint(int ntype, int nstep, FSModel* fem) : FSRigidConstraint(ntype, nstep, fem)
 {
 	m_matid = -1;
+
+	SetSuperClassID(FERIGIDBC_ID);
 }
 
 void FBSRigidConstraint::Save(OArchive& ar)
@@ -196,7 +198,7 @@ FSRigidForce::FSRigidForce(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID
 {
 	SetTypeString("Rigid force");
 
-	AddIntParam(0, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
+	AddIntParam(0, "dof", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
 	AddScienceParam(0.0, UNIT_FORCE, "value", "value");
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
 	AddBoolParam(false, "relative");

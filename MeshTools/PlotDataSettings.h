@@ -48,6 +48,7 @@ public:
 	void setShown(bool b) { m_bshow = b; }
 
 	unsigned int domainType() const { return m_domainType; }
+	void setDomainType(DOMAIN_TYPE domainType) { m_domainType = domainType; }
 
 	int Domains() const;
 	FEItemListBuilder* GetDomain(int i);

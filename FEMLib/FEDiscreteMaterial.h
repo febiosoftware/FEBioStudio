@@ -45,7 +45,7 @@ public:
 class FS1DFunction : public FSMaterial
 {
 public:
-	FS1DFunction(int ntype, FSModel* fem) : FSMaterial(ntype, fem) {}
+	FS1DFunction(int ntype, FSModel* fem);
 };
 
 class FS1DPointFunction : public FS1DFunction

@@ -1117,7 +1117,7 @@ void FSStep::Load(IArchive &ar)
 					}
 					else
 					{
-						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FEBC_ID, ntype); assert(rc);
+						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FERIGIDBC_ID, ntype); assert(rc);
 						if (rc == nullptr) ar.log("error parsing CID_RC_SECTION in FSStep::Load");
 
 						if (rc)

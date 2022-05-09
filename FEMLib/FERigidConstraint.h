@@ -64,6 +64,11 @@ private:
 	int		m_ntype;	// constraint type
 };
 
+// Rigid constraints used to have their own Super ID, but are now grouped with
+// boundary conditions. However, this causes an issue with reading older files. 
+// So, we define a special super class ID, just for reading older fsm files. 
+#define FERIGIDBC_ID	0x100
+
 class FBSRigidConstraint : public FSRigidConstraint
 {
 public:

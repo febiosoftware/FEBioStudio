@@ -370,11 +370,11 @@ void FSProject::InitModules()
     REGISTER_FE_CLASS(FSCentrifugalBodyForce       , MODULE_MECH, FELOAD_ID        , FE_CENTRIFUGAL_BODY_FORCE       , "Centrifugal body force");
     REGISTER_FE_CLASS(FSMassDamping                , MODULE_MECH, FELOAD_ID        , FE_MASSDAMPING_LOAD             , "Mass damping");
 
-	REGISTER_FE_CLASS(FSRigidFixed			, MODULE_MECH, FEBC_ID, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation");
-	REGISTER_FE_CLASS(FSRigidDisplacement	, MODULE_MECH, FEBC_ID, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation");
-	REGISTER_FE_CLASS(FSRigidForce			, MODULE_MECH, FEBC_ID, FE_RIGID_FORCE				, "Prescribed rigid force");
-	REGISTER_FE_CLASS(FSRigidVelocity		, MODULE_MECH, FEBC_ID, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
-	REGISTER_FE_CLASS(FSRigidAngularVelocity, MODULE_MECH, FEBC_ID, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
+	REGISTER_FE_CLASS(FSRigidFixed			, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_FIXED				, "Fixed rigid displacement/rotation");
+	REGISTER_FE_CLASS(FSRigidDisplacement	, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_DISPLACEMENT		, "Prescribed rigid displacement/rotation");
+	REGISTER_FE_CLASS(FSRigidForce			, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_FORCE				, "Prescribed rigid force");
+	REGISTER_FE_CLASS(FSRigidVelocity		, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_INIT_VELOCITY		, "Initial rigid velocity");
+	REGISTER_FE_CLASS(FSRigidAngularVelocity, MODULE_MECH, FERIGIDBC_ID, FE_RIGID_INIT_ANG_VELOCITY	, "Initial rigid angular velocity");
 
 	REGISTER_FE_CLASS(FSRigidSphericalJoint		, MODULE_MECH, FENLCONSTRAINT_ID, FE_RC_SPHERICAL_JOINT	, "Spherical joint");
 	REGISTER_FE_CLASS(FSRigidRevoluteJoint		, MODULE_MECH, FENLCONSTRAINT_ID, FE_RC_REVOLUTE_JOINT		, "Revolute joint");
@@ -392,6 +392,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSVolumeConstraint   , MODULE_MECH, FENLCONSTRAINT_ID, FE_VOLUME_CONSTRAINT   , "volume constraint");
 	REGISTER_FE_CLASS(FSWarpingConstraint  , MODULE_MECH, FENLCONSTRAINT_ID, FE_WARP_CONSTRAINT     , "warp-image");
 	REGISTER_FE_CLASS(FSPrestrainConstraint, MODULE_MECH, FENLCONSTRAINT_ID, FE_PRESTRAIN_CONSTRAINT, "prestrain");
+	REGISTER_FE_CLASS(FSInSituStretchConstraint, MODULE_MECH, FENLCONSTRAINT_ID, FE_INSITUSTRETCH_CONSTRAINT, "in-situ stretch");
 	REGISTER_FE_CLASS(FSFixedNormalDisplacement, MODULE_MECH, FENLCONSTRAINT_ID, FE_FIXED_NORMAL_DISPLACEMENT, "fixed normal displacement");
 
 	// --- HEAT MODULE ---
@@ -640,7 +641,12 @@ bool copyParameters(std::ostream& log, FSModelComponent* pd, const FSCoreBase* p
 			}
 		}
 	}
-	if (bret == false) log << "Errors encountered copying parameters from " << ps->GetName() << std::endl;
+	if (bret == false)
+	{
+		string s = ps->GetName();
+		if (s.empty()) s = "(no name; type = " + string(ps->GetTypeString()) + ")";
+		log << "Errors encountered copying parameters from " << s << std::endl;
+	}
 	return bret;
 }
 
@@ -681,40 +687,50 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 	{
 		const FSProperty& prop = ps->GetProperty(i);
 
-		FSProperty* pi = pd->FindProperty(prop.GetName());
-		if (pi)
+		// see if prop has any allocated components
+		int ncomp = 0;
+		for (int j = 0; j < prop.Size(); ++j)
 		{
-			int ncomp = prop.Size();
-			pi->SetSize(ncomp);
-			for (int j = 0; j < ncomp; ++j)
+			if (prop.GetComponent(j)) ncomp++;
+		}
+	
+		if (ncomp > 0)
+		{
+			FSProperty* pi = pd->FindProperty(prop.GetName());
+			if (pi)
 			{
-				if (prop.GetComponent(j))
+				int ncomp = prop.Size();
+				pi->SetSize(ncomp);
+				for (int j = 0; j < ncomp; ++j)
 				{
-					const FSModelComponent* pcj = dynamic_cast<const FSModelComponent*>(prop.GetComponent(j));
-					if (pcj)
+					if (prop.GetComponent(j))
 					{
-						FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), pd->GetFSModel());
-						assert(pcn);
-						if (pcn)
+						const FSModelComponent* pcj = dynamic_cast<const FSModelComponent*>(prop.GetComponent(j));
+						if (pcj)
 						{
-							copyModelComponent(log, pcn, pcj);
-							pi->SetComponent(pcn, j);
+							FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), pd->GetFSModel());
+							assert(pcn);
+							if (pcn)
+							{
+								copyModelComponent(log, pcn, pcj);
+								pi->SetComponent(pcn, j);
+							}
+							else
+							{
+								log << "Failed to create model component!\n";
+							}
 						}
 						else
 						{
-							log << "Failed to create model component!\n";
+							log << "dynamic_cast to FSModelComponent failed!\n";
 						}
-					}
-					else
-					{
-						log << "dynamic_cast to FSModelComponent failed!\n";
 					}
 				}
 			}
-		}
-		else
-		{
-			log << "Failed to find property %s" << prop.GetName() << std::endl;
+			else
+			{
+				log << "Failed to find property " << prop.GetName() << std::endl;
+			}
 		}
 	}
 }
@@ -728,16 +744,22 @@ void FSProject::ConvertMaterials(std::ostream& log)
 		GMaterial* mat = fem.GetMaterial(i);
 
 		FSMaterial* pm = mat->GetMaterialProperties();
-
-		FSMaterial* febMat = FEBio::CreateMaterial(pm->GetTypeString(), &fem);
-		if (febMat == nullptr)
+		if (pm == nullptr)
 		{
-			log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
+			log << "ERROR: Material \"" << mat->GetName() << "\" has no properties!" << std::endl;
 		}
 		else
 		{
-			copyModelComponent(log, febMat, pm);
-			mat->SetMaterialProperties(febMat);
+			FSMaterial* febMat = FEBio::CreateMaterial(pm->GetTypeString(), &fem);
+			if (febMat == nullptr)
+			{
+				log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
+			}
+			else
+			{
+				copyModelComponent(log, febMat, pm);
+				mat->SetMaterialProperties(febMat);
+			}
 		}
 	}
 }
@@ -760,7 +782,8 @@ bool FSProject::ConvertSteps(std::ostream& log)
 			FSAnalysisStep* step = dynamic_cast<FSAnalysisStep*>(fem.GetStep(i)); assert(step);
 			if (step == nullptr) return false;
 
-			FEBioAnalysisStep* febioStep = dynamic_cast<FEBioAnalysisStep*>(FEBio::CreateStep("analysis", &fem)); assert(febioStep);
+			const char* stepType = FEBio::GetActiveModuleName();
+			FEBioAnalysisStep* febioStep = dynamic_cast<FEBioAnalysisStep*>(FEBio::CreateStep(stepType, &fem)); assert(febioStep);
 			if (febioStep == nullptr)
 			{
 				log << "Failed to create FEBio step.\n";
@@ -830,12 +853,9 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 		else if (pc->Type() == FE_RIGID_FORCE)
 		{
 			FSRigidLoad* pl = FEBio::CreateRigidLoad("rigid_force", fem);
-
-			// TODO: copy parameters
-			assert(false);
-
-			pl->SetName(pc->GetName());
+			copyParameters(log, pl, pc);
 			pl->SetMaterialID(pc->GetMaterialID());
+			pl->SetName(pc->GetName());
 			newStep.AddRigidLoad(pl);
 		}
 		else if (pc->Type() == FE_RIGID_DISPLACEMENT)
@@ -923,13 +943,13 @@ void FSProject::ConvertStepConstraints(std::ostream& log, FSStep& newStep, FSSte
 		FSModelConstraint* pcfeb = nullptr;
 		switch (pc->Type())
 		{
-		case FE_SYMMETRY_PLANE          : pcfeb = FEBio::CreateNLConstraint("symmetry plane", fem); break;
-		case FE_NORMAL_FLUID_FLOW       : pcfeb = FEBio::CreateNLConstraint("normal fluid flow", fem); break;
-		case FE_VOLUME_CONSTRAINT       : pcfeb = FEBio::CreateNLConstraint("volume", fem); break;
-//		case FE_WARP_CONSTRAINT         : pcfeb = FEBio::CreateNLConstraint("", fem); break;
-		case FE_FRICTIONLESS_FLUID_WALL : pcfeb = FEBio::CreateNLConstraint("frictionless fluid wall", fem); break;
-		case FE_INSITUSTRETCH_CONSTRAINT: pcfeb = FEBio::CreateNLConstraint("in-situ stretch", fem); break;
-		case FE_PRESTRAIN_CONSTRAINT    : pcfeb = FEBio::CreateNLConstraint("prestrain", fem); break;
+		case FE_SYMMETRY_PLANE          : pcfeb = FEBio::CreateModelConstraint("symmetry plane", fem); break;
+		case FE_NORMAL_FLUID_FLOW       : pcfeb = FEBio::CreateModelConstraint("normal fluid flow", fem); break;
+		case FE_VOLUME_CONSTRAINT       : pcfeb = FEBio::CreateModelConstraint("volume", fem); break;
+//		case FE_WARP_CONSTRAINT         : pcfeb = FEBio::CreateModelConstraint("", fem); break;
+		case FE_FRICTIONLESS_FLUID_WALL : pcfeb = FEBio::CreateModelConstraint("frictionless fluid wall", fem); break;
+		case FE_INSITUSTRETCH_CONSTRAINT: pcfeb = FEBio::CreateModelConstraint("in-situ stretch", fem); break;
+		case FE_PRESTRAIN_CONSTRAINT    : pcfeb = FEBio::CreateModelConstraint("prestrain", fem); break;
 		default:
 			assert(false);
 		}
@@ -1012,7 +1032,7 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 	//		case FE_RIGID_JOINT					: newpi = FEBio::CreatePairedInterface(, fem); break;
 			case FE_TIED_INTERFACE              : newpi = FEBio::CreatePairedInterface("tied-node-on-facet", fem); break;
 			case FE_PORO_INTERFACE              : newpi = FEBio::CreatePairedInterface("sliding-biphasic", fem); break;
-	//		case FE_PORO_SOLUTE_INTERFACE		: newpi = FEBio::CreatePairedInterface(, fem); break;
+			case FE_PORO_SOLUTE_INTERFACE		: newpi = FEBio::CreatePairedInterface("sliding-biphasic-solute", fem); break;
 			case FE_TENSCOMP_INTERFACE          : newpi = FEBio::CreatePairedInterface("sliding-elastic", fem); break;
 			case FE_TIEDBIPHASIC_INTERFACE      : newpi = FEBio::CreatePairedInterface("tied-biphasic", fem); break;
 	//		case FE_SPRINGTIED_INTERFACE		: newpi = FEBio::CreatePairedInterface(, fem); break;
@@ -1108,20 +1128,31 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			case 2: f = vec3d(0, 0, s); break;
 			}
 
-			FSProperty* pf = febLoad->FindProperty("value"); assert(pf);
-			FSModelComponent* pv = FEBio::CreateClass(FEVEC3DVALUATOR_ID, "vector", fem);
-			pf->SetComponent(pv);
-
-			Param* p = pv->GetParam("vector");
-			p->SetVec3dValue(f);
+			Param* pf = febLoad->GetParam("value"); assert(pf);
+			pf->SetVec3dValue(f);
 
 			int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
-			p->SetLoadCurveID(lc);
+			pf->SetLoadCurveID(lc);
 		}
 		else if (pl->Type() == FE_FLUID_ROTATIONAL_VELOCITY)
 		{
-			// TODO: This is now a boundary condition
-			assert(false);
+			// NOTE: This is now a boundary condition!
+			FSBoundaryCondition* bcfeb = FEBio::CreateBoundaryCondition("fluid rotational velocity", fem); assert(bcfeb);
+
+			// replace parameters
+			copyParameters(log, bcfeb, pl);
+
+			// copy the name 
+			bcfeb->SetName(pl->GetName());
+
+			// steal the item list
+			bcfeb->SetItemList(pl->GetItemList());
+			pl->SetItemList(nullptr);
+
+			newStep.AddBC(bcfeb);
+
+			// let's move on
+			continue;
 		}
 		else
 		{
