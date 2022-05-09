@@ -1182,7 +1182,7 @@ GObject* BuildObject(int ntype)
 //	case GSHELL_SPHERE      : po = new GShellSphere   (); break;
 //	case GSHELL_TORUS       : po = new GShellTorus    (); break;
 	case GSHELL_TUBE        : po = new GThinTube      (); break;
-//	case GCURVE             : po = new GCurve         (); break;
+	case GCURVE             : po = new GObject        (GCURVE); break;
 //	case GCURVE_CIRCLE      : po = new GCircle        (); break;
 	case GMESH_OBJECT       : po = new GMeshObject    ((FEMesh*)0); break;
 	case GMODIFIED_OBJECT   : po = new GModifiedObject(0); break;
