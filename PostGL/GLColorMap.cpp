@@ -309,7 +309,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			FEFace& face = pm->Face(i);
 			FACEDATA& fd0 = s0.m_FACE[i];
 			FACEDATA& fd1 = s1.m_FACE[i];
-			//			if (face.IsEnabled() && (face.m_ntag > 0))
+			if (face.IsEnabled() && (fd0.m_ntag > 0))
 			{
 				face.m_ntag = 1;
 				int nf = face.Nodes();
