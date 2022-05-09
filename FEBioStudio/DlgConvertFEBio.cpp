@@ -43,6 +43,8 @@ public:
 	QLineEdit*		outPath;
 	QComboBox*		outFormat;
 
+	int		m_inFormat;
+
 public:
 	void setup(QDialog* dlg)
 	{
@@ -106,6 +108,8 @@ public:
 
 CDlgConvertFEBio::CDlgConvertFEBio(CMainWindow* wnd) : QDialog(wnd), ui(new CDlgConvertFEBioUI)
 {
+	ui->m_inFormat = FEB_FILES;
+
 	ui->setup(this);
 
 	m_compress = false;
@@ -139,9 +143,17 @@ int CDlgConvertFEBio::getOutputFormat()
 	return ui->outFormat->currentIndex();
 }
 
+void CDlgConvertFEBio::SetFileFilter(int n)
+{
+	ui->m_inFormat = n;
+}
+
 void CDlgConvertFEBio::on_addFiles()
 {
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", "FEBio files (*.feb)");
+	QString filter;
+	if (ui->m_inFormat == 0) filter = "FEBio files (*.feb)";
+	else filter = "FEBio Studio Models (*.fsm)";
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", filter);
 	if (fileNames.isEmpty() == false)
 	{
 		for (int i = 0; i < fileNames.size(); ++i)

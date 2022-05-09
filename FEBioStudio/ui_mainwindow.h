@@ -447,6 +447,7 @@ public:
 		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
         QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
+        QAction* actionConvertFsm2Feb    = addAction("FSM to FEB ...", "actionConvertFsm2Feb");
 		QAction* actionConvertGeo = addAction("Geometry Files ...", "actionConvertGeo");
 		QAction* actionExit       = addAction("Exit"       , "actionExit"  );
 
@@ -746,6 +747,7 @@ public:
 		QMenu* ConvertMenu = new QMenu("Batch convert");
 		ConvertMenu->addAction(actionConvertFeb);
         ConvertMenu->addAction(actionConvertFeb2Fsm);
+        ConvertMenu->addAction(actionConvertFsm2Feb);
 		ConvertMenu->addAction(actionConvertGeo);
 
 		menuFile->addAction(ConvertMenu->menuAction());

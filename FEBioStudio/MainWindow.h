@@ -344,6 +344,7 @@ public slots:
 	void on_actionImportImageSequence_triggered();
 	void on_actionConvertFeb_triggered();
     void on_actionConvertFeb2Fsm_triggered();
+    void on_actionConvertFsm2Feb_triggered();
 	void on_actionConvertGeo_triggered();
 	void on_actionExit_triggered();
 	void on_recentFiles_triggered(QAction* action);

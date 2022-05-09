@@ -124,6 +124,7 @@ SOFTWARE.*/
 #include <sstream>
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
+#include "ModelFileReader.h"
 
 using std::stringstream;
 
@@ -1818,6 +1819,112 @@ void CMainWindow::on_actionConvertFeb2Fsm_triggered()
             else
                 AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
         }
+	}
+}
+
+void CMainWindow::on_actionConvertFsm2Feb_triggered()
+{
+	CDlgConvertFEBio dlg(this);
+	dlg.SetFileFilter(CDlgConvertFEBio::FSM_FILES);
+	if (dlg.exec())
+	{
+		QStringList fileNames = dlg.getFileNames();
+		QString dir = dlg.getOutPath();
+
+		int nformat = dlg.getOutputFormat();
+
+		QStringList::iterator it;
+
+		ShowLogPanel();
+
+		AddLogEntry("Starting batch conversion ...\n");
+		int nsuccess = 0, nfails = 0, nwarnings = 0;
+		for (it = fileNames.begin(); it != fileNames.end(); ++it)
+		{
+			CModelDocument doc(this);
+
+			std::string inFile = it->toStdString();
+			AddLogEntry(QString("Converting %1 ... ").arg(*it));
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+			// read the model
+			ModelFileReader reader(&doc);
+			bool bret = reader.Load(inFile.c_str());
+
+			if (bret)
+			{
+				FSProject& prj = doc.GetProject();
+
+				FEFileExport* exporter = 0;
+				if (nformat == 0)
+				{
+					// write version 4
+					FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 1)
+				{
+					// write version 3
+					FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 2)
+				{
+					// write version 2.5
+					FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 3)
+				{
+					// Write version 2.0
+					FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 4)
+				{
+					// Write version 1.x
+					FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else
+				{
+					QMessageBox::critical(this, "Convert", "Cannot convert to this file format.");
+					return;
+				}
+
+				// create an output file name
+				QString outName = createFileName(*it, dir, "feb");
+				string outFile = outName.toStdString();
+
+				// try to save the project
+				exporter->ClearLog();
+				bret = (bret ? exporter->Write(outFile.c_str()) : false);
+
+				AddLogEntry(bret ? "success\n" : "FAILED\n");
+				string err = reader.GetErrorMessage();
+				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+				err = exporter->GetErrorMessage();
+				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+
+				if (bret) nsuccess++; else nfails++;
+
+				delete exporter;
+			}
+			else
+			{
+				AddLogEntry("FAILED\n");
+				string err = reader.GetErrorMessage();
+				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+				nfails++;
+			}
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+		}
+
+		AddLogEntry("Batch conversion completed:\n");
+		if (nwarnings == 0)
+			AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
+		else
+			AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
 	}
 }
 

@@ -37,6 +37,12 @@ class CDlgConvertFEBio : public QDialog
 	enum { MAX_SECTIONS = 15 };
 
 public:
+	enum FileFilters {
+		FEB_FILES,
+		FSM_FILES
+	};
+
+public:
 	CDlgConvertFEBio(CMainWindow* wnd);
 
 	QStringList getFileNames();
@@ -44,6 +50,8 @@ public:
 	QString getOutPath();
 
 	int getOutputFormat();
+
+	void SetFileFilter(int n);
 
 public:
 	bool	m_nsection[MAX_SECTIONS];
