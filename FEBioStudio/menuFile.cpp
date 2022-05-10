@@ -1321,8 +1321,9 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					return;
 				}
 
+				int nformat = dlg.FEBioFormat();
 				try {
-					if (dlg.m_nversion == 0)
+					if (nformat == 0x0400)
 					{
 						// write version 4.0
 						FEBioExport4 writer(fem);
@@ -1333,7 +1334,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 1)
+					else if (nformat == 0x0300)
 					{
 						// write version 3.0
 						FEBioExport3 writer(fem);
@@ -1344,7 +1345,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 2)
+					else if (nformat == 0x0205)
 					{
 						// write version 2.5
 						FEBioExport25 writer(fem);
@@ -1355,7 +1356,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 3)
+					else if (nformat == 0x0200)
 					{
 						// Write version 2.0
 						FEBioExport2 writer(fem);
@@ -1364,13 +1365,17 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 4)
+					else if (nformat == 0x0102)
 					{
 						// Write version 1.x
 						FEBioExport12 writer(fem);
 						for (int i = 0; i < FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
+					else
+					{
+						assert(false);
 					}
 				}
 				catch (...)

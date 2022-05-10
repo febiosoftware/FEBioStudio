@@ -3056,21 +3056,21 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	string err;
 
 	try {
-		if (febioFileVersion == 0)
+		if (febioFileVersion == 0x0205)
 		{
 			FEBioExport25 feb(doc->GetProject());
 			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
-		else if (febioFileVersion == 1)
+		else if (febioFileVersion == 0x0300)
 		{
 			FEBioExport3 feb(doc->GetProject());
 			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
-		else if (febioFileVersion == 2)
+		else if (febioFileVersion == 0x0400)
 		{
 			FEBioExport4 feb(doc->GetProject());
 			ret = feb.Write(febFile.c_str());

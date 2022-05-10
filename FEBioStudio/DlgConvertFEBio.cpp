@@ -41,7 +41,7 @@ class CDlgConvertFEBioUI
 public:
 	QListWidget*	fileList;
 	QLineEdit*		outPath;
-	QComboBox*		outFormat;
+	CFEBioFormatSelector*		outFormat;
 
 	int		m_inFormat;
 
@@ -75,14 +75,8 @@ public:
 		h->addWidget(selectOutPath);
 		l->addLayout(h);
 
-		// NOTE: make sure the order here matches the order in CDlgExportFEBio
-		outFormat = new QComboBox;
-		outFormat->addItem("febio_spec 4.0");
-		outFormat->addItem("febio_spec 3.0");
-		outFormat->addItem("febio_spec 2.5");
-		outFormat->addItem("febio_spec 2.0");
-		outFormat->addItem("febio_spec 1.2");
-		outFormat->setCurrentIndex(0);
+		outFormat = new CFEBioFormatSelector;
+
 		QPushButton* options = new QPushButton("More options...");
 		h = new QHBoxLayout;
 		h->addWidget(new QLabel("Output format:"));
@@ -140,7 +134,7 @@ QString CDlgConvertFEBio::getOutPath()
 
 int CDlgConvertFEBio::getOutputFormat()
 {
-	return ui->outFormat->currentIndex();
+	return ui->outFormat->FEBioFormat();
 }
 
 void CDlgConvertFEBio::SetFileFilter(int n)
@@ -191,14 +185,14 @@ void CDlgConvertFEBio::on_moreOptions()
 {
 	CDlgExportFEBio dlg(this);
 
-	dlg.m_nversion = getOutputFormat();
+	dlg.SetFEBioFormat(getOutputFormat());
 	dlg.m_writeNotes = m_writeNotes;
 	dlg.m_compress = m_compress;
 	dlg.m_bexportSelections = m_bexportSelections;
 
 	if (dlg.exec())
 	{
-		ui->outFormat->setCurrentIndex(dlg.m_nversion);
+		ui->outFormat->setFEBioFormat(dlg.FEBioFormat());
 		m_writeNotes = dlg.m_writeNotes;
 		m_compress = dlg.m_compress;
 		m_bexportSelections = dlg.m_bexportSelections;

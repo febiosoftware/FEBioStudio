@@ -35,10 +35,41 @@ SOFTWARE.*/
 #include <QGroupBox>
 #include <QGridLayout>
 
+CFEBioFormatSelector::CFEBioFormatSelector(QWidget* pw) : QComboBox(pw)
+{
+	// make sure the order here matches setFEBioFormat. 
+	addItem("febio_spec 4.0", 0x0400);
+//	addItem("febio_spec 3.0", 0x0300);
+//	addItem("febio_spec 2.5", 0x0205);
+//	addItem("febio_spec 2.0", 0x0200);
+//	addItem("febio_spec 1.2", 0x0102);
+	setCurrentIndex(0);
+}
+
+int CFEBioFormatSelector::FEBioFormat() const
+{
+	return currentData().toInt();
+}
+
+void CFEBioFormatSelector::setFEBioFormat(int n)
+{
+	switch (n)
+	{
+	case 0x0400: setCurrentIndex(0); break;
+	case 0x0300: setCurrentIndex(1); break;
+	case 0x0205: setCurrentIndex(2); break;
+	case 0x0200: setCurrentIndex(3); break;
+	case 0x0102: setCurrentIndex(4); break;
+	default:
+		assert(false);
+	}
+	assert(currentData().toInt() == n);
+}
+
 class Ui::CDlgExportFEBio
 {
 public:
-	QComboBox*	combo;
+	CFEBioFormatSelector*	combo;
 	QCheckBox*	sel;
 	QCheckBox*	comp;
 	QCheckBox*	notes;
@@ -49,13 +80,7 @@ public:
 	{
 		// format selector
 		QLabel* l = new QLabel("format:");
-		combo = new QComboBox;
-		combo->addItem("febio_spec 4.0");
-		combo->addItem("febio_spec 3.0");
-		combo->addItem("febio_spec 2.5");
-		combo->addItem("febio_spec 2.0");
-		combo->addItem("febio_spec 1.2");
-		combo->setCurrentIndex(0);
+		combo = new CFEBioFormatSelector;
 		l->setBuddy(combo);
 
 		QHBoxLayout* formatLayout = new QHBoxLayout;
@@ -138,7 +163,7 @@ public:
 	}
 };
 
-int CDlgExportFEBio::m_nversion = -1;
+int CDlgExportFEBio::m_nindex = -1;
 
 CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgExportFEBio)
 {
@@ -146,8 +171,8 @@ CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::
 	m_compress = false;
 	m_bexportSelections = false;
 
-	if (m_nversion == -1) m_nversion = 0;
-	ui->combo->setCurrentIndex(m_nversion);
+	if (m_nindex == -1) m_nindex = 0;
+	ui->combo->setCurrentIndex(m_nindex);
 
 	for (int i=0; i<MAX_SECTIONS; ++i) 
 	{
@@ -158,7 +183,7 @@ CDlgExportFEBio::CDlgExportFEBio(QWidget* parent) : QDialog(parent), ui(new Ui::
 
 void CDlgExportFEBio::accept()
 {
-	m_nversion = ui->combo->currentIndex();
+	m_nindex = ui->combo->currentIndex();
 	m_compress = ui->comp->isChecked();
 	m_bexportSelections = ui->sel->isChecked();
 	m_writeNotes = ui->notes->isChecked();
@@ -176,4 +201,14 @@ void CDlgExportFEBio::OnAllClicked()
 void CDlgExportFEBio::OnNoneClicked()
 {
 	for (int i = 0; i<MAX_SECTIONS; ++i) ui->pc[i]->setChecked(false);
+}
+
+int CDlgExportFEBio::FEBioFormat() const
+{
+	return ui->combo->FEBioFormat();
+}
+
+void CDlgExportFEBio::SetFEBioFormat(int n)
+{
+	ui->combo->setFEBioFormat(n);
 }

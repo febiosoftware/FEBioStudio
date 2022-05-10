@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <string.h>
 #include "DlgEditLConfigs.h"
+#include "DlgExportFEBio.h"
 
 
 class Ui::CDlgRun
@@ -57,7 +58,7 @@ public:
 	QLineEdit*	taskFile;
 	QCheckBox*	autoSave;
 
-	QComboBox* febioFormat;
+	CFEBioFormatSelector* febioFormat;
 	
 	QCheckBox* editCmd;
 	QLineEdit*	cmd;
@@ -101,11 +102,8 @@ public:
 		jobFolder = new QWidget;
 		jobFolder->setLayout(cwdLayout);
 
-		febioFormat = new QComboBox;
-		febioFormat->addItem("FEBio 2.5 format");
-		febioFormat->addItem("FEBio 3.0 format");
-		febioFormat->addItem("FEBio 4.0 format");
-		febioFormat->setCurrentIndex(2);
+		febioFormat = new CFEBioFormatSelector;
+		febioFormat->setFEBioFormat(0x0400);
 
 		autoSave = new QCheckBox("Save model before running FEBio");
 		autoSave->setChecked(true);
@@ -324,7 +322,7 @@ void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int nde
 
 void CDlgRun::SetFEBioFileVersion(int fileVersion)
 {
-	ui->febioFormat->setCurrentIndex(fileVersion);
+	ui->febioFormat->setFEBioFormat(fileVersion);
 }
 
 QString CDlgRun::GetWorkingDirectory()
@@ -359,7 +357,7 @@ int CDlgRun::GetLaunchConfig()
 
 int CDlgRun::GetFEBioFileVersion()
 {
-	return ui->febioFormat->currentIndex();
+	return ui->febioFormat->FEBioFormat();
 }
 
 bool CDlgRun::WriteNotes()
