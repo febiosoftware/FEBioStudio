@@ -1001,6 +1001,7 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 	{
 		FSGenericClass* pc = new FSGenericClass(fem);
 		pc->SetSuperClassID(FECLASS_ID);
+		return pc;
 	}
 	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr, fem);
 }
