@@ -68,6 +68,8 @@ void CMainWindow::on_actionAddBC_triggered()
 		FSBoundaryCondition* pbc = FEBio::CreateFEBioClass<FSBoundaryCondition>(dlg.GetClassID(), &fem); assert(pbc);
 		if (pbc)
 		{
+			FEBio::InitDefaultProps(pbc);
+
 			FSStep* step = fem.GetStep(dlg.GetStep());
 
 			pbc->SetStep(step->GetID());
@@ -116,6 +118,8 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 		FSNodalLoad* pnl = FEBio::CreateFEBioClass<FSNodalLoad>(dlg.GetClassID(), &fem); assert(pnl);
 		if (pnl)
 		{
+			FEBio::InitDefaultProps(pnl);
+
 			string name = dlg.GetName();
 			if (name.empty()) name = defaultLoadName(&fem, pnl);
 			pnl->SetName(name);
@@ -161,6 +165,8 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 		FSSurfaceLoad* psl = FEBio::CreateFEBioClass<FSSurfaceLoad>(dlg.GetClassID(), &fem); assert(psl);
 		if (psl)
 		{
+			FEBio::InitDefaultProps(psl);
+
 			string name = dlg.GetName();
 			if (name.empty()) name = defaultLoadName(&fem, psl);
 			psl->SetName(name);
@@ -203,6 +209,8 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 		FSBodyLoad* pbl = FEBio::CreateFEBioClass<FSBodyLoad>(dlg.GetClassID(), &fem); assert(pbl);
 		if (pbl)
 		{
+			FEBio::InitDefaultProps(pbl);
+
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultLoadName(&fem, pbl);
 			pbl->SetName(name);
@@ -228,6 +236,8 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 		FSRigidLoad* prl = FEBio::CreateFEBioClass<FSRigidLoad>(dlg.GetClassID(), &fem); assert(prl);
 		if (prl)
 		{
+			FEBio::InitDefaultProps(prl);
+
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultRigidLoadName(&fem, prl);
 			prl->SetName(name);
@@ -253,6 +263,8 @@ void CMainWindow::on_actionAddIC_triggered()
 		FSInitialCondition* pic = FEBio::CreateFEBioClass<FSInitialCondition>(dlg.GetClassID(), &fem); assert(pic);
 		if (pic)
 		{
+			FEBio::InitDefaultProps(pic);
+
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultICName(&fem, pic);
 			pic->SetName(name);
@@ -304,6 +316,8 @@ void CMainWindow::on_actionAddContact_triggered()
 		FSInterface* pi = FEBio::CreateFEBioClass<FSInterface>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
+			FEBio::InitDefaultProps(pi);
+
 			// create a name
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultInterfaceName(&fem, pi);
@@ -354,6 +368,8 @@ void CMainWindow::on_actionAddConstraint_triggered()
 		FSModelConstraint* pi = FEBio::CreateFEBioClass<FSModelConstraint>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
+			FEBio::InitDefaultProps(pi);
+
 			// create a name
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
@@ -381,6 +397,8 @@ void CMainWindow::OnAddSurfaceConstraint()
 		FSSurfaceConstraint* pi = FEBio::CreateFEBioClass<FSSurfaceConstraint>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
+			FEBio::InitDefaultProps(pi);
+
 			// create a name
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
@@ -425,6 +443,8 @@ void CMainWindow::OnAddBodyConstraint()
 		FSBodyConstraint* pi = FEBio::CreateFEBioClass<FSBodyConstraint>(dlg.GetClassID(), &fem); assert(pi);
 		if (pi)
 		{
+			FEBio::InitDefaultProps(pi);
+
 			// create a name
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
@@ -480,6 +500,8 @@ void CMainWindow::on_actionAddRigidIC_triggered()
 		assert(prc);
 		if (prc)
 		{
+			FEBio::InitDefaultProps(prc);
+
 			FSStep* step = fem->GetStep(dlg.GetStep());
 			prc->SetStep(step->GetID());
 
@@ -508,6 +530,8 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 		assert(pc);
 		if (pc)
 		{
+			FEBio::InitDefaultProps(pc);
+
 			pc->SetPosition(GetGLView()->Get3DCursor());
 //			pc->SetRigidBody1(dlg.GetMaterialA());
 //			pc->SetRigidBody2(dlg.GetMaterialB());

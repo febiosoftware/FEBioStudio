@@ -774,9 +774,27 @@ void FEBio::DeleteClass(void* p)
 	delete pc;
 }
 
+void InitParameters(FSModelComponent* pc)
+{
+	FSModel* fem = pc->GetFSModel();
+	for (int i = 0; i < pc->Parameters(); ++i)
+	{
+		Param& p = pc->GetParam(i);
+
+		if (p.GetFlags() & FE_PARAM_ADDLC)
+		{
+			assert(fem);
+			LoadCurve lc;
+			FSLoadController* plc = fem->AddLoadCurve(lc); assert(plc);
+			p.SetLoadCurveID(plc->GetID());
+		}
+	}
+}
+
 // Call this to initialize default properties
 bool FEBio::InitDefaultProps(FSModelComponent* pc)
 {
+	InitParameters(pc);
 	for (int i = 0; i < pc->Properties(); ++i)
 	{
 		FSProperty& prop = pc->GetProperty(i);

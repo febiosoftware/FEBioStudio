@@ -258,7 +258,7 @@ public:
 						if (p.GetEnumNames() && GetFSModel())
 						{
 							const char* sz = GetFSModel()->GetEnumKey(p);
-							if (sz == nullptr) sz = "please select";
+							if (sz == nullptr) sz = "(select)";
 							return sz;
 						}
 						int n = p.val<int>();
