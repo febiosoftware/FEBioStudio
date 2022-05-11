@@ -47,9 +47,11 @@ public:
 	void setup(QDialog* dlg)
 	{
 		QPushButton* loadPlugin = new QPushButton("Load ...");
+		QPushButton* unloadPlugin = new QPushButton("Unload ...");
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(loadPlugin);
+		h->addWidget(unloadPlugin);
 		h->addStretch();
 
 		plugins = new QTreeWidget;
@@ -77,6 +79,7 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(plugins, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), dlg, SLOT(updateFeaturesList()));
 		QObject::connect(loadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onLoadPlugin()));
+		QObject::connect(unloadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onUnloadPlugin()));
 		dlg->setLayout(l);
 	}
 
@@ -195,4 +198,28 @@ void CDlgFEBioPlugins::onLoadPlugin()
 			ui->selectPlugin(ui->pluginCount() - 1);
 		}
 	}
+}
+
+void CDlgFEBioPlugins::onUnloadPlugin()
+{
+	QTreeWidgetItem* it = ui->plugins->currentItem();
+	if (it == nullptr)
+	{
+		QMessageBox::information(this, "Unload plugin", QString("Please select the plugin to unload."));
+		return;
+	}
+	
+	QString name = it->text(0);
+
+	FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
+	if (pm->UnloadPlugin(name.toStdString()))
+	{
+		QMessageBox::information(this, "Unload plugin", QString("Plugin %1 unloaded successfully.").arg(name));
+	}
+	else
+	{
+		QMessageBox::critical(this, "Unload plugin", QString("Failed to unload plugin %1.").arg(name));
+	}
+
+	ui->updatePluginsList();
 }

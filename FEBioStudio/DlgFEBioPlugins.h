@@ -38,6 +38,7 @@ public:
 private slots:
 	void updateFeaturesList();
 	void onLoadPlugin();
+	void onUnloadPlugin();
 
 private:
 	CDlgFEBioPluginsUI* ui;
