@@ -565,25 +565,30 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 		{
 			if ((pi->GetParamType() == Param_INT) && (p.GetParamType() == Param_BOOL))
 			{
-				log << "implicit conversion from bool to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				log << "warning: converting from bool to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 				pi->SetIntValue(p.GetBoolValue() ? 1 : 0);
 			}
 			else if ((pi->GetParamType() == Param_BOOL) && (p.GetParamType() == Param_INT))
 			{
-				log << "implicit conversion from int to bool (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				log << "warning: converting from int to bool (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 				pi->SetBoolValue(p.GetIntValue() != 0 ? true : false);
+			}
+			else if ((pi->GetParamType() == Param_INT) && (p.GetParamType() == Param_FLOAT))
+			{
+				log << "warning: converting from float to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				pi->SetIntValue((int)p.GetFloatValue());
 			}
 			else if ((pi->GetParamType() == Param_CHOICE) && (p.GetParamType() == Param_INT))
 			{
 #ifdef _DEBUG
-				log << "implicit conversion from int to choice (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				log << "warning: converting from int to choice (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				pi->SetIntValue(p.GetIntValue());
 			}
 			else if ((pi->GetParamType() == Param_INT) && (p.GetParamType() == Param_CHOICE))
 			{
 #ifdef _DEBUG
-				log << "implicit conversion from choice to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+				log << "warning: converting from choice to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				pi->SetIntValue(p.GetIntValue());
 			}
