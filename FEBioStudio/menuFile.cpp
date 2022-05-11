@@ -1697,31 +1697,31 @@ void CMainWindow::on_actionConvertFeb_triggered()
 			FEBioFileImport reader(prj);
 
 			FEFileExport* exporter = 0;
-			if (nformat == 0)
+			if (nformat == 0x0400)
 			{
 				// write version 4
 				FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
 				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 			}
-			else if (nformat == 1)
+			else if (nformat == 0x0300)
 			{
 				// write version 3
 				FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
 				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 			}
-			else if (nformat == 2)
+			else if (nformat == 0x0205)
 			{
 				// write version 2.5
 				FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
 				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 			}
-			else if (nformat == 3)
+			else if (nformat == 0x0200)
 			{
 				// Write version 2.0
 				FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
 				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 			}
-			else if (nformat == 4)
+			else if (nformat == 0x0102)
 			{
 				// Write version 1.x
 				FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
@@ -1862,31 +1862,31 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 				FSProject& prj = doc.GetProject();
 
 				FEFileExport* exporter = 0;
-				if (nformat == 0)
+				if (nformat == 0x0400)
 				{
 					// write version 4
 					FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
 					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 				}
-				else if (nformat == 1)
+				else if (nformat == 0x0300)
 				{
 					// write version 3
 					FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
 					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 				}
-				else if (nformat == 2)
+				else if (nformat == 0x0205)
 				{
 					// write version 2.5
 					FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
 					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 				}
-				else if (nformat == 3)
+				else if (nformat == 0x0200)
 				{
 					// Write version 2.0
 					FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
 					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
 				}
-				else if (nformat == 4)
+				else if (nformat == 0x0102)
 				{
 					// Write version 1.x
 					FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
