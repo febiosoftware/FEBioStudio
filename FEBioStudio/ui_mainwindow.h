@@ -454,20 +454,20 @@ public:
 		// --- Edit menu ---
 		QAction* actionUndo              = addAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
 		QAction* actionRedo              = addAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
-		QAction* actionInvertSelection   = addAction("Invert Selection"  , "actionInvertSelection"  ); actionInvertSelection->setShortcut(Qt::AltModifier + Qt::Key_I);
+		QAction* actionInvertSelection   = addAction("Invert Selection"  , "actionInvertSelection"  ); actionInvertSelection->setShortcut(Qt::AltModifier | Qt::Key_I);
 		QAction* actionClearSelection    = addAction("Clear Selection"   , "actionClearSelection"   );
 		QAction* actionDeleteSelection   = addAction("Delete Selection"  , "actionDeleteSelection"  ); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
-		QAction* actionNameSelection     = addAction("Name Selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier + Qt::Key_G);
+		QAction* actionNameSelection     = addAction("Name Selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier | Qt::Key_G);
 		QAction* actionHideSelection     = addAction("Hide Selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
-		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
-		QAction* actionSyncSelection     = addAction("Sync selection"    , "actionSyncSelection"    ); actionSyncSelection->setShortcut(Qt::AltModifier + Qt::Key_F);
+		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier | Qt::Key_H);
+		QAction* actionSyncSelection     = addAction("Sync selection"    , "actionSyncSelection"    ); actionSyncSelection->setShortcut(Qt::AltModifier | Qt::Key_F);
 		QAction* actionUnhideAll         = addAction("Unhide All"        , "actionUnhideAll"        );
-		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); //actionFind->setShortcut(Qt::ControlModifier + Qt::Key_F);
+		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); //actionFind->setShortcut(Qt::ControlModifier | Qt::Key_F);
 		QAction* actionSelectRange       = addAction("Select Range ...", "actionSelectRange"     );
 		QAction* actionToggleVisible     = addAction("Toggle Visibility" , "actionToggleVisible"    , "toggle_visible");
-		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
+		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier | Qt::Key_T);
 		QAction* actionCollapseTransform = addAction("Collapse Transform", "actionCollapseTransform");
-		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); // actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); // actionClone->setShortcut(Qt::ControlModifier | Qt::Key_D);
 		QAction* actionCopyObject        = addAction("Copy Object"       , "actionCopyObject");
 		QAction* actionPasteObject       = addAction("Paste Object"      , "actionPasteObject");
 		QAction* actionCloneGrid         = addAction("Clone Grid ..."    , "actionCloneGrid"        , "clonegrid");
@@ -481,14 +481,14 @@ public:
 		QAction* actionSurfaceToFaces         = addAction("Surface to Face Selection", "actionSurfaceToFaces");
 		QAction* actionSelectOverlap          = addAction("Select surface overlap ...", "actionSelectOverlap");
 		QAction* actionSelectIsolatedVertices = addAction("Select isolated vertices", "actionSelectIsolatedVertices");
-		QAction* actionGrowSelection          = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
-		QAction* actionShrinkSelection        = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier + Qt::Key_Minus);
+		QAction* actionGrowSelection          = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier | Qt::Key_Plus);
+		QAction* actionShrinkSelection        = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier | Qt::Key_Minus);
 
 		// --- Edit (txt) menu ---
-		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F + Qt::ControlModifier);
-		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F | Qt::ControlModifier | Qt::ShiftModifier);
-		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier + Qt::Key_Slash);
-		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F | Qt::ControlModifier);
+		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_F);
+		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier | Qt::Key_Slash);
+		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier | Qt::Key_D);
 		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_L);
 
         // -- Edit (xml) menut ---
@@ -501,12 +501,12 @@ public:
         QAction* actionRemoveRow = addAction("Remove Row", "actionRemoveRow", "selectDel");
 
 		// --- Physics menu ---
-		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
+		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier | Qt::Key_B);
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
-		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier + Qt::Key_L);
+		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
 		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
-		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier + Qt::Key_I);
+		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
 		actionAddConstraint      = addAction("Add Constraint..."             , "actionAddConstraint");
 		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
@@ -514,7 +514,7 @@ public:
 		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
-		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier + Qt::Key_M);
+		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier | Qt::Key_M);
 		actionSoluteTable        = addAction("Solute Table ..."              , "actionSoluteTable");
 		actionSBMTable           = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
 		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
@@ -593,8 +593,8 @@ public:
 
 
 		// --- View menu ---
-		actionUndoViewChange  = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_U);
-		actionRedoViewChange  = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_R);
+		actionUndoViewChange  = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_U);
+		actionRedoViewChange  = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_R);
 		actionZoomSelect      = addAction("Zoom to Selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
 		actionZoomExtents     = addAction("Zoom to Selection", "actionZoomExtents");
 		actionViewCapture     = addAction("Show Capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
@@ -620,10 +620,10 @@ public:
 		actionTop             = addAction("Top"  , "actionTop"    ); actionTop   ->setShortcut(Qt::Key_9 | Qt::KeypadModifier);
 		actionBottom          = addAction("Bottom", "actionBottom"); actionBottom->setShortcut(Qt::Key_3 | Qt::KeypadModifier);
         actionIsometric       = addAction("Isometric", "actionIsometric"); actionIsometric->setShortcut(Qt::Key_5 | Qt::KeypadModifier);
-		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
+		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL | Qt::Key_K);
 		QAction* actionViewVPPrev = addAction("Prev Viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
-		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S + Qt::AltModifier);
+		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S | Qt::AltModifier);
 
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
