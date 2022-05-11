@@ -1544,7 +1544,8 @@ void CMainWindow::on_actionImportRawImage_triggered()
 			// only for model docs
 			if (dynamic_cast<CModelDocument*>(doc))
 			{
-				Post::CVolRender* vr = new Post::CVolRender(imageModel);
+//				Post::CVolRender* vr = new Post::CVolRender(imageModel);
+				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
 				vr->Create();
 				imageModel->AddImageRenderer(vr);
 
