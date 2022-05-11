@@ -323,7 +323,7 @@ unset(FEBio_LIB_NAMES)
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
-    add_definitions(-DWIN32)
+    add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
