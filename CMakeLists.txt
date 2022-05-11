@@ -309,7 +309,7 @@ endif()
 # Find FEBio Libs
 set(FEBio_LIBS "")
 
-set(FEBio_LIB_NAMES fecore febiolib febiomech xml)
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
 foreach(name IN LISTS FEBio_LIB_NAMES)
     findLib(FEBio_LIB_DIR FEBio_LIB ${name})
