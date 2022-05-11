@@ -92,6 +92,7 @@ protected:
 	void UpdateSurfaces();
 	void UpdateEdges();
 	void UpdateNodes();
+	void UpdateSections();
 };
 
 GMeshObject* ExtractSelection(GObject* po);
