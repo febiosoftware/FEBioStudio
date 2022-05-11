@@ -171,6 +171,7 @@ public:
 protected:
 	void ConvertMaterials(std::ostream& log);
 	bool ConvertSteps(std::ostream& log);
+	bool ConvertDiscrete(std::ostream& log);
 	void ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep);
 	void ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 	void ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep);

@@ -675,6 +675,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 
 	ConvertMaterials(log);
 	ConvertSteps(log);
+	ConvertDiscrete(log);
 }
 
 void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelComponent* ps)
@@ -1426,4 +1427,30 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 			}
 		}
 	}
+}
+
+bool FSProject::ConvertDiscrete(std::ostream& log)
+{
+	FSModel& fem = GetFSModel();
+
+	GModel& mdl = fem.GetModel();
+	for (int i = 0; i < mdl.DiscreteObjects(); ++i)
+	{
+		GDiscreteObject* po = mdl.DiscreteObject(i);
+
+		GDiscreteSpringSet* ps = dynamic_cast<GDiscreteSpringSet*>(po);
+		if (ps)
+		{
+			FSDiscreteMaterial* pm = ps->GetMaterial();
+			if (pm)
+			{
+				FSDiscreteMaterial* febMat = FEBio::CreateDiscreteMaterial(pm->GetTypeString(), &fem);
+				copyParameters(log, febMat, pm);
+				ps->SetMaterial(febMat);
+				delete pm;
+			}
+		}
+	}
+
+	return true;
 }
