@@ -43,11 +43,14 @@ public:
 	QTreeWidget* plugins;
 	QTreeWidget* features;
 
+	QPushButton* unloadPlugin;
+
 public:
 	void setup(QDialog* dlg)
 	{
 		QPushButton* loadPlugin = new QPushButton("Load ...");
-		QPushButton* unloadPlugin = new QPushButton("Unload ...");
+		unloadPlugin = new QPushButton("Unload ...");
+		unloadPlugin->setDisabled(true);
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(loadPlugin);
@@ -140,7 +143,12 @@ public:
 
 		features->clear();
 		int n = plugins->currentIndex().row();
-		if ((n < 0) || (n >= pm->Plugins())) return;
+		if ((n < 0) || (n >= pm->Plugins()))
+		{
+			unloadPlugin->setDisabled(true);
+			return;
+		}
+		unloadPlugin->setEnabled(true);
 
 		const FEBioPlugin& pi = pm->GetPlugin(n);
 
@@ -211,15 +219,19 @@ void CDlgFEBioPlugins::onUnloadPlugin()
 	
 	QString name = it->text(0);
 
-	FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
-	if (pm->UnloadPlugin(name.toStdString()))
+	QString msg = QString("Are you sure you want to unload the plugin %1.\nAny open model that uses it may not work correctly anymore.").arg(name);
+	if (QMessageBox::question(this, "Unload plugin", msg) == QMessageBox::Yes)
 	{
-		QMessageBox::information(this, "Unload plugin", QString("Plugin %1 unloaded successfully.").arg(name));
-	}
-	else
-	{
-		QMessageBox::critical(this, "Unload plugin", QString("Failed to unload plugin %1.").arg(name));
-	}
+		FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
+		if (pm->UnloadPlugin(name.toStdString()))
+		{
+			QMessageBox::information(this, "Unload plugin", QString("Plugin %1 unloaded successfully.").arg(name));
+		}
+		else
+		{
+			QMessageBox::critical(this, "Unload plugin", QString("Failed to unload plugin %1.").arg(name));
+		}
 
-	ui->updatePluginsList();
+		ui->updatePluginsList();
+	}
 }
