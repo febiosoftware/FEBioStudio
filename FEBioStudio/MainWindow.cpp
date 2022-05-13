@@ -1785,6 +1785,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("recentFiles", ui->m_recentFiles);
 	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
 	settings.setValue("recentProjects", ui->m_recentProjects);
+	settings.setValue("recentPlugins" , ui->m_recentPlugins);
 
 	settings.endGroup();
 
@@ -1892,6 +1893,7 @@ void CMainWindow::readSettings()
 	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
 	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
 	QStringList recentProjects = settings.value("recentProjects").toStringList(); ui->setRecentProjects(recentProjects);
+	QStringList recentPlugins = settings.value("recentPlugins").toStringList(); ui->setRecentPlugins(recentPlugins);
 
 	settings.endGroup();
 
@@ -3234,6 +3236,16 @@ QStringList CMainWindow::GetRecentFileList()
 QStringList CMainWindow::GetRecentProjectsList()
 {
 	return ui->m_recentProjects;
+}
+
+QStringList CMainWindow::GetRecentPluginsList()
+{
+	return ui->m_recentPlugins;
+}
+
+void CMainWindow::AddRecentPlugin(const QString& fileName)
+{
+	ui->addToRecentPlugins(fileName);
 }
 
 QString CMainWindow::ProjectFolder()

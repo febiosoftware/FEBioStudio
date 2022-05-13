@@ -234,6 +234,7 @@ public:
 	QStringList	m_recentFiles;
 	QStringList	m_recentGeomFiles;
 	QStringList m_recentProjects;
+	QStringList m_recentPlugins;
 
 	QAction* actionUndoViewChange;
 	QAction* actionRedoViewChange;
@@ -1195,6 +1196,11 @@ public:
 		setRecentFileList(m_recentProjects, recentFiles, menuRecentProjects, recentProjectsActionGroup);
 	}
 
+	void setRecentPlugins(QStringList& recentPlugins)
+	{
+		setRecentFileList(m_recentPlugins, recentPlugins, nullptr, nullptr);
+	}
+
 	void setRecentGeomFiles(QStringList& recentFiles)
 	{
 		setRecentFileList(m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
@@ -1208,6 +1214,11 @@ public:
 	void addToRecentProjects(const QString& file)
 	{
 		addToRecentFilesList(m_recentProjects, file, menuRecentProjects, recentProjectsActionGroup);
+	}
+
+	void addToRecentPlugins(const QString& file)
+	{
+		addToRecentFilesList(m_recentPlugins, file);
 	}
 
 	void addToRecentGeomFiles(const QString& file)
@@ -1263,9 +1274,11 @@ private:
 		{
 			QString file = dstList.at(i);
 
-			QAction* pa = menu->addAction(file);
-
-			actionGroup->addAction(pa);
+			if (menu)
+			{
+				QAction* pa = menu->addAction(file);
+				if (actionGroup) actionGroup->addAction(pa);
+			}
 		}
 	}
 
@@ -1320,6 +1333,47 @@ private:
 				QAction* pa = new QAction(fileName);
 				menu->insertAction(firstAction, pa);
 				actionGroup->addAction(pa);
+			}
+		}
+	}
+
+	void addToRecentFilesList(QStringList& dstList, const QString& file)
+	{
+		QString fileName = file;
+
+#ifdef WIN32
+		// on windows, make sure that all filenames use backslashes
+		fileName.replace('/', '\\');
+#endif
+
+		if (dstList.isEmpty())
+		{
+			dstList.append(fileName);
+		}
+		else
+		{
+			// see if the file already exists or not
+			int n = dstList.indexOf(fileName);
+			if (n >= 0)
+			{
+				// if the file exists, we move it to the top
+				if (n != 0)
+				{
+					dstList.removeAt(n);
+					dstList.push_front(fileName);
+				}
+			}
+			else
+			{
+				int N = dstList.count();
+				if (N >= MAX_RECENT_FILES)
+				{
+					// remove the last one
+					dstList.removeLast();
+				}
+
+				// add a new file item
+				dstList.push_front(fileName);
 			}
 		}
 	}

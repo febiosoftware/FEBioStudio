@@ -36,19 +36,29 @@ SOFTWARE.*/
 #include <FEBioLib/febio.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FECore/FEModule.h>
+#include <QMenu>
+#include "MainWindow.h"
 
 class CDlgFEBioPluginsUI
 {
 public:
+	CMainWindow* m_wnd = nullptr;
+
 	QTreeWidget* plugins;
 	QTreeWidget* features;
 
 	QPushButton* unloadPlugin;
 
+	QMenu* recentPlugins;
+
 public:
 	void setup(QDialog* dlg)
 	{
 		QPushButton* loadPlugin = new QPushButton("Load ...");
+
+		recentPlugins = new QMenu(dlg);
+		loadPlugin->setMenu(recentPlugins);
+
 		unloadPlugin = new QPushButton("Unload ...");
 		unloadPlugin->setDisabled(true);
 
@@ -81,7 +91,8 @@ public:
 
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(plugins, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), dlg, SLOT(updateFeaturesList()));
-		QObject::connect(loadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onLoadPlugin()));
+//		QObject::connect(loadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onLoadPlugin()));
+		QObject::connect(recentPlugins, SIGNAL(triggered(QAction*)), dlg, SLOT(onMenuTriggered(QAction*)));
 		QObject::connect(unloadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onUnloadPlugin()));
 		dlg->setLayout(l);
 	}
@@ -92,6 +103,17 @@ public:
 		twi->setText(0, name);
 		twi->setText(1, version);
 		twi->setText(2, path);
+	}
+
+	void updateRecentPlugins()
+	{
+		recentPlugins->clear();
+		QStringList l = m_wnd->GetRecentPluginsList();
+		for (int i = 0; i < l.size(); ++i)
+		{
+			recentPlugins->addAction(l[i]);
+		}
+		recentPlugins->addAction("<other...>");
 	}
 
 	void updatePluginsList()
@@ -162,13 +184,15 @@ public:
 	}
 };
 
-CDlgFEBioPlugins::CDlgFEBioPlugins(QWidget* parent) : QDialog(parent), ui(new CDlgFEBioPluginsUI)
+CDlgFEBioPlugins::CDlgFEBioPlugins(CMainWindow* parent) : QDialog(parent), ui(new CDlgFEBioPluginsUI)
 {
 	setWindowTitle("FEBio Plugins");
 
 	setMinimumSize(800, 600);
 
+	ui->m_wnd = parent;
 	ui->setup(this);
+	ui->updateRecentPlugins();
 	ui->updatePluginsList();
 }
 
@@ -177,34 +201,52 @@ void CDlgFEBioPlugins::updateFeaturesList()
 	ui->updateFeaturesList();
 }
 
+void CDlgFEBioPlugins::onMenuTriggered(QAction* action)
+{
+	QString t = action->text();
+	if (t == "<other...>")
+		onLoadPlugin();
+	else
+	{
+		LoadPlugin(t);
+	}
+}
+
 void CDlgFEBioPlugins::onLoadPlugin()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
 	if (fileName.isEmpty() == false)
 	{
-		std::string sfile = fileName.toStdString();
+		LoadPlugin(fileName);
+	}
+}
 
-		// get the currently active module
-		// We need this, since importing the plugin might change this.
-		FECoreKernel& fecore = FECoreKernel::GetInstance();
-		int modId = fecore.GetActiveModule()->GetModuleID();
+void CDlgFEBioPlugins::LoadPlugin(const QString& fileName)
+{
+	std::string sfile = fileName.toStdString();
 
-		// try to import the plugin
-		bool bsuccess = febio::ImportPlugin(sfile.c_str());
+	// get the currently active module
+	// We need this, since importing the plugin might change this.
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	int modId = fecore.GetActiveModule()->GetModuleID();
 
-		// restore active module
-		fecore.SetActiveModule(modId);
+	// try to import the plugin
+	bool bsuccess = febio::ImportPlugin(sfile.c_str());
 
-		if (bsuccess == false)
-		{
-			QMessageBox::critical(this, "Load Plugin", QString("The plugin failed to load:\n%1").arg(fileName));
-		}
-		else
-		{
-			QMessageBox::information(this, "Load Plugin", QString("The plugin loaded successfully:\n%1").arg(fileName));
-			ui->updatePluginsList();
-			ui->selectPlugin(ui->pluginCount() - 1);
-		}
+	// restore active module
+	fecore.SetActiveModule(modId);
+
+	if (bsuccess == false)
+	{
+		QMessageBox::critical(this, "Load Plugin", QString("The plugin failed to load:\n%1").arg(fileName));
+	}
+	else
+	{
+		QMessageBox::information(this, "Load Plugin", QString("The plugin loaded successfully:\n%1").arg(fileName));
+		ui->m_wnd->AddRecentPlugin(fileName);
+		ui->updateRecentPlugins();
+		ui->updatePluginsList();
+		ui->selectPlugin(ui->pluginCount() - 1);
 	}
 }
 

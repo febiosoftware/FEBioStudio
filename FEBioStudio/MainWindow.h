@@ -645,6 +645,9 @@ public slots:
 public:
 	QStringList GetRecentFileList();
 	QStringList GetRecentProjectsList();
+	QStringList GetRecentPluginsList();
+
+	void AddRecentPlugin(const QString& fileName);
 
 	QString ProjectFolder();
 	QString ProjectName();
