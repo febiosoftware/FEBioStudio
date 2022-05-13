@@ -189,6 +189,11 @@ public:
 
 	void regionSelect(QRect rt);
 
+public:
+	void SetHighlightInterval(double rngMin, double rngMax);
+
+	void GetHighlightInterval(double& rngMin, double& rngMax);
+
 signals:
 	void regionSelected(QRect rt);
 	void pointClicked(QPointF p, bool bshift);
@@ -217,6 +222,9 @@ public:
 	QPointF ScreenToView(const QPoint& p);
 	QRectF ScreenToView(const QRect& rt);
 	QPoint ViewToScreen(const QPointF& p);
+
+	int ViewToScreenX(double x) const;
+	int ViewToScreenY(double x) const;
 
 	void SetBackgroundImage(QImage* img);
 
@@ -253,6 +261,8 @@ private:
 	CGraphData		m_data;
 
 	int		m_chartStyle;
+
+	double	m_hlrng[2];	// range that will be highlighted on background
 
 public:
 	QRectF	m_viewRect;
@@ -383,12 +393,22 @@ class CMathPlotWidget : public CPlotWidget
 	Q_OBJECT
 
 public:
+	// NOTE: Make sure this matches the definition in FEMathIntervalController
+	enum ExtendMode { ZERO, CONSTANT, REPEAT };
+
+public:
 	CMathPlotWidget(QWidget* parent = nullptr);
 	void DrawPlotData(QPainter& p, CPlotData& data) override;
 
 	void SetOrdinate(const std::string& x);
 
 	void SetMath(const QString& txt);
+
+	void setLeftExtendMode(int n);
+	void setRightExtendMode(int n);
+
+private:
+	double value(double x, MVariable* var, int& region);
 
 public slots:
 	void onRegionSelected(QRect rt);
@@ -397,6 +417,9 @@ public slots:
 private:
 	MSimpleExpression	m_math;
 	std::string			m_ord;
+
+	int		m_leftExtend;
+	int		m_rghtExtend;
 };
 
 //=============================================================================
@@ -412,11 +435,25 @@ public:
 	void SetOrdinate(const QString& ord);
 	void SetMath(const QString& txt);
 
+	void showRangeOptions(bool b);
+
+	void setMinMaxRange(double rmin, double rmax);
+	void setLeftExtend(int n);
+	void setRightExtend(int n);
+
 public slots:
 	void onEditingFinished();
+	void onLeftExtendChanged();
+	void onRightExtendChanged();
+	void onRangeMinChanged();
+	void onRangeMaxChanged();
 
 signals:
 	void mathChanged(QString s);
+	void leftExtendChanged(int n);
+	void rightExtendChanged(int n);
+	void minChanged(double vmin);
+	void maxChanged(double vmax);
 
 private:
 	UIMathEditWidget* ui;

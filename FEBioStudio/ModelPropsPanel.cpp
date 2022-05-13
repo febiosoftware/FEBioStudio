@@ -284,7 +284,8 @@ class Ui::CModelPropsPanel
 //		PROPS_MAT,
 		PROPS_FECLASS,
 		PROPS_PLOT,
-		PROPS_MATH
+		PROPS_MATH,
+		PROPS_MATH_INTERVAL
 	};
 
 public:
@@ -298,6 +299,7 @@ public:
 	FEClassEdit*		fec;
 	CCurveEditWidget* plt;
 	CMathEditWidget* math;
+	CMathEditWidget* math2;
 
 	CToolBox* tool;
 	CObjectPropsPanel*	obj;
@@ -326,6 +328,10 @@ public:
 		math  = new CMathEditWidget; math->setObjectName("math");
 		math->SetOrdinate("t");
 
+		math2 = new CMathEditWidget; math->setObjectName("math2");
+		math2->SetOrdinate("t");
+		math2->showRangeOptions(true);
+
 		obj = new CObjectPropsPanel;
 		obj->setObjectName("object");
 
@@ -342,6 +348,7 @@ public:
 		propStack->addWidget(fec);
 		propStack->addWidget(plt);
 		propStack->addWidget(math);
+		propStack->addWidget(math2);
 
 		sel1 = new CItemListSelectionBox;
 		sel1->setObjectName("select1");
@@ -503,6 +510,27 @@ public:
 		std::string s = p->GetStringValue();
 		math->SetMath(QString::fromStdString(s));
 	}
+
+	void showMathIntervalWidget(FSLoadController* plc)
+	{
+		props->Update(0);
+		form->setPropertyList(0);
+		fec->SetFEClass(nullptr, nullptr);
+		propStack->setCurrentIndex(PROPS_MATH_INTERVAL);
+		plt->Clear();
+		plt->SetLoadCurve(nullptr);
+
+		if (plc == nullptr) return;
+
+		Param* p = plc->GetParam("math"); assert(p);
+		std::string s = p->GetStringValue();
+		math2->SetMath(QString::fromStdString(s));
+		math2->setLeftExtend(plc->GetParam("left_extend")->GetIntValue());
+		math2->setRightExtend(plc->GetParam("right_extend")->GetIntValue());
+		vector<double> v = plc->GetParam("interval")->GetArrayDoubleValue();
+		math2->setMinMaxRange(v[0], v[1]);
+	}
+
 
 	void showImagePanel(bool b, Post::CImageModel* img = nullptr, CPropertyList* props = nullptr)
 	{
@@ -752,6 +780,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				ui->showPlotWidget(plc);
 			else if (plc && plc->IsType("math"))
 				ui->showMathWidget(plc);
+			else if (plc && plc->IsType("math-interval"))
+				ui->showMathIntervalWidget(plc);
 			else
 			{
 				ui->setFEClassData(plc, plc->GetFSModel());
@@ -1323,6 +1353,58 @@ void CModelPropsPanel::on_math_mathChanged(QString m)
 	{
 		Param* p = plc->GetParam("math"); assert(p);
 		p->SetStringValue(m.toStdString());
+	}
+}
+
+void CModelPropsPanel::on_math2_mathChanged(QString m)
+{
+	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);
+	if (plc && plc->IsType("math-interval"))
+	{
+		Param* p = plc->GetParam("math"); assert(p);
+		p->SetStringValue(m.toStdString());
+	}
+}
+
+void CModelPropsPanel::on_math2_leftExtendChanged(int n)
+{
+	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);
+	if (plc && plc->IsType("math-interval"))
+	{
+		plc->SetParamInt("left_extend", n);
+	}
+}
+
+void CModelPropsPanel::on_math2_rightExtendChanged(int n)
+{
+	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);
+	if (plc && plc->IsType("math-interval"))
+	{
+		plc->SetParamInt("right_extend", n);
+	}
+}
+
+void CModelPropsPanel::on_math2_minChanged(double vmin)
+{
+	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);
+	if (plc && plc->IsType("math-interval"))
+	{
+		Param* p = plc->GetParam("interval");
+		vector<double> v = p->GetArrayDoubleValue();
+		v[0] = vmin;
+		p->SetArrayDoubleValue(v);
+	}
+}
+
+void CModelPropsPanel::on_math2_maxChanged(double vmax)
+{
+	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);
+	if (plc && plc->IsType("math-interval"))
+	{
+		Param* p = plc->GetParam("interval");
+		vector<double> v = p->GetArrayDoubleValue();
+		v[1] = vmax;
+		p->SetArrayDoubleValue(v);
 	}
 }
 

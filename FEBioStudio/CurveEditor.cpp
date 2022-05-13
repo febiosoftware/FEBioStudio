@@ -672,8 +672,19 @@ void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
 		Param* p = plc->GetParam("math"); assert(p);
 		ui->math->SetMath(QString::fromStdString(p->GetStringValue()));
 	}
-	else panel = 3;
+	else if (plc->IsType("math-interval"))
 	{
+		panel = 3;
+		Param* p = plc->GetParam("math"); assert(p);
+		ui->math2->SetMath(QString::fromStdString(p->GetStringValue()));
+		ui->math2->setLeftExtend(plc->GetParam("left_extend")->GetIntValue());
+		ui->math2->setRightExtend(plc->GetParam("right_extend")->GetIntValue());
+		vector<double> v = plc->GetParam("interval")->GetArrayDoubleValue();
+		ui->math2->setMinMaxRange(v[0], v[1]);
+	}
+	else
+	{
+		panel = 4;
 		ui->props->SetFEClass(plc, m_fem);
 	}
 	ui->stack->setCurrentIndex(panel);
@@ -777,4 +788,49 @@ void CCurveEditor::on_math_mathChanged(QString s)
 
 	std::string t = s.toStdString();
 	p->SetStringValue(t);
+}
+
+void CCurveEditor::on_math2_mathChanged(QString s)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+
+	std::string t = s.toStdString();
+	m_plc->SetParamString("math", t);
+}
+
+void CCurveEditor::on_math2_leftExtendChanged(int n)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+	m_plc->SetParamInt("left_extend", n);
+}
+
+void CCurveEditor::on_math2_rightExtendChanged(int n)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+	m_plc->SetParamInt("right_extend", n);
+}
+
+void CCurveEditor::on_math2_minChanged(double v)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+
+	Param* p = m_plc->GetParam("interval"); assert(p);
+	vector<double> d = p->GetArrayDoubleValue();
+	d[0] = v;
+	p->SetArrayDoubleValue(d);
+}
+
+void CCurveEditor::on_math2_maxChanged(double v)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+
+	Param* p = m_plc->GetParam("interval"); assert(p);
+	vector<double> d = p->GetArrayDoubleValue();
+	d[1] = v;
+	p->SetArrayDoubleValue(d);
 }
