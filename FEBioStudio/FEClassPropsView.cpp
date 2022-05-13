@@ -96,6 +96,25 @@ public:
 
 		Item* addChild(FSCoreBase* pc, int paramId, int propId, int index)
 		{
+			// check for a special case first
+			if (pc && (paramId >= 0) && (index == -1))
+			{
+				Param& p = pc->GetParam(paramId);
+				if ((p.GetParamType() == Param_STD_VECTOR_INT) && (p.GetEnumNames()))
+				{
+					FSModel* fem = m_model->m_fem;
+					QStringList keys = GetEnumValues(fem, p.GetEnumNames());
+					for (int i=0; i<keys.size(); ++i)
+					{
+						Item* item = new Item(pc, paramId, -1, i, (int)m_children.size());
+						item->m_model = m_model; assert(m_model);
+						item->m_parent = this;
+						m_children.push_back(item);
+					}
+				}
+				return nullptr;
+			}
+
 			Item* item = new Item(pc, paramId, propId, index, (int)m_children.size());
 			item->m_model = m_model; assert(m_model);
 			item->m_parent = this;
@@ -221,7 +240,16 @@ public:
 							name = QString::fromStdString(sname);
 						}
 						else
-							name = QString("[%1]").arg(m_index);
+						{
+							if ((p.GetParamType() == Param_STD_VECTOR_INT) && (p.GetEnumNames()))
+							{
+								FSModel* fem = m_model->m_fem;
+								QStringList keys = GetEnumValues(fem, p.GetEnumNames());
+								name = keys.at(m_index);
+							}
+							else 
+								name = QString("[%1]").arg(m_index);
+						}
 
 						return name;
 					}
@@ -342,13 +370,29 @@ public:
 					case Param_STD_VECTOR_INT:
 					{
 						std::vector<int> v = p.val<std::vector<int> >();
-						QString s;
-						for (int i = 0; i < v.size(); ++i)
+						if ((m_index == -1) || (p.GetEnumNames() == nullptr))
 						{
-							s += QString::number(v[i]);
-							if (i < v.size() - 1) s += QString(",");
+							QString s;
+							for (int i = 0; i < v.size(); ++i)
+							{
+								s += QString::number(v[i]);
+								if (i < v.size() - 1) s += QString(",");
+							}
+							return s;
 						}
-						return s;
+						else if ((m_index != -1) && (p.GetEnumNames()))
+						{
+							bool bfound = false;
+							for (int i = 0; i < v.size(); ++i)
+							{
+								if (v[i] == m_index)
+								{
+									bfound = true;
+									break;
+								}
+							}
+							return (bfound ? "Yes" : "No");
+						}
 					}
 					break;
 					case Param_STD_VECTOR_DOUBLE:
@@ -1100,28 +1144,51 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				{
 					if (p->GetEnumNames())
 					{
-						QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
+						int index = item->m_index;
 
-						int n = enumValues.size();
-						QStandardItemModel* mdl = new QStandardItemModel(n, 1);
-						for (int i = 0; i < n; ++i)
+						if (index == -1)
 						{
-							QStandardItem* item = new QStandardItem(enumValues.at(i));
-							item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-							item->setData(Qt::Unchecked, Qt::CheckStateRole);
-							mdl->setItem(i, item);
-						}
+							QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
 
-						std::vector<int> v = p->val<std::vector<int> >();
-						for (int i = 0; i < v.size(); ++i)
+							int n = enumValues.size();
+							QStandardItemModel* mdl = new QStandardItemModel(n, 1);
+							for (int i = 0; i < n; ++i)
+							{
+								QStandardItem* item = new QStandardItem(enumValues.at(i));
+								item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+								item->setData(Qt::Unchecked, Qt::CheckStateRole);
+								mdl->setItem(i, item);
+							}
+
+							std::vector<int> v = p->val<std::vector<int> >();
+							for (int i = 0; i < v.size(); ++i)
+							{
+								QStandardItem* it = mdl->item(v[i]);
+								it->setData(Qt::Checked, Qt::CheckStateRole);
+							}
+
+							QComboBox* box = new QComboBox(parent);
+							box->setModel(mdl);
+							return box;
+						}
+						else
 						{
-							QStandardItem* it = mdl->item(v[i]);
-							it->setData(Qt::Checked, Qt::CheckStateRole);
-						}
+							std::vector<int> v = p->val<std::vector<int> >();
+							bool bfound = false;
+							for (int i = 0; i < v.size(); ++i)
+							{
+								if (v[i] == index)
+								{
+									bfound = true;
+									break;
+								}
+							}
 
-						QComboBox* box = new QComboBox(parent);
-						box->setModel(mdl);
-						return box;
+							QComboBox* box = new QComboBox(parent);
+							box->addItems(QStringList() << "No" << "Yes");
+							box->setCurrentIndex(bfound ? 1 : 0);
+							return box;
+						}
 					}
 				}
 				break;
@@ -1247,17 +1314,53 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 			Param* p = item->parameter();
 			if (p && (p->GetParamType() == Param_STD_VECTOR_INT))
 			{
-				QStandardItemModel* m = dynamic_cast<QStandardItemModel*>(pw->model());
-				std::vector<int> v;
-				for (int i = 0; i < m->rowCount(); ++i)
+				int index = item->m_index;
+				if (index == -1)
 				{
-					QStandardItem* it = m->item(i);
-					if (it->checkState() == Qt::Checked)
+					QStandardItemModel* m = dynamic_cast<QStandardItemModel*>(pw->model());
+					std::vector<int> v;
+					for (int i = 0; i < m->rowCount(); ++i)
 					{
-						v.push_back(i);
+						QStandardItem* it = m->item(i);
+						if (it->checkState() == Qt::Checked)
+						{
+							v.push_back(i);
+						}
 					}
+					p->val<std::vector<int> >() = v;
 				}
-				p->val<std::vector<int> >() = v;
+				else
+				{
+					std::vector<int> v = p->val<std::vector<int> >();
+					bool b = (pw->currentIndex() == 1);
+					if (b)
+					{
+						// add index
+						int m = 0;
+						for (int i = 0; i < v.size(); ++i, ++m)
+						{
+							if (v[i] == index) return;
+							if (v[i] > index) {
+								m = i;
+								break;
+							}
+						}
+						v.insert(v.begin() + m, index);
+					}
+					else
+					{
+						// remove index
+						for (int i = 0; i < v.size(); ++i)
+						{
+							if (v[i] == index)
+							{
+								v.erase(v.begin() + i);
+								break;
+							}
+						}
+					}
+					p->val<std::vector<int> >() = v;
+				}
 				return;
 			}
 			else if (p && (p->GetEnumNames() || (p->GetParamType() == Param_BOOL)))
