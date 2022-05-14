@@ -1678,7 +1678,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Add Rigid Constraint ...", wnd, SLOT(on_actionAddRigidBC_triggered()));
 		menu.addAction("Add Rigid Initial Condition ...", wnd, SLOT(on_actionAddRigidIC_triggered()));
 		menu.addAction("Add Rigid Connector ...", wnd, SLOT(on_actionAddRigidConnector_triggered()));
-		menu.addAction("Add Rigid Load ...", this, SLOT(on_actionAddRigidLoad_triggered()));
+		menu.addAction("Add Rigid Load ...", wnd, SLOT(on_actionAddRigidLoad_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidComponents()));
 		break;

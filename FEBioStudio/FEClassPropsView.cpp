@@ -111,8 +111,8 @@ public:
 						item->m_parent = this;
 						m_children.push_back(item);
 					}
+					return nullptr;
 				}
-				return nullptr;
 			}
 
 			Item* item = new Item(pc, paramId, propId, index, (int)m_children.size());
