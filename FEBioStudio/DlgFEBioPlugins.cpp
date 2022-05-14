@@ -217,6 +217,7 @@ void CDlgFEBioPlugins::onLoadPlugin()
 	QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
 	if (fileName.isEmpty() == false)
 	{
+		fileName = QDir::toNativeSeparators(fileName);
 		LoadPlugin(fileName);
 	}
 }
