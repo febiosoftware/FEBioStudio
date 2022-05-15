@@ -916,21 +916,25 @@ public:
 			QColor c;
 			Shape s = Shape::Circle;
 			bool bicon = true;
-			if (item->isParameter() && (item->m_index == -1)) 
+			if (item->isParameter()) 
 			{ 
-				Param* p = item->parameter();
-				if (p)
+				if (item->m_index == -1)
 				{
-					if (p->GetLoadCurveID() > 0)
+					Param* p = item->parameter();
+					if (p)
 					{
-						assert(p->IsVolatile());
-						c = QColor::fromRgb(0, 255, 0);
+						if (p->GetLoadCurveID() > 0)
+						{
+							assert(p->IsVolatile());
+							c = QColor::fromRgb(0, 255, 0);
+						}
+						else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
+						else bicon = false;
 					}
-					else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
-					else bicon = false;
+					else c = QColor::fromRgb(0, 0, 0);
+					s = Shape::Circle;
 				}
-				else c = QColor::fromRgb(0, 0, 0); 
-				s = Shape::Circle; 
+				else bicon = false;
 			}
 			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
 			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
