@@ -858,11 +858,26 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 		}
 		else if (pc->Type() == FE_RIGID_FORCE)
 		{
-			FSRigidLoad* pl = FEBio::CreateRigidLoad("rigid_force", fem);
-			copyParameters(log, pl, pc);
-			pl->SetMaterialID(pc->GetMaterialID());
-			pl->SetName(pc->GetName());
-			newStep.AddRigidLoad(pl);
+			FSRigidForce* pf = dynamic_cast<FSRigidForce*>(pc);
+
+			int dof = pf->GetDOF();
+			if (dof < 3)
+			{
+				FSRigidLoad* pl = FEBio::CreateRigidLoad("rigid_force", fem);
+				copyParameters(log, pl, pc);
+				pl->SetMaterialID(pc->GetMaterialID());
+				pl->SetName(pc->GetName());
+				newStep.AddRigidLoad(pl);
+			}
+			else
+			{
+				FSRigidLoad* pl = FEBio::CreateRigidLoad("rigid_moment", fem);
+				copyParameters(log, pl, pc);
+				pl->SetParamInt("dof", dof - 3); // NOTE: This is necessary since dof is zero-based!
+				pl->SetMaterialID(pc->GetMaterialID());
+				pl->SetName(pc->GetName());
+				newStep.AddRigidLoad(pl);
+			}
 		}
 		else if (pc->Type() == FE_RIGID_DISPLACEMENT)
 		{

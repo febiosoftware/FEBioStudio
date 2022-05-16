@@ -2913,22 +2913,85 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 	else if (strcmp(sztype, "prescribe") == 0) sztype = "rigid_prescribed";
 	else if (strcmp(sztype, "force") == 0)
 	{
-		// This actually is a rigid load
-		sztype = "rigid_force";
-
 		// get the name 
 		stringstream ss;
 		ss << "RigidLoad" << CountLoads<FSRigidLoad>(fem) + 1;
 		std::string name = tag.AttributeValue("name", ss.str());
 
-		// allocate class
-		FSRigidLoad* pi = FEBio::CreateRigidLoad(sztype, &fem);
-		if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+		// we need to decide whether we want to apply a force or a moment, since these
+		// are now two separate classes. Unfortunately, this means we first need to 
+		// read all parameters, before we can allocate the correct class. 
+		int rb = -1;
+		int ntype = 0;
+		int bc = -1;
+		double val = 0.;
+		bool brel = false;
+		int lc = -1;
+		++tag;
+		do
+		{
+			if (tag == "rb") tag.value(rb);
+			else if (tag == "value")
+			{
+				tag.value(val);
+				const char* szlc = tag.AttributeValue("lc", true);
+				if (szlc) lc = atoi(szlc) - 1;
+			}
+			else if (tag == "load_type") tag.value(ntype);
+			else if (tag == "relative") tag.value(brel);
+			else if (tag == "dof")
+			{
+				const char* sz = tag.szvalue();
+				if ((strcmp(sz, "Rx") == 0) || (strcmp(sz, "0") == 0)) bc = 0;
+				if ((strcmp(sz, "Ry") == 0) || (strcmp(sz, "1") == 0)) bc = 1;
+				if ((strcmp(sz, "Rz") == 0) || (strcmp(sz, "2") == 0)) bc = 2;
+				if ((strcmp(sz, "Ru") == 0) || (strcmp(sz, "3") == 0)) bc = 3;
+				if ((strcmp(sz, "Rv") == 0) || (strcmp(sz, "4") == 0)) bc = 4;
+				if ((strcmp(sz, "Rw") == 0) || (strcmp(sz, "5") == 0)) bc = 5;
+
+				if (bc < 0)
+				{
+					throw XMLReader::InvalidValue(tag);
+				}
+			}
+
+			++tag;
+		} while (!tag.isend());
+
+		FSRigidLoad* pi = nullptr;
+		if (bc < 3)
+		{
+			// allocate class
+			pi = FEBio::CreateRigidLoad("rigid_force", &fem);
+			if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+			pi->SetParamInt  ("load_type", ntype);
+			pi->SetParamInt  ("rb", rb);
+			pi->SetParamInt  ("dof", bc);
+			pi->SetParamFloat("value", val);
+			pi->SetParamBool ("relative", brel);
+		}
+		else
+		{
+			// allocate class
+			pi = FEBio::CreateRigidLoad("rigid_moment", &fem);
+			if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+			pi->SetParamInt  ("rb", rb);
+			pi->SetParamInt  ("dof", bc - 3);
+			pi->SetParamFloat("value", val);
+			pi->SetParamBool ("relative", brel);
+		}
+
+		if (lc >= 0)
+		{
+			Param* pv = pi->GetParam("value");
+			febio.AddParamCurve(pv, lc);
+		}
 
 		pi->SetName(name);
 		pstep->AddRigidLoad(pi);
 
-		ReadParameters(*pi, tag);
 		return;
 	}
 	else if ((strcmp(sztype, "initial_rigid_velocity") == 0) ||
