@@ -56,6 +56,8 @@ public:
 	QToolButton* tb;
 	QComboBox* cat;
 
+	QWidget* nameAndCategory;
+
 	int		m_superID;
 	int		m_baseClassID;
 	bool	m_modDepends;
@@ -88,6 +90,9 @@ public:
 		}
 		form->addRow("Category:", cat = new QComboBox());
 
+		nameAndCategory = new QWidget;
+		nameAndCategory->setLayout(form);
+
 		QVBoxLayout* layout = new QVBoxLayout;
 
 		QHBoxLayout* h = new QHBoxLayout;
@@ -96,7 +101,7 @@ public:
 		flt->setPlaceholderText("enter filter text");
 		h->addWidget(tb = new QToolButton); tb->setText("Aa"); tb->setToolTip("Match case"); tb->setCheckable(true);
 		
-		layout->addLayout(form);
+		layout->addWidget(nameAndCategory);
 		layout->addLayout(h);
 		layout->addWidget(type);
 
@@ -157,6 +162,11 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 	}
 
 	Update();
+}
+
+void CDlgAddPhysicsItem::ShowNameAndCategoryFields(bool b)
+{
+	ui->nameAndCategory->setVisible(b);
 }
 
 void CDlgAddPhysicsItem::Update()

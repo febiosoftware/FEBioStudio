@@ -41,6 +41,8 @@ public:
 	int GetStep();
 	int GetClassID();
 
+	void ShowNameAndCategoryFields(bool b);
+
 protected:
 	void SetURL();
 
