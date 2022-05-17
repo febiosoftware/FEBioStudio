@@ -44,7 +44,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
 #include <QSpinBox>
-#include <QInputDialog>
+#include <QMessageBox>
 #include <FSCore/FSCore.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
@@ -62,7 +62,7 @@ CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* pa
 	if (pc) addItem(pc->GetTypeString(), pc->GetClassID());
 	else addItem("(none)", -1);
 	addItem("<select...>", -3);
-	addItem("<remove>", -2);
+	addItem("<remove...>", -2);
 	if (pc == nullptr) setCurrentIndex(-1);
 
 	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onSelectionChanged(int)));
@@ -71,7 +71,16 @@ CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* pa
 void CPropertySelector::onSelectionChanged(int n)
 {
 	int m = currentData().toInt();
-	if (m == -3)
+	if (m == -2)
+	{
+		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		if (QMessageBox::question(this, title, "Are you sure you want to remove this property?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+		{
+			emit currentDataChanged(n);
+		}
+		else setCurrentIndex(0);
+	}
+	else if (m == -3)
 	{
 		int superID = m_pp->GetSuperClassID();
 		int baseID = m_pp->GetPropertyType();
