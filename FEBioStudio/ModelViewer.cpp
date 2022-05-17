@@ -1085,7 +1085,7 @@ void CModelViewer::OnChangeMaterial()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, prj, false, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, &fem, false, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);

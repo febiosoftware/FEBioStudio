@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
 #include <FSCore/FSCore.h>
 #include "HelpUrl.h"
 
@@ -110,7 +111,7 @@ public:
 	}
 };
 
-CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent)
+CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, QWidget* parent)
 	: CHelpDialog(parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
@@ -124,14 +125,14 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 	// add the steps
 	if (ui->step)
 	{
-		FSModel& fem = prj.GetFSModel();
-		for (int i = 0; i < fem.Steps(); ++i)
+		assert(fem);
+		for (int i = 0; i < fem->Steps(); ++i)
 		{
-			ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+			ui->step->addItem(QString::fromStdString(fem->GetStep(i)->GetName()));
 		}
 	}
 
-	m_module = prj.GetModule();
+	m_module = FEBio::GetActiveModule();
 
 	unsigned int searchFlags = (ui->m_modDepends ? FEBio::ClassSearchFlags::IncludeModuleDependencies : 0);
 

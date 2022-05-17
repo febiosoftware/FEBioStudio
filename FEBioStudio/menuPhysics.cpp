@@ -62,7 +62,7 @@ void CMainWindow::on_actionAddBC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, -1, prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, -1, &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSBoundaryCondition* pbc = FEBio::CreateFEBioClass<FSBoundaryCondition>(dlg.GetClassID(), &fem); assert(pbc);
@@ -112,7 +112,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Nodal Load", FELOAD_ID, FEBio::GetBaseClassIndex("FENodalLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Nodal Load", FELOAD_ID, FEBio::GetBaseClassIndex("FENodalLoad"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSNodalLoad* pnl = FEBio::CreateFEBioClass<FSNodalLoad>(dlg.GetClassID(), &fem); assert(pnl);
@@ -159,7 +159,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Surface Load", FELOAD_ID, FEBio::GetBaseClassIndex("FESurfaceLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Surface Load", FELOAD_ID, FEBio::GetBaseClassIndex("FESurfaceLoad"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSSurfaceLoad* psl = FEBio::CreateFEBioClass<FSSurfaceLoad>(dlg.GetClassID(), &fem); assert(psl);
@@ -203,7 +203,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Body Load", FELOAD_ID, FEBio::GetBaseClassIndex("FEBodyLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Body Load", FELOAD_ID, FEBio::GetBaseClassIndex("FEBodyLoad"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSBodyLoad* pbl = FEBio::CreateFEBioClass<FSBodyLoad>(dlg.GetClassID(), &fem); assert(pbl);
@@ -230,7 +230,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Rigid Load", FELOAD_ID, FEBio::GetBaseClassIndex("FERigidLoad"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Rigid Load", FELOAD_ID, FEBio::GetBaseClassIndex("FERigidLoad"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSRigidLoad* prl = FEBio::CreateFEBioClass<FSRigidLoad>(dlg.GetClassID(), &fem); assert(prl);
@@ -257,7 +257,7 @@ void CMainWindow::on_actionAddIC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, -1, prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, -1, &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSInitialCondition* pic = FEBio::CreateFEBioClass<FSInitialCondition>(dlg.GetClassID(), &fem); assert(pic);
@@ -310,7 +310,7 @@ void CMainWindow::on_actionAddContact_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, -1, prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSInterface* pi = FEBio::CreateFEBioClass<FSInterface>(dlg.GetClassID(), &fem); assert(pi);
@@ -362,7 +362,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FENLConstraint"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FENLConstraint"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSModelConstraint* pi = FEBio::CreateFEBioClass<FSModelConstraint>(dlg.GetClassID(), &fem); assert(pi);
@@ -391,7 +391,7 @@ void CMainWindow::OnAddSurfaceConstraint()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Surface Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FESurfaceConstraint"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Surface Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FESurfaceConstraint"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSSurfaceConstraint* pi = FEBio::CreateFEBioClass<FSSurfaceConstraint>(dlg.GetClassID(), &fem); assert(pi);
@@ -437,7 +437,7 @@ void CMainWindow::OnAddBodyConstraint()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Body Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FEBodyConstraint"), prj, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Body Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FEBodyConstraint"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSBodyConstraint* pi = FEBio::CreateFEBioClass<FSBodyConstraint>(dlg.GetClassID(), &fem); assert(pi);
@@ -465,10 +465,10 @@ void CMainWindow::on_actionAddRigidBC_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	CDlgAddPhysicsItem dlg("Add Rigid Constraint", FEBC_ID, FEBio::GetBaseClassIndex("FERigidBC"), prj, true, true, this);
+	FSModel* fem = &prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Rigid Constraint", FEBC_ID, FEBio::GetBaseClassIndex("FERigidBC"), fem, true, true, this);
 	if (dlg.exec())
 	{
-		FSModel* fem = &prj.GetFSModel();
 		FSRigidBC* prc = FEBio::CreateFEBioClass<FSRigidBC>(dlg.GetClassID(), fem);
 		assert(prc);
 		if (prc)
@@ -492,10 +492,10 @@ void CMainWindow::on_actionAddRigidIC_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	CDlgAddPhysicsItem dlg("Add Rigid Initial Condition", FEIC_ID, FEBio::GetBaseClassIndex("FERigidIC"), prj, true, true, this);
+	FSModel* fem = &prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Rigid Initial Condition", FEIC_ID, FEBio::GetBaseClassIndex("FERigidIC"), fem, true, true, this);
 	if (dlg.exec())
 	{
-		FSModel* fem = &prj.GetFSModel();
 		FSRigidIC* prc = FEBio::CreateFEBioClass<FSRigidIC>(dlg.GetClassID(), fem);
 		assert(prc);
 		if (prc)
@@ -521,11 +521,11 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-//	CDlgAddRigidConnector dlg(prj, this);
-	CDlgAddPhysicsItem dlg("Add Rigid Connector", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FERigidConnector"), prj, true, true, this);
+	FSModel* fem = doc->GetFSModel();
+	//	CDlgAddRigidConnector dlg(prj, this);
+	CDlgAddPhysicsItem dlg("Add Rigid Connector", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FERigidConnector"), fem, true, true, this);
 	if (dlg.exec())
 	{
-		FSModel* fem = doc->GetFSModel();
 		FSRigidConnector* pc = FEBio::CreateFEBioClass<FSRigidConnector>(dlg.GetClassID(), fem);
 		assert(pc);
 		if (pc)
@@ -558,7 +558,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, prj, true, false, this);
+	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, &fem, true, false, this);
 	if (dlg.exec())
 	{
 		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
@@ -589,10 +589,10 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FEMESHADAPTOR_ID, -1, prj, true, true, this);
+	FSModel* fem = &prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Mesh Adaptor", FEMESHADAPTOR_ID, -1, fem, true, true, this);
 	if (dlg.exec())
 	{
-		FSModel* fem = &prj.GetFSModel();
 		FSMeshAdaptor* pma = FEBio::CreateFEBioClass<FSMeshAdaptor>(dlg.GetClassID(), fem); assert(pma);
 		if (pma)
 		{
@@ -615,10 +615,10 @@ void CMainWindow::on_actionAddLoadController_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
-	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, -1, prj, true, false, this);
+	FSModel* fem = &prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, -1, fem, true, false, this);
 	if (dlg.exec())
 	{
-		FSModel* fem = &prj.GetFSModel();
 		FSLoadController* plc = FEBio::CreateFEBioClass<FSLoadController>(dlg.GetClassID(), fem); assert(plc);
 		if (plc)
 		{
@@ -643,11 +643,11 @@ void CMainWindow::on_actionAddMeshData_triggered()
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
+	FSModel* fem = &prj.GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Mesh Data", FEMESHDATAGENERATOR_ID, -1, prj, true, false, this);
+	CDlgAddPhysicsItem dlg("Add Mesh Data", FEMESHDATAGENERATOR_ID, -1, fem, true, false, this);
 	if (dlg.exec())
 	{
-		FSModel* fem = &prj.GetFSModel();
 		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);
 		if (pmd)
 		{
