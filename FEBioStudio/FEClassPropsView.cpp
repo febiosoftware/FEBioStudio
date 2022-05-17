@@ -1357,6 +1357,7 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 		{
 			int n = ps->currentData().toInt();
 			model->setData(index, n);
+			return;
 		}
 	}
 	else if (dynamic_cast<QComboBox*>(editor))
