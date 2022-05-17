@@ -36,6 +36,24 @@ class Param;
 class FSProperty;
 class CMainWindow;
 
+class CPropertySelector : public QComboBox
+{
+	Q_OBJECT
+
+public:
+	CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* parent = nullptr);
+
+public slots:
+	void onSelectionChanged(int n);
+
+signals:
+	void currentDataChanged(int n);
+
+private:
+	FSCoreBase* m_pc;
+	FSProperty* m_pp;
+};
+
 class FEClassPropsDelegate : public QStyledItemDelegate
 {
 	Q_OBJECT

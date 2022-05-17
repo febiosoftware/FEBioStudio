@@ -44,13 +44,53 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
 #include <QSpinBox>
+#include <QInputDialog>
 #include <FSCore/FSCore.h>
 #include "SelectionBox.h"
+#include "DlgAddPhysicsItem.h"
 using namespace std;
 
 // in MaterialPropsView.cpp
 QStringList GetEnumValues(FSModel* fem, const char* ch);
 
+//=================================================================================
+CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* parent) : QComboBox(parent)
+{
+	m_pc = pc;
+	m_pp = pp;
+
+	if (pc) addItem(pc->GetTypeString(), pc->GetClassID());
+	else addItem("(none)", -1);
+	addItem("<select...>", -3);
+	addItem("<remove>", -2);
+	if (pc == nullptr) setCurrentIndex(-1);
+
+	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onSelectionChanged(int)));
+}
+
+void CPropertySelector::onSelectionChanged(int n)
+{
+	int m = currentData().toInt();
+	if (m == -3)
+	{
+		int superID = m_pp->GetSuperClassID();
+		int baseID = m_pp->GetPropertyType();
+		QString title = QString("Add %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		CDlgAddPhysicsItem dlg(title, superID, baseID, nullptr, true, false, this);
+		dlg.ShowNameAndCategoryFields(false);
+		if (dlg.exec())
+		{
+			int n = dlg.GetClassID();
+			this->setItemData(0, n);
+			this->setItemText(0, FEBio::GetClassInfo(n).sztype);
+			setCurrentIndex(0);
+
+			emit currentDataChanged(n);
+		}
+	}
+}
+
+//=================================================================================
 class FEClassPropsModel : public QAbstractItemModel
 {
 public:
@@ -1253,10 +1293,10 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 
 				int nclass = prop.GetSuperClassID();
 
-				QComboBox* pc = new QComboBox(parent);
+				CPropertySelector* pc = new CPropertySelector(&prop, pcbi, parent);
 
 				// fill the combo box
-				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetPropertyType(), true);
+/*				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetPropertyType(), true);
 				pc->clear();
 				int classes = classInfo.size();
 				for (int i = 0; i < classes; ++i)
@@ -1273,8 +1313,8 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				// see if the current option is in the list and selected it if so
 				int n = (pcbi ? pc->findText(pcbi->GetTypeString()) : -1);
 				pc->setCurrentIndex(n);
-
-				QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+*/
+				QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
 
 				return pc;
 			}
@@ -1309,7 +1349,17 @@ void FEClassPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& ind
 void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
 	if (!index.isValid()) return;
-	if (dynamic_cast<QComboBox*>(editor))
+	if (dynamic_cast<CPropertySelector*>(editor))
+	{
+		CPropertySelector* ps = dynamic_cast<CPropertySelector*>(editor);
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+		if (item->isProperty())
+		{
+			int n = ps->currentData().toInt();
+			model->setData(index, n);
+		}
+	}
+	else if (dynamic_cast<QComboBox*>(editor))
 	{
 		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
 		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
@@ -1397,7 +1447,7 @@ FEClassPropsView::FEClassPropsView(QWidget* parent) : QTreeView(parent)
 	setUniformRowHeights(true);
 	setEditTriggers(QAbstractItemView::AllEditTriggers);
 
-	setItemDelegate(new FEClassPropsDelegate);
+	setItemDelegate(new FEClassPropsDelegate(this));
 	m_model = new FEClassPropsModel;
 	setModel(m_model);
 
