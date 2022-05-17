@@ -29,7 +29,6 @@ SOFTWARE.*/
 
 #define UNSELECTED_HELP "unselected_help"
 
-class FSProject;
 class QLayout;
 
 namespace Ui {
@@ -41,7 +40,7 @@ class CHelpDialog : public QDialog
 	Q_OBJECT
 
 public:
-	CHelpDialog(FSProject& prj, QWidget* parent);
+	CHelpDialog(QWidget* parent);
 	virtual ~CHelpDialog();
 
 protected slots:

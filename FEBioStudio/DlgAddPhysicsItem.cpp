@@ -111,7 +111,7 @@ public:
 };
 
 CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent)
-	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
+	: CHelpDialog(parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
 	setMinimumSize(600, 400);

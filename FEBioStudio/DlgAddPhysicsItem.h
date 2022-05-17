@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "HelpDialog.h"
 
 class UIDlgAddPhysicsItem;
+class FSProject;
 
 class CDlgAddPhysicsItem : public CHelpDialog
 {

@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include "WebDefines.h"
 #include "FEBioStudio.h"
 #include "MainWindow.h"
+#include <FEBioLink/FEBioModule.h>
 
 class Ui::CHelpDialog
 {
@@ -69,11 +70,11 @@ public:
 };
 
 
-CHelpDialog::CHelpDialog(FSProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog), m_url(UNSELECTED_HELP)
+CHelpDialog::CHelpDialog(QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog), m_url(UNSELECTED_HELP)
 {
 	ui->setupUi(this);
 
-	m_module = prj.GetModule();
+	m_module = FEBio::GetActiveModule();
 }
 
 CHelpDialog::~CHelpDialog() { delete ui; }

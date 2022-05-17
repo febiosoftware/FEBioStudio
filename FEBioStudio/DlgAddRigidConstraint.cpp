@@ -77,7 +77,7 @@ public:
 	}
 };
 
-CDlgAddRigidConstraint::CDlgAddRigidConstraint(FSProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CDlgAddRigidConstraint)
+CDlgAddRigidConstraint::CDlgAddRigidConstraint(FSProject& prj, QWidget* parent) : CHelpDialog(parent), ui(new Ui::CDlgAddRigidConstraint)
 {
 	setWindowTitle("Add Rigid Constraint");
 
