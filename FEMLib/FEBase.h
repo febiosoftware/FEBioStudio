@@ -22,7 +22,6 @@ public:
 		REFERENCE  = 0x04,		// references another class in the model
 		FIXED      = 0x08,		// fixed properties are fixed type class members
 		TOPLEVEL   = 0x10,		// This is a "top-level" property. 
-		RESTRICTED = 0x20		// This is a "restricted" property
 	};
 
 public:

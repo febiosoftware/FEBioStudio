@@ -339,7 +339,6 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 	PB.SetActiveGroup(nullptr);
 
 	bool isTopLevel   = (flags & FEProperty::TopLevel);
-	bool isRestricted = (flags & FEProperty::Restricted);
 
 	const int params = PL.Parameters();
 	FEParamIterator pi = PL.first();
@@ -483,69 +482,66 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 	}
 
 	// map the properties
-	if (isRestricted == false)
+	for (int i = 0; i < feb->PropertyClasses(); ++i)
 	{
-		for (int i = 0; i < feb->PropertyClasses(); ++i)
+		FEProperty& prop = *feb->PropertyClass(i);
+
+		int maxSize = (prop.IsArray() ? 0 : 1);
+		int baseClassId = (prop.GetClassName() ? baseClassIndex(prop.GetClassName()) : -1);
+		FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
+
+		fsp->SetFlags(prop.Flags());
+
+		fsp->SetLongName(prop.GetLongName());
+
+		fsp->SetSuperClassID(prop.GetSuperClassID());
+		if (prop.IsRequired())
+			fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
+		if (prop.IsPreferred())
+			fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
+
+		// set the (optional) default type
+		if (prop.GetDefaultType())
+			fsp->SetDefaultType(prop.GetDefaultType());
+
+		// for solvers we need to set the default type to the module name
+		if (prop.GetSuperClassID() == FESOLVER_ID)
 		{
-			FEProperty& prop = *feb->PropertyClass(i);
+			int activeMod = GetActiveModule(); assert(activeMod >= 0);
+			const char* szmod = GetModuleName(activeMod); assert(szmod);
+			fsp->SetDefaultType(szmod);
+		}
 
-			int maxSize = (prop.IsArray() ? 0 : 1);
-			int baseClassId = (prop.GetClassName() ? baseClassIndex(prop.GetClassName()) : -1);
-			FSProperty* fsp = po->AddProperty(prop.GetName(), baseClassId, maxSize); assert(fsp);
+		// handle mesh selection properties differently
+		if (prop.GetSuperClassID() == FESURFACE_ID)
+		{
+			FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+			pms->SetMeshItemType(FE_FACE_FLAG);
+			pms->SetSuperClassID(FESURFACE_ID);
+			fsp->AddComponent(pms);
+		}
+		/*		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
+				{
+					FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
+					if (strcmp(prop.GetName(), "node_set") == 0) pms->SetMeshItemType(FE_NODE_FLAG);
 
-			fsp->SetFlags(prop.Flags());
+					// TODO: We need to integrate these IDs.
+					fsp->SetSuperClassID(FEDOMAIN_ID);
+					pms->SetSuperClassID(FEDOMAIN_ID);
+					fsp->AddComponent(pms);
+				}
+		*/		else if (prop.size() != 0)
+		{
+			FECoreBase* pci = prop.get(0);
 
-			fsp->SetLongName(prop.GetLongName());
+			// make sure the property is either a FECLASS_ID, which is not allocated through the kernel
+			// or the super IDs match.
+			assert((prop.GetSuperClassID() == FECLASS_ID) || (pci->GetSuperClassID() == prop.GetSuperClassID()));
 
-			fsp->SetSuperClassID(prop.GetSuperClassID());
-			if (prop.IsRequired())
-				fsp->SetFlags(fsp->GetFlags() | FSProperty::REQUIRED);
-			if (prop.IsPreferred())
-				fsp->SetFlags(fsp->GetFlags() | FSProperty::PREFERRED);
-
-			// set the (optional) default type
-			if (prop.GetDefaultType())
-				fsp->SetDefaultType(prop.GetDefaultType());
-
-			// for solvers we need to set the default type to the module name
-			if (prop.GetSuperClassID() == FESOLVER_ID)
-			{
-				int activeMod = GetActiveModule(); assert(activeMod >= 0);
-				const char* szmod = GetModuleName(activeMod); assert(szmod);
-				fsp->SetDefaultType(szmod);
-			}
-
-			// handle mesh selection properties differently
-			if (prop.GetSuperClassID() == FESURFACE_ID)
-			{
-				FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
-				pms->SetMeshItemType(FE_FACE_FLAG);
-				pms->SetSuperClassID(FESURFACE_ID);
-				fsp->AddComponent(pms);
-			}
-			/*		else if (prop.GetSuperClassID() == FEITEMLIST_ID)
-					{
-						FSMeshSelection* pms = new FSMeshSelection(po->GetFSModel());
-						if (strcmp(prop.GetName(), "node_set") == 0) pms->SetMeshItemType(FE_NODE_FLAG);
-
-						// TODO: We need to integrate these IDs.
-						fsp->SetSuperClassID(FEDOMAIN_ID);
-						pms->SetSuperClassID(FEDOMAIN_ID);
-						fsp->AddComponent(pms);
-					}
-			*/		else if (prop.size() != 0)
-			{
-				FECoreBase* pci = prop.get(0);
-
-				// make sure the property is either a FECLASS_ID, which is not allocated through the kernel
-				// or the super IDs match.
-				assert((prop.GetSuperClassID() == FECLASS_ID) || (pci->GetSuperClassID() == prop.GetSuperClassID()));
-
-				// allocate the model component
-				FSModelComponent* pmi = CreateFSClass(prop.GetSuperClassID(), -1, nullptr); assert(pmi);
-				BuildModelComponent(pmi, pci, prop.Flags());
-				fsp->AddComponent(pmi);
-			}
+			// allocate the model component
+			FSModelComponent* pmi = CreateFSClass(prop.GetSuperClassID(), -1, nullptr); assert(pmi);
+			BuildModelComponent(pmi, pci, prop.Flags());
+			fsp->AddComponent(pmi);
 		}
 	}
 
