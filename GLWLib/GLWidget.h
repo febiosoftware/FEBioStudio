@@ -132,6 +132,8 @@ public:
 
 public:
 	static void set_base_color(GLColor c) { m_base = c; }
+	static void set_default_font(const QFont& font) { m_defaultFont = font; }
+	static const QFont& get_default_font() { return m_defaultFont; }
 
 public:
 	static void clearStringTable();
@@ -164,6 +166,8 @@ protected:
 	static GLWidget* m_pfocus;	// the widget that has the focus
 
 	static	GLColor	m_base;	// base color
+
+	static QFont	m_defaultFont;
 
 	bool	m_bshow;	// show the widget or not
 
