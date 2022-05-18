@@ -1647,6 +1647,9 @@ void CGLView::paintGL()
 //-----------------------------------------------------------------------------
 void CGLView::RenderModelView()
 {
+	// We don't need this for rendering model docs
+	glDisable(GL_COLOR_MATERIAL);
+
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nitem = pdoc->GetItemMode();
@@ -1769,6 +1772,9 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 {
 	if (postDoc && postDoc->IsValid())
 	{
+		// We need this for rendering post docs
+		glEnable(GL_COLOR_MATERIAL);
+
 		Post::CGLModel* glm = postDoc->GetGLModel();
 
 		CGLCamera& cam = postDoc->GetView()->GetCamera();
