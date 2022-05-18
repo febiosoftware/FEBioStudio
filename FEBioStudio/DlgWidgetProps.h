@@ -26,12 +26,37 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
+#include <QGroupBox>
 
 namespace Ui{
 	class CDlgBoxProps;
 	class CDlgLegendProps;
 	class CDlgTriadProps;
 	class CDlgCaptureFrameProps;
+};
+
+class CFontWidgetUI;
+
+class CFontWidget : public QGroupBox
+{
+	Q_OBJECT
+
+public:
+	CFontWidget(QWidget* parent = 0);
+	~CFontWidget();
+
+public:
+	void setFont(const QFont& font, const QColor& col);
+
+	QFont getFont() const;
+
+	QColor getFontColor() const;
+
+public slots:
+	void onMakeDefault();
+
+private:
+	CFontWidgetUI* ui;
 };
 
 class GLWidget;

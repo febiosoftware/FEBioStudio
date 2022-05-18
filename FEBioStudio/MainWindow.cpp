@@ -1766,6 +1766,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor);
+	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1861,6 +1862,9 @@ void CMainWindow::readSettings()
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor).toInt());
+
+	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
+	GLWidget::set_default_font(font);
 
 	if (vs.m_defaultFGColorOption != 0)
 	{
