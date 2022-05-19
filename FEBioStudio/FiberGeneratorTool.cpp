@@ -204,6 +204,12 @@ void CFiberGeneratorTool::OnApply()
 		return;
 	}
 
+	if (m_data.size() == 0)
+	{
+		QMessageBox::critical(GetMainWindow(), "Tool", "No selections were added.");
+		return;
+	}
+
 	int NN = pm->Nodes();
 	vector<int> bn(NN, 0);
 	vector<double> val(NN, 0.0);
