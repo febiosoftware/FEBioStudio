@@ -100,6 +100,85 @@ bool FEVTKimport::Load(const char* szfile)
 	m_vtk = new VTKModel;
 
 	// Process root file
+	if (readFile(szfile) == false) return false;
+
+	// build the mesh
+	if (BuildMesh() == false) return false;
+
+	// add all data fields to the model
+	if (UpdateModel() == false) return false;
+
+	// build the state 
+	if (BuildState(0) == false) return false;
+
+	// This file might be part of a series, so check and try to read it in
+	if (ProcessSeries(szfile) == false) return false;
+	
+	return true;
+}
+
+bool FEVTKimport::ProcessSeries(const char* szfile)
+{
+	FEPostModel& fem = *m_fem;
+
+	// see if this file could be part of a series. 
+	bool bseries = false;
+	int nroot = -1;
+	int ndigits = 0;
+	char base[1024] = { 0 };
+	const char* ext = strrchr(szfile, '.');
+	if (ext)
+	{
+		const char* c = ext;
+		c--;
+		if (isdigit(*c))
+		{
+			while (isdigit(*c) && (c > szfile)) c--;
+			nroot = atoi(c + 1);
+			bseries = true;
+			ndigits = ext - c - 1;
+			strncpy(base, szfile, c - szfile + 1);
+		}
+	}
+
+	if (bseries)
+	{
+		// create the format string
+		char szfmt[1024] = { 0 };
+		sprintf(szfmt, "%s%%0%dd%s", base, ndigits, ext);
+
+		char szfilen[1024] = { 0 };
+
+		int nfile = nroot;
+		do {
+			nfile++;
+			sprintf(szfilen, szfmt, nfile);
+
+			delete m_vtk;
+			m_vtk = new VTKModel;
+			if (readFile(szfilen) == false)
+			{
+				// Let's assume that the file was not found, so we probably 
+				// reached the end of the series. No reason to make a fuss about that. 
+				ClearErrors();
+				break;
+			}
+
+			// some sanity checks
+			FEMesh* pm = fem.GetFEMesh(0);
+			if (m_vtk->m_pt.size() != pm->Nodes()) break;
+			if (m_vtk->m_el.size() != pm->Elements()) break;
+
+			// build the state
+			if (BuildState(nfile) == false) return false;
+		} while (true);
+	}
+
+	return true;
+}
+
+bool FEVTKimport::readFile(const char* szfile)
+{
 	if (!Open(szfile, "rt")) return errf("Failed opening file %s.", szfile);
 
 	if (readHeader() == false) return false;
@@ -151,135 +230,6 @@ bool FEVTKimport::Load(const char* szfile)
 	}
 	Close();
 
-	// create a new mesh
-	int nodes = m_vtk->m_pt.size();
-	int elems = m_vtk->m_el.size();
-	FEPostMesh* pm = new FEPostMesh;
-	pm->Create(nodes, elems);
-
-	for (int i = 0; i < nodes; ++i)
-	{
-		vec3f& r = m_vtk->m_pt[i];
-		FENode& node = pm->Node(i);
-		node.r = r;
-	}
-
-	for (int i = 0; i < elems; ++i)
-	{
-		VTKModel::CELL& cell = m_vtk->m_el[i];
-		if (cell.type == FE_INVALID_ELEMENT_TYPE) return false;
-		FEElement& el = pm->Element(i);
-		el.SetType(cell.type);
-		el.m_gid = cell.id;
-		assert(el.Nodes() == cell.nodes);
-		for (int j = 0; j < cell.nodes; ++j) el.m_node[j] = cell.n[j];
-	}
-
-	// We need to build the mesh before allocating a state so that we have 
-	// the faces. 
-	pm->BuildMesh();
-
-	fem.AddMesh(pm);
-
-	// add a state
-	FEState* ps = new FEState(0.f, m_fem, m_fem->GetFEMesh(0));
-	m_ps = ps;
-	fem.AddState(ps);
-
-	for (int i = 0; i < m_vtk->m_ptDataScalar.size(); ++i)
-	{
-		VTKModel::DataScalar& data = m_vtk->m_ptDataScalar[i];
-		fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), data.m_name);
-
-		FENodeData<float>& df = dynamic_cast<FENodeData<float>&>(ps->m_Data[m_ps->m_Data.size() - 1]);
-		for (int j = 0; j < pm->Nodes(); ++j) df[j] = (float)data.m_data[j];
-	}
-
-	for (int i = 0; i < m_vtk->m_ptDataVector.size(); ++i)
-	{
-		VTKModel::DataVector& data = m_vtk->m_ptDataVector[i];
-		fem.AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), data.m_name);
-
-		FENodeData<vec3f>& df = dynamic_cast<FENodeData<vec3f>&>(ps->m_Data[m_ps->m_Data.size() - 1]);
-		for (int j = 0; j < pm->Nodes(); ++j) df[j] = data.m_data[j];
-	}
-
-	for (int i = 0; i < m_vtk->m_cellDataScalar.size(); ++i)
-	{
-		VTKModel::DataScalar& data = m_vtk->m_cellDataScalar[i];
-		fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name);
-
-		FEElementData<float, DATA_ITEM>& ed = dynamic_cast<FEElementData<float, DATA_ITEM>&>(ps->m_Data[ps->m_Data.size() - 1]);
-		for (int j = 0; j < elems; ++j) ed.add(j, (float)data.m_data[j]);
-	}
-
-	for (int i = 0; i < m_vtk->m_cellDataVector.size(); ++i)
-	{
-		VTKModel::DataVector& data = m_vtk->m_cellDataVector[i];
-		fem.AddDataField(new FEDataField_T<FEElementData<vec3f, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name);
-
-		FEElementData<vec3f, DATA_ITEM>& ed = dynamic_cast<FEElementData<vec3f, DATA_ITEM>&>(ps->m_Data[ps->m_Data.size() - 1]);
-		for (int j = 0; j < elems; ++j) ed.add(j, data.m_data[j]);
-	}
-
-	for (int i = 0; i < m_vtk->m_cellDataTensor.size(); ++i)
-	{
-		VTKModel::DataTensor& data = m_vtk->m_cellDataTensor[i];
-		fem.AddDataField(new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name);
-
-		FEElementData<mat3f, DATA_ITEM>& ed = dynamic_cast<FEElementData<mat3f, DATA_ITEM>&>(ps->m_Data[ps->m_Data.size() - 1]);
-		for (int j = 0; j < elems; ++j) ed.add(j, data.m_data[j]);
-	}
-
-	// count the parts
-	int nparts = pm->CountElementPartitions();
-
-	// add one material for each part
-	for (int i = 0; i < nparts; ++i)
-	{
-		FEMaterial mat;
-		fem.AddMaterial(mat);
-	}
-
-	// the mesh will be partitioned in the BuildMesh function based on the material IDs
-	// so, we have to match the material IDs to the part IDs
-	for (int i = 0; i < pm->Elements(); ++i)
-	{
-		FEElement& el = pm->Element(i);
-		el.m_MatID = el.m_gid;
-	}
-
-	// make sure the mat IDs are 0-based and sequential
-	int minId, maxId;
-	for (int i = 0; i < pm->Elements(); ++i)
-	{
-		int mid = pm->Element(i).m_MatID;
-		if ((i == 0) || (mid < minId)) minId = mid;
-		if ((i == 0) || (mid > maxId)) maxId = mid;
-	}
-	int nsize = maxId - minId + 1;
-	vector<int> lut(nsize, 0);
-	for (int i = 0; i < pm->Elements(); ++i)
-	{
-		int mid = pm->Element(i).m_MatID - minId;
-		lut[mid]++;
-	}
-	int m = 0;
-	for (int i = 0; i < nsize; ++i)
-	{
-		if (lut[i] > 0) lut[i] = m++;
-		else lut[i] = -1;
-	}
-	for (int i = 0; i < pm->Elements(); ++i)
-	{
-		int mid = pm->Element(i).m_MatID - minId;
-		pm->Element(i).m_MatID = lut[mid]; assert(lut[mid] >= 0);
-	}
-
-	// update the mesh
-	pm->BuildMesh();
-	fem.UpdateBoundingBox();
-
 	return true;
 }
 
@@ -297,10 +247,6 @@ char* FEVTKimport::readLine(char* szline)
 bool FEVTKimport::readHeader()
 {
 	char szline[256] = { 0 }, * ch;
-	int nread, i, j, k;
-	char type[256];
-	double temp[9];
-	bool isASCII = false, isPOLYDATA = false, isUnstructuredGrid = false, isCellData = false, isScalar = false, isShellThickness = false;
 
 	// skip first line (should be # vtk ...)
 	ch = fgets(szline, 255, m_fp); if (ch == 0) return false;
@@ -647,6 +593,8 @@ bool FEVTKimport::readVectors(char* szline)
 
 		m_vtk->m_cellDataVector.push_back(data);
 	}
+
+	return true;
 }
 
 bool FEVTKimport::readTensors(char* szline)
@@ -674,11 +622,191 @@ bool FEVTKimport::readTensors(char* szline)
 		for (int i = 0; i < elems; ++i)
 		{
 			if (readLine(szline) == 0) return false;
-			nread = sscanf(szline, "%g%g%g%g%g%g%g%g%g", &v[0], &v[1], &v[2], &v[3], &v[4], &v[5], &v[6], &v[7], &v[8]);
+			nread = sscanf(szline, "%g%g%g", &v[0], &v[1], &v[2]);
+
+			if (readLine(szline) == 0) return false;
+			nread = sscanf(szline, "%g%g%g", &v[3], &v[4], &v[5]);
+
+			if (readLine(szline) == 0) return false;
+			nread = sscanf(szline, "%g%g%g", &v[6], &v[7], &v[8]);
 
 			data.m_data[i] = mat3f(v[0], v[1], v[2], v[3], v[4], v[5], v[6], v[7], v[8]);
 		}
 
 		m_vtk->m_cellDataTensor.push_back(data);
 	}
+
+	return true;
+}
+
+bool FEVTKimport::BuildMesh()
+{
+	// create a new mesh
+	int nodes = m_vtk->m_pt.size();
+	int elems = m_vtk->m_el.size();
+	FEPostMesh* pm = new FEPostMesh;
+	pm->Create(nodes, elems);
+
+	for (int i = 0; i < nodes; ++i)
+	{
+		vec3f& r = m_vtk->m_pt[i];
+		FENode& node = pm->Node(i);
+		node.r = r;
+	}
+
+	for (int i = 0; i < elems; ++i)
+	{
+		VTKModel::CELL& cell = m_vtk->m_el[i];
+		if (cell.type == FE_INVALID_ELEMENT_TYPE) return false;
+		FEElement& el = pm->Element(i);
+		el.SetType(cell.type);
+		el.m_gid = cell.id;
+		assert(el.Nodes() == cell.nodes);
+		for (int j = 0; j < cell.nodes; ++j) el.m_node[j] = cell.n[j];
+	}
+
+	// We need to build the mesh before allocating a state so that we have 
+	// the faces. 
+	pm->BuildMesh();
+
+	FEPostModel& fem = *m_fem;
+	fem.AddMesh(pm);
+
+	// count the parts
+	int nparts = pm->CountElementPartitions();
+
+	// add one material for each part
+	for (int i = 0; i < nparts; ++i)
+	{
+		FEMaterial mat;
+		fem.AddMaterial(mat);
+	}
+
+	// the mesh will be partitioned in the BuildMesh function based on the material IDs
+	// so, we have to match the material IDs to the part IDs
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement& el = pm->Element(i);
+		el.m_MatID = el.m_gid;
+	}
+
+	// make sure the mat IDs are 0-based and sequential
+	int minId, maxId;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		int mid = pm->Element(i).m_MatID;
+		if ((i == 0) || (mid < minId)) minId = mid;
+		if ((i == 0) || (mid > maxId)) maxId = mid;
+	}
+	int nsize = maxId - minId + 1;
+	vector<int> lut(nsize, 0);
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		int mid = pm->Element(i).m_MatID - minId;
+		lut[mid]++;
+	}
+	int m = 0;
+	for (int i = 0; i < nsize; ++i)
+	{
+		if (lut[i] > 0) lut[i] = m++;
+		else lut[i] = -1;
+	}
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		int mid = pm->Element(i).m_MatID - minId;
+		pm->Element(i).m_MatID = lut[mid]; assert(lut[mid] >= 0);
+	}
+
+	// update the mesh
+	pm->BuildMesh();
+	fem.UpdateBoundingBox();
+
+	return true;
+}
+
+bool FEVTKimport::UpdateModel()
+{
+	FEPostModel& fem = *m_fem;
+	for (int i = 0; i < m_vtk->m_ptDataScalar.size(); ++i)
+	{
+		VTKModel::DataScalar& data = m_vtk->m_ptDataScalar[i];
+		fem.AddDataField(new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA), data.m_name);
+	}
+	for (int i = 0; i < m_vtk->m_ptDataVector.size(); ++i)
+	{
+		VTKModel::DataVector& data = m_vtk->m_ptDataVector[i];
+		fem.AddDataField(new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA), data.m_name);
+	}
+
+	for (int i = 0; i < m_vtk->m_cellDataScalar.size(); ++i)
+	{
+		VTKModel::DataScalar& data = m_vtk->m_cellDataScalar[i];
+		fem.AddDataField(new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name);
+	}
+
+	for (int i = 0; i < m_vtk->m_cellDataVector.size(); ++i)
+	{
+		VTKModel::DataVector& data = m_vtk->m_cellDataVector[i];
+		fem.AddDataField(new FEDataField_T<FEElementData<vec3f, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name);
+	}
+
+	for (int i = 0; i < m_vtk->m_cellDataTensor.size(); ++i)
+	{
+		VTKModel::DataTensor& data = m_vtk->m_cellDataTensor[i];
+		fem.AddDataField(new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem, EXPORT_DATA), data.m_name);
+	}
+
+	return true;
+}
+
+bool FEVTKimport::BuildState(double time)
+{
+	// add a state
+	FEState* ps = new FEState(time, m_fem, m_fem->GetFEMesh(0));
+	m_ps = ps;
+
+	FEPostModel& fem = *m_fem;
+	fem.AddState(ps);
+
+	FEMesh* pm = ps->GetFEMesh();
+	int nodes = pm->Nodes();
+	int elems = pm->Elements();
+
+	int nfield = 0;
+	for (int i = 0; i < m_vtk->m_ptDataScalar.size(); ++i)
+	{
+		VTKModel::DataScalar& data = m_vtk->m_ptDataScalar[i];
+		FENodeData<float>& df = dynamic_cast<FENodeData<float>&>(ps->m_Data[nfield++]);
+		for (int j = 0; j < pm->Nodes(); ++j) df[j] = (float)data.m_data[j];
+	}
+
+	for (int i = 0; i < m_vtk->m_ptDataVector.size(); ++i)
+	{
+		VTKModel::DataVector& data = m_vtk->m_ptDataVector[i];
+		FENodeData<vec3f>& df = dynamic_cast<FENodeData<vec3f>&>(ps->m_Data[nfield++]);
+		for (int j = 0; j < pm->Nodes(); ++j) df[j] = data.m_data[j];
+	}
+
+	for (int i = 0; i < m_vtk->m_cellDataScalar.size(); ++i)
+	{
+		VTKModel::DataScalar& data = m_vtk->m_cellDataScalar[i];
+		FEElementData<float, DATA_ITEM>& ed = dynamic_cast<FEElementData<float, DATA_ITEM>&>(ps->m_Data[nfield++]);
+		for (int j = 0; j < elems; ++j) ed.add(j, (float)data.m_data[j]);
+	}
+
+	for (int i = 0; i < m_vtk->m_cellDataVector.size(); ++i)
+	{
+		VTKModel::DataVector& data = m_vtk->m_cellDataVector[i];
+		FEElementData<vec3f, DATA_ITEM>& ed = dynamic_cast<FEElementData<vec3f, DATA_ITEM>&>(ps->m_Data[nfield++]);
+		for (int j = 0; j < elems; ++j) ed.add(j, data.m_data[j]);
+	}
+
+	for (int i = 0; i < m_vtk->m_cellDataTensor.size(); ++i)
+	{
+		VTKModel::DataTensor& data = m_vtk->m_cellDataTensor[i];
+		FEElementData<mat3f, DATA_ITEM>& ed = dynamic_cast<FEElementData<mat3f, DATA_ITEM>&>(ps->m_Data[nfield++]);
+		for (int j = 0; j < elems; ++j) ed.add(j, data.m_data[j]);
+	}
+
+	return true;
 }

@@ -93,6 +93,9 @@ protected:
 	// helper function that sets the error string
 	bool errf(const char* szerr, ...);
 
+	// clear error
+	void ClearErrors();
+
 	// get the file pointer
 	FILE* FilePtr();
 

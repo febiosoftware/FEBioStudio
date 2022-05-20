@@ -43,6 +43,8 @@ public:
 	bool Load(const char* szfile) override;
 
 protected:
+	bool readFile(const char* szfile);
+
 	char* readLine(char* szline);
 	bool readHeader();
 	bool readDataSet  (char* szline);
@@ -58,6 +60,10 @@ protected:
 	
 protected:
 	bool BuildMesh();
+	bool UpdateModel();
+	bool BuildState(double time);
+	bool ProcessSeries(const char* szfile);
+
 	FEState*		m_ps;
 
 	bool	m_isPolyData;
