@@ -1363,9 +1363,9 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
 	int cy = height();
 	if (m_pframe && m_pframe->visible())
 	{
-		int dpr = m_pWnd->devicePixelRatio();
-		cx = dpr*m_pframe->w();
-		cy = dpr*m_pframe->h();
+		double dpr = m_pWnd->devicePixelRatio();
+		cx = (int) (dpr*m_pframe->w());
+		cy = (int) (dpr*m_pframe->h());
 	}
 
 	// get the frame rate
