@@ -151,6 +151,7 @@
 #define FE_POLYNOMIAL_HYPERELASTIC      90
 #define FE_FORCE_VELOCITY_ESTRADA       91
 #define FE_FIBER_EXP_POW_LIN            92
+#define FE_HGO_CORONARY                 93
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1638,6 +1639,14 @@ public:
     FEOrthotropicCLE();
     
     DECLARE_REGISTERED(FEOrthotropicCLE);
+};
+
+//-----------------------------------------------------------------------------
+class FEHGOCoronary : public FETransverselyIsotropic
+{
+public:
+    FEHGOCoronary();
+    DECLARE_REGISTERED(FEHGOCoronary);
 };
 
 //-----------------------------------------------------------------------------
