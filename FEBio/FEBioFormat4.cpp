@@ -1405,6 +1405,7 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 {
 	if (tag.isleaf()) return true;
 
+	FEBioInputModel& feb = GetFEBioModel();
 	FSModel* fem = &GetFSModel();
 
 	++tag;
@@ -1423,6 +1424,18 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 				stringstream ss; 
 				ss << "MeshAdaptor" << CountMeshAdaptors<FSMeshAdaptor>(*fem) + 1;
 				mda->SetName(ss.str());
+			}
+
+			const char* szset = tag.AttributeValue("elem_set", true);
+			if (szset)
+			{
+				FEBioInputModel::Domain* dom = feb.FindDomain(szset);
+				if (dom)
+				{
+					FSPart* pg = feb.BuildFEPart(dom);
+					mda->SetItemList(pg);
+				}
+				else AddLogEntry("Failed to find element set %s", szset);
 			}
 
 			m_pBCStep->AddMeshAdaptor(mda);

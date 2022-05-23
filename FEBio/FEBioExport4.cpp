@@ -380,6 +380,21 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				}
 			}
 		}
+		for (int j = 0; j < pstep->MeshAdaptors(); ++j)
+		{
+			FSMeshAdaptor* pma = pstep->MeshAdaptor(j);
+			if (pma->IsActive())
+			{
+				FEItemListBuilder* pi = pma->GetItemList();
+				if (pi)
+				{
+					string name = pi->GetName();
+					if (name.empty()) name = pma->GetName();
+
+					AddElemSet(name, pi);
+				}
+			}
+		}
 	}
 
 	// extract mesh data selections
@@ -2369,6 +2384,14 @@ void FEBioExport4::WriteMeshAdaptorSection(FSStep& s)
 			XMLElement el("mesh_adaptor");
 			string name = mda->GetName();
 			if (name.empty() == false) el.add_attribute("name", name);
+
+			FEItemListBuilder* pi = mda->GetItemList();
+			if (pi)
+			{
+				string elSet = GetElementSetName(pi);
+				el.add_attribute("elem_set", elSet);
+			}
+
 			WriteModelComponent(mda, el);
 		}
 	}

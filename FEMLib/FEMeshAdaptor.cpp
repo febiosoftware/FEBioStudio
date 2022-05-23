@@ -1,15 +1,12 @@
 #include "stdafx.h"
 #include "FEMeshAdaptor.h"
+#include <MeshTools/FEItemListBuilder.h>
 
-FSMeshAdaptor::FSMeshAdaptor(FSModel* fem, int ntype) : FSStepComponent(fem)
+FSMeshAdaptor::FSMeshAdaptor(FSModel* fem, int ntype) : FSDomainComponent(ntype, fem)
 {
 	m_ntype = ntype;
 	SetSuperClassID(FEMESHADAPTOR_ID);
-}
-
-int FSMeshAdaptor::Type() const
-{
-	return m_ntype;
+	SetMeshItemType(FE_ELEM_FLAG);
 }
 
 FEBioMeshAdaptor::FEBioMeshAdaptor(FSModel* fem) : FSMeshAdaptor(fem, FE_FEBIO_MESH_ADAPTOR)
