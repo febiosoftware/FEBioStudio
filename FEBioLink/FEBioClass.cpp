@@ -986,6 +986,11 @@ FSMeshDataGenerator* FEBio::CreateElemDataGenerator(const std::string& typeStr, 
 	return CreateModelComponent<FEBioElemDataGenerator>(FEMESHDATAGENERATOR_ID, typeStr, fem);
 }
 
+FSMeshAdaptor* FEBio::CreateMeshAdaptor(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBioMeshAdaptor>(FEMESHADAPTOR_ID, typeStr, fem);
+}
+
 FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEBioFunction1D>(FEFUNCTION1D_ID, typeStr, fem);

@@ -226,6 +226,7 @@ protected:
 	void WriteGeometryNodeSets();
 	void WriteGeometryDiscreteSets();
 	void WriteMeshDataSection();
+	void WriteMeshAdaptorSection(FSStep& s);
 	void WriteBoundarySection(FSStep& s);
 	void WriteLoadsSection(FSStep& s);
 	void WriteContactSection(FSStep& s);

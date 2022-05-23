@@ -46,7 +46,7 @@ class CDlgExportFEBio : public QDialog
 	Q_OBJECT
 
 private:
-	enum { MAX_SECTIONS = 15 };
+	enum { MAX_SECTIONS = 16 };
 
 public:
 	CDlgExportFEBio(QWidget* parent);

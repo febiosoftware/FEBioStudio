@@ -113,15 +113,16 @@ public:
 		vl->addWidget(pc[ 3] = new QCheckBox("Material"             ));
 		vl->addWidget(pc[ 4] = new QCheckBox("Geometry"             ));
 		vl->addWidget(pc[ 5] = new QCheckBox("MeshData  (FEBio 2.5)"));
-		vl->addWidget(pc[ 6] = new QCheckBox("Boundary"             ));
-		vl->addWidget(pc[ 7] = new QCheckBox("Loads"                ));
-		vl->addWidget(pc[ 8] = new QCheckBox("Initial"              ));
-		vl->addWidget(pc[ 9] = new QCheckBox("Constraints"          ));
-		vl->addWidget(pc[10] = new QCheckBox("Contact  (FEBio 2.x)" ));
-		vl->addWidget(pc[11] = new QCheckBox("Discrete (FEBio 2.x)" ));
-		vl->addWidget(pc[12] = new QCheckBox("LoadData"             ));
-		vl->addWidget(pc[13] = new QCheckBox("Output"               ));
-		vl->addWidget(pc[14] = new QCheckBox("Step"                 ));
+		vl->addWidget(pc[ 6] = new QCheckBox("MeshAdaptor (FEBio 4.0)"));
+		vl->addWidget(pc[ 7] = new QCheckBox("Boundary"             ));
+		vl->addWidget(pc[ 8] = new QCheckBox("Loads"                ));
+		vl->addWidget(pc[ 9] = new QCheckBox("Initial"              ));
+		vl->addWidget(pc[10] = new QCheckBox("Constraints"          ));
+		vl->addWidget(pc[11] = new QCheckBox("Contact  (FEBio 2.x)" ));
+		vl->addWidget(pc[12] = new QCheckBox("Discrete (FEBio 2.x)" ));
+		vl->addWidget(pc[13] = new QCheckBox("LoadData"             ));
+		vl->addWidget(pc[14] = new QCheckBox("Output"               ));
+		vl->addWidget(pc[15] = new QCheckBox("Step"                 ));
 
 		QVBoxLayout* buttonLayout = new QVBoxLayout;
 		buttonLayout->addWidget(allButton);

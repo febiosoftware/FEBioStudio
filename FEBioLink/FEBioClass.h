@@ -60,6 +60,7 @@ class FSFunction1D;
 class FSGenericClass;
 class FESolidFormulation;
 class FEShellFormulation;
+class FSMeshAdaptor;
 
 namespace FEBio {
 
@@ -146,6 +147,7 @@ namespace FEBio {
 	FSMeshDataGenerator* CreateEdgeDataGenerator(const std::string& typeStr, FSModel* fem);
 	FSMeshDataGenerator* CreateFaceDataGenerator(const std::string& typeStr, FSModel* fem);
 	FSMeshDataGenerator* CreateElemDataGenerator(const std::string& typeStr, FSModel* fem);
+	FSMeshAdaptor*       CreateMeshAdaptor      (const std::string& typeStr, FSModel* fem);
 	FSFunction1D*        CreateFunction1D       (const std::string& typeStr, FSModel* fem);
 	FSGenericClass*		 CreateGenericClass     (const std::string& typeStr, FSModel* fem);
 	FEShellFormulation*  CreateShellFormulation (const std::string& typeStr, FSModel* fem);

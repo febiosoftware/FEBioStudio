@@ -653,6 +653,16 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.close_branch(); // MeshData
 			}
 
+			// output mesh adaptor section
+			if (m_section[FEBIO_MESHADAPTOR])
+			{
+				m_xml.add_branch("MeshAdaptor");
+				{
+					WriteMeshAdaptorSection(*pstep);
+				}
+				m_xml.close_branch(); // MeshData
+			}
+
 			// output boundary section
 			int nbc = pstep->BCs();
 			if ((nbc > 0) && (m_section[FEBIO_BOUNDARY]))
@@ -2343,6 +2353,23 @@ void FEBioExport4::WriteNodeDataSection()
 				}
 				m_xml.close_branch();
 			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteMeshAdaptorSection(FSStep& s)
+{
+	FSModel& fem = *m_pfem;
+	for (int i = 0; i < s.MeshAdaptors(); ++i)
+	{
+		FSMeshAdaptor* mda = s.MeshAdaptor(i);
+		if (mda && mda->IsActive())
+		{
+			XMLElement el("mesh_adaptor");
+			string name = mda->GetName();
+			if (name.empty() == false) el.add_attribute("name", name);
+			WriteModelComponent(mda, el);
 		}
 	}
 }

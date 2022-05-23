@@ -21,4 +21,8 @@ class FEBioMeshAdaptor : public FSMeshAdaptor
 {
 public:
 	FEBioMeshAdaptor(FSModel* fem);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 };
