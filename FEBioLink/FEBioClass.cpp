@@ -1027,12 +1027,14 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FECLASS_ID           : return CreateGenericClass    (typeStr, fem); break;
 	case FELOADCONTROLLER_ID  : return CreateLoadController  (typeStr, fem); break;
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
+	case FEMESHADAPTOR_ID     : return CreateMeshAdaptor     (typeStr, fem); break;
 	case FESOLVER_ID          :
 	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
 	case FEVEC3DVALUATOR_ID   :
 	case FEMAT3DVALUATOR_ID  :
 	case FEMAT3DSVALUATOR_ID :
+	case FEMESHADAPTORCRITERION_ID:
 	{
 		FSGenericClass* pc = new FSGenericClass(fem);
 		BuildModelComponent(superClassID, typeStr, pc, flags);

@@ -190,6 +190,7 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 		else if (tag == "Mesh"       ) ret = ParseMeshSection       (tag);
 		else if (tag == "MeshDomains") ret = ParseMeshDomainsSection(tag);
 		else if (tag == "MeshData"   ) ret = ParseMeshDataSection   (tag);
+		else if (tag == "MeshAdaptor") ret = ParseMeshAdaptorSection(tag);
 		else if (tag == "Boundary"   ) ret = ParseBoundarySection   (tag);
 		else if (tag == "Constraints") ret = ParseConstraintSection (tag);
 		else if (tag == "Loads"      ) ret = ParseLoadsSection      (tag);
@@ -1709,6 +1710,47 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		} while (!tag.isend());
 	}
 	else ParseUnknownTag(tag);
+
+	return true;
+}
+
+//=============================================================================
+//
+//                                B O U N D A R Y 
+//
+//=============================================================================
+
+bool FEBioFormat3::ParseMeshAdaptorSection(XMLTag& tag)
+{
+	if (tag.isleaf()) return true;
+
+	FSModel* fem = &GetFSModel();
+
+	++tag;
+	do {
+		if (tag == "mesh_adaptor")
+		{
+			const char* szname = tag.AttributeValue("name", true);
+			const char* sztype = tag.AttributeValue("type");
+
+			FSMeshAdaptor* mda = FEBio::CreateMeshAdaptor(sztype, fem);
+			if (mda == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+			if (szname) mda->SetName(szname);
+			else
+			{
+				stringstream ss;
+				ss << "MeshAdaptor" << CountMeshAdaptors<FSMeshAdaptor>(*fem) + 1;
+				mda->SetName(ss.str());
+			}
+
+			m_pBCStep->AddMeshAdaptor(mda);
+
+			ParseModelComponent(mda, tag);
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	} while (!tag.isleaf());
 
 	return true;
 }

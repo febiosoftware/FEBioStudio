@@ -48,6 +48,7 @@ private:
 	bool ParseMeshSection      (XMLTag& tag);
 	bool ParseMeshDomainsSection(XMLTag& tag);
 	bool ParseMeshDataSection  (XMLTag& tag);
+	bool ParseMeshAdaptorSection(XMLTag& tag);
 	bool ParseBoundarySection  (XMLTag& tag);
 	bool ParseLoadsSection     (XMLTag& tag);
 	bool ParseInitialSection   (XMLTag& tag);
