@@ -1550,6 +1550,25 @@ FSOrthotropicCLE::FSOrthotropicCLE(FSModel* fem) : FSMaterial(FE_CLE_ORTHOTROPIC
 	SetAxisMaterial(new FSAxisMaterial(fem));
 }
 
+//////////////////////////////////////////////////////////////////////
+// FEHGOCoronary
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEHGOCoronary, MODULE_MECH, FE_HGO_CORONARY, FE_MAT_ELASTIC_UNCOUPLED, "HGO-coronary", MaterialFlags::TOPLEVEL, 0);
+
+FEHGOCoronary::FEHGOCoronary(FSModel* fem) : FSTransverselyIsotropic(FE_HGO_CORONARY, fem)
+{
+	SetFiberMaterial(new FSOldFiberMaterial(fem));
+
+	// define material parameters
+	AddScienceParam(1, UNIT_DENSITY, "density", "density")->SetPersistent(false);
+	AddScienceParam(0, UNIT_PRESSURE, "rho", "rho");
+	AddScienceParam(0, UNIT_PRESSURE, "k1", "k1");
+	AddScienceParam(0, UNIT_NONE    , "k2", "k2");
+	AddScienceParam(0, UNIT_PRESSURE, "k", "bulk modulus")->SetPersistent(false);
+}
+
+
 ////////////////////////////////////////////////////////////////////////
 // FSPrescribedActiveContractionUniaxial - Prescribed uniaxial active contraction
 ////////////////////////////////////////////////////////////////////////

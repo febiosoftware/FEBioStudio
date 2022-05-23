@@ -657,6 +657,7 @@ CGLPointPlot::CGLPointPlot()
 	SetName(szname);
 
 	AddDoubleParam(8.0, "point size");
+	AddChoiceParam(0, "point size source");
 	AddIntParam(0, "render mode")->SetEnumNames("points\0sphere\0");
 	AddIntParam(0, "color mode")->SetEnumNames("solid\0color map\0");
 	AddColorParam(GLColor::White(), "solid color");
@@ -687,35 +688,59 @@ CGLPointPlot::CGLPointPlot()
 	UpdateData(false);
 }
 
-void CGLPointPlot::SetPointDataModel(PointDataModel* pointData)
+int stringlist_to_szstring(std::vector<std::string>& sl, char* sz)
 {
-	m_pointData = pointData;
-	std::vector<std::string> dataNames = pointData->GetDataNames();
-
 	int nsize = 0;
-	for (int i = 0; i < dataNames.size(); ++i)
+	for (int i = 0; i < sl.size(); ++i)
 	{
-		nsize += dataNames[i].length();
+		nsize += sl[i].length();
 		nsize += 1; // null character
 	}
 	nsize++; // final null character
 
-	char* buf = new char[nsize];
-	char* c = buf;
-	for (int i = 0; i < dataNames.size(); ++i)
+	if (sz == nullptr) return nsize;
+
+	char* c = sz;
+	for (int i = 0; i < sl.size(); ++i)
 	{
-		string& s = dataNames[i];
+		string& s = sl[i];
 		strcpy(c, s.c_str());
 		c += s.length();
 		*c++ = 0;
 	}
 	*c++ = 0;
 
-	Param& p = GetParam(DATA_FIELD);
-	p.CopyEnumNames(buf);
+	return nsize;
+}
 
+void CGLPointPlot::SetPointDataModel(PointDataModel* pointData)
+{
+	m_pointData = pointData;
+
+	// get all data field names
+	std::vector<std::string> dataNames = pointData->GetDataNames();
+
+	// convert to zero-terminated string
+	int nsize = stringlist_to_szstring(dataNames, nullptr);
+	char* buf = new char[nsize];
+	stringlist_to_szstring(dataNames, buf);
+
+	// copy enums
+	Param& dataField = GetParam(DATA_FIELD);
+	dataField.CopyEnumNames(buf);
 	delete buf;
 
+	// for point size data, we do the same, but append
+	dataNames.insert(dataNames.begin(), "(default)");
+	nsize = stringlist_to_szstring(dataNames, nullptr);
+	buf = new char[nsize];
+	stringlist_to_szstring(dataNames, buf);
+
+	// copy enums
+	Param& pointSizeSrc = GetParam(POINT_SIZE_SOURCE);
+	pointSizeSrc.CopyEnumNames(buf);
+	pointSizeSrc.SetIntValue(0);
+	delete buf;
 }
 
 void CGLPointPlot::Reload()
@@ -916,6 +941,10 @@ void CGLPointPlot::RenderSpheres()
 
 	GLUquadricObj* pobj = gluNewQuadric();
 
+	double pointSize = m_pointSize;
+
+	int pointSizeSource = GetIntValue(POINT_SIZE_SOURCE);
+
 	for (int i = 0; i < pd.Points(); ++i)
 	{
 		PointData::POINT& p = pd.Point(i);
@@ -928,12 +957,20 @@ void CGLPointPlot::RenderSpheres()
 			glColor3ub(c.r, c.g, c.b);
 		}
 
-		glPushMatrix();
+		if (pointSizeSource > 0)
 		{
-			glTranslatef(c.x, c.y, c.z);
-			gluSphere(pobj, m_pointSize, 32, 32);
+			pointSize = m_pointSize*fabs(p.val[pointSizeSource - 1]);
 		}
-		glPopMatrix();
+
+		if (pointSize > 0)
+		{
+			glPushMatrix();
+			{
+				glTranslatef(c.x, c.y, c.z);
+				gluSphere(pobj, pointSize, 32, 32);
+			}
+			glPopMatrix();
+		}
 	}
 	gluDeleteQuadric(pobj);
 }

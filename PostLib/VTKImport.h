@@ -34,6 +34,7 @@ class FEState;
 
 class VTKimport :	public FEFileReader
 {
+	class VTKModel;
 
 public:
 	VTKimport(FEPostModel* fem);
@@ -42,10 +43,34 @@ public:
 	bool Load(const char* szfile) override;
 
 protected:
-	bool readPointData(char* ch);
+	bool readFile(const char* szfile);
+
+	char* readLine(char* szline);
+	bool readHeader();
+	bool readDataSet  (char* szline);
+	bool readPoints   (char* szline);
+	bool readPolygons (char* szline);
+	bool readCells    (char* szline);
+	bool readCellTypes(char* szline);
+	bool readPointData(char* szline);
+	bool readCellData (char* szline);
+	bool readScalars(char* szline);
+	bool readVectors(char* szline);
+	bool readTensors(char* szline);
 	
 protected:
 	bool BuildMesh();
+	bool UpdateModel();
+	bool BuildState(double time);
+	bool ProcessSeries(const char* szfile);
+
 	FEState*		m_ps;
+
+	bool	m_isPolyData;
+	bool	m_isUnstructuredGrid;
+	bool	m_readingPointData;
+	bool	m_readingCellData;
+
+	VTKModel* m_vtk;
 };
 }

@@ -167,6 +167,11 @@ bool FileReader::errf(const char* szerr, ...)
 	return false;
 }
 
+void FileReader::ClearErrors()
+{
+	m_err.clear();
+}
+
 float FileReader::GetFileProgress() const
 {
 	if (m_fp)
