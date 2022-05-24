@@ -669,7 +669,8 @@ bool FEBioExport4::Write(const char* szfile)
 			}
 
 			// output mesh adaptor section
-			if (m_section[FEBIO_MESHADAPTOR])
+			int nma = pstep->MeshAdaptors();
+			if ((nma > 0) && m_section[FEBIO_MESHADAPTOR])
 			{
 				m_xml.add_branch("MeshAdaptor");
 				{
