@@ -36,15 +36,15 @@ SOFTWARE.*/
 #include <MeshLib/FEElementLibrary.h>
 #include <QSplashScreen>
 #include <QDebug>
+#include <QPainter>
 #include <FEBioLink/FEBioInit.h>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>
-class MyApplication : public QApplication
+class FBSApplication : public QApplication
 {
 public:
-	MyApplication(int &argc, char **argv)
-		: QApplication(argc, argv)
+	FBSApplication(int &argc, char **argv) : QApplication(argc, argv)
 	{
 	}
 	void SetMainWindow(CMainWindow* wnd) { m_pWnd = wnd; }
@@ -72,10 +72,52 @@ public:
 	}
 
 public:
-	CMainWindow* m_pWnd;
+	CMainWindow* m_pWnd = nullptr;
 };
-
+#else
+class FBSApplication : public QApplication 
+{
+public: 
+	FBSApplication(int& argc, char** argv) : QApplication(argc, argv) {}
+	void SetMainWindow(CMainWindow* wnd) { m_pWnd = wnd; }
+private:
+	CMainWindow* m_pWnd = nullptr;
+};
 #endif
+
+class FBSSplashScreen : public QSplashScreen
+{
+public:
+	FBSSplashScreen(QPixmap& pixmap)
+	{
+		QPainter painter(&pixmap);
+
+		QRect rt = pixmap.rect();
+		rt.adjust(20, 20, -20, -20);
+		painter.setPen(Qt::white);
+		QFont font = painter.font();
+		font.setPointSizeF(25);
+		font.setStretch(175);
+		font.setBold(true);
+		painter.setFont(font);
+		QString t1 = QString("FEBIO STUDIO");
+		painter.drawText(rt, Qt::AlignRight, t1);
+
+		QFontInfo fi(font);
+		rt.setTop(rt.top() + fi.pixelSize() + 10);
+		font.setPointSize(14);
+		font.setStretch(100);
+		font.setBold(false);
+		painter.setFont(font);
+		QString t2 = QString("version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+		painter.drawText(rt, Qt::AlignRight, t2);
+
+		QString t3 = QString("Weiss Lab, University of Utah\nAteshian Lab, Columbia University\n\nCopyright (c) 2022, All rights reserved");
+		painter.drawText(rt, Qt::AlignLeft | Qt::AlignBottom, t3);
+
+		setPixmap(pixmap);
+	}
+};
 
 // starting point of application
 int main(int argc, char* argv[])
@@ -87,12 +129,8 @@ int main(int argc, char* argv[])
 	// initialize the FEBio library
 	FEBio::InitFEBioLibrary();
 
-#ifndef __APPLE__
-
-	QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
 	// create the application object
-	QApplication app(argc, argv);
+	FBSApplication app(argc, argv);
 
 	// set the display name (this will be displayed on all windows and dialogs)
 	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
@@ -113,9 +151,9 @@ int main(int argc, char* argv[])
 
 	// show the splash screen
 	QPixmap pixmap(":/icons/splash.png");
-    qreal pixelRatio = app.devicePixelRatio();
-    pixmap.setDevicePixelRatio(pixelRatio);
-	QSplashScreen splash(pixmap);
+	qreal pixelRatio = app.devicePixelRatio();
+	pixmap.setDevicePixelRatio(pixelRatio);
+	FBSSplashScreen splash(pixmap);
 	splash.show();
 
 	// see if the reset flag was defined
@@ -133,7 +171,7 @@ int main(int argc, char* argv[])
 
 	// create the main window
 	CMainWindow wnd(breset);
-	//	wnd.setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+
 	wnd.show();
 
 	splash.finish(&wnd);
@@ -143,62 +181,10 @@ int main(int argc, char* argv[])
 		wnd.OpenFile(argv[1], false);
 	}
 
-	
-
 	return app.exec();
-
-#else
-	MyApplication app(argc, argv);
-
-    // set the display name (this will be displayed on all windows and dialogs)
-    app.setApplicationVersion("1.0.0");
-    app.setApplicationName("FEBio Studio");
-    app.setApplicationDisplayName("FEBio Studio");
-
-	string appdir = QApplication::applicationDirPath().toStdString();
-	
-    qDebug() << appdir.c_str();
-    
-	FSDir::setMacro("FEBioStudioDir", appdir);
-
-	// show the splash screen
-	QPixmap pixmap(":/icons/splash_hires.png");
-    qreal pixelRatio = app.devicePixelRatio();
-    pixmap.setDevicePixelRatio(pixelRatio);
-	QSplashScreen splash(pixmap);
-	splash.show();
-	
-    // see if the reset flag was defined
-    // the reset flag can be used to restore the UI, i.e.
-    // when reset is true, the CMainWindow class will not read the settings.
-	bool breset = false;
-	for (int i = 0; i < argc; ++i)
-	{
-		if (strcmp(argv[i], "-reset") == 0)
-		{
-			breset = true;
-			break;
-		}
-	}
-
-	// create the main window
-	CMainWindow wnd(breset);
-	app.SetMainWindow(&wnd);
-	wnd.show();	
-
-	splash.finish(&wnd);
-
-    if ((argc == 2) && (breset == false))
-    {
-        wnd.OpenFile(argv[1], false);
-    }
-    
-	return app.exec();
-
-#endif
 }
 
-CMainWindow* PRV::getMainWindow()
+CMainWindow* FBS::getMainWindow()
 {
     CMainWindow* wnd = nullptr;
 
@@ -215,8 +201,8 @@ CMainWindow* PRV::getMainWindow()
 	return wnd;
 }
 
-CDocument* PRV::getDocument()
+CDocument* FBS::getDocument()
 {
-	CMainWindow* wnd = PRV::getMainWindow();
+	CMainWindow* wnd = FBS::getMainWindow();
 	return wnd->GetDocument();
 }
