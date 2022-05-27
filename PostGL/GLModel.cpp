@@ -957,6 +957,8 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	Material* pmat = ps->GetMaterial(m);
 	Post::FEPostMesh* pm = GetActiveMesh();
 
+	int transMode = pmat->m_ntransmode;
+
 	// get the camera's orientation
 	quatd q = rc.m_cam->GetOrientation();
 
@@ -1035,13 +1037,33 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		{
 			FSFace& face = dom.Face(zlist[i].first);
 
-			GLubyte a[4];
-			for (int j = 0; j < face.Nodes(); ++j)
+			GLubyte a[4] = { 255, 255, 255, 255 };
+			if (transMode == RENDER_TRANS_NORMAL_WEIGHTED)
 			{
-				vec3d r = to_vec3d(face.m_nn[j]);
-				q.RotateVector(r);
-				double z = 1 - fabs(r.z);
-				a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					vec3d r = to_vec3d(face.m_nn[j]);
+					q.RotateVector(r);
+					double z = 1 - fabs(r.z);
+					a[j] = (GLubyte)(255 * (tm + 0.5 * (1 - tm) * (z * z)));
+				}
+			}
+			else if (benable && (transMode == RENDER_TRANS_VALUE_WEIGHTED))
+			{
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					float texj = face.m_tex[j];
+					if (texj < 0.f) texj = 0.f;
+					if (texj > 1.f) texj = 1.f;
+
+					vec3d r = to_vec3d(face.m_nn[j]);
+					q.RotateVector(r);
+					double z = 1 - fabs(r.z);
+					float f = tm*(z * z);
+
+					float w = texj + (1.f - texj) * f;
+					a[j] = (GLubyte)(255.f * w);
+				}
 			}
 
 			if (benable)
@@ -1338,7 +1360,8 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 
 	if (nmode == RENDER_MODE_SOLID)
 	{
-		if ((pmat->transparency >= 0.99f) || (pmat->m_ntransmode == RENDER_TRANS_CONSTANT)) RenderSolidMaterial(rc, ps, mat, false);
+		if (pmat->m_ntransmode == RENDER_TRANS_VALUE_WEIGHTED) RenderTransparentMaterial(rc, ps, mat);
+		else if ((pmat->transparency >= 0.99f) || (pmat->m_ntransmode == RENDER_TRANS_CONSTANT)) RenderSolidMaterial(rc, ps, mat, false);
 		else RenderTransparentMaterial(rc, ps, mat);
 	}
 	else

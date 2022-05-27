@@ -281,9 +281,10 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 					{
 						float f0 = d0.m_val;
 						float f1 = d1.m_val;
-						float f = f0 + (f1 - f0)*w;
+						float f = f0 + (f1 - f0) * w;
 						face.m_tex[j] = f;
 					}
+					else face.m_tex[j] = 0.f;
 				}
 			}
 		}

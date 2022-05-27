@@ -55,7 +55,7 @@ public:
 		addProperty("Mesh color"       , CProperty::Color );
 		addProperty("Shininess"        , CProperty::Float)->setFloatRange(0.0, 1.0);
 		addProperty("Transparency"     , CProperty::Float)->setFloatRange(0.0, 1.0);
-		addProperty("Transparency mode", CProperty::Enum, "Transparency mode")->setEnumValues(QStringList() << "constant" << "normal-weighed");
+		addProperty("Transparency mode", CProperty::Enum, "Transparency mode")->setEnumValues(QStringList() << "constant" << "normal-weigthed" << "value-weigthed");
 		addProperty("Show Mesh"        , CProperty::Bool);
 		addProperty("Cast shadows"     , CProperty::Bool);
 		addProperty("Clip"             , CProperty::Bool);
