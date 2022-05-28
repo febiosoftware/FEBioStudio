@@ -7528,6 +7528,9 @@ void CGLView::RenderFEFaces(GObject* po)
 		}
 	}
 
+	// render beam elements
+	RenderBeamElements(po);
+
 	// render the selected faces
 	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -7752,6 +7755,7 @@ void CGLView::RenderFEElements(GObject* po)
 	// render the unselected faces
 	vector<int> selectedElements;
 	int NE = pm->Elements();
+	bool hasBeamElements = false;
 	for (i = 0; i<NE; ++i)
 	{
 		FSElement& el = pm->Element(i);
@@ -7847,7 +7851,7 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
 					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
                     case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2 : break;
+					case FE_BEAM2 : hasBeamElements = true; break;
 					case FE_BEAM3 : break;
 					default:
 						assert(false);
@@ -7855,6 +7859,12 @@ void CGLView::RenderFEElements(GObject* po)
 				}
 			}
 		}
+	}
+
+	if (hasBeamElements)
+	{
+		// render beam elements
+		RenderBeamElements(po);
 	}
 
 	// override some settings
@@ -7987,6 +7997,37 @@ void CGLView::RenderFEElements(GObject* po)
 	glPopAttrib();
 }
 
+//-----------------------------------------------------------------------------
+void CGLView::RenderBeamElements(GObject* po)
+{
+	if (po == nullptr) return;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (!el.IsSelected() && el.IsVisible())
+		{
+			GPart* pg = po->Part(el.m_gid);
+			if (pg->IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_BEAM2: m_renderer.RenderBEAM2(&el, pm, true); break;
+				case FE_BEAM3: break;
+				}
+			}
+		}
+	}
+
+	glPopAttrib();
+}
+ 
 //-----------------------------------------------------------------------------
 // This function is used for selecting elements
 void CGLView::RenderFEAllElements(FSMesh* pm, bool bexterior)
