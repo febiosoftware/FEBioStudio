@@ -656,6 +656,14 @@ void GMeshObject::BuildGMesh()
 		for (int j=0; j<nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
 	}
 
+	// count all edges and tag nodes
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& e = pm->Edge(i);
+		int ne = e.Nodes();
+		for (int j = 0; j < ne; ++j) pm->Node(e.n[j]).m_ntag = 1;
+	}
+
 	// create nodes
 	for (int i=0; i<NN; ++i)
 	{
