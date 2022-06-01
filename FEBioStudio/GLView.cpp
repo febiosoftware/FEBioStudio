@@ -2850,12 +2850,11 @@ void CGLView::RenderImageData()
 	glPopMatrix();
 }
 
-void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, mat3d& Q, const vec3d& c, double h)
+void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
 {
 	if (pmat->HasFibers())
 	{
-		vec3d q0 = pmat->GetFiber(rel);
-		vec3d q = Q * q0;
+		vec3d q = pmat->GetFiber(rel);
 
 		// This vector is defined in global coordinates, except for user-defined fibers, which
 		// are assumed to be in local coordinates
@@ -2883,9 +2882,7 @@ void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, mat3d& Q, con
 		for (int j = 0; j < prop.Size(); ++j)
 		{
 			FEMaterial* matj = prop.GetMaterial(j);
-
-			Q = Q*matj->GetMatAxes(rel);
-			if (matj) RenderFiber(po, matj, rel, Q, c, h);
+			if (matj) RenderFiber(po, matj, rel, c, h);
 		}
 	}
 }
@@ -2944,11 +2941,8 @@ void CGLView::RenderMaterialFibers()
 							// to global coordinates
 							c = po->GetTransform().LocalToGlobal(c);
 
-							// local material axes
-							mat3d Q = pmat->GetMatAxes(rel);
-
 							// render the fiber
-							RenderFiber(po, pmat, rel, Q, c, h);
+							RenderFiber(po, pmat, rel, c, h);
 						}
 					}
 				}

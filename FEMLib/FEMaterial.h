@@ -677,6 +677,8 @@ public:
 private:
 	FEOldFiberMaterial(const FEOldFiberMaterial& m);
 	FEOldFiberMaterial& operator = (const FEOldFiberMaterial& m);
+
+    vec3d GetLocalFiberVector(FEElementRef& el);
 };
 
 //-----------------------------------------------------------------------------

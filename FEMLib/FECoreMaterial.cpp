@@ -615,9 +615,16 @@ bool FEMaterial::HasMaterialAxes() const
 }
 
 //-----------------------------------------------------------------------------
-mat3d FEMaterial::GetMatAxes(FEElementRef& el)
+mat3d FEMaterial::GetMatAxes(FEElementRef& el) const
 {
-	return (m_axes ? m_axes->GetMatAxes(el) : mat3d(1,0,0, 0,1,0, 0,0,1));
+	mat3d Q = m_axes ? m_axes->GetMatAxes(el) : mat3d(1, 0, 0, 0, 1, 0, 0, 0, 1);
+	const FEMaterial* parentMat = GetParentMaterial();
+	if (parentMat)
+	{
+		mat3d Qp = parentMat->GetMatAxes(el);
+		Q = Qp * Q;
+	}
+	return Q;
 }
 
 //-----------------------------------------------------------------------------

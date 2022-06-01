@@ -124,7 +124,7 @@ public:
 	
 	// local material axes
 	bool HasMaterialAxes() const;
-	mat3d GetMatAxes(FEElementRef& el);
+	mat3d GetMatAxes(FEElementRef& el) const;
 
 	// set the axis material
 	virtual void SetAxisMaterial(FEAxisMaterial* Q);

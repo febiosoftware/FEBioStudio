@@ -567,6 +567,18 @@ bool FEOldFiberMaterial::UpdateData(bool bsave)
 
 vec3d FEOldFiberMaterial::GetFiberVector(FEElementRef& el)
 {
+	vec3d v = GetLocalFiberVector(el);
+	const FEMaterial* parentMat = GetParentMaterial();
+	if (parentMat)
+	{
+		mat3d Q = parentMat->GetMatAxes(el);
+		v = Q * v;
+	}
+	return v;
+}
+
+vec3d FEOldFiberMaterial::GetLocalFiberVector(FEElementRef& el)
+{
 	switch (m_naopt)
 	{
 	case FE_FIBER_LOCAL:
@@ -790,6 +802,7 @@ FEOldFiberMaterial* FETransverselyIsotropic::GetFiberMaterial()
 
 void FETransverselyIsotropic::SetFiberMaterial(FEOldFiberMaterial* fiber)
 {
+	fiber->SetParentMaterial(this);
 	m_pfiber = fiber;
 }
 
@@ -2072,7 +2085,7 @@ vec3d FEFiberMaterial::GetFiber(FEElementRef& el)
 	const FEMaterial* parentMat = GetParentMaterial();
 	if (parentMat && parentMat->m_axes)
 	{
-		mat3d Q = parentMat->m_axes->GetMatAxes(el);
+		mat3d Q = parentMat->GetMatAxes(el);
 		v = Q * v;
 	}
 
