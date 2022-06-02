@@ -573,6 +573,18 @@ bool FSOldFiberMaterial::UpdateData(bool bsave)
 
 vec3d FSOldFiberMaterial::GetFiberVector(FEElementRef& el)
 {
+	vec3d v = GetLocalFiberVector(el);
+	const FSMaterial* parentMat = GetParentMaterial();
+	if (parentMat)
+	{
+		mat3d Q = parentMat->GetMatAxes(el);
+		v = Q * v;
+	}
+	return v;
+}
+
+vec3d FSOldFiberMaterial::GetLocalFiberVector(FEElementRef& el)
+{
 	switch (m_naopt)
 	{
 	case FE_FIBER_LOCAL:
@@ -796,6 +808,7 @@ FSOldFiberMaterial* FSTransverselyIsotropic::GetFiberMaterial()
 
 void FSTransverselyIsotropic::SetFiberMaterial(FSOldFiberMaterial* fiber)
 {
+	fiber->SetParentMaterial(this);
 	m_pfiber = fiber;
 }
 
@@ -1554,7 +1567,7 @@ FSOrthotropicCLE::FSOrthotropicCLE(FSModel* fem) : FSMaterial(FE_CLE_ORTHOTROPIC
 // FEHGOCoronary
 //////////////////////////////////////////////////////////////////////
 
-REGISTER_MATERIAL(FEHGOCoronary, MODULE_MECH, FE_HGO_CORONARY, FE_MAT_ELASTIC_UNCOUPLED, "HGO-coronary", MaterialFlags::TOPLEVEL, 0);
+REGISTER_MATERIAL(FEHGOCoronary, MODULE_MECH, FE_HGO_CORONARY, FE_MAT_ELASTIC_UNCOUPLED, "HGO-coronary", MaterialFlags::TOPLEVEL);
 
 FEHGOCoronary::FEHGOCoronary(FSModel* fem) : FSTransverselyIsotropic(FE_HGO_CORONARY, fem)
 {
@@ -2084,7 +2097,7 @@ vec3d FSFiberMaterial::GetFiber(FEElementRef& el)
 	const FSMaterial* parentMat = GetParentMaterial();
 	if (parentMat && parentMat->m_axes)
 	{
-		mat3d Q = parentMat->m_axes->GetMatAxes(el);
+		mat3d Q = parentMat->GetMatAxes(el);
 		v = Q * v;
 	}
 

@@ -685,6 +685,8 @@ public:
 private:
 	FSOldFiberMaterial(const FSOldFiberMaterial& m);
 	FSOldFiberMaterial& operator = (const FSOldFiberMaterial& m);
+
+    vec3d GetLocalFiberVector(FEElementRef& el);
 };
 
 //-----------------------------------------------------------------------------
