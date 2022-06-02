@@ -7529,7 +7529,7 @@ void CGLView::RenderFEFaces(GObject* po)
 	}
 
 	// render beam elements
-	RenderBeamElements(po);
+	RenderAllBeamElements(po);
 
 	// render the selected faces
 	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
@@ -7864,7 +7864,7 @@ void CGLView::RenderFEElements(GObject* po)
 	if (hasBeamElements)
 	{
 		// render beam elements
-		RenderBeamElements(po);
+		RenderUnselectedBeamElements(po);
 	}
 
 	// override some settings
@@ -7879,6 +7879,7 @@ void CGLView::RenderFEElements(GObject* po)
 	if (pdoc == nullptr) return;
 	if (selectedElements.empty() == false)
 	{
+		hasBeamElements = false;
 		int NE = (int)selectedElements.size();
 		for (i = 0; i<NE; ++i)
 		{
@@ -7904,7 +7905,7 @@ void CGLView::RenderFEElements(GObject* po)
 				case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, false); break;
 				case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, false); break;
                 case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, false); break;
-				case FE_BEAM2 : break;
+				case FE_BEAM2 : hasBeamElements = true;  break;
 				case FE_BEAM3 : break;
 				default:
 					assert(false);
@@ -7992,13 +7993,50 @@ void CGLView::RenderFEElements(GObject* po)
 		glEnd();
 
 		glPopAttrib();
+
+		if (hasBeamElements)
+		{
+			// render beam elements
+			RenderSelectedBeamElements(po);
+		}
 	}
 
 	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::RenderBeamElements(GObject* po)
+void CGLView::RenderAllBeamElements(GObject* po)
+{
+	if (po == nullptr) return;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.IsVisible())
+		{
+			GPart* pg = po->Part(el.m_gid);
+			if (pg->IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_BEAM2: m_renderer.RenderBEAM2(&el, pm, true); break;
+				case FE_BEAM3: break;
+				}
+			}
+		}
+	}
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RenderUnselectedBeamElements(GObject* po)
 {
 	if (po == nullptr) return;
 	FSMesh* pm = po->GetFEMesh();
@@ -8012,6 +8050,38 @@ void CGLView::RenderBeamElements(GObject* po)
 	{
 		FSElement& el = pm->Element(i);
 		if (!el.IsSelected() && el.IsVisible())
+		{
+			GPart* pg = po->Part(el.m_gid);
+			if (pg->IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_BEAM2: m_renderer.RenderBEAM2(&el, pm, true); break;
+				case FE_BEAM3: break;
+				}
+			}
+		}
+	}
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RenderSelectedBeamElements(GObject* po)
+{
+	if (po == nullptr) return;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glColor3ub(255, 255, 0);
+
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.IsSelected() && el.IsVisible())
 		{
 			GPart* pg = po->Part(el.m_gid);
 			if (pg->IsVisible())

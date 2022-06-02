@@ -317,7 +317,10 @@ public:
 	void RenderFENodes(GObject* po);
 	void RenderMeshLines();
 	void RenderMeshLines(GObject* pm);
-	void RenderBeamElements(GObject* po);
+	
+	void RenderAllBeamElements(GObject* po);
+	void RenderUnselectedBeamElements(GObject* po);
+	void RenderSelectedBeamElements(GObject* po);
 
 	// rendering functions for surface meshes
 	void RenderSurfaceMeshFaces(GObject* po);
