@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QStackedWidget>
 #include <QApplication>
+#include <QLabel>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
@@ -142,134 +143,6 @@ public:
 		int flag() const { return m_flag; }
 
 		Param* parameter() { return (m_paramId >= 0 ? m_pc->GetParamPtr(m_paramId) : nullptr); }
-
-		Item* addChild(FSCoreBase* pc, int paramId, int propId, int index)
-		{
-			// check for a special case first
-			if (pc && (paramId >= 0) && (index == -1))
-			{
-				Param& p = pc->GetParam(paramId);
-				if ((p.GetParamType() == Param_STD_VECTOR_INT) && (p.GetEnumNames()))
-				{
-					FSModel* fem = m_model->m_fem;
-					QStringList keys = GetEnumValues(fem, p.GetEnumNames());
-					for (int i=0; i<keys.size(); ++i)
-					{
-						Item* item = new Item(pc, paramId, -1, i, (int)m_children.size());
-						item->m_model = m_model; assert(m_model);
-						item->m_parent = this;
-						m_children.push_back(item);
-					}
-					return nullptr;
-				}
-			}
-
-			Item* item = new Item(pc, paramId, propId, index, (int)m_children.size());
-			item->m_model = m_model; assert(m_model);
-			item->m_parent = this;
-			m_children.push_back(item);
-
-			if (pc && (paramId >= 0) && (index == -1))
-			{
-				Param& p = pc->GetParam(paramId);
-				if (p.GetParamType() == Param_STD_VECTOR_DOUBLE)
-				{
-					std::vector<double> v = p.GetVectorDoubleValue();
-					for (int i = 0; i < v.size(); ++i)
-					{
-						item->addChild(pc, paramId, -1, i);
-					}
-				}
-				else if (p.GetParamType() == Param_STD_VECTOR_VEC2D)
-				{
-					std::vector<vec2d> v = p.GetVectorVec2dValue();
-					for (int i = 0; i < v.size(); ++i)
-					{
-						item->addChild(pc, paramId, -1, i);
-					}
-				}
-			}
-			else if (propId >= 0)
-			{
-				FSCoreBase* pci = pc->GetProperty(propId, index);
-				if (pci)
-				{
-					// don't add children of classes that have custom widgets
-					FSFunction1D* pf = dynamic_cast<FSFunction1D*>(pci);
-					if (pf && (pf->IsType("point") || pf->IsType("math")))
-						return item;
-
-					// don't add mesh selection 
-					FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pci);
-					if (pms) return item;
-
-					item->addChildren(pci);
-				}
-			}
-			return item;
-		}
-
-		void addParameters(FSCoreBase* pc)
-		{
-			pc->UpdateData(false);
-			int currentGroup = -1;
-			ParamBlock& PB = pc->GetParamBlock();
-			int NPG = PB.ParameterGroups();
-			Item* item = this;
-			for (int n = -1; n < NPG; ++n)
-			{
-				if (n != -1)
-				{
-					item = addChild(pc, -1, -1, n);
-				}
-				for (int i = 0; i < pc->Parameters(); ++i)
-				{
-					Param& p = pc->GetParam(i);
-					if (p.GetParameterGroup() == n)
-					{
-						if (p.IsVisible())
-						{
-							if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
-								item->addChild(pc, i, -1, -1);
-							else if (p.IsPersistent() == false)
-							{
-								item->addChild(pc, i, -1, -1);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		void addChildren(FSCoreBase* pc)
-		{
-			addParameters(pc);
-
-			for (int i = 0; i < pc->Properties(); ++i)
-			{
-				FSProperty& p = pc->GetProperty(i);
-
-				if (p.maxSize() == FSProperty::NO_FIXED_SIZE)
-				{
-					Item* item = new Item(pc, -1, i, -1, (int)m_children.size());
-					item->m_model = m_model; assert(m_model);
-					item->m_parent = this;
-					m_children.push_back(item);
-
-					int nc = p.Size();
-					for (int j = 0; j < nc; ++j) item->addChild(pc, -1, i, j);
-				}
-				else {
-					int nc = p.Size();
-					for (int j = 0; j < nc; ++j) addChild(pc, -1, i, j);
-
-//					if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
-//					{
-//						addChild(pc, -1, i, -1);
-//					}
-				}
-			}
-		}
 
 		FSModel* GetFSModel();
 
@@ -854,13 +727,30 @@ public:
 	};
 
 public:
+	enum ModelDisplayMode { DefaultMode, ParamsOnlyMode };
+
+public:
 	explicit FEClassPropsModel(QObject* parent = nullptr) : QAbstractItemModel(parent)
 	{
 		m_root = nullptr;
 		m_valid = true;
+		m_mode = DefaultMode;
 	}
 
 	~FEClassPropsModel() { delete m_root; }
+
+	void SetDisplayMode(ModelDisplayMode mode)
+	{
+		m_mode = mode;
+		SetClass(m_pc, m_fem);
+	}
+
+	void SetFilter(const QString& flt)
+	{
+		m_filter = flt;
+		if (m_filter.isEmpty()) SetDisplayMode(DefaultMode);
+		else SetDisplayMode(ParamsOnlyMode);
+	}
 
 	void SetClass(FSCoreBase* pc, FSModel* fem)
 	{
@@ -874,9 +764,168 @@ public:
 		{
 			m_root = new Item();
 			m_root->m_model = this;
-			m_root->addChildren(pc);
+			addChildren(m_root, pc);
 		}
 		endResetModel();
+	}
+
+	void addChildren(Item* parent, FSCoreBase* pc)
+	{
+		addParameters(parent, pc);
+
+		for (int i = 0; i < pc->Properties(); ++i)
+		{
+			FSProperty& p = pc->GetProperty(i);
+
+			if (p.maxSize() == FSProperty::NO_FIXED_SIZE)
+			{
+				if (m_mode == DefaultMode)
+				{
+					Item* item = new Item(pc, -1, i, -1, (int)parent->m_children.size());
+					item->m_model = parent->m_model; assert(parent->m_model);
+					item->m_parent = parent;
+					parent->m_children.push_back(item);
+
+					int nc = p.Size();
+					for (int j = 0; j < nc; ++j) addChild(item, pc, -1, i, j);
+				}
+				else
+				{
+					int nc = p.Size();
+					for (int j = 0; j < nc; ++j) addChild(parent, pc, -1, i, j);
+				}
+			}
+			else {
+				int nc = p.Size();
+				for (int j = 0; j < nc; ++j) addChild(parent, pc, -1, i, j);
+
+//				if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
+//				{
+//					addChild(parent, pc, -1, i, -1);
+//				}
+			}
+		}		
+	}
+
+	void addParameters(Item* parent, FSCoreBase* pc)
+	{
+		pc->UpdateData(false);
+		int currentGroup = -1;
+		ParamBlock& PB = pc->GetParamBlock();
+		int NPG = PB.ParameterGroups();
+		Item* item = parent;
+		for (int n = -1; n < NPG; ++n)
+		{
+			if (n != -1)
+			{
+				item = addChild(parent, pc, -1, -1, n);
+			}
+			for (int i = 0; i < pc->Parameters(); ++i)
+			{
+				Param& p = pc->GetParam(i);
+				if (p.GetParameterGroup() == n)
+				{
+					if (p.IsVisible())
+					{
+						if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
+							addChild(item, pc, i, -1, -1);
+						else if (p.IsPersistent() == false)
+						{
+							addChild(item, pc, i, -1, -1);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	Item* addChild(Item* parent, FSCoreBase* pc, int paramId, int propId, int index)
+	{
+		// check for a special case first
+		if (pc && (paramId >= 0) && (index == -1))
+		{
+			Param& p = pc->GetParam(paramId);
+			if ((p.GetParamType() == Param_STD_VECTOR_INT) && (p.GetEnumNames()))
+			{
+				FSModel* fem = parent->m_model->m_fem;
+				QStringList keys = GetEnumValues(fem, p.GetEnumNames());
+				for (int i = 0; i < keys.size(); ++i)
+				{
+					addItem(parent, pc, paramId, -1, i);
+				}
+				return nullptr;
+			}
+		}
+
+		Item* item = nullptr;
+		if ((m_mode == DefaultMode) || (paramId >= 0))
+		{
+			item = addItem(parent, pc, paramId, propId, index);
+		}
+		else item = parent;
+
+		if (pc && (paramId >= 0) && (index == -1))
+		{
+			Param& p = pc->GetParam(paramId);
+			if (p.GetParamType() == Param_STD_VECTOR_DOUBLE)
+			{
+				std::vector<double> v = p.GetVectorDoubleValue();
+				for (int i = 0; i < v.size(); ++i)
+				{
+					addChild(item, pc, paramId, -1, i);
+				}
+			}
+			else if (p.GetParamType() == Param_STD_VECTOR_VEC2D)
+			{
+				std::vector<vec2d> v = p.GetVectorVec2dValue();
+				for (int i = 0; i < v.size(); ++i)
+				{
+					addChild(item, pc, paramId, -1, i);
+				}
+			}
+		}
+		else if (propId >= 0)
+		{
+			FSCoreBase* pci = pc->GetProperty(propId, index);
+			if (pci)
+			{
+				// don't add children of classes that have custom widgets
+				FSFunction1D* pf = dynamic_cast<FSFunction1D*>(pci);
+				if (pf && (pf->IsType("point") || pf->IsType("math")))
+					return item;
+
+				// don't add mesh selection 
+				FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pci);
+				if (pms) return item;
+
+				addChildren(item, pci);
+			}
+		}
+		return item;
+	}
+
+	Item* addItem(Item* parent, FSCoreBase* pc, int paramId, int propId, int index)
+	{
+		if ((m_mode == ParamsOnlyMode) && (m_filter.isEmpty() == false))
+		{
+			if (paramId >= 0)
+			{
+				Param& p = pc->GetParam(paramId);
+				QString name = p.GetLongName();
+
+				if (name.contains(m_filter, Qt::CaseInsensitive) == false)
+				{
+					return parent;
+				}
+			}
+			else return parent;
+		}
+
+		Item* item = new Item(pc, paramId, propId, index, (int)parent->m_children.size());
+		item->m_model = parent->m_model; assert(parent->m_model);
+		item->m_parent = parent;
+		parent->m_children.push_back(item);
+		return item;
 	}
 
 	bool isProperty(const QModelIndex& index)
@@ -1087,6 +1136,8 @@ private:
 	FSCoreBase*		m_pc;
 	Item*			m_root;
 	bool		m_valid;
+	int			m_mode;
+	QString		m_filter;
 };
 
 FSModel* FEClassPropsModel::Item::GetFSModel()
@@ -1533,11 +1584,46 @@ void FEClassPropsView::onModelDataChanged()
 	}
 }
 
+void FEClassPropsView::setFilter(const QString& flt)
+{
+	m_model->SetFilter(flt);
+}
+
+//=============================================================================
+FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
+{
+	QVBoxLayout* l = new QVBoxLayout;
+
+	m_flt = new QLineEdit;
+	QHBoxLayout* h = new QHBoxLayout;
+	h->addWidget(new QLabel("Filter:"));
+	h->addWidget(m_flt);
+	l->addLayout(h);
+
+	l->addWidget(m_view = new FEClassPropsView);
+
+	setLayout(l);
+
+	QObject::connect(m_flt, SIGNAL(textChanged(const QString&)), m_view, SLOT(setFilter(const QString&)));
+}
+
+void FEClassPropsWidget::SetFEClass(FSCoreBase* pc, FSModel* fem)
+{
+	m_view->SetFEClass(nullptr, fem);
+	m_flt->setText("");
+	m_view->SetFEClass(pc, fem);
+}
+
+FSProperty* FEClassPropsWidget::getProperty(const QModelIndex& index)
+{
+	return m_view->getProperty(index);
+}
+
 //=============================================================================
 class FEClassEditUI
 {
 public:
-	FEClassPropsView* feprops;
+	FEClassPropsWidget* feprops;
 	QStackedWidget* stack;
 
 	CCurveEditWidget* plt;
@@ -1553,7 +1639,7 @@ public:
 		m_pf = nullptr;
 		m_pms = nullptr;
 
-		feprops = new FEClassPropsView;
+		feprops = new FEClassPropsWidget;
 
 		stack = new QStackedWidget;
 		stack->addWidget(plt  = new CCurveEditWidget);
