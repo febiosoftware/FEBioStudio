@@ -158,7 +158,7 @@ public:
 	void SetDefaultPlotVariables();
 
 	int GetModule() const;
-	void SetModule(int mod);
+	void SetModule(int mod, bool setDefaultPlotVariables = true);
 
 	std::string GetModuleName() const;
 

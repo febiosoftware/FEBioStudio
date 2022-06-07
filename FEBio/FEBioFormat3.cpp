@@ -220,7 +220,7 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 
 	int moduleId = FEBio::GetModuleId(sztype);
 	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
-	FileReader()->GetProject().SetModule(moduleId);
+	FileReader()->GetProject().SetModule(moduleId, false);
 	return (moduleId != -1);
 }
 //=============================================================================

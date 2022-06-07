@@ -180,7 +180,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 	XMLAtt& atype = tag.Attribute("type");
 	int moduleId = FEBio::GetModuleId(atype.cvalue()); assert(moduleId >= 0);
 	FEBio::SetActiveModule(moduleId);
-	FileReader()->GetProject().SetModule(moduleId);
+	FileReader()->GetProject().SetModule(moduleId, false);
 	return (moduleId != -1);
 }
 //=============================================================================
