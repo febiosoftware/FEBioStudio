@@ -114,6 +114,8 @@ public:
 
 	FEItemListBuilder* Copy() override { return nullptr; }
 
+	vector<int> GetFaceList() const { return m_Face; }
+
 public:
 	vector<int>	m_Face;	// face indices
 };
@@ -126,6 +128,8 @@ public:
 	FENodeSet(FECoreMesh* pm) : Post::FEGroup(pm, FE_NODESET){}
 
 	FEItemListBuilder* Copy() override { return nullptr; }
+
+	vector<int> GetNodeList() const { return m_Node; }
 
 public:
 	vector<int>	m_Node;
