@@ -723,10 +723,34 @@ void CPostModelPanel::BuildModelTree()
 				Post::FEPostMesh& mesh = *fem->GetFEMesh(0);
 				CModelTreeItem* pi2 = ui->AddItem(pi1, mdl, "Mesh", "mesh", new CMeshProps(fem), CModelTreeItem::ALL_FLAGS);
 
-				for (int i = 0; i < mesh.Parts(); ++i)
+				if (mesh.NodeSets() > 0)
 				{
-					Post::FSPart& part = mesh.Part(i);
-					ui->AddItem(pi2, &part, QString::fromStdString(part.GetName()), "", nullptr, CModelTreeItem::ALL_FLAGS);
+					CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, "Node Sets", "", nullptr, CModelTreeItem::ALL_FLAGS);
+					for (int i = 0; i < mesh.NodeSets(); ++i)
+					{
+						Post::FSNodeSet& nset = mesh.NodeSet(i);
+						ui->AddItem(pi3, &nset, QString::fromStdString(nset.GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
+					}
+				}
+
+				if (mesh.Surfaces() > 0)
+				{
+					CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, "Surfaces", "", nullptr, CModelTreeItem::ALL_FLAGS);
+					for (int i = 0; i < mesh.Surfaces(); ++i)
+					{
+						Post::FSSurface& surf = mesh.Surface(i);
+						ui->AddItem(pi3, &surf, QString::fromStdString(surf.GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
+					}
+				}
+
+				if (mesh.Parts() > 0)
+				{
+					CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, "Element Sets", "", nullptr, CModelTreeItem::ALL_FLAGS);
+					for (int i = 0; i < mesh.Parts(); ++i)
+					{
+						Post::FSPart& part = mesh.Part(i);
+						ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
+					}
 				}
 
 				GObject* po = pdoc->GetActiveObject();
@@ -1110,6 +1134,24 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		return;
 	}
 
+	Post::FSNodeSet* ns = dynamic_cast<Post::FSNodeSet*>(po);
+	if (ns)
+	{
+		QMenu menu(this);
+		menu.addAction("Select Nodes", this, SLOT(OnSelectNodes()));
+		menu.exec(ev->globalPos());
+		return;
+	}
+
+	Post::FSSurface* ps = dynamic_cast<Post::FSSurface*>(po);
+	if (ns)
+	{
+		QMenu menu(this);
+		menu.addAction("Select Faces", this, SLOT(OnSelectFaces()));
+		menu.exec(ev->globalPos());
+		return;
+	}
+
 	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
 	if (pg)
 	{
@@ -1128,6 +1170,42 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
 		menu.exec(ev->globalPos());
 		return;
+	}
+}
+
+void CPostModelPanel::OnSelectNodes()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::FSNodeSet* pg = dynamic_cast<Post::FSNodeSet*>(po);
+	if (pg)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		pdoc->SetItemMode(ITEM_NODE);
+		vector<int>pgl = pg->GetNodeList();
+		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
+		GetMainWindow()->UpdateGLControlBar();
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnSelectFaces()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::FSSurface* pg = dynamic_cast<Post::FSSurface*>(po);
+	if (pg)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
+		pdoc->SetItemMode(ITEM_FACE);
+		vector<int>pgl = pg->GetFaceList();
+		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
+		GetMainWindow()->UpdateGLControlBar();
+		GetMainWindow()->RedrawGL();
 	}
 }
 

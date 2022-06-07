@@ -115,6 +115,8 @@ public:
 
 	void GetNodeList(std::vector<int>& node, std::vector<int>& lnode);
 
+	std::vector<int> GetFaceList() const { return m_Face; }
+
 public:
 	std::vector<int>	m_Face;	// face indices
 };
@@ -125,6 +127,8 @@ class FSNodeSet : public MeshItemList
 {
 public:
 	FSNodeSet(FSCoreMesh* pm) : MeshItemList(pm, FE_NODESET){}
+
+	std::vector<int> GetNodeList() const { return m_Node; }
 
 public:
 	std::vector<int>	m_Node;

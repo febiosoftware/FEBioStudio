@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QCheckBox>
+#include <QRadioButton>
 #include <QAction>
 #include <QMenu>
 #include <QComboBox>
@@ -1163,6 +1165,79 @@ void CPostDataPanel::on_AddFilter_triggered()
 	}
 }
 
+
+//=============================================================================
+class Ui::CDlgExportData
+{
+public:
+	QCheckBox* cb;
+	QRadioButton* pb1;
+	QRadioButton* pb2;
+	QRadioButton* pb3;
+	QLineEdit* pitems;
+
+public:
+	void setup(QDialog* dlg)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+
+		cb = new QCheckBox("Selection only");
+		l->addWidget(cb);
+
+		QVBoxLayout* pg = new QVBoxLayout;
+		pg->addWidget(pb1 = new QRadioButton("Write all states"));
+		pg->addWidget(pb2 = new QRadioButton("Write current state only"));
+		pg->addWidget(pb3 = new QRadioButton("Write states from list:"));
+		l->addLayout(pg);
+
+		pb1->setChecked(true);
+
+		l->addWidget(pitems = new QLineEdit);
+		l->addWidget(new QLabel("(e.g.:1,2,3:6,10:100:5)"));
+		
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+		l->addWidget(bb);
+		dlg->setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+	}
+};
+
+CDlgExportData::CDlgExportData(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgExportData())
+{
+	ui->setup(this);
+}
+
+CDlgExportData::~CDlgExportData()
+{
+	delete ui;
+}
+
+bool CDlgExportData::selectionOnly() const
+{
+	return ui->cb->isChecked();
+}
+
+int CDlgExportData::stateOutputOption() const
+{
+	int nop = -1;
+	if (ui->pb1->isChecked()) nop = 0;
+	if (ui->pb2->isChecked()) nop = 1;
+	if (ui->pb3->isChecked()) nop = 2;
+	return nop;
+}
+
+QString CDlgExportData::stateList() const
+{
+	return ui->pitems->text();
+}
+
+// see DlgFind.cpp
+bool string_to_int_list(QString listString, std::vector<int>& list);
+
+//=============================================================================
 void CPostDataPanel::on_ExportButton_clicked()
 {
 	QItemSelectionModel* select = ui->list->selectionModel();
@@ -1179,10 +1254,37 @@ void CPostDataPanel::on_ExportButton_clicked()
 			QString file = QFileDialog::getSaveFileName(this, "Export Data");
 			if (file.isEmpty() == false)
 			{
-				std::string sfile = file.toStdString();
-				if (Post::ExportDataField(fem, *pdf, sfile.c_str()) == false)
+				CDlgExportData dlg(this);
+				if (dlg.exec())
 				{
-					QMessageBox::critical(this, "Export Data", "Export Failed!");
+					bool selectionOnly = dlg.selectionOnly();
+
+					int op = dlg.stateOutputOption();
+					vector<int> states;
+					switch (op)
+					{
+					case 0: for (int i = 0; i < fem.GetStates(); ++i) states.push_back(i); break;
+					case 1: states.push_back(fem.CurrentTimeIndex()); break;
+					case 2:
+					{
+						QString s = dlg.stateList();
+						if (string_to_int_list(s, states) == false)
+						{
+							QMessageBox::critical(this, "Export Data", "List of export states is not valid.");
+							return;
+						}
+					}
+					break;
+					default:
+						assert(false);
+						return;
+					}
+
+					std::string sfile = file.toStdString();
+					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, states) == false)
+					{
+						QMessageBox::critical(this, "Export Data", "Export Failed!");
+					}
 				}
 			}
 		}

@@ -432,7 +432,7 @@ Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 
 //=================================================================================================
 
-bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, const char* szfile)
+bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, const char* szfile, bool selOnly, const std::vector<int>& states)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -441,22 +441,22 @@ bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, con
 	int nfield = df.GetFieldID();
 	if (IS_NODE_FIELD(nfield))
 	{
-		bret = Post::ExportNodeDataField(fem, df, fp);
+		bret = Post::ExportNodeDataField(fem, df, fp, selOnly, states);
 	}
 	else if (IS_ELEM_FIELD(nfield))
 	{
-		bret = Post::ExportElementDataField(fem, df, fp);
+		bret = Post::ExportElementDataField(fem, df, fp, selOnly, states);
 	}
 	else if (IS_FACE_FIELD(nfield))
 	{
-		bret = Post::ExportFaceDataField(fem, df, fp);
+		bret = Post::ExportFaceDataField(fem, df, fp, selOnly, states);
 	}
 	fclose(fp);
 
 	return bret;
 }
 
-bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp)
+bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -464,7 +464,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	// get the mesh
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	int nstates = fem.GetStates();
+	int nstates = (int) states.size();
 
 	// loop over all nodes
 	int NN = mesh.Nodes();
@@ -472,50 +472,53 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	{
 		FSNode& node = mesh.Node(i);
 
-		// write the node ID
-		fprintf(fp, "%d,", i + 1);
-
-		// loop over all states
-		for (int n = 0; n<nstates; ++n)
+		if ((selOnly == false) || node.IsSelected())
 		{
-			FEState& s = *fem.GetState(n);
+			// write the node ID
+			fprintf(fp, "%d,", i + 1);
 
-			FEMeshData& d = s.m_Data[ndata];
-			Data_Format fmt = d.GetFormat();
-			switch (d.GetType())
+			// loop over all states
+			for (int n = 0; n < nstates; ++n)
 			{
-			case DATA_FLOAT:
-			{
-				FENodeData_T<float>* pf = dynamic_cast<FENodeData_T<float>*>(&d);
-				float f; pf->eval(i, &f);
-				fprintf(fp, "%g", f);
+				FEState& s = *fem.GetState( states[n] );
+
+				FEMeshData& d = s.m_Data[ndata];
+				Data_Format fmt = d.GetFormat();
+				switch (d.GetType())
+				{
+				case DATA_FLOAT:
+				{
+					FENodeData_T<float>* pf = dynamic_cast<FENodeData_T<float>*>(&d);
+					float f; pf->eval(i, &f);
+					fprintf(fp, "%g", f);
+				}
+				break;
+				case DATA_VEC3F:
+				{
+					FENodeData_T<vec3f>* pf = dynamic_cast<FENodeData_T<vec3f>*>(&d);
+					vec3f f; pf->eval(i, &f);
+					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+				}
+				break;
+				case DATA_MAT3FS:
+				{
+					FENodeData_T<mat3fs>* pf = dynamic_cast<FENodeData_T<mat3fs>*>(&d);
+					mat3fs f; pf->eval(i, &f);
+					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+				}
+				break;
+				}
+				if (n != nstates - 1) fprintf(fp, ",");
 			}
-			break;
-			case DATA_VEC3F:
-			{
-				FENodeData_T<vec3f>* pf = dynamic_cast<FENodeData_T<vec3f>*>(&d);
-				vec3f f; pf->eval(i, &f);
-				fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
-			}
-			break;
-			case DATA_MAT3FS:
-			{
-				FENodeData_T<mat3fs>* pf = dynamic_cast<FENodeData_T<mat3fs>*>(&d);
-				mat3fs f; pf->eval(i, &f);
-				fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
-			}
-			break;
-			}
-			if (n != nstates - 1) fprintf(fp, ",");
+			fprintf(fp, "\n");
 		}
-		fprintf(fp, "\n");
 	}
 
 	return true;
 }
 
 
-bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp)
+bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -523,7 +526,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	// get the mesh
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	int nstates = fem.GetStates();
+	int nstates = (int)states.size();
 
 	char buf[8192] = { 0 };
 
@@ -533,60 +536,62 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	{
 		FSFace& face = mesh.Face(i);
 
-		// write the element ID
-		char* sz = buf;
-		sprintf(sz, "%d,", i + 1); sz += strlen(sz);
-
-		// loop over all states
-		bool bwrite = true;
-		for (int n = 0; n<nstates; ++n)
+		if ((selOnly == false) || face.IsSelected())
 		{
-			FEState& s = *fem.GetState(n);
+			// write the element ID
+			char* sz = buf;
+			sprintf(sz, "%d,", i + 1); sz += strlen(sz);
 
-			FEMeshData& d = s.m_Data[ndata];
-			Data_Format fmt = d.GetFormat();
-			if (fmt == DATA_ITEM)
+			// loop over all states
+			bool bwrite = true;
+			for (int n = 0; n < nstates; ++n)
 			{
-				switch (d.GetType())
+				FEState& s = *fem.GetState( states[n] );
+
+				FEMeshData& d = s.m_Data[ndata];
+				Data_Format fmt = d.GetFormat();
+				if (fmt == DATA_ITEM)
 				{
-				case DATA_FLOAT:
-				{
-					FEFaceData_T<float, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<float, DATA_ITEM>*>(&d);
-					if (pf->active(i))
+					switch (d.GetType())
 					{
-						float f; pf->eval(i, &f);
-						sprintf(sz, "%g", f); sz += strlen(sz);
-					}
-					else bwrite = false;
-				}
-				break;
-				case DATA_VEC3F:
-				{
-					FEFaceData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_ITEM>*>(&d);
-					if (pf->active(i))
+					case DATA_FLOAT:
 					{
-						vec3f f; pf->eval(i, &f);
-						sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
+						FEFaceData_T<float, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<float, DATA_ITEM>*>(&d);
+						if (pf->active(i))
+						{
+							float f; pf->eval(i, &f);
+							sprintf(sz, "%g", f); sz += strlen(sz);
+						}
+						else bwrite = false;
 					}
-					else bwrite = false;
-				}
-				break;
-				case DATA_MAT3FS:
-				{
-					FEFaceData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>*>(&d);
-					if (pf->active(i))
+					break;
+					case DATA_VEC3F:
 					{
-						mat3fs f; pf->eval(i, &f);
-						sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
+						FEFaceData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_ITEM>*>(&d);
+						if (pf->active(i))
+						{
+							vec3f f; pf->eval(i, &f);
+							sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
+						}
+						else bwrite = false;
 					}
-					else bwrite = false;
+					break;
+					case DATA_MAT3FS:
+					{
+						FEFaceData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>*>(&d);
+						if (pf->active(i))
+						{
+							mat3fs f; pf->eval(i, &f);
+							sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
+						}
+						else bwrite = false;
+					}
+					break;
+					}
 				}
-				break;
-				}
-			}
-			else if (fmt == DATA_COMP)
-			{
-				int nn = face.Nodes();
+				else if (fmt == DATA_COMP)
+				{
+					int nn = face.Nodes();
 
 				switch (d.GetType())
 				{
@@ -684,17 +689,18 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 			}
 			else return false;
 
-			if (n != nstates - 1) { sprintf(sz, ",");  sz += strlen(sz); }
-		}
-		sprintf(sz, "\n");
+				if (n != nstates - 1) { sprintf(sz, ",");  sz += strlen(sz); }
+			}
+			sprintf(sz, "\n");
 
-		if (bwrite) fprintf(fp, "%s", buf);
+			if (bwrite) fprintf(fp, "%s", buf);
+		}
 	}
 
 	return true;
 }
 
-bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp)
+bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -702,7 +708,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 	// get the mesh
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	int nstates = fem.GetStates();
+	int nstates = (int)states.size();
 
 	// loop over all elements
 	int NE = mesh.Elements();
@@ -710,108 +716,111 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 	{
 		FEElement_& el = mesh.ElementRef(i);
 
-		// write the element ID
-		fprintf(fp, "%d,", i + 1);
-
-		// loop over all states
-		for (int n = 0; n<nstates; ++n)
+		if ((selOnly == false) || el.IsSelected())
 		{
-			FEState& s = *fem.GetState(n);
+			// write the element ID
+			fprintf(fp, "%d,", i + 1);
 
-			FEMeshData& d = s.m_Data[ndata];
-			Data_Format fmt = d.GetFormat();
-			if (fmt == DATA_ITEM)
+			// loop over all states
+			for (int n = 0; n < nstates; ++n)
 			{
-				switch (d.GetType())
-				{
-				case DATA_FLOAT:
-				{
-					FEElemData_T<float, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&d);
-					float f; pf->eval(i, &f);
-					fprintf(fp, "%g", f);
-				}
-				break;
-				case DATA_VEC3F:
-				{
-					FEElemData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&d);
-					vec3f f; pf->eval(i, &f);
-					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
-				}
-				break;
-				case DATA_MAT3FS:
-				{
-					FEElemData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&d);
-					mat3fs f; pf->eval(i, &f);
-					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
-				}
-				break;
-				case DATA_ARRAY:
-				{
-					FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(d);
-					int nsize = dm.arraySize();
-					vector<double> data(nsize, 0.0);
-					if (dm.active(i))
-					{
-						for (int j = 0; j < nsize; ++j) data[j] = dm.eval(i, j);
-					}
-					for (int j = 0; j < nsize; ++j)
-					{
-						fprintf(fp, "%g", data[j]);
-						if (j != nsize - 1) fprintf(fp, ",");
-					}
-				}
-				break;
-				default:
-					assert(false);
-				}
-			}
-			else if (fmt == DATA_COMP)
-			{
-				int nn = el.Nodes();
+				FEState& s = *fem.GetState(states[n]);
 
-				switch (d.GetType())
+				FEMeshData& d = s.m_Data[ndata];
+				Data_Format fmt = d.GetFormat();
+				if (fmt == DATA_ITEM)
 				{
-				case DATA_FLOAT:
+					switch (d.GetType())
+					{
+					case DATA_FLOAT:
+					{
+						FEElemData_T<float, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&d);
+						float f; pf->eval(i, &f);
+						fprintf(fp, "%g", f);
+					}
+					break;
+					case DATA_VEC3F:
+					{
+						FEElemData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&d);
+						vec3f f; pf->eval(i, &f);
+						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+					}
+					break;
+					case DATA_MAT3FS:
+					{
+						FEElemData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&d);
+						mat3fs f; pf->eval(i, &f);
+						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+					}
+					break;
+					case DATA_ARRAY:
+					{
+						FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(d);
+						int nsize = dm.arraySize();
+						vector<double> data(nsize, 0.0);
+						if (dm.active(i))
+						{
+							for (int j = 0; j < nsize; ++j) data[j] = dm.eval(i, j);
+						}
+						for (int j = 0; j < nsize; ++j)
+						{
+							fprintf(fp, "%g", data[j]);
+							if (j != nsize - 1) fprintf(fp, ",");
+						}
+					}
+					break;
+					default:
+						assert(false);
+					}
+				}
+				else if (fmt == DATA_COMP)
 				{
-					FEElemData_T<float, DATA_COMP>* pf = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&d);
-					float v[FSElement::MAX_NODES]; pf->eval(i, v);
-					float f = 0.0f;
-					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
-					fprintf(fp, "%g", f);
+					int nn = el.Nodes();
+
+					switch (d.GetType())
+					{
+					case DATA_FLOAT:
+					{
+						FEElemData_T<float, DATA_COMP>* pf = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&d);
+						float v[FSElement::MAX_NODES]; pf->eval(i, v);
+						float f = 0.0f;
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+						fprintf(fp, "%g", f);
+					}
+					break;
+					case DATA_VEC3F:
+					{
+						FEElemData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>*>(&d);
+						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
+						vec3f f(0.f, 0.f, 0.f);
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+					}
+					break;
+					case DATA_MAT3FS:
+					{
+						FEElemData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>*>(&d);
+						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
+						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+					}
+					break;
+					case DATA_MAT3D:
+					{
+						FEElemData_T<mat3d, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3d, DATA_COMP>*>(&d);
+						mat3d v[FSElement::MAX_NODES]; pf->eval(i, v);
+						mat3d f; f.zero();
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (double)nn;
+						fprintf(fp, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", f(0, 0), f(0, 1), f(0, 2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
+					}
+					break;
+					}
 				}
-				break;
-				case DATA_VEC3F:
-				{
-					FEElemData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>*>(&d);
-					vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
-					vec3f f(0.f, 0.f, 0.f);
-					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
-					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
-				}
-				break;
-				case DATA_MAT3FS:
-				{
-					FEElemData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>*>(&d);
-					mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
-					mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
-					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
-					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
-				}
-				break;
-				case DATA_MAT3D:
-				{
-					FEElemData_T<mat3d, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3d, DATA_COMP>*>(&d);
-					mat3d v[FSElement::MAX_NODES]; pf->eval(i, v);
-					mat3d f; f.zero();
-					for (int i = 0; i < nn; ++i) f += v[i]; f /= (double)nn;
-					fprintf(fp, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", f(0, 0), f(0, 1), f(0, 2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
-				}
-				break;
-				}
+				if (n != nstates - 1) fprintf(fp, ",");
 			}
-			if (n != nstates - 1) fprintf(fp, ",");
+			fprintf(fp, "\n");
 		}
-		fprintf(fp, "\n");
 	}
 
 	return true;

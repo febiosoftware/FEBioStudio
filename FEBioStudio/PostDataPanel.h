@@ -43,7 +43,23 @@ namespace Ui {
 	class CPostDataPanel;
 	class CDlgAddDataFile;
 	class CDlgFilter;
+	class CDlgExportData;
 }
+
+class CDlgExportData : public QDialog
+{
+public:
+	CDlgExportData(QWidget* parent);
+	~CDlgExportData();
+
+public:
+	bool selectionOnly() const;
+	int stateOutputOption() const;
+	QString stateList() const;
+
+private:
+	Ui::CDlgExportData* ui;
+};
 
 class CPostDataPanel : public CCommandPanel
 {
