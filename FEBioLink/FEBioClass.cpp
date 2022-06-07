@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <FECore/FEModelParam.h>
 #include <FECore/FEModule.h>
 #include <FEBioLib/FEBioModel.h>
+#include <FEBioLib/febio.h>
 #include <MeshTools/FEModel.h>
 #include <FEMLib/FEStepComponent.h>
 #include <FEMLib/FEBoundaryCondition.h>
@@ -703,7 +704,7 @@ void FEBio::TerminateRun()
 	terminateRun = true;
 }
 
-bool FEBio::runModel(const std::string& fileName, FEBioOutputHandler* outputHandler)
+bool FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 {
 	terminateRun = false;
 
@@ -719,21 +720,13 @@ bool FEBio::runModel(const std::string& fileName, FEBioOutputHandler* outputHand
 	fem.AddCallback(interrup_cb, CB_ALWAYS, nullptr);
 
 	try {
-
-		// try to read the input file
-		if (fem.Input(fileName.c_str()) == false)
+		febio::CMDOPTIONS ops;
+		if (febio::ProcessOptionsString(cmd, ops) == false)
 		{
 			return false;
 		}
 
-		// do model initialization
-		if (fem.Init() == false)
-		{
-			return false;
-		}
-
-		// solve the model
-		return fem.Solve();
+		return febio::RunModel(fem, &ops);
 	}
 	catch (...)
 	{
