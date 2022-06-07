@@ -166,10 +166,10 @@ public:
 };
 
 //-------------------------------------------------------------------------------
-bool ExportDataField(FEPostModel& fem, const FEDataField& df, const char* szfile);
-bool ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
-bool ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
-bool ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
+bool ExportDataField(FEPostModel& fem, const FEDataField& df, const char* szfile, bool selOnly, const std::vector<int>& states);
+bool ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states);
+bool ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states);
+bool ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states);
 
 //-----------------------------------------------------------------------------
 void InitStandardDataFields();
