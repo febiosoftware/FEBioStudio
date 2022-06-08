@@ -43,6 +43,8 @@ SOFTWARE.*/
 #include <string.h>
 #include "DlgEditLConfigs.h"
 #include "DlgExportFEBio.h"
+#include <FEBioLink/FEBioClass.h>
+#include <FECore/fecore_enum.h>
 
 
 class Ui::CDlgRun
@@ -54,7 +56,7 @@ public:
 	QCheckBox*	debug;
 	QCheckBox*	writeNotes;
 	QLineEdit*	configFile;
-	QLineEdit*	taskName;
+	QComboBox*	taskName;
 	QLineEdit*	taskFile;
 	QCheckBox*	autoSave;
 
@@ -116,7 +118,14 @@ public:
 		configLayout->addWidget(configFile);
 		configLayout->addWidget(selectConfigFile);
 
-		taskName = new QLineEdit;
+		taskName = new QComboBox; taskName->setEditable(true);
+		std::vector<FEBio::FEBioClassInfo> ci = FEBio::FindAllClasses(-1, FETASK_ID);
+		for (int i = 0; i < ci.size(); ++i)
+		{
+			taskName->addItem(ci[i].sztype);
+		}
+		taskName->setCurrentIndex(-1);
+
 		taskFile = new QLineEdit;
 
 		QFormLayout* form = new QFormLayout;
@@ -190,7 +199,7 @@ public:
 		QObject::connect(editCmd, SIGNAL(toggled(bool)), cmd, SLOT(setEnabled(bool)));
 		QObject::connect(selectConfigFile, SIGNAL(clicked()), dlg, SLOT(on_selectConfigFile()));
 		QObject::connect(configFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
-		QObject::connect(taskName, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
+		QObject::connect(taskName, SIGNAL(currentTextChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(taskFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 	}
 };
@@ -251,7 +260,7 @@ void CDlgRun::updateDefaultCommand()
 		QString configFile = ui->configFile->text();
 		if (configFile.isEmpty() == false) t += " -config $(ConfigFile)";
 
-		QString taskName = ui->taskName->text();
+		QString taskName = ui->taskName->currentText();
 		if (taskName.isEmpty() == false)
 		{
 			t += " -task=\"" + taskName + "\"";
