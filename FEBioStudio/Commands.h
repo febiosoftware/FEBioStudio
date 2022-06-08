@@ -745,15 +745,15 @@ protected:
 class CCmdSelectElements : public CCommand
 {
 public:
-	CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd);
+	CCmdSelectElements(FECoreMesh* pm, int* pe, int N, bool badd);
+	CCmdSelectElements(FECoreMesh* pm, vector<int>& el, bool badd);
 	~CCmdSelectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMesh*	m_pm;
+	FECoreMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
 	bool	m_badd; // add to selection or not

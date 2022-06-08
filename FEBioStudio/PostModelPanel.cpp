@@ -710,6 +710,7 @@ void CPostModelPanel::BuildModelTree()
 	{
 		Post::FEPostModel* fem = pdoc->GetFEModel();
 		Post::CGLModel* mdl = pdoc->GetGLModel();
+		GObject* po = pdoc->GetActiveObject();
 
 		CModelTreeItem* pi1 = nullptr;
 		if (mdl)
@@ -723,61 +724,66 @@ void CPostModelPanel::BuildModelTree()
 				Post::FEPostMesh& mesh = *fem->GetFEMesh(0);
 				CModelTreeItem* pi2 = ui->AddItem(pi1, mdl, "Mesh", "mesh", new CMeshProps(fem), CModelTreeItem::ALL_FLAGS);
 
-				if (mesh.NodeSets() > 0)
+				// add node sets
+				int nsets = mesh.NodeSets() + (po ? po->FENodeSets() : 0);
+				CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, QString("Node Sets (%1)").arg(nsets), "", nullptr, CModelTreeItem::ALL_FLAGS);
+				for (int i = 0; i < mesh.NodeSets(); ++i)
 				{
-					CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, "Node Sets", "", nullptr, CModelTreeItem::ALL_FLAGS);
-					for (int i = 0; i < mesh.NodeSets(); ++i)
-					{
-						Post::FENodeSet& nset = mesh.NodeSet(i);
-						ui->AddItem(pi3, &nset, QString::fromStdString(nset.GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
+					Post::FENodeSet& nset = mesh.NodeSet(i);
+					ui->AddItem(pi3, &nset, QString::fromStdString(nset.GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
 				}
-
-				if (mesh.Surfaces() > 0)
-				{
-					CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, "Surfaces", "", nullptr, CModelTreeItem::ALL_FLAGS);
-					for (int i = 0; i < mesh.Surfaces(); ++i)
-					{
-						Post::FESurface& surf = mesh.Surface(i);
-						ui->AddItem(pi3, &surf, QString::fromStdString(surf.GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
-				}
-
-				if (mesh.Parts() > 0)
-				{
-					CModelTreeItem* pi3 = ui->AddItem(pi2, nullptr, "Element Sets", "", nullptr, CModelTreeItem::ALL_FLAGS);
-					for (int i = 0; i < mesh.Parts(); ++i)
-					{
-						Post::FEPart& part = mesh.Part(i);
-						ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
-					}
-				}
-
-				GObject* po = pdoc->GetActiveObject();
 				if (po)
 				{
 					for (int i = 0; i < po->FENodeSets(); ++i)
 					{
 						FENodeSet* pg = po->GetFENodeSet(i);
-						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
+						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selNode", nullptr, CModelTreeItem::CANNOT_DISABLE);
 					}
+				}
 
+				// add edges
+				int nedges = (po ? po->FEEdgeSets() : 0);
+				pi3 = ui->AddItem(pi2, nullptr, QString("Edges (%1)").arg(nedges), "", nullptr, CModelTreeItem::ALL_FLAGS);
+				if (po)
+				{
 					for (int i = 0; i < po->FEEdgeSets(); ++i)
 					{
 						FEEdgeSet* pg = po->GetFEEdgeSet(i);
-						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selEdge", nullptr, CModelTreeItem::CANNOT_DISABLE);
+						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selEdge", nullptr, CModelTreeItem::CANNOT_DISABLE);
 					}
+				}
 
+				// add surfaces
+				int nsurf = mesh.Surfaces() + (po ? po->FESurfaces() : 0);
+				pi3 = ui->AddItem(pi2, nullptr, QString("Surfaces (%1)").arg(nsurf), "", nullptr, CModelTreeItem::ALL_FLAGS);
+				for (int i = 0; i < mesh.Surfaces(); ++i)
+				{
+					Post::FESurface& surf = mesh.Surface(i);
+					ui->AddItem(pi3, &surf, QString::fromStdString(surf.GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
+				}
+				if (po)
+				{
 					for (int i = 0; i < po->FESurfaces(); ++i)
 					{
 						FESurface* pg = po->GetFESurface(i);
-						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
+						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selFace", nullptr, CModelTreeItem::CANNOT_DISABLE);
 					}
+				}
 
+				// add element sets
+				int eset = mesh.Parts() + (po ? po->FEParts() : 0);
+				pi3 = ui->AddItem(pi2, nullptr, QString("Element Sets (%1)").arg(eset), "", nullptr, CModelTreeItem::ALL_FLAGS);
+				for (int i = 0; i < mesh.Parts(); ++i)
+				{
+					Post::FEPart& part = mesh.Part(i);
+					ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
+				}
+				if (po)
+				{
 					for (int i = 0; i < po->FEParts(); ++i)
 					{
 						FEPart* pg = po->GetFEPart(i);
-						ui->AddItem(pi2, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
+						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
 					}
 				}
 			}
@@ -971,6 +977,14 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		doc->DoCommand(new CCmdSelectFENodes(pn->GetMesh(), vitems, false));
 	}
 
+	Post::FENodeSet* pn2 = dynamic_cast<Post::FENodeSet*>(po);
+	if (pn2)
+	{
+		std::vector<int> items = pn2->GetNodeList();
+		doc->SetItemMode(ITEM_NODE);
+		doc->DoCommand(new CCmdSelectFENodes(pn2->GetMesh(), items, false));
+	}
+
 	FEEdgeSet* pe = dynamic_cast<FEEdgeSet*>(po);
 	if (pe)
 	{
@@ -988,6 +1002,13 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		doc->SetItemMode(ITEM_FACE);
 		doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), vitems, false));
 	}
+	Post::FESurface* ps2 = dynamic_cast<Post::FESurface*>(po);
+	if (ps2)
+	{
+		std::vector<int> items = ps2->GetFaceList();
+		doc->SetItemMode(ITEM_FACE);
+		doc->DoCommand(new CCmdSelectFaces(ps2->GetMesh(), items, false));
+	}
 
 	FEPart* pg = dynamic_cast<FEPart*>(po);
 	if (pg)
@@ -996,6 +1017,13 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_ELEM);
 		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
+	}
+	Post::FEPart* pg2 = dynamic_cast<Post::FEPart*>(po);
+	if (pg2)
+	{
+		std::vector<int> items = pg2->GetElementList();
+		doc->SetItemMode(ITEM_ELEM);
+		doc->DoCommand(new CCmdSelectElements(pg2->GetMesh(), items, false));
 	}
 
 	GetMainWindow()->UpdateGLControlBar();
@@ -1142,9 +1170,25 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
+	::FENodeSet* ns2 = dynamic_cast<::FENodeSet*>(po);
+	if (ns2)
+	{
+		QMenu menu(this);
+		menu.addAction("Select Nodes", this, SLOT(OnSelectNodes()));
+		menu.exec(ev->globalPos());
+		return;
+	}
 
 	Post::FESurface* ps = dynamic_cast<Post::FESurface*>(po);
-	if (ns)
+	if (ps)
+	{
+		QMenu menu(this);
+		menu.addAction("Select Faces", this, SLOT(OnSelectFaces()));
+		menu.exec(ev->globalPos());
+		return;
+	}
+	::FESurface* ps2 = dynamic_cast<::FESurface*>(po);
+	if (ps2)
 	{
 		QMenu menu(this);
 		menu.addAction("Select Faces", this, SLOT(OnSelectFaces()));
@@ -1154,6 +1198,15 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 
 	Post::FEPart* pg = dynamic_cast<Post::FEPart*>(po);
 	if (pg)
+	{
+		QMenu menu(this);
+		menu.addAction("Select Elements", this, SLOT(OnSelectElements()));
+		menu.addAction("Hide Elements", this, SLOT(OnHideElements()));
+		menu.exec(ev->globalPos());
+		return;
+	}
+	::FEPart* pg2 = dynamic_cast<::FEPart*>(po);
+	if (pg2)
 	{
 		QMenu menu(this);
 		menu.addAction("Select Elements", this, SLOT(OnSelectElements()));
@@ -1186,9 +1239,22 @@ void CPostModelPanel::OnSelectNodes()
 		pdoc->SetItemMode(ITEM_NODE);
 		vector<int>pgl = pg->GetNodeList();
 		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
-		GetMainWindow()->UpdateGLControlBar();
-		GetMainWindow()->RedrawGL();
 	}
+
+	::FENodeSet* pg2 = dynamic_cast<::FENodeSet*>(po);
+	if (pg2)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+		pdoc->SetItemMode(ITEM_NODE);
+		list<int> items = pg2->CopyItems();
+		vector<int> pgl;
+		pgl.insert(pgl.begin(), items.begin(), items.end());
+		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
+	}
+
+	GetMainWindow()->UpdateGLControlBar();
+	GetMainWindow()->RedrawGL();
 }
 
 void CPostModelPanel::OnSelectFaces()
@@ -1204,9 +1270,21 @@ void CPostModelPanel::OnSelectFaces()
 		pdoc->SetItemMode(ITEM_FACE);
 		vector<int>pgl = pg->GetFaceList();
 		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
-		GetMainWindow()->UpdateGLControlBar();
-		GetMainWindow()->RedrawGL();
 	}
+	::FESurface* pg2 = dynamic_cast<::FESurface*>(po);
+	if (pg2)
+	{
+		CPostDocument* pdoc = GetActiveDocument();
+		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
+		pdoc->SetItemMode(ITEM_FACE);
+		list<int> items = pg2->CopyItems();
+		vector<int> pgl;
+		pgl.insert(pgl.begin(), items.begin(), items.end());
+		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
+	}
+
+	GetMainWindow()->UpdateGLControlBar();
+	GetMainWindow()->RedrawGL();
 }
 
 void CPostModelPanel::OnSelectElements()
@@ -1214,33 +1292,51 @@ void CPostModelPanel::OnSelectElements()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
+	CPostDocument* pdoc = GetActiveDocument();
+	FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
 	Post::FEPart* pg = dynamic_cast<Post::FEPart*>(po);
 	if (pg)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_ELEM);
         vector<int>pgl = pg->GetElementList();
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
-		GetMainWindow()->UpdateGLControlBar();
-		GetMainWindow()->RedrawGL();
 	}
+	::FEPart* pg2 = dynamic_cast<::FEPart*>(po);
+	if (pg2)
+	{
+		pdoc->SetItemMode(ITEM_ELEM);
+		list<int> items = pg2->CopyItems();
+		vector<int> pgl;
+		pgl.insert(pgl.begin(), items.begin(), items.end());
+		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
+	}
+
+	GetMainWindow()->UpdateGLControlBar();
+	GetMainWindow()->RedrawGL();
 }
 
 void CPostModelPanel::OnHideElements()
 {
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
+	CPostDocument* pdoc = GetActiveDocument();
+	FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
 
 	Post::FEPart* pg = dynamic_cast<Post::FEPart*>(po);
 	if (pg)
 	{
-		CPostDocument* pdoc = GetActiveDocument();
-		FEMesh* mesh = pdoc->GetFEModel()->GetFEMesh(0);
-
 		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
-		GetMainWindow()->RedrawGL();
 	}
+	::FEPart* pg2 = dynamic_cast<::FEPart*>(po);
+	if (pg2)
+	{
+		list<int> items = pg2->CopyItems();
+		vector<int> pgl;
+		pgl.insert(pgl.begin(), items.begin(), items.end());
+		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));
+	}
+
+	GetMainWindow()->RedrawGL();
 }
 
 void CPostModelPanel::OnShowAllElements()

@@ -1483,7 +1483,7 @@ void CCmdInvertSelection::UnExecute()
 // CCmdSelectElements
 //////////////////////////////////////////////////////////////////////
 
-CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : CCommand("Select Elements")
+CCmdSelectElements::CCmdSelectElements(FECoreMesh* pm, int* pe, int N, bool badd) : CCommand("Select Elements")
 {
 	int i;
 
@@ -1497,7 +1497,7 @@ CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : 
 
 	// store the elements selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Element(i).IsSelected();
+	for (i = 0; i<M; ++i) m_ptag[i] = pm->ElementRef(i).IsSelected();
 
 	// store the elements we need to select
 	if (N != 0)
@@ -1508,7 +1508,7 @@ CCmdSelectElements::CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd) : 
 	}
 }
 
-CCmdSelectElements::CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd) : CCommand("Select Elements")
+CCmdSelectElements::CCmdSelectElements(FECoreMesh* pm, vector<int>& el, bool badd) : CCommand("Select Elements")
 {
 	int i;
 	int N = (int)el.size();
@@ -1523,7 +1523,7 @@ CCmdSelectElements::CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd) :
 
 	// store the elements selection state
 	m_ptag = new bool[M];
-	for (i = 0; i<M; ++i) m_ptag[i] = pm->Element(i).IsSelected();
+	for (i = 0; i<M; ++i) m_ptag[i] = pm->ElementRef(i).IsSelected();
 
 	// store the elements we need to select
 	if (N != 0)
@@ -1541,14 +1541,14 @@ void CCmdSelectElements::Execute()
 
 	if (!m_badd)
 	{
-		for (i = 0; i<m_pm->Elements(); ++i) m_pm->Element(i).Unselect();
+		for (i = 0; i<m_pm->Elements(); ++i) m_pm->ElementRef(i).Unselect();
 	}
 
 	int NE = m_pm->Elements();
 	for (i = 0; i<m_N; ++i)
 	{
 		int n = m_pel[i];
-		if ((n >= 0) && (n<NE)) m_pm->Element(n).Select();
+		if ((n >= 0) && (n<NE)) m_pm->ElementRef(n).Select();
 	}
 
 	m_pm->UpdateSelection();
@@ -1558,7 +1558,7 @@ void CCmdSelectElements::UnExecute()
 {
 	for (int i = 0; i<m_pm->Elements(); ++i)
 	{
-		FEElement& el = m_pm->Element(i);
+		FEElement_& el = m_pm->ElementRef(i);
 		if (m_ptag[i])
 			el.Select();
 		else
