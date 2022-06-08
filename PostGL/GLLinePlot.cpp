@@ -1228,6 +1228,7 @@ void LineDataModel::Clear()
 void LineData::processLines()
 {
 	int lines = Lines();
+	if (lines == 0) return;
 
 	// find the bounding box
 	BOX box;
@@ -1275,7 +1276,9 @@ void LineData::processLines()
 	mesh.BuildMesh();
 
 	// figure out the segments
-	int nsegs = mesh.Segments(); assert(nsegs >= 1);
+	int nsegs = mesh.Segments();
+	if (nsegs == 0) return;
+
 	vector<Segment> segment(nsegs, Segment(&mesh));
 	for (int i = 0; i < lines; ++i)
 	{
