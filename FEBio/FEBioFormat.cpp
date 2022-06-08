@@ -580,6 +580,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				const char* sz = tag.Name();
 				Param* p = fem.GetParam(sz);
 				if (p) p->SetFloatValue(v);
+				else fem.AddDoubleParam(v, strdup(sz));  // TODO: memory leak!!
 				++tag;
 			} while (!tag.isend());
 		}
