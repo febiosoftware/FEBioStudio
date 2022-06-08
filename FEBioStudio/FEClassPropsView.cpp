@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QApplication>
 #include <QLabel>
+#include <QToolButton>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
@@ -1593,11 +1594,16 @@ void FEClassPropsView::setFilter(const QString& flt)
 FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
 {
 	QVBoxLayout* l = new QVBoxLayout;
+	l->setContentsMargins(0, 2, 0, 0);
 
 	m_flt = new QLineEdit;
+	QToolButton* tb = new QToolButton();
+	tb->setIcon(CIconProvider::GetIcon("clear"));
+	tb->setToolTip("Clear filter");
 	QHBoxLayout* h = new QHBoxLayout;
 	h->addWidget(new QLabel("Filter:"));
 	h->addWidget(m_flt);
+	h->addWidget(tb);
 	l->addLayout(h);
 
 	l->addWidget(m_view = new FEClassPropsView);
@@ -1605,6 +1611,7 @@ FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
 	setLayout(l);
 
 	QObject::connect(m_flt, SIGNAL(textChanged(const QString&)), m_view, SLOT(setFilter(const QString&)));
+	QObject::connect(tb, SIGNAL(clicked(bool)), m_flt, SLOT(clear()));
 }
 
 void FEClassPropsWidget::SetFEClass(FSCoreBase* pc, FSModel* fem)
