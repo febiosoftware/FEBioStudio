@@ -3307,7 +3307,11 @@ void CGLView::RenderRigidConnectors()
 				FERigidSphericalJoint* pj = dynamic_cast<FERigidSphericalJoint*> (rci);
 				vec3d r = pj->GetVecValue(FERigidSphericalJoint::J_ORIG);
 
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glx::renderJoint(R);
@@ -3331,7 +3335,11 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(0, 0, 255);
+				if (pj->IsActive())
+					glColor3ub(0, 0, 255);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderRevoluteJoint(R);
 
 				glPopMatrix();
@@ -3354,7 +3362,10 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(0, 255, 0);
+				if (pj->IsActive())
+					glColor3ub(0, 255, 0);
+				else
+					glColor3ub(64, 64, 64);
 				glx::renderPrismaticJoint(R);
 
 				glPopMatrix();
@@ -3377,7 +3388,11 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(255, 0, 255);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 255);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderCylindricalJoint(R);
 
 				glPopMatrix();
@@ -3400,7 +3415,11 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(0, 255, 255);
+				if (pj->IsActive())
+					glColor3ub(0, 255, 255);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderPlanarJoint(R);
 
 				glPopMatrix();
@@ -3423,7 +3442,10 @@ void CGLView::RenderRigidConnectors()
                 glTranslatef((float)r.x, (float)r.y, (float)r.z);
                 glMultMatrixf(Q4);
                 
-				glColor3ub(255, 127, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 127, 0);
+				else
+					glColor3ub(64, 64, 64);
 
 				glx::renderRigidLock(R);
                 
@@ -3436,7 +3458,11 @@ void CGLView::RenderRigidConnectors()
 				vec3d xb = pj->GetVecValue(FERigidSpring::XB);
 
 				glPushMatrix();
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderSpring(xa, xb, R);
 				glPopMatrix();
 			}
@@ -3448,7 +3474,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPushMatrix();
 
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderDamper(xa, xb, R);
 
 				glPopMatrix();
@@ -3461,7 +3491,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPushMatrix();
 
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderContractileForce(xa, xb, R);
 
 				glPopMatrix();
