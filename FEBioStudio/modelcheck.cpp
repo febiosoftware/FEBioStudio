@@ -213,30 +213,36 @@ void check_003(FSProject& prj, std::vector<FSObject*>& objList)
 	FSModel& fem = prj.GetFSModel();
 
 	// build a material lookup table
-	int minId, maxId;
-	for (int i = 0; i < fem.Materials(); ++i)
+	int minId = 0;
+	int mats = 0;
+	vector<int> lut;
+	if (fem.Materials() > 0)
 	{
-		GMaterial* gm = fem.GetMaterial(i); assert(gm);
-		if (gm)
+		int maxId;
+		for (int i = 0; i < fem.Materials(); ++i)
 		{
-			int matId = gm->GetID();
-			if ((i == 0) || (matId < minId)) minId = matId;
-			if ((i == 0) || (matId > maxId)) maxId = matId;
-		}
-	}
-	int mats = maxId - minId + 1;
-	vector<int> lut(mats, -1);
-	for (int i = 0; i < fem.Materials(); ++i)
-	{
-		GMaterial* gm = fem.GetMaterial(i); assert(gm);
-		if (gm)
-		{
-			int matId = gm->GetID() - minId;
-			assert(matId < mats);
-			if (matId < mats)
+			GMaterial* gm = fem.GetMaterial(i); assert(gm);
+			if (gm)
 			{
-				assert(lut[matId] == -1);
-				lut[matId] = i;
+				int matId = gm->GetID();
+				if ((i == 0) || (matId < minId)) minId = matId;
+				if ((i == 0) || (matId > maxId)) maxId = matId;
+			}
+		}
+		mats = maxId - minId + 1;
+		lut.assign(mats, -1);
+		for (int i = 0; i < fem.Materials(); ++i)
+		{
+			GMaterial* gm = fem.GetMaterial(i); assert(gm);
+			if (gm)
+			{
+				int matId = gm->GetID() - minId;
+				assert(matId < mats);
+				if (matId < mats)
+				{
+					assert(lut[matId] == -1);
+					lut[matId] = i;
+				}
 			}
 		}
 	}
