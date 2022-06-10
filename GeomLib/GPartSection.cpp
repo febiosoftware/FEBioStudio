@@ -328,7 +328,7 @@ void GBeamSection::SetElementFormulation(FEBeamFormulation* form)
 	else
 	{
 		int n = form->GetClassID(); assert(n > 0);
-		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FETRUSSDOMAIN_ID);
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FEBEAMDOMAIN_ID);
 		for (int i = 0; i < l.size(); ++i)
 		{
 			if (l[i].classId == n)
@@ -352,7 +352,7 @@ bool GBeamSection::UpdateData(bool bsave)
 
 		// we subtract by one, since n==0 is the null formulation (i.e. "default"). 
 		n--;
-		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FETRUSSDOMAIN_ID);
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FEBEAMDOMAIN_ID);
 		assert((n >= 0) && (n < l.size()));
 
 		if ((m_form == nullptr) || (m_form->GetClassID() != l[n].classId))

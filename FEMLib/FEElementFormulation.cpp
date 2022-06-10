@@ -84,7 +84,7 @@ void FEShellFormulation::Load(IArchive& ar)
 //=============================================================================
 FEBeamFormulation::FEBeamFormulation(FSModel* fem) : FEElementFormulation(fem)
 {
-	m_superClassID = FETRUSSDOMAIN_ID;
+	m_superClassID = FEBEAMDOMAIN_ID;
 }
 
 void FEBeamFormulation::Save(OArchive& ar)

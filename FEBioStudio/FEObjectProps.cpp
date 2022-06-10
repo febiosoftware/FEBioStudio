@@ -892,7 +892,7 @@ QStringList CPartProperties::GetEnumValues(const char* ch)
 
 	if (strcmp(ch, "$(beam_domain)") == 0)
 	{
-		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FETRUSSDOMAIN_ID);
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FEBEAMDOMAIN_ID);
 		QStringList sl;
 		sl << "default";
 		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
