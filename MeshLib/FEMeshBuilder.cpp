@@ -1768,31 +1768,47 @@ void FEMeshBuilder::AutoPartitionElements()
 			el.m_gid = np;
 
 			// solid elements
-			int nf = el.Faces();
-			for (int i = 0; i<nf; ++i)
+			if (el.IsSolid())
 			{
-				FSElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
-				if (pj && (pj->m_ntag == 0))
+				int nf = el.Faces();
+				for (int i = 0; i < nf; ++i)
 				{
-					pj->m_ntag = 1;
-					s.push(el.m_nbr[i]);
+					FSElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
+					if (pj && (pj->m_ntag == 0))
+					{
+						pj->m_ntag = 1;
+						s.push(el.m_nbr[i]);
+					}
 				}
 			}
-
-			// shells
-			int ne = el.Edges();
-			for (int i = 0; i<ne; ++i)
+			else if (el.IsShell())
 			{
-				FSElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
-				if (pj && (pj->m_ntag == 0))
+				// shells
+				int ne = el.Edges();
+				for (int i = 0; i < ne; ++i)
 				{
-					pj->m_ntag = 1;
-					s.push(el.m_nbr[i]);
+					FSElement* pj = (el.m_nbr[i] == -1 ? 0 : &m_mesh.Element(el.m_nbr[i]));
+					if (pj && (pj->m_ntag == 0))
+					{
+						pj->m_ntag = 1;
+						s.push(el.m_nbr[i]);
+					}
 				}
 			}
 		}
 		++np;
 	}
+
+	// group all beam elements together
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = m_mesh.Element(i);
+		if (el.IsBeam())
+		{
+			el.m_gid = np;
+		}
+	}
+	m_mesh.UpdateElementPartitions();
 
 #ifdef _DEBUG
 	for (int i = 0; i<NE; ++i)

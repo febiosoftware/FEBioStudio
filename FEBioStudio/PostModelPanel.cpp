@@ -135,7 +135,8 @@ public:
 		addProperty("Nodes"         , CProperty::Int, "Number of nodes"         )->setFlags(CProperty::Visible);
 		addProperty("Faces"         , CProperty::Int, "Number of faces"         )->setFlags(CProperty::Visible);
 		addProperty("Solid Elements", CProperty::Int, "Number of solid elements")->setFlags(CProperty::Visible);
-		addProperty("Shell Elements", CProperty::Int, "Number of shell elemetns")->setFlags(CProperty::Visible);
+		addProperty("Shell Elements", CProperty::Int, "Number of shell elements")->setFlags(CProperty::Visible);
+		addProperty("Beam Elements" , CProperty::Int, "Number of beam elements" )->setFlags(CProperty::Visible);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -150,6 +151,7 @@ public:
 			case 1: v = mesh.Faces(); break;
 			case 2: v = mesh.SolidElements(); break;
 			case 3: v = mesh.ShellElements(); break;
+			case 4: v = mesh.BeamElements(); break;
 			}
 		}
 		return v;

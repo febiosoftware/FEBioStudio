@@ -70,10 +70,11 @@ class CPartInfoPanel : public QWidget
 private:
 	QLabel*	m_solid;
 	QLabel*	m_shell;
+	QLabel*	m_beam;
 
 public:
 	CPartInfoPanel(QWidget* parent = 0);
 
 	void setInfo(GPart* pg);
-	void setPartInfo(int solid, int shell);
+	void setPartInfo(int numSolid, int numShell, int numBeam);
 };
