@@ -852,6 +852,13 @@ CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
 			FEShellFormulation* form = shellSection->GetElementFormulation();
 			AddParameterList(form);
 		}
+
+		GBeamSection* beamSection = dynamic_cast<GBeamSection*>(section);
+		if (beamSection && beamSection->GetElementFormulation())
+		{
+			FEBeamFormulation* form = beamSection->GetElementFormulation();
+			AddParameterList(form);
+		}
 	}
 
 	QStringList mats;
@@ -877,6 +884,15 @@ QStringList CPartProperties::GetEnumValues(const char* ch)
 	if (strcmp(ch, "$(shell_domain)") == 0)
 	{
 		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
+		return sl;
+	}
+
+	if (strcmp(ch, "$(beam_domain)") == 0)
+	{
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FETRUSSDOMAIN_ID);
 		QStringList sl;
 		sl << "default";
 		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;

@@ -80,3 +80,43 @@ void FEShellFormulation::Load(IArchive& ar)
 	// We call this to make sure that the FEBio class has the same parameters
 	UpdateData(true);
 }
+
+//=============================================================================
+FEBeamFormulation::FEBeamFormulation(FSModel* fem) : FEElementFormulation(fem)
+{
+	m_superClassID = FETRUSSDOMAIN_ID;
+}
+
+void FEBeamFormulation::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FEElementFormulation::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBeamFormulation::Load(IArchive& ar)
+{
+	TRACE("FEBeamFormulation::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FEElementFormulation::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+	// We call this to make sure that the FEBio class has the same parameters
+	UpdateData(true);
+}

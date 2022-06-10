@@ -28,3 +28,13 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 };
+
+class FEBeamFormulation : public FEElementFormulation
+{
+public:
+	FEBeamFormulation(FSModel*);
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+};

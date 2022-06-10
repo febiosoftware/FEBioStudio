@@ -177,6 +177,7 @@ void GMeshObject::UpdateSections()
 			// see if this is a solid part, or shell part
 			bool isSolid = false;
 			bool isShell = false;
+			bool isBeam  = false;
 			bool isOther = false;
 
 			for (int j = 0; j < pm->Elements(); ++j)
@@ -186,6 +187,7 @@ void GMeshObject::UpdateSections()
 				{
 					if      (el.IsSolid()) isSolid = true;
 					else if (el.IsShell()) isShell = true;
+					else if (el.IsBeam ()) isBeam  = true;
 					else isOther = true;
 				}
 			}
@@ -200,6 +202,12 @@ void GMeshObject::UpdateSections()
 			if (isShell && (isSolid == false) && (isOther == false))
 			{
 				GShellSection* ps = new GShellSection(pg);
+				pg->SetSection(ps);
+			}
+
+			if (isBeam && (isSolid == false) && (isOther == false))
+			{
+				GBeamSection* ps = new GBeamSection(pg);
 				pg->SetSection(ps);
 			}
 		}
@@ -269,6 +277,9 @@ void GMeshObject::UpdateParts()
 
 	// sanity check
 	assert(m.CountElementPartitions() == Parts());
+
+	// update part sections
+	UpdateSections();
 }
 
 //-----------------------------------------------------------------------------

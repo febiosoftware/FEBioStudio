@@ -877,6 +877,15 @@ void FEBioInputModel::UpdateGeometry()
 
 				shellSection->SetElementFormulation(shellForm);
 			}
+
+			FEBeamFormulation* beamForm = dynamic_cast<FEBeamFormulation*>(elSet.m_form);
+			if (beamForm || (elSet.Type() == Domain::BEAM))
+			{
+				GBeamSection* beamSection = new GBeamSection(&gpart);
+				gpart.SetSection(beamSection);
+
+				beamSection->SetElementFormulation(beamForm);
+			}
         }
 	}
 }

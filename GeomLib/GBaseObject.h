@@ -83,6 +83,7 @@ public:
 
 	GPart* AddSolidPart();
 	GPart* AddShellPart();
+	GPart* AddBeamPart();
 
 	void AddFace(GFace* f);
 	GFace* AddFace();

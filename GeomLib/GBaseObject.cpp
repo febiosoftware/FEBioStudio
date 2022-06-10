@@ -558,6 +558,13 @@ GPart* GBaseObject::AddShellPart()
 	return p;
 }
 
+GPart* GBaseObject::AddBeamPart()
+{
+	GPart* p = AddPart();
+	p->SetSection(new GBeamSection(p));
+	return p;
+}
+
 //-----------------------------------------------------------------------------
 //! This function updates the type of nodes. A node is either a vertex, which
 //! means it is considered part of the geometry, or it is a shape-node, which 

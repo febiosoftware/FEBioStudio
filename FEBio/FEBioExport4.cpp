@@ -1082,6 +1082,21 @@ void FEBioExport4::WriteMeshDomainsSection()
 			}
 			else m_xml.add_empty(el);
 		}
+		else if (dom->m_elemClass == ELEM_BEAM)
+		{
+			GPart* pg = dom->m_pg;
+			el.name("BeamDomain");
+			el.add_attribute("name", dom->m_name);
+			el.add_attribute("mat", dom->m_matName);
+
+			GBeamSection* section = dynamic_cast<GBeamSection*>(pg->GetSection());
+			if (section && section->GetElementFormulation())
+			{
+				FEBeamFormulation* beam = section->GetElementFormulation();
+				WriteModelComponent(beam, el);
+			}
+			else m_xml.add_empty(el);
+		}
 		else
 		{
 			assert(false);

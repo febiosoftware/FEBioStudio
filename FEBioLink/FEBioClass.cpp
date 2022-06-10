@@ -1011,6 +1011,11 @@ FESolidFormulation* FEBio::CreateSolidFormulation(const std::string& typeStr, FS
 	return CreateModelComponent<FESolidFormulation>(FESOLIDDOMAIN_ID, typeStr, fem);
 }
 
+FEBeamFormulation* FEBio::CreateBeamFormulation(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBeamFormulation>(FETRUSSDOMAIN_ID, typeStr, fem);
+}
+
 FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags)
 {
 	switch (superClassID)

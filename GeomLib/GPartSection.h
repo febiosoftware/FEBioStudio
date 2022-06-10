@@ -19,7 +19,9 @@ private:
 
 class FESolidFormulation;
 class FEShellFormulation;
+class FEBeamFormulation;
 
+//=============================================================================
 class GSolidSection : public GPartSection
 {
 public:
@@ -40,6 +42,7 @@ private:
 	FESolidFormulation* m_form;
 };
 
+//=============================================================================
 class GShellSection : public GPartSection
 {
 public:
@@ -61,4 +64,25 @@ public:
 
 private:
 	FEShellFormulation* m_form;
+};
+
+//=============================================================================
+class GBeamSection : public GPartSection
+{
+public:
+	GBeamSection(GPart* pg);
+	~GBeamSection();
+	GBeamSection* Copy() override;
+
+	void SetElementFormulation(FEBeamFormulation* form);
+	FEBeamFormulation* GetElementFormulation();
+
+	bool UpdateData(bool bsave) override;
+
+public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+private:
+	FEBeamFormulation* m_form;
 };

@@ -265,3 +265,110 @@ GShellSection* GShellSection::Copy()
 	s->CopyParams(*this);
 	return s;
 }
+
+//========================================================================
+GBeamSection::GBeamSection(GPart* pg) : GPartSection(pg)
+{
+	AddChoiceParam(0, "type", "Beam formulation")->SetEnumNames("$(beam_domain)");
+	m_form = nullptr;
+}
+
+GBeamSection::~GBeamSection()
+{
+	delete m_form;
+}
+
+void GBeamSection::Save(OArchive& ar)
+{
+	// save the parameters
+	if (Parameters() > 0)
+	{
+		ar.BeginChunk(CID_OBJ_PARAMS);
+		{
+			ParamContainer::Save(ar);
+		}
+		ar.EndChunk();
+	}
+
+	if (m_form)
+	{
+		ar.BeginChunk(CID_OBJ_SHELL_DOMAIN);
+		{
+			m_form->Save(ar);
+		}
+		ar.EndChunk();
+	}
+}
+
+void GBeamSection::Load(IArchive& ar)
+{
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid, mid;
+		switch (ar.GetChunkID())
+		{
+		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
+		case CID_OBJ_SOLID_DOMAIN:
+		{
+			FEBeamFormulation* beam = new FEBeamFormulation(nullptr);
+			SetElementFormulation(beam);
+			beam->Load(ar);
+		}
+		break;
+		}
+		ar.CloseChunk();
+	}
+}
+
+void GBeamSection::SetElementFormulation(FEBeamFormulation* form)
+{
+	delete m_form;
+	m_form = form;
+	if (form == nullptr) SetIntValue(0, 0);
+	else
+	{
+		int n = form->GetClassID(); assert(n > 0);
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FETRUSSDOMAIN_ID);
+		for (int i = 0; i < l.size(); ++i)
+		{
+			if (l[i].classId == n)
+			{
+				// Note we add 1, since we need to offset for the "default" formulation.
+				SetIntValue(0, i + 1);
+				return;
+			}
+		}
+	}
+}
+
+FEBeamFormulation* GBeamSection::GetElementFormulation() { return m_form; }
+
+bool GBeamSection::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		int n = GetIntValue(0);
+		if (n <= 0) { delete m_form; m_form = nullptr; return true; }
+
+		// we subtract by one, since n==0 is the null formulation (i.e. "default"). 
+		n--;
+		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FETRUSSDOMAIN_ID);
+		assert((n >= 0) && (n < l.size()));
+
+		if ((m_form == nullptr) || (m_form->GetClassID() != l[n].classId))
+		{
+			delete m_form;
+			m_form = FEBio::CreateBeamFormulation(l[n].sztype, nullptr);
+			assert(m_form);
+			return true;
+		}
+	}
+	return false;
+}
+
+GBeamSection* GBeamSection::Copy()
+{
+	GBeamSection* s = new GBeamSection(nullptr);
+	s->CopyParams(*this);
+	return s;
+}

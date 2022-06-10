@@ -60,6 +60,7 @@ class FSFunction1D;
 class FSGenericClass;
 class FESolidFormulation;
 class FEShellFormulation;
+class FEBeamFormulation;
 class FSMeshAdaptor;
 
 namespace FEBio {
@@ -152,6 +153,7 @@ namespace FEBio {
 	FSGenericClass*		 CreateGenericClass     (const std::string& typeStr, FSModel* fem);
 	FEShellFormulation*  CreateShellFormulation (const std::string& typeStr, FSModel* fem);
 	FESolidFormulation*  CreateSolidFormulation (const std::string& typeStr, FSModel* fem);
+	FEBeamFormulation*   CreateBeamFormulation  (const std::string& typeStr, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL);
 	FSModelComponent* CreateClass(int classId, FSModel* fem, unsigned int flags = 0);
