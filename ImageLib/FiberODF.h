@@ -24,51 +24,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include <FECore/vec3d.h>
-#include <FSCore/FSObject.h>
-
-namespace Post{
-class CImageModel;
-};
-
-class CImageFilter : public FSObject
-{
-public:
-    CImageFilter();
-
-    virtual void ApplyFilter() = 0;
-
-    void SetImageModel(Post::CImageModel* model);
-
-protected:
-    Post::CImageModel* m_model;
-};
-
-class ThresholdImageFilter : public CImageFilter
-{
-public:
-    ThresholdImageFilter();
-
-    void ApplyFilter() override;
-};
-
 #ifdef HAS_ITK
 
-class MeanImageFilter : public CImageFilter
+#include <SimpleITK.h>
+#include <string>
+
+namespace sitk = itk::simple;
+using std::string;
+
+class matrix;
+
+class CFiberODF 
 {
+
 public:
-    MeanImageFilter();
+    CFiberODF(string& inFile, string& outFile);
 
-    void ApplyFilter() override;
-};
+    void Apply();
 
-class GaussianImageFilter : public CImageFilter
-{
-public:
-    GaussianImageFilter();
+private:
+    void butterworthFilter(sitk::Image img);
+    sitk::Image powerSpectrum(sitk::Image img);
+    void fftRadialFilter(sitk::Image img);
+    void reduceAmp(sitk::Image img, std::vector<double>* reduced);
 
-    void ApplyFilter() override;
+    std::unique_ptr<matrix> compSH(int size, double* theta, double*phi);
+    double harmonicY(int degree, int order, double theta, double phi, int numType);
+    std::unique_ptr<matrix> complLapBel_Coef();
+
+    double GFA(std::vector<double> vals);
+
+private:
+    string m_inFile;
+    string m_outFile;
+
+    float m_tLow;
+    float m_tHigh;
+
+    int m_order;
+
+
 };
 
 #endif
