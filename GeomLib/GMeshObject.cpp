@@ -165,6 +165,48 @@ bool GMeshObject::Update(bool b)
 }
 
 //-----------------------------------------------------------------------------
+void GMeshObject::UpdateSections()
+{
+	FSMesh* pm = GetFEMesh();
+
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
+		if (pg->GetSection() == nullptr)
+		{
+			// see if this is a solid part, or shell part
+			bool isSolid = false;
+			bool isShell = false;
+			bool isOther = false;
+
+			for (int j = 0; j < pm->Elements(); ++j)
+			{
+				FSElement& el = pm->Element(j);
+				if (el.m_gid == i)
+				{
+					if      (el.IsSolid()) isSolid = true;
+					else if (el.IsShell()) isShell = true;
+					else isOther = true;
+				}
+			}
+			assert(isOther == false);
+
+			if (isSolid && (isShell == false) && (isOther == false))
+			{
+				GSolidSection* ps = new GSolidSection(pg);
+				pg->SetSection(ps);
+			}
+
+			if (isShell && (isSolid == false) && (isOther == false))
+			{
+				GShellSection* ps = new GShellSection(pg);
+				pg->SetSection(ps);
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 // It is assumed that the group ID's have already been assigned to the elements.
 // This was either done by the auto-mesher or by copying the element data from
 // an existing mesh (when converting an object to a GMeshObject).
@@ -614,6 +656,14 @@ void GMeshObject::BuildGMesh()
 		for (int j=0; j<nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
 	}
 
+	// count all edges and tag nodes
+	for (int i = 0; i < pm->Edges(); ++i)
+	{
+		FSEdge& e = pm->Edge(i);
+		int ne = e.Nodes();
+		for (int j = 0; j < ne; ++j) pm->Node(e.n[j]).m_ntag = 1;
+	}
+
 	// create nodes
 	for (int i=0; i<NN; ++i)
 	{
@@ -908,7 +958,7 @@ void GMeshObject::Load(IArchive& ar)
 							//       are now managed by for the FEElementFormulation class. 
 							//		 We need to read in the parameters, and then somehow map them to the 
 							//       FEElementFormulation class. 
-							p->ParamContainer::Load(ar);
+//							p->ParamContainer::Load(ar);
 						}
 						break;
 						}
@@ -1046,6 +1096,7 @@ void GMeshObject::Load(IArchive& ar)
 	}
 
 //	Update(false);
+	UpdateSections();
 	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
 	UpdateEdges(); // we need to call this since the edge nodes are not stored
 	UpdateNodes(); // we need to call this because the GNode::m_fenode is not stored

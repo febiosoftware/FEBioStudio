@@ -283,6 +283,7 @@ FSElementEdgeList::FSElementEdgeList(const FSMesh& mesh, const FSEdgeList& ET)
 		{
 		case FE_TET4  :
 		case FE_TET5  : nedges =  6; lut = ETET; break;
+		case FE_TET10 : nedges =  6; lut = ETET; break;
 		case FE_HEX8  : nedges = 12; lut = EHEX; break;
 		case FE_PENTA6: nedges =  9; lut = EPENTA; break;
 		case FE_TRI3  : nedges =  3; lut = ETRI; break;

@@ -679,6 +679,7 @@ private:
 	QLineEdit* m_var;
 	QLineEdit* m_flt;
 	QLineEdit* m_aka;
+	QComboBox* m_cat;
 
 public:
 	CNewVariableDialog(QWidget* parent) : QDialog(parent) 
@@ -687,8 +688,13 @@ public:
 
 		QFormLayout* f = new QFormLayout;
 		f->addRow("Variable", m_var = new QLineEdit);
+		f->addRow("Category", m_cat = new QComboBox);
 		f->addRow("Filter"  , m_flt = new QLineEdit);
 		f->addRow("Alias"   , m_aka = new QLineEdit);
+
+		m_cat->addItem("Node variable");
+		m_cat->addItem("Element variable");
+		m_cat->addItem("Face variable");
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
@@ -705,6 +711,18 @@ public:
 	QString getVariable() const { return m_var->text(); }
 	QString getFilter() const { return m_flt->text(); }
 	QString getAlias() const { return m_aka->text(); }
+	DOMAIN_TYPE getCategory() const
+	{
+		int n = m_cat->currentIndex();
+		switch (n)
+		{
+		case 0: return DOMAIN_MESH; break;
+		case 1: return DOMAIN_PART; break;
+		case 2: return DOMAIN_SURFACE; break;
+		}
+		assert(false);
+		return DOMAIN_MESH;
+	}
 
 	QString getFullVariableName() const
 	{
@@ -726,6 +744,7 @@ void CDlgEditOutput::OnNewVariable()
 	if (dlg.exec())
 	{
 		QString s = dlg.getFullVariableName();
+		DOMAIN_TYPE n = dlg.getCategory();
 		if (s.isEmpty() == false)
 		{
 			string varName = s.toStdString();
@@ -739,7 +758,7 @@ void CDlgEditOutput::OnNewVariable()
 					return;
 				}
 			}
-			CPlotVariable var(s.toStdString(), true, true, DOMAIN_MESH);
+			CPlotVariable var(s.toStdString(), true, true, n);
 			ui->m_plt.push_back(var);
 			UpdateVariables("");
 			ui->setCurrentVariable(s);

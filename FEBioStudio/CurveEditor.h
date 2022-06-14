@@ -83,6 +83,11 @@ private slots:
 	void on_selectLC_currentIndexChanged(int index);
 	void on_plot_dataChanged();
 	void on_math_mathChanged(QString s);
+	void on_math2_mathChanged(QString s);
+	void on_math2_leftExtendChanged(int n);
+	void on_math2_rightExtendChanged(int n);
+	void on_math2_minChanged(double v);
+	void on_math2_maxChanged(double v);
 
 private:
 	Ui::CCurveEdior*	ui;

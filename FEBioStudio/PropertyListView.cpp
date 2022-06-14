@@ -229,7 +229,7 @@ public:
 					{
 						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_SCALAR);
 					}
-					if (s.empty()) s = "(please select)";
+					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
 				}
 				else if (role == Qt::EditRole) return v;
@@ -244,7 +244,7 @@ public:
 					{
 						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_VECTOR);
 					}
-					if (s.empty()) s = "(please select)";
+					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
 				}
 				else if (role == Qt::EditRole) return v;
@@ -259,7 +259,7 @@ public:
 					{
 						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_TENSOR2);
 					}
-					if (s.empty()) s = "(please select)";
+					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
 				}
 				else if (role == Qt::EditRole) return v;

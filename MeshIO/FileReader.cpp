@@ -48,6 +48,7 @@ FileReader::FileReader()
 	m_fp = 0;
 	m_nfilesize = 0;
 	m_cancelled = false;
+	m_nerrors = 0;
 }
 
 FileReader::~FileReader()
@@ -161,10 +162,13 @@ bool FileReader::errf(const char* szerr, ...)
 
 	m_nerrors++;
 
-	// close the file
-	Close();
-
 	return false;
+}
+
+void FileReader::ClearErrors()
+{
+	m_err.clear();
+	m_nerrors = 0;
 }
 
 float FileReader::GetFileProgress() const

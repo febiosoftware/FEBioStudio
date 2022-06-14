@@ -29,7 +29,7 @@ SOFTWARE.*/
 class CMainWindow;
 class CDocument;
 
-namespace PRV {
+namespace FBS {
 
 CMainWindow* getMainWindow();
 

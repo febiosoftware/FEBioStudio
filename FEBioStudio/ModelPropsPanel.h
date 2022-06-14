@@ -189,6 +189,12 @@ private slots:
 	void on_bcobject_stateChanged(bool isActive);
 	void on_object_statusChanged(bool b);
 	void on_math_mathChanged(QString m);
+	void on_math2_mathChanged(QString m);
+	void on_math2_leftExtendChanged(int n);
+	void on_math2_rightExtendChanged(int n);
+	void on_math2_minChanged(double vmin);
+	void on_math2_maxChanged(double vmax);
+
 	void on_plt_dataChanged();
 
 private:

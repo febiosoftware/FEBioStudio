@@ -121,12 +121,12 @@ void CPlotDataSettings::Init()
 /*
 	// add default plot file variables
 	AddPlotVariable(MODULE_MECH, "acceleration"                      );
-	AddPlotVariable(MODULE_MECH, "contact area"                      );
-	AddPlotVariable(MODULE_MECH, "contact force"                     );
+	AddPlotVariable(MODULE_MECH, "contact area"                      , false, true, DOMAIN_SURFACE);
+	AddPlotVariable(MODULE_MECH, "contact force"                     , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "contact gap"                       , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "contact penalty"                   , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "contact pressure"                  , false, true, DOMAIN_SURFACE);
-	AddPlotVariable(MODULE_MECH, "contact stick"                     );
+	AddPlotVariable(MODULE_MECH, "contact stick"                     , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "contact traction"                  , false, true, DOMAIN_SURFACE);
 	AddPlotVariable(MODULE_MECH, "current density"                   );
     AddPlotVariable(MODULE_MECH, "damage"                            );
@@ -159,11 +159,11 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "left stretch"                      );
     AddPlotVariable(MODULE_MECH, "material axes"                     );
     AddPlotVariable(MODULE_MECH, "nested damage"                     );
-    AddPlotVariable(MODULE_MECH, "nodal contact gap"                 );
-    AddPlotVariable(MODULE_MECH, "nodal contact pressure"            );
-    AddPlotVariable(MODULE_MECH, "nodal contact traction"            );
+    AddPlotVariable(MODULE_MECH, "nodal contact gap"                 , false, true, DOMAIN_SURFACE);
+    AddPlotVariable(MODULE_MECH, "nodal contact pressure"            , false, true, DOMAIN_SURFACE);
+    AddPlotVariable(MODULE_MECH, "nodal contact traction"            , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "nodal stress"                      );
-    AddPlotVariable(MODULE_MECH, "nodal surface traction"            );
+    AddPlotVariable(MODULE_MECH, "nodal surface traction"            , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "nodal vector gap"                  );
     AddPlotVariable(MODULE_MECH, "octahedral plastic strain"         );
     AddPlotVariable(MODULE_MECH, "rate of deformation"               );
@@ -201,7 +201,8 @@ void CPlotDataSettings::Init()
     AddPlotVariable(MODULE_MECH, "PK1 stress"                        );
     AddPlotVariable(MODULE_MECH, "PK2 stress"                        );
     AddPlotVariable(MODULE_MECH, "surface area"                      , false, true, DOMAIN_SURFACE);
-    AddPlotVariable(MODULE_MECH, "surface traction"                  );
+    AddPlotVariable(MODULE_MECH, "facet area"                        , false, true, DOMAIN_SURFACE);
+    AddPlotVariable(MODULE_MECH, "surface traction"                  , false, true, DOMAIN_SURFACE);
     AddPlotVariable(MODULE_MECH, "uncoupled pressure"                );
     AddPlotVariable(MODULE_MECH, "vector gap"                        );
     AddPlotVariable(MODULE_MECH, "velocity"                          );
@@ -378,7 +379,14 @@ void CPlotDataSettings::Load(IArchive& ar)
 			for (int i=0; i<dom.size(); ++i)
 			{
 				FEItemListBuilder* pl = mdl.FindNamedSelection(dom[i]);
-				if (pl) pv->addDomain(pl);
+				if (pl)
+				{
+					pv->addDomain(pl);
+
+					// The domain type was not store, so we'll have to use
+					// some heuristics to determine it. 
+					if (dynamic_cast<FSSurface*>(pl)) pv->setDomainType(DOMAIN_SURFACE);
+				}
 			}
 		}
 		ar.CloseChunk();

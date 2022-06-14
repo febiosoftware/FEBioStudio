@@ -49,6 +49,8 @@ GLWidget* GLWidget::m_pfocus = 0;
 
 GLColor GLWidget::m_base = GLColor(0,0,0);
 
+QFont GLWidget::m_defaultFont("Helvetica", 13);
+
 std::map<std::string, std::string>	GLWidget::m_stringTable;
 
 GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
@@ -71,9 +73,7 @@ GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 	m_bgLineSize = 1;
 	m_bgLineColor = GLColor(0, 0, 0, 0);
 
-	m_font = QFont("Helvetica", 13);
-	m_font.setBold(false);
-	m_font.setItalic(false);
+	m_font = m_defaultFont;
 
 	m_nsnap = 0;
 

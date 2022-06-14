@@ -309,7 +309,7 @@ endif()
 # Find FEBio Libs
 set(FEBio_LIBS "")
 
-set(FEBio_LIB_NAMES fecore febiolib febiomech xml)
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
 foreach(name IN LISTS FEBio_LIB_NAMES)
     findLib(FEBio_LIB_DIR FEBio_LIB ${name})
@@ -323,7 +323,7 @@ unset(FEBio_LIB_NAMES)
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
-    add_definitions(-DWIN32)
+    add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)

@@ -227,11 +227,11 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 		// This is only done if the material specifies the "user" fiber property
 		bool writeFibers = false;
 
-		FSProperty* fiberProp = pmat->FindProperty("fiber");
+		FSProperty* fiberProp = (pmat ? pmat->FindProperty("fiber") : nullptr);
 		if (fiberProp && fiberProp->Size() == 1)
 		{
 			FSCoreBase* fib = fiberProp->GetComponent(0);
-			if (strcmp(fib->GetTypeString(), "user") == 0)
+			if (fib && (strcmp(fib->GetTypeString(), "user") == 0))
 			{
 				m_bdata = true;
 			}
@@ -377,6 +377,21 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 					if (name.empty()) name = psf->GetName();
 
 					AddSurface(name, pi);
+				}
+			}
+		}
+		for (int j = 0; j < pstep->MeshAdaptors(); ++j)
+		{
+			FSMeshAdaptor* pma = pstep->MeshAdaptor(j);
+			if (pma->IsActive())
+			{
+				FEItemListBuilder* pi = pma->GetItemList();
+				if (pi)
+				{
+					string name = pi->GetName();
+					if (name.empty()) name = pma->GetName();
+
+					AddElemSet(name, pi);
 				}
 			}
 		}
@@ -649,6 +664,17 @@ bool FEBioExport4::Write(const char* szfile)
 				m_xml.add_branch("MeshData");
 				{
 					WriteMeshDataSection();
+				}
+				m_xml.close_branch(); // MeshData
+			}
+
+			// output mesh adaptor section
+			int nma = pstep->MeshAdaptors();
+			if ((nma > 0) && m_section[FEBIO_MESHADAPTOR])
+			{
+				m_xml.add_branch("MeshAdaptor");
+				{
+					WriteMeshAdaptorSection(*pstep);
 				}
 				m_xml.close_branch(); // MeshData
 			}
@@ -2051,7 +2077,7 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 		if (fiberProp && fiberProp->Size() == 1)
 		{
 			FSCoreBase* fib = fiberProp->GetComponent(0);
-			if (strcmp(fib->GetTypeString(), "user") == 0)
+			if (fib && (strcmp(fib->GetTypeString(), "user") == 0))
 			{
 				writeFibers = true;
 			}
@@ -2343,6 +2369,31 @@ void FEBioExport4::WriteNodeDataSection()
 				}
 				m_xml.close_branch();
 			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::WriteMeshAdaptorSection(FSStep& s)
+{
+	FSModel& fem = *m_pfem;
+	for (int i = 0; i < s.MeshAdaptors(); ++i)
+	{
+		FSMeshAdaptor* mda = s.MeshAdaptor(i);
+		if (mda && mda->IsActive())
+		{
+			XMLElement el("mesh_adaptor");
+			string name = mda->GetName();
+			if (name.empty() == false) el.add_attribute("name", name);
+
+			FEItemListBuilder* pi = mda->GetItemList();
+			if (pi)
+			{
+				string elSet = GetElementSetName(pi);
+				el.add_attribute("elem_set", elSet);
+			}
+
+			WriteModelComponent(mda, el);
 		}
 	}
 }

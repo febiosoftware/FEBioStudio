@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QStackedWidget>
 #include <QApplication>
+#include <QLabel>
+#include <QToolButton>
 #include "EditVariableParam.h"
 #include "units.h"
 #include "PropertyList.h"
@@ -44,13 +46,62 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <QStandardItemModel>
 #include <QSpinBox>
+#include <QMessageBox>
 #include <FSCore/FSCore.h>
 #include "SelectionBox.h"
+#include "DlgAddPhysicsItem.h"
 using namespace std;
 
 // in MaterialPropsView.cpp
 QStringList GetEnumValues(FSModel* fem, const char* ch);
 
+//=================================================================================
+CPropertySelector::CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* parent) : QComboBox(parent)
+{
+	m_pc = pc;
+	m_pp = pp;
+
+	if (pc) addItem(pc->GetTypeString(), pc->GetClassID());
+	else addItem("(none)", -1);
+	addItem("<select...>", -3);
+	addItem("<remove...>", -2);
+	if (pc == nullptr) setCurrentIndex(-1);
+
+	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onSelectionChanged(int)));
+}
+
+void CPropertySelector::onSelectionChanged(int n)
+{
+	int m = currentData().toInt();
+	if (m == -2)
+	{
+		QString title = QString("Remove %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		if (QMessageBox::question(this, title, "Are you sure you want to remove this property?", QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
+		{
+			emit currentDataChanged(n);
+		}
+		else setCurrentIndex(0);
+	}
+	else if (m == -3)
+	{
+		int superID = m_pp->GetSuperClassID();
+		int baseID = m_pp->GetPropertyType();
+		QString title = QString("Add %1").arg(QString::fromStdString(m_pp->GetLongName()));
+		CDlgAddPhysicsItem dlg(title, superID, baseID, nullptr, true, false, this);
+		dlg.ShowNameAndCategoryFields(false);
+		if (dlg.exec())
+		{
+			int n = dlg.GetClassID();
+			this->setItemData(0, n);
+			this->setItemText(0, FEBio::GetClassInfo(n).sztype);
+			setCurrentIndex(0);
+
+			emit currentDataChanged(n);
+		}
+	}
+}
+
+//=================================================================================
 class FEClassPropsModel : public QAbstractItemModel
 {
 public:
@@ -94,115 +145,6 @@ public:
 
 		Param* parameter() { return (m_paramId >= 0 ? m_pc->GetParamPtr(m_paramId) : nullptr); }
 
-		Item* addChild(FSCoreBase* pc, int paramId, int propId, int index)
-		{
-			Item* item = new Item(pc, paramId, propId, index, (int)m_children.size());
-			item->m_model = m_model; assert(m_model);
-			item->m_parent = this;
-			m_children.push_back(item);
-
-			if (pc && (paramId >= 0) && (index == -1))
-			{
-				Param& p = pc->GetParam(paramId);
-				if (p.GetParamType() == Param_STD_VECTOR_DOUBLE)
-				{
-					std::vector<double> v = p.GetVectorDoubleValue();
-					for (int i = 0; i < v.size(); ++i)
-					{
-						item->addChild(pc, paramId, -1, i);
-					}
-				}
-				else if (p.GetParamType() == Param_STD_VECTOR_VEC2D)
-				{
-					std::vector<vec2d> v = p.GetVectorVec2dValue();
-					for (int i = 0; i < v.size(); ++i)
-					{
-						item->addChild(pc, paramId, -1, i);
-					}
-				}
-			}
-			else if (propId >= 0)
-			{
-				FSCoreBase* pci = pc->GetProperty(propId, index);
-				if (pci)
-				{
-					// don't add children of classes that have custom widgets
-					FSFunction1D* pf = dynamic_cast<FSFunction1D*>(pci);
-					if (pf && (pf->IsType("point") || pf->IsType("math")))
-						return item;
-
-					// don't add mesh selection 
-					FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pci);
-					if (pms) return item;
-
-					item->addChildren(pci);
-				}
-			}
-			return item;
-		}
-
-		void addParameters(FSCoreBase* pc)
-		{
-			pc->UpdateData(false);
-			int currentGroup = -1;
-			ParamBlock& PB = pc->GetParamBlock();
-			int NPG = PB.ParameterGroups();
-			Item* item = this;
-			for (int n = -1; n < NPG; ++n)
-			{
-				if (n != -1)
-				{
-					item = addChild(pc, -1, -1, n);
-				}
-				for (int i = 0; i < pc->Parameters(); ++i)
-				{
-					Param& p = pc->GetParam(i);
-					if (p.GetParameterGroup() == n)
-					{
-						if (p.IsVisible())
-						{
-							if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
-								item->addChild(pc, i, -1, -1);
-							else if (p.IsPersistent() == false)
-							{
-								item->addChild(pc, i, -1, -1);
-							}
-						}
-					}
-				}
-			}
-		}
-
-		void addChildren(FSCoreBase* pc)
-		{
-			addParameters(pc);
-
-			for (int i = 0; i < pc->Properties(); ++i)
-			{
-				FSProperty& p = pc->GetProperty(i);
-
-				if (p.maxSize() == FSProperty::NO_FIXED_SIZE)
-				{
-					Item* item = new Item(pc, -1, i, -1, (int)m_children.size());
-					item->m_model = m_model; assert(m_model);
-					item->m_parent = this;
-					m_children.push_back(item);
-
-					int nc = p.Size();
-					for (int j = 0; j < nc; ++j) item->addChild(pc, -1, i, j);
-				}
-				else {
-					int nc = p.Size();
-					for (int j = 0; j < nc; ++j) addChild(pc, -1, i, j);
-
-//					if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
-//					{
-//						addChild(pc, -1, i, -1);
-//					}
-				}
-			}
-		}
-
 		FSModel* GetFSModel();
 
 		QVariant data(int column, int role)
@@ -221,7 +163,16 @@ public:
 							name = QString::fromStdString(sname);
 						}
 						else
-							name = QString("[%1]").arg(m_index);
+						{
+							if ((p.GetParamType() == Param_STD_VECTOR_INT) && (p.GetEnumNames()))
+							{
+								FSModel* fem = m_model->m_fem;
+								QStringList keys = GetEnumValues(fem, p.GetEnumNames());
+								name = keys.at(m_index);
+							}
+							else 
+								name = QString("[%1]").arg(m_index);
+						}
 
 						return name;
 					}
@@ -258,7 +209,7 @@ public:
 						if (p.GetEnumNames() && GetFSModel())
 						{
 							const char* sz = GetFSModel()->GetEnumKey(p);
-							if (sz == nullptr) sz = "please select";
+							if (sz == nullptr) sz = "(select)";
 							return sz;
 						}
 						int n = p.val<int>();
@@ -342,13 +293,29 @@ public:
 					case Param_STD_VECTOR_INT:
 					{
 						std::vector<int> v = p.val<std::vector<int> >();
-						QString s;
-						for (int i = 0; i < v.size(); ++i)
+						if ((m_index == -1) || (p.GetEnumNames() == nullptr))
 						{
-							s += QString::number(v[i]);
-							if (i < v.size() - 1) s += QString(",");
+							QString s;
+							for (int i = 0; i < v.size(); ++i)
+							{
+								s += QString::number(v[i]);
+								if (i < v.size() - 1) s += QString(",");
+							}
+							return s;
 						}
-						return s;
+						else if ((m_index != -1) && (p.GetEnumNames()))
+						{
+							bool bfound = false;
+							for (int i = 0; i < v.size(); ++i)
+							{
+								if (v[i] == m_index)
+								{
+									bfound = true;
+									break;
+								}
+							}
+							return (bfound ? "Yes" : "No");
+						}
 					}
 					break;
 					case Param_STD_VECTOR_DOUBLE:
@@ -761,13 +728,30 @@ public:
 	};
 
 public:
+	enum ModelDisplayMode { DefaultMode, ParamsOnlyMode };
+
+public:
 	explicit FEClassPropsModel(QObject* parent = nullptr) : QAbstractItemModel(parent)
 	{
 		m_root = nullptr;
 		m_valid = true;
+		m_mode = DefaultMode;
 	}
 
 	~FEClassPropsModel() { delete m_root; }
+
+	void SetDisplayMode(ModelDisplayMode mode)
+	{
+		m_mode = mode;
+		SetClass(m_pc, m_fem);
+	}
+
+	void SetFilter(const QString& flt)
+	{
+		m_filter = flt;
+		if (m_filter.isEmpty()) SetDisplayMode(DefaultMode);
+		else SetDisplayMode(ParamsOnlyMode);
+	}
 
 	void SetClass(FSCoreBase* pc, FSModel* fem)
 	{
@@ -781,9 +765,168 @@ public:
 		{
 			m_root = new Item();
 			m_root->m_model = this;
-			m_root->addChildren(pc);
+			addChildren(m_root, pc);
 		}
 		endResetModel();
+	}
+
+	void addChildren(Item* parent, FSCoreBase* pc)
+	{
+		addParameters(parent, pc);
+
+		for (int i = 0; i < pc->Properties(); ++i)
+		{
+			FSProperty& p = pc->GetProperty(i);
+
+			if (p.maxSize() == FSProperty::NO_FIXED_SIZE)
+			{
+				if (m_mode == DefaultMode)
+				{
+					Item* item = new Item(pc, -1, i, -1, (int)parent->m_children.size());
+					item->m_model = parent->m_model; assert(parent->m_model);
+					item->m_parent = parent;
+					parent->m_children.push_back(item);
+
+					int nc = p.Size();
+					for (int j = 0; j < nc; ++j) addChild(item, pc, -1, i, j);
+				}
+				else
+				{
+					int nc = p.Size();
+					for (int j = 0; j < nc; ++j) addChild(parent, pc, -1, i, j);
+				}
+			}
+			else {
+				int nc = p.Size();
+				for (int j = 0; j < nc; ++j) addChild(parent, pc, -1, i, j);
+
+//				if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
+//				{
+//					addChild(parent, pc, -1, i, -1);
+//				}
+			}
+		}		
+	}
+
+	void addParameters(Item* parent, FSCoreBase* pc)
+	{
+		pc->UpdateData(false);
+		int currentGroup = -1;
+		ParamBlock& PB = pc->GetParamBlock();
+		int NPG = PB.ParameterGroups();
+		Item* item = parent;
+		for (int n = -1; n < NPG; ++n)
+		{
+			if (n != -1)
+			{
+				item = addChild(parent, pc, -1, -1, n);
+			}
+			for (int i = 0; i < pc->Parameters(); ++i)
+			{
+				Param& p = pc->GetParam(i);
+				if (p.GetParameterGroup() == n)
+				{
+					if (p.IsVisible())
+					{
+						if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
+							addChild(item, pc, i, -1, -1);
+						else if (p.IsPersistent() == false)
+						{
+							addChild(item, pc, i, -1, -1);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	Item* addChild(Item* parent, FSCoreBase* pc, int paramId, int propId, int index)
+	{
+		// check for a special case first
+		if (pc && (paramId >= 0) && (index == -1))
+		{
+			Param& p = pc->GetParam(paramId);
+			if ((p.GetParamType() == Param_STD_VECTOR_INT) && (p.GetEnumNames()))
+			{
+				FSModel* fem = parent->m_model->m_fem;
+				QStringList keys = GetEnumValues(fem, p.GetEnumNames());
+				for (int i = 0; i < keys.size(); ++i)
+				{
+					addItem(parent, pc, paramId, -1, i);
+				}
+				return nullptr;
+			}
+		}
+
+		Item* item = nullptr;
+		if ((m_mode == DefaultMode) || (paramId >= 0))
+		{
+			item = addItem(parent, pc, paramId, propId, index);
+		}
+		else item = parent;
+
+		if (pc && (paramId >= 0) && (index == -1))
+		{
+			Param& p = pc->GetParam(paramId);
+			if (p.GetParamType() == Param_STD_VECTOR_DOUBLE)
+			{
+				std::vector<double> v = p.GetVectorDoubleValue();
+				for (int i = 0; i < v.size(); ++i)
+				{
+					addChild(item, pc, paramId, -1, i);
+				}
+			}
+			else if (p.GetParamType() == Param_STD_VECTOR_VEC2D)
+			{
+				std::vector<vec2d> v = p.GetVectorVec2dValue();
+				for (int i = 0; i < v.size(); ++i)
+				{
+					addChild(item, pc, paramId, -1, i);
+				}
+			}
+		}
+		else if (propId >= 0)
+		{
+			FSCoreBase* pci = pc->GetProperty(propId, index);
+			if (pci)
+			{
+				// don't add children of classes that have custom widgets
+				FSFunction1D* pf = dynamic_cast<FSFunction1D*>(pci);
+				if (pf && (pf->IsType("point") || pf->IsType("math")))
+					return item;
+
+				// don't add mesh selection 
+				FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(pci);
+				if (pms) return item;
+
+				addChildren(item, pci);
+			}
+		}
+		return item;
+	}
+
+	Item* addItem(Item* parent, FSCoreBase* pc, int paramId, int propId, int index)
+	{
+		if ((m_mode == ParamsOnlyMode) && (m_filter.isEmpty() == false))
+		{
+			if (paramId >= 0)
+			{
+				Param& p = pc->GetParam(paramId);
+				QString name = p.GetLongName();
+
+				if (name.contains(m_filter, Qt::CaseInsensitive) == false)
+				{
+					return parent;
+				}
+			}
+			else return parent;
+		}
+
+		Item* item = new Item(pc, paramId, propId, index, (int)parent->m_children.size());
+		item->m_model = parent->m_model; assert(parent->m_model);
+		item->m_parent = parent;
+		parent->m_children.push_back(item);
+		return item;
 	}
 
 	bool isProperty(const QModelIndex& index)
@@ -872,21 +1015,25 @@ public:
 			QColor c;
 			Shape s = Shape::Circle;
 			bool bicon = true;
-			if (item->isParameter() && (item->m_index == -1)) 
+			if (item->isParameter()) 
 			{ 
-				Param* p = item->parameter();
-				if (p)
+				if (item->m_index == -1)
 				{
-					if (p->GetLoadCurveID() > 0)
+					Param* p = item->parameter();
+					if (p)
 					{
-						assert(p->IsVolatile());
-						c = QColor::fromRgb(0, 255, 0);
+						if (p->GetLoadCurveID() > 0)
+						{
+							assert(p->IsVolatile());
+							c = QColor::fromRgb(0, 255, 0);
+						}
+						else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
+						else bicon = false;
 					}
-					else if (p->IsVolatile()) c = QColor::fromRgb(0, 128, 0);
-					else bicon = false;
+					else c = QColor::fromRgb(0, 0, 0);
+					s = Shape::Circle;
 				}
-				else c = QColor::fromRgb(0, 0, 0); 
-				s = Shape::Circle; 
+				else bicon = false;
 			}
 			if (item->isProperty()) { c = QColor::fromRgb(255, 0, 0); s = Shape::Square; }
 			if (item->isParamGroup()) { c = QColor::fromRgb(200, 0, 200); s = Shape::Square; }
@@ -990,6 +1137,8 @@ private:
 	FSCoreBase*		m_pc;
 	Item*			m_root;
 	bool		m_valid;
+	int			m_mode;
+	QString		m_filter;
 };
 
 FSModel* FEClassPropsModel::Item::GetFSModel()
@@ -1100,28 +1249,51 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				{
 					if (p->GetEnumNames())
 					{
-						QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
+						int index = item->m_index;
 
-						int n = enumValues.size();
-						QStandardItemModel* mdl = new QStandardItemModel(n, 1);
-						for (int i = 0; i < n; ++i)
+						if (index == -1)
 						{
-							QStandardItem* item = new QStandardItem(enumValues.at(i));
-							item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
-							item->setData(Qt::Unchecked, Qt::CheckStateRole);
-							mdl->setItem(i, item);
-						}
+							QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
 
-						std::vector<int> v = p->val<std::vector<int> >();
-						for (int i = 0; i < v.size(); ++i)
+							int n = enumValues.size();
+							QStandardItemModel* mdl = new QStandardItemModel(n, 1);
+							for (int i = 0; i < n; ++i)
+							{
+								QStandardItem* item = new QStandardItem(enumValues.at(i));
+								item->setFlags(Qt::ItemIsUserCheckable | Qt::ItemIsEnabled);
+								item->setData(Qt::Unchecked, Qt::CheckStateRole);
+								mdl->setItem(i, item);
+							}
+
+							std::vector<int> v = p->val<std::vector<int> >();
+							for (int i = 0; i < v.size(); ++i)
+							{
+								QStandardItem* it = mdl->item(v[i]);
+								it->setData(Qt::Checked, Qt::CheckStateRole);
+							}
+
+							QComboBox* box = new QComboBox(parent);
+							box->setModel(mdl);
+							return box;
+						}
+						else
 						{
-							QStandardItem* it = mdl->item(v[i]);
-							it->setData(Qt::Checked, Qt::CheckStateRole);
-						}
+							std::vector<int> v = p->val<std::vector<int> >();
+							bool bfound = false;
+							for (int i = 0; i < v.size(); ++i)
+							{
+								if (v[i] == index)
+								{
+									bfound = true;
+									break;
+								}
+							}
 
-						QComboBox* box = new QComboBox(parent);
-						box->setModel(mdl);
-						return box;
+							QComboBox* box = new QComboBox(parent);
+							box->addItems(QStringList() << "No" << "Yes");
+							box->setCurrentIndex(bfound ? 1 : 0);
+							return box;
+						}
 					}
 				}
 				break;
@@ -1182,10 +1354,10 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 
 				int nclass = prop.GetSuperClassID();
 
-				QComboBox* pc = new QComboBox(parent);
+				CPropertySelector* pc = new CPropertySelector(&prop, pcbi, parent);
 
 				// fill the combo box
-				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetPropertyType(), true);
+/*				vector<FEBio::FEBioClassInfo> classInfo = FEBio::FindAllActiveClasses(nclass, prop.GetPropertyType(), true);
 				pc->clear();
 				int classes = classInfo.size();
 				for (int i = 0; i < classes; ++i)
@@ -1202,8 +1374,8 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				// see if the current option is in the list and selected it if so
 				int n = (pcbi ? pc->findText(pcbi->GetTypeString()) : -1);
 				pc->setCurrentIndex(n);
-
-				QObject::connect(pc, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+*/
+				QObject::connect(pc, SIGNAL(currentDataChanged(int)), this, SLOT(OnEditorSignal()));
 
 				return pc;
 			}
@@ -1238,7 +1410,18 @@ void FEClassPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& ind
 void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const
 {
 	if (!index.isValid()) return;
-	if (dynamic_cast<QComboBox*>(editor))
+	if (dynamic_cast<CPropertySelector*>(editor))
+	{
+		CPropertySelector* ps = dynamic_cast<CPropertySelector*>(editor);
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+		if (item->isProperty())
+		{
+			int n = ps->currentData().toInt();
+			model->setData(index, n);
+			return;
+		}
+	}
+	else if (dynamic_cast<QComboBox*>(editor))
 	{
 		QComboBox* pw = dynamic_cast<QComboBox*>(editor);
 		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
@@ -1247,17 +1430,53 @@ void FEClassPropsDelegate::setModelData(QWidget* editor, QAbstractItemModel* mod
 			Param* p = item->parameter();
 			if (p && (p->GetParamType() == Param_STD_VECTOR_INT))
 			{
-				QStandardItemModel* m = dynamic_cast<QStandardItemModel*>(pw->model());
-				std::vector<int> v;
-				for (int i = 0; i < m->rowCount(); ++i)
+				int index = item->m_index;
+				if (index == -1)
 				{
-					QStandardItem* it = m->item(i);
-					if (it->checkState() == Qt::Checked)
+					QStandardItemModel* m = dynamic_cast<QStandardItemModel*>(pw->model());
+					std::vector<int> v;
+					for (int i = 0; i < m->rowCount(); ++i)
 					{
-						v.push_back(i);
+						QStandardItem* it = m->item(i);
+						if (it->checkState() == Qt::Checked)
+						{
+							v.push_back(i);
+						}
 					}
+					p->val<std::vector<int> >() = v;
 				}
-				p->val<std::vector<int> >() = v;
+				else
+				{
+					std::vector<int> v = p->val<std::vector<int> >();
+					bool b = (pw->currentIndex() == 1);
+					if (b)
+					{
+						// add index
+						int m = 0;
+						for (int i = 0; i < v.size(); ++i, ++m)
+						{
+							if (v[i] == index) return;
+							if (v[i] > index) {
+								m = i;
+								break;
+							}
+						}
+						v.insert(v.begin() + m, index);
+					}
+					else
+					{
+						// remove index
+						for (int i = 0; i < v.size(); ++i)
+						{
+							if (v[i] == index)
+							{
+								v.erase(v.begin() + i);
+								break;
+							}
+						}
+					}
+					p->val<std::vector<int> >() = v;
+				}
 				return;
 			}
 			else if (p && (p->GetEnumNames() || (p->GetParamType() == Param_BOOL)))
@@ -1290,7 +1509,7 @@ FEClassPropsView::FEClassPropsView(QWidget* parent) : QTreeView(parent)
 	setUniformRowHeights(true);
 	setEditTriggers(QAbstractItemView::AllEditTriggers);
 
-	setItemDelegate(new FEClassPropsDelegate);
+	setItemDelegate(new FEClassPropsDelegate(this));
 	m_model = new FEClassPropsModel;
 	setModel(m_model);
 
@@ -1366,11 +1585,52 @@ void FEClassPropsView::onModelDataChanged()
 	}
 }
 
+void FEClassPropsView::setFilter(const QString& flt)
+{
+	m_model->SetFilter(flt);
+}
+
+//=============================================================================
+FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
+{
+	QVBoxLayout* l = new QVBoxLayout;
+	l->setContentsMargins(0, 2, 0, 0);
+
+	m_flt = new QLineEdit;
+	QToolButton* tb = new QToolButton();
+	tb->setIcon(CIconProvider::GetIcon("clear"));
+	tb->setToolTip("Clear filter");
+	QHBoxLayout* h = new QHBoxLayout;
+	h->addWidget(new QLabel("Filter:"));
+	h->addWidget(m_flt);
+	h->addWidget(tb);
+	l->addLayout(h);
+
+	l->addWidget(m_view = new FEClassPropsView);
+
+	setLayout(l);
+
+	QObject::connect(m_flt, SIGNAL(textChanged(const QString&)), m_view, SLOT(setFilter(const QString&)));
+	QObject::connect(tb, SIGNAL(clicked(bool)), m_flt, SLOT(clear()));
+}
+
+void FEClassPropsWidget::SetFEClass(FSCoreBase* pc, FSModel* fem)
+{
+	m_view->SetFEClass(nullptr, fem);
+	m_flt->setText("");
+	m_view->SetFEClass(pc, fem);
+}
+
+FSProperty* FEClassPropsWidget::getProperty(const QModelIndex& index)
+{
+	return m_view->getProperty(index);
+}
+
 //=============================================================================
 class FEClassEditUI
 {
 public:
-	FEClassPropsView* feprops;
+	FEClassPropsWidget* feprops;
 	QStackedWidget* stack;
 
 	CCurveEditWidget* plt;
@@ -1386,7 +1646,7 @@ public:
 		m_pf = nullptr;
 		m_pms = nullptr;
 
-		feprops = new FEClassPropsView;
+		feprops = new FEClassPropsWidget;
 
 		stack = new QStackedWidget;
 		stack->addWidget(plt  = new CCurveEditWidget);

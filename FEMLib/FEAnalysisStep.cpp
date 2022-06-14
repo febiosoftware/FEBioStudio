@@ -827,6 +827,26 @@ void FSStep::Save(OArchive &ar)
 		}
 		ar.EndChunk();
 	}
+
+	// save the mesh adaptors
+	int nma = MeshAdaptors();
+	if (nma > 0)
+	{
+		ar.BeginChunk(CID_MESH_ADAPTOR_SECTION);
+		{
+			for (int i = 0; i < nma; ++i)
+			{
+				FSMeshAdaptor* pma = MeshAdaptor(i);
+				int ntype = pma->Type();
+				ar.BeginChunk(ntype);
+				{
+					pma->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1117,7 +1137,7 @@ void FSStep::Load(IArchive &ar)
 					}
 					else
 					{
-						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FEBC_ID, ntype); assert(rc);
+						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FERIGIDBC_ID, ntype); assert(rc);
 						if (rc == nullptr) ar.log("error parsing CID_RC_SECTION in FSStep::Load");
 
 						if (rc)
@@ -1170,6 +1190,25 @@ void FSStep::Load(IArchive &ar)
                 }
             }
             break;
+		case CID_MESH_ADAPTOR_SECTION:
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int ntype = ar.GetChunkID();
+
+				FSMeshAdaptor* pma = fscore_new<FSMeshAdaptor>(fem, FEMESHADAPTOR_ID, ntype); assert(pma);
+				if (pma == nullptr) ar.log("error parsing CID_MESH_ADAPTOR_SECTION FSStep::Load");
+
+				if (pma)
+				{
+					pma->Load(ar);
+					AddMeshAdaptor(pma);
+				}
+
+				ar.CloseChunk();
+			}
+		}
+		break;
 		}
 		ar.CloseChunk();
 	}

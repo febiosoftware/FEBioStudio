@@ -158,7 +158,7 @@ public:
 	void SetDefaultPlotVariables();
 
 	int GetModule() const;
-	void SetModule(int mod);
+	void SetModule(int mod, bool setDefaultPlotVariables = true);
 
 	std::string GetModuleName() const;
 
@@ -171,6 +171,7 @@ public:
 protected:
 	void ConvertMaterials(std::ostream& log);
 	bool ConvertSteps(std::ostream& log);
+	bool ConvertDiscrete(std::ostream& log);
 	void ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep);
 	void ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 	void ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep);

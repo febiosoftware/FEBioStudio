@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include "MeshTools/FEProject.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
 #include <FSCore/FSCore.h>
 #include "HelpUrl.h"
 
@@ -54,6 +55,8 @@ public:
 	QLineEdit* flt;
 	QToolButton* tb;
 	QComboBox* cat;
+
+	QWidget* nameAndCategory;
 
 	int		m_superID;
 	int		m_baseClassID;
@@ -87,6 +90,9 @@ public:
 		}
 		form->addRow("Category:", cat = new QComboBox());
 
+		nameAndCategory = new QWidget;
+		nameAndCategory->setLayout(form);
+
 		QVBoxLayout* layout = new QVBoxLayout;
 
 		QHBoxLayout* h = new QHBoxLayout;
@@ -95,7 +101,7 @@ public:
 		flt->setPlaceholderText("enter filter text");
 		h->addWidget(tb = new QToolButton); tb->setText("Aa"); tb->setToolTip("Match case"); tb->setCheckable(true);
 		
-		layout->addLayout(form);
+		layout->addWidget(nameAndCategory);
 		layout->addLayout(h);
 		layout->addWidget(type);
 
@@ -110,8 +116,8 @@ public:
 	}
 };
 
-CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent)
-	: CHelpDialog(prj, parent), ui(new UIDlgAddPhysicsItem)
+CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, QWidget* parent)
+	: CHelpDialog(parent), ui(new UIDlgAddPhysicsItem)
 {
 	setWindowTitle(windowName);
 	setMinimumSize(600, 400);
@@ -124,14 +130,14 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 	// add the steps
 	if (ui->step)
 	{
-		FSModel& fem = prj.GetFSModel();
-		for (int i = 0; i < fem.Steps(); ++i)
+		assert(fem);
+		for (int i = 0; i < fem->Steps(); ++i)
 		{
-			ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
+			ui->step->addItem(QString::fromStdString(fem->GetStep(i)->GetName()));
 		}
 	}
 
-	m_module = prj.GetModule();
+	m_module = FEBio::GetActiveModule();
 
 	unsigned int searchFlags = (ui->m_modDepends ? FEBio::ClassSearchFlags::IncludeModuleDependencies : 0);
 
@@ -156,6 +162,11 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 	}
 
 	Update();
+}
+
+void CDlgAddPhysicsItem::ShowNameAndCategoryFields(bool b)
+{
+	ui->nameAndCategory->setVisible(b);
 }
 
 void CDlgAddPhysicsItem::Update()

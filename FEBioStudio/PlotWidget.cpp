@@ -345,6 +345,8 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 	if (h < 200) h = 200;
 	m_sizeHint = QSize(w, h);
 
+	m_hlrng[0] = m_hlrng[1] = 0.0;
+
 	// allow drop events
 	setAcceptDrops(true);
 
@@ -982,9 +984,21 @@ QRectF CPlotWidget::ScreenToView(const QRect& rt)
 //-----------------------------------------------------------------------------
 QPoint CPlotWidget::ViewToScreen(const QPointF& p)
 {
-	int x = m_plotRect.left() + (int)(m_plotRect.width ()*(p.x() - m_viewRect.left  ())/(m_viewRect.width ()));
-	int y = m_plotRect.top () - (int)(m_plotRect.height()*(p.y() - m_viewRect.bottom())/(m_viewRect.height()));
+	int x = ViewToScreenX(p.x());
+	int y = ViewToScreenY(p.y());
 	return QPoint(x, y);
+}
+
+//-----------------------------------------------------------------------------
+int CPlotWidget::ViewToScreenX(double x) const
+{
+	return m_plotRect.left() + (int)(m_plotRect.width() * (x - m_viewRect.left()) / (m_viewRect.width()));
+}
+
+//-----------------------------------------------------------------------------
+int CPlotWidget::ViewToScreenY(double y) const
+{
+	return m_plotRect.top() - (int)(m_plotRect.height() * (y - m_viewRect.bottom()) / (m_viewRect.height()));
 }
 
 //-----------------------------------------------------------------------------
@@ -992,6 +1006,21 @@ void CPlotWidget::SetBackgroundImage(QImage* img)
 {
 	if (m_img) delete m_img;
 	m_img = img;
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::SetHighlightInterval(double rngMin, double rngMax)
+{
+	m_hlrng[0] = rngMin;
+	m_hlrng[1] = rngMax;
+	repaint();
+}
+
+//-----------------------------------------------------------------------------
+void CPlotWidget::GetHighlightInterval(double& rngMin, double& rngMax)
+{
+	rngMin = m_hlrng[0];
+	rngMax = m_hlrng[1];
 }
 
 //-----------------------------------------------------------------------------
@@ -1014,6 +1043,34 @@ void CPlotWidget::paintEvent(QPaintEvent* pe)
 	else 
 		// clear the background
 		p.fillRect(m_screenRect, m_data.m_bgCol);
+
+	if (m_hlrng[1] > m_hlrng[0])
+	{
+		int x0 = ViewToScreenX(m_hlrng[0]);
+		int x1 = ViewToScreenX(m_hlrng[1]);
+
+		if ((x0 > m_screenRect.left()) && (x0 < m_screenRect.right()))
+		{
+			QColor c = m_data.m_bgCol.darker();
+			QRect rl = m_screenRect;
+			rl.setRight(x0);
+			p.fillRect(rl, c);
+		}
+
+		if ((x1 > m_screenRect.left()) && (x1 < m_screenRect.right()))
+		{
+			QColor c = m_data.m_bgCol.darker();
+			QRect rr = m_screenRect;
+			rr.setLeft(x1);
+			p.fillRect(rr, c);
+		}
+
+		if ((m_screenRect.left() >= x1) || (m_screenRect.right() <= x0))
+		{
+			QColor c = m_data.m_bgCol.darker();
+			p.fillRect(m_screenRect, c);
+		}
+	}
 
 	// render the title
 	QFont f("Times", 12, QFont::Bold);
@@ -2632,36 +2689,90 @@ CMathPlotWidget::CMathPlotWidget(QWidget* parent) : CPlotWidget(parent)
 	addPlotData(data);
 	data->setLineColor(QColor(255, 92, 164));
 
+	m_leftExtend = 0;
+	m_rghtExtend = 0;
+
 	QObject::connect(this, SIGNAL(regionSelected(QRect)), this, SLOT(onRegionSelected(QRect)));
 	QObject::connect(this, SIGNAL(pointClicked(QPointF, bool)), this, SLOT(onPointClicked(QPointF, bool)));
 }
 
+double CMathPlotWidget::value(double x, MVariable* var, int& region)
+{
+	double xmin, xmax;
+	GetHighlightInterval(xmin, xmax);
+	double Dx = xmax - xmin;
+
+	if (x <= xmin)
+	{
+		region = -(int) ((xmin - x)/Dx) - 1;
+		switch (m_leftExtend)
+		{
+		case ExtendMode::ZERO: return 0.0; break;
+		case ExtendMode::CONSTANT: x = xmin; break;
+		case ExtendMode::REPEAT: x = xmax - fmod(xmin - x, Dx); break;
+		}
+	}
+	else if (x >= xmax)
+	{
+		region = (int)((x - xmin)/Dx);
+		switch (m_rghtExtend)
+		{
+		case ExtendMode::ZERO    : return 0.0; break;
+		case ExtendMode::CONSTANT: x = xmax; break;
+		case ExtendMode::REPEAT  : x = xmin + fmod(x - xmin, Dx); break;
+		}
+	}
+	else region = 0;
+
+	var->value(x);
+	double y = m_math.value();
+	return y;
+}
+
 void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 {
-	MVariable* x = m_math.FindVariable(m_ord);
-	if (x == nullptr) return;
+	MVariable* var = m_math.FindVariable(m_ord);
+	if (var == nullptr) return;
+
+	double xmin, xmax;
+	GetHighlightInterval(xmin, xmax);
+	bool useInterval = false;
+	if (xmax > xmin) useInterval = true;
 
 	// draw the line
 	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
 	QRect rt = ScreenRect();
 	QPoint p0, p1;
+	int prevRegion = 0;
+	int curRegion = 0;
 	for (int i = rt.left(); i < rt.right(); i += 2)
 	{
 		p1.setX(i);
 		QPointF p = ScreenToView(p1);
 
-		x->value(p.x());
-		double y = m_math.value();
+		double x = p.x();
+		double y = 0.0;
+		if (useInterval)
+		{
+			y = value(x, var, curRegion);
+		}
+		else
+		{
+			var->value(x);
+			y = m_math.value();
+		}
 
 		p.setY(y);
 		p1 = ViewToScreen(p);
 
 		if (i != rt.left())
 		{
+			if (curRegion != prevRegion) p0.setY(p1.y());
 			painter.drawLine(p0, p1);
 		}
 
 		p0 = p1;
+		prevRegion = curRegion;
 	}
 }
 
@@ -2682,6 +2793,18 @@ void CMathPlotWidget::SetMath(const QString& txt)
 	if (m.empty()) m = "0";
 	m_math.Create(m);
 
+	repaint();
+}
+
+void CMathPlotWidget::setLeftExtendMode(int n)
+{
+	m_leftExtend = n;
+	repaint();
+}
+
+void CMathPlotWidget::setRightExtendMode(int n)
+{
+	m_rghtExtend = n;
 	repaint();
 }
 
@@ -2720,24 +2843,58 @@ void CMathPlotWidget::onPointClicked(QPointF pt, bool shift)
 class UIMathEditWidget
 {
 public:
+	QLineEdit* rngMin;
+	QLineEdit* rngMax;
+	QComboBox* leftExt;
+	QComboBox* rghtExt;
 	QLineEdit* edit;
 	CMathPlotWidget* plot;
 	QLabel* fnc;
 
+	QWidget* rngOps;
+
 public:
 	void setup(QWidget* w)
 	{
+		rngMin = new QLineEdit; rngMin->setValidator(new QDoubleValidator()); rngMin->setText(QString::number(0.0));
+		rngMax = new QLineEdit; rngMax->setValidator(new QDoubleValidator()); rngMax->setText(QString::number(1.0));
+
+		leftExt = new QComboBox; leftExt->addItems(QStringList() << "zero" << "constant" << "repeat");
+		rghtExt = new QComboBox; rghtExt->addItems(QStringList() << "zero" << "constant" << "repeat");
+
+		QHBoxLayout* hx = new QHBoxLayout;
+		hx->addWidget(new QLabel("min:")); hx->addWidget(rngMin);
+		hx->addWidget(new QLabel("max:")); hx->addWidget(rngMax);
+		hx->addWidget(new QLabel("left extend:" )); hx->addWidget(leftExt);
+		hx->addWidget(new QLabel("right extend:")); hx->addWidget(rghtExt);
+		hx->addStretch();
+
+		rngOps = new QWidget;
+		rngOps->setLayout(hx);
+		rngOps->hide();
+		rngOps->setSizePolicy(rngOps->sizePolicy().horizontalPolicy(), QSizePolicy::Fixed);
+
 		edit = new QLineEdit;
 		QHBoxLayout* editLayout = new QHBoxLayout;
 		editLayout->addWidget(fnc = new QLabel("f(x) = "));
 		editLayout->addWidget(edit);
 
 		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(rngOps);
 		l->addLayout(editLayout);
 		l->addWidget(plot = new CMathPlotWidget);
 		w->setLayout(l);
 
 		QObject::connect(edit, SIGNAL(editingFinished()), w, SLOT(onEditingFinished()));
+		QObject::connect(leftExt, SIGNAL(currentIndexChanged(int)), w, SLOT(onLeftExtendChanged()));
+		QObject::connect(rghtExt, SIGNAL(currentIndexChanged(int)), w, SLOT(onRightExtendChanged()));
+		QObject::connect(rngMin, SIGNAL(textChanged(const QString&)), w, SLOT(onRangeMinChanged()));
+		QObject::connect(rngMax, SIGNAL(textChanged(const QString&)), w, SLOT(onRangeMaxChanged()));
+	}
+
+	void showRangeOptions(bool b)
+	{
+		rngOps->setVisible(b);
 	}
 };
 
@@ -2761,8 +2918,66 @@ void CMathEditWidget::onEditingFinished()
 	emit mathChanged(s);
 }
 
+void CMathEditWidget::onLeftExtendChanged()
+{
+	int n = ui->leftExt->currentIndex();
+	ui->plot->setLeftExtendMode(n);
+	emit leftExtendChanged(n);
+}
+
+void CMathEditWidget::onRightExtendChanged()
+{
+	int n = ui->rghtExt->currentIndex();
+	ui->plot->setRightExtendMode(n);
+	emit rightExtendChanged(n);
+}
+
+void CMathEditWidget::onRangeMinChanged()
+{
+	double v = ui->rngMin->text().toDouble();
+
+	double xmin, xmax;
+	ui->plot->GetHighlightInterval(xmin, xmax);
+
+	ui->plot->SetHighlightInterval(v, xmax);
+
+	emit minChanged(v);
+}
+
+void CMathEditWidget::onRangeMaxChanged()
+{
+	double v = ui->rngMax->text().toDouble();
+
+	double xmin, xmax;
+	ui->plot->GetHighlightInterval(xmin, xmax);
+
+	ui->plot->SetHighlightInterval(xmin, v);
+
+	emit maxChanged(v);
+}
+
+void CMathEditWidget::showRangeOptions(bool b)
+{
+	ui->showRangeOptions(b);
+}
+
+void CMathEditWidget::setMinMaxRange(double rmin, double rmax)
+{
+	ui->plot->SetHighlightInterval(rmin, rmax);
+}
+
 void CMathEditWidget::SetMath(const QString& txt)
 {
 	ui->edit->setText(txt);
 	ui->plot->SetMath(txt);
+}
+
+void CMathEditWidget::setLeftExtend(int n)
+{
+	ui->leftExt->setCurrentIndex(n);
+}
+
+void CMathEditWidget::setRightExtend(int n)
+{
+	ui->rghtExt->setCurrentIndex(n);
 }

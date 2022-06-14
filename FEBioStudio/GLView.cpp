@@ -1364,9 +1364,9 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
 	int cy = height();
 	if (m_pframe && m_pframe->visible())
 	{
-		int dpr = m_pWnd->devicePixelRatio();
-		cx = dpr*m_pframe->w();
-		cy = dpr*m_pframe->h();
+		double dpr = m_pWnd->devicePixelRatio();
+		cx = (int) (dpr*m_pframe->w());
+		cy = (int) (dpr*m_pframe->h());
 	}
 
 	// get the frame rate
@@ -1647,6 +1647,9 @@ void CGLView::paintGL()
 //-----------------------------------------------------------------------------
 void CGLView::RenderModelView()
 {
+	// We don't need this for rendering model docs
+	glDisable(GL_COLOR_MATERIAL);
+
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	VIEW_SETTINGS& view = GetViewSettings();
 	int nitem = pdoc->GetItemMode();
@@ -1769,6 +1772,9 @@ void CGLView::RenderPostView(CPostDocument* postDoc)
 {
 	if (postDoc && postDoc->IsValid())
 	{
+		// We need this for rendering post docs
+		glEnable(GL_COLOR_MATERIAL);
+
 		Post::CGLModel* glm = postDoc->GetGLModel();
 
 		CGLCamera& cam = postDoc->GetView()->GetCamera();
@@ -3332,7 +3338,11 @@ void CGLView::RenderRigidConnectors()
 				FSRigidSphericalJoint* pj = dynamic_cast<FSRigidSphericalJoint*> (rci);
 				vec3d r = pj->GetVecValue(FSRigidSphericalJoint::J_ORIG);
 
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glPushMatrix();
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glx::renderJoint(R);
@@ -3356,7 +3366,11 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(0, 0, 255);
+				if (pj->IsActive())
+					glColor3ub(0, 0, 255);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderRevoluteJoint(R);
 
 				glPopMatrix();
@@ -3379,7 +3393,10 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(0, 255, 0);
+				if (pj->IsActive())
+					glColor3ub(0, 255, 0);
+				else
+					glColor3ub(64, 64, 64);
 				glx::renderPrismaticJoint(R);
 
 				glPopMatrix();
@@ -3402,7 +3419,11 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(255, 0, 255);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 255);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderCylindricalJoint(R);
 
 				glPopMatrix();
@@ -3425,7 +3446,11 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				glColor3ub(0, 255, 255);
+				if (pj->IsActive())
+					glColor3ub(0, 255, 255);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderPlanarJoint(R);
 
 				glPopMatrix();
@@ -3448,7 +3473,10 @@ void CGLView::RenderRigidConnectors()
                 glTranslatef((float)r.x, (float)r.y, (float)r.z);
                 glMultMatrixf(Q4);
                 
-				glColor3ub(255, 127, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 127, 0);
+				else
+					glColor3ub(64, 64, 64);
 
 				glx::renderRigidLock(R);
                 
@@ -3461,7 +3489,11 @@ void CGLView::RenderRigidConnectors()
 				vec3d xb = pj->GetVecValue(FSRigidSpring::XB);
 
 				glPushMatrix();
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderSpring(xa, xb, R);
 				glPopMatrix();
 			}
@@ -3473,7 +3505,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPushMatrix();
 
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderDamper(xa, xb, R);
 
 				glPopMatrix();
@@ -3486,7 +3522,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPushMatrix();
 
-				glColor3ub(255, 0, 0);
+				if (pj->IsActive())
+					glColor3ub(255, 0, 0);
+				else
+					glColor3ub(64, 64, 64);
+
 				glx::renderContractileForce(xa, xb, R);
 
 				glPopMatrix();
@@ -7522,6 +7562,9 @@ void CGLView::RenderFEFaces(GObject* po)
 		}
 	}
 
+	// render beam elements
+	RenderAllBeamElements(po);
+
 	// render the selected faces
 	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -7746,6 +7789,7 @@ void CGLView::RenderFEElements(GObject* po)
 	// render the unselected faces
 	vector<int> selectedElements;
 	int NE = pm->Elements();
+	bool hasBeamElements = false;
 	for (i = 0; i<NE; ++i)
 	{
 		FSElement& el = pm->Element(i);
@@ -7841,7 +7885,7 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
 					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
                     case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2 : break;
+					case FE_BEAM2 : hasBeamElements = true; break;
 					case FE_BEAM3 : break;
 					default:
 						assert(false);
@@ -7849,6 +7893,12 @@ void CGLView::RenderFEElements(GObject* po)
 				}
 			}
 		}
+	}
+
+	if (hasBeamElements)
+	{
+		// render beam elements
+		RenderUnselectedBeamElements(po);
 	}
 
 	// override some settings
@@ -7863,6 +7913,7 @@ void CGLView::RenderFEElements(GObject* po)
 	if (pdoc == nullptr) return;
 	if (selectedElements.empty() == false)
 	{
+		hasBeamElements = false;
 		int NE = (int)selectedElements.size();
 		for (i = 0; i<NE; ++i)
 		{
@@ -7888,7 +7939,7 @@ void CGLView::RenderFEElements(GObject* po)
 				case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, false); break;
 				case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, false); break;
                 case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, false); break;
-				case FE_BEAM2 : break;
+				case FE_BEAM2 : hasBeamElements = true;  break;
 				case FE_BEAM3 : break;
 				default:
 					assert(false);
@@ -7976,11 +8027,111 @@ void CGLView::RenderFEElements(GObject* po)
 		glEnd();
 
 		glPopAttrib();
+
+		if (hasBeamElements)
+		{
+			// render beam elements
+			RenderSelectedBeamElements(po);
+		}
 	}
 
 	glPopAttrib();
 }
 
+//-----------------------------------------------------------------------------
+void CGLView::RenderAllBeamElements(GObject* po)
+{
+	if (po == nullptr) return;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.IsVisible())
+		{
+			GPart* pg = po->Part(el.m_gid);
+			if (pg->IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_BEAM2: m_renderer.RenderBEAM2(&el, pm, true); break;
+				case FE_BEAM3: break;
+				}
+			}
+		}
+	}
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RenderUnselectedBeamElements(GObject* po)
+{
+	if (po == nullptr) return;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (!el.IsSelected() && el.IsVisible())
+		{
+			GPart* pg = po->Part(el.m_gid);
+			if (pg->IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_BEAM2: m_renderer.RenderBEAM2(&el, pm, true); break;
+				case FE_BEAM3: break;
+				}
+			}
+		}
+	}
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::RenderSelectedBeamElements(GObject* po)
+{
+	if (po == nullptr) return;
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glColor3ub(255, 255, 0);
+
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = pm->Element(i);
+		if (el.IsSelected() && el.IsVisible())
+		{
+			GPart* pg = po->Part(el.m_gid);
+			if (pg->IsVisible())
+			{
+				switch (el.Type())
+				{
+				case FE_BEAM2: m_renderer.RenderBEAM2(&el, pm, true); break;
+				case FE_BEAM3: break;
+				}
+			}
+		}
+	}
+
+	glPopAttrib();
+}
+ 
 //-----------------------------------------------------------------------------
 // This function is used for selecting elements
 void CGLView::RenderFEAllElements(FSMesh* pm, bool bexterior)

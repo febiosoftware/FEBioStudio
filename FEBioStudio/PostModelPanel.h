@@ -65,6 +65,8 @@ private slots:
 	void on_deleteButton_clicked();
 	void on_props_dataChanged();
 	void on_enabled_stateChanged(int nstate);
+	void OnSelectNodes();
+	void OnSelectFaces();
 	void OnSelectElements();
 	void OnHideElements();
 	void OnShowAllElements();

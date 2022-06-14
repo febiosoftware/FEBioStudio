@@ -39,61 +39,80 @@ SOFTWARE.*/
 #include <QFontComboBox>
 #include <QSpinBox>
 #include <QGroupBox>
+#include <QPushButton>
 #include <GLWLib/GLWidget.h>
 #include "InputWidgets.h"
 #include "CColorButton.h"
 #include "GLWLib/convert.h"
 #include "MainWindow.h"
 
-class CFontWidget : public QGroupBox
+//=================================================================================================
+class CFontWidgetUI
 {
 public:
-	QFontComboBox*	pfontStyle;
-	QSpinBox*		pfontSize;
-	CColorButton*	pfontColor;
-	QCheckBox		*pfontBold, *pfontItalic;
-
-	void setFont(const QFont& font, const QColor& col)
-	{
-		pfontStyle->setCurrentFont(font);
-		pfontSize->setValue(font.pointSize());
-		pfontBold->setChecked(font.bold());
-		pfontItalic->setChecked(font.italic());
-		pfontColor->setColor(col);
-	}
-
-	QFont getFont() const
-	{
-		QFont font(pfontStyle->currentFont().family(), pfontSize->value());
-		font.setBold(pfontBold->isChecked());
-		font.setItalic(pfontItalic->isChecked());
-		return font;
-	}
-
-	QColor getFontColor() const
-	{
-		return pfontColor->color();
-	}
-
-public:
-	CFontWidget(QWidget* parent = 0) : QGroupBox("Font", parent)
-	{
-		QGridLayout* pgrid = new QGridLayout;
-		pfontStyle = new QFontComboBox;
-		QLabel* label = new QLabel("Font:"); label->setBuddy(pfontStyle);
-		pgrid->addWidget(label, 0, 0); pgrid->addWidget(pfontStyle, 0, 1, 1, 3);
-		pfontSize = new QSpinBox;
-		label = new QLabel("Size:"); label->setBuddy(pfontSize);
-		pgrid->addWidget(label, 1, 0); pgrid->addWidget(pfontSize, 1, 1);
-		pfontColor = new CColorButton;
-		label = new QLabel("Color:"); label->setBuddy(pfontColor);
-		pgrid->addWidget(label, 0, 4, 1, 1, Qt::AlignRight); pgrid->addWidget(pfontColor, 0, 5);
-		pgrid->addWidget(pfontBold   = new QCheckBox("bold"  ), 1, 2);
-		pgrid->addWidget(pfontItalic = new QCheckBox("italic"), 1, 3);
-		setLayout(pgrid);
-	}
+	QFontComboBox* pfontStyle;
+	QSpinBox* pfontSize;
+	CColorButton* pfontColor;
+	QCheckBox* pfontBold, * pfontItalic;
 };
 
+CFontWidget::CFontWidget(QWidget* parent) : QGroupBox("Font", parent), ui(new CFontWidgetUI)
+{
+	QGridLayout* pgrid = new QGridLayout;
+	ui->pfontStyle = new QFontComboBox;
+	QLabel* label = new QLabel("Font:"); label->setBuddy(ui->pfontStyle);
+	pgrid->addWidget(label, 0, 0); pgrid->addWidget(ui->pfontStyle, 0, 1, 1, 3);
+	ui->pfontSize = new QSpinBox;
+	label = new QLabel("Size:"); label->setBuddy(ui->pfontSize);
+	pgrid->addWidget(label, 1, 0); pgrid->addWidget(ui->pfontSize, 1, 1);
+	ui->pfontColor = new CColorButton;
+	label = new QLabel("Color:"); label->setBuddy(ui->pfontColor);
+	pgrid->addWidget(label, 0, 4, 1, 1, Qt::AlignRight); pgrid->addWidget(ui->pfontColor, 0, 5);
+	pgrid->addWidget(ui->pfontBold   = new QCheckBox("bold"  ), 1, 2);
+	pgrid->addWidget(ui->pfontItalic = new QCheckBox("italic"), 1, 3);
+
+	QPushButton* pb = new QPushButton("Make default");
+	pb->setToolTip("Set this as the default font for widgets.");
+	pgrid->addWidget(pb, 2, 0);
+	setLayout(pgrid);
+
+	QObject::connect(pb, SIGNAL(clicked(bool)), this, SLOT(onMakeDefault()));
+}
+
+CFontWidget::~CFontWidget()
+{
+	delete ui;
+}
+
+void CFontWidget::setFont(const QFont& font, const QColor& col)
+{
+	ui->pfontStyle->setCurrentFont(font);
+	ui->pfontSize->setValue(font.pointSize());
+	ui->pfontBold->setChecked(font.bold());
+	ui->pfontItalic->setChecked(font.italic());
+	ui->pfontColor->setColor(col);
+}
+
+QFont CFontWidget::getFont() const
+{
+	QFont font(ui->pfontStyle->currentFont().family(), ui->pfontSize->value());
+	font.setBold(ui->pfontBold->isChecked());
+	font.setItalic(ui->pfontItalic->isChecked());
+	return font;
+}
+
+QColor CFontWidget::getFontColor() const
+{
+	return ui->pfontColor->color();
+}
+
+void CFontWidget::onMakeDefault()
+{
+	QFont font = getFont();
+	GLWidget::set_default_font(font);
+}
+
+//=================================================================================================
 class CPositionWidget : public QWidget
 {
 public:

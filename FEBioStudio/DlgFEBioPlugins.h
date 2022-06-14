@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
+class CMainWindow;
 class CDlgFEBioPluginsUI;
 
 class CDlgFEBioPlugins : public QDialog
@@ -33,11 +34,16 @@ class CDlgFEBioPlugins : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgFEBioPlugins(QWidget* parent);
+	CDlgFEBioPlugins(CMainWindow* parent);
 
 private slots:
 	void updateFeaturesList();
 	void onLoadPlugin();
+	void onMenuTriggered(QAction* action);
+	void onUnloadPlugin();
+
+private:
+	void LoadPlugin(const QString& fileName);
 
 private:
 	CDlgFEBioPluginsUI* ui;

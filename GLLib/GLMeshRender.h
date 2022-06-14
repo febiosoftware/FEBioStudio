@@ -84,6 +84,7 @@ public:
 	void RenderPYRA5  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderPENTA15(FEElement_* pe, FSCoreMesh *pm, bool bsel);
     void RenderPYRA13 (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+    void RenderBEAM2  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 
 	void RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
 	void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col);

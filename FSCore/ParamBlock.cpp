@@ -169,7 +169,7 @@ Param* Param::MakeVariable(bool b)
 {
 	if (b)
 	{
-		assert((m_ntype == Param_FLOAT) || (m_ntype == Param_VEC3D) || (m_ntype == Param_MAT3D) || (m_ntype == Param_MAT3DS));
+		assert((m_ntype == Param_FLOAT) || (m_ntype == Param_VEC3D) || (m_ntype == Param_MAT3D) || (m_ntype == Param_MAT3DS) || (m_ntype == Param_MATH));
 		m_varType = m_ntype;
 	}
 	else m_varType = Param_UNDEF;
@@ -386,6 +386,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -411,6 +412,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -436,6 +438,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -461,6 +464,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -486,6 +490,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -511,6 +516,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -537,6 +543,7 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -562,6 +569,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -587,6 +595,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -611,6 +620,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -635,6 +645,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -658,6 +669,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -681,6 +693,7 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -705,6 +718,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -732,6 +746,7 @@ Param::Param(const int* v, int nsize, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -759,6 +774,7 @@ Param::Param(const double* v, int nsize, const char* szb, const char* szn)
 	m_szenum = 0;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_szindx = 0;
 	m_nindx = -1;
 	m_lc = -1;
@@ -786,6 +802,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
@@ -811,6 +828,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
     m_nindx = idx;
 	m_szunit = 0;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;
@@ -836,6 +854,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
     m_nindx = idx;
 	m_szunit = szunit;
 	m_nstate = Param_ALLFLAGS;
+	m_flags = 0;
 	m_lc = -1;
 	m_bcopy = false;
 	m_offset = 0;

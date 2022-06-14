@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
+#include <FEBioLink/FEBioModule.h>
 ////using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -63,7 +64,7 @@ bool AbaqusImport::read_line(char* szline, FILE* fp)
 	// read a line but skip over comments (i.e.lines that start with **)
 	do
 	{
-		fgets(szline, 255, fp);
+		if (fgets(szline, 255, fp) == nullptr) return false;
 		++m_nline;
 		if (feof(fp)) return false;
 	}
@@ -116,6 +117,7 @@ bool szicmp(const char* sz1, const char* sz2)
 //! Load an Abaqus model file
 bool AbaqusImport::Load(const char* szfile)
 {
+	m_prj.SetModule(FEBio::SetActiveModule("solid"));
 	FSModel& fem = m_prj.GetFSModel();
 	m_pprj = &m_prj;
 	m_pfem = &fem;
@@ -613,6 +615,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
             else if (szicmp(sz, "S6"    )) ntype = FE_TRI6;
             else if (szicmp(sz, "S8R"   )) ntype = FE_QUAD8;
             else if (szicmp(sz, "S9R5"  )) ntype = FE_QUAD9;
+            else if (szicmp(sz, "T3D2"  )) ntype = FE_BEAM2;
 			else if (szicmp(sz, "SPRINGA"))
 			{
 				ntype = -1;
@@ -666,6 +669,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
     case FE_TRI6  : N = 6; break;
     case FE_QUAD8 : N = 8; break;
     case FE_QUAD9 : N = 9; break;
+    case FE_BEAM2 : N = 2; break;
 	default:
 		assert(false);
 		return false;
@@ -1145,7 +1149,7 @@ bool AbaqusImport::read_surface(char* szline, FILE* fp)
 				ps->face.push_back(f);
 			}
 		}
-		else
+		else if (ps)
 		{
 			// get the element number
 			ne = atoi(szline);
@@ -2055,15 +2059,24 @@ bool AbaqusImport::read_step(char* szline, FILE* fp)
 	{
 		if (szicmp(szline, "*STATIC"))
 		{
-			if (!read_static(szline, fp)) return false;
+			if (read_static(szline, fp) == false)
+			{
+				errf("Error reading *STATIC keyword (line %d)", m_nline);
+			}
 		}
 		else if (szicmp(szline, "*DSLOAD"))
 		{
-			if (!read_dsload(szline, fp)) return false;
+			if (read_dsload(szline, fp) == false)
+			{
+				errf("Error reading *DSLOAD keyword (line %d)", m_nline);
+			}
 		}
 		else if (szicmp(szline, "*BOUNDARY"))
 		{
-			if (!read_boundary(szline, fp)) return false;
+			if (read_boundary(szline, fp) == false)
+			{
+				errf("Error reading *BOUNDARY keyword (line %d)", m_nline);
+			}
 		}
 		else if (szicmp(szline, "*END STEP")) 
 		{

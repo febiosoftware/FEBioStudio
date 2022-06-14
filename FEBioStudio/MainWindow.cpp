@@ -1766,6 +1766,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor);
+	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -1785,6 +1786,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("recentFiles", ui->m_recentFiles);
 	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
 	settings.setValue("recentProjects", ui->m_recentProjects);
+	settings.setValue("recentPlugins" , ui->m_recentPlugins);
 
 	settings.endGroup();
 
@@ -1861,6 +1863,9 @@ void CMainWindow::readSettings()
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor).toInt());
 
+	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
+	GLWidget::set_default_font(font);
+
 	if (vs.m_defaultFGColorOption != 0)
 	{
 		GLWidget::set_base_color(vs.m_defaultFGColor);
@@ -1892,6 +1897,7 @@ void CMainWindow::readSettings()
 	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
 	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
 	QStringList recentProjects = settings.value("recentProjects").toStringList(); ui->setRecentProjects(recentProjects);
+	QStringList recentPlugins = settings.value("recentPlugins").toStringList(); ui->setRecentPlugins(recentPlugins);
 
 	settings.endGroup();
 
@@ -3056,21 +3062,21 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	string err;
 
 	try {
-		if (febioFileVersion == 0)
+		if (febioFileVersion == 0x0205)
 		{
 			FEBioExport25 feb(doc->GetProject());
 			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
-		else if (febioFileVersion == 1)
+		else if (febioFileVersion == 0x0300)
 		{
 			FEBioExport3 feb(doc->GetProject());
 			feb.SetExportSelectionsFlag(true);
 			ret = feb.Write(febFile.c_str());
 			if (ret == false) err = feb.GetErrorMessage();
 		}
-		else if (febioFileVersion == 2)
+		else if (febioFileVersion == 0x0400)
 		{
 			FEBioExport4 feb(doc->GetProject());
 			ret = feb.Write(febFile.c_str());
@@ -3234,6 +3240,16 @@ QStringList CMainWindow::GetRecentFileList()
 QStringList CMainWindow::GetRecentProjectsList()
 {
 	return ui->m_recentProjects;
+}
+
+QStringList CMainWindow::GetRecentPluginsList()
+{
+	return ui->m_recentPlugins;
+}
+
+void CMainWindow::AddRecentPlugin(const QString& fileName)
+{
+	ui->addToRecentPlugins(fileName);
 }
 
 QString CMainWindow::ProjectFolder()

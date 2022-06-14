@@ -36,20 +36,35 @@ SOFTWARE.*/
 #include <FEBioLib/febio.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FECore/FEModule.h>
+#include <QMenu>
+#include "MainWindow.h"
 
 class CDlgFEBioPluginsUI
 {
 public:
+	CMainWindow* m_wnd = nullptr;
+
 	QTreeWidget* plugins;
 	QTreeWidget* features;
+
+	QPushButton* unloadPlugin;
+
+	QMenu* recentPlugins;
 
 public:
 	void setup(QDialog* dlg)
 	{
 		QPushButton* loadPlugin = new QPushButton("Load ...");
 
+		recentPlugins = new QMenu(dlg);
+		loadPlugin->setMenu(recentPlugins);
+
+		unloadPlugin = new QPushButton("Unload ...");
+		unloadPlugin->setDisabled(true);
+
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(loadPlugin);
+		h->addWidget(unloadPlugin);
 		h->addStretch();
 
 		plugins = new QTreeWidget;
@@ -76,7 +91,9 @@ public:
 
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(plugins, SIGNAL(currentItemChanged(QTreeWidgetItem*, QTreeWidgetItem*)), dlg, SLOT(updateFeaturesList()));
-		QObject::connect(loadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onLoadPlugin()));
+//		QObject::connect(loadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onLoadPlugin()));
+		QObject::connect(recentPlugins, SIGNAL(triggered(QAction*)), dlg, SLOT(onMenuTriggered(QAction*)));
+		QObject::connect(unloadPlugin, SIGNAL(clicked(bool)), dlg, SLOT(onUnloadPlugin()));
 		dlg->setLayout(l);
 	}
 
@@ -86,6 +103,17 @@ public:
 		twi->setText(0, name);
 		twi->setText(1, version);
 		twi->setText(2, path);
+	}
+
+	void updateRecentPlugins()
+	{
+		recentPlugins->clear();
+		QStringList l = m_wnd->GetRecentPluginsList();
+		for (int i = 0; i < l.size(); ++i)
+		{
+			recentPlugins->addAction(l[i]);
+		}
+		recentPlugins->addAction("<other...>");
 	}
 
 	void updatePluginsList()
@@ -137,7 +165,12 @@ public:
 
 		features->clear();
 		int n = plugins->currentIndex().row();
-		if ((n < 0) || (n >= pm->Plugins())) return;
+		if ((n < 0) || (n >= pm->Plugins()))
+		{
+			unloadPlugin->setDisabled(true);
+			return;
+		}
+		unloadPlugin->setEnabled(true);
 
 		const FEBioPlugin& pi = pm->GetPlugin(n);
 
@@ -151,13 +184,15 @@ public:
 	}
 };
 
-CDlgFEBioPlugins::CDlgFEBioPlugins(QWidget* parent) : QDialog(parent), ui(new CDlgFEBioPluginsUI)
+CDlgFEBioPlugins::CDlgFEBioPlugins(CMainWindow* parent) : QDialog(parent), ui(new CDlgFEBioPluginsUI)
 {
 	setWindowTitle("FEBio Plugins");
 
 	setMinimumSize(800, 600);
 
+	ui->m_wnd = parent;
 	ui->setup(this);
+	ui->updateRecentPlugins();
 	ui->updatePluginsList();
 }
 
@@ -166,33 +201,80 @@ void CDlgFEBioPlugins::updateFeaturesList()
 	ui->updateFeaturesList();
 }
 
+void CDlgFEBioPlugins::onMenuTriggered(QAction* action)
+{
+	QString t = action->text();
+	if (t == "<other...>")
+		onLoadPlugin();
+	else
+	{
+		LoadPlugin(t);
+	}
+}
+
 void CDlgFEBioPlugins::onLoadPlugin()
 {
 	QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
 	if (fileName.isEmpty() == false)
 	{
-		std::string sfile = fileName.toStdString();
+		fileName = QDir::toNativeSeparators(fileName);
+		LoadPlugin(fileName);
+	}
+}
 
-		// get the currently active module
-		// We need this, since importing the plugin might change this.
-		FECoreKernel& fecore = FECoreKernel::GetInstance();
-		int modId = fecore.GetActiveModule()->GetModuleID();
+void CDlgFEBioPlugins::LoadPlugin(const QString& fileName)
+{
+	std::string sfile = fileName.toStdString();
 
-		// try to import the plugin
-		bool bsuccess = febio::ImportPlugin(sfile.c_str());
+	// get the currently active module
+	// We need this, since importing the plugin might change this.
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	int modId = fecore.GetActiveModule()->GetModuleID();
 
-		// restore active module
-		fecore.SetActiveModule(modId);
+	// try to import the plugin
+	bool bsuccess = febio::ImportPlugin(sfile.c_str());
 
-		if (bsuccess == false)
+	// restore active module
+	fecore.SetActiveModule(modId);
+
+	if (bsuccess == false)
+	{
+		QMessageBox::critical(this, "Load Plugin", QString("The plugin failed to load:\n%1").arg(fileName));
+	}
+	else
+	{
+		QMessageBox::information(this, "Load Plugin", QString("The plugin loaded successfully:\n%1").arg(fileName));
+		ui->m_wnd->AddRecentPlugin(fileName);
+		ui->updateRecentPlugins();
+		ui->updatePluginsList();
+		ui->selectPlugin(ui->pluginCount() - 1);
+	}
+}
+
+void CDlgFEBioPlugins::onUnloadPlugin()
+{
+	QTreeWidgetItem* it = ui->plugins->currentItem();
+	if (it == nullptr)
+	{
+		QMessageBox::information(this, "Unload plugin", QString("Please select the plugin to unload."));
+		return;
+	}
+	
+	QString name = it->text(0);
+
+	QString msg = QString("Are you sure you want to unload the plugin %1.\nAny open model that uses it may not work correctly anymore.").arg(name);
+	if (QMessageBox::question(this, "Unload plugin", msg) == QMessageBox::Yes)
+	{
+		FEBioPluginManager* pm = FEBioPluginManager::GetInstance(); assert(pm);
+		if (pm->UnloadPlugin(name.toStdString()))
 		{
-			QMessageBox::critical(this, "Load Plugin", QString("The plugin failed to load:\n%1").arg(fileName));
+			QMessageBox::information(this, "Unload plugin", QString("Plugin %1 unloaded successfully.").arg(name));
 		}
 		else
 		{
-			QMessageBox::information(this, "Load Plugin", QString("The plugin loaded successfully:\n%1").arg(fileName));
-			ui->updatePluginsList();
-			ui->selectPlugin(ui->pluginCount() - 1);
+			QMessageBox::critical(this, "Unload plugin", QString("Failed to unload plugin %1.").arg(name));
 		}
+
+		ui->updatePluginsList();
 	}
 }

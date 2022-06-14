@@ -1218,6 +1218,24 @@ void GLMeshRender::RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
     glEnd();
 }
 
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel)
+{
+	assert(pe->IsType(FE_BEAM2));
+	FEElement_& e = *pe;
+	vec3d r[2];
+
+	glBegin(GL_LINES);
+	{
+		r[0] = pm->Node(e.m_node[0]).r;
+		r[1] = pm->Node(e.m_node[1]).r;
+
+		glx::vertex3d(r[0]);
+		glx::vertex3d(r[1]);
+	}
+	glEnd();
+}
+
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderGLMesh(GLMesh* pm, int nid)

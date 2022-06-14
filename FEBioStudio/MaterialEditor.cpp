@@ -129,7 +129,7 @@ FSMaterial* CMaterialEditor::GetMaterial()
 	return it->GetMaterial();
 }
 
-CMaterialEditor::CMaterialEditor(FSProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CMaterialEditor)
+CMaterialEditor::CMaterialEditor(FSProject& prj, QWidget* parent) : CHelpDialog(parent), ui(new Ui::CMaterialEditor)
 {
 //	setMinimumSize(400, 400);
 	setWindowTitle("Add Material");

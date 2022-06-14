@@ -190,6 +190,7 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 		else if (tag == "Mesh"       ) ret = ParseMeshSection       (tag);
 		else if (tag == "MeshDomains") ret = ParseMeshDomainsSection(tag);
 		else if (tag == "MeshData"   ) ret = ParseMeshDataSection   (tag);
+		else if (tag == "MeshAdaptor") ret = ParseMeshAdaptorSection(tag);
 		else if (tag == "Boundary"   ) ret = ParseBoundarySection   (tag);
 		else if (tag == "Constraints") ret = ParseConstraintSection (tag);
 		else if (tag == "Loads"      ) ret = ParseLoadsSection      (tag);
@@ -219,7 +220,7 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 
 	int moduleId = FEBio::GetModuleId(sztype);
 	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
-	FileReader()->GetProject().SetModule(moduleId);
+	FileReader()->GetProject().SetModule(moduleId, false);
 	return (moduleId != -1);
 }
 //=============================================================================
@@ -1719,6 +1720,60 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 //
 //=============================================================================
 
+bool FEBioFormat3::ParseMeshAdaptorSection(XMLTag& tag)
+{
+	if (tag.isleaf()) return true;
+
+	FEBioInputModel& feb = GetFEBioModel();
+	FSModel* fem = &GetFSModel();
+
+	++tag;
+	do {
+		if (tag == "mesh_adaptor")
+		{
+			const char* szname = tag.AttributeValue("name", true);
+			const char* sztype = tag.AttributeValue("type");
+
+			FSMeshAdaptor* mda = FEBio::CreateMeshAdaptor(sztype, fem);
+			if (mda == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+			if (szname) mda->SetName(szname);
+			else
+			{
+				stringstream ss;
+				ss << "MeshAdaptor" << CountMeshAdaptors<FSMeshAdaptor>(*fem) + 1;
+				mda->SetName(ss.str());
+			}
+
+			const char* szset = tag.AttributeValue("elem_set", true);
+			if (szset)
+			{
+				FEBioInputModel::Domain* dom = feb.FindDomain(szset);
+				if (dom)
+				{
+					FSPart* pg = feb.BuildFEPart(dom);
+					mda->SetItemList(pg);
+				}
+				else AddLogEntry("Failed to find element set %s", szset);
+			}
+
+			m_pBCStep->AddMeshAdaptor(mda);
+
+			ParseModelComponent(mda, tag);
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	} while (!tag.isleaf());
+
+	return true;
+}
+
+//=============================================================================
+//
+//                                B O U N D A R Y 
+//
+//=============================================================================
+
 //-----------------------------------------------------------------------------
 //  Parses the boundary section from the xml file (format 2.5)
 bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
@@ -2913,22 +2968,85 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 	else if (strcmp(sztype, "prescribe") == 0) sztype = "rigid_prescribed";
 	else if (strcmp(sztype, "force") == 0)
 	{
-		// This actually is a rigid load
-		sztype = "rigid_force";
-
 		// get the name 
 		stringstream ss;
 		ss << "RigidLoad" << CountLoads<FSRigidLoad>(fem) + 1;
 		std::string name = tag.AttributeValue("name", ss.str());
 
-		// allocate class
-		FSRigidLoad* pi = FEBio::CreateRigidLoad(sztype, &fem);
-		if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+		// we need to decide whether we want to apply a force or a moment, since these
+		// are now two separate classes. Unfortunately, this means we first need to 
+		// read all parameters, before we can allocate the correct class. 
+		int rb = -1;
+		int ntype = 0;
+		int bc = -1;
+		double val = 0.;
+		bool brel = false;
+		int lc = -1;
+		++tag;
+		do
+		{
+			if (tag == "rb") tag.value(rb);
+			else if (tag == "value")
+			{
+				tag.value(val);
+				const char* szlc = tag.AttributeValue("lc", true);
+				if (szlc) lc = atoi(szlc) - 1;
+			}
+			else if (tag == "load_type") tag.value(ntype);
+			else if (tag == "relative") tag.value(brel);
+			else if (tag == "dof")
+			{
+				const char* sz = tag.szvalue();
+				if ((strcmp(sz, "Rx") == 0) || (strcmp(sz, "0") == 0)) bc = 0;
+				if ((strcmp(sz, "Ry") == 0) || (strcmp(sz, "1") == 0)) bc = 1;
+				if ((strcmp(sz, "Rz") == 0) || (strcmp(sz, "2") == 0)) bc = 2;
+				if ((strcmp(sz, "Ru") == 0) || (strcmp(sz, "3") == 0)) bc = 3;
+				if ((strcmp(sz, "Rv") == 0) || (strcmp(sz, "4") == 0)) bc = 4;
+				if ((strcmp(sz, "Rw") == 0) || (strcmp(sz, "5") == 0)) bc = 5;
+
+				if (bc < 0)
+				{
+					throw XMLReader::InvalidValue(tag);
+				}
+			}
+
+			++tag;
+		} while (!tag.isend());
+
+		FSRigidLoad* pi = nullptr;
+		if (bc < 3)
+		{
+			// allocate class
+			pi = FEBio::CreateRigidLoad("rigid_force", &fem);
+			if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+			pi->SetParamInt  ("load_type", ntype);
+			pi->SetParamInt  ("rb", rb);
+			pi->SetParamInt  ("dof", bc);
+			pi->SetParamFloat("value", val);
+			pi->SetParamBool ("relative", brel);
+		}
+		else
+		{
+			// allocate class
+			pi = FEBio::CreateRigidLoad("rigid_moment", &fem);
+			if (pi == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+			pi->SetParamInt  ("rb", rb);
+			pi->SetParamInt  ("dof", bc - 3);
+			pi->SetParamFloat("value", val);
+			pi->SetParamBool ("relative", brel);
+		}
+
+		if (lc >= 0)
+		{
+			Param* pv = pi->GetParam("value");
+			febio.AddParamCurve(pv, lc);
+		}
 
 		pi->SetName(name);
 		pstep->AddRigidLoad(pi);
 
-		ReadParameters(*pi, tag);
 		return;
 	}
 	else if ((strcmp(sztype, "initial_rigid_velocity") == 0) ||

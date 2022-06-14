@@ -28,17 +28,20 @@ SOFTWARE.*/
 #include "HelpDialog.h"
 
 class UIDlgAddPhysicsItem;
+class FSModel;
 
 class CDlgAddPhysicsItem : public CHelpDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSProject& prj, bool includeModuleDependencies, bool showStepList, QWidget* parent);
+	CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, QWidget* parent);
 
 	std::string GetName();
 	int GetStep();
 	int GetClassID();
+
+	void ShowNameAndCategoryFields(bool b);
 
 protected:
 	void SetURL();

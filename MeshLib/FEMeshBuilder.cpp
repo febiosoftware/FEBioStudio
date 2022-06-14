@@ -2012,7 +2012,7 @@ void FEMeshBuilder::BuildEdges()
 			{
 				FSEdge e = f.GetEdge(j);
 
-				// see if this node already exists
+				// see if this edge already exists
 				bool bfound = false;
 				vector<int>& net = NET[e.n[0]];
 				for (int l = 0; l < net.size(); ++l)
@@ -2038,6 +2038,46 @@ void FEMeshBuilder::BuildEdges()
 					NET[e.n[0]].push_back(edgeIndex);
 					NET[e.n[1]].push_back(edgeIndex);
 				}
+			}
+		}
+	}
+
+	// loop over beam elements
+	for (int i = 0; i < m_mesh.Elements(); ++i)
+	{
+		FSElement& el = m_mesh.Element(i);
+		if (el.IsBeam())
+		{
+			FSEdge e;
+			e.SetType(FE_EDGE2);
+			e.n[0] = el.m_node[0];
+			e.n[1] = el.m_node[1];
+
+			// see if this edge already exists
+			bool bfound = false;
+			vector<int>& net = NET[e.n[0]];
+			for (int l = 0; l < net.size(); ++l)
+			{
+				FSEdge& el = m_mesh.Edge(net[l]);
+				if (el == e)
+				{
+					// the edge already exists, so don't add it
+					bfound = true;
+					break;
+				}
+			}
+
+			// If not, then process and add
+			if (bfound == false)
+			{
+				e.m_gid = 0;
+				e.SetID((int)m_mesh.m_Edge.size() + 1);
+				e.SetExterior(e.m_gid == 0);
+
+				int edgeIndex = m_mesh.Edges();
+				m_mesh.m_Edge.push_back(e);
+				NET[e.n[0]].push_back(edgeIndex);
+				NET[e.n[1]].push_back(edgeIndex);
 			}
 		}
 	}

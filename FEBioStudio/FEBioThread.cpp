@@ -64,9 +64,13 @@ void CFEBioThread::run()
 	// set ...
 	m_job->SetStatus(CFEBioJob::RUNNING);
 
+	QString Cmd = QString::fromStdString(m_job->m_cmd);
+	Cmd.replace("$(Filename)", QString::fromStdString(m_job->GetFEBFileName()));
+	string cmd = Cmd.toStdString();
+
 	// go!
 	FEBioThreadOutput threadOutput(this);
-	bool b = FEBio::runModel(febFile, &threadOutput);
+	bool b = FEBio::runModel(cmd, &threadOutput);
 
 	emit resultsReady((b ? 0 : 1), QProcess::ExitStatus::NormalExit);
 }

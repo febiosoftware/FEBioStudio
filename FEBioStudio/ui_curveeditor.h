@@ -65,6 +65,7 @@ public:
 	QWidget*			lcWidget;
 	QComboBox*			selectLC;
 	CMathEditWidget*	math;
+	CMathEditWidget*	math2;
 	FEClassPropsView*	props;
 
 public:
@@ -102,6 +103,12 @@ public:
 		math->SetOrdinate("t");
 		math->setObjectName("math");
 
+		math2 = new CMathEditWidget;
+		math2->SetOrdinate("t");
+		math2->setObjectName("math2");
+		math2->showRangeOptions(true);
+		math2->setMinMaxRange(0.0, 1.0);
+
 		props = new FEClassPropsView;
 		props->setObjectName("props");
 
@@ -131,6 +138,7 @@ public:
 		stack->addWidget(new QLabel("(no contoller)"));
 		stack->addWidget(plot);
 		stack->addWidget(math);
+		stack->addWidget(math2);
 		stack->addWidget(props);
 
 		QVBoxLayout* plotLayout = new QVBoxLayout;

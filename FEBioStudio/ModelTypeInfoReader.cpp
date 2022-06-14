@@ -78,7 +78,7 @@ string ModelTypeInfoReader::GetModule()
 
 void ModelTypeInfoReader::ReadFSM()
 {
-    CModelDocument doc(PRV::getMainWindow());
+    CModelDocument doc(FBS::getMainWindow());
 	// doc.SetDocFilePath(szfile);
 
     FSModel* fsModel = doc.GetFSModel();

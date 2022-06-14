@@ -30,7 +30,7 @@ DEALINGS IN THE SOFTWARE.
 #include "ImageSITK.h"
 
 #ifdef HAS_ITK
-#include <QFileInfo>
+#include <FSCore/FSDir.h>
 
 namespace sitk = itk::simple;
 
@@ -62,8 +62,8 @@ bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
     {
         sitk::ImageSeriesReader reader;
 
-        QFileInfo info(filename.c_str());
-        const std::vector<std::string> dicom_names = sitk::ImageSeriesReader::GetGDCMSeriesFileNames( info.absolutePath().toStdString().c_str() );
+        string absolutePath = FSDir::fileDir(filename);
+        const std::vector<std::string> dicom_names = sitk::ImageSeriesReader::GetGDCMSeriesFileNames(absolutePath);
         reader.SetFileNames( dicom_names );
 
         m_sitkImage = reader.Execute();

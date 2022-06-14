@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QMessageBox>
 
-static bool string_to_int_list(QString listString, std::vector<int>& list);
+bool string_to_int_list(QString listString, std::vector<int>& list);
 
 class Ui::CDlgFind
 {

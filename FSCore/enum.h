@@ -549,6 +549,8 @@ SOFTWARE.*/
 #define CID_FEBIO_BASE_DATA			0x00200002
 #define CID_FEBIO_TYPE_STRING		0x00200003
 
+#define CID_MESH_ADAPTOR_SECTION	0x00300000
+
 //--------------------------------------------------------
 // Mesh type
 #define FE_MESH					0x0000

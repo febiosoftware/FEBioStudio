@@ -42,6 +42,9 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <string.h>
 #include "DlgEditLConfigs.h"
+#include "DlgExportFEBio.h"
+#include <FEBioLink/FEBioClass.h>
+#include <FECore/fecore_enum.h>
 
 
 class Ui::CDlgRun
@@ -53,11 +56,11 @@ public:
 	QCheckBox*	debug;
 	QCheckBox*	writeNotes;
 	QLineEdit*	configFile;
-	QLineEdit*	taskName;
+	QComboBox*	taskName;
 	QLineEdit*	taskFile;
 	QCheckBox*	autoSave;
 
-	QComboBox* febioFormat;
+	CFEBioFormatSelector* febioFormat;
 	
 	QCheckBox* editCmd;
 	QLineEdit*	cmd;
@@ -101,11 +104,8 @@ public:
 		jobFolder = new QWidget;
 		jobFolder->setLayout(cwdLayout);
 
-		febioFormat = new QComboBox;
-		febioFormat->addItem("FEBio 2.5 format");
-		febioFormat->addItem("FEBio 3.0 format");
-		febioFormat->addItem("FEBio 4.0 format");
-		febioFormat->setCurrentIndex(2);
+		febioFormat = new CFEBioFormatSelector;
+		febioFormat->setFEBioFormat(0x0400);
 
 		autoSave = new QCheckBox("Save model before running FEBio");
 		autoSave->setChecked(true);
@@ -118,7 +118,14 @@ public:
 		configLayout->addWidget(configFile);
 		configLayout->addWidget(selectConfigFile);
 
-		taskName = new QLineEdit;
+		taskName = new QComboBox; taskName->setEditable(true);
+		std::vector<FEBio::FEBioClassInfo> ci = FEBio::FindAllClasses(-1, FETASK_ID);
+		for (int i = 0; i < ci.size(); ++i)
+		{
+			taskName->addItem(ci[i].sztype);
+		}
+		taskName->setCurrentIndex(-1);
+
 		taskFile = new QLineEdit;
 
 		QFormLayout* form = new QFormLayout;
@@ -192,7 +199,7 @@ public:
 		QObject::connect(editCmd, SIGNAL(toggled(bool)), cmd, SLOT(setEnabled(bool)));
 		QObject::connect(selectConfigFile, SIGNAL(clicked()), dlg, SLOT(on_selectConfigFile()));
 		QObject::connect(configFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
-		QObject::connect(taskName, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
+		QObject::connect(taskName, SIGNAL(currentTextChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(taskFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 	}
 };
@@ -253,7 +260,7 @@ void CDlgRun::updateDefaultCommand()
 		QString configFile = ui->configFile->text();
 		if (configFile.isEmpty() == false) t += " -config $(ConfigFile)";
 
-		QString taskName = ui->taskName->text();
+		QString taskName = ui->taskName->currentText();
 		if (taskName.isEmpty() == false)
 		{
 			t += " -task=\"" + taskName + "\"";
@@ -324,7 +331,7 @@ void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int nde
 
 void CDlgRun::SetFEBioFileVersion(int fileVersion)
 {
-	ui->febioFormat->setCurrentIndex(fileVersion);
+	ui->febioFormat->setFEBioFormat(fileVersion);
 }
 
 QString CDlgRun::GetWorkingDirectory()
@@ -359,7 +366,7 @@ int CDlgRun::GetLaunchConfig()
 
 int CDlgRun::GetFEBioFileVersion()
 {
-	return ui->febioFormat->currentIndex();
+	return ui->febioFormat->FEBioFormat();
 }
 
 bool CDlgRun::WriteNotes()

@@ -728,15 +728,15 @@ protected:
 class CCmdSelectElements : public CCommand
 {
 public:
-	CCmdSelectElements(FSMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectElements(FSMesh* pm, const vector<int>& el, bool badd);
+	CCmdSelectElements(FSCoreMesh* pm, int* pe, int N, bool badd);
+	CCmdSelectElements(FSCoreMesh* pm, const std::vector<int>& el, bool badd);
 	~CCmdSelectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FSMesh*	m_pm;
+	FSCoreMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
 	bool	m_badd; // add to selection or not

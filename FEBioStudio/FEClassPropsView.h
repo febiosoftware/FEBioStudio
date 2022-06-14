@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <QTreeView>
 #include <QStyledItemDelegate>
 #include <QComboBox>
+#include <QLineEdit>
 
 class FSCoreBase;
 class FSModel;
@@ -35,6 +36,24 @@ class FEClassPropsModel;
 class Param;
 class FSProperty;
 class CMainWindow;
+
+class CPropertySelector : public QComboBox
+{
+	Q_OBJECT
+
+public:
+	CPropertySelector(FSProperty* pp, FSCoreBase* pc, QWidget* parent = nullptr);
+
+public slots:
+	void onSelectionChanged(int n);
+
+signals:
+	void currentDataChanged(int n);
+
+private:
+	FSCoreBase* m_pc;
+	FSProperty* m_pp;
+};
 
 class FEClassPropsDelegate : public QStyledItemDelegate
 {
@@ -71,9 +90,24 @@ protected:
 
 private slots:
 	void onModelDataChanged();
+	void setFilter(const QString& flt);
 
 private:
 	FEClassPropsModel*	m_model;
+};
+
+//-----------------------------------------------------------------------------
+class FEClassPropsWidget : public QWidget
+{
+public:
+	FEClassPropsWidget(QWidget* parent = nullptr);
+
+	void SetFEClass(FSCoreBase* pc, FSModel* fem);
+	FSProperty* getProperty(const QModelIndex& index);
+
+private:
+	QLineEdit* m_flt;
+	FEClassPropsView* m_view;
 };
 
 //-----------------------------------------------------------------------------

@@ -284,8 +284,11 @@ void IArchive::log(const char* sz, ...)
 	va_start(args, sz);
 
 	// count how many chars we need to allocate
+	va_list argscopy;
+	va_copy(argscopy, args);
 	char* szlog = NULL;
-	int l = vsnprintf(nullptr, 0, sz, args) + 1;
+	int l = vsnprintf(nullptr, 0, sz, argscopy) + 1;
+	va_end(argscopy);
 	if (l > 1)
 	{
 		szlog = new char[l]; assert(szlog);

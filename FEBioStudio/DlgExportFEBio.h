@@ -26,25 +26,39 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
+#include <QComboBox>
 
 namespace Ui {
 	class CDlgExportFEBio;
 }
+
+class CFEBioFormatSelector : public QComboBox
+{
+public:
+	CFEBioFormatSelector(QWidget* pw = nullptr);
+
+	int FEBioFormat() const;
+	void setFEBioFormat(int n);
+};
 
 class CDlgExportFEBio : public QDialog
 {
 	Q_OBJECT
 
 private:
-	enum { MAX_SECTIONS = 15 };
+	enum { MAX_SECTIONS = 16 };
 
 public:
 	CDlgExportFEBio(QWidget* parent);
 
 	void accept();
 
+	int FEBioFormat() const;
+
+	void SetFEBioFormat(int n);
+
 public:
-	static int		m_nversion;
+	static int		m_nindex;
 	bool	m_nsection[MAX_SECTIONS];
 	bool	m_bexportSelections;
 	bool	m_compress;

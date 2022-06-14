@@ -84,6 +84,9 @@ FSHillContractileMaterial::FSHillContractileMaterial(FSModel* fem) : FSDiscreteM
 }
 
 //===================================================================
+FS1DFunction::FS1DFunction(int ntype, FSModel* fem) : FSMaterial(ntype, fem) { SetSuperClassID(FEFUNCTION1D_ID); }
+
+//===================================================================
 
 REGISTER_MATERIAL(FS1DPointFunction, MODULE_MECH, FE_FNC1D_POINT, FE_MAT_1DFUNC, "point", 0);
 

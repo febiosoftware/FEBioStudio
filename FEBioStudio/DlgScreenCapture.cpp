@@ -44,7 +44,6 @@ CDlgScreenCapture::CDlgScreenCapture(QImage* img, CMainWindow* wnd)
     m_view = new QGraphicsView;
     m_view->setScene(m_scene);
 
-    m_view->setMinimumSize(img->size());
     QGraphicsPixmapItem* item = m_scene->addPixmap(QPixmap::fromImage(*img));
 
     layout->addWidget(m_view);
