@@ -29,8 +29,8 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
 #define VERSION			1
-#define SUBVERSION		7
-#define SUBSUBVERSION	1
+#define SUBVERSION		8
+#define SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
 // FSM FILE VERSION
