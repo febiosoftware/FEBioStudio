@@ -6,6 +6,81 @@
 
 ===========================================================================
 
+ R E L E A S E   1.8   6/15/2022
+
+===========================================================================
+
+* Inactive rigid connectors are now rendered gray.
+* Fixed bug in post context menu for surfaces. Improved consistency between post groups (stored on mesh) and user groups (stored on post object).
+* Added options to export only current selection and user-defined time step range from PostData panel.
+* Post Model panel now shows nodesets, surfaces, and element sets of the mesh.
+* Updated plot variables list. Added option to set plot variable category when adding new plot variable.
+* Now taking local CS into account when drawing fibers.
+* Implemented value-weighted transparency mode.
+* Added support for FEHGOCoronary material.
+* Added support for reading a series of vtk files.
+* Removed min size constraint in screen capture dialog.
+* Fixed dpr issue with screen recording.
+* Added check for empty data selection in fiber generator tool.
+* Added option to size points based on point data in CGLPointPlot.
+* Added option to set default font for GL widgets.
+* Added support for TET10 elements in FEElementEdgeList.
+* Fixed issue with color map range for face data.
+* Fixed couple bugs in curve-projection algorithm.
+* Fixed bug in FEShellPatch.
+* Added plot variable "RVE strain"
+* Implemented 'solute natural flux' surface load.
+* Implemented ICP Registration tool.
+* Non-visible materials show up in italic in the Post material panel.
+* Fixed bug with updating plane cut in build mode.
+* Added new import data dialog. Optimization wizard now uses this new dialog for pasting data.
+* Fixed bug when applying TetGen modifier.
+* Added new dialog for capturing screenshot. You can now either save the image or copy it to clipboard.
+* Fixed issue with applying modifiers in object selection mode.
+* Added option to set text alignment for box widget.
+* Moved outline rendering further down the pipeline to address rendering artifact.
+* Added option for setting default foreground color of GL widgets.
+* Local repo database is no longer deleted on each refresh, it is just completely emptied.
+* Added context menu option for changing render order for plots.
+* Added icon for point plots.
+* Moved point data to PointDataModel class. Implemented mechanism for reloading point data.
+* Implemented mechanism for reloading line data.
+* Added functionality to specify bearing load. Updated QuadricFitTool functionality.  Updated Quadric functions to be more tolerant to numerical round-offs.
+* Added functionality to prescribe a force on a surface.
+* Added functionality for prescribing a fixed normal displacement constraint.
+* Added fiber-exp-pow-linear as a fiber model.
+* Made the "T0" parameter of "uncoupled prescribed uniaxial active contraction" variable.
+* Added support for selection only flag when exporting element data.
+* Added material active fiber contraction material "force-velocity-Estrada"
+* Added "fatigue bond fraction" plot variable.
+* Added ability to read/write "reactive viscoelastic damage", "reactive fatigue" and "uncoupled reactive fatigue" materials.
+* Fixed typo in Figure 10.2 description in manual
+* Added ability to import plot_stride variable from FEBioFormat3 model files.
+* Set correct modules when reading feb file.
+* Updated GOOCObject to stop using deprecated functions from OpenCascade.
+* Added support for new "infinitesimal strain" plot variable.
+* Added check for tet slivers in Mesh Diagnostics tool.
+* Fixed crash when drawing mesh on planecut.
+* Added support new "polynomial" hyperelastic material.
+* Added documentation on the auto update settings in options.
+* Fixed typo in specification of relaxation-Malkin-distortion material.
+* Fixed logic in rendering active-only faces.
+* Active faces are now also rendered in wire render mode.
+* Fixed bug to properly save plot_level to feb file for modules other than structural mechanics.
+* Fixed crash when closing a model document with an active selection.
+* Fixed bug with setting active FEPostModel.
+* Added materials for CDF power, relaxation-Malkin-dist, and trace-free neo-Hookean.  Added recruitment component to reactive viscoelastic materials.
+* Fixed bug when adding new plot that passed incorrect time index.
+* Legend bar is now hidden when GLLegendPlot is deactivated.
+* Clear projects lists button now clears recent files and recent projects.
+* Removed "general spring" and added measure parameter to "nonlinear spring"
+* Add units of velocity and angular velocity to FEFluidNormalVelocity and FEFluidRotationalVelocity
+* Implemented support for the new general spring material.
+* Added support for "scale" parameter of nonlinear springs.
+
+
+===========================================================================
+
  R E L E A S E   1.7.1   2/25/2022
 
 ===========================================================================
