@@ -7784,7 +7784,12 @@ void CGLView::RenderFEElements(GObject* po)
 	double vmin, vmax;
 	Mesh_Data& data = pm->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
+	if (showContour) 
+	{ 
+		data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); 
+
+		glEnable(GL_COLOR_MATERIAL);
+	}
 
 	// render the unselected faces
 	vector<int> selectedElements;

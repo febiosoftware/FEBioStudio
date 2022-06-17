@@ -699,15 +699,15 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[3];
-	vec3f n[3];
+	vec3d n[3];
 
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
 
-	n[0] = pf->m_nn[0];
-	n[1] = pf->m_nn[1];
-	n[2] = pf->m_nn[2];
+	n[0] = to_vec3d(pf->m_nn[0]);
+	n[1] = to_vec3d(pf->m_nn[1]);
+	n[2] = to_vec3d(pf->m_nn[2]);
 
 	glBegin(GL_TRIANGLES);
 	{
@@ -726,17 +726,17 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	FSFace* pf = pm->FacePtr(e.m_face[0]);
 	if (pf == 0) return;
 	vec3d r[4];
-	vec3f n[4];
+	vec3d n[4];
 
 	r[0] = pm->Node(e.m_node[0]).r;
 	r[1] = pm->Node(e.m_node[1]).r;
 	r[2] = pm->Node(e.m_node[2]).r;
 	r[3] = pm->Node(e.m_node[3]).r;
 
-	n[0] = pf->m_nn[0];
-	n[1] = pf->m_nn[1];
-	n[2] = pf->m_nn[2];
-	n[3] = pf->m_nn[3];
+	n[0] = to_vec3d(pf->m_nn[0]);
+	n[1] = to_vec3d(pf->m_nn[1]);
+	n[2] = to_vec3d(pf->m_nn[2]);
+	n[3] = to_vec3d(pf->m_nn[3]);
 
 	glBegin(GL_TRIANGLES);
 	{
