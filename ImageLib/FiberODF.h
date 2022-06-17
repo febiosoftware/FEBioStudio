@@ -28,19 +28,21 @@ SOFTWARE.*/
 
 #include <SimpleITK.h>
 #include <string>
+#include <FEBioStudio/Tool.h>
 
 namespace sitk = itk::simple;
 using std::string;
 
+class CMainWindow;
 class matrix;
 
-class CFiberODF 
+class CFiberODF : public CBasicTool
 {
 
 public:
-    CFiberODF(string& inFile, string& outFile);
+    CFiberODF(CMainWindow* wnd);
 
-    void Apply();
+    bool OnApply() override;
 
 private:
     void butterworthFilter(sitk::Image img);
@@ -48,18 +50,21 @@ private:
     void fftRadialFilter(sitk::Image img);
     void reduceAmp(sitk::Image img, std::vector<double>* reduced);
 
-    std::unique_ptr<matrix> compSH(int size, double* theta, double*phi);
+    std::unique_ptr<matrix> compSH(int size, double* theta, double* phi);
     double harmonicY(int degree, int order, double theta, double phi, int numType);
     std::unique_ptr<matrix> complLapBel_Coef();
 
     double GFA(std::vector<double> vals);
 
-private:
-    string m_inFile;
-    string m_outFile;
+    GObject* buildMesh();
+    void makeDataField(GObject* obj, std::vector<double>& vals);
 
-    float m_tLow;
-    float m_tHigh;
+private:
+    CMainWindow* m_wnd;
+    QString m_imgFile;
+
+    double m_tLow;
+    double m_tHigh;
 
     int m_order;
 

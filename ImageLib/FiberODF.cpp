@@ -32,45 +32,58 @@ SOFTWARE.*/
 #include "FESpherePts.h"
 #include <MeshTools/FENNQuery.h>
 #include <FECore/matrix.h>
+#include <GeomLib/GMeshObject.h>
+#include <MeshTools/GModel.h>
+#include <FEBioStudio/MainWindow.h>
+#include <FEBioStudio/ModelDocument.h>
+#include <MeshTools/FEElementData.h>
 
 using std::complex;
 
 #ifdef HAS_ITK
 
-CFiberODF::CFiberODF(string& inFile, string& outFile)
-    : m_inFile(inFile), m_outFile(outFile), m_order(0)
+CFiberODF::CFiberODF(CMainWindow* wnd) : CBasicTool(wnd, "Fiber ODF", HAS_APPLY_BUTTON),
+    m_wnd(wnd), m_order(16), m_tHigh(2.0), m_tLow(30)
 {
-
+    addResourceProperty(&m_imgFile, "Image File");
+    addIntProperty(&m_order, "Harmonic Order");
+    addDoubleProperty(&m_tHigh, "High pass cuttoff");
+    addDoubleProperty(&m_tLow, "Low pass cuttoff");
 }
 
-void CFiberODF::Apply()
+bool CFiberODF::OnApply()
 {
-    sitk::ImageFileReader reader;
-    reader.SetFileName(m_inFile);
+    // sitk::ImageFileReader reader;
+    // reader.SetFileName(m_imgFile.toStdString());
 
-    sitk::Image img = reader.Execute();
+    // sitk::Image img = reader.Execute();
 
-    if(img.GetPixelID() != sitk::sitkUInt16)
-    {
-        sitk::RescaleIntensityImageFilter rescaleFiler;
-        rescaleFiler.SetOutputMinimum(0);
-        rescaleFiler.SetOutputMaximum(65536);
-        img = rescaleFiler.Execute(img);
+    // if(img.GetPixelID() != sitk::sitkUInt16)
+    // {
+        // sitk::RescaleIntensityImageFilter rescaleFiler;
+        // rescaleFiler.SetOutputMinimum(0);
+        // rescaleFiler.SetOutputMaximum(65536);
+        // img = rescaleFiler.Execute(img);
 
-        sitk::CastImageFilter castFilter;
-        castFilter.SetOutputPixelType(sitk::sitkUInt16);
-        img = castFilter.Execute(img);
-    }
+        // sitk::CastImageFilter castFilter;
+        // castFilter.SetOutputPixelType(sitk::sitkUInt32);
+        // img = castFilter.Execute(img);
+
+        // img = sitk::Cast(img, sitk::sitkUInt32);
+    // }
+
+    sitk::Image img = sitk::ReadImage(m_imgFile.toStdString());
+    img = sitk::Cast(img, sitk::sitkUInt32);
 
     // Apply Butterworth filter
     butterworthFilter(img);
 
-    // Apply FFT and FFT shift
-    sitk::ForwardFFTImageFilter fft;
-    img = fft.Execute(img);
+    img = sitk::Cast(img, sitk::sitkFloat32);
 
-    sitk::FFTShiftImageFilter fftShift;
-    img = fftShift.Execute(img);
+    // Apply FFT and FFT shift
+    img = sitk::FFTPad(img);
+    img = sitk::ForwardFFT(img);
+    img = sitk::FFTShift(img);
 
     // Obtain Power Spectrum
     img = powerSpectrum(img);
@@ -134,7 +147,7 @@ void CFiberODF::Apply()
 
     auto A = (*T)*(*C)*((transposeT*(*T)).inverse()*transposeT);
 
-    std::vector<double> ODF;
+    std::vector<double> ODF(NPTS, 0.0);
     A.mult(reduced, ODF);
 
     delete[] theta;
@@ -157,7 +170,18 @@ void CFiberODF::Apply()
         ODF[index] /= sum;
     }
 
+    FSModel* fem = m_wnd->GetModelDocument()->GetFSModel();
 
+    GObject* po = buildMesh();
+
+    po->SetName("ODF");
+
+	// add the object to the model
+	fem->GetModel().AddObject(po);
+
+    makeDataField(po, ODF);
+
+    return true;
 }
 
 void CFiberODF::butterworthFilter(sitk::Image img)
@@ -205,15 +229,19 @@ void CFiberODF::butterworthFilter(sitk::Image img)
 
 sitk::Image CFiberODF::powerSpectrum(sitk::Image img)
 {
-    auto size = img.GetSize();
+    int nx = img.GetSize()[0];
+    int ny = img.GetSize()[1];
+    int nz = img.GetSize()[2];
 
-    sitk::Image PS(size[0], size[1], size[2], sitk::sitkFloat32);
+    sitk::Image PS(nx, ny, nz, sitk::sitkFloat32);
+    float* data = PS.GetBufferAsFloat();
 
-    for(uint32_t x = 0; x < size[0]; x++)
+    #pragma omp parallel for
+    for(uint32_t x = 0; x <nx; x++)
     {
-        for(uint32_t y = 0; y < size[1]; y++)
+        for(uint32_t y = 0; y < ny; y++)
         {
-            for(uint32_t z = 0; z < size[2]; z++)
+            for(uint32_t z = 0; z < nz; z++)
             {
                 std::vector<uint32_t> index = {x,y,z};
                 
@@ -221,7 +249,9 @@ sitk::Image CFiberODF::powerSpectrum(sitk::Image img)
 
                 float ps = abs(val);
 
-                PS.SetPixelAsFloat(index, ps*ps);
+                int newIndex = x + y*nx + z*nx*ny;
+
+                data[newIndex] = ps*ps;
             }
         }
     }
@@ -246,7 +276,7 @@ void CFiberODF::fftRadialFilter(sitk::Image img)
 
     float* data = img.GetBufferAsFloat();
 
-    int index = 0;
+    #pragma omp parallel for
     for(int z = 0; z < nz; z++)
     {
         for(int y = 0; y < ny; y++)
@@ -261,12 +291,12 @@ void CFiberODF::fftRadialFilter(sitk::Image img)
 
                 double val = rad/minSize;
 
+                int index = x + y*nx + z*nx*ny;
+
                 if(val < fLow || val > fHigh)
                 {
                    data[index] = 0;
                 }
-
-                index++;
             }
         }
     }
@@ -277,45 +307,59 @@ void CFiberODF::reduceAmp(sitk::Image img, std::vector<double>* reduced)
 {
     std::vector<vec3d> points;
     points.reserve(NPTS);
-
-    for(int index = 0; index < NPTS; index++)
+    
+    for (int index = 0; index < NPTS; index++)
     {
-        points.emplace_back(XCOORDS[NPTS], YCOORDS[NPTS], ZCOORDS[NPTS]);
+        points.emplace_back(XCOORDS[index], YCOORDS[index], ZCOORDS[index]);
     }
 
-    FSNNQuery query(&points);
+    float* data = img.GetBufferAsFloat();
 
-    double* data = img.GetBufferAsDouble();
     int nx = img.GetSize()[0];
     int ny = img.GetSize()[1];
     int nz = img.GetSize()[2];
+
     double xStep = img.GetSpacing()[0];
     double yStep = img.GetSpacing()[1];
     double zStep = img.GetSpacing()[2];
 
-    int index = 0;
-    for(int z = 0; z < nz; z++)
+    #pragma omp parallel shared(img, points)
     {
-        for(int y = 0; y < ny; y++)
+        FSNNQuery query(&points);
+        query.Init();
+        
+        std::vector<double> tmp(NPTS, 0.0);
+
+        #pragma omp for
+        for (int z = 0; z < nz; z++)
         {
-            for(int x = 0; x < nx; x++)
+            for (int y = 0; y < ny; y++)
             {
-                int xPos = x - nx/2;
-                int yPos = y - ny/2;
-                int zPos = z - nz/2;
+                for (int x = 0; x < nx; x++)
+                {
+                    int xPos = x - nx / 2;
+                    int yPos = y - ny / 2;
+                    int zPos = z - nz / 2;
+                    
+                    double rad = sqrt(xPos * xStep * xPos * xStep + yPos * yStep * yPos * yStep + zPos * zStep * zPos * zStep);
+                    
+                    if(rad == 0) continue;
 
-                double rad = sqrt(xPos*xStep*xPos*xStep + yPos*yStep*yPos*yStep + zPos*zStep*zPos*zStep);
-
-                int closestIndex = query.Find(vec3d(xPos/rad, yPos/rad, zPos/rad));
-
-                (*reduced)[closestIndex] += data[index];
-
-                index++;
-
+                    int closestIndex = query.Find(vec3d(xPos / rad, yPos / rad, zPos / rad));
+                    // int closestIndex = 0;
+                    
+                    int index = x + y * nx + z * nx * ny;
+                    
+                    tmp[closestIndex] += data[index];
+                }
             }
-
         }
-
+        
+        for (int i = 0; i < NPTS; ++i)
+        {
+            #pragma omp critical
+            (*reduced)[i] += tmp[i];
+        }
     }
 }
 
@@ -333,7 +377,7 @@ double fact(int val)
     return ans;
 }
 
-std::unique_ptr<matrix> CFiberODF::compSH(int size, double* theta, double*phi)
+std::unique_ptr<matrix> CFiberODF::compSH(int size, double* theta, double* phi)
 {
     int numCols = (m_order+1)*(m_order+2)/2;
     std::unique_ptr<matrix> out = std::make_unique<matrix>(size, numCols);
@@ -370,7 +414,13 @@ std::unique_ptr<matrix> CFiberODF::compSH(int size, double* theta, double*phi)
 
 double CFiberODF::harmonicY(int degree, int order, double theta, double phi, int numType)
 {
-    if(order < 0) order = abs(order);
+    // Will be true if order is both positive and odd
+    // In that case, we need to negate the answer to match the output
+    // in Adam's MATLAB code.
+    int negate = 1;
+    if(order % 2 == 1) negate = -1;
+    
+    order = abs(order);
 
     double a = (2*degree+1)/(4*M_PI);
     double b = fact(degree-order)/fact(degree+order);
@@ -394,14 +444,7 @@ double CFiberODF::harmonicY(int degree, int order, double theta, double phi, int
         break;
     }
 
-    double returnVal = normalization*std::assoc_legendre(degree, order, cos(theta))*pow(-1, degree)*e;
-
-    if(order < 0 && order%2==1)
-    {
-        returnVal *= -1;
-    }
-
-    return returnVal;
+    return normalization*std::assoc_legendre(degree, order, cos(theta))*pow(-1, degree)*e*negate;
 }
 
 std::unique_ptr<matrix> CFiberODF::complLapBel_Coef()
@@ -459,6 +502,70 @@ double CFiberODF::GFA(std::vector<double> vals)
     rms = sqrt(rms/vals.size());
 
     return stdDev/rms;
+}
+
+GObject* CFiberODF::buildMesh()
+{
+    FSMesh* pm = new FSMesh();
+	pm->Create(NPTS, NCON);
+
+	// create nodes
+	for (int i=0; i<NPTS; ++i)
+	{
+		FSNode& node = pm->Node(i);
+		node.pos(vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]));
+	}
+
+	// create elements
+	for (int i=0; i<NCON; ++i)
+	{
+        FSElement& el = pm->Element(i);
+        el.SetType(FE_TRI3);
+        el.m_gid = 0;
+        el.m_node[0] = CONN1[i]-1;
+        el.m_node[1] = CONN2[i]-1;
+        el.m_node[2] = CONN3[i]-1;
+	}
+
+	// update the mesh
+	pm->RebuildMesh();
+	GMeshObject* po = new GMeshObject(pm);
+
+	return po;
+}
+
+void CFiberODF::makeDataField(GObject* obj, std::vector<double>& vals)
+{
+    // create element data
+    int parts = obj->Parts();
+    vector<int> partList;
+    for (int i = 0; i < parts; ++i)
+    {
+        partList.push_back(i);
+    }
+
+    FSMesh* mesh = obj->GetFEMesh();
+    FEPartData* pdata = new FEPartData(mesh);
+    pdata->SetName("ODF");
+    pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+    mesh->AddMeshDataField(pdata);
+
+    FEElemList* elemList = pdata->BuildElemList();
+    int NE = elemList->Size();
+    auto it = elemList->First();
+    for (int i = 0; i < NE; ++i, ++it)
+    {
+        FEElement_& el = *it->m_pi;
+        int ne = el.Nodes();
+        for (int j = 0; j < ne; ++j)
+        {
+            int nodeID = el.m_node[j];
+            pdata->SetValue(i, j, vals[nodeID]);
+        }
+    }
+    delete elemList;
+
+    m_wnd->UpdateModel();
 }
 
 #endif

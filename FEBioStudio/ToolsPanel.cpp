@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "ImportSpringsTool.h"
 #include "ICPRegistrationTool.h"
 #include "ImageMapTool.h"
+#include <ImageLib/FiberODF.h>
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -71,6 +72,10 @@ void CToolsPanel::initTools()
     tools.push_back(new CQuadricFitTool    (wnd));
 	tools.push_back(new CICPRegistrationTool(wnd));
     tools.push_back(new CImageMapTool      (wnd));
+
+#ifdef HAS_ITK
+    tools.push_back(new CFiberODF(wnd));
+#endif
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)
