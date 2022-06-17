@@ -174,6 +174,7 @@ public:
 
 	bool IsSolid() const;
 	bool IsShell() const;
+	bool IsBeam () const;
 
 public:
 	int GetMaterialID() const { return m_matid; }

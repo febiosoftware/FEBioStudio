@@ -496,6 +496,12 @@ bool GPart::IsShell() const
 	return (dynamic_cast<GShellSection*>(m_section));
 }
 
+bool GPart::IsBeam() const
+{
+	assert(m_section);
+	return (dynamic_cast<GBeamSection*>(m_section));
+}
+
 //-----------------------------------------------------------------------------
 void GPart::operator =(const GPart &p)
 {

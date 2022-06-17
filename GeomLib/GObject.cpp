@@ -856,6 +856,16 @@ void GObject::Save(OArchive &ar)
 							}
 							ar.EndChunk();
 						}
+
+						GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
+						if (beam)
+						{
+							ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
+							{
+								beam->Save(ar);
+							}
+							ar.EndChunk();
+						}
 					}
 				}
 				ar.EndChunk();
@@ -1105,6 +1115,13 @@ void GObject::Load(IArchive& ar)
 						GShellSection* shell = new GShellSection(p);
 						p->SetSection(shell);
 						shell->Load(ar);
+					}
+					break;
+					case CID_OBJ_PART_BEAMSECTION:
+					{
+						GBeamSection* beam = new GBeamSection(p);
+						p->SetSection(beam);
+						beam->Load(ar);
 					}
 					break;
 					case CID_OBJ_PART_NODELIST: ar.read(p->m_node); break;

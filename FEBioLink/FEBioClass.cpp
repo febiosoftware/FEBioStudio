@@ -298,6 +298,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FEMAT3DSVALUATOR_ID  : pc = new FSGenericClass(fem); break;
 	case FESOLIDDOMAIN_ID     : pc = new FESolidFormulation(fem); break;
 	case FESHELLDOMAIN_ID     : pc = new FEShellFormulation(fem); break;
+	case FEBEAMDOMAIN_ID      : pc = new FEBeamFormulation(fem); break;
 	case FEDISCRETEMATERIAL_ID: pc = new FEBioDiscreteMaterial(fem); break;
 	case FELINEARSOLVER_ID    : pc = new FSGenericClass(fem); break;
 	default:
@@ -1009,6 +1010,11 @@ FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FS
 FESolidFormulation* FEBio::CreateSolidFormulation(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FESolidFormulation>(FESOLIDDOMAIN_ID, typeStr, fem);
+}
+
+FEBeamFormulation* FEBio::CreateBeamFormulation(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FEBeamFormulation>(FEBEAMDOMAIN_ID, typeStr, fem);
 }
 
 FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags)

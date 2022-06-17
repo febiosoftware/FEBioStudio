@@ -155,7 +155,8 @@ public:
 		enum DOMAIN_TYPE {
 			UNKNOWN,
 			SOLID,
-			SHELL
+			SHELL,
+			BEAM
 		};
 
 	public:

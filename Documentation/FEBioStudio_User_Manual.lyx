@@ -124,13 +124,13 @@ status open
 User's Manual
 \series default
 \emph on
-Version 1.7
+Version 1.8
 \end_layout
 
 \begin_layout Date
 
 \series bold
-Last Updated:February 17, 2022
+Last Updated: June 14, 2022
 \end_layout
 
 \begin_layout Standard
@@ -14102,6 +14102,137 @@ Gradient
 \emph default
 : Evaluate the gradient vector of a scalar data field.
  
+\end_layout
+
+\begin_layout Subsection
+Exporting Data
+\end_layout
+
+\begin_layout Standard
+Data can be exported from the Data panel.
+ To export data, first select the field variable from the data panel that
+ will be exported.
+ (It doesn't matter which data field is being displayed in the Graphics
+ View.) Then, click the Export button at the top of the Data panel.
+ This will bring up a file-save dialog.
+ Select the location and enter the filename of the file where the data will
+ be stored.
+ Click Save to continue.
+ The next dialog shows some options that allows the content of the output
+ file to be customized.
+ The options are as follows: 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Selection only
+\series default
+: When checked, only the data associated with the current selection will
+ be exported.
+ Make sure that the selection matches the data 
+\begin_inset Quotes eld
+\end_inset
+
+Class
+\begin_inset Quotes erd
+\end_inset
+
+.
+ E.g.
+ for element data, elements should be selected; for node data, nodes should
+ be selected.
+ The data class of a data variable is shown in the Class column of the data
+ panel.
+ If this option is not checked, the data of all corresponding mesh items
+ will be output.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Write all states: 
+\series default
+Write the data for all the time steps of the simulation.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Write current state only
+\series default
+: Only export data for the currently active time step.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Write states from list
+\series default
+: Enter a comma-separated list of states (i.e.
+ time steps) that will be exported.
+ (e.g., 1,3,5,7.
+ You can also use the short-hand equivalent notation 1:7:2),
+\end_layout
+
+\begin_layout Standard
+After clicking OK, the data will be exported to the output file.
+ The data is exported to a text file as a comma-separated list of values.
+ Each row corresponds to a mesh item.
+ E.g., for nodal data, each row will contain the data of a node of the mesh.
+ For element data, each row contains the data for an element.
+ The values on each row are as follows: 
+\end_layout
+
+\begin_layout Enumerate
+Item ID (e.g.
+ node number, or element number)
+\end_layout
+
+\begin_layout Enumerate
+The value(s) of the selected data field for that item at the first time
+ step.
+ The number of values depends on the value type of the field.
+\end_layout
+
+\begin_deeper
+\begin_layout Enumerate
+For scalar fields, there will be one value.
+ 
+\end_layout
+
+\begin_layout Enumerate
+For vector fields, there will be 3 values (comma separated).
+ 
+\end_layout
+
+\begin_layout Enumerate
+For mat3f fields (3x3 matrix), there are 9 values in row-first ordering
+ (m11, m12, m13, m21, m22, m23, m31, m32, m33)
+\end_layout
+
+\begin_layout Enumerate
+For mat3fs (3x3 symmetric matrix), there are six values (m11, m22, m33,
+ m12, m23, m13)
+\end_layout
+
+\end_deeper
+\begin_layout Enumerate
+The values are exported for each selected time step 
+\end_layout
+
+\begin_layout Standard
+For example, the output for exporting the nodal displacement vector (a vec3f
+ variable) of node 123, for 4 time steps (vectors {0,0,0}, {0.1,0,0}, {0.2,0,0},
+ {0.3,0,0}) would be as follows.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+123,0,0,0,0.1,0,0,0.2,0,0,0.3,0,0
 \end_layout
 
 \begin_layout Section

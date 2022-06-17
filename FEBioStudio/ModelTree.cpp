@@ -1246,7 +1246,14 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 		for (int j = 0; j<po->Parts(); ++j)
 		{
 			GPart* pg = po->Part(j);
-			t4 = AddTreeItem(t3, QString::fromStdString(pg->GetName()), MT_PART, 0, pg, new CPartProperties(pg, fem), 0, 1);
+
+			QString name = QString::fromStdString(pg->GetName());
+			if      (pg->IsSolid()) name += " [solid]";
+			else if (pg->IsShell()) name += " [shell]";
+			else if (pg->IsBeam ()) name += " [beam]";
+			else name += " []";
+
+			t4 = AddTreeItem(t3, name, MT_PART, 0, pg, new CPartProperties(pg, fem), 0, 1);
 
 			if (pg->IsVisible() == false)
 			{

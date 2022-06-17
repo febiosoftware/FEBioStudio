@@ -1747,55 +1747,56 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 				}
 			}
 		}
+
+		pm->RebuildMesh(60.0, false);
 	}
-	else
+	else if (m_bautopart && (elsets > 0))
 	{
-		if (m_bautopart && (elsets > 0))
+		list<AbaqusModel::ELEMENT_SET>::iterator pes = part.m_ElSet.begin();
+		for (i=0; i<elsets; ++i, ++pes)
 		{
-			list<AbaqusModel::ELEMENT_SET>::iterator pes = part.m_ElSet.begin();
-			for (i=0; i<elsets; ++i, ++pes)
+			int n = (int)pes->elem.size();
+			vector<int>::iterator pe = pes->elem.begin();
+			for (j=0; j<n; ++j, ++pe)
 			{
-				int n = (int)pes->elem.size();
-				vector<int>::iterator pe = pes->elem.begin();
-				for (j=0; j<n; ++j, ++pe)
-				{
-					assert(*pe != -1);
-					int eid = part.FindElement(*pe)->lid;
-					FSElement& el = pm->Element(eid);
-					el.m_gid = i;
-				}
-			}
-
-			// since elements can belong to multiple sets, 
-			// some parts may become empty when all elements in the
-			// set also belong to another set. 
-			// Therefore we reindex the element GID's
-			for (int i=0; i<elems; ++i)
-			{
-				FSElement& el = pm->Element(i);
-				if (el.m_gid >= 0) index[el.m_gid]++;
-			}
-
-			int ngid = 0;
-			for (int i=0; i<elsets; ++i)
-			{
-				if (index[i] > 0) index[i] = ngid++;
-				else index[i] = -1;
-			}
-
-			for (int i = 0; i<elems; ++i)
-			{
-				FSElement& el = pm->Element(i);
-				if (el.m_gid >= 0)
-				{
-					el.m_gid = index[el.m_gid];
-					assert(el.m_gid != -1);
-				}
+				assert(*pe != -1);
+				int eid = part.FindElement(*pe)->lid;
+				FSElement& el = pm->Element(eid);
+				el.m_gid = i;
 			}
 		}
-	}
 
-	pm->RebuildMesh(60.0, false);
+		// since elements can belong to multiple sets, 
+		// some parts may become empty when all elements in the
+		// set also belong to another set. 
+		// Therefore we reindex the element GID's
+		for (int i=0; i<elems; ++i)
+		{
+			FSElement& el = pm->Element(i);
+			if (el.m_gid >= 0) index[el.m_gid]++;
+		}
+
+		int ngid = 0;
+		for (int i=0; i<elsets; ++i)
+		{
+			if (index[i] > 0) index[i] = ngid++;
+			else index[i] = -1;
+		}
+
+		for (int i = 0; i<elems; ++i)
+		{
+			FSElement& el = pm->Element(i);
+			if (el.m_gid >= 0)
+			{
+				el.m_gid = index[el.m_gid];
+				assert(el.m_gid != -1);
+			}
+		}
+		pm->RebuildMesh(60.0, false);
+	}
+	else {
+		pm->RebuildMesh(60.0, true);
+	}
 
 	// next, we will add the mesh surfaces. Before we 
 	// can do that we need to build and update the mesh.
