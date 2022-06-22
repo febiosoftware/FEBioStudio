@@ -56,7 +56,7 @@ bool CFiberODF::OnApply()
     sitk::Image img = sitk::ReadImage(m_imgFile.toStdString());
     img = sitk::Cast(img, sitk::sitkUInt32);
 
-    // // Apply Butterworth filter
+    // Apply Butterworth filter
     butterworthFilter(img);
 
     img = sitk::Cast(img, sitk::sitkFloat32);
@@ -77,8 +77,7 @@ bool CFiberODF::OnApply()
     std::vector<uint32_t> index = {size[0]/2 + 1, size[1]/2 + 1, size[2]/2 + 1};
     img.SetPixelAsFloat(index, 0);
 
-
-    // // Apply Radial FFT Filter
+    // Apply Radial FFT Filter
     fftRadialFilter(img);
 
     std::vector<double> reduced = std::vector<double>(NPTS,0);
@@ -127,12 +126,19 @@ bool CFiberODF::OnApply()
     auto C = complLapBel_Coef();
     auto T = compSH(NPTS, theta, phi);
 
-    auto transposeT = T->transpose();
+    matrix transposeT = T->transpose();
 
-    auto A = (*T)*(*C)*((transposeT*(*T)).inverse()*transposeT);
+    matrix A = (*T)*(*C);
+    matrix B = (transposeT*(*T)).inverse()*transposeT;
+
+    // Here we multiply A*B*reduced. A*B is a 40962x40962 matrix, 
+    // but after multiplying it by reduced (which is 40962x1), we 
+    // end up with a 40962x1 vector. By doing A*B*reduced in a single
+    // step, we skip having to create a 40962x40962 matrix (from A*B)
+    // which saves a ton of RAM
 
     std::vector<double> ODF(NPTS, 0.0);
-    A.mult(reduced, ODF);
+    A.mult(B, reduced, ODF);
 
     delete[] theta;
     delete[] phi;
