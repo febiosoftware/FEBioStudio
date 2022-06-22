@@ -45,10 +45,10 @@ public:
     bool OnApply() override;
 
 private:
-    void butterworthFilter(sitk::Image img);
-    sitk::Image powerSpectrum(sitk::Image img);
-    void fftRadialFilter(sitk::Image img);
-    void reduceAmp(sitk::Image img, std::vector<double>* reduced);
+    void butterworthFilter(sitk::Image& img);
+    sitk::Image powerSpectrum(sitk::Image& img);
+    void fftRadialFilter(sitk::Image& img);
+    void reduceAmp(sitk::Image& img, std::vector<double>* reduced);
 
     std::unique_ptr<matrix> compSH(int size, double* theta, double* phi);
     double harmonicY(int degree, int order, double theta, double phi, int numType);

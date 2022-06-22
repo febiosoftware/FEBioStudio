@@ -14,7 +14,7 @@ copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+copies or substantial portions of the Software.d
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
@@ -53,29 +53,10 @@ CFiberODF::CFiberODF(CMainWindow* wnd) : CBasicTool(wnd, "Fiber ODF", HAS_APPLY_
 
 bool CFiberODF::OnApply()
 {
-    // sitk::ImageFileReader reader;
-    // reader.SetFileName(m_imgFile.toStdString());
-
-    // sitk::Image img = reader.Execute();
-
-    // if(img.GetPixelID() != sitk::sitkUInt16)
-    // {
-        // sitk::RescaleIntensityImageFilter rescaleFiler;
-        // rescaleFiler.SetOutputMinimum(0);
-        // rescaleFiler.SetOutputMaximum(65536);
-        // img = rescaleFiler.Execute(img);
-
-        // sitk::CastImageFilter castFilter;
-        // castFilter.SetOutputPixelType(sitk::sitkUInt32);
-        // img = castFilter.Execute(img);
-
-        // img = sitk::Cast(img, sitk::sitkUInt32);
-    // }
-
     sitk::Image img = sitk::ReadImage(m_imgFile.toStdString());
     img = sitk::Cast(img, sitk::sitkUInt32);
 
-    // Apply Butterworth filter
+    // // Apply Butterworth filter
     butterworthFilter(img);
 
     img = sitk::Cast(img, sitk::sitkFloat32);
@@ -88,13 +69,16 @@ bool CFiberODF::OnApply()
     // Obtain Power Spectrum
     img = powerSpectrum(img);
 
-    // Remove DC componenet (does not have a direction and does not 
+    // Remove DC component (does not have a direction and does not 
     // constitute fibrillar structures)
+    // NOTE: For some reason, this doesn't perfectly match zeroing out the same point in MATLAB
+    // and results in a slightly different max value in the ODF
     auto size = img.GetSize();
     std::vector<uint32_t> index = {size[0]/2 + 1, size[1]/2 + 1, size[2]/2 + 1};
     img.SetPixelAsFloat(index, 0);
 
-    // Apply Radial FFT Filter
+
+    // // Apply Radial FFT Filter
     fftRadialFilter(img);
 
     std::vector<double> reduced = std::vector<double>(NPTS,0);
@@ -161,7 +145,17 @@ bool CFiberODF::OnApply()
     double sum = 0;
     for(int index = 0; index < ODF.size(); index++)
     {
-        ODF[index] = ODF[index] - min + (max - min)*0.1*gfa;
+        double val = ODF[index] - (min + (max - min)*0.1*gfa);
+
+        if(val < 0)
+        {
+            ODF[index] = 0;
+        }
+        else
+        {
+            ODF[index] = val;
+        }
+        
         sum += ODF[index];
     }
 
@@ -184,17 +178,10 @@ bool CFiberODF::OnApply()
     return true;
 }
 
-void CFiberODF::butterworthFilter(sitk::Image img)
+void CFiberODF::butterworthFilter(sitk::Image& img)
 {
     double fraction = 0.2;
     double steepness = 10;
-
-    double height = img.GetSize()[0]*img.GetSpacing()[0];
-    double width = img.GetSize()[1]*img.GetSpacing()[1];
-    double depth = img.GetSize()[2]*img.GetSpacing()[2];
-    double radMax = std::min({height, width, depth});
-
-    double decent = radMax - radMax * fraction;
 
     uint32_t* data = img.GetBufferAsUInt32();
 
@@ -206,6 +193,13 @@ void CFiberODF::butterworthFilter(sitk::Image img)
     double yStep = img.GetSpacing()[1];
     double zStep = img.GetSpacing()[2];
 
+    double height = nx*xStep;
+    double width = ny*yStep;
+    double depth = nz*zStep;
+    double radMax = std::min({height, width, depth})/2;
+
+    double decent = radMax - radMax * fraction;
+
     int index = 0;
     for(int z = 0; z < nz; z++)
     {
@@ -213,9 +207,9 @@ void CFiberODF::butterworthFilter(sitk::Image img)
         {
             for(int x = 0; x < nx; x++)
             {
-                int xPos = abs(x - nx/2);
-                int yPos = abs(y - ny/2);
-                int zPos = abs(z - nz/2);
+                int xPos = x - nx/2;
+                int yPos = y - ny/2;
+                int zPos = z - nz/2;
 
                 double rad = sqrt(xPos*xStep*xPos*xStep + yPos*yStep*yPos*yStep + zPos*zStep*zPos*zStep);
 
@@ -227,7 +221,7 @@ void CFiberODF::butterworthFilter(sitk::Image img)
     }
 }
 
-sitk::Image CFiberODF::powerSpectrum(sitk::Image img)
+sitk::Image CFiberODF::powerSpectrum(sitk::Image& img)
 {
     int nx = img.GetSize()[0];
     int ny = img.GetSize()[1];
@@ -259,7 +253,7 @@ sitk::Image CFiberODF::powerSpectrum(sitk::Image img)
     return PS;
 }
 
-void CFiberODF::fftRadialFilter(sitk::Image img)
+void CFiberODF::fftRadialFilter(sitk::Image& img)
 {
     float fLow = 1/m_tLow;
     float fHigh = 1/m_tHigh;
@@ -303,7 +297,7 @@ void CFiberODF::fftRadialFilter(sitk::Image img)
 }
 
 
-void CFiberODF::reduceAmp(sitk::Image img, std::vector<double>* reduced)
+void CFiberODF::reduceAmp(sitk::Image& img, std::vector<double>* reduced)
 {
     std::vector<vec3d> points;
     points.reserve(NPTS);
@@ -337,18 +331,21 @@ void CFiberODF::reduceAmp(sitk::Image img, std::vector<double>* reduced)
             {
                 for (int x = 0; x < nx; x++)
                 {
-                    int xPos = x - nx / 2;
-                    int yPos = y - ny / 2;
-                    int zPos = z - nz / 2;
+                    int xPos = (x - nx / 2);
+                    int yPos = (y - ny / 2);
+                    int zPos = (z - nz / 2);
+
+                    double realX = xPos*xStep;
+                    double realY = yPos*yStep;
+                    double realZ = zPos*zStep;
                     
-                    double rad = sqrt(xPos * xStep * xPos * xStep + yPos * yStep * yPos * yStep + zPos * zStep * zPos * zStep);
+                    double rad = sqrt(realX*realX + realY*realY + realZ*realZ);
                     
                     if(rad == 0) continue;
 
-                    int closestIndex = query.Find(vec3d(xPos / rad, yPos / rad, zPos / rad));
-                    // int closestIndex = 0;
+                    int closestIndex = query.Find(vec3d(realX/rad, realY/rad, realZ/rad));
                     
-                    int index = x + y * nx + z * nx * ny;
+                    int index = x + y*nx + z*nx*ny;
                     
                     tmp[closestIndex] += data[index];
                 }
@@ -549,6 +546,8 @@ void CFiberODF::makeDataField(GObject* obj, std::vector<double>& vals)
     pdata->SetName("ODF");
     pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
     mesh->AddMeshDataField(pdata);
+    
+    double PtArea = 4*M_PI/(NPTS);
 
     FEElemList* elemList = pdata->BuildElemList();
     int NE = elemList->Size();
@@ -560,7 +559,7 @@ void CFiberODF::makeDataField(GObject* obj, std::vector<double>& vals)
         for (int j = 0; j < ne; ++j)
         {
             int nodeID = el.m_node[j];
-            pdata->SetValue(i, j, vals[nodeID]);
+            pdata->SetValue(i, j, vals[nodeID]/PtArea);
         }
     }
     delete elemList;
