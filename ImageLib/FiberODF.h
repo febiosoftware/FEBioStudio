@@ -35,6 +35,7 @@ using std::string;
 
 class CMainWindow;
 class matrix;
+class GMeshObject;
 
 class CFiberODF : public CBasicTool
 {
@@ -50,14 +51,18 @@ private:
     void fftRadialFilter(sitk::Image& img);
     void reduceAmp(sitk::Image& img, std::vector<double>* reduced);
 
-    std::unique_ptr<matrix> compSH(int size, double* theta, double* phi);
-    double harmonicY(int degree, int order, double theta, double phi, int numType);
     std::unique_ptr<matrix> complLapBel_Coef();
-
     double GFA(std::vector<double> vals);
 
     GObject* buildMesh();
-    void makeDataField(GObject* obj, std::vector<double>& vals);
+    void makeDataField(GObject* obj, std::vector<double>& vals, std::string name);
+
+    void calcGradient(std::vector<double>& sphHarm, std::vector<double>& gradient, std::vector<double>& thetaGrad,std::vector<double>& phiGrad);
+    void altGradient(GMeshObject* mesh, std::vector<double>& sphHarm, std::vector<double>& gradient);
+
+    void flattenODF(std::vector<double>& ODF);
+
+    FSMesh* Remesh(FSMesh* pm, std::vector<double>& gradient);
 
 private:
     CMainWindow* m_wnd;
@@ -66,7 +71,13 @@ private:
     double m_tLow;
     double m_tHigh;
 
+    double m_lengthScale;
+    double m_hausd;
+    double m_grad;
+
+
     int m_order;
+
 
 
 };
