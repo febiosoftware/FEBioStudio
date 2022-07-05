@@ -57,12 +57,7 @@ private:
     GObject* buildMesh();
     void makeDataField(GObject* obj, std::vector<double>& vals, std::string name);
 
-    void calcGradient(std::vector<double>& sphHarm, std::vector<double>& gradient, std::vector<double>& thetaGrad,std::vector<double>& phiGrad);
-    void altGradient(GMeshObject* mesh, std::vector<double>& sphHarm, std::vector<double>& gradient);
-
     void flattenODF(std::vector<double>& ODF);
-
-    FSMesh* Remesh(std::vector<double>& gradient);
 
 private:
     CMainWindow* m_wnd;

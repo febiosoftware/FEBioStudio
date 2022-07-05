@@ -42,12 +42,6 @@ SOFTWARE.*/
 #include <MeshTools/FEElementData.h>
 #include <iostream>
 
-#ifdef HAS_MMG
-#include "mmg/mmg3d/libmmg3d.h"
-#include <mmg/mmgs/libmmgs.h>
-#include <mmg/mmg2d/libmmg2d.h>
-#endif
-
 using std::complex;
 using std::unordered_map;
 
@@ -185,12 +179,42 @@ bool CFiberODF::OnApply()
 
     // Calc Gradient
     vector<double> gradient;
-    altGradient((GMeshObject*)po, sphHarm, gradient);
+    altGradient(m_order, sphHarm, gradient);
 
     makeDataField(po, gradient, "Gradient");
 
     // Remesh sphere
-    FSMesh* newMesh = Remesh(gradient);
+    vector<vec3d> nodePos;
+    vector<vec3i> elems;
+    remesh(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
+
+    FSMesh* newMesh = new FSMesh();
+
+	// get the new mesh sizes
+    int NN = nodePos.size();
+    int NF = elems.size();
+	newMesh->Create(NN, NF);
+
+	// get the vertex coordinates
+	for (int i = 0; i < NN; ++i)
+	{
+		FSNode& vi = newMesh->Node(i);
+		vi.r = nodePos[i];
+	}
+
+    // create elements
+	for (int i=0; i<NF; ++i)
+	{
+        FSElement& el = newMesh->Element(i);
+        el.SetType(FE_TRI3);
+        int* n = el.m_node;
+		el.m_node[0] = elems[i].x;
+		el.m_node[1] = elems[i].y;
+		el.m_node[2] = elems[i].z;
+	}
+
+    newMesh->RebuildMesh();
+
 	GMeshObject* po2 = new GMeshObject(newMesh);
     po2->SetName("Remeshed");
 
@@ -218,7 +242,7 @@ bool CFiberODF::OnApply()
 
     getSphereCoords(nodes, xCoords, yCoords, zCoords, theta, phi);
 
-    T = compSH(m_order, NPTS, theta, phi);
+    T = compSH(m_order, nodes, theta, phi);
 
     delete[] xCoords;
     delete[] yCoords;
@@ -226,7 +250,7 @@ bool CFiberODF::OnApply()
     delete[] theta;
     delete[] phi;
 
-    std::vector<double> newODF(NPTS, 0);  
+    std::vector<double> newODF(nodes, 0);  
     (*T).mult(sphHarm, newODF);
 
     makeDataField(po2, newODF, "ODF");
@@ -553,128 +577,6 @@ void CFiberODF::makeDataField(GObject* obj, std::vector<double>& vals, std::stri
     m_wnd->UpdateModel();
 }
 
-
-void CFiberODF::calcGradient(std::vector<double>& sphHarm, std::vector<double>& gradient, std::vector<double>& thetaGrad,std::vector<double>& phiGrad)
-{
-    // 1/10 degrees
-    double diff = M_PI/1800;
-
-    double* theta = new double[NPTS] {};
-    double* phi = new double[NPTS] {};
-
-    getSphereCoords(NPTS, XCOORDS, YCOORDS, ZCOORDS, theta, phi);
-
-    std::vector<double> ODF(NPTS, 0);  
-    auto T = compSH(m_order, NPTS, theta, phi);
-    (*T).mult(sphHarm, ODF);
-    // flattenODF(ODF);
-
-    double* newThetaPlus = new double[NPTS] {};
-    double* newThetaMinus = new double[NPTS] {};
-
-    double* newPhiPlus = new double[NPTS] {};
-    double* newPhiMinus = new double[NPTS] {};
-
-    // double* thetaGrad = new double[NPTS] {};
-    // double* phiGrad = new double[NPTS] {};
-    thetaGrad.reserve(NPTS);
-    phiGrad.reserve(NPTS);
-
-    std::vector<double> temp(NPTS, 0);
-
-    gradient.reserve(NPTS);
-
-    // theta diff
-    for(int index = 0; index < NPTS; index++)
-    {
-        double val = theta[index] + diff;
-        // if(val > M_PI) val -= M_PI;
-        newThetaPlus[index] = val;
-
-        // val = theta[index] - diff;
-        // if(val < 0) val += M_PI;
-        // newThetaMinus[index] = val;
-    }
-
-    T = compSH(m_order, NPTS, newThetaPlus, phi);
-    (*T).mult(sphHarm, temp);
-    // flattenODF(temp);
-
-    for(int index = 0; index < NPTS; index++)
-    {
-        thetaGrad[index] = (ODF[index] - temp[index]);
-    }
-
-    // T = compSH(m_order, NPTS, newThetaMinus, phi);
-    // (*T).mult(sphHarm, temp);
-    // flattenODF(temp);
-
-    // for(int index = 0; index < NPTS; index++)
-    // {
-    //     thetaGrad[index] += abs(ODF[index] - temp[index]);
-    // }
-
-    // phi diff
-    for(int index = 0; index < NPTS; index++)
-    {
-        double val = phi[index] + diff;
-        // if(val > M_PI) val -= M_PI;
-        newPhiPlus[index] = val;
-
-        // val = phi[index] - diff;
-        // if(val < 0) val += M_PI;
-        // newPhiPlus[index] = val;
-    }
-
-    T = compSH(m_order, NPTS, newPhiPlus, theta);
-    (*T).mult(sphHarm, temp);
-    // flattenODF(temp);
-
-    for(int index = 0; index < NPTS; index++)
-    {
-        double val = sin(theta[index]);
-
-        if(val == 0)
-        {
-            phiGrad[index] = 0;
-        }
-        else
-        {
-            phiGrad[index] = (ODF[index] - temp[index])/val;    
-        }
-
-        // phiGrad[index] = (ODF[index] - temp[index]);
-
-        
-    }
-
-    // T = compSH(m_order, NPTS, newPhiMinus, phi);
-    // (*T).mult(sphHarm, temp);
-    // flattenODF(temp);
-
-    // for(int index = 0; index < NPTS; index++)
-    // {
-    //     phiGrad[index] += abs(ODF[index] - temp[index]);
-    // }
-    
-    for(int index = 0; index < NPTS; index++)
-    {
-        gradient[index] = sqrt(thetaGrad[index]*thetaGrad[index] + phiGrad[index]*phiGrad[index]);
-    }
-
-    delete[] theta;
-    delete[] phi;
-
-    delete[] newThetaPlus;
-    delete[] newThetaMinus;
-
-    delete[] newPhiPlus;
-    delete[] newPhiMinus;
-
-    // delete[]  thetaGrad;
-    // delete[]  phiGrad;
-}
-
 void CFiberODF::flattenODF(std::vector<double>& ODF)
 {
     double min = *std::min_element(ODF.begin(), ODF.end());
@@ -705,228 +607,9 @@ void CFiberODF::flattenODF(std::vector<double>& ODF)
 
 }
 
-void CFiberODF::altGradient(GMeshObject* mesh, std::vector<double>& sphHarm, std::vector<double>& gradient)
-{
-    double* theta = new double[NPTS] {};
-    double* phi = new double[NPTS] {};
-
-    getSphereCoords(NPTS, XCOORDS, YCOORDS, ZCOORDS, theta, phi);
-
-    std::vector<double> ODF(NPTS, 0);  
-    auto T = compSH(m_order, NPTS, theta, phi);
-    (*T).mult(sphHarm, ODF);
-
-    delete[] theta;
-    delete[] phi;
-
-    gradient.resize(NPTS);
-    for(int index = 0; index < NPTS; index++)
-    {
-        gradient[index] = 0;
-    }
-
-    FSMesh* fsMesh = mesh->GetFEMesh();
-
-    std::vector<int> count(NPTS, 0);
-
-    for(int index = 0; index < fsMesh->Elements(); index++)
-    {
-        FSElement el = fsMesh->Element(index);
-
-        int n0 = el.m_node[0];
-        int n1 = el.m_node[1];
-        int n2 = el.m_node[2];
-
-        double val0 = ODF[n0];
-        double val1 = ODF[n1];
-        double val2 = ODF[n2];
-
-        double diff0 = abs(val0 - val1);
-        double diff1 = abs(val0 - val2);
-        double diff2 = abs(val1 - val2);
-
-        gradient[n0] += diff0 + diff1;
-        gradient[n1] += diff0 + diff2;
-        gradient[n2] += diff1 + diff2;
-
-        count[n0]++;
-        count[n1]++;
-        count[n2]++;
-    }
-
-    for(int index = 0; index < NPTS; index++)
-    {
-        gradient[index] /= count[index];
-    }
-
-}
-
 void SetError(std::string err)
 {
     std::cout << err << std::endl;
-}
-
-FSMesh* CFiberODF::Remesh(std::vector<double>& gradient)
-{
-#ifdef HAS_MMG
-	int NN = NPTS;
-	int NF = NCON;
-    int NC;
-
-    // we only want to remesh half of the sphere, so here we discard 
-    // any nodes that have a z coordinate < 0, and any elements defined
-    // with those nodes.
-    unordered_map<int, int> newNodeIDs;
-    int newNodeID = 1;
-    for(int index = 0; index < NN; index++)
-    {
-        if(ZCOORDS[index] >= 0)
-        {
-            newNodeIDs[index] = newNodeID;
-            newNodeID++;
-        }
-    }
-
-    unordered_map<int, int> newElemIDs;
-    int newElemID = 1;
-    for(int index = 0; index < NF; index++)
-    {
-        if(newNodeIDs.count(CONN1[index]-1) == 0 || newNodeIDs.count(CONN2[index]-1) == 0 || newNodeIDs.count(CONN3[index]-1) == 0)
-        {
-            continue;
-        }
-
-        newElemIDs[index] = newElemID;
-        newElemID++;
-    }
-
-	// build the MMG mesh
-	MMG5_pMesh mmgMesh;
-	MMG5_pSol  mmgSol;
-	mmgMesh = NULL;
-	mmgSol = NULL;
-	MMGS_Init_mesh(MMG5_ARG_start,
-		MMG5_ARG_ppMesh, &mmgMesh,
-		MMG5_ARG_ppMet, &mmgSol,
-		MMG5_ARG_end);
-
-	// allocate mesh size
-	if (MMGS_Set_meshSize(mmgMesh, newNodeID-1, newElemID-1, 0) != 1)
-	{
-		assert(false);
-		SetError("Error in MMGS_Set_meshSize");
-		return nullptr;
-	}
-
-	// build the MMG mesh
-	for (int i = 0; i < NN; ++i)
-	{
-        if(newNodeIDs.count(i))
-        {
-            MMGS_Set_vertex(mmgMesh, XCOORDS[i], YCOORDS[i], ZCOORDS[i], 0, newNodeIDs[i]);
-        }
-	}
-
-	for (int i = 0; i < NF; ++i)
-	{
-        if(newElemIDs.count(i))
-        {
-            MMGS_Set_triangle(mmgMesh, newNodeIDs[CONN1[i]-1], newNodeIDs[CONN2[i]-1], newNodeIDs[CONN3[i]-1], 0, newElemIDs[i]);
-        }
-	}
-	
-    // Now, we build the "solution", i.e. the target element size.
-	// If no elements are selected, we set a homogenous remeshing using the element size parameter.
-	// set the "solution", i.e. desired element size
-	if (MMGS_Set_solSize(mmgMesh, mmgSol, MMG5_Vertex, newNodeID-1, MMG5_Scalar) != 1)
-	{
-		assert(false);
-		SetError("Error in MMG3D_Set_solSize");
-		return nullptr;
-	}
-
-    int n0 = CONN1[0]-1;
-    int n1 = CONN2[0]-1;
-
-    vec3d pos0(XCOORDS[n0], YCOORDS[n0], ZCOORDS[n0]);
-    vec3d pos1(XCOORDS[n1], YCOORDS[n1], ZCOORDS[n1]);
-
-    double minLength = (pos0 - pos1).Length();
-    double maxLength = minLength*m_lengthScale;
-
-    double min = *std::min_element(gradient.begin(), gradient.end());
-    double max = *std::max_element(gradient.begin(), gradient.end());
-    double range = max-min;
-
-
-    for (int k = 0; k < NN; k++) {
-        if(newNodeIDs.count(k))
-        {
-            double val = (maxLength - minLength)*(1-(gradient[k] - min)/range) + minLength;
-            MMGS_Set_scalarSol(mmgSol, val, newNodeIDs[k]);
-        }
-    }
-
-	// set the control parameters
-	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hmin, minLength);
-	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hausd, m_hausd);
-	MMGS_Set_dparameter(mmgMesh, mmgSol, MMGS_DPARAM_hgrad, m_grad);
-
-	// run the mesher
-	int ier = MMGS_mmgslib(mmgMesh, mmgSol);
-
-	if (ier == MMG5_STRONGFAILURE) {
-		if (min == 0.0) SetError("Element size cannot be zero.");
-		else SetError("MMG was not able to remesh the mesh.");
-		return nullptr;
-	}
-	else if (ier == MMG5_LOWFAILURE)
-	{
-		SetError("MMG return low failure error");
-	}
-
-	// convert back to prv mesh
-	FSMesh* newMesh = new FSMesh();
-
-	// get the new mesh sizes
-	MMGS_Get_meshSize(mmgMesh, &NN, &NF, &NC);
-	newMesh->Create(NN, NF);
-
-	// get the vertex coordinates
-	for (int i = 0; i < NN; ++i)
-	{
-		FSNode& vi = newMesh->Node(i);
-		vec3d& ri = vi.r;
-		int isCorner = 0;
-		MMGS_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
-		if (isCorner == 0) vi.m_gid = -1;
-	}
-
-    // create elements
-	for (int i=0; i<NF; ++i)
-	{
-        FSElement& el = newMesh->Element(i);
-        el.SetType(FE_TRI3);
-        int* n = el.m_node;
-        MMGS_Get_triangle(mmgMesh, n, n + 1, n + 2, &el.m_gid, NULL);
-		el.m_node[0]--;
-		el.m_node[1]--;
-		el.m_node[2]--;
-	}
-
-	// Clean up
-	MMGS_Free_all(MMG5_ARG_start,
-		MMG5_ARG_ppMesh, &mmgMesh, MMG5_ARG_ppMet, &mmgSol,
-		MMG5_ARG_end);
-
-    newMesh->RebuildMesh();
-
-	return newMesh;
-
-#else
-	SetError("This version does not have MMG support");
-	return nullptr;
-#endif
 }
 
 #endif
