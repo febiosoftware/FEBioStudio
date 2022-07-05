@@ -62,7 +62,7 @@ private:
 
     void flattenODF(std::vector<double>& ODF);
 
-    FSMesh* Remesh(FSMesh* pm, std::vector<double>& gradient);
+    FSMesh* Remesh(std::vector<double>& gradient);
 
 private:
     CMainWindow* m_wnd;

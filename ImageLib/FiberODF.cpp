@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <complex>
 #include <vector>
 #include <unordered_map>
-#include <unordered_set>
 #include <cmath>
 #include <MeshTools/FENNQuery.h>
 #include <FECore/matrix.h>
@@ -51,7 +50,6 @@ SOFTWARE.*/
 
 using std::complex;
 using std::unordered_map;
-using std::unordered_set;
 
 #ifdef HAS_ITK
 
@@ -192,7 +190,7 @@ bool CFiberODF::OnApply()
     makeDataField(po, gradient, "Gradient");
 
     // Remesh sphere
-    FSMesh* newMesh = Remesh(po->GetFEMesh(), gradient);
+    FSMesh* newMesh = Remesh(gradient);
 	GMeshObject* po2 = new GMeshObject(newMesh);
     po2->SetName("Remeshed");
 
@@ -768,11 +766,11 @@ void SetError(std::string err)
     std::cout << err << std::endl;
 }
 
-FSMesh* CFiberODF::Remesh(FSMesh* pm, std::vector<double>& gradient)
+FSMesh* CFiberODF::Remesh(std::vector<double>& gradient)
 {
 #ifdef HAS_MMG
-	int NN = pm->Nodes();
-	int NF = pm->Faces();
+	int NN = NPTS;
+	int NF = NCON;
     int NC;
 
     // we only want to remesh half of the sphere, so here we discard 
@@ -782,10 +780,7 @@ FSMesh* CFiberODF::Remesh(FSMesh* pm, std::vector<double>& gradient)
     int newNodeID = 1;
     for(int index = 0; index < NN; index++)
     {
-        FSNode& vi = pm->Node(index);
-		vec3d r = vi.pos();
-
-        if(r.z >= 0)
+        if(ZCOORDS[index] >= 0)
         {
             newNodeIDs[index] = newNodeID;
             newNodeID++;
@@ -796,10 +791,7 @@ FSMesh* CFiberODF::Remesh(FSMesh* pm, std::vector<double>& gradient)
     int newElemID = 1;
     for(int index = 0; index < NF; index++)
     {
-        FSFace& f = pm->Face(index);
-		int* n = f.n;
-
-        if(newNodeIDs.count(n[0]) == 0 || newNodeIDs.count(n[1]) == 0 || newNodeIDs.count(n[2]) == 0)
+        if(newNodeIDs.count(CONN1[index]-1) == 0 || newNodeIDs.count(CONN2[index]-1) == 0 || newNodeIDs.count(CONN3[index]-1) == 0)
         {
             continue;
         }
@@ -831,10 +823,7 @@ FSMesh* CFiberODF::Remesh(FSMesh* pm, std::vector<double>& gradient)
 	{
         if(newNodeIDs.count(i))
         {
-            FSNode& vi = pm->Node(i);
-		    vec3d r = vi.pos();
-
-            MMGS_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, newNodeIDs[i]);
+            MMGS_Set_vertex(mmgMesh, XCOORDS[i], YCOORDS[i], ZCOORDS[i], 0, newNodeIDs[i]);
         }
 	}
 
@@ -842,9 +831,7 @@ FSMesh* CFiberODF::Remesh(FSMesh* pm, std::vector<double>& gradient)
 	{
         if(newElemIDs.count(i))
         {
-            FSFace& f = pm->Face(i);
-            int* n = f.n;
-            MMGS_Set_triangle(mmgMesh, newNodeIDs[n[0]], newNodeIDs[n[1]], newNodeIDs[n[2]], f.m_gid, newElemIDs[i]);
+            MMGS_Set_triangle(mmgMesh, newNodeIDs[CONN1[i]-1], newNodeIDs[CONN2[i]-1], newNodeIDs[CONN3[i]-1], 0, newElemIDs[i]);
         }
 	}
 	
@@ -858,10 +845,13 @@ FSMesh* CFiberODF::Remesh(FSMesh* pm, std::vector<double>& gradient)
 		return nullptr;
 	}
 
-    int n0 = pm->Element(0).m_node[0];
-    int n1 = pm->Element(0).m_node[1];
+    int n0 = CONN1[0]-1;
+    int n1 = CONN2[0]-1;
 
-    double minLength = (pm->Node(n0).pos() - pm->Node(n1).pos()).Length();
+    vec3d pos0(XCOORDS[n0], YCOORDS[n0], ZCOORDS[n0]);
+    vec3d pos1(XCOORDS[n1], YCOORDS[n1], ZCOORDS[n1]);
+
+    double minLength = (pos0 - pos1).Length();
     double maxLength = minLength*m_lengthScale;
 
     double min = *std::min_element(gradient.begin(), gradient.end());
