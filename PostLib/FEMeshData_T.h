@@ -763,6 +763,20 @@ public:
 	static int m_bext;
 };
 
+//-----------------------------------------------------------------------------
+class FEFacetArea : public FEFaceData_T<float, DATA_ITEM>
+{
+public:
+	FEFacetArea(FEState* state, FEDataField* pdf) : FEFaceData_T<float, DATA_ITEM>(state, pdf) { m_face.assign(state->GetFEMesh()->Faces(), 1); }
+
+	bool active(int n) { return (m_face[n] == 1); }
+
+protected:
+	void eval(int n, float* f);
+
+	vector<int> m_face;
+};
+
 //=============================================================================
 // Additional element data fields
 //=============================================================================

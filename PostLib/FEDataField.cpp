@@ -930,6 +930,7 @@ void StandardDataFieldManager::Init()
 	Add<FEDataField_T<PrincCurvatureVector2> >("2-Princ curvature vector");
 	Add<FEDistanceMap >("Distance map");
 	Add<FEAreaCoverage>("Area coverage");
+	Add<FEDataField_T<FEFacetArea> >("Facet area");
 }
 
 void Post::InitStandardDataFields()
