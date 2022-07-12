@@ -32,8 +32,8 @@ SOFTWARE.*/
 #include <cmath>
 #include <MeshTools/FENNQuery.h>
 #include <FECore/matrix.h>
-#include <FECore/sphericalHarmonics.h>
-#include <FECore/spherePoints.h>
+#include <FEAMR/sphericalHarmonics.h>
+#include <FEAMR/spherePoints.h>
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
