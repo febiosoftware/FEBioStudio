@@ -3013,6 +3013,9 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 			++tag;
 		} while (!tag.isend());
 
+		// The rb parameter has to be the material ID
+		rb = febio.GetMaterial(rb - 1)->GetID();
+
 		FSRigidLoad* pi = nullptr;
 		if (bc < 3)
 		{

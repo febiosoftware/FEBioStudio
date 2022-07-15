@@ -915,6 +915,10 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 				{
 //					int v = fem.GetEnumValue(p);
 					const char* v = fem.GetEnumKey(p, false);
+					if (v == nullptr) {
+						errf("Invalid key for parameter %s", p.GetShortName());
+						v = "(invalid)";
+					}
 					el.add_attribute(p.GetShortName(), v);
 				}
 				else el.add_attribute(p.GetShortName(), p.GetIntValue());
