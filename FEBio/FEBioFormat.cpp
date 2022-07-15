@@ -281,6 +281,18 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 	XMLAtt* atype = tag.AttributePtr("type");
 	if (atype == nullptr)
 	{
+		// if the type is not specified, we'll try to determine if 
+		// it's a math expression or a const
+		if (pp->IsVariable())
+		{
+			const char* szval = tag.szvalue();
+			if (is_number(szval) == false)
+			{
+				// assume this is a math string
+				pp->SetParamType(Param_MATH);
+			}
+		}
+
 		// read parameter value
 		switch (pp->GetParamType())
 		{

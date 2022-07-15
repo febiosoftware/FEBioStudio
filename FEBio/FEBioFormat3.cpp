@@ -3513,12 +3513,13 @@ bool FEBioFormat3::ParseStep(XMLTag& tag)
 
 	do
 	{
-		if      (tag == "Control"    ) ParseControlSection   (tag);
-		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
-		else if (tag == "Constraints") ParseConstraintSection(tag);
-		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
-		else if (tag == "Contact"    ) ParseContactSection   (tag);
-		else if (tag == "Rigid"      ) ParseRigidSection     (tag);
+		if      (tag == "Control"    ) ParseControlSection    (tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection   (tag);
+		else if (tag == "Constraints") ParseConstraintSection (tag);
+		else if (tag == "Loads"      ) ParseLoadsSection      (tag);
+		else if (tag == "Contact"    ) ParseContactSection    (tag);
+		else if (tag == "Rigid"      ) ParseRigidSection      (tag);
+		else if (tag == "MeshAdaptor") ParseMeshAdaptorSection(tag);
 		else ParseUnknownTag(tag);
 
 		// go to the next tag

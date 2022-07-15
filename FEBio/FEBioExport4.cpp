@@ -3190,6 +3190,16 @@ void FEBioExport4::WriteStepSection()
 				}
 				m_xml.close_branch(); // Constraints
 			}
+
+			int nma = step.MeshAdaptors();
+			if (nma > 0)
+			{
+				m_xml.add_branch("MeshAdaptor");
+				{
+					WriteMeshAdaptorSection(step);
+				}
+				m_xml.close_branch();
+			}
 		}
 		m_xml.close_branch(); // step
 	}
