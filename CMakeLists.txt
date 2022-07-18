@@ -45,19 +45,22 @@ if(Qt_Ver VERSION_EQUAL 6)
             find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
                 PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
                 PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
-                DOC "Qt CMake Directory")
+                DOC "Qt CMake Directory"
+                NO_DEFAULT_PATH)
         elseif(APPLE)
             find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
                 PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                     $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
                 PATH_SUFFIXES "clang_64"
-                DOC "${Qt_Version} CMake Directory")
+                DOC "${Qt_Version} CMake Directory"
+                NO_DEFAULT_PATH)
         else()
             find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
                 PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                     $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
                 PATH_SUFFIXES "gcc_64"
-                DOC "Qt CMake Directory")
+                DOC "Qt CMake Directory"
+                NO_DEFAULT_PATH)
         endif()
         
         if(Qt_TEMP)

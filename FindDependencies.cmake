@@ -656,4 +656,4 @@ else()
 endif()
 
 # SITK
-find_package(SimpleITK)
+find_package(SimpleITK QUIET)
