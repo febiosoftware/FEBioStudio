@@ -1685,7 +1685,7 @@ void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
 
 #else
 
-CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent){}
+CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent){}
 CRepositoryPanel::~CRepositoryPanel(){}
 void CRepositoryPanel::OpenLink(const QString& link) {}
 // void CRepositoryPanel::Raise() {}
@@ -1720,6 +1720,8 @@ void CRepositoryPanel::on_actionDeleteRemote_triggered() {}
 void CRepositoryPanel::on_actionModify_triggered() {}
 void CRepositoryPanel::on_treeWidget_itemSelectionChanged() {}
 void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
+void CRepositoryPanel::on_actionCopyPermalink_triggered() {}
+void CRepositoryPanel::Raise() {}
 void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::OpenItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item) {}
