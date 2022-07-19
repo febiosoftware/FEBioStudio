@@ -18,6 +18,47 @@ int FSLoadController::Type() const
 	return m_ntype;
 }
 
+void FSLoadController::Save(OArchive& ar)
+{
+	int nid = GetID();
+	ar.WriteChunk(CID_LOAD_CONTROLLER_ID, nid);
+	string name = GetName();
+	if (name.empty() == false)
+	{
+		ar.WriteChunk(CID_LOAD_CONTROLLER_NAME, name);
+	}
+	string info = GetInfo();
+	if (info.empty() == false)
+	{
+		ar.WriteChunk(CID_LOAD_CONTROLLER_INFO, info);
+	}
+	if (Parameters() > 0)
+	{
+		ar.BeginChunk(CID_LOAD_CONTROLLER_PARAMS);
+		{
+			ParamContainer::Save(ar);
+		}
+		ar.EndChunk();
+	}
+}
+
+void FSLoadController::Load(IArchive& ar)
+{
+	TRACE("FSLoadController::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_LOAD_CONTROLLER_ID  : { int lcid = -1; ar.read(lcid); SetID(lcid); } break;
+		case CID_LOAD_CONTROLLER_NAME: { string name; ar.read(name); SetName(name); } break;
+		case CID_LOAD_CONTROLLER_INFO: { string info; ar.read(info); SetInfo(info); } break;
+		case CID_LOAD_CONTROLLER_PARAMS: ParamContainer::Load(ar); break;
+		}
+		ar.CloseChunk();
+	}
+}
+
 int FSLoadController::GetID() const { return m_nUID; }
 void FSLoadController::SetID(int nid)
 {
