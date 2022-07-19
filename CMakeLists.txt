@@ -638,7 +638,7 @@ target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
 target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
 
 if(APPLE)
-    target_link_libraries(FEBioStudio ${GLEW_SHARED_LIBRARY_RELEASE})
+    target_link_libraries(FEBioStudio ${GLEW_SHARED_LIBRARY_RELEASE} ${GLEW_LIBRARIES})
 else()
     target_link_libraries(FEBioStudio ${GLEW_LIBRARIES})
 endif()
