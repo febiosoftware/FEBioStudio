@@ -46,6 +46,7 @@ SOFTWARE.*/
 FileReader::FileReader()
 {
 	m_fp = 0;
+	m_stream = nullptr;
 	m_nfilesize = 0;
 	m_cancelled = false;
 	m_nerrors = 0;
