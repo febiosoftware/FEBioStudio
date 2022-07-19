@@ -257,7 +257,7 @@ struct OldParam {
 };
 
 // in FEBioFormat.cpp
-extern bool is_number(const char* szval);
+extern bool is_int(const char* szval);
 
 //-----------------------------------------------------------------------------
 void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
@@ -283,7 +283,7 @@ void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 			{
 				int qn = -1;
 				const char* sz = tag.szvalue();
-				if (is_number(sz))
+				if (is_int(sz))
 					tag.value(qn);
 				else
 				{
@@ -2559,12 +2559,27 @@ void FEBioFormat3::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 				const char* szatt = tag.AttributeValue("surface_data", true);
 				if (szatt)
 				{
-					// TODO: What to do if the value for velocity is not 1?
 					Param* p = psl->GetParam("velocity"); assert(p);
 					if (p && p->IsVariable())
 					{
-						p->SetParamType(Param_Type::Param_STRING);
-						p->SetStringValue(szatt);
+						double s = 1.0;
+						if (p->GetParamType() == Param_Type::Param_FLOAT)
+						{
+							s = p->GetFloatValue();
+						}
+					
+						if ((s == 0) || (s == 1.0))
+						{
+							p->SetParamType(Param_Type::Param_STRING);
+							p->SetStringValue(szatt);
+						}
+						else
+						{
+							char sz[256] = { 0 };
+							sprintf(sz, "%lg*%s", s, szatt);
+							p->SetParamType(Param_Type::Param_MATH);
+							p->SetMathString(sz);
+						}
 					}
 					else ParseUnknownTag(tag);
 				}
@@ -3012,6 +3027,9 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 
 			++tag;
 		} while (!tag.isend());
+
+		// The rb parameter has to be the material ID
+		rb = febio.GetMaterial(rb - 1)->GetID();
 
 		FSRigidLoad* pi = nullptr;
 		if (bc < 3)
@@ -3510,12 +3528,13 @@ bool FEBioFormat3::ParseStep(XMLTag& tag)
 
 	do
 	{
-		if      (tag == "Control"    ) ParseControlSection   (tag);
-		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
-		else if (tag == "Constraints") ParseConstraintSection(tag);
-		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
-		else if (tag == "Contact"    ) ParseContactSection   (tag);
-		else if (tag == "Rigid"      ) ParseRigidSection     (tag);
+		if      (tag == "Control"    ) ParseControlSection    (tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection   (tag);
+		else if (tag == "Constraints") ParseConstraintSection (tag);
+		else if (tag == "Loads"      ) ParseLoadsSection      (tag);
+		else if (tag == "Contact"    ) ParseContactSection    (tag);
+		else if (tag == "Rigid"      ) ParseRigidSection      (tag);
+		else if (tag == "MeshAdaptor") ParseMeshAdaptorSection(tag);
 		else ParseUnknownTag(tag);
 
 		// go to the next tag

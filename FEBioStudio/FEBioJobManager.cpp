@@ -34,6 +34,7 @@ SOFTWARE.*/
 #endif
 #include <QProcess>
 #include <QMessageBox>
+#include "MainWindow.h"
 
 class CFEBioJobManager::Impl
 {

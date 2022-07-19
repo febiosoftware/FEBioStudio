@@ -171,6 +171,10 @@ void FEBioExport::WriteParam(Param &p)
 				if (m_exportEnumStrings)
 				{
 					const char* sz = GetEnumKey(p);
+					if (sz == nullptr) {
+						errf("Invalid key for parameter %s", p.GetShortName());
+						sz = "(invalid)";
+					}
 					e.value(sz);
 				}
 				else

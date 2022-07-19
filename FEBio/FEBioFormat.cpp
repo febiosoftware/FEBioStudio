@@ -198,22 +198,88 @@ FSAnalysisStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* sz
 
 //-----------------------------------------------------------------------------
 // helper function to see if a string is a number (i.e. int)
-bool is_number(const char* szval)
+bool is_int(const char* szval)
 {
 	if (szval == nullptr) return false;
 	const char* c = szval;
+	while (isspace(*c)) c++;
+	if (*c == 0) return false;
+
+	// first digit must be in {+,-,0..9}
+	if ((*c != '+') && (*c != '-') && (isdigit(*c) == 0)) return false;
+
+	// the rest must be digits
+	c++;
 	while (*c) {
-		if (isdigit(*c++) == 0) return false;
+		if (isdigit(*c) == 0)
+		{
+			// the rest can be white-space
+			while (*c)
+			{
+				if (isspace(*c) == 0) return false;
+				else c++;
+			}
+		}
+		else c++;
 	}
 	return true;
 }
+
+
+//-----------------------------------------------------------------------------
+// helper function to see if a string is a floating number
+bool is_float(const char* szval)
+{
+	if (szval == nullptr) return false;
+	const char* c = szval;
+	while (isspace(*c)) c++;
+
+	// first digit must be in {+,-,.,0..9}
+	if ((*c != '+') && (*c != '-') && (*c != '.') && (isdigit(*c) == 0)) return false;
+	bool bexp = false; // inside exponent
+	bool bsgn = true; // sign (+,-) can follow
+	while (*c) {
+		switch (*c)
+		{
+		case 'e':
+		case 'E':
+			if (bexp) return false;
+			if (*(c + 1) == 0) return false;
+			bexp = true; bsgn = true; c++;
+			break;
+		case '.': if (bexp) return false; bsgn = false; c++; break;
+		case '+':
+		case '-':
+			if (bsgn == false) return false; bsgn = false;
+			if (*(c + 1) == 0) return false;
+			c++;
+			break;
+		default:
+			if (isdigit(*c) == 0)
+			{
+				// the rest can be white-space
+				while (*c) {
+					if (isspace(*c) == 0) return false;
+					else c++;
+				}
+			}
+			else {
+				bsgn = false;
+				c++;
+			}
+			break;
+		}
+	}
+	return true;
+}
+
 
 //-----------------------------------------------------------------------------
 bool FEBioFormat::ReadChoiceParam(Param& p, const char* szval)
 {
 	if (p.GetEnumNames())
 	{
-		if (is_number(szval))
+		if (is_int(szval))
 		{
 			int n = atoi(szval);
 			GetFSModel().SetEnumValue(p, n);
@@ -281,6 +347,18 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 	XMLAtt* atype = tag.AttributePtr("type");
 	if (atype == nullptr)
 	{
+		// if the type is not specified, we'll try to determine if 
+		// it's a math expression or a const
+		if (pp->IsVariable())
+		{
+			const char* szval = tag.szvalue();
+			if (is_float(szval) == false)
+			{
+				// assume this is a math string
+				pp->SetParamType(Param_MATH);
+			}
+		}
+
 		// read parameter value
 		switch (pp->GetParamType())
 		{

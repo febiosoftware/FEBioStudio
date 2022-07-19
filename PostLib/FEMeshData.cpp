@@ -1634,6 +1634,20 @@ void SurfaceCongruency::eval(int n, float* f)
 	}
 }
 
+//-----------------------------------------------------------------------------
+void FEFacetArea::eval(int n, float* f)
+{
+	FEPostMesh* pmesh = GetFEMesh();
+	FSFace& face = pmesh->Face(n);
+
+	std::vector<Post::NODEDATA>& data = m_state->m_NODE;
+
+	vector<vec3d> r(face.Nodes());
+	for (int i = 0; i < face.Nodes(); ++i) r[i] = to_vec3d(data[face.n[i]].m_rt);
+
+	// NOTE: Passing the face type doesn't work! 
+	f[0] = (float)pmesh->FaceArea(r, face.Nodes());
+}
 
 //=============================================================================
 void VolumeStrain::eval(int n, float* pv)
