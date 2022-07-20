@@ -50,10 +50,12 @@ SOFTWARE.*/
 #define POW_2 QString(QChar(0x00B2))
 #define POW_3 QString(QChar(0x00B3))
 #define POW_4 QString(QChar(0x2074))
+#define POW_5 QString(QChar(0x2075))
 #else
 #define POW_2 QString("^2")
 #define POW_3 QString("^3")
 #define POW_4 QString("^4")
+#define POW_5 QString("^5")
 #endif
 
 #define DEG "_deg"
@@ -205,6 +207,7 @@ QString Unit::toString()
 				case 2: s += POW_2; break;
 				case 3: s += POW_3; break;
 				case 4: s += POW_4; break;
+                case 5: s += POW_5; break;
 				default:
 					s += QString("^%1").arg(f.p);
 				}
@@ -234,6 +237,7 @@ QString Unit::toString()
 					case 2: s += POW_2; break;
 					case 3: s += POW_3; break;
 					case 4: s += POW_4; break;
+                    case 5: s += POW_5; break;
 					default:
 						s += QString("^%1").arg(p);
 					}

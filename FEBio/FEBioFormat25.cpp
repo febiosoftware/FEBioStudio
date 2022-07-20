@@ -1803,9 +1803,6 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
         {
             double R; tag.value(R);
             psl->SetLoad(R);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(&psl->GetParam(FSFluidFlowResistance::LOAD), lc);
         }
         else if (tag == "pressure_offset")
         {
@@ -1839,9 +1836,6 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
         {
             double R; tag.value(R);
             psl->SetLoad(R);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::LOAD), lc);
         }
         else if (tag == "Rd")
         {
@@ -1871,14 +1865,6 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
         {
             double ip; tag.value(ip);
             psl->SetIP(ip);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::IP), lc);
-        }
-        else if (tag == "Bernoulli")
-        {
-            bool be; tag.value(be);
-            psl->SetBE(be);
         }
         else ParseUnknownTag(tag);
         ++tag;

@@ -1291,8 +1291,6 @@ void FEBioFormat2::ParseLoadFluidFlowResistance(FSStep* pstep, XMLTag& tag)
     {
         if (tag == "R")
         {
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(&pbc->GetParam(FSFluidFlowResistance::LOAD), lc);
             double s; tag.value(s);
             pbc->SetLoad(s);
         }
