@@ -554,16 +554,11 @@ void CCurveEditor::BuildModelTree()
                 FEFluidFlowRCR* prcr = dynamic_cast<FEFluidFlowRCR*>(pstep->Load(j));
                 if (pfr) {
 					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-                    ui->addTreeItem(t3, QString::fromStdString("R"), pfr->GetLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), pfr->GetPOLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), pfr->GetLoadCurve());
                 }
                 else if (prcr) {
 					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-					ui->addTreeItem(t3, QString::fromStdString("R"), prcr->GetLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("Rd"), prcr->GetRDLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("capacitance"), prcr->GetCOLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), prcr->GetPOLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
+                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), prcr->GetLoadCurve());
                 }
 				else {
 					FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(pstep->Load(j));

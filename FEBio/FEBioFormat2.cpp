@@ -1290,8 +1290,6 @@ void FEBioFormat2::ParseLoadFluidFlowResistance(FEStep* pstep, XMLTag& tag)
     {
         if (tag == "R")
         {
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(pbc->GetLoadCurve(), lc);
             double s; tag.value(s);
             pbc->SetLoad(s);
         }
@@ -1300,7 +1298,7 @@ void FEBioFormat2::ParseLoadFluidFlowResistance(FEStep* pstep, XMLTag& tag)
 			int lc = tag.AttributeValue<int>("lc", 0) - 1;
 			if (lc >= 0)
 			{
-				febio.AddParamCurve(pbc->GetPOLoadCurve(), lc);
+				febio.AddParamCurve(pbc->GetLoadCurve(), lc);
 			}
 			double s; tag.value(s);
             pbc->SetPO(s);

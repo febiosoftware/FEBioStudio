@@ -4285,15 +4285,10 @@ void FEBioExport25::WriteFluidFlowResistance(FEStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
-                
                 XMLElement load("R");
-                load.add_attribute("lc", lc);
-                load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
-                FELoadCurve* polc = ptc->GetPOLoadCurve();
+                FELoadCurve* polc = ptc->GetLoadCurve();
                 int lcpo = polc->GetID();
                 
                 XMLElement po("pressure_offset");
@@ -4326,31 +4321,16 @@ void FEBioExport25::WriteFluidFlowRCR(FEStep& s)
             flux.add_attribute("surface", GetSurfaceName(pitem));
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
-                
                 XMLElement load("R");
-                load.add_attribute("lc", lc);
-                load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
-                FELoadCurve* rdlc = ptc->GetRDLoadCurve();
-                int lcrd = rdlc->GetID();
-                
                 XMLElement rd("Rd");
-                rd.add_attribute("lc", lcrd);
-                rd.value(ptc->GetRD());
                 m_xml.add_leaf(rd);
                 
-                FELoadCurve* colc = ptc->GetCOLoadCurve();
-                int lcco = colc->GetID();
-                
                 XMLElement co("capacitance");
-                co.add_attribute("lc", lcco);
-                co.value(ptc->GetCO());
                 m_xml.add_leaf(co);
                 
-                FELoadCurve* polc = ptc->GetPOLoadCurve();
+                FELoadCurve* polc = ptc->GetLoadCurve();
                 int lcpo = polc->GetID();
                 
                 XMLElement po("pressure_offset");
@@ -4358,17 +4338,8 @@ void FEBioExport25::WriteFluidFlowRCR(FEStep& s)
                 po.value(ptc->GetPO());
                 m_xml.add_leaf(po);
 
-                FELoadCurve* iplc = ptc->GetIPLoadCurve();
-                int lcip = iplc->GetID();
-                
                 XMLElement ip("initial_pressure");
-                ip.add_attribute("lc", lcip);
-                ip.value(ptc->GetIP());
                 m_xml.add_leaf(ip);
-                
-                XMLElement be("Bernoulli");
-                be.value(ptc->GetBE());
-                m_xml.add_leaf(be);
             }
             m_xml.close_branch(); // surface_load
         }

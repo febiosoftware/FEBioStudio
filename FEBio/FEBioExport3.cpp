@@ -4290,6 +4290,7 @@ void FEBioExport3::WriteSurfaceLoads(FEStep& s)
 			case FE_CONV_HEAT_FLUX           : WriteSurfaceLoad(s, pbc, "convective_heatflux"); break;
 			case FE_FLUID_TRACTION           : WriteSurfaceLoad(s, pbc, "fluid viscous traction"); break;
 			case FE_FLUID_FLOW_RESISTANCE    : WriteSurfaceLoad(s, pbc, "fluid resistance"); break;
+            case FE_FLUID_FLOW_RCR           : WriteSurfaceLoad(s, pbc, "fluid RCR"); break;
 			case FE_FLUID_TANGENTIAL_STABIL  : WriteSurfaceLoad(s, pbc, "fluid tangential stabilization"); break;
 			case FE_FLUID_BACKFLOW_STABIL    : WriteSurfaceLoad(s, pbc, "fluid backflow stabilization"); break;
 			case FE_FSI_TRACTION             : WriteSurfaceLoad(s, pbc, "fluid-FSI traction"); break;

@@ -381,12 +381,10 @@ public:
     FEFluidFlowResistance(FEModel* ps);
     FEFluidFlowResistance(FEModel* ps, FEItemListBuilder* pi, double b, double p, int nstep = 0);
     
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
-    
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
     
-    FELoadCurve* GetPOLoadCurve() { return GetParamLC(PO); }
+    FELoadCurve* GetLoadCurve() { return GetParamLC(PO); }
     
     void SetPO(double f) { SetFloatValue(PO, f); }
     double GetPO() { return GetFloatValue(PO); }
@@ -398,41 +396,28 @@ public:
 class FEFluidFlowRCR : public FESurfaceLoad
 {
 public:
-    enum {LOAD, RD, CO, PO, IP, BE };
+    enum {LOAD, RD, CO, PO, IP };
     
 public:
     FEFluidFlowRCR(FEModel* ps);
-    FEFluidFlowRCR(FEModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FEFluidFlowRCR(FEModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
     
-    FELoadCurve* GetRDLoadCurve() { return GetParamLC(RD); }
-    
     void SetRD(double f) { SetFloatValue(RD, f); }
     double GetRD() { return GetFloatValue(RD); }
-    
-    FELoadCurve* GetCOLoadCurve() { return GetParamLC(CO); }
     
     void SetCO(double f) { SetFloatValue(CO, f); }
     double GetCO() { return GetFloatValue(CO); }
     
-    FELoadCurve* GetPOLoadCurve() { return GetParamLC(PO); }
+    FELoadCurve* GetLoadCurve() { return GetParamLC(PO); }
     
     void SetPO(double f) { SetFloatValue(PO, f); }
     double GetPO() { return GetFloatValue(PO); }
-    
-    FELoadCurve* GetIPLoadCurve() { return GetParamLC(IP); }
-    
+
     void SetIP(double f) { SetFloatValue(IP, f); }
     double GetIP() { return GetFloatValue(IP); }
-
-    FELoadCurve* GetBELoadCurve() { return GetParamLC(BE); }
-    
-    void SetBE(bool b) { SetBoolValue(BE, b); }
-    double GetBE() { return GetBoolValue(BE); }
     
 };
 

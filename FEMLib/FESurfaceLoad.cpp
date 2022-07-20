@@ -334,7 +334,7 @@ FEFluidRotationalVelocity::FEFluidRotationalVelocity(FEModel* ps, FEItemListBuil
 FEFluidFlowResistance::FEFluidFlowResistance(FEModel* ps) : FESurfaceLoad(FE_FLUID_FLOW_RESISTANCE, ps)
 {
     SetTypeString("Fluid Flow Resistance");
-    AddDoubleParam(0, "R", "resistance")->SetLoadCurve();
+    AddDoubleParam(0, "R", "resistance")->SetUnit(UNIT_FLOW_RESISTANCE);
     AddDoubleParam(0, "pressure_offset", "pressure_offset")->SetLoadCurve();
 }
 
@@ -350,24 +350,22 @@ FEFluidFlowResistance::FEFluidFlowResistance(FEModel* ps, FEItemListBuilder* pi,
 FEFluidFlowRCR::FEFluidFlowRCR(FEModel* ps) : FESurfaceLoad(FE_FLUID_FLOW_RCR, ps)
 {
     SetTypeString("Fluid RCR");
-    AddDoubleParam(0, "R", "proximal resistance")->SetLoadCurve();
-    AddDoubleParam(0, "Rd", "distal resistance")->SetLoadCurve();
-    AddDoubleParam(0, "capacitance", "compliance")->SetLoadCurve();
-    AddDoubleParam(0, "pressure_offset", "pressure offset")->SetLoadCurve();
-    AddDoubleParam(0, "initial_pressure", "initial pressure")->SetLoadCurve();
-    AddBoolParam(true, "Bernoulli", "Bernoulli");
+    AddScienceParam(0, UNIT_FLOW_RESISTANCE, "R", "proximal resistance");
+    AddScienceParam(0, UNIT_FLOW_RESISTANCE, "Rd", "distal resistance");
+    AddScienceParam(0, UNIT_FLOW_CAPACITANCE, "capacitance", "compliance");
+    AddScienceParam(0, UNIT_PRESSURE, "pressure_offset", "pressure offset")->SetLoadCurve();
+    AddScienceParam(0, UNIT_PRESSURE, "initial_pressure", "initial pressure");
 
 }
 
-FEFluidFlowRCR::FEFluidFlowRCR(FEModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep) : FESurfaceLoad(FE_FLUID_FLOW_RCR, ps, pi, nstep)
+FEFluidFlowRCR::FEFluidFlowRCR(FEModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, int nstep) : FESurfaceLoad(FE_FLUID_FLOW_RCR, ps, pi, nstep)
 {
     SetTypeString("Fluid RCR");
-    AddDoubleParam(rp, "R", "resistance")->SetLoadCurve();
-    AddDoubleParam(rd, "Rd", "distal resistance")->SetLoadCurve();
-    AddDoubleParam(co, "capacitance", "compliance")->SetLoadCurve();
-    AddDoubleParam(po, "pressure_offset", "pressure offset")->SetLoadCurve();
-    AddDoubleParam(ip, "initial_pressure", "initial pressure")->SetLoadCurve();
-    AddBoolParam(be, "Bernoulli", "Bernoulli");
+    AddScienceParam(rp, UNIT_FLOW_RESISTANCE, "R", "proximal resistance");
+    AddScienceParam(rd, UNIT_FLOW_RESISTANCE, "Rd", "distal resistance");
+    AddScienceParam(co, UNIT_FLOW_CAPACITANCE, "capacitance", "compliance");
+    AddScienceParam(po, UNIT_PRESSURE, "pressure_offset", "pressure offset")->SetLoadCurve();
+    AddScienceParam(ip, UNIT_PRESSURE, "initial_pressure", "initial pressure");
 }
 
 //-----------------------------------------------------------------------------

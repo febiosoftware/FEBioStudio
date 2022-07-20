@@ -1782,9 +1782,6 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
         {
             double R; tag.value(R);
             psl->SetLoad(R);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
         }
         else if (tag == "pressure_offset")
         {
@@ -1792,7 +1789,7 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
             psl->SetPO(po);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetPOLoadCurve(), lc);
+            febio.AddParamCurve(psl->GetLoadCurve(), lc);
         }
         else ParseUnknownTag(tag);
         ++tag;
@@ -1818,25 +1815,16 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
         {
             double R; tag.value(R);
             psl->SetLoad(R);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetLoadCurve(), lc);
         }
         else if (tag == "Rd")
         {
             double rd; tag.value(rd);
             psl->SetRD(rd);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetRDLoadCurve(), lc);
         }
         else if (tag == "capacitance")
         {
             double  co; tag.value(co);
             psl->SetCO(co);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetCOLoadCurve(), lc);
         }
         else if (tag == "pressure_offset")
         {
@@ -1844,20 +1832,12 @@ FESurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
             psl->SetPO(po);
             
             int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetPOLoadCurve(), lc);
+            febio.AddParamCurve(psl->GetLoadCurve(), lc);
         }
         else if (tag == "initial_pressure")
         {
             double ip; tag.value(ip);
             psl->SetIP(ip);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(psl->GetIPLoadCurve(), lc);
-        }
-        else if (tag == "Bernoulli")
-        {
-            bool be; tag.value(be);
-            psl->SetBE(be);
         }
         else ParseUnknownTag(tag);
         ++tag;

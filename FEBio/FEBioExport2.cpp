@@ -4317,16 +4317,11 @@ void FEBioExport2::WriteFluidFlowResistance(FEStep& s)
             flux.add_attribute("type", "fluid resistance");
             m_xml.add_branch(flux);
             {
-                FELoadCurve* plc = ptc->GetLoadCurve();
-                int lc = plc->GetID();
-                
                 XMLElement load("R");
-                load.add_attribute("lc", lc);
-                load.value(ptc->GetLoad());
                 m_xml.add_leaf(load);
                 
                 // Write pressure offset element
-                FELoadCurve* polc = ptc->GetPOLoadCurve();
+                FELoadCurve* polc = ptc->GetLoadCurve();
                 int lcpo = polc->GetID();
                 
                 XMLElement po("pressure_offset");
