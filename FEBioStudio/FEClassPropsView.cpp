@@ -1612,6 +1612,12 @@ FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
 
 	QObject::connect(m_flt, SIGNAL(textChanged(const QString&)), m_view, SLOT(setFilter(const QString&)));
 	QObject::connect(tb, SIGNAL(clicked(bool)), m_flt, SLOT(clear()));
+	QObject::connect(m_view, SIGNAL(clicked(const QModelIndex&)), this, SLOT(on_clicked(const QModelIndex&)));
+}
+
+void FEClassPropsWidget::on_clicked(const QModelIndex& index)
+{
+	emit clicked(index);
 }
 
 void FEClassPropsWidget::SetFEClass(FSCoreBase* pc, FSModel* fem)

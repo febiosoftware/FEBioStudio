@@ -99,11 +99,19 @@ private:
 //-----------------------------------------------------------------------------
 class FEClassPropsWidget : public QWidget
 {
+	Q_OBJECT
+
 public:
 	FEClassPropsWidget(QWidget* parent = nullptr);
 
 	void SetFEClass(FSCoreBase* pc, FSModel* fem);
 	FSProperty* getProperty(const QModelIndex& index);
+
+private slots:
+	void on_clicked(const QModelIndex& index);
+
+signals:
+	void clicked(const QModelIndex& index);
 
 private:
 	QLineEdit* m_flt;
