@@ -145,8 +145,12 @@ int main(int argc, char* argv[])
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
 	// show the splash screen
-	QPixmap pixmap(":/icons/splash.png");
+    QPixmap pixmap;
 	qreal pixelRatio = app.devicePixelRatio();
+    if (pixelRatio == 1)
+        pixmap = QPixmap(":/icons/splash.png");
+    else
+        pixmap = QPixmap(":/icons/splash_hires.png");
 	pixmap.setDevicePixelRatio(pixelRatio);
 	FBSSplashScreen splash(pixmap);
 	splash.show();
