@@ -144,11 +144,6 @@ int main(int argc, char* argv[])
 	
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
-	QDir febioDir(QApplication::applicationDirPath());
-	febioDir.cd("../febio");
-	string febdir = QDir::toNativeSeparators(febioDir.absolutePath()).toStdString();
-	FSDir::setMacro("FEBioDir", febdir);
-
 	// show the splash screen
 	QPixmap pixmap(":/icons/splash.png");
 	qreal pixelRatio = app.devicePixelRatio();
