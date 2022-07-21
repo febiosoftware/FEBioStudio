@@ -724,6 +724,10 @@ bool FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 		febio::CMDOPTIONS ops;
 		if (febio::ProcessOptionsString(cmd, ops) == false)
 		{
+			if (outputHandler)
+			{
+				outputHandler->write("Failed processing command line.");
+			}
 			return false;
 		}
 

@@ -156,7 +156,7 @@ public:
 
 		editCmd = new QCheckBox("override command");
 		cmd = new QLineEdit; cmd->setEnabled(false);
-		cmd->setText("-i $(Filename)");
+		cmd->setText("-i \"$(Filename)\"");
 
 		QVBoxLayout* v = new QVBoxLayout;
 		v->addLayout(ext);
@@ -254,7 +254,7 @@ void CDlgRun::updateDefaultCommand()
 
 	if (ui->cmd->isEnabled() == false)
 	{
-		QString t("-i $(Filename)");
+		QString t("-i \"$(Filename)\"");
 		if (bg) t += " -g";
 
 		QString configFile = ui->configFile->text();
