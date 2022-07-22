@@ -339,11 +339,15 @@ void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 		{
 			FSProperty* prop = pmc->FindProperty(pi.propName); assert(prop);
 			FSCoreBase* pc = prop->GetComponent(0);
-			pp = pc->GetParam(pi.szparamName); assert(pp);
+			if (pc)
+				pp = pc->GetParam(pi.szparamName);
 		}
 		else pp = pmc->GetParam(pi.szparamName);
-		assert(pp);
 		if (pp) pp->SetIntValue(pi.vi);
+		else
+		{
+			AddLogEntry("Failed to map old parameter %s", pi.szparamName);
+		}
 	}
 }
 
