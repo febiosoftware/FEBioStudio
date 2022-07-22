@@ -92,6 +92,7 @@ SOFTWARE.*/
 #include <PostLib/Palette.h>
 #include <PostLib/VolRender.h>
 #include <PostLib/VolumeRender2.h>
+#include <PostGL/GLColorMap.h>
 
 extern GLColor col[];
 
@@ -1774,6 +1775,7 @@ void CMainWindow::writeSettings()
 
 	settings.beginGroup("PostSettings");
 	settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
+	settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
 	settings.endGroup();
 
 	settings.beginGroup("FolderSettings");
@@ -1883,6 +1885,7 @@ void CMainWindow::readSettings()
 
 	settings.beginGroup("PostSettings");
 	Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
+	Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
 	settings.endGroup();
 
 	settings.beginGroup("FolderSettings");

@@ -97,5 +97,7 @@ public:
 	Post::CColorTexture	m_Col;	// colormap used for rendering
 
 	GLLegendBar*	m_pbar;	// the legend bar
+
+	static int	m_defaultRngType;
 };
 }
