@@ -857,7 +857,7 @@ void CMainWindow::SetCurrentTimeValue(float ftime)
 
 	// update the rest
 	//	UpdateTools(false);
-	//	UpdateGraphs(false);
+	UpdateGraphs(false);
 	RedrawGL();
 }
 
@@ -1129,13 +1129,7 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 
-	int graphs = ui->graphList.size();
-	QList<CGraphWindow*>::iterator it = ui->graphList.begin();
-	for (int i = 0; i < graphs; ++i, ++it)
-	{
-		CGraphWindow* w = *it;
-		w->Update(false);
-	}
+	UpdateGraphs(false);
 }
 
 //-----------------------------------------------------------------------------
