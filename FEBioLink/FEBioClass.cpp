@@ -115,6 +115,7 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 	ci.baseClassId = baseClassIndex(fac->GetBaseClassName());
 	ci.sztype = fac->GetTypeStr();
 	ci.szmod = fecore.GetModuleName(modId);
+	ci.spec = fac->GetSpecID();
 
 	return ci;
 }
@@ -162,7 +163,8 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 					baseClassIndex(fac->GetBaseClassName()),
 					fac->GetTypeStr(), 
 					fac->GetClassName(),
-					szmod };
+					szmod,
+					fac->GetSpecID()};
 				facs.push_back(febc);
 			}
 		}
@@ -187,7 +189,9 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllPluginClasses(int allocId)
 				baseClassIndex(fac->GetBaseClassName()),
 				fac->GetTypeStr(),
 				fac->GetClassName(),
-				szmod };
+				szmod,
+				fac->GetSpecID()
+			};
 			facs.push_back(febc);
 		}
 	}
