@@ -1060,7 +1060,13 @@ public:
 		{
 			Item* item = static_cast<Item*>(index.internalPointer());
 			if (item->isParameter())
-				return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+			{
+				Param* p = item->parameter();
+				if (p && (p->GetParamType() == Param_BOOL))
+					return QAbstractItemModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
+				else
+					return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+			}
 
 			if (item->isProperty())
 				return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
@@ -1218,12 +1224,13 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				break;
 			case Param_BOOL:
 				{
-					QComboBox* pw = new QComboBox(parent);
-					pw->addItems(QStringList() << "No" << "Yes");
-					bool b = p->GetBoolValue();
-					pw->setCurrentIndex(b ? 1 : 0);
-					QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
-					return pw;
+					//QComboBox* pw = new QComboBox(parent);
+					//pw->addItems(QStringList() << "No" << "Yes");
+					//bool b = p->GetBoolValue();
+					//pw->setCurrentIndex(b ? 1 : 0);
+					//QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+					//return pw;
+					return nullptr;
 				}
 				break;
 			case Param_STRING:
@@ -1278,21 +1285,22 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 						}
 						else
 						{
-							std::vector<int> v = p->val<std::vector<int> >();
-							bool bfound = false;
-							for (int i = 0; i < v.size(); ++i)
-							{
-								if (v[i] == index)
-								{
-									bfound = true;
-									break;
-								}
-							}
+							//std::vector<int> v = p->val<std::vector<int> >();
+							//bool bfound = false;
+							//for (int i = 0; i < v.size(); ++i)
+							//{
+							//	if (v[i] == index)
+							//	{
+							//		bfound = true;
+							//		break;
+							//	}
+							//}
 
-							QComboBox* box = new QComboBox(parent);
-							box->addItems(QStringList() << "No" << "Yes");
-							box->setCurrentIndex(bfound ? 1 : 0);
-							return box;
+							//QComboBox* box = new QComboBox(parent);
+							//box->addItems(QStringList() << "No" << "Yes");
+							//box->setCurrentIndex(bfound ? 1 : 0);
+							//return box;
+							return nullptr;
 						}
 					}
 				}
@@ -1499,6 +1507,132 @@ void FEClassPropsDelegate::OnEditorSignal()
 {
 	QWidget* sender = dynamic_cast<QWidget*>(QObject::sender());
 	emit commitData(sender);
+}
+
+void FEClassPropsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	if (!index.isValid()) return;
+	if (index.column() == 1)
+	{
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+		if (item && item->isParameter())
+		{
+			Param* p = item->parameter();
+			if (p && (p->GetParamType() == Param_BOOL))
+			{
+				QStyleOptionButton cbOpt;
+				cbOpt.rect = option.rect;
+				cbOpt.state = option.state;
+				bool b = p->GetBoolValue();
+				if (b) cbOpt.state |= QStyle::State_On;
+				else cbOpt.state |= QStyle::State_Off;
+				QApplication::style()->drawPrimitive(QStyle::PrimitiveElement::PE_PanelItemViewItem, &option, painter);
+				QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
+				return;
+			}
+			else if (p && (p->GetParamType() == Param_STD_VECTOR_INT))
+			{
+				std::vector<int> v = p->val<std::vector<int> >();
+				int index = item->m_index;
+				if ((index != -1) && (p->GetEnumNames()))
+				{
+					bool bfound = false;
+					for (int i = 0; i < v.size(); ++i)
+					{
+						if (v[i] == index)
+						{
+							bfound = true;
+							break;
+						}
+					}
+
+					QStyleOptionButton cbOpt;
+					cbOpt.rect = option.rect;
+					cbOpt.state = option.state;
+					if (bfound) cbOpt.state |= QStyle::State_On;
+					else cbOpt.state |= QStyle::State_Off;
+					QApplication::style()->drawPrimitive(QStyle::PrimitiveElement::PE_PanelItemViewItem, &option, painter);
+					QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
+					return;
+				}
+			}
+		}
+	}
+
+	QStyledItemDelegate::paint(painter, option, index);
+}
+
+bool FEClassPropsDelegate::editorEvent(QEvent* event,
+	QAbstractItemModel* model,
+	const QStyleOptionViewItem& option,
+	const QModelIndex& index)
+{
+	if (event->type() == QEvent::MouseButtonPress)
+	{
+		if (index.column() == 1)
+		{
+			FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+			if (item && item->isParameter())
+			{
+				Param* p = item->parameter();
+				if (p && (p->GetParamType() == Param_BOOL))
+				{
+					bool b = p->GetBoolValue();
+					p->SetBoolValue(b ? false : true);
+					p->SetModified(true);
+					return true;
+				}
+				else if (p && (p->GetParamType() == Param_STD_VECTOR_INT))
+				{
+					std::vector<int> v = p->val<std::vector<int> >();
+					int index = item->m_index;
+					if ((index != -1) && (p->GetEnumNames()))
+					{
+						bool bfound = false;
+						for (int i = 0; i < v.size(); ++i)
+						{
+							if (v[i] == index)
+							{
+								bfound = true;
+								break;
+							}
+						}
+
+						if (bfound == false)
+						{
+							// add index
+							int m = 0;
+							for (int i = 0; i < v.size(); ++i, ++m)
+							{
+								if (v[i] == index) return true;
+								if (v[i] > index) {
+									m = i;
+									break;
+								}
+							}
+							v.insert(v.begin() + m, index);
+						}
+						else
+						{
+							// remove index
+							for (int i = 0; i < v.size(); ++i)
+							{
+								if (v[i] == index)
+								{
+									v.erase(v.begin() + i);
+									break;
+								}
+							}
+						}
+						p->val<std::vector<int> >() = v;
+						return true;
+					}
+				}
+			}
+		}
+	}
+
+	return QStyledItemDelegate::editorEvent(event, model, option, index);
 }
 
 //=================================================================================================
