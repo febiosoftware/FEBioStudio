@@ -1526,7 +1526,8 @@ void FEClassPropsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 				bool b = p->GetBoolValue();
 				if (b) cbOpt.state |= QStyle::State_On;
 				else cbOpt.state |= QStyle::State_Off;
-				QApplication::style()->drawPrimitive(QStyle::PrimitiveElement::PE_PanelItemViewItem, &option, painter);
+
+				QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
 				QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
 				return;
 			}
@@ -1551,7 +1552,7 @@ void FEClassPropsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 					cbOpt.state = option.state;
 					if (bfound) cbOpt.state |= QStyle::State_On;
 					else cbOpt.state |= QStyle::State_Off;
-					QApplication::style()->drawPrimitive(QStyle::PrimitiveElement::PE_PanelItemViewItem, &option, painter);
+					QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
 					QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
 					return;
 				}
