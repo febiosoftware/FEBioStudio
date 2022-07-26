@@ -626,12 +626,6 @@ void CModelViewer::OnDeleteNamedSelection()
 	OnDeleteItem();
 }
 
-void CModelViewer::OnAddBC()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddBC_triggered();
-}
-
 void CModelViewer::OnAddInitialCondition()
 {
 	CMainWindow* wnd = GetMainWindow();
@@ -1646,7 +1640,9 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	}
 	break;
 	case MT_BC_LIST:
-		menu.addAction("Add Boundary Condition ...", this, SLOT(OnAddBC()));
+		menu.addAction("Add Nodal BC ...", wnd, SLOT(on_actionAddNodalBC_triggered()));
+		menu.addAction("Add Surface BC ...", wnd, SLOT(on_actionAddSurfaceBC_triggered()));
+		menu.addAction("Add Linear Constraint ...", wnd, SLOT(on_actionAddGeneralBC_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllBC()));
 		break;

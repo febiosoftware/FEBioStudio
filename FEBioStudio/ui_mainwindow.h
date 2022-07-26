@@ -209,7 +209,10 @@ public:
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
 
-	QAction* actionAddBC;
+	QAction* actionAddNodalBC;
+	QAction* actionAddSurfaceBC;
+	QAction* actionAddGeneralBC;
+
 	QAction* actionAddNodalLoad;
 	QAction* actionAddSurfLoad;
 	QAction* actionAddBodyLoad;
@@ -502,7 +505,9 @@ public:
         QAction* actionRemoveRow = addAction("Remove Row", "actionRemoveRow", "selectDel");
 
 		// --- Physics menu ---
-		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier | Qt::Key_B);
+		actionAddNodalBC         = addAction("Add Nodal BC..."               , "actionAddNodalBC"  ); actionAddNodalBC->setShortcut(Qt::ControlModifier | Qt::Key_B);
+		actionAddSurfaceBC       = addAction("Add Surface BC..."             , "actionAddSurfaceBC");
+		actionAddGeneralBC       = addAction("Add Linear Constraint ..."     , "actionAddGeneralBC");
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
 		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
@@ -812,7 +817,9 @@ public:
 
 		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());
-		menuPhysics->addAction(actionAddBC);
+		menuPhysics->addAction(actionAddNodalBC);
+		menuPhysics->addAction(actionAddSurfaceBC);
+		menuPhysics->addAction(actionAddGeneralBC);
 		menuPhysics->addAction(actionAddNodalLoad);
 		menuPhysics->addAction(actionAddSurfLoad);
 		menuPhysics->addAction(actionAddBodyLoad);

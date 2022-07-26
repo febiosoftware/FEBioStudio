@@ -55,14 +55,14 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <sstream>
 
-void CMainWindow::on_actionAddBC_triggered()
+void CMainWindow::on_actionAddNodalBC_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
-	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, -1, &fem, true, true, this);
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, FEBio::GetBaseClassIndex("FENodalBC"), &fem, true, true, this);
 	if (dlg.exec())
 	{
 		FSBoundaryCondition* pbc = FEBio::CreateFEBioClass<FSBoundaryCondition>(dlg.GetClassID(), &fem); assert(pbc);
@@ -104,6 +104,81 @@ void CMainWindow::on_actionAddBC_triggered()
 		}
 	}
 }
+
+void CMainWindow::on_actionAddSurfaceBC_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, FEBio::GetBaseClassIndex("FESurfaceBC"), &fem, true, true, this);
+	if (dlg.exec())
+	{
+		FSBoundaryCondition* pbc = FEBio::CreateFEBioClass<FSBoundaryCondition>(dlg.GetClassID(), &fem); assert(pbc);
+		if (pbc)
+		{
+			FEBio::InitDefaultProps(pbc);
+
+			FSStep* step = fem.GetStep(dlg.GetStep());
+
+			pbc->SetStep(step->GetID());
+
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultBCName(&fem, pbc);
+			pbc->SetName(name);
+
+			// figure out the selection
+			FESelection* psel = doc->GetCurrentSelection();
+			if (psel && psel->Size())
+			{
+				int ntype = psel->Type();
+				switch (ntype)
+				{
+				case SELECT_SURFACES:
+				case SELECT_FE_FACES:
+				{
+					FEItemListBuilder* items = psel->CreateItemList();
+					if (items) pbc->SetItemList(items);
+				}
+				break;
+				}
+			}
+
+			step->AddBC(pbc);
+			UpdateModel(pbc);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddGeneralBC_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = prj.GetFSModel();
+	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, FEBio::GetBaseClassIndex("FEBoundaryCondition"), &fem, true, true, this);
+	if (dlg.exec())
+	{
+		FSBoundaryCondition* pbc = FEBio::CreateFEBioClass<FSBoundaryCondition>(dlg.GetClassID(), &fem); assert(pbc);
+		if (pbc)
+		{
+			FEBio::InitDefaultProps(pbc);
+
+			FSStep* step = fem.GetStep(dlg.GetStep());
+
+			pbc->SetStep(step->GetID());
+
+			std::string name = dlg.GetName();
+			if (name.empty()) name = defaultBCName(&fem, pbc);
+			pbc->SetName(name);
+			step->AddBC(pbc);
+			UpdateModel(pbc);
+		}
+	}
+}
+
 
 void CMainWindow::on_actionAddNodalLoad_triggered()
 {

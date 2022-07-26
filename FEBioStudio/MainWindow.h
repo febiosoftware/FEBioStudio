@@ -391,7 +391,9 @@ public slots:
 	void on_actionDeleteLine_triggered();
 
 	// Physics menu
-	void on_actionAddBC_triggered();
+	void on_actionAddNodalBC_triggered();
+	void on_actionAddSurfaceBC_triggered();
+	void on_actionAddGeneralBC_triggered();
 	void on_actionAddNodalLoad_triggered();
 	void on_actionAddSurfLoad_triggered();
 	void on_actionAddBodyLoad_triggered();

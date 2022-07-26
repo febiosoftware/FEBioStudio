@@ -117,7 +117,6 @@ public slots:
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
 	void OnDeleteNamedSelection();
-	void OnAddBC();
 	void OnAddInitialCondition();
 	void OnAddContact();
 	void OnAddConstraint();
