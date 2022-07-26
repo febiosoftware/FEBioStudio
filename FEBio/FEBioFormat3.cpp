@@ -1850,15 +1850,13 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero displacement", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "x") { dofList.push_back(0); }
-			if (di == "y") { dofList.push_back(1); }
-			if (di == "z") { dofList.push_back(2); }
+			if (di == "x") pbc->SetParamBool("x_dof", true);
+			if (di == "y") pbc->SetParamBool("y_dof", true);
+			if (di == "z") pbc->SetParamBool("z_dof", true);
 		}			
-		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1872,15 +1870,13 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero rotation", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "u") { dofList.push_back(0); }
-			if (di == "v") { dofList.push_back(1); }
-			if (di == "w") { dofList.push_back(2); }
+			if (di == "u") pbc->SetParamBool("u_dof", true);
+			if (di == "v") pbc->SetParamBool("v_dof", true);
+			if (di == "w") pbc->SetParamBool("w_dof", true);
 		}
-		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1949,15 +1945,13 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero shell displacement", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "sx") { dofList.push_back(0); }
-			if (di == "sy") { dofList.push_back(1); }
-			if (di == "sz") { dofList.push_back(2); }
-		}			
-		pbc->SetParamVectorInt("dofs", dofList);
+			if (di == "sx") pbc->SetParamBool("sx_dof", true);
+			if (di == "sy") pbc->SetParamBool("sy_dof", true);
+			if (di == "sz") pbc->SetParamBool("sz_dof", true);
+		}
 
 		// set the name
 		if (name.empty())
@@ -1979,36 +1973,41 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 	else if (bc.compare(0, 1, "c") == 0)
 	{
-		pbc = FEBio::CreateBoundaryCondition("zero concentration", &fem); assert(pbc);
-
-		// map the dofs
-		vector<int> dofList;
+		// we need to make a separate bc for each concentration dof
 		for (int i = 0; i < dofs.size(); ++i)
 		{
+			pbc = FEBio::CreateBoundaryCondition("zero concentration", &fem); assert(pbc);
+
+			sprintf(szbuf, "ZeroConcentration%02d", CountBCs<FEBioBoundaryCondition>(fem) + 1);
+			name = szbuf;
+			pbc->SetName(name);
+			pbc->SetItemList(pg);
+			pstep->AddComponent(pbc);
+
 			string& di = dofs[i];
 			if (di.size() == 2)
 			{
 				int n = atoi(di.c_str() + 1);
 				dofList.push_back(n - 1);
+				pbc->SetParamInt("c_dof", n - 1);
 			}
 		}
-		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
 
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEBioBoundaryCondition>(fem) + 1);
-			name = szbuf;
-		}
+		// all processing is done, so set pbc to null so we don't do anything else. 
+		pbc = nullptr;
 	}
 
 	// assign the name
-	pbc->SetName(name);
+	if (pbc)
+	{
+		pbc->SetName(name);
 
-	// assign the item list
-	pbc->SetItemList(pg);
+		// assign the item list
+		pbc->SetItemList(pg);
 
-	// add it to the active step
-	pstep->AddComponent(pbc);
+		// add it to the active step
+		pstep->AddComponent(pbc);
+	}
 }
 
 //-----------------------------------------------------------------------------

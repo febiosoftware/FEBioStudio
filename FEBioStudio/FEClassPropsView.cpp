@@ -1285,22 +1285,21 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 						}
 						else
 						{
-							//std::vector<int> v = p->val<std::vector<int> >();
-							//bool bfound = false;
-							//for (int i = 0; i < v.size(); ++i)
-							//{
-							//	if (v[i] == index)
-							//	{
-							//		bfound = true;
-							//		break;
-							//	}
-							//}
+							std::vector<int> v = p->val<std::vector<int> >();
+							bool bfound = false;
+							for (int i = 0; i < v.size(); ++i)
+							{
+								if (v[i] == index)
+								{
+									bfound = true;
+									break;
+								}
+							}
 
-							//QComboBox* box = new QComboBox(parent);
-							//box->addItems(QStringList() << "No" << "Yes");
-							//box->setCurrentIndex(bfound ? 1 : 0);
-							//return box;
-							return nullptr;
+							QComboBox* box = new QComboBox(parent);
+							box->addItems(QStringList() << "No" << "Yes");
+							box->setCurrentIndex(bfound ? 1 : 0);
+							return box;
 						}
 					}
 				}
@@ -1531,32 +1530,6 @@ void FEClassPropsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& 
 				QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
 				return;
 			}
-			else if (p && (p->GetParamType() == Param_STD_VECTOR_INT))
-			{
-				std::vector<int> v = p->val<std::vector<int> >();
-				int index = item->m_index;
-				if ((index != -1) && (p->GetEnumNames()))
-				{
-					bool bfound = false;
-					for (int i = 0; i < v.size(); ++i)
-					{
-						if (v[i] == index)
-						{
-							bfound = true;
-							break;
-						}
-					}
-
-					QStyleOptionButton cbOpt;
-					cbOpt.rect = option.rect;
-					cbOpt.state = option.state;
-					if (bfound) cbOpt.state |= QStyle::State_On;
-					else cbOpt.state |= QStyle::State_Off;
-					QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
-					QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
-					return;
-				}
-			}
 		}
 	}
 
@@ -1582,52 +1555,6 @@ bool FEClassPropsDelegate::editorEvent(QEvent* event,
 					p->SetBoolValue(b ? false : true);
 					p->SetModified(true);
 					return true;
-				}
-				else if (p && (p->GetParamType() == Param_STD_VECTOR_INT))
-				{
-					std::vector<int> v = p->val<std::vector<int> >();
-					int index = item->m_index;
-					if ((index != -1) && (p->GetEnumNames()))
-					{
-						bool bfound = false;
-						for (int i = 0; i < v.size(); ++i)
-						{
-							if (v[i] == index)
-							{
-								bfound = true;
-								break;
-							}
-						}
-
-						if (bfound == false)
-						{
-							// add index
-							int m = 0;
-							for (int i = 0; i < v.size(); ++i, ++m)
-							{
-								if (v[i] == index) return true;
-								if (v[i] > index) {
-									m = i;
-									break;
-								}
-							}
-							v.insert(v.begin() + m, index);
-						}
-						else
-						{
-							// remove index
-							for (int i = 0; i < v.size(); ++i)
-							{
-								if (v[i] == index)
-								{
-									v.erase(v.begin() + i);
-									break;
-								}
-							}
-						}
-						p->val<std::vector<int> >() = v;
-						return true;
-					}
 				}
 			}
 		}
