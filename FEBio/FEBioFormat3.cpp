@@ -1912,7 +1912,6 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero fluid velocity", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
@@ -1920,7 +1919,6 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 			if (di == "wy") { dofList.push_back(1); }
 			if (di == "wz") { dofList.push_back(2); }
 		}
-		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
