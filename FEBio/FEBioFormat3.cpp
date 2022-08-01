@@ -1915,9 +1915,9 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "wx") { dofList.push_back(0); }
-			if (di == "wy") { dofList.push_back(1); }
-			if (di == "wz") { dofList.push_back(2); }
+			if (di == "wx") pbc->SetParamBool("wx_dof", true);
+			if (di == "wy") pbc->SetParamBool("wy_dof", true);
+			if (di == "wz") pbc->SetParamBool("wz_dof", true);
 		}
 
 		// set the name
