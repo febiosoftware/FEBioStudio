@@ -348,7 +348,7 @@ endif()
 
 ##### Stupid OMP stuff for stupid macOS #####
 
-if(APPLE)
+if(UNIX)
     option(USE_MKL_OMP "Link to MKL OMP instead of System OMP" OFF)
     set(MKL_OMP "" CACHE PATH "Path to the MKL OMP library")
     mark_as_advanced(USE_MKL_OMP MKL_OMP)
@@ -580,15 +580,10 @@ if(USE_DICOM)
   target_link_libraries(${FBS_BIN_NAME} ${DICOM_LIBS})
 endif()
 
-if(APPLE)
+if(UNIX)
     if(${USE_MKL_OMP})
         target_link_libraries(${FBS_BIN_NAME} ${MKL_OMP})
     else()
-        target_link_libraries(${FBS_BIN_NAME} ${OpenMP_C_LIBRARIES})
-    endif()
-
-elseif(LINUX)
-    if(${OpenMP_C_FOUND})
         target_link_libraries(${FBS_BIN_NAME} ${OpenMP_C_LIBRARIES})
     endif()
 endif()
