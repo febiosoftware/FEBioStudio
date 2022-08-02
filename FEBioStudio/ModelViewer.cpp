@@ -540,12 +540,6 @@ void CModelViewer::OnDeleteItem()
 	GetMainWindow()->RedrawGL();
 }
 
-void CModelViewer::OnAddMaterial()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddMaterial_triggered();
-}
-
 void CModelViewer::OnUnhideAllObjects()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -624,30 +618,6 @@ void CModelViewer::OnUnhideAllParts()
 void CModelViewer::OnDeleteNamedSelection()
 {
 	OnDeleteItem();
-}
-
-void CModelViewer::OnAddInitialCondition()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddIC_triggered();
-}
-
-void CModelViewer::OnAddContact()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddContact_triggered();
-}
-
-void CModelViewer::OnAddConstraint()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddConstraint_triggered();
-}
-
-void CModelViewer::OnAddStep()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddStep_triggered();
 }
 
 void CModelViewer::OnHideObject()
@@ -1531,12 +1501,6 @@ void CModelViewer::OnRemoveAllSelections()
 	Update();
 }
 
-void CModelViewer::OnAddMeshAdaptor()
-{
-	CMainWindow* wnd = GetMainWindow();
-	wnd->on_actionAddMeshAdaptor_triggered();
-}
-
 void CModelViewer::OnDeleteAllMeshAdaptors()
 {
 
@@ -1615,7 +1579,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_MATERIAL_LIST:
 	{
-		menu.addAction("Add Material ...", this, SLOT(OnAddMaterial()));
+		menu.addAction("Add Material ...", wnd, SLOT(on_actionAddMaterial_triggered()));
 		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
 
 		QMenu* sub = new QMenu("Import Materials");
@@ -1654,19 +1618,19 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllLoads()));
 		break;
 	case MT_IC_LIST:
-		menu.addAction("Add Initial Condition ...", this, SLOT(OnAddInitialCondition()));
+		menu.addAction("Add Initial Condition ...", wnd, SLOT(on_actionAddIC_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllIC()));
 		break;
 	case MT_CONTACT_LIST:
-		menu.addAction("Add Contact Interface ...", this, SLOT(OnAddContact()));
+		menu.addAction("Add Contact Interface ...", wnd, SLOT(on_actionAddContact_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllContact()));
 		break;
 	case MT_CONSTRAINT_LIST:
 		menu.addAction("Add Surface Constraint ...", wnd, SLOT(OnAddSurfaceConstraint()));
 		menu.addAction("Add Body Constraint ..."   , wnd, SLOT(OnAddBodyConstraint()));
-		menu.addAction("Add General Constraint ...", this, SLOT(OnAddConstraint()));
+		menu.addAction("Add General Constraint ...", wnd, SLOT(on_actionAddGenericNLC_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllConstraints()));
 		break;
@@ -1679,7 +1643,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllRigidComponents()));
 		break;
 	case MT_STEP_LIST:
-		menu.addAction("Add Analysis Step ...", this, SLOT(OnAddStep()));
+		menu.addAction("Add Analysis Step ...", wnd, SLOT(on_actionAddStep_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllSteps()));
 		break;
@@ -1695,7 +1659,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
 		break;
 	case MT_MESH_ADAPTOR_LIST:
-		menu.addAction("Add Mesh Adaptor", this, SLOT(OnAddMeshAdaptor()));
+		menu.addAction("Add Mesh Adaptor", wnd, SLOT(on_actionAddMeshAdaptor_triggered()));
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllMeshAdaptors()));
 		break;
 	case MT_OBJECT:

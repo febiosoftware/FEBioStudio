@@ -400,7 +400,9 @@ public slots:
 	void on_actionAddRigidLoad_triggered();
 	void on_actionAddIC_triggered();
 	void on_actionAddContact_triggered();
-	void on_actionAddConstraint_triggered();
+	void on_actionAddSurfaceNLC_triggered();
+	void on_actionAddBodyNLC_triggered();
+	void on_actionAddGenericNLC_triggered();
 	void on_actionAddRigidBC_triggered();
 	void on_actionAddRigidIC_triggered();
 	void on_actionAddRigidConnector_triggered();
@@ -413,8 +415,6 @@ public slots:
     void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();
 	void on_actionSBMTable_triggered();
-	void OnAddSurfaceConstraint();
-	void OnAddBodyConstraint();
 
 	void on_actionCurveEditor_triggered();
 	void on_actionMeshInspector_triggered();

@@ -216,9 +216,15 @@ public:
 	QAction* actionAddNodalLoad;
 	QAction* actionAddSurfLoad;
 	QAction* actionAddBodyLoad;
+
 	QAction* actionAddIC;
+
 	QAction* actionAddContact;
-	QAction* actionAddConstraint;
+
+	QAction* actionAddSurfaceNLC;
+	QAction* actionAddBodyNLC;
+	QAction* actionAddGenericNLC;
+
 	QAction* actionAddRigidBC;
 	QAction* actionAddRigidIC;
 	QAction* actionAddRigidLoad;
@@ -514,7 +520,9 @@ public:
 		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
-		actionAddConstraint      = addAction("Add Constraint..."             , "actionAddConstraint");
+		actionAddSurfaceNLC      = addAction("Add Surface Constraint..."     , "actionAddSurfaceNLC");
+		actionAddBodyNLC         = addAction("Add Body Constraint..."        , "actionAddBodyNLC");
+		actionAddGenericNLC      = addAction("Add General Constraint..."     , "actionAddGenericNLC");
 		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
 		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
 		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
@@ -825,7 +833,9 @@ public:
 		menuPhysics->addAction(actionAddBodyLoad);
 		menuPhysics->addAction(actionAddIC);
 		menuPhysics->addAction(actionAddContact);
-		menuPhysics->addAction(actionAddConstraint);
+		menuPhysics->addAction(actionAddSurfaceNLC);
+		menuPhysics->addAction(actionAddBodyNLC);
+		menuPhysics->addAction(actionAddGenericNLC);
 		menuPhysics->addAction(actionAddRigidBC);
 		menuPhysics->addAction(actionAddRigidIC);
 		menuPhysics->addAction(actionAddRigidLoad);

@@ -430,7 +430,7 @@ void CMainWindow::on_actionAddContact_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddConstraint_triggered()
+void CMainWindow::on_actionAddGenericNLC_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
@@ -459,7 +459,7 @@ void CMainWindow::on_actionAddConstraint_triggered()
 	}
 }
 
-void CMainWindow::OnAddSurfaceConstraint()
+void CMainWindow::on_actionAddSurfaceNLC_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
@@ -505,7 +505,7 @@ void CMainWindow::OnAddSurfaceConstraint()
 	}
 }
 
-void CMainWindow::OnAddBodyConstraint()
+void CMainWindow::on_actionAddBodyNLC_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
