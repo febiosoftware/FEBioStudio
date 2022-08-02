@@ -1880,7 +1880,7 @@ public:
 	QToolButton* copy;
 	QToolButton* paste;
 	QToolButton* open;
-	QToolButton* close;
+	QToolButton* save;
 
 	CCurvePlotWidget* plt;
 
@@ -1932,8 +1932,8 @@ public:
 		open = new QToolButton; open->setObjectName("open");
 		open->setIcon(QIcon(":/icons/open.png"));
 
-		close = new QToolButton; open->setObjectName("close");
-		close->setIcon(QIcon(":/icons/save.png"));
+		save = new QToolButton; save->setObjectName("save");
+		save->setIcon(QIcon(":/icons/save.png"));
 
 		QHBoxLayout* curveLayout = new QHBoxLayout;
 		curveLayout->addWidget(new QLabel("Type:"));
@@ -1945,6 +1945,8 @@ public:
 		curveLayout->addWidget(math);
 		curveLayout->addWidget(copy);
 		curveLayout->addWidget(paste);
+		curveLayout->addWidget(open);
+		curveLayout->addWidget(save);
 		curveLayout->addStretch();
 
 		// plot widget
