@@ -86,7 +86,7 @@ void Post::shape_grad(FEPostModel& fem, int elem, double q[3], int nstate, vec3f
 	el.shape_deriv(Hr, Hs, Ht, q[0], q[1], q[2]);
 
 	// evaluate jacobian
-	mat3d J;
+	mat3d J; J.zero();
 	for (int i = 0; i<N; i++)
 	{
 		J[0][0] += x[i].x*Hr[i]; J[0][1] += x[i].x*Hs[i]; J[0][2] += x[i].x*Ht[i];
@@ -124,7 +124,7 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 	if (el.IsSolid() == false)
 	{
 		// for non-solid elements, let's return the identity for now
-		return mat3d(1.0,0.0,0.0, 0.0,1.0,0.0, 0.0,0.0,1.0);
+		return mat3d::identity();
 	}
 
 	// get the nodal positions
@@ -155,7 +155,7 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 	el.shape_deriv(Hr, Hs, Ht, r, s, t);
 
 	// evaluate jacobian
-	mat3d J;
+	mat3d J; J.zero();
 	for (int i=0; i<N; i++)
 	{
 		J[0][0] += X[i].x*Hr[i]; J[0][1] += X[i].x*Hs[i]; J[0][2] += X[i].x*Ht[i];
@@ -176,7 +176,7 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 	}
 
 	// evaluate deformation gradient F
-	mat3d F;
+	mat3d F; F.zero();
 	for (int i=0; i<N; i++)
 	{
 		F[0][0] += x[i].x*HX[i]; F[0][1] += x[i].x*HY[i]; F[0][2] += x[i].x*HZ[i];
