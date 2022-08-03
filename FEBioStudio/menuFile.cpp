@@ -270,6 +270,18 @@ void CMainWindow::on_actionSave_triggered()
 	if (fileName.empty()) on_actionSaveAs_triggered();
 	else
 	{
+		// if the extension is fsm, we are going to change it to fs2
+		size_t n = fileName.rfind('.');
+		if (n != string::npos)
+		{
+			string ext = fileName.substr(n);
+			if (ext == ".fsm")
+			{
+				on_actionSaveAs_triggered();
+				return;
+			}
+		}
+		
 		SaveDocument(QString::fromStdString(fileName));
 	}
 }
@@ -1141,6 +1153,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 		return;
 	}
 
+	string fileName = doc->GetDocTitle();
 	QString currentPath = ui->currentPath;
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
 	{
@@ -1154,6 +1167,16 @@ void CMainWindow::on_actionSaveAs_triggered()
 		{
 			QFileInfo fi(QString::fromStdString(docfile));
 			currentPath = fi.absolutePath();
+
+			size_t n = fileName.rfind('.');
+			if (n != string::npos)
+			{
+				string ext = fileName.substr(n);
+				if (ext == ".fsm")
+				{
+					fileName.replace(n, 4, ".fs2");
+				}
+			}
 		}
 	}
 
@@ -1161,7 +1184,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 	dlg.setDirectory(currentPath);
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
-	dlg.selectFile(QString::fromStdString(doc->GetDocTitle()));
+	dlg.selectFile(QString::fromStdString(fileName));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec())
 	{
