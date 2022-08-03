@@ -113,6 +113,7 @@ namespace FEBio {
 	std::vector<FEBioClassInfo> FindAllPluginClasses(int allocId);
 	std::vector<FEBioClassInfo> FindAllActiveClasses(int superId, int baseClassId = -1, unsigned int flags = ClassSearchFlags::AllFlags);
 	int GetClassId(int superClassId, const std::string& typeStr);
+	std::vector<std::string> GetModuleDependencies(int mod);
 
 	FEBioClassInfo GetClassInfo(int classId);
 

@@ -41,6 +41,7 @@ class Ui::CDlgEditProject
 {
 public:
 	QListWidget* list;
+	QLabel* m_dep;
 	
 public:
 	void setup(QDialog* dlg)
@@ -52,13 +53,22 @@ public:
 		QLabel* m = new QLabel("Modules:");
 		m->setAlignment(Qt::AlignLeft);
 
+		QHBoxLayout* h = new QHBoxLayout;
+		QLabel* d = new QLabel("Dependencies:");
+		h->addWidget(d);
+		h->addWidget(m_dep = new QLabel);
+		m_dep->setAlignment(Qt::AlignLeft);
+		h->addStretch();
+    
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		mainLayout->addWidget(m);
 		mainLayout->addWidget(list);
+		mainLayout->addLayout(h);
 		mainLayout->addWidget(bb);
 
 		dlg->setLayout(mainLayout);
 
+		QObject::connect(list, SIGNAL(currentRowChanged(int)), dlg, SLOT(on_selection_changed(int)));
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 	}
@@ -110,4 +120,18 @@ void CDlgEditProject::accept()
 	m_prj.SetModule(moduleId);
 
 	QDialog::accept();
+}
+
+void CDlgEditProject::on_selection_changed(int n)
+{
+	if (n < 0) ui->m_dep->setText("");
+	int m = ui->getModule();
+	vector<string> mods = FEBio::GetModuleDependencies(m);
+	QString s;
+	for (int i = 0; i < mods.size(); ++i)
+	{
+		s.append(QString::fromStdString(mods[i]));
+		if (i != mods.size() - 1) s.append(",");
+	}
+	ui->m_dep->setText(s);
 }

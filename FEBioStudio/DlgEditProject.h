@@ -42,6 +42,9 @@ public:
 
 	void accept();
 
+private slots:
+	void on_selection_changed(int n);
+
 private:
 	Ui::CDlgEditProject*	ui;
 	FSProject&				m_prj;

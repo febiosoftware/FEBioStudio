@@ -126,6 +126,20 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllActiveClasses(int superId, int 
 	return FindAllClasses(fecore.GetActiveModuleID(), superId, baseClassId, flags);
 }
 
+std::vector<std::string> FEBio::GetModuleDependencies(int mod)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	vector<int> mods;
+	mods = fecore.GetModuleDependencies(mod - 1);
+	vector<string> modNames;
+	for (int i = 0; i < mods.size(); ++i)
+	{
+		string si = fecore.GetModuleName(mods[i] - 1);
+		modNames.push_back(si);
+	}
+	return modNames;
+}
+
 std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, int baseClassId, unsigned int flags)
 {
 	vector<FEBio::FEBioClassInfo> facs;
