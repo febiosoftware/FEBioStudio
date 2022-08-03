@@ -207,8 +207,8 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
-	filters << "FEBioStudio Model (*.fsm *.fsprj)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
+	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
 	filters << "FEBioStudio Post Session (*.fsps)";
@@ -1160,7 +1160,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 	QFileDialog dlg;
 	dlg.setDirectory(currentPath);
 	dlg.setFileMode(QFileDialog::AnyFile);
-	dlg.setNameFilter("FEBio Studio Model (*.fsm)");
+	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
 	dlg.selectFile(QString::fromStdString(doc->GetDocTitle()));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec())
