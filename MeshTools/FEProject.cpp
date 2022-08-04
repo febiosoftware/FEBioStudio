@@ -1488,7 +1488,37 @@ bool FSProject::ConvertDiscrete(std::ostream& log)
 			if (pm)
 			{
 				FSDiscreteMaterial* febMat = FEBio::CreateDiscreteMaterial(pm->GetTypeString(), &fem);
-				copyParameters(log, febMat, pm);
+
+				if (dynamic_cast<FSNonLinearSpringMaterial*>(pm))
+				{
+					int m = pm->GetParam("measure")->GetIntValue();
+					double s = pm->GetParam("scale")->GetFloatValue();
+
+					Param* pF = pm->GetParam("force");
+					double F = pF->GetFloatValue();
+
+					febMat->SetParamInt("measure", m);
+					febMat->SetParamFloat("scale", s*F);
+
+					int lcid = pF->GetLoadCurveID();
+					if (lcid >= 0)
+					{
+						FEBioLoadController* plc = dynamic_cast<FEBioLoadController*>(fem.GetLoadControllerFromID(lcid));
+						LoadCurve& lc = *plc->CreateLoadCurve();
+
+						FEBioFunction1D* pf = dynamic_cast<FEBioFunction1D*>(FEBio::CreateFunction1D("point", &fem));
+						LoadCurve& f1d = *pf->CreateLoadCurve();
+						f1d = lc;
+						pf->UpdateData(true);
+
+						FSProperty* pForce = febMat->FindProperty("force"); assert(pForce);
+						if (pForce) pForce->SetComponent(pf);
+					}
+				}
+				else
+				{
+					copyParameters(log, febMat, pm);
+				}
 				ps->SetMaterial(febMat);
 				delete pm;
 			}

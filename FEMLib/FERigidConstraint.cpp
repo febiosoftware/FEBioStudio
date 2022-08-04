@@ -208,7 +208,7 @@ FSRigidForce::FSRigidForce(int bc, int matid, double v, int nstep) : FSRigidPres
 {
 	SetTypeString("Rigid force");
 
-	AddIntParam(bc, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
+	AddIntParam(bc, "dof", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
 	AddScienceParam(v, UNIT_FORCE, "value", "value");
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
 
