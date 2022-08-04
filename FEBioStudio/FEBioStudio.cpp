@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
         pixmap = QPixmap(":/icons/splash.png");
     else
         pixmap = QPixmap(":/icons/splash_hires.png");
-	pixmap.setDevicePixelRatio(pixelRatio);
+//	pixmap.setDevicePixelRatio(pixelRatio);
 	FBSSplashScreen splash(pixmap);
 	splash.show();
 
