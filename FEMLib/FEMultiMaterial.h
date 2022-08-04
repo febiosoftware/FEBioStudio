@@ -431,14 +431,14 @@ public:
 
     // get/set type (solute or sbm)
     void SetSpeciesType(int i) { SetIntValue(MP_TYPE, i); }
-    int GetSpeciesType() { return GetIntValue(MP_TYPE); }
+    int GetSpeciesType() const { return GetIntValue(MP_TYPE); }
 
     // get/set (solute or sbm) index
     void SetIndex(int i) { SetIntValue(MP_ID, i); }
-    int GetIndex() { return GetIntValue(MP_ID); }
+    int GetIndex() const { return GetIntValue(MP_ID); }
 
     // get stoichiometric coefficient
-    int GetCoef() { return GetIntValue(MP_NU); }
+    int GetCoef() const { return GetIntValue(MP_NU); }
     void SetCoeff(int n) { SetIntValue(MP_NU, n); }
 
 private:

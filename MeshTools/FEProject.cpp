@@ -714,9 +714,35 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 						const FSModelComponent* pcj = dynamic_cast<const FSModelComponent*>(prop.GetComponent(j));
 						if (pcj)
 						{
-							FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), pd->GetFSModel());
+							FSModel* fem = pd->GetFSModel();
+							FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), fem);
 							assert(pcn);
-							if (pcn)
+
+							if (dynamic_cast<const FSReactantMaterial*>(pcj))
+							{
+								const FSReactantMaterial* prm = dynamic_cast<const FSReactantMaterial*>(pcj);
+								int v = prm->GetIntValue(FSReactionSpecies::MP_NU);
+								int speciesType = prm->GetSpeciesType();
+								int index = prm->GetIndex();
+								const int solutes = fem->Solutes();
+								if (speciesType == FSReactionSpecies::SBM_SPECIES) index += solutes;
+								pcn->SetParamInt("vR", v);
+								pcn->SetParamInt("species", index);
+								pi->SetComponent(pcn, j);
+							}
+							else if (dynamic_cast<const FSProductMaterial*>(pcj))
+							{
+								const FSProductMaterial* ppm = dynamic_cast<const FSProductMaterial*>(pcj);
+								int v = ppm->GetIntValue(FSReactionSpecies::MP_NU);
+								int speciesType = ppm->GetSpeciesType();
+								int index = ppm->GetIndex();
+								const int solutes = fem->Solutes();
+								if (speciesType == FSReactionSpecies::SBM_SPECIES) index += solutes;
+								pcn->SetParamInt("vP", v);
+								pcn->SetParamInt("species", index);
+								pi->SetComponent(pcn, j);
+							}
+							else if (pcn)
 							{
 								copyModelComponent(log, pcn, pcj);
 								pi->SetComponent(pcn, j);
