@@ -1278,14 +1278,37 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 
 			if (febbc)
 			{
+				// TODO: Add support for concentrations
 				int bc = pbc->GetBC();
-
-				if (febbc->GetParam("dofs"))
+				switch (pbc->Type())
 				{
-					// TODO: This is not going to work for concentrations!
-					vector<int> dofs;
-					for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
-					febbc->SetParamVectorInt("dofs", dofs);
+				case FE_FIXED_DISPLACEMENT:
+					if (bc & 1) febbc->SetParamBool("x_dof", true);
+					if (bc & 2) febbc->SetParamBool("y_dof", true);
+					if (bc & 4) febbc->SetParamBool("z_dof", true);
+					break;
+				case FE_FIXED_ROTATION:
+					if (bc & 1) febbc->SetParamBool("u_dof", true);
+					if (bc & 2) febbc->SetParamBool("v_dof", true);
+					if (bc & 4) febbc->SetParamBool("w_dof", true);
+					break;
+				case FE_FIXED_SHELL_DISPLACEMENT:
+					if (bc & 1) febbc->SetParamBool("sx_dof", true);
+					if (bc & 2) febbc->SetParamBool("sy_dof", true);
+					if (bc & 4) febbc->SetParamBool("sz_dof", true);
+					break;
+				case FE_FIXED_FLUID_VELOCITY:
+					if (bc & 1) febbc->SetParamBool("wx_dof", true);
+					if (bc & 2) febbc->SetParamBool("wy_dof", true);
+					if (bc & 4) febbc->SetParamBool("wz_dof", true);
+					break;
+				case FE_FIXED_FLUID_PRESSURE:
+				case FE_FIXED_FLUID_DILATATION:
+				case FE_FIXED_TEMPERATURE:
+					// No need to do anything
+					break;
+				default:
+					log << "Unable to map degrees of freedom for " << pb->GetName() << std::endl;
 				}
 
 				// copy the name 
