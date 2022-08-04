@@ -697,6 +697,12 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						{
 							const char* szlc = tag.AttributeValue("lc");
 							int lc = atoi(szlc);
+							double v = 1.0;
+							tag.value(v);
+							if (v != 1.0)
+							{
+								FileReader()->AddLogEntry("Parameter \"%s\" value not mapped.", tag.Name());
+							}
 							Param* pp = pc->GetParam("points"); assert(pp);
 							GetFEBioModel().AddParamCurve(pp, lc - 1);
 						}
@@ -3241,7 +3247,57 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				pg->SetMaterial(pdm);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
-				ParseModelComponent(pdm, tag);
+
+				int m = 0;
+				double s = 1.0;
+
+				++tag;
+				do {
+					if      (tag == "measure") tag.value(m);
+					else if (tag == "scale") {
+						double v = 1; tag.value(v); s *= v;
+					}
+					else if (tag == "force")
+					{
+						FSProperty* prop = pdm->FindProperty("force"); assert(prop);
+						if (prop)
+						{
+							assert(prop->GetSuperClassID() == FEFUNCTION1D_ID);
+							FSModelComponent* pc = FEBio::CreateClass(FEFUNCTION1D_ID, "point", &fem); assert(pc);
+							if (pc)
+							{
+								prop->AddComponent(pc);
+
+								const char* szlc = tag.AttributeValue("lc", true);
+								if (szlc)
+								{
+									int lc = atoi(szlc);
+									double v = 1; tag.value(v);
+									s *= v;
+
+									Param* pp = pc->GetParam("points"); assert(pp);
+									GetFEBioModel().AddParamCurve(pp, lc - 1);
+								}
+								else
+								{
+									const char* sztype = tag.AttributeValue("type", true);
+									if (sztype)
+									{
+										ParseModelComponent(pc, tag);
+									}
+									else ParseUnknownTag(tag);
+								}
+							}
+							else ParseUnknownTag(tag);
+						}
+						else ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+
+				pdm->SetParamInt("measure", m);
+				pdm->SetParamFloat("scale", s);
+
 				set.push_back(pg);
 			}
 			else if (strcmp(sztype, "Hill") == 0)
