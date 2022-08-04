@@ -127,6 +127,11 @@ bool FEBioFormat25::ParseModuleSection(XMLTag &tag)
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
 
+	const char* sztype = atype.cvalue();
+	int moduleId = FEBio::GetModuleId(sztype);
+	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
+	FileReader()->GetProject().SetModule(moduleId, false);
+
 	// set the project's active modules
 /*
 	FSProject& prj = FileReader()->GetProject();
