@@ -579,22 +579,34 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 
 FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 {
+	vector<int> elemList;
+
 	ElementSet* set = m_part->FindElementSet(szname);
-	if (set == 0) return 0;
+	if (set)
+	{
+		// get the element list
+		elemList = set->elemList();
 
-	// get the element list
-	vector<int> elemList = set->elemList();
+		// these are element IDs. we need to convert them to indices
+		// TODO: implement this!
+		for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+	}
+	else
+	{
+		// could be a domain?
+		Domain* dom = m_part->FindDomain(szname);
 
-	// these are element IDs. we need to convert them to indices
-	// TODO: implement this!
-	for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+		// get the element list
+		elemList = dom->GetElementIDList();
+	}
+
+	if (elemList.empty()) return nullptr;
 
 	// create the part
 	FSPart* pg = new FSPart(m_po, elemList);
 
 	// copy the name
-	std::string name = set->name();
-	pg->SetName(name.c_str());
+	pg->SetName(szname);
 
 	// all done
 	return pg;
