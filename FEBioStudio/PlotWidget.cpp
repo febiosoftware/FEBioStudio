@@ -1901,8 +1901,8 @@ public:
 	{
 		// toolbar
 		lineType = new QComboBox; lineType->setObjectName("lineType");
-		lineType->addItem("Step");
 		lineType->addItem("Linear");
+		lineType->addItem("Step");
 		lineType->addItem("Smooth");
 		lineType->addItem("Cubic spline");
 		lineType->addItem("Control points");
