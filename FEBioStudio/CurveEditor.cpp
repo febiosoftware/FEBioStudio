@@ -121,8 +121,11 @@ void CCurveEditor::Update()
 	}
 }
 
-void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po)
+void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po, const std::string& name)
 {
+	string oname = name;
+	if (name.empty()) oname = po->GetName();
+
 	FSModel* fem = po->GetFSModel();
 	int np = po->Parameters();
 	for (int n = 0; n < np; ++n)
@@ -131,8 +134,8 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po)
 		if (p.GetLoadCurveID() > 0)
 		{
 			assert(p.IsVolatile());
-			string name = po->GetName() + "." + p.GetLongName();
-			ui->addTreeItem(t1, QString::fromStdString(name), &p);
+			string pname = oname + "." + p.GetLongName();
+			ui->addTreeItem(t1, QString::fromStdString(pname), &p);
 		}
 	}
 }
@@ -344,15 +347,23 @@ void CCurveEditor::BuildLoadCurves()
 */
 	}
 
-	// must point curves
-	for (int i = 0; i<fem.Steps(); ++i)
+	// skip initial step
+	for (int i = 1; i < fem.Steps(); ++i)
 	{
 		FSStep* pstep = fem.GetStep(i);
-		FSAnalysisStep* pas = dynamic_cast<FSAnalysisStep*>(pstep);
-		if (pas && pas->GetSettings().bmust)
+		BuildLoadCurves(t1, pstep);
+		for (int j = 0; j < pstep->Properties(); ++j)
 		{
-			string name = pas->GetName() + ".must point";
-			ui->addTreeItem(t1, QString::fromStdString(name));
+			FSProperty& prop = pstep->GetProperty(j);
+			if (prop.Size() != 0)
+			{
+				FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(prop.GetComponent());
+				if (pmc)
+				{
+					string name = pstep->GetName() + "." + prop.GetName();
+					BuildLoadCurves(t1, pmc, name);
+				}
+			}
 		}
 	}
 }
@@ -589,13 +600,26 @@ void CCurveEditor::BuildModelTree()
 	// must point curves
 	if (Filter(FLT_STEP))
 	{
+		// skip initial step
 		t2 = ui->addTreeItem(t1, "Steps");
-		for (int i = 0; i<fem.Steps(); ++i)
+		for (int i = 1; i<fem.Steps(); ++i)
 		{
 			FSStep* pstep = fem.GetStep(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pstep->GetName()));
-			FSAnalysisStep* pas = dynamic_cast<FSAnalysisStep*>(pstep);
-//			if (pas && pas->GetSettings().bmust) ui->addTreeItem(t3, "must point", pas->GetMustPointLoadCurve());
+			AddParameterList(t3, pstep);
+			for (int j = 0; j < pstep->Properties(); ++j)
+			{
+				FSProperty& prop = pstep->GetProperty(j);
+				if (prop.Size() != 0)
+				{
+					FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(prop.GetComponent());
+					if (pmc)
+					{
+						QTreeWidgetItem* t4 = ui->addTreeItem(t3, QString::fromStdString(prop.GetName()));
+						AddParameterList(t4, pmc);
+					}
+				}
+			}
 		}
 	}
 }

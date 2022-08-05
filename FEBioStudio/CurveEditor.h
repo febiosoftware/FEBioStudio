@@ -73,7 +73,7 @@ private:
 private:
 	void BuildLoadCurves();
 	void BuildModelTree();
-	void BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po);
+	void BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po, const std::string& name = "");
 	void BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, const std::string& name);
 
 private slots:
