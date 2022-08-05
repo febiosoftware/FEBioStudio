@@ -514,21 +514,7 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 			}
 		}
 
-		// parse material
-		if (strcmp(sztype, "rigid body") == 0)
-		{
-			// we need to see if the center_of_mass parameter was specified. 
-			bool autocom = true;
-			++tag;
-			do {
-				if (tag == "center_of_mass") autocom = false;
-				ReadParam(*pmat, tag);
-				++tag;
-			} 
-			while (!tag.isend());
-			pmat->SetParamBool("auto_com", autocom);
-		}
-		else ParseModelComponent(pmat, tag);
+		ParseModelComponent(pmat, tag);
 
 		// if pmat is set we need to add the material to the list
 		gmat = new GMaterial(pmat);

@@ -767,6 +767,17 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 	}
 }
 
+void copyRigidMaterial(std::ostream& log, FSRigidMaterial* prm, FSMaterial* febMat)
+{
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_DENSITY));
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_E));
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_V));
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_RC));
+
+	bool autoCom = prm->GetBoolValue(FSRigidMaterial::MP_COM);
+	febMat->SetParamBool("override_com", !autoCom);
+}
+
 void FSProject::ConvertMaterials(std::ostream& log)
 {
 	FSModel& fem = GetFSModel();
@@ -789,7 +800,10 @@ void FSProject::ConvertMaterials(std::ostream& log)
 			}
 			else
 			{
-				copyModelComponent(log, febMat, pm);
+				if (dynamic_cast<FSRigidMaterial*>(pm))
+					copyRigidMaterial(log, dynamic_cast<FSRigidMaterial*>(pm), febMat);
+				else
+					copyModelComponent(log, febMat, pm);
 				mat->SetMaterialProperties(febMat);
 			}
 		}
