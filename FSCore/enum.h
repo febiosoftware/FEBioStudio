@@ -481,10 +481,12 @@ SOFTWARE.*/
 #define CID_FC_SECTION				0x00110000
 
 // --- rigid constraints ---
-#define CID_RC_SECTION				0x00120000
+#define CID_RC_SECTION_OLD			0x00120000
 
 // --- rigid loads ---- (new in FBS2)
-#define CID_RL_SECTION				0x00121000
+#define CID_RBL_SECTION				0x00121000
+#define CID_RBC_SECTION				0x00122000
+#define CID_RBI_SECTION				0x00123000
 
 // --- rigid connectors ---
 #define CID_CONNECTOR_SECTION		0x00130000

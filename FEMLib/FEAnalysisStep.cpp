@@ -772,7 +772,7 @@ void FSStep::Save(OArchive &ar)
 	int nrc = RigidConstraints();
 	if (nrc > 0)
 	{
-		ar.BeginChunk(CID_RC_SECTION);
+		ar.BeginChunk(CID_RC_SECTION_OLD);
 		{
 			for (int i=0; i<nrc; ++i)
 			{
@@ -812,7 +812,7 @@ void FSStep::Save(OArchive &ar)
 	int nrl = RigidLoads();
 	if (nrl > 0)
 	{
-		ar.BeginChunk(CID_RL_SECTION);
+		ar.BeginChunk(CID_RBL_SECTION);
 		{
 			for (int i = 0; i < nrl; ++i)
 			{
@@ -821,6 +821,46 @@ void FSStep::Save(OArchive &ar)
 				ar.BeginChunk(ntype);
 				{
 					prl->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	// save the rigid conditions
+	int nrbc = RigidBCs();
+	if (nrbc > 0)
+	{
+		ar.BeginChunk(CID_RBC_SECTION);
+		{
+			for (int i = 0; i < nrbc; ++i)
+			{
+				FSRigidBC* prc = RigidBC(i);
+				int ntype = prc->Type();
+				ar.BeginChunk(ntype);
+				{
+					prc->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	// save the rigid initial conditions
+	int nric = RigidICs();
+	if (nric > 0)
+	{
+		ar.BeginChunk(CID_RBI_SECTION);
+		{
+			for (int i = 0; i < nric; ++i)
+			{
+				FSRigidIC* pic = RigidIC(i);
+				int ntype = pic->Type();
+				ar.BeginChunk(ntype);
+				{
+					pic->Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -1117,7 +1157,7 @@ void FSStep::Load(IArchive &ar)
 			}
 		}
 		break;
-		case CID_RC_SECTION: // rigid constraints
+		case CID_RC_SECTION_OLD: // rigid constraints
 			{
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
@@ -1138,7 +1178,7 @@ void FSStep::Load(IArchive &ar)
 					else
 					{
 						FSRigidConstraint* rc = fscore_new<FSRigidConstraint>(fem, FERIGIDBC_ID, ntype); assert(rc);
-						if (rc == nullptr) ar.log("error parsing CID_RC_SECTION in FSStep::Load");
+						if (rc == nullptr) ar.log("error parsing CID_RC_SECTION_OLD in FSStep::Load");
 
 						if (rc)
 						{
@@ -1171,7 +1211,7 @@ void FSStep::Load(IArchive &ar)
                 }
             }
             break;
-        case CID_RL_SECTION: // rigid loads
+        case CID_RBL_SECTION: // rigid loads
             {
                 while (IArchive::IO_OK == ar.OpenChunk())
                 {
@@ -1190,7 +1230,44 @@ void FSStep::Load(IArchive &ar)
                 }
             }
             break;
-		case CID_MESH_ADAPTOR_SECTION:
+		case CID_RBC_SECTION: // rigid body constraints
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int ntype = ar.GetChunkID();
+
+				FEBioRigidBC* pc = fscore_new<FEBioRigidBC>(fem, FEBC_ID, ntype); assert(pc);
+				if (pc == nullptr) ar.log("error parsing CID_RBC_SECTION FSStep::Load");
+
+				if (pc)
+				{
+					pc->Load(ar);
+					AddRigidBC(pc);
+				}
+
+				ar.CloseChunk();
+			}
+		}
+		break;
+		case CID_RBI_SECTION: // rigid body initial conditions
+		{
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				int ntype = ar.GetChunkID();
+
+				FEBioRigidIC* ic = fscore_new<FEBioRigidIC>(fem, FEIC_ID, ntype); assert(ic);
+				if (ic == nullptr) ar.log("error parsing CID_RBI_SECTION FSStep::Load");
+
+				if (ic)
+				{
+					ic->Load(ar);
+					AddRigidIC(ic);
+				}
+
+				ar.CloseChunk();
+			}
+		}
+		break;		case CID_MESH_ADAPTOR_SECTION:
 		{
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
