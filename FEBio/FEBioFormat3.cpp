@@ -253,7 +253,9 @@ FSStep* FEBioFormat3::NewStep(FSModel& fem, const std::string& typeStr, const ch
 struct OldParam {
 	const char* propName;
 	const char* szparamName;
+	int	ntype;
 	int vi;
+	double	vd;
 };
 
 // in FEBioFormat.cpp
@@ -277,7 +279,13 @@ void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 			{
 				int v;
 				tag.value(v);
-				oldParams.push_back(OldParam{ "qn_method", "max_ups", v });
+				oldParams.push_back(OldParam{ "qn_method", "max_ups", Param_INT, v });
+			}
+			else if (tag == "cmax")
+			{
+				double cmax = 0;
+				tag.value(cmax);
+				oldParams.push_back(OldParam{ "qn_method", "cmax", Param_FLOAT, 0, cmax });
 			}
 			else if (tag == "qnmethod")
 			{
@@ -343,7 +351,16 @@ void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 				pp = pc->GetParam(pi.szparamName);
 		}
 		else pp = pmc->GetParam(pi.szparamName);
-		if (pp) pp->SetIntValue(pi.vi);
+		if (pp)
+		{
+			switch (pi.ntype)
+			{
+			case Param_INT: pp->SetIntValue(pi.vi); break;
+			case Param_FLOAT: pp->SetFloatValue(pi.vd); break;
+			default:
+				assert(false);
+			}
+		}
 		else
 		{
 			AddLogEntry("Failed to map old parameter %s", pi.szparamName);
