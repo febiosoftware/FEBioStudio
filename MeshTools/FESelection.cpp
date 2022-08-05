@@ -87,7 +87,7 @@ FEItemListBuilder* GObjectSelection::CreateItemList()
 		if (po->IsSelected())
 		{
 			int parts = po->Parts();
-			for (int j = 0; j < parts; ++j) partList->add(po->Part(i)->GetID());
+			for (int j = 0; j < parts; ++j) partList->add(po->Part(j)->GetID());
 		}
 	}
 	return partList;
