@@ -498,6 +498,17 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 			{
 				p->SetFlags(param.GetFlags());
 				if (param.units()) p->SetUnit(param.units());
+
+				// copy the watch variable
+				if (param.GetWatchVariable())
+				{
+					bool* pb = param.GetWatchVariable();
+					FEParam* pw = PL.FindFromData(pb); assert(pw);
+					if (pw) {
+						Param* pp = po->GetParam(pw->name()); assert(pp);
+						if (pp) p->SetWatchVariable(pp);
+					}
+				}
 			}
 		}
 	}

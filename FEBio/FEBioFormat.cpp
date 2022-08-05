@@ -444,8 +444,17 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		}
 	}
 
+	// NOTE: Is this still used? I think this was an initial attempt
+	//       for creating watched variables.
 	// if parameter is checkable, mark it as checked
 	if (pp->IsCheckable()) pp->SetChecked(true);
+
+	// If the parameter is watched, set the watch variable to true to indicate the
+	// parameter was set in the input file. 
+	if (pp->IsWatched())
+	{
+		pp->SetWatchFlag(true);
+	}
 
 	return true;
 }

@@ -904,7 +904,7 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 	for (int i = 0; i < pm->Parameters(); ++i)
 	{
 		Param& p = pm->GetParam(i);
-		if (p.GetFlags() & 0x01)
+		if (p.GetFlags() & FS_PARAM_ATTRIBUTE)
 		{
 			switch (p.GetParamType())
 			{

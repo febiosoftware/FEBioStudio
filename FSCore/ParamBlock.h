@@ -80,7 +80,9 @@ enum Param_Flags {
 	FS_PARAM_USER      = 0x02,		// user parameter (owned by parameter list)	
 	FS_PARAM_HIDDEN    = 0x04,		// Hides parameter (in FEBio Studio)
 	FS_PARAM_ADDLC     = 0x08,		// parameter should get a default load curve in FEBio Studio
-	FS_PARAM_VOLATILE  = 0x10		// parameter can change (e.g. via a load curve)
+	FS_PARAM_VOLATILE  = 0x10,		// parameter can change (e.g. via a load curve)
+	FS_PARAM_TOPLEVEL  = 0x20,		// parameter should only defined at top-level (materials only)
+	FS_PARAM_WATCH	   = 0x40		// This is a watch parameter 
 };
 
 //-----------------------------------------------------------------------------
@@ -235,6 +237,12 @@ public:
 	size_t size() const;
 
 public:
+	void SetWatchVariable(Param* watchVar);
+	bool IsWatched() const;
+	void SetWatchFlag(bool b);
+	bool GetWatchFlag() const;
+
+public:
 	void SetParameterGroup(int n);
 	int GetParameterGroup() const;
 
@@ -265,6 +273,8 @@ protected:
     const char* m_szindx;   // name of index
     int			m_nindx;    // index value
 	bool		m_bcopy;	// copy enum values
+
+	Param*	m_watch;	// watch variable
 
 	Param_Type	m_varType;	// if set, the parameter can have different types. 
 
