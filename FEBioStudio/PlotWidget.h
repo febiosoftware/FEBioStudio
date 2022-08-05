@@ -372,6 +372,7 @@ public slots:
 	void on_paste_clicked(bool b);
 	void on_open_clicked(bool b);
 	void on_save_clicked(bool b);
+	void on_clear_clicked();
 
 signals:
 	void dataChanged();

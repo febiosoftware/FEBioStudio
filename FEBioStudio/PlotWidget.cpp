@@ -49,12 +49,14 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QComboBox>
 #include <QLabel>
+#include <QMessageBox>
 #include <QtCore/QMimeData>
 #include <FSCore/LoadCurve.h>
 #include "MainWindow.h"	// for CResource
 #include "DlgFormula.h"
 #include "Command.h"
 #include "DlgImportData.h"
+#include "IconProvider.h"
 
 using namespace std;
 
@@ -1995,6 +1997,11 @@ public:
 		map->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
 		map->setToolTip("<font color=\"black\">Map to rectangle");
 
+		QToolButton* clear = new QToolButton; clear->setObjectName("clear");
+		clear->setAutoRaise(true);
+		clear->setIcon(CIconProvider::GetIcon("delete"));
+		clear->setToolTip("<font color=\"black\">Clear the curve");
+
 		pltbutton = new QHBoxLayout;
 		pltbutton->addWidget(xval);
 		pltbutton->addWidget(yval);
@@ -2005,6 +2012,7 @@ public:
 		pltbutton->addWidget(zoomy);
 		pltbutton->addWidget(zoom);
 		pltbutton->addWidget(map);
+		pltbutton->addWidget(clear);
 		pltbutton->addStretch();
 		pltbutton->setSpacing(2);
 
@@ -2667,6 +2675,19 @@ void CCurveEditWidget::on_save_clicked(bool b)
 		}
 	}
 }
+
+void CCurveEditWidget::on_clear_clicked()
+{
+	LoadCurve* plc = ui->plt->GetLoadCurve();
+	if (plc == nullptr) return;
+
+	if (QMessageBox::question(this, "Clear Curve", "Are you sure you to clear all points on the curve?") == QMessageBox::Yes)
+	{
+		plc->Clear();
+		SetLoadCurve(plc);
+	}
+}
+
 
 //=============================================================================
 CMathPlotWidget::CMathPlotWidget(QWidget* parent) : CPlotWidget(parent)
