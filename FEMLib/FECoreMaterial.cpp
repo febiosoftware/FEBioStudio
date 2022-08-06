@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "FEMKernel.h"
 #include <FECore/fecore_enum.h>
 #include <FECore/units.h>
+#include <FEBioLink/FEBioInterface.h>
 
 //=============================================================================
 // FSAxisMaterial
@@ -486,34 +487,18 @@ void FSMaterial::Save(OArchive& ar)
 				// store the property name
 				ar.WriteChunk(CID_MAT_PROPERTY_NAME, mpi.GetName());
 
-				// store the property data
-				ar.BeginChunk(CID_MAT_PROPERTY_MAT);
+				ar.BeginChunk(CID_MATERIAL_COMPONENT);
 				{
 					for (int j = 0; j < mpi.Size(); ++j)
 					{
-						FSMaterial* pm = dynamic_cast<FSMaterial*>(mpi.GetComponent(j));
-						if (pm)
+						FSModelComponent* pc = dynamic_cast<FSModelComponent*>(mpi.GetComponent(j));
+						if (pc)
 						{
-							ar.BeginChunk(pm->Type());
+							string typeStr = pc->GetTypeString();
+							ar.WriteChunk(CID_MATERIAL_COMPONENT_TYPE, typeStr);
+							ar.BeginChunk(CID_MATERIAL_COMPONENT_DATA);
 							{
-								pm->Save(ar);
-							}
-							ar.EndChunk();
-						}
-					}
-				}
-				ar.EndChunk();
-
-				ar.BeginChunk(CID_MAT_PROPERTY_MATPROP);
-				{
-					for (int j = 0; j < mpi.Size(); ++j)
-					{
-						FSMaterialProperty* pp = dynamic_cast<FSMaterialProperty*>(mpi.GetComponent(j));
-						if (pp)
-						{
-							ar.BeginChunk(pp->Type());
-							{
-								pp->Save(ar);
+								pc->Save(ar);
 							}
 							ar.EndChunk();
 						}
@@ -723,6 +708,29 @@ void FSMaterial::Load(IArchive &ar)
 									n++;
 								}
 							}
+							ar.CloseChunk();
+						}
+					}
+					else if (CID_MATERIAL_COMPONENT)
+					{
+						string typeString;
+						while (IArchive::IO_OK == ar.OpenChunk())
+						{
+							int cid = ar.GetChunkID();
+							switch (cid)
+							{
+							case CID_MATERIAL_COMPONENT_TYPE: ar.read(typeString); break;
+							case CID_MATERIAL_COMPONENT_DATA:
+								assert(prop);
+								if (prop)
+								{
+									FSModelComponent* pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, fem); assert(pmc);
+									pmc->Load(ar);
+									prop->AddComponent(pmc);
+								}
+								break;
+							}
+
 							ar.CloseChunk();
 						}
 					}
