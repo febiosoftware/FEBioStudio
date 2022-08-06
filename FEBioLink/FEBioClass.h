@@ -62,6 +62,7 @@ class FESolidFormulation;
 class FEShellFormulation;
 class FEBeamFormulation;
 class FSMeshAdaptor;
+class FSVec3dValuator;
 
 namespace FEBio {
 
@@ -156,6 +157,7 @@ namespace FEBio {
 	FEShellFormulation*  CreateShellFormulation (const std::string& typeStr, FSModel* fem);
 	FESolidFormulation*  CreateSolidFormulation (const std::string& typeStr, FSModel* fem);
 	FEBeamFormulation*   CreateBeamFormulation  (const std::string& typeStr, FSModel* fem);
+	FSVec3dValuator*     CreateVec3dValuator    (const std::string& typeStr, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL);
 	FSModelComponent* CreateClass(int classId, FSModel* fem, unsigned int flags = 0);
@@ -175,6 +177,7 @@ namespace FEBio {
 	// Call this to initialize default properties
 	bool InitDefaultProps(FSModelComponent* pc);
 
+	bool UpdateFEBioClass(FSModelComponent* pc);
 	void UpdateFEBioMaterial(FEBioMaterial* pm);
 	void UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm);
 

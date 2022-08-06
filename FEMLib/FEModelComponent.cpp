@@ -33,6 +33,12 @@ SOFTWARE.*/
 FSModelComponent::FSModelComponent(FSModel* fem) : m_fem(fem)
 {
 	m_superClassID = -1;
+	m_febClass = nullptr;
+}
+
+FSModelComponent::~FSModelComponent()
+{
+	if (m_febClass) FEBio::DeleteClass(m_febClass);
 }
 
 FSModel* FSModelComponent::GetFSModel()
@@ -79,6 +85,26 @@ void FSModelComponent::AssignLoadCurve(Param& p, LoadCurve& lc)
 	FSLoadController* plc = fem->AddLoadCurve(lc);
 	if (plc) p.SetLoadCurveID(plc->GetID());
 }
+
+void FSModelComponent::SetFEBioClass(void* pc)
+{
+	m_febClass = pc;
+}
+
+void* FSModelComponent::GetFEBioClass()
+{
+	return m_febClass;
+}
+
+bool FSModelComponent::UpdateData(bool bsave)
+{
+	if (m_febClass)
+	{
+		return FEBio::UpdateFEBioClass(this);
+	}
+	return false;
+}
+
 
 //==============================================================================
 void SaveClassMetaData(FSModelComponent* pc, OArchive& ar)
@@ -236,4 +262,18 @@ void FSGenericClass::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
+
+	// mape parameters to FEBio class
+	UpdateData(true);
+}
+
+//===============================================================================
+FSVec3dValuator::FSVec3dValuator(FSModel* fem) : FSGenericClass(fem)
+{
+	SetSuperClassID(FEVEC3DVALUATOR_ID);
+}
+
+vec3d FSVec3dValuator::GetFiberVector(const vec3d& p)
+{
+	return FEBio::GetMaterialFiber(GetFEBioClass(), p);
 }

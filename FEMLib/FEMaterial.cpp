@@ -3407,14 +3407,18 @@ void FEBioMaterial::SetTypeString(const std::string& s)
 
 vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 {
+	vec3d v(0, 0, 0);
+
 	FSProperty* pm = FindProperty("fiber");
-	FEBioMaterial* fiber = dynamic_cast<FEBioMaterial*>(pm->GetComponent());
+	FSVec3dValuator* fiber = dynamic_cast<FSVec3dValuator*>(pm->GetComponent());
+	if (fiber)
+	{
+		// evaluate the element's center
+		vec3d p = el.center();
 
-	// evaluate the element's center
-	vec3d p = el.center();
-
-	// evaluate the fiber direction
-	vec3d v;// = FEBio::GetMaterialFiber(fiber->m_febClass->GetFEBioClass(), p);
+		// evaluate the fiber direction
+		v = fiber->GetFiberVector(p);
+	}
 	return v;
 }
 
