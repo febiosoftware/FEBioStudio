@@ -717,6 +717,8 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 		}
 		++tag;
 	} while (!tag.isend());
+
+	pmc->UpdateData(true);
 }
 
 //=============================================================================
