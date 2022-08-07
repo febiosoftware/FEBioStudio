@@ -2881,7 +2881,49 @@ void CGLView::RenderImageData()
 	glPopMatrix();
 }
 
-void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
+//=======================================================================================
+static GLColor fiberColorPalette[GMaterial::MAX_COLORS] = {
+	GLColor(255, 128, 128),
+	GLColor(128, 255, 128),
+	GLColor(128, 128, 255),
+	GLColor(0, 240, 240),
+	GLColor(240, 180, 0),
+	GLColor(240, 0, 180),
+	GLColor(180, 240, 0),
+	GLColor(0, 240, 180),
+	GLColor(180, 0, 240),
+	GLColor(0, 180, 240),
+	GLColor(0, 180, 0),
+	GLColor(0, 0, 180),
+	GLColor(180, 180, 0),
+	GLColor(0, 180, 180),
+	GLColor(180, 0, 180),
+	GLColor(120, 0, 240)
+};
+
+class GLFiberRenderer
+{
+public:
+	GLFiberRenderer(CGLView* view) : m_view(view) {}
+	void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c);
+
+public:
+	void SetColorOption(int n) { m_colorOption = n; }
+	void SetDefaultColor(GLColor c) { m_defaultCol = c; }
+	void SetScaleFactor(double s) { m_scale = s; }
+	void SetLineStyle(int n) { m_lineStyle = n; }
+	void SetLineWidth(double l) { m_lineWidth = l; }
+
+private:
+	CGLView* m_view;
+	int		m_colorOption = 0;
+	int		m_lineStyle = 0;
+	double	m_lineWidth = 1.0;
+	GLColor	m_defaultCol;
+	double	m_scale = 1.0;
+};
+
+void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c)
 {
 	if (pmat->HasFibers())
 	{
@@ -2895,25 +2937,61 @@ void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& 
 			q = po->GetTransform().LocalToGlobalNormal(q);
 		}
 
-		double r = fabs(q.x);
-		double g = fabs(q.y);
-		double b = fabs(q.z);
+		GLColor col = m_defaultCol;
+		if (m_colorOption == 0)
+		{
+			Byte r = (Byte)(255*fabs(q.x));
+			Byte g = (Byte)(255*fabs(q.y));
+			Byte b = (Byte)(255*fabs(q.z));
+			col = GLColor(r, g, b);
+		}
 
-		glColor3d(r, g, b);
+		vec3d p0 = c - q * (m_scale * 0.5);
+		vec3d p1 = c + q * (m_scale * 0.5);
 
-		vec3d p0 = c - q * (h*0.5);
-		vec3d p1 = c + q * (h*0.5);
-		glVertex3d(p0.x, p0.y, p0.z);
-		glVertex3d(p1.x, p1.y, p1.z);
+		glColor3ub(col.r, col.g, col.b);
+		if (m_lineStyle == 0)
+		{
+			glVertex3d(p0.x, p0.y, p0.z);
+			glVertex3d(p1.x, p1.y, p1.z);
+		}
+		else
+		{
+			glPushMatrix();
+
+			glTranslatef(p0.x, p0.y, p0.z);
+			quatd Q(vec3d(0, 0, 1), q);
+			double w = Q.GetAngle();
+			if (fabs(w) > 1e-6)
+			{
+				vec3d p = Q.GetVector();
+				if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
+				else glRotated(w * 180 / PI, 1, 0, 0);
+			}
+
+			GLUquadricObj* pglyph = gluNewQuadric();
+			gluQuadricNormals(pglyph, GLU_SMOOTH);
+
+			gluCylinder(pglyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
+
+			gluDeleteQuadric(pglyph);
+
+			glPopMatrix();
+		}
 	}
 
+	int index = 0;
 	for (int i = 0; i < pmat->Properties(); ++i)
 	{
 		FSProperty& prop = pmat->GetProperty(i);
-		for (int j = 0; j < prop.Size(); ++j)
+		for (int j = 0; j < prop.Size(); ++j, ++index)
 		{
 			FSMaterial* matj = pmat->GetMaterialProperty(i, j);
-			if (matj) RenderFiber(po, matj, rel, c, h);
+			if (matj)
+			{
+				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+				RenderFiber(po, matj, rel, c);
+			}
 		}
 	}
 }
@@ -2931,14 +3009,24 @@ void CGLView::RenderMaterialFibers()
 
 	FEElementRef rel;
 
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
 	BOX box = model.GetBoundingBox();
-	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;
+	double h = 0.05*box.GetMaxExtent();
 
-	glBegin(GL_LINES);
+	GLFiberRenderer fiberRender(this);
+	fiberRender.SetScaleFactor(h * view.m_fiber_scale);
+	fiberRender.SetLineWidth(h*view.m_fiber_width *0.1);
+	fiberRender.SetColorOption(view.m_fibColor);
+	fiberRender.SetLineStyle(view.m_fibLineStyle);
+
+	int index = 0;
+	glEnable(GL_COLOR_MATERIAL);
+	if (view.m_fibLineStyle == 0)
+	{
+		glPushAttrib(GL_ENABLE_BIT);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		glBegin(GL_LINES);
+	}
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2961,6 +3049,8 @@ void CGLView::RenderMaterialFibers()
 						FSMaterial* pmat = 0;
 						if (pgm) pmat = pgm->GetMaterialProperties();
 
+						fiberRender.SetDefaultColor(pgm->Diffuse());
+
 						rel.m_nelem = j;
 						if (pmat)
 						{
@@ -2973,16 +3063,18 @@ void CGLView::RenderMaterialFibers()
 							c = po->GetTransform().LocalToGlobal(c);
 
 							// render the fiber
-							RenderFiber(po, pmat, rel, c, h);
+							fiberRender.RenderFiber(po, pmat, rel, c);
 						}
 					}
 				}
 			}
 		}
 	}
-	glEnd(); // GL_LINES
-
-	glPopAttrib();
+	if (m_view.m_fibLineStyle == 0)
+	{
+		glEnd(); // GL_LINES
+		glPopAttrib();
+	}
 }
 
 void CGLView::RenderLocalMaterialAxes()

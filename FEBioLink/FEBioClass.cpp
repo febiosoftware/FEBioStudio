@@ -867,13 +867,28 @@ void map_parameters(FSModelComponent* pc, FECoreBase* pf)
 		FEParam* pp = pf->FindParameter(p.GetShortName());
 		if (pp)
 		{
-			switch (p.GetParamType())
+			if (p.IsVariable() == false)
 			{
-			case Param_BOOL  : pp->value<bool>       () = p.GetBoolValue  (); break;
-			case Param_INT   : pp->value<int>        () = p.GetIntValue   (); break;
-			case Param_FLOAT : pp->value<double>     () = p.GetFloatValue (); break;
-			case Param_VEC3D : pp->value<vec3d>      () = p.GetVec3dValue (); break;
-			case Param_STRING: pp->value<std::string>() = p.GetStringValue(); break;
+				switch (p.GetParamType())
+				{
+				case Param_BOOL  : pp->value<bool       >() = p.GetBoolValue  (); break;
+				case Param_INT   : pp->value<int        >() = p.GetIntValue   (); break;
+				case Param_FLOAT : pp->value<double     >() = p.GetFloatValue (); break;
+				case Param_VEC3D : pp->value<vec3d      >() = p.GetVec3dValue (); break;
+				case Param_STRING: pp->value<std::string>() = p.GetStringValue(); break;
+				}
+			}
+			else
+			{
+				if (pp->type() == FE_PARAM_DOUBLE_MAPPED)
+				{
+					if (p.GetParamType() == Param_FLOAT)
+					{
+						double w = p.GetFloatValue();
+						FEParamDouble& v = pp->value<FEParamDouble>();
+						v = w;
+					}
+				}
 			}
 		}
 	}

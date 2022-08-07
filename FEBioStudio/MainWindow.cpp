@@ -1762,7 +1762,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("lighting", vs.m_bLighting);
 	settings.setValue("shadows", vs.m_bShadows);
 	settings.setValue("multiViewProjection", vs.m_nconv);
-	settings.setValue("showMaterialFibers", vs.m_bfiber);
+//	settings.setValue("showMaterialFibers", vs.m_bfiber);
 	settings.setValue("showMaterialAxes", vs.m_blma);
 	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
@@ -1859,8 +1859,8 @@ void CMainWindow::readSettings()
 	vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 	vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
 	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
-	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
-	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
+//	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
+//	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
 	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
@@ -1968,7 +1968,6 @@ void CMainWindow::UpdateToolbar()
 	if (doc->IsValid() == false) return;
 
 	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
-	if (view.m_bfiber != ui->actionShowFibers->isChecked()) ui->actionShowFibers->trigger();
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();

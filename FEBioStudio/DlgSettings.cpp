@@ -124,7 +124,6 @@ public:
 		addBoolProperty  (&m_showRigidJoints, "Show rigid joints");
 		addBoolProperty  (&m_showRigidLabels, "Show rigid labels");
 		addBoolProperty  (&m_showRigidWalls , "Show rigid walls" );
-		addBoolProperty  (&m_showFibers     , "Show material fibers");
 		addDoubleProperty(&m_fiberScale   , "Fiber scale factor"  );
 		addBoolProperty  (&m_showMatAxes  ,"Show material axes"   );
 		addBoolProperty  (&m_showHiddenFibers, "Show fibers/axes on hidden parts");
@@ -135,7 +134,6 @@ public:
 	bool	m_showRigidJoints;
 	bool	m_showRigidLabels;
 	bool	m_showRigidWalls;
-	bool	m_showFibers;
 	bool	m_showMatAxes;
 	double	m_fiberScale;
 	bool	m_showHiddenFibers;
@@ -1033,7 +1031,6 @@ void CDlgSettings::UpdateSettings()
 	ui->m_physics->m_showRigidJoints = view.m_bjoint;
 	ui->m_physics->m_showRigidLabels = view.m_showRigidLabels;
 	ui->m_physics->m_showRigidWalls = view.m_bwall;
-	ui->m_physics->m_showFibers = view.m_bfiber;
 	ui->m_physics->m_fiberScale = view.m_fiber_scale;
 	ui->m_physics->m_showMatAxes = view.m_blma;
 	ui->m_physics->m_showHiddenFibers = view.m_showHiddenFibers;
@@ -1149,7 +1146,6 @@ void CDlgSettings::apply()
 	view.m_bjoint = ui->m_physics->m_showRigidJoints;
 	view.m_showRigidLabels = ui->m_physics->m_showRigidLabels;
 	view.m_bwall = ui->m_physics->m_showRigidWalls;
-	view.m_bfiber = ui->m_physics->m_showFibers;
 	view.m_fiber_scale = ui->m_physics->m_fiberScale;
 	view.m_blma = ui->m_physics->m_showMatAxes;
 	view.m_showHiddenFibers = ui->m_physics->m_showHiddenFibers;

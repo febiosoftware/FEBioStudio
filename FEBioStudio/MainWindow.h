@@ -477,7 +477,7 @@ public slots:
 	void on_actionBackfaceCulling_toggled(bool b);
 	void on_actionViewSmooth_toggled(bool bchecked);
 	void on_actionShowNormals_toggled(bool b);
-	void on_actionShowFibers_toggled(bool b);
+	void on_actionShowFibers_triggered();
 	void on_actionShowMatAxes_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
 	void on_actionToggleLight_triggered();

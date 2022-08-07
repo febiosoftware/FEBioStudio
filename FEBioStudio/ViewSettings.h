@@ -58,10 +58,15 @@ struct VIEW_SETTINGS
 	bool	m_bjoint;	//!< show rigid joints
 	bool	m_bwall;	//!< show rigid walls
 	bool	m_brigid;	//!< show rigid kinematics
+	
 	bool	m_bfiber;	//!< show material fibers
+	int		m_fibColor;
+	int		m_fibLineStyle;
+
 	bool	m_bcontour;	//!< show contour plot
 	bool	m_blma;		//!< show local material axes
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
+	double	m_fiber_width;	//!< line width
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
 	bool	m_showDiscrete;		//!< render discrete sets
 	bool	m_showRigidLabels;	//!< show labels on rigid bodies

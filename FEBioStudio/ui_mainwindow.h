@@ -79,6 +79,7 @@ SOFTWARE.*/
 #include "WebDefines.h"
 #include "FEBioJobManager.h"
 #include "XMLDocument.h"
+#include "DlgFiberViz.h"
 #include <vector>
 
 class QProcess;
@@ -181,6 +182,7 @@ public:
 	::CTimelinePanel*	timePanel;
     ::CImagePanel*	imagePanel;
     ::CImageSettingsPanel*	imageSettingsPanel;
+	::CDlgFiberViz* fiberViz;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -316,6 +318,7 @@ public:
 
 		measureTool = nullptr;
 		planeCutTool = nullptr;
+		fiberViz = nullptr;
 
 		m_showNewDialog = true;
 	}
@@ -620,7 +623,7 @@ public:
 		actionOrtho           = addAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
 		actionRenderMode      = addAction("Toggle Render Mode", "actionRenderMode"); actionRenderMode->setCheckable(true); actionRenderMode->setShortcut(Qt::Key_W);
-		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
+		actionShowFibers      = addAction("Show Fibers", "actionShowFibers");
 		actionShowMatAxes     = addAction("Toggle Material Axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
 		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);

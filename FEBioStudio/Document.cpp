@@ -83,9 +83,13 @@ void VIEW_SETTINGS::Defaults(int ntheme)
 	m_bwall = true;
 	m_brigid = true;
 	m_bfiber = false;
+	m_fibColor = 0;
+	m_fibLineStyle = 0;
+	m_fiber_scale = 1.0;
+	m_fiber_width = 1.0;
+
 	m_bcontour = false;
 	m_blma = false;
-	m_fiber_scale = 1.0;
 	m_showHiddenFibers = false;
 	m_showDiscrete = true;
 	m_showRigidLabels = false;
