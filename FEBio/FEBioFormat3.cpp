@@ -2731,8 +2731,7 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				}
                 else if (bc == "q")
                 {
-					pic = FEBio::CreateInitialCondition("initial fluid pressure", &fem);
-					pic->SetParamBool("shell_bottom", true);
+					pic = FEBio::CreateInitialCondition("initial shell fluid pressure", &fem);
 					pic->SetParamFloat("value", val);
 				}
                 else if (bc == "vx")
