@@ -144,15 +144,14 @@ int main(int argc, char* argv[])
 	
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
-	QDir febioDir(QApplication::applicationDirPath());
-	febioDir.cd("../febio");
-	string febdir = QDir::toNativeSeparators(febioDir.absolutePath()).toStdString();
-	FSDir::setMacro("FEBioDir", febdir);
-
 	// show the splash screen
-	QPixmap pixmap(":/icons/splash.png");
+    QPixmap pixmap;
 	qreal pixelRatio = app.devicePixelRatio();
-	pixmap.setDevicePixelRatio(pixelRatio);
+    if (pixelRatio == 1)
+        pixmap = QPixmap(":/icons/splash.png");
+    else
+        pixmap = QPixmap(":/icons/splash_hires.png");
+//	pixmap.setDevicePixelRatio(pixelRatio);
 	FBSSplashScreen splash(pixmap);
 	splash.show();
 

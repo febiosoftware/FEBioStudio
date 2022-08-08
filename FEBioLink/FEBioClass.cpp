@@ -115,6 +115,7 @@ FEBioClassInfo FEBio::GetClassInfo(int classId)
 	ci.baseClassId = baseClassIndex(fac->GetBaseClassName());
 	ci.sztype = fac->GetTypeStr();
 	ci.szmod = fecore.GetModuleName(modId);
+	ci.spec = fac->GetSpecID();
 
 	return ci;
 }
@@ -123,6 +124,20 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllActiveClasses(int superId, int 
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	return FindAllClasses(fecore.GetActiveModuleID(), superId, baseClassId, flags);
+}
+
+std::vector<std::string> FEBio::GetModuleDependencies(int mod)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	vector<int> mods;
+	mods = fecore.GetModuleDependencies(mod - 1);
+	vector<string> modNames;
+	for (int i = 0; i < mods.size(); ++i)
+	{
+		string si = fecore.GetModuleName(mods[i] - 1);
+		modNames.push_back(si);
+	}
+	return modNames;
 }
 
 std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, int baseClassId, unsigned int flags)
@@ -162,7 +177,8 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 					baseClassIndex(fac->GetBaseClassName()),
 					fac->GetTypeStr(), 
 					fac->GetClassName(),
-					szmod };
+					szmod,
+					fac->GetSpecID()};
 				facs.push_back(febc);
 			}
 		}
@@ -187,7 +203,9 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllPluginClasses(int allocId)
 				baseClassIndex(fac->GetBaseClassName()),
 				fac->GetTypeStr(),
 				fac->GetClassName(),
-				szmod };
+				szmod,
+				fac->GetSpecID()
+			};
 			facs.push_back(febc);
 		}
 	}
@@ -293,7 +311,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FENEWTONSTRATEGY_ID  : pc = new FSGenericClass(fem); break;
 	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
 	case FETIMECONTROLLER_ID  : pc = new FSGenericClass(fem); break;
-	case FEVEC3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
+	case FEVEC3DVALUATOR_ID   : pc = new FSVec3dValuator(fem); break;
 	case FEMAT3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
 	case FEMAT3DSVALUATOR_ID  : pc = new FSGenericClass(fem); break;
 	case FESOLIDDOMAIN_ID     : pc = new FESolidFormulation(fem); break;
@@ -480,6 +498,17 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 			{
 				p->SetFlags(param.GetFlags());
 				if (param.units()) p->SetUnit(param.units());
+
+				// copy the watch variable
+				if (param.GetWatchVariable())
+				{
+					bool* pb = param.GetWatchVariable();
+					FEParam* pw = PL.FindFromData(pb); assert(pw);
+					if (pw) {
+						Param* pp = po->GetParam(pw->name()); assert(pp);
+						if (pp) p->SetWatchVariable(pp);
+					}
+				}
 			}
 		}
 	}
@@ -571,6 +600,7 @@ bool FEBio::BuildModelComponent(FSModelComponent* po, unsigned int flags)
 	int classId = po->GetClassID();
 	FECoreBase* feb = CreateFECoreClass(classId);
 	if (feb == nullptr) return false;
+	po->SetFEBioClass((void*)feb);
 	return BuildModelComponent(po, feb, flags);
 }
 
@@ -724,6 +754,10 @@ bool FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 		febio::CMDOPTIONS ops;
 		if (febio::ProcessOptionsString(cmd, ops) == false)
 		{
+			if (outputHandler)
+			{
+				outputHandler->write("Failed processing command line.");
+			}
 			return false;
 		}
 
@@ -823,6 +857,52 @@ bool BuildModelComponent(int superClassId, const std::string& typeStr, FSModelCo
 bool FEBio::BuildModelComponent(FSModelComponent* pc, const std::string& typeStr, unsigned int flags)
 {
 	return BuildModelComponent(pc->GetSuperClassID(), typeStr, pc, flags);
+}
+
+void map_parameters(FSModelComponent* pc, FECoreBase* pf)
+{
+	for (int i = 0; i < pc->Parameters(); ++i)
+	{
+		Param& p = pc->GetParam(i);
+		FEParam* pp = pf->FindParameter(p.GetShortName());
+		if (pp)
+		{
+			if (p.IsVariable() == false)
+			{
+				switch (p.GetParamType())
+				{
+				case Param_BOOL  : pp->value<bool       >() = p.GetBoolValue  (); break;
+				case Param_INT   : pp->value<int        >() = p.GetIntValue   (); break;
+				case Param_FLOAT : pp->value<double     >() = p.GetFloatValue (); break;
+				case Param_VEC3D : pp->value<vec3d      >() = p.GetVec3dValue (); break;
+				case Param_STRING: pp->value<std::string>() = p.GetStringValue(); break;
+				}
+			}
+			else
+			{
+				if (pp->type() == FE_PARAM_DOUBLE_MAPPED)
+				{
+					if (p.GetParamType() == Param_FLOAT)
+					{
+						double w = p.GetFloatValue();
+						FEParamDouble& v = pp->value<FEParamDouble>();
+						v = w;
+					}
+				}
+			}
+		}
+	}
+}
+
+bool FEBio::UpdateFEBioClass(FSModelComponent* pc)
+{
+	FECoreBase* febClass = (FECoreBase*)pc->GetFEBioClass();
+	if (febClass == nullptr) return false;
+
+	// first map the parameters to the FEBioClass
+	map_parameters(pc, febClass);
+
+	return false;
 }
 
 void FEBio::UpdateFEBioMaterial(FEBioMaterial* pm)
@@ -991,6 +1071,11 @@ FSFunction1D* FEBio::CreateFunction1D(const std::string& typeStr, FSModel* fem)
 	return CreateModelComponent<FEBioFunction1D>(FEFUNCTION1D_ID, typeStr, fem);
 }
 
+FSVec3dValuator* FEBio::CreateVec3dValuator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FSVec3dValuator>(FEVEC3DVALUATOR_ID, typeStr, fem);
+}
+
 FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
 {
 	if (typeStr.empty())
@@ -1028,10 +1113,10 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FELOADCONTROLLER_ID  : return CreateLoadController  (typeStr, fem); break;
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
 	case FEMESHADAPTOR_ID     : return CreateMeshAdaptor     (typeStr, fem); break;
+	case FEVEC3DVALUATOR_ID   : return CreateVec3dValuator   (typeStr, fem); break;
 	case FESOLVER_ID          :
 	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
-	case FEVEC3DVALUATOR_ID   :
 	case FEMAT3DVALUATOR_ID  :
 	case FEMAT3DSVALUATOR_ID :
 	case FEMESHADAPTORCRITERION_ID:

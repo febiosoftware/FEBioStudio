@@ -68,6 +68,13 @@ public:
 
 	void setModelData(QWidget* editor, QAbstractItemModel* model, const QModelIndex& index) const override;
 
+	void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+
+	bool editorEvent(QEvent* event,
+		QAbstractItemModel* model,
+		const QStyleOptionViewItem& option,
+		const QModelIndex& index) override;
+
 private slots:
 	void OnEditorSignal();
 };
@@ -99,11 +106,19 @@ private:
 //-----------------------------------------------------------------------------
 class FEClassPropsWidget : public QWidget
 {
+	Q_OBJECT
+
 public:
 	FEClassPropsWidget(QWidget* parent = nullptr);
 
 	void SetFEClass(FSCoreBase* pc, FSModel* fem);
 	FSProperty* getProperty(const QModelIndex& index);
+
+private slots:
+	void on_clicked(const QModelIndex& index);
+
+signals:
+	void clicked(const QModelIndex& index);
 
 private:
 	QLineEdit* m_flt;

@@ -714,9 +714,35 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 						const FSModelComponent* pcj = dynamic_cast<const FSModelComponent*>(prop.GetComponent(j));
 						if (pcj)
 						{
-							FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), pd->GetFSModel());
+							FSModel* fem = pd->GetFSModel();
+							FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), fem);
 							assert(pcn);
-							if (pcn)
+
+							if (dynamic_cast<const FSReactantMaterial*>(pcj))
+							{
+								const FSReactantMaterial* prm = dynamic_cast<const FSReactantMaterial*>(pcj);
+								int v = prm->GetIntValue(FSReactionSpecies::MP_NU);
+								int speciesType = prm->GetSpeciesType();
+								int index = prm->GetIndex();
+								const int solutes = fem->Solutes();
+								if (speciesType == FSReactionSpecies::SBM_SPECIES) index += solutes;
+								pcn->SetParamInt("vR", v);
+								pcn->SetParamInt("species", index);
+								pi->SetComponent(pcn, j);
+							}
+							else if (dynamic_cast<const FSProductMaterial*>(pcj))
+							{
+								const FSProductMaterial* ppm = dynamic_cast<const FSProductMaterial*>(pcj);
+								int v = ppm->GetIntValue(FSReactionSpecies::MP_NU);
+								int speciesType = ppm->GetSpeciesType();
+								int index = ppm->GetIndex();
+								const int solutes = fem->Solutes();
+								if (speciesType == FSReactionSpecies::SBM_SPECIES) index += solutes;
+								pcn->SetParamInt("vP", v);
+								pcn->SetParamInt("species", index);
+								pi->SetComponent(pcn, j);
+							}
+							else if (pcn)
 							{
 								copyModelComponent(log, pcn, pcj);
 								pi->SetComponent(pcn, j);
@@ -741,6 +767,17 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 	}
 }
 
+void copyRigidMaterial(std::ostream& log, FSRigidMaterial* prm, FSMaterial* febMat)
+{
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_DENSITY));
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_E));
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_V));
+	copyParameter(log, febMat, prm->GetParam(FSRigidMaterial::MP_RC));
+
+	bool autoCom = prm->GetBoolValue(FSRigidMaterial::MP_COM);
+	febMat->SetParamBool("override_com", !autoCom);
+}
+
 void FSProject::ConvertMaterials(std::ostream& log)
 {
 	FSModel& fem = GetFSModel();
@@ -763,7 +800,10 @@ void FSProject::ConvertMaterials(std::ostream& log)
 			}
 			else
 			{
-				copyModelComponent(log, febMat, pm);
+				if (dynamic_cast<FSRigidMaterial*>(pm))
+					copyRigidMaterial(log, dynamic_cast<FSRigidMaterial*>(pm), febMat);
+				else
+					copyModelComponent(log, febMat, pm);
 				mat->SetMaterialProperties(febMat);
 			}
 		}
@@ -1278,14 +1318,37 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 
 			if (febbc)
 			{
+				// TODO: Add support for concentrations
 				int bc = pbc->GetBC();
-
-				if (febbc->GetParam("dofs"))
+				switch (pbc->Type())
 				{
-					// TODO: This is not going to work for concentrations!
-					vector<int> dofs;
-					for (int i = 0; i < 3; ++i) if (bc & (1 << i)) dofs.push_back(i);
-					febbc->SetParamVectorInt("dofs", dofs);
+				case FE_FIXED_DISPLACEMENT:
+					if (bc & 1) febbc->SetParamBool("x_dof", true);
+					if (bc & 2) febbc->SetParamBool("y_dof", true);
+					if (bc & 4) febbc->SetParamBool("z_dof", true);
+					break;
+				case FE_FIXED_ROTATION:
+					if (bc & 1) febbc->SetParamBool("u_dof", true);
+					if (bc & 2) febbc->SetParamBool("v_dof", true);
+					if (bc & 4) febbc->SetParamBool("w_dof", true);
+					break;
+				case FE_FIXED_SHELL_DISPLACEMENT:
+					if (bc & 1) febbc->SetParamBool("sx_dof", true);
+					if (bc & 2) febbc->SetParamBool("sy_dof", true);
+					if (bc & 4) febbc->SetParamBool("sz_dof", true);
+					break;
+				case FE_FIXED_FLUID_VELOCITY:
+					if (bc & 1) febbc->SetParamBool("wx_dof", true);
+					if (bc & 2) febbc->SetParamBool("wy_dof", true);
+					if (bc & 4) febbc->SetParamBool("wz_dof", true);
+					break;
+				case FE_FIXED_FLUID_PRESSURE:
+				case FE_FIXED_FLUID_DILATATION:
+				case FE_FIXED_TEMPERATURE:
+					// No need to do anything
+					break;
+				default:
+					log << "Unable to map degrees of freedom for " << pb->GetName() << std::endl;
 				}
 
 				// copy the name 
@@ -1465,7 +1528,37 @@ bool FSProject::ConvertDiscrete(std::ostream& log)
 			if (pm)
 			{
 				FSDiscreteMaterial* febMat = FEBio::CreateDiscreteMaterial(pm->GetTypeString(), &fem);
-				copyParameters(log, febMat, pm);
+
+				if (dynamic_cast<FSNonLinearSpringMaterial*>(pm))
+				{
+					int m = pm->GetParam("measure")->GetIntValue();
+					double s = pm->GetParam("scale")->GetFloatValue();
+
+					Param* pF = pm->GetParam("force");
+					double F = pF->GetFloatValue();
+
+					febMat->SetParamInt("measure", m);
+					febMat->SetParamFloat("scale", s*F);
+
+					int lcid = pF->GetLoadCurveID();
+					if (lcid >= 0)
+					{
+						FEBioLoadController* plc = dynamic_cast<FEBioLoadController*>(fem.GetLoadControllerFromID(lcid));
+						LoadCurve& lc = *plc->CreateLoadCurve();
+
+						FEBioFunction1D* pf = dynamic_cast<FEBioFunction1D*>(FEBio::CreateFunction1D("point", &fem));
+						LoadCurve& f1d = *pf->CreateLoadCurve();
+						f1d = lc;
+						pf->UpdateData(true);
+
+						FSProperty* pForce = febMat->FindProperty("force"); assert(pForce);
+						if (pForce) pForce->SetComponent(pf);
+					}
+				}
+				else
+				{
+					copyParameters(log, febMat, pm);
+				}
 				ps->SetMaterial(febMat);
 				delete pm;
 			}

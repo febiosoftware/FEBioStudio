@@ -129,13 +129,16 @@ void CMainWindow::on_actionShowNormals_toggled(bool b)
 	RedrawGL();
 }
 
-void CMainWindow::on_actionShowFibers_toggled(bool b)
+void CMainWindow::on_actionShowFibers_triggered()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
-	view.m_bfiber = b;
+	if (ui->fiberViz == nullptr) ui->fiberViz = new CDlgFiberViz(this);
+
+	if (ui->fiberViz->isVisible()) ui->fiberViz->close();
+	else ui->fiberViz->show();
+
 	RedrawGL();
 }
 

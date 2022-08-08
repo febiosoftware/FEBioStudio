@@ -35,6 +35,8 @@ using namespace Post;
 // CGLColorMap
 //-----------------------------------------------------------------------------
 
+int CGLColorMap::m_defaultRngType = Range_Type::RANGE_DYNAMIC;
+
 CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 {
 	AddIntParam (-1, "Data field", "Data field")->SetEnumNames("@data_scalar");
@@ -43,15 +45,15 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddBoolParam(true, "Nodal smoothing");
 	AddIntParam (10, "Range divisions")->SetIntRange(1, 100);
 	AddBoolParam(true, "Show Legend");
-	AddIntParam (0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddIntParam (m_defaultRngType, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User max");
-	AddIntParam (0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddIntParam (m_defaultRngType, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User min");
 	AddBoolParam(false, "Show min/max markers");
 	AddColorParam(GLColor(200, 200, 200), "Inactive color");
 
 	m_range.min = m_range.max = 0;
-	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
+	m_range.mintype = m_range.maxtype = m_defaultRngType;
 	m_rmin = m_rmax = vec3d(0, 0, 0);
 
 	m_nfield = 0;

@@ -253,7 +253,9 @@ FSStep* FEBioFormat3::NewStep(FSModel& fem, const std::string& typeStr, const ch
 struct OldParam {
 	const char* propName;
 	const char* szparamName;
+	int	ntype;
 	int vi;
+	double	vd;
 };
 
 // in FEBioFormat.cpp
@@ -277,7 +279,13 @@ void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 			{
 				int v;
 				tag.value(v);
-				oldParams.push_back(OldParam{ "qn_method", "max_ups", v });
+				oldParams.push_back(OldParam{ "qn_method", "max_ups", Param_INT, v });
+			}
+			else if (tag == "cmax")
+			{
+				double cmax = 0;
+				tag.value(cmax);
+				oldParams.push_back(OldParam{ "qn_method", "cmax", Param_FLOAT, 0, cmax });
 			}
 			else if (tag == "qnmethod")
 			{
@@ -339,11 +347,24 @@ void FEBioFormat3::ReadSolverParameters(FSModelComponent* pmc, XMLTag& tag)
 		{
 			FSProperty* prop = pmc->FindProperty(pi.propName); assert(prop);
 			FSCoreBase* pc = prop->GetComponent(0);
-			pp = pc->GetParam(pi.szparamName); assert(pp);
+			if (pc)
+				pp = pc->GetParam(pi.szparamName);
 		}
 		else pp = pmc->GetParam(pi.szparamName);
-		assert(pp);
-		if (pp) pp->SetIntValue(pi.vi);
+		if (pp)
+		{
+			switch (pi.ntype)
+			{
+			case Param_INT: pp->SetIntValue(pi.vi); break;
+			case Param_FLOAT: pp->SetFloatValue(pi.vd); break;
+			default:
+				assert(false);
+			}
+		}
+		else
+		{
+			AddLogEntry("Failed to map old parameter %s", pi.szparamName);
+		}
 	}
 }
 
@@ -493,21 +514,7 @@ bool FEBioFormat3::ParseMaterialSection(XMLTag& tag)
 			}
 		}
 
-		// parse material
-		if (strcmp(sztype, "rigid body") == 0)
-		{
-			// we need to see if the center_of_mass parameter was specified. 
-			bool autocom = true;
-			++tag;
-			do {
-				if (tag == "center_of_mass") autocom = false;
-				ReadParam(*pmat, tag);
-				++tag;
-			} 
-			while (!tag.isend());
-			pmat->SetParamBool("auto_com", autocom);
-		}
-		else ParseModelComponent(pmat, tag);
+		ParseModelComponent(pmat, tag);
 
 		// if pmat is set we need to add the material to the list
 		gmat = new GMaterial(pmat);
@@ -693,6 +700,12 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 						{
 							const char* szlc = tag.AttributeValue("lc");
 							int lc = atoi(szlc);
+							double v = 1.0;
+							tag.value(v);
+							if (v != 1.0)
+							{
+								FileReader()->AddLogEntry("Parameter \"%s\" value not mapped.", tag.Name());
+							}
 							Param* pp = pc->GetParam("points"); assert(pp);
 							GetFEBioModel().AddParamCurve(pp, lc - 1);
 						}
@@ -704,6 +717,8 @@ void FEBioFormat3::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 		}
 		++tag;
 	} while (!tag.isend());
+
+	pmc->UpdateData(true);
 }
 
 //=============================================================================
@@ -1846,15 +1861,13 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero displacement", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "x") { dofList.push_back(0); }
-			if (di == "y") { dofList.push_back(1); }
-			if (di == "z") { dofList.push_back(2); }
+			if (di == "x") pbc->SetParamBool("x_dof", true);
+			if (di == "y") pbc->SetParamBool("y_dof", true);
+			if (di == "z") pbc->SetParamBool("z_dof", true);
 		}			
-		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1868,15 +1881,13 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero rotation", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "u") { dofList.push_back(0); }
-			if (di == "v") { dofList.push_back(1); }
-			if (di == "w") { dofList.push_back(2); }
+			if (di == "u") pbc->SetParamBool("u_dof", true);
+			if (di == "v") pbc->SetParamBool("v_dof", true);
+			if (di == "w") pbc->SetParamBool("w_dof", true);
 		}
-		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1912,15 +1923,13 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero fluid velocity", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "wx") { dofList.push_back(0); }
-			if (di == "wy") { dofList.push_back(1); }
-			if (di == "wz") { dofList.push_back(2); }
+			if (di == "wx") pbc->SetParamBool("wx_dof", true);
+			if (di == "wy") pbc->SetParamBool("wy_dof", true);
+			if (di == "wz") pbc->SetParamBool("wz_dof", true);
 		}
-		pbc->SetParamVectorInt("dofs", dofList);
 
 		// set the name
 		if (name.empty())
@@ -1945,15 +1954,13 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 		pbc = FEBio::CreateBoundaryCondition("zero shell displacement", &fem); assert(pbc);
 
 		// map the dofs
-		vector<int> dofList;
 		for (int i = 0; i < dofs.size(); ++i)
 		{
 			string& di = dofs[i];
-			if (di == "sx") { dofList.push_back(0); }
-			if (di == "sy") { dofList.push_back(1); }
-			if (di == "sz") { dofList.push_back(2); }
-		}			
-		pbc->SetParamVectorInt("dofs", dofList);
+			if (di == "sx") pbc->SetParamBool("sx_dof", true);
+			if (di == "sy") pbc->SetParamBool("sy_dof", true);
+			if (di == "sz") pbc->SetParamBool("sz_dof", true);
+		}
 
 		// set the name
 		if (name.empty())
@@ -1975,36 +1982,41 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 	else if (bc.compare(0, 1, "c") == 0)
 	{
-		pbc = FEBio::CreateBoundaryCondition("zero concentration", &fem); assert(pbc);
-
-		// map the dofs
-		vector<int> dofList;
+		// we need to make a separate bc for each concentration dof
 		for (int i = 0; i < dofs.size(); ++i)
 		{
+			pbc = FEBio::CreateBoundaryCondition("zero concentration", &fem); assert(pbc);
+
+			sprintf(szbuf, "ZeroConcentration%02d", CountBCs<FEBioBoundaryCondition>(fem) + 1);
+			name = szbuf;
+			pbc->SetName(name);
+			pbc->SetItemList(pg);
+			pstep->AddComponent(pbc);
+
 			string& di = dofs[i];
 			if (di.size() == 2)
 			{
 				int n = atoi(di.c_str() + 1);
 				dofList.push_back(n - 1);
+				pbc->SetParamInt("c_dof", n - 1);
 			}
 		}
-		pbc->GetParam("dofs")->SetVectorIntValue(dofList);
 
-		if (name.empty())
-		{
-			sprintf(szbuf, "FixedConcentration%02d", CountBCs<FEBioBoundaryCondition>(fem) + 1);
-			name = szbuf;
-		}
+		// all processing is done, so set pbc to null so we don't do anything else. 
+		pbc = nullptr;
 	}
 
 	// assign the name
-	pbc->SetName(name);
+	if (pbc)
+	{
+		pbc->SetName(name);
 
-	// assign the item list
-	pbc->SetItemList(pg);
+		// assign the item list
+		pbc->SetItemList(pg);
 
-	// add it to the active step
-	pstep->AddComponent(pbc);
+		// add it to the active step
+		pstep->AddComponent(pbc);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -3240,7 +3252,57 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				pg->SetMaterial(pdm);
 				pg->SetName(szname);
 				fem.GetModel().AddDiscreteObject(pg);
-				ParseModelComponent(pdm, tag);
+
+				int m = 0;
+				double s = 1.0;
+
+				++tag;
+				do {
+					if      (tag == "measure") tag.value(m);
+					else if (tag == "scale") {
+						double v = 1; tag.value(v); s *= v;
+					}
+					else if (tag == "force")
+					{
+						FSProperty* prop = pdm->FindProperty("force"); assert(prop);
+						if (prop)
+						{
+							assert(prop->GetSuperClassID() == FEFUNCTION1D_ID);
+							FSModelComponent* pc = FEBio::CreateClass(FEFUNCTION1D_ID, "point", &fem); assert(pc);
+							if (pc)
+							{
+								prop->AddComponent(pc);
+
+								const char* szlc = tag.AttributeValue("lc", true);
+								if (szlc)
+								{
+									int lc = atoi(szlc);
+									double v = 1; tag.value(v);
+									s *= v;
+
+									Param* pp = pc->GetParam("points"); assert(pp);
+									GetFEBioModel().AddParamCurve(pp, lc - 1);
+								}
+								else
+								{
+									const char* sztype = tag.AttributeValue("type", true);
+									if (sztype)
+									{
+										ParseModelComponent(pc, tag);
+									}
+									else ParseUnknownTag(tag);
+								}
+							}
+							else ParseUnknownTag(tag);
+						}
+						else ParseUnknownTag(tag);
+					}
+					++tag;
+				} while (!tag.isend());
+
+				pdm->SetParamInt("measure", m);
+				pdm->SetParamFloat("scale", s);
+
 				set.push_back(pg);
 			}
 			else if (strcmp(sztype, "Hill") == 0)

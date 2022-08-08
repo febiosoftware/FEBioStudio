@@ -15,6 +15,10 @@ public:
 	int Type() const;
 
 public:
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+public:
 	int GetID() const;
 	void SetID(int nid);
 

@@ -282,7 +282,17 @@ void FEBioExport::WriteParamList(ParamContainer& c)
 	{
 		Param& p = c.GetParam(i);
 		// don't write attribute params
-		if ((p.GetFlags() & 0x01) == 0) WriteParam(p);
+		if ((p.GetFlags() & FS_PARAM_ATTRIBUTE) == 0)
+		{
+			// don't write watch variables
+			if ((p.GetFlags() & FS_PARAM_WATCH) == 0)
+			{
+				// Watched variables are only written if the corresponding
+				// watch variable is true. 
+				if ((p.IsWatched() == false) || (p.GetWatchFlag()))
+					WriteParam(p);
+			}
+		}
 	}
 }
 

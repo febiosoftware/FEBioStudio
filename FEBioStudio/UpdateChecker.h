@@ -47,19 +47,19 @@ class QDialogButtonBox;
 
 #ifdef WIN32
 	#define URL_BASE "/update2/FEBioStudio/Windows"
-	#define DEV_BASE "/update2/FEBioStudioDev/Windows"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/Windows"
 	#define UPDATER_BASE "/update2/Updater/Windows"
 	#define REL_ROOT "\\..\\"
 	#define UPDATER "/FEBioStudioUpdater.exe"
 #elif __APPLE__
 	#define URL_BASE "/update2/FEBioStudio/macOS"
-	#define DEV_BASE "/update2/FEBioStudioDev/macOS"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/macOS"
 	#define UPDATER_BASE "/update2/Updater/macOS"
 	#define REL_ROOT "/../../../"
 	#define UPDATER "/FEBioStudioUpdater"
 #else
 	#define URL_BASE "/update2/FEBioStudio/Linux"
-	#define DEV_BASE "/update2/FEBioStudioDev/Linux"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/Linux"
 	#define UPDATER_BASE "/update2/Updater/Linux"
 	#define REL_ROOT "/../"
 	#define UPDATER "/FEBioStudioUpdater"

@@ -351,7 +351,6 @@ FSFluidFlowRCR::FSFluidFlowRCR(FSModel* ps) : FSSurfaceLoad(FE_FLUID_FLOW_RCR, p
     AddDoubleParam(0, "capacitance", "compliance");
     AddDoubleParam(0, "pressure_offset", "pressure offset");
     AddDoubleParam(0, "initial_pressure", "initial pressure");
-    AddBoolParam(true, "Bernoulli", "Bernoulli");
 
 }
 
@@ -363,7 +362,6 @@ FSFluidFlowRCR::FSFluidFlowRCR(FSModel* ps, FEItemListBuilder* pi, double rp, do
     AddDoubleParam(co, "capacitance", "compliance");
     AddDoubleParam(po, "pressure_offset", "pressure offset");
     AddDoubleParam(ip, "initial_pressure", "initial pressure");
-    AddBoolParam(be, "Bernoulli", "Bernoulli");
 }
 
 //-----------------------------------------------------------------------------

@@ -128,13 +128,17 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 		GPart* g = nullptr;
 		if (go.IsSolid()) g = AddSolidPart();
 		else if (go.IsShell()) g = AddShellPart();
-		else { assert(false); g = new GPart(this); }
+		else 
+		{ 
+			assert(false); 
+			g = new GPart(this); 
+			m_Part.push_back(g);
+		}
 		g->SetMaterialID(go.GetMaterialID());
 		g->SetID(go.GetID());
 		g->SetLocalID(i);
 		g->SetName(go.GetName());
 		assert(g->GetLocalID() == go.GetLocalID());
-		m_Part.push_back(g);
 	}
 
 	// copy the mesh from the original object

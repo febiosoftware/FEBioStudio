@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <QStandardItemModel>
 #include <QSpinBox>
 #include <QMessageBox>
+#include <QCheckBox>
 #include <FSCore/FSCore.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
@@ -134,6 +135,7 @@ public:
 			m_model = nullptr;
 			m_pc = pc; m_paramId = paramId; m_propId = propId; m_index = index; m_nrow = nrow;
 			m_flag = (paramId == -1 ? 1 : 0);
+			m_parent = nullptr;
 		}
 		~Item() { for (int i = 0; i < m_children.size(); ++i) delete m_children[i]; m_children.clear(); }
 
@@ -571,6 +573,8 @@ public:
 					if (p.GetBoolValue() != b) {
 						p.SetBoolValue(b);
 						p.SetModified(true);
+
+						if (p.GetFlags() & FS_PARAM_WATCH) return true;
 					}
 				}
 				break;
@@ -828,7 +832,11 @@ public:
 				{
 					if (p.IsVisible())
 					{
-						if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
+						if (p.IsWatched())
+						{
+							if (p.GetWatchFlag()) addChild(item, pc, i, -1, -1);
+						}
+						else if (p.IsEditable() && (p.IsPersistent() || (m_pc == nullptr)))
 							addChild(item, pc, i, -1, -1);
 						else if (p.IsPersistent() == false)
 						{
@@ -1060,7 +1068,13 @@ public:
 		{
 			Item* item = static_cast<Item*>(index.internalPointer());
 			if (item->isParameter())
-				return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+			{
+				Param* p = item->parameter();
+				if (p && (p->GetParamType() == Param_BOOL))
+					return QAbstractItemModel::flags(index) | Qt::ItemIsEditable | Qt::ItemIsUserCheckable | Qt::ItemIsEnabled;
+				else
+					return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
+			}
 
 			if (item->isProperty())
 				return QAbstractItemModel::flags(index) | Qt::ItemIsEditable;
@@ -1106,7 +1120,7 @@ public:
 		if (!index.isValid()) return QModelIndex();
 		Item* item = static_cast<Item*>(index.internalPointer());
 		Item* parent = item->parent();
-		if (parent == m_root) return QModelIndex();
+		if ((parent == nullptr) || (parent == m_root)) return QModelIndex();
 		return createIndex(parent->row(), 0, parent);
 	}
 
@@ -1126,6 +1140,7 @@ public:
 	}
 
 	bool IsValid() const { return m_valid; }
+	void SetValid(bool b) { m_valid = b; }
 
 	void ResetModel()
 	{
@@ -1218,12 +1233,12 @@ QWidget* FEClassPropsDelegate::createEditor(QWidget* parent, const QStyleOptionV
 				break;
 			case Param_BOOL:
 				{
-					QComboBox* pw = new QComboBox(parent);
-					pw->addItems(QStringList() << "No" << "Yes");
+					QCheckBox* pw = new QCheckBox(parent);
 					bool b = p->GetBoolValue();
-					pw->setCurrentIndex(b ? 1 : 0);
-					QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
+					pw->setChecked(b);
+					QObject::connect(pw, SIGNAL(toggled(bool)), this, SLOT(OnEditorSignal()));
 					return pw;
+//					return nullptr;
 				}
 				break;
 			case Param_STRING:
@@ -1501,6 +1516,68 @@ void FEClassPropsDelegate::OnEditorSignal()
 	emit commitData(sender);
 }
 
+void FEClassPropsDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
+{
+	if (!index.isValid()) return;
+	if (index.column() == 1)
+	{
+		FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+		if (item && item->isParameter())
+		{
+			Param* p = item->parameter();
+			if (p && (p->GetParamType() == Param_BOOL))
+			{
+				QStyleOptionButton cbOpt;
+				cbOpt.rect = option.rect;
+				cbOpt.state = option.state;
+				bool b = p->GetBoolValue();
+				if (b) cbOpt.state |= QStyle::State_On;
+				else cbOpt.state |= QStyle::State_Off;
+
+				QApplication::style()->drawPrimitive(QStyle::PE_PanelItemViewItem, &option, painter, option.widget);
+				QApplication::style()->drawControl(QStyle::CE_CheckBox, &cbOpt, painter);
+				return;
+			}
+		}
+	}
+
+	QStyledItemDelegate::paint(painter, option, index);
+}
+
+bool FEClassPropsDelegate::editorEvent(QEvent* event,
+	QAbstractItemModel* model,
+	const QStyleOptionViewItem& option,
+	const QModelIndex& index)
+{
+/*	if (event->type() == QEvent::MouseButtonPress)
+	{
+		if (index.column() == 1)
+		{
+			FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+			if (item && item->isParameter())
+			{
+				Param* p = item->parameter();
+				if (p && (p->GetParamType() == Param_BOOL))
+				{
+					bool b = p->GetBoolValue();
+					p->SetBoolValue(b ? false : true);
+					p->SetModified(true);
+
+					if (p->GetFlags() & FS_PARAM_WATCH)
+					{
+						FEClassPropsModel* mdl = dynamic_cast<FEClassPropsModel*>(model);
+						mdl->SetValid(false);
+//						emit mdl->dataChanged(index, index);
+					}
+					return true;
+				}
+			}
+		}
+	}
+*/
+	return QStyledItemDelegate::editorEvent(event, model, option, index);
+}
+
 //=================================================================================================
 FEClassPropsView::FEClassPropsView(QWidget* parent) : QTreeView(parent)
 {
@@ -1612,6 +1689,12 @@ FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
 
 	QObject::connect(m_flt, SIGNAL(textChanged(const QString&)), m_view, SLOT(setFilter(const QString&)));
 	QObject::connect(tb, SIGNAL(clicked(bool)), m_flt, SLOT(clear()));
+	QObject::connect(m_view, SIGNAL(clicked(const QModelIndex&)), this, SLOT(on_clicked(const QModelIndex&)));
+}
+
+void FEClassPropsWidget::on_clicked(const QModelIndex& index)
+{
+	emit clicked(index);
 }
 
 void FEClassPropsWidget::SetFEClass(FSCoreBase* pc, FSModel* fem)

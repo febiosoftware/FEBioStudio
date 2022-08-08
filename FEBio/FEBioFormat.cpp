@@ -444,8 +444,17 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		}
 	}
 
+	// NOTE: Is this still used? I think this was an initial attempt
+	//       for creating watched variables.
 	// if parameter is checkable, mark it as checked
 	if (pp->IsCheckable()) pp->SetChecked(true);
+
+	// If the parameter is watched, set the watch variable to true to indicate the
+	// parameter was set in the input file. 
+	if (pp->IsWatched())
+	{
+		pp->SetWatchFlag(true);
+	}
 
 	return true;
 }
@@ -599,6 +608,15 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 			else if (tag == "plot_stride") tag.value(ops.plot_stride);
 			else ParseUnknownTag(tag);
 		}
+
+		// In older files qnmethod=2 was Broyden, but this was later changed to qnmethod=1
+		// so we need to do this hack to make sure qnmethod is set correctly. 
+		Param* qnm = pstep->GetParam("qnmethod");
+		if (qnm && (qnm->GetIntValue() == 2))
+		{
+			qnm->SetIntValue(1);
+		}
+
 		++tag;
 	}
 	while (!tag.isend());

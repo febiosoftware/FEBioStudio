@@ -4364,10 +4364,6 @@ void FEBioExport25::WriteFluidFlowRCR(FSStep& s)
 
                 ip.value(ptc->GetIP());
                 m_xml.add_leaf(ip);
-                
-                XMLElement be("Bernoulli");
-                be.value(ptc->GetBE());
-                m_xml.add_leaf(be);
             }
             m_xml.close_branch(); // surface_load
         }

@@ -391,14 +391,18 @@ public slots:
 	void on_actionDeleteLine_triggered();
 
 	// Physics menu
-	void on_actionAddBC_triggered();
+	void on_actionAddNodalBC_triggered();
+	void on_actionAddSurfaceBC_triggered();
+	void on_actionAddGeneralBC_triggered();
 	void on_actionAddNodalLoad_triggered();
 	void on_actionAddSurfLoad_triggered();
 	void on_actionAddBodyLoad_triggered();
 	void on_actionAddRigidLoad_triggered();
 	void on_actionAddIC_triggered();
 	void on_actionAddContact_triggered();
-	void on_actionAddConstraint_triggered();
+	void on_actionAddSurfaceNLC_triggered();
+	void on_actionAddBodyNLC_triggered();
+	void on_actionAddGenericNLC_triggered();
 	void on_actionAddRigidBC_triggered();
 	void on_actionAddRigidIC_triggered();
 	void on_actionAddRigidConnector_triggered();
@@ -411,8 +415,6 @@ public slots:
     void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();
 	void on_actionSBMTable_triggered();
-	void OnAddSurfaceConstraint();
-	void OnAddBodyConstraint();
 
 	void on_actionCurveEditor_triggered();
 	void on_actionMeshInspector_triggered();
@@ -475,7 +477,7 @@ public slots:
 	void on_actionBackfaceCulling_toggled(bool b);
 	void on_actionViewSmooth_toggled(bool bchecked);
 	void on_actionShowNormals_toggled(bool b);
-	void on_actionShowFibers_toggled(bool b);
+	void on_actionShowFibers_triggered();
 	void on_actionShowMatAxes_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
 	void on_actionToggleLight_triggered();

@@ -146,7 +146,8 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 	for (int i = 0; i < (int)l.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& fac = l[i];
-		ui->classList[fac.baseClassId].push_back(fac);
+		if ((fac.spec == -1) || (fac.spec >= 0x400))
+			ui->classList[fac.baseClassId].push_back(fac);
 	}
 
 	ui->cat->clear();

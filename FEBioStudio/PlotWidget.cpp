@@ -49,12 +49,14 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QComboBox>
 #include <QLabel>
+#include <QMessageBox>
 #include <QtCore/QMimeData>
 #include <FSCore/LoadCurve.h>
 #include "MainWindow.h"	// for CResource
 #include "DlgFormula.h"
 #include "Command.h"
 #include "DlgImportData.h"
+#include "IconProvider.h"
 
 using namespace std;
 
@@ -1880,7 +1882,7 @@ public:
 	QToolButton* copy;
 	QToolButton* paste;
 	QToolButton* open;
-	QToolButton* close;
+	QToolButton* save;
 
 	CCurvePlotWidget* plt;
 
@@ -1901,8 +1903,8 @@ public:
 	{
 		// toolbar
 		lineType = new QComboBox; lineType->setObjectName("lineType");
-		lineType->addItem("Step");
 		lineType->addItem("Linear");
+		lineType->addItem("Step");
 		lineType->addItem("Smooth");
 		lineType->addItem("Cubic spline");
 		lineType->addItem("Control points");
@@ -1932,8 +1934,8 @@ public:
 		open = new QToolButton; open->setObjectName("open");
 		open->setIcon(QIcon(":/icons/open.png"));
 
-		close = new QToolButton; open->setObjectName("close");
-		close->setIcon(QIcon(":/icons/save.png"));
+		save = new QToolButton; save->setObjectName("save");
+		save->setIcon(QIcon(":/icons/save.png"));
 
 		QHBoxLayout* curveLayout = new QHBoxLayout;
 		curveLayout->addWidget(new QLabel("Type:"));
@@ -1945,6 +1947,8 @@ public:
 		curveLayout->addWidget(math);
 		curveLayout->addWidget(copy);
 		curveLayout->addWidget(paste);
+		curveLayout->addWidget(open);
+		curveLayout->addWidget(save);
 		curveLayout->addStretch();
 
 		// plot widget
@@ -1993,6 +1997,11 @@ public:
 		map->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
 		map->setToolTip("<font color=\"black\">Map to rectangle");
 
+		QToolButton* clear = new QToolButton; clear->setObjectName("clear");
+		clear->setAutoRaise(true);
+		clear->setIcon(CIconProvider::GetIcon("delete"));
+		clear->setToolTip("<font color=\"black\">Clear the curve");
+
 		pltbutton = new QHBoxLayout;
 		pltbutton->addWidget(xval);
 		pltbutton->addWidget(yval);
@@ -2003,6 +2012,7 @@ public:
 		pltbutton->addWidget(zoomy);
 		pltbutton->addWidget(zoom);
 		pltbutton->addWidget(map);
+		pltbutton->addWidget(clear);
 		pltbutton->addStretch();
 		pltbutton->setSpacing(2);
 
@@ -2665,6 +2675,19 @@ void CCurveEditWidget::on_save_clicked(bool b)
 		}
 	}
 }
+
+void CCurveEditWidget::on_clear_clicked()
+{
+	LoadCurve* plc = ui->plt->GetLoadCurve();
+	if (plc == nullptr) return;
+
+	if (QMessageBox::question(this, "Clear Curve", "Are you sure you to clear all points on the curve?") == QMessageBox::Yes)
+	{
+		plc->Clear();
+		SetLoadCurve(plc);
+	}
+}
+
 
 //=============================================================================
 CMathPlotWidget::CMathPlotWidget(QWidget* parent) : CPlotWidget(parent)

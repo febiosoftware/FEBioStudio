@@ -430,7 +430,7 @@ FSReactionMaterial::FSReactionMaterial(int ntype, FSModel* fem) : FSMaterialProp
 {
 	// the optional Vbar parameter is hidden by default.
 	AddScienceParam(0, UNIT_MOLAR_VOLUME, "Vbar", "Vbar")->SetState(Param_HIDDEN);
-	AddBoolParam(false, 0, 0)->SetState(Param_HIDDEN);
+	AddBoolParam(false, "override_vbar", 0)->SetState(Param_HIDDEN);
     
 	// Add reaction rate properties
 	AddProperty("forward_rate", FE_MAT_REACTION_RATE);

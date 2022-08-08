@@ -127,6 +127,11 @@ bool FEBioFormat25::ParseModuleSection(XMLTag &tag)
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
 
+	const char* sztype = atype.cvalue();
+	int moduleId = FEBio::GetModuleId(sztype);
+	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
+	FileReader()->GetProject().SetModule(moduleId, false);
+
 	// set the project's active modules
 /*
 	FSProject& prj = FileReader()->GetProject();
@@ -1803,9 +1808,6 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowResistance(XMLTag& tag)
         {
             double R; tag.value(R);
             psl->SetLoad(R);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(&psl->GetParam(FSFluidFlowResistance::LOAD), lc);
         }
         else if (tag == "pressure_offset")
         {
@@ -1839,9 +1841,6 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
         {
             double R; tag.value(R);
             psl->SetLoad(R);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::LOAD), lc);
         }
         else if (tag == "Rd")
         {
@@ -1871,14 +1870,6 @@ FSSurfaceLoad* FEBioFormat25::ParseLoadFluidFlowRCR(XMLTag& tag)
         {
             double ip; tag.value(ip);
             psl->SetIP(ip);
-            
-            int lc = tag.Attribute("lc").value<int>() - 1;
-            febio.AddParamCurve(&psl->GetParam(FSFluidFlowRCR::IP), lc);
-        }
-        else if (tag == "Bernoulli")
-        {
-            bool be; tag.value(be);
-            psl->SetBE(be);
         }
         else ParseUnknownTag(tag);
         ++tag;

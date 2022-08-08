@@ -11,6 +11,7 @@ class FSModelComponent : public FSCoreBase
 {
 public:
 	FSModelComponent(FSModel* fem = nullptr);
+	~FSModelComponent();
 
 	int GetSuperClassID() const;
 
@@ -27,9 +28,15 @@ public:
 	// overridden from ParamContainer to help processing load curves from old fsm files
 	void AssignLoadCurve(Param& p, LoadCurve& lc) override;
 
+public:
+	void SetFEBioClass(void* pc);
+	void* GetFEBioClass();
+	bool UpdateData(bool bsave) override;
+
 protected:
 	FSModel*	m_fem;
 	int			m_superClassID;		// super class ID (defined in FECore\fecore_enum.h)
+	void*		m_febClass;			// The FEBio class
 };
 
 
@@ -47,4 +54,12 @@ public:
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
+};
+
+class FSVec3dValuator : public FSGenericClass
+{
+public:
+	FSVec3dValuator(FSModel* fem);
+
+	vec3d GetFiberVector(const vec3d& p);
 };

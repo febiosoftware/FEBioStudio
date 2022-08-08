@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include <PostLib/Palette.h>
+#include <PostGL/GLColorMap.h>
 #include "RepositoryPanel.h"
 #include "units.h"
 #include "DlgSetRepoFolder.h"
@@ -123,7 +124,6 @@ public:
 		addBoolProperty  (&m_showRigidJoints, "Show rigid joints");
 		addBoolProperty  (&m_showRigidLabels, "Show rigid labels");
 		addBoolProperty  (&m_showRigidWalls , "Show rigid walls" );
-		addBoolProperty  (&m_showFibers     , "Show material fibers");
 		addDoubleProperty(&m_fiberScale   , "Fiber scale factor"  );
 		addBoolProperty  (&m_showMatAxes  ,"Show material axes"   );
 		addBoolProperty  (&m_showHiddenFibers, "Show fibers/axes on hidden parts");
@@ -134,7 +134,6 @@ public:
 	bool	m_showRigidJoints;
 	bool	m_showRigidLabels;
 	bool	m_showRigidWalls;
-	bool	m_showFibers;
 	bool	m_showMatAxes;
 	double	m_fiberScale;
 	bool	m_showHiddenFibers;
@@ -302,6 +301,39 @@ public:
 	float	m_speed;
 	float	m_bias;
 };
+
+//-----------------------------------------------------------------------------
+class CPostProps : public CPropertyList
+{
+public:
+	CPostProps()
+	{
+		addProperty("Default colormap range", CProperty::Enum)->setEnumValues(QStringList() << "dynamic" << "static");
+		m_defrng = 0;
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		QVariant v;
+		switch (i)
+		{
+		case 0: return m_defrng; break;
+		}
+		return v;
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		switch (i)
+		{
+		case 0: m_defrng = v.toInt(); break;
+		}
+	}
+
+public:
+	int	m_defrng;
+};
+
 
 //=================================================================================================
 ColorGradient::ColorGradient(QWidget* parent) : QWidget(parent)
@@ -848,6 +880,7 @@ public:
 	CSelectionProps*	m_select;
 	CLightingProps*		m_light;
 	CCameraProps*		m_cam;
+	CPostProps*			m_post;
 	CUnitWidget*		m_unit;
 	CRepoSettingsWidget*	m_repo;
 	CUpdateSettingsWidget*	m_update;
@@ -859,6 +892,7 @@ public:
 	::CPropertyListView*	se_panel;
 	::CPropertyListView*	li_panel;
 	::CPropertyListView*	ca_panel;
+	::CPropertyListView*	po_panel;
 
 public:
 	CDlgSettings(QDialog* parent, ::CMainWindow* wnd)
@@ -872,6 +906,7 @@ public:
 		m_select = new CSelectionProps;
 		m_light = new CLightingProps;
 		m_cam = new CCameraProps;
+		m_post = new CPostProps;
 		m_unit = new CUnitWidget(wnd);
 		m_repo = new CRepoSettingsWidget;
 		m_update = new CUpdateSettingsWidget(parent, wnd);
@@ -886,6 +921,7 @@ public:
 		se_panel = new ::CPropertyListView;
 		li_panel = new ::CPropertyListView;
 		ca_panel = new ::CPropertyListView;
+		po_panel = new ::CPropertyListView;
 		m_repo->setupUi();
 
 		QStackedWidget* stack = new QStackedWidget;
@@ -898,6 +934,7 @@ public:
 		stack->addWidget(li_panel); list->addItem("Lighting");
 		stack->addWidget(m_pal   ); list->addItem("Palette");
 		stack->addWidget(ph_panel); list->addItem("Physics");
+		stack->addWidget(po_panel); list->addItem("Post Options");
 		stack->addWidget(se_panel); list->addItem("Selection");
 		stack->addWidget(ui_panel); list->addItem("UI");
 		stack->addWidget(m_unit); list->addItem("Units");
@@ -994,7 +1031,6 @@ void CDlgSettings::UpdateSettings()
 	ui->m_physics->m_showRigidJoints = view.m_bjoint;
 	ui->m_physics->m_showRigidLabels = view.m_showRigidLabels;
 	ui->m_physics->m_showRigidWalls = view.m_bwall;
-	ui->m_physics->m_showFibers = view.m_bfiber;
 	ui->m_physics->m_fiberScale = view.m_fiber_scale;
 	ui->m_physics->m_showMatAxes = view.m_blma;
 	ui->m_physics->m_showHiddenFibers = view.m_showHiddenFibers;
@@ -1022,6 +1058,8 @@ void CDlgSettings::UpdateSettings()
 	ui->m_cam->m_banim = true;
 	ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
 	ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
+
+	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
 }
 
 void CDlgSettings::UpdatePalettes()
@@ -1052,6 +1090,7 @@ void CDlgSettings::UpdateUI()
 	ui->se_panel->Update(ui->m_select);
 	ui->li_panel->Update(ui->m_light);
 	ui->ca_panel->Update(ui->m_cam);
+	ui->po_panel->Update(ui->m_post);
 }
 
 void CDlgSettings::apply()
@@ -1107,7 +1146,6 @@ void CDlgSettings::apply()
 	view.m_bjoint = ui->m_physics->m_showRigidJoints;
 	view.m_showRigidLabels = ui->m_physics->m_showRigidLabels;
 	view.m_bwall = ui->m_physics->m_showRigidWalls;
-	view.m_bfiber = ui->m_physics->m_showFibers;
 	view.m_fiber_scale = ui->m_physics->m_fiberScale;
 	view.m_blma = ui->m_physics->m_showMatAxes;
 	view.m_showHiddenFibers = ui->m_physics->m_showHiddenFibers;
@@ -1130,6 +1168,8 @@ void CDlgSettings::apply()
 	CGLCamera* cam = glview->GetCamera();
 	if (cam) cam->SetCameraBias(ui->m_cam->m_bias);
 	if (cam) cam->SetCameraSpeed(ui->m_cam->m_speed);
+
+	Post::CGLColorMap::m_defaultRngType = ui->m_post->m_defrng;
 
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
 	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);

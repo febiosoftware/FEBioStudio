@@ -207,8 +207,8 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
-	filters << "FEBioStudio Model (*.fsm *.fsprj)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
+	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
 	filters << "FEBioStudio Post Session (*.fsps)";
@@ -270,6 +270,18 @@ void CMainWindow::on_actionSave_triggered()
 	if (fileName.empty()) on_actionSaveAs_triggered();
 	else
 	{
+		// if the extension is fsm, we are going to change it to fs2
+		size_t n = fileName.rfind('.');
+		if (n != string::npos)
+		{
+			string ext = fileName.substr(n);
+			if (ext == ".fsm")
+			{
+				on_actionSaveAs_triggered();
+				return;
+			}
+		}
+		
 		SaveDocument(QString::fromStdString(fileName));
 	}
 }
@@ -1141,6 +1153,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 		return;
 	}
 
+	string fileName = doc->GetDocTitle();
 	QString currentPath = ui->currentPath;
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
 	{
@@ -1154,14 +1167,24 @@ void CMainWindow::on_actionSaveAs_triggered()
 		{
 			QFileInfo fi(QString::fromStdString(docfile));
 			currentPath = fi.absolutePath();
+
+			size_t n = fileName.rfind('.');
+			if (n != string::npos)
+			{
+				string ext = fileName.substr(n);
+				if (ext == ".fsm")
+				{
+					fileName.replace(n, 4, ".fs2");
+				}
+			}
 		}
 	}
 
 	QFileDialog dlg;
 	dlg.setDirectory(currentPath);
 	dlg.setFileMode(QFileDialog::AnyFile);
-	dlg.setNameFilter("FEBio Studio Model (*.fsm)");
-	dlg.selectFile(QString::fromStdString(doc->GetDocTitle()));
+	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
+	dlg.selectFile(QString::fromStdString(fileName));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec())
 	{

@@ -353,7 +353,7 @@ public:
 class FSFluidFlowRCR : public FSSurfaceLoad
 {
 public:
-    enum {LOAD, RD, CO, PO, IP, BE };
+    enum {LOAD, RD, CO, PO, IP };
     
 public:
     FSFluidFlowRCR(FSModel* ps);
@@ -370,12 +370,9 @@ public:
     
     void SetPO(double f) { SetFloatValue(PO, f); }
     double GetPO() { return GetFloatValue(PO); }
-    
+
     void SetIP(double f) { SetFloatValue(IP, f); }
     double GetIP() { return GetFloatValue(IP); }
-
-    void SetBE(bool b) { SetBoolValue(BE, b); }
-    double GetBE() { return GetBoolValue(BE); }
     
 };
 

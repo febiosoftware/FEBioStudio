@@ -27,25 +27,22 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
-class FSProject;
+class CDlgFiberViz_UI;
+class CMainWindow;
 
-namespace Ui {
-	class CDlgEditProject;
-}
-
-class CDlgEditProject : public QDialog
+class CDlgFiberViz : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgEditProject(FSProject& prj, QWidget* parent);
+	CDlgFiberViz(CMainWindow* wnd);
 
-	void accept();
+	void showEvent(QShowEvent* ev) override;
+	void closeEvent(QCloseEvent* ev) override;
 
 private slots:
-	void on_selection_changed(int n);
+	void onDataChanged();
 
 private:
-	Ui::CDlgEditProject*	ui;
-	FSProject&				m_prj;
+	CDlgFiberViz_UI* ui;
 };

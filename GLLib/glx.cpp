@@ -41,7 +41,8 @@ void glx::rotate(const quatd& q)
 	if (w != 0)
 	{
 		vec3d r = q.GetVector();
-		glRotated(180*w/PI, r.x, r.y, r.z);
+		if (r.Length() > 1e-6) glRotated(w * 180 / PI, r.x, r.y, r.z);
+		else glRotated(w * 180 / PI, 1, 0, 0);
 	}
 }
 

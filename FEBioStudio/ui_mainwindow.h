@@ -79,6 +79,7 @@ SOFTWARE.*/
 #include "WebDefines.h"
 #include "FEBioJobManager.h"
 #include "XMLDocument.h"
+#include "DlgFiberViz.h"
 #include <vector>
 
 class QProcess;
@@ -181,6 +182,7 @@ public:
 	::CTimelinePanel*	timePanel;
     ::CImagePanel*	imagePanel;
     ::CImageSettingsPanel*	imageSettingsPanel;
+	::CDlgFiberViz* fiberViz;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -209,13 +211,22 @@ public:
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
 
-	QAction* actionAddBC;
+	QAction* actionAddNodalBC;
+	QAction* actionAddSurfaceBC;
+	QAction* actionAddGeneralBC;
+
 	QAction* actionAddNodalLoad;
 	QAction* actionAddSurfLoad;
 	QAction* actionAddBodyLoad;
+
 	QAction* actionAddIC;
+
 	QAction* actionAddContact;
-	QAction* actionAddConstraint;
+
+	QAction* actionAddSurfaceNLC;
+	QAction* actionAddBodyNLC;
+	QAction* actionAddGenericNLC;
+
 	QAction* actionAddRigidBC;
 	QAction* actionAddRigidIC;
 	QAction* actionAddRigidLoad;
@@ -307,6 +318,7 @@ public:
 
 		measureTool = nullptr;
 		planeCutTool = nullptr;
+		fiberViz = nullptr;
 
 		m_showNewDialog = true;
 	}
@@ -502,14 +514,18 @@ public:
         QAction* actionRemoveRow = addAction("Remove Row", "actionRemoveRow", "selectDel");
 
 		// --- Physics menu ---
-		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier | Qt::Key_B);
+		actionAddNodalBC         = addAction("Add Nodal BC..."               , "actionAddNodalBC"  ); actionAddNodalBC->setShortcut(Qt::ControlModifier | Qt::Key_B);
+		actionAddSurfaceBC       = addAction("Add Surface BC..."             , "actionAddSurfaceBC");
+		actionAddGeneralBC       = addAction("Add Linear Constraint ..."     , "actionAddGeneralBC");
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
 		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
 		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
-		actionAddConstraint      = addAction("Add Constraint..."             , "actionAddConstraint");
+		actionAddSurfaceNLC      = addAction("Add Surface Constraint..."     , "actionAddSurfaceNLC");
+		actionAddBodyNLC         = addAction("Add Body Constraint..."        , "actionAddBodyNLC");
+		actionAddGenericNLC      = addAction("Add General Constraint..."     , "actionAddGenericNLC");
 		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
 		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
 		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
@@ -607,7 +623,7 @@ public:
 		actionOrtho           = addAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
 		actionRenderMode      = addAction("Toggle Render Mode", "actionRenderMode"); actionRenderMode->setCheckable(true); actionRenderMode->setShortcut(Qt::Key_W);
-		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
+		actionShowFibers      = addAction("Show Fibers", "actionShowFibers");
 		actionShowMatAxes     = addAction("Toggle Material Axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
 		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
@@ -812,13 +828,17 @@ public:
 
 		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());
-		menuPhysics->addAction(actionAddBC);
+		menuPhysics->addAction(actionAddNodalBC);
+		menuPhysics->addAction(actionAddSurfaceBC);
+		menuPhysics->addAction(actionAddGeneralBC);
 		menuPhysics->addAction(actionAddNodalLoad);
 		menuPhysics->addAction(actionAddSurfLoad);
 		menuPhysics->addAction(actionAddBodyLoad);
 		menuPhysics->addAction(actionAddIC);
 		menuPhysics->addAction(actionAddContact);
-		menuPhysics->addAction(actionAddConstraint);
+		menuPhysics->addAction(actionAddSurfaceNLC);
+		menuPhysics->addAction(actionAddBodyNLC);
+		menuPhysics->addAction(actionAddGenericNLC);
 		menuPhysics->addAction(actionAddRigidBC);
 		menuPhysics->addAction(actionAddRigidIC);
 		menuPhysics->addAction(actionAddRigidLoad);

@@ -51,6 +51,7 @@ Param::Param()
 	m_checked = false;
 	m_flags = 0;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -151,6 +152,31 @@ size_t Param::size() const
 		assert(false);
 	}
 	return 0;
+}
+
+//-----------------------------------------------------------------------------
+void Param::SetWatchVariable(Param* watchVar)
+{
+	assert(watchVar && (watchVar->GetParamType() == Param_BOOL));
+	m_watch = watchVar;
+}
+
+bool Param::IsWatched() const
+{
+	return (m_watch != nullptr);
+}
+
+void Param::SetWatchFlag(bool b)
+{
+	assert(m_watch);
+	if (m_watch) m_watch->SetBoolValue(b);
+}
+
+bool Param::GetWatchFlag() const
+{
+	assert(m_watch);
+	if (m_watch) return m_watch->GetBoolValue();
+	else return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -398,6 +424,7 @@ Param::Param(int n, Param_Type ntype, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -424,6 +451,7 @@ Param::Param(int n, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -450,6 +478,7 @@ Param::Param(double d, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -476,6 +505,7 @@ Param::Param(double d, const char* szunit, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -502,6 +532,7 @@ Param::Param(bool b, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -528,6 +559,7 @@ Param::Param(vec3d v, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 
@@ -555,6 +587,8 @@ Param::Param(vec2i v, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -581,6 +615,7 @@ Param::Param(mat3d v, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -607,6 +642,7 @@ Param::Param(mat3ds v, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -632,6 +668,7 @@ Param::Param(GLColor c, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -657,6 +694,7 @@ Param::Param(const std::vector<int>& v, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
@@ -681,6 +719,7 @@ Param::Param(const std::vector<double>& v, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
@@ -705,6 +744,7 @@ Param::Param(const std::vector<vec2d>& v, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 Param::Param(const std::string& val, const char* szb, const char* szn)
@@ -730,6 +770,7 @@ Param::Param(const std::string& val, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 Param::Param(const int* v, int nsize, const char* szb, const char* szn)
@@ -758,6 +799,7 @@ Param::Param(const int* v, int nsize, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 Param::Param(const double* v, int nsize, const char* szb, const char* szn)
@@ -786,6 +828,7 @@ Param::Param(const double* v, int nsize, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -812,6 +855,7 @@ Param::Param(int n, const char* szi, int idx, const char* szb, const char* szn)
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
     
 //-----------------------------------------------------------------------------
@@ -838,6 +882,7 @@ Param::Param(double d, const char* szi, int idx, const char* szb, const char* sz
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
     
 //-----------------------------------------------------------------------------
@@ -864,6 +909,7 @@ Param::Param(double d, const char* szi, int idx, const char* szunit, const char*
 	m_checkable = false;
 	m_checked = false;
 	m_paramGroup = -1;
+	m_watch = nullptr;
 }
 
 void Param::SetArrayIntValue(const std::vector<int>& v)
