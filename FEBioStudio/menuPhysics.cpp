@@ -548,6 +548,8 @@ void CMainWindow::on_actionAddRigidBC_triggered()
 		assert(prc);
 		if (prc)
 		{
+			FEBio::InitDefaultProps(prc);
+
 			FSStep* step = fem->GetStep(dlg.GetStep());
 			prc->SetStep(step->GetID());
 
