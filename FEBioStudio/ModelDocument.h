@@ -51,6 +51,8 @@ public:
 	void Load(IArchive& ar) override;
 	void Save(OArchive& ar) override;
 
+	bool Initialize() override;
+
 public:
 	//! Get the project
 	FSProject& GetProject();

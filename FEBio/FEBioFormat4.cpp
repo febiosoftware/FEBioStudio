@@ -180,7 +180,29 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 	XMLAtt& atype = tag.Attribute("type");
 	int moduleId = FEBio::GetModuleId(atype.cvalue()); assert(moduleId >= 0);
 	FEBio::SetActiveModule(moduleId);
-	FileReader()->GetProject().SetModule(moduleId, false);
+	FSProject& prj = FileReader()->GetProject();
+	prj.SetModule(moduleId, false);
+
+	if (tag.isempty() == false)
+	{
+		++tag;
+		do {
+			if (tag == "units")
+			{
+				// NOTE: the values are defined in FEBioStudio\units.h. 
+				const char* sz = tag.szvalue();
+				if      (strcmp(sz, "SI"     ) == 0) prj.SetUnits(2);
+				else if (strcmp(sz, "mm-N-s" ) == 0) prj.SetUnits(3);
+				else if (strcmp(sz, "mm-kg-s") == 0) prj.SetUnits(4);
+				else if (strcmp(sz, "µm-nN-s") == 0) prj.SetUnits(5);
+				else if (strcmp(sz, "CGS"    ) == 0) prj.SetUnits(6);
+				else AddLogEntry("Unrecognized unit system.");
+			}
+			++tag;
+		} 
+		while (!tag.isend());
+	}
+
 	return (moduleId != -1);
 }
 //=============================================================================

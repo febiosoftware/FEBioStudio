@@ -1325,6 +1325,9 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		// get the project
 		FSProject& fem = doc->GetProject();
 
+		// pass the units to the model project
+		fem.SetUnits(doc->GetUnitSystem());
+
 		AddLogEntry(QString("Writing file %1 ... ").arg(fileName));
 
 		// export file based on selected filter

@@ -3064,6 +3064,10 @@ bool CMainWindow::ExportFEBioFile(CModelDocument* doc, const std::string& febFil
 	bool ret = false;
 	string err;
 
+	// pass the units to the model project
+	doc->GetProject().SetUnits(doc->GetUnitSystem());
+
+
 	try {
 		if (febioFileVersion == 0x0205)
 		{

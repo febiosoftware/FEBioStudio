@@ -119,6 +119,8 @@ FSProject::FSProject(void) : m_plt(*this)
 
 	m_module = -1;
 
+	m_units = 0; // 0 = no unit system
+
 	static bool init = false;
 	if (init == false)
 	{
@@ -485,6 +487,18 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FEBioLoadController   , 0, FELOADCONTROLLER_ID   , FE_FEBIO_LOAD_CONTROLLER   , "[febio]");
 	REGISTER_FE_CLASS(FEBioFunction1D       , 0, FEFUNCTION1D_ID       , FE_FEBIO_FUNCTION1D        , "[febio]");
 	REGISTER_FE_CLASS(FEBioMaterialProperty , 0, FEMATERIALPROP_ID     , FE_FEBIO_MATERIAL_PROPERTY , "[febio]");
+}
+
+//-------------------------------------------------------------------------------------------------
+void FSProject::SetUnits(int units)
+{
+	m_units = units;
+}
+
+//-------------------------------------------------------------------------------------------------
+int FSProject::GetUnits() const
+{
+	return m_units;
 }
 
 //-------------------------------------------------------------------------------------------------
