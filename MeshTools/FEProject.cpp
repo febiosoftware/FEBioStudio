@@ -1022,7 +1022,7 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 		{
 			FSRigidPrescribed* pf = dynamic_cast<FSRigidPrescribed*>(pc); assert(pf);
 			int bc = pf->GetDOF();
-			if (bc > 0)
+			if (bc < 3)
 			{
 				FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_displacement", fem); assert(pcfeb);
 				copyParameters(log, pcfeb, pc);
@@ -1034,6 +1034,7 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 			{
 				FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_rotation", fem); assert(pcfeb);
 				copyParameters(log, pcfeb, pc);
+				pcfeb->SetParamInt("dof", bc - 3); // NOTE: This is necessary since dof is zero-based!
 				pcfeb->SetName(pc->GetName());
 				pcfeb->SetMaterialID(pc->GetMaterialID());
 				newStep.AddRigidBC(pcfeb);
