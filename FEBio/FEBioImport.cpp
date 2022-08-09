@@ -513,7 +513,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		log.AddLogData(ld);
 	}
 
-	if (m_nversion < 0x0300)
+	if (m_nversion < 0x0400)
 	{
 		// older formats need to be converted
 		AddLogEntry("Converting FE model:");

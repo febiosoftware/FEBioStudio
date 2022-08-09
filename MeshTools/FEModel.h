@@ -343,6 +343,24 @@ template <class T> int CountLoads(FSModel& fem)
 }
 
 //-----------------------------------------------------------------------------
+// helper function for identifying the number of rigid constraints of a specific type that have been defined.
+template <class T> int CountRigidConstraints(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->RigidConstraints(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->RigidConstraint(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+
+//-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
 template <class T> int CountConnectors(FSModel& fem)
 {
