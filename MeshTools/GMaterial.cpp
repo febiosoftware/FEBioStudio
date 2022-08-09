@@ -191,7 +191,7 @@ FEItemListBuilder* GMaterial::GetItemList()
 		int NP = po->Parts();
 		for (int j = 0; j < NP; ++j)
 		{
-			GPart* pg = po->Part(i);
+			GPart* pg = po->Part(j);
 			if (pg->GetMaterialID() == GetID())
 			{
 				m_partList->add(pg->GetID());
@@ -214,7 +214,7 @@ void GMaterial::SetItemList(FEItemListBuilder* pi)
 		int NP = po->Parts();
 		for (int j = 0; j < NP; ++j)
 		{
-			GPart* pg = po->Part(i);
+			GPart* pg = po->Part(j);
 			if (pg->GetMaterialID() == GetID())
 			{
 				pg->SetMaterialID(-1);
