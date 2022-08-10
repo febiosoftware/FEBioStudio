@@ -4,6 +4,7 @@
 
 class FSModel;
 class FSLoadController;
+class FEElementRef;
 
 //-----------------------------------------------------------------------------
 // Base class for components of an FSModel
@@ -61,5 +62,11 @@ class FSVec3dValuator : public FSGenericClass
 public:
 	FSVec3dValuator(FSModel* fem);
 
-	vec3d GetFiberVector(const vec3d& p);
+	vec3d GetFiberVector(const FEElementRef& el);
+
+	bool UpdateData(bool bsave) override;
+
+private:
+	int		m_naopt;
+	int		m_n[2];
 };

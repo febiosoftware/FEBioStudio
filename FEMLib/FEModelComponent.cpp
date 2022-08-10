@@ -27,6 +27,8 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 #include <MeshTools/FEModel.h>
+#include "FECoreMaterial.h"	// for FEElementRef
+#include "FEMaterial.h" // for fiber generator defines
 #include <exception>
 #include <sstream>
 
@@ -98,7 +100,7 @@ void* FSModelComponent::GetFEBioClass()
 
 bool FSModelComponent::UpdateData(bool bsave)
 {
-	if (m_febClass)
+	if (bsave && m_febClass)
 	{
 		return FEBio::UpdateFEBioClass(this);
 	}
@@ -271,9 +273,55 @@ void FSGenericClass::Load(IArchive& ar)
 FSVec3dValuator::FSVec3dValuator(FSModel* fem) : FSGenericClass(fem)
 {
 	SetSuperClassID(FEVEC3DVALUATOR_ID);
+	m_naopt = -1;
+	m_n[0] = 1;
+	m_n[1] = 2;
 }
 
-vec3d FSVec3dValuator::GetFiberVector(const vec3d& p)
+bool FSVec3dValuator::UpdateData(bool bsave)
 {
-	return FEBio::GetMaterialFiber(GetFEBioClass(), p);
+	const char* sztype = GetTypeString();
+	if (sztype && (strcmp(sztype, "user" ) == 0)) m_naopt = FE_FIBER_USER;
+	if (sztype && (strcmp(sztype, "local") == 0))
+	{
+		m_naopt = FE_FIBER_LOCAL;
+		Param* p = GetParam("local"); assert(p);
+		if (p)
+		{
+			std::vector<int> n = p->GetArrayIntValue(); assert(n.size() == 2);
+			if (n.size() == 2)
+			{
+				m_n[0] = n[0];
+				m_n[1] = n[1];
+			}
+		}
+	}
+	return FSGenericClass::UpdateData(bsave);
+}
+
+vec3d FSVec3dValuator::GetFiberVector(const FEElementRef& el)
+{
+	switch (m_naopt)
+	{
+	case FE_FIBER_USER: return el->m_fiber; break;
+	case FE_FIBER_LOCAL:
+	{
+		vec3d v(0, 0, 0);
+		FSCoreMesh* pm = el.m_pmesh;
+		if (pm)
+		{
+			int n0 = m_n[0] - 1;
+			int n1 = m_n[1] - 1;
+			if (n0 < 0) n0 = 0;
+			if (n1 < 0) n1 = 1;
+			vec3d r0 = pm->Node(el->m_node[n0]).pos();
+			vec3d r1 = pm->Node(el->m_node[n1]).pos();
+			v = r1 - r0;
+			v.unit();
+		}
+		return v;
+	}
+	break;
+	}
+	return FEBio::GetMaterialFiber(GetFEBioClass(), el.center());
 }
