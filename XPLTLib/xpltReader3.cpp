@@ -64,6 +64,8 @@ template <class Type> void ReadElemData_REGION(xpltArchive& ar, XpltReader3::Dom
 
 XpltReader3::DICT_ITEM::DICT_ITEM()
 {
+	szname[0] = 0;
+	szunit[0] = 0;
 }
 
 XpltReader3::DICT_ITEM::DICT_ITEM(const XpltReader3::DICT_ITEM& item)
@@ -71,6 +73,7 @@ XpltReader3::DICT_ITEM::DICT_ITEM(const XpltReader3::DICT_ITEM& item)
 	ntype = item.ntype;
 	nfmt = item.nfmt;
 	strcpy(szname, item.szname);
+	strcpy(szunit, item.szunit);
 
 	index = item.index;
 
@@ -278,6 +281,7 @@ bool XpltReader3::ReadDictItem(DICT_ITEM& it)
 				strcpy(it.szname, sz);
 			}
 			break;
+		case PLT_DIC_ITEM_UNITS: m_ar.read(it.szunit, DI_NAME_SIZE); break;
 		default:
 			return errf("Error while reading dictionary section");
 		}
@@ -339,6 +343,9 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 			return errf("Error while reading dictionary.");
 		}
 		if (pdf == nullptr) return false;
+
+		if (it.szunit[0]) pdf->SetUnits(it.szunit);
+
 		pdm->AddDataField(pdf, it.szname);
 	}
 
@@ -445,6 +452,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 			return errf("Error while reading dictionary");
 		}
 		if (pdf == nullptr) return false;
+		if (it.szunit[0]) pdf->SetUnits(it.szunit);
 		pdm->AddDataField(pdf, it.szname);
 	}
 
@@ -523,6 +531,7 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 			return errf("Error reading dictionary");
 		}
 		if (pdf == nullptr) return false;
+		if (it.szunit[0]) pdf->SetUnits(it.szunit);
 		pdm->AddDataField(pdf, it.szname);
 	}
 
@@ -530,24 +539,24 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	if (m_bHasDispl) 
 	{
 		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
-		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         );
-		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" );
+		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         , "L");
+		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" , "L");
 	}
 
 	// add additional stress fields
 	if (m_bHasStress)
 	{
-		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure");
+		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure", "P");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
+			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
 		}
 	}
 
 	// add additional stress fields
 	if (m_bHasNodalStress)
 	{
-		pdm->AddDataField(new FEDataField_T<ElemNodalPressure>(&fem), "nodal pressure");
+		pdm->AddDataField(new FEDataField_T<ElemNodalPressure>(&fem), "nodal pressure", "P");
 	}
 
 	return true;

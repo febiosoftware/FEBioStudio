@@ -43,7 +43,7 @@ public:
 	~FEDataManager(void);
 
 	//! add a data field
-	void AddDataField(ModelDataField* pd, const std::string& name = "");
+	void AddDataField(ModelDataField* pd, const std::string& name = "", const char* szunits = nullptr);
 
 	//! delete a data field
 	void DeleteDataField(ModelDataField* pd);
@@ -62,6 +62,8 @@ public:
 	FEDataFieldPtr DataField(int i);
 
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);
+
+	const char* getDataUnits(int nfield);
 
 	// see if a field ID is valid
 	bool IsValid(int fieldId) const;

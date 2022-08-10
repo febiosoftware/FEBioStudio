@@ -152,6 +152,7 @@ public:
 	TIMESETTINGS& GetTimeSettings();
 
 	std::string GetFieldString();
+	std::string GetFieldUnits();
 
 	float GetTimeValue();
 

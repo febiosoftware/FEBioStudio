@@ -1262,7 +1262,7 @@ void CGLView::initializeGL()
 	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
 	m_psubtitle->set_font_size(15);
 	m_psubtitle->fit_to_size();
-	m_psubtitle->set_label("$(datafield)\\nTime = $(time)");
+	m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
 
 	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
@@ -1558,6 +1558,7 @@ void CGLView::paintGL()
 		{
 			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
 			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
+			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
 			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
 		}
 	}

@@ -103,6 +103,10 @@ public:
 
 	FEPostModel* GetModel() { return m_fem; }
 
+public:
+	void SetUnits(const char* sz);
+	const char* GetUnits() const;
+
 protected:
 	int				m_nfield;	//!< field ID
 	Data_Type		m_ntype;	//!< data type
@@ -110,6 +114,7 @@ protected:
 	Data_Class		m_nclass;	//!< data class
 	unsigned int	m_flag;		//!< flags
 	std::string		m_name;		//!< data field name
+	std::string		m_units;	//!< units
 
 	int				m_arraySize;	//!< data size for arrays
 	std::vector<string>	m_arrayNames;	//!< (optional) names of array components
