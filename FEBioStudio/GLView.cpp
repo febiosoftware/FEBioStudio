@@ -3051,7 +3051,7 @@ void CGLView::RenderMaterialFibers()
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible() && po->IsValid())
+		if (po->IsVisible() && po->IsValid() && (po->IsSelected() || (view.m_showSelectFibersOnly==false)))
 		{
 			FSMesh* pm = po->GetFEMesh();
 			if (pm)

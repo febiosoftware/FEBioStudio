@@ -91,6 +91,8 @@ void VIEW_SETTINGS::Defaults(int ntheme)
 	m_bcontour = false;
 	m_blma = false;
 	m_showHiddenFibers = false;
+	m_showSelectFibersOnly = false;
+
 	m_showDiscrete = true;
 	m_showRigidLabels = false;
 
