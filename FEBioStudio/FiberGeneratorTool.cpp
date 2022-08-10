@@ -53,12 +53,15 @@ public:
 	QTableWidget*	m_table;
 	QLineEdit*		m_val;
 	QCheckBox*		m_matAxes;
+	QCheckBox*		m_cross;
 
 	QComboBox*	m_matList;
 
 	QLineEdit*	m_maxIters;
 	QLineEdit*	m_tol;
 	QLineEdit*	m_sor;
+
+	QLineEdit* m_normal;
 
 public:
 	UIFiberGeneratorTool(CFiberGeneratorTool* w)
@@ -86,7 +89,10 @@ public:
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
 		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
-		f->addRow("Generate mat axes:", m_matAxes = new QCheckBox); 
+		f->addRow("Generate mat axes:", m_matAxes = new QCheckBox);
+		f->addRow("Generate cross product:", m_cross = new QCheckBox);
+		f->addRow("Normal vector:", m_normal = new QLineEdit);
+		m_normal->setText(Vec3dToString(vec3d(0, 0, 1)));
 
 		m_maxIters->setValidator(new QIntValidator());
 		m_tol->setValidator(new QDoubleValidator());
@@ -102,6 +108,7 @@ public:
 
 		QObject::connect(m_add, SIGNAL(clicked()), w, SLOT(OnAddClicked()));
 		QObject::connect(m_apply, SIGNAL(clicked()), w, SLOT(OnApply()));
+		QObject::connect(m_normal, SIGNAL(editingFinished()), w, SLOT(validateNormal()));
 	}
 };
 
@@ -185,6 +192,16 @@ void CFiberGeneratorTool::OnAddClicked()
 			}
 		}
 	}
+}
+
+void CFiberGeneratorTool::validateNormal()
+{
+	QString s = ui->m_normal->text();
+	vec3d v = StringToVec3d(s);
+	s = Vec3dToString(v);
+	ui->m_normal->blockSignals(true);
+	ui->m_normal->setText(s);
+	ui->m_normal->blockSignals(false);
 }
 
 void CFiberGeneratorTool::OnApply()
@@ -302,6 +319,22 @@ void CFiberGeneratorTool::OnApply()
 	vector<vec3d> grad;
 	GradientMap G;
 	G.Apply(data, grad, m_nsmoothIters);
+
+	vec3d N = StringToVec3d(ui->m_normal->text());
+	N.unit();
+
+	bool cross = ui->m_cross->isChecked();
+	if (cross)
+	{
+		// calculate cross product
+		for (int i = 0; i < grad.size(); ++i)
+		{
+			vec3d a = grad[i];
+			vec3d b = a ^ N;
+			b.unit();
+			grad[i] = b;
+		}
+	}
 
 	bool matAxes = ui->m_matAxes->isChecked();
 	if (matAxes == false)
