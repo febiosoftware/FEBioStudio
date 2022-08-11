@@ -1188,11 +1188,14 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 		{
 			// rigid interface became a boundary condition
 			FSRigidInterface* pr = dynamic_cast<FSRigidInterface*>(pi);
-			FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("rigid", fem); break;
+			FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("rigid", fem);
 
 			pbc->SetParamInt("rb", pr->GetRigidBody()->GetID());
 
 			pbc->SetItemList(pr->GetItemList());
+			pr->SetItemList(nullptr);
+
+			pbc->SetName(pr->GetName());
 
 			newStep.AddBC(pbc);
 		}
@@ -1596,6 +1599,7 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 		solver->SetParamInt("max_refs", ops.maxref);
 		solver->SetParamBool("diverge_reform", ops.bdivref);
 		solver->SetParamBool("reform_each_time_step", ops.brefstep);
+		solver->SetParamInt("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 
 		FSProperty* qnProp = solver->FindProperty("qn_method");
 		qnProp->SetComponent(nullptr);
