@@ -3321,14 +3321,13 @@ void CGLView::RenderRigidWalls()
 	for (int n = 0; n<ps->Steps(); ++n)
 	{
 		FSStep& s = *ps->GetStep(n);
-		for (int i = 0; i<s.Interfaces(); ++i)
+		for (int i = 0; i<s.Constraints(); ++i)
 		{
-			FSRigidWallInterface* pi = dynamic_cast<FSRigidWallInterface*>(s.Interface(i));
-			if (pi)
+			FSModelConstraint* pw = s.Constraint(i);
+			if (pw->IsType("rigid_wall"))
 			{
 				// get the plane equation
-				double a[4];
-				pi->GetPlaneEquation(a);
+				vector<double> a = pw->GetParamArrayDouble("plane");
 				vec3d n(a[0], a[1], a[2]);
 				double D = a[3];
 				vec3d r0 = n*(D / (n*n));
@@ -3363,24 +3362,6 @@ void CGLView::RenderRigidWalls()
 					glEnd();
 				}
 				glPopMatrix();
-			}
-			FSRigidSphereInterface* prs = dynamic_cast<FSRigidSphereInterface*>(s.Interface(i));
-			if (prs)
-			{
-				vec3d c = prs->Center();
-				double R = prs->Radius();
-
-				GLUquadricObj* pobj = gluNewQuadric();
-
-				glColor4ub(128, 96, 0, 96);
-				glPushMatrix();
-				{
-					glTranslated(c.x, c.y, c.z);
-					gluSphere(pobj, R, 32, 32);
-				}
-				glPopMatrix();
-
-				gluDeleteQuadric(pobj);
 			}
 		}
 	}
@@ -3450,12 +3431,11 @@ void CGLView::RenderRigidConnectors()
 		for (int i = 0; i<s.RigidConnectors(); ++i)
 		{
 			FSRigidConnector* rci = s.RigidConnector(i);
-			if (dynamic_cast<FSRigidSphericalJoint*> (rci))
+			if (rci->IsType("rigid spherical joint"))
 			{
-				FSRigidSphericalJoint* pj = dynamic_cast<FSRigidSphericalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FSRigidSphericalJoint::J_ORIG);
+				vec3d r = rci->GetParamVec3d("joint_origin");
 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(255, 0, 0);
 				else
 					glColor3ub(64, 64, 64);
@@ -3465,12 +3445,11 @@ void CGLView::RenderRigidConnectors()
 				glx::renderJoint(R);
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FSRigidRevoluteJoint*> (rci))
+			else if (rci->IsType("rigid revolute joint"))
 			{
-				FSRigidRevoluteJoint* pj = dynamic_cast<FSRigidRevoluteJoint*> (rci);
-				vec3d r = pj->GetVecValue(FSRigidRevoluteJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FSRigidRevoluteJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FSRigidRevoluteJoint::T_AXIS); a.Normalize();
+				vec3d r = rci->GetParamVec3d("joint_origin");
+				vec3d c = rci->GetParamVec3d("rotation_axis"); c.Normalize();
+				vec3d a = rci->GetParamVec3d("transverse_axis"); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3483,7 +3462,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(0, 0, 255);
 				else
 					glColor3ub(64, 64, 64);
@@ -3492,12 +3471,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FSRigidPrismaticJoint*> (rci))
+			else if (rci->IsType("rigid prismatic joint"))
 			{
-				FSRigidPrismaticJoint* pj = dynamic_cast<FSRigidPrismaticJoint*> (rci);
-				vec3d r = pj->GetVecValue(FSRigidPrismaticJoint::J_ORIG);
-				vec3d a = pj->GetVecValue(FSRigidPrismaticJoint::J_AXIS); a.Normalize();
-				vec3d b = pj->GetVecValue(FSRigidPrismaticJoint::T_AXIS); b.Normalize();
+				vec3d r = rci->GetParamVec3d("joint_origin");
+				vec3d a = rci->GetParamVec3d("translation_axis"); a.Normalize();
+				vec3d b = rci->GetParamVec3d("transverse_axis"); b.Normalize();
 				vec3d c = a ^ b; c.Normalize();
 				b = c ^ a; b.Normalize();
 				GLfloat Q4[16] = {
@@ -3510,7 +3488,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(0, 255, 0);
 				else
 					glColor3ub(64, 64, 64);
@@ -3518,12 +3496,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FSRigidCylindricalJoint*> (rci))
+			else if (rci->IsType("rigid cylindrical joint"))
 			{
-				FSRigidCylindricalJoint* pj = dynamic_cast<FSRigidCylindricalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FSRigidCylindricalJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FSRigidCylindricalJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FSRigidCylindricalJoint::T_AXIS); a.Normalize();
+				vec3d r = rci->GetParamVec3d("joint_origin");
+				vec3d c = rci->GetParamVec3d("joint_axis"); c.Normalize();
+				vec3d a = rci->GetParamVec3d("transverse_axis"); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3536,7 +3513,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(255, 0, 255);
 				else
 					glColor3ub(64, 64, 64);
@@ -3545,12 +3522,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FSRigidPlanarJoint*> (rci))
+			else if (rci->IsType("rigid planar joint"))
 			{
-				FSRigidPlanarJoint* pj = dynamic_cast<FSRigidPlanarJoint*> (rci);
-				vec3d r = pj->GetVecValue(FSRigidPlanarJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FSRigidPlanarJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FSRigidPlanarJoint::T_AXIS); a.Normalize();
+				vec3d r = rci->GetParamVec3d("joint_origin");
+				vec3d c = rci->GetParamVec3d("rotation_axis"); c.Normalize();
+				vec3d a = rci->GetParamVec3d("translation_axis_1"); a.Normalize();
 				vec3d b = c ^ a; b.Normalize();
 				a = b ^ c; a.Normalize();
 				GLfloat Q4[16] = {
@@ -3563,7 +3539,7 @@ void CGLView::RenderRigidConnectors()
 				glTranslatef((float)r.x, (float)r.y, (float)r.z);
 				glMultMatrixf(Q4);
 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(0, 255, 255);
 				else
 					glColor3ub(64, 64, 64);
@@ -3572,12 +3548,11 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-            else if (dynamic_cast<FSRigidLock*> (rci))
+            else if (rci->IsType("rigid lock"))
             {
-                FSRigidLock* pj = dynamic_cast<FSRigidLock*> (rci);
-                vec3d r = pj->GetVecValue(FSRigidLock::J_ORIG);
-                vec3d c = pj->GetVecValue(FSRigidLock::J_AXIS); c.Normalize();
-                vec3d a = pj->GetVecValue(FSRigidLock::T_AXIS); a.Normalize();
+                vec3d r = rci->GetParamVec3d("joint_origin");
+                vec3d c = rci->GetParamVec3d("first_axis"); c.Normalize();
+                vec3d a = rci->GetParamVec3d("second_axis"); a.Normalize();
                 vec3d b = c ^ a; b.Normalize();
                 a = b ^ c; a.Normalize();
                 GLfloat Q4[16] = {
@@ -3590,7 +3565,7 @@ void CGLView::RenderRigidConnectors()
                 glTranslatef((float)r.x, (float)r.y, (float)r.z);
                 glMultMatrixf(Q4);
                 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(255, 127, 0);
 				else
 					glColor3ub(64, 64, 64);
@@ -3599,14 +3574,13 @@ void CGLView::RenderRigidConnectors()
                 
                 glPopMatrix();
             }
-			else if (dynamic_cast<FSRigidSpring*> (rci))
+			else if (rci->IsType("rigid spring"))
 			{
-				FSRigidSpring* pj = dynamic_cast<FSRigidSpring*> (rci);
-				vec3d xa = pj->GetVecValue(FSRigidSpring::XA);
-				vec3d xb = pj->GetVecValue(FSRigidSpring::XB);
+				vec3d xa = rci->GetParamVec3d("insertion_a");
+				vec3d xb = rci->GetParamVec3d("insertion_b");
 
 				glPushMatrix();
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(255, 0, 0);
 				else
 					glColor3ub(64, 64, 64);
@@ -3614,15 +3588,14 @@ void CGLView::RenderRigidConnectors()
 				glx::renderSpring(xa, xb, R);
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FSRigidDamper*> (rci))
+			else if (rci->IsType("rigid damper"))
 			{
-				FSRigidDamper* pj = dynamic_cast<FSRigidDamper*> (rci);
-				vec3d xa = pj->GetVecValue(FSRigidDamper::XA);
-				vec3d xb = pj->GetVecValue(FSRigidDamper::XB);
+				vec3d xa = rci->GetParamVec3d("insertion_a");
+				vec3d xb = rci->GetParamVec3d("insertion_b");
 
 				glPushMatrix();
 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(255, 0, 0);
 				else
 					glColor3ub(64, 64, 64);
@@ -3631,15 +3604,14 @@ void CGLView::RenderRigidConnectors()
 
 				glPopMatrix();
 			}
-			else if (dynamic_cast<FSRigidContractileForce*> (rci))
+			else if (rci->IsType("rigid contractile force"))
 			{
-				FSRigidContractileForce* pj = dynamic_cast<FSRigidContractileForce*> (rci);
-				vec3d xa = pj->GetVecValue(FSRigidContractileForce::XA);
-				vec3d xb = pj->GetVecValue(FSRigidContractileForce::XB);
+				vec3d xa = rci->GetParamVec3d("insertion_a");
+				vec3d xb = rci->GetParamVec3d("insertion_b");
 
 				glPushMatrix();
 
-				if (pj->IsActive())
+				if (rci->IsActive())
 					glColor3ub(255, 0, 0);
 				else
 					glColor3ub(64, 64, 64);
@@ -3676,15 +3648,15 @@ void CGLView::RenderRigidBodies()
 
 	for (int i = 0; i<ps->Materials(); ++i)
 	{
-		GMaterial* pm = ps->GetMaterial(i);
-		FSRigidMaterial* pb = dynamic_cast<FSRigidMaterial*> (pm->GetMaterialProperties());
-		if (pb)
+		GMaterial* pgm = ps->GetMaterial(i);
+		FSMaterial* pm = pgm->GetMaterialProperties();
+		if (pm->IsRigid())
 		{
-			GLColor c = pm->Diffuse();
+			GLColor c = pgm->Diffuse();
 
 			glColor3ub(c.r, c.g, c.b);
 
-			vec3d r = pb->GetVecValue(FSRigidMaterial::MP_RC);
+			vec3d r = pm->GetParamVec3d("center_of_mass");
 
 			glPushMatrix();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
@@ -3694,7 +3666,7 @@ void CGLView::RenderRigidBodies()
 			glPopMatrix();
 
 			// get the parent
-			if (pb->m_pid != -1)
+/*			if (pb->m_pid != -1)
 			{
 				FSRigidMaterial* pp = dynamic_cast<FSRigidMaterial*>(ps->GetMaterialFromID(pb->m_pid)->GetMaterialProperties());
 				assert(pp);
@@ -3730,7 +3702,7 @@ void CGLView::RenderRigidBodies()
 					glEnd();
 				}
 				glPopMatrix();
-			}
+			}*/
 		}
 	}
 

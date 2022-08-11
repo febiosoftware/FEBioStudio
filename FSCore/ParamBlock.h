@@ -666,6 +666,13 @@ public:
 	void SetParamVectorInt   (const char* szparam, const std::vector<int   >& a) { GetParam(szparam)->SetVectorIntValue(a); }
 	void SetParamVectorDouble(const char* szparam, const std::vector<double>& a) { GetParam(szparam)->SetVectorDoubleValue(a); }
 
+	int    GetParamInt  (const char* szparam) { return GetParam(szparam)->GetIntValue(); }
+	double GetParamFloat(const char* szparam) { return GetParam(szparam)->GetFloatValue(); }
+	bool   GetParamBool (const char* szparam) { return GetParam(szparam)->GetBoolValue(); }
+	vec3d  GetParamVec3d(const char* szparam) { return GetParam(szparam)->GetVec3dValue(); }
+	std::vector<int>    GetParamArrayInt   (const char* szparam) { return GetParam(szparam)->GetArrayIntValue(); }
+	std::vector<double> GetParamArrayDouble(const char* szparam) { return GetParam(szparam)->GetArrayDoubleValue(); }
+
 public:
 	ParamBlock& GetParamBlock() { return m_Param; }
 	const ParamBlock& GetParamBlock() const { return m_Param; }
