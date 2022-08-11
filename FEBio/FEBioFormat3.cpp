@@ -38,6 +38,8 @@ SOFTWARE.*/
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/GModel.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FEBioLink/FEBioClass.h>
+#include <FEMLib/FERigidLoad.h>
 #include <assert.h>
 #include <sstream>
 using namespace std;
@@ -3062,12 +3064,66 @@ bool FEBioFormat3::ParseDiscreteSection(XMLTag& tag)
 				assert(false);
 			}
 		}
+		else if (tag == "rigid_cable")
+		{
+			ParseRigidCable(m_pBCStep, tag);
+		}
 		else ParseUnknownTag(tag);
 		++tag;
 	}
 	while (!tag.isend());
 
 	return true;
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat3::ParseRigidCable(FSStep* pstep, XMLTag& tag)
+{
+	FSModel* fem = &GetFSModel();
+	const char* szname = tag.AttributeValue("name", true);
+	FSRigidLoad* prl = FEBio::CreateRigidLoad("rigid_cable", fem);
+	if (prl == nullptr)
+	{
+		ParseUnknownTag(tag);
+		return;
+	}
+
+	if (szname) prl->SetName(szname);
+	else
+	{
+		int n = pstep->RigidLoads() + 1;
+		char sz[100] = { 0 };
+		sprintf(sz, "RigidLoad%d", n);
+		prl->SetName(sz);
+	}
+
+	pstep->AddRigidLoad(prl);
+
+	// we need the rigid_cable_point property
+	FSProperty* points = prl->FindProperty("rigid_cable_point");
+	if (points == nullptr)
+	{
+		ParseUnknownTag(tag);
+		return;
+	}
+
+	// process parameters
+	++tag;
+	do
+	{
+		// try to read the parameters
+		if (ReadParam(*prl, tag) == false)
+		{
+			if (tag == "rigid_cable_point")
+			{
+				FSGenericClass* rcp = FEBio::CreateGenericClass("rigid_cable_point", fem);
+				ReadParameters(*rcp, tag);
+				points->AddComponent(rcp);
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	} while (!tag.isend());
 }
 
 //=============================================================================

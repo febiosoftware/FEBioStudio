@@ -1063,6 +1063,16 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 			assert(false);
 		}
 	}
+
+	// Rigid cables are read in directly as FEBio loads, so we just need to clone them.
+	for (int i = 0; i < oldStep.RigidLoads(); ++i)
+	{
+		FSRigidLoad* plo = oldStep.RigidLoad(i);
+		FSRigidLoad* pln = FEBio::CreateRigidLoad(plo->GetTypeString(), fem);
+		copyModelComponent(log, pln, plo);
+		pln->SetName(plo->GetName());
+		newStep.AddRigidLoad(pln);
+	}
 }
 
 void FSProject::ConvertStepRigidConnectors(std::ostream& log, FSStep& newStep, FSStep& oldStep)
