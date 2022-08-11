@@ -420,60 +420,202 @@ bool FEBioFormat3::ParseMeshSection(XMLTag& tag)
 bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 {
 	// make sure the section is not empty
-	if (!tag.isleaf())
+	if (tag.isleaf()) return true;
+
+	// loop over all sections
+	++tag;
+	do
 	{
-		FEBioInputModel::Part* part = DefaultPart();
-
-		// loop over all sections
-		++tag;
-		do
+		if (tag == "SolidDomain")
 		{
-			if ((tag == "SolidDomain") || (tag == "ShellDomain"))
-			{
-				const char* szname = tag.AttributeValue("name");
-				const char* szmat = tag.AttributeValue("mat", true);
-				if (szmat)
-				{
-					FEBioInputModel& febio = GetFEBioModel();
-					int matID = febio.GetMaterialIndex(szmat);
-					if (matID == -1) matID = atoi(szmat) - 1;
-
-					FEBioInputModel::Domain* dom = part->FindDomain(szname);
-					if (dom) dom->SetMatID(matID);
-
-					if (tag.isleaf() == false)
-					{
-						++tag;
-						do
-						{
-							if (tag == "shell_normal_nodal")
-							{
-								if (dom) tag.value(dom->m_bshellNodalNormals);
-							}
-                            else if (tag == "laugon")
-                            {
-                                if (dom) tag.value(dom->m_blaugon);
-                            }
-                            else if (tag == "atol")
-                            {
-                                if (dom) tag.value(dom->m_augtol);
-                            }
-							else ParseUnknownTag(tag);
-							++tag;
-						}
-						while (!tag.isend());
-					}
-				}
-			}
-			else ParseUnknownTag(tag);
-			++tag;
-		} while (!tag.isend());
-	}
+			if (ParseSolidDomainSection(tag) == false) return false;
+		}
+		else if (tag == "ShellDomain")
+		{
+			if (ParseShellDomainSection(tag) == false) return false;
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	} 
+	while (!tag.isend());
 
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();
-    
-    return true;
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool FEBioFormat3::ParseSolidDomainSection(XMLTag& tag)
+{
+	FEBioInputModel& febio = GetFEBioModel();
+
+	FEBioInputModel::Part* part = DefaultPart();
+
+	const char* szname = tag.AttributeValue("name");
+	FEBioInputModel::Domain* dom = part->FindDomain(szname);
+	if (dom == nullptr) return false;
+
+	const char* szmat = tag.AttributeValue("mat", true);
+	if (szmat)
+	{
+		int matID = febio.GetMaterialIndex(szmat);
+		if (matID == -1) matID = atoi(szmat) - 1;
+		dom->SetMatID(matID);
+	}
+
+	// see if any parameters are defined
+	if (tag.isleaf()) return true;
+
+	// three-field parameters
+	bool is3field = false;
+	bool blaugon = false;
+	double atol = 0.0;
+	int minaug = 0;
+	int maxaug = 0;
+
+	++tag;
+	do
+	{
+		if (tag == "laugon")
+		{
+			tag.value(blaugon);
+			is3field = true;
+		}
+		else if (tag == "atol")
+		{
+			tag.value(atol);
+			is3field = true;
+		}
+		else if (tag == "minaug")
+		{
+			tag.value(minaug);
+			is3field = true;
+		}
+		else if (tag == "maxaug")
+		{
+			tag.value(maxaug);
+			is3field = true;
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	} 
+	while (!tag.isend());
+
+	if (is3field)
+	{
+		FESolidFormulation* eform = FEBio::CreateSolidFormulation("three-field-solid", &GetFSModel());
+		eform->SetParamBool("laugon", blaugon);
+		eform->SetParamFloat("atol", atol);
+		eform->SetParamInt("minaug", minaug);
+		eform->SetParamInt("maxaug", maxaug);
+		dom->m_form = eform;
+	}
+
+	return true;
+}
+
+bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
+{
+	FEBioInputModel& febio = GetFEBioModel();
+
+	FEBioInputModel::Part* part = DefaultPart();
+
+	const char* szname = tag.AttributeValue("name");
+	FEBioInputModel::Domain* dom = part->FindDomain(szname);
+	if (dom == nullptr) return false;
+
+	const char* szmat = tag.AttributeValue("mat", true);
+	if (szmat)
+	{
+		int matID = febio.GetMaterialIndex(szmat);
+		if (matID == -1) matID = atoi(szmat) - 1;
+		dom->SetMatID(matID);
+	}
+
+	// see if any parameters are defined
+	if (tag.isleaf()) return true;
+
+	// shell parameters
+	bool is3field = false;
+	bool laugon = false;
+	double atol = 0.0;
+	bool shellNodalNormals = false;
+	int minaug = 0;
+	int maxaug = 0;
+
+	++tag;
+	do
+	{
+		if (tag == "shell_normal_nodal")
+		{
+			tag.value(shellNodalNormals);
+		}
+		else if (tag == "laugon")
+		{
+			tag.value(laugon);
+			is3field = true;
+		}
+		else if (tag == "atol")
+		{
+			tag.value(atol);
+			is3field = true;
+		}
+		else if (tag == "minaug")
+		{
+			tag.value(minaug);
+			is3field = true;
+		}
+		else if (tag == "maxaug")
+		{
+			tag.value(maxaug);
+			is3field = true;
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	}
+	while (!tag.isend());
+
+	FSModel* fem = &GetFSModel();
+
+	if (is3field)
+	{
+		FEShellFormulation* eform = FEBio::CreateShellFormulation("three-field-shell", fem);
+		eform->SetParamBool("laugon", laugon);
+		eform->SetParamFloat("atol", atol);
+		eform->SetParamInt("minaug", minaug);
+		eform->SetParamInt("maxaug", maxaug);
+		eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
+		dom->m_form = eform;
+	}
+	else
+	{
+		int nmat = dom->MatID();
+		GMaterial* gmat = fem->GetMaterial(nmat);
+		if (gmat && gmat->GetMaterialProperties())
+		{
+			FSMaterial* pm = gmat->GetMaterialProperties();
+			FEShellFormulation* eform = nullptr;
+			if (pm->IsRigid()) eform = FEBio::CreateShellFormulation("rigid-shell", fem);
+			else
+			{
+				int baseClass = FEBio::GetBaseClassIndex("FEUncoupledMaterial");
+				if (FEBio::HasBaseClass(pm, "FEUncoupledMaterial"))
+				{
+					eform = FEBio::CreateShellFormulation("three-field-shell", fem);
+				}
+				else eform = FEBio::CreateShellFormulation("elastic-shell", fem);
+			}
+
+			if (eform)
+			{
+				eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
+				dom->m_form = eform;
+			}
+		}
+	}
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -619,7 +761,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 
 	// add domain to list
 	FEBioInputModel::Domain* dom = part->AddDomain(name, matID);
-	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
+//	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
 	// create elements
 	FSMesh& mesh = *part->GetFEMesh();

@@ -185,12 +185,6 @@ public:
 		DOMAIN_TYPE Type() const { return m_type; }
 		void SetType(DOMAIN_TYPE type) { m_type = type; }
 
-	public:
-		// parameters for reading older feb files
-		bool	m_bshellNodalNormals = false;
-		bool	m_blaugon = false;
-		double	m_augtol = 0.0;
-
 	private:
 		int				m_matID;	// zero-based material index
 		DOMAIN_TYPE		m_type;		// domain type

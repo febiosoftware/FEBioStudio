@@ -94,6 +94,19 @@ std::string FEBio::GetBaseClassName(int baseClassIndex)
 	return std::string();
 }
 
+bool FEBio::HasBaseClass(FSModelComponent* pm, const char* szbase)
+{
+	if (szbase == nullptr) return false;
+
+	const char* sztype = pm->GetTypeString();
+	int sid = pm->GetSuperClassID();
+
+	int n0 = GetBaseClassIndex(sid, sztype);
+	int n1 = GetBaseClassIndex(szbase);
+
+	return (n0 == n1);
+}
+
 bool in_vector(const vector<int>& v, int n)
 {
 	for (int j = 0; j < v.size(); ++j)

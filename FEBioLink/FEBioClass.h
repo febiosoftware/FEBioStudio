@@ -127,6 +127,9 @@ namespace FEBio {
 	// get the base class name from its index (returns nullptr if not found)
 	std::string GetBaseClassName(int baseClassIndex);
 
+	// see if pm is derived from a base class
+	bool HasBaseClass(FSModelComponent* pm, const char* szbase);
+
 	// helper functions for creating FEBio classes.
 	FSStep*              CreateStep             (const std::string& typeStr, FSModel* fem);
 	FSMaterial*          CreateMaterial         (const std::string& typeStr, FSModel* fem);
