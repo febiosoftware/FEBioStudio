@@ -1600,6 +1600,7 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 		solver->SetParamBool("diverge_reform", ops.bdivref);
 		solver->SetParamBool("reform_each_time_step", ops.brefstep);
 		solver->SetParamInt("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		solver->SetParamInt("equation_scheme", ops.neqscheme);
 
 		FSProperty* qnProp = solver->FindProperty("qn_method");
 		qnProp->SetComponent(nullptr);
