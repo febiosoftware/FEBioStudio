@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <QInputDialog>
 #include <QtCore/QTextStream>
 #include <QtCore/QThread>
+#include <QStandardPaths>
 
 using std::ifstream;
 using std::ios;
@@ -351,6 +352,9 @@ void CSSHHandler::StartSSHSession()
 	ssh_options_set(m_data->session, SSH_OPTIONS_HOST, m_data->job->GetLaunchConfig()->server.c_str());
 	ssh_options_set(m_data->session, SSH_OPTIONS_PORT, &(m_data->job->GetLaunchConfig()->port));
 	ssh_options_set(m_data->session, SSH_OPTIONS_USER, m_data->job->GetLaunchConfig()->userName.c_str());
+
+	QString sshDir = QStandardPaths::writableLocation(QStandardPaths::HomeLocation) + "/.ssh";
+	ssh_options_set(m_data->session, SSH_OPTIONS_SSH_DIR, sshDir.toStdString().c_str());
 
 	// Connect to server
 	error = ssh_connect(m_data->session);
