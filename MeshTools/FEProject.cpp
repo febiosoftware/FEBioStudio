@@ -960,6 +960,7 @@ void FSProject::ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 {
 	// convert the model components
 	ConvertStepBCs             (log, newStep, oldStep);
+	ConvertStepICs             (log, newStep, oldStep);
 	ConvertStepLoads           (log, newStep, oldStep);
 	ConvertStepContact         (log, newStep, oldStep);
 	ConvertStepConstraints     (log, newStep, oldStep);
