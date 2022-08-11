@@ -119,6 +119,8 @@ FSProject::FSProject(void) : m_plt(*this)
 
 	m_module = -1;
 
+	m_units = 0; // 0 = no unit system
+
 	static bool init = false;
 	if (init == false)
 	{
@@ -488,6 +490,18 @@ void FSProject::InitModules()
 }
 
 //-------------------------------------------------------------------------------------------------
+void FSProject::SetUnits(int units)
+{
+	m_units = units;
+}
+
+//-------------------------------------------------------------------------------------------------
+int FSProject::GetUnits() const
+{
+	return m_units;
+}
+
+//-------------------------------------------------------------------------------------------------
 void FSProject::SetDefaultPlotVariables()
 {
 	int moduleId = GetModule();
@@ -591,6 +605,15 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 				log << "warning: converting from choice to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				pi->SetIntValue(p.GetIntValue());
+			}
+			else if ((p.GetParamType() == Param_VEC3D) && (pi->GetParamType() == Param_ARRAY_DOUBLE) && (pi->size() == 3))
+			{
+#ifdef _DEBUG
+				log << "warning: converting from vec3d to double[3] (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+#endif
+				vec3d v = p.GetVec3dValue();
+				std::vector<double> d = { v.x, v.y, v.z };
+				pi->SetArrayDoubleValue(d);
 			}
 			else if (pi->GetParamType() != p.GetParamType())
 			{
@@ -804,6 +827,82 @@ void FSProject::ConvertMaterials(std::ostream& log)
 					copyRigidMaterial(log, dynamic_cast<FSRigidMaterial*>(pm), febMat);
 				else
 					copyModelComponent(log, febMat, pm);
+
+				if (pm->HasMaterialAxes())
+				{
+					// see if the febio material has the mat_axis property defined. 
+					FSProperty* matAxis = febMat->FindProperty("mat_axis");
+					if (matAxis)
+					{
+						FSAxisMaterial* axis = pm->m_axes;
+						switch (axis->m_naopt)
+						{
+						case FE_AXES_LOCAL: 
+						{
+							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "local", &fem); assert(febAxis);
+							if (febAxis)
+							{
+								std::vector<int> n = { axis->m_n[0], axis->m_n[1], axis->m_n[2] };
+								febAxis->GetParam("local")->SetArrayIntValue(n);
+								matAxis->SetComponent(febAxis);
+							}
+						}
+						break;
+						case FE_AXES_VECTOR: 
+						{
+							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "vector", &fem); assert(febAxis);
+							if (febAxis)
+							{
+								febAxis->SetParamVec3d("a", axis->m_a);
+								febAxis->SetParamVec3d("d", axis->m_d);
+								matAxis->SetComponent(febAxis);
+							}
+						}
+						break;
+						case FE_AXES_ANGLES: 
+						{
+							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "vector", &fem); assert(febAxis);
+							if (febAxis)
+							{
+								febAxis->SetParamFloat("theta", axis->m_theta);
+								febAxis->SetParamFloat("phi"  , axis->m_phi);
+								matAxis->SetComponent(febAxis);
+							}
+						}
+						break;
+						case FE_AXES_CYLINDRICAL: 
+						{
+							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "cylindrical", &fem); assert(febAxis);
+							if (febAxis)
+							{
+								febAxis->SetParamVec3d("center", axis->m_center);
+								febAxis->SetParamVec3d("axis"  , axis->m_axis);
+								febAxis->SetParamVec3d("vector", axis->m_vec);
+								matAxis->SetComponent(febAxis);
+							}
+						}
+						break;
+						case FE_AXES_SPHERICAL: 
+						{
+							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "spherical", &fem); assert(febAxis);
+							if (febAxis)
+							{
+								febAxis->SetParamVec3d("center", axis->m_center);
+								febAxis->SetParamVec3d("vector", axis->m_vec);
+								matAxis->SetComponent(febAxis);
+							}
+						}
+						break;
+						default:
+							log << "Unkown mat axis type in " << mat->GetName() << std::endl;
+						}
+					}
+					else
+					{
+						log << "Can't map mat_axis property of " << mat->GetName() << std::endl;
+					}
+				}
+
 				mat->SetMaterialProperties(febMat);
 			}
 		}
@@ -879,14 +978,14 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 		if (pc->Type() == FE_RIGID_FIXED)
 		{
 			FSRigidFixed* pf = dynamic_cast<FSRigidFixed*>(pc); assert(pf);
-			vector<int> dofs;
-			for (int i = 0; i < 6; ++i)
-			{
-				if (pf->GetBoolValue(i)) dofs.push_back(i);
-			}
 
 			FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_fixed", fem); assert(pcfeb);
-			pcfeb->SetParamVectorInt("dofs", dofs);
+			pcfeb->SetParamBool("Rx_dof", pf->GetBoolValue(0));
+			pcfeb->SetParamBool("Ry_dof", pf->GetBoolValue(1));
+			pcfeb->SetParamBool("Rz_dof", pf->GetBoolValue(2));
+			pcfeb->SetParamBool("Ru_dof", pf->GetBoolValue(3));
+			pcfeb->SetParamBool("Rv_dof", pf->GetBoolValue(4));
+			pcfeb->SetParamBool("Rw_dof", pf->GetBoolValue(5));
 
 			// copy the name 
 			pcfeb->SetName(pc->GetName());
@@ -922,11 +1021,24 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 		else if (pc->Type() == FE_RIGID_DISPLACEMENT)
 		{
 			FSRigidPrescribed* pf = dynamic_cast<FSRigidPrescribed*>(pc); assert(pf);
-			FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_prescribed", fem); assert(pcfeb);
-			copyParameters(log, pcfeb, pc);
-			pcfeb->SetName(pc->GetName());
-			pcfeb->SetMaterialID(pc->GetMaterialID());
-			newStep.AddRigidBC(pcfeb);
+			int bc = pf->GetDOF();
+			if (bc < 3)
+			{
+				FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_displacement", fem); assert(pcfeb);
+				copyParameters(log, pcfeb, pc);
+				pcfeb->SetName(pc->GetName());
+				pcfeb->SetMaterialID(pc->GetMaterialID());
+				newStep.AddRigidBC(pcfeb);
+			}
+			else
+			{
+				FSRigidBC* pcfeb = FEBio::CreateRigidBC("rigid_rotation", fem); assert(pcfeb);
+				copyParameters(log, pcfeb, pc);
+				pcfeb->SetParamInt("dof", bc - 3); // NOTE: This is necessary since dof is zero-based!
+				pcfeb->SetName(pc->GetName());
+				pcfeb->SetMaterialID(pc->GetMaterialID());
+				newStep.AddRigidBC(pcfeb);
+			}
 		}
 		else if (pc->Type() == FE_RIGID_INIT_VELOCITY)
 		{
@@ -950,6 +1062,16 @@ void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, 
 		{
 			assert(false);
 		}
+	}
+
+	// Rigid cables are read in directly as FEBio loads, so we just need to clone them.
+	for (int i = 0; i < oldStep.RigidLoads(); ++i)
+	{
+		FSRigidLoad* plo = oldStep.RigidLoad(i);
+		FSRigidLoad* pln = FEBio::CreateRigidLoad(plo->GetTypeString(), fem);
+		copyModelComponent(log, pln, plo);
+		pln->SetName(plo->GetName());
+		newStep.AddRigidLoad(pln);
 	}
 }
 
@@ -1076,11 +1198,14 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 		{
 			// rigid interface became a boundary condition
 			FSRigidInterface* pr = dynamic_cast<FSRigidInterface*>(pi);
-			FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("rigid", fem); break;
+			FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("rigid", fem);
 
 			pbc->SetParamInt("rb", pr->GetRigidBody()->GetID());
 
 			pbc->SetItemList(pr->GetItemList());
+			pr->SetItemList(nullptr);
+
+			pbc->SetName(pr->GetName());
 
 			newStep.AddBC(pbc);
 		}
@@ -1347,6 +1472,9 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 				case FE_FIXED_TEMPERATURE:
 					// No need to do anything
 					break;
+				case FE_FIXED_CONCENTRATION:
+					febbc->SetParamInt("c_dof", bc - 1);
+					break;
 				default:
 					log << "Unable to map degrees of freedom for " << pb->GetName() << std::endl;
 				}
@@ -1481,6 +1609,8 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 		solver->SetParamInt("max_refs", ops.maxref);
 		solver->SetParamBool("diverge_reform", ops.bdivref);
 		solver->SetParamBool("reform_each_time_step", ops.brefstep);
+		solver->SetParamInt("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+		solver->SetParamInt("equation_scheme", ops.neqscheme);
 
 		FSProperty* qnProp = solver->FindProperty("qn_method");
 		qnProp->SetComponent(nullptr);

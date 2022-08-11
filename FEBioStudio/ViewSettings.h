@@ -68,6 +68,8 @@ struct VIEW_SETTINGS
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
 	double	m_fiber_width;	//!< line width
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
+	bool	m_showSelectFibersOnly;	//!< only show fibers on selected objects
+
 	bool	m_showDiscrete;		//!< render discrete sets
 	bool	m_showRigidLabels;	//!< show labels on rigid bodies
 

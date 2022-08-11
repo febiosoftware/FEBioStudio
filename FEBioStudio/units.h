@@ -63,6 +63,8 @@ namespace Units {
 	void SetUnitSystem(unsigned int us);
 	unsigned int GetUnitSystem();
 
+	int FindUnitSytemFromName(const char* sz);
+
 	QString GetUnitString(const char* sz);
 	QString GetUnitString(int unit_system, const char* sz);
 	QString GetUnitString(int unit_system, Unit_Symbol us);

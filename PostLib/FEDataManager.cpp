@@ -58,9 +58,10 @@ void FEDataManager::Clear()
 	m_Data.clear();
 }
 
-void FEDataManager::AddDataField(ModelDataField* pd, const std::string& name)
+void FEDataManager::AddDataField(ModelDataField* pd, const std::string& name, const char* szunits)
 {
 	if (name.empty() == false) pd->SetName(name);
+	if (szunits) pd->SetUnits(szunits);
 	m_Data.push_back(pd);
 	pd->SetFieldID(BUILD_FIELD(pd->DataClass(), DataFields()-1, 0));
 }
@@ -107,6 +108,20 @@ std::string FEDataManager::getDataString(int nfield, Data_Tensor_Type ntype)
 		}
 	}
 	return "";
+}
+
+const char* FEDataManager::getDataUnits(int nfield)
+{
+	if (IS_VALID(nfield))
+	{
+		int ndata = FIELD_CODE(nfield);
+		if ((ndata >= 0) && (ndata < m_Data.size()))
+		{
+			ModelDataField* pd = m_Data[ndata];
+			return pd->GetUnits();
+		}
+	}
+	return nullptr;
 }
 
 // see if a field ID is valid

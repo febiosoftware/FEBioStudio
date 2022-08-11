@@ -47,6 +47,7 @@ private:
 private slots:
 	void OnAddClicked();
 	void OnApply();
+	void validateNormal();
 
 private:
 	int	m_nsmoothIters;

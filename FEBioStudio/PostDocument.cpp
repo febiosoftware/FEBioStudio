@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <XPLTLib/xpltFileReader.h>
 #include "ClassDescriptor.h"
 #include "PostSessionFile.h"
+#include "units.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -340,6 +341,17 @@ bool CPostDocument::Initialize()
 		}
 	}
 
+	xpltFileReader* reader = dynamic_cast<xpltFileReader*>(GetFileReader());
+	if (reader)
+	{
+		const char* szunits = reader->GetUnits();
+		if (szunits)
+		{
+			int n = Units::FindUnitSytemFromName(szunits);
+			SetUnitSystem(n);
+		}
+	}
+
 	UpdateFEModel(true);
 
 	return true;
@@ -464,6 +476,22 @@ std::string CPostDocument::GetFieldString()
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
 		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+	}
+	else return "";
+}
+
+std::string CPostDocument::GetFieldUnits()
+{
+	if (IsValid())
+	{
+		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
+		const char* szunits = GetFSModel()->GetDataManager()->getDataUnits(nfield);
+		if (szunits)
+		{
+			QString s = QString("(%1)").arg(Units::GetUnitString(szunits));
+			return s.toStdString();
+		}
+		else return "";
 	}
 	else return "";
 }

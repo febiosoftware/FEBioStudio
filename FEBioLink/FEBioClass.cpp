@@ -600,8 +600,13 @@ bool FEBio::BuildModelComponent(FSModelComponent* po, unsigned int flags)
 	int classId = po->GetClassID();
 	FECoreBase* feb = CreateFECoreClass(classId);
 	if (feb == nullptr) return false;
-	po->SetFEBioClass((void*)feb);
-	return BuildModelComponent(po, feb, flags);
+	bool bret = BuildModelComponent(po, feb, flags);
+	if (bret)
+	{
+		po->SetFEBioClass((void*)feb);
+		po->UpdateData(false);
+	}
+	return bret;
 }
 
 vector<FEBio::FEBioModule>	FEBio::GetAllModules()

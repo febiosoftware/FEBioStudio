@@ -164,6 +164,9 @@ public:
 
 	static void InitModules();
 
+	void SetUnits(int units);
+	int GetUnits() const;
+
 public:
 	// convert the old format to the new
 	void ConvertToNewFormat(std::ostream& log);
@@ -187,6 +190,7 @@ private:
 	string				m_title;	// Project Title
 	FSModel				m_fem;		// FE model data
 	int					m_module;	// active module
+	int					m_units;	// unit system (read from feb file)
 	CPlotDataSettings	m_plt;		// plot file settings
 	CLogDataSettings	m_log;		// log file settings
 };

@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QGridLayout>
 #include <QSlider>
+#include <QCheckBox>
 #include "MainWindow.h"
 #include "GLView.h"
 
@@ -46,6 +47,8 @@ public:
 	QSlider* m_width;
 	QComboBox* m_style;
 	QComboBox* m_color;
+	QCheckBox* m_selOnly;
+	QCheckBox* m_showHidden;
 
 public:
 	void setup(QDialog* dlg)
@@ -69,6 +72,8 @@ public:
 		f->addRow("Scale factor:", m_scale);
 		f->addRow("Line width:", m_width);
 		f->addRow("Line style:", m_style);
+		f->addRow("Selected objects only:", m_selOnly = new QCheckBox);
+		f->addRow("Show fibers on hidden parts:", m_showHidden = new QCheckBox);
 
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addLayout(f);
@@ -80,6 +85,8 @@ public:
 		QObject::connect(m_scale, SIGNAL(valueChanged(int)), dlg, SLOT(onDataChanged()));
 		QObject::connect(m_width, SIGNAL(valueChanged(int)), dlg, SLOT(onDataChanged()));
 		QObject::connect(m_style, SIGNAL(currentIndexChanged(int)), dlg, SLOT(onDataChanged()));
+		QObject::connect(m_selOnly, SIGNAL(clicked(bool)), dlg, SLOT(onDataChanged()));
+		QObject::connect(m_showHidden, SIGNAL(clicked(bool)), dlg, SLOT(onDataChanged()));
 	}
 };
 
@@ -120,6 +127,10 @@ void CDlgFiberViz::showEvent(QShowEvent* ev)
 
 	double v = view.m_fiber_scale;
 	double w = view.m_fiber_width;
+	bool bhf = view.m_showHiddenFibers;
+	bool bsf = view.m_showSelectFibersOnly;
+	GLColor c = view.m_fibColor;
+	int ls = view.m_fibLineStyle;
 
 	int n = double_to_int(v);
 	ui->m_scale->setValue(n);
@@ -127,8 +138,11 @@ void CDlgFiberViz::showEvent(QShowEvent* ev)
 	int m = double_to_int(w);
 	ui->m_width->setValue(m);
 
-	ui->m_color->setCurrentIndex(view.m_fibColor);
-	ui->m_style->setCurrentIndex(view.m_fibLineStyle);
+	ui->m_color->setCurrentIndex(c);
+	ui->m_style->setCurrentIndex(ls);
+
+	ui->m_showHidden->setChecked(bhf);
+	ui->m_selOnly->setChecked(bsf);
 }
 
 void CDlgFiberViz::closeEvent(QCloseEvent* ev)
@@ -153,6 +167,8 @@ void CDlgFiberViz::onDataChanged()
 	view.m_fiber_scale = v;
 	view.m_fiber_width = w;
 	view.m_fibLineStyle = nstyle;
+	view.m_showSelectFibersOnly = ui->m_selOnly->isChecked();
+	view.m_showHiddenFibers = ui->m_showHidden->isChecked();
 
 	ui->m_wnd->RedrawGL();
 }

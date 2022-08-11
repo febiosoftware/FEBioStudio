@@ -3413,11 +3413,8 @@ vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 	FSVec3dValuator* fiber = dynamic_cast<FSVec3dValuator*>(pm->GetComponent());
 	if (fiber)
 	{
-		// evaluate the element's center
-		vec3d p = el.center();
-
 		// evaluate the fiber direction
-		v = fiber->GetFiberVector(p);
+		v = fiber->GetFiberVector(el);
 	}
 	return v;
 }

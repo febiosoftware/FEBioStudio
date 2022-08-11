@@ -1727,6 +1727,13 @@ void CModelGraphWindow::setDataSource(int n)
 		if ((n >= 0) && (n < fem.PlotObjects()))
 		{
 			SetYDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
+
+			int plotType = GetCurrentPlotType();
+			if ((plotType == SCATTER_PLOT) || (plotType == TIME_SCATTER_PLOT))
+			{
+				SetXDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
+			}
+
 			Update(false, true);
 		}
 		n -= fem.PlotObjects();

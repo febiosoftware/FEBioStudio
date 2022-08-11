@@ -59,12 +59,22 @@ void FEBioRigidLoad::Save(OArchive& ar)
 
 void FEBioRigidLoad::SetMaterialID(int n)
 {
-	SetParamInt("rb", n);
+	// Not all rigid loads define the "rb" parameter. (e.g. rigid cables)
+	if (GetParam("rb"))
+	{
+		SetParamInt("rb", n);
+	}
 }
 
 int FEBioRigidLoad::GetMaterialID() const
 {
-	return GetParam("rb")->GetIntValue();
+	// Not all rigid loads define the "rb" parameter. (e.g. rigid cables)
+	if (GetParam("rb"))
+	{
+		return GetParam("rb")->GetIntValue();
+	}
+
+	return -1;
 }
 
 void FEBioRigidLoad::Load(IArchive& ar)

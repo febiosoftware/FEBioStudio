@@ -18,13 +18,15 @@ public:
 	FSCoreMesh*	m_pmesh;	// mesh to which this element belongs
 	int		m_nelem;	// index of element
 
-	vec3d center() 
+	vec3d center() const 
 	{
-		FEElement_* pe = m_pmesh->ElementPtr(m_nelem);
+		const FEElement_* pe = m_pmesh->ElementPtr(m_nelem);
 		return m_pmesh->ElementCenter(*pe);
 	}
 
 	FEElement_* operator -> () {return m_pmesh->ElementPtr(m_nelem);}
+	const FEElement_* operator -> () const {return m_pmesh->ElementPtr(m_nelem);}
+
 	operator FEElement_*(){ return m_pmesh->ElementPtr(m_nelem); }
 };
 

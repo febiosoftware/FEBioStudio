@@ -424,6 +424,16 @@ void CModelDocument::Load(IArchive& ar)
 	m_bValid = true;
 }
 
+bool CModelDocument::Initialize()
+{
+	// When called after reading an FEBio, the project's units may be different
+	// than the model's (which is initialized to the default units). 
+	if (m_Project.GetUnits() != 0)
+	{
+		SetUnitSystem(m_Project.GetUnits());
+	}
+	return CGLDocument::Initialize();
+}
 
 //-----------------------------------------------------------------------------
 bool CModelDocument::LoadTemplate(int n)

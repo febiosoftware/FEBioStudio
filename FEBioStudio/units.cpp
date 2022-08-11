@@ -46,6 +46,14 @@ QStringList Units::SupportedUnitSystems()
 	return s;
 }
 
+int Units::FindUnitSytemFromName(const char* sz)
+{
+	if (sz == nullptr) return -1;
+	QStringList sl = SupportedUnitSystems();
+	int n = sl.indexOf(sz); assert((n >= 0) && (n < sl.size()));
+	return n;
+}
+
 static const char* unit_table[][12] = {
 	// dimensions
 	{"L","M","t","T","I","n","F","P","E","W","V","c"},

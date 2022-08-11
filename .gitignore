@@ -397,3 +397,7 @@ Documentation/htmlManual
 # Python stuff
 PyLib
 Documentation/htmlManual
+
+# macOS Stuff
+.DS_Store
+*/.DS_Store

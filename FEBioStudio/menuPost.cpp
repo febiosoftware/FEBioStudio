@@ -544,14 +544,14 @@ public:
 		if (m_fileName.empty()) return false;
 		const char* szfile = m_fileName.c_str();
 
-		Post::LineDataModel* lineData = GetLineDataModel();
-		lineData->Clear();
+		Post::LineDataModel* ldm = GetLineDataModel();
+		ldm->Clear();
 		bool bsuccess = false;
 		const char* szext = strrchr(szfile, '.');
 		if (szext && (strcmp(szext, ".ang2") == 0))
 		{
 			// Read AngioFE2 format
-			int nret = ReadAng2Format(szfile, *lineData);
+			int nret = ReadAng2Format(szfile, *ldm);
 			bsuccess = (nret != 0);
 			if (nret == 2)
 			{
@@ -561,7 +561,19 @@ public:
 		else
 		{
 			// read old format (this assumes this is a text file)
-			bsuccess = ReadOldFormat(szfile, *lineData);
+			bsuccess = ReadOldFormat(szfile, *ldm);
+		}
+
+		if (bsuccess)
+		{
+			// process the line data
+			int states = ldm->States();
+#pragma omp parallel for schedule(dynamic)
+			for (int nstate = 0; nstate < states; ++nstate)
+			{
+				Post::LineData& lineData = ldm->GetLineData(nstate);
+				lineData.processLines();
+			}
 		}
 
 		return bsuccess;

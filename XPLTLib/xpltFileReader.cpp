@@ -135,6 +135,7 @@ bool xpltFileReader::ReadHeader()
 	m_hdr.ncompression = 0;	// default for version < 0.3
 	m_hdr.author[0] = 0;
 	m_hdr.software[0] = 0;
+	m_hdr.units[0] = 0;
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
@@ -148,6 +149,8 @@ bool xpltFileReader::ReadHeader()
 		// version 2.0 and up
 		case PLT_HDR_AUTHOR         : m_ar.read(m_hdr.author); break;
 		case PLT_HDR_SOFTWARE       : m_ar.read(m_hdr.software); break;
+		// Added in febio4
+		case PLT_HDR_UNITS	        : m_ar.read(m_hdr.units); break;
 		default:
 			return errf("Error while reading header.");
 		}

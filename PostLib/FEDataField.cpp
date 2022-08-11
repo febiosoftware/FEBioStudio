@@ -373,6 +373,18 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 	return "(invalid)";
 }
 
+void ModelDataField::SetUnits(const char* sz)
+{
+	if (sz) m_units = sz;
+	else m_units.clear();
+}
+
+const char* ModelDataField::GetUnits() const
+{
+	if (m_units.empty()) return nullptr;
+	else return m_units.c_str();
+}
+
 //=================================================================================================
 FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
 {
