@@ -1599,6 +1599,17 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 		timeStepper->SetParamFloat("dtmin", ops.dtmin);
 		timeStepper->SetParamFloat("dtmax", ops.dtmax);
 		timeStepper->SetParamInt("aggressiveness", ops.ncut);
+
+		if (ops.bmust)
+		{
+			LoadCurve* lc = oldStep.GetMustPointLoadCurve();
+			if (lc->Points() > 0)
+			{
+				FSModel* fem = febStep.GetFSModel();
+				FSLoadController* plc = fem->AddLoadCurve(*lc);
+				timeStepper->GetParam("dtmax")->SetLoadCurveID(plc->GetID());
+			}
+		}
 	}
 	else timeStepperProp->SetComponent(nullptr);
 
