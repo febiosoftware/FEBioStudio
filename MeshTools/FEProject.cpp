@@ -1299,7 +1299,9 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 	{
 		FSLoad* pl = oldStep.Load(i);
 		FSLoad* febLoad = nullptr;
-		if (pl->Type() == FE_NODAL_DOF_LOAD)
+		switch (pl->Type())
+		{
+		case FE_NODAL_DOF_LOAD:
 		{
 			FSNodalDOFLoad* pnl = dynamic_cast<FSNodalDOFLoad*>(pl);
 
@@ -1321,27 +1323,50 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
 			pf->SetLoadCurveID(lc);
 		}
-		else if (pl->Type() == FE_FLUID_ROTATIONAL_VELOCITY)
+		break;
+		case FE_FLUID_ROTATIONAL_VELOCITY:
+		case FE_FLUID_PRESSURE_LOAD:
+		case FE_FLUID_FLOW_RCR:
+		case FE_FLUID_FLOW_RESISTANCE:
 		{
-			// NOTE: This is now a boundary condition!
-			FSBoundaryCondition* bcfeb = FEBio::CreateBoundaryCondition("fluid rotational velocity", fem); assert(bcfeb);
+			// These loads are now boundary conditions and require special treatment. 
+			
+			FSBoundaryCondition* bcfeb = nullptr;
+			switch (pl->Type())
+			{
+			case FE_FLUID_ROTATIONAL_VELOCITY: bcfeb = FEBio::CreateBoundaryCondition("fluid rotational velocity", fem); break;
+			case FE_FLUID_PRESSURE_LOAD      : bcfeb = FEBio::CreateBoundaryCondition("fluid pressure", fem); break;
+			case FE_FLUID_FLOW_RCR           : bcfeb = FEBio::CreateBoundaryCondition("fluid RCR", fem); break;
+			case FE_FLUID_FLOW_RESISTANCE    : bcfeb = FEBio::CreateBoundaryCondition("fluid resistance", fem); break;
+			case FE_MATCHING_OSM_COEF        : bcfeb = FEBio::CreateBoundaryCondition("matching_osm_coef", fem); break;
+			default:
+				assert(false);
+			}
 
-			// replace parameters
-			copyParameters(log, bcfeb, pl);
+			if (bcfeb)
+			{
+				// replace parameters
+				copyParameters(log, bcfeb, pl);
 
-			// copy the name 
-			bcfeb->SetName(pl->GetName());
+				// copy the name 
+				bcfeb->SetName(pl->GetName());
 
-			// steal the item list
-			bcfeb->SetItemList(pl->GetItemList());
-			pl->SetItemList(nullptr);
+				// steal the item list
+				bcfeb->SetItemList(pl->GetItemList());
+				pl->SetItemList(nullptr);
 
-			newStep.AddBC(bcfeb);
+				newStep.AddBC(bcfeb);
+			}
+			else
+			{
+				log << "Failed to convert load " << pl->GetName() << " to a BC." << std::endl;
+			}
 
 			// let's move on
 			continue;
 		}
-		else
+		break;
+		default:
 		{
 			if (dynamic_cast<FSSurfaceLoad*>(pl))
 			{
@@ -1355,6 +1380,7 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 
 			// replace parameters
 			copyParameters(log, febLoad, pl);
+		}
 		}
 
 		if (febLoad)
