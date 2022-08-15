@@ -24,15 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "VolumeRender2.h"
-#ifdef WIN32
 #include <GL/glew.h>
-#endif
-#ifdef __APPLE__
-#include <GL/glew.h>
-#endif
-#ifdef LINUX
-#include <GL/glew.h>
-#endif
 #include "ImageModel.h"
 #include <GLLib/GLContext.h>
 #include <ImageLib/3DImage.h>
