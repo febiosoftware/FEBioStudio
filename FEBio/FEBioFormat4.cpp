@@ -606,6 +606,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("type", true);
 		if (szelem) eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
+		dom->m_form = eform;
 
 		// read the domain parameters
 		if (tag.isleaf() == false)

@@ -781,6 +781,127 @@ int FSMaterialProperty::Type() const
 	return m_ntype;
 }
 
+void FSMaterialProperty::Save(OArchive& ar)
+{
+	// save the name if there is one
+	string name = GetName();
+	if (name.empty() == false)
+	{
+		ar.WriteChunk(CID_FEOBJ_NAME, name);
+	}
+
+	string info = GetInfo();
+	if (info.empty() == false)
+	{
+		ar.WriteChunk(CID_FEOBJ_INFO, info);
+	}
+	ar.BeginChunk(CID_FEOBJ_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+
+	// write the material properties (if any)
+	if (Properties() != 0)
+	{
+		int n = (int)Properties();
+		for (int i = 0; i < n; ++i)
+		{
+			FSProperty& mpi = GetProperty(i);
+			ar.BeginChunk(CID_MAT_PROPERTY);
+			{
+				// store the property name
+				ar.WriteChunk(CID_MAT_PROPERTY_NAME, mpi.GetName());
+
+				for (int j = 0; j < mpi.Size(); ++j)
+				{
+					FSModelComponent* pc = dynamic_cast<FSModelComponent*>(mpi.GetComponent(j));
+					if (pc)
+					{
+						ar.BeginChunk(CID_MATERIAL_COMPONENT);
+						{
+							string typeStr = pc->GetTypeString();
+							ar.WriteChunk(CID_MATERIAL_COMPONENT_TYPE, typeStr);
+							ar.BeginChunk(CID_MATERIAL_COMPONENT_DATA);
+							{
+								pc->Save(ar);
+							}
+							ar.EndChunk();
+						}
+						ar.EndChunk();
+					}
+				}
+			}
+			ar.EndChunk();
+		}
+	}
+}
+
+void FSMaterialProperty::Load(IArchive& ar)
+{
+	TRACE("FSMaterialProperty::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEOBJ_NAME: { string name; ar.read(name); SetName(name); } break;
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
+		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
+		case CID_MAT_PROPERTY:
+		{
+			FSProperty* prop = nullptr;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				switch (ar.GetChunkID())
+				{
+				case CID_MAT_PROPERTY_NAME:
+				{
+					string name; 
+					ar.read(name);
+					prop = FindProperty(name); assert(prop);
+					prop->Clear();
+				}
+				break;
+				case CID_MATERIAL_COMPONENT:
+				{
+					assert(prop);
+					FSModelComponent* pmc = nullptr;
+					while (IArchive::IO_OK == ar.OpenChunk())
+					{
+						switch (ar.GetChunkID())
+						{
+						case CID_MATERIAL_COMPONENT_TYPE:
+						{
+							string type; ar.read(type);
+							pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, GetFSModel()); assert(pmc);
+						}
+						break;
+						case CID_MATERIAL_COMPONENT_DATA:
+						{
+							if (pmc)
+							{
+								pmc->Load(ar);
+								if (prop) prop->AddComponent(pmc);
+							}
+						}
+						break;
+						}
+						ar.CloseChunk();
+					}
+				}
+				break;
+				}
+				ar.CloseChunk();
+			}
+		}
+		break;
+		}
+		ar.CloseChunk();
+	}
+}
+
+//===============================================================================================
 FEBioMaterialProperty::FEBioMaterialProperty(FSModel* fem) : FSMaterialProperty(fem, FE_FEBIO_MATERIAL_PROPERTY)
 {
 

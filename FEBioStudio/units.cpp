@@ -54,24 +54,24 @@ int Units::FindUnitSytemFromName(const char* sz)
 	return n;
 }
 
-static const char* unit_table[][12] = {
+static const char* unit_table[][13] = {
 	// dimensions
-	{"L","M","t","T","I","n","F","P","E","W","V","c"},
+	{"L","M","t","T","I","n","F","P","E","W","V","c","o"},
 
 	// SI units
-	{"m","kg","s","K","A","mol","N","Pa","J","W","V","mM"},
+	{"m","kg","s","K","A","mol","N","Pa","J","W","V","mM","1"},
 
 	// MMTS units
-	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM"},
+	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM","1"},
     
     // MMKS units
-    {"mm","kg","s","K","mA","nmol","mN","kPa","µJ","µW","mV","mM"},
+    {"mm","kg","s","K","mA","nmol","mN","kPa","µJ","µW","mV","mM","1"},
     
     // UMNNS units
-    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM"},
+    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM","1"},
 
 	// CGS units
-	{"cm","g","s","K","cA","µmol","dyn","[F/L^2]","erg","[E/t]","mV","mM"}
+	{"cm","g","s","K","cA","µmol","dyn","[F/L^2]","erg","[E/t]","mV","mM","1"}
 
 };
 
@@ -102,6 +102,7 @@ QString Units::GetUnitString(int unit_system, Unit_Symbol us)
 	case POWER        : return GetUnitString(unit_system, UNIT_POWER        ); break;
 	case VOLTAGE      : return GetUnitString(unit_system, UNIT_VOLTAGE      ); break;
 	case CONCENTRATION: return GetUnitString(unit_system, UNIT_CONCENTRATION); break;
+    case ONE          : return GetUnitString(unit_system, UNIT_ONE          ); break;
 	default:
 		assert(false);
 	}

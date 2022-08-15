@@ -153,6 +153,7 @@ Unit UnitParser::symbol()
 	case 'W': s = Units::GetUnitSymbol(m_unit_system, Units::POWER); break;
 	case 'V': s = Units::GetUnitSymbol(m_unit_system, Units::VOLTAGE); break;
 	case 'c': s = Units::GetUnitSymbol(m_unit_system, Units::CONCENTRATION); break;
+    case 'o': s = Units::GetUnitSymbol(m_unit_system, Units::ONE); break;
 	case 'd': s = DEG; break;
 	case 'r': s = RAD; break;
 	}

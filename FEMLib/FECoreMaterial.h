@@ -149,6 +149,9 @@ public:
 
 	int Type() const;
 
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+
 private:
 	int	m_ntype;
 };

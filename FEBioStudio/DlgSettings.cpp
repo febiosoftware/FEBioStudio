@@ -752,6 +752,7 @@ void CUnitWidget::OnUnitSystemChanged(int n)
 	m_name[ 9]->setText(Units::GetUnitString(n, Units::POWER));
     m_name[10]->setText(Units::GetUnitString(n, Units::VOLTAGE));
     m_name[11]->setText(Units::GetUnitString(n, Units::CONCENTRATION));
+    m_name[12]->setText(Units::GetUnitString(n, Units::ONE));
 }
 
 //-----------------------------------------------------------------------------

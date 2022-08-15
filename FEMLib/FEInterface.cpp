@@ -568,7 +568,7 @@ FSPoroContact::FSPoroContact(FSModel* ps, int nstep) : FSPairedInterface(FE_PORO
 	AddDoubleParam(0    , "fric_coeff"            , "friction coefficient"         );
     AddDoubleParam(0    , "contact_frac"          , "solid-solid area fraction"    );
     AddBoolParam  (false, "smooth_fls"            , "smooth fluid load support"    );
-    AddIntParam   (1    , "knmult"                , "higher-order stiffness"       );
+    AddIntParam   (0    , "knmult"                , "higher-order stiffness"       );
     AddBoolParam  (false, "node_reloc"            , "relocated nodes"              );
     AddBoolParam  (false, "flip_primary"          , "flip normal on primary"       );
     AddBoolParam  (false, "flip_secondary"        , "flip normal on secondary"     );

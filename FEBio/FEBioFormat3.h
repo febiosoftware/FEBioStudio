@@ -83,6 +83,10 @@ private:
 	bool ParseSurfaceDataSection(XMLTag& tag);
 	bool ParseNodeDataSection(XMLTag& tag);
 
+	// mesh domain sections
+	bool ParseSolidDomainSection(XMLTag& tag);
+	bool ParseShellDomainSection(XMLTag& tag);
+
 private:
 	bool ParseStep(XMLTag& tag);
 	bool ParseLoadCurve(XMLTag& tag, LoadCurve& lc);

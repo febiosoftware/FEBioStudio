@@ -94,6 +94,19 @@ std::string FEBio::GetBaseClassName(int baseClassIndex)
 	return std::string();
 }
 
+bool FEBio::HasBaseClass(FSModelComponent* pm, const char* szbase)
+{
+	if (szbase == nullptr) return false;
+
+	const char* sztype = pm->GetTypeString();
+	int sid = pm->GetSuperClassID();
+
+	int n0 = GetBaseClassIndex(sid, sztype);
+	int n1 = GetBaseClassIndex(szbase);
+
+	return (n0 == n1);
+}
+
 bool in_vector(const vector<int>& v, int n)
 {
 	for (int j = 0; j < v.size(); ++j)
@@ -158,28 +171,71 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 		mods.push_back(0);
 	}
 
+	// First, add all the primary module features that match
 	for (int i = 0; i < fecore.FactoryClasses(); ++i)
 	{
 		const FECoreFactory* fac = fecore.GetFactoryClass(i);
 		int facmod = fac->GetModuleID();
-
 		int baseId = baseClassIndex(fac->GetBaseClassName());
 
-		if (((superId     == -1) || (fac->GetSuperClassID() == superId)) && 
+		if (((mod         == -1) || (mod == facmod)) && 
+			((superId     == -1) || (fac->GetSuperClassID() == superId)) &&
 			((baseClassId == -1) || (baseId == baseClassId)))
 		{
-			if ((mod == -1) || (mod == facmod) || in_vector(mods, facmod))
+			const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
+			FEBio::FEBioClassInfo febc = {
+				(unsigned int)i,
+				fac->GetSuperClassID(),
+				baseClassIndex(fac->GetBaseClassName()),
+				fac->GetTypeStr(),
+				fac->GetClassName(),
+				szmod,
+				fac->GetSpecID() };
+			facs.push_back(febc);
+		}
+	}
+
+	// Now, add all features from the dependent modules that match
+	if (mod != -1)
+	{
+		for (int i = 0; i < fecore.FactoryClasses(); ++i)
+		{
+			const FECoreFactory* fac = fecore.GetFactoryClass(i);
+			int facmod = fac->GetModuleID();
+			int baseId = baseClassIndex(fac->GetBaseClassName());
+
+			if ((mod != facmod) && in_vector(mods, facmod) &&
+				((superId     == -1) || (fac->GetSuperClassID() == superId)) &&
+				((baseClassId == -1) || (baseId == baseClassId)))
 			{
-				const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
-				FEBio::FEBioClassInfo febc = { 
-					(unsigned int)i,
-					fac->GetSuperClassID(),
-					baseClassIndex(fac->GetBaseClassName()),
-					fac->GetTypeStr(), 
-					fac->GetClassName(),
-					szmod,
-					fac->GetSpecID()};
-				facs.push_back(febc);
+				// It is possible that features are re-defined in different modules. 
+				// However, we only want to keep the feature in the primary module. 
+				bool badd = true;
+				if ((superId != -1) && (mod != -1) && includeModuleDependencies && (mod != facmod))
+				{
+					for (int j = 0; j < facs.size(); ++j)
+					{
+						if (strcmp(facs[j].sztype, fac->GetTypeStr()) == 0)
+						{
+							badd = false;
+							break;
+						}
+					}
+				}
+
+				if (badd)
+				{
+					const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
+					FEBio::FEBioClassInfo febc = {
+						(unsigned int)i,
+						fac->GetSuperClassID(),
+						baseClassIndex(fac->GetBaseClassName()),
+						fac->GetTypeStr(),
+						fac->GetClassName(),
+						szmod,
+						fac->GetSpecID() };
+					facs.push_back(febc);
+				}
 			}
 		}
 	}
