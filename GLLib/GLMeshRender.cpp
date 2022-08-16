@@ -1369,6 +1369,30 @@ void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
 }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderGLMeshLines(GLMesh* pm)
+{
+	if (pm == 0) return;
+
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
+	glDisable(GL_LIGHTING);
+//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+	// loop over all faces
+	glBegin(GL_LINES);
+	for (int i = 0; i < pm->Faces(); i++)
+	{
+		const GMesh::FACE& face = pm->Face(i);
+		const vec3d& r1 = pm->Node(face.n[0]).r;
+		const vec3d& r2 = pm->Node(face.n[1]).r;
+		const vec3d& r3 = pm->Node(face.n[2]).r;
+		glx::lineLoop(r1, r2, r3);
+	}
+	glEnd();
+
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 {
 	glPushAttrib(GL_ENABLE_BIT);
