@@ -50,7 +50,7 @@ public:
 public:
 	void RenderGLMesh(GLMesh* pm, int nid = -1);
 	void RenderGLEdges(GLMesh* pm, int nid = -1);
-
+	void RenderGLMeshLines(GLMesh* pm);
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);
