@@ -1776,7 +1776,7 @@ void CModelTree::UpdateMaterials(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
 		FSMaterial* mat = pm->GetMaterialProperties();
-		QString name = QString("%1 [%2]").arg(QString::fromStdString(pm->GetName())).arg(mat->GetTypeString());
+		QString name = QString("%1 [%2]").arg(QString::fromStdString(pm->GetName())).arg(mat ? mat->GetTypeString(): "null");
 		AddMaterial(t1, name, pm, mat, fem, true);
 	}
 }

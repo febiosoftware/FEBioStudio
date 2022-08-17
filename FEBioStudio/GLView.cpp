@@ -3650,7 +3650,7 @@ void CGLView::RenderRigidBodies()
 	{
 		GMaterial* pgm = ps->GetMaterial(i);
 		FSMaterial* pm = pgm->GetMaterialProperties();
-		if (pm->IsRigid())
+		if (pm && pm->IsRigid())
 		{
 			GLColor c = pgm->Diffuse();
 
