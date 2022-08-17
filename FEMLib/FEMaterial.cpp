@@ -1766,7 +1766,7 @@ FSIsotropicLeeSacks::FSIsotropicLeeSacks(FSModel* fem) : FSMaterial(FE_ISOTROPIC
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FSIsotropicLeeSacksUncoupled, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSIsotropicLeeSacksUncoupled, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled isotropic Lee-Sacks", MaterialFlags::TOPLEVEL);
 
 FSIsotropicLeeSacksUncoupled::FSIsotropicLeeSacksUncoupled(FSModel* fem) : FSMaterial(FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, fem)
 {
