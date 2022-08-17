@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "GLHighlighter.h"
 #include "Commands.h"
+#include <FEBioLink/FEBioClass.h>
 //using namespace std;
 
 using std::stringstream;
@@ -181,11 +182,14 @@ void CCreateSpringPane::on_newSet_clicked()
 		FSDiscreteMaterial* dmat = nullptr;
 		switch (ntype)
 		{
-		case 0: dmat = new FSLinearSpringMaterial(fem); break;
-		case 1: dmat = new FSNonLinearSpringMaterial(fem); break;
-		case 2: dmat = new FSHillContractileMaterial(fem); break;
-		default:
-			assert(false);
+		case 0: dmat = FEBio::CreateDiscreteMaterial("linear spring", fem); break;
+		case 1: dmat = FEBio::CreateDiscreteMaterial("nonlinear spring", fem); break;
+		case 2: dmat = FEBio::CreateDiscreteMaterial("Hill", fem); break;
+		}
+
+		if (dmat == nullptr)
+		{
+			QMessageBox::critical(this, "Create Springs", "Failed to create discrete material.");
 			return;
 		}
 
