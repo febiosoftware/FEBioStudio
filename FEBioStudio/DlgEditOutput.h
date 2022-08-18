@@ -70,6 +70,8 @@ protected slots:
 	void OnAddDomain();
 	void OnRemoveDomain();
 	void OnNewVariable();
+	void OnEditVariable();
+	void OnDeleteVariable();
 	void OnVariable(int nrow);
 	void OnItemClicked(QListWidgetItem* item);
 	void onFilterChanged(const QString& txt);

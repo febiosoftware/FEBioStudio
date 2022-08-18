@@ -119,7 +119,16 @@ public:
 		varList = new QListWidget;
 		domList = new QListWidget;
 
-		QPushButton* newVar = new QPushButton("Add..."); newVar->setToolTip("<font color=\"black\">Add custom variable");
+		QPushButton* newVar  = new QPushButton("Add..."   ); newVar->setToolTip("<font color=\"black\">Add custom variable");
+		QPushButton* delVar  = new QPushButton("Delete..."); delVar->setToolTip("<font color=\"black\">Remove custom variable");
+		QPushButton* editVar = new QPushButton("Edit..."  ); editVar->setToolTip("<font color=\"black\">Edit custom variable");
+
+		QHBoxLayout* editLayout = new QHBoxLayout;
+		editLayout->addWidget(newVar);
+		editLayout->addWidget(editVar);
+		editLayout->addWidget(delVar);
+		editLayout->addStretch();
+
 		QPushButton* add = new QPushButton("Add Domain...");
 		QPushButton* del = new QPushButton("Remove");
 
@@ -127,7 +136,6 @@ public:
 		fltLayout->setContentsMargins(0,0,0,0);
 		fltLayout->addWidget(new QLabel("Filter"));
 		fltLayout->addWidget(filter);
-		fltLayout->addWidget(newVar);
 
 		QHBoxLayout* buttonLayout = new QHBoxLayout;
 		buttonLayout->setContentsMargins(0,0,0,0);
@@ -144,6 +152,7 @@ public:
 		varLayout->setContentsMargins(0,0,0,0);
 		varLayout->addLayout(fltLayout);
 		varLayout->addWidget(varList);
+		varLayout->addLayout(editLayout);
 
 		QHBoxLayout* h = new QHBoxLayout;
 //		h->setContentsMargins(0,0,0,0);
@@ -220,7 +229,9 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(add, SIGNAL(clicked()), dlg, SLOT(OnAddDomain()));
 		QObject::connect(del, SIGNAL(clicked()), dlg, SLOT(OnRemoveDomain()));
-		QObject::connect(newVar, SIGNAL(clicked()), dlg, SLOT(OnNewVariable()));
+		QObject::connect(newVar , SIGNAL(clicked()), dlg, SLOT(OnNewVariable()));
+		QObject::connect(editVar, SIGNAL(clicked()), dlg, SLOT(OnEditVariable()));
+		QObject::connect(delVar , SIGNAL(clicked()), dlg, SLOT(OnDeleteVariable()));
 		QObject::connect(varList, SIGNAL(currentRowChanged(int)), dlg, SLOT(OnVariable(int)));
 		QObject::connect(varList, SIGNAL(itemClicked(QListWidgetItem*)), dlg, SLOT(OnItemClicked(QListWidgetItem*)));
 
@@ -241,11 +252,17 @@ public:
 		domList->clear();
 	}
 
-	void addVariable(const QString& name, bool bchecked, int nid)
+	void addVariable(const QString& name, bool bchecked, int nid, bool buser)
 	{
 		QListWidgetItem* item = new QListWidgetItem(name, varList);
 		item->setData(Qt::UserRole, nid);
 		item->setCheckState(bchecked ? Qt::Checked : Qt::Unchecked);
+		if (buser)
+		{
+			QFont f = item->font();
+			f.setBold(true);
+			item->setFont(f);
+		}
 	}
 
 	int currentVariable()
@@ -365,7 +382,6 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 	bool filter = (flt.isEmpty() == false);
 
 	ui->varList->clear();
-	int module = m_prj.GetModule();
 	int N = ui->m_plt.size();
 	for (int i = 0; i<N; ++i)
 	{
@@ -373,7 +389,7 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 		QString t = QString::fromStdString(tmp.name());
 		if ((filter == false) || (t.contains(flt, Qt::CaseInsensitive)))
 		{
-			ui->addVariable(t, tmp.isActive(), i);
+			ui->addVariable(t, tmp.isActive(), i, tmp.isCustom());
 		}
 
 /*		CPlotVariable& var = plt.PlotVariable(i);
@@ -759,11 +775,56 @@ void CDlgEditOutput::OnNewVariable()
 				}
 			}
 			CPlotVariable var(s.toStdString(), true, true, n);
+			var.setCustom(true);
 			ui->m_plt.push_back(var);
 			UpdateVariables("");
 			ui->setCurrentVariable(s);
 		}
 	}
+}
+
+void CDlgEditOutput::OnEditVariable()
+{
+	int n = ui->currentVariable();
+	if ((n >= 0) && (n < ui->m_plt.size()))
+	{
+		CPlotVariable& v = ui->m_plt[n];
+		if (v.isCustom() == false)
+		{
+			QMessageBox::critical(this, "Delete Variable", "Only custom variables can be deleted.");
+		}
+		else
+		{
+			QString s = QInputDialog::getText(this, "Edit Variable", "Variable:", QLineEdit::Normal, QString::fromStdString(v.name()));
+			if (s.isEmpty() == false)
+			{
+				v.setName(s.toStdString());
+				UpdateVariables("");
+				ui->setCurrentVariable(s);
+			}
+		}
+	}
+	else QMessageBox::information(this, "Delete Variable", "Please select a custom variable.");
+
+}
+
+void CDlgEditOutput::OnDeleteVariable()
+{
+	int n = ui->currentVariable();
+	if ((n >= 0) && (n < ui->m_plt.size()))
+	{
+		CPlotVariable& v = ui->m_plt[n];
+		if (v.isCustom() == false)
+		{
+			QMessageBox::critical(this, "Delete Variable", "Only custom variables can be deleted.");
+		}
+		else
+		{
+			ui->m_plt.erase(ui->m_plt.begin() + n);
+			UpdateVariables("");
+		}
+	}
+	else QMessageBox::information(this, "Delete Variable", "Please select a custom variable.");
 }
 
 void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)

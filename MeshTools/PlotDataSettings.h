@@ -40,12 +40,15 @@ public:
 	void operator = (const CPlotVariable& v);
 
 	const string& name() const { return m_name; }
+	void setName(const std::string& s) { m_name = s; }
 
 	bool isActive() const { return m_bactive; }
 	bool isShown() const { return m_bshow; }
+	bool isCustom() const { return m_bcustom; }
 
 	void setActive(bool b) { m_bactive = b; }
 	void setShown(bool b) { m_bshow = b; }
+	void setCustom(bool b) { m_bcustom = b; }
 
 	unsigned int domainType() const { return m_domainType; }
 	void setDomainType(DOMAIN_TYPE domainType) { m_domainType = domainType; }
@@ -62,6 +65,7 @@ private:
 	string			m_name;						// name of variable (as in FEBio file)
 	bool			m_bactive;					// active flag
 	bool			m_bshow;					// show flag
+	bool			m_bcustom;					// user defined
 	unsigned int	m_domainType;				// domain type for variable
 	std::vector<FEItemListBuilder*>		m_domains;	// domains 
 };
