@@ -114,6 +114,7 @@ public:
 
 	bool ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList);
 	bool ImportMaterials(const std::string& fileName);
+	bool ImportFEBioMaterials(const std::string& fileName);
 
 private:
 	// the FE Project

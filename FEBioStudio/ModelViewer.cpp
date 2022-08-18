@@ -1583,7 +1583,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
 
 		QMenu* sub = new QMenu("Import Materials");
-		QAction* ac = sub->addAction("From file ...");
+		QAction* ac = sub->addAction("From FEBio file ...");
 		ac->setData(-1);
 
 		CDocManager* docMng = wnd->GetDocManager();

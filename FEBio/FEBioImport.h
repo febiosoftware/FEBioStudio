@@ -51,6 +51,9 @@ public:
 	void SetGeometryOnlyFlag(bool b);
     void SetSkipGeometryFlag(bool b);
 
+public:
+	bool ImportMaterials(const char* szfile);
+
 protected:
 	bool UpdateFEModel(FSModel& fem);
 

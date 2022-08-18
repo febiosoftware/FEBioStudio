@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshTools/GModel.h>
+#include <FEBio/FEBioImport.h>
 
 class CModelContext
 {
@@ -630,6 +631,13 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 	}
 
 	return true;
+}
+
+bool CModelDocument::ImportFEBioMaterials(const std::string& fileName)
+{
+	if (fileName.empty()) return false;
+	FEBioFileImport feb(GetProject());
+	return feb.ImportMaterials(fileName.c_str());
 }
 
 //-----------------------------------------------------------------------------
