@@ -501,14 +501,26 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 	Surface* surface = m_part->FindSurface(szname);
 	if (surface == 0) return 0;
 
+	FESurface* fesurf = BuildFESurface(*surface);
+
+	// increase ref counter on surface
+	surface->m_refs++;
+
+	return fesurf;
+}
+
+FESurface* FEBioModel::PartInstance::BuildFESurface(const FEBioModel::Surface& surface)
+{
 	bool issuesFound = false;
+
+	const char* szname = surface.name().c_str();
 
 	// create face list
 	vector<int> faceList;
-	int NF = surface->faces();
+	int NF = surface.faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		const vector<int>& face = surface->face(i);
+		const vector<int>& face = surface.face(i);
 		int faceID = m_part->m_mesh.FindFace(face);
 		if (faceID >= 0)
 		{
@@ -553,11 +565,8 @@ FESurface* FEBioModel::PartInstance::BuildFESurface(const char* szname)
 	FESurface* ps = new FESurface(m_po, faceList);
 
 	// copy the name
-	std::string name = surface->name();
-	ps->SetName(name.c_str());
-
-	// increase ref counter on surface
-	surface->m_refs++;
+	std::string name = surface.name();
+	ps->SetName(surface.name());
 
 	// all done
 	return ps;
@@ -859,6 +868,66 @@ void FEBioModel::UpdateGeometry()
         }
 	}
 }
+
+void FEBioModel::CopyMeshSelections()
+{
+	int NP = Instances();
+	for (int i = 0; i < NP; ++i)
+	{
+		PartInstance& instance = *GetInstance(i);
+		Part* part = instance.GetPart();
+
+		GMeshObject* po = instance.GetGObject();
+		assert(po);
+
+		// create the nodesets
+		for (int j = 0; j < part->NodeSets(); ++j)
+		{
+			NodeSet& ns = part->GetNodeSet(j);
+
+			// create the node set
+			FENodeSet* pns = new FENodeSet(po, ns.nodeList());
+
+			// copy the name
+			pns->SetName(ns.name());
+
+			po->AddFENodeSet(pns);
+		}
+
+		// create the surfaces
+		for (int j = 0; j < part->Surfaces(); ++j)
+		{
+			Surface& s = part->GetSurface(j);
+
+			// create the FESurface
+			FESurface* ps = instance.BuildFESurface(s);
+
+			po->AddFESurface(ps);
+		}
+
+		// create the element sets
+		for (int j = 0; j < part->ElementSets(); ++j)
+		{
+			ElementSet& es = part->GetElementSet(j);
+
+			// get the element list
+			vector<int> elemList = es.elemList();
+
+			// these are element IDs. we need to convert them to indices
+			// TODO: implement this!
+			for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+
+			// create the part
+			FEPart* pg = new FEPart(po, elemList);
+
+			// copy the name
+			pg->SetName(es.name());
+
+			po->AddFEPart(pg);
+		}
+	}
+}
+
 
 FEBioModel::PartInstance* FEBioModel::FindInstance(const char* szname)
 {
