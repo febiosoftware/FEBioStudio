@@ -1622,6 +1622,20 @@ void FEPrescribedActiveContractionUniaxial::Convert(FEPrescribedActiveContractio
 }
 
 ////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionFiber
+////////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEPrescribedActiveContractionFiber, MODULE_MECH, FE_ACTIVE_CONTRACT_FIBER, FE_MAT_ELASTIC, "prescribed fiber active contraction", 0, PRESCRIBED_UNIAXIAL_ACTIVE_CONTRACTION_HTML);
+
+FEPrescribedActiveContractionFiber::FEPrescribedActiveContractionFiber() : FETransverselyIsotropic(FE_ACTIVE_CONTRACT_FIBER)
+{
+	SetFiberMaterial(new FEOldFiberMaterial);
+
+	AddScienceParam(0, UNIT_PRESSURE, "T0", "T0")->MakeVariable(true);
+	SetAxisMaterial(new FEAxisMaterial);
+}
+
+////////////////////////////////////////////////////////////////////////
 // FEPrescribedActiveContractionTransIso - Prescribed trans iso active contraction
 ////////////////////////////////////////////////////////////////////////
 
@@ -1704,6 +1718,19 @@ void FEPrescribedActiveContractionUniaxialUC::Convert(FEPrescribedActiveContract
 	m_axes->m_naopt = FE_AXES_ANGLES;
     m_axes->m_theta = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_TH);
     m_axes->m_phi = pold->GetFloatValue(FEPrescribedActiveContractionUniaxialUCOld::MP_PH);
+}
+
+
+////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionFiberUC - Prescribed uniaxial active contraction
+////////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FEPrescribedActiveContractionFiberUC, MODULE_MECH, FE_ACTIVE_CONTRACT_FIBER_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed fiber active contraction", 0, UNCOUPLED_PRESCRIBED_UNIAXIAL_ACTIVE_CONTRACTION_HTML);
+
+FEPrescribedActiveContractionFiberUC::FEPrescribedActiveContractionFiberUC() : FETransverselyIsotropic(FE_ACTIVE_CONTRACT_FIBER_UC)
+{
+	SetFiberMaterial(new FEOldFiberMaterial);
+	AddScienceParam(0, UNIT_PRESSURE, "T0", "T0")->MakeVariable(true);
 }
 
 ////////////////////////////////////////////////////////////////////////

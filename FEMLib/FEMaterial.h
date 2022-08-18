@@ -152,6 +152,8 @@
 #define FE_FORCE_VELOCITY_ESTRADA       91
 #define FE_FIBER_EXP_POW_LIN            92
 #define FE_HGO_CORONARY                 93
+#define FE_ACTIVE_CONTRACT_FIBER        94   
+#define FE_ACTIVE_CONTRACT_FIBER_UC     95   
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -1728,6 +1730,19 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Prescribed fiber active contraction
+//
+class FEPrescribedActiveContractionFiber : public FETransverselyIsotropic
+{
+public:
+    enum { MP_T0 };
+
+public:
+    FEPrescribedActiveContractionFiber();
+    DECLARE_REGISTERED(FEPrescribedActiveContractionFiber);
+};
+
+//-----------------------------------------------------------------------------
 // Prescribed uniaxial active contraction uncoupled
 //
 class FEPrescribedActiveContractionUniaxialUCOld : public FEMaterial
@@ -1770,6 +1785,19 @@ public:
     void Convert(FEPrescribedActiveContractionUniaxialUCOld* mat);
 
     DECLARE_REGISTERED(FEPrescribedActiveContractionUniaxialUC);
+};
+
+//-----------------------------------------------------------------------------
+// Prescribed fiber active contraction
+//
+class FEPrescribedActiveContractionFiberUC : public FETransverselyIsotropic
+{
+public:
+    enum { MP_T0 };
+
+public:
+    FEPrescribedActiveContractionFiberUC();
+    DECLARE_REGISTERED(FEPrescribedActiveContractionFiberUC);
 };
 
 //-----------------------------------------------------------------------------
