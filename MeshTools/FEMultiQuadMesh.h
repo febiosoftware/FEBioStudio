@@ -71,9 +71,6 @@ public:
 	MBFace& AddFace();
 	MBFace& GetFace(int n);
 
-	// update the Multii-Block data
-	void UpdateMQ();
-
 	void SetFaceEdgeIDs(int nface, int n0, int n1, int n2, int n3);
 
 	MBEdge& GetFaceEdge(int nface, int nedge);

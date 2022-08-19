@@ -918,12 +918,6 @@ void FEMultiQuadMesh::SetFaceSizes(int nface, int nx, int ny)
 }
 
 //-----------------------------------------------------------------------------
-void FEMultiQuadMesh::UpdateMQ()
-{
-	BuildMBEdges();
-}
-
-//-----------------------------------------------------------------------------
 int FEMultiQuadMesh::GetFENode(MBNode& node)
 {
 	return node.m_ntag;
