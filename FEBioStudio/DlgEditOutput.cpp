@@ -818,7 +818,7 @@ void CDlgEditOutput::OnDeleteVariable()
 		{
 			QMessageBox::critical(this, "Delete Variable", "Only custom variables can be deleted.");
 		}
-		else
+		else if (QMessageBox::question(this, "Delete Variable", "Are you sure you want to delete this variable?") == QMessageBox::Yes)
 		{
 			ui->m_plt.erase(ui->m_plt.begin() + n);
 			UpdateVariables("");
