@@ -72,9 +72,12 @@ FSMesh* FEShellDisc::BuildMesh()
 
 	pm->BuildMesh();
 
-	// assign shell thickness
+	// assign shell thickness to section
 	double h = GetFloatValue(T);
-	pm->SetUniformShellThickness(h);
+	GPart* part = m_pobj->Part(0); assert(part);
+	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
+	if (shellSection) shellSection->SetShellThickness(h);
+	else pm->SetUniformShellThickness(h);
 
 	return pm;
 }
@@ -123,8 +126,8 @@ bool FEShellDisc::BuildMultiQuad()
 	MBFace& F11 = AddFace(7, 15, 16, 8); F11.SetID(3); F11.SetSizes(ns, nd);
 	MBFace& F12 = AddFace(8, 16,  9, 1); F12.SetID(3); F12.SetSizes(ns, nd);
 
-	// build the MQ structure
-	UpdateMQ();
+	// build the MQ edges
+	BuildMBEdges();
 
 	// assign edge IDs
 	SetFaceEdgeIDs( 0,  4, -1, -1,  5);

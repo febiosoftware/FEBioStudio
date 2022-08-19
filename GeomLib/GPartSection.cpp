@@ -229,6 +229,11 @@ FEShellFormulation* GShellSection::GetElementFormulation() { return m_form; }
 void GShellSection::SetShellThickness(double h)
 {
 	SetFloatValue(1, h);
+	if (m_form)
+	{
+		Param* p = m_form->GetParam("shell_thickness");
+		if (p) p->SetFloatValue(h);
+	}
 }
 
 double GShellSection::shellThickness() const
@@ -241,7 +246,20 @@ bool GShellSection::UpdateData(bool bsave)
 	if (bsave)
 	{
 		int n = GetIntValue(0);
-		if (n <= 0) { delete m_form; m_form = nullptr; return true; }
+		if (n <= 0) { 
+			// we need to make sure that shell thickness stays in sync
+			if (m_form)
+			{
+				Param* p = m_form->GetParam("shell_thickness");
+				if (p) SetFloatValue(1, p->GetFloatValue());
+			}
+
+			delete m_form; 
+			m_form = nullptr; 
+			GetParam(1).SetVisible(true);
+			GetParam(1).SetEditable(true);
+			return true; 
+		}
 
 		// we subtract by one, since n==0 is the null formulation (i.e. "default"). 
 		n--;
@@ -253,6 +271,12 @@ bool GShellSection::UpdateData(bool bsave)
 			delete m_form;
 			m_form = FEBio::CreateShellFormulation(l[n].sztype, nullptr);
 			assert(m_form);
+			GetParam(1).SetVisible(false);
+			GetParam(1).SetEditable(false);
+
+			// this will copy the shell thickness to the form's
+			double h = shellThickness();
+			SetShellThickness(h);
 			return true;
 		}
 	}

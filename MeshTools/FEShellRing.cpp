@@ -69,9 +69,12 @@ FSMesh* FEShellRing::BuildMesh()
 	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
 	if (pm == nullptr) return nullptr;
 
-	// assign shell thickness
+	// assign shell thickness to section
 	double t = GetFloatValue(T);
-	pm->SetUniformShellThickness(t);
+	GPart* part = m_pobj->Part(0); assert(part);
+	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
+	if (shellSection) shellSection->SetShellThickness(t);
+	else pm->SetUniformShellThickness(t);
 
 	return pm;
 }

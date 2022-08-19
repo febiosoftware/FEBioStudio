@@ -516,6 +516,10 @@ void check_013(FSProject& prj, std::vector<FSObject*>& objList)
 			{
 				GPart* pg = obj_i->Part(n);
 
+				double h = 0.0;
+				GShellSection* shell = dynamic_cast<GShellSection*>(pg->GetSection());
+				if (shell) h = shell->shellThickness();
+
 				int zeroShells = 0;
 				int NE = pm->Elements();
 				for (int j = 0; j < NE; ++j)
@@ -526,7 +530,7 @@ void check_013(FSProject& prj, std::vector<FSObject*>& objList)
 						int ne = el.Nodes();
 						for (int k = 0; k < ne; ++k)
 						{
-							if (el.m_h[k] == 0.0) zeroShells++;
+							if ((h == 0) && (el.m_h[k] == 0.0)) zeroShells++;
 						}
 					}
 					if (zeroShells) break;

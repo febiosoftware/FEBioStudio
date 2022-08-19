@@ -216,7 +216,37 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 
 	// see if we need to add a MeshData section
 	m_bdata = false;
-	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
+
+	// see if we have any shells with non-zero thickness
+	if (model.ShellElements() > 0)
+	{
+		for (int i = 0; i < model.Objects(); ++i)
+		{
+			GObject* po = model.Object(i);
+			if (po && po->GetFEMesh())
+			{
+				FSMesh* pm = po->GetFEMesh();
+				for (int j = 0; j < pm->Elements(); ++j)
+				{
+					FSElement& el = pm->Element(j);
+					if (el.IsShell())
+					{
+						int n = el.Nodes();
+						for (int k = 0; k < n; ++k)
+						{
+							if (el.m_h[k] != 0.0)
+							{
+								m_bdata = true;
+								break;
+							}
+						}
+						if (m_bdata) break;
+					}
+				}
+				if (m_bdata) break;
+			}
+		}
+	}
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		// get the material properties
@@ -1094,10 +1124,17 @@ void FEBioExport4::WriteMeshDomainsSection()
 			el.add_attribute("mat", dom->m_matName);
 
 			GShellSection* section = dynamic_cast<GShellSection*>(pg->GetSection());
-			if (section && section->GetElementFormulation())
+			if (section)
 			{
 				FEShellFormulation* shell = section->GetElementFormulation();
-				WriteModelComponent(shell, el);
+				if (shell) WriteModelComponent(shell, el);
+				else
+				{
+					m_xml.add_branch(el);
+					double h = section->shellThickness();
+					m_xml.add_leaf("shell_thickness", h);
+					m_xml.close_branch();
+				}
 			}
 			else m_xml.add_empty(el);
 		}
@@ -1208,6 +1245,8 @@ bool FEBioExport4::WriteNodeSet(const string& name, FSNodeList* pl)
 	}
 
 	int nn = pl->Size();
+	if (nn == 0) return false;
+
 	FSNodeList::Iterator pn = pl->First();
 	vector<int> m(nn);
 	for (int n = 0; n < nn; ++n, pn++)
