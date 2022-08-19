@@ -54,24 +54,24 @@ int Units::FindUnitSytemFromName(const char* sz)
 	return n;
 }
 
-static const char* unit_table[][13] = {
+static const char* unit_table[][12] = {
 	// dimensions
-	{"L","M","t","T","I","n","F","P","E","W","V","c","o"},
+	{"L","M","t","T","I","n","F","P","E","W","V","c"},
 
 	// SI units
-	{"m","kg","s","K","A","mol","N","Pa","J","W","V","mM","1"},
+	{"m","kg","s","K","A","mol","N","Pa","J","W","V","mM"},
 
 	// MMTS units
-	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM","1"},
+	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM"},
     
     // MMKS units
-    {"mm","kg","s","K","mA","nmol","mN","kPa","µJ","µW","mV","mM","1"},
+    {"mm","kg","s","K","mA","nmol","mN","kPa","µJ","µW","mV","mM"},
     
     // UMNNS units
-    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM","1"},
+    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM"},
 
 	// CGS units
-	{"cm","g","s","K","cA","µmol","dyn","[F/L^2]","erg","[E/t]","mV","mM","1"}
+	{"cm","g","s","K","cA","µmol","dyn","[F/L^2]","erg","[E/t]","mV","mM"}
 
 };
 
