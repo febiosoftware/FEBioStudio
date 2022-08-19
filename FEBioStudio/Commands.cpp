@@ -1464,7 +1464,7 @@ void CCmdUnSelectDiscrete::UnExecute()
 // CCmdInvertSelection
 //////////////////////////////////////////////////////////////////////
 
-CCmdInvertSelection::CCmdInvertSelection(CModelDocument* doc) : CCommand("Invert selection")
+CCmdInvertSelection::CCmdInvertSelection(CGLDocument* doc) : CCommand("Invert selection")
 {
 	m_doc = doc;
 }

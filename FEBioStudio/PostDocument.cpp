@@ -612,6 +612,12 @@ void CPostDocument::SetInitFlag(bool b)
 	m_binit = b;
 }
 
+void CPostDocument::UpdateSelection(bool report)
+{
+	Post::CGLModel* mdl = GetGLModel();
+	if (mdl) mdl->UpdateSelectionLists();
+}
+
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 {
 	int NCOL = pal.Colors();

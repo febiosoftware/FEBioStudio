@@ -78,7 +78,7 @@ void CMainWindow::on_actionRedo_triggered()
 
 void CMainWindow::on_actionInvertSelection_triggered()
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FESelection* ps = doc->GetCurrentSelection();
