@@ -33,24 +33,24 @@ class QListWidgetItem;
 class QTableWidgetItem;
 
 namespace Ui {
-	class CDlgAddDomain;
+	class CDlgAddSelection;
 	class CDlgEditOutput;
 }
 
-class CDlgAddDomain : public QDialog
+class CDlgAddSelection : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgAddDomain(QWidget* parent);
+	CDlgAddSelection(QWidget* parent);
 
 	void setVariable(const CPlotVariable& var);
-	void setDomains(const QStringList& l);
+	void setSelections(const QStringList& l);
 
-	int selectedDomain();
+	int currentSelection();
 
 private:
-	Ui::CDlgAddDomain*	ui;
+	Ui::CDlgAddSelection*	ui;
 };
 
 class CDlgEditOutput : public QDialog
@@ -67,8 +67,8 @@ private:
 	void UpdateLogTable();
 
 protected slots:
-	void OnAddDomain();
-	void OnRemoveDomain();
+	void OnAddSelection();
+	void OnRemoveSelection();
 	void OnNewVariable();
 	void OnEditVariable();
 	void OnDeleteVariable();
