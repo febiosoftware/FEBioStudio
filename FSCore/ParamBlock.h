@@ -198,6 +198,9 @@ public:
 	bool IsVisible  () const { return (m_nstate & Param_VISIBLE) != 0; }
 	bool IsPersistent() const { return (m_nstate & Param_PERSISTENT) != 0; }
 
+	void SetVisible(bool b) { if (b) m_nstate |= Param_VISIBLE; else m_nstate &= ~Param_VISIBLE; }
+	void SetEditable(bool b) { if (b) m_nstate |= Param_EDITABLE; else m_nstate &= ~Param_EDITABLE; }
+
 	bool IsModified() const { return (m_nstate & Param_MODIFIED) != 0; }
 	void SetModified(bool b) { if (b) m_nstate |= Param_MODIFIED; else m_nstate &= ~Param_MODIFIED; }
 
