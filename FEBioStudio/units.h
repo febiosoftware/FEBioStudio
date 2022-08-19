@@ -56,7 +56,6 @@ namespace Units {
 		POWER,
         VOLTAGE,
         CONCENTRATION,
-        ONE
 	};
 
 	QStringList SupportedUnitSystems();

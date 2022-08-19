@@ -102,7 +102,6 @@ QString Units::GetUnitString(int unit_system, Unit_Symbol us)
 	case POWER        : return GetUnitString(unit_system, UNIT_POWER        ); break;
 	case VOLTAGE      : return GetUnitString(unit_system, UNIT_VOLTAGE      ); break;
 	case CONCENTRATION: return GetUnitString(unit_system, UNIT_CONCENTRATION); break;
-    case ONE          : return GetUnitString(unit_system, UNIT_ONE          ); break;
 	default:
 		assert(false);
 	}
