@@ -300,7 +300,7 @@ GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orie
 	m_nrot = orientation;
 	m_btitle = false;
 	m_blabels = true;
-	m_nprec = 3;
+	m_nprec = 4;
 	m_labelPos = 0;
 
 	m_fmin = 0.0f;
