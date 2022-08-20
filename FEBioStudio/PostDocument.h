@@ -132,6 +132,8 @@ public:
 
 	void SetInitFlag(bool b);
 
+	void UpdateSelection(bool report) override;
+
 public:
 	int GetStates();
 

@@ -442,6 +442,13 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();
 
+	// If we only import geometry, make sure to copy all
+	// the mesh selections, otherwise this information will be lost.
+	if (m_geomOnly)
+	{
+		GetFEBioModel().CopyMeshSelections();
+	}
+
 	return true;
 }
 

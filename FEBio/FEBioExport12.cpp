@@ -630,6 +630,8 @@ void FEBioExport12::WriteMaterialSection()
 			case FE_ACTIVE_CONTRACT_UNI_UC: WriteMaterial(pmat, el); break;
 			case FE_ACTIVE_CONTRACT_TISO_UC: WriteMaterial(pmat, el); break;
 			case FE_ACTIVE_CONTRACT_ISO_UC: WriteMaterial(pmat, el); break;
+			case FE_ACTIVE_CONTRACT_FIBER: WriteMaterial(pmat, el); break;
+			case FE_ACTIVE_CONTRACT_FIBER_UC: WriteMaterial(pmat, el); break;
 			case FE_USER_MATERIAL: WriteMaterial(pmat, el); break;
 				//		case FE_PORO_ELASTIC       : WriteNestedMaterial(dynamic_cast<FENestedMaterial*>(pmat), el); break;
 				//		case FE_PORO_HOLMES_MOW    : WriteNestedMaterial(dynamic_cast<FENestedMaterial*>(pmat), el); break;

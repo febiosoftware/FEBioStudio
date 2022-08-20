@@ -501,6 +501,18 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 	Surface* surface = m_part->FindSurface(szname);
 	if (surface == 0) return 0;
 
+	FSSurface* fesurf = BuildFESurface(*surface);
+
+	// increase ref counter on surface
+	surface->m_refs++;
+
+	return fesurf;
+}
+
+FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const FEBioInputModel::Surface& surface)
+{
+	const char* szname = surface.name().c_str();
+
 	const int maxIssues = 10;
 	int issuesFound = 0;
 	stringstream serr;
@@ -508,10 +520,10 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 
 	// create face list
 	vector<int> faceList;
-	int NF = surface->faces();
+	int NF = surface.faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		const vector<int>& face = surface->face(i);
+		const vector<int>& face = surface.face(i);
 		int faceID = m_part->m_mesh.FindFace(face);
 		if (faceID >= 0)
 		{
@@ -567,11 +579,8 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
 	FSSurface* ps = new FSSurface(m_po, faceList);
 
 	// copy the name
-	std::string name = surface->name();
-	ps->SetName(name.c_str());
-
-	// increase ref counter on surface
-	surface->m_refs++;
+	std::string name = surface.name();
+	ps->SetName(surface.name());
 
 	// all done
 	return ps;
@@ -901,6 +910,66 @@ void FEBioInputModel::UpdateGeometry()
         }
 	}
 }
+
+void FEBioInputModel::CopyMeshSelections()
+{
+	int NP = Instances();
+	for (int i = 0; i < NP; ++i)
+	{
+		PartInstance& instance = *GetInstance(i);
+		Part* part = instance.GetPart();
+
+		GMeshObject* po = instance.GetGObject();
+		assert(po);
+
+		// create the nodesets
+		for (int j = 0; j < part->NodeSets(); ++j)
+		{
+			NodeSet& ns = part->GetNodeSet(j);
+
+			// create the node set
+			FSNodeSet* pns = new FSNodeSet(po, ns.nodeList());
+
+			// copy the name
+			pns->SetName(ns.name());
+
+			po->AddFENodeSet(pns);
+		}
+
+		// create the surfaces
+		for (int j = 0; j < part->Surfaces(); ++j)
+		{
+			Surface& s = part->GetSurface(j);
+
+			// create the FESurface
+			FSSurface* ps = instance.BuildFESurface(s);
+
+			po->AddFESurface(ps);
+		}
+
+		// create the element sets
+		for (int j = 0; j < part->ElementSets(); ++j)
+		{
+			ElementSet& es = part->GetElementSet(j);
+
+			// get the element list
+			vector<int> elemList = es.elemList();
+
+			// these are element IDs. we need to convert them to indices
+			// TODO: implement this!
+			for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+
+			// create the part
+			FSPart* pg = new FSPart(po, elemList);
+
+			// copy the name
+			pg->SetName(es.name());
+
+			po->AddFEPart(pg);
+		}
+	}
+}
+
 
 FEBioInputModel::PartInstance* FEBioInputModel::FindInstance(const char* szname)
 {
