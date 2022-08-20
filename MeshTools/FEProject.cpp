@@ -1309,6 +1309,12 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			int bc = pnl->GetDOF();
 			double s = pnl->GetLoad();
 
+			if (bc >= 3)
+			{
+				febLoad->SetParamBool("shell_bottom", true);
+				bc -= 3;
+			}
+
 			vec3d f;
 			switch (bc)
 			{

@@ -207,9 +207,19 @@ void GShellSection::SetElementFormulation(FEShellFormulation* form)
 {
 	delete m_form;
 	m_form = form;
-	if (form == nullptr) SetIntValue(0, 0);
+	if (form == nullptr)
+	{
+		SetIntValue(0, 0);
+		GetParam(1).SetVisible(true);
+		GetParam(1).SetEditable(true);
+	}
 	else
 	{
+		GetParam(1).SetVisible(false);
+		GetParam(1).SetEditable(false);
+		Param* p = m_form->GetParam("shell_thickness");
+		if (p) SetFloatValue(1, shellThickness());
+
 		int n = form->GetClassID(); assert(n > 0);
 		std::vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
 		for (int i = 0; i < l.size(); ++i)
@@ -254,10 +264,7 @@ bool GShellSection::UpdateData(bool bsave)
 				if (p) SetFloatValue(1, p->GetFloatValue());
 			}
 
-			delete m_form; 
-			m_form = nullptr; 
-			GetParam(1).SetVisible(true);
-			GetParam(1).SetEditable(true);
+			SetElementFormulation(nullptr);
 			return true; 
 		}
 
@@ -268,15 +275,8 @@ bool GShellSection::UpdateData(bool bsave)
 
 		if ((m_form == nullptr) || (m_form->GetClassID() != l[n].classId))
 		{
-			delete m_form;
-			m_form = FEBio::CreateShellFormulation(l[n].sztype, nullptr);
-			assert(m_form);
-			GetParam(1).SetVisible(false);
-			GetParam(1).SetEditable(false);
-
-			// this will copy the shell thickness to the form's
-			double h = shellThickness();
-			SetShellThickness(h);
+			FEShellFormulation* form = FEBio::CreateShellFormulation(l[n].sztype, nullptr);
+			SetElementFormulation(form);
 			return true;
 		}
 	}
