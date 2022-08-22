@@ -92,6 +92,9 @@ void check_016(FSProject& prj, std::vector<FSObject*>& objList);
 // check if parts have duplicate names
 void check_017(FSProject& prj, std::vector<FSObject*>& objList);
 
+// are any required components missing?
+void check_018(FSProject& prj, std::vector<FSObject*>& objList);
+
 typedef void(*ERROR_FUNC)(FSProject&, std::vector<FSObject*>&);
 
 struct ERROR_DATA
@@ -119,7 +122,8 @@ vector<ERROR_DATA> error = {
 	{ WARNING , "Rigid connector \"%s\" connects the same rigid body.", check_014 },
 	{ CRITICAL, "Rigid connector \"%s\" does not connect two rigid bodies.", check_015 },
 	{ CRITICAL, "A rigid body was not assigned to rigid interface \"%s\".", check_016 },
-	{ WARNING , "Some parts have the same name. \"%s\".", check_017 }
+	{ WARNING , "Some parts have the same name. \"%s\".", check_017 },
+	{ CRITICAL, "Missing required component in \"%s\".", check_018 }
 };
 
 const char* errorString(int error_code)
@@ -645,5 +649,51 @@ void check_017(FSProject& prj, std::vector<FSObject*>& objList)
 				}
 			}
 		}
+	}
+}
+
+//=============================================================================
+// check for missing required components
+void check_required_components(FSModelComponent* pc, std::vector<FSObject*>& objList)
+{
+	for (int j = 0; j < pc->Properties(); ++j)
+	{
+		FSProperty& pj = pc->GetProperty(j);
+		if (pj.IsRequired())
+		{
+			for (int k = 0; k < pj.Size(); ++k)
+			{
+				FSModelComponent* pck = dynamic_cast<FSModelComponent*>(pj.GetComponent(k));
+				if (pck == nullptr)
+				{
+					objList.push_back(pc);
+					break;
+				}
+				else
+				{
+					check_required_components(pck, objList);
+				}
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// are any required components missing?
+void check_018(FSProject& prj, std::vector<FSObject*>& objList)
+{
+	FSModel& fem = prj.GetFSModel();
+	for (int i = 0; i < fem.Materials(); ++i)
+	{
+		GMaterial* gmat = fem.GetMaterial(i);
+		FSMaterial* pm = gmat->GetMaterialProperties();
+		if (pm == nullptr) objList.push_back(gmat);
+		else check_required_components(pm, objList);
+	}
+
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* step = fem.GetStep(i);
+		check_required_components(step, objList);
 	}
 }
