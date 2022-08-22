@@ -57,14 +57,14 @@ enum MODULE_FLAG
 
 //-----------------------------------------------------------------------------
 // Output for log file
-class FELogData
+class FSLogData
 {
 public:
 	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR };
 
 public:
-    FELogData(){ matID = -1; groupID = -1; rcID = -1; }
-	FELogData(const FELogData& d)
+	FSLogData(){ matID = -1; groupID = -1; rcID = -1; }
+	FSLogData(const FSLogData& d)
 	{
 		type = d.type;
 		sdata = d.sdata;
@@ -73,7 +73,7 @@ public:
 		groupID = d.groupID;
         rcID = d.rcID;
 	}
-	void operator = (const FELogData& d)
+	void operator = (const FSLogData& d)
 	{
 		type = d.type;
 		sdata = d.sdata;
@@ -107,13 +107,13 @@ public:
 
 public:
 	int LogDataSize() { return (int)m_log.size(); }
-	FELogData& LogData(int i) { return m_log[i]; }
-	void AddLogData(FELogData& d) { m_log.push_back(d); }
+	FSLogData& LogData(int i) { return m_log[i]; }
+	void AddLogData(FSLogData& d) { m_log.push_back(d); }
 	void ClearLogData() { m_log.clear(); }
 	void RemoveLogData(int item);
 
 private:
-	std::vector<FELogData>		m_log;		// log data
+	std::vector<FSLogData>		m_log;		// log data
 };
 
 //-----------------------------------------------------------------------------

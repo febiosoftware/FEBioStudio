@@ -742,7 +742,7 @@ CLogfileProperties::CLogfileProperties(FSProject& prj) : CObjectProps(0)
 
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
-		FELogData& ld = log.LogData(i);
+		FSLogData& ld = log.LogData(i);
 		addProperty(QString::fromStdString(ld.sdata), CProperty::Bool)->setFlags(CProperty::Visible);
 	}
 }

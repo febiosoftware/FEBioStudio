@@ -498,26 +498,26 @@ void CDlgEditOutput::UpdateLogTable()
 	ui->setLogTableSize(log.LogDataSize());
 	for (int i=0; i<log.LogDataSize(); ++i)
 	{
-		FELogData& logi = log.LogData(i);
+		FSLogData& logi = log.LogData(i);
 
 		QString type;
 		switch (logi.type)
 		{
-		case FELogData::LD_NODE : type = "Node"; break;
-		case FELogData::LD_ELEM : type = "Element"; break;
-		case FELogData::LD_RIGID: type = "Rigid body"; break;
-        case FELogData::LD_CNCTR: type = "Rigid connector"; break;
+		case FSLogData::LD_NODE : type = "Node"; break;
+		case FSLogData::LD_ELEM : type = "Element"; break;
+		case FSLogData::LD_RIGID: type = "Rigid body"; break;
+        case FSLogData::LD_CNCTR: type = "Rigid connector"; break;
 		}
 
 		QString data = QString::fromStdString(logi.sdata);
 
 		QString list;
-		if (logi.type == FELogData::LD_RIGID)
+		if (logi.type == FSLogData::LD_RIGID)
 		{
 			if (logi.matID == -1) list = "(all rigid bodies)";
 			else list = QString::fromStdString(fem.GetMaterialFromID(logi.matID)->GetName());
 		}
-        else if (logi.type == FELogData::LD_CNCTR)
+        else if (logi.type == FSLogData::LD_CNCTR)
         {
             if (logi.rcID == -1) list = "(all rigid connectors)";
             else list = QString::fromStdString(fem.GetRigidConnectorFromID(logi.rcID)->GetName());
@@ -526,7 +526,7 @@ void CDlgEditOutput::UpdateLogTable()
 		{
 			if (logi.groupID == -1)
 			{
-				if (logi.type == FELogData::LD_NODE) list = "(all nodes)";
+				if (logi.type == FSLogData::LD_NODE) list = "(all nodes)";
 				else list = "(all elements)";
 			}
 			else
@@ -554,12 +554,12 @@ void CDlgEditOutput::UpdateLogItemList()
 
 	int ntype = ui->logType->currentIndex();
 
-	if (ntype == FELogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
-	if (ntype == FELogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
-	if (ntype == FELogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
-    if (ntype == FELogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+	if (ntype == FSLogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
+	if (ntype == FSLogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
+	if (ntype == FSLogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
+    if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
 
-	if ((ntype == FELogData::LD_NODE) || (ntype == FELogData::LD_ELEM))
+	if ((ntype == FSLogData::LD_NODE) || (ntype == FSLogData::LD_ELEM))
 	{
 		// add parts
 		for (int i = 0; i<mdl.PartLists(); ++i)
@@ -568,7 +568,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 		}
 
-		if (ntype == FELogData::LD_NODE)
+		if (ntype == FSLogData::LD_NODE)
 		{
 			// add surfaces
 			for (int i = 0; i<mdl.FaceLists(); ++i)
@@ -603,7 +603,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 
-		if (ntype == FELogData::LD_ELEM)
+		if (ntype == FSLogData::LD_ELEM)
 		{
 			for (int i = 0; i<mdl.Objects(); ++i)
 			{
@@ -617,7 +617,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 	}
-	else if (ntype == FELogData::LD_RIGID)
+	else if (ntype == FSLogData::LD_RIGID)
 	{
 		int M = fem.Materials();
 		for (int i = 0; i<M; ++i)
@@ -629,7 +629,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 	}
-    else if (ntype == FELogData::LD_CNCTR)
+    else if (ntype == FSLogData::LD_CNCTR)
     {
         int lid = -1;
         for (int i = 0; i<fem.Steps(); ++i)
@@ -662,11 +662,11 @@ void CDlgEditOutput::onLogAdd()
 	ui->logEdit->setText("");
 
 	// create new log entry
-	FELogData ld;
+	FSLogData ld;
 	ld.type = ntype;
 	ld.sdata = data.toStdString();
-	if (ld.type == FELogData::LD_RIGID) ld.matID = nlist;
-    else if (ld.type == FELogData::LD_CNCTR) ld.rcID = nlist;
+	if (ld.type == FSLogData::LD_RIGID) ld.matID = nlist;
+    else if (ld.type == FSLogData::LD_CNCTR) ld.rcID = nlist;
 	else ld.groupID = nlist;
 
 	// add it to the list
@@ -828,7 +828,7 @@ void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
 	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	if ((n >= 0) && (n < log.LogDataSize()))
 	{
-		FELogData& ld = log.LogData(n);
+		FSLogData& ld = log.LogData(n);
 		QString t = item->text();
 		ld.fileName = t.toStdString();
 	}

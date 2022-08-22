@@ -505,7 +505,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 	{
 		FEBioInputModel::LogVariable& v = m_febio->GetLogVariable(i);
 
-		FELogData ld;
+		FSLogData ld;
 		ld.type = v.type();
 		ld.sdata = v.data();
 		ld.groupID = v.GroupID();

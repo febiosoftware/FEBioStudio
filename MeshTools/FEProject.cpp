@@ -59,7 +59,7 @@ void CLogDataSettings::Save(OArchive& ar)
 	const int N = (int) m_log.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FELogData& v = m_log[i];
+		FSLogData& v = m_log[i];
 		ar.BeginChunk(CID_PRJ_LOGDATA_ITEM);
 		{
 			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.type);
@@ -96,7 +96,7 @@ void CLogDataSettings::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 
-			FELogData d;
+			FSLogData d;
 			d.type = ntype;
 			d.sdata = data;
 			d.matID = mid;
