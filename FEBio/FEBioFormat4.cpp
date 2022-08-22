@@ -194,7 +194,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 				if      (strcmp(sz, "SI"     ) == 0) prj.SetUnits(2);
 				else if (strcmp(sz, "mm-N-s" ) == 0) prj.SetUnits(3);
 				else if (strcmp(sz, "mm-kg-s") == 0) prj.SetUnits(4);
-				else if (strcmp(sz, "µm-nN-s") == 0) prj.SetUnits(5);
+				else if (strcmp(sz, "um-nN-s") == 0) prj.SetUnits(5);
 				else if (strcmp(sz, "CGS"    ) == 0) prj.SetUnits(6);
 				else AddLogEntry("Unrecognized unit system.");
 			}
@@ -384,6 +384,11 @@ void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 					att.value(n);
 					param->SetIntValue(n);
 				}
+			}
+			break;
+			case Param_STRING:
+			{
+				param->SetStringValue(att.cvalue());
 			}
 			break;
 			default:

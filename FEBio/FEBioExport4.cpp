@@ -869,7 +869,7 @@ void FEBioExport4::WriteModuleSection(FSProject& prj)
 		case 2: m_xml.add_leaf("units", "SI"     ); break;
 		case 3: m_xml.add_leaf("units", "mm-N-s" ); break;
 		case 4: m_xml.add_leaf("units", "mm-kg-s"); break;
-		case 5: m_xml.add_leaf("units", "µm-nN-s"); break;
+		case 5: m_xml.add_leaf("units", "um-nN-s"); break;
 		case 6: m_xml.add_leaf("units", "CGS"    ); break;
 		}
 		m_xml.close_branch();
