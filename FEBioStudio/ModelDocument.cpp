@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshTools/GModel.h>
 #include <FEBio/FEBioImport.h>
+#include <FEBioLink/FEBioInit.h>
 
 class CModelContext
 {
@@ -139,11 +140,14 @@ void CModelDocument::Activate()
 	// reset active module
 	unsigned int m = m_Project.GetModule();
 	m_Project.SetModule(m);
+
+	FEBio::SetActiveProject(&m_Project);
 }
 
 void CModelDocument::Deactivate()
 {
 	m_context->Push();
+	FEBio::SetActiveProject(nullptr);
 }
 
 //-----------------------------------------------------------------------------

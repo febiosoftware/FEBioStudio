@@ -286,7 +286,7 @@ FECoreBase* CreateFECoreClass(int classId)
 
 	// try to create the FEBio object
 	assert(febioModel);
-	FECoreBase* pc = fac->CreateInstance(febioModel); assert(pc);
+	FECoreBase* pc = fecore.CreateInstance(fac, febioModel); assert(pc);
 
 	// all done!
 	return pc;

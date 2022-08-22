@@ -25,8 +25,37 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioInit.h"
 #include <FEBioLib/febio.h>
+#include <FECore/FEModelUpdate.h>
+#include <MeshTools/FEProject.h>
+
+class FBSModelUpdate : public FEModelUpdate
+{
+public:
+	FBSModelUpdate() : m_prj(nullptr) {}
+
+	void SetActiveProject(FSProject* prj) { m_prj = prj; }
+
+	void AddPlotVariable(const char* szplt) override
+	{
+		if (m_prj)
+		{
+			CPlotDataSettings& plt = m_prj->GetPlotDataSettings();
+			plt.AddPlotVariable(szplt, true);
+		}
+	}
+
+private:
+	FSProject* m_prj;
+};
+
+FBSModelUpdate fbsUpdater;
 
 void FEBio::InitFEBioLibrary()
 {
 	febio::InitLibrary();
+}
+
+void FEBio::SetActiveProject(FSProject* prj)
+{
+	fbsUpdater.SetActiveProject(prj);
 }
