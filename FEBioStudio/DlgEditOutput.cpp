@@ -419,8 +419,10 @@ void CDlgEditOutput::OnVariable(int nrow)
 
 void CDlgEditOutput::OnItemClicked(QListWidgetItem* item)
 {
-	CPlotVariable* var = ui->currentVariable();
-	if (var) var->setActive(item->checkState() == Qt::Checked);
+	if (item == nullptr) return;
+	int nid = item->data(Qt::UserRole).toInt();
+	CPlotVariable& var = ui->m_plt[nid];
+	var.setActive(item->checkState() == Qt::Checked);
 }
 
 void CDlgEditOutput::OnAddSelection()
