@@ -100,7 +100,12 @@ public:
 		painter.setPen(Qt::white);
 		QFont font = painter.font();
 		font.setPointSizeF(25);
+
+		// This causes the font to clip on macOS, so I've disabled it for now
+#ifndef __APPLE__
 		font.setStretch(175);
+#endif
+
 		font.setBold(true);
 		painter.setFont(font);
 		QString t1 = QString("FEBIO STUDIO");
