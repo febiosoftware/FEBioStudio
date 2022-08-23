@@ -26,111 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
+#include "LineDataModel.h"
 #include <PostLib/FEState.h>
 namespace Post {
-
-//-----------------------------------------------------------------------------
-struct LINESEGMENT
-{
-	// nodal coordinates
-	vec3f	m_r0;
-	vec3f	m_r1;
-
-	// tangents
-	vec3d	m_t0;
-	vec3d	m_t1;
-
-	// values
-	float	m_val[2];
-	float	m_user_data[2];
-	int		m_elem[2];
-
-	// segment ID
-	int	m_segId;
-
-	// flags to identify ends
-	int m_end[2];
-};
-
-class LineData
-{
-public:
-	LineData() {}
-
-	int Lines() const { return (int)m_Line.size(); }
-	LINESEGMENT& Line(int n) { return m_Line[n]; }
-	const LINESEGMENT& Line(int n) const { return m_Line[n]; }
-
-	void Add(LINESEGMENT& line) { m_Line.push_back(line); }
-
-	void processLines();
-
-	void AddLine(vec3f a, vec3f b, float data_a = 0.f, float data_b = 0.f, int el0 = -1, int el1 = -1)
-	{
-		vec3f t = b - a; t.Normalize();
-
-		LINESEGMENT L;
-		L.m_segId = 0;
-		L.m_r0 = a;
-		L.m_r1 = b;
-		L.m_t0 = L.m_t1 = to_vec3d(t);
-		L.m_user_data[0] = data_a;
-		L.m_user_data[1] = data_b;
-		L.m_elem[0] = el0;
-		L.m_elem[1] = el1;
-		L.m_end[0] = L.m_end[1] = 0;
-		m_Line.push_back(L);
-	}
-
-private:
-	vector<LINESEGMENT>	m_Line;
-};
-
-class LineDataModel;
-
-class LineDataSource
-{
-public:
-	LineDataSource(LineDataModel* mdl);
-	virtual ~LineDataSource() {}
-
-	virtual bool Load(const char* szfile) = 0;
-	virtual bool Reload() = 0;
-
-	LineDataModel* GetLineDataModel() { return m_mdl; }
-
-private:
-	LineDataModel* m_mdl;
-};
-
-class LineDataModel 
-{
-public:
-	LineDataModel(FEPostModel* fem);
-	~LineDataModel();
-
-	void Clear();
-
-	LineData& GetLineData(size_t n) { return m_line[n]; }
-
-	int States() const { return (int)m_line.size(); }
-
-	FEPostModel* GetFEModel() { return m_fem; }
-
-	void SetLineDataSource(LineDataSource* src) { m_src = src; }
-	LineDataSource* GetLineDataSource() { return m_src; }
-
-	bool Reload() 
-	{
-		if (m_src) return m_src->Reload();
-		else return false;
-	}
-
-private:
-	LineDataSource* m_src;
-	FEPostModel* m_fem;
-	std::vector<LineData>	m_line;
-};
 
 //-----------------------------------------------------------------------------
 // Line rendering of imported line data
@@ -177,6 +75,7 @@ public:
 
 public:
 	void SetLineDataModel(LineDataModel* lineData);
+	LineDataModel* GetLineDataModel();
 
 protected:
 	void RenderLines(FEState& s, int ntime);

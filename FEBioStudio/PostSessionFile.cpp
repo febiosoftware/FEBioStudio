@@ -13,12 +13,14 @@
 #include <GeomLib/GObject.h>
 #include <FEBio/FEBioExport.h> // for type_to_string<vec3d>
 #include <FEBio/FEBioFormat.h>
+#include <PostGL/GLLinePlot.h>
 #include <sstream>
 
 template <> std::string type_to_string<GLColor>(const GLColor& v)
 {
 	std::stringstream ss;
-	ss << v.r << "," << v.g << "," << v.b;
+	int n[3] = { v.r, v.g, v.b };
+	ss << n[0] << "," << n[1] << "," << n[2];
 	return ss.str();
 }
 
@@ -44,6 +46,30 @@ float PostSessionFileReader::GetFileProgress() const
 	if (m_openFile == nullptr) return 0.f;
 	else m_openFile->GetFileProgress();
     return 1.f;
+}
+
+void fsps_read_parameters(FSObject* po, XMLTag& tag)
+{
+	++tag;
+	do {
+		Param* p = po->GetParam(tag.Name());
+		if (p)
+		{
+			switch (p->GetParamType())
+			{
+			case Param_BOOL: { bool b; tag.value(b); p->SetBoolValue(b); } break;
+			case Param_INT: { int n; tag.value(n); p->SetIntValue(n); } break;
+			case Param_CHOICE: { int n; tag.value(n); p->SetIntValue(n); } break;
+			case Param_FLOAT: { double g; tag.value(g); p->SetFloatValue(g); } break;
+			case Param_VEC3D: { vec3d v; tag.value(v); p->SetVec3dValue(v); } break;
+			case Param_COLOR: { GLColor c; tag.value(c); p->SetColorValue(c); } break;
+			case Param_STRING: { std::string s; tag.value(s); p->SetStringValue(s); } break;
+			}
+		}
+		else tag.skip();
+		++tag;
+	}
+	while (!tag.isend());
 }
 
 bool PostSessionFileReader::Load(const char* szfile)
@@ -253,6 +279,24 @@ bool PostSessionFileReader::Load(const char* szfile)
 						case Param_COLOR: { GLColor c; tag.value(c); p->SetColorValue(c); } break;
 						}
 					}
+					else if (tag == "source")
+					{
+						Post::CGLLinePlot* linePlot = dynamic_cast<Post::CGLLinePlot*>(plot);
+						if (linePlot)
+						{
+							const char* sztype = tag.AttributeValue("type");
+							if (strcmp(sztype, "ang2") == 0)
+							{
+								Post::LineDataModel* lineData = new Post::LineDataModel(fem);
+								Post::LineDataSource* src = new Post::Ang2LineDataSource(lineData);
+								fsps_read_parameters(src, tag);
+								src->UpdateData(true);
+								src->Reload();
+								linePlot->SetLineDataModel(lineData);
+							}
+						}
+						else xml.SkipTag(tag);
+					}
 					++tag;
 				} while (!tag.isend());
 
@@ -274,6 +318,33 @@ bool PostSessionFileReader::Load(const char* szfile)
 }
 
 //=============================================================================
+// helper function for writing parameters
+void fsps_write_parameters(FSObject* po, XMLWriter& xml)
+{
+	if (po == nullptr) return;
+
+	for (int i = 0; i < po->Parameters(); ++i)
+	{
+		Param& pi = po->GetParam(i);
+		const char* sz = pi.GetShortName();
+
+		XMLElement el(sz);
+		switch (pi.GetParamType())
+		{
+		case Param_BOOL  : { bool    b = pi.GetBoolValue (); el.value(b); } break;
+		case Param_INT   : { int     n = pi.GetIntValue  (); el.value(n); } break;
+		case Param_CHOICE: { int     n = pi.GetIntValue  (); el.value(n); } break;
+		case Param_FLOAT : { double  v = pi.GetFloatValue(); el.value(v); } break;
+		case Param_VEC3D : { vec3d   v = pi.GetVec3dValue(); el.value(v); } break;
+		case Param_COLOR : { GLColor c = pi.GetColorValue(); int v[3] = { c.r, c.g, c.b }; el.value(v, 3); } break;
+		case Param_STRING: { string s = pi.GetStringValue(); el.value(s); } break;
+		}
+
+		xml.add_leaf(el);
+	}
+}
+
+//-----------------------------------------------------------------------------
 PostSessionFileWriter::PostSessionFileWriter(CPostDocument* doc) : m_doc(doc)
 {
 
@@ -469,23 +540,28 @@ bool PostSessionFileWriter::Write(const char* szfile)
 				if (name.empty() == false) el.add_attribute("name", name);
 				xml.add_branch(el);
 				{
-					for (int i = 0; i < plot->Parameters(); ++i)
+					fsps_write_parameters(plot, xml);
+
+					if (dynamic_cast<Post::CGLLinePlot*>(plot))
 					{
-						Param& pi = plot->GetParam(i);
-						const char* sz = pi.GetShortName();
+						Post::CGLLinePlot* linePlot = dynamic_cast<Post::CGLLinePlot*>(plot);
 
-						el.name(sz);
-						switch (pi.GetParamType())
+						Post::LineDataModel* lineData = linePlot->GetLineDataModel();
+						if (lineData)
 						{
-						case Param_BOOL: { bool b = pi.GetBoolValue(); el.value(b); } break;
-						case Param_INT: { int n = pi.GetIntValue(); el.value(n); } break;
-						case Param_CHOICE: { int n = pi.GetIntValue(); el.value(n); } break;
-						case Param_FLOAT: { double v = pi.GetFloatValue(); el.value(v); } break;
-						case Param_VEC3D: { vec3d v = pi.GetVec3dValue(); el.value(v); } break;
-						case Param_COLOR: { GLColor c = pi.GetColorValue(); int v[3] = { c.r, c.g, c.b }; el.value(v, 3); } break;
+							Post::LineDataSource* src = lineData->GetLineDataSource();
+							if (src)
+							{
+								const char* sztype = src->GetTypeString();
+								XMLElement el("source");
+								el.add_attribute("type", sztype);
+								xml.add_branch(el);
+								{
+									fsps_write_parameters(src, xml);
+								}
+								xml.close_branch();
+							}
 						}
-
-						xml.add_leaf(el);
 					}
 				}
 				xml.close_branch();
