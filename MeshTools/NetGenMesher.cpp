@@ -29,6 +29,11 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <MeshLib/FEMesh.h>
 
+// NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
+#if defined(WIN32) && defined(_DEBUG)
+#undef HAS_NETGEN
+#endif
+
 #ifdef HAS_NETGEN
 
 #include <TopTools_IndexedMapOfShape.hxx>
