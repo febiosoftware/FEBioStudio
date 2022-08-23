@@ -16835,6 +16835,1105 @@ name "fig54"
 
 \end_layout
 
+\begin_layout Section
+Post Session Files
+\end_layout
+
+\begin_layout Standard
+The post model, i.e.
+ the results and all the plots and other items added, can be saved to a
+ Post Session File (PSF).
+ The PSF is an xml-formatted file that contains the contents of the post
+ model, and all the information necessary for FEBio Studio to reconstruct
+ the model.
+ The default extension for a PSF is 
+\emph on
+fspsf
+\emph default
+.
+ 
+\end_layout
+
+\begin_layout Standard
+To create a PSF, first load a model into the Post side of FEBio Studio (e.g.
+ by loading an xplt file).
+ Then, go to 
+\emph on
+File
+\backslash
+Save as...
+\emph default
+, select the 
+\begin_inset Quotes eld
+\end_inset
+
+FEBio Studio Post Session
+\begin_inset Quotes erd
+\end_inset
+
+ file filter, choose a name, and enter Save.
+ Similarly, to open a PSF, go to the menu 
+\emph on
+File
+\backslash
+Open Model
+\emph default
+, select the 
+\begin_inset Quotes eld
+\end_inset
+
+FEBio Studio Post Session
+\begin_inset Quotes erd
+\end_inset
+
+ filter, choose the file, and click Open.
+ 
+\end_layout
+
+\begin_layout Standard
+The rest of this section describes the content of the PSF file in some detail.
+ 
+\end_layout
+
+\begin_layout Subsection
+PSF File Structure
+\end_layout
+
+\begin_layout Standard
+The Post Session File (PSF) is an xml-formatted file.
+ The root tag is 
+\emph on
+febiostudio_post_session
+\emph default
+ and it takes a required 
+\emph on
+version
+\emph default
+ tag, which has to be set to 
+\begin_inset Quotes eld
+\end_inset
+
+1.0
+\begin_inset Quotes erd
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+<febiostudio_post_session version=
+\begin_inset Quotes qrd
+\end_inset
+
+1.0
+\begin_inset Quotes qrd
+\end_inset
+
+>
+\end_layout
+
+\begin_layout LyX-Code
+...
+\end_layout
+
+\begin_layout LyX-Code
+</febiostudio_post_session>
+\end_layout
+
+\begin_layout Standard
+The remainder of the file will contain tags that change default attributes
+ or add other model components (e.g.
+ plots).
+ The following table shows a list of the supported tags.
+ The subsequent sections will discuss each tag in more detail.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement htbp
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="262pt">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+tag
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+model
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Open a model file
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+material
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set material properties
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+plot
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Supported PSF File tags
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+model
+\end_layout
+
+\begin_layout Standard
+The first XML element in the file will usually be the 
+\emph on
+model
+\emph default
+ tag, which is used to read a file, e.g.
+ an FEBio xplt file.
+ The 
+\emph on
+file
+\emph default
+ attribute specifies the filename.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+<model file=
+\begin_inset Quotes qrd
+\end_inset
+
+/path/to/some/file
+\begin_inset Quotes qrd
+\end_inset
+
+/>
+\end_layout
+
+\begin_layout Standard
+At this point, FEBio Studio will try to read the file.
+ If reading the file fails, FEBio Studio will not process the rest of the
+ session file.
+ 
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+model 
+\emph default
+tag can also contain a 
+\emph on
+type 
+\emph default
+attribute instead of a 
+\emph on
+file 
+\emph default
+attribute.
+ This is used for creating models using a specialized tool.
+ This can be used for instance for creating models via the kinemat tool.
+ See the examples below for how this works.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+material
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+material 
+\emph default
+tag allows users to set defaut material properties for the materials that
+ were automatically created when reading the model file.
+ The following table shows a list of available material parameters.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement htbp
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="8" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="262pt">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+property
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+diffuse
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the diffuse color for the material
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+ambient
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the ambient color for the material 
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+specular
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the specular color for the material
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+emission
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the emission color for the material
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+mesh_color
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the color for rendering mesh lines
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+shininess
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the shininess parameters (between 0 and 1)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+transparency
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set the material transparency (between 0 and 1)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Material properties
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+plot
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+plot 
+\emph default
+tag will add a specific type of plot to the model.
+ The plot type is specified by the 
+\emph on
+type 
+\emph default
+attribute.
+ The following plots can be added.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement htbp
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="13" columns="2">
+<features tabularvalignment="middle">
+<column alignment="left" valignment="top" width="262pt">
+<column alignment="left" valignment="top">
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+type
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Description
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+iso-surface
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add an iso-surface plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+lines
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a line plot (1)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+points
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a point cloud plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+mirror
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a mirror plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+planecut
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a planecut plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+probe
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a probe plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+ruler
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a ruler plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+slices
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a slices plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+streamlines
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a streamline plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+tensor
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a tensor plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+vector
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a vector plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+volume-flow
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Add a volume flow plot
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Plot types
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+Comments
+\emph default
+:
+\end_layout
+
+\begin_layout Enumerate
+The line plot requires a 
+\emph on
+source 
+\emph default
+property that defines the file from which the line data will be read.
+ 
+\end_layout
+
+\begin_layout Subsection
+PSF Examples
+\end_layout
+
+\begin_layout Standard
+A minimum PSF file that reads in an xplt file will look like this.
+\end_layout
+
+\begin_layout LyX-Code
+<febiostudio_post_session version=
+\begin_inset Quotes qrd
+\end_inset
+
+2.0
+\begin_inset Quotes qrd
+\end_inset
+
+>
+\end_layout
+
+\begin_layout LyX-Code
+	<model file=
+\begin_inset Quotes qrd
+\end_inset
+
+/path/to/some/file.xplt
+\begin_inset Quotes qrd
+\end_inset
+
+/>
+\end_layout
+
+\begin_layout LyX-Code
+</febiostudio_post_session>
+\end_layout
+
+\begin_layout Standard
+Assume an xplt file contains two materials.
+ The following example reads the xplt file and sets the default color properties
+ for the materials.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+<febiostudio_post_session version=
+\begin_inset Quotes qrd
+\end_inset
+
+2.0
+\begin_inset Quotes qrd
+\end_inset
+
+>
+\end_layout
+
+\begin_layout LyX-Code
+    <model file=
+\begin_inset Quotes qrd
+\end_inset
+
+/path/to/some/file.xplt
+\begin_inset Quotes qrd
+\end_inset
+
+/>
+\end_layout
+
+\begin_layout LyX-Code
+	<material id="1">
+\end_layout
+
+\begin_layout LyX-Code
+		<diffuse>240,164,96</diffuse>
+\end_layout
+
+\begin_layout LyX-Code
+		<ambient>240,164,96</ambient>
+\end_layout
+
+\begin_layout LyX-Code
+	</material> 
+\end_layout
+
+\begin_layout LyX-Code
+	<material id="2">
+\end_layout
+
+\begin_layout LyX-Code
+		<diffuse>128,128,0</diffuse>
+\end_layout
+
+\begin_layout LyX-Code
+		<ambient>128,128,0</ambient>
+\end_layout
+
+\begin_layout LyX-Code
+	</material> 
+\end_layout
+
+\begin_layout LyX-Code
+</febiostudio_post_session>
+\end_layout
+
+\begin_layout Standard
+The next example shows how to load an xplt file and add a line plot that
+ reads data from a separate file.
+\end_layout
+
+\begin_layout LyX-Code
+<febiostudio_post_session version=
+\begin_inset Quotes qrd
+\end_inset
+
+2.0
+\begin_inset Quotes qrd
+\end_inset
+
+>
+\end_layout
+
+\begin_layout LyX-Code
+	<model file=
+\begin_inset Quotes qrd
+\end_inset
+
+/path/to/some/file.xplt
+\begin_inset Quotes qrd
+\end_inset
+
+/>
+\end_layout
+
+\begin_layout LyX-Code
+	<plot type=
+\begin_inset Quotes qrd
+\end_inset
+
+lines
+\begin_inset Quotes qrd
+\end_inset
+
+>
+\end_layout
+
+\begin_layout LyX-Code
+		<source file=
+\begin_inset Quotes qrd
+\end_inset
+
+/path/to/lines/file.ang
+\begin_inset Quotes qrd
+\end_inset
+
+/>
+\end_layout
+
+\begin_layout LyX-Code
+	</plot>
+\end_layout
+
+\begin_layout LyX-Code
+</febiostudio_post_session>
+\end_layout
+
+\begin_layout Standard
+This example illustrates the use of the 
+\emph on
+kinemat
+\emph default
+ tag to read and construct a post model.
+ 
+\end_layout
+
+\begin_layout LyX-Code
+<febiostudio_post_session version="2.0">
+\end_layout
+
+\begin_layout LyX-Code
+	<model type=
+\begin_inset Quotes qrd
+\end_inset
+
+kinemat
+\begin_inset Quotes qrd
+\end_inset
+
+>
+\end_layout
+
+\begin_layout LyX-Code
+		<model_file>geometry.k</model_file>
+\end_layout
+
+\begin_layout LyX-Code
+		<kine_file>kine_data.txt</kine_file>
+\end_layout
+
+\begin_layout LyX-Code
+		<range>1,999,1</range>
+\end_layout
+
+\begin_layout LyX-Code
+	</model>
+\end_layout
+
+\begin_layout LyX-Code
+</febiostudio_post_session>
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
+\end_layout
+
 \begin_layout Chapter
 Visualizing 3D Image Data
 \end_layout
