@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEBioLink/FEBioModule.h>
 #include <MeshTools/GModel.h>
 #include "FEBioFormatOld.h"
 #include "FEBioFormat12.h"
@@ -129,11 +130,25 @@ void FEBioFileImport::AddLogEntry(const char* sz, ...)
 }
 
 //-----------------------------------------------------------------------------
+// helper class for blocking and unblocking FEBio create events.
+// this ensure that the block is released upon exit. 
+class FEBioEventBlocker
+{
+public:
+	FEBioEventBlocker() { FEBio::BlockCreateEvents(true); }
+	~FEBioEventBlocker() { FEBio::BlockCreateEvents(false); }
+};
+
+//-----------------------------------------------------------------------------
 //  Imports an FEBio input file
 //  The actual file is parsed using the XMLReader class.
 //
 bool FEBioFileImport::Load(const char* szfile)
 {
+	// set an event blocker
+	FEBioEventBlocker blocker;
+
+	// clear the log
 	ClearLog();
 
 	// extract the path

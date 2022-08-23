@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ModelFileReader.h"
 #include "ModelDocument.h"
+#include <FEBioLink/FEBioModule.h>
 #include <GeomLib/GObject.h>
 #include <sstream>
 
@@ -66,6 +67,14 @@ int ModelFileReader::GetFileVersion() const
 }
 
 bool ModelFileReader::Load(const char* szfile)
+{
+	FEBio::BlockCreateEvents(true);
+	bool b = ReadFile(szfile);
+	FEBio::BlockCreateEvents(false);
+	return b;
+}
+
+bool ModelFileReader::ReadFile(const char* szfile)
 {
 	// get the archive
 	IArchive& ar = GetArchive();

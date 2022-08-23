@@ -1221,3 +1221,9 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm, unsigned int fla
 
 	return pc;
 }
+
+void FEBio::BlockCreateEvents(bool b)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	fecore.BlockEvents(b);
+}

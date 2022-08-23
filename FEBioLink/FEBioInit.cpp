@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <FEBioLib/febio.h>
 #include <FECore/FEModelUpdate.h>
 #include <MeshTools/FEProject.h>
+#include "FEBioModule.h"
 
 class FBSModelUpdate : public FEModelUpdate
 {
@@ -53,6 +54,9 @@ FBSModelUpdate fbsUpdater;
 void FEBio::InitFEBioLibrary()
 {
 	febio::InitLibrary();
+
+	// we will process create events
+	FEBio::BlockCreateEvents(false);
 }
 
 void FEBio::SetActiveProject(FSProject* prj)

@@ -680,6 +680,9 @@ bool copyParameters(std::ostream& log, FSModelComponent* pd, const FSCoreBase* p
 
 void FSProject::ConvertToNewFormat(std::ostream& log)
 {
+	// we should not process create events, since we wish to retain the authenticity of the model
+	FEBio::BlockCreateEvents(true);
+
 	// although the active module was read in already, in previous versions of FEBio Studio
 	// the module ID didn't really matter, so it's possible that it was not set properly. 
 	// So, just to be sure, we're going to set the active module here as well, based on the first analysis' step type
@@ -704,6 +707,9 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 	ConvertMaterials(log);
 	ConvertSteps(log);
 	ConvertDiscrete(log);
+
+	// process create events again
+	FEBio::BlockCreateEvents(false);
 }
 
 void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelComponent* ps)
