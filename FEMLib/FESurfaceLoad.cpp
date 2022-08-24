@@ -147,7 +147,7 @@ FSMatchingOsmoticCoefficient::FSMatchingOsmoticCoefficient(FSModel* ps, FEItemLi
 
 FSHeatFlux::FSHeatFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_HEAT_FLUX, ps, pi, nstep)
 {
-	SetTypeString("heat flux");
+	SetTypeString("heatflux");
 	AddDoubleParam(0.0, "flux", "flux");
 }
 
@@ -166,7 +166,7 @@ void FSHeatFlux::LoadParam(const Param& p)
 
 FSConvectiveHeatFlux::FSConvectiveHeatFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_CONV_HEAT_FLUX, ps, pi, nstep)
 {
-	SetTypeString("convective heat flux");
+	SetTypeString("convective_heatflux");
 	AddDoubleParam(1, "hc", "hc");
 	AddDoubleParam(0, "Ta", "Ta");
 }
