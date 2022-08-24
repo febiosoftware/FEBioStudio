@@ -2351,7 +2351,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
 
-			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FELogData::LD_NODE, szdata);
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_NODE, szdata);
 
 			const char* szfile = tag.AttributeValue("file", true);
 			if (szfile) logVar.setFile(szfile);
@@ -2402,7 +2402,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
 
-			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FELogData::LD_ELEM, szdata);
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_ELEM, szdata);
 
 			const char* szfile = tag.AttributeValue("file", true);
 			if (szfile) logVar.setFile(szfile);
@@ -2448,13 +2448,13 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 		{
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";
-			fem.AddLogVariable(FEBioInputModel::LogVariable(FELogData::LD_RIGID, szdata));
+			fem.AddLogVariable(FEBioInputModel::LogVariable(FSLogData::LD_RIGID, szdata));
 		}
         else if (tag == "rigid_connector_data")
         {
             const char* szdata = tag.AttributeValue("data", true);
             if (szdata == 0) szdata = "";
-            fem.AddLogVariable(FEBioInputModel::LogVariable(FELogData::LD_CNCTR, szdata));
+            fem.AddLogVariable(FEBioInputModel::LogVariable(FSLogData::LD_CNCTR, szdata));
         }
 		else ParseUnknownTag(tag);
 		++tag;

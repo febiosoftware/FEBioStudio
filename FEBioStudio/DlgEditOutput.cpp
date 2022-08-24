@@ -48,20 +48,20 @@ SOFTWARE.*/
 #include <QInputDialog>
 #include <FEBioLink/FEBioClass.h>
 
-class Ui::CDlgAddDomain
+class Ui::CDlgAddSelection
 {
 public:
 	QLabel*	name;
 	QLabel* type;
-	QComboBox*	dom;
+	QComboBox*	sel;
 
 public:
 	void setup(QDialog* dlg)
 	{
 		QFormLayout* form = new QFormLayout;
 		form->addRow("Variable"   , name = new QLabel);
-		form->addRow("Domain type", type = new QLabel);
-		form->addRow("Domain"     , dom = new QComboBox);
+		form->addRow("Selection type", type = new QLabel);
+		form->addRow("Selection"     , sel = new QComboBox);
 
 		QVBoxLayout* l = new QVBoxLayout;
 
@@ -89,10 +89,10 @@ public:
 		}
 	}
 
-	void setDomains(const QStringList& l)
+	void setSelections(const QStringList& l)
 	{
-		dom->clear();
-		dom->addItems(l);
+		sel->clear();
+		sel->addItems(l);
 	}
 };
 
@@ -119,15 +119,23 @@ public:
 		varList = new QListWidget;
 		domList = new QListWidget;
 
-		QPushButton* newVar = new QPushButton("Add..."); newVar->setToolTip("<font color=\"black\">Add custom variable");
-		QPushButton* add = new QPushButton("Add Domain...");
+		QPushButton* newVar  = new QPushButton("Add..."   ); newVar->setToolTip("<font color=\"black\">Add custom variable");
+		QPushButton* delVar  = new QPushButton("Delete..."); delVar->setToolTip("<font color=\"black\">Remove custom variable");
+		QPushButton* editVar = new QPushButton("Edit..."  ); editVar->setToolTip("<font color=\"black\">Edit custom variable");
+
+		QHBoxLayout* editLayout = new QHBoxLayout;
+		editLayout->addWidget(newVar);
+		editLayout->addWidget(editVar);
+		editLayout->addWidget(delVar);
+		editLayout->addStretch();
+
+		QPushButton* add = new QPushButton("Add Selection...");
 		QPushButton* del = new QPushButton("Remove");
 
 		QHBoxLayout* fltLayout = new QHBoxLayout;
 		fltLayout->setContentsMargins(0,0,0,0);
 		fltLayout->addWidget(new QLabel("Filter"));
 		fltLayout->addWidget(filter);
-		fltLayout->addWidget(newVar);
 
 		QHBoxLayout* buttonLayout = new QHBoxLayout;
 		buttonLayout->setContentsMargins(0,0,0,0);
@@ -144,6 +152,7 @@ public:
 		varLayout->setContentsMargins(0,0,0,0);
 		varLayout->addLayout(fltLayout);
 		varLayout->addWidget(varList);
+		varLayout->addLayout(editLayout);
 
 		QHBoxLayout* h = new QHBoxLayout;
 //		h->setContentsMargins(0,0,0,0);
@@ -218,9 +227,11 @@ public:
 		QObject::connect(filter, SIGNAL(textEdited(const QString&)), dlg, SLOT(onFilterChanged(const QString&)));
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
-		QObject::connect(add, SIGNAL(clicked()), dlg, SLOT(OnAddDomain()));
-		QObject::connect(del, SIGNAL(clicked()), dlg, SLOT(OnRemoveDomain()));
-		QObject::connect(newVar, SIGNAL(clicked()), dlg, SLOT(OnNewVariable()));
+		QObject::connect(add, SIGNAL(clicked()), dlg, SLOT(OnAddSelection()));
+		QObject::connect(del, SIGNAL(clicked()), dlg, SLOT(OnRemoveSelection()));
+		QObject::connect(newVar , SIGNAL(clicked()), dlg, SLOT(OnNewVariable()));
+		QObject::connect(editVar, SIGNAL(clicked()), dlg, SLOT(OnEditVariable()));
+		QObject::connect(delVar , SIGNAL(clicked()), dlg, SLOT(OnDeleteVariable()));
 		QObject::connect(varList, SIGNAL(currentRowChanged(int)), dlg, SLOT(OnVariable(int)));
 		QObject::connect(varList, SIGNAL(itemClicked(QListWidgetItem*)), dlg, SLOT(OnItemClicked(QListWidgetItem*)));
 
@@ -241,19 +252,42 @@ public:
 		domList->clear();
 	}
 
-	void addVariable(const QString& name, bool bchecked, int nid)
+	void addVariable(const QString& name, bool bchecked, int nid, bool buser)
 	{
 		QListWidgetItem* item = new QListWidgetItem(name, varList);
 		item->setData(Qt::UserRole, nid);
 		item->setCheckState(bchecked ? Qt::Checked : Qt::Unchecked);
+		if (buser)
+		{
+			QFont f = item->font();
+			f.setBold(true);
+			item->setFont(f);
+		}
 	}
 
-	int currentVariable()
+	CPlotVariable* currentVariable()
 	{
 		int item = varList->currentRow();
-		if (item < 0) return -1;
+		if (item < 0) return nullptr;
 		int nid = varList->currentItem()->data(Qt::UserRole).toInt();
-		return nid;
+		return &m_plt[nid];
+	}
+
+	void removeCurrentVariable()
+	{
+		QListWidgetItem* it = varList->currentItem();
+		if (it)
+		{
+			int n = it->data(Qt::UserRole).toInt();
+			m_plt.erase(m_plt.begin() + n);
+		}
+	}
+
+	void updateSelectionList()
+	{
+		clearDomainList();
+		CPlotVariable* var = currentVariable();
+		if (var) setCurrentVariable(*var);
 	}
 
 	void setCurrentVariable(const CPlotVariable& var)
@@ -297,24 +331,24 @@ public:
 };
 
 //=================================================================================================
-CDlgAddDomain::CDlgAddDomain(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddDomain)
+CDlgAddSelection::CDlgAddSelection(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddSelection)
 {
 	ui->setup(this);
 }
 
-void CDlgAddDomain::setVariable(const CPlotVariable& var)
+void CDlgAddSelection::setVariable(const CPlotVariable& var)
 {
 	ui->setVariable(var);
 }
 
-void CDlgAddDomain::setDomains(const QStringList& l)
+void CDlgAddSelection::setSelections(const QStringList& l)
 {
-	ui->setDomains(l);
+	ui->setSelections(l);
 }
 
-int CDlgAddDomain::selectedDomain()
+int CDlgAddSelection::currentSelection()
 {
-	int n = ui->dom->currentIndex();
+	int n = ui->sel->currentIndex();
 	return n;
 }
 
@@ -365,7 +399,6 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 	bool filter = (flt.isEmpty() == false);
 
 	ui->varList->clear();
-	int module = m_prj.GetModule();
 	int N = ui->m_plt.size();
 	for (int i = 0; i<N; ++i)
 	{
@@ -373,57 +406,42 @@ void CDlgEditOutput::UpdateVariables(const QString& flt)
 		QString t = QString::fromStdString(tmp.name());
 		if ((filter == false) || (t.contains(flt, Qt::CaseInsensitive)))
 		{
-			ui->addVariable(t, tmp.isActive(), i);
+			ui->addVariable(t, tmp.isActive(), i, tmp.isCustom());
 		}
-
-/*		CPlotVariable& var = plt.PlotVariable(i);
-		if (var.isShown() && (var.GetModule() & module))
-		{
-			QString t = QString::fromStdString(var.name());
-			if ((filter == false) || ( t.contains(flt, Qt::CaseInsensitive)))
-			{
-				ui->addVariable(t, var.isActive(), i);
-			}
-		}
-*/
 	}
 	ui->varList->sortItems();
 }
 
 void CDlgEditOutput::OnVariable(int nrow)
 {
-/*	ui->clearDomainList();
-	if (nrow >= 0)
-	{
-		int nvar = ui->currentVariable();
-		CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-		CPlotVariable& var = plt.PlotVariable(nvar);
-		ui->setCurrentVariable(var);
-	}
-*/
+	ui->updateSelectionList();
 }
 
 void CDlgEditOutput::OnItemClicked(QListWidgetItem* item)
 {
-	int nvar = item->data(Qt::UserRole).toInt();
-	CPlotVariable& var = ui->m_plt[nvar];
+	if (item == nullptr) return;
+	int nid = item->data(Qt::UserRole).toInt();
+	CPlotVariable& var = ui->m_plt[nid];
 	var.setActive(item->checkState() == Qt::Checked);
 }
 
-void CDlgEditOutput::OnAddDomain()
+void CDlgEditOutput::OnAddSelection()
 {
-/*	int nvar = ui->currentVariable();
-	if (nvar == -1)
+	CPlotVariable* var = ui->currentVariable();
+	if (var == nullptr)
 	{
-		QMessageBox::information(this, "Add Domain", "Please select a plot variable first");
+		QMessageBox::information(this, "Add Selection", "Please select a plot variable first");
 		return;
 	}
 
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	CPlotVariable& var = plt.PlotVariable(nvar);
+	if (var->domainType() == DOMAIN_MESH)
+	{
+		QMessageBox::information(this, "Add Selection", "This plot variable does not support selections.");
+		return;
+	}
 
 	FSModel& fem = m_prj.GetFSModel();
-	vector<FEItemListBuilder*> list = fem.GetModel().AllNamedSelections(var.domainType());
+	vector<FEItemListBuilder*> list = fem.GetModel().AllNamedSelections(var->domainType());
 
 	QStringList names;
 	for (size_t i=0; i<list.size(); ++i)
@@ -431,45 +449,39 @@ void CDlgEditOutput::OnAddDomain()
 		names << QString::fromStdString(list[i]->GetName());
 	}
 
-	CDlgAddDomain dlg(this);
-	dlg.setVariable(var);
-	dlg.setDomains(names);
+	CDlgAddSelection dlg(this);
+	dlg.setVariable(*var);
+	dlg.setSelections(names);
 	if (dlg.exec())
 	{
-		int n = dlg.selectedDomain();
+		int n = dlg.currentSelection();
 		if (n >= 0)
 		{
-			var.addDomain(list[n]);
-			ui->setCurrentVariable(var);
+			var->addDomain(list[n]);
+			ui->setCurrentVariable(*var);
 		}
 	}
-*/
 }
 
-void CDlgEditOutput::OnRemoveDomain()
+void CDlgEditOutput::OnRemoveSelection()
 {
-/*
-	int nvar = ui->currentVariable();
-	if (nvar == -1)
+	CPlotVariable* var = ui->currentVariable();
+	if (var == nullptr)
 	{
 		QMessageBox::information(this, "Add Domain", "Please select a plot variable first");
 		return;
 	}
 
-	CPlotDataSettings& plt = m_prj.GetPlotDataSettings();
-	CPlotVariable& var = plt.PlotVariable(nvar);
-
 	QList<QListWidgetItem*> sel = ui->domList->selectedItems();
 	if (sel.empty())
 	{
-		QMessageBox::information(this, "Add Domain", "Please select a domain first");
+		QMessageBox::information(this, "Add Selection", "Please select a selection.");
 		return;
 	}
 
 	int nrow = ui->domList->currentRow();
-	var.removeDomain(nrow);
-	ui->setCurrentVariable(var);
-*/
+	var->removeDomain(nrow);
+	ui->setCurrentVariable(*var);
 }
 
 void CDlgEditOutput::onFilterChanged(const QString& txt)
@@ -486,26 +498,26 @@ void CDlgEditOutput::UpdateLogTable()
 	ui->setLogTableSize(log.LogDataSize());
 	for (int i=0; i<log.LogDataSize(); ++i)
 	{
-		FELogData& logi = log.LogData(i);
+		FSLogData& logi = log.LogData(i);
 
 		QString type;
 		switch (logi.type)
 		{
-		case FELogData::LD_NODE : type = "Node"; break;
-		case FELogData::LD_ELEM : type = "Element"; break;
-		case FELogData::LD_RIGID: type = "Rigid body"; break;
-        case FELogData::LD_CNCTR: type = "Rigid connector"; break;
+		case FSLogData::LD_NODE : type = "Node"; break;
+		case FSLogData::LD_ELEM : type = "Element"; break;
+		case FSLogData::LD_RIGID: type = "Rigid body"; break;
+        case FSLogData::LD_CNCTR: type = "Rigid connector"; break;
 		}
 
 		QString data = QString::fromStdString(logi.sdata);
 
 		QString list;
-		if (logi.type == FELogData::LD_RIGID)
+		if (logi.type == FSLogData::LD_RIGID)
 		{
 			if (logi.matID == -1) list = "(all rigid bodies)";
 			else list = QString::fromStdString(fem.GetMaterialFromID(logi.matID)->GetName());
 		}
-        else if (logi.type == FELogData::LD_CNCTR)
+        else if (logi.type == FSLogData::LD_CNCTR)
         {
             if (logi.rcID == -1) list = "(all rigid connectors)";
             else list = QString::fromStdString(fem.GetRigidConnectorFromID(logi.rcID)->GetName());
@@ -514,7 +526,7 @@ void CDlgEditOutput::UpdateLogTable()
 		{
 			if (logi.groupID == -1)
 			{
-				if (logi.type == FELogData::LD_NODE) list = "(all nodes)";
+				if (logi.type == FSLogData::LD_NODE) list = "(all nodes)";
 				else list = "(all elements)";
 			}
 			else
@@ -542,12 +554,12 @@ void CDlgEditOutput::UpdateLogItemList()
 
 	int ntype = ui->logType->currentIndex();
 
-	if (ntype == FELogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
-	if (ntype == FELogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
-	if (ntype == FELogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
-    if (ntype == FELogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+	if (ntype == FSLogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
+	if (ntype == FSLogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
+	if (ntype == FSLogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
+    if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
 
-	if ((ntype == FELogData::LD_NODE) || (ntype == FELogData::LD_ELEM))
+	if ((ntype == FSLogData::LD_NODE) || (ntype == FSLogData::LD_ELEM))
 	{
 		// add parts
 		for (int i = 0; i<mdl.PartLists(); ++i)
@@ -556,7 +568,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 		}
 
-		if (ntype == FELogData::LD_NODE)
+		if (ntype == FSLogData::LD_NODE)
 		{
 			// add surfaces
 			for (int i = 0; i<mdl.FaceLists(); ++i)
@@ -591,7 +603,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 
-		if (ntype == FELogData::LD_ELEM)
+		if (ntype == FSLogData::LD_ELEM)
 		{
 			for (int i = 0; i<mdl.Objects(); ++i)
 			{
@@ -605,7 +617,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 	}
-	else if (ntype == FELogData::LD_RIGID)
+	else if (ntype == FSLogData::LD_RIGID)
 	{
 		int M = fem.Materials();
 		for (int i = 0; i<M; ++i)
@@ -617,7 +629,7 @@ void CDlgEditOutput::UpdateLogItemList()
 			}
 		}
 	}
-    else if (ntype == FELogData::LD_CNCTR)
+    else if (ntype == FSLogData::LD_CNCTR)
     {
         int lid = -1;
         for (int i = 0; i<fem.Steps(); ++i)
@@ -650,11 +662,11 @@ void CDlgEditOutput::onLogAdd()
 	ui->logEdit->setText("");
 
 	// create new log entry
-	FELogData ld;
+	FSLogData ld;
 	ld.type = ntype;
 	ld.sdata = data.toStdString();
-	if (ld.type == FELogData::LD_RIGID) ld.matID = nlist;
-    else if (ld.type == FELogData::LD_CNCTR) ld.rcID = nlist;
+	if (ld.type == FSLogData::LD_RIGID) ld.matID = nlist;
+    else if (ld.type == FSLogData::LD_CNCTR) ld.rcID = nlist;
 	else ld.groupID = nlist;
 
 	// add it to the list
@@ -759,11 +771,53 @@ void CDlgEditOutput::OnNewVariable()
 				}
 			}
 			CPlotVariable var(s.toStdString(), true, true, n);
+			var.setCustom(true);
 			ui->m_plt.push_back(var);
 			UpdateVariables("");
 			ui->setCurrentVariable(s);
 		}
 	}
+}
+
+void CDlgEditOutput::OnEditVariable()
+{
+	CPlotVariable* var = ui->currentVariable();
+	if (var)
+	{
+		if (var->isCustom() == false)
+		{
+			QMessageBox::critical(this, "Delete Variable", "Only custom variables can be deleted.");
+		}
+		else
+		{
+			QString s = QInputDialog::getText(this, "Edit Variable", "Variable:", QLineEdit::Normal, QString::fromStdString(var->name()));
+			if (s.isEmpty() == false)
+			{
+				var->setName(s.toStdString());
+				UpdateVariables("");
+				ui->setCurrentVariable(s);
+			}
+		}
+	}
+	else QMessageBox::information(this, "Delete Variable", "Please select a custom variable.");
+}
+
+void CDlgEditOutput::OnDeleteVariable()
+{
+	CPlotVariable* var = ui->currentVariable();
+	if (var)
+	{
+		if (var->isCustom() == false)
+		{
+			QMessageBox::critical(this, "Delete Variable", "Only custom variables can be deleted.");
+		}
+		else if (QMessageBox::question(this, "Delete Variable", "Are you sure you want to delete this variable?") == QMessageBox::Yes)
+		{
+			ui->removeCurrentVariable();
+			UpdateVariables("");
+		}
+	}
+	else QMessageBox::information(this, "Delete Variable", "Please select a custom variable.");
 }
 
 void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
@@ -774,7 +828,7 @@ void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
 	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	if ((n >= 0) && (n < log.LogDataSize()))
 	{
-		FELogData& ld = log.LogData(n);
+		FSLogData& ld = log.LogData(n);
 		QString t = item->text();
 		ld.fileName = t.toStdString();
 	}

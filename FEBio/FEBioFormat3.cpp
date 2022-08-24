@@ -442,6 +442,13 @@ bool FEBioFormat3::ParseMeshDomainsSection(XMLTag& tag)
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();
 
+	// If we only import geometry, make sure to copy all
+	// the mesh selections, otherwise this information will be lost.
+	if (m_geomOnly)
+	{
+		GetFEBioModel().CopyMeshSelections();
+	}
+
 	return true;
 }
 
@@ -541,6 +548,7 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 	bool laugon = false;
 	double atol = 0.0;
 	bool shellNodalNormals = false;
+	double shellThickness = 0.0;
 	int minaug = 0;
 	int maxaug = 0;
 
@@ -550,6 +558,10 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 		if (tag == "shell_normal_nodal")
 		{
 			tag.value(shellNodalNormals);
+		}
+		else if (tag == "shell_thickness")
+		{
+			tag.value(shellThickness);
 		}
 		else if (tag == "laugon")
 		{
@@ -578,41 +590,54 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 
 	FSModel* fem = &GetFSModel();
 
-	if (is3field)
+	if (dom->m_form == nullptr)
 	{
-		FEShellFormulation* eform = FEBio::CreateShellFormulation("three-field-shell", fem);
-		eform->SetParamBool("laugon", laugon);
-		eform->SetParamFloat("atol", atol);
-		eform->SetParamInt("minaug", minaug);
-		eform->SetParamInt("maxaug", maxaug);
-		eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
-		dom->m_form = eform;
+		if (is3field)
+		{
+			FEShellFormulation* eform = FEBio::CreateShellFormulation("three-field-shell", fem);
+			eform->SetParamBool("laugon", laugon);
+			eform->SetParamFloat("atol", atol);
+			eform->SetParamInt("minaug", minaug);
+			eform->SetParamInt("maxaug", maxaug);
+			eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
+			eform->SetParamFloat("shell_thickness", shellThickness);
+			dom->m_form = eform;
+		}
+		else
+		{
+			int nmat = dom->MatID();
+			GMaterial* gmat = fem->GetMaterial(nmat);
+			if (gmat && gmat->GetMaterialProperties())
+			{
+				FSMaterial* pm = gmat->GetMaterialProperties();
+				FEShellFormulation* eform = nullptr;
+				if (pm->IsRigid()) eform = FEBio::CreateShellFormulation("rigid-shell", fem);
+				else
+				{
+					int baseClass = FEBio::GetBaseClassIndex("FEUncoupledMaterial");
+					if (FEBio::HasBaseClass(pm, "FEUncoupledMaterial"))
+					{
+						eform = FEBio::CreateShellFormulation("three-field-shell", fem);
+					}
+					else eform = FEBio::CreateShellFormulation("elastic-shell", fem);
+				}
+
+				if (eform)
+				{
+					eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
+					eform->SetParamFloat("shell_thickness", shellThickness);
+					dom->m_form = eform;
+				}
+			}
+		}
 	}
 	else
 	{
-		int nmat = dom->MatID();
-		GMaterial* gmat = fem->GetMaterial(nmat);
-		if (gmat && gmat->GetMaterialProperties())
-		{
-			FSMaterial* pm = gmat->GetMaterialProperties();
-			FEShellFormulation* eform = nullptr;
-			if (pm->IsRigid()) eform = FEBio::CreateShellFormulation("rigid-shell", fem);
-			else
-			{
-				int baseClass = FEBio::GetBaseClassIndex("FEUncoupledMaterial");
-				if (FEBio::HasBaseClass(pm, "FEUncoupledMaterial"))
-				{
-					eform = FEBio::CreateShellFormulation("three-field-shell", fem);
-				}
-				else eform = FEBio::CreateShellFormulation("elastic-shell", fem);
-			}
+		Param* p = dom->m_form->GetParam("shell_normal_nodal");
+		if (p) p->SetBoolValue(shellNodalNormals);
 
-			if (eform)
-			{
-				eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
-				dom->m_form = eform;
-			}
-		}
+		Param* ph = dom->m_form->GetParam("shell_thickness");
+		if (ph) ph->SetFloatValue(shellThickness);
 	}
 
 	return true;
@@ -676,6 +701,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	int elems = tag.children();
 
 	// get the required type attribute
+	const char* szshell = nullptr;
 	const char* sztype = tag.AttributeValue("type");
 	FEElementType ntype = FE_INVALID_ELEMENT_TYPE;
 	if      (strcmp(sztype, "hex8"  ) == 0) ntype = FE_HEX8;
@@ -729,6 +755,8 @@ void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	else if (strcmp(sztype, "TRI3G9"      ) == 0) ntype = FE_TRI3;
 	else if (strcmp(sztype, "TRI6G14"     ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "TRI6G21"     ) == 0) ntype = FE_TRI6;
+	else if (strcmp(sztype, "q4eas"       ) == 0) { ntype = FE_QUAD4; szshell = "elastic-shell-eas"; }
+	else if (strcmp(sztype, "q4ans"       ) == 0) { ntype = FE_QUAD4; szshell = "elastic-shell-ans"; }
 	else throw XMLReader::InvalidTag(tag);
 
 	// get the optional material attribute
@@ -762,6 +790,8 @@ void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	// add domain to list
 	FEBioInputModel::Domain* dom = part->AddDomain(name, matID);
 //	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
+
+	if (szshell) dom->m_form = FEBio::CreateShellFormulation(szshell, &GetFSModel());
 
 	// create elements
 	FSMesh& mesh = *part->GetFEMesh();
@@ -1971,11 +2001,14 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 			if      (abc == "x") bc = 0;
 			else if (abc == "y") bc = 1;
 			else if (abc == "z") bc = 2;
-			else if (abc == "p") bc = 3;
-            else if (abc.compare(0,1,"c") == 0) {
+			else if (abc == "sx") bc = 3;
+			else if (abc == "sy") bc = 4;
+			else if (abc == "sz") bc = 5;
+			else if (abc == "p") bc = 6;
+			else if (abc.compare(0,1,"c") == 0) {
                 int isol = 0;
                 sscanf(abc.substr(1).c_str(),"%d",&isol);
-                bc = isol+3;
+                bc = isol+6;
             }
 			else throw XMLReader::InvalidValue(tag);
 

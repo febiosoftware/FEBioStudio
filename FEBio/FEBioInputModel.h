@@ -354,6 +354,8 @@ public:
 		FSSurface* BuildFESurface(const char* szname);
 		FSPart*    BuildFEPart   (const char* szname);
 
+		FSSurface* BuildFESurface(const Surface& surf);
+
 	public:
 		vec3d	m_pos;
 		quatd	m_rot;
@@ -425,6 +427,8 @@ public:
 	~FEBioInputModel();
 
 	void UpdateGeometry();
+
+	void CopyMeshSelections();
 
 	FSModel& GetFSModel() { return m_fem; }
 

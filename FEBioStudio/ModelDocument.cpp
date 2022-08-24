@@ -39,6 +39,8 @@ SOFTWARE.*/
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshTools/GModel.h>
+#include <FEBio/FEBioImport.h>
+#include <FEBioLink/FEBioInit.h>
 
 class CModelContext
 {
@@ -138,11 +140,14 @@ void CModelDocument::Activate()
 	// reset active module
 	unsigned int m = m_Project.GetModule();
 	m_Project.SetModule(m);
+
+	FEBio::SetActiveProject(&m_Project);
 }
 
 void CModelDocument::Deactivate()
 {
 	m_context->Push();
+	FEBio::SetActiveProject(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -630,6 +635,13 @@ bool CModelDocument::ImportMaterials(const std::string& fileName)
 	}
 
 	return true;
+}
+
+bool CModelDocument::ImportFEBioMaterials(const std::string& fileName)
+{
+	if (fileName.empty()) return false;
+	FEBioFileImport feb(GetProject());
+	return feb.ImportMaterials(fileName.c_str());
 }
 
 //-----------------------------------------------------------------------------

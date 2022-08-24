@@ -41,6 +41,9 @@ public:
 	int GetFileVersion() const;
 
 private:
+	bool ReadFile(const char* szfile);
+
+private:
 	CModelDocument*	m_doc;
 
 	int	m_fileVersion;

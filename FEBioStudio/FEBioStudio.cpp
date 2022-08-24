@@ -92,12 +92,20 @@ public:
 	{
 		QPainter painter(&pixmap);
 
-		QRect rt = pixmap.rect();
-		rt.adjust(20, 20, -20, -20);
+        qreal pr = pixmap.devicePixelRatio();
+		QRect rtdi = pixmap.rect();
+        QRect rt = QRect(rtdi.left()/pr,rtdi.top()/pr,rtdi.width()/pr,rtdi.height()/pr);
+        qreal border = 20;
+		rt.adjust(border, border, -border, -border);
 		painter.setPen(Qt::white);
 		QFont font = painter.font();
 		font.setPointSizeF(25);
+
+		// This causes the font to clip on macOS, so I've disabled it for now
+#ifndef __APPLE__
 		font.setStretch(175);
+#endif
+
 		font.setBold(true);
 		painter.setFont(font);
 		QString t1 = QString("FEBIO STUDIO");
@@ -151,8 +159,8 @@ int main(int argc, char* argv[])
         pixmap = QPixmap(":/icons/splash.png");
     else
         pixmap = QPixmap(":/icons/splash_hires.png");
-//	pixmap.setDevicePixelRatio(pixelRatio);
-	FBSSplashScreen splash(pixmap);
+    pixmap.setDevicePixelRatio(pixelRatio);
+    FBSSplashScreen splash(pixmap);
 	splash.show();
 
 	// see if the reset flag was defined

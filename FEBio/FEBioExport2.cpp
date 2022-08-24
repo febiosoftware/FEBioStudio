@@ -4919,10 +4919,10 @@ void FEBioExport2::WriteOutputSection()
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FELogData& d = log.LogData(i);
+				FSLogData& d = log.LogData(i);
 				switch (d.type)
 				{
-				case FELogData::LD_NODE:
+				case FSLogData::LD_NODE:
 					{
 						XMLElement e;
 						e.name("node_data");
@@ -4941,7 +4941,7 @@ void FEBioExport2::WriteOutputSection()
 						else m_xml.add_empty(e);
 					}
 					break;
-				case FELogData::LD_ELEM:
+				case FSLogData::LD_ELEM:
 					{
 						XMLElement e;
 						e.name("element_data");
@@ -4960,7 +4960,7 @@ void FEBioExport2::WriteOutputSection()
 						else m_xml.add_empty(e);
 					}
 					break;
-				case FELogData::LD_RIGID:
+				case FSLogData::LD_RIGID:
 					{
 						XMLElement e;
 						e.name("rigid_body_data");

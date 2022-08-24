@@ -81,6 +81,7 @@ Unit UnitParser::expr()
 			left /= expr();
 			break;
 		case END:
+		case ONE:
 			return left;
 			break;
 		default:
@@ -114,6 +115,12 @@ Unit UnitParser::prim()
 	case SYMBOL:
 	{
 		u = symbol();
+	}
+	break;
+	case ONE:
+	{
+		u = Unit("1", 1);
+		get_token();
 	}
 	break;
 	case END: return u; break;
@@ -153,7 +160,6 @@ Unit UnitParser::symbol()
 	case 'W': s = Units::GetUnitSymbol(m_unit_system, Units::POWER); break;
 	case 'V': s = Units::GetUnitSymbol(m_unit_system, Units::VOLTAGE); break;
 	case 'c': s = Units::GetUnitSymbol(m_unit_system, Units::CONCENTRATION); break;
-    case 'o': s = Units::GetUnitSymbol(m_unit_system, Units::ONE); break;
 	case 'd': s = DEG; break;
 	case 'r': s = RAD; break;
 	}
@@ -179,6 +185,7 @@ UnitParser::Token UnitParser::get_token()
 	switch (ch)
 	{
 	case 0: return curr_tok = END; break;
+	case '1': return curr_tok = ONE; break;
 	case '^': return curr_tok = POW; break;
 	case '.': return curr_tok = MUL; break;
 	case '/': return curr_tok = DIV; break;

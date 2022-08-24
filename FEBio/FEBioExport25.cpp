@@ -632,8 +632,8 @@ void FEBioExport25::BuildNodeSetList(FSProject& prj)
 	int ndata = logData.LogDataSize();
 	for (int i = 0; i < ndata; ++i)
 	{
-		FELogData& ld = logData.LogData(i);
-		if (ld.type == FELogData::LD_NODE)
+		FSLogData& ld = logData.LogData(i);
+		if (ld.type == FSLogData::LD_NODE)
 		{
 			// Find the node set
 			FEItemListBuilder* itemList = mdl.FindNamedSelection(ld.groupID);
@@ -670,8 +670,8 @@ void FEBioExport25::BuildElemSetList(FSProject& prj)
 	CLogDataSettings& log = prj.GetLogDataSettings();
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
-		FELogData& di = log.LogData(i);
-		if ((di.type == FELogData::LD_ELEM) && (di.groupID != -1))
+		FSLogData& di = log.LogData(i);
+		if ((di.type == FSLogData::LD_ELEM) && (di.groupID != -1))
 		{
 			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
 			if (pg)
@@ -5085,10 +5085,10 @@ void FEBioExport25::WriteOutputSection()
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FELogData& d = log.LogData(i);
+				FSLogData& d = log.LogData(i);
 				switch (d.type)
 				{
-				case FELogData::LD_NODE:
+				case FSLogData::LD_NODE:
 					{
 						XMLElement e;
 						e.name("node_data");
@@ -5107,7 +5107,7 @@ void FEBioExport25::WriteOutputSection()
 						m_xml.add_empty(e);
 					}
 					break;
-				case FELogData::LD_ELEM:
+				case FSLogData::LD_ELEM:
 					{
 						XMLElement e;
 						e.name("element_data");
@@ -5126,7 +5126,7 @@ void FEBioExport25::WriteOutputSection()
 						m_xml.add_empty(e);
 					}
 					break;
-				case FELogData::LD_RIGID:
+				case FSLogData::LD_RIGID:
 					{
 						XMLElement e;
 						e.name("rigid_body_data");
@@ -5146,7 +5146,7 @@ void FEBioExport25::WriteOutputSection()
 						else m_xml.add_empty(e);
 					}
 					break;
-                case FELogData::LD_CNCTR:
+                case FSLogData::LD_CNCTR:
                     {
                         XMLElement e;
                         e.name("rigid_connector_data");

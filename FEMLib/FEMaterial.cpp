@@ -1633,7 +1633,21 @@ void FSPrescribedActiveContractionUniaxial::Convert(FSPrescribedActiveContractio
 }
 
 ////////////////////////////////////////////////////////////////////////
-// FSPrescribedActiveContractionTransIso - Prescribed trans iso active contraction
+// FEPrescribedActiveContractionFiber
+////////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FSPrescribedActiveContractionFiber, MODULE_MECH, FE_ACTIVE_CONTRACT_FIBER, FE_MAT_ELASTIC, "prescribed fiber active contraction", 0);
+
+FSPrescribedActiveContractionFiber::FSPrescribedActiveContractionFiber(FSModel* fem) : FSTransverselyIsotropic(FE_ACTIVE_CONTRACT_FIBER, fem)
+{
+	SetFiberMaterial(new FSOldFiberMaterial(fem));
+
+	AddScienceParam(0, UNIT_PRESSURE, "T0", "T0")->MakeVariable(true);
+	SetAxisMaterial(new FSAxisMaterial(fem));
+}
+
+////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionTransIso - Prescribed trans iso active contraction
 ////////////////////////////////////////////////////////////////////////
 
 REGISTER_MATERIAL(FSPrescribedActiveContractionTransIso, MODULE_MECH, FE_ACTIVE_CONTRACT_TISO, FE_MAT_ELASTIC, "prescribed trans iso active contraction", 0);
@@ -1717,6 +1731,19 @@ void FSPrescribedActiveContractionUniaxialUC::Convert(FSPrescribedActiveContract
     m_axes->m_phi = pold->GetFloatValue(FSPrescribedActiveContractionUniaxialUCOld::MP_PH);
 }
 
+
+////////////////////////////////////////////////////////////////////////
+// FEPrescribedActiveContractionFiberUC - Prescribed uniaxial active contraction
+////////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FSPrescribedActiveContractionFiberUC, MODULE_MECH, FE_ACTIVE_CONTRACT_FIBER_UC, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled prescribed fiber active contraction", 0);
+
+FSPrescribedActiveContractionFiberUC::FSPrescribedActiveContractionFiberUC(FSModel* fem) : FSTransverselyIsotropic(FE_ACTIVE_CONTRACT_FIBER_UC, fem)
+{
+	SetFiberMaterial(new FSOldFiberMaterial(fem));
+	AddScienceParam(0, UNIT_PRESSURE, "T0", "T0")->MakeVariable(true);
+}
+
 ////////////////////////////////////////////////////////////////////////
 // FSPrescribedActiveContractionTransIsoUC - Prescribed trans iso active contraction
 ////////////////////////////////////////////////////////////////////////
@@ -1766,7 +1793,7 @@ FSIsotropicLeeSacks::FSIsotropicLeeSacks(FSModel* fem) : FSMaterial(FE_ISOTROPIC
 }
 
 //////////////////////////////////////////////////////////////////////
-REGISTER_MATERIAL(FSIsotropicLeeSacksUncoupled, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "Kamensky uncoupled", MaterialFlags::TOPLEVEL);
+REGISTER_MATERIAL(FSIsotropicLeeSacksUncoupled, MODULE_MECH, FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, FE_MAT_ELASTIC_UNCOUPLED, "uncoupled isotropic Lee-Sacks", MaterialFlags::TOPLEVEL);
 
 FSIsotropicLeeSacksUncoupled::FSIsotropicLeeSacksUncoupled(FSModel* fem) : FSMaterial(FE_ISOTROPIC_LEE_SACKS_UNCOUPLED, fem)
 {

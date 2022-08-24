@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEBioLink/FEBioModule.h>
 #include <MeshTools/GModel.h>
 #include "FEBioFormatOld.h"
 #include "FEBioFormat12.h"
@@ -129,11 +130,25 @@ void FEBioFileImport::AddLogEntry(const char* sz, ...)
 }
 
 //-----------------------------------------------------------------------------
+// helper class for blocking and unblocking FEBio create events.
+// this ensure that the block is released upon exit. 
+class FEBioEventBlocker
+{
+public:
+	FEBioEventBlocker() { FEBio::BlockCreateEvents(true); }
+	~FEBioEventBlocker() { FEBio::BlockCreateEvents(false); }
+};
+
+//-----------------------------------------------------------------------------
 //  Imports an FEBio input file
 //  The actual file is parsed using the XMLReader class.
 //
 bool FEBioFileImport::Load(const char* szfile)
 {
+	// set an event blocker
+	FEBioEventBlocker blocker;
+
+	// clear the log
 	ClearLog();
 
 	// extract the path
@@ -505,7 +520,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 	{
 		FEBioInputModel::LogVariable& v = m_febio->GetLogVariable(i);
 
-		FELogData ld;
+		FSLogData ld;
 		ld.type = v.type();
 		ld.sdata = v.data();
 		ld.groupID = v.GroupID();
@@ -526,4 +541,82 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 	}
 
 	return true;
+}
+
+bool FEBioFileImport::ImportMaterials(const char* szfile)
+{
+	ClearLog();
+
+	// extract the path
+	strcpy(m_szpath, szfile);
+	char* ch = strrchr(m_szpath, '/');
+	if (ch == 0)
+	{
+		ch = strrchr(m_szpath, '\\');
+	}
+	if (ch != 0) *(++ch) = 0; else m_szpath[0] = 0;
+
+	SetFileName(szfile);
+
+	// Open thefile with the XML reader
+	XMLReader xml;
+	if (xml.Open(szfile) == false) return errf("This is not a valid FEBio input file");
+
+	// Set the file stream
+	SetFileStream(xml.GetFileStream());
+
+	FSModel& fem = m_prj.GetFSModel();
+	GModel& mdl = fem.GetModel();
+
+	// create a new FEBioInputModel
+	InitLog(this);
+	m_febio = new FEBioInputModel(fem);
+
+	// loop over all child tags
+	bool bret = true;
+	try
+	{
+		// Find the root element
+		XMLTag tag;
+		if (xml.FindTag("febio_spec", tag) == false) return errf("This is not a valid FEBio input file");
+
+		mdl.SetInfo(xml.GetLastComment());
+
+		// check the version number of the file (This also allocates the format)
+		if (ParseVersion(tag) == false) return errf("Invalid version for febio_spec");
+
+		if (xml.FindTag("febio_spec/Material", tag) == false)
+		{
+			return errf("File does not contain Material section.");
+		}
+
+		// loop over all file sections
+		bret = m_fmt->ParseSection(tag);
+	}
+	catch (XMLReader::EndOfFile e)
+	{
+		// this is fine. Moving on ...
+	}
+	catch (std::runtime_error e)
+	{
+		SetFileStream(nullptr);
+		return errf("FATAL ERROR: %s (line %d)\n", e.what(), xml.GetCurrentLine());
+	}
+	catch (...)
+	{
+		SetFileStream(nullptr);
+		return errf("FATAL ERROR: unrecoverable error (line %d)\n", xml.GetCurrentLine());
+	}
+
+	// copy the log to the error string
+	const char* szlog = GetLog();
+	if (szlog != 0)
+	{
+		errf(szlog);
+	}
+
+	SetFileStream(nullptr);
+
+	// we're done!
+	return bret;
 }

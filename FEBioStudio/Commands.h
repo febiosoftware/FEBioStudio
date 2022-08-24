@@ -45,6 +45,7 @@ SOFTWARE.*/
 class ObjectMeshList;
 class MeshLayer;
 class CModelDocument;
+class CGLDocument;
 class CGView;
 
 //-----------------------------------------------------------------------------
@@ -713,13 +714,13 @@ public:
 class CCmdInvertSelection : public CCommand
 {
 public:
-	CCmdInvertSelection(CModelDocument* doc);
+	CCmdInvertSelection(CGLDocument* doc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument*	m_doc;
+	CGLDocument*	m_doc;
 	int	m_item;
 };
 

@@ -59,7 +59,7 @@ void CLogDataSettings::Save(OArchive& ar)
 	const int N = (int) m_log.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FELogData& v = m_log[i];
+		FSLogData& v = m_log[i];
 		ar.BeginChunk(CID_PRJ_LOGDATA_ITEM);
 		{
 			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.type);
@@ -96,7 +96,7 @@ void CLogDataSettings::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 
-			FELogData d;
+			FSLogData d;
 			d.type = ntype;
 			d.sdata = data;
 			d.matID = mid;
@@ -398,14 +398,14 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSFixedNormalDisplacement, MODULE_MECH, FENLCONSTRAINT_ID, FE_FIXED_NORMAL_DISPLACEMENT, "fixed normal displacement");
 
 	// --- HEAT MODULE ---
-	REGISTER_FE_CLASS(FSHeatTransfer         , MODULE_HEAT, FEANALYSIS_ID        , FE_STEP_HEAT_TRANSFER    , "Heat Transfer");
-	REGISTER_FE_CLASS(FSFixedTemperature     , MODULE_HEAT, FEBC_ID              , FE_FIXED_TEMPERATURE     , "Zero temperature");
-	REGISTER_FE_CLASS(FSPrescribedTemperature, MODULE_HEAT, FEBC_ID              , FE_PRESCRIBED_TEMPERATURE, "Prescribed temperature");
-	REGISTER_FE_CLASS(FSHeatFlux             , MODULE_HEAT, FELOAD_ID       , FE_HEAT_FLUX             , "Heat flux");
-	REGISTER_FE_CLASS(FSConvectiveHeatFlux   , MODULE_HEAT, FELOAD_ID       , FE_CONV_HEAT_FLUX        , "Convective heat flux");
-	REGISTER_FE_CLASS(FSInitTemperature      , MODULE_HEAT, FEIC_ID              , FE_INIT_TEMPERATURE      , "Temperature");
-	REGISTER_FE_CLASS(FSHeatSource           , MODULE_HEAT, FELOAD_ID       , FE_HEAT_SOURCE           , "Heat source");
-	REGISTER_FE_CLASS(FSGapHeatFluxInterface , MODULE_HEAT, FESURFACEINTERFACE_ID, FE_GAPHEATFLUX_INTERFACE , "Gap heat flux");
+	REGISTER_FE_CLASS(FSHeatTransfer         , MODULE_HEAT, FEANALYSIS_ID        , FE_STEP_HEAT_TRANSFER    , "heat");
+	REGISTER_FE_CLASS(FSFixedTemperature     , MODULE_HEAT, FEBC_ID              , FE_FIXED_TEMPERATURE     , "fixed temperature");
+	REGISTER_FE_CLASS(FSPrescribedTemperature, MODULE_HEAT, FEBC_ID              , FE_PRESCRIBED_TEMPERATURE, "prescribed temperature");
+	REGISTER_FE_CLASS(FSHeatFlux             , MODULE_HEAT, FELOAD_ID       , FE_HEAT_FLUX             , "heatflux");
+	REGISTER_FE_CLASS(FSConvectiveHeatFlux   , MODULE_HEAT, FELOAD_ID       , FE_CONV_HEAT_FLUX        , "convective_heatflux");
+	REGISTER_FE_CLASS(FSInitTemperature      , MODULE_HEAT, FEIC_ID              , FE_INIT_TEMPERATURE      , "temperature");
+	REGISTER_FE_CLASS(FSHeatSource           , MODULE_HEAT, FELOAD_ID       , FE_HEAT_SOURCE           , "heat_source");
+	REGISTER_FE_CLASS(FSGapHeatFluxInterface , MODULE_HEAT, FESURFACEINTERFACE_ID, FE_GAPHEATFLUX_INTERFACE , "gap heat flux");
 
 	// --- BIPHASIC MODULE ---
 	REGISTER_FE_CLASS(FSNonLinearBiphasic      , MODULE_BIPHASIC, FEANALYSIS_ID        , FE_STEP_BIPHASIC            , "Biphasic");
@@ -680,6 +680,9 @@ bool copyParameters(std::ostream& log, FSModelComponent* pd, const FSCoreBase* p
 
 void FSProject::ConvertToNewFormat(std::ostream& log)
 {
+	// we should not process create events, since we wish to retain the authenticity of the model
+	FEBio::BlockCreateEvents(true);
+
 	// although the active module was read in already, in previous versions of FEBio Studio
 	// the module ID didn't really matter, so it's possible that it was not set properly. 
 	// So, just to be sure, we're going to set the active module here as well, based on the first analysis' step type
@@ -690,12 +693,14 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		int ntype = step->GetType();
 		switch (ntype)
 		{
-		case FE_STEP_MECHANICS      : FEBio::SetActiveModule("solid"); break;
-		case FE_STEP_BIPHASIC       : FEBio::SetActiveModule("biphasic"); break;
-		case FE_STEP_BIPHASIC_SOLUTE: FEBio::SetActiveModule("solute"); break;
-		case FE_STEP_MULTIPHASIC    : FEBio::SetActiveModule("multiphasic"); break;
-		case FE_STEP_FLUID          : FEBio::SetActiveModule("fluid"); break;
-		case FE_STEP_FLUID_FSI      : FEBio::SetActiveModule("fluid-FSI"); break;
+		case FE_STEP_MECHANICS         : FEBio::SetActiveModule("solid"             ); break;
+		case FE_STEP_BIPHASIC          : FEBio::SetActiveModule("biphasic"          ); break;
+		case FE_STEP_BIPHASIC_SOLUTE   : FEBio::SetActiveModule("solute"            ); break;
+		case FE_STEP_MULTIPHASIC       : FEBio::SetActiveModule("multiphasic"       ); break;
+		case FE_STEP_FLUID             : FEBio::SetActiveModule("fluid"             ); break;
+		case FE_STEP_FLUID_FSI         : FEBio::SetActiveModule("fluid-FSI"         ); break;
+		case FE_STEP_REACTION_DIFFUSION: FEBio::SetActiveModule("reaction-diffusion"); break; // requires plugin!
+		case FE_STEP_HEAT_TRANSFER     : FEBio::SetActiveModule("heat"              ); break; // requires plugin!
 		default:
 			assert(false);
 		}
@@ -704,6 +709,9 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 	ConvertMaterials(log);
 	ConvertSteps(log);
 	ConvertDiscrete(log);
+
+	// process create events again
+	FEBio::BlockCreateEvents(false);
 }
 
 void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelComponent* ps)
@@ -738,7 +746,7 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 						if (pcj)
 						{
 							FSModel* fem = pd->GetFSModel();
-							FSModelComponent* pcn = FEBio::CreateClass(pcj->GetSuperClassID(), pcj->GetTypeString(), fem);
+							FSModelComponent* pcn = FEBio::CreateClass(pi->GetSuperClassID(), pcj->GetTypeString(), fem);
 							assert(pcn);
 
 							if (dynamic_cast<const FSReactantMaterial*>(pcj))
@@ -1232,7 +1240,7 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 			case FE_FACET_ON_FACET_TIED         : newpi = FEBio::CreatePairedInterface("tied-facet-on-facet", fem); break;
 			case FE_TIEDMULTIPHASIC_INTERFACE   : newpi = FEBio::CreatePairedInterface("tied-multiphasic", fem); break;
 			case FE_TIED_ELASTIC_INTERFACE      : newpi = FEBio::CreatePairedInterface("tied-elastic", fem); break;
-	//		case FE_GAPHEATFLUX_INTERFACE		: newpi = FEBio::CreatePairedInterface(, fem); break;
+			case FE_GAPHEATFLUX_INTERFACE		: newpi = FEBio::CreatePairedInterface("gap heat flux", fem); break;
 			case FE_CONTACTPOTENTIAL_CONTACT    : newpi = FEBio::CreatePairedInterface("contact potential", fem); break;
 			default:
 				assert(false);
@@ -1308,6 +1316,12 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			febLoad = FEBio::CreateNodalLoad("nodal_force", fem);
 			int bc = pnl->GetDOF();
 			double s = pnl->GetLoad();
+
+			if (bc >= 3)
+			{
+				febLoad->SetParamBool("shell_bottom", true);
+				bc -= 3;
+			}
 
 			vec3d f;
 			switch (bc)
@@ -1644,14 +1658,14 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 	FSCoreBase* solver = solverProp->GetComponent(0);
 	if (solver)
 	{
-		solver->SetParamInt("max_refs", ops.maxref);
-		solver->SetParamBool("diverge_reform", ops.bdivref);
-		solver->SetParamBool("reform_each_time_step", ops.brefstep);
-		solver->SetParamInt("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
-		solver->SetParamInt("equation_scheme", ops.neqscheme);
+		if (solver->GetParam("max_refs"             )) solver->SetParamInt ("max_refs"             , ops.maxref);
+		if (solver->GetParam("diverge_reform"       )) solver->SetParamBool("diverge_reform"       , ops.bdivref);
+		if (solver->GetParam("reform_each_time_step")) solver->SetParamBool("reform_each_time_step", ops.brefstep);
+		if (solver->GetParam("symmetric_stiffness"  )) solver->SetParamInt ("symmetric_stiffness"  , (ops.nmatfmt == 1 ? 1 : 0));
+		if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
 
 		FSProperty* qnProp = solver->FindProperty("qn_method");
-		qnProp->SetComponent(nullptr);
+		if (qnProp) qnProp->SetComponent(nullptr);
 		FSCoreBase* qnSolver = nullptr;
 
 		for (int i = 0; i < oldStep.Parameters(); ++i)

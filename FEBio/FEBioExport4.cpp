@@ -216,7 +216,37 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 
 	// see if we need to add a MeshData section
 	m_bdata = false;
-	if (model.ShellElements() > 0) m_bdata = true;	// for shell thicknesses
+
+	// see if we have any shells with non-zero thickness
+	if (model.ShellElements() > 0)
+	{
+		for (int i = 0; i < model.Objects(); ++i)
+		{
+			GObject* po = model.Object(i);
+			if (po && po->GetFEMesh())
+			{
+				FSMesh* pm = po->GetFEMesh();
+				for (int j = 0; j < pm->Elements(); ++j)
+				{
+					FSElement& el = pm->Element(j);
+					if (el.IsShell())
+					{
+						int n = el.Nodes();
+						for (int k = 0; k < n; ++k)
+						{
+							if (el.m_h[k] != 0.0)
+							{
+								m_bdata = true;
+								break;
+							}
+						}
+						if (m_bdata) break;
+					}
+				}
+				if (m_bdata) break;
+			}
+		}
+	}
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		// get the material properties
@@ -475,8 +505,8 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 	CLogDataSettings& log = prj.GetLogDataSettings();
 	for (int i = 0; i < log.LogDataSize(); ++i)
 	{
-		FELogData& di = log.LogData(i);
-		if ((di.type == FELogData::LD_ELEM) && (di.groupID != -1))
+		FSLogData& di = log.LogData(i);
+		if ((di.type == FSLogData::LD_ELEM) && (di.groupID != -1))
 		{
 			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
 			if (pg)
@@ -484,7 +514,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				AddElemSet(pg->GetName(), pg);
 			}
 		}
-		if ((di.type == FELogData::LD_NODE) && (di.groupID != -1))
+		if ((di.type == FSLogData::LD_NODE) && (di.groupID != -1))
 		{
 			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
 			if (pg)
@@ -839,7 +869,7 @@ void FEBioExport4::WriteModuleSection(FSProject& prj)
 		case 2: m_xml.add_leaf("units", "SI"     ); break;
 		case 3: m_xml.add_leaf("units", "mm-N-s" ); break;
 		case 4: m_xml.add_leaf("units", "mm-kg-s"); break;
-		case 5: m_xml.add_leaf("units", "µm-nN-s"); break;
+		case 5: m_xml.add_leaf("units", "um-nN-s"); break;
 		case 6: m_xml.add_leaf("units", "CGS"    ); break;
 		}
 		m_xml.close_branch();
@@ -1094,10 +1124,17 @@ void FEBioExport4::WriteMeshDomainsSection()
 			el.add_attribute("mat", dom->m_matName);
 
 			GShellSection* section = dynamic_cast<GShellSection*>(pg->GetSection());
-			if (section && section->GetElementFormulation())
+			if (section)
 			{
 				FEShellFormulation* shell = section->GetElementFormulation();
-				WriteModelComponent(shell, el);
+				if (shell) WriteModelComponent(shell, el);
+				else
+				{
+					m_xml.add_branch(el);
+					double h = section->shellThickness();
+					m_xml.add_leaf("shell_thickness", h);
+					m_xml.close_branch();
+				}
 			}
 			else m_xml.add_empty(el);
 		}
@@ -1208,6 +1245,8 @@ bool FEBioExport4::WriteNodeSet(const string& name, FSNodeList* pl)
 	}
 
 	int nn = pl->Size();
+	if (nn == 0) return false;
+
 	FSNodeList::Iterator pn = pl->First();
 	vector<int> m(nn);
 	for (int n = 0; n < nn; ++n, pn++)
@@ -3037,10 +3076,10 @@ void FEBioExport4::WriteOutputSection()
 		{
 			for (int i = 0; i < N; ++i)
 			{
-				FELogData& d = log.LogData(i);
+				FSLogData& d = log.LogData(i);
 				switch (d.type)
 				{
-				case FELogData::LD_NODE:
+				case FSLogData::LD_NODE:
 				{
 					XMLElement e;
 					e.name("node_data");
@@ -3059,7 +3098,7 @@ void FEBioExport4::WriteOutputSection()
 					m_xml.add_empty(e);
 				}
 				break;
-				case FELogData::LD_ELEM:
+				case FSLogData::LD_ELEM:
 				{
 					XMLElement e;
 					e.name("element_data");
@@ -3078,7 +3117,7 @@ void FEBioExport4::WriteOutputSection()
 					m_xml.add_empty(e);
 				}
 				break;
-				case FELogData::LD_RIGID:
+				case FSLogData::LD_RIGID:
 				{
 					XMLElement e;
 					e.name("rigid_body_data");
@@ -3098,7 +3137,7 @@ void FEBioExport4::WriteOutputSection()
 					else m_xml.add_empty(e);
 				}
 				break;
-				case FELogData::LD_CNCTR:
+				case FSLogData::LD_CNCTR:
 				{
 					XMLElement e;
 					e.name("rigid_connector_data");

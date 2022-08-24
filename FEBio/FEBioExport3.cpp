@@ -650,8 +650,8 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 	CLogDataSettings& log = prj.GetLogDataSettings();
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
-		FELogData& di = log.LogData(i);
-		if ((di.type == FELogData::LD_ELEM) && (di.groupID != -1))
+		FSLogData& di = log.LogData(i);
+		if ((di.type == FSLogData::LD_ELEM) && (di.groupID != -1))
 		{
 			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
 			if (pg)
@@ -659,7 +659,7 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 				AddElemSet(pg->GetName(), pg);
 			}
 		}
-		if ((di.type == FELogData::LD_NODE) && (di.groupID != -1))
+		if ((di.type == FSLogData::LD_NODE) && (di.groupID != -1))
 		{
 			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
 			if (pg)
@@ -4950,10 +4950,10 @@ void FEBioExport3::WriteOutputSection()
 		{
 			for (int i = 0; i<N; ++i)
 			{
-				FELogData& d = log.LogData(i);
+				FSLogData& d = log.LogData(i);
 				switch (d.type)
 				{
-				case FELogData::LD_NODE:
+				case FSLogData::LD_NODE:
 				{
 					XMLElement e;
 					e.name("node_data");
@@ -4972,7 +4972,7 @@ void FEBioExport3::WriteOutputSection()
 					m_xml.add_empty(e);
 				}
 				break;
-				case FELogData::LD_ELEM:
+				case FSLogData::LD_ELEM:
 				{
 					XMLElement e;
 					e.name("element_data");
@@ -4991,7 +4991,7 @@ void FEBioExport3::WriteOutputSection()
 					m_xml.add_empty(e);
 				}
 				break;
-				case FELogData::LD_RIGID:
+				case FSLogData::LD_RIGID:
 				{
 					XMLElement e;
 					e.name("rigid_body_data");
@@ -5011,7 +5011,7 @@ void FEBioExport3::WriteOutputSection()
 					else m_xml.add_empty(e);
 				}
 				break;
-                case FELogData::LD_CNCTR:
+                case FSLogData::LD_CNCTR:
                 {
                     XMLElement e;
                     e.name("rigid_connector_data");

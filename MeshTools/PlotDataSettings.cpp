@@ -34,6 +34,7 @@ CPlotVariable::CPlotVariable(const string& name, bool bactive, bool bshow, DOMAI
 	m_name = name;
 	m_bactive = bactive;
 	m_bshow = bshow;
+	m_bcustom = false;
 	m_domainType = type;
 }
 
@@ -42,6 +43,7 @@ CPlotVariable::CPlotVariable(const CPlotVariable& v)
 	m_name = v.m_name;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
+	m_bcustom = v.m_bcustom;
 	m_domainType = v.m_domainType;
 	m_domains = v.m_domains;
 }
@@ -51,6 +53,7 @@ void CPlotVariable::operator = (const CPlotVariable& v)
 	m_name = v.m_name;
 	m_bactive = v.m_bactive;
 	m_bshow = v.m_bshow;
+	m_bcustom = v.m_bcustom;
 	m_domainType = v.m_domainType;
 	m_domains = v.m_domains;
 }
@@ -330,8 +333,9 @@ void CPlotDataSettings::Save(OArchive& ar)
 		{
 			CPlotVariable& v = m_plot[i];
 			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_NAME, v.name());
-			int n = (v.isActive()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_ACTIVE, n);
+			int n = (v.isActive()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_ACTIVE , n);
 			int m = (v.isShown() ? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_VISIBLE, m);
+			int c = (v.isCustom()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_CUSTOM , c);
 			for (int j=0; j<v.Domains(); ++j)
 			{
 				FEItemListBuilder* pl = v.GetDomain(j);
@@ -351,7 +355,7 @@ void CPlotDataSettings::Load(IArchive& ar)
 		if (ar.GetChunkID() == CID_PRJ_OUTPUT_VAR)
 		{
 			string tmp;
-			int n = 0, m = 0, id, module = -1;
+			int n = 0, m = 0, c = 0, id, module = -1;
 			std::vector<int> dom;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
@@ -360,6 +364,7 @@ void CPlotDataSettings::Load(IArchive& ar)
 				case CID_PRJ_OUTPUT_VAR_NAME   : ar.read(tmp); break;
 				case CID_PRJ_OUTPUT_VAR_ACTIVE : ar.read(n); break;
 				case CID_PRJ_OUTPUT_VAR_VISIBLE: ar.read(m); break;
+				case CID_PRJ_OUTPUT_VAR_CUSTOM : ar.read(c); break;
 				case CID_PRJ_OUTPUT_VAR_DOMAINID: 
 					{
 						ar.read(id);
@@ -375,6 +380,7 @@ void CPlotDataSettings::Load(IArchive& ar)
 
 			pv->setActive(n != 0);
 			pv->setShown(m != 0);
+			pv->setCustom(c != 0);
 
 			for (int i=0; i<dom.size(); ++i)
 			{

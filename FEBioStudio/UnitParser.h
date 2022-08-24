@@ -79,7 +79,8 @@ class UnitParser
 		MUL,
 		DIV,
 		POW,
-		SYMBOL
+		SYMBOL,
+		ONE
 	};
 
 public:

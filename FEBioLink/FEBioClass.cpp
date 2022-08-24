@@ -286,7 +286,7 @@ FECoreBase* CreateFECoreClass(int classId)
 
 	// try to create the FEBio object
 	assert(febioModel);
-	FECoreBase* pc = fac->CreateInstance(febioModel); assert(pc);
+	FECoreBase* pc = fecore.CreateInstance(fac, febioModel); assert(pc);
 
 	// all done!
 	return pc;
@@ -1220,4 +1220,10 @@ FSModelComponent* FEBio::CreateClass(int classId, FSModel* fsm, unsigned int fla
 	BuildModelComponent(pc, flags);
 
 	return pc;
+}
+
+void FEBio::BlockCreateEvents(bool b)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	fecore.BlockEvents(b);
 }

@@ -2659,13 +2659,13 @@ void CMainWindow::onImportMaterials()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "FEBio Studio Materials (*.pvm)");
+	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Import Materials", "", "FEBio files (*.feb)");
 	if (fileNames.isEmpty() == false)
 	{
 		for (int i=0; i<fileNames.size(); ++i)
 		{
 			QString file = fileNames.at(i);
-			if (doc->ImportMaterials(file.toStdString()) == false)
+			if (doc->ImportFEBioMaterials(file.toStdString()) == false)
 			{
 				QString msg = QString("Failed importing materials from\n%1").arg(file);
 				QMessageBox::critical(this, "Import Materials", msg);

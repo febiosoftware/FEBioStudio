@@ -1269,6 +1269,7 @@ void CGLView::initializeGL()
 	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 	m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 	m_pframe->hide();
+	m_pframe->set_layer(0); // permanent widget
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
 	m_oglVersionString = szv;
@@ -3650,7 +3651,7 @@ void CGLView::RenderRigidBodies()
 	{
 		GMaterial* pgm = ps->GetMaterial(i);
 		FSMaterial* pm = pgm->GetMaterialProperties();
-		if (pm->IsRigid())
+		if (pm && pm->IsRigid())
 		{
 			GLColor c = pgm->Diffuse();
 
