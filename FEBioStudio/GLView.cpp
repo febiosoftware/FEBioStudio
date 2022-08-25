@@ -7912,7 +7912,7 @@ void CGLView::RenderFEElements(GObject* po)
 					case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, c); break;
 					case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, true); break;
 					case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, true); break;
-					case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, true); break;
+					case FE_PENTA6: m_renderer.RenderPENTA6(&el, pm, c); break;
 					case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
 					case FE_TET4  : m_renderer.RenderTET4(&el, pm, c); break;
 					case FE_TET5  : m_renderer.RenderTET4(&el, pm, c); break;
