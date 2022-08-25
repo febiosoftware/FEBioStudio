@@ -768,8 +768,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			m_rt += dr;
 			ps->Translate(dr);
 
-			m_pWnd->UpdateGLControlBar();
-			repaint();
+			m_pWnd->OnSelectionTransformed();
 		}
 	}
 	else if (ntrans == TRANSFORM_ROTATE)

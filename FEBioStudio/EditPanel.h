@@ -82,6 +82,12 @@ private slots:
 	void on_apply_clicked(bool b);
 	void on_menu_triggered(QAction* pa);
 	void on_buttons_buttonSelected(int n);
+	void on_posX_editingFinished();
+	void on_posY_editingFinished();
+	void on_posZ_editingFinished();
+
+private:
+	void updateObjectPosition();
 
 private:
 	Ui::CEditPanel*	ui;

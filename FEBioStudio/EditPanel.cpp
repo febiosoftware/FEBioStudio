@@ -150,7 +150,15 @@ void CEditPanel::Update(bool breset)
 
 	// make sure the active object has changed
 	GObject* activeObject = doc->GetActiveObject();
-	if (activeObject == ui->m_currenObject) return;
+	if (breset) ui->m_currenObject = nullptr;
+
+	if (activeObject == ui->m_currenObject)
+	{
+		// only update position
+		vec3d r = activeObject->GetTransform().GetPosition();
+		ui->SetObjectPosition(r);
+		return;
+	}
 
 	ui->m_currenObject = activeObject;
 
@@ -159,10 +167,16 @@ void CEditPanel::Update(bool breset)
 	if (activeObject == 0)
 	{
 		ui->showParametersPanel(false);
+		ui->showPositionPanel(false);
 		ui->showButtonsPanel(false);
 	}
 	else
 	{
+		ui->showPositionPanel(true);
+
+		vec3d r = activeObject->GetTransform().GetPosition();
+		ui->SetObjectPosition(r);
+
 		if (activeObject->Parameters() > 0)
 		{
 			ui->setPropertyList(new CObjectProps(activeObject));
@@ -311,6 +325,36 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 
 	Update();
 	GetMainWindow()->Update(this, true);
+}
+
+void CEditPanel::updateObjectPosition()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	GObject* po = pdoc->GetActiveObject();
+	if (po == nullptr) return;
+
+	vec3d r = ui->objectPosition();
+	Transform t = po->GetTransform();
+	t.SetPosition(r);
+
+	pdoc->DoCommand(new CCmdTransformObject(po, t));
+	
+	GetMainWindow()->RedrawGL();
+}
+
+void CEditPanel::on_posX_editingFinished()
+{
+	updateObjectPosition();
+}
+
+void CEditPanel::on_posY_editingFinished()
+{
+	updateObjectPosition();
+}
+
+void CEditPanel::on_posZ_editingFinished()
+{
+	updateObjectPosition();
 }
 
 void CEditPanel::on_buttons_buttonSelected(int id)

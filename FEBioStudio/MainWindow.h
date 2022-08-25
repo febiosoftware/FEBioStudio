@@ -279,6 +279,9 @@ public:
 
     void UpdateUiView();
 
+	// the selection was transformed (i.e. translated, rotated, or scaled)
+	void OnSelectionTransformed();
+
 private:
 	void writeSettings();
 	void readSettings();
