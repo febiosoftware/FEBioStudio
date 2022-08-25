@@ -993,17 +993,8 @@ void FEBioFormat::ParseFiberProperty(XMLTag& tag, FSFiberMaterial* pm)
 	}
 	else if (atype == "angles")
 	{
-		double theta = 0, phi = 90;
-		++tag;
-		do
-		{
-			if (tag == "theta") tag.value(theta);
-			else if (tag == "phi") tag.value(phi);
-			else ParseUnknownAttribute(tag, "type");
-			++tag;
-		} while (!tag.isend());
-
-		pm->SetFiberGenerator(new FSAnglesVectorGenerator(fem, theta, phi));
+		FSFiberGenerator* fiber = dynamic_cast<FSFiberGenerator*>(ParseMaterial(tag, "angles")); assert(fiber);
+		pm->SetFiberGenerator(fiber);
 	}
 	else if (atype == "cylindrical")
 	{

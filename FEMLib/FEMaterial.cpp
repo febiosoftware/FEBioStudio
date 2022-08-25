@@ -181,8 +181,8 @@ REGISTER_MATERIAL(FSAnglesVectorGenerator, MODULE_MECH, FE_FIBER_GENERATOR_ANGLE
 
 FSAnglesVectorGenerator::FSAnglesVectorGenerator(FSModel* fem, double theta, double phi) : FSFiberGenerator(FE_FIBER_GENERATOR_ANGLES, fem)
 {
-	AddScienceParam(theta, UNIT_DEGREE, "theta", "theta");
-	AddScienceParam(phi, UNIT_DEGREE, "phi", "phi");
+	AddScienceParam(theta, UNIT_DEGREE, "theta", "theta")->MakeVariable(true);
+	AddScienceParam(phi, UNIT_DEGREE, "phi", "phi")->MakeVariable(true);
 }
 
 vec3d FSAnglesVectorGenerator::GetFiber(FEElementRef& el)
