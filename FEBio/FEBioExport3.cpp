@@ -3493,39 +3493,72 @@ void FEBioExport3::WriteElementDataFields()
 					GPart* pg = partArray[np];
 					int pid = pg->GetLocalID();
 
-					XMLElement tag("ElementData");
-					tag.add_attribute("name", data.GetName().c_str());
-					tag.add_attribute("elem_set", pg->GetName());
-					m_xml.add_branch(tag);
+					// A part could have been split into multiple Elements sections.
+					// We need to do the same here.
+					int NE = elemList->Size();
+					FEElemList::Iterator it = elemList->First();
+					for (int j = 0; j < NE; ++j, ++it) it->m_pi->m_ntag = 0;
+
+					int nset = 0;
+					int ecount = 0;
+					char szname[128] = { 0 };
+					do
 					{
-						XMLElement el("e");
-						int nid = el.add_attribute("lid", 0);
-						int N = elemList->Size();
+						if (nset == 0)
+							sprintf(szname, "%s", pg->GetName().c_str());
+						else
+							sprintf(szname, "%s__%d", pg->GetName().c_str(), nset + 1);
+
+						int etype = -1;
 						FEElemList::Iterator it = elemList->First();
-						int lid = 1;
-						for (int j = 0; j < N; ++j, ++it)
+						for (int j=0; j<NE; ++j, ++it)
 						{
-							FEElement_* pe = it->m_pi;
-							if (pe->m_gid == pid)
+							if (it->m_pi->m_ntag == 0)
 							{
-								el.set_attribute(nid, lid++);
-
-								if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
-								{
-									el.value(data[j]);
-								}
-								else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
-								{
-									int nn = pe->Nodes();
-									for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
-									el.value(v, nn);
-								}
-
-								m_xml.add_leaf(el, false);
+								etype = it->m_pi->Type();
+								break;
 							}
 						}
+						assert(etype != -1);
+
+						XMLElement tag("ElementData");
+						tag.add_attribute("name", data.GetName().c_str());
+						tag.add_attribute("elem_set", szname);
+						m_xml.add_branch(tag);
+						{
+							XMLElement el("e");
+							int nid = el.add_attribute("lid", 0);
+							int N = elemList->Size();
+							FEElemList::Iterator it = elemList->First();
+							int lid = 1;
+							for (int j = 0; j < N; ++j, ++it)
+							{
+								FEElement_* pe = it->m_pi;
+								if ((pe->m_gid == pid) && (pe->Type() == etype))
+								{
+									el.set_attribute(nid, lid++);
+
+									if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+									{
+										el.value(data[j]);
+									}
+									else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+									{
+										int nn = pe->Nodes();
+										for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
+										el.value(v, nn);
+									}
+
+									m_xml.add_leaf(el, false);
+									ecount++;
+									pe->m_ntag = 1;
+								}
+							}
+						}
+						m_xml.close_branch();
+						nset++;
 					}
-					m_xml.close_branch();
+					while (ecount < NE);
 				}
 				delete partList;
 			}
