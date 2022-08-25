@@ -87,6 +87,7 @@ public:
     void RenderPYRA13 (FEElement_* pe, FECoreMesh* pm, bool bsel);
 
 	void RenderHEX8(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
+	void RenderPENTA6(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
 	void RenderTET4(FEElement_ *pe, FECoreMesh *pm, GLColor* col);
 	void RenderTET10(FEElement_* pe, FECoreMesh* pm, GLColor* col);
 	void RenderTRI3(FEElement_* pe, FECoreMesh* pm, GLColor* col);

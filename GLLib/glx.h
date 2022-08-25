@@ -55,12 +55,14 @@ void drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, 
 void drawSmoothPath(const std::vector<vec3d>& path, float R);
 
 void quad4(vec3d r[4], vec3d n[4]);
+void quad4(vec3d r[4], vec3d n[4], GLColor c[4]);
 void quad4(vec3d r[4], vec3f n[4], float t[4]);
 void quad8(vec3d r[8], vec3f n[8], float t[8]);
 void quad9(vec3d r[9], vec3f n[9], float t[9]);
 
 void tri3(vec3d r[3], vec3f n[3]);
 void tri3(vec3d r[3], vec3d n[3]);
+void tri3(vec3d r[3], vec3f n[3], GLColor c[3]);
 void tri3(vec3d r[3], vec3f n[3], float t[3]);
 
 void tri6(vec3d r[6], vec3f n[6], float t[6]);
@@ -83,6 +85,8 @@ inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x
 inline void vertex3d(const vec3d& r, const vec3d& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, const GLColor& c) { glNormal3d(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
+
+inline void glcolor(const GLColor& c) { glColor3ub(c.r, c.g, c.b); }
 
 void smoothQUAD4(vec3d r[ 4], vec3f n[ 4], float t[ 4], int ndivs);
 void smoothQUAD8(vec3d r[ 8], vec3f n[ 8], float t[ 8], int ndivs);
