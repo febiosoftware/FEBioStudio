@@ -42,5 +42,5 @@ GLCanvas::~GLCanvas(void)
 
 void GLCanvas::SetDefaultMaterial()
 {
-//	m_pGLView->SetDefaultMaterial();
+
 }

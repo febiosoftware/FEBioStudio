@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include"FEMeshBase.h"
 #include <GeomLib/GObject.h>
+#include "FENodeEdgeList.h"
 using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -695,5 +696,235 @@ void FSMeshBase::GetNodeNeighbors(int inode, int levels, std::set<int>& nl1)
 
 		// merge sets
 		if (!nl2.empty()) nl1.insert(nl2.begin(), nl2.end());
+	}
+}
+
+//-----------------------------------------------------------------------------
+void MeshTools::TagConnectedNodes(FSMeshBase* pm, int num, double tolAngleDeg, bool bmax)
+{
+	// clear all tags
+	for (int i = 0; i < pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
+
+	// first see if this node is a corner node
+	if (pm->Node(num).m_gid >= 0)
+	{
+		pm->Node(num).m_ntag = 1;
+	}
+	else
+	{
+		pm->Node(num).m_ntag = 1;
+
+		// see if this node belongs to an edge
+		std::stack<FSEdge*> stack;
+
+		// find all edges that have this node as a node
+		for (int i = 0; i < pm->Edges(); ++i)
+		{
+			FSEdge* pe = pm->EdgePtr(i);
+			if (pe->m_gid >= 0)
+			{
+				pe->m_ntag = 0;
+				if (pe->FindNodeIndex(num) >= 0)
+				{
+					stack.push(pe);
+					pe->m_ntag = -1;
+				}
+			}
+		}
+
+		if (!stack.empty())
+		{
+			// now push the rest
+			while (!stack.empty())
+			{
+				FSEdge* pe = stack.top(); stack.pop();
+
+				// mark all nodes
+				int nn = pe->Nodes();
+				for (int i = 0; i < nn; ++i)
+				{
+					pm->Node(pe->n[i]).m_ntag = 1;
+				}
+
+				// push neighbours
+				for (int i = 0; i < 2; ++i)
+					if (pe->m_nbr[i] >= 0)
+					{
+						FSEdge* pe2 = pm->EdgePtr(pe->m_nbr[i]);
+						if (pe2->m_ntag >= 0 && pe2->IsVisible() && (pe2->m_gid == pe->m_gid))
+						{
+							pe2->m_ntag = -1;
+							stack.push(pe2);
+						}
+					}
+			}
+		}
+		else
+		{
+			// create a stack of face pointers
+			std::stack<FSFace*> stack;
+
+			// find all faces that have this node as a node
+			vec3d t(0, 0, 0);
+			for (int i = 0; i < pm->Faces(); ++i)
+			{
+				FSFace* pf = pm->FacePtr(i);
+				pf->m_ntag = 0;
+				int m = pf->FindNode(num);
+				if (m >= 0)
+				{
+					t += to_vec3d(pf->m_fn);
+					stack.push(pf);
+					pf->m_ntag = -1;
+				}
+			}
+			t.Normalize();
+			double tr = cos(PI * tolAngleDeg / 180.0);
+			bool bangle = bmax;
+
+			// now push the rest
+			int m = 0;
+			while (!stack.empty())
+			{
+				FSFace* pf = stack.top(); stack.pop();
+				int nn = pf->Nodes();
+				int ne = pf->Edges();
+
+				// mark all nodes
+				for (int i = 0; i < nn; ++i)
+				{
+					pm->Node(pf->n[i]).m_ntag = 1;
+				}
+
+				// push neighbours
+				for (int i = 0; i < ne; ++i)
+					if (pf->m_nbr[i] >= 0)
+					{
+						FSFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
+						if (pf2->m_ntag >= 0 && pf2->IsVisible() && (pf2->m_gid == pf->m_gid) && ((pf2->m_fn * to_vec3f(t) >= tr) || (bangle == false)))
+						{
+							pf2->m_ntag = -1;
+							stack.push(pf2);
+						}
+					}
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void MeshTools::TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1)
+{
+	if (n1 == n0) return;
+
+	pm->TagAllNodes(0);
+	pm->Node(n0).m_ntag = 1;
+
+	vec3d r0 = pm->Node(n0).r;
+	vec3d r1 = pm->Node(n1).r;
+
+	// see if the start and end node lie on an edge
+	bool b0 = false, b1 = false;
+	int NE = pm->Edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSEdge& edge = pm->Edge(i);
+		if ((edge.n[0] == n0) || (edge.n[1] == n0)) b0 = true;
+		if ((edge.n[0] == n1) || (edge.n[1] == n1)) b1 = true;
+
+		if (b0 && b1) break;
+	}
+
+	if (b0 && b1)
+	{
+		// see if we can connect the nodes by staying on edges
+		FSNodeEdgeList NEL(pm);
+
+		int n = n0;
+		double Lmin = (r1 - r0).SqrLength();
+		do
+		{
+			int minNode = -1;
+			int nval = NEL.Edges(n);
+			for (int i = 0; i < nval; ++i)
+			{
+				const FSEdge* pe = NEL.Edge(n, i);
+				int ne = pe->Nodes();
+				for (int j = 0; j < ne; ++j)
+				{
+					int nj = pe->n[j];
+					if (pm->Node(nj).m_ntag == 0)
+					{
+						vec3d rj = pm->Node(nj).r;
+						double L = (r1 - rj).SqrLength();
+						if (L < Lmin)
+						{
+							Lmin = L;
+							minNode = nj;
+						}
+					}
+				}
+			}
+
+			if (minNode != -1)
+			{
+				pm->Node(minNode).m_ntag = 1;
+				n = minNode;
+				if (minNode == n1) break;
+			}
+			else break;
+		} while (1);
+	}
+	else
+	{
+		FSNodeFaceList NFL;
+		NFL.Build(pm);
+
+		int n = n0;
+		do
+		{
+			// this is the line to project on
+			vec3d e = (r1 - r0); e.Normalize();
+
+			double Lmin = 1e99;
+			int minNode = -1;
+			int nval = NFL.Valence(n);
+			for (int i = 0; i < nval; ++i)
+			{
+				FSFace* pf = NFL.Face(n, i);
+				int nf = pf->Nodes();
+				for (int j = 0; j < nf; ++j)
+				{
+					int nj = pf->n[j];
+					if (pm->Node(nj).m_ntag == 0)
+					{
+						vec3d pj = pm->Node(nj).r - r0;
+
+						// see if the projects on the positive side of the line
+						double l = pj * e;
+						if (l > 0)
+						{
+							// calculate distance to line
+							double L = (pj - e * l).Length();
+							if (L < Lmin)
+							{
+								Lmin = L;
+								minNode = nj;
+							}
+						}
+					}
+				}
+			}
+
+			if (minNode != -1)
+			{
+				pm->Node(minNode).m_ntag = 1;
+				n = minNode;
+				if (minNode == n1) break;
+
+				r0 = pm->Node(minNode).r;
+			}
+			else break;
+		} while (1);
 	}
 }

@@ -129,4 +129,8 @@ namespace MeshTools {
 	// tolAngleDeg      : angle of selection tolerance (degrees). Set to zero to turn off.
 	// respectPartitions: do not cross surface partitions if true
 	std::vector<int> GetConnectedFaces(FSMeshBase* pm, int nface, double tolAngleDeg, bool respectPartitions);
+
+	void TagConnectedNodes(FSMeshBase* pm, int node, double tolAngleDeg, bool bmax);
+
+	void TagNodesByShortestPath(FSMeshBase* pm, int n0, int n1);
 }

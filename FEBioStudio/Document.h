@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "modelcheck.h"
 #include <QtCore/QString>
 #include "ViewSettings.h"
+#include "GLScene.h"
 #include <GLLib/GView.h>
 
 //-----------------------------------------------------------------------------
@@ -309,6 +310,8 @@ public:
 
 	CGView* GetView();
 
+	CGLScene* GetScene();
+
 	virtual FESelection* GetCurrentSelection() { return nullptr; }
 
 public:
@@ -341,6 +344,7 @@ public:
 
 protected:
 	CGView				m_view;
+	CGLScene*			m_scene;
 
 	VIEW_STATE	m_vs;	// the view state
 

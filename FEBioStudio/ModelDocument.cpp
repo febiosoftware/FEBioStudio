@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
+#include "GLModelScene.h"
 
 class CModelContext
 {
@@ -104,6 +105,9 @@ CModelDocument::~CModelDocument()
 {
 	delete m_context;
 	m_context = nullptr;
+
+	delete m_scene;
+	m_scene = nullptr;
 }
 
 CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
@@ -113,6 +117,8 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 	m_psel = nullptr;
 
 	m_context = new CModelContext(this);
+
+	m_scene = new CGLModelScene(this);
 
 	SetFileWriter(new CModelFileWriter(this));
 }

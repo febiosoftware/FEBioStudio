@@ -23,23 +23,15 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
 
-#include "stdafx.h"
-#include "GLContext.h"
+class CGLContext;
 
-CGLContext::CGLContext()
+//-----------------------------------------------------------------------------
+class CGLScene
 {
-	m_cam = nullptr;
-	m_view = nullptr;
-
-	m_showMesh = false;
-	m_showOutline = false;
-	m_bext = false;
-	m_springThick = 1.f;
-
-	m_btrack = false;
-}
-
-CGLContext::~CGLContext(void)
-{
-}
+public:
+	CGLScene();
+	virtual ~CGLScene();
+	virtual void Render(CGLContext& rc) = 0;
+};

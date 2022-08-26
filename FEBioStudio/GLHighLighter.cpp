@@ -123,7 +123,7 @@ void drawEdge(CGLView* view, GEdge* edge, GLColor c)
 	glColor3ub(c.r, c.g, c.b);
 
 	glPushMatrix();
-	view->SetModelView(po);
+	SetModelView(po);
 
 	GLMesh& m = *po->GetRenderMesh();
 	view->GetMeshRenderer().RenderGLEdges(&m, edge->GetLocalID());

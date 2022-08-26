@@ -23,23 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "stdafx.h"
-#include "GLContext.h"
+#include "GLScene.h"
 
-CGLContext::CGLContext()
-{
-	m_cam = nullptr;
-	m_view = nullptr;
+CGLScene::CGLScene() {}
+CGLScene::~CGLScene() {}
 
-	m_showMesh = false;
-	m_showOutline = false;
-	m_bext = false;
-	m_springThick = 1.f;
-
-	m_btrack = false;
-}
-
-CGLContext::~CGLContext(void)
-{
-}

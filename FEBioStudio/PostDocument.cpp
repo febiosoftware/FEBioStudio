@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include "ClassDescriptor.h"
 #include "PostSessionFile.h"
 #include "units.h"
+#include "GLPostScene.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -238,6 +239,8 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 
 	m_binit = false;
 
+	m_scene = new CGLPostScene(this);
+
 	SetItemMode(ITEM_ELEM);
 }
 
@@ -252,6 +255,9 @@ CPostDocument::~CPostDocument()
 	delete m_glm; m_glm = nullptr;
 	delete m_fem;
 	if (m_sel) delete m_sel;
+
+	delete m_scene;
+	m_scene = nullptr;
 }
 
 void CPostDocument::Clear()

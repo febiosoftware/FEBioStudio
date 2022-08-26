@@ -94,7 +94,7 @@ void VIEW_SETTINGS::Defaults(int ntheme)
 	m_showSelectFibersOnly = false;
 
 	m_showDiscrete = true;
-	m_showRigidLabels = false;
+	m_showRigidLabels = true;
 
 	m_bcull = false;
 	m_bconn = false;
@@ -603,6 +603,8 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 
 	// set default unit system (0 == no unit system)
 	m_units = 0;
+
+	m_scene = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -648,6 +650,12 @@ GObject* CGLDocument::GetActiveObject()
 CGView* CGLDocument::GetView()
 {
 	return &m_view;
+}
+
+//-----------------------------------------------------------------------------
+CGLScene* CGLDocument::GetScene()
+{
+	return m_scene;
 }
 
 //-----------------------------------------------------------------------------
