@@ -278,6 +278,7 @@ public:
 	void WriteFluidControlParams(FSAnalysisStep* pstep);
 	void WriteFluidFSIControlParams(FSAnalysisStep* pstep);
 	void WriteReactionDiffusionControlParams(FSAnalysisStep* pstep);
+    void WritePolarFluidControlParams(FSAnalysisStep* pstep);
 
 	void WriteBC(FSStep& s, FSBoundaryCondition* pbc);
 	void WriteBCFixed(FSStep& s, FSBoundaryCondition* pbc);

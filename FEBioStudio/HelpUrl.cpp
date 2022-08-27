@@ -164,7 +164,6 @@ const unordered_map<int, unordered_map<string, string>> URLs =
             { "fiber-exp-pow sbm", "" },
             { "fiber-pow-linear sbm", "" },
             { "fluid", VISCOUS_FLUID_MATERIALS_HTML },
-            { "fluidP", VISCOUS_FLUID_MATERIALS_HTML },
             { "ideal gas isentropic", "" },
             { "ideal gas isothermal", "" },
             { "fluid-FSI", GENERAL_SPECIFICATION_OF_FLUID_FSI_MATERIALS_HTML },

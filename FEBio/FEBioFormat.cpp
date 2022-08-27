@@ -105,13 +105,16 @@ int GetDOFCode(const char* sz)
 			else if (strcmp(szdof, "sx") == 0) dof |= (1 << 12);	// = 4096
 			else if (strcmp(szdof, "sy") == 0) dof |= (1 << 13);	// = 8192
 			else if (strcmp(szdof, "sz") == 0) dof |= (1 << 14);	// = 16384
-			else if (strcmp(szdof, "c" ) == 0) dof |= (1 << 15);
-			else if (strcmp(szdof, "c1") == 0) dof |= (1 << 15);
-			else if (strcmp(szdof, "c2") == 0) dof |= (1 << 16);
-			else if (strcmp(szdof, "c3") == 0) dof |= (1 << 17);
-			else if (strcmp(szdof, "c4") == 0) dof |= (1 << 18);
-			else if (strcmp(szdof, "c5") == 0) dof |= (1 << 29);
-			else if (strcmp(szdof, "c6") == 0) dof |= (1 << 20);
+            else if (strcmp(szdof, "gx") == 0) dof |= (1 << 15);    // = 32768
+            else if (strcmp(szdof, "gy") == 0) dof |= (1 << 16);    // = 65536
+            else if (strcmp(szdof, "gz") == 0) dof |= (1 << 17);    // = 131072
+			else if (strcmp(szdof, "c" ) == 0) dof |= (1 << 18);
+			else if (strcmp(szdof, "c1") == 0) dof |= (1 << 18);
+			else if (strcmp(szdof, "c2") == 0) dof |= (1 << 19);
+			else if (strcmp(szdof, "c3") == 0) dof |= (1 << 20);
+			else if (strcmp(szdof, "c4") == 0) dof |= (1 << 21);
+			else if (strcmp(szdof, "c5") == 0) dof |= (1 << 22);
+			else if (strcmp(szdof, "c6") == 0) dof |= (1 << 23);
 			else
 			{
 				assert(false);
@@ -177,6 +180,7 @@ FSAnalysisStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* sz
 	case FE_STEP_FLUID             : pstep = new FSFluidAnalysis      (&fem); break;
     case FE_STEP_FLUID_FSI         : pstep = new FSFluidFSIAnalysis   (&fem); break;
 	case FE_STEP_REACTION_DIFFUSION: pstep = new FSReactionDiffusionAnalysis(&fem); break;
+    case FE_STEP_POLAR_FLUID       : pstep = new FSPolarFluidAnalysis (&fem); break;
 	default:
 		pstep = new FSNonLinearMechanics(&fem);
 		FileReader()->AddLogEntry("Unknown step type. Creating Structural Mechanics step");
@@ -626,7 +630,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	{
 		// default analysis depends on step type
 		int ntype = m_pstep->GetType();
-		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI)) ops.nanalysis = FE_DYNAMIC;
+		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
 		else ops.nanalysis = FE_STATIC;
 	}
 

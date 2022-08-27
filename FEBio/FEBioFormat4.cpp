@@ -100,6 +100,9 @@ static bool validate_dof(string bc)
     else if (bc == "sx") return true;
     else if (bc == "sy") return true;
     else if (bc == "sz") return true;
+    else if (bc == "gx") return true;
+    else if (bc == "gy") return true;
+    else if (bc == "gz") return true;
     else if (bc == "c")  return true;
     else if (bc.compare(0,1,"c") == 0) {
         int isol = 0;

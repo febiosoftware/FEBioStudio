@@ -181,6 +181,23 @@ FSFixedFluidDilatation::FSFixedFluidDilatation(FSModel* ps, FEItemListBuilder* p
 }
 
 //=============================================================================
+// FIXED ANGULAR FLUID VELOCITY
+//=============================================================================
+FSFixedFluidAngularVelocity::FSFixedFluidAngularVelocity(FSModel* ps) : FSFixedDOF(FE_FIXED_FLUID_ANGULAR_VELOCITY, ps)
+{
+    SetTypeString("Fixed Fluid Angular Velocity");
+    SetVarID(ps->GetVariableIndex("fluid angular velocity"));
+}
+
+//-----------------------------------------------------------------------------
+FSFixedFluidAngularVelocity::FSFixedFluidAngularVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep) : FSFixedDOF(FE_FIXED_FLUID_ANGULAR_VELOCITY, ps, pi, nstep)
+{
+    SetTypeString("Fixed Fluid Angular Velocity");
+    SetVarID(ps->GetVariableIndex("fluid angular velocity"));
+    SetBC(bc);
+}
+
+//=============================================================================
 // PRESCRIBED DOF
 //=============================================================================
 
@@ -377,6 +394,22 @@ FSPrescribedFluidDilatation::FSPrescribedFluidDilatation(FSModel* ps, FEItemList
 {
     SetTypeString("Prescribed Fluid Dilatation");
 //	SetVarID(ps->GetVariableIndex("fluid dilatation"));
+}
+
+//=============================================================================
+// PRESCRIBED ANGULAR FLUID VELOCITY
+//=============================================================================
+FSPrescribedFluidAngularVelocity::FSPrescribedFluidAngularVelocity(FSModel* ps) : FSPrescribedDOF(FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY, ps)
+{
+    SetTypeString("Prescribed Angular Fluid Velocity");
+    SetScaleUnit(UNIT_ANGULAR_VELOCITY);
+}
+
+//-----------------------------------------------------------------------------
+FSPrescribedFluidAngularVelocity::FSPrescribedFluidAngularVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep) : FSPrescribedDOF(FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY, ps, pi, bc, s, nstep)
+{
+    SetTypeString("Prescribed Angular Fluid Velocity");
+    SetScaleUnit(UNIT_ANGULAR_VELOCITY);
 }
 
 //=============================================================================

@@ -32,6 +32,7 @@ class FSMeshAdaptor;
 #define FE_STEP_REACTION_DIFFUSION	8
 #define FE_STEP_FLUID_FSI           9
 #define FE_STEP_FEBIO_ANALYSIS		10
+#define FE_STEP_POLAR_FLUID         11
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
@@ -356,6 +357,13 @@ public:
 
 	// get the analysis types
 	std::vector<string> GetAnalysisStrings() const;
+};
+
+//-----------------------------------------------------------------------------
+class FSPolarFluidAnalysis : public FSAnalysisStep
+{
+public:
+    FSPolarFluidAnalysis(FSModel* ps);
 };
 
 //==============================================================================

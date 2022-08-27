@@ -231,6 +231,7 @@ int MapOldToNewModules(int oldId)
 {
 	if (oldId & MODULE_FLUID_FSI  ) return FEBio::GetModuleId("fluid-FSI");
 	if (oldId & MODULE_FLUID      ) return FEBio::GetModuleId("fluid");
+    if (oldId & MODULE_POLAR_FLUID) return FEBio::GetModuleId("polar fluid");
 	if (oldId & MODULE_MULTIPHASIC) return FEBio::GetModuleId("multiphasic");
 	if (oldId & MODULE_SOLUTES    ) return FEBio::GetModuleId("solute");
 	if (oldId & MODULE_BIPHASIC   ) return FEBio::GetModuleId("biphasic");
@@ -336,6 +337,7 @@ void FSProject::InitModules()
 	FEMaterialFactory::AddCategory("heat transfer"       , MODULE_HEAT               , FE_MAT_HEAT_TRANSFER);
 	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID              , FE_MAT_FLUID);
     FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI          , FE_MAT_FLUID_FSI);
+    FEMaterialFactory::AddCategory("polar fluid"         , MODULE_POLAR_FLUID        , FE_MAT_POLAR_FLUID);
 	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION , FE_MAT_REACTION_DIFFUSION);
 	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				 , FE_MAT_RIGID);
 
@@ -464,6 +466,11 @@ void FSProject::InitModules()
     REGISTER_FE_CLASS(FSBFSITraction            , MODULE_FLUID_FSI, FELOAD_ID  , FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction");
     
 
+    // --- POLAR FLUID MODULE ---
+    REGISTER_FE_CLASS(FSPolarFluidAnalysis            , MODULE_POLAR_FLUID, FEANALYSIS_ID, FE_STEP_POLAR_FLUID, "Polar Fluid Mechanics");
+    REGISTER_FE_CLASS(FSFixedFluidAngularVelocity     , MODULE_POLAR_FLUID, FEBC_ID      , FE_FIXED_FLUID_ANGULAR_VELOCITY        , "Zero fluid angular velocity");
+    REGISTER_FE_CLASS(FSPrescribedFluidAngularVelocity, MODULE_POLAR_FLUID, FEBC_ID      , FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY   , "Prescribed fluid angular velocity");
+
 	// --- REACTION-DIFFUSION MODULE ---
 	REGISTER_FE_CLASS(FSReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FEANALYSIS_ID   , FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");
 	REGISTER_FE_CLASS(FSConcentrationFlux        , MODULE_REACTION_DIFFUSION, FELOAD_ID  , FE_CONCENTRATION_FLUX, "Concentration Flux");
@@ -540,6 +547,7 @@ void FSProject::SetDefaultPlotVariables()
 	}
 	else if (strcmp(szmod, "fluid") == 0)
 	{
+        m_plt.AddPlotVariable("displacement", true);
 		m_plt.AddPlotVariable("fluid pressure", true);
 		m_plt.AddPlotVariable("nodal fluid velocity", true);
 		m_plt.AddPlotVariable("fluid stress", true);
@@ -564,6 +572,25 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
 	}
+    else if (strcmp(szmod, "polar fluid") == 0)
+    {
+        m_plt.AddPlotVariable("displacement", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("nodal polar fluid angular velocity", true);
+        m_plt.AddPlotVariable("polar fluid stress", true);
+        m_plt.AddPlotVariable("polar fluid couple stress", true);
+        m_plt.AddPlotVariable("polar fluid angular velocity", true);
+        m_plt.AddPlotVariable("polar fluid relative angular velocity", true);
+        m_plt.AddPlotVariable("polar fluid regional angular velocity", true);
+    }
 }
 
 bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
@@ -699,6 +726,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		case FE_STEP_MULTIPHASIC       : FEBio::SetActiveModule("multiphasic"       ); break;
 		case FE_STEP_FLUID             : FEBio::SetActiveModule("fluid"             ); break;
 		case FE_STEP_FLUID_FSI         : FEBio::SetActiveModule("fluid-FSI"         ); break;
+        case FE_STEP_POLAR_FLUID       : FEBio::SetActiveModule("polar fluid"       ); break;
 		case FE_STEP_REACTION_DIFFUSION: FEBio::SetActiveModule("reaction-diffusion"); break; // requires plugin!
 		case FE_STEP_HEAT_TRANSFER     : FEBio::SetActiveModule("heat"              ); break; // requires plugin!
 		default:
@@ -1476,7 +1504,8 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 			case FE_FIXED_TEMPERATURE       : febbc = FEBio::CreateBoundaryCondition("zero temperature"       , fem); break;
 			case FE_FIXED_CONCENTRATION     : febbc = FEBio::CreateBoundaryCondition("zero concentration"     , fem); break;
 			case FE_FIXED_FLUID_VELOCITY    : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
-			case FE_FIXED_FLUID_DILATATION  : febbc = FEBio::CreateBoundaryCondition("zero fluid velocity"    , fem); break;
+			case FE_FIXED_FLUID_DILATATION  : febbc = FEBio::CreateBoundaryCondition("zero fluid dilatation"  , fem); break;
+            case FE_FIXED_FLUID_ANGULAR_VELOCITY: febbc = FEBio::CreateBoundaryCondition("zero fluid angular velocity", fem); break;
 			default:
 				assert(false);
 			}
@@ -1508,6 +1537,11 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 					if (bc & 2) febbc->SetParamBool("wy_dof", true);
 					if (bc & 4) febbc->SetParamBool("wz_dof", true);
 					break;
+                case FE_FIXED_FLUID_ANGULAR_VELOCITY:
+                    if (bc & 1) febbc->SetParamBool("gx_dof", true);
+                    if (bc & 2) febbc->SetParamBool("gy_dof", true);
+                    if (bc & 4) febbc->SetParamBool("gz_dof", true);
+                        break;
 				case FE_FIXED_FLUID_PRESSURE:
 				case FE_FIXED_FLUID_DILATATION:
 				case FE_FIXED_TEMPERATURE:

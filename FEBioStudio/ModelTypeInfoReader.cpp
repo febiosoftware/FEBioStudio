@@ -168,6 +168,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
                 case FE_STEP_FLUID: module = "fluid"; break;
                 case FE_STEP_FLUID_FSI: module = "fluid-FSI"; break;
                 case FE_STEP_REACTION_DIFFUSION: module = "reaction-diffusion"; break;
+                case FE_STEP_POLAR_FLUID: module = "polar fluid"; break;
                 case FE_STEP_FEBIO_ANALYSIS:
                 {
                     int mod = prj.GetModule();
@@ -216,11 +217,11 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
             {
                 analysis = analysisType == 0 ? "STEADY-STATE" : "DYNAMIC";
             }
-            else if(module.compare("fluidP") == 0)
+            else if(module.compare("fluid-FSI") == 0)
             {
                 analysis = analysisType == 0 ? "STEADY-STATE" : "DYNAMIC";
             }
-            else if(module.compare("fluid-FSI") == 0)
+            else if(module.compare("polar fluid") == 0)
             {
                 analysis = analysisType == 0 ? "STEADY-STATE" : "DYNAMIC";
             }

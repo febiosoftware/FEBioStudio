@@ -232,6 +232,11 @@ FSModel::FSModel() : m_skipGeometry(false)
 	varSDisp->AddDOF("Shell Y-displacement", "sy");
 	varSDisp->AddDOF("Shell Z-displacement", "sz");
 
+    FEDOFVariable* varAVel = AddVariable("fluid angular velocity");
+    varAVel->AddDOF("X-fluid angular velocity", "gx");
+    varAVel->AddDOF("Y-fluid angular velocity", "gy");
+    varAVel->AddDOF("Z-fluid angular velocity", "gz");
+    
 	// define model parameters
 	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Absolute temperature");
 	AddScienceParam(0, UNIT_GAS_CONSTANT, "R", "Gas constant");
@@ -1561,6 +1566,7 @@ void FSModel::LoadSteps(IArchive& ar)
         case FE_STEP_FLUID              : ps = new FSFluidAnalysis      (this); break;
         case FE_STEP_FLUID_FSI          : ps = new FSFluidFSIAnalysis   (this); break;
 		case FE_STEP_REACTION_DIFFUSION : ps = new FSReactionDiffusionAnalysis(this); break;
+        case FE_STEP_POLAR_FLUID        : ps = new FSPolarFluidAnalysis (this); break;
 		case FE_STEP_FEBIO_ANALYSIS     : ps = new FEBioAnalysisStep(this); break;
 		default:
 			throw ReadError("unknown CID in FSModel::LoadSteps");
