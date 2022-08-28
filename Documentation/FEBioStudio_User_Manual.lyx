@@ -16967,7 +16967,7 @@ status open
 \begin_layout Plain Layout
 \align center
 \begin_inset Tabular
-<lyxtabular version="3" rows="4" columns="2">
+<lyxtabular version="3" rows="5" columns="2">
 <features tabularvalignment="middle">
 <column alignment="left" valignment="top" width="262pt">
 <column alignment="left" valignment="top">
@@ -17030,6 +17030,26 @@ material
 
 \begin_layout Plain Layout
 Set material properties
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+datafield
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Set datafield parameters
 \end_layout
 
 \end_inset
@@ -17367,6 +17387,45 @@ Material properties
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsubsection
+datafield
+\end_layout
+
+\begin_layout Standard
+The 
+\emph on
+datafield
+\emph default
+ element is used to set parameters for data fields that are loaded from
+ the model data file.
+ This element requires a 
+\emph on
+name 
+\emph default
+attribute that identifies the specific data field.
+ 
+\end_layout
+
+\begin_layout Standard
+
+\emph on
+Example
+\emph default
+: 
+\end_layout
+
+\begin_layout LyX-Code
+<datafield name="Lagrange strain">
+\end_layout
+
+\begin_layout LyX-Code
+  <ref_state>2</ref_state>
+\end_layout
+
+\begin_layout LyX-Code
+</datafield>
 \end_layout
 
 \begin_layout Subsubsection
