@@ -681,7 +681,7 @@ public:
 	ModelDataField* Clone() const override
 	{
 		CurvatureField* pd = new CurvatureField(m_fem, m_measure);
-		pd->m_name = m_name;
+		pd->SetName(GetName());
 		pd->m_nlevels = m_nlevels;
 		pd->m_nmax = m_nmax;
 		pd->m_bext = m_bext;
@@ -807,25 +807,30 @@ public:
 		ALMANSI
 	};
 
+	enum { MP_REF_STATE };
+
 public:
 	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3FS, DATA_ITEM, CLASS_ELEM, 0)
-	{ 
-		m_nref = -1; 
-		m_measure = measure; 
+	{
+		m_measure = measure;
+
+		AddIntParam(-1, "ref_state", "Reference state");
 	}
+
+	int ReferenceState() const { return GetIntValue(MP_REF_STATE); }
+	void SetReferenceState(int n) { SetIntValue(MP_REF_STATE, n); }
 
 	ModelDataField* Clone() const override
 	{
 		StrainDataField* pd = new StrainDataField(m_fem, m_measure);
-		pd->m_name = m_name;
-		pd->m_nref = m_nref;
+		pd->SetName(GetName());
+		pd->SetReferenceState(ReferenceState());
 		return pd;
 	}
 
 	FEMeshData* CreateData(FEState* pstate) override;
 
 public:
-	int	m_nref;
 	int	m_measure;
 };
 
@@ -836,7 +841,7 @@ public:
 	ElemStrain(FEState* state, StrainDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf), m_strainData(pdf) {}
 
 protected:
-	int ReferenceState() { return m_strainData->m_nref; }
+	int ReferenceState() { return m_strainData->ReferenceState(); }
 
 private:
 	StrainDataField*	m_strainData;

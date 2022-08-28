@@ -116,6 +116,10 @@ bool PostSessionFileReader::Load(const char* szfile)
 			{
 				if (parse_material(tag) == false) return false;
 			}
+			else if (tag == "datafield")
+			{
+				if (parse_datafield(tag) == false) return false;
+			}
 			else if (tag == "mesh:nodeset")
 			{
 				if (parse_mesh_nodeset(tag) == false) return false;
@@ -291,6 +295,20 @@ bool PostSessionFileReader::parse_material(XMLTag& tag)
 		} while (!tag.isend());
 	}
 	else return false;
+
+	return true;
+}
+
+bool PostSessionFileReader::parse_datafield(XMLTag& tag)
+{
+	const char* szname = tag.AttributeValue("name");
+	Post::FEPostModel& fem = *m_doc->GetFSModel();
+	Post::FEDataManager& dm = *fem.GetDataManager();
+	int n = dm.FindDataField(szname);
+	if (n < 0) return false;
+
+	Post::ModelDataField* data = *dm.DataField(n);
+	fsps_read_parameters(data, tag);
 
 	return true;
 }
@@ -558,6 +576,22 @@ bool PostSessionFileWriter::Write(const char* szfile)
 				xml.add_leaf("transparency", mat->transparency);
 			}
 			xml.close_branch(); // material
+		}
+
+		// save data field settings
+		Post::FEPostModel& fem = *m_doc->GetFSModel();
+		Post::FEDataManager& dm = *fem.GetDataManager();
+		for (int i = 0; i < dm.DataFields(); ++i)
+		{
+			Post::ModelDataField* data = *dm.DataField(i);
+			if (data && (data->Parameters()))
+			{
+				XMLElement el("datafield");
+				el.add_attribute("name", data->GetName());
+				xml.add_branch(el);
+				fsps_write_parameters(data, xml);
+				xml.close_branch();
+			}
 		}
 
 		// save selections

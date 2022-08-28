@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData.h"
+#include <FSCore/FSObject.h>
 #include <typeinfo>
 #include <string>
 
@@ -45,18 +46,12 @@ enum DataFieldFlags {
 
 //-----------------------------------------------------------------------------
 // Base class describing a data field
-class ModelDataField
+class ModelDataField : public FSObject
 {
 public:
 	ModelDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
 
 	virtual ~ModelDataField();
-
-	//! get the name of the field
-	const std::string& GetName() const;
-
-	//! set the name of the field
-	void SetName(const std::string& newName);
 
 	//! Create a copy
 	virtual ModelDataField* Clone() const = 0;
@@ -113,18 +108,12 @@ protected:
 	Data_Format		m_nfmt;		//!< data format
 	Data_Class		m_nclass;	//!< data class
 	unsigned int	m_flag;		//!< flags
-	std::string		m_name;		//!< data field name
 	std::string		m_units;	//!< units
 
 	int				m_arraySize;	//!< data size for arrays
 	std::vector<string>	m_arrayNames;	//!< (optional) names of array components
 
 	FEPostModel*	m_fem;
-
-public:
-	// TODO: Add properties list for data fields (e.g. strains and curvature could use this)
-	// strain parameters
-	int		m_nref;	// reference state
 };
 
 //-----------------------------------------------------------------------------
