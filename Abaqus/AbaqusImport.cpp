@@ -223,7 +223,11 @@ bool AbaqusImport::parse_file(FILE* fp)
 		}
 		else if (szicmp(szline, "*SURFACE")) // read surfaces
 		{
-			if (!read_surface(szline, fp)) return errf("Error while reading keyword SURFACE (line %d)", m_nline);
+			if (m_bfacesets)
+			{
+				if (!read_surface(szline, fp)) return errf("Error while reading keyword SURFACE (line %d)", m_nline);
+			}
+			else read_line(szline, fp);
 		}
 		else if (szicmp(szline, "*MATERIAL")) // read materials
 		{
@@ -615,6 +619,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
             else if (szicmp(sz, "S6"    )) ntype = FE_TRI6;
             else if (szicmp(sz, "S8R"   )) ntype = FE_QUAD8;
             else if (szicmp(sz, "S9R5"  )) ntype = FE_QUAD9;
+            else if (szicmp(sz, "M3D3"  )) ntype = FE_TRI3;
             else if (szicmp(sz, "T3D2"  )) ntype = FE_BEAM2;
 			else if (szicmp(sz, "SPRINGA"))
 			{
