@@ -181,8 +181,8 @@ REGISTER_MATERIAL(FSAnglesVectorGenerator, MODULE_MECH, FE_FIBER_GENERATOR_ANGLE
 
 FSAnglesVectorGenerator::FSAnglesVectorGenerator(FSModel* fem, double theta, double phi) : FSFiberGenerator(FE_FIBER_GENERATOR_ANGLES, fem)
 {
-	AddScienceParam(theta, UNIT_DEGREE, "theta", "theta");
-	AddScienceParam(phi, UNIT_DEGREE, "phi", "phi");
+	AddScienceParam(theta, UNIT_DEGREE, "theta", "theta")->MakeVariable(true);
+	AddScienceParam(phi, UNIT_DEGREE, "phi", "phi")->MakeVariable(true);
 }
 
 vec3d FSAnglesVectorGenerator::GetFiber(FEElementRef& el)
@@ -3323,6 +3323,20 @@ FSVFCross::FSVFCross(FSModel* fem) : FSMaterialProp(FE_VF_CROSS, fem)
     AddScienceParam(0, UNIT_VISCOSITY, "mui" , "infinite shear rate viscosity"  );
     AddScienceParam(0, UNIT_TIME, "lambda" , "relaxation time"  );
     AddScienceParam(0, UNIT_NONE, "m" , "power"  );
+}
+
+//=============================================================================
+// Linear Polar Viscous fluid
+//=============================================================================
+
+REGISTER_MATERIAL(FSVPFLinear, MODULE_POLAR_FLUID, FE_PVF_LINEAR, FE_MAT_POLAR_FLUID_VISCOSITY, "polar linear", 0);
+
+FSVPFLinear::FSVPFLinear(FSModel* fem) : FSMaterialProp(FE_PVF_LINEAR, fem)
+{
+    AddScienceParam(0, UNIT_ROTATIONAL_VISCOSITY, "tau"  , "polar rotational viscosity");
+    AddScienceParam(0, UNIT_COUPLE_VISCOSITY, "alpha", "couple bulk viscosity");
+    AddScienceParam(0, UNIT_COUPLE_VISCOSITY, "beta" , "couple viscosity-sym");
+    AddScienceParam(0, UNIT_COUPLE_VISCOSITY, "gamma", "couple viscosity-skw");
 }
 
 //=============================================================================

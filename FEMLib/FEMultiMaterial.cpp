@@ -1714,6 +1714,30 @@ FSBiphasicFSIMaterial::FSBiphasicFSIMaterial(FSModel* fem) : FSMultiMaterial(FE_
 }
 
 //=============================================================================
+//                                   POLAR FLUID
+//=============================================================================
+
+REGISTER_MATERIAL(FSPolarFluidMaterial, MODULE_POLAR_FLUID, FE_POLAR_FLUID_MATERIAL, FE_MAT_POLAR_FLUID, "polar fluid", MaterialFlags::TOPLEVEL);
+
+FSPolarFluidMaterial::FSPolarFluidMaterial(FSModel* fem) : FSMaterial(FE_POLAR_FLUID_MATERIAL, fem)
+{
+    // add parameters
+    AddScienceParam(1.0, UNIT_DENSITY, "density", "density");
+    
+    // add parameters
+    AddScienceParam(1.0, UNIT_PRESSURE, "k", "bulk modulus");
+    
+    // add parameters
+    AddScienceParam(0, UNIT_LENGTH, "kg", "radius of gyration");
+    
+    // Add viscous component
+    AddProperty("viscous", FE_MAT_FLUID_VISCOSITY);
+    
+    // Add fluid component
+    AddProperty("polar", FE_MAT_POLAR_FLUID_VISCOSITY);
+}
+
+//=============================================================================
 //								SPECIES MATERIAL
 //=============================================================================
 

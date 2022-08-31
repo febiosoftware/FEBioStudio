@@ -17,6 +17,7 @@
 #define FE_MAT_FLUID_FSI            0x0080
 #define FE_MAT_DISCRETE				0x0100
 #define FE_MAT_1DFUNC				0x0200
+#define FE_MAT_POLAR_FLUID          0x0300
 
 // component classes
 // These values must not contain the top level class values in the lower bits!
@@ -55,6 +56,7 @@
 #define FE_MAT_MREACTION_EREACTANTS     0x00210000
 #define FE_MAT_MREACTION_EPRODUCTS      0x00220000
 #define FE_MAT_PLASTIC_FLOW_RULE		0x00230000
+#define FE_MAT_POLAR_FLUID_VISCOSITY    0x00240000
 
 
 // Classes with IDs above this refer to FEBio base classes.
@@ -191,6 +193,7 @@
 #define FE_UNCOUPLED_REACTIVE_FATIGUE   134
 
 #define FE_FEBIO_MATERIAL			135
+#define FE_POLAR_FLUID_MATERIAL     136
 
 // permeability materials
 #define FE_PERM_CONST				200
@@ -316,6 +319,9 @@
 #define FE_VF_POWELL_EYRING         1103
 #define FE_VF_CROSS                 1104
 #define FE_VF_BINGHAM               1105
+
+// polar viscous fluid material
+#define FE_PVF_LINEAR               1150
 
 // solvent supplies
 #define FE_STARLING_SUPPLY			1200
@@ -2540,6 +2546,17 @@ public:
 public:
     FSVFCross(FSModel* fem);
     DECLARE_REGISTERED(FSVFCross);
+};
+
+//-----------------------------------------------------------------------------
+// Linear Polar Viscous fluid
+class FSVPFLinear : public FSMaterialProp
+{
+public:
+    enum { MP_TAU, MP_ALPHA, MP_BETA, MP_GAMMA };
+public:
+    FSVPFLinear(FSModel* fem);
+    DECLARE_REGISTERED(FSVPFLinear);
 };
 
 //-----------------------------------------------------------------------------

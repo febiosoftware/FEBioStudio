@@ -442,6 +442,94 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	glEnd();
 }
 
+//-----------------------------------------------------------------------------
+// TODO: This may not always give the desired result: I render using both
+//		 element and face data. But that cannot always be guaranteed to be consistent.
+//		 What I need to do is only render using element or face data, but not both.
+void GLMeshRender::RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+{
+	assert(pe->IsType(FE_PENTA6));
+	FEElement_& e = *pe;
+	glBegin(GL_TRIANGLES);
+	{
+		vec3d r[4];
+		vec3d n[4];
+		GLColor c[4];
+		for (int j = 0; j < 3; j++)
+		{
+			r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+			r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+			r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+			r[3] = pm->Node(e.m_node[FTPENTA[j][3]]).r;
+
+			c[0] = col[FTPENTA[j][0]];
+			c[1] = col[FTPENTA[j][1]];
+			c[2] = col[FTPENTA[j][2]];
+			c[3] = col[FTPENTA[j][3]];
+
+			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+			if (pen == 0)
+			{
+				FSFace* pf = pm->FacePtr(e.m_face[j]);
+				assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+				n[0] = to_vec3d(pf->m_nn[0]);
+				n[1] = to_vec3d(pf->m_nn[1]);
+				n[2] = to_vec3d(pf->m_nn[2]);
+				n[3] = to_vec3d(pf->m_nn[3]);
+			}
+			else
+			{
+				vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+				fn.Normalize();
+				n[0] = n[1] = n[2] = n[3] = fn;
+			}
+
+			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
+			{
+				glx::quad4(r, n, c);
+			}
+		}
+	}
+	glEnd();
+
+	glBegin(GL_TRIANGLES);
+	{
+		vec3d r[3];
+		vec3f n[3];
+		GLColor c[3];
+		for (int j = 3; j < 5; j++)
+		{
+			r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+			r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+			r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+
+			c[0] = col[FTPENTA[j][0]];
+			c[1] = col[FTPENTA[j][1]];
+			c[2] = col[FTPENTA[j][2]];
+
+			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+			if (pen == 0)
+			{
+				FSFace* pf = pm->FacePtr(e.m_face[j]);
+				n[0] = pf->m_nn[0];
+				n[1] = pf->m_nn[1];
+				n[2] = pf->m_nn[2];
+			}
+			else
+			{
+				vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+				fn.Normalize();
+				n[0] = n[1] = n[2] = to_vec3f(fn);
+			}
+
+			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
+			{
+				glx::tri3(r, n, c);
+			}
+		}
+	}
+	glEnd();
+}
 
 //-----------------------------------------------------------------------------
 // TODO: This may not always give the desired result: I render using both

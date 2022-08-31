@@ -279,6 +279,9 @@ public:
 
     void UpdateUiView();
 
+	// the selection was transformed (i.e. translated, rotated, or scaled)
+	void OnSelectionTransformed();
+
 private:
 	void writeSettings();
 	void readSettings();
@@ -504,6 +507,7 @@ public slots:
 	void on_actionFEBioPubs_triggered();
 	void on_actionAbout_triggered();
 	void on_actionWelcome_triggered();
+    void on_actionBugReport_triggered();
 
 	void on_actionSelect_toggled(bool b);
 	void on_actionTranslate_toggled(bool b);

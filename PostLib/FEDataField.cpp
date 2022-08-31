@@ -39,20 +39,11 @@ ModelDataField::ModelDataField(FEPostModel* fem, Data_Type ntype, Data_Format nf
 	m_ntype = ntype;
 	m_nfmt = nfmt;
 	m_nclass = ncls;
-	m_nref = 0;
 	m_flag = flag;
 	m_arraySize = 0;
 }
 
 ModelDataField::~ModelDataField() {}
-
-//! get the name of the field
-const std::string& ModelDataField::GetName() const { return m_name; }
-
-void ModelDataField::SetName(const std::string& newName)
-{
-	m_name = newName;
-}
 
 void ModelDataField::SetArrayNames(vector<string>& n)
 {

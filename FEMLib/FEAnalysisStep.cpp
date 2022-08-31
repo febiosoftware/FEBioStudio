@@ -967,6 +967,8 @@ void FSStep::Load(IArchive &ar)
 					case FE_FIXED_SHELL_DISPLACEMENT : pb = new FSFixedShellDisplacement    (fem); break;
 					case FE_PRESCRIBED_SHELL_DISPLACEMENT: pb = new FSPrescribedShellDisplacement(fem); break;
 					case FE_FEBIO_BC                 : pb = new FEBioBoundaryCondition(fem); break;
+                    case FE_FIXED_FLUID_ANGULAR_VELOCITY     : pb = new FSFixedFluidAngularVelocity        (fem); break;
+                    case FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY: pb = new FSPrescribedFluidAngularVelocity   (fem); break;
 					default:
 						if (ar.Version() < 0x00020000)
 						{
@@ -1715,6 +1717,27 @@ vector<string> FSReactionDiffusionAnalysis::GetAnalysisStrings() const
 	s.push_back("steady-state");
 	s.push_back("transient");
 	return s;
+}
+
+//-----------------------------------------------------------------------------
+FSPolarFluidAnalysis::FSPolarFluidAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_POLAR_FLUID)
+{
+    SetTypeString("Polar Fluid");
+    
+    AddDoubleParam(0.001, "vtol", "Fluid velocity tolerance");
+    AddDoubleParam(0.001, "ftol", "Fluid dilatation tolerance");
+    AddDoubleParam(0.001, "gtol", "Angular fluid velocity tolerance");
+    AddDoubleParam(0.01 , "etol", "Energy tolerance");
+    AddDoubleParam(0    , "rtol", "Residual tolerance");
+    AddDoubleParam(0.9  , "lstol", "Line search tolerance");
+    AddDoubleParam(1e-20, "min_residual", "Minumum residual");
+    AddDoubleParam(1e+20, "max_residual", "Maximum residual");
+    AddDoubleParam(0    , "rhoi", "Spectral radius");
+    AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
+    AddChoiceParam(1    , "equation_scheme", "Equation Scheme");
+    
+    m_ops.nanalysis = 1; // set dynamic analysis
+    m_ops.nmatfmt = 0;   // set non-symmetric flag
 }
 
 //==================================================================================

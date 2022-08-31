@@ -2922,6 +2922,16 @@ void CMainWindow::OnCameraChanged()
 	}
 }
 
+void CMainWindow::OnSelectionTransformed()
+{
+	UpdateGLControlBar();
+	if (ui->buildPanel->IsEditPanelVisible())
+	{
+		ui->buildPanel->Update(false);
+	}
+	RedrawGL();
+}
+
 // remove a graph from the list
 void CMainWindow::RemoveGraph(::CGraphWindow* graph)
 {

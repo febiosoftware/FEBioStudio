@@ -1021,6 +1021,7 @@ void FEBioExport3::WriteModuleSection(FSStep* pstep)
 	case FE_STEP_FLUID: t.add_attribute("type", "fluid"); break;
 	case FE_STEP_FLUID_FSI: t.add_attribute("type", "fluid-FSI"); break;
 	case FE_STEP_REACTION_DIFFUSION: t.add_attribute("type", "reaction-diffusion"); m_useReactionMaterial2 = true; break;
+    case FE_STEP_POLAR_FLUID: t.add_attribute("type", "polar fluid"); break;
 	case FE_STEP_FEBIO_ANALYSIS:
 	{
 		int mod = m_prj.GetModule();
@@ -1050,6 +1051,7 @@ void FEBioExport3::WriteControlSection(FSStep& step)
 		case FE_STEP_MULTIPHASIC: WriteBiphasicSoluteControlParams(analysis); break;
 		case FE_STEP_FLUID: WriteFluidControlParams(analysis); break;
 		case FE_STEP_FLUID_FSI: WriteFluidFSIControlParams(analysis); break;
+        case FE_STEP_POLAR_FLUID: WritePolarFluidControlParams(analysis); break;
 		case FE_STEP_REACTION_DIFFUSION: WriteReactionDiffusionControlParams(analysis); break;
 		default:
 			assert(false);
@@ -1502,6 +1504,72 @@ void FEBioExport3::WriteReactionDiffusionControlParams(FSAnalysisStep* pstep)
 	{
 		m_xml.add_leaf("plot_stride", ops.plot_stride);
 	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport3::WritePolarFluidControlParams(FSAnalysisStep* pstep)
+{
+    XMLElement el;
+    STEP_SETTINGS& ops = pstep->GetSettings();
+    
+    m_xml.add_leaf("analysis", (ops.nanalysis == 0 ? "STEADY-STATE" : "DYNAMIC"));
+    m_xml.add_leaf("time_steps", ops.ntime);
+    m_xml.add_leaf("step_size", ops.dt);
+    
+    m_xml.add_branch("solver");
+    {
+        m_xml.add_leaf("max_refs", ops.maxref);
+        m_xml.add_leaf("max_ups", ops.ilimit);
+        m_xml.add_leaf("diverge_reform", ops.bdivref);
+        m_xml.add_leaf("reform_each_time_step", ops.brefstep);
+        
+        // write the parameters
+        WriteParamList(*pstep);
+        
+        if (ops.bminbw)
+        {
+            m_xml.add_leaf("optimize_bw", 1);
+        }
+        
+        if (ops.nmatfmt != 0)
+        {
+            m_xml.add_leaf("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
+        }
+    }
+    m_xml.close_branch();
+    
+    if (ops.bauto)
+    {
+        LoadCurve* plc = pstep->GetMustPointLoadCurve();
+        el.name("time_stepper");
+        m_xml.add_branch(el);
+        {
+            m_xml.add_leaf("dtmin", ops.dtmin);
+            
+            el.name("dtmax");
+            if (ops.bmust && plc)
+                el.add_attribute("lc", plc->GetID());
+            else el.value(ops.dtmax);
+            m_xml.add_leaf(el);
+            
+            m_xml.add_leaf("max_retries", ops.mxback);
+            m_xml.add_leaf("opt_iter", ops.iteopt);
+            
+            if (ops.ncut > 0) m_xml.add_leaf("aggressiveness", ops.ncut);
+        }
+        m_xml.close_branch();
+    }
+    
+    if (ops.plot_level != 1)
+    {
+        const char* sz[] = { "PLOT_NEVER", "PLOT_MAJOR_ITRS", "PLOT_MINOR_ITRS", "PLOT_MUST_POINTS", "PLOT_FINAL", "PLOT_AUGMENTATIONS", "PLOT_STEP_FINAL" };
+        m_xml.add_leaf("plot_level", sz[ops.plot_level]);
+    }
+    
+    if (ops.plot_stride != 1)
+    {
+        m_xml.add_leaf("plot_stride", ops.plot_stride);
+    }
 }
 
 //-----------------------------------------------------------------------------
@@ -3581,39 +3649,72 @@ void FEBioExport3::WriteElementDataFields()
 					GPart* pg = partArray[np];
 					int pid = pg->GetLocalID();
 
-					XMLElement tag("ElementData");
-					tag.add_attribute("name", data.GetName().c_str());
-					tag.add_attribute("elem_set", pg->GetName());
-					m_xml.add_branch(tag);
+					// A part could have been split into multiple Elements sections.
+					// We need to do the same here.
+					int NE = elemList->Size();
+					FEElemList::Iterator it = elemList->First();
+					for (int j = 0; j < NE; ++j, ++it) it->m_pi->m_ntag = 0;
+
+					int nset = 0;
+					int ecount = 0;
+					char szname[128] = { 0 };
+					do
 					{
-						XMLElement el("e");
-						int nid = el.add_attribute("lid", 0);
-						int N = elemList->Size();
+						if (nset == 0)
+							sprintf(szname, "%s", pg->GetName().c_str());
+						else
+							sprintf(szname, "%s__%d", pg->GetName().c_str(), nset + 1);
+
+						int etype = -1;
 						FEElemList::Iterator it = elemList->First();
-						int lid = 1;
-						for (int j = 0; j < N; ++j, ++it)
+						for (int j=0; j<NE; ++j, ++it)
 						{
-							FEElement_* pe = it->m_pi;
-							if (pe->m_gid == pid)
+							if (it->m_pi->m_ntag == 0)
 							{
-								el.set_attribute(nid, lid++);
-
-								if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
-								{
-									el.value(data[j]);
-								}
-								else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
-								{
-									int nn = pe->Nodes();
-									for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
-									el.value(v, nn);
-								}
-
-								m_xml.add_leaf(el, false);
+								etype = it->m_pi->Type();
+								break;
 							}
 						}
+						assert(etype != -1);
+
+						XMLElement tag("ElementData");
+						tag.add_attribute("name", data.GetName().c_str());
+						tag.add_attribute("elem_set", szname);
+						m_xml.add_branch(tag);
+						{
+							XMLElement el("e");
+							int nid = el.add_attribute("lid", 0);
+							int N = elemList->Size();
+							FEElemList::Iterator it = elemList->First();
+							int lid = 1;
+							for (int j = 0; j < N; ++j, ++it)
+							{
+								FEElement_* pe = it->m_pi;
+								if ((pe->m_gid == pid) && (pe->Type() == etype))
+								{
+									el.set_attribute(nid, lid++);
+
+									if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+									{
+										el.value(data[j]);
+									}
+									else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+									{
+										int nn = pe->Nodes();
+										for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
+										el.value(v, nn);
+									}
+
+									m_xml.add_leaf(el, false);
+									ecount++;
+									pe->m_ntag = 1;
+								}
+							}
+						}
+						m_xml.close_branch();
+						nset++;
 					}
-					m_xml.close_branch();
+					while (ecount < NE);
 				}
 				delete partList;
 			}

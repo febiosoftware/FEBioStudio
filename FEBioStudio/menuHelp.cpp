@@ -70,6 +70,12 @@ void CMainWindow::on_actionFEBioPubs_triggered()
 	QDesktopServices::openUrl(QUrl("https://febio.org/publications/"));
 }
 
+void CMainWindow::on_actionBugReport_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://github.com/febiosoftware/FEBioStudio/issues/new?labels=bug"));
+}
+
+
 void CMainWindow::on_actionAbout_triggered()
 {
 	QString version;

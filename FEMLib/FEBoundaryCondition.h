@@ -151,6 +151,21 @@ public:
 };
 
 //=============================================================================
+// FIXED ANGULAR FLUID VELOCITY
+//=============================================================================
+// The BC parameter stores the constraints that are fixed. The order is:
+// 0: x-velocity
+// 1: y-velocity
+// 2: z-velocity
+//
+class FSFixedFluidAngularVelocity : public FSFixedDOF
+{
+public:
+    FSFixedFluidAngularVelocity(FSModel* ps);
+    FSFixedFluidAngularVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, int nstep = 0);
+};
+
+//=============================================================================
 // Prescribed boundary condition base class
 //=============================================================================
 class FSPrescribedDOF : public FSBoundaryCondition
@@ -261,6 +276,16 @@ class FSPrescribedFluidDilatation : public FSPrescribedDOF
 public:
     FSPrescribedFluidDilatation(FSModel* ps);
     FSPrescribedFluidDilatation(FSModel* ps, FEItemListBuilder* pi, double s, int nstep = 0);
+};
+
+//=============================================================================
+// PRESCRIBED ANGULAR FLUID VELOCITY
+//=============================================================================
+class FSPrescribedFluidAngularVelocity : public FSPrescribedDOF
+{
+public:
+    FSPrescribedFluidAngularVelocity(FSModel* ps);
+    FSPrescribedFluidAngularVelocity(FSModel* ps, FEItemListBuilder* pi, int bc, double s, int nstep = 0);
 };
 
 //=============================================================================

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QPushButton>
 #include <QAction>
+#include <QFormLayout>
 #include "PropertyListForm.h"
 #include "ToolBox.h"
 #include "PropertyList.h"
@@ -40,14 +41,21 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include "MainWindow.h"
 #include "Document.h"
+#include "InputWidgets.h"
 
 class Ui::CEditPanel
 {
 	// make sure these values correspond to the order of the panel
 	enum {
 		OBJECT_PANEL,
+		POSITION_PANEL,
 		EDITMESH_PANEL,
 		PARAMS_PANEL
+	};
+
+	enum {
+		EMPTY_LAYOUT,
+
 	};
 
 public:
@@ -57,6 +65,8 @@ public:
 	CToolBox* tool;
 
 	CPropertyList* m_pl;
+
+	CFloatInput* r[3];
 
 	int						m_nid;	// current button selected
 	FESurfaceModifier*		m_mod;	// temporary modifier
@@ -80,14 +90,28 @@ public:
 		pl->addWidget(applyButton);
 		pw->setLayout(pl);
 
+		QWidget* pos = new QWidget;
+		QFormLayout* posForm = new QFormLayout;
+		QHBoxLayout* ph = nullptr;
+		ph = new QHBoxLayout; ph->addWidget(r[0] = new CFloatInput); ph->addStretch(); ph->setContentsMargins(0, 0, 0, 0); posForm->addRow("X:", ph);
+		ph = new QHBoxLayout; ph->addWidget(r[1] = new CFloatInput); ph->addStretch(); ph->setContentsMargins(0, 0, 0, 0); posForm->addRow("Y:", ph);
+		ph = new QHBoxLayout; ph->addWidget(r[2] = new CFloatInput); ph->addStretch(); ph->setContentsMargins(0, 0, 0, 0); posForm->addRow("Z:", ph);
+		pos->setLayout(posForm);
+
+		r[0]->setObjectName("posX");
+		r[1]->setObjectName("posY");
+		r[2]->setObjectName("posZ");
+
 		buttons = new ::CMeshButtonBox(CLASS_SURFACE_MODIFIER);
 		buttons->setObjectName("buttons");
 
 		tool = new CToolBox;
 		tool->addTool("Object", obj);
+		tool->addTool("Position", pos);
 		tool->addTool("Edit Surface Mesh", buttons);
 		tool->addTool("Parameters", pw);
 
+		showPositionPanel(false);
 		showParametersPanel(false);
 		showButtonsPanel(false);
 
@@ -107,6 +131,22 @@ public:
 		if (m_pl) form->setPropertyList(m_pl);
 	}
 
+	void SetObjectPosition(const vec3d& p)
+	{
+		r[0]->setValue(p.x);
+		r[1]->setValue(p.y);
+		r[2]->setValue(p.z);
+	}
+
+	vec3d objectPosition()
+	{
+		vec3d p;
+		p.x = r[0]->value();
+		p.y = r[1]->value();
+		p.z = r[2]->value();
+		return p;
+	}
+
 	void ShowObjectInfoPanel(bool b)
 	{
 		tool->getToolItem(OBJECT_PANEL)->setVisible(b);
@@ -120,5 +160,10 @@ public:
 	void showParametersPanel(bool b)
 	{
 		tool->getToolItem(PARAMS_PANEL)->setVisible(b);
+	}
+
+	void showPositionPanel(bool b)
+	{
+		tool->getToolItem(POSITION_PANEL)->setVisible(b);
 	}
 };

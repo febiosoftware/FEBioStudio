@@ -696,6 +696,8 @@ SOFTWARE.*/
 #define FE_SURFACE_FORCE                    0x0037
 #define FE_BEARING_LOAD                     0x0038
 #define FE_SOLUTE_NATURAL_FLUX              0x0039
+#define FE_FIXED_FLUID_ANGULAR_VELOCITY     0x003A
+#define FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY 0x003B
 
 #define FE_FEBIO_BC							0x0101
 #define FE_FEBIO_NODAL_LOAD					0x0102

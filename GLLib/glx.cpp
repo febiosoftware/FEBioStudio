@@ -385,6 +385,12 @@ void glx::quad4(vec3d r[4], vec3d n[4])
 	vertex3d(r[2], n[2]); vertex3d(r[3], n[3]); vertex3d(r[0], n[0]);
 }
 
+void glx::quad4(vec3d r[4], vec3d n[4], GLColor c[4])
+{
+	vertex3d(r[0], n[0], c[0]); vertex3d(r[1], n[1], c[1]);	vertex3d(r[2], n[2], c[2]);
+	vertex3d(r[2], n[2], c[2]);	vertex3d(r[3], n[3], c[3]);	vertex3d(r[0], n[0], c[0]);
+}
+
 void glx::quad4(vec3d r[4], vec3f n[4], float t[4])
 {
 	vertex3d(r[0], n[0], t[0]); vertex3d(r[1], n[1], t[1]); vertex3d(r[2], n[2], t[2]);
@@ -452,6 +458,13 @@ void glx::tri3(vec3d r[3], vec3d n[3])
 	vertex3d(r[0], n[0]);
 	vertex3d(r[1], n[1]);
 	vertex3d(r[2], n[2]);
+}
+
+void glx::tri3(vec3d r[3], vec3f n[3], GLColor c[3])
+{
+	vertex3d(r[0], n[0], c[0]);
+	vertex3d(r[1], n[1], c[1]);
+	vertex3d(r[2], n[2], c[2]);
 }
 
 void glx::tri3(vec3d r[3], vec3f n[3], float t[3])

@@ -953,6 +953,29 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// polar fluid
+class FSPolarFluidMaterial : public FSMaterial
+{
+public:
+    // material parameters
+    enum { MP_RHO, MP_K, MP_KG };
+    
+public:
+    // constructor
+    FSPolarFluidMaterial(FSModel* fem);
+    
+    // set/get viscous component
+    void SetViscousMaterial(FSMaterial* pm) { ReplaceProperty(0, pm); }
+    FSMaterial* GetViscousMaterial() { return GetMaterialProperty(0); }
+    
+    // set/get polar viscous component
+    void SetPolarViscousMaterial(FSMaterial* pm) { ReplaceProperty(1, pm); }
+    FSMaterial* GetPolarViscousMaterial() { return GetMaterialProperty(1); }
+    
+    DECLARE_REGISTERED(FSPolarFluidMaterial);
+};
+
+//-----------------------------------------------------------------------------
 class FSSpeciesMaterial : public FSMaterial
 {
 public:

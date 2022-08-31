@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FECore/quatd.h>
 
 class CGLCamera;
+class CGLView;
 
 class CGLContext
 {
@@ -37,6 +38,7 @@ public:
 	~CGLContext();
 
 public:
+	CGLView*	m_view;
 	CGLCamera*	m_cam;
 	int			m_x, m_y;
 	quatd		m_q;

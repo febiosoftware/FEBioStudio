@@ -93,6 +93,11 @@ void TemplateManager::Init()
 	doc.module = MODULE_MECH | MODULE_FLUID | MODULE_FLUID_FSI;
 	AddTemplate(doc);
 
+    doc.title = "Polar Fluid Mechanics";
+    doc.description = "Fluid dynamics using linear and angular momentum balance";
+    doc.module = MODULE_FLUID | MODULE_POLAR_FLUID;
+    AddTemplate(doc);
+    
 	doc.title = "Reaction-Diffusion Analysis";
 	doc.description = "Transient reaction-diffusion analysis";
 	doc.module = MODULE_REACTIONS | MODULE_SOLUTES | MODULE_REACTION_DIFFUSION;

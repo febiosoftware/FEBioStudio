@@ -106,6 +106,9 @@ bool validate_dof(string bc)
     else if (bc == "wy") return true;
     else if (bc == "wz") return true;
     else if (bc == "ef") return true;
+    else if (bc == "gx") return true;
+    else if (bc == "gy") return true;
+    else if (bc == "gz") return true;
     else if (bc == "u")  return true;
     else if (bc == "v")  return true;
     else if (bc == "w")  return true;
@@ -198,6 +201,12 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 	else if (atype == "fluid"      ) m_nAnalysis = FE_STEP_FLUID;
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
+    else if (atype == "polar fluid") m_nAnalysis = FE_STEP_POLAR_FLUID;
+	else
+	{
+		FileReader()->AddLogEntry("Unknown module type. (line %d)", tag.currentLine());
+		return false;
+	}
 
 	const char* sztype = atype.cvalue();
 	int moduleId = FEBio::GetModuleId(sztype);
@@ -354,7 +363,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 	{
 		// default analysis depends on step type
 		int ntype = m_pstep->GetType();
-		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI)) ops.nanalysis = FE_DYNAMIC;
+		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
 		else ops.nanalysis = FE_STATIC;
 	}
 
@@ -1638,6 +1647,17 @@ void FEBioFormat3::ParseBCFixed(FSStep* pstep, XMLTag &tag)
         pbc->SetName(name);
         pstep->AddComponent(pbc);
     }
+    else if ((bc=="gx") || (bc=="gy") || (bc=="gz"))
+    {
+        FSFixedFluidAngularVelocity* pbc = new FSFixedFluidAngularVelocity(&fem, pg, GetDOFDir(dofs), pstep->GetID());
+        if (name.empty())
+        {
+            sprintf(szbuf, "FixedFluidAngularVelocity%02d", CountBCs<FSFixedFluidAngularVelocity>(fem) + 1);
+            name = szbuf;
+        }
+        pbc->SetName(name);
+        pstep->AddComponent(pbc);
+    }
     else if ((bc=="sx") || (bc=="sy") || (bc=="sz"))
     {
         FSFixedShellDisplacement* pbc = new FSFixedShellDisplacement(&fem, pg, GetDOFDir(dofs), pstep->GetID());
@@ -1746,6 +1766,9 @@ void FEBioFormat3::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
     else if (bc=="u") pbc = new FSPrescribedRotation(&fem, pg, 0, 1, pstep->GetID());
     else if (bc=="v") pbc = new FSPrescribedRotation(&fem, pg, 1, 1, pstep->GetID());
     else if (bc=="w") pbc = new FSPrescribedRotation(&fem, pg, 2, 1, pstep->GetID());
+    else if (bc=="gx") pbc = new FSPrescribedFluidAngularVelocity(&fem, pg, 0, 1, pstep->GetID());
+    else if (bc=="gy") pbc = new FSPrescribedFluidAngularVelocity(&fem, pg, 1, 1, pstep->GetID());
+    else if (bc=="gz") pbc = new FSPrescribedFluidAngularVelocity(&fem, pg, 2, 1, pstep->GetID());
     else if (bc.compare(0,1,"c") == 0) {
         int isol;
         sscanf(bc.substr(1).c_str(),"%d",&isol);

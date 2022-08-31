@@ -168,7 +168,7 @@ public:
 	{
 		switch (i)
 		{
-		case 0: return m_ps->m_nref + 1; break;
+		case 0: return m_ps->ReferenceState() + 1; break;
 		}
 
 		return QVariant();
@@ -178,7 +178,7 @@ public:
 	{
 		switch (i)
 		{
-		case 0: m_ps->m_nref = v.toInt() - 1; break;
+		case 0: m_ps->SetReferenceState(v.toInt() - 1); break;
 		}
 	}
 };

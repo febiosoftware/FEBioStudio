@@ -126,6 +126,11 @@ bool FEBioFormat25::ParseModuleSection(XMLTag &tag)
 	else if (atype == "fluid"      ) m_nAnalysis = FE_STEP_FLUID;
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
+	else
+	{
+		FileReader()->AddLogEntry("Unknown module type. (line %d)", tag.currentLine());
+		return false;
+	}
 
 	const char* sztype = atype.cvalue();
 	int moduleId = FEBio::GetModuleId(sztype);
