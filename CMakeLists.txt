@@ -541,7 +541,7 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
         crossExecProcess(BRANCH_NAME)
 
         string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
-        string(COMPARE EQUAL ${BRANCH_NAME} "febio4"  ISFEBIO4)
+        string(COMPARE EQUAL ${BRANCH_NAME} "febiostudio2"  ISFEBIO4)
         
         # Get the commit info and set the DEVCOMMIT macro
         if(SUCCESS EQUAL 0 AND (ISDEVELOP OR ISFEBIO4))
