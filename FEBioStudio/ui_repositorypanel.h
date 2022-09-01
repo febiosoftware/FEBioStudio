@@ -57,6 +57,9 @@ SOFTWARE.*/
 #include <QJsonDocument>
 #include <QByteArray>
 #include <QDir>
+#include <QList>
+#include <QUrl>
+#include <QMimeData>
 #include <QFileIconProvider>
 #include <JlCompress.h>
 #include <QStandardPaths>
@@ -603,6 +606,58 @@ private:
     QGridLayout* gridLayout;
 };
 
+class CustomTreeWidget : public QTreeWidget
+{
+public:
+    CustomTreeWidget(CRepositoryPanel* repoPanel) : repoPanel(repoPanel) {}
+
+protected:
+    QStringList mimeTypes() const override
+    {
+        QStringList types;
+        types << "text/uri-list";
+        return types;
+    }
+
+    QMimeData* mimeData(const QList<QTreeWidgetItem *> &items) const override
+    {
+        QList<QUrl> urls;
+
+        for(auto item : items)
+        {
+            FileItem* fileItem = nullptr;
+
+            if(dynamic_cast<SearchItem*>(item))
+            {
+                fileItem = dynamic_cast<FileItem*>(dynamic_cast<SearchItem*>(item)->getRealItem());
+            }
+            else
+            {
+                fileItem = dynamic_cast<FileItem*>(item);
+            }
+
+            if(fileItem && fileItem->LocalCopy())
+            {
+                urls.append(QUrl::fromLocalFile(repoPanel->GetFilePathFromID(fileItem->getFileID())));
+            }
+        }
+
+        if(urls.isEmpty())
+        {
+            return nullptr;
+        }
+
+        QMimeData* mimeData = new QMimeData;
+        mimeData->setUrls(urls);
+
+        return mimeData;
+    }
+
+private:
+    CRepositoryPanel* repoPanel;
+
+};
+
 
 class Ui::CRepositoryPanel
 {
@@ -617,8 +672,8 @@ public:
 
 	QWidget* modelPage;
 	QStackedWidget* treeStack;
-	QTreeWidget* projectTree;
-	QTreeWidget* searchTree;
+	CustomTreeWidget* projectTree;
+	CustomTreeWidget* searchTree;
     QCheckBox* showProjectsCB;
     QCheckBox* showFilesCB;
 
@@ -777,11 +832,12 @@ public:
 
 		treeStack = new QStackedWidget;
 
-		projectTree = new QTreeWidget;
+		projectTree = new CustomTreeWidget(parent);
 		projectTree->setObjectName("treeWidget");
 		projectTree->setColumnCount(2);
 		projectTree->setHeaderLabels(QStringList() << "Projects" << "Size");
 		projectTree->setSelectionMode(QAbstractItemView::SingleSelection);
+        projectTree->setDragEnabled(true);
 		projectTree->setContextMenuPolicy(Qt::CustomContextMenu);
 		projectTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
 		projectTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
@@ -814,7 +870,7 @@ public:
 
         searchTreeLayout->addLayout(checkboxLayout);
 
-		searchTree = new QTreeWidget;
+		searchTree = new CustomTreeWidget(parent);
 		searchTree->setObjectName("searchTree");
 		searchTree->setColumnCount(2);
 		searchTree->setHeaderLabels(QStringList() << "Results" << "Size");

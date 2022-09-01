@@ -88,6 +88,8 @@ public:
 	void showMainPage();
 	void showLoadingPage(QString message, bool progress = false);
 
+    QString GetFilePathFromID(int fileID);
+
 public slots:
 	void updateUploadReady(bool ready, QString message = "");
 	void updateModifyReady(bool ready, QString message = "");
@@ -142,7 +144,7 @@ private:
 
     QString getLocalPath(CustomTreeWidgetItem* item);
 
-	QStringList GetCategories();
+    QStringList GetCategories();
 
 private:
 	CMainWindow*		m_wnd;
