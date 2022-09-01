@@ -72,7 +72,7 @@ void CMainWindow::on_actionFEBioPubs_triggered()
 
 void CMainWindow::on_actionBugReport_triggered()
 {
-	QDesktopServices::openUrl(QUrl("https://github.com/febiosoftware/FEBioStudio/issues/new?labels=bug"));
+	QDesktopServices::openUrl(QUrl("https://github.com/febiosoftware/FEBioStudio/issues"));
 }
 
 
