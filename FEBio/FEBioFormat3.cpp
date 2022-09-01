@@ -164,23 +164,24 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 	}
 	else
 	{
-		if      (tag == "Module"     ) ParseModuleSection    (tag);
-		else if (tag == "Control"    ) ParseControlSection   (tag);
-		else if (tag == "Material"   ) ParseMaterialSection  (tag);
-		else if (tag == "Mesh"       ) ParseMeshSection      (tag);
+		if      (tag == "Module"     ) ParseModuleSection     (tag);
+		else if (tag == "Control"    ) ParseControlSection    (tag);
+		else if (tag == "Material"   ) ParseMaterialSection   (tag);
+		else if (tag == "Mesh"       ) ParseMeshSection       (tag);
 		else if (tag == "MeshDomains") ParseMeshDomainsSection(tag);
-		else if (tag == "MeshData"   ) ParseMeshDataSection  (tag);
-		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
-		else if (tag == "Constraints") ParseConstraintSection(tag);
-		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
-		else if (tag == "Contact"    ) ParseContactSection   (tag);
-		else if (tag == "Discrete"   ) ParseDiscreteSection  (tag);
-		else if (tag == "Initial"    ) ParseInitialSection   (tag);
-		else if (tag == "Rigid"      ) ParseRigidSection     (tag);
-		else if (tag == "Globals"    ) ParseGlobalsSection   (tag);
-		else if (tag == "LoadData"   ) ParseLoadDataSection  (tag);
-		else if (tag == "Output"     ) ParseOutputSection    (tag);
-		else if (tag == "Step"       ) ParseStepSection      (tag);
+		else if (tag == "MeshData"   ) ParseMeshDataSection   (tag);
+		else if (tag == "MeshAdaptor") ParseMeshAdaptorSection(tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection   (tag);
+		else if (tag == "Constraints") ParseConstraintSection (tag);
+		else if (tag == "Loads"      ) ParseLoadsSection      (tag);
+		else if (tag == "Contact"    ) ParseContactSection    (tag);
+		else if (tag == "Discrete"   ) ParseDiscreteSection   (tag);
+		else if (tag == "Initial"    ) ParseInitialSection    (tag);
+		else if (tag == "Rigid"      ) ParseRigidSection      (tag);
+		else if (tag == "Globals"    ) ParseGlobalsSection    (tag);
+		else if (tag == "LoadData"   ) ParseLoadDataSection   (tag);
+		else if (tag == "Output"     ) ParseOutputSection     (tag);
+		else if (tag == "Step"       ) ParseStepSection       (tag);
 		else return false;
 	}
 	
@@ -1511,6 +1512,61 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 
 	return true;
 }
+
+//=============================================================================
+//
+//                            M E S H   A D A P T O R
+//
+//=============================================================================
+
+bool FEBioFormat3::ParseMeshAdaptorSection(XMLTag& tag)
+{
+	if (tag.isempty()) return true;
+
+	FEBioInputModel& feb = GetFEBioModel();
+	FSModel* fem = &GetFSModel();
+
+	++tag;
+	do {
+		if (tag == "mesh_adaptor")
+		{
+			const char* szname = tag.AttributeValue("name", true);
+			const char* sztype = tag.AttributeValue("type");
+
+			FSMeshAdaptor* mda = FEBio::CreateMeshAdaptor(sztype, fem);
+			if (mda == nullptr) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
+
+			if (szname) mda->SetName(szname);
+			else
+			{
+				stringstream ss;
+				ss << "MeshAdaptor" << CountMeshAdaptors<FSMeshAdaptor>(*fem) + 1;
+				mda->SetName(ss.str());
+			}
+
+			const char* szset = tag.AttributeValue("elem_set", true);
+			if (szset)
+			{
+				FEBioInputModel::Domain* dom = feb.FindDomain(szset);
+				if (dom)
+				{
+					FSPart* pg = feb.BuildFEPart(dom);
+					mda->SetItemList(pg);
+				}
+				else AddLogEntry("Failed to find element set %s", szset);
+			}
+			m_pBCStep->AddMeshAdaptor(mda);
+
+			ParseModelComponent(mda, tag);
+		}
+		else ParseUnknownTag(tag);
+		++tag;
+	}
+	while (!tag.isend());
+
+	return true;
+}
+
 
 //=============================================================================
 //
@@ -3716,12 +3772,13 @@ bool FEBioFormat3::ParseStep(XMLTag& tag)
 
 	do
 	{
-		if      (tag == "Control"    ) ParseControlSection   (tag);
-		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
-		else if (tag == "Constraints") ParseConstraintSection(tag);
-		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
-		else if (tag == "Contact"    ) ParseContactSection   (tag);
-		else if (tag == "Rigid"      ) ParseRigidSection     (tag);
+		if      (tag == "Control"    ) ParseControlSection    (tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection   (tag);
+		else if (tag == "Constraints") ParseConstraintSection (tag);
+		else if (tag == "Loads"      ) ParseLoadsSection      (tag);
+		else if (tag == "Contact"    ) ParseContactSection    (tag);
+		else if (tag == "Rigid"      ) ParseRigidSection      (tag);
+		else if (tag == "MeshAdaptor") ParseMeshAdaptorSection(tag);
 		else ParseUnknownTag(tag);
 
 		// go to the next tag

@@ -43,20 +43,21 @@ public:
 
 private:
 	// parsers for parent sections
-	bool ParseModuleSection    (XMLTag& tag);
-	bool ParseMeshSection      (XMLTag& tag);
+	bool ParseModuleSection     (XMLTag& tag);
+	bool ParseMeshSection       (XMLTag& tag);
 	bool ParseMeshDomainsSection(XMLTag& tag);
-	bool ParseMeshDataSection  (XMLTag& tag);
-	bool ParseBoundarySection  (XMLTag& tag);
-	bool ParseLoadsSection     (XMLTag& tag);
-	bool ParseInitialSection   (XMLTag& tag);
-	bool ParseConstraintSection(XMLTag& tag);
-	bool ParseContactSection   (XMLTag& tag);
-	bool ParseDiscreteSection  (XMLTag& tag);
-	bool ParseStepSection      (XMLTag& tag);
-	bool ParseRigidSection     (XMLTag& tag);
-	bool ParseLoadDataSection  (XMLTag& tag) override;
-	bool ParseControlSection   (XMLTag& tag) override;
+	bool ParseMeshDataSection   (XMLTag& tag);
+	bool ParseMeshAdaptorSection(XMLTag& tag);
+	bool ParseBoundarySection   (XMLTag& tag);
+	bool ParseLoadsSection      (XMLTag& tag);
+	bool ParseInitialSection    (XMLTag& tag);
+	bool ParseConstraintSection (XMLTag& tag);
+	bool ParseContactSection    (XMLTag& tag);
+	bool ParseDiscreteSection   (XMLTag& tag);
+	bool ParseStepSection       (XMLTag& tag);
+	bool ParseRigidSection      (XMLTag& tag);
+	bool ParseLoadDataSection   (XMLTag& tag) override;
+	bool ParseControlSection    (XMLTag& tag) override;
 
 private:
 	// geometry parsing functions (version 2.0 and up)

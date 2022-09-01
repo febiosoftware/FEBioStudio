@@ -1004,6 +1004,7 @@ void FSProject::ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 	ConvertStepRigidConstraints(log, newStep, oldStep);
 	ConvertStepRigidConnectors (log, newStep, oldStep);
 	ConvertLinearConstraints   (log, newStep, oldStep);
+	ConvertMeshAdaptors        (log, newStep, oldStep);
 }
 
 void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep)
@@ -1666,6 +1667,21 @@ void FSProject::ConvertLinearConstraints(std::ostream& log, FSStep& newStep, FSS
 		}
 
 		newStep.AddConstraint(flc);
+	}
+}
+
+void FSProject::ConvertMeshAdaptors(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+
+	// Since mesh adaptors were not supported in FBS1, these 
+	// are all FEBio classes, so let's just move them to the new step
+	int MA = oldStep.MeshAdaptors();
+	for (int i = 0; i < MA; ++i)
+	{
+		FSMeshAdaptor* ma = oldStep.MeshAdaptor(0);
+		newStep.AddMeshAdaptor(ma);
+		oldStep.RemoveMeshAdaptor(ma);
 	}
 }
 

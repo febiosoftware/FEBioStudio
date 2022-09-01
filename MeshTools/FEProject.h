@@ -186,6 +186,7 @@ protected:
 	void ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 	void ConvertStepRigidConnectors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 	void ConvertLinearConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertMeshAdaptors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
 
 private:
 	string				m_title;	// Project Title

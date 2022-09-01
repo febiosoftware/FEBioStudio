@@ -2494,3 +2494,174 @@ void FEBioFormat::ParseMappedParameter(XMLTag& tag, Param* param)
 		param->SetFloatValue(scale);
 	}
 }
+
+//-----------------------------------------------------------------------------
+void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
+{
+	FSModel& fem = GetFSModel();
+
+	// first, process potential attribute parameters
+	for (int i = 0; i < tag.m_natt; ++i)
+	{
+		XMLAtt& att = tag.m_att[i];
+		Param* param = pmc->GetParam(att.name());
+		if (param)
+		{
+			switch (param->GetParamType())
+			{
+			case Param_INT:
+			case Param_CHOICE:
+			{
+				if (param->GetEnumNames())
+					ReadChoiceParam(*param, att.m_szatv);
+				else
+				{
+					int n;
+					att.value(n);
+					param->SetIntValue(n);
+				}
+			}
+			break;
+			case Param_STRING:
+			{
+				param->SetStringValue(att.cvalue());
+			}
+			break;
+			default:
+				assert(false);
+			}
+		}
+		else if (strcmp(att.name(), "sol") == 0)
+		{
+			// we might be in a chemical reaction. Try to find the "species" parameter.
+			param = pmc->GetParam("species");
+			if (param)
+			{
+				int n = atoi(att.cvalue());
+				param->SetIntValue(n - 1);
+			}
+		}
+		else if (strcmp(att.name(), "sbm") == 0)
+		{
+			// we might be in a chemical reaction. Try to find the "species" parameter.
+			param = pmc->GetParam("species");
+			if (param)
+			{
+				int n = atoi(att.cvalue());
+				FSModel& fem = GetFSModel();
+				int nsol = fem.Solutes();
+				param->SetIntValue(nsol + n - 1);
+			}
+		}
+	}
+
+	if (tag.isleaf())
+	{
+		// make sure there is a value
+		if (strlen(tag.szvalue()) == 0) return;
+
+		const char* szparam = tag.Name();
+		const char* sztype = tag.AttributeValue("type", true);
+		if (sztype) szparam = sztype;
+
+		// see if there is a parameter with the same name 
+		Param* param = pmc->GetParam(szparam);
+		if (param)
+		{
+			switch (param->GetParamType())
+			{
+			case Param_INT:
+			{
+				int n = -1;
+				tag.value(n);
+				param->SetIntValue(n);
+			}
+			break;
+			case Param_FLOAT:
+			{
+				double v = 0.0;
+				tag.value(v);
+				param->SetFloatValue(v);
+			}
+			break;
+			case Param_VEC3D:
+			{
+				vec3d v;
+				tag.value(v);
+				param->SetVec3dValue(v);
+			}
+			break;
+			case Param_MAT3D:
+			{
+				mat3d v;
+				tag.value(v);
+				param->SetMat3dValue(v);
+			}
+			break;
+			case Param_ARRAY_INT:
+			{
+				std::vector<int> d = param->GetArrayIntValue();
+				tag.value(d);
+				param->SetArrayIntValue(d);
+			}
+			break;
+			case Param_STRING:
+			{
+				std::string s;
+				tag.value(s);
+				param->SetStringValue(s);
+			}
+			break;
+			default:
+				assert(false);
+			}
+		}
+		else ParseUnknownTag(tag);
+
+		return;
+	}
+
+	// read the tags
+	++tag;
+	do
+	{
+		if (ReadParam(*pmc, tag) == false)
+		{
+			if (pmc->Properties() > 0)
+			{
+				const char* sztag = tag.Name();
+				FSProperty* prop = pmc->FindProperty(sztag);
+				if (prop == nullptr)
+				{
+					ParseUnknownTag(tag);
+				}
+				else
+				{
+					// see if the type attribute is defined
+					const char* sztype = tag.AttributeValue("type", true);
+					if (sztype == 0)
+					{
+						// if not, get the default type. If none specified, we'll use the tag itself.
+						const std::string& defType = prop->GetDefaultType();
+						if (defType.empty() == false) sztype = defType.c_str();
+						else sztype = tag.Name();
+					}
+
+					// some classes allow names for their properties (e.g. chemical reactions)
+					const char* szname = tag.AttributeValue("name", true);
+
+					FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+					assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+					if (pc)
+					{
+						if (szname) pc->SetName(szname);
+						prop->AddComponent(pc);
+						ParseModelComponent(pc, tag);
+					}
+				}
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	} while (!tag.isend());
+}
