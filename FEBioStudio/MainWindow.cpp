@@ -989,42 +989,6 @@ int CMainWindow::GetMeshMode()
 }
 
 //-----------------------------------------------------------------------------
-void CMainWindow::dragEnterEvent(QDragEnterEvent *e)
-{
-	if (e->mimeData()->hasUrls()) {
-		e->acceptProposedAction();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::dropEvent(QDropEvent *e)
-{
-	foreach (const QUrl &url, e->mimeData()->urls()) {
-		QString fileName = url.toLocalFile();
-
-		FileReader* fileReader = nullptr;
-
-		QFileInfo file(fileName);
-
-		// Create a file reader
-		// NOTE: For FEB files I prefer to open the file as a separate model,
-		// so I need this hack. 
-		if (file.suffix() != "feb") fileReader = CreateFileReader(fileName);
-
-		CDocument* doc = GetDocument();
-
-		// make sure we have one
-		if (fileReader && doc)
-		{
-			ReadFile(doc, fileName, fileReader, 0);
-		}
-		else {
-			OpenFile(fileName, false, false);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
 void CMainWindow::checkFileProgress()
 {
 	float f = 1.f;
