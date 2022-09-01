@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "version.h"
 #include "UpdateChecker.h"
+#include "DlgBugReport.h"
 
 
 void CMainWindow::on_actionUpdate_triggered(bool dev)
@@ -72,7 +73,8 @@ void CMainWindow::on_actionFEBioPubs_triggered()
 
 void CMainWindow::on_actionBugReport_triggered()
 {
-	QDesktopServices::openUrl(QUrl("https://github.com/febiosoftware/FEBioStudio/issues"));
+	CDlgBugReport dlg(this);
+    dlg.exec();
 }
 
 
