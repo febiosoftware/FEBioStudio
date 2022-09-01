@@ -107,7 +107,7 @@ void FSBPNormalTraction::LoadParam(const Param& p)
 //-----------------------------------------------------------------------------
 FSSoluteFlux::FSSoluteFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_SOLUTE_FLUX, ps, pi, nstep)
 {
-	SetTypeString("solute flux");
+	SetTypeString("soluteflux");
 	AddDoubleParam(1, "flux", "flux");
 	AddBoolParam(0, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
 	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)")->SetOffset(1);
@@ -128,7 +128,7 @@ void FSSoluteFlux::LoadParam(const Param& p)
 //-----------------------------------------------------------------------------
 FSSoluteNaturalFlux::FSSoluteNaturalFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_SOLUTE_NATURAL_FLUX, ps, pi, nstep)
 {
-    SetTypeString("Solute natural flux");
+    SetTypeString("solute natural flux");
     AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)");
     AddBoolParam(0, "shell_bottom", "Apply to shell bottom")->SetCheckable(false);
 }
@@ -205,7 +205,7 @@ void FSSurfaceTraction::LoadParam(const Param& p)
 
 FSSurfaceForceUniform::FSSurfaceForceUniform(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_SURFACE_FORCE, ps, pi, nstep)
 {
-    SetTypeString("Surface Force");
+    SetTypeString("force");
     AddDoubleParam(1.0, "scale");
     AddVecParam(vec3d(0,0,0), "force")->SetUnit(UNIT_FORCE);
 }
@@ -213,7 +213,7 @@ FSSurfaceForceUniform::FSSurfaceForceUniform(FSModel* ps, FEItemListBuilder* pi,
 //-----------------------------------------------------------------------------
 FSBearingLoad::FSBearingLoad(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_BEARING_LOAD, ps, pi, nstep)
 {
-    SetTypeString("Bearing Load");
+    SetTypeString("bearing load");
     AddDoubleParam(1.0, "scale");
     AddVecParam(vec3d(0,0,0), "force")->SetUnit(UNIT_FORCE);
     AddIntParam(1, "profile")->SetEnumNames("Sinusoidal\0Parabolic\0");

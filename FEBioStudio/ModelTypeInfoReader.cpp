@@ -160,16 +160,17 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
         {
             switch (current->GetType())
             {
-                case FE_STEP_MECHANICS: module = "solid"; break;
-                case FE_STEP_HEAT_TRANSFER: module = "heat"; break;
-                case FE_STEP_BIPHASIC: module = "biphasic"; break;
-                case FE_STEP_BIPHASIC_SOLUTE: module = "solute"; break;
-                case FE_STEP_MULTIPHASIC: module = "multiphasic"; break;
-                case FE_STEP_FLUID: module = "fluid"; break;
-                case FE_STEP_FLUID_FSI: module = "fluid-FSI"; break;
+                case FE_STEP_MECHANICS         : module = "solid"; break;
+                case FE_STEP_HEAT_TRANSFER     : module = "heat"; break;
+                case FE_STEP_BIPHASIC          : module = "biphasic"; break;
+                case FE_STEP_BIPHASIC_SOLUTE   : module = "solute"; break;
+                case FE_STEP_MULTIPHASIC       : module = "multiphasic"; break;
+                case FE_STEP_FLUID             : module = "fluid"; break;
+                case FE_STEP_FLUID_FSI         : module = "fluid-FSI"; break;
                 case FE_STEP_REACTION_DIFFUSION: module = "reaction-diffusion"; break;
-                case FE_STEP_POLAR_FLUID: module = "polar fluid"; break;
-                case FE_STEP_FEBIO_ANALYSIS:
+                case FE_STEP_POLAR_FLUID       : module = "polar fluid"; break;
+				case FE_STEP_EXPLICIT_SOLID    : module = "explicit-solid"; break;
+				case FE_STEP_FEBIO_ANALYSIS    :
                 {
                     int mod = prj.GetModule();
                     module = FEBio::GetModuleName(mod);

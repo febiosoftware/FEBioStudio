@@ -1561,6 +1561,12 @@ void FSNonLinearMechanics::SetResidualTolerance(double rtol) { GetParam(MP_RTOL)
 void FSNonLinearMechanics::SetLineSearchTolerance(double lstol) { GetParam(MP_LSTOL).SetFloatValue(lstol); }
 
 //-----------------------------------------------------------------------------
+FSExplicitSolidAnalysis::FSExplicitSolidAnalysis(FSModel* fem) : FSAnalysisStep(fem, FE_STEP_EXPLICIT_SOLID)
+{
+	SetTypeString("explicit-solid");
+}
+
+//-----------------------------------------------------------------------------
 FSHeatTransfer::FSHeatTransfer(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_HEAT_TRANSFER)
 {
 	SetTypeString("Heat Transfer");

@@ -202,6 +202,7 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
     else if (atype == "polar fluid") m_nAnalysis = FE_STEP_POLAR_FLUID;
+	else if (atype == "explicit-solid") m_nAnalysis = FE_STEP_EXPLICIT_SOLID;
 	else
 	{
 		FileReader()->AddLogEntry("Unknown module type. (line %d)", tag.currentLine());
@@ -209,6 +210,8 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
 	}
 
 	const char* sztype = atype.cvalue();
+	if (strcmp(sztype, "explicit-solid") == 0) sztype = "solid";
+
 	int moduleId = FEBio::GetModuleId(sztype);
 	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
 	FileReader()->GetProject().SetModule(moduleId, false);

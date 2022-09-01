@@ -729,6 +729,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
         case FE_STEP_POLAR_FLUID       : FEBio::SetActiveModule("polar fluid"       ); break;
 		case FE_STEP_REACTION_DIFFUSION: FEBio::SetActiveModule("reaction-diffusion"); break; // requires plugin!
 		case FE_STEP_HEAT_TRANSFER     : FEBio::SetActiveModule("heat"              ); break; // requires plugin!
+		case FE_STEP_EXPLICIT_SOLID    : FEBio::SetActiveModule("solid"             ); break;
 		default:
 			assert(false);
 		}
@@ -1163,13 +1164,14 @@ void FSProject::ConvertStepConstraints(std::ostream& log, FSStep& newStep, FSSte
 		FSModelConstraint* pcfeb = nullptr;
 		switch (pc->Type())
 		{
-		case FE_SYMMETRY_PLANE          : pcfeb = FEBio::CreateModelConstraint("symmetry plane", fem); break;
-		case FE_NORMAL_FLUID_FLOW       : pcfeb = FEBio::CreateModelConstraint("normal fluid flow", fem); break;
-		case FE_VOLUME_CONSTRAINT       : pcfeb = FEBio::CreateModelConstraint("volume", fem); break;
-//		case FE_WARP_CONSTRAINT         : pcfeb = FEBio::CreateModelConstraint("", fem); break;
-		case FE_FRICTIONLESS_FLUID_WALL : pcfeb = FEBio::CreateModelConstraint("frictionless fluid wall", fem); break;
-		case FE_INSITUSTRETCH_CONSTRAINT: pcfeb = FEBio::CreateModelConstraint("in-situ stretch", fem); break;
-		case FE_PRESTRAIN_CONSTRAINT    : pcfeb = FEBio::CreateModelConstraint("prestrain", fem); break;
+		case FE_SYMMETRY_PLANE           : pcfeb = FEBio::CreateModelConstraint("symmetry plane", fem); break;
+		case FE_NORMAL_FLUID_FLOW        : pcfeb = FEBio::CreateModelConstraint("normal fluid flow", fem); break;
+		case FE_VOLUME_CONSTRAINT        : pcfeb = FEBio::CreateModelConstraint("volume", fem); break;
+		case FE_WARP_CONSTRAINT          : pcfeb = FEBio::CreateModelConstraint("warp-image", fem); break; // NOTE: requires plugin!!
+		case FE_FRICTIONLESS_FLUID_WALL  : pcfeb = FEBio::CreateModelConstraint("frictionless fluid wall", fem); break;
+		case FE_INSITUSTRETCH_CONSTRAINT : pcfeb = FEBio::CreateModelConstraint("in-situ stretch", fem); break;
+		case FE_PRESTRAIN_CONSTRAINT     : pcfeb = FEBio::CreateModelConstraint("prestrain", fem); break;
+		case FE_FIXED_NORMAL_DISPLACEMENT: pcfeb = FEBio::CreateModelConstraint("fixed normal displacement", fem); break;
 		default:
 			assert(false);
 		}
@@ -1245,6 +1247,21 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 			pbc->SetName(pr->GetName());
 
 			newStep.AddBC(pbc);
+		}
+		else if (pi->Type() == FE_RIGID_JOINT)
+		{
+			// rigid joint is a rigid connector
+			FSRigidJoint* rj = dynamic_cast<FSRigidJoint*>(pi); assert(rj);
+			FSRigidConnector* rc = FEBio::CreateRigidConnector("rigid joint", fem);
+
+			if (rj->m_pbodyA) rc->SetParamInt("body_a", rj->m_pbodyA->GetID());
+			if (rj->m_pbodyB) rc->SetParamInt("body_b", rj->m_pbodyB->GetID());
+
+			rc->SetName(rj->GetName());
+
+			copyParameters(log, rc, rj);
+
+			newStep.AddRigidConnector(rc);
 		}
 		else
 		{
@@ -1689,40 +1706,50 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 
 	// solver settings
 	FSProperty* solverProp = febStep.FindProperty("solver");
-	FSCoreBase* solver = solverProp->GetComponent(0);
-	if (solver)
+
+	// For explicit-solid problems, we need to make sure the explicit solver is allocated. 
+	if (oldStep.GetType() == FE_STEP_EXPLICIT_SOLID)
 	{
-		if (solver->GetParam("max_refs"             )) solver->SetParamInt ("max_refs"             , ops.maxref);
-		if (solver->GetParam("diverge_reform"       )) solver->SetParamBool("diverge_reform"       , ops.bdivref);
-		if (solver->GetParam("reform_each_time_step")) solver->SetParamBool("reform_each_time_step", ops.brefstep);
-		if (solver->GetParam("symmetric_stiffness"  )) solver->SetParamInt ("symmetric_stiffness"  , (ops.nmatfmt == 1 ? 1 : 0));
-		if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
-
-		FSProperty* qnProp = solver->FindProperty("qn_method");
-		if (qnProp) qnProp->SetComponent(nullptr);
-		FSCoreBase* qnSolver = nullptr;
-
-		for (int i = 0; i < oldStep.Parameters(); ++i)
+		FSModel* fem = febStep.GetFSModel();
+		solverProp->SetComponent(FEBio::CreateClass(FESOLVER_ID, "explicit-solid", fem));
+	}
+	else 
+	{
+		FSCoreBase* solver = solverProp->GetComponent(0);
+		if (solver)
 		{
-			Param& p = oldStep.GetParam(i);
+			if (solver->GetParam("max_refs"             )) solver->SetParamInt ("max_refs"             , ops.maxref);
+			if (solver->GetParam("diverge_reform"       )) solver->SetParamBool("diverge_reform"       , ops.bdivref);
+			if (solver->GetParam("reform_each_time_step")) solver->SetParamBool("reform_each_time_step", ops.brefstep);
+			if (solver->GetParam("symmetric_stiffness"  )) solver->SetParamInt ("symmetric_stiffness"  , (ops.nmatfmt == 1 ? 1 : 0));
+			if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
 
-			if (strcmp(p.GetShortName(), "qnmethod") == 0)
+			FSProperty* qnProp = solver->FindProperty("qn_method");
+			if (qnProp) qnProp->SetComponent(nullptr);
+			FSCoreBase* qnSolver = nullptr;
+
+			for (int i = 0; i < oldStep.Parameters(); ++i)
 			{
-				int qnmethod = p.GetIntValue();
-				switch (qnmethod)
+				Param& p = oldStep.GetParam(i);
+
+				if (strcmp(p.GetShortName(), "qnmethod") == 0)
 				{
-				case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", febStep.GetFSModel()); break;
-				case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
-				default:
-					assert(false);
-				}
-				qnProp->SetComponent(qnSolver);
+					int qnmethod = p.GetIntValue();
+					switch (qnmethod)
+					{
+					case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", febStep.GetFSModel()); break;
+					case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
+					default:
+						assert(false);
+					}
+					qnProp->SetComponent(qnSolver);
 
-				qnSolver->SetParamInt("max_ups", ops.ilimit);
-			}
-			else
-			{
-				copyParameter(log, solver, p);
+					qnSolver->SetParamInt("max_ups", ops.ilimit);
+				}
+				else
+				{
+					copyParameter(log, solver, p);
+				}
 			}
 		}
 	}

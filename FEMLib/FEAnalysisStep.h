@@ -33,6 +33,7 @@ class FSMeshAdaptor;
 #define FE_STEP_FLUID_FSI           9
 #define FE_STEP_FEBIO_ANALYSIS		10
 #define FE_STEP_POLAR_FLUID         11
+#define FE_STEP_EXPLICIT_SOLID		12
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
@@ -293,6 +294,13 @@ public:
 	void SetEnergyTolerance(double etol);
 	void SetResidualTolerance(double rtol);
 	void SetLineSearchTolerance(double lstol);
+};
+
+//-----------------------------------------------------------------------------
+class FSExplicitSolidAnalysis : public FSAnalysisStep
+{
+public:
+	FSExplicitSolidAnalysis(FSModel* fem);
 };
 
 //-----------------------------------------------------------------------------
