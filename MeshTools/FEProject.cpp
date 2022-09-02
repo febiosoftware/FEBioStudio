@@ -865,6 +865,65 @@ void FSProject::ConvertMaterials(std::ostream& log)
 				else
 					copyModelComponent(log, febMat, pm);
 
+				if (dynamic_cast<FSTransverselyIsotropic*>(pm))
+				{
+					FSTransverselyIsotropic* pti = dynamic_cast<FSTransverselyIsotropic*>(pm);
+					FSOldFiberMaterial* pf = pti->GetFiberMaterial();
+					if (pf)
+					{
+						FSProperty* fiberProp = febMat->FindProperty("fiber");
+						if (fiberProp)
+						{
+							FSVec3dValuator* v = nullptr;
+							switch (pf->m_naopt)
+							{
+							case FE_FIBER_LOCAL: 
+							{
+								v = FEBio::CreateVec3dValuator("local", &fem);
+								std::vector<int> n = { pf->m_n[0], pf->m_n[1] };
+								v->GetParam("local")->SetArrayIntValue(n);
+							}
+							break;
+							case FE_FIBER_CYLINDRICAL:
+							{
+								v = FEBio::CreateVec3dValuator("cylindrical", &fem);
+								v->SetParamVec3d("center", pf->m_r);
+								v->SetParamVec3d("axis"  , pf->m_a);
+								v->SetParamVec3d("vector", pf->m_d);
+							}
+							break;
+							case FE_FIBER_SPHERICAL:
+							{
+								v = FEBio::CreateVec3dValuator("spherical", &fem);
+								v->SetParamVec3d("center", pf->m_r);
+								v->SetParamVec3d("vector", pf->m_d);
+							}
+							break;
+							case FE_FIBER_VECTOR:
+							{
+								v = FEBio::CreateVec3dValuator("vector", &fem);
+								v->SetParamVec3d("vector", pf->m_a);
+							}
+							break;
+							case FE_FIBER_ANGLES:
+							{
+								v = FEBio::CreateVec3dValuator("angles", &fem);
+								v->SetParamFloat("theta", pf->m_theta);
+								v->SetParamFloat("phi", pf->m_phi);
+							}
+							break;
+							default:
+								log << "Unrecognized fiber generator.\n";
+							}
+							if (v) fiberProp->SetComponent(v);
+						}
+						else
+						{
+							log << "Failed to map fiber property\n";
+						}
+					}
+				}
+
 				if (pm->HasMaterialAxes())
 				{
 					// see if the febio material has the mat_axis property defined. 
