@@ -439,6 +439,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 			pp->SetParamType(Param_MATH);
 			pp->SetMathString(tag.szvalue());
 		}
+		else FileReader()->AddLogEntry("Cannot assign math to non-variable parameter %s", pp->GetShortName());
 	}
 	else if (*atype == "map")
 	{
@@ -447,6 +448,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 			pp->SetParamType(Param_STRING);
 			pp->SetStringValue(tag.szvalue());
 		}
+		else FileReader()->AddLogEntry("Cannot assign map to non-variable parameter %s", pp->GetShortName());
 	}
 
 	// NOTE: Is this still used? I think this was an initial attempt

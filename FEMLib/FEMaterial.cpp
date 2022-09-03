@@ -3411,7 +3411,7 @@ REGISTER_MATERIAL(FSPrestrainInSituGradient, MODULE_MECH, FE_PRESTRAIN_INSITU_GR
 
 FSPrestrainInSituGradient::FSPrestrainInSituGradient(FSModel* fem) : FSMaterialProp(FE_PRESTRAIN_INSITU_GRADIENT, fem)
 {
-	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch");
+	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch")->MakeVariable(true);
 	AddBoolParam(false, "isochoric", "isochoric prestrain");
 }
 
