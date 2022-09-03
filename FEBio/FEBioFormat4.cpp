@@ -1224,7 +1224,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 		{
 			if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
+			else if (*dataTypeAtt == "mat3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
 			else return false;
 		}
 		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
@@ -1235,18 +1235,47 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 		FSMesh* mesh = pg->GetMesh();
 		FEElementData* elemData = mesh->AddElementDataField(name->cvalue(), pg, dataType);
 
-		double val;
-		int lid;
-		++tag;
-		do
+		if (dataType == FEMeshData::DATA_SCALAR)
 		{
-			tag.AttributePtr("lid")->value(lid);
-			tag.value(val);
-
-			(*elemData)[lid - 1] = val;
-
+			double val;
+			int lid;
 			++tag;
-		} while (!tag.isend());
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+
+				(*elemData)[lid - 1] = val;
+
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (dataType == FEMeshData::DATA_VEC3D)
+		{
+			vec3d val;
+			int lid;
+			++tag;
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+				elemData->set(lid - 1, val);
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (dataType == FEMeshData::DATA_MAT3D)
+		{
+			mat3d val;
+			int lid;
+			++tag;
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+				elemData->set(lid - 1, val);
+				++tag;
+			} while (!tag.isend());
+		}
 	}
 	else ParseUnknownTag(tag);
 

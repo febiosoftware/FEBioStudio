@@ -806,6 +806,11 @@ FSOldFiberMaterial* FSTransverselyIsotropic::GetFiberMaterial()
 	return m_pfiber;
 }
 
+const FSOldFiberMaterial* FSTransverselyIsotropic::GetFiberMaterial() const
+{
+	return m_pfiber;
+}
+
 void FSTransverselyIsotropic::SetFiberMaterial(FSOldFiberMaterial* fiber)
 {
 	fiber->SetParentMaterial(this);
@@ -3118,6 +3123,19 @@ FSRelaxMalkin::FSRelaxMalkin(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN, fem
 }
 
 //=============================================================================
+// Relaxation Malkin Distributin User
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxMalkinDistUser, MODULE_MECH, FE_RELAX_MALKIN_DIST_USER, FE_MAT_RV_RELAX, "relaxation-Malkin-dist-user", 0);
+
+FSRelaxMalkinDistUser::FSRelaxMalkinDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN_DIST_USER, fem)
+{
+	AddProperty("tau1", FE_MAT_1DFUNC);
+	AddProperty("tau2", FE_MAT_1DFUNC);
+	AddProperty("beta", FE_MAT_1DFUNC);
+}
+
+//=============================================================================
 // Relaxation Malkin Distortion
 //=============================================================================
 
@@ -3360,7 +3378,7 @@ REGISTER_MATERIAL(FSPrestrainConstGradient, MODULE_MECH, FE_PRESTRAIN_CONST_GRAD
 FSPrestrainConstGradient::FSPrestrainConstGradient(FSModel* fem) : FSMaterialProp(FE_PRESTRAIN_CONST_GRADIENT, fem)
 {
 	mat3d F0; F0.unit();
-	AddMat3dParam(F0, "F0", "prestrain gradient");
+	AddMat3dParam(F0, "F0", "prestrain gradient")->MakeVariable(true);
 }
 
 //=============================================================================

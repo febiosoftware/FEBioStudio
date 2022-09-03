@@ -77,6 +77,7 @@ private:
 	void ParseBCPrescribed(FSStep* pstep, XMLTag& tag);
 	void ParseBCRigid     (FSStep* pstep, XMLTag& tag);
 	void ParseBCFluidRotationalVelocity(FSStep* pstep, XMLTag& tag);
+	void ParseBCNormalDisplacement(FSStep* pstep, XMLTag& tag);
 	void ParseRigidCable(FSStep* pstep, XMLTag& tag);
 
 	// mesh data sections

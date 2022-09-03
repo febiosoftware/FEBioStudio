@@ -484,6 +484,15 @@ bool FEBioFormat3::ParseSolidDomainSection(XMLTag& tag)
 		dom->SetMatID(matID);
 	}
 
+	const char* eltype = tag.AttributeValue("elem_type", true);
+	if (eltype && (strcmp(eltype, "ut4") == 0))
+	{
+		FESolidFormulation* eform = FEBio::CreateSolidFormulation("ut4-solid", &GetFSModel());
+		ReadParameters(*eform, tag);
+		dom->m_form = eform;
+		return true;
+	}
+
 	// see if any parameters are defined
 	if (tag.isleaf()) return true;
 
@@ -1477,14 +1486,15 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FEBioInputModel& feb = GetFEBioModel();
 
 		XMLAtt* name = tag.AttributePtr("name");
-		XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+		XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 		XMLAtt* set = tag.AttributePtr("elem_set");
 
 		FEMeshData::DATA_TYPE dataType;
 		if (dataTypeAtt)
 		{
-			if (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-			else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+			if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+			else if (*dataTypeAtt == "mat3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
 			else return false;
 		}
 		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
@@ -1495,18 +1505,47 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		FSMesh* mesh = pg->GetMesh();
 		FEElementData* elemData = mesh->AddElementDataField(name->cvalue(), pg, dataType);
 
-		double val;
-		int lid;
-		++tag;
-		do
+		if (dataType == FEMeshData::DATA_SCALAR)
 		{
-			tag.AttributePtr("lid")->value(lid);
-			tag.value(val);
-
-			(*elemData)[lid - 1] = val;
-
+			double val;
+			int lid;
 			++tag;
-		} while (!tag.isend());
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+
+				(*elemData)[lid - 1] = val;
+
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (dataType == FEMeshData::DATA_VEC3D)
+		{
+			vec3d val;
+			int lid;
+			++tag;
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+				elemData->set(lid - 1, val);
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (dataType == FEMeshData::DATA_MAT3D)
+		{
+			mat3d val;
+			int lid;
+			++tag;
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+				elemData->set(lid - 1, val);
+				++tag;
+			} while (!tag.isend());
+		}
 	}
 	else ParseUnknownTag(tag);
 
@@ -1589,10 +1628,8 @@ bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
 			if      (type == "fix"       ) ParseBCFixed(m_pBCStep, tag);
 			else if (type == "prescribe" ) ParseBCPrescribed(m_pBCStep, tag);
 			else if (type == "rigid"     ) ParseBCRigid(m_pBCStep, tag);
-			else if (type == "fluid rotational velocity")
-			{
-				ParseBCFluidRotationalVelocity(m_pBCStep, tag);
-			}
+			else if (type == "fluid rotational velocity") ParseBCFluidRotationalVelocity(m_pBCStep, tag);
+			else if (type == "normal displacement") ParseBCNormalDisplacement(m_pBCStep, tag);
 			else ParseUnknownTag(tag);
 		}
 		else ParseUnknownTag(tag);
@@ -1954,6 +1991,54 @@ void FEBioFormat3::ParseBCFluidRotationalVelocity(FSStep* pstep, XMLTag& tag)
 	}
 }
 
+void FEBioFormat3::ParseBCNormalDisplacement(FSStep* pstep, XMLTag& tag)
+{
+	FEBioInputModel& febio = GetFEBioModel();
+	FSModel& fem = GetFSModel();
+
+	std::string comment = tag.comment();
+
+	// read the name attribute
+	string name;
+	const char* sz = tag.AttributeValue("name", true);
+	if (sz == 0)
+	{
+		char szbuf[256] = { 0 };
+		sprintf(szbuf, "NormalDisplacement%02d", CountBCs<FSNormalDisplacementBC>(fem) + 1);
+		name = szbuf;
+	}
+	else name = string(sz);
+
+	// find the surface
+	XMLAtt& surfAtt = tag.Attribute("surface");
+	FEItemListBuilder* psurf = febio.BuildFESurface(surfAtt.cvalue());
+	if (psurf == 0)
+	{
+		AddLogEntry("Failed creating selection for normal displacement\"%s\"", name.c_str());
+	}
+
+	// create the surface load
+	FSBoundaryCondition* pbc = new FSNormalDisplacementBC(&fem);
+	if (pbc)
+	{
+		// read the parameters
+		ReadParameters(*pbc, tag);
+
+		// set the name
+		if (name.empty() == false) pbc->SetName(name);
+
+		// assign the surface
+		if (psurf) pbc->SetItemList(psurf);
+
+		// set the comment
+		pbc->SetInfo(comment);
+
+		// add to the step
+		pstep->AddBC(pbc);
+	}
+}
+
+
 //=============================================================================
 //
 //                                R I G I D
@@ -2150,8 +2235,48 @@ void FEBioFormat3::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 	// process surface load
 	if (psl)
 	{
-		// read the parameters
-		ReadParameters(*psl, tag);
+		// we need to process the value parameter of the "fluid normal velocity" load
+		if (dynamic_cast<FSFluidNormalVelocity*>(psl))
+		{
+			// read parameters
+			++tag;
+			do
+			{
+				if (ReadParam(*psl, tag) == false)
+				{
+					// try to read the parameters
+					if (tag == "value")
+					{
+						const char* szatv = tag.AttributeValue("surface_data", true);
+						if (szatv)
+						{
+							Param* val = psl->GetParam("velocity");
+							double v = val->GetFloatValue();
+							if (v == 1.0)
+							{
+								val->SetParamType(Param_STRING);
+								val->SetStringValue(szatv);
+							}
+							else
+							{
+								val->SetParamType(Param_MATH);
+								std::stringstream ss;
+								ss << v << "*" << szatv;
+								val->SetMathString(ss.str());
+							}
+						}
+					}
+					else ParseUnknownTag(tag);
+				}
+				++tag;
+			} while (!tag.isend());
+
+		}
+		else
+		{
+			// read the parameters
+			ReadParameters(*psl, tag);
+		}
 
 		// set the name
 		if (name.empty() == false) psl->SetName(name);
@@ -2779,25 +2904,9 @@ void FEBioFormat3::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 		// read parameters
 		if      (tag == "laugon"   ) { int n; tag.value(n); pci->SetBoolValue(FSRigidWallInterface::LAUGON, (n == 0 ? false : true)); }
 		else if (tag == "tolerance") { double f; tag.value(f); pci->SetFloatValue(FSRigidWallInterface::ALTOL, f); }
-		else if (tag == "penalty"  ) { double f; tag.value(f); pci->SetFloatValue(FSRigidWallInterface::PENALTY, f); }
-		else if (tag == "offset")
-		{
-			Param* pp = pci->GetParamPtr(FSRigidWallInterface::OFFSET); assert(pp);
-			if (pp)
-			{
-				double v = 0.0;
-				tag.value(v);
-				pp->SetFloatValue(v);
-
-				const char* szlc = tag.AttributeValue("lc", true);
-				if (szlc)
-				{
-					int n = atoi(szlc);
-					if (pp) febio.AddParamCurve(pp, n - 1);
-				}
-			}
-		}
-		if (tag == "plane")
+		else if (tag == "penalty"  ) { ReadParam(*pci, tag); }
+		else if (tag == "offset"   ) { ReadParam(*pci, tag); }
+		else if (tag == "plane")
 		{
 			double n[4];
 			tag.value(n, 4);
@@ -2989,7 +3098,7 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 		} while (!tag.isend());
         pstep->AddComponent(pc);
 	}
-	else if (type == "rigid_velocity")
+	else if ((type == "rigid_velocity") || (type == "initial_rigid_velocity"))
 	{
 		FSRigidVelocity* pv = CREATE_RIGID_CONSTRAINT(FSRigidVelocity);
 		if (name.empty() == false) pv->SetName(name);
@@ -3014,7 +3123,7 @@ void FEBioFormat3::ParseRigidConstraint(FSStep* pstep, XMLTag& tag)
 		} while (!tag.isend());
         pstep->AddComponent(pv);
 	}
-	else if (type == "rigid_angular_velocity")
+	else if ((type == "rigid_angular_velocity") || (type == "initial_rigid_angular_velocity"))
 	{
 		FSRigidAngularVelocity* pv = CREATE_RIGID_CONSTRAINT(FSRigidAngularVelocity);
 		if (name.empty() == false) pv->SetName(name);

@@ -2270,8 +2270,8 @@ void FEBioExport4::WriteElementDataFields()
 				switch (meshData->GetDataType())
 				{
 				case FEMeshData::DATA_SCALAR: break;
-				case FEMeshData::DATA_VEC3D : tag.add_attribute("datatype", "vec3"); break;
-				case FEMeshData::DATA_MAT3D : tag.add_attribute("datatype", "mat3"); break;
+				case FEMeshData::DATA_VEC3D : tag.add_attribute("data_type", "vec3"); break;
+				case FEMeshData::DATA_MAT3D : tag.add_attribute("data_type", "mat3"); break;
 				default:
 					assert(false);
 				}
@@ -2368,8 +2368,8 @@ void FEBioExport4::WriteSurfaceDataSection()
 				XMLElement tag("SurfaceData");
 				tag.add_attribute("name", sd.GetName().c_str());
 
-				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
+				if      (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
+				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("data_type", "vec3");
 
 				tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
 
@@ -2420,8 +2420,8 @@ void FEBioExport4::WriteNodeDataSection()
 				XMLElement tag("NodeData");
 				tag.add_attribute("name", nd.GetName().c_str());
 
-				if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
+				if      (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
+				else if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("data_type", "vec3"  );
 
 				FEItemListBuilder* pitem = nd.GetItemList();
 				tag.add_attribute("node_set", GetNodeSetName(pitem));
@@ -2720,10 +2720,18 @@ void FEBioExport4::WriteBC(FSStep& s, FSBoundaryCondition* pbc)
 		FEItemListBuilder* pitem = pbc->GetItemList();
 		if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-		// get node set name
-		string nodeSetName = GetNodeSetName(pitem);
-
-		tag.add_attribute("node_set", nodeSetName);
+		if (pbc->GetMeshItemType() == FE_FACE_FLAG)
+		{
+			// get surface name
+			string surfName = GetSurfaceName(pitem);
+			tag.add_attribute("surface", surfName);
+		}
+		else
+		{
+			// get node set name
+			string nodeSetName = GetNodeSetName(pitem);
+			tag.add_attribute("node_set", nodeSetName);
+		}
 	}
 
 	// write the tag

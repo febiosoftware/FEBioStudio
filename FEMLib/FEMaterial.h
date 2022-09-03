@@ -280,6 +280,7 @@
 #define FE_RELAX_MALKIN             808
 #define FE_RELAX_CSEXP              809
 #define FE_RELAX_MALKIN_DIST        810
+#define FE_RELAX_MALKIN_DIST_USER   811
 
 // elastic damage materials
 #define FE_DMG_MATERIAL             900
@@ -341,6 +342,7 @@
 
 // 1D functions
 #define FE_FNC1D_POINT		1501
+#define FE_FNC1D_MATH		1502
 
 // plastic flow rules
 #define FE_MAT_PLASTIC_FLOW_PAPER		1601
@@ -711,6 +713,7 @@ public:
 	bool HasFibers() { return true; }
 
 	FSOldFiberMaterial* GetFiberMaterial();
+	const FSOldFiberMaterial* GetFiberMaterial() const;
 
 	void copy(FSMaterial* pmat);
 	void Load(IArchive& ar);
@@ -2447,6 +2450,14 @@ public:
 public:
     FSRelaxProny(FSModel* fem);
     DECLARE_REGISTERED(FSRelaxProny);
+};
+
+//-----------------------------------------------------------------------------
+class FSRelaxMalkinDistUser: public FSMaterialProp
+{
+public:
+	FSRelaxMalkinDistUser(FSModel* fem);
+	DECLARE_REGISTERED(FSRelaxMalkinDistUser);
 };
 
 //-----------------------------------------------------------------------------

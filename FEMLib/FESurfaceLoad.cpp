@@ -110,7 +110,7 @@ FSSoluteFlux::FSSoluteFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSu
 	SetTypeString("soluteflux");
 	AddDoubleParam(1, "flux", "flux");
 	AddBoolParam(0, "linear", "Type")->SetEnumNames("Nonlinear\0Linear\0");
-	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)")->SetOffset(1);
+	AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)");// ->SetOffset(1);
 }
 
 // used only for reading parameters for old file formats
@@ -292,7 +292,7 @@ FSFluidVelocity::FSFluidVelocity(FSModel* ps, FEItemListBuilder* pi, vec3d t, in
 FSFluidNormalVelocity::FSFluidNormalVelocity(FSModel* ps) : FSSurfaceLoad(FE_FLUID_NORMAL_VELOCITY, ps)
 {
     SetTypeString("fluid normal velocity");
-    AddScienceParam(1, UNIT_VELOCITY, "velocity", "normal velocity");
+    AddScienceParam(1, UNIT_VELOCITY, "velocity", "normal velocity")->MakeVariable(true);
     AddBoolParam(true, "prescribe_nodal_velocities", "prescribe nodal velocities");
     AddBoolParam(false, "parabolic", "parabolic velocity profile");
     AddBoolParam(false, "prescribe_rim_pressure", "prescribe rim pressure");

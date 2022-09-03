@@ -93,9 +93,12 @@ GMaterial::~GMaterial(void)
 
 void GMaterial::SetMaterialProperties(FSMaterial* pm) 
 { 
-	delete m_pm; 
-	m_pm = pm; 
-	m_pm->SetOwner(this);
+	if (pm != m_pm)
+	{
+		delete m_pm;
+		m_pm = pm;
+		m_pm->SetOwner(this);
+	}
 }
 
 FSMaterial* GMaterial::GetMaterialProperties()

@@ -1079,6 +1079,17 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
 		if (strcmp(szmat, "EFD neo-Hookean2") == 0) pm = FEMaterialFactory::Create(fem, "EFD neo-Hookean");
 
+		// FBS1 never supported these materials, so we'll just use the FEBio classes.
+		if ((strcmp(szmat, "remodeling solid"      ) == 0) ||
+			(strcmp(szmat, "hyperelastic"          ) == 0) ||
+			(strcmp(szmat, "uncoupled hyperelastic") == 0) ||
+			(strcmp(szmat, "Shenoy"                ) == 0))
+		{
+			pm = FEBio::CreateMaterial(szmat, fem);
+			ParseModelComponent(pm, tag);
+			return pm;
+		}
+
 		if (pm == 0)
 		{
 			ParseUnknownAttribute(tag, "type");
@@ -1207,6 +1218,20 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 			else ++tag;
 		}
 		while (!tag.isend());
+	}
+	else
+	{
+		// there should be one parameter with the same name as the type
+		Param* p = pm->GetParam(szmat);
+		if (p)
+		{
+			switch (p->GetParamType())
+			{
+			case Param_MATH: p->SetMathString(tag.szvalue()); break;
+			default:
+				assert(false);
+			}
+		}
 	}
 
 	// NOTE: As of FEBio3, the bulk-modulus of uncoupled materials must be defined at the top-level
