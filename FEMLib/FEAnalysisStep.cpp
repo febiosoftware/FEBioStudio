@@ -1352,6 +1352,7 @@ void STEP_SETTINGS::Defaults()
 	tfinal = 0;
 	bdivref = true;
 	brefstep = true;
+	dtforce = false;
 
 	// solver settings
 	mthsol = 0;
@@ -1360,6 +1361,7 @@ void STEP_SETTINGS::Defaults()
 	neqscheme = 0;	// = default equation scheme
 	ilimit = 10;
 	maxref = 15;
+	logSolve = false;
 
 	// analysis settings
 	nanalysis = 0;

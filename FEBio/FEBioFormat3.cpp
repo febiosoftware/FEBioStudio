@@ -303,6 +303,8 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					}
 					else if (tag == "diverge_reform") tag.value(ops.bdivref);
 					else if (tag == "reform_each_time_step") tag.value(ops.brefstep);
+					else if (tag == "logSolve") tag.value(ops.logSolve);
+					else if (tag == "equation_scheme") tag.value(ops.neqscheme);
 					else ReadParam(*pstep, tag);
 					++tag;
 				}
@@ -327,6 +329,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					else if (tag == "max_retries") tag.value(ops.mxback);
 					else if (tag == "opt_iter") tag.value(ops.iteopt);
 					else if (tag == "aggressiveness") tag.value(ops.ncut);
+					else if (tag == "dtforce") tag.value(ops.dtforce);
 					else ParseUnknownTag(tag);
 
 					++tag;

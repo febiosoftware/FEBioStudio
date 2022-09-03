@@ -212,6 +212,7 @@ struct STEP_SETTINGS
 	double	dtmax;			// maximum step size
 	int		ncut;			// cutback method
 	double	tfinal;			// final time
+	bool	dtforce;		// force max time step
 
 	// Nonlinear solver Settings
 	int		mthsol;			// nonlinear equilibrium solution method
@@ -219,6 +220,7 @@ struct STEP_SETTINGS
 	int		maxref;			// max nr of SMR's per time step
 	bool	bdivref;		// reform on divergence
 	bool	brefstep;		// reform each time step
+	bool	logSolve;		// log solver flag
 
     // linear solver settings
 	bool	bminbw;			// minimze bandwidth

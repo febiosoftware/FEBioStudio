@@ -1859,6 +1859,7 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 		timeStepper->SetParamFloat("dtmin", ops.dtmin);
 		timeStepper->SetParamFloat("dtmax", ops.dtmax);
 		timeStepper->SetParamInt("aggressiveness", ops.ncut);
+		timeStepper->SetParamBool("dtforce", ops.dtforce);
 
 		if (ops.bmust)
 		{
@@ -1890,6 +1891,8 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 			if (solver->GetParam("max_refs"             )) solver->SetParamInt ("max_refs"             , ops.maxref);
 			if (solver->GetParam("diverge_reform"       )) solver->SetParamBool("diverge_reform"       , ops.bdivref);
 			if (solver->GetParam("reform_each_time_step")) solver->SetParamBool("reform_each_time_step", ops.brefstep);
+			if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
+			if (solver->GetParam("logSolve"             )) solver->SetParamBool("logSolve"             , ops.logSolve);
 			if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
 
 			if (ops.nmatfmt != 0)

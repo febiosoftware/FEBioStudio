@@ -3074,6 +3074,17 @@ FSRelaxCSExp::FSRelaxCSExp(FSModel* fem) : FSMaterialProp(FE_RELAX_CSEXP, fem)
 }
 
 //=============================================================================
+// Relaxation Exponential with Continuous Spectrum
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxCSExpDistUser, MODULE_MECH, FE_RELAX_CSEXP_DIST_USER, FE_MAT_RV_RELAX, "relaxation-CSexp-dist-user", 0);
+
+FSRelaxCSExpDistUser::FSRelaxCSExpDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_CSEXP_DIST_USER, fem)
+{
+	AddProperty("tau", FE_MAT_1DFUNC);
+}
+
+//=============================================================================
 // Relaxation Exponential
 //=============================================================================
 
@@ -3095,6 +3106,17 @@ FSRelaxExpDistortion::FSRelaxExpDistortion(FSModel* fem) : FSMaterialProp(FE_REL
     AddScienceParam(0, UNIT_TIME, "tau0"  , "constant coefficient" ); // characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau1"  , "power coefficient" );
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent");
+}
+
+//=============================================================================
+// Relaxation Exponential
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxExpDistUser, MODULE_MECH, FE_RELAX_EXP_DIST_USER, FE_MAT_RV_RELAX, "relaxation-exp-dist-user", 0);
+
+FSRelaxExpDistUser::FSRelaxExpDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_EXP_DIST_USER, fem)
+{
+	AddProperty("tau", FE_MAT_1DFUNC);
 }
 
 //=============================================================================
