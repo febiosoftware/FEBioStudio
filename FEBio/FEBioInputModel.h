@@ -32,6 +32,7 @@ SOFTWARE.*/
 
 class GMeshObject;
 class GDiscreteElementSet;
+class GPart;
 
 //-----------------------------------------------------------------------------
 // Helper class for processing and finding mesh data 
@@ -180,14 +181,21 @@ public:
 
 		std::vector<int> GetElementIDList() const { return m_elem; }
 
-		FEElementFormulation* m_form;
-
 		DOMAIN_TYPE Type() const { return m_type; }
 		void SetType(DOMAIN_TYPE type) { m_type = type; }
+
+		void SetElementFormulation(FEElementFormulation* eform) { m_form = eform; }
+		FEElementFormulation* GetElementFormulation() { return m_form; }
+
+		void SetDefaultShellThickness(double h) { m_defaultShellThickness = h; }
+		double GetDefaultShellThickness() { return m_defaultShellThickness; }
 
 	private:
 		int				m_matID;	// zero-based material index
 		DOMAIN_TYPE		m_type;		// domain type
+
+		FEElementFormulation* m_form;
+		double	m_defaultShellThickness;
 
 		std::string			m_name;	
 		Part*				m_part;
@@ -478,6 +486,7 @@ public:
 	FSSurface* BuildFESurface(const char* szname);
 	FSPart* BuildFEPart(const char* szname);
 	FSPart* BuildFEPart(Domain* dom);
+	GPart* FindGPart(const char* szname);
 	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);

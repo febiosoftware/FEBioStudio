@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/GGroup.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FERigidLoad.h>
@@ -492,7 +493,7 @@ bool FEBioFormat3::ParseSolidDomainSection(XMLTag& tag)
 	{
 		FESolidFormulation* eform = FEBio::CreateSolidFormulation("ut4-solid", &GetFSModel());
 		ReadParameters(*eform, tag);
-		dom->m_form = eform;
+		dom->SetElementFormulation(eform);
 		return true;
 	}
 
@@ -541,7 +542,7 @@ bool FEBioFormat3::ParseSolidDomainSection(XMLTag& tag)
 		eform->SetParamFloat("atol", atol);
 		eform->SetParamInt("minaug", minaug);
 		eform->SetParamInt("maxaug", maxaug);
-		dom->m_form = eform;
+		dom->SetElementFormulation(eform);
 	}
 
 	return true;
@@ -615,7 +616,8 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 
 	FSModel* fem = &GetFSModel();
 
-	if (dom->m_form == nullptr)
+	FEElementFormulation* shell = dom->GetElementFormulation();
+	if (shell == nullptr)
 	{
 		if (is3field)
 		{
@@ -626,7 +628,7 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 			eform->SetParamInt("maxaug", maxaug);
 			eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
 			eform->SetParamFloat("shell_thickness", shellThickness);
-			dom->m_form = eform;
+			dom->SetElementFormulation(eform);
 		}
 		else
 		{
@@ -651,17 +653,17 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 				{
 					eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
 					eform->SetParamFloat("shell_thickness", shellThickness);
-					dom->m_form = eform;
+					dom->SetElementFormulation(eform);
 				}
 			}
 		}
 	}
 	else
 	{
-		Param* p = dom->m_form->GetParam("shell_normal_nodal");
+		Param* p = shell->GetParam("shell_normal_nodal");
 		if (p) p->SetBoolValue(shellNodalNormals);
 
-		Param* ph = dom->m_form->GetParam("shell_thickness");
+		Param* ph = shell->GetParam("shell_thickness");
 		if (ph) ph->SetFloatValue(shellThickness);
 	}
 
@@ -816,7 +818,7 @@ void FEBioFormat3::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	FEBioInputModel::Domain* dom = part->AddDomain(name, matID);
 //	dom->m_bshellNodalNormals = GetFEBioModel().m_shellNodalNormals;
 
-	if (szshell) dom->m_form = FEBio::CreateShellFormulation(szshell, &GetFSModel());
+	if (szshell) dom->SetElementFormulation(FEBio::CreateShellFormulation(szshell, &GetFSModel()));
 
 	// create elements
 	FSMesh& mesh = *part->GetFEMesh();
@@ -1589,11 +1591,12 @@ bool FEBioFormat3::ParseMeshAdaptorSection(XMLTag& tag)
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
 			{
-				FEBioInputModel::Domain* dom = feb.FindDomain(szset);
-				if (dom)
+				GPart* pg = feb.FindGPart(szset);
+				if (pg)
 				{
-					FSPart* pg = feb.BuildFEPart(dom);
-					mda->SetItemList(pg);
+					GPartList* partList = new GPartList(fem);
+					partList->add(pg->GetID());
+					mda->SetItemList(partList);
 				}
 				else AddLogEntry("Failed to find element set %s", szset);
 			}

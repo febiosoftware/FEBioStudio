@@ -627,6 +627,7 @@ FEBioInputModel::Domain::Domain(Part* part) : m_part(part)
 {
 	m_form = nullptr;
 	m_type = UNKNOWN;
+	m_defaultShellThickness = 0.0;
 }
 
 FEBioInputModel::Domain::Domain(Part* part, const std::string& name, int matID) : m_part(part)
@@ -635,6 +636,7 @@ FEBioInputModel::Domain::Domain(Part* part, const std::string& name, int matID) 
 	m_matID = matID;
 	m_form = nullptr;
 	m_type = UNKNOWN;
+	m_defaultShellThickness = 0.0;
 }
 
 FEBioInputModel::Domain::Domain(const Domain& part)
@@ -645,6 +647,7 @@ FEBioInputModel::Domain::Domain(const Domain& part)
 	m_elem = part.m_elem;
 	m_type = part.m_type;
 	m_form = part.m_form; // TODO: Need to copy!
+	m_defaultShellThickness = part.m_defaultShellThickness;
 }
 
 void FEBioInputModel::Domain::operator = (const Domain& part)
@@ -881,7 +884,8 @@ void FEBioInputModel::UpdateGeometry()
 			std::string name = elSet.name();
 			gpart.SetName(name.c_str());
 
-			FESolidFormulation* solidForm = dynamic_cast<FESolidFormulation*>(elSet.m_form);
+			FEElementFormulation* eform = elSet.GetElementFormulation();
+			FESolidFormulation* solidForm = dynamic_cast<FESolidFormulation*>(eform);
 			if (solidForm || (elSet.Type() == Domain::SOLID))
 			{
 				GSolidSection* solidSection = new GSolidSection(&gpart);
@@ -890,16 +894,19 @@ void FEBioInputModel::UpdateGeometry()
 				solidSection->SetElementFormulation(solidForm);
 			}
 
-			FEShellFormulation* shellForm = dynamic_cast<FEShellFormulation*>(elSet.m_form);
+			FEShellFormulation* shellForm = dynamic_cast<FEShellFormulation*>(eform);
 			if (shellForm || (elSet.Type() == Domain::SHELL))
 			{
 				GShellSection* shellSection = new GShellSection(&gpart);
 				gpart.SetSection(shellSection);
 
-				shellSection->SetElementFormulation(shellForm);
+				if (shellForm)
+					shellSection->SetElementFormulation(shellForm);
+				else
+					shellSection->SetShellThickness(elSet.GetDefaultShellThickness());
 			}
 
-			FEBeamFormulation* beamForm = dynamic_cast<FEBeamFormulation*>(elSet.m_form);
+			FEBeamFormulation* beamForm = dynamic_cast<FEBeamFormulation*>(eform);
 			if (beamForm || (elSet.Type() == Domain::BEAM))
 			{
 				GBeamSection* beamSection = new GBeamSection(&gpart);
@@ -1291,6 +1298,13 @@ FSPart* FEBioInputModel::BuildFEPart(FEBioInputModel::Domain* dom)
 	pg->SetName(dom->name());
 
 	return pg;
+}
+
+GPart* FEBioInputModel::FindGPart(const char* szname)
+{
+	GMeshObject* po = GetInstance(0)->GetGObject();
+	if (po == nullptr) return nullptr;
+	return po->FindPartFromName(szname);
 }
 
 FEBioInputModel::SurfacePair* FEBioInputModel::FindSurfacePair(const char* szname)

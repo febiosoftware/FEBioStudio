@@ -108,6 +108,15 @@ string FEBioExport4::GetElementSetName(FEItemListBuilder* pl)
 	int N = (int)m_pESet.size();
 	for (int i = 0; i < N; ++i)
 		if (m_pESet[i].m_list == pl) return m_pESet[i].m_name.c_str();
+
+	if (dynamic_cast<GPartList*>(pl) && (pl->size() == 1))
+	{
+		std::list items = pl->CopyItems();
+		int partId = *(items.begin());
+		GPart* pg = m_pfem->GetModel().FindPart(partId); assert(pg);
+		if (pg) return pg->GetName();
+	}
+
 	assert(false);
 	return "";
 }
@@ -418,10 +427,14 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				FEItemListBuilder* pi = pma->GetItemList();
 				if (pi)
 				{
+					// don't add part-lists with only one member.
+					// they are handled differently. 
 					string name = pi->GetName();
-					if (name.empty()) name = pma->GetName();
-
-					AddElemSet(name, pi);
+					if ((dynamic_cast<GPartList*>(pi) == nullptr) || (pi->size() != 1))
+					{
+						if (name.empty()) name = pma->GetName();
+						AddElemSet(name, pi);
+					}
 				}
 			}
 		}

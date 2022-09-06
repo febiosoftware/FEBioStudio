@@ -198,6 +198,18 @@ GNode* GBaseObject::FindNode(int nid)
 }
 
 //-----------------------------------------------------------------------------
+GPart* GBaseObject::FindPartFromName(const char* szname)
+{
+	if (szname == nullptr) return nullptr;
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pi = Part(i);
+		if (strcmp(szname, pi->GetName().c_str()) == 0) return pi;
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 void GBaseObject::AddFace(GFace* f)
 {
 #ifdef _DEBUG

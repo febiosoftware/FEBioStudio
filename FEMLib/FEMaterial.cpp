@@ -3445,7 +3445,7 @@ FSPlasticFlowCurveMath::FSPlasticFlowCurveMath(FSModel* fem) : FSMaterialProp(FE
 	AddIntParam(1, "nf");
 	AddDoubleParam(0, "e0");
 	AddDoubleParam(1, "emax");
-	AddMathParam("", "plastic_response", "plastic flow curve")->MakeVariable(true);
+	AddStringParam("", "plastic_response", "plastic flow curve");
 }
 
 

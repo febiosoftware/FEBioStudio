@@ -64,6 +64,8 @@ public:
 	GEdge* FindEdge(int nid);
 	GNode* FindNode(int nid);
 
+	GPart* FindPartFromName(const char* szname);
+
 	// --- C O N S T R U C T I O N ---
 
 	// add a face to the object

@@ -247,7 +247,10 @@ void FEBioExport::WriteParam(Param &p)
 	break;
 	case Param_STRING:
 	{
-		e.add_attribute("type", "map");
+		if (p.IsVariable())
+		{
+			e.add_attribute("type", "map");
+		}
 		std::string s = p.GetStringValue();
 		e.value(s.c_str());
 	}

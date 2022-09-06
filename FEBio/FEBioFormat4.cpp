@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/GGroup.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
 #include <assert.h>
@@ -449,7 +450,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("type", true);
 		if (szelem) eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
-		dom->m_form = eform;
+		dom->SetElementFormulation(eform);
 
 		// read the domain parameters
 		if (tag.isleaf() == false)
@@ -482,7 +483,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 		const char* szelem = tag.AttributeValue("type", true);
 		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
-		dom->m_form = shell;
+		dom->SetElementFormulation(shell);
 
 		// read the domain parameters
 		if (tag.isleaf() == false)
@@ -490,7 +491,20 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 			if (shell)
 				ReadParameters(*shell, tag);
 			else
-				ParseUnknownAttribute(tag, "type");
+			{
+				++tag;
+				do {
+					if (tag == "shell_thickness")
+					{
+						double h = 0.0;
+						tag.value(h);
+						dom->SetDefaultShellThickness(h);
+					}
+					else tag.skip();
+					++tag;
+				} 
+				while (!tag.isend());
+			}
 		}
 	}
 }
@@ -1324,11 +1338,12 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
 			{
-				FEBioInputModel::Domain* dom = feb.FindDomain(szset);
-				if (dom)
+				GPart* pg = feb.FindGPart(szset);
+				if (pg)
 				{
-					FSPart* pg = feb.BuildFEPart(dom);
-					mda->SetItemList(pg);
+					GPartList* partList = new GPartList(fem);
+					partList->add(pg->GetID());
+					mda->SetItemList(partList);
 				}
 				else AddLogEntry("Failed to find element set %s", szset);
 			}
@@ -1378,8 +1393,9 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 
-	// get the node set
+	// get the node set/surface 
 	XMLAtt* aset = tag.Attribute("node_set", true);
+	XMLAtt* asrf = tag.Attribute("surface", true);
 
 	// create the node set
 	FEItemListBuilder* pg = nullptr;
@@ -1387,6 +1403,11 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	{
 		pg = febio.BuildItemList(aset->cvalue());
 		if (pg == 0) FileReader()->AddLogEntry("Unknown node set \"%s\". (line %d)", aset->cvalue(), tag.m_nstart_line);
+	}
+	else if (asrf)
+	{
+		pg = febio.BuildFESurface(asrf->cvalue());
+		if (pg == 0) FileReader()->AddLogEntry("Unknown surface \"%s\". (line %d)", aset->cvalue(), tag.m_nstart_line);
 	}
 
 	// get the type attribute
@@ -2053,12 +2074,13 @@ bool FEBioFormat4::ParseStep(XMLTag& tag)
 
 	do
 	{
-		if      (tag == "Control"    ) ParseControlSection   (tag);
-		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
-		else if (tag == "Constraints") ParseConstraintSection(tag);
-		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
-		else if (tag == "Contact"    ) ParseContactSection   (tag);
-		else if (tag == "Rigid"      ) ParseRigidSection     (tag);
+		if      (tag == "Control"    ) ParseControlSection    (tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection   (tag);
+		else if (tag == "Constraints") ParseConstraintSection (tag);
+		else if (tag == "Loads"      ) ParseLoadsSection      (tag);
+		else if (tag == "Contact"    ) ParseContactSection    (tag);
+		else if (tag == "Rigid"      ) ParseRigidSection      (tag);
+		else if (tag == "MeshAdaptor") ParseMeshAdaptorSection(tag);
 		else ParseUnknownTag(tag);
 
 		// go to the next tag
