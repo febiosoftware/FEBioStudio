@@ -1399,42 +1399,6 @@ void FEBioExport4::WriteGeometryNodeSets()
 			}
 		}
 	}
-
-	// Write the user-defined node sets
-	FSModel& fem = *m_pfem;
-	GModel& model = fem.GetModel();
-
-	// first, do model-level node sets
-	for (int i = 0; i < model.NodeLists(); ++i)
-	{
-		GNodeList* pg = model.NodeList(i);
-		unique_ptr<FSNodeList> pn(pg->BuildNodeList());
-		if (WriteNodeSet(pg->GetName(), pn.get()) == false)
-		{
-			throw InvalidItemListBuilder(pg);
-		}
-	}
-
-	// Then, do object-level node sets
-	int nobj = model.Objects();
-	for (int i = 0; i < nobj; ++i)
-	{
-		GObject* po = model.Object(i);
-		FSMesh* pm = po->GetFEMesh();
-		if (pm)
-		{
-			int nset = po->FENodeSets();
-			for (int j = 0; j < nset; ++j)
-			{
-				FSNodeSet* pns = po->GetFENodeSet(j);
-				unique_ptr<FSNodeList> pl(pns->BuildNodeList());
-				if (WriteNodeSet(pns->GetName(), pl.get()) == false)
-				{
-					throw InvalidItemListBuilder(po);
-				}
-			}
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
