@@ -139,7 +139,8 @@ CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int base
 
 	m_module = FEBio::GetActiveModule();
 
-	unsigned int searchFlags = (ui->m_modDepends ? FEBio::ClassSearchFlags::IncludeModuleDependencies : 0);
+	unsigned int searchFlags = 0;
+	if (ui->m_modDepends) searchFlags |= FEBio::ClassSearchFlags::IncludeModuleDependencies;
 
 	// set the types
 	vector<FEBio::FEBioClassInfo> l = FEBio::FindAllClasses(m_module, ui->m_superID, ui->m_baseClassID, searchFlags);

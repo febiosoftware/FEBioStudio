@@ -71,7 +71,7 @@ template <> std::string type_to_string<vec3f>(const vec3f& v)
 template <> std::string type_to_string<vec3d>(const vec3d& v)
 {
 	std::stringstream ss;
-	ss << std::setprecision(8) << v.x << "," << v.y << "," << v.z;
+	ss << std::setprecision(9) << v.x << "," << v.y << "," << v.z;
 	return ss.str();
 }
 
@@ -247,7 +247,10 @@ void FEBioExport::WriteParam(Param &p)
 	break;
 	case Param_STRING:
 	{
-		e.add_attribute("type", "map");
+		if (p.IsVariable())
+		{
+			e.add_attribute("type", "map");
+		}
 		std::string s = p.GetStringValue();
 		e.value(s.c_str());
 	}

@@ -108,6 +108,15 @@ string FEBioExport4::GetElementSetName(FEItemListBuilder* pl)
 	int N = (int)m_pESet.size();
 	for (int i = 0; i < N; ++i)
 		if (m_pESet[i].m_list == pl) return m_pESet[i].m_name.c_str();
+
+	if (dynamic_cast<GPartList*>(pl) && (pl->size() == 1))
+	{
+		std::list items = pl->CopyItems();
+		int partId = *(items.begin());
+		GPart* pg = m_pfem->GetModel().FindPart(partId); assert(pg);
+		if (pg) return pg->GetName();
+	}
+
 	assert(false);
 	return "";
 }
@@ -418,10 +427,14 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				FEItemListBuilder* pi = pma->GetItemList();
 				if (pi)
 				{
+					// don't add part-lists with only one member.
+					// they are handled differently. 
 					string name = pi->GetName();
-					if (name.empty()) name = pma->GetName();
-
-					AddElemSet(name, pi);
+					if ((dynamic_cast<GPartList*>(pi) == nullptr) || (pi->size() != 1))
+					{
+						if (name.empty()) name = pma->GetName();
+						AddElemSet(name, pi);
+					}
 				}
 			}
 		}
@@ -1386,42 +1399,6 @@ void FEBioExport4::WriteGeometryNodeSets()
 			}
 		}
 	}
-
-	// Write the user-defined node sets
-	FSModel& fem = *m_pfem;
-	GModel& model = fem.GetModel();
-
-	// first, do model-level node sets
-	for (int i = 0; i < model.NodeLists(); ++i)
-	{
-		GNodeList* pg = model.NodeList(i);
-		unique_ptr<FSNodeList> pn(pg->BuildNodeList());
-		if (WriteNodeSet(pg->GetName(), pn.get()) == false)
-		{
-			throw InvalidItemListBuilder(pg);
-		}
-	}
-
-	// Then, do object-level node sets
-	int nobj = model.Objects();
-	for (int i = 0; i < nobj; ++i)
-	{
-		GObject* po = model.Object(i);
-		FSMesh* pm = po->GetFEMesh();
-		if (pm)
-		{
-			int nset = po->FENodeSets();
-			for (int j = 0; j < nset; ++j)
-			{
-				FSNodeSet* pns = po->GetFENodeSet(j);
-				unique_ptr<FSNodeList> pl(pns->BuildNodeList());
-				if (WriteNodeSet(pns->GetName(), pl.get()) == false)
-				{
-					throw InvalidItemListBuilder(po);
-				}
-			}
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2270,8 +2247,8 @@ void FEBioExport4::WriteElementDataFields()
 				switch (meshData->GetDataType())
 				{
 				case FEMeshData::DATA_SCALAR: break;
-				case FEMeshData::DATA_VEC3D : tag.add_attribute("datatype", "vec3"); break;
-				case FEMeshData::DATA_MAT3D : tag.add_attribute("datatype", "mat3"); break;
+				case FEMeshData::DATA_VEC3D : tag.add_attribute("data_type", "vec3"); break;
+				case FEMeshData::DATA_MAT3D : tag.add_attribute("data_type", "mat3"); break;
 				default:
 					assert(false);
 				}
@@ -2368,8 +2345,8 @@ void FEBioExport4::WriteSurfaceDataSection()
 				XMLElement tag("SurfaceData");
 				tag.add_attribute("name", sd.GetName().c_str());
 
-				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
+				if      (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
+				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("data_type", "vec3");
 
 				tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
 
@@ -2420,8 +2397,8 @@ void FEBioExport4::WriteNodeDataSection()
 				XMLElement tag("NodeData");
 				tag.add_attribute("name", nd.GetName().c_str());
 
-				if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
+				if      (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
+				else if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("data_type", "vec3"  );
 
 				FEItemListBuilder* pitem = nd.GetItemList();
 				tag.add_attribute("node_set", GetNodeSetName(pitem));
@@ -2720,10 +2697,18 @@ void FEBioExport4::WriteBC(FSStep& s, FSBoundaryCondition* pbc)
 		FEItemListBuilder* pitem = pbc->GetItemList();
 		if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-		// get node set name
-		string nodeSetName = GetNodeSetName(pitem);
-
-		tag.add_attribute("node_set", nodeSetName);
+		if (pbc->GetMeshItemType() == FE_FACE_FLAG)
+		{
+			// get surface name
+			string surfName = GetSurfaceName(pitem);
+			tag.add_attribute("surface", surfName);
+		}
+		else
+		{
+			// get node set name
+			string nodeSetName = GetNodeSetName(pitem);
+			tag.add_attribute("node_set", nodeSetName);
+		}
 	}
 
 	// write the tag

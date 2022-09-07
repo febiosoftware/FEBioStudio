@@ -98,6 +98,11 @@ protected:
 
 	void ParseMappedParameter(XMLTag& tag, Param* param);
 
+protected:
+	// NOTE: This is only used by FEBioFormat4 and FEBioFormat3.
+	//       Do not use in older file readers. 
+	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);
+
 private:
 	FEBioInputModel&		m_febio;
 	FEBioFileImport*	m_fileReader;

@@ -1676,6 +1676,11 @@ void CRepositoryPanel::showLoadingPage(QString message, bool progress)
 	ui->showLoadingPage(message, progress);
 }
 
+QString CRepositoryPanel::GetFilePathFromID(int fileID)
+{
+    return dbHandler->FullFileNameFromID(fileID, PART);
+}
+
 void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
 {
 	ui->loadingBar->setRange(0, bytesTotal);
@@ -1747,4 +1752,5 @@ void CRepositoryPanel::on_actionAdvancedClear_triggered() {}
 void CRepositoryPanel::on_actionAdvnacedHide_triggered() {}
 void CRepositoryPanel::SearchDatabase(QString searchTerm) {}
 void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths) {}
+QString CRepositoryPanel::GetFilePathFromID(int fileID) {return "";}
 #endif

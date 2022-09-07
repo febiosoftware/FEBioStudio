@@ -413,6 +413,18 @@ FSPrescribedFluidAngularVelocity::FSPrescribedFluidAngularVelocity(FSModel* ps, 
 }
 
 //=============================================================================
+FSNormalDisplacementBC::FSNormalDisplacementBC(FSModel* fem) : FSBoundaryCondition(FE_PRESCRIBED_NORMAL_DISPLACEMENT, fem)
+{
+	SetMeshItemType(FE_FACE_FLAG);
+
+	SetTypeString("normal displacement");
+
+	AddDoubleParam(0, "scale");
+	AddIntParam(0, "surface_hint");
+	AddBoolParam(false, "relative");
+}
+
+//=============================================================================
 FEBioBoundaryCondition::FEBioBoundaryCondition(FSModel* ps) : FSBoundaryCondition(FE_FEBIO_BC, ps)
 {
 }

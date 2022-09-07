@@ -170,12 +170,6 @@ public:
 	// set clear command stack on save
 	void setClearCommandStackOnSave(bool b);
 
-	//! Process drag event
-    void dragEnterEvent(QDragEnterEvent *e);
-    
-    //! Process drop event
-    void dropEvent(QDropEvent *e);
-
 	//! get the mesh mode
 	int GetMeshMode();
 

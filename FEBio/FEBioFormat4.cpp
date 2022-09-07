@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/GModel.h>
+#include <MeshTools/GGroup.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
 #include <assert.h>
@@ -361,178 +362,6 @@ bool FEBioFormat4::ParseMaterialSection(XMLTag& tag)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
-//-----------------------------------------------------------------------------
-void FEBioFormat4::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
-{
-	FSModel& fem = GetFSModel();
-
-	// first, process potential attribute parameters
-	for (int i = 0; i < tag.m_natt; ++i)
-	{
-		XMLAtt& att = tag.m_att[i];
-		Param* param = pmc->GetParam(att.name());
-		if (param)
-		{
-			switch (param->GetParamType())
-			{
-			case Param_INT:
-			case Param_CHOICE:
-			{
-				if (param->GetEnumNames())
-					ReadChoiceParam(*param, att.m_szatv);
-				else
-				{
-					int n;
-					att.value(n);
-					param->SetIntValue(n);
-				}
-			}
-			break;
-			case Param_STRING:
-			{
-				param->SetStringValue(att.cvalue());
-			}
-			break;
-			default:
-				assert(false);
-			}
-		}
-		else if (strcmp(att.name(), "sol") == 0)
-		{
-			// we might be in a chemical reaction. Try to find the "species" parameter.
-			param = pmc->GetParam("species");
-			if (param)
-			{
-				int n = atoi(att.cvalue());
-				param->SetIntValue(n - 1);
-			}
-		}
-		else if (strcmp(att.name(), "sbm") == 0)
-		{
-			// we might be in a chemical reaction. Try to find the "species" parameter.
-			param = pmc->GetParam("species");
-			if (param)
-			{
-				int n = atoi(att.cvalue());
-				FSModel& fem = GetFSModel();
-				int nsol = fem.Solutes();
-				param->SetIntValue(nsol + n - 1);
-			}
-		}
-	}
-
-	if (tag.isleaf())
-	{
-		// make sure there is a value
-		if (strlen(tag.szvalue()) == 0) return;
-
-		const char* szparam = tag.Name();
-		const char* sztype = tag.AttributeValue("type", true);
-		if (sztype) szparam = sztype;
-
-		// see if there is a parameter with the same name 
-		Param* param = pmc->GetParam(szparam);
-		if (param)
-		{
-			switch (param->GetParamType())
-			{
-			case Param_INT:
-			{
-				int n = -1;
-				tag.value(n);
-				param->SetIntValue(n);
-			}
-			break;
-			case Param_FLOAT:
-			{
-				double v = 0.0;
-				tag.value(v);
-				param->SetFloatValue(v);
-			}
-			break;
-			case Param_VEC3D:
-			{
-				vec3d v;
-				tag.value(v);
-				param->SetVec3dValue(v);
-			}
-			break;
-			case Param_MAT3D:
-			{
-				mat3d v;
-				tag.value(v);
-				param->SetMat3dValue(v);
-			}
-			break;
-			case Param_ARRAY_INT:
-			{
-				std::vector<int> d = param->GetArrayIntValue();
-				tag.value(d);
-				param->SetArrayIntValue(d);
-			}
-			break;
-			case Param_STRING:
-			{
-				std::string s;
-				tag.value(s);
-				param->SetStringValue(s);
-			}
-			break;
-			default:
-				assert(false);
-			}
-		}
-		else ParseUnknownTag(tag);
-
-		return;
-	}
-
-	// read the tags
-	++tag;
-	do
-	{
-		if (ReadParam(*pmc, tag) == false)
-		{
-			if (pmc->Properties() > 0)
-			{
-				const char* sztag = tag.Name();
-				FSProperty* prop = pmc->FindProperty(sztag);
-				if (prop == nullptr)
-				{
-					ParseUnknownTag(tag);
-				}
-				else
-				{
-					// see if the type attribute is defined
-					const char* sztype = tag.AttributeValue("type", true);
-					if (sztype == 0)
-					{
-						// if not, get the default type. If none specified, we'll use the tag itself.
-						const std::string& defType = prop->GetDefaultType();
-						if (defType.empty() == false) sztype = defType.c_str();
-						else sztype = tag.Name();
-					}
-
-					// some classes allow names for their properties (e.g. chemical reactions)
-					const char* szname = tag.AttributeValue("name", true);
-
-					FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
-					assert(pc->GetSuperClassID() == prop->GetSuperClassID());
-					if (pc)
-					{
-						if (szname) pc->SetName(szname);
-						prop->AddComponent(pc);
-						ParseModelComponent(pc, tag);
-					}
-				}
-			}
-			else ParseUnknownTag(tag);
-		}
-		++tag;
-	} while (!tag.isend());
-}
-
 //=============================================================================
 //
 //                                G E O M E T R Y
@@ -591,6 +420,13 @@ bool FEBioFormat4::ParseMeshDomainsSection(XMLTag& tag)
 
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();
+
+	// If we only import geometry, make sure to copy all
+	// the mesh selections, otherwise this information will be lost.
+	if (m_geomOnly)
+	{
+		GetFEBioModel().CopyMeshSelections();
+	}
     
     return true;
 }
@@ -614,7 +450,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("type", true);
 		if (szelem) eform = FEBio::CreateSolidFormulation(szelem, &febio.GetFSModel());
-		dom->m_form = eform;
+		dom->SetElementFormulation(eform);
 
 		// read the domain parameters
 		if (tag.isleaf() == false)
@@ -647,7 +483,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 		const char* szelem = tag.AttributeValue("type", true);
 		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
-		dom->m_form = shell;
+		dom->SetElementFormulation(shell);
 
 		// read the domain parameters
 		if (tag.isleaf() == false)
@@ -655,7 +491,20 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 			if (shell)
 				ReadParameters(*shell, tag);
 			else
-				ParseUnknownAttribute(tag, "type");
+			{
+				++tag;
+				do {
+					if (tag == "shell_thickness")
+					{
+						double h = 0.0;
+						tag.value(h);
+						dom->SetDefaultShellThickness(h);
+					}
+					else tag.skip();
+					++tag;
+				} 
+				while (!tag.isend());
+			}
 		}
 	}
 }
@@ -1396,7 +1245,7 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 		{
 			if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
+			else if (*dataTypeAtt == "mat3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
 			else return false;
 		}
 		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
@@ -1407,18 +1256,47 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 		FSMesh* mesh = pg->GetMesh();
 		FEElementData* elemData = mesh->AddElementDataField(name->cvalue(), pg, dataType);
 
-		double val;
-		int lid;
-		++tag;
-		do
+		if (dataType == FEMeshData::DATA_SCALAR)
 		{
-			tag.AttributePtr("lid")->value(lid);
-			tag.value(val);
-
-			(*elemData)[lid - 1] = val;
-
+			double val;
+			int lid;
 			++tag;
-		} while (!tag.isend());
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+
+				(*elemData)[lid - 1] = val;
+
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (dataType == FEMeshData::DATA_VEC3D)
+		{
+			vec3d val;
+			int lid;
+			++tag;
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+				elemData->set(lid - 1, val);
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (dataType == FEMeshData::DATA_MAT3D)
+		{
+			mat3d val;
+			int lid;
+			++tag;
+			do
+			{
+				tag.AttributePtr("lid")->value(lid);
+				tag.value(val);
+				elemData->set(lid - 1, val);
+				++tag;
+			} while (!tag.isend());
+		}
 	}
 	else ParseUnknownTag(tag);
 
@@ -1460,11 +1338,12 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
 			{
-				FEBioInputModel::Domain* dom = feb.FindDomain(szset);
-				if (dom)
+				GPart* pg = feb.FindGPart(szset);
+				if (pg)
 				{
-					FSPart* pg = feb.BuildFEPart(dom);
-					mda->SetItemList(pg);
+					GPartList* partList = new GPartList(fem);
+					partList->add(pg->GetID());
+					mda->SetItemList(partList);
 				}
 				else AddLogEntry("Failed to find element set %s", szset);
 			}
@@ -1514,8 +1393,9 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 
-	// get the node set
+	// get the node set/surface 
 	XMLAtt* aset = tag.Attribute("node_set", true);
+	XMLAtt* asrf = tag.Attribute("surface", true);
 
 	// create the node set
 	FEItemListBuilder* pg = nullptr;
@@ -1523,6 +1403,11 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	{
 		pg = febio.BuildItemList(aset->cvalue());
 		if (pg == 0) FileReader()->AddLogEntry("Unknown node set \"%s\". (line %d)", aset->cvalue(), tag.m_nstart_line);
+	}
+	else if (asrf)
+	{
+		pg = febio.BuildFESurface(asrf->cvalue());
+		if (pg == 0) FileReader()->AddLogEntry("Unknown surface \"%s\". (line %d)", aset->cvalue(), tag.m_nstart_line);
 	}
 
 	// get the type attribute
@@ -2189,12 +2074,13 @@ bool FEBioFormat4::ParseStep(XMLTag& tag)
 
 	do
 	{
-		if      (tag == "Control"    ) ParseControlSection   (tag);
-		else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
-		else if (tag == "Constraints") ParseConstraintSection(tag);
-		else if (tag == "Loads"      ) ParseLoadsSection     (tag);
-		else if (tag == "Contact"    ) ParseContactSection   (tag);
-		else if (tag == "Rigid"      ) ParseRigidSection     (tag);
+		if      (tag == "Control"    ) ParseControlSection    (tag);
+		else if (tag == "Boundary"   ) ParseBoundarySection   (tag);
+		else if (tag == "Constraints") ParseConstraintSection (tag);
+		else if (tag == "Loads"      ) ParseLoadsSection      (tag);
+		else if (tag == "Contact"    ) ParseContactSection    (tag);
+		else if (tag == "Rigid"      ) ParseRigidSection      (tag);
+		else if (tag == "MeshAdaptor") ParseMeshAdaptorSection(tag);
 		else ParseUnknownTag(tag);
 
 		// go to the next tag

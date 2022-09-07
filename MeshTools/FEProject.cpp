@@ -349,6 +349,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSPrescribedDisplacement     , MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_DISPLACEMENT      , "Prescribed displacement");
 	REGISTER_FE_CLASS(FSPrescribedShellDisplacement, MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_SHELL_DISPLACEMENT, "Prescribed shell displacement");
 	REGISTER_FE_CLASS(FSPrescribedRotation         , MODULE_MECH, FEBC_ID			    , FE_PRESCRIBED_ROTATION          , "Prescribed shell rotation");
+	REGISTER_FE_CLASS(FSNormalDisplacementBC       , MODULE_MECH, FEBC_ID               , FE_PRESCRIBED_NORMAL_DISPLACEMENT, "normal displacement");
 	REGISTER_FE_CLASS(FSPressureLoad               , MODULE_MECH, FELOAD_ID             , FE_PRESSURE_LOAD                , "Pressure");
 	REGISTER_FE_CLASS(FSSurfaceTraction            , MODULE_MECH, FELOAD_ID             , FE_SURFACE_TRACTION             , "Surface traction");
 	REGISTER_FE_CLASS(FSSurfaceForceUniform        , MODULE_MECH, FELOAD_ID             , FE_SURFACE_FORCE                , "Surface force");
@@ -642,6 +643,14 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 				std::vector<double> d = { v.x, v.y, v.z };
 				pi->SetArrayDoubleValue(d);
 			}
+			else if ((p.GetParamType() == Param_MATH) && (pi->GetParamType() == Param_STRING))
+			{
+				string s = p.GetMathString();
+				pi->SetStringValue(s);
+#ifdef _DEBUG
+				log << "warning: converting math string to string (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
+#endif
+			}
 			else if (pi->GetParamType() != p.GetParamType())
 			{
 				return false;
@@ -729,6 +738,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
         case FE_STEP_POLAR_FLUID       : FEBio::SetActiveModule("polar fluid"       ); break;
 		case FE_STEP_REACTION_DIFFUSION: FEBio::SetActiveModule("reaction-diffusion"); break; // requires plugin!
 		case FE_STEP_HEAT_TRANSFER     : FEBio::SetActiveModule("heat"              ); break; // requires plugin!
+		case FE_STEP_EXPLICIT_SOLID    : FEBio::SetActiveModule("solid"             ); break;
 		default:
 			assert(false);
 		}
@@ -742,10 +752,173 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 	FEBio::BlockCreateEvents(false);
 }
 
+void convert_fibers(std::ostream& log, FSModelComponent* pd, const FSOldFiberMaterial* pf)
+{
+	FSModel* fem = pd->GetFSModel();
+	FSProperty* fiberProp = pd->FindProperty("fiber");
+	if (fiberProp)
+	{
+		FSVec3dValuator* v = nullptr;
+		switch (pf->m_naopt)
+		{
+		case FE_FIBER_LOCAL:
+		{
+			v = FEBio::CreateVec3dValuator("local", fem);
+			std::vector<int> n = { pf->m_n[0], pf->m_n[1] };
+			v->GetParam("local")->SetArrayIntValue(n);
+		}
+		break;
+		case FE_FIBER_CYLINDRICAL:
+		{
+			v = FEBio::CreateVec3dValuator("cylindrical", fem);
+			v->SetParamVec3d("center", pf->m_r);
+			v->SetParamVec3d("axis", pf->m_a);
+			v->SetParamVec3d("vector", pf->m_d);
+		}
+		break;
+		case FE_FIBER_SPHERICAL:
+		{
+			v = FEBio::CreateVec3dValuator("spherical", fem);
+			v->SetParamVec3d("center", pf->m_r);
+			v->SetParamVec3d("vector", pf->m_d);
+		}
+		break;
+		case FE_FIBER_VECTOR:
+		{
+			v = FEBio::CreateVec3dValuator("vector", fem);
+			v->SetParamVec3d("vector", pf->m_a);
+		}
+		break;
+		case FE_FIBER_ANGLES:
+		{
+			v = FEBio::CreateVec3dValuator("angles", fem);
+			v->SetParamFloat("theta", pf->m_theta);
+			v->SetParamFloat("phi", pf->m_phi);
+		}
+		break;
+		case FE_FIBER_USER:
+		{
+			v = FEBio::CreateVec3dValuator("user", fem);
+		}
+		break;
+		default:
+			log << "Unrecognized fiber generator.\n";
+		}
+		if (v) fiberProp->SetComponent(v);
+	}
+	else
+	{
+		log << "Failed to map fiber property\n";
+	}
+}
+
+void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMaterial* axis)
+{
+	if (axis == nullptr) return;
+	FSModel* fem = pd->GetFSModel();
+
+	// see if the febio material has the mat_axis property defined. 
+	FSProperty* matAxis = pd->FindProperty("mat_axis");
+	if (matAxis == nullptr)
+	{
+		log << "Failed to copy material axes.\n";
+		return;
+	}
+
+	FSModelComponent* febAxis = nullptr;
+	switch (axis->m_naopt)
+	{
+	case FE_AXES_LOCAL:
+	{
+		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "local", fem); assert(febAxis);
+		if (febAxis)
+		{
+			std::vector<int> n = { axis->m_n[0], axis->m_n[1], axis->m_n[2] };
+			febAxis->GetParam("local")->SetArrayIntValue(n);
+		}
+	}
+	break;
+	case FE_AXES_VECTOR:
+	{
+		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "vector", fem); assert(febAxis);
+		if (febAxis)
+		{
+			febAxis->SetParamVec3d("a", axis->m_a);
+			febAxis->SetParamVec3d("d", axis->m_d);
+		}
+	}
+	break;
+	case FE_AXES_ANGLES:
+	{
+		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "angles", fem); assert(febAxis);
+		if (febAxis)
+		{
+			febAxis->SetParamFloat("theta", axis->m_theta);
+			febAxis->SetParamFloat("phi", axis->m_phi);
+		}
+	}
+	break;
+	case FE_AXES_CYLINDRICAL:
+	{
+		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "cylindrical", fem); assert(febAxis);
+		if (febAxis)
+		{
+			febAxis->SetParamVec3d("center", axis->m_center);
+			febAxis->SetParamVec3d("axis", axis->m_axis);
+			febAxis->SetParamVec3d("vector", axis->m_vec);
+		}
+	}
+	break;
+	case FE_AXES_SPHERICAL:
+	{
+		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "spherical", fem); assert(febAxis);
+		if (febAxis)
+		{
+			febAxis->SetParamVec3d("center", axis->m_center);
+			febAxis->SetParamVec3d("vector", axis->m_vec);
+		}
+	}
+	break;
+	default:
+		log << "Unkown mat axis type" << std::endl;
+	}
+
+	if (febAxis) matAxis->SetComponent(febAxis);
+}
+
 void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelComponent* ps)
 {
 	// first copy parameters
 	copyParameters(log, pd, ps);
+
+	// special cases
+	if (dynamic_cast<const FSTransverselyIsotropic*>(ps))
+	{
+		const FSTransverselyIsotropic* pti = dynamic_cast<const FSTransverselyIsotropic*>(ps);
+		const FSOldFiberMaterial* pf = pti->GetFiberMaterial();
+		if (pf)
+		{
+			convert_fibers(log, pd, pf);
+		}
+	}
+	if (dynamic_cast<const FSMaterial*>(ps))
+	{
+		const FSMaterial* pm = dynamic_cast<const FSMaterial*>(ps);
+		if (pm->HasMaterialAxes())
+		{
+			convert_mat_axis(log, pd, pm->m_axes);
+		}
+	}
+	if (dynamic_cast<const FS1DPointFunction*>(ps))
+	{
+		const FS1DPointFunction* f1s = dynamic_cast<const FS1DPointFunction*>(ps);
+		const LoadCurve* plc = f1s->GetPointCurve();
+
+		FEBioFunction1D* f1d = dynamic_cast<FEBioFunction1D*>(pd); assert(pd);
+		LoadCurve* pld = f1d->CreateLoadCurve(); assert(plc);
+		*pld = *plc;
+		f1d->UpdateData(true);
+	}
 
 	// copy properties
 	for (int i = 0; i < ps->Properties(); ++i)
@@ -837,6 +1010,19 @@ void copyRigidMaterial(std::ostream& log, FSRigidMaterial* prm, FSMaterial* febM
 	febMat->SetParamBool("override_com", !autoCom);
 }
 
+FSMaterial* convert_material(std::ostream& log, FSMaterial* pm, FSModel* fem)
+{
+	FSMaterial* febMat = FEBio::CreateMaterial(pm->GetTypeString(), fem);
+	if (febMat == nullptr) return nullptr;
+
+	if (dynamic_cast<FSRigidMaterial*>(pm))
+		copyRigidMaterial(log, dynamic_cast<FSRigidMaterial*>(pm), febMat);
+	else
+		copyModelComponent(log, febMat, pm);
+
+	return febMat;
+}
+
 void FSProject::ConvertMaterials(std::ostream& log)
 {
 	FSModel& fem = GetFSModel();
@@ -852,95 +1038,12 @@ void FSProject::ConvertMaterials(std::ostream& log)
 		}
 		else
 		{
-			FSMaterial* febMat = FEBio::CreateMaterial(pm->GetTypeString(), &fem);
+			FSMaterial* febMat = convert_material(log, pm, &fem);
 			if (febMat == nullptr)
 			{
 				log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
 			}
-			else
-			{
-				if (dynamic_cast<FSRigidMaterial*>(pm))
-					copyRigidMaterial(log, dynamic_cast<FSRigidMaterial*>(pm), febMat);
-				else
-					copyModelComponent(log, febMat, pm);
-
-				if (pm->HasMaterialAxes())
-				{
-					// see if the febio material has the mat_axis property defined. 
-					FSProperty* matAxis = febMat->FindProperty("mat_axis");
-					if (matAxis)
-					{
-						FSAxisMaterial* axis = pm->m_axes;
-						switch (axis->m_naopt)
-						{
-						case FE_AXES_LOCAL: 
-						{
-							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "local", &fem); assert(febAxis);
-							if (febAxis)
-							{
-								std::vector<int> n = { axis->m_n[0], axis->m_n[1], axis->m_n[2] };
-								febAxis->GetParam("local")->SetArrayIntValue(n);
-								matAxis->SetComponent(febAxis);
-							}
-						}
-						break;
-						case FE_AXES_VECTOR: 
-						{
-							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "vector", &fem); assert(febAxis);
-							if (febAxis)
-							{
-								febAxis->SetParamVec3d("a", axis->m_a);
-								febAxis->SetParamVec3d("d", axis->m_d);
-								matAxis->SetComponent(febAxis);
-							}
-						}
-						break;
-						case FE_AXES_ANGLES: 
-						{
-							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "vector", &fem); assert(febAxis);
-							if (febAxis)
-							{
-								febAxis->SetParamFloat("theta", axis->m_theta);
-								febAxis->SetParamFloat("phi"  , axis->m_phi);
-								matAxis->SetComponent(febAxis);
-							}
-						}
-						break;
-						case FE_AXES_CYLINDRICAL: 
-						{
-							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "cylindrical", &fem); assert(febAxis);
-							if (febAxis)
-							{
-								febAxis->SetParamVec3d("center", axis->m_center);
-								febAxis->SetParamVec3d("axis"  , axis->m_axis);
-								febAxis->SetParamVec3d("vector", axis->m_vec);
-								matAxis->SetComponent(febAxis);
-							}
-						}
-						break;
-						case FE_AXES_SPHERICAL: 
-						{
-							FSModelComponent* febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "spherical", &fem); assert(febAxis);
-							if (febAxis)
-							{
-								febAxis->SetParamVec3d("center", axis->m_center);
-								febAxis->SetParamVec3d("vector", axis->m_vec);
-								matAxis->SetComponent(febAxis);
-							}
-						}
-						break;
-						default:
-							log << "Unkown mat axis type in " << mat->GetName() << std::endl;
-						}
-					}
-					else
-					{
-						log << "Can't map mat_axis property of " << mat->GetName() << std::endl;
-					}
-				}
-
-				mat->SetMaterialProperties(febMat);
-			}
+			else mat->SetMaterialProperties(febMat);
 		}
 	}
 }
@@ -1003,6 +1106,7 @@ void FSProject::ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep)
 	ConvertStepRigidConstraints(log, newStep, oldStep);
 	ConvertStepRigidConnectors (log, newStep, oldStep);
 	ConvertLinearConstraints   (log, newStep, oldStep);
+	ConvertMeshAdaptors        (log, newStep, oldStep);
 }
 
 void FSProject::ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep)
@@ -1163,13 +1267,14 @@ void FSProject::ConvertStepConstraints(std::ostream& log, FSStep& newStep, FSSte
 		FSModelConstraint* pcfeb = nullptr;
 		switch (pc->Type())
 		{
-		case FE_SYMMETRY_PLANE          : pcfeb = FEBio::CreateModelConstraint("symmetry plane", fem); break;
-		case FE_NORMAL_FLUID_FLOW       : pcfeb = FEBio::CreateModelConstraint("normal fluid flow", fem); break;
-		case FE_VOLUME_CONSTRAINT       : pcfeb = FEBio::CreateModelConstraint("volume", fem); break;
-//		case FE_WARP_CONSTRAINT         : pcfeb = FEBio::CreateModelConstraint("", fem); break;
-		case FE_FRICTIONLESS_FLUID_WALL : pcfeb = FEBio::CreateModelConstraint("frictionless fluid wall", fem); break;
-		case FE_INSITUSTRETCH_CONSTRAINT: pcfeb = FEBio::CreateModelConstraint("in-situ stretch", fem); break;
-		case FE_PRESTRAIN_CONSTRAINT    : pcfeb = FEBio::CreateModelConstraint("prestrain", fem); break;
+		case FE_SYMMETRY_PLANE           : pcfeb = FEBio::CreateModelConstraint("symmetry plane", fem); break;
+		case FE_NORMAL_FLUID_FLOW        : pcfeb = FEBio::CreateModelConstraint("normal fluid flow", fem); break;
+		case FE_VOLUME_CONSTRAINT        : pcfeb = FEBio::CreateModelConstraint("volume", fem); break;
+		case FE_WARP_CONSTRAINT          : pcfeb = FEBio::CreateModelConstraint("warp-image", fem); break; // NOTE: requires plugin!!
+		case FE_FRICTIONLESS_FLUID_WALL  : pcfeb = FEBio::CreateModelConstraint("frictionless fluid wall", fem); break;
+		case FE_INSITUSTRETCH_CONSTRAINT : pcfeb = FEBio::CreateModelConstraint("in-situ stretch", fem); break;
+		case FE_PRESTRAIN_CONSTRAINT     : pcfeb = FEBio::CreateModelConstraint("prestrain", fem); break;
+		case FE_FIXED_NORMAL_DISPLACEMENT: pcfeb = FEBio::CreateModelConstraint("fixed normal displacement", fem); break;
 		default:
 			assert(false);
 		}
@@ -1226,7 +1331,6 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 				else if (strcmp(p.GetShortName(), "d") == 0) plane[3] = p.GetFloatValue();
 				else copyParameter(log, newpc, p);
 			}
-
 			newpc->GetParam("plane")->SetArrayDoubleValue(plane);
 
 			newStep.AddConstraint(newpc);
@@ -1246,6 +1350,59 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 
 			newStep.AddBC(pbc);
 		}
+		else if (pi->Type() == FE_RIGID_JOINT)
+		{
+			// rigid joint is a rigid connector
+			FSRigidJoint* rj = dynamic_cast<FSRigidJoint*>(pi); assert(rj);
+			FSRigidConnector* rc = FEBio::CreateRigidConnector("rigid joint", fem);
+
+			if (rj->m_pbodyA) rc->SetParamInt("body_a", rj->m_pbodyA->GetID());
+			if (rj->m_pbodyB) rc->SetParamInt("body_b", rj->m_pbodyB->GetID());
+
+			rc->SetName(rj->GetName());
+
+			copyParameters(log, rc, rj);
+
+			newStep.AddRigidConnector(rc);
+		}
+		else if (pi->Type() == FE_MULTIPHASIC_INTERFACE)
+		{
+			FSMultiphasicContact* pmc = dynamic_cast<FSMultiphasicContact*>(pi);
+
+			// The multiphasic interface requires some special handling due to the ambient_concentration parameters
+			FSPairedInterface* pcnew = FEBio::CreatePairedInterface("sliding-multiphasic", fem);
+
+			FSProperty* amc = pcnew->FindProperty("ambient_concentration");
+
+			for (int i = 0; i < pmc->Parameters(); ++i)
+			{
+				Param& p = pmc->GetParam(i);
+
+				if (strcmp(p.GetShortName(), "ambient_concentration") == 0)
+				{
+					if (p.GetParamType() == Param_FLOAT)
+					{
+						double v = p.GetFloatValue();
+						int n = p.GetIndexValue();
+
+						FSModelComponent* ac = FEBio::CreateClass(FECLASS_ID, "ambient_concentration", fem);
+						ac->SetParamInt("sol", n - 1);
+						ac->SetParamFloat("ambient_concentration", v);
+						amc->AddComponent(ac);
+					}
+					else log << "can't process parameter 'sol'\n";
+				}
+				else copyParameter(log, pcnew, p);
+			}
+
+			// steal contact surface pair
+			pcnew->SetPrimarySurface(pmc->GetPrimarySurface()); pmc->SetPrimarySurface(nullptr);
+			pcnew->SetSecondarySurface(pmc->GetSecondarySurface()); pmc->SetSecondarySurface(nullptr);
+
+			// add it to the pile
+			pcnew->SetName(pmc->GetName());
+			newStep.AddInterface(pcnew);
+		}
 		else
 		{
 			switch (pi->Type())
@@ -1259,7 +1416,7 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 			case FE_TENSCOMP_INTERFACE          : newpi = FEBio::CreatePairedInterface("sliding-elastic", fem); break;
 			case FE_TIEDBIPHASIC_INTERFACE      : newpi = FEBio::CreatePairedInterface("tied-biphasic", fem); break;
 	//		case FE_SPRINGTIED_INTERFACE		: newpi = FEBio::CreatePairedInterface(, fem); break;
-			case FE_MULTIPHASIC_INTERFACE       : newpi = FEBio::CreatePairedInterface("sliding-multiphasic", fem); break;
+	//		case FE_MULTIPHASIC_INTERFACE       : newpi = FEBio::CreatePairedInterface("sliding-multiphasic", fem); break;
 			case FE_STICKY_INTERFACE            : newpi = FEBio::CreatePairedInterface("sticky", fem); break;
 			case FE_PERIODIC_BOUNDARY			: newpi = FEBio::CreatePairedInterface("periodic boundary", fem); break;
 	//		case FE_RIGID_SPHERE_CONTACT		: newpi = FEBio::CreatePairedInterface(, fem); break;
@@ -1492,9 +1649,9 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 	{
 		FSBoundaryCondition* pb = oldStep.BC(i);
 		FSBoundaryCondition* febbc = nullptr;
-		FSFixedDOF* pbc = dynamic_cast<FSFixedDOF*>(pb);
-		if (pbc)
+		if (dynamic_cast<FSFixedDOF*>(pb))
 		{
+			FSFixedDOF* pbc = dynamic_cast<FSFixedDOF*>(pb);
 			switch (pbc->Type())
 			{
 			case FE_FIXED_DISPLACEMENT      : febbc = FEBio::CreateBoundaryCondition("zero displacement"      , fem); break;
@@ -1568,10 +1725,9 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 				log << "Unable to convert boundary condition " << pb->GetName() << std::endl;
 			}
 		}
-
-		FSPrescribedDOF* pdc = dynamic_cast<FSPrescribedDOF*>(pb);
-		if (pdc)
+		else if (dynamic_cast<FSPrescribedDOF*>(pb))
 		{
+			FSPrescribedDOF* pdc = dynamic_cast<FSPrescribedDOF*>(pb);
 			switch (pdc->Type())
 			{
 			case FE_PRESCRIBED_DISPLACEMENT      : febbc = FEBio::CreateBoundaryCondition("prescribed displacement", fem); break;
@@ -1613,6 +1769,21 @@ void FSProject::ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 				log << "Unable to convert boundary condition " << pb->GetName() << std::endl;
 			}
 		}
+		else
+		{
+			febbc = FEBio::CreateBoundaryCondition(pb->GetTypeString(), fem);
+
+			copyModelComponent(log, febbc, pb);
+
+			// copy the name 
+			febbc->SetName(pb->GetName());
+
+			// steal the item list
+			febbc->SetItemList(pb->GetItemList());
+			pb->SetItemList(nullptr);
+
+			newStep.AddBC(febbc);
+		}
 	}
 }
 
@@ -1652,6 +1823,21 @@ void FSProject::ConvertLinearConstraints(std::ostream& log, FSStep& newStep, FSS
 	}
 }
 
+void FSProject::ConvertMeshAdaptors(std::ostream& log, FSStep& newStep, FSStep& oldStep)
+{
+	FSModel* fem = newStep.GetFSModel();
+
+	// Since mesh adaptors were not supported in FBS1, these 
+	// are all FEBio classes, so let's just move them to the new step
+	int MA = oldStep.MeshAdaptors();
+	for (int i = 0; i < MA; ++i)
+	{
+		FSMeshAdaptor* ma = oldStep.MeshAdaptor(0);
+		newStep.AddMeshAdaptor(ma);
+		oldStep.RemoveMeshAdaptor(ma);
+	}
+}
+
 void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep)
 {
 	STEP_SETTINGS& ops = oldStep.GetSettings();
@@ -1673,6 +1859,7 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 		timeStepper->SetParamFloat("dtmin", ops.dtmin);
 		timeStepper->SetParamFloat("dtmax", ops.dtmax);
 		timeStepper->SetParamInt("aggressiveness", ops.ncut);
+		timeStepper->SetParamBool("dtforce", ops.dtforce);
 
 		if (ops.bmust)
 		{
@@ -1689,40 +1876,56 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 
 	// solver settings
 	FSProperty* solverProp = febStep.FindProperty("solver");
-	FSCoreBase* solver = solverProp->GetComponent(0);
-	if (solver)
+
+	// For explicit-solid problems, we need to make sure the explicit solver is allocated. 
+	if (oldStep.GetType() == FE_STEP_EXPLICIT_SOLID)
 	{
-		if (solver->GetParam("max_refs"             )) solver->SetParamInt ("max_refs"             , ops.maxref);
-		if (solver->GetParam("diverge_reform"       )) solver->SetParamBool("diverge_reform"       , ops.bdivref);
-		if (solver->GetParam("reform_each_time_step")) solver->SetParamBool("reform_each_time_step", ops.brefstep);
-		if (solver->GetParam("symmetric_stiffness"  )) solver->SetParamInt ("symmetric_stiffness"  , (ops.nmatfmt == 1 ? 1 : 0));
-		if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
-
-		FSProperty* qnProp = solver->FindProperty("qn_method");
-		if (qnProp) qnProp->SetComponent(nullptr);
-		FSCoreBase* qnSolver = nullptr;
-
-		for (int i = 0; i < oldStep.Parameters(); ++i)
+		FSModel* fem = febStep.GetFSModel();
+		solverProp->SetComponent(FEBio::CreateClass(FESOLVER_ID, "explicit-solid", fem));
+	}
+	else 
+	{
+		FSCoreBase* solver = solverProp->GetComponent(0);
+		if (solver)
 		{
-			Param& p = oldStep.GetParam(i);
+			if (solver->GetParam("max_refs"             )) solver->SetParamInt ("max_refs"             , ops.maxref);
+			if (solver->GetParam("diverge_reform"       )) solver->SetParamBool("diverge_reform"       , ops.bdivref);
+			if (solver->GetParam("reform_each_time_step")) solver->SetParamBool("reform_each_time_step", ops.brefstep);
+			if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
+			if (solver->GetParam("logSolve"             )) solver->SetParamBool("logSolve"             , ops.logSolve);
+			if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
 
-			if (strcmp(p.GetShortName(), "qnmethod") == 0)
+			if (ops.nmatfmt != 0)
 			{
-				int qnmethod = p.GetIntValue();
-				switch (qnmethod)
-				{
-				case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", febStep.GetFSModel()); break;
-				case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
-				default:
-					assert(false);
-				}
-				qnProp->SetComponent(qnSolver);
-
-				qnSolver->SetParamInt("max_ups", ops.ilimit);
+				if (solver->GetParam("symmetric_stiffness")) solver->SetParamInt("symmetric_stiffness", (ops.nmatfmt == 1 ? 1 : 0));
 			}
-			else
+
+			FSProperty* qnProp = solver->FindProperty("qn_method");
+			if (qnProp) qnProp->SetComponent(nullptr);
+			FSCoreBase* qnSolver = nullptr;
+
+			for (int i = 0; i < oldStep.Parameters(); ++i)
 			{
-				copyParameter(log, solver, p);
+				Param& p = oldStep.GetParam(i);
+
+				if (strcmp(p.GetShortName(), "qnmethod") == 0)
+				{
+					int qnmethod = p.GetIntValue();
+					switch (qnmethod)
+					{
+					case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", febStep.GetFSModel()); break;
+					case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
+					default:
+						assert(false);
+					}
+					qnProp->SetComponent(qnSolver);
+
+					qnSolver->SetParamInt("max_ups", ops.ilimit);
+				}
+				else
+				{
+					copyParameter(log, solver, p);
+				}
 			}
 		}
 	}

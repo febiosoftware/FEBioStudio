@@ -7670,6 +7670,38 @@ name "sec:mylabel5"
  
 \end_layout
 
+\begin_layout Standard
+FEBio Studio offers several geometry and mesh creation tools.
+ Most of these tools can be found on the Build panel and its sub-panels.
+ The Build panel offers the following sub-panels:
+\end_layout
+
+\begin_layout Description
+Create This panel has tools for creating primitive geometries.
+ 
+\end_layout
+
+\begin_layout Description
+Edit The Edit panel is used to change geometry parameters of shape.
+ 
+\end_layout
+
+\begin_layout Description
+Mesh The Mesh panel is used to mesh the selected object.
+ 
+\end_layout
+
+\begin_layout Description
+Tools Several specialized tools for creating and editing geometry and meshes
+ can be found here.
+ 
+\end_layout
+
+\begin_layout Standard
+The following sections describe the features of these panels in more detail.
+ 
+\end_layout
+
 \begin_layout Section
 Creating Geometry
 \begin_inset CommandInset label
@@ -7687,6 +7719,10 @@ Although FEBioStudio is not designed to be a mesh generator, it has a few
  Most of these options are available from the 
 \emph on
 Create 
+\emph default
+panel, which is a sub-panel of the 
+\emph on
+Build 
 \emph default
 panel.
  At the top it shows the various creation options.
@@ -7724,7 +7760,7 @@ The most commonly used creation option is
 primitives
 \emph default
 .
- When selected a list of available primitives is shown.
+ When selected, a list of available primitives is shown.
  When selecting a primitive, its creation parameters are shown.
  After entering the desired values, click the 
 \emph on
@@ -7733,6 +7769,15 @@ Create
 button to create the primitive and add it to the model.
  The new object will be automatically selected in the Graphics View and
  shown in the Model Viewer.
+\end_layout
+
+\begin_layout Standard
+After a primitve is created, its parameters can be changed in the 
+\emph on
+Edit 
+\emph default
+panel.
+ 
 \end_layout
 
 \begin_layout Section
@@ -7777,21 +7822,24 @@ Edit panel
 \emph default
 , one of the panels on the Build panel, gives access to the object's creation
  parameters and editing options.
- For primitives this shows the same parameters as when the object was created.
- This allows you to change the object's dimensions at any time.
- If the object is not a primitive, no options will be shown here.
 \end_layout
 
 \begin_layout Standard
 The other feature to note at the top of both the Edit and Mesh panels is
  the Object rollout.
  This shows the name of the active object as well as its type.
- An object can be converted to a different type via the 
+ The type of the object affects what tools will be available for editing
+ and meshing the geometry.
+ 
+\end_layout
+
+\begin_layout Standard
+An object can be converted to a different type via the 
 \emph on
 Convert 
 \emph default
 button.
- It offers two options:
+ Two options are available:
 \end_layout
 
 \begin_layout Itemize
@@ -7826,6 +7874,408 @@ reference "subsec:mylabel22"
 .
 \end_layout
 
+\begin_layout Subsection
+Editing Primitives
+\end_layout
+
+\begin_layout Standard
+For primitives the same parameters as when the object was created are shown
+ on the 
+\emph on
+Edit 
+\emph default
+panel.
+ This allows you to change the primitives dimensions at any time.
+ If the object is not a primitive, no options will be shown here.
+\end_layout
+
+\begin_layout Standard
+Note that changing the primitive parameters will discard the FE mesh if
+ one was already created.
+ The primitive will have to be meshed again.
+ 
+\end_layout
+
+\begin_layout Subsection
+Editing Editable Surfaces
+\end_layout
+
+\begin_layout Standard
+An 
+\emph on
+editable surface 
+\emph default
+is defined via a surface mesh.
+ This surface mesh can be modified via the tools on the 
+\emph on
+Edit 
+\emph default
+panel.
+ 
+\end_layout
+
+\begin_layout Standard
+Note that changing the surface mesh of an editable surface will discard
+ the FE mesh if one was already created.
+ The object will have to be meshed again.
+ 
+\end_layout
+
+\begin_layout Standard
+The sections below discuss each of the available tools in more detail.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Auto Partition
+\end_layout
+
+\begin_layout Standard
+The surface of an editable surface can be partitioned (i.e.
+ divided) into several partitions.
+ By default, FEBio Studio will automatically generate a partitioning based
+ on finding the crease edges.
+ If for some reason the resulting partitioning is not correct, the user
+ can re-run the auto-partitioning tool.
+ 
+\end_layout
+
+\begin_layout Standard
+The auto-partition tool paritions the geometry into surfaces by identifying
+ the crease edges.
+ A crease edge is an edge between two surface facets whose normals make
+ an angle that is larger than the crease angle.
+ To manually create surface paritions, use the Partition tool instead.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Decimate
+\end_layout
+
+\begin_layout Standard
+Decimation is the process of decreasing the number of triangles in the mesh.
+ This tool decimates the triangular surface mesh using an approximate Centroidal
+ Voronoi Diagram based approach.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Scale
+\emph default
+: This option helps in creating a uniform triangular mesh.
+ Scale value specifies the desired reduction in the total number of nodes
+ in the final decimated mesh.
+ For example a 0.4 value of scale will result in the final decimated mesh
+ with 40 {%} of current number of nodes.
+\end_layout
+
+\begin_layout Subsubsection
+Edge Collapse
+\end_layout
+
+\begin_layout Standard
+This filter collapses all edges with a length that is below the given threshold
+ value.
+ This can be useful for eliminating small triangles or very narrow triangles,
+ which may improve the quality of the mesh.
+\end_layout
+
+\begin_layout Subsubsection
+Fix Mesh
+\end_layout
+
+\begin_layout Standard
+This tool provides several options to fix specific common problems in surface
+ meshes.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Remove duplicate elements
+\emph default
+: removes elements that are repeated in the mesh.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Remove non-manifold elements
+\emph default
+: removes element that have an invalid connectivity.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Fix winding
+\emph default
+: This option works only for triangular mesh.
+ This option checks if the nodes of the triangle are in the same sequence
+ clockwise/anti-clockwise direction for all the triangular facets.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Fill all holes
+\emph default
+: Finds and fills the holes in the triangular mesh by adding new triangular
+ faces.
+\end_layout
+
+\begin_layout Subsubsection
+Flip Edges
+\end_layout
+
+\begin_layout Standard
+Flips the selected edge.
+ This can be useful to eliminate slivers or otherwise locally improve the
+ mesh quality.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+MMG Remesh
+\end_layout
+
+\begin_layout Standard
+The MMG Remesh tool uses the MMG library
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://www.mmgtools.org/
+\end_layout
+
+\end_inset
+
+ to regenerate the surface mesh.
+ The following options can be set.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Element size
+\series default
+: Desired element size.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Min element size
+\series default
+: The minimum element size allowed.
+ MMG cannot always guarantee that this criterion is met.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Global Hausdorff value
+\series default
+: Sets the maximum allowed distance from the triangle mesh to the locally
+ interpolated quadratic surface.
+ Setting this to a smaller value creates a refined mesh in areas of large
+ curvature.
+ Note that this is a distance, so the units are length.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Gradation
+\series default
+: Sets the rate of transition between a refined and coarser area.
+ A value close to one creates a very wide transition area.
+ Larger values allow for narrower transition areas.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Only remesh selection
+\series default
+: If checked (and a current selection is active), only the selection will
+ be remeshed.
+\end_layout
+
+\begin_layout Standard
+This tool can be used for globally remeshing the surface, or for doing a
+ local mesh refinement.
+ To perform a local mesh refinement, select the faces that should be refined,
+ and make sure to check the 
+\begin_inset Quotes eld
+\end_inset
+
+only remesh selection
+\begin_inset Quotes erd
+\end_inset
+
+ option.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Partition
+\end_layout
+
+\begin_layout Standard
+The Partition tool creates a partition (i.e.
+ a selectable geometry surface) from the current node, edge, or face selection.
+ 
+\end_layout
+
+\begin_layout Standard
+This tool is useful when the auto-partition tool did not create a desirable
+ partitioning of the surface mesh.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Project Curve
+\end_layout
+
+\begin_layout Standard
+This tool projects a curve on the mesh and modifies the mesh locally so
+ that the curve becomes a crease edge of the surface mesh.
+ 
+\end_layout
+
+\begin_layout Standard
+First, select the curves (i.e.
+ edges of other geometry) and assign them to the selection box.
+ Then, click Apply.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Refine
+\end_layout
+
+\begin_layout Standard
+This tool uniformly refines the mesh by splitting all elements.
+ Triangles are split into 3 triangles, and quads are split into 3 smaller
+ quads.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Smooth
+\end_layout
+
+\begin_layout Standard
+Performs a simple mesh smoothing, where each node is moved towards the average
+ of its neighbors.
+ The new node position is defined by, 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Formula 
+\[
+\boldsymbol{r}_{new}=(1-\lambda)\boldsymbol{r}_{old}+\lambda\boldsymbol{r}_{c}
+\]
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Here, 
+\begin_inset Formula $\boldsymbol{r}_{new}$
+\end_inset
+
+is the new position, 
+\begin_inset Formula $\boldsymbol{r}_{old}$
+\end_inset
+
+is the old position, 
+\begin_inset Formula $\boldsymbol{r}_{c}$
+\end_inset
+
+is the average of the node neighbors, and 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ is a weight factor.
+ 
+\end_layout
+
+\begin_layout Standard
+The following parameters can be set: 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Iterations
+\series default
+: Enter the value to repeat the smoothing operation several times.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+lambda
+\series default
+: The weight factor 
+\begin_inset Formula $\lambda$
+\end_inset
+
+ in the equation above.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+preserve shape
+\series default
+: When checked, the new nodal positions are projected back onto the original
+ mesh.
+ This is useful the counteract the shrinking that typically occurs when
+ applying this smoothing filter.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+preserve edge
+\series default
+: When checked, nodes that were on an edge on the original geometry, are
+ forced to remain on that edge.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Weld Nodes
+\end_layout
+
+\begin_layout Standard
+The Weld Nodes tools merges the selected nodes that are within the specified
+ tolerance.
+ Any edges or faces that collapse as a result, will be removed from the
+ mesh as well.
+ 
+\end_layout
+
 \begin_layout Section
 Creating and Editing a Mesh
 \begin_inset CommandInset label
@@ -7844,7 +8294,7 @@ Mesh panel
 \emph default
 gives access to FEBio Studio's meshing capabilities.
  As noted before, FEBioStudio was not designed to be a powerful mesh generator,
- but regardless, has some simple mesh creating and editing features.
+ but regardless, it has some simple mesh generation and editing features.
 \end_layout
 
 \begin_layout Subsection
@@ -7866,8 +8316,9 @@ butterfly mesh
  onto a sphere.
  This projection is segmented to create several layers of elements.
  Note that all solid primitives are composed of 8-noded hexahedral elements
- and all shell primitives are composed of 4-noded quadrilateral elements.
- After you changed the mesh parameters simply press the 
+ and all shell primitives are composed of 4-noded quadrilateral elements,
+ although some primitives may offer different element options.
+ After you change the mesh parameters simply press the 
 \emph on
 Apply 
 \emph default
@@ -7884,7 +8335,88 @@ View/Toggle Mesh lines
 \end_layout
 
 \begin_layout Subsection
-Editable Surfaces
+Meshing CAD Geometry
+\end_layout
+
+\begin_layout Standard
+CAD objects are meshed with the NetGen library.
+ The NetGen mesher is a multi-pass mesh generator.
+ It generates a base mesh and then tries to improve the mesh over several
+ iterations.
+ The following parameters control the mesh generation process.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Mesh Granularity:
+\series default
+ set level of detail.
+ This sets several internal parameters that affect the final element density.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Use local mesh modifiers:
+\series default
+ Check to use local mesh modifiers.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Grading
+\series default
+: Set grading level
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Max element size:
+\series default
+ Set the largest allowed element size.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Nr.
+ 2D optimization steps
+\series default
+: Set the number of passes to improve surface mesh
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Nr.
+ 3D optimization steps
+\series default
+: Set the number of passes to improve volume mesh
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Second order tets
+\series default
+: When checked, NetGen will generate tet10 elements.
+ 
+\end_layout
+
+\begin_layout Standard
+Click Apply to generate the mesh.
+ 
+\end_layout
+
+\begin_layout Subsection
+Meshing Editable Surfaces
 \end_layout
 
 \begin_layout Standard
@@ -7895,138 +8427,93 @@ editable surface
  is an object that is defined via a surface mesh.
  The surface mesh can be edited via the tools on the Edit panel.
  If the mesh is closed and composed of triangles, the object can be meshed
- using the Tetgen tool, available from the Mesh panel.
+ using Tetgen
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://www.wias-berlin.de/software/index.jsp?id=TetGen&lang=1
+\end_layout
+
+\end_inset
+
+, available from the Mesh panel.
  This tool will generate a tetrahedral mesh.
+ The following options can be set.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Element size:
+\series default
+ the desired size of the elements.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Quality:
+\series default
+ the desired quality of the elements.
+ The quality of the element is defined as the ratio of the radius of the
+ circumscribed sphere over the shortest edge length.
+ The theoretical minimum is 
+\begin_inset Formula $\sqrt{6}/4\approx0.621$
+\end_inset
+
+.
+ Note that this is a suggestion to TetGen, and in general TetGen cannot
+ guarantee that all elements will satisfy this criterion.
+ In fact, setting it too low may cause TetGen to fail.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Element type: 
+\series default
+Set the desired element type.
+ Note that TetGen only generates 4-node tetrahedral elements (TET4), however,
+ FEBioStudio can modify the element type after TetGen completes.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Split Faces
+\series default
+: Allow TetGen to split surface facets if it can improve the mesh quality.
+ For curved surfaces this option should not be used, since TetGen does not
+ try to maintain the curvature while splitting facets.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Hole:
+\series default
+ To hollow out a part of the mesh, check this box and set the coordinates
+ of a point inside the hole.
+ 
 \end_layout
 
 \begin_layout Standard
-The surface of an editable surface can be modified via the tools on the
- 
-\emph on
-Edit 
-\emph default
-panel:
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Project curve: 
-\series default
-projects a curve on the mesh and modifies the mesh locally so that the curve
- becomes a crease edge of the mesh.
+Click Apply to generate the mesh.
  
 \end_layout
 
-\begin_layout Itemize
-
-\series bold
-Partition: 
-\series default
-Partition the mesh selection.
+\begin_layout Standard
+Editable surfaces can also be converted to shells.
+ This is the only option available for surface meshes that are not closed.
  
 \end_layout
 
-\begin_layout Itemize
-
-\series bold
-Smooth: 
-\series default
-Smooths the surface mesh.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Edge collapse: 
-\series default
-Collapses small edges.
- This tool can improve the quality of the mesh.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Decimate: 
-\series default
-Remesh the triangular meshes using a Centroidal Voronoi Diagram based approach.
- Decimation is the process of decreasing the number of triangles in the
- mesh.
- 
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-
-\emph on
-Scale
-\emph default
-: This option helps in creating a uniform triangular mesh.
- Scale value specifies the desired reduction in the total number of nodes
- in the final decimated mesh.
- For example a 0.4 value of scale will result in the final decimated mesh
- with 40
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-{
-\end_layout
-
-\end_inset
-
-%
-\begin_inset ERT
-status collapsed
-
-\begin_layout Plain Layout
-
-}
-\end_layout
-
-\end_inset
-
- of current number of nodes.
- 
-\end_layout
-
-\end_deeper
-\begin_layout Itemize
-
-\series bold
-Fix Mesh 
-\series default
-– Provide options to fix specific problems in mesh 
-\end_layout
-
-\begin_deeper
-\begin_layout Itemize
-Remove duplicate elements.
- 
-\end_layout
-
-\begin_layout Itemize
-Remove non-manifold elements.
- 
-\end_layout
-
-\begin_layout Itemize
-Fix winding: This option works only for triangular mesh.
- This option checks if the nodes of the triangle are in same sequence clockwise/
-anti-clockwise direction for all the triangular shells.
- 
-\end_layout
-
-\begin_layout Itemize
-Fill all holes: Finds and fills the holes in the triangular mesh by adding
- new triangular faces.
- 
-\end_layout
-
-\end_deeper
 \begin_layout Subsection
 Editable Meshes
 \end_layout
@@ -8056,8 +8543,8 @@ Important Note.
 \emph on
 It is best to first make the necessary modifications to an editable mesh
  before you apply any boundary conditions or loads.
- Any modifications to an editable mesh may invalidate boundary conditions
- and loads.
+ Any modifications to an editable mesh may invalidate the selections assigned
+ to boundary conditions and loads.
  
 \end_layout
 
@@ -8230,39 +8717,652 @@ panel.
  Most of these tools require a specific mesh selection mode to be active.
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Subsubsection
+Add Node
+\end_layout
 
-\series bold
-Auto Partition: 
-\series default
+\begin_layout Standard
+Adds a node to the mesh.
+ Enter the position of the node and press Apply.
+ Note that the node will not be connected to the rest of the mesh.
+ 
+\end_layout
+
+\begin_layout Standard
+This tool can be useful to create an anchor for a spring that is connected
+ to a node on the mesh.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Align
+\end_layout
+
+\begin_layout Standard
+This tool flattens and aligns the selection to be on the same plane.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Auto Partition
+\end_layout
+
+\begin_layout Standard
 Partitions the surface, edges, and nodes of the mesh based on an angle criterion.
  If the Repartition elements is checked, the elements will be partitioned
  based on their connectivity.
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Subsubsection
 
 \series bold
-Partition:
-\series default
- Partition the current mesh selection.
+Boundary Layer
+\end_layout
+
+\begin_layout Standard
+For certain types of analysis (e.g.
+ biphasic) it may be important to refine the mesh near the boundary to capture
+ rapid boundary layer effects.
+ The Boundary Layer tool can be used to generate a thin layer of refined
+ elements.
+ The tool requires a facet selection.
+ It then finds the layer of solid elements adjacent to the selected faces,
+ and then subdivides these elements, using the given control parameters:
  
 \end_layout
 
 \begin_layout Itemize
 
 \series bold
-Smooth:
+bias
 \series default
- This option works only for triangular shell meshes.
+: Sets the refinement gradation level.
+ If equal to one, all elements will have the same size.
+ If larger than one, elements will shrink as they get closer to the surface.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+segments
+\series default
+: Sets the number of divisions each boundary element will be divided in.
+ 
+\end_layout
+
+\begin_layout Standard
+Note that this tool may introduce different types of elements.
+ For instance, when applied to a tetrahedral mesh, the boundary layer may
+ contain tetrahedral, wedge, and hexahedral elements.
+ The quality of the elements in the boundary layer may also be degraded.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Convert Mesh
+\end_layout
+
+\begin_layout Standard
+Convert the element type to a different type.
+ 
+\end_layout
+
+\begin_layout Standard
+When converting between linear and quadratic elements, nodes are inserted
+ in (or removed from) edges and faces.
+ The number of elements is not affected.
+ 
+\end_layout
+
+\begin_layout Standard
+When converting between linear element types, elements may be split and
+ the total number of elements will increase.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Create shells from faces
+\end_layout
+
+\begin_layout Standard
+This tool creates a layer of shells from a face selection.
+ The shells will lie on top of the adjacent solid element.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Detach Elements
+\end_layout
+
+\begin_layout Standard
+This tool detaches the element selection from the rest of the mesh.
+ The detached elements will be assigned to their own part.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Discard Mesh
+\end_layout
+
+\begin_layout Standard
+This discards the volume mesh and only retains the surface as a shell mesh.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Extrude Faces
+\end_layout
+
+\begin_layout Standard
+The selected faces are extruded.
+ New solid elements are inserted.
+ Triangular faces will extrude into wedge elements and quad faces will extrude
+ into hex elements.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Fix Mesh
+\end_layout
+
+\begin_layout Standard
+Thsi tool offers several options for repairing common problems in volume
+ meshes.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Inflate
+\end_layout
+
+\begin_layout Standard
+Inflates and divides a layer of elements.
+ This can be useful for inserting a row of elements to a side of the mesh.
+ 
+\end_layout
+
+\begin_layout Standard
+To use this tool, select the faces adjacent to the elements that will be
+ inflated.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+distance
+\series default
+: Sets the inflation distance.
+ The element size normal to the facet selection will grow to this value.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+segments
+\series default
+: the top layer elements will be divided in this many segments.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+mesh bias
+\series default
+: sets the gradation level of the inserted elements.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+symmetric mesh bias
+\series default
+: Applies a symmetric mesh bias to the inserted elements.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Invert
+\end_layout
+
+\begin_layout Standard
+This tool can be used to invert the selected elements.
+ Elements that are inverted (i.e.
+ turned inside-out) have negative volumes and cannot be used in an FE simulation.
+ This can happen when the mesh was generated with a tool that assumes a
+ different element nodal connectivity.
+ This tool can be used to fix this problem.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Mirror
+\end_layout
+
+\begin_layout Standard
+This tool mirrors the mesh with respect to the selected mirror plane and
+ center.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+MMG Remesh
+\end_layout
+
+\begin_layout Standard
+The MMG remesh tool can be used to re-create the mesh or apply a local mesh
+ refinement or coarsening on a tetrahedral mesh.
+ The following parameters can be set.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Element size
+\series default
+: Desired element size.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Min element size
+\series default
+: The minimum element size allowed.
+ MMG cannot always guarantee that this criterion is met.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Global Hausdorff value
+\series default
+: Sets the maximum allowed distance from the surface mesh to the locally
+ interpolated quadratic surface.
+ Setting this to a smaller value creates a refined mesh in areas of large
+ curvature.
+ Note that this is a distance, so the units are length.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Gradation
+\series default
+: Sets the rate of transition between a refined and coarser area.
+ A value close to one creates a very wide transition area.
+ Larger values allow for narrower transition areas.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Only remesh selection
+\series default
+: If checked (and a current selection is active), only the selection will
+ be remeshed.
+\end_layout
+
+\begin_layout Standard
+This tool can be used for global remeshing, or for doing a local mesh refinement
+ or coarsening.
+ To perform a local mesh refinement/coarsening, select the elements that
+ should be refined, and make sure to check the 
+\begin_inset Quotes eld
+\end_inset
+
+only remesh selection
+\begin_inset Quotes erd
+\end_inset
+
+ option.
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Partition
+\end_layout
+
+\begin_layout Standard
+The Partition tool creates a partition from the current node, edge, face,
+ or element selection.
+ 
+\end_layout
+
+\begin_layout Standard
+This tool is useful when the auto-partition tool did not create a desirable
+ partitioning of the mesh.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Rebuild Mesh
+\end_layout
+
+\begin_layout Standard
+This tool can be used to fix any issues related to mesh connectivity.
+ It rebuilds the internal mesh data structures.
+ Note that this tool may affect the mesh partitioning.
+ 
+\end_layout
+
+\begin_layout Standard
+This tool should not be used often.
+ It should only be used if any other mesh operation leaves the mesh with
+ an invalid internal data structure.
+ Before applying this tool, you can use the Mesh Diagnostic tool to check
+ if there are problems with the mesh.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Refine Mesh
+\end_layout
+
+\begin_layout Standard
+Refines the triangular shell mesh uniformly by dividing each triangular
+ face into 4 smaller triangles.
+ In this method, a new node is added at the center of each edge of the triangle
+ and new triangles are created using these new nodes.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Revolve Faces
+\end_layout
+
+\begin_layout Standard
+Similar to the Face Extrude tool, but the selected faces are extruded by
+ revolving them around an axis.
+ 
+\end_layout
+
+\begin_layout Description
+axis Sets the axis orientation
+\end_layout
+
+\begin_layout Description
+center Sets the center of rotation
+\end_layout
+
+\begin_layout Description
+angle Angle of rotation
+\end_layout
+
+\begin_layout Description
+pitch displacement along axis
+\end_layout
+
+\begin_layout Description
+segments divisions during rotation
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Rezone
+\end_layout
+
+\begin_layout Standard
+This tool can be used to locally rezone a mesh.
+ This is useful for refining or coarsening a mesh near a boundary, without
+ the need to remesh the area.
+ This tool simply moves nodes around in order to obtain the desired zoning.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Set Axis
+\end_layout
+
+\begin_layout Standard
+This tools can be used to generate local material axes on each element.
+ Different algorithms can be chosen using the 
+\emph on
+generator 
+\emph default
+option.
+ 
+\end_layout
+
+\begin_layout Description
+vector The first option for generating material axes is 
+\emph on
+vector
+\emph default
+.
+ This option allows you to specify the same set of material axes for all
+ elements of the mesh.
+ In general, this option is useful if the desired material axes are not
+ aligned with the global XYZ coordinate system.
+ For this option you are prompted to enter the
+\begin_inset Formula $\mathbf{a}$
+\end_inset
+
+ and 
+\begin_inset Formula $\mathbf{d}$
+\end_inset
+
+ vectors that uniquely define the XYZ axes triad.
+ The vector 
+\begin_inset Formula $\mathbf{a}$
+\end_inset
+
+ represents the local X-direction, and the vector 
+\begin_inset Formula $\mathbf{d}$
+\end_inset
+
+ is used to produce the local Z-direction from the cross product 
+\begin_inset Formula $\mathbf{c}=\mathbf{a}\times\mathbf{d}$
+\end_inset
+
+.
+ Then, the Y-direction is obtained form the right-hand rule from the cross-produ
+ct 
+\begin_inset Formula $\mathbf{b}=\mathbf{c}\times\mathbf{a}$
+\end_inset
+
+.
+ FEBioStudio automatically normalizes the vectors.
+\end_layout
+
+\begin_layout Description
+angles This option is similar to the vector option described in the previous
+ section.
+ It produces a uniform set of material axes using the azimuthal angle theta
+ (°) and declination angle phi (°) of a spherical coordinate system as shown
+ in the FEBio User's Manual.
+ 
+\end_layout
+
+\begin_layout Description
+node-numbering This option is generally useful only when the mesh consists
+ of hexahedral elements, such as hex8, hex20 and hex27 elements, created
+ in a regular pattern.
+ Users need to specify three nodes, n0, n1 and n2, which must have values
+ between 1 and 8, representing the 8 corner nodes of a hexahedral element.
+ FEBioStudio treats the line segment between nodes n0 and n1 as the vector
+ 
+\begin_inset Formula $\mathbf{a}$
+\end_inset
+
+, and the line segment from n0 to n2 as the vector 
+\begin_inset Formula $\mathbf{d}$
+\end_inset
+
+, from which it produces local XYZ axes as explained in vector above.
+ 
+\end_layout
+
+\begin_layout Description
+cylindrical The last option under the generator pull-down menu of Set Axes
+ is the cylindrical option.This option may be used to produce local material
+ axes that are aligned with a cylindrical coordinate system whose long axis
+ (the local Z-direction) is along the user-specified vector 
+\begin_inset Formula $\mathbf{a}$
+\end_inset
+
+ and whose radial direction (the local X-direction) is along the user-specified
+\begin_inset Formula $\mathbf{d}$
+\end_inset
+
+ vector.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Set Axis from curvature
+\end_layout
+
+\begin_layout Standard
+There are many geometries for which the options described in the Set Axes
+ section for generating material axes may not be suitable.
+ For example, consider a torus geometry that includes two families of fibers,
+ each oriented along one of the two principal radii of the Torus.
+ Thus we may wish to generate local material axes that are aligned along
+ the principal directions of curvature of the toroidal surface.
+ The following options can be set.
+ 
+\end_layout
+
+\begin_layout Standard
+To use this tool, first make a face selection.
+ 
+\end_layout
+
+\begin_layout Description
+generator This option determines who to approximate the local surface in
+ order to estimate the principal axes of curvature.
+ For general surface, choose 
+\emph on
+spline
+\emph default
+, but if the surface is a quadric surface (e.g.
+ cone, cylinder, ellipsoid), the 
+\emph on
+quadric 
+\emph default
+option may perform better.
+ 
+\end_layout
+
+\begin_layout Description
+whole_part The box labeled Whole part ensures that local material axes are
+ assigned to all elements inside the geometry, not just the ones right underneat
+h the selected faces.
+ 
+\end_layout
+
+\begin_layout Standard
+This tool may be particularly useful with meshes that represent anatomical
+ features, as typically acquired from medical images.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Set Fibers
+\end_layout
+
+\begin_layout Standard
+This tools can be used to generate local material fibers on each element.
+ Different algorithms can be chosen using the 
+\emph on
+generator 
+\emph default
+option.
+ 
+\end_layout
+
+\begin_layout Description
+vector The first option for generating fibers is 
+\emph on
+vector
+\emph default
+.
+ This option allows you to specify the same fiber vector for all elements
+ of the mesh.
+ For this option you are prompted to enter the fiber vector directly.
+ FEBioStudio automatically normalizes the vector.
+\end_layout
+
+\begin_layout Description
+node-numbering This option is generally useful only when the mesh consists
+ of hexahedral elements, such as hex8, hex20 and hex27 elements, created
+ in a regular pattern.
+ Users need to specify two nodes, n0 and n1, which must have values between
+ 1 and 8, representing the 8 corner nodes of a hexahedral element.
+ FEBioStudio treats the line segment between nodes n0 and n1 as the fiber
+ vector .
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Shell Thickness
+\end_layout
+
+\begin_layout Standard
+Set the shell thickness for the selected shell elements.
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Smooth
+\end_layout
+
+\begin_layout Standard
+This option works only for triangular shell meshes.
  It smooths the mesh by iteratively moving points towards their neighbors
  and often results in better-shaped triangles and more evenly distributed
  nodes.
  
 \end_layout
 
-\begin_deeper
 \begin_layout Itemize
 
 \emph on
@@ -8296,40 +9396,61 @@ Project
 : project the smoothed nodes back to the original mesh 
 \end_layout
 
-\end_deeper
-\begin_layout Itemize
+\begin_layout Subsubsection
 
 \series bold
-Discard Mesh
-\series default
-: Discards the volume mesh and only retains the surface as a shell mesh.
+TetGen
+\end_layout
+
+\begin_layout Standard
+This tool applies the TetGen mesher to a tetrahedral mesh.
+ It can be used to recreate or remesh a tet4 mesh locally.
  
 \end_layout
 
 \begin_layout Itemize
 
 \series bold
-Mirror: 
+minimum radius-edge ratio
 \series default
-Mirror the mesh.
+: sets the desired quality measure for the tet mesh.
  
 \end_layout
 
 \begin_layout Itemize
 
 \series bold
-TetGen: 
+element size
 \series default
-Replace the current mesh with a tetrahedral mesh.
- 
+: sets the desired element size.
 \end_layout
 
 \begin_layout Itemize
 
 \series bold
-Weld Nodes:
+split facets
 \series default
- Weld the selected nodes together that are within a distance specified by
+: allows TetGen to split surface facets if necessary.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+feather
+\series default
+: sets the number of element layers of the transition zone between the locally
+ remeshed part and the rest of the mesh.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+
+\series bold
+Weld Nodes
+\end_layout
+
+\begin_layout Standard
+Weld the selected nodes together that are within a distance specified by
  the 
 \emph on
 threshold
@@ -8338,72 +9459,6 @@ threshold
  Welding is useful to connect touching parts together.
  However, be aware that you might create unexpected errors in your geometry
  this way since the effects of welding are not always visible.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Refine Mesh: 
-\series default
-Refines the triangular shell mesh by dividing each triangular face into
- 4 triangular faces.
- In this method a new node is added at the center of each edge of the triangle
- and new triangles are created using these new nodes.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Convert
-\series default
-: Convert the element type to a different type.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Add node: 
-\series default
-Add a node to the model at the specified coordinates.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Invert:
-\series default
- Invert the selected elements.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-PostBL: 
-\series default
-Create a boundary layer from the selected surface faces.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Shell Thickness
-\series default
-: Set the shell thickness for the selected elements.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Set Fibers:
-\series default
- Set the fiber orientation of the selected elements.
  
 \end_layout
 

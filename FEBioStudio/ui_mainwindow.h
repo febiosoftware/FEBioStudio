@@ -49,6 +49,9 @@ SOFTWARE.*/
 #include <QtCore/QStandardPaths>
 #include <QFontComboBox>
 #include <QTreeView>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
 #include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
@@ -114,6 +117,53 @@ public:
 	CGLControlBar* glc;
 };
 
+class CentralStackedWidget : public QStackedWidget
+{
+public:
+    CentralStackedWidget(CMainWindow* wnd) : m_wnd(wnd)
+    {
+        setAcceptDrops(true);
+    }
+
+    void dragEnterEvent(QDragEnterEvent *e) override
+    {
+        if (e->mimeData()->hasUrls()) {
+            e->acceptProposedAction();
+        }
+    }
+
+    void dropEvent(QDropEvent *e) override
+    {
+        foreach (const QUrl &url, e->mimeData()->urls()) {
+            QString fileName = url.toLocalFile();
+
+            FileReader* fileReader = nullptr;
+
+            QFileInfo file(fileName);
+
+            // Create a file reader
+            // NOTE: For FEB files I prefer to open the file as a separate model,
+            // so I need this hack. 
+            if (file.suffix() != "feb") fileReader = m_wnd->CreateFileReader(fileName);
+
+            CDocument* doc = m_wnd->GetDocument();
+
+            // make sure we have one
+            if (fileReader && doc)
+            {
+                m_wnd->ReadFile(doc, fileName, fileReader, 0);
+            }
+            else {
+                m_wnd->OpenFile(fileName, false, false);
+            }
+        }
+    }
+
+private:
+    CMainWindow* m_wnd;
+
+};
+
 class Ui::CMainWindow
 {
 	enum
@@ -137,7 +187,7 @@ public:
 	CMainTabBar*	tab;
 	::CMainWindow*	m_wnd;
 
-	QStackedWidget*	stack;
+	CentralStackedWidget* stack;
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
@@ -359,7 +409,7 @@ public:
 		tab = new CMainTabBar(wnd);
 		tab->setObjectName("tab");
 
-		stack = new QStackedWidget;
+		stack = new CentralStackedWidget(wnd);
 
 		htmlViewer = new QTextBrowser;
 		htmlViewer->setObjectName("htmlview");

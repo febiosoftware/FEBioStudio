@@ -42,6 +42,7 @@ ul { line-height: 150%; list-style-type: none; }\
 <body>\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
 <p style=\"font-size: 14pt\">_VERSION_</p>\
+<p style=\"font-size: 14pt\">FEBio Studio 2 is currently in beta. You can help development by <a href=\"#bugreport\" style=\"font-size: 14pt\">submitting a bug report.</a></p>\
 _UPDATE_INFO_\
 <h1>Start</h1>\
 <table width=100%>\
@@ -66,6 +67,7 @@ _RECENT_PROJECTS_\
 <li><a href=\"#febio\">FEBio Website</li>\
 <li><a href=\"#help\">FEBio Knowledgebase</li>\
 <li><a href=\"#forum\">FEBio Forum</li>\
+<li><a href=\"#bugreport\">Submit a Bug Report</li>\
 </ul>\
 </td>\
 <td>\

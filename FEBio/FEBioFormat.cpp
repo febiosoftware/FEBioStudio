@@ -181,6 +181,7 @@ FSAnalysisStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* sz
     case FE_STEP_FLUID_FSI         : pstep = new FSFluidFSIAnalysis   (&fem); break;
 	case FE_STEP_REACTION_DIFFUSION: pstep = new FSReactionDiffusionAnalysis(&fem); break;
     case FE_STEP_POLAR_FLUID       : pstep = new FSPolarFluidAnalysis (&fem); break;
+	case FE_STEP_EXPLICIT_SOLID    : pstep = new FSExplicitSolidAnalysis(&fem); break;
 	default:
 		pstep = new FSNonLinearMechanics(&fem);
 		FileReader()->AddLogEntry("Unknown step type. Creating Structural Mechanics step");
@@ -438,6 +439,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 			pp->SetParamType(Param_MATH);
 			pp->SetMathString(tag.szvalue());
 		}
+		else FileReader()->AddLogEntry("Cannot assign math to non-variable parameter %s", pp->GetShortName());
 	}
 	else if (*atype == "map")
 	{
@@ -446,6 +448,7 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 			pp->SetParamType(Param_STRING);
 			pp->SetStringValue(tag.szvalue());
 		}
+		else FileReader()->AddLogEntry("Cannot assign map to non-variable parameter %s", pp->GetShortName());
 	}
 
 	// NOTE: Is this still used? I think this was an initial attempt
@@ -1078,6 +1081,17 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
 		if (strcmp(szmat, "EFD neo-Hookean2") == 0) pm = FEMaterialFactory::Create(fem, "EFD neo-Hookean");
 
+		// FBS1 never supported these materials, so we'll just use the FEBio classes.
+		if ((strcmp(szmat, "remodeling solid"      ) == 0) ||
+			(strcmp(szmat, "hyperelastic"          ) == 0) ||
+			(strcmp(szmat, "uncoupled hyperelastic") == 0) ||
+			(strcmp(szmat, "Shenoy"                ) == 0))
+		{
+			pm = FEBio::CreateMaterial(szmat, fem);
+			ParseModelComponent(pm, tag);
+			return pm;
+		}
+
 		if (pm == 0)
 		{
 			ParseUnknownAttribute(tag, "type");
@@ -1206,6 +1220,20 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 			else ++tag;
 		}
 		while (!tag.isend());
+	}
+	else
+	{
+		// there should be one parameter with the same name as the type
+		Param* p = pm->GetParam(szmat);
+		if (p)
+		{
+			switch (p->GetParamType())
+			{
+			case Param_MATH: p->SetMathString(tag.szvalue()); break;
+			default:
+				assert(false);
+			}
+		}
 	}
 
 	// NOTE: As of FEBio3, the bulk-modulus of uncoupled materials must be defined at the top-level
@@ -2492,4 +2520,175 @@ void FEBioFormat::ParseMappedParameter(XMLTag& tag, Param* param)
 		param->SetParamType(Param_FLOAT);
 		param->SetFloatValue(scale);
 	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
+{
+	FSModel& fem = GetFSModel();
+
+	// first, process potential attribute parameters
+	for (int i = 0; i < tag.m_natt; ++i)
+	{
+		XMLAtt& att = tag.m_att[i];
+		Param* param = pmc->GetParam(att.name());
+		if (param)
+		{
+			switch (param->GetParamType())
+			{
+			case Param_INT:
+			case Param_CHOICE:
+			{
+				if (param->GetEnumNames())
+					ReadChoiceParam(*param, att.m_szatv);
+				else
+				{
+					int n;
+					att.value(n);
+					param->SetIntValue(n);
+				}
+			}
+			break;
+			case Param_STRING:
+			{
+				param->SetStringValue(att.cvalue());
+			}
+			break;
+			default:
+				assert(false);
+			}
+		}
+		else if (strcmp(att.name(), "sol") == 0)
+		{
+			// we might be in a chemical reaction. Try to find the "species" parameter.
+			param = pmc->GetParam("species");
+			if (param)
+			{
+				int n = atoi(att.cvalue());
+				param->SetIntValue(n - 1);
+			}
+		}
+		else if (strcmp(att.name(), "sbm") == 0)
+		{
+			// we might be in a chemical reaction. Try to find the "species" parameter.
+			param = pmc->GetParam("species");
+			if (param)
+			{
+				int n = atoi(att.cvalue());
+				FSModel& fem = GetFSModel();
+				int nsol = fem.Solutes();
+				param->SetIntValue(nsol + n - 1);
+			}
+		}
+	}
+
+	if (tag.isleaf())
+	{
+		// make sure there is a value
+		if (strlen(tag.szvalue()) == 0) return;
+
+		const char* szparam = tag.Name();
+		const char* sztype = tag.AttributeValue("type", true);
+		if (sztype) szparam = sztype;
+
+		// see if there is a parameter with the same name 
+		Param* param = pmc->GetParam(szparam);
+		if (param)
+		{
+			switch (param->GetParamType())
+			{
+			case Param_INT:
+			{
+				int n = -1;
+				tag.value(n);
+				param->SetIntValue(n);
+			}
+			break;
+			case Param_FLOAT:
+			{
+				double v = 0.0;
+				tag.value(v);
+				param->SetFloatValue(v);
+			}
+			break;
+			case Param_VEC3D:
+			{
+				vec3d v;
+				tag.value(v);
+				param->SetVec3dValue(v);
+			}
+			break;
+			case Param_MAT3D:
+			{
+				mat3d v;
+				tag.value(v);
+				param->SetMat3dValue(v);
+			}
+			break;
+			case Param_ARRAY_INT:
+			{
+				std::vector<int> d = param->GetArrayIntValue();
+				tag.value(d);
+				param->SetArrayIntValue(d);
+			}
+			break;
+			case Param_STRING:
+			{
+				std::string s;
+				tag.value(s);
+				param->SetStringValue(s);
+			}
+			break;
+			default:
+				assert(false);
+			}
+		}
+		else ParseUnknownTag(tag);
+
+		return;
+	}
+
+	// read the tags
+	++tag;
+	do
+	{
+		if (ReadParam(*pmc, tag) == false)
+		{
+			if (pmc->Properties() > 0)
+			{
+				const char* sztag = tag.Name();
+				FSProperty* prop = pmc->FindProperty(sztag);
+				if (prop == nullptr)
+				{
+					ParseUnknownTag(tag);
+				}
+				else
+				{
+					// see if the type attribute is defined
+					const char* sztype = tag.AttributeValue("type", true);
+					if (sztype == 0)
+					{
+						// if not, get the default type. If none specified, we'll use the tag itself.
+						const std::string& defType = prop->GetDefaultType();
+						if (defType.empty() == false) sztype = defType.c_str();
+						else sztype = tag.Name();
+					}
+
+					// some classes allow names for their properties (e.g. chemical reactions)
+					const char* szname = tag.AttributeValue("name", true);
+
+					FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+					assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+					if (pc)
+					{
+						if (szname) pc->SetName(szname);
+						prop->AddComponent(pc);
+						ParseModelComponent(pc, tag);
+					}
+				}
+			}
+			else ParseUnknownTag(tag);
+		}
+		++tag;
+	} while (!tag.isend());
 }

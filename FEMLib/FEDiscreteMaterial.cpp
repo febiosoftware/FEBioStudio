@@ -103,9 +103,22 @@ LoadCurve* FS1DPointFunction::GetPointCurve()
 	return &m_lc;
 }
 
+const LoadCurve* FS1DPointFunction::GetPointCurve() const
+{
+	return &m_lc;
+}
+
 void FS1DPointFunction::SetPointCurve(LoadCurve& lc)
 {
 	m_lc = lc;
+}
+
+//===================================================================
+REGISTER_MATERIAL(FS1DMathFunction, MODULE_MECH, FE_FNC1D_MATH, FE_MAT_1DFUNC, "math", 0);
+
+FS1DMathFunction::FS1DMathFunction(FSModel* fem) : FS1DFunction(FE_FNC1D_MATH, fem)
+{
+	AddMathParam("", "math");
 }
 
 //===================================================================

@@ -51,9 +51,9 @@ void FSConstBodyForce::SetLoad(int n, double v) { SetFloatValue(FORCE_X + n, v);
 FSNonConstBodyForce::FSNonConstBodyForce(FSModel* ps, int nstep) : FSBodyLoad(FE_NON_CONST_BODY_FORCE, ps, nstep)
 {
 	SetTypeString("non-const");
-	AddMathParam("0", "x");
-	AddMathParam("0", "y");
-	AddMathParam("0", "z");
+	AddMathParam("0", "x")->MakeVariable(true);
+	AddMathParam("0", "y")->MakeVariable(true);
+	AddMathParam("0", "z")->MakeVariable(true);
 }
 
 //-----------------------------------------------------------------------------

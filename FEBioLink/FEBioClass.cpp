@@ -159,6 +159,7 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 
 	bool includeModuleDependencies = (flags & ClassSearchFlags::IncludeModuleDependencies);
 	bool includeFECoreClasses = includeModuleDependencies;// (flags & ClassSearchFlags::IncludeFECoreClasses);
+	bool includeExperimentals = (flags & ClassSearchFlags::IncludeExperimentalClasses);
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	vector<int> mods;
@@ -177,10 +178,12 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 		const FECoreFactory* fac = fecore.GetFactoryClass(i);
 		int facmod = fac->GetModuleID();
 		int baseId = baseClassIndex(fac->GetBaseClassName());
+		int spec = fac->GetSpecID();
 
 		if (((mod         == -1) || (mod == facmod)) && 
 			((superId     == -1) || (fac->GetSuperClassID() == superId)) &&
-			((baseClassId == -1) || (baseId == baseClassId)))
+			((baseClassId == -1) || (baseId == baseClassId)) &&
+			((spec != FECORE_EXPERIMENTAL) || includeExperimentals))
 		{
 			const char* szmod = fecore.GetModuleName(fac->GetModuleID() - 1);
 			FEBio::FEBioClassInfo febc = {
@@ -993,6 +996,7 @@ void FEBio::UpdateFEBioDiscreteMaterial(FEBioDiscreteMaterial* pm)
 template <class T> T* CreateModelComponent(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL)
 {
 	int baseClassIndex = GetBaseClassIndex(superClassID, typeStr);
+	if (baseClassIndex == -1) return nullptr;
 
 	FSModelComponent* pmc = CreateFSClass(superClassID, baseClassIndex, fem);
 	if (pmc == nullptr) { assert(false); return nullptr; }

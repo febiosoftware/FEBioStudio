@@ -53,11 +53,19 @@ class FS1DPointFunction : public FS1DFunction
 public:
 	FS1DPointFunction(FSModel* fem);
 	LoadCurve* GetPointCurve();
+	const LoadCurve* GetPointCurve() const;
 	void SetPointCurve(LoadCurve& lc);
 	DECLARE_REGISTERED(FS1DPointFunction);
 
 private:
 	LoadCurve	m_lc;
+};
+
+class FS1DMathFunction : public FS1DFunction
+{
+public:
+	FS1DMathFunction(FSModel* fem);
+	DECLARE_REGISTERED(FS1DMathFunction);
 };
 
 //===================================================================

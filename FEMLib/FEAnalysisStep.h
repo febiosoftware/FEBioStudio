@@ -33,6 +33,7 @@ class FSMeshAdaptor;
 #define FE_STEP_FLUID_FSI           9
 #define FE_STEP_FEBIO_ANALYSIS		10
 #define FE_STEP_POLAR_FLUID         11
+#define FE_STEP_EXPLICIT_SOLID		12
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
@@ -211,6 +212,7 @@ struct STEP_SETTINGS
 	double	dtmax;			// maximum step size
 	int		ncut;			// cutback method
 	double	tfinal;			// final time
+	bool	dtforce;		// force max time step
 
 	// Nonlinear solver Settings
 	int		mthsol;			// nonlinear equilibrium solution method
@@ -218,6 +220,7 @@ struct STEP_SETTINGS
 	int		maxref;			// max nr of SMR's per time step
 	bool	bdivref;		// reform on divergence
 	bool	brefstep;		// reform each time step
+	bool	logSolve;		// log solver flag
 
     // linear solver settings
 	bool	bminbw;			// minimze bandwidth
@@ -293,6 +296,13 @@ public:
 	void SetEnergyTolerance(double etol);
 	void SetResidualTolerance(double rtol);
 	void SetLineSearchTolerance(double lstol);
+};
+
+//-----------------------------------------------------------------------------
+class FSExplicitSolidAnalysis : public FSAnalysisStep
+{
+public:
+	FSExplicitSolidAnalysis(FSModel* fem);
 };
 
 //-----------------------------------------------------------------------------

@@ -781,9 +781,9 @@ FSRigidJoint::FSRigidJoint(FSModel* ps, int nstep) : FSInterface(FE_RIGID_JOINT,
 
 	SetTypeString("Rigid joint");
 
-	AddDoubleParam(0.1         , "tol", "augmentation tolerance");
-	AddDoubleParam(1           , "pen", "penalty factor"        );
-	AddVecParam   (vec3d(0,0,0), "rj" , "joint position"        );
+	AddDoubleParam(0.1         , "tolerance", "augmentation tolerance");
+	AddDoubleParam(1           , "penalty"  , "penalty factor"        );
+	AddVecParam   (vec3d(0,0,0), "joint"    , "joint position"        );
 }
 
 //-----------------------------------------------------------------------------

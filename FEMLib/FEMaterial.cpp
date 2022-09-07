@@ -806,6 +806,11 @@ FSOldFiberMaterial* FSTransverselyIsotropic::GetFiberMaterial()
 	return m_pfiber;
 }
 
+const FSOldFiberMaterial* FSTransverselyIsotropic::GetFiberMaterial() const
+{
+	return m_pfiber;
+}
+
 void FSTransverselyIsotropic::SetFiberMaterial(FSOldFiberMaterial* fiber)
 {
 	fiber->SetParentMaterial(this);
@@ -3069,6 +3074,17 @@ FSRelaxCSExp::FSRelaxCSExp(FSModel* fem) : FSMaterialProp(FE_RELAX_CSEXP, fem)
 }
 
 //=============================================================================
+// Relaxation Exponential with Continuous Spectrum
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxCSExpDistUser, MODULE_MECH, FE_RELAX_CSEXP_DIST_USER, FE_MAT_RV_RELAX, "relaxation-CSexp-dist-user", 0);
+
+FSRelaxCSExpDistUser::FSRelaxCSExpDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_CSEXP_DIST_USER, fem)
+{
+	AddProperty("tau", FE_MAT_1DFUNC);
+}
+
+//=============================================================================
 // Relaxation Exponential
 //=============================================================================
 
@@ -3090,6 +3106,17 @@ FSRelaxExpDistortion::FSRelaxExpDistortion(FSModel* fem) : FSMaterialProp(FE_REL
     AddScienceParam(0, UNIT_TIME, "tau0"  , "constant coefficient" ); // characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau1"  , "power coefficient" );
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent");
+}
+
+//=============================================================================
+// Relaxation Exponential
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxExpDistUser, MODULE_MECH, FE_RELAX_EXP_DIST_USER, FE_MAT_RV_RELAX, "relaxation-exp-dist-user", 0);
+
+FSRelaxExpDistUser::FSRelaxExpDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_EXP_DIST_USER, fem)
+{
+	AddProperty("tau", FE_MAT_1DFUNC);
 }
 
 //=============================================================================
@@ -3115,6 +3142,19 @@ FSRelaxMalkin::FSRelaxMalkin(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN, fem
     AddScienceParam(0, UNIT_TIME, "tau1"   , "min. relaxation time"); //  minimum characteristic relaxation time
     AddScienceParam(0, UNIT_TIME, "tau2"   , "max. relaxation time"); // maximum characteristic relaxation time
     AddScienceParam(0, UNIT_NONE, "beta"   , "power exponent"); // exponent
+}
+
+//=============================================================================
+// Relaxation Malkin Distributin User
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxMalkinDistUser, MODULE_MECH, FE_RELAX_MALKIN_DIST_USER, FE_MAT_RV_RELAX, "relaxation-Malkin-dist-user", 0);
+
+FSRelaxMalkinDistUser::FSRelaxMalkinDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_MALKIN_DIST_USER, fem)
+{
+	AddProperty("tau1", FE_MAT_1DFUNC);
+	AddProperty("tau2", FE_MAT_1DFUNC);
+	AddProperty("beta", FE_MAT_1DFUNC);
 }
 
 //=============================================================================
@@ -3360,7 +3400,7 @@ REGISTER_MATERIAL(FSPrestrainConstGradient, MODULE_MECH, FE_PRESTRAIN_CONST_GRAD
 FSPrestrainConstGradient::FSPrestrainConstGradient(FSModel* fem) : FSMaterialProp(FE_PRESTRAIN_CONST_GRADIENT, fem)
 {
 	mat3d F0; F0.unit();
-	AddMat3dParam(F0, "F0", "prestrain gradient");
+	AddMat3dParam(F0, "F0", "prestrain gradient")->MakeVariable(true);
 }
 
 //=============================================================================
@@ -3371,7 +3411,7 @@ REGISTER_MATERIAL(FSPrestrainInSituGradient, MODULE_MECH, FE_PRESTRAIN_INSITU_GR
 
 FSPrestrainInSituGradient::FSPrestrainInSituGradient(FSModel* fem) : FSMaterialProp(FE_PRESTRAIN_INSITU_GRADIENT, fem)
 {
-	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch");
+	AddScienceParam(1.0, UNIT_NONE, "stretch", "fiber stretch")->MakeVariable(true);
 	AddBoolParam(false, "isochoric", "isochoric prestrain");
 }
 
@@ -3405,7 +3445,7 @@ FSPlasticFlowCurveMath::FSPlasticFlowCurveMath(FSModel* fem) : FSMaterialProp(FE
 	AddIntParam(1, "nf");
 	AddDoubleParam(0, "e0");
 	AddDoubleParam(1, "emax");
-	AddMathParam("", "plastic_response", "plastic flow curve")->MakeVariable(true);
+	AddStringParam("", "plastic_response", "plastic flow curve");
 }
 
 

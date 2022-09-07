@@ -289,6 +289,15 @@ public:
 };
 
 //=============================================================================
+// PRESCRIBED NORMAL DISPLACEMENT
+//=============================================================================
+class FSNormalDisplacementBC : public FSBoundaryCondition
+{
+public:
+	FSNormalDisplacementBC(FSModel* ps);
+};
+
+//=============================================================================
 class FEBioBoundaryCondition : public FSBoundaryCondition
 {
 public:

@@ -451,6 +451,7 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 	else if (ref == "#help") on_actionFEBioResources_triggered();
 	else if (ref == "#forum") on_actionFEBioForum_triggered();
 	else if (ref == "#update") on_actionUpdate_triggered();
+    else if (ref == "#bugreport") on_actionBugReport_triggered();
 	else
 	{
 		string s = ref.toStdString();
@@ -986,42 +987,6 @@ int CMainWindow::GetMeshMode()
 {
 	if (ui->buildPanel->IsEditPanelVisible()) return MESH_MODE_SURFACE;
 	else return MESH_MODE_VOLUME;
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::dragEnterEvent(QDragEnterEvent *e)
-{
-	if (e->mimeData()->hasUrls()) {
-		e->acceptProposedAction();
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CMainWindow::dropEvent(QDropEvent *e)
-{
-	foreach (const QUrl &url, e->mimeData()->urls()) {
-		QString fileName = url.toLocalFile();
-
-		FileReader* fileReader = nullptr;
-
-		QFileInfo file(fileName);
-
-		// Create a file reader
-		// NOTE: For FEB files I prefer to open the file as a separate model,
-		// so I need this hack. 
-		if (file.suffix() != "feb") fileReader = CreateFileReader(fileName);
-
-		CDocument* doc = GetDocument();
-
-		// make sure we have one
-		if (fileReader && doc)
-		{
-			ReadFile(doc, fileName, fileReader, 0);
-		}
-		else {
-			OpenFile(fileName, false, false);
-		}
-	}
 }
 
 //-----------------------------------------------------------------------------

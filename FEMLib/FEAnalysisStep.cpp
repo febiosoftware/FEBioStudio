@@ -1352,6 +1352,7 @@ void STEP_SETTINGS::Defaults()
 	tfinal = 0;
 	bdivref = true;
 	brefstep = true;
+	dtforce = false;
 
 	// solver settings
 	mthsol = 0;
@@ -1360,6 +1361,7 @@ void STEP_SETTINGS::Defaults()
 	neqscheme = 0;	// = default equation scheme
 	ilimit = 10;
 	maxref = 15;
+	logSolve = false;
 
 	// analysis settings
 	nanalysis = 0;
@@ -1559,6 +1561,12 @@ void FSNonLinearMechanics::SetDisplacementTolerance(double dtol) { GetParam(MP_D
 void FSNonLinearMechanics::SetEnergyTolerance(double etol) { GetParam(MP_ETOL).SetFloatValue(etol); }
 void FSNonLinearMechanics::SetResidualTolerance(double rtol) { GetParam(MP_RTOL).SetFloatValue(rtol); }
 void FSNonLinearMechanics::SetLineSearchTolerance(double lstol) { GetParam(MP_LSTOL).SetFloatValue(lstol); }
+
+//-----------------------------------------------------------------------------
+FSExplicitSolidAnalysis::FSExplicitSolidAnalysis(FSModel* fem) : FSAnalysisStep(fem, FE_STEP_EXPLICIT_SOLID)
+{
+	SetTypeString("explicit-solid");
+}
 
 //-----------------------------------------------------------------------------
 FSHeatTransfer::FSHeatTransfer(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_HEAT_TRANSFER)

@@ -75,8 +75,6 @@ private:
 	void ParseGeometryPart       (XMLTag& tag);
 	void ParseGeometryInstance   (XMLTag& tag);
 
-	void ParseModelComponent(FSModelComponent* pmc, XMLTag& tag);
-
 	void ParseSolidDomain(XMLTag& tag);
 	void ParseShellDomain(XMLTag& tag);
 
