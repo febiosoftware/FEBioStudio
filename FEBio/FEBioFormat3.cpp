@@ -1225,15 +1225,26 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	{
 		FSMesh* feMesh = nodeSet->GetMesh();
 
-		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-
 		const char* szgen = tag.AttributeValue("generator", true);
 		if (szgen)
 		{
-			tag.skip();
+			FSModel* fem = &feb.GetFSModel();
+			FSMeshDataGenerator* gen = FEBio::CreateNodeDataGenerator(szgen, fem);
+			if (gen == nullptr)
+			{
+				tag.skip();
+			}
+			else
+			{
+				ParseModelComponent(gen, tag);
+				gen->SetItemList(nodeSet);
+				gen->SetName(name->cvalue());
+				fem->AddMeshDataGenerator(gen);
+			}
 		}
 		else
 		{
+			FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 			double val;
 			int lid;
 			++tag;
@@ -2335,7 +2346,12 @@ void FEBioFormat3::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 	else if (att == "heat_source") pbl = CREATE_BODY_LOAD(FSHeatSource);
 	else if (att == "non-const"  ) pbl = CREATE_BODY_LOAD(FSNonConstBodyForce);
     else if (att == "centrifugal") pbl = CREATE_BODY_LOAD(FSCentrifugalBodyForce);
-	else ParseUnknownAttribute(tag, "type");
+	else {
+		// see if FEBio knows it
+		pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
+		if (pbl == nullptr)
+			ParseUnknownAttribute(tag, "type");
+	}
 
 	// process body load
 	if (pbl)

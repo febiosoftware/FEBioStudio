@@ -357,10 +357,14 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 		if (pp->IsVariable())
 		{
 			const char* szval = tag.szvalue();
-			if (is_float(szval) == false)
+
+			if (pp->GetParamType() == Param_FLOAT)
 			{
-				// assume this is a math string
-				pp->SetParamType(Param_MATH);
+				if (is_float(szval) == false)
+				{
+					// assume this is a math string
+					pp->SetParamType(Param_MATH);
+				}
 			}
 		}
 
