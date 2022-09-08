@@ -115,6 +115,9 @@ public: // reading
 	// Get the current chunk ID
 	unsigned int GetChunkID();
 
+	// Get the current chunk size
+	unsigned int GetChunkSize();
+
 	// Close a chunk
 	void CloseChunk();
 

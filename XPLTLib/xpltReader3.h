@@ -38,7 +38,7 @@ namespace Post {
 // This class reads the XPLT file, version 3.0
 class XpltReader3 : public xpltParser
 {
-protected:
+public:
 	// file tags
 	enum { 
 		PLT_ROOT						= 0x01000000,

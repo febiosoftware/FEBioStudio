@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include "ToolBox.h"
-#include "ClassDescriptor.h"
+#include <FSCore/ClassDescriptor.h>
 #include "ObjectProps.h"
 #include <MeshLib/FECurveMesh.h>
 #include <MeshTools/GObject2D.h>

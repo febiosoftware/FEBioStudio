@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DlgImageFilter.h"
-#include "ClassDescriptor.h"
+#include <FSCore/ClassDescriptor.h>
 
 CImageFilterWidget::CImageFilterWidget()
     : m_imgModel(nullptr)

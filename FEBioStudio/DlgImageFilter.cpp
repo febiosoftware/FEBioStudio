@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QLabel>
 #include "DlgImageFilter.h"
-#include "ClassDescriptor.h"
+#include <FSCore/ClassDescriptor.h>
 
 
 CDlgImageFilter::CDlgImageFilter()

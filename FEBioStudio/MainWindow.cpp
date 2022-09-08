@@ -1708,7 +1708,7 @@ void CMainWindow::writeSettings()
 {
 	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
 
-	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	settings.setValue("version", version);

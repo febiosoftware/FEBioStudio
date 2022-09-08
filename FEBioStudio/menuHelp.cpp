@@ -82,9 +82,9 @@ void CMainWindow::on_actionAbout_triggered()
 {
 	QString version;
 #ifndef DEVCOMMIT
-	version = QString("Version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	version = QString("Version %1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 #else
-	version = QString("Dev Version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
+	version = QString("Dev Version %1.%2.%3.%4").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION).arg(DEVCOMMIT);
 #endif
 
 	std::string oglVersion = GetGLView()->GetOGLVersionString();
