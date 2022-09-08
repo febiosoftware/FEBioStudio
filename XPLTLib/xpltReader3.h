@@ -49,6 +49,7 @@ public:
 			PLT_HDR_COMPRESSION			= 0x01010004,
 			PLT_HDR_AUTHOR				= 0x01010005,	// new in 2.0
 			PLT_HDR_SOFTWARE			= 0x01010006,	// new in 2.0
+			PLT_HDR_UNITS				= 0x01010007,	// new in 4.0
 		PLT_DICTIONARY					= 0x01020000,
 			PLT_DIC_ITEM				= 0x01020001,
 			PLT_DIC_ITEM_TYPE			= 0x01020002,
@@ -135,7 +136,7 @@ public:
 			PLT_OBJECTS_STATE			= 0x02040000
 	};
 
-protected:
+public:
 	// FEBio tag
 	enum {FEBIO_TAG = 0x00464542 };
 
