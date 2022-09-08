@@ -516,10 +516,11 @@ void FEBioFormat4::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 
 	vector<FEBioInputModel::NODE> nodes; nodes.reserve(10000);
 
-	// create a node set if the name is definde
+	// create a node set if the name is defined
 	const char* szname = tag.AttributeValue("name", true);
 	std::string name;
 	if (szname) name = szname;
+	if (szname) part->SetName(szname);
 
 	// read nodal coordinates
 	++tag;
