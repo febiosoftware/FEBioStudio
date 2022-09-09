@@ -19822,7 +19822,7 @@ Elements
 \end_layout
 
 \begin_layout Section
-BYU format
+BYU
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec:mylabel32"
@@ -19839,7 +19839,7 @@ The BYU format, developed at Brigham Young University, is used to describe
 \end_layout
 
 \begin_layout Section
-VTK format
+VTK
 \begin_inset CommandInset label
 LatexCommand label
 name "subsec:mylabel33"
@@ -19888,6 +19888,260 @@ CELLTYPES
 \begin_layout Standard
 Currently FEBio Studio only supports the triangular and quadilateral shell
  mesh and hexahedral volume mesh.
+\end_layout
+
+\begin_layout Section
+STEP 
+\end_layout
+
+\begin_layout Standard
+Step files are used to import CAD geometry.
+ The STEP file reader is supported mostly through a third-party library,
+ called OpenCascade
+\begin_inset Foot
+status open
+
+\begin_layout Plain Layout
+https://www.opencascade.com/
+\end_layout
+
+\end_inset
+
+ and should be able to read a wide variety of STEP files.
+ 
+\end_layout
+
+\begin_layout Standard
+The STEP file reader will import each solid part defined in the STEP file
+ as a separate object.
+ 
+\end_layout
+
+\begin_layout Section
+BREP
+\end_layout
+
+\begin_layout Standard
+BREP files are used to import CAD geometry.
+ The BREP file reader is supported mostly through a third-party library,
+ called OpenCascade and should be able to read a wide variety of BREP files.
+ 
+\end_layout
+
+\begin_layout Standard
+The BREP file reader will import the entire geometry as a single object.
+\end_layout
+
+\begin_layout Section
+IDEAS
+\end_layout
+
+\begin_layout Standard
+This is the file format of the I-DEAS software.
+ 
+\end_layout
+
+\begin_layout Standard
+The IDEAS file reader will import the nodal coordinates and element connectivity.
+ The following element types are supported: 
+\end_layout
+
+\begin_layout Itemize
+11 : rod element
+\end_layout
+
+\begin_layout Itemize
+21 : linear beam
+\end_layout
+
+\begin_layout Itemize
+22 : tapered beam
+\end_layout
+
+\begin_layout Itemize
+23 : curved beam
+\end_layout
+
+\begin_layout Itemize
+24 : parabolic beam
+\end_layout
+
+\begin_layout Itemize
+44 : plane stress linear quadrilateral
+\end_layout
+
+\begin_layout Itemize
+91 : linear triangular element
+\end_layout
+
+\begin_layout Itemize
+94 : linear quadrilateral element
+\end_layout
+
+\begin_layout Itemize
+111: linear tetrahedral element
+\end_layout
+
+\begin_layout Itemize
+112 : linear wedge element
+\end_layout
+
+\begin_layout Itemize
+113 : 15-node wedge element
+\end_layout
+
+\begin_layout Itemize
+115 : linear brick element
+\end_layout
+
+\begin_layout Itemize
+116 : 27-node brick element
+\end_layout
+
+\begin_layout Itemize
+118 : 10-node tetrahedron element
+\end_layout
+
+\begin_layout Section
+NASTRAN
+\end_layout
+
+\begin_layout Standard
+This if the file format from the Nastran finite element software.
+ The following keywords are supported.
+ 
+\end_layout
+
+\begin_layout Itemize
+GRID
+\end_layout
+
+\begin_layout Itemize
+CTETRA
+\end_layout
+
+\begin_layout Itemize
+PSOLID
+\end_layout
+
+\begin_layout Itemize
+MAT1 : materials are mapped to 
+\begin_inset Quotes eld
+\end_inset
+
+isotropic elastic
+\begin_inset Quotes erd
+\end_inset
+
+ materials.
+ 
+\end_layout
+
+\begin_layout Itemize
+CHexa
+\end_layout
+
+\begin_layout Section
+MESH
+\end_layout
+
+\begin_layout Standard
+Mesh file format.
+ The following keywords are supported.
+ 
+\end_layout
+
+\begin_layout Itemize
+Vertices
+\end_layout
+
+\begin_layout Itemize
+Hexahedra
+\end_layout
+
+\begin_layout Itemize
+Tetrahedra
+\end_layout
+
+\begin_layout Itemize
+Triangles
+\end_layout
+
+\begin_layout Section
+TETGEN
+\end_layout
+
+\begin_layout Standard
+File format used by the TetGen software.
+ TetGen typically splits the mesh into two separate files, a .node file,
+ which contains the nodal coordinates and .ele file, which contains the element
+ connectivity.
+ The TetGen file reader expects the .ele file and will automatically look
+ for a .node file that has the same file name.
+ So, for example, if the .ele file is called 
+\begin_inset Quotes eld
+\end_inset
+
+mymesh.ele
+\begin_inset Quotes erd
+\end_inset
+
+, then the file reader will look for a .node file called 
+\begin_inset Quotes eld
+\end_inset
+
+mymesh.node
+\begin_inset Quotes erd
+\end_inset
+
+ in the same file folder.
+ 
+\end_layout
+
+\begin_layout Section
+RAW
+\end_layout
+
+\begin_layout Standard
+The RAW format is used to define a 3D stack of image data.
+ The RAW file reader will import the image data and generate a hexahedral
+ mesh that has the same number of elements in x, y, and z as the image dimension
+s.
+ The elements are partitioned based on the grayscale levels in the image.
+ For instance, for a black-and-white image, two parts will be created, one
+ for all the elements that correspond to the black part of the image, and
+ one for all the elements that correspond to the white part of the image.
+ 
+\end_layout
+
+\begin_layout Section
+COMSOL
+\end_layout
+
+\begin_layout Standard
+This file format is used by the COMSOL software package.
+ Currently, only the text version (mphtxt) can be imported.
+ 
+\end_layout
+
+\begin_layout Standard
+Only the finite element mesh is extracted from the file.
+ 
+\end_layout
+
+\begin_layout Section
+PLY
+\end_layout
+
+\begin_layout Standard
+These are files stored in the Polygon File Format, and supports triangular
+ and quadrilateral surface meshes.
+ 
+\end_layout
+
+\begin_layout Standard
+Meshes from PLY files are imported as editable surfaces.
+ 
 \end_layout
 
 \begin_layout Chapter
