@@ -138,49 +138,33 @@ void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po, co
 			ui->addTreeItem(t1, QString::fromStdString(pname), &p);
 		}
 	}
-}
 
-void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FSMaterial* mat, const std::string& name)
-{
-	FSModel* fem = mat->GetFSModel();
-	int NP = mat->Parameters();
+	int NP = po->Properties();
 	for (int n = 0; n < NP; ++n)
 	{
-		Param& p = mat->GetParam(n);
-		if (p.GetLoadCurveID() > 0)
-		{
-			assert(p.IsVolatile());
-			string paramName = name + "." + p.GetShortName();
-			ui->addTreeItem(t1, QString::fromStdString(paramName), &p);
-		}
-	}
+		FSProperty& prop = po->GetProperty(n);
 
-	NP = mat->Properties();
-	for (int n = 0; n < NP; ++n)
-	{
-		FSProperty& matProp = mat->GetProperty(n);
-
-		int np = matProp.Size();
+		int np = prop.Size();
 		if (np == 1)
 		{
-			FSMaterial* pm = mat->GetMaterialProperty(n);
+			FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent());
 			if (pm)
 			{
-				string paramName = name + "." + matProp.GetName();
-				BuildMaterialCurves(t1, pm, paramName);
+				string paramName = name + "." + prop.GetName();
+				BuildLoadCurves(t1, pm, paramName);
 			}
 		}
 		else
 		{
 			for (int j = 0; j < np; ++j)
 			{
-				FSMaterial* pm = mat->GetMaterialProperty(n, j);
+				FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
 				if (pm)
 				{
-					std::stringstream ss; 
-					ss << name << "." << matProp.GetName() << "[" << j << "]";
+					std::stringstream ss;
+					ss << name << "." << prop.GetName() << "[" << j << "]";
 					string paramName = ss.str();
-					BuildMaterialCurves(t1, pm, paramName);
+					BuildLoadCurves(t1, pm, paramName);
 				}
 			}
 		}
@@ -232,10 +216,7 @@ void CCurveEditor::BuildLoadCurves()
 	{
 		GMaterial* pgm = fem.GetMaterial(i);
 		FSMaterial* pm = pgm->GetMaterialProperties();
-		if (pm)
-		{
-			BuildMaterialCurves(t1, pm, pgm->GetName());
-		}
+		if (pm) BuildLoadCurves(t1, pm, pgm->GetName());
 	}
 
 	// add the boundary condition data
@@ -368,7 +349,7 @@ void CCurveEditor::BuildLoadCurves()
 	}
 }
 
-void CCurveEditor::AddParameterList(QTreeWidgetItem* t1, FSModelComponent* po)
+void CCurveEditor::AddModelComponent(QTreeWidgetItem* t1, FSModelComponent* po)
 {
 	FSModel* fem = po->GetFSModel();
 	for (int n = 0; n < po->Parameters(); ++n)
@@ -377,6 +358,39 @@ void CCurveEditor::AddParameterList(QTreeWidgetItem* t1, FSModelComponent* po)
 		if (param.IsEditable() && param.IsVolatile())
 		{
 			ui->addTreeItem(t1, QString::fromStdString(param.GetShortName()), &param);
+		}
+	}
+
+	for (int k = 0; k < po->Properties(); ++k)
+	{
+		FSProperty& prop = po->GetProperty(k);
+		QString propName = QString::fromStdString(prop.GetName());
+		if (prop.Size() == 1)
+		{
+			FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent());
+			if (pm)
+			{
+				const char* sztype = pm->GetTypeString();
+				QString name = propName;
+				if (sztype) name = QString("%1 [%2]").arg(propName).arg(sztype);
+				QTreeWidgetItem* tc = ui->addTreeItem(t1, name);
+				AddModelComponent(tc, pm);
+			}
+		}
+		else
+		{
+			for (int l = 0; l < prop.Size(); ++l)
+			{
+				FSModelComponent* pml = dynamic_cast<FSModelComponent*>(prop.GetComponent(l));
+				if (pml)
+				{
+					const char* sztype = pml->GetTypeString();
+					QString name = propName;
+					if (sztype) name = QString("%1-%2 [%3]").arg(propName).arg(l+1).arg(sztype);
+					QTreeWidgetItem* tc = ui->addTreeItem(t1, name);
+					AddModelComponent(tc, pml);
+				}
+			}
 		}
 	}
 }
@@ -427,7 +441,7 @@ void CCurveEditor::BuildModelTree()
 		{
 			FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(map->GetName()));
-			AddParameterList(t3, map);
+			AddModelComponent(t3, map);
 		}
 	}
 
@@ -441,10 +455,7 @@ void CCurveEditor::BuildModelTree()
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pgm->GetName()));
 
 			FSMaterial* pm = pgm->GetMaterialProperties();
-			if (pm)
-			{
-				AddMaterial(pm, t3);
-			}
+			if (pm) AddModelComponent(t3, pm);
 		}
 	}
 
@@ -462,7 +473,7 @@ void CCurveEditor::BuildModelTree()
 				if (pbc)
 				{
 					QTreeWidgetItem* t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
-					AddParameterList(t3, pbc);
+					AddModelComponent(t3, pbc);
 				}
 			}
 		}
@@ -480,7 +491,7 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSLoad* plj = pstep->Load(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-				AddParameterList(t3, plj);
+				AddModelComponent(t3, plj);
 			}
 		}
 	}
@@ -496,7 +507,7 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSInterface* pi = pstep->Interface(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pi->GetName()));
-				AddParameterList(t3, pi);
+				AddModelComponent(t3, pi);
 			}
 		}
 	}
@@ -512,7 +523,7 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSModelConstraint* pmc = pstep->Constraint(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pmc->GetName()));
-				AddParameterList(t3, pmc);
+				AddModelComponent(t3, pmc);
 			}
 		}
 	}
@@ -528,7 +539,7 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSRigidBC* pc = pstep->RigidBC(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-				AddParameterList(t3, pc);
+				AddModelComponent(t3, pc);
 			}
 		}
 
@@ -539,7 +550,7 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSRigidIC* pc = pstep->RigidIC(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-				AddParameterList(t3, pc);
+				AddModelComponent(t3, pc);
 			}
 		}
 
@@ -550,7 +561,7 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSRigidLoad* pc = pstep->RigidLoad(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-				AddParameterList(t3, pc);
+				AddModelComponent(t3, pc);
 			}
 		}
 	}
@@ -566,7 +577,7 @@ void CCurveEditor::BuildModelTree()
 			{
 				FSRigidConnector* pc = pstep->RigidConnector(j);
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-				AddParameterList(t3, pc);
+				AddModelComponent(t3, pc);
 			}
 		}
 	}
@@ -591,7 +602,7 @@ void CCurveEditor::BuildModelTree()
 				if (dm)
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(dss->GetName()));
-					AddMaterial(dm, t3);
+					AddModelComponent(t3, dm);
 				}
 			}
 		}
@@ -606,49 +617,7 @@ void CCurveEditor::BuildModelTree()
 		{
 			FSStep* pstep = fem.GetStep(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pstep->GetName()));
-			AddParameterList(t3, pstep);
-			for (int j = 0; j < pstep->Properties(); ++j)
-			{
-				FSProperty& prop = pstep->GetProperty(j);
-				if (prop.Size() != 0)
-				{
-					FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(prop.GetComponent());
-					if (pmc)
-					{
-						QTreeWidgetItem* t4 = ui->addTreeItem(t3, QString::fromStdString(prop.GetName()));
-						AddParameterList(t4, pmc);
-					}
-				}
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CCurveEditor::AddMaterial(FSMaterial* pm, QTreeWidgetItem* tp)
-{
-	AddParameterList(tp, pm);
-	AddMultiMaterial(pm, tp);
-}
-
-//-----------------------------------------------------------------------------
-void CCurveEditor::AddMultiMaterial(FSMaterial* pm, QTreeWidgetItem* tp)
-{
-	for (int k = 0; k<pm->Properties(); ++k)
-	{
-		FSProperty& pmc = pm->GetProperty(k);
-		for (int l=0; l<pmc.Size(); ++l)
-		{
-			FSMaterial* pmat = pm->GetMaterialProperty(k, l);
-			if (pmat)
-			{
-				QString name = QString::fromStdString(pmc.GetName());
-				const char* sztype = pmat->GetTypeString();
-				if (sztype) name = QString("%1 [%2]").arg(name).arg(sztype);
-				QTreeWidgetItem* tc = ui->addTreeItem(tp, name);
-				AddParameterList(tc, pmat);
-				AddMultiMaterial(pmat, tc);
-			}
+			AddModelComponent(t3, pstep);
 		}
 	}
 }
