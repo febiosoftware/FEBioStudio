@@ -139,150 +139,156 @@ bool FESphereInBox::BuildMultiBlock()
 	AddNode(vec3d(0, 0, d), NODE_SHAPE);
 
 	// create blocks
+	// -Z
 	m_MBlock.resize(24);
 	MBBlock& b1 = m_MBlock[0];
 	b1.SetID(0);
 	b1.SetNodes(0, 1, 4, 3, 28, 29, 26, 27);
 	b1.SetSizes(nx, ny, nr);
-//	b1.SetZoning(1, gr, 1, false, br, false);
+	b1.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b2 = m_MBlock[1];
 	b2.SetID(0);
 	b2.SetNodes(1, 2, 5, 4, 29, 30, 31, 26);
 	b2.SetSizes(nx, ny, nr);
-//	b2.SetZoning(1, gr, 1, false, br, false);
+	b2.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b3 = m_MBlock[2];
 	b3.SetID(0);
 	b3.SetNodes(3, 4, 7, 6, 27, 26, 33, 34);
 	b3.SetSizes(nx, ny, nr);
-//	b3.SetZoning(1, gr, 1, false, br, false);
+	b3.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b4 = m_MBlock[3];
 	b4.SetID(0);
 	b4.SetNodes(4, 5, 8, 7, 26, 31, 32, 33);
 	b4.SetSizes(nx, ny, nr);
-//	b4.SetZoning(1, gr, 1, false, br, false);
+	b4.SetZoning(1, 1, gr, false, false, br);
 
+	// -X
 	MBBlock& b5 = m_MBlock[4];
 	b5.SetID(0);
-	b5.SetNodes(0, 28, 27, 3, 9, 36, 35, 12);
-	b5.SetSizes(nr, ny, nz);
-//	b5.SetZoning(1, gr, 1, false, br, false);
+	b5.SetNodes(0, 3, 12, 9, 28, 27, 35, 36);
+	b5.SetSizes(nx, ny, nr);
+	b5.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b6 = m_MBlock[5];
 	b6.SetID(0);
-	b6.SetNodes(0, 1, 29, 28, 9, 10, 37, 36);
-	b6.SetSizes(nx, nr, nz);
-//	b6.SetZoning(1, gr, 1, false, br, false);
+	b6.SetNodes(3, 6, 14, 12, 27, 34, 42, 35);
+	b6.SetSizes(nx, ny, nr);
+	b6.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b7 = m_MBlock[6];
 	b7.SetID(0);
-	b7.SetNodes(1, 2, 30, 29, 10, 11, 38, 37);
-	b7.SetSizes(nx, nr, nz);
-//	b7.SetZoning(1, gr, 1, false, br, false);
+	b7.SetNodes(9, 12, 20, 17, 36, 35, 43, 44);
+	b7.SetSizes(nx, ny, nr);
+	b7.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b8 = m_MBlock[7];
 	b8.SetID(0);
-	b8.SetNodes(30, 2, 5, 31, 38, 11, 13, 39);
-	b8.SetSizes(nr, ny, nz);
-//	b8.SetZoning(1, gr, 1, false, br, false);
+	b8.SetNodes(12, 14, 23, 20, 35, 42, 50, 43);
+	b8.SetSizes(nx, ny, nr);
+	b8.SetZoning(1, 1, gr, false, false, br);
 
+	// -Y
 	MBBlock& b9 = m_MBlock[8];
 	b9.SetID(0);
-	b9.SetNodes(31, 5, 8, 32, 39, 13, 16, 40);
-	b9.SetSizes(nr, ny, nz);
-//	b9.SetZoning(1, gr, 1, false, br, false);
+	b9.SetNodes(0, 9, 10, 1, 28, 36, 37, 29);
+	b9.SetSizes(nx, ny, nr);
+	b9.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b10 = m_MBlock[9];
 	b10.SetID(0);
-	b10.SetNodes(33, 32, 8, 7, 41, 40, 16, 15);
-	b10.SetSizes(nx, nr, nz);
-//	b10.SetZoning(1, gr, 1, false, br, false);
+	b10.SetNodes(1, 10, 11, 2, 29, 37, 38, 30);
+	b10.SetSizes(nx, ny, nr);
+	b10.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b11 = m_MBlock[10];
 	b11.SetID(0);
-	b11.SetNodes(34, 33, 7, 6, 42, 41, 15, 14);
-	b11.SetSizes(nx, nr, nz);
-//	b11.SetZoning(1, gr, 1, false, br, false);
+	b11.SetNodes(10, 9, 17, 18, 37, 36, 44, 45);
+	b11.SetSizes(nx, ny, nr);
+	b11.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b12 = m_MBlock[11];
 	b12.SetID(0);
-	b12.SetNodes(3, 27, 34, 6, 12, 35, 42, 14);
-	b12.SetSizes(nr, ny, nz);
-//	b12.SetZoning(1, gr, 1, false, br, false);
+	b12.SetNodes(11, 10, 18, 19, 38, 37, 45, 46);
+	b12.SetSizes(nx, ny, nr);
+	b12.SetZoning(1, 1, gr, false, false, br);
 
+	// +X 
 	MBBlock& b13 = m_MBlock[12];
 	b13.SetID(0);
-	b13.SetNodes(9, 36, 35, 12, 17, 44, 43, 20);
-	b13.SetSizes(nr, ny, nz);
-//	b13.SetZoning(1, gr, 1, false, br, false);
+	b13.SetNodes(2, 11, 13, 5, 30, 38, 39, 31);
+	b13.SetSizes(nx, ny, nr);
+	b13.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b14 = m_MBlock[13];
 	b14.SetID(0);
-	b14.SetNodes(9, 10, 37, 36, 17, 18, 45, 44);
-	b14.SetSizes(nx, nr, nz);
-//	b14.SetZoning(1, gr, 1, false, br, false);
+	b14.SetNodes(5, 13, 16, 8, 31, 39, 40, 32);
+	b14.SetSizes(nx, ny, nr);
+	b14.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b15 = m_MBlock[14];
 	b15.SetID(0);
-	b15.SetNodes(10, 11, 38, 37, 18, 19, 46, 45);
-	b15.SetSizes(nx, nr, nz);
-//	b15.SetZoning(1, gr, 1, false, br, false);
+	b15.SetNodes(13, 11, 19, 22, 39, 38, 46, 47);
+	b15.SetSizes(nx, ny, nr);
+	b15.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b16 = m_MBlock[15];
 	b16.SetID(0);
-	b16.SetNodes(38, 11, 13, 39, 46, 19, 22, 47);
-	b16.SetSizes(nr, ny, nz);
-//	b16.SetZoning(1, gr, 1, false, br, false);
+	b16.SetNodes(16, 13, 22, 25, 40, 39, 47, 48);
+	b16.SetSizes(nx, ny, nr);
+	b16.SetZoning(1, 1, gr, false, false, br);
 
+	// +Y
 	MBBlock& b17 = m_MBlock[16];
 	b17.SetID(0);
-	b17.SetNodes(39, 13, 16, 40, 47, 22, 25, 48);
-	b17.SetSizes(nr, ny, nz);
-//	b17.SetZoning(1, gr, 1, false, br, false);
+	b17.SetNodes(7, 8, 16, 15, 33, 32, 40, 41);
+	b17.SetSizes(nx, ny, nr);
+	b17.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b18 = m_MBlock[17];
 	b18.SetID(0);
-	b18.SetNodes(41, 40, 16, 15, 49, 48, 25, 24);
-	b18.SetSizes(nx, nr, nz);
-//	b18.SetZoning(1, gr, 1, false, br, false);
+	b18.SetNodes(6, 7, 15, 14, 34, 33, 41, 42);
+	b18.SetSizes(nx, ny, nr);
+	b18.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b19 = m_MBlock[18];
 	b19.SetID(0);
-	b19.SetNodes(42, 41, 15, 14, 50, 49, 24, 23);
-	b19.SetSizes(nx, nr, nz);
-//	b19.SetZoning(1, gr, 1, false, br, false);
+	b19.SetNodes(15, 16, 25, 24, 41, 40, 48, 49);
+	b19.SetSizes(nx, ny, nr);
+	b19.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b20 = m_MBlock[19];
 	b20.SetID(0);
-	b20.SetNodes(12, 35, 42, 14, 20, 43, 50, 23);
-	b20.SetSizes(nr, ny, nz);
-//	b20.SetZoning(1, gr, 1, false, br, false);
+	b20.SetNodes(14, 15, 24, 23, 42, 41, 49, 50);
+	b20.SetSizes(nx, ny, nr);
+	b20.SetZoning(1, 1, gr, false, false, br);
 
+	// +Z
 	MBBlock& b21 = m_MBlock[20];
 	b21.SetID(0);
-	b21.SetNodes(44, 45, 51, 43, 17, 18, 21, 20);
+	b21.SetNodes(20, 21, 18, 17, 43, 51, 45, 44);
 	b21.SetSizes(nx, ny, nr);
-//	b21.SetZoning(1, gr, 1, false, br, false);
+	b21.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b22 = m_MBlock[21];
 	b22.SetID(0);
-	b22.SetNodes(45, 46, 47, 51, 18, 19, 22, 21);
+	b22.SetNodes(21, 22, 19, 18, 51, 47, 46, 45);
 	b22.SetSizes(nx, ny, nr);
-//	b22.SetZoning(1, gr, 1, false, br, false);
+	b22.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b23 = m_MBlock[22];
 	b23.SetID(0);
-	b23.SetNodes(43, 51, 49, 50, 20, 21, 24, 23);
+	b23.SetNodes(23, 24, 21, 20, 50, 49, 51, 43);
 	b23.SetSizes(nx, ny, nr);
-//	b23.SetZoning(1, gr, 1, false, br, false);
+	b23.SetZoning(1, 1, gr, false, false, br);
 
 	MBBlock& b24 = m_MBlock[23];
 	b24.SetID(0);
-	b24.SetNodes(51, 47, 48, 49, 21, 22, 25, 24);
+	b24.SetNodes(24, 25, 22, 21, 49, 48, 47, 51);
 	b24.SetSizes(nx, ny, nr);
-//	b24.SetZoning(1, gr, 1, false, br, false);
+	b24.SetZoning(1, 1, gr, false, false, br);
 
 	// update the MB data
 	BuildMB();
@@ -292,127 +298,213 @@ bool FESphereInBox::BuildMultiBlock()
 	SetBlockFaceID(b2 , -1, -1, -1, -1,  4, 10);
 	SetBlockFaceID(b3 , -1, -1, -1, -1,  4, 10);
 	SetBlockFaceID(b4 , -1, -1, -1, -1,  4, 10);
-	SetBlockFaceID(b5 , -1,  9, -1,  3, -1, -1);
-	SetBlockFaceID(b6 ,  0, -1,  6, -1, -1, -1);
-	SetBlockFaceID(b7 ,  0, -1,  6, -1, -1, -1);
-	SetBlockFaceID(b8 , -1,  1, -1,  7, -1, -1);
-	SetBlockFaceID(b9 , -1,  1, -1,  7, -1, -1);
-	SetBlockFaceID(b10,  8, -1,  2, -1, -1, -1);
-	SetBlockFaceID(b11,  8, -1,  2, -1, -1, -1);
-	SetBlockFaceID(b12, -1,  9, -1,  3, -1, -1);
-	SetBlockFaceID(b13, -1,  9, -1,  3, -1, -1);
-	SetBlockFaceID(b14,  0, -1,  6, -1, -1, -1);
-	SetBlockFaceID(b15,  0, -1,  6, -1, -1, -1);
-	SetBlockFaceID(b16, -1,  1, -1,  7, -1, -1);
-	SetBlockFaceID(b17, -1,  1, -1,  7, -1, -1);
-	SetBlockFaceID(b18,  8, -1,  2, -1, -1, -1);
-	SetBlockFaceID(b19,  8, -1,  2, -1, -1, -1);
-	SetBlockFaceID(b20, -1,  9, -1,  3, -1, -1);
-	SetBlockFaceID(b21, -1, -1, -1, -1, 11,  5);
-	SetBlockFaceID(b22, -1, -1, -1, -1, 11,  5);
-	SetBlockFaceID(b23, -1, -1, -1, -1, 11,  5);
-	SetBlockFaceID(b24, -1, -1, -1, -1, 11,  5);
+
+	SetBlockFaceID(b5 , -1, -1, -1, -1,  3,  9);
+	SetBlockFaceID(b6 , -1, -1, -1, -1,  3,  9);
+	SetBlockFaceID(b7 , -1, -1, -1, -1,  3,  9);
+	SetBlockFaceID(b8 , -1,  1, -1, -1,  3,  9);
+
+	SetBlockFaceID(b9 , -1, -1, -1, -1,  0,  6);
+	SetBlockFaceID(b10, -1, -1, -1, -1,  0,  6);
+	SetBlockFaceID(b11, -1, -1, -1, -1,  0,  6);
+	SetBlockFaceID(b12, -1, -1, -1, -1,  0,  6);
+
+	SetBlockFaceID(b13, -1, -1, -1, -1,  1,  7);
+	SetBlockFaceID(b14, -1, -1, -1, -1,  1,  7);
+	SetBlockFaceID(b15, -1, -1, -1, -1,  1,  7);
+	SetBlockFaceID(b16, -1, -1, -1, -1,  1,  7);
+
+	SetBlockFaceID(b17, -1, -1, -1, -1,  2,  8);
+	SetBlockFaceID(b18, -1, -1, -1, -1,  2,  8);
+	SetBlockFaceID(b19, -1, -1, -1, -1,  2,  8);
+	SetBlockFaceID(b20, -1, -1, -1, -1,  2,  8);
+
+	SetBlockFaceID(b21, -1, -1, -1, -1,  5,  6);
+	SetBlockFaceID(b22, -1, -1, -1, -1,  5,  6);
+	SetBlockFaceID(b23, -1, -1, -1, -1,  5,  6);
+	SetBlockFaceID(b24, -1, -1, -1, -1,  5,  6);
 
 	// assign edge ID's
 	MBFace& F1  = GetBlockFace( 0, 4); SetFaceEdgeID(F1 , -1, -1,  0,  3);
 	MBFace& F2  = GetBlockFace( 1, 4); SetFaceEdgeID(F2 , -1,  1,  0, -1);
 	MBFace& F3  = GetBlockFace( 2, 4); SetFaceEdgeID(F3 ,  2, -1, -1,  3);
 	MBFace& F4  = GetBlockFace( 3, 4); SetFaceEdgeID(F4 ,  2,  1, -1, -1);
-	MBFace& F5  = GetBlockFace( 4, 3); SetFaceEdgeID(F5 ,  3,  8, -1, -1);
-	MBFace& F6  = GetBlockFace( 5, 0); SetFaceEdgeID(F6 ,  0, -1, -1,  8);
-	MBFace& F7  = GetBlockFace( 6, 0); SetFaceEdgeID(F7 ,  0,  9, -1, -1);
-	MBFace& F8  = GetBlockFace( 7, 1); SetFaceEdgeID(F8 ,  1, -1, -1,  9);
-	MBFace& F9  = GetBlockFace( 8, 1); SetFaceEdgeID(F9 ,  1, 10, -1, -1);
-	MBFace& F10 = GetBlockFace( 9, 2); SetFaceEdgeID(F10,  2, -1, -1, 10);
-	MBFace& F11 = GetBlockFace(10, 2); SetFaceEdgeID(F11,  2, 11, -1, -1);
-	MBFace& F12 = GetBlockFace(11, 3); SetFaceEdgeID(F12,  3, -1, -1, 11);
-	MBFace& F13 = GetBlockFace(12, 3); SetFaceEdgeID(F13, -1,  8,  7, -1);
-	MBFace& F14 = GetBlockFace(13, 0); SetFaceEdgeID(F14, -1, -1,  4,  8);
-	MBFace& F15 = GetBlockFace(14, 0); SetFaceEdgeID(F15, -1,  9,  4, -1);
-	MBFace& F16 = GetBlockFace(15, 1); SetFaceEdgeID(F16, -1, -1,  5,  9);
-	MBFace& F17 = GetBlockFace(16, 1); SetFaceEdgeID(F17, -1, 10,  5, -1);
-	MBFace& F18 = GetBlockFace(17, 2); SetFaceEdgeID(F18, -1, -1,  6, 10);
-	MBFace& F19 = GetBlockFace(18, 2); SetFaceEdgeID(F19, -1, 11,  6, -1);
-	MBFace& F20 = GetBlockFace(19, 3); SetFaceEdgeID(F20, -1, -1,  7, 11);
-	MBFace& F21 = GetBlockFace(20, 5); SetFaceEdgeID(F21,  4, -1, -1,  7);
-	MBFace& F22 = GetBlockFace(21, 5); SetFaceEdgeID(F22,  4,  5, -1, -1);
-	MBFace& F23 = GetBlockFace(22, 5); SetFaceEdgeID(F23, -1, -1,  6,  7);
-	MBFace& F24 = GetBlockFace(23, 5); SetFaceEdgeID(F24, -1,  5,  6, -1);
+
+	MBFace& F5  = GetBlockFace( 4, 4); SetFaceEdgeID(F5 , -1, -1, 3, 8);
+	MBFace& F6  = GetBlockFace( 5, 4); SetFaceEdgeID(F6 , -1, 11, 3, -1);
+	MBFace& F7  = GetBlockFace( 6, 4); SetFaceEdgeID(F7 , 7, -1, -1, 8);
+	MBFace& F8  = GetBlockFace( 7, 4); SetFaceEdgeID(F8 , 7, 11, -1, -1);
+	
+	MBFace& F9  = GetBlockFace( 8, 4); SetFaceEdgeID(F9 , -1, -1, 8, 0);
+	MBFace& F10 = GetBlockFace( 9, 4); SetFaceEdgeID(F10, 9, -1, -1, 0);
+	MBFace& F11 = GetBlockFace(10, 4); SetFaceEdgeID(F11, 4, 8, -1, -1);
+	MBFace& F12 = GetBlockFace(11, 4); SetFaceEdgeID(F12, 4, -1, -1, 9);
+
+	MBFace& F13 = GetBlockFace(12, 4); SetFaceEdgeID(F13, -1, -1, 9, 1);
+	MBFace& F14 = GetBlockFace(13, 4); SetFaceEdgeID(F14, 10, -1, -1, 1);
+	MBFace& F15 = GetBlockFace(14, 4); SetFaceEdgeID(F15, 5, 9, -1, -1);
+	MBFace& F16 = GetBlockFace(15, 4); SetFaceEdgeID(F16, 5, -1, -1, 10);
+
+	MBFace& F17 = GetBlockFace(16, 4); SetFaceEdgeID(F17, -1, 10, 2, -1);
+	MBFace& F18 = GetBlockFace(17, 4); SetFaceEdgeID(F18, -1, -1, 2, 11);
+	MBFace& F19 = GetBlockFace(18, 4); SetFaceEdgeID(F19, 6, 10, -1, -1);
+	MBFace& F20 = GetBlockFace(19, 4); SetFaceEdgeID(F20, 6, -1, -1, 11);
+
+	MBFace& F21 = GetBlockFace(20, 4); SetFaceEdgeID(F21, 4, -1, -1,  7);
+	MBFace& F22 = GetBlockFace(21, 4); SetFaceEdgeID(F22,  4,  5, -1, -1);
+	MBFace& F23 = GetBlockFace(22, 4); SetFaceEdgeID(F23, -1, -1,  6,  7);
+	MBFace& F24 = GetBlockFace(23, 4); SetFaceEdgeID(F24, -1,  5,  6, -1);
 
 	MBFace& F25 = GetBlockFace( 0, 5); SetFaceEdgeID(F25, 12, -1, -1, 15);
 	MBFace& F26 = GetBlockFace( 1, 5); SetFaceEdgeID(F26, 12, 13, -1, -1);
 	MBFace& F27 = GetBlockFace( 2, 5); SetFaceEdgeID(F27, -1, -1, 14, 15);
 	MBFace& F28 = GetBlockFace( 3, 5); SetFaceEdgeID(F28, -1, 13, 14, -1);
-	MBFace& F29 = GetBlockFace( 4, 1); SetFaceEdgeID(F29, 15, -1, -1, 20);
-	MBFace& F30 = GetBlockFace( 5, 2); SetFaceEdgeID(F30, 12, 20, -1, -1);
-	MBFace& F31 = GetBlockFace( 6, 2); SetFaceEdgeID(F31, 12, -1, -1, 21);
-	MBFace& F32 = GetBlockFace( 7, 3); SetFaceEdgeID(F32, 13, 21, -1, -1);
-	MBFace& F33 = GetBlockFace( 8, 3); SetFaceEdgeID(F33, 13, -1, -1, 22);
-	MBFace& F34 = GetBlockFace( 9, 0); SetFaceEdgeID(F34, 14, 22, -1, -1);
-	MBFace& F35 = GetBlockFace(10, 0); SetFaceEdgeID(F35, 14, -1, -1, 23);
-	MBFace& F36 = GetBlockFace(11, 1); SetFaceEdgeID(F36, 15, 23, -1, -1);
-	MBFace& F37 = GetBlockFace(12, 1); SetFaceEdgeID(F37, -1, -1, 19, 20);
-	MBFace& F38 = GetBlockFace(13, 2); SetFaceEdgeID(F38, -1, 20, 16, -1);
-	MBFace& F39 = GetBlockFace(14, 2); SetFaceEdgeID(F39, -1, -1, 16, 21);
-	MBFace& F40 = GetBlockFace(15, 3); SetFaceEdgeID(F40, -1, 21, 17, -1);
-	MBFace& F41 = GetBlockFace(16, 3); SetFaceEdgeID(F41, -1, -1, 17, 22);
-	MBFace& F42 = GetBlockFace(17, 0); SetFaceEdgeID(F42, -1, 22, 18, -1);
-	MBFace& F43 = GetBlockFace(18, 0); SetFaceEdgeID(F43, -1, -1, 18, 23);
-	MBFace& F44 = GetBlockFace(19, 1); SetFaceEdgeID(F44, -1, 23, 19, -1);
-	MBFace& F45 = GetBlockFace(20, 4); SetFaceEdgeID(F45, -1, -1, 16, 19);
-	MBFace& F46 = GetBlockFace(21, 4); SetFaceEdgeID(F46, -1, 17, 16, -1);
-	MBFace& F47 = GetBlockFace(22, 4); SetFaceEdgeID(F47, 18, -1, -1, 19);
-	MBFace& F48 = GetBlockFace(23, 4); SetFaceEdgeID(F48, 18, 17, -1, -1);
+
+	MBFace& F29 = GetBlockFace( 4, 5); SetFaceEdgeID(F29, 15, -1, -1, 20);
+	MBFace& F30 = GetBlockFace( 5, 5); SetFaceEdgeID(F30, 15, 23, -1, -1);
+	MBFace& F31 = GetBlockFace( 6, 5); SetFaceEdgeID(F31, -1, -1, 19, 20);
+	MBFace& F32 = GetBlockFace( 7, 5); SetFaceEdgeID(F32, -1, 23, 19, -1);
+
+	MBFace& F33 = GetBlockFace( 8, 5); SetFaceEdgeID(F33, 20, -1, -1, 12);
+	MBFace& F34 = GetBlockFace( 9, 5); SetFaceEdgeID(F34, -1, -1, 14, 12);
+	MBFace& F35 = GetBlockFace(10, 5); SetFaceEdgeID(F35, -1, 20, 16, -1);
+	MBFace& F36 = GetBlockFace(11, 5); SetFaceEdgeID(F36, -1, -1, 16, 14);
+	
+	MBFace& F37 = GetBlockFace(12, 5); SetFaceEdgeID(F37, 21, -1, -1, 13);
+	MBFace& F38 = GetBlockFace(13, 5); SetFaceEdgeID(F38, -1, -1, 22, 13);
+	MBFace& F39 = GetBlockFace(14, 5); SetFaceEdgeID(F39, -1, 21, 17, -1);
+	MBFace& F40 = GetBlockFace(15, 5); SetFaceEdgeID(F40, -1, -1, 17, 22);
+
+	MBFace& F41 = GetBlockFace(16, 5); SetFaceEdgeID(F41, 14, 22, -1, -1);
+	MBFace& F42 = GetBlockFace(17, 5); SetFaceEdgeID(F42, 14, -1, -1, 23);
+	MBFace& F43 = GetBlockFace(18, 5); SetFaceEdgeID(F43, -1, 22, 18, -1);
+	MBFace& F44 = GetBlockFace(19, 5); SetFaceEdgeID(F44, -1, -1, 18, 23);
+
+	MBFace& F45 = GetBlockFace(20, 5); SetFaceEdgeID(F45, -1, -1, 16, 19);
+	MBFace& F46 = GetBlockFace(21, 5); SetFaceEdgeID(F46, -1, 17, 16, -1);
+	MBFace& F47 = GetBlockFace(22, 5); SetFaceEdgeID(F47, 18, -1, -1, 19);
+	MBFace& F48 = GetBlockFace(23, 5); SetFaceEdgeID(F48, 18, 17, -1, -1);
 
 	// set the curved edges
 	GetFaceEdge(F25, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F25, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F25, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F25, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
 	GetFaceEdge(F26, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F26, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F26, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F26, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F27, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F27, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F27, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F27, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F28, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F28, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F28, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F28, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F29, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F29, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
-	GetFaceEdge(F29, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F29, 2).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F29, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
-	GetFaceEdge(F30, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F30, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F30, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F30, 2).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F30, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F31, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F31, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F31, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F31, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F32, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F32, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F32, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F32, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F33, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F33, 1).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F33, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F33, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F34, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F34, 1).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F34, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F34, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F35, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F35, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F35, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F35, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F36, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F36, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F36, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
-	GetFaceEdge(F37, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F36, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F37, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F37, 1).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F37, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F37, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F38, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F38, 1).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F38, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F38, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F39, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F39, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F39, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F39, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F40, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F40, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F40, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F40, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
-	GetFaceEdge(F41, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F41, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F41, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F41, 2).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F41, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
-	GetFaceEdge(F42, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F42, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F42, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F42, 2).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
 	GetFaceEdge(F42, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F43, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F43, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F43, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F43, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F44, 0).SetEdge(EDGE_3P_CIRC_ARC, -1, cnode);
+	GetFaceEdge(F44, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F44, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F44, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
 	GetFaceEdge(F45, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F45, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F45, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F45, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F46, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F46, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F46, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F46, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F47, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F47, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F47, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F47, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+
+	GetFaceEdge(F48, 0).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F48, 1).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 	GetFaceEdge(F48, 2).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
+	GetFaceEdge(F48, 3).SetEdge(EDGE_3P_CIRC_ARC, 1, cnode);
 
 	// set the node ID's
 	m_MBNode[ 0].SetID( 0);
