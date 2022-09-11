@@ -626,6 +626,20 @@ void CMainWindow::ImportFiles(const QStringList& files)
 	for (int i = 0; i < files.size(); ++i)
 	{
 		QString fileName = files[i];
+
+		// see if this file actually exists
+		if (files.size() == 1)
+		{
+			QFileInfo fi(fileName);
+			if (fi.exists() == false)
+			{
+				QString msg = QString("Failed reading file\n%1\nThe file does not exist.").arg(fileName);
+				AddLogEntry(msg);
+				QMessageBox::critical(this, "Import Geometry", msg);
+				return;
+			}
+		}
+
 		FileReader* fileReader = CreateFileReader(fileName);
 		if (fileReader)
 		{

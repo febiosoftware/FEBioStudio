@@ -57,7 +57,7 @@ bool STEPImport::Load(const char* szfile)
 	IFSelect_ReturnStatus status = aReader.ReadFile(szfile);
 	if (status != IFSelect_RetDone)
 	{
-		return false;
+		return errf("Failed readering STEP file.");
 	}
 
 	//Interface_TraceFile::SetDefault();
@@ -104,6 +104,6 @@ bool STEPImport::Load(const char* szfile)
 
 	return true;
 #else
-	return false;
+	return errf("STEP reader not supported in this build.");
 #endif
 }
