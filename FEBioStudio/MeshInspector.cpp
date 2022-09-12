@@ -102,13 +102,16 @@ void CMeshInspector::UpdateData(int ndata)
 	if (pm == 0) return;
 
 	
-	int etype = -1;
-	QModelIndex index = ui->table->currentIndex();
-	if (index.isValid())
+	const int MAX_ELEM = 21;
+	vector<bool> ET(MAX_ELEM, false);
+	for (int i = 0; i < ui->table->rowCount(); ++i)
 	{
-		QTableWidgetItem* item = ui->table->item(index.row(), 0);
-		assert(item);
-		etype = item->data(Qt::UserRole).toInt();
+		QTableWidgetItem* item = ui->table->item(i, 0);
+		if (item->checkState() == Qt::Checked)
+		{
+			int e = item->data(Qt::UserRole).toInt(); assert((e >= 0) && (e < MAX_ELEM));
+			ET[e] = true;
+		}
 	}
 
 	FEMeshValuator eval(*pm);
@@ -131,7 +134,7 @@ void CMeshInspector::UpdateData(int ndata)
 		{
 			FSElement& el = pm->Element(i);
 			int ne = el.Nodes();
-			if ((etype == -1) || (el.Type() == etype))
+			if (ET[el.Type()])
 			{
 				if (data[i].tag)
 				{
@@ -266,4 +269,9 @@ void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 		m_wnd->RedrawGL();
 	}
+}
+
+void CMeshInspector::on_table_cellChanged(int r, int c)
+{
+	if (c == 0) Update();
 }

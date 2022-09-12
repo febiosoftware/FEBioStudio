@@ -195,6 +195,7 @@ public:
 		info = new CMeshInfo;
 
 		table = new QTableWidget;
+		table->setObjectName("table");
 
 		table->setColumnCount(2);
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -327,13 +328,15 @@ public:
 		for (int i = 0; i<MAX_ELEM + 1; ++i) if (n[i] != 0) m++;
 
 		// fill the rows
+		table->blockSignals(true);
 		table->setRowCount(m); m = 0;
 		for (int i = 0; i<MAX_ELEM + 1; ++i)
 		{
 			if (n[i] != 0)
 			{
 				QTableWidgetItem* item = new QTableWidgetItem(EN[i]);
-				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+				item->setCheckState(Qt::Checked);
 				item->setData(Qt::UserRole, ET[i]);
 				table->setItem(m, 0, item);
 				item = new QTableWidgetItem(QString::number(n[i]));
@@ -342,6 +345,7 @@ public:
 				m++;
 			}
 		}
+		table->blockSignals(false);
 
 		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
 		QStringList items;
