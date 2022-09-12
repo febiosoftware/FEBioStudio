@@ -874,6 +874,9 @@ FSElement& FSElement::operator = (const FSElement& el)
 	return *this;
 }
 
+int ET_LINE[1][2] = {
+	{ 0, 1 }};
+
 int ET_QUAD[4][2] = {
 	{ 0, 1 },
 	{ 1, 2 },
