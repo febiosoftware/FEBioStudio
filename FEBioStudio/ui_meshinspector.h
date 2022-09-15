@@ -173,6 +173,7 @@ public:
 	QComboBox*		col;
 	CStatsInfo*		stats;
 	CSelectionInfo*	sel;
+	QCheckBox*		logScale;
 
 	QWidget* propsWidget;
 	QSpinBox* curvatureLevels;
@@ -195,6 +196,7 @@ public:
 		info = new CMeshInfo;
 
 		table = new QTableWidget;
+		table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
 		table->setObjectName("table");
 
 		table->setColumnCount(2);
@@ -221,16 +223,21 @@ public:
 		col = new QComboBox;
 		col->setObjectName("col");
 
+		logScale = new QCheckBox;
+		logScale->setObjectName("logScale");
+
 		QFormLayout* varForm = new QFormLayout;
 		varForm->addRow("Variable:", var);
 		varForm->addRow("Parameters:", propsWidget);
 		varForm->addRow("Color map", col);
+		varForm->addRow("Logarithmic scale", logScale);
 
-		QHBoxLayout* topLayout = new QHBoxLayout;
-		topLayout->addWidget(info);
-		topLayout->addWidget(table);
+		QHBoxLayout* infoLayout = new QHBoxLayout;
+		infoLayout->addWidget(info);
+		infoLayout->addWidget(table);
 
 		plot = new CPlotWidget;
+		plot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		plot->showLegend(false);
 		plot->setViewLocked(true);
 
@@ -238,19 +245,16 @@ public:
 
 		sel = new CSelectionInfo;
 
-		QHBoxLayout* bottomLayout = new QHBoxLayout;
-		bottomLayout->addWidget(stats);
-		bottomLayout->addWidget(sel);
+		QHBoxLayout* statsLayout = new QHBoxLayout;
+		statsLayout->addWidget(stats);
+		statsLayout->addWidget(sel);
 
 		QWidget* w = new QWidget;
-
 		QVBoxLayout* mainLayout = new QVBoxLayout;
-//		mainLayout->setMargin(0);
-//		mainLayout->setSpacing(0);
-		mainLayout->addLayout(topLayout);
+		mainLayout->addLayout(infoLayout);
 		mainLayout->addLayout(varForm);
 		mainLayout->addWidget(plot);
-		mainLayout->addLayout(bottomLayout);
+		mainLayout->addLayout(statsLayout);
 		w->setLayout(mainLayout);
 
 		wnd->setCentralWidget(w);
