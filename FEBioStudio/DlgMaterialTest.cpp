@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "FEClassPropsView.h"
+#include "units.h"
 
 using namespace std;
 
@@ -55,6 +56,7 @@ public:
 	QComboBox* m_mat;
 	QComboBox* m_test;
 	QLineEdit* m_steps;
+	QLineEdit* m_time;
 	QLineEdit* m_strain;
 	FEClassEdit* m_props;
 
@@ -71,11 +73,13 @@ public:
 
 		QFormLayout* f2 = new QFormLayout;
 		f2->addRow("select test:", m_test);
-		f2->addRow("samples:", m_steps = new QLineEdit); m_steps->setValidator(new QIntValidator(10, 400));
-		f2->addRow("strain:", m_strain = new QLineEdit); m_strain->setValidator(new QDoubleValidator(0.01, 1.0, 4));
+		f2->addRow("strain:", m_strain = new QLineEdit); m_strain->setValidator(new QDoubleValidator(0.01, 1.0, 5));
+		f2->addRow("simulation time:", m_time  = new QLineEdit); m_time->setValidator(new QDoubleValidator(0.01, 1000, 5));
+		f2->addRow("time step:"      , m_steps = new QLineEdit); m_steps->setValidator(new QDoubleValidator(0.001, 100, 5));
 
-		m_steps->setText("20");
 		m_strain->setText("0.1");
+		m_time->setText("1.0");
+		m_steps->setText("0.05");
 
 		m_props = new FEClassEdit(m_wnd);
 
@@ -98,6 +102,8 @@ public:
 
 		split->addWidget(wl);
 		split->addWidget(plot);
+		split->setStretchFactor(0, 1);
+		split->setStretchFactor(1, 2);
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(split);
@@ -112,7 +118,7 @@ public:
 CDlgMaterialTest::CDlgMaterialTest(CMainWindow* wnd)	: QDialog(wnd), ui(new UIDlgMaterialTest)
 {
 	setWindowTitle("Material Test");
-	setMinimumSize(800, 600);
+	setMinimumSize(1000, 600);
 	ui->m_wnd = wnd;
 	ui->setup(this);
 
@@ -148,15 +154,30 @@ void CDlgMaterialTest::onRun()
 
 	MaterialTest mt;
 	mt.mat = pm;
-	mt.steps = ui->m_steps->text().toInt();
-	mt.strain = ui->m_strain->text().toDouble();
 	mt.test = ui->m_test->currentText().toStdString();
-	
+	mt.strain = ui->m_strain->text().toDouble();
+	mt.time   = ui->m_time->text().toDouble();
+
+	double dt = ui->m_steps->text().toDouble();
+	if (dt <= 0.0)
+	{
+		QMessageBox::critical(this, "Material Test", "time step must be positive.");
+		return;
+	}
+	mt.steps  = (int)(mt.time / dt);
+	if (mt.steps < 1)
+	{
+		QMessageBox::critical(this, "Material Test", "Invalid number of time steps.");
+		return;
+	}
+
+	ui->plot->clear();
+	ui->plot->setTitle("");
+	ui->plot->setDrawAxesLabels(false);
+
 	std::vector<pair<double, double> > data;
 	if (FEBio::RunMaterialTest(mt, data))
 	{
-		ui->plot->clear();
-
 		CPlotData* pltData = new CPlotData;
 		for (int i = 0; i < data.size(); ++i)
 		{
@@ -164,10 +185,18 @@ void CDlgMaterialTest::onRun()
 		}
 		ui->plot->addPlotData(pltData);
 		ui->plot->OnZoomToFit();
+
+		QString unit = Units::GetUnitString(doc->GetUnitSystem(), Units::PRESSURE);
+
+		ui->plot->setXAxisLabel("Ex");
+		ui->plot->setYAxisLabel(QString("sx [%1]").arg(unit));
+		ui->plot->setDrawAxesLabels(true);
+
+		QString title = QString("%1 - %2").arg(ui->m_mat->currentText()).arg(ui->m_test->currentText());
+		ui->plot->setTitle(title);
 	}
 	else
 	{
-		ui->plot->clear();
 		QMessageBox::critical(this, "Material Test", "Failed to run material test.");
 	}
 }

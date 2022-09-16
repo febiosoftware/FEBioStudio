@@ -36,6 +36,7 @@ struct MaterialTest
 	string	test;
 
 	// control parameters
+	double	time = 1.0;
 	int	steps = 20;
 };
 

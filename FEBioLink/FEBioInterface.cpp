@@ -27,18 +27,21 @@ SOFTWARE.*/
 #include <FEBioLib/febio.h>
 #include <FEMLib/FEMaterial.h>
 #include <FECore/FEMaterial.h>
-
+#include <FEBioLink/FEBioClass.h>
 
 bool FEBio::RunMaterialTest(MaterialTest test, std::vector<pair<double, double> >& out)
 {
 	out.clear();
 
-	// Grab the FEBio material
-	FEBioMaterial* febmat = dynamic_cast<FEBioMaterial*>(test.mat);
-	if (febmat == nullptr) return false;
-	febmat->UpdateData(true);
-	FEMaterial* m = (FEMaterial*)febmat->GetFEBioClass();
+	FEModel fem;
+
+	// Create an FEBio material from the FSMaterial
+	FEMaterial* febmat = dynamic_cast<FEMaterial*>(FEBio::CreateFECoreClassFromModelComponent(test.mat, &fem));
 
 	// run the test
-	return febio::RunMaterialTest(m, test.steps, test.strain, test.test.c_str(), out);
+	bool b = febio::RunMaterialTest(febmat, test.time, test.steps, test.strain, test.test.c_str(), out);
+
+	delete febmat;
+
+	return b;
 }

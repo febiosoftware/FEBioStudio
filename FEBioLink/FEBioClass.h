@@ -64,6 +64,11 @@ class FEBeamFormulation;
 class FSMeshAdaptor;
 class FSVec3dValuator;
 
+// forward declarations of FECore classes
+class FEModel;
+class FECoreBase;
+
+
 namespace FEBio {
 
 	// NOTE: This is an exact copy of the FEParamType enum in FEBio (defined in FEParam.h)!
@@ -205,4 +210,6 @@ namespace FEBio {
 	vec3d GetMaterialFiber(void* vec3dvaluator, const vec3d& p);
 
 	void DeleteClass(void* p);
+
+	FECoreBase* CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FEModel* fem);
 }
