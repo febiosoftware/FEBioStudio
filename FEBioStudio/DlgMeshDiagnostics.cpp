@@ -376,10 +376,17 @@ void CDlgMeshDiagnosticsUI::checkFaceConnectivity()
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& face = mesh.Face(i);
-		for (int j = 0; j < face.Nodes(); ++j)
+		int nf = face.Nodes();
+		for (int j = 0; j < nf; ++j)
 		{
 			int nj = face.n[j];
 			if ((nj < 0) || (nj >= NN)) errors++;
+
+			for (int k = 0; k < nf; ++k)
+			{
+				int nk = face.n[k];
+				if ((k != j) && (nk == nj)) errors++;
+			}
 		}
 	}
 
