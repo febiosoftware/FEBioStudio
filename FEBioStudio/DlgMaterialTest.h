@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,22 +23,24 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "FEBioInterface.h"
-#include <FEBioLib/febio.h>
-#include <FEMLib/FEMaterial.h>
-#include <FECore/FEMaterial.h>
+#pragma once
+#include <QDialog>
 
+class UIDlgMaterialTest;
+class CMainWindow;
 
-bool FEBio::RunMaterialTest(MaterialTest test, std::vector<pair<double, double> >& out)
+class CDlgMaterialTest : public QDialog
 {
-	out.clear();
+	Q_OBJECT
 
-	// Grab the FEBio material
-	FEBioMaterial* febmat = dynamic_cast<FEBioMaterial*>(test.mat);
-	if (febmat == nullptr) return false;
-	febmat->UpdateData(true);
-	FEMaterial* m = (FEMaterial*)febmat->GetFEBioClass();
+public:
+	CDlgMaterialTest(CMainWindow* parent);
 
-	// run the test
-	return febio::RunMaterialTest(m, test.steps, test.strain, test.test.c_str(), out);
-}
+
+public slots:
+	void onRun();
+	void onMatChanged(int n);
+
+private:
+	UIDlgMaterialTest* ui;
+};

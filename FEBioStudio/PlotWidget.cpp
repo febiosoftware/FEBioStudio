@@ -324,6 +324,8 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 {
 	ColorList::init();
 
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 	m_bregionSelect = false;
 
 	m_bautoRngUpdate = true;

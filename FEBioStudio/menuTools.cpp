@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "DlgPlotMix.h"
 #include "DlgSettings.h"
 #include "DlgMeshDiagnostics.h"
+#include "DlgMaterialTest.h"
 #include <QMessageBox>
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
@@ -72,6 +73,12 @@ void CMainWindow::on_actionMeshDiagnostic_triggered()
 void CMainWindow::on_actionElasticityConvertor_triggered()
 {
 	CDlgLameConvertor dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionMaterialTest_triggered()
+{
+	CDlgMaterialTest dlg(this);
 	dlg.exec();
 }
 

@@ -28,3 +28,20 @@ SOFTWARE.*/
 #include <string>
 #include "FEBioClass.h"
 
+struct MaterialTest
+{
+	double		strain = 0.1;	// strain level
+	FSMaterial* mat = nullptr;	// material to test
+
+	string	test;
+
+	// control parameters
+	int	steps = 20;
+};
+
+namespace FEBio {
+
+	// run a material test in FEBio. 
+	// returns stress-strain data in out
+	bool RunMaterialTest(MaterialTest test, std::vector<pair<double, double> >& out);
+}

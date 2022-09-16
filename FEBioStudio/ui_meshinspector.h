@@ -237,7 +237,6 @@ public:
 		infoLayout->addWidget(table);
 
 		plot = new CPlotWidget;
-		plot->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 		plot->showLegend(false);
 		plot->setViewLocked(true);
 
