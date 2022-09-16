@@ -38,8 +38,8 @@ public:
 
 private:
 	void Cleanup();
-	void MarkEdges(FSSurfaceMesh* mesh);
-	bool FlipEdge(int iedge, FSSurfaceMesh* mesh);
+	void MarkEdges(FSSurfaceMesh* mesh, bool selectedOnly);
+	bool FlipEdge(int iedge, FSSurfaceMesh* mesh, bool forceFlip);
 	bool ShouldFlip(int a[3], int b[3], FSSurfaceMesh* mesh);
 	void DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FSSurfaceMesh* mesh);
 
