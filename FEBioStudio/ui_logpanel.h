@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QStackedWidget>
 #include <QComboBox>
+#include <QLabel>
 
 class Ui::CLogPanel
 {
@@ -62,16 +63,18 @@ public:
 		pl->setSpacing(0);
 
 		combo = new QComboBox;
+		combo->setMinimumWidth(200);
 		combo->addItem("Log");
-		combo->addItem("Output");
+		combo->addItem("FEBio");
 		combo->setObjectName("combo");
 
 		QToolButton* b1 = new QToolButton; b1->setIcon(QIcon(":/icons/save.png")); b1->setAutoRaise(true); b1->setObjectName("logSave"); b1->setToolTip("<font color=\"black\">Save log");
 		QToolButton* b2 = new QToolButton; b2->setIcon(QIcon(":/icons/clear.png")); b2->setAutoRaise(true); b2->setObjectName("logClear"); b2->setToolTip("<font color=\"black\">Clear log");
 		QHBoxLayout* pv = new QHBoxLayout;
+		pv->addWidget(new QLabel("Show output from:"));
+		pv->addWidget(combo);
 		pv->addWidget(b1);
 		pv->addWidget(b2);
-		pv->addWidget(combo);
 		pv->addStretch();
 
 		pl->addLayout(pv);
