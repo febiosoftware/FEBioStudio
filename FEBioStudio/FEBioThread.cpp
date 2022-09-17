@@ -70,9 +70,9 @@ void CFEBioThread::run()
 
 	// go!
 	FEBioThreadOutput threadOutput(this);
-	bool b = FEBio::runModel(cmd, &threadOutput);
+	int n = FEBio::runModel(cmd, &threadOutput);
 
-	emit resultsReady((b ? 0 : 1), QProcess::ExitStatus::NormalExit);
+	emit resultsReady(n, QProcess::ExitStatus::NormalExit);
 }
 
 void CFEBioThread::KillThread()

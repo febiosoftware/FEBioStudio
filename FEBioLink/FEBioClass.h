@@ -200,7 +200,7 @@ namespace FEBio {
 		virtual void write(const char* sztxt) = 0;
 	};
 
-	bool runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
+	int runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
 	void TerminateRun();
 
 	const char* GetSuperClassString(int superClassID);

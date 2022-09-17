@@ -799,7 +799,7 @@ void FEBio::TerminateRun()
 	terminateRun = true;
 }
 
-bool FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 {
 	terminateRun = false;
 
@@ -832,7 +832,7 @@ bool FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 
 	}
 
-	return false;
+	return 1;
 }
 
 const char* FEBio::GetSuperClassString(int superClassID)
