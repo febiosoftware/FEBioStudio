@@ -153,6 +153,12 @@ bool FEBioFormat4::ParseSection(XMLTag& tag)
 	}
 	else
 	{
+		// make sure the module section was read in
+		if ((m_nAnalysis == -1) && (tag != "Module"))
+		{
+			throw std::runtime_error("Required Module section is missing.");
+		}
+
 		if      (tag == "Module"     ) ParseModuleSection    (tag);
 		else if (tag == "Control"    ) ParseControlSection   (tag);
 		else if (tag == "Material"   ) ParseMaterialSection  (tag);
