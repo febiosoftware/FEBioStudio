@@ -538,7 +538,10 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 			// open a text editor
 			OpenFEBioFile(fileName);
 		}
-
+	}
+	else if (ext.compare("qml", Qt::CaseInsensitive) == 0)
+	{
+		OpenQMLFile(fileName);
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0))
@@ -2076,7 +2079,12 @@ void CMainWindow::UpdateUIConfig()
                 }
                 else
                 {
-                    ui->setUIConfig(HTML_CONFIG);
+					CQMLDocument* qmlDoc = dynamic_cast<CQMLDocument*>(GetDocument());
+					if (qmlDoc)
+					{
+						ui->setUIConfig(CMainWindow::QML_CONFIG);
+					}
+					else ui->setUIConfig(HTML_CONFIG);
                 }
 			}
 			ui->fileViewer->parentWidget()->raise();

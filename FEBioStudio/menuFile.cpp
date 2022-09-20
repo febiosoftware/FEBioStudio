@@ -578,6 +578,13 @@ void CMainWindow::OpenFEBioFile(const QString& fileName)
 	AddDocument(xml);
 }
 
+void CMainWindow::OpenQMLFile(const QString& fileName)
+{
+	CQMLDocument* qml = new CQMLDocument(this);
+	qml->SetDocFilePath(fileName.toStdString());
+	AddDocument(qml);
+}
+
 void CMainWindow::ExportPostGeometry()
 {
 	CPostDocument* doc = GetPostDocument();

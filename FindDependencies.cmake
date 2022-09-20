@@ -1,5 +1,5 @@
 # Qt
-find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
+find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL QuickWidgets REQUIRED) 
 
 if(Qt_Ver VERSION_EQUAL 6)
   find_package(${Qt_Version} COMPONENTS Core5Compat OpenGLWidgets REQUIRED)

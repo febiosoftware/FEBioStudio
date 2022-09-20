@@ -52,6 +52,7 @@ SOFTWARE.*/
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QQuickWidget>
 #include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
@@ -180,7 +181,8 @@ public:
         XML_VIEWER,
         IMG_SLICE,
 		TIME_VIEW_2D,
-		GL_VIEWER
+		GL_VIEWER,
+		QML_VIEWER
 	};
 
 public:
@@ -191,6 +193,7 @@ public:
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
+	QQuickWidget*		qml;
     ::XMLTreeView*  xmlTree;
     CImageSliceView* sliceView;
     ::C2DImageTimeView* timeView2D;
@@ -435,8 +438,14 @@ public:
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
-
 		stack->addWidget(glw);
+
+		qml = new QQuickWidget(wnd);
+		qml->setObjectName("qmlview");
+		qml->setResizeMode(QQuickWidget::SizeRootObjectToView);
+		qml->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		qml->setSource(QUrl("main.qml"));
+		stack->addWidget(qml);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);
@@ -1571,6 +1580,33 @@ public:
 		else if (config == ::CMainWindow::TEXT_CONFIG)
 		{
 			stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
+
+			menuEdit->menuAction()->setVisible(false);
+			menuEditTxt->menuAction()->setVisible(true);
+            menuEditXml->menuAction()->setVisible(false);
+			menuPhysics->menuAction()->setVisible(false);
+			menuPost->menuAction()->setVisible(false);
+			menuRecord->menuAction()->setVisible(false);
+
+			buildToolBar->hide();
+			postToolBar->hide();
+            imageToolBar->hide();
+			pFontToolBar->hide();
+            xmlToolbar->hide();
+
+			glw->glc->hide();
+
+			modelViewer->parentWidget()->hide();
+			buildPanel->parentWidget()->hide();
+			postPanel->parentWidget()->hide();
+			logPanel->parentWidget()->hide();
+			infoPanel->parentWidget()->hide();
+			timePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
+		}
+		else if (config == ::CMainWindow::QML_CONFIG)
+		{
+			stack->setCurrentIndex(Ui::CMainWindow::QML_VIEWER);
 
 			menuEdit->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(true);

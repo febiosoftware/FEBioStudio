@@ -53,3 +53,10 @@ protected:
 	QTextDocument	m_txt;
 	int				m_format;
 };
+
+//--------------------------------------------------------------------
+class CQMLDocument : public CDocument
+{
+public:
+	CQMLDocument(CMainWindow* wnd);
+};
