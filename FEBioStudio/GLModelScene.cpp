@@ -1798,6 +1798,8 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 			if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
 		}
 	}
+
+	RenderBeamParts(rc, po);
 }
 
 //-----------------------------------------------------------------------------
@@ -1935,8 +1937,75 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 				renderer.RenderGLEdges(pm, e.GetLocalID());
 		}
 	}
+
+	// render beam sections if feature edges are not rendered. 
+	if (vs.m_bfeat == false)
+	{
+		RenderBeamParts(rc, po);
+	}
 }
 
+void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
+{
+	if (!po->IsVisible()) return;
+
+	CModelDocument* doc = m_doc;
+	if (doc == nullptr) return;
+
+	int nitem = m_doc->GetItemMode();
+	int nsel = m_doc->GetSelectionMode();
+
+	CGLView* glview = rc.m_view;
+
+	VIEW_SETTINGS& vs = glview->GetViewSettings();
+
+	// get the GLMesh
+	FSModel& fem = *doc->GetFSModel();
+	GLMesh* pm = po->GetRenderMesh();
+	if (pm == 0) return;
+
+	GLMeshRender& renderer = glview->GetMeshRenderer();
+
+	GPart* pgmat = 0; // the part that defines the material
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	SetMatProps(0);
+	GLColor c = po->GetColor();
+	glColor3ub(c.r, c.g, c.b);
+	for (int i = 0; i < po->Parts(); ++i)
+	{
+		GPart* pg = po->Part(i);
+		if (pg->IsVisible() && pg->IsBeam())
+		{
+			// if this part is not the current part defining the 
+			// material, we need to change the mat props
+			if (vs.m_objectColor == 0)
+			{
+				GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
+				SetMatProps(pmat);
+				GLColor c = po->GetColor();
+				if (pmat) c = pmat->Diffuse();
+
+				glColor3ub(c.r, c.g, c.b);
+				pgmat = pg;
+			}
+
+			if ((nitem == ITEM_MESH) && (nsel == SELECT_PART) && pg->IsSelected())
+			{
+				SetMatProps(0);
+				glColor3ub(0, 0, 255);
+			}
+
+			for (int j = 0; j < pg->m_edge.size(); ++j)
+			{
+				GEdge& e = *po->Edge(pg->m_edge[j]);
+				if (e.IsVisible())
+					renderer.RenderGLEdges(pm, e.GetLocalID());
+			}
+		}
+	}
+	glPopAttrib();
+}
 
 //=============================================================================
 //					Rendering functions for FEMeshes
