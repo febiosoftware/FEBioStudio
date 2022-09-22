@@ -251,7 +251,8 @@ bool FEBioFileImport::ReadFile(XMLTag& tag)
 			if (xml2.FindTag("febio_spec", tag2) == false) return errf("febio_spec tag was not found in included file.");
 
 			// find the section we are looking for
-			if (xml2.FindTag(tag.Name(), tag2) == false) return errf("FATAL ERROR: Couldn't find %s section in file %s.\n\n", tag.Name(), szinc);
+			string path = "febio_spec/" + string(tag.Name());
+			if (xml2.FindTag(path.c_str(), tag2) == false) return errf("FATAL ERROR: Couldn't find %s section in file %s.\n\n", tag.Name(), szinc);
 
 			// try to process the section
 			if (m_fmt->ParseSection(tag2) == false) return errf("Cannot read included file");
