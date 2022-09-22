@@ -386,8 +386,36 @@ void LagrangeStrain::eval(int n, mat3fs* pv)
 	// get the element
 	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
 
-	// make sure it's a solid
-	if (e.IsSolid() == false)
+	// get the state
+	int nstate = m_state->GetID();
+
+	if (e.IsBeam())
+	{
+		// get the mesh
+		FEPostModel& fem = *GetFSModel();
+		FEState& state = *fem.GetState(nstate);
+		Post::FEPostMesh& m = *state.GetFEMesh();
+
+		Post::FERefState* ref = state.m_ref;
+		vec3f R0 = ref->m_Node[e.m_node[0]].m_rt;
+		vec3f R1 = ref->m_Node[e.m_node[1]].m_rt;
+
+		vec3f r0 = fem.NodePosition(e.m_node[0], nstate);
+		vec3f r1 = fem.NodePosition(e.m_node[1], nstate);
+
+		double L = (R1 - R0).Length();
+		double l = (r1 - r0).Length();
+
+		double lam = (L != 0 ? l / L : 0);
+
+		mat3fs& E = *pv; 
+		E.x = 0.5f * (lam * lam - 1.0f);
+		E.y = 0.0f; E.z = 0.0f;
+		E.xy = E.yz = E.xz = 0.f;
+		
+		return;
+	}
+	else if (e.IsSolid() == false)
 	{
 		*pv = mat3fs();
 		return;
@@ -396,9 +424,6 @@ void LagrangeStrain::eval(int n, mat3fs* pv)
     // get the iso-parameteric coordinates of the element center
     double q[3];
     e.iso_coord(-1, q);
-
-	// get the state
-	int nstate = m_state->GetID();
 
 	// get the deformation gradient
 	int nref = ReferenceState();
