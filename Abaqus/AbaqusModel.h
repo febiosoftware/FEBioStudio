@@ -96,8 +96,8 @@ public:
 	// Element set
 	struct ELEMENT_SET
 	{
-		char szname[Max_Name + 1];	// element set name
-		PART*			part;
+		char szname[Max_Name + 1] = { 0 };	// element set name
+		PART*			part = nullptr;
 		vector<int>		elem;
 	};
 
