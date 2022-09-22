@@ -312,16 +312,15 @@ endif()
 # Find FEBio Libs
 set(FEBio_LIBS "")
 
-    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot feamr)
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot feamr)
 
-    foreach(name IN LISTS FEBio_LIB_NAMES)
-        findLib(FEBio_LIB_DIR FEBio_LIB ${name})
-        list(APPEND FEBio_LIBS ${FEBio_LIB})
-        unset(FEBio_LIB)
-    endforeach(name)
+foreach(name IN LISTS FEBio_LIB_NAMES)
+    findLib(FEBio_LIB_DIR FEBio_LIB ${name})
+    list(APPEND FEBio_LIBS ${FEBio_LIB})
+    unset(FEBio_LIB)
+endforeach(name)
 
-    unset(FEBio_LIB_NAMES)
-endif()
+unset(FEBio_LIB_NAMES)
 
 ##### Stupid OMP stuff for stupid macOS #####
 
