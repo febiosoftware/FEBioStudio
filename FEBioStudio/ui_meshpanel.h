@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include <QGridLayout>
 #include <QMenu>
 #include <QValidator>
-#include "ClassDescriptor.h"
+#include <FSCore/ClassDescriptor.h>
 #include "PropertyListForm.h"
 #include "PropertyList.h"
 #include "ObjectPanel.h"

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "ParamBlock.h"
-#include <FEBioStudio/ClassDescriptor.h>
+#include"ClassDescriptor.h"
 #include <string>
 
 //-----------------------------------------------------------------------------

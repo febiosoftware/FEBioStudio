@@ -165,6 +165,12 @@ bool FEBioFormat3::ParseSection(XMLTag& tag)
 	}
 	else
 	{
+		// make sure the module section was read in
+		if ((m_nAnalysis == -1) && (tag != "Module"))
+		{
+			throw std::runtime_error("Required Module section is missing.");
+		}
+
 		if      (tag == "Module"     ) ParseModuleSection     (tag);
 		else if (tag == "Control"    ) ParseControlSection    (tag);
 		else if (tag == "Material"   ) ParseMaterialSection   (tag);
@@ -677,10 +683,11 @@ void FEBioFormat3::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 
 	vector<FEBioInputModel::NODE> nodes; nodes.reserve(10000);
 
-	// create a node set if the name is definde
+	// create a node set if the name is defined
 	const char* szname = tag.AttributeValue("name", true);
 	std::string name;
 	if (szname) name = szname;
+	if (szname) part->SetName(szname);
 
 	// read nodal coordinates
 	++tag;
@@ -1224,15 +1231,26 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	{
 		FSMesh* feMesh = nodeSet->GetMesh();
 
-		FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-
 		const char* szgen = tag.AttributeValue("generator", true);
 		if (szgen)
 		{
-			tag.skip();
+			FSModel* fem = &feb.GetFSModel();
+			FSMeshDataGenerator* gen = FEBio::CreateNodeDataGenerator(szgen, fem);
+			if (gen == nullptr)
+			{
+				tag.skip();
+			}
+			else
+			{
+				ParseModelComponent(gen, tag);
+				gen->SetItemList(nodeSet);
+				gen->SetName(name->cvalue());
+				fem->AddMeshDataGenerator(gen);
+			}
 		}
 		else
 		{
+			FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 			double val;
 			int lid;
 			++tag;
@@ -2334,7 +2352,12 @@ void FEBioFormat3::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 	else if (att == "heat_source") pbl = CREATE_BODY_LOAD(FSHeatSource);
 	else if (att == "non-const"  ) pbl = CREATE_BODY_LOAD(FSNonConstBodyForce);
     else if (att == "centrifugal") pbl = CREATE_BODY_LOAD(FSCentrifugalBodyForce);
-	else ParseUnknownAttribute(tag, "type");
+	else {
+		// see if FEBio knows it
+		pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
+		if (pbl == nullptr)
+			ParseUnknownAttribute(tag, "type");
+	}
 
 	// process body load
 	if (pbl)

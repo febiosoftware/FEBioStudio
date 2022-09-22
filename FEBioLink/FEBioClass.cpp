@@ -799,7 +799,7 @@ void FEBio::TerminateRun()
 	terminateRun = true;
 }
 
-bool FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 {
 	terminateRun = false;
 
@@ -832,7 +832,7 @@ bool FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 
 	}
 
-	return false;
+	return 1;
 }
 
 const char* FEBio::GetSuperClassString(int superClassID)
@@ -1230,4 +1230,93 @@ void FEBio::BlockCreateEvents(bool b)
 {
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.BlockEvents(b);
+}
+
+FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FEModel* fem)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+	FECoreBase* pc = fecore.Create(pmc->GetSuperClassID(), pmc->GetTypeString(), fem);
+	if (pc == nullptr) return nullptr;
+
+	for (int i = 0; i < pmc->Parameters(); ++i)
+	{
+		Param& pi = pmc->GetParam(i);
+
+		FEParam* fp = pc->FindParameter(pi.GetShortName()); assert(fp);
+		if (fp)
+		{
+			switch (fp->type())
+			{
+			case FE_PARAM_INT       : fp->value<int   >() = pi.GetIntValue   (); break;
+			case FE_PARAM_BOOL      : fp->value<bool  >() = pi.GetBoolValue  (); break;
+			case FE_PARAM_DOUBLE    : fp->value<double>() = pi.GetFloatValue (); break;
+//			case FE_PARAM_VEC2D     : fp->value<vec2d >() = pi.GetVec2dValue (); break;
+			case FE_PARAM_VEC3D     : fp->value<vec3d >() = pi.GetVec3dValue (); break;
+			case FE_PARAM_MAT3D     : fp->value<mat3d >() = pi.GetMat3dValue (); break;
+			case FE_PARAM_MAT3DS    : fp->value<mat3ds>() = pi.GetMat3dsValue(); break;
+//			case FE_PARAM_STRING    : fp->value<string>() = pi.GetStringValue(); break;
+			case FE_PARAM_STD_STRING: fp->value<string>() = pi.GetStringValue(); break;
+			case FE_PARAM_STD_VECTOR_INT   : fp->value<vector<int> >() = pi.GetVectorIntValue(); break;
+			case FE_PARAM_STD_VECTOR_DOUBLE: fp->value<vector<double> >() = pi.GetVectorDoubleValue(); break;
+			case FE_PARAM_STD_VECTOR_VEC2D : fp->value<vector<vec2d> >() = pi.GetVectorVec2dValue(); break;
+//			case FE_PARAM_STD_VECTOR_STRING: fp->value<vector<string> >() = pi.GetVectorStringValue(); break;
+			case FE_PARAM_DOUBLE_MAPPED:
+			{
+				FEParamDouble& v = fp->value<FEParamDouble>();
+				if (pi.GetParamType() == Param_FLOAT)
+				{
+					v = pi.GetFloatValue();
+				}
+				else assert(false);
+			}
+			break;
+			case FE_PARAM_VEC3D_MAPPED:
+			{
+				FEParamVec3& v = fp->value<FEParamVec3>();
+				if (pi.GetParamType() == Param_VEC3D)
+				{
+					v = pi.GetVec3dValue();
+				}
+				else assert(false);
+			}
+			break;
+			case FE_PARAM_MAT3D_MAPPED:
+			{
+				FEParamMat3d& v = fp->value<FEParamMat3d>();
+				if (pi.GetParamType() == Param_MAT3D)
+				{
+					v = pi.GetMat3dValue();
+				}
+				else assert(false);
+			}
+			break;
+			default:
+				break;
+			}
+		}
+	}
+
+	for (int i = 0; i < pmc->Properties(); ++i)
+	{
+		FSProperty& propi = pmc->GetProperty(i);
+		if (propi.Size() > 0)
+		{
+			FEProperty* fprop = pc->FindProperty(propi.GetName().c_str()); assert(fprop);
+
+			for (int j = 0; j < propi.Size(); ++j)
+			{
+				FSModelComponent* pmcj = dynamic_cast<FSModelComponent*>(propi.GetComponent(j));
+				if (pmcj)
+				{
+					FECoreBase* pcj = CreateFECoreClassFromModelComponent(pmcj, fem); assert(pcj);
+					if (pcj)
+					{
+						fprop->SetProperty(pcj);
+					}
+				}
+			}
+		}
+	}
+
+	return pc;
 }

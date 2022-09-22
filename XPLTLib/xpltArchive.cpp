@@ -455,6 +455,13 @@ unsigned int xpltArchive::GetChunkID()
 	return pc->id;
 }
 
+unsigned int xpltArchive::GetChunkSize()
+{
+	CHUNK* pc = im.m_Chunk.top();
+	assert(pc);
+	return pc->nsize;
+}
+
 xpltArchive::IOResult xpltArchive::read(char& c) { mread(&c, sizeof(char), 1, &im.m_pdata); return IO_OK; }
 xpltArchive::IOResult xpltArchive::read(int& n) { mread(&n, sizeof(int), 1, &im.m_pdata); if (im.m_bswap) bswap(n); return IO_OK; }
 xpltArchive::IOResult xpltArchive::read(bool& b) { mread(&b, sizeof(bool), 1, &im.m_pdata); return IO_OK; }

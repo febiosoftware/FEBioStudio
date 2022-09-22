@@ -43,7 +43,7 @@ SOFTWARE.*/
 //#include <XML/XMLReader.h>
 //---------------------------------------
 #include <XPLTLib/xpltFileReader.h>
-#include "ClassDescriptor.h"
+#include <FSCore/ClassDescriptor.h>
 #include "PostSessionFile.h"
 #include "units.h"
 #include "GLPostScene.h"

@@ -24,3 +24,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioInterface.h"
+#include <FEBioLib/febio.h>
+#include <FEMLib/FEMaterial.h>
+#include <FECore/FEMaterial.h>
+#include <FEBioLink/FEBioClass.h>
+
+bool FEBio::RunMaterialTest(MaterialTest test, std::vector<pair<double, double> >& out)
+{
+	out.clear();
+
+	FEModel fem;
+
+	// Create an FEBio material from the FSMaterial
+	FEMaterial* febmat = dynamic_cast<FEMaterial*>(FEBio::CreateFECoreClassFromModelComponent(test.mat, &fem));
+
+	// run the test
+	bool b = febio::RunMaterialTest(febmat, test.time, test.steps, test.strain, test.test.c_str(), out);
+
+	delete febmat;
+
+	return b;
+}

@@ -324,6 +324,8 @@ CPlotWidget::CPlotWidget(QWidget* parent, int w, int h) : QWidget(parent)
 {
 	ColorList::init();
 
+	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+
 	m_bregionSelect = false;
 
 	m_bautoRngUpdate = true;
@@ -1528,6 +1530,10 @@ void CPlotWidget::draw_barchart(QPainter& p, CPlotData& data)
 	int N = data.size();
 	if (N == 0) return;
 
+	int W = m_plotRect.width();
+	int w = W / N;
+	if (w < 1) w = 1;
+
 	p.setPen(Qt::NoPen);
 	p.setBrush(data.fillColor());
 	for (int i = 0; i<N; ++i)
@@ -1535,7 +1541,7 @@ void CPlotWidget::draw_barchart(QPainter& p, CPlotData& data)
 		QPointF& pi = data.Point(i);
 		QPoint p0 = ViewToScreen(pi);
 		QPoint p1 = ViewToScreen(QPointF(pi.x(), 0.0));
-		QRect r(p0.x() - 5, p0.y(), 10, p1.y() - p0.y());
+		QRect r(p0.x() - w/2, p0.y(), w, p1.y() - p0.y());
 		p.drawRect(r);
 	}
 }

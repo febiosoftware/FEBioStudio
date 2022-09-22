@@ -153,6 +153,12 @@ bool FEBioFormat4::ParseSection(XMLTag& tag)
 	}
 	else
 	{
+		// make sure the module section was read in
+		if ((m_nAnalysis == -1) && (tag != "Module"))
+		{
+			throw std::runtime_error("Required Module section is missing.");
+		}
+
 		if      (tag == "Module"     ) ParseModuleSection    (tag);
 		else if (tag == "Control"    ) ParseControlSection   (tag);
 		else if (tag == "Material"   ) ParseMaterialSection  (tag);
@@ -516,10 +522,11 @@ void FEBioFormat4::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 
 	vector<FEBioInputModel::NODE> nodes; nodes.reserve(10000);
 
-	// create a node set if the name is definde
+	// create a node set if the name is defined
 	const char* szname = tag.AttributeValue("name", true);
 	std::string name;
 	if (szname) name = szname;
+	if (szname) part->SetName(szname);
 
 	// read nodal coordinates
 	++tag;

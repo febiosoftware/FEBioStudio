@@ -64,6 +64,11 @@ class FEBeamFormulation;
 class FSMeshAdaptor;
 class FSVec3dValuator;
 
+// forward declarations of FECore classes
+class FEModel;
+class FECoreBase;
+
+
 namespace FEBio {
 
 	// NOTE: This is an exact copy of the FEParamType enum in FEBio (defined in FEParam.h)!
@@ -195,7 +200,7 @@ namespace FEBio {
 		virtual void write(const char* sztxt) = 0;
 	};
 
-	bool runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
+	int runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
 	void TerminateRun();
 
 	const char* GetSuperClassString(int superClassID);
@@ -205,4 +210,6 @@ namespace FEBio {
 	vec3d GetMaterialFiber(void* vec3dvaluator, const vec3d& p);
 
 	void DeleteClass(void* p);
+
+	FECoreBase* CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FEModel* fem);
 }

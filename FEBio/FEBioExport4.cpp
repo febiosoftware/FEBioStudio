@@ -317,7 +317,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				if (name.empty()) name = pl->GetName();
 
 				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else if (ps->Type() == GO_PART) AddElemSet(name, ps);
+				else if ((ps->Type() == GO_PART) || (ps->Type() == FE_PART)) AddElemSet(name, ps);
 				else AddNodeSet(name, ps);
 			}
 		}

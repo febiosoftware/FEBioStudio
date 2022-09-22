@@ -55,6 +55,8 @@ private slots:
 	void on_curvatureLevels_valueChanged(int n);
 	void on_curvatureMaxIters_valueChanged(int n);
 	void on_curvatureExtQuad_stateChanged(int n);
+	void on_table_cellChanged(int r, int c);
+	void on_logScale_clicked();
 
 private:
 	void UpdateData(int ndata);

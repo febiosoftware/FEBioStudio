@@ -123,6 +123,7 @@ extern int ET_PENTA[9][2];
 extern int ET_PYRA5[8][2];
 
 // in FSElement.cpp
+extern int ET_LINE[1][2];
 extern int ET_TRI[3][2];
 extern int ET_QUAD[4][2];
 
@@ -1020,6 +1021,7 @@ double MinEdgeLength(const FSMesh& mesh, const FSElement& e)
     case ELEM_PYRA : edges =  8; ET = ET_PYRA5; break;
 	case ELEM_TRI  : edges =  3; ET = ET_TRI  ; break;
 	case ELEM_QUAD : edges =  4; ET = ET_QUAD ; break;
+	case ELEM_LINE : edges =  1; ET = ET_LINE ; break;
 	default:
 		assert(false);
 		return 0;
@@ -1055,6 +1057,7 @@ double MaxEdgeLength(const FSMesh& mesh, const FSElement& e)
     case ELEM_PYRA : edges =  8; ET = ET_PYRA5; break;
 	case ELEM_TRI  : edges =  3; ET = ET_TRI  ; break;
 	case ELEM_QUAD : edges =  4; ET = ET_QUAD ; break;
+	case ELEM_LINE : edges =  1; ET = ET_LINE ; break;
 	default:
 		assert(false);
 		return 0;

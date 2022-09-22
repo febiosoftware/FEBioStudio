@@ -2773,6 +2773,7 @@ void CGLView::SelectParts(int x, int y)
 	GPart* closestPart = 0;
 	Intersection q;
 	double minDist = 0;
+	double* a = m_plane;
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -2793,35 +2794,38 @@ void CGLView::SelectParts(int x, int y)
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
 					{
-						double distance = ray.direction*(q.point - ray.origin);
-						if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
+						if ((m_showPlaneCut == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
 						{
-							GFace* gface = po->Face(face.pid);
-							int pid = gface->m_nPID[0];
-							GPart* part = po->Part(pid);
-							if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+							double distance = ray.direction * (q.point - ray.origin);
+							if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
 							{
-								closestPart = part;
-								minDist = distance;
-							}
-							else if (gface->m_nPID[1] >= 0)
-							{
-								pid = gface->m_nPID[1];
-								part = po->Part(pid);
+								GFace* gface = po->Face(face.pid);
+								int pid = gface->m_nPID[0];
+								GPart* part = po->Part(pid);
 								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
 								{
 									closestPart = part;
 									minDist = distance;
 								}
-							}
-							else if (gface->m_nPID[2] >= 0)
-							{
-								pid = gface->m_nPID[2];
-								part = po->Part(pid);
-								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								else if (gface->m_nPID[1] >= 0)
 								{
-									closestPart = part;
-									minDist = distance;
+									pid = gface->m_nPID[1];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+								else if (gface->m_nPID[2] >= 0)
+								{
+									pid = gface->m_nPID[2];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
 								}
 							}
 						}
@@ -2869,6 +2873,7 @@ void CGLView::SelectSurfaces(int x, int y)
 	GLViewTransform transform(this);
 	Ray ray = transform.PointToRay(x, y);
 
+	double* a = m_plane;
 	GFace* closestSurface = 0;
 	Intersection q;
 	double minDist = 0;
@@ -2896,15 +2901,18 @@ void CGLView::SelectSurfaces(int x, int y)
 						Triangle tri = {r0, r1, r2};
 						if (IntersectTriangle(ray, tri, q))
 						{
-							double distance = ray.direction*(q.point - ray.origin);
-							if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
+							if ((m_showPlaneCut == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
 							{
-								if ((gface->IsSelected() == false) || (m_bctrl))
+								double distance = ray.direction * (q.point - ray.origin);
+								if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
 								{
-									closestSurface = po->Face(face.pid);
-									minDist = distance;
+									if ((gface->IsSelected() == false) || (m_bctrl))
+									{
+										closestSurface = po->Face(face.pid);
+										minDist = distance;
+									}
 								}
-							}					
+							}
 						}
 					}
 				}
@@ -2951,6 +2959,8 @@ void CGLView::SelectEdges(int x, int y)
 	int S = 4;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
 
+	double* a = m_plane;
+
 	int Objects = model.Objects();
 	GEdge* closestEdge = 0;
 	double zmin = 0.0;
@@ -2970,15 +2980,21 @@ void CGLView::SelectEdges(int x, int y)
 					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
 					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
 
-					vec3d p0 = transform.WorldToScreen(r0);
-					vec3d p1 = transform.WorldToScreen(r1);
+					double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+					double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
 
-					if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+					if ((m_showPlaneCut == false) || ((d0 > 0) || (d1 > 0)))
 					{
-						if ((closestEdge == 0) || (p0.z < zmin))
+						vec3d p0 = transform.WorldToScreen(r0);
+						vec3d p1 = transform.WorldToScreen(r1);
+
+						if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
 						{
-							closestEdge = po->Edge(edge.pid);
-							zmin = p0.z;
+							if ((closestEdge == 0) || (p0.z < zmin))
+							{
+								closestEdge = po->Edge(edge.pid);
+								zmin = p0.z;
+							}
 						}
 					}
 				}			
@@ -3092,6 +3108,7 @@ void CGLView::SelectNodes(int x, int y)
 	if (NN == 0) return;
 	GNode* closestNode = 0;
 	double zmin = 0.0;
+	double* a = m_plane;
 	for (int i=0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -3107,14 +3124,16 @@ void CGLView::SelectNodes(int x, int y)
 				{
 					vec3d r = node.Position();
 
-					vec3d p = transform.WorldToScreen(r);
-
-					if (rt.contains(QPoint((int)p.x, (int)p.y)))
+					if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0))
 					{
-						if ((closestNode == 0) || (p.z < zmin))
+						vec3d p = transform.WorldToScreen(r);
+						if (rt.contains(QPoint((int)p.x, (int)p.y)))
 						{
-							closestNode = &node;
-							zmin = p.z;
+							if ((closestNode == 0) || (p.z < zmin))
+							{
+								closestNode = &node;
+								zmin = p.z;
+							}
 						}
 					}
 				}
@@ -3540,7 +3559,23 @@ void CGLView::SelectFEFaces(int x, int y)
 	// find the intersection
 	Intersection q;
 	CCommand* pcmd = 0;
-	if (FindFaceIntersection(ray, *pm, q))
+
+	bool bfound = FindFaceIntersection(ray, *pm, q);
+
+	if (bfound && m_planeCut)
+	{
+		vec3d p = po->GetTransform().LocalToGlobal(q.point);
+
+		// see if the intersection lies behind the plane cut. 
+		double* a = m_plane;
+		double d = p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3];
+		if (d < 0)
+		{
+			bfound = false;
+		}
+	}
+
+	if (bfound)
 	{
 		int index = q.m_index;
 		if (view.m_bconn)
@@ -3613,6 +3648,7 @@ void CGLView::SelectFEEdges(int x, int y)
 
 	vec3d o(0,0,0);
 	vec3d O = transform.WorldToScreen(o);
+	double* a = m_plane;
 
 	int index = -1;
 	float zmin = 0.f;
@@ -3626,12 +3662,22 @@ void CGLView::SelectFEEdges(int x, int y)
 		vec3d p0 = transform.WorldToScreen(r0);
 		vec3d p1 = transform.WorldToScreen(r1);
 
-		// make sure p0, p1 are in front of the camers
+		// make sure p0, p1 are in front of the camera
 		if (((p0.x >= 0) || (p1.x >= 0)) && ((p0.y >= 0) || (p1.y >= 0)) && 
 			(p0.z > -1) && (p0.z < 1) && (p1.z > -1) && (p1.z < 1))
 			{
 				// see if the edge intersects
-				if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+				bool bfound = intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt);
+
+				if (bfound && m_planeCut)
+				{
+					// make sure one point is in front of plane
+					double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+					double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
+					if ((d0 < 0) && (d1 < 0)) bfound = false;
+				}
+				
+				if (bfound)
 				{
 					if ((index == -1) || (p0.z < zmin))
 					{
@@ -4364,6 +4410,7 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 	// activate the gl rendercontext
 	makeCurrent();
 	GLViewTransform transform(this);
+	double* a = m_plane;
 
 	vector<int> selectedNodes;
 	for (int i=0; i<model.Objects(); ++i)
@@ -4379,11 +4426,15 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 				if (node->Type() != NODE_SHAPE)
 				{
 					vec3d r = node->Position();
-					vec3d p = transform.WorldToScreen(r);
 
-					if (region.IsInside((int)p.x, (int)p.y))
+					if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 					{
-						selectedNodes.push_back(node->GetID());
+						vec3d p = transform.WorldToScreen(r);
+
+						if (region.IsInside((int)p.x, (int)p.y))
+						{
+							selectedNodes.push_back(node->GetID());
+						}
 					}
 				}
 			}
@@ -4514,6 +4565,8 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	}
 	else lineMesh->TagAllNodes(0);
 
+	double* a = m_plane;
+
 	vector<int> selectedNodes;
 	for (int i = 0; i<lineMesh->Nodes(); ++i)
 	{
@@ -4522,11 +4575,14 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 
-			vec3d p = transform.WorldToScreen(r);
-
-			if (region.IsInside((int)p.x, (int)p.y))
+			if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 			{
-				selectedNodes.push_back(i);
+				vec3d p = transform.WorldToScreen(r);
+
+				if (region.IsInside((int)p.x, (int)p.y))
+				{
+					selectedNodes.push_back(i);
+				}
 			}
 		}
 	}
@@ -4700,6 +4756,8 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 		TagBackfacingElements(*pm);
 	}
 	else pm->TagAllElements(0);
+	
+	double* a = m_plane;
 
 	vector<int> selectedElements;
 	int NE = pm->Elements();
@@ -4720,11 +4778,15 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 				for (int j = 0; j<ne; ++j)
 				{
 					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(el.m_node[j]).r);
-					vec3d p = transform.WorldToScreen(r);
-					if (region.IsInside((int)p.x, (int)p.y))
+
+					if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] > 0))
 					{
-						binside = true;
-						break;
+						vec3d p = transform.WorldToScreen(r);
+						if (region.IsInside((int)p.x, (int)p.y))
+						{
+							binside = true;
+							break;
+						}
 					}
 				}
 
@@ -4904,7 +4966,26 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 		FSFace& face = pm->Face(i);
 		if (face.IsVisible() && vis[face.m_gid] && (face.m_ntag == 0))
 		{
-			if (regionFaceIntersect(transform, region, face, pm))
+			bool b = regionFaceIntersect(transform, region, face, pm);
+
+			if (b && m_showPlaneCut)
+			{
+				double* a = m_plane;
+				b = false;
+				vec3d r[FSFace::MAX_NODES];
+				pm->FaceNodePosition(face, r);
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					vec3d p = pm->LocalToGlobal(r[j]);
+					if (p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3] > 0)
+					{
+						b = true;
+						break;
+					}
+				}
+			}
+
+			if (b)
 			{
 				selectedFaces.push_back(i);
 			}
@@ -4957,6 +5038,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	else
 		pm->TagAllEdges(0);
 
+	double* a = m_plane;
 	vector<int> selectedEdges;
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
@@ -4967,17 +5049,23 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
-			vec3d p0 = transform.WorldToScreen(r0);
-			vec3d p1 = transform.WorldToScreen(r1);
+			double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+			double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
 
-			int x0 = (int)p0.x;
-			int y0 = (int)p0.y;
-			int x1 = (int)p1.x;
-			int y1 = (int)p1.y;
-
-			if (region.LineIntersects(x0, y0, x1, y1))
+			if ((m_showPlaneCut == false) || ((d0 >= 0)||(d1>=0)))
 			{
-				selectedEdges.push_back(i);
+				vec3d p0 = transform.WorldToScreen(r0);
+				vec3d p1 = transform.WorldToScreen(r1);
+
+				int x0 = (int)p0.x;
+				int y0 = (int)p0.y;
+				int x1 = (int)p1.x;
+				int y1 = (int)p1.y;
+
+				if (region.LineIntersects(x0, y0, x1, y1))
+				{
+					selectedEdges.push_back(i);
+				}
 			}
 		}
 	}
@@ -5023,15 +5111,19 @@ void CGLView::SelectFENodes(int x, int y)
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(pm->Node(i).r);
+			double D = r.x * m_plane[0] + r.y * m_plane[1] + r.z * m_plane[2] + m_plane[3];
 
-			vec3d p = transform.WorldToScreen(r);
-
-			if (rt.contains(QPoint((int)p.x, (int)p.y)))
+			if ((m_showPlaneCut == false) || (D >= 0))
 			{
-				if ((index == -1) || (p.z < zmin))
+				vec3d p = transform.WorldToScreen(r);
+
+				if (rt.contains(QPoint((int)p.x, (int)p.y)))
 				{
-					index = i;
-					zmin = p.z;
+					if ((index == -1) || (p.z < zmin))
+					{
+						index = i;
+						zmin = p.z;
+					}
 				}
 			}
 		}

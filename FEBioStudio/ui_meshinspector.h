@@ -173,6 +173,7 @@ public:
 	QComboBox*		col;
 	CStatsInfo*		stats;
 	CSelectionInfo*	sel;
+	QCheckBox*		logScale;
 
 	QWidget* propsWidget;
 	QSpinBox* curvatureLevels;
@@ -195,6 +196,8 @@ public:
 		info = new CMeshInfo;
 
 		table = new QTableWidget;
+		table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+		table->setObjectName("table");
 
 		table->setColumnCount(2);
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -220,14 +223,18 @@ public:
 		col = new QComboBox;
 		col->setObjectName("col");
 
+		logScale = new QCheckBox;
+		logScale->setObjectName("logScale");
+
 		QFormLayout* varForm = new QFormLayout;
 		varForm->addRow("Variable:", var);
 		varForm->addRow("Parameters:", propsWidget);
 		varForm->addRow("Color map", col);
+		varForm->addRow("Logarithmic scale", logScale);
 
-		QHBoxLayout* topLayout = new QHBoxLayout;
-		topLayout->addWidget(info);
-		topLayout->addWidget(table);
+		QHBoxLayout* infoLayout = new QHBoxLayout;
+		infoLayout->addWidget(info);
+		infoLayout->addWidget(table);
 
 		plot = new CPlotWidget;
 		plot->showLegend(false);
@@ -237,19 +244,16 @@ public:
 
 		sel = new CSelectionInfo;
 
-		QHBoxLayout* bottomLayout = new QHBoxLayout;
-		bottomLayout->addWidget(stats);
-		bottomLayout->addWidget(sel);
+		QHBoxLayout* statsLayout = new QHBoxLayout;
+		statsLayout->addWidget(stats);
+		statsLayout->addWidget(sel);
 
 		QWidget* w = new QWidget;
-
 		QVBoxLayout* mainLayout = new QVBoxLayout;
-//		mainLayout->setMargin(0);
-//		mainLayout->setSpacing(0);
-		mainLayout->addLayout(topLayout);
+		mainLayout->addLayout(infoLayout);
 		mainLayout->addLayout(varForm);
 		mainLayout->addWidget(plot);
-		mainLayout->addLayout(bottomLayout);
+		mainLayout->addLayout(statsLayout);
 		w->setLayout(mainLayout);
 
 		wnd->setCentralWidget(w);
@@ -327,13 +331,15 @@ public:
 		for (int i = 0; i<MAX_ELEM + 1; ++i) if (n[i] != 0) m++;
 
 		// fill the rows
+		table->blockSignals(true);
 		table->setRowCount(m); m = 0;
 		for (int i = 0; i<MAX_ELEM + 1; ++i)
 		{
 			if (n[i] != 0)
 			{
 				QTableWidgetItem* item = new QTableWidgetItem(EN[i]);
-				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+				item->setCheckState(Qt::Checked);
 				item->setData(Qt::UserRole, ET[i]);
 				table->setItem(m, 0, item);
 				item = new QTableWidgetItem(QString::number(n[i]));
@@ -342,6 +348,7 @@ public:
 				m++;
 			}
 		}
+		table->blockSignals(false);
 
 		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
 		QStringList items;

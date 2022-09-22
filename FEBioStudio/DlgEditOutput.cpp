@@ -383,7 +383,11 @@ void CDlgEditOutput::showEvent(QShowEvent* ev)
 	for (int i = 0; i < pltClasses.size(); ++i)
 	{
 		FEBio::FEBioClassInfo& feb = pltClasses[i];
-		CPlotVariable tmp(feb.sztype, false, true, DOMAIN_MESH);
+
+		DOMAIN_TYPE dom = DOMAIN_MESH;
+		if (feb.baseClassId == FEBio::GetBaseClassIndex("FEPlotSurfaceData")) dom = DOMAIN_SURFACE;
+		if (feb.baseClassId == FEBio::GetBaseClassIndex("FEPlotDomainData" )) dom = DOMAIN_PART;
+		CPlotVariable tmp(feb.sztype, false, true, dom);
 
 		CPlotVariable* var = plt.FindVariable(feb.sztype);
 		if (var == nullptr) ui->m_plt.push_back(tmp);

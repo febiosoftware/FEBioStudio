@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QWidget>
-#include "ClassDescriptor.h"
+#include <FSCore/ClassDescriptor.h>
 
 namespace Ui {
 	class CMeshButtonBox;

@@ -124,7 +124,7 @@ void CUpdateWidget::checkForAppUpdate()
 	QNetworkRequest request;
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
-	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).toUtf8());
+	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION).toUtf8());
 	
 	request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
 

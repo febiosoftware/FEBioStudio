@@ -594,6 +594,7 @@ public:
 		QAction* actionMeshDiagnostic = addAction("Mesh Diagnostic ...", "actionMeshDiagnostic"); actionMeshDiagnostic->setShortcut(Qt::Key_F11);
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
 		QAction* actionUnitConverter = addAction("Unit Converter ...", "actionUnitConverter");
+		QAction* actionMaterialTest  = addAction("Material test ...", "actionMaterialTest");
 		QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
 		QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
@@ -958,6 +959,7 @@ public:
 		menuTools->addAction(actionMeshDiagnostic);
 		menuTools->addAction(actionUnitConverter);
 		menuTools->addAction(actionElasticityConvertor);
+		menuTools->addAction(actionMaterialTest);
 		menuTools->addAction(actionKinemat);
 		menuTools->addAction(actionPlotMix);
 		menuTools->addAction(actionOptions);

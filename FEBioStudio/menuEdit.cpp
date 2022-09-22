@@ -550,10 +550,14 @@ void CMainWindow::on_actionNameSelection_triggered()
 			assert(po);
 			FEElementSelection* pes = dynamic_cast<FEElementSelection*>(psel); assert(pes);
 			FSPart* pg = dynamic_cast<FSPart*>(pes->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddPart(po, pg));
-			++nparts;
-			UpdateModel(pg);
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddPart(po, pg));
+				++nparts;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_FACE:
@@ -561,10 +565,14 @@ void CMainWindow::on_actionNameSelection_triggered()
 			assert(po);
 			FEFaceSelection* pfs = dynamic_cast<FEFaceSelection*>(psel);
 			FSSurface* pg = dynamic_cast<FSSurface*>(pfs->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddSurface(po, pg));
-			++nsurfs;
-			UpdateModel(pg);
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddSurface(po, pg));
+				++nsurfs;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_EDGE:
@@ -572,10 +580,14 @@ void CMainWindow::on_actionNameSelection_triggered()
 			assert(po);
 			FEEdgeSelection* pes = dynamic_cast<FEEdgeSelection*>(psel);
 			FSEdgeSet* pg = dynamic_cast<FSEdgeSet*>(pes->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
-			++nsurfs;
-			UpdateModel(pg);
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
+				++nsurfs;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_NODE:
@@ -583,10 +595,14 @@ void CMainWindow::on_actionNameSelection_triggered()
 			assert(po);
 			FENodeSelection* pns = dynamic_cast<FENodeSelection*>(psel);
 			FSNodeSet* pg = dynamic_cast<FSNodeSet*>(pns->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddNodeSet(po, pg));
-			++nnodes;
-			UpdateModel(pg);
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddNodeSet(po, pg));
+				++nnodes;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_MESH:

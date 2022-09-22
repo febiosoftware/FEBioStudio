@@ -57,6 +57,15 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 	// copy the mesh
 	FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 
+	// see if any edges are selected
+	bool forceFlip = false;
+	bool selectedOnly = false;
+	if (newMesh->CountSelectedEdges() > 0)
+	{
+		selectedOnly = true;
+		forceFlip = true;
+	}
+
 	// allocate the data structures we'll need
 	// create the edge list
 	m_EL = new FSEdgeList(*newMesh);
@@ -69,7 +78,7 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 	m_EFL = new FSEdgeFaceList(*newMesh);
 
 	// mark the edges we don't want to flip
-	MarkEdges(newMesh);
+	MarkEdges(newMesh, selectedOnly);
 
 	// repeat until we can't find any more edges to flip
 	bool bdone = false;
@@ -85,7 +94,7 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 			if (m_tag[i] == 1)
 			{
 				// Try to flip this edge
-				if (FlipEdge(i, newMesh))
+				if (FlipEdge(i, newMesh, forceFlip))
 				{
 					// The edge was flipped, so we're not done yet
 					bdone = false;
@@ -107,7 +116,7 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 
 // Mark the edges the we can and cannot flip.
 // This means don't flip feature edges.
-void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh)
+void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh, bool selectedOnly)
 {
 	FSEdgeList& EL = *m_EL;
 	FSFaceEdgeList& FEL = *m_FEL;
@@ -128,6 +137,12 @@ void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh)
 			mesh->Node(edge.n[0]).m_ntag = 1;
 			mesh->Node(edge.n[1]).m_ntag = 1;
 
+			edgeList.push_back(i);
+		}
+		else if (selectedOnly && (edge.IsSelected() == false))
+		{
+			mesh->Node(edge.n[0]).m_ntag = 1;
+			mesh->Node(edge.n[1]).m_ntag = 1;
 			edgeList.push_back(i);
 		}
 	}
@@ -161,7 +176,7 @@ void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh)
 
 // Try to flip an edge
 // Will return true on success (the edge was flipped), or false on failure
-bool FEEdgeFlip::FlipEdge(int iedge, FSSurfaceMesh* mesh)
+bool FEEdgeFlip::FlipEdge(int iedge, FSSurfaceMesh* mesh, bool forceFlip)
 {
 	int a[3], b[3];
 	vec3d ra[3], rb[3];
@@ -227,8 +242,12 @@ bool FEEdgeFlip::FlipEdge(int iedge, FSSurfaceMesh* mesh)
 	assert(a[1] == b[0]);
 
 	// see if we should flip the edge
-	bool flip = ShouldFlip(a, b, mesh);
-	if (flip == false) return false;
+	if (forceFlip == false)
+	{
+		bool flip = ShouldFlip(a, b, mesh);
+		if (flip == false) return false;
+	}
+	else m_tag[iedge] = 0;
 
 	// Do the actual edge flipping
 	DoFlipEdge(iedge, a, b, k0, k1, mesh);

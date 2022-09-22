@@ -23,46 +23,24 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QDialog>
 
-#include <QVBoxLayout>
-#include <QDialogButtonBox>
-#include <QComboBox>
-#include <QLabel>
-#include "DlgImageFilter.h"
-#include <FSCore/ClassDescriptor.h>
+class UIDlgMaterialTest;
+class CMainWindow;
 
-
-CDlgImageFilter::CDlgImageFilter()
+class CDlgMaterialTest : public QDialog
 {
-    QVBoxLayout* layout = new QVBoxLayout;
+	Q_OBJECT
 
-    layout->addWidget(new QLabel("Choose an Image Filter:"));
-    
-    m_comboBox = new QComboBox;
+public:
+	CDlgMaterialTest(CMainWindow* parent);
 
-	for (Class_Iterator it = ClassKernel::FirstCD(); it != ClassKernel::LastCD(); ++it)
-	{
-        ClassDescriptor* pcd = *it;
-		if (pcd->GetType() == CLASS_IMAGE_FILTER)
-		{
-            m_classDesc.push_back(pcd);
-        
-            m_comboBox->addItem(pcd->GetName());
-        }
-    }
 
-    layout->addWidget(m_comboBox);
+public slots:
+	void onRun();
+	void onMatChanged(int n);
 
-    QDialogButtonBox* bBox = new QDialogButtonBox(QDialogButtonBox::Ok|QDialogButtonBox::Cancel);
-    layout->addWidget(bBox);
-
-    setLayout(layout);
-
-    connect(bBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
-    connect(bBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
-}
-
-ClassDescriptor* CDlgImageFilter::GetClassDescriptor()
-{
-    return m_classDesc[m_comboBox->currentIndex()];
-}
+private:
+	UIDlgMaterialTest* ui;
+};

@@ -117,7 +117,7 @@ public:
 		font.setStretch(100);
 		font.setBold(false);
 		painter.setFont(font);
-		QString t2 = QString("version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+		QString t2 = QString("version %1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 		painter.drawText(rt, Qt::AlignRight, t2);
 
 		QString t3 = QString("Weiss Lab, University of Utah\nAteshian Lab, Columbia University\n\nCopyright (c) 2022, All rights reserved");
@@ -141,7 +141,7 @@ int main(int argc, char* argv[])
 	FBSApplication app(argc, argv);
 
 	// set the display name (this will be displayed on all windows and dialogs)
-	QString version = QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 	app.setApplicationVersion(version);
 	app.setApplicationName("FEBio Studio");
 	app.setApplicationDisplayName("FEBio Studio " + version);

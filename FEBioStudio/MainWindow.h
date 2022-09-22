@@ -417,6 +417,7 @@ public slots:
 	void on_actionMeshInspector_triggered();
 	void on_actionMeshDiagnostic_triggered();
 	void on_actionElasticityConvertor_triggered();
+	void on_actionMaterialTest_triggered();
 	void on_actionUnitConverter_triggered();
 	void on_actionKinemat_triggered();
 	void on_actionPlotMix_triggered();

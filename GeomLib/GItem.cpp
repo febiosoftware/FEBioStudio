@@ -486,19 +486,19 @@ GPart::GPart(const GPart& p)
 
 bool GPart::IsSolid() const
 {
-	assert(m_section);
+//	assert(m_section);
 	return (dynamic_cast<GSolidSection*>(m_section));
 }
 
 bool GPart::IsShell() const
 {
-	assert(m_section);
+//	assert(m_section);
 	return (dynamic_cast<GShellSection*>(m_section));
 }
 
 bool GPart::IsBeam() const
 {
-	assert(m_section);
+//	assert(m_section);
 	return (dynamic_cast<GBeamSection*>(m_section));
 }
 

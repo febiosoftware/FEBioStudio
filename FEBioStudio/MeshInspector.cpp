@@ -102,13 +102,16 @@ void CMeshInspector::UpdateData(int ndata)
 	if (pm == 0) return;
 
 	
-	int etype = -1;
-	QModelIndex index = ui->table->currentIndex();
-	if (index.isValid())
+	const int MAX_ELEM = 21;
+	vector<bool> ET(MAX_ELEM, false);
+	for (int i = 0; i < ui->table->rowCount(); ++i)
 	{
-		QTableWidgetItem* item = ui->table->item(index.row(), 0);
-		assert(item);
-		etype = item->data(Qt::UserRole).toInt();
+		QTableWidgetItem* item = ui->table->item(i, 0);
+		if (item->checkState() == Qt::Checked)
+		{
+			int e = item->data(Qt::UserRole).toInt(); assert((e >= 0) && (e < MAX_ELEM));
+			ET[e] = true;
+		}
 	}
 
 	FEMeshValuator eval(*pm);
@@ -131,7 +134,7 @@ void CMeshInspector::UpdateData(int ndata)
 		{
 			FSElement& el = pm->Element(i);
 			int ne = el.Nodes();
-			if ((etype == -1) || (el.Type() == etype))
+			if (ET[el.Type()])
 			{
 				if (data[i].tag)
 				{
@@ -158,20 +161,41 @@ void CMeshInspector::UpdateData(int ndata)
 
 	ui->sel->setRange(vmin, vmax);
 
-	int M = (int)sqrt((double)NC) + 1;
+	// determine number of bins
+	// sqrt rule
+//	int M = (int)ceil(sqrt((double)NC));
+
+	// sturges rule
+	int M = (int)ceil(log2(NC) + 1);
+
+	// rice rule
+//	int M = (int)ceil(2.0*pow(NC, 1.0/3.0));
+
+	if (M < 1) M = 1;
 	if (M > width() / 3) M = width() / 3;
 
 	if (fabs(vmax - vmin) < 1e-5) vmax++;
 	vector<double> bin; bin.assign(M, 0.0);
-	double w = 1.0 / (double)NC;
 	double ymax = 0;
 	for (int i = 0; i<NC; ++i)
 	{
 		int n = (int)(M*(v[i] - vmin) / (vmax - vmin));
 		if (n < 0) n = 0;
 		if (n >= M) n = M - 1;
-		if (n >= 0) bin[n] += w;
+		if (n >= 0) bin[n] += 1;
 		if (bin[n] > ymax) ymax = bin[n];
+	}
+
+	if (ui->logScale->isChecked())
+	{
+		for (int i = 0; i < M; ++i)
+		{
+			if (bin[i] > 0) bin[i] = log10(bin[i]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < M; ++i) bin[i] /= (double)NC;
 	}
 
 	CPlotData* pltData = new CPlotData;
@@ -266,4 +290,14 @@ void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 		m_wnd->RedrawGL();
 	}
+}
+
+void CMeshInspector::on_table_cellChanged(int r, int c)
+{
+	if (c == 0) Update();
+}
+
+void CMeshInspector::on_logScale_clicked()
+{
+	Update();
 }

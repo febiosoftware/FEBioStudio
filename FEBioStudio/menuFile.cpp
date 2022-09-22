@@ -848,7 +848,7 @@ void CMainWindow::ExportGeometry()
 		{
 			FEAbaqusExport writer(fem);
 			stringstream ss;
-			ss << "Written by FEBio Studio " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
+			ss << "Written by FEBio Studio " << FBS_VERSION << "." << FBS_SUBVERSION << "." << FBS_SUBSUBVERSION;
 			writer.SetHeading(ss.str());
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to Abaqus file."));
@@ -1097,7 +1097,7 @@ void CMainWindow::SavePostDoc()
 		{
 			Post::AbaqusExport w;
 			stringstream ss;
-			ss << "Written by FEBio Studio " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
+			ss << "Written by FEBio Studio " << FBS_VERSION << "." << FBS_SUBVERSION << "." << FBS_SUBSUBVERSION;
 			w.SetHeading(ss.str());
 			bret = w.Save(fem, doc->GetActiveState(), szfilename);
 			error = "Failed writing Abaqus file.";

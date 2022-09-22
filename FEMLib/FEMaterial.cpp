@@ -3536,9 +3536,6 @@ void FEBioMaterial::Load(IArchive& ar)
 
 bool FEBioMaterial::UpdateData(bool bsave)
 {
-//	if (m_febClass)
-	{
-		if (bsave) FEBio::UpdateFEBioMaterial(this);
-	}
+	if (bsave) FEBio::UpdateFEBioClass(this);
 	return false;
 }
