@@ -1760,9 +1760,10 @@ void CMainWindow::readSettings()
 	Units::SetUnitSystem(ui->m_defaultUnits);
 
 	QRect rt;
-	rt = settings.value("curveEditorSize", QRect()).toRect();
+    QRect defaultRect(geometry().center().x() - 400, geometry().center().y() - 300, 800, 600);
+	rt = settings.value("curveEditorSize", defaultRect).toRect();
 	if (rt.isValid()) CCurveEditor::setPreferredSize(rt);
-	rt = settings.value("graphWindowSize", QRect()).toRect();
+	rt = settings.value("graphWindowSize", defaultRect).toRect();
 	if (rt.isValid()) CGraphWindow::setPreferredSize(rt);
 
 	settings.endGroup();

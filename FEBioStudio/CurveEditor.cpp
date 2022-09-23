@@ -199,10 +199,6 @@ CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(
 
 	if (m_preferredSize.isValid())
 	{
-		// copy the x,y coordinates
-		QRect rt = geometry();
-		m_preferredSize.setX(rt.x());
-		m_preferredSize.setY(rt.y());
 		setGeometry(m_preferredSize);
 	}
 }

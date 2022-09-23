@@ -253,6 +253,8 @@ public:
 	virtual void Update(bool breset = true, bool bfit = false) = 0;
 
 	void closeEvent(QCloseEvent* closeEvent) override;
+    void resizeEvent(QResizeEvent* resizeEvent) override;
+    void moveEvent(QMoveEvent* moveEvent) override;
 
 	static QRect preferredSize();
 	static void setPreferredSize(const QRect& rt);
