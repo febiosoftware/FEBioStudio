@@ -26,6 +26,10 @@ SOFTWARE.*/
 
 #include "AbaqusModel.h"
 
+#ifndef WIN32
+#define stricmp strcmp
+#endif
+
 // in AbaqusImport.cpp
 bool szicmp(const char* sz1, const char* sz2);
 
@@ -305,7 +309,7 @@ list<AbaqusModel::ELEMENT_SET>::iterator AbaqusModel::PART::FindElementSet(const
 {
 	size_t n = m_ElSet.size();
 	list<ELEMENT_SET>::iterator pe = m_ElSet.begin();
-	for (size_t i = 0; i<n; ++i, ++pe) if (stricmp(pe->szname, szname) == 0) return pe;
+	for (size_t i = 0; i<n; ++i, ++pe) if (strcmp(pe->szname, szname) == 0) return pe;
 	return m_ElSet.end();
 }
 
