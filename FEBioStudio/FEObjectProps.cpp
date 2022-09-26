@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
+#include "ModelViewer.h"
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -736,24 +737,43 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CLogfileProperties::CLogfileProperties(FSProject& prj) : CObjectProps(0)
+CLogfileProperties::CLogfileProperties(CModelViewer* wnd, FSProject& prj) : CObjectProps(0)
 {
-	CLogDataSettings& log = prj.GetLogDataSettings();
+	m_prj = &prj;
+	m_wnd = wnd;
+	Update();
+}
+
+void CLogfileProperties::Update()
+{
+	Clear();
+	if (m_prj == nullptr) return;
+
+	CLogDataSettings& log = m_prj->GetLogDataSettings();
 
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
 		FSLogData& ld = log.LogData(i);
 		addProperty(QString::fromStdString(ld.sdata), CProperty::Bool)->setFlags(CProperty::Visible);
 	}
+
+	addProperty("", CProperty::Action, "Edit log variables ...");
+	m_actionIndex = log.LogDataSize();
 }
 
 QVariant CLogfileProperties::GetPropertyValue(int i)
 {
-	return true;
+	return (i != m_actionIndex ? true : QVariant());
 }
 
 void CLogfileProperties::SetPropertyValue(int i, const QVariant& v)
 {
+	if (i == m_actionIndex)
+	{
+		m_wnd->blockUpdate(true);
+		m_wnd->OnEditOutputLog();
+		m_wnd->blockUpdate(false);
+	}
 }
 
 //=======================================================================================

@@ -59,6 +59,7 @@ private:
 	void RenderSelectedSurfaces(CGLContext& rc, GObject* po);
 	void RenderSelectedEdges   (CGLContext& rc, GObject* po);
 	void RenderSelectedNodes   (CGLContext& rc, GObject* po);
+	void RenderBeamParts       (CGLContext& rc, GObject* po);
 
 	// rendering functions for FEMeshes
 	void RenderFEElements   (CGLContext& rc, GObject* po);

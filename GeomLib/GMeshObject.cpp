@@ -495,6 +495,38 @@ void GMeshObject::UpdateEdges()
 			}
 		}
 	}
+
+	// assign edges to beam parts
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
+		if (pg->IsBeam())
+		{
+			pg->m_edge.clear();
+			vector<int> ET(m_Edge.size(), 0);
+			for (int j = 0; j < m.Edges(); ++j)
+			{
+				FSEdge& edge = m.Edge(j);
+				if (edge.m_elem >= 0)
+				{
+					FSElement& el = m.Element(edge.m_elem); assert(el.IsBeam());
+					if (el.m_gid == pg->GetLocalID())
+					{
+						int edgeId = edge.m_gid;
+						ET[edgeId] = 1;
+					}
+				}
+			}
+
+			for (int j=0; j<m_Edge.size(); ++j)
+			{
+				if (ET[j] > 0)
+				{
+					pg->m_edge.push_back(j);
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

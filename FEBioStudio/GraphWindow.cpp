@@ -1021,10 +1021,6 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 
 	if (m_preferredSize.isValid())
 	{
-		// copy the x,y coordinates
-		QRect rt = geometry();
-		m_preferredSize.setX(rt.x());
-		m_preferredSize.setY(rt.y());
 		setGeometry(m_preferredSize);
 	}
 	else resize(800, 600);
@@ -1034,7 +1030,21 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 void CGraphWindow::closeEvent(QCloseEvent* closeEvent)
 {
 	m_wnd->RemoveGraph(this);
-	m_preferredSize = geometry();
+    m_preferredSize = geometry();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::resizeEvent(QResizeEvent* resizeEvent)
+{
+    QMainWindow::resizeEvent(resizeEvent);
+    m_preferredSize = geometry();
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::moveEvent(QMoveEvent* moveEvent)
+{
+    QMainWindow::moveEvent(moveEvent);
+    m_preferredSize = geometry();
 }
 
 //-----------------------------------------------------------------------------
@@ -1296,7 +1306,7 @@ void CGraphWindow::on_selectPlot_currentIndexChanged(int index)
 //-----------------------------------------------------------------------------
 void CGraphWindow::on_actionSave_triggered()
 {
-	QString fileName = QFileDialog::getSaveFileName(this, "Save Graph Data", QDir::currentPath(), QString("All files (*)"));
+	QString fileName = QFileDialog::getSaveFileName(this, "Save Graph Data", QString(), QString("All files (*)"));
 	if (fileName.isEmpty() == false)
 	{
 		if (ui->plot->Save(fileName) == false)

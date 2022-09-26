@@ -26,6 +26,16 @@ SOFTWARE.*/
 
 #include "AbaqusModel.h"
 
+#ifdef LINUX // same for Linux and Mac OS X
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#endif
+
+#ifdef __APPLE__ // same for Linux and Mac OS X
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#endif
+
 // in AbaqusImport.cpp
 bool szicmp(const char* sz1, const char* sz2);
 
@@ -305,7 +315,7 @@ list<AbaqusModel::ELEMENT_SET>::iterator AbaqusModel::PART::FindElementSet(const
 {
 	size_t n = m_ElSet.size();
 	list<ELEMENT_SET>::iterator pe = m_ElSet.begin();
-	for (size_t i = 0; i<n; ++i, ++pe) if (strcmp(pe->szname, szname) == 0) return pe;
+	for (size_t i = 0; i<n; ++i, ++pe) if (stricmp(pe->szname, szname) == 0) return pe;
 	return m_ElSet.end();
 }
 
@@ -343,7 +353,7 @@ list<AbaqusModel::SURFACE>::iterator AbaqusModel::PART::FindSurface(const char* 
 {
 	size_t n = m_Surf.size();
 	list<SURFACE>::iterator ps = m_Surf.begin();
-	for (size_t i = 0; i<n; ++i, ++ps) if (strcmp(ps->szname, szname) == 0) return ps;
+	for (size_t i = 0; i<n; ++i, ++ps) if (stricmp(ps->szname, szname) == 0) return ps;
 	return m_Surf.end();
 }
 
@@ -423,7 +433,7 @@ AbaqusModel::Orientation* AbaqusModel::PART::FindOrientation(const char* szname)
 	list<Orientation>::iterator it;
 	for (it = m_Orient.begin(); it != m_Orient.end(); ++it)
 	{
-		if (strcmp(it->szname, szname) == 0) return &(*it);
+		if (stricmp(it->szname, szname) == 0) return &(*it);
 	}
 	return 0;
 }
@@ -435,7 +445,7 @@ AbaqusModel::Distribution* AbaqusModel::PART::FindDistribution(const char* sznam
 	list<Distribution>::iterator it;
 	for (it = m_Distr.begin(); it != m_Distr.end(); ++it)
 	{
-		if (strcmp(it->m_szname, szname) == 0) return &(*it);
+		if (stricmp(it->m_szname, szname) == 0) return &(*it);
 	}
 	return 0;
 }

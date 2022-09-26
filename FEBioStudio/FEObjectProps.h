@@ -44,6 +44,7 @@ class FSReactionMaterial;
 class FSMaterial;
 class GPart;
 class FSStep;
+class CModelViewer;
 
 class FEObjectProps : public CObjectProps
 {
@@ -164,9 +165,15 @@ private:
 class CLogfileProperties : public CObjectProps
 {
 public:
-	CLogfileProperties(FSProject& prj);
+	CLogfileProperties(CModelViewer* wnd, FSProject& prj);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+	void Update() override;
+
+private:
+	int	m_actionIndex;
+	CModelViewer* m_wnd;
+	FSProject* m_prj;
 };
 
 

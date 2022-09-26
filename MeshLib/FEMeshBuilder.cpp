@@ -2087,6 +2087,7 @@ void FEMeshBuilder::BuildEdges()
 			if (bfound == false)
 			{
 				e.m_gid = 0;
+				e.m_elem = i;
 				e.SetID((int)m_mesh.m_Edge.size() + 1);
 				e.SetExterior(e.m_gid == 0);
 
