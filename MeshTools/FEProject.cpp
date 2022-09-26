@@ -742,6 +742,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		default:
 			assert(false);
 		}
+		m_module = FEBio::GetActiveModule();
 	}
 
 	ConvertMaterials(log);
@@ -828,6 +829,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 	FSModelComponent* febAxis = nullptr;
 	switch (axis->m_naopt)
 	{
+	case -1: break;
 	case FE_AXES_LOCAL:
 	{
 		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "local", fem); assert(febAxis);
@@ -880,7 +882,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 	}
 	break;
 	default:
-		log << "Unkown mat axis type" << std::endl;
+		log << "Unknown mat axis type" << std::endl;
 	}
 
 	if (febAxis) matAxis->SetComponent(febAxis);
