@@ -1902,5 +1902,5 @@ void CModelTree::UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem)
 void CModelTree::UpdateOutput(QTreeWidgetItem* t1, FSProject& prj)
 {
 	AddTreeItem(t1, "plotfile", MT_PROJECT_OUTPUT_PLT, 0, 0, new CPlotfileProperties(m_view, prj), 0, 1);
-	AddTreeItem(t1, "logfile", MT_PROJECT_OUTPUT_LOG, 0, 0, new CLogfileProperties(prj), 0, 1);
+	AddTreeItem(t1, "logfile", MT_PROJECT_OUTPUT_LOG, 0, 0, new CLogfileProperties(m_view, prj), 0, 1);
 }
