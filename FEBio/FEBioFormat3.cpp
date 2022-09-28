@@ -3831,12 +3831,13 @@ bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, LoadCurve& lc)
 		if (tag == "interpolate")
 		{
 			string interpolate = tag.szvalue();
-			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetInterpolator(PointCurve::STEP);
-			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetInterpolator(PointCurve::LINEAR);
-			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetInterpolator(PointCurve::SMOOTH);
-            else if ((interpolate == "cubic spline") || (interpolate == "CUBIC SPLINE")) lc.SetInterpolator(PointCurve::CSPLINE);
-            else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetInterpolator(PointCurve::CPOINTS);
-            else if ((interpolate == "approximation") || (interpolate == "APPROXIMATION")) lc.SetInterpolator(PointCurve::APPROX);
+			if      ((interpolate == "step"          ) || (interpolate == "STEP"          )) lc.SetInterpolator(PointCurve::STEP);
+			else if ((interpolate == "linear"        ) || (interpolate == "LINEAR"        )) lc.SetInterpolator(PointCurve::LINEAR);
+			else if ((interpolate == "smooth"        ) || (interpolate == "SMOOTH"        )) lc.SetInterpolator(PointCurve::SMOOTH);
+			else if ((interpolate == "cubic spline"  ) || (interpolate == "CUBIC SPLINE"  )) lc.SetInterpolator(PointCurve::CSPLINE);
+			else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetInterpolator(PointCurve::CPOINTS);
+			else if ((interpolate == "approximation" ) || (interpolate == "APPROXIMATION" )) lc.SetInterpolator(PointCurve::APPROX);
+			else if ((interpolate == "smooth step"   ) || (interpolate == "SMOOTH STEP"   )) lc.SetInterpolator(PointCurve::SMOOTH_STEP);
 			else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 		}
 		else if (tag == "extend")

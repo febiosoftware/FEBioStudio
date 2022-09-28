@@ -1855,6 +1855,7 @@ void FEBioExport25::WritePointCurve(FS1DPointFunction* f1d, XMLElement& el)
         case PointCurve::CSPLINE: m_xml.add_leaf("interpolate", "cubic spline"); break;
         case PointCurve::CPOINTS: m_xml.add_leaf("interpolate", "control points"); break;
         case PointCurve::APPROX : m_xml.add_leaf("interpolate", "approximation"); break;
+        case PointCurve::SMOOTH_STEP: m_xml.add_leaf("interpolate", "smooth step"); break;
 		}
 
 		int nextend = plc->GetExtendMode();

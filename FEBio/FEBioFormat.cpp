@@ -2183,6 +2183,7 @@ FSMaterial* FEBioFormat::Parse1DFunction(FSMaterial* pm, XMLTag& tag)
             if (stricmp(szval, "cubic spline" ) == 0) plc->SetInterpolator(PointCurve::CSPLINE);
             if (stricmp(szval, "control point") == 0) plc->SetInterpolator(PointCurve::CPOINTS);
             if (stricmp(szval, "approximation") == 0) plc->SetInterpolator(PointCurve::APPROX);
+            if (stricmp(szval, "smooth step"  ) == 0) plc->SetInterpolator(PointCurve::SMOOTH_STEP);
 		}
 		else if (tag == "extend")
 		{
@@ -2252,6 +2253,7 @@ bool FEBioFormat::ParseLoadDataSection(XMLTag& tag)
                 else if (*pat == "cubic spline"  ) lc.SetInterpolator(PointCurve::CSPLINE);
                 else if (*pat == "control points") lc.SetInterpolator(PointCurve::CPOINTS);
                 else if (*pat == "approximation" ) lc.SetInterpolator(PointCurve::APPROX);
+                else if (*pat == "smooth step"   ) lc.SetInterpolator(PointCurve::SMOOTH_STEP);
 				else FileReader()->AddLogEntry("unknown type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 			}
 			else lc.SetInterpolator(PointCurve::LINEAR);

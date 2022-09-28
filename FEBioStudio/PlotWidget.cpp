@@ -1915,6 +1915,7 @@ public:
 		lineType->addItem("Cubic spline");
 		lineType->addItem("Control points");
 		lineType->addItem("Approximation");
+		lineType->addItem("Smooth step");
 
 		extendMode = new QComboBox; extendMode->setObjectName("extendMode");
 		extendMode->addItem("Constant");
