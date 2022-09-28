@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/GModel.h>
 #include <FEBioLink/FEBioModule.h>
+#include <sstream>
 ////using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -145,7 +146,15 @@ bool AbaqusImport::Load(const char* szfile)
 	// build the model
 	if (build_model() == false) return false;
 
-	// we're good!
+	// The abaqus reader currently still uses the old FE classes, so we need to convert. 
+	std::ostringstream log;
+	m_prj.ConvertToNewFormat(log);
+	std::string s = log.str();
+	if (s.empty() == false)
+	{
+		errf(s.c_str());
+	}
+
 	return true;
 }
 
@@ -1216,27 +1225,48 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 		else if (szicmp(szline, "*HYPERELASTIC"))
 		{
 			mat.mattype = AbaqusModel::HYPERELASTIC;
+			mat.ntype = -1;
 			natt = parse_line(szline, a);
 			const char* sztype = a[1].szatt;
-			if (sztype && szicmp(sztype, "NEOHOOKE")) mat.ntype = 1;
-
-			read_line(szline, fp);
-			char* sz = szline;
-			char* ch = strchr(sz, ',');
+			int lines = 1;
 			int nmax = 2;
-			int np = 0;
-			do
+			mat.nparam = 0;
+			if (sztype && szicmp(sztype, "NEOHOOKE"))
 			{
-				if (ch) *ch = 0;
-				sscanf(sz, "%lg", &mat.d[np]);
-				if (ch)
+				mat.ntype = 1;
+				mat.nparam = 2;
+			}
+			if (sztype && szicmp(sztype, "OGDEN"))
+			{
+				if (strcmp(a[2].szatt, "N") == 0)
 				{
-					++np;
-					sz = ch + 1;
-					ch = strchr(sz, ',');
+					int N = atoi(a[2].szval);
+					mat.ntype = 2;
+					lines = (N > 2 ? 2 : 1);
+					nmax = N*3;
+					mat.nparam = nmax;
 				}
-				else sz = 0;
-			} while (sz && (np < nmax));
+			}
+
+			int np = 0;
+			for (int l = 0; l < lines; ++l)
+			{
+				read_line(szline, fp);
+				char* sz = szline;
+				char* ch = strchr(sz, ',');
+				do
+				{
+					if (ch) *ch = 0;
+					sscanf(sz, "%lg", &mat.d[np]);
+					if (ch)
+					{
+						++np;
+						sz = ch + 1;
+						ch = strchr(sz, ',');
+					}
+					else sz = 0;
+				} while (sz && (np < nmax));
+			}
 		}
 		else if (szicmp(szline, "*ANISOTROPIC HYPERELASTIC"))
 		{
@@ -1527,6 +1557,34 @@ bool AbaqusImport::build_physics()
 				pmat->SetFloatValue(FSIncompNeoHookean::MP_DENSITY, pm->dens);
 				pmat->SetFloatValue(FSIncompNeoHookean::MP_G, 2.0*pm->d[0]);
 				pmat->SetFloatValue(FSIncompNeoHookean::MP_K, 1.0 / pm->d[1]);
+			}
+			else if (pm->ntype == 2)
+			{
+				pmat = new FSOgdenMaterial(&fem);
+				if (pm->nparam == 3)
+				{
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C1, pm->d[0]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M1, pm->d[1]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_K, 1.0 / pm->d[2]);
+				}
+				else if (pm->nparam == 6)
+				{
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C1, pm->d[0]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M1, pm->d[1]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C2, pm->d[2]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M2, pm->d[3]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_K, 1.0 / pm->d[4]);
+				}
+				else if (pm->nparam == 9)
+				{
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C1, pm->d[0]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M1, pm->d[1]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C2, pm->d[2]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M2, pm->d[3]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C3, pm->d[4]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M3, pm->d[5]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_K, 1.0 / pm->d[6]);
+				}
 			}
 			break;
 		}

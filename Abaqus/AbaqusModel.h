@@ -262,8 +262,9 @@ public:
 		char	szname[256];
 		int		mattype;
 		int		ntype;
+		int		nparam;
 		double	dens;
-		double	d[5];
+		double	d[10];
 	};
 
 	// surface loads
