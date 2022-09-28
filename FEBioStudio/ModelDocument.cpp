@@ -451,18 +451,8 @@ bool CModelDocument::LoadTemplate(int n)
 {
 	int N = TemplateManager::Templates();
 	if ((n<0) || (n >= N)) return false;
-
-	const DocTemplate& doc = TemplateManager::GetTemplate(n);
-
-	/*	string fileName = TemplateManager::TemplatePath() + doc.fileName;
-	const char* szfile = fileName.c_str();
-
-	PRVArchive ar;
-	if (ar.Load(szfile) == false) return false;
-	*/
-	m_Project.SetModule(doc.module);
-
-	return true;
+	DocTemplate& doc = TemplateManager::GetTemplate(n);
+	return doc.Load(this);
 }
 
 bool CModelDocument::GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt)

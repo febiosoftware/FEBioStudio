@@ -152,7 +152,6 @@ public:
 		themes << "Adwaita" << "Adwaita Dark";
 #endif
 		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
-		addBoolProperty(&m_showNewDialog, "Show New dialog box");
 		addProperty("Recent files list", CProperty::Action)->info = QString("Clear");
 		addIntProperty(&m_autoSaveInterval, "AutoSave Interval (s)");
 	}
@@ -175,7 +174,6 @@ public:
 	bool	m_apply;
 	bool	m_bcmd;
 	int		m_theme;
-	bool	m_showNewDialog;
 	int		m_autoSaveInterval;
 };
 
@@ -1038,7 +1036,6 @@ void CDlgSettings::UpdateSettings()
 	ui->m_ui->m_apply = (view.m_apply == 1);
 	ui->m_ui->m_bcmd = m_pwnd->clearCommandStackOnSave();
 	ui->m_ui->m_theme = m_pwnd->currentTheme();
-	ui->m_ui->m_showNewDialog = m_pwnd->showNewDialog();
 	ui->m_ui->m_autoSaveInterval = m_pwnd->autoSaveInterval();
 
 	ui->m_select->m_bconnect = view.m_bconn;
@@ -1172,7 +1169,6 @@ void CDlgSettings::apply()
 	Post::CGLColorMap::m_defaultRngType = ui->m_post->m_defrng;
 
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
-	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);
 	m_pwnd->setAutoSaveInterval(ui->m_ui->m_autoSaveInterval);
 
 	int oldTheme = m_pwnd->currentTheme();

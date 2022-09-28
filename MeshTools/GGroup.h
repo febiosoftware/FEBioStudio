@@ -78,6 +78,7 @@ class GFaceList : public GGroup
 public:
 	GFaceList(FSModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
 	GFaceList(FSModel* ps, GFaceSelection* pf);
+	GFaceList(FSModel* ps, GFace* pf);
 
 	vector<GFace*>	GetFaceList();
 

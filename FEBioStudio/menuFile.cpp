@@ -171,26 +171,34 @@ void CMainWindow::on_actionNewModel_triggered()
 	} while (bok == false);
 
 	// show the dialog box
-	int nmodule = -1;
-	if (ui->m_showNewDialog)
+	CDlgNew dlg(this);
+	dlg.SetModelName(QString::fromStdString(docTitle));
+	if (dlg.exec())
 	{
-		CDlgNew dlg(this);
-		dlg.SetModelName(QString::fromStdString(docTitle));
-		if (dlg.exec())
+		CModelDocument* doc = CreateNewDocument();
+		if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
 		{
-			nmodule = dlg.GetModule();
-			docTitle = dlg.GetModelName().toStdString();
+			int nmodule = dlg.GetSelection();
+			doc->GetProject().SetModule(nmodule);
 		}
-		else return;
-
-		ui->m_showNewDialog = !(dlg.showDialogOption());
+		else if (dlg.CreateMode() == CDlgNew::CREATE_FROM_TEMPLATE)
+		{
+			if (doc->LoadTemplate(dlg.GetSelection()) == false)
+			{
+				QMessageBox::critical(this, "New", "Failed to initialize template.");
+				delete doc;
+				doc = nullptr;
+			}
+		}
+		assert(doc);
+		if (doc)
+		{
+			docTitle = dlg.GetModelName().toStdString();
+			doc->SetDocTitle(docTitle);
+			AddDocument(doc);
+		}
 	}
-
-	// create a new model doc
-	CModelDocument* doc = CreateNewDocument();
-	doc->GetProject().SetModule(nmodule);
-	doc->SetDocTitle(docTitle);
-	AddDocument(doc);
+	else return;
 }
 
 void CMainWindow::on_actionNewProject_triggered()

@@ -262,6 +262,12 @@ GFaceList::GFaceList(FSModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_N
 }
 
 //-----------------------------------------------------------------------------
+GFaceList::GFaceList(FSModel* ps, GFace* pf) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
+{
+	if (pf) add(pf->GetID());
+}
+
+//-----------------------------------------------------------------------------
 FSNodeList* GFaceList::BuildNodeList()
 {
 	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();

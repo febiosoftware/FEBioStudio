@@ -69,6 +69,14 @@ FEBoxMesher::FEBoxMesher(GBox* po)
 }
 
 //-----------------------------------------------------------------------------
+void FEBoxMesher::SetResolution(int nx, int ny, int nz)
+{
+	SetIntValue(NX, nx);
+	SetIntValue(NY, ny);
+	SetIntValue(NZ, nz);
+}
+
+//-----------------------------------------------------------------------------
 // Build the FSMesh
 FSMesh* FEBoxMesher::BuildMesh()
 {

@@ -338,8 +338,6 @@ public:
 	int			m_theme;	// 0 = default, 1 = dark
 	bool		m_clearUndoOnSave;
 
-	bool	m_showNewDialog;
-
 	bool	m_isAnimating;
 
 	QList<::CGraphWindow*>	graphList;
@@ -369,8 +367,6 @@ public:
 		measureTool = nullptr;
 		planeCutTool = nullptr;
 		fiberViz = nullptr;
-
-		m_showNewDialog = true;
 	}
 
 	void setupUi(::CMainWindow* wnd)

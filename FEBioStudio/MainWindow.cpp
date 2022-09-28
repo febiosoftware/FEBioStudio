@@ -1674,16 +1674,6 @@ FEBioStudioProject* CMainWindow::GetProject()
 	return &ui->m_project;
 }
 
-void CMainWindow::setShowNewDialog(bool b)
-{
-	ui->m_showNewDialog = b;
-}
-
-bool CMainWindow::showNewDialog()
-{
-	return ui->m_showNewDialog;
-}
-
 void CMainWindow::setAutoSaveInterval(int interval)
 {
 	ui->m_autoSaveInterval = interval;
@@ -1730,7 +1720,6 @@ void CMainWindow::writeSettings()
 	settings.setValue("geometry", saveGeometry());
 	settings.setValue("state", saveState());
 	settings.setValue("theme", ui->m_theme);
-	settings.setValue("showNewDialogBox", ui->m_showNewDialog);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
 	settings.setValue("bgColor1", (int)vs.m_col1);
@@ -1827,7 +1816,6 @@ void CMainWindow::readSettings()
 	restoreGeometry(settings.value("geometry").toByteArray());
 	restoreState(settings.value("state").toByteArray());
 	ui->m_theme = settings.value("theme", 0).toInt();
-	ui->m_showNewDialog = settings.value("showNewDialogBox", true).toBool();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
 	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1).toInt());

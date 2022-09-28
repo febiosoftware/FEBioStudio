@@ -43,6 +43,9 @@ public:
 	FEBoxMesher(GBox* po);
 	FSMesh* BuildMesh();
 
+public:
+	void SetResolution(int nx, int ny, int nz);
+
 protected:
 	bool BuildMultiBlock() override;
 
