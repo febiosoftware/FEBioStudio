@@ -142,6 +142,23 @@ public:
 		vector<ENTRY>	m_data;
 	};
 
+	class Amplitude
+	{
+	public:
+		enum AmplitudeType {
+			AMP_TABULAR,
+			AMP_SMOOTH_STEP
+		};
+
+	public:
+		Amplitude() { m_type = 0; }
+
+	public:
+		string	m_name;
+		int		m_type;
+		std::vector<vec2d>	m_points;
+	};
+
 	// part
 	class PART
 	{
@@ -417,6 +434,11 @@ public:
 
 	list<STEP>& StepList() { return m_Step; }
 
+public:
+	void AddAmplitude(const Amplitude& a);
+	int Amplitudes() const;
+	const Amplitude& GetAmplitude(int n) const;
+
 private:
 	FSModel*	m_fem;		// the model
 
@@ -432,4 +454,5 @@ private:	// physics
 	list<BOUNDARY>		m_Boundary;		// boundary conditions
 	list<STEP>			m_Step;			// steps
 	STEP*				m_pStep;		// current step
+	std::vector<Amplitude>		m_Amp;
 };

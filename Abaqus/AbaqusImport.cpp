@@ -285,6 +285,10 @@ bool AbaqusImport::parse_file(FILE* fp)
 		{
 			if (!read_distribution(szline, fp)) return errf("Error while reading keyword DISTRIBUTION (line %d)", m_nline);
 		}
+		else if (szicmp(szline, "*AMPLITUDE"))
+		{
+			if (!read_amplitude(szline, fp)) return errf("Error while reading keyword AMPLITUDE (line %d)", m_nline);
+		}
 		else if (szicmp(szline, "*INCLUDE")) // include another file
 		{
 			// get the filename
@@ -1633,6 +1637,23 @@ bool AbaqusImport::build_physics()
 		fem.AddStep(festep);
 	}
 
+	// add the aplitude curves
+	for (int n = 0; n < m_inp.Amplitudes(); ++n)
+	{
+		const AbaqusModel::Amplitude& amp = m_inp.GetAmplitude(n);
+		LoadCurve lc;
+		lc.Clear();
+		for (int i = 0; i < amp.m_points.size(); ++i)
+		{
+			vec2d p = amp.m_points[i];
+			lc.Add(p.x(), p.y());
+		}
+		if (amp.m_type == AbaqusModel::Amplitude::AMP_TABULAR    ) lc.SetInterpolator(LoadCurve::LINEAR);
+		if (amp.m_type == AbaqusModel::Amplitude::AMP_SMOOTH_STEP) lc.SetInterpolator(LoadCurve::SMOOTH_STEP);
+		FSLoadController* plc = fem.AddLoadCurve(lc);
+		plc->SetName(amp.m_name);
+	}
+
 	// add all boundary conditions
 	list<AbaqusModel::BOUNDARY>& BCs = m_inp.BoundaryConditionList();
 	list<AbaqusModel::BOUNDARY>::iterator bci;
@@ -2316,4 +2337,34 @@ bool AbaqusImport::read_distribution(char* szline, FILE* fp)
 	pg->m_Distr.push_back(D);
 
 	return true;
+}
+
+bool AbaqusImport::read_amplitude(char* szline, FILE* fp)
+{
+	ATTRIBUTE att[8];
+	parse_line(szline, att);
+
+	const char* szname = find_attribute(att, 5, "name");
+	if (szname == 0) return false;
+
+	AbaqusModel::Amplitude amp; 
+	amp.m_name = szname;
+
+	const char* szdef = find_attribute(att, 10, "definition");
+	if (szdef)
+	{
+		if (szicmp(szdef, "TABULAR"   )) amp.m_type = AbaqusModel::Amplitude::AMP_TABULAR;
+		if (szicmp(szdef, "SMOOTHSTEP")) amp.m_type = AbaqusModel::Amplitude::AMP_SMOOTH_STEP;
+	}
+
+	read_line(szline, fp);
+	int count = parse_line(szline, att);
+	for (int n = 0; n < count; n += 2)
+	{
+		double x = atof(att[n  ].szatt);
+		double y = atof(att[n+1].szatt);
+		amp.m_points.push_back(vec2d(x, y));
+	}
+
+	m_inp.AddAmplitude(amp);
 }

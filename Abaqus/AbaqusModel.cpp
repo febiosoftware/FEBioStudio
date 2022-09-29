@@ -500,3 +500,19 @@ void AbaqusModel::INSTANCE::GetRotation(double t[7])
 	t[3] = m_rot[3]; t[4] = m_rot[4]; t[5] = m_rot[5];
 	t[6] = m_rot[6];
 }
+
+//-----------------------------------------------------------------------------
+void AbaqusModel::AddAmplitude(const AbaqusModel::Amplitude& a)
+{
+	m_Amp.push_back(a);
+}
+
+int AbaqusModel::Amplitudes() const
+{
+	return (int)m_Amp.size();
+}
+
+const AbaqusModel::Amplitude& AbaqusModel::GetAmplitude(int n) const
+{
+	return m_Amp[n];
+}
