@@ -1752,43 +1752,16 @@ void CGLModel::RenderNormals(CGLContext& rc)
 
 	float scale = 0.05f*box.Radius()*m_scaleNormals;
 
-	// store the attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// disable lighting
-	glDisable(GL_LIGHTING);
-
-	glBegin(GL_LINES);
+	// tag faces
+	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		// render the normals
-		for (int i=0; i<pm->Faces(); ++i)
-		{	
-			FSFace& face = pm->Face(i);
-
-			// see if it is visible
-			if (face.IsVisible())
-			{
-				vec3f r1(0,0,0);
-
-				int n = face.Nodes();
-				for (int j = 0; j<n; ++j) r1 += to_vec3f(pm->Node(face.n[j]).r);
-				r1 /= (float) n;
-
-				GLfloat r = (GLfloat)fabs(face.m_fn.x);
-				GLfloat g = (GLfloat)fabs(face.m_fn.y);
-				GLfloat b = (GLfloat)fabs(face.m_fn.z);
-
-				vec3f r2 = r1 + face.m_fn*scale;
-
-				glColor3ub(255,255,255); glVertex3f(r1.x, r1.y, r1.z);
-				glColor3f(r, g, b); glVertex3f(r2.x, r2.y, r2.z);
-			}
-		}
+		FSFace& face = pm->Face(i);
+		if (face.IsVisible()) face.m_ntag = 1; else face.m_ntag = 0;
 	}
-	glEnd();
 
-	// restore attributes
-	glPopAttrib();
+	// render the normals on the tagged faces
+	GLMeshRender render;
+	render.RenderNormals(pm, scale, 1);
 }
 
 //-----------------------------------------------------------------------------

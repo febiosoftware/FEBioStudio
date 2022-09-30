@@ -2795,3 +2795,43 @@ void GLMeshRender::RenderFaceEdge(FSFace& f, int j, FSMeshBase* pm, int ndivs)
 	}
 	glEnd();
 }
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderNormals(FSMeshBase* pm, float scale, int ntag)
+{
+	// store the attributes
+	glPushAttrib(GL_ENABLE_BIT);
+
+	// disable lighting
+	glDisable(GL_LIGHTING);
+
+	glBegin(GL_LINES);
+	{
+		// render the normals
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FSFace& face = pm->Face(i);
+			if (face.m_ntag == ntag)
+			{
+				vec3d r1(0, 0, 0);
+				vec3d fn = to_vec3d(face.m_fn);
+
+				int n = face.Nodes();
+				for (int j = 0; j < n; ++j) r1 += pm->Node(face.n[j]).r;
+				r1 /= (double)n;
+
+				GLfloat r = (GLfloat)fabs(fn.x);
+				GLfloat g = (GLfloat)fabs(fn.y);
+				GLfloat b = (GLfloat)fabs(fn.z);
+
+				vec3d r2 = r1 + fn * scale;
+
+				glx::line(r1, r2, GLColor::White(), GLColor::FromRGBf(r, g, b));
+			}
+		}
+	}
+	glEnd();
+
+	// restore attributes
+	glPopAttrib();
+}

@@ -48,7 +48,7 @@ void drawCircle(const vec3d& c, double R, int N);
 void drawPoint(const vec3d& p);
 void drawLine(const vec3d& a, const vec3d& b);
 void drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
-void drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+void line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
 void drawArc(const vec3d& c, double R, double w0, double w1, int N);
 void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
 

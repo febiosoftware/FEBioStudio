@@ -66,6 +66,8 @@ public:
 
 	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndivs);
 
+	void RenderNormals(FSMeshBase* pm, float scale, int tag);
+
 public:
 	// drawing routines for elements
 	void RenderHEX8   (FEElement_ *pe, FSCoreMesh *pm, bool bsel);

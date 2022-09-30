@@ -63,7 +63,6 @@ private:
 
 	// rendering functions for FEMeshes
 	void RenderFEElements   (CGLContext& rc, GObject* po);
-	void RenderFEAllElements(CGLContext& rc, FSMesh* pm, bool bext = false);
 	void RenderFEFaces      (CGLContext& rc, GObject* po);
 	void RenderFEEdges      (CGLContext& rc, GObject* po);
 	void RenderFENodes      (CGLContext& rc, GObject* po);

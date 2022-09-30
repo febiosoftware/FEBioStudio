@@ -139,7 +139,7 @@ void glx::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GL
 }
 
 //-----------------------------------------------------------------------------
-void glx::drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
+void glx::line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glColor3ub(colA.r, colA.g, colA.b); glVertex3d(a.x, a.y, a.z);
 	glColor3ub(colB.r, colB.g, colB.b); glVertex3d(b.x, b.y, b.z);
