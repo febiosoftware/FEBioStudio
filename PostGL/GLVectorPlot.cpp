@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "PostLib/constants.h"
 #include "GLWLib/GLWidgetManager.h"
 #include <PostGL/GLModel.h>
+#include <GLLib/glx.h>
 using namespace Post;
 
 //////////////////////////////////////////////////////////////////////
@@ -371,53 +372,10 @@ void CGLVectorPlot::RenderVector(const vec3f& r, vec3f v, GLUquadric* pglyph)
 		gluSphere(pglyph, r1, 10, 5);
 		break;
 	case GLYPH_BOX:
-		glBegin(GL_QUADS);
-		{
-			glNormal3d(1, 0, 0);
-			glVertex3d(r0, -r0, -r0);
-			glVertex3d(r0, r0, -r0);
-			glVertex3d(r0, r0, r0);
-			glVertex3d(r0, -r0, r0);
-
-			glNormal3d(-1, 0, 0);
-			glVertex3d(-r0, r0, -r0);
-			glVertex3d(-r0, -r0, -r0);
-			glVertex3d(-r0, -r0, r0);
-			glVertex3d(-r0, r0, r0);
-
-			glNormal3d(0, 1, 0);
-			glVertex3d(r0, r0, -r0);
-			glVertex3d(-r0, r0, -r0);
-			glVertex3d(-r0, r0, r0);
-			glVertex3d(r0, r0, r0);
-
-			glNormal3d(0, -1, 0);
-			glVertex3d(-r0, -r0, -r0);
-			glVertex3d(r0, -r0, -r0);
-			glVertex3d(r0, -r0, r0);
-			glVertex3d(-r0, -r0, r0);
-
-			glNormal3d(0, 0, 1);
-			glVertex3d(-r0, r0, r0);
-			glVertex3d(r0, r0, r0);
-			glVertex3d(r0, -r0, r0);
-			glVertex3d(-r0, -r0, r0);
-
-			glNormal3d(0, 0, -1);
-			glVertex3d(r0, r0, -r0);
-			glVertex3d(-r0, r0, -r0);
-			glVertex3d(-r0, -r0, -r0);
-			glVertex3d(r0, -r0, -r0);
-		}
-		glEnd();
+		glx::drawBox(r0, r0, r0);
 		break;
 	case GLYPH_LINE:
-		glBegin(GL_LINES);
-		{
-			glVertex3d(0, 0, 0);
-			glVertex3d(0, 0, L);
-		}
-		glEnd();
+		glx::drawLine(0, 0, 0, 0, 0, L);
 	}
 
 	glPopMatrix();

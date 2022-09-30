@@ -48,7 +48,12 @@ void drawCircle(const vec3d& c, double R, int N);
 void drawPoint(const vec3d& p);
 void drawLine(const vec3d& a, const vec3d& b);
 void drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+
 void line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+void line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB);
+void line(const vec3d& a, const vec3d& b);
+void line(const vec3f& a, const vec3f& b);
+
 void drawArc(const vec3d& c, double R, double w0, double w1, int N);
 void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
 
@@ -82,6 +87,8 @@ void lineLoop(const vec3d r[9]);
 void drawLine(double x0, double y0, double x1, double y1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2);
+
+void drawBox(double wx, double wy, double wz);
 
 inline void vertex3d(const vec3d& r) { glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }

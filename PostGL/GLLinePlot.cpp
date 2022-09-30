@@ -226,8 +226,7 @@ void CGLLinePlot::RenderLines(FEState& s, int ntime)
 				LINESEGMENT& l = lineData.Line(i);
 				if (m_show || ShowLine(l, s))
 				{
-					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+					glx::line(l.m_r0, l.m_r1);
 				}
 			}
 		}
@@ -254,12 +253,11 @@ void CGLLinePlot::RenderLines(FEState& s, int ntime)
 				int n = l.m_segId;// randomize(l.m_segId, maxseg);
 				float f = (float)n / (float)maxseg;
 				GLColor c = map.map(f);
-				glColor3ub(c.r, c.g, c.b);
+				glx::glcolor(c);
 				
 				if (m_show || ShowLine(l, s))
 				{
-					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+					glx::line(l.m_r0, l.m_r1);
 				}
 			}
 		}
@@ -287,11 +285,7 @@ void CGLLinePlot::RenderLines(FEState& s, int ntime)
 
 					GLColor c0 = map.map(f0);
 					GLColor c1 = map.map(f1);
-
-					glColor3ub(c0.r, c0.g, c0.b);
-					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-					glColor3ub(c1.r, c1.g, c1.b);
-					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
+					glx::line(l.m_r0, l.m_r1, c0, c1);
 				}
 			}
 		}
