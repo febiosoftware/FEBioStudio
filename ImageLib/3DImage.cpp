@@ -364,13 +364,28 @@ void C3DImage::GetSampledSliceZ(CImage& im, double f)
 	// copy image data
 	Byte* pd = im.GetBytes();
 
-	for (int y = 0; y<m_cy; y++)
+	if (Depth() == 1)
 	{
-		double fy = y / (double)(m_cy - 1.0);
-		for (int x = 0; x<m_cx; x++)
+		for (int y = 0; y < m_cy; y++)
 		{
-			double fx = x / (double)(m_cx - 1.0);
-			*pd++ = Peek(fx, fy, f);
+			double fy = y / (double)(m_cy - 1.0);
+			for (int x = 0; x < m_cx; x++)
+			{
+				double fx = x / (double)(m_cx - 1.0);
+				*pd++ = Value(fx, fy, 0);
+			}
+		}
+	}
+	else
+	{
+		for (int y = 0; y < m_cy; y++)
+		{
+			double fy = y / (double)(m_cy - 1.0);
+			for (int x = 0; x < m_cx; x++)
+			{
+				double fx = x / (double)(m_cx - 1.0);
+				*pd++ = Peek(fx, fy, f);
+			}
 		}
 	}
 }
