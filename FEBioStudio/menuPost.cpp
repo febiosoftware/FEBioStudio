@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include "DlgTimeSettings.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
+#include <ImageLib/ImageFilter.h>
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -296,6 +297,32 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 		ui->postPanel->Update();
 		ui->postPanel->SelectObject(mc);
 	}
+	RedrawGL();
+}
+
+void CMainWindow::on_actionImageWarp_triggered()
+{
+	// get the document
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr) return;
+
+	// get the selected image model
+	Post::CImageModel* img = nullptr;
+	img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	if (img == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
+		return;
+	}
+
+	// create the image warp filter
+	Post::CGLModel& mdl = *postDoc->GetGLModel();
+	WarpImageFilter* warp = new WarpImageFilter(&mdl);
+	img->AddImageFilter(warp);
+	img->ApplyFilters();
+	ui->postPanel->Update(true);
+	ui->postPanel->SelectObject(warp);
+
 	RedrawGL();
 }
 

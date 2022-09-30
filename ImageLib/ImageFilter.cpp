@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include <FSCore/ClassDescriptor.h>
 #include <PostLib/ImageModel.h>
 #include <ImageLib/ImageSITK.h>
+#include <PostGL/GLModel.h>
+#include <MeshLib/FEFindElement.h>
 #include <chrono>
 #include <ctime>
 #include <iostream>
@@ -49,6 +51,11 @@ CImageFilter::CImageFilter() : m_model(nullptr)
 void CImageFilter::SetImageModel(Post::CImageModel* model)
 {
     m_model = model;
+}
+
+Post::CImageModel* CImageFilter::GetImageModel()
+{
+	return m_model;
 }
 
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
@@ -193,3 +200,92 @@ void GaussianImageFilter::ApplyFilter()
 }
 
 #endif
+
+WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) : m_glm(glm)
+{
+	static int n = 1;
+	char sz[64] = { 0 };
+	sprintf(sz, "WarpImageFilter%02d", n++);
+	SetName(sz);
+}
+
+void WarpImageFilter::ApplyFilter()
+{
+	if ((m_model == nullptr) || (m_glm == nullptr)) return;
+	Post::CImageModel* mdl = m_model;
+
+	C3DImage* im = mdl->Get3DImage();
+	Byte* src = im->GetBytes();
+
+	Post::CGLModel& gm = *m_glm;
+	Post::FEState* state = gm.GetActiveState();
+	Post::FERefState* ps = state->m_ref;
+
+	FSMesh* mesh = gm.GetActiveMesh();
+	BOX box = mesh->GetBoundingBox();
+
+	FEFindElement fe(*mesh);
+	fe.Init();
+
+	double w = box.Width();
+	double h = box.Height();
+	double d = box.Depth();
+
+	int nx = im->Width();
+	int ny = im->Height();
+	int nz = im->Depth();
+	int voxels = nx * ny * nz;
+	Byte* dst_buf = new Byte[voxels];
+	Byte* dst = dst_buf;
+
+	double wx = (nx < 2 ? 0 : 1.0 / (nx - 1.0));
+	double wy = (ny < 2 ? 0 : 1.0 / (ny - 1.0));
+	double wz = (nz < 2 ? 0 : 1.0 / (nz - 1.0));
+
+	vec3d r0 = box.r0();
+	vec3d r1 = box.r1();
+
+	for (int k = 0; k < im->Depth(); ++k)
+	{
+		for (int j = 0; j < im->Height(); ++j)
+		{
+			for (int i = 0; i < im->Width(); ++i)
+			{
+				// get the spatial coordinates of the voxel
+				double x = r0.x + (r1.x - r0.x) * (i * wx);
+				double y = r0.y + (r1.y - r0.y) * (j * wy);
+				double z = r0.z + (r1.z - r0.z) * (k * wz);
+
+				// find which element this belongs to
+				int elem = -1;
+				double q[3] = { 0 };
+				if (fe.FindElement(vec3f(x, y, z), elem, q))
+				{
+					// map to reference configuration
+					FSElement& el = mesh->Element(elem);
+					int ne = el.Nodes();
+					vec3f p[FSElement::MAX_NODES];
+					for (int j = 0; j < el.Nodes(); ++j)
+					{
+						p[j] = ps->m_Node[el.m_node[j]].m_rt;
+					}
+
+					// sample 
+					vec3f s = el.eval(p, q[0], q[1], q[2]);
+					Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
+					*dst++ = b;
+				}
+				else
+				{
+					*dst++ = 0;
+				}
+			}
+		}
+	}
+
+	Byte* b = mdl->GetImageSource()->GetImageToFilter(true)->GetBytes();
+	memcpy(b, dst_buf, voxels);
+
+	// update the model's box
+	mdl->SetBoundingBox(box);
+}

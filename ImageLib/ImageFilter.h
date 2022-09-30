@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 namespace Post{
 class CImageModel;
+class CGLModel;
 };
 
 class CImageFilter : public FSObject
@@ -40,6 +41,8 @@ public:
     virtual void ApplyFilter() = 0;
 
     void SetImageModel(Post::CImageModel* model);
+
+	Post::CImageModel* GetImageModel();
 
 protected:
     Post::CImageModel* m_model;
@@ -72,3 +75,13 @@ public:
 };
 
 #endif
+
+class WarpImageFilter : public CImageFilter
+{
+public:
+	WarpImageFilter(Post::CGLModel* glm);
+	void ApplyFilter() override;
+
+private:
+	Post::CGLModel* m_glm;
+};

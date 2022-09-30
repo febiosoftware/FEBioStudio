@@ -867,6 +867,15 @@ void CPostModelPanel::BuildModelTree()
 					ui->AddItem(pi1, marchCube, QString::fromStdString(render->GetName()), "marching_cubes", new CObjectProps(marchCube));
 				}
 			}
+
+			for (int j = 0; j < img->ImageFilters(); ++j)
+			{
+				CImageFilter* flt = img->GetImageFilter(j);
+				if (flt)
+				{
+					ui->AddItem(pi1, flt, QString::fromStdString(flt->GetName()), "", new CObjectProps(flt));
+				}
+			}
 		}
 	
 		// view settings
@@ -1116,6 +1125,14 @@ void CPostModelPanel::on_deleteButton_clicked()
 			poa->RemoveFEPart(dynamic_cast<FSPart*>(po));
 			Update(true);
 		}
+	}
+	else if (dynamic_cast<CImageFilter*>(pobj))
+	{
+		CImageFilter* imf = dynamic_cast<CImageFilter*>(pobj);
+		Post::CImageModel* mdl = imf->GetImageModel();
+		mdl->RemoveFilter(imf);
+		delete imf;
+		Update(true);
 	}
 	else QMessageBox::information(this, "FEBio Studio", "Cannot delete this object");
 }

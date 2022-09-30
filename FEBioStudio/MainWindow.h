@@ -441,6 +441,7 @@ public slots:
 	void on_actionImageSlicer_triggered();
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
+	void on_actionImageWarp_triggered();
 	void on_actionAddProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionMusclePath_triggered();

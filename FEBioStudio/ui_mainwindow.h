@@ -616,9 +616,12 @@ public:
 		QAction* actionStreamLinePlot = addAction("Streamlines Plot", "actionStreamLinePlot", "streamlines");
 		QAction* actionParticleFlowPlot = addAction("Particleflow Plot", "actionParticleFlowPlot", "particle");
 		QAction* actionVolumeFlowPlot = addAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
-		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
-		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
+
+		QAction* actionImageSlicer   = addAction("Image Slicer", "actionImageSlicer", "imageslice");
+		QAction* actionVolumeRender  = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
+		QAction* actionImageWarp     = addAction("Image Warp", "actionImageWarp");
+
 		QAction* actionAddProbe = addAction("Probe", "actionAddProbe", "probe");
 		QAction* actionAddRuler = addAction("Ruler", "actionAddRuler", "ruler");
 		QAction* actionMusclePath = addAction("Muscle Path ...", "actionMusclePath");
@@ -922,13 +925,14 @@ public:
 		menuPost->addAction(actionStreamLinePlot);
 		menuPost->addAction(actionParticleFlowPlot);
 		menuPost->addAction(actionVolumeFlowPlot);
+		menuPost->addAction(actionAddProbe);
+		menuPost->addAction(actionAddRuler);
+		menuPost->addAction(actionMusclePath);
 		menuPost->addSeparator();
 		menuPost->addAction(actionImageSlicer);
 		menuPost->addAction(actionVolumeRender);
 		menuPost->addAction(actionMarchingCubes);
-		menuPost->addAction(actionAddProbe);
-		menuPost->addAction(actionAddRuler);
-		menuPost->addAction(actionMusclePath);
+		menuPost->addAction(actionImageWarp);
 		menuPost->addSeparator();
 		menuPost->addAction(actionGraph);
 		menuPost->addSeparator();

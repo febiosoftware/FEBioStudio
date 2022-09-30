@@ -136,6 +136,8 @@ public:
 
     Byte ValueAtGlobalPos(vec3d pos);
 
+	C3DImage* Get3DImage() { return (m_img ? m_img->Get3DImage() : nullptr); }
+
 private:
 	BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
