@@ -374,12 +374,12 @@ void CMainWindow::on_actionSlicePlot_triggered()
 
 void CMainWindow::on_actionDisplacementMap_triggered()
 {
-/*	CDocument* doc = GetDocument();
+	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 	if (doc->IsValid() == false) return;
 
-	CGLModel* pm = doc->GetGLModel();
-	if (pm->GetDisplacementMap() == 0)
+	Post::CGLModel* pm = doc->GetGLModel();
+	if (pm->GetDisplacementMap() == nullptr)
 	{
 		if (pm->AddDisplacementMap() == false)
 		{
@@ -388,14 +388,13 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 		else
 		{
 			doc->UpdateFEModel(true);
-			ui->modelViewer->Update(true);
+			ui->postPanel->Update(true);
 		}
 	}
 	else
 	{
 		QMessageBox::information(this, "FEBio Studio", "This model already has a displacement map.");
 	}
-*/
 }
 
 void CMainWindow::on_actionGraph_triggered()
