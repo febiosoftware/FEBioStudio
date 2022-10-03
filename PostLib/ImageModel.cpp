@@ -489,3 +489,28 @@ void CImageModel::Load(IArchive& ar)
 	// let's try to load the file
 	UpdateData();
 }
+
+bool CImageModel::ExportRAWImage(const std::string& filename)
+{
+	C3DImage* im = Get3DImage();
+	if (im == nullptr) return false;
+
+	Byte* pb = im->GetBytes();
+	if (pb == nullptr) return false;
+
+	int nx = im->Width();
+	int ny = im->Height();
+	int nz = im->Depth();
+
+	int nsize = nx * ny * nz;
+	if (nsize <= 0) return false;
+
+	FILE* fp = fopen(filename.c_str(), "wb");
+	if (fp == nullptr) return false;
+
+	int nread = fwrite(pb, nsize, 1, fp);
+
+	fclose(fp);
+
+	return (nread == 1);
+}

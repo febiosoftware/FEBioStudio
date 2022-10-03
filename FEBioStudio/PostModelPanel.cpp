@@ -69,6 +69,8 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
+#include <PostLib/ImageModel.h>
+#include <QFileDialog>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -1243,6 +1245,14 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
+
+	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+	if (img)
+	{
+		QMenu menu(this);
+		menu.addAction("Export image ...", this, SLOT(OnExportImage()));
+		menu.exec(ev->globalPos());
+	}
 }
 
 void CPostModelPanel::OnSelectNodes()
@@ -1414,4 +1424,28 @@ void CPostModelPanel::OnMoveDownInRenderingQueue()
 
 		GetMainWindow()->RedrawGL();
 	}
+}
+
+void CPostModelPanel::OnExportImage()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export image", "", "Raw image (*.raw)");
+	if (filename.isEmpty() == false)
+	{
+		if (img->ExportRAWImage(filename.toStdString()) == false)
+		{
+			QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+			QMessageBox::critical(GetMainWindow(), "Export image", msg);
+		}
+		else
+		{
+			QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+			QMessageBox::information(GetMainWindow(), "Export image", msg);
+		}
+	}	
 }

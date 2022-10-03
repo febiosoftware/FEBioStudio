@@ -138,6 +138,9 @@ public:
 
 	C3DImage* Get3DImage() { return (m_img ? m_img->Get3DImage() : nullptr); }
 
+public:
+	bool ExportRAWImage(const std::string& filename);
+
 private:
 	BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
