@@ -180,6 +180,9 @@ public:
 	// get iso-param coordinates of the nodes
 	void iso_coord(int n, double q[3]);
 
+	// get iso-param coordinates of the nodes
+	void iso_coord_2d(int n, double q[2]);
+
 	// set the material axis
 	void setAxes(const vec3d& a, const vec3d& d);
 
