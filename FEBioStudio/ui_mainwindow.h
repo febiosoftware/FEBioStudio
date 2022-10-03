@@ -1188,7 +1188,7 @@ public:
 //		m_wnd->tabifyDockWidget(dock2, dock3);
 
  		QDockWidget* dock4 = new QDockWidget("Output", m_wnd); dock4->setObjectName("dockLog");
-		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
 		logPanel = new ::CLogPanel(dock4);
 		dock4->setWidget(logPanel);
 		menuWindows->addAction(dock4->toggleViewAction());
