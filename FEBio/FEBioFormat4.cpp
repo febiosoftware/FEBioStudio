@@ -192,6 +192,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 	FEBio::SetActiveModule(moduleId);
 	FSProject& prj = FileReader()->GetProject();
 	prj.SetModule(moduleId, false);
+	m_nAnalysis = moduleId;
 
 	if (tag.isempty() == false)
 	{
