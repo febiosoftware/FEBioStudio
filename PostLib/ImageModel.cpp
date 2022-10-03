@@ -390,12 +390,7 @@ void CImageModel::ApplyFilters()
 
 	for (int i = 0; i < (int)m_render.Size(); ++i)
 	{
-		Post::CVolumeRender2* render = dynamic_cast<Post::CVolumeRender2*>(m_render[i]);
-
-		if(render)
-        {
-            render->Create();
-        }
+		m_render[i]->Update();
 	} 
 }
 
@@ -453,12 +448,20 @@ Byte CImageModel::ValueAtGlobalPos(vec3d pos)
         return 0;
     }
 
-    double x = (m_box.x1 - pos.x)/(m_box.x1 - m_box.x0);
-    double y = (m_box.y1 - pos.y)/(m_box.y1 - m_box.y0);
-    double z = (m_box.z1 - pos.z)/(m_box.z1 - m_box.z0);
+	if (Get3DImage()->Depth() == 1)
+	{
+		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
+		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
+		return m_img->Get3DImage()->Value(x, y, 0);
+	}
+	else
+	{
+		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
+		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
+		double z = (pos.z - m_box.z0) / (m_box.z1 - m_box.z0);
 
-    return m_img->Get3DImage()->Peek(x,y,z);
-
+		return m_img->Get3DImage()->Peek(x, y, z);
+	}
 }
 
 void CImageModel::Load(IArchive& ar)

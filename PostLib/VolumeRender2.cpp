@@ -69,6 +69,11 @@ void CVolumeRender2::Create()
 	m_vrReset = true;
 }
 
+void CVolumeRender2::Update()
+{
+	Create();
+}
+
 void CVolumeRender2::Init()
 {
 	assert(m_vrInit == false);
