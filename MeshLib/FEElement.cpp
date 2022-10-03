@@ -858,6 +858,20 @@ void FEElement_::iso_coord(int n, double q[3])
     }
 }
 
+//-----------------------------------------------------------------------------
+void FEElement_::iso_coord_2d(int n, double q[2])
+{
+	// for n=-1 return isoparametric coordinates of element center
+	assert((n >= -1) && (n < Nodes()));
+	switch (Type())
+	{
+	case FE_TRI3 : TRI3::iso_coord(n, q); break;
+	case FE_QUAD4: QUAD4::iso_coord(n, q); break;
+	default:
+		assert(false);
+	}
+}
+
 void FEElement_::setAxes(const vec3d& a, const vec3d& d)
 {
 	vec3d e1(a); e1.Normalize();
