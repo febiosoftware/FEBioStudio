@@ -84,3 +84,7 @@ inline bool FEFindElement::FindElement(const vec3f& x, int& nelem, double r[3])
 {
 	return (m_nframe == 0 ? FindInReferenceFrame(x, nelem, r) : FindInCurrentFrame(x, nelem, r));
 }
+
+class FSMesh;
+
+bool FindElement2D(const vec2d& r, int& elem, double q[2], FSMesh* mesh);

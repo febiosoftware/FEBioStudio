@@ -224,9 +224,6 @@ void WarpImageFilter::ApplyFilter()
 	FSMesh* mesh = gm.GetActiveMesh();
 	BOX box = mesh->GetBoundingBox();
 
-	FEFindElement fe(*mesh);
-	fe.Init();
-
 	double w = box.Width();
 	double h = box.Height();
 	double d = box.Depth();
@@ -245,7 +242,7 @@ void WarpImageFilter::ApplyFilter()
 	vec3d r0 = box.r0();
 	vec3d r1 = box.r1();
 
-	for (int k = 0; k < im->Depth(); ++k)
+	if (im->Depth() == 1)
 	{
 		for (int j = 0; j < im->Height(); ++j)
 		{
@@ -254,30 +251,74 @@ void WarpImageFilter::ApplyFilter()
 				// get the spatial coordinates of the voxel
 				double x = r0.x + (r1.x - r0.x) * (i * wx);
 				double y = r0.y + (r1.y - r0.y) * (j * wy);
-				double z = r0.z + (r1.z - r0.z) * (k * wz);
 
 				// find which element this belongs to
 				int elem = -1;
-				double q[3] = { 0 };
-				if (fe.FindElement(vec3f(x, y, z), elem, q))
+				double q[2] = { 0 };
+				vec2d p(x, y);
+				if (FindElement2D(p, elem, q, mesh))
 				{
 					// map to reference configuration
 					FSElement& el = mesh->Element(elem);
 					int ne = el.Nodes();
-					vec3f p[FSElement::MAX_NODES];
+					vec3f r[FSElement::MAX_NODES];
 					for (int j = 0; j < el.Nodes(); ++j)
 					{
-						p[j] = ps->m_Node[el.m_node[j]].m_rt;
+						r[j] = ps->m_Node[el.m_node[j]].m_rt;
 					}
 
 					// sample 
-					vec3f s = el.eval(p, q[0], q[1], q[2]);
+					vec3f s = el.eval(r, q[0], q[1]);
 					Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
 					*dst++ = b;
 				}
 				else
 				{
 					*dst++ = 0;
+				}
+			}
+		}
+	}
+	else
+	{
+		FEFindElement fe(*mesh);
+		fe.Init();
+
+		// 3D case
+		for (int k = 0; k < im->Depth(); ++k)
+		{
+			for (int j = 0; j < im->Height(); ++j)
+			{
+				for (int i = 0; i < im->Width(); ++i)
+				{
+					// get the spatial coordinates of the voxel
+					double x = r0.x + (r1.x - r0.x) * (i * wx);
+					double y = r0.y + (r1.y - r0.y) * (j * wy);
+					double z = r0.z + (r1.z - r0.z) * (k * wz);
+
+					// find which element this belongs to
+					int elem = -1;
+					double q[3] = { 0 };
+					if (fe.FindElement(vec3f(x, y, z), elem, q))
+					{
+						// map to reference configuration
+						FSElement& el = mesh->Element(elem);
+						int ne = el.Nodes();
+						vec3f p[FSElement::MAX_NODES];
+						for (int j = 0; j < el.Nodes(); ++j)
+						{
+							p[j] = ps->m_Node[el.m_node[j]].m_rt;
+						}
+
+						// sample 
+						vec3f s = el.eval(p, q[0], q[1], q[2]);
+						Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
+						*dst++ = b;
+					}
+					else
+					{
+						*dst++ = 0;
+					}
 				}
 			}
 		}
