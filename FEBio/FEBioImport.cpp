@@ -379,10 +379,13 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 
 	// resolve all load curve references
 	int NLC = m_febio->LoadCurves();
-	vector<int> LCT(NLC, -1);
-	for (int i = 0; i < NLC; ++i)
+	if (NLC > 0)
 	{
-		LCT[i] = fem.AddLoadCurve(m_febio->GetLoadCurve(i))->GetID();
+		assert(fem.LoadControllers() == 0);
+		for (int i = 0; i < NLC; ++i)
+		{
+			fem.AddLoadCurve(m_febio->GetLoadCurve(i))->GetID();
+		}
 	}
 
 	int NPC = m_febio->ParamCurves();
@@ -391,14 +394,14 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		FEBioInputModel::PARAM_CURVE pc = m_febio->GetParamCurve(i);
 		assert(pc.m_lc >= 0);
 		assert(pc.m_p || pc.m_plc);
-		if ((pc.m_lc >= 0) && (pc.m_lc < m_febio->LoadCurves()))
+		if ((pc.m_lc >= 0) && (pc.m_lc < fem.LoadControllers()))
 		{
 			if (pc.m_p)
 			{
+				FSLoadController* plc = fem.GetLoadController(pc.m_lc);
 				if (pc.m_p->GetParamType() == Param_Type::Param_STD_VECTOR_VEC2D)
 				{
 					// map the points directly to vector
-					FSLoadController* plc = fem.GetLoadController(pc.m_lc);
 					Param* src = plc->GetParam("points"); assert(src);
 					if (src)
 					{
@@ -406,10 +409,11 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 						pc.m_p->SetVectorVec2dValue(pt);
 					}
 				}
-				else pc.m_p->SetLoadCurveID(LCT[pc.m_lc]);
+				else pc.m_p->SetLoadCurveID(plc->GetID());
 			}
 			if (pc.m_plc) 
 			{
+				// NOTE: This is only used for reading in must-point curves of older files.
 				*pc.m_plc = m_febio->GetLoadCurve(pc.m_lc);
 			}
 		}
