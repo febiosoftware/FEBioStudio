@@ -71,7 +71,7 @@ public:
 		form->addRow("y0", y0);
 		form->addRow("z0", z0);
 		form->addRow("width", w);
-		form->addRow("heght", h);
+		form->addRow("height", h);
 		form->addRow("depth", d);
 
 		lo->addLayout(form);
