@@ -507,7 +507,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 						tag.value(h);
 						dom->SetDefaultShellThickness(h);
 					}
-					else tag.skip();
+					else ParseUnknownTag(tag);
 					++tag;
 				} 
 				while (!tag.isend());
