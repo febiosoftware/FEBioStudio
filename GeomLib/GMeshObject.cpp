@@ -835,6 +835,40 @@ void GMeshObject::Save(OArchive &ar)
 					}
 					ar.EndChunk();
 				}
+
+				GPartSection* section = p.GetSection();
+				if (section)
+				{
+					GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
+					if (solid)
+					{
+						ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
+						{
+							solid->Save(ar);
+						}
+						ar.EndChunk();
+					}
+
+					GShellSection* shell = dynamic_cast<GShellSection*>(section);
+					if (shell)
+					{
+						ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
+						{
+							shell->Save(ar);
+						}
+						ar.EndChunk();
+					}
+
+					GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
+					if (beam)
+					{
+						ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
+						{
+							beam->Save(ar);
+						}
+						ar.EndChunk();
+					}
+				}
 			}
 			ar.EndChunk();
 		}
@@ -1012,6 +1046,27 @@ void GMeshObject::Load(IArchive& ar)
 							//		 We need to read in the parameters, and then somehow map them to the 
 							//       FEElementFormulation class. 
 //							p->ParamContainer::Load(ar);
+						}
+						break;
+						case CID_OBJ_PART_SOLIDSECTION:
+						{
+							GSolidSection* solid = new GSolidSection(p);
+							p->SetSection(solid);
+							solid->Load(ar);
+						}
+						break;
+						case CID_OBJ_PART_SHELLSECTION:
+						{
+							GShellSection* shell = new GShellSection(p);
+							p->SetSection(shell);
+							shell->Load(ar);
+						}
+						break;
+						case CID_OBJ_PART_BEAMSECTION:
+						{
+							GBeamSection* beam = new GBeamSection(p);
+							p->SetSection(beam);
+							beam->Load(ar);
 						}
 						break;
 						}

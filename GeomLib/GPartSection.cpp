@@ -191,7 +191,7 @@ void GShellSection::Load(IArchive& ar)
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
-		case CID_OBJ_SOLID_DOMAIN:
+		case CID_OBJ_SHELL_DOMAIN:
 		{
 			FEShellFormulation* shell = new FEShellFormulation(nullptr);
 			SetElementFormulation(shell);
@@ -316,7 +316,7 @@ void GBeamSection::Save(OArchive& ar)
 
 	if (m_form)
 	{
-		ar.BeginChunk(CID_OBJ_SHELL_DOMAIN);
+		ar.BeginChunk(CID_OBJ_BEAM_DOMAIN);
 		{
 			m_form->Save(ar);
 		}
@@ -332,10 +332,10 @@ void GBeamSection::Load(IArchive& ar)
 		switch (ar.GetChunkID())
 		{
 		case CID_OBJ_PARAMS: ParamContainer::Load(ar); break;
-		case CID_OBJ_SOLID_DOMAIN:
+		case CID_OBJ_BEAM_DOMAIN:
 		{
 			FEBeamFormulation* beam = new FEBeamFormulation(nullptr);
-			SetElementFormulation(beam);
+			m_form = beam;// SetElementFormulation(beam);
 			beam->Load(ar);
 		}
 		break;
