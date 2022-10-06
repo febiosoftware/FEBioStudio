@@ -310,17 +310,41 @@ if(USE_FFMPEG)
 endif()
 
 # Find FEBio Libs
-set(FEBio_LIBS "")
+if (WIN32)
+    set(FEBio_DEBUG_LIBS "")
+    set(FEBio_RELEASE_LIBS "")
 
-set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot feamr)
+    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
-foreach(name IN LISTS FEBio_LIB_NAMES)
-    findLib(FEBio_LIB_DIR FEBio_LIB ${name})
-    list(APPEND FEBio_LIBS ${FEBio_LIB})
-    unset(FEBio_LIB)
-endforeach(name)
+    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
+    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
 
-unset(FEBio_LIB_NAMES)
+    foreach(name IN LISTS FEBio_LIB_NAMES)
+        findLib(FEBio_DEBUG_DIR FEBio_LIB ${name})
+        list(APPEND FEBio_DEBUG_LIBS ${FEBio_LIB})
+        unset(FEBio_LIB)
+    endforeach(name)
+
+    foreach(name IN LISTS FEBio_LIB_NAMES)
+        findLib(FEBio_RELEASE_DIR FEBio_LIB ${name})
+        list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
+        unset(FEBio_LIB)
+    endforeach(name)
+
+    unset(FEBio_LIB_NAMES)
+else()
+    set(FEBio_LIBS "")
+
+    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
+
+    foreach(name IN LISTS FEBio_LIB_NAMES)
+        findLib(FEBio_LIB_DIR FEBio_LIB ${name})
+        list(APPEND FEBio_LIBS ${FEBio_LIB})
+        unset(FEBio_LIB)
+    endforeach(name)
+
+    unset(FEBio_LIB_NAMES)
+endif()
 
 ##### Stupid OMP stuff for stupid macOS #####
 
@@ -664,7 +688,6 @@ endif()
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 
 if (WIN32)
-
     foreach(name IN LISTS FEBio_RELEASE_LIBS)
         target_link_libraries(${FBS_BIN_NAME} optimized ${name})
     endforeach()
