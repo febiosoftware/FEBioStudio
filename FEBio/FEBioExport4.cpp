@@ -1433,8 +1433,11 @@ void FEBioExport4::WriteGeometryElementSets()
 		FEElemList::Iterator pe = ps->First();
 		for (int i = 0; i < NE; ++i, ++pe)
 		{
-			FEElement_& el = *(pe->m_pi);
-			elemIds.push_back(el.m_nid);
+			if (pe->m_pi)
+			{
+				FEElement_& el = *(pe->m_pi);
+				elemIds.push_back(el.m_nid);
+			}
 		}
 
 		m_xml.add_leaf(el, elemIds);
