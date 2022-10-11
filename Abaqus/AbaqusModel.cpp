@@ -134,14 +134,32 @@ AbaqusModel::NODE_SET* AbaqusModel::FindNodeSet(const char* sznset)
 // find a part with a particular element set
 AbaqusModel::ELEMENT_SET* AbaqusModel::FindElementSet(const char* szelemset)
 {
-	list<AbaqusModel::PART*>::iterator it;
-	for (it = m_Part.begin(); it != m_Part.end(); ++it)
+	char szbuf[256] = { 0 };
+	const char* ch = strchr(szelemset, '.');
+	if (ch)
 	{
-		AbaqusModel::PART& part = *(*it);
-		list<AbaqusModel::ELEMENT_SET>::iterator ps = part.FindElementSet(szelemset);
-		if (ps != part.m_ElSet.end())
+		strncpy(szbuf, szelemset, (int)(ch - szelemset));
+		AbaqusModel::INSTANCE* inst = FindInstance(szbuf);
+		if (inst == nullptr) return nullptr;
+
+		AbaqusModel::PART* pg = inst->GetPart();
+		list<AbaqusModel::ELEMENT_SET>::iterator ps = pg->FindElementSet(ch+1);
+		if (ps != pg->m_ElSet.end())
 		{
 			return &(*ps);
+		}
+	}
+	else
+	{
+		list<AbaqusModel::PART*>::iterator it;
+		for (it = m_Part.begin(); it != m_Part.end(); ++it)
+		{
+			AbaqusModel::PART& part = *(*it);
+			list<AbaqusModel::ELEMENT_SET>::iterator ps = part.FindElementSet(szelemset);
+			if (ps != part.m_ElSet.end())
+			{
+				return &(*ps);
+			}
 		}
 	}
 
