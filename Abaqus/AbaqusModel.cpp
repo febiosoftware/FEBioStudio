@@ -516,3 +516,16 @@ const AbaqusModel::Amplitude& AbaqusModel::GetAmplitude(int n) const
 {
 	return m_Amp[n];
 }
+
+int AbaqusModel::FindAmplitude(const char* szname) const
+{
+	string sname = szname;
+	for (int i = 0; i < m_Amp.size(); ++i)
+	{
+		if (sname == m_Amp[i].m_name)
+		{
+			return i;
+		}
+	}
+	return -1;
+}

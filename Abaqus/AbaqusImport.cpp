@@ -265,11 +265,11 @@ bool AbaqusImport::parse_file(FILE* fp)
 				return errf("Error while reading keyword STEP (line %d)", m_nline);
 			}
 		}
-/*		else if (szicmp(szline, "*BOUNDARY"))
+		else if (szicmp(szline, "*BOUNDARY"))
 		{
 			if (!read_boundary(szline, fp)) return errf("Error while reading keyword BOUNDARY (line %d)", m_nline);
 		}
-*/		else if (szicmp(szline, "*DSLOAD"))
+		else if (szicmp(szline, "*DSLOAD"))
 		{
 			if (!read_dsload(szline, fp)) return errf("Error while reading keyword DSLOAD (line %d)", m_nline);
 		}
@@ -1672,6 +1672,17 @@ bool AbaqusImport::build_physics()
 				char szname[256] = { 0 };
 				sprintf(szname, "bc_%d", n);
 				pbc->SetName(szname);
+
+				if (bc.m_ampl >= 0)
+				{
+					FSLoadController* plc = fem.GetLoadController(bc.m_ampl);
+					if (plc)
+					{
+						Param& p = pbc->GetParam(FSPrescribedDOF::SCALE);
+						p.SetLoadCurveID(plc->GetID());
+					}
+				}
+
 				fem.GetStep(0)->AddComponent(pbc);
 			}
 		}
@@ -2179,6 +2190,14 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 {
 	AbaqusModel::BOUNDARY BC;
 	ATTRIBUTE att[4];
+	int natt = parse_line(szline, att);
+	const char* szampl = find_attribute(att, 4, "amplitude");
+	if (szampl)
+	{
+		BC.m_ampl = m_inp.FindAmplitude(szampl);
+	}
+	else BC.m_ampl = -1;
+
 	read_line(szline, fp);
 
 	AbaqusModel::NODE_SET* dummy = nullptr;
@@ -2196,9 +2215,25 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 			val = atof(att[3].szatt);
 			if (ns == nullptr)
 			{
-				int nid = atoi(szset);
+				AbaqusModel::PART* part = nullptr;
+				int nid = -1;
+				const char* ch = strchr(szset, '.');
+				if (ch)
+				{
+					char szbuf[256] = { 0 };
+					strncpy(szbuf, szset, ch - szset);
+					AbaqusModel::INSTANCE* inst = m_inp.FindInstance(szbuf);
+					if (inst == nullptr) return false;
+					part = inst->GetPart();
+					nid = atoi(ch + 1);
+				}
+				else
+				{
+					part = m_inp.CurrentPart(); 
+					nid = atoi(szset);
+				}
 
-				AbaqusModel::PART* part = m_inp.CurrentPart();
+				
 				if (part == nullptr) return false;
 
 				if (dummy == nullptr)
@@ -2356,15 +2391,37 @@ bool AbaqusImport::read_amplitude(char* szline, FILE* fp)
 		if (szicmp(szdef, "TABULAR"   )) amp.m_type = AbaqusModel::Amplitude::AMP_TABULAR;
 		if (szicmp(szdef, "SMOOTHSTEP")) amp.m_type = AbaqusModel::Amplitude::AMP_SMOOTH_STEP;
 	}
+	else amp.m_type = AbaqusModel::Amplitude::AMP_TABULAR;
 
-	read_line(szline, fp);
-	int count = parse_line(szline, att);
-	for (int n = 0; n < count; n += 2)
+	if (amp.m_type == AbaqusModel::Amplitude::AMP_SMOOTH_STEP)
 	{
-		double x = atof(att[n  ].szatt);
-		double y = atof(att[n+1].szatt);
-		amp.m_points.push_back(vec2d(x, y));
+		if (read_line(szline, fp) == false) return false;
+		int count = parse_line(szline, att);
+		for (int n = 0; n < count; n += 2)
+		{
+			double x = atof(att[n  ].szatt);
+			double y = atof(att[n+1].szatt);
+			amp.m_points.push_back(vec2d(x, y));
+		}
+	}
+	else
+	{
+		do
+		{
+			if (read_line(szline, fp) == false) break;
+			if (szline[0] == '*') break;
+
+			int count = parse_line(szline, att);
+			if (count >= 2)
+			{
+				double x = atof(att[0].szatt);
+				double y = atof(att[1].szatt);
+				amp.m_points.push_back(vec2d(x, y));
+			}
+		} while (true);
 	}
 
 	m_inp.AddAmplitude(amp);
+
+	return true;
 }

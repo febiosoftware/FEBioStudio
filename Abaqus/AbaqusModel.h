@@ -321,21 +321,13 @@ public:
 	public:
 		struct NSET
 		{
-			double		load;
-			int			ndof;
-			NODE_SET*	nodeSet;
+			double		load = 0.0;
+			int			ndof = -1;
+			NODE_SET*	nodeSet = nullptr;
 		};
 
 	public:
 		BOUNDARY(){}
-		BOUNDARY(const BOUNDARY& d)
-		{
-			m_nodeSet = d.m_nodeSet;
-		}
-		void operator = (const BOUNDARY& d)
-		{
-			m_nodeSet = d.m_nodeSet;
-		}
 
 		void add(NODE_SET* ns, int ndof, double v)
 		{
@@ -345,6 +337,7 @@ public:
 
 	public:
 		vector<NSET>	m_nodeSet;
+		int				m_ampl = -1;
 	};
 
 	// Steps
@@ -438,6 +431,7 @@ public:
 	void AddAmplitude(const Amplitude& a);
 	int Amplitudes() const;
 	const Amplitude& GetAmplitude(int n) const;
+	int FindAmplitude(const char* szname) const;
 
 private:
 	FSModel*	m_fem;		// the model
