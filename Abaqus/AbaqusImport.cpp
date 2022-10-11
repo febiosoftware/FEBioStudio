@@ -1700,18 +1700,24 @@ bool AbaqusImport::build_physics()
 		for (int i=0; i<ns; ++i, ++n)
 		{
 			FSSurface* surface = build_surface(p.m_surf[i].surf);
-			if (surface)
-			{
-				FSPressureLoad* pl = new FSPressureLoad(&fem, surface);
-				char szname[256] = {0};
-				sprintf(szname, "dsload_%d", n);
-				pl->SetName(szname);
-				pl->SetLoad(p.m_surf[i].load);
+			FSPressureLoad* pl = new FSPressureLoad(&fem, surface);
+			char szname[256] = {0};
+			sprintf(szname, "dsload_%d", n);
+			pl->SetName(szname);
+			pl->SetLoad(p.m_surf[i].load);
 
-				// add it to the initial step
-				fem.GetStep(0)->AddComponent(pl);
+			if (p.m_ampl >= 0)
+			{
+				FSLoadController* plc = fem.GetLoadController(p.m_ampl);
+				if (plc)
+				{
+					Param& p = pl->GetParam(FSPressureLoad::LOAD);
+					p.SetLoadCurveID(plc->GetID());
+				}
 			}
-			else return false;
+
+			// add it to the initial step
+			fem.GetStep(0)->AddComponent(pl);
 		}
 	}
 
@@ -2014,6 +2020,8 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 //-----------------------------------------------------------------------------
 FSSurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 {
+	if (si == nullptr) return nullptr;
+
 	AbaqusModel::PART* part = si->part;
 	if (part == 0) return 0;
 
@@ -2261,6 +2269,14 @@ bool AbaqusImport::read_dsload(char* szline, FILE* fp)
 {
 	AbaqusModel::DSLOAD P;
 	ATTRIBUTE att[4];
+
+	int natt = parse_line(szline, att);
+	const char* sza = find_attribute(att, 4, "amplitude");
+	if (sza)
+	{
+		P.m_ampl = m_inp.FindAmplitude(sza);
+	}
+
 	read_line(szline, fp);
 	while (!feof(fp) && (szline[0] != '*'))
 	{
@@ -2269,10 +2285,9 @@ bool AbaqusImport::read_dsload(char* szline, FILE* fp)
 		{
 			const char* szsurf = att[0].szatt;
 			AbaqusModel::SURFACE* s = m_inp.FindSurface(szsurf);
+			if (s == nullptr) errf("Warning: Failed to find surface \"%s\"", szsurf);
 			double val = atof(att[2].szatt);
-
-			if (s) P.add(s, val);
-			else return false;
+			P.add(s, val);
 		}
 		read_line(szline, fp);
 	}

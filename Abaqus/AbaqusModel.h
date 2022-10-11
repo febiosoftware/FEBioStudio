@@ -296,14 +296,6 @@ public:
 
 	public:
 		DSLOAD(){}
-		DSLOAD(const DSLOAD& d)
-		{
-			m_surf = d.m_surf;
-		}
-		void operator = (const DSLOAD& d)
-		{
-			m_surf = d.m_surf;
-		}
 
 		void add(SURFACE* s, double p)
 		{
@@ -313,6 +305,7 @@ public:
 
 	public:
 		vector<SURF>	m_surf;
+		int				m_ampl = -1;
 	};
 
 	// Boundary conditions
