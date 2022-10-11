@@ -80,6 +80,7 @@ void CModelViewer::Update(bool breset)
 //	FSObject* po = m_currentObject;
 
 	// rebuild the model tree
+	ui->setWarningCount(0);
 	ui->tree->Build(doc);
 	if (ui->m_search->isVisible()) ui->m_search->Build(doc);
 
@@ -1483,6 +1484,11 @@ void CModelViewer::UpdateCurrentItem()
 void CModelViewer::SetFilter(int index)
 {
     ui->m_filter->setCurrentIndex(index);
+}
+
+void CModelViewer::IncWarningCount()
+{
+	ui->m_errs->increase();
 }
 
 void CModelViewer::OnRemoveEmptySelections()

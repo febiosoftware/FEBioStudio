@@ -648,6 +648,7 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 		t2->setIcon(0, QIcon(":/icons/warning.png"));
 		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 		if (parent) parent->setExpanded(true);
+		if (m_view) m_view->IncWarningCount();
 	}
 	else
 	{
