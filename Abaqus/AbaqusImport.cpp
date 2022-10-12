@@ -2208,7 +2208,6 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 
 	read_line(szline, fp);
 
-	AbaqusModel::NODE_SET* dummy = nullptr;
 	int ndof = -1;
 	double val = 0.0;
 
@@ -2244,20 +2243,15 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 				
 				if (part == nullptr) return false;
 
-				if (dummy == nullptr)
-				{
-					dummy = &part->AddNodeSet("_unnamed")->second;
-					dummy->part = part;
-				}
-
+				AbaqusModel::NODE_SET* dummy = new AbaqusModel::NODE_SET;
+				dummy->part = part;
 				dummy->node.push_back(part->FindNode(nid));
+				BC.add(dummy, ndof, val);
 			}
 			else BC.add(ns, ndof, val);
 		}
 		read_line(szline, fp);
 	}
-
-	if (dummy) BC.add(dummy, ndof, val);
 
 	m_inp.AddBoundaryCondition(BC);
 
