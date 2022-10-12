@@ -401,7 +401,7 @@ double FSCoreMesh::HexVolume(const FEElement_& el)
 
     
     vec3d rt[FSElement::MAX_NODES];
-    for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+    for (int i = 0; i<el.Nodes(); ++i) rt[i] = NodePosition(el.m_node[i]);
     
     switch (el.Type())
     {
@@ -572,7 +572,7 @@ double FSCoreMesh::PentaVolume(const FEElement_& el)
 	assert((el.Type() == FE_PENTA6) || (el.Type() == FE_PENTA15));
 
     vec3d rt[FSElement::MAX_NODES];
-    for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+    for (int i = 0; i<el.Nodes(); ++i) rt[i] = NodePosition(el.m_node[i]);
     
     switch (el.Type())
     {
@@ -738,7 +738,7 @@ double FSCoreMesh::PyramidVolume(const FEElement_& el)
 	assert((el.Type() == FE_PYRA5) || (el.Type() == FE_PYRA13));
     
     vec3d rt[FSElement::MAX_NODES];
-    for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+    for (int i = 0; i<el.Nodes(); ++i) rt[i] = NodePosition(el.m_node[i]);
     
     switch (el.Type())
     {
@@ -1286,7 +1286,7 @@ double FSCoreMesh::TetVolume(const FEElement_& el)
 		|| (el.Type() == FE_TET15) || (el.Type() == FE_TET20));
 
 	vec3d rt[FSElement::MAX_NODES];
-	for (int i = 0; i<el.Nodes(); ++i) rt[i] = m_Node[el.m_node[i]].r;
+	for (int i = 0; i<el.Nodes(); ++i) rt[i] = NodePosition(el.m_node[i]);
 
 	switch (el.Type())
 	{

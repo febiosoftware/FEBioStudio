@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "PointDistanceTool.h"
 #include <GLLib/GDecoration.h>
+#include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
 
 QVariant CPointDistanceTool::GetPropertyValue(int i)
@@ -101,8 +102,9 @@ void CPointDistanceTool::Update()
 	}
 	else if ((m_node1 > 0) && (m_node2 > 0))
 	{
-		vec3d a = mesh->Node(m_node1 - 1).pos();
-		vec3d b = mesh->Node(m_node2 - 1).pos();
+		vec3d a = mesh->NodePosition(m_node1 - 1);
+		vec3d b = mesh->NodePosition(m_node2 - 1);
+
 		m_d = b - a;
 
 		GCompositeDecoration* deco = new GCompositeDecoration;
