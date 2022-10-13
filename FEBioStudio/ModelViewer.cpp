@@ -79,6 +79,11 @@ void CModelViewer::Update(bool breset)
 
 //	FSObject* po = m_currentObject;
 
+	// NOTE: Not sure if this is the best place to do this
+	// update the model
+	FSModel* fem = doc->GetFSModel();
+	fem->UpdateLoadControllerReferenceCounts();
+
 	// rebuild the model tree
 	ui->setWarningCount(0);
 	ui->tree->Build(doc);

@@ -261,6 +261,26 @@ private:
 	CFEBioJob*	m_job;
 };
 
+class CLCValidator : public CObjectValidator
+{
+public:
+	CLCValidator(FSLoadController* plc) : m_plc(plc) {}
+
+	QString GetErrorString() const override
+	{
+		if (m_plc && m_plc->GetReferenceCount() > 0) return "";
+		return "Load controller is not used.";
+	}
+
+	bool IsValid() override
+	{
+		return (m_plc && m_plc->GetReferenceCount() > 0);
+	}
+
+private:
+	FSLoadController* m_plc;
+};
+
 class CFEBioJobProps : public CPropertyList
 {
 public:
@@ -1892,7 +1912,7 @@ void CModelTree::UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		FSLoadController* plc = fem.GetLoadController(i);
 		string name = plc->GetName();
-		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, 0, plc);
+		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, 0, plc, nullptr, new CLCValidator(plc));
 	}
 
 	int n = t1->childCount();

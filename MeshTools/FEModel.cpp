@@ -2302,6 +2302,130 @@ FSLoadController* FSModel::AddLoadCurve(LoadCurve& lc)
 }
 
 //----------------------------------------------------------------------------------------
+void UpdateLCRefsCount(FSModelComponent* pmc, std::map<int, int>& LCT)
+{
+	if (pmc == nullptr) return;
+
+	for (int n = 0; n < pmc->Parameters(); ++n)
+	{
+		Param& p = pmc->GetParam(n);
+		if (p.GetLoadCurveID() > 0)
+		{
+			LCT[p.GetLoadCurveID()]++;
+		}
+	}
+
+	for (int m = 0; m < pmc->Properties(); ++m)
+	{
+		FSProperty& prop = pmc->GetProperty(m);
+		for (int k = 0; k < prop.Size(); ++k)
+		{
+			FSModelComponent* pmk = dynamic_cast<FSModelComponent*>(prop.GetComponent(k));
+			if (pmk) UpdateLCRefsCount(pmk, LCT);
+		}
+	}
+}
+
+//----------------------------------------------------------------------------------------
+void FSModel::UpdateLoadControllerReferenceCounts()
+{
+	// clear all reference counters
+	int NLC = LoadControllers();
+	std::map<int, int> LCT;
+	for (int i = 0; i < NLC; ++i)
+	{
+		FSLoadController* plc = GetLoadController(i);
+		plc->SetReferenceCount(0);
+		LCT[plc->GetID()] = 0;
+	}
+
+	// process materials
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* mat = GetMaterial(i);
+		FSMaterial* pm = mat->GetMaterialProperties();
+		if (pm) UpdateLCRefsCount(pm, LCT);
+	}
+
+	// process Steps
+	for (int n = 0; n < Steps(); ++n)
+	{
+		FSStep* step = GetStep(n);
+
+		// process BCs
+		for (int i = 0; i < step->BCs(); ++i)
+		{
+			FSBoundaryCondition* pbc = step->BC(i);
+			UpdateLCRefsCount(pbc, LCT);
+		}
+
+		// process Loads
+		for (int i = 0; i < step->Loads(); ++i)
+		{
+			FSLoad* pload = step->Load(i);
+			UpdateLCRefsCount(pload, LCT);
+		}
+
+		// process contact
+		for (int i = 0; i < step->Interfaces(); ++i)
+		{
+			FSInterface* pi = step->Interface(i);
+			UpdateLCRefsCount(pi, LCT);
+		}
+
+		// nonlinear constraints
+		for (int i = 0; i < step->Constraints(); ++i)
+		{
+			FSModelConstraint* pi = step->Constraint(i);
+			UpdateLCRefsCount(pi, LCT);
+		}
+
+		// rigid BC
+		for (int i = 0; i < step->RigidBCs(); ++i)
+		{
+			FSRigidBC* pi = step->RigidBC(i);
+			UpdateLCRefsCount(pi, LCT);
+		}
+
+		// rigid load
+		for (int i = 0; i < step->RigidLoads(); ++i)
+		{
+			FSRigidLoad* pi = step->RigidLoad(i);
+			UpdateLCRefsCount(pi, LCT);
+		}
+
+		// rigid constraints
+		for (int i = 0; i < step->RigidConstraints(); ++i)
+		{
+			FSRigidConstraint* pi = step->RigidConstraint(i);
+			UpdateLCRefsCount(pi, LCT);
+		}
+
+		// rigid connector
+		for (int i = 0; i < step->RigidConnectors(); ++i)
+		{
+			FSRigidConnector* pi = step->RigidConnector(i);
+			UpdateLCRefsCount(pi, LCT);
+		}
+
+		// mesh adaptor
+		for (int i = 0; i < step->MeshAdaptors(); ++i)
+		{
+			FSMeshAdaptor* pi = step->MeshAdaptor(i);
+			UpdateLCRefsCount(pi, LCT);
+		}
+	}
+
+	// update reference counts
+	for (int i = 0; i < NLC; ++i)
+	{
+		FSLoadController* plc = GetLoadController(i);
+		plc->SetReferenceCount(LCT[plc->GetID()]);
+	}
+}
+
+
+//----------------------------------------------------------------------------------------
 int FSModel::MeshDataGenerators() const
 {
 	return m_MD.Size();

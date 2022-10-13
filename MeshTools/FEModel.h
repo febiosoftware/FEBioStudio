@@ -216,6 +216,8 @@ public:
 
 	FSLoadController* GetLoadControllerFromID(int lc);
 
+	void UpdateLoadControllerReferenceCounts();
+
 public:
 	int MeshDataGenerators() const;
 	FSMeshDataGenerator* GetMeshDataGenerator(int i);
