@@ -453,6 +453,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 
 		FEBioInputModel::Domain* dom = part->FindDomain(szname);
 		if (dom) dom->SetMatID(matID);
+		dom->SetType(FEBioInputModel::Domain::SOLID);
 
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("type", true);
@@ -491,6 +492,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
 		dom->SetElementFormulation(shell);
+		dom->SetType(FEBioInputModel::Domain::SHELL);
 
 		// read the domain parameters
 		if (tag.isleaf() == false)
