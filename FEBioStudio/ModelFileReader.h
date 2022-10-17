@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,8 +34,17 @@ class ModelFileReader : public PRVArchive
 public:
 	ModelFileReader(CModelDocument* doc);
 
+	bool Open(const char* szfile);
+
 	bool Load(const char* szfile) override;
+
+	int GetFileVersion() const;
+
+private:
+	bool ReadFile(const char* szfile);
 
 private:
 	CModelDocument*	m_doc;
+
+	int	m_fileVersion;
 };

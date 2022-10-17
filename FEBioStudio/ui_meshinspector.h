@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,6 +36,8 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include <QGroupBox>
 #include <QLineEdit>
+#include <QSpinBox>
+#include <QCheckBox>
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 
@@ -54,7 +56,7 @@ public:
 
 	void setMesh(GObject* po)
 	{
-		FEMesh* pm = (po ? po->GetFEMesh() : 0);
+		FSMesh* pm = (po ? po->GetFEMesh() : 0);
 		if (pm)
 		{
 			name->setText(QString::fromStdString(po->GetName()));
@@ -64,7 +66,9 @@ public:
 		}
 		else
 		{
-			name->setText("---");
+			if (po) name->setText(QString::fromStdString(po->GetName()));
+			else name->setText("---");
+
 			nodes->setText("---");
 			faces->setText("---");
 			elems->setText("---");
@@ -142,7 +146,24 @@ public:
 class Ui::CMeshInspector
 {
 public:
-	enum { MAX_EVAL_FIELDS = 11 };
+	enum { MAX_EVAL_FIELDS = 13 };
+
+	// NOTE: 
+	enum DataFields {
+		ELEMENT_VOLUME,
+		JACOBIAN,
+		SHELL_THICKNESS,
+		SHELL_AREA,
+		TET_QUALITY,
+		TET_MIN_DIHEDRAL_ANGLE,
+		TET_MAX_DIHEDRAL_ANGLE,
+		TRIANGLE_QUALITY,
+		TET10_MID_NODE_OFFSET,
+		MIN_EDGE_LENGTH,
+		MAX_EDGE_LENGTH,
+		PRINC_CURVE_1,
+		PRINC_CURVE_2
+	};
 
 public:
 	CMeshInfo*		info;
@@ -152,8 +173,16 @@ public:
 	QComboBox*		col;
 	CStatsInfo*		stats;
 	CSelectionInfo*	sel;
+	QCheckBox*		logScale;
 
-	FEMesh*		m_pm;
+	QWidget* propsWidget;
+	QSpinBox* curvatureLevels;
+	QSpinBox* curvatureMaxIters;
+	QCheckBox* curvatureExtQuad;
+
+	FSMesh*		m_pm;
+
+	
 
 	int		m_map;
 
@@ -167,6 +196,8 @@ public:
 		info = new CMeshInfo;
 
 		table = new QTableWidget;
+		table->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
+		table->setObjectName("table");
 
 		table->setColumnCount(2);
 		table->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -181,16 +212,29 @@ public:
 		var = new QComboBox;
 		var->setObjectName("var");
 
+		propsWidget = new QWidget;
+		QFormLayout* propsForm = new QFormLayout;
+		propsForm->addRow("Smoothness", curvatureLevels = new QSpinBox); curvatureLevels->setObjectName("curvatureLevels"); curvatureLevels->setRange(1, 10); curvatureLevels->setValue(1);
+		propsForm->addRow("Max. Iterations", curvatureMaxIters = new QSpinBox); curvatureMaxIters->setObjectName("curvatureMaxIters"); curvatureMaxIters->setRange(1, 50); curvatureMaxIters->setValue(10);
+		propsForm->addRow("Use Extended Quadric", curvatureExtQuad = new QCheckBox); curvatureExtQuad->setObjectName("curvatureExtQuad");
+		propsWidget->setLayout(propsForm);
+		propsWidget->hide();
+
 		col = new QComboBox;
 		col->setObjectName("col");
 
+		logScale = new QCheckBox;
+		logScale->setObjectName("logScale");
+
 		QFormLayout* varForm = new QFormLayout;
 		varForm->addRow("Variable:", var);
+		varForm->addRow("Parameters:", propsWidget);
 		varForm->addRow("Color map", col);
+		varForm->addRow("Logarithmic scale", logScale);
 
-		QHBoxLayout* topLayout = new QHBoxLayout;
-		topLayout->addWidget(info);
-		topLayout->addWidget(table);
+		QHBoxLayout* infoLayout = new QHBoxLayout;
+		infoLayout->addWidget(info);
+		infoLayout->addWidget(table);
 
 		plot = new CPlotWidget;
 		plot->showLegend(false);
@@ -200,19 +244,16 @@ public:
 
 		sel = new CSelectionInfo;
 
-		QHBoxLayout* bottomLayout = new QHBoxLayout;
-		bottomLayout->addWidget(stats);
-		bottomLayout->addWidget(sel);
+		QHBoxLayout* statsLayout = new QHBoxLayout;
+		statsLayout->addWidget(stats);
+		statsLayout->addWidget(sel);
 
 		QWidget* w = new QWidget;
-
 		QVBoxLayout* mainLayout = new QVBoxLayout;
-//		mainLayout->setMargin(0);
-//		mainLayout->setSpacing(0);
-		mainLayout->addLayout(topLayout);
+		mainLayout->addLayout(infoLayout);
 		mainLayout->addLayout(varForm);
 		mainLayout->addWidget(plot);
-		mainLayout->addLayout(bottomLayout);
+		mainLayout->addLayout(statsLayout);
 		w->setLayout(mainLayout);
 
 		wnd->setCentralWidget(w);
@@ -231,18 +272,18 @@ public:
 		static const char* EN[] = {
 			"HEX8", "TET4", "PENTA6", "QUAD4", "TRI3", "BEAM2", "HEX20", "QUAD8", "LINE3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "TET20", "TRI10", "PYRA5", "PENTA15", "TET5", "PYRA13", "(unknown)"};
 
-		table->setRowCount(0);
-
 		info->setMesh(po);
 		if (po == 0) 
 		{
-			m_pm = nullptr; 
+			table->setRowCount(0);
+			m_pm = nullptr;
 			return;
 		}
 
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm == 0)
 		{
+			table->setRowCount(0);
 			m_pm = nullptr;
 			return;
 		}
@@ -256,7 +297,7 @@ public:
 		int NE = pm->Elements();
 		for (int i = 0; i<NE; ++i)
 		{
-			FEElement& e = pm->Element(i);
+			FSElement& e = pm->Element(i);
 			switch (e.Type())
 			{
 			case FE_HEX8   : n[0]++; break;
@@ -290,13 +331,15 @@ public:
 		for (int i = 0; i<MAX_ELEM + 1; ++i) if (n[i] != 0) m++;
 
 		// fill the rows
+		table->blockSignals(true);
 		table->setRowCount(m); m = 0;
 		for (int i = 0; i<MAX_ELEM + 1; ++i)
 		{
 			if (n[i] != 0)
 			{
 				QTableWidgetItem* item = new QTableWidgetItem(EN[i]);
-				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+				item->setCheckState(Qt::Checked);
 				item->setData(Qt::UserRole, ET[i]);
 				table->setItem(m, 0, item);
 				item = new QTableWidgetItem(QString::number(n[i]));
@@ -305,8 +348,9 @@ public:
 				m++;
 			}
 		}
+		table->blockSignals(false);
 
-		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above.
+		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
 		QStringList items;
 		items << "Element Volume";
 		items << "Jacobian";
@@ -319,6 +363,8 @@ public:
 		items << "Tet10 midside node offset";
 		items << "Minimum element edge length";
 		items << "Maximum element edge length";
+		items << "1-Principal curvature";
+		items << "2-Principal curvature";
 		var->clear();
 		var->addItems(items);
 

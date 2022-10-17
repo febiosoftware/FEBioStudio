@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -63,11 +63,11 @@ FECylinderInBox::FECylinderInBox(GCylinderInBox* po)
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 
-	AddIntParam(m_nelem, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0");
+	AddIntParam(m_nelem, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FECylinderInBox::BuildMesh()
+bool FECylinderInBox::BuildMultiBlock()
 {
 	assert(m_po);
 
@@ -94,8 +94,6 @@ FEMesh* FECylinderInBox::BuildMesh()
 	m_bz = GetBoolValue(BZ);
 	m_br = GetBoolValue(BR);
 
-	int nelem = GetIntValue(NELEM);
-
 	// create the MB nodes
 	m_MBNode.clear();
 	AddNode(vec3d(-w, -h, 0)).SetID(0);
@@ -115,6 +113,9 @@ FEMesh* FECylinderInBox::BuildMesh()
 	AddNode(vec3d( r, -r, d)).SetID(13);
 	AddNode(vec3d( r,  r, d)).SetID(14);
 	AddNode(vec3d(-r,  r, d)).SetID(15);
+
+	AddNode(vec3d(0, 0, 0), NODE_SHAPE);
+	AddNode(vec3d(0, 0, d), NODE_SHAPE);
 
 	// create the blocks
 	m_MBlock.resize(4);
@@ -143,7 +144,7 @@ FEMesh* FECylinderInBox::BuildMesh()
 	b4.SetZoning(1, m_gr, m_gz, false, m_br, m_bz);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, 0, -1, 4, -1,  8, 12);
@@ -171,27 +172,35 @@ FEMesh* FECylinderInBox::BuildMesh()
 	MBFace& F16 = GetBlockFace( 3, 5); SetFaceEdgeID(F16,  7, 28, 19, 31);
 
 	// set the edges
-	GetFaceEdge(F5, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F5, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F5, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F6, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F6, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F7, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F7, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+	GetFaceEdge(F8, 0).SetWinding(-1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 16;
+	GetFaceEdge(F8, 2).SetWinding( 1).SetType(EDGE_3P_CIRC_ARC).m_cnode = 17;
+
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FECylinderInBox::BuildMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(NELEM);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
-
-	// convert to hex20
-	if (nelem == 1)
-	{
-		FEHex8ToHex20 mod;
-		mod.SetSmoothing(false);
-		FEMesh* pnew = mod.Apply(pm);
-		delete pm;
-		pm = pnew;
-	}
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. 

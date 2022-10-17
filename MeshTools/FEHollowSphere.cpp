@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -51,6 +51,8 @@ FEHollowSphere::FEHollowSphere(GHollowSphere* po)
 
 	AddDoubleParam(m_gr, "gr", "R-bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 double gain2(double x, double r, double n)
@@ -59,7 +61,7 @@ double gain2(double x, double r, double n)
 	return (pow(r, n*x) - 1.0)/(pow(r, n) - 1.0);
 }
 
-FEMesh* FEHollowSphere::BuildMesh()
+bool FEHollowSphere::BuildMultiBlock()
 {
 	assert(m_pobj);
 
@@ -186,7 +188,7 @@ FEMesh* FEHollowSphere::BuildMesh()
 	}
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// Face ID's
 	MBFace& F1 = GetBlockFace( 5, 1); F1.SetID(0);
@@ -387,8 +389,26 @@ FEMesh* FEHollowSphere::BuildMesh()
 	m_MBNode[ 4].SetID(10);
 	m_MBNode[21].SetID(11);
 
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FEHollowSphere::BuildMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
+
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

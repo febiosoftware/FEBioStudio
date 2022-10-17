@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -129,13 +129,16 @@ void CMainWindow::on_actionShowNormals_toggled(bool b)
 	RedrawGL();
 }
 
-void CMainWindow::on_actionShowFibers_toggled(bool b)
+void CMainWindow::on_actionShowFibers_triggered()
 {
-	CDocument* doc = GetDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
-	view.m_bfiber = b;
+	if (ui->fiberViz == nullptr) ui->fiberViz = new CDlgFiberViz(this);
+
+	if (ui->fiberViz->isVisible()) ui->fiberViz->close();
+	else ui->fiberViz->show();
+
 	RedrawGL();
 }
 

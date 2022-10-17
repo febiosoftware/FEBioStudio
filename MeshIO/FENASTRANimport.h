@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FENASTRANimport : public FEFileImport
+class FENASTRANimport : public FSFileImport
 {
 protected:
 	enum {MAX_ITEMS = 32};
@@ -67,7 +67,7 @@ protected:
 	};
 
 public:
-	FENASTRANimport(FEProject& prj) : FEFileImport(prj) {}
+	FENASTRANimport(FSProject& prj) : FSFileImport(prj) {}
 	bool Load(const char* szfile);
 
 protected:
@@ -82,7 +82,7 @@ protected:
 	bool read_MAT1  (CARD& c);
 	bool read_CHEXA (CARD& c);
 
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 protected:
 	list<GRID>		m_Node;

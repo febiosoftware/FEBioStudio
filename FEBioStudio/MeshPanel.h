@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,10 +33,11 @@ SOFTWARE.*/
 class CMainWindow;
 class CModelDocument;
 class FEModifier;
-class FEMesh;
+class FSMesh;
 class GObject;
 class FEMesher;
-class FEGroup;
+class FSGroup;
+class FESelection;
 
 namespace Ui {
 	class CMeshPanel;
@@ -92,7 +93,7 @@ private:
 class ModifierThread : public CustomThread
 {
 public:
-	ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg);
+	ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FESelection* sel);
 
 	void run() Q_DECL_OVERRIDE;
 
@@ -109,5 +110,5 @@ private:
 	CModelDocument*	m_doc;
 	GObject*	m_po;
 	FEModifier*	m_mod;
-	FEGroup*	m_pg;
+	FESelection*	m_sel;
 };

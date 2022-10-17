@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-class FEProject;
+class FSProject;
 
 enum ERROR_TYPE
 {
@@ -37,4 +37,4 @@ enum ERROR_TYPE
 
 typedef std::pair<ERROR_TYPE, std::string> MODEL_ERROR;
 
-void checkModel(FEProject& prj, std::vector<MODEL_ERROR>& errorList);
+void checkModel(FSProject& prj, std::vector<MODEL_ERROR>& errorList);

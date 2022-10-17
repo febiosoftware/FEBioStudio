@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "PointDistanceTool.h"
 #include <GLLib/GDecoration.h>
+#include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
 
 QVariant CPointDistanceTool::GetPropertyValue(int i)
@@ -53,7 +54,7 @@ CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Poin
 { 
 	m_node1 = 0; 
 	m_node2 = 0; 
-	m_d = vec3f(0,0,0); 
+	m_d = vec3d(0,0,0); 
 
 	addProperty("node 1", CProperty::Int);
 	addProperty("node 2", CProperty::Int);
@@ -72,15 +73,15 @@ void CPointDistanceTool::Activate()
 void CPointDistanceTool::Update()
 {
 	SetDecoration(nullptr);
-	m_d = vec3f(0.f, 0.f, 0.f);
+	m_d = vec3d(0, 0, 0);
 
-	FEMesh* mesh = GetActiveMesh();
+	FSMeshBase* mesh = GetActiveEditMesh();
 	if (mesh == nullptr) return;
 
 	int nsel = 0;
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		int nid = i + 1;
 		if (node.IsSelected())
 		{
@@ -101,8 +102,9 @@ void CPointDistanceTool::Update()
 	}
 	else if ((m_node1 > 0) && (m_node2 > 0))
 	{
-		vec3d a = mesh->Node(m_node1 - 1).pos();
-		vec3d b = mesh->Node(m_node2 - 1).pos();
+		vec3d a = mesh->NodePosition(m_node1 - 1);
+		vec3d b = mesh->NodePosition(m_node2 - 1);
+
 		m_d = b - a;
 
 		GCompositeDecoration* deco = new GCompositeDecoration;

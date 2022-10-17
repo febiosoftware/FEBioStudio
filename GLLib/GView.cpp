@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +37,8 @@ CGView::CGView()
 	m_fnear = 1.f;
 	m_ffar = 50000.f;
 	m_fov = 45.f;
+
+    imgView = MODEL_VIEW;
 }
 
 CGView::~CGView()
@@ -54,7 +56,7 @@ void CGView::Reset()
 
 void CGView::DeleteAllKeys()
 {
-	vector<GLCameraTransform*>::iterator it;
+	std::vector<GLCameraTransform*>::iterator it;
 	for (it=m_key.begin(); it != m_key.end(); ++it) delete (*it);
 	m_key.clear();
 }
@@ -112,7 +114,7 @@ void CGView::PrevKey()
 void CGView::DeleteKey(GLCameraTransform* pt)
 {
 	if (m_key.empty()) return;
-	vector<GLCameraTransform*>::iterator it;
+	std::vector<GLCameraTransform*>::iterator it;
 	for (it=m_key.begin(); it != m_key.end(); ++it)
 	{
 		if (*it == pt)

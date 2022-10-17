@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,7 +41,7 @@ SOFTWARE.*/
 
 
 //=============================================================================
-STEPImport::STEPImport(FEProject& prj) : FEFileImport(prj)
+STEPImport::STEPImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -57,7 +57,7 @@ bool STEPImport::Load(const char* szfile)
 	IFSelect_ReturnStatus status = aReader.ReadFile(szfile);
 	if (status != IFSelect_RetDone)
 	{
-		return false;
+		return errf("Failed readering STEP file.");
 	}
 
 	//Interface_TraceFile::SetDefault();
@@ -95,7 +95,7 @@ bool STEPImport::Load(const char* szfile)
 				sprintf(szname, "%s%02d", szfiletitle, count++);
 				occ->SetName(szname);
 
-				GModel& mdl = m_prj.GetFEModel().GetModel();
+				GModel& mdl = m_prj.GetFSModel().GetModel();
 				mdl.AddObject(occ);
 
 			}
@@ -104,6 +104,6 @@ bool STEPImport::Load(const char* szfile)
 
 	return true;
 #else
-	return false;
+	return errf("STEP reader not supported in this build.");
 #endif
 }

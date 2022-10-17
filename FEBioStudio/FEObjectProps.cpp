@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,9 +34,13 @@ SOFTWARE.*/
 #include <MeshTools/GMaterial.h>
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/FEElementFormulation.h>
+#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
+#include "ModelViewer.h"
 
 //=======================================================================================
-FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(nullptr)
+FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
 {
 	m_fem = fem;
 	if (po) BuildParamList(po);
@@ -45,7 +49,7 @@ FEObjectProps::FEObjectProps(FSObject* po, FEModel* fem) : CObjectProps(nullptr)
 QStringList FEObjectProps::GetEnumValues(const char* ch)
 {
 	QStringList ops;
-	char sz[256] = { 0 };
+	char sz[512] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (m_fem)
@@ -66,9 +70,9 @@ QStringList FEObjectProps::GetEnumValues(const char* ch)
 }
 
 //=======================================================================================
-CFixedDOFProps::CFixedDOFProps(FEFixedDOF* pbc) : m_bc(pbc)
+CFixedDOFProps::CFixedDOFProps(FSFixedDOF* pbc) : m_bc(pbc)
 {
-	FEModel& fem = *pbc->GetFEModel();
+	FSModel& fem = *pbc->GetFSModel();
 	FEDOFVariable& var = fem.Variable(pbc->GetVarID());
 	for (int i = 0; i<var.DOFs(); ++i)
 	{
@@ -88,7 +92,7 @@ void CFixedDOFProps::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CAnalysisTimeSettings::CAnalysisTimeSettings(FEAnalysisStep* step) : CObjectProps(0)
+CAnalysisTimeSettings::CAnalysisTimeSettings(FSAnalysisStep* step) : CObjectProps(0)
 {
 	m_step = step;
 	addProperty("Analysis", CProperty::Group);
@@ -220,8 +224,113 @@ void CAnalysisTimeSettings::SetPropertyValue(int i, const QVariant& v)
 	}
 }
 
+QStringList GetFEBioChoices(int moduleId, int superClassId)
+{
+	vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(moduleId, superClassId, -1, FEBio::ClassSearchFlags::IncludeFECoreClasses);
+
+	QStringList ops;
+	for (int i = 0; i < fci.size(); ++i)
+	{
+		ops << QString(fci[i].sztype);
+	}
+	return ops;
+}
+
+CStepSettings::CStepSettings(FSProject& prj, FSStep* step) : CObjectProps(0)
+{
+	m_step = step;
+	m_moduleId = prj.GetModule();
+	BuildStepProperties();
+}
+
+void CStepSettings::BuildStepProperties()
+{
+	Clear();
+	BuildParamList(m_step);
+	for (int i = 0; i < m_step->Properties(); ++i)
+	{
+		FSProperty& prop = m_step->GetProperty(i);
+		QStringList ops = GetFEBioChoices(m_moduleId, prop.GetSuperClassID());
+		if (prop.IsRequired() == false) ops << "(none)";
+		addProperty(QString::fromStdString(prop.GetName()), CProperty::Group)->setEnumValues(ops);
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(prop.GetComponent());
+		if (pc) BuildParamList(pc);
+	}
+}
+
+QVariant CStepSettings::GetPropertyValue(int n)
+{
+	int params = m_step->Parameters();
+	if (n < params)
+	{
+		return CObjectProps::GetPropertyValue(m_step->GetParam(n));
+	}
+	n -= params;
+	for (int i = 0; i < m_step->Properties(); ++i)
+	{
+		FSProperty& prop = m_step->GetProperty(i);
+		params = (prop.GetComponent() ? prop.GetComponent()->Parameters() : 0);
+		if (n == 0)
+		{
+			QStringList ops = GetFEBioChoices(m_moduleId, prop.GetSuperClassID());
+
+			// this is the control property selection.
+			if (prop.GetComponent() == nullptr)
+			{
+				if (prop.IsRequired() == false) return ops.size();
+				else return -1;
+			}
+			QString typeStr(prop.GetComponent()->GetTypeString());
+			int n = ops.indexOf(typeStr);
+			return n;
+		}
+		else if (n <= params)
+		{
+			return CObjectProps::GetPropertyValue(prop.GetComponent()->GetParam(n - 1));
+		}
+		n -= params + 1;
+	}
+
+	return 0;
+}
+
+void CStepSettings::SetPropertyValue(int n, const QVariant& v)
+{
+	int params = m_step->Parameters();
+	if (n < params)
+	{
+		CObjectProps::SetPropertyValue(m_step->GetParam(n), v);
+		return;
+	}
+	n -= params;
+	for (int i = 0; i < m_step->Properties(); ++i)
+	{
+		FSProperty& prop = m_step->GetProperty(i);
+		params = (prop.GetComponent() ? prop.GetComponent()->Parameters() : 0);
+		if (n == 0)
+		{
+			vector<FEBio::FEBioClassInfo> fci = FEBio::FindAllClasses(m_moduleId, prop.GetSuperClassID(), -1);
+			int m = v.toInt();
+			if ((m >= 0) && (m < fci.size()))
+			{
+				FSModelComponent* pc = FEBio::CreateClass(fci[m].classId, m_step->GetFSModel()); assert(pc);
+				prop.SetComponent(pc);
+			}
+			BuildStepProperties();
+			SetModified(true);
+			return;
+		}
+		else if (n <= params)
+		{
+			CObjectProps::SetPropertyValue(prop.GetComponent()->GetParam(n - 1), v);
+			return;
+		}
+		n -= params + 1;
+	}
+}
+
 //=======================================================================================
-CRigidInterfaceSettings::CRigidInterfaceSettings(FEModel& fem, FERigidInterface* pi) : m_ri(pi)
+CRigidInterfaceSettings::CRigidInterfaceSettings(FSModel& fem, FSRigidInterface* pi) : m_ri(pi)
 {
 	QStringList mats;
 	m_sel = -1;
@@ -229,7 +338,7 @@ CRigidInterfaceSettings::CRigidInterfaceSettings(FEModel& fem, FERigidInterface*
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			m_mat.push_back(pm);
 			mats.push_back(QString::fromStdString(pm->GetName()));
@@ -256,14 +365,14 @@ void CRigidInterfaceSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidConstraintSettings::CRigidConstraintSettings(FEModel& fem, FERigidConstraint* pi) : CObjectProps(0), m_rc(pi)
+CRigidConstraintSettings::CRigidConstraintSettings(FSModel& fem, FSRigidConstraint* pi) : CObjectProps(0), m_rc(pi)
 {
 	QStringList mats;
 	m_sel = -1;
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			m_mat.push_back(pm);
 			mats.push_back(QString::fromStdString(pm->GetName()));
@@ -296,19 +405,19 @@ void CRigidConstraintSettings::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CRigidConnectorSettings::CRigidConnectorSettings(FEModel& fem, FERigidConnector* pi) : CObjectProps(0), m_rc(pi)
+CRigidConnectorSettings::CRigidConnectorSettings(FSModel& fem, FSRigidConnector* pi) : CObjectProps(0), m_rc(pi)
 {
 	QStringList mats;
 	m_rbA = -1, m_rbB = -1;
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			m_mat.push_back(pm);
 			mats.push_back(QString::fromStdString(pm->GetName()));
-			if (pm->GetID() == pi->m_rbA) m_rbA = (int)m_mat.size() - 1;
-			if (pm->GetID() == pi->m_rbB) m_rbB = (int)m_mat.size() - 1;
+			if (pm->GetID() == pi->GetRigidBody1()) m_rbA = (int)m_mat.size() - 1;
+			if (pm->GetID() == pi->GetRigidBody2()) m_rbB = (int)m_mat.size() - 1;
 		}
 	}
 	addProperty("Rigid Material A", CProperty::Enum)->setEnumValues(mats);
@@ -338,7 +447,7 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 		m_rbA = v.toInt();
 		if (m_mat.empty() == false)
 		{
-			m_rc->m_rbA = m_mat[m_rbA]->GetID();
+			m_rc->SetRigidBody1(m_mat[m_rbA]->GetID());
 		}
 	}
 	else if (i == 1)
@@ -346,14 +455,14 @@ void CRigidConnectorSettings::SetPropertyValue(int i, const QVariant& v)
 		m_rbB = v.toInt();
 		if (m_mat.empty() == false)
 		{
-			m_rc->m_rbB = m_mat[m_rbB]->GetID();
+			m_rc->SetRigidBody2(m_mat[m_rbB]->GetID());
 		}
 	}
 	else CObjectProps::SetPropertyValue(i - 2, v);
 }
 
 //=======================================================================================
-CMaterialProps::CMaterialProps(FEModel& fem, FEMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
+CMaterialProps::CMaterialProps(FSModel& fem, FSMaterial* mat) : FEObjectProps(0, &fem), m_mat(mat)
 {
 	BuildPropertyList();
 }
@@ -365,16 +474,16 @@ void CMaterialProps::BuildPropertyList()
 	m_params.clear();
 
 	// get the material properties
-	FEMaterial* pm = m_mat;
+	FSMaterial* pm = m_mat;
 
 	// add the parameters
 	if (pm) BuildParamList(pm, true);
 
 	// add the fiber parameters
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pm);
+	FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
 	if (ptiso)
 	{
-		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
+		FSOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 
 		int NP = fiber->Parameters();
 		for (int i = 0; i<NP; ++i)
@@ -465,10 +574,10 @@ QVariant CMaterialProps::GetPropertyValue(int i)
 	if (i<m_params.size()) return CObjectProps::GetPropertyValue(i);
 	i -= (int)m_params.size();
 
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
+	FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
+		FSOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0) return fiber->m_naopt;
 
 		switch (fiber->m_naopt)
@@ -536,10 +645,10 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 	if (i<m_params.size()) CObjectProps::SetPropertyValue(i, v);
 	i -= (int)m_params.size();
 
-	FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(m_mat);
+	FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(m_mat);
 	if (ptiso)
 	{
-		FEOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
+		FSOldFiberMaterial* fiber = ptiso->GetFiberMaterial();
 		if (i == 0)
 		{
 			int naopt = v.toInt();
@@ -628,44 +737,63 @@ void CMaterialProps::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CLogfileProperties::CLogfileProperties(FEProject& prj) : CObjectProps(0)
+CLogfileProperties::CLogfileProperties(CModelViewer* wnd, FSProject& prj) : CObjectProps(0)
 {
-	CLogDataSettings& log = prj.GetLogDataSettings();
+	m_prj = &prj;
+	m_wnd = wnd;
+	Update();
+}
+
+void CLogfileProperties::Update()
+{
+	Clear();
+	if (m_prj == nullptr) return;
+
+	CLogDataSettings& log = m_prj->GetLogDataSettings();
 
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
-		FELogData& ld = log.LogData(i);
+		FSLogData& ld = log.LogData(i);
 		addProperty(QString::fromStdString(ld.sdata), CProperty::Bool)->setFlags(CProperty::Visible);
 	}
+
+	addProperty("", CProperty::Action, "Edit log variables ...");
+	m_actionIndex = log.LogDataSize();
 }
 
 QVariant CLogfileProperties::GetPropertyValue(int i)
 {
-	return true;
+	return (i != m_actionIndex ? true : QVariant());
 }
 
 void CLogfileProperties::SetPropertyValue(int i, const QVariant& v)
 {
+	if (i == m_actionIndex)
+	{
+		m_wnd->blockUpdate(true);
+		m_wnd->OnEditOutputLog();
+		m_wnd->blockUpdate(false);
+	}
 }
 
 //=======================================================================================
-CReactionReactantProperties::CReactionReactantProperties(FEReactionMaterial* mat, FEModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionReactantProperties::CReactionReactantProperties(FSReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
 {
 	int NR = m_mat->Reactants();
 	for (int i = 0; i<NR; ++i)
 	{
-		FEReactantMaterial* pr = m_mat->Reactant(i);
+		FSReactantMaterial* pr = m_mat->Reactant(i);
 		int index = pr->GetIndex();
 
 		if (pr->GetReactantType() == 1)
 		{
-			FESoluteData& sd = fem.GetSoluteData(index);
+			SoluteData& sd = fem.GetSoluteData(index);
 			QString t = "vR (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
 		else
 		{
-			FESoluteData& sd = fem.GetSBMData(index);
+			SoluteData& sd = fem.GetSBMData(index);
 			QString t = "vR (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
@@ -674,34 +802,34 @@ CReactionReactantProperties::CReactionReactantProperties(FEReactionMaterial* mat
 
 QVariant CReactionReactantProperties::GetPropertyValue(int i)
 {
-	FEReactantMaterial* pr = m_mat->Reactant(i);
+	FSReactantMaterial* pr = m_mat->Reactant(i);
 	return pr->GetCoef();
 }
 
 void CReactionReactantProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	FEReactantMaterial* pr = m_mat->Reactant(i);
+	FSReactantMaterial* pr = m_mat->Reactant(i);
 	pr->SetCoeff(v.toInt());
 }
 
 //=======================================================================================
-CReactionProductProperties::CReactionProductProperties(FEReactionMaterial* mat, FEModel& fem) : CObjectProps(0), m_mat(mat)
+CReactionProductProperties::CReactionProductProperties(FSReactionMaterial* mat, FSModel& fem) : CObjectProps(0), m_mat(mat)
 {
 	int NP = m_mat->Products();
 	for (int i = 0; i<NP; ++i)
 	{
-		FEProductMaterial* pr = m_mat->Product(i);
+		FSProductMaterial* pr = m_mat->Product(i);
 		int index = pr->GetIndex();
 
 		if (pr->GetProductType() == 1)
 		{
-			FESoluteData& sd = fem.GetSoluteData(index);
+			SoluteData& sd = fem.GetSoluteData(index);
 			QString t = "vP (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
 		else
 		{
-			FESoluteData& sd = fem.GetSBMData(index);
+			SoluteData& sd = fem.GetSBMData(index);
 			QString t = "vP (" + QString::fromStdString(sd.GetName()) + ")";
 			addProperty(t, CProperty::Int);
 		}
@@ -710,47 +838,151 @@ CReactionProductProperties::CReactionProductProperties(FEReactionMaterial* mat, 
 
 QVariant CReactionProductProperties::GetPropertyValue(int i)
 {
-	FEProductMaterial* pr = m_mat->Product(i);
+	FSProductMaterial* pr = m_mat->Product(i);
 	return pr->GetCoef();
 }
 
 void CReactionProductProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	FEProductMaterial* pr = m_mat->Product(i);
+	FSProductMaterial* pr = m_mat->Product(i);
 	pr->SetCoeff(v.toInt());
 }
 
 //=======================================================================================
-CPartProperties::CPartProperties(GPart* pg, FEModel& fem) : CObjectProps(pg)
+CPartProperties::CPartProperties(GPart* pg, FSModel& fem) : FEObjectProps(0)
 {
 	m_fem = &fem;
 	m_pg = pg;
-	int mid = pg->GetMaterialID();
-	m_lid = -1;
+
+	GPartSection* section = pg->GetSection();
+	if (section)
+	{
+		BuildParamList(section);
+
+		GSolidSection* solidSection = dynamic_cast<GSolidSection*>(section);
+		if (solidSection && solidSection->GetElementFormulation())
+		{
+			FESolidFormulation* form = solidSection->GetElementFormulation();
+			AddParameterList(form);
+		}
+
+		GShellSection* shellSection = dynamic_cast<GShellSection*>(section);
+		if (shellSection && shellSection->GetElementFormulation())
+		{
+			FEShellFormulation* form = shellSection->GetElementFormulation();
+			AddParameterList(form);
+		}
+
+		GBeamSection* beamSection = dynamic_cast<GBeamSection*>(section);
+		if (beamSection && beamSection->GetElementFormulation())
+		{
+			FEBeamFormulation* form = beamSection->GetElementFormulation();
+			AddParameterList(form);
+		}
+	}
+
 	QStringList mats;
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		GMaterial* m = fem.GetMaterial(i);
-		if (m->GetID() == mid) m_lid = i;
 		mats.push_back(QString::fromStdString(m->GetName()));
 	}
 	addProperty("material", CProperty::Enum)->setEnumValues(mats);
 }
 
+QStringList CPartProperties::GetEnumValues(const char* ch)
+{
+	if (strcmp(ch, "$(solid_domain)") == 0)
+	{
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESOLIDDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
+		return sl;
+	}
+
+	if (strcmp(ch, "$(shell_domain)") == 0)
+	{
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FESHELLDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
+		return sl;
+	}
+
+	if (strcmp(ch, "$(beam_domain)") == 0)
+	{
+		vector<FEBio::FEBioClassInfo> l = FEBio::FindAllActiveClasses(FEBEAMDOMAIN_ID);
+		QStringList sl;
+		sl << "default";
+		for (int i = 0; i < l.size(); ++i) sl << l[i].sztype;
+		return sl;
+	}
+
+	if (strcmp(ch, "$(solid_element)") == 0)
+	{
+		assert(m_pg->IsSolid());
+		QStringList sl;
+		sl << "default";
+
+		GObject* po = dynamic_cast<GObject*>(m_pg->Object());
+		if (po && po->GetFEMesh())
+		{
+			FSMesh* pm = po->GetFEMesh();
+			int lid = m_pg->GetLocalID();
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				FSElement& el = pm->Element(i);
+				if (el.m_gid == lid)
+				{
+					switch (el.Type())
+					{
+					case FE_TET4 : sl << "TET4G4"; break;
+					case FE_TET10: sl << "TET10G4" << "TET10G8" << "TET10GL11"; break;
+					case FE_TET15: sl << "TET15G8" << "TET15G11" << "TET15G15"; break;
+					case FE_HEX8 : sl << "HEX8G8"; break;
+					case FE_HEX20: sl << "HEX20G8"; break;
+					}
+
+					break;
+				}
+			}
+		}
+
+		return sl;
+	}
+
+	return FEObjectProps::GetEnumValues(ch);
+}
+
 QVariant CPartProperties::GetPropertyValue(int i)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::GetPropertyValue(i);
-	return m_lid;
+	if (i < Properties() - 1) return CObjectProps::GetPropertyValue(i);
+
+	int lid = -1;
+	int mid = m_pg->GetMaterialID();
+	for (int i = 0; i < m_fem->Materials(); ++i)
+	{
+		GMaterial* m = m_fem->GetMaterial(i);
+		if (m->GetID() == mid) {
+			lid = i; break;
+		}
+	}
+	return lid;
 }
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::SetPropertyValue(i, v);
-	m_lid = v.toInt();
-	if (m_lid >= 0)
+	GPartSection* section = m_pg->GetSection();
+	if (i < Properties() - 1) return CObjectProps::SetPropertyValue(i, v);
+	else
 	{
-		GMaterial* mat = m_fem->GetMaterial(m_lid);
-		m_pg->SetMaterialID(mat->GetID());
+		int lid = v.toInt();
+		if (lid < 0) m_pg->SetMaterialID(-1);
+		else
+		{
+			GMaterial* m = m_fem->GetMaterial(lid);
+			m_pg->SetMaterialID(m->GetID());
+		}
 	}
-	else m_pg->SetMaterialID(-1);
 }

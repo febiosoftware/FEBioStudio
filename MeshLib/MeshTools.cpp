@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "MeshTools.h"
+#include "FENodeNodeList.h"
+using namespace std;
 
 // calculate the closest-fitting circle of a triangle
 // This assumes a are in fact 2D vectors
@@ -222,7 +224,7 @@ bool IntersectQuad(vec3d* y, vec3d r, vec3d n, vec3d& q, double& g)
 //-----------------------------------------------------------------------------
 // Project a point to the mesh
 //
-vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
+vec3d ClosestNodeOnSurface(FSMesh& mesh, const vec3d& r, const vec3d& t)
 {
 	// tag all surface nodes
 	mesh.TagAllNodes(0);
@@ -231,8 +233,8 @@ vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
 	for (int i = 0; i<mesh.Faces(); ++i)
 	{
 		// only pick faces that are facing r
-		FEFace& f = mesh.Face(i);
-		if (t*f.m_fn < 0)
+		FSFace& f = mesh.Face(i);
+		if (t* to_vec3d(f.m_fn) < 0)
 		{
 			int n = f.Nodes();
 			for (int j = 0; j<n; ++j) mesh.Node(f.n[j]).m_ntag = 1;
@@ -244,7 +246,7 @@ vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
 	vec3d p = r, q;
 	for (int i = 0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag)
 		{
 			q = r + t*((node.r - r)*t);
@@ -263,7 +265,7 @@ vec3d ClosestNodeOnSurface(FEMesh& mesh, const vec3d& r, const vec3d& t)
 //-----------------------------------------------------------------------------
 // Project a point to the surface of a FE mesh
 //
-vec3d ProjectToFace(FEMesh& mesh, vec3d p, FEFace &f, double &r, double &s, bool bedge)
+vec3d ProjectToFace(FSMesh& mesh, vec3d p, FSFace &f, double &r, double &s, bool bedge)
 {
 	double R[2], u[2], D;
 
@@ -385,7 +387,7 @@ vec3d ProjectToEdge(vec3d e1, vec3d e2, vec3d p, double& r)
 }
 
 //-----------------------------------------------------------------------------
-std::vector<vec3d> FindAllIntersections(FEMeshBase& mesh, const vec3d& x, const vec3d& n, bool forwardOnly)
+std::vector<vec3d> FindAllIntersections(FSMeshBase& mesh, const vec3d& x, const vec3d& n, bool forwardOnly)
 {
 	vector<vec3d> q;
 	int NF = mesh.Faces();
@@ -393,7 +395,7 @@ std::vector<vec3d> FindAllIntersections(FEMeshBase& mesh, const vec3d& x, const 
 	double g;
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (FindIntersection(mesh, f, x, n, r, g))
 		{
 			if ((forwardOnly == false) || (g > 0.0))
@@ -406,7 +408,7 @@ std::vector<vec3d> FindAllIntersections(FEMeshBase& mesh, const vec3d& x, const 
 }
 
 //-----------------------------------------------------------------------------
-bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap)
+bool FindIntersection(FSMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap)
 {
 	int NF = mesh.Faces();
 	vec3d r, rmin;
@@ -415,7 +417,7 @@ bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q
 	int imin = -1;
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (FindIntersection(mesh, f, x, n, r, g))
 		{
 			if ((g > 0.0) && (g < gmin))
@@ -434,7 +436,7 @@ bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q
 
 		if (snap && (imin != -1))
 		{
-			FEFace& face = mesh.Face(imin);
+			FSFace& face = mesh.Face(imin);
 			int nf = face.Nodes();
 			double Dmin = 0.0;
 			rmin = q;
@@ -458,11 +460,11 @@ bool FindIntersection(FEMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q
 //-----------------------------------------------------------------------------
 // Find the intersection.
 //
-bool FindIntersection(FEMeshBase& mesh, FEFace &f, const vec3d& x, const vec3d& n, vec3d& q, double& g)
+bool FindIntersection(FSMeshBase& mesh, FSFace &f, const vec3d& x, const vec3d& n, vec3d& q, double& g)
 {
 	int N = f.Nodes();
 
-	vec3d y[FEFace::MAX_NODES];
+	vec3d y[FSFace::MAX_NODES];
 	for (int i = 0; i<N; ++i) y[i] = mesh.Node(f.n[i]).r;
 
 	// call the correct intersection function
@@ -605,13 +607,13 @@ bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q)
 	return ((r > -1.0 - eps) && (r < 1.0 + eps) && (s > -1.0 - eps) && (s < 1.0 + eps));
 }
 
-vec3d projectToEdge(const FEMeshBase& m, const vec3d& p, int gid)
+vec3d projectToEdge(const FSMeshBase& m, const vec3d& p, int gid)
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
 	for (int i = 0; i<m.Edges(); ++i)
 	{
-		const FEEdge& edge = m.Edge(i);
+		const FSEdge& edge = m.Edge(i);
 		if (edge.m_gid == gid)
 		{
 			// calculate distance to edge nodes
@@ -644,7 +646,7 @@ vec3d projectToEdge(const FEMeshBase& m, const vec3d& p, int gid)
 	return rmin;
 }
 
-vec3d projectToSurface(const FEMeshBase& m, const vec3d& p, int gid, int* faceID)
+vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID)
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
@@ -652,7 +654,7 @@ vec3d projectToSurface(const FEMeshBase& m, const vec3d& p, int gid, int* faceID
 	if (faceID) *faceID = -1;
 	for (int i = 0; i<m.Faces(); ++i)
 	{
-		const FEFace& face = m.Face(i);
+		const FSFace& face = m.Face(i);
 		if ((face.m_gid == gid) || (gid == -1))
 		{
 			int nf = face.Nodes();
@@ -691,7 +693,7 @@ vec3d projectToSurface(const FEMeshBase& m, const vec3d& p, int gid, int* faceID
 	return rmin;
 }
 
-vec3d projectToPatch(const FEMeshBase& m, const vec3d& p, int gid, int faceID, int l)
+vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, int l)
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
@@ -704,7 +706,7 @@ vec3d projectToPatch(const FEMeshBase& m, const vec3d& p, int gid, int faceID, i
 		set<int> tmp;
 		for (set<int>::iterator it = patch.begin(); it != patch.end(); ++it)
 		{
-			const FEFace& face = m.Face(*it);
+			const FSFace& face = m.Face(*it);
 			int ne = face.Edges();
 			for (int j = 0; j<ne; ++j)
 			{
@@ -721,7 +723,7 @@ vec3d projectToPatch(const FEMeshBase& m, const vec3d& p, int gid, int faceID, i
 
 	for (set<int>::iterator it = patch.begin(); it != patch.end(); ++it)
 	{
-		const FEFace& face = m.Face(*it);
+		const FSFace& face = m.Face(*it);
 		if (face.m_gid == gid)
 		{
 			assert(face.Type() == FE_FACE_TRI3);
@@ -963,9 +965,9 @@ double TriangleQuality(vec3d r[3])
 
 
 //-----------------------------------------------------------------------------
-bool FindElementRef(FECoreMesh& m, const vec3f& p, int& nelem, double r[3])
+bool FindElementRef(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
 {
-	vec3d y[FEElement::MAX_NODES];
+	vec3d y[FSElement::MAX_NODES];
 	int NE = m.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
@@ -1016,11 +1018,11 @@ bool FindElementRef(FECoreMesh& m, const vec3f& p, int& nelem, double r[3])
 }
 
 //-----------------------------------------------------------------------------
-bool ProjectInsideElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
-	vec3f x[FEElement::MAX_NODES];
+	vec3f x[FSElement::MAX_NODES];
 	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
 
 	project_inside_element(el, p, r, x);
@@ -1059,8 +1061,8 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 
 	int ne = el.Nodes();
 	double dr[3], R[3];
-	Mat3d K;
-	double u2, N[FEElement::MAX_NODES], G[3][FEElement::MAX_NODES];
+	mat3d K;
+	double u2, N[FSElement::MAX_NODES], G[3][FSElement::MAX_NODES];
 	int n = 0;
 	do
 	{
@@ -1085,7 +1087,7 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 			K[2][0] -= G[0][i] * x[i].z; K[2][1] -= G[1][i] * x[i].z; K[2][2] -= G[2][i] * x[i].z;
 		}
 
-		K.Invert();
+		K.invert();
 
 		dr[0] = K[0][0] * R[0] + K[0][1] * R[1] + K[0][2] * R[2];
 		dr[1] = K[1][0] * R[0] + K[1][1] * R[1] + K[1][2] * R[2];
@@ -1101,14 +1103,179 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 }
 
 //-----------------------------------------------------------------------------
-bool ProjectInsideReferenceElement(FECoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
+bool project_inside_element2d(FEElement_& el, vec3d* x, const vec2d& p, double q[2])
+{
+	if (el.IsShell() == false) return false;
+
+	const double tol = 1e-7;
+	const int nmax = 10;
+
+	int ne = el.Nodes();
+	double dq[2], R[2];
+	mat2d K;
+	double u2, N[FSElement::MAX_NODES], G[2][FSElement::MAX_NODES];
+	int n = 0;
+	do
+	{
+		el.shape_2d(N, q[0], q[1]);
+		el.shape_deriv_2d(G[0], G[1], q[0], q[1]);
+
+		R[0] = p.x();
+		R[1] = p.y();
+		for (int i = 0; i < ne; ++i)
+		{
+			R[0] -= N[i] * x[i].x;
+			R[1] -= N[i] * x[i].y;
+		}
+
+		K.zero();
+		for (int i = 0; i < ne; ++i)
+		{
+			K[0][0] -= G[0][i] * x[i].x; K[0][1] -= G[1][i] * x[i].x;
+			K[1][0] -= G[0][i] * x[i].y; K[1][1] -= G[1][i] * x[i].y;
+		}
+
+		mat2d Ki = K.inverse();
+
+		dq[0] = Ki[0][0] * R[0] + Ki[0][1] * R[1];
+		dq[1] = Ki[1][0] * R[0] + Ki[1][1] * R[1];
+
+		q[0] -= dq[0];
+		q[1] -= dq[1];
+
+		u2 = dq[0] * dq[0] + dq[1] * dq[1];
+		++n;
+	}
+	while ((u2 > tol * tol) && (n < nmax));
+
+	bool inside = false;
+	switch (el.Type())
+	{
+	case FE_TRI3:
+		inside = (q[0] >= -tol) && (q[1] >= -tol) && (q[0] + q[1] <= 1.0 + tol);
+		break;
+	case FE_QUAD4:
+		inside =((q[0] >= -1.0 - tol) && (q[0] <= 1.0 + tol) && (q[1] >= -1.0 - tol) && (q[1] <= 1.0 + tol));
+		break;
+	default:
+		assert(false);
+	}
+	return inside;
+}
+
+
+//-----------------------------------------------------------------------------
+bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;
 	int ne = el.Nodes();
-	vec3f x[FEElement::MAX_NODES];
+	vec3f x[FSElement::MAX_NODES];
 	for (int i = 0; i<ne; ++i) x[i] = to_vec3f(m.Node(el.m_node[i]).r);
 
 	project_inside_element(el, p, r, x);
 
 	return IsInsideElement(el, r, 0.001);
+}
+
+//-------------------------------------------------------------------------------
+std::vector<vec3d> FindShortestPath(FSMesh& mesh, int m0, int m1)
+{
+	// helper class for finding neighbors
+	FSNodeNodeList NNL(&mesh);
+
+	const double INF = 1e34;
+	int N = mesh.Nodes();
+	vector<double> dist(N, INF);
+
+	mesh.TagAllNodes(-1);
+
+	int ncurrent = m0;
+	mesh.Node(m0).m_ntag = m0;
+	dist[m0] = 0.0;
+	double L0 = 0.0;
+	while (ncurrent != m1)
+	{
+		// get the position of the current node
+		FSNode& node0 = mesh.Node(ncurrent);
+		vec3d rc = node0.pos();
+
+		// update neighbor distances
+		int nval = NNL.Valence(ncurrent);
+		for (int i = 0; i < nval; ++i)
+		{
+			int mi = NNL.Node(ncurrent, i);
+			assert(mi != ncurrent);
+
+			FSNode& nodei = mesh.Node(mi);
+			if (dist[mi] > 0)
+			{
+				vec3d ri = mesh.Node(mi).pos();
+				double dL = (ri - rc).Length();
+
+				double L1 = L0 + dL;
+				if (L1 < dist[mi])
+				{
+					dist[mi] = L1;
+					nodei.m_ntag = ncurrent;
+				}
+				else L1 = dist[mi];
+			}
+		}
+
+		// choose the next node as the unvisited node with the smallest distance
+		int nmin = -1;
+		double dmin = 0.0;
+		for (int i = 0; i < mesh.Nodes(); ++i)
+		{
+			if (dist[i] > 0)
+			{
+				if ((nmin == -1) || (dist[i] < dmin))
+				{
+					nmin = i;
+					dmin = dist[i];
+				}
+			}
+		}
+
+		if (nmin == -1)
+		{
+			// hmmm, something went wrong
+			assert(false);
+			return std::vector<vec3d>();
+		}
+
+		L0 = dist[nmin];
+		dist[nmin] = -1.0;
+		ncurrent = nmin;
+	}
+
+	// build the path
+	// NOTE: This traverses the path in reverse!
+	std::vector<vec3d> tmp;
+	ncurrent = m1;
+	tmp.push_back(mesh.Node(m1).pos());
+	do
+	{
+		int parentNode = mesh.Node(ncurrent).m_ntag;
+
+		vec3d rc = mesh.Node(parentNode).pos();
+		tmp.push_back(rc);
+
+		ncurrent = parentNode;
+
+	} while (ncurrent != m0);
+
+	// invert the temp path to get the final path
+	std::vector<vec3d> path;
+	int n = tmp.size();
+	if (n > 0)
+	{
+		path.resize(n);
+		for (int i = 0; i < n; ++i)
+		{
+			path[i] = tmp[n - i - 1];
+		}
+	}
+
+	return path;
 }

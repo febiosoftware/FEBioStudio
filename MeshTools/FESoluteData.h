@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,12 +30,13 @@ SOFTWARE.*/
 // This class is used for both solutes and sbms. 
 // This was done to simplify the dialog box for editing solutes/sbms.
 // Perhaps a flag cam be added to identify this molecule as a solute or sbm but I have not found a need for this.
-class FESoluteData : public FSObject
+// TODO: Move to FEMLib?
+class SoluteData : public FSObject
 {
 	enum { Z, MM, DENS};
 
 public:
-	FESoluteData();
+	SoluteData();
 
 	int GetChargeNumber() const { return GetIntValue(Z); }
 	void SetChargeNumber(int n) { SetIntValue(Z, n); }

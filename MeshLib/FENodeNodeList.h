@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,17 +29,17 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-class FEMesh;
-class FESurfaceMesh;
+class FSMesh;
+class FSSurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // This class stores for each node a list of nodes that are connected to it.
-class FENodeNodeList
+class FSNodeNodeList
 {
 public:
-	FENodeNodeList(FEMesh* pm, bool preservePartitions = false);
-	FENodeNodeList(FESurfaceMesh* pm);
-	~FENodeNodeList();
+	FSNodeNodeList(FSMesh* pm, bool preservePartitions = false);
+	FSNodeNodeList(FSSurfaceMesh* pm);
+	~FSNodeNodeList();
 
 	int Valence(int n) { return m_val[n]; }
 	int Node(int n, int j) { return m_node[ m_off[n] + j]; }
@@ -51,13 +51,13 @@ public:
 	double& Value(int n, int j) { return m_data[m_off[n] + j]; }
 
 protected:
-	void Build(FEMesh* pm, bool preservePartitions = false);
-	void Build(FESurfaceMesh* pm);
+	void Build(FSMesh* pm, bool preservePartitions = false);
+	void Build(FSSurfaceMesh* pm);
 
 protected:
-	vector<int>	m_val;		// Valence list
-	vector<int>	m_off;		// Offset into node array
-	vector<int>	m_node;		// node list
+	std::vector<int>	m_val;		// Valence list
+	std::vector<int>	m_off;		// Offset into node array
+	std::vector<int>	m_node;		// node list
 
-	vector<double>	m_data;
+	std::vector<double>	m_data;
 };

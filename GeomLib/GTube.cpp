@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -124,20 +124,20 @@ void GTube::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
 	// face-edge table
 	int FE[16][4] = {
-		{ 0, 25,  4, 24}, { 1, 26,  5, 25}, { 2, 27,  6, 26}, { 3, 24,  7, 27},
+		{24,  4, 25,  0}, {25,  5, 26,  1}, {26,  6, 27,  2}, {27,  7, 24,  3},
 		{ 0, 17,  8, 16}, { 1, 18,  9, 17}, { 2, 19, 10, 18}, { 3, 16, 11, 19},
-		{ 4, 21, 12, 20}, { 5, 22, 13, 21}, { 6, 23, 14, 22}, { 7, 20, 15, 23},
+		{12, 21,  4, 20}, {13, 22,  5, 21}, {14, 23,  6, 22}, {15, 20,  7, 23},
 		{ 8, 29, 12, 28}, { 9, 30, 13, 29}, {10, 31, 14, 30}, {11, 28, 15, 31},
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);
@@ -256,7 +256,7 @@ void GTube2::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -269,7 +269,7 @@ void GTube2::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);

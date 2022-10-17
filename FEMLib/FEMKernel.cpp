@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,14 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEMKernel.h"
+using namespace std;
 
-FEClassFactory::FEClassFactory(int module, int superID, int classID, const char* sztype, const char* helpURL)
+FEClassFactory::FEClassFactory(int module, int superID, int classID, const char* sztype)
 {
 	m_Module = module;
 	m_SuperID = superID;
 	m_ClassID = classID;
 	m_szType = sztype;
-	m_helpURL = helpURL;
 }
 
 FEClassFactory::~FEClassFactory()
@@ -49,7 +49,7 @@ FEMKernel* FEMKernel::Instance()
 	return m_This;
 }
 
-FSObject* FEMKernel::Create(FEModel* fem, int superID, int classID)
+FSObject* FEMKernel::Create(FSModel* fem, int superID, int classID)
 {
 	for (size_t i=0; i<m_Class.size(); ++i)
 	{
@@ -62,7 +62,7 @@ FSObject* FEMKernel::Create(FEModel* fem, int superID, int classID)
 	return 0;
 }
 
-FSObject* FEMKernel::Create(FEModel* fem, int superID, const char* szTypeString)
+FSObject* FEMKernel::Create(FSModel* fem, int superID, const char* szTypeString)
 {
 	for (size_t i = 0; i < m_Class.size(); ++i)
 	{
@@ -105,4 +105,17 @@ FEClassFactory* FEMKernel::FindClass(int module, int superID, int classID)
 	}
 
 	return nullptr;
+}
+
+const char* FEMKernel::TypeStr(int superID, int classID)
+{
+    for (size_t i=0; i<m_Class.size(); ++i)
+	{
+		FEClassFactory* fac = m_Class[i];
+		if ((fac->GetSuperID() == superID) && (fac->GetClassID() == classID))
+		{
+			return fac->GetTypeStr();
+		}
+	}
+	return "";
 }

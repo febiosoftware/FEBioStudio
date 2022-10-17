@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -118,7 +118,7 @@ void CCreateP2PLinePane::AddPoint(const vec3d& r)
 	// Add the new point
 	// this will check if the point already coincides with a node
 	// of the curve, in which case it will return the (local) node ID. 
-	int newNode = m_tmp->AddNode(r);
+	int newNode = m_tmp->AddNode(r)->GetLocalID();
 
 	// add a new edge connecting the last added node to this new node.
 	bool addEdge = false;

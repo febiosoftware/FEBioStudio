@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,7 @@ class GCylinder2;
 class FECylinder : public FEMultiBlockMesh
 {
 public:
-	enum {RATIO, NDIV, NSEG, NSTACK, ZZ, GR, CTYPE, GZ2, GR2};
+	enum {RATIO, NDIV, NSEG, NSTACK, ZZ, GR, CTYPE, GZ2, GR2, ELEM_TYPE};
 
 	// creation types
 	enum { BUTTERFLY, WEDGED };
@@ -41,15 +41,17 @@ public:
 public:
 	FECylinder(){}
 	FECylinder(GCylinder* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
+
+	bool BuildMultiBlock() override;
 
 protected:
-	FEMesh* BuildButterfly();
-	FEMesh* BuildWedged();
+	FSMesh* BuildButterfly();
+	FSMesh* BuildWedged();
 
-	void BuildWedgedFaces(FEMesh* pm);
-	void BuildWedgedEdges(FEMesh* pm);
-	void BuildWedgesNodes(FEMesh* pm);
+	void BuildWedgedFaces(FSMesh* pm);
+	void BuildWedgedEdges(FSMesh* pm);
+	void BuildWedgesNodes(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k) 
 	{
@@ -78,15 +80,15 @@ public:
 public:
 	FECylinder2(){}
 	FECylinder2(GCylinder2* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* BuildButterfly();
-	FEMesh* BuildWedged();
+	FSMesh* BuildButterfly();
+	FSMesh* BuildWedged();
 
-	void BuildWedgedFaces(FEMesh* pm);
-	void BuildWedgedEdges(FEMesh* pm);
-	void BuildWedgesNodes(FEMesh* pm);
+	void BuildWedgedFaces(FSMesh* pm);
+	void BuildWedgedEdges(FSMesh* pm);
+	void BuildWedgesNodes(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k) 
 	{

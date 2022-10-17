@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "geom.h"
+#include <assert.h>
+#include <FECore/mat3d.h>
+#include <FECore/quatd.h>
 
 //-----------------------------------------------------------------------------
 // solves the quadratic: a*x^2 + b*x + c = 0
@@ -101,10 +104,10 @@ bool GM_LINE::Intersect(GM_LINE& e, double& w)
 	vec2d b1 = e.m_r1;
 
 	double Q[2][2], B[2];
-	B[0] = b0.x - a0.x;
-	B[1] = b0.y - a0.y;
-	Q[0][0] = a1.x - a0.x; Q[0][1] = b0.x - b1.x; 
-	Q[1][0] = a1.y - a0.y; Q[1][1] = b0.y - b1.y;
+	B[0] = b0.x() - a0.x();
+	B[1] = b0.y() - a0.y();
+	Q[0][0] = a1.x() - a0.x(); Q[0][1] = b0.x() - b1.x(); 
+	Q[1][0] = a1.y() - a0.y(); Q[1][1] = b0.y() - b1.y();
 	double D = Q[0][0]*Q[1][1] - Q[0][1]*Q[1][0];
 	if (D == 0) return false;
 
@@ -127,10 +130,10 @@ bool GM_LINE::Intersect(GM_CIRCLE_ARC &e, double &w)
 	vec2d c = e.m_c;
 	double R = e.m_R;
 
-	double ax = r0.x - c.x;
-	double ay = r0.y - c.y;
-	double bx = r1.x - r0.x;
-	double by = r1.y - r0.y;
+	double ax = r0.x() - c.x();
+	double ay = r0.y() - c.y();
+	double bx = r1.x() - r0.x();
+	double by = r1.y() - r0.y();
 
 	double a2 = bx*bx + by*by;
 	double a1 = 2.0*(ax*bx + ay*by);
@@ -173,11 +176,11 @@ GM_CIRCLE_ARC::GM_CIRCLE_ARC(vec2d c, vec2d a, vec2d b, int nw)
 	e2.unit();
 
 	m_c = c;
-	m_w0 = acos(e1.x);
-	m_w1 = acos(e2.x);
+	m_w0 = acos(e1.x());
+	m_w1 = acos(e2.x());
 
-	if (e1.y < 0) m_w0 = -m_w0;
-	if (e2.y < 0) m_w1 = -m_w1;
+	if (e1.y() < 0) m_w0 = -m_w0;
+	if (e2.y() < 0) m_w1 = -m_w1;
 
 	if (nw == 1)
 	{
@@ -193,8 +196,8 @@ GM_CIRCLE_ARC::GM_CIRCLE_ARC(vec2d c, vec2d a, vec2d b, int nw)
 double GM_CIRCLE_ARC::Coord(vec2d& q)
 {
 	vec2d e = q - m_c; e.unit();
-	double w = acos(e.x);
-	if (e.y < 0) w = -w;
+	double w = acos(e.x());
+	if (e.y() < 0) w = -w;
 	if (w < m_w0) w += 2.0*PI;
 
 	assert(m_w1 != m_w0);
@@ -252,10 +255,10 @@ bool GM_CIRCLE_ARC::Intersect(GM_LINE &e, double &w)
 	vec2d r1 = e.m_r1;
 	vec2d c = m_c;
 
-	double ax = r0.x - c.x;
-	double ay = r0.y - c.y;
-	double bx = r1.x - r0.x;
-	double by = r1.y - r0.y;
+	double ax = r0.x() - c.x();
+	double ay = r0.y() - c.y();
+	double bx = r1.x() - r0.x();
+	double by = r1.y() - r0.y();
 
 	double a2 = bx*bx + by*by;
 	double a1 = 2.0*(ax*bx + ay*by);
@@ -292,8 +295,8 @@ bool GM_CIRCLE_ARC::Intersect(GM_CIRCLE_ARC &e, double &w)
 	if (D + R0 < R1) return false;
 	if (D + R1 < R0) return false;
 
-	double a0 = c0.x, a1 = c0.y;
-	double b0 = c1.x, b1 = c1.y;
+	double a0 = c0.x(), a1 = c0.y();
+	double b0 = c1.x(), b1 = c1.y();
 	double a2 = a0*a0 + a1*a1;
 	double b2 = b0*b0 + b1*b1;
 
@@ -314,11 +317,11 @@ bool GM_CIRCLE_ARC::Intersect(GM_CIRCLE_ARC &e, double &w)
 		double y[2];
 		if (quadratic(h2, h1, h0, y) == 0) return false;
 
-		r[0].x = g0 + g1*y[0];
-		r[0].y = y[0];
+		r[0].x() = g0 + g1*y[0];
+		r[0].y() = y[0];
 
-		r[1].x = g0 + g1*y[1];
-		r[1].y = y[1];
+		r[1].x() = g0 + g1*y[1];
+		r[1].y() = y[1];
 	}
 	else
 	{
@@ -332,11 +335,11 @@ bool GM_CIRCLE_ARC::Intersect(GM_CIRCLE_ARC &e, double &w)
 		double x[2];
 		if (quadratic(h2, h1, h0, x) == 0) return false;
 
-		r[0].x = x[0];
-		r[0].y = g0 + g1*x[0];
+		r[0].x() = x[0];
+		r[0].y() = g0 + g1*x[0];
 
-		r[1].x = x[1];
-		r[1].y = g0 + g1*x[1];
+		r[1].x() = x[1];
+		r[1].y() = g0 + g1*x[1];
 	}
 
 	// we found our intersection point(s) r
@@ -373,8 +376,8 @@ GM_ARC::GM_ARC(vec2d c, vec2d a, vec2d b, int nw)
 	vec2d A = a - c;
 	vec2d B = b - c;
 
-	double ua = A.x*A.x, va = A.y*A.y;
-	double ub = B.x*B.x, vb = B.y*B.y;
+	double ua = A.x()*A.x(), va = A.y()*A.y();
+	double ub = B.x()*B.x(), vb = B.y()*B.y();
 	double N = vb*ua-va*ub;
 	double r0 = N / (vb - va);
 	double r1 = N / (ua - ub);
@@ -383,8 +386,8 @@ GM_ARC::GM_ARC(vec2d c, vec2d a, vec2d b, int nw)
 	m_R1 = sqrt(r1);
 	m_c = c;
 
-	m_w0 = atan2(A.y/m_R1, A.x/m_R0);
-	m_w1 = atan2(B.y/m_R1, B.x/m_R0);
+	m_w0 = atan2(A.y()/m_R1, A.x()/m_R0);
+	m_w1 = atan2(B.y()/m_R1, B.x()/m_R0);
 
 	if (nw == 1)
 	{
@@ -401,8 +404,8 @@ GM_ARC::GM_ARC(vec2d c, vec2d a, vec2d b, int nw)
 double GM_ARC::Coord(vec2d& q)
 {
 	vec2d e = q - m_c;
-	double w = atan2(e.y/m_R1, e.x/m_R0);
-	if (e.y < 0) w = -w;
+	double w = atan2(e.y()/m_R1, e.x() /m_R0);
+	if (e.y() < 0) w = -w;
 	if (w < m_w0) w += 2.0*PI;
 
 	assert(m_w1 != m_w0);
@@ -479,7 +482,7 @@ vec3d GM_CIRCLE_3P_ARC::Point(double l)
 	q.RotateVector(r2);
 	GM_CIRCLE_ARC c(vec2d(0, 0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y), m_winding);
 	vec2d a = c.Point(l);
-	vec3d p(a.x, a.y, 0);
+	vec3d p(a.x(), a.y(), 0);
 	qi.RotateVector(p);
 	vec3d r = p + m_c;
 	return r;

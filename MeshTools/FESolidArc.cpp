@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -55,20 +55,22 @@ FESolidArc::FESolidArc(GSolidArc* po)
 
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FEMesh* FESolidArc::BuildMesh()
+FSMesh* FESolidArc::BuildMesh()
 {
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FESolidArc::BuildMultiBlockMesh()
+bool FESolidArc::BuildMultiBlock()
 {
 	double R0 = m_pobj->GetFloatValue(GSolidArc::RIN);
 	double R1 = m_pobj->GetFloatValue(GSolidArc::ROUT);
-	double H  = m_pobj->GetFloatValue(GSolidArc::HEIGHT);
-	double w  = m_pobj->GetFloatValue(GSolidArc::ARC);
+	double H = m_pobj->GetFloatValue(GSolidArc::HEIGHT);
+	double w = m_pobj->GetFloatValue(GSolidArc::ARC);
 
 	// get mesh parameters
 	m_nd = GetIntValue(NDIV);
@@ -105,11 +107,11 @@ FEMesh* FESolidArc::BuildMultiBlockMesh()
 	MBBlock& b1 = m_MBlock[0];
 	b1.SetID(0);
 	b1.SetNodes(0, 1, 2, 3, 4, 5, 6, 7);
-	b1.SetSizes(m_nd, m_nd, m_nz);
+	b1.SetSizes(m_nd, m_ns, m_nz);
 	b1.SetZoning(1, m_gr, m_gz, false, m_br, m_bz);
 
 	// build MB data structures
-	UpdateMB();
+	BuildMB();
 
 	// set IDs of faces and edges
 	SetBlockFaceID(b1, 0, 1, 2, 3, 4, 5);
@@ -122,16 +124,34 @@ FEMesh* FESolidArc::BuildMultiBlockMesh()
 	MBFace& F6 = GetBlockFace(0, 5); SetFaceEdgeID(F6, 4, 5, 6, 7);
 
 	// set edge types
-	GetFaceEdge(F1, 0).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F1, 2).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F3, 0).SetWinding(-1).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F3, 2).SetWinding( 1).edge.m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 0).SetWinding(1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 2).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 0).SetWinding(-1).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 2).SetWinding(1).m_ntype = EDGE_ZARC;
+
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FESolidArc::BuildMultiBlockMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
 
 	// build mesh and return
 	return FEMultiBlockMesh::BuildMesh();
 }
 
-FEMesh* FESolidArc::BuildMeshLegacy()
+FSMesh* FESolidArc::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -174,7 +194,7 @@ FEMesh* FESolidArc::BuildMeshLegacy()
 	int nodes = (nd+1)*(nr+1)*(nz+1);
 	int elems = nd*nr*nz;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	double cosa, sina;
@@ -227,7 +247,7 @@ FEMesh* FESolidArc::BuildMeshLegacy()
 				x = R*cosa;
 				y = R*sina;
 
-				FENode& node = pm->Node(n);
+				FSNode& node = pm->Node(n);
 
 				node.r = vec3d(x, y, z);
 
@@ -267,7 +287,7 @@ FEMesh* FESolidArc::BuildMeshLegacy()
 		for (j=0; j<nd; ++j)
 			for (i=0; i<nr; ++i, ++n)
 			{
-				FEElement& e = pm->Element(n);
+				FSElement& e = pm->Element(n);
 				e.SetType(FE_HEX8);
 				e.m_gid = 0;
 
@@ -289,7 +309,7 @@ FEMesh* FESolidArc::BuildMeshLegacy()
 	return pm;
 }
 
-void FESolidArc::BuildFaces(FEMesh* pm)
+void FESolidArc::BuildFaces(FSMesh* pm)
 {
 	int i, j;
 
@@ -302,14 +322,14 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 	pm->Create(0,0,NF);
 
 	// build the faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 
 	// face 0
 	for (j=0; j<nz; ++j)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 0;
 			f.m_sid = 0;
@@ -325,7 +345,7 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 1;
 			f.m_sid = 1;
@@ -341,7 +361,7 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nd; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 2;
 			f.m_sid = 2;
@@ -357,7 +377,7 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 3;
 			f.m_sid = 3;
@@ -373,7 +393,7 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4;
 			f.m_sid = 4;
@@ -389,7 +409,7 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 	{
 		for (i=0; i<nr; ++i, ++pf)
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 5;
 			f.m_sid = 5;
@@ -402,7 +422,7 @@ void FESolidArc::BuildFaces(FEMesh* pm)
 
 }
 
-void FESolidArc::BuildEdges(FEMesh* pm)
+void FESolidArc::BuildEdges(FSMesh* pm)
 {
 	int i;
 
@@ -413,7 +433,7 @@ void FESolidArc::BuildEdges(FEMesh* pm)
 	// count edges
 	int nedges = 4*nd + 4*nz + 4*nr;
 	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 
 	for (i= 0; i<  nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 0; pe->n[0] = NodeIndex(nr, i,  0); pe->n[1] = NodeIndex(nr, i+1,  0); }
 	for (i= 0; i<  nd; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 2; pe->n[0] = NodeIndex(0 , i,  0); pe->n[1] = NodeIndex(0 , i+1,  0); }

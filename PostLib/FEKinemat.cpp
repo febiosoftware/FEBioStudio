@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEPostModel.h>
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 vec3d FEKinemat::KINE::apply(const vec3d& r)
@@ -45,7 +46,12 @@ vec3d FEKinemat::KINE::apply(const vec3d& r)
 //-----------------------------------------------------------------------------
 FEKinemat::FEKinemat()
 {
+	m_isKineValid = false;
+}
 
+bool FEKinemat::IsKineValid() const
+{
+	return m_isKineValid;
 }
 
 //-----------------------------------------------------------------------------
@@ -58,11 +64,18 @@ void FEKinemat::SetRange(int n0, int n1, int ni)
 	m_ni = ni;
 }
 
+int FEKinemat::States() const
+{
+	return m_State.size();
+}
+
 //-----------------------------------------------------------------------------
 bool FEKinemat::Apply(Post::FEPostModel* fem, const char* szkine)
 {
 	// read the kinematics file data
+	m_isKineValid = false;
 	if (ReadKine(szkine) == false) return false;
+	m_isKineValid = true;
 
 	// build the states
 	if (BuildStates(fem) == false) return false;
@@ -132,7 +145,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 
 	// get the initial coordinates
 	vector<vec3d> r0(NN);
-	for (int i=0; i<NN; ++i) r0[i] = fem.NodePosition(i, 0);
+	for (int i=0; i<NN; ++i) r0[i] = to_vec3d(fem.NodePosition(i, 0));
 
 	int NS = (int)m_State.size();
 	if (m_n0 >= NS) return false;
@@ -179,7 +192,7 @@ bool FEKinemat::BuildStates(Post::FEPostModel* pfem)
 
 			for (int i=0; i<NN; ++i)
 			{
-				FENode& nd = mesh.Node(i);
+				FSNode& nd = mesh.Node(i);
 				if (nd.m_ntag == 1)
 				{
 					const vec3d& r0_i = r0[i];

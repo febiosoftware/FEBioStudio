@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,7 @@ SOFTWARE.*/
 
 //! \todo PreView has trouble with reading surface elements and volume elements since
 //! the surface elements are not shell elements.
-FEGMshImport::FEGMshImport(FEProject& prj) : FEFileImport(prj)
+FEGMshImport::FEGMshImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_szline[0] = 0;
 	m_pm = 0;
@@ -41,14 +41,14 @@ FEGMshImport::FEGMshImport(FEProject& prj) : FEFileImport(prj)
 
 bool FEGMshImport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file
 	if (!Open(szfile, "rt")) return false;
 
 	// create a new mesh
-	m_pm = new FEMesh();
+	m_pm = new FSMesh();
 
 	bool ret = true;
 	while (fgets(m_szline, 255, m_fp))
@@ -145,7 +145,7 @@ bool FEGMshImport::ReadNodes()
 	// read the nodes
 	for (int i=0; i<nodes; ++i)
 	{
-		FENode& node = m_pm->Node(i);
+		FSNode& node = m_pm->Node(i);
 		vec3d& r = node.r;
 
 		fgets(m_szline, 255, m_fp);
@@ -187,8 +187,8 @@ bool FEGMshImport::ReadElements()
 	int nread = sscanf(m_szline, "%d", &elems);
 	if (nread != 1) return errf("Error while reading Element section");
 
-	vector<ELEMENT> Face;
-	vector<ELEMENT> Elem;
+	std::vector<ELEMENT> Face;
+	std::vector<ELEMENT> Elem;
 	Face.reserve(elems);
 	Elem.reserve(elems);
 
@@ -298,6 +298,26 @@ bool FEGMshImport::ReadElements()
             el.node[9] = m[8] - 1;
             Elem.push_back(el);
             break;
+        case 14: // 14-node pyramid
+            {
+                if (nread != 3 + ntags + 14) return errf("Invalid number of entries when reading element %d", n[0]);
+                el.ntype = FE_PYRA13;
+                el.node[0] = m[0] - 1;
+                el.node[1] = m[1] - 1;
+                el.node[2] = m[2] - 1;
+                el.node[3] = m[3] - 1;
+                el.node[4] = m[4] - 1;
+                el.node[ 5] = m[ 5] - 1;
+                el.node[ 6] = m[ 8] - 1;
+                el.node[ 7] = m[10] - 1;
+                el.node[ 8] = m[ 6] - 1;
+                el.node[ 9] = m[ 7] - 1;
+                el.node[10] = m[ 9] - 1;
+                el.node[11] = m[11] - 1;
+                el.node[12] = m[12] - 1;
+                Elem.push_back(el);
+            }
+                break;
         case 19: // 13-node pyramid
             {
                 if (nread != 3 + ntags + 13) return errf("Invalid number of entries when reading element %d", n[0]);
@@ -308,13 +328,13 @@ bool FEGMshImport::ReadElements()
                 el.node[3] = m[3] - 1;
                 el.node[4] = m[4] - 1;
                 el.node[ 5] = m[ 5] - 1;
-                el.node[ 6] = m[ 6] - 1;
-                el.node[ 7] = m[ 7] - 1;
-                el.node[ 8] = m[ 9] - 1;
-                el.node[ 9] = m[ 8] - 1;
-                el.node[10] = m[11] - 1;
-                el.node[11] = m[10] - 1;
-                el.node[12] = m[15] - 1;
+                el.node[ 6] = m[ 8] - 1;
+                el.node[ 7] = m[10] - 1;
+                el.node[ 8] = m[ 6] - 1;
+                el.node[ 9] = m[ 7] - 1;
+                el.node[10] = m[ 9] - 1;
+                el.node[11] = m[11] - 1;
+                el.node[12] = m[12] - 1;
                 Elem.push_back(el);
             }
             break;
@@ -383,7 +403,7 @@ bool FEGMshImport::ReadElements()
 		m_pm->Create(0, nelems, nfaces);
 		for (int i=0; i<nelems; ++i)
 		{
-			FEElement& el = m_pm->Element(i);
+			FSElement& el = m_pm->Element(i);
 			ELEMENT& e = Elem[i];
 
 			el.m_gid = e.gid;
@@ -460,7 +480,7 @@ bool FEGMshImport::ReadElements()
 
 		for (int i=0; i<nfaces; ++i)
 		{
-			FEFace& face = m_pm->Face(i);
+			FSFace& face = m_pm->Face(i);
 			ELEMENT& e = Face[i];
 
 			face.m_gid = e.gid;
@@ -497,7 +517,7 @@ bool FEGMshImport::ReadElements()
 		m_pm->Create(0, nfaces);
 		for (int i=0; i<nfaces; ++i)
 		{
-			FEElement& el = m_pm->Element(i);
+			FSElement& el = m_pm->Element(i);
 			ELEMENT& e = Face[i];
 
 			el.m_gid = e.gid;

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -200,7 +200,7 @@ void CStatePanel::Update(bool breset)
 	if (breset)
 	{
 		CPostDocument* pdoc = GetActiveDocument();
-		Post::FEPostModel* fem = (pdoc ? pdoc->GetFEModel() : nullptr);
+		Post::FEPostModel* fem = (pdoc ? pdoc->GetFSModel() : nullptr);
 		ui->data->SetFEModel(fem);
 	}
 }
@@ -218,7 +218,7 @@ void CStatePanel::on_addButton_clicked()
 	CDlgAddState dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFSModel();
 		int N = dlg.m_nstates;
 		int M = (N < 2 ? 1 : N - 1);
 		double t0 = dlg.m_minTime;
@@ -237,7 +237,7 @@ void CStatePanel::on_editButton_clicked()
 	CPostDocument* doc = GetActiveDocument();
 	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	QItemSelectionModel* selection = ui->list->selectionModel();
 	QModelIndexList selRows = selection->selectedRows();
 	int ncount = selRows.count();
@@ -265,7 +265,7 @@ void CStatePanel::on_deleteButton_clicked()
 	CPostDocument* doc = GetActiveDocument();
 	if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 	QItemSelectionModel* selection = ui->list->selectionModel();
 	QModelIndexList selRows = selection->selectedRows();
 

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,14 +38,12 @@ public:
 	FEMeshSmoothingModifier();
 
 	//! Apply the smoothing modifier
-	FEMesh* Apply(FEMesh* pm);
-	double area_triangle(vec3d r[3]);
-	double distance(vec3d x,vec3d y );
-	void Laplacian_Smoothing(FEMesh* pm,vector<int> hashmap);
-	void Laplacian_Smoothing2(FEMesh* pm,vector<int> hashmap);
-	void Taubin_Smoothing(FEMesh* pm,vector<int> hashmap);
-	void Crease_Enhancing_Diffusion(FEMesh* pm,vector<int> hashmap);
-	void Add_Noise(FEMesh* pm,vector<int> hashmap);
+	FSMesh* Apply(FSMesh* pm);
+	void Laplacian_Smoothing(FSMesh* pm, std::vector<int> hashmap);
+	void Laplacian_Smoothing2(FSMesh* pm, std::vector<int> hashmap);
+	void Taubin_Smoothing(FSMesh* pm, std::vector<int> hashmap);
+	void Crease_Enhancing_Diffusion(FSMesh* pm, std::vector<int> hashmap);
+	void Add_Noise(FSMesh* pm, std::vector<int> hashmap);
 public:
 	double	m_threshold1;
 	double	m_threshold2;

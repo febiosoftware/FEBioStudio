@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,13 +26,13 @@ SOFTWARE.*/
 #pragma once
 #include <MeshTools/FEFileExport.h>
 
-class FEProject;
+class FSProject;
 
 //-----------------------------------------------------------------------------
 class FEAbaqusExport : public FEFileExport
 {
 public:
-	FEAbaqusExport(FEProject& prj);
+	FEAbaqusExport(FSProject& prj);
 	~FEAbaqusExport(void);
 
 	bool Write(const char* szfile) override;

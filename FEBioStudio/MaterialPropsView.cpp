@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,12 +35,13 @@ SOFTWARE.*/
 #include "units.h"
 #include "PropertyList.h"
 #include <MeshTools/FEModel.h>
+#include <FEBioLink/FEBioInterface.h>
+#include "EditVariableParam.h"
 
-
-QStringList GetEnumValues(FEModel* fem, const char* ch)
+QStringList GetEnumValues(FSModel* fem, const char* ch)
 {
 	QStringList ops;
-	char sz[256] = { 0 };
+	char sz[512] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (fem)
@@ -60,63 +61,6 @@ QStringList GetEnumValues(FEModel* fem, const char* ch)
 	return ops;
 }
 
-//-----------------------------------------------------------------------------
-CEditVariableParam::CEditVariableParam(QWidget* parent) : QComboBox(parent)
-{
-	addItem("<constant>");
-	addItem("<math>");
-	addItem("<map>");
-
-	setEditable(true);
-	setInsertPolicy(QComboBox::NoInsert);
-	setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
-
-	m_param = nullptr;
-
-	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
-}
-
-void CEditVariableParam::setParam(Param* p)
-{
-	m_param = p;
-	if (p == nullptr) return;
-
-	blockSignals(true);
-	if (p->GetParamType() == Param_Type::Param_FLOAT)
-	{
-		setCurrentIndex(0);
-		setEditText(QString("%1").arg(p->GetFloatValue()));
-	}
-	else if (p->GetParamType() == Param_Type::Param_MATH)
-	{
-		setCurrentIndex(1);
-		setEditText(QString::fromStdString(p->GetMathString()));
-	}
-	else if (p->GetParamType() == Param_Type::Param_STRING)
-	{
-		setCurrentIndex(2);
-		setEditText(QString::fromStdString(p->GetStringValue()));
-	}
-	else
-	{
-		assert(false);
-	}
-	blockSignals(false);
-}
-
-void CEditVariableParam::onCurrentIndexChanged(int index)
-{
-	if (m_param == nullptr) return;
-
-	if (index == 0) m_param->SetParamType(Param_FLOAT);
-	if (index == 1) m_param->SetParamType(Param_MATH);
-	if (index == 2) m_param->SetParamType(Param_STRING);
-
-	setParam(m_param);
-
-	emit typeChanged();
-}
-
 class CMaterialPropsModel : public QAbstractItemModel
 {
 public:
@@ -131,7 +75,7 @@ public:
 	public:
 		CMaterialPropsModel*	m_model;
 
-		FEMaterial*		m_pm;			// material pointer
+		FSMaterial*		m_pm;			// material pointer
 		int				m_paramId;	// index of parameter (or -1 if this is property)
 		int				m_propId;		// index of property (or -1 if this is parameter)
 		int				m_matIndex;	// index into property's material array
@@ -146,7 +90,7 @@ public:
 
 	public:
 		Item() { m_model = nullptr; m_pm = nullptr; m_parent = nullptr; m_paramId = -1; m_propId = -1; m_matIndex = 0; m_nrow = -1; m_flag = 0;  }
-		Item(FEMaterial* pm, int paramId = -1, int propId = -1, int matIndex = 0, int nrow = -1) {
+		Item(FSMaterial* pm, int paramId = -1, int propId = -1, int matIndex = 0, int nrow = -1) {
 			m_model = nullptr;
 			m_pm = pm; m_paramId = paramId; m_propId = propId; m_matIndex = matIndex; m_nrow = nrow;
 			m_flag = (propId != -1 ? 1 : 0);
@@ -160,7 +104,7 @@ public:
 
 		Param* parameter() { return (m_paramId >= 0 ? m_pm->GetParamPtr(m_paramId) : nullptr); }
 
-		Item* addChild(FEMaterial* pm, int paramId, int propId, int matIndex)
+		Item* addChild(FSMaterial* pm, int paramId, int propId, int matIndex)
 		{
 			Item* item = new Item(pm, paramId, propId, matIndex, (int)m_children.size());
 			item->m_model = m_model; assert(m_model);
@@ -169,14 +113,13 @@ public:
 
 			if (propId >= 0)
 			{
-				FEMaterialProperty& p = pm->GetProperty(propId);
-				FEMaterial* pm = p.GetMaterial(matIndex);
-				if (pm) item->addChildren(pm);
+				FSMaterial* pmi = pm->GetMaterialProperty(propId, matIndex);
+				if (pmi) item->addChildren(pmi);
 			}
 			return item;
 		}
 
-		void addFiberParameters(FEOldFiberMaterial* pm)
+		void addFiberParameters(FSOldFiberMaterial* pm)
 		{
 			pm->UpdateData(false);
 			for (int i = 0; i < pm->Parameters(); ++i)
@@ -191,7 +134,7 @@ public:
 			}
 		}
 
-		void addParameters(FEMaterial* pm)
+		void addParameters(FSMaterial* pm)
 		{
 			pm->UpdateData(false);
 			for (int i = 0; i < pm->Parameters(); ++i)
@@ -203,7 +146,7 @@ public:
 						addChild(pm, i, -1, 0);
 					else if (p.IsPersistent() == false)
 					{
-						const FEMultiMaterial* mmat = dynamic_cast<const FEMultiMaterial*>(pm->GetParentMaterial());
+						const FSMultiMaterial* mmat = dynamic_cast<const FSMultiMaterial*>(pm->GetParentMaterial());
 						if (mmat)
 						{
 							addChild(pm, i, -1, 0);
@@ -213,13 +156,13 @@ public:
 			}
 		}
 
-		void addChildren(FEMaterial* pm)
+		void addChildren(FSMaterial* pm)
 		{
 			addParameters(pm);
 
-			if (dynamic_cast<FETransverselyIsotropic*>(pm))
+			if (dynamic_cast<FSTransverselyIsotropic*>(pm))
 			{
-				FETransverselyIsotropic* tiso = dynamic_cast<FETransverselyIsotropic*>(pm);
+				FSTransverselyIsotropic* tiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
 				addFiberParameters(tiso->GetFiberMaterial());
 			}
 			else if (pm->HasMaterialAxes())
@@ -229,18 +172,18 @@ public:
 
 			for (int i = 0; i < pm->Properties(); ++i)
 			{
-				FEMaterialProperty& p = pm->GetProperty(i);
+				FSProperty& p = pm->GetProperty(i);
 				int nc = p.Size();
 				for (int j = 0; j < nc; ++j) addChild(pm, -1, i, j);
 
-				if ((p.maxSize() == FEMaterialProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FEMaterialProperty::NON_EXTENDABLE) == 0))
+/*				if ((p.maxSize() == FSProperty::NO_FIXED_SIZE) && ((p.GetFlags() & FSProperty::NON_EXTENDABLE) == 0))
 				{
 					addChild(pm, -1, i, -1);
 				}
-			}
+*/			}
 		}
 
-		FEModel* GetFEModel();
+		FSModel* GetFSModel();
 
 		QVariant data(int column, int role)
 		{
@@ -277,11 +220,13 @@ public:
 					case Param_CHOICE:
 					case Param_INT:
 					{
-						int n = p.val<int>();
 						if (p.GetEnumNames())
 						{
-							return GetFEModel()->GetEnumValue(p.GetEnumNames(), n);
+							const char* sz = GetFSModel()->GetEnumKey(p);
+							if (sz == nullptr) sz = "(select)";
+							return sz;
 						}
+						int n = p.val<int>();
 						return n;
 					}
 					break;
@@ -318,10 +263,23 @@ public:
 						return v;
 					}
 					break;
+					case Param_MAT3DS:
+					{
+						QString v = Mat3dsToString(p.val<mat3ds>());
+						const char* szunit = p.GetUnit();
+						if (szunit)
+						{
+							QString unitString = Units::GetUnitString(szunit);
+							if (unitString.isEmpty() == false)
+								v += QString(" %1").arg(unitString);
+						}
+						return v;
+					}
+					break;
 					case Param_MATH:
 					{
 						string s = p.GetMathString();
-						QString v = QString::fromStdString(s);
+						QString v = QString("= ") + QString::fromStdString(s);
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -335,7 +293,7 @@ public:
 					case Param_STRING:
 					{
 						string s = p.GetStringValue();
-						QString v = QString::fromStdString(s);
+						QString v = QString("\"") + QString::fromStdString(s) + QString("\"");
 						const char* szunit = p.GetUnit();
 						if (szunit)
 						{
@@ -347,7 +305,7 @@ public:
 					}
 					break;
 					default:
-						assert(false);
+//						assert(false);
 						return "in progress";
 					}
 				}
@@ -363,6 +321,7 @@ public:
 					case Param_BOOL: return (p.val<bool>() ? 1 : 0); break;
 					case Param_VEC2I:return Vec2iToString(p.val<vec2i>()); break;
 					case Param_MAT3D: return Mat3dToString(p.val<mat3d>()); break;
+					case Param_MAT3DS: return Mat3dsToString(p.val<mat3ds>()); break;
 					case Param_MATH: return QString::fromStdString(p.GetMathString()); break;
 					case Param_STRING: return QString::fromStdString(p.GetStringValue()); break;
 					default:
@@ -373,7 +332,7 @@ public:
 			}
 			else if (m_propId >= 0)
 			{
-				FEMaterialProperty& p = m_pm->GetProperty(m_propId);
+				FSProperty& p = m_pm->GetProperty(m_propId);
 				if (column == 0)
 				{
 					QString s = QString::fromStdString(p.GetName());
@@ -382,7 +341,7 @@ public:
 						if (m_matIndex >= 0)
 						{
 							s += QString(" - %1").arg(m_matIndex + 1);
-							FEMaterial* pm = p.GetMaterial(m_matIndex);
+							FSMaterial* pm = m_pm->GetMaterialProperty(m_propId, m_matIndex);
 							if (pm && (pm->GetName().empty() == false))
 							{
 								QString name = QString::fromStdString(pm->GetName());
@@ -396,23 +355,27 @@ public:
 				}
 				else
 				{
-					FEMaterial* pm = (m_matIndex >= 0 ? p.GetMaterial(m_matIndex) : nullptr);
-					if (pm == nullptr) return QString("(select)");
-					else   if (dynamic_cast<FEReactionSpecies*>(pm))
+					FSMaterial* pm = (m_matIndex >= 0 ? m_pm->GetMaterialProperty(m_propId, m_matIndex) : nullptr);
+					if (pm == nullptr)
 					{
-						FEModel* fem = GetFEModel();
-						FEReactionSpecies* prm = dynamic_cast<FEReactionSpecies*>(pm);
+						bool required = (p.GetFlags() & FSProperty::REQUIRED);
+						return QString(required ? "(select)" : "(none)");
+					}
+					else   if (dynamic_cast<FSReactionSpecies*>(pm))
+					{
+						FSModel* fem = GetFSModel();
+						FSReactionSpecies* prm = dynamic_cast<FSReactionSpecies*>(pm);
 
 						int ntype = prm->GetSpeciesType();
 						int index = prm->GetIndex();
 						const char* sz = nullptr;
-						if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+						if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 						{
-							sz = fem->GetVariableName("$(Solutes)", index);
+							sz = fem->GetVariableName("$(solutes)", index);
 						}
-						else if (ntype == FEReactionSpecies::SBM_SPECIES)
+						else if (ntype == FSReactionSpecies::SBM_SPECIES)
 						{
-							sz = fem->GetVariableName("$(SBMs)", index);
+							sz = fem->GetVariableName("$(sbms)", index);
 						}
 						else
 						{
@@ -421,7 +384,7 @@ public:
 
 						return (sz ? sz : "(invalid species)");
 					}
-					else return pm->TypeStr();
+					else return pm->GetTypeString();
 				}
 			}
 			else return "No data";
@@ -452,6 +415,7 @@ public:
 				case Param_VEC3D: p.SetVec3dValue(StringToVec3d(value.toString())); break;
 				case Param_VEC2I: p.SetVec2iValue(StringToVec2i(value.toString())); break;
 				case Param_MAT3D: p.SetMat3dValue(StringToMat3d(value.toString())); break;
+				case Param_MAT3DS: p.SetMat3dsValue(StringToMat3ds(value.toString())); break;
 				case Param_BOOL:
 				{
 					int n = value.toInt();
@@ -461,12 +425,19 @@ public:
 				case Param_MATH:
 				{
 					string s = value.toString().toStdString();
+					if ((s.empty() == false) && (s[0] == '=')) s.erase(s.begin());
 					p.SetMathString(s);
 				}
 				break;
 				case Param_STRING:
 				{
 					string s = value.toString().toStdString();
+					if ((s.empty() == false) && (s[0] == '\"'))
+					{
+						s.erase(s.begin());
+						size_t n = s.rfind('\"');
+						if (n != string::npos) s.erase(s.begin() + n);
+					}
 					p.SetStringValue(s);
 				}
 				break;
@@ -480,23 +451,23 @@ public:
 			{
 				int matId = value.toInt();
 
-				FEMaterialProperty& matProp = m_pm->GetProperty(m_propId);
+				FSProperty& matProp = m_pm->GetProperty(m_propId);
 
 				if (matId == -2)
 				{
-					FEMaterial* pm = matProp.GetMaterial(m_matIndex);
-					if (pm) matProp.RemoveMaterial(pm);
+					FSMaterial* pm = m_pm->GetMaterialProperty(m_propId, m_matIndex);
+					if (pm) matProp.RemoveComponent(pm);
 				}
 				else
 				{
 					// check if this is a different type
 					if (m_matIndex >= 0)
 					{
-						FEMaterial* oldMat = m_pm->GetProperty(m_propId).GetMaterial();
+						FSMaterial* oldMat = m_pm->GetMaterialProperty(m_propId, m_matIndex);
 
-						if (dynamic_cast<FEReactionSpecies*>(oldMat))
+						if (dynamic_cast<FSReactionSpecies*>(oldMat))
 						{
-							FEReactionSpecies* rs = dynamic_cast<FEReactionSpecies*>(oldMat);
+							FSReactionSpecies* rs = dynamic_cast<FSReactionSpecies*>(oldMat);
 							rs->SetIndex(matId);
 							return true;
 						}
@@ -509,14 +480,24 @@ public:
 					}
 
 					FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-					FEMaterial* pmat = MF.Create(value.toInt());
+					FSMaterial* pmat = nullptr;
+					if (matProp.GetPropertyType() < FE_FEBIO_MATERIAL_CLASS)
+					{
+						pmat = MF.Create(GetFSModel(), value.toInt());
+					}
+					else if (matId > 0)
+					{
+						pmat = MF.Create(GetFSModel(), FE_FEBIO_MATERIAL);
+//						FEBio::CreateMaterial(matId, dynamic_cast<FEBioMaterial*>(pmat));
+					}
+
 					if (pmat)
 					{
 						if (m_matIndex >= 0)
-							m_pm->GetProperty(m_propId).SetMaterial(pmat, m_matIndex);
+							m_pm->GetProperty(m_propId).SetComponent(pmat, m_matIndex);
 						else
 						{
-							m_pm->GetProperty(m_propId).AddMaterial(pmat);
+							m_pm->GetProperty(m_propId).AddComponent(pmat);
 						}
 					}
 				}
@@ -682,7 +663,7 @@ private:
 	bool		m_valid;
 };
 
-FEModel* CMaterialPropsModel::Item::GetFEModel()
+FSModel* CMaterialPropsModel::Item::GetFSModel()
 {
 	return m_model->m_mat->GetModel();
 }
@@ -692,6 +673,7 @@ CMaterialPropsDelegate::CMaterialPropsDelegate(QObject* parent) : QStyledItemDel
 
 // in MaterialEditor.cpp
 void FillComboBox(QComboBox* pc, int nclass, int module, bool btoplevelonly);
+void FillComboBox2(QComboBox* pc, int nclass, int module, bool btoplevelonly);
 
 QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
@@ -727,12 +709,22 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				QLineEdit* pw = new QLineEdit(parent);
 				return pw;
 			}
+			if (p->GetParamType() == Param_MAT3D)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
+			if (p->GetParamType() == Param_MAT3DS)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
 			if ((p->GetParamType() == Param_INT) || (p->GetParamType() == Param_CHOICE))
 			{
 				if (p->GetEnumNames())
 				{
 					QComboBox* box = new QComboBox(parent);
-					QStringList enumValues = GetEnumValues(item->GetFEModel(), p->GetEnumNames());
+					QStringList enumValues = GetEnumValues(item->GetFSModel(), p->GetEnumNames());
 					box->addItems(enumValues);
 					QObject::connect(box, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 					return box;
@@ -745,29 +737,34 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 				QObject::connect(pw, SIGNAL(currentIndexChanged(int)), this, SLOT(OnEditorSignal()));
 				return pw;
 			}
+			if (p->GetParamType() == Param_STRING)
+			{
+				QLineEdit* pw = new QLineEdit(parent);
+				return pw;
+			}
 		}
 		else if (item->isProperty())
 		{
-			FEMaterial* pm = item->m_pm;
-			FEMaterialProperty& matProp = pm->GetProperty(item->m_propId);
-			FEMaterial* pmat = pm->GetProperty(item->m_propId).GetMaterial(item->m_matIndex);
+			FSMaterial* pm = item->m_pm;
+			FSProperty& matProp = pm->GetProperty(item->m_propId);
+			FSMaterial* pmat = pm->GetMaterialProperty(item->m_propId, item->m_matIndex);
 
 			QComboBox* pc = new QComboBox(parent);
 
-			if (dynamic_cast<FEReactionSpecies*>(pmat))
+			if (dynamic_cast<FSReactionSpecies*>(pmat))
 			{
-				FEReactionSpecies* rs = dynamic_cast<FEReactionSpecies*>(pmat);
-				FEModel& fem = *item->GetFEModel();
+				FSReactionSpecies* rs = dynamic_cast<FSReactionSpecies*>(pmat);
+				FSModel& fem = *item->GetFSModel();
 				int ntype = rs->GetSpeciesType();
 				int index = rs->GetIndex();
 				char buf[1024] = { 0 };
-				if (ntype == FEReactionSpecies::SBM_SPECIES)
+				if (ntype == FSReactionSpecies::SBM_SPECIES)
 				{
-					fem.GetVariableNames("$(SBMs)", buf);
+					fem.GetVariableNames("$(sbms)", buf);
 				}
-				else if (ntype == FEReactionSpecies::SOLUTE_SPECIES)
+				else if (ntype == FSReactionSpecies::SOLUTE_SPECIES)
 				{
-					fem.GetVariableNames("$(Solutes)", buf);
+					fem.GetVariableNames("$(solutes)", buf);
 				}
 				else
 				{
@@ -785,18 +782,18 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			}
 			else
 			{
-				FillComboBox(pc, matProp.GetClassID(), 0xFFFF, false);
+				FillComboBox2(pc, matProp.GetPropertyType(), 0xFFFF, false);
 
 				pc->insertSeparator(pc->count());
 				pc->addItem("(remove)", -2);
 
 				if (pmat)
 				{
-					int index = pmat->Type();
+					QString typeStr = pmat->GetTypeString();
 					for (int i = 0; i < pc->count(); ++i)
 					{
-						int matid = pc->itemData(i, Qt::UserRole).toInt();
-						if (matid == index)
+						QString txti = pc->itemText(i);
+						if (typeStr == txti)
 						{
 							pc->setCurrentIndex(i);
 							break;
@@ -811,7 +808,9 @@ QWidget* CMaterialPropsDelegate::createEditor(QWidget* parent, const QStyleOptio
 			return pc;
 		}
 	}
-	return QStyledItemDelegate::createEditor(parent, option, index);
+	QWidget* pw = QStyledItemDelegate::createEditor(parent, option, index);
+	pw->setSizePolicy(QSizePolicy::Expanding, pw->sizePolicy().verticalPolicy());
+	return pw;
 }
 
 void CMaterialPropsDelegate::setEditorData(QWidget* editor, const QModelIndex& index) const

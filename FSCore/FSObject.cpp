@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FSObject.h"
 
-FSObject::FSObject(FSObject* parent) : m_parent(parent)
+FSObject::FSObject(FSObject* parent) : m_parent(parent), m_typeStr("")
 {
 
 }
@@ -74,7 +74,6 @@ void FSObject::SetParent(FSObject* parent)
 
 size_t FSObject::RemoveChild(FSObject* po)
 {
-	assert(false);
 	return -1;
 }
 
@@ -128,4 +127,10 @@ bool FSObject::Update(bool b)
 bool FSObject::UpdateData(bool bsave)
 {
 	return false;
+}
+
+bool FSObject::IsType(const char* sztype) const
+{
+	const char* sz = GetTypeString();
+	return (strcmp(sz, sztype) == 0);
 }

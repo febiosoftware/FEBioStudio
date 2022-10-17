@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,10 +28,10 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEPLYImport : public FEFileImport
+class FEPLYImport : public FSFileImport
 {
 public:
-	FEPLYImport(FEProject& prj);
+	FEPLYImport(FSProject& prj);
 	~FEPLYImport();
 
 	bool Load(const char* szfile);
@@ -40,5 +40,5 @@ private:
 	bool read_file(const char* szfile);
 
 private:
-	FESurfaceMesh* m_mesh;
+	FSSurfaceMesh* m_mesh;
 };

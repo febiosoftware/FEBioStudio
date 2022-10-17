@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 using std::vector;
 
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class FECurveMesh;
 
 class FELoftMesher
@@ -42,11 +42,11 @@ public:
 
 	void setDivisions(int n) { m_ndivs = n; }
 
-	FESurfaceMesh* Apply(vector<FECurveMesh*> curve);
+	FSSurfaceMesh* Apply(vector<FECurveMesh*> curve);
 
 private:
-	FESurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
-	FESurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
+	FSSurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
+	FSSurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
 
 private:
 	int m_elem;

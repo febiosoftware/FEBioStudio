@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FSObject.h"
 #include <vector>
+#include <algorithm>
 
 class FSObjectList_ : public FSObject
 {
@@ -70,6 +71,16 @@ public:
 	}
 
 protected:
+	FSObject* replace(int i, FSObject* po)
+	{
+		FSObject* old = m_obs[i];
+		old->SetParent(nullptr);
+		po->SetParent(this);
+		m_obs[i] = po;
+		return old;
+	}
+
+protected:
 	std::vector<FSObject*>	m_obs;
 };
 
@@ -102,6 +113,11 @@ public:
 		InsertChild(pos, obj);
 	}
 
+	T* Replace(int i, T* po)
+	{
+		return dynamic_cast<T*>(replace(i, po));
+	}
+
 	T* operator [] (size_t i) { return dynamic_cast<T*>(m_obs[i]); }
 	const T* operator [] (size_t i) const { return dynamic_cast<T*>(m_obs[i]); }
 
@@ -109,6 +125,14 @@ public:
 	{
 		m_obs[pos] = obj;
 	}
+
+    void Move(size_t oldIndex, size_t newIndex)
+    {
+        if (oldIndex > newIndex)
+            std::rotate(m_obs.rend() - oldIndex - 1, m_obs.rend() - oldIndex, m_obs.rend() - newIndex);
+        else        
+            std::rotate(m_obs.begin() + oldIndex, m_obs.begin() + oldIndex + 1, m_obs.begin() + newIndex + 1);
+    }
 
 protected:
 	size_t RemoveChild(FSObject* po) override

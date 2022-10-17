@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,6 +34,19 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/GModel.h>
+//---------------------------------------
+// NOTE: We need to include these FEBio files to make sure we get the correct
+//       implementations for the type_to_string and string_to_type functions.
+#include <FEBio/FEBioFormat.h>
+#include <FEBio/FEBioExport.h>
+//#include <XML/XMLWriter.h>
+//#include <XML/XMLReader.h>
+//---------------------------------------
+#include <XPLTLib/xpltFileReader.h>
+#include <FSCore/ClassDescriptor.h>
+#include "PostSessionFile.h"
+#include "units.h"
+#include "GLPostScene.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -97,7 +110,7 @@ void ModelData::ReadData(Post::CGLModel* po)
 	}
 
 	// displacement map
-	Post::FEPostModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFSModel();
 	m_dmap.m_nfield = ps->GetDisplacementField();
 
 	// materials 
@@ -144,7 +157,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 	}
 
 	// displacement map
-	Post::FEPostModel* ps = po->GetFEModel();
+	Post::FEPostModel* ps = po->GetFSModel();
 	ps->SetDisplacementField(m_dmap.m_nfield);
 
 	// materials
@@ -159,7 +172,7 @@ void ModelData::WriteData(Post::CGLModel* po)
 		Post::FEPostMesh* pmesh = po->GetActiveMesh();
 		for (int i = 0; i<N; ++i)
 		{
-			Post::FEMaterial* pm = ps->GetMaterial(i);
+			Post::Material* pm = ps->GetMaterial(i);
 			if (pm->bvisible == false) po->HideMaterial(i);
 		}
 	}
@@ -203,6 +216,14 @@ void ModelData::WriteData(Post::CGLModel* po)
 	int ntime = m_mdl.m_ntime;
 	if (ntime >= ps->GetStates() - 1) ntime = ps->GetStates() - 1;
 	po->SetCurrentTimeIndex(ntime);
+
+	// give the plots a chance to reload data if necessary
+	for (int i = 0; i < po->Plots(); ++i)
+	{
+		Post::CGLPlot* plt = po->Plot(i);
+		plt->Reload();
+	}
+
 	po->Update(false);
 }
 
@@ -214,6 +235,11 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_fem = new Post::FEPostModel;
 	m_postObj = nullptr;
 	m_glm = nullptr;
+	m_sel = nullptr;
+
+	m_binit = false;
+
+	m_scene = new CGLPostScene(this);
 
 	SetItemMode(ITEM_ELEM);
 }
@@ -228,6 +254,10 @@ CPostDocument::~CPostDocument()
 
 	delete m_glm; m_glm = nullptr;
 	delete m_fem;
+	if (m_sel) delete m_sel;
+
+	delete m_scene;
+	m_scene = nullptr;
 }
 
 void CPostDocument::Clear()
@@ -244,6 +274,13 @@ void CPostDocument::Clear()
 
 bool CPostDocument::Initialize()
 {
+	// the init flag is only used when reading a session to prevent Initialize from getting called twice
+	if (m_binit)
+	{
+		m_binit = false;
+		return true;
+	}
+
 	assert(m_fem);
 	m_fem->UpdateBoundingBox();
 
@@ -283,7 +320,7 @@ bool CPostDocument::Initialize()
 		// map colors from modeldoc
 		if (m_doc)
 		{
-			::FEModel& docfem = *m_doc->GetFEModel();
+			FSModel& docfem = *m_doc->GetFSModel();
 			GModel* mdl = m_doc->GetGModel();
 
 			int mats = docfem.Materials();
@@ -294,7 +331,7 @@ bool CPostDocument::Initialize()
 				{
 					GLColor c = docfem.GetMaterial(i)->Diffuse();
 
-					Post::FEMaterial* mat = m_fem->GetMaterial(i);
+					Post::Material* mat = m_fem->GetMaterial(i);
 					mat->ambient = c;
 					mat->diffuse = c;
 				}
@@ -302,11 +339,22 @@ bool CPostDocument::Initialize()
 				for (int i = 0; i < dmats; ++i)
 				{
 					GLColor c = mdl->DiscreteObject(i)->GetColor();
-					Post::FEMaterial* mat = m_fem->GetMaterial(i + mats);
+					Post::Material* mat = m_fem->GetMaterial(i + mats);
 					mat->ambient = c;
 					mat->diffuse = c;
 				}
 			}
+		}
+	}
+
+	xpltFileReader* reader = dynamic_cast<xpltFileReader*>(GetFileReader());
+	if (reader)
+	{
+		const char* szunits = reader->GetUnits();
+		if (szunits)
+		{
+			int n = Units::FindUnitSytemFromName(szunits);
+			SetUnitSystem(n);
 		}
 	}
 
@@ -328,7 +376,7 @@ int CPostDocument::GetStates()
 	return m_fem->GetStates();
 }
 
-Post::FEPostModel* CPostDocument::GetFEModel()
+Post::FEPostModel* CPostDocument::GetFSModel()
 {
 	return m_fem;
 }
@@ -370,6 +418,12 @@ void CPostDocument::ActivateColormap(bool bchecked)
 	Post::CGLModel* po = m_glm;
 	po->GetColorMap()->Activate(bchecked);
 	UpdateFEModel();
+}
+
+void CPostDocument::Activate()
+{
+	Post::FEPostModel::SetInstance(m_fem);
+	CGLDocument::Activate();
 }
 
 void CPostDocument::DeleteObject(Post::CGLObject* po)
@@ -427,7 +481,23 @@ std::string CPostDocument::GetFieldString()
 	if (IsValid())
 	{
 		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
-		return GetFEModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+		return GetFSModel()->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+	}
+	else return "";
+}
+
+std::string CPostDocument::GetFieldUnits()
+{
+	if (IsValid())
+	{
+		int nfield = GetGLModel()->GetColorMap()->GetEvalField();
+		const char* szunits = GetFSModel()->GetDataManager()->getDataUnits(nfield);
+		if (szunits)
+		{
+			QString s = QString("(%1)").arg(Units::GetUnitString(szunits));
+			return s.toStdString();
+		}
+		else return "";
 	}
 	else return "";
 }
@@ -440,7 +510,7 @@ float CPostDocument::GetTimeValue()
 
 float CPostDocument::GetTimeValue(int n)
 {
-	if (m_glm) return m_glm->GetFEModel()->GetTimeValue(n);
+	if (m_glm) return m_glm->GetFSModel()->GetTimeValue(n);
 	else return 0.f;
 }
 
@@ -509,26 +579,26 @@ BOX CPostDocument::GetSelectionBox()
 			for (int j = 0; j < nel; ++j) box += mesh.Node(el.m_node[j]).r;
 		}
 
-		const vector<FEFace*> selFaces = GetGLModel()->GetFaceSelection();
+		const vector<FSFace*> selFaces = GetGLModel()->GetFaceSelection();
 		for (int i = 0; i < (int)selFaces.size(); ++i)
 		{
-			FEFace& face = *selFaces[i];
+			FSFace& face = *selFaces[i];
 			int nel = face.Nodes();
 			for (int j = 0; j < nel; ++j) box += mesh.Node(face.n[j]).r;
 		}
 
-		const vector<FEEdge*> selEdges = GetGLModel()->GetEdgeSelection();
+		const vector<FSEdge*> selEdges = GetGLModel()->GetEdgeSelection();
 		for (int i = 0; i < (int)selEdges.size(); ++i)
 		{
-			FEEdge& edge = *selEdges[i];
+			FSEdge& edge = *selEdges[i];
 			int nel = edge.Nodes();
 			for (int j = 0; j < nel; ++j) box += mesh.Node(edge.n[j]).r;
 		}
 
-		const vector<FENode*> selNodes = GetGLModel()->GetNodeSelection();
+		const vector<FSNode*> selNodes = GetGLModel()->GetNodeSelection();
 		for (int i = 0; i < (int)selNodes.size(); ++i)
 		{
-			FENode& node = *selNodes[i];
+			FSNode& node = *selNodes[i];
 			box += node.r;
 		}
 	}
@@ -545,6 +615,24 @@ BOX CPostDocument::GetSelectionBox()
 	return box;
 }
 
+FESelection* CPostDocument::GetCurrentSelection()
+{
+	if (m_sel) { delete m_sel; m_sel = nullptr; }
+
+	FSMesh* pm = GetGLModel()->GetActiveMesh();
+
+	int selectionMode = m_vs.nitem;
+	switch (selectionMode)
+	{
+	case ITEM_NODE: m_sel = new FENodeSelection(nullptr, pm); break;
+	case ITEM_EDGE: m_sel = new FEEdgeSelection(nullptr, pm); break;
+	case ITEM_FACE: m_sel = new FEFaceSelection(nullptr, pm); break;
+	case ITEM_ELEM: m_sel = new FEElementSelection(nullptr, pm); break;
+	}
+
+	return m_sel;
+}
+
 std::string CPostDocument::GetFileName()
 {
 	return m_fileName;
@@ -553,7 +641,23 @@ std::string CPostDocument::GetFileName()
 
 bool CPostDocument::IsValid()
 {
-	return ((m_glm != nullptr) && (m_glm->GetFEModel() != nullptr) && (m_postObj != nullptr));
+	return ((m_glm != nullptr) && (m_glm->GetFSModel() != nullptr) && (m_postObj != nullptr));
+}
+
+void CPostDocument::SetModifiedFlag(bool bset)
+{
+	// ignore this, since post docs can't be saved anyways
+}
+
+void CPostDocument::SetInitFlag(bool b)
+{
+	m_binit = b;
+}
+
+void CPostDocument::UpdateSelection(bool report)
+{
+	Post::CGLModel* mdl = GetGLModel();
+	if (mdl) mdl->UpdateSelectionLists();
 }
 
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)
@@ -564,7 +668,7 @@ void CPostDocument::ApplyPalette(const Post::CPalette& pal)
 	{
 		GLColor c = pal.Color(i % NCOL);
 
-		Post::FEMaterial& m = *m_fem->GetMaterial(i);
+		Post::Material& m = *m_fem->GetMaterial(i);
 		m.diffuse = c;
 		m.ambient = c;
 		m.specular = GLColor(128, 128, 128);
@@ -633,4 +737,19 @@ bool CPostDocument::MergeFEModel(Post::FEPostModel* fem)
 	// we assume that the merge did not break the model
 	// so we can always reinitialize
 	return Initialize() && bret;
+}
+
+//-------------------------------------------------------------------------------------------
+//! save to session file
+bool CPostDocument::SavePostSession(const std::string& fileName)
+{
+	PostSessionFileWriter writer(this);
+	return writer.Write(fileName.c_str());
+}
+
+//-------------------------------------------------------------------------------------------
+void CPostDocument::SetGLModel(Post::CGLModel* glm)
+{
+	if (m_glm) delete m_glm;
+	m_glm = glm;
 }

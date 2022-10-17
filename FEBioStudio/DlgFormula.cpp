@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QMessageBox>
 #include <QCheckBox>
-#include <MathLib/MathParser.h>
+#include <FECore/MathObject.h>
 
 CDlgFormula::CDlgFormula(QWidget* parent) : QDialog(parent)
 {
@@ -128,7 +128,7 @@ void CDlgFormula::accept()
 	QDialog::accept();
 }
 
-std::vector<LOADPOINT> CDlgFormula::GetPoints()
+std::vector<vec2d> CDlgFormula::GetPoints()
 {
 	QString math = GetMath();
 	std::string smath = math.toStdString();
@@ -137,24 +137,17 @@ std::vector<LOADPOINT> CDlgFormula::GetPoints()
 	double fmax = GetMax();
 	int samples = GetSamples();
 
-	std::vector<LOADPOINT> pts;
-	CMathParser m;
+	std::vector<vec2d> pts;
+	MSimpleExpression m;
+	MVariable* tvar = m.AddVariable("t");
+	m.Create(smath);
 	int ierr;
-	LOADPOINT pt;
 	for (int i = 0; i<samples; ++i)
 	{
-		pt.time = fmin + i*(fmax - fmin) / (samples - 1);
-		m.set_variable("t", pt.time);
-
-		pt.load = m.eval(smath.c_str(), ierr);
-
-		pts.push_back(pt);
-
-		if (ierr != 0)
-		{
-			pts.clear();
-			break;
-		}
+		double x = fmin + i*(fmax - fmin) / (samples - 1);
+		tvar->value(x);
+		double y = m.value();
+		pts.push_back(vec2d(x, y));
 	}
 
 	return pts;

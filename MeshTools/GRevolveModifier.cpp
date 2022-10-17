@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
 #include "FETetGenMesher.h"
+using namespace std;
 
 //-----------------------------------------------------------------------------
 GRevolveModifier::GRevolveModifier()
@@ -109,7 +110,7 @@ void GRevolveModifier::Apply(GObject* po)
 				rp.z = sw * r.x + cw * r.z;
 
 				// add the new node
-				nn[N*(i + 1) + j] = po->AddNode(rp, n.Type());
+				nn[N*(i + 1) + j] = po->AddNode(rp, n.Type())->GetLocalID();
 			}
 			else
 				nn[N*(i + 1) + j] = j;
@@ -247,7 +248,7 @@ void GRevolveModifier::Apply(GObject* po)
 	assert(po->Parts()==1);
 
 	// but we should have one for each face
-	for (int i=1; i<F*D; ++i) po->AddPart();
+	for (int i=1; i<F*D; ++i) po->AddSolidPart();
 	int NP = po->Parts();
 
 	if (F == 0)
@@ -315,7 +316,7 @@ GMesh* GRevolveModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GRevolveModifier::BuildFEMesh(GObject* po)
+FSMesh* GRevolveModifier::BuildFEMesh(GObject* po)
 {
 	FETetGenMesher tet(po);
 	tet.SetFloatValue(FETetGenMesher::ELSIZE, 0.2);

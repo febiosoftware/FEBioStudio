@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include "Commands.h"
 
 //=======================================================================================
-SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg)
+SurfaceModifierThread::SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg)
 {
 	m_doc = doc;
 	m_mod = mod;
@@ -92,7 +92,7 @@ REGISTER_CLASS(FEEdgeFlip                 , CLASS_SURFACE_MODIFIER, "Flip edges"
 REGISTER_CLASS(FERefineSurface            , CLASS_SURFACE_MODIFIER, "Refine"       , 0xFF);
 REGISTER_CLASS(FECurveIntersect           , CLASS_SURFACE_MODIFIER, "Project Curve", 0xFF);
 REGISTER_CLASS(FEWeldSurfaceNodes         , CLASS_SURFACE_MODIFIER, "Weld Nodes"   , 0xFF);
-REGISTER_CLASS(FEMMGSurfaceRemesh         , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
+REGISTER_CLASS(MMGSurfaceRemesh         , CLASS_SURFACE_MODIFIER, "MMG Remesh"   , 0xFF);
 
 class CPartitionProps : public CDataPropertyList
 {
@@ -150,7 +150,15 @@ void CEditPanel::Update(bool breset)
 
 	// make sure the active object has changed
 	GObject* activeObject = doc->GetActiveObject();
-	if (activeObject == ui->m_currenObject) return;
+	if (breset) ui->m_currenObject = nullptr;
+
+	if (activeObject == ui->m_currenObject)
+	{
+		// only update position
+		vec3d r = activeObject->GetTransform().GetPosition();
+		ui->SetObjectPosition(r);
+		return;
+	}
 
 	ui->m_currenObject = activeObject;
 
@@ -159,10 +167,16 @@ void CEditPanel::Update(bool breset)
 	if (activeObject == 0)
 	{
 		ui->showParametersPanel(false);
+		ui->showPositionPanel(false);
 		ui->showButtonsPanel(false);
 	}
 	else
 	{
+		ui->showPositionPanel(true);
+
+		vec3d r = activeObject->GetTransform().GetPosition();
+		ui->SetObjectPosition(r);
+
 		if (activeObject->Parameters() > 0)
 		{
 			ui->setPropertyList(new CObjectProps(activeObject));
@@ -198,7 +212,7 @@ void CEditPanel::on_apply_clicked(bool b)
 	if (activeObject == 0) return;
 
 	// check for a FE mesh
-	FEMesh* pm = activeObject->GetFEMesh();
+	FSMesh* pm = activeObject->GetFEMesh();
 	if (pm)
 	{
 		if (QMessageBox::question(this, "Apply Changes", "This object has a mesh. This mesh has to be discarded before the changes can be applied.\nDo you wish to discard the mesh?", QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
@@ -215,10 +229,10 @@ void CEditPanel::on_apply_clicked(bool b)
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 			FESelection* sel = doc->GetCurrentSelection();
 			FEItemListBuilder* list = sel->CreateItemList();
-			FEGroup* g = 0;
+			FSGroup* g = 0;
 			if (sel->Size() > 0)
 			{
-				g = dynamic_cast<FEGroup*>(list);
+				g = dynamic_cast<FSGroup*>(list);
 				if (g == 0) { delete list; list = 0; }
 			}
 
@@ -313,6 +327,36 @@ void CEditPanel::on_menu_triggered(QAction* pa)
 	GetMainWindow()->Update(this, true);
 }
 
+void CEditPanel::updateObjectPosition()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	GObject* po = pdoc->GetActiveObject();
+	if (po == nullptr) return;
+
+	vec3d r = ui->objectPosition();
+	Transform t = po->GetTransform();
+	t.SetPosition(r);
+
+	pdoc->DoCommand(new CCmdTransformObject(po, t));
+	
+	GetMainWindow()->RedrawGL();
+}
+
+void CEditPanel::on_posX_editingFinished()
+{
+	updateObjectPosition();
+}
+
+void CEditPanel::on_posY_editingFinished()
+{
+	updateObjectPosition();
+}
+
+void CEditPanel::on_posZ_editingFinished()
+{
+	updateObjectPosition();
+}
+
 void CEditPanel::on_buttons_buttonSelected(int id)
 {
 	ui->m_nid = id;
@@ -331,7 +375,7 @@ void CEditPanel::on_buttons_buttonSelected(int id)
 
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 
-			GModel* geo = &doc->GetFEModel()->GetModel();
+			GModel* geo = &doc->GetFSModel()->GetModel();
 
 			CPropertyList* pl = 0;
 			if (dynamic_cast<FECurveIntersect*>(ui->m_mod)) pl = new CCurveIntersectProps(geo, dynamic_cast<FECurveIntersect*>(ui->m_mod));

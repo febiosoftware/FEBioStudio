@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,61 +39,80 @@ SOFTWARE.*/
 #include <QFontComboBox>
 #include <QSpinBox>
 #include <QGroupBox>
+#include <QPushButton>
 #include <GLWLib/GLWidget.h>
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include "CColorButton.h"
 #include "GLWLib/convert.h"
 #include "MainWindow.h"
 
-class CFontWidget : public QGroupBox
+//=================================================================================================
+class CFontWidgetUI
 {
 public:
-	QFontComboBox*	pfontStyle;
-	QSpinBox*		pfontSize;
-	CColorButton*	pfontColor;
-	QCheckBox		*pfontBold, *pfontItalic;
-
-	void setFont(const QFont& font, const QColor& col)
-	{
-		pfontStyle->setCurrentFont(font);
-		pfontSize->setValue(font.pointSize());
-		pfontBold->setChecked(font.bold());
-		pfontItalic->setChecked(font.italic());
-		pfontColor->setColor(col);
-	}
-
-	QFont getFont() const
-	{
-		QFont font(pfontStyle->currentFont().family(), pfontSize->value());
-		font.setBold(pfontBold->isChecked());
-		font.setItalic(pfontItalic->isChecked());
-		return font;
-	}
-
-	QColor getFontColor() const
-	{
-		return pfontColor->color();
-	}
-
-public:
-	CFontWidget(QWidget* parent = 0) : QGroupBox("Font", parent)
-	{
-		QGridLayout* pgrid = new QGridLayout;
-		pfontStyle = new QFontComboBox;
-		QLabel* label = new QLabel("Font:"); label->setBuddy(pfontStyle);
-		pgrid->addWidget(label, 0, 0); pgrid->addWidget(pfontStyle, 0, 1, 1, 3);
-		pfontSize = new QSpinBox;
-		label = new QLabel("Size:"); label->setBuddy(pfontSize);
-		pgrid->addWidget(label, 1, 0); pgrid->addWidget(pfontSize, 1, 1);
-		pfontColor = new CColorButton;
-		label = new QLabel("Color:"); label->setBuddy(pfontColor);
-		pgrid->addWidget(label, 0, 4, 1, 1, Qt::AlignRight); pgrid->addWidget(pfontColor, 0, 5);
-		pgrid->addWidget(pfontBold   = new QCheckBox("bold"  ), 1, 2);
-		pgrid->addWidget(pfontItalic = new QCheckBox("italic"), 1, 3);
-		setLayout(pgrid);
-	}
+	QFontComboBox* pfontStyle;
+	QSpinBox* pfontSize;
+	CColorButton* pfontColor;
+	QCheckBox* pfontBold, * pfontItalic;
 };
 
+CFontWidget::CFontWidget(QWidget* parent) : QGroupBox("Font", parent), ui(new CFontWidgetUI)
+{
+	QGridLayout* pgrid = new QGridLayout;
+	ui->pfontStyle = new QFontComboBox;
+	QLabel* label = new QLabel("Font:"); label->setBuddy(ui->pfontStyle);
+	pgrid->addWidget(label, 0, 0); pgrid->addWidget(ui->pfontStyle, 0, 1, 1, 3);
+	ui->pfontSize = new QSpinBox;
+	label = new QLabel("Size:"); label->setBuddy(ui->pfontSize);
+	pgrid->addWidget(label, 1, 0); pgrid->addWidget(ui->pfontSize, 1, 1);
+	ui->pfontColor = new CColorButton;
+	label = new QLabel("Color:"); label->setBuddy(ui->pfontColor);
+	pgrid->addWidget(label, 0, 4, 1, 1, Qt::AlignRight); pgrid->addWidget(ui->pfontColor, 0, 5);
+	pgrid->addWidget(ui->pfontBold   = new QCheckBox("bold"  ), 1, 2);
+	pgrid->addWidget(ui->pfontItalic = new QCheckBox("italic"), 1, 3);
+
+	QPushButton* pb = new QPushButton("Make default");
+	pb->setToolTip("Set this as the default font for widgets.");
+	pgrid->addWidget(pb, 2, 0);
+	setLayout(pgrid);
+
+	QObject::connect(pb, SIGNAL(clicked(bool)), this, SLOT(onMakeDefault()));
+}
+
+CFontWidget::~CFontWidget()
+{
+	delete ui;
+}
+
+void CFontWidget::setFont(const QFont& font, const QColor& col)
+{
+	ui->pfontStyle->setCurrentFont(font);
+	ui->pfontSize->setValue(font.pointSize());
+	ui->pfontBold->setChecked(font.bold());
+	ui->pfontItalic->setChecked(font.italic());
+	ui->pfontColor->setColor(col);
+}
+
+QFont CFontWidget::getFont() const
+{
+	QFont font(ui->pfontStyle->currentFont().family(), ui->pfontSize->value());
+	font.setBold(ui->pfontBold->isChecked());
+	font.setItalic(ui->pfontItalic->isChecked());
+	return font;
+}
+
+QColor CFontWidget::getFontColor() const
+{
+	return ui->pfontColor->color();
+}
+
+void CFontWidget::onMakeDefault()
+{
+	QFont font = getFont();
+	GLWidget::set_default_font(font);
+}
+
+//=================================================================================================
 class CPositionWidget : public QWidget
 {
 public:
@@ -131,11 +150,15 @@ public:
 	CPositionWidget* ppos;
 	QLineEdit* ptext;
 	QCheckBox* pshadow;
+	QComboBox* align;
 	CColorButton*	pshadowCol;
 	QComboBox* pbgstyle;
 	CColorButton *bgCol1, *bgCol2;
 	CFontWidget* pfont;
 	QDialogButtonBox* buttonBox;
+	QComboBox* bglinemode;
+	QSpinBox* bglinesize;
+	CColorButton* bglinecol;
 
 public:
 	void setupUi(QDialog* parent)
@@ -167,6 +190,14 @@ public:
 			phb->addWidget(pshadowCol);
 			phb->addStretch();
 		pvg->addLayout(phb);
+
+		QHBoxLayout* alignLayout = new QHBoxLayout;
+			align = new QComboBox;
+			align->addItems(QStringList() << "Left" << "Centered" << "Right");
+			alignLayout->addWidget(new QLabel("Align:"));
+			alignLayout->addWidget(align);
+			alignLayout->addStretch();
+		pvg->addLayout(alignLayout);
 		pg->setLayout(pvg);
 		textPageLayout->addWidget(pg);
 
@@ -180,9 +211,16 @@ public:
 		pbgstyle->addItems(items);
 
 		pform->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
-		pform->addRow("Background style:", pbgstyle);
+		pform->addRow("Fill mode:", pbgstyle);
 		pform->addRow("Color1:", bgCol1 = new CColorButton);
 		pform->addRow("Color2:", bgCol2 = new CColorButton);
+
+		bglinemode = new QComboBox;
+		bglinemode->addItems(QStringList() << "None" << "Solid");
+
+		pform->addRow("Line mode:", bglinemode);
+		pform->addRow("Line width:", bglinesize = new QSpinBox); bglinesize->setRange(1, 10);
+		pform->addRow("Line color:", bglinecol = new CColorButton);
 		pg->setLayout(pform);
 		textPageLayout->addWidget(pg);
 
@@ -222,6 +260,10 @@ CDlgBoxProps::CDlgBoxProps(GLWidget* widget, QWidget* parent) : QDialog(parent),
 	ui->bgCol1->setColor(toQColor(pb->get_bg_color(0)));
 	ui->bgCol2->setColor(toQColor(pb->get_bg_color(1)));
 
+	ui->bglinemode->setCurrentIndex(pb->get_bg_line_style());
+	ui->bglinesize->setValue(pb->get_bg_line_size());
+	ui->bglinecol->setColor(toQColor(pb->get_bg_line_color()));
+
 	QFont font = pb->get_font();
 	ui->pfont->setFont(font, toQColor(pb->get_fg_color()));
 }
@@ -244,10 +286,16 @@ void CDlgBoxProps::apply()
 
 	pb->set_bg_style(ui->pbgstyle->currentIndex());
 	pb->set_bg_color(toGLColor(ui->bgCol1->color()), toGLColor(ui->bgCol2->color()));
+	pb->set_bg_line_style(ui->bglinemode->currentIndex());
+	pb->set_bg_line_size(ui->bglinesize->value());
+	pb->set_bg_line_color(toGLColor(ui->bglinecol->color()));
 
 	QFont font = ui->pfont->getFont();
 	pb->set_font(font);
 	pb->set_fg_color(toGLColor(ui->pfont->getFontColor()));
+
+	int n = ui->align->currentIndex(); assert(n >= 0);
+	pb->m_align = n;
 
 	CMainWindow* wnd = dynamic_cast<CMainWindow*>(parentWidget());
 	if (wnd) wnd->RedrawGL();
@@ -278,6 +326,14 @@ public:
 	QDialogButtonBox* buttonBox;
 	QComboBox* placement;
 	QComboBox* orientation;
+	QDoubleSpinBox* plineThick;
+
+	// background
+	QComboBox* pbgstyle;
+	CColorButton* bgCol1, * bgCol2;
+	QComboBox* bglinemode;
+	QSpinBox* bglinesize;
+	CColorButton* bglinecol;
 
 public:
 	void setupUi(QDialog* parent)
@@ -303,23 +359,45 @@ public:
 					ph->addStretch();
 				labelsPageLayout->addLayout(ph);
 
-				QHBoxLayout* pol = new QHBoxLayout;
-				QLabel* pl = new QLabel("Orientation:");
+				QFormLayout* pol = new QFormLayout;
 				orientation = new QComboBox;
 				orientation->addItems(QStringList() << "Horizontal" << "Vertical");
-				pol->addWidget(pl);
-				pol->addWidget(orientation);
-				pol->addStretch();
+				plineThick = new QDoubleSpinBox;
+				plineThick->setRange(0.0, 100.0);
+				pol->addRow("Orientation", orientation);
+				pol->addRow("Line thickness", plineThick);
 				labelsPageLayout->addLayout(pol);
 				plabelFont = new CFontWidget;
 				labelsPageLayout->addWidget(plabelFont);
+
+				// background props
+				QGroupBox* pg = new QGroupBox("Background");
+				QFormLayout* pform = new QFormLayout;
+				QStringList items; items << "None" << "Color 1" << "Color 2" << "Horizontal gradient" << "Vertical gradient";
+				pbgstyle = new QComboBox;
+				pbgstyle->addItems(items);
+
+				bglinemode = new QComboBox;
+				bglinemode->addItems(QStringList() << "None" << "Solid");
+				
+				pform->setFieldGrowthPolicy(QFormLayout::FieldsStayAtSizeHint);
+				pform->addRow("Fill mode:", pbgstyle);
+				pform->addRow("Color1:", bgCol1 = new CColorButton);
+				pform->addRow("Color2:", bgCol2 = new CColorButton);
+
+				pform->addRow("Line mode:", bglinemode);
+				pform->addRow("Line width:", bglinesize = new QSpinBox); bglinesize->setRange(1, 10);
+				pform->addRow("Line color:", bglinecol = new CColorButton);
+				pg->setLayout(pform);
+				labelsPageLayout->addWidget(pg);
+
 			labelsPage->setLayout(labelsPageLayout);
 
 		// Position page
 		ppos = new CPositionWidget;
 
 		// add all the tabs
-		tab->addTab(labelsPage, "Labels");
+		tab->addTab(labelsPage, "Options");
 		tab->addTab(ppos, "Position");
 		pv->addWidget(tab);
 
@@ -342,6 +420,7 @@ CDlgLegendProps::CDlgLegendProps(GLWidget* widget, CMainWindow* parent) : QDialo
 	ui->pshowLabels->setChecked(pb->ShowLabels());
 	ui->pprec->setValue(pb->GetPrecision());
 	ui->orientation->setCurrentIndex(pb->Orientation());
+	ui->plineThick->setValue(pb->LineThickness());
 
 	QFont labelFont = pb->get_font();
 	ui->plabelFont->setFont(labelFont, toQColor(pb->get_fg_color()));
@@ -349,6 +428,14 @@ CDlgLegendProps::CDlgLegendProps(GLWidget* widget, CMainWindow* parent) : QDialo
 	ui->placement->setCurrentIndex(pb->GetLabelPosition());
 
 	ui->ppos->setPosition(widget->x(), widget->y(), widget->w(), widget->h());
+
+	ui->pbgstyle->setCurrentIndex(pb->get_bg_style());
+	ui->bgCol1->setColor(toQColor(pb->get_bg_color(0)));
+	ui->bgCol2->setColor(toQColor(pb->get_bg_color(1)));
+
+	ui->bglinemode->setCurrentIndex(pb->get_bg_line_style());
+	ui->bglinesize->setValue(pb->get_bg_line_size());
+	ui->bglinecol->setColor(toQColor(pb->get_bg_line_color()));
 }
 
 void CDlgLegendProps::apply()
@@ -364,6 +451,14 @@ void CDlgLegendProps::apply()
 	QFont labelFont = ui->plabelFont->getFont();
 	pb->set_font(labelFont);
 	pb->set_fg_color(toGLColor(ui->plabelFont->getFontColor()));
+
+	pb->set_bg_style(ui->pbgstyle->currentIndex());
+	pb->set_bg_color(toGLColor(ui->bgCol1->color()), toGLColor(ui->bgCol2->color()));
+	pb->set_bg_line_style(ui->bglinemode->currentIndex());
+	pb->set_bg_line_size(ui->bglinesize->value());
+	pb->set_bg_line_color(toGLColor(ui->bglinecol->color()));
+
+	pb->SetLineThickness((float)ui->plineThick->value());
 
 	if (oldOrient != newOrient)
 	{

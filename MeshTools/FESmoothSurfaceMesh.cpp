@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,10 +39,10 @@ FESmoothSurfaceMesh::FESmoothSurfaceMesh() : FESurfaceModifier("Smooth")
 	AddBoolParam(false, "preserve edges");
 }
 
-FESurfaceMesh* FESmoothSurfaceMesh::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FESmoothSurfaceMesh::Apply(FSSurfaceMesh* pm)
 {
 	// create a copy of the mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 
 	// apply smoothing
 	bool bshape = GetBoolValue(2);
@@ -53,13 +53,13 @@ FESurfaceMesh* FESmoothSurfaceMesh::Apply(FESurfaceMesh* pm)
 	return newMesh;
 }
 
-void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMesh& backMesh, bool preserveShape, bool preserveEdges)
+void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMesh& backMesh, bool preserveShape, bool preserveEdges)
 {
 	int niter = GetIntValue(0);
 	double w = GetFloatValue(1);
 	int N = mesh.Nodes();
 
-	vector<int> faceIDs(N, -1);
+	std::vector<int> faceIDs(N, -1);
 
 	// smooth node positions
 	for (int n = 0; n<niter; ++n)
@@ -67,10 +67,10 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 		// clear tags
 		// first = count of how often a node was visited
 		// second = ID (edge or face) that the nodes should be back-projected to
-		vector<pair<int, int> > tag(N, pair<int, int>(0, -1));
+		std::vector< std::pair<int, int> > tag(N, pair<int, int>(0, -1));
 
 		// storage for new node positions
-		vector<vec3d> newPos(N, vec3d(0, 0, 0));
+		std::vector<vec3d> newPos(N, vec3d(0, 0, 0));
 
 		// tag all immovable nodes
 		if (preserveShape || preserveEdges)
@@ -89,7 +89,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 			// lock all edges nodes
 			for (int i = 0; i<mesh.Edges(); ++i)
 			{
-				FEEdge& edge = mesh.Edge(i);
+				FSEdge& edge = mesh.Edge(i);
 				if (edge.m_gid >= 0)
 				{
 					int ne = edge.Nodes();
@@ -114,7 +114,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 		{
 			for (int i = 0; i<mesh.Edges(); ++i)
 			{
-				FEEdge& edge = mesh.Edge(i);
+				FSEdge& edge = mesh.Edge(i);
 				if (edge.m_gid >= 0)
 				{
 					int ne = edge.Nodes();
@@ -153,7 +153,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 		// process face nodes
 		for (int i = 0; i<mesh.Faces(); ++i)
 		{
-			FEFace& face = mesh.Face(i);
+			FSFace& face = mesh.Face(i);
 			int nf = face.Nodes();
 			for (int j = 0; j<nf; ++j)
 			{
@@ -203,7 +203,7 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FESurfaceMesh& mesh, const FESurfaceMe
 		// assign new node positions
 		for (int i = 0; i<N; ++i)
 		{
-			FENode& ni = mesh.Node(i);
+			FSNode& ni = mesh.Node(i);
 			if (tag[i].first == -1)
 			{
 				vec3d& vi = newPos[i];

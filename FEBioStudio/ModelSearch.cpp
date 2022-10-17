@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -175,7 +175,7 @@ void CModelSearch::UpdateObject(FSObject* po)
 			FSObject* o = treeItem.obj;
 			if (o == po)
 			{
-				FEStepComponent* pc = dynamic_cast<FEStepComponent*>(o);
+				FSStepComponent* pc = dynamic_cast<FSStepComponent*>(o);
 				if (pc)
 				{
 					QFont font = item->font();
@@ -215,7 +215,7 @@ void CModelSearch::UpdateList()
 					it->setText(s);
 					it->setData(Qt::UserRole, i);
 
-					FEStepComponent* pc = dynamic_cast<FEStepComponent*>(o);
+					FSStepComponent* pc = dynamic_cast<FSStepComponent*>(o);
 					if (pc)
 					{
 						QFont font = it->font();

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QMessageBox>
 #include <MeshTools/FEModel.h>
-#include "CIntInput.h"
+#include "InputWidgets.h"
 
 class Ui::CDlgAddNodalLoad
 {
@@ -75,7 +75,7 @@ public:
 	}
 };
 
-CDlgAddNodalLoad::CDlgAddNodalLoad(FEModel& fem, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddNodalLoad)
+CDlgAddNodalLoad::CDlgAddNodalLoad(FSModel& fem, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddNodalLoad)
 {
 	setWindowTitle("Add Nodal Load");
 
@@ -91,6 +91,9 @@ CDlgAddNodalLoad::CDlgAddNodalLoad(FEModel& fem, QWidget* parent) : QDialog(pare
 	ui->var->addItem("x-force");
 	ui->var->addItem("y-force");
 	ui->var->addItem("z-force");
+    ui->var->addItem("shell x-force");
+    ui->var->addItem("shell y-force");
+    ui->var->addItem("shell z-force");
 	ui->var->addItem("fluid volumetric flow rate");
 
 	ui->value->setValue(1.0);

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "version.h"
 #include "UpdateChecker.h"
+#include "DlgBugReport.h"
 
 
 void CMainWindow::on_actionUpdate_triggered(bool dev)
@@ -70,13 +71,20 @@ void CMainWindow::on_actionFEBioPubs_triggered()
 	QDesktopServices::openUrl(QUrl("https://febio.org/publications/"));
 }
 
+void CMainWindow::on_actionBugReport_triggered()
+{
+	CDlgBugReport dlg(this);
+    dlg.exec();
+}
+
+
 void CMainWindow::on_actionAbout_triggered()
 {
 	QString version;
 #ifndef DEVCOMMIT
-	version = QString("Version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	version = QString("Version %1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 #else
-	version = QString("Dev Version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
+	version = QString("Dev Version %1.%2.%3.%4").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION).arg(DEVCOMMIT);
 #endif
 
 	std::string oglVersion = GetGLView()->GetOGLVersionString();

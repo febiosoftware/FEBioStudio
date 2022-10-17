@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,7 +47,7 @@ SphereFit::~SphereFit()
 
 }
 
-void SphereFit::Apply(vector<vec3d>& y)
+void SphereFit::Apply(std::vector<vec3d>& y)
 {
 	int N = (int) y.size();
 	for (int i=0; i<N; ++i)
@@ -58,7 +58,7 @@ void SphereFit::Apply(vector<vec3d>& y)
 	}
 }
 
-bool SphereFit::Fit(const vector<vec3d>& y, int maxiter)
+bool SphereFit::Fit(const std::vector<vec3d>& y, int maxiter)
 {
 	const double TOL = 0.001;
 	int i;
@@ -115,7 +115,7 @@ bool SphereFit::Fit(const vector<vec3d>& y, int maxiter)
 	return true;
 }
 
-double SphereFit::ObjFunc(const vector<vec3d>& y)
+double SphereFit::ObjFunc(const std::vector<vec3d>& y)
 {
 	double f = 0;
 	int N = (int) y.size();

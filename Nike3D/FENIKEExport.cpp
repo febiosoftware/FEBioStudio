@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,7 @@ SOFTWARE.*/
 // FENIKEExport
 //-----------------------------------------------------------------------------
 
-FENIKEExport::FENIKEExport(FEProject& prj) : FEFileExport(prj)
+FENIKEExport::FENIKEExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -735,18 +735,18 @@ bool FENIKEExport::ExportLoadCurve(FENikeProject& prj)
 	}
 
 	int i, j;
-	list<FELoadCurve>::iterator pc = prj.m_LC.begin();
+	list<LoadCurve>::iterator pc = prj.m_LC.begin();
 	for (i=0; i<nlc; ++i, ++pc)
 	{
 		if (i != 0) fprintf(m_fp,"*-----------------------\n");
 
-		FELoadCurve& lc = *pc;
+		LoadCurve& lc = *pc;
 
-		fprintf(m_fp, "%5d%5d\n", i+1, lc.Size());
-		for (j=0; j<lc.Size(); ++j)
+		fprintf(m_fp, "%5d%5d\n", i+1, lc.Points());
+		for (j=0; j<lc.Points(); ++j)
 		{
-			LOADPOINT& pt = lc.Item(j);
-			fprintf(m_fp, "%10lg%10lg\n", pt.time, pt.load);
+			vec2d pt = lc.Point(j);
+			fprintf(m_fp, "%10lg%10lg\n", pt.x(), pt.y());
 		}
 	}
 

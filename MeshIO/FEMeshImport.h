@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEMeshImport : public FEFileImport
+class FEMeshImport : public FSFileImport
 {
 protected:
 	struct NODE
@@ -44,7 +44,7 @@ protected:
 	};
 
 public:
-	FEMeshImport(FEProject& prj);
+	FEMeshImport(FSProject& prj);
 	~FEMeshImport();
 
 	bool Load(const char* szfile);
@@ -58,11 +58,11 @@ protected:
 	void ReadTet  (FILE* fp);
 	void ReadTri  (FILE* fp);
 
-	void BuildMesh(FEProject& prj);
+	void BuildMesh(FSProject& prj);
 
 protected:
-	vector<NODE>	m_Node;
-	vector<ELEM>	m_Elem;
+	std::vector<NODE>	m_Node;
+	std::vector<ELEM>	m_Elem;
 
 private:
 	bool	m_bread_surface;

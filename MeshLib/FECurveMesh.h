@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,16 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include "FENode.h"
 #include "FEElement.h"
 #include "FELineMesh.h"
 #include <FSCore/box.h>
 #include <FSCore/Serializable.h>
+#include <vector>
 
 // A class that represents a mesh for a curve
 // This mesh only consists of nodes and edges
-class FECurveMesh : public FELineMesh
+class FECurveMesh : public FSLineMesh
 {
 public:
 	// curve types
@@ -92,10 +93,10 @@ public:
 	void Invert();
 
 	// reorder nodes based on look-up table
-	void ReorderNodes(vector<int>& NLT);
+	void ReorderNodes(std::vector<int>& NLT);
 
 	// reorder edges based on look-up table
-	void ReorderEdges(vector<int>& ELT);
+	void ReorderEdges(std::vector<int>& ELT);
 
 	// attach another curve to this one
 	void Attach(const FECurveMesh& c);
@@ -110,7 +111,7 @@ public:
 	int EndPoints() const;
 
 	// return a list of end points
-	vector<int> EndPointList() const;
+	std::vector<int> EndPointList() const;
 
 	// count the curve segments (a segment is a simply-connected curve)
 	int Segments() const;
@@ -123,7 +124,7 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	void FlipEdge(FEEdge& e);
+	void FlipEdge(FSEdge& e);
 
 	void UpdateEdgeNeighbors();
 	void UpdateEdgeIDs();

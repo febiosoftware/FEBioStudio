@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,28 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiQuadMesh.h"
 
 class GRing;
 
-class FEShellRing : public FEMesher
+class FEShellRing : public FEMultiQuadMesh
 {
 public:
-	enum { T, NSLICE, NDIV };
+	enum { T, NSLICE, NDIV, ELEM_TYPE };
 
 public:
 	FEShellRing(){}
 	FEShellRing(GRing* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiQuadMesh();
-
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return (j%m_ns)*(m_nr+1)+ i; }
+	bool BuildMultiQuad() override;
 
 protected:
 	GRing* m_pobj;

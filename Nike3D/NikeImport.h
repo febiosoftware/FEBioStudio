@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,18 +31,18 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Implements a class to import NIKE files
 //
-class FENIKEImport : public FEFileImport
+class FENIKEImport : public FSFileImport
 {
 	enum {MAXLINE = 256};
 
 public:
-	FENIKEImport(FEProject& prj);
+	FENIKEImport(FSProject& prj);
 
 	bool Load(const char* szfile);
 
 protected:
-	void UpdateFEModel(FEModel& fem);
-	void UpdateMesh(FEMesh& mesh);
+	void UpdateFEModel(FSModel& fem);
+	void UpdateMesh(FSMesh& mesh);
 	int FindFace(int n[4], int noff = 0);
 
 private:
@@ -76,15 +76,15 @@ private:
 
 private:
 	GObject*	m_po;
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 
 	int		m_nmat;	// nr of materials
 	int		m_nmplc;	// nr of must point load curve
 
-	vector<int>		m_iFace;
-	vector<int*>	m_pFace;
-	vector<int>		m_nFace;
+	std::vector<int>	m_iFace;
+	std::vector<int*>	m_pFace;
+	std::vector<int>	m_nFace;
 
-	vector<FELoadCurve>		m_LC;
-	vector<GMaterial*>		m_pMat;
+	std::vector<LoadCurve>		m_LC;
+	std::vector<GMaterial*>		m_pMat;
 };

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 namespace Post {
 
@@ -50,7 +50,7 @@ class FEStrainMap
 		std::vector<vec3f>	m_norm;		// node normals
 		std::vector<vec3f>	m_pos;		// node positions
 
-		std::vector<vector<int> >	m_NLT;	// node-facet look-up table
+		std::vector<std::vector<int> >	m_NLT;	// node-facet look-up table
 	};
 
 public:

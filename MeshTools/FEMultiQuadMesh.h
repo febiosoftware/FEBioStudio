@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,58 +40,119 @@ public:
 	FEMultiQuadMesh();
 
 	// destructor
-	~FEMultiQuadMesh();
+	virtual ~FEMultiQuadMesh();
 
 	// build the mesh
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
+
+	// set the quad mesh flag
+	void SetElementType(int elemType);
 
 	// build the mesh from the object
 	bool Build(GObject* po);
 
+	// build the multi-quad data
+	virtual bool BuildMultiQuad();
+
+	// clear the MQ data
+	void ClearMQ();
+
 public:
+	int Nodes() const;
 	MBNode& AddNode(const vec3d& r, int ntype = NODE_VERTEX);
+	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
+
+	int Edges() const;
+	MBEdge& GetEdge(int i);
+	MBEdge& AddEdge();
+
+	int Faces() const;
 	MBFace& AddFace(int n0, int n1, int n2, int n3);
-
+	MBFace& AddFace();
 	MBFace& GetFace(int n);
-
-	// update the Multii-Block data
-	void UpdateMQ();
 
 	void SetFaceEdgeIDs(int nface, int n0, int n1, int n2, int n3);
 
-	MBNode& GetMBNode(int i) { return m_MBNode[i]; }
 	MBEdge& GetFaceEdge(int nface, int nedge);
 
 	void SetFaceSizes(int nface, int nx, int ny);
 
+	void ClearMeshSettings();
+
+	bool SetEdgeDivisions(int iedge, int nd);
+	bool SetDefaultDivisions(int nd);
+	bool SetNodeWeights(std::vector<double>& w);
+
 protected:
-	void FindFaceNeighbours();
 	void BuildMBEdges();
 
 	// build the mesh items
-	void BuildNodes(FEMesh* pm);
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFENodes(FSMesh* pm);
+	void BuildFEFaces(FSMesh* pm);
+	void BuildFEEdges(FSMesh* pm);
 
 	void BuildNodeFaceTable(vector< vector<int> >& NFT);
 	int FindEdgeIndex(MBFace& F, int n1, int n2);
 	int FindEdge(int n1, int n2);
 
-	int GetFaceNodeIndex(MBFace& f, int i, int j);
 	int GetEdgeNodeIndex(MBEdge& e, int i);
 
 	int GetFaceEdgeNodeIndex(MBFace& f, int ne, int i);
 
 protected:
+	class MQPoint
+	{
+	public:
+		int	m_i, m_j;
+		double	m_r, m_s;
 
+		MQPoint() { m_i = m_j = -1; m_r = m_s = 0.0; }
+		MQPoint(int i, double r) { m_i = i; m_j = -1; m_r = r; m_s = 0.0; }
+		MQPoint(int i, int j, double r, double s) { m_i = i; m_j = j; m_r = r; m_s = s; }
+	};
+
+protected:
 	int GetFENode(MBNode& node);
-	vector<int> GetFENodeList(MBEdge& node);
-	vector<int> GetFENodeList(MBFace& node);
+
+	vec3d EdgePosition(MBEdge& edge, const MQPoint& q);
+	vec3d FacePosition(MBFace& face, const MQPoint& q);
+
+	int AddFENode(const vec3d& r, int gid = -1);
+
+protected:
+	int AddFENode(MBNode& N);
+	int AddFEEdgeNode(MBEdge& E, const MQPoint& q);
+	int AddFEFaceNode(MBFace& F, const MQPoint& q);
+
+private:
+	int		m_elemType;	// element type to generate
+	bool	m_bquadMesh;
 
 protected:
 	GObject*		m_po;
 	vector<MBFace>	m_MBFace;
 	vector<MBEdge>	m_MBEdge;
 	vector<MBNode>	m_MBNode;
+
+	FSMesh* m_pm;
+	FSNode* m_currentNode;
+	int		m_nodes;
 };
 
+class GMultiPatch;
+
+class FEMultiQuadMesher : public FEMultiQuadMesh
+{
+	enum { DIVS, ELEM_TYPE };
+
+public:
+	FEMultiQuadMesher(GMultiPatch* po);
+
+	// build the mesh
+	FSMesh* BuildMesh() override;
+
+	bool BuildMultiQuad() override;
+
+private:
+	GMultiPatch* m_po;
+};

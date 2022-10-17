@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "FEDataField.h"
 #include <vector>
-//using namespace std;
 
 namespace Post {
 
@@ -44,10 +43,10 @@ public:
 	~FEDataManager(void);
 
 	//! add a data field
-	void AddDataField(FEDataField* pd, const std::string& name = "");
+	void AddDataField(ModelDataField* pd, const std::string& name = "", const char* szunits = nullptr);
 
 	//! delete a data field
-	void DeleteDataField(FEDataField* pd);
+	void DeleteDataField(ModelDataField* pd);
 
 	//! get the nodal datafield
 	FEDataFieldPtr FirstDataField();
@@ -64,11 +63,13 @@ public:
 
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);
 
+	const char* getDataUnits(int nfield);
+
 	// see if a field ID is valid
 	bool IsValid(int fieldId) const;
 
 protected:
-	vector<FEDataField*>	m_Data;
+	std::vector<ModelDataField*>	m_Data;
 	FEPostModel*	m_pm;
 };
 }

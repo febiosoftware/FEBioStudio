@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -48,15 +48,17 @@ FETorus::FETorus(GTorus* po)
 
 	AddIntParam(m_nd, "nd", "Divisions");
 	AddIntParam(m_ns, "ns", "Segments" );
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
-FEMesh* FETorus::BuildMesh()
+FSMesh* FETorus::BuildMesh()
 {
 //	return BuildMeshLegacy();
 	return BuildMultiBlockMesh();
 }
 
-FEMesh* FETorus::BuildMultiBlockMesh()
+bool FETorus::BuildMultiBlock()
 {
 	// get the object parameters
 	double Ro = m_pobj->GetFloatValue(GTorus::RIN);
@@ -175,7 +177,10 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 		}
 	}
 
-	UpdateMB();
+	BuildMB();
+
+	// set uniform smoothing ID
+	for (int i = 0; i < m_MBFace.size(); ++i) m_MBFace[i].m_sid = 0;
 
 	for (int i=0; i<4; ++i)
 	{
@@ -196,14 +201,23 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	// set edges
 	for (int i = 0; i < 4; ++i)
 	{
-		GetBlockEdge( 4+i*12, 1).SetEdge(EDGE_ZARC,  1);
-		GetBlockEdge( 5+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 6+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 7+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 8+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge( 9+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge(10+i*12, 1).SetEdge(EDGE_ZARC, -1);
-		GetBlockEdge(11+i*12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 0 + i * 12, 3).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 0 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 1 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 3).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 3 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 2 + i * 12, 7).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 2 + i * 12, 5).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 3 + i * 12, 5).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 4 + i * 12, 1).SetEdge(EDGE_ZARC,  1);
+		GetBlockEdge( 5 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 6 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 7 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 8 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge( 9 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge(10 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
+		GetBlockEdge(11 + i * 12, 1).SetEdge(EDGE_ZARC, -1);
 
 		for (int j=0; j<8; ++j)
 			GetBlockEdge(4 + j + i*12, 9).SetEdge(EDGE_3P_CIRC_ARC, 1, 4 + i*17);
@@ -271,10 +285,28 @@ FEMesh* FETorus::BuildMultiBlockMesh()
 	m_MBNode[47].SetID(14);
 	m_MBNode[45].SetID(15);
 
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FETorus::BuildMultiBlockMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
+
 	return FEMultiBlockMesh::BuildMesh();
 }
 
-FEMesh* FETorus::BuildMeshLegacy()
+FSMesh* FETorus::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -301,12 +333,12 @@ FEMesh* FETorus::BuildMeshLegacy()
 	int elems = ns*(nd*nd+4*nd*nd);
 
 	// allocate storage for mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
 
 	// --- create the first layer of nodes ---
 	// create the inner nodes
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	vec3d r;
 	double h = R1/sqrt(2.0)*0.5;
 	double R, f, dr;
@@ -324,8 +356,8 @@ FEMesh* FETorus::BuildMeshLegacy()
 		}
 
 	// create node index loop
-	vector<int>	Nd; Nd.resize(4*nd);
-	vector<vec3d> Nr; Nr.resize(4*nd);
+	std::vector<int>	Nd; Nd.resize(4*nd);
+	std::vector<vec3d> Nr; Nr.resize(4*nd);
 	for (i=0; i<nd; ++i) Nd[i     ] = nd - i - 1;
 	for (i=0; i<nd; ++i) Nd[i+nd  ] = (i+1)*(nd+1);
 	for (i=0; i<nd; ++i) Nd[i+nd*2] = i + nd*(nd+1)+1;
@@ -453,7 +485,7 @@ FEMesh* FETorus::BuildMeshLegacy()
 	return pm;
 }
 
-void FETorus::BuildFaces(FEMesh* pm)
+void FETorus::BuildFaces(FSMesh* pm)
 {
 	int nd = 2*m_nd;
 	int ns = 4*m_ns;
@@ -463,7 +495,7 @@ void FETorus::BuildFaces(FEMesh* pm)
 	for (j=0; j<ns; ++j)
 		for (i=0; i<4*nd; ++i, ++n)
 		{
-			FEFace& f = pm->Face(n);
+			FSFace& f = pm->Face(n);
 			f.SetType(FE_FACE_QUAD4);
 			f.m_gid = 4*(4*j/ns) + i/nd;
 			f.m_sid = 0;
@@ -474,7 +506,7 @@ void FETorus::BuildFaces(FEMesh* pm)
 		}
 }
 
-void FETorus::BuildEdges(FEMesh* pm)
+void FETorus::BuildEdges(FSMesh* pm)
 {
 	int nd = 2*m_nd;
 	int ns = 4*m_ns;
@@ -484,7 +516,7 @@ void FETorus::BuildEdges(FEMesh* pm)
 	for (j=0; j<4; ++j)
 		for (i=0; i<ns; ++i, ++n)
 		{
-			FEEdge& e = pm->Edge(n);
+			FSEdge& e = pm->Edge(n);
 			e.SetType(FE_EDGE2);
 			e.m_gid = 4*j + 4*i/ns;
 			e.n[0] = NodeIndex(j*nd, i);
@@ -494,7 +526,7 @@ void FETorus::BuildEdges(FEMesh* pm)
 	for (j=0; j<4; ++j)
 		for (i=0; i<4*nd; ++i, ++n)
 		{
-			FEEdge& e = pm->Edge(n);
+			FSEdge& e = pm->Edge(n);
 			e.SetType(FE_EDGE2);
 			e.m_gid = 16 + j * 4 + i / nd;
 			e.n[0] = NodeIndex(i  , j*ns/4);

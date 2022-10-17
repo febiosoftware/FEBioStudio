@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FEPostModel.h"
 
 using namespace Post;
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEPointCongruency::FEPointCongruency()
@@ -39,7 +40,7 @@ FEPointCongruency::FEPointCongruency()
 }
 
 //-----------------------------------------------------------------------------
-FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEMesh* mesh, int nid)
+FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FSMesh* mesh, int nid)
 {
 	CONGRUENCY_DATA d;
 	d.H1 = 0;
@@ -72,7 +73,7 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEMesh* mesh, i
 
 		// find the local curvature measure at the projection
 		d.nface = nface;
-		FEFace& face = m_mesh->Face(nface);
+		FSFace& face = m_mesh->Face(nface);
 		vec3f tsn = -sn;
 		d.H2 = face_curvature(face, rs, tsn, MEAN);
 		d.G2 = face_curvature(face, rs, tsn, DIFF);
@@ -93,7 +94,7 @@ FEPointCongruency::CONGRUENCY_DATA FEPointCongruency::Congruency(FEMesh* mesh, i
 }
 
 //-----------------------------------------------------------------------------
-float FEPointCongruency::face_curvature(FEFace& face, double rs[2], vec3f& sn, int m)
+float FEPointCongruency::face_curvature(FSFace& face, double rs[2], vec3f& sn, int m)
 {
 	int nf = face.Nodes();
 	double K[4] = {0};
@@ -127,7 +128,7 @@ float FEPointCongruency::face_curvature(FEFace& face, double rs[2], vec3f& sn, i
 //-----------------------------------------------------------------------------
 bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec3f& sn)
 {
-	FEMesh* pm = m_mesh;
+	FSMesh* pm = m_mesh;
 
 	// get the node position
 	vec3f nr = to_vec3f(pm->Node(nid).pos());
@@ -136,7 +137,7 @@ bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec
 	sn = vec3f(0.f, 0.f, 0.f);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int nf = face.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
@@ -147,21 +148,21 @@ bool FEPointCongruency::Project(int nid, int& nface, vec3f& q, double rs[2], vec
 
 	// find the intersection of the ray with the surface makin sure not to intersect
 	// faces that contain this node
-	Ray ray = {nr, sn};
+	Ray ray = { to_vec3d(nr), to_vec3d(sn)};
 	return Intersect(ray, nface, nid, q, rs);
 }
 
 //-----------------------------------------------------------------------------
 bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q, double rs[2])
 {
-	FEMesh* pm = m_mesh;
+	FSMesh* pm = m_mesh;
 	nface = -1;
 	double Dmin = 0;
 	double rsi[2];
 	vec3f o = to_vec3f(ray.origin);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		// make sure this face does not contain nid
 		if (face.HasNode(nid) == false)
 		{
@@ -189,15 +190,15 @@ bool FEPointCongruency::Intersect(const Ray& ray, int& nface, int nid, vec3f& q,
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectTri3(const Ray& ray, FSFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
 
-	FEMesh* pm = m_mesh;
+	FSMesh* pm = m_mesh;
 
-	vec3f n1 = to_vec3f(pm->Node(face.n[0]).pos());
-	vec3f n2 = to_vec3f(pm->Node(face.n[1]).pos());
-	vec3f n3 = to_vec3f(pm->Node(face.n[2]).pos());
+	vec3d n1 = pm->Node(face.n[0]).pos();
+	vec3d n2 = pm->Node(face.n[1]).pos();
+	vec3d n3 = pm->Node(face.n[2]).pos();
 
 	Triangle tri = {n1, n2, n3};
 
@@ -212,10 +213,10 @@ bool FEPointCongruency::IntersectTri3(const Ray& ray, FEFace& face, vec3f& q, do
 }
 
 //-----------------------------------------------------------------------------
-bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, double rs[2])
+bool FEPointCongruency::IntersectQuad4(const Ray& ray, FSFace& face, vec3f& q, double rs[2])
 {
 	const double tol = 0.01;
-	FEFace tri1,tri2;
+	FSFace tri1,tri2;
 	tri1.n[0] = face.n[0]; tri1.n[1] = face.n[1]; tri1.n[2] = face.n[2];
 	tri1.m_nn[0] = face.m_nn[0]; tri1.m_nn[1] = face.m_nn[1]; tri1.m_nn[2] = face.m_nn[2];
 
@@ -225,12 +226,12 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, d
 	if (IntersectTri3(ray, tri1, q, rs) ||
 		IntersectTri3(ray, tri2, q, rs))
 	{
-		FEMesh* pm = m_mesh;
-		vec3f y[4];
-		y[0] = to_vec3f(pm->Node(face.n[0]).pos());
-		y[1] = to_vec3f(pm->Node(face.n[1]).pos());
-		y[2] = to_vec3f(pm->Node(face.n[2]).pos());
-		y[3] = to_vec3f(pm->Node(face.n[3]).pos());
+		FSMesh* pm = m_mesh;
+		vec3d y[4];
+		y[0] = pm->Node(face.n[0]).pos();
+		y[1] = pm->Node(face.n[1]).pos();
+		y[2] = pm->Node(face.n[2]).pos();
+		y[3] = pm->Node(face.n[3]).pos();
 
 		Quad quad = {y[0], y[1], y[2], y[3]};
 		Intersection intersect;
@@ -248,7 +249,7 @@ bool FEPointCongruency::IntersectQuad4(const Ray& ray, FEFace& face, vec3f& q, d
 float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 {
 	// get the model's surface
-	FEMesh* pm = m_mesh;
+	FSMesh* pm = m_mesh;
 
 	// get the reference nodal position
 	vec3f r0 = to_vec3f(pm->Node(nid).pos());
@@ -297,11 +298,11 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 
 		vec3f e2 = e3 ^ e1;
 
-		Mat3d Q;
+		mat3f Q;
 		Q[0][0] = e1.x; Q[1][0] = e2.x; Q[2][0] = e3.x;
 		Q[0][1] = e1.y; Q[1][1] = e2.y; Q[2][1] = e3.y;
 		Q[0][2] = e1.z; Q[1][2] = e2.z; Q[2][2] = e3.z;
-		Mat3d Qt = Q.transpose();
+		mat3f Qt = Q.transpose();
 
 		// map coordinates
 		for (int i=0; i<nn; ++i)
@@ -311,7 +312,7 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 		}
 
 		// setup the linear system
-		Matrix R(nn, 3);
+		matrix R(nn, 3);
 		vector<double> r(nn);
 		for (int i=0; i<nn; ++i)
 		{
@@ -385,11 +386,11 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 
 			vec3f e2 = e3 ^ e1;
 
-			Mat3d Q;
+			mat3f Q;
 			Q[0][0] = e1.x; Q[1][0] = e2.x; Q[2][0] = e3.x;
 			Q[0][1] = e1.y; Q[1][1] = e2.y; Q[2][1] = e3.y;
 			Q[0][2] = e1.z; Q[1][2] = e2.z; Q[2][2] = e3.z;
-			Mat3d Qt = Q.transpose();
+			mat3f Qt = Q.transpose();
 
 			// map coordinates
 			for (int i=0; i<nn; ++i)
@@ -399,7 +400,7 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 			}
 
 			// setup the linear system
-			Matrix R(nn, 5);
+			matrix R(nn, 5);
 			vector<double> r(nn);
 			for (int i=0; i<nn; ++i)
 			{
@@ -482,7 +483,7 @@ float FEPointCongruency::nodal_curvature(int nid, vec3f& sn, int m)
 void FEPointCongruency::level(int n, int l, set<int>& nl1)
 {
 	// get the model's surface
-	FEMesh* pmesh = m_mesh;
+	FSMesh* pmesh = m_mesh;
 
 	// add the first node
 	nl1.insert(n);
@@ -502,7 +503,7 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].fid); 
+				FSFace& f = pmesh->Face(nfl[i].fid); 
 				f.m_ntag = 0;
 			}
 		}
@@ -518,7 +519,7 @@ void FEPointCongruency::level(int n, int l, set<int>& nl1)
 			// add the other nodes
 			for (int i=0; i<NF; ++i)
 			{
-				FEFace& f = pmesh->Face(nfl[i].fid);
+				FSFace& f = pmesh->Face(nfl[i].fid);
 				if (f.m_ntag == 0)
 				{
 					int ne = f.Nodes();

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -314,7 +314,7 @@ void ZipThread::run()
 		return;
 	}
 
-	emit resultReady(true);
+	emit resultReady(true, "");
 }
 
 void ZipThread::abort()
@@ -331,7 +331,11 @@ void ZipThread::failed()
 		zip.remove();
 	}
 
-	emit resultReady(false);
+    // If we manually aborted, don't show an error
+    if(!aborted)
+    {
+        emit resultReady(false, "Failed to zip project files.");
+    }
 }
 
 

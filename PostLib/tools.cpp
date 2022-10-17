@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "tools.h"
+#include <assert.h>
+#include <FECore/mat3d.h>
 
 //-----------------------------------------------------------------------------
 bool ProjectToFacet(vec3f* y, int nf, vec3f& x, vec3f& t, vec3f& q, double tol)
@@ -268,13 +270,13 @@ bool ProjectToQuad(vec3f* y, vec3f& x, vec3f& t, vec3f& q, double tol)
 		vec3f R3 = -(y[0] * Hs[0] + y[1] * Hs[1] + y[2] * Hs[2] + y[3] * Hs[3]);
 
 		// setup linear system
-		Mat3d A;
+		mat3f A;
 		A[0][0] = R1.x; A[0][1] = R2.x; A[0][2] = R3.x;
 		A[1][0] = R1.y; A[1][1] = R2.y; A[1][2] = R3.y;
 		A[2][0] = R1.z; A[2][1] = R2.z; A[2][2] = R3.z;
 
 		// solve linear system
-		A.Invert();
+		A.invert();
 		vec3f Du = A*R;
 
 		// update solution

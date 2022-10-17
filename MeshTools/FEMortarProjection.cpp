@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,17 +36,17 @@ FEMortarProjection::FEMortarProjection()
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
+FSMesh* FEMortarProjection::Apply(FSSurface* pslave, FSSurface* pmaster)
 {
 	// get the slave mesh
-	FEMesh* pms = pslave->GetMesh();
+	FSMesh* pms = pslave->GetMesh();
 
 	// get the master mesh
-	FEMesh* pmm = pmaster->GetMesh();
+	FSMesh* pmm = pmaster->GetMesh();
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh();
-	FEMesh* ptri = new FEMesh();
+	FSMesh* pnew = new FSMesh();
+	FSMesh* ptri = new FSMesh();
 
 	// these polygons represent the projected slave, master, and intersection polygons
 	const int MAX_POINTS = 10;
@@ -63,10 +63,10 @@ FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 	for (int i=0; i<NFS; ++i, ++pi)
 	{
 		// get the next slave facet
-		FEFace* pf = pms->FacePtr(*pi);
+		FSFace* pf = pms->FacePtr(*pi);
 
 		// get the average facet normal
-		vec3d n = pf->m_fn;
+		vec3d n = to_vec3d(pf->m_fn);
 
 		// get the slave nodes
 		np = pf->Nodes();
@@ -102,7 +102,7 @@ FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 		for (int j=0; j<NFM; ++j, ++pj)
 		{
 			// get the next master surface facet
-			FEFace* pfm = pmm->FacePtr(*pj);
+			FSFace* pfm = pmm->FacePtr(*pj);
 
 			// get the master nodes
 			nq = pfm->Nodes();
@@ -169,14 +169,14 @@ FEMesh* FEMortarProjection::Apply(FESurface* pslave, FESurface* pmaster)
 				ptri->Node(0).r = e1*d.x + e2*d.y + c;
 				for (int k=0; k<nr; ++k)
 				{
-					FENode& n = ptri->Node(k+1);
+					FSNode& n = ptri->Node(k+1);
 					n.r = e1*R[k].x + e2*R[k].y + c;
 				}
 
 				// create the elements
 				for (int k=0; k<nr; ++k)
 				{
-					FEElement& el = ptri->Element(k);
+					FSElement& el = ptri->Element(k);
 					el.SetType(FE_TRI3);
 					el.m_gid = 0;
 					el.m_node[0] = 0;

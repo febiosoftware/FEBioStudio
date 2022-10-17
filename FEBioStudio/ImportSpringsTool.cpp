@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -110,12 +110,12 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	// find closest node
 	int imin = -1;
 	double l2min = 0.0;
-	FEMesh* m = po->GetFEMesh();
+	FSMesh* m = po->GetFEMesh();
 	int N = m->Nodes();
 	imin = -1;
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& ni = m->Node(i);
+		FSNode& ni = m->Node(i);
 		if (ni.IsExterior())
 		{
 			vec3d ri = m->LocalToGlobal(ni.r);
@@ -136,19 +136,20 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	return -1;
 }
 
-bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
+bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 {
 	// create the discrete set
-	GDiscreteSpringSet* dset = new GDiscreteSpringSet(fem);
+	GDiscreteSpringSet* dset = new GDiscreteSpringSet(gm);
 
 	std::cout << m_type << std::endl;
 
 	// set the spring material
+	FSModel* fem = gm->GetFSModel();
 	switch (m_type)
 	{
-	case 0: dset->SetMaterial(new FELinearSpringMaterial); break;
-	case 1: dset->SetMaterial(new FENonLinearSpringMaterial); break;
-	case 2: dset->SetMaterial(new FEHillContractileMaterial); break;
+	case 0: dset->SetMaterial(new FSLinearSpringMaterial(fem)); break;
+	case 1: dset->SetMaterial(new FSNonLinearSpringMaterial(fem)); break;
+	case 2: dset->SetMaterial(new FSHillContractileMaterial(fem)); break;
 	default:
 		assert(false);
 		return false;
@@ -160,7 +161,7 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 	dset->SetName(baseName.toStdString());
 
 	// add the discrete set to the model
-	fem->AddDiscreteObject(dset);
+	gm->AddDiscreteObject(dset);
 
 	int notFound = 0;
 	for (size_t i = 0; i < m_springs.size(); ++i)
@@ -193,7 +194,7 @@ bool CImportSpringsTool::AddSprings(GModel* fem, GMeshObject* po)
 
 void CImportSpringsTool::Intersect(GMeshObject* po, CImportSpringsTool::SPRING& spring)
 {
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 
 	vec3d n = spring.r1 - spring.r0; n.Normalize();
 

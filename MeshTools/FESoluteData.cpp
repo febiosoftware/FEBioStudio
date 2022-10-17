@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESoluteData.h"
 
-FESoluteData::FESoluteData()
+SoluteData::SoluteData()
 {
 	AddIntParam   (  0, "charge_number", "Charge Number");
 	AddDoubleParam(0.0, "molar_mass", "Molar Mass");

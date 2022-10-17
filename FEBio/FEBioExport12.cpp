@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,12 +39,12 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/GGroup.h>
 #include <memory>
-//using namespace std;
+#include <FECore/FETransform.h>
 
 using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
-FEBioExport12::FEBioExport12(FEProject& prj) : FEBioExport(prj)
+FEBioExport12::FEBioExport12(FSProject& prj) : FEBioExport(prj)
 {
 	// initialize section flags
 	for (int i = 0; i<MAX_SECTIONS; ++i) m_section[i] = true;
@@ -75,11 +75,11 @@ bool FEBioExport12::HasSurface(FEItemListBuilder* pl)
 
 //-----------------------------------------------------------------------------
 //! Prepare for export. Collect all loadcurves and named surfaces.
-bool FEBioExport12::PrepareExport(FEProject& prj)
+bool FEBioExport12::PrepareExport(FSProject& prj)
 {
 	if (FEBioExport::PrepareExport(prj) == false) return false;
 
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 	GModel& model = fem.GetModel();
 
 	m_nodes = model.FENodes();
@@ -88,10 +88,10 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 	// get the named surfaces (loads)
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Loads(); ++j)
 		{
-			FELoad* pl = pstep->Load(j);
+			FSLoad* pl = pstep->Load(j);
 			if (pl->IsActive())
 			{
 				FEItemListBuilder* ps = pl->GetItemList();
@@ -107,10 +107,10 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 	// get the named surfaces (paired interfaces)
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
-			FEPairedInterface* pi = dynamic_cast<FEPairedInterface*>(pstep->Interface(j));
+			FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(pstep->Interface(j));
 			if (pi && pi->IsActive())
 			{
 				FEItemListBuilder* pms = pi->GetSecondarySurface();
@@ -138,14 +138,14 @@ bool FEBioExport12::PrepareExport(FEProject& prj)
 bool FEBioExport12::Write(const char* szfile)
 {
 	// get the project and model
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// prepare for export
 	if (PrepareExport(m_prj) == false) return errf("Not all objects are meshed.");
 
 	// get the initial step
-	FEStep* pstep = fem.GetStep(0);
+	FSStep* pstep = fem.GetStep(0);
 
 	// the format for single step versus multi-step
 	// is slightly different, so we need to see if the 
@@ -157,7 +157,7 @@ bool FEBioExport12::Write(const char* szfile)
 	bool bsingle_step = (m_nsteps <= 1);
 	if (m_nsteps == 2)
 	{
-		FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+		FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
 		ntype = pstep->GetType();
 		if (pstep == 0) return errf("Step 1 is not an analysis step.");
 		if (pstep->BCs() + pstep->Loads() + pstep->Interfaces() + pstep->RigidConstraints() == 0) bsingle_step = true;
@@ -167,7 +167,7 @@ bool FEBioExport12::Write(const char* szfile)
 	bool bporo = false;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int ntype = pstep->GetType();
 		bporo |= (ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC);
 	}
@@ -192,7 +192,7 @@ bool FEBioExport12::Write(const char* szfile)
 			// written separately for each step
 			if (bsingle_step && (m_nsteps == 2))
 			{
-				FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(fem.GetStep(1));
+				FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(fem.GetStep(1));
 				if (pstep == 0) return errf("Step 1 is not an analysis step.");
 
 				// write the module section
@@ -283,7 +283,7 @@ bool FEBioExport12::Write(const char* szfile)
 			}
 
 			// loadcurve data
-			if ((m_pLC.size() > 0) && (m_section[FEBIO_LOADDATA]))
+			if ((fem.LoadControllers() > 0) && (m_section[FEBIO_LOADDATA]))
 			{
 				m_xml.add_branch("LoadData");
 				{
@@ -340,7 +340,7 @@ bool FEBioExport12::Write(const char* szfile)
 
 //-----------------------------------------------------------------------------
 // Write the MODULE section
-void FEBioExport12::WriteModuleSection(FEAnalysisStep* pstep)
+void FEBioExport12::WriteModuleSection(FSAnalysisStep* pstep)
 {
 	XMLElement t;
 	t.name("Module");
@@ -357,7 +357,7 @@ void FEBioExport12::WriteModuleSection(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteControlSection(FEAnalysisStep* pstep)
+void FEBioExport12::WriteControlSection(FSAnalysisStep* pstep)
 {
 	STEP_SETTINGS& ops = pstep->GetSettings();
 	int ntype = pstep->GetType();
@@ -374,7 +374,7 @@ void FEBioExport12::WriteControlSection(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteSolidControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteSolidControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -390,7 +390,7 @@ void FEBioExport12::WriteSolidControlParams(FEAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -421,7 +421,7 @@ void FEBioExport12::WriteSolidControlParams(FEAnalysisStep* pstep)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteHeatTransferControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 
@@ -433,7 +433,7 @@ void FEBioExport12::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -465,7 +465,7 @@ void FEBioExport12::WriteHeatTransferControlParams(FEAnalysisStep* pstep)
 
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBiphasicControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteBiphasicControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -481,7 +481,7 @@ void FEBioExport12::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -522,7 +522,7 @@ void FEBioExport12::WriteBiphasicControlParams(FEAnalysisStep* pstep)
 
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
+void FEBioExport12::WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep)
 {
 	XMLElement el;
 	STEP_SETTINGS& ops = pstep->GetSettings();
@@ -538,7 +538,7 @@ void FEBioExport12::WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep)
 
 	if (ops.bauto)
 	{
-		FELoadCurve* plc = pstep->GetMustPointLoadCurve();
+		LoadCurve* plc = pstep->GetMustPointLoadCurve();
 		el.name("time_stepper");
 		m_xml.add_branch(el);
 		{
@@ -583,7 +583,7 @@ void FEBioExport12::WriteMaterialSection()
 {
 	XMLElement el;
 
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 
 
 	for (int i = 0; i<s.Materials(); ++i)
@@ -594,7 +594,7 @@ void FEBioExport12::WriteMaterialSection()
 		el.add_attribute("id", pgm->m_ntag);
 		el.add_attribute("name", pgm->GetName().c_str());
 
-		FEMaterial* pmat = pgm->GetMaterialProperties();
+		FSMaterial* pmat = pgm->GetMaterialProperties();
 		if (pmat)
 		{
 			switch (pmat->Type())
@@ -630,6 +630,8 @@ void FEBioExport12::WriteMaterialSection()
 			case FE_ACTIVE_CONTRACT_UNI_UC: WriteMaterial(pmat, el); break;
 			case FE_ACTIVE_CONTRACT_TISO_UC: WriteMaterial(pmat, el); break;
 			case FE_ACTIVE_CONTRACT_ISO_UC: WriteMaterial(pmat, el); break;
+			case FE_ACTIVE_CONTRACT_FIBER: WriteMaterial(pmat, el); break;
+			case FE_ACTIVE_CONTRACT_FIBER_UC: WriteMaterial(pmat, el); break;
 			case FE_USER_MATERIAL: WriteMaterial(pmat, el); break;
 				//		case FE_PORO_ELASTIC       : WriteNestedMaterial(dynamic_cast<FENestedMaterial*>(pmat), el); break;
 				//		case FE_PORO_HOLMES_MOW    : WriteNestedMaterial(dynamic_cast<FENestedMaterial*>(pmat), el); break;
@@ -649,20 +651,20 @@ void FEBioExport12::WriteMaterialSection()
 			case FE_UNCOUPLED_SOLID_MIXTURE: WriteMultiMaterial(pmat, el); break;
 			case FE_MUSCLE_MATERIAL:
 			{
-									   FEMuscleMaterial* pm = dynamic_cast<FEMuscleMaterial*> (pmat);
-									   FEOldFiberMaterial& f = *pm->GetFiberMaterial();
+									   FSMuscleMaterial* pm = dynamic_cast<FSMuscleMaterial*> (pmat);
+									   FSOldFiberMaterial& f = *pm->GetFiberMaterial();
 									   el.add_attribute("type", "muscle material");
 									   m_xml.add_branch(el);
 									   {
-										   m_xml.add_leaf("density", pm->GetFloatValue(FEMuscleMaterial::MP_DENSITY));
-										   m_xml.add_leaf("g1", pm->GetFloatValue(FEMuscleMaterial::MP_G1));
-										   m_xml.add_leaf("g2", pm->GetFloatValue(FEMuscleMaterial::MP_G2));
-										   m_xml.add_leaf("k", pm->GetFloatValue(FEMuscleMaterial::MP_K));
-										   m_xml.add_leaf("p1", f.GetFloatValue(FEMuscleMaterial::MP_P1));
-										   m_xml.add_leaf("p2", f.GetFloatValue(FEMuscleMaterial::MP_P2));
-										   m_xml.add_leaf("Lofl", f.GetFloatValue(FEMuscleMaterial::MP_LOFL));
-										   m_xml.add_leaf("lam_max", f.GetFloatValue(FEMuscleMaterial::MP_LAM));
-										   m_xml.add_leaf("smax", f.GetFloatValue(FEMuscleMaterial::MP_SMAX));
+										   m_xml.add_leaf("density", pm->GetFloatValue(FSMuscleMaterial::MP_DENSITY));
+										   m_xml.add_leaf("g1", pm->GetFloatValue(FSMuscleMaterial::MP_G1));
+										   m_xml.add_leaf("g2", pm->GetFloatValue(FSMuscleMaterial::MP_G2));
+										   m_xml.add_leaf("k", pm->GetFloatValue(FSMuscleMaterial::MP_K));
+										   m_xml.add_leaf("p1", f.GetFloatValue(FSMuscleMaterial::MP_P1));
+										   m_xml.add_leaf("p2", f.GetFloatValue(FSMuscleMaterial::MP_P2));
+										   m_xml.add_leaf("Lofl", f.GetFloatValue(FSMuscleMaterial::MP_LOFL));
+										   m_xml.add_leaf("lam_max", f.GetFloatValue(FSMuscleMaterial::MP_LAM));
+										   m_xml.add_leaf("smax", f.GetFloatValue(FSMuscleMaterial::MP_SMAX));
 
 										   el.name("fiber");
 										   if (f.m_naopt == FE_FIBER_LOCAL)
@@ -718,7 +720,7 @@ void FEBioExport12::WriteMaterialSection()
 											   m_xml.add_leaf(el);
 										   }
 
-										   //					FELoadCurve& ac = f.GetParam(FEMuscleMaterial::Fiber::MP_AC).GetLoadCurve();
+										   //					LoadCurve& ac = f.GetParam(FEMuscleMaterial::Fiber::MP_AC).GetLoadCurve();
 										   //					el.name("active_contraction");
 										   //					el.add_attribute("lc", ac.m_nID);
 										   //					el.value(1.0);
@@ -729,18 +731,18 @@ void FEBioExport12::WriteMaterialSection()
 				break;
 			case FE_TENDON_MATERIAL:
 			{
-									   FETendonMaterial* pm = dynamic_cast<FETendonMaterial*> (pmat);
-									   FEOldFiberMaterial& f = *pm->GetFiberMaterial();
+									   FSTendonMaterial* pm = dynamic_cast<FSTendonMaterial*> (pmat);
+									   FSOldFiberMaterial& f = *pm->GetFiberMaterial();
 									   el.add_attribute("type", "tendon material");
 									   m_xml.add_branch(el);
 									   {
-										   m_xml.add_leaf("density", pm->GetFloatValue(FETendonMaterial::MP_DENSITY));
-										   m_xml.add_leaf("g1", pm->GetFloatValue(FETendonMaterial::MP_G1));
-										   m_xml.add_leaf("g2", pm->GetFloatValue(FETendonMaterial::MP_G2));
-										   m_xml.add_leaf("k", pm->GetFloatValue(FETendonMaterial::MP_K));
-										   m_xml.add_leaf("l1", f.GetFloatValue(FETendonMaterial::MP_L1));
-										   m_xml.add_leaf("l2", f.GetFloatValue(FETendonMaterial::MP_L2));
-										   m_xml.add_leaf("lam_max", f.GetFloatValue(FETendonMaterial::MP_LAM));
+										   m_xml.add_leaf("density", pm->GetFloatValue(FSTendonMaterial::MP_DENSITY));
+										   m_xml.add_leaf("g1", pm->GetFloatValue(FSTendonMaterial::MP_G1));
+										   m_xml.add_leaf("g2", pm->GetFloatValue(FSTendonMaterial::MP_G2));
+										   m_xml.add_leaf("k", pm->GetFloatValue(FSTendonMaterial::MP_K));
+										   m_xml.add_leaf("l1", f.GetFloatValue(FSTendonMaterial::MP_L1));
+										   m_xml.add_leaf("l2", f.GetFloatValue(FSTendonMaterial::MP_L2));
+										   m_xml.add_leaf("lam_max", f.GetFloatValue(FSTendonMaterial::MP_LAM));
 
 										   el.name("fiber");
 										   if (f.m_naopt == FE_FIBER_LOCAL)
@@ -801,15 +803,15 @@ void FEBioExport12::WriteMaterialSection()
 				break;
 			case FE_RIGID_MATERIAL:
 			{
-									  FERigidMaterial* pm = dynamic_cast<FERigidMaterial*> (pmat);
+									  FSRigidMaterial* pm = dynamic_cast<FSRigidMaterial*> (pmat);
 									  el.add_attribute("type", "rigid body");
 									  m_xml.add_branch(el);
 									  {
-										  m_xml.add_leaf("density", pm->GetFloatValue(FERigidMaterial::MP_DENSITY));
+										  m_xml.add_leaf("density", pm->GetFloatValue(FSRigidMaterial::MP_DENSITY));
 
-										  if (pm->GetBoolValue(FERigidMaterial::MP_COM) == false)
+										  if (pm->GetBoolValue(FSRigidMaterial::MP_COM) == false)
 										  {
-											  vec3d v = pm->GetParam(FERigidMaterial::MP_RC).GetVec3dValue();
+											  vec3d v = pm->GetParam(FSRigidMaterial::MP_RC).GetVec3dValue();
 											  m_xml.add_leaf("center_of_mass", v);
 										  }
 
@@ -825,30 +827,30 @@ void FEBioExport12::WriteMaterialSection()
 				break;
 			case FE_TCNL_ORTHO:
 			{
-								  FETCNonlinearOrthotropic* pm = dynamic_cast<FETCNonlinearOrthotropic*>(pmat);
+								  FSTCNonlinearOrthotropic* pm = dynamic_cast<FSTCNonlinearOrthotropic*>(pmat);
 								  el.add_attribute("type", "TC nonlinear orthotropic");
 								  double C1, C2, K, beta[3], ksi[3], a[3], d[3];
 								  vec3d v;
-								  C1 = pm->GetParam(FETCNonlinearOrthotropic::MP_C1).GetFloatValue();
-								  C2 = pm->GetParam(FETCNonlinearOrthotropic::MP_C2).GetFloatValue();
-								  K = pm->GetParam(FETCNonlinearOrthotropic::MP_K).GetFloatValue();
+								  C1 = pm->GetParam(FSTCNonlinearOrthotropic::MP_C1).GetFloatValue();
+								  C2 = pm->GetParam(FSTCNonlinearOrthotropic::MP_C2).GetFloatValue();
+								  K = pm->GetParam(FSTCNonlinearOrthotropic::MP_K).GetFloatValue();
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_BETA).GetVec3dValue();
+								  v = pm->GetParam(FSTCNonlinearOrthotropic::MP_BETA).GetVec3dValue();
 								  beta[0] = v.x;
 								  beta[1] = v.y;
 								  beta[2] = v.z;
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_KSI).GetVec3dValue();
+								  v = pm->GetParam(FSTCNonlinearOrthotropic::MP_KSI).GetVec3dValue();
 								  ksi[0] = v.x;
 								  ksi[1] = v.y;
 								  ksi[2] = v.z;
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_A).GetVec3dValue();
+								  v = pm->GetParam(FSTCNonlinearOrthotropic::MP_A).GetVec3dValue();
 								  a[0] = v.x;
 								  a[1] = v.y;
 								  a[2] = v.z;
 
-								  v = pm->GetParam(FETCNonlinearOrthotropic::MP_D).GetVec3dValue();
+								  v = pm->GetParam(FSTCNonlinearOrthotropic::MP_D).GetVec3dValue();
 								  d[0] = v.x;
 								  d[1] = v.y;
 								  d[2] = v.z;
@@ -890,9 +892,9 @@ void FEBioExport12::WriteMaterialSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteMaterial(FEMaterial *pm, XMLElement& el)
+void FEBioExport12::WriteMaterial(FSMaterial *pm, XMLElement& el)
 {
-	const char* sztype = FEMaterialFactory::TypeStr(pm);
+	const char* sztype = pm->GetTypeString();
 	el.add_attribute("type", sztype);
 	m_xml.add_branch(el);
 	{
@@ -923,12 +925,12 @@ void FEBioExport12::WriteMaterial(FEMaterial *pm, XMLElement& el)
 //-----------------------------------------------------------------------------
 //! Write a fiber material to file.
 //! TODO: Can I use the fiber material's parameters?
-void FEBioExport12::WriteFiberMaterial(FEOldFiberMaterial& f)
+void FEBioExport12::WriteFiberMaterial(FSOldFiberMaterial& f)
 {
-	m_xml.add_leaf("c3", f.GetFloatValue(FETransMooneyRivlinOld::Fiber::MP_C3));
-	m_xml.add_leaf("c4", f.GetFloatValue(FETransMooneyRivlinOld::Fiber::MP_C4));
-	m_xml.add_leaf("c5", f.GetFloatValue(FETransMooneyRivlinOld::Fiber::MP_C5));
-	m_xml.add_leaf("lam_max", f.GetFloatValue(FETransMooneyRivlinOld::Fiber::MP_LAM));
+	m_xml.add_leaf("c3", f.GetFloatValue(FSTransMooneyRivlinOld::Fiber::MP_C3));
+	m_xml.add_leaf("c4", f.GetFloatValue(FSTransMooneyRivlinOld::Fiber::MP_C4));
+	m_xml.add_leaf("c5", f.GetFloatValue(FSTransMooneyRivlinOld::Fiber::MP_C5));
+	m_xml.add_leaf("lam_max", f.GetFloatValue(FSTransMooneyRivlinOld::Fiber::MP_LAM));
 
 	XMLElement el;
 	el.name("fiber");
@@ -987,29 +989,29 @@ void FEBioExport12::WriteFiberMaterial(FEOldFiberMaterial& f)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteMaterialParams(FEMaterial* pm)
+void FEBioExport12::WriteMaterialParams(FSMaterial* pm)
 {
 	// Write the parameters first
 	WriteParamList(*pm);
 
 	// if the material is transversely-isotropic, we need to write the fiber data as well
-	FETransMooneyRivlin* ptmr = dynamic_cast<FETransMooneyRivlin*>(pm);
+	FSTransMooneyRivlin* ptmr = dynamic_cast<FSTransMooneyRivlin*>(pm);
 	if (ptmr)
 	{
-		FEOldFiberMaterial& f = *(ptmr->GetFiberMaterial());
+		FSOldFiberMaterial& f = *(ptmr->GetFiberMaterial());
 		WriteFiberMaterial(f);
 	}
 
-	FETransVerondaWestmann* ptvw = dynamic_cast<FETransVerondaWestmann*>(pm);
+	FSTransVerondaWestmann* ptvw = dynamic_cast<FSTransVerondaWestmann*>(pm);
 	if (ptvw)
 	{
-		FEOldFiberMaterial& f = *(ptvw->GetFiberMaterial());
+		FSOldFiberMaterial& f = *(ptvw->GetFiberMaterial());
 		WriteFiberMaterial(f);
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
+void FEBioExport12::WriteMultiMaterial(FSMaterial* pm, XMLElement& el)
 {
 	const char* sztype = 0;
 
@@ -1043,24 +1045,24 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 	// set the type attribute
 	if (pm->Type() == FE_SOLUTE_MATERIAL)
 	{
-		FESoluteMaterial* psm = dynamic_cast<FESoluteMaterial*>(pm); assert(psm);
+		FSSoluteMaterial* psm = dynamic_cast<FSSoluteMaterial*>(pm); assert(psm);
 		el.add_attribute("sol", psm->GetSoluteIndex() + 1);
 	}
 	else if (pm->Type() == FE_SBM_MATERIAL)
 	{
-		FESBMMaterial* psb = dynamic_cast<FESBMMaterial*>(pm); assert(psb);
+		FSSBMMaterial* psb = dynamic_cast<FSSBMMaterial*>(pm); assert(psb);
 		el.add_attribute("sbm", psb->GetSBMIndex() + 1);
 	}
 	else if (pm->Type() == FE_REACTANT_MATERIAL)
 	{
-		FEReactantMaterial* psb = dynamic_cast<FEReactantMaterial*>(pm); assert(psb);
+		FSReactantMaterial* psb = dynamic_cast<FSReactantMaterial*>(pm); assert(psb);
 		int idx = psb->GetIndex();
 		int type = psb->GetReactantType();
 		el.value(psb->GetCoef());
 		switch (type)
 		{
-		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FSReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
 		}
@@ -1069,14 +1071,14 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 	}
 	else if (pm->Type() == FE_PRODUCT_MATERIAL)
 	{
-		FEProductMaterial* psb = dynamic_cast<FEProductMaterial*>(pm); assert(psb);
+		FSProductMaterial* psb = dynamic_cast<FSProductMaterial*>(pm); assert(psb);
 		int idx = psb->GetIndex();
 		int type = psb->GetProductType();
 		el.value(psb->GetCoef());
 		switch (type)
 		{
-		case FEReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
-		case FEReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
+		case FSReactionSpecies::SOLUTE_SPECIES: el.add_attribute("sol", idx + 1); break;
+		case FSReactionSpecies::SBM_SPECIES   : el.add_attribute("sbm", idx + 1); break;
 		default:
 			assert(false);
 		}
@@ -1116,10 +1118,10 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 		int NC = pm->Properties();
 		for (int i = 0; i<NC; ++i)
 		{
-			FEMaterialProperty& mc = pm->GetProperty(i);
+			FSProperty& mc = pm->GetProperty(i);
 			for (int j = 0; j<mc.Size(); ++j)
 			{
-				FEMaterial* pc = mc.GetMaterial(j);
+				FSMaterial* pc = pm->GetMaterialProperty(i, j);
 				if (pc)
 				{
 					el.name(mc.GetName().c_str());
@@ -1139,7 +1141,7 @@ void FEBioExport12::WriteMultiMaterial(FEMaterial* pm, XMLElement& el)
 					if ((pc->Properties() > 0) || is_multi) WriteMultiMaterial(pc, el);
 					else
 					{
-						el.add_attribute("type", FEMaterialFactory::TypeStr(pc));
+						el.add_attribute("type", pc->GetTypeString());
 						m_xml.add_branch(el);
 						{
 							WriteMaterialParams(pc);
@@ -1158,7 +1160,7 @@ void FEBioExport12::WriteGeometrySection()
 {
 	XMLElement el;
 
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	vec3d r;
@@ -1174,12 +1176,12 @@ void FEBioExport12::WriteGeometrySection()
 	if (model.ShellElements() > 0) bdata = true;
 	for (int i = 0; i<s.Materials(); ++i)
 	{
-		FETransverselyIsotropic* pmat = dynamic_cast<FETransverselyIsotropic*>(s.GetMaterial(i)->GetMaterialProperties());
+		FSTransverselyIsotropic* pmat = dynamic_cast<FSTransverselyIsotropic*>(s.GetMaterial(i)->GetMaterialProperties());
 		if (pmat && (pmat->GetFiberMaterial()->m_naopt == FE_FIBER_USER)) bdata = true;
 	}
 	for (int i = 0; i<model.Objects(); ++i)
 	{
-		FECoreMesh* pm = model.Object(i)->GetFEMesh();
+		FSCoreMesh* pm = model.Object(i)->GetFEMesh();
 
 		for (int j = 0; j<pm->Elements(); ++j)
 		{
@@ -1198,7 +1200,7 @@ void FEBioExport12::WriteGeometrySection()
 //-----------------------------------------------------------------------------
 void FEBioExport12::WriteGeometryNodes()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	XMLWriter::SetFloatFormat(XMLWriter::ScientificFormat);
@@ -1213,11 +1215,11 @@ void FEBioExport12::WriteGeometryNodes()
 		for (int i = 0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			FECoreMesh* pm = po->GetFEMesh();
+			FSCoreMesh* pm = po->GetFEMesh();
 
 			for (int j = 0; j<pm->Nodes(); ++j, ++n)
 			{
-				FENode& node = pm->Node(j);
+				FSNode& node = pm->Node(j);
 				node.m_nid = n;
 				el.set_attribute(nid, n);
 				vec3d r = po->GetTransform().LocalToGlobal(node.r);
@@ -1234,7 +1236,7 @@ void FEBioExport12::WriteGeometryNodes()
 //-----------------------------------------------------------------------------
 void FEBioExport12::WriteGeometryElements()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	// elements
@@ -1304,7 +1306,7 @@ void FEBioExport12::WriteGeometryElements()
 		for (i = 0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			FECoreMesh* pm = po->GetFEMesh();
+			FSCoreMesh* pm = po->GetFEMesh();
 
 			for (j = 0; j<pm->Elements(); ++j)
 			{
@@ -1407,7 +1409,7 @@ void FEBioExport12::WriteGeometryElements()
 		for (i = 0; i<model.Objects(); ++i)
 		{
 			GObject* po = model.Object(i);
-			FECoreMesh* pm = po->GetFEMesh();
+			FSCoreMesh* pm = po->GetFEMesh();
 
 			// next we write all shell elements
 			for (j = 0; j<pm->Elements(); ++j)
@@ -1450,7 +1452,7 @@ void FEBioExport12::WriteGeometryElements()
 //-----------------------------------------------------------------------------
 void FEBioExport12::WriteGeometryElementData()
 {
-	FEModel& s = *m_pfem;
+	FSModel& s = *m_pfem;
 	GModel& model = s.GetModel();
 
 	m_xml.add_branch("ElementData");
@@ -1462,15 +1464,15 @@ void FEBioExport12::WriteGeometryElementData()
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FECoreMesh* pm = po->GetFEMesh();
+		FSCoreMesh* pm = po->GetFEMesh();
 		const Transform& T = po->GetTransform();
 
 		for (int j = 0; j<pm->Elements(); ++j)
 		{
 			FEElement_& e = pm->ElementRef(j);
 			GMaterial* pmat = s.GetMaterialFromID(po->Part(e.m_gid)->GetMaterialID());
-			FETransverselyIsotropic* ptiso = 0;
-			if (pmat) ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat->GetMaterialProperties());
+			FSTransverselyIsotropic* ptiso = 0;
+			if (pmat) ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat->GetMaterialProperties());
 
 			elem.set_attribute(nid, e.m_nid);
 			if (e.IsShell() || e.m_Qactive || (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER)))
@@ -1509,7 +1511,7 @@ void FEBioExport12::WriteGeometryElementData()
 
 //-----------------------------------------------------------------------------
 
-void FEBioExport12::WriteBoundarySection(FEStep& s)
+void FEBioExport12::WriteBoundarySection(FSStep& s)
 {
 	XMLElement el;
 
@@ -1529,7 +1531,7 @@ void FEBioExport12::WriteBoundarySection(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteContactSection(FEStep& s)
+void FEBioExport12::WriteContactSection(FSStep& s)
 {
 	// --- C O N T A C T ---
 	// rigid interfaces
@@ -1574,7 +1576,7 @@ void FEBioExport12::WriteContactSection(FEStep& s)
 
 //-----------------------------------------------------------------------------
 
-void FEBioExport12::WriteLoadsSection(FEStep& s)
+void FEBioExport12::WriteLoadsSection(FSStep& s)
 {
 	XMLElement el;
 
@@ -1614,7 +1616,7 @@ void FEBioExport12::WriteLoadsSection(FEStep& s)
 //
 void FEBioExport12::WriteDiscrete()
 {
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 	GModel& model = fem.GetModel();
 	for (int i = 0; i<model.DiscreteObjects(); ++i)
 	{
@@ -1629,7 +1631,7 @@ void FEBioExport12::WriteDiscrete()
 				m_xml.add_branch("spring");
 				{
 					int n[2];
-					GObject* po; FENode* pn;
+					GObject* po; FSNode* pn;
 
 					po = dynamic_cast<GObject*>(pn0->Object()); assert(po);
 					pn = po->GetFENode(pn0->GetLocalID()); assert(pn);
@@ -1670,7 +1672,7 @@ void FEBioExport12::WriteDiscrete()
 					Param& p = pg->GetParam(GGeneralSpring::MP_F);
 
 					double F = p.GetFloatValue();
-					int lc = p.GetLoadCurve()->GetID();
+					int lc = -1;// p.GetLoadCurve()->GetID();
 
 					m_xml.add_leaf("node", n, 2);
 
@@ -1689,12 +1691,12 @@ void FEBioExport12::WriteDiscrete()
 //-----------------------------------------------------------------------------
 // write rigid joints
 //
-void FEBioExport12::WriteContactJoint(FEStep& s)
+void FEBioExport12::WriteContactJoint(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
 		// rigid joints
-		FERigidJoint* pj = dynamic_cast<FERigidJoint*> (s.Interface(i));
+		FSRigidJoint* pj = dynamic_cast<FSRigidJoint*> (s.Interface(i));
 		if (pj && pj->IsActive())
 		{
 			XMLElement ec("contact");
@@ -1704,12 +1706,12 @@ void FEBioExport12::WriteContactJoint(FEStep& s)
 				int na = (pj->m_pbodyA ? pj->m_pbodyA->m_ntag : 0);
 				int nb = (pj->m_pbodyB ? pj->m_pbodyB->m_ntag : 0);
 
-				m_xml.add_leaf("tolerance", pj->GetFloatValue(FERigidJoint::TOL));
-				m_xml.add_leaf("penalty", pj->GetFloatValue(FERigidJoint::PENALTY));
+				m_xml.add_leaf("tolerance", pj->GetFloatValue(FSRigidJoint::TOL));
+				m_xml.add_leaf("penalty", pj->GetFloatValue(FSRigidJoint::PENALTY));
 				m_xml.add_leaf("body_a", na);
 				m_xml.add_leaf("body_b", nb);
 
-				vec3d v = pj->GetVecValue(FERigidJoint::RJ);
+				vec3d v = pj->GetVecValue(FSRigidJoint::RJ);
 				m_xml.add_leaf("joint", v);
 			}
 			m_xml.close_branch(); // contact - rigid joint
@@ -1720,31 +1722,31 @@ void FEBioExport12::WriteContactJoint(FEStep& s)
 //-----------------------------------------------------------------------------
 // write rigid walls
 //
-void FEBioExport12::WriteContactWall(FEStep& s)
+void FEBioExport12::WriteContactWall(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*> (s.Interface(i));
+		FSRigidWallInterface* pw = dynamic_cast<FSRigidWallInterface*> (s.Interface(i));
 		if (pw && pw->IsActive())
 		{
 			XMLElement ec("contact");
 			ec.add_attribute("type", "rigid_wall");
 			m_xml.add_branch(ec);
 			{
-				m_xml.add_leaf("laugon", (pw->GetBoolValue(FERigidWallInterface::LAUGON) ? 1 : 0));
-				m_xml.add_leaf("tolerance", pw->GetFloatValue(FERigidWallInterface::ALTOL));
-				m_xml.add_leaf("penalty", pw->GetFloatValue(FERigidWallInterface::PENALTY));
+				m_xml.add_leaf("laugon", (pw->GetBoolValue(FSRigidWallInterface::LAUGON) ? 1 : 0));
+				m_xml.add_leaf("tolerance", pw->GetFloatValue(FSRigidWallInterface::ALTOL));
+				m_xml.add_leaf("penalty", pw->GetFloatValue(FSRigidWallInterface::PENALTY));
 
-				FELoadCurve* plc = pw->GetParamLC(FERigidWallInterface::OFFSET);
+				int lc = GetLC(&pw->GetParam(FSRigidWallInterface::OFFSET));
 
 				XMLElement plane;
-				if (plc) plane.add_attribute("lc", plc->GetID());
+				if (lc > 0) plane.add_attribute("lc", lc);
 				plane.name("plane");
 				double a[4];
-				a[0] = pw->GetFloatValue(FERigidWallInterface::PA);
-				a[1] = pw->GetFloatValue(FERigidWallInterface::PB);
-				a[2] = pw->GetFloatValue(FERigidWallInterface::PC);
-				a[3] = pw->GetFloatValue(FERigidWallInterface::PD);
+				a[0] = pw->GetFloatValue(FSRigidWallInterface::PA);
+				a[1] = pw->GetFloatValue(FSRigidWallInterface::PB);
+				a[2] = pw->GetFloatValue(FSRigidWallInterface::PC);
+				a[3] = pw->GetFloatValue(FSRigidWallInterface::PD);
 				plane.value(a, 4);
 				m_xml.add_leaf(plane);
 
@@ -1762,8 +1764,8 @@ void FEBioExport12::WriteContactWall(FEStep& s)
 					FEFaceList::Iterator pf = pg->First();
 					for (j = 0; j<pg->Size(); ++j, ++pf)
 					{
-						FEFace& face = *(pf->m_pi);
-						FECoreMesh* pm = pf->m_pm;
+						FSFace& face = *(pf->m_pi);
+						FSCoreMesh* pm = pf->m_pm;
 						for (k = 0; k<face.Nodes(); ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 						switch (face.Nodes())
 						{
@@ -1796,11 +1798,11 @@ void FEBioExport12::WriteContactWall(FEStep& s)
 //-----------------------------------------------------------------------------
 // write poro-contact
 //
-void FEBioExport12::WriteContactPoro(FEStep& s)
+void FEBioExport12::WriteContactPoro(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FEPoroContact* pp = dynamic_cast<FEPoroContact*> (s.Interface(i));
+		FSPoroContact* pp = dynamic_cast<FSPoroContact*> (s.Interface(i));
 		if (pp && pp->IsActive())
 		{
 			XMLElement ec("contact");
@@ -1838,11 +1840,11 @@ void FEBioExport12::WriteContactPoro(FEStep& s)
 //-----------------------------------------------------------------------------
 // write poro-solute contact
 //
-void FEBioExport12::WriteContactPoroSolute(FEStep& s)
+void FEBioExport12::WriteContactPoroSolute(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FEPoroSoluteContact* pp = dynamic_cast<FEPoroSoluteContact*> (s.Interface(i));
+		FSPoroSoluteContact* pp = dynamic_cast<FSPoroSoluteContact*> (s.Interface(i));
 		if (pp && pp->IsActive())
 		{
 			XMLElement ec("contact");
@@ -1880,11 +1882,11 @@ void FEBioExport12::WriteContactPoroSolute(FEStep& s)
 //-----------------------------------------------------------------------------
 // write multiphasic contact
 //
-void FEBioExport12::WriteContactMultiphasic(FEStep& s)
+void FEBioExport12::WriteContactMultiphasic(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FEMultiphasicContact* pp = dynamic_cast<FEMultiphasicContact*> (s.Interface(i));
+		FSMultiphasicContact* pp = dynamic_cast<FSMultiphasicContact*> (s.Interface(i));
 		if (pp && pp->IsActive())
 		{
 			XMLElement ec("contact");
@@ -1922,11 +1924,11 @@ void FEBioExport12::WriteContactMultiphasic(FEStep& s)
 //-----------------------------------------------------------------------------
 // write Tension-Compression contact
 //
-void FEBioExport12::WriteContactTC(FEStep& s)
+void FEBioExport12::WriteContactTC(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FETensionCompressionInterface* pp = dynamic_cast<FETensionCompressionInterface*> (s.Interface(i));
+		FSTensionCompressionInterface* pp = dynamic_cast<FSTensionCompressionInterface*> (s.Interface(i));
 		if (pp && pp->IsActive())
 		{
 			XMLElement ec("contact");
@@ -1964,11 +1966,11 @@ void FEBioExport12::WriteContactTC(FEStep& s)
 //-----------------------------------------------------------------------------
 // write Tied-Biphasic interface
 //
-void FEBioExport12::WriteContactTiedPoro(FEStep& s)
+void FEBioExport12::WriteContactTiedPoro(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FETiedBiphasicInterface* pp = dynamic_cast<FETiedBiphasicInterface*> (s.Interface(i));
+		FSTiedBiphasicInterface* pp = dynamic_cast<FSTiedBiphasicInterface*> (s.Interface(i));
 		if (pp && pp->IsActive())
 		{
 			XMLElement ec("contact");
@@ -2006,12 +2008,12 @@ void FEBioExport12::WriteContactTiedPoro(FEStep& s)
 //-----------------------------------------------------------------------------
 // write rigid interfaces
 //
-void FEBioExport12::WriteContactRigid(FEStep& s)
+void FEBioExport12::WriteContactRigid(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
 		// rigid interfaces
-		FERigidInterface* pr = dynamic_cast<FERigidInterface*> (s.Interface(i));
+		FSRigidInterface* pr = dynamic_cast<FSRigidInterface*> (s.Interface(i));
 		if (pr && pr->IsActive())
 		{
 			GMaterial* pm = pr->GetRigidBody();
@@ -2024,8 +2026,8 @@ void FEBioExport12::WriteContactRigid(FEStep& s)
 
 			FEItemListBuilder* pitem = pr->GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(pr);
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator pn = pg->First();
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator pn = pg->First();
 			for (j = 0; j<pg->Size(); ++j, ++pn) RC[(pn->m_pi)->m_nid - 1] = 1;
 
 			XMLElement ec("contact");
@@ -2054,11 +2056,11 @@ void FEBioExport12::WriteContactRigid(FEStep& s)
 //-----------------------------------------------------------------------------
 // write tied interfaces
 //
-void FEBioExport12::WriteContactTied(FEStep& s)
+void FEBioExport12::WriteContactTied(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FETiedInterface* pt = dynamic_cast<FETiedInterface*> (s.Interface(i));
+		FSTiedInterface* pt = dynamic_cast<FSTiedInterface*> (s.Interface(i));
 		if (pt && pt->IsActive())
 		{
 			XMLElement ec("contact");
@@ -2095,11 +2097,11 @@ void FEBioExport12::WriteContactTied(FEStep& s)
 //-----------------------------------------------------------------------------
 // write sticky interfaces
 //
-void FEBioExport12::WriteContactSticky(FEStep& s)
+void FEBioExport12::WriteContactSticky(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FEStickyInterface* pt = dynamic_cast<FEStickyInterface*> (s.Interface(i));
+		FSStickyInterface* pt = dynamic_cast<FSStickyInterface*> (s.Interface(i));
 		if (pt && pt->IsActive())
 		{
 			XMLElement ec("contact");
@@ -2138,11 +2140,11 @@ void FEBioExport12::WriteContactSticky(FEStep& s)
 //-----------------------------------------------------------------------------
 // write periodic boundary constraints
 //
-void FEBioExport12::WriteContactPeriodic(FEStep& s)
+void FEBioExport12::WriteContactPeriodic(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FEPeriodicBoundary* pt = dynamic_cast<FEPeriodicBoundary*> (s.Interface(i));
+		FSPeriodicBoundary* pt = dynamic_cast<FSPeriodicBoundary*> (s.Interface(i));
 		if (pt && pt->IsActive())
 		{
 			XMLElement ec("contact");
@@ -2179,15 +2181,15 @@ void FEBioExport12::WriteContactPeriodic(FEStep& s)
 //-----------------------------------------------------------------------------
 // write sliding interfaces
 //
-void FEBioExport12::WriteContactSliding(FEStep& s)
+void FEBioExport12::WriteContactSliding(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FESlidingInterface* ps = dynamic_cast<FESlidingInterface*> (s.Interface(i));
+		FSSlidingInterface* ps = dynamic_cast<FSSlidingInterface*> (s.Interface(i));
 		if (ps && ps->IsActive())
 		{
 			XMLElement ec("contact");
-			int ntype = ps->GetIntValue(FESlidingInterface::NTYPE);
+			int ntype = ps->GetIntValue(FSSlidingInterface::NTYPE);
 			if (ntype == 0) ec.add_attribute("type", "sliding_with_gaps");
 			else if (ntype == 1) ec.add_attribute("type", "facet-to-facet sliding");
 
@@ -2197,7 +2199,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 				int NP = ps->Parameters();
 				for (int n = 0; n<NP; ++n)
 				{
-					if (n != FESlidingInterface::NTYPE)
+					if (n != FSSlidingInterface::NTYPE)
 					{
 						Param& p = ps->GetParam(n);
 						WriteParam(p);
@@ -2225,7 +2227,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 			m_xml.close_branch(); // contact - sliding
 		}
 
-		FESlidingWithGapsInterface* pswg = dynamic_cast<FESlidingWithGapsInterface*> (s.Interface(i));
+		FSSlidingWithGapsInterface* pswg = dynamic_cast<FSSlidingWithGapsInterface*> (s.Interface(i));
 		if (pswg && pswg->IsActive())
 		{
 			XMLElement ec("contact");
@@ -2260,7 +2262,7 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 			m_xml.close_branch(); // contact - sliding
 		}
 
-		FEFacetOnFacetInterface* pf2f = dynamic_cast<FEFacetOnFacetInterface*> (s.Interface(i));
+		FSFacetOnFacetInterface* pf2f = dynamic_cast<FSFacetOnFacetInterface*> (s.Interface(i));
 		if (pf2f && pf2f->IsActive())
 		{
 			XMLElement ec("contact");
@@ -2300,14 +2302,14 @@ void FEBioExport12::WriteContactSliding(FEStep& s)
 //-----------------------------------------------------------------------------
 // write Tied-Biphasic interface
 //
-void FEBioExport12::WriteSpringTied(FEStep& s)
+void FEBioExport12::WriteSpringTied(FSStep& s)
 {
 	for (int i = 0; i<s.Interfaces(); ++i)
 	{
-		FESpringTiedInterface* ps = dynamic_cast<FESpringTiedInterface*> (s.Interface(i));
+		FSSpringTiedInterface* ps = dynamic_cast<FSSpringTiedInterface*> (s.Interface(i));
 		if (ps && ps->IsActive())
 		{
-			double E = ps->GetFloatValue(FESpringTiedInterface::ECONST);
+			double E = ps->GetFloatValue(FSSpringTiedInterface::ECONST);
 			vector<pair<int, int> > L;
 			ps->BuildSpringList(L);
 			if (L.empty() == false)
@@ -2328,36 +2330,36 @@ void FEBioExport12::WriteSpringTied(FEStep& s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBCFixed(FEStep &s)
+void FEBioExport12::WriteBCFixed(FSStep &s)
 {
 	for (int i = 0; i<s.BCs(); ++i)
 	{
-		FEBoundaryCondition* pbc = s.BC(i);
+		FSBoundaryCondition* pbc = s.BC(i);
 		if (pbc->IsActive())
 		{
 			switch (pbc->Type())
 			{
-			case FE_FIXED_DISPLACEMENT: WriteBCFixedDisplacement(dynamic_cast<FEFixedDisplacement& >(*pbc), s); break;
-			case FE_FIXED_ROTATION: WriteBCFixedRotation(dynamic_cast<FEFixedRotation&     >(*pbc), s); break;
-			case FE_FIXED_FLUID_PRESSURE: WriteBCFixedFluidPressure(dynamic_cast<FEFixedFluidPressure&>(*pbc), s); break;
-			case FE_FIXED_TEMPERATURE: WriteBCFixedTemperature(dynamic_cast<FEFixedTemperature&  >(*pbc), s); break;
-			case FE_FIXED_CONCENTRATION: WriteBCFixedConcentration(dynamic_cast<FEFixedConcentration&>(*pbc), s); break;
+			case FE_FIXED_DISPLACEMENT: WriteBCFixedDisplacement(dynamic_cast<FSFixedDisplacement& >(*pbc), s); break;
+			case FE_FIXED_ROTATION: WriteBCFixedRotation(dynamic_cast<FSFixedRotation&     >(*pbc), s); break;
+			case FE_FIXED_FLUID_PRESSURE: WriteBCFixedFluidPressure(dynamic_cast<FSFixedFluidPressure&>(*pbc), s); break;
+			case FE_FIXED_TEMPERATURE: WriteBCFixedTemperature(dynamic_cast<FSFixedTemperature&  >(*pbc), s); break;
+			case FE_FIXED_CONCENTRATION: WriteBCFixedConcentration(dynamic_cast<FSFixedConcentration&>(*pbc), s); break;
 			}
 		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBCFixedDisplacement(FEFixedDisplacement& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedDisplacement(FSFixedDisplacement& rbc, FSStep& s)
 {
 	const char* xyz[] = { "x", "y", "xy", "z", "xz", "yz", "xyz" };
 
 	// build the node list
 	FEItemListBuilder* pItem = rbc.GetItemList();
 	if (pItem == 0) throw InvalidItemListBuilder(&rbc);
-	FENodeList* pns = pItem->BuildNodeList();
+	FSNodeList* pns = pItem->BuildNodeList();
 	if (pns == 0) throw InvalidItemListBuilder(&rbc);
-	unique_ptr<FENodeList> pg(pns);
+	unique_ptr<FSNodeList> pg(pns);
 
 	// get the BC for this constraint
 	int bc = rbc.GetBC();
@@ -2382,10 +2384,10 @@ void FEBioExport12::WriteBCFixedDisplacement(FEFixedDisplacement& rbc, FEStep& s
 
 			// write the BC's
 			int N = pg->Size();
-			FENodeList::Iterator pi = pg->First();
+			FSNodeList::Iterator pi = pg->First();
 			for (int k = 0; k<N; ++k, ++pi)
 			{
-				FENode* pn = pi->m_pi;
+				FSNode* pn = pi->m_pi;
 				int nid = pn->m_nid;
 
 				el.set_attribute(n1, nid);
@@ -2398,16 +2400,16 @@ void FEBioExport12::WriteBCFixedDisplacement(FEFixedDisplacement& rbc, FEStep& s
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBCFixedRotation(FEFixedRotation& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedRotation(FSFixedRotation& rbc, FSStep& s)
 {
 	const char* uvw[] = { "u", "v", "uv", "w", "uw", "vw", "uvw" };
 
 	// build the node list
 	FEItemListBuilder* pItem = rbc.GetItemList();
 	if (pItem == 0) throw InvalidItemListBuilder(&rbc);
-	FENodeList* pns = pItem->BuildNodeList();
+	FSNodeList* pns = pItem->BuildNodeList();
 	if (pns == 0) throw InvalidItemListBuilder(&rbc);
-	unique_ptr<FENodeList> pg(pns);
+	unique_ptr<FSNodeList> pg(pns);
 
 	// get the BC for this constraint
 	int bc = rbc.GetBC();
@@ -2432,10 +2434,10 @@ void FEBioExport12::WriteBCFixedRotation(FEFixedRotation& rbc, FEStep& s)
 
 			// write the BC's
 			int N = pg->Size();
-			FENodeList::Iterator pi = pg->First();
+			FSNodeList::Iterator pi = pg->First();
 			for (int k = 0; k<N; ++k, ++pi)
 			{
-				FENode* pn = pi->m_pi;
+				FSNode* pn = pi->m_pi;
 				int nid = pn->m_nid;
 
 				el.set_attribute(n1, nid);
@@ -2450,7 +2452,7 @@ void FEBioExport12::WriteBCFixedRotation(FEFixedRotation& rbc, FEStep& s)
 //-----------------------------------------------------------------------------
 // Export the fixed degrees of freedom
 //
-void FEBioExport12::WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedFluidPressure(FSFixedFluidPressure& rbc, FSStep& s)
 {
 	vector<int> BC; BC.resize(m_nodes);
 
@@ -2471,12 +2473,12 @@ void FEBioExport12::WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep&
 		FEItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
-		unique_ptr<FENodeList> pg(pItem->BuildNodeList());
+		unique_ptr<FSNodeList> pg(pItem->BuildNodeList());
 
-		FENodeList::Iterator it = pg->First();
+		FSNodeList::Iterator it = pg->First();
 		for (int k = 0; k<pg->Size(); ++k, ++it)
 		{
-			FENode& node = *(it->m_pi);
+			FSNode& node = *(it->m_pi);
 			BC[node.m_nid - 1] |= bc;
 		}
 
@@ -2501,7 +2503,7 @@ void FEBioExport12::WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep&
 //-----------------------------------------------------------------------------
 // Export the fixed degrees of freedom
 //
-void FEBioExport12::WriteBCFixedTemperature(FEFixedTemperature& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedTemperature(FSFixedTemperature& rbc, FSStep& s)
 {
 	vector<int> BC; BC.resize(m_nodes);
 	m_xml.add_branch("fix");
@@ -2521,12 +2523,12 @@ void FEBioExport12::WriteBCFixedTemperature(FEFixedTemperature& rbc, FEStep& s)
 		FEItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
-		unique_ptr<FENodeList> pg(pItem->BuildNodeList());
+		unique_ptr<FSNodeList> pg(pItem->BuildNodeList());
 
-		FENodeList::Iterator it = pg->First();
+		FSNodeList::Iterator it = pg->First();
 		for (int k = 0; k<pg->Size(); ++k, ++it)
 		{
-			FENode& node = *(it->m_pi);
+			FSNode& node = *(it->m_pi);
 			BC[node.m_nid - 1] |= bc;
 		}
 
@@ -2550,7 +2552,7 @@ void FEBioExport12::WriteBCFixedTemperature(FEFixedTemperature& rbc, FEStep& s)
 //-----------------------------------------------------------------------------
 // Export the fixed degrees of freedom
 //
-void FEBioExport12::WriteBCFixedConcentration(FEFixedConcentration& rbc, FEStep& s)
+void FEBioExport12::WriteBCFixedConcentration(FSFixedConcentration& rbc, FSStep& s)
 {
 	vector<int> BC; BC.resize(m_nodes);
 
@@ -2571,12 +2573,12 @@ void FEBioExport12::WriteBCFixedConcentration(FEFixedConcentration& rbc, FEStep&
 		FEItemListBuilder* pItem = rbc.GetItemList();
 		if (pItem == 0) throw InvalidItemListBuilder(&rbc);
 
-		unique_ptr<FENodeList> pg(pItem->BuildNodeList());
+		unique_ptr<FSNodeList> pg(pItem->BuildNodeList());
 
-		FENodeList::Iterator it = pg->First();
+		FSNodeList::Iterator it = pg->First();
 		for (int k = 0; k<pg->Size(); ++k, ++it)
 		{
-			FENode& node = *(it->m_pi);
+			FSNode& node = *(it->m_pi);
 			BC[node.m_nid - 1] |= bc;
 		}
 
@@ -2602,20 +2604,20 @@ void FEBioExport12::WriteBCFixedConcentration(FEFixedConcentration& rbc, FEStep&
 
 //-----------------------------------------------------------------------------
 // Export prescribed boundary conditions
-void FEBioExport12::WriteBCPrescribed(FEStep &s)
+void FEBioExport12::WriteBCPrescribed(FSStep &s)
 {
 	for (int i = 0; i<s.BCs(); ++i)
 	{
-		FEBoundaryCondition* pbc = s.BC(i);
+		FSBoundaryCondition* pbc = s.BC(i);
 		if (pbc->IsActive())
 		{
 			switch (pbc->Type())
 			{
-			case FE_PRESCRIBED_DISPLACEMENT: WriteBCPrescribedDisplacement(dynamic_cast<FEPrescribedDisplacement &>(*pbc), s); break;
-			case FE_PRESCRIBED_ROTATION: WriteBCPrescribedRotation(dynamic_cast<FEPrescribedRotation     &>(*pbc), s); break;
-			case FE_PRESCRIBED_FLUID_PRESSURE: WriteBCPrescribedFluidPressure(dynamic_cast<FEPrescribedFluidPressure&>(*pbc), s); break;
-			case FE_PRESCRIBED_TEMPERATURE: WriteBCPrescribedTemperature(dynamic_cast<FEPrescribedTemperature  &>(*pbc), s); break;
-			case FE_PRESCRIBED_CONCENTRATION: WriteBCPrescribedConcentration(dynamic_cast<FEPrescribedConcentration&>(*pbc), s); break;
+			case FE_PRESCRIBED_DISPLACEMENT: WriteBCPrescribedDisplacement(dynamic_cast<FSPrescribedDisplacement &>(*pbc), s); break;
+			case FE_PRESCRIBED_ROTATION: WriteBCPrescribedRotation(dynamic_cast<FSPrescribedRotation     &>(*pbc), s); break;
+			case FE_PRESCRIBED_FLUID_PRESSURE: WriteBCPrescribedFluidPressure(dynamic_cast<FSPrescribedFluidPressure&>(*pbc), s); break;
+			case FE_PRESCRIBED_TEMPERATURE: WriteBCPrescribedTemperature(dynamic_cast<FSPrescribedTemperature  &>(*pbc), s); break;
+			case FE_PRESCRIBED_CONCENTRATION: WriteBCPrescribedConcentration(dynamic_cast<FSPrescribedConcentration&>(*pbc), s); break;
 			}
 		}
 	}
@@ -2624,7 +2626,7 @@ void FEBioExport12::WriteBCPrescribed(FEStep &s)
 //-----------------------------------------------------------------------------
 // Export prescribed displacements
 //
-void FEBioExport12::WriteBCPrescribedDisplacement(FEPrescribedDisplacement& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedDisplacement(FSPrescribedDisplacement& rbc, FSStep& s)
 {
 	int k, l;
 	int lc;
@@ -2647,9 +2649,8 @@ void FEBioExport12::WriteBCPrescribedDisplacement(FEPrescribedDisplacement& rbc,
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
+		lc = GetLC(&rbc.GetParam(FSPrescribedDisplacement::SCALE));
 		l = rbc.GetDOF();
-		lc = plc->GetID();
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
 
@@ -2660,9 +2661,9 @@ void FEBioExport12::WriteBCPrescribedDisplacement(FEPrescribedDisplacement& rbc,
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator it = pg->First();
+			FSNode* pn;
 			int N = pg->Size();
 			for (k = 0; k<N; ++k, ++it)
 			{
@@ -2689,7 +2690,7 @@ void FEBioExport12::WriteBCPrescribedDisplacement(FEPrescribedDisplacement& rbc,
 //-----------------------------------------------------------------------------
 // Export prescribed rotations
 //
-void FEBioExport12::WriteBCPrescribedRotation(FEPrescribedRotation& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedRotation(FSPrescribedRotation& rbc, FSStep& s)
 {
 	int k, l;
 	int lc;
@@ -2712,9 +2713,8 @@ void FEBioExport12::WriteBCPrescribedRotation(FEPrescribedRotation& rbc, FEStep&
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
+		lc = GetLC(&rbc.GetParam(FSPrescribedDisplacement::SCALE));
 		l = rbc.GetDOF();
-		lc = plc->GetID();
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
 
@@ -2725,9 +2725,9 @@ void FEBioExport12::WriteBCPrescribedRotation(FEPrescribedRotation& rbc, FEStep&
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator it = pg->First();
+			FSNode* pn;
 			int N = pg->Size();
 			for (k = 0; k<N; ++k, ++it)
 			{
@@ -2754,7 +2754,7 @@ void FEBioExport12::WriteBCPrescribedRotation(FEPrescribedRotation& rbc, FEStep&
 //-----------------------------------------------------------------------------
 // Export prescribed fluid pressures
 //
-void FEBioExport12::WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedFluidPressure(FSPrescribedFluidPressure& rbc, FSStep& s)
 {
 	int k;
 	int lc;
@@ -2776,8 +2776,7 @@ void FEBioExport12::WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure& rb
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
-		lc = plc->GetID();
+		lc = GetLC(&rbc.GetParam(FSPrescribedDisplacement::SCALE));
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
 
@@ -2788,9 +2787,9 @@ void FEBioExport12::WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure& rb
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator it = pg->First();
+			FSNode* pn;
 			int N = pg->Size();
 			for (k = 0; k<N; ++k, ++it)
 			{
@@ -2817,7 +2816,7 @@ void FEBioExport12::WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure& rb
 //-----------------------------------------------------------------------------
 // Export prescribed temperatures
 //
-void FEBioExport12::WriteBCPrescribedTemperature(FEPrescribedTemperature& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedTemperature(FSPrescribedTemperature& rbc, FSStep& s)
 {
 	int k;
 	int lc;
@@ -2839,8 +2838,7 @@ void FEBioExport12::WriteBCPrescribedTemperature(FEPrescribedTemperature& rbc, F
 
 		vector<int> DC; DC.resize(m_nodes);
 
-		FELoadCurve* plc = rbc.GetLoadCurve();
-		lc = plc->GetID();
+		lc = GetLC(&rbc.GetParam(FSPrescribedDisplacement::SCALE));
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
 
@@ -2851,9 +2849,9 @@ void FEBioExport12::WriteBCPrescribedTemperature(FEPrescribedTemperature& rbc, F
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator it = pg->First();
+			FSNode* pn;
 			int N = pg->Size();
 			for (k = 0; k<N; ++k, ++it)
 			{
@@ -2880,7 +2878,7 @@ void FEBioExport12::WriteBCPrescribedTemperature(FEPrescribedTemperature& rbc, F
 //-----------------------------------------------------------------------------
 // Export prescribed concentration
 //
-void FEBioExport12::WriteBCPrescribedConcentration(FEPrescribedConcentration& rbc, FEStep& s)
+void FEBioExport12::WriteBCPrescribedConcentration(FSPrescribedConcentration& rbc, FSStep& s)
 {
 	int k;
 	int lc;
@@ -2904,8 +2902,7 @@ void FEBioExport12::WriteBCPrescribedConcentration(FEPrescribedConcentration& rb
 		vector<int> DC; DC.resize(m_nodes);
 
 		int l = rbc.GetDOF();
-		FELoadCurve* plc = rbc.GetLoadCurve();
-		lc = plc->GetID();
+		lc = GetLC(&rbc.GetParam(FSPrescribedDisplacement::SCALE));
 		bn = true; // plc->IsActive();
 		val = rbc.GetScaleFactor();
 
@@ -2916,9 +2913,9 @@ void FEBioExport12::WriteBCPrescribedConcentration(FEPrescribedConcentration& rb
 			FEItemListBuilder* pitem = rbc.GetItemList();
 			if (pitem == 0) throw InvalidItemListBuilder(&rbc);
 
-			unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-			FENodeList::Iterator it = pg->First();
-			FENode* pn;
+			unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+			FSNodeList::Iterator it = pg->First();
+			FSNode* pn;
 			int N = pg->Size();
 			for (k = 0; k<N; ++k, ++it)
 			{
@@ -2945,11 +2942,11 @@ void FEBioExport12::WriteBCPrescribedConcentration(FEPrescribedConcentration& rb
 //-----------------------------------------------------------------------------
 // export nodal loads
 //
-void FEBioExport12::WriteLoadNodal(FEStep& s)
+void FEBioExport12::WriteLoadNodal(FSStep& s)
 {
 	for (int j = 0; j<s.Loads(); ++j)
 	{
-		FENodalLoad* pbc = dynamic_cast<FENodalLoad*>(s.Load(j));
+		FSNodalDOFLoad* pbc = dynamic_cast<FSNodalDOFLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			m_xml.add_branch("force");
@@ -2963,15 +2960,12 @@ void FEBioExport12::WriteLoadNodal(FEStep& s)
 
 				vector<int> FC; FC.resize(m_nodes);
 
-				FELoadCurve* plc;
-				FENode* pn;
-				int lc;
+				FSNode* pn;
 				bool bn;
 				char bc[][3] = { "x", "y", "z", "p", "c1", "c2", "c3", "c4", "c5", "c6" };
 
 				int l = pbc->GetDOF();
-				plc = pbc->GetLoadCurve();
-				lc = plc->GetID();
+				int lc = GetLC(&pbc->GetParam(FSNodalDOFLoad::LOAD));
 				bn = true; // plc->IsActive();
 				el.value(pbc->GetLoad());
 
@@ -2982,8 +2976,8 @@ void FEBioExport12::WriteLoadNodal(FEStep& s)
 					FEItemListBuilder* pitem = pbc->GetItemList();
 					if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-					unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-					FENodeList::Iterator it = pg->First();
+					unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+					FSNodeList::Iterator it = pg->First();
 					for (int k = 0; k<pg->Size(); ++k, ++it)
 					{
 						pn = it->m_pi;
@@ -3010,13 +3004,13 @@ void FEBioExport12::WriteLoadNodal(FEStep& s)
 //----------------------------------------------------------------------------
 // Export pressure loads
 //
-void FEBioExport12::WriteLoadPressure(FEStep& s)
+void FEBioExport12::WriteLoadPressure(FSStep& s)
 {
 	int j, k, l, n, nn[8];
 
 	for (j = 0; j<s.Loads(); ++j)
 	{
-		FEPressureLoad* pbc = dynamic_cast<FEPressureLoad*>(s.Load(j));
+		FSPressureLoad* pbc = dynamic_cast<FSPressureLoad*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			XMLElement load;
@@ -3058,8 +3052,7 @@ void FEBioExport12::WriteLoadPressure(FEStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
+				int lc = GetLC(&pbc->GetParam(FSPressureLoad::LOAD));
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3072,8 +3065,8 @@ void FEBioExport12::WriteLoadPressure(FEStep& s)
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
+					FSFace& face = *(pf->m_pi);
+					FSCoreMesh* pm = pf->m_pm;
 					switch (face.Nodes())
 					{
 					case 3:
@@ -3150,11 +3143,11 @@ void FEBioExport12::WriteLoadPressure(FEStep& s)
 //----------------------------------------------------------------------------
 // Export fluid flux
 //
-void FEBioExport12::WriteFluidFlux(FEStep& s)
+void FEBioExport12::WriteFluidFlux(FSStep& s)
 {
 	for (int j = 0; j<s.Loads(); ++j)
 	{
-		FEFluidFlux* pbc = dynamic_cast<FEFluidFlux*>(s.Load(j));
+		FSFluidFlux* pbc = dynamic_cast<FSFluidFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			XMLElement flux;
@@ -3177,8 +3170,7 @@ void FEBioExport12::WriteFluidFlux(FEStep& s)
 
 				int n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
+				int lc = GetLC(&pbc->GetParam(FSFluidFlux::LOAD));
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3187,8 +3179,8 @@ void FEBioExport12::WriteFluidFlux(FEStep& s)
 
 				for (int k = 0; k<pg->Size(); ++k, ++pf)
 				{
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
+					FSFace& face = *(pf->m_pi);
+					FSCoreMesh* pm = pf->m_pm;
 
 					int nn[4];
 					for (int l = 0; l<4; ++l) nn[l] = pm->Node(face.n[l]).m_nid;
@@ -3225,13 +3217,13 @@ void FEBioExport12::WriteFluidFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export mixture normal traction
 //
-void FEBioExport12::WriteBPNormalTraction(FEStep& s)
+void FEBioExport12::WriteBPNormalTraction(FSStep& s)
 {
 	int j, k, l, n, nn[4];
 
 	for (j = 0; j<s.Loads(); ++j)
 	{
-		FEBPNormalTraction* pbc = dynamic_cast<FEBPNormalTraction*>(s.Load(j));
+		FSBPNormalTraction* pbc = dynamic_cast<FSBPNormalTraction*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			XMLElement flux;
@@ -3254,8 +3246,7 @@ void FEBioExport12::WriteBPNormalTraction(FEStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
+				int lc = GetLC(&pbc->GetParam(FSBPNormalTraction::LOAD));
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3264,8 +3255,8 @@ void FEBioExport12::WriteBPNormalTraction(FEStep& s)
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
+					FSFace& face = *(pf->m_pi);
+					FSCoreMesh* pm = pf->m_pm;
 
 					for (l = 0; l<4; ++l) nn[l] = pm->Node(face.n[l]).m_nid;
 					switch (face.Nodes())
@@ -3300,13 +3291,13 @@ void FEBioExport12::WriteBPNormalTraction(FEStep& s)
 //----------------------------------------------------------------------------
 // Export heat flux
 //
-void FEBioExport12::WriteHeatFlux(FEStep& s)
+void FEBioExport12::WriteHeatFlux(FSStep& s)
 {
 	int j, k, l, n, nn[4];
 
 	for (j = 0; j<s.Loads(); ++j)
 	{
-		FEHeatFlux* pbc = dynamic_cast<FEHeatFlux*>(s.Load(j));
+		FSHeatFlux* pbc = dynamic_cast<FSHeatFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			m_xml.add_branch("heatflux");
@@ -3325,8 +3316,7 @@ void FEBioExport12::WriteHeatFlux(FEStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
+				int lc = GetLC(&pbc->GetParam(FSHeatFlux::FLUX));
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3335,8 +3325,8 @@ void FEBioExport12::WriteHeatFlux(FEStep& s)
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
+					FSFace& face = *(pf->m_pi);
+					FSCoreMesh* pm = pf->m_pm;
 
 					for (l = 0; l<4; ++l) nn[l] = pm->Node(face.n[l]).m_nid;
 					switch (face.Nodes())
@@ -3371,13 +3361,13 @@ void FEBioExport12::WriteHeatFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export convective heat flux
 //
-void FEBioExport12::WriteConvectiveHeatFlux(FEStep& s)
+void FEBioExport12::WriteConvectiveHeatFlux(FSStep& s)
 {
 	int j, k, l, n, nn[4];
 
 	for (j = 0; j<s.Loads(); ++j)
 	{
-		FEConvectiveHeatFlux* pbc = dynamic_cast<FEConvectiveHeatFlux*>(s.Load(j));
+		FSConvectiveHeatFlux* pbc = dynamic_cast<FSConvectiveHeatFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			m_xml.add_branch("convective_heatflux");
@@ -3398,8 +3388,7 @@ void FEBioExport12::WriteConvectiveHeatFlux(FEStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
+				int lc = GetLC(&pbc->GetParam(FSConvectiveHeatFlux::TREF));
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3408,8 +3397,8 @@ void FEBioExport12::WriteConvectiveHeatFlux(FEStep& s)
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
+					FSFace& face = *(pf->m_pi);
+					FSCoreMesh* pm = pf->m_pm;
 
 					for (l = 0; l<4; ++l) nn[l] = pm->Node(face.n[l]).m_nid;
 					switch (face.Nodes())
@@ -3446,13 +3435,13 @@ void FEBioExport12::WriteConvectiveHeatFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export solute flux
 //
-void FEBioExport12::WriteSoluteFlux(FEStep& s)
+void FEBioExport12::WriteSoluteFlux(FSStep& s)
 {
 	int j, k, l, n, nn[4];
 
 	for (j = 0; j<s.Loads(); ++j)
 	{
-		FESoluteFlux* pbc = dynamic_cast<FESoluteFlux*>(s.Load(j));
+		FSSoluteFlux* pbc = dynamic_cast<FSSoluteFlux*>(s.Load(j));
 		if (pbc && pbc->IsActive())
 		{
 			XMLElement flux;
@@ -3475,8 +3464,7 @@ void FEBioExport12::WriteSoluteFlux(FEStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = pbc->GetLoadCurve();
-				int lc = plc->GetID();
+				int lc = GetLC(&pbc->GetParam(FSSoluteFlux::LOAD));
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
@@ -3485,8 +3473,8 @@ void FEBioExport12::WriteSoluteFlux(FEStep& s)
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
+					FSFace& face = *(pf->m_pi);
+					FSCoreMesh* pm = pf->m_pm;
 
 					for (l = 0; l<4; ++l) nn[l] = pm->Node(face.n[l]).m_nid;
 					switch (face.Nodes())
@@ -3521,12 +3509,12 @@ void FEBioExport12::WriteSoluteFlux(FEStep& s)
 //----------------------------------------------------------------------------
 // Export pressure tractions
 //
-void FEBioExport12::WriteLoadTraction(FEStep& s)
+void FEBioExport12::WriteLoadTraction(FSStep& s)
 {
 	int j, k, l, n, nn[10];
 	for (j = 0; j<s.Loads(); ++j)
 	{
-		FESurfaceTraction* ptc = dynamic_cast<FESurfaceTraction*>(s.Load(j));
+		FSSurfaceTraction* ptc = dynamic_cast<FSSurfaceTraction*>(s.Load(j));
 		if (ptc && ptc->IsActive())
 		{
 			m_xml.add_branch("traction");
@@ -3577,8 +3565,7 @@ void FEBioExport12::WriteLoadTraction(FEStep& s)
 
 				n = 1;
 
-				FELoadCurve* plc = ptc->GetLoadCurve();
-				int lc = plc->GetID();
+				int lc = GetLC(&ptc->GetParam(FSSurfaceTraction::LOAD));
 				FEItemListBuilder* pitem = ptc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(ptc);
 
@@ -3594,8 +3581,8 @@ void FEBioExport12::WriteLoadTraction(FEStep& s)
 
 				for (k = 0; k<pg->Size(); ++k, ++pf)
 				{
-					FEFace& face = *(pf->m_pi);
-					FECoreMesh* pm = pf->m_pm;
+					FSFace& face = *(pf->m_pi);
+					FSCoreMesh* pm = pf->m_pm;
 
 					int nf = face.Nodes();
 					for (l = 0; l<nf; ++l) nn[l] = pm->Node(face.n[l]).m_nid;
@@ -3681,15 +3668,15 @@ void FEBioExport12::WriteLoadTraction(FEStep& s)
 //
 void FEBioExport12::WriteInitialSection()
 {
-	FEModel& fem = m_prj.GetFEModel();
-	FEStep& s = *fem.GetStep(0);
+	FSModel& fem = m_prj.GetFSModel();
+	FSStep& s = *fem.GetStep(0);
 
 	vector<int> VC; VC.resize(m_nodes);
 
 	// initial velocities
 	for (int j = 0; j<s.ICs(); ++j)
 	{
-		FENodalVelocities* pbc = dynamic_cast<FENodalVelocities*>(s.IC(j));
+		FSNodalVelocities* pbc = dynamic_cast<FSNodalVelocities*>(s.IC(j));
 		if (pbc && pbc->IsActive())
 		{
 			vec3d v = pbc->GetVelocity();
@@ -3702,11 +3689,11 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-				FENodeList::Iterator it = pg->First();
+				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+				FSNodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid - 1] = 1;
 				}
 
@@ -3728,7 +3715,7 @@ void FEBioExport12::WriteInitialSection()
 	// initial concentration
 	for (int j = 0; j<s.BCs(); ++j)
 	{
-		FEInitConcentration* pbc = dynamic_cast<FEInitConcentration*>(s.IC(j));
+		FSInitConcentration* pbc = dynamic_cast<FSInitConcentration*>(s.IC(j));
 		if (pbc && pbc->IsActive())
 		{
 			double c = pbc->GetValue();
@@ -3746,11 +3733,11 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-				FENodeList::Iterator it = pg->First();
+				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+				FSNodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid - 1] = 1;
 				}
 
@@ -3772,7 +3759,7 @@ void FEBioExport12::WriteInitialSection()
 	// initial fluid pressure
 	for (int j = 0; j<s.BCs(); ++j)
 	{
-		FEInitFluidPressure* pbc = dynamic_cast<FEInitFluidPressure*>(s.IC(j));
+		FSInitFluidPressure* pbc = dynamic_cast<FSInitFluidPressure*>(s.IC(j));
 		if (pbc && pbc->IsActive())
 		{
 			double p = pbc->GetValue();
@@ -3785,11 +3772,11 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-				FENodeList::Iterator it = pg->First();
+				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+				FSNodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid - 1] = 1;
 				}
 
@@ -3811,7 +3798,7 @@ void FEBioExport12::WriteInitialSection()
 	// initial temperature
 	for (int j = 0; j<s.BCs(); ++j)
 	{
-		FEInitTemperature* pbc = dynamic_cast<FEInitTemperature*>(s.IC(j));
+		FSInitTemperature* pbc = dynamic_cast<FSInitTemperature*>(s.IC(j));
 		if (pbc && pbc->IsActive())
 		{
 			double T = pbc->GetValue();
@@ -3824,11 +3811,11 @@ void FEBioExport12::WriteInitialSection()
 				FEItemListBuilder* pitem = pbc->GetItemList();
 				if (pitem == 0) throw InvalidItemListBuilder(pbc);
 
-				unique_ptr<FENodeList> pg(pitem->BuildNodeList());
-				FENodeList::Iterator it = pg->First();
+				unique_ptr<FSNodeList> pg(pitem->BuildNodeList());
+				FSNodeList::Iterator it = pg->First();
 				for (int k = 0; k<pg->Size(); ++k, ++it)
 				{
-					FENode* pn = it->m_pi;
+					FSNode* pn = it->m_pi;
 					VC[pn->m_nid - 1] = 1;
 				}
 
@@ -3849,11 +3836,11 @@ void FEBioExport12::WriteInitialSection()
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteBodyForces(FEStep &s)
+void FEBioExport12::WriteBodyForces(FSStep &s)
 {
 	for (int i = 0; i<s.Loads(); ++i)
 	{
-		FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(s.Load(i));
+		FSConstBodyForce* pbl = dynamic_cast<FSConstBodyForce*>(s.Load(i));
 		if (pbl && pbl->IsActive())
 		{
 			m_xml.add_branch("body_force");
@@ -3863,7 +3850,8 @@ void FEBioExport12::WriteBodyForces(FEStep &s)
 				for (int i = 0; i<3; ++i)
 				{
 					el.name(sz[i]);
-					if (pbl->GetLoadCurve(i))el.add_attribute("lc", pbl->GetLoadCurve(i)->GetID());
+					int lc = GetLC(&pbl->GetParam(i));
+					if (lc > 0) el.add_attribute("lc", lc);
 					el.value(pbl->GetLoad(i));
 					m_xml.add_leaf(el);
 				}
@@ -3875,18 +3863,19 @@ void FEBioExport12::WriteBodyForces(FEStep &s)
 }
 
 //-----------------------------------------------------------------------------
-void FEBioExport12::WriteHeatSources(FEStep& s)
+void FEBioExport12::WriteHeatSources(FSStep& s)
 {
 	for (int i = 0; i<s.Loads(); ++i)
 	{
-		FEHeatSource* phs = dynamic_cast<FEHeatSource*>(s.Load(i));
+		FSHeatSource* phs = dynamic_cast<FSHeatSource*>(s.Load(i));
 		if (phs && phs->IsActive())
 		{
 			m_xml.add_branch("heat_source");
 			{
 				XMLElement el;
 				el.name("Q");
-				el.add_attribute("lc", phs->GetLoadCurve()->GetID());
+				int lc = GetLC(&phs->GetParam(FSHeatSource::LOAD));
+				if (lc > 0) el.add_attribute("lc", lc);
 				el.value(phs->GetLoad());
 				m_xml.add_leaf(el);
 			}
@@ -3900,7 +3889,7 @@ void FEBioExport12::WriteHeatSources(FEStep& s)
 void FEBioExport12::WriteGlobalsSection()
 {
 	XMLElement el;
-	FEModel& fem = *m_pfem;
+	FSModel& fem = *m_pfem;
 
 	if (fem.Parameters())
 	{
@@ -3922,7 +3911,7 @@ void FEBioExport12::WriteGlobalsSection()
 				int NS = fem.Solutes();
 				for (int i = 0; i<NS; ++i)
 				{
-					FESoluteData& s = fem.GetSoluteData(i);
+					SoluteData& s = fem.GetSoluteData(i);
 					XMLElement el;
 					el.name("solute");
 					el.add_attribute("id", i + 1);
@@ -3946,7 +3935,7 @@ void FEBioExport12::WriteGlobalsSection()
 				int NS = fem.SBMs();
 				for (int i = 0; i<NS; ++i)
 				{
-					FESoluteData& s = fem.GetSBMData(i);
+					SoluteData& s = fem.GetSBMData(i);
 					XMLElement el;
 					el.name("solid_bound");
 					el.add_attribute("id", i + 1);
@@ -3969,42 +3958,42 @@ void FEBioExport12::WriteGlobalsSection()
 
 void FEBioExport12::WriteLoadDataSection()
 {
-	for (int i = 0; i<(int)m_pLC.size(); ++i)
+	FSModel& fem = m_prj.GetFSModel();
+	for (int i = 0; i<(int)fem.LoadControllers(); ++i)
 	{
-		FELoadCurve* plc = m_pLC[i];
-
 		XMLElement el;
 		el.name("loadcurve");
 		el.add_attribute("id", i + 1);
 
-		switch (plc->GetType())
+/*		switch (plc->GetType())
 		{
-		case FELoadCurve::LC_STEP: el.add_attribute("type", "step"); break;
-		case FELoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
-		case FELoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
+		case LoadCurve::LC_STEP: el.add_attribute("type", "step"); break;
+		case LoadCurve::LC_LINEAR: el.add_attribute("type", "linear"); break;
+		case LoadCurve::LC_SMOOTH: el.add_attribute("type", "smooth"); break;
 		}
 
 		switch (plc->GetExtend())
 		{
-			//		case FELoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
-		case FELoadCurve::EXT_EXTRAPOLATE: el.add_attribute("extend", "extrapolate"); break;
-		case FELoadCurve::EXT_REPEAT: el.add_attribute("extend", "repeat"); break;
-		case FELoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
+			//		case LoadCurve::EXT_CONSTANT     : el.add_attribute("extend", "constant"     ); break;
+		case LoadCurve::EXT_EXTRAPOLATE: el.add_attribute("extend", "extrapolate"); break;
+		case LoadCurve::EXT_REPEAT: el.add_attribute("extend", "repeat"); break;
+		case LoadCurve::EXT_REPEAT_OFFSET: el.add_attribute("extend", "repeat offset"); break;
 		}
-
+*/
 		double d[2];
 
 		const char* szpt = "loadpoint";
 
 		m_xml.add_branch(el);
 		{
-			for (int j = 0; j<plc->Size(); ++j)
+/*			for (int j = 0; j<plc->Size(); ++j)
 			{
 				LOADPOINT& pt = plc->Item(j);
 				d[0] = pt.time;
 				d[1] = pt.load;
 				m_xml.add_leaf(szpt, d, 2);
 			}
+*/
 		}
 		m_xml.close_branch(); // loadcurve
 	}
@@ -4021,16 +4010,16 @@ void FEBioExport12::WriteSurfaceSection(FEFaceList& s)
 	FEFaceList::Iterator pf = s.First();
 
 	/*
-	FEAnalysisStep* pstep = dynamic_cast<FEAnalysisStep*>(m_pfem->GetStep(1));
+	FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(m_pfem->GetStep(1));
 	assert(pstep);
 	STEP_SETTINGS& ops = pstep->GetSettings();
 	if (ops.beface)
 	{
 	for (int i=0; i<NF; ++i, ++n, ++pf)
 	{
-	FEFace& face = *(pf->m_pi);
-	FECoreMesh* pm = pf->m_pm;
-	FEElement& el = pm->Element(face.m_elem[0]);
+	FSFace& face = *(pf->m_pi);
+	FSCoreMesh* pm = pf->m_pm;
+	FSElement& el = pm->Element(face.m_elem[0]);
 	nn[0] = el.m_ntag;
 	nn[1] = face.m_face+1;
 
@@ -4046,8 +4035,8 @@ void FEBioExport12::WriteSurfaceSection(FEFaceList& s)
 		int nfn;
 		for (int j = 0; j<NF; ++j, ++n, ++pf)
 		{
-			FEFace& face = *(pf->m_pi);
-			FECoreMesh* pm = pf->m_pm;
+			FSFace& face = *(pf->m_pi);
+			FSCoreMesh* pm = pf->m_pm;
 			nfn = face.Nodes();
 			for (int k = 0; k<nfn; ++k) nn[k] = pm->Node(face.n[k]).m_nid;
 			switch (nfn)
@@ -4104,7 +4093,7 @@ void FEBioExport12::WriteOutputSection()
 			{
 				for (int i = 0; i<N; ++i)
 				{
-					FEPlotVariable& v = plt.PlotVariable(i);
+					CPlotVariable& v = plt.PlotVariable(i);
 					if (v.isShown() && v.isActive())
 					{
 						XMLElement e;
@@ -4119,7 +4108,7 @@ void FEBioExport12::WriteOutputSection()
 		else m_xml.add_empty(p);
 	}
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 	CLogDataSettings& log = m_prj.GetLogDataSettings();
 	N = log.LogDataSize();
@@ -4129,10 +4118,10 @@ void FEBioExport12::WriteOutputSection()
 		{
 			for (int i=0; i<N; ++i)
 			{
-				FELogData& d = log.LogData(i);
+				FSLogData& d = log.LogData(i);
 				switch (d.type)
 				{
-				case FELogData::LD_NODE:
+				case FSLogData::LD_NODE:
 					{
 						XMLElement e;
 						e.name("node_data");
@@ -4142,8 +4131,8 @@ void FEBioExport12::WriteOutputSection()
 						if (pg)
 						{
 							vector<int> L;
-							FENodeList* pl = pg->BuildNodeList();
-							FENodeList::Iterator pi = pl->First();
+							FSNodeList* pl = pg->BuildNodeList();
+							FSNodeList::Iterator pi = pl->First();
 							int M = pl->Size();
 							for (int i=0; i<M; ++i, ++pi) L.push_back(pi->m_pi->m_nid);
 							m_xml.add_leaf(e, L);
@@ -4151,7 +4140,7 @@ void FEBioExport12::WriteOutputSection()
 						else m_xml.add_empty(e);
 					}
 					break;
-				case FELogData::LD_ELEM:
+				case FSLogData::LD_ELEM:
 					{
 						XMLElement e;
 						e.name("element_data");
@@ -4170,7 +4159,7 @@ void FEBioExport12::WriteOutputSection()
 						else m_xml.add_empty(e);
 					}
 					break;
-				case FELogData::LD_RIGID:
+				case FSLogData::LD_RIGID:
 					{
 						XMLElement e;
 						e.name("rigid_body_data");
@@ -4200,7 +4189,7 @@ void FEBioExport12::WriteStepSection()
 	// so now we simply output all the analysis steps
 	for (int i = 1; i<m_pfem->Steps(); ++i)
 	{
-		FEAnalysisStep& s = dynamic_cast<FEAnalysisStep&>(*m_pfem->GetStep(i));
+		FSAnalysisStep& s = dynamic_cast<FSAnalysisStep&>(*m_pfem->GetStep(i));
 
 		XMLElement e;
 		e.name("Step");
@@ -4255,23 +4244,22 @@ void FEBioExport12::WriteStepSection()
 	}
 }
 
-void FEBioExport12::WriteConstraintSection(FEStep &s)
+void FEBioExport12::WriteConstraintSection(FSStep &s)
 {
 	const char* szbc[6] = { "trans_x", "trans_y", "trans_z", "rot_x", "rot_y", "rot_z" };
 
 	for (int i = 0; i<s.RigidConstraints(); ++i)
 	{
-		FERigidConstraint* ps = s.RigidConstraint(i);
+		FSRigidConstraint* ps = s.RigidConstraint(i);
 
 		GMaterial* pgm = m_pfem->GetMaterialFromID(ps->GetMaterialID());
 		if (pgm == 0) throw MissingRigidBody(ps->GetName());
-		FERigidMaterial* pm = dynamic_cast<FERigidMaterial*>(pgm->GetMaterialProperties());
-		if (pm == 0) throw InvalidMaterialReference();
+		if (pgm->GetMaterialProperties()->IsRigid() == false) throw InvalidMaterialReference();
 
 		// see if any DOF's are active
 		if (ps->Type() == FE_RIGID_FIXED)
 		{
-			FERigidFixed* rc = dynamic_cast<FERigidFixed*>(ps);
+			FSRigidFixed* rc = dynamic_cast<FSRigidFixed*>(ps);
 			XMLElement el;
 			el.name("rigid_body");
 			el.add_attribute("mat", pgm->m_ntag);
@@ -4289,7 +4277,7 @@ void FEBioExport12::WriteConstraintSection(FEStep &s)
 		}
 		else if (ps->Type() == FE_RIGID_DISPLACEMENT)
 		{
-			FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+			FSRigidPrescribed* rc = dynamic_cast<FSRigidPrescribed*>(ps);
 			XMLElement el;
 			el.name("rigid_body");
 			el.add_attribute("mat", pgm->m_ntag);
@@ -4298,7 +4286,8 @@ void FEBioExport12::WriteConstraintSection(FEStep &s)
 				XMLElement el;
 				el.name(szbc[rc->GetDOF()]);
 				el.add_attribute("type", "prescribed");
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+				int lc = GetLC(&rc->GetParam(FSRigidPrescribed::VALUE));
+				if (lc > 0) el.add_attribute("lc", lc);
 				el.value(rc->GetValue());
 				m_xml.add_leaf(el);
 			}
@@ -4306,7 +4295,7 @@ void FEBioExport12::WriteConstraintSection(FEStep &s)
 		}
 		else if (ps->Type() == FE_RIGID_FORCE)
 		{
-			FERigidPrescribed* rc = dynamic_cast<FERigidPrescribed*>(ps);
+			FSRigidPrescribed* rc = dynamic_cast<FSRigidPrescribed*>(ps);
 			XMLElement el;
 			el.name("rigid_body");
 			el.add_attribute("mat", pgm->m_ntag);
@@ -4315,7 +4304,8 @@ void FEBioExport12::WriteConstraintSection(FEStep &s)
 				XMLElement el;
 				el.name(szbc[rc->GetDOF()]);
 				el.add_attribute("type", "force");
-				el.add_attribute("lc", rc->GetLoadCurve()->GetID());
+				int lc = GetLC(&rc->GetParam(FSRigidPrescribed::VALUE));
+				if (lc > 0) el.add_attribute("lc", lc);
 				el.value(rc->GetValue());
 				m_xml.add_leaf(el);
 			}

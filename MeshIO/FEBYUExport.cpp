@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
 
-FEBYUExport::FEBYUExport(FEProject& prj) : FEFileExport(prj)
+FEBYUExport::FEBYUExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -44,7 +44,7 @@ bool FEBYUExport::Write(const char* szfile)
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// for now we put everything in one part
@@ -57,13 +57,13 @@ bool FEBYUExport::Write(const char* szfile)
 	int edges = 0;
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
-		FEMesh& m = *pm;
+		FSMesh& m = *pm;
 		for (j=0; j<m.Nodes(); ++j) m.Node(j).m_ntag = 0;
 		for (j=0; j<m.Faces(); ++j)
 		{
-			FEFace& f = m.Face(j);
+			FSFace& f = m.Face(j);
 			n = f.Nodes();
 			edges += n;
 			for (k=0; k<n; ++k) m.Node(f.n[k]).m_ntag = 1;
@@ -74,7 +74,7 @@ bool FEBYUExport::Write(const char* szfile)
 	int nodes = 0;
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Nodes(); ++j) if (m.Node(j).m_ntag == 1) m.Node(j).m_ntag = ++nodes;
 	}
 
@@ -89,10 +89,10 @@ bool FEBYUExport::Write(const char* szfile)
 	// --- N O D E S ---
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Nodes(); ++j)
 		{
-			FENode& n = m.Node(j);
+			FSNode& n = m.Node(j);
 			if (n.m_ntag)
 				fprintf(fp, "%g %g %g\n", n.r.x, n.r.y, n.r.z);
 		}
@@ -101,10 +101,10 @@ bool FEBYUExport::Write(const char* szfile)
 	// --- E D G E S ---
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh& m = *model.Object(i)->GetFEMesh();
+		FSMesh& m = *model.Object(i)->GetFEMesh();
 		for (j=0; j<m.Faces(); ++j)
 		{
-			FEFace& f = m.Face(j);
+			FSFace& f = m.Face(j);
 			n = f.Nodes();
 			if (n == 3)
 				fprintf(fp, "%d %d %d\n", m.Node(f.n[0]).m_ntag, m.Node(f.n[1]).m_ntag, -m.Node(f.n[2]).m_ntag);

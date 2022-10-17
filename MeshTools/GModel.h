@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,12 +28,11 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FSCore/box.h>
 #include <vector>
-//using namespace std;
 
 class GObject;
-class FEModel;
-class FENodeSet;
-class FESurface;
+class FSModel;
+class FSNodeSet;
+class FSSurface;
 class GPart;
 class GFace;
 class GEdge;
@@ -60,10 +59,12 @@ class GModel : public FSObject
 
 public:
 	//! default constructor
-	GModel(FEModel*);
+	GModel(FSModel*);
 
 	//! destructor
 	~GModel(void);
+
+	FSModel* GetFSModel();
 
 	//! clear all objects and groups
 	void Clear();
@@ -79,6 +80,7 @@ public:
 
 	//! Load the model from the archive
 	void Load(IArchive& ar);
+    void LoadDiscrete(IArchive& ar);
 
 	// return number of objects
 	int Objects() const;
@@ -161,8 +163,8 @@ public:
 	int ShellElements();
 
 	// --- group functions ---
-	FENodeSet* GetNodesetFromID(int id);
-	FESurface* GetSurfaceFromID(int id);
+	FSNodeSet* GetNodesetFromID(int id);
+	FSSurface* GetSurfaceFromID(int id);
 
 	BOX GetBoundingBox();
 	void UpdateBoundingBox();
@@ -171,7 +173,7 @@ public:
 	int CountNamedSelections() const;
 	FEItemListBuilder* FindNamedSelection(int nid);
 	FEItemListBuilder* FindNamedSelection(const std::string& name);
-	vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
+	std::vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
 
 	// --- GPartList ---
 	void AddPartList(GPartList* pg);
@@ -222,10 +224,10 @@ public:
 	GObject* CloneObject(GObject *po);
 
 	// clone the object on a grid
-	vector<GObject*> CloneGrid(GObject* po, int x0, int x1, int y0, int y1, int z0, int z1, double dx, double dy, double dz);
+	std::vector<GObject*> CloneGrid(GObject* po, int x0, int x1, int y0, int y1, int z0, int z1, double dx, double dy, double dz);
 
 	// reolve clone the object
-	vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
+	std::vector<GObject*> CloneRevolve(GObject* po, int count, double range, double spiral, const vec3d& center, const vec3d& axis, bool rotateClones);
 
 	// merge the selected objects
 	GObject* MergeSelectedObjects(GObjectSelection* sel, const string& newObjectName, bool weld, double tol);
@@ -234,20 +236,20 @@ public:
 	GObject* DetachDiscreteSet(GDiscreteElementSet* set);
 
 	// merge a "discrete" object with the rest
-	GObject* MergeDiscreteObject(vector<GObject*> discreteObjects, vector<GObject*>& objList, double tol);
+	GObject* MergeDiscreteObject(std::vector<GObject*> discreteObjects, std::vector<GObject*>& objList, double tol);
 
 public:
 	// show (or hide if bshow==false) a list of objects
-	void ShowObjects(const vector<int>& objList, bool bshow = true);
+	void ShowObjects(const std::vector<int>& objList, bool bshow = true);
 	void ShowObject(GObject* po, bool bshow = true);
 
 	// select a list of objects
-	void SelectObjects(const vector<int>& objList);
+	void SelectObjects(const std::vector<int>& objList);
 
 	// show or hide a list of parts
-	void ShowParts(const vector<int>& partList, bool bshow, bool bselect = false);
-	void ShowParts(vector<GPart*>& partList, bool bshow);
-	void ShowParts(list<GPart*>& partList, bool bshow);
+	void ShowParts(const std::vector<int>& partList, bool bshow, bool bselect = false);
+	void ShowParts(std::vector<GPart*>& partList, bool bshow);
+	void ShowParts(std::list<GPart*>& partList, bool bshow);
 	void ShowPart(GPart* pg, bool bshow = true);
 
 	void ShowAllObjects();
@@ -271,6 +273,8 @@ public:
 	void InsertMeshLayer(int index, MeshLayer* layer);
 
 	MeshLayerManager* GetMeshLayerManager();
+
+    void SetLoadOnlyDiscreteFlag(bool flag);
 
 private:
 	Imp*	imp;

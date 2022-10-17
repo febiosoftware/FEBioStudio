@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -226,7 +226,7 @@ void CGLCamera::SetViewDirection(const vec3d &r)
 {
 	if (r.Length() != 0.f)
 	{
-		m_rot.Target(quatd(vec3f(0, 0, 1.f), r).Inverse());
+		m_rot.Target(quatd(vec3d(0, 0, 1.f), r).Inverse());
 	}
 }
 

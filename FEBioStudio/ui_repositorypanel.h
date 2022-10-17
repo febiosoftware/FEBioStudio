@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,13 +36,17 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QToolButton>
 #include <QToolBar>
+#include <QCompleter>
+#include <QScrollBar>
 #include <QBoxLayout>
 #include <QSplitter>
 #include <QToolButton>
+#include <QCheckBox>
 #include <QStackedLayout>
 #include <QStackedWidget>
 #include <QFormLayout>
 #include <QLineEdit>
+#include <QKeyEvent>
 #include <QTextBrowser>
 #include <QProgressBar>
 #include <QLabel>
@@ -53,6 +57,9 @@ SOFTWARE.*/
 #include <QJsonDocument>
 #include <QByteArray>
 #include <QDir>
+#include <QList>
+#include <QUrl>
+#include <QMimeData>
 #include <QFileIconProvider>
 #include <JlCompress.h>
 #include <QStandardPaths>
@@ -62,6 +69,7 @@ SOFTWARE.*/
 #include "MultiLineLabel.h"
 #include "WrapLabel.h"
 #include "TagLabel.h"
+#include "CustomLineEdit.h"
 
 #include <iostream>
 #include <QDebug>
@@ -78,6 +86,8 @@ public:
 	}
 
 	virtual CustomTreeWidgetItem* getProjectItem() = 0;
+    virtual QList<CustomTreeWidgetItem*> getFileItems() = 0;
+    virtual void justDownloaded(qint64 time) = 0;
 
 	bool LocalCopy() { return localCopy >= totalCopies; }
 
@@ -205,6 +215,35 @@ public:
 		return this;
 	}
 
+    QList<CustomTreeWidgetItem*> getFileItems()
+    {
+        QList<CustomTreeWidgetItem*> fileItems;
+
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            QList<CustomTreeWidgetItem*> tempList = current->getFileItems();
+
+            for(auto item : tempList)
+            {
+                fileItems.append(item);
+            }
+        }
+
+        return fileItems;
+    }
+
+    void justDownloaded(qint64 time)
+    {
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            current->justDownloaded(time);
+        }
+    }
+
 	void setProjectID(int project) {m_projectID = project;}
 	int getProjectID() {return m_projectID;}
 	bool ownedByUser() {return m_ownedByUser;}
@@ -230,35 +269,66 @@ public:
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
 
+    QList<CustomTreeWidgetItem*> getFileItems()
+    {
+        QList<CustomTreeWidgetItem*> fileItems;
+
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            QList<CustomTreeWidgetItem*> tempList = current->getFileItems();
+
+            for(auto item : tempList)
+            {
+                fileItems.append(item);
+            }
+        }
+
+        return fileItems;
+    }
+
+    void justDownloaded(qint64 time)
+    {
+        for(int index = 0; index < childCount(); index++)
+		{
+			CustomTreeWidgetItem* current = static_cast<CustomTreeWidgetItem*>(child(index));
+
+            current->justDownloaded(time);
+        }
+    }
+
 };
 
 class FileItem : public CustomTreeWidgetItem
 {
 public:
-	FileItem(QString name, int fileID, bool lc, qint64 size)
-		: CustomTreeWidgetItem(name, FILEITEM), m_fileID(fileID)
+	FileItem(QString name, int fileID, bool lc, qint64 size, qint64 uploadTime, qint64 downloadTime)
+		: CustomTreeWidgetItem(name, FILEITEM), m_fileID(fileID),
+            m_downloadTime(downloadTime), m_outOfDate(lc && (uploadTime >= downloadTime))
 	{
 		if(name.endsWith(".fsp"))
 		{
-			setIcon(0, CIconProvider::GetIcon("FEBioStudio"));
+			iconName = "FEBioStudio";
 		}
 		else if(name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
 		{
-			setIcon(0, CIconProvider::GetIcon("PreView"));
+			iconName = "PreView";
 		}
 		else if(name.endsWith(".feb"))
 		{
-			setIcon(0, CIconProvider::GetIcon("febio"));
+			iconName = "febio";
 		}
 		else if(name.endsWith(".xplt"))
 		{
-			setIcon(0, CIconProvider::GetIcon("PostView"));
+			iconName = "PostView";
 		}
 		else
 		{
-			setIcon(0, CIconProvider::GetIcon("new"));
+			iconName = "new";
 		}
 
+        Update();
 
 		localCopy = (lc ? 1 : 0);
 
@@ -266,51 +336,328 @@ public:
 
 		UpdateLocalCopyColor();
 
-		m_size = size;
+        m_size = size;
 	}
+
+    void Update()
+    {
+        if(m_outOfDate)
+        {
+            setIcon(0, CIconProvider::GetIcon(iconName, Emblem::Caution));
+            setToolTip(0,"Out of Date");
+        }
+        else
+        {
+            setIcon(0, CIconProvider::GetIcon(iconName));
+            setToolTip(0,"");
+        }
+    }
 
 	virtual CustomTreeWidgetItem* getProjectItem()
 	{
 		return ((CustomTreeWidgetItem*) parent())->getProjectItem();
 	}
+    
+    QList<CustomTreeWidgetItem*> getFileItems()
+    {
+        return QList<CustomTreeWidgetItem*>() << this;
+    }
+
+    void justDownloaded(qint64 time)
+    {
+        m_downloadTime = time;
+        m_outOfDate = false;
+
+        Update();
+
+        if(!localCopy) AddLocalCopy();
+    }
+
+    void justDeleted()
+    {
+        m_downloadTime = 0;
+        m_outOfDate = false;
+
+        Update();
+
+        SubtractLocalCopy();
+    }
 
 	int getFileID()
 	{
 		return m_fileID;
 	}
 
+    bool outOfDate()
+    {
+        return m_outOfDate;
+    }
+
+    qint64 downloadTime()
+    {
+        return m_downloadTime;
+    }
+
 private:
 	int m_fileID;
+    bool m_outOfDate;
+    qint64 m_downloadTime;
+    QString iconName;
 
 };
 
-class FileSearchItem : public QTreeWidgetItem
+class SearchItem : public QTreeWidgetItem
 {
 public:
-	FileSearchItem(FileItem* item)
+	SearchItem(CustomTreeWidgetItem* item)
 		: QTreeWidgetItem(), realItem(item)
 	{
 		setText(0, realItem->text(0));
 		setText(1, realItem->text(1));
-		UpdateColor();
-		setIcon(0,realItem->icon(0));
+
+        for(int index = 0; index < realItem->childCount(); index++)
+        {
+            addChild(new SearchItem(static_cast<CustomTreeWidgetItem*>(realItem->child(index))));
+        }
+
+		Update();
 	}
 
-	void UpdateColor()
+	void Update()
 	{
+        for(int index = 0; index < childCount(); index++)
+        {
+            static_cast<SearchItem*>(child(index))->Update();
+        }
+
 		setForeground(0, realItem->foreground(0));
 		setForeground(1, realItem->foreground(1));
+        setIcon(0,realItem->icon(0));
 	}
 
-	FileItem* getRealItem()
+	CustomTreeWidgetItem* getRealItem()
 	{
 		return realItem;
 	}
 
 private:
-	FileItem* realItem;
+	CustomTreeWidgetItem* realItem;
+};
+
+class SearchBox : public QWidget
+{
+public:
+    SearchBox(QString name) : name(name)
+    {
+        QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+        layout->addWidget(label = new QLabel(name + ":"));
+        layout->addWidget(lineEdit = new CustomLineEdit);
+
+        setLayout(layout);
+    }
+
+public:
+    QString name;
+    QLabel* label;
+    CustomLineEdit* lineEdit;
+};
+
+class AdvancedSearchBox : public QWidget
+{
+public:
+    AdvancedSearchBox()
+    {
+        layout = new QVBoxLayout;
+
+        layout->addWidget(new QLabel("General:"));
+
+        toolbar = new QToolBar;
+        toolbar->setContentsMargins(0,0,0,0);
+		toolbar->addWidget(general = new QLineEdit);
+		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search");
+		toolbar->addAction(actionSearch);
+		actionClear = new QAction(CIconProvider::GetIcon("clear"), "Clear");
+		toolbar->addAction(actionClear);
+        actionHide = new QAction(CIconProvider::GetIcon("collapse"), "Hide");
+		toolbar->addAction(actionHide);
+        layout->addWidget(toolbar);
+
+        gridLayout = new QGridLayout;
+        gridLayout->setContentsMargins(0,0,0,0);
+
+        layout->addLayout(gridLayout);
+
+        setLayout(layout);
+    }
+
+    void Reset(std::vector<std::pair<QString, QStringList>> typeInfo)
+    {
+        QList<SearchBox*> boxes;
+        
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                boxes.append(box);
+            }
+        }
+
+        for(auto box : boxes)
+        {
+            delete box;
+        }
+
+        AddSearchBoxes(typeInfo);
+    }
+
+    void AddSearchBoxes(std::vector<std::pair<QString, QStringList>> typeInfo)
+    {
+        int boxes = 0;
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                boxes++;
+            }
+        }
+
+        for(auto info : typeInfo)
+        {
+            int row = (boxes)/2;
+            int col = (boxes)%2;
+
+            SearchBox* box = new SearchBox(info.first);
+
+            if(!info.second.empty())
+            {
+                QCompleter* completer = new QCompleter(info.second);
+                completer->setCaseSensitivity(Qt::CaseInsensitive);
+                completer->setFilterMode(Qt::MatchContains);
+
+                box->lineEdit->setMultipleCompleter(completer);
+            }
+
+            QObject::connect(box->lineEdit, &QLineEdit::returnPressed, this, [this]{emit actionSearch->triggered();});
+
+            gridLayout->addWidget(box, row, col);
+
+            boxes++;
+        }
+    }
+
+    void Clear()
+    {
+        general->clear();
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                box->lineEdit->clear();
+            }
+        }
+    }
+
+    QString GetSearchTerm()
+    {
+        QString searchTerm;
+
+        QString generalText = general->text().trimmed();
+
+        if(!generalText.isEmpty())
+        {
+            searchTerm += "all:" + generalText;
+        }
+
+        for(auto child : children())
+        {
+            SearchBox* box = dynamic_cast<SearchBox*>(child);
+            if(box)
+            {
+                QString boxText = box->lineEdit->text().trimmed();
+
+                if(!boxText.isEmpty())
+                {
+                    searchTerm += " " + box->name.toLower() + ":" + boxText;
+                }
+
+            }
+        }
+
+        return searchTerm.trimmed();
+    }
+
+public:
+    QToolBar* toolbar;
+    QAction* actionSearch;
+    QAction* actionClear;
+    QAction* actionHide;
+
+
+private:
+    QVBoxLayout* layout;
+    QLineEdit* general;
+    QGridLayout* gridLayout;
+};
+
+class CustomTreeWidget : public QTreeWidget
+{
+public:
+    CustomTreeWidget(CRepositoryPanel* repoPanel) : repoPanel(repoPanel) {}
+
+protected:
+    QStringList mimeTypes() const override
+    {
+        QStringList types;
+        types << "text/uri-list";
+        return types;
+    }
+
+    QMimeData* mimeData(const QList<QTreeWidgetItem *> &items) const override
+    {
+        QList<QUrl> urls;
+
+        for(auto item : items)
+        {
+            FileItem* fileItem = nullptr;
+
+            if(dynamic_cast<SearchItem*>(item))
+            {
+                fileItem = dynamic_cast<FileItem*>(dynamic_cast<SearchItem*>(item)->getRealItem());
+            }
+            else
+            {
+                fileItem = dynamic_cast<FileItem*>(item);
+            }
+
+            if(fileItem && fileItem->LocalCopy())
+            {
+                urls.append(QUrl::fromLocalFile(repoPanel->GetFilePathFromID(fileItem->getFileID())));
+            }
+        }
+
+        if(urls.isEmpty())
+        {
+            return nullptr;
+        }
+
+        QMimeData* mimeData = new QMimeData;
+        mimeData->setUrls(urls);
+
+        return mimeData;
+    }
+
+private:
+    CRepositoryPanel* repoPanel;
 
 };
+
 
 class Ui::CRepositoryPanel
 {
@@ -325,8 +672,10 @@ public:
 
 	QWidget* modelPage;
 	QStackedWidget* treeStack;
-	QTreeWidget* projectTree;
-	QTreeWidget* fileSearchTree;
+	CustomTreeWidget* projectTree;
+	CustomTreeWidget* searchTree;
+    QCheckBox* showProjectsCB;
+    QCheckBox* showFilesCB;
 
 	CToolBox* projectInfoBox;
 
@@ -352,6 +701,7 @@ public:
 	QAction* actionOpen;
 	QAction* actionOpenFileLocation;
 	QAction* actionDelete;
+	QAction* actionCopyPermalink;
 
 	QAction* actionUpload;
 
@@ -360,9 +710,13 @@ public:
 
 	QAction* actionFindInTree;
 
+    QToolBar* searchBar;
 	QLineEdit* searchLineEdit;
 	QAction* actionSearch;
 	QAction* actionClearSearch;
+    QAction* actionShowAdvanced;
+
+    AdvancedSearchBox* advancedSearch;
 
 	QWidget* loadingPage;
 	QLabel* loadingLabel;
@@ -370,7 +724,7 @@ public:
 	QPushButton* loadingCancel;
 
 public:
-	CRepositoryPanel() : currentProject(nullptr), openAfterDownload(nullptr){}
+	CRepositoryPanel() : currentProject(nullptr), openAfterDownload(nullptr), projectInfo(nullptr){}
 
 	void setupUi(::CRepositoryPanel* parent)
 	{
@@ -428,6 +782,9 @@ public:
 		actionDelete->setIconVisibleInMenu(false);
 		toolbar->addAction(actionDelete);
 
+		actionCopyPermalink = new QAction("Copy Permalink", parent);
+		actionCopyPermalink->setObjectName("actionCopyPermalink");
+
 		toolbar->addSeparator();
 		QWidget* empty = new QWidget();
 		empty->setSizePolicy(QSizePolicy::Expanding,QSizePolicy::Preferred);
@@ -448,52 +805,92 @@ public:
 
 		modelVBLayout->addWidget(toolbar);
 
-		QToolBar* searchBar = new QToolBar;
+		searchBar = new QToolBar;
+        searchBar->setContentsMargins(0,0,0,0);
 		searchBar->addWidget(searchLineEdit = new QLineEdit);
 		actionSearch = new QAction(CIconProvider::GetIcon("search"), "Search", parent);
 		actionSearch->setObjectName("actionSearch");
 		searchBar->addAction(actionSearch);
 		actionClearSearch = new QAction(CIconProvider::GetIcon("clear"), "Clear", parent);
 		actionClearSearch->setObjectName("actionClearSearch");
-		searchBar->addAction(actionClearSearch);
+        searchBar->addAction(actionClearSearch);
+        actionShowAdvanced = new QAction(CIconProvider::GetIcon("expand"), "Show", parent);
+		actionShowAdvanced->setObjectName("actionShowAdvanced");
+        searchBar->addAction(actionShowAdvanced);
 
-		modelVBLayout->addWidget(searchBar);
+        modelVBLayout->addWidget(searchBar);
 
+        advancedSearch = new AdvancedSearchBox;
+        advancedSearch->hide();
+        modelVBLayout->addWidget(advancedSearch);
+		
 		actionFindInTree = new QAction("Show in Project Tree", parent);
 		actionFindInTree->setObjectName("actionFindInTree");
 
-		QSplitter* splitter = new QSplitter;
+		QSplitter* splitter = new QSplitter;            
 		splitter->setOrientation(Qt::Vertical);
 
 		treeStack = new QStackedWidget;
 
-		projectTree = new QTreeWidget;
+		projectTree = new CustomTreeWidget(parent);
 		projectTree->setObjectName("treeWidget");
 		projectTree->setColumnCount(2);
 		projectTree->setHeaderLabels(QStringList() << "Projects" << "Size");
 		projectTree->setSelectionMode(QAbstractItemView::SingleSelection);
+        projectTree->setDragEnabled(true);
 		projectTree->setContextMenuPolicy(Qt::CustomContextMenu);
 		projectTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
 		projectTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
 		projectTree->header()->setStretchLastSection(false);
 		treeStack->addWidget(projectTree);
 
-		fileSearchTree = new QTreeWidget;
-		fileSearchTree->setObjectName("fileSearchTree");
-		fileSearchTree->setColumnCount(2);
-		fileSearchTree->setHeaderLabels(QStringList() << "Files" << "Size");
-		fileSearchTree->setSelectionMode(QAbstractItemView::SingleSelection);
-		fileSearchTree->setContextMenuPolicy(Qt::CustomContextMenu);
-		fileSearchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
-		fileSearchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
-		fileSearchTree->header()->setStretchLastSection(false);
-		treeStack->addWidget(fileSearchTree);
+        QWidget* searchTreeWidget = new QWidget;
+        QVBoxLayout* searchTreeLayout = new QVBoxLayout;
+        searchTreeLayout->setContentsMargins(0,0,0,0);
+
+        QHBoxLayout* checkboxLayout = new QHBoxLayout;
+        checkboxLayout->setContentsMargins(0,0,0,0);
+        checkboxLayout->addStretch();
+
+        showProjectsCB = new QCheckBox("Projects");
+        showProjectsCB->setObjectName("showProjectsCB");
+        showProjectsCB->setChecked(true);
+
+        checkboxLayout->addWidget(showProjectsCB);
+
+        checkboxLayout->addStretch();
+
+        showFilesCB = new QCheckBox("Files");
+        showFilesCB->setObjectName("showFilesCB");
+        showFilesCB->setChecked(true);
+
+        checkboxLayout->addWidget(showFilesCB);
+
+        checkboxLayout->addStretch();
+
+        searchTreeLayout->addLayout(checkboxLayout);
+
+		searchTree = new CustomTreeWidget(parent);
+		searchTree->setObjectName("searchTree");
+		searchTree->setColumnCount(2);
+		searchTree->setHeaderLabels(QStringList() << "Results" << "Size");
+		searchTree->setSelectionMode(QAbstractItemView::SingleSelection);
+		searchTree->setContextMenuPolicy(Qt::CustomContextMenu);
+		searchTree->header()->setSectionResizeMode(0, QHeaderView::Stretch);
+		searchTree->header()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+		searchTree->header()->setStretchLastSection(false);
+		searchTreeLayout->addWidget(searchTree);
+
+        searchTreeWidget->setLayout(searchTreeLayout);
+
+        treeStack->addWidget(searchTreeWidget);
 
 		splitter->addWidget(treeStack);
 
 		projectInfoBox = new CToolBox;
 		QWidget* projectDummy = new QWidget;
 		QVBoxLayout* modelInfoLayout = new QVBoxLayout;
+        modelInfoLayout->setContentsMargins(0,0,0,10);
 		projectDummy->setLayout(modelInfoLayout);
 
 		modelInfoLayout->addWidget(unauthorized = new QLabel("<font color='red'>This project has not yet been approved by our "
@@ -502,17 +899,16 @@ public:
 		unauthorized->setWordWrap(true);
 		unauthorized->hide();
 
-		QHBoxLayout* centerName = new QHBoxLayout;
-		centerName->addStretch();
-		centerName->addWidget(projectName = new QLabel);
-		centerName->addStretch();
-
-		modelInfoLayout->addLayout(centerName);
+        projectName = new QLabel;
+        projectName->setWordWrap(true);
+        projectName->setAlignment(Qt::AlignCenter);
 
 		QFont font = projectName->font();
 		font.setBold(true);
 		font.setPointSize(14);
 		projectName->setFont(font);
+
+        modelInfoLayout->addWidget(projectName);
 
 		modelInfoLayout->addWidget(projectDesc = new MultiLineLabel);
 
@@ -536,13 +932,15 @@ public:
 
 		QWidget* fileDummy = new QWidget;
 		QVBoxLayout* fileInfoLayout = new QVBoxLayout;
+        fileInfoLayout->setContentsMargins(0,0,0,0);
 		fileDummy->setLayout(fileInfoLayout);
 
 		fileInfoForm = new QFormLayout;
 		fileInfoForm->setHorizontalSpacing(10);
 		fileInfoForm->addRow("Filename:", filenameLabel = new MultiLineLabel);
-		fileInfoForm->addRow("Description:", fileDescLabel = new MultiLineLabel);
 		fileInfoLayout->addLayout(fileInfoForm);
+
+        fileInfoLayout->addWidget(fileDescLabel = new MultiLineLabel);
 
 		fileInfoLayout->addWidget(fileTags = new TagLabel);
 		fileTags->setObjectName("fileTags");
@@ -577,20 +975,20 @@ public:
 		// setLoginVisible(true);
 	}
 
-	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size)
+	CustomTreeWidgetItem* addFile(QString &path, int index, int fileID, bool localCopy, qint64 size, qint64 uploadTime, qint64 downloadTime)
 	{
 		int pos = path.right(path.length() - index).indexOf("/");
 
 		if(pos == -1)
 		{
-			FileItem* child = new FileItem(path.right(path.length() - index), fileID, localCopy, size);
+			FileItem* child = new FileItem(path.right(path.length() - index), fileID, localCopy, size, uploadTime, downloadTime);
 
 			fileItemsByID[fileID] = child;
 
 			return child;
 		}
 
-		CustomTreeWidgetItem* child = addFile(path, index + (pos + 1), fileID, localCopy, size);
+		CustomTreeWidgetItem* child = addFile(path, index + (pos + 1), fileID, localCopy, size, uploadTime, downloadTime);
 		CustomTreeWidgetItem* parent;
 
 		try
@@ -607,19 +1005,6 @@ public:
 		parent->addChild(child);
 
 		return parent;
-	}
-
-	void unhideAll()
-	{
-		for(auto current : projectItemsByID)
-		{
-			current.second->setHidden(false);
-		}
-
-		for(auto current : fileItemsByID)
-		{
-			current.second->setHidden(false);
-		}
 	}
 
 	void showLoadingPage(QString message, bool progress = false)
@@ -648,13 +1033,15 @@ public:
 
 	void setFileDescription(QString description)
 	{
-		fileInfoForm->removeRow(fileDescLabel);
-
-		if(!description.isEmpty())
-		{
-			fileInfoForm->insertRow(1, "Description:", fileDescLabel = new MultiLineLabel(description));
-		}
-
+        if(description.isEmpty())
+        {
+            fileDescLabel->hide();
+        }
+        else
+        {
+            fileDescLabel->setText(description);
+            fileDescLabel->show();
+        }
 	}
 
 	void setFileTags()
@@ -670,6 +1057,27 @@ public:
 		}
 	}
 
+	void selectProjectByID(int ID)
+	{
+		for(int cat = 0; cat < projectTree->topLevelItemCount(); cat++)
+		{
+			QTreeWidgetItem* current = projectTree->topLevelItem(cat);
+			for(int child = 0; child < current->childCount(); child++)
+			{
+				QTreeWidgetItem* childItem = current->child(child);
+				if(childItem->type() == PROJECTITEM)
+				{
+					if(ID == static_cast<ProjectItem*>(childItem)->getProjectID())
+					{
+						projectTree->setCurrentItem(childItem);
+						childItem->setExpanded(true);
+						return;
+					}
+				}
+			}
+		}
+
+	}
 
 public:
 	ProjectItem* currentProject;
@@ -678,6 +1086,7 @@ public:
 	QStringList currentFileTags;
 	std::unordered_map<int, ProjectItem*> projectItemsByID;
 	std::unordered_map<int, FileItem*> fileItemsByID;
+	QByteArray* projectInfo;
 
 	CustomTreeWidgetItem* openAfterDownload;
 };

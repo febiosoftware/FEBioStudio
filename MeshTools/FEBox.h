@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 class GBox;
 
-class FEBox : public FEMultiBlockMesh
+class FEBoxMesher : public FEMultiBlockMesh
 {
 public:
 	// parameters
@@ -39,49 +39,39 @@ public:
 	enum { SIMPLE, BUTTERFLY3D, BUTTERFLY2D };
 
 public:
-	FEBox(){}
-	FEBox(GBox* po);
-	FEMesh* BuildMesh();
+	FEBoxMesher(){}
+	FEBoxMesher(GBox* po);
+	FSMesh* BuildMesh();
+
+public:
+	void SetResolution(int nx, int ny, int nz);
 
 protected:
-	FEMesh* CreateRegular();
-	FEMesh* CreateButterfly3D();
-	FEMesh* CreateButterfly2D();
+	bool BuildMultiBlock() override;
 
-	FEMesh* CreateRegularHEX8 ();
-	FEMesh* CreateRegularHEX20();
-	FEMesh* CreateRegularHEX27();
-	FEMesh* CreateRegularTET4 ();
-	FEMesh* CreateRegularTET10();
-	FEMesh* CreateRegularTET15();
-	FEMesh* CreateRegularTET20();
+	bool CreateRegularBoxMesh();
+	bool CreateButterfly3DMesh();
+	bool CreateButterfly2DMesh();
 
 protected:
-	void BuildHexFaces(FEMesh* pm);
-	void BuildTetFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	FSMesh* CreateRegular();
+	FSMesh* CreateButterfly3D();
+	FSMesh* CreateButterfly2D();
 
-	void BuildHex20Faces(FEMesh* pm, vector<int>& LUT);
-	void BuildHex20Edges(FEMesh* pm, vector<int>& LUT);
+	FSMesh* CreateRegularHEX  ();
+	FSMesh* CreateRegularTET4 ();
+	FSMesh* CreateRegularTET10();
+	FSMesh* CreateRegularTET15();
+	FSMesh* CreateRegularTET20();
 
-	void BuildHex27Faces(FEMesh* pm);
-	void BuildHex27Edges(FEMesh* pm);
+protected:
+	void BuildHexFaces(FSMesh* pm);
+	void BuildTetFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k) 
 	{
 		return i*(m_ny+1)*(m_nz+1) + j*(m_nz+1) + k;
-	}
-
-	int NodeIndex2(int i, int j, int k, vector<int>& LUT)
-	{
-		int m = k + j*(2*m_nz+1) + i*(2*m_ny+1)*(2*m_nz+1);
-		assert(LUT[m] != -1);
-		return LUT[m];
-	}
-
-	int NodeIndex3(int i, int j, int k) 
-	{
-		return i*(2*m_ny+1)*(2*m_nz+1) + j*(2*m_nz+1) + k;
 	}
 
 protected:

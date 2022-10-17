@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,19 +32,22 @@ SOFTWARE.*/
 #include "GGroup.h"
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FEMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	m_scale = 1.0;
+	m_stride = 0;
 	m_part = nullptr;
 	SetMesh(mesh);
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FEMesh* pm, FEPart* part, FEMeshData::DATA_TYPE dataType)
+void FEElementData::Create(FSMesh* pm, FSPart* part, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(pm);
 	m_part = part;
-	m_data.assign(part->size(), 0.0);
+	m_dataType = dataType;
+	m_stride = ItemSize();
+	m_data.assign(part->size()*m_stride, 0.0);
 }
 
 //-----------------------------------------------------------------------------
@@ -54,6 +57,8 @@ FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::EL
 	SetName(d.GetName());
 	m_data = d.m_data;
 	m_part = d.m_part;
+	m_dataType = d.m_dataType;
+	m_stride = d.m_stride;
 }
 
 //-----------------------------------------------------------------------------
@@ -63,12 +68,15 @@ FEElementData& FEElementData::operator = (const FEElementData& d)
 	SetMesh(d.GetMesh());
 	m_data = d.m_data;
 	m_part = d.m_part;
+	m_dataType = d.m_dataType;
+	m_stride = d.m_stride;
 	return (*this);
 }
 
 //-----------------------------------------------------------------------------
 void FEElementData::FillRandomBox(double fmin, double fmax)
 {
+	assert(m_dataType == DATA_SCALAR);
 	int N = (int)m_data.size();
 	for (int i = 0; i<N; ++i)
 	{
@@ -91,6 +99,39 @@ double FEElementData::GetScaleFactor() const
 }
 
 //-----------------------------------------------------------------------------
+int FEElementData::ItemSize() const
+{
+	switch (m_dataType)
+	{
+	case DATA_SCALAR: return 1; break;
+	case DATA_VEC3D : return 3; break;
+	case DATA_MAT3D : return 9; break;
+	default:
+		assert(false);
+	}
+	return 0;
+}
+
+//-----------------------------------------------------------------------------
+void FEElementData::get(int n, double* d)
+{
+	assert((m_stride > 0) && (m_stride == ItemSize()));
+	for (int i = 0; i < m_stride; ++i)
+		d[i] = m_data[m_stride * n + i];
+}
+
+//-----------------------------------------------------------------------------
+void FEElementData::set(int n, const mat3d& v)
+{
+	assert(m_dataType == DATA_MAT3D);
+	assert(m_stride == 9);
+	int m = 0;
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j, ++m)
+			m_data[9 * n + m] = v(i, j);
+}
+
+//-----------------------------------------------------------------------------
 void FEElementData::Save(OArchive& ar)
 {
 	const string& dataName = GetName();
@@ -108,7 +149,8 @@ void FEElementData::Save(OArchive& ar)
 	ar.EndChunk();
 
 	int NE = m_part->size();
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE);
+	assert(m_data.size() == NE * m_stride);
+	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE*m_stride);
 }
 
 //-----------------------------------------------------------------------------
@@ -136,14 +178,17 @@ void FEElementData::Load(IArchive& ar)
 		}
 		else if (nid == CID_MESH_DATA_PART)
 		{
-			m_part = new FEPart(po);
+			m_part = new FSPart(po);
 			m_part->Load(ar);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
 			int NE = m_part->size();
-			m_data.resize(NE);
-			ar.read(&m_data[0], NE);
+			m_stride = ItemSize();
+
+			int dataSize = NE * m_stride;
+			m_data.resize(dataSize);
+			ar.read(&m_data[0], dataSize);
 		}
 
 		ar.CloseChunk();
@@ -151,7 +196,7 @@ void FEElementData::Load(IArchive& ar)
 }
 
 //=============================================================================
-FEPartData::FEPartData(FEMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 {
 	SetMesh(mesh);
 	m_maxElemItems = 1;
@@ -170,7 +215,7 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 // create a data field
 bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
 {
-	FEMesh* mesh = GetMesh();
+	FSMesh* mesh = GetMesh();
 	assert(mesh);
 	m_data.clear();
 	m_part = partList;
@@ -183,7 +228,7 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 		int pid = partList[i];
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = mesh->Element(i);
+			FSElement& el = mesh->Element(i);
 			if (el.m_gid == pid)
 			{
 				int nn = el.Nodes();
@@ -211,7 +256,7 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 
 FEElemList* FEPartData::BuildElemList()
 {
-	FEMesh* mesh = GetMesh();
+	FSMesh* mesh = GetMesh();
 	assert(mesh);
 
 	FEElemList* elemList = new FEElemList;
@@ -221,7 +266,7 @@ FEElemList* FEPartData::BuildElemList()
 		int pid = m_part[i];
 		for (int j = 0; j < NE; ++j)
 		{
-			FEElement& el = mesh->Element(j);
+			FSElement& el = mesh->Element(j);
 			if (el.m_gid == pid)
 			{
 				elemList->Add(mesh, &el, j);
@@ -231,7 +276,7 @@ FEElemList* FEPartData::BuildElemList()
 	return elemList;
 }
 
-GPartList* FEPartData::GetPartList(FEModel* fem)
+GPartList* FEPartData::GetPartList(FSModel* fem)
 {
 	GObject* po = GetMesh()->GetGObject();
 	GPartList* partList = new GPartList(fem);

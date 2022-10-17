@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -45,9 +45,9 @@ void FEDOF::operator=(const FEDOF& dof)
 	m_symbol = dof.m_symbol;
 }
 
-FEDOFVariable::FEDOFVariable(const char* szname)
+FEDOFVariable::FEDOFVariable(const std::string& name)
 {
-	m_name = szname;
+	m_name = name;
 }
 
 FEDOFVariable::FEDOFVariable(const FEDOFVariable& var)

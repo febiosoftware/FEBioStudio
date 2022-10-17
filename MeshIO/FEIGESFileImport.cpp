@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 
-FEIGESFileImport::FEIGESFileImport(FEProject& prj) : FEFileImport(prj)
+FEIGESFileImport::FEIGESFileImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -76,7 +76,7 @@ bool FEIGESFileImport::read_record(FEIGESFileImport::RECORD& rec)
 
 bool FEIGESFileImport::Load(const char *szfile)
 {
-	FEModel &fem = m_prj.GetFEModel();
+	FSModel&fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,12 +42,12 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QListWidget>
 #include "PropertyListForm.h"
-#include "CIntInput.h"
-#include <MathLib/math3d.h>
+#include "InputWidgets.h"
+#include <FECore/vec3d.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include "ToolBox.h"
-#include "ClassDescriptor.h"
+#include <FSCore/ClassDescriptor.h>
 #include "ObjectProps.h"
 #include <MeshLib/FECurveMesh.h>
 #include <MeshTools/GObject2D.h>
@@ -220,8 +220,8 @@ CNewDiscreteSetDlg::CNewDiscreteSetDlg(QWidget* parent) : QDialog(parent)
 	form->addRow("Name:", m_edit = new QLineEdit);
 	form->addRow("Type:", m_combo = new QComboBox);
 
-	m_combo->addItem("Linear");
-	m_combo->addItem("Nonlinear");
+	m_combo->addItem("Linear spring");
+	m_combo->addItem("Nonlinear spring");
 	m_combo->addItem("Hill");
 
 	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -322,7 +322,7 @@ FSObject* CCreateLoftSurface::Create()
 	FELoftMesher loft;
 	loft.setElementType(nelem);
 	loft.setDivisions(m_divs->value());
-	FESurfaceMesh* mesh = loft.Apply(curves);
+	FSSurfaceMesh* mesh = loft.Apply(curves);
 
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(mesh);
 

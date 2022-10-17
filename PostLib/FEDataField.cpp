@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,45 +33,36 @@ SOFTWARE.*/
 #include "FEAreaCoverage.h"
 using namespace Post;
 
-FEDataField::FEDataField(FEPostModel* fem, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
+ModelDataField::ModelDataField(FEPostModel* fem, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
 {
 	m_fem = fem;
 	m_ntype = ntype;
 	m_nfmt = nfmt;
 	m_nclass = ncls;
-	m_nref = 0;
 	m_flag = flag;
 	m_arraySize = 0;
 }
 
-FEDataField::~FEDataField() {}
+ModelDataField::~ModelDataField() {}
 
-//! get the name of the field
-const std::string& FEDataField::GetName() const { return m_name; }
-
-void FEDataField::SetName(const std::string& newName)
-{
-	m_name = newName;
-}
-
-void FEDataField::SetArrayNames(vector<string>& n)
+void ModelDataField::SetArrayNames(vector<string>& n)
 {
 	m_arrayNames = n;
 }
 
-vector<string> FEDataField::GetArrayNames() const
+vector<string> ModelDataField::GetArrayNames() const
 {
 	return m_arrayNames;
 }
 
-const char* FEDataField::TypeStr() const
+const char* ModelDataField::TypeStr() const
 {
 	switch (m_ntype)
 	{
 	case DATA_FLOAT: return "float"; break;
 	case DATA_VEC3F: return "vec3f"; break;
 	case DATA_MAT3F: return "mat3f"; break;
-	case DATA_MAT3D: return "Mat3d"; break;
+	case DATA_MAT3D: return "mat3d"; break;
 	case DATA_MAT3FS: return "mat3fs"; break;
 	case DATA_MAT3FD: return "mat3fd"; break;
 	case DATA_TENS4FS: return "tens4fs"; break;
@@ -81,7 +72,7 @@ const char* FEDataField::TypeStr() const
 	return "unknown";
 }
 
-int FEDataField::components(Data_Tensor_Type ntype)
+int ModelDataField::components(Data_Tensor_Type ntype)
 {
 	if (ntype == DATA_SCALAR)
 	{
@@ -91,7 +82,7 @@ int FEDataField::components(Data_Tensor_Type ntype)
 		case DATA_VEC3F: return 7; break;
 		case DATA_MAT3F: return 9; break;
 		case DATA_MAT3D: return 9; break;
-		case DATA_MAT3FS: return 15; break;
+		case DATA_MAT3FS: return 18; break;
 		case DATA_MAT3FD: return 3; break;
 		case DATA_TENS4FS: return 21; break;
 		case DATA_ARRAY: return GetArraySize(); break;
@@ -131,7 +122,7 @@ int FEDataField::components(Data_Tensor_Type ntype)
 	return 0;
 }
 
-int FEDataField::dataComponents(Data_Tensor_Type ntype)
+int ModelDataField::dataComponents(Data_Tensor_Type ntype)
 {
 	if (ntype == DATA_SCALAR)
 	{
@@ -181,7 +172,7 @@ int FEDataField::dataComponents(Data_Tensor_Type ntype)
 	return 0;
 }
 
-std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
+std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 {
 	const std::string& name = GetName();
 	const char* sz = name.c_str();
@@ -237,6 +228,9 @@ std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			else if (ncomp == 12) sprintf(szline, "3 Dev Principal %s", sz);
 			else if (ncomp == 13) sprintf(szline, "Max Shear %s", sz);
 			else if (ncomp == 14) sprintf(szline, "%s Magnitude", sz);
+            else if (ncomp == 15) sprintf(szline, "1 Invariant of %s", sz);
+            else if (ncomp == 16) sprintf(szline, "2 Invariant of %s", sz);
+            else if (ncomp == 17) sprintf(szline, "3 Invariant of %s", sz);
 			return szline;
 		}
 		break;
@@ -370,12 +364,24 @@ std::string FEDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 	return "(invalid)";
 }
 
+void ModelDataField::SetUnits(const char* sz)
+{
+	if (sz) m_units = sz;
+	else m_units.clear();
+}
+
+const char* ModelDataField::GetUnits() const
+{
+	if (m_units.empty()) return nullptr;
+	else return m_units.c_str();
+}
+
 //=================================================================================================
-FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : FEDataField(fem, DATA_ARRAY, f, c, flag)
+FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
 {
 }
 
-FEDataField* FEArrayDataField::Clone() const
+ModelDataField* FEArrayDataField::Clone() const
 {
 	FEArrayDataField* newData = new FEArrayDataField(m_fem, DataClass(), Format(), m_flag);
 	newData->SetName(GetName());
@@ -403,11 +409,11 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 }
 
 //=================================================================================================
-FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag) : FEDataField(fem, DATA_ARRAY_VEC3F, DATA_ITEM, c, flag)
+FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag) : ModelDataField(fem, DATA_ARRAY_VEC3F, DATA_ITEM, c, flag)
 {
 }
 
-FEDataField* FEArrayVec3DataField::Clone() const
+ModelDataField* FEArrayVec3DataField::Clone() const
 {
 	FEArrayVec3DataField* newData = new FEArrayVec3DataField(m_fem, DataClass(), m_flag);
 	newData->SetName(GetName());
@@ -429,7 +435,7 @@ Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 
 //=================================================================================================
 
-bool Post::ExportDataField(Post::FEPostModel& fem, const FEDataField& df, const char* szfile)
+bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, const char* szfile, bool selOnly, const std::vector<int>& states)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -438,22 +444,22 @@ bool Post::ExportDataField(Post::FEPostModel& fem, const FEDataField& df, const 
 	int nfield = df.GetFieldID();
 	if (IS_NODE_FIELD(nfield))
 	{
-		bret = Post::ExportNodeDataField(fem, df, fp);
+		bret = Post::ExportNodeDataField(fem, df, fp, selOnly, states);
 	}
 	else if (IS_ELEM_FIELD(nfield))
 	{
-		bret = Post::ExportElementDataField(fem, df, fp);
+		bret = Post::ExportElementDataField(fem, df, fp, selOnly, states);
 	}
 	else if (IS_FACE_FIELD(nfield))
 	{
-		bret = Post::ExportFaceDataField(fem, df, fp);
+		bret = Post::ExportFaceDataField(fem, df, fp, selOnly, states);
 	}
 	fclose(fp);
 
 	return bret;
 }
 
-bool Post::ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
+bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -461,58 +467,61 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 	// get the mesh
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	int nstates = fem.GetStates();
+	int nstates = (int) states.size();
 
 	// loop over all nodes
 	int NN = mesh.Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 
-		// write the node ID
-		fprintf(fp, "%d,", i + 1);
-
-		// loop over all states
-		for (int n = 0; n<nstates; ++n)
+		if ((selOnly == false) || node.IsSelected())
 		{
-			FEState& s = *fem.GetState(n);
+			// write the node ID
+			fprintf(fp, "%d,", i + 1);
 
-			FEMeshData& d = s.m_Data[ndata];
-			Data_Format fmt = d.GetFormat();
-			switch (d.GetType())
+			// loop over all states
+			for (int n = 0; n < nstates; ++n)
 			{
-			case DATA_FLOAT:
-			{
-				FENodeData_T<float>* pf = dynamic_cast<FENodeData_T<float>*>(&d);
-				float f; pf->eval(i, &f);
-				fprintf(fp, "%g", f);
+				FEState& s = *fem.GetState( states[n] );
+
+				FEMeshData& d = s.m_Data[ndata];
+				Data_Format fmt = d.GetFormat();
+				switch (d.GetType())
+				{
+				case DATA_FLOAT:
+				{
+					FENodeData_T<float>* pf = dynamic_cast<FENodeData_T<float>*>(&d);
+					float f; pf->eval(i, &f);
+					fprintf(fp, "%g", f);
+				}
+				break;
+				case DATA_VEC3F:
+				{
+					FENodeData_T<vec3f>* pf = dynamic_cast<FENodeData_T<vec3f>*>(&d);
+					vec3f f; pf->eval(i, &f);
+					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+				}
+				break;
+				case DATA_MAT3FS:
+				{
+					FENodeData_T<mat3fs>* pf = dynamic_cast<FENodeData_T<mat3fs>*>(&d);
+					mat3fs f; pf->eval(i, &f);
+					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+				}
+				break;
+				}
+				if (n != nstates - 1) fprintf(fp, ",");
 			}
-			break;
-			case DATA_VEC3F:
-			{
-				FENodeData_T<vec3f>* pf = dynamic_cast<FENodeData_T<vec3f>*>(&d);
-				vec3f f; pf->eval(i, &f);
-				fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
-			}
-			break;
-			case DATA_MAT3FS:
-			{
-				FENodeData_T<mat3fs>* pf = dynamic_cast<FENodeData_T<mat3fs>*>(&d);
-				mat3fs f; pf->eval(i, &f);
-				fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
-			}
-			break;
-			}
-			if (n != nstates - 1) fprintf(fp, ",");
+			fprintf(fp, "\n");
 		}
-		fprintf(fp, "\n");
 	}
 
 	return true;
 }
 
 
-bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
+bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -520,7 +529,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 	// get the mesh
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	int nstates = fem.GetStates();
+	int nstates = (int)states.size();
 
 	char buf[8192] = { 0 };
 
@@ -528,62 +537,64 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 
-		// write the element ID
-		char* sz = buf;
-		sprintf(sz, "%d,", i + 1); sz += strlen(sz);
-
-		// loop over all states
-		bool bwrite = true;
-		for (int n = 0; n<nstates; ++n)
+		if ((selOnly == false) || face.IsSelected())
 		{
-			FEState& s = *fem.GetState(n);
+			// write the element ID
+			char* sz = buf;
+			sprintf(sz, "%d,", i + 1); sz += strlen(sz);
 
-			FEMeshData& d = s.m_Data[ndata];
-			Data_Format fmt = d.GetFormat();
-			if (fmt == DATA_ITEM)
+			// loop over all states
+			bool bwrite = true;
+			for (int n = 0; n < nstates; ++n)
 			{
-				switch (d.GetType())
+				FEState& s = *fem.GetState( states[n] );
+
+				FEMeshData& d = s.m_Data[ndata];
+				Data_Format fmt = d.GetFormat();
+				if (fmt == DATA_ITEM)
 				{
-				case DATA_FLOAT:
-				{
-					FEFaceData_T<float, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<float, DATA_ITEM>*>(&d);
-					if (pf->active(i))
+					switch (d.GetType())
 					{
-						float f; pf->eval(i, &f);
-						sprintf(sz, "%g", f); sz += strlen(sz);
-					}
-					else bwrite = false;
-				}
-				break;
-				case DATA_VEC3F:
-				{
-					FEFaceData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_ITEM>*>(&d);
-					if (pf->active(i))
+					case DATA_FLOAT:
 					{
-						vec3f f; pf->eval(i, &f);
-						sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
+						FEFaceData_T<float, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<float, DATA_ITEM>*>(&d);
+						if (pf->active(i))
+						{
+							float f; pf->eval(i, &f);
+							sprintf(sz, "%g", f); sz += strlen(sz);
+						}
+						else bwrite = false;
 					}
-					else bwrite = false;
-				}
-				break;
-				case DATA_MAT3FS:
-				{
-					FEFaceData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>*>(&d);
-					if (pf->active(i))
+					break;
+					case DATA_VEC3F:
 					{
-						mat3fs f; pf->eval(i, &f);
-						sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
+						FEFaceData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_ITEM>*>(&d);
+						if (pf->active(i))
+						{
+							vec3f f; pf->eval(i, &f);
+							sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
+						}
+						else bwrite = false;
 					}
-					else bwrite = false;
+					break;
+					case DATA_MAT3FS:
+					{
+						FEFaceData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_ITEM>*>(&d);
+						if (pf->active(i))
+						{
+							mat3fs f; pf->eval(i, &f);
+							sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
+						}
+						else bwrite = false;
+					}
+					break;
+					}
 				}
-				break;
-				}
-			}
-			else if (fmt == DATA_COMP)
-			{
-				int nn = face.Nodes();
+				else if (fmt == DATA_COMP)
+				{
+					int nn = face.Nodes();
 
 				switch (d.GetType())
 				{
@@ -592,7 +603,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<float, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<float, DATA_COMP>*>(&d);
 					if (pf->active(i))
 					{
-						float v[FEElement::MAX_NODES]; pf->eval(i, v);
+						float v[FSElement::MAX_NODES]; pf->eval(i, v);
 						float f = 0.0f;
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g", f); sz += strlen(sz);
@@ -605,7 +616,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_COMP>*>(&d);
 					if (pf->active(i))
 					{
-						vec3f v[FEElement::MAX_NODES]; pf->eval(i, v);
+						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
 						vec3f f(0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
@@ -618,7 +629,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_COMP>*>(&d);
 					if (pf->active(i))
 					{
-						mat3fs v[FEElement::MAX_NODES]; pf->eval(i, v);
+						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
 						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
@@ -641,7 +652,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<float, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<float, DATA_NODE>*>(&d);
 					if (pf->active(i))
 					{
-						float v[FEElement::MAX_NODES]; pf->eval(i, v);
+						float v[FSElement::MAX_NODES]; pf->eval(i, v);
 						float f = 0.0f;
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g", f); sz += strlen(sz);
@@ -654,7 +665,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<vec3f, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_NODE>*>(&d);
 					if (pf->active(i))
 					{
-						vec3f v[FEElement::MAX_NODES]; pf->eval(i, v);
+						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
 						vec3f f(0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g", f.x, f.y, f.z); sz += strlen(sz);
@@ -667,7 +678,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 					FEFaceData_T<mat3fs, DATA_NODE>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_NODE>*>(&d);
 					if (pf->active(i))
 					{
-						mat3fs v[FEElement::MAX_NODES]; pf->eval(i, v);
+						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
 						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 						for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
 						sprintf(sz, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz); sz += strlen(sz);
@@ -681,17 +692,18 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp
 			}
 			else return false;
 
-			if (n != nstates - 1) { sprintf(sz, ",");  sz += strlen(sz); }
-		}
-		sprintf(sz, "\n");
+				if (n != nstates - 1) { sprintf(sz, ",");  sz += strlen(sz); }
+			}
+			sprintf(sz, "\n");
 
-		if (bwrite) fprintf(fp, "%s", buf);
+			if (bwrite) fprintf(fp, "%s", buf);
+		}
 	}
 
 	return true;
 }
 
-bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp)
+bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -699,7 +711,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE*
 	// get the mesh
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	int nstates = fem.GetStates();
+	int nstates = (int)states.size();
 
 	// loop over all elements
 	int NE = mesh.Elements();
@@ -707,108 +719,111 @@ bool Post::ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE*
 	{
 		FEElement_& el = mesh.ElementRef(i);
 
-		// write the element ID
-		fprintf(fp, "%d,", i + 1);
-
-		// loop over all states
-		for (int n = 0; n<nstates; ++n)
+		if ((selOnly == false) || el.IsSelected())
 		{
-			FEState& s = *fem.GetState(n);
+			// write the element ID
+			fprintf(fp, "%d,", i + 1);
 
-			FEMeshData& d = s.m_Data[ndata];
-			Data_Format fmt = d.GetFormat();
-			if (fmt == DATA_ITEM)
+			// loop over all states
+			for (int n = 0; n < nstates; ++n)
 			{
-				switch (d.GetType())
-				{
-				case DATA_FLOAT:
-				{
-					FEElemData_T<float, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&d);
-					float f; pf->eval(i, &f);
-					fprintf(fp, "%g", f);
-				}
-				break;
-				case DATA_VEC3F:
-				{
-					FEElemData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&d);
-					vec3f f; pf->eval(i, &f);
-					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
-				}
-				break;
-				case DATA_MAT3FS:
-				{
-					FEElemData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&d);
-					mat3fs f; pf->eval(i, &f);
-					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
-				}
-				break;
-				case DATA_ARRAY:
-				{
-					FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(d);
-					int nsize = dm.arraySize();
-					vector<double> data(nsize, 0.0);
-					if (dm.active(i))
-					{
-						for (int j = 0; j < nsize; ++j) data[j] = dm.eval(i, j);
-					}
-					for (int j = 0; j < nsize; ++j)
-					{
-						fprintf(fp, "%g", data[j]);
-						if (j != nsize - 1) fprintf(fp, ",");
-					}
-				}
-				break;
-				default:
-					assert(false);
-				}
-			}
-			else if (fmt == DATA_COMP)
-			{
-				int nn = el.Nodes();
+				FEState& s = *fem.GetState(states[n]);
 
-				switch (d.GetType())
+				FEMeshData& d = s.m_Data[ndata];
+				Data_Format fmt = d.GetFormat();
+				if (fmt == DATA_ITEM)
 				{
-				case DATA_FLOAT:
+					switch (d.GetType())
+					{
+					case DATA_FLOAT:
+					{
+						FEElemData_T<float, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&d);
+						float f; pf->eval(i, &f);
+						fprintf(fp, "%g", f);
+					}
+					break;
+					case DATA_VEC3F:
+					{
+						FEElemData_T<vec3f, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>*>(&d);
+						vec3f f; pf->eval(i, &f);
+						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+					}
+					break;
+					case DATA_MAT3FS:
+					{
+						FEElemData_T<mat3fs, DATA_ITEM>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>*>(&d);
+						mat3fs f; pf->eval(i, &f);
+						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+					}
+					break;
+					case DATA_ARRAY:
+					{
+						FEElemArrayDataItem& dm = dynamic_cast<FEElemArrayDataItem&>(d);
+						int nsize = dm.arraySize();
+						vector<double> data(nsize, 0.0);
+						if (dm.active(i))
+						{
+							for (int j = 0; j < nsize; ++j) data[j] = dm.eval(i, j);
+						}
+						for (int j = 0; j < nsize; ++j)
+						{
+							fprintf(fp, "%g", data[j]);
+							if (j != nsize - 1) fprintf(fp, ",");
+						}
+					}
+					break;
+					default:
+						assert(false);
+					}
+				}
+				else if (fmt == DATA_COMP)
 				{
-					FEElemData_T<float, DATA_COMP>* pf = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&d);
-					float v[FEElement::MAX_NODES]; pf->eval(i, v);
-					float f = 0.0f;
-					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
-					fprintf(fp, "%g", f);
+					int nn = el.Nodes();
+
+					switch (d.GetType())
+					{
+					case DATA_FLOAT:
+					{
+						FEElemData_T<float, DATA_COMP>* pf = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&d);
+						float v[FSElement::MAX_NODES]; pf->eval(i, v);
+						float f = 0.0f;
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+						fprintf(fp, "%g", f);
+					}
+					break;
+					case DATA_VEC3F:
+					{
+						FEElemData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>*>(&d);
+						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
+						vec3f f(0.f, 0.f, 0.f);
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+						fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
+					}
+					break;
+					case DATA_MAT3FS:
+					{
+						FEElemData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>*>(&d);
+						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
+						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
+						fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
+					}
+					break;
+					case DATA_MAT3D:
+					{
+						FEElemData_T<mat3d, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3d, DATA_COMP>*>(&d);
+						mat3d v[FSElement::MAX_NODES]; pf->eval(i, v);
+						mat3d f; f.zero();
+						for (int i = 0; i < nn; ++i) f += v[i]; f /= (double)nn;
+						fprintf(fp, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", f(0, 0), f(0, 1), f(0, 2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
+					}
+					break;
+					}
 				}
-				break;
-				case DATA_VEC3F:
-				{
-					FEElemData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>*>(&d);
-					vec3f v[FEElement::MAX_NODES]; pf->eval(i, v);
-					vec3f f(0.f, 0.f, 0.f);
-					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
-					fprintf(fp, "%g,%g,%g", f.x, f.y, f.z);
-				}
-				break;
-				case DATA_MAT3FS:
-				{
-					FEElemData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>*>(&d);
-					mat3fs v[FEElement::MAX_NODES]; pf->eval(i, v);
-					mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
-					for (int i = 0; i<nn; ++i) f += v[i]; f /= (float)nn;
-					fprintf(fp, "%g,%g,%g,%g,%g,%g", f.x, f.y, f.z, f.xy, f.yz, f.xz);
-				}
-				break;
-				case DATA_MAT3D:
-				{
-					FEElemData_T<Mat3d, DATA_COMP>* pf = dynamic_cast<FEElemData_T<Mat3d, DATA_COMP>*>(&d);
-					Mat3d v[FEElement::MAX_NODES]; pf->eval(i, v);
-					Mat3d f; f.zero();
-					for (int i = 0; i < nn; ++i) f += v[i]; f /= (double)nn;
-					fprintf(fp, "%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg,%lg", f(0, 0), f(0, 1), f(0, 2), f(1, 0), f(1, 1), f(1, 2), f(2, 0), f(2, 1), f(2, 2));
-				}
-				break;
-				}
+				if (n != nstates - 1) fprintf(fp, ",");
 			}
-			if (n != nstates - 1) fprintf(fp, ",");
+			fprintf(fp, "\n");
 		}
-		fprintf(fp, "\n");
 	}
 
 	return true;
@@ -822,7 +837,7 @@ public:
 	StandardDataField(const char* sz, int flag) : m_szname(sz), m_flag(flag) {}
 	virtual ~StandardDataField() {}
 public:
-	virtual Post::FEDataField* Create(Post::FEPostModel* fem) = 0;
+	virtual Post::ModelDataField* Create(Post::FEPostModel* fem) = 0;
 	
 public:
 	const char*	m_szname;
@@ -833,9 +848,9 @@ template <typename T> class StandardDataField_T : public StandardDataField
 {
 public:
 	StandardDataField_T(const char* szname, int flag = 0) : StandardDataField(szname, flag) {}
-	Post::FEDataField* Create(Post::FEPostModel* fem) override 
+	Post::ModelDataField* Create(Post::FEPostModel* fem) override 
 	{ 
-		Post::FEDataField* dataField = new T(fem, m_flag);
+		Post::ModelDataField* dataField = new T(fem, m_flag);
 		dataField->SetName(m_szname);
 		return dataField;
 	}
@@ -859,7 +874,7 @@ public:
 		return name;
 	}
 
-	static Post::FEDataField* CreateDataField(Post::FEPostModel* fem, const std::string& name)
+	static Post::ModelDataField* CreateDataField(Post::FEPostModel* fem, const std::string& name)
 	{
 		for (int i = 0; i < m_stdDataFields.size(); ++i)
 		{
@@ -890,34 +905,36 @@ void StandardDataFieldManager::Init()
 {
 	if (m_stdDataFields.empty() == false) return;
 
-	Add<FEDataField_T<FENodePosition> >("Position");
-	Add<FEDataField_T<FENodeInitPos > >("Initial Position");
-	Add<FEDataField_T<FEDeformationGradient> >("Deformation gradient");
-	Add<FEStrainDataField >("Infinitesimal strain", FEStrainDataField::INF_STRAIN);
-	Add<FEStrainDataField >("Lagrange strain"     , FEStrainDataField::LAGRANGE          );
-	Add<FEStrainDataField >("Right Cauchy-Green"  , FEStrainDataField::RIGHT_CAUCHY_GREEN);
-	Add<FEStrainDataField >("Right stretch"       , FEStrainDataField::RIGHT_STRETCH     );
-	Add<FEStrainDataField >("Biot strain"         , FEStrainDataField::BIOT              );
-	Add<FEStrainDataField >("Right Hencky"        , FEStrainDataField::RIGHT_HENCKY      );
-	Add<FEStrainDataField >("Left Cauchy-Green"   , FEStrainDataField::LEFT_CAUCHY_GREEN );
-	Add<FEStrainDataField >("Left stretch"        , FEStrainDataField::LEFT_STRETCH      );
-	Add<FEStrainDataField >("Left Hencky"         , FEStrainDataField::LEFT_HENCKY       );
-	Add<FEStrainDataField >("Almansi strain"      , FEStrainDataField::ALMANSI           );
-	Add<FEDataField_T<FEElementVolume        > >("Volume"                    );
-	Add<FEDataField_T<FEVolRatio             > >("Volume ratio"              );
-	Add<FEDataField_T<FEVolStrain            > >("Volume strain"             );
-	Add<FEDataField_T<FEAspectRatio          > >("Aspect ratio"              );
-	Add<FECurvatureField >("1-Princ curvature"         , FECurvatureField::PRINC1_CURVATURE);
-	Add<FECurvatureField >("2-Princ curvature"         , FECurvatureField::PRINC2_CURVATURE);
-	Add<FECurvatureField >("Gaussian curvature"        , FECurvatureField::GAUSS_CURVATURE );
-	Add<FECurvatureField >("Mean curvature"            , FECurvatureField::MEAN_CURVATURE  );
-	Add<FECurvatureField >("RMS curvature"             , FECurvatureField::RMS_CURVATURE   );
-	Add<FECurvatureField >("Princ curvature difference", FECurvatureField::DIFF_CURVATURE  );
-	Add<FEDataField_T<FECongruency           > >("Congruency"              );
-	Add<FEDataField_T<FEPrincCurvatureVector1> >("1-Princ curvature vector");
-	Add<FEDataField_T<FEPrincCurvatureVector2> >("2-Princ curvature vector");
+	Add<FEDataField_T<NodePosition> >("Position");
+	Add<FEDataField_T<NodeInitPos > >("Initial Position");
+	Add<FEDataField_T<DeformationGradient> >("Deformation gradient");
+	Add<StrainDataField >("Infinitesimal strain", StrainDataField::INF_STRAIN);
+	Add<StrainDataField >("Lagrange strain"     , StrainDataField::LAGRANGE          );
+	Add<StrainDataField >("Right Cauchy-Green"  , StrainDataField::RIGHT_CAUCHY_GREEN);
+	Add<StrainDataField >("Right stretch"       , StrainDataField::RIGHT_STRETCH     );
+	Add<StrainDataField >("Biot strain"         , StrainDataField::BIOT              );
+	Add<StrainDataField >("Right Hencky"        , StrainDataField::RIGHT_HENCKY      );
+	Add<StrainDataField >("Left Cauchy-Green"   , StrainDataField::LEFT_CAUCHY_GREEN );
+	Add<StrainDataField >("Left stretch"        , StrainDataField::LEFT_STRETCH      );
+	Add<StrainDataField >("Left Hencky"         , StrainDataField::LEFT_HENCKY       );
+	Add<StrainDataField >("Almansi strain"      , StrainDataField::ALMANSI           );
+	Add<FEDataField_T<LagrangeStrain2D     > >("Lagrange Strain 2D");
+	Add<FEDataField_T<ElementVolume        > >("Volume"                    );
+	Add<FEDataField_T<VolumeRatio          > >("Volume ratio"              );
+	Add<FEDataField_T<VolumeStrain         > >("Volume strain"             );
+	Add<FEDataField_T<AspectRatio          > >("Aspect ratio"              );
+	Add<CurvatureField >("1-Princ curvature"         , CurvatureField::PRINC1_CURVATURE);
+	Add<CurvatureField >("2-Princ curvature"         , CurvatureField::PRINC2_CURVATURE);
+	Add<CurvatureField >("Gaussian curvature"        , CurvatureField::GAUSS_CURVATURE );
+	Add<CurvatureField >("Mean curvature"            , CurvatureField::MEAN_CURVATURE  );
+	Add<CurvatureField >("RMS curvature"             , CurvatureField::RMS_CURVATURE   );
+	Add<CurvatureField >("Princ curvature difference", CurvatureField::DIFF_CURVATURE  );
+	Add<FEDataField_T<SurfaceCongruency           > >("Congruency"              );
+	Add<FEDataField_T<PrincCurvatureVector1> >("1-Princ curvature vector");
+	Add<FEDataField_T<PrincCurvatureVector2> >("2-Princ curvature vector");
 	Add<FEDistanceMap >("Distance map");
 	Add<FEAreaCoverage>("Area coverage");
+	Add<FEDataField_T<FEFacetArea> >("Facet area");
 }
 
 void Post::InitStandardDataFields()
@@ -937,7 +954,7 @@ std::string Post::GetStandarDataFieldName(int i)
 
 bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField)
 {
-	FEDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
+	ModelDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
 	if (pdf == nullptr) return false;
 	fem.AddDataField(pdf);
 	return true;
@@ -946,7 +963,7 @@ bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataF
 
 bool Post::AddStandardDataField(Post::FEPostModel& fem, const std::string& dataField, vector<int> selectionList)
 {
-	FEDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
+	ModelDataField* pdf = StandardDataFieldManager::CreateDataField(&fem, dataField);
 	if (pdf == nullptr) return false;
 
 	// NOTE: This only works with curvatures
@@ -970,12 +987,12 @@ bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char*
 
 	// create a new data field
 	int ND = 0;
-	Post::FEDataField* pdf = nullptr;
+	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
 	case DATA_FLOAT  : pdf = new FEDataField_T<FENodeData<float  > >(&fem, EXPORT_DATA); ND =  1; break;
 	case DATA_VEC3F  : pdf = new FEDataField_T<FENodeData<vec3f  > >(&fem, EXPORT_DATA); ND =  3; break;
-	case DATA_MAT3D  : pdf = new FEDataField_T<FENodeData<Mat3d  > >(&fem, EXPORT_DATA); ND =  9; break;
+	case DATA_MAT3D  : pdf = new FEDataField_T<FENodeData<mat3d  > >(&fem, EXPORT_DATA); ND =  9; break;
 	case DATA_MAT3F  : pdf = new FEDataField_T<FENodeData<mat3f  > >(&fem, EXPORT_DATA); ND =  9; break;
 	case DATA_MAT3FS : pdf = new FEDataField_T<FENodeData<mat3fs > >(&fem, EXPORT_DATA); ND =  6; break;
 	case DATA_MAT3FD : pdf = new FEDataField_T<FENodeData<mat3fd > >(&fem, EXPORT_DATA); ND =  3; break;
@@ -1045,8 +1062,8 @@ bool Post::AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char*
 				break;
 				case DATA_MAT3D:
 				{
-					FENodeData<Mat3d>& df = dynamic_cast<FENodeData<Mat3d>&>(ps->m_Data[ndf - 1]);
-					df[node] = Mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]);
+					FENodeData<mat3d>& df = dynamic_cast<FENodeData<mat3d>&>(ps->m_Data[ndf - 1]);
+					df[node] = mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]);
 				}
 				break;
 				case DATA_MAT3F:
@@ -1096,13 +1113,13 @@ bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 
 	// create a new data field
 	int ND = 0;
-	Post::FEDataField* pdf = nullptr;
+	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
 	case DATA_FLOAT  : pdf = new FEDataField_T<FEFaceData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
 	case DATA_VEC3F  : pdf = new FEDataField_T<FEFaceData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
 	case DATA_MAT3F  : pdf = new FEDataField_T<FEFaceData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
-	case DATA_MAT3D  : pdf = new FEDataField_T<FEFaceData<Mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3D  : pdf = new FEDataField_T<FEFaceData<mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
 	case DATA_MAT3FS : pdf = new FEDataField_T<FEFaceData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
 	case DATA_MAT3FD : pdf = new FEDataField_T<FEFaceData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
 	case DATA_TENS4FS: pdf = new FEDataField_T<FEFaceData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
@@ -1177,8 +1194,8 @@ bool Post::AddFaceDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 				break;
 				case DATA_MAT3D:
 				{
-					FEFaceData<Mat3d, DATA_ITEM>& df = dynamic_cast<FEFaceData<Mat3d, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
-					df.add(nface, Mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
+					FEFaceData<mat3d, DATA_ITEM>& df = dynamic_cast<FEFaceData<mat3d, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
+					df.add(nface, mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
 				}
 				break;
 				case DATA_MAT3FS:
@@ -1222,13 +1239,13 @@ bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 
 	// create a new data field
 	int ND = 0;
-	Post::FEDataField* pdf = nullptr;
+	Post::ModelDataField* pdf = nullptr;
 	switch (ntype)
 	{
 	case DATA_FLOAT  : pdf = new FEDataField_T<FEElementData<float  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 1; break;
 	case DATA_VEC3F  : pdf = new FEDataField_T<FEElementData<vec3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
 	case DATA_MAT3F  : pdf = new FEDataField_T<FEElementData<mat3f  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
-	case DATA_MAT3D  : pdf = new FEDataField_T<FEElementData<Mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
+	case DATA_MAT3D  : pdf = new FEDataField_T<FEElementData<mat3d  , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 9; break;
 	case DATA_MAT3FS : pdf = new FEDataField_T<FEElementData<mat3fs , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 6; break;
 	case DATA_MAT3FD : pdf = new FEDataField_T<FEElementData<mat3fd , DATA_ITEM> >(&fem, EXPORT_DATA); ND = 3; break;
 	case DATA_TENS4FS: pdf = new FEDataField_T<FEElementData<tens4fs, DATA_ITEM> >(&fem, EXPORT_DATA); ND = 21; break;
@@ -1303,8 +1320,8 @@ bool Post::AddElemDataFromFile(Post::FEPostModel& fem, const char* szfile, const
 				break;
 				case DATA_MAT3D:
 				{
-					FEElementData<Mat3d, DATA_ITEM>& df = dynamic_cast<FEElementData<Mat3d, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
-					df.add(nelem, Mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
+					FEElementData<mat3d, DATA_ITEM>& df = dynamic_cast<FEElementData<mat3d, DATA_ITEM>&>(ps->m_Data[ndf - 1]);
+					df.add(nelem, mat3d(f[0], f[1], f[2], f[3], f[4], f[5], f[6], f[7], f[8]));
 				}
 				break;
 				case DATA_MAT3FS:

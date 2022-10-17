@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GBaseObject.h"
 #include "GObject.h"
 #include "geom.h"
+#include "GPartSection.h"
 #include <MeshTools/FEGroup.h>
 #include <MeshLib/FEMesh.h>
 
@@ -97,10 +98,10 @@ void GNode::MakeRequired()
 	GObject* po = dynamic_cast<GObject*>(Object());
 	if (po)
 	{
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			FENode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
+			FSNode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
 			if (pn) pn->SetRequired(true);
 		}
 	}
@@ -114,6 +115,7 @@ GEdge::GEdge(const GEdge& e)
 	m_node[0] = e.m_node[0];
 	m_node[1] = e.m_node[1];
 	m_cnode = e.m_cnode;
+	m_orient = e.m_orient;
 	m_ntype = e.m_ntype;
 
 	m_state = e.m_state;
@@ -129,6 +131,7 @@ void GEdge::operator =(const GEdge &e)
 	m_node[0] = e.m_node[0];
 	m_node[1] = e.m_node[1];
 	m_cnode = e.m_cnode;
+	m_orient = e.m_orient;
 	m_ntype = e.m_ntype;
 
 	m_state = e.m_state;
@@ -151,10 +154,12 @@ bool GEdge::operator==(const GEdge& e)
 	case EDGE_YARC:
 	case EDGE_ZARC:
 		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;
+		if (m_orient != e.m_orient) return false;
 		break;
 	case EDGE_3P_CIRC_ARC:
 		if ((m_node[0] != e.m_node[0])  || (m_node[1] != e.m_node[1])) return false;
 		if (m_cnode != e.m_cnode) return false;
+		if (m_orient != e.m_orient) return false;
 		break;
 	case EDGE_3P_ARC:
 		if ((m_node[0] != e.m_node[0]) || (m_node[1] != e.m_node[1])) return false;
@@ -248,8 +253,8 @@ vec3d GEdge::Point(double l)
 			q.RotateVector(r2);
 			GM_CIRCLE_ARC c(vec2d(0,0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
 			vec2d a = c.Point(l);
-			p.x = a.x;
-			p.y = a.y;
+			p.x = a.x();
+			p.y = a.y();
 			p.z = 0;
 			qi.RotateVector(p);
 			p += r0;
@@ -266,8 +271,8 @@ vec3d GEdge::Point(double l)
 			q.RotateVector(r2);
 			GM_ARC c(vec2d(0,0), vec2d(r1.x, r1.y), vec2d(r2.x, r2.y));
 			vec2d a = c.Point(l);
-			p.x = a.x;
-			p.y = a.y;
+			p.x = a.x();
+			p.y = a.y();
 			p.z = 0;
 			qi.RotateVector(p);
 			p += r0;
@@ -337,19 +342,19 @@ vec2d GEdge::Tangent(double l)
 }
 
 //-----------------------------------------------------------------------------
-FEEdgeSet* GEdge::GetFEEdgeSet() const
+FSEdgeSet* GEdge::GetFEEdgeSet() const
 {
 	GObject* po = dynamic_cast<GObject*>(m_po);
 	if (m_po == nullptr) return nullptr;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return nullptr;
 
-	FEEdgeSet* edge = new FEEdgeSet(po);
+	FSEdgeSet* edge = new FSEdgeSet(po);
 	int eid = GetLocalID();
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		const FEEdge& ei = pm->Edge(i);
+		const FSEdge& ei = pm->Edge(i);
 		if (ei.m_gid == eid) edge->add(i);
 	}
 
@@ -416,24 +421,59 @@ bool GFace::HasEdge(int nid)
 	return false;
 }
 
+
+void GFace::Invert()
+{
+	// swap block IDs
+	int tmp = m_nPID[0]; m_nPID[0] = m_nPID[1]; m_nPID[1] = tmp;
+
+	// we also need to invert the edges and nodes
+	int fn[4], fe[4], fw[4];
+	for (int j = 0; j < 4; ++j) {
+		fn[j] = m_node[j];
+		fe[j] = m_edge[j].nid;
+		fw[j] = m_edge[j].nwn;
+	}
+	for (int j = 0; j < 4; ++j)
+	{
+		m_node[j] = fn[(4 - j) % 4];
+		m_edge[j].nid = fe[3 - j];
+		m_edge[j].nwn = -fw[3 - j];
+	}
+}
+
 //=============================================================================
 // GPart
 //-----------------------------------------------------------------------------
 GPart::GPart() : GItem_T<GPart>(0) 
 { 
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-	m_matid = -1; 
+	m_matid = -1;
+	m_section = nullptr;
 }
 GPart::GPart(GBaseObject* po) : GItem_T<GPart>(po) 
 { 
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
 	m_matid = -1;
+	m_section = nullptr;
 }
+
+GPart::~GPart()
+{
+	delete m_section;
+}
+
+void GPart::SetSection(GPartSection* section) 
+{ 
+	if (m_section == section) return;
+	delete m_section;
+	m_section = section; 
+	section->SetParent(this);
+}
+
+GPartSection* GPart::GetSection() const { return m_section; }
 
 GPart::GPart(const GPart& p)
 {
-	AddBoolParam(true, "shell_normal_nodal", "shell nodal normals");
-	CopyParams(p);
+	if (p.GetSection()) m_section = p.GetSection()->Copy();
 
 	m_matid = p.m_matid;
 
@@ -442,6 +482,24 @@ GPart::GPart(const GPart& p)
 	m_lid = p.m_lid;
 	m_po = p.m_po;
 	SetName(p.GetName());
+}
+
+bool GPart::IsSolid() const
+{
+//	assert(m_section);
+	return (dynamic_cast<GSolidSection*>(m_section));
+}
+
+bool GPart::IsShell() const
+{
+//	assert(m_section);
+	return (dynamic_cast<GShellSection*>(m_section));
+}
+
+bool GPart::IsBeam() const
+{
+//	assert(m_section);
+	return (dynamic_cast<GBeamSection*>(m_section));
 }
 
 //-----------------------------------------------------------------------------
@@ -455,14 +513,4 @@ void GPart::operator =(const GPart &p)
 	m_lid = p.m_lid;
 	SetName(p.GetName());
 //	m_po = p.m_po;
-}
-
-void GPart::setShellNormalNodal(bool b)
-{
-	SetBoolValue(0, b);
-}
-
-bool GPart::shellNormalNodal() const
-{
-	return GetBoolValue(0);
 }

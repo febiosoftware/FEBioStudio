@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,30 +27,28 @@ SOFTWARE.*/
 #pragma once
 #include "HelpDialog.h"
 
-class QListWidget;
+class UIDlgAddPhysicsItem;
+class FSModel;
 
 class CDlgAddPhysicsItem : public CHelpDialog
 {
+	Q_OBJECT
+
 public:
-	CDlgAddPhysicsItem(QString windowName, int superID, FEProject& prj, QWidget* parent);
+	CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, QWidget* parent);
 
 	std::string GetName();
 	int GetStep();
 	int GetClassID();
 
+	void ShowNameAndCategoryFields(bool b);
+
 protected:
 	void SetURL();
 
+public slots:
+	void Update();
+
 private:
-	QListWidget* type;
-	QLineEdit* name;
-	QComboBox* step;
-
-	int m_superID;
-
-public:
-//	QString	m_name;
-//	int		m_nstep;
-//	int		m_ntype;
-//	int		m_module;
+	UIDlgAddPhysicsItem*	ui;
 };

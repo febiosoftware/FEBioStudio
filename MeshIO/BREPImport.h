@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,20 +29,20 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 
 
-class BREPImport : public FEFileImport
+class BREPImport : public FSFileImport
 {
 public:
-	BREPImport(FEProject& prj);
+	BREPImport(FSProject& prj);
 	~BREPImport();
 
 	bool Load(const char* szfile);
 };
 
 // NOTE: There is already an IGES file reader in FEIGESFileImport.h
-class IGESImport : public FEFileImport
+class IGESImport : public FSFileImport
 {
 public:
-	IGESImport(FEProject& prj);
+	IGESImport(FSProject& prj);
 	~IGESImport();
 
 	bool Load(const char* szfile);

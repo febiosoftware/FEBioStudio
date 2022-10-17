@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -92,11 +92,11 @@ void BivariateSpline::SurfaceCurvature(const double u, const double v, const vec
 
     // check spline normal versus face normal
     if (xn*pn >= 0) {
-        kappa.x = kmax; kappa.y = kmin;
+        kappa.x() = kmax; kappa.y() = kmin;
         theta[0] = xmax; theta[1] = xmin;
     }
     else {
-        kappa.x = kmin; kappa.y = kmax;
+        kappa.x() = kmin; kappa.y() = kmax;
         theta[0] = xmin; theta[1] = xmax;
     }
     // fix handedness if neeeded
@@ -115,7 +115,7 @@ void BivariateSpline::FittedPoints(PointCloud3d& pc, double& rmsres)
     int np = m_pc->Points();
     
     for (int i=0; i<np; ++i) {
-        pc.m_p[i] = SurfacePoint(pc.m_u[i].x, pc.m_u[i].y);
+        pc.m_p[i] = SurfacePoint(pc.m_u[i].x(), pc.m_u[i].y());
         vec3d d = m_pc->m_p[i] - pc.m_p[i];
         rmsres += d*d;
     }

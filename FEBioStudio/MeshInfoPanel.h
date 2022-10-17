@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ SOFTWARE.*/
 class QLabel;
 class GObject;
 class GPart;
-class FESurfaceMesh;
+class FSSurfaceMesh;
 
 class CMeshInfoPanel : public QWidget
 {
@@ -61,7 +61,7 @@ private:
 public:
 	CSurfaceMeshInfoPanel(QWidget* parent = 0);
 
-	void setInfo(const FESurfaceMesh* pm);
+	void setInfo(const FSSurfaceMesh* pm);
 	void setInfo(int nodes, int edges, int faces);
 };
 
@@ -70,10 +70,11 @@ class CPartInfoPanel : public QWidget
 private:
 	QLabel*	m_solid;
 	QLabel*	m_shell;
+	QLabel*	m_beam;
 
 public:
 	CPartInfoPanel(QWidget* parent = 0);
 
 	void setInfo(GPart* pg);
-	void setPartInfo(int solid, int shell);
+	void setPartInfo(int numSolid, int numShell, int numBeam);
 };

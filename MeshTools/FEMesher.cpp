@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,7 +36,7 @@ SOFTWARE.*/
 // constructor
 FEMesher::FEMesher()
 {
-
+	m_ntype = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -44,6 +44,18 @@ FEMesher::FEMesher()
 FEMesher::~FEMesher()
 {
 
+}
+
+//-----------------------------------------------------------------------------
+int FEMesher::Type() const
+{
+	return m_ntype;
+}
+
+//-----------------------------------------------------------------------------
+void FEMesher::SetType(int ntype)
+{
+	m_ntype = ntype;
 }
 
 //-----------------------------------------------------------------------------

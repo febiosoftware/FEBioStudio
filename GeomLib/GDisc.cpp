@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // constructor
-GDisc::GDisc() : GPrimitive(GDISC)
+GDisc::GDisc() : GShellPrimitive(GDISC)
 {
 	// define parameters
 	AddDoubleParam(1.0, "R", "radius");
@@ -71,13 +71,13 @@ void GDisc::Create()
 	// 3. build the parts
 	//-------------------
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	//------------------
 	int FE[4][3] = {{0,5,4}, {1,6,5}, {2,7,6}, {3,4,7}};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(3);

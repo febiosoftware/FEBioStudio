@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -77,7 +77,7 @@ void GCone::Create()
 
 	// build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddSolidPart();
 
 	// build the faces
 	int FT[6][4] = {
@@ -211,8 +211,8 @@ void GCone::BuildGMesh()
 		{
 			GMesh::FACE& f = m.Face(nf++);
 			f.n[0] = 0;
-			f.n[1] = 1 + i;
-			f.n[2] = 1 + (i+1)%ND;
+			f.n[1] = 1 + (i+1)%ND;
+			f.n[2] = 1 + i;
 			f.pid = 4;
 			f.sid = 0;
 			f.fn = vec3d(0,0,-1);
@@ -225,15 +225,15 @@ void GCone::BuildGMesh()
 			{
 				GMesh::FACE& f1 = m.Face(nf++);
 				f1.n[0] = 1 + j*ND + i;
-				f1.n[2] = 1 + j*ND + (i+1)%ND;
-				f1.n[1] = 1 + (j+1)*ND + (i+1)%ND;
+				f1.n[1] = 1 + j*ND + (i+1)%ND;
+				f1.n[2] = 1 + (j+1)*ND + (i+1)%ND;
 				f1.pid = 4;
 				f1.sid = 0;
 
 				GMesh::FACE& f2 = m.Face(nf++);
 				f2.n[0] = 1 + (j+1)*ND + (i+1)%ND;
-				f2.n[2] = 1 + (j+1)*ND + i;
-				f2.n[1] = 1 + j*ND + i;
+				f2.n[1] = 1 + (j+1)*ND + i;
+				f2.n[2] = 1 + j*ND + i;
 				f2.pid = 4;
 				f2.sid = 0;
 			}
@@ -267,8 +267,8 @@ void GCone::BuildGMesh()
 		{
 			GMesh::FACE& f = m.Face(nf++);
 			f.n[0] = 1 + NR*ND + (NH+1)*ND + (i+1)%ND;
-			f.n[1] = 1 + NR*ND + (NH+1)*ND + i;
-			f.n[2] = NN-1;
+			f.n[1] = NN-1;
+			f.n[2] = 1 + NR * ND + (NH + 1) * ND + i;
 			f.pid = 5;
 			f.sid = 2;
 		}
@@ -280,14 +280,14 @@ void GCone::BuildGMesh()
 				GMesh::FACE& f1 = m.Face(nf++);
 				GMesh::FACE& f2 = m.Face(nf++);
 				f1.n[0] = 1 + NR*ND + (NH+1)*ND + j*ND + i;
-				f1.n[1] = 1 + NR*ND + (NH+1)*ND + j*ND + (i+1)%ND;
-				f1.n[2] = 1 + NR*ND + (NH+1)*ND + (j+1)*ND + (i+1)%ND;
+				f1.n[2] = 1 + NR*ND + (NH+1)*ND + j*ND + (i+1)%ND;
+				f1.n[1] = 1 + NR*ND + (NH+1)*ND + (j+1)*ND + (i+1)%ND;
 				f1.pid = 5;
 				f1.sid = 2;
 
 				f2.n[0] = 1 + NR*ND + (NH+1)*ND + (j+1)*ND + (i+1)%ND;
-				f2.n[1] = 1 + NR*ND + (NH+1)*ND + (j+1)*ND + i;
-				f2.n[2] = 1 + NR*ND + (NH+1)*ND + j*ND + i;
+				f2.n[2] = 1 + NR*ND + (NH+1)*ND + (j+1)*ND + i;
+				f2.n[1] = 1 + NR*ND + (NH+1)*ND + j*ND + i;
 				f2.pid = 5;
 				f2.sid = 2;
 			}

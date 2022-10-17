@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,9 +28,8 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 #include <list>
-//using namespace std;
 
-class FETetGenImport : public FEFileImport
+class FETetGenImport : public FSFileImport
 {
 public:
 	struct NODE
@@ -45,16 +44,16 @@ public:
 	};
 
 public:
-	FETetGenImport(FEProject& prj);
+	FETetGenImport(FSProject& prj);
 	~FETetGenImport(void);
 
 	bool Load(const char* szfile);
 
 protected:
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 private:
-	vector<NODE>	m_Node;
-	vector<ELEM>	m_Elem;
+	std::vector<NODE>	m_Node;
+	std::vector<ELEM>	m_Elem;
 	int				m_offset;
 };

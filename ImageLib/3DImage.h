@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -62,9 +62,14 @@ public:
 	void GetSampledSliceY(CImage& im, double f);
 	void GetSampledSliceZ(CImage& im, double f);
 
+    void GetThresholdedSliceX(CImage& im, int n, int min, int max);
+    void GetThresholdedSliceY(CImage& im, int n, int min, int max);
+    void GetThresholdedSliceZ(CImage& im, int n, int min, int max);
+
 	void Invert();
 
 	Byte* GetBytes() { return m_pb; }
+	void SetBytes(Byte* bytes) {m_pb = bytes; }
 
 	void Zero();
 

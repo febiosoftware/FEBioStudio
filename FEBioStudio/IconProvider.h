@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,9 +27,12 @@ SOFTWARE.*/
 #pragma once
 
 class QIcon;
+class QColor;
+class QPixmap;
 class QString;
 
-enum class Emblem{Plus, Minus, Check, Warning, Caution, Missing};
+enum class Emblem {Plus, Minus, Check, Warning, Caution, Missing};
+enum class Shape {Circle, Square};
 
 class CIconProvider
 {
@@ -39,6 +42,9 @@ public:
 	static QIcon GetIcon(const QString& iconName);
 	static QIcon GetIcon(const QString& baseIconName, Emblem emblem);
 	static QIcon GetIcon(const QString& baseIconName, const QString& emblemIconName);
+    static QIcon GetIcon(const QString& baseIconName, QColor c, Shape shape);
+
+    static QPixmap BuildPixMap(QColor& c, Shape shape = Shape::Circle, int size = 12);
 
 private:
 	CIconProvider() {}

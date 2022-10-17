@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -108,4 +108,43 @@ private slots:
 private:
 	Ui::CSelectionBox*	ui;
 	vector<Item>		m_items;
+};
+
+//-----------------------------------------------------------------------------
+class FEItemListBuilder;
+
+class CItemListSelectionBox : public CSelectionBox
+{
+public:
+	CItemListSelectionBox(QWidget* parent = nullptr);
+
+	void SetItemList(FEItemListBuilder* pItem);
+};
+
+class CMainWindow;
+class FSMeshSelection;
+
+class CMeshSelectionBox : public CItemListSelectionBox
+{
+	Q_OBJECT
+
+public:
+	CMeshSelectionBox(CMainWindow* wnd, QWidget* parent = nullptr);
+
+	void SetSelection(FSMeshSelection* pms);
+
+private slots:
+	void onAddButtonClicked();
+	void onSubButtonClicked();
+	void onDelButtonClicked();
+	void onSelButtonClicked();
+	void onClearButtonClicked();
+	void onNameChanged(const QString& t);
+
+signals:
+	void selectionChanged();
+
+private:
+	CMainWindow* m_wnd;
+	FSMeshSelection* m_pms;
 };

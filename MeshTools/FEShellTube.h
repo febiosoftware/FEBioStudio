@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,29 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiQuadMesh.h"
 
 class GThinTube;
 
-class FEShellTube : public FEMesher
+class FEShellTube : public FEMultiQuadMesh
 {
 public:
-	enum {T, NDIV, NSTACK};
+	enum {T, NDIV, NSTACK, ELEM_TYPE};
 
 public:
 	FEShellTube(){}
 	FEShellTube(GThinTube* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiQuadMesh();
-
-protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return j*(4*m_nd)+ (i%(4*m_nd)); }
+	bool BuildMultiQuad() override;
 
 protected:
 	GThinTube* m_pobj;

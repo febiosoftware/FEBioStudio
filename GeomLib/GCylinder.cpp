@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -81,17 +81,17 @@ void GCylinder::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
 	int FE[6][4] = {
-		{ 0, 1, 2, 3},{ 0, 9, 4, 8},{ 1,10, 5, 9},
+		{ 3, 2, 1, 0},{ 0, 9, 4, 8},{ 1,10, 5, 9},
 		{ 2,11, 6,10},{ 3, 8, 7,11},{ 4, 5, 6, 7}
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 
 	for (i=0; i<6; ++i)
 	{
@@ -195,7 +195,7 @@ void GCylinder2::Create()
 	//-------------------
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
@@ -205,7 +205,7 @@ void GCylinder2::Create()
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 
 	for (i=0; i<6; ++i)
 	{

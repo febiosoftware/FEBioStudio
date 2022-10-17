@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -52,12 +52,12 @@ FEMeshData::DATA_FORMAT FEMeshData::GetDataFormat() const
 	return m_dataFmt;
 }
 
-FEMesh* FEMeshData::GetMesh() const
+FSMesh* FEMeshData::GetMesh() const
 {
 	return m_pMesh;
 }
 
-void FEMeshData::SetMesh(FEMesh* mesh)
+void FEMeshData::SetMesh(FSMesh* mesh)
 {
 	m_pMesh = mesh;
 }

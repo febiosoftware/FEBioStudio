@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,7 +47,7 @@ public slots:
 	void abort();
 
 signals:
-	void resultReady(bool success);
+	void resultReady(bool success, QString message);
 	void progress(qint64 bytesSent, qint64 bytesTotal);
 
 private:

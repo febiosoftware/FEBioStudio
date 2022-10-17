@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -49,12 +49,15 @@ GLWidget* GLWidget::m_pfocus = 0;
 
 GLColor GLWidget::m_base = GLColor(0,0,0);
 
+QFont GLWidget::m_defaultFont("Helvetica", 13);
+
 std::map<std::string, std::string>	GLWidget::m_stringTable;
 
 GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 {
 	m_minw = 30;
 	m_minh = 20;
+	m_boverridefgc = false;
 
 	m_x = x;
 	m_y = y;
@@ -63,13 +66,14 @@ GLWidget::GLWidget(int x, int y, int w, int h, const char* szlabel)
 	m_szlabel = (char*) szlabel;
 
 	m_fgc = m_base;
-	m_bgc[0] = GLColor(0,0,0,0);
-	m_bgc[1] = GLColor(0,0,0,0);
-	m_nbg = NONE;
+	m_bgFillColor[0] = GLColor(0,0,0,0);
+	m_bgFillColor[1] = GLColor(0,0,0,0);
+	m_bgFillMode = FILL_NONE;
+	m_bgLineMode = LINE_NONE;
+	m_bgLineSize = 1;
+	m_bgLineColor = GLColor(0, 0, 0, 0);
 
-	m_font = QFont("Helvetica", 13);
-	m_font.setBold(false);
-	m_font.setItalic(false);
+	m_font = m_defaultFont;
 
 	m_nsnap = 0;
 
@@ -186,6 +190,7 @@ GLBox::GLBox(int x, int y, int w, int h, const char *szlabel) : GLWidget(x, y, w
 	m_bshadow = false;
 	m_shc = GLColor(200,200,200);
 	m_margin = 5;
+	m_align = LeftJustified;
 }
 
 void GLBox::fit_to_size()
@@ -201,21 +206,21 @@ void GLBox::fit_to_size()
 
 void GLBox::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 {
-	QColor c1 = toQColor(m_bgc[0]);
-	QColor c2 = toQColor(m_bgc[1]);
+	QColor c1 = toQColor(m_bgFillColor[0]);
+	QColor c2 = toQColor(m_bgFillColor[1]);
 
 	QRect rt(x0, y0, x1 - x0, y1 - y0);
 
-	switch (m_nbg)
+	switch (m_bgFillMode)
 	{
-	case NONE: break;
-	case COLOR1:
+	case FILL_NONE: break;
+	case FILL_COLOR1:
 		painter->fillRect(rt, c1);
 		break;
-	case COLOR2:
+	case FILL_COLOR2:
 		painter->fillRect(rt, c2);
 		break;
-	case HORIZONTAL:
+	case FILL_HORIZONTAL:
 		{
 			QLinearGradient grad(rt.topLeft(), rt.topRight());
 			grad.setColorAt(0, c1);
@@ -223,7 +228,7 @@ void GLBox::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 			painter->fillRect(rt, grad);
 		}
 		break;
-	case VERTICAL:
+	case FILL_VERTICAL:
 		{
 			QLinearGradient grad(rt.topLeft(), rt.bottomLeft());
 			grad.setColorAt(0, c1);
@@ -231,6 +236,17 @@ void GLBox::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 			painter->fillRect(rt, grad);
 		}
 		break;
+	}
+
+	switch (m_bgLineMode)
+	{
+	case LINE_NONE: break;
+	case LINE_SOLID:
+	{
+		painter->setPen(QPen(toQColor(m_bgLineColor), m_bgLineSize));
+		painter->drawRect(rt);
+	}
+	break;
 	}
 }
 
@@ -250,19 +266,28 @@ void GLBox::draw(QPainter* painter)
 
 	if (m_szlabel)
 	{
+		// set the align flag
+		int flags = Qt::AlignVCenter;
+		switch (m_align)
+		{
+		case LeftJustified : flags |= Qt::AlignLeft; break;
+		case Centered      : flags |= Qt::AlignHCenter; break;
+		case RightJustified: flags |= Qt::AlignRight; break;
+		}
+
 		string label = processLabel();
 		if (m_bshadow)
 		{
 			int dx = m_font.pointSize()/10+1;
 			painter->setPen(QColor(m_shc.r, m_shc.g, m_shc.b));
 			painter->setFont(m_font);
-			painter->drawText(x0+dx, y0+dx, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString::fromStdString(label));
+			painter->drawText(x0+dx, y0+dx, w, h, flags, QString::fromStdString(label));
 		}
 		QPen pen = painter->pen();
 		pen.setColor(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
 		painter->setPen(pen);
-		painter->drawText(x0, y0, w, h, Qt::AlignLeft| Qt::AlignVCenter, QString::fromStdString(label));
+		painter->drawText(x0, y0, w, h, flags, QString::fromStdString(label));
 	}
 }
 
@@ -275,23 +300,31 @@ GLLegendBar::GLLegendBar(CColorTexture* pm, int x, int y, int w, int h, int orie
 	m_nrot = orientation;
 	m_btitle = false;
 	m_blabels = true;
-	m_nprec = 3;
+	m_nprec = 4;
 	m_labelPos = 0;
 
 	m_fmin = 0.0f;
 	m_fmax = 1.0f;
+
+	m_lineWidth = 1.f;
 }
 
 void GLLegendBar::draw(QPainter* painter)
 {
+	int x0 = m_x;
+	int y0 = m_y;
+	int x1 = m_x + m_w;
+	int y1 = m_y + m_h;
+	draw_bg(x0, y0, x1, y1, painter);
+
 	switch (m_ntype)
 	{
 	case GRADIENT: 
-		if (m_nrot == VERTICAL) draw_gradient_vert(painter);
+		if (m_nrot == ORIENT_VERTICAL) draw_gradient_vert(painter);
 		else draw_gradient_horz(painter);
 		break;
 	case DISCRETE:
-		if (m_nrot == VERTICAL) draw_discrete_vert(painter); 
+		if (m_nrot == ORIENT_VERTICAL) draw_discrete_vert(painter); 
 		else draw_discrete_horz(painter);
 		break;
 	default:
@@ -332,6 +365,52 @@ void GLLegendBar::SetDivisions(int n)
 	m_pMap->SetDivisions(n);
 }
 
+void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
+{
+	QColor c1 = toQColor(m_bgFillColor[0]);
+	QColor c2 = toQColor(m_bgFillColor[1]);
+
+	QRect rt(x0, y0, x1 - x0, y1 - y0);
+
+	switch (m_bgFillMode)
+	{
+	case FILL_NONE: break;
+	case FILL_COLOR1:
+		painter->fillRect(rt, c1);
+		break;
+	case FILL_COLOR2:
+		painter->fillRect(rt, c2);
+		break;
+	case FILL_HORIZONTAL:
+	{
+		QLinearGradient grad(rt.topLeft(), rt.topRight());
+		grad.setColorAt(0, c1);
+		grad.setColorAt(1, c2);
+		painter->fillRect(rt, grad);
+	}
+	break;
+	case FILL_VERTICAL:
+	{
+		QLinearGradient grad(rt.topLeft(), rt.bottomLeft());
+		grad.setColorAt(0, c1);
+		grad.setColorAt(1, c2);
+		painter->fillRect(rt, grad);
+	}
+	break;
+	}
+
+	switch (m_bgLineMode)
+	{
+	case LINE_NONE: break;
+	case LINE_SOLID: 
+	{
+		painter->setPen(QPen(toQColor(m_bgLineColor), m_bgLineSize));
+		painter->drawRect(rt);
+	}
+	break;
+	}
+}
+
 void GLLegendBar::draw_gradient_vert(QPainter* painter)
 {
 	painter->beginNativePainting();
@@ -352,6 +431,14 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 	glDepthFunc(GL_ALWAYS);
 
 	glDisable(GL_BLEND);
+
+	// provide some room for the title
+	int titleHeight = 0;
+	if (m_btitle && m_szlabel)
+	{
+		QFontMetrics fm(m_font);
+		titleHeight = fm.height() + 2;
+	}
 
 	int x0 = x() + w() - 50;
 	int y0 = y() + 30;
@@ -391,20 +478,23 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 	}
 	else ipow = 0;
 
-	glColor3ub(m_fgc.r,m_fgc.g,m_fgc.b);
-	glLineWidth(1.f);
-	glBegin(GL_LINES);
+	if (m_lineWidth > 0.f)
 	{
-		for (i=0; i<=nsteps; i++)
+		glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
+		glLineWidth(m_lineWidth);
+		glBegin(GL_LINES);
 		{
-			yt = y0 + i*(y1 - y0)/nsteps;
-			f = m_fmax + i*(m_fmin - m_fmax)/nsteps;
-		
-			glVertex2i(x0+1, yt);
-			glVertex2i(x1-1, yt);
+			for (i = 0; i <= nsteps; i++)
+			{
+				yt = y0 + i * (y1 - y0) / nsteps;
+				f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
+
+				glVertex2i(x0 + 1, yt);
+				glVertex2i(x1 - 1, yt);
+			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	glDepthFunc(dfnc);
 
@@ -460,6 +550,19 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 				painter->drawText(x1 + 5, yt + h, s);
 			}
 		}
+	}
+
+	// render the title
+	if (m_btitle && m_szlabel)
+	{
+		QFontMetrics fm(m_font);
+		int w = fm.horizontalAdvance(m_szlabel);
+		int x = (x0 + x1) / 2 - w/2;
+		int y = y0 - fm.height() - 2;
+
+		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
+		painter->setFont(m_font);
+		painter->drawText(x, y, m_szlabel);
 	}
 }
 
@@ -522,20 +625,23 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 	}
 	else ipow = 0;
 
-	glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
-	glLineWidth(1.f);
-	glBegin(GL_LINES);
+	if (m_lineWidth > 0.f)
 	{
-		for (i = 0; i <= nsteps; i++)
+		glColor3ub(m_fgc.r, m_fgc.g, m_fgc.b);
+		glLineWidth(m_lineWidth);
+		glBegin(GL_LINES);
 		{
-			int xt = x0 + i*(x1 - x0) / nsteps;
-			double f = m_fmax + i*(m_fmin - m_fmax) / nsteps;
+			for (i = 0; i <= nsteps; i++)
+			{
+				int xt = x0 + i * (x1 - x0) / nsteps;
+				double f = m_fmax + i * (m_fmin - m_fmax) / nsteps;
 
-			glVertex2i(xt, y0 + 1);
-			glVertex2i(xt, y1 - 1);
+				glVertex2i(xt, y0 + 1);
+				glVertex2i(xt, y1 - 1);
+			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	glDepthFunc(dfnc);
 
@@ -602,7 +708,7 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
 
-		if (m_nrot == HORIZONTAL)
+		if (m_nrot == ORIENT_HORIZONTAL)
 		{
 			painter->drawText(x(), y(), w(), h(), Qt::AlignCenter | Qt::AlignBottom, m_szlabel);
 		}
@@ -632,7 +738,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 	glDepthFunc(GL_ALWAYS);
 
 	int x0, y0, x1, y1;
-	if (m_nrot == VERTICAL)
+	if (m_nrot == ORIENT_VERTICAL)
 	{
 		x0 = x() + w() - 50;
 		y0 = y() + 30;
@@ -687,10 +793,13 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 
 		float denom = (nsteps <= 1 ? 1.f : nsteps - 1.f);
 
+		float lineWidth = m_lineWidth;
+		if (lineWidth <= 0.f) lineWidth = 1.f;
+
 		// render the lines and text
 		for (i=1; i<nsteps+1; i++)
 		{
-			if (m_nrot == VERTICAL)
+			if (m_nrot == ORIENT_VERTICAL)
 			{
 				yt = y0 + i*(y1 - y0)/(nsteps+1);
 				f = 1.f - (i - 1) / denom;
@@ -700,7 +809,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 				GLColor c = map.map((float) f);
 				glColor3ub(c.r, c.g, c.b);
 
-				glLineWidth(5.f);
+				glLineWidth(lineWidth);
 				glBegin(GL_LINES);
 				{
 					glVertex2i(x0+1, yt);
@@ -718,7 +827,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 				GLColor c = map.map((float)f);
 				glColor3ub(c.r, c.g, c.b);
 
-				glLineWidth(5.f);
+				glLineWidth(lineWidth);
 				glBegin(GL_LINES);
 				{
 					glVertex2i(xt, y0+1);
@@ -740,7 +849,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		painter->setPen(QColor(m_fgc.r, m_fgc.g, m_fgc.b));
 		painter->setFont(m_font);
 
-		if (m_nrot == HORIZONTAL)
+		if (m_nrot == ORIENT_HORIZONTAL)
 		{
 			painter->drawText(x(), y(), w(), h(), Qt::AlignCenter | Qt::AlignBottom, m_szlabel);
 		}
@@ -761,7 +870,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 		// render the lines and text
 		for (i = 1; i<nsteps + 1; i++)
 		{
-			if (m_nrot == VERTICAL)
+			if (m_nrot == ORIENT_VERTICAL)
 			{
 				yt = y0 + i*(y1 - y0) / (nsteps + 1);
 				f = m_fmax + (i-1)*(m_fmin - m_fmax) / denom;
@@ -856,6 +965,7 @@ void GLTriad::draw(QPainter* painter)
 
 	// create the cylinder object
 	glEnable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 	GLUquadricObj* pcyl = gluNewQuadric();
 
 	const GLdouble r0 = .05;
@@ -983,12 +1093,20 @@ bool GLSafeFrame::is_inside(int x, int y)
 	int x1 = m_x+m_w;
 	int y1 = m_y+m_h;
 
+	// see if it's on the border
 	int a = 2;
-
 	if ((x>=x0-a) && (x<=x0+a) && (y >= y0) && (y <= y1)) return true;
 	if ((x>=x1-a) && (x<=x1+a) && (y >= y0) && (y <= y1)) return true;
 	if ((y>=y0-a) && (y<=y0+a) && (x >= x0) && (x <= x1)) return true;
 	if ((y>=y1-a) && (y<=y1+a) && (x >= x0) && (x <= x1)) return true;
+
+	// see if it's in the resize triangle
+	double r = (m_x + m_w - x) / 20.0;
+	double s = (m_y + m_h - y) / 20.0;
+	if ((r >= 0) && (s >= 0) && (r + s <= 1.0))
+	{
+		return true;
+	}
 
 	return false;
 }

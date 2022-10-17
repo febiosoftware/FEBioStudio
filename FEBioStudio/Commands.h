@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include <FSCore/ParamBlock.h>
 #include <MeshTools/GGroup.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModifiedObject.h>
 #include <MeshTools/FESurfaceModifier.h>
@@ -46,6 +45,7 @@ SOFTWARE.*/
 class ObjectMeshList;
 class MeshLayer;
 class CModelDocument;
+class CGLDocument;
 class CGView;
 
 //-----------------------------------------------------------------------------
@@ -87,15 +87,15 @@ protected:
 class CCmdAddInterface : public CCommand
 {
 public:
-	CCmdAddInterface(FEStep* ps, FEInterface* pi) : CCommand("Add interface") { m_ps = ps; m_pint = pi; m_bdel = true; }
+	CCmdAddInterface(FSStep* ps, FSInterface* pi) : CCommand("Add interface") { m_ps = ps; m_pint = pi; m_bdel = true; }
 	~CCmdAddInterface() { if (m_bdel) delete m_pint; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*			m_ps;
-	FEInterface*	m_pint;
+	FSStep*			m_ps;
+	FSInterface*	m_pint;
 	bool			m_bdel;
 };
 
@@ -103,15 +103,15 @@ protected:
 class CCmdAddRigidConnector : public CCommand
 {
 public:
-	CCmdAddRigidConnector(FEStep* ps, FERigidConnector* pi) : CCommand("Add rigid connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
+	CCmdAddRigidConnector(FSStep* ps, FSRigidConnector* pi) : CCommand("Add rigid connector") { m_ps = ps; m_pint = pi; m_bdel = true; }
 	~CCmdAddRigidConnector() { if (m_bdel) delete m_pint; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*			m_ps;
-	FERigidConnector*	m_pint;
+	FSStep*			m_ps;
+	FSRigidConnector*	m_pint;
 	bool			m_bdel;
 };
 
@@ -119,15 +119,15 @@ protected:
 class CCmdAddConstraint : public CCommand
 {
 public:
-	CCmdAddConstraint(FEStep* ps, FEModelConstraint* pmc);
+	CCmdAddConstraint(FSStep* ps, FSModelConstraint* pmc);
 	~CCmdAddConstraint();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*				m_ps;
-	FEModelConstraint*	m_pmc;
+	FSStep*				m_ps;
+	FSModelConstraint*	m_pmc;
 	bool				m_bdel;
 };
 
@@ -136,7 +136,7 @@ protected:
 class CCmdAddPart : public CCommand
 {
 public:
-	CCmdAddPart(GObject* po, FEPart* pg) : CCommand("Add Part") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddPart(GObject* po, FSPart* pg) : CCommand("Add Part") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddPart() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -144,7 +144,7 @@ public:
 
 protected:
 	GObject*		m_po;
-	FEPart*		m_pg;
+	FSPart*		m_pg;
 	bool		m_bdel;
 };
 
@@ -153,7 +153,7 @@ protected:
 class CCmdAddSurface : public CCommand
 {
 public:
-	CCmdAddSurface(GObject* po, FESurface* pg) : CCommand("Add Surface") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddSurface(GObject* po, FSSurface* pg) : CCommand("Add Surface") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddSurface() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -161,7 +161,7 @@ public:
 
 protected:
 	GObject*	m_po;
-	FESurface*	m_pg;
+	FSSurface*	m_pg;
 	bool		m_bdel;
 };
 
@@ -170,7 +170,7 @@ protected:
 class CCmdAddFEEdgeSet : public CCommand
 {
 public:
-	CCmdAddFEEdgeSet(GObject* po, FEEdgeSet* pg) : CCommand("Add EdgeSet") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddFEEdgeSet(GObject* po, FSEdgeSet* pg) : CCommand("Add EdgeSet") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddFEEdgeSet() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -178,7 +178,7 @@ public:
 
 protected:
 	GObject*	m_po;
-	FEEdgeSet*	m_pg;
+	FSEdgeSet*	m_pg;
 	bool		m_bdel;
 };
 
@@ -187,7 +187,7 @@ protected:
 class CCmdAddNodeSet : public CCommand
 {
 public:
-	CCmdAddNodeSet(GObject* po, FENodeSet* pg) : CCommand("Add Nodeset") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddNodeSet(GObject* po, FSNodeSet* pg) : CCommand("Add Nodeset") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddNodeSet() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -195,7 +195,7 @@ public:
 
 protected:
 	GObject*	m_po;
-	FENodeSet*	m_pg;
+	FSNodeSet*	m_pg;
 	bool		m_bdel;
 };
 
@@ -268,15 +268,15 @@ protected:
 class CCmdAddBC : public CCommand
 {
 public:
-	CCmdAddBC(FEStep* ps, FEBoundaryCondition* pbc) : CCommand("Add Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = true; }
+	CCmdAddBC(FSStep* ps, FSBoundaryCondition* pbc) : CCommand("Add Boundary Condition") { m_ps = ps; m_pbc = pbc; m_bdel = true; }
 	~CCmdAddBC() { if (m_bdel) delete m_pbc; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*					m_ps;
-	FEBoundaryCondition*	m_pbc;
+	FSStep*					m_ps;
+	FSBoundaryCondition*	m_pbc;
 	bool					m_bdel;
 };
 
@@ -284,15 +284,15 @@ protected:
 class CCmdAddIC : public CCommand
 {
 public:
-	CCmdAddIC(FEStep* ps, FEInitialCondition* pic) : CCommand("Add Initial Condition") { m_ps = ps; m_pic = pic; m_bdel = true; }
+	CCmdAddIC(FSStep* ps, FSInitialCondition* pic) : CCommand("Add Initial Condition") { m_ps = ps; m_pic = pic; m_bdel = true; }
 	~CCmdAddIC() { if (m_bdel) delete m_pic; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*					m_ps;
-	FEInitialCondition*		m_pic;
+	FSStep*					m_ps;
+	FSInitialCondition*		m_pic;
 	bool					m_bdel;
 };
 
@@ -300,32 +300,16 @@ protected:
 class CCmdAddLoad : public CCommand
 {
 public:
-	CCmdAddLoad(FEStep* ps, FELoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
+	CCmdAddLoad(FSStep* ps, FSLoad* pfc) : CCommand("Add Load") { m_ps = ps; m_pfc = pfc; m_bdel = true; }
 	~CCmdAddLoad() { if (m_bdel) delete m_pfc; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEStep*		m_ps;
-	FELoad*		m_pfc;
+	FSStep*		m_ps;
+	FSLoad*		m_pfc;
 	bool		m_bdel;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdAddRC : public CCommand
-{
-public:
-	CCmdAddRC(FEStep* ps, FERigidConstraint* prc) : CCommand("Add Rigid Constraint") { m_ps = ps; m_prc = prc; m_bdel = true; }
-	~CCmdAddRC() { if (m_bdel) delete m_prc; }
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEStep*				m_ps;
-	FERigidConstraint*	m_prc;
-	bool				m_bdel;
 };
 
 //----------------------------------------------------------------
@@ -345,6 +329,19 @@ protected:
 	int		m_npos;
 };
 
+//-----------------------------------------------------------------------------
+class CCmdTransformObject : public CCommand
+{
+public:
+	CCmdTransformObject(GObject* po, const Transform& Q);
+
+	void Execute() override;
+	void UnExecute() override;
+
+private:
+	GObject* m_po;
+	Transform	m_oldQ;
+};
 
 //-----------------------------------------------------------------------------
 class CCmdTranslateSelection : public CCommand
@@ -439,26 +436,26 @@ private:
 class CCmdToggleElementVisibility : public CCommand
 {
 public:
-	CCmdToggleElementVisibility(FEMesh* fem);
+	CCmdToggleElementVisibility(FSMesh* fem);
 
 	void Execute();
 	void UnExecute();
 
 private:
-	FEMesh*	m_mesh;
+	FSMesh*	m_mesh;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdToggleFEFaceVisibility : public CCommand
 {
 public:
-	CCmdToggleFEFaceVisibility(FEMeshBase* mesh);
+	CCmdToggleFEFaceVisibility(FSMeshBase* mesh);
 
 	void Execute();
 	void UnExecute();
 
 private:
-	FEMeshBase*	m_mesh;
+	FSMeshBase*	m_mesh;
 };
 
 //-----------------------------------------------------------------------------
@@ -717,13 +714,13 @@ public:
 class CCmdInvertSelection : public CCommand
 {
 public:
-	CCmdInvertSelection(CModelDocument* doc);
+	CCmdInvertSelection(CGLDocument* doc);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	CModelDocument*	m_doc;
+	CGLDocument*	m_doc;
 	int	m_item;
 };
 
@@ -732,15 +729,15 @@ protected:
 class CCmdSelectElements : public CCommand
 {
 public:
-	CCmdSelectElements(FEMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectElements(FEMesh* pm, vector<int>& el, bool badd);
+	CCmdSelectElements(FSCoreMesh* pm, int* pe, int N, bool badd);
+	CCmdSelectElements(FSCoreMesh* pm, const std::vector<int>& el, bool badd);
 	~CCmdSelectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMesh*	m_pm;
+	FSCoreMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
 	bool	m_badd; // add to selection or not
@@ -752,15 +749,15 @@ protected:
 class CCmdUnselectElements : public CCommand
 {
 public:
-	CCmdUnselectElements(FEMesh* mesh, int* pe, int N);
-	CCmdUnselectElements(FEMesh* mesh, const vector<int>& elem);
+	CCmdUnselectElements(FSMesh* mesh, int* pe, int N);
+	CCmdUnselectElements(FSMesh* mesh, const vector<int>& elem);
 	~CCmdUnselectElements() { delete[] m_ptag; delete[] m_pel; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMesh* m_mesh;
+	FSMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of elements
 	int*	m_pel;	// array of element indics we need to select
 	bool	m_badd; // add to selection or not
@@ -772,15 +769,15 @@ protected:
 class CCmdSelectFaces : public CCommand
 {
 public:
-	CCmdSelectFaces(FEMeshBase* pm, int* pf, int N, bool badd);
-	CCmdSelectFaces(FEMeshBase* pm, vector<int>& fl, bool badd);
+	CCmdSelectFaces(FSMeshBase* pm, int* pf, int N, bool badd);
+	CCmdSelectFaces(FSMeshBase* pm, const vector<int>& fl, bool badd);
 	~CCmdSelectFaces() { delete[] m_ptag; delete[] m_pface; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMeshBase*	m_pm;
+	FSMeshBase*	m_pm;
 	bool*	m_ptag;	// old selecion state of faces
 	int*	m_pface;// array of face indics we need to select
 	bool	m_badd; // add to selection or not
@@ -792,15 +789,15 @@ protected:
 class CCmdUnselectFaces : public CCommand
 {
 public:
-	CCmdUnselectFaces(FEMeshBase* pm, int* pf, int N);
-	CCmdUnselectFaces(FEMeshBase* pm, const vector<int>& face);
+	CCmdUnselectFaces(FSMeshBase* pm, int* pf, int N);
+	CCmdUnselectFaces(FSMeshBase* pm, const vector<int>& face);
 	~CCmdUnselectFaces() { delete[] m_ptag; delete[] m_pface; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMeshBase* m_pm;
+	FSMeshBase* m_pm;
 	bool*	m_ptag;	// old selecion state of faces
 	int*	m_pface;	// array of face indics we need to select
 	bool	m_badd; // add to selection or not
@@ -812,15 +809,15 @@ protected:
 class CCmdSelectFEEdges : public CCommand
 {
 public:
-	CCmdSelectFEEdges(FELineMesh* pm, int* pe, int N, bool badd);
-	CCmdSelectFEEdges(FELineMesh* pm, vector<int>& el, bool badd);
+	CCmdSelectFEEdges(FSLineMesh* pm, int* pe, int N, bool badd);
+	CCmdSelectFEEdges(FSLineMesh* pm, const vector<int>& el, bool badd);
 	~CCmdSelectFEEdges() { delete[] m_ptag; delete[] m_pedge; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh*	m_pm;
+	FSLineMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of edges
 	int*	m_pedge;// array of edge indices we need to select
 	bool	m_badd; // add to selection or not
@@ -832,15 +829,15 @@ protected:
 class CCmdUnselectFEEdges : public CCommand
 {
 public:
-	CCmdUnselectFEEdges(FELineMesh* pm, int* pe, int N);
-	CCmdUnselectFEEdges(FELineMesh* pm, const vector<int>& edge);
+	CCmdUnselectFEEdges(FSLineMesh* pm, int* pe, int N);
+	CCmdUnselectFEEdges(FSLineMesh* pm, const vector<int>& edge);
 	~CCmdUnselectFEEdges() { delete[] m_ptag; delete[] m_pedge; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh*	m_pm;
+	FSLineMesh*	m_pm;
 	bool*	m_ptag;		// old selecion state of edges
 	int*	m_pedge;	// array of edge indices we need to select
 	bool	m_badd;		// add to selection or not
@@ -852,15 +849,15 @@ protected:
 class CCmdSelectFENodes : public CCommand
 {
 public:
-	CCmdSelectFENodes(FELineMesh* pm, int* pn, int N, bool badd);
-	CCmdSelectFENodes(FELineMesh* pm, vector<int>& nl, bool badd);
+	CCmdSelectFENodes(FSLineMesh* pm, int* pn, int N, bool badd);
+	CCmdSelectFENodes(FSLineMesh* pm, const vector<int>& nl, bool badd);
 	~CCmdSelectFENodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh*	m_pm;
+	FSLineMesh*	m_pm;
 	bool*	m_ptag;	// old selecion state of nodes
 	int*	m_pn;	// array of node indices we need to select
 	bool	m_badd; // add to selection or not
@@ -872,15 +869,15 @@ protected:
 class CCmdUnselectNodes : public CCommand
 {
 public:
-	CCmdUnselectNodes(FELineMesh* pm, int* pn, int N);
-	CCmdUnselectNodes(FELineMesh* pm, const vector<int>& node);
+	CCmdUnselectNodes(FSLineMesh* pm, int* pn, int N);
+	CCmdUnselectNodes(FSLineMesh* pm, const vector<int>& node);
 	~CCmdUnselectNodes() { delete[] m_ptag; delete[] m_pn; }
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FELineMesh* m_mesh;
+	FSLineMesh* m_mesh;
 	bool*	m_ptag;	// old selecion state of nodes
 	int*	m_pn;	// array of nodes indices we need to select
 	bool	m_badd; // add to selection or not
@@ -934,21 +931,21 @@ public:
 class CCmdAssignMaterial : public CCommand
 {
 public:
-CCmdAssignMaterial(GObject* po, FEMaterial* pmat, int* pel=0, int N=0);
+CCmdAssignMaterial(GObject* po, FSMaterial* pmat, int* pel=0, int N=0);
 ~CCmdAssignMaterial(){ delete [] m_ppmat; }
 
 void Execute();
 void UnExecute();
 
 protected:
-FEMaterial*	m_pmat;
-FEMesh*	m_pm;
+FSMaterial*	m_pmat;
+FSMesh*	m_pm;
 GObject* m_po;
 
 int*	m_pel;
 int		m_N;
 
-FEMaterial**	m_ppmat;
+FSMaterial**	m_ppmat;
 };
 */
 
@@ -965,8 +962,8 @@ public:
 
 protected:
 	GMeshObject*	m_pobj;
-	FEMesh*			m_pold;
-	FEMesh*			m_pnew;
+	FSMesh*			m_pold;
+	FSMesh*			m_pnew;
 	int		m_nitem;
 };
 
@@ -983,8 +980,8 @@ public:
 
 protected:
 	GSurfaceMeshObject*	m_pobj;
-	FESurfaceMesh*		m_pold;
-	FESurfaceMesh*		m_pnew;
+	FSSurfaceMesh*		m_pold;
+	FSSurfaceMesh*		m_pnew;
 	int				m_item;
 };
 
@@ -1037,13 +1034,13 @@ protected:
 class CCmdHideElements : public CCommand
 {
 public:
-	CCmdHideElements(FEMesh* mesh, const vector<int>& elemList);
+	CCmdHideElements(FSMesh* mesh, const vector<int>& elemList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEMesh*			m_mesh;
+	FSMesh*			m_mesh;
 	vector<int>		m_elemList;
 };
 
@@ -1051,13 +1048,13 @@ protected:
 class CCmdHideFaces : public CCommand
 {
 public:
-	CCmdHideFaces(FESurfaceMesh* mesh, const vector<int>& faceList);
+	CCmdHideFaces(FSSurfaceMesh* mesh, const vector<int>& faceList);
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FESurfaceMesh*	m_mesh;
+	FSSurfaceMesh*	m_mesh;
 	vector<int>		m_faceList;
 };
 
@@ -1118,7 +1115,7 @@ protected:
 class CCmdApplyFEModifier : public CCommand
 {
 public:
-	CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FEGroup* selection = 0);
+	CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FSGroup* selection = 0);
 	~CCmdApplyFEModifier() { delete m_pnew; delete m_pmod; }
 
 	void Execute();
@@ -1126,10 +1123,10 @@ public:
 
 protected:
 	GObject*		m_pobj;
-	FEMesh*			m_pold;	// old, unmodified mesh
-	FEMesh*			m_pnew;	// new, modified mesh
+	FSMesh*			m_pold;	// old, unmodified mesh
+	FSMesh*			m_pnew;	// new, modified mesh
 	FEModifier*		m_pmod;
-	FEGroup*		m_psel;
+	FSGroup*		m_psel;
 };
 
 //-----------------------------------------------------------------------------
@@ -1137,7 +1134,7 @@ protected:
 class CCmdApplySurfaceModifier : public CCommand
 {
 public:
-	CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FEGroup* selection);
+	CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FSGroup* selection);
 	~CCmdApplySurfaceModifier();
 
 	void Execute();
@@ -1145,10 +1142,10 @@ public:
 
 protected:
 	GObject*			m_pobj;
-	FESurfaceMesh*		m_pold;	// old, unmodified mesh
-	FESurfaceMesh*		m_pnew;	// new, modified mesh
+	FSSurfaceMesh*		m_pold;	// old, unmodified mesh
+	FSSurfaceMesh*		m_pnew;	// new, modified mesh
 	FESurfaceModifier*	m_pmod;
-	FEGroup*			m_psel;
+	FSGroup*			m_psel;
 };
 
 //-----------------------------------------------------------------------------
@@ -1156,7 +1153,7 @@ protected:
 class CCmdChangeFEMesh : public CCommand
 {
 public:
-	CCmdChangeFEMesh(GObject* po, FEMesh* pm, bool up = false);
+	CCmdChangeFEMesh(GObject* po, FSMesh* pm, bool up = false);
 	~CCmdChangeFEMesh() { delete m_pnew; }
 
 	void Execute();
@@ -1165,14 +1162,14 @@ public:
 protected:
 	bool		m_update;
 	GObject*	m_po;
-	FEMesh*		m_pnew;
+	FSMesh*		m_pnew;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdChangeFESurfaceMesh : public CCommand
 {
 public:
-	CCmdChangeFESurfaceMesh(GSurfaceMeshObject* po, FESurfaceMesh* pm, bool up = false);
+	CCmdChangeFESurfaceMesh(GSurfaceMeshObject* po, FSSurfaceMesh* pm, bool up = false);
 	~CCmdChangeFESurfaceMesh();
 
 	void Execute();
@@ -1181,7 +1178,7 @@ public:
 protected:
 	bool				m_update;
 	GSurfaceMeshObject*	m_po;
-	FESurfaceMesh*		m_pnew;
+	FSSurfaceMesh*		m_pnew;
 };
 
 //-----------------------------------------------------------------------------
@@ -1297,15 +1294,15 @@ protected:
 class CCmdAddStep : public CCommand
 {
 public:
-	CCmdAddStep(FEModel* fem, FEStep* ps, int insertAfter = -1);
+	CCmdAddStep(FSModel* fem, FSStep* ps, int insertAfter = -1);
 	~CCmdAddStep();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*	m_fem;
-	FEStep*		m_pstep;
+	FSModel*	m_fem;
+	FSStep*		m_pstep;
 	int			m_pos;
 };
 
@@ -1313,60 +1310,45 @@ protected:
 class CCmdSwapSteps : public CCommand
 {
 public:
-	CCmdSwapSteps(FEModel* fem, FEStep* step0, FEStep* step1);
+	CCmdSwapSteps(FSModel* fem, FSStep* step0, FSStep* step1);
 
 	void Execute();
 	void UnExecute();
 
 private:
-	FEModel*	m_fem;
-	FEStep*		m_step0;
-	FEStep*		m_step1;
+	FSModel*	m_fem;
+	FSStep*		m_step0;
+	FSStep*		m_step1;
 };
 
 //----------------------------------------------------------------
 class CCmdAddMaterial : public CCommand
 {
 public:
-	CCmdAddMaterial(FEModel* fem, GMaterial* pm);
+	CCmdAddMaterial(FSModel* fem, GMaterial* pm);
 	~CCmdAddMaterial();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	GMaterial*	m_pm;
 };
 
 //-----------------------------------------------------------------------------
-class CCmdSetModelComponentItemList : public CCommand
+class CCmdSetItemList : public CCommand
 {
 public:
-	CCmdSetModelComponentItemList(FEModelComponent* pbc, FEItemListBuilder* pl);
-	~CCmdSetModelComponentItemList();
+	CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl);
+	~CCmdSetItemList();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	FEModelComponent*	m_pbc;
+	IHasItemList*		m_pbc;
 	FEItemListBuilder*	m_pl;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdUnassignBC : public CCommand
-{
-public:
-	CCmdUnassignBC(FEBoundaryCondition* pbc);
-	~CCmdUnassignBC();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FEBoundaryCondition*	m_pbc;
-	FEItemListBuilder*		m_pl;
 };
 
 //-----------------------------------------------------------------------------
@@ -1403,9 +1385,8 @@ protected:
 class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveItemListBuilder(FEModelComponent* pmc);
-	CCmdRemoveItemListBuilder(FESoloInterface* pmc);
-	CCmdRemoveItemListBuilder(FEPairedInterface* pmc, int n);
+	CCmdRemoveItemListBuilder(IHasItemList* pmc);
+	CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n);
 	~CCmdRemoveItemListBuilder();
 
 	void Execute();
@@ -1413,9 +1394,8 @@ public:
 
 private:
 	FEItemListBuilder*	m_pitem;
-	FESoloInterface*	m_psi;
-	FEPairedInterface*	m_ppi;
-	FEModelComponent*	m_pmc;
+	IHasItemList*		m_pmc;
+	FSPairedInterface*	m_ppi;
 	int	m_index;
 };
 

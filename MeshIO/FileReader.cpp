@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,8 +46,10 @@ SOFTWARE.*/
 FileReader::FileReader()
 {
 	m_fp = 0;
+	m_stream = nullptr;
 	m_nfilesize = 0;
 	m_cancelled = false;
+	m_nerrors = 0;
 }
 
 FileReader::~FileReader()
@@ -88,6 +90,21 @@ bool FileReader::Open(const char* szfile, const char* szmode)
 	return (m_fp != 0);
 }
 
+bool FileReader::SetFileStream(ifstream* stream)
+{
+    m_stream = stream;
+
+	if (m_stream)
+	{
+		std::streampos pos = m_stream->tellg();
+		m_stream->seekg(0, std::ios_base::end);
+		m_nfilesize = m_stream->tellg();
+		m_stream->seekg(pos, std::ios_base::beg);
+	}
+
+	return true;
+}
+
 void FileReader::Close()
 {
 	if (m_fp) 
@@ -96,6 +113,7 @@ void FileReader::Close()
 		m_fp = 0;	// we set this to zero first, in order to avoid a race condition
 		fclose(fp);
 	}
+	m_stream = nullptr;
 	m_nfilesize = 0;
 }
 
@@ -145,10 +163,13 @@ bool FileReader::errf(const char* szerr, ...)
 
 	m_nerrors++;
 
-	// close the file
-	Close();
-
 	return false;
+}
+
+void FileReader::ClearErrors()
+{
+	m_err.clear();
+	m_nerrors = 0;
 }
 
 float FileReader::GetFileProgress() const
@@ -159,6 +180,11 @@ float FileReader::GetFileProgress() const
 		float pct = (float)npos / (float)m_nfilesize;
 		return pct;
 	}
+    else if(m_stream)
+    {
+        std::streampos npos = m_stream->tellg();
+        return (float)npos / (float)m_nfilesize;
+    }
 	else return 1.0f;
 }
 

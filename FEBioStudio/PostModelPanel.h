@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -65,9 +65,14 @@ private slots:
 	void on_deleteButton_clicked();
 	void on_props_dataChanged();
 	void on_enabled_stateChanged(int nstate);
+	void OnSelectNodes();
+	void OnSelectFaces();
 	void OnSelectElements();
 	void OnHideElements();
 	void OnShowAllElements();
+	void OnMoveUpInRenderingQueue();
+	void OnMoveDownInRenderingQueue();
+	void OnExportImage();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 

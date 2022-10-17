@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include <MeshLib/FEFaceEdgeList.h>
+using namespace std;
 
 class DynamicMesh2D
 {
@@ -657,7 +658,7 @@ double Area2(DynamicMesh2D::FACEP fp)
 	return Area2(fp->node[0]->r, fp->node[1]->r, fp->node[2]->r);
 }
 
-FEMesh* FECurveIntersect2D::Apply(FEMesh* pm)
+FSMesh* FECurveIntersect2D::Apply(FSMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_TRI3) == false) return 0;
@@ -688,7 +689,7 @@ FEMesh* FECurveIntersect2D::Apply(FEMesh* pm)
 	int NE = ps->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& e = ps->Edge(i);
+		FSEdge& e = ps->Edge(i);
 		dyna.insertEdge(nodeList[e.n[0]], nodeList[e.n[1]], nodeList);
 	}
 
@@ -751,7 +752,7 @@ FEMesh* FECurveIntersect2D::Apply(FEMesh* pm)
 	return BuildFEMesh(dyna);
 }
 
-void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FEMesh* pm)
+void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FSMesh* pm)
 {
 	// build the nodes
 	int NN = pm->Nodes();
@@ -764,7 +765,7 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FEMesh* pm)
 	}
 
 	// build the edges
-	FEEdgeList ET(*pm);
+	FSEdgeList ET(*pm);
 	int NE = ET.size();
 	vector<DynamicMesh2D::EDGEP> edgePtr;
 	for (int i = 0; i<NE; ++i)
@@ -775,11 +776,11 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FEMesh* pm)
 	}
 
 	// build the faces
-	FEFaceEdgeList FET(*pm, ET);
+	FSFaceEdgeList FET(*pm, ET);
 	int NF = pm->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		DynamicMesh2D::FACE f;
 		f.node[0] = nodePtr[face.n[0]];
 		f.node[1] = nodePtr[face.n[1]];
@@ -793,7 +794,7 @@ void FECurveIntersect2D::BuildMesh(DynamicMesh2D& dyna, FEMesh* pm)
 	}
 }
 
-FEMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
+FSMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
 {
 	DynamicMesh2D::NodeIterator nodePtr(dyna);
 	for (;nodePtr.isValid(); ++nodePtr) nodePtr->ntag = -1;
@@ -814,7 +815,7 @@ FEMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
 	int NN = nodes;
 	int NF = dyna.Faces();
 
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(NN, NF);
 
 	nodePtr.reset();
@@ -825,7 +826,7 @@ FEMesh* FECurveIntersect2D::BuildFEMesh(DynamicMesh2D& dyna)
 	facePtr.reset();
 	for (int i = 0; i<NF; ++i, ++facePtr)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		el.SetType(FE_TRI3);
 		el.m_node[0] = facePtr->node[0]->ntag; assert((el.m_node[0] >= 0) && (el.m_node[0] < NN));
 		el.m_node[1] = facePtr->node[1]->ntag; assert((el.m_node[1] >= 0) && (el.m_node[1] < NN));

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,31 +37,31 @@ FETet4ToTet20::FETet4ToTet20() : FEModifier("Tet4-to-Tet20")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
+FSMesh* FETet4ToTet20::Apply(FSMesh* pm)
 {
 	// before we get started, let's make sure this is a tet4 mesh
 	if (pm->IsType(FE_TET4) == false) return 0;
 
 	// build the edge table
-	FEEdgeList ET(*pm);
+	FSEdgeList ET(*pm);
 
 	// build the element-edge table
-	FEElementEdgeList EET(*pm, ET);
+	FSElementEdgeList EET(*pm, ET);
 
 	// build the face table
-	FEFaceTable FT(*pm);
+	FSFaceTable FT(*pm);
 
 	// build the element face table
-	FEElementFaceList EFT(*pm, FT);
+	FSElementFaceList EFT(*pm, FT);
 
 	// build the face-edge table
-	FEFaceEdgeList FET(*pm, ET);
+	FSFaceEdgeList FET(*pm, ET);
 
 	// build the face-face table
-	FEFaceFaceList FFT(*pm, FT);
+	FSFaceFaceList FFT(*pm, FT);
 
 	// build the edge-edge table
-	FEEdgeIndexList CET(*pm, ET);
+	FSEdgeIndexList CET(*pm, ET);
 
 	// the new number of nodes is given by the number of nodes, 2*edges, faces
 	int NN = pm->Nodes();
@@ -73,14 +73,14 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 	int elems = pm->Elements();
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(nodes, elems, pm->Faces(), pm->Edges());
 
 	// copy the old nodes
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& n0 = pnew->Node(i);
-		FENode& n1 = pm->Node(i);
+		FSNode& n0 = pnew->Node(i);
+		FSNode& n1 = pm->Node(i);
 		n0.r = n1.r;
 		n0.m_gid = n1.m_gid;
 	}
@@ -89,8 +89,8 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 	for (int i = 0; i<NC; i++)
 	{
 		pair<int, int>& edge = ET[i];
-		FENode& n0 = pnew->Node(NN + 2*i);
-		FENode& n1 = pnew->Node(NN + 2*i+1);
+		FSNode& n0 = pnew->Node(NN + 2*i);
+		FSNode& n1 = pnew->Node(NN + 2*i+1);
 		vec3d& ra = pm->Node(edge.first).r;
 		vec3d& rb = pm->Node(edge.second).r;
 		n0.r = ra + (rb - ra) / 3.0;
@@ -100,8 +100,8 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 	// create the face nodes
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = FT[i];
-		FENode& n0 = pnew->Node(i + NN + 2*NC);
+		FSFace& face = FT[i];
+		FSNode& n0 = pnew->Node(i + NN + 2*NC);
 		vec3d& ra = pm->Node(face.n[0]).r;
 		vec3d& rb = pm->Node(face.n[1]).r;
 		vec3d& rc = pm->Node(face.n[2]).r;
@@ -112,8 +112,8 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 	const int TET[6][2] = {{0,1},{1,2},{0,2},{0,3},{1,3},{2,3}};
 	for (int i = 0; i<elems; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
-		FEElement& e1 = pnew->Element(i);
+		FSElement& e0 = pm->Element(i);
+		FSElement& e1 = pnew->Element(i);
 		e1 = e0;
 
 		e1.SetType(FE_TET20);
@@ -149,8 +149,8 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 	// create the new faces
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& f0 = pm->Face(i);
-		FEFace& f1 = pnew->Face(i);
+		FSFace& f0 = pm->Face(i);
+		FSFace& f1 = pnew->Face(i);
 
 		f1.SetType(FE_FACE_TRI10);
 		f1.m_gid = f0.m_gid;
@@ -188,8 +188,8 @@ FEMesh* FETet4ToTet20::Apply(FEMesh* pm)
 	// create the new edges
 	for (int i = 0; i<pm->Edges(); ++i)
 	{
-		FEEdge& e0 = pm->Edge(i);
-		FEEdge& e1 = pnew->Edge(i);
+		FSEdge& e0 = pm->Edge(i);
+		FSEdge& e1 = pnew->Edge(i);
 
 		e1.SetType(FE_EDGE4);
 		e1.n[0] = e0.n[0];

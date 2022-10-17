@@ -6,6 +6,297 @@
 
 ===========================================================================
 
+ R E L E A S E   1.8   6/15/2022
+
+===========================================================================
+
+* Inactive rigid connectors are now rendered gray.
+* Fixed bug in post context menu for surfaces. Improved consistency between post groups (stored on mesh) and user groups (stored on post object).
+* Added options to export only current selection and user-defined time step range from PostData panel.
+* Post Model panel now shows nodesets, surfaces, and element sets of the mesh.
+* Updated plot variables list. Added option to set plot variable category when adding new plot variable.
+* Now taking local CS into account when drawing fibers.
+* Implemented value-weighted transparency mode.
+* Added support for FEHGOCoronary material.
+* Added support for reading a series of vtk files.
+* Removed min size constraint in screen capture dialog.
+* Fixed dpr issue with screen recording.
+* Added check for empty data selection in fiber generator tool.
+* Added option to size points based on point data in CGLPointPlot.
+* Added option to set default font for GL widgets.
+* Added support for TET10 elements in FEElementEdgeList.
+* Fixed issue with color map range for face data.
+* Fixed couple bugs in curve-projection algorithm.
+* Fixed bug in FEShellPatch.
+* Added plot variable "RVE strain"
+* Implemented 'solute natural flux' surface load.
+* Implemented ICP Registration tool.
+* Non-visible materials show up in italic in the Post material panel.
+* Fixed bug with updating plane cut in build mode.
+* Added new import data dialog. Optimization wizard now uses this new dialog for pasting data.
+* Fixed bug when applying TetGen modifier.
+* Added new dialog for capturing screenshot. You can now either save the image or copy it to clipboard.
+* Fixed issue with applying modifiers in object selection mode.
+* Added option to set text alignment for box widget.
+* Moved outline rendering further down the pipeline to address rendering artifact.
+* Added option for setting default foreground color of GL widgets.
+* Local repo database is no longer deleted on each refresh, it is just completely emptied.
+* Added context menu option for changing render order for plots.
+* Added icon for point plots.
+* Moved point data to PointDataModel class. Implemented mechanism for reloading point data.
+* Implemented mechanism for reloading line data.
+* Added functionality to specify bearing load. Updated QuadricFitTool functionality.  Updated Quadric functions to be more tolerant to numerical round-offs.
+* Added functionality to prescribe a force on a surface.
+* Added functionality for prescribing a fixed normal displacement constraint.
+* Added fiber-exp-pow-linear as a fiber model.
+* Made the "T0" parameter of "uncoupled prescribed uniaxial active contraction" variable.
+* Added support for selection only flag when exporting element data.
+* Added material active fiber contraction material "force-velocity-Estrada"
+* Added "fatigue bond fraction" plot variable.
+* Added ability to read/write "reactive viscoelastic damage", "reactive fatigue" and "uncoupled reactive fatigue" materials.
+* Fixed typo in Figure 10.2 description in manual
+* Added ability to import plot_stride variable from FEBioFormat3 model files.
+* Set correct modules when reading feb file.
+* Updated GOOCObject to stop using deprecated functions from OpenCascade.
+* Added support for new "infinitesimal strain" plot variable.
+* Added check for tet slivers in Mesh Diagnostics tool.
+* Fixed crash when drawing mesh on planecut.
+* Added support new "polynomial" hyperelastic material.
+* Added documentation on the auto update settings in options.
+* Fixed typo in specification of relaxation-Malkin-distortion material.
+* Fixed logic in rendering active-only faces.
+* Active faces are now also rendered in wire render mode.
+* Fixed bug to properly save plot_level to feb file for modules other than structural mechanics.
+* Fixed crash when closing a model document with an active selection.
+* Fixed bug with setting active FEPostModel.
+* Added materials for CDF power, relaxation-Malkin-dist, and trace-free neo-Hookean.  Added recruitment component to reactive viscoelastic materials.
+* Fixed bug when adding new plot that passed incorrect time index.
+* Legend bar is now hidden when GLLegendPlot is deactivated.
+* Clear projects lists button now clears recent files and recent projects.
+* Removed "general spring" and added measure parameter to "nonlinear spring"
+* Add units of velocity and angular velocity to FEFluidNormalVelocity and FEFluidRotationalVelocity
+* Implemented support for the new general spring material.
+* Added support for "scale" parameter of nonlinear springs.
+
+
+===========================================================================
+
+ R E L E A S E   1.7.1   2/25/2022
+
+===========================================================================
+
+* A bug was fixed that showed duplicate entries of rigid constraints in curve editor
+* A bug was fixed that showed incorrect scaling of material icons on post material panel. 
+* All graph windows (New Graphs, Summary, Stats, Integrate, and Integrate Surface) now show the name of the corresponding plot file. 
+* Fixed bug where element table in mesh inspector was not updated.
+* Fixed import of xyzuvw fixed bc of febio 2.0 format.
+
+===========================================================================
+
+ R E L E A S E   1.7   2/18/2022
+
+===========================================================================
+
+* A new post feature was implemented called muscle-path that can be used to simulate muscle wrapping: it finds the shortest, feasible path between two points, avoiding intersecting the geometry. 
+* Support for a new post-session file (extension .fsps) was added that allows users to store their current post session, including all plots that were created. Session files are generated by saving a model that was opened on the Post side (e.g. the xplt file). 
+* Added support for creating named selections on post side. Named selections are also stored to the session file.
+* Support for the kinemat tool was added to the post session file.
+* A progress dialog is now shown when loading kinemat data.
+* A new time derivative data filter was added, which evaluates the (approximate) time derivative of a data field using finite differences.  
+* Implemented transparency for isosurface plots.
+* Fixed issues with region selecting on graphs.
+* A new ruler post object was added that allows users to measure and visualize the distance between two points.
+* Added options to set line mode, width, and color for box and legend widgets.
+* Added option to zoom to a user rect to the Graph window.
+* Modified integration tool so that it grabs the element data instead of projected nodal data for evaluating element integrals.
+* Graphs are now updated automatically when data field selection changes.
+* The export FEBio file from Post side now exports the current, deformed mesh.
+* Now exporting all data to VTK (not just data tagged with DATA_EXPORT).
+* Added track model data parameter to probe. If set to no, the probe's position can be evaluated in a graph window.
+* Probes will now follow rigid shell elements. Added feature to show path of probe.
+* Added mechanism to show/hide individual plot objects.
+* Now using value range as opacity thresholds in volume flow plot.
+* Added additional default fields for point plots. Fixed some issues with visualization of point plots.
+* Made titles visible on point and line plot legend bars.
+* Added additional parameters to volume plot, point plot, and line plot.
+* Added support for assigning multiple data fields to point data.
+* Added context menu to delete named selections. Fixed issue where name field of named selection shows up twice.
+* Fixed the insert curve modifier when using curves from P2P curve objects.
+* Fixed radial bias for sphere mesher.
+* Added methods for convering surface selection to face selection.
+* Fixed some issues with tri10 facets.
+* Repo project file names will now wrap to new lines when needed.
+* Implemented support for atan2 in math parser (issue #42)
+* Fixed crash when curve editor is opened on post side.
+* Fixed crash when merge objects is applied without a valid object selection.
+* The mesh curvature data field was added to the mesh inspector.
+* Fixed some issues with planecut tool.
+* Fixed issue with extruding quad faces.
+* Fixed meshing issues with torus solid.
+* Added option to select hex8, hex20, hex27 element type in most primitives that use the multi-block mesher.
+* Implemented support for quadratic hex meshing in multi-block mesher.
+* Fixed issue in multi-quad mesher.
+* Multiquad mesher can now generate geometry conforming QUAD8 and QUAD9 elements.
+* Fixed issue with shell jacobian for quad9.
+* Fixed issues with rendering of hidden parts and selection of hidden discrete elements.
+* Measure tool is updated when time step changes.
+* Added new box-in-box primitive.
+* Fixed some issues with plane cut and mesh line visibility.
+* Added new volume renderer that significantly improves performance of old volume renderer.
+* Added ability to convert 14-node pyramid in Gmsh file to pyra13 element.
+* Implemented VTU file reader.
+* Added batch file converter for feb to fsm files
+* Gmsh import feature for pyra13 elements.
+* Added support for exporting to STL from post side.
+* Fixed bug in reading material section from Abaqus file.
+* Fixed issue with exporting part numbers in LSDYNA export.
+* Add plot variable for RVE reforming bonds.
+* Add plot variable for effective friction coefficient.
+* Added uncoupled Holmes-Mow material.
+* Help dialogs now open help links in an external browser.
+* Added plot variables for "fluid load support" and "local fluid load support" for sliding biphasic contact interfaces.
+* Added "PK1 stress" and "PK2 stress" plot variables.
+* Added "activation" parameter to muscle material.
+* Added relaxation functions CSExp, Malkin and Prony to list of materials. Changed display of material parameters to use Greek alphabet font in most material descriptions. Added plot variables for strong bond and weak bond SED and deviatoric SED.
+* Fixed bug reading in Prescribed Fluid velocity dof tag (changed from vx to wx)
+* Import and export nodal loads for shell degrees of freedom. Fix name of "orthotropic elastic" material (previously listed as "linear orthotropic").
+* Fixed issue with reading nodedata from febio3 file.
+* Fixed issue with crash upon import of model with nodal data.
+* Added missing parameters for damage fiber exp-linear.
+* Added "rate of deformation" as plot variable.  Added scalar invariants to components of mat3fs plot variables.
+* Added support for generator mesh data in febio format 3.
+* Added feature to generate FEBio tangent diagnostic input file.
+* Fixed bug in material props view when a user just tabs through properties.
+* Implemented a dialog for curve import options.
+* Fixed issue with reading in mat_axis data.
+* Improved support for surface-to-surface map generator.
+* Added support for reading mat_axis element data for element sets.
+* Added missing "tau" parameter to biphasic material.
+* Added plot variable "RVE generations".
+* Added parameters wmin and emin to reactive viscoelastic and uncoupled reactive viscoelastic materials.
+* Added chapter to user manual describing how to set log and plot file output.
+
+===========================================================================
+
+ R E L E A S E   1.6.1   9/28/2021
+
+===========================================================================
+
+* Re-implemented default mesher for sphere-in-box primitive. This mesher can now create a mesh that conforms to the outer mesh of a sphere.
+* Added Out of Date tooltip for files in the repository.
+* Repo now asks to redownload out of date files. Repo asks to overwrite modified files. Various other changes and fixes to the tree.
+* Repository now records download and upload times for files.
+* Fixed bug with integrating element data. (reference and current configurations were switched).
+* Fixed some issues with creating 3D image visualizations on post side.
+* Shrink/grow selection methods are now available on both build and post sides.
+* Added little hack to convert lambda parameter to lam_max for coupled trans-iso MR.
+* Made sure that user selections are exported when running model from FEBio Studio.
+* Fixed bug in Boundary Layer meshing tool pertaining to setting element IDs when splitting box into wedges or splitting wedge into tets
+* Added improved support for point data and point visualization on post side, including ability to render points as spheres.
+* Added support for fiber-NH and fiber-natural-NH to library of materials. Updated fiber-exp-pow to accept new parameter lam0.
+* Fixed issue with closing model when plane cut tool is active.
+* Forced redraw when converting face to element selection.
+* Modified "Face to element selection" so it works with model and post documents.
+* Fixed issue with exporting rigid section in multi-step analyses.
+* Fixed method of specifying plastic flow curve parameters (PFC paper) and math formula (PFC math).
+* Updated definition of reactive plasticity and reactive damage plasticity to reflect latest changes in definitions of plastic flow curves. Removed rtol from list of material parameters.
+* Added F3 back as shortcut for opening new graph. (And assigned ctrl+shift+F to "Find again").
+* Face normals are now re-evaluated after partitioning.
+* Updated natural neo-Hookean material to use Young's modulus and Poisson's ratio, instead of shear and bulk moduli.
+* Added left stretch tensor as plot variable.
+* Added left Hencky plot variable.
+* Implemented shell volume calculation for tri3 and quad4.
+* Added option to volume average back to summary window.
+* Fixed issue with meshing of solid arc.
+* Added "right stretch" and "right Hencky" plot variables.
+* Fixed issue with importing max_ups from older FEBio formats.
+* Fixed crash due to deleting active item in model tree.
+* Added some error checking to LSDYNA export.
+* Added ability to import/export laugon and atol parameters in SolidDomain and ShellDomain sections of MeshDomain.
+
+===========================================================================
+
+ R E L E A S E   1.6   8/30/2021
+
+===========================================================================
+
+* The help feature on the physics dialog boxes has been restored. 
+* Added support for new "Kamensky" material, an isotropic Fung-type material from Kamensky, CMAME 2018.
+* An issue was fixed that could cause a crash when starting a recording fails.
+* Legend bars of plots are now hidden when the plot is disabled.
+* Title is now shown for vertical legend bars.
+* Added feature to show location of min/max. (github issue #9)
+* A model with active jobs cannot be closed. Tab title now also indicates whether the model is running.
+* Fixed issue with processing line data when there are duplicate edges or circular segments.
+* Added feature to import materials from other open models.
+* Added option to choose current or reference configuration on Integrate window.
+* Materials can be exported and imported again.
+* Entering notes immediately updates the corresponding item in the model tree.
+* Added Newtonian viscous solid material.
+* Jobs are deleted when saving a model with Saving As.
+* Fixed issue with z-clipping range when objects are scaled. (github issue #28)
+* Object info now shows global box dimensions, instead of local.
+* Collapse transform can now be applied to a selection of objects.
+* Made T0 of prescribed uniaxial active contraction a variable parameter. (github issue #39)
+* Added shell_bottom flag for pressure surface load.
+* Added "contact potential" contact interface and "mass damping" body load features.
+* Modified tet4 split modifier so that it works without an element selection.
+* MMG remesh now also works with face selections.
+* Repository Upload wizard now asks if you want to save when you cancel with information in the wizard.
+* Upload wizard now allows projects to be saved and loaded via json. If an upload fails for any reason, the upload dialog should reopen with the same data.
+* Added ability to load info into the upload wizard from a json file.
+* Point Distance tool now also works with editable surfaces.
+* Added "pressure" field to old xplt file reader when "stress" field is present.
+* Fixed issue with import max_ups parameter of FEBio input file.
+* Added option to import Abaqus S6 element type.
+* Improved clarity of error messages in VTK import
+* Fixed issue with grabbing resize area on capture frame.
+* Clarified error message on video write fail.
+* Fixed issue with changing name of a plot item in the Post model tree.
+* Added option to set line thickness of legend bar. 
+* Added range division option for tensor plot.
+* Updated sliding-biphasic contact interface to include friction coefficient, solid-solid contact area fraction, smooth fluid load support, flip primary or secondary surface, use shell bottom on primary or secondary surface.
+* Updated VTK import to handle files with VTU-like format (including OFFSETS and CONNECTIVITY in the CELL_DATA field).  Added QUAD and TRIANGLE elements as import option.
+* The time parameter of line data is now mapped to line user data. Added "range mode" parameter to line plot.
+* Line plots can now be rendered with a "smooth lines 3D" option, which creates more smoothed renderings of the line data compared to the "lines 3D" option.
+* Fixed minor issue with default name of lines in line import tool.
+* Fixed bug in line plot with 3D lines not having the right color.
+* Added mesh color parameter to plane cut plot.
+* Exporting FEBio plot_stride parameter for other modules as well. (Previously this parameter was only exported for solid mechanics problems.)
+* Added option to replace existing file when modifying a project on the repository.
+* Added code to allow MacOS to handle custom URL scheme.
+* Fixed issue with hyperlinks in Repo Project descriptions.
+* Added support for handling a custom URL scheme.
+* Fixed bug with processing probe data in graphs.
+* Added option to calculate signed distance in distance map.
+* Added Drucker shear stress criterion to list of damage criterion materials. In reactive plastic damage materials, renamed tags yield_damage, yield_damage_criterion, intact_damage and intact_damage_criterion to plastic_damage, plastic_damage_criterion, elastic_damage and elastic_damage_criterion, respectively.
+* Fixed issue with reading data from a VTK file.
+* Fixed typo in "extend" load curve parameter value.
+* An issue with fixed with input of vec2i (i.e. a vector with two integer) parameters.
+* WebHelp feature now relies on local HTML files.
+* Added Bingham viscous fluid.
+* Added material axes as plot variable.
+* Plot and log properties are now updated without rebuilding entire model tree.
+* Added support for dropping images onto curve editor to set the background image.
+* Added "Open File Location" option for folders in repo panel.
+* Set default settings for Show Mesh Lines and Show Edge Lines.
+* Added "permeability" plot variable to Biphasic and Fluid-FSI modules, renamed BFSI plot variable "fluid volume fraction" to "porosity".
+* Fixed bug in displacement map update that caused crash when reloading plot file.
+* Added zooming and scrolling functionality to time line widget.
+* The curve fitting tool in the graph window can now fit to a user-defined selection of points.
+* Updated ability to import and export linear constraints involving DOFs other than x y z, using FEBio format 3.
+* Implemented auto-partition for face selection.
+* Element partitions are now preserved with Boundary Layer modifier tool.
+* Sorted modifiers on create panel alphabetically.
+* Added model tree context menu items to show/hide discrete objects.
+* Fixed lighting issue when using mirror planes.
+* Added option to set the line color for the undeformed outline.
+* Fixed bug that caused crash in Preferences->Display when there is no default multiview projection setting.
+* Fixed some issues with export/import of nodal loads.
+* Added support for binary PLY format and quad elements.
+
+===========================================================================
+
  R E L E A S E   1.5   5/17/2021
 
 ===========================================================================

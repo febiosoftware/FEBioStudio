@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -75,6 +75,9 @@ void CMeshInspector::hideEvent(QHideEvent* ev)
 
 void CMeshInspector::on_var_currentIndexChanged(int n)
 {
+	if ((n == Ui::CMeshInspector::PRINC_CURVE_1) || (n == Ui::CMeshInspector::PRINC_CURVE_2)) ui->propsWidget->show();
+	else ui->propsWidget->hide();
+
 	UpdateData(n);
 	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 	m_wnd->RedrawGL();
@@ -95,23 +98,33 @@ void CMeshInspector::UpdateData(int ndata)
 	// so we need to subtract one if ndata is larger than the number of eval fields
 	if (ndata > ui->MAX_EVAL_FIELDS) ndata--;
 
-	FEMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
+	FSMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
 	if (pm == 0) return;
 
 	
-	int etype = -1;
-	QModelIndex index = ui->table->currentIndex();
-	if (index.isValid())
+	const int MAX_ELEM = 21;
+	vector<bool> ET(MAX_ELEM, false);
+	for (int i = 0; i < ui->table->rowCount(); ++i)
 	{
-		QTableWidgetItem* item = ui->table->item(index.row(), 0);
-		assert(item);
-		etype = item->data(Qt::UserRole).toInt();
+		QTableWidgetItem* item = ui->table->item(i, 0);
+		if (item->checkState() == Qt::Checked)
+		{
+			int e = item->data(Qt::UserRole).toInt(); assert((e >= 0) && (e < MAX_ELEM));
+			ET[e] = true;
+		}
 	}
 
 	FEMeshValuator eval(*pm);
 
+	int curvatureLevels = ui->curvatureLevels->value();
+	int curvatureMaxIters = ui->curvatureMaxIters->value();
+	bool curvatureExtQuad = ui->curvatureExtQuad->isChecked();
+	eval.SetCurvatureLevels(curvatureLevels);
+	eval.SetCurvatureMaxIters(curvatureMaxIters);
+	eval.SetCurvatureExtQuad(curvatureExtQuad);
+
 	int NE = pm->Elements();
-	vector<double> v; v.reserve(NE*FEElement::MAX_NODES);
+	vector<double> v; v.reserve(NE*FSElement::MAX_NODES);
 	double vmax = -1e99, vmin = 1e99, vavg = 0;
 	eval.Evaluate(ndata);
 	Mesh_Data& data = pm->GetMeshData();
@@ -119,9 +132,9 @@ void CMeshInspector::UpdateData(int ndata)
 	{
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			int ne = el.Nodes();
-			if ((etype == -1) || (el.Type() == etype))
+			if (ET[el.Type()])
 			{
 				if (data[i].tag)
 				{
@@ -148,20 +161,41 @@ void CMeshInspector::UpdateData(int ndata)
 
 	ui->sel->setRange(vmin, vmax);
 
-	int M = (int)sqrt((double)NC) + 1;
+	// determine number of bins
+	// sqrt rule
+//	int M = (int)ceil(sqrt((double)NC));
+
+	// sturges rule
+	int M = (int)ceil(log2(NC) + 1);
+
+	// rice rule
+//	int M = (int)ceil(2.0*pow(NC, 1.0/3.0));
+
+	if (M < 1) M = 1;
 	if (M > width() / 3) M = width() / 3;
 
 	if (fabs(vmax - vmin) < 1e-5) vmax++;
 	vector<double> bin; bin.assign(M, 0.0);
-	double w = 1.0 / (double)NC;
 	double ymax = 0;
 	for (int i = 0; i<NC; ++i)
 	{
 		int n = (int)(M*(v[i] - vmin) / (vmax - vmin));
 		if (n < 0) n = 0;
 		if (n >= M) n = M - 1;
-		if (n >= 0) bin[n] += w;
+		if (n >= 0) bin[n] += 1;
 		if (bin[n] > ymax) ymax = bin[n];
+	}
+
+	if (ui->logScale->isChecked())
+	{
+		for (int i = 0; i < M; ++i)
+		{
+			if (bin[i] > 0) bin[i] = log10(bin[i]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < M; ++i) bin[i] /= (double)NC;
 	}
 
 	CPlotData* pltData = new CPlotData;
@@ -182,7 +216,7 @@ void CMeshInspector::on_select_clicked()
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	double smin, smax;
@@ -204,7 +238,7 @@ void CMeshInspector::on_select_clicked()
 	Mesh_Data& data = pm->GetMeshData();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		if ((etype == -1) || (e.Type() == etype))
 		{
 			if (data.GetElementDataTag(i) > 0)
@@ -222,4 +256,48 @@ void CMeshInspector::on_select_clicked()
 		m_wnd->Update(this);
 		m_wnd->RedrawGL();
 	}
+}
+
+void CMeshInspector::on_curvatureLevels_valueChanged(int n)
+{
+	int nvar = ui->var->currentIndex();
+	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	{
+		UpdateData(nvar);
+		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+		m_wnd->RedrawGL();
+	}
+}
+
+void CMeshInspector::on_curvatureMaxIters_valueChanged(int n)
+{
+	int nvar = ui->var->currentIndex();
+	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	{
+		UpdateData(nvar);
+		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+		m_wnd->RedrawGL();
+	}
+
+}
+
+void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
+{
+	int nvar = ui->var->currentIndex();
+	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	{
+		UpdateData(nvar);
+		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
+		m_wnd->RedrawGL();
+	}
+}
+
+void CMeshInspector::on_table_cellChanged(int r, int c)
+{
+	if (c == 0) Update();
+}
+
+void CMeshInspector::on_logScale_clicked()
+{
+	Update();
 }

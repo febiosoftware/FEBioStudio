@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GItem.h"
-#include <MathLib/Transform.h>
+#include <FECore/FETransform.h>
 
 //-----------------------------------------------------------------------------
 // This is a base class for GObject. I hope to describe all geometry in terms 
@@ -64,22 +64,33 @@ public:
 	GEdge* FindEdge(int nid);
 	GNode* FindNode(int nid);
 
+	GPart* FindPartFromName(const char* szname);
+
 	// --- C O N S T R U C T I O N ---
 
 	// add a face to the object
 	int AddNode(GNode* n);
-	int AddNode(vec3d r, int n = NODE_VERTEX, bool bdup = false);
+	GNode* AddNode(vec3d r, int n = NODE_VERTEX, bool bdup = false);
+	GEdge* AddEdge();
 	int AddEdge(GEdge* e);
 	int AddLine(int n1, int n2);
 	int AddYArc(int n1, int n2);
 	int AddZArc(int n1, int n2);
 	int AddCircularArc(int n1, int n2, int n3);
 	int AddArcSection(int n1, int n2, int n3);
-	void AddFacet(const vector<int>& node, const vector<pair<int, int> >& edge, int ntype);
-	void AddFacet(const vector<int>& edge, int ntype);
+	void AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype);
+	void AddFacet(const std::vector<int>& edge, int ntype);
 	void AddSurface(GFace* f);
-	void AddPart ();
+	GPart* AddPart ();
+
+	GPart* AddSolidPart();
+	GPart* AddShellPart();
+	GPart* AddBeamPart();
+
 	void AddFace(GFace* f);
+	GFace* AddFace();
+
+	virtual bool DeletePart(GPart* pg);
 
 	// update the node types
 	void UpdateNodeTypes();
@@ -110,8 +121,8 @@ protected:
 
 protected:
 	// --- definition of geometry ---
-	vector<GPart*>		m_Part;	//!< parts
-	vector<GFace*>		m_Face;	//!< surfaces
-	vector<GEdge*>		m_Edge;	//!< edges
-	vector<GNode*>		m_Node;	//!< nodes
+	std::vector<GPart*>		m_Part;	//!< parts
+	std::vector<GFace*>		m_Face;	//!< surfaces
+	std::vector<GEdge*>		m_Edge;	//!< edges
+	std::vector<GNode*>		m_Node;	//!< nodes
 };

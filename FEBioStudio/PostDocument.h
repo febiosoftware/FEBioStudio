@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "Document.h"
-#include <PostLib/FEMaterial.h>
+#include <PostLib/Material.h>
 #include "GraphData.h"
 
 class CModelDocument;
@@ -109,7 +109,7 @@ protected:
 	MODEL						m_mdl;	// CGLModel data
 	COLORMAP					m_cmap;	// CColorMap data
 	DISPLACEMENTMAP				m_dmap;	// DisplacementMap data
-	std::vector<Post::FEMaterial>		m_mat;	// material list
+	std::vector<Post::Material>		m_mat;	// material list
 	std::vector<std::string>	m_data;	// data field strings
 };
 
@@ -128,6 +128,12 @@ public:
 
 	bool IsValid();
 
+	void SetModifiedFlag(bool bset = true) override;
+
+	void SetInitFlag(bool b);
+
+	void UpdateSelection(bool report) override;
+
 public:
 	int GetStates();
 
@@ -137,7 +143,7 @@ public:
 
 	void SetDataField(int n);
 
-	Post::FEPostModel* GetFEModel();
+	Post::FEPostModel* GetFSModel();
 
 	Post::CGLModel* GetGLModel();
 
@@ -148,6 +154,7 @@ public:
 	TIMESETTINGS& GetTimeSettings();
 
 	std::string GetFieldString();
+	std::string GetFieldUnits();
 
 	float GetTimeValue();
 
@@ -165,6 +172,8 @@ public:
 
 	void DeleteObject(Post::CGLObject* po);
 
+	void Activate() override;
+
 	std::string GetFileName();
 
 	// get the model's bounding box
@@ -172,6 +181,15 @@ public:
 
 	// get the selection bounding box
 	BOX GetSelectionBox();
+
+	// Get current selection
+	FESelection* GetCurrentSelection() override;
+
+	void SetGLModel(Post::CGLModel* glm);
+
+public:
+	//! save to session file
+	bool SavePostSession(const std::string& fileName);
 
 public:
 	int Graphs() const;
@@ -199,4 +217,8 @@ private:
 	CPostObject*	m_postObj;
 
 	TIMESETTINGS m_timeSettings;
+
+	bool	m_binit;
+
+	FESelection* m_sel;
 };

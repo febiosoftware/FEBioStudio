@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -148,7 +148,7 @@ void CPostToolBar::Update()
 	Post::CGLColorMap* map = mdl->GetColorMap();
 
 	// rebuild the menu
-	Post::FEPostModel* pfem = doc->GetFEModel();
+	Post::FEPostModel* pfem = doc->GetFSModel();
 	ui->m_selectData->BuildMenu(pfem, Post::DATA_SCALAR);
 	ui->m_selectData->blockSignals(true);
 	ui->m_selectData->setCurrentValue(map->GetEvalField());
@@ -161,7 +161,7 @@ void CPostToolBar::Update()
 	// update the state indicator
 	int ntime = mdl->CurrentTimeIndex() + 1;
 
-	Post::FEPostModel* fem = mdl->GetFEModel();
+	Post::FEPostModel* fem = mdl->GetFSModel();
 	int states = fem->GetStates();
 	QString suff = QString("/%1").arg(states);
 	ui->m_spin->setSuffix(suff);

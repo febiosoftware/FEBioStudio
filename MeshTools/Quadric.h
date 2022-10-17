@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,7 +50,7 @@ public:
     void SurfaceCurvature(const vec3d p, const vec3d n, vec2d& kappa, vec3d* v);
     
     // Find ray-quadric surface intersections x: p is point on ray, n is normal along ray
-    void RayQuadricIntersection(const vec3d p, const vec3d n, vector<vec3d>* x, vector<double>* t = nullptr);
+    void RayQuadricIntersection(const vec3d p, const vec3d n, std::vector<vec3d>* x, std::vector<double>* t = nullptr);
     
     // Find the point on the quadric closest to the point p
     vec3d ClosestPoint(const vec3d p);

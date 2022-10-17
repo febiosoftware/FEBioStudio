@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,13 +34,13 @@ FEEdgeCollapse::FEEdgeCollapse() : FESurfaceModifier("Edge Collapse")
 	AddDoubleParam(m_tol, "tolerance", "tolerance");
 }
 
-FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEEdgeCollapse::Apply(FSSurfaceMesh* pm)
 {
 	// make sure this is a tri mesh
 	if (pm->IsType(FE_FACE_TRI3) == false) return 0;
 
 	// create a copy of this mesh
-	FESurfaceMesh* mesh = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* mesh = new FSSurfaceMesh(*pm);
 
 	// first, let's tag all nodes based on whether they are:
 	// 0: free
@@ -52,13 +52,13 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	int NE = mesh->Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& e = mesh->Edge(i);
+		FSEdge& e = mesh->Edge(i);
 		mesh->Node(e.n[0]).m_ntag = 1;
 		mesh->Node(e.n[1]).m_ntag = 1;
 	}
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_gid != -1) node.m_ntag = 2;
 	}
 
@@ -67,13 +67,13 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	int NF = mesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		for (int j = 0; j<3; ++j)
 		{
 			int j0 = face.n[j];
 			int j1 = face.n[(j + 1) % 3];
-			FENode& n0 = mesh->Node(j0);
-			FENode& n1 = mesh->Node(j1);
+			FSNode& n0 = mesh->Node(j0);
+			FSNode& n1 = mesh->Node(j1);
 			vec3d r0 = n0.pos();
 			vec3d r1 = n1.pos();
 
@@ -93,14 +93,14 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// loop over all elements
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 
 		for (int j=0; j<3; ++j)
 		{
 			int j0 = face.n[j];
 			int j1 = face.n[(j+1)%3];
-			FENode& n0 = mesh->Node(j0);
-			FENode& n1 = mesh->Node(j1);
+			FSNode& n0 = mesh->Node(j0);
+			FSNode& n1 = mesh->Node(j1);
 
 			// make sure neither node was processed
 			if ((n0.m_ntag >= 0) && (n1.m_ntag >= 0))
@@ -141,7 +141,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	}
 
 	// reindex the nodes
-	vector<int> index(NN, -1);
+	std::vector<int> index(NN, -1);
 	int n = 0;
 	for (int i = 0; i<NN; ++i)
 	{
@@ -171,7 +171,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// (this also markes edges for deletion)
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& edge = mesh->Edge(i);
+		FSEdge& edge = mesh->Edge(i);
 		edge.m_ntag = 0;
 		edge.n[0] = index[edge.n[0]];
 		edge.n[1] = index[edge.n[1]];
@@ -183,7 +183,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// reindex elements
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		if (face.m_ntag >= 0)
 		{
 			face.n[0] = index[face.n[0]];
@@ -196,7 +196,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// I'm not sure why, but I'll need to fix this. For now, we'll mark any invalid triangle for deletion
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		int* n = face.n;
 		if ((n[0] == n[1]) || (n[1] == n[2]) || (n[0] == n[2])) face.m_ntag = -1;
 	}
@@ -204,7 +204,7 @@ FESurfaceMesh* FEEdgeCollapse::Apply(FESurfaceMesh* pm)
 	// reindex faces
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		if (f.m_ntag >= 0)
 		{
 			f.n[0] = index[f.n[0]];

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -64,7 +64,7 @@ public:
 		int Nodes() { return (int) node.size(); }
 
 	public:
-		vector<int>	node;	// node list
+		std::vector<int>	node;	// node list
 		int			nid;	// edge ID
 		int			ndiv;	// number of divisions
 		bool		fixedDiv;	// ndiv is fixed and cannot be changed.
@@ -80,8 +80,8 @@ public:
 		int Nodes() { return (int) node.size(); }
 
 	public:
-		vector<int>	node;
-		int			nid;
+		std::vector<int>	node;
+		int					nid;
 	};
 
 public:
@@ -114,9 +114,9 @@ protected:
 	bool BuildFaceRevolveWedge(GFace& fs);
 
 protected:
-	vector<NODE>	m_Node;
-	vector<EDGE>	m_Edge;
-	vector<FACE>	m_Face;
+	std::vector<NODE>	m_Node;
+	std::vector<EDGE>	m_Edge;
+	std::vector<FACE>	m_Face;
 
 	GObject*	m_po;	//!< object we are building a PLC for
 	double		m_h;	//!< element size
@@ -134,7 +134,7 @@ public:
 	FETetGenMesher(GObject* po);
 
 	// build the mesh
-	FEMesh*	BuildMesh() override;
+	FSMesh*	BuildMesh() override;
 
 	double ElementSize();
 
@@ -146,7 +146,7 @@ public:
 
 public:
 	// Generate a volume mesh from a surface mesh
-	FEMesh* CreateMesh(FESurfaceMesh* surfaceMesh);
+	FSMesh* CreateMesh(FSSurfaceMesh* surfaceMesh);
 
 protected:
 
@@ -155,13 +155,24 @@ protected:
 
 #ifdef TETLIBRARY
 public:
-	bool build_plc(FESurfaceMesh* pm, tetgenio& in);
+	bool build_plc(FSSurfaceMesh* pm, tetgenio& in);
 protected:
-	FEMesh* BuildPLCMesh();
+	FSMesh* BuildPLCMesh();
 	bool build_tetgen_in(tetgenio& in);
 	bool build_tetgen_in_remesh(tetgenio& io);
-	FEMesh* build_tet_mesh(tetgenio& out);
-	FEMesh* build_tet10_mesh(FEMesh* pm);
-	FEMesh* build_tet15_mesh(FEMesh* pm);
+	FSMesh* build_tet_mesh(tetgenio& out);
+	FSMesh* build_tet10_mesh(FSMesh* pm);
+	FSMesh* build_tet15_mesh(FSMesh* pm);
 #endif
+};
+
+//-----------------------------------------------------------------------------
+class FEConvexHullMesher : public FEMesher
+{
+public:
+	FEConvexHullMesher();
+	FSMesh* Create(const std::vector<vec3d>& pointCloud);
+
+protected:
+	FSMesh* BuildMesh() override { return nullptr; }
 };

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include "units.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 CMeshInfoPanel::CMeshInfoPanel(QWidget* parent) : QWidget(parent)
 {
@@ -81,10 +81,10 @@ void CMeshInfoPanel::setInfo(GObject* po)
 {
 	if (po)
 	{
-		BOX box = po->GetLocalBox();
+		BOX box = po->GetGlobalBox();
 		setDimensions(box.Width(), box.Height(), box.Depth());
 
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		if (pm) setMeshInfo(pm->Nodes(), pm->Faces(), pm->Elements());
 		else setMeshInfo(0, 0, 0);
 	}
@@ -117,7 +117,7 @@ void CSurfaceMeshInfoPanel::setInfo(int nodes, int edges, int faces)
 	m_faces->setText(QString::number(faces));
 }
 
-void CSurfaceMeshInfoPanel::setInfo(const FESurfaceMesh* pm)
+void CSurfaceMeshInfoPanel::setInfo(const FSSurfaceMesh* pm)
 {
 	if (pm)
 	{
@@ -133,10 +133,12 @@ CPartInfoPanel::CPartInfoPanel(QWidget* parent) : QWidget(parent)
 {
 	m_solid = new QLabel;
 	m_shell = new QLabel;
+	m_beam  = new QLabel;
 
 	QFormLayout* form = new QFormLayout;
 	form->addRow("Solid elements:", m_solid);
 	form->addRow("Shell elements:", m_shell);
+	form->addRow("Beam elements:" , m_beam);
 
 	setLayout(form);
 
@@ -145,29 +147,32 @@ CPartInfoPanel::CPartInfoPanel(QWidget* parent) : QWidget(parent)
 
 void CPartInfoPanel::setInfo(GPart* pg)
 {
-	if (pg == nullptr) { setPartInfo(0, 0); return; }
+	if (pg == nullptr) { setPartInfo(0, 0, 0); return; }
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
-	if (po == nullptr) { setPartInfo(0, 0); return; }
-	FEMesh* pm = po->GetFEMesh();
-	if (pm == nullptr) { setPartInfo(0, 0); return; }
+	if (po == nullptr) { setPartInfo(0, 0, 0); return; }
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) { setPartInfo(0, 0, 0); return; }
 
 	int nsolid = 0;
 	int nshell = 0;
+	int nbeam  = 0;
 	int pid = pg->GetLocalID();
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_gid == pid)
 		{
-			if (el.IsSolid()) nsolid++;
+			if      (el.IsSolid()) nsolid++;
 			else if (el.IsShell()) nshell++;
+			else if (el.IsBeam ()) nbeam ++;
 		}
 	}
-	setPartInfo(nsolid, nshell);
+	setPartInfo(nsolid, nshell, nbeam);
 }
 
-void CPartInfoPanel::setPartInfo(int solid, int shell)
+void CPartInfoPanel::setPartInfo(int numSolid, int numShell, int numBeam)
 {
-	m_solid->setText(QString::number(solid));
-	m_shell->setText(QString::number(shell));
+	m_solid->setText(QString::number(numSolid));
+	m_shell->setText(QString::number(numShell));
+	m_beam ->setText(QString::number(numBeam ));
 }

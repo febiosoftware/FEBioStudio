@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DlgKinemat.h"
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include <QListWidget>
 #include <QBoxLayout>
 #include <QPushButton>
@@ -35,12 +35,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QDialogButtonBox>
 #include "MainWindow.h"
-#include "Document.h"
-#include "PostDocument.h"
-#include <PostLib/FEKinemat.h>
-#include <PostLib/FELSDYNAimport.h>
-#include "PostDocument.h"
-#include <PostGL/GLModel.h>
 
 class CDlgKinematUI
 {
@@ -88,7 +82,7 @@ public:
 
 		QObject::connect(browse1, SIGNAL(clicked()), dlg, SLOT(OnBrowse1()));
 		QObject::connect(browse2, SIGNAL(clicked()), dlg, SLOT(OnBrowse2()));
-		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(OnApply()));
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 	}
 };
@@ -118,54 +112,27 @@ void CDlgKinemat::OnBrowse2()
 	}
 }
 
-void CDlgKinemat::OnApply()
+int CDlgKinemat::StartIndex() const
 {
-	int n0 = ui->start->value();
-	int n1 = ui->end->value();
-	int ni = ui->stride->value();
+	return ui->start->value();
+}
 
-	// create a new document
-	CMainWindow* wnd = ui->m_wnd;
-	CPostDocument* postDoc = new CPostDocument(wnd);
+int CDlgKinemat::EndIndex() const
+{
+	return ui->end->value();
+}
 
-	FEKinemat kine;
-	kine.SetRange(n0, n1, ni);
+int CDlgKinemat::Increment() const
+{
+	return ui->stride->value();
+}
 
-	string modelFile = ui->modelFile->text().toStdString();
-	string kineFile = ui->kineFile->text().toStdString();
+QString CDlgKinemat::GetModelFile() const
+{
+	return ui->modelFile->text();
+}
 
-	// load the file
-	Post::FELSDYNAimport* preader = new Post::FELSDYNAimport(postDoc->GetFEModel());
-	preader->read_displacements(true);
-	if (preader->Load(modelFile.c_str())==false)
-	{
-		QMessageBox::critical(wnd, "PostView2", "Failed to load model file");
-		delete postDoc;
-		return;
-	}
-
-	if (kine.Apply(postDoc->GetFEModel(), kineFile.c_str()) == false)
-	{
-		QMessageBox::critical(0, "Kinemat", "Failed applying Kinemat tool");
-	}
-
-	postDoc->SetDocFilePath(modelFile);
-	postDoc->Initialize();
-
-	// update displacements on all states
-	Post::CGLModel& mdl = *postDoc->GetGLModel();
-	if (mdl.GetDisplacementMap() == nullptr)
-	{
-		mdl.AddDisplacementMap("Displacement");
-	}
-
-	int nstates = mdl.GetFEModel()->GetStates();
-	for (int i = 0; i < nstates; ++i) mdl.UpdateDisplacements(i, true);
-
-
-	wnd->UpdateModel();
-	wnd->Update();
-	wnd->AddDocument(postDoc);
-
-	accept();
+QString CDlgKinemat::GetKineFile() const
+{
+	return ui->kineFile->text();
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEItem.h"
 #include "FEEdge.h"
-#include "MathLib/math3d.h"
+#include <FECore/vec3d.h>
 
 //-----------------------------------------------------------------------------
 // Face shapes
@@ -54,7 +54,7 @@ enum FEFaceType
 };
 
 //-----------------------------------------------------------------------------
-// FEFace class stores face data. 
+// FSFace class stores face data. 
 // A face can either have 3, 4, 6, 7, 8, 9 or 10 nodes. 
 //  - 3  : linear triangle
 //  - 6,7: quadratic triangle
@@ -75,7 +75,7 @@ enum FEFaceType
 // Note that for the first three nodes for a triangle and the first four nodes
 // of a quad are always the corner nodes.
 //
-class FEFace : public FEItem
+class FSFace : public MeshItem
 {
 public:
 	enum { MAX_NODES = 10 };
@@ -88,10 +88,10 @@ public:
 
 public:
 	//! constructor
-	FEFace();
+	FSFace();
 
 	//! comparison operator
-	bool operator == (const FEFace& f) const;
+	bool operator == (const FSFace& f) const;
 
 	//! get the type
 	int Type() const { return m_type; }
@@ -112,7 +112,7 @@ public:
 	int GetEdgeNodes(int i, int* n) const;
 
 	//! return an edge
-	FEEdge GetEdge(int i) const;
+	FSEdge GetEdge(int i) const;
 
 	//! See if this face has an edge
 	bool HasEdge(int n1, int n2);
@@ -127,7 +127,7 @@ public:
 	bool IsExternal() { return (m_elem[1].eid == -1); }
 
 	//! See if a node list is an edge
-	int FindEdge(const FEEdge& edge);
+	int FindEdge(const FSEdge& edge);
 
 public:
 	// evaluate shape function at iso-parameteric point (r,s)

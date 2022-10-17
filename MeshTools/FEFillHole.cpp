@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,9 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FENodeEdgeList.h>
+#include <FECore/matrix.h>
 #include <limits.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 bool FEFillHole::EdgeRing::contains(int inode)
@@ -43,16 +45,16 @@ bool FEFillHole::EdgeRing::contains(int inode)
 //-----------------------------------------------------------------------------
 // Create a new mesh where the hole is filled. The hole is defined by a node
 // that lies on the edge of the hole.
-FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEFillHole::Apply(FSSurfaceMesh* pm)
 {
 	// build the node normals
 	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
 	for (int i = 0; i < pm->Faces(); i++)
 	{
-		FEFace &Face = pm->Face(i);
+		FSFace &Face = pm->Face(i);
 		for (int j = 0; j < Face.Nodes(); j++)
 		{
-			m_node_normals[Face.n[j]] += Face.m_nn[j];
+			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
 		}
 	}
 	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
@@ -79,7 +81,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		int new_faces = (int) tri_list.size();
 		int new_nodes = (int) node_list.size();
 		// create a copy of the original mesh
-		FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
 
 		// allocate room for the new faces
 		int NF = pnew->Faces();
@@ -89,7 +91,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		// insert the new triangles into the mesh
 		for (int i=0; i<new_faces; ++i)
 		{
-			FEFace& face = pnew->Face(i + NF);
+			FSFace& face = pnew->Face(i + NF);
 			FACE& fi = tri_list[i];
 			face.SetType(FE_FACE_TRI3);
 			face.n[0] = fi.n[0];
@@ -101,7 +103,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		// calculate the node positions
 		for (int i=0; i<new_nodes; ++i)
 		{
-			FENode& nd = pnew->Node(i+NN);
+			FSNode& nd = pnew->Node(i+NN);
 			nd.r = node_list[i];
 		}
 
@@ -128,7 +130,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		int new_faces = (int) tri_list.size();
 
 		// create a copy of the original mesh
-		FESurfaceMesh* pnew = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* pnew = new FSSurfaceMesh(*pm);
 
 		// allocate room for the new faces
 		int NF = pnew->Faces();
@@ -137,7 +139,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 		// insert the new triangles into the mesh
 		for (int i=0; i<new_faces; ++i)
 		{
-			FEFace& face = pnew->Face(i + NF);
+			FSFace& face = pnew->Face(i + NF);
 			FACE& fi = tri_list[i];
 			face.SetType(FE_FACE_TRI3);
 			face.n[0] = fi.n[0];
@@ -156,7 +158,7 @@ FESurfaceMesh* FEFillHole::Apply(FESurfaceMesh* pm)
 
 //-----------------------------------------------------------------------------
 // fill all holes
-void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
+void FEFillHole::FillAllHoles(FSSurfaceMesh* pm)
 {
 	// clear tags
 	pm->TagAllNodes(0);
@@ -168,10 +170,10 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 	m_node_normals.assign(pm->Nodes(), vec3d(0, 0, 0));
 	for (int i = 0; i < pm->Faces(); i++)
 	{
-		FEFace &Face = pm->Face(i);
+		FSFace &Face = pm->Face(i);
 		for (int j = 0; j < Face.Nodes(); j++)
 		{
-			m_node_normals[Face.n[j]] += Face.m_nn[j];
+			m_node_normals[Face.n[j]] += to_vec3d(Face.m_nn[j]);
 		}
 	}
 	for (int i = 0; i < m_node_normals.size(); ++i) m_node_normals[i].Normalize();
@@ -180,13 +182,13 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 	pm->TagAllNodes(0);
 	for (int i=0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		int fe = face.Edges();
 		for (int j=0; j<fe; ++j)
 		{
 			if (face.m_nbr[j] == -1)
 			{
-				FEEdge ej = face.GetEdge(j);
+				FSEdge ej = face.GetEdge(j);
 				pm->Node(ej.n[0]).m_ntag += 1;
 				pm->Node(ej.n[1]).m_ntag += 1;
 			}
@@ -236,7 +238,7 @@ void FEFillHole::FillAllHoles(FESurfaceMesh* pm)
 	// insert the new triangles into the mesh
 	for (int i=0; i<new_faces; ++i)
 	{
-		FEFace& face = pm->Face(i + NF);
+		FSFace& face = pm->Face(i + NF);
 		FACE& fi = tri_list[i];
 		face.SetType(FE_FACE_TRI3);
 		face.n[0] = fi.n[0];
@@ -271,7 +273,7 @@ bool findCircumSphere(const vec3d* r, vec3d& c, double& R)
 
 	// solve it
 	vector<double> x(3);
-	if (A.solve(x, y) == false) return false;
+	A.solve(x, y);
 
 	// this will give us the center of the sphere
 	c = vec3d(x[0], x[1], x[2]);
@@ -292,7 +294,7 @@ inline bool IsInsideSphere(const vec3d& r, const vec3d& sphereCenter, double sph
 }
 
 //-----------------------------------------------------------------------------
-vec3d edgeVector(FEEdge& e, FESurfaceMesh& mesh)
+vec3d edgeVector(FSEdge& e, FSSurfaceMesh& mesh)
 {
 	vec3d a = mesh.Node(e.n[0]).pos();
 	vec3d b = mesh.Node(e.n[1]).pos();
@@ -302,7 +304,7 @@ vec3d edgeVector(FEEdge& e, FESurfaceMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRing& ring)
+bool FEFillHole::FindEdgeRing(FSSurfaceMesh& mesh, int inode, FEFillHole::EdgeRing& ring)
 {
 	// let's make sure the ring is empty
 	ring.clear();
@@ -311,7 +313,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int ne = face.Edges();
 		for (int j=0; j<ne; ++j)
 		{
@@ -327,7 +329,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	int iedge = -1;
 	for (int i=0; i<mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.m_ntag == 1)
 		{
 			if ((edge.n[0] == inode) || (edge.n[1] == inode))
@@ -344,11 +346,11 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	// we do this is by first identifying a face that has this edge and then
 	// see what the winding is of this face
 	int iface = -1;
-	FEEdge& edge = mesh.Edge(iedge);
+	FSEdge& edge = mesh.Edge(iedge);
 	ring.m_winding = 0;
 	for (int i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		for (int j=0; j<3; ++j)
 		{
 			int jn = (j+1)%3;
@@ -380,7 +382,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 	// now, loop over all the edges of the ring and add the nodes
 	do
 	{
-		FEEdge& edge = mesh.Edge(iedge);
+		FSEdge& edge = mesh.Edge(iedge);
 		vec3d re = edgeVector(edge, mesh);
 		if (edge.n[0] == jnode)
 		{
@@ -398,7 +400,7 @@ bool FEFillHole::FindEdgeRing(FESurfaceMesh& mesh, int inode, FEFillHole::EdgeRi
 		for (int k = 0; k < nedges; ++k)
 		{
 			int edgek = m_NEL.EdgeIndex(jnode, k);
-			FEEdge& ek = mesh.Edge(edgek);
+			FSEdge& ek = mesh.Edge(edgek);
 			if ((edgek != iedge) && (ek.m_ntag == 1))
 			{
 				if ((mesh.Node(ek.n[0]).m_ntag > 0) &&
@@ -910,7 +912,7 @@ void FEFillHole::EdgeRing::GetLeftEar(int n0, int n1, EdgeRing& ear)
 //-----------------------------------------------------------------------------
 // Advancing Front Method
 
-bool FEFillHole::AFM(FESurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list, vector<vec3d>&node_list)
+bool FEFillHole::AFM(FSSurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list, vector<vec3d>&node_list)
 {
 	// make sure this ring has at least three nodes
 	assert(ring.size() >= 3);
@@ -946,14 +948,14 @@ bool FEFillHole::AFM(FESurfaceMesh& mesh, EdgeRing& ring, vector<FACE>& tri_list
 	}
 	for(int i = 0 ;i < mesh.Faces();i++)
 	{
-		FEFace &Face = mesh.Face(i);
+		FSFace &Face = mesh.Face(i);
 		for(int j = 0; j < Face.Nodes(); j++)
 		{
-			node_normals[Face.n[j]] = Face.m_nn[j];
+			node_normals[Face.n[j]] = to_vec3d(Face.m_nn[j]);
 		}
 	}
 
-	FENodeNodeList NNL(&mesh);
+	FSNodeNodeList NNL(&mesh);
 
 	int N = mesh.Nodes(); //total no of nodes.
 	int new_nodes_count = 0;

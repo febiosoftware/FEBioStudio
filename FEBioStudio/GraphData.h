@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -174,8 +174,10 @@ public:
 
 	QColor	m_bgCol;
 	QColor	m_gridCol;
-	QColor	m_xCol;
-	QColor	m_yCol;
+	QColor	m_xAxisCol;
+	QColor	m_yAxisCol;
+	QColor	m_xAxisTickCol;
+	QColor	m_yAxisTickCol;
 
 	CPlotAxis			m_xAxis;
 	CPlotAxis			m_yAxis;

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -49,128 +49,49 @@ FEShellPatch::FEShellPatch(GPatch* po)
 	AddDoubleParam(m_t, "t", "Thickness");
 	AddIntParam(m_nx, "nx", "Nx");
 	AddIntParam(m_ny, "ny", "Ny");
+	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FEMesh* FEShellPatch::BuildMesh()
+FSMesh* FEShellPatch::BuildMesh()
 {
-	// get the object parameters
-	ParamBlock& param = m_pobj->GetParamBlock();
-	double w = param.GetFloatValue(GPatch::W);
-	double h = param.GetFloatValue(GPatch::H);
-
-	// get parameters
-	m_t = GetFloatValue(T);
-	double t = m_t;
+	// get mesh parameters
 	m_nx = GetIntValue(NX);
 	m_ny = GetIntValue(NY);
-	int nx = m_nx;
-	int ny = m_ny;
+	int elemType = GetIntValue(ELEM_TYPE);
 
-	// check parameters
-	if (nx < 1) nx = 1;
-	if (ny < 1) ny = 1;
+	BuildMultiQuad();
 
-	int nodes = (nx+1)*(ny+1);
-	int elems = nx*ny;
-
-	// allocate storage
-	FEMesh* pm = new FEMesh();
-	pm->Create(nodes, elems);
-	m_nx = nx;
-	m_ny = ny;
-
-	// position the nodes
-	int i, j;
-	double x, y;
-	double fx, fy;
-	FENode* pn = pm->NodePtr();
-	for (i=0; i<=nx; i++)
+	// update the MB data
+	switch (elemType)
 	{
-		fx = (double) i/(double) nx;
-		x = -w/2 + fx*w;
-		for (j=0; j<=ny; j++, pn++)
-		{
-			fy = (double) j/(double) ny;
-			y = -h/2 + fy*h;
+	case 0: SetElementType(FE_QUAD4); break;
+	case 1: SetElementType(FE_QUAD8); break;
+	case 2: SetElementType(FE_QUAD9); break;
+	};
 
-			pn->r = vec3d(x, y, 0);
-		}
-	}
+	// create the MB
+	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
 
-	pm->Node(NodeIndex( 0, 0)).m_gid = 0;
-	pm->Node(NodeIndex(nx, 0)).m_gid = 1;
-	pm->Node(NodeIndex(nx,ny)).m_gid = 2;
-	pm->Node(NodeIndex( 0,ny)).m_gid = 3;
-
-	// create the connectivity
-	int eid = 0;
-	for (i=0; i<nx; i++)
-		for (j=0; j<ny; j++)
-		{
-			FEElement_* pe = pm->ElementPtr(eid++);
-
-			pe->SetType(FE_QUAD4);
-			pe->m_gid = 0;
-			int* n = pe->m_node;
-			n[0] = NodeIndex(i  ,j  );
-			n[1] = NodeIndex(i+1,j  );
-			n[2] = NodeIndex(i+1,j+1);
-			n[3] = NodeIndex(i  ,j+1);
-		}
-	
-	// assign thickness to shells
-	for (i=0; i<elems; ++i)
-	{
-		FEElement_* pe = pm->ElementPtr(i);
-
-		pe->m_h[0] = t;
-		pe->m_h[1] = t;
-		pe->m_h[2] = t;
-		pe->m_h[3] = t;
-	}
-
-	BuildFaces(pm);
-	BuildEdges(pm);
-
-	pm->BuildMesh();
+	// assign shell thickness to section
+	double t = GetFloatValue(T);
+	GPart* part = m_pobj->Part(0); assert(part);
+	GShellSection* shellSection = dynamic_cast<GShellSection*>(part->GetSection());
+	if (shellSection) shellSection->SetShellThickness(t);
+	else pm->SetUniformShellThickness(t);
 
 	return pm;
 }
 
-void FEShellPatch::BuildFaces(FEMesh* pm)
+bool FEShellPatch::BuildMultiQuad()
 {
-	int i, j;
-	// count faces
-	int nfaces = m_nx*m_ny;
-	pm->Create(0,0,nfaces);
-	FEFace* pf = pm->FacePtr();
-	for (i=0; i<m_nx; ++i)
-	{
-		for (j=0; j<m_ny; ++j, ++pf)
-		{
-			FEFace& f = *pf;
-			f.m_gid = 0;
-			f.SetType(FE_FACE_QUAD4);
-			f.n[0] = NodeIndex(i, j);
-			f.n[1] = NodeIndex(i+1, j);
-			f.n[2] = NodeIndex(i+1, j+1);
-			f.n[3] = NodeIndex(i, j+1);
-		}
-	}
-}
+	ClearMQ();
 
-void FEShellPatch::BuildEdges(FEMesh* pm)
-{
-	int i;
-	int nedges = 2*(m_nx+m_ny);
-	pm->Create(0,0,0,nedges);
-	FEEdge* pe = pm->EdgePtr();
-	for (i=0; i<m_nx; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 0; pe->n[0] = NodeIndex(i, 0); pe->n[1] = NodeIndex(i+1, 0); }
-	for (i=0; i<m_ny; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 1; pe->n[0] = NodeIndex(m_nx, i); pe->n[1] = NodeIndex(m_nx, i+1); }
-	for (i=0; i<m_nx; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 2; pe->n[0] = NodeIndex(m_nx-i, m_ny); pe->n[1] = NodeIndex(m_nx-i-1, m_ny); }
-	for (i=0; i<m_ny; ++i, ++pe) { pe->SetType(FE_EDGE2); pe->m_gid = 3; pe->n[0] = NodeIndex(0, m_ny-i); pe->n[1] = NodeIndex(0, m_ny-i-1); }
-}
+	// create the MB nodes
+	Build(m_pobj);
+	SetFaceSizes(0, m_nx, m_ny);
 
+	return true;
+}
 
 //////////////////////////////////////////////////////////////////////
 // FECylndricalPatch
@@ -186,35 +107,43 @@ FECylndricalPatch::FECylndricalPatch(GCylindricalPatch* po)
 	AddDoubleParam(m_t, "t", "Thickness");
 	AddIntParam(m_nx, "nx", "Nx");
 	AddIntParam(m_ny, "ny", "Ny");
+	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("QUAD4\0QUAD8\0QUAD9\0");
 }
 
-FEMesh* FECylndricalPatch::BuildMesh()
+FSMesh* FECylndricalPatch::BuildMesh()
 {
-	return BuildMultiQuadMesh();
-}
+	if (BuildMultiQuad() == false) return nullptr;
 
-FEMesh* FECylndricalPatch::BuildMultiQuadMesh()
-{
-	// build the quad mesh data
-	FEMultiQuadMesh MQ;
-	MQ.Build(m_pobj);
-
-	// set sizes
-	int nx = GetIntValue(NX);
-	int ny = GetIntValue(NY);
-	MQ.SetFaceSizes(0, nx, ny);
+	int elemType = GetIntValue(ELEM_TYPE);
+	switch (elemType)
+	{
+	case 0: SetElementType(FE_QUAD4); break;
+	case 1: SetElementType(FE_QUAD8); break;
+	case 2: SetElementType(FE_QUAD9); break;
+	};
 
 	// Build the mesh
-	FEMesh* pm = MQ.BuildMesh();
+	FSMesh* pm = FEMultiQuadMesh::BuildMesh();
 	if (pm == nullptr) return nullptr;
 
 	// assign shell thickness
 	double t = GetFloatValue(T);
-	for (int i = 0; i < pm->Elements(); ++i)
-	{
-		FEElement& el = pm->Element(i);
-		el.m_h[0] = el.m_h[1] = el.m_h[2] = el.m_h[3] = t;
-	}
+	pm->SetUniformShellThickness(t);
 
 	return pm;
+}
+
+bool FECylndricalPatch::BuildMultiQuad()
+{
+	ClearMQ();
+
+	// build the quad mesh data
+	Build(m_pobj);
+
+	// set sizes
+	int nx = GetIntValue(NX);
+	int ny = GetIntValue(NY);
+	SetFaceSizes(0, nx, ny);
+
+	return true;
 }

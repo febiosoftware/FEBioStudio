@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,7 +44,7 @@ FECurveMesh* GCurveMeshObject::GetCurveMesh()
 	return m_curve;
 }
 
-FELineMesh* GCurveMeshObject::GetEditableLineMesh()
+FSLineMesh* GCurveMeshObject::GetEditableLineMesh()
 { 
 	return GetCurveMesh(); 
 }
@@ -66,7 +66,7 @@ void GCurveMeshObject::Update()
 	}
 
 	// get the end points
-	vector<int> endPoints = m_curve->EndPointList();
+	std::vector<int> endPoints = m_curve->EndPointList();
 	if (endPoints.size() < m_Node.size())
 	{
 		// shrink the node list
@@ -118,7 +118,7 @@ void GCurveMeshObject::Update()
 
 	for (int i = 0; i<m_curve->Edges(); ++i)
 	{
-		FEEdge& ei = m_curve->Edge(i);
+		FSEdge& ei = m_curve->Edge(i);
 		int eid = ei.m_gid;
 		assert((eid >= 0) && (eid < m_Edge.size()));
 
@@ -157,7 +157,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 	int ne = 0;
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& e = m_curve->Edge(i);
+		FSEdge& e = m_curve->Edge(i);
 		if (e.m_gid == edgeId)
 		{
 			m_curve->Node(e.n[0]).m_ntag = 0;
@@ -172,7 +172,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 	int nn = 0;
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = m_curve->Node(i);
+		FSNode& node = m_curve->Node(i);
 		if (node.m_ntag != -1)
 		{
 			node.m_ntag = nn++;
@@ -183,7 +183,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& sedge = m_curve->Edge(i);
+		FSEdge& sedge = m_curve->Edge(i);
 		if (sedge.m_gid == edgeId)
 		{
 			int n0 = m_curve->Node(sedge.n[0]).m_ntag;
@@ -240,7 +240,7 @@ void GCurveMeshObject::Save(OArchive& ar)
 	// save the parts
 	if (Parts() > 0)
 	{
-		ar.BeginChunk(CID_OBJ_PART_SECTION);
+		ar.BeginChunk(CID_OBJ_PART_LIST);
 		{
 			for (int i = 0; i<Parts(); ++i)
 			{
@@ -260,7 +260,7 @@ void GCurveMeshObject::Save(OArchive& ar)
 	}
 
 	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_SECTION);
+	ar.BeginChunk(CID_OBJ_EDGE_LIST);
 	{
 		for (int i = 0; i<Edges(); ++i)
 		{
@@ -285,7 +285,7 @@ void GCurveMeshObject::Save(OArchive& ar)
 	// for instance, a shell disc
 	if (Nodes()>0)
 	{
-		ar.BeginChunk(CID_OBJ_NODE_SECTION);
+		ar.BeginChunk(CID_OBJ_NODE_LIST);
 		{
 			for (int i = 0; i<Nodes(); ++i)
 			{
@@ -387,14 +387,14 @@ void GCurveMeshObject::Load(IArchive& ar)
 			ParamContainer::Load(ar);
 			break;
 			// object parts
-		case CID_OBJ_PART_SECTION:
+		case CID_OBJ_PART_LIST:
 		{
 			assert(nparts > 0);
 			m_Part.reserve(nparts);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_SECTION");
+				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST");
 
 				GPart* p = new GPart(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -424,14 +424,14 @@ void GCurveMeshObject::Load(IArchive& ar)
 		}
 		break;
 		// object edges
-		case CID_OBJ_EDGE_SECTION:
+		case CID_OBJ_EDGE_LIST:
 		{
 			m_Edge.clear();
 			if (nedges > 0) m_Edge.reserve(nedges);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_SECTION");
+				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST");
 
 				GEdge* e = new GEdge(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -464,7 +464,7 @@ void GCurveMeshObject::Load(IArchive& ar)
 		}
 		break;
 		// object nodes
-		case CID_OBJ_NODE_SECTION:
+		case CID_OBJ_NODE_LIST:
 		{
 			m_Node.clear();
 			if (nnodes > 0)
@@ -473,7 +473,7 @@ void GCurveMeshObject::Load(IArchive& ar)
 				int m = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_SECTION");
+					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST");
 
 					GNode* n = new GNode(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -506,7 +506,7 @@ void GCurveMeshObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (GetFEMesh()) delete GetFEMesh();
-			SetFEMesh(new FEMesh);
+			SetFEMesh(new FSMesh);
 			GetFEMesh()->Load(ar);
 			break;
 		case CID_CURVE_MESH:

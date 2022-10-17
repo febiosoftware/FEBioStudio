@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <memory>
 //using namespace std;
 
-FEMeshExport::FEMeshExport(FEProject& prj) : FEFileExport(prj)
+FEMeshExport::FEMeshExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -41,7 +41,7 @@ FEMeshExport::~FEMeshExport(void)
 
 bool FEMeshExport::Write(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	GModel& model = fem.GetModel();
 
 	FILE* fp = fopen(szfile, "wt");
@@ -58,11 +58,11 @@ bool FEMeshExport::Write(const char* szfile)
 	for (i=0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 
 		for (j=0; j<pm->Nodes(); ++j, ++N)
 		{
-			FENode& node = pm->Node(j);
+			FSNode& node = pm->Node(j);
 			node.m_nid = N;
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 			fprintf(fp, "%lg %lg %lg 0\n", r.x, r.y, r.z);
@@ -76,10 +76,10 @@ bool FEMeshExport::Write(const char* szfile)
 	int ntri = 0;
 	for (i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		for (j=0; j<pm->Elements(); ++j)
 		{
-			FEElement& e = pm->Element(j);
+			FSElement& e = pm->Element(j);
 			if (e.IsType(FE_HEX8)) nhex++;
 			if (e.IsType(FE_TET4)) ntet++;
 			if (e.IsType(FE_TRI3)) ntri++;
@@ -93,10 +93,10 @@ bool FEMeshExport::Write(const char* szfile)
 		fprintf(fp, "%d\n", nhex);
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh* pm = model.Object(i)->GetFEMesh();
+			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
-				FEElement& e = pm->Element(j);
+				FSElement& e = pm->Element(j);
 				if (e.IsType(FE_HEX8))
 				{
 					int nn[8];
@@ -115,10 +115,10 @@ bool FEMeshExport::Write(const char* szfile)
 		fprintf(fp, "%d\n", ntet);
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh* pm = model.Object(i)->GetFEMesh();
+			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
-				FEElement& e = pm->Element(j);
+				FSElement& e = pm->Element(j);
 				if (e.IsType(FE_TET4))
 				{
 					int nn[4];
@@ -138,10 +138,10 @@ bool FEMeshExport::Write(const char* szfile)
 		int ntag = 1;
 		for (i=0; i<model.Objects(); ++i)
 		{
-			FEMesh* pm = model.Object(i)->GetFEMesh();
+			FSMesh* pm = model.Object(i)->GetFEMesh();
 			for (j=0; j<pm->Elements(); ++j)
 			{
-				FEElement& e = pm->Element(j);
+				FSElement& e = pm->Element(j);
 				if (e.IsType(FE_TRI3))
 				{
 					int nn[3];

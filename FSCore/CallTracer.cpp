@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -59,27 +59,29 @@ void CCallStack::ClearStack()
 }
 
 //-------------------------------------------------------------------
-int CCallStack::GetCallStackString(char* sz)
+std::string CCallStack::GetCallStackString()
 {
 	int L = 0;
 	int N = (int)m_stack.size();
-	for (int i=0; i<N; ++i)
-	{
-		const char* szi = m_stack[i];
-		L += (int)strlen(szi) + 1;
-	}
-	L -= 1;
-	if (sz == 0) return L;
 
-	sz[0] = 0;
+	std::string s;
+
 	for (int i=0; i<N; ++i)
 	{
 		const char* szi = m_stack[i];
-		strcat(sz, szi);
-		if (i != N-1)  strcat(sz, "\n");
+		s += szi;
+		if (i != N-1) s += "\n";
 	}
-	assert(L == strlen(sz));
-	return L;
+
+	return s;
+}
+
+//-------------------------------------------------------------------
+std::string CCallStack::GetCurrentCall()
+{
+	std::string s;
+	if (m_stack.empty() == false) s = m_stack.back();
+	return s;
 }
 
 //-------------------------------------------------------------------

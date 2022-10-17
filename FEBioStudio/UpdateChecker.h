@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,9 +37,9 @@ class QLabel;
 class QNetworkAccessManager;
 class QDialogButtonBox;
 
-#define UPDATE_URL "repo.febio.org"
-#define PORT 4433
-#define SCHEME "https"
+// #define UPDATE_URL "repo.febio.org"
+// #define PORT 4433
+// #define SCHEME "https"
 
 // #define UPDATE_URL "localhost"
 // #define PORT 5236
@@ -47,19 +47,19 @@ class QDialogButtonBox;
 
 #ifdef WIN32
 	#define URL_BASE "/update2/FEBioStudio/Windows"
-	#define DEV_BASE "/update2/FEBioStudioDev/Windows"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/Windows"
 	#define UPDATER_BASE "/update2/Updater/Windows"
 	#define REL_ROOT "\\..\\"
 	#define UPDATER "/FEBioStudioUpdater.exe"
 #elif __APPLE__
 	#define URL_BASE "/update2/FEBioStudio/macOS"
-	#define DEV_BASE "/update2/FEBioStudioDev/macOS"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/macOS"
 	#define UPDATER_BASE "/update2/Updater/macOS"
 	#define REL_ROOT "/../../../"
 	#define UPDATER "/FEBioStudioUpdater"
 #else
 	#define URL_BASE "/update2/FEBioStudio/Linux"
-	#define DEV_BASE "/update2/FEBioStudioDev/Linux"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/Linux"
 	#define UPDATER_BASE "/update2/Updater/Linux"
 	#define REL_ROOT "/../"
 	#define UPDATER "/FEBioStudioUpdater"

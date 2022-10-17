@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,18 +26,18 @@ SOFTWARE.*/
 
 #include "FENode.h"
 
-FENode::FENode()
+FSNode::FSNode()
 {
 	m_gid = -1;
 }
 
-FENode::FENode(const FENode& n) : FEItem(n)
+FSNode::FSNode(const FSNode& n) : MeshItem(n)
 {
 	r = n.r;
 }
 
-void FENode::operator = (const FENode& n)
+void FSNode::operator = (const FSNode& n)
 {
 	r = n.r;
-	FEItem::operator=(n);
+	MeshItem::operator=(n);
 }

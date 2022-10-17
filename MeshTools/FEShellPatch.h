@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,26 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiQuadMesh.h"
 
 class GPatch;
 class GCylindricalPatch;
 
-class FEShellPatch : public FEMesher
+class FEShellPatch : public FEMultiQuadMesh
 {
 public:
-	enum { T, NX, NY };
+	enum { T, NX, NY, ELEM_TYPE};
 
 public:
 	FEShellPatch(){}
 	FEShellPatch(GPatch* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return i*(m_ny+1) + j; }
+	bool BuildMultiQuad() override;
 
 protected:
 	GPatch* m_pobj;
@@ -53,18 +49,17 @@ protected:
 	int		m_nx, m_ny;
 };
 
-class FECylndricalPatch : public FEMesher
+class FECylndricalPatch : public FEMultiQuadMesh
 {
 public:
-	enum { T, NX, NY };
+	enum { T, NX, NY, ELEM_TYPE };
 
 public:
 	FECylndricalPatch() {}
 	FECylndricalPatch(GCylindricalPatch* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-protected:
-	FEMesh* BuildMultiQuadMesh();
+	bool BuildMultiQuad() override;
 
 protected:
 	GCylindricalPatch* m_pobj;

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -47,6 +47,9 @@ public:
 	// update the model tree and props window
 	void Update(bool breset = true) override;
 
+	// clear the model viewer
+	void Clear();
+
 	// get the currently selected object
 	FSObject* GetCurrentObject();
 
@@ -64,6 +67,7 @@ public:
 
 	// set the current item
 	void SetCurrentItem(int item);
+	void SetCurrentItem(CModelTreeItem& item);
 
 	// show the context menu
 	void ShowContextMenu(CModelTreeItem* data, QPoint pt);
@@ -86,9 +90,13 @@ public:
 
 	bool OnDeleteEvent() override;
 
-	void RefreshProperties();
-
 	void blockUpdate(bool block);
+
+	void UpdateCurrentItem();
+
+    void SetFilter(int index);
+
+	void IncWarningCount();
 
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
@@ -105,20 +113,11 @@ public slots:
 public slots:
 	// slots for model tree context menu actions
 	void OnDeleteItem();
-	void OnAddMaterial();
 	void OnUnhideAllObjects();
 	void OnCreateNewMeshLayer();
 	void OnDeleteMeshLayer();
 	void OnUnhideAllParts();
-	void OnAddBC();
-	void OnAddSurfaceLoad();
-	void OnAddBodyLoad();
-	void OnAddInitialCondition();
-	void OnAddContact();
-	void OnAddConstraint();
-	void OnAddRigidConstraint();
-	void OnAddRigidConnector();
-	void OnAddStep();
+	void OnDeleteNamedSelection();
 	void OnHideObject();
 	void OnShowObject();
 	void OnSelectObject();
@@ -132,6 +131,7 @@ public slots:
 	void OnChangeDiscreteType();
 	void OnHidePart();
 	void OnSelectPartElements();
+	void OnSelectSurfaceFaces();
 	void OnShowPart();
 	void OnSelectPart();
 	void OnSelectSurface();
@@ -144,7 +144,8 @@ public slots:
 	void OnCopyRigidConnector();
 	void OnCopyLoad();
 	void OnCopyConstraint();
-	void OnCopyRigidConstraint();
+	void OnCopyRigidBC();
+	void OnCopyRigidIC();
 	void OnCopyStep();
 	void OnStepMoveUp();
 	void OnStepMoveDown();
@@ -154,13 +155,14 @@ public slots:
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();
 	void OnRemoveAllSelections();
+	void OnDeleteAllMeshAdaptors();
 	void OnChangeMaterial();
 	void OnMaterialHideParts();
 	void OnMaterialShowParts();
 	void OnMaterialHideOtherParts();
 	void OnExportMaterials();
 	void OnExportAllMaterials();
-	void OnImportMaterials();
+	void OnImportMaterials(QAction*);
 	void OnDeleteAllMaterials();
 	void OnSwapMasterSlave();
 	void OnDeleteAllBC();
@@ -168,8 +170,7 @@ public slots:
 	void OnDeleteAllIC();
 	void OnDeleteAllContact();
 	void OnDeleteAllConstraints();
-	void OnDeleteAllRigidConstraints();
-	void OnDeleteAllRigidConnectors();
+	void OnDeleteAllRigidComponents();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 

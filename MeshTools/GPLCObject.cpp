@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -39,13 +39,13 @@ GPLCObject::GPLCObject() : GObject(GPLC_OBJECT)
 }
 
 //-----------------------------------------------------------------------------
-FEMeshBase* GPLCObject::GetEditableMesh()
+FSMeshBase* GPLCObject::GetEditableMesh()
 {
 	return GetFEMesh();
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GPLCObject::BuildMesh()
+FSMesh* GPLCObject::BuildMesh()
 {
 	SetFEMesh(GetFEMesher()->BuildMesh());
 	return GetFEMesh();
@@ -174,8 +174,8 @@ void GPLCObject::Create(GSketch &s)
 		if (pe==0) break;
 
 		// construct a face by finding a closed loop
-		vector<int> node;
-		vector<pair<int,int> > edge;
+		std::vector<int> node;
+		std::vector< std::pair<int,int> > edge;
 		node.clear();
 		edge.clear();
 		while (pe)
@@ -247,7 +247,7 @@ void GPLCObject::Create(GSketch &s)
 	while (1);
 
 	// we only add one part for now
-	AddPart();
+	AddSolidPart();
 
 	// Build the GMesh
 	BuildGMesh();

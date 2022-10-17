@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ModelFileReader.h"
 #include "ModelDocument.h"
+#include <FEBioLink/FEBioModule.h>
 #include <GeomLib/GObject.h>
 #include <sstream>
 
@@ -35,64 +36,108 @@ using std::stringstream;
 ModelFileReader::ModelFileReader(CModelDocument* doc)
 {
 	m_doc = doc;
+
+	m_fileVersion = -1;
+}
+
+bool ModelFileReader::Open(const char* szfile)
+{
+	// try to open the archive
+	if (!PRVArchive::Load(szfile)) return false;
+
+	// get the version info
+	IArchive& ar = GetArchive();
+	IArchive::IOResult nret = IArchive::IO_OK;
+
+	// the version chunk should be the first one!
+	if (ar.OpenChunk() != IArchive::IO_OK) return false;
+	if (ar.GetChunkID() != CID_VERSION) return false;
+	nret = ar.read(m_fileVersion);
+	ar.CloseChunk();
+
+	// make sure to inform the archive of the version number
+	ar.SetVersion(m_fileVersion);
+
+	return true;
+}
+
+int ModelFileReader::GetFileVersion() const
+{
+	return m_fileVersion;
 }
 
 bool ModelFileReader::Load(const char* szfile)
 {
-	if (!PRVArchive::Load(szfile))
+	FEBio::BlockCreateEvents(true);
+	bool b = ReadFile(szfile);
+	FEBio::BlockCreateEvents(false);
+	return b;
+}
+
+bool ModelFileReader::ReadFile(const char* szfile)
+{
+	// get the archive
+	IArchive& ar = GetArchive();
+
+	// see if it's already open (which can be since we pull out some info before actually reading the file)
+	if (ar.IsValid() == false)
 	{
-		return errf("Failed opening file");
+		// try to open it
+		if (!PRVArchive::Load(szfile))
+		{
+			return errf("Failed opening file");
+		}
 	}
-	else
+
+	// now try to read the rest of the file
+	try
 	{
-		try
-		{
-			IArchive& ar = GetArchive();
-			m_doc->SetDocFilePath(szfile);
-			m_doc->Load(ar);
+		m_doc->SetDocFilePath(szfile);
+		m_doc->Load(ar);
 
-			std::string log = ar.GetLog();
-			if (log.empty() == false)
-			{
-				errf("%s", log.c_str());
-			}
-
-			Close();
-			return true;
-		}
-		catch (InvalidVersion)
+		std::string log = ar.GetLog();
+		if (log.empty() == false)
 		{
-			Close();
-			return errf("This file has an invalid version number.");
+			errf(log.c_str());
 		}
-		catch (ReadError e)
-		{
-			char* sz = 0;
-			int L = CCallStack::GetCallStackString(0);
-			sz = new char[L + 1];
-			CCallStack::GetCallStackString(sz);
 
-			stringstream ss;
-			if (e.m_szmsg) { ss << e.m_szmsg << "\n"; }
-			else { ss << "(unknown)\n"; };
-			ss << "\nCALL STACK:\n" << sz;
-			delete[] sz;
+		Close();
+		return true;
+	}
+	catch (InvalidVersion)
+	{
+		Close();
+		return errf("This file has an invalid version number.");
+	}
+	catch (ReadError e)
+	{
+		std::string s = CCallStack::GetCallStackString();
 
-			string errMsg = ss.str();
+		stringstream ss;
+		if (e.m_szmsg) { ss << e.m_szmsg << "\n"; }
+		else { ss << "(unknown)\n"; };
+		ss << "\nCALL STACK:\n" << s;
 
-			Close();
-			return errf(errMsg.c_str());
-		}
-		catch (GObjectException e)
-		{
-			Close();
-			return errf("An error occurred processing model:\n%s", e.ErrorMsg());
-		}
-		catch (...)
-		{
-			Close();
-			return errf("Failed opening file %s", szfile);
-		}
+		string errMsg = ss.str();
+
+		Close();
+		return errf(errMsg.c_str());
+	}
+	catch (GObjectException e)
+	{
+		Close();
+		return errf("An error occurred processing model:\n%s", e.ErrorMsg());
+	}
+	catch (std::exception e)
+	{
+		Close();
+		const char* szerr = (e.what() == nullptr ? "(unknown)" : e.what());
+		return errf("An exception occurred: %s", szerr);
+	}
+	catch (...)
+	{
+		Close();
+		return errf("Failed opening file %s", szfile);
 	}
 
 	Close();

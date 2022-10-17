@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,8 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include <QWizard>
 #include "FEBioOpt.h"
+#include "FEBioDiagnostic.h"
 
-class FEModel;
+class FSModel;
 
 class CMainWindow;
 class QLineEdit;
@@ -64,11 +65,11 @@ class CSelectParam : public QWidget
 private:
 	QLineEdit*		m_edit;
 	QPushButton*	m_push;
-	FEModel*		m_fem;
+	FSModel*		m_fem;
 	int				m_paramOption;
 
 public:
-	CSelectParam(FEModel* fem, int paramOption = 0, QWidget* parent = nullptr);
+	CSelectParam(FSModel* fem, int paramOption = 0, QWidget* parent = nullptr);
 
 	void clear();
 	QString text();
@@ -82,7 +83,7 @@ class CDlgSelectParam : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgSelectParam(FEModel* fem, int paramOption, QWidget* parent = nullptr);
+	CDlgSelectParam(FSModel* fem, int paramOption, QWidget* parent = nullptr);
 
 	void accept() override;
 
@@ -90,4 +91,22 @@ public:
 
 private:
 	Ui::CDlgSelectParam*	ui;
+};
+
+//=================================================================================================
+class CDlgFEBioTangentUI;
+
+class CDlgFEBioTangent : public QDialog
+{
+
+public:
+	CDlgFEBioTangent(CMainWindow* parent);
+
+	FEBioTangentDiagnostic GetData();
+
+private:
+	void accept() override;
+
+private:
+	CDlgFEBioTangentUI* ui;
 };

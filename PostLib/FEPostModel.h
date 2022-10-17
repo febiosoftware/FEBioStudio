@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,9 +27,10 @@ SOFTWARE.*/
 #pragma once
 
 #include "FEPostMesh.h"
-#include "FEMaterial.h"
+#include "Material.h"
 #include "FEState.h"
 #include "FEDataManager.h"
+#include "GLObject.h"
 #include <FSCore/box.h>
 #include <vector>
 //using namespace std;
@@ -64,7 +65,7 @@ public:
 class FEPostModel  
 {
 public:
-	class PlotObject : public FSObject
+	class PlotObject : public CGLObject
 	{
 	public:
 		PlotObject();
@@ -79,7 +80,7 @@ public:
 		vec3d			m_pos;
 		quatd			m_rot;
 
-		vector<FEPlotObjectData*>	m_data;
+		std::vector<PlotObjectData*>	m_data;
 	};
 
 	class PointObject : public PlotObject
@@ -144,13 +145,13 @@ public:
 	int Materials() { return (int) m_Mat.size();  }
 
 	// get a particular material
-	FEMaterial* GetMaterial(int i) { return &m_Mat[i]; }
+	Material* GetMaterial(int i) { return &m_Mat[i]; }
 
 	// clear all materials
 	void ClearMaterials() { m_Mat.clear(); }
 
 	// add a material to the model
-	void AddMaterial(FEMaterial& mat);
+	void AddMaterial(Material& mat);
 
 	// --- S T A T E   M A N A G M E N T ---
 	//! add a state to the mesh
@@ -172,19 +173,19 @@ public:
 	FEState* GetState(int nstate) { return m_State[nstate]; }
 
 	//! Add a new data field
-	void AddDataField(FEDataField* pd, const std::string& name = "");
+	void AddDataField(ModelDataField* pd, const std::string& name = "");
 
 	//! add a new data field constrained to a set
-	void AddDataField(FEDataField* pd, vector<int>& L);
+	void AddDataField(ModelDataField* pd, std::vector<int>& L);
 
 	//! delete a data field
-	void DeleteDataField(FEDataField* pd);
+	void DeleteDataField(ModelDataField* pd);
 
 	//! Copy a data field
-	FEDataField* CopyDataField(FEDataField* pd, const char* sznewname = 0);
+	ModelDataField* CopyDataField(ModelDataField* pd, const char* sznewname = 0);
 
 	//! Create a cached copy of a data field
-	FEDataField* CreateCachedCopy(FEDataField* pd, const char* sznewname);
+	ModelDataField* CreateCachedCopy(ModelDataField* pd, const char* sznewname);
 
 	// Get the field variable name
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);
@@ -228,7 +229,7 @@ public:
 	void SetDisplacementField(int ndisp) { m_ndisp = ndisp; }
 	int GetDisplacementField() { return m_ndisp; }
 	vec3f NodePosition(int n, int ntime);
-	vec3f FaceNormal(FEFace& f, int ntime);
+	vec3f FaceNormal(FSFace& f, int ntime);
 
 	vec3f NodePosition(const vec3f& r, int ntime);
 
@@ -288,24 +289,24 @@ protected:
 	MetaData	m_meta;
 
 	// --- M E S H ---
-	vector<FERefState*>		m_RefState;	// reference state for meshes
-	vector<FEPostMesh*>		m_mesh;		// the list of meshes
+	std::vector<FERefState*>		m_RefState;	// reference state for meshes
+	std::vector<FEPostMesh*>		m_mesh;		// the list of meshes
 	BOX						m_bbox;		// bounding box of mesh
 
 	// --- M A T E R I A L S ---
-	vector<FEMaterial>	m_Mat;		// array of materials
+	std::vector<Material>	m_Mat;		// array of materials
 
 	// --- O B J E C T S ---
-	vector<PointObject*>	m_Points;
-	vector<LineObject *>	m_Lines;
+	std::vector<PointObject*>	m_Points;
+	std::vector<LineObject *>	m_Lines;
 
 	// --- S T A T E ---
-	vector<FEState*>	m_State;	// array of pointers to FE-state structures
+	std::vector<FEState*>	m_State;	// array of pointers to FE-state structures
 	FEDataManager*		m_pDM;		// the Data Manager
 	int					m_ndisp;	// vector field defining the displacement
 
 	// dependants
-	vector<FEModelDependant*>	m_Dependants;
+	std::vector<FEModelDependant*>	m_Dependants;
 
 	static FEPostModel*	m_pThis;
 };

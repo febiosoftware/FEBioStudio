@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -59,7 +59,9 @@ QIcon CIconProvider::GetIcon(const QString& baseIconName, Emblem emblem)
 	QString baseUrl = themedIconURL(baseIconName);
 	QString emblemUrl = emblemIconURL(emblem);
 
-    QPixmap basePixmap(baseUrl); basePixmap.setDevicePixelRatio(m_dpr);
+    QPixmap basePixmap(baseUrl); 
+    basePixmap.setDevicePixelRatio(m_dpr);
+
 	QPixmap emblemPixmap = QPixmap(emblemUrl).scaled(basePixmap.size()/2);
     emblemPixmap.setDevicePixelRatio(m_dpr);
 
@@ -74,7 +76,9 @@ QIcon CIconProvider::GetIcon(const QString& baseIconName, const QString& emblemI
 	QString baseUrl = themedIconURL(baseIconName);
 	QString emblemUrl = themedIconURL(emblemIconName);
 
-	QPixmap basePixmap(baseUrl); basePixmap.setDevicePixelRatio(m_dpr);
+	QPixmap basePixmap(baseUrl); 
+    basePixmap.setDevicePixelRatio(m_dpr);
+
 	QPixmap emblemPixmap = QPixmap(emblemUrl).scaled(basePixmap.size()/2);
     emblemPixmap.setDevicePixelRatio(m_dpr);
 
@@ -82,6 +86,52 @@ QIcon CIconProvider::GetIcon(const QString& baseIconName, const QString& emblemI
 	painter.drawPixmap(basePixmap.width() - emblemPixmap.width(), basePixmap.height() - emblemPixmap.height(), emblemPixmap);
 
 	return QIcon(basePixmap);
+}
+
+QIcon CIconProvider::GetIcon(const QString& baseIconName, QColor c, Shape shape)
+{
+    QString baseUrl = themedIconURL(baseIconName);
+
+    QPixmap basePixmap(baseUrl); 
+    basePixmap.setDevicePixelRatio(m_dpr);
+
+    QPixmap emblemPixmap = BuildPixMap(c, shape, basePixmap.width()/2);
+    emblemPixmap.setDevicePixelRatio(m_dpr);
+
+    QPainter painter(&basePixmap);
+	painter.drawPixmap(basePixmap.width() - emblemPixmap.width(), basePixmap.height() - emblemPixmap.height(), emblemPixmap);
+
+	return QIcon(basePixmap);
+}
+
+QPixmap CIconProvider::BuildPixMap(QColor& c, Shape shape, int size)
+{
+	if (size < 8) size = 8;
+
+	QColor c2 = c;
+	QColor c1 = c2.lighter();
+	QColor c3 = c2.darker();
+
+	QRadialGradient g(QPointF(size/3, size/3), size/2);
+	g.setColorAt(0.0, c1);
+	g.setColorAt(0.2, c2);
+	g.setColorAt(1.0, c3);
+
+	QPixmap pix(size, size);
+//	pix.setDevicePixelRatio(m_list->devicePixelRatio());
+	pix.fill(Qt::transparent);
+	QPainter p(&pix);
+	p.setRenderHint(QPainter::Antialiasing);
+	p.setPen(Qt::PenStyle::NoPen);
+	p.setBrush(QBrush(g));
+	if (shape == Shape::Circle)
+		p.drawEllipse(2, 2, size - 4, size - 4);
+	else
+		p.drawRect(2, 2, size - 4, size - 4);
+
+	p.end();
+
+	return pix;
 }
 
 QString CIconProvider::themedIconURL(const QString& iconName)

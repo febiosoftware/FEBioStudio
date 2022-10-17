@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -63,7 +63,7 @@ int FESlice::NodeIndex(int i, int j, int k)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FESlice::BuildMesh()
+FSMesh* FESlice::BuildMesh()
 {
 	assert(m_pobj);
 
@@ -99,11 +99,11 @@ FEMesh* FESlice::BuildMesh()
 	int edges = 2*m_nd + 3*m_nz + 4*m_ns;
 
 	// create mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems, faces, edges);
 
 	// --- A. Create the nodes ---
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	double x, y, z, R;
 
 	double gz = 1;
@@ -243,7 +243,7 @@ FEMesh* FESlice::BuildMesh()
 
 	// --- C. Create faces ---
 	// side faces
-	FEFace* pf = pm->FacePtr();
+	FSFace* pf = pm->FacePtr();
 	for (i=0; i<m_nz; ++i)
 	{
 		for (k=0; k<m_ns; ++k, ++pf)
@@ -335,7 +335,7 @@ FEMesh* FESlice::BuildMesh()
 	}
 
 	// --- D. Create edges ---
-	FEEdge* pe = pm->EdgePtr();
+	FSEdge* pe = pm->EdgePtr();
 	for (k=0; k<m_ns; ++k, ++pe)
 	{
 		pe->SetType(FE_EDGE2);

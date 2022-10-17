@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -75,11 +75,11 @@ int LSDYNAModel::FindFace(int n[4])
 	int N = m_nFace[n[0]];
 	int i;
 
-	FEMesh* pm = m_po->GetFEMesh();
+	FSMesh* pm = m_po->GetFEMesh();
 
 	for (i = 0; i<N; ++i)
 	{
-		FEFace& face = pm->Face(pf[i]);
+		FSFace& face = pm->Face(pf[i]);
 		if (face.HasNode(n[1]) &&
 			face.HasNode(n[2]) &&
 			face.HasNode(n[3])) return pf[i];
@@ -96,7 +96,7 @@ int LSDYNAModel::FindShellDomain(int pid)
     return -1;
 }
 
-bool LSDYNAModel::BuildModel(FEModel& fem)
+bool LSDYNAModel::BuildModel(FSModel& fem)
 {
 	// build the mesh and object
 	if (BuildFEMesh(fem) == false) return false;
@@ -108,7 +108,7 @@ bool LSDYNAModel::BuildModel(FEModel& fem)
 	return true;
 }
 
-bool LSDYNAModel::BuildFEMesh(FEModel& fem)
+bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 {
 	int nodes = (int)m_node.size();
 	int shells = (int)m_shell.size();
@@ -120,12 +120,12 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 	if (nodes == 0) return false;
 	if (elems == 0) return false;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create nodes
 	vector<NODE>::iterator in = m_node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	int imin = 0, imax = 0;
 	for (int i = 0; i<nodes; ++i, ++pn, ++in)
 	{
@@ -304,7 +304,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 		int ns0 = 0, ns1 = shells;
 		for (i = 0; i<nparts; ++i, ++ip)
 		{
-			FEPart* pg = new FEPart(m_po);
+			FSPart* pg = new FSPart(m_po);
 
 			pg->SetName(ip->szname);
 
@@ -353,7 +353,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 	for (pi = m_set.begin(); pi != m_set.end(); ++pi)
 	{
 	SET_SEGMENT_TITLE& s = *pi;
-	FESurface* ps = new FESurface(m_po);
+	FSSurface* ps = new FSSurface(m_po);
 	m_po->AddFESurface(ps);
 	ps->SetName(s.m_szname);
 
@@ -383,7 +383,7 @@ bool LSDYNAModel::BuildFEMesh(FEModel& fem)
 	return true;
 }
 
-void LSDYNAModel::UpdateMesh(FEMesh& mesh)
+void LSDYNAModel::UpdateMesh(FSMesh& mesh)
 {
 	int nsize = 0, i, j, n, m, l;
 
@@ -395,7 +395,7 @@ void LSDYNAModel::UpdateMesh(FEMesh& mesh)
 
 	for (i = 0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j = 0; j<n; ++j) m_nFace[face.n[j]]++;
 		nsize += n;
@@ -415,7 +415,7 @@ void LSDYNAModel::UpdateMesh(FEMesh& mesh)
 
 	for (i = 0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
 		for (j = 0; j<n; ++j)
 		{
@@ -428,7 +428,7 @@ void LSDYNAModel::UpdateMesh(FEMesh& mesh)
 	}
 }
 
-bool LSDYNAModel::BuildMaterials(FEModel& fem)
+bool LSDYNAModel::BuildMaterials(FSModel& fem)
 {
 	if (m_Mat.empty()) return true;
 
@@ -437,56 +437,56 @@ bool LSDYNAModel::BuildMaterials(FEModel& fem)
 	for (int i = 0; im != m_Mat.end(); ++i, ++im)
 	{
 		MATERIAL* glmat = *im;
-		FEMaterial* gpmat = nullptr;
+		FSMaterial* gpmat = nullptr;
 		if (dynamic_cast<MAT_ELASTIC*>(glmat)) {
 			MAT_ELASTIC& lmat = *dynamic_cast<MAT_ELASTIC*>(glmat);
-			FEIsotropicElastic* pmat = new FEIsotropicElastic;
+			FSIsotropicElastic* pmat = new FSIsotropicElastic(&fem);
 			gpmat = pmat;
-			pmat->SetFloatValue(FEIsotropicElastic::MP_DENSITY, lmat.ro);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_E, lmat.e);
-			pmat->SetFloatValue(FEIsotropicElastic::MP_v, lmat.pr);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, lmat.ro);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_E, lmat.e);
+			pmat->SetFloatValue(FSIsotropicElastic::MP_v, lmat.pr);
 			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_RIGID*>(glmat)) {
 			MAT_RIGID& lmat = *dynamic_cast<MAT_RIGID*>(glmat);
-			FERigidMaterial* pmat = new FERigidMaterial;
+			FSRigidMaterial* pmat = new FSRigidMaterial(&fem);
 			gpmat = pmat;
-			pmat->SetFloatValue(FERigidMaterial::MP_DENSITY, lmat.ro);
-			pmat->SetFloatValue(FERigidMaterial::MP_E, lmat.e);
-			pmat->SetFloatValue(FERigidMaterial::MP_V, lmat.pr);
+			pmat->SetFloatValue(FSRigidMaterial::MP_DENSITY, lmat.ro);
+			pmat->SetFloatValue(FSRigidMaterial::MP_E, lmat.e);
+			pmat->SetFloatValue(FSRigidMaterial::MP_V, lmat.pr);
 			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_VISCOELASTIC*>(glmat)) {
 			MAT_VISCOELASTIC& lmat = *dynamic_cast<MAT_VISCOELASTIC*>(glmat);
-			FEUncoupledViscoElastic* pmat = new FEUncoupledViscoElastic;
-			FEMooneyRivlin* emat = new FEMooneyRivlin;
+			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic(&fem);
+			FSMooneyRivlin* emat = new FSMooneyRivlin(&fem);
 			gpmat = pmat;
-			emat->SetFloatValue(FEMooneyRivlin::MP_DENSITY, lmat.ro);
-			emat->SetFloatValue(FEMooneyRivlin::MP_A, lmat.gi/2.);
-			emat->SetFloatValue(FEMooneyRivlin::MP_B, 0);
-			emat->SetFloatValue(FEMooneyRivlin::MP_K, lmat.bulk);
+			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
+			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
+			emat->SetFloatValue(FSMooneyRivlin::MP_B, 0);
+			emat->SetFloatValue(FSMooneyRivlin::MP_K, lmat.bulk);
 			pmat->SetElasticMaterial(emat);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_T1, 1.0 / lmat.beta);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_T1, 1.0 / lmat.beta);
 			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat)) {
 			MAT_KELVIN_MAXWELL_VISCOELASTIC& lmat = *dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat);
-			FEUncoupledViscoElastic* pmat = new FEUncoupledViscoElastic;
-			FEMooneyRivlin* emat = new FEMooneyRivlin;
+			FSUncoupledViscoElastic* pmat = new FSUncoupledViscoElastic(&fem);
+			FSMooneyRivlin* emat = new FSMooneyRivlin(&fem);
 			gpmat = pmat;
-			emat->SetFloatValue(FEMooneyRivlin::MP_DENSITY, lmat.ro);
-			emat->SetFloatValue(FEMooneyRivlin::MP_A, lmat.gi/2.);
-			emat->SetFloatValue(FEMooneyRivlin::MP_B, 0);
-			emat->SetFloatValue(FEMooneyRivlin::MP_K, lmat.bulk);
+			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
+			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
+			emat->SetFloatValue(FSMooneyRivlin::MP_B, 0);
+			emat->SetFloatValue(FSMooneyRivlin::MP_K, lmat.bulk);
 			pmat->SetElasticMaterial(emat);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
-			pmat->SetFloatValue(FEUncoupledViscoElastic::MP_T1, 1.0 / lmat.dc);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
+			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_T1, 1.0 / lmat.dc);
 			pmat->SetName(lmat.szname);
 		}
 		// For unknown materials, use MAT_ELASTIC
 		else {
-			FEIsotropicElastic* pmat = new FEIsotropicElastic;
+			FSIsotropicElastic* pmat = new FSIsotropicElastic(&fem);
 			gpmat = pmat;
 			pmat->SetName(glmat->szname);
 		}

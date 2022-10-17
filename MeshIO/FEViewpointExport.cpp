@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEViewpointExport::FEViewpointExport(FEProject& prj) : FEFileExport(prj)
+FEViewpointExport::FEViewpointExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -51,16 +51,16 @@ bool FEViewpointExport::Write(const char* szfile)
 	FILE* fp = fopen(szfcor, "wt");
 	if (fp == 0) return false;
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int nn = 1;
 	for (m=0; m<model.Objects(); ++m)
 	{
-		FEMesh* pm = model.Object(m)->GetFEMesh();
+		FSMesh* pm = model.Object(m)->GetFEMesh();
 		for (n=0; n<pm->Nodes(); ++n, ++nn)
 		{
-			FENode& node = pm->Node(n);
+			FSNode& node = pm->Node(n);
 			node.m_ntag = nn;
 			vec3d& r = node.r;
 
@@ -79,12 +79,12 @@ bool FEViewpointExport::Write(const char* szfile)
 	for (m=0; m<model.Objects(); ++m)
 	{
 		GObject* po = model.Object(m);
-		FEMesh* pm = po->GetFEMesh();
+		FSMesh* pm = po->GetFEMesh();
 		const char* sz = po->GetName().c_str();
 		if (strlen(sz) == 0) sz = szdefault;
 		for (n=0; n<pm->Elements(); ++n, ++ne)
 		{
-			FEElement& el = pm->Element(n);
+			FSElement& el = pm->Element(n);
 			int* l = el.m_node;
 			fprintf(fp, "%s", sz);
 			for (k=0; k<el.Nodes(); ++k) fprintf(fp, " %d", pm->Node(l[k]).m_ntag);

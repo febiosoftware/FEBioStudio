@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,7 @@ SOFTWARE.*/
 // GThinTube
 //=============================================================================
 
-GThinTube::GThinTube() : GPrimitive(GSHELL_TUBE)
+GThinTube::GThinTube() : GShellPrimitive(GSHELL_TUBE)
 {
 	m_R = 1;
 	m_h = 1;
@@ -98,12 +98,12 @@ void GThinTube::Create()
 
 	// 3. build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	int FE[4][4] = {{0, 9, 4, 8}, {1, 10, 5, 9}, {2, 11, 6, 10}, {3, 8, 7, 11}};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(4);
@@ -118,7 +118,7 @@ void GThinTube::Create()
 }
 
 //-----------------------------------------------------------------------------
-GCylindricalPatch::GCylindricalPatch() : GPrimitive(GCYLINDRICAL_PATCH)
+GCylindricalPatch::GCylindricalPatch() : GShellPrimitive(GCYLINDRICAL_PATCH)
 {
 	AddDoubleParam(1.0, "w", "width");
 	AddDoubleParam(1.0, "h", "height");
@@ -180,12 +180,12 @@ void GCylindricalPatch::Create()
 
 	// 3. build the parts
 	assert(m_Part.empty());
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	int FE[1][4] = { { 0, 3, 1, 2 }};
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (int i = 0; i<1; ++i)
 	{
 		edge.resize(4);

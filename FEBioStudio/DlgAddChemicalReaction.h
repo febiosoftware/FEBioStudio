@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,9 +42,10 @@ class CMainWindow;
 class QListWidget;
 class QListWidgetItem;
 
-class FEMaterial;
-class FEReactionMaterial;
-class FEModel;
+class FSMaterial;
+class FSMaterialProperty;
+class FEBioReactionMaterial;
+class FSModel;
 class GMaterial;
 class QAbstractButton;
 
@@ -115,8 +116,8 @@ private:
 	void InitDialog();
 	void apply();
 	void accept();
-	void SetMaterial(GMaterial* mat, FEModel& fem);
-	void SetReaction(FEReactionMaterial* mat);
+	void SetMaterial(GMaterial* mat, FSModel& fem);
+	void SetReaction(FSMaterialProperty* mat);
 	bool hasChanged();
 
 protected slots:
@@ -129,8 +130,8 @@ protected slots:
 	void onClicked(QAbstractButton* button);
 
 private:
-	GMaterial*			m_pmp;		// parent multiphasic material
-	FEReactionMaterial*	m_reaction;	// active reaction
+	GMaterial*					m_pmp;		// parent multiphasic material
+	FEBioReactionMaterial*		m_reaction;	// active reaction
 
 	string				m_name;		// name of chemical reaction
 	bool				m_bovrd;	// override calculated Vbar

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -125,7 +125,7 @@ void GTorus::Create()
 	// 3. build the parts
 	//-------------------
 	assert(m_Part.empty());
-	AddPart();
+	AddSolidPart();
 	
 	// 4. build the faces
 	//-------------------
@@ -148,14 +148,14 @@ void GTorus::Create()
 
 	assert(m_Face.empty());
 	m_Face.reserve(16);
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<16; ++i)
 	{
 		edge.resize(4);
-		edge[0] = FE[i][0];
-		edge[1] = FE[i][1];
-		edge[2] = FE[i][2];
-		edge[3] = FE[i][3];
+		edge[3] = FE[i][0];
+		edge[2] = FE[i][1];
+		edge[1] = FE[i][2];
+		edge[0] = FE[i][3];
 
 		AddFacet(edge, FACE_REVOLVE);
 	}

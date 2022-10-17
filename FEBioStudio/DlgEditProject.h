@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
-class FEProject;
+class FSProject;
 
 namespace Ui {
 	class CDlgEditProject;
@@ -38,15 +38,14 @@ class CDlgEditProject : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgEditProject(FEProject& prj, QWidget* parent);
+	CDlgEditProject(FSProject& prj, QWidget* parent);
 
 	void accept();
 
 private slots:
-	void onAllClicked();
-	void onNoneClicked();
+	void on_selection_changed(int n);
 
 private:
 	Ui::CDlgEditProject*	ui;
-	FEProject&				m_prj;
+	FSProject&				m_prj;
 };

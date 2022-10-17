@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,10 +36,13 @@ SOFTWARE.*/
 #include "ModelFileWriter.h"
 #include "Commands.h"
 #include "DocManager.h"
+#include "DlgConvertFEBio.h"
+#include <FEBio/FEBioImport.h>
 #include <FEBio/FEBioExport12.h>
 #include <FEBio/FEBioExport2.h>
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
+#include <FEBio/FEBioExport4.h>
 #include <Nike3D/FENIKEExport.h>
 #include <MeshIO/FEBYUExport.h>
 #include <MeshIO/FEHypersurfaceExport.h>
@@ -49,6 +52,7 @@ SOFTWARE.*/
 #include <MeshIO/FEViewpointExport.h>
 #include <MeshIO/FETetGenExport.h>
 #include <MeshIO/FEVTKExport.h>
+#include <MeshIO/VTUImport.h>
 #include <MeshIO/FEPLYExport.h>
 #include <GeomLib/GPrimitive.h>
 #include <FEBio/FEBioImport.h>
@@ -97,12 +101,13 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 #include <PostLib/FELSDYNAExport.h>
-#include <PostLib/FEAbaqusExport.h>
+#include <PostLib/AbaqusExport.h>
 #include <MeshTools/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
 #include "ModelDocument.h"
+#include "XMLDocument.h"
 #include "FileThread.h"
 #include "DlgExportAscii.h"
 #include "DlgExportVTK.h"
@@ -113,9 +118,13 @@ SOFTWARE.*/
 #include <PostLib/FEVTKExport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
-#include <PostLib/FEVTKImport.h>
+#include <PostLib/VTKImport.h>
 #include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <sstream>
+#include "PostObject.h"
+#include "DlgScreenCapture.h"
+#include "ModelFileReader.h"
 
 using std::stringstream;
 
@@ -162,26 +171,34 @@ void CMainWindow::on_actionNewModel_triggered()
 	} while (bok == false);
 
 	// show the dialog box
-	int ntemplate = -1;
-	if (ui->m_showNewDialog)
+	CDlgNew dlg(this);
+	dlg.SetModelName(QString::fromStdString(docTitle));
+	if (dlg.exec())
 	{
-		CDlgNew dlg(this);
-		dlg.SetModelName(QString::fromStdString(docTitle));
-		if (dlg.exec())
+		CModelDocument* doc = CreateNewDocument();
+		if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
 		{
-			ntemplate = dlg.getTemplate();
-			docTitle = dlg.GetModelName().toStdString();
+			int nmodule = dlg.GetSelection();
+			doc->GetProject().SetModule(nmodule);
 		}
-		else return;
-
-		ui->m_showNewDialog = !(dlg.showDialogOption());
+		else if (dlg.CreateMode() == CDlgNew::CREATE_FROM_TEMPLATE)
+		{
+			if (doc->LoadTemplate(dlg.GetSelection()) == false)
+			{
+				QMessageBox::critical(this, "New", "Failed to initialize template.");
+				delete doc;
+				doc = nullptr;
+			}
+		}
+		assert(doc);
+		if (doc)
+		{
+			docTitle = dlg.GetModelName().toStdString();
+			doc->SetDocTitle(docTitle);
+			AddDocument(doc);
+		}
 	}
-
-	// create a new model doc
-	CModelDocument* doc = CreateNewDocument();
-	if (ntemplate != -1) doc->LoadTemplate(ntemplate);
-	doc->SetDocTitle(docTitle);
-	AddDocument(doc);
+	else return;
 }
 
 void CMainWindow::on_actionNewProject_triggered()
@@ -198,10 +215,11 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk)";
-	filters << "FEBioStudio Model (*.fsm *.fsprj)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
+	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
+	filters << "FEBioStudio Post Session (*.fsps)";
 	filters << "PreView files (*.prv)";
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
@@ -227,6 +245,30 @@ void CMainWindow::on_actionOpen_triggered()
 	}
 }
 
+// void CMainWindow::on_actionReadInfo_triggered()
+// {
+//     QStringList filters;
+// 	filters << "All supported files (*.fsm *.fsprj *.prv *.feb)";
+// 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
+
+// 	QFileDialog dlg(this, "Open");
+// 	dlg.setFileMode(QFileDialog::ExistingFiles);
+// 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+// 	dlg.setDirectory(ui->currentPath);
+// 	dlg.setNameFilters(filters);
+// 	if (dlg.exec())
+// 	{
+//         QStringList files = dlg.selectedFiles();
+//         files.sort();
+
+//         for(auto filename : files)
+//         {
+//             ModelTypeInfoReader reader;
+//             reader.ReadTypeInfo(filename.toStdString());
+//         }
+// 	}
+// }
+
 void CMainWindow::on_actionSave_triggered()
 {
 	CDocument* doc = GetDocument();
@@ -236,6 +278,18 @@ void CMainWindow::on_actionSave_triggered()
 	if (fileName.empty()) on_actionSaveAs_triggered();
 	else
 	{
+		// if the extension is fsm, we are going to change it to fs2
+		size_t n = fileName.rfind('.');
+		if (n != string::npos)
+		{
+			string ext = fileName.substr(n);
+			if (ext == ".fsm")
+			{
+				on_actionSaveAs_triggered();
+				return;
+			}
+		}
+		
 		SaveDocument(QString::fromStdString(fileName));
 	}
 }
@@ -386,7 +440,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return nullptr;
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 
 	// get the file extension
 	QString ext = QFileInfo(fileName).suffix();
@@ -415,6 +469,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new FETetGenImport(prj);
 	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new FEIGESFileImport(prj);
 	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new FEVTKimport(prj);
+	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
 		CDlgRAWImport dlg(this);
@@ -446,7 +501,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 		(ext.compare("igs", Qt::CaseInsensitive) == 0)) return new IGESImport(prj);
 	if (ext.compare("feb", Qt::CaseInsensitive) == 0)
 	{
-		FEBioImport* febio = new FEBioImport(prj);
+		FEBioFileImport* febio = new FEBioFileImport(prj);
 		febio->SetGeometryOnlyFlag(true);
 		return febio;
 	}
@@ -468,12 +523,12 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	//       while the file is reading. 
 	CDocument::SetActiveDocument(doc);
 
-	FEProject& prj = doc->GetProject();
+	FSProject& prj = doc->GetProject();
 
 	// create a file reader
 	FileReader* reader = 0;
 	QString ext = QFileInfo(fileName).suffix();
-	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioImport(prj);
+	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
 	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new FENIKEImport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
@@ -508,16 +563,27 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 
 void CMainWindow::OpenFEBioFile(const QString& fileName)
 {
-	CTextDocument* txt = new CTextDocument(this);
-	if (txt->ReadFromFile(fileName) == false)
+	// CTextDocument* txt = new CTextDocument(this);
+	// if (txt->ReadFromFile(fileName) == false)
+	// {
+	// 	QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
+	// 	return;
+	// }
+
+	// txt->SetDocFilePath(fileName.toStdString());
+
+	// AddDocument(txt);
+
+    CXMLDocument* xml = new CXMLDocument(this);
+	if (xml->ReadFromFile(fileName) == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to open file:\n" + fileName);
 		return;
 	}
 
-	txt->SetDocFilePath(fileName.toStdString());
+	xml->SetDocFilePath(fileName.toStdString());
 
-	AddDocument(txt);
+	AddDocument(xml);
 }
 
 void CMainWindow::ExportPostGeometry()
@@ -530,7 +596,8 @@ void CMainWindow::ExportPostGeometry()
 		//		<< "FEBio files (*.feb)"
 		//		<< "ASCII files (*.*)"
 		//		<< "VRML files (*.wrl)"
-		<< "LSDYNA Keyword (*.k)";
+		<< "LSDYNA Keyword (*.k)"
+		<< "STL file (*.stl)";
 	//		<< "BYU files(*.byu)"
 	//		<< "NIKE3D files (*.n)"
 	//		<< "VTK files (*.vtk)"
@@ -553,7 +620,7 @@ void CMainWindow::ExportPostGeometry()
 	string sfilename = fileName.toStdString();
 	const char* szfilename = sfilename.c_str();
 
-	Post::FEPostModel& fem = *doc->GetFEModel();
+	Post::FEPostModel& fem = *doc->GetFSModel();
 
 	bool bret = false;
 	QString error("(unknown)");
@@ -622,6 +689,14 @@ void CMainWindow::ExportPostGeometry()
 			w.m_bnode = dlg.m_bnode;
 			bret = w.Save(fem, doc->GetActiveState(), szfilename);
 		}
+	}
+	break;
+	case 2:
+	{
+		// We need a dummy project
+		FSProject prj;
+		FESTLExport stl(prj);
+		bret = stl.Write(szfilename, doc->GetPostObject());
 	}
 	break;
 	/*	case 5:
@@ -747,7 +822,7 @@ void CMainWindow::ExportGeometry()
 		const char* szfile = sfile.c_str();
 
 		// get the project
-		FEProject& fem = doc->GetProject();
+		FSProject& fem = doc->GetProject();
 
 		AddLogEntry(QString("Writing file %1 ... ").arg(fileName));
 
@@ -781,7 +856,7 @@ void CMainWindow::ExportGeometry()
 		{
 			FEAbaqusExport writer(fem);
 			stringstream ss;
-			ss << "Written by FEBio Studio " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
+			ss << "Written by FEBio Studio " << FBS_VERSION << "." << FBS_SUBVERSION << "." << FBS_SUBSUBVERSION;
 			writer.SetHeading(ss.str());
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to Abaqus file."));
@@ -884,7 +959,8 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 void CMainWindow::SavePostDoc()
 {
 	QStringList filters;
-	filters << "FEBio xplt files (*.xplt)"
+	filters << "FEBio Studio Post Session (*.fsps)"
+		<< "FEBio xplt files (*.xplt)"
 		<< "FEBio files (*.feb)"
 		<< "ASCII files (*.*)"
 		<< "VRML files (*.wrl)"
@@ -914,13 +990,18 @@ void CMainWindow::SavePostDoc()
 		CPostDocument* doc = GetPostDocument();
 		if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
-		Post::FEPostModel& fem = *doc->GetFEModel();
+		Post::FEPostModel& fem = *doc->GetFSModel();
 
 		bool bret = false;
 		QString error("(unknown)");
 		switch (nfilter)
 		{
 		case 0:
+		{
+			bret = doc->SavePostSession(fileName.toStdString());
+		}
+		break;
+		case 1:
 		{
 			CDlgExportXPLT dlg(this);
 			if (dlg.exec() == QDialog::Accepted)
@@ -932,13 +1013,13 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 1:
+		case 2:
 		{
 			Post::FEFEBioExport fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
-		case 2:
+		case 3:
 		{
 			CDlgExportAscii dlg(this);
 			if (dlg.exec() == QDialog::Accepted)
@@ -966,13 +1047,13 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 3:
+		case 4:
 		{
 			Post::VRMLExporter exporter;
 			bret = exporter.Save(&fem, szfilename);
 		}
 		break;
-		case 4:
+		case 5:
 		{
 			CDlgExportLSDYNA dlg(this);
 			if (dlg.exec())
@@ -985,19 +1066,19 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 5:
+		case 6:
 		{
 			Post::BYUExport exporter;
 			bret = exporter.Save(fem, szfilename);
 		}
 		break;
-		case 6:
+		case 7:
 		{
 			Post::FENikeExport fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
-		case 7:
+		case 8:
 		{
 			CDlgExportVTK dlg(this);
 			if (dlg.exec())
@@ -1009,7 +1090,7 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 8:
+		case 9:
 		{
 			CDlgExportLSDYNAPlot dlg(&fem, this);
 			if (dlg.exec())
@@ -1020,11 +1101,11 @@ void CMainWindow::SavePostDoc()
 			}
 		}
 		break;
-		case 9:
+		case 10:
 		{
-			Post::FEAbaqusExport w;
+			Post::AbaqusExport w;
 			stringstream ss;
-			ss << "Written by FEBio Studio " << VERSION << "." << SUBVERSION << "." << SUBSUBVERSION;
+			ss << "Written by FEBio Studio " << FBS_VERSION << "." << FBS_SUBVERSION << "." << FBS_SUBSUBVERSION;
 			w.SetHeading(ss.str());
 			bret = w.Save(fem, doc->GetActiveState(), szfilename);
 			error = "Failed writing Abaqus file.";
@@ -1061,9 +1142,26 @@ void CMainWindow::on_actionSaveAs_triggered()
 		{
 			SavePostDoc();
 		}
+
+        CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+        if(xmlDoc)
+        {
+            QFileDialog dlg;
+            dlg.setDirectory(ui->currentPath);
+            dlg.setFileMode(QFileDialog::AnyFile);
+            dlg.setNameFilter("FEBio Input files (*.feb)");
+            dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
+            dlg.setAcceptMode(QFileDialog::AcceptSave);
+            if (dlg.exec())
+            {
+                QStringList fileNames = dlg.selectedFiles();
+                SaveDocument(QDir::toNativeSeparators(fileNames[0]));
+            }
+        }
 		return;
 	}
 
+	string fileName = doc->GetDocTitle();
 	QString currentPath = ui->currentPath;
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
 	{
@@ -1077,20 +1175,35 @@ void CMainWindow::on_actionSaveAs_triggered()
 		{
 			QFileInfo fi(QString::fromStdString(docfile));
 			currentPath = fi.absolutePath();
+
+			size_t n = fileName.rfind('.');
+			if (n != string::npos)
+			{
+				string ext = fileName.substr(n);
+				if (ext == ".fsm")
+				{
+					fileName.replace(n, 4, ".fs2");
+				}
+			}
 		}
 	}
 
 	QFileDialog dlg;
 	dlg.setDirectory(currentPath);
 	dlg.setFileMode(QFileDialog::AnyFile);
-	dlg.setNameFilter("FEBio Studio Model (*.fsm)");
-	dlg.selectFile(QString::fromStdString(doc->GetDocTitle()));
+	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
+	dlg.selectFile(QString::fromStdString(fileName));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec())
 	{
+		// clear the jobs
+		doc->DeleteAllJobs();
+
 		QStringList fileNames = dlg.selectedFiles();
 		doc->SetFileWriter(new CModelFileWriter(doc));
 		SaveDocument(QDir::toNativeSeparators(fileNames[0]));
+
+		UpdateModel();
 	}
 }
 
@@ -1142,7 +1255,10 @@ void CMainWindow::on_actionCloseAll_triggered()
 void CMainWindow::on_actionSnapShot_triggered()
 {
 	QImage img = GetGLView()->CaptureScreen();
-	SaveImage(img);
+
+    CDlgScreenCapture dlg(&img, this);
+
+    dlg.exec();
 }
 
 void CMainWindow::on_actionSaveProject_triggered()
@@ -1215,7 +1331,10 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		const char* szfile = sfile.c_str();
 
 		// get the project
-		FEProject& fem = doc->GetProject();
+		FSProject& fem = doc->GetProject();
+
+		// pass the units to the model project
+		fem.SetUnits(doc->GetUnitSystem());
 
 		AddLogEntry(QString("Writing file %1 ... ").arg(fileName));
 
@@ -1236,8 +1355,20 @@ void CMainWindow::on_actionExportFEModel_triggered()
 					return;
 				}
 
+				int nformat = dlg.FEBioFormat();
 				try {
-					if (dlg.m_nversion == 0)
+					if (nformat == 0x0400)
+					{
+						// write version 4.0
+						FEBioExport4 writer(fem);
+						writer.SetPlotfileCompressionFlag(dlg.m_compress);
+						writer.SetExportSelectionsFlag(dlg.m_bexportSelections);
+						writer.SetWriteNotesFlag(dlg.m_writeNotes);
+						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
+						bsuccess = writer.Write(szfile);
+						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
+					else if (nformat == 0x0300)
 					{
 						// write version 3.0
 						FEBioExport3 writer(fem);
@@ -1248,7 +1379,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 1)
+					else if (nformat == 0x0205)
 					{
 						// write version 2.5
 						FEBioExport25 writer(fem);
@@ -1259,7 +1390,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 2)
+					else if (nformat == 0x0200)
 					{
 						// Write version 2.0
 						FEBioExport2 writer(fem);
@@ -1268,13 +1399,17 @@ void CMainWindow::on_actionExportFEModel_triggered()
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 					}
-					else if (dlg.m_nversion == 3)
+					else if (nformat == 0x0102)
 					{
 						// Write version 1.x
 						FEBioExport12 writer(fem);
 						for (int i = 0; i < FEBioExport12::MAX_SECTIONS; ++i) writer.SetSectionFlag(i, dlg.m_nsection[i]);
 						bsuccess = writer.Write(szfile);
 						if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
+					}
+					else
+					{
+						assert(false);
 					}
 				}
 				catch (...)
@@ -1383,7 +1518,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 
 				// create a dummy post model
 				Post::FEPostModel* dummyFem = new Post::FEPostModel;
-				Post::FEVTKimport vtk(dummyFem);
+				Post::VTKimport vtk(dummyFem);
 				if (vtk.Load(sfile.c_str()))
 				{
 					if (postDoc->MergeFEModel(dummyFem) == false)
@@ -1396,7 +1531,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 					QMessageBox::critical(this, "FEBio Studio", QString("Failed importing file:\n%1").arg(fileName));
 				}
 				delete dummyFem;
-				Post::FEPostModel::SetInstance(postDoc->GetFEModel());
+				Post::FEPostModel::SetInstance(postDoc->GetFSModel());
 			}
 
 			ui->postPanel->Update(true);
@@ -1405,114 +1540,155 @@ void CMainWindow::on_actionImportGeometry_triggered()
 	}
 }
 
-void CMainWindow::on_actionImportImage_triggered()
+void CMainWindow::on_actionImportRawImage_triggered()
 {
-	QStringList filters;
-  #ifdef HAS_TEEM && HAS_DICOM
-	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)" << "Dicom files (*.dicom, *.dcm)";
-  #elif HAS_DICOM
-      filters << "RAW files (*.raw)" << "Dicom files (*.dicom, *.dcm)";
-  #elif HAS_TEEM 
-	  filters << "RAW files (*.raw)" << "TIFF files (*.tiff, *.tif)" << "NRRD files (*.nrrd)";
-  #else
-	  filters << "RAW files (*.raw)";
-  #endif
-
 	CGLDocument* doc = GetGLDocument();
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "RAW Files (*.raw)" << "All Files (*)";
 	filedlg.setNameFilters(filters);
 
 	if (filedlg.exec())
 	{
-	  // store the current path
-	  QDir dir = filedlg.directory();
-	  SetCurrentFolder(dir.absolutePath());
+		Post::CImageModel* imageModel = nullptr;
+		
+		CDlgRAWImport dlg(this);
+		if (dlg.exec())
+		{
+			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-	  // get the file name
-	  QStringList files = filedlg.selectedFiles();
-	  QString fileName = files.at(0);
+			imageModel = doc->ImportImage(filedlg.selectedFiles()[0].toStdString(), dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
+			if (imageModel == nullptr)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
+				return;
+			}
+		}
 
-      std::string sfile = fileName.toStdString();
-      QFileInfo fileInfo(fileName);
-      QString ext = fileInfo.suffix();
-      ext = ext.toLower();
+		if(imageModel)
+		{
+			Update(0, true);
+			ZoomTo(imageModel->GetBoundingBox());
 
-      Post::CImageModel* imageModel = nullptr;
-    
-      if(ext == "tiff" || ext == "tif")
-      {
-        #ifdef HAS_TEEM
-        imageModel = doc->ImportTiff(sfile);
-        #endif
+			// only for model docs
+			if (dynamic_cast<CModelDocument*>(doc))
+			{
+//				Post::CVolRender* vr = new Post::CVolRender(imageModel);
+				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				vr->Create();
+				imageModel->AddImageRenderer(vr);
+
+				Update(0, true);
+				ShowInModelViewer(imageModel);
+			}
+			else
+			{
+				Update(0, true);
+			}
+			ZoomTo(imageModel->GetBoundingBox());
+		}
+	}
+}
+void CMainWindow::on_actionImportDICOMImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "DICOM Files (*.dcm *.dicom)" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
+	}
+}
+
+void CMainWindow::on_actionImportTiffImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
+	}
+
+}
+
+void CMainWindow::on_actionImportOMETiffImage_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "OME Tiff XML Files (*.xml)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OMETIFF);
+	}
+}
+
+void CMainWindow::on_actionImportImageSequence_triggered()
+{
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	if (filedlg.exec())
+	{
+        QStringList files = filedlg.selectedFiles();
+
+        if(files.length() == 0) return;
+
+        CGLDocument* doc = GetGLDocument();
+
+        Post::CImageModel* imageModel = nullptr;
+
+        imageModel = doc->ImportITKStack(files);
         if (imageModel == nullptr)
         {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-      }
-	  else if (ext == "nrrd")
-	  {
-        #ifdef HAS_TEEM
-        imageModel = doc->ImportNrrd(sfile);
-        #endif
-        if (imageModel == nullptr)
-        {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-	  }
-	  else if (ext == "dcm" || ext == "dicom")
-	  {
-        #ifdef HAS_DICOM
-        imageModel = doc->ImportDicom(sfile);
-        #endif
-        if (imageModel == nullptr)
-        {
-          QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-          return;
-        }
-	  }
-      else
-      {
-        CDlgRAWImport dlg(this);
-        if (dlg.exec())
-        {
-          BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
-
-          imageModel = doc->ImportImage(sfile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-          if (imageModel == nullptr)
-          {
             QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
             return;
-          }
         }
-      }
-      if(imageModel)
-      {
-        Update(0, true);
-        ZoomTo(imageModel->GetBoundingBox());
 
-        // only for model docs
-        if (dynamic_cast<CModelDocument*>(doc))
+        if(imageModel)
         {
-          Post::CVolRender* vr = new Post::CVolRender(imageModel);
-          vr->Create();
-          imageModel->AddImageRenderer(vr);
+            Update(0, true);
+            ZoomTo(imageModel->GetBoundingBox());
 
-          Update(0, true);
-          ShowInModelViewer(imageModel);
+            // only for model docs
+            if (dynamic_cast<CModelDocument*>(doc))
+            {
+                Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+                vr->Create();
+                imageModel->AddImageRenderer(vr);
+
+                Update(0, true);
+                ShowInModelViewer(imageModel);
+            }
+            else
+            {
+                Update(0, true);
+            }
+            ZoomTo(imageModel->GetBoundingBox());
         }
-        else
-        {
-          Update(0, true);
-        }
-        ZoomTo(imageModel->GetBoundingBox());
-      }
     }
+
 }
 
 void CMainWindow::on_actionExportGeometry_triggered()
@@ -1535,91 +1711,260 @@ QString createFileName(const QString& fileName, const QString& dirName, const QS
 
 void CMainWindow::on_actionConvertFeb_triggered()
 {
-	QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", "FEBio files (*.feb)");
+	CDlgConvertFEBio dlg(this);
+	if (dlg.exec())
+	{
+		QStringList fileNames = dlg.getFileNames();
+		QString dir = dlg.getOutPath();
+
+		int nformat = dlg.getOutputFormat();
+
+		QStringList::iterator it;
+
+		ShowLogPanel();
+
+		AddLogEntry("Starting batch conversion ...\n");
+		int nsuccess = 0, nfails = 0, nwarnings = 0;
+		for (it = fileNames.begin(); it != fileNames.end(); ++it)
+		{
+			FSProject prj;
+			FEBioFileImport reader(prj);
+
+			FEFileExport* exporter = 0;
+			if (nformat == 0x0400)
+			{
+				// write version 4
+				FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
+				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+			}
+			else if (nformat == 0x0300)
+			{
+				// write version 3
+				FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
+				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+			}
+			else if (nformat == 0x0205)
+			{
+				// write version 2.5
+				FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
+				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+			}
+			else if (nformat == 0x0200)
+			{
+				// Write version 2.0
+				FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
+				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+			}
+			else if (nformat == 0x0102)
+			{
+				// Write version 1.x
+				FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
+				for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+			}
+			else
+			{
+				QMessageBox::critical(this, "Convert", "Cannot convert to this file format.");
+				return;
+			}
+
+			std::string inFile = it->toStdString();
+			AddLogEntry(QString("Converting %1 ... ").arg(*it));
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+			// create an output file name
+			QString outName = createFileName(*it, dir, "feb");
+			string outFile = outName.toStdString();
+
+			// try to read the project
+			bool bret = reader.Load(inFile.c_str());
+
+			// try to save the project
+			exporter->ClearLog();
+			bret = (bret ? exporter->Write(outFile.c_str()) : false);
+
+			AddLogEntry(bret ? "success\n" : "FAILED\n");
+			string err = reader.GetErrorMessage();
+			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+			err = exporter->GetErrorMessage();
+			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+
+			if (bret) nsuccess++; else nfails++;
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+			delete exporter;
+		}
+
+		AddLogEntry("Batch conversion completed:\n");
+		if (nwarnings == 0)
+			AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
+		else
+			AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
+	}
+}
+
+void CMainWindow::on_actionConvertFeb2Fsm_triggered()
+{
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", "FEBio files (*.feb)");
 	if (fileNames.isEmpty() == false)
 	{
 		QString dir = QFileDialog::getExistingDirectory();
 		if (dir.isEmpty() == false)
 		{
-			CDlgExportFEBio dlg(this);
-			if (dlg.exec())
+            QStringList::iterator it;
+
+            ShowLogPanel();
+
+            AddLogEntry("Starting batch conversion ...\n");
+            int nsuccess = 0, nfails = 0, nwarnings = 0;
+            for (it = fileNames.begin(); it != fileNames.end(); ++it)
+            {
+                CModelDocument doc(this);
+
+                // we need to set this document as the active document
+                // NOTE: This might cause problems if the user modifies the currently open document
+                //       while the file is reading. 
+                // CDocument::SetActiveDocument(doc);
+
+                FSProject& prj = doc.GetProject();
+				FEBioFileImport reader(prj);
+
+                std::string inFile = it->toStdString();
+                AddLogEntry(QString("Converting %1 ... ").arg(*it));
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+                // create an output file name
+                QString outName = createFileName(*it, dir, "fsm");
+                string outFile = outName.toStdString();
+                doc.SetDocFilePath(outFile);
+
+                // try to read the project
+                bool bret = reader.Load(inFile.c_str());
+
+                // try to save the project
+                bret = (bret ? doc.SaveDocument() : false);
+
+                AddLogEntry(bret ? "success\n" : "FAILED\n");
+                string err = reader.GetErrorMessage();
+                if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+                if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+
+                if (bret) nsuccess++; else nfails++;
+                QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+            }
+
+            AddLogEntry("Batch conversion completed:\n");
+            if (nwarnings == 0)
+                AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
+            else
+                AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
+        }
+	}
+}
+
+void CMainWindow::on_actionConvertFsm2Feb_triggered()
+{
+	CDlgConvertFEBio dlg(this);
+	dlg.SetFileFilter(CDlgConvertFEBio::FSM_FILES);
+	if (dlg.exec())
+	{
+		QStringList fileNames = dlg.getFileNames();
+		QString dir = dlg.getOutPath();
+
+		int nformat = dlg.getOutputFormat();
+
+		QStringList::iterator it;
+
+		ShowLogPanel();
+
+		AddLogEntry("Starting batch conversion ...\n");
+		int nsuccess = 0, nfails = 0, nwarnings = 0;
+		for (it = fileNames.begin(); it != fileNames.end(); ++it)
+		{
+			CModelDocument doc(this);
+
+			std::string inFile = it->toStdString();
+			AddLogEntry(QString("Converting %1 ... ").arg(*it));
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
+
+			// read the model
+			ModelFileReader reader(&doc);
+			bool bret = reader.Load(inFile.c_str());
+
+			if (bret)
 			{
-				QStringList::iterator it;
+				FSProject& prj = doc.GetProject();
 
-				ShowLogPanel();
-
-				AddLogEntry("Starting batch conversion ...\n");
-				int nsuccess = 0, nfails = 0, nwarnings = 0;
-				for (it = fileNames.begin(); it != fileNames.end(); ++it)
+				FEFileExport* exporter = 0;
+				if (nformat == 0x0400)
 				{
-					FEProject prj;
-					FEBioImport reader(prj);
-
-					FEFileExport* exporter = 0;
-					if (dlg.m_nversion == 0)
-					{
-						// write version 3
-						FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-					}
-					else if (dlg.m_nversion == 1)
-					{
-						// write version 2.5
-						FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-					}
-					else if (dlg.m_nversion == 2)
-					{
-						// Write version 2.0
-						FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-					}
-					else if (dlg.m_nversion == 3)
-					{
-						// Write version 1.x
-						FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
-						for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
-					}
-					else
-					{
-						QMessageBox::critical(this, "Convert", "Cannot convert to this file format.");
-						return;
-					}
-
-					std::string inFile = it->toStdString();
-					AddLogEntry(QString("Converting %1 ... ").arg(*it));
-					QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-					// create an output file name
-					QString outName = createFileName(*it, dir, "feb");
-					string outFile = outName.toStdString();
-
-					// try to read the project
-					bool bret = reader.Load(inFile.c_str());
-
-					// try to save the project
-					exporter->ClearLog();
-					bret = (bret ? exporter->Write(outFile.c_str()) : false);
-
-					AddLogEntry(bret ? "success\n" : "FAILED\n");
-					string err = reader.GetErrorMessage();
-					if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-					err = exporter->GetErrorMessage();
-					if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
-					
-					if (bret) nsuccess++; else nfails++;
-					QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
-
-					delete exporter;
+					// write version 4
+					FEBioExport4* writer = new FEBioExport4(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 0x0300)
+				{
+					// write version 3
+					FEBioExport3* writer = new FEBioExport3(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 0x0205)
+				{
+					// write version 2.5
+					FEBioExport25* writer = new FEBioExport25(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 0x0200)
+				{
+					// Write version 2.0
+					FEBioExport2* writer = new FEBioExport2(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else if (nformat == 0x0102)
+				{
+					// Write version 1.x
+					FEBioExport12* writer = new FEBioExport12(prj); exporter = writer;
+					for (int i = 0; i < FEBIO_MAX_SECTIONS; ++i) writer->SetSectionFlag(i, dlg.m_nsection[i]);
+				}
+				else
+				{
+					QMessageBox::critical(this, "Convert", "Cannot convert to this file format.");
+					return;
 				}
 
-				AddLogEntry("Batch conversion completed:\n");
-				if (nwarnings == 0)
-					AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
-				else
-					AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
+				// create an output file name
+				QString outName = createFileName(*it, dir, "feb");
+				string outFile = outName.toStdString();
+
+				// try to save the project
+				exporter->ClearLog();
+				bret = (bret ? exporter->Write(outFile.c_str()) : false);
+
+				AddLogEntry(bret ? "success\n" : "FAILED\n");
+				string err = reader.GetErrorMessage();
+				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+				err = exporter->GetErrorMessage();
+				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+
+				if (bret) nsuccess++; else nfails++;
+
+				delete exporter;
 			}
+			else
+			{
+				AddLogEntry("FAILED\n");
+				string err = reader.GetErrorMessage();
+				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
+				nfails++;
+			}
+			QCoreApplication::processEvents(QEventLoop::AllEvents, 1000);
 		}
+
+		AddLogEntry("Batch conversion completed:\n");
+		if (nwarnings == 0)
+			AddLogEntry(QString("%1 converted, %2 failed\n").arg(nsuccess).arg(nfails));
+		else
+			AddLogEntry(QString("%1 converted, %2 failed, warnings were generated\n").arg(nsuccess).arg(nfails));
 	}
 }
 
@@ -1685,10 +2030,10 @@ void CMainWindow::on_actionConvertGeo_triggered()
 
 					// create a file reader based on the file extension
 					FileReader* reader = CreateFileReader(*it);
-					FEFileImport* importer = dynamic_cast<FEFileImport*>(reader);
+					FSFileImport* importer = dynamic_cast<FSFileImport*>(reader);
 					if (importer)
 					{
-						FEProject& prj = importer->GetProject();
+						FSProject& prj = importer->GetProject();
 
 						FEFileExport* exporter = nullptr;
 						switch (format)

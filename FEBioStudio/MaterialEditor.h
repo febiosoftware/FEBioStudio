@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,8 +36,8 @@ namespace Ui {
 }
 
 class QTreeWidgetItem;
-class FEProject;
-class FEMaterial;
+class FSProject;
+class FSMaterial;
 class GMaterial;
 
 class CMaterialEditor : public CHelpDialog
@@ -45,17 +45,17 @@ class CMaterialEditor : public CHelpDialog
 	Q_OBJECT
 
 public:
-	CMaterialEditor(FEProject& prj, QWidget* parent);
+	CMaterialEditor(FSProject& prj, QWidget* parent);
 
 	void SetInitMaterial(GMaterial* mat);
 
-	FEMaterial* GetMaterial();
+	FSMaterial* GetMaterial();
 
 	QString GetMaterialName() const;
 
 protected:
 	void showEvent(QShowEvent* ev);
-	void SetMaterial(FEMaterial* mat);
+	void SetMaterial(FSMaterial* mat);
 	void SetURL();
 
 private slots:

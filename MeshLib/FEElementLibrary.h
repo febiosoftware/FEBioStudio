@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,19 +29,20 @@ SOFTWARE.*/
 #include <vector>
 
 //=============================================================================
-class FEElementLibrary
+class FSElementLibrary
 {
 public:
-	static const FEElemTraits* GetTraits(int type);
+	static void InitLibrary();
+
+	static const FSElemTraits* GetTraits(int type);
 
 private:
-	FEElementLibrary() {}
-	FEElementLibrary(const FEElementLibrary&) {}
+	FSElementLibrary() {}
+	FSElementLibrary(const FSElementLibrary&) {}
 
-	static vector<FEElemTraits> InitLibrary();
-	static void addElement(vector<FEElemTraits>& lib, int ntype, int nshape, int nclass, int nodes, int faces, int edges);
+	static void addElement(int ntype, int nshape, int nclass, int nodes, int faces, int edges);
 
 private:
-	static vector<FEElemTraits>	m_lib;
+	static std::vector<FSElemTraits>	m_lib;
 };
 

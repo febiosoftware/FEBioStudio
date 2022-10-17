@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,60 +25,65 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include"FEMesh.h"
+#include "FEMesh.h"
 
 namespace FEMeshMetrics {
 
 // shortest edge on the mesh
-double ShortestEdge(const FEMesh& mesh);
+double ShortestEdge(const FSMesh& mesh);
 
 // longest edge of the element
-double LongestEdge(const FEMesh& mesh, const FEElement& el);
+double LongestEdge(const FSMesh& mesh, const FSElement& el);
 
 // shortest edge of the element
-double ShortestEdge(const FEMesh& mesh, const FEElement& el);
+double ShortestEdge(const FSMesh& mesh, const FSElement& el);
 
 // jacobian for a solid element
-double SolidJacobian(const FEMesh& mesh, const FEElement& el);
+double SolidJacobian(const FSMesh& mesh, const FSElement& el);
 
 // calculate jacobian of a shell
-double ShellJacobian(const FEMesh& mesh, const FEElement& el, int flag);
+double ShellJacobian(const FSMesh& mesh, const FSElement& el, int flag);
 
 // area of shell
-double ShellArea(const FEMesh& mesh, const FEElement& el);
+double ShellArea(const FSMesh& mesh, const FSElement& el);
 
 // surface area of facet
-double SurfaceArea(const FEMesh& mesh, const FEFace& f);
+double SurfaceArea(const FSMesh& mesh, const FSFace& f);
 
 // volume of element
-double ElementVolume(const FEMesh& mesh, const FEElement& e);
+double ElementVolume(const FSMesh& mesh, const FSElement& e);
 
 // quality if tet element
-double TetQuality(const FEMesh& mesh, const FEElement& e);
+double TetQuality(const FSMesh& mesh, const FSElement& e);
 
 // min dihedral angle of tet
-double TetMinDihedralAngle(const FEMesh& mesh, const FEElement& e);
+double TetMinDihedralAngle(const FSMesh& mesh, const FSElement& e);
 
 // max dihedral angle of tet
-double TetMaxDihedralAngle(const FEMesh& mesh, const FEElement& e);
+double TetMaxDihedralAngle(const FSMesh& mesh, const FSElement& e);
 
 // quality if triangle element
-double TriQuality(const FEMesh& mesh, const FEElement& e);
+double TriQuality(const FSMesh& mesh, const FSElement& e);
 
 // max distance from tet10 mid edges nodes to edge line
-double Tet10MidsideNodeOffset(const FEMesh& mesh, const FEElement& e, bool brel = false);
+double Tet10MidsideNodeOffset(const FSMesh& mesh, const FSElement& e, bool brel = false);
 
 // evaluate gradient at element nodes
-vec3d Gradient(const FEMesh& mesh, const FEElement& el, int node, double* v);
+vec3d Gradient(const FSMesh& mesh, const FSElement& el, int node, double* v);
 
 // evaluate gradient at element nodes (i.e. Grad{Na(x_b)})
-vec3d ShapeGradient(const FEMesh& mesh, const FEElement_& el, int na, int nb);
+vec3d ShapeGradient(const FSMesh& mesh, const FEElement_& el, int na, int nb);
 
 // get the min edge length of an element
-double MinEdgeLength(const FEMesh& mesh, const FEElement& e);
+double MinEdgeLength(const FSMesh& mesh, const FSElement& e);
 
 // get the max edge length of an element
-double MaxEdgeLength(const FEMesh& mesh, const FEElement& e);
+double MaxEdgeLength(const FSMesh& mesh, const FSElement& e);
+
+float eval_curvature(const std::vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter);
+
+// curvature measures (see for values for measure in FEMeshData_T.h, in CurvatureField
+double Curvature(FSMesh& mesh, int node, int measure, int levels = 1, int maxIters = 10, bool extQuad = false);
 
 }
 

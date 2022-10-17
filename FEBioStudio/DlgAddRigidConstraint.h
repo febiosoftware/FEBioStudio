@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,7 +34,7 @@ using std::string;
 using std::vector;
 //using namespace std;
 
-class FEProject;
+class FSProject;
 class GMaterial;
 
 namespace Ui {
@@ -44,7 +44,7 @@ namespace Ui {
 class CDlgAddRigidConstraint : public CHelpDialog
 {
 public:
-	CDlgAddRigidConstraint(FEProject& prj, QWidget* parent);
+	CDlgAddRigidConstraint(FSProject& prj, QWidget* parent);
 
 	void accept();
 

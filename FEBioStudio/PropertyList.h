@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <QtCore/QVariant>
 #include <GLWLib/convert.h>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/mat3d.h>
 
 class Param;
 
@@ -51,7 +52,10 @@ public:
 		ColorMap,
 		Vec3,
 		Mat3,
+		Mat3s,
 		Vec2i,
+		Std_Vector_Int,
+		Std_Vector_Double,
 
 		// from PostView
 		DataScalar,
@@ -136,6 +140,8 @@ public:
 	virtual QVariant GetPropertyValue(int i) = 0;
 	virtual void SetPropertyValue(int i, const QVariant& v) = 0;
 
+	virtual void Update() {}
+
 public:
 	bool IsModified() const { return m_bmodified; }
 	void SetModified(bool b) { m_bmodified = b; }
@@ -174,9 +180,17 @@ public:
 	void SetPropertyValue(int i, const QVariant& v);
 };
 
+QString Vec2dToString(const vec2d& r);
 QString Vec3dToString(const vec3d& r);
+vec2d StringToVec2d(const QString& s);
 vec3d StringToVec3d(const QString& s);
 mat3d StringToMat3d(const QString& s);
+mat3ds StringToMat3ds(const QString& s);
 QString Mat3dToString(const mat3d& a);
+QString Mat3dsToString(const mat3ds& a);
 QString Vec2iToString(const vec2i& r);
 vec2i StringToVec2i(const QString& s);
+std::vector<int> StringToVectorInt(const QString& s);
+QString VectorIntToString(const std::vector<int>& v);
+std::vector<double> StringToVectorDouble(const QString& s);
+QString VectorDoubleToString(const std::vector<double>& v);

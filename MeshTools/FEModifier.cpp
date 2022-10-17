@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,10 +37,35 @@ SOFTWARE.*/
 #include "FESplitModifier.h"
 #include <GeomLib/GObject.h>
 #include <stdarg.h>
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 #include <MeshLib/FEMeshBuilder.h>
+#include "GGroup.h"
 
 std::string FEModifier::m_error;
+
+FEModifier::FEModifier(const char* sz) { SetName(sz); }
+FEModifier::~FEModifier() {}
+
+FSMesh* FEModifier::Apply(FSMesh* pm) { return nullptr; }
+FSMesh* FEModifier::Apply(FSGroup* pg) { return Apply(pg->GetMesh()); }
+FSMesh* FEModifier::Apply(GObject* po, FESelection* sel)
+{ 
+	if ((po == nullptr) || (sel == nullptr)) return nullptr;
+	FSMesh* oldMesh = po->GetFEMesh();
+	if (oldMesh == nullptr) return nullptr;
+
+	FSMesh* newMesh = nullptr;
+	FEItemListBuilder* list(sel->CreateItemList());
+	FSGroup* pg = dynamic_cast<FSGroup*>(list);
+	if (pg && (pg->GetMesh() == oldMesh))
+	{
+		newMesh = Apply(pg);
+	}
+	delete list;
+	return newMesh; 
+}
+
+FSMeshBase* FEModifier::ApplyModifier(FSMeshBase* pm) { return nullptr; }
 
 bool FEModifier::SetError(const char* szerr, ...)
 {
@@ -86,12 +111,12 @@ bool FEPartitionSelection::UpdateData(bool bsave)
 	return false;
 }
 
-FEMesh* FEPartitionSelection::Apply(FEMesh* pm)
+FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 {
 	bool newPartition = GetBoolValue(0);
 	int gid = GetIntValue(1) - 1;
 	if (newPartition) gid = -1;
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.PartitionElementSelection(gid);
@@ -99,37 +124,37 @@ FEMesh* FEPartitionSelection::Apply(FEMesh* pm)
 	return newMesh;
 }
 
-FEMesh* FEPartitionSelection::Apply(FEGroup* pg)
+FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 {
 	bool newPartition = GetBoolValue(0);
 	int gid = GetIntValue(1) - 1;
 	if (newPartition) gid = -1;
 
-	FEMesh* oldMesh = pg->GetMesh();
+	FSMesh* oldMesh = pg->GetMesh();
 	if (oldMesh == 0) return 0;
 
-	FEMesh* newMesh = new FEMesh(*oldMesh);
+	FSMesh* newMesh = new FSMesh(*oldMesh);
 	FEMeshBuilder meshBuilder(*newMesh);
 
-	FESurface* s = dynamic_cast<FESurface*>(pg);
+	FSSurface* s = dynamic_cast<FSSurface*>(pg);
 	if (s)
 	{
 		meshBuilder.PartitionFaceSelection(gid);
 	}
 
-	FEPart* p = dynamic_cast<FEPart*>(pg);
+	FSPart* p = dynamic_cast<FSPart*>(pg);
 	if (p)
 	{
 		meshBuilder.PartitionElementSelection(gid);
 	}
 
-	FENodeSet* n = dynamic_cast<FENodeSet*>(pg);
+	FSNodeSet* n = dynamic_cast<FSNodeSet*>(pg);
 	if (n)
 	{
 		meshBuilder.PartitionNodeSet(n);
 	}
 
-	FEEdgeSet* e = dynamic_cast<FEEdgeSet*>(pg);
+	FSEdgeSet* e = dynamic_cast<FSEdgeSet*>(pg);
 	if (e)
 	{
 		meshBuilder.PartitionEdgeSelection(gid);
@@ -142,14 +167,14 @@ FEMesh* FEPartitionSelection::Apply(FEGroup* pg)
 // FERemoveDuplicateElements
 //-----------------------------------------------------------------------------
 
-FEMesh* FERemoveDuplicateElements::Apply(FEMesh* pm)
+FSMesh* FERemoveDuplicateElements::Apply(FSMesh* pm)
 {
 	int i, j, k;
 
-	FEMesh* pnm = new FEMesh(*pm);
-	FEMesh& m = *pnm;
+	FSMesh* pnm = new FSMesh(*pm);
+	FSMesh& m = *pnm;
 
-	FENodeElementList NEL; NEL.Build(&m);
+	FSNodeElementList NEL; NEL.Build(&m);
 	int NE = m.Elements();
 	int NN = m.Nodes();
 	for (i=0; i<NE; ++i) m.Element(i).m_ntag = i;
@@ -187,20 +212,20 @@ FEMesh* FERemoveDuplicateElements::Apply(FEMesh* pm)
 // FEFlattenFaces
 //////////////////////////////////////////////////////////////////////
 
-FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
+FSMesh* FEFlattenFaces::Apply(FSMesh *pm)
 {
 	int i, j, ntag;
 
 	// create a new mesh
-	FEMesh* pnm = new FEMesh(*pm);
-	FEMesh& m = *pnm;
+	FSMesh* pnm = new FSMesh(*pm);
+	FSMesh& m = *pnm;
 
 	// tag all nodes
 	for (i=0; i<m.Nodes(); ++i) m.Node(i).m_ntag = 0;
 
 	for (i=0; i<m.Faces(); ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		if (f.IsSelected())
 		{
 			for (j=0; j<f.Nodes(); ++j) m.Node(f.n[j]).m_ntag = 1;
@@ -213,8 +238,8 @@ FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
 	{
 		for (i=0; i<m.Faces(); ++i)
 		{
-			FEFace& f = m.Face(i);
-			if (f.IsSelected()) na += f.m_fn;
+			FSFace& f = m.Face(i);
+			if (f.IsSelected()) na += to_vec3d(f.m_fn);
 		}
 	}
 	else na = m_na;
@@ -230,7 +255,7 @@ FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
 	double d0 = na*p, d;
 	for (i=0, ntag = 0; i<m.Nodes(); ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		if (n.m_ntag)
 		{
 			d = na*n.r;
@@ -243,8 +268,8 @@ FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
 		}
 	}
 
-	vector<int> tag(ntag);
-	vector<double>	wgt(m.Nodes());
+	std::vector<int> tag(ntag);
+	std::vector<double>	wgt(m.Nodes());
 	for (i=0, ntag = 0; i<m.Nodes(); ++i)
 	{
 		if (m.Node(i).m_ntag) tag[ntag++] = i;
@@ -253,14 +278,14 @@ FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
 	// find the distance to project for the tagged nodes
 	for (i=0; i<m.Nodes(); ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		if (n.m_ntag) wgt[i] = na*(n.r - p);
 	}
 
 	// find the distance to project for the non-tagged nodes
 	for (i=0; i<m.Nodes(); ++i)
 	{
-		FENode& n = m.Node(i);
+		FSNode& n = m.Node(i);
 		if (n.m_ntag == 0)
 		{
 			// find the closest tagged node
@@ -286,7 +311,7 @@ FEMesh* FEFlattenFaces::Apply(FEMesh *pm)
 	// project all nodes
 	for (i=0; i<m.Nodes(); ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (wgt[i] > 0.0) node.r -= na*wgt[i];
 	}
 
@@ -305,17 +330,17 @@ FEAlignNodes::FEAlignNodes() : FEModifier("Align")
 	AddChoiceParam(0, "align", "align")->SetEnumNames("+X\0-X\0+Y\0-Y\0+Z\0-Z\0");
 }
 
-FEMesh* FEAlignNodes::Apply(FEMesh* pm)
+FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 {
 	int nalign = GetIntValue(0);
 
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	vec3d rc;
 	int iref = -1;
 	for (int i=0; i<pnm->Nodes(); ++i)
 	{
-		FENode& node = pnm->Node(i);
+		FSNode& node = pnm->Node(i);
 		vec3d ri = node.pos();
 		if (node.IsSelected())
 		{
@@ -343,7 +368,7 @@ FEMesh* FEAlignNodes::Apply(FEMesh* pm)
 
 	for (int i = 0; i<pnm->Nodes(); ++i)
 	{
-		FENode& node = pnm->Node(i);
+		FSNode& node = pnm->Node(i);
 		if (node.IsSelected())
 		{
 			vec3d ri = node.pos();
@@ -375,9 +400,9 @@ FESetShellThickness::FESetShellThickness() : FEModifier("Set shell thickness")
 	AddDoubleParam(0, "h", "h");
 }
 
-FEMesh* FESetShellThickness::Apply(FEMesh *pm)
+FSMesh* FESetShellThickness::Apply(FSMesh *pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	double thick = GetFloatValue(0);
 	double percent = 0;	// TODO: Add a parameter for this
@@ -386,7 +411,7 @@ FEMesh* FESetShellThickness::Apply(FEMesh *pm)
 	{
 		for (int i=0; i<pnm->Elements(); ++i)
 		{
-			FEElement& el = pnm->Element(i);
+			FSElement& el = pnm->Element(i);
 			if (el.IsSelected())
 			{
 				double* h = el.m_h;
@@ -398,7 +423,7 @@ FEMesh* FESetShellThickness::Apply(FEMesh *pm)
 	{
 		for (int i=0; i<pnm->Elements(); ++i)
 		{
-			FEElement& el = pnm->Element(i);
+			FSElement& el = pnm->Element(i);
 			if (el.IsSelected())
 			{
 				double* h = el.m_h;
@@ -447,9 +472,9 @@ bool FESetFiberOrientation::UpdateData(bool bsave)
 	return false;
 }
 
-FEMesh* FESetFiberOrientation::Apply(FEMesh *pm)
+FSMesh* FESetFiberOrientation::Apply(FSMesh *pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	int ngen = GetIntValue(0);
 	switch (ngen)
@@ -465,7 +490,7 @@ FEMesh* FESetFiberOrientation::Apply(FEMesh *pm)
 	return pnm;
 }
 
-void FESetFiberOrientation::SetFiberVector(FEMesh *pm)
+void FESetFiberOrientation::SetFiberVector(FSMesh *pm)
 {
 	vec3d r = GetVecValue(1);
 	r.Normalize();
@@ -476,13 +501,13 @@ void FESetFiberOrientation::SetFiberVector(FEMesh *pm)
 
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected() || (nsel==0))
 			el.m_fiber = r;
 	}
 }
 
-void FESetFiberOrientation::SetFiberNodes(FEMesh *pm)
+void FESetFiberOrientation::SetFiberNodes(FSMesh *pm)
 {
 	int nsel = 0;
 	for (int i = 0; i<pm->Elements(); ++i)
@@ -493,7 +518,7 @@ void FESetFiberOrientation::SetFiberNodes(FEMesh *pm)
 	int node1 = GetIntValue(3);
 	for (int i = 0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected() || (nsel == 0))
 		{
 			r1 = pm->Node(el.m_node[ node0 ]).r;
@@ -564,15 +589,15 @@ bool FESetAxesOrientation::UpdateData(bool bsave)
 	else return false;
 }
 
-FEMesh* FESetAxesOrientation::Apply(FEMesh *pm)
+FSMesh* FESetAxesOrientation::Apply(FSMesh *pm)
 {
-	FEMesh* pnm = new FEMesh(*pm);
+	FSMesh* pnm = new FSMesh(*pm);
 
 	pnm->TagAllElements(-1);
 	int nsel = 0;
 	for (int i=0; i<pnm->Elements(); ++i)
 	{
-		FEElement& el = pnm->Element(i);
+		FSElement& el = pnm->Element(i);
 		if (el.IsSelected())
 		{
 			el.m_ntag = 1;
@@ -603,7 +628,7 @@ FEMesh* FESetAxesOrientation::Apply(FEMesh *pm)
 	return pnm;
 }
 
-bool FESetAxesOrientation::SetAxesVectors(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesVectors(FSMesh *pm)
 {
 	vec3d a = GetVecValue(1);
 	vec3d d = GetVecValue(2);
@@ -615,7 +640,7 @@ bool FESetAxesOrientation::SetAxesVectors(FEMesh *pm)
 	c.Normalize();
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 1)
 		{
 			mat3d& m = el.m_Q;
@@ -630,7 +655,7 @@ bool FESetAxesOrientation::SetAxesVectors(FEMesh *pm)
 	return true;
 }
 
-bool FESetAxesOrientation::SetAxesNodes(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesNodes(FSMesh *pm)
 {
 	int node[3] = {0, 1, 2};
 	node[0] = GetIntValue(3)-1;
@@ -640,7 +665,7 @@ bool FESetAxesOrientation::SetAxesNodes(FEMesh *pm)
 	vec3d r1, r2, r3, a, b, c, d;
 	for (int i=0; i<pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 1)
 		{
 			int neln = el.Nodes();
@@ -670,14 +695,14 @@ bool FESetAxesOrientation::SetAxesNodes(FEMesh *pm)
 	return true;
 }
 
-bool FESetAxesOrientation::SetAxesAngles(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesAngles(FSMesh *pm)
 {
     double theta = GetFloatValue(6)*PI/180;
     double phi = GetFloatValue(7)*PI/180;
 
     for (int i=0; i<pm->Elements(); ++i)
     {
-        FEElement& el = pm->Element(i);
+        FSElement& el = pm->Element(i);
         if (el.m_ntag == 1)
         {
             mat3d& m = el.m_Q;
@@ -692,7 +717,7 @@ bool FESetAxesOrientation::SetAxesAngles(FEMesh *pm)
     return true;
 }
 
-bool FESetAxesOrientation::SetAxesCylindrical(FEMesh* pm)
+bool FESetAxesOrientation::SetAxesCylindrical(FSMesh* pm)
 {
 	vec3d c(0, 0, 0); // center of axis
 
@@ -700,7 +725,7 @@ bool FESetAxesOrientation::SetAxesCylindrical(FEMesh* pm)
 	vec3d d = GetVecValue(2); // reference vector
 	for (int i = 0; i < pm->Elements(); ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.m_ntag == 1)
 		{
 			vec3d p = pm->ElementCenter(el);
@@ -743,7 +768,7 @@ bool FESetAxesOrientation::SetAxesCylindrical(FEMesh* pm)
 	return true;
 }
 
-bool FESetAxesOrientation::SetAxesCopy(FEMesh *pm)
+bool FESetAxesOrientation::SetAxesCopy(FSMesh *pm)
 {
 /*	assert(m_pms);
 	
@@ -754,7 +779,7 @@ bool FESetAxesOrientation::SetAxesCopy(FEMesh *pm)
 	vector<vec3d> Y(NY);
 	for (i=0; i<NY; ++i)
 	{
-		FEElement& el = m_pms->Element(i);
+		FSElement& el = m_pms->Element(i);
 		n = el.Nodes();
 		vec3d c(0,0,0);
 		for (j=0; j<n; ++j) c += m_pms->Node(el.m_node[j]).r;
@@ -763,21 +788,21 @@ bool FESetAxesOrientation::SetAxesCopy(FEMesh *pm)
 	}
 	
 	// set up the nearest node search
-	FENNQuery q(&Y);
+	FSNNQuery q(&Y);
 	q.Init();
 	
 	// do the mapping
 	int N = pm->Elements();
 	for (i=0; i<N; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		n = el.Nodes();
 		vec3d c(0,0,0);
 		for (j=0; j<n; ++j) c += pm->Node(el.m_node[j]).r;
 		c /= n;
 		n = q.Find(c);
 		
-		FEElement& els = m_pms->Element(n);
+		FSElement& els = m_pms->Element(n);
 		el.m_Q = els.m_Q;
 		el.m_Qactive = els.m_Qactive;
 		
@@ -818,17 +843,17 @@ FEMirrorMesh::FEMirrorMesh() : FEModifier("Mirror")
 	AddVecParam(vec3d(0,0,0), "center", "Center");
 }
 
-FEMesh* FEMirrorMesh::Apply(FEMesh *pm)
+FSMesh* FEMirrorMesh::Apply(FSMesh *pm)
 {
 	int nplane = GetIntValue(0);
 	vec3d rc = GetVecValue(1);
 
-	FEMesh* pmn = new FEMesh(*pm);
+	FSMesh* pmn = new FSMesh(*pm);
 
 	// mirror the nodes
 	for (int i=0; i<pmn->Nodes(); ++i)
 	{
-		FENode& n = pmn->Node(i);
+		FSNode& n = pmn->Node(i);
 		vec3d r = n.r - rc;
 		switch (nplane)
 		{
@@ -850,7 +875,7 @@ FEMesh* FEMirrorMesh::Apply(FEMesh *pm)
 // FEQuad2Tri
 //-----------------------------------------------------------------------------
 
-FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
+FSMesh* FEQuad2Tri::Apply(FSMesh *pm)
 {
 	int i;
 	int NN = pm->Nodes();
@@ -873,7 +898,7 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 	}
 
 	// create a new mesh
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(NN, NE1, NF1, NC);
 
 	// copy nodes
@@ -886,11 +911,11 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 	NE1 = 0;
 	for (i=0; i<NE0; ++i)
 	{
-		FEElement& e0 = pm->Element(i);
+		FSElement& e0 = pm->Element(i);
 		if (e0.IsType(FE_QUAD4))
 		{
-			FEElement& e1 = pnew->Element(NE1++);
-			FEElement& e2 = pnew->Element(NE1++);
+			FSElement& e1 = pnew->Element(NE1++);
+			FSElement& e2 = pnew->Element(NE1++);
 
 			e1 = e0;
 			e2 = e0;
@@ -913,7 +938,7 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 		}
 		else
 		{
-			FEElement& e1 = pnew->Element(NE1++);
+			FSElement& e1 = pnew->Element(NE1++);
 			e1 = e0;
 		}
 	}
@@ -922,11 +947,11 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 	NF1 = 0;
 	for (i=0; i<NF0; ++i)
 	{
-		FEFace& f0 = pm->Face(i);
+		FSFace& f0 = pm->Face(i);
 		if (f0.Nodes() == 4)
 		{
-			FEFace& f1 = pnew->Face(NF1++);
-			FEFace& f2 = pnew->Face(NF1++);
+			FSFace& f1 = pnew->Face(NF1++);
+			FSFace& f2 = pnew->Face(NF1++);
 
 			f1 = f0;
 			f2 = f0;
@@ -944,7 +969,7 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 		}
 		else
 		{
-			FEFace& f1 = pnew->Face(NF1++);
+			FSFace& f1 = pnew->Face(NF1++);
 			f1 = f0;
 		}
 	}
@@ -955,17 +980,17 @@ FEMesh* FEQuad2Tri::Apply(FEMesh *pm)
 }
 
 //=============================================================================
-// FERefineMesh
+// RefineMesh
 //-----------------------------------------------------------------------------
 
-FERefineMesh::FERefineMesh() : FEModifier("Refine")
+RefineMesh::RefineMesh() : FEModifier("Refine")
 {
 	AddIntParam(1, "iterations:", "iterations");
 	AddBoolParam(false, "Smooth surface");
 	AddBoolParam(false, "hex 2d-split");
 }
 
-FEMesh* FERefineMesh::Apply(FEMesh* pm)
+FSMesh* RefineMesh::Apply(FSMesh* pm)
 {
 	// get parameters
 	int niter = GetIntValue(0);
@@ -1006,11 +1031,11 @@ FEMesh* FERefineMesh::Apply(FEMesh* pm)
 	if (mod == 0) return 0;
 
 	// apply the refine modifier
-	FEMesh* pmold = pm;
+	FSMesh* pmold = pm;
 	setProgress(0.0);
 	for (int i=0; i<niter; ++i)
 	{
-		FEMesh* pmnew = mod->Apply(pmold);
+		FSMesh* pmnew = mod->Apply(pmold);
 		if (i != 0) delete pmold;
 		pmold = pmnew;
 		setProgress(100.0*(i + 1.0) / (double)niter);
@@ -1130,7 +1155,7 @@ bool FEConvertMesh::UpdateData(bool bsave)
 	GObject* po = GObject::GetActiveObject();
 	if (po == nullptr) return false;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return false;
 
 	// get the mesh type
@@ -1165,7 +1190,7 @@ bool FEConvertMesh::UpdateData(bool bsave)
 	return true;
 }
 
-FEMesh* FEConvertMesh::Apply(FEMesh* pm)
+FSMesh* FEConvertMesh::Apply(FSMesh* pm)
 {
 	// get the chosen option
 	int nsel = GetIntValue(0);
@@ -1212,7 +1237,7 @@ FEMesh* FEConvertMesh::Apply(FEMesh* pm)
 	// apply it
 	if (m_mod)
 	{
-		FEMesh* newMesh = m_mod->Apply(pm);
+		FSMesh* newMesh = m_mod->Apply(pm);
 		FEModifier* tmp = m_mod; m_mod = nullptr;
 		delete tmp;
 		return newMesh;
@@ -1237,9 +1262,9 @@ FEAddNode::FEAddNode() : FEModifier("Add Node")
 	AddVecParam(vec3d(0,0,0), "position", "position");
 }
 
-FEMesh* FEAddNode::Apply(FEMesh* pm)
+FSMesh* FEAddNode::Apply(FSMesh* pm)
 {
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 
 	vec3d r = GetVecValue(0);
 	GObject* po = pm->GetGObject();
@@ -1262,12 +1287,12 @@ FEInvertMesh::FEInvertMesh() : FEModifier("Invert Mesh")
 	AddBoolParam(true, "Invert faces", "Invert faces");
 }
 
-FEMesh* FEInvertMesh::Apply(FEMesh* pm)
+FSMesh* FEInvertMesh::Apply(FSMesh* pm)
 {
 	bool invertElems = GetBoolValue(0);
 	bool invertFaces = GetBoolValue(1);
 
-	FEMesh* newMesh = new FEMesh(*pm);
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 
 	if (invertElems)
@@ -1296,14 +1321,14 @@ FEDetachElements::FEDetachElements() : FEModifier("Detach Elements")
 	AddBoolParam(true, "Repartition selection");
 }
 
-FEMesh* FEDetachElements::Apply(FEMesh* pm)
+FSMesh* FEDetachElements::Apply(FSMesh* pm)
 {
 	// Figure out which nodes need to be duplicated
 	pm->TagAllNodes(-1);
 	int NE = pm->Elements();
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected())
 		{
 			// solid element
@@ -1313,10 +1338,10 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 				int nbr = el.m_nbr[j];
 				if (nbr >= 0)
 				{
-					FEElement& elj = pm->Element(nbr);
+					FSElement& elj = pm->Element(nbr);
 					if (elj.IsSelected() == false)
 					{
-						FEFace f = el.GetFace(j);
+						FSFace f = el.GetFace(j);
 						int nf = f.Nodes();
 						for (int k=0; k<nf; ++k) pm->Node(f.n[k]).m_ntag = 1;
 					}
@@ -1330,10 +1355,10 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 				int nbr = el.m_nbr[j];
 				if (nbr >= 0)
 				{
-					FEElement& elj = pm->Element(nbr);
+					FSElement& elj = pm->Element(nbr);
 					if (elj.IsSelected() == false)
 					{
-						FEEdge e = el.GetEdge(j);
+						FSEdge e = el.GetEdge(j);
 						int ne = e.Nodes();
 						for (int k = 0; k<ne; ++k) pm->Node(e.n[k]).m_ntag = 1;
 					}
@@ -1347,7 +1372,7 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 	int nn1 = NN;
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_ntag == 1) 
 		{
 			node.m_ntag = nn1++;
@@ -1355,18 +1380,18 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 	}
 
 	// create a new mesh
-	FEMesh* newMesh = new FEMesh;
+	FSMesh* newMesh = new FSMesh;
 	newMesh->Create(nn1, NE);
 
 	// create nodes
 	for (int i=0; i<NN; ++i) 
 	{
-		FENode& si = pm->Node(i);
-		FENode& di = newMesh->Node(i);
+		FSNode& si = pm->Node(i);
+		FSNode& di = newMesh->Node(i);
 		di = si;
 		if (si.m_ntag != -1)
 		{
-			FENode& di2 = newMesh->Node(si.m_ntag);
+			FSNode& di2 = newMesh->Node(si.m_ntag);
 			di2 = si;
 		}
 	}
@@ -1374,15 +1399,15 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 	// create elements
 	for (int i=0; i<NE; ++i)
 	{
-		FEElement& si = pm->Element(i);
-		FEElement& di = newMesh->Element(i);
+		FSElement& si = pm->Element(i);
+		FSElement& di = newMesh->Element(i);
 		di = si;
 
 		if (si.IsSelected())
 		{
 			for (int j=0; j<si.Nodes(); ++j)
 			{
-				FENode& nj = pm->Node(si.m_node[j]);
+				FSNode& nj = pm->Node(si.m_node[j]);
 				if (nj.m_ntag != -1)
 				{
 					di.m_node[j] = nj.m_ntag;
@@ -1398,8 +1423,8 @@ FEMesh* FEDetachElements::Apply(FEMesh* pm)
 		int ng = pm->CountElementPartitions();
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement& si = pm->Element(i);
-			FEElement& di = newMesh->Element(i);
+			FSElement& si = pm->Element(i);
+			FSElement& di = newMesh->Element(i);
 
 			if (si.IsSelected())
 			{

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -164,7 +164,7 @@ bool IntersectQuad(const Ray& ray, const Quad& quad, Intersection& intersect)
 }
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, Intersection& q)
+bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& q)
 {
 	vec3d rn[10];
 
@@ -177,7 +177,7 @@ bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, Intersection& 
 	Intersection tmp;
 	for (int i=0; i<faces; ++i)
 	{
-		const FEFace& face = mesh.Face(i);
+		const FSFace& face = mesh.Face(i);
 		if (face.IsVisible())
 		{
 			mesh.FaceNodeLocalPositions(face, rn);
@@ -271,7 +271,7 @@ bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q)
 }
 
 //-----------------------------------------------------------------------------
-bool FindElementIntersection(const Ray& ray, const FEMesh& mesh, Intersection& q, bool selectionState)
+bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q, bool selectionState)
 {
 	vec3d rn[10];
 
@@ -280,12 +280,12 @@ bool FindElementIntersection(const Ray& ray, const FEMesh& mesh, Intersection& q
 	float gmin = 1e30f;
 	bool b = false;
 
-	FEFace face;
+	FSFace face;
 	q.m_index = -1;
 	Intersection tmp;
 	for (int i = 0; i<elems; ++i)
 	{
-		const FEElement& elem = mesh.Element(i);
+		const FSElement& elem = mesh.Element(i);
 		if (elem.IsVisible() && (elem.IsSelected() == selectionState))
 		{
 			// solid elements
@@ -394,7 +394,7 @@ bool FindElementIntersection(const Ray& ray, const FEMesh& mesh, Intersection& q
 }
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FEFace& face, Intersection& q)
+bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FSFace& face, Intersection& q)
 {
 	q.m_index = -1;
 
@@ -409,7 +409,7 @@ bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FEFace& 
 	case FE_FACE_TRI7:
 	case FE_FACE_TRI10:
 	{
-		Triangle tri = { to_vec3f(rn[0]), to_vec3f(rn[1]), to_vec3f(rn[2]) };
+		Triangle tri = { rn[0], rn[1], rn[2] };
 		bfound = IntersectTriangle(ray, tri, q);
 	}
 	break;
@@ -417,7 +417,7 @@ bool FindFaceIntersection(const Ray& ray, const FEMeshBase& mesh, const FEFace& 
 	case FE_FACE_QUAD8:
 	case FE_FACE_QUAD9:
 	{
-		Quad quad = { to_vec3f(rn[0]), to_vec3f(rn[1]), to_vec3f(rn[2]), to_vec3f(rn[3]) };
+		Quad quad = { rn[0], rn[1], rn[2], rn[3] };
 		bfound = FastIntersectQuad(ray, quad, q);
 	}
 	break;

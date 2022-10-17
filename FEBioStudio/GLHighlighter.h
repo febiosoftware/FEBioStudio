@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -102,7 +102,7 @@ signals:
 private:
 	CGLView*		m_view;				// pointer to GL view
 	GItem*			m_activeItem;		// pointer to the active item (or zero)
-	vector<GItem*>	m_item;				// list of hightlighted items (except active item)
+	std::vector<GItem*>	m_item;				// list of hightlighted items (except active item)
 	bool			m_btrack;			// set active item via mouse tracking
 	GLColor			m_activeColor;		// color of active item
 	GLColor			m_pickColor;		// color of picked items

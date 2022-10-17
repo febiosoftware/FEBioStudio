@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,11 +38,11 @@ public:
 
 	void SetCurveMesh(GCurveMeshObject* pc);
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 private:
-	void BuildMesh(DynamicMesh2D& dyna, FEMesh* pm);
-	FEMesh* BuildFEMesh(DynamicMesh2D& dyna);
+	void BuildMesh(DynamicMesh2D& dyna, FSMesh* pm);
+	FSMesh* BuildFEMesh(DynamicMesh2D& dyna);
 
 private:
 	GCurveMeshObject*	m_pc;

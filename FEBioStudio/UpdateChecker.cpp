@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QCheckBox>
 #include "UpdateChecker.h"
+#include "ServerSettings.h"
 #include "version.h"
 
 #include <iostream>
@@ -115,15 +116,15 @@ void CUpdateWidget::checkForAppUpdate()
 	}
 
 	QUrl myurl;
-	myurl.setScheme(SCHEME);
-	myurl.setHost(UPDATE_URL);
-	myurl.setPort(PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(urlBase + ".xml");
 
 	QNetworkRequest request;
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
-	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).toUtf8());
+	request.setRawHeader(QByteArray("version"), QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION).toUtf8());
 	
 	request.setRawHeader(QByteArray("UUID"), UUID.toUtf8());
 
@@ -269,9 +270,9 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 void CUpdateWidget::checkForUpdaterUpdate()
 {
 	QUrl myurl;
-	myurl.setScheme(SCHEME);
-	myurl.setHost(UPDATE_URL);
-	myurl.setPort(PORT);
+	myurl.setScheme(ServerSettings::Scheme());
+	myurl.setHost(ServerSettings::URL());
+	myurl.setPort(ServerSettings::Port());
 	myurl.setPath(updaterBase + ".xml");
 
 	QNetworkRequest request;

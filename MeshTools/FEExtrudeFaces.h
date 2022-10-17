@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,8 +32,8 @@ class FEExtrudeFaces : public FEModifier
 public:
 	FEExtrudeFaces();
 
-	FEMesh* Apply(FEMesh* pm);
-	FEMesh* Apply(FEGroup* pg);
+	FSMesh* Apply(FSMesh* pm);
+	FSMesh* Apply(FSGroup* pg);
 
 	void SetExtrusionDistance(double D);
 	void SetSegments(int n);
@@ -42,5 +42,5 @@ public:
 	void SetSymmetricBias(bool b);
 
 protected:
-	void Extrude(FEMesh* pm, vector<int>& faceList);
+	void Extrude(FSMesh* pm, std::vector<int>& faceList);
 };

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -116,7 +116,11 @@ public:
 	QStringList GetZipFilePaths();
 	QList<QVariant> getFileInfo();
 
+	void getProjectJson(QByteArray* json);
+	void setProjectJson(QByteArray* json);
+
 	void accept() override;
+	void reject() override;
 
 protected:
 	void keyPressEvent(QKeyEvent* e) override;
@@ -125,9 +129,12 @@ public slots:
 	void on_addTagBtn_clicked();
 	void on_delTagBtn_clicked();
 
+	void on_loadJson_triggered();
+	void on_saveJson_triggered();
 	void on_addFolder_triggered();
 	void on_addFiles_triggered();
 	void on_rename_triggered();
+	void on_replaceFile_triggered();
 	void on_fileTree_currentItemChanged(QTreeWidgetItem *current);
 	void on_fileTree_itemChanged(QTreeWidgetItem *item, int column);
 	void on_fileTree_itemDoubleClicked(QTreeWidgetItem * item, int column);
@@ -136,6 +143,10 @@ public slots:
 
 	void on_addFileTagBtn_clicked();
 	void on_delFileTagBtn_clicked();
+
+private:
+	QTreeWidgetItem* addFileFromJson(QJsonObject& file);
+	void addFileToJson(QTreeWidgetItem* item, QVariantList& list);
 
 private:
 	Ui::CWzdUpload*	ui;

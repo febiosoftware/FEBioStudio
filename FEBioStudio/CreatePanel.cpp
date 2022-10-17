@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -55,6 +55,7 @@ REGISTER_CLASS2(GQuartDogBone      , CLASS_OBJECT, "Dog bone"       , ":/icons/d
 REGISTER_CLASS2(GCylinderInBox     , CLASS_OBJECT, "Cylinder in Box", ":/icons/cylinderinbox.png", 0);
 REGISTER_CLASS2(GSphereInBox       , CLASS_OBJECT, "Sphere in Box"  , ":/icons/sphereinbox.png"  , 0);
 REGISTER_CLASS2(GHollowSphere      , CLASS_OBJECT, "Hollow Sphere"  , ":/icons/hollowsphere.png" , 0);
+REGISTER_CLASS2(GBoxInBox          , CLASS_OBJECT, "Box in box"     , ":/icons/boxinbox.png"     , 0);
 REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "Thin Tube"      , ":/icons/thintube.png"     , 0);
 REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "Patch"          , ":/icons/square.png"       , 0);
 REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/disc.png"         , 0);
@@ -199,7 +200,7 @@ void CCreatePanel::on_create_clicked()
 			GDiscreteObject* go = dynamic_cast<GDiscreteObject*>(po);
 
 			CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-			GModel& geo = doc->GetFEModel()->GetModel();
+			GModel& geo = doc->GetFSModel()->GetModel();
 			geo.AddDiscreteObject(go);
 			GetMainWindow()->UpdateModel(go);
 			GetMainWindow()->Update(this);

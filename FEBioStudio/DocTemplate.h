@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,12 +32,15 @@ SOFTWARE.*/
 using std::vector;
 using std::string;
 
+class CModelDocument;
+
 class DocTemplate
 {
 public:
 	DocTemplate();
-	DocTemplate(const DocTemplate& doc);
-	void operator = (const DocTemplate& doc);
+	virtual ~DocTemplate();
+
+	virtual bool Load(CModelDocument* doc) = 0;
 
 public:
 	string	title;
@@ -51,19 +54,25 @@ class TemplateManager
 public:
 	static void Init();
 
-	static bool LoadTemplate(const char* sztmp);
-
 	static int Templates();
 
-	static void AddTemplate(DocTemplate& tmp);
+	static void AddTemplate(DocTemplate* tmp);
 
-	static const DocTemplate& GetTemplate(int i);
+	static DocTemplate& GetTemplate(int i);
 
 	static string TemplatePath();
 
 private:
 	TemplateManager();
 
-	static vector<DocTemplate>	m_doc;
+	static vector<DocTemplate*>	m_doc;
 	static string m_path;
+};
+
+//===========================================================================
+class DocTemplateUniAxialStrain : public DocTemplate
+{
+public:
+	DocTemplateUniAxialStrain();
+	bool Load(CModelDocument* doc) override;
 };

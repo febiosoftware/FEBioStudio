@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <MeshTools/GDiscreteObject.h>
 
 //-----------------------------------------------------------------------------
-PRVObjectImport::PRVObjectImport(FEProject& prj) : FEFileImport(prj)
+PRVObjectImport::PRVObjectImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -60,9 +60,9 @@ void PRVObjectImport::Close()
 	FileReader::Close();
 }
 
-bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
+bool PRVObjectImport::LoadObjects(IArchive& ar, FSProject& prj)
 {
-	GModel& model = prj.GetFEModel().GetModel();
+	GModel& model = prj.GetFSModel().GetModel();
 	m_objList.clear();
 	IArchive::IOResult nret = IArchive::IO_OK;
 	while (ar.OpenChunk() == IArchive::IO_OK)
@@ -101,7 +101,7 @@ bool PRVObjectImport::LoadObjects(IArchive& ar, FEProject& prj)
 	return true;
 }
 
-GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
+GObject* PRVObjectImport::LoadObject(IArchive& ar, FSProject& prj)
 {
 	GObject* po = 0;
 	while (ar.OpenChunk() == IArchive::IO_OK)
@@ -135,10 +135,11 @@ GObject* PRVObjectImport::LoadObject(IArchive& ar, FEProject& prj)
 	return po;
 }
 
-GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& prj)
+GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FSProject& prj)
 {
 	GDiscreteObject* po = 0;
-	GModel* gm = &prj.GetFEModel().GetModel();
+	FSModel* fem = &prj.GetFSModel();
+	GModel* gm = &prj.GetFSModel().GetModel();
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
@@ -179,7 +180,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& pr
 			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
-			FELinearSpringMaterial* mat = new FELinearSpringMaterial();
+			FSLinearSpringMaterial* mat = new FSLinearSpringMaterial(fem);
 			mat->SetSpringConstant(po->GetFloatValue(GLinearSpringSet::MP_E));
 			pnew->SetMaterial(mat);
 			delete po;
@@ -191,7 +192,7 @@ GDiscreteObject* PRVObjectImport::LoadDiscreteObject(IArchive& ar, FEProject& pr
 			GDiscreteSpringSet* pnew = new GDiscreteSpringSet(gm);
 			pnew->SetName(po->GetName());
 			pnew->CopyDiscreteElementSet(ds);
-			FENonLinearSpringMaterial* mat = new FENonLinearSpringMaterial();
+			FSNonLinearSpringMaterial* mat = new FSNonLinearSpringMaterial(fem);
 			// TODO: map F parameter
 			pnew->SetMaterial(mat);
 			delete po;

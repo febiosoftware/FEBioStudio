@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -75,166 +75,6 @@ void IOMemBuffer::append(void* pd, int n)
 	m_nsize += n;
 }
 
-//=============================================================================
-// IOFileStream
-//=============================================================================
-IOFileStream::IOFileStream(FILE* fp, bool owner)
-{
-	m_bufsize = 262144;	// = 256K
-	m_current = 0;
-	m_buf = new unsigned char[m_bufsize];
-	m_pout = new unsigned char[m_bufsize];
-	m_ncompress = 0;
-	m_fp = fp;
-	m_fileOwner = owner;
-}
-
-IOFileStream::~IOFileStream()
-{
-	Close();
-	delete[] m_buf;
-	delete[] m_pout;
-	m_buf = 0;
-	m_pout = 0;
-}
-
-bool IOFileStream::Open(const char* szfile)
-{
-	m_fp = fopen(szfile, "rb");
-	if (m_fp == 0) return false;
-	return true;
-}
-
-bool IOFileStream::Append(const char* szfile)
-{
-	m_fp = fopen(szfile, "a+b");
-	return (m_fp != 0);
-}
-
-bool IOFileStream::Create(const char* szfile)
-{
-	m_fp = fopen(szfile, "wb");
-	return (m_fp != 0);
-}
-
-void IOFileStream::Close()
-{
-	if (m_fp)
-	{
-		Flush();
-		if(m_fileOwner)	fclose(m_fp);
-	}
-	m_fp = 0;
-}
-
-void IOFileStream::BeginStreaming()
-{
-	if (m_ncompress)
-	{
-		strm.zalloc = Z_NULL;
-		strm.zfree = Z_NULL;
-		strm.opaque = Z_NULL;
-		deflateInit(&strm, -1);
-	}
-}
-
-void IOFileStream::EndStreaming()
-{
-	Flush();
-	if (m_ncompress)
-	{
-		strm.avail_in = 0;
-		strm.next_in = 0;
-
-		// run deflate() on input until output buffer not full, finish
-		// compression if all of source has been read in
-		do {
-			strm.avail_out = m_bufsize;
-			strm.next_out = m_pout;
-			int ret = deflate(&strm, Z_FINISH);    // no bad return value
-			assert(ret != Z_STREAM_ERROR);  // state not clobbered
-			int have = m_bufsize - strm.avail_out;
-			fwrite(m_pout, 1, have, m_fp);
-		} while (strm.avail_out == 0);
-		assert(strm.avail_in == 0);     // all input will be used
-
-										// all done
-		deflateEnd(&strm);
-
-		fflush(m_fp);
-	}
-}
-
-void IOFileStream::Write(void* pd, size_t Size, size_t Count)
-{
-	unsigned char* pdata = (unsigned char*)pd;
-	size_t nsize = Size*Count;
-	while (nsize > 0)
-	{
-		if (m_current + nsize < m_bufsize)
-		{
-			memcpy(m_buf + m_current, pdata, nsize);
-			m_current += nsize;
-			nsize = 0;
-		}
-		else
-		{
-			int nblock = m_bufsize - m_current;
-			if (nblock>0) { memcpy(m_buf + m_current, pdata, nblock); m_current += nblock; }
-			Flush();
-			pdata += nblock;
-			nsize -= nblock;
-		}
-	}
-}
-
-void IOFileStream::Flush()
-{
-	if (m_ncompress)
-	{
-		strm.avail_in = m_current;
-		strm.next_in = m_buf;
-
-		// run deflate() on input until output buffer not full, finish
-		// compression if all of source has been read in
-		do {
-			strm.avail_out = m_bufsize;
-			strm.next_out = m_pout;
-			int ret = deflate(&strm, Z_NO_FLUSH);    // no bad return value
-			assert(ret != Z_STREAM_ERROR);  // state not clobbered
-			int have = m_bufsize - strm.avail_out;
-			fwrite(m_pout, 1, have, m_fp);
-		} while (strm.avail_out == 0);
-		assert(strm.avail_in == 0);     // all input will be used
-	}
-	else
-	{
-		if (m_fp) fwrite(m_buf, m_current, 1, m_fp);
-	}
-
-	// flush the file
-	if (m_fp) fflush(m_fp);
-
-	// reset current data pointer
-	m_current = 0;
-}
-
-size_t IOFileStream::read(void* pd, size_t Size, size_t Count)
-{
-	return fread(pd, Size, Count, m_fp);
-}
-
-long IOFileStream::tell()
-{
-	return ftell(m_fp);
-}
-
-void IOFileStream::seek(long noff, int norigin)
-{
-	fseek(m_fp, noff, norigin);
-}
-
-
 //////////////////////////////////////////////////////////////////////
 // IArchive
 //////////////////////////////////////////////////////////////////////
@@ -253,6 +93,13 @@ IArchive::IArchive()
 IArchive::~IArchive()
 {
 	Close();
+}
+
+//-----------------------------------------------------------------------------
+// see if there is a valid file pointer
+bool IArchive::IsValid() const
+{
+	return (m_fp != 0);
 }
 
 //-----------------------------------------------------------------------------
@@ -406,8 +253,24 @@ IArchive::IOResult IArchive::read(std::vector<double>& v)
 	CHUNK* pc = m_Chunk.top();
 
 	int nsize = pc->nsize / sizeof(double);
+	if (nsize > 0)
+	{
+		v.resize(nsize);
+		int nread = (int)fread(&v[0], sizeof(double), nsize, m_fp);
+		if (nread != nsize) return IO_ERROR;
+	}
+	else v.clear();
+
+	return IO_OK;
+}
+
+IArchive::IOResult IArchive::read(std::vector<vec2d>& v)
+{
+	CHUNK* pc = m_Chunk.top();
+
+	int nsize = pc->nsize / sizeof(vec2d);
 	v.resize(nsize);
-	int nread = (int)fread(&v[0], sizeof(double), nsize, m_fp);
+	int nread = (int)fread(&v[0], sizeof(vec2d), nsize, m_fp);
 	if (nread != nsize) return IO_ERROR;
 	return IO_OK;
 }
@@ -418,14 +281,26 @@ void IArchive::log(const char* sz, ...)
 
 	// get a pointer to the argument list
 	va_list	args;
-
-	// copy to string
-	char szlog[256] = { 0 };
 	va_start(args, sz);
-	vsprintf(szlog, sz, args);
-	va_end(args);
 
-	int l = (int)strlen(szlog);
+	// count how many chars we need to allocate
+	va_list argscopy;
+	va_copy(argscopy, args);
+	char* szlog = NULL;
+	int l = vsnprintf(nullptr, 0, sz, argscopy) + 1;
+	va_end(argscopy);
+	if (l > 1)
+	{
+		szlog = new char[l]; assert(szlog);
+		if (szlog)
+		{
+			vsnprintf(szlog, l, sz, args);
+		}
+	}
+	va_end(args);
+	if (szlog == NULL) return;
+
+	l = (int)strlen(szlog);
 	if (l == 0) return;
 
 	stringstream ss;

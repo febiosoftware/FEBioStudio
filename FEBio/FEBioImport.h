@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,11 +36,11 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Implements a class to import FEBio files
 // 
-class FEBioImport : public FEFileImport
+class FEBioFileImport : public FSFileImport
 {
 public:
-	FEBioImport(FEProject& prj);
-	~FEBioImport();
+	FEBioFileImport(FSProject& prj);
+	~FEBioFileImport();
 	bool Load(const char* szfile) override;
 
 	const char* GetLog() { return m_szlog; }
@@ -49,9 +49,13 @@ public:
 	void AddLogEntry(const char* sz, ...);
 
 	void SetGeometryOnlyFlag(bool b);
+    void SetSkipGeometryFlag(bool b);
+
+public:
+	bool ImportMaterials(const char* szfile);
 
 protected:
-	bool UpdateFEModel(FEModel& fem);
+	bool UpdateFEModel(FSModel& fem);
 
 private:
 	bool ParseVersion(XMLTag& tag);
@@ -63,13 +67,14 @@ protected: // Error handling
 
 protected:
 	FEBioFormat*	m_fmt;
-	FEBioModel*		m_febio;
+	FEBioInputModel*		m_febio;
 	int				m_nversion;
 	char			m_szpath[1024];
 
 protected:
 	char*	m_szlog;	//!< log used for reporting warnings
 	bool	m_geomOnly;
+    bool    m_skipGeom;
 
 	friend class FEBioFormat;
 };

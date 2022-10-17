@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GObject.h"
 
 //-----------------------------------------------------------------------------
-class FESurfaceMesh;
+class FSSurfaceMesh;
 
 //-----------------------------------------------------------------------------
 // The GMeshObject defines the geometry of a "naked" FE mesh. That is, a mesh
@@ -48,11 +48,11 @@ class GMeshObject : public GObject
 {
 public:
 	// Constructor for creating a GMeshObject from a "naked" mesh
-	GMeshObject(FEMesh* pm);
+	GMeshObject(FSMesh* pm);
 
 	// Constructor for creating a GMeshObject from a "naked" surface mesh 
 	// (this creates a shell mesh)
-	GMeshObject(FESurfaceMesh* pm);
+	GMeshObject(FSSurfaceMesh* pm);
 
 	// Constructor for converting a GObject to a GMeshObject
 	GMeshObject(GObject* po);
@@ -64,7 +64,7 @@ public:
 
 	int AddNode(vec3d r);
 
-	virtual FEMesh* BuildMesh() override;
+	virtual FSMesh* BuildMesh() override;
 
 	// serialization
 	void Save(OArchive& ar) override;
@@ -73,8 +73,8 @@ public:
 	// cloning
 	GObject* Clone() override;
 
-	FEMeshBase* GetEditableMesh() override;
-	FELineMesh* GetEditableLineMesh() override;
+	FSMeshBase* GetEditableMesh() override;
+	FSLineMesh* GetEditableLineMesh() override;
 
 	// detach an element selection
 	GMeshObject* DetachSelection();
@@ -82,7 +82,7 @@ public:
 public:
 	void Attach(GObject* po, bool bweld, double tol);
 
-	bool DeletePart(GPart* pg);
+	bool DeletePart(GPart* pg) override;
 
 protected:
 	void BuildGMesh() override;
@@ -92,6 +92,7 @@ protected:
 	void UpdateSurfaces();
 	void UpdateEdges();
 	void UpdateNodes();
+	void UpdateSections();
 };
 
 GMeshObject* ExtractSelection(GObject* po);

@@ -1,80 +1,126 @@
 #pragma once
-#include "FEModelComponent.h"
+#include "FEDomainComponent.h"
 
-class FEModelConstraint : public FEModelComponent
+class FSModelConstraint : public FSDomainComponent
 {
 public:
-	FEModelConstraint(int ntype, FEModel* fem, int nstep = 0);
+	FSModelConstraint(int ntype, FSModel* fem, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FESurfaceConstraint : public FEModelConstraint
+class FSSurfaceConstraint : public FSModelConstraint
 {
 public:
-	FESurfaceConstraint(int ntype, FEModel* fem, int nstep = 0);
+	FSSurfaceConstraint(int ntype, FSModel* fem, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+class FSBodyConstraint : public FSModelConstraint
+{
+public:
+	FSBodyConstraint(int ntype, FSModel* fem, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a volume constraint
-class FEVolumeConstraint : public FESurfaceConstraint
+class FSVolumeConstraint : public FSSurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY };
 
 public:
-	FEVolumeConstraint(FEModel* ps, int nstep = 0);
+	FSVolumeConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a normal fluid flow constraint
-class FENormalFlowSurface : public FESurfaceConstraint
+class FSNormalFlowSurface : public FSSurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, RHS };
 
 public:
-	FENormalFlowSurface(FEModel* ps, int nstep = 0);
+	FSNormalFlowSurface(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a symmetry plane constraint
-class FESymmetryPlane : public FESurfaceConstraint
+class FSSymmetryPlane : public FSSurfaceConstraint
 {
 public:
 	enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 
 public:
-	FESymmetryPlane(FEModel* ps, int nstep = 0);
+	FSSymmetryPlane(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEWarpingConstraint : public FEModelConstraint
+class FSWarpingConstraint : public FSModelConstraint
 {
 public:
-	FEWarpingConstraint(FEModel* fem);
+	FSWarpingConstraint(FSModel* fem);
 };
 
 //-----------------------------------------------------------------------------
 // This class implements a frictionless fluid wall constraint
-class FEFrictionlessFluidWall : public FESurfaceConstraint
+class FSFrictionlessFluidWall : public FSSurfaceConstraint
 {
 public:
     enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG };
 
 public:
-    FEFrictionlessFluidWall(FEModel* ps, int nstep = 0);
+    FSFrictionlessFluidWall(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEPrestrainConstraint : public FEModelConstraint
+class FSPrestrainConstraint : public FSModelConstraint
 {
 public:
-	FEPrestrainConstraint(FEModel* ps, int nstep = 0);
+	FSPrestrainConstraint(FSModel* ps, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
-class FEInSituStretchConstraint : public FEModelConstraint
+class FSInSituStretchConstraint : public FSModelConstraint
 {
 public:
-	FEInSituStretchConstraint(FEModel* ps, int nstep = 0);
+	FSInSituStretchConstraint(FSModel* ps, int nstep = 0);
 };
+
+//-----------------------------------------------------------------------------
+class FEBioNLConstraint : public FSModelConstraint
+{
+public:
+	FEBioNLConstraint(FSModel* fem, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioSurfaceConstraint : public FSSurfaceConstraint
+{
+public:
+	FEBioSurfaceConstraint(FSModel* fem, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioBodyConstraint : public FSBodyConstraint
+{
+public:
+	FEBioBodyConstraint(FSModel* fem, int nstep = 0);
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
+};
+
+//-----------------------------------------------------------------------------
+// This class implements a fixed normal displacement constraint
+class FSFixedNormalDisplacement : public FSSurfaceConstraint
+{
+public:
+    enum { LAUGON, ALTOL, PENALTY, MINAUG, MAXAUG, SHELLB };
+    
+public:
+    FSFixedNormalDisplacement(FSModel* ps, int nstep = 0);
+};
+

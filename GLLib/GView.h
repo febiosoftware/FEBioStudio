@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,12 @@ SOFTWARE.*/
 // This class stores viewing information
 class CGView : public FSObject
 {
+public:
+    enum UiView
+    {
+        MODEL_VIEW, SLICE_VIEW, TIME_VIEW_2D
+    };
+
 public:
 	CGView();
 	~CGView();
@@ -68,10 +74,11 @@ public:
 	double	m_ffar;
 	double	m_fov;
 	double	m_ar;
+    UiView imgView;
 
 protected:
 	CGLCamera m_cam;	//!< current camera
 
-	vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
-	int							m_nkey;	//!< current key
+	std::vector<GLCameraTransform*>	m_key;	//!< stored camera transformations
+	int								m_nkey;	//!< current key
 };

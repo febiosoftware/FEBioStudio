@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
 
-AnsysImport::AnsysImport(FEProject& prj) : FEFileImport(prj)
+AnsysImport::AnsysImport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -65,7 +65,7 @@ bool AnsysImport::Load(const char* szfile)
 	Close();
 
 	// build the mesh
-	return BuildMesh(m_prj.GetFEModel());
+	return BuildMesh(m_prj.GetFSModel());
 }
 
 //-----------------------------------------------------------------------------
@@ -154,7 +154,7 @@ bool AnsysImport::read_EBLOCK()
 }
 
 //-----------------------------------------------------------------------------
-bool AnsysImport::BuildMesh(FEModel &fem)
+bool AnsysImport::BuildMesh(FSModel &fem)
 {
 	int i;
 
@@ -166,12 +166,12 @@ bool AnsysImport::BuildMesh(FEModel &fem)
 	if (elems == 0) return errf("FATAL ERROR: No element data defined in file.");
 
 	// create a new mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// create nodes
 	list<NODE>::iterator in = m_Node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	int imin = 0, imax = 0;
 	for (i=0; i<nodes; ++i, ++pn, ++in)
 	{
@@ -184,7 +184,7 @@ bool AnsysImport::BuildMesh(FEModel &fem)
 
 	// create node lookup table
 	int nsize = imax - imin + 1;
-	vector<int> NLT;
+	std::vector<int> NLT;
 	NLT.resize(nsize);
 	for (i=0; i<nsize; ++i) NLT[i] = -1;
 	in = m_Node.begin();

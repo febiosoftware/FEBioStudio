@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 #include "FEBioException.h"
 #include <MeshTools/FEProject.h>
+#include <sstream>
+#include <map>
 
 // export sections
 enum FEBioExportSections
@@ -39,6 +41,7 @@ enum FEBioExportSections
 	FEBIO_MATERIAL,
 	FEBIO_GEOMETRY,
 	FEBIO_MESHDATA,			// new in FEBio 2.5
+	FEBIO_MESHADAPTOR,		// new in FEBio 4.0
 	FEBIO_BOUNDARY,
 	FEBIO_LOADS,
 	FEBIO_INITIAL,
@@ -54,7 +57,7 @@ enum FEBioExportSections
 class FEBioExport : public FEFileExport
 {
 public:
-	FEBioExport(FEProject& prj);
+	FEBioExport(FSProject& prj);
 
 	void SetPlotfileCompressionFlag(bool b);
 	void SetExportSelectionsFlag(bool b);
@@ -65,22 +68,20 @@ protected:
 
 	virtual void Clear();
 
-	virtual bool PrepareExport(FEProject& prj);
+	virtual bool PrepareExport(FSProject& prj);
 
 	void WriteNote(FSObject* po);
 
-	const char* GetEnumValue(Param& p);
+	const char* GetEnumKey(Param& p);
 
-private:
-	void AddLoadCurve(FELoadCurve* plc);
-	void AddLoadCurves(ParamContainer& PC);
-	void MultiMaterialCurves(FEMaterial* pm);
-	void BuildLoadCurveList(FEModel& fem);
+protected:
+	int	GetLC(const Param* p);
+
+public: // helper functions for writing to the xml file directly
+	XMLWriter& GetXMLWriter();
 
 protected:
 	XMLWriter		m_xml;
-
-	std::vector<FELoadCurve*>		m_pLC;		//!< array of loadcurve pointers
 
 	bool	m_section[FEBIO_MAX_SECTIONS];	//!< write section flags
 
@@ -89,4 +90,15 @@ protected:
 	bool	m_exportEnumStrings;	//!< export enums as strings (otherwise output numbers)
 
 	bool	m_exportNonPersistentParams;
+
+	std::map<int, int>	m_LCT;	// load-controller map: key = load curve ID, value = lc
 };
+
+template <> std::string type_to_string<vec2i>(const vec2i& v);
+template <> std::string type_to_string<vec2f>(const vec2f& v);
+template <> std::string type_to_string<vec2d>(const vec2d& v);
+template <> std::string type_to_string<vec3f>(const vec3f& v);
+template <> std::string type_to_string<vec3d>(const vec3d& v);
+template <> std::string type_to_string<quatd>(const quatd& v);
+template <> std::string type_to_string<mat3ds>(const mat3ds& v);
+template <> std::string type_to_string<mat3d>(const mat3d& v);

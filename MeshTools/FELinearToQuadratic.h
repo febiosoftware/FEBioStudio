@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,7 @@ class FELinearToQuadratic : public FEModifier
 {
 public:
 	FELinearToQuadratic();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 
 protected:
@@ -46,7 +46,7 @@ class FEQuadraticToLinear : public FEModifier
 {
 public:
 	FEQuadraticToLinear() : FEModifier("Quadratic-to-Linear"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -54,5 +54,5 @@ public:
 class FESolidSmooth
 {
 public:
-	void Apply(FEMesh* pm);
+	void Apply(FSMesh* pm);
 };

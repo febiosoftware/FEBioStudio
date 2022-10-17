@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <string>
 //using namespace std;
 
-class FEMesh;
+class FSMesh;
 
 class FEMeshData : public FSObject
 {
@@ -43,7 +43,8 @@ public:
 
 	enum DATA_TYPE {
 		DATA_SCALAR,
-		DATA_VEC3D
+		DATA_VEC3D,
+		DATA_MAT3D
 	};
 
 	enum DATA_FORMAT {
@@ -66,14 +67,14 @@ public:
 	DATA_FORMAT GetDataFormat() const;
 
 	// return mesh this data field belongs to
-	FEMesh* GetMesh() const;
+	FSMesh* GetMesh() const;
 
 protected:
-	void SetMesh(FEMesh* mesh);
+	void SetMesh(FSMesh* mesh);
 	DATA_TYPE		m_dataType;
 	DATA_FORMAT		m_dataFmt;
 
 private:
 	DATA_CLASS		m_dataClass;
-	FEMesh*			m_pMesh;
+	FSMesh*			m_pMesh;
 };

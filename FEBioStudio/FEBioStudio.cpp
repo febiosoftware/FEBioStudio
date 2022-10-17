@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,20 +29,22 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "MainWindow.h"
 #include "FEBioStudio.h"
+#include "version.h"
 #include <stdio.h>
 #include <PostLib/PostView.h>
 #include <FSCore/FSDir.h>
 #include <MeshLib/FEElementLibrary.h>
 #include <QSplashScreen>
 #include <QDebug>
+#include <QPainter>
+#include <FEBioLink/FEBioInit.h>
 
 #ifdef __APPLE__
 #include <QFileOpenEvent>
-class MyApplication : public QApplication
+class FBSApplication : public QApplication
 {
 public:
-	MyApplication(int &argc, char **argv)
-		: QApplication(argc, argv)
+	FBSApplication(int &argc, char **argv) : QApplication(argc, argv)
 	{
 	}
 	void SetMainWindow(CMainWindow* wnd) { m_pWnd = wnd; }
@@ -51,7 +53,17 @@ public:
 	{
 		if (event->type() == QEvent::FileOpen) {
 			QFileOpenEvent *openEvent = static_cast<QFileOpenEvent *>(event);
-			QString fileName = openEvent->file();
+			
+			QString fileName;
+			// Handle custom URL scheme
+			if (!openEvent->url().isEmpty())
+        	{
+				fileName =openEvent->url().toString();
+			}
+			else
+			{	
+				fileName = openEvent->file();
+			}
 
 			m_pWnd->OpenFile(fileName);
 		}
@@ -60,28 +72,79 @@ public:
 	}
 
 public:
-	CMainWindow* m_pWnd;
+	CMainWindow* m_pWnd = nullptr;
 };
-
+#else
+class FBSApplication : public QApplication 
+{
+public: 
+	FBSApplication(int& argc, char** argv) : QApplication(argc, argv) {}
+	void SetMainWindow(CMainWindow* wnd) { m_pWnd = wnd; }
+private:
+	CMainWindow* m_pWnd = nullptr;
+};
 #endif
+
+class FBSSplashScreen : public QSplashScreen
+{
+public:
+	FBSSplashScreen(QPixmap& pixmap)
+	{
+		QPainter painter(&pixmap);
+
+        qreal pr = pixmap.devicePixelRatio();
+		QRect rtdi = pixmap.rect();
+        QRect rt = QRect(rtdi.left()/pr,rtdi.top()/pr,rtdi.width()/pr,rtdi.height()/pr);
+        qreal border = 20;
+		rt.adjust(border, border, -border, -border);
+		painter.setPen(Qt::white);
+		QFont font = painter.font();
+		font.setPointSizeF(25);
+
+		// This causes the font to clip on macOS, so I've disabled it for now
+#ifndef __APPLE__
+		font.setStretch(175);
+#endif
+
+		font.setBold(true);
+		painter.setFont(font);
+		QString t1 = QString("FEBIO STUDIO");
+		painter.drawText(rt, Qt::AlignRight, t1);
+
+		QFontInfo fi(font);
+		rt.setTop(rt.top() + fi.pixelSize() + 10);
+		font.setPointSize(14);
+		font.setStretch(100);
+		font.setBold(false);
+		painter.setFont(font);
+		QString t2 = QString("version %1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
+		painter.drawText(rt, Qt::AlignRight, t2);
+
+		QString t3 = QString("Weiss Lab, University of Utah\nAteshian Lab, Columbia University\n\nCopyright (c) 2022, All rights reserved");
+		painter.drawText(rt, Qt::AlignLeft | Qt::AlignBottom, t3);
+
+		setPixmap(pixmap);
+	}
+};
 
 // starting point of application
 int main(int argc, char* argv[])
 {
 	// Initialize the libraries
+	FSElementLibrary::InitLibrary();
 	Post::Initialize();
 
-#ifndef __APPLE__
-
-	QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
+	// initialize the FEBio library
+	FEBio::InitFEBioLibrary();
 
 	// create the application object
-	QApplication app(argc, argv);
+	FBSApplication app(argc, argv);
 
 	// set the display name (this will be displayed on all windows and dialogs)
-	app.setApplicationVersion("1.0.0");
+	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
+	app.setApplicationVersion(version);
 	app.setApplicationName("FEBio Studio");
-	app.setApplicationDisplayName("FEBio Studio");
+	app.setApplicationDisplayName("FEBio Studio " + version);
 	app.setWindowIcon(QIcon(":/icons/FEBioStudio.png"));
 
 	string appdir = QApplication::applicationDirPath().toStdString();
@@ -89,16 +152,15 @@ int main(int argc, char* argv[])
 	
 	FSDir::setMacro("FEBioStudioDir", appdir);
 
-	QDir febioDir(QApplication::applicationDirPath());
-	febioDir.cd("../febio");
-	string febdir = QDir::toNativeSeparators(febioDir.absolutePath()).toStdString();
-	FSDir::setMacro("FEBioDir", febdir);
-
 	// show the splash screen
-	QPixmap pixmap(":/icons/splash.png");
-    qreal pixelRatio = app.devicePixelRatio();
+    QPixmap pixmap;
+	qreal pixelRatio = app.devicePixelRatio();
+    if (pixelRatio == 1)
+        pixmap = QPixmap(":/icons/splash.png");
+    else
+        pixmap = QPixmap(":/icons/splash_hires.png");
     pixmap.setDevicePixelRatio(pixelRatio);
-	QSplashScreen splash(pixmap);
+    FBSSplashScreen splash(pixmap);
 	splash.show();
 
 	// see if the reset flag was defined
@@ -116,7 +178,7 @@ int main(int argc, char* argv[])
 
 	// create the main window
 	CMainWindow wnd(breset);
-	//	wnd.setWindowFlags(Qt::Window | Qt::FramelessWindowHint);
+
 	wnd.show();
 
 	splash.finish(&wnd);
@@ -126,71 +188,28 @@ int main(int argc, char* argv[])
 		wnd.OpenFile(argv[1], false);
 	}
 
-	
-
 	return app.exec();
+}
 
-#else
-	MyApplication app(argc, argv);
+CMainWindow* FBS::getMainWindow()
+{
+    CMainWindow* wnd = nullptr;
 
-    // set the display name (this will be displayed on all windows and dialogs)
-    app.setApplicationVersion("1.0.0");
-    app.setApplicationName("FEBio Studio");
-    app.setApplicationDisplayName("FEBio Studio");
-
-	string appdir = QApplication::applicationDirPath().toStdString();
-	
-    qDebug() << appdir.c_str();
-    
-	FSDir::setMacro("FEBioStudioDir", appdir);
-
-	// show the splash screen
-	QPixmap pixmap(":/icons/splash_hires.png");
-    qreal pixelRatio = app.devicePixelRatio();
-    pixmap.setDevicePixelRatio(pixelRatio);
-	QSplashScreen splash(pixmap);
-	splash.show();
-	
-    // see if the reset flag was defined
-    // the reset flag can be used to restore the UI, i.e.
-    // when reset is true, the CMainWindow class will not read the settings.
-	bool breset = false;
-	for (int i = 0; i < argc; ++i)
-	{
-		if (strcmp(argv[i], "-reset") == 0)
-		{
-			breset = true;
-			break;
-		}
-	}
-
-	// create the main window
-	CMainWindow wnd(breset);
-	app.SetMainWindow(&wnd);
-	wnd.show();	
-
-	splash.finish(&wnd);
-
-    if ((argc == 2) && (breset == false))
+    for(QWidget* widget : QApplication::topLevelWidgets())
     {
-        wnd.OpenFile(argv[1], false);
+        if(CMainWindow* wnd = dynamic_cast<CMainWindow*>(widget))
+        {
+            assert(wnd);
+            return wnd;
+        }
     }
-    
-	return app.exec();
 
-#endif
+    assert(wnd);
+	return wnd;
 }
 
-CMainWindow* PRV::getMainWindow()
+CDocument* FBS::getDocument()
 {
-	foreach (QWidget *w, qApp->topLevelWidgets())
-        if (CMainWindow* mainWin = qobject_cast<CMainWindow*>(w))
-            return mainWin;
-    return nullptr;
-}
-
-CDocument* PRV::getDocument()
-{
-	CMainWindow* wnd = PRV::getMainWindow();
+	CMainWindow* wnd = FBS::getMainWindow();
 	return wnd->GetDocument();
 }

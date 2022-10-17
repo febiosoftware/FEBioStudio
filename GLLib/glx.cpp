@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,7 +41,8 @@ void glx::rotate(const quatd& q)
 	if (w != 0)
 	{
 		vec3d r = q.GetVector();
-		glRotated(180*w/PI, r.x, r.y, r.z);
+		if (r.Length() > 1e-6) glRotated(w * 180 / PI, r.x, r.y, r.z);
+		else glRotated(w * 180 / PI, 1, 0, 0);
 	}
 }
 
@@ -138,10 +139,31 @@ void glx::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GL
 }
 
 //-----------------------------------------------------------------------------
-void glx::drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
+void glx::line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glColor3ub(colA.r, colA.g, colA.b); glVertex3d(a.x, a.y, a.z);
 	glColor3ub(colB.r, colB.g, colB.b); glVertex3d(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB)
+{
+	glColor3ub(colA.r, colA.g, colA.b); glVertex3f(a.x, a.y, a.z);
+	glColor3ub(colB.r, colB.g, colB.b); glVertex3f(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3d& a, const vec3d& b)
+{
+	glVertex3d(a.x, a.y, a.z);
+	glVertex3d(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3f& a, const vec3f& b)
+{
+	glVertex3f(a.x, a.y, a.z);
+	glVertex3f(b.x, b.y, b.z);
 }
 
 //-----------------------------------------------------------------------------
@@ -197,10 +219,197 @@ void glx::drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N)
         glx::drawLine(a, b);
 }
 
+//-----------------------------------------------------------------------------
+void glx::drawSphere(const vec3d& r, float R)
+{
+	GLUquadricObj* pobj = gluNewQuadric();
+	glPushMatrix();
+	{
+		glTranslated(r.x, r.y, r.z);
+		gluSphere(pobj, R, 32, 32);
+	}
+	glPopMatrix();
+	gluDeleteQuadric(pobj);
+}
+
+//-----------------------------------------------------------------------------
+void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
+{
+	quatd q0(vec3d(0, 0, 1), n0);
+
+	const int M = 5;
+	const int N = 16;
+	for (int j = 0; j < M; ++j)
+	{
+		double th0 = 0.5 * PI * j / (double)M;
+		double th1 = 0.5 * PI * (j + 1) / (double)M;
+		double z1 = sin(th0);
+		double z2 = sin(th1);
+
+		double ct0 = cos(th0);
+		double ct1 = cos(th1);
+
+		double r1 = R * ct0;
+		double r2 = R * ct1;
+
+		if (j < M - 1)
+		{
+			glBegin(GL_QUAD_STRIP);
+			for (int i = 0; i <= N; ++i)
+			{
+				double w = 2 * PI * i / (double)N;
+				double x = cos(w);
+				double y = sin(w);
+
+				vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
+				vec3d ri1(r2 * x, r2 * y, R * z2); q0.RotateVector(ri1);
+				vec3d ra = r0 + ri0;
+				vec3d rb = r0 + ri1;
+
+				vec3d na(ct0*x, ct0*y, z1); q0.RotateVector(na);
+				vec3d nb(ct1*x, ct1*y, z2); q0.RotateVector(nb);
+
+				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+				glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+			}
+			glEnd();
+		}
+		else
+		{
+			glBegin(GL_TRIANGLE_FAN);
+			{
+				vec3d ri1(0, 0, R); q0.RotateVector(ri1);
+				vec3d rb = r0 + ri1;
+				vec3d nb(0, 0, R); q0.RotateVector(nb);
+				glTexCoord1d(tex); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+
+				for (int i = 0; i <= N; ++i)
+				{
+					double w = 2 * PI * i / (double)N;
+					double x = cos(w);
+					double y = sin(w);
+
+					vec3d ri0(r1 * x, r1 * y, R * z1); q0.RotateVector(ri0);
+					vec3d ra = r0 + ri0;
+					vec3d na(ct0*x, ct0*y, z1); q0.RotateVector(na);
+					glTexCoord1d(tex); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+				}
+			}
+			glEnd();
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+static vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
+{
+	double ax[4], ay[4], az[4];
+	ax[0] = r0.x; ax[1] = n0.x; ax[2] = 3.0 * (r1.x - r0.x) - 2.0 * n0.x - n1.x; ax[3] = n1.x + n0.x - 2.0 * (r1.x - r0.x);
+	ay[0] = r0.y; ay[1] = n0.y; ay[2] = 3.0 * (r1.y - r0.y) - 2.0 * n0.y - n1.y; ay[3] = n1.y + n0.y - 2.0 * (r1.y - r0.y);
+	az[0] = r0.z; az[1] = n0.z; az[2] = 3.0 * (r1.z - r0.z) - 2.0 * n0.z - n1.z; az[3] = n1.z + n0.z - 2.0 * (r1.z - r0.z);
+
+	vec3d r;
+	r.x = ((ax[3] * t + ax[2]) * t + ax[1]) * t + ax[0];
+	r.y = ((ay[3] * t + ay[2]) * t + ay[1]) * t + ay[0];
+	r.z = ((az[3] * t + az[2]) * t + az[1]) * t + az[0];
+
+	return r;
+}
+
+//-----------------------------------------------------------------------------
+void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1, int nsegs)
+{
+	quatd q0(vec3d(0, 0, 1), n0);
+	quatd q1(vec3d(0, 0, 1), n1);
+
+	double L = (r1 - r0).Length();
+	vec3d m0 = n0 * L;
+	vec3d m1 = n1 * L;
+
+	int M = nsegs;
+	if (M < 2) M = 2;
+
+	const int N = 16;
+	for (int j = 0; j < M; ++j)
+	{
+		quatd qa = quatd::slerp(q0, q1, (double)j / M);
+		quatd qb = quatd::slerp(q0, q1, (double)(j + 1) / M);
+
+		vec3d rj0 = interpolate(r0, r1, m0, m1, (double)j / M);
+		vec3d rj1 = interpolate(r0, r1, m0, m1, (double)(j + 1.0) / M);
+
+		float ta = t0 + j * (t1 - t0) / M;
+		float tb = t0 + (j + 1) * (t1 - t0) / M;
+
+		glBegin(GL_QUAD_STRIP);
+		for (int i = 0; i <= N; ++i)
+		{
+			double w = 2 * PI * i / (double)N;
+			double x = cos(w);
+			double y = sin(w);
+
+			vec3d ri0(R * x, R * y, 0); qa.RotateVector(ri0);
+			vec3d ri1(R * x, R * y, 0); qb.RotateVector(ri1);
+			vec3d ra = rj0 + ri0;
+			vec3d rb = rj1 + ri1;
+
+			vec3d na(x, y, 0.0); qa.RotateVector(na);
+			vec3d nb(x, y, 0.0); qb.RotateVector(nb);
+
+			glTexCoord1d(ta); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+			glTexCoord1d(tb); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+		}
+		glEnd();
+	}
+}
+
+void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
+{
+	int NP = (int)path.size();
+	if (NP < 2) return;
+
+	vec3d r0 = path[0];
+	vec3d r1 = path[1];
+	vec3d e1 = r1 - r0; e1.Normalize();
+	vec3d r2;
+
+	for (int i = 0; i < NP-1; ++i)
+	{
+		vec3d e2 = e1;
+		r2 = r1;
+		if (i < NP - 2)
+		{
+			r2 = path[i + 2];
+			e2 = r2 - r0; e2.Normalize();
+		}
+		else {
+			e2 = r1 - r0; e2.Normalize();
+		}
+
+		// render cylinder
+		glx::drawSmoothPath(r0, r1, R, e1, e2, 0.f, 0.f, 32);
+		
+		// render caps
+		if (i ==    0) glx::drawHalfSphere(r0, R, -e1);
+		if (i == NP-2) glx::drawHalfSphere(r1, R,  e2);
+
+		// prep for next segment
+		r0 = r1;
+		r1 = r2;
+		e1 = e2;
+	}
+}
+
 void glx::quad4(vec3d r[4], vec3d n[4])
 {
 	vertex3d(r[0], n[0]); vertex3d(r[1], n[1]); vertex3d(r[2], n[2]);
 	vertex3d(r[2], n[2]); vertex3d(r[3], n[3]); vertex3d(r[0], n[0]);
+}
+
+void glx::quad4(vec3d r[4], vec3d n[4], GLColor c[4])
+{
+	vertex3d(r[0], n[0], c[0]); vertex3d(r[1], n[1], c[1]);	vertex3d(r[2], n[2], c[2]);
+	vertex3d(r[2], n[2], c[2]);	vertex3d(r[3], n[3], c[3]);	vertex3d(r[0], n[0], c[0]);
 }
 
 void glx::quad4(vec3d r[4], vec3f n[4], float t[4])
@@ -270,6 +479,13 @@ void glx::tri3(vec3d r[3], vec3d n[3])
 	vertex3d(r[0], n[0]);
 	vertex3d(r[1], n[1]);
 	vertex3d(r[2], n[2]);
+}
+
+void glx::tri3(vec3d r[3], vec3f n[3], GLColor c[3])
+{
+	vertex3d(r[0], n[0], c[0]);
+	vertex3d(r[1], n[1], c[1]);
+	vertex3d(r[2], n[2], c[2]);
 }
 
 void glx::tri3(vec3d r[3], vec3f n[3], float t[3])
@@ -393,6 +609,50 @@ void glx::drawLine(double x0, double y0, double z0, double x1, double y1, double
 }
 
 //-----------------------------------------------------------------------------
+void glx::drawBox(double wx, double wy, double wz)
+{
+	glBegin(GL_QUADS);
+	{
+		glNormal3d(1, 0, 0);
+		glVertex3d(wx, -wy, -wz);
+		glVertex3d(wx,  wy, -wz);
+		glVertex3d(wx,  wy,  wz);
+		glVertex3d(wx, -wy,  wz);
+
+		glNormal3d(-1, 0, 0);
+		glVertex3d(-wx,  wy, -wz);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d(-wx, -wy,  wz);
+		glVertex3d(-wx,  wy,  wz);
+
+		glNormal3d(0, 1, 0);
+		glVertex3d( wx, wy, -wz);
+		glVertex3d(-wx, wy, -wz);
+		glVertex3d(-wx, wy,  wz);
+		glVertex3d( wx, wy,  wz);
+
+		glNormal3d(0, -1, 0);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d( wx, -wy, -wz);
+		glVertex3d( wx, -wy,  wz);
+		glVertex3d(-wx, -wy,  wz);
+
+		glNormal3d(0, 0, 1);
+		glVertex3d(-wx,  wy, wz);
+		glVertex3d( wx,  wy, wz);
+		glVertex3d( wx, -wy, wz);
+		glVertex3d(-wx, -wy, wz);
+
+		glNormal3d(0, 0, -1);
+		glVertex3d( wx,  wy, -wz);
+		glVertex3d(-wx,  wy, -wz);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d( wx, -wy, -wz);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 // Render a sub-divided 4-noded quadrilateral
 void glx::smoothQUAD4(vec3d r[4], vec3f n[4], float t[4], int ndivs)
 {
@@ -423,7 +683,7 @@ void glx::smoothQUAD4(vec3d r[4], vec3f n[4], float t[4], int ndivs)
 					h[2] = 0.25f*(1 + sak)*(1 + tak);
 					h[3] = 0.25f*(1 - sak)*(1 + tak);
 
-					vec3d nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3];
+					vec3f nk = n[0] * h[0] + n[1] * h[1] + n[2] * h[2] + n[3] * h[3];
 					vec3d rk = r[0] * h[0] + r[1] * h[1] + r[2] * h[2] + r[3] * h[3];
 					float tk = t[0] * h[0] + t[1] * h[1] + t[2] * h[2] + t[3] * h[3];
 
@@ -682,7 +942,8 @@ void glx::smoothTRI7(vec3d r[7], vec3f n[7], float t[7], int ndivs)
 void glx::smoothTRI10(vec3d r[10], vec3f n[10], float t[10], int ndivs)
 {
 	float sa[2], ta[2], tk, h[10];
-	vec3d nk, xk;
+	vec3f nk;
+	vec3d xk;
 	int i, j, k;
 	int nj = ndivs;
 

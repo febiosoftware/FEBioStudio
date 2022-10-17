@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -69,7 +69,7 @@ double LaplaceSolver::GetRelativeNorm() const
 // Input: val = initial values for all nodes
 //        bn  = boundary flags: 0 = free, 1 = fixed
 // Output: val = solution
-bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int elemTag)
+bool LaplaceSolver::Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int elemTag)
 {
 	m_niters = 0;
 
@@ -124,7 +124,7 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int 
 	for (int i = 0; i < elist.size(); ++i)
 	{
 		int eid = elist[i];
-		FEElement& el = pm->Element(eid);
+		FSElement& el = pm->Element(eid);
 		if (el.IsSolid())
 			Ve[eid] = FEMeshMetrics::ElementVolume(*pm, el);
 		else
@@ -137,7 +137,7 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int 
 	for (int i = 0; i < elist.size(); ++i)
 	{
 		int eid = elist[i];
-		FEElement& el = pm->Element(eid);
+		FSElement& el = pm->Element(eid);
 		int nn = el.Nodes();
 		for (int j = 0; j < nn; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
 	}
@@ -158,10 +158,10 @@ bool LaplaceSolver::Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int 
 	assert(nc == nodeList.size());
 
 	// create Node-Node list
-	FENodeNodeList NNL(pm);
+	FSNodeNodeList NNL(pm);
 
 	// create node-element list
-	FENodeElementList NEL;
+	FSNodeElementList NEL;
 	NEL.Build(pm);
 
 	// we'll assign values to the edges and the nodes

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include <QStandardPaths>
 #include <QDir>
 #include <QFile>
-//#include <QStringList>
 #include <QVariantMap>
 #include "RepositoryPanel.h"
 
@@ -103,27 +102,40 @@ public:
 		dbPath = dbPanel->GetRepositoryFolder() += "/localdb.db";
 	}
 
-	void openDatabase(std::string schema)
-	{
-		char *zErrMsg = 0;
-
-		// When the repository is refreshed, this is called again, and the current db needs to be closed
-		// before it is deleted.
-		if(db) sqlite3_close(db);
-
-		// Delete local copy of the model database in order to write a new one.
-		QFile::remove(dbPath);
-
-		int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
+    bool openDatabase()
+    {
+        int rc = sqlite3_open(dbPath.toStdString().c_str(), &db);
 
 		if( rc )
 		{
 			fprintf(stderr, "Can't open database: %s\nError: %s\n", dbPath.toStdString().c_str(), sqlite3_errmsg(db));
 			sqlite3_close(db);
-			return;
+			return false;
 		}
 
-		rc = sqlite3_exec(db,schema.c_str(), NULL, NULL, &zErrMsg);
+        return true;
+    }
+
+    void closeDatabase()
+    {
+        sqlite3_close(db);
+    }
+
+	void initDatabase(std::string schema)
+	{
+		char *zErrMsg = 0;
+
+        // Before we close and delete it, we need to copy the downloaded date for the files
+        saveDownloadDates();
+
+		if(!openDatabase()) return;
+
+        // Completely empty the database
+        sqlite3_db_config(db, SQLITE_DBCONFIG_RESET_DATABASE, 1, 0);
+        sqlite3_exec(db, "VACUUM", 0, 0, 0);
+        sqlite3_db_config(db, SQLITE_DBCONFIG_RESET_DATABASE, 0, 0);
+
+		int rc = sqlite3_exec(db,schema.c_str(), NULL, NULL, &zErrMsg);
 
 		if( rc!=SQLITE_OK )
 		{
@@ -131,50 +143,80 @@ public:
 			sqlite3_free(zErrMsg);
 		}
 
+        closeDatabase();
 	}
+
+    void saveDownloadDates()
+    {
+        if(!openDatabase()) return;
+
+        char **table;
+		int rows, cols;
+
+		std::string query = "SELECT ID, downloadTime FROM filenames";
+		getTable(query, &table, &rows, &cols);
+
+        if(rows != 0)
+        {
+            for(int row = 1; row < rows + 1; row++)
+            {
+                downloadTimes[QString(table[row*cols]).toLongLong()] = QString(table[row*cols + 1]).toLongLong();
+            }
+        }
+
+        sqlite3_free_table(table);
+
+        closeDatabase();
+    }
 
 	void execute(std::string& query, int (*callback)(void*,int,char**,char**)=NULL, void* arg = NULL)
 	{
-		int rc;
+        if(!openDatabase()) return;
+
 		char *zErrMsg = 0;
 
-		rc = sqlite3_exec(db, query.c_str(), callback, arg, &zErrMsg);
+		int rc = sqlite3_exec(db, query.c_str(), callback, arg, &zErrMsg);
 
 		if( rc!=SQLITE_OK )
 		{
 			fprintf(stderr, "SQL error: %s\n", zErrMsg);
 			sqlite3_free(zErrMsg);
 		}
+
+        closeDatabase();
 	}
 
 	void getTable(std::string& query, char ***table, int* rows, int* cols)
 	{
-		int rc;
+        if(!openDatabase()) return;
+
 		char *zErrMsg = 0;
 
-		rc = sqlite3_get_table(db, query.c_str(), table, rows, cols, &zErrMsg);
+		int rc = sqlite3_get_table(db, query.c_str(), table, rows, cols, &zErrMsg);
 
 		if( rc!=SQLITE_OK )
 		{
 			fprintf(stderr, "SQL error: %s\n", zErrMsg);
 			sqlite3_free(zErrMsg);
 		}
+
+        closeDatabase();
 	}
 
 	void insert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
-		{
-			std::string query("INSERT INTO ");
-			query += tableName;
-			query += "(" + columns[0];
-			for(int index = 1; index < columns.size(); index++)
-			{
-				query += ", " + columns[index];
-			}
-			query += ") ";
-			query += "VALUES " + values;
+    {
+        std::string query("INSERT INTO ");
+        query += tableName;
+        query += "(" + columns[0];
+        for(int index = 1; index < columns.size(); index++)
+        {
+            query += ", " + columns[index];
+        }
+        query += ") ";
+        query += "VALUES " + values;
 
-			execute(query);
-		}
+        execute(query);
+    }
 
 	void upsert(std::string& tableName, std::vector<std::string>& columns, std::string& values, std::string conflict = "")
 	{
@@ -212,25 +254,45 @@ public:
 
 		std::string hasCopy = "UPDATE filenames set localCopy = 1 WHERE ID IN (";
 		std::string noCopy = "UPDATE filenames set localCopy = 0 WHERE ID IN (";
+        std::string dtimes;
 
 		bool updateHasCopy = false;
 		bool updateNoCopy = false;
 
 		for(int row = 1; row < rows + 1; row++)
 		{
-			QString filename = GetFullFilename(std::stoi(table[row]), 1);
+            char* ID = table[row];
 
+			QString filename = GetFullFilename(std::stoi(ID), 1);
 
-			QFile file(filename);
-			if(file.exists())
+			QFileInfo info(filename);
+			if(info.exists())
 			{
-				hasCopy += table[row];
+				hasCopy += ID;
 				hasCopy += ", ";
 				updateHasCopy = true;
+
+                std::string downloadTime = "0";
+
+                // Grab the download time from the map if it's there. 
+                try
+                {
+                    downloadTime = QString::number(downloadTimes.at(std::stoi(ID))).toStdString();
+                }
+                catch(const std::out_of_range& e) {}
+
+                // If it wasn't there, or is 0, set it equal to the last modified time of the file
+                if(downloadTime.compare("0") == 0)
+                {
+                    downloadTime = QString::number(info.lastModified().toSecsSinceEpoch()).toStdString();
+                }
+                
+                // Build the SQL string to add the download times
+                dtimes += "UPDATE filenames SET downloadTime=" + downloadTime + " WHERE ID=" + ID + "; ";
 			}
 			else
 			{
-				noCopy += table[row];
+				noCopy += ID;
 				noCopy += ", ";
 				updateNoCopy = true;
 			}
@@ -251,6 +313,9 @@ public:
 
 		if(updateHasCopy) execute(hasCopy);
 		if(updateNoCopy) execute(noCopy);
+        execute(dtimes);
+
+        downloadTimes.clear();
 	}
 
 	QString ProjectNameFromID(int ID)
@@ -414,6 +479,24 @@ public:
 		return projID;
 	}
 
+    void FileIDsFromProjectID(int ID, std::vector<int>& ids)
+    {
+        char **table;
+		int rows, cols;
+
+        std::string query("SELECT ID FROM filenames WHERE project = ");
+        query += std::to_string(ID);
+
+        getTable(query, &table, &rows, &cols);
+
+        for(int row = 1; row < rows + 1; row++)
+        {
+            ids.push_back(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
+
 	int CategoryIDFromName(std::string name)
 	{
 		char **table;
@@ -493,10 +576,42 @@ public:
 		return totalSize;
 	}
 
+    void setDownloadTime(int ID, int type, qint64 time)
+    {
+        std::string query = "UPDATE filenames SET downloadTime=" +
+            std::to_string(time) + " WHERE ID";
+
+        if(type == FULL)
+        {
+            std::vector<int> fileIDs;
+            FileIDsFromProjectID(ID, fileIDs);
+
+            query += " in (";
+
+            for(int fileID : fileIDs)
+            {
+                query += std::to_string(fileID) + ",";
+            }
+
+            // Remove the last comma
+            query.pop_back();
+
+            query += ");";
+        }
+        else
+        {
+            query += "=" + std::to_string(ID);
+        }
+
+        execute(query);
+    }
+
 public:
 	sqlite3* db;
 	CRepositoryPanel* dbPanel;
 	QString dbPath;
+
+    std::map<qint64, qint64> downloadTimes;
 };
 
 CLocalDatabaseHandler::CLocalDatabaseHandler(CRepositoryPanel* dbPanel)
@@ -510,7 +625,7 @@ void CLocalDatabaseHandler::init(std::string schema)
 {
 	imp->updateDBPath();
 
-	imp->openDatabase(schema);
+	imp->initDatabase(schema);
 }
 
 void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
@@ -580,7 +695,7 @@ QStringList CLocalDatabaseHandler::GetTags()
 
 void CLocalDatabaseHandler::GetProjectFiles(int ID)
 {
-	std::string query("SELECT ID, filename, localCopy, size from filenames where project = ");
+	std::string query("SELECT ID, filename, localCopy, size, uploadTime, downloadTime from filenames where project = ");
 	query += std::to_string(ID);
 
 	imp->execute(query, addProjectFilesCallback, imp->dbPanel);
@@ -748,18 +863,37 @@ void CLocalDatabaseHandler::GetProjectPubs(int ID)
 
 }
 
-std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
+std::set<int> CLocalDatabaseHandler::ProjectSearch(QString dataType, QString term)
 {
-	if(term.isEmpty()) return std::unordered_set<int>();
+	if(term.isEmpty()) return std::set<int>();
 
+    dataType = dataType.toLower();
+
+    QString query;
+    if(dataType == "all")
+    {
+        query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner=users.ID WHERE username LIKE '%%1%' "
+            "OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "user")
+    {
+        query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner=users.ID WHERE username LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "name")
+    {
+        query = QString("SELECT projects.ID FROM projects WHERE name LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "description")
+    {
+        query = QString("SELECT projects.ID FROM projects WHERE description LIKE '%%1%'").arg(term);
+    }
+    
 	char **table;
 	int rows, cols;
 
-	std::unordered_set<int> projects;
+	std::set<int> projects;
 
-	// Matches owners, names, and descriptions of projects
-	QString query = QString("SELECT projects.ID FROM projects JOIN users ON projects.owner=users.ID WHERE username LIKE '%%1%' OR name LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
-	std::string queryStd = query.toStdString();
+    std::string queryStd = query.toStdString();
 
 	imp->getTable(queryStd, &table, &rows, &cols);
 
@@ -770,57 +904,55 @@ std::unordered_set<int> CLocalDatabaseHandler::FullTextSearch(QString term)
 
 	sqlite3_free_table(table);
 
-	// Matches filenames and descriptions
-	query = QString("SELECT project FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
-	queryStd = query.toStdString();
+    if(dataType == "all" || dataType == "tag")
+    {
+        // Matches project tags
+        query = QString("SELECT projectTags.project FROM tags JOIN projectTags ON tags.ID = projectTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
+        queryStd = query.toStdString();
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+        imp->getTable(queryStd, &table, &rows, &cols);
 
-	for(int row = 1; row <= rows; row++)
-	{
-		projects.insert(std::stoi(table[row]));
-	}
+        for(int row = 1; row <= rows; row++)
+        {
+            projects.insert(std::stoi(table[row]));
+        }
 
-	sqlite3_free_table(table);
-
-	// Matches project tags
-	query = QString("SELECT projectTags.project FROM tags JOIN projectTags ON tags.ID = projectTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
-	queryStd = query.toStdString();
-
-	imp->getTable(queryStd, &table, &rows, &cols);
-
-	for(int row = 1; row <= rows; row++)
-	{
-		projects.insert(std::stoi(table[row]));
-	}
-
-	sqlite3_free_table(table);
-
-	// Matches file tags
-//	query = QString("SELECT filenames.project FROM tags JOIN fileTags ON tags.ID = fileTags.tag JOIN filenames ON fileNames.ID = fileTags.file WHERE tags.tag LIKE '%%1%'").arg(term);
-//	queryStd = query.toStdString();
-//
-//	imp->getTable(queryStd, &table, &rows, &cols);
-//
-//	for(int row = 1; row <= rows; row++)
-//	{
-//		projects.insert(stoi(table[row]));
-//	}
-//
-//	sqlite3_free_table(table);
+        sqlite3_free_table(table);
+    }
 
 	return projects;
 }
 
-std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
+std::set<int> CLocalDatabaseHandler::FileSearch(QString dataType, QString term)
 {
+    if(term.isEmpty()) return std::set<int>();
+
+    dataType = dataType.toLower();
+
 	char **table;
 	int rows, cols;
 
-	std::unordered_set<int> files;
+	std::set<int> files;
 
-	// Matches filenames and descriptions
-	QString query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+    bool otherType = true;
+
+    QString query;
+    if(dataType == "all")
+    {
+        otherType = false;
+        query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%' OR description LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "name")
+    {
+        otherType = false;
+        query = QString("SELECT ID FROM filenames WHERE filename LIKE '%%1%'").arg(term);
+    }
+    else if(dataType == "description")
+    {
+        otherType = false;
+        query = QString("SELECT ID FROM filenames WHERE description LIKE '%%1%'").arg(term);
+    }
+
 	std::string queryStd = query.toStdString();
 
 	imp->getTable(queryStd, &table, &rows, &cols);
@@ -832,20 +964,134 @@ std::unordered_set<int> CLocalDatabaseHandler::FileSearch(QString term)
 
 	sqlite3_free_table(table);
 
-	// Matches file tags
-	query = QString("SELECT fileTags.file FROM tags JOIN fileTags ON tags.ID = fileTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
-	queryStd = query.toStdString();
+    if(dataType == "all" || dataType == "tag")
+    {
+        otherType = false;
 
-	imp->getTable(queryStd, &table, &rows, &cols);
+        // Matches file tags
+        query = QString("SELECT fileTags.file FROM tags JOIN fileTags ON tags.ID = fileTags.tag WHERE tags.tag LIKE '%%1%'").arg(term);
+        queryStd = query.toStdString();
 
-	for(int row = 1; row <= rows; row++)
-	{
-		files.insert(std::stoi(table[row]));
-	}
+        imp->getTable(queryStd, &table, &rows, &cols);
 
-	sqlite3_free_table(table);
+        for(int row = 1; row <= rows; row++)
+        {
+            files.insert(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
+
+    if(dataType == "all")
+    {
+        // Matches file data types
+        query = QString("SELECT filenames.ID FROM filenames JOIN filedatatypes ON filenames.ID=fileDataTypes.file JOIN "
+            "dataTypes ON fileDataTypes.type=dataTypes.ID WHERE dataTypes.type LIKE '%%1%'").arg(term);
+        queryStd = query.toStdString();
+
+        imp->getTable(queryStd, &table, &rows, &cols);
+
+        for(int row = 1; row <= rows; row++)
+        {
+            files.insert(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
+	
+    if(otherType)
+    {
+        // Matches file data types
+        QString query = QString("SELECT filenames.ID FROM filenames JOIN filedatatypes ON filenames.ID=fileDataTypes.file JOIN "
+            "dataTypes ON fileDataTypes.type=dataTypes.ID JOIN sections ON dataTypes.section=sections.ID WHERE sections.section "
+            "LIKE '%%1%' and dataTypes.type LIKE '%%2%'").arg(dataType).arg(term);
+        std::string queryStd = query.toStdString();
+
+        imp->getTable(queryStd, &table, &rows, &cols);
+
+        for(int row = 1; row <= rows; row++)
+        {
+            files.insert(std::stoi(table[row]));
+        }
+
+        sqlite3_free_table(table);
+    }
 
 	return files;
+}
+
+std::vector<std::pair<QString, QStringList>> CLocalDatabaseHandler::GetAdvancedSearchInfo()
+{
+    std::vector<std::pair<QString, QStringList>> info;
+
+    // Add in some standard fields first
+    info.emplace_back("Name", QStringList());
+    info.emplace_back("Description", QStringList());
+
+    char **table;
+	int rows, cols;
+
+    // Get users from database
+    std::string query = "SELECT username FROM users";
+    imp->getTable(query, &table, &rows, &cols);
+
+    QStringList users;
+    for(int row = 1; row <= rows; row++)
+    {
+        users.append(table[row]);
+    }
+
+    info.emplace_back("User", users);
+
+    sqlite3_free_table(table);
+
+    // Get tags from database
+    query = "SELECT tag FROM tags";
+    imp->getTable(query, &table, &rows, &cols);
+
+    QStringList tags;
+    for(int row = 1; row <= rows; row++)
+    {
+        tags.append(table[row]);
+    }
+
+    info.emplace_back("Tag", tags);
+
+    sqlite3_free_table(table);
+
+    // Get section names and associated datatypes from database
+    query = "SELECT sections.section, type FROM sections JOIN dataTypes on sections.ID = dataTypes.section";
+
+    imp->getTable(query, &table, &rows, &cols);
+
+    // Since the query doesn't return a sorted list, it's easier to first add the data to a map
+    // and then transfer it to our vector
+    std::map<QString, QStringList> dataTypeInfo;
+	for(int row = 1; row <= rows; row++)
+	{
+        QString section = table[row*cols];
+        QString dataType = table[row*cols+1];
+        
+        try
+        {
+            dataTypeInfo.at(section).append(dataType);
+        }
+        catch(const std::out_of_range& e)
+        {
+            dataTypeInfo[section] = QStringList(dataType);
+        }
+        
+	}
+
+    sqlite3_free_table(table);
+
+    // Here we copy the data to the vector
+    for(auto item : dataTypeInfo)
+    {
+        info.emplace_back(item.first, item.second);
+    }
+
+    return info;
 }
 
 QString CLocalDatabaseHandler::ProjectNameFromID(int ID)
@@ -898,7 +1144,10 @@ qint64 CLocalDatabaseHandler::projectsSize(int ID)
 	return imp->projectSize(ID);
 }
 
-
+void CLocalDatabaseHandler::setDownloadTime(int ID, int type, qint64 time)
+{
+    imp->setDownloadTime(ID, type, time);
+}
 
 #else
 
@@ -909,5 +1158,7 @@ bool CLocalDatabaseHandler::isValidUpload(QString& projectName, QString& categor
 qint64 CLocalDatabaseHandler::currentProjectsSize(QString username) { return 0; }
 QString CLocalDatabaseHandler::ProjectNameFromID(int ID) { return ""; }
 qint64 CLocalDatabaseHandler::projectsSize(int ID) { return 0; }
+
+void setDownloadTime(int ID, int type, qint64 time) {}
 #endif
 

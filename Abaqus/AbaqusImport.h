@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // Implements a class to import ABAQUS files
 // 
-class AbaqusImport : public FEFileImport
+class AbaqusImport : public FSFileImport
 {
 	// attributes
 	struct ATTRIBUTE
@@ -57,7 +57,7 @@ public:	// import options
 	bool	m_breadPhysics;	// read the physics (i.e. materials, bcs, etc).
 
 public:
-	AbaqusImport(FEProject& prj);
+	AbaqusImport(FSProject& prj);
 	virtual ~AbaqusImport();
 
 	bool Load(const char* szfile);
@@ -79,10 +79,10 @@ protected:
 	GObject* build_part(AbaqusModel::PART* pg);
 
 	// build a surface
-	FESurface* build_surface(AbaqusModel::SURFACE* ps);
+	FSSurface* build_surface(AbaqusModel::SURFACE* ps);
 
 	// build a nodeset
-	FENodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
+	FSNodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
 
 	// Keyword parsers
 	bool read_heading            (char* szline, FILE* fp);
@@ -109,6 +109,7 @@ protected:
 	bool read_static             (char* szline, FILE* fp);
 	bool read_orientation        (char* szline, FILE* fp);
 	bool read_distribution       (char* szline, FILE* fp);
+	bool read_amplitude          (char* szline, FILE* fp);
 
 	// skip until we find the next keyword
 	bool skip_keyword(char* szline, FILE* fp);
@@ -125,9 +126,9 @@ protected:
 
 private:
 	char		m_szTitle[AbaqusModel::Max_Title + 1];
-	FEProject*	m_pprj;
+	FSProject*	m_pprj;
 
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 
 	AbaqusModel		m_inp;
 

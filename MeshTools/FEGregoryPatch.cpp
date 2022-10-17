@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,7 +46,7 @@ FEGregoryPatch::~FEGregoryPatch(void)
 {
 }
 
-FEMesh* FEGregoryPatch::BuildMesh()
+FSMesh* FEGregoryPatch::BuildMesh()
 {
 	// first, build the patches
 	BuildPatches();
@@ -58,7 +58,7 @@ FEMesh* FEGregoryPatch::BuildMesh()
 	return BuildFEMesh();
 }
 
-FEMesh* FEGregoryPatch::BuildFEMesh()
+FSMesh* FEGregoryPatch::BuildFEMesh()
 {
 	// get the parameters
 	m_w = GetFloatValue(W);
@@ -76,13 +76,13 @@ FEMesh* FEGregoryPatch::BuildFEMesh()
 	int nodes = (m_nx*m_mx+1)*(m_ny*m_my+1);
 	int elems = m_nx*m_mx*m_ny*m_my;
 
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// build the nodes
 	int i, j, k, l, m, n;
 	double r, s;
-	FENode *pn = pm->NodePtr();
+	FSNode *pn = pm->NodePtr();
 	for (j=0; j<=m_ny*m_my; ++j)
 		for (i=0; i<=m_nx*m_mx; ++i, ++pn)
 		{
@@ -104,7 +104,7 @@ FEMesh* FEGregoryPatch::BuildFEMesh()
 	for (j=0; j<=m_ny; ++j)
 		for (i=0; i<=m_nx; ++i)
 		{
-			FENode& n = pm->Node(j*(m_nx*m_mx+1)*(m_my) + i*m_mx);
+			FSNode& n = pm->Node(j*(m_nx*m_mx+1)*(m_my) + i*m_mx);
 			n.m_gid = j*(m_nx+1)+i;
 		}
 
@@ -308,14 +308,14 @@ vec3d FEGregoryPatch::EvalPatch(FEGregoryPatch::GPatch &p, double r, double s)
 	return y;
 }
 
-void FEGregoryPatch::BuildFaces(FEMesh* pm)
+void FEGregoryPatch::BuildFaces(FSMesh* pm)
 {
 	int faces = pm->Elements();
 	pm->Create(0,0,faces);
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& f = pm->Face(i);
-		FEElement& e = pm->Element(i);
+		FSFace& f = pm->Face(i);
+		FSElement& e = pm->Element(i);
 		f.SetType(FE_FACE_QUAD4);
 		f.n[0] = e.m_node[0];
 		f.n[1] = e.m_node[1];

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include "penta.h"
 #include "hex.h"
 #include "pyra.h"
+#include "tri3.h"
+#include "quad4.h"
 
 //=============================================================================
 // FEElement_
@@ -57,7 +59,7 @@ FEElement_::FEElement_()
 // Set the element type. This also sets some other type related data
 void FEElement_::SetType(int ntype)
 {
-	m_traits = FEElementLibrary::GetTraits(ntype);
+	m_traits = FSElementLibrary::GetTraits(ntype);
 	assert(m_traits);
 }
 
@@ -121,9 +123,9 @@ bool FEElement_::HasNode(int node) const
 }
 
 //-----------------------------------------------------------------------------
-FEFace FEElement_::GetFace(int i) const
+FSFace FEElement_::GetFace(int i) const
 {
-	FEFace face;
+	FSFace face;
 	GetFace(i, face);
 	return face;
 }
@@ -259,6 +261,10 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 		nodes = 4;
 		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3;
 		break;
+	case FE_QUAD9:
+		nodes = 9;
+		n[0] = 0; n[1] = 1; n[2] = 2; n[3] = 3; n[4] = 4; n[5] = 5; n[6] = 6; n[7] = 7; n[8] = 8;
+		break;
 	}
 
 	assert(nodes > 0);
@@ -266,7 +272,7 @@ int FEElement_::GetLocalFaceIndices(int i, int* n) const
 }
 
 //-----------------------------------------------------------------------------
-void FEElement_::GetFace(int i, FEFace& f) const
+void FEElement_::GetFace(int i, FSFace& f) const
 {
 	int* m = m_node;
 	int* n = f.n;
@@ -393,9 +399,9 @@ void FEElement_::GetFace(int i, FEFace& f) const
 }
 
 //-----------------------------------------------------------------------------
-FEEdge FEElement_::GetEdge(int i) const
+FSEdge FEElement_::GetEdge(int i) const
 {
-	FEEdge e;
+	FSEdge e;
 
 	switch (Type())
 	{
@@ -447,7 +453,7 @@ FEEdge FEElement_::GetEdge(int i) const
 
 //-----------------------------------------------------------------------------
 //! Find the edge index of a shell
-int FEElement_::FindEdge(const FEEdge& edge) const
+int FEElement_::FindEdge(const FSEdge& edge) const
 {
 	assert(IsShell());
 	int nbre = Edges();
@@ -462,7 +468,7 @@ int FEElement_::FindEdge(const FEEdge& edge) const
 }
 
 //-----------------------------------------------------------------------------
-void FEElement_::GetShellFace(FEFace& f) const
+void FEElement_::GetShellFace(FSFace& f) const
 {
 	switch (Type())
 	{
@@ -499,11 +505,11 @@ int FEElement_::FindNodeIndex(int nid)
 }
 
 //-----------------------------------------------------------------------------
-int FEElement_::FindFace(const FEFace& f)
+int FEElement_::FindFace(const FSFace& f)
 {
 	int nf = Faces();
 	for (int i = 0; i<nf; ++i) {
-		FEFace lf = GetFace(i);
+		FSFace lf = GetFace(i);
 		if (lf == f)
 		{
 			return i;
@@ -741,9 +747,22 @@ void FEElement_::shape(double *H, double r, double s, double t)
 }
 
 //-----------------------------------------------------------------------------
+//! Calculate the shape function values at the point (r,s)
+void FEElement_::shape_2d(double* H, double r, double s)
+{
+	switch (Type())
+	{
+	case FE_TRI3 : TRI3 ::shape(H, r, s); break;
+	case FE_QUAD4: QUAD4::shape(H, r, s); break;
+	default:
+		assert(false);
+	}
+}
+
+//-----------------------------------------------------------------------------
 double FEElement_::eval(double* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i=0; i<Nodes(); ++i) a += H[i]*d[i];
@@ -753,7 +772,7 @@ double FEElement_::eval(double* d, double r, double s, double t)
 //-----------------------------------------------------------------------------
 float FEElement_::eval(float* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	double a = 0.0;
 	for (int i = 0; i<Nodes(); ++i) a += H[i] * d[i];
@@ -763,10 +782,20 @@ float FEElement_::eval(float* d, double r, double s, double t)
 //-----------------------------------------------------------------------------
 vec3f FEElement_::eval(vec3f* d, double r, double s, double t)
 {
-	double H[FEElement::MAX_NODES];
+	double H[FSElement::MAX_NODES];
 	shape(H, r, s, t);
 	vec3f a(0,0,0);
 	for (int i=0; i<Nodes(); ++i) a += d[i]*((float)H[i]);
+	return a;
+}
+
+//-----------------------------------------------------------------------------
+vec3f FEElement_::eval(vec3f* d, double r, double s)
+{
+	double H[FSElement::MAX_NODES];
+	shape_2d(H, r, s);
+	vec3f a(0, 0, 0);
+	for (int i = 0; i < Nodes(); ++i) a += d[i] * ((float)H[i]);
 	return a;
 }
 
@@ -790,6 +819,18 @@ void FEElement_::shape_deriv(double* Hr, double* Hs, double* Ht, double r, doubl
     default:
 		assert(false);
     }
+}
+
+//-----------------------------------------------------------------------------
+void FEElement_::shape_deriv_2d(double* Hr, double* Hs, double r, double s)
+{
+	switch (Type())
+	{
+	case FE_TRI3 : TRI3 ::shape_deriv(Hr, Hs, r, s); break;
+	case FE_QUAD4: QUAD4::shape_deriv(Hr, Hs, r, s); break;
+	default:
+		assert(false);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -817,10 +858,36 @@ void FEElement_::iso_coord(int n, double q[3])
     }
 }
 
-//=============================================================================
-// FEElement
 //-----------------------------------------------------------------------------
-FEElement::FEElement()
+void FEElement_::iso_coord_2d(int n, double q[2])
+{
+	// for n=-1 return isoparametric coordinates of element center
+	assert((n >= -1) && (n < Nodes()));
+	switch (Type())
+	{
+	case FE_TRI3 : TRI3::iso_coord(n, q); break;
+	case FE_QUAD4: QUAD4::iso_coord(n, q); break;
+	default:
+		assert(false);
+	}
+}
+
+void FEElement_::setAxes(const vec3d& a, const vec3d& d)
+{
+	vec3d e1(a); e1.Normalize();
+	vec3d e3 = e1 ^ d; e3.Normalize();
+	vec3d e2 = e3 ^ e1; e2.Normalize();
+	m_Q = mat3d(
+		e1.x, e2.x, e3.x,
+		e1.y, e2.y, e3.y,
+		e1.z, e2.z, e3.z);
+	m_Qactive = true;
+}
+
+//=============================================================================
+// FSElement
+//-----------------------------------------------------------------------------
+FSElement::FSElement()
 { 
 	m_node = _node;
 	m_nbr = _nbr;
@@ -834,7 +901,7 @@ FEElement::FEElement()
 }
 
 //-----------------------------------------------------------------------------
-FEElement::FEElement(const FEElement& el)
+FSElement::FSElement(const FSElement& el)
 {
 	m_node = _node;
 	m_nbr = _nbr;
@@ -848,7 +915,7 @@ FEElement::FEElement(const FEElement& el)
 }
 
 //-----------------------------------------------------------------------------
-FEElement& FEElement::operator = (const FEElement& el)
+FSElement& FSElement::operator = (const FSElement& el)
 {
 	copy(el);
 
@@ -857,6 +924,9 @@ FEElement& FEElement::operator = (const FEElement& el)
 
 	return *this;
 }
+
+int ET_LINE[1][2] = {
+	{ 0, 1 }};
 
 int ET_QUAD[4][2] = {
 	{ 0, 1 },

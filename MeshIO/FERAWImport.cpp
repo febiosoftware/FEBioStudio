@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 
 //-----------------------------------------------------------------------------
-FERAWImport::FERAWImport(FEProject& prj) : FEFileImport(prj)
+FERAWImport::FERAWImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_nx = 0;
 	m_ny = 0;
@@ -76,19 +76,19 @@ bool FERAWImport::Load(const char* szfile)
 	Close();
 
 	// reindex image so that we know how many gray values are effectively used 
-	vector<int> bin; bin.assign(256, 0);
+	std::vector<int> bin; bin.assign(256, 0);
 	for (int i=0; i<N; ++i) bin[pb[i]]++;
 	int n = 0;
 	for (int i=0; i<256; ++i) if (bin[i] > 0) bin[i] = n++; else bin[i] = -1;
 	for (int i=0; i<N; ++i) { pb[i] = bin[pb[i]]; assert(pb[i] >= 0); }
 
 	// get the FE Model
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	// create a new mesh
 	int nodes = (m_nx+1)*(m_ny+1)*(m_nz+1);
 	int elems = m_nx*m_ny*m_nz;
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// define the nodal coordinates
@@ -113,7 +113,7 @@ bool FERAWImport::Load(const char* szfile)
 		for (int j=0; j<m_ny; ++j)
 			for (int i=0; i<m_nx; ++i, ++n)
 			{
-				FEElement& elem = pm->Element(n);
+				FSElement& elem = pm->Element(n);
 				elem.SetType(FE_HEX8);
 				elem.m_gid = pb[n];
 				elem.m_node[0] = k*(m_nx+1)*(m_ny+1) + j*(m_nx+1) + i;

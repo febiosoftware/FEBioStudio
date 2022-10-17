@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,45 +41,32 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QListWidget>
 #include <QPlainTextEdit>
+#include <QSplitter>
+#include <QLabel>
 #include <unordered_map>
-
 #include "DlgEditLConfigs.h"
 #include "LaunchConfig.h"
-
-
-class StackedWidget : public QStackedWidget
-{
-	QSize sizeHint() const override
-	{
-		return currentWidget()->sizeHint();
-	}
-
-	QSize minimumSizeHint() const override
-	{
-		return currentWidget()->minimumSizeHint();
-	}
-
-};
+#include "DynamicStackedWidget.h"
 
 class Ui::CDlgEditPath
 {
 public:
 	QListWidget* launchConfigList;
 
-	StackedWidget* stack;
+	QWidget* defaultPage;
+
+	QStackedWidget* rhsStack;
+	DynamicStackedWidget* configStack;
+
+	QToolButton* addConfigBtn;
+	QToolButton* delConfigBtn;
+	QToolButton* editLocalPath;
 
 	QWidget* localPage;
 	QWidget* remotePage;
 	QWidget* PBSPage;
 	QWidget* SlurmPage;
 	QWidget* customPage;
-
-	QFormLayout* baseForm;
-	QFormLayout* localForm;
-	QFormLayout* remoteForm;
-	QFormLayout* PBSForm;
-	QFormLayout* SlurmForm;
-	QFormLayout* customForm;
 
 	QComboBox*	launchType;
 
@@ -138,56 +125,162 @@ public:
 				"#\t${REMOTE_DIR}: the remote directory that you specify.\n"
 				"#\t${JOB_NAME}: your current job's name.\n";
 
-	std::vector<CLaunchConfig>* launchConfigs;
+	std::vector<CLaunchConfig>& launchConfigs;
 	std::unordered_map<QListWidgetItem*, CLaunchConfig> tempLaunchConfigs;
 
-	CDlgEditPath(std::vector<CLaunchConfig>* launchConfigs) : launchConfigs(launchConfigs){}
+	CDlgEditPath(std::vector<CLaunchConfig>& launchConfigs) : launchConfigs(launchConfigs){}
 
 	void setup(QDialog* dlg)
 	{
-		stack = new StackedWidget;
+		// build the left, right panes
+		QWidget* leftPane = buildLeftPane();
+		QWidget* rightPane = buildRightPane();
 
-		baseForm = new QFormLayout;
+		// build the splitter
+		QSplitter* split = new QSplitter;
+		split->setOrientation(Qt::Horizontal);
+		split->addWidget(leftPane);
+		split->addWidget(rightPane);
+
+		// build the main layout
+		QVBoxLayout* mainLayout = new QVBoxLayout;
+		mainLayout->addWidget(split);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		mainLayout->addWidget(bb);
+
+		dlg->setLayout(mainLayout);
+
+		QObject::connect(addConfigBtn, SIGNAL(clicked()), dlg, SLOT(on_addConfigBtn_Clicked()));
+		QObject::connect(delConfigBtn, SIGNAL(clicked()), dlg, SLOT(on_delConfigBtn_Clicked()));
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+		QObject::connect(launchType, QOverload<int>::of(&QComboBox::activated), configStack, &QStackedWidget::setCurrentIndex);
+		QObject::connect(launchConfigList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), dlg, SLOT(on_selection_change(QListWidgetItem*, QListWidgetItem*)));
+		QObject::connect(editLocalPath, SIGNAL(clicked()), dlg, SLOT(on_editLocalPath_clicked()));
+	}
+
+	QWidget* buildLeftPane()
+	{
+		// build the launch configuration widget
+		launchConfigList = new QListWidget;
+		launchConfigList->setEditTriggers(QAbstractItemView::DoubleClicked);
+		launchConfigList->setDragDropMode(QAbstractItemView::InternalMove);
+		launchConfigList->setDropIndicatorShown(true);
+		for (CLaunchConfig& lc : launchConfigs)
+		{
+			QListWidgetItem* item = new QListWidgetItem(lc.name.c_str(), launchConfigList);
+			item->setFlags(item->flags() | Qt::ItemIsEditable);
+			tempLaunchConfigs[item] = lc;
+		}
+//		launchConfigList->setFixedWidth(launchConfigList->sizeHintForColumn(0) + 10);
+
+		// build the add config button
+		QAction* addConfig = new QAction;
+		addConfig->setIcon(QIcon(":/icons/selectAdd.png"));
+		addConfigBtn = new QToolButton;
+		addConfigBtn->setDefaultAction(addConfig);
+		addConfigBtn->setToolTip("Add a new launch configuration");
+
+		// build the delete config button
+		QAction* delConfig = new QAction;
+		delConfig->setIcon(QIcon(":/icons/selectSub.png"));
+		delConfigBtn = new QToolButton;
+		delConfigBtn->setDefaultAction(delConfig);
+		delConfigBtn->setToolTip("Remove launch configuration");
+
+		// build the layouts
+		QHBoxLayout* h1 = new QHBoxLayout;
+		h1->setContentsMargins(0, 0, 0, 0);
+		h1->addWidget(addConfigBtn);
+		h1->addWidget(delConfigBtn);
+		h1->setAlignment(Qt::AlignLeft);
+
+		QVBoxLayout* v2 = new QVBoxLayout;
+		v2->setContentsMargins(0, 0, 0, 0);
+		v2->addWidget(launchConfigList);
+		v2->addLayout(h1);
+
+		QWidget* leftPane = new QWidget;
+		leftPane->setLayout(v2);
+
+		return leftPane;
+	}
+
+	QWidget* buildRightPane()
+	{
+		// form for right-hand side pane
+		QFormLayout* baseForm = new QFormLayout;
 		baseForm->setLabelAlignment(Qt::AlignRight);
-		baseForm->setContentsMargins(0,0,0,0);
+		baseForm->setContentsMargins(0, 0, 0, 0);
 		baseForm->addRow("Launch Type:", launchType = new QComboBox);
+
+		// the stack holds the widgets for the different launch configuration types selected via launchType
+		configStack = new DynamicStackedWidget;
+
+		// add the different config widgets
 		launchType->addItem("Local");
-
-		localPage = new QWidget;
-		localForm = new QFormLayout;
-		localForm->setLabelAlignment(Qt::AlignRight);
-		localForm->setContentsMargins(0,0,0,0);
-		localForm->addRow("FEBio Executable:", localPath = new QLineEdit);
-		localPage->setLayout(localForm);
-
-		stack->addWidget(localPage);
+		localPage = buildLocalConfigWidget();
+		configStack->addWidget(localPage);
 
 #ifdef HAS_SSH
 		launchType->addItem("Remote");
+		remotePage = buildRemoteConfigWidget();
+		configStack->addWidget(remotePage);
+
 		launchType->addItem("PBS Queue");
+		PBSPage = buildPBSConfigWidget();
+		configStack->addWidget(PBSPage);
+
 		launchType->addItem("Slurm Queue");
+		SlurmPage = buildSlurmConfigWidget();
+		configStack->addWidget(SlurmPage);
+
 		launchType->addItem("Custom Remote");
+		customPage = buildCustomConfigWidget();
+		configStack->addWidget(customPage);
+#endif
 
-		remotePage = new QWidget;
-		PBSPage = new QWidget;
-		SlurmPage = new QWidget;
-		customPage = new QWidget;
+		QVBoxLayout* v1 = new QVBoxLayout;
+		v1->setContentsMargins(0, 0, 0, 0);
+		v1->addLayout(baseForm);
+		v1->addWidget(configStack);
 
-		remoteForm = new QFormLayout;
+		QWidget* rightPane = new QWidget;
+		rightPane->setLayout(v1);
+
+		rhsStack = new QStackedWidget;
+		QLabel* lbl = new QLabel("(no properties)");
+		lbl->setAlignment(Qt::AlignTop);
+		rhsStack->addWidget(lbl);
+		rhsStack->addWidget(rightPane);
+
+		return rhsStack;
+	}
+
+	QWidget* buildLocalConfigWidget()
+	{
+		editLocalPath = new QToolButton; editLocalPath->setText("...");
+		QHBoxLayout* localPathLayout = new QHBoxLayout;
+		localPathLayout->addWidget(localPath = new QLineEdit);
+		localPathLayout->addWidget(editLocalPath);
+
+		QWidget* localPage = new QWidget;
+		QFormLayout* localForm = new QFormLayout;
+		localForm->setLabelAlignment(Qt::AlignRight);
+		localForm->setContentsMargins(0, 0, 0, 0);
+		localForm->addRow("FEBio Executable:", localPathLayout);
+		localPage->setLayout(localForm);
+
+		return localPage;
+	}
+
+	QWidget* buildRemoteConfigWidget()
+	{
+		QFormLayout* remoteForm = new QFormLayout;
 		remoteForm->setLabelAlignment(Qt::AlignRight);
-		remoteForm->setContentsMargins(0,0,0,0);
-
-		PBSForm = new QFormLayout;
-		PBSForm->setLabelAlignment(Qt::AlignRight);
-		PBSForm->setContentsMargins(0,0,0,0);
-
-		SlurmForm = new QFormLayout;
-		SlurmForm->setLabelAlignment(Qt::AlignRight);
-		SlurmForm->setContentsMargins(0,0,0,0);
-
-		customForm = new QFormLayout;
-		customForm->setLabelAlignment(Qt::AlignRight);
-		customForm->setContentsMargins(0,0,0,0);
+		remoteForm->setContentsMargins(0, 0, 0, 0);
 
 		// Remote config widgets
 		remoteForm->addRow("Remote Executable:", remotePath = new QLineEdit);
@@ -198,9 +291,17 @@ public:
 		remoteForm->addRow("Username:", remoteUserName = new QLineEdit);
 		remoteForm->addRow("Remote Directory:", remoteRemoteDir = new QLineEdit);
 
+		QWidget* remotePage = new QWidget;
 		remotePage->setLayout(remoteForm);
-		stack->addWidget(remotePage);
 
+		return remotePage;
+	}
+
+	QWidget* buildPBSConfigWidget()
+	{
+		QFormLayout* PBSForm = new QFormLayout;
+		PBSForm->setLabelAlignment(Qt::AlignRight);
+		PBSForm->setContentsMargins(0, 0, 0, 0);
 
 		// PBS config widgets
 		PBSForm->addRow("Remote Executable:", PBSPath = new QLineEdit);
@@ -221,8 +322,16 @@ public:
 		PBSV1->addLayout(PBSForm);
 		PBSV1->addWidget(PBSText);
 
+		QWidget* PBSPage = new QWidget;
 		PBSPage->setLayout(PBSV1);
-		stack->addWidget(PBSPage);
+		return PBSPage;
+	}
+
+	QWidget* buildSlurmConfigWidget()
+	{
+		QFormLayout* SlurmForm = new QFormLayout;
+		SlurmForm->setLabelAlignment(Qt::AlignRight);
+		SlurmForm->setContentsMargins(0, 0, 0, 0);
 
 		// Slurm config widgets
 		SlurmForm->addRow("Remote Executable:", SlurmPath = new QLineEdit);
@@ -243,10 +352,16 @@ public:
 		SlurmV1->addLayout(SlurmForm);
 		SlurmV1->addWidget(SlurmText);
 
-
+		QWidget* SlurmPage = new QWidget;
 		SlurmPage->setLayout(SlurmV1);
-		stack->addWidget(SlurmPage);
+		return SlurmPage;
+	}
 
+	QWidget* buildCustomConfigWidget()
+	{
+		QFormLayout* customForm = new QFormLayout;
+		customForm->setLabelAlignment(Qt::AlignRight);
+		customForm->setContentsMargins(0, 0, 0, 0);
 
 		// Custom config widgets
 //		customForm->addRow("Custom Script", customFile = new QLineEdit);
@@ -268,78 +383,14 @@ public:
 		customV1->addLayout(customForm);
 		customV1->addWidget(customText);
 
-
+		QWidget* customPage = new QWidget;
 		customPage->setLayout(customV1);
-		stack->addWidget(customPage);
-#endif
-		QVBoxLayout* v1 = new QVBoxLayout;
-		v1->addLayout(baseForm);
-		v1->addWidget(stack);
-
-		launchConfigList = new QListWidget;
-		launchConfigList->setEditTriggers(QAbstractItemView::DoubleClicked);
-		launchConfigList->setDragDropMode(QAbstractItemView::InternalMove);
-		launchConfigList->setDropIndicatorShown(true);
-		for(CLaunchConfig lc : *launchConfigs)
-		{
-			launchConfigList->addItem(lc.name.c_str());
-		}
-
-		for(int row = 0; row < launchConfigList->count(); row++)
-		{
-			QListWidgetItem* item = launchConfigList->item(row);
-
-			item->setFlags (item->flags () | Qt::ItemIsEditable);
-			tempLaunchConfigs[item] = launchConfigs->at(row);
-		}
-		launchConfigList->setFixedWidth(launchConfigList->sizeHintForColumn(0) + 10);
-
-
-		QAction* addConfig = new QAction;
-		addConfig->setIcon(QIcon(":/icons/selectAdd.png"));
-		QToolButton* addConfigBtn = new QToolButton;
-		addConfigBtn->setDefaultAction(addConfig);
-
-		QAction* delConfig = new QAction;
-		delConfig->setIcon(QIcon(":/icons/selectSub.png"));
-		QToolButton* delConfigBtn = new QToolButton;
-		delConfigBtn->setDefaultAction(delConfig);
-
-		QHBoxLayout* h1 = new QHBoxLayout;
-		h1->addWidget(addConfigBtn);
-		h1->addWidget(delConfigBtn);
-		h1->setAlignment(Qt::AlignLeft);
-
-		QVBoxLayout* v2 = new QVBoxLayout;
-		v2->addWidget(launchConfigList);
-		v2->addLayout(h1);
-
-		QHBoxLayout* h2 = new QHBoxLayout;
-		h2->addLayout(v2);
-		h2->addLayout(v1);
-
-		QVBoxLayout* v3 = new QVBoxLayout;
-		v3->addLayout(h2);
-
-
-		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-		v3->addWidget(bb);
-
-		dlg->setLayout(v3);
-
-		QObject::connect(addConfigBtn, SIGNAL(clicked()), dlg, SLOT(on_addConfigBtn_Clicked()));
-		QObject::connect(delConfigBtn, SIGNAL(clicked()), dlg, SLOT(on_delConfigBtn_Clicked()));
-
-		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
-		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
-		QObject::connect(launchType, QOverload<int>::of(&QComboBox::activated), stack, &QStackedWidget::setCurrentIndex);
-		QObject::connect(launchConfigList, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), dlg, SLOT(on_selection_change(QListWidgetItem*, QListWidgetItem*)));
+		return customPage;
 	}
 };
 
-
 CDlgEditPath::CDlgEditPath(QWidget* parent, std::vector<CLaunchConfig>* launchConfigs)
-	: QDialog(parent), ui(new Ui::CDlgEditPath(launchConfigs))
+	: QDialog(parent), ui(new Ui::CDlgEditPath(*launchConfigs))
 {
 	ui->setup(this);
 }
@@ -349,6 +400,7 @@ void CDlgEditPath::UpdateConfig(QListWidgetItem* item)
 	if(!item) return;
 
 	CLaunchConfig& launchConfig = ui->tempLaunchConfigs[item];
+	if (launchConfig.type == launchTypes::DEFAULT) return;
 
 	int type = ui->launchType->currentIndex();
 	launchConfig.type = type;
@@ -402,10 +454,12 @@ void CDlgEditPath::UpdateConfig(QListWidgetItem* item)
 		launchConfig.setText(ui->customText->toPlainText().toStdString());
 		break;
 #endif
+	case DEFAULT:
+		break;
 	}
 
 	// Set width for launch config list
-	ui->launchConfigList->setFixedWidth(ui->launchConfigList->sizeHintForColumn(0) + 10);
+//	ui->launchConfigList->setFixedWidth(ui->launchConfigList->sizeHintForColumn(0) + 10);
 }
 
 void CDlgEditPath::on_selection_change(QListWidgetItem* current, QListWidgetItem* previous)
@@ -428,9 +482,19 @@ void CDlgEditPath::on_dblClick(QListWidgetItem* item)
 
 void CDlgEditPath::ChangeToConfig(QListWidgetItem* item)
 {
-	if(!item) return;
+	if (item == nullptr)
+	{
+		ui->rhsStack->setCurrentIndex(0);
+		return;
+	}
 
 	CLaunchConfig& launchConfig = ui->tempLaunchConfigs[item];
+	if (launchConfig.type == launchTypes::DEFAULT)
+	{
+		ui->rhsStack->setCurrentIndex(0);
+		return;
+	}
+	else ui->rhsStack->setCurrentIndex(1);
 
 	ui->launchType->setCurrentIndex(launchConfig.type);
 	ui->localPath->setText(QString::fromStdString(launchConfig.path));
@@ -490,7 +554,7 @@ void CDlgEditPath::ChangeToConfig(QListWidgetItem* item)
 
 #endif
 
-	ui->stack->setCurrentIndex(launchConfig.type);
+	ui->configStack->setCurrentIndex(launchConfig.type);
 }
 
 void CDlgEditPath::on_addConfigBtn_Clicked()
@@ -522,6 +586,21 @@ void CDlgEditPath::on_delConfigBtn_Clicked()
 	delete current;
 
 	ui->launchConfigList->setCurrentRow(0);
+}
+
+void CDlgEditPath::on_editLocalPath_clicked()
+{
+#ifdef WIN32
+	QString filter("Executables (*.exe)");
+#else
+	QString filter("All files (*)");
+#endif
+
+	QString exePath = QFileDialog::getOpenFileName(this, "Edit Local Path", "", filter);
+	if (exePath.isEmpty() == false)
+	{
+		ui->localPath->setText(exePath);
+	}
 }
 
 int CDlgEditPath::GetLCIndex()
@@ -680,15 +759,15 @@ void CDlgEditPath::accept()
 	// See if any of the configs have changed
 	bool changed = false;
 
-	if(ui->launchConfigs->size() != ui->launchConfigList->count())
+	if(ui->launchConfigs.size() != ui->launchConfigList->count())
 	{
 		changed = true;
 	}
 	else
 	{
-		for(int index = 0; index < ui->launchConfigs->size(); index++)
+		for(int index = 1; index < ui->launchConfigs.size(); index++)
 		{
-			if(ui->launchConfigs->at(index) != ui->tempLaunchConfigs[ui->launchConfigList->item(index)])
+			if(ui->launchConfigs.at(index) != ui->tempLaunchConfigs[ui->launchConfigList->item(index)])
 			{
 				changed = true;
 				break;
@@ -706,17 +785,19 @@ void CDlgEditPath::accept()
 		if(reply == QMessageBox::Yes)
 		{
 			// Check to make sure that each config has all necessary fields filled out
-			for(int index = 0; index < ui->launchConfigList->count(); index++)
+			for(int index = 1; index < ui->launchConfigList->count(); index++)
 			{
 				if(!ErrorCheck(index)) return;
 			}
 
-			// Rewrite the global launchConfigs with the temporary ones
-			ui->launchConfigs->clear();
-
-			for(int index = 0; index < ui->launchConfigList->count(); index++)
+			for(int index = 1; index < ui->launchConfigList->count(); index++)
 			{
-				ui->launchConfigs->push_back(ui->tempLaunchConfigs[ui->launchConfigList->item(index)]);
+				CLaunchConfig& lci = ui->tempLaunchConfigs[ui->launchConfigList->item(index)];
+
+				if (index < ui->launchConfigs.size())
+					ui->launchConfigs[index] = lci;
+				else 
+					ui->launchConfigs.push_back(lci);
 			}
 		}
 		else if(reply == QMessageBox::Cancel)

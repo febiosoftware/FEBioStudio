@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -117,26 +117,26 @@ void GModifiedObject::DeleteModifier(GModifier* pmod)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GModifiedObject::BuildMesh()
+FSMesh* GModifiedObject::BuildMesh()
 {
 	delete GetFEMesh();
 	SetFEMesh(nullptr);
 
 	// ask the ref object to build a mesh
-	FEMesh* newMesh = nullptr;
-	FEMesh* pm = m_po->BuildMesh();
+	FSMesh* newMesh = nullptr;
+	FSMesh* pm = m_po->BuildMesh();
 	if (pm)
 	{
-		newMesh = new FEMesh(*pm);
+		newMesh = new FSMesh(*pm);
 		newMesh->SetGObject(this);
 	}
 	
-	// apply modifiers to FEMesh
+	// apply modifiers to FSMesh
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i)
 	{
 		GModifier* pmod = m_pStack->Modifier(i);
-		FEMesh* pm = pmod->BuildFEMesh(this);
+		FSMesh* pm = pmod->BuildFEMesh(this);
 		if (pm) SetFEMesh(pm);
 	}
 
@@ -216,7 +216,7 @@ void GModifiedObject::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the parts
-	ar.BeginChunk(CID_OBJ_PART_SECTION);
+	ar.BeginChunk(CID_OBJ_PART_LIST);
 	{
 		for (int i=0; i<Parts(); ++i)
 		{
@@ -234,7 +234,7 @@ void GModifiedObject::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the surfaces
-	ar.BeginChunk(CID_OBJ_FACE_SECTION);
+	ar.BeginChunk(CID_OBJ_FACE_LIST);
 	{
 		for (int i=0; i<Faces(); ++i)
 		{
@@ -252,7 +252,7 @@ void GModifiedObject::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_SECTION);
+	ar.BeginChunk(CID_OBJ_EDGE_LIST);
 	{
 		for (int i=0; i<Edges(); ++i)
 		{
@@ -272,7 +272,7 @@ void GModifiedObject::Save(OArchive &ar)
 	// for instance, a shell disc
 	if (Nodes()>0)
 	{
-		ar.BeginChunk(CID_OBJ_NODE_SECTION);
+		ar.BeginChunk(CID_OBJ_NODE_LIST);
 		{
 			for (int i=0; i<Nodes(); ++i)
 			{	
@@ -376,14 +376,14 @@ void GModifiedObject::Load(IArchive &ar)
 			}
 			break;
 		// object parts
-		case CID_OBJ_PART_SECTION:
+		case CID_OBJ_PART_LIST:
 			{
 				assert(nparts > 0);
 				m_Part.reserve(nparts);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_SECTION (GModifiedObject::Load)");
+					if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST (GModifiedObject::Load)");
 
 					GPart* p = new GPart(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -406,14 +406,14 @@ void GModifiedObject::Load(IArchive &ar)
 			}
 			break;
 		// object surfaces
-		case CID_OBJ_FACE_SECTION:
+		case CID_OBJ_FACE_LIST:
 			{
 				assert(nfaces > 0);
 				m_Face.reserve(nfaces);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_SECTION (GModifiedObject::Load)");
+					if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST (GModifiedObject::Load)");
 
 					GFace* f = new GFace(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -437,14 +437,14 @@ void GModifiedObject::Load(IArchive &ar)
 			}
 			break;
 		// object edges
-		case CID_OBJ_EDGE_SECTION:
+		case CID_OBJ_EDGE_LIST:
 			{
 				m_Edge.clear();
 				if (nedges > 0) m_Edge.reserve(nedges);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_SECTION (GModifiedObject::Load)");
+					if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST (GModifiedObject::Load)");
 
 					GEdge* e = new GEdge(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -466,7 +466,7 @@ void GModifiedObject::Load(IArchive &ar)
 			}
 			break;
 		// object nodes
-		case CID_OBJ_NODE_SECTION:
+		case CID_OBJ_NODE_LIST:
 			{
 				m_Node.clear();
 				if (nnodes > 0)
@@ -475,7 +475,7 @@ void GModifiedObject::Load(IArchive &ar)
 					int m = 0;
 					while (IArchive::IO_OK == ar.OpenChunk())
 					{
-						if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_SECTION (GModifiedObject::Load)");
+						if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST (GModifiedObject::Load)");
 
 						GNode* n = new GNode(this);
 						while (IArchive::IO_OK == ar.OpenChunk())

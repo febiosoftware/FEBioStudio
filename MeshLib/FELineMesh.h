@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,15 +28,16 @@ SOFTWARE.*/
 #include "FENode.h"
 #include "FEEdge.h"
 #include <FSCore/box.h>
+#include <vector>
 
 class GObject;
 
 // class that manages a list of nodes and edges
 // This serves as a base class for most meshes
-class FELineMesh
+class FSLineMesh
 {
 public:
-	FELineMesh();
+	FSLineMesh();
 
 	// Should be called when mesh needs to be updated (but not reconstructred)
 	// E.g. for surface meshes, this will update face normals, etc.
@@ -52,10 +53,10 @@ public: // node interface
 
 	// access node data
 	int Nodes() const { return (int) m_Node.size(); }
-	FENode& Node(int i) { return m_Node[i]; }
-	const FENode& Node(int i) const { return m_Node[i]; }
-	FENode* NodePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0);; };
-	const FENode* NodePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0); }
+	FSNode& Node(int i) { return m_Node[i]; }
+	const FSNode& Node(int i) const { return m_Node[i]; }
+	FSNode* NodePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0);; };
+	const FSNode* NodePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Node.size()) ? &m_Node[n] : 0); }
 
 	void TagAllNodes(int ntag);
 
@@ -63,10 +64,10 @@ public: // edge interface
 
 	// access edge data
 	int Edges() const { return (int) m_Edge.size(); }
-	FEEdge& Edge(int i) { return m_Edge[i]; }
-	const FEEdge& Edge(int i) const { return m_Edge[i]; }
-	FEEdge* EdgePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
-	const FEEdge* EdgePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
+	FSEdge& Edge(int i) { return m_Edge[i]; }
+	const FSEdge& Edge(int i) const { return m_Edge[i]; }
+	FSEdge* EdgePtr(int n = 0) { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
+	const FSEdge* EdgePtr(int n = 0) const { return ((n >= 0) && (n<(int)m_Edge.size()) ? &m_Edge[n] : 0); }
 
 	void TagAllEdges(int ntag);
 
@@ -94,6 +95,6 @@ protected:
 	GObject*	m_pobj;		//!< owning object
 	BOX			m_box;		//!< bounding box
 
-	vector<FENode>	m_Node;		//!< Node list
-	vector<FEEdge>	m_Edge;		//!< Edge list
+	std::vector<FSNode>	m_Node;		//!< Node list
+	std::vector<FSEdge>	m_Edge;		//!< Edge list
 };

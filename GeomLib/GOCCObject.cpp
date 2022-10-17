@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -101,8 +101,8 @@ TopoDS_Shape& GOCCObject::GetShape()
 #endif
 }
 
-FEMeshBase* GOCCObject::GetEditableMesh() { return GetFEMesh(); }
-FELineMesh* GOCCObject::GetEditableLineMesh() { return GetFEMesh(); }
+FSMeshBase* GOCCObject::GetEditableMesh() { return GetFEMesh(); }
+FSLineMesh* GOCCObject::GetEditableLineMesh() { return GetFEMesh(); }
 
 void GOCCObject::BuildGObject()
 {
@@ -179,7 +179,6 @@ void GOCCObject::BuildGMesh()
 		BRep_Tool::PolygonOnTriangulation(aEdge, aPT, aT, aL);
 
 		Standard_Integer nbNodes = aPT->NbNodes();
-		const TColStd_Array1OfInteger& nodeList = aPT->Nodes();
 		for (Standard_Integer j = 1; j < nbNodes; j++, aNbEdges++) {
 		}
 	}
@@ -199,24 +198,21 @@ void GOCCObject::BuildGMesh()
 		TopLoc_Location aLoc;
 		Handle(Poly_Triangulation) aTriangulation = BRep_Tool::Triangulation(face, aLoc);
 
-		const TColgp_Array1OfPnt& aNodes = aTriangulation->Nodes();
-		const Poly_Array1OfTriangle& aTriangles = aTriangulation->Triangles();
-
 		// copy nodes
 		gp_Trsf aTrsf = aLoc.Transformation();
-		for (Standard_Integer aNodeIter = aNodes.Lower(); aNodeIter <= aNodes.Upper(); ++aNodeIter)
+		for (Standard_Integer aNodeIter = 1; aNodeIter <= aTriangulation->NbNodes(); ++aNodeIter)
 		{
 			GMesh::NODE& node = gmesh->Node(aNodeIter + aNodeOffset - 1);
-			gp_Pnt aPnt = aNodes(aNodeIter);
+			gp_Pnt aPnt = aTriangulation->Node(aNodeIter);
 			aPnt.Transform(aTrsf);
 			node.r = vec3d(aPnt.X(), aPnt.Y(), aPnt.Z());
 		}
 
 		// copy triangles
 		const TopAbs_Orientation anOrientation = anExpSF.Current().Orientation();
-		for (Standard_Integer aTriIter = aTriangles.Lower(); aTriIter <= aTriangles.Upper(); ++aTriIter)
+		for (Standard_Integer aTriIter = 1; aTriIter <= aTriangulation->NbTriangles(); ++aTriIter)
 		{
-			Poly_Triangle aTri = aTriangles(aTriIter);
+			Poly_Triangle aTri = aTriangulation->Triangle(aTriIter);
 
 			Standard_Integer anId[3];
 			aTri.Get(anId[0], anId[1], anId[2]);
@@ -262,8 +258,8 @@ void GOCCObject::BuildGMesh()
 			}
 		}
 
-		aNodeOffset += aNodes.Size();
-		aTriangleOffet += aTriangles.Size();
+		aNodeOffset += aTriangulation->NbNodes();
+		aTriangleOffet += aTriangulation->NbTriangles();
 	}
 
 	// update the GMesh
@@ -359,8 +355,6 @@ void GOCCBottle::MakeBottle(double h, double w, double t)
 	gp_Pnt aPnt3(0, -t / 2., 0);
 	gp_Pnt aPnt4(w / 2., -t / 4., 0);
 	gp_Pnt aPnt5(w / 2., 0, 0);
-
-	Standard_Real xValue1 = aPnt1.X();
 
 	Handle(Geom_TrimmedCurve) aArcOfCircle = GC_MakeArcOfCircle(aPnt2, aPnt3, aPnt4);
 	Handle(Geom_TrimmedCurve) aSegment1 = GC_MakeSegment(aPnt1, aPnt2);

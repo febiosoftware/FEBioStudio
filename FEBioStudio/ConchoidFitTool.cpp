@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -68,14 +68,14 @@ bool CConchoidFitTool::OnApply()
 			return false;
 		}
 
-		FEMesh& mesh = *po->GetFEMesh();
+		FSMesh& mesh = *po->GetFEMesh();
 
 		int N = mesh.Nodes();
 		int F = mesh.Faces();
 		for (int i = 0; i<N; ++i) mesh.Node(i).m_ntag = 0;
 		for (int i = 0; i<F; ++i)
 		{
-			FEFace& f = mesh.Face(i);
+			FSFace& f = mesh.Face(i);
 			if ((m_bsel == false) || (f.IsSelected()))
 			{
 				int nf = f.Nodes();

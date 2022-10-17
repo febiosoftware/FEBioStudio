@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,6 +25,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "AbaqusModel.h"
+
+#ifdef LINUX // same for Linux and Mac OS X
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#endif
+
+#ifdef __APPLE__ // same for Linux and Mac OS X
+#define stricmp strcasecmp
+#define strnicmp strncasecmp
+#endif
 
 // in AbaqusImport.cpp
 bool szicmp(const char* sz1, const char* sz2);
@@ -124,14 +134,32 @@ AbaqusModel::NODE_SET* AbaqusModel::FindNodeSet(const char* sznset)
 // find a part with a particular element set
 AbaqusModel::ELEMENT_SET* AbaqusModel::FindElementSet(const char* szelemset)
 {
-	list<AbaqusModel::PART*>::iterator it;
-	for (it = m_Part.begin(); it != m_Part.end(); ++it)
+	char szbuf[256] = { 0 };
+	const char* ch = strchr(szelemset, '.');
+	if (ch)
 	{
-		AbaqusModel::PART& part = *(*it);
-		list<AbaqusModel::ELEMENT_SET>::iterator ps = part.FindElementSet(szelemset);
-		if (ps != part.m_ElSet.end())
+		strncpy(szbuf, szelemset, (int)(ch - szelemset));
+		AbaqusModel::INSTANCE* inst = FindInstance(szbuf);
+		if (inst == nullptr) return nullptr;
+
+		AbaqusModel::PART* pg = inst->GetPart();
+		list<AbaqusModel::ELEMENT_SET>::iterator ps = pg->FindElementSet(ch+1);
+		if (ps != pg->m_ElSet.end())
 		{
 			return &(*ps);
+		}
+	}
+	else
+	{
+		list<AbaqusModel::PART*>::iterator it;
+		for (it = m_Part.begin(); it != m_Part.end(); ++it)
+		{
+			AbaqusModel::PART& part = *(*it);
+			list<AbaqusModel::ELEMENT_SET>::iterator ps = part.FindElementSet(szelemset);
+			if (ps != part.m_ElSet.end())
+			{
+				return &(*ps);
+			}
 		}
 	}
 
@@ -305,7 +333,7 @@ list<AbaqusModel::ELEMENT_SET>::iterator AbaqusModel::PART::FindElementSet(const
 {
 	size_t n = m_ElSet.size();
 	list<ELEMENT_SET>::iterator pe = m_ElSet.begin();
-	for (size_t i = 0; i<n; ++i, ++pe) if (strcmp(pe->szname, szname) == 0) return pe;
+	for (size_t i = 0; i<n; ++i, ++pe) if (stricmp(pe->szname, szname) == 0) return pe;
 	return m_ElSet.end();
 }
 
@@ -343,7 +371,7 @@ list<AbaqusModel::SURFACE>::iterator AbaqusModel::PART::FindSurface(const char* 
 {
 	size_t n = m_Surf.size();
 	list<SURFACE>::iterator ps = m_Surf.begin();
-	for (size_t i = 0; i<n; ++i, ++ps) if (strcmp(ps->szname, szname) == 0) return ps;
+	for (size_t i = 0; i<n; ++i, ++ps) if (stricmp(ps->szname, szname) == 0) return ps;
 	return m_Surf.end();
 }
 
@@ -423,7 +451,7 @@ AbaqusModel::Orientation* AbaqusModel::PART::FindOrientation(const char* szname)
 	list<Orientation>::iterator it;
 	for (it = m_Orient.begin(); it != m_Orient.end(); ++it)
 	{
-		if (strcmp(it->szname, szname) == 0) return &(*it);
+		if (stricmp(it->szname, szname) == 0) return &(*it);
 	}
 	return 0;
 }
@@ -435,7 +463,7 @@ AbaqusModel::Distribution* AbaqusModel::PART::FindDistribution(const char* sznam
 	list<Distribution>::iterator it;
 	for (it = m_Distr.begin(); it != m_Distr.end(); ++it)
 	{
-		if (strcmp(it->m_szname, szname) == 0) return &(*it);
+		if (stricmp(it->m_szname, szname) == 0) return &(*it);
 	}
 	return 0;
 }
@@ -489,4 +517,32 @@ void AbaqusModel::INSTANCE::GetRotation(double t[7])
 	t[0] = m_rot[0]; t[1] = m_rot[1]; t[2] = m_rot[2];
 	t[3] = m_rot[3]; t[4] = m_rot[4]; t[5] = m_rot[5];
 	t[6] = m_rot[6];
+}
+
+//-----------------------------------------------------------------------------
+void AbaqusModel::AddAmplitude(const AbaqusModel::Amplitude& a)
+{
+	m_Amp.push_back(a);
+}
+
+int AbaqusModel::Amplitudes() const
+{
+	return (int)m_Amp.size();
+}
+
+const AbaqusModel::Amplitude& AbaqusModel::GetAmplitude(int n) const
+{
+	return m_Amp[n];
+}
+
+int AbaqusModel::FindAmplitude(const char* szname) const
+{
+	for (int i = 0; i < m_Amp.size(); ++i)
+	{
+		if (szicmp(szname, m_Amp[i].m_name.c_str()))
+		{
+			return i;
+		}
+	}
+	return -1;
 }

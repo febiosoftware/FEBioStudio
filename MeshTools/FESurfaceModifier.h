@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,8 +28,8 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FSCore/FSThreadedTask.h>
 
-class FESurfaceMesh;
-class FEGroup;
+class FSSurfaceMesh;
+class FSGroup;
 
 //-------------------------------------------------------------------
 // Class for modifying surface meshes
@@ -39,8 +39,8 @@ public:
 	FESurfaceModifier(const std::string& name = "");
 	virtual ~FESurfaceModifier();
 
-	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm) { return 0; }
-	virtual FESurfaceMesh* Apply(FESurfaceMesh* pm, FEGroup* pg) { return Apply(pm); }
+	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm) { return 0; }
+	virtual FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FSGroup* pg) { return Apply(pm); }
 
 	bool SetError(const char* szerr, ...);
 
@@ -57,12 +57,12 @@ class FESurfacePartitionSelection : public FESurfaceModifier
 {
 public:
 	FESurfacePartitionSelection();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm, FEGroup* pg);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm, FSGroup* pg);
 
 	void assignToPartition(int n);
 
 protected:
-	void PartitionSelectedFaces(FESurfaceMesh* mesh);
+	void PartitionSelectedFaces(FSSurfaceMesh* mesh);
 
 private:
 	int	m_partition;
@@ -73,5 +73,5 @@ class FESurfaceAutoPartition : public FESurfaceModifier
 {
 public:
 	FESurfaceAutoPartition();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 };

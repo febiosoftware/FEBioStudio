@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -40,7 +40,7 @@ class MeshLayer : CSerializable
 	{
 		GObject*	po;			// the object
 		FEMesher*	mesher;		// the class the generates the mesh
-		FEMesh*		mesh;		// the mesh for this object
+		FSMesh*		mesh;		// the mesh for this object
 
 		Mesh()
 		{
@@ -64,15 +64,15 @@ public:
 
 	int Meshes() const;
 
-	void SetMeshData(int n, FEMesher* mesher, FEMesh* mesh);
+	void SetMeshData(int n, FEMesher* mesher, FSMesh* mesh);
 
-	void InsertMeshData(int n, GObject* po, FEMesher* mesher, FEMesh* mesh);
+	void InsertMeshData(int n, GObject* po, FEMesher* mesher, FSMesh* mesh);
 
 	GObject* GetObject(int n);
 
 	FEMesher* GetFEMesher(int n);
 
-	FEMesh* GetFEMesh(int n);
+	FSMesh* GetFEMesh(int n);
 
 	int FindObject(GObject* po);
 
@@ -167,7 +167,7 @@ FEMesher* MeshLayer::GetFEMesher(int n)
 	return m_meshList[n].mesher;
 }
 
-FEMesh* MeshLayer::GetFEMesh(int n)
+FSMesh* MeshLayer::GetFEMesh(int n)
 {
 	return m_meshList[n].mesh;
 }
@@ -177,14 +177,14 @@ int MeshLayer::Meshes() const
 	return (int)m_meshList.size();
 }
 
-void MeshLayer::SetMeshData(int n, FEMesher* mesher, FEMesh* mesh)
+void MeshLayer::SetMeshData(int n, FEMesher* mesher, FSMesh* mesh)
 {
 	Mesh& m = m_meshList[n];
 	m.mesher = mesher;
 	m.mesh = mesh;
 }
 
-void MeshLayer::InsertMeshData(int n, GObject* po, FEMesher* mesher, FEMesh* mesh)
+void MeshLayer::InsertMeshData(int n, GObject* po, FEMesher* mesher, FSMesh* mesh)
 {
 	Mesh m;
 	m.po = po;
@@ -276,7 +276,7 @@ void MeshLayer::Load(IArchive& ar)
 		{
 			Mesh& m = m_meshList[index];
 			assert(m.mesh == nullptr);
-			m.mesh = new FEMesh();
+			m.mesh = new FSMesh();
 			m.mesh->SetGObject(m.po);
 			m.mesh->Load(ar);
 		}
@@ -290,8 +290,8 @@ class ObjectMeshList
 public:
 	int					m_index;	// index into mesh list array
 	GObject*			m_po;		// the object whose list this is
-	vector<FEMesher*>	m_mesher;	// list of FE meshers
-	vector<FEMesh*  >	m_mesh;		// list of FE meshes
+	std::vector<FEMesher*>	m_mesher;	// list of FE meshers
+	std::vector<FSMesh*  >	m_mesh;		// list of FE meshes
 
 public:
 	ObjectMeshList() { m_po = nullptr; m_index = -1; }
@@ -487,13 +487,13 @@ void MeshLayerManager::AddObject(GObject* po)
 		if (i != m_activeLayer)
 		{
 			FEMesher* mesher = po->CreateDefaultMesher();
-			FEMesh* mesh = nullptr;
+			FSMesh* mesh = nullptr;
 
 			// if the object has no mesher, we are going to copy the current mesh
 			if (mesher == nullptr)
 			{
-				FEMesh* oldMesh = po->GetFEMesh();
-				if (oldMesh) mesh = new FEMesh(*oldMesh);
+				FSMesh* oldMesh = po->GetFEMesh();
+				if (oldMesh) mesh = new FSMesh(*oldMesh);
 			}
 
 			// add the object (and mesh data) to the layer
@@ -521,13 +521,13 @@ void MeshLayerManager::InsertObject(int npos, GObject* po)
 		if (i != m_activeLayer)
 		{
 			FEMesher* mesher = po->CreateDefaultMesher();
-			FEMesh* mesh = nullptr;
+			FSMesh* mesh = nullptr;
 
 			// if the object has no mesher, we are going to copy the current mesh
 			if (mesher == nullptr)
 			{
-				FEMesh* oldMesh = po->GetFEMesh();
-				if (oldMesh) mesh = new FEMesh(*oldMesh);
+				FSMesh* oldMesh = po->GetFEMesh();
+				if (oldMesh) mesh = new FSMesh(*oldMesh);
 			}
 
 			// add the object (and mesh data) to the layer
@@ -623,7 +623,7 @@ const FEMesher* MeshLayerManager::GetFEMesher(int layer, int obj)
 	return m_layerList[layer]->GetFEMesher(obj);
 }
 
-const FEMesh* MeshLayerManager::GetFEMesh(int layer, int obj)
+const FSMesh* MeshLayerManager::GetFEMesh(int layer, int obj)
 {
 	return m_layerList[layer]->GetFEMesh(obj);
 }

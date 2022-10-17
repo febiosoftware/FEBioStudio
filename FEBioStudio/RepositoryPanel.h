@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -46,6 +46,7 @@ class CustomTreeWidgetItem;
 class ProjectItem;
 class FileItem;
 class ZipThread;
+class QDockWidget;
 
 enum FILETYPE {FULL=0, PART=1};
 
@@ -54,15 +55,19 @@ class CRepositoryPanel : public QWidget
 	Q_OBJECT
 
 public:
-	CRepositoryPanel(CMainWindow* pwnd, QWidget* parent = 0);
+	CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent);
 	~CRepositoryPanel();
 
+	void OpenLink(const QString& link);
+	void Raise();
+
 	void SetModelList();
-	void ShowMessage(QString message);
+	void ShowMessage(QString message, bool logout = false);
 	void ShowWelcomeMessage(QByteArray messages);
 	void LoginTimeout();
 	void NetworkInaccessible();
 	void DownloadFinished(int fileID, int fileType);
+	void UploadFinished(bool error, QString message);
 
 	// SQLite callbacks
 	void AddCategory(char **argv);
@@ -83,9 +88,11 @@ public:
 	void showMainPage();
 	void showLoadingPage(QString message, bool progress = false);
 
+    QString GetFilePathFromID(int fileID);
+
 public slots:
-	void updateUploadReady(bool ready);
-	void updateModifyReady(bool ready);
+	void updateUploadReady(bool ready, QString message = "");
+	void updateModifyReady(bool ready, QString message = "");
 	void loadingPageProgress(qint64 bytesSent, qint64 bytesTotal);
 
 signals:
@@ -94,42 +101,61 @@ signals:
 private slots:
 	void on_connectButton_clicked();
 	void on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, int column);
-	void on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
+	void on_searchTree_itemDoubleClicked(QTreeWidgetItem *item, int column);
 	void on_actionRefresh_triggered();
 	void on_actionDownload_triggered();
 	void on_actionOpen_triggered();
 	void on_actionOpenFileLocation_triggered();
 	void on_actionDelete_triggered();
+	void on_actionCopyPermalink_triggered();
 	void on_actionUpload_triggered();
 	void on_actionSearch_triggered();
 	void on_actionClearSearch_triggered();
+    void on_actionShowAdvanced_triggered();
 	void on_actionDeleteRemote_triggered();
 	void on_actionModify_triggered();
 	void on_actionFindInTree_triggered();
 	void on_treeWidget_itemSelectionChanged();
 	void on_treeWidget_customContextMenuRequested(const QPoint &pos);
-	void on_fileSearchTree_itemSelectionChanged();
-	void on_fileSearchTree_customContextMenuRequested(const QPoint &pos);
+	void on_searchTree_itemSelectionChanged();
+	void on_searchTree_customContextMenuRequested(const QPoint &pos);
+    void on_showProjectsCB_stateChanged(int state);
+    void on_showFilesCB_stateChanged(int state);
 	void on_projectTags_linkActivated(const QString& link);
 	void on_fileTags_linkActivated(const QString& link);
 
+    void on_actionAdvnacedSearch_triggered();
+    void on_actionAdvancedClear_triggered();
+    void on_actionAdvnacedHide_triggered();
+
 private:
+    void GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths);
+
+    void SearchDatabase(QString searchTerm);
+
 	void UpdateInfo(CustomTreeWidgetItem *item);
 	void DownloadItem(CustomTreeWidgetItem *item);
 	void OpenItem(CustomTreeWidgetItem *item);
 	void DeleteItem(CustomTreeWidgetItem *item);
 	void ShowItemInBrowser(CustomTreeWidgetItem *item);
 
-	QStringList GetCategories();
+    bool projectModified(ProjectItem* item);
+    bool fileModified(FileItem* item);
+
+    QString getLocalPath(CustomTreeWidgetItem* item);
+
+    QStringList GetCategories();
 
 private:
 	CMainWindow*		m_wnd;
+	QDockWidget* dock;
 	CRepoConnectionHandler*	repoHandler;
 	CLocalDatabaseHandler* dbHandler;
 	QString m_repositoryFolder;
+	QString linkToOpen;
 	qint64 lastMessageTime;
-  const QString MESSAGE = "message";
-  const QString MESSAGES = "messages";
+	const QString MESSAGE = "message";
+	const QString MESSAGES = "messages";
 
 	Ui::CRepositoryPanel*	ui;
 };

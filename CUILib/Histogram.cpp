@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -74,7 +74,7 @@ void CHistogramViewer::Update()
 
 	C3DImage* im = m_img->GetImageSource()->Get3DImage();
 
-	vector<double> h(256, 0.0);
+	std::vector<double> h(256, 0.0);
 	for (int k = 0; k < im->Depth(); ++k)
 	{
 		for (int j = 0; j < im->Height(); ++j)

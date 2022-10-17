@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -76,17 +76,17 @@ void FESurfacePartitionSelection::assignToPartition(int n)
 }
 
 
-FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg)
+FSSurfaceMesh* FESurfacePartitionSelection::Apply(FSSurfaceMesh* pm, FSGroup* pg)
 {
-	if (dynamic_cast<FEEdgeSet*>(pg))
+	if (dynamic_cast<FSEdgeSet*>(pg))
 	{
-		FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 		newMesh->PartitionEdgeSelection(m_partition);
 		return newMesh;
 	}
-	else if (dynamic_cast<FENodeSet*>(pg))
+	else if (dynamic_cast<FSNodeSet*>(pg))
 	{
-		FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+		FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 		newMesh->PartitionNodeSelection();
 		return newMesh;
 	}
@@ -95,7 +95,7 @@ FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg
 		int n = pm->CountSelectedFaces();
 		if (n > 0)
 		{
-			FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+			FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 			PartitionSelectedFaces(newMesh);
 			return newMesh;
 		}
@@ -104,13 +104,13 @@ FESurfaceMesh* FESurfacePartitionSelection::Apply(FESurfaceMesh* pm, FEGroup* pg
 	return 0;
 }
 
-void FESurfacePartitionSelection::PartitionSelectedFaces(FESurfaceMesh* mesh)
+void FESurfacePartitionSelection::PartitionSelectedFaces(FSSurfaceMesh* mesh)
 {
 	int NF = mesh->Faces();
 	int ng = mesh->CountFacePartitions();
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = mesh->Face(i);
+		FSFace& f = mesh->Face(i);
 		if (f.IsSelected())
 		{
 			f.m_gid = ng;
@@ -126,10 +126,10 @@ FESurfaceAutoPartition::FESurfaceAutoPartition() : FESurfaceModifier("Auto Parti
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh* FESurfaceAutoPartition::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FESurfaceAutoPartition::Apply(FSSurfaceMesh* pm)
 {
 	double w = GetFloatValue(0);
-	FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 	newMesh->AutoPartition(w);
 	return newMesh;
 }

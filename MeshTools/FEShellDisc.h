@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,30 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiQuadMesh.h"
 
 class GDisc;
 
-class FEShellDisc : public FEMesher
+class FEShellDisc : public FEMultiQuadMesh
 {
 public:
-	enum {RATIO, T, NDIV, NSEG };
+	enum {RATIO, T, NDIV, NSEG, ELEM_TYPE };
 
 public:
 	FEShellDisc(){}
 	FEShellDisc(GDisc* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiQuadMesh();
-
-protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
-
-	int NodeIndex(int i, int j) { return i*(m_nd+1)+j; }
-	int NodeIndex2(int i, int j);
+	bool BuildMultiQuad() override;
 
 protected:
 	GDisc*	m_pobj;

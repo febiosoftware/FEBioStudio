@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FENodeFaceList.h>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 FEFixMesh::FEFixMesh() : FEModifier("Fix mesh")
@@ -38,10 +39,10 @@ FEFixMesh::FEFixMesh() : FEModifier("Fix mesh")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEFixMesh::Apply(FEMesh* pm)
+FSMesh* FEFixMesh::Apply(FSMesh* pm)
 {
 	// create a copy of the mesh
-	FEMesh* pnew = new FEMesh(*pm);
+	FSMesh* pnew = new FSMesh(*pm);
 
 	// apply the task on this mesh
 	int task = GetIntValue(0);
@@ -61,7 +62,7 @@ FEMesh* FEFixMesh::Apply(FEMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
+bool FEFixMesh::RemoveDuplicateEdges(FSMesh* pm)
 {
 	int NE = pm->Edges();
 	int NN = pm->Nodes();
@@ -69,7 +70,7 @@ bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
 	vector<vector<int> > NET(NN);
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& ei = pm->Edge(i);
+		FSEdge& ei = pm->Edge(i);
 		NET[ei.n[0]].push_back(i);
 		NET[ei.n[1]].push_back(i);
 	}
@@ -78,7 +79,7 @@ bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
 	pm->TagAllEdges(-1);
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& ei = pm->Edge(i);
+		FSEdge& ei = pm->Edge(i);
 		if (ei.m_ntag == -1)
 		{
 			vector<int>& net = NET[ei.n[0]];
@@ -87,7 +88,7 @@ bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
 				int nej = net[j];
 				if (nej > i)
 				{
-					FEEdge& ej = pm->Edge(nej);
+					FSEdge& ej = pm->Edge(nej);
 					if ((ej.m_ntag == -1) && (ej == ei))
 					{
 						ej.m_ntag = i;
@@ -105,14 +106,14 @@ bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
 	int ne = 0;
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& ei = pm->Edge(i);
+		FSEdge& ei = pm->Edge(i);
 		if (ei.m_ntag == -1) id[i] = ne++;
 	}
 
 	// update edge neighbors
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& ei = pm->Edge(i);
+		FSEdge& ei = pm->Edge(i);
 		if (ei.m_ntag == -1)
 		{
 			if (ei.m_nbr[0] >= 0) ei.m_nbr[0] = id[ei.m_nbr[0]];
@@ -123,13 +124,13 @@ bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
 	// the faces could reference edges, so we will need to reindex them 
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		for (int j = 0; j < 4; ++j)
 		{
 			int nej = f.m_edge[j];
 			if (nej >= 0)
 			{
-				FEEdge& ej = pm->Edge(nej);
+				FSEdge& ej = pm->Edge(nej);
 				if (ej.m_ntag >= 0)
 				{
 					int nid = id[ej.m_ntag]; assert(nid >= 0);
@@ -143,13 +144,13 @@ bool FEFixMesh::RemoveDuplicateEdges(FEMesh* pm)
 	ne = 0;
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& ei = pm->Edge(i);
+		FSEdge& ei = pm->Edge(i);
 		if (ei.m_ntag == -1)
 		{
 			assert(id[i] >= 0);
 			if (i != ne)
 			{
-				FEEdge& en = pm->Edge(ne);
+				FSEdge& en = pm->Edge(ne);
 				en = ei;
 			}
 			ne++;

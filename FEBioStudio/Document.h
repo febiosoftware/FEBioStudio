@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include "modelcheck.h"
 #include <QtCore/QString>
 #include "ViewSettings.h"
+#include "GLScene.h"
 #include <GLLib/GView.h>
 
 //-----------------------------------------------------------------------------
@@ -95,6 +96,7 @@ class FESurfaceModifier;
 class GSurfaceMeshObject;
 class FileReader;
 class FileWriter;
+enum class ImageFileType;
 
 namespace Post {
 	class CImageModel;
@@ -149,7 +151,7 @@ public:
 public:
 	// --- Document validation ---
 	bool IsModified();
-	void SetModifiedFlag(bool bset = true);
+	virtual void SetModifiedFlag(bool bset = true);
 	bool IsValid();
 
 public:
@@ -229,14 +231,43 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+// Base class for documents that use the undo stack
+class CUndoDocument : public CDocument
+{
+public:
+    CUndoDocument(CMainWindow* wnd);
+    ~CUndoDocument();
+
+    void Clear() override;
+
+    // --- Command history functions ---
+	bool CanUndo();
+	bool CanRedo();
+	void AddCommand(CCommand* pcmd);
+	void AddCommand(CCommand* pcmd, const std::string& s);
+	bool DoCommand(CCommand* pcmd, bool b = true);
+	bool DoCommand(CCommand* pcmd, const std::string& s, bool b = true);
+	void UndoCommand();
+	void RedoCommand();
+	const char* GetUndoCmdName();
+	const char* GetRedoCmdName();
+	void ClearCommandStack();
+	const std::string& GetCommandErrorString() const;
+
+    virtual void UpdateSelection(bool breport = true);
+
+protected:
+	// The command manager
+	CCommandManager*	m_pCmd;		// the command manager
+};
+
+//-----------------------------------------------------------------------------
 // Base class for documents that require visualization
-class CGLDocument : public CDocument
+class CGLDocument : public CUndoDocument
 {
 public:
 	CGLDocument(CMainWindow* wnd);
 	~CGLDocument();
-
-	void Clear() override;
 
 	bool SaveDocument() override;
 
@@ -250,30 +281,10 @@ public:
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
 
-	// import image data
-#ifdef HAS_TEEM
-  Post::CImageModel* ImportTiff(const std::string& filename);
-  Post::CImageModel* ImportNrrd(const std::string& filename);
-#endif
-
-#ifdef HAS_DICOM
-  Post::CImageModel* ImportDicom(const std::string& filename);
-#endif
 	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
 
-	// --- Command history functions ---
-	bool CanUndo();
-	bool CanRedo();
-	void AddCommand(CCommand* pcmd);
-	void AddCommand(CCommand* pcmd, const std::string& s);
-	bool DoCommand(CCommand* pcmd, bool b = true);
-	bool DoCommand(CCommand* pcmd, const std::string& s, bool b = true);
-	void UndoCommand();
-	void RedoCommand();
-	const char* GetUndoCmdName();
-	const char* GetRedoCmdName();
-	void ClearCommandStack();
-	const std::string& GetCommandErrorString() const;
+    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
+    Post::CImageModel* ImportITKStack(QStringList& filenames);
 
 	// --- view state ---
 	VIEW_STATE GetViewState() { return m_vs; }
@@ -299,15 +310,29 @@ public:
 
 	CGView* GetView();
 
+	CGLScene* GetScene();
+
+	virtual FESelection* GetCurrentSelection() { return nullptr; }
+
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }
 
 public:
 	int ImageModels() const;
-	void AddImageModel(Post::CImageModel* img);
+	virtual void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
+
+public:
+	void GrowNodeSelection(FSMeshBase* pm);
+	void GrowFaceSelection(FSMeshBase* pm, bool respectPartitions = true);
+	void GrowEdgeSelection(FSMeshBase* pm);
+	void GrowElementSelection(FSMesh* pm, bool respectPartitions = true);
+	void ShrinkNodeSelection(FSMeshBase* pm);
+	void ShrinkFaceSelection(FSMeshBase* pm);
+	void ShrinkEdgeSelection(FSMeshBase* pm);
+	void ShrinkElementSelection(FSMesh* pm);
 
 protected:
 	void SaveResources(OArchive& ar);
@@ -318,10 +343,8 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	// The command manager
-	CCommandManager*	m_pCmd;		// the command manager
-
 	CGView				m_view;
+	CGLScene*			m_scene;
 
 	VIEW_STATE	m_vs;	// the view state
 
@@ -332,4 +355,19 @@ protected:
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;
+};
+
+// helper class for getting selections without the need to access the document
+class CActiveSelection
+{
+public:
+	static FESelection* GetCurrentSelection();
+
+private:
+	static void SetMainWindow(CMainWindow* wnd);
+
+private:
+	static CMainWindow* m_wnd;
+
+	friend class CMainWindow;
 };

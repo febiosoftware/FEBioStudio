@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEMathData.h"
 #include "FEPostModel.h"
+#include <FECore/MathObject.h>
 
 using namespace Post;
 
@@ -38,27 +39,28 @@ FEMathData::FEMathData(FEState* state, FEMathDataField* pdf) : FENodeData_T<floa
 // evaluate all the nodal data for this state
 void FEMathData::eval(int n, float* pv)
 {
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 
 
 	double time = m_state->m_time;
 
 	FEPostMesh& mesh = *m_state->GetFEMesh();
 
-	CMathParser math;
-	math.set_variable("t", time);
+	MSimpleExpression math;
+	math.AddVariable("t", time);
 
 	int ierr;
-	FENode& node = mesh.Node(n);
+	FSNode& node = mesh.Node(n);
 
 	vec3f r = fem.NodePosition(n, m_state->GetID());
-	math.set_variable("x", (double)r.x);
-	math.set_variable("y", (double)r.y);
-	math.set_variable("z", (double)r.z);
+	math.AddVariable("x", (double)r.x);
+	math.AddVariable("y", (double)r.y);
+	math.AddVariable("z", (double)r.z);
 
 	const std::string& eq = m_pdf->EquationString();
+	math.Create(eq);
 
-	double v = math.eval(eq.c_str(), ierr);
+	double v = math.value();
 
 	if (pv) *pv = (float) v;
 }
@@ -72,7 +74,7 @@ FEMathVec3Data::FEMathVec3Data(FEState* state, FEMathVec3DataField* pdf) : FENod
 // evaluate all the nodal data for this state
 void FEMathVec3Data::eval(int n, vec3f* pv)
 {
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 
 	FEState& state = *m_state;
 	int ntime = state.GetID();
@@ -80,25 +82,25 @@ void FEMathVec3Data::eval(int n, vec3f* pv)
 
 	FEPostMesh& mesh = *state.GetFEMesh();
 
-	CMathParser math;
-	math.set_variable("t", time);
+	MSimpleExpression math;
+	math.AddVariable("t", time);
 
 	int ierr;
-	FENode& node = mesh.Node(n);
+	FSNode& node = mesh.Node(n);
 
 	vec3f r = fem.NodePosition(n, ntime);
-	math.set_variable("x", (double)r.x);
-	math.set_variable("y", (double)r.y);
-	math.set_variable("z", (double)r.z);
+	math.AddVariable("x", (double)r.x);
+	math.AddVariable("y", (double)r.y);
+	math.AddVariable("z", (double)r.z);
 
 	const std::string& x = m_pdf->EquationString(0);
 	const std::string& y = m_pdf->EquationString(1);
 	const std::string& z = m_pdf->EquationString(2);
 
 	vec3f v;
-	v.x = (float)math.eval(x.c_str(), ierr);
-	v.y = (float)math.eval(y.c_str(), ierr);
-	v.z = (float)math.eval(z.c_str(), ierr);
+	v.x = (float)math.value(x);
+	v.y = (float)math.value(y);
+	v.z = (float)math.value(z);
 
 	if (pv) *pv = v;
 }
@@ -113,7 +115,7 @@ void FEMathMat3Data::eval(int n, mat3f* pv)
 {
 	if (pv == nullptr) return;
 
-	FEPostModel& fem = *GetFEModel();
+	FEPostModel& fem = *GetFSModel();
 
 	FEState& state = *m_state;
 	int ntime = state.GetID();
@@ -121,22 +123,22 @@ void FEMathMat3Data::eval(int n, mat3f* pv)
 
 	FEPostMesh& mesh = *state.GetFEMesh();
 
-	CMathParser math;
-	math.set_variable("t", time);
+	MSimpleExpression math;
+	math.AddVariable("t", time);
 
 	int ierr;
-	FENode& node = mesh.Node(n);
+	FSNode& node = mesh.Node(n);
 
 	vec3f r = fem.NodePosition(n, ntime);
-	math.set_variable("x", (double)r.x);
-	math.set_variable("y", (double)r.y);
-	math.set_variable("z", (double)r.z);
+	math.AddVariable("x", (double)r.x);
+	math.AddVariable("y", (double)r.y);
+	math.AddVariable("z", (double)r.z);
 
 	float m[9] = { 0.f };
 	for (int i = 0; i < 9; ++i)
 	{
 		const std::string& eq = m_pdf->EquationString(i);
-		m[i] = (float) math.eval(eq.c_str(), ierr);
+		m[i] = (float) math.value(eq);
 	}
 
 	*pv = mat3f(m[0], m[1], m[2], m[3], m[4], m[5], m[6], m[7], m[8]);

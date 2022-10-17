@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QMessageBox>
 
-static bool string_to_int_list(char* sz, std::vector<int>& list);
+bool string_to_int_list(QString listString, std::vector<int>& list);
 
 class Ui::CDlgFind
 {
@@ -107,10 +107,10 @@ void CDlgFind::accept()
 	m_bclear = false;
 	if (ui->pclear->isChecked()) m_bclear = true;
 
-	std::string s = ui->pitem->text().toStdString();
-	char sz[256] = {0};
-	strcpy(sz, s.c_str());
-	if (string_to_int_list(sz, m_item) == false)
+	// std::string s = ui->pitem->text().toStdString();
+	// char sz[256] = {0};
+	// strcpy(sz, s.c_str());
+	if (string_to_int_list(ui->pitem->text(), m_item) == false)
 	{
 		QMessageBox::critical(this, "Find", "Invalid item list");
 		return;
@@ -122,27 +122,18 @@ void CDlgFind::accept()
 // converts a string to a list of numbers. 
 // Note: no white space allowed in the string.
 // Note: the numbers are converted to zero-base
-bool string_to_int_list(char* sz, std::vector<int>& list)
+bool string_to_int_list(QString listString, std::vector<int>& list)
 {
-	// remove all white-space
-	char* ch = sz;
-	int l = 0;
-	while (*ch)
-	{
-		if (isspace(*ch) == 0)
-		{
-			sz[l] = *ch;
-			l++;
-		}
-		++ch;
-	}
-	sz[l] = 0;
+	// remove all spaces
+    listString.replace(" ", "");
 
-	// make sure there
-	if (strlen(sz) == 0) return false;
+	// make sure string isn't empty
+    if (listString.isEmpty()) return false;
 
 	list.clear();
-	ch = sz;
+    std::string stdString = listString.toStdString();
+
+	const char* ch = stdString.c_str();
 	int n0 = -1, n1 = -1, nn = -1;
 	do
 	{

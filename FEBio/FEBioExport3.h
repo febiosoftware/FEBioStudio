@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,8 +30,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include "FEBioExport.h"
 
-class FEDataMapGenerator;
-class FESurfaceLoad;
+class FSSurfaceLoad;
 class GPartList;
 class GMaterial;
 class GPart;
@@ -92,10 +91,10 @@ private:
 	{
 	public:
 		string			m_name;
-		FENodeList*		m_nodeList;
+		FSNodeList*		m_nodeList;
 
 	public:
-		NodeSet(const string& name, FENodeList* nodeList) : m_name(name), m_nodeList(nodeList) {}
+		NodeSet(const string& name, FSNodeList* nodeList) : m_name(name), m_nodeList(nodeList) {}
 		~NodeSet() { delete m_nodeList; }
 	};
 
@@ -174,7 +173,7 @@ private:
 	class ElementSet
 	{
 	public:
-		FECoreMesh*	m_mesh;
+		FSCoreMesh*	m_mesh;
 		int			m_matID;
 		string		m_name;
 		vector<int>	m_elem;
@@ -199,7 +198,7 @@ private:
 	};
 
 public:
-	FEBioExport3(FEProject& prj);
+	FEBioExport3(FSProject& prj);
 	virtual ~FEBioExport3();
 
 	void Clear();
@@ -214,13 +213,12 @@ public: // set export attributes
 	void SetWriteNotesFlag(bool b) { m_writeNotes = b; }
 
 protected:
-	bool PrepareExport(FEProject& prj);
-	void BuildItemLists(FEProject& prj);
+	bool PrepareExport(FSProject& prj);
+	void BuildItemLists(FSProject& prj);
 
-	GPartList* BuildPartList(GMaterial* mat);
-
-	void WriteModuleSection(FEAnalysisStep* pstep);
-	void WriteControlSection(FEAnalysisStep* pstep);
+public:
+	void WriteModuleSection(FSStep* pstep);
+	void WriteControlSection(FSStep& s);
 	void WriteMaterialSection();
 	void WriteGeometrySection();
 	void WriteGeometrySectionOld();	// old, global node and element list
@@ -237,21 +235,21 @@ protected:
 	void WriteGeometryNodeSets();
 	void WriteGeometryDiscreteSets();
 	void WriteMeshDataSection();
-	void WriteBoundarySection(FEStep& s);
-	void WriteLoadsSection(FEStep& s);
-	void WriteContactSection(FEStep& s);
-	void WriteDiscreteSection(FEStep& s);
+	void WriteBoundarySection(FSStep& s);
+	void WriteLoadsSection(FSStep& s);
+	void WriteContactSection(FSStep& s);
+	void WriteDiscreteSection(FSStep& s);
 	void WriteInitialSection();
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
 	void WriteStepSection();
-	void WriteConstraintSection(FEStep& s);
+	void WriteConstraintSection(FSStep& s);
 	
-	void WriteRigidSection(FEStep& s);
-	void WriteRigidConstraints(FEStep& s);
+	void WriteRigidSection(FSStep& s);
+	void WriteRigidConstraints(FSStep& s);
 
-	void WriteBodyLoads(FEStep& s);
+	void WriteBodyLoads(FSStep& s);
 
 	// Used by new Part export feature
 	void WriteGeometryObject(Part* po);
@@ -268,57 +266,63 @@ protected:
 	void WriteMeshDataMaterialFibers();
 	void WriteMeshDataMaterialAxes();
 	void WriteElementDataFields();
-	void WriteMeshData(FEDataMapGenerator* map);
+	void WriteNodeDataGenerator(FSNodeDataGenerator* map);
+	void WriteEdgeDataGenerator(FSEdgeDataGenerator* map);
+	void WriteFaceDataGenerator(FSFaceDataGenerator* map);
+	void WriteElemDataGenerator(FSElemDataGenerator* map);
 
-	void WriteSolidControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep);
-	void WriteHeatTransferControlParams(FEAnalysisStep* pstep);
-	void WriteFluidControlParams(FEAnalysisStep* pstep);
-	void WriteFluidFSIControlParams(FEAnalysisStep* pstep);
-	void WriteReactionDiffusionControlParams(FEAnalysisStep* pstep);
+	void WriteSolidControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep);
+	void WriteHeatTransferControlParams(FSAnalysisStep* pstep);
+	void WriteFluidControlParams(FSAnalysisStep* pstep);
+	void WriteFluidFSIControlParams(FSAnalysisStep* pstep);
+	void WriteReactionDiffusionControlParams(FSAnalysisStep* pstep);
+    void WritePolarFluidControlParams(FSAnalysisStep* pstep);
 
-	void WriteBCFixed(FEStep& s);
-	void WriteBCPrescribed(FEStep& s);
-	void WriteBCRigid(FEStep& s);
+	void WriteBC(FSStep& s, FSBoundaryCondition* pbc);
+	void WriteBCFixed(FSStep& s, FSBoundaryCondition* pbc);
+	void WriteBCPrescribed(FSStep& s, FSBoundaryCondition* pbc);
+	void WriteBCRigid(FSStep& s);
 
-	void WriteInitVelocity(FENodalVelocities&        iv);
-	void WriteInitShellVelocity(FENodalShellVelocities&   iv);
-	void WriteInitConcentration(FEInitConcentration&      ic);
-	void WriteInitShellConcentration(FEInitShellConcentration& ic);
-	void WriteInitFluidPressure(FEInitFluidPressure&      ip);
-	void WriteInitShellFluidPressure(FEInitShellFluidPressure& iq);
-	void WriteInitTemperature(FEInitTemperature&        it);
-    void WriteInitFluidDilatation(FEInitFluidDilatation&  it);
-	void WriteInitPrestrain(FEInitPrestrain&          ip);
+	void WriteInitVelocity(FSNodalVelocities&        iv);
+	void WriteInitShellVelocity(FSNodalShellVelocities&   iv);
+	void WriteInitConcentration(FSInitConcentration&      ic);
+	void WriteInitShellConcentration(FSInitShellConcentration& ic);
+	void WriteInitFluidPressure(FSInitFluidPressure&      ip);
+	void WriteInitShellFluidPressure(FSInitShellFluidPressure& iq);
+	void WriteInitTemperature(FSInitTemperature&        it);
+    void WriteInitFluidDilatation(FSInitFluidDilatation&  it);
+	void WriteInitPrestrain(FSInitPrestrain&          ip);
 
-	void WriteLoadNodal(FEStep& s);
+	void WriteDOFNodalLoad(FSStep& s, FSNodalLoad* pbc);
 
-	void WriteSurfaceLoads(FEStep& s);
-	void WriteSurfaceLoad(FEStep& s, FESurfaceLoad* psl, const char* sztype);
+	void WriteNodalLoads(FSStep& s);
+	void WriteSurfaceLoads(FSStep& s);
+	void WriteSurfaceLoad(FSStep& s, FSSurfaceLoad* psl, const char* sztype);
 
-	void WriteContactInterface(FEStep& s, const char* sztype, FEPairedInterface* pi);
-	void WriteContactWall(FEStep& s);
-	void WriteContactSphere(FEStep& s);
-	void WriteLinearConstraints(FEStep& s);
-	void WriteConnectors(FEStep& s);
-	void WriteRigidJoint(FEStep& s);
-	void WriteConstraints(FEStep& s);
+	void WriteContactInterface(FSStep& s, const char* sztype, FSPairedInterface* pi);
+	void WriteContactWall(FSStep& s);
+	void WriteContactSphere(FSStep& s);
+	void WriteLinearConstraints(FSStep& s);
+	void WriteConnectors(FSStep& s);
+	void WriteRigidJoint(FSStep& s);
+	void WriteConstraints(FSStep& s);
 
-	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteRigidMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMaterialParams(FEMaterial* pm, bool isTopLevel = false);
-	void WriteFiberMaterial(FEOldFiberMaterial& f);
-	void WriteReactionMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteReactionMaterial2(FEMaterial* pmat, XMLElement& el);
-    void WriteMembraneReactionMaterial(FEMaterial* pmat, XMLElement& el);
+	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteRigidMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMaterialParams(FSMaterial* pm, bool isTopLevel = false);
+	void WriteFiberMaterial(FSOldFiberMaterial& f);
+	void WriteReactionMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteReactionMaterial2(FSMaterial* pmat, XMLElement& el);
+    void WriteMembraneReactionMaterial(FSMaterial* pmat, XMLElement& el);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);
 	void WriteElementList(FEElemList& el);
 
 protected:
-	FEModel*		m_pfem;
+	FSModel*		m_pfem;
 
 	bool	m_useReactionMaterial2;
 	bool	m_writeControlSection;	// write Control section for single step analysis
@@ -332,7 +336,7 @@ protected:
 	void AddSurface(const std::string& name, FEItemListBuilder* pl);
 	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
 
-	bool WriteNodeSet(const string& name, FENodeList* pl);
+	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
 protected:
 	Part* FindPart(GObject* po);

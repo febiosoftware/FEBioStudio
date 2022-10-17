@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,6 +38,9 @@ SOFTWARE.*/
 #include "FiberGeneratorTool.h"
 #include "AreaCalculatorTool.h"
 #include "ImportSpringsTool.h"
+#include "ICPRegistrationTool.h"
+#include "ImageMapTool.h"
+#include "DiscreteElementNetworkTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -67,6 +70,9 @@ void CToolsPanel::initTools()
     tools.push_back(new CAreaCalculatorTool(wnd));
 	tools.push_back(new CImportSpringsTool (wnd));
     tools.push_back(new CQuadricFitTool    (wnd));
+	tools.push_back(new CICPRegistrationTool(wnd));
+    tools.push_back(new CImageMapTool      (wnd));
+    tools.push_back(new CDiscreteElementNetworkTool(wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

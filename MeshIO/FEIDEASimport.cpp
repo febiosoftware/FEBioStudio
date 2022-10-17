@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-FEIDEASimport::FEIDEASimport(FEProject& prj) : FEFileImport(prj)
+FEIDEASimport::FEIDEASimport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -40,7 +40,7 @@ FEIDEASimport::~FEIDEASimport()
 
 bool FEIDEASimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 
 	// open the file 
@@ -104,7 +104,7 @@ bool FEIDEASimport::Load(const char* szfile)
 	return true;
 }
 
-bool FEIDEASimport::BuildMesh(FEModel& fem)
+bool FEIDEASimport::BuildMesh(FSModel& fem)
 {
 	int i, j;
 
@@ -113,7 +113,7 @@ bool FEIDEASimport::BuildMesh(FEModel& fem)
 	int elems = (int)m_Elem.size();
 
 	// create new mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
 
 	// create the node-lookup table
@@ -127,7 +127,7 @@ bool FEIDEASimport::BuildMesh(FEModel& fem)
 	}
 
 	int nsize = imax - imin + 1;
-	vector<int> NLT; NLT.resize(nsize);
+	std::vector<int> NLT; NLT.resize(nsize);
 	for (i=0; i<nsize; ++i) NLT[i] = -1;
 
 	in = m_Node.begin();
@@ -135,7 +135,7 @@ bool FEIDEASimport::BuildMesh(FEModel& fem)
 
 	// create the nodes
 	in = m_Node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (i=0; i<nodes; ++i, ++in, ++pn)
 	{
 		pn->r.x = in->x;

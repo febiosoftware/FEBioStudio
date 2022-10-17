@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <string>
 #include <string.h>
 #include <vector>
-#include <unordered_set>
+#include <set>
 #include <map>
 #include <QList>
 #include <QtGlobal>
@@ -67,9 +67,9 @@ public:
 
 	QList<QList<QVariant>> GetProjectFileInfo(int projID);
 
-
-	std::unordered_set<int> FullTextSearch(QString term);
-	std::unordered_set<int> FileSearch(QString term);
+	std::set<int> ProjectSearch(QString dataType, QString term);
+	std::set<int> FileSearch(QString dataType, QString term);
+    std::vector<std::pair<QString, QStringList>> GetAdvancedSearchInfo();
 
 	QString ProjectNameFromID(int ID);
 	QString FilePathFromID(int ID, int type);
@@ -83,6 +83,7 @@ public:
 	qint64 currentProjectsSize(QString username);
 	qint64 projectsSize(int ID);
 
+    void setDownloadTime(int ID, int type, qint64 time);
 
 private:
 	Imp* imp;

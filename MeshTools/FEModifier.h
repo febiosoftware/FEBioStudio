@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,20 +27,22 @@ SOFTWARE.*/
 #pragma once
 #include <MeshLib/FEMesh.h>
 #include <FSCore/FSThreadedTask.h>
+class FESelection;
+class GObject;
 
 //-----------------------------------------------------------------------------
 
 class FEModifier : public FSThreadedTask 
 {
 public:
-	FEModifier(const char* sz) { SetName(sz); }
-	virtual ~FEModifier() {}
+	FEModifier(const char* sz);
+	virtual ~FEModifier();
 
-	virtual FEMesh* Apply(FEMesh* pm) = 0;
+	virtual FSMesh* Apply(FSMesh* pm);
+	virtual FSMesh* Apply(FSGroup* pg);
+	virtual FSMesh* Apply(GObject* po, FESelection* pg);
 
-	virtual FEMesh* Apply(FEGroup* pg) { return (pg ? Apply(pg->GetMesh()) : 0); }
-
-	virtual FEMeshBase* ApplyModifier(FEMeshBase* pm) { return 0; }
+	virtual FSMeshBase* ApplyModifier(FSMeshBase* pm);
 
 	static bool SetError(const char* szerr, ...);
 
@@ -55,8 +57,8 @@ class FEPartitionSelection : public FEModifier
 {
 public:
 	FEPartitionSelection();
-	FEMesh* Apply(FEMesh* pm) override;
-	FEMesh* Apply(FEGroup* pg) override;
+	FSMesh* Apply(FSMesh* pm) override;
+	FSMesh* Apply(FSGroup* pg) override;
 
 	bool UpdateData(bool bsave) override;
 };
@@ -66,11 +68,11 @@ class FESmoothMesh : public FEModifier
 {
 public:
 	FESmoothMesh();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 public:
-	void SmoothMesh(FEMesh& mesh);
-	void ShapeSmoothMesh(FEMesh& mesh, const FEMesh& backMesh);
+	void SmoothMesh(FSMesh& mesh);
+	void ShapeSmoothMesh(FSMesh& mesh, const FSMesh& backMesh);
 };
 
 //-----------------------------------------------------------------------------
@@ -78,7 +80,7 @@ class FERemoveDuplicateElements : public FEModifier
 {
 public:
 	FERemoveDuplicateElements() : FEModifier("Remove duplicates"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -88,7 +90,7 @@ class FEMirrorMesh : public FEModifier
 public:
 	FEMirrorMesh();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -102,7 +104,7 @@ public:
 		m_bun = false;
 	}
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 public:
 	double	m_rad;
@@ -115,7 +117,7 @@ class FEAlignNodes : public FEModifier
 {
 public:
 	FEAlignNodes();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -125,7 +127,7 @@ class FESetShellThickness : public FEModifier
 public:
 	FESetShellThickness();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -135,13 +137,13 @@ class FESetFiberOrientation : public FEModifier
 public:
 	FESetFiberOrientation();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	bool UpdateData(bool bsave);
 
 protected:
-	void SetFiberVector(FEMesh* pm);
-	void SetFiberNodes (FEMesh* pm);
+	void SetFiberVector(FSMesh* pm);
+	void SetFiberNodes (FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -151,16 +153,16 @@ class FESetAxesOrientation : public FEModifier
 public:
 	FESetAxesOrientation();
 	
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	bool UpdateData(bool bsave);
 	
 protected:
-	bool SetAxesVectors(FEMesh* pm);
-	bool SetAxesNodes (FEMesh* pm);
-    bool SetAxesAngles(FEMesh* pm);
-	bool SetAxesCopy  (FEMesh* pm);
-	bool SetAxesCylindrical(FEMesh* pm);
+	bool SetAxesVectors(FSMesh* pm);
+	bool SetAxesNodes (FSMesh* pm);
+    bool SetAxesAngles(FSMesh* pm);
+	bool SetAxesCopy  (FSMesh* pm);
+	bool SetAxesCylindrical(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -170,7 +172,7 @@ class FEQuad2Tri : public FEModifier
 {
 public:
 	FEQuad2Tri() : FEModifier("Quad2Tri"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -180,7 +182,7 @@ class FEHex2Tet : public FEModifier
 {
 public:
 	FEHex2Tet() : FEModifier("Hex2Tet"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -188,7 +190,7 @@ public:
 class FETet10Smooth
 {
 public:
-	void Apply(FEMesh* pm);
+	void Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -198,7 +200,7 @@ class FETet4ToTet5 : public FEModifier
 {
 public:
 	FETet4ToTet5();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -208,7 +210,7 @@ class FETet5ToTet4 : public FEModifier
 {
 public:
 	FETet5ToTet4();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -218,7 +220,7 @@ class FETet4ToTet10 : public FEModifier
 {
 public:
 	FETet4ToTet10(bool bsmooth = false);
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 private:
@@ -232,7 +234,7 @@ class FETet4ToTet15 : public FEModifier
 {
 public:
 	FETet4ToTet15(bool bsmooth = false);
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 private:
@@ -246,7 +248,7 @@ class FETet4ToTet20 : public FEModifier
 {
 public:
 	FETet4ToTet20();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 private:
@@ -260,7 +262,7 @@ class FETet4ToHex8 : public FEModifier
 {
 public:
 	FETet4ToHex8(bool bsmooth = false);
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 private:
@@ -274,7 +276,7 @@ class FETet10ToTet4 : public FEModifier
 {
 public:
 	FETet10ToTet4() : FEModifier("Tet10-to-Tet4"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -284,7 +286,7 @@ class FETet15ToTet4 : public FEModifier
 {
 public:
 	FETet15ToTet4() : FEModifier("Tet15-to-Tet4"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -292,7 +294,7 @@ public:
 class FEHex20Smooth
 {
 public:
-	void Apply(FEMesh* pm);
+	void Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -301,7 +303,7 @@ class FEHex8ToHex20 : public FEModifier
 {
 public:
 	FEHex8ToHex20(bool bsmooth = false);
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 	void SetSmoothing(bool b) { m_bsmooth = b; }
 
 protected:
@@ -314,7 +316,7 @@ class FEHex20ToHex8 : public FEModifier
 {
 public:
 	FEHex20ToHex8() : FEModifier("Hex20-to-Hex8"){}
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -322,7 +324,7 @@ public:
 class FEQuad8Smooth
 {
 public:
-    void Apply(FEMesh* pm);
+    void Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -331,7 +333,7 @@ class FEQuad4ToQuad8 : public FEModifier
 {
 public:
     FEQuad4ToQuad8(bool bsmooth = false);
-    FEMesh* Apply(FEMesh* pm);
+    FSMesh* Apply(FSMesh* pm);
     void SetSmoothing(bool b) { m_bsmooth = b; }
     
 protected:
@@ -344,7 +346,7 @@ class FEQuad8ToQuad4 : public FEModifier
 {
 public:
     FEQuad8ToQuad4() : FEModifier("Quad8-to-Quad4"){}
-    FEMesh* Apply(FEMesh* pm);
+    FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -352,7 +354,7 @@ public:
 class FETri6Smooth
 {
 public:
-    void Apply(FEMesh* pm);
+    void Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -361,7 +363,7 @@ class FETri3ToTri6 : public FEModifier
 {
 public:
     FETri3ToTri6(bool bsmooth = false);
-    FEMesh* Apply(FEMesh* pm);
+    FSMesh* Apply(FSMesh* pm);
     void SetSmoothing(bool b) { m_bsmooth = b; }
     
 protected:
@@ -374,7 +376,7 @@ class FETri6ToTri3 : public FEModifier
 {
 public:
     FETri6ToTri3() : FEModifier("Tri6-to-Tri3"){}
-    FEMesh* Apply(FEMesh* pm);
+    FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -394,7 +396,7 @@ class FEPlaneCut : public FEModifier
 
 public:
 	FEPlaneCut();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	void SetPlaneCoefficients(double a[4]);
 
@@ -403,12 +405,12 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class FERefineMesh : public FEModifier
+class RefineMesh : public FEModifier
 {
 public:
-	FERefineMesh();
+	RefineMesh();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -417,7 +419,7 @@ class FEConvertMesh : public FEModifier
 public:
 	FEConvertMesh();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 	bool UpdateData(bool bsave) override;
 
@@ -435,7 +437,7 @@ class FEAddNode : public FEModifier
 public:
 	FEAddNode();
 
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -443,7 +445,7 @@ class FEInvertMesh : public FEModifier
 {
 public:
 	FEInvertMesh();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -451,7 +453,7 @@ class FEDetachElements : public FEModifier
 {
 public:
 	FEDetachElements();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -459,7 +461,7 @@ class FERezoneMesh : public FEModifier
 {
 public:
 	FERezoneMesh();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 };
 
 //-----------------------------------------------------------------------------
@@ -467,8 +469,8 @@ class FEInflateMesh: public FEModifier
 {
 public:
 	FEInflateMesh();
-	FEMesh* Apply(FEMesh* pm);
+	FSMesh* Apply(FSMesh* pm);
 
 private:
-	void ShrinkMesh(FEMesh& mesh);
+	void ShrinkMesh(FSMesh& mesh);
 };

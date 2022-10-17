@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,25 +24,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <QCoreApplication>
 #include <QBoxLayout>
 #include <QDialogButtonBox>
 #include <QPushButton>
+#include <QTextBrowser>
+#include <QDesktopServices>
+#include <QMessageBox>
 #include <MeshTools/FEProject.h>
 #include "HelpDialog.h"
 #include "WebDefines.h"
-
-#ifdef WEBHELP
-	#include <QWebEngineView>
-#endif
+#include "FEBioStudio.h"
+#include "MainWindow.h"
+#include <FEBioLink/FEBioModule.h>
 
 class Ui::CHelpDialog
 {
 public:
-#ifdef WEBHELP
 	QPushButton* helpButton;
-	QWebEngineView* helpView;
-#endif
-
 	QHBoxLayout* helpLayout;
 
 public:
@@ -51,22 +50,14 @@ public:
 		QVBoxLayout* mainLayout = new QVBoxLayout;
 		helpLayout = new QHBoxLayout;
 
-#ifdef WEBHELP
-		helpLayout->addWidget(helpView = new QWebEngineView, 2);
-		helpView->setMinimumSize(600,400);
-		helpView->setVisible(false);
-#endif
-
 		mainLayout->addLayout(helpLayout);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 
-#ifdef WEBHELP
-		helpButton = new QPushButton("Help");
-		helpButton->setCheckable(true);
+        helpButton = new QPushButton("Help");
+        helpButton->setCheckable(true);
 
-		bb->addButton(helpButton, QDialogButtonBox::HelpRole);
-#endif
+        bb->addButton(helpButton, QDialogButtonBox::HelpRole);
 
 		mainLayout->addWidget(bb);
 
@@ -79,71 +70,35 @@ public:
 };
 
 
-CHelpDialog::CHelpDialog(FEProject& prj, QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog)
+CHelpDialog::CHelpDialog(QWidget* parent) : QDialog(parent), ui(new Ui::CHelpDialog), m_url(UNSELECTED_HELP)
 {
 	ui->setupUi(this);
 
-	m_module = prj.GetModule();
+	m_module = FEBio::GetActiveModule();
 }
 
 CHelpDialog::~CHelpDialog() { delete ui; }
 
 void CHelpDialog::on_help_clicked()
 {
-#ifdef WEBHELP
-	if(ui->helpButton->isChecked())
-	{
-		m_withoutHelp = size();
-		// reset min size
-		setMinimumSize(0,0);
-		ui->helpView->setVisible(true);
-		LoadPage();
-		resize(m_withHelp);
-	}
-	else
-	{
-		m_withHelp = size();
-		ui->helpView->setVisible(false);
-		// reset min size
-		setMinimumSize(0,0);
-		resize(m_withoutHelp);
-	}
-#endif
+    SetURL();
+
+    if(m_url.isEmpty())
+    {
+        QMessageBox::information(this, "Help", "There is currently no help article available for this item.");
+    }
+    else if(m_url == UNSELECTED_HELP)
+    {
+        QMessageBox::information(this, "Help", "Please select an item before clicking Help.");
+    }
+    else
+    {
+        QDesktopServices::openUrl(QUrl(MANUAL_PATH + m_url));
+        
+    }
 }
 
 void CHelpDialog::SetLeftSideLayout(QLayout* layout)
 {
 	ui->helpLayout->insertLayout(0, layout);
-}
-
-void CHelpDialog::LoadPage()
-{
-#ifdef WEBHELP
-	// Make sure the help view is actually visible
-	if (ui->helpView->isVisible() == false) return;
-
-	QString oldURL = m_url;
-
-	SetURL();
-
-	if(!m_url.isEmpty())
-	{
-		if(m_url == UNSELECTED_HELP)
-		{
-			ui->helpView->setHtml(QString("<html><body><p><b>%1</b></p></body></html>").arg(m_unselectedHelp));
-			return;
-		}
-
-		m_url.insert(0, currentManualURL);
-
-		if(m_url != oldURL)
-		{
-			ui->helpView->load(m_url);
-		}
-	}
-	else
-	{
-		ui->helpView->setHtml("<html><body><p><b>There is currently no help article available for this item.</b></p></body></html>");
-	}
-#endif
 }

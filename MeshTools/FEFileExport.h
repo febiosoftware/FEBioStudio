@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,12 +28,12 @@ SOFTWARE.*/
 #include <MeshIO/FileWriter.h>
 #include <string>
 
-class FEProject;
+class FSProject;
 
 class FEFileExport : public FileWriter
 {
 public:
-	FEFileExport(FEProject& prj);
+	FEFileExport(FSProject& prj);
 	virtual ~FEFileExport();
 
 	void ClearLog();
@@ -46,5 +46,5 @@ protected:
 
 protected:
 	std::string	m_err;	// error message
-	FEProject&	m_prj;
+	FSProject&	m_prj;
 };

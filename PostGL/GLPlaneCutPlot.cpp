@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -51,9 +51,12 @@ const int TRI_NT[4]  = { 0, 1, 2, 2 };
 vector<int> CGLPlaneCutPlot::m_clip;
 vector<CGLPlaneCutPlot*> CGLPlaneCutPlot::m_pcp;
 
+REGISTER_CLASS(CGLPlaneCutPlot, CLASS_PLOT, "planecut", 0);
 
-CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
+CGLPlaneCutPlot::CGLPlaneCutPlot()
 {
+	SetTypeString("planecut");
+
 	SetRenderOrder(1);
 
 	static int n = 1;
@@ -63,7 +66,8 @@ CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 
 	AddBoolParam(true, "Show plane");
 	AddBoolParam(true, "Cut hidden");
-	AddBoolParam(true, "Show Mesh" );
+	AddBoolParam(true, "Show mesh" );
+	AddColorParam(GLColor(0, 0, 0), "Mesh color");
 	AddDoubleParam(0, "Transparency")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(0, "X-normal")->SetFloatRange(-1.0, 1.0);
 	AddDoubleParam(0, "Y-normal")->SetFloatRange(-1.0, 1.0);
@@ -79,6 +83,8 @@ CGLPlaneCutPlot::CGLPlaneCutPlot(CGLModel* po) : CGLPlot(po)
 	m_bcut_hidden = false;
 	m_bshowplane = true;
 	m_bshow_mesh = false;
+
+	m_meshColor = GLColor(0, 0, 0);
 
 	m_nclip = GetFreePlane();
 	if (m_nclip >= 0) m_pcp[m_nclip] = this;
@@ -98,6 +104,7 @@ bool CGLPlaneCutPlot::UpdateData(bool bsave)
 		m_bshowplane  = GetBoolValue(SHOW_PLANE);
 		m_bcut_hidden = GetBoolValue(CUT_HIDDEN);
 		m_bshow_mesh  = GetBoolValue(SHOW_MESH);
+		m_meshColor = GetColorValue(MESH_COLOR);
 		m_transparency = GetFloatValue(TRANSPARENCY);
 		m_normal.x = GetFloatValue(NORMAL_X);
 		m_normal.y = GetFloatValue(NORMAL_Y);
@@ -111,6 +118,7 @@ bool CGLPlaneCutPlot::UpdateData(bool bsave)
 		SetBoolValue(SHOW_PLANE, m_bshowplane);
 		SetBoolValue(CUT_HIDDEN, m_bcut_hidden);
 		SetBoolValue(SHOW_MESH, m_bshow_mesh);
+		SetColorValue(MESH_COLOR, m_meshColor);
 		SetFloatValue(TRANSPARENCY, m_transparency);
 		SetFloatValue(NORMAL_X, m_normal.x);
 		SetFloatValue(NORMAL_Y, m_normal.y);
@@ -224,7 +232,7 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	}
 	else
 	{
-		BOX box = GetModel()->GetFEModel()->GetBoundingBox();
+		BOX box = GetModel()->GetFSModel()->GetBoundingBox();
 		m_T.SetPosition(-box.Center());
 		m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
 	}
@@ -286,8 +294,8 @@ void CGLPlaneCutPlot::RenderSlice()
 {
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* ps = mdl->GetFEModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FEPostModel* ps = mdl->GetFSModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 
 	CGLColorMap* pcol = mdl->GetColorMap();
 
@@ -302,7 +310,7 @@ void CGLPlaneCutPlot::RenderSlice()
 	// loop over all enabled materials
 	for (int n=0; n<ps->Materials(); ++n)
 	{
-		FEMaterial* pmat = ps->GetMaterial(n);
+		Material* pmat = ps->GetMaterial(n);
 		if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 		{
 			if (pcol->IsActive() && pmat->benable)
@@ -384,10 +392,11 @@ void CGLPlaneCutPlot::RenderMesh()
 
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
-	glColor3ub(0,0,0);
+	GLColor c = m_meshColor;
+	glColor3ub(c.r, c.g, c.b);	
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -425,8 +434,8 @@ void CGLPlaneCutPlot::RenderMesh()
 	{
 		// render only when visible
 		FEElement_& el = pm->ElementRef(i);
-		FEMaterial* pmat = ps->GetMaterial(el.m_MatID);
-		if ((el.m_ntag > 0) && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
+		Material* pmat = ps->GetMaterial(el.m_MatID);
+		if ((el.m_ntag > 0) && el.IsSolid() && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
 		{
 			switch (el.Type())
 			{
@@ -451,7 +460,7 @@ void CGLPlaneCutPlot::RenderMesh()
 			for (k=0; k<8; ++k)
 			{
 				int nk = el.m_node[nt[k]];
-				FENode& node = pm->Node(nk);
+				FSNode& node = pm->Node(nk);
 				en[k] = nk;
 				ev[k] = state.m_NODE[nk].m_val;
 				ex[k] = node.r;
@@ -544,8 +553,8 @@ void CGLPlaneCutPlot::RenderOutline()
 {
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* ps = mdl->GetFEModel();
-	FEMeshBase* pm = mdl->GetActiveMesh();
+	FEPostModel* ps = mdl->GetFSModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -590,7 +599,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 {
 	// Get the bounding box. We need it for determining the scale
 	CGLModel* mdl = GetModel();
-	BOX box = GetModel()->GetFEModel()->GetBoundingBox();
+	BOX box = GetModel()->GetFSModel()->GetBoundingBox();
 	double R = box.Radius();
 	m_scl = (R == 0.0 ? 1.0 : R);
 
@@ -603,7 +612,7 @@ void CGLPlaneCutPlot::UpdateSlice()
 
 	double ref = -a[3];
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	m_slice.Clear();
@@ -613,11 +622,11 @@ void CGLPlaneCutPlot::UpdateSlice()
 	// loop over all domains
 	for (int n = 0; n < pm->Domains(); ++n)
 	{
-		FEDomain& dom = pm->Domain(n);
+		MeshDomain& dom = pm->Domain(n);
 		int matId = dom.GetMatID();
 		if ((matId >= 0) && (matId < ps->Materials()))
 		{
-			FEMaterial* pmat = ps->GetMaterial(matId);
+			Material* pmat = ps->GetMaterial(matId);
 			if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 			{
 				AddDomain(pm, n);
@@ -637,7 +646,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 	int en[8];
 	int	rf[3];
 
-	FEDomain& dom = pm->Domain(n);
+	MeshDomain& dom = pm->Domain(n);
 
 	// get the plane equations
 	GLdouble a[4];
@@ -651,7 +660,7 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 	CGLModel* mdl = GetModel();
 	int ndivs = mdl->GetSubDivisions();
 
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	Post::FEState& state = *ps->CurrentState();
 
 	// repeat over all elements
@@ -681,9 +690,9 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 			// get the nodal values
 			for (int k = 0; k < 8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 				nf[k] = (node.IsExterior() ? 1 : 0);
-				ex[k] = to_vec3f(node.r);
+				ex[k] = node.r;
 				en[k] = el.m_node[nt[k]];
 				ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
 			}
@@ -846,7 +855,7 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 	EDGE edge[15];
 	int en[8];
 	CGLModel* mdl = GetModel();
-	FEPostModel* ps = mdl->GetFEModel();
+	FEPostModel* ps = mdl->GetFSModel();
 	Post::FEState& state = *ps->CurrentState();
 
 	// get the plane equations
@@ -860,18 +869,18 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 	// loop over faces to determine edges
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 
 		int elemId = face.m_elem[0].eid;
-		FEElement& el = pm->Element(elemId);
+		FSElement& el = pm->Element(elemId);
 		int pid = el.m_MatID;
 		if (pid >= 0)
 		{
-			FEDomain& dom = pm->Domain(pid);
+			MeshDomain& dom = pm->Domain(pid);
 			int matId = dom.GetMatID();
 			if ((matId >= 0) && (matId < ps->Materials()))
 			{
-				FEMaterial* pmat = ps->GetMaterial(matId);
+				Material* pmat = ps->GetMaterial(matId);
 				if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 				{
 					const int *nt = nullptr;
@@ -889,8 +898,8 @@ void CGLPlaneCutPlot::AddFaces(FEPostMesh* pm)
 					// get the nodal values
 					for (int k = 0; k<4; ++k)
 					{
-						FENode& node = pm->Node(face.n[nt[k]]);
-						ex[k] = to_vec3f(node.r);
+						FSNode& node = pm->Node(face.n[nt[k]]);
+						ex[k] = node.r;
 						en[k] = el.m_node[nt[k]];
 						ev[k] = state.m_NODE[el.m_node[nt[k]]].m_val;
 					}
@@ -950,7 +959,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 	CGLModel* mdl = GetModel();
 
-	FEPostModel* pfem = mdl->GetFEModel();
+	FEPostModel* pfem = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
 
 	float ev[8];
@@ -975,7 +984,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	{
 		// consider only solid elements that are visible
 		FEElement_& el = pm->ElementRef(i);
-		FEMaterial* pmat = pfem->GetMaterial(el.m_MatID);
+		Material* pmat = pfem->GetMaterial(el.m_MatID);
 		if (el.IsSolid() && el.IsVisible() && pmat->bvisible)
 		{
 			// we consider all elements degenerate hexes
@@ -1000,10 +1009,10 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FENode& node = pm->Node(el.m_node[nt[k]]);
+				FSNode& node = pm->Node(el.m_node[nt[k]]);
 				en[k] = el.m_node[k];
 				ev[k] = ps->m_NODE[en[k]].m_val;
-				ex[k] = ps->m_NODE[en[k]].m_rt;
+				ex[k] = to_vec3d(ps->m_NODE[en[k]].m_rt);
 			}
 
 			// calculate the case of the element

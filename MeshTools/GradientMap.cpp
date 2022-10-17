@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,17 +36,17 @@ GradientMap::GradientMap()
 
 void GradientMap::Apply(const FENodeData& data, vector<vec3d>& out, int niter)
 {
-	FEMesh* pm = data.GetMesh();
+	FSMesh* pm = data.GetMesh();
 	if (pm==0) return;
-	FEMesh& mesh = *pm;
+	FSMesh& mesh = *pm;
 
 	int NE = mesh.Elements();
 	out.assign(NE, vec3d(0,0,0));
 
-	double v[FEElement::MAX_NODES];
+	double v[FSElement::MAX_NODES];
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		int ne = el.Nodes();
 		for (int j = 0; j<ne; ++j) v[j] = data.get(el.m_node[j]);
@@ -63,7 +63,7 @@ void GradientMap::Apply(const FENodeData& data, vector<vec3d>& out, int niter)
 	{
 		for (int i=0; i<NE; ++i)
 		{
-			FEElement& el = mesh.Element(i);
+			FSElement& el = mesh.Element(i);
 
 			vec3d avg(0,0,0);
 			int nf = el.Faces(), nnb = 0;

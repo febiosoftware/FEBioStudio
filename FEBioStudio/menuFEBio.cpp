@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,11 +33,13 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <QMessageBox>
 #include <QFileDialog>
+#include "DlgFEBioInfo.h"
+#include "DlgFEBioPlugins.h"
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
 	// First, check that a job is not running yet
-	if (ui->m_process && (ui->m_process->state() != QProcess::NotRunning))
+	if (ui->m_jobManager->IsJobRunning())
 	{
 		QMessageBox::information(this, "FEBio Studio", "An FEBio job is already running.\nYou must wait till the job is finished or stop it.");
 		return;
@@ -111,7 +113,7 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 	// this keeps track of the FEBio selection that was used last
 	static int lastLaunchConfigIndex = 0;
-	static int lastFEBioFileVersion = 1;	// default to 3.0
+	static int lastFEBioFileVersion = 0x0400;	// default to 4.0
 
 	// setup the run dialog
 	CDlgRun dlg(this);
@@ -164,6 +166,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 				return;
 			}
 		}
+
+		// for default jobs we want to change the working directory to the jobs folder
+		QDir::setCurrent(absDir);
 
 		CFEBioJob* job = nullptr;
 
@@ -248,17 +253,9 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 void CMainWindow::on_actionFEBioStop_triggered()
 {
-	if (ui->m_process && (ui->m_process->state() == QProcess::Running))
+	if (ui->m_jobManager->IsJobRunning())
 	{
-		ui->m_bkillProcess = true;
-		ui->m_process->kill();
-
-		CFEBioJob* job = CFEBioJob::GetActiveJob();
-		if (job)
-		{
-			job->SetStatus(CFEBioJob::CANCELLED);
-			CFEBioJob::SetActiveJob(nullptr);
-		}
+		ui->m_jobManager->KillJob();
 	}
 	else QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
 }
@@ -289,6 +286,49 @@ void CMainWindow::on_actionFEBioOptimize_triggered()
 			catch (...)
 			{
 				QMessageBox::critical(this, "Generate FEBio Optimization file", "Exception detection. Optimization file might be incorrect.");
+			}
+		}
+	}
+}
+
+void CMainWindow::on_actionFEBioInfo_triggered()
+{
+	CDlgFEBioInfo dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionFEBioPlugins_triggered()
+{
+	CDlgFEBioPlugins dlg(this);
+	dlg.exec();
+}
+
+void CMainWindow::on_actionFEBioTangent_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	CDlgFEBioTangent dlg(this);
+	if (dlg.exec() == QDialog::Accepted)
+	{
+		QString fileName = QFileDialog::getSaveFileName(this, "Save", "", "*.feb");
+		if (fileName.isEmpty() == false)
+		{
+			try {
+				FEBioTangentDiagnostic data = dlg.GetData();
+
+				if (data.WriteDiagnosticFile(doc, fileName.toStdString()) == false)
+				{
+					QMessageBox::critical(this, "Generate FEBio Diagnostic file", "Something went terribly wrong!");
+				}
+				else
+				{
+					QMessageBox::information(this, "Generate FEBio Diagnostic file", "Success writing FEBio Tangent Diagnostic file!");
+				}
+			}
+			catch (...)
+			{
+				QMessageBox::critical(this, "Generate FEBio Tangent Diagnostic", "Exception detection. Diagnostic file might be incorrect.");
 			}
 		}
 	}

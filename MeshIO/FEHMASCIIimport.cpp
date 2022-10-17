@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,8 +27,9 @@ SOFTWARE.*/
 #include "FEHMASCIIimport.h"
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModel.h>
+using namespace std;
 
-FEHMASCIIimport::FEHMASCIIimport(FEProject& prj) : FEFileImport(prj)
+FEHMASCIIimport::FEHMASCIIimport(FSProject& prj) : FSFileImport(prj)
 {
 }
 
@@ -66,7 +67,7 @@ int parse_line(char* szline, char* argv[])
 
 bool FEHMASCIIimport::Load(const char* szfile)
 {
-	FEProject& prj = m_prj;
+	FSProject& prj = m_prj;
 
 	char szline[256] = {0};
 
@@ -172,12 +173,12 @@ bool FEHMASCIIimport::Load(const char* szfile)
 	// close the file
 	Close();
 
-	return BuildMesh(prj.GetFEModel());
+	return BuildMesh(prj.GetFSModel());
 }
 
 //-----------------------------------------------------------------------------
 
-bool FEHMASCIIimport::BuildMesh(FEModel &fem)
+bool FEHMASCIIimport::BuildMesh(FSModel& fem)
 {
 	// make sure there is something
 	if (m_Node.empty() || m_Elem.empty()) return false;
@@ -188,7 +189,7 @@ bool FEHMASCIIimport::BuildMesh(FEModel &fem)
 	int parts = (int)m_Part.size();
 
 	// create the mesh
-	FEMesh* pm = new FEMesh();
+	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
 	// find the node ID ranges
@@ -216,7 +217,7 @@ bool FEHMASCIIimport::BuildMesh(FEModel &fem)
 	in = m_Node.begin();
 	for (i=0; i<nodes; ++i, in++)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		n.r = in->r;
 	}
 
@@ -224,7 +225,7 @@ bool FEHMASCIIimport::BuildMesh(FEModel &fem)
 	list<ELEM>::iterator ie = m_Elem.begin();
 	for (i=0; i<elems; ++i, ++ie)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		e.m_gid = 0;
 		int nn = -1;
 		switch (ie->ntype)
@@ -252,7 +253,7 @@ bool FEHMASCIIimport::BuildMesh(FEModel &fem)
 		list<COMPONENT>::iterator ip = m_Part.begin();
 		for (int i=0; i<parts; ++i, ++ip)
 		{
-			FEPart* pg = new FEPart(po);
+			FSPart* pg = new FSPart(po);
 
 			pg->SetName(ip->szname);
 

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,34 +25,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEMesher.h"
+#include "FEMultiBlockMesh.h"
 
 class GTube;
 class GTube2;
 
 //-----------------------------------------------------------------------------
-class FETube : public FEMesher
+class FETube : public FEMultiBlockMesh
 {
 public:
-	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2 };
+	enum { NDIV, NSEG, NSTACK, ZZ, ZR, GZ2, GR2, ELEM_TYPE };
 
 public:
 	FETube(){}
 	FETube(GTube* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiBlockMesh();
+	FSMesh* BuildMeshLegacy();
+	FSMesh* BuildMultiBlockMesh();
 
 protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k)
 	{
 		int nd = 4*m_nd;
 		return k*(nd*(m_ns+1)) + (j%nd)*(m_ns+1) + i;
 	}
+
+	bool BuildMultiBlock() override;
 
 protected:
 	GTube*	m_pobj;
@@ -71,11 +73,11 @@ public:
 public:
 	FETube2(){}
 	FETube2(GTube2* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j, int k)
 	{

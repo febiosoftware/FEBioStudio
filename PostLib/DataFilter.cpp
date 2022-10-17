@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "FEMeshData_T.h"
 #include "evaluate.h"
 using namespace Post;
+using namespace std;
 
 bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 {
@@ -69,8 +70,8 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 			break;
 			case DATA_MAT3D:
 			{
-				FENodeData<Mat3d>* pv = dynamic_cast< FENodeData<Mat3d>* >(&d);
-				for (int n = 0; n<NN; ++n) { Mat3d& v = (*pv)[n]; v *= fscale; }
+				FENodeData<mat3d>* pv = dynamic_cast< FENodeData<mat3d>* >(&d);
+				for (int n = 0; n<NN; ++n) { mat3d& v = (*pv)[n]; v *= fscale; }
 			}
 			break;
 			case DATA_MAT3F:
@@ -175,25 +176,25 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 			{
 				if (fmt == DATA_NODE)
 				{
-					FEElementData<Mat3d, DATA_NODE>* pf = dynamic_cast<FEElementData<Mat3d, DATA_NODE>*>(&d);
+					FEElementData<mat3d, DATA_NODE>* pf = dynamic_cast<FEElementData<mat3d, DATA_NODE>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
 				else if (fmt == DATA_ITEM)
 				{
-					FEElementData<Mat3d, DATA_ITEM>* pf = dynamic_cast<FEElementData<Mat3d, DATA_ITEM>*>(&d);
+					FEElementData<mat3d, DATA_ITEM>* pf = dynamic_cast<FEElementData<mat3d, DATA_ITEM>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
 				else if (fmt == DATA_COMP)
 				{
-					FEElementData<Mat3d, DATA_COMP>* pf = dynamic_cast<FEElementData<Mat3d, DATA_COMP>*>(&d);
+					FEElementData<mat3d, DATA_COMP>* pf = dynamic_cast<FEElementData<mat3d, DATA_COMP>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
 				else if (fmt == DATA_REGION)
 				{
-					FEElementData<Mat3d, DATA_REGION>* pf = dynamic_cast<FEElementData<Mat3d, DATA_REGION>*>(&d);
+					FEElementData<mat3d, DATA_REGION>* pf = dynamic_cast<FEElementData<mat3d, DATA_REGION>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -324,25 +325,25 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 			{
 				if (fmt == DATA_NODE)
 				{
-					FEFaceData<Mat3d, DATA_NODE>* pf = dynamic_cast<FEFaceData<Mat3d, DATA_NODE>*>(&d);
+					FEFaceData<mat3d, DATA_NODE>* pf = dynamic_cast<FEFaceData<mat3d, DATA_NODE>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= scale;
 				}
 				else if (fmt == DATA_ITEM)
 				{
-					FEFaceData<Mat3d, DATA_ITEM>* pf = dynamic_cast<FEFaceData<Mat3d, DATA_ITEM>*>(&d);
+					FEFaceData<mat3d, DATA_ITEM>* pf = dynamic_cast<FEFaceData<mat3d, DATA_ITEM>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= scale;
 				}
 				else if (fmt == DATA_COMP)
 				{
-					FEFaceData<Mat3d, DATA_COMP>* pf = dynamic_cast<FEFaceData<Mat3d, DATA_COMP>*>(&d);
+					FEFaceData<mat3d, DATA_COMP>* pf = dynamic_cast<FEFaceData<mat3d, DATA_COMP>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= scale;
 				}
 				else if (fmt == DATA_REGION)
 				{
-					FEFaceData<Mat3d, DATA_REGION>* pf = dynamic_cast<FEFaceData<Mat3d, DATA_REGION>*>(&d);
+					FEFaceData<mat3d, DATA_REGION>* pf = dynamic_cast<FEFaceData<mat3d, DATA_REGION>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= scale;
 				}
@@ -821,10 +822,10 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 					if (pd && ps)
 					{
 						int N = mesh.Elements();
-						float vs[FEElement::MAX_NODES], vd[FEElement::MAX_NODES];
+						float vs[FSElement::MAX_NODES], vd[FSElement::MAX_NODES];
 						for (int i = 0; i<N; ++i)
 						{
-							FEElement& el = mesh.Element(i);
+							FSElement& el = mesh.Element(i);
 							if (pd->active(i) && ps->active(i))
 							{
 								pd->eval(i, vd);
@@ -957,7 +958,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 					vector<int> tag(NN, 0);
 					FEElemData_T<float, DATA_NODE>* ps = dynamic_cast<FEElemData_T<float, DATA_NODE>*>(&s);
 
-					float ed[FEElement::MAX_NODES] = {0.f};
+					float ed[FSElement::MAX_NODES] = {0.f};
 					for (int i=0; i<mesh->Elements(); ++i)
 					{
 						FEElement_& el = mesh->ElementRef(i);
@@ -1001,7 +1002,7 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 					vector<int> tag(NN, 0);
 					FEElemData_T<float, DATA_COMP>* ps = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&s);
 
-					float ed[FEElement::MAX_NODES] = { 0.f };
+					float ed[FSElement::MAX_NODES] = { 0.f };
 					for (int i = 0; i<mesh->Elements(); ++i)
 					{
 						FEElement_& el = mesh->ElementRef(i);
@@ -1023,8 +1024,8 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 
 		// now, calculate the gradient for each element
 		vector<vec3f> G(NN, vec3f(0.f, 0.f, 0.f));
-		vec3f eg[FEElement::MAX_NODES];
-		float ed[FEElement::MAX_NODES];
+		vec3f eg[FSElement::MAX_NODES];
+		float ed[FSElement::MAX_NODES];
 		vector<int> tag(NN, 0);
 		for (int i=0; i<mesh->Elements(); ++i)
 		{
@@ -1082,7 +1083,7 @@ void extractNodeDataComponent(Data_Type ntype, Post::FEMeshData& dst, Post::FEMe
 	case DATA_MAT3FS : extractNodeDataComponent_T<mat3fs >(dst, src, ncomp, mesh); break;
 	case DATA_MAT3FD : extractNodeDataComponent_T<mat3fs >(dst, src, ncomp, mesh); break;
 	case DATA_TENS4FS: extractNodeDataComponent_T<tens4fs>(dst, src, ncomp, mesh); break;
-	case DATA_MAT3D  : extractNodeDataComponent_T<Mat3d  >(dst, src, ncomp, mesh); break;
+	case DATA_MAT3D  : extractNodeDataComponent_T<mat3d  >(dst, src, ncomp, mesh); break;
 	case DATA_MAT3F  : extractNodeDataComponent_T<mat3f  >(dst, src, ncomp, mesh); break;
 	}
 }
@@ -1157,7 +1158,7 @@ void extractElemDataComponentITEM(Data_Type ntype, Post::FEMeshData& dst, Post::
 	case DATA_MAT3FS : extractElemDataComponentITEM_T<mat3fs >(dst, src, ncomp, mesh); break;
 	case DATA_MAT3FD : extractElemDataComponentITEM_T<mat3fs >(dst, src, ncomp, mesh); break;
 	case DATA_TENS4FS: extractElemDataComponentITEM_T<tens4fs>(dst, src, ncomp, mesh); break;
-	case DATA_MAT3D  : extractElemDataComponentITEM_T<Mat3d  >(dst, src, ncomp, mesh); break;
+	case DATA_MAT3D  : extractElemDataComponentITEM_T<mat3d  >(dst, src, ncomp, mesh); break;
 	case DATA_MAT3F  : extractElemDataComponentITEM_T<mat3f  >(dst, src, ncomp, mesh); break;
 	case DATA_ARRAY      : extractElemDataComponentITEM_ARRAY(dst, src, ncomp, mesh); break;
 	case DATA_ARRAY_VEC3F: extractElemDataComponentITEM_ARRAY_VEC3F(dst, src, ncomp, mesh); break;
@@ -1170,7 +1171,7 @@ template <typename T> void extractElemDataComponentNODE_T(Post::FEMeshData& dst,
 	Post::FEElementData<float, DATA_NODE>& scl = dynamic_cast<Post::FEElementData<float, DATA_NODE>&>(dst);
 
 	int NE = mesh.Elements();
-	T val[FEElement::MAX_NODES];
+	T val[FSElement::MAX_NODES];
 	vector<float> data;
 	vector<int> elem(1);
 	vector<int> l;
@@ -1201,7 +1202,7 @@ void extractElemDataComponentNODE_ARRAY(Post::FEMeshData& dst, Post::FEMeshData&
 	Post::FEElementData<float, DATA_NODE>& scl = dynamic_cast<Post::FEElementData<float, DATA_NODE>&>(dst);
 
 	int NE = mesh.Elements();
-	float val[FEElement::MAX_NODES];
+	float val[FSElement::MAX_NODES];
 	vector<float> data;
 	vector<int> elem(1);
 	vector<int> l;
@@ -1234,13 +1235,13 @@ void extractElemDataComponentNODE(Data_Type ntype, Post::FEMeshData& dst, Post::
 	case DATA_MAT3FS : extractElemDataComponentNODE_T<mat3fs >(dst, src, ncomp, mesh); break;
 	case DATA_MAT3FD : extractElemDataComponentNODE_T<mat3fs >(dst, src, ncomp, mesh); break;
 	case DATA_TENS4FS: extractElemDataComponentNODE_T<tens4fs>(dst, src, ncomp, mesh); break;
-	case DATA_MAT3D  : extractElemDataComponentNODE_T<Mat3d  >(dst, src, ncomp, mesh); break;
+	case DATA_MAT3D  : extractElemDataComponentNODE_T<mat3d  >(dst, src, ncomp, mesh); break;
 	case DATA_MAT3F  : extractElemDataComponentNODE_T<mat3f  >(dst, src, ncomp, mesh); break;
 	case DATA_ARRAY  : extractElemDataComponentNODE_ARRAY(dst, src, ncomp, mesh); break;
 	}
 }
 
-FEDataField* Post::DataComponent(FEPostModel& fem, FEDataField* pdf, int ncomp, const std::string& sname)
+ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int ncomp, const std::string& sname)
 {
 	if (pdf == 0) return 0;
 
@@ -1250,7 +1251,7 @@ FEDataField* Post::DataComponent(FEPostModel& fem, FEDataField* pdf, int ncomp, 
 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	FEDataField* newField = 0;
+	ModelDataField* newField = 0;
 	if (nclass == CLASS_NODE)
 	{
 		newField = new FEDataField_T<FENodeData<float> >(&fem);
@@ -1358,7 +1359,7 @@ bool Post::DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tens
 
 //-----------------------------------------------------------------------------
 // convert between formats
-FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int newFormat, const std::string& name)
+ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, int newFormat, const std::string& name)
 {
 	if (dataField == nullptr) return nullptr;
 
@@ -1371,7 +1372,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
-	FEDataField* newField = nullptr;
+	ModelDataField* newField = nullptr;
 	if (nclass == CLASS_ELEM)
 	{
 		if (nfmt == DATA_ITEM)
@@ -1404,7 +1405,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 							float v = 0.0;
 							pold->eval(i, &v);
 
-							FEElement& el = mesh.Element(i);
+							FSElement& el = mesh.Element(i);
 							int ne = el.Nodes();
 							for (int j = 0; j < ne; ++j)
 							{
@@ -1421,7 +1422,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 					vector<int> l;
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh.Element(i);
+						FSElement& el = mesh.Element(i);
 						e[0] = i;
 						l.resize(el.Nodes());
 						d.resize(el.Nodes());
@@ -1459,10 +1460,10 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 					{
 						if (pold->active(i))
 						{
-							FEElement& el = mesh.Element(i);
+							FSElement& el = mesh.Element(i);
 							int ne = el.Nodes();
 
-							float v[FEElement::MAX_NODES] = { 0.f };
+							float v[FSElement::MAX_NODES] = { 0.f };
 							pold->eval(i, v);
 
 							float avg = 0.f;
@@ -1480,7 +1481,7 @@ FEDataField* Post::DataConvert(FEPostModel& fem, FEDataField* dataField, int new
 	return newField;
 }
 
-FEDataField* Post::DataEigenTensor(FEPostModel& fem, FEDataField* dataField, const std::string& name)
+ModelDataField* Post::DataEigenTensor(FEPostModel& fem, ModelDataField* dataField, const std::string& name)
 {
 	int dataType = dataField->Type();
 	int nfmt = dataField->Format();
@@ -1490,7 +1491,7 @@ FEDataField* Post::DataEigenTensor(FEPostModel& fem, FEDataField* dataField, con
 	if (nclass != CLASS_ELEM) return nullptr;
 	if (nfmt != DATA_ITEM) return nullptr;
 
-	FEDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem);
+	ModelDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem);
 	fem.AddDataField(newField, name);
 
 	int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1522,6 +1523,108 @@ FEDataField* Post::DataEigenTensor(FEPostModel& fem, FEDataField* dataField, con
 				a[2][0] = e[0].z; a[2][1] = e[1].z; a[2][2] = e[2].z;
 
 				pnew->add(i, a);
+			}
+		}
+	}
+
+	return newField;
+}
+
+ModelDataField* Post::DataTimeRate(FEPostModel& fem, ModelDataField* dataField, const std::string& name)
+{
+	if (dataField == nullptr) return nullptr;
+
+	int nclass = dataField->DataClass();
+	Data_Type ntype = dataField->Type();
+	int nfmt = dataField->Format();
+
+	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
+
+	ModelDataField* newField = 0;
+	if (nclass == CLASS_NODE)
+	{
+		if (ntype == DATA_SCALAR)
+		{
+			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			fem.AddDataField(newField, name);
+
+			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+			int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+			for (int n = 0; n < fem.GetStates(); ++n)
+			{
+				Post::FENodeData<float>& vt = dynamic_cast<FENodeData<float>&>(fem.GetState(n)->m_Data[nnew]);
+				if (n == 0)
+				{
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						vt[i] = 0.f;
+					}
+				}
+				else
+				{
+					FEState* state0 = fem.GetState(n - 1);
+					FEState* state1 = fem.GetState(n);
+
+					double dt = state1->m_time - state0->m_time;
+
+					Post::FENodeData_T<float>& d0 = dynamic_cast<FENodeData_T<float>&>(state0->m_Data[nold]);
+					Post::FENodeData_T<float>& d1 = dynamic_cast<FENodeData_T<float>&>(state1->m_Data[nold]);
+
+
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						float v0, v1;
+						d0.eval(i, &v0);
+						d1.eval(i, &v1);
+
+						float dvdt = (v1 - v0) / dt;
+
+						vt[i] = dvdt;
+					}
+				}
+			}
+		}
+		else if (ntype == DATA_VEC3F)
+		{
+			newField = new FEDataField_T<FENodeData<vec3f> >(&fem);
+			fem.AddDataField(newField, name);
+
+			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+			int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+			for (int n = 0; n < fem.GetStates(); ++n)
+			{
+				Post::FENodeData<vec3f>& vt = dynamic_cast<FENodeData<vec3f>&>(fem.GetState(n)->m_Data[nnew]);
+				if (n == 0)
+				{
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						vt[i] = vec3f(0.f, 0.f, 0.f);
+					}
+				}
+				else
+				{
+					FEState* state0 = fem.GetState(n - 1);
+					FEState* state1 = fem.GetState(n    );
+
+					double dt = state1->m_time - state0->m_time;
+
+					Post::FENodeData_T<vec3f>& d0 = dynamic_cast<FENodeData_T<vec3f>&>(state0->m_Data[nold]);
+					Post::FENodeData_T<vec3f>& d1 = dynamic_cast<FENodeData_T<vec3f>&>(state1->m_Data[nold]);
+
+
+					for (int i = 0; i < mesh.Nodes(); ++i)
+					{
+						vec3f v0, v1;
+						d0.eval(i, &v0);
+						d1.eval(i, &v1);
+
+						vec3f dvdt = (v1 - v0) / dt;
+
+						vt[i] = dvdt;
+					}
+				}
 			}
 		}
 	}

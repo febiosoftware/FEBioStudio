@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,30 +27,30 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 
-class FEProject;
-class FEPlotVariable;
+class FSProject;
+class CPlotVariable;
 class QListWidgetItem;
 class QTableWidgetItem;
 
 namespace Ui {
-	class CDlgAddDomain;
+	class CDlgAddSelection;
 	class CDlgEditOutput;
 }
 
-class CDlgAddDomain : public QDialog
+class CDlgAddSelection : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgAddDomain(QWidget* parent);
+	CDlgAddSelection(QWidget* parent);
 
-	void setVariable(const FEPlotVariable& var);
-	void setDomains(const QStringList& l);
+	void setVariable(const CPlotVariable& var);
+	void setSelections(const QStringList& l);
 
-	int selectedDomain();
+	int currentSelection();
 
 private:
-	Ui::CDlgAddDomain*	ui;
+	Ui::CDlgAddSelection*	ui;
 };
 
 class CDlgEditOutput : public QDialog
@@ -58,7 +58,7 @@ class CDlgEditOutput : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgEditOutput(FEProject& prj, QWidget* parent = 0, int tab = 0);
+	CDlgEditOutput(FSProject& prj, QWidget* parent = 0, int tab = 0);
 
 	void showEvent(QShowEvent* ev) override;
 
@@ -67,9 +67,11 @@ private:
 	void UpdateLogTable();
 
 protected slots:
-	void OnAddDomain();
-	void OnRemoveDomain();
+	void OnAddSelection();
+	void OnRemoveSelection();
 	void OnNewVariable();
+	void OnEditVariable();
+	void OnDeleteVariable();
 	void OnVariable(int nrow);
 	void OnItemClicked(QListWidgetItem* item);
 	void onFilterChanged(const QString& txt);
@@ -77,8 +79,9 @@ protected slots:
 	void onLogRemove();
 	void UpdateLogItemList();
 	void onItemChanged(QTableWidgetItem* item);
+	void accept();
 
 private:
-	FEProject&	m_prj;
+	FSProject&	m_prj;
 	Ui::CDlgEditOutput*	ui;
 };

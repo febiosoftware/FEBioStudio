@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -80,7 +80,7 @@ struct LOFT_NODE
 	double	s;		// parametric position on curve (from 0 to 1)
 };
 
-FESurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
 {
 	switch(m_elem)
 	{
@@ -94,7 +94,7 @@ FESurfaceMesh* FELoftMesher::Apply(vector<FECurveMesh*> curve)
 }
 
 
-FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 {
 	// number of curves to loft
 	int NC = (int)curve.size();
@@ -129,7 +129,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 	int NF = ND*(NC - 1)*(NCN - 1);
 
 	// Build the mesh
-	FESurfaceMesh* mesh = new FESurfaceMesh;
+	FSSurfaceMesh* mesh = new FSSurfaceMesh;
 	mesh->Create(NN, NE, NF);
 
 	// create nodes
@@ -170,7 +170,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 			// do horizontal edges
 			for (int j=0; j<NCN-1; ++j)
 			{
-				FEEdge& edge = mesh->Edge(NE++);
+				FSEdge& edge = mesh->Edge(NE++);
 				edge.SetType(FE_EDGE2);
 				edge.m_gid = (l==0 ? i : -1);
 				edge.n[0] = (i*ND + l)*NCN + j;
@@ -182,7 +182,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 			{
 				for (int j = 0; j<NCN; ++j)
 				{
-					FEEdge& edge = mesh->Edge(NE++);
+					FSEdge& edge = mesh->Edge(NE++);
 					edge.SetType(FE_EDGE2);
 
 					if      (j==0    ) edge.m_gid = NC + 2*i;
@@ -204,7 +204,7 @@ FESurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 		{
 			for (int j=0; j<NCN-1; ++j)
 			{
-				FEFace& face = mesh->Face(NF++);
+				FSFace& face = mesh->Face(NF++);
 				face.SetType(FE_FACE_QUAD4);
 				face.m_gid = 0;
 				face.n[0] = (i*ND + l)*NCN + j;
@@ -490,7 +490,7 @@ void flipCurve(vector<LOFT_NODE>& curve)
 	}
 }
 
-FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
+FSSurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 {
 	// number of curves to loft
 	int NC = (int)curve.size();
@@ -621,7 +621,7 @@ FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	}
 
 	// create a new mesh
-	FESurfaceMesh* mesh = new FESurfaceMesh;
+	FSSurfaceMesh* mesh = new FSSurfaceMesh;
 	mesh->Create(NN, 0, 0);
 
 	// reserve space for storing facets
@@ -715,7 +715,7 @@ FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	for (int i=0; i<NE; ++i)
 	{
 		LOFT_EDGE& e = edge[i];
-		FEEdge& edge = mesh->Edge(i);
+		FSEdge& edge = mesh->Edge(i);
 		edge.SetType(FE_EDGE2);
 		edge.m_gid = e.id;
 		edge.n[0] = e.n0;
@@ -729,7 +729,7 @@ FESurfaceMesh* FELoftMesher::BuildTriMesh(vector<FECurveMesh*> curve)
 	for (int i = 0; i<NF; ++i)
 	{
 		LOFT_FACET& f = face[i];
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		face.m_gid = 0;
 		face.SetType(FE_FACE_TRI3);
 		face.n[0] = f.n0;

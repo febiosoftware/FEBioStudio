@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <MeshTools/FEProject.h>
 
-class FEIGESFileImport : public FEFileImport
+class FEIGESFileImport : public FSFileImport
 {
 protected:
 	enum SECTION_CODE
@@ -67,7 +67,7 @@ protected:
 	};
 
 public:
-	FEIGESFileImport(FEProject& prj);
+	FEIGESFileImport(FSProject& prj);
 	~FEIGESFileImport(void);
 
 	bool Load(const char* szfile);
@@ -82,5 +82,5 @@ protected:
 	bool ReadTerminateSection(RECORD& rec);
 
 protected:
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 };

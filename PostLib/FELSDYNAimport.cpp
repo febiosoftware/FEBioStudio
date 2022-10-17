@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -266,7 +266,7 @@ void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 	int nmat = nm1 - nm0 + 1;
 	for (i=0; i<nmat; ++i)
 	{
-		FEMaterial mat;
+		Material mat;
 		fem.AddMaterial(mat);
 	}
 
@@ -307,7 +307,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	list<NODE>::iterator in = m_node.begin();
 	for (i=0; i<nodes; ++i, ++in)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		in->n = i;
 		n.r.x = (float) in->x;
 		n.r.y = (float) in->y;
@@ -323,7 +323,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 		list<ELEMENT_SOLID>::iterator ih = m_solid.begin();
 		for (i=0; i<solids; ++i, ++ih)
 		{
-			FEElement& el = static_cast<FEElement&>(pm->ElementRef(ne++));
+			FSElement& el = static_cast<FSElement&>(pm->ElementRef(ne++));
 			int* n = ih->n;
 			if ((n[7] == n[6]) && (n[7]==n[5]) && (n[7]==n[4]) && (n[7]==n[3])) el.SetType(FE_TET4);
 			else if ((n[7] == n[6]) && (n[7]==n[5])) el.SetType(FE_PENTA6);
@@ -349,7 +349,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 		list<ELEMENT_SHELL>::iterator is = m_shell.begin();
 		for (i=0; i<shells; ++i, ++is)
 		{
-			FEElement& el = static_cast<FEElement&>(pm->ElementRef(ne++));
+			FSElement& el = static_cast<FSElement&>(pm->ElementRef(ne++));
 			el.m_node[0] = FindNode(is->n[0], in); if (el.m_node[0] < 0) return false;
 			el.m_node[1] = FindNode(is->n[1], in); if (el.m_node[1] < 0) return false;
 			el.m_node[2] = FindNode(is->n[2], in); if (el.m_node[2] < 0) return false;

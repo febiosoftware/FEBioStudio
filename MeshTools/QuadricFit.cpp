@@ -29,7 +29,7 @@
 //////////////////////////////////////////////////////////////////////
 #include "stdafx.h"
 #include "QuadricFit.h"
-#include <MathLib/powell.h>
+#include <FECore/tools.h>
 #include <stdio.h>
 
 using std::swap;
@@ -84,7 +84,8 @@ void QuadricFit::GetOrientation()
     C.eigen2(eval, evec);   // eigenvalues sorted from smallest to largest
     
     // rectify sign of eigenvalues
-    if (eval[2] <= 0) {
+    double emag = sqrt(eval[0]*eval[0] + eval[1]*eval[1] + eval[2]*eval[2]);
+    if (eval[2] <= emag*m_eps) {
         eval[0] = -eval[0];
         eval[1] = -eval[1];
         eval[2] = -eval[2];
@@ -98,7 +99,6 @@ void QuadricFit::GetOrientation()
     if (eval[1] < eval[2]) { swap(eval[1],eval[2]); swap(evec[1], evec[2]); }
 
     // estimate the relative magnitudes of the eigenvalues
-    double emag = sqrt(eval[0]*eval[0] + eval[1]*eval[1] + eval[2]*eval[2]);
     if (fabs(eval[0]) < m_eps*emag) eval[0] = 0;
     if (fabs(eval[1]) < m_eps*emag) eval[1] = 0;
     if (fabs(eval[2]) < m_eps*emag) eval[2] = 0;
@@ -115,10 +115,9 @@ void QuadricFit::GetOrientation()
     if (rh < 0) evec[1] = evec[2] ^ evec[0];
     
     // estimate the relative magnitudes of the components of v
-    double vmag = v.Length();
-    if (fabs(v.x) < m_eps*vmag) v.x = 0;
-    if (fabs(v.y) < m_eps*vmag) v.y = 0;
-    if (fabs(v.z) < m_eps*vmag) v.z = 0;
+    if (fabs(v.x) < m_eps*emag) v.x = 0;
+    if (fabs(v.y) < m_eps*emag) v.y = 0;
+    if (fabs(v.z) < m_eps*emag) v.z = 0;
 
     mat3d Q(evec[0].x, evec[1].x, evec[2].x,
             evec[0].y, evec[1].y, evec[2].y,
@@ -130,6 +129,7 @@ void QuadricFit::GetOrientation()
     
     m_c2 = vec3d(eval[0], eval[1], eval[2]);
     vec3d d = Q.transpose()*v;
+    m_v = v;
 
     vec3d X0;
     if (m_c2.x*m_c2.y*m_c2.z != 0) {
@@ -200,10 +200,9 @@ QuadricFit::Q_TYPE QuadricFit::GetType()
     // determine quadric type
     Q_TYPE type = Q_UNKNOWN;
     double A = m_c2.x, B =  m_c2.y, C = m_c2.z;
-    double c = m_c;
     
     if ((A > 0) && (B > 0)) {
-        if ((C > 0) && (c == -1)) {
+        if ((C > 0) && isSame(m_c,-1)) {
             type = Q_ELLIPSOID;
             if (isSame(A,B)) {
                 type = Q_SPHEROID;
@@ -211,31 +210,31 @@ QuadricFit::Q_TYPE QuadricFit::GetType()
             }
         }
         else if (C == 0) {
-            if ((m_v.z == -1) && (c == 0)) {
+            if (isSame(m_v.z,-1) && (m_c == 0)) {
                 type = Q_ELLIPTIC_PARABOLOID;
                 if (isSame(A,B))
                     type = Q_CIRCULAR_PARABOLOID;
             }
-            else if ((m_v.z == 0) && (c == -1)) {
+            else if ((m_v.z == 0) && isSame(m_c,-1)) {
                 type = Q_ELLIPTIC_CYLINDER;
                 if (isSame(A,B))
                     type = Q_CIRCULAR_CYLINDER;
             }
         }
         else if (C < 0) {
-            if  (c == -1) {
+            if  (isSame(m_c,-1)) {
                 type = Q_ELLIPTIC_HYPERBOLOID_1;
                 if (isSame(A,B)) {
                     type = Q_CIRCULAR_HYPERBOLOID_1;
                 }
             }
-            else if  (c == 1) {
+            else if (isSame(m_c,1)) {
                 type = Q_ELLIPTIC_HYPERBOLOID_2;
                 if (isSame(A,B)) {
                     type = Q_CIRCULAR_HYPERBOLOID_2;
                 }
             }
-            else if  (c == 0) {
+            else if  (m_c == 0) {
                 type = Q_ELLIPTIC_CONE;
                 if (isSame(A,B)) {
                     type = Q_CIRCULAR_CONE;
@@ -244,16 +243,42 @@ QuadricFit::Q_TYPE QuadricFit::GetType()
         }
     }
     else if ((A > 0) && (B < 0)) {
-        if ((C == 0) && (c == 0) && (m_v.z == -1)) {
+        if ((C == 0) && (m_c == 0) && isSame(m_v.z,-1)) {
             type = Q_HYPERBOLIC_PARABOLOID;
         }
-        else if ((C == 0) && (c == -1) && (m_v.z == 0)) {
+        else if ((C == 0) && isSame(m_c,-1) && (m_v.z == 0)) {
             type = Q_HYPERBOLIC_CYLINDER;
         }
     }
     else if ((A > 0) && (B == 0)) {
         type = Q_PARABOLIC_CYLINDER;
     }
-
+    
     return type;
+}
+
+//-------------------------------------------------------------------------------
+std::string QuadricFit::GetStringType(Q_TYPE qtype)
+{
+    std::string quadric;
+    switch (qtype) {
+        case QuadricFit::Q_ELLIPSOID: quadric = std::string("Ellipsoid"); break;
+        case QuadricFit::Q_ELLIPTIC_PARABOLOID: quadric = std::string("Elliptic Paraboloid"); break;
+        case QuadricFit::Q_HYPERBOLIC_PARABOLOID: quadric = std::string("Hyperbolic Paraboloid"); break;
+        case QuadricFit::Q_ELLIPTIC_HYPERBOLOID_1: quadric = std::string("Elliptic Hyperboloid of One Sheet"); break;
+        case QuadricFit::Q_ELLIPTIC_HYPERBOLOID_2: quadric = std::string("Elliptic Hyperboloid of Two Sheets"); break;
+        case QuadricFit::Q_ELLIPTIC_CONE: quadric = std::string("Elliptic Cone"); break;
+        case QuadricFit::Q_ELLIPTIC_CYLINDER: quadric = std::string("Elliptic Cylinder"); break;
+        case QuadricFit::Q_PARABOLIC_CYLINDER: quadric = std::string("Parabolic Cylinder"); break;
+        case QuadricFit::Q_SPHEROID: quadric = std::string("Spheroid"); break;
+        case QuadricFit::Q_SPHERE: quadric = std::string("Sphere"); break;
+        case QuadricFit::Q_CIRCULAR_PARABOLOID: quadric = std::string("Circular Paraboloid"); break;
+        case QuadricFit::Q_CIRCULAR_HYPERBOLOID_1: quadric = std::string("Circular Hyperboloid of One Sheet"); break;
+        case QuadricFit::Q_CIRCULAR_HYPERBOLOID_2: quadric = std::string("Circular Hyperboloid of Two Sheets"); break;
+        case QuadricFit::Q_CIRCULAR_CONE: quadric = std::string("Circular Cone"); break;
+        case QuadricFit::Q_CIRCULAR_CYLINDER: quadric = std::string("Circular Cylinder"); break;
+        case QuadricFit::Q_UNKNOWN: quadric = std::string("Unknown"); break;
+        default: break;
+    }
+    return quadric;
 }

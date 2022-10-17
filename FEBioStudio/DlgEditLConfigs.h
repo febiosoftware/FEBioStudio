@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -52,6 +52,7 @@ public slots:
 	void on_dblClick(QListWidgetItem* item);
 	void on_addConfigBtn_Clicked();
 	void on_delConfigBtn_Clicked();
+	void on_editLocalPath_clicked();
 
 private:
 	Ui::CDlgEditPath* ui;

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -55,6 +55,8 @@ public:
 	void SetRenderOrder(int renderOrder);
 	int GetRenderOrder() const;
 
+	virtual void Reload();
+
 private:
 	int	m_renderOrder;
 };
@@ -62,7 +64,7 @@ private:
 class CGLLegendPlot : public CGLPlot
 {
 public:
-	CGLLegendPlot(CGLModel* po = 0);
+	CGLLegendPlot();
 	virtual ~CGLLegendPlot();
 
 	void SetLegendBar(GLLegendBar* bar);
@@ -72,6 +74,8 @@ public:
 
 	bool ShowLegend() const;
 	void ShowLegend(bool b);
+
+	void Activate(bool b) override;
 
 private:
 	GLLegendBar*	m_pbar;

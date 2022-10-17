@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,8 +37,8 @@ SOFTWARE.*/
 #include "DlgMergeObjects.h"
 #include "DlgDetachSelection.h"
 #include "DlgPurge.h"
-#include "DlgEditProject.h"
 #include "PostDocument.h"
+#include "XMLDocument.h"
 #include "Commands.h"
 #include <MeshTools/GModel.h>
 #include <QMessageBox>
@@ -52,7 +52,7 @@ using std::stringstream;
 
 void CMainWindow::on_actionUndo_triggered()
 {
-	CGLDocument* doc = GetGLDocument();
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	if (doc->CanUndo())
@@ -65,7 +65,7 @@ void CMainWindow::on_actionUndo_triggered()
 
 void CMainWindow::on_actionRedo_triggered()
 {
-	CGLDocument* doc = GetGLDocument();
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	if (doc->CanRedo())
@@ -78,7 +78,7 @@ void CMainWindow::on_actionRedo_triggered()
 
 void CMainWindow::on_actionInvertSelection_triggered()
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FESelection* ps = doc->GetCurrentSelection();
@@ -101,9 +101,9 @@ void CMainWindow::on_actionClearSelection_triggered()
 		int nsel = doc->GetSelectionMode();
 		GModel* mdl = doc->GetGModel();
 		GObject* po = doc->GetActiveObject();
-		FEMesh* pm = (po ? po->GetFEMesh() : 0);
-		FEMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
-		FELineMesh* pml = (po ? po->GetEditableLineMesh() : 0);
+		FSMesh* pm = (po ? po->GetFEMesh() : 0);
+		FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+		FSLineMesh* pml = (po ? po->GetEditableLineMesh() : 0);
 		switch (item)
 		{
 		case ITEM_MESH:
@@ -131,6 +131,17 @@ void CMainWindow::on_actionClearSelection_triggered()
 
 void CMainWindow::on_actionDeleteSelection_triggered()
 {
+    CXMLDocument* xmlDoc  = dynamic_cast<CXMLDocument*>(GetDocument());
+    if(xmlDoc)
+    {
+        // see if the focus is on the xml tree
+        if(ui->xmlTree->hasFocus())
+        {
+            ui->xmlTree->on_removeSelectedRow_triggered();
+            return;
+        }
+    }
+
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
@@ -154,7 +165,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 	{
 		GDiscreteSelection* pds = dynamic_cast<GDiscreteSelection*>(psel);
 		CCmdGroup* pcmd = new CCmdGroup("Delete Discrete");
-		FEModel* ps = doc->GetFEModel();
+		FSModel* ps = doc->GetFSModel();
 		GModel& model = ps->GetModel();
 		for (int i = 0; i<model.DiscreteObjects(); ++i)
 		{
@@ -228,7 +239,7 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			if (nsel == SELECT_OBJECT)
 			{
 				CCmdGroup* pcmd = new CCmdGroup("Delete");
-				FEModel* ps = doc->GetFEModel();
+				FSModel* ps = doc->GetFSModel();
 				GModel& model = ps->GetModel();
 				for (int i = 0; i<model.Objects(); ++i)
 				{
@@ -340,7 +351,7 @@ void CMainWindow::on_actionFind_triggered()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int nitem = doc->GetItemMode();
@@ -452,8 +463,8 @@ void CMainWindow::on_actionToggleVisible_triggered()
 			GObject* po = doc->GetActiveObject();
 			if (po == 0) return;
 
-			FEMesh* pm = po->GetFEMesh();
-			FEMeshBase* pmb = po->GetEditableMesh();
+			FSMesh* pm = po->GetFEMesh();
+			FSMeshBase* pmb = po->GetEditableMesh();
 
 			switch (nitem)
 			{
@@ -480,15 +491,22 @@ void CMainWindow::on_actionNameSelection_triggered()
 
 	char szname[256] = { 0 };
 
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel* pfem = doc->GetFEModel();
-	GModel* mdl = doc->GetGModel();
+	// we need a bit more for model docs
+	FSModel* pfem = nullptr;
+	GModel* mdl = nullptr;
+	if (GetModelDocument())
+	{
+		CModelDocument* modelDoc = GetModelDocument();
+		pfem = modelDoc->GetFSModel();
+		mdl = modelDoc->GetGModel();
+	}
 
 	// make sure there is a selection
 	FESelection* psel = doc->GetCurrentSelection();
-	if (psel->Size() == 0) return;
+	if ((psel == nullptr) || (psel->Size() == 0)) return;
 
 	// set the name
 	int item = doc->GetItemMode();
@@ -531,48 +549,66 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FEElementSelection* pes = dynamic_cast<FEElementSelection*>(psel); assert(pes);
-			FEPart* pg = dynamic_cast<FEPart*>(pes->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddPart(po, pg));
-			++nparts;
-			UpdateModel(pg);
+			FSPart* pg = dynamic_cast<FSPart*>(pes->CreateItemList());
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddPart(po, pg));
+				++nparts;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_FACE:
 		{
 			assert(po);
 			FEFaceSelection* pfs = dynamic_cast<FEFaceSelection*>(psel);
-			FESurface* pg = dynamic_cast<FESurface*>(pfs->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddSurface(po, pg));
-			++nsurfs;
-			UpdateModel(pg);
+			FSSurface* pg = dynamic_cast<FSSurface*>(pfs->CreateItemList());
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddSurface(po, pg));
+				++nsurfs;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_EDGE:
 		{
 			assert(po);
 			FEEdgeSelection* pes = dynamic_cast<FEEdgeSelection*>(psel);
-			FEEdgeSet* pg = dynamic_cast<FEEdgeSet*>(pes->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
-			++nsurfs;
-			UpdateModel(pg);
+			FSEdgeSet* pg = dynamic_cast<FSEdgeSet*>(pes->CreateItemList());
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
+				++nsurfs;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_NODE:
 		{
 			assert(po);
 			FENodeSelection* pns = dynamic_cast<FENodeSelection*>(psel);
-			FENodeSet* pg = dynamic_cast<FENodeSet*>(pns->CreateItemList());
-			pg->SetName(szname);
-			doc->DoCommand(new CCmdAddNodeSet(po, pg));
-			++nnodes;
-			UpdateModel(pg);
+			FSNodeSet* pg = dynamic_cast<FSNodeSet*>(pns->CreateItemList());
+			if (pg)
+			{
+				pg->SetName(szname);
+				doc->DoCommand(new CCmdAddNodeSet(po, pg));
+				++nnodes;
+				UpdateModel(pg);
+			}
+			else QMessageBox::critical(this, "Name Selection", "Failed to create named selection.");
 		}
 		break;
 		case ITEM_MESH:
 		{
+			assert(pfem);
+			assert(mdl);
 			int nsel = doc->GetSelectionMode();
 			switch (nsel)
 			{
@@ -684,6 +720,7 @@ void CMainWindow::on_actionTransform_triggered()
 			pcmd->AddCommand(new CCmdScaleSelection(doc, dlg.m_scl.z*dlg.m_relScl.z / scl.z, s3, pos));
 
 			doc->DoCommand(pcmd);
+			doc->GetGModel()->UpdateBoundingBox();
 			UpdateGLControlBar();
 			RedrawGL();
 		}
@@ -695,14 +732,19 @@ void CMainWindow::on_actionCollapseTransform_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	GObject* po = doc->GetActiveObject();
-	if (po == 0) QMessageBox::critical(this, "FEBio Studio", "Please select an object");
-	else
+	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(doc->GetCurrentSelection());
+	if ((sel == nullptr) || (sel->Size() == 0))
 	{
-		po->CollapseTransform();
-		UpdateModel(po);
-		RedrawGL();
+		QMessageBox::critical(this, "FEBio Studio", "Please select an object");
+		return;
 	}
+
+	for (int i = 0; i < sel->Size(); ++i)
+	{
+		GObject* po = sel->Object(i);
+		po->CollapseTransform();
+	}
+	RedrawGL();
 }
 
 void CMainWindow::on_actionClone_triggered()
@@ -905,9 +947,6 @@ void CMainWindow::on_actionMerge_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	CDlgMergeObjects dlg(this);
-	if (dlg.exec() == QDialog::Rejected) return;
-
 	// make sure we have an object selection
 	FESelection* currentSelection = doc->GetCurrentSelection();
 	if (currentSelection->Type() != SELECT_OBJECTS)
@@ -916,6 +955,14 @@ void CMainWindow::on_actionMerge_triggered()
 		return;
 	}
 	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
+	if ((sel == nullptr) || (sel->Count() < 2))
+	{
+		QMessageBox::critical(this, "Merge Objects", "You need to select at least two objects.");
+		return;
+	}
+
+	CDlgMergeObjects dlg(this);
+	if (dlg.exec() == QDialog::Rejected) return;
 
 	// merge the objects
 	GModel& m = *doc->GetGModel();
@@ -1018,7 +1065,7 @@ void CMainWindow::on_actionPurge_triggered()
 	CDlgPurge dlg(this);
 	if (dlg.exec())
 	{
-		FEModel* ps = doc->GetFEModel();
+		FSModel* ps = doc->GetFSModel();
 		ps->Purge(dlg.getOption());
 		doc->ClearCommandStack();
 		doc->SetModifiedFlag(true);
@@ -1027,37 +1074,60 @@ void CMainWindow::on_actionPurge_triggered()
 	}
 }
 
-void CMainWindow::on_actionEditProject_triggered()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	CDlgEditProject dlg(doc->GetProject(), this);
-	dlg.exec();
-	UpdatePhysicsUi();
-}
-
 void CMainWindow::on_actionFaceToElem_triggered()
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	FESelection* sel = doc->GetCurrentSelection();
-	if (sel->Type() == SELECT_FE_FACES)
+	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
+	if (doc->GetItemMode() != ITEM_FACE) return;
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FSMesh* mesh = po->GetFEMesh();
+	if (mesh == nullptr) return;
+
+	vector<int> selectedElems = mesh->GetElementsFromSelectedFaces();
+	if (selectedElems.empty() == false)
 	{
-		FEFaceSelection* selectedFaces = dynamic_cast<FEFaceSelection*>(sel);
-		FEMesh* mesh = dynamic_cast<FEMesh*>(selectedFaces->GetMesh());
-		if (mesh)
-		{
-			vector<int> selectedElems = mesh->GetElementsFromSelectedFaces();
-			if (selectedElems.empty() == false)
-			{
-				SetItemSelectionMode(SELECT_OBJECT, ITEM_ELEM);
-				CCmdSelectElements* cmd = new CCmdSelectElements(mesh, selectedElems, false);
-				doc->DoCommand(cmd);
-			}
-		}
+		SetItemSelectionMode(SELECT_OBJECT, ITEM_ELEM);
+		CCmdSelectElements* cmd = new CCmdSelectElements(mesh, selectedElems, false);
+		doc->DoCommand(cmd);
 	}
+
+	RedrawGL();
+}
+
+void CMainWindow::on_actionSurfaceToFaces_triggered()
+{
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (doc->GetSelectionMode() != SELECT_FACE) return;
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr) return;
+
+	FSMesh* mesh = po->GetFEMesh();
+	if (mesh == nullptr) return;
+
+	// now, select the faces
+	vector<int> faceList;
+	for (int i = 0; i < mesh->Faces(); ++i)
+	{
+		FSFace& face = mesh->Face(i);
+		GFace* pf = po->Face(face.m_gid);
+		if (pf->IsSelected()) faceList.push_back(i);
+	}
+
+	// select elements
+	doc->SetSelectionMode(SELECT_OBJECT);
+	doc->SetItemMode(ITEM_FACE);
+	doc->DoCommand(new CCmdSelectFaces(mesh, faceList, false));
+
+	UpdateGLControlBar();
+	RedrawGL();
 }
 
 void CMainWindow::on_actionSelectOverlap_triggered()
@@ -1091,7 +1161,7 @@ void CMainWindow::on_actionSelectOverlap_triggered()
 	if (select.isEmpty() == false)
 	{
 		GObject* trg = mdl.FindObject(select.toStdString());
-		FEMesh* mesh = po->GetFEMesh();
+		FSMesh* mesh = po->GetFEMesh();
 		std::vector<int> faceList = MeshTools::FindSurfaceOverlap(mesh, trg->GetEditableMesh());
 		
 		SetItemSelectionMode(SELECT_OBJECT, ITEM_FACE);
@@ -1113,14 +1183,14 @@ void CMainWindow::on_actionSelectIsolatedVertices_triggered()
 	GObject* po = doc->GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 	if (mesh == nullptr) return;
 	
 	mesh->TagAllNodes(0);
 	int NE = mesh->Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		int ne = el.Nodes();
 		for (int j = 0; j < ne; ++j)
 		{
@@ -1152,8 +1222,8 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
-	FEMeshBase* pmb = pm;
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
 	if (pm == nullptr)
 	{
 		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
@@ -1161,7 +1231,7 @@ void CMainWindow::on_actionGrowSelection_triggered()
 		if (pmb == nullptr) return;
 	}
 
-	CModelDocument* doc = GetModelDocument();
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
 
@@ -1184,8 +1254,8 @@ void CMainWindow::on_actionShrinkSelection_triggered()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
-	FEMeshBase* pmb = pm;
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
 	if (pm == nullptr)
 	{
 		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);

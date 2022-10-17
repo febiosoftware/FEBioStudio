@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <PostLib/FEPlotMix.h>
 #include "Document.h"
-#include "CIntInput.h"
+#include "InputWidgets.h"
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
 #include "PostDocument.h"
@@ -146,7 +146,7 @@ void CDlgPlotMix::OnApply()
 	// Create a new document
 	/*	CDocument* doc = m_wnd->NewDocument("plotmix");
 
-	FEModel* pnew = reader.Load(&sz[0], nitems);
+	FSModel* pnew = reader.Load(&sz[0], nitems);
 	if (pnew == 0) QMessageBox::critical(0, "Plot Mix Tool", "An error occured reading the plot files.");
 	else
 	{

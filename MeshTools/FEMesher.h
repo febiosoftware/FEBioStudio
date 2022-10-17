@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,13 @@ SOFTWARE.*/
 #include <FSCore/FSThreadedTask.h>
 
 class GObject;
-class FEMesh;
+class FSMesh;
+
+// mesher types
+enum FEMesherType {
+	Default_Mesher = 0,
+	TetGen_Mesher = 1
+};
 
 //-----------------------------------------------------------------------------
 // The FEMesher class takes a geometry object and converts it to a finite
@@ -47,7 +53,7 @@ public:
 	virtual ~FEMesher();
 
 	// build the mesh
-	virtual FEMesh*	BuildMesh() = 0;
+	virtual FSMesh*	BuildMesh() = 0;
 
 	// save/load
 	void Save(OArchive& ar);
@@ -57,9 +63,16 @@ public:
 	void SetErrorMessage(const std::string& err);
 	std::string GetErrorMessage() const;
 
+	int Type() const;
+
+protected:
+	void SetType(int ntype);
+
 public:
 	static FEMesher* Create(GObject* po, int classType);
 
 protected:
 	std::string		m_error;
+
+	int	m_ntype;
 };

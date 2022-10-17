@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -67,7 +67,7 @@ bool xpltFileReader::Load(const char* szfile)
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");
 
 	// attach the file to the archive
-	IOFileStream fs(m_fp, false);
+	FileStream fs(m_fp, false);
 	if (m_ar.Open(&fs) == false) return errf("This is not a valid XPLT file.");
 
 	// open the root chunk (no compression for this sectio)
@@ -135,6 +135,7 @@ bool xpltFileReader::ReadHeader()
 	m_hdr.ncompression = 0;	// default for version < 0.3
 	m_hdr.author[0] = 0;
 	m_hdr.software[0] = 0;
+	m_hdr.units[0] = 0;
 	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 	{
 		int nid = m_ar.GetChunkID();
@@ -148,6 +149,8 @@ bool xpltFileReader::ReadHeader()
 		// version 2.0 and up
 		case PLT_HDR_AUTHOR         : m_ar.read(m_hdr.author); break;
 		case PLT_HDR_SOFTWARE       : m_ar.read(m_hdr.software); break;
+		// Added in febio4
+		case PLT_HDR_UNITS	        : m_ar.read(m_hdr.units); break;
 		default:
 			return errf("Error while reading header.");
 		}

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,10 +42,7 @@ SOFTWARE.*/
 #include "GLCursor.h"
 #include <math.h>
 #include <QtCore/QTimer>
-#include <MeshLib/MeshMetrics.h>
 #include <MeshLib/MeshTools.h>
-#include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/FECurveMesh.h>
 #include "GLViewTransform.h"
 #include <GLLib/glx.h>
 #include <GLLib/GDecoration.h>
@@ -54,7 +51,6 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include <MeshLib/FENodeFaceList.h>
-#include <FEMLib/FEMultiMaterial.h>
 #include <QAction>
 #include <QMenu>
 #include <QMessageBox>
@@ -65,7 +61,9 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
-#include <iostream>
+#include <PostLib/ImageSlicer.h>
+#include "ImageSliceView.h"
+#include <MeshTools/FEExtrudeFaces.h>
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -111,7 +109,6 @@ const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
 extern int LUT[256][15]; 
 extern int ET_HEX[12][2];
 extern int ET_TET[6][2];
-extern int ET_PYR[8][2];
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
@@ -322,7 +319,7 @@ inline void render_triad(double x, double y, double z, double dx, double dy, dou
 	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
 }
 
-void RenderBox(const BOX& bbox, bool partial = true, double scale = 1.0)
+void RenderBox(const BOX& bbox, bool partial, double scale)
 {
 	// push attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -421,8 +418,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	m_coord = COORD_GLOBAL;
 
-	m_pmod = 0;
-
 	setMouseTracking(true);
 
 	m_showPlaneCut = false;
@@ -495,6 +490,11 @@ void CGLView::changeViewMode(View_Mode vm)
 void CGLView::SetColorMap(Post::CColorMap& map)
 {
 	m_colorMap = map;
+}
+
+Post::CColorMap& CGLView::GetColorMap()
+{
+	return m_colorMap;
 }
 
 void CGLView::mousePressEvent(QMouseEvent* ev)
@@ -586,7 +586,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		if (mdoc)
 		{
 			FESelection* ps = mdoc->GetCurrentSelection();
-			if (m_coord == COORD_LOCAL)
+			if (ps && (m_coord == COORD_LOCAL))
 			{
 				quatd q = ps->GetOrientation();
 				q.RotateVector(m_ds);
@@ -767,8 +767,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			m_rt += dr;
 			ps->Translate(dr);
 
-			m_pWnd->UpdateGLControlBar();
-			repaint();
+			m_pWnd->OnSelectionTransformed();
 		}
 	}
 	else if (ntrans == TRANSFORM_ROTATE)
@@ -1058,15 +1057,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		CCommand* cmd = 0;
 		if ((ntrans == TRANSFORM_MOVE) && (but == Qt::LeftButton))
 		{
-			if (!m_pmod)
-			{
-				cmd = new CCmdTranslateSelection(mdoc, m_rt);
-			}
-			else
-			{
-//				m_pmod->m_dist = m_rt.Length();
-				m_pmod = 0;
-			}
+			cmd = new CCmdTranslateSelection(mdoc, m_rt);
 		}
 		else if ((ntrans == TRANSFORM_ROTATE) && (but == Qt::LeftButton))
 		{
@@ -1098,6 +1089,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			string s = ps->GetName();
 			pdoc->AddCommand(cmd, s);
+			mdoc->GetGModel()->UpdateBoundingBox();
 		}
 
 		// TODO: Find a better way to update the GMesh when necessary. 
@@ -1231,7 +1223,7 @@ void CGLView::initializeGL()
 	//	glLightfv(GL_LIGHT1, GL_DIFFUSE, dif2);
 
 	// enable color tracking for diffuse color of materials
-	glEnable(GL_COLOR_MATERIAL);
+//	glEnable(GL_COLOR_MATERIAL);
 	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
 
 	// set the texture parameters
@@ -1260,13 +1252,14 @@ void CGLView::initializeGL()
 	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
 	m_psubtitle->set_font_size(15);
 	m_psubtitle->fit_to_size();
-	m_psubtitle->set_label("$(datafield)\\nTime = $(time)");
+	m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
 
 	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
 	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
 	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
 	m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 	m_pframe->hide();
+	m_pframe->set_layer(0); // permanent widget
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
 	m_oglVersionString = szv;
@@ -1362,9 +1355,9 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
 	int cy = height();
 	if (m_pframe && m_pframe->visible())
 	{
-		int dpr = m_pWnd->devicePixelRatio();
-		cx = dpr*m_pframe->w();
-		cy = dpr*m_pframe->h();
+		double dpr = m_pWnd->devicePixelRatio();
+		cx = (int) (dpr*m_pframe->w());
+		cy = (int) (dpr*m_pframe->h());
 	}
 
 	// get the frame rate
@@ -1421,17 +1414,21 @@ void CGLView::StopAnimation()
 		// stop the animation
 		m_videoMode = VIDEO_STOPPED;
 
-		if (m_video->Frames() == 0)
-		{
-			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
-		}
+		// get the nr of frames before we close
+		int nframes = m_video->Frames();
 
 		// close the stream
 		m_video->Close();
 
 		// delete the object
 		delete m_video;
-		m_video = 0;
+		m_video = nullptr;
+
+		// say something if frames is 0. 
+		if (nframes == 0)
+		{
+			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
+		}
 
 		// unlock the frame
 		m_pframe->SetState(GLSafeFrame::FREE);
@@ -1475,6 +1472,7 @@ void CGLView::paintGL()
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
 	CGLContext& rc = m_rc;
+	rc.m_view = this;
 	rc.m_cam = &cam;
 	rc.m_showOutline = view.m_bfeat;
 	rc.m_showMesh = view.m_bmesh;
@@ -1486,14 +1484,12 @@ void CGLView::paintGL()
 	// render the backgound
 	RenderBackground();
 
-	// get the active view
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-
-	if (postDoc == nullptr) RenderModelView();
-	else RenderPostView(postDoc);
+	// render the active scene
+	CGLScene* scene = pdoc->GetScene();
+	if (scene) scene->Render(rc);
 
 	// render the grid
-	if (view.m_bgrid && (postDoc == nullptr)) m_grid.Render(m_rc);
+	if (view.m_bgrid && (m_pWnd->GetModelDocument())) m_grid.Render(m_rc);
 
 	// render the image data
 	RenderImageData();
@@ -1513,7 +1509,7 @@ void CGLView::paintGL()
 	}
 
 	// render the 3D cursor
-	if (postDoc == nullptr)
+	if (m_pWnd->GetModelDocument())
 	{
 		// render the highlights
 		GLHighlighter::draw();
@@ -1533,9 +1529,6 @@ void CGLView::paintGL()
 	// render selection
 	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
 
-	// show the labels on rigid bodies
-	if (view.m_showRigidLabels) RenderRigidLabels();
-
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -1545,12 +1538,14 @@ void CGLView::paintGL()
 	glLoadIdentity();
 
 	// Update GLWidget string table for post rendering
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc)
 	{
 		if (postDoc && postDoc->IsValid())
 		{
 			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
 			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
+			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
 			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
 		}
 	}
@@ -1571,7 +1566,7 @@ void CGLView::paintGL()
 		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
 		if (mdoc)
 		{
-			FEModel* ps = mdoc->GetFEModel();
+			FSModel* ps = mdoc->GetFSModel();
 			GModel& model = ps->GetModel();
 
 			painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
@@ -1611,7 +1606,7 @@ void CGLView::paintGL()
 		if (m_video->Write(im) == false)
 		{
 			StopAnimation();
-			QMessageBox::critical(this, "FEBio Studio", "An error occurred while recording.");
+			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
 		}
 	}
 
@@ -1635,247 +1630,6 @@ void CGLView::paintGL()
 		cam.Update();
 		QTimer::singleShot(50, this, SLOT(repaintEvent()));
 	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderModelView()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	VIEW_SETTINGS& view = GetViewSettings();
-	int nitem = pdoc->GetItemMode();
-
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
-
-	if (m_showPlaneCut)
-	{
-		if (m_planeCut == nullptr) UpdatePlaneCut();
-		if (m_planeCutMode == 0)
-		{
-			// render the plane cut first
-			if (m_planeCut) RenderPlaneCut();
-
-			// then turn on the clipping plane before rendering the other geometry
-			glClipPlane(GL_CLIP_PLANE0, m_plane);
-			glEnable(GL_CLIP_PLANE0);
-		}
-	}
-
-	// render the model
-	if (pdoc->IsValid())
-	{
-		// render the (solid) model
-		if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH)) RenderModel();
-
-		// render discrete objects
-		if (view.m_showDiscrete)
-		{
-			RenderDiscrete();
-		}
-
-		// render selected box
-		RenderSelectionBox();
-
-		cam.LineDrawMode(true);
-		cam.Transform();
-
-		// Render mesh lines
-		//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
-		if (view.m_bmesh) RenderMeshLines();
-
-		if (view.m_bfeat || (view.m_nrender == RENDER_WIREFRAME))
-		{
-			// don't draw feature edges in edge mode, since the edges are the feature edges
-			// (Don't draw feature edges when we are rendering FE edges)
-			int nselect = pdoc->GetSelectionMode();
-			if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges();
-		}
-
-		cam.LineDrawMode(false);
-		cam.Transform();
-	}
-
-	// render the temp object
-	CCreatePanel* cp = m_pWnd->GetCreatePanel();
-	if (cp)
-	{
-		GObject* po = cp->GetTempObject();
-		if (po)
-		{
-			RenderObject(po);
-			RenderEdges(po);
-		}
-	}
-
-	// render physics
-	if (pdoc->IsValid())
-	{
-		if (view.m_brigid) RenderRigidBodies();
-		if (view.m_bjoint) { RenderRigidJoints(); RenderRigidConnectors(); }
-		if (view.m_bwall) RenderRigidWalls();
-		if (view.m_bfiber) RenderMaterialFibers();
-		if (view.m_blma) RenderLocalMaterialAxes();
-	}
-
-	// render the command window gizmo's
-	/*	CCommandPanel* pcw = m_pWnd->GetCommandWindow()->GetActivePanel();
-	if (pcw)
-	{
-	GLCanvas glc(this);
-	pcw->Render(&glc);
-	}
-	*/
-	// render the selected parts
-	if (pdoc->IsValid())
-	{
-		GModel& model = *pdoc->GetGModel();
-		int nsel = pdoc->GetSelectionMode();
-		if (nitem == ITEM_MESH)
-		{
-			for (int i = 0; i<model.Objects(); ++i)
-			{
-				GObject* po = model.Object(i);
-				if (po->IsVisible() && po->IsValid())
-				{
-					glPushMatrix();
-					SetModelView(po);
-					switch (nsel)
-					{
-					case SELECT_PART: RenderSelectedParts(po); break;
-					case SELECT_FACE: RenderSelectedSurfaces(po); break;
-					case SELECT_EDGE: RenderSelectedEdges(po); break;
-					case SELECT_NODE: RenderSelectedNodes(po); break;
-					}
-					glPopMatrix();
-				}
-			}
-		}
-	}
-
-	glDisable(GL_CLIP_PLANE0);
-
-	// render the tags
-	if (view.m_bTags) RenderTags();
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderPostView(CPostDocument* postDoc)
-{
-	if (postDoc && postDoc->IsValid())
-	{
-		Post::CGLModel* glm = postDoc->GetGLModel();
-
-		CGLCamera& cam = postDoc->GetView()->GetCamera();
-
-		VIEW_SETTINGS& vs = GetViewSettings();
-
-		glm->m_nrender = vs.m_nrender + 1;
-		glm->m_bnorm = vs.m_bnorm;
-		glm->m_scaleNormals = vs.m_scaleNormals;
-		glm->m_brenderPlotObjects = vs.m_bjoint;
-		glm->m_doZSorting = vs.m_bzsorting;
-
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-
-		PositionCamera();
-
-		glDisable(GL_CULL_FACE);
-
-		// match the selection mode
-		int selectionMode = Post::SELECT_ELEMS;
-		switch (GetDocument()->GetItemMode())
-		{
-		case ITEM_MESH:
-		case ITEM_ELEM: selectionMode = Post::SELECT_ELEMS; break;
-		case ITEM_FACE: selectionMode = Post::SELECT_FACES; break;
-		case ITEM_EDGE: selectionMode = Post::SELECT_EDGES; break;
-		case ITEM_NODE: selectionMode = Post::SELECT_NODES; break;
-		}
-		glm->SetSelectionMode(selectionMode);
-
-
-		if (vs.m_bShadows)
-		{
-			BOX box = postDoc->GetBoundingBox();
-
-			float a = vs.m_shadow_intensity;
-			GLfloat shadow[] = { a, a, a, 1 };
-			GLfloat zero[] = { 0, 0, 0, 1 };
-			GLfloat ones[] = { 1,1,1,1 };
-			GLfloat lp[4] = { 0 };
-
-			glEnable(GL_STENCIL_TEST);
-
-			float inf = box.Radius()*100.f;
-
-			vec3d lpv = GetLightPosition();
-
-			quatd q = cam.GetOrientation();
-			q.Inverse().RotateVector(lpv);
-
-			lp[0] = lpv.x;
-			lp[1] = lpv.y;
-			lp[2] = lpv.z;
-
-			// set coloring for shadows
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, shadow);
-			glLightfv(GL_LIGHT0, GL_SPECULAR, zero);
-
-			glStencilFunc(GL_ALWAYS, 0x00, 0xff);
-			glStencilOp(GL_ZERO, GL_ZERO, GL_ZERO);
-
-			// render the scene
-			glm->Render(m_rc);
-
-			// Create mask in stencil buffer
-			glColorMask(GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
-			glDepthMask(GL_FALSE);
-
-			glEnable(GL_CULL_FACE);
-			glCullFace(GL_FRONT);
-			glStencilOp(GL_KEEP, GL_INCR, GL_KEEP);
-
-			Post::FEPostModel* fem = glm->GetFEModel();
-			glm->RenderShadows(fem, lpv, inf);
-
-			glCullFace(GL_BACK);
-			glStencilOp(GL_KEEP, GL_DECR, GL_KEEP);
-
-			glm->RenderShadows(fem, lpv, inf);
-
-			// Render the scene in light
-			glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
-			glDepthMask(GL_TRUE);
-
-			GLfloat d = vs.m_diffuse;
-			GLfloat dv[4] = { d, d, d, 1.f };
-
-			glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
-			glLightfv(GL_LIGHT0, GL_SPECULAR, ones);
-
-			glStencilFunc(GL_EQUAL, 0, 0xff);
-			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-
-			glDisable(GL_CULL_FACE);
-
-			glClear(GL_DEPTH_BUFFER_BIT);
-		}
-
-		glm->Render(m_rc);
-
-		glMatrixMode(GL_MODELVIEW);
-		glPopMatrix();
-
-		// render the tracking
-		if (m_btrack) RenderTrack();
-
-		// render the tags
-		VIEW_SETTINGS& view = GetViewSettings();
-		if (view.m_bTags) RenderTags();
-	}
-
-	Post::CGLPlaneCutPlot::DisableClipPlanes();
 }
 
 //-----------------------------------------------------------------------------
@@ -1930,44 +1684,6 @@ QPoint CGLView::DeviceToPhysical(int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::SetMatProps(GMaterial* pm)
-{
-	if (pm == 0) SetDefaultMatProps();
-	else
-	{
-		GMaterial& m = *pm;
-		GLfloat f = 1.f / 255.f;
-		//			GLfloat dif[4] = {m.m_diffuse.r*f, m.m_diffuse.g*f, m.m_diffuse.b*f, 1.f}; 
-		GLColor a = pm->Ambient();
-		GLColor s = pm->Specular();
-		GLColor e = pm->Emission();
-		GLfloat amb[4] = { a.r*f, a.g*f, a.b*f, 1.f };
-		GLfloat spc[4] = { s.r*f, s.g*f, s.b*f, 1.f };
-		GLfloat emi[4] = { e.r*f, e.g*f, e.b*f, 1.f };
-		//			glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE , dif);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, amb);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-		glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
-		glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 128 * (GLfloat)m.m_shininess);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::SetDefaultMatProps()
-{
-	//		GLfloat dif[] = {0.8f, 0.8f, 0.8f, 1.f};
-	GLfloat amb[] = { 0.8f, 0.8f, 0.8f, 1.f };
-	GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
-	GLfloat emi[] = { 0.0f, 0.0f, 0.0f, 1.f };
-
-	//		glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE , dif);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, amb);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
-}
-
-//-----------------------------------------------------------------------------
 // setup the projection matrix
 void CGLView::SetupProjection()
 {
@@ -1979,13 +1695,15 @@ void CGLView::SetupProjection()
 	if (doc == nullptr) return;
 
 	BOX box;
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
-	{
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		box = mdoc->GetModelBox();
-	}
-	else if (postDoc->IsValid())
+
+    CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if(mdoc)
+    {
+        box = mdoc->GetModelBox();
+    }
+
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+    if (postDoc && postDoc->IsValid())
 	{
 		box = postDoc->GetPostObject()->GetBoundingBox();
 	}
@@ -1996,9 +1714,11 @@ void CGLView::SetupProjection()
 	double R = box.Radius();
 	VIEW_SETTINGS& vs = GetViewSettings();
 
+	// NOTE: For some reason the camera position is coming back with the opposite sign
+	//       so I need to add p and c, instead of subtract. Need to look into this closer. 
 	vec3d p = cam.GlobalPosition();
 	vec3d c = box.Center();
-	double L = (c - p).Length();
+	double L = (c + p).Length();
 
 	view.m_ffar = (L + R) * 2;
 	view.m_fnear = 0.01f*view.m_ffar;
@@ -2048,12 +1768,12 @@ void CGLView::PositionCamera()
 	// see if we need to track anything
 	if (pdoc->IsValid() && m_btrack)
 	{
-		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 		int NN = pm->Nodes();
 		int* nt = m_ntrack;
 		if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { m_btrack = false; return; }
 
-		Post::FEPostModel& fem = *pdoc->GetFEModel();
+		Post::FEPostModel& fem = *pdoc->GetFSModel();
 
 		vec3d a = pm->Node(nt[0]).r;
 		vec3d b = pm->Node(nt[1]).r;
@@ -2112,12 +1832,12 @@ void CGLView::SetTrackingData(int n[3])
 
 	// get the current nodal positions
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
-	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 	int NN = pm->Nodes();
 	int* nt = m_ntrack;
 	if ((nt[0] >= NN) || (nt[1] >= NN) || (nt[2] >= NN)) { assert(false); return; }
 
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	vec3d a = pm->Node(nt[0]).r;
 	vec3d b = pm->Node(nt[1]).r;
 	vec3d c = pm->Node(nt[2]).r;
@@ -2156,7 +1876,7 @@ void CGLView::TrackSelection(bool b)
 		Post::CGLModel* model = pdoc->GetGLModel(); assert(model);
 
 		int nmode = model->GetSelectionMode();
-		FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+		FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 		if (nmode == Post::SELECT_ELEMS)
 		{
 			const vector<FEElement_*> selElems = pdoc->GetGLModel()->GetElementSelection();
@@ -2313,7 +2033,7 @@ void CGLView::RenderTooltip(int x, int y)
 */
 }
 
-void CGLView::SetModelView(GObject* po)
+void SetModelView(GObject* po)
 {
 	// get transform data
 	vec3d r = po->GetTransform().GetPosition();
@@ -2357,366 +2077,13 @@ void CGLView::ClearCommandStack()
 	m_Cmd.Clear();
 }
 
-void CGLView::RenderNormals(GObject* po, double scale)
+int CGLView::GetMeshMode()
 {
-	if (po->IsVisible() == false) return;
-
-	FEMeshBase* pm = po->GetEditableMesh();
-	if (pm == 0) return;
-
-	double R = 0.05*pm->GetBoundingBox().GetMaxExtent()*scale;
-
-	glPushAttrib(GL_LIGHTING);
-	glDisable(GL_LIGHTING);
-
-	int NS = po->Faces();
-	vector<bool> vis(NS);
-	for (int n = 0; n<NS; ++n)
-	{
-		GFace* gface = po->Face(n);
-		vis[n] = po->IsFaceVisible(gface);
-	}
-
-	glBegin(GL_LINES);
-	{
-		int N = pm->Faces();
-		for (int i = 0; i<N; ++i)
-		{
-			FEFace& face = pm->Face(i);
-			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
-			if (face.IsVisible() && bvis)
-			{
-				vec3d fn = face.m_fn;
-
-				int n = face.Nodes();
-				vec3d p = vec3d(0, 0, 0);
-				for (int j = 0; j<n; ++j) p += pm->Node(face.n[j]).r;
-				p /= (double)n;
-
-				vec3d q = p + fn*R;
-
-				float r = (float) fabs(fn.x);
-				float g = (float) fabs(fn.y);
-				float b = (float) fabs(fn.z);
-	
-				glx::drawLine_(p, q, GLColor::White(), GLColor::FromRGBf(r, g, b));
-			}
-		}
-	}
-	glEnd();
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderModel()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
-
-	// get the model
-	FEModel* ps = pdoc->GetFEModel();
-	GModel& model = ps->GetModel();
-
-	// Get the item mode
-	int item = pdoc->GetItemMode();
-
-	// get the mesh mode
-	int meshMode = m_pWnd->GetMeshMode();
-
-	// get the selection mode
-	int nsel = pdoc->GetSelectionMode();
-
-	GObject* poa = pdoc->GetActiveObject();
-
-	bool bnorm = view.m_bnorm;
-	double scale = view.m_scaleNormals;
-
-	// we don't use backface culling when drawing
-	//	if (view.m_bcull) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
-
-	if (item == ITEM_MESH)
-	{
-		for (int i = 0; i<model.Objects(); ++i)
-		{
-			GObject* po = model.Object(i);
-			if (po->IsVisible() && po->IsValid())
-			{
-				glPushMatrix();
-				SetModelView(po);
-				switch (nsel)
-				{
-				case SELECT_OBJECT:
-				{
-					if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(po);
-					else if (m_showPlaneCut && (m_planeCutMode == 1))
-					{
-						RenderFEElements(po);
-
-						GLColor c = view.m_mcol;
-						glColor3ub(c.r, c.g, c.b);
-						RenderMeshLines(po);
-					}
-					else RenderObject(po);
-				}
-				break;
-				case SELECT_PART: RenderParts(po); break;
-				case SELECT_FACE: RenderSurfaces(po); break;
-				case SELECT_EDGE:
-					{
-						RenderObject(po);
-						cam.LineDrawMode(true);
-						cam.Transform();
-						SetModelView(po);
-						RenderEdges(po);
-						cam.LineDrawMode(false);
-						cam.Transform();
-						SetModelView(po);
-					}
-					break;
-				case SELECT_NODE:
-					{
-						RenderObject(po);
-						cam.LineDrawMode(true);
-						cam.Transform();
-						SetModelView(po);
-						RenderNodes(po);
-						cam.LineDrawMode(false);
-						cam.Transform();
-						SetModelView(po);
-					}
-					break;
-				case SELECT_DISCRETE:
-				{
-					RenderObject(po);
-				}
-				break;
-				}
-				if (bnorm) RenderNormals(po, scale);
-				glPopMatrix();
-			}
-		}
-	}
-	else
-	{
-		for (int i = 0; i<model.Objects(); ++i)
-		{
-			GObject* po = model.Object(i);
-			if (po->IsVisible() && po->IsValid())
-			{
-				glPushMatrix();
-				SetModelView(po);
-				if (po == poa)
-				{
-					if (meshMode == MESH_MODE_VOLUME)
-					{
-						if (item == ITEM_ELEM)
-						{
-							RenderFEElements(po);
-						}
-						else if (item == ITEM_FACE)
-						{
-							RenderFEFaces(po);
-						}
-						else if (item == ITEM_EDGE)
-						{
-							RenderFEFaces(po);
-							cam.LineDrawMode(true);
-							cam.Transform();
-							SetModelView(po);
-							RenderFEEdges(po);
-							cam.LineDrawMode(false);
-							cam.Transform();
-						}
-						else if (item == ITEM_NODE)
-						{
-							RenderFEFaces(po);
-							RenderFENodes(po);
-						}
-					}
-					else
-					{
-						if (item == ITEM_FACE)
-						{
-							RenderSurfaceMeshFaces(po);
-						}
-						else if (item == ITEM_EDGE)
-						{
-							RenderSurfaceMeshFaces(po);
-							cam.LineDrawMode(true);
-							cam.Transform();
-							SetModelView(po);
-							RenderSurfaceMeshEdges(po);
-							cam.LineDrawMode(false);
-							cam.Transform();
-						}
-						else if (item == ITEM_NODE)
-						{
-							RenderSurfaceMeshFaces(po);
-							RenderSurfaceMeshNodes(po);
-						}
-					}
-				}
-				else RenderObject(po);
-				if (bnorm) RenderNormals(po, scale);
-				glPopMatrix();
-			}
-		}
-	}
-}
-
-void CGLView::RenderSelectionBox()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-
-	// get the model
-	FEModel* ps = pdoc->GetFEModel();
-	GModel& model = ps->GetModel();
-
-	// Get the item mode
-	int item = pdoc->GetItemMode();
-
-	// get the selection mode
-	int nsel = pdoc->GetSelectionMode();
-
-	GObject* poa = pdoc->GetActiveObject();
-
-	bool bnorm = view.m_bnorm;
-	double scale = view.m_scaleNormals;
-
-	if (item == ITEM_MESH)
-	{
-		for (int i = 0; i<model.Objects(); ++i)
-		{
-			GObject* po = model.Object(i);
-			if (po->IsVisible())
-			{
-				glPushMatrix();
-				SetModelView(po);
-
-				if (nsel == SELECT_OBJECT)
-				{
-					glColor3ub(255, 255, 255);
-					if (po->IsSelected())
-					{
-						RenderBox(po->GetLocalBox(), true, 1.025);
-					}
-				}
-				else if (po == poa)
-				{
-					glColor3ub(164, 0, 164);
-					assert(po->IsSelected());
-					RenderBox(po->GetLocalBox(), true, 1.025);
-				}
-				glPopMatrix();
-			}
-		}
-	}
-	else if (poa)
-	{
-		glPushMatrix();
-		SetModelView(poa);
-		glColor3ub(255, 255, 0);
-		RenderBox(poa->GetLocalBox(), true, 1.025);
-		glPopMatrix();
-	}
-}
-
-void RenderLine(GNode& n0, GNode& n1)
-{
-	vec3d r0 = n0.Position();
-	vec3d r1 = n1.Position();
-
-	glx::drawPoint(r0);
-	glx::drawPoint(r1);
-
-	glx::drawLine(r0, r1);
-}
-
-void CGLView::RenderDiscrete()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	// get the selection mode
-	int nsel = pdoc->GetSelectionMode();
-	bool bsel = (nsel == SELECT_DISCRETE);
-
-	// get the model
-	FEModel* ps = pdoc->GetFEModel();
-	GModel& model = ps->GetModel();
-
-	// render the discrete objects
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	int ND = model.DiscreteObjects();
-	for (int i = 0; i<model.DiscreteObjects(); ++i)
-	{
-		GDiscreteObject* po = model.DiscreteObject(i);
-		if (po->IsVisible())
-		{
-			GLColor c = po->GetColor();
-
-			if (bsel && po->IsSelected()) glColor3ub(255, 255, 0);
-			else glColor3ub(c.r, c.g, c.b);
-
-			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(po);
-			if (ps)
-			{
-				GNode* pn0 = model.FindNode(ps->m_node[0]);
-				GNode* pn1 = model.FindNode(ps->m_node[1]);
-				if (pn0 && pn1) RenderLine(*pn0, *pn1);
-			}
-
-			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(po);
-			if (pg)
-			{
-				GNode* pn0 = model.FindNode(pg->m_node[0]);
-				GNode* pn1 = model.FindNode(pg->m_node[1]);
-				if (pn0 && pn1) RenderLine(*pn0, *pn1);
-			}
-
-			GDiscreteElementSet* pd = dynamic_cast<GDiscreteElementSet*>(po);
-			if (pd)
-			{
-				int N = pd->size();
-				for (int n = 0; n < N; ++n)
-				{
-					GDiscreteElement& el = pd->element(n);
-
-					if (bsel && el.IsSelected()) glColor3ub(255, 255, 0);
-					else glColor3ub(c.r, c.g, c.b);
-
-					GNode* pn0 = model.FindNode(el.Node(0));
-					GNode* pn1 = model.FindNode(el.Node(1));
-					if (pn0 && pn1) RenderLine(*pn0, *pn1);
-				}
-			}
-
-			GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(po);
-			if (ds)
-			{
-				GNode* pn0 = model.FindNode(ds->NodeID(0));
-				GNode* pn1 = model.FindNode(ds->NodeID(1));
-				if (pn0 && pn1) RenderLine(*pn0, *pn1);
-			}
-		}
-	}
-	glPopAttrib();
+	return m_pWnd->GetMeshMode();
 }
 
 void CGLView::RenderBackground()
 {
-	// Get the document
-	CDocument* pdoc = GetDocument();
-
 	// set up the viewport
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -2771,6 +2138,11 @@ void CGLView::RenderBackground()
 	glMatrixMode(GL_MODELVIEW);
 }
 
+bool CGLView::TrackModeActive()
+{
+	return m_btrack;
+}
+
 void CGLView::RenderTrack()
 {
 	if (m_btrack == false) return;
@@ -2778,7 +2150,7 @@ void CGLView::RenderTrack()
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-	FEMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
+	FSMeshBase* pm = pdoc->GetPostObject()->GetFEMesh();
 	int* nt = m_ntrack;
 
 	glPushAttrib(GL_ENABLE_BIT);
@@ -2828,211 +2200,38 @@ void CGLView::RenderImageData()
 	glLoadIdentity();
 	cam.Transform();
 
-	for (int i = 0; i < doc->ImageModels(); ++i)
-	{
-		Post::CImageModel* img = doc->GetImageModel(i);
-		BOX box = img->GetBoundingBox();
-//		GLColor c = img->GetColor();
-		GLColor c(255, 128, 128);
-		glColor3ub(c.r, c.g, c.b);
-		if (img->ShowBox()) RenderBox(box, false);
-		img->Render(m_rc);
-	}
+    if(doc->GetView()->imgView == CGView::MODEL_VIEW)
+    {
+        for (int i = 0; i < doc->ImageModels(); ++i)
+        {
+            Post::CImageModel* img = doc->GetImageModel(i);
+            BOX box = img->GetBoundingBox();
+    		// GLColor c = img->GetColor();
+            GLColor c(255, 128, 128);
+            glColor3ub(c.r, c.g, c.b);
+            if (img->ShowBox()) RenderBox(box, false);
+            img->Render(m_rc);
+        }
+    }
+    else if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+    {
+        CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
+
+        Post::CImageModel* img =  sliceView->GetImageModel();
+        if(img)
+        {
+            BOX box = img->GetBoundingBox();
+            GLColor c(255, 128, 128);
+            glColor3ub(c.r, c.g, c.b);
+            if (img->ShowBox()) RenderBox(box, false);
+            img->Render(m_rc);
+
+            sliceView->RenderSlicers(m_rc);
+        }
+    }
 
 	glMatrixMode(GL_MODELVIEW);
 	glPopMatrix();
-}
-
-void RenderFiber(GObject* po, FEMaterial* pmat, FEElementRef& rel, const vec3d& c, double h)
-{
-	if (pmat->HasFibers())
-	{
-		vec3d q = pmat->GetFiber(rel);
-
-		// This vector is defined in global coordinates, except for user-defined fibers, which
-		// are assumed to be in local coordinates
-		FETransverselyIsotropic* ptiso = dynamic_cast<FETransverselyIsotropic*>(pmat);
-		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
-		{
-			q = po->GetTransform().LocalToGlobalNormal(q);
-		}
-
-		double r = fabs(q.x);
-		double g = fabs(q.y);
-		double b = fabs(q.z);
-
-		glColor3d(r, g, b);
-
-		vec3d p0 = c - q * (h*0.5);
-		vec3d p1 = c + q * (h*0.5);
-		glVertex3d(p0.x, p0.y, p0.z);
-		glVertex3d(p1.x, p1.y, p1.z);
-	}
-
-	for (int i = 0; i < pmat->Properties(); ++i)
-	{
-		FEMaterialProperty& prop = pmat->GetProperty(i);
-		for (int j = 0; j < prop.Size(); ++j)
-		{
-			FEMaterial* matj = prop.GetMaterial(j);
-			if (matj) RenderFiber(po, matj, rel, c, h);
-		}
-	}
-}
-
-void CGLView::RenderMaterialFibers()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-
-	// get the model
-	FEModel* ps = pdoc->GetFEModel();
-	GModel& model = ps->GetModel();
-
-	FEElementRef rel;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
-	BOX box = model.GetBoundingBox();
-	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;
-
-	glBegin(GL_LINES);
-	for (int i = 0; i<model.Objects(); ++i)
-	{
-		GObject* po = model.Object(i);
-		if (po->IsVisible() && po->IsValid())
-		{
-			FEMesh* pm = po->GetFEMesh();
-			if (pm)
-			{
-				rel.m_pmesh = pm;
-				for (int j = 0; j<pm->Elements(); ++j)
-				{
-					FEElement& el = pm->Element(j);
-					GPart* pg = po->Part(el.m_gid);
-
-					bool showFiber = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
-
-					if (showFiber)
-					{
-						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
-						FEMaterial* pmat = 0;
-						if (pgm) pmat = pgm->GetMaterialProperties();
-
-						rel.m_nelem = j;
-						if (pmat)
-						{
-							// element center
-							vec3d c(0, 0, 0);
-							for (int k = 0; k < el.Nodes(); ++k) c += pm->Node(el.m_node[k]).r;
-							c /= el.Nodes();
-
-							// to global coordinates
-							c = po->GetTransform().LocalToGlobal(c);
-
-							// render the fiber
-							RenderFiber(po, pmat, rel, c, h);
-						}
-					}
-				}
-			}
-		}
-	}
-	glEnd(); // GL_LINES
-
-	glPopAttrib();
-}
-
-void CGLView::RenderLocalMaterialAxes()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	// get the model
-	FEModel* ps = pdoc->GetFEModel();
-	GModel& model = ps->GetModel();
-
-	FEElementRef rel;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	BOX box = model.GetBoundingBox();
-	double h = 0.05*box.GetMaxExtent()*view.m_fiber_scale;
-
-	double rgb[3][3] = { 255, 0, 0, 0, 255, 0, 0, 0, 255 };
-
-	for (int i = 0; i<model.Objects(); ++i)
-	{
-		GObject* po = model.Object(i);
-		if (po->IsVisible())
-		{
-			FEMesh* pm = po->GetFEMesh();
-			if (pm)
-			{
-				Transform& T = po->GetTransform();
-				rel.m_pmesh = pm;
-				for (int j = 0; j<pm->Elements(); ++j)
-				{
-					FEElement& el = pm->Element(j);
-
-					GPart* pg = po->Part(el.m_gid);
-
-					bool showAxes = (pg->IsVisible() && el.IsVisible()) || view.m_showHiddenFibers;
-
-					if (showAxes)
-					{
-						GMaterial* pgm = ps->GetMaterialFromID(po->Part(el.m_gid)->GetMaterialID());
-						FEMaterial* pmat = 0;
-						if (pgm) pmat = pgm->GetMaterialProperties();
-
-						rel.m_nelem = j;
-						if (el.m_Qactive)
-						{
-							vec3d c(0, 0, 0);
-							for (int k = 0; k<el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);
-							c /= el.Nodes();
-
-							mat3d Q = el.m_Q;
-							vec3d q;
-							for (int k = 0; k<3; ++k) {
-								q = vec3d(Q[0][k], Q[1][k], Q[2][k]);
-
-								q = T.LocalToGlobalNormal(q);
-
-								glColor3ub(rgb[0][k], rgb[1][k], rgb[2][k]);
-
-								glx::drawLine(c, c + q*h);
-							}
-						}
-						else if (pmat)
-						{
-							vec3d c(0, 0, 0);
-							for (int k = 0; k<el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);
-							c /= el.Nodes();
-
-							mat3d Q = pmat->GetMatAxes(rel);
-							vec3d q;
-							for (int k = 0; k<3; ++k) {
-								q = vec3d(Q[0][k], Q[1][k], Q[2][k]);
-
-								glColor3ub(rgb[0][k], rgb[1][k], rgb[2][k]);
-
-								glx::drawLine(c, c + q*h);
-							}
-						}
-					}
-				}
-			}
-		}
-	}
-
-	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
@@ -3145,406 +2344,6 @@ void CGLView::RenderRubberBand()
 	}
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glPopAttrib();
-}
-
-
-void CGLView::RenderRigidWalls()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	FEModel* ps = pdoc->GetFEModel();
-	BOX box = ps->GetModel().GetBoundingBox();
-	double R = box.GetMaxExtent();
-	vec3d c = box.Center();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
-	for (int n = 0; n<ps->Steps(); ++n)
-	{
-		FEStep& s = *ps->GetStep(n);
-		for (int i = 0; i<s.Interfaces(); ++i)
-		{
-			FERigidWallInterface* pi = dynamic_cast<FERigidWallInterface*>(s.Interface(i));
-			if (pi)
-			{
-				// get the plane equation
-				double a[4];
-				pi->GetPlaneEquation(a);
-				vec3d n(a[0], a[1], a[2]);
-				double D = a[3];
-				vec3d r0 = n*(D / (n*n));
-
-				// project the center of the box onto the plane
-				n.Normalize();
-				vec3d p = c - n*(n*(c - r0));
-
-				quatd q(vec3d(0, 0, 1), n);
-				glPushMatrix();
-				{
-					glTranslated(p.x, p.y, p.z);
-					glx::rotate(q);
-					glColor4ub(128, 96, 0, 96);
-					glRectd(-R, -R, R, R);
-
-					glColor3ub(164, 128, 0);
-					glBegin(GL_LINE_LOOP);
-					{
-						glVertex3d(-R, -R, 0);
-						glVertex3d(R, -R, 0);
-						glVertex3d(R, R, 0);
-						glVertex3d(-R, R, 0);
-					}
-					glEnd();
-					glBegin(GL_LINES);
-					{
-						glVertex3d(0, 0, 0); glVertex3d(0, 0, R / 2);
-						glVertex3d(0, 0, R / 2); glVertex3d(-R*0.1, 0, R*0.4);
-						glVertex3d(0, 0, R / 2); glVertex3d(R*0.1, 0, R*0.4);
-					}
-					glEnd();
-				}
-				glPopMatrix();
-			}
-			FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(s.Interface(i));
-			if (prs)
-			{
-				vec3d c = prs->Center();
-				double R = prs->Radius();
-
-				GLUquadricObj* pobj = gluNewQuadric();
-
-				glColor4ub(128, 96, 0, 96);
-				glPushMatrix();
-				{
-					glTranslated(c.x, c.y, c.z);
-					gluSphere(pobj, R, 32, 32);
-				}
-				glPopMatrix();
-
-				gluDeleteQuadric(pobj);
-			}
-		}
-	}
-
-	glPopAttrib();
-}
-
-void CGLView::RenderRigidJoints()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
-
-	FEModel* ps = pdoc->GetFEModel();
-
-	double scale = 0.05*(double)cam.GetTargetDistance();
-	double R = 0.5*scale;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 0, 0);
-
-	for (int n = 0; n<ps->Steps(); ++n)
-	{
-		FEStep& s = *ps->GetStep(n);
-		for (int i = 0; i<s.Interfaces(); ++i)
-		{
-			FERigidJoint* pj = dynamic_cast<FERigidJoint*> (s.Interface(i));
-			if (pj)
-			{
-				vec3d r = pj->GetVecValue(FERigidJoint::RJ);
-
-				glColor3ub(255, 0, 0);
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glx::renderJoint(R);
-				glPopMatrix();
-			}
-		}
-	}
-
-	glPopAttrib();
-}
-
-void CGLView::RenderRigidConnectors()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
-
-	FEModel* ps = pdoc->GetFEModel();
-
-	double scale = 0.05*(double)cam.GetTargetDistance();
-	double R = 0.5*scale;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(0, 0, 255);
-
-	for (int n = 0; n<ps->Steps(); ++n)
-	{
-		FEStep& s = *ps->GetStep(n);
-		for (int i = 0; i<s.RigidConnectors(); ++i)
-		{
-			FERigidConnector* rci = s.RigidConnector(i);
-			if (dynamic_cast<FERigidSphericalJoint*> (rci))
-			{
-				FERigidSphericalJoint* pj = dynamic_cast<FERigidSphericalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidSphericalJoint::J_ORIG);
-
-				glColor3ub(255, 0, 0);
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glx::renderJoint(R);
-				glPopMatrix();
-			}
-			else if (dynamic_cast<FERigidRevoluteJoint*> (rci))
-			{
-				FERigidRevoluteJoint* pj = dynamic_cast<FERigidRevoluteJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidRevoluteJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidRevoluteJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidRevoluteJoint::T_AXIS); a.Normalize();
-				vec3d b = c ^ a; b.Normalize();
-				a = b ^ c; a.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
-					0.f, 0.f, 0.f, 1.f };
-
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
-
-				glColor3ub(0, 0, 255);
-				glx::renderRevoluteJoint(R);
-
-				glPopMatrix();
-			}
-			else if (dynamic_cast<FERigidPrismaticJoint*> (rci))
-			{
-				FERigidPrismaticJoint* pj = dynamic_cast<FERigidPrismaticJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidPrismaticJoint::J_ORIG);
-				vec3d a = pj->GetVecValue(FERigidPrismaticJoint::J_AXIS); a.Normalize();
-				vec3d b = pj->GetVecValue(FERigidPrismaticJoint::T_AXIS); b.Normalize();
-				vec3d c = a ^ b; c.Normalize();
-				b = c ^ a; b.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
-					0.f, 0.f, 0.f, 1.f };
-
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
-
-				glColor3ub(0, 255, 0);
-				glx::renderPrismaticJoint(R);
-
-				glPopMatrix();
-			}
-			else if (dynamic_cast<FERigidCylindricalJoint*> (rci))
-			{
-				FERigidCylindricalJoint* pj = dynamic_cast<FERigidCylindricalJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidCylindricalJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidCylindricalJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidCylindricalJoint::T_AXIS); a.Normalize();
-				vec3d b = c ^ a; b.Normalize();
-				a = b ^ c; a.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
-					0.f, 0.f, 0.f, 1.f };
-
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
-
-				glColor3ub(255, 0, 255);
-				glx::renderCylindricalJoint(R);
-
-				glPopMatrix();
-			}
-			else if (dynamic_cast<FERigidPlanarJoint*> (rci))
-			{
-				FERigidPlanarJoint* pj = dynamic_cast<FERigidPlanarJoint*> (rci);
-				vec3d r = pj->GetVecValue(FERigidPlanarJoint::J_ORIG);
-				vec3d c = pj->GetVecValue(FERigidPlanarJoint::J_AXIS); c.Normalize();
-				vec3d a = pj->GetVecValue(FERigidPlanarJoint::T_AXIS); a.Normalize();
-				vec3d b = c ^ a; b.Normalize();
-				a = b ^ c; a.Normalize();
-				GLfloat Q4[16] = {
-					(GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-					(GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-					(GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
-					0.f, 0.f, 0.f, 1.f };
-
-				glPushMatrix();
-				glTranslatef((float)r.x, (float)r.y, (float)r.z);
-				glMultMatrixf(Q4);
-
-				glColor3ub(0, 255, 255);
-				glx::renderPlanarJoint(R);
-
-				glPopMatrix();
-			}
-            else if (dynamic_cast<FERigidLock*> (rci))
-            {
-                FERigidLock* pj = dynamic_cast<FERigidLock*> (rci);
-                vec3d r = pj->GetVecValue(FERigidLock::J_ORIG);
-                vec3d c = pj->GetVecValue(FERigidLock::J_AXIS); c.Normalize();
-                vec3d a = pj->GetVecValue(FERigidLock::T_AXIS); a.Normalize();
-                vec3d b = c ^ a; b.Normalize();
-                a = b ^ c; a.Normalize();
-                GLfloat Q4[16] = {
-                    (GLfloat)a.x, (GLfloat)a.y, (GLfloat)a.z, 0.f,
-                    (GLfloat)b.x, (GLfloat)b.y, (GLfloat)b.z, 0.f,
-                    (GLfloat)c.x, (GLfloat)c.y, (GLfloat)c.z, 0.f,
-                    0.f, 0.f, 0.f, 1.f };
-                
-                glPushMatrix();
-                glTranslatef((float)r.x, (float)r.y, (float)r.z);
-                glMultMatrixf(Q4);
-                
-				glColor3ub(255, 127, 0);
-
-				glx::renderRigidLock(R);
-                
-                glPopMatrix();
-            }
-			else if (dynamic_cast<FERigidSpring*> (rci))
-			{
-				FERigidSpring* pj = dynamic_cast<FERigidSpring*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidSpring::XA);
-				vec3d xb = pj->GetVecValue(FERigidSpring::XB);
-
-				glPushMatrix();
-				glColor3ub(255, 0, 0);
-				glx::renderSpring(xa, xb, R);
-				glPopMatrix();
-			}
-			else if (dynamic_cast<FERigidDamper*> (rci))
-			{
-				FERigidDamper* pj = dynamic_cast<FERigidDamper*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidDamper::XA);
-				vec3d xb = pj->GetVecValue(FERigidDamper::XB);
-
-				glPushMatrix();
-
-				glColor3ub(255, 0, 0);
-				glx::renderDamper(xa, xb, R);
-
-				glPopMatrix();
-			}
-			else if (dynamic_cast<FERigidContractileForce*> (rci))
-			{
-				FERigidContractileForce* pj = dynamic_cast<FERigidContractileForce*> (rci);
-				vec3d xa = pj->GetVecValue(FERigidContractileForce::XA);
-				vec3d xb = pj->GetVecValue(FERigidContractileForce::XB);
-
-				glPushMatrix();
-
-				glColor3ub(255, 0, 0);
-				glx::renderContractileForce(xa, xb, R);
-
-				glPopMatrix();
-			}
-		}
-	}
-
-	glPopAttrib();
-}
-
-
-void CGLView::RenderRigidBodies()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
-
-	FEModel* ps = pdoc->GetFEModel();
-
-	double scale = 0.03*(double)cam.GetTargetDistance();
-	double R = 0.5*scale;
-
-	quatd qi = cam.GetOrientation().Inverse();
-
-	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
-	for (int i = 0; i<ps->Materials(); ++i)
-	{
-		GMaterial* pm = ps->GetMaterial(i);
-		FERigidMaterial* pb = dynamic_cast<FERigidMaterial*> (pm->GetMaterialProperties());
-		if (pb)
-		{
-			GLColor c = pm->Diffuse();
-
-			glColor3ub(c.r, c.g, c.b);
-
-			vec3d r = pb->GetVecValue(FERigidMaterial::MP_RC);
-
-			glPushMatrix();
-			glTranslatef((float)r.x, (float)r.y, (float)r.z);
-
-			glx::renderRigidBody(R);
-
-			glPopMatrix();
-
-			// get the parent
-			if (pb->m_pid != -1)
-			{
-				FERigidMaterial* pp = dynamic_cast<FERigidMaterial*>(ps->GetMaterialFromID(pb->m_pid)->GetMaterialProperties());
-				assert(pp);
-
-				glColor3ub(50, 50, 255);
-				vec3d r0 = pb->GetVecValue(FERigidMaterial::MP_RC);
-				vec3d r1 = pp->GetVecValue(FERigidMaterial::MP_RC);
-
-				double l = (r1 - r0).Length();
-				vec3d el = r0 - r1; el.Normalize();
-
-				quatd q(vec3d(0, 0, 1), el);
-				glPushMatrix();
-				{
-					glTranslated(r1.x, r1.y, r1.z);
-					glx::rotate(q);
-
-					vec3d e2 = q*vec3d(0, 0, 1);
-
-					double a = l*0.25;
-					double b = a*0.25;
-					glBegin(GL_LINES);
-					{
-						glVertex3d(0, 0, 0); glVertex3d(b, b, a); glVertex3d(b, b, a); glVertex3d(0, 0, l);
-						glVertex3d(0, 0, 0); glVertex3d(-b, b, a); glVertex3d(-b, b, a); glVertex3d(0, 0, l);
-						glVertex3d(0, 0, 0); glVertex3d(-b, -b, a); glVertex3d(-b, -b, a); glVertex3d(0, 0, l);
-						glVertex3d(0, 0, 0); glVertex3d(b, -b, a); glVertex3d(b, -b, a); glVertex3d(0, 0, l);
-						glVertex3d(b, b, a); glVertex3d(-b, b, a);
-						glVertex3d(-b, b, a); glVertex3d(-b, -b, a);
-						glVertex3d(-b, -b, a); glVertex3d(b, -b, a);
-						glVertex3d(b, -b, a); glVertex3d(b, b, a);
-					}
-					glEnd();
-				}
-				glPopMatrix();
-			}
-		}
-	}
-
 	glPopAttrib();
 }
 
@@ -3766,6 +2565,12 @@ void CGLView::ShowPlaneCut(bool b)
 }
 
 //-----------------------------------------------------------------------------
+bool CGLView::ShowPlaneCut() const
+{
+	return m_showPlaneCut;
+}
+
+//-----------------------------------------------------------------------------
 void CGLView::SetPlaneCutMode(int nmode)
 {
 	m_planeCutMode = nmode;
@@ -3784,10 +2589,27 @@ void CGLView::SetPlaneCut(double d[4])
 	double R = box.GetMaxExtent();
 	if (R < 1e-12) R = 1.0;
 
-	vec3d n(d[0], d[1], d[2]); n.Normalize();
+	vec3d n(d[0], d[1], d[2]);
 
-	double d0 = box.r0()*n;
-	double d1 = box.r1()*n;
+	vec3d a = box.r0();
+	vec3d b = box.r1();
+	vec3d r[8];
+	r[0] = vec3d(a.x, a.y, a.z);
+	r[1] = vec3d(b.x, a.y, a.z);
+	r[2] = vec3d(b.x, b.y, a.z);
+	r[3] = vec3d(a.x, b.y, a.z);
+	r[4] = vec3d(a.x, a.y, b.z);
+	r[5] = vec3d(b.x, a.y, b.z);
+	r[6] = vec3d(b.x, b.y, b.z);
+	r[7] = vec3d(a.x, b.y, b.z);
+	double d0 = n * r[0];
+	double d1 = d0;
+	for (int i = 1; i < 8; ++i)
+	{
+		double d = n * r[i];
+		if (d < d0) d0 = d;
+		if (d > d1) d1 = d;
+	}
 
 	double d3 = d0 + 0.5*(d[3] + 1)*(d1 - d0);
 
@@ -3883,7 +2705,7 @@ void CGLView::SelectObjects(int x, int y)
 
 	makeCurrent();
 
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// convert the point to a ray
@@ -3938,7 +2760,7 @@ void CGLView::SelectParts(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Parts() == 0) return;
@@ -3951,6 +2773,7 @@ void CGLView::SelectParts(int x, int y)
 	GPart* closestPart = 0;
 	Intersection q;
 	double minDist = 0;
+	double* a = m_plane;
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -3971,35 +2794,38 @@ void CGLView::SelectParts(int x, int y)
 					Triangle tri = { r0, r1, r2 };
 					if (IntersectTriangle(ray, tri, q))
 					{
-						double distance = ray.direction*(q.point - ray.origin);
-						if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
+						if ((m_showPlaneCut == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
 						{
-							GFace* gface = po->Face(face.pid);
-							int pid = gface->m_nPID[0];
-							GPart* part = po->Part(pid);
-							if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+							double distance = ray.direction * (q.point - ray.origin);
+							if ((closestPart == 0) || ((distance >= 0.0) && (distance < minDist)))
 							{
-								closestPart = part;
-								minDist = distance;
-							}
-							else if (gface->m_nPID[1] >= 0)
-							{
-								pid = gface->m_nPID[1];
-								part = po->Part(pid);
+								GFace* gface = po->Face(face.pid);
+								int pid = gface->m_nPID[0];
+								GPart* part = po->Part(pid);
 								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
 								{
 									closestPart = part;
 									minDist = distance;
 								}
-							}
-							else if (gface->m_nPID[2] >= 0)
-							{
-								pid = gface->m_nPID[2];
-								part = po->Part(pid);
-								if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+								else if (gface->m_nPID[1] >= 0)
 								{
-									closestPart = part;
-									minDist = distance;
+									pid = gface->m_nPID[1];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
+								}
+								else if (gface->m_nPID[2] >= 0)
+								{
+									pid = gface->m_nPID[2];
+									part = po->Part(pid);
+									if (part->IsVisible() && ((part->IsSelected() == false) || (m_bctrl)))
+									{
+										closestPart = part;
+										minDist = distance;
+									}
 								}
 							}
 						}
@@ -4037,7 +2863,7 @@ void CGLView::SelectSurfaces(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Surfaces() == 0) return;
@@ -4047,6 +2873,7 @@ void CGLView::SelectSurfaces(int x, int y)
 	GLViewTransform transform(this);
 	Ray ray = transform.PointToRay(x, y);
 
+	double* a = m_plane;
 	GFace* closestSurface = 0;
 	Intersection q;
 	double minDist = 0;
@@ -4074,15 +2901,18 @@ void CGLView::SelectSurfaces(int x, int y)
 						Triangle tri = {r0, r1, r2};
 						if (IntersectTriangle(ray, tri, q))
 						{
-							double distance = ray.direction*(q.point - ray.origin);
-							if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
+							if ((m_showPlaneCut == false) || (q.point.x * a[0] + q.point.y * a[1] + q.point.z * a[2] + a[3] > 0))
 							{
-								if ((gface->IsSelected() == false) || (m_bctrl))
+								double distance = ray.direction * (q.point - ray.origin);
+								if ((closestSurface == 0) || ((distance >= 0.0) && (distance < minDist)))
 								{
-									closestSurface = po->Face(face.pid);
-									minDist = distance;
+									if ((gface->IsSelected() == false) || (m_bctrl))
+									{
+										closestSurface = po->Face(face.pid);
+										minDist = distance;
+									}
 								}
-							}					
+							}
 						}
 					}
 				}
@@ -4115,7 +2945,7 @@ void CGLView::SelectEdges(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int NE = model.Edges();
@@ -4128,6 +2958,8 @@ void CGLView::SelectEdges(int x, int y)
 	int Y = y;
 	int S = 4;
 	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	double* a = m_plane;
 
 	int Objects = model.Objects();
 	GEdge* closestEdge = 0;
@@ -4148,15 +2980,21 @@ void CGLView::SelectEdges(int x, int y)
 					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
 					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
 
-					vec3d p0 = transform.WorldToScreen(r0);
-					vec3d p1 = transform.WorldToScreen(r1);
+					double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+					double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
 
-					if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+					if ((m_showPlaneCut == false) || ((d0 > 0) || (d1 > 0)))
 					{
-						if ((closestEdge == 0) || (p0.z < zmin))
+						vec3d p0 = transform.WorldToScreen(r0);
+						vec3d p1 = transform.WorldToScreen(r1);
+
+						if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
 						{
-							closestEdge = po->Edge(edge.pid);
-							zmin = p0.z;
+							if ((closestEdge == 0) || (p0.z < zmin))
+							{
+								closestEdge = po->Edge(edge.pid);
+								zmin = p0.z;
+							}
 						}
 					}
 				}			
@@ -4189,7 +3027,7 @@ void CGLView::HighlightEdge(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// set up selection buffer
@@ -4255,7 +3093,7 @@ void CGLView::SelectNodes(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int X = x;
@@ -4270,6 +3108,7 @@ void CGLView::SelectNodes(int x, int y)
 	if (NN == 0) return;
 	GNode* closestNode = 0;
 	double zmin = 0.0;
+	double* a = m_plane;
 	for (int i=0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -4285,14 +3124,16 @@ void CGLView::SelectNodes(int x, int y)
 				{
 					vec3d r = node.Position();
 
-					vec3d p = transform.WorldToScreen(r);
-
-					if (rt.contains(QPoint((int)p.x, (int)p.y)))
+					if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0))
 					{
-						if ((closestNode == 0) || (p.z < zmin))
+						vec3d p = transform.WorldToScreen(r);
+						if (rt.contains(QPoint((int)p.x, (int)p.y)))
 						{
-							closestNode = &node;
-							zmin = p.z;
+							if ((closestNode == 0) || (p.z < zmin))
+							{
+								closestNode = &node;
+								zmin = p.z;
+							}
 						}
 					}
 				}
@@ -4326,7 +3167,7 @@ void CGLView::SelectDiscrete(int x, int y)
 	VIEW_SETTINGS& view = GetViewSettings();
 
 	// get the fe model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int ND = model.DiscreteObjects();
@@ -4469,7 +3310,7 @@ void CGLView::SelectFEElements(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// convert the point to a ray
 	makeCurrent();
@@ -4537,7 +3378,7 @@ void CGLView::SelectFEElements(int x, int y)
 			if (pe->IsShell())
 			{
 				assert(pe->m_face[0] >= 0);
-				t = pm->Face(pe->m_face[0]).m_fn; tr = cos(PI*view.m_fconn / 180.0);
+				t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI*view.m_fconn / 180.0);
 			}
 
 			// get the respect partition boundary flag
@@ -4563,7 +3404,7 @@ void CGLView::SelectFEElements(int x, int y)
 							int fid2 = -1;
 							if (pe->m_face[i] >= 0)
 							{
-								FEFace& f2 = pm->Face(pe->m_face[i]);
+								FSFace& f2 = pm->Face(pe->m_face[i]);
 								fid2 = f2.m_gid;
 							}
 
@@ -4621,10 +3462,10 @@ void CGLView::SelectFEElements(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_ELEM[num].m_val;
-						FEElement& el = pm->Element(num);
+						FSElement& el = pm->Element(num);
 						QString txt = QString("Element %1 : %2\n").arg(el.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -4648,8 +3489,8 @@ void CGLView::SelectFEElements(int x, int y)
 		int NE = pm->Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& del = pm->Element(i);
-			if (del.IsBeam())
+			FSElement& del = pm->Element(i);
+			if (del.IsBeam() && del.IsVisible())
 			{
 				vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
 				vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[1]).r);
@@ -4703,7 +3544,7 @@ void CGLView::SelectFEFaces(int x, int y)
 	if (po == 0) return;
 
 	// get the FE mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
 	// convert the point to a ray
@@ -4718,7 +3559,23 @@ void CGLView::SelectFEFaces(int x, int y)
 	// find the intersection
 	Intersection q;
 	CCommand* pcmd = 0;
-	if (FindFaceIntersection(ray, *pm, q))
+
+	bool bfound = FindFaceIntersection(ray, *pm, q);
+
+	if (bfound && m_planeCut)
+	{
+		vec3d p = po->GetTransform().LocalToGlobal(q.point);
+
+		// see if the intersection lies behind the plane cut. 
+		double* a = m_plane;
+		double d = p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3];
+		if (d < 0)
+		{
+			bfound = false;
+		}
+	}
+
+	if (bfound)
 	{
 		int index = q.m_index;
 		if (view.m_bconn)
@@ -4743,10 +3600,10 @@ void CGLView::SelectFEFaces(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_FACE[index].m_val;
-						FEFace& face = pm->Face(index);
+						FSFace& face = pm->Face(index);
 						QString txt = QString("Face %1 : %2\n").arg(face.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -4778,7 +3635,7 @@ void CGLView::SelectFEEdges(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int X = x;
@@ -4791,25 +3648,36 @@ void CGLView::SelectFEEdges(int x, int y)
 
 	vec3d o(0,0,0);
 	vec3d O = transform.WorldToScreen(o);
+	double* a = m_plane;
 
 	int index = -1;
 	float zmin = 0.f;
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
 		vec3d p0 = transform.WorldToScreen(r0);
 		vec3d p1 = transform.WorldToScreen(r1);
 
-		// make sure p0, p1 are in front of the camers
+		// make sure p0, p1 are in front of the camera
 		if (((p0.x >= 0) || (p1.x >= 0)) && ((p0.y >= 0) || (p1.y >= 0)) && 
 			(p0.z > -1) && (p0.z < 1) && (p1.z > -1) && (p1.z < 1))
 			{
 				// see if the edge intersects
-				if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+				bool bfound = intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt);
+
+				if (bfound && m_planeCut)
+				{
+					// make sure one point is in front of plane
+					double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+					double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
+					if ((d0 < 0) && (d1 < 0)) bfound = false;
+				}
+				
+				if (bfound)
 				{
 					if ((index == -1) || (p0.z < zmin))
 					{
@@ -4830,12 +3698,12 @@ void CGLView::SelectFEEdges(int x, int y)
 			int m = 0;
 
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FEEdge*> stack;
+			std::stack<FSEdge*> stack;
 
-			FENodeEdgeList NEL(pm);
+			FSNodeEdgeList NEL(pm);
 
 			// push the first face to the stack
-			FEEdge* pe = pm->EdgePtr(index);
+			FSEdge* pe = pm->EdgePtr(index);
 			pint[m++] = index;
 			pe->m_ntag = -1;
 			stack.push(pe);
@@ -4863,7 +3731,7 @@ void CGLView::SelectFEEdges(int x, int y)
 						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
 						if (edgeID >= 0)
 						{
-							FEEdge* pe2 = pm->EdgePtr(edgeID);
+							FSEdge* pe2 = pm->EdgePtr(edgeID);
 							vec3d& r0 = pm->Node(pe2->n[0]).r;
 							vec3d& r1 = pm->Node(pe2->n[1]).r;
 							vec3d t2 = r1 - r0; t2.Normalize();
@@ -4896,10 +3764,10 @@ void CGLView::SelectFEEdges(int x, int y)
 					Post::CGLColorMap* cmap = postDoc->GetGLModel()->GetColorMap();
 					if (cmap && cmap->IsActive())
 					{
-						Post::FEPostModel* fem = postDoc->GetFEModel();
+						Post::FEPostModel* fem = postDoc->GetFSModel();
 						Post::FEState* state = fem->CurrentState();
 						double val = state->m_EDGE[num].m_val;
-						FEEdge& ed = pm->Edge(num);
+						FSEdge& ed = pm->Edge(num);
 						QString txt = QString("Edge %1 : %2\n").arg(ed.m_nid).arg(val);
 						m_pWnd->AddLogEntry(txt);
 					}
@@ -4932,7 +3800,7 @@ void CGLView::SelectSurfaceFaces(int x, int y)
 	if (po == 0) return;
 
 	// get the surface mesh
-	FEMeshBase* pm = po->GetSurfaceMesh();
+	FSMeshBase* pm = po->GetSurfaceMesh();
 	if (pm == 0) return;
 
 	// convert the point to a ray
@@ -4981,7 +3849,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FELineMesh* pm = po->GetEditableLineMesh();
+	FSLineMesh* pm = po->GetEditableLineMesh();
 
 	int X = x;
 	int Y = y;
@@ -4999,7 +3867,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 		vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
@@ -5032,12 +3900,12 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 			int m = 0;
 
 			for (int i = 0; i<pm->Edges(); ++i) pm->Edge(i).m_ntag = i;
-			std::stack<FEEdge*> stack;
+			std::stack<FSEdge*> stack;
 
-			FENodeEdgeList NEL(pm);
+			FSNodeEdgeList NEL(pm);
 
 			// push the first face to the stack
-			FEEdge* pe = pm->EdgePtr(index);
+			FSEdge* pe = pm->EdgePtr(index);
 			pint[m++] = index;
 			pe->m_ntag = -1;
 			stack.push(pe);
@@ -5065,7 +3933,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 						int edgeID = NEL.Edge(pe->n[i], j)->m_ntag;
 						if (edgeID >= 0)
 						{
-							FEEdge* pe2 = pm->EdgePtr(edgeID);
+							FSEdge* pe2 = pm->EdgePtr(edgeID);
 							vec3d& r0 = pm->Node(pe2->n[0]).r;
 							vec3d& r1 = pm->Node(pe2->n[1]).r;
 							vec3d t2 = r1 - r0; t2.Normalize();
@@ -5110,8 +3978,8 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
-	FELineMesh* lineMesh = po->GetEditableLineMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
+	FSLineMesh* lineMesh = po->GetEditableLineMesh();
 	if (lineMesh == 0) return;
 
 	int X = x;
@@ -5127,7 +3995,7 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	int NN = lineMesh->Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = lineMesh->Node(i);
+		FSNode& node = lineMesh->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(lineMesh->Node(i).r);
@@ -5154,14 +4022,14 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 
 			if (view.m_bselpath == false)
 			{
-				TagConnectedNodes(pm, index);
+				MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
 				lastIndex = -1;
 			}
 			else
 			{
 				if ((lastIndex != -1) && (lastIndex != index))
 				{
-					TagNodesByShortestPath(pm, lastIndex, index);
+					MeshTools::TagNodesByShortestPath(pm, lastIndex, index);
 					lastIndex = index;
 				}
 				else
@@ -5240,7 +4108,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 		vec3d rl = po->GetTransform().GlobalToLocal(ray.origin);
 		vec3d nl = po->GetTransform().GlobalToLocalNormal(ray.direction);
 
-		FEMeshBase* mesh = po->GetEditableMesh();
+		FSMeshBase* mesh = po->GetEditableMesh();
 		vec3d q;
 		if (FindIntersection(*mesh, rl, nl, q, view.m_snapToNode))
 		{
@@ -5273,7 +4141,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 	if (model.Objects() == 0) return;
 
@@ -5345,7 +4213,7 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	if (model.Parts() == 0) return;
@@ -5413,7 +4281,7 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	int nSurfaces = model.Surfaces();
@@ -5479,7 +4347,7 @@ void CGLView::RegionSelectEdges(const SelectRegion& region)
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = pdoc->GetFEModel();
+	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5536,12 +4404,13 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
 	makeCurrent();
 	GLViewTransform transform(this);
+	double* a = m_plane;
 
 	vector<int> selectedNodes;
 	for (int i=0; i<model.Objects(); ++i)
@@ -5557,11 +4426,15 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 				if (node->Type() != NODE_SHAPE)
 				{
 					vec3d r = node->Position();
-					vec3d p = transform.WorldToScreen(r);
 
-					if (region.IsInside((int)p.x, (int)p.y))
+					if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 					{
-						selectedNodes.push_back(node->GetID());
+						vec3d p = transform.WorldToScreen(r);
+
+						if (region.IsInside((int)p.x, (int)p.y))
+						{
+							selectedNodes.push_back(node->GetID());
+						}
 					}
 				}
 			}
@@ -5584,7 +4457,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
-	FEModel* ps = doc->GetFEModel();
+	FSModel* ps = doc->GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// activate the gl rendercontext
@@ -5626,7 +4499,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingNodes(FEMeshBase& mesh)
+void CGLView::TagBackfacingNodes(FSMeshBase& mesh)
 {
 	int NN = mesh.Nodes();
 	for (int i = 0; i<NN; ++i) mesh.Node(i).m_ntag = 1;
@@ -5637,7 +4510,7 @@ void CGLView::TagBackfacingNodes(FEMeshBase& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		if (f.m_ntag == 0)
 		{
 			int nn = f.Nodes();
@@ -5659,8 +4532,8 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
-	FELineMesh* lineMesh = po->GetEditableLineMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
+	FSLineMesh* lineMesh = po->GetEditableLineMesh();
 	if (lineMesh == 0) return;
 
 	makeCurrent();
@@ -5669,7 +4542,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	if (pm)
 	{
 		// ignore exterior option for surface meshes
-		if (view.m_bext || (dynamic_cast<FESurfaceMesh*>(pm)))
+		if (view.m_bext || (dynamic_cast<FSSurfaceMesh*>(pm)))
 		{
 			if (view.m_bcullSel)
 			{
@@ -5681,7 +4554,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 				// tag all exterior nodes
 				for (int i = 0; i < pm->Nodes(); ++i)
 				{
-					FENode& node = pm->Node(i);
+					FSNode& node = pm->Node(i);
 					if (node.IsExterior()) node.m_ntag = 0;
 					else node.m_ntag = -1;
 				}
@@ -5692,19 +4565,24 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	}
 	else lineMesh->TagAllNodes(0);
 
+	double* a = m_plane;
+
 	vector<int> selectedNodes;
 	for (int i = 0; i<lineMesh->Nodes(); ++i)
 	{
-		FENode& node = lineMesh->Node(i);
+		FSNode& node = lineMesh->Node(i);
 		if (node.IsVisible() && (node.m_ntag == 0))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
 
-			vec3d p = transform.WorldToScreen(r);
-
-			if (region.IsInside((int)p.x, (int)p.y))
+			if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] >= 0.0))
 			{
-				selectedNodes.push_back(i);
+				vec3d p = transform.WorldToScreen(r);
+
+				if (region.IsInside((int)p.x, (int)p.y))
+				{
+					selectedNodes.push_back(i);
+				}
 			}
 		}
 	}
@@ -5722,14 +4600,14 @@ bool IsBackfacing(const vec3d r[3])
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingElements(FEMesh& mesh)
+void CGLView::TagBackfacingElements(FSMesh& mesh)
 {
 	GLViewTransform transform(this);
 	vec3d r[4], p1[3], p2[3];
 	int NE = mesh.Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		el.m_ntag = 0;
 
 		// make sure the element is visible
@@ -5745,10 +4623,10 @@ void CGLView::TagBackfacingElements(FEMesh& mesh)
 			el.m_ntag = 1;
 			for (int j = 0; j<NF; ++j)
 			{
-				FEElement* pj = (el.m_nbr[j] != -1 ? &mesh.Element(el.m_nbr[j]) : 0);
+				FSElement* pj = (el.m_nbr[j] != -1 ? &mesh.Element(el.m_nbr[j]) : 0);
 				if ((pj == 0) || (pj->IsVisible() == false))
 				{
-					FEFace f = el.GetFace(j);
+					FSFace f = el.GetFace(j);
 					switch (f.Type())
 					{
 					case FE_FACE_TRI3:
@@ -5800,10 +4678,10 @@ void CGLView::TagBackfacingElements(FEMesh& mesh)
 			// shells 
 			if (el.IsShell())
 			{
-				FEFace* pf = mesh.FacePtr(el.m_face[0]);
+				FSFace* pf = mesh.FacePtr(el.m_face[0]);
 				if (pf)
 				{
-					FEFace& f = *pf;
+					FSFace& f = *pf;
 					switch (f.Type())
 					{
 					case FE_FACE_TRI3:
@@ -5867,7 +4745,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -5878,12 +4756,14 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 		TagBackfacingElements(*pm);
 	}
 	else pm->TagAllElements(0);
+	
+	double* a = m_plane;
 
 	vector<int> selectedElements;
 	int NE = pm->Elements();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 
 		// if the exterior-only flag is off, make sure all solids are selectable
 		if ((view.m_bext == false) && el.IsSolid()) el.m_ntag = 0;
@@ -5898,11 +4778,15 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 				for (int j = 0; j<ne; ++j)
 				{
 					vec3d r = po->GetTransform().LocalToGlobal(pm->Node(el.m_node[j]).r);
-					vec3d p = transform.WorldToScreen(r);
-					if (region.IsInside((int)p.x, (int)p.y))
+
+					if ((m_showPlaneCut == false) || (r.x * a[0] + r.y * a[1] + r.z * a[2] + a[3] > 0))
 					{
-						binside = true;
-						break;
+						vec3d p = transform.WorldToScreen(r);
+						if (region.IsInside((int)p.x, (int)p.y))
+						{
+							binside = true;
+							break;
+						}
 					}
 				}
 
@@ -5923,7 +4807,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 
 
 //-----------------------------------------------------------------------------
-bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FEFace& face, FEMeshBase* pm)
+bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region, FSFace& face, FSMeshBase* pm)
 {
 	if (pm == 0) return false;
 
@@ -5972,7 +4856,7 @@ bool regionFaceIntersect(GLViewTransform& transform, const SelectRegion& region,
 	return binside;
 }
 
-void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
+void CGLView::TagBackfacingFaces(FSMeshBase& mesh)
 {
 	GLViewTransform transform(this);
 
@@ -5980,7 +4864,7 @@ void CGLView::TagBackfacingFaces(FEMeshBase& mesh)
 	int NF = mesh.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		if (f.IsExterior())
 		{
@@ -6043,7 +4927,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -6060,7 +4944,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 		// tag exterior faces only 
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			if (f.IsExterior()) f.m_ntag = 0;
 			else f.m_ntag = -1;
 		}
@@ -6079,10 +4963,29 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	int NF = pm->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsVisible() && vis[face.m_gid] && (face.m_ntag == 0))
 		{
-			if (regionFaceIntersect(transform, region, face, pm))
+			bool b = regionFaceIntersect(transform, region, face, pm);
+
+			if (b && m_showPlaneCut)
+			{
+				double* a = m_plane;
+				b = false;
+				vec3d r[FSFace::MAX_NODES];
+				pm->FaceNodePosition(face, r);
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					vec3d p = pm->LocalToGlobal(r[j]);
+					if (p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3] > 0)
+					{
+						b = true;
+						break;
+					}
+				}
+			}
+
+			if (b)
 			{
 				selectedFaces.push_back(i);
 			}
@@ -6096,7 +4999,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::TagBackfacingEdges(FEMeshBase& mesh)
+void CGLView::TagBackfacingEdges(FSMeshBase& mesh)
 {
 	int NE = mesh.Edges();
 	for (int i = 0; i<NE; ++i) mesh.Edge(i).m_ntag = 1;
@@ -6105,7 +5008,7 @@ void CGLView::TagBackfacingEdges(FEMeshBase& mesh)
 
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = mesh.Edge(i);
+		FSEdge& e = mesh.Edge(i);
 		if ((mesh.Node(e.n[0]).m_ntag == 0) && (mesh.Node(e.n[1]).m_ntag == 0))
 			e.m_ntag = 0;
 	}
@@ -6124,7 +5027,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = po->GetEditableMesh();
 
 	// activate the gl rendercontext
 	makeCurrent();
@@ -6135,27 +5038,34 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	else
 		pm->TagAllEdges(0);
 
+	double* a = m_plane;
 	vector<int> selectedEdges;
 	int NE = pm->Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.IsVisible() && (edge.m_ntag == 0))
 		{
 			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[0]).r);
 			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(edge.n[1]).r);
 
-			vec3d p0 = transform.WorldToScreen(r0);
-			vec3d p1 = transform.WorldToScreen(r1);
+			double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+			double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
 
-			int x0 = (int)p0.x;
-			int y0 = (int)p0.y;
-			int x1 = (int)p1.x;
-			int y1 = (int)p1.y;
-
-			if (region.LineIntersects(x0, y0, x1, y1))
+			if ((m_showPlaneCut == false) || ((d0 >= 0)||(d1>=0)))
 			{
-				selectedEdges.push_back(i);
+				vec3d p0 = transform.WorldToScreen(r0);
+				vec3d p1 = transform.WorldToScreen(r1);
+
+				int x0 = (int)p0.x;
+				int y0 = (int)p0.y;
+				int x1 = (int)p1.x;
+				int y1 = (int)p1.y;
+
+				if (region.LineIntersects(x0, y0, x1, y1))
+				{
+					selectedEdges.push_back(i);
+				}
 			}
 		}
 	}
@@ -6181,7 +5091,7 @@ void CGLView::SelectFENodes(int x, int y)
 	GObject* po = GetActiveObject();
 	if (po == 0) return;
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
 	int X = x;
@@ -6197,19 +5107,23 @@ void CGLView::SelectFENodes(int x, int y)
 	int NN = pm->Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.IsVisible() && ((view.m_bext == false) || node.IsExterior()))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(pm->Node(i).r);
+			double D = r.x * m_plane[0] + r.y * m_plane[1] + r.z * m_plane[2] + m_plane[3];
 
-			vec3d p = transform.WorldToScreen(r);
-
-			if (rt.contains(QPoint((int)p.x, (int)p.y)))
+			if ((m_showPlaneCut == false) || (D >= 0))
 			{
-				if ((index == -1) || (p.z < zmin))
+				vec3d p = transform.WorldToScreen(r);
+
+				if (rt.contains(QPoint((int)p.x, (int)p.y)))
 				{
-					index = i;
-					zmin = p.z;
+					if ((index == -1) || (p.z < zmin))
+					{
+						index = i;
+						zmin = p.z;
+					}
 				}
 			}
 		}
@@ -6224,14 +5138,14 @@ void CGLView::SelectFENodes(int x, int y)
 
 			if (view.m_bselpath == false)
 			{
-				TagConnectedNodes(pm, index);
+				MeshTools::TagConnectedNodes(pm, index, view.m_fconn, view.m_bmax);
 				lastIndex = -1;
 			}
 			else
 			{
 				if ((lastIndex != -1) && (lastIndex != index))
 				{
-					TagNodesByShortestPath(pm, lastIndex, index);
+					MeshTools::TagNodesByShortestPath(pm, lastIndex, index);
 					lastIndex = index;
 				}
 				else
@@ -6261,9 +5175,9 @@ void CGLView::SelectFENodes(int x, int y)
 				CPostDocument* postDoc = dynamic_cast<CPostDocument*>(pdoc);
 				if (postDoc && postDoc->IsValid())
 				{
-					Post::FEPostModel* fem = postDoc->GetFEModel();
+					Post::FEPostModel* fem = postDoc->GetFSModel();
 					Post::FEState* state = fem->CurrentState();
-					FENode& node = pm->Node(index);
+					FSNode& node = pm->Node(index);
 					vec3f r = state->m_NODE[index].m_rt;
 					QString txt = QString("Node %1 : position = (%2, %3, %4)").arg(node.m_nid).arg(r.x).arg(r.y).arg(r.z);
 
@@ -6291,273 +5205,6 @@ void CGLView::SelectFENodes(int x, int y)
 	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
-}
-
-//-----------------------------------------------------------------------------
-
-void CGLView::TagConnectedNodes(FEMeshBase* pm, int num)
-{
-	// get the document
-	CDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = GetViewSettings();
-
-	// clear all tags
-	for (int i = 0; i<pm->Nodes(); ++i) pm->Node(i).m_ntag = -1;
-
-	// first see if this node is a corner node
-	if (pm->Node(num).m_gid >= 0)
-	{
-		pm->Node(num).m_ntag = 1;
-	}
-	else
-	{
-		pm->Node(num).m_ntag = 1;
-
-		// see if this node belongs to an edge
-		std::stack<FEEdge*> stack;
-
-		// find all edges that have this node as a node
-		for (int i = 0; i<pm->Edges(); ++i)
-		{
-			FEEdge* pe = pm->EdgePtr(i);
-			if (pe->m_gid >= 0)
-			{
-				pe->m_ntag = 0;
-				if (pe->FindNodeIndex(num) >= 0)
-				{
-					stack.push(pe);
-					pe->m_ntag = -1;
-				}
-			}
-		}
-
-		if (!stack.empty())
-		{
-			// now push the rest
-			while (!stack.empty())
-			{
-				FEEdge* pe = stack.top(); stack.pop();
-
-				// mark all nodes
-				int nn = pe->Nodes();
-				for (int i = 0; i<nn; ++i)
-				{
-					pm->Node(pe->n[i]).m_ntag = 1;
-				}
-
-				// push neighbours
-				for (int i = 0; i<2; ++i)
-				if (pe->m_nbr[i] >= 0)
-				{
-					FEEdge* pe2 = pm->EdgePtr(pe->m_nbr[i]);
-					if (pe2->m_ntag >= 0 && pe2->IsVisible() && (pe2->m_gid == pe->m_gid))
-					{
-						pe2->m_ntag = -1;
-						stack.push(pe2);
-					}
-				}
-			}
-		}
-		else
-		{
-			// create a stack of face pointers
-			std::stack<FEFace*> stack;
-
-			// find all faces that have this node as a node
-			vec3d t(0, 0, 0);
-			for (int i = 0; i<pm->Faces(); ++i)
-			{
-				FEFace* pf = pm->FacePtr(i);
-				pf->m_ntag = 0;
-				int m = pf->FindNode(num);
-				if (m >= 0)
-				{
-					t += pf->m_fn;
-					stack.push(pf);
-					pf->m_ntag = -1;
-				}
-			}
-			t.Normalize();
-			double tr = cos(PI*view.m_fconn / 180.0);
-			bool bangle = view.m_bmax;
-
-			// now push the rest
-			int m = 0;
-			while (!stack.empty())
-			{
-				FEFace* pf = stack.top(); stack.pop();
-				int nn = pf->Nodes();
-				int ne = pf->Edges();
-
-				// mark all nodes
-				for (int i = 0; i<nn; ++i)
-				{
-					pm->Node(pf->n[i]).m_ntag = 1;
-				}
-
-				// push neighbours
-				for (int i = 0; i<ne; ++i)
-				if (pf->m_nbr[i] >= 0)
-				{
-					FEFace* pf2 = pm->FacePtr(pf->m_nbr[i]);
-					if (pf2->m_ntag >= 0 && pf2->IsVisible() && (pf2->m_gid == pf->m_gid) && ((pf2->m_fn*to_vec3f(t) >= tr) || (bangle == false)))
-					{
-						pf2->m_ntag = -1;
-						stack.push(pf2);
-					}
-				}
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1)
-{
-	if (n1 == n0) return;
-
-	pm->TagAllNodes(0);
-	pm->Node(n0).m_ntag = 1;
-
-	vec3d r0 = pm->Node(n0).r;
-	vec3d r1 = pm->Node(n1).r;
-
-	// see if the start and end node lie on an edge
-	bool b0 = false, b1 = false;
-	int NE = pm->Edges();
-	for (int i=0; i<NE; ++i)
-	{
-		FEEdge& edge = pm->Edge(i);
-		if ((edge.n[0] == n0) || (edge.n[1] == n0)) b0 = true;
-		if ((edge.n[0] == n1) || (edge.n[1] == n1)) b1 = true;
-
-		if (b0 && b1) break;
-	}
-
-	if (b0 && b1)
-	{
-		// see if we can connect the nodes by staying on edges
-		FENodeEdgeList NEL(pm);
-
-		int n = n0;
-		double Lmin = (r1 - r0).SqrLength();
-		do
-		{
-			int minNode = -1;
-			int nval = NEL.Edges(n);
-			for (int i = 0; i<nval; ++i)
-			{
-				const FEEdge* pe = NEL.Edge(n, i);
-				int ne = pe->Nodes();
-				for (int j = 0; j<ne; ++j)
-				{
-					int nj = pe->n[j];
-					if (pm->Node(nj).m_ntag == 0)
-					{
-						vec3d rj = pm->Node(nj).r;
-						double L = (r1 - rj).SqrLength();
-						if (L < Lmin)
-						{
-							Lmin = L;
-							minNode = nj;
-						}
-					}
-				}
-			}
-
-			if (minNode != -1)
-			{
-				pm->Node(minNode).m_ntag = 1;
-				n = minNode;
-				if (minNode == n1) break;
-			}
-			else break;
-		}
-		while (1);
-	}
-	else
-	{
-		FENodeFaceList NFL;
-		NFL.Build(pm);
-
-		int n = n0;
-		do
-		{
-			// this is the line to project on
-			vec3d e = (r1 - r0); e.Normalize();
-
-			double Lmin = 1e99;
-			int minNode = -1;
-			int nval = NFL.Valence(n);
-			for (int i=0; i<nval; ++i)
-			{
-				FEFace* pf = NFL.Face(n, i);
-				int nf = pf->Nodes();
-				for (int j=0; j<nf; ++j)
-				{
-					int nj = pf->n[j];
-					if (pm->Node(nj).m_ntag == 0)
-					{
-						vec3d pj = pm->Node(nj).r - r0;
-
-						// see if the projects on the positive side of the line
-						double l = pj*e;
-						if (l > 0)
-						{
-							// calculate distance to line
-							double L = (pj - e*l).Length();
-							if (L < Lmin)
-							{
-								Lmin = L;
-								minNode = nj;
-							}
-						}
-					}
-				}
-			}
-
-			if (minNode != -1)
-			{
-				pm->Node(minNode).m_ntag = 1;
-				n = minNode;
-				if (minNode == n1) break;
-
-				r0 = pm->Node(minNode).r;
-			}
-			else break;
-		}
-		while (1);
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderFeatureEdges()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glColor3ub(0, 0, 0);
-
-	FEModel* ps = doc->GetFEModel();
-	GModel& model = ps->GetModel();
-
-	for (int k = 0; k<model.Objects(); ++k)
-	{
-		GObject* po = model.Object(k);
-		if (po->IsVisible())
-		{
-			glPushMatrix();
-			SetModelView(po);
-
-			GLMesh& m = *po->GetRenderMesh();
-			m_renderer.RenderGLEdges(&m);
-
-			glPopMatrix();
-		}
-	}
-	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
@@ -6610,2046 +5257,6 @@ quatd CGLView::GetPivotRotation()
 
 	return quatd(0.0, 0.0, 0.0, 1.0);
 }
-
-//=============================================================================
-//					Rendering functions for GObjects
-//=============================================================================
-
-//-----------------------------------------------------------------------------
-// Render non-selected nodes
-void CGLView::RenderNodes(GObject* po)
-{
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glColor3ub(0, 0, 255);
-	for (int i = 0; i<po->Nodes(); ++i)
-	{
-		// only render nodes that are not selected
-		// and are not shape-nodes
-		GNode& n = *po->Node(i);
-		if (!n.IsSelected() && (n.Type() != NODE_SHAPE))
-		{
-			vec3d r = n.LocalPosition();
-			glBegin(GL_POINTS);
-			{
-				glVertex3d(r.x, r.y, r.z);
-			}
-			glEnd();
-		}
-	}
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// Render selected nodes
-void CGLView::RenderSelectedNodes(GObject* po)
-{
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255, 255, 0);
-	for (int i = 0; i<po->Nodes(); ++i)
-	{
-		GNode& n = *po->Node(i);
-		if (n.IsSelected())
-		{
-			assert(n.Type() != NODE_SHAPE);
-			vec3d r = n.LocalPosition();
-			glBegin(GL_POINTS);
-			{
-				glVertex3d(r.x, r.y, r.z);
-			}
-			glEnd();
-		}
-	}
-
-#ifdef _DEBUG
-	// Draw FE nodes on top of GMesh nodes to make sure they match
-	FEMesh* pm = po->GetFEMesh();
-	if (pm)
-	{
-		glColor3ub(255, 0, 0);
-		for (int i = 0; i<pm->Nodes(); ++i)
-		{
-			FENode& n = pm->Node(i);
-			if (n.m_gid > -1)
-			{
-				GNode& gn = *po->Node(n.m_gid);
-				if (gn.IsSelected())
-				{
-					vec3d r = n.r;
-					glBegin(GL_POINTS);
-					{
-						glVertex3d(r.x, r.y, r.z);
-					}
-					glEnd();
-				}
-			}
-		}
-	}
-#endif
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// render non-selected edges
-void CGLView::RenderEdges(GObject* po)
-{
-	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT);
-	glDisable(GL_LIGHTING);
-	glColor3ub(0, 0, 255);
-
-	GLMesh& m = *po->GetRenderMesh();
-	int N = po->Edges();
-	for (int i = 0; i<N; ++i)
-	{
-		GEdge& e = *po->Edge(i);
-		if (e.IsSelected() == false)
-		{
-			m_renderer.RenderGLEdges(&m, i);
-		}
-	}
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// render selected edges
-void CGLView::RenderSelectedEdges(GObject* po)
-{
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
-	vec3d r1, r2;
-
-	GLMesh& m = *po->GetRenderMesh();
-	int N = po->Edges();
-	for (int i = 0; i<N; ++i)
-	{
-		GEdge& e = *po->Edge(i);
-		if (e.IsSelected())
-		{
-			m_renderer.RenderGLEdges(&m, i);
-
-			GNode* n0 = po->Node(e.m_node[0]);
-			GNode* n1 = po->Node(e.m_node[1]);
-
-			if (n0 && n1)
-			{
-				glBegin(GL_POINTS);
-				{
-					vec3d r0 = n0->LocalPosition();
-					vec3d r1 = n1->LocalPosition();
-					glVertex3d(r0.x, r0.y, r0.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-				}
-				glEnd();
-			}
-		}
-	}
-
-#ifdef _DEBUG
-	// Render FE edges onto of GMesh edges to make sure they are consistent
-	FEMesh* pm = po->GetFEMesh();
-	if (pm)
-	{
-		glColor3ub(255, 0, 0);
-		for (int i = 0; i<pm->Edges(); ++i)
-		{
-			FEEdge& e = pm->Edge(i);
-			if (e.m_gid > -1)
-			{
-				GEdge& ge = *po->Edge(e.m_gid);
-				if (ge.IsSelected())
-				{
-					vec3d r0 = pm->Node(e.n[0]).r;
-					vec3d r1 = pm->Node(e.n[1]).r;
-					glBegin(GL_LINES);
-					{
-						glVertex3d(r0.x, r0.y, r0.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-					}
-					glEnd();
-				}
-			}
-		}
-	}
-#endif
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// Render non-selected surfaces
-void CGLView::RenderSurfaces(GObject* po)
-{
-	if (!po->IsVisible()) return;
-
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	VIEW_SETTINGS& vs = GetViewSettings();
-
-	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
-	GLMesh* pm = po->GetRenderMesh();
-	assert(pm);
-
-	// render non-selected faces
-	GPart* pgmat = 0; // the part that defines the material
-	int NF = po->Faces();
-	for (int n = 0; n<NF; ++n)
-	{
-		// get the next face
-		GFace& f = *po->Face(n);
-
-		// make sure this face is not selected
-		if (f.IsSelected() == false)
-		{
-			// get the part IDs
-			int* pid = f.m_nPID;
-
-			// get the part (that is visible)
-			GPart* pg = po->Part(pid[0]);
-			if (pg && pg->IsVisible() == false)
-			{
-				if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
-				if (pg && (pg->IsVisible() == false)) pg = 0;
-			}
-
-			// make sure we have a part
-			if (pg)
-			{
-				// if this part is not the current part defining the 
-				// material, we need to change the mat props
-				if (pg != pgmat)
-				{
-					if (vs.m_objectColor == 0)
-					{
-						GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-						SetMatProps(pmat);
-						GLColor c = po->GetColor();
-						if (pmat) c = pmat->Diffuse();
-						glColor3ub(c.r, c.g, c.b);
-						pgmat = pg;
-					}
-					else
-					{
-						SetMatProps(0);
-						GLColor c = po->GetColor();
-						glColor3ub(c.r, c.g, c.b);
-					}
-				}
-
-				if (vs.m_transparencyMode != 0)
-				{
-					switch (vs.m_transparencyMode)
-					{
-					case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-					case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-					}
-				}
-
-				// render the face
-				m_renderer.RenderGLMesh(pm, n);
-
-				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Render selected surfaces
-void CGLView::RenderSelectedSurfaces(GObject* po)
-{
-	if (!po->IsVisible()) return;
-
-	GLMesh* pm = po->GetRenderMesh();
-	assert(pm);
-
-	// render the selected faces
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
-	{
-		glColor3ub(0, 0, 255);
-		glEnable(GL_POLYGON_STIPPLE);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-		int NF = po->Faces();
-		for (int i = 0; i<NF; ++i)
-		{
-			GFace& f = *po->Face(i);
-			if (f.IsSelected())
-			{
-				m_renderer.RenderGLMesh(pm, i);
-			}
-		}
-
-#ifdef _DEBUG
-		// Render the GFace nodes and the FE surfaces to make sure the 
-		// GMesh and the FE mesh are consisten
-
-		// render GNodes
-		// TODO: This causes a crash after a primitive was converted to editable mesh and auto partition was applied.
-/*		for (int i = 0; i<NF; ++i)
-		{
-			GFace& f = *po->Face(i);
-			if (f.IsSelected())
-			{
-				glBegin(GL_POINTS);
-				{
-					int nf = f.Nodes();
-					for (int j = 0; j<nf; ++j)
-					if (f.m_node[j] != -1)
-					{
-						vec3d r = po->Node(f.m_node[j])->LocalPosition();
-						int c = 255 * j / (nf - 1);
-						glColor3ub((GLubyte)c, (GLubyte)c, (GLubyte)c);
-						glVertex3d(r.x, r.y, r.z);
-					}
-				}
-				glEnd();
-			}
-		}
-*/
-		// render FE surfaces
-		FEMesh* pm = po->GetFEMesh();
-		if (pm)
-		{
-			glColor3ub(255, 0, 0);
-			vec3d rf[FEElement::MAX_NODES];
-			for (int i = 0; i<pm->Faces(); ++i)
-			{
-				FEFace& f = pm->Face(i);
-				if (f.m_gid > -1)
-				{
-					GFace& gf = *po->Face(f.m_gid);
-					if (gf.IsSelected())
-					{
-						int nf = f.Nodes();
-						for (int j = 0; j<nf; ++j) rf[j] = pm->Node(f.n[j]).r;
-						switch (nf)
-						{
-						case 3:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-							}
-							glEnd();
-							break;
-						case 4:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-							}
-							glEnd();
-							break;
-						case 6:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-							}
-							glEnd();
-							break;
-						case 8:
-						case 9:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[7].x, rf[7].y, rf[7].z);
-
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[7].x, rf[7].y, rf[7].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-								glVertex3d(rf[7].x, rf[7].y, rf[7].z);
-
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-							}
-							glEnd();
-							break;
-						}
-					}
-				}
-			}
-		}
-#endif
-		glDisable(GL_POLYGON_STIPPLE);
-	}
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// render non-selected parts
-void CGLView::RenderParts(GObject* po)
-{
-	if (!po->IsVisible()) return;
-
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	VIEW_SETTINGS& vs = GetViewSettings();
-
-	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
-	GLMesh* pm = po->GetRenderMesh();
-	assert(pm);
-
-	// render non-selected parts
-	GPart* pgmat = 0; // the part that defines the material
-	int NF = po->Faces();
-	for (int n = 0; n<NF; ++n)
-	{
-		// get the next face
-		GFace& f = *po->Face(n);
-
-		// get the part IDs
-		int* pid = f.m_nPID;
-
-		// get the part (that is visible)
-		GPart* pg = po->Part(pid[0]); assert(pg);
-		if (pg && ((pg->IsVisible() == false) || (pg->IsSelected())))
-		{
-			if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
-			if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
-
-			if (pg == nullptr)
-			{
-				if (pid[2] >= 0) pg = po->Part(pid[2]); else pg = 0;
-				if (pg && ((pg->IsVisible() == false) || pg->IsSelected())) pg = 0;
-			}
-		}
-
-		// make sure we have a part
-		if (pg)
-		{
-			// if this part is not the current part defining the 
-			// material, we need to change the mat props
-			if (vs.m_objectColor == 0)
-			{
-				if (pg != pgmat)
-				{
-					GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-					SetMatProps(pmat);
-					GLColor c = po->GetColor();
-					if (pmat) c = pmat->Diffuse();
-					glColor3ub(c.r, c.g, c.b);
-					pgmat = pg;
-				}
-			}
-			else
-			{
-				SetMatProps(0);
-				GLColor c = po->GetColor();
-				glColor3ub(c.r, c.g, c.b);
-			}
-
-			if (vs.m_transparencyMode != 0)
-			{
-				switch (vs.m_transparencyMode)
-				{
-				case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-				case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-				}
-			}
-
-			// render the face
-			int nid = pg->GetLocalID();
-			m_renderer.RenderGLMesh(pm, n);
-
-			if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// render selected parts
-void CGLView::RenderSelectedParts(GObject* po)
-{
-	if (!po->IsVisible()) return;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glEnable(GL_POLYGON_STIPPLE);
-		SetMatProps(0);
-		glColor3ub(0, 0, 255);
-		GLMesh& m = *po->GetRenderMesh();
-		int NF = po->Faces();
-		for (int i = 0; i<NF; ++i)
-		{
-			GFace* pf = po->Face(i);
-			GPart* p0 = po->Part(pf->m_nPID[0]);
-			GPart* p1 = po->Part(pf->m_nPID[1]);
-			GPart* p2 = po->Part(pf->m_nPID[2]);
-			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
-			{
-				m_renderer.RenderGLMesh(&m, i);
-			}
-		}
-	}
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// This function renders the object by looping over all the parts and
-// for each part render the external surfaces that belong to that part.
-// NOTE: The reason why only external surfaces are rendered is because
-//       it is possible for an external surface to coincide with an
-//       internal surface. E.g., when a shell layer lies on top of a 
-//       hex layer.
-void CGLView::RenderObject(GObject* po)
-{
-	if (!po->IsVisible()) return;
-
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	VIEW_SETTINGS& vs = GetViewSettings();
-
-	// get the GLMesh
-	FEModel& fem = *doc->GetFEModel();
-	GLMesh* pm = po->GetRenderMesh();
-	if (pm == 0) return;
-	assert(pm);
-
-	// render non-selected faces
-	GPart* pgmat = 0; // the part that defines the material
-	int NF = po->Faces();
-	for (int n = 0; n<NF; ++n)
-	{
-		// get the next face
-		GFace& f = *po->Face(n);
-
-		// make sure the face is visible
-		if (f.IsVisible())
-		{
-			// get the part IDs
-			int* pid = f.m_nPID;
-
-			// get the part (that is visible)
-			GPart* pg = po->Part(pid[0]);
-			if (pg && pg->IsVisible() == false)
-			{
-				if (pid[1] >= 0) pg = po->Part(pid[1]); else pg = 0;
-				if (pg && (pg->IsVisible() == false)) pg = 0;
-			}
-
-			// make sure we have a part
-			if (pg)
-			{
-				// if this part is not the current part defining the 
-				// material, we need to change the mat props
-				if (vs.m_objectColor == 0)
-				{
-					if (pg != pgmat)
-					{
-						GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-						SetMatProps(pmat);
-						GLColor c = po->GetColor();
-						if (pmat) c = pmat->Diffuse();
-
-						glColor3ub(c.r, c.g, c.b);
-						pgmat = pg;
-					}
-				}
-				else
-				{
-					SetMatProps(0);
-					GLColor c = po->GetColor();
-					glColor3ub(c.r, c.g, c.b);
-				}
-
-				if (vs.m_transparencyMode != 0)
-				{
-					switch (vs.m_transparencyMode)
-					{
-					case 1: if (po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-					case 2: if (!po->IsSelected()) glEnable(GL_POLYGON_STIPPLE); break;
-					}
-				}
-
-				// render the face
-				m_renderer.RenderGLMesh(pm, n);
-
-				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
-			}
-		}
-	}
-
-	if (NF == 0)
-	{
-		// if there are no faces, render edges instead
-		int NC = po->Edges();
-		for (int n=0; n<NC; ++n)
-		{
-			GEdge& e = *po->Edge(n);
-			if (e.IsVisible())
-				m_renderer.RenderGLEdges(pm, e.GetLocalID());
-		}
-	}
-}
-
-//=============================================================================
-//					Rendering functions for FEMeshes
-//=============================================================================
-
-//-----------------------------------------------------------------------------
-// Render the FE nodes
-void CGLView::RenderFENodes(GObject* po)
-{
-	CGLDocument* pdoc = GetDocument();
-	if (pdoc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
-
-	// set the point size
-	float fsize = GetViewSettings().m_node_size;
-	m_renderer.SetPointSize(fsize);
-
-	FEMesh* pm = po->GetFEMesh();
-	if (pm)
-	{
-		int N = pm->Nodes();
-		int NF = pm->Faces();
-		int NE = pm->Elements();
-
-		// reset all tags
-		for (int i = 0; i<N; ++i) pm->Node(i).m_ntag = 1;
-
-		// make sure we render all isolated nodes
-		for (int i = 0; i<NE; ++i)
-		{
-			FEElement& el = pm->Element(i);
-			int n = el.Nodes();
-			for (int j = 0; j<n; ++j) pm->Node(el.m_node[j]).m_ntag = 0;
-		}
-
-		// check visibility
-		for (int i = 0; i<NE; ++i)
-		{
-			FEElement& el = pm->Element(i);
-			if (el.IsVisible() && (po->Part(el.m_gid)->IsVisible()))
-			{
-				int n = el.Nodes();
-				for (int j = 0; j<n; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
-			}
-		}
-
-		// check the cull
-		if (view.m_bcull)
-		{
-			vec3d f;
-			for (int i = 0; i<NF; ++i)
-			{
-				FEFace& face = pm->Face(i);
-				int n = face.Nodes();
-				for (int j = 0; j<n; ++j)
-				{
-					vec3d nn = face.m_nn[j];
-					f = q*nn;
-					if (f.z < 0) pm->Node(face.n[j]).m_ntag = 0;
-				}
-			}
-		}
-
-		// check the ext criteria
-		if (view.m_bext)
-		{
-			for (int i = 0; i<N; ++i)
-			{
-				FENode& node = pm->Node(i);
-				if (!node.IsExterior()) node.m_ntag = 0;
-			}
-		}
-
-		m_renderer.RenderFENodes(pm);
-	}
-	else
-	{
-		FEMeshBase* mesh = po->GetEditableMesh();
-		if (mesh)
-		{
-			// reset all tags
-			mesh->TagAllNodes(1);
-
-			// make sure we render all isolated nodes
-			int NF = mesh->Faces();
-			for (int i = 0; i<NF; ++i)
-			{
-				FEFace& face = mesh->Face(i);
-				int n = face.Nodes();
-				for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
-			}
-
-			// check visibility
-			for (int i = 0; i<NF; ++i)
-			{
-				FEFace& face = mesh->Face(i);
-				if (face.IsVisible())
-				{
-					int n = face.Nodes();
-					for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 1;
-				}
-			}
-
-			// check the cull
-			if (view.m_bcull)
-			{
-				vec3d f;
-				for (int i = 0; i<NF; ++i)
-				{
-					FEFace& face = mesh->Face(i);
-					int n = face.Nodes();
-					for (int j = 0; j<n; ++j)
-					{
-						vec3d nn = face.m_nn[j];
-						f = q*nn;
-						if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
-					}
-				}
-			}
-
-			m_renderer.RenderFENodes(mesh);
-		}
-		else
-		{
-			FELineMesh* pm = po->GetEditableLineMesh();
-			if (pm)
-			{
-				pm->TagAllNodes(1);
-				m_renderer.RenderFENodes(pm);
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderFEFaces(GObject* po)
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
-	FEMesh* pm = po->GetFEMesh();
-	if (pm == 0)
-	{
-		RenderObject(po);
-		return;
-	}
-
-	GLColor col = po->GetColor();
-	GLColor dif = col;
-	SetMatProps(0);
-	glColor3ub(dif.r, dif.g, dif.b);
-	int nmatid = -1;
-
-	double vmin, vmax;
-	Post::CColorMap map;
-	Mesh_Data& data = pm->GetMeshData();
-	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
-
-	// render the unselected faces
-	for (int i = 0; i<pm->Faces(); i++)
-	{
-		FEFace& face = pm->Face(i);
-
-		FEElement& el = pm->Element(face.m_elem[0].eid);
-		GPart* pg = po->Part(el.m_gid);
-		if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
-		{
-			FEElement& el1 = pm->Element(face.m_elem[1].eid);
-			pg = po->Part(el1.m_gid);
-		}
-
-		if (!face.IsSelected() && face.IsVisible())
-		{
-			if (pg && pg->IsVisible())
-			{
-				if (showContour)
-				{
-					if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
-					{
-						int fnl[FEElement::MAX_NODES];
-						int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
-						assert(nn == face.Nodes());
-
-						GLColor c[FEFace::MAX_NODES];
-						int nf = face.Nodes();
-						for (int j = 0; j<nf; ++j)
-							c[j] = map.map(data.GetElementValue(face.m_elem[0].eid, fnl[j]));
-
-						// Render the face
-						m_renderer.RenderFace(face, pm, c, 1);
-					}
-					else
-					{
-						dif = GLColor(212, 212, 212);
-						glColor3ub(dif.r, dif.g, dif.b);
-
-						// Render the face
-						glBegin(GL_TRIANGLES);
-						{
-							m_renderer.RenderFEFace(face, pm);
-						}
-						glEnd();
-					}
-				}
-				else 
-				{
-					if (view.m_objectColor == 0)
-					{
-						if (pg->GetMaterialID() != nmatid)
-						{
-							nmatid = pg->GetMaterialID();
-							GMaterial* pmat = fem.GetMaterialFromID(nmatid);
-							SetMatProps(pmat);
-							dif = (pmat ? pmat->Diffuse() : col);
-							glColor3ub(dif.r, dif.g, dif.b);
-
-							int glmode = 0;
-							if (pmat && (pmat->m_nrender != 0))
-							{
-								GLint n[2];
-								glGetIntegerv(GL_POLYGON_MODE, n);
-								glmode = n[1];
-								if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-							}
-						}
-					}
-
-					// Render the face
-					glBegin(GL_TRIANGLES);
-					{
-						m_renderer.RenderFEFace(face, pm);
-					}
-					glEnd();
-				}
-			}
-		}
-	}
-
-	// render the selected faces
-	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_POLYGON_STIPPLE);
-	glColor3ub(255, 0, 0);
-	m_renderer.RenderSelectedFEFaces(pm);
-
-	// render the selected face outline
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
-	m_renderer.RenderSelectedFEFacesOutline(pm);
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderSurfaceMeshFaces(GObject* po)
-{
-	GSurfaceMeshObject* surfaceObject = dynamic_cast<GSurfaceMeshObject*>(po);
-	if (surfaceObject == 0)
-	{
-		// just render something, otherwise nothing will show up
-		RenderObject(po);
-		return;
-	}
-
-	FESurfaceMesh* surfaceMesh = surfaceObject->GetSurfaceMesh();
-	assert(surfaceMesh);
-	if (surfaceMesh == 0) return;
-
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
-
-	GLColor col = po->GetColor();
-	SetMatProps(0);
-	glColor3ub(col.r, col.g, col.b);
-
-	// render the unselected faces
-	// Note that we do not render internal faces
-	m_renderer.RenderUnselectedFEFaces(surfaceMesh);
-
-	// render the selected faces
-	// override some settings
-	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_POLYGON_STIPPLE);
-	glColor3ub(255, 128, 0);
-	m_renderer.RenderSelectedFEFaces(surfaceMesh);
-
-	// render the selected face outline
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
-	m_renderer.RenderSelectedFEFacesOutline(surfaceMesh);
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderSurfaceMeshEdges(GObject* po)
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
-	FELineMesh* pm = po->GetEditableLineMesh();
-	assert(pm);
-	if (pm == 0) return;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
-	// render the unselected edges
-	glColor3ub(0, 0, 255);
-	m_renderer.RenderUnselectedFEEdges(pm);
-
-	// render the selected edges
-	// override some settings
-	glDisable(GL_CULL_FACE);
-	glColor3ub(255, 0, 0);
-	m_renderer.RenderSelectedFEEdges(pm);
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderSurfaceMeshNodes(GObject* po)
-{
-	CGLDocument* pdoc = GetDocument();
-	if (pdoc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
-
-	// set the point size
-	float fsize = GetViewSettings().m_node_size;
-	m_renderer.SetPointSize(fsize);
-
-	FEMeshBase* mesh = po->GetEditableMesh();
-	if (mesh)
-	{
-		// reset all tags
-		mesh->TagAllNodes(1);
-
-		// make sure we render all isolated nodes
-		int NF = mesh->Faces();
-		for (int i = 0; i<NF; ++i)
-		{
-			FEFace& face = mesh->Face(i);
-			int n = face.Nodes();
-			for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 0;
-		}
-
-		// check visibility
-		for (int i = 0; i<NF; ++i)
-		{
-			FEFace& face = mesh->Face(i);
-			if (face.IsVisible())
-			{
-				int n = face.Nodes();
-				for (int j = 0; j<n; ++j) mesh->Node(face.n[j]).m_ntag = 1;
-			}
-		}
-
-		// check the cull
-		if (view.m_bcull)
-		{
-			vec3d f;
-			for (int i = 0; i<NF; ++i)
-			{
-				FEFace& face = mesh->Face(i);
-				int n = face.Nodes();
-				for (int j = 0; j<n; ++j)
-				{
-					vec3d nn = face.m_nn[j];
-					f = q*nn;
-					if (f.z < 0) mesh->Node(face.n[j]).m_ntag = 0;
-				}
-			}
-		}
-
-		m_renderer.RenderFENodes(mesh);
-	}
-	else
-	{
-		FELineMesh* pm = po->GetEditableLineMesh();
-		if (pm)
-		{
-			pm->TagAllNodes(1);
-			m_renderer.RenderFENodes(pm);
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// Render the FE Edges
-void CGLView::RenderFEEdges(GObject* po)
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	FEModel& fem = *doc->GetFEModel();
-	FEMesh* pm = po->GetFEMesh();
-	if (pm == 0) return;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-
-	// render the unselected edges
-	glColor3ub(0, 0, 255);
-	m_renderer.RenderUnselectedFEEdges(pm);
-
-	// render the selected edges
-	// override some settings
-	glDisable(GL_CULL_FACE);
-	glColor3ub(255, 0, 0);
-	m_renderer.RenderSelectedFEEdges(pm);
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// Render the FE elements
-void CGLView::RenderFEElements(GObject* po)
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	FEModel& fem = *pdoc->GetFEModel();
-	FEMesh* pm = po->GetFEMesh();
-	assert(pm);
-	if (pm == 0) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-	GLColor dif;
-
-	GLColor col = po->GetColor();
-
-	int i;
-
-	int nmatid = -1;
-	dif = po->GetColor();
-	glColor3ub(dif.r, dif.g, dif.b);
-	SetMatProps(0);
-	int glmode = 0;
-
-	double vmin, vmax;
-	Mesh_Data& data = pm->GetMeshData();
-	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
-
-	// render the unselected faces
-	int NE = pm->Elements();
-	for (i = 0; i<NE; ++i)
-	{
-		FEElement& el = pm->Element(i);
-
-		if (!el.IsSelected() && el.IsVisible())
-		{
-			GPart* pg = po->Part(el.m_gid);
-			if (pg->IsVisible())
-			{
-				if (showContour)
-				{
-					GLColor c[FEElement::MAX_NODES];
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j)
-					{
-						if (data.GetElementDataTag(i) > 0)
-							c[j] = m_colorMap.map(data.GetElementValue(i, j));
-						else
-							c[j] = GLColor(212, 212, 212);
-					}
-
-					switch (el.Type())
-					{
-					case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, c); break;
-					case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, true); break;
-					case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, true); break;
-					case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, true); break;
-					case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
-					case FE_TET4  : m_renderer.RenderTET4(&el, pm, c); break;
-					case FE_TET5  : m_renderer.RenderTET4(&el, pm, c); break;
-					case FE_TET10 : m_renderer.RenderTET10(&el, pm, c); break;
-					case FE_TET15 : m_renderer.RenderTET15(&el, pm, true); break;
-					case FE_TET20 : m_renderer.RenderTET20(&el, pm, true); break;
-					case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, c); break;
-					case FE_QUAD8 : m_renderer.RenderQUAD8(&el, pm, true); break;
-					case FE_QUAD9 : m_renderer.RenderQUAD9(&el, pm, true); break;
-					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, c); break;
-					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
-					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
-                    case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2 : break;
-					case FE_BEAM3 : break;
-					default:
-						assert(false);
-					}
-
-				}
-				else
-				{
-					if (view.m_objectColor == 0)
-					{
-						if (pg->GetMaterialID() != nmatid)
-						{
-							GMaterial* pmat = 0;
-							if (pg->GetMaterialID() != nmatid)
-							{
-								nmatid = pg->GetMaterialID();
-								pmat = fem.GetMaterialFromID(nmatid);
-								SetMatProps(pmat);
-							}
-
-							dif = (pmat != 0 ? pmat->Diffuse() : col);
-
-							glColor3ub(dif.r, dif.g, dif.b);
-
-							if (pmat && (pmat->m_nrender != 0))
-							{
-								GLint n[2];
-								glGetIntegerv(GL_POLYGON_MODE, n);
-								glmode = n[1];
-								if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-							}
-						}
-					}
-
-					switch (el.Type())
-					{
-					case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, true); break;
-					case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, true); break;
-					case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, true); break;
-					case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, true); break;
-					case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
-					case FE_TET4  : m_renderer.RenderTET4(&el, pm, true); break;
-					case FE_TET5  : m_renderer.RenderTET4(&el, pm, true); break;
-					case FE_TET10 : m_renderer.RenderTET10(&el, pm, true); break;
-					case FE_TET15 : m_renderer.RenderTET15(&el, pm, true); break;
-					case FE_TET20 : m_renderer.RenderTET20(&el, pm, true); break;
-					case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, true); break;
-					case FE_QUAD8 : m_renderer.RenderQUAD8(&el, pm, true); break;
-					case FE_QUAD9 : m_renderer.RenderQUAD9(&el, pm, true); break;
-					case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, true); break;
-					case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, true); break;
-					case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, true); break;
-                    case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2 : break;
-					case FE_BEAM3 : break;
-					default:
-						assert(false);
-					}
-				}
-			}
-		}
-	}
-
-	// override some settings
-	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glColor4ub(255, 0, 0, 128);
-	glEnable(GL_POLYGON_STIPPLE);
-	glDisable(GL_LIGHTING);
-
-	// render the selected faces
-	if (pdoc == nullptr) return;
-	FEElementSelection* psel = dynamic_cast<FEElementSelection*>(pdoc->GetCurrentSelection());
-	if (psel && psel->Size() > 0)
-	{
-		int NE = psel->Size();
-		for (i = 0; i<NE; ++i)
-		{
-			FEElement_& el = *psel->Element(i);
-			if (el.IsVisible())
-			{
-				switch (el.Type())
-				{
-				case FE_HEX8  : m_renderer.RenderHEX8(&el, pm, false); break;
-				case FE_HEX20 : m_renderer.RenderHEX20(&el, pm, false); break;
-				case FE_HEX27 : m_renderer.RenderHEX27(&el, pm, false); break;
-				case FE_PENTA6: m_renderer.RenderPENTA(&el, pm, false); break;
-				case FE_PENTA15: m_renderer.RenderPENTA15(&el, pm, true); break;
-				case FE_TET4   : m_renderer.RenderTET4(&el, pm, false); break;
-				case FE_TET5   : m_renderer.RenderTET4(&el, pm, false); break;
-				case FE_TET10 : m_renderer.RenderTET10(&el, pm, false); break;
-				case FE_TET15 : m_renderer.RenderTET15(&el, pm, false); break;
-				case FE_TET20 : m_renderer.RenderTET20(&el, pm, false); break;
-				case FE_QUAD4 : m_renderer.RenderQUAD(&el, pm, false); break;
-				case FE_QUAD8 : break;
-				case FE_QUAD9 : break;
-				case FE_TRI3  : m_renderer.RenderTRI3(&el, pm, false); break;
-				case FE_TRI6  : m_renderer.RenderTRI6(&el, pm, false); break;
-				case FE_PYRA5 : m_renderer.RenderPYRA5(&el, pm, false); break;
-                case FE_PYRA13: m_renderer.RenderPYRA13(&el, pm, false); break;
-				case FE_BEAM2 : break;
-				case FE_BEAM3 : break;
-				default:
-					assert(false);
-				}
-			}
-		}
-
-		// render a yellow highlight around selected elements
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glColor3ub(255, 255, 0);
-
-
-		glBegin(GL_LINES);
-		for (i = 0; i < NE; ++i)
-		{
-			FEElement_& el = *psel->Element(i);
-			int ne = el.Nodes();
-			if (el.IsVisible())
-			{
-				switch (el.Type())
-				{
-				case FE_HEX8:
-				case FE_HEX20:
-				case FE_HEX27:
-					for (int j = 0; j < 12; ++j)
-					{
-						int n0 = el.m_node[ET_HEX[j][0]];
-						int n1 = el.m_node[ET_HEX[j][1]];
-
-						vec3d r0 = pm->Node(n0).pos();
-						vec3d r1 = pm->Node(n1).pos();
-
-						glx::vertex3d(r0);
-						glx::vertex3d(r1);
-					}
-					break;
-				case FE_TET4:
-				case FE_TET10:
-				case FE_TET15:
-					for (int j = 0; j < 6; ++j)
-					{
-						int n0 = el.m_node[ET_TET[j][0]];
-						int n1 = el.m_node[ET_TET[j][1]];
-
-						vec3d r0 = pm->Node(n0).pos();
-						vec3d r1 = pm->Node(n1).pos();
-
-						glx::vertex3d(r0);
-						glx::vertex3d(r1);
-					}
-					break;
-                case FE_PYRA5:
-                case FE_PYRA13:
-                    for (int j = 0; j < 8; ++j)
-                    {
-                        int n0 = el.m_node[ET_PYR[j][0]];
-                        int n1 = el.m_node[ET_PYR[j][1]];
-                            
-                        vec3d r0 = pm->Node(n0).pos();
-                        vec3d r1 = pm->Node(n1).pos();
-                            
-                        glx::vertex3d(r0);
-                        glx::vertex3d(r1);
-                    }
-                    break;
-				case FE_TRI3:
-				case FE_QUAD4:
-					for (int i = 0; i < ne; ++i)
-					{
-						int n0 = el.m_node[i];
-						int n1 = el.m_node[(i + 1) % ne];
-
-						vec3d r0 = pm->Node(n0).pos();
-						vec3d r1 = pm->Node(n1).pos();
-
-						glx::vertex3d(r0);
-						glx::vertex3d(r1);
-					}
-					break;
-				}
-			}
-		}
-		glEnd();
-
-		glPopAttrib();
-	}
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-// This function is used for selecting elements
-void CGLView::RenderFEAllElements(FEMesh* pm, bool bexterior)
-{
-	// get the document
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-
-	bool bcull = view.m_bcull;
-	bool bok;
-	int i, j;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	if (bcull == false) glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-
-	for (i = 0; i<pm->Elements(); i++)
-	{
-		FEElement& e = pm->Element(i);
-
-		bok = e.IsVisible();
-		if (bexterior && (e.IsExterior() == false)) bok = false;
-
-		if (bok)
-		{
-			switch (e.Type())
-			{
-			case FE_HEX8:
-			{
-							glBegin(GL_QUADS);
-							{
-								for (j = 0; j<6; j++)
-								{
-									bok = true;
-									if (bcull)
-									{
-										bok = false;
-										if ((e.m_nbr[j] == -1) || (!pm->Element(e.m_nbr[j]).IsVisible()))
-										{
-											bok = true;
-										}
-									}
-
-									// don't render when the neighbor is a shell
-									// we have to do this otherwise the shell will not be selected.
-									if ((e.m_nbr[j] != -1) && (pm->Element(e.m_nbr[j]).IsShell())) bok = false;
-
-									if (bok)
-									{
-										const vec3d& r1 = pm->Node(e.m_node[FTHEX8[j][0]]).r;
-										const vec3d& r2 = pm->Node(e.m_node[FTHEX8[j][1]]).r;
-										const vec3d& r3 = pm->Node(e.m_node[FTHEX8[j][2]]).r;
-										const vec3d& r4 = pm->Node(e.m_node[FTHEX8[j][3]]).r;
-
-										vec3d n = (r2 - r1) ^ (r3 - r1);
-										n.Normalize();
-
-										glNormal3d(n.x, n.y, n.z);
-										glVertex3d(r1.x, r1.y, r1.z);
-										glVertex3d(r2.x, r2.y, r2.z);
-										glVertex3d(r3.x, r3.y, r3.z);
-										glVertex3d(r4.x, r4.y, r4.z);
-									}
-								}
-							}
-							glEnd();
-			}
-				break;
-			case FE_HEX20:
-			{
-							 glBegin(GL_TRIANGLES);
-							 {
-								 for (j = 0; j<6; j++)
-								 {
-									 bok = true;
-									 if (bcull)
-									 {
-										 bok = false;
-										 if ((e.m_nbr[j] == -1) || (!pm->Element(e.m_nbr[j]).IsVisible()))
-										 {
-											 bok = true;
-										 }
-									 }
-
-									 if (bok)
-									 {
-										 const vec3d& r1 = pm->Node(e.m_node[FTHEX20[j][0]]).r;
-										 const vec3d& r2 = pm->Node(e.m_node[FTHEX20[j][1]]).r;
-										 const vec3d& r3 = pm->Node(e.m_node[FTHEX20[j][2]]).r;
-										 const vec3d& r4 = pm->Node(e.m_node[FTHEX20[j][3]]).r;
-										 const vec3d& r5 = pm->Node(e.m_node[FTHEX20[j][4]]).r;
-										 const vec3d& r6 = pm->Node(e.m_node[FTHEX20[j][5]]).r;
-										 const vec3d& r7 = pm->Node(e.m_node[FTHEX20[j][6]]).r;
-										 const vec3d& r8 = pm->Node(e.m_node[FTHEX20[j][7]]).r;
-
-										 vec3d n = (r2 - r1) ^ (r3 - r1);
-										 n.Normalize();
-
-										 glNormal3d(n.x, n.y, n.z);
-										 glVertex3d(r1.x, r1.y, r1.z); glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r8.x, r8.y, r8.z);
-										 glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r2.x, r2.y, r2.z); glVertex3d(r6.x, r6.y, r6.z);
-										 glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r3.x, r3.y, r3.z); glVertex3d(r7.x, r7.y, r7.z);
-										 glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r4.x, r4.y, r4.z); glVertex3d(r8.x, r8.y, r8.z);
-										 glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r8.x, r8.y, r8.z);
-										 glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r8.x, r8.y, r8.z);
-									 }
-								 }
-							 }
-							 glEnd();
-			}
-				break;
-			case FE_HEX27:
-			{
-							 glBegin(GL_TRIANGLES);
-							 {
-								 for (j = 0; j<6; j++)
-								 {
-									 bok = true;
-									 if (bcull)
-									 {
-										 bok = false;
-										 if ((e.m_nbr[j] == -1) || (!pm->Element(e.m_nbr[j]).IsVisible()))
-										 {
-											 bok = true;
-										 }
-									 }
-
-									 if (bok)
-									 {
-										 const vec3d& r0 = pm->Node(e.m_node[FTHEX27[j][0]]).r;
-										 const vec3d& r1 = pm->Node(e.m_node[FTHEX27[j][1]]).r;
-										 const vec3d& r2 = pm->Node(e.m_node[FTHEX27[j][2]]).r;
-										 const vec3d& r3 = pm->Node(e.m_node[FTHEX27[j][3]]).r;
-										 const vec3d& r4 = pm->Node(e.m_node[FTHEX27[j][4]]).r;
-										 const vec3d& r5 = pm->Node(e.m_node[FTHEX27[j][5]]).r;
-										 const vec3d& r6 = pm->Node(e.m_node[FTHEX27[j][6]]).r;
-										 const vec3d& r7 = pm->Node(e.m_node[FTHEX27[j][7]]).r;
-										 const vec3d& r8 = pm->Node(e.m_node[FTHEX27[j][8]]).r;
-
-										 vec3d n = (r1 - r0) ^ (r2 - r0);
-										 n.Normalize();
-
-										 glNormal3d(n.x, n.y, n.z);
-										 glVertex3d(r0.x, r0.y, r0.z); glVertex3d(r4.x, r4.y, r4.z); glVertex3d(r8.x, r8.y, r8.z);
-										 glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r0.x, r0.y, r0.z);
-										 glVertex3d(r4.x, r4.y, r4.z); glVertex3d(r1.x, r1.y, r1.z); glVertex3d(r5.x, r5.y, r5.z);
-										 glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r4.x, r4.y, r4.z);
-										 glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r6.x, r6.y, r6.z);
-										 glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r3.x, r3.y, r3.z); glVertex3d(r7.x, r7.y, r7.z);
-										 glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r2.x, r2.y, r2.z);
-										 glVertex3d(r2.x, r2.y, r2.z); glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r8.x, r8.y, r8.z);
-									 }
-								 }
-							 }
-							 glEnd();
-			}
-				break;
-			case FE_PENTA6:
-			case FE_PENTA15:
-			{
-					glBegin(GL_QUADS);
-					{
-						for (j = 0; j<3; j++)
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
-
-							vec3d n = (r2 - r1) ^ (r3 - r1);
-							n.Normalize();
-
-							glNormal3d(n.x, n.y, n.z);
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-							glVertex3d(r4.x, r4.y, r4.z);
-						}
-					}
-					glEnd();
-
-					glBegin(GL_TRIANGLES);
-					{
-						for (j = 3; j<5; j++)
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-
-							vec3d n = (r2 - r1) ^ (r3 - r1);
-							n.Normalize();
-
-							glNormal3d(n.x, n.y, n.z);
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-						}
-					}
-					glEnd();
-				}
-				break;
-			case FE_TET4:
-			case FE_TET5:
-			case FE_TET10:
-			case FE_TET15:
-			case FE_TET20:
-				{
-					glBegin(GL_TRIANGLES);
-					{
-						for (j = 0; j<4; j++)
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTTET[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTTET[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTTET[j][2]]).r;
-
-							//							vec3d n = (r2 - r1)^(r3 - r1);
-							//							n.Normalize();
-
-							//							glNormal3d(n.x, n.y, n.z);
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-						}
-					}
-					glEnd();
-				}
-				break;
-			case FE_PYRA5:
-				{
-					glBegin(GL_TRIANGLES);
-					{
-						for (j = 0; j<4; j++)
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
-
-							vec3d n = (r2 - r1) ^ (r3 - r1);
-							n.Normalize();
-
-							glNormal3d(n.x, n.y, n.z);
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-						}
-					}
-					glEnd();				
-
-					glBegin(GL_QUADS);
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[4][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[4][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
-
-						vec3d n = (r2 - r1) ^ (r3 - r1);
-						n.Normalize();
-
-						glNormal3d(n.x, n.y, n.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-						glVertex3d(r4.x, r4.y, r4.z);
-					}
-					glEnd();
-
-				}
-				break;
-            case FE_PYRA13:
-                {
-                    glBegin(GL_TRIANGLES);
-                    {
-                        for (j = 0; j<4; j++)
-                        {
-                            const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
-                            const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
-                            const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
-                            
-                            vec3d n = (r2 - r1) ^ (r3 - r1);
-                            n.Normalize();
-                            
-                            glNormal3d(n.x, n.y, n.z);
-                            glVertex3d(r1.x, r1.y, r1.z);
-                            glVertex3d(r2.x, r2.y, r2.z);
-                            glVertex3d(r3.x, r3.y, r3.z);
-                        }
-                    }
-                    glEnd();
-                    
-                    glBegin(GL_QUADS);
-                    {
-                        const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
-                        const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
-                        const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
-                        const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
-                        
-                        vec3d n = (r2 - r1) ^ (r3 - r1);
-                        n.Normalize();
-                        
-                        glNormal3d(n.x, n.y, n.z);
-                        glVertex3d(r1.x, r1.y, r1.z);
-                        glVertex3d(r2.x, r2.y, r2.z);
-                        glVertex3d(r3.x, r3.y, r3.z);
-                        glVertex3d(r4.x, r4.y, r4.z);
-                    }
-                    glEnd();
-                    
-                }
-			case FE_QUAD4:
-			case FE_QUAD8:
-			case FE_QUAD9:
-			{
-							 const vec3d& r1 = pm->Node(e.m_node[0]).r;
-							 const vec3d& r2 = pm->Node(e.m_node[1]).r;
-							 const vec3d& r3 = pm->Node(e.m_node[2]).r;
-							 const vec3d& r4 = pm->Node(e.m_node[3]).r;
-
-							 vec3d n = (r2 - r1) ^ (r3 - r1);
-							 n.Normalize();
-
-							 glBegin(GL_QUADS);
-							 {
-								 glNormal3d(n.x, n.y, n.z);
-								 glVertex3d(r1.x, r1.y, r1.z);
-								 glVertex3d(r2.x, r2.y, r2.z);
-								 glVertex3d(r3.x, r3.y, r3.z);
-								 glVertex3d(r4.x, r4.y, r4.z);
-							 }
-							 glEnd();
-			}
-				break;
-			case FE_TRI3:
-			case FE_TRI6:
-			{
-							const vec3d& r1 = pm->Node(e.m_node[0]).r;
-							const vec3d& r2 = pm->Node(e.m_node[1]).r;
-							const vec3d& r3 = pm->Node(e.m_node[2]).r;
-
-							vec3d n = (r2 - r1) ^ (r3 - r1);
-							n.Normalize();
-
-							glBegin(GL_TRIANGLES);
-							{
-								glNormal3d(n.x, n.y, n.z);
-								glVertex3d(r1.x, r1.y, r1.z);
-								glVertex3d(r2.x, r2.y, r2.z);
-								glVertex3d(r3.x, r3.y, r3.z);
-							}
-							glEnd();
-			}
-				break;
-			case FE_BEAM2:
-			{
-							 const vec3d& r1 = pm->Node(e.m_node[0]).r;
-							 const vec3d& r2 = pm->Node(e.m_node[1]).r;
-							 glBegin(GL_LINES);
-							 {
-								 glNormal3d(1, 1, 1);
-								 glVertex3d(r1.x, r1.y, r1.z);
-								 glVertex3d(r2.x, r2.y, r2.z);
-							 }
-							 glEnd();
-			}
-				break;
-			default:
-				assert(false);
-			}
-		}
-	}
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderMeshLines()
-{
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (pdoc == nullptr) return;
-
-	GModel& model = *pdoc->GetGModel();
-	int nitem = pdoc->GetItemMode();
-
-	VIEW_SETTINGS& vs = GetViewSettings();
-	GLColor c = vs.m_mcol;
-	glColor3ub(c.r, c.g, c.b);
-
-	for (int i = 0; i<model.Objects(); ++i)
-	{
-		GObject* po = model.Object(i);
-		if (po->IsVisible() && po->IsValid())
-		{
-			FEMesh* pm = po->GetFEMesh();
-			if (pm)
-			{
-				glPushMatrix();
-				SetModelView(po);
-				if (nitem == ITEM_ELEM)
-					RenderMeshLines(po);
-				else if (nitem == ITEM_MESH)
-					m_renderer.RenderMeshLines(pm);
-				else if (nitem != ITEM_EDGE)
-					m_renderer.RenderMeshLines(po->GetEditableMesh());
-				glPopMatrix();
-			}
-			else if (dynamic_cast<GSurfaceMeshObject*>(po))
-			{
-				FESurfaceMesh* surfaceMesh = dynamic_cast<GSurfaceMeshObject*>(po)->GetSurfaceMesh();
-				if (surfaceMesh && (nitem != ITEM_EDGE))
-				{
-					glPushMatrix();
-					SetModelView(po);
-					m_renderer.RenderMeshLines(surfaceMesh);
-					glPopMatrix();
-				}
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CGLView::RenderMeshLines(GObject* po)
-{
-	if ((po == 0) || !po->IsVisible()) return;
-
-	FEMesh* pm = po->GetFEMesh();
-	if (pm == 0) return;
-
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
-	glDisable(GL_LIGHTING);
-//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-	// loop over all elements
-	for (int i = 0; i<pm->Elements(); i++)
-	{
-		const FEElement_& e = pm->ElementRef(i);
-		if (e.IsVisible() && (po->Part(e.m_gid)->IsVisible()))
-		{
-			switch (e.Type())
-			{
-			case FE_HEX8:
-			{
-				for (int j = 0; j<6; j++)
-				{
-					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-					if ((pen == 0) || (!pen->IsVisible()))
-					{
-						glBegin(GL_LINE_LOOP);
-						{
-
-							const vec3d& r1 = pm->Node(e.m_node[FTHEX8[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTHEX8[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTHEX8[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTHEX8[j][3]]).r;
-
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-							glVertex3d(r4.x, r4.y, r4.z);
-						}
-						glEnd();
-					}
-				}
-			}
-			break;
-			case FE_HEX20:
-			case FE_HEX27:
-				{
-					for (int j = 0; j<6; j++)
-					{
-						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-						if ((pen == 0) || (!pen->IsVisible()))
-						{
-							glBegin(GL_LINE_LOOP);
-							{
-
-								const vec3d& r1 = pm->Node(e.m_node[FTHEX20[j][0]]).r;
-								const vec3d& r2 = pm->Node(e.m_node[FTHEX20[j][1]]).r;
-								const vec3d& r3 = pm->Node(e.m_node[FTHEX20[j][2]]).r;
-								const vec3d& r4 = pm->Node(e.m_node[FTHEX20[j][3]]).r;
-								const vec3d& r5 = pm->Node(e.m_node[FTHEX20[j][4]]).r;
-								const vec3d& r6 = pm->Node(e.m_node[FTHEX20[j][5]]).r;
-								const vec3d& r7 = pm->Node(e.m_node[FTHEX20[j][6]]).r;
-								const vec3d& r8 = pm->Node(e.m_node[FTHEX20[j][7]]).r;
-
-								glVertex3d(r1.x, r1.y, r1.z);
-								glVertex3d(r5.x, r5.y, r5.z);
-								glVertex3d(r2.x, r2.y, r2.z);
-								glVertex3d(r6.x, r6.y, r6.z);
-								glVertex3d(r3.x, r3.y, r3.z);
-								glVertex3d(r7.x, r7.y, r7.z);
-								glVertex3d(r4.x, r4.y, r4.z);
-								glVertex3d(r8.x, r8.y, r8.z);
-							}
-							glEnd();
-						}
-					}
-				}
-				break;
-			case FE_PENTA6:
-			case FE_PENTA15:
-				{
-					for (int j = 0; j<3; j++)
-					{
-						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-						if ((pen == 0) || (!pen->IsVisible()))
-						{
-							glBegin(GL_LINE_LOOP);
-							{
-								const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-								const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-								const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-								const vec3d& r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
-
-								glVertex3d(r1.x, r1.y, r1.z);
-								glVertex3d(r2.x, r2.y, r2.z);
-								glVertex3d(r3.x, r3.y, r3.z);
-								glVertex3d(r4.x, r4.y, r4.z);
-							}
-							glEnd();
-						}
-					}
-
-					for (int j = 3; j<5; j++)
-					{
-						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-						if ((pen == 0) || (!pen->IsVisible()))
-						{
-							glBegin(GL_LINE_LOOP);
-							{
-								const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-								const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-								const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-
-								glVertex3d(r1.x, r1.y, r1.z);
-								glVertex3d(r2.x, r2.y, r2.z);
-								glVertex3d(r3.x, r3.y, r3.z);
-							}
-							glEnd();
-						}
-					}
-				}
-				break;
-			case FE_PYRA5:
-				{
-					for (int j = 0; j<4; j++)
-					{
-						glBegin(GL_LINE_LOOP);
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
-
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-						}
-						glEnd();
-					}
-
-					glBegin(GL_LINE_LOOP);
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[4][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[4][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
-
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-						glVertex3d(r4.x, r4.y, r4.z);
-					}
-					glEnd();
-
-				}
-				break;
-
-            case FE_PYRA13:
-                {
-                    for (int j = 0; j<4; j++)
-                    {
-                        glBegin(GL_LINE_LOOP);
-                        {
-                            const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
-                            const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
-                            const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
-                            const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[j][3]]).r;
-                            const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[j][4]]).r;
-                            const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[j][5]]).r;
-
-                            glVertex3d(r1.x, r1.y, r1.z);
-                            glVertex3d(r4.x, r4.y, r4.z);
-                            glVertex3d(r2.x, r2.y, r2.z);
-                            glVertex3d(r5.x, r5.y, r5.z);
-                            glVertex3d(r3.x, r3.y, r3.z);
-                            glVertex3d(r6.x, r6.y, r6.z);
-                        }
-                        glEnd();
-                    }
-                    
-                    glBegin(GL_LINE_LOOP);
-                    {
-                        const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
-                        const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
-                        const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
-                        const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
-                        const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[4][4]]).r;
-                        const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[4][5]]).r;
-                        const vec3d& r7 = pm->Node(e.m_node[FTPYRA13[4][6]]).r;
-                        const vec3d& r8 = pm->Node(e.m_node[FTPYRA13[4][7]]).r;
-
-                        glVertex3d(r1.x, r1.y, r1.z);
-                        glVertex3d(r5.x, r5.y, r5.z);
-                        glVertex3d(r2.x, r2.y, r2.z);
-                        glVertex3d(r6.x, r6.y, r6.z);
-                        glVertex3d(r3.x, r3.y, r3.z);
-                        glVertex3d(r7.x, r7.y, r7.z);
-                        glVertex3d(r4.x, r4.y, r4.z);
-                        glVertex3d(r8.x, r8.y, r8.z);
-                    }
-                    glEnd();
-                    
-                }
-                    break;
-                    
-			case FE_TET4:
-			case FE_TET5:
-			case FE_TET20:
-				{
-					for (int j = 0; j<4; j++)
-					{
-						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-						if ((pen == 0) || (!pen->IsVisible()))
-						{
-							glBegin(GL_LINE_LOOP);
-							{
-								const vec3d& r1 = pm->Node(e.m_node[FTTET[j][0]]).r;
-								const vec3d& r2 = pm->Node(e.m_node[FTTET[j][1]]).r;
-								const vec3d& r3 = pm->Node(e.m_node[FTTET[j][2]]).r;
-
-								glVertex3d(r1.x, r1.y, r1.z);
-								glVertex3d(r2.x, r2.y, r2.z);
-								glVertex3d(r3.x, r3.y, r3.z);
-							}
-							glEnd();
-						}
-					}
-				}
-				break;
-			case FE_TET10:
-			case FE_TET15:
-				{
-					for (int j = 0; j<4; j++)
-					{
-						FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-						if ((pen == 0) || (!pen->IsVisible()))
-						{
-							glBegin(GL_LINE_LOOP);
-							{
-								const vec3d& r1 = pm->Node(e.m_node[FTTET10[j][0]]).r;
-								const vec3d& r2 = pm->Node(e.m_node[FTTET10[j][1]]).r;
-								const vec3d& r3 = pm->Node(e.m_node[FTTET10[j][2]]).r;
-								const vec3d& r4 = pm->Node(e.m_node[FTTET10[j][3]]).r;
-								const vec3d& r5 = pm->Node(e.m_node[FTTET10[j][4]]).r;
-								const vec3d& r6 = pm->Node(e.m_node[FTTET10[j][5]]).r;
-
-								glVertex3d(r1.x, r1.y, r1.z);
-								glVertex3d(r4.x, r4.y, r4.z);
-								glVertex3d(r2.x, r2.y, r2.z);
-								glVertex3d(r5.x, r5.y, r5.z);
-								glVertex3d(r3.x, r3.y, r3.z);
-								glVertex3d(r6.x, r6.y, r6.z);
-							}
-							glEnd();
-						}
-					}
-				}
-				break;
-			case FE_QUAD4:
-			case FE_QUAD8:
-			case FE_QUAD9:
-				{
-					glBegin(GL_LINE_LOOP);
-					{
-						const vec3d& r1 = pm->Node(e.m_node[0]).r;
-						const vec3d& r2 = pm->Node(e.m_node[1]).r;
-						const vec3d& r3 = pm->Node(e.m_node[2]).r;
-						const vec3d& r4 = pm->Node(e.m_node[3]).r;
-
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-						glVertex3d(r4.x, r4.y, r4.z);
-					}
-					glEnd();
-				}
-				break;
-			case FE_TRI3:
-			case FE_TRI6:
-				{
-					glBegin(GL_LINE_LOOP);
-					{
-						const vec3d& r1 = pm->Node(e.m_node[0]).r;
-						const vec3d& r2 = pm->Node(e.m_node[1]).r;
-						const vec3d& r3 = pm->Node(e.m_node[2]).r;
-
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-					}
-					glEnd();
-				}
-				break;
-			} // switch
-		} // if
-	} // for
-
-	glPopAttrib();
-}
-
 
 //-----------------------------------------------------------------
 // this function will only adjust the camera if the currently
@@ -8803,8 +5410,8 @@ void CGLView::RenderTags()
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
 
-	FEMesh* pm = po->GetFEMesh();
-	FEMeshBase* pmb = pm;
+	FSMesh* pm = po->GetFEMesh();
+	FSMeshBase* pmb = pm;
 	if (pm == nullptr)
 	{
 		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
@@ -8819,7 +5426,7 @@ void CGLView::RenderTags()
 
 	// clear the node tags
 	int NN = pmb->Nodes();
-	for (int i = 0; i<NN; ++i) pmb->Node(i).m_ntag = 0;
+	for (int i = 0; i < NN; ++i) pmb->Node(i).m_ntag = 0;
 
 	int mode = doc->GetItemMode();
 
@@ -8827,13 +5434,12 @@ void CGLView::RenderTags()
 	if ((mode == ITEM_ELEM) && pm)
 	{
 		int NE = pm->Elements();
-		for (int i = 0; i<NE; i++)
+		for (int i = 0; i < NE; i++)
 		{
 			FEElement_& el = pm->Element(i);
 			if (el.IsSelected())
 			{
 				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
-				tag.bvis = false;
 				tag.ntag = 0;
 				int nid = el.GetID();
 				if (nid < 0) nid = i + 1;
@@ -8852,11 +5458,10 @@ void CGLView::RenderTags()
 		int NF = pmb->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = pmb->Face(i);
+			FSFace& f = pmb->Face(i);
 			if (f.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
-				tag.bvis = false;
 				tag.ntag = (f.IsExternal() ? 0 : 1);
 				int nid = f.GetID();
 				if (nid < 0) nid = i + 1;
@@ -8873,13 +5478,12 @@ void CGLView::RenderTags()
 	if (mode == ITEM_EDGE)
 	{
 		int NC = pmb->Edges();
-		for (int i = 0; i<NC; i++)
+		for (int i = 0; i < NC; i++)
 		{
-			FEEdge& edge = pmb->Edge(i);
+			FSEdge& edge = pmb->Edge(i);
 			if (edge.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
-				tag.bvis = false;
 				tag.ntag = 0;
 				int nid = edge.GetID();
 				if (nid < 0) nid = i + 1;
@@ -8895,13 +5499,12 @@ void CGLView::RenderTags()
 	// process nodes
 	if (mode == ITEM_NODE)
 	{
-		for (int i = 0; i<NN; i++)
+		for (int i = 0; i < NN; i++)
 		{
-			FENode& node = pmb->Node(i);
+			FSNode& node = pmb->Node(i);
 			if (node.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
-				tag.bvis = false;
 				tag.ntag = (node.IsExterior() ? 0 : 1);
 				int nid = node.GetID();
 				if (nid < 0) nid = i + 1;
@@ -8914,13 +5517,12 @@ void CGLView::RenderTags()
 	// add additional nodes
 	if (view.m_ntagInfo == 1)
 	{
-		for (int i = 0; i<NN; i++)
+		for (int i = 0; i < NN; i++)
 		{
-			FENode& node = pmb->Node(i);
+			FSNode& node = pmb->Node(i);
 			if (node.m_ntag == 1)
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
-				tag.bvis = false;
 				tag.ntag = (node.IsExterior() ? 0 : 1);
 				sprintf(tag.sztag, "N%d", node.GetID());
 				vtag.push_back(tag);
@@ -8936,6 +5538,13 @@ void CGLView::RenderTags()
 	int nsel = (int)vtag.size();
 	if (nsel > MAX_TAGS) return; // nsel = MAX_TAGS;
 
+	RenderTags(vtag);
+}
+
+void CGLView::RenderTags(std::vector<GLTAG>& vtag)
+{
+	int nsel = (int)vtag.size();
+
 	// find out where the tags are on the screen
 	GLViewTransform transform(this);
 	for (int i = 0; i<nsel; i++)
@@ -8943,7 +5552,6 @@ void CGLView::RenderTags()
 		vec3d p = transform.WorldToScreen(vtag[i].r);
 		vtag[i].wx = p.x;
 		vtag[i].wy = m_viewport[3] - p.y;
-		vtag[i].bvis = true;
 	}
 
 	// render the tags
@@ -8963,7 +5571,6 @@ void CGLView::RenderTags()
 
 	double dpr = GetDevicePixelRatio();
 	for (int i = 0; i<nsel; i++)
-		if (vtag[i].bvis)
 		{
 			glBegin(GL_POINTS);
 			{
@@ -8982,7 +5589,6 @@ void CGLView::RenderTags()
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 	painter.setFont(QFont("Helvetica", 10));
 	for (int i = 0; i<nsel; ++i)
-		if (vtag[i].bvis)
 		{
             int x = vtag[i].wx;
             int y = height()*dpr - vtag[i].wy;
@@ -9009,124 +5615,17 @@ void CGLView::RenderTags()
 	glMatrixMode(GL_MODELVIEW);
 }
 
-void CGLView::RenderRigidLabels()
+GLMesh* CGLView::BuildPlaneCut(FSModel& fem)
 {
-	CModelDocument* pdoc = m_pWnd->GetModelDocument();
-	if (pdoc == nullptr) return;
-
-	FEModel* fem = pdoc->GetFEModel();
-	if (fem == nullptr) return;
-
-	VIEW_SETTINGS& view = GetViewSettings();
-
-	vector<GLTAG> vtag;
-
-	for (int i = 0; i < fem->Materials(); ++i)
-	{
-		GMaterial* mat = fem->GetMaterial(i);
-		FERigidMaterial* rb = dynamic_cast<FERigidMaterial*>(mat->GetMaterialProperties());
-		if (rb)
-		{
-			GLTAG tag;
-			tag.r = rb->GetCenterOfMass();
-			tag.bvis = false;
-			tag.ntag = 0;
-
-			string name = mat->GetName();
-			int l = name.size(); if (l > 63) l = 63;
-			if (l > 0)
-			{
-				strncpy(tag.sztag, name.c_str(), l);
-				tag.sztag[l] = 0;
-			}
-			else sprintf(tag.sztag, "_no_name");
-			vtag.push_back(tag);
-		}
-	}
-	int nsel = vtag.size();
-	if (nsel == 0) return;
-
-	// find out where the tags are on the screen
-	GLViewTransform transform(this);
-	for (int i = 0; i < nsel; i++)
-	{
-		vec3d p = transform.WorldToScreen(vtag[i].r);
-		vtag[i].wx = p.x;
-		vtag[i].wy = m_viewport[3] - p.y;
-		vtag[i].bvis = true;
-	}
-
-	// render the tags
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-
-	gluOrtho2D(0, m_viewport[2], 0, m_viewport[3]);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
-	for (int i = 0; i < nsel; i++)
-		if (vtag[i].bvis)
-		{
-			glBegin(GL_POINTS);
-			{
-				glColor3ub(0, 0, 0);
-				glVertex2f(vtag[i].wx, vtag[i].wy);
-				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
-				else glColor3ub(255, 0, 0);
-				glVertex2f(vtag[i].wx - 1, vtag[i].wy + 1);
-			}
-			glEnd();
-		}
-
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-	painter.setFont(QFont("Helvetica", 10));
-	for (int i = 0; i < nsel; ++i)
-		if (vtag[i].bvis)
-		{
-			double dpr = GetDevicePixelRatio();
-			int x = vtag[i].wx;
-			int y = (int)(height()*dpr - vtag[i].wy);
-			painter.setPen(Qt::black);
-
-			painter.drawText(x + 3, y - 2, vtag[i].sztag);
-
-			if (vtag[i].ntag == 0) painter.setPen(Qt::yellow);
-			else painter.setPen(Qt::red);
-
-			painter.drawText(x + 2, y - 3, vtag[i].sztag);
-		}
-	painter.end();
-
-	glPopAttrib();
-
-	// QPainter messes this up so reset it
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	glPopMatrix();
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-	glMatrixMode(GL_MODELVIEW);
-}
-
-void CGLView::UpdatePlaneCut(bool breset)
-{
-	if (m_planeCut) delete m_planeCut;
+	GModel& mdl = fem.GetModel();
+	VIEW_SETTINGS& vs = GetViewSettings();
+	GObject* poa = m_pWnd->GetActiveObject();
+	double vmin, vmax;
 
 	CModelDocument* doc = m_pWnd->GetModelDocument();
-	if (doc == nullptr) return;
+	if (doc == nullptr) return nullptr;
 
-	FEModel& fem = *doc->GetFEModel();
-
-	GModel& mdl = *doc->GetGModel();
-	if (mdl.Objects() == 0) return;
+	if (mdl.Objects() == 0) return nullptr;
 
 	// set the plane normal
 	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
@@ -9134,136 +5633,136 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
-	VIEW_SETTINGS& vs = GetViewSettings();
+	GLMesh* planeCut = new GLMesh;
 
-	double vmin, vmax;
-
-	m_planeCut = new GLMesh;
-
-	if (breset)
+	for (int i = 0; i < mdl.Objects(); ++i)
 	{
-		for (int n = 0; n < mdl.Objects(); ++n)
+		GObject* po = mdl.Object(i);
+		if (po->GetFEMesh())
 		{
-			GObject* po = mdl.Object(n);
-			if (po->GetFEMesh())
+			FSMesh* mesh = po->GetFEMesh();
+
+			vec3d ex[8];
+			int en[8];
+			GLColor ec[8];
+
+			bool showContour = false;
+			Mesh_Data& data = mesh->GetMeshData();
+			if ((po == poa) && (vs.m_bcontour))
 			{
-				FEMesh* mesh = po->GetFEMesh();
-				int NE = mesh->Elements();
-				for (int i = 0; i < NE; ++i)
-				{
-					FEElement& el = mesh->Element(i);
-					el.Show(); el.Unhide();
-				}
-				mesh->UpdateItemVisibility();
+				showContour = (vs.m_bcontour && data.IsValid());
+				if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
 			}
-		}
-	}
 
-	if ((m_planeCutMode == 0) && (m_showPlaneCut))
-	{
-		GObject* poa = m_pWnd->GetActiveObject();
-
-		for (int i = 0; i < mdl.Objects(); ++i)
-		{
-			GObject* po = mdl.Object(i);
-			if (po->GetFEMesh())
+			// repeat over all elements
+			GLColor defaultColor(200, 200, 200);
+			GLColor c(defaultColor);
+			int matId = -1;
+			int NE = mesh->Elements();
+			for (int i = 0; i < NE; ++i)
 			{
-				FEMesh* mesh = po->GetFEMesh();
-
-				vec3d ex[8];
-				int en[8];
-				GLColor ec[8];
-
-				bool showContour = false;
-				Mesh_Data& data = mesh->GetMeshData();
-				if ((po == poa) && (vs.m_bcontour))
+				// render only when visible
+				FSElement& el = mesh->Element(i);
+				GPart* pg = po->Part(el.m_gid);
+				if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
 				{
-					showContour = (vs.m_bcontour && data.IsValid());
-					if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
-				}
-
-				// repeat over all elements
-				GLColor defaultColor(200, 200, 200);
-				GLColor c(defaultColor);
-				int matId = -1;
-				int NE = mesh->Elements();
-				for (int i = 0; i < NE; ++i)
-				{
-					// render only when visible
-					FEElement& el = mesh->Element(i);
-					if (el.IsVisible() && el.IsSolid())
+					int mid = pg->GetMaterialID();
+					if (mid != matId)
 					{
-						GPart* pg = po->Part(el.m_gid);
-						int mid = pg->GetMaterialID();
-						if (mid != matId)
+						GMaterial* pmat = fem.GetMaterialFromID(mid);
+						if (pmat)
 						{
-							GMaterial* pmat = fem.GetMaterialFromID(mid);
-							if (pmat)
-							{
-								c = fem.GetMaterialFromID(mid)->Diffuse();
-								matId = mid;
-							}
-							else
-							{
-								matId = -1;
-								c = defaultColor;
-							}
+							c = fem.GetMaterialFromID(mid)->Diffuse();
+							matId = mid;
 						}
+						else
+						{
+							matId = -1;
+							c = defaultColor;
+						}
+					}
 
 
-						const int *nt = nullptr;
-						switch (el.Type())
-						{
-						case FE_HEX8: nt = HEX_NT; break;
-						case FE_HEX20: nt = HEX_NT; break;
-						case FE_HEX27: nt = HEX_NT; break;
-						case FE_PENTA6: nt = PEN_NT; break;
-						case FE_PENTA15: nt = PEN_NT; break;
-						case FE_TET4: nt = TET_NT; break;
-						case FE_TET5: nt = TET_NT; break;
-						case FE_TET10: nt = TET_NT; break;
-						case FE_TET15: nt = TET_NT; break;
-						case FE_TET20: nt = TET_NT; break;
-						case FE_PYRA5: nt = PYR_NT; break;
-                        case FE_PYRA13: nt = PYR_NT; break;
-						default:
-							assert(false);
-						}
+					const int* nt = nullptr;
+					switch (el.Type())
+					{
+					case FE_HEX8: nt = HEX_NT; break;
+					case FE_HEX20: nt = HEX_NT; break;
+					case FE_HEX27: nt = HEX_NT; break;
+					case FE_PENTA6: nt = PEN_NT; break;
+					case FE_PENTA15: nt = PEN_NT; break;
+					case FE_TET4: nt = TET_NT; break;
+					case FE_TET5: nt = TET_NT; break;
+					case FE_TET10: nt = TET_NT; break;
+					case FE_TET15: nt = TET_NT; break;
+					case FE_TET20: nt = TET_NT; break;
+					case FE_PYRA5: nt = PYR_NT; break;
+					case FE_PYRA13: nt = PYR_NT; break;
+					default:
+						assert(false);
+					}
 
 						// get the nodal values
 						for (int k = 0; k < 8; ++k)
 						{
-							FENode& node = mesh->Node(el.m_node[nt[k]]);
-							ex[k] = to_vec3f(mesh->LocalToGlobal(node.r));
+							FSNode& node = mesh->Node(el.m_node[nt[k]]);
+							ex[k] = mesh->LocalToGlobal(node.r);
 							en[k] = el.m_node[nt[k]];
 						}
 
-						if (showContour)
+					if (showContour)
+					{
+						for (int k = 0; k < 8; ++k)
 						{
-							for (int k = 0; k < 8; ++k)
-							{
-								if (data.GetElementDataTag(i) > 0)
-									ec[k] = m_colorMap.map(data.GetElementValue(i, nt[k]));
-								else
-									ec[k] = GLColor(212, 212, 212);
-							}
+							if (data.GetElementDataTag(i) > 0)
+								ec[k] = m_colorMap.map(data.GetElementValue(i, nt[k]));
+							else
+								ec[k] = GLColor(212, 212, 212);
 						}
+					}
 
 						// calculate the case of the element
 						int ncase = 0;
 						for (int k = 0; k < 8; ++k)
-							if (norm*ex[k] >= ref) ncase |= (1 << k);
+							if (norm*ex[k] > ref*0.999999) ncase |= (1 << k);
 
-						// loop over faces
-						int* pf = LUT[ncase];
-						int ne = 0;
-						for (int l = 0; l < 5; l++)
+					// loop over faces
+					int* pf = LUT[ncase];
+					int ne = 0;
+					for (int l = 0; l < 5; l++)
+					{
+						if (*pf == -1) break;
+
+						// calculate nodal positions
+						vec3d r[3];
+						float w1, w2, w;
+						for (int k = 0; k < 3; k++)
 						{
-							if (*pf == -1) break;
+							int n1 = ET_HEX[pf[k]][0];
+							int n2 = ET_HEX[pf[k]][1];
 
-							// calculate nodal positions
-							vec3d r[3];
-							float w1, w2, w;
+							w1 = norm * ex[n1];
+							w2 = norm * ex[n2];
+
+							if (w2 != w1)
+								w = (ref - w1) / (w2 - w1);
+							else
+								w = 0.f;
+
+							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+						}
+
+						int nf = planeCut->Faces();
+						planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
+						GMesh::FACE& face = planeCut->Face(nf);
+						if (po == poa)
+						{
+							face.eid = i;
+						}
+
+						if (showContour)
+						{
+							GLColor c;
 							for (int k = 0; k < 3; k++)
 							{
 								int n1 = ET_HEX[pf[k]][0];
@@ -9277,93 +5776,110 @@ void CGLView::UpdatePlaneCut(bool breset)
 								else
 									w = 0.f;
 
-								r[k] = ex[n1] * (1 - w) + ex[n2] * w;
+								c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
+								c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
+								c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
+
+								face.c[k] = c;
 							}
-
-							int nf = m_planeCut->Faces();
-							m_planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
-							GMesh::FACE& face = m_planeCut->Face(nf);
-							if (po == poa)
-							{
-								face.eid = i;
-							}
-
-							if (showContour)
-							{
-								GLColor c;
-								for (int k = 0; k < 3; k++)
-								{
-									int n1 = ET_HEX[pf[k]][0];
-									int n2 = ET_HEX[pf[k]][1];
-
-									w1 = norm * ex[n1];
-									w2 = norm * ex[n2];
-
-									if (w2 != w1)
-										w = (ref - w1) / (w2 - w1);
-									else
-										w = 0.f;
-
-									c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
-									c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
-									c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
-
-									face.c[k] = c;
-								}
-							}
-							else
-							{
-								face.c[0] = face.c[1] = face.c[2] = c;
-							}
-
-							// add edges (for mesh rendering)
-							for (int k = 0; k < 3; ++k)
-							{
-								int n1 = pf[k];
-								int n2 = pf[(k + 1) % 3];
-
-								bool badd = true;
-								for (int m = 0; m < ne; ++m)
-								{
-									int m1 = edge[m][0];
-									int m2 = edge[m][1];
-									if (((n1 == m1) && (n2 == m2)) ||
-										((n1 == m2) && (n2 == m1)))
-									{
-										badd = false;
-										etag[m]++;
-										break;
-									}
-								}
-
-								if (badd)
-								{
-									edge[ne][0] = n1;
-									edge[ne][1] = n2;
-									etag[ne] = 0;
-
-									GMesh::FACE& face = m_planeCut->Face(m_planeCut->Faces() - 1);
-									edgeNode[ne][0] = face.n[k];
-									edgeNode[ne][1] = face.n[(k + 1) % 3];
-									++ne;
-								}
-							}
-							pf += 3;
+						}
+						else
+						{
+							face.c[0] = face.c[1] = face.c[2] = c;
 						}
 
-						for (int k = 0; k < ne; ++k)
+						// add edges (for mesh rendering)
+						for (int k = 0; k < 3; ++k)
 						{
-							if (etag[k] == 0)
+							int n1 = pf[k];
+							int n2 = pf[(k + 1) % 3];
+
+							bool badd = true;
+							for (int m = 0; m < ne; ++m)
 							{
-								m_planeCut->AddEdge(edgeNode[k], 2, (el.IsSelected() ? 1 : 0));
+								int m1 = edge[m][0];
+								int m2 = edge[m][1];
+								if (((n1 == m1) && (n2 == m2)) ||
+									((n1 == m2) && (n2 == m1)))
+								{
+									badd = false;
+									etag[m]++;
+									break;
+								}
 							}
+
+							if (badd)
+							{
+								edge[ne][0] = n1;
+								edge[ne][1] = n2;
+								etag[ne] = 0;
+
+								GMesh::FACE& face = planeCut->Face(planeCut->Faces() - 1);
+								edgeNode[ne][0] = face.n[k];
+								edgeNode[ne][1] = face.n[(k + 1) % 3];
+								++ne;
+							}
+						}
+						pf += 3;
+					}
+
+					for (int k = 0; k < ne; ++k)
+					{
+						if (etag[k] == 0)
+						{
+							planeCut->AddEdge(edgeNode[k], 2, (el.IsSelected() ? 1 : 0));
 						}
 					}
 				}
 			}
 		}
+	}
 
-		m_planeCut->Update();
+	planeCut->Update();
+
+	return planeCut;
+}
+
+void CGLView::UpdatePlaneCut(bool breset)
+{
+	if (m_planeCut) delete m_planeCut; m_planeCut = nullptr;
+
+	CModelDocument* doc = m_pWnd->GetModelDocument();
+	if (doc == nullptr) return;
+
+	FSModel& fem = *doc->GetFSModel();
+
+	GModel& mdl = *doc->GetGModel();
+	if (mdl.Objects() == 0) return;
+
+	// set the plane normal
+	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
+	double ref = -m_plane[3];
+
+	VIEW_SETTINGS& vs = GetViewSettings();
+
+	if (breset)
+	{
+		for (int n = 0; n < mdl.Objects(); ++n)
+		{
+			GObject* po = mdl.Object(n);
+			if (po->GetFEMesh())
+			{
+				FSMesh* mesh = po->GetFEMesh();
+				int NE = mesh->Elements();
+				for (int i = 0; i < NE; ++i)
+				{
+					FSElement& el = mesh->Element(i);
+					el.Show(); el.Unhide();
+				}
+				po->UpdateItemVisibility();
+			}
+		}
+	}
+
+	if ((m_planeCutMode == 0) && (m_showPlaneCut))
+	{
+		m_planeCut = BuildPlaneCut(fem);
 	}
 	else
 	{
@@ -9372,14 +5888,14 @@ void CGLView::UpdatePlaneCut(bool breset)
 			GObject* po = mdl.Object(n);
 			if (po->GetFEMesh())
 			{
-				FEMesh* mesh = po->GetFEMesh();
+				FSMesh* mesh = po->GetFEMesh();
 
 				if (m_showPlaneCut)
 				{
 					int NN = mesh->Nodes();
 					for (int i = 0; i < NN; ++i)
 					{
-						FENode& node = mesh->Node(i);
+						FSNode& node = mesh->Node(i);
 						node.m_ntag = 0;
 
 						vec3d ri = mesh->LocalToGlobal(node.pos());
@@ -9392,7 +5908,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					int NE = mesh->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh->Element(i);
+						FSElement& el = mesh->Element(i);
 						el.Show(); el.Unhide();
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
@@ -9410,7 +5926,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 					int NE = mesh->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = mesh->Element(i);
+						FSElement& el = mesh->Element(i);
 						el.Show(); el.Unhide();
 					}
 				}
@@ -9419,6 +5935,26 @@ void CGLView::UpdatePlaneCut(bool breset)
 			}
 		}
 	}
+}
+
+bool CGLView::ShowPlaneCut()
+{
+	return m_showPlaneCut;
+}
+
+GLMesh* CGLView::PlaneCutMesh()
+{
+	return m_planeCut;
+}
+
+int CGLView::PlaneCutMode()
+{
+	return m_planeCutMode;
+}
+
+double* CGLView::PlaneCoordinates()
+{
+	return m_plane;
 }
 
 void CGLView::RenderPlaneCut()
@@ -9433,14 +5969,19 @@ void CGLView::RenderPlaneCut()
 	glColor3ub(200, 0, 200);
 	RenderBox(box, false);
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	int MAT = fem.Materials();
+
+	GLMeshRender& mr = GetMeshRenderer();
+
+	bool oldFaceColorMode = mr.GetFaceColor();
 
 	// render the unselected faces
 	glColor3ub(255, 255, 255);
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_COLOR_MATERIAL);
-	GetMeshRenderer().RenderGLMesh(m_planeCut, 0);
+	mr.SetFaceColor(true);
+	mr.RenderGLMesh(m_planeCut, 0);
 
 	// render the selected faces
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
@@ -9448,7 +5989,10 @@ void CGLView::RenderPlaneCut()
 	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_STIPPLE);
 	glColor3ub(255, 0, 0);
-	GetMeshRenderer().RenderGLMesh(m_planeCut, 1);
+	mr.SetFaceColor(false);
+	mr.RenderGLMesh(m_planeCut, 1);
+
+	mr.SetFaceColor(oldFaceColorMode);
 
 	if (GetViewSettings().m_bmesh)
 	{

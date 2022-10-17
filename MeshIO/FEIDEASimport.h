@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <list>
 //using namespace std;
 
-class FEIDEASimport : public FEFileImport
+class FEIDEASimport : public FSFileImport
 {
 protected:
 	struct NODE
@@ -49,13 +49,13 @@ protected:
 	};
 
 public:
-	FEIDEASimport(FEProject& prj);
+	FEIDEASimport(FSProject& prj);
 	virtual ~FEIDEASimport();
 
 	bool Load(const char* szfile);
 
 protected:
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 
 	bool ReadHeader(bool& bend);
 	bool ReadNodes(bool& bend);
@@ -64,5 +64,5 @@ protected:
 protected:
 	list<NODE>		m_Node;
 	list<ELEMENT>	m_Elem;
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 };

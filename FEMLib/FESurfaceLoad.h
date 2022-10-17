@@ -4,29 +4,23 @@
 //=============================================================================
 // Base class for surface loads.
 //
-class FESurfaceLoad : public FELoad
+class FSSurfaceLoad : public FSLoad
 {
 public:
-	FESurfaceLoad(int ntype, FEModel* ps) : FELoad(ntype, ps) {}
-	FESurfaceLoad(int ntype, FEModel* ps, FEItemListBuilder* pi, int nstep) : FELoad(ntype, ps, pi, nstep){}
-
-	// return the "primary" load curve
-	// TODO: remove this
-	virtual FELoadCurve* GetLoadCurve() = 0;
+    FSSurfaceLoad(int ntype, FSModel* ps);
+    FSSurfaceLoad(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep);
 };
 
 //-----------------------------------------------------------------------------
 // Surface pressure boundary conditions
 //
-class FEPressureLoad : public FESurfaceLoad
+class FSPressureLoad : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE };
 
 public:
-	FEPressureLoad(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+	FSPressureLoad(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLinearFlag(bool b) { SetBoolValue(NTYPE, b); }
 	bool GetLinearFlag() { return GetBoolValue(NTYPE); }
@@ -41,15 +35,13 @@ public:
 //-----------------------------------------------------------------------------
 // Fluid flux surface boundary load
 //
-class FEFluidFlux : public FESurfaceLoad
+class FSFluidFlux : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE, NFLUX };
 
 public:
-	FEFluidFlux(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+	FSFluidFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
@@ -67,15 +59,13 @@ public:
 //-----------------------------------------------------------------------------
 // Mixture Normal Traction surface boundary load
 //
-class FEBPNormalTraction : public FESurfaceLoad
+class FSBPNormalTraction : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE, NTRAC };
 
 public:
-	FEBPNormalTraction(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+	FSBPNormalTraction(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
@@ -93,15 +83,13 @@ public:
 //-----------------------------------------------------------------------------
 // Solute flux surface boundary load
 //
-class FESoluteFlux : public FESurfaceLoad
+class FSSoluteFlux : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, NTYPE, BC };
 
 public:
-	FESoluteFlux(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+	FSSoluteFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(LOAD, f); }
 	double GetLoad() { return GetFloatValue(LOAD); }
@@ -117,18 +105,34 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Solute natural flux surface boundary load
+//
+class FSSoluteNaturalFlux : public FSSurfaceLoad
+{
+public:
+    enum { SID, BSHL };
+    
+public:
+    FSSoluteNaturalFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    int GetBC() { return GetIntValue(SID); }
+    void SetBC(int n) { SetIntValue(SID, n); }
+    
+
+    void SetShellBottomFlag(bool b) { SetBoolValue(BSHL, b); }
+    bool GetShellBottomFlag() { return GetBoolValue(BSHL); }
+};
+
+//-----------------------------------------------------------------------------
 // Matching osmotic coefficient surface boundary load
 //
-class FEMatchingOsmoticCoefficient : public FESurfaceLoad
+class FSMatchingOsmoticCoefficient : public FSSurfaceLoad
 {
 public:
     enum { AMBP, AMBC, BSHL };
 
 public:
-    FEMatchingOsmoticCoefficient(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-    FELoadCurve* GetLoadCurve() override { return GetParamLC(AMBP); }
-    FELoadCurve* GetLoadCurveC() { return GetParamLC(AMBC); }
+    FSMatchingOsmoticCoefficient(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
     void SetLoadP(double f) { SetFloatValue(AMBP, f); }
     double GetLoadP() { return GetFloatValue(AMBP); }
@@ -144,15 +148,13 @@ public:
 //-----------------------------------------------------------------------------
 // Heat flux surface boundary load
 //
-class FEHeatFlux : public FESurfaceLoad
+class FSHeatFlux : public FSSurfaceLoad
 {
 public:
 	enum { FLUX };
 
 public:
-	FEHeatFlux(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(FLUX); }
+	FSHeatFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetLoad(double f) { SetFloatValue(FLUX, f); }
 	double GetLoad() { return GetFloatValue(FLUX); }
@@ -164,13 +166,13 @@ public:
 //-----------------------------------------------------------------------------
 // Convective Heat flux surface boundary load
 //
-class FEConvectiveHeatFlux : public FESurfaceLoad
+class FSConvectiveHeatFlux : public FSSurfaceLoad
 {
 public:
 	enum { HC, TREF };
 
 public:
-	FEConvectiveHeatFlux(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+	FSConvectiveHeatFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	double GetCoefficient() { return GetFloatValue(HC); }
 	double GetTemperature() { return GetFloatValue(TREF); }
@@ -178,23 +180,19 @@ public:
 	void SetCoefficient(double hc) { SetFloatValue(HC, hc); }
 	void SetTemperature(double Ta) { SetFloatValue(TREF, Ta); }
 
-	FELoadCurve* GetLoadCurve() { return GetParamLC(TREF); }
-
 	// used only for reading parameters for old file formats
 	void LoadParam(const Param& p);
 };
 
 //-----------------------------------------------------------------------------
 
-class FESurfaceTraction : public FESurfaceLoad
+class FSSurfaceTraction : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, TRACTION };
 
 public:
-	FESurfaceTraction(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+	FSSurfaceTraction(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetScale(double f) { SetFloatValue(LOAD, f); }
 	double GetScale() { return GetFloatValue(LOAD); }
@@ -208,15 +206,40 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidTraction : public FESurfaceLoad
+class FSSurfaceForceUniform : public FSSurfaceLoad
+{
+public:
+    enum { SCALE, FORCE };
+    
+public:
+    FSSurfaceForceUniform(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    void SetScale(double f) { SetFloatValue(SCALE, f); }
+    double GetScale() { return GetFloatValue(SCALE); }
+    
+    void SetForce(const vec3d& t) { SetVecValue(FORCE, t); }
+    vec3d GetForce() { return GetVecValue(FORCE); }
+};
+
+//-----------------------------------------------------------------------------
+class FSBearingLoad: public FSSurfaceLoad
+{
+public:
+    enum { SCALE, FORCE, PROFILE, NTYPE };
+    
+public:
+    FSBearingLoad(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+};
+
+//-----------------------------------------------------------------------------
+
+class FSFluidTraction : public FSSurfaceLoad
 {
 public:
 	enum { LOAD, TRACTION };
 
 public:
-	FEFluidTraction(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-
-	FELoadCurve* GetLoadCurve();
+	FSFluidTraction(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
 
 	void SetScale(double s);
 	double GetScale();
@@ -231,15 +254,13 @@ public:
 //-----------------------------------------------------------------------------
 // fluid pressure boundary conditions
 //
-class FEFluidPressureLoad : public FESurfaceLoad
+class FSFluidPressureLoad : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
     
 public:
-    FEFluidPressureLoad(FEModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidPressureLoad(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -250,16 +271,14 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidVelocity : public FESurfaceLoad
+class FSFluidVelocity : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
     
 public:
-    FEFluidVelocity(FEModel* ps);
-    FEFluidVelocity(FEModel* ps, FEItemListBuilder* pi, vec3d t, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidVelocity(FSModel* ps);
+    FSFluidVelocity(FSModel* ps, FEItemListBuilder* pi, vec3d t, int nstep = 0);
     
     void SetLoad(vec3d t) { SetVecValue(LOAD, t); }
     vec3d GetLoad() { return GetVecValue(LOAD); }
@@ -267,16 +286,14 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidNormalVelocity : public FESurfaceLoad
+class FSFluidNormalVelocity : public FSSurfaceLoad
 {
 public:
     enum {LOAD, BP, BPARAB, BRIMP};
     
 public:
-    FEFluidNormalVelocity(FEModel* ps);
-    FEFluidNormalVelocity(FEModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidNormalVelocity(FSModel* ps);
+    FSFluidNormalVelocity(FSModel* ps, FEItemListBuilder* pi, double vn, bool bp, bool bparab, bool brimp, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -293,16 +310,14 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidRotationalVelocity : public FESurfaceLoad
+class FSFluidRotationalVelocity : public FSSurfaceLoad
 {
 public:
     enum {LOAD, AXIS, ORIGIN };
     
 public:
-    FEFluidRotationalVelocity(FEModel* ps);
-    FEFluidRotationalVelocity(FEModel* ps, FEItemListBuilder* pi, double w, vec3d n, vec3d p, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidRotationalVelocity(FSModel* ps);
+    FSFluidRotationalVelocity(FSModel* ps, FEItemListBuilder* pi, double w, vec3d n, vec3d p, int nstep = 0);
     
     void SetLoad(double w) { SetFloatValue(LOAD, w); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -316,21 +331,17 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidFlowResistance : public FESurfaceLoad
+class FSFluidFlowResistance : public FSSurfaceLoad
 {
 public:
     enum {LOAD, PO };
     
 public:
-    FEFluidFlowResistance(FEModel* ps);
-    FEFluidFlowResistance(FEModel* ps, FEItemListBuilder* pi, double b, double p, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidFlowResistance(FSModel* ps);
+    FSFluidFlowResistance(FSModel* ps, FEItemListBuilder* pi, double b, double p, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
-    
-    FELoadCurve* GetPOLoadCurve() { return GetParamLC(PO); }
     
     void SetPO(double f) { SetFloatValue(PO, f); }
     double GetPO() { return GetFloatValue(PO); }
@@ -339,59 +350,42 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidFlowRCR : public FESurfaceLoad
+class FSFluidFlowRCR : public FSSurfaceLoad
 {
 public:
-    enum {LOAD, RD, CO, PO, IP, BE };
+    enum {LOAD, RD, CO, PO, IP };
     
 public:
-    FEFluidFlowRCR(FEModel* ps);
-    FEFluidFlowRCR(FEModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidFlowRCR(FSModel* ps);
+    FSFluidFlowRCR(FSModel* ps, FEItemListBuilder* pi, double rp, double rd, double co, double po, double ip, bool be, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
-    
-    FELoadCurve* GetRDLoadCurve() { return GetParamLC(RD); }
     
     void SetRD(double f) { SetFloatValue(RD, f); }
     double GetRD() { return GetFloatValue(RD); }
     
-    FELoadCurve* GetCOLoadCurve() { return GetParamLC(CO); }
-    
     void SetCO(double f) { SetFloatValue(CO, f); }
     double GetCO() { return GetFloatValue(CO); }
     
-    FELoadCurve* GetPOLoadCurve() { return GetParamLC(PO); }
-    
     void SetPO(double f) { SetFloatValue(PO, f); }
     double GetPO() { return GetFloatValue(PO); }
-    
-    FELoadCurve* GetIPLoadCurve() { return GetParamLC(IP); }
-    
+
     void SetIP(double f) { SetFloatValue(IP, f); }
     double GetIP() { return GetFloatValue(IP); }
-
-    FELoadCurve* GetBELoadCurve() { return GetParamLC(BE); }
-    
-    void SetBE(bool b) { SetBoolValue(BE, b); }
-    double GetBE() { return GetBoolValue(BE); }
     
 };
 
 //-----------------------------------------------------------------------------
 
-class FEFluidBackflowStabilization : public FESurfaceLoad
+class FSFluidBackflowStabilization : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
     
 public:
-    FEFluidBackflowStabilization(FEModel* ps);
-    FEFluidBackflowStabilization(FEModel* ps, FEItemListBuilder* pi, double b, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidBackflowStabilization(FSModel* ps);
+    FSFluidBackflowStabilization(FSModel* ps, FEItemListBuilder* pi, double b, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -400,16 +394,14 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFluidTangentialStabilization : public FESurfaceLoad
+class FSFluidTangentialStabilization : public FSSurfaceLoad
 {
 public:
     enum { LOAD };
     
 public:
-    FEFluidTangentialStabilization(FEModel* ps);
-    FEFluidTangentialStabilization(FEModel* ps, FEItemListBuilder* pi, double b, int nstep = 0);
-    
-    FELoadCurve* GetLoadCurve() { return GetParamLC(LOAD); }
+    FSFluidTangentialStabilization(FSModel* ps);
+    FSFluidTangentialStabilization(FSModel* ps, FEItemListBuilder* pi, double b, int nstep = 0);
     
     void SetLoad(double f) { SetFloatValue(LOAD, f); }
     double GetLoad() { return GetFloatValue(LOAD); }
@@ -418,40 +410,44 @@ public:
 
 //-----------------------------------------------------------------------------
 
-class FEFSITraction : public FESurfaceLoad
+class FSFSITraction : public FSSurfaceLoad
 {
 public:
-    FEFSITraction(FEModel* ps);
-    FEFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
-    FELoadCurve* GetLoadCurve() { return nullptr; }
-
+    FSFSITraction(FSModel* ps);
+    FSFSITraction(FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 
-class FEBFSITraction : public FESurfaceLoad
+class FSBFSITraction : public FSSurfaceLoad
 {
 public:
-    FEBFSITraction(FEModel* ps);
-    FEBFSITraction(FEModel* ps, FEItemListBuilder* pi, int nstep = 0);
-    FELoadCurve* GetLoadCurve() { return nullptr; }
-    
+    FSBFSITraction(FSModel* ps);
+    FSBFSITraction(FSModel* ps, FEItemListBuilder* pi, int nstep = 0);
 };
 
 //-----------------------------------------------------------------------------
 // concentration flux for reaction-diffusion problems
-class FEConcentrationFlux : public FESurfaceLoad
+class FSConcentrationFlux : public FSSurfaceLoad
 {
+public:
 	enum { SOL_ID, FLUX };
 
 public:
-	FEConcentrationFlux(FEModel* ps);
+	FSConcentrationFlux(FSModel* ps);
 	
-	FELoadCurve* GetLoadCurve();
-
 	void SetFlux(double f);
 	double GetFlux();
 
 	int GetSoluteID();
 	void SetSoluteID(int n);
+};
+
+//-----------------------------------------------------------------------------
+class FEBioSurfaceLoad : public FSSurfaceLoad
+{
+public:
+    FEBioSurfaceLoad(FSModel* ps);
+    void Save(OArchive& ar);
+    void Load(IArchive& ar);
 };

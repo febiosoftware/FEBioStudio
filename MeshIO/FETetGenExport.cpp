@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FETetGenExport::FETetGenExport(FEProject& prj) : FEFileExport(prj)
+FETetGenExport::FETetGenExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -40,7 +40,7 @@ FETetGenExport::~FETetGenExport()
 bool FETetGenExport::Write(const char *szfile)
 {
 	// get the model
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	char sznode[256] = {0};
@@ -55,12 +55,12 @@ bool FETetGenExport::Write(const char *szfile)
 	int n = 1;
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
 		int NN = pm->Nodes();
 		for (int j=0; j<NN; ++j, ++n)
 		{
-			FENode& nd = pm->Node(j);
+			FSNode& nd = pm->Node(j);
 			nd.m_ntag = n;
 			fprintf(fp, "%d %lg %lg %lg\n", n, nd.r.x, nd.r.y, nd.r.z);
 		}
@@ -73,12 +73,12 @@ bool FETetGenExport::Write(const char *szfile)
 	n = 1;
 	for (int i=0; i<model.Objects(); ++i)
 	{
-		FEMesh* pm = model.Object(i)->GetFEMesh();
+		FSMesh* pm = model.Object(i)->GetFEMesh();
 		if (pm == 0) return false;
 		int NE = pm->Elements();
 		for (int j=0; j<NE; ++j, ++n)
 		{
-			FEElement& el = pm->Element(j);
+			FSElement& el = pm->Element(j);
 			assert(el.Type() == FE_TET4);
 			int m[4];
 			m[0] = pm->Node(el.m_node[0]).m_ntag;

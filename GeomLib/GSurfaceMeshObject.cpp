@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeEdgeList.h>
 #include "GOCCObject.h"
 
-GSurfaceMeshObject::GSurfaceMeshObject(FESurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
+GSurfaceMeshObject::GSurfaceMeshObject(FSSurfaceMesh* pm) : GObject(GSURFACEMESH_OBJECT), m_surfmesh(pm)
 {
 	SetFEMesher(new FETetGenMesher(this));
 	if (m_surfmesh)
@@ -114,17 +114,17 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 	}
 
 	// copy the surface mesh from the original object's mesh
-	FEMeshBase* pm = po->GetEditableMesh(); assert(pm);
+	FSMeshBase* pm = po->GetEditableMesh(); assert(pm);
 
-	FESurfaceMesh* psm = dynamic_cast<FESurfaceMesh*>(pm);
+	FSSurfaceMesh* psm = dynamic_cast<FSSurfaceMesh*>(pm);
 	if (psm)
 	{
-		m_surfmesh = new FESurfaceMesh(*psm);
+		m_surfmesh = new FSSurfaceMesh(*psm);
 		m_surfmesh->SetGObject(this);
 	}
 	else
 	{
-		m_surfmesh = new FESurfaceMesh;
+		m_surfmesh = new FSSurfaceMesh;
 		m_surfmesh->SetGObject(this);
 
 		NN = pm->Nodes();
@@ -132,7 +132,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		NF = pm->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = pm->Face(i);
+			FSFace& f = pm->Face(i);
 			int nf = f.Nodes();
 			for (int j = 0; j < nf; ++j) pm->Node(f.n[j]).m_ntag = 1;
 		}
@@ -140,7 +140,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		int nodes = 0;
 		for (int i = 0; i < NN; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_ntag == 1) node.m_ntag = nodes++;
 		}
 
@@ -150,10 +150,10 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		// copy nodes
 		for (int i = 0; i < NN; ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			if (node.m_ntag >= 0)
 			{
-				FENode& snode = m_surfmesh->Node(node.m_ntag);
+				FSNode& snode = m_surfmesh->Node(node.m_ntag);
 				snode = node;
 			}
 		}
@@ -162,7 +162,7 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 		// copy faces
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& f = m_surfmesh->Face(i);
+			FSFace& f = m_surfmesh->Face(i);
 			f = pm->Face(i);
 			int nf = f.Nodes();
 			for (int j = 0; j < nf; ++j) f.n[j] = pm->Node(f.n[j]).m_ntag;
@@ -174,23 +174,23 @@ GSurfaceMeshObject::GSurfaceMeshObject(GObject* po) : GObject(GSURFACEMESH_OBJEC
 
 		// copy edges
 		// Build a node-edge tabel
-		FENodeEdgeList NEL(m_surfmesh);
+		FSNodeEdgeList NEL(m_surfmesh);
 		m_surfmesh->BuildEdges();
 		for (int i = 0; i < pm->Edges(); ++i)
 		{
-			FEEdge& src = pm->Edge(i);
+			FSEdge& src = pm->Edge(i);
 			int n0 = pm->Node(src.n[0]).m_ntag;
 			int n1 = pm->Node(src.n[1]).m_ntag;
 
-			FEEdge* pe = nullptr;
+			FSEdge* pe = nullptr;
 			const std::vector<int>& el = NEL.EdgeIndexList(n0);
 			for (int k = 0; k < el.size(); ++k)
 			{
-				FEEdge& e = m_surfmesh->Edge(el[k]);
+				FSEdge& e = m_surfmesh->Edge(el[k]);
 				if (((e.n[0] == n0) && (e.n[1] == n1)) ||
 					((e.n[0] == n1) && (e.n[1] == n0)))
 				{
-					FEEdge* pe = &e;
+					FSEdge* pe = &e;
 					break;
 				}
 			}
@@ -215,13 +215,13 @@ FEMesher* GSurfaceMeshObject::CreateDefaultMesher()
 	return new FETetGenMesher(this);
 }
 
-FEMesh* GSurfaceMeshObject::BuildMesh()
+FSMesh* GSurfaceMeshObject::BuildMesh()
 {
 	// make sure that the surface is triangular
 	int NF = m_surfmesh->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = m_surfmesh->Face(i);
+		FSFace& face = m_surfmesh->Face(i);
 
 		// Only triangles, quads are accepted
 		int nf = face.Nodes();
@@ -232,10 +232,10 @@ FEMesh* GSurfaceMeshObject::BuildMesh()
 	FEMesher* mesher = GetFEMesher();
 
 	// keep a pointer to the old mesh
-	FEMesh* pold = GetFEMesh();
+	FSMesh* pold = GetFEMesh();
 
 	// create a new mesh
-	FEMesh* pmesh = mesher->BuildMesh();
+	FSMesh* pmesh = mesher->BuildMesh();
 	SetFEMesh(pmesh);
 
 	// now it is safe to delete the old mesh
@@ -247,7 +247,7 @@ FEMesh* GSurfaceMeshObject::BuildMesh()
 void GSurfaceMeshObject::Update()
 {
 	// create one part
-	if (Parts() == 0) AddPart();
+	if (Parts() == 0) AddSolidPart();
 
 	// Add surfaces
 	UpdateSurfaces();
@@ -273,7 +273,7 @@ GObject* GSurfaceMeshObject::Clone()
 void GSurfaceMeshObject::UpdateNodes()
 {
 	// get the mesh
-	FESurfaceMesh& m = *GetSurfaceMesh();
+	FSSurfaceMesh& m = *GetSurfaceMesh();
 
 	// count the node partitions
 	int ng = m.CountNodePartitions();
@@ -294,7 +294,7 @@ void GSurfaceMeshObject::UpdateNodes()
 	int NN = m.Nodes();
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_gid >= 0)
 		{
 			GNode& n = *m_Node[node.m_gid];
@@ -307,7 +307,7 @@ void GSurfaceMeshObject::UpdateNodes()
 void GSurfaceMeshObject::UpdateEdges()
 {
 	// get the mesh
-	FESurfaceMesh& m = *GetSurfaceMesh();
+	FSSurfaceMesh& m = *GetSurfaceMesh();
 	int NE = m.Edges();
 
 	int ng = m.CountEdgePartitions();
@@ -338,7 +338,7 @@ void GSurfaceMeshObject::UpdateEdges()
 	const int NN = Nodes();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& e = m.Edge(i);
+		FSEdge& e = m.Edge(i);
 		if (e.m_gid >= 0)
 		{
 			for (int j = 0; j<2; ++j)
@@ -348,7 +348,7 @@ void GSurfaceMeshObject::UpdateEdges()
 					GEdge& ge = *m_Edge[e.m_gid];
 					if (ge.m_node[0] == -1)
 					{
-						FENode& nj = m.Node(e.n[j]);
+						FSNode& nj = m.Node(e.n[j]);
 						if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 						{
 							ge.m_node[0] = m_Node[nj.m_gid]->GetLocalID();
@@ -358,7 +358,7 @@ void GSurfaceMeshObject::UpdateEdges()
 					}
 					else if (ge.m_node[1] == -1)
 					{
-						FENode& nj = m.Node(e.n[j]);
+						FSNode& nj = m.Node(e.n[j]);
 						if ((nj.m_gid >= 0) && (nj.m_gid < NN))
 						{
 							ge.m_node[1] = m_Node[nj.m_gid]->GetLocalID();
@@ -373,7 +373,7 @@ void GSurfaceMeshObject::UpdateEdges()
 
 void GSurfaceMeshObject::UpdateSurfaces()
 {
-	FESurfaceMesh& m = *GetSurfaceMesh();
+	FSSurfaceMesh& m = *GetSurfaceMesh();
 	int NF = m.Faces();
 
 	int ng = m.CountFacePartitions();
@@ -396,19 +396,19 @@ void GSurfaceMeshObject::BuildGMesh()
 	GLMesh* gmesh = new GLMesh();
 
 	// we'll extract the data from the FE mesh
-	FESurfaceMesh* pm = m_surfmesh;
+	FSSurfaceMesh* pm = m_surfmesh;
 
 	// create nodes
 	for (int i = 0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		gmesh->AddNode(node.r, node.m_gid);
 	}
 
 	// create edges
 	for (int i = 0; i<pm->Edges(); ++i)
 	{
-		FEEdge& es = pm->Edge(i);
+		FSEdge& es = pm->Edge(i);
 		if (es.m_gid >= 0)
 			gmesh->AddEdge(es.n, es.Nodes(), es.m_gid);
 	}
@@ -416,7 +416,7 @@ void GSurfaceMeshObject::BuildGMesh()
 	// create face data
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& fs = pm->Face(i);
+		FSFace& fs = pm->Face(i);
 		gmesh->AddFace(fs.n, fs.Nodes(), fs.m_gid, fs.m_sid);
 	}
 
@@ -424,17 +424,17 @@ void GSurfaceMeshObject::BuildGMesh()
 	SetRenderMesh(gmesh);
 }
 
-FESurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh()
+FSSurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh()
 {
 	return m_surfmesh;
 }
 
-const FESurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh() const
+const FSSurfaceMesh* GSurfaceMeshObject::GetSurfaceMesh() const
 {
 	return m_surfmesh;
 }
 
-void GSurfaceMeshObject::ReplaceSurfaceMesh(FESurfaceMesh* newMesh)
+void GSurfaceMeshObject::ReplaceSurfaceMesh(FSSurfaceMesh* newMesh)
 {
 	m_surfmesh = newMesh;
 	m_surfmesh->SetGObject(this);
@@ -444,7 +444,7 @@ void GSurfaceMeshObject::ReplaceSurfaceMesh(FESurfaceMesh* newMesh)
 // get the mesh of an edge curve
 FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 {
-	FESurfaceMesh* mesh = GetSurfaceMesh();
+	FSSurfaceMesh* mesh = GetSurfaceMesh();
 	if (mesh == 0) return 0;
 
 	mesh->TagAllNodes(-1);
@@ -452,7 +452,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 	int ne = 0;
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& e = mesh->Edge(i);
+		FSEdge& e = mesh->Edge(i);
 		if (e.m_gid == edgeId)
 		{
 			mesh->Node(e.n[0]).m_ntag = 0;
@@ -467,7 +467,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 	int nn = 0;
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		if (node.m_ntag != -1)
 		{
 			node.m_ntag = nn++;
@@ -478,7 +478,7 @@ FECurveMesh* GSurfaceMeshObject::GetFECurveMesh(int edgeId)
 
 	for (int i = 0; i<NC; ++i)
 	{
-		FEEdge& sedge = mesh->Edge(i);
+		FSEdge& sedge = mesh->Edge(i);
 		if (sedge.m_gid == edgeId)
 		{
 			int n0 = mesh->Node(sedge.n[0]).m_ntag;
@@ -532,7 +532,7 @@ void GSurfaceMeshObject::Save(OArchive& ar)
 	}
 
 	// save the parts
-	ar.BeginChunk(CID_OBJ_PART_SECTION);
+	ar.BeginChunk(CID_OBJ_PART_LIST);
 	{
 		for (int i = 0; i<Parts(); ++i)
 		{
@@ -551,7 +551,7 @@ void GSurfaceMeshObject::Save(OArchive& ar)
 	ar.EndChunk();
 
 	// save the surfaces
-	ar.BeginChunk(CID_OBJ_FACE_SECTION);
+	ar.BeginChunk(CID_OBJ_FACE_LIST);
 	{
 		for (int i = 0; i<Faces(); ++i)
 		{
@@ -571,7 +571,7 @@ void GSurfaceMeshObject::Save(OArchive& ar)
 	ar.EndChunk();
 
 	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_SECTION);
+	ar.BeginChunk(CID_OBJ_EDGE_LIST);
 	{
 		for (int i = 0; i<Edges(); ++i)
 		{
@@ -596,7 +596,7 @@ void GSurfaceMeshObject::Save(OArchive& ar)
 	// for instance, a shell disc
 	if (Nodes()>0)
 	{
-		ar.BeginChunk(CID_OBJ_NODE_SECTION);
+		ar.BeginChunk(CID_OBJ_NODE_LIST);
 		{
 			for (int i = 0; i<Nodes(); ++i)
 			{
@@ -717,14 +717,14 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 			ParamContainer::Load(ar);
 			break;
 			// object parts
-		case CID_OBJ_PART_SECTION:
+		case CID_OBJ_PART_LIST:
 		{
 			assert(nparts > 0);
 			m_Part.reserve(nparts);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_SECTION");
+				if (ar.GetChunkID() != CID_OBJ_PART) throw ReadError("error parsing CID_OBJ_PART_LIST");
 
 				GPart* p = new GPart(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -754,14 +754,14 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		}
 		break;
 		// object surfaces
-		case CID_OBJ_FACE_SECTION:
+		case CID_OBJ_FACE_LIST:
 		{
 			assert(nfaces > 0);
 			m_Face.reserve(nfaces);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_SECTION");
+				if (ar.GetChunkID() != CID_OBJ_FACE) throw ReadError("error parsing CID_OBJ_FACE_LIST");
 
 				GFace* f = new GFace(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -793,14 +793,14 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		}
 		break;
 		// object edges
-		case CID_OBJ_EDGE_SECTION:
+		case CID_OBJ_EDGE_LIST:
 		{
 			m_Edge.clear();
 			if (nedges > 0) m_Edge.reserve(nedges);
 			int n = 0;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
-				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_SECTION");
+				if (ar.GetChunkID() != CID_OBJ_EDGE) throw ReadError("error parsing CID_OBJ_EDGE_LIST");
 
 				GEdge* e = new GEdge(this);
 				while (IArchive::IO_OK == ar.OpenChunk())
@@ -833,7 +833,7 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		}
 		break;
 		// object nodes
-		case CID_OBJ_NODE_SECTION:
+		case CID_OBJ_NODE_LIST:
 		{
 			m_Node.clear();
 			if (nnodes > 0)
@@ -842,7 +842,7 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 				int m = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
-					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_SECTION");
+					if (ar.GetChunkID() != CID_OBJ_NODE) throw ReadError("error parsing CID_OBJ_NODE_LIST");
 
 					GNode* n = new GNode(this);
 					while (IArchive::IO_OK == ar.OpenChunk())
@@ -896,12 +896,12 @@ void GSurfaceMeshObject::Load(IArchive& ar)
 		// the mesh object
 		case CID_MESH:
 			if (GetFEMesh()) delete GetFEMesh();
-			SetFEMesh(new FEMesh);
+			SetFEMesh(new FSMesh);
 			GetFEMesh()->Load(ar);
 			break;
 		case CID_SURFACE_MESH:
 			if (m_surfmesh) delete m_surfmesh;
-			m_surfmesh = new FESurfaceMesh;
+			m_surfmesh = new FSSurfaceMesh;
 			m_surfmesh->SetGObject(this);
 			m_surfmesh->Load(ar);
 			break;
@@ -983,8 +983,8 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 	}
 
 	// attach to the new mesh
-	const FESurfaceMesh* oldMesh = po->GetSurfaceMesh();
-	FESurfaceMesh* newMesh = GetSurfaceMesh();
+	const FSSurfaceMesh* oldMesh = po->GetSurfaceMesh();
+	FSSurfaceMesh* newMesh = GetSurfaceMesh();
 	if (weld)
 	{
 		newMesh->AttachAndWeld(*oldMesh, weldTolerance);
@@ -1000,26 +1000,26 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 	BuildGMesh();
 }
 
-FESurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
+FSSurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
 {
 	if (glmesh == nullptr) return nullptr;
 
 	int NN = glmesh->Nodes();
 	int NF = glmesh->Faces();
 
-	FESurfaceMesh* pm = new FESurfaceMesh;
+	FSSurfaceMesh* pm = new FSSurfaceMesh;
 	pm->Create(NN, 0, NF);
 
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& nodei = pm->Node(i);
+		FSNode& nodei = pm->Node(i);
 		const GMesh::NODE& glnode = glmesh->Node(i);
 		nodei.r = glnode.r;
 	}
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& facei = pm->Face(i);
+		FSFace& facei = pm->Face(i);
 		const GMesh::FACE& glface = glmesh->Face(i);
 		facei.SetType(FE_FACE_TRI3);
 		facei.m_gid = glface.pid;
@@ -1051,8 +1051,8 @@ GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
 		GLMesh* glmesh = po->GetRenderMesh();
 		if (glmesh == nullptr) return nullptr;
 
-		// create FESurfaceMesh from GLMesh
-		FESurfaceMesh* surfMesh = createSurfaceMesh(glmesh);
+		// create FSSurfaceMesh from GLMesh
+		FSSurfaceMesh* surfMesh = createSurfaceMesh(glmesh);
 
 		// create the surface mesh object
 		pnew = new GSurfaceMeshObject(surfMesh);

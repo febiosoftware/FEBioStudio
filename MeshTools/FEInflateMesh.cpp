@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEExtrudeFaces.h"
 #include <MeshLib/FEMeshBuilder.h>
 #include <MeshLib/FENodeNodeList.h>
+using namespace std;
 
 FEInflateMesh::FEInflateMesh() : FEModifier("Inflate")
 {
@@ -36,10 +37,10 @@ FEInflateMesh::FEInflateMesh() : FEModifier("Inflate")
 	AddBoolParam(false, "symmetric mesh bias");
 }
 
-FEMesh* FEInflateMesh::Apply(FEMesh* pm)
+FSMesh* FEInflateMesh::Apply(FSMesh* pm)
 {
 	// First, create a temp mesh that will be squised
-	FEMesh tmp(*pm);
+	FSMesh tmp(*pm);
 
 	// shrink the mesh
 	ShrinkMesh(tmp);
@@ -55,21 +56,21 @@ FEMesh* FEInflateMesh::Apply(FEMesh* pm)
 	extrude.SetSegments(nseg);
 	extrude.SetMeshBiasFactor(rbias);
 	extrude.SetSymmetricBias(symmBias);
-	FEMesh* newMesh = extrude.Apply(&tmp);
+	FSMesh* newMesh = extrude.Apply(&tmp);
 
 	// all done, good to go
 	return newMesh;
 }
 
 // TODO: The algorithm above could invert elements. We should try to prevent this
-void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
+void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
 {
 	// figure out which nodes to move
 	mesh.TagAllNodes(-1);
 	int nsel = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (face.IsSelected())
 		{
 			nsel++;
@@ -83,7 +84,7 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 	vector<int> taggedNodes;
 	for (int i = 0; i < NN0; ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag == 1)
 		{
 			node.m_ntag = taggedNodes.size();
@@ -95,13 +96,13 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 	vector<vec3d> normal(taggedNodes.size());
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (face.IsSelected())
 		{
 			int nn = face.Nodes();
 			for (int j = 0; j < nn; ++j)
 			{
-				vec3d fn = face.m_nn[j];
+				vec3d fn = to_vec3d(face.m_nn[j]);
 				int ntag = mesh.Node(face.n[j]).m_ntag; assert(ntag >= 0);
 				normal[ntag] += fn;
 			}
@@ -116,12 +117,12 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 	double d = GetFloatValue(0);
 	for (int i = 0; i < taggedNodes.size(); ++i)
 	{
-		FENode& node = mesh.Node(taggedNodes[i]);
+		FSNode& node = mesh.Node(taggedNodes[i]);
 		displacement[taggedNodes[i]] = -normal[i] * d;
 	}
 
 	// smooth the nodal displacements
-	FENodeNodeList NNL(&mesh, true);
+	FSNodeNodeList NNL(&mesh, true);
 	mesh.TagAllNodes(0);
 	for (int i = 0; i < taggedNodes.size(); ++i) mesh.Node(taggedNodes[i]).m_ntag = 1;
 
@@ -132,7 +133,7 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 		double dmax = 0;
 		for (int i = 0; i < mesh.Nodes(); ++i)
 		{
-			FENode& nodei = mesh.Node(i);
+			FSNode& nodei = mesh.Node(i);
 			if (nodei.m_ntag == 0)
 			{
 				int nn = NNL.Valence(i);
@@ -178,7 +179,7 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 	// apply nodal displacements
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		node.r += displacement[i];
 	}
 
@@ -188,7 +189,7 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 		if (mesh.Node(i).m_gid >= 0) mesh.Node(i).m_ntag = 1;
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			int nn = edge.Nodes();
@@ -197,7 +198,7 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 	}
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		if (face.m_gid >= 0)
 		{
 			int nn = face.Nodes();
@@ -210,7 +211,7 @@ void FEInflateMesh::ShrinkMesh(FEMesh& mesh)
 	double alpha = 0.5;
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		double Vi = mesh.ElementVolume(el);
 		double J0 = Vi / elemVol[i];
 		if (el.IsType(FE_TET4) && ((Vi < 0) || (J0 < 0.001)))

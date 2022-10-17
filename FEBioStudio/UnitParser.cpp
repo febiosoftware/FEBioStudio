@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,10 +50,12 @@ SOFTWARE.*/
 #define POW_2 QString(QChar(0x00B2))
 #define POW_3 QString(QChar(0x00B3))
 #define POW_4 QString(QChar(0x2074))
+#define POW_5 QString(QChar(0x2075))
 #else
 #define POW_2 QString("^2")
 #define POW_3 QString("^3")
 #define POW_4 QString("^4")
+#define POW_5 QString("^5")
 #endif
 
 #define DEG "_deg"
@@ -79,6 +81,7 @@ Unit UnitParser::expr()
 			left /= expr();
 			break;
 		case END:
+		case ONE:
 			return left;
 			break;
 		default:
@@ -112,6 +115,12 @@ Unit UnitParser::prim()
 	case SYMBOL:
 	{
 		u = symbol();
+	}
+	break;
+	case ONE:
+	{
+		u = Unit("1", 1);
+		get_token();
 	}
 	break;
 	case END: return u; break;
@@ -176,6 +185,7 @@ UnitParser::Token UnitParser::get_token()
 	switch (ch)
 	{
 	case 0: return curr_tok = END; break;
+	case '1': return curr_tok = ONE; break;
 	case '^': return curr_tok = POW; break;
 	case '.': return curr_tok = MUL; break;
 	case '/': return curr_tok = DIV; break;
@@ -205,6 +215,7 @@ QString Unit::toString()
 				case 2: s += POW_2; break;
 				case 3: s += POW_3; break;
 				case 4: s += POW_4; break;
+                case 5: s += POW_5; break;
 				default:
 					s += QString("^%1").arg(f.p);
 				}
@@ -234,6 +245,7 @@ QString Unit::toString()
 					case 2: s += POW_2; break;
 					case 3: s += POW_3; break;
 					case 4: s += POW_4; break;
+                    case 5: s += POW_5; break;
 					default:
 						s += QString("^%1").arg(p);
 					}

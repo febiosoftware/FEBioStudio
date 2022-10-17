@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -53,12 +53,15 @@ public:
 	QTableWidget*	m_table;
 	QLineEdit*		m_val;
 	QCheckBox*		m_matAxes;
+	QCheckBox*		m_cross;
 
 	QComboBox*	m_matList;
 
 	QLineEdit*	m_maxIters;
 	QLineEdit*	m_tol;
 	QLineEdit*	m_sor;
+
+	QLineEdit* m_normal;
 
 public:
 	UIFiberGeneratorTool(CFiberGeneratorTool* w)
@@ -86,7 +89,10 @@ public:
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
 		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
-		f->addRow("Generate mat axes:", m_matAxes = new QCheckBox); 
+		f->addRow("Generate mat axes:", m_matAxes = new QCheckBox);
+		f->addRow("Generate cross product:", m_cross = new QCheckBox);
+		f->addRow("Normal vector:", m_normal = new QLineEdit);
+		m_normal->setText(Vec3dToString(vec3d(0, 0, 1)));
 
 		m_maxIters->setValidator(new QIntValidator());
 		m_tol->setValidator(new QDoubleValidator());
@@ -102,6 +108,7 @@ public:
 
 		QObject::connect(m_add, SIGNAL(clicked()), w, SLOT(OnAddClicked()));
 		QObject::connect(m_apply, SIGNAL(clicked()), w, SLOT(OnApply()));
+		QObject::connect(m_normal, SIGNAL(editingFinished()), w, SLOT(validateNormal()));
 	}
 };
 
@@ -125,7 +132,7 @@ void CFiberGeneratorTool::Activate()
 	ui->m_matList->clear();
 	if (doc)
 	{
-		FEModel* fem = doc->GetFEModel();
+		FSModel* fem = doc->GetFSModel();
 		if (fem)
 		{
 			int nmat = fem->Materials();
@@ -187,6 +194,16 @@ void CFiberGeneratorTool::OnAddClicked()
 	}
 }
 
+void CFiberGeneratorTool::validateNormal()
+{
+	QString s = ui->m_normal->text();
+	vec3d v = StringToVec3d(s);
+	s = Vec3dToString(v);
+	ui->m_normal->blockSignals(true);
+	ui->m_normal->setText(s);
+	ui->m_normal->blockSignals(false);
+}
+
 void CFiberGeneratorTool::OnApply()
 {
 	CGLDocument* pdoc = GetDocument();
@@ -197,10 +214,16 @@ void CFiberGeneratorTool::OnApply()
 		return;
 	}
 
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) 
 	{
 		QMessageBox::critical(GetMainWindow(), "Tool", "The selected object does not have a mesh.");
+		return;
+	}
+
+	if (m_data.size() == 0)
+	{
+		QMessageBox::critical(GetMainWindow(), "Tool", "No selections were added.");
 		return;
 	}
 
@@ -213,12 +236,12 @@ void CFiberGeneratorTool::OnApply()
 		FEItemListBuilder* item = m_data[i];
 		double v = ui->m_table->item(i, 1)->text().toDouble();
 
-		FENodeList* node = item->BuildNodeList(); assert(node);
+		FSNodeList* node = item->BuildNodeList(); assert(node);
 		if (node)
 		{
 			for (int i = 0; i < NN; ++i) pm->Node(i).m_ntag = i;
 
-			FENodeList::Iterator it = node->First();
+			FSNodeList::Iterator it = node->First();
 			int nn = node->Size();
 			for (int j = 0; j < nn; ++j, it++)
 			{
@@ -242,7 +265,7 @@ void CFiberGeneratorTool::OnApply()
 		CModelDocument* doc = GetMainWindow()->GetModelDocument();
 		if (doc)
 		{
-			FEModel* fem = doc->GetFEModel();
+			FSModel* fem = doc->GetFSModel();
 			if (fem)
 			{
 				GMaterial* mat = fem->GetMaterial(n);
@@ -253,7 +276,7 @@ void CFiberGeneratorTool::OnApply()
 					int NE = pm->Elements();
 					for (int i = 0; i < NE; ++i)
 					{
-						FEElement& el = pm->Element(i);
+						FSElement& el = pm->Element(i);
 
 						int pid = el.m_gid;
 						GPart* pg = po->Part(pid); assert(pg);
@@ -297,6 +320,22 @@ void CFiberGeneratorTool::OnApply()
 	GradientMap G;
 	G.Apply(data, grad, m_nsmoothIters);
 
+	vec3d N = StringToVec3d(ui->m_normal->text());
+	N.unit();
+
+	bool cross = ui->m_cross->isChecked();
+	if (cross)
+	{
+		// calculate cross product
+		for (int i = 0; i < grad.size(); ++i)
+		{
+			vec3d a = grad[i];
+			vec3d b = a ^ N;
+			b.unit();
+			grad[i] = b;
+		}
+	}
+
 	bool matAxes = ui->m_matAxes->isChecked();
 	if (matAxes == false)
 	{
@@ -304,7 +343,7 @@ void CFiberGeneratorTool::OnApply()
 		int NE = pm->Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag == 1)
 			{
 				el.m_fiber = grad[i];
@@ -317,7 +356,7 @@ void CFiberGeneratorTool::OnApply()
 		int NE = pm->Elements();
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.m_ntag == 1)
 			{
 				vec3d N(0, 0, 1);

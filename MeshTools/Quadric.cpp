@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "Quadric.h"
-#include "MathLib/math3d.h"
+#include <FECore/matrix.h>
 #include <math.h>
 
 //-------------------------------------------------------------------------------
@@ -82,7 +82,7 @@ bool Quadric::GetQuadricCoeficients()
     }
 
     // find eigenvalues and eigenvectors of A
-    vector<double> Aval;
+    std::vector<double> Aval;
     matrix Avec(10,10);
     bool good = A.eigen_vectors(Avec, Aval);
 
@@ -203,11 +203,11 @@ void Quadric::SurfaceCurvature(const vec3d p, const vec3d pn, vec2d& kappa, vec3
     
     // check quadric normal versus face normal
     if (xn*pn >= 0) {
-        kappa.x = kmax; kappa.y = kmin;
+        kappa.x() = kmax; kappa.y() = kmin;
         v[0] = xmax; v[1] = xmin;
     }
     else {
-        kappa.x = kmin; kappa.y = kmax;
+        kappa.x() = kmin; kappa.y() = kmax;
         v[0] = xmin; v[1] = xmax;
     }
     // fix handedness if neeeded
@@ -218,7 +218,7 @@ void Quadric::SurfaceCurvature(const vec3d p, const vec3d pn, vec2d& kappa, vec3
 // Find ray-quadric surface intersections x: p is point on ray, n is normal along ray
 // There are three possible solutions: 0 roots, 1 root, and 2 roots
 // When 2 roots are found, sort results from closest to farthest
-void Quadric::RayQuadricIntersection(const vec3d p, const vec3d n, vector<vec3d>* x, vector<double>* t)
+void Quadric::RayQuadricIntersection(const vec3d p, const vec3d n, std::vector<vec3d>* x, std::vector<double>* t)
 {
     double a = n.x*n.x*m_c[0]+n.y*n.y*m_c[1]+n.z*n.z*m_c[2]+n.y*n.z*m_c[3]+n.x*n.z*m_c[4]+n.x*n.y*m_c[5];
     double b = n.x*(2*p.x*m_c[0]+p.z*m_c[4]+p.y*m_c[5]+m_c[6])
@@ -267,14 +267,14 @@ void Quadric::RayQuadricIntersection(const vec3d p, const vec3d n, vector<vec3d>
 // This routine finds a closest point approximation (not the exact solution)
 vec3d Quadric::ClosestPoint(const vec3d p)
 {
-    vector<vec3d> xsol;
-    vector<double> tsol;
+    std::vector<vec3d> xsol;
+    std::vector<double> tsol;
 
     vec3d n1 = vec3d(1,0,0);
     vec3d n2 = vec3d(0,1,0);
     vec3d n3 = vec3d(0,0,1);
-    vector<vec3d> x1, x2, x3;
-    vector<double> t1, t2, t3;
+    std::vector<vec3d> x1, x2, x3;
+    std::vector<double> t1, t2, t3;
     RayQuadricIntersection(p, n1, &x1, &t1);
     RayQuadricIntersection(p, n2, &x2, &t2);
     RayQuadricIntersection(p, n3, &x3, &t3);
@@ -313,8 +313,8 @@ vec3d Quadric::ClosestPoint(const vec3d p, const vec3d norm)
     vec3d xsol;
     double tsol;
     
-    vector<vec3d> x;
-    vector<double> t;
+    std::vector<vec3d> x;
+    std::vector<double> t;
     RayQuadricIntersection(p, norm, &x, &t);
 
     if (t.size() > 0) {

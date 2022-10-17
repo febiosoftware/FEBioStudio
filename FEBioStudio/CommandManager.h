@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <string>
 
 class CCommand;
-class CGLDocument;
+class CUndoDocument;
 
 typedef std::stack<CCommand*> CCmdStack;
 
@@ -68,7 +68,7 @@ public:
 class CCommandManager  : public CBasicCmdManager
 {
 public:
-	CCommandManager(CGLDocument* pdoc);
+	CCommandManager(CUndoDocument* pdoc);
 	virtual ~CCommandManager();
 
 	void AddCommand(CCommand* pcmd) override;
@@ -80,5 +80,5 @@ public:
 	void RedoCommand() override;
 
 protected:
-	CGLDocument* m_pDoc; // pointer to the current document
+	CUndoDocument* m_pDoc; // pointer to the current document
 };

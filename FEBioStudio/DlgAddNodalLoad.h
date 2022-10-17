@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include <string>
 
-class FEModel;
+class FSModel;
 
 namespace Ui {
 	class CDlgAddNodalLoad;
@@ -38,7 +38,7 @@ namespace Ui {
 class CDlgAddNodalLoad : public QDialog
 {
 public:
-	CDlgAddNodalLoad(FEModel& fem, QWidget* parent);
+	CDlgAddNodalLoad(FSModel& fem, QWidget* parent);
 
 	void accept();
 

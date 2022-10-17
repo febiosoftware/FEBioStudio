@@ -29,7 +29,7 @@ private:
 class FEDOFVariable
 {
 public:
-	FEDOFVariable(const char* szname);
+	FEDOFVariable(const std::string& name);
 	FEDOFVariable(const FEDOFVariable& var);
 	void operator = (const FEDOFVariable& var);
 
@@ -42,6 +42,7 @@ public:
 	int DOFs() const { return (int)m_dofs.size(); }
 
 	FEDOF& GetDOF(int i) { return m_dofs[i]; }
+	const FEDOF& GetDOF(int i) const { return m_dofs[i]; }
 
 	void Clear() { m_dofs.clear(); }
 

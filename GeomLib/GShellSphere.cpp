@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,7 +32,7 @@ SOFTWARE.*/
 // GShellSphere
 //=============================================================================
 
-GShellSphere::GShellSphere(FEModel* ps) : GPrimitive(ps, GSHELL_SPHERE)
+GShellSphere::GShellSphere(FSModel* ps) : GPrimitive(ps, GSHELL_SPHERE)
 {
 	m_R = 1;
 

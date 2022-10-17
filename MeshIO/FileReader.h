@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,8 +28,10 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <string.h>
 #include <string>
+#include <fstream>
 
 using std::string;
+using std::ifstream;
 
 #ifdef WIN32
 typedef __int64 off_type;
@@ -45,8 +47,8 @@ typedef off_t off_type;
 
 //-----------------------------------------------------------------------------
 // forward declaration of model class
-class FEModel;
-class FEProject;
+class FSModel;
+class FSProject;
 
 //-----------------------------------------------------------------------------
 class FileReader
@@ -72,7 +74,7 @@ public:
 
 	// get the amount of the file read so far
 	// expressed in percentage of total file size
-	float GetFileProgress() const;
+	virtual float GetFileProgress() const;
 
 	// get the file title, i.e. the file name w/o the path
 	void FileTitle(char* sz);
@@ -87,17 +89,24 @@ protected:
 	// open the file
 	bool Open(const char* szfile, const char* szmode);
 
+    // Set file stream
+    bool SetFileStream(ifstream* stream);
+
 	// close the file
 	virtual void Close();
 
 	// helper function that sets the error string
 	bool errf(const char* szerr, ...);
 
+	// clear error
+	void ClearErrors();
+
 	// get the file pointer
 	FILE* FilePtr();
 
 protected:
 	FILE*			m_fp;
+    ifstream*       m_stream;
 
 private:
 	std::string		m_fileName;	//!< file name
@@ -109,15 +118,15 @@ private:
 
 //-----------------------------------------------------------------------------
 // class for reading FE file formats
-class FEFileImport : public FileReader
+class FSFileImport : public FileReader
 {
 public:
-	FEFileImport(FEProject& prj) : m_prj(prj) {}
+	FSFileImport(FSProject& prj) : m_prj(prj) {}
 
-	FEProject& GetProject() { return m_prj; }
+	FSProject& GetProject() { return m_prj; }
 
 protected:
-	FEProject& m_prj;
+	FSProject& m_prj;
 };
 
 // helper function to compare strings

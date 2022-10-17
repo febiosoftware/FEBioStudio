@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,16 +33,23 @@ SOFTWARE.*/
 #include "DlgPlotMix.h"
 #include "DlgSettings.h"
 #include "DlgMeshDiagnostics.h"
+#include "DlgMaterialTest.h"
 #include <QMessageBox>
 #include <QFileDialog>
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GModel.h>
 #include "ModelDocument.h"
+#include "PostDocument.h"
+#include "DlgStartThread.h"
+#include <PostLib/FEKinemat.h>
+#include <PostLib/FELSDYNAimport.h>
+#include <PostGL/GLModel.h>
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
-	ui->showCurveEditor();
+	CModelDocument* doc = GetModelDocument();
+	if (doc) ui->showCurveEditor();
 }
 
 void CMainWindow::on_actionMeshInspector_triggered()
@@ -70,16 +77,161 @@ void CMainWindow::on_actionElasticityConvertor_triggered()
 	dlg.exec();
 }
 
+void CMainWindow::on_actionMaterialTest_triggered()
+{
+	CDlgMaterialTest dlg(this);
+	dlg.exec();
+}
+
 void CMainWindow::on_actionUnitConverter_triggered()
 {
 	CDlgUnitConverter dlg(this);
 	dlg.exec();
 }
 
+class LoadKineFile : public CustomThread
+{
+public:
+	LoadKineFile(CPostDocument* doc) : m_doc(doc)
+	{
+		m_kine = nullptr;
+		m_task = 0;
+		m_fileReader = nullptr;
+		m_fem = doc->GetFSModel();
+		m_currentState = 0;
+	}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		m_task = 0;
+		// load the file
+		Post::FELSDYNAimport reader(m_fem);
+		reader.read_displacements(true);
+		m_fileReader = &reader;
+		bool bret = reader.Load(m_modelFile.c_str());
+		m_fileReader = nullptr;
+		if (bret == false)
+		{
+			emit resultReady(false);
+			return;
+		}
+
+		// apply the kine mat file
+		m_task = 1;
+		FEKinemat kine;
+		kine.SetRange(m_n0, m_n1, m_ni);
+		m_kine = &kine;
+		if (kine.Apply(m_fem, m_kineFile.c_str()) == false)
+		{
+			emit resultReady(false);
+			return;
+		}
+
+		// update post document
+		m_doc->Initialize();
+
+		// update displacements on all states
+		m_task = 2;
+		Post::CGLModel& mdl = *m_doc->GetGLModel();
+		if (mdl.GetDisplacementMap() == nullptr)
+		{
+			mdl.AddDisplacementMap("Displacement");
+		}
+		int nstates = mdl.GetFSModel()->GetStates();
+		for (m_currentState = 0; m_currentState < nstates; ++m_currentState) mdl.UpdateDisplacements(m_currentState, true);
+
+		// all done
+		m_kine = nullptr;
+		emit resultReady(true);
+	}
+
+public:
+	bool hasProgress() override { return true; }
+
+	double progress() override
+	{
+		double pct = 0.0;
+		if (m_task == 0)
+		{
+			if (m_fileReader) pct = m_fileReader->GetFileProgress();
+		}
+		else if (m_task == 1)
+		{
+			int nstates = (m_kine ? m_kine->States() : 1);
+			int nread = m_fem->GetStates();
+			pct = (100.0 * nread) / nstates;
+		}
+		else if (m_task == 2)
+		{
+			int nstates = m_fem->GetStates();
+			pct = (100.0 * m_currentState) / nstates;
+		}
+		return pct;
+	}
+
+	const char* currentTask() override 
+	{ 
+		const char* sztask = "(unknown)";
+		switch (m_task)
+		{
+		case 0: sztask = "Reading model file ..."; break;
+		case 1: sztask = "Processing kine file ..."; break;
+		case 2: sztask = "Updating states ..."; break;
+		}
+		return sztask;
+	}
+
+	void stop() override {}
+
+public:
+	int		m_n0, m_n1, m_ni;
+	std::string	m_modelFile;
+	std::string m_kineFile;
+
+private:
+	int	m_task;
+	int	m_currentState;
+	CPostDocument* m_doc;
+	Post::FEPostModel* m_fem;
+	FEKinemat* m_kine;
+	FileReader* m_fileReader;
+};
+
 void CMainWindow::on_actionKinemat_triggered()
 {
 	CDlgKinemat dlg(this);
-	dlg.exec();
+	if (dlg.exec())
+	{
+		// create a new document
+		CPostDocument* postDoc = new CPostDocument(this);
+
+		std::string modelFile = dlg.GetModelFile().toStdString();
+		std::string kineFile  = dlg.GetKineFile().toStdString();
+
+		Post::FEPostModel& fem = *postDoc->GetFSModel();
+		LoadKineFile* kinethread = new LoadKineFile(postDoc);
+		kinethread->m_n0 = dlg.StartIndex();
+		kinethread->m_n1 = dlg.EndIndex();
+		kinethread->m_ni = dlg.Increment();
+		kinethread->m_modelFile = modelFile;
+		kinethread->m_kineFile = kineFile;
+
+		postDoc->SetDocFilePath(modelFile);
+
+		CDlgStartThread dlg2(this, kinethread);
+		dlg2.exec();
+
+		if (dlg2.GetReturnCode() == false)
+		{
+			delete postDoc;
+			QMessageBox::critical(this, "FEBio Studio", "Failed to apply kinemat tool.");
+			return;
+		}
+
+		UpdateModel();
+		Update();
+		AddDocument(postDoc);
+	}
 }
 
 void CMainWindow::on_actionPlotMix_triggered()
@@ -94,6 +246,7 @@ void CMainWindow::on_actionOptions_triggered()
 	dlg.exec();
 }
 
+#ifdef _DEBUG
 void CMainWindow::on_actionLayerInfo_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -133,7 +286,7 @@ void CMainWindow::on_actionLayerInfo_triggered()
 			for (int j = 0; j < nc; ++j)
 			{
 				const FEMesher* mesher = nullptr;
-				const FEMesh*	mesh = nullptr;
+				const FSMesh*	mesh = nullptr;
 
 				if (i == activeLayer)
 				{
@@ -242,88 +395,4 @@ void CMainWindow::on_actionLayerInfo_triggered()
 	log->AddText(QString("Edge counter: %1\n").arg(GEdge::GetCounter()));
 	log->AddText(QString("Node counter: %1\n").arg(GNode::GetCounter()));
 }
-
-void CMainWindow::onRunFinished(int exitCode, QProcess::ExitStatus es)
-{
-	CFEBioJob* job = CFEBioJob::GetActiveJob();
-	if (job)
-	{
-		job->SetStatus(exitCode == 0 ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
-		CFEBioJob::SetActiveJob(nullptr);
-
-		QString sret = (exitCode == 0 ? "NORMAL TERMINATION" : "ERROR TERMINATION");
-		QString jobName = QString::fromStdString(job->GetName());
-		QString msg = QString("FEBio job \"%1 \" has finished:\n\n%2\n").arg(jobName).arg(sret);
-
-		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
-		AddLogEntry(logmsg);
-
-		if (exitCode == 0)
-		{
-			msg += "\nDo you wish to load the results?";
-			if (QMessageBox::question(this, "Run FEBio", msg) == QMessageBox::Yes)
-			{
-				OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
-			}
-		}
-		else
-		{
-			QMessageBox::critical(this, "Run FEBio", msg);
-		}
-	}
-	else
-	{
-		// Not sure if we should ever get here.
-		QMessageBox::information(this, "FEBio Studio", "FEBio is done.");
-	}
-	CFEBioJob::SetActiveJob(nullptr);
-
-	delete ui->m_process;
-	ui->m_process = 0;
-}
-
-void CMainWindow::onReadyRead()
-{
-	if (ui->m_process == 0) return;
-
-	QByteArray output = ui->m_process->readAll();
-	QString s(output);
-	AddOutputEntry(s);
-}
-
-void CMainWindow::onErrorOccurred(QProcess::ProcessError err)
-{
-	// make sure we don't have an active job since onRunFinished will not be called!
-	CFEBioJob::SetActiveJob(nullptr);
-
-	// suppress an error if user stopped FEBio job
-	if (ui->m_bkillProcess && (err==QProcess::Crashed))
-	{
-		return;
-	}
-
-	// check for FailedToStart
-	if (err == QProcess::FailedToStart)
-	{
-		QMessageBox::critical(this, "Run FEBio", "FEBio failed to start.\nCheck the launch configuration and make sure that the path to the FEBio executable is correct.");
-	}
-	else
-	{
-		QString errString;
-		switch (err)
-		{
-		case QProcess::FailedToStart: errString = "Failed to start"; break;
-		case QProcess::Crashed: errString = "Crashed"; break;
-		case QProcess::Timedout: errString = "Timed out"; break;
-		case QProcess::WriteError: errString = "Write error"; break;
-		case QProcess::ReadError: errString = "Read error"; break;
-		case QProcess::UnknownError: errString = "Unknown error"; break;
-		default:
-			errString = QString("Error code = %1").arg(err);
-		}
-
-		QString t = "An error has occurred.\nError = " + errString;
-		AddLogEntry(t);
-		QMessageBox::critical(this, "Run FEBio", t);
-	}
-}
+#endif

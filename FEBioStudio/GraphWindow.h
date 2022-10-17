@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include <QMainWindow>
-#include <MathLib/MathParser.h>
 #include "PlotWidget.h"
 #include "Document.h"
 
@@ -253,6 +252,8 @@ public:
 	virtual void Update(bool breset = true, bool bfit = false) = 0;
 
 	void closeEvent(QCloseEvent* closeEvent) override;
+    void resizeEvent(QResizeEvent* resizeEvent) override;
+    void moveEvent(QMoveEvent* moveEvent) override;
 
 	static QRect preferredSize();
 	static void setPreferredSize(const QRect& rt);
@@ -358,8 +359,7 @@ private slots:
 	void on_actionZoomWidth_triggered();
 	void on_actionZoomHeight_triggered();
 	void on_actionZoomFit_triggered();
-	void on_actionZoomSelect_toggled(bool bchecked);
-	void on_plot_doneZoomToRect();
+	void on_plot_regionSelected(QRect rt);
 	void on_range_optionsChanged();
 	void on_dataSource_currentIndexChanged(int);
 
@@ -394,6 +394,8 @@ private:
 
 namespace Post {
 	class GLProbe;
+	class GLRuler;
+	class GLMusclePath;
 }
 
 class CModelGraphWindow : public CGraphWindow
@@ -409,6 +411,7 @@ private:
 	void TrackFaceHistory(int nface, float* pval, int nfield, int nmin = 0, int nmax = -1);
 	void TrackEdgeHistory(int edge, float* pval, int nfield, int nmin = 0, int nmax = -1);
 	void TrackNodeHistory(int node, float* pval, int nfield, int nmin = 0, int nmax = -1);
+	void TrackObjectHistory(int nobj, float* pval, int nfield);
 
 private:
 	void addSelectedNodes();
@@ -417,6 +420,8 @@ private:
 	void addSelectedElems();
 	void addObjectData(int n);
 	void addProbeData(Post::GLProbe* probe);
+	void addRulerData(Post::GLRuler* ruler);
+	void addMusclePathData(Post::GLMusclePath* musclePath);
 
 	CPlotData* nextData();
 

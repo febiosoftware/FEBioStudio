@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,15 +37,15 @@ namespace Ui {
 class CMainWindow;
 class CModelDocument;
 class FESurfaceModifier;
-class FEMesh;
+class FSMesh;
 class GSurfaceMeshObject;
 class FEMesher;
-class FEGroup;
+class FSGroup;
 
 class SurfaceModifierThread : public CustomThread
 {
 public:
-	SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FEGroup* pg);
+	SurfaceModifierThread(CModelDocument* doc, FESurfaceModifier* mod, GSurfaceMeshObject* po, FSGroup* pg);
 
 	void run() Q_DECL_OVERRIDE;
 
@@ -62,7 +62,7 @@ private:
 	CModelDocument*		m_doc;
 	GSurfaceMeshObject*	m_po;
 	FESurfaceModifier*	m_mod;
-	FEGroup*			m_pg;
+	FSGroup*			m_pg;
 };
 
 
@@ -82,6 +82,12 @@ private slots:
 	void on_apply_clicked(bool b);
 	void on_menu_triggered(QAction* pa);
 	void on_buttons_buttonSelected(int n);
+	void on_posX_editingFinished();
+	void on_posY_editingFinished();
+	void on_posZ_editingFinished();
+
+private:
+	void updateObjectPosition();
 
 private:
 	Ui::CEditPanel*	ui;

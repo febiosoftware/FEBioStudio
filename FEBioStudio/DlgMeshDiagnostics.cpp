@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QPlainTextEdit>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
+using namespace std;
 
 class CDlgMeshDiagnosticsUI
 {
@@ -155,6 +156,7 @@ public:
 		checkFacePartitioning(); testCount++;
 		checkEdgePartitioning(); testCount++;
 		checkNodePartitioning(); testCount++;
+		checkSlivers(); testCount++;
 	}
 
 	void checkMeshStats();
@@ -173,6 +175,7 @@ public:
 	void checkFacePartitioning();
 	void checkEdgePartitioning();
 	void checkNodePartitioning();
+	void checkSlivers();
 };
 
 CDlgMeshDiagnostics::CDlgMeshDiagnostics(QWidget* parent) : QDialog(parent), ui(new CDlgMeshDiagnosticsUI)
@@ -204,13 +207,13 @@ void CDlgMeshDiagnostics::runDiagnostics()
 	}
 
 	// see if this object has a mesh
-	FEMesh* pm = po->GetFEMesh();
+	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr)
 	{
 		ui->log("This object does not have a mesh to diagnose.");
 		return;
 	}
-	FEMesh& mesh = *pm;
+	FSMesh& mesh = *pm;
 
 	try {
 		ui->diagnose();
@@ -229,7 +232,7 @@ void CDlgMeshDiagnostics::runDiagnostics()
 
 void CDlgMeshDiagnosticsUI::checkMeshStats()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	// collect some statistics
 	int nodes = mesh.Nodes();    log(QString(" Nodes    = %1").arg(nodes));
@@ -245,7 +248,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int elemCount[MAX_ELEM_TYPES] = { 0 };
 	for (int i = 0; i < elems; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int elemType = el.Type();
 		if ((elemType >= 0) && (elemType < MAX_ELEM_TYPES)) elemCount[elemType]++; else elemCount[FE_INVALID_ELEMENT_TYPE]++;
 		if      (el.IsSolid()) solidElems++;
@@ -277,7 +280,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int faceCount[MAX_FACE_TYPES] = { 0 };
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int faceType = face.Type();
 		if ((faceType >= 0) && (faceType < MAX_FACE_TYPES)) faceCount[faceType]++;
 		else faceCount[FE_FACE_INVALID_TYPE]++;
@@ -304,7 +307,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int edgeCount[MAX_EDGE_TYPES] = { 0 };
 	for (int i = 0; i < edges; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		int edgeType = edge.Type();
 		if ((edgeType >= 0) && (edgeType < MAX_EDGE_TYPES)) edgeCount[edgeType]++; else edgeCount[FE_EDGE_INVALID]++;
 	}
@@ -330,7 +333,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	int nsss = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		FEElement_* pe = mesh.ElementPtr(face.m_elem[0].eid);
 		if (pe && pe->IsShell())
 		{
@@ -344,14 +347,14 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 
 void CDlgMeshDiagnosticsUI::checkElementConnectivity()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int errors = 0;
 	int NN = mesh.Nodes();
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		for (int j = 0; j < el.Nodes(); ++j)
 		{
 			int nj = el.m_node[j];
@@ -365,18 +368,25 @@ void CDlgMeshDiagnosticsUI::checkElementConnectivity()
 
 void CDlgMeshDiagnosticsUI::checkFaceConnectivity()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int errors = 0;
 	int NN = mesh.Nodes();
 	int NF = mesh.Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
-		for (int j = 0; j < face.Nodes(); ++j)
+		FSFace& face = mesh.Face(i);
+		int nf = face.Nodes();
+		for (int j = 0; j < nf; ++j)
 		{
 			int nj = face.n[j];
 			if ((nj < 0) || (nj >= NN)) errors++;
+
+			for (int k = 0; k < nf; ++k)
+			{
+				int nk = face.n[k];
+				if ((k != j) && (nk == nj)) errors++;
+			}
 		}
 	}
 
@@ -386,14 +396,14 @@ void CDlgMeshDiagnosticsUI::checkFaceConnectivity()
 
 void CDlgMeshDiagnosticsUI::checkEdgeConnectivity()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int errors = 0;
 	int NN = mesh.Nodes();
 	int NE = mesh.Edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		for (int j = 0; j < edge.Nodes(); ++j)
 		{
 			int nj = edge.n[j];
@@ -407,19 +417,19 @@ void CDlgMeshDiagnosticsUI::checkEdgeConnectivity()
 
 void CDlgMeshDiagnosticsUI::checkIsolatedVertices()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	mesh.TagAllNodes(0);
 	int NN = mesh.Nodes();
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		for (int j = 0; j < el.Nodes(); ++j)
 		{
 			int nj = el.m_node[j];
 			if ((nj >= 0) && (nj < NN))
 			{
-				FENode& node = mesh.Node(nj);
+				FSNode& node = mesh.Node(nj);
 				node.m_ntag = 1;
 			}
 		}
@@ -446,7 +456,7 @@ void CDlgMeshDiagnosticsUI::checkIsolatedVertices()
 
 void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int NE = mesh.Edges();
 	int NN = mesh.Nodes();
@@ -454,7 +464,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 	vector<vector<int> > NET(NN);
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& ei = mesh.Edge(i);
+		FSEdge& ei = mesh.Edge(i);
 		if ((ei.n[0] >= 0) && (ei.n[0] < NN)) NET[ei.n[0]].push_back(i);
 		if ((ei.n[1] >= 0) && (ei.n[1] < NN)) NET[ei.n[1]].push_back(i);
 	}
@@ -463,7 +473,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 	mesh.TagAllEdges(-1);
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& ei = mesh.Edge(i);
+		FSEdge& ei = mesh.Edge(i);
 		if (ei.m_ntag == -1)
 		{
 			if ((ei.n[0] >= 0) && (ei.n[0] < NN))
@@ -474,7 +484,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 					int nej = net[j];
 					if (nej > i)
 					{
-						FEEdge& ej = mesh.Edge(nej);
+						FSEdge& ej = mesh.Edge(nej);
 						if ((ej.m_ntag == -1) && (ej == ei))
 						{
 							ej.m_ntag = i;
@@ -492,7 +502,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateEdges()
 
 void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int NF = mesh.Faces();
 	int NN = mesh.Nodes();
@@ -500,7 +510,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 	vector<vector<int> > NFT(NN);
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = 0;
 		if (face.Shape() == FE_FACE_QUAD) nf = 4;
 		if (face.Shape() == FE_FACE_TRI ) nf = 3;
@@ -518,7 +528,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 	mesh.TagAllFaces(-1);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& facei = mesh.Face(i);
+		FSFace& facei = mesh.Face(i);
 		if (facei.m_ntag == -1)
 		{
 			int n0 = facei.n[0];
@@ -530,7 +540,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 					int nfj = nft[j];
 					if (nfj > i)
 					{
-						FEFace& facej = mesh.Face(nfj);
+						FSFace& facej = mesh.Face(nfj);
 						if ((facej.m_ntag == -1) && (facej == facei))
 						{
 							facej.m_ntag = i;
@@ -548,7 +558,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateFaces()
 
 void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 
 	int NE = mesh.Elements();
 	int NN = mesh.Nodes();
@@ -556,7 +566,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 	vector<vector<int> > NET(NN);
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int ne = 0;
 		switch (el.Shape())
 		{
@@ -585,7 +595,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 	mesh.TagAllElements(-1);
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& eli = mesh.Element(i);
+		FSElement& eli = mesh.Element(i);
 		if (eli.m_ntag == -1)
 		{
 			int n0 = eli.m_node[0];
@@ -597,7 +607,7 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 					int nej = net[j];
 					if (nej > i)
 					{
-						FEElement& elj = mesh.Element(nej);
+						FSElement& elj = mesh.Element(nej);
 						if ((elj.m_ntag == -1) && elj.is_equal(eli))
 						{
 							elj.m_ntag = i;
@@ -615,12 +625,12 @@ void CDlgMeshDiagnosticsUI::checkDuplicateElements()
 
 void CDlgMeshDiagnosticsUI::checkElementNeighbors()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int nerr = 0;
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.IsSolid())
 		{
 			int nf = el.Faces();
@@ -653,12 +663,12 @@ void CDlgMeshDiagnosticsUI::checkElementNeighbors()
 
 void CDlgMeshDiagnosticsUI::checkFaceNeighbors()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int nerr = 0;
 	int NF = mesh.Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = face.Edges();
 		for (int j = 0; j < nf; ++j)
 		{
@@ -676,12 +686,12 @@ void CDlgMeshDiagnosticsUI::checkFaceNeighbors()
 
 void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	vector<int> err;
 	int NE = mesh.Edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		for (int j = 0; j < 2; ++j)
 		{
 			int nebr = edge.m_nbr[j];
@@ -692,7 +702,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 			else if (nebr >= 0)
 			{
 				// an edge neighbor must have the same GID
-				FEEdge* pen = mesh.EdgePtr(nebr);
+				FSEdge* pen = mesh.EdgePtr(nebr);
 				if (pen == nullptr) err.push_back(i);
 				else if (pen->m_gid != edge.m_gid) err.push_back(i);
 			}
@@ -703,7 +713,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 				int nj = edge.n[j];
 				if ((nj >= 0) && (nj < mesh.Nodes()))
 				{
-					FENode& node = mesh.Node(nj);
+					FSNode& node = mesh.Node(nj);
 					if (node.m_gid < 0) err.push_back(i);
 				}
 				else err.push_back(i);
@@ -719,7 +729,7 @@ void CDlgMeshDiagnosticsUI::checkEdgeNeighbors()
 		{
 			for (int i = 0; i < err.size(); ++i)
 			{
-				FEEdge& edge = mesh.Edge(err[i]);
+				FSEdge& edge = mesh.Edge(err[i]);
 				logError(QString("Edge %1, nodes =%2, %3, gid = %4, nbr = %5, %6").arg(err[i]+1).arg(edge.n[0]+1).arg(edge.n[1]+1).arg(edge.m_gid).arg(edge.m_nbr[0]+1).arg(edge.m_nbr[1]+1));
 			}
 		}
@@ -732,12 +742,12 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 	int invalidShellFaces = 0;
 	int invalidSolidShellFaces = 0;
 	int elemFaces = 0; 
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int NE = mesh.Elements();
 	int NF = mesh.Faces();
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		if (el.IsSolid())
 		{
 			int nf = el.Faces();
@@ -757,7 +767,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 					else
 					{
 						// make sure that this face's element is this element
-						FEFace& f = mesh.Face(nfj);
+						FSFace& f = mesh.Face(nfj);
 						if (pej == nullptr)
 						{
 							// If there is no neighbor, then the face only should have elem[0] set
@@ -810,7 +820,7 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 			else
 			{
 				// make sure that the face's element is this element
-				FEFace& f = mesh.Face(nf0);
+				FSFace& f = mesh.Face(nf0);
 				if (f.m_elem[0].eid != i) invalidShellFaces++;
 			}
 
@@ -832,13 +842,13 @@ void CDlgMeshDiagnosticsUI::checkElementFaceTable()
 
 void CDlgMeshDiagnosticsUI::checkElementPartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountElementPartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Elements(); ++i)
 	{
-		FEElement& el = mesh.Element(i);
+		FSElement& el = mesh.Element(i);
 		int gid = el.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else invalidGID++;
@@ -862,13 +872,13 @@ void CDlgMeshDiagnosticsUI::checkElementPartitioning()
 
 void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountFacePartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int gid = face.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else invalidGID++;
@@ -904,7 +914,7 @@ void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 	int invalidSurfaces = 0;
 	for (int i = 0; i < mesh.Faces(); ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int fid = face.m_gid;
 		if ((fid >= 0) && (fid < obj->Faces()))
 		{
@@ -940,13 +950,13 @@ void CDlgMeshDiagnosticsUI::checkFacePartitioning()
 
 void CDlgMeshDiagnosticsUI::checkEdgePartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountEdgePartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Edges(); ++i)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		int gid = edge.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else if (gid >= ng) invalidGID++;
@@ -970,13 +980,13 @@ void CDlgMeshDiagnosticsUI::checkEdgePartitioning()
 
 void CDlgMeshDiagnosticsUI::checkNodePartitioning()
 {
-	FEMesh& mesh = *obj->GetFEMesh();
+	FSMesh& mesh = *obj->GetFEMesh();
 	int ng = mesh.CountNodePartitions();
 	vector<int> lut(ng, 0);
 	int invalidGID = 0;
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		int gid = node.m_gid;
 		if ((gid >= 0) && (gid < ng)) lut[gid]++;
 		else if (gid >= ng) invalidGID++;
@@ -997,4 +1007,66 @@ void CDlgMeshDiagnosticsUI::checkNodePartitioning()
 	}
 
 	if (berr == false) log("Node partitions look good.");
+}
+
+void CDlgMeshDiagnosticsUI::checkSlivers()
+{
+	const int T[4][4] = {
+		{0,1,2,3},
+		{0,3,1,2},
+		{0,2,3,1},
+		{1,3,2,0}
+	};
+
+	vector<int> slivers;
+	FSMesh& mesh = *obj->GetFEMesh();
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FSElement& el = mesh.Element(i);
+		if (el.Shape() == ELEM_TET)
+		{
+			// get the max edge length
+			double Lmax = 0;
+			for (int i=0; i<4; ++i)
+				for (int j = 1; j < 4; ++j)
+				{
+					vec3d a = mesh.Node(el.m_node[i]).pos();
+					vec3d b = mesh.Node(el.m_node[j]).pos();
+
+					double lij = (b - a).SqrLength();
+					if (lij > Lmax) Lmax = lij;
+				}
+			Lmax = sqrt(Lmax);
+
+			// pick the plane with the largest area
+			double Amax = 0.0;
+			int imax = -1;
+			for (int i = 0; i < 4; ++i)
+			{
+				vec3d r0 = mesh.Node(el.m_node[T[i][0]]).pos();
+				vec3d r1 = mesh.Node(el.m_node[T[i][1]]).pos();
+				vec3d r2 = mesh.Node(el.m_node[T[i][2]]).pos();
+
+				double Ai = ((r1 - r0) ^ (r2 - r0)).SqrLength();
+				if (Ai >= Amax) { Amax = Ai; imax = i; }
+			}
+			assert(imax != -1);
+
+			// create a plane from the first 3 points
+			vec3d r0 = mesh.Node(el.m_node[T[imax][0]]).pos();
+			vec3d r1 = mesh.Node(el.m_node[T[imax][1]]).pos();
+			vec3d r2 = mesh.Node(el.m_node[T[imax][2]]).pos();
+			vec3d r3 = mesh.Node(el.m_node[T[imax][3]]).pos();
+
+			vec3d N = (r1 - r0) ^ (r2 - r0); N.Normalize();
+
+			// see if the fourth point is (approximately) on this plane. 
+			double l = ((r3 - r0) * N)/Lmax;
+
+			if (l < 1e-5) slivers.push_back(i);
+		}
+	}
+
+	if (slivers.empty()) log("No tet slivers found.");
+	else logWarning(QString("%1 tet slivers found!").arg(slivers.size()));
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,16 +29,29 @@ SOFTWARE.*/
 
 class FEMeshValuator
 {
+	enum { MAX_DEFAULT_FIELDS = 13 };
+
 public:
 	// constructor
-	FEMeshValuator(FEMesh& mesh);
+	FEMeshValuator(FSMesh& mesh);
 
 	// evaluate the particular data field
 	void Evaluate(int nfield);
 
 	// evaluate just one element
 	double EvaluateElement(int i, int nfield, int* err = 0);
+	double EvaluateNode(int i, int nfield, int* err = 0);
+
+public:
+	void SetCurvatureLevels(int levels);
+	void SetCurvatureMaxIters(int maxIters);
+	void SetCurvatureExtQuad(bool b);
 
 private:
-	FEMesh& m_mesh;
+	FSMesh& m_mesh;
+
+	// properties for curvature
+	int	m_curvature_levels;
+	int	m_curvature_maxiters;
+	bool m_curvature_extquad;
 };

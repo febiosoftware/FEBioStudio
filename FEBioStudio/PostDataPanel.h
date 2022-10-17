@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,21 +29,37 @@ SOFTWARE.*/
 #include <QDialog>
 #include <string>
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 class CMainWindow;
 class QModelIndex;
 class CPostDocument;
 
 namespace Post {
-	class FEDataField;
+	class ModelDataField;
 }
 
 namespace Ui {
 	class CPostDataPanel;
 	class CDlgAddDataFile;
 	class CDlgFilter;
+	class CDlgExportData;
 }
+
+class CDlgExportData : public QDialog
+{
+public:
+	CDlgExportData(QWidget* parent);
+	~CDlgExportData();
+
+public:
+	bool selectionOnly() const;
+	int stateOutputOption() const;
+	QString stateList() const;
+
+private:
+	Ui::CDlgExportData* ui;
+};
 
 class CPostDataPanel : public CCommandPanel
 {
@@ -101,7 +117,7 @@ public:
 	CDlgFilter(QWidget* parent);
 
 	void setDataOperands(const std::vector<QString>& opNames);
-	void setDataField(Post::FEDataField* pdf);
+	void setDataField(Post::ModelDataField* pdf);
 
 	int getArrayComponent();
 

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,12 +32,12 @@ class GTruncatedEllipsoid;
 class FETruncatedEllipsoid : public FEMultiBlockMesh
 {
 public:
-	enum {NSLICE, NSTACK, NDIV, GR, GR2};
+	enum {NSLICE, NSTACK, NDIV, GR, GR2, ELEM_TYPE};
 
 public:
 	FETruncatedEllipsoid(){}
 	FETruncatedEllipsoid(GTruncatedEllipsoid* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
 	GTruncatedEllipsoid*	m_pobj;

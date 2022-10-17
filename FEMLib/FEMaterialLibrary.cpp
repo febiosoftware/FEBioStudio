@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -72,7 +72,7 @@ bool FEMaterialLibrary::Load(IArchive& ar)
 			int ntype = ar.GetChunkID();
 
 			// allocate the material
-			FEMaterial* pmat = FEMaterialFactory::Create(ntype);
+			FSMaterial* pmat = FEMaterialFactory::Create(nullptr, ntype);
 			if (pmat == 0) throw ReadError("error parsing CID_MATERIAL_SECTION in FEMaterialLibrary::Load");
 
 			char szname[256] = {0};
@@ -119,7 +119,7 @@ bool FEMaterialLibrary::Save(OArchive& ar)
 		{
 			for (int i=0; i<nmats; ++i)
 			{
-				FEMaterial* pm = Material(i);
+				FSMaterial* pm = Material(i);
 				int ntype = pm->Type();
 				ar.BeginChunk(ntype);
 				{
@@ -138,11 +138,11 @@ bool FEMaterialLibrary::Save(OArchive& ar)
 	return true;
 }
 
-void FEMaterialLibrary::Add(const char* szname, FEMaterial* pmat)
+void FEMaterialLibrary::Add(const char* szname, FSMaterial* pmat)
 {
 	int ntype = pmat->Type();
 	FEMaterialFactory* pMF = FEMaterialFactory::GetInstance();
-	FEMaterial* pm = pMF->Create(ntype);
+	FSMaterial* pm = pMF->Create(nullptr, ntype);
 	pm->copy(pmat);
 	MATENTRY m;
 	m.m_pmat = pm;

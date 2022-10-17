@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,6 @@ SOFTWARE.*/
 
 #define UNSELECTED_HELP "unselected_help"
 
-class FEProject;
 class QLayout;
 
 namespace Ui {
@@ -41,16 +40,13 @@ class CHelpDialog : public QDialog
 	Q_OBJECT
 
 public:
-	CHelpDialog(FEProject& prj, QWidget* parent);
+	CHelpDialog(QWidget* parent);
 	virtual ~CHelpDialog();
-
-public slots:
-	void LoadPage();
 
 protected slots:
 	void on_help_clicked();
 
-protected:
+public:
 	void SetLeftSideLayout(QLayout* layout);
 
 	virtual void SetURL() = 0;
@@ -59,8 +55,6 @@ protected:
 	int		m_module;
 	QString m_url;
 	QString m_unselectedHelp;
-	QSize m_withoutHelp;
-	QSize m_withHelp;
 private:
 	Ui::CHelpDialog* ui;
 };

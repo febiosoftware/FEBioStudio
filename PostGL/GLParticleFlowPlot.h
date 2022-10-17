@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -71,7 +71,7 @@ class CGLParticleFlowPlot : public CGLPlot
 	};
 
 public:
-	CGLParticleFlowPlot(CGLModel* mdl);
+	CGLParticleFlowPlot();
 
 	void Update(int ntime, float dt, bool breset) override;
 
@@ -134,7 +134,7 @@ private:
 	float	m_lastTime;
 	float	m_lastDt;
 
-	FEFindElement	m_find;
+	FEFindElement*	m_find;
 
 	vector<FlowParticle>	m_particles;
 };

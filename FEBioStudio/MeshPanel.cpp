@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,8 +37,11 @@ SOFTWARE.*/
 #include <MeshTools/FECreateShells.h>
 #include <MeshTools/FERevolveFaces.h>
 #include <MeshTools/FEMesher.h>
+#include <MeshTools/FEMultiBlockMesh.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <GeomLib/GMultiBox.h>
+#include <GeomLib/GMultiPatch.h>
 #include "ui_meshpanel.h"
 #include "ObjectProps.h"
 #include "MainWindow.h"
@@ -123,7 +126,7 @@ void MeshingThread::run()
 {
 	m_mesher = m_po->GetFEMesher();
 	if (m_mesher) m_mesher->SetErrorMessage("");
-	FEMesh* mesh = m_po->BuildMesh();
+	FSMesh* mesh = m_po->BuildMesh();
 	emit resultReady(mesh != nullptr);
 }
 
@@ -148,17 +151,17 @@ void MeshingThread::stop()
 }
 
 //=======================================================================================
-ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FEGroup* pg)
+ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po, FESelection* sel)
 {
 	m_doc = doc;
 	m_mod = mod;
-	m_pg = pg;
+	m_sel = sel;
 	m_po = po;
 }
 
 void ModifierThread::run()
 {
-	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_pg);
+	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_sel);
 	emit resultReady(bsuccess);
 }
 
@@ -198,11 +201,11 @@ REGISTER_CLASS(FEInflateMesh          , CLASS_FEMODIFIER, "Inflate"        , EDI
 REGISTER_CLASS(FEInvertMesh           , CLASS_FEMODIFIER, "Invert"         , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
 REGISTER_CLASS(FEMirrorMesh           , CLASS_FEMODIFIER, "Mirror"         , EDIT_MESH);
 #ifdef HAS_MMG
-REGISTER_CLASS(FEMMGRemesh            , CLASS_FEMODIFIER, "MMG Remesh"     , EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(MMGRemesh            , CLASS_FEMODIFIER, "MMG Remesh"     , EDIT_MESH | EDIT_SAFE);
 #endif
 REGISTER_CLASS(FEPartitionSelection   , CLASS_FEMODIFIER, "Partition"      , EDIT_ELEMENT | EDIT_FACE | EDIT_EDGE | EDIT_NODE);
 REGISTER_CLASS(FERebuildMesh          , CLASS_FEMODIFIER, "Rebuild Mesh"   , EDIT_MESH);
-REGISTER_CLASS(FERefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
+REGISTER_CLASS(RefineMesh			  , CLASS_FEMODIFIER, "Refine Mesh"    , EDIT_MESH | EDIT_SAFE);
 REGISTER_CLASS(FERevolveFaces         , CLASS_FEMODIFIER, "Revolve Faces"  , EDIT_FACE);
 REGISTER_CLASS(FERezoneMesh           , CLASS_FEMODIFIER, "Rezone"         , EDIT_FACE | EDIT_SAFE);
 REGISTER_CLASS(FESetAxesOrientation   , CLASS_FEMODIFIER, "Set Axes"       , EDIT_MESH | EDIT_ELEMENT | EDIT_SAFE);
@@ -212,6 +215,7 @@ REGISTER_CLASS(FESetShellThickness    , CLASS_FEMODIFIER, "Shell Thickness", EDI
 REGISTER_CLASS(FESmoothMesh           , CLASS_FEMODIFIER, "Smooth"         , EDIT_MESH);
 REGISTER_CLASS(FETetGenModifier       , CLASS_FEMODIFIER, "TetGen"         , EDIT_MESH);
 REGISTER_CLASS(FEWeldNodes            , CLASS_FEMODIFIER, "Weld nodes"     , EDIT_MESH);
+REGISTER_CLASS(FESetMBWeight          , CLASS_FEMODIFIER, "Set MB Weight"  , EDIT_MESH | EDIT_SAFE);
 
 CMeshPanel::CMeshPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CMeshPanel)
 {
@@ -285,7 +289,7 @@ void CMeshPanel::Update(bool breset)
 			}
 		}
 
-		FEMesh* mesh = activeObject->GetFEMesh();
+		FSMesh* mesh = activeObject->GetFEMesh();
 		if (mesh)
 		{
 			// show modifiers for non-editable meshes
@@ -368,7 +372,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	if (dlg.exec())
 	{
 		// see if the meshing was successful
-		FEMesh* mesh = activeObject->GetFEMesh();
+		FSMesh* mesh = activeObject->GetFEMesh();
 		if (mesh == nullptr)
 		{
 			QString errMsg = QString::fromStdString(mesher->GetErrorMessage());
@@ -400,19 +404,18 @@ void CMeshPanel::on_apply2_clicked(bool b)
 
 	FESelection* sel = doc->GetCurrentSelection();
 	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);
-	FEGroup* g = dynamic_cast<FEGroup*>(list);
+	FSGroup* g = dynamic_cast<FSGroup*>(list);
 	if (g == 0) 
 	{ 
 		if (dynamic_cast<GEdgeList*>(list) && (list->size() == 1))
 		{
-			GEdgeList* edgeList = dynamic_cast<GEdgeList*>(list);
 			GEdge* ge = dynamic_cast<GEdgeList*>(list)->GetEdge(0);
 			g = ge->GetFEEdgeSet();
 		}
 		else { delete list; list = 0; }
 	}
 
-	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, g);
+	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, sel);
 	CDlgStartThread dlg(this, thread);
 	dlg.setTask(QString::fromStdString(m_mod->GetName()));
 	if (dlg.exec())
@@ -441,9 +444,6 @@ void CMeshPanel::on_apply2_clicked(bool b)
 		}
 	}
 
-	// don't forget to cleanup
-	if (g) delete g;
-
 	w->UpdateModel(activeObject, true);
 	w->UpdateGLControlBar();
 	w->RedrawGL();
@@ -457,6 +457,9 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GObject* po = pdoc->GetActiveObject();
 	GModel* mdl = pdoc->GetGModel();
+
+	// Make sure that this object is not the active item 
+	if (pdoc->GetActiveItem() == po) pdoc->SetActiveItem(nullptr);
 
 	int convertOption = pa->data().toInt();
 
@@ -492,6 +495,22 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 				return;
 			}
 		}
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIBLOCK)
+	{
+		GPrimitive* primitive = dynamic_cast<GPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multiblock object.");
+
+		GMultiBox* newObject = new GMultiBox(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
+	}
+	else if (convertOption == CObjectPanel::CONVERT_TO_MULTIPATCH)
+	{
+		GShellPrimitive* primitive = dynamic_cast<GShellPrimitive*>(po);
+		if (primitive == nullptr) QMessageBox::information(this, "Convert", "Cannot convert this to a multi-patch object.");
+
+		GMultiPatch* newObject = new GMultiPatch(primitive);
+		pdoc->DoCommand(new CCmdSwapObjects(pdoc->GetGModel(), po, newObject));
 	}
 	else
 	{

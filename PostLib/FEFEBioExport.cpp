@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,9 @@ SOFTWARE.*/
 #include <XML/XMLWriter.h>
 #include "FEPostModel.h"
 using namespace Post;
+
+// defined in FEBio/FEBioExport.h
+template <> std::string type_to_string<vec3f>(const vec3f& v);
 
 const char* elementTypeStr(int ntype)
 {
@@ -62,8 +65,8 @@ bool FEFEBioExport::Save(FEPostModel& fem, const char* szfile)
 {
 	int nmat = fem.Materials();
 
-	FEPostMesh* pm = fem.GetFEMesh(0);
 	FEState* pst = fem.CurrentState();
+	FEPostMesh* pm = pst->GetFEMesh();
 	int NE = pm->Elements();
 
 	XMLWriter xml;
@@ -126,7 +129,7 @@ bool FEFEBioExport::Save(FEPostModel& fem, const char* szfile)
 					// now export all the elements of this material and type
 					xml.add_branch(part);
 					{
-						int n[FEElement::MAX_NODES];
+						int n[FSElement::MAX_NODES];
 						XMLElement el("elem");
 						int n1 = el.add_attribute("id", "");
 						for (int i=i0; i<pm->Elements(); ++i)

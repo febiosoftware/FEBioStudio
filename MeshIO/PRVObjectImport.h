@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,10 +34,10 @@ class GDiscreteObject;
 
 //-------------------------------------------------------------------
 // Class for reading the Preview Object File format.
-class PRVObjectImport : public FEFileImport
+class PRVObjectImport : public FSFileImport
 {
 public:
-	PRVObjectImport(FEProject& prj);
+	PRVObjectImport(FSProject& prj);
 
 	// read the file
 	bool Load(const char* szfile);
@@ -46,13 +46,13 @@ public:
 	void Close();
 
 protected:
-	bool LoadObjects(IArchive& ar, FEProject& prj);
-	GObject* LoadObject(IArchive& ar, FEProject& prj);
-	GDiscreteObject* LoadDiscreteObject(IArchive& ar, FEProject& prj);
+	bool LoadObjects(IArchive& ar, FSProject& prj);
+	GObject* LoadObject(IArchive& ar, FSProject& prj);
+	GDiscreteObject* LoadDiscreteObject(IArchive& ar, FSProject& prj);
 	void ReindexObject(GObject* po);
 	void ReindexDiscreteObject(GDiscreteObject* po);
 
 private:
 	IArchive			m_ar;
-	vector<GObject*>	m_objList;
+	std::vector<GObject*>	m_objList;
 };

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,12 +30,19 @@ SOFTWARE.*/
 
 #ifdef MODEL_REPO
 #include <vector>
-#include <unordered_map>
+#include <map>
 #include <JlCompress.h>
 #include <QStandardPaths>
+#include <QDockWidget>
 #include <QDesktopServices>
 #include <QDateTime>
 #include <QXmlStreamReader>
+#include <QUrl>
+#include <QUrlQuery>
+#include <QClipboard>
+#include <QRegularExpression>
+#include <QRegularExpressionMatch>
+#include <QRegularExpressionMatchIterator>
 #include "RepoConnectionHandler.h"
 #include "MainWindow.h"
 #include "ui_mainwindow.h"
@@ -50,17 +57,28 @@ SOFTWARE.*/
 #include "WrapLabel.h"
 #include "TagLabel.h"
 #include "ZipFiles.h"
+#include "ModelTypeInfoReader.h"
+#include "ServerSettings.h"
 
 #include <iostream>
 #include <QDebug>
 
-CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent)
-	: QWidget(parent), m_wnd(pwnd), ui(new Ui::CRepositoryPanel)
+using std::vector;
+using std::pair;
+using std::map;
+using std::set;
+
+CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent)
+	: QWidget(parent), m_wnd(pwnd), dock(parent), ui(new Ui::CRepositoryPanel)
 {
 	// build Ui
 	ui->setupUi(this);
-	QObject::connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CRepositoryPanel::on_actionSearch_triggered);
-	QObject::connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
+	connect(ui->searchLineEdit, &QLineEdit::returnPressed, this, &CRepositoryPanel::on_actionSearch_triggered);
+	connect(ui->loadingCancel, SIGNAL(clicked(bool)), this, SIGNAL(cancelClicked()));
+
+    connect(ui->advancedSearch->actionSearch, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedSearch_triggered);
+    connect(ui->advancedSearch->actionClear, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvancedClear_triggered);
+    connect(ui->advancedSearch->actionHide, &QAction::triggered, this, &::CRepositoryPanel::on_actionAdvnacedHide_triggered);
 
 	dbHandler = new CLocalDatabaseHandler(this);
 	repoHandler = new CRepoConnectionHandler(this, dbHandler, m_wnd);
@@ -73,6 +91,33 @@ CRepositoryPanel::~CRepositoryPanel()
 	delete repoHandler;
 	delete dbHandler;
 	delete ui;
+}
+
+void CRepositoryPanel::OpenLink(const QString& link)
+{
+	// Connect to the repository if we haven't already
+	if(ui->stack->currentIndex() == 0)
+	{
+		linkToOpen = link;
+		on_connectButton_clicked();
+		return;
+	}
+
+	QUrl url(link);
+	QString type(url.path());
+	QUrlQuery query(url.query());
+	if(type == "/project")
+
+	{
+		ui->selectProjectByID(query.queryItemValue("ID").toInt());
+	}
+
+	linkToOpen.clear();
+}
+
+void CRepositoryPanel::Raise()
+{
+	dock->raise();
 }
 
 void CRepositoryPanel::SetModelList()
@@ -114,10 +159,18 @@ void CRepositoryPanel::SetModelList()
 		ui->projectTree->topLevelItem(0)->setSelected(true);
 	}
 
+    // Set Fields in the advanced search box
+    ui->advancedSearch->Reset(dbHandler->GetAdvancedSearchInfo());
+
 	ui->stack->setCurrentIndex(1);
+
+	if(!linkToOpen.isEmpty())
+	{
+		OpenLink(linkToOpen);
+	}
 }
 
-void CRepositoryPanel::ShowMessage(QString message)
+void CRepositoryPanel::ShowMessage(QString message, bool logout)
 {
 	QDialog *dlg = new QDialog(this);
 	QVBoxLayout* l = new QVBoxLayout;
@@ -131,14 +184,17 @@ void CRepositoryPanel::ShowMessage(QString message)
 	QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 
 	dlg->exec();
+
+    if(logout)
+    {
+        ui->stack->setCurrentIndex(0);
+    }
 }
 
 void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
 {
 	QString message;
 
-	qDebug() << lastMessageTime;
-	
 	if(lastMessageTime == -1)
 	{
 	 	message += "<h2>Welcome to the FEBio Project Repository!</h2><p>This repository is a way for FEBio users to easily access models "
@@ -227,9 +283,15 @@ void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages)
 
 void CRepositoryPanel::LoginTimeout()
 {
-	ShowMessage("Your login to the model repository has timed out.");
+    // This will stop files from being zipped if that's currently happening
+    emit cancelClicked();
 
-	ui->stack->setCurrentIndex(1);
+	ShowMessage("Your login to the model repository has timed out.", true);
+
+	// ui->stack->setCurrentIndex(1);
+
+    // Prompt for login again
+    on_actionUpload_triggered();
 }
 
 void CRepositoryPanel::NetworkInaccessible()
@@ -239,6 +301,8 @@ void CRepositoryPanel::NetworkInaccessible()
 
 void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 {
+    qint64 now;
+
 	if(fileType == FULL)
 	{
 		// Extract the files from the archive
@@ -251,21 +315,29 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 		JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
 		m_wnd->ShowIndeterminateProgress(false);
 
-		// Set the appropriate local copy flags
-		ui->projectItemsByID[fileID]->setLocalCopyRecursive(true);
+        // Delete archive
+        QFile::remove(filename);
 
+        // Get the current time and update the tree items
+        now = QDateTime::currentSecsSinceEpoch();
+		ui->projectItemsByID[fileID]->justDownloaded(now);
 	}
 	else
 	{
-		ui->fileItemsByID[fileID]->AddLocalCopy();
+        // Get the current time and update the tree item
+        now = QDateTime::currentSecsSinceEpoch();
+		ui->fileItemsByID[fileID]->justDownloaded(now);
 	}
 
-	// Update fileSearchItem's color if there's a current file search
+    // Update the download time(s) in the database
+    dbHandler->setDownloadTime(fileID, fileType, now);
+
+	// Update fileSearchItem's color and icon if there's a current file search
 	if(ui->treeStack->currentIndex() == 1)
 	{
-		if(ui->fileSearchTree->selectedItems().count() > 0)
+		if(ui->searchTree->selectedItems().count() > 0)
 		{
-			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->UpdateColor();
+			static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->Update();
 		}
 	}
 
@@ -276,6 +348,28 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 	}
 
 	on_treeWidget_itemSelectionChanged();
+}
+
+void CRepositoryPanel::UploadFinished(bool ok, QString message)
+{
+	if(!message.isEmpty())
+	{
+		ShowMessage(message);
+	}
+	
+	if(ui->projectInfo)
+	{
+		if(!ok)
+		{
+			on_actionUpload_triggered();
+		}
+		else
+		{
+			delete ui->projectInfo;
+			ui->projectInfo = nullptr;
+		}
+	}
+	
 }
 
 void CRepositoryPanel::AddCategory(char **data)
@@ -344,8 +438,10 @@ void CRepositoryPanel::AddProjectFile(char **data)
 	QString filename(data[1]);
 	bool localCopy = std::stoi(data[2]);
 	qint64 size = QString(data[3]).toLongLong();
+    qint64 uploadTime = QString(data[4]).toLongLong();
+    qint64 downloadTime = QString(data[5]).toLongLong();
 
-	ui->currentProject->addChild(ui->addFile(filename, 0, ID, localCopy, size));
+	ui->currentProject->addChild(ui->addFile(filename, 0, ID, localCopy, size, uploadTime, downloadTime));
 }
 
 void CRepositoryPanel::on_connectButton_clicked()
@@ -365,7 +461,7 @@ void CRepositoryPanel::on_connectButton_clicked()
 		defaultPath += "/FEBio Studio Repo Files";
 
 		// set proper separators.
-		std::string sPath = FSDir::filePath(defaultPath.toStdString());
+		string sPath = FSDir::filePath(defaultPath.toStdString());
 
 		CDlgSetRepoFolder dlg(sPath.c_str(), this);
 
@@ -390,9 +486,8 @@ void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, in
 
 	if(!customItem->LocalCopy())
 	{
-		DownloadItem(customItem);
-
 		ui->openAfterDownload = customItem;
+        DownloadItem(customItem);
 	}
 	else
 	{
@@ -400,9 +495,9 @@ void CRepositoryPanel::on_treeWidget_itemDoubleClicked(QTreeWidgetItem *item, in
 	}
 }
 
-void CRepositoryPanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
+void CRepositoryPanel::on_searchTree_itemDoubleClicked(QTreeWidgetItem *item, int column)
 {
-	FileSearchItem* searchItem = static_cast<FileSearchItem*>(item);
+	SearchItem* searchItem = static_cast<SearchItem*>(item);
 
 	on_treeWidget_itemDoubleClicked(searchItem->getRealItem(),0);
 }
@@ -421,7 +516,7 @@ void CRepositoryPanel::on_actionDownload_triggered()
 	}
 	else
 	{
-		DownloadItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		DownloadItem(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 
 }
@@ -434,7 +529,7 @@ void CRepositoryPanel::on_actionOpen_triggered()
 	}
 	else
 	{
-		OpenItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		OpenItem(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 }
 
@@ -446,7 +541,7 @@ void CRepositoryPanel::on_actionOpenFileLocation_triggered()
 	}
 	else
 	{
-		ShowItemInBrowser(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		ShowItemInBrowser(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 }
 
@@ -458,10 +553,19 @@ void CRepositoryPanel::on_actionDelete_triggered()
 	}
 	else
 	{
-		DeleteItem(static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->getRealItem());
+		DeleteItem(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
 	}
 
 	on_treeWidget_itemSelectionChanged();
+}
+
+void CRepositoryPanel::on_actionCopyPermalink_triggered()
+{
+	ProjectItem* item = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0]);
+
+	QString permalink = QString("https://%1:%2/permalink/project/%3").arg(ServerSettings::URL()).arg(ServerSettings::Port()).arg(item->getProjectID());
+
+	QGuiApplication::clipboard()->setText(permalink);
 }
 
 void CRepositoryPanel::on_actionUpload_triggered()
@@ -476,11 +580,8 @@ void CRepositoryPanel::on_actionUpload_triggered()
 
 			ui->showLoadingPage("Logging in...");
 		}
-
-		return;
 	}
-
-	if(repoHandler->getUploadPermission())
+	else if(repoHandler->getUploadPermission())
 	{
 		CWzdUpload dlg(this,repoHandler->getUploadPermission(), dbHandler, repoHandler);
 		dlg.setOwner(repoHandler->getUsername());
@@ -491,9 +592,13 @@ void CRepositoryPanel::on_actionUpload_triggered()
 		QStringList tags = dbHandler->GetTags();
 		dlg.setTagList(tags);
 
+		if(ui->projectInfo) dlg.setProjectJson(ui->projectInfo);
 
 		if (dlg.exec())
 		{
+			ui->projectInfo = new QByteArray;
+			dlg.getProjectJson(ui->projectInfo);
+
 			QVariantMap projectInfo;
 			projectInfo.insert("name", dlg.getName());
 			projectInfo.insert("description", dlg.getDescription());
@@ -511,11 +616,13 @@ void CRepositoryPanel::on_actionUpload_triggered()
 			QStringList filePaths = dlg.GetFilePaths();
 			QStringList zipFilePaths = dlg.GetZipFilePaths();
 
-			projectInfo.insert("files", dlg.getFileInfo());
+            QVariantList fileInfo = dlg.getFileInfo();
+
+            GetFileMetaDataForUpload(fileInfo, filePaths, zipFilePaths);
+
+			projectInfo.insert("files", fileInfo);
 
 			QByteArray payload=QJsonDocument::fromVariant(projectInfo).toJson();
-
-			qDebug() << payload;
 
 			repoHandler->setUploadReady(false);
 
@@ -528,9 +635,17 @@ void CRepositoryPanel::on_actionUpload_triggered()
 			ZipThread* zip = new ZipThread(archiveName, filePaths, zipFilePaths);
 			QObject::connect(zip, &ZipThread::resultReady, this, &CRepositoryPanel::updateUploadReady);
 			QObject::connect(zip, &ZipThread::finished, zip, &ZipThread::deleteLater);
-			QObject::connect(ui->loadingCancel, &QPushButton::clicked, zip, &ZipThread::abort);
+			QObject::connect(this, &CRepositoryPanel::cancelClicked, zip, &ZipThread::abort);
 			QObject::connect(zip, &ZipThread::progress, this, &CRepositoryPanel::loadingPageProgress);
 			zip->start();
+		}
+		else
+		{
+			if(ui->projectInfo)
+			{
+				delete ui->projectInfo;
+				ui->projectInfo = nullptr;
+			}
 		}
 	}
 	else
@@ -556,70 +671,26 @@ void CRepositoryPanel::on_actionUpload_triggered()
 
 void CRepositoryPanel::on_actionSearch_triggered()
 {
-	ui->unhideAll();
-
 	QString searchTerm = ui->searchLineEdit->text();
 	if(searchTerm.isEmpty()) return;
 
-	QString projectSearch;
-	QString fileSearch;
-	if(searchTerm.contains("files:"))
-	{
-		QStringList parts = searchTerm.split("files:");
-		projectSearch = parts[0];
-		fileSearch = parts[1];
+    searchTerm = "all:" + searchTerm;
 
-		if(!fileSearch.isEmpty())
-		{
-			std::unordered_set<int> fileIDs = dbHandler->FileSearch(fileSearch);
-
-			ui->fileSearchTree->blockSignals(true);
-
-			ui->fileSearchTree->clear();
-			ui->fileSearchTree->setColumnWidth(0, ui->projectTree->columnWidth(0));
-
-			for(int id : fileIDs)
-			{
-				FileSearchItem* item = new FileSearchItem(ui->fileItemsByID[id]);
-
-				ui->fileSearchTree->addTopLevelItem(item);
-			}
-
-			ui->fileSearchTree->blockSignals(false);
-
-			ui->treeStack->setCurrentIndex(1);
-		}
-	}
-	else
-	{
-		projectSearch = searchTerm;
-
-		std::unordered_set<int> projIDs = dbHandler->FullTextSearch(projectSearch);
-
-		ui->projectTree->blockSignals(true);
-
-		for(auto current : ui->projectItemsByID)
-		{
-			if(projIDs.count(current.first) == 0)
-			{
-				current.second->setHidden(true);
-			}
-		}
-
-		ui->projectTree->blockSignals(false);
-		ui->treeStack->setCurrentIndex(0);
-	}
-
-
+    SearchDatabase(searchTerm);
 }
 
 void CRepositoryPanel::on_actionClearSearch_triggered()
 {
 	ui->searchLineEdit->clear();
-
-	ui->unhideAll();
+    ui->advancedSearch->Clear();
 
 	ui->treeStack->setCurrentIndex(0);
+}
+
+void CRepositoryPanel::on_actionShowAdvanced_triggered()
+{
+    ui->searchBar->hide();
+    ui->advancedSearch->show();
 }
 
 void CRepositoryPanel::on_actionDeleteRemote_triggered()
@@ -684,10 +755,14 @@ void CRepositoryPanel::on_actionModify_triggered()
 
 			projectInfo.insert("publications", dlg.getPublicationInfo());
 
-			projectInfo.insert("files", dlg.getFileInfo());
-
-			QStringList filePaths = dlg.GetFilePaths();
+            QStringList filePaths = dlg.GetFilePaths();
 			QStringList zipFilePaths = dlg.GetZipFilePaths();
+
+            QVariantList fileInfo = dlg.getFileInfo();
+
+            GetFileMetaDataForUpload(fileInfo, filePaths, zipFilePaths);
+
+			projectInfo.insert("files", fileInfo);
 
 			if(filePaths.size() > 0)
 			{
@@ -730,13 +805,299 @@ void CRepositoryPanel::on_actionModify_triggered()
 
 void CRepositoryPanel::on_actionFindInTree_triggered()
 {
-	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
+	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->selectedItems()[0]);
 
 	ui->projectTree->setCurrentItem(item->getRealItem());
 
 	ui->treeStack->setCurrentIndex(0);
 
 	ui->searchLineEdit->clear();
+}
+
+void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths)
+{
+    for(QVariant& fileInfo : fileInfoList)
+    {  
+        QString filename = fileInfo.toMap()["filename"].toString();
+
+        // find full file path
+        int index; bool found = false;
+        for(index = 0; index < zipPaths.size(); index++)
+        {
+            if(zipPaths[index] == filename)
+            {
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) continue;
+
+        QString fullFilePath = localPaths[index];
+
+        if(QFileInfo::exists(fullFilePath))
+        {
+            ModelTypeInfoReader reader;
+            if(!reader.ReadTypeInfo(fullFilePath.toStdString())) continue;
+
+            string module = reader.GetModule();
+            unordered_map<string, unordered_set<string>> typeInfo = reader.GetTypeInfo();
+
+            QVariantMap metadata;
+            metadata["Module"] = QStringList(module.c_str());
+
+            for(auto item : typeInfo)
+            {
+                if(item.second.size() > 0)
+                {
+                    QString section = item.first.c_str();
+                    
+                    QStringList typeNames;
+
+                    for(auto typeName : item.second)
+                    {
+                        typeNames.append(typeName.c_str());
+                    }
+
+                    metadata[section] = typeNames;
+                }
+            }
+
+            ((QVariantMap&)fileInfo)["metaData"] = metadata;
+        }
+    }
+}
+
+void CRepositoryPanel::SearchDatabase(QString searchTerm)
+{
+    vector<pair<QString, QStringList>> termList;
+
+    QRegularExpression regex("\\w*:.*?(?=(?:\\w*:)|$)");
+
+    QRegularExpressionMatchIterator i = regex.globalMatch(searchTerm);
+    while(i.hasNext())
+    {
+        QRegularExpressionMatch match = i.next();
+        QStringList splitResult = match.captured().split(":");
+        QString key = splitResult[0];
+
+        // Loop over characters to split terms at spaces, unless the space occurs in a quote
+        QStringList values;
+        QString value;
+        bool inQuote = false;
+        for(QChar chr : splitResult[1].trimmed())
+        {
+            if(chr == '"')
+            {
+                if(inQuote)
+                {
+                    inQuote = false;
+                    if(!value.isEmpty())
+                    {
+                        values.push_back(value);
+                        value.clear();
+                    }
+                }
+                else
+                {
+                    inQuote = true;
+                    if(!value.isEmpty())
+                    {
+                        values.push_back(value);
+                        value.clear();
+                    }
+                }
+            }
+            else if(chr == ' ')
+            {
+                if(inQuote)
+                {
+                    value.push_back(chr);
+                }
+                else
+                {
+                    if(!value.isEmpty())
+                    {
+                        values.push_back(value);
+                        value.clear();
+                    }
+                }
+            }
+            else
+            {
+                value.push_back(chr);
+            }
+        }
+        
+        // Add the last term
+        if(!value.isEmpty())
+        {
+            values.push_back(value);
+        }
+
+        if(!values.empty())
+        {
+            termList.emplace_back(key,values);
+        }
+    }
+
+    map<pair<int, bool>,int> IDs;
+
+    ui->searchTree->blockSignals(true);
+    ui->searchTree->clear();
+	ui->searchTree->setColumnWidth(0, ui->projectTree->columnWidth(0));
+
+    bool firstTerm = true;
+    for(auto& item : termList)
+    {
+        QString dataType = item.first;
+        QStringList terms = item.second;
+
+        map<int,int> itemIDs;
+
+        for(auto term : terms)
+        {
+            set<int> tempIDs = dbHandler->ProjectSearch(dataType, term);
+
+            for(int ID : tempIDs)
+            {
+                try
+                {
+                    int val = itemIDs.at(ID);
+
+                    itemIDs[ID] = val + 1;
+                }
+                catch(const std::out_of_range& e)
+                {
+                    itemIDs[ID] = 1;
+                }
+            }
+        }
+
+        if(firstTerm)
+        {
+            for(auto& item : itemIDs)
+            {
+                pair<int,bool> pair(item.first, true);
+
+                IDs[pair] = item.second;
+            }
+        }
+        else
+        {
+            vector<pair<int, bool>> remove;
+
+            for(auto& item : IDs)
+            {
+                if(item.first.second)
+                {
+                    if(itemIDs.count(item.first.first) == 0)
+                    {
+                        remove.push_back(item.first);
+                    }
+                    else
+                    {
+                        IDs[item.first] += itemIDs[item.first.first];
+                    }
+                }
+            }
+
+            for(auto item : remove)
+            {
+                IDs.erase(item);
+            }
+        }
+
+        itemIDs.clear();
+
+        for(auto term : terms)
+        {
+            set<int> tempIDs = dbHandler->FileSearch(dataType, term);
+
+            for(int ID : tempIDs)
+            {
+                try
+                {
+                    int val = itemIDs.at(ID);
+
+                    itemIDs[ID] = val + 1;
+                }
+                catch(const std::out_of_range& e)
+                {
+                    itemIDs[ID] = 1;
+                }
+            }
+        }
+
+        if(firstTerm)
+        {
+            for(auto& item : itemIDs)
+            {
+                pair<int,bool> pair(item.first, false);
+
+                IDs[pair] = item.second;
+            }
+        }
+        else
+        {
+            vector<pair<int, bool>> remove;
+
+            for(auto& item : IDs)
+            {
+                if(!item.first.second)
+                {
+                    if(itemIDs.count(item.first.first) == 0)
+                    {
+                        remove.push_back(item.first);
+                    }
+                    else
+                    {
+                        IDs[item.first] += itemIDs[item.first.first];
+                    }
+                }
+            }
+
+            for(auto item : remove)
+            {
+                IDs.erase(item);
+            }
+        }
+        
+        firstTerm = false;
+    }
+
+    vector<pair<pair<int,bool>,int>> results;
+
+    for(auto item : IDs)
+    {
+        results.push_back(item);
+    }
+
+    sort(results.begin(), results.end(), 
+        [](pair<pair<int,bool>,int> a,
+        pair<pair<int,bool>,int> b)
+        {
+            return a.second > b.second;
+        }
+    );
+
+    SearchItem* searchItem;
+    for(auto item : results)
+    {
+        if(item.first.second)
+        {
+            searchItem = new SearchItem(ui->projectItemsByID[item.first.first]);
+        }
+        else
+        {
+            searchItem = new SearchItem(ui->fileItemsByID[item.first.first]);
+        }
+
+        ui->searchTree->addTopLevelItem(searchItem);
+    }
+
+    ui->searchTree->blockSignals(false);
+    ui->treeStack->setCurrentIndex(1);
 }
 
 void CRepositoryPanel::UpdateInfo(CustomTreeWidgetItem *item)
@@ -786,11 +1147,24 @@ void CRepositoryPanel::UpdateInfo(CustomTreeWidgetItem *item)
 		ui->projectInfoBox->getToolItem(2)->hide();
 	}
 
-
-	ui->actionDownload->setDisabled(false);
-	if(item->LocalCopy())
+    if(item->type() == FOLDERITEM)
+    {
+        ui->actionDownload->setDisabled(true);
+    }
+    else
+    {
+        ui->actionDownload->setDisabled(false);
+    }
+	
+    // We don't just use item->LocalCopy() because this allows these to work 
+    // for partially downloaded projects or folders
+	if(item->GetLocalCopy() > 0)
 	{
-		ui->actionOpen->setDisabled(false);
+        if(item->type() == FILEITEM)
+        {
+            ui->actionOpen->setDisabled(false);
+        }
+		
 		ui->actionOpenFileLocation->setDisabled(false);
 		ui->actionDelete->setDisabled(false);
 	}
@@ -824,12 +1198,38 @@ void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item)
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
 		ID = projItem->getProjectID();
 		type = FULL;
+
+        if(projectModified(projItem))
+        {
+            int ret = QMessageBox::question(this, "Overwrite File", "You have modifed at least one file in this project after downloading it.\n"
+                "Downloading again will overwrite these changes.\n\nWould you like to continue?");
+
+            if(ret == QMessageBox::No)
+            {
+                ui->openAfterDownload = nullptr;
+                return;
+            }
+        }
+
 	}
 	else if (item->type() == FILEITEM)
 	{
 		FileItem* fileItem = static_cast<FileItem*>(item);
 		ID = fileItem->getFileID();
 		type = PART;
+
+        if(fileModified(fileItem))
+        {
+            int ret = QMessageBox::question(this, "Overwrite File", "You have modifed this file after downloading it.\n"
+                "Downloading again will overwrite these changes.\n\nWould you like to continue?");
+
+            if(ret == QMessageBox::No)
+            {
+                ui->openAfterDownload = nullptr;
+                return;
+            }
+        }
+
 	}
 	else
 	{
@@ -846,101 +1246,156 @@ void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item)
 
 void CRepositoryPanel::OpenItem(CustomTreeWidgetItem *item)
 {
-	int ID;
-	int type;
+    if (item->type() != FILEITEM)
+    {
+        ui->openAfterDownload = nullptr;
+        return;
+    }
 
-	if(item->type() == PROJECTITEM)
-	{
-		ProjectItem* projItem = static_cast<ProjectItem*>(item);
-		ID = projItem->getProjectID();
-		type = FULL;
-	}
-	else if (item->type() == FILEITEM)
-	{
-		FileItem* fileItem = static_cast<FileItem*>(item);
-		ID = fileItem->getFileID();
-		type = PART;
-	}
-	else
-	{
-		return;
-	}
+    FileItem* fileItem = static_cast<FileItem*>(item);
+    int ID = fileItem->getFileID();
 
-	QString filename = dbHandler->FullFileNameFromID(ID, type);
+    if(fileItem->outOfDate())
+    {
+        int answer = QMessageBox::question(this, "File Out of Date", "There is a newer version of this file "
+            "available on the repository.\n\nWould you like to download it first?");
+        
+        if(answer == QMessageBox::Yes)
+        {
+            ui->openAfterDownload = fileItem;
+            DownloadItem(fileItem);
+            return;
+        }
+
+    }
+
+	QString filename = dbHandler->FullFileNameFromID(ID, PART);
 
 	m_wnd->OpenFile(filename);
 }
 
 void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item)
 {
+    // This prevents file items from lowering their parents copy count
+    // when they don't already exist
+    if(item->GetLocalCopy() <= 0) return;
+
 	int children = item->childCount();
 	for(int child = 0; child < children; child++)
 	{
 		DeleteItem(static_cast<CustomTreeWidgetItem*>(item->child(child)));
 	}
 
-	int ID;
-	int type;
+    if(item->type() != FILEITEM)
+    {
+        QDir dir;
 
-	if(item->type() == PROJECTITEM)
-	{
-		ProjectItem* projItem = static_cast<ProjectItem*>(item);
-		ID = projItem->getProjectID();
-		type = FULL;
-	}
-	else if (item->type() == FILEITEM)
-	{
-		FileItem* fileItem = static_cast<FileItem*>(item);
-		ID = fileItem->getFileID();
-		type = PART;
+        // Removes the directory, only if it is empty. 
+        dir.rmdir(getLocalPath(item));
 
-		item->SubtractLocalCopy();
-	}
-	else
-	{
-		return;
-	}
+        return;
+    }
 
-	// Update fileSearchItem's color if there's a current file search
-	if(ui->treeStack->currentIndex() == 1)
-	{
-		if(ui->fileSearchTree->selectedItems().count() > 0)
-		{
-			static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0])->UpdateColor();
-		}
-	}
+    FileItem* fileItem = static_cast<FileItem*>(item);
+    int ID = fileItem->getFileID();
 
-	QString filename = dbHandler->FullFileNameFromID(ID, type);
+    QString filename = dbHandler->FullFileNameFromID(ID, PART);
 
-	QFile::remove(filename);
+    QFile::remove(filename);
 
+    // Update FileItem in tree
+    fileItem->justDeleted();
+
+    // Update fileSearchItem if there's a current file search
+    if(ui->treeStack->currentIndex() == 1)
+    {
+        if(ui->searchTree->selectedItems().count() > 0)
+        {
+            static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->Update();
+        }
+    }
 }
 
 void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item)
 {
-	int ID;
-	int type;
+	QDesktopServices::openUrl(QUrl::fromLocalFile(getLocalPath(item)));
+}
 
+bool CRepositoryPanel::projectModified(ProjectItem* item)
+{
+    QList<CustomTreeWidgetItem*> fileItems = item->getFileItems();
+
+    for(auto item : fileItems)
+    {
+        FileItem* fileItem = static_cast<FileItem*>(item);
+        if(fileModified(fileItem)) return true;
+    }
+
+    return false;
+}
+
+bool CRepositoryPanel::fileModified(FileItem* item)
+{
+    if(!item->LocalCopy())
+    {
+        return false;
+    }
+
+    QFileInfo info(dbHandler->FullFileNameFromID(item->getFileID(), PART));
+
+    return info.lastModified().toSecsSinceEpoch() > item->downloadTime();
+}
+
+QString CRepositoryPanel::getLocalPath(CustomTreeWidgetItem* item)
+{
 	if(item->type() == PROJECTITEM)
 	{
 		ProjectItem* projItem = static_cast<ProjectItem*>(item);
-		ID = projItem->getProjectID();
-		type = FULL;
+		int ID = projItem->getProjectID();
+
+        QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, FULL));
+
+        return fileInfo.absolutePath() + "/" + fileInfo.baseName();
+	}
+    else if(item->type() == FOLDERITEM)
+	{
+        int depth = 0;
+
+        CustomTreeWidgetItem* current = item;
+        while(current->childCount() > 0)
+        {
+            current = static_cast<CustomTreeWidgetItem*>(current->child(0));
+            depth++;
+        }
+
+        FileItem* fileItem = static_cast<FileItem*>(current);
+        int ID = fileItem->getFileID();
+
+        QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, PART));
+
+        QDir dir = fileInfo.dir();
+
+        while(depth > 1)
+        {
+            dir.cdUp();
+            depth--;
+        }
+
+        return dir.absolutePath();
 	}
 	else if (item->type() == FILEITEM)
 	{
 		FileItem* fileItem = static_cast<FileItem*>(item);
-		ID = fileItem->getFileID();
-		type = PART;
+		int ID = fileItem->getFileID();
+
+        QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, PART));
+
+        return fileInfo.absolutePath();
 	}
 	else
 	{
-		return;
+		return "";
 	}
-
-	QFileInfo fileInfo(dbHandler->FullFileNameFromID(ID, type));
-
-	QDesktopServices::openUrl(QUrl::fromLocalFile(fileInfo.absolutePath()));
 }
 
 void CRepositoryPanel::on_treeWidget_itemSelectionChanged()
@@ -977,18 +1432,30 @@ void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &po
 	QMenu menu(this);
 
 	menu.addAction(ui->actionRefresh);
+    menu.addSeparator();
 
-	menu.addAction(ui->actionDownload);
+    if(item->type() != FOLDERITEM)
+    {
+        menu.addAction(ui->actionDownload);
+    }
 
-	if(item->LocalCopy())
+    // We don't just use item->LocalCopy() because this allows these to work 
+    // for partially downloaded projects or folders
+	if(item->GetLocalCopy() > 0)
 	{
-		menu.addAction(ui->actionDelete);
-		menu.addAction(ui->actionOpen);
+        if(item->type() == FILEITEM)
+        {
+            menu.addAction(ui->actionOpen);
+        }
+
 		menu.addAction(ui->actionOpenFileLocation);
+        menu.addAction(ui->actionDelete);
 	}
 
 	if(item->type() == PROJECTITEM)
 	{
+		menu.addAction(ui->actionCopyPermalink);
+
 		if(static_cast<ProjectItem*>(item)->ownedByUser())
 			{
 				menu.addSeparator();
@@ -1000,16 +1467,16 @@ void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &po
 	menu.exec(ui->projectTree->viewport()->mapToGlobal(pos));
 }
 
-void CRepositoryPanel::on_fileSearchTree_itemSelectionChanged()
+void CRepositoryPanel::on_searchTree_itemSelectionChanged()
 {
-	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->selectedItems()[0]);
+	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->selectedItems()[0]);
 
 	UpdateInfo(item->getRealItem());
 }
 
-void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos)
+void CRepositoryPanel::on_searchTree_customContextMenuRequested(const QPoint &pos)
 {
-	FileSearchItem* item = static_cast<FileSearchItem*>(ui->fileSearchTree->itemAt(pos));
+	SearchItem* item = static_cast<SearchItem*>(ui->searchTree->itemAt(pos));
 	item->setSelected(true);
 
 	QMenu menu(this);
@@ -1020,12 +1487,38 @@ void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint
 
 	if(item->getRealItem()->LocalCopy())
 	{
-		menu.addAction(ui->actionDelete);
 		menu.addAction(ui->actionOpen);
 		menu.addAction(ui->actionOpenFileLocation);
+        menu.addAction(ui->actionDelete);
 	}
 
-	menu.exec(ui->fileSearchTree->viewport()->mapToGlobal(pos));
+	menu.exec(ui->searchTree->viewport()->mapToGlobal(pos));
+}
+
+void CRepositoryPanel::on_showProjectsCB_stateChanged(int state)
+{
+    for(int child = 0; child < ui->searchTree->topLevelItemCount(); child++)
+    {
+        SearchItem* item = static_cast<SearchItem*>(ui->searchTree->topLevelItem(child));
+
+        if(dynamic_cast<ProjectItem*>(item->getRealItem()))
+        {
+            item->setHidden(state == Qt::Unchecked);
+        }
+    }
+}
+
+void CRepositoryPanel::on_showFilesCB_stateChanged(int state)
+{
+    for(int child = 0; child < ui->searchTree->topLevelItemCount(); child++)
+    {
+        SearchItem* item = static_cast<SearchItem*>(ui->searchTree->topLevelItem(child));
+
+        if(dynamic_cast<FileItem*>(item->getRealItem()))
+        {
+            item->setHidden(state == Qt::Unchecked);
+        }
+    }
 }
 
 void CRepositoryPanel::on_projectTags_linkActivated(const QString& link)
@@ -1036,11 +1529,32 @@ void CRepositoryPanel::on_projectTags_linkActivated(const QString& link)
 
 void CRepositoryPanel::on_fileTags_linkActivated(const QString& link)
 {
-	ui->searchLineEdit->setText(QString("files:") + link);
+	ui->searchLineEdit->setText(link);
 	on_actionSearch_triggered();
 }
 
-void CRepositoryPanel::updateUploadReady(bool ready)
+void CRepositoryPanel::on_actionAdvnacedSearch_triggered()
+{
+    QString searchTerm = ui->advancedSearch->GetSearchTerm();
+    SearchDatabase(searchTerm);
+    ui->searchLineEdit->setText(searchTerm);
+    on_actionAdvnacedHide_triggered();
+}
+
+void CRepositoryPanel::on_actionAdvancedClear_triggered()
+{
+    ui->advancedSearch->Clear();
+    ui->searchLineEdit->clear();
+    ui->treeStack->setCurrentIndex(0);
+}
+
+void CRepositoryPanel::on_actionAdvnacedHide_triggered()
+{
+    ui->searchBar->show();
+    ui->advancedSearch->hide();
+}
+
+void CRepositoryPanel::updateUploadReady(bool ready, QString message)
 {
 	if(ready)
 	{
@@ -1052,10 +1566,12 @@ void CRepositoryPanel::updateUploadReady(bool ready)
 	{
 		repoHandler->cancelUpload();
 		ui->stack->setCurrentIndex(1);
+
+		UploadFinished(false, message);
 	}
 }
 
-void CRepositoryPanel::updateModifyReady(bool ready)
+void CRepositoryPanel::updateModifyReady(bool ready, QString message)
 {
 	if(ready)
 	{
@@ -1074,7 +1590,7 @@ QStringList CRepositoryPanel::GetCategories()
 {
 	int permission = repoHandler->getUploadPermission();
 
-	std::map<int, std::string> categoryMap;
+	map<int, string> categoryMap;
 
 	dbHandler->GetCategoryMap(categoryMap);
 
@@ -1099,14 +1615,17 @@ void CRepositoryPanel::SetProjectData(char **data)
 
 	// Fix new lines
 	QString desc(data[1]);
-	desc.replace("\\n", "\n");
+	desc.replace("\\n", "<br>");
 	ui->projectDesc->setText(desc);
 }
 
 void CRepositoryPanel::SetFileData(char **data)
 {
 	ui->filenameLabel->setText(data[0]);
-	ui->setFileDescription(data[1]);
+
+    QString desc(data[1]);
+	desc.replace("\\n", "<br>");
+	ui->setFileDescription(desc);
 }
 
 void CRepositoryPanel::AddCurrentTag(char **data)
@@ -1157,6 +1676,11 @@ void CRepositoryPanel::showLoadingPage(QString message, bool progress)
 	ui->showLoadingPage(message, progress);
 }
 
+QString CRepositoryPanel::GetFilePathFromID(int fileID)
+{
+    return dbHandler->FullFileNameFromID(fileID, PART);
+}
+
 void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
 {
 	ui->loadingBar->setRange(0, bytesTotal);
@@ -1166,14 +1690,17 @@ void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal)
 
 #else
 
-CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QWidget* parent){}
+CRepositoryPanel::CRepositoryPanel(CMainWindow* pwnd, QDockWidget* parent){}
 CRepositoryPanel::~CRepositoryPanel(){}
+void CRepositoryPanel::OpenLink(const QString& link) {}
+// void CRepositoryPanel::Raise() {}
 void CRepositoryPanel::SetModelList(){}
-void CRepositoryPanel::ShowMessage(QString message) {}
+void CRepositoryPanel::ShowMessage(QString message, bool logout) {}
 void CRepositoryPanel::ShowWelcomeMessage(QByteArray messages) {}
 void CRepositoryPanel::LoginTimeout() {}
 void CRepositoryPanel::NetworkInaccessible() {}
 void CRepositoryPanel::DownloadFinished(int fileID, int fileType) {}
+void CRepositoryPanel::UploadFinished(bool error, QString message) {}
 void CRepositoryPanel::AddCategory(char **argv) {}
 void CRepositoryPanel::AddProject(char **argv) {}
 void CRepositoryPanel::AddProjectFile(char **argv) {}
@@ -1193,23 +1720,37 @@ void CRepositoryPanel::on_actionDelete_triggered() {}
 void CRepositoryPanel::on_actionUpload_triggered() {}
 void CRepositoryPanel::on_actionSearch_triggered() {}
 void CRepositoryPanel::on_actionClearSearch_triggered() {}
+void CRepositoryPanel::on_actionShowAdvanced_triggered() {}
 void CRepositoryPanel::on_actionDeleteRemote_triggered() {}
 void CRepositoryPanel::on_actionModify_triggered() {}
 void CRepositoryPanel::on_treeWidget_itemSelectionChanged() {}
 void CRepositoryPanel::on_treeWidget_customContextMenuRequested(const QPoint &pos) {}
+void CRepositoryPanel::on_actionCopyPermalink_triggered() {}
+void CRepositoryPanel::Raise() {}
 void CRepositoryPanel::DownloadItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::OpenItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::DeleteItem(CustomTreeWidgetItem *item) {}
 void CRepositoryPanel::ShowItemInBrowser(CustomTreeWidgetItem *item) {}
+bool CRepositoryPanel::fileModified(FileItem* item) {return false;}
+QString CRepositoryPanel::getLocalPath(CustomTreeWidgetItem* item) {return "";}
+bool CRepositoryPanel::projectModified(ProjectItem* item) {return false;}
 void CRepositoryPanel::on_connectButton_clicked() {}
 void CRepositoryPanel::on_actionRefresh_triggered() {}
 void CRepositoryPanel::on_projectTags_linkActivated(const QString& link) {}
 void CRepositoryPanel::on_fileTags_linkActivated(const QString& link) {}
-void CRepositoryPanel::updateUploadReady(bool ready) {}
-void CRepositoryPanel::updateModifyReady(bool ready) {}
+void CRepositoryPanel::updateUploadReady(bool ready, QString message) {}
+void CRepositoryPanel::updateModifyReady(bool ready, QString message) {}
 void CRepositoryPanel::loadingPageProgress(qint64 bytesSent, qint64 bytesTotal) {}
-void CRepositoryPanel::on_fileSearchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
+void CRepositoryPanel::on_searchTree_itemDoubleClicked(QTreeWidgetItem *item, int column) {}
 void CRepositoryPanel::on_actionFindInTree_triggered() {}
-void CRepositoryPanel::on_fileSearchTree_itemSelectionChanged() {}
-void CRepositoryPanel::on_fileSearchTree_customContextMenuRequested(const QPoint &pos) {}
+void CRepositoryPanel::on_searchTree_itemSelectionChanged() {}
+void CRepositoryPanel::on_searchTree_customContextMenuRequested(const QPoint &pos) {}
+void CRepositoryPanel::on_showProjectsCB_stateChanged(int state) {}
+void CRepositoryPanel::on_showFilesCB_stateChanged(int state) {}
+void CRepositoryPanel::on_actionAdvnacedSearch_triggered() {}
+void CRepositoryPanel::on_actionAdvancedClear_triggered() {}
+void CRepositoryPanel::on_actionAdvnacedHide_triggered() {}
+void CRepositoryPanel::SearchDatabase(QString searchTerm) {}
+void CRepositoryPanel::GetFileMetaDataForUpload(QVariantList& fileInfoList, QStringList& localPaths, QStringList& zipPaths) {}
+QString CRepositoryPanel::GetFilePathFromID(int fileID) {return "";}
 #endif

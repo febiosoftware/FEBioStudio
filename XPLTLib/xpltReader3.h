@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,7 +38,7 @@ namespace Post {
 // This class reads the XPLT file, version 3.0
 class XpltReader3 : public xpltParser
 {
-protected:
+public:
 	// file tags
 	enum { 
 		PLT_ROOT						= 0x01000000,
@@ -49,6 +49,7 @@ protected:
 			PLT_HDR_COMPRESSION			= 0x01010004,
 			PLT_HDR_AUTHOR				= 0x01010005,	// new in 2.0
 			PLT_HDR_SOFTWARE			= 0x01010006,	// new in 2.0
+			PLT_HDR_UNITS				= 0x01010007,	// new in 4.0
 		PLT_DICTIONARY					= 0x01020000,
 			PLT_DIC_ITEM				= 0x01020001,
 			PLT_DIC_ITEM_TYPE			= 0x01020002,
@@ -56,6 +57,7 @@ protected:
 			PLT_DIC_ITEM_NAME			= 0x01020004,
 			PLT_DIC_ITEM_ARRAYSIZE		= 0x01020005,	// added in version 0x05
 			PLT_DIC_ITEM_ARRAYNAME		= 0x01020006,	// added in version 0x05
+			PLT_DIC_ITEM_UNITS			= 0x01020007,	// added in version 4.0
 			PLT_DIC_GLOBAL				= 0x01021000,
 //			PLT_DIC_MATERIAL			= 0x01022000,	// this was removed
 			PLT_DIC_NODAL				= 0x01023000,
@@ -134,7 +136,7 @@ protected:
 			PLT_OBJECTS_STATE			= 0x02040000
 	};
 
-protected:
+public:
 	// FEBio tag
 	enum {FEBIO_TAG = 0x00464542 };
 
@@ -181,21 +183,22 @@ public:
 		unsigned int	ntype;
 		unsigned int	nfmt;
 		char			szname[DI_NAME_SIZE];
+		char			szunit[DI_NAME_SIZE];
 
 		unsigned int	index;	// index into data manager list
 
 		unsigned int	arraySize;	// only used for array variables (plt version 0x05)
-		vector<string>	arrayNames;	// (optional) names of array components
+		std::vector<string>	arrayNames;	// (optional) names of array components
 	};
 
 	class Dictionary
 	{
 	public:
-		vector<DICT_ITEM>	m_Glb;
-		vector<DICT_ITEM>	m_Mat;
-		vector<DICT_ITEM>	m_Node;
-		vector<DICT_ITEM>	m_Elem;
-		vector<DICT_ITEM>	m_Face;
+		std::vector<DICT_ITEM>	m_Glb;
+		std::vector<DICT_ITEM>	m_Mat;
+		std::vector<DICT_ITEM>	m_Node;
+		std::vector<DICT_ITEM>	m_Elem;
+		std::vector<DICT_ITEM>	m_Face;
 
 	public:
 		void Clear()
@@ -224,7 +227,7 @@ public:
 	{
 		int		eid;
 		int		index;
-		int		node[FEElement::MAX_NODES];
+		int		node[FSElement::MAX_NODES];
 	};
 
 	struct FACE
@@ -242,8 +245,8 @@ public:
 		int		ne;
 		int		nid;	// domain ID
 		char	szname[DI_NAME_SIZE];
-		vector<int>		elist;
-		vector<ELEM>	elem;
+		std::vector<int>		elist;
+		std::vector<ELEM>	elem;
 
 	public:
 		Domain() { ne = 0; szname[0] = 0; }
@@ -257,7 +260,7 @@ public:
 		int				sid;
 		int				nfaces;		// number of faces
 		int				maxNodes;	// max nr of nodes
-		vector<FACE>	face;
+		std::vector<FACE>	face;
 		char			szname[DI_NAME_SIZE];
 
 	public:
@@ -272,7 +275,7 @@ public:
 		int		nid;
 		int		nn;
 		char	szname[DI_NAME_SIZE];
-		vector<int>	node;
+		std::vector<int>	node;
 
 	public:
 		NodeSet() { nn = 0; szname[0] = 0; }
@@ -282,11 +285,11 @@ public:
 	class XMesh
 	{
 	public:
-		vector<MATERIAL>	m_Mat;
-		vector<NODE>		m_Node;
-		vector<Domain>		m_Dom;
-		vector<Surface>		m_Surf;
-		vector<NodeSet>		m_NodeSet;
+		std::vector<MATERIAL>	m_Mat;
+		std::vector<NODE>		m_Node;
+		std::vector<Domain>		m_Dom;
+		std::vector<Surface>		m_Surf;
+		std::vector<NodeSet>		m_NodeSet;
 
 	public:
 		void Clear();

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,13 +26,16 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
-#include <MathLib/mat3d.h>
+#include <FECore/mat3d.h>
+#include <FECore/quatd.h>
+#include <FECore/vec3d.h>
 #include <qopengl.h>
 #ifdef __APPLE__
     #include <OpenGL/GLU.h>
 #else
     #include <GL/glu.h>
 #endif
+#include <vector>
 
 namespace glx {
 
@@ -45,17 +48,29 @@ void drawCircle(const vec3d& c, double R, int N);
 void drawPoint(const vec3d& p);
 void drawLine(const vec3d& a, const vec3d& b);
 void drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
-void drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+
+void line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+void line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB);
+void line(const vec3d& a, const vec3d& b);
+void line(const vec3f& a, const vec3f& b);
+
 void drawArc(const vec3d& c, double R, double w0, double w1, int N);
 void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
 
+void drawSphere(const vec3d& r, float R);
+void drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f);
+void drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f, int nsegs = 16);
+void drawSmoothPath(const std::vector<vec3d>& path, float R);
+
 void quad4(vec3d r[4], vec3d n[4]);
+void quad4(vec3d r[4], vec3d n[4], GLColor c[4]);
 void quad4(vec3d r[4], vec3f n[4], float t[4]);
 void quad8(vec3d r[8], vec3f n[8], float t[8]);
 void quad9(vec3d r[9], vec3f n[9], float t[9]);
 
 void tri3(vec3d r[3], vec3f n[3]);
 void tri3(vec3d r[3], vec3d n[3]);
+void tri3(vec3d r[3], vec3f n[3], GLColor c[3]);
 void tri3(vec3d r[3], vec3f n[3], float t[3]);
 
 void tri6(vec3d r[6], vec3f n[6], float t[6]);
@@ -73,11 +88,17 @@ void drawLine(double x0, double y0, double x1, double y1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2);
 
+void drawBox(double wx, double wy, double wz);
+
 inline void vertex3d(const vec3d& r) { glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3f& n) { glNormal3d(n.x, n.y, n.z); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
+inline void vertex3d(const vec3d& r, const vec3f& n, double t) { glNormal3d(n.x, n.y, n.z); glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, const vec3d& n, const GLColor& c) { glNormal3d(n.x, n.y, n.z); glColor3ub(c.r, c.g, c.b); glVertex3d(r.x, r.y, r.z); }
+
+inline void glcolor(const GLColor& c) { glColor3ub(c.r, c.g, c.b); }
 
 void smoothQUAD4(vec3d r[ 4], vec3f n[ 4], float t[ 4], int ndivs);
 void smoothQUAD8(vec3d r[ 8], vec3f n[ 8], float t[ 8], int ndivs);

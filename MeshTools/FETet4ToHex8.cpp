@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,7 @@ FETet4ToHex8::FETet4ToHex8(bool bsmooth) : FEModifier("Tet4-to-Hex8")
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
+FSMesh* FETet4ToHex8::Apply(FSMesh* pm)
 {
 	// before we get started, let's make sure this is a tet4 mesh
 	if (pm->IsType(FE_TET4) == false) return 0;
@@ -45,21 +45,21 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 	// convert to a Tet15 mesh
 	FETet4ToTet15 tet4to15;
 	tet4to15.SetSmoothing(m_bsmooth);
-	FEMesh* tet15 = tet4to15.Apply(pm);
+	FSMesh* tet15 = tet4to15.Apply(pm);
 
 	// create a new mesh
 	int nodes = tet15->Nodes();
 	int elems = tet15->Elements();
 	int faces = tet15->Faces();
 	int edges = tet15->Edges();
-	FEMesh* pnew = new FEMesh;
+	FSMesh* pnew = new FSMesh;
 	pnew->Create(nodes, 4*elems, 3*faces, 2*edges);
 
 	// copy the nodes from the tet15 mesh
 	for (int i = 0; i<nodes; ++i)
 	{
-		FENode& n0 = pnew->Node(i);
-		FENode& n1 = tet15->Node(i);
+		FSNode& n0 = pnew->Node(i);
+		FSNode& n1 = tet15->Node(i);
 		n0.r = n1.r;
 		n0.m_gid = n1.m_gid;
 	}
@@ -76,11 +76,11 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 	int ne = 0;
 	for (int i = 0; i<elems; ++i)
 	{
-		FEElement& e0 = tet15->Element(i);
+		FSElement& e0 = tet15->Element(i);
 
 		for (int j = 0; j < 4; ++j)
 		{
-			FEElement& e1 = pnew->Element(ne++);
+			FSElement& e1 = pnew->Element(ne++);
 
 			e1.SetType(FE_HEX8);
 			e1.m_gid = e0.m_gid;
@@ -98,11 +98,11 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 	int nf = 0;
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& f0 = tet15->Face(i);
+		FSFace& f0 = tet15->Face(i);
 
 		for (int j = 0; j < 3; ++j)
 		{
-			FEFace& f1 = pnew->Face(nf++);
+			FSFace& f1 = pnew->Face(nf++);
 
 			f1.SetType(FE_FACE_QUAD4);
 			f1.m_gid = f0.m_gid;
@@ -117,10 +117,10 @@ FEMesh* FETet4ToHex8::Apply(FEMesh* pm)
 	int nc = 0;
 	for (int i = 0; i < edges; ++i)
 	{
-		FEEdge& c0 = tet15->Edge(i);
+		FSEdge& c0 = tet15->Edge(i);
 		for (int j = 0; j < 2; ++j)
 		{
-			FEEdge& c1 = pnew->Edge(nc++);
+			FSEdge& c1 = pnew->Edge(nc++);
 			c1.SetType(FE_EDGE2);
 			c1.m_gid = c0.m_gid;
 

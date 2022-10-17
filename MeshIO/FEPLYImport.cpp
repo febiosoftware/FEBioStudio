@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModel.h>
 
-FEPLYImport::FEPLYImport(FEProject& prj) : FEFileImport(prj)
+FEPLYImport::FEPLYImport(FSProject& prj) : FSFileImport(prj)
 {
 	m_mesh = nullptr;
 }
@@ -42,7 +42,7 @@ bool FEPLYImport::Load(const char* szfile)
 	// make sure the mesh pointer is reset
 	m_mesh = nullptr;
 
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 
 	if (read_file(szfile) == false)
 	{
@@ -111,8 +111,8 @@ bool FEPLYImport::read_file(const char* szfile)
 	if (faces == 0) return errf("No face data found.");
 
 	// allocate a mesh
-	m_mesh = new FESurfaceMesh;
-	FESurfaceMesh& mesh = *m_mesh;
+	m_mesh = new FSSurfaceMesh;
+	FSSurfaceMesh& mesh = *m_mesh;
 	mesh.Create(verts, 0, faces);
 
 	if (binary == false)
@@ -121,7 +121,7 @@ bool FEPLYImport::read_file(const char* szfile)
 		{
 			ch = fgets(szline, 255, m_fp);
 			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-			FENode& n = mesh.Node(i);
+			FSNode& n = mesh.Node(i);
 			vec3d& r = n.r;
 			sscanf(szline, "%lg%lg%lg", &r.x, &r.y, &r.z);
 		}
@@ -130,7 +130,7 @@ bool FEPLYImport::read_file(const char* szfile)
 		{
 			ch = fgets(szline, 255, m_fp);
 			if (ch == 0) return errf("An unexpected error occured while reading the file data.");
-			FEFace& el = mesh.Face(i);
+			FSFace& el = mesh.Face(i);
 			int n[5];
 			int nread = sscanf(szline, "%d%d%d%d%d", &n[0], &n[1], &n[2], &n[3], &n[4]);
 
@@ -166,7 +166,7 @@ bool FEPLYImport::read_file(const char* szfile)
 			size_t nread = fread(r, sizeof(float), 3, m_fp);
 			if (nread != 3) return errf("An unexpected error occured while reading vertex data.");
 
-			FENode& n = mesh.Node(i);
+			FSNode& n = mesh.Node(i);
 			n.r = vec3d(r[0], r[1], r[2]);
 		}
 
@@ -180,7 +180,7 @@ bool FEPLYImport::read_file(const char* szfile)
 			int nread = fread(n, sizeof(int), vertices, m_fp);
 			if (nread != vertices) return errf("An unexpected error occured while reading element data.");
 
-			FEFace& el = mesh.Face(i);
+			FSFace& el = mesh.Face(i);
 
 			if (vertices == 3)
 			{

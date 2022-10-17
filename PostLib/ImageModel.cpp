@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,18 +27,14 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
+// #include <ImageLib/ITKImage.h>
+#include <ImageLib/ImageSITK.h>
+#include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
+#include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <FSCore/FSDir.h>
 #include <assert.h>
-
-#ifdef HAS_TEEM
-#include <ImageLib/compatibility.h>
-#endif
-
-#ifdef HAS_DICOM
-#include <dcmtk/dcmimgle/dcmimage.h>
-#include <bitset>
-#endif
 
 using namespace Post;
 
@@ -50,6 +46,7 @@ CImageSource::CImageSource(CImageModel* imgModel)
 	AddIntParam(2, "NZ")->SetState(Param_VISIBLE);
 
 	m_img = nullptr;
+    m_originalImage = nullptr;
 	m_imgModel = imgModel;
 }
 
@@ -65,7 +62,12 @@ void CImageSource::SetImageModel(CImageModel* imgModel)
 
 CImageSource::~CImageSource()
 {
-	delete m_img;
+    if(m_img != m_originalImage)
+    {
+        delete m_img;
+    }
+	
+    delete m_originalImage;
 }
 
 void CImageSource::SetFileName(const std::string& file)
@@ -77,145 +79,6 @@ std::string CImageSource::GetFileName() const
 {
 	return GetStringValue(0);
 }
-
-
-#ifdef HAS_TEEM
-
-//TODO: Maybe see if we can break this function up a bit? 
-//      See much how much of Yong's code we can break off.
-bool CImageSource::LoadTiffData(std::wstring &fileName)
-{
-  C3DImage* im = new C3DImage;
-  std::unique_ptr<TIFReader> reader = std::make_unique<TIFReader>();
-
-  // Returns a nrrd based on templated function
-  Nrrd* nrrdStruct = GetNrrd<TIFReader>(reader,fileName);
-
-  auto [nx,ny,npages,bits] = reader->GetTiffInfo();
-
-  BOX box(nx, ny, npages, nx + reader->GetXSpc(), ny+reader->GetYSpc(), npages+reader->GetZSpc());
-  m_imgModel->SetBoundingBox(box);
- 
-  if(im->Create(nx,ny,npages,reader->GetRawImage()) == false)
-  {
-	delete im;
-	return false;
-  }
-
-  SetValues(ws2s(fileName),nx,ny,npages);
-  AssignImage(im);
-
-  return true;
-}
-
-bool CImageSource::LoadNrrdData(std::wstring& filename)
-{
-  C3DImage* im = new C3DImage();
-  std::unique_ptr<NRRDReader> reader = std::make_unique<NRRDReader>();
-
-  Nrrd* nrrdStruct = GetNrrd<NRRDReader>(reader,filename);
-  
-  int nx = reader->GetXSize();
-  int ny = reader->GetYSize();
-  int nz = reader->GetSliceNum();
-  int dataSize = nx * ny * nz;
-
-  Byte* data = static_cast<Byte*>(nrrdStruct->data);
-
-  Byte* dataBuf;
-
-  if (nrrdStruct->type == nrrdTypeUShort || nrrdStruct->type == nrrdTypeShort)
-  {
-    dataBuf = new Byte[dataSize];
-    for (int i = 0; i < dataSize; ++i)
-    {
-      dataBuf[i] = data[2*i];
-    }
-  }
-  else
-    dataBuf = data;
-
-
-  BOX box(nx, ny, nz, nx+reader->GetXSpc(), ny+reader->GetYSpc(), nz+reader->GetZSpc());
-  m_imgModel->SetBoundingBox(box);
-
-  if (im->Create(nx, ny, nz, dataBuf) == false)
-  {
-    delete im;
-    return false;
-  }
-
-  SetValues(ws2s(filename),nx,ny,nz);
-  AssignImage(im);
-
-  return true;
-}
-#endif
-
-#ifdef HAS_DICOM
-bool CImageSource::LoadDicomData(const std::string& filename)
-{
-  C3DImage* im = new C3DImage();
-  DicomImage* dicomImage = new DicomImage(filename.c_str());
-
-  int nx = dicomImage->getWidth();
-  int ny = dicomImage->getHeight();
-  int nz = dicomImage->getNumberOfFrames(); 
-  int dataSize = nx * ny * nz;
-
-  const DiPixel* rawData = dicomImage->getInterData();
-
-  EP_Representation type = rawData->getRepresentation();  // An Enum that gets the type 
-  const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
-  Byte* dataBuf = new Byte[rawData->getCount()]; //may not need dataSize
-
-  std::cout << "Image depth in pixels: " << dicomImage->getDepth() << std::endl;
-  std::cout << "Is it monochrome? " << dicomImage->isMonochrome() << std::endl;
-
-  if (type == EPR_Uint16 && dicomImage->getDepth() == 16)
-  {
-    const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
-    for(int i = 0; i < rawData->getCount(); ++i)
-    { 
-      dataBuf[i] = data[i] >> 8;
-    }
-  }
-  else if (type == EPR_Uint16 && dicomImage->getDepth() == 10)
-  {
-    const u_short* data = static_cast<const u_short*>(rawData->getData()); //only returns const
-    std::vector<std::bitset<10>> tenBitVec(rawData->getCount());
- 
-    for(int i = 0; i < rawData->getCount(); ++i)
-      tenBitVec.at(i) = data[i];
-
-    for(int i = 0; i < rawData->getCount(); ++i)
-    {
-      dataBuf[i] = 256 * tenBitVec[i].to_ulong()/1024;
-    }
-  }
-  else
-  {
-    for(int i = 0; i < rawData->getCount(); ++i)
-    { 
-      dataBuf[i] = data[i];
-    }
-  }
-
-  BOX box(nx, ny, nz, nx+dicomImage->getWidthHeightRatio(), ny+dicomImage->getHeightWidthRatio(), nz+1.0);
-  m_imgModel->SetBoundingBox(box);
-
-  if (im->Create(nx, ny, nz, dataBuf) == false)
-  {
-    delete im;
-    return false;
-  }
-
-  SetValues(filename,nx,ny,nz);
-  AssignImage(im);
-
-  return true;
-}
-#endif
 
 bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
 {
@@ -238,6 +101,104 @@ bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, in
   return true;
 }
 
+#ifdef HAS_ITK
+bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type)
+{
+	CImageSITK* im = new CImageSITK();  
+
+	if(!im->LoadFromFile(filename.c_str(), type == ImageFileType::DICOM))
+	{
+		delete im;
+		return false;
+	}
+
+	std::vector<unsigned int> size = im->GetSize();
+	std::vector<double> origin = im->GetOrigin();
+	std::vector<double> spacing = im->GetSpacing();
+
+	BOX box(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
+	m_imgModel->SetBoundingBox(box);
+
+	SetValues(filename,im->Width(),im->Height(),im->Depth());
+	AssignImage(im);
+
+	return true;
+}
+
+bool CImageSource::LoadITKSeries(const std::vector<std::string> &filenames)
+{
+    CImageSITK* im = new CImageSITK();  
+
+	if(!im->LoadFromStack(filenames))
+	{
+		delete im;
+		return false;
+	}
+
+	std::vector<unsigned int> size = im->GetSize();
+	std::vector<double> origin = im->GetOrigin();
+	std::vector<double> spacing = im->GetSpacing();
+
+	BOX box(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
+	m_imgModel->SetBoundingBox(box);
+
+	SetValues(filenames[0],im->Width(),im->Height(),im->Depth());
+	AssignImage(im);
+
+	return true;
+}
+
+#else
+bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type) { return false; }
+#endif
+
+void CImageSource::ClearFilters()
+{
+    if( m_img != m_originalImage)
+    {
+        delete m_img;
+        m_img = m_originalImage;
+    }
+}
+
+C3DImage* CImageSource::GetImageToFilter(bool allocate)
+{
+
+#ifdef HAS_ITK
+
+    if(m_img == m_originalImage)
+    {
+        if(allocate)
+        {
+            int nx = m_originalImage->Width();
+            int ny = m_originalImage->Height();
+            int nz = m_originalImage->Depth();
+
+            m_img = new CImageSITK(nx, ny, nz);
+        }
+        else
+        {
+            m_img = new CImageSITK();
+        }
+    }
+
+#else
+
+    if(m_img == m_originalImage)
+    {
+        int nx = m_originalImage->Width();
+        int ny = m_originalImage->Height();
+        int nz = m_originalImage->Depth();
+
+        m_img = new C3DImage();
+        m_img->Create(nx, ny, nz);
+    }
+
+#endif
+
+    return m_img;
+}
+
 void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
 {
 	SetStringValue(0, fileName);
@@ -248,8 +209,12 @@ void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
 
 void CImageSource::AssignImage(C3DImage* im)
 {
-  delete m_img;
-  m_img = im;
+//   delete m_img;
+//   m_img = im;
+
+    delete m_originalImage;
+    m_originalImage = im;
+    m_img = im;
 }
 
 void CImageSource::Save(OArchive& ar)
@@ -319,68 +284,6 @@ bool CImageModel::UpdateData(bool bsave)
 	return false;
 }
 
-#ifdef HAS_TEEM
-bool CImageModel::LoadTiffData(std::wstring &fileName)
-{
-	if (m_img == nullptr) m_img = new CImageSource(this);
-
-	if (m_img->LoadTiffData(fileName) == false)
-	{
-		delete m_img;
-		m_img = nullptr;
-		return false;
-	}
-
-	// set the default name by extracting the base of the file name
-	string fileBase = FSDir::fileBase(ws2s(fileName));
-	m_img->SetName(fileBase);
-
-	UpdateData(false);
-
-	return true;
-}
-
-bool CImageModel::LoadNrrdData(std::wstring& filename)
-{
-  if(m_img == nullptr) m_img = new CImageSource(this);
-
-  if (m_img->LoadNrrdData(filename) == false)
-  {
-    delete m_img;
-    m_img = nullptr;
-    return false;
-  }
-  std::string fileBase = FSDir::fileBase(ws2s(filename));
-  m_img->SetName(fileBase);
-
-  UpdateData(false);
-
-  return true;
-}
-#endif
-
-#ifdef HAS_DICOM
-bool CImageModel::LoadDicomData(const std::string& filename)
-{
-	if (m_img == nullptr) m_img = new CImageSource(this);
-
-	if (m_img->LoadDicomData(filename) == false)
-	{
-		delete m_img;
-		m_img = nullptr;
-		return false;
-	}
-
-	// set the default name by extracting the base of the file name
-	string fileBase = FSDir::fileBase(filename);
-	m_img->SetName(fileBase);
-
-	UpdateData(false);
-
-	return true;
-}
-#endif
-
 bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)
 {
 	if (m_img == nullptr) m_img = new CImageSource(this);
@@ -401,6 +304,52 @@ bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int
 
 	return true;
 }
+
+#ifdef HAS_ITK
+bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type)
+{
+	if (m_img == nullptr) m_img = new CImageSource(this);
+
+	if (m_img->LoadITKData(filename, type) == false)
+	{
+		delete m_img;
+		m_img = nullptr;
+		return false;
+	}
+
+	// set the default name by extracting the base of the file name
+	string fileBase = FSDir::fileBase(filename);
+	m_img->SetName(fileBase);
+
+	UpdateData(false);
+
+	return true;
+}
+
+bool CImageModel::LoadITKSeries(const std::vector<std::string> &filenames)
+{
+    if (m_img == nullptr) m_img = new CImageSource(this);
+
+	if (m_img->LoadITKSeries(filenames) == false)
+	{
+		delete m_img;
+		m_img = nullptr;
+		return false;
+	}
+
+	// set the default name by extracting the base of the file name
+	string fileBase = FSDir::fileBase(filenames[0]);
+	m_img->SetName(fileBase);
+
+	UpdateData(false);
+
+	return true;
+}
+
+#else
+bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type) { return false; }
+bool CImageModel::LoadITKSeries(const std::vector<std::string> &filenames) { return false; }
+#endif
 
 bool CImageModel::ShowBox() const
 {
@@ -430,6 +379,21 @@ void CImageModel::Render(CGLContext& rc)
 	}
 }
 
+void CImageModel::ApplyFilters()
+{
+    m_img->ClearFilters();
+
+	for(int index = 0; index < m_filters.Size(); index++)
+	{
+		m_filters[index]->ApplyFilter();
+	}
+
+	for (int i = 0; i < (int)m_render.Size(); ++i)
+	{
+		m_render[i]->Update();
+	} 
+}
+
 size_t CImageModel::RemoveRenderer(CGLImageRenderer* render)
 {
 	return m_render.Remove(render);
@@ -439,6 +403,17 @@ void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 {
 	assert(render);
 	m_render.Add(render);
+}
+
+size_t CImageModel::RemoveFilter(CImageFilter* filter)
+{
+    return m_filters.Remove(filter);
+}
+
+void CImageModel::AddImageFilter(CImageFilter* imageFilter)
+{
+    imageFilter->SetImageModel(this);
+	m_filters.Add(imageFilter);
 }
 
 void CImageModel::Save(OArchive& ar)
@@ -462,6 +437,31 @@ void CImageModel::Save(OArchive& ar)
 CImageSource* CImageModel::GetImageSource()
 { 
 	return m_img; 
+}
+
+Byte CImageModel::ValueAtGlobalPos(vec3d pos)
+{
+    if(pos.x < m_box.x0 || pos.x > m_box.x1 ||
+        pos.y < m_box.y0 || pos.y > m_box.y1 ||
+        pos.z < m_box.z0 || pos.z > m_box.z1)
+    {
+        return 0;
+    }
+
+	if (Get3DImage()->Depth() == 1)
+	{
+		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
+		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
+		return m_img->Get3DImage()->Value(x, y, 0);
+	}
+	else
+	{
+		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
+		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
+		double z = (pos.z - m_box.z0) / (m_box.z1 - m_box.z0);
+
+		return m_img->Get3DImage()->Peek(x, y, z);
+	}
 }
 
 void CImageModel::Load(IArchive& ar)
@@ -488,4 +488,29 @@ void CImageModel::Load(IArchive& ar)
 
 	// let's try to load the file
 	UpdateData();
+}
+
+bool CImageModel::ExportRAWImage(const std::string& filename)
+{
+	C3DImage* im = Get3DImage();
+	if (im == nullptr) return false;
+
+	Byte* pb = im->GetBytes();
+	if (pb == nullptr) return false;
+
+	int nx = im->Width();
+	int ny = im->Height();
+	int nz = im->Depth();
+
+	int nsize = nx * ny * nz;
+	if (nsize <= 0) return false;
+
+	FILE* fp = fopen(filename.c_str(), "wb");
+	if (fp == nullptr) return false;
+
+	int nread = fwrite(pb, nsize, 1, fp);
+
+	fclose(fp);
+
+	return (nread == 1);
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include "GGrid.h"
 #include <MeshLib/Intersect.h>
 #include <GLLib/GLMeshRender.h>
-#include <MeshTools/FEExtrudeFaces.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
@@ -42,11 +41,9 @@ SOFTWARE.*/
 
 class CMainWindow;
 class CGLDocument;
-class GCurveMeshObject;
-class CPostDocument;
-class GMaterial;
 class GDecoration;
 class CGView;
+class FSModel;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -94,7 +91,6 @@ struct GLTAG
 	char	sztag[64];	// name of tag
 	float	wx, wy;		// window coordinates for tag
 	vec3d	r;			// world coordinates of tag
-	bool	bvis;		// is the tag visible or not
 	int		ntag;		// tag value
 };
 
@@ -204,8 +200,6 @@ public:
 	void RegionSelectFEEdges(const SelectRegion& region);
 	void RegionSelectFEElems(const SelectRegion& region);
 
-	void SetModelView(GObject* po);
-
 	void SetCoordinateSystem(int nmode);
 	
 	void UndoViewChange();
@@ -277,17 +271,8 @@ public:
 	// setup the projection matrix
 	void SetupProjection();
 
-	// overridden from Glx_View
-	void SetDefaultMaterial() { SetMatProps(0); }
-
 	// get device pixel ration
 	double GetDevicePixelRatio();
-
-	// set the GL material properties based on the material
-	void SetMatProps(GMaterial* pm);
-
-	// set some default GL material properties
-	void SetDefaultMatProps();
 
 	// position the camera
 	void PositionCamera();
@@ -297,53 +282,20 @@ public:
 
 	// render functions
 public:
-	// rendering functions for GObjects
-	void RenderObject(GObject* po);
-	void RenderParts(GObject* po);
-	void RenderSurfaces(GObject* po);
-	void RenderEdges(GObject* po);
-	void RenderNodes(GObject* po);
-	void RenderSelectedParts(GObject* po);
-	void RenderSelectedSurfaces(GObject* po);
-	void RenderSelectedEdges(GObject* po);
-	void RenderSelectedNodes(GObject* po);
-
-	// rendering functions for FEMeshes
-	void RenderFEElements(GObject* po);
-	void RenderFEAllElements(FEMesh* pm, bool bext = false);
-	void RenderFEFaces(GObject* po);
-	void RenderFEEdges(GObject* po);
-	void RenderFENodes(GObject* po);
-	void RenderMeshLines();
-	void RenderMeshLines(GObject* pm);
-
-	// rendering functions for surface meshes
-	void RenderSurfaceMeshFaces(GObject* po);
-	void RenderSurfaceMeshEdges(GObject* po);
-	void RenderSurfaceMeshNodes(GObject* po);
-
 	// other rendering functions
-	void RenderDiscrete();
 	void RenderBackground();
-	void RenderNormals(GObject* po, double scale);
-	void RenderFeatureEdges();
-	void RenderModel();
+
 	void RenderRubberBand();
 	void RenderPivot(bool bpick = false);
-	void RenderRigidJoints();
-	void RenderRigidConnectors();
-	void RenderRigidWalls();
-	void RenderRigidBodies();
-	void RenderMaterialFibers();
-	void RenderLocalMaterialAxes();
+
 	void Render3DCursor(const vec3d& r, double R);
-	void RenderSelectionBox();
-	void RenderModelView();
-	void RenderPostView(CPostDocument* postDoc);
 	void RenderTags();
+	void RenderTags(std::vector<GLTAG>& tags);
 	void RenderImageData();
 	void RenderTrack();
-	void RenderRigidLabels();
+
+
+	bool TrackModeActive();
 
 	void ScreenToView(int x, int y, double& fx, double& fy);
 
@@ -365,25 +317,26 @@ public:
 
 	void changeViewMode(View_Mode vm);
 
+	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
+
+	int GetMeshMode();
+
 protected:
 	void initializeGL();
 	void resizeGL(int w, int h);
 	void paintGL();
 
 private:
-	void TagConnectedNodes(FEMeshBase* pm, int n);
-	void TagNodesByShortestPath(FEMeshBase* pm, int n0, int n1);
-
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
 	Snap_Mode GetSnapMode() { return m_nsnap; }
 
 	// convert from device pixel to physical pixel
 	QPoint DeviceToPhysical(int x, int y);
 
-	void TagBackfacingFaces(FEMeshBase& mesh);
-	void TagBackfacingNodes(FEMeshBase& mesh);
-	void TagBackfacingEdges(FEMeshBase& mesh);
-	void TagBackfacingElements(FEMesh& mesh);
+	void TagBackfacingFaces(FSMeshBase& mesh);
+	void TagBackfacingNodes(FSMeshBase& mesh);
+	void TagBackfacingEdges(FSMeshBase& mesh);
+	void TagBackfacingElements(FSMesh& mesh);
 
 public:
 	QImage CaptureScreen();
@@ -414,19 +367,33 @@ public:
 	void RemoveDecoration(GDecoration* deco);
 
 	void ShowPlaneCut(bool b);
+	bool ShowPlaneCut() const;
 	void SetPlaneCut(double d[4]);
 	void SetPlaneCutMode(int nmode);
 	void UpdatePlaneCut(bool breset = false);
 
+private:
+	GLMesh* BuildPlaneCut(FSModel& fem);
+
 public:
 	void SetColorMap(Post::CColorMap& map);
 
-protected:
+	Post::CColorMap& GetColorMap();
+
 	void PanView(vec3d r);
 
 	void AddRegionPoint(int x, int y);
 
+public:
 	void RenderPlaneCut();
+
+	bool ShowPlaneCut();
+
+	GLMesh* PlaneCutMesh();
+
+	int PlaneCutMode();
+
+	double* PlaneCoordinates();
 
 protected:
 	void SetTrackingData(int n[3]);
@@ -474,8 +441,6 @@ public:
 	bool	m_bpick;
 
 protected:
-	FEExtrudeFaces*	m_pmod;
-
 	double	m_ox;
 	double	m_oy;
 
@@ -532,3 +497,5 @@ private:
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);
+void RenderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
+void SetModelView(GObject* po);

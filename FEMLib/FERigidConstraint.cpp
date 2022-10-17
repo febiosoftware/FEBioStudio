@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,9 +26,10 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FERigidConstraint.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
+using namespace std;
 
-FERigidConstraintOld::FERigidConstraintOld(int ntype, int nstep)
+FSRigidConstraintOld::FSRigidConstraintOld(int ntype, int nstep)
 {
 	m_ntype = ntype;
 	m_mid = -1;
@@ -40,11 +41,11 @@ FERigidConstraintOld::FERigidConstraintOld(int ntype, int nstep)
 	}
 }
 
-FERigidConstraintOld::~FERigidConstraintOld(void)
+FSRigidConstraintOld::~FSRigidConstraintOld(void)
 {
 }
 
-void FERigidConstraintOld::Save(OArchive &ar)
+void FSRigidConstraintOld::Save(OArchive &ar)
 {
 	ar.WriteChunk(NAME, GetName());
 	ar.WriteChunk(MATID, m_mid);
@@ -64,9 +65,9 @@ void FERigidConstraintOld::Save(OArchive &ar)
 	}
 }
 
-void FERigidConstraintOld::Load(IArchive &ar)
+void FSRigidConstraintOld::Load(IArchive &ar)
 {
-	TRACE("FERigidConstraintOld::Load");
+	TRACE("FSRigidConstraintOld::Load");
 
 	char sz[256] = {0};
 	int n = 0;
@@ -99,18 +100,25 @@ void FERigidConstraintOld::Load(IArchive &ar)
 }
 
 //=============================================================================
-FERigidConstraint::FERigidConstraint(int ntype, int nstep)
+FSRigidConstraint::FSRigidConstraint(int ntype, int nstep, FSModel* fem) : FSStepComponent(fem)
 {
-	m_matid = -1;
 	m_ntype = ntype;
 	m_nstepID = nstep;
 }
 
-FERigidConstraint::~FERigidConstraint(void)
+FSRigidConstraint::~FSRigidConstraint(void)
 {
 }
 
-void FERigidConstraint::Save(OArchive &ar)
+//=============================================================================
+FBSRigidConstraint::FBSRigidConstraint(int ntype, int nstep, FSModel* fem) : FSRigidConstraint(ntype, nstep, fem)
+{
+	m_matid = -1;
+
+	SetSuperClassID(FERIGIDBC_ID);
+}
+
+void FBSRigidConstraint::Save(OArchive& ar)
 {
 	ar.WriteChunk(NAME, GetName());
 	ar.WriteChunk(MATID, m_matid);
@@ -121,11 +129,11 @@ void FERigidConstraint::Save(OArchive &ar)
 	ar.EndChunk();
 }
 
-void FERigidConstraint::Load(IArchive &ar)
+void FBSRigidConstraint::Load(IArchive& ar)
 {
-	TRACE("FERigidConstraint::Load");
+	TRACE("FBSRigidConstraint::Load");
 
-	char sz[256] = {0};
+	char sz[256] = { 0 };
 	int n = 0;
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
@@ -135,16 +143,17 @@ void FERigidConstraint::Load(IArchive &ar)
 		case NAME: ar.read(sz); SetName(sz); break;
 		case MATID: ar.read(m_matid); break;
 		case PARAMS:
-			{
-				ParamContainer::Load(ar);
-			}
-			break;
+		{
+			ParamContainer::Load(ar);
+		}
+		break;
 		}
 		ar.CloseChunk();
 	}
 }
 
-FERigidFixed::FERigidFixed(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_FIXED, nstep)
+//=============================================================================
+FSRigidFixed::FSRigidFixed(FSModel* fem, int nstep) : FBSRigidConstraint(FE_RIGID_FIXED, nstep, fem)
 {
 	SetTypeString("Rigid fixed");
 
@@ -156,87 +165,95 @@ FERigidFixed::FERigidFixed(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID
 	AddBoolParam(false, "bc6", "Z-rotation");
 }
 
-FERigidPrescribed::FERigidPrescribed(int ntype, int nstep) : FERigidConstraint(ntype, nstep)
+FSRigidPrescribed::FSRigidPrescribed(int ntype, int nstep, FSModel* fem) : FBSRigidConstraint(ntype, nstep, fem)
 {
 }
 
-FERigidDisplacement::FERigidDisplacement(FEModel* fem, int nstep) : FERigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
+FSRigidDisplacement::FSRigidDisplacement(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID_DISPLACEMENT, nstep, fem)
 {
 	SetTypeString("Rigid displacement/rotation");
 
-	AddIntParam(0, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
-	AddScienceParam(0.0, UNIT_LENGTH, "value", "value")->SetLoadCurve();
+	AddIntParam(0, "dof", "degree of freedom")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
+	AddScienceParam(0.0, UNIT_LENGTH, "value", "value");
 	AddBoolParam(false, "relative");
 }
 
-FERigidDisplacement::FERigidDisplacement(int bc, int matid, double v, int nstep) : FERigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
+FSRigidDisplacement::FSRigidDisplacement(int bc, int matid, double v, int nstep) : FSRigidPrescribed(FE_RIGID_DISPLACEMENT, nstep)
 {
 	SetTypeString("Rigid displacement/rotation");
 
-	AddIntParam(bc, "var", "var")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
-	AddScienceParam(v, UNIT_LENGTH, "value", "value")->SetLoadCurve();
+	AddIntParam(bc, "dof", "degree of freedom")->SetEnumNames("X-displacement\0Y-displacement\0Z-displacement\0X-rotation\0Y-rotation\0Z-rotation\0");
+	AddScienceParam(v, UNIT_LENGTH, "value", "value");
 	AddBoolParam(false, "relative");
 
 	SetMaterialID(matid);
 }
 
-bool FERigidDisplacement::GetRelativeFlag() const
+bool FSRigidDisplacement::GetRelativeFlag() const
 {
 	return GetBoolValue(2);
 }
 
-FERigidForce::FERigidForce(FEModel* fem, int nstep) : FERigidPrescribed(FE_RIGID_FORCE, nstep)
+FSRigidForce::FSRigidForce(FSModel* fem, int nstep) : FSRigidPrescribed(FE_RIGID_FORCE, nstep, fem)
 {
 	SetTypeString("Rigid force");
 
-	AddIntParam(0, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
-	AddScienceParam(0.0, UNIT_FORCE, "value", "value")->SetLoadCurve();
+	AddIntParam(0, "dof", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
+	AddScienceParam(0.0, UNIT_FORCE, "value", "value");
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
+	AddBoolParam(false, "relative");
 }
 
-FERigidForce::FERigidForce(int bc, int matid, double v, int nstep) : FERigidPrescribed(FE_RIGID_FORCE, nstep)
+FSRigidForce::FSRigidForce(int bc, int matid, double v, int nstep) : FSRigidPrescribed(FE_RIGID_FORCE, nstep)
 {
 	SetTypeString("Rigid force");
 
-	AddIntParam(bc, "var", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
-	AddScienceParam(v, UNIT_FORCE, "value", "value")->SetLoadCurve();
+	AddIntParam(bc, "dof", "var")->SetEnumNames("X-force\0Y-force\0Z-force\0X-torque\0Y-torque\0Z-torque\0");
+	AddScienceParam(v, UNIT_FORCE, "value", "value");
 	AddIntParam(0, "load_type", "load type")->SetEnumNames("load\0follow\0target\0");
+	AddBoolParam(false, "relative");
 
 	SetMaterialID(matid);
 }
 
-int FERigidForce::GetForceType() const
+int FSRigidForce::GetForceType() const
 {
 	return GetIntValue(2);
 }
 
-void FERigidForce::SetForceType(int n)
+void FSRigidForce::SetForceType(int n)
 {
 	SetIntValue(2, n);
 }
 
-FERigidVelocity::FERigidVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_VELOCITY, nstep)
+bool FSRigidForce::IsRelative() const
+{
+	return GetBoolValue(3);
+}
+
+FSRigidVelocity::FSRigidVelocity(FSModel* fem, int nstep) : FBSRigidConstraint(FE_RIGID_INIT_VELOCITY, nstep, fem)
 {
 	SetTypeString("Rigid velocity");
 
 	AddVecParam(vec3d(0, 0, 0), "value", "velocity")->SetUnit(UNIT_VELOCITY);
 }
 
-FERigidAngularVelocity::FERigidAngularVelocity(FEModel* fem, int nstep) : FERigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep)
+FSRigidAngularVelocity::FSRigidAngularVelocity(FSModel* fem, int nstep) : FBSRigidConstraint(FE_RIGID_INIT_ANG_VELOCITY, nstep, fem)
 {
 	SetTypeString("Rigid angular velocity");
 
 	AddVecParam(vec3d(0, 0, 0), "value", "angular velocity")->SetUnit(UNIT_ANGULAR_VELOCITY);
 }
 
-vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidConstraintOld* rc)
+//===============================================================================================
+vector<FSRigidConstraint*> convertOldToNewRigidConstraint(FSModel* fem, FSRigidConstraintOld* rc)
 {
-	vector<FERigidConstraint*> rc_new;
+	vector<FSRigidConstraint*> rc_new;
 	switch (rc->Type())
 	{
 	case FE_RIGID_FIXED:
 		{
-			FERigidFixed* rf = new FERigidFixed(fem, rc->GetStep());
+			FSRigidFixed* rf = new FSRigidFixed(fem, rc->GetStep());
 			if (rc->m_BC[0]) rf->SetDOF(0, true);
 			if (rc->m_BC[1]) rf->SetDOF(1, true);
 			if (rc->m_BC[2]) rf->SetDOF(2, true);
@@ -255,15 +272,15 @@ vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidC
 			{
 				if (rc->m_BC[i])
 				{
-					FERigidPrescribed* rp = 0;
-					if      (rc->Type() == FE_RIGID_DISPLACEMENT) rp = new FERigidDisplacement(fem, rc->GetStep());
-					else if (rc->Type() == FE_RIGID_FORCE       ) rp = new FERigidForce       (fem, rc->GetStep());
+					FSRigidPrescribed* rp = 0;
+					if      (rc->Type() == FE_RIGID_DISPLACEMENT) rp = new FSRigidDisplacement(fem, rc->GetStep());
+					else if (rc->Type() == FE_RIGID_FORCE       ) rp = new FSRigidForce       (fem, rc->GetStep());
 					else { assert(false); }
 
 					rp->SetMaterialID(rc->m_mid);
 					rp->SetDOF(i);
 					rp->SetValue(rc->m_val[i]);
-					rp->SetLoadCurve(rc->m_LC[i]);
+//					rp->SetLoadCurve(rc->m_LC[i]);
 
 					rc_new.push_back(rp);
 				}
@@ -272,11 +289,11 @@ vector<FERigidConstraint*> convertOldToNewRigidConstraint(FEModel* fem, FERigidC
 		break;
 	case FE_RIGID_INIT_VELOCITY:
 		{	
-			FERigidVelocity* rv = new FERigidVelocity(fem, rc->GetStep());
+			FSRigidVelocity* rv = new FSRigidVelocity(fem, rc->GetStep());
 			rv->SetVelocity(vec3d(rc->m_val[0], rc->m_val[1], rc->m_val[2]));
 			rv->SetMaterialID(rc->m_mid);
 
-			FERigidAngularVelocity* ra = new FERigidAngularVelocity(fem, rc->GetStep());
+			FSRigidAngularVelocity* ra = new FSRigidAngularVelocity(fem, rc->GetStep());
 			ra->SetVelocity(vec3d(rc->m_val[3], rc->m_val[4], rc->m_val[5]));
 
 			rc_new.push_back(rv);

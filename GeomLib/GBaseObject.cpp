@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -198,6 +198,18 @@ GNode* GBaseObject::FindNode(int nid)
 }
 
 //-----------------------------------------------------------------------------
+GPart* GBaseObject::FindPartFromName(const char* szname)
+{
+	if (szname == nullptr) return nullptr;
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pi = Part(i);
+		if (strcmp(szname, pi->GetName().c_str()) == 0) return pi;
+	}
+	return nullptr;
+}
+
+//-----------------------------------------------------------------------------
 void GBaseObject::AddFace(GFace* f)
 {
 #ifdef _DEBUG
@@ -213,6 +225,14 @@ void GBaseObject::AddFace(GFace* f)
 	sprintf(sz, "Surface%d", f->GetID());
 	f->SetName(sz);
 	m_Face.push_back(f);
+}
+
+//-----------------------------------------------------------------------------
+GFace* GBaseObject::AddFace()
+{
+	GFace* f = new GFace;
+	AddFace(f);
+	return f;
 }
 
 //-----------------------------------------------------------------------------
@@ -241,7 +261,7 @@ int GBaseObject::AddNode(GNode* n)
 // has already been defined or not. If not, the new vertex is added. If so,
 // the index to the existing node is returned.
 // TODO: What if a shape_node is added onto a vertex node? Should I change the type?
-int GBaseObject::AddNode(vec3d r, int nt, bool bdup)
+GNode* GBaseObject::AddNode(vec3d r, int nt, bool bdup)
 {
 	// if node duplication is not allowed
 	// check if this node is already defined
@@ -254,7 +274,7 @@ int GBaseObject::AddNode(vec3d r, int nt, bool bdup)
 		{
 			vec3d p = Node(i)->LocalPosition();
 			double L = (r - p).Length();
-			if (L <= tol) return i;
+			if (L <= tol) return Node(i);
 		}
 	}
 
@@ -274,7 +294,15 @@ int GBaseObject::AddNode(vec3d r, int nt, bool bdup)
 	n->SetName(sz);
 
 	m_Node.push_back(n);
-	return m_Node.size() - 1;
+	return n;
+}
+
+//-----------------------------------------------------------------------------
+GEdge* GBaseObject::AddEdge()
+{
+	GEdge* edge = new GEdge(this);
+	AddEdge(edge);
+	return edge;
 }
 
 //-----------------------------------------------------------------------------
@@ -387,7 +415,7 @@ int GBaseObject::AddArcSection(int n1, int n2, int n3)
 // Build a facet from a wire, that is an edge list. It is assumed that the edges
 // are in the proper order, that is that each edge connects to its left and right
 // neigbor and that the wire is closed.
-void GBaseObject::AddFacet(const vector<int>& edge, int ntype)
+void GBaseObject::AddFacet(const std::vector<int>& edge, int ntype)
 {
 	// allocate a new face
 	GFace* f = new GFace(this);
@@ -406,7 +434,7 @@ void GBaseObject::AddFacet(const vector<int>& edge, int ntype)
 	assert(NE >= 3);
 
 	// node list and winding list
-	vector<int> node; vector<int> ew;
+	std::vector<int> node; std::vector<int> ew;
 
 	// figure out the orientation of the first edge
 	// we can decided that by looking which node connects to the second edge
@@ -468,7 +496,7 @@ void GBaseObject::AddFacet(const vector<int>& edge, int ntype)
 }
 
 //-----------------------------------------------------------------------------
-void GBaseObject::AddFacet(const vector<int>& node, const vector<pair<int, int> >& edge, int ntype)
+void GBaseObject::AddFacet(const std::vector<int>& node, const std::vector<pair<int, int> >& edge, int ntype)
 {
 	GFace* f = new GFace(this);
 	f->SetID(GFace::CreateUniqueID());
@@ -508,7 +536,7 @@ void GBaseObject::AddSurface(GFace* f)
 }
 
 //-----------------------------------------------------------------------------
-void GBaseObject::AddPart()
+GPart* GBaseObject::AddPart()
 {
 	GPart* p = new GPart(this);
 	p->SetID(GPart::CreateUniqueID());
@@ -518,6 +546,35 @@ void GBaseObject::AddPart()
 	sprintf(szname, "Part%d", p->GetID());
 	p->SetName(szname);
 	m_Part.push_back(p);
+	return p;
+}
+
+//-----------------------------------------------------------------------------
+bool GBaseObject::DeletePart(GPart* pg)
+{
+	// let the derived class do the heavy lifting. 
+	return false;
+}
+
+GPart* GBaseObject::AddSolidPart()
+{
+	GPart* p = AddPart();
+	p->SetSection(new GSolidSection(p));
+	return p;
+}
+
+GPart* GBaseObject::AddShellPart()
+{
+	GPart* p = AddPart();
+	p->SetSection(new GShellSection(p));
+	return p;
+}
+
+GPart* GBaseObject::AddBeamPart()
+{
+	GPart* p = AddPart();
+	p->SetSection(new GBeamSection(p));
+	return p;
 }
 
 //-----------------------------------------------------------------------------

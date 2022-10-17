@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,104 +32,30 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QPainter>
 #include "DlgFormula.h"
-#include <MathLib/MathParser.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
-#include <FEMLib/FERigidConstraint.h>
+#include <FEMLib/FERigidLoad.h>
+#include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GModel.h>
 #include <sstream>
+#include <QDialogButtonBox>
+#include <QComboBox>
+#include <QFormLayout>
+#include <QLineEdit>
+#include "DlgAddPhysicsItem.h"
+#include <FEMLib/FEMKernel.h>
+#include <FEBioLink/FEBioInterface.h>
 
-CCmdAddPoint::CCmdAddPoint(FELoadCurve* plc, LOADPOINT& pt) : CCommand("Add point")
-{
-	m_lc = plc;
-	m_pt = pt;
-	m_index = -1;
-}
-
-void CCmdAddPoint::Execute()
-{
-	m_index = m_lc->Add(m_pt);
-    m_lc->Update();
-}
-
-void CCmdAddPoint::UnExecute()
-{
-	m_lc->Delete(m_index);
-    m_lc->Update();
-}
-
-CCmdRemovePoint::CCmdRemovePoint(FELoadCurve* plc, const vector<int>& index) : CCommand("Remove point")
-{
-	m_lc = plc;
-	m_index = index;
-}
-
-void CCmdRemovePoint::Execute()
-{
-	m_copy = *m_lc;
-	m_lc->Delete(m_index);
-    m_lc->Update();
-}
-
-void CCmdRemovePoint::UnExecute()
-{
-	*m_lc = m_copy;
-    m_lc->Update();
-}
-
-CCmdMovePoint::CCmdMovePoint(FELoadCurve* plc, int index, LOADPOINT to) : CCommand("Move point")
-{
-	m_lc = plc;
-	m_index = index;
-	m_p = to;
-    m_lc->Update();
-}
-
-void CCmdMovePoint::Execute()
-{
-	LOADPOINT tmp = m_lc->Item(m_index);
-	m_lc->Item(m_index) = m_p;
-	m_p = tmp;
-    m_lc->Update();
-}
-
-void CCmdMovePoint::UnExecute()
-{
-	Execute();
-}
-
-CCmdDeleteCurve::CCmdDeleteCurve(Param* pp) : CCommand("Delete Curve")
-{
-	m_plc = nullptr;
-	m_pp = pp; assert(m_pp);
-}
-
-CCmdDeleteCurve::~CCmdDeleteCurve()
-{
-	if (m_plc) delete m_plc;
-	m_plc = nullptr;
-}
-
-void CCmdDeleteCurve::Execute()
-{
-	m_plc = m_pp->RemoveLoadCurve();
-}
-
-void CCmdDeleteCurve::UnExecute()
-{
-	if (m_plc) m_pp->SetLoadCurve(*m_plc);
-	m_plc = nullptr;
-}
 
 //=============================================================================
-
 QRect CCurveEditor::m_preferredSize;
 
 CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CCurveEdior)
 {
+	m_fem = nullptr;
+	m_plc = nullptr;
 	m_currentItem = 0;
-	m_plc_copy = 0;
 	m_nflt = FLT_ALL;
 	ui->setupUi(this);
 	resize(600, 400);
@@ -138,10 +64,6 @@ CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(
 
 	if (m_preferredSize.isValid())
 	{
-		// copy the x,y coordinates
-		QRect rt = geometry();
-		m_preferredSize.setX(rt.x());
-		m_preferredSize.setY(rt.y());
 		setGeometry(m_preferredSize);
 	}
 }
@@ -165,9 +87,26 @@ void CCurveEditor::Update()
 {
 	// clear the tree
 	ui->tree->clear();
-	ui->plot->clearData();
+	ui->plot->Clear();
 	m_currentItem = 0;
 
+	// get the active document and FSModel
+	CModelDocument* doc = m_wnd->GetModelDocument();
+	if (doc == nullptr) return;
+
+	m_fem = doc->GetFSModel();
+	if (m_fem == nullptr) return;
+
+	// fill the load controller selection widget
+	ui->selectLC->clear();
+	ui->selectLC->addItem("(none)");
+	for (int i = 0; i < m_fem->LoadControllers(); ++i)
+	{
+		FSLoadController* plc = m_fem->GetLoadController(i);
+		ui->selectLC->addItem(QString::fromStdString(plc->GetName()), plc->GetID());
+	}
+
+	// build the model tree
 	if (m_nflt == FLT_LOAD_CURVES)
 	{
 		BuildLoadCurves();
@@ -178,63 +117,50 @@ void CCurveEditor::Update()
 	}
 }
 
-void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSObject* po)
+void CCurveEditor::BuildLoadCurves(QTreeWidgetItem* t1, FSModelComponent* po, const std::string& name)
 {
+	string oname = name;
+	if (name.empty()) oname = po->GetName();
+
+	FSModel* fem = po->GetFSModel();
 	int np = po->Parameters();
 	for (int n = 0; n < np; ++n)
 	{
 		Param& p = po->GetParam(n);
-		FELoadCurve* plc = p.GetLoadCurve();
-		if (plc)
+		if (p.GetLoadCurveID() > 0)
 		{
-            plc->Update();
-			string name = po->GetName() + "." + p.GetLongName();
-			ui->addTreeItem(t1, QString::fromStdString(name), plc, &p);
-		}
-	}
-}
-
-void CCurveEditor::BuildMaterialCurves(QTreeWidgetItem* t1, FEMaterial* mat, const std::string& name)
-{
-	int NP = mat->Parameters();
-	for (int n = 0; n < NP; ++n)
-	{
-		Param& p = mat->GetParam(n);
-		FELoadCurve* plc = p.GetLoadCurve();
-		if (plc)
-		{
-            plc->Update();
-			string paramName = name + "." + p.GetShortName();
-			ui->addTreeItem(t1, QString::fromStdString(paramName), plc, &p);
+			assert(p.IsVolatile());
+			string pname = oname + "." + p.GetLongName();
+			ui->addTreeItem(t1, QString::fromStdString(pname), &p);
 		}
 	}
 
-	NP = mat->Properties();
+	int NP = po->Properties();
 	for (int n = 0; n < NP; ++n)
 	{
-		FEMaterialProperty& matProp = mat->GetProperty(n);
+		FSProperty& prop = po->GetProperty(n);
 
-		int np = matProp.Size();
+		int np = prop.Size();
 		if (np == 1)
 		{
-			FEMaterial* pm = matProp.GetMaterial(0);
+			FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent());
 			if (pm)
 			{
-				string paramName = name + "." + matProp.GetName();
-				BuildMaterialCurves(t1, pm, paramName);
+				string paramName = name + "." + prop.GetName();
+				BuildLoadCurves(t1, pm, paramName);
 			}
 		}
 		else
 		{
 			for (int j = 0; j < np; ++j)
 			{
-				FEMaterial* pm = matProp.GetMaterial(j);
+				FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
 				if (pm)
 				{
-					std::stringstream ss; 
-					ss << name << "." << matProp.GetName() << "[" << j << "]";
+					std::stringstream ss;
+					ss << name << "." << prop.GetName() << "[" << j << "]";
 					string paramName = ss.str();
-					BuildMaterialCurves(t1, pm, paramName);
+					BuildLoadCurves(t1, pm, paramName);
 				}
 			}
 		}
@@ -250,7 +176,7 @@ void CCurveEditor::BuildLoadCurves()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 	if (doc == nullptr) return;
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GModel& model = fem.GetModel();
 
 	for (int i = 0; i<model.DiscreteObjects(); ++i)
@@ -259,24 +185,24 @@ void CCurveEditor::BuildLoadCurves()
 		GLinearSpring* pls = dynamic_cast<GLinearSpring*>(po);
 		if (pls)
 		{
-			FELoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
+			LoadCurve* plc = nullptr;// fem.GetParamCurve(pls->GetParam(GLinearSpring::MP_E));
 			if (plc)
 			{
                 plc->Update();
 				string name = pls->GetName() + ".E";
-				ui->addTreeItem(t1, QString::fromStdString(name), plc);
+				ui->addTreeItem(t1, QString::fromStdString(name));
 			}
 		}
 
 		GGeneralSpring* pgs = dynamic_cast<GGeneralSpring*>(po);
 		if (pgs)
 		{
-			FELoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
+			LoadCurve* plc = nullptr;// fem.GetParamCurve(pgs->GetParam(GGeneralSpring::MP_F));
 			if (plc)
 			{
                 plc->Update();
 				string name = pls->GetName() + ".F";
-				ui->addTreeItem(t1, QString::fromStdString(name), plc);
+				ui->addTreeItem(t1, QString::fromStdString(name));
 			}
 		}
 	}
@@ -285,21 +211,18 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pgm = fem.GetMaterial(i);
-		FEMaterial* pm = pgm->GetMaterialProperties();
-		if (pm)
-		{
-			BuildMaterialCurves(t1, pm, pgm->GetName());
-		}
+		FSMaterial* pm = pgm->GetMaterialProperties();
+		if (pm) BuildLoadCurves(t1, pm, pgm->GetName());
 	}
 
 	// add the boundary condition data
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int nbc = pstep->BCs();
 		for (int j = 0; j<nbc; ++j)
 		{
-			FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(pstep->BC(j));
+			FSBoundaryCondition* pbc = pstep->BC(j);
 			if (pbc) BuildLoadCurves(t1, pbc);
 		}
 	}
@@ -307,11 +230,11 @@ void CCurveEditor::BuildLoadCurves()
 	// add the load data
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		int nbc = pstep->Loads();
 		for (int j = 0; j < nbc; ++j)
 		{
-			FELoad* plj = pstep->Load(j);
+			FSLoad* plj = pstep->Load(j);
 			BuildLoadCurves(t1, plj);
 		}
 	}
@@ -319,21 +242,54 @@ void CCurveEditor::BuildLoadCurves()
 	// add contact interfaces
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->Interfaces(); ++j)
 		{
-			FEInterface* pi = pstep->Interface(j);
+			FSInterface* pi = pstep->Interface(j);
 			BuildLoadCurves(t1, pi);
 		}
 	}
 
-	// add constraints
+	// add nonlinear constraints
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* pstep = fem.GetStep(i);
+		for (int j = 0; j < pstep->Constraints(); ++j)
+		{
+			FSModelConstraint* pmc = pstep->Constraint(j);
+			BuildLoadCurves(t1, pmc);
+		}
+	}
+
+	// add rigid constraints
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
-		for (int j = 0; j<pstep->RigidConstraints(); ++j)
+		FSStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->RigidBCs(); ++j)
 		{
-			FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
+			FSRigidBC* pc = pstep->RigidBC(j);
+			if (pc) BuildLoadCurves(t1, pc);
+		}
+	}
+
+	// add rigid initial conditions
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FSStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->RigidICs(); ++j)
+		{
+			FSRigidIC* pc = pstep->RigidIC(j);
+			if (pc) BuildLoadCurves(t1, pc);
+		}
+	}
+
+	// add rigid lodas
+	for (int i = 0; i<fem.Steps(); ++i)
+	{
+		FSStep* pstep = fem.GetStep(i);
+		for (int j = 0; j<pstep->RigidLoads(); ++j)
+		{
+			FSRigidLoad* pc = pstep->RigidLoad(j);
 			if (pc) BuildLoadCurves(t1, pc);
 		}
 	}
@@ -341,10 +297,10 @@ void CCurveEditor::BuildLoadCurves()
 	// add rigid connectors
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
+		FSStep* pstep = fem.GetStep(i);
 		for (int j = 0; j<pstep->RigidConnectors(); ++j)
 		{
-			FERigidConnector* pc = pstep->RigidConnector(j);
+			FSRigidConnector* pc = pstep->RigidConnector(j);
 			if (pc) BuildLoadCurves(t1, pc);
 		}
 	}
@@ -353,12 +309,12 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 0; i < model.DiscreteObjects(); ++i)
 	{
 		GDiscreteObject* po = model.DiscreteObject(i);
-		if (po) BuildLoadCurves(t1, po);
+//		if (po) BuildLoadCurves(t1, po);
 
 /*		GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
 		if (dss)
 		{
-			FEDiscreteMaterial* dm = dss->GetMaterial();
+			FSDiscreteMaterial* dm = dss->GetMaterial();
 			if (dm)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(dss->GetName()));
@@ -368,15 +324,69 @@ void CCurveEditor::BuildLoadCurves()
 */
 	}
 
-	// must point curves
-	for (int i = 0; i<fem.Steps(); ++i)
+	// skip initial step
+	for (int i = 1; i < fem.Steps(); ++i)
 	{
-		FEStep* pstep = fem.GetStep(i);
-		FEAnalysisStep* pas = dynamic_cast<FEAnalysisStep*>(pstep);
-		if (pas && pas->GetSettings().bmust)
+		FSStep* pstep = fem.GetStep(i);
+		BuildLoadCurves(t1, pstep);
+		for (int j = 0; j < pstep->Properties(); ++j)
 		{
-			string name = pas->GetName() + ".must point";
-			ui->addTreeItem(t1, QString::fromStdString(name), pas->GetMustPointLoadCurve());
+			FSProperty& prop = pstep->GetProperty(j);
+			if (prop.Size() != 0)
+			{
+				FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(prop.GetComponent());
+				if (pmc)
+				{
+					string name = pstep->GetName() + "." + prop.GetName();
+					BuildLoadCurves(t1, pmc, name);
+				}
+			}
+		}
+	}
+}
+
+void CCurveEditor::AddModelComponent(QTreeWidgetItem* t1, FSModelComponent* po)
+{
+	FSModel* fem = po->GetFSModel();
+	for (int n = 0; n < po->Parameters(); ++n)
+	{
+		Param& param = po->GetParam(n);
+		if (param.IsEditable() && param.IsVolatile())
+		{
+			ui->addTreeItem(t1, QString::fromStdString(param.GetShortName()), &param);
+		}
+	}
+
+	for (int k = 0; k < po->Properties(); ++k)
+	{
+		FSProperty& prop = po->GetProperty(k);
+		QString propName = QString::fromStdString(prop.GetName());
+		if (prop.Size() == 1)
+		{
+			FSModelComponent* pm = dynamic_cast<FSModelComponent*>(prop.GetComponent());
+			if (pm)
+			{
+				const char* sztype = pm->GetTypeString();
+				QString name = propName;
+				if (sztype) name = QString("%1 [%2]").arg(propName).arg(sztype);
+				QTreeWidgetItem* tc = ui->addTreeItem(t1, name);
+				AddModelComponent(tc, pm);
+			}
+		}
+		else
+		{
+			for (int l = 0; l < prop.Size(); ++l)
+			{
+				FSModelComponent* pml = dynamic_cast<FSModelComponent*>(prop.GetComponent(l));
+				if (pml)
+				{
+					const char* sztype = pml->GetTypeString();
+					QString name = propName;
+					if (sztype) name = QString("%1-%2 [%3]").arg(propName).arg(l+1).arg(sztype);
+					QTreeWidgetItem* tc = ui->addTreeItem(t1, name);
+					AddModelComponent(tc, pml);
+				}
+			}
 		}
 	}
 }
@@ -389,7 +399,7 @@ void CCurveEditor::BuildModelTree()
 	t1->setExpanded(true);
 	t1->setText(0, "Model");
 
-	FEModel& fem = *doc->GetFEModel();
+	FSModel& fem = *doc->GetFSModel();
 	GModel& model = fem.GetModel();
 
 	QTreeWidgetItem *t2, *t3;
@@ -405,17 +415,29 @@ void CCurveEditor::BuildModelTree()
 			if (pls)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pls->GetName()));
-				FELoadCurve* plc = pls->GetParam(GLinearSpring::MP_E).GetLoadCurve();
-				if (plc) ui->addTreeItem(t3, "E", plc);
+//				LoadCurve* plc = fem.GetParamCurve(pls->GetParam(GLinearSpring::MP_E));
+//				if (plc) ui->addTreeItem(t3, "E", plc);
 			}
 
 			GGeneralSpring* pgs = dynamic_cast<GGeneralSpring*>(po);
 			if (pgs)
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(pgs->GetName()));
-				FELoadCurve* plc = pgs->GetParam(GGeneralSpring::MP_F).GetLoadCurve();
-				if (plc) ui->addTreeItem(t3, "F", plc);
+//				LoadCurve* plc = fem.GetParamCurve(pgs->GetParam(GGeneralSpring::MP_F));
+//				if (plc) ui->addTreeItem(t3, "F", plc);
 			}
+		}
+	}
+
+	// add data maps
+	if (Filter(FLT_MESH_DATA))
+	{
+		t2 = ui->addTreeItem(t1, "Mesh data");
+		for (int i = 0; i < fem.MeshDataGenerators(); ++i)
+		{
+			FSMeshDataGenerator* map = fem.GetMeshDataGenerator(i);
+			t3 = ui->addTreeItem(t2, QString::fromStdString(map->GetName()));
+			AddModelComponent(t3, map);
 		}
 	}
 
@@ -428,11 +450,8 @@ void CCurveEditor::BuildModelTree()
 			GMaterial* pgm = fem.GetMaterial(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pgm->GetName()));
 
-			FEMaterial* pm = pgm->GetMaterialProperties();
-			if (pm)
-			{
-				AddMaterial(pm, t3);
-			}
+			FSMaterial* pm = pgm->GetMaterialProperties();
+			if (pm) AddModelComponent(t3, pm);
 		}
 	}
 
@@ -442,16 +461,15 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "BCs");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			int nbc = pstep->BCs();
 			for (int j = 0; j<nbc; ++j)
 			{
-				FEPrescribedDOF* pbc = dynamic_cast<FEPrescribedDOF*>(pstep->BC(j));
+				FSBoundaryCondition* pbc = pstep->BC(j);
 				if (pbc)
 				{
-					t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
-					Param& p = pbc->GetParam(FEPrescribedDOF::SCALE);
-					ui->addTreeItem(t3, QString::fromStdString(pbc->GetName()), p.GetLoadCurve(), &p);
+					QTreeWidgetItem* t3 = ui->addTreeItem(t2, QString::fromStdString(pbc->GetName()));
+					AddModelComponent(t3, pbc);
 				}
 			}
 		}
@@ -463,71 +481,13 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Loads");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			int nbc = pstep->Loads();
 			for (int j = 0; j<nbc; ++j)
 			{
-				FELoad* plj = pstep->Load(j);
-
-                FEFluidFlowResistance* pfr = dynamic_cast<FEFluidFlowResistance*>(pstep->Load(j));
-                FEFluidFlowRCR* prcr = dynamic_cast<FEFluidFlowRCR*>(pstep->Load(j));
-                if (pfr) {
-					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-                    ui->addTreeItem(t3, QString::fromStdString("R"), pfr->GetLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), pfr->GetPOLoadCurve());
-                }
-                else if (prcr) {
-					t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-					ui->addTreeItem(t3, QString::fromStdString("R"), prcr->GetLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("Rd"), prcr->GetRDLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("capacitance"), prcr->GetCOLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("pressure_offset"), prcr->GetPOLoadCurve());
-                    ui->addTreeItem(t3, QString::fromStdString("initial_pressure"), prcr->GetIPLoadCurve());
-                }
-				else {
-					FEConstBodyForce* pbl = dynamic_cast<FEConstBodyForce*>(pstep->Load(j));
-					if (pbl)
-					{
-						t3 = ui->addTreeItem(t2, QString::fromStdString(pbl->GetName()));
-						if (pbl->GetLoadCurve(0)) ui->addTreeItem(t3, "x-force", pbl->GetLoadCurve(0));
-						if (pbl->GetLoadCurve(1)) ui->addTreeItem(t3, "y-force", pbl->GetLoadCurve(1));
-						if (pbl->GetLoadCurve(2)) ui->addTreeItem(t3, "z-force", pbl->GetLoadCurve(2));
-					}
-					else {
-						FEHeatSource* phs = dynamic_cast<FEHeatSource*>(pstep->Load(j));
-                        FECentrifugalBodyForce* pcs = dynamic_cast<FECentrifugalBodyForce*>(pstep->Load(j));
-						if (phs)
-						{
-							if (phs->GetLoadCurve())
-							{
-								t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-								ui->addTreeItem(t3, QString::fromStdString(phs->GetName()), phs->GetLoadCurve());
-							}
-						}
-                        else if (pcs)
-                        {
-							if (pcs->GetLoadCurve())
-							{
-								t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-								ui->addTreeItem(t3, QString::fromStdString(pcs->GetName()), pcs->GetLoadCurve());
-							}
-                        }
-						else
-						{
-							t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
-							int N = plj->Parameters();
-							for (int k = 0; k < N; ++k)
-							{
-								Param& pk = plj->GetParam(k);
-								if (pk.IsEditable() && (pk.GetParamType() != Param_INT))
-								{
-									FELoadCurve* plc = pk.GetLoadCurve();
-									ui->addTreeItem(t3, pk.GetLongName(), plc, &pk);
-								}
-							}
-						}
-					}
-				}
+				FSLoad* plj = pstep->Load(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(plj->GetName()));
+				AddModelComponent(t3, plj);
 			}
 		}
 	}
@@ -538,102 +498,82 @@ void CCurveEditor::BuildModelTree()
 		t2 = ui->addTreeItem(t1, "Contact");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			for (int j = 0; j<pstep->Interfaces(); ++j)
 			{
-				FEInterface* pi = pstep->Interface(j);
-				FERigidWallInterface* pw = dynamic_cast<FERigidWallInterface*>(pi);
-				if (pw) 
-				{
-					t3 = ui->addTreeItem(t2, QString::fromStdString(pw->GetName()));
-					ui->addTreeItem(t3, "tolerance", pw->GetParamLC(FERigidWallInterface::ALTOL  ), pw->GetParamPtr(FERigidWallInterface::ALTOL  ));
-					ui->addTreeItem(t3, "penalty"  , pw->GetParamLC(FERigidWallInterface::PENALTY), pw->GetParamPtr(FERigidWallInterface::PENALTY));
-					ui->addTreeItem(t3, "plane displacement", pw->GetParamLC(FERigidWallInterface::OFFSET ), pw->GetParamPtr(FERigidWallInterface::OFFSET ));
-				}
-				else
-				{
-					FERigidSphereInterface* prs = dynamic_cast<FERigidSphereInterface*>(pi);
-					if (prs)
-					{
-						t3 = ui->addTreeItem(t2, QString::fromStdString(prs->GetName()));
-						ui->addTreeItem(t3, "ux", prs->GetLoadCurve(0));
-						ui->addTreeItem(t3, "uy", prs->GetLoadCurve(1));
-						ui->addTreeItem(t3, "uz", prs->GetLoadCurve(2));
-					}
-					else
-					{
-						FEInterface* pc = pstep->Interface(j);
-						int NP = pc->Parameters();
-						if (NP > 0)
-						{
-							t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-							for (int n = 0; n<NP; ++n)
-							{
-								Param& p = pc->GetParam(n);
-								if (p.IsEditable())
-								{
-									FELoadCurve* plc = p.GetLoadCurve();
-									ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-								}
-							}
-						}
-					}
-				}
+				FSInterface* pi = pstep->Interface(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pi->GetName()));
+				AddModelComponent(t3, pi);
 			}
 		}
 	}
 
-	// add constraints
-	if (Filter(FLT_CONSTRAINT))
+	// add nonlinear constraints
+	if (Filter(FLT_NLCONSTRAINT))
 	{
-		t2 = ui->addTreeItem(t1, "Rigid Constraints");
+		t2 = ui->addTreeItem(t1, "Constraints");
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			FSStep* pstep = fem.GetStep(i);
+			for (int j = 0; j < pstep->Constraints(); ++j)
+			{
+				FSModelConstraint* pmc = pstep->Constraint(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pmc->GetName()));
+				AddModelComponent(t3, pmc);
+			}
+		}
+	}
+
+	// add rigid constraints
+	if (Filter(FLT_RIGID_CONSTRAINT))
+	{
+		t2 = ui->addTreeItem(t1, "Rigid BC");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
-			for (int j = 0; j<pstep->RigidConstraints(); ++j)
+			FSStep* pstep = fem.GetStep(i);
+			for (int j = 0; j<pstep->RigidBCs(); ++j)
 			{
-				FERigidPrescribed* pc = dynamic_cast<FERigidPrescribed*>(pstep->RigidConstraint(j));
-				if (pc)
-				{
-					for (int n = 0; n < pc->Parameters(); ++n)
-					{
-						Param& p = pc->GetParam(n);
-						if (p.IsEditable())
-						{
-							FELoadCurve* plc = p.GetLoadCurve();
-							t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-						}
-					}
-				}
+				FSRigidBC* pc = pstep->RigidBC(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+				AddModelComponent(t3, pc);
+			}
+		}
+
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			FSStep* pstep = fem.GetStep(i);
+			for (int j = 0; j < pstep->RigidICs(); ++j)
+			{
+				FSRigidIC* pc = pstep->RigidIC(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+				AddModelComponent(t3, pc);
+			}
+		}
+
+		for (int i = 0; i < fem.Steps(); ++i)
+		{
+			FSStep* pstep = fem.GetStep(i);
+			for (int j = 0; j < pstep->RigidLoads(); ++j)
+			{
+				FSRigidLoad* pc = pstep->RigidLoad(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+				AddModelComponent(t3, pc);
 			}
 		}
 	}
 
 	// add rigid connectors
-	if (Filter(FLT_CONNECTOR))
+	if (Filter(FLT_RIGID_CONNECTOR))
 	{
 		t2 = ui->addTreeItem(t1, "Rigid Connectors");
 		for (int i = 0; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			for (int j = 0; j<pstep->RigidConnectors(); ++j)
 			{
-				FERigidConnector* pc = pstep->RigidConnector(j);
-				int NP = pc->Parameters();
-				if (NP > 0)
-				{
-					t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
-					for (int n = 0; n<NP; ++n)
-					{
-						Param& p = pc->GetParam(n);
-						if (p.IsEditable())
-						{
-							FELoadCurve* plc = p.GetLoadCurve();
-							ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-						}
-					}
-				}
+				FSRigidConnector* pc = pstep->RigidConnector(j);
+				t3 = ui->addTreeItem(t2, QString::fromStdString(pc->GetName()));
+				AddModelComponent(t3, pc);
 			}
 		}
 	}
@@ -645,29 +585,20 @@ void CCurveEditor::BuildModelTree()
 		for (int i = 0; i < model.DiscreteObjects(); ++i)
 		{
 			GDiscreteObject* po = model.DiscreteObject(i);
-			int NP = po->Parameters();
-			if (NP > 0)
+			if (po && (po->Parameters() > 0))
 			{
 				t3 = ui->addTreeItem(t2, QString::fromStdString(po->GetName()));
-				for (int n = 0; n<NP; ++n)
-				{
-					Param& p = po->GetParam(n);
-					if (p.IsEditable())
-					{
-						FELoadCurve* plc = p.GetLoadCurve();
-						ui->addTreeItem(t3, p.GetLongName(), plc, &p);
-					}
-				}
+//				AddParameterList(t3, po);
 			}
 
 			GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(po);
 			if (dss)
 			{
-				FEDiscreteMaterial* dm = dss->GetMaterial();
+				FSDiscreteMaterial* dm = dss->GetMaterial();
 				if (dm)
 				{
 					t3 = ui->addTreeItem(t2, QString::fromStdString(dss->GetName()));
-					AddMaterial(dm, t3);
+					AddModelComponent(t3, dm);
 				}
 			}
 		}
@@ -676,60 +607,13 @@ void CCurveEditor::BuildModelTree()
 	// must point curves
 	if (Filter(FLT_STEP))
 	{
+		// skip initial step
 		t2 = ui->addTreeItem(t1, "Steps");
-		for (int i = 0; i<fem.Steps(); ++i)
+		for (int i = 1; i<fem.Steps(); ++i)
 		{
-			FEStep* pstep = fem.GetStep(i);
+			FSStep* pstep = fem.GetStep(i);
 			t3 = ui->addTreeItem(t2, QString::fromStdString(pstep->GetName()));
-			FEAnalysisStep* pas = dynamic_cast<FEAnalysisStep*>(pstep);
-			if (pas && pas->GetSettings().bmust) ui->addTreeItem(t3, "must point", pas->GetMustPointLoadCurve());
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void CCurveEditor::AddMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
-{
-	int n = pm->Parameters();
-	for (int j = 0; j<n; ++j)
-	{
-		Param& p = pm->GetParam(j);
-		if (p.IsEditable())
-		{
-			FELoadCurve* plc = p.GetLoadCurve();
-			ui->addTreeItem(tp, p.GetLongName(), plc, &p);
-		}
-	}
-	AddMultiMaterial(pm, tp);
-}
-
-//-----------------------------------------------------------------------------
-void CCurveEditor::AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
-{
-	for (int k = 0; k<pm->Properties(); ++k)
-	{
-		FEMaterialProperty& pmc = pm->GetProperty(k);
-		for (int l=0; l<pmc.Size(); ++l)
-		{
-			FEMaterial* pmat = pmc.GetMaterial(l);
-			if (pmat)
-			{
-				QString name = QString::fromStdString(pmc.GetName());
-				const char* sztype = FEMaterialFactory::TypeStr(pmat);
-				if (sztype) name = QString("%1 [%2]").arg(name).arg(sztype);
-				QTreeWidgetItem* tc = ui->addTreeItem(tp, name);
-				int n = pmat->Parameters();
-				for (int j = 0; j<n; ++j)
-				{
-					Param& p = pmat->GetParam(j);
-					if (p.IsEditable())
-					{
-						FELoadCurve* plc = p.GetLoadCurve();
-						ui->addTreeItem(tc, p.GetLongName(), plc, &p);
-					}
-				}
-				AddMultiMaterial(pmat, tc);
-			}
+			AddModelComponent(t3, pstep);
 		}
 	}
 }
@@ -737,59 +621,63 @@ void CCurveEditor::AddMultiMaterial(FEMaterial* pm, QTreeWidgetItem* tp)
 void CCurveEditor::on_tree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev)
 {
 	m_currentItem = dynamic_cast<CCurveEditorItem*>(current);
-	m_cmd.Clear();
 	if (m_currentItem)
 	{
-		FELoadCurve* plc = m_currentItem->GetLoadCurve();
-		SetLoadCurve(plc);
-	}
-	else SetLoadCurve(0);
-}
-
-void CCurveEditor::SetLoadCurve(FELoadCurve* plc)
-{
-	ui->plot->clear();
-	ui->plot->SetLoadCurve(plc);
-
-	if (plc)
-	{
-		CPlotData* data = new CPlotData;
-		for (int i=0; i<plc->Size(); ++i)
+		Param* p = m_currentItem->GetParam();
+		if (p)
 		{
-			LOADPOINT pt = plc->Item(i);
-			data->addPoint(pt.time, pt.load);
+			int lcId = p->GetLoadCurveID();
+			ui->setCurrentLC(lcId);
 		}
-		ui->plot->addPlotData(data);
-
-		data->setLineColor(QColor(92, 255, 164));
-		data->setFillColor(QColor(92, 255, 164));
-		data->setLineWidth(2);
-		data->setMarkerSize(5);
-
-		ui->setCurveType(plc->GetType(), plc->GetExtend());
+		else ui->deactivate();
 	}
-	ui->plot->repaint();
-}
-
-void CCurveEditor::UpdateLoadCurve()
-{
-	if (m_currentItem == 0) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	if (plc == 0) return;
-
-	CPlotData& data = ui->plot->getPlotData(0);
-	assert(data.size() == plc->Size());
-	for (int i = 0; i<data.size(); ++i)
+	else
 	{
-		LOADPOINT& pi = plc->Item(i);
-		QPointF& po = data.Point(i);
-
-		po.setX(pi.time);
-		po.setY(pi.load);
+		ui->setCurrentLC(-1);
+		ui->deactivate();
 	}
-	ui->plot->repaint();
 }
 
+void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
+{
+	m_plc = plc;
+
+	if (plc == nullptr)
+	{
+		ui->stack->setCurrentIndex(0);
+		return;
+	}
+
+	int panel = 0;
+	if (plc->IsType("loadcurve"))
+	{
+		panel = 1;
+		ui->plot->SetLoadCurve(plc->CreateLoadCurve());
+		ui->plot->repaint();
+	}
+	else if (plc->IsType("math"))
+	{
+		panel = 2;
+		Param* p = plc->GetParam("math"); assert(p);
+		ui->math->SetMath(QString::fromStdString(p->GetStringValue()));
+	}
+	else if (plc->IsType("math-interval"))
+	{
+		panel = 3;
+		Param* p = plc->GetParam("math"); assert(p);
+		ui->math2->SetMath(QString::fromStdString(p->GetStringValue()));
+		ui->math2->setLeftExtend(plc->GetParam("left_extend")->GetIntValue());
+		ui->math2->setRightExtend(plc->GetParam("right_extend")->GetIntValue());
+		vector<double> v = plc->GetParam("interval")->GetArrayDoubleValue();
+		ui->math2->setMinMaxRange(v[0], v[1]);
+	}
+	else
+	{
+		panel = 4;
+		ui->props->SetFEClass(plc, m_fem);
+	}
+	ui->stack->setCurrentIndex(panel);
+}
 
 void CCurveEditor::on_filter_currentIndexChanged(int n)
 {
@@ -797,490 +685,141 @@ void CCurveEditor::on_filter_currentIndexChanged(int n)
 	Update();
 }
 
-void CCurveEditor::on_plot_pointClicked(QPointF p, bool shift)
+vector<double> processLine(const char* szline, char delim)
 {
-	if (m_currentItem == 0) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	if (plc == 0)
+	vector<double> v;
+	const char* sz = szline;
+	while (sz)
 	{
-		Param* pp = m_currentItem->GetParam();
-		if (pp)
-		{
-			assert(pp->GetLoadCurve() == 0);
-			pp->SetLoadCurve();
-			plc = pp->GetLoadCurve();
-			plc->Clear();
-			m_currentItem->SetLoadCurve(plc);
-		}
+		double w = atof(sz);
+		v.push_back(w);
+		sz = strchr(sz, delim);
+		if (sz) sz++;
 	}
-
-	if (plc && (ui->isAddPointChecked() || shift))
-	{
-		if (ui->isSnapToGrid()) p = ui->plot->SnapToGrid(p);
-
-		LOADPOINT lp(p.x(), p.y());
-
-		CCmdAddPoint* cmd = new CCmdAddPoint(plc, lp);
-		m_cmd.DoCommand(cmd);
-
-		SetLoadCurve(plc);
-		ui->plot->selectPoint(0, cmd->Index());
-	}
+	return v;
 }
 
-void CCurveEditor::on_plot_pointSelected(int n)
+void CCurveEditor::on_newLC_clicked(bool b)
 {
-	UpdateSelection();
-}
+	CModelDocument* doc = m_wnd->GetModelDocument();
+	if (doc == nullptr) return;
 
-void CCurveEditor::UpdateSelection()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	if (plc == nullptr) return;
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
 
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
-
-	if (sel.size() == 1)
-	{
-		ui->enablePointEdit(true);
-		LOADPOINT pt = plc->Item(sel[0].npointIndex);
-		ui->setPointValues(pt.time, pt.load);
-	}
-	else
-	{
-		ui->enablePointEdit(false);
-	}
-}
-
-void CCurveEditor::on_plot_pointDragged(QPoint p)
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
-	if (sel.size() == 0) return;
-
-	QPointF pf = ui->plot->ScreenToView(p);
-	double dx = pf.x() - ui->m_dragPt.x();
-	double dy = pf.y() - ui->m_dragPt.y();
-
-	if ((ui->m_dragIndex >= 0) && (ui->isSnapToGrid()))
-	{
-		LOADPOINT& lp = plc->Item(ui->m_dragIndex);
-		QPointF p0 = ui->m_p0[ui->m_dragIndex];
-		QPointF pi(p0.x() + dx, p0.y() + dy);
-		pi = ui->plot->SnapToGrid(pi);
-		dx = pi.x() - p0.x();
-		dy = pi.y() - p0.y();
-	}
-
-	for (int i=0; i<sel.size(); ++i)
-	{
-		int n = sel[i].npointIndex;
-		LOADPOINT& lp = plc->Item(n);
-
-		QPointF p0 = ui->m_p0[i];
-		QPointF pi(p0.x() +dx, p0.y() + dy);
-
-		lp.time = pi.x();
-		lp.load = pi.y();
-
-		ui->plot->getPlotData(0).Point(n) = pi;
-
-		if (sel.size() == 1) ui->setPointValues(pi.x(), pi.y());
-	}
-    plc->Update();
-	ui->plot->repaint();
-}
-
-void CCurveEditor::on_plot_draggingStart(QPoint p)
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	ui->m_dragPt = ui->plot->ScreenToView(p);
-
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
-	ui->m_dragIndex = -1;
-	ui->m_p0.clear();
-	if (sel.size() > 0)
-	{
-		ui->m_p0.resize(sel.size());
-		for (int i = 0; i < sel.size(); ++i)
-		{
-			LOADPOINT& lp = plc->Item(sel[i].npointIndex);
-			ui->m_p0[i].setX(lp.time);
-			ui->m_p0[i].setY(lp.load);
-
-			QPointF pf(lp.time, lp.load);
-			QPoint pi = ui->plot->ViewToScreen(pf);
-
-			double dx = fabs(pi.x() - p.x());
-			double dy = fabs(pi.y() - p.y());
-			if ((dx <= 5) && (dy <= 5)) ui->m_dragIndex = i;
-		}
-	}
-}
-
-void CCurveEditor::on_plot_draggingEnd(QPoint p)
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
-
-	if (sel.size() == 1)
-	{
-		int n = sel[0].npointIndex;
-
-		LOADPOINT lp0;
-		lp0.time = ui->m_p0[0].x();
-		lp0.load = ui->m_p0[0].y();
-
-		LOADPOINT lp = plc->Item(n);
-		plc->Item(n) = lp0;
-
-		m_cmd.DoCommand(new CCmdMovePoint(plc, n, lp));
-
-		UpdateLoadCurve();
-	}
-}
-
-void CCurveEditor::on_open_triggered()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	QString fileName = QFileDialog::getOpenFileName(this, "Open File", "", "All files (*)");
-	if (fileName.isEmpty() == false)
-	{
-		std::string sfile = fileName.toStdString();
-		const char* szfile = sfile.c_str();
-		if (plc->LoadData(szfile))
-		{
-			SetLoadCurve(plc);
-		}
-		else QMessageBox::critical(this, "Open File", QString("Failed loading curve data from file %1").arg(szfile));
-	}
-}
-
-void CCurveEditor::on_plot_backgroundImageChanged()
-{
-	if (ui->plot->HasBackgroundImage())
-	{
-		ui->plot->setXAxisColor(QColor(0, 0, 0));
-		ui->plot->setYAxisColor(QColor(0, 0, 0));
-	}
-	else
-	{
-		ui->plot->setXAxisColor(QColor(255, 255, 255));
-		ui->plot->setYAxisColor(QColor(255, 255, 255));
-	}
-}
-
-void CCurveEditor::on_plot_doneZoomToRect()
-{
-
-}
-
-void CCurveEditor::on_plot_regionSelected(QRect rt)
-{
-	UpdateSelection();
-}
-
-void CCurveEditor::on_plot_doneSelectingRect(QRect rt)
-{
-	CDlgPlotWidgetProps dlg;
+	CDlgAddPhysicsItem dlg("Add Load Controller", FELOADCONTROLLER_ID, -1, &fem, true, false, this);
 	if (dlg.exec())
 	{
-		ui->plot->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
-	}
-}
-
-void CCurveEditor::on_save_triggered()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	QString fileName = QFileDialog::getSaveFileName(this, "Open File", "", "All files (*)");
-	if (fileName.isEmpty() == false)
-	{
-		std::string sfile = fileName.toStdString();
-		const char* szfile = sfile.c_str();
-		if (plc->WriteData(szfile) == false)
+		FSModel* fem = &prj.GetFSModel();
+		FSLoadController* plc = FEBio::CreateFEBioClass<FSLoadController>(dlg.GetClassID(), fem);
+		assert(plc);
+		if (plc)
 		{
-			QMessageBox::critical(this, "Save File", QString("Failed saving curve data to file %1").arg(szfile));
+			std::string name = dlg.GetName();
+			if (name.empty())
+			{
+				int n = fem->LoadControllers();
+				std::stringstream ss; ss << "LC" << n + 1;
+				name = ss.str();
+			}
+
+			plc->SetName(name);
+			fem->AddLoadController(plc);
+			m_wnd->UpdateModel();
+
+			// add it to the list
+			ui->selectLC->addItem(QString::fromStdString(plc->GetName()), plc->GetID());
+			ui->setCurrentLC(plc->GetID());
 		}
 	}
 }
 
-void CCurveEditor::on_clip_triggered()
+void CCurveEditor::on_selectLC_currentIndexChanged(int index)
 {
-	ui->plot->OnCopyToClipboard();
-}
+	if (index < 0) return;
 
-void CCurveEditor::on_copy_triggered()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
+	if (m_currentItem == nullptr) return;
+	Param* p = m_currentItem->GetParam();
+	if (p == nullptr) return;
 
-	if (m_plc_copy == 0) m_plc_copy = new FELoadCurve;
-	*m_plc_copy = *plc;
-}
-
-void CCurveEditor::on_paste_triggered()
-{
-	if (m_currentItem == 0) return;
-	if (m_plc_copy == 0) return;
-
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	if (m_currentItem->GetLoadCurve() == 0)
+	if (index == 0)
 	{
-		Param* p = m_currentItem->GetParam();
-		if (p)
-		{
-			p->SetLoadCurve();
-			plc = p->GetLoadCurve();
-			m_currentItem->SetLoadCurve(plc);
-		}
+		p->SetLoadCurveID(-1);
+		SetActiveLoadController(nullptr);
 	}
-
-	if (plc)
+	else
 	{
-		*plc = *m_plc_copy;
-		SetLoadCurve(plc);
+		FSLoadController* plc = m_fem->GetLoadController(index - 1); assert(plc);
+		p->SetLoadCurveID(plc->GetID());
+		SetActiveLoadController(plc);
 	}
 }
 
-void CCurveEditor::on_delete_triggered()
+void CCurveEditor::on_plot_dataChanged()
 {
 	if (m_currentItem == nullptr) return;
 	Param* p = m_currentItem->GetParam();
-	if (p && p->GetLoadCurve())
-	{
-		m_cmd.DoCommand(new CCmdDeleteCurve(p));
-		m_currentItem->SetLoadCurve(0);
-		SetLoadCurve(0);
-	}
-	else
-	{
-		FELoadCurve* plc = m_currentItem->GetLoadCurve();
-		if (plc)
-		{
-			plc->Clear();
-			SetLoadCurve(plc);
-		}
-	}
-}
-
-void CCurveEditor::on_xval_textEdited()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
-
-	if (sel.size() == 1)
-	{
-		QPointF p = ui->getPointValue();
-		LOADPOINT& it = plc->Item(sel[0].npointIndex);
-		it.time = p.x();
-		it.load = p.y();
-		UpdateLoadCurve();
-	}
-}
-
-void CCurveEditor::on_yval_textEdited()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
-
-	if (sel.size() == 1)
-	{
-		QPointF p = ui->getPointValue();
-		LOADPOINT& it = plc->Item(sel[0].npointIndex);
-		it.time = p.x();
-		it.load = p.y();
-		UpdateLoadCurve();
-	}
-}
-
-void CCurveEditor::on_deletePoint_clicked()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	vector<CPlotWidget::Selection> sel = ui->plot->selection();
-
-	if (sel.empty() == false)
-	{
-		vector<int> points;
-		for (int i = 0; i < sel.size(); ++i) points.push_back(sel[i].npointIndex);
-
-		m_cmd.DoCommand(new CCmdRemovePoint(plc, points));
-		SetLoadCurve(plc);
-		ui->enablePointEdit(false);
-	}
-}
-
-void CCurveEditor::on_zoomToFit_clicked()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	ui->plot->OnZoomToFit();
-}
-
-void CCurveEditor::on_zoomX_clicked()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	ui->plot->OnZoomToWidth();
-}
-
-void CCurveEditor::on_zoomY_clicked()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	ui->plot->OnZoomToHeight();
-}
-
-void CCurveEditor::on_map_clicked()
-{
-	ui->plot->mapToUserRect();
-}
-
-void CCurveEditor::on_undo_triggered()
-{
-	if (m_currentItem == 0) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	if (m_cmd.CanUndo()) m_cmd.UndoCommand();
-
-	QString undo = m_cmd.CanUndo() ? m_cmd.GetUndoCmdName() : "(Nothing to undo)";
-	QString redo = m_cmd.CanRedo() ? m_cmd.GetRedoCmdName() : "(Nothing to redo)";
-	ui->setCmdNames(undo, redo);
-
-	Param* pp = m_currentItem->GetParam();
-	if (plc) SetLoadCurve(plc);
-	else if (pp) {
-		plc = pp->GetLoadCurve(); 
-		m_currentItem->SetLoadCurve(plc);
-		SetLoadCurve(plc);
-	}
-
-	ui->enablePointEdit(false);
-}
-
-void CCurveEditor::on_redo_triggered()
-{	
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	if (m_cmd.CanRedo()) m_cmd.RedoCommand();
-
-	QString undo = m_cmd.CanUndo() ? m_cmd.GetUndoCmdName() : "(Nothing to undo)";
-	QString redo = m_cmd.CanRedo() ? m_cmd.GetRedoCmdName() : "(Nothing to redo)";
-	ui->setCmdNames(undo, redo);
-
-	SetLoadCurve(plc);
-	ui->enablePointEdit(false);
-}
-
-void CCurveEditor::on_math_triggered()
-{
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-
-	CDlgFormula dlg(this);
-
-	dlg.SetMath(plc->GetName());
+	if (p == nullptr) return;
 	
-	if (dlg.exec())
-	{
-		std::vector<LOADPOINT> pts = dlg.GetPoints();
-		QString math = dlg.GetMath();
-		std::string smath = math.toStdString();
+	int lcid = p->GetLoadCurveID();
+	if (lcid < 0) return;
 
-		CMathParser m;
-		bool insertMode = dlg.Insert();
-		if (insertMode == false) plc->Clear();
-		plc->SetName(smath.c_str());
-		if (pts.empty() && (insertMode == false))
-		{
-			LOADPOINT p0(0, 0), p1(0, 0);
-			plc->Add(p0);
-			plc->Add(p1);
-		}
-		else
-		{
-			for (int i = 0; i < (int)pts.size(); ++i)
-			{
-				LOADPOINT& pt = pts[i];
-				plc->Add(pt);
-			}
-		}
-
-		SetLoadCurve(plc);
-		ui->enablePointEdit(false);
-	}	
+	FSLoadController* plc = m_fem->GetLoadControllerFromID(lcid); assert(plc);
+	if (plc) plc->UpdateData(true);
 }
 
-void CCurveEditor::on_lineType_currentIndexChanged(int n)
+void CCurveEditor::on_math_mathChanged(QString s)
 {
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	plc->SetType(n);
-    plc->Update();
-	ui->plot->repaint();
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math") == false) return;
+
+	Param* p = m_plc->GetParam("math"); assert(p);
+
+	std::string t = s.toStdString();
+	p->SetStringValue(t);
 }
 
-void CCurveEditor::on_extendMode_currentIndexChanged(int n)
+void CCurveEditor::on_math2_mathChanged(QString s)
 {
-	if ((m_currentItem == 0) || (m_currentItem->GetLoadCurve() == 0)) return;
-	FELoadCurve* plc = m_currentItem->GetLoadCurve();
-	plc->SetExtend(n);
-	ui->plot->repaint();
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+
+	std::string t = s.toStdString();
+	m_plc->SetParamString("math", t);
 }
 
-//=======================================================================================
-void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
+void CCurveEditor::on_math2_leftExtendChanged(int n)
 {
-	if (m_lc == 0) return;
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+	m_plc->SetParamInt("left_extend", n);
+}
 
-	int N = data.size();
+void CCurveEditor::on_math2_rightExtendChanged(int n)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
+	m_plc->SetParamInt("right_extend", n);
+}
 
-	// draw the line
-	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
-	QRect rt = ScreenRect();
-	QPoint p0, p1;
-	for (int i=rt.left(); i<rt.right(); i += 2)
-	{
-		p1.setX(i);
-		QPointF p = ScreenToView(p1);
-		p.setY(m_lc->Value(p.x()));
-		p1 = ViewToScreen(p);
+void CCurveEditor::on_math2_minChanged(double v)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
 
-		if (i != rt.left())
-		{
-			painter.drawLine(p0, p1);
-		}
+	Param* p = m_plc->GetParam("interval"); assert(p);
+	vector<double> d = p->GetArrayDoubleValue();
+	d[0] = v;
+	p->SetArrayDoubleValue(d);
+}
 
-		p0 = p1;
-	}
+void CCurveEditor::on_math2_maxChanged(double v)
+{
+	if (m_plc == nullptr) return;
+	if (m_plc->IsType("math-interval") == false) return;
 
-	// draw the marks
-	if (data.markerType() > 0)
-	{
-		painter.setBrush(data.fillColor());
-		for (int i = 0; i<N; ++i)
-		{
-			p1 = ViewToScreen(data.Point(i));
-			QRect r(p1.x() - 2, p1.y() - 2, 5, 5);
-			painter.drawRect(r);
-		}
-	}
+	Param* p = m_plc->GetParam("interval"); assert(p);
+	vector<double> d = p->GetArrayDoubleValue();
+	d[1] = v;
+	p->SetArrayDoubleValue(d);
 }

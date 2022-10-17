@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -55,9 +55,13 @@ private:
 	void IntegrateSelection(CPlotData& data);
 	void IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& data);
 
+private slots:
+	void OnConfigChanged(int i);
+
 private:
 	std::vector<Post::CGLPlaneCutPlot*>	m_src;
 	int		m_nsrc;
+	int		m_nconf;
 	bool	m_updating;
 };
 

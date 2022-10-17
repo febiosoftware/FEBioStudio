@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,49 +23,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
 #include <vector>
-//using namespace std;
 
-#include "FEMeshBase.h"
+class FSFace;
+class FSMeshBase;
 
 struct NodeFaceRef {
 	int		fid;	// face index (into mesh' Face array)
 	int		nid;	// local node index
-	FEFace*	pf;		// face pointer
+	FSFace*	pf;		// face pointer
 };
 
-class FENodeFaceList
+class FSNodeFaceList
 {
 public:
-	FENodeFaceList();
-	~FENodeFaceList(void);
+	FSNodeFaceList();
+	~FSNodeFaceList(void);
 
-	void Build(FEMeshBase* pm);
-	bool BuildSorted(FEMeshBase* pm);
+	void Build(FSMeshBase* pm);
+	bool BuildSorted(FSMeshBase* pm);
 
 	void Clear();
 
 	bool IsEmpty() const;
 
 	int Valence(int i) const { return (int) m_face[i].size(); }
-	FEFace* Face(int n, int i) { return m_face[n][i].pf; }
+	FSFace* Face(int n, int i) { return m_face[n][i].pf; }
 	int FaceIndex(int n, int i) { return m_face[n][i].fid; }
 
-	bool HasFace(int n, FEFace* pf);
+	bool HasFace(int n, FSFace* pf);
 
-	int FindFace(const FEFace& f);
+	int FindFace(const FSFace& f);
 
 	int FindFace(int inode, int n[10], int m);
 
-	const vector<NodeFaceRef>& FaceList(int n) const;
+	const std::vector<NodeFaceRef>& FaceList(int n) const;
 
 protected:
 	bool Sort(int node);
 
 protected:
-	FEMeshBase*	m_pm;
-	vector< vector<NodeFaceRef> >	m_face;
+	FSMeshBase*	m_pm;
+	std::vector< std::vector<NodeFaceRef> >	m_face;
 };

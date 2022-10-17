@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +37,9 @@ SOFTWARE.*/
 #include <MeshTools/FEProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
+#include <FEBioLink/FEBioInterface.h>
+#include <FEBioLink/FEBioClass.h>
+#include <FSCore/FSCore.h>
 
 class Ui::CDlgAddRigidConnector
 {
@@ -81,7 +84,7 @@ public:
 	}
 };
 
-CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : CHelpDialog(prj, parent), ui(new Ui::CDlgAddRigidConnector)
+CDlgAddRigidConnector::CDlgAddRigidConnector(FSProject& prj, QWidget* parent) : CHelpDialog(parent), ui(new Ui::CDlgAddRigidConnector)
 {
 	setWindowTitle("Add Rigid Connector");
 
@@ -89,7 +92,7 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : 
 	SetLeftSideLayout(ui->mainLayout);
 
 	// add the steps
-	FEModel& fem = prj.GetFEModel();
+	FSModel& fem = prj.GetFSModel();
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
 		ui->step->addItem(QString::fromStdString(fem.GetStep(i)->GetName()));
@@ -99,7 +102,7 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : 
 	for (int i = 0; i<fem.Materials(); ++i)
 	{
 		GMaterial* pm = fem.GetMaterial(i);
-		if (dynamic_cast<FERigidMaterial*>(pm->GetMaterialProperties()))
+		if (pm->GetMaterialProperties()->IsRigid())
 		{
 			ui->matA->addItem(QString::fromStdString(pm->GetName()), pm->GetID());
 			ui->matB->addItem(QString::fromStdString(pm->GetName()), pm->GetID());
@@ -108,28 +111,31 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FEProject& prj, QWidget* parent) : 
 
 	// add the rigid connectors
 	unsigned int mod = prj.GetModule();
-	vector<FEClassFactory*> v =  FEMKernel::FindAllClasses(mod, FE_RIGID_CONNECTOR);
+//	vector<FEClassFactory*> v =  FEMKernel::FindAllClasses(mod, FE_RIGID_CONNECTOR);
+	int rigidConnectorId = FEBio::GetBaseClassIndex("FERigidConnector"); assert(rigidConnectorId != -1);
+	vector<FEBio::FEBioClassInfo> v = FEBio::FindAllClasses(m_module, FENLCONSTRAINT_ID, rigidConnectorId);
 	for (int i=0; i<(int)v.size(); ++i)
 	{
-		FEClassFactory* fac = v[i];
+		FEBio::FEBioClassInfo& fac = v[i];
+
+		const char* sztype = fac.sztype;
+		QString typeStr = QString::fromStdString(FSCore::beautify_string(sztype));
 
 		QListWidgetItem* item = new QListWidgetItem;
-		item->setText(QString::fromStdString(fac->GetTypeStr()));
-		item->setData(Qt::UserRole, fac->GetClassID());
+		item->setText(typeStr);
+		item->setData(Qt::UserRole, fac.classId);
 
 		ui->list->addItem(item);
 	}
 
 	ui->list->setCurrentRow(0);
-
-	QObject::connect(ui->list, &QListWidget::currentRowChanged, this, &CHelpDialog::LoadPage);
 }
 
 void CDlgAddRigidConnector::SetURL()
 {
 	int classID = ui->list->currentItem()->data(Qt::UserRole).toInt();
 
-	m_url = FEMKernel::FindClass(m_module, FE_RIGID_CONNECTOR, classID)->GetHelpURL();
+	// m_url = FEMKernel::FindClass(m_module, FENLCONSTRAINT_ID, classID)->GetHelpURL();
 }
 
 void CDlgAddRigidConnector::accept()

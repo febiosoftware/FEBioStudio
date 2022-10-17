@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,8 @@ SOFTWARE.*/
 #include <MeshLib/FEElement.h>
 #include <vector>
 #include "ValArray.h"
-//using namespace std;
+#include <FECore/vec3d.h>
+#include <FECore/quatd.h>
 
 //-----------------------------------------------------------------------------
 // forward declaration of the mesh
@@ -56,35 +57,20 @@ struct EDGEDATA
 {
 	float	m_val;		// current value
 	int		m_ntag;		// active flag
-	float	m_nv[FEEdge::MAX_NODES]; // nodal values
+	float	m_nv[FSEdge::MAX_NODES]; // nodal values
 };
 
 struct ELEMDATA
 {
 	float			m_val;		// current element value
 	unsigned int	m_state;	// state flags
-	float			m_h[FEElement::MAX_NODES];		// shell thickness (TODO: Can we move this to the face data?)
+	float			m_h[FSElement::MAX_NODES];		// shell thickness (TODO: Can we move this to the face data?)
 };
 
 struct FACEDATA
 {
 	int		m_ntag;		// active flag
 	float	m_val;		// current face value
-};
-
-struct LINEDATA
-{
-	vec3f	m_r0;
-	vec3f	m_r1;
-	float	m_val[2];
-	float	m_user_data[2];
-	int		m_elem[2];
-};
-
-struct POINTDATA
-{
-	int		nlabel;
-	vec3f	m_r;
 };
 
 class ObjectData
@@ -106,7 +92,7 @@ private:
 private:
 	float*	data;
 	int		nsize;
-	vector<int>	off;
+	std::vector<int>	off;
 };
 
 class OBJECT_DATA
@@ -142,7 +128,7 @@ public:
 	FERefState(FEPostModel* fem);
 
 public:
-	vector<NODEDATA>	m_Node;
+	std::vector<NODEDATA>	m_Node;
 };
 
 //-----------------------------------------------------------------------------
@@ -158,20 +144,10 @@ public:
 
 	int GetID() const;
 
-	void AddLine(vec3f a, vec3f b, float data_a = 0.f, float data_b = 0.f, int el0 = -1, int el1 = -1);
-
-	void AddPoint(vec3f a, int nlabel = 0);
-
-	LINEDATA& Line(int n) { return m_Line[n]; }
-	int Lines() { return (int) m_Line.size(); }
-
-	POINTDATA& Point(int n) { return m_Point[n]; }
-	int Points() { return (int) m_Point.size(); }
-
 	void SetFEMesh(FEPostMesh* pm) { m_mesh = pm; }
 	FEPostMesh* GetFEMesh() { return m_mesh; }
 
-	FEPostModel* GetFEModel() { return m_fem; }
+	FEPostModel* GetFSModel() { return m_fem; }
 
 	OBJECT_DATA& GetObjectData(int n);
 
@@ -184,15 +160,13 @@ public:
 	bool	m_bsmooth;
 	int		m_status;	// status flag
 
-	vector<NODEDATA>	m_NODE;		// nodal data
-	vector<EDGEDATA>	m_EDGE;		// edge data
-	vector<FACEDATA>	m_FACE;		// face data
-	vector<ELEMDATA>	m_ELEM;		// element data
-	vector<LINEDATA>	m_Line;		// line data
-	vector<POINTDATA>	m_Point;	// point data
+	std::vector<NODEDATA>	m_NODE;		// nodal data
+	std::vector<EDGEDATA>	m_EDGE;		// edge data
+	std::vector<FACEDATA>	m_FACE;		// face data
+	std::vector<ELEMDATA>	m_ELEM;		// element data
 
-	vector<OBJ_POINT_DATA>	m_objPt;		// object data
-	vector<OBJ_LINE_DATA>	m_objLn;		// object data
+	std::vector<OBJ_POINT_DATA>	m_objPt;		// object data
+	std::vector<OBJ_LINE_DATA>	m_objLn;		// object data
 
 	ValArray	m_ElemData;	// element data
 	ValArray	m_FaceData;	// face data

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,27 +28,30 @@ SOFTWARE.*/
 #include <FSCore/Serializable.h>
 #include "FEItemListBuilder.h"
 
-class FEProject;
+class FSProject;
 
 //-----------------------------------------------------------------------------
 // Output variable for plot file
-class FEPlotVariable
+class CPlotVariable
 {
 public:
-	FEPlotVariable(int module, const string& name, const string& displayName, bool bactive, bool bshow, DOMAIN_TYPE type);
-	FEPlotVariable(const FEPlotVariable& v);
-	void operator = (const FEPlotVariable& v);
+	CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
+	CPlotVariable(const CPlotVariable& v);
+	void operator = (const CPlotVariable& v);
 
 	const string& name() const { return m_name; }
-	const string& displayName() const { return m_displayName; }
+	void setName(const std::string& s) { m_name = s; }
 
 	bool isActive() const { return m_bactive; }
 	bool isShown() const { return m_bshow; }
+	bool isCustom() const { return m_bcustom; }
 
 	void setActive(bool b) { m_bactive = b; }
 	void setShown(bool b) { m_bshow = b; }
+	void setCustom(bool b) { m_bcustom = b; }
 
 	unsigned int domainType() const { return m_domainType; }
+	void setDomainType(DOMAIN_TYPE domainType) { m_domainType = domainType; }
 
 	int Domains() const;
 	FEItemListBuilder* GetDomain(int i);
@@ -58,16 +61,13 @@ public:
 	void removeDomain(FEItemListBuilder* pi);
 	void removeDomain(int n);
 
-	int GetModule() const { return m_module; }
-
 private:
-	int				m_module;					// name of module this variable belongs to
 	string			m_name;						// name of variable (as in FEBio file)
-	string			m_displayName;				// display name
 	bool			m_bactive;					// active flag
 	bool			m_bshow;					// show flag
+	bool			m_bcustom;					// user defined
 	unsigned int	m_domainType;				// domain type for variable
-	vector<FEItemListBuilder*>		m_domains;	// domains 
+	std::vector<FEItemListBuilder*>		m_domains;	// domains 
 };
 
 //-----------------------------------------------------------------------------
@@ -75,7 +75,7 @@ private:
 class CPlotDataSettings : public CSerializable
 {
 public:
-	CPlotDataSettings(FEProject& prj);
+	CPlotDataSettings(FSProject& prj);
 
 	//! save to file
 	void Save(OArchive& ar);
@@ -86,16 +86,17 @@ public:
 	//! initialize all plot variables
 	void Init();
 
+	// Clear all plot variables
+	void Clear();
+
 public:
 	int PlotVariables() { return (int)m_plot.size(); }
-	FEPlotVariable& PlotVariable(int i) { return m_plot[i]; }
-	FEPlotVariable* AddPlotVariable(int module, const std::string& var, bool bactive = false, bool bshown = true, DOMAIN_TYPE type = DOMAIN_MESH);
-	FEPlotVariable* FindVariable(const std::string& var, int module = -1);
-
-	void SetAllVariables(bool b);
-	void SetAllModuleVariables(int module, bool b);
+	CPlotVariable& PlotVariable(int i) { return m_plot[i]; }
+	CPlotVariable* AddPlotVariable(const std::string& var, bool bactive = false, bool bshown = true, DOMAIN_TYPE type = DOMAIN_MESH);
+	void AddPlotVariable(CPlotVariable& var);
+	CPlotVariable* FindVariable(const std::string& var);
 
 private:
-	FEProject&	m_prj;
-	vector<FEPlotVariable>	m_plot;		// plot file variables
+	FSProject&	m_prj;
+	std::vector<CPlotVariable>	m_plot;		// plot file variables
 };

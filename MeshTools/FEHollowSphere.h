@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,12 +32,15 @@ class GHollowSphere;
 class FEHollowSphere : public FEMultiBlockMesh
 {
 public:
-	enum { NDIV, NSEG, GR, GR2 };
+	enum { NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
 	FEHollowSphere(){}
 	FEHollowSphere(GHollowSphere* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
+
+protected:
+	bool BuildMultiBlock() override;
 
 protected:
 	GHollowSphere*	m_pobj;

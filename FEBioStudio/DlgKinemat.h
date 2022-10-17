@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,10 +37,16 @@ class CDlgKinemat : public QDialog
 public:
 	CDlgKinemat(CMainWindow* parent);
 
+	int StartIndex() const;
+	int EndIndex() const;
+	int Increment() const;
+
+	QString GetModelFile() const;
+	QString GetKineFile() const;
+
 private slots:
 	void OnBrowse1();
 	void OnBrowse2();
-	void OnApply();
 
 private:
 	CDlgKinematUI*	ui;

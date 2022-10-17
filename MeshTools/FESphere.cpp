@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -56,13 +56,15 @@ FESphere::FESphere(GSphere* po)
 	AddIntParam(m_nseg, "ns", "Segments");
 	AddIntParam(m_ndiv, "nd", "Divisions");
 
-	AddDoubleParam(m_gd, "gd", "D-bias");
+//	AddDoubleParam(m_gd, "gd", "D-bias");
 	AddDoubleParam(m_gr, "gr", "R-bias");
-	AddBoolParam(m_bd, "bd", "D-mirrored bias");
+//	AddBoolParam(m_bd, "bd", "D-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
-FEMesh* FESphere::BuildMesh()
+bool FESphere::BuildMultiBlock()
 {
 	assert(m_pobj);
 
@@ -78,9 +80,9 @@ FEMesh* FESphere::BuildMesh()
 	int nd = m_ndiv;
 	int ns = m_nseg;
 
-	m_gd = GetFloatValue(GD);
+	m_gd = 1.0;// GetFloatValue(GD);
 	m_gr = GetFloatValue(GR);
-	m_bd = GetBoolValue(GD2);
+	m_bd = false;// GetBoolValue(GD2);
 	m_br = GetBoolValue(GR2);
 
 
@@ -204,11 +206,12 @@ FEMesh* FESphere::BuildMesh()
 		n = MB[i];
 		m_MBlock[i].SetNodes(n[0],n[1],n[2],n[3],n[4],n[5],n[6],n[7]);
 		m_MBlock[i].SetSizes(ns,nd,nd);
+		m_MBlock[i].SetZoning(m_gr, 1, 1, m_br, false, false);
 		m_MBlock[i].SetID(0);
 	}
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// Face ID's
 	MBFace& F1 = GetBlockFace(13, 1); F1.SetID(0);
@@ -337,13 +340,31 @@ FEMesh* FESphere::BuildMesh()
 	m_MBNode[31].SetID(4);
 	m_MBNode[48].SetID(5);
 
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FESphere::BuildMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
+
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// the Multi-block mesher will assign a different smoothing ID
 	// to each face, but we don't want that here. Instead we assign
 	// to each face the same smoothing ID
-	for (i=0; i<pm->Faces(); ++i) pm->Face(i).m_sid = 0;
+	for (int i=0; i<pm->Faces(); ++i) pm->Face(i).m_sid = 0;
 
 	// finally, we update the normals and we are good to go
 	pm->UpdateNormals();

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,12 +42,38 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "PostDocument.h"
+#include <QComboBox>
+#include <QBoxLayout>
 
 CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBio Studio: Integrate";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":Integrate";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
+
+	QWidget* d = new QWidget;
+	QHBoxLayout* l = new QHBoxLayout;
+	l->setContentsMargins(2, 0, 2, 0);
+	l->addWidget(new QLabel("configuration"));
+	QComboBox* config = new QComboBox();
+	l->addWidget(config);
+	d->setLayout(l);
+	config->addItem("Current");
+	config->addItem("Reference");
+	AddToolBarWidget(d);
+
+	QObject::connect(config, SIGNAL(currentIndexChanged(int)), this, SLOT(OnConfigChanged(int)));
+
 	m_nsrc = -1;
+	m_nconf = 0;
+}
+
+void CIntegrateWindow::OnConfigChanged(int i)
+{
+	if ((i < 0) || (i > 1)) return;
+	m_nconf = i;
+	Update(true, true);
 }
 
 void CIntegrateWindow::Update(bool breset, bool bfit)
@@ -141,7 +167,7 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	Post::CGLModel* po = pdoc->GetGLModel();
 
@@ -166,11 +192,23 @@ void CIntegrateWindow::IntegrateSelection(CPlotData& data)
 
 			// evaluate sum/integration
 			double res = 0.0;
-			if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
-			else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
-			else if (nview == Post::SELECT_FACES) res = IntegrateFaces(mesh, ps);
-			else if (nview == Post::SELECT_ELEMS) res = IntegrateElems(mesh, ps);
-			else assert(false);
+
+			if (m_nconf == 0)
+			{
+				if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
+				else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
+				else if (nview == Post::SELECT_FACES) res = IntegrateFaces(mesh, ps);
+				else if (nview == Post::SELECT_ELEMS) res = IntegrateElems(mesh, ps);
+				else assert(false);
+			}
+			else
+			{
+				if      (nview == Post::SELECT_NODES) res = IntegrateNodes(mesh, ps);
+				else if (nview == Post::SELECT_EDGES) res = IntegrateEdges(mesh, ps);
+				else if (nview == Post::SELECT_FACES) res = IntegrateReferenceFaces(mesh, ps);
+				else if (nview == Post::SELECT_ELEMS) res = IntegrateReferenceElems(mesh, ps);
+				else assert(false);
+			}
 
 			data.addPoint(ps->m_time, res);
 		}
@@ -182,7 +220,7 @@ void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& d
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	Post::CGLModel* po = pdoc->GetGLModel();
 
 	data.clear();
@@ -209,8 +247,11 @@ void CIntegrateWindow::IntegratePlaneCut(Post::CGLPlaneCutPlot* pp, CPlotData& d
 
 CIntegrateSurfaceWindow::CIntegrateSurfaceWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBio Studio: Integrate Surface";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":IntegrateSurface";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
+
 	m_nsrc = -1;
 }
 
@@ -272,7 +313,7 @@ void CIntegrateSurfaceWindow::IntegrateSelection(CPlotData& dataX, CPlotData& da
 {
 	// get the document
 	CPostDocument* pdoc = GetPostDoc();
-	Post::FEPostModel& fem = *pdoc->GetFEModel();
+	Post::FEPostModel& fem = *pdoc->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 	Post::CGLModel* po = pdoc->GetGLModel();
 

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -107,19 +107,19 @@ void GCylinderInBox::Create()
 	// 3. build the parts
 	//-------------------
 	assert(m_Part.empty());
-	AddPart();
+	AddSolidPart();
 
 	// 4. build the faces
 	//-------------------
 	int FET[16][4] = {
 		{ 0,  9,  4,  8}, { 1, 10,  5,  9}, { 2, 11,  6, 10}, { 3,  8,  7, 11},
 		{12, 20, 16, 21}, {13, 21, 17, 22}, {14, 22, 18, 23}, {15, 23, 19, 20},
-		{ 0, 25, 12, 24}, { 1, 26, 13, 25}, { 2, 27, 14, 26}, { 3, 24, 15, 27},
+		{24, 12, 25,  0}, {25, 13, 26,  1}, {26, 14, 27,  2}, {27, 15, 24,  3},
 		{ 4, 29, 16, 28}, { 5, 30, 17, 29}, { 6, 31, 18, 30}, { 7, 28, 19, 31}
 	};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	edge.resize(4);
 	for (i=0; i<4; ++i)
 	{

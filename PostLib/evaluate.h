@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,12 +25,13 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/tens4d.h>
 
 // extract components of tensor types
 float component(const vec3f& v, int n);
 float component2(const vec3f& v, int n);
-float component(const Mat3d& m, int n);
+float component(const mat3d& m, int n);
 float component(const mat3f& m, int n);
 float component(const mat3fs& m, int n);
 float component(const mat3fd& m, int n);

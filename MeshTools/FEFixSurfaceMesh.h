@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,16 +33,16 @@ class FEFixSurfaceMesh : public FESurfaceModifier
 {
 public:
 	FEFixSurfaceMesh();
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 	FSTaskProgress GetProgress() override;
 
-	bool RemoveDuplicateFaces(FESurfaceMesh* pm);
-	bool RemoveNonManifoldFaces(FESurfaceMesh* pm);
-	bool FixElementWinding(FESurfaceMesh* pm);
-	bool InvertMesh(FESurfaceMesh* pm);
-	bool FillAllHoles(FESurfaceMesh* pm);
-	bool RemoveDuplicateEdges(FESurfaceMesh* pm);
+	bool RemoveDuplicateFaces(FSSurfaceMesh* pm);
+	bool RemoveNonManifoldFaces(FSSurfaceMesh* pm);
+	bool FixElementWinding(FSSurfaceMesh* pm);
+	bool InvertMesh(FSSurfaceMesh* pm);
+	bool FillAllHoles(FSSurfaceMesh* pm);
+	bool RemoveDuplicateEdges(FSSurfaceMesh* pm);
 
 protected:
 	FESurfaceModifier* m_mod;

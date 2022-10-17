@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -98,14 +98,14 @@ void CAbstractTool::SetDecoration(GDecoration* deco)
 }
 
 // get the active mesh
-FEMesh* CAbstractTool::GetActiveMesh()
+FSMesh* CAbstractTool::GetActiveMesh()
 {
 	GObject* po = GetActiveObject();
 	if (po) return po->GetFEMesh();
 	else return nullptr;
 }
 
-FEMeshBase* CAbstractTool::GetActiveEditMesh()
+FSMeshBase* CAbstractTool::GetActiveEditMesh()
 {
 	GObject* po = GetActiveObject();
 	if (po) return po->GetEditableMesh();

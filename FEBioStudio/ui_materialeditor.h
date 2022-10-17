@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,14 +41,14 @@ public:
 	MaterialEditorItem(QTreeWidget* tree) : QTreeWidgetItem(tree), m_mat(0), m_parent(0) { m_nprop = -1; m_nmat = -1; m_matClass = 0; }
 	MaterialEditorItem(QTreeWidgetItem* item) : QTreeWidgetItem(item), m_mat(0), m_parent(0) { m_nprop = -1; m_nmat = -1; m_matClass = 0; }
 
-	void SetParentMaterial(FEMaterial* pmat)
+	void SetParentMaterial(FSMaterial* pmat)
 	{
 		m_parent = pmat;
 	}
 
 	void SetPropertyIndex(int index, int nmat = 0) { m_nprop = index; m_nmat = nmat; }
 
-	void SetMaterial(FEMaterial* pmat)
+	void SetMaterial(FSMaterial* pmat)
 	{ 
 		int noldmat = m_nmat;
 
@@ -75,22 +75,21 @@ public:
 		// add the properties
 		if (pmat)
 		{
-			FEMaterialFactory& MF = *FEMaterialFactory::GetInstance();
-			setText(1, QString(MF.TypeStr(pmat)));
+			setText(1, QString(pmat->GetTypeString()));
 
 			for (int i=0; i<pmat->Properties(); ++i)
 			{
-				FEMaterialProperty& mp = pmat->GetProperty(i);
-				if (mp.GetFlags() & FEMaterialProperty::EDITABLE)
+				FSProperty& mp = pmat->GetProperty(i);
+				if (true)//mp.GetFlags() & FSProperty::EDITABLE)
 				{
 					if (mp.maxSize() == 1)
 					{
 						MaterialEditorItem* item = new MaterialEditorItem(this);
 						item->SetParentMaterial(pmat);
-						item->SetClassID(mp.GetClassID());
+						item->SetClassID(mp.GetPropertyType());
 						item->SetPropertyIndex(i);
 						item->setText(0, QString::fromStdString(mp.GetName()));
-						item->SetMaterial(mp.GetMaterial());
+						item->SetMaterial(pmat->GetMaterialProperty(i));
 					}
 					else
 					{
@@ -98,18 +97,18 @@ public:
 						{
 							MaterialEditorItem* item = new MaterialEditorItem(this);
 							item->SetParentMaterial(pmat);
-							item->SetClassID(mp.GetClassID());
+							item->SetClassID(mp.GetPropertyType());
 							item->SetPropertyIndex(i, j);
 							item->setText(0, QString::fromStdString(mp.GetName()));
-							item->SetMaterial(mp.GetMaterial(j));
+							item->SetMaterial(pmat->GetMaterialProperty(i, j));
 						}
 
 						// Add one more so that users can create a new material for variable size properties
-						if (mp.maxSize() == FEMaterialProperty::NO_FIXED_SIZE)
+						if (mp.maxSize() == FSProperty::NO_FIXED_SIZE)
 						{
 							MaterialEditorItem* item = new MaterialEditorItem(this);
 							item->SetParentMaterial(pmat);
-							item->SetClassID(mp.GetClassID());
+							item->SetClassID(mp.GetPropertyType());
 							item->SetPropertyIndex(i, -1);
 							item->setText(0, QString::fromStdString(mp.GetName()));
 						}
@@ -131,12 +130,12 @@ public:
 
 			int index = mi->indexOfChild(this);
 
-			FEMaterialProperty& mp = m_parent->GetProperty(m_nprop);
-			if (mp.maxSize() == FEMaterialProperty::NO_FIXED_SIZE)
+			FSProperty& mp = m_parent->GetProperty(m_nprop);
+			if (mp.maxSize() == FSProperty::NO_FIXED_SIZE)
 			{
 				MaterialEditorItem* item = new MaterialEditorItem((QTreeWidgetItem*)0);
 				item->SetParentMaterial(m_parent);
-				item->SetClassID(mp.GetClassID());
+				item->SetClassID(mp.GetPropertyType());
 				item->SetPropertyIndex(m_nprop, -1);
 				item->setText(0, QString::fromStdString(mp.GetName()));
 				mi->insertChild(index+1, item);
@@ -156,16 +155,16 @@ public:
 		}
 	}
 
-	FEMaterial* GetMaterial() const { return m_mat; }
+	FSMaterial* GetMaterial() const { return m_mat; }
 
 	void SetClassID(int nclass) { m_matClass = nclass; }
 	int GetClassID() const { return m_matClass; }
 
-	FEMaterial* ParentMaterial() { return m_parent; }
+	FSMaterial* ParentMaterial() { return m_parent; }
 
 private:
-	FEMaterial*	m_parent;	// parent material (or zero)
-	FEMaterial*	m_mat;		// pointer to material (can be zero!)
+	FSMaterial*	m_parent;	// parent material (or zero)
+	FSMaterial*	m_mat;		// pointer to material (can be zero!)
 	int			m_nprop;	// property index of parent material
 	int			m_nmat;		// material index into property's material list
 	int			m_matClass;	// material category
@@ -181,11 +180,13 @@ public:
 
 	QComboBox*	matList;
 
+	FSModel* m_fem;
 	GMaterial* mat;	// if nonzero, material that will be edited
 
 public:
 	void setupUi(QWidget* parent)
 	{
+		m_fem = nullptr;
 		mat = 0;
 		matList = 0;
 

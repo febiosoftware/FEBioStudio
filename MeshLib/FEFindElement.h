@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,8 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/box.h>
+#include <vector>
 
-class FECoreMesh;
+class FSCoreMesh;
 
 class FEFindElement
 {
@@ -36,7 +37,7 @@ public:
 	{
 	public:
 		BOX					m_box;
-		vector<OCTREE_BOX*>	m_child;
+		std::vector<OCTREE_BOX*>	m_child;
 		int					m_elem;
 		int					m_level;
 
@@ -48,24 +49,24 @@ public:
 
 		OCTREE_BOX* Find(const vec3f& r);
 
-		bool IsInside(const vec3f& r) const { return m_box.IsInside(r); }
+		bool IsInside(const vec3f& r) const { return m_box.IsInside(to_vec3d(r)); }
 
 		void Add(BOX& b, int nelem);
 	};
 
 public:
-	FEFindElement(FECoreMesh& mesh);
+	FEFindElement(FSCoreMesh& mesh);
 
 	void Init(int nframe = 0);
-	void Init(vector<bool>& flags, int nframe = 0);
+	void Init(std::vector<bool>& flags, int nframe = 0);
 
 	bool FindElement(const vec3f& x, int& nelem, double r[3]);
 
 	BOX BoundingBox() const { return m_bound.m_box; }
 
 private:
-	void InitReferenceFrame(vector<bool>& flags);
-	void InitCurrentFrame(vector<bool>& flags);
+	void InitReferenceFrame(std::vector<bool>& flags);
+	void InitCurrentFrame(std::vector<bool>& flags);
 
 	bool FindInReferenceFrame(const vec3f& x, int& nelem, double r[3]);
 	bool FindInCurrentFrame(const vec3f& x, int& nelem, double r[3]);
@@ -75,7 +76,7 @@ private:
 
 private:
 	OCTREE_BOX	m_bound;
-	FECoreMesh&	m_mesh;
+	FSCoreMesh&	m_mesh;
 	int			m_nframe;	// = 0 reference, 1 = current
 };
 
@@ -83,3 +84,7 @@ inline bool FEFindElement::FindElement(const vec3f& x, int& nelem, double r[3])
 {
 	return (m_nframe == 0 ? FindInReferenceFrame(x, nelem, r) : FindInCurrentFrame(x, nelem, r));
 }
+
+class FSMesh;
+
+bool FindElement2D(const vec2d& r, int& elem, double q[2], FSMesh* mesh);

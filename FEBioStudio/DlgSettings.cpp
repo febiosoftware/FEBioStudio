@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,6 +50,7 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include <GLWLib/convert.h>
 #include <PostLib/Palette.h>
+#include <PostGL/GLColorMap.h>
 #include "RepositoryPanel.h"
 #include "units.h"
 #include "DlgSetRepoFolder.h"
@@ -95,6 +96,8 @@ public:
 		addEnumProperty(&m_ntrans, "Object transparency mode")->setEnumValues(QStringList() << "None" << "Selected only" << "Unselected only");
 		addEnumProperty(&m_nobjcol, "Object color")->setEnumValues(QStringList() << "Default" << "Object");
 		addBoolProperty(&m_dozsorting, "Improved Transparency");
+		addEnumProperty(&m_defaultFGColorOption, "Default text color option")->setEnumValues(QStringList() << "Theme" << "Custom");
+		addColorProperty(&m_defaultFGColor, "Custom text color");
 	}
 
 public:
@@ -107,6 +110,8 @@ public:
 	int		m_ntrans;
 	int		m_nobjcol;
 	bool	m_dozsorting;
+	int		m_defaultFGColorOption;
+	QColor	m_defaultFGColor;
 };
 
 //-----------------------------------------------------------------------------
@@ -119,7 +124,6 @@ public:
 		addBoolProperty  (&m_showRigidJoints, "Show rigid joints");
 		addBoolProperty  (&m_showRigidLabels, "Show rigid labels");
 		addBoolProperty  (&m_showRigidWalls , "Show rigid walls" );
-		addBoolProperty  (&m_showFibers     , "Show material fibers");
 		addDoubleProperty(&m_fiberScale   , "Fiber scale factor"  );
 		addBoolProperty  (&m_showMatAxes  ,"Show material axes"   );
 		addBoolProperty  (&m_showHiddenFibers, "Show fibers/axes on hidden parts");
@@ -130,7 +134,6 @@ public:
 	bool	m_showRigidJoints;
 	bool	m_showRigidLabels;
 	bool	m_showRigidWalls;
-	bool	m_showFibers;
 	bool	m_showMatAxes;
 	double	m_fiberScale;
 	bool	m_showHiddenFibers;
@@ -149,8 +152,7 @@ public:
 		themes << "Adwaita" << "Adwaita Dark";
 #endif
 		addEnumProperty(&m_theme, "Theme")->setEnumValues(themes);
-		addBoolProperty(&m_showNewDialog, "Show New dialog box");
-		addProperty("Recent projects list", CProperty::Action)->info = QString("Clear");
+		addProperty("Recent files list", CProperty::Action)->info = QString("Clear");
 		addIntProperty(&m_autoSaveInterval, "AutoSave Interval (s)");
 	}
 
@@ -158,9 +160,9 @@ public:
 	{
 		if (i == 4)
 		{
-			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear the recent project list.\nThis can not be undone!") == QMessageBox::Yes)
+			if (QMessageBox::question(m_dlg, "FEBio Studio", "Are you sure you want to clear all the recent files list.\nThis can not be undone!") == QMessageBox::Yes)
 			{
-				m_wnd->ClearRecentProjectsList();
+				m_wnd->ClearRecentFilesList();
 			}
 		}
 		else CDataPropertyList::SetPropertyValue(i, v);
@@ -172,7 +174,6 @@ public:
 	bool	m_apply;
 	bool	m_bcmd;
 	int		m_theme;
-	bool	m_showNewDialog;
 	int		m_autoSaveInterval;
 };
 
@@ -298,6 +299,39 @@ public:
 	float	m_speed;
 	float	m_bias;
 };
+
+//-----------------------------------------------------------------------------
+class CPostProps : public CPropertyList
+{
+public:
+	CPostProps()
+	{
+		addProperty("Default colormap range", CProperty::Enum)->setEnumValues(QStringList() << "dynamic" << "static");
+		m_defrng = 0;
+	}
+
+	QVariant GetPropertyValue(int i)
+	{
+		QVariant v;
+		switch (i)
+		{
+		case 0: return m_defrng; break;
+		}
+		return v;
+	}
+
+	void SetPropertyValue(int i, const QVariant& v)
+	{
+		switch (i)
+		{
+		case 0: m_defrng = v.toInt(); break;
+		}
+	}
+
+public:
+	int	m_defrng;
+};
+
 
 //=================================================================================================
 ColorGradient::ColorGradient(QWidget* parent) : QWidget(parent)
@@ -844,6 +878,7 @@ public:
 	CSelectionProps*	m_select;
 	CLightingProps*		m_light;
 	CCameraProps*		m_cam;
+	CPostProps*			m_post;
 	CUnitWidget*		m_unit;
 	CRepoSettingsWidget*	m_repo;
 	CUpdateSettingsWidget*	m_update;
@@ -855,6 +890,7 @@ public:
 	::CPropertyListView*	se_panel;
 	::CPropertyListView*	li_panel;
 	::CPropertyListView*	ca_panel;
+	::CPropertyListView*	po_panel;
 
 public:
 	CDlgSettings(QDialog* parent, ::CMainWindow* wnd)
@@ -868,6 +904,7 @@ public:
 		m_select = new CSelectionProps;
 		m_light = new CLightingProps;
 		m_cam = new CCameraProps;
+		m_post = new CPostProps;
 		m_unit = new CUnitWidget(wnd);
 		m_repo = new CRepoSettingsWidget;
 		m_update = new CUpdateSettingsWidget(parent, wnd);
@@ -882,6 +919,7 @@ public:
 		se_panel = new ::CPropertyListView;
 		li_panel = new ::CPropertyListView;
 		ca_panel = new ::CPropertyListView;
+		po_panel = new ::CPropertyListView;
 		m_repo->setupUi();
 
 		QStackedWidget* stack = new QStackedWidget;
@@ -894,6 +932,7 @@ public:
 		stack->addWidget(li_panel); list->addItem("Lighting");
 		stack->addWidget(m_pal   ); list->addItem("Palette");
 		stack->addWidget(ph_panel); list->addItem("Physics");
+		stack->addWidget(po_panel); list->addItem("Post Options");
 		stack->addWidget(se_panel); list->addItem("Selection");
 		stack->addWidget(ui_panel); list->addItem("UI");
 		stack->addWidget(m_unit); list->addItem("Units");
@@ -983,12 +1022,13 @@ void CDlgSettings::UpdateSettings()
 	ui->m_display->m_ntrans = view.m_transparencyMode;
 	ui->m_display->m_nobjcol = view.m_objectColor;
 	ui->m_display->m_dozsorting = view.m_bzsorting;
+	ui->m_display->m_defaultFGColorOption = view.m_defaultFGColorOption;
+	ui->m_display->m_defaultFGColor = toQColor(view.m_defaultFGColor);
 
 	ui->m_physics->m_showRigidBodies = view.m_brigid;
 	ui->m_physics->m_showRigidJoints = view.m_bjoint;
 	ui->m_physics->m_showRigidLabels = view.m_showRigidLabels;
 	ui->m_physics->m_showRigidWalls = view.m_bwall;
-	ui->m_physics->m_showFibers = view.m_bfiber;
 	ui->m_physics->m_fiberScale = view.m_fiber_scale;
 	ui->m_physics->m_showMatAxes = view.m_blma;
 	ui->m_physics->m_showHiddenFibers = view.m_showHiddenFibers;
@@ -996,7 +1036,6 @@ void CDlgSettings::UpdateSettings()
 	ui->m_ui->m_apply = (view.m_apply == 1);
 	ui->m_ui->m_bcmd = m_pwnd->clearCommandStackOnSave();
 	ui->m_ui->m_theme = m_pwnd->currentTheme();
-	ui->m_ui->m_showNewDialog = m_pwnd->showNewDialog();
 	ui->m_ui->m_autoSaveInterval = m_pwnd->autoSaveInterval();
 
 	ui->m_select->m_bconnect = view.m_bconn;
@@ -1016,6 +1055,8 @@ void CDlgSettings::UpdateSettings()
 	ui->m_cam->m_banim = true;
 	ui->m_cam->m_bias = (cam ? cam->GetCameraBias() : 0);
 	ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
+
+	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
 }
 
 void CDlgSettings::UpdatePalettes()
@@ -1046,6 +1087,7 @@ void CDlgSettings::UpdateUI()
 	ui->se_panel->Update(ui->m_select);
 	ui->li_panel->Update(ui->m_light);
 	ui->ca_panel->Update(ui->m_cam);
+	ui->po_panel->Update(ui->m_post);
 }
 
 void CDlgSettings::apply()
@@ -1068,12 +1110,39 @@ void CDlgSettings::apply()
 	view.m_transparencyMode = ui->m_display->m_ntrans;
 	view.m_objectColor = ui->m_display->m_nobjcol;
 	view.m_bzsorting = ui->m_display->m_dozsorting;
+	view.m_defaultFGColorOption = ui->m_display->m_defaultFGColorOption;
+	view.m_defaultFGColor = toGLColor(ui->m_display->m_defaultFGColor);
+
+	if (view.m_defaultFGColorOption == 0)
+	{
+		int theme = m_pwnd->currentTheme();
+		if (theme == 0) view.m_defaultFGColor = GLColor(0,0,0);
+		else view.m_defaultFGColor = GLColor(255, 255, 255);
+	}
+	GLWidget::set_base_color(view.m_defaultFGColor);
+
+	CGLDocument* doc = m_pwnd->GetGLDocument();
+	if (doc)
+	{
+		CGLView* glview = m_pwnd->GetGLView();
+		CGLWidgetManager* wm = (glview ? glview->GetGLWidgetManager() : nullptr);
+		if (wm)
+		{
+			for (int i = 0; i < wm->Widgets(); ++i)
+			{
+				GLWidget* wi = wm->get(i); 
+				if (wi && (wi->isfgc_overridden() == false))
+				{
+					wi->set_fg_color(view.m_defaultFGColor, false);
+				}
+			}
+		}
+	}
 
 	view.m_brigid = ui->m_physics->m_showRigidBodies;
 	view.m_bjoint = ui->m_physics->m_showRigidJoints;
 	view.m_showRigidLabels = ui->m_physics->m_showRigidLabels;
 	view.m_bwall = ui->m_physics->m_showRigidWalls;
-	view.m_bfiber = ui->m_physics->m_showFibers;
 	view.m_fiber_scale = ui->m_physics->m_fiberScale;
 	view.m_blma = ui->m_physics->m_showMatAxes;
 	view.m_showHiddenFibers = ui->m_physics->m_showHiddenFibers;
@@ -1097,8 +1166,9 @@ void CDlgSettings::apply()
 	if (cam) cam->SetCameraBias(ui->m_cam->m_bias);
 	if (cam) cam->SetCameraSpeed(ui->m_cam->m_speed);
 
+	Post::CGLColorMap::m_defaultRngType = ui->m_post->m_defrng;
+
 	m_pwnd->setClearCommandStackOnSave(ui->m_ui->m_bcmd);
-	m_pwnd->setShowNewDialog(ui->m_ui->m_showNewDialog);
 	m_pwnd->setAutoSaveInterval(ui->m_ui->m_autoSaveInterval);
 
 	int oldTheme = m_pwnd->currentTheme();

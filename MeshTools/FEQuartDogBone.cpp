@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,13 +41,13 @@ FEQuartDogBone::FEQuartDogBone(GQuartDogBone* po)
 	AddDoubleParam(1, "R-bias");
 	AddDoubleParam(1, "Z-bias");
 	AddBoolParam(false, "bz", "Z-mirrored bias");
+
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMesh()
+bool FEQuartDogBone::BuildMultiBlock()
 {
-//	return BuildMeshLegacy();
-
 	// see if we should do 4-block or 6-block
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
 	double ch = m_pobj->GetFloatValue(GQuartDogBone::CHEIGHT);
@@ -58,8 +58,27 @@ FEMesh* FEQuartDogBone::BuildMesh()
 	else return BuildMultiBlockMesh6();
 }
 
+FSMesh* FEQuartDogBone::BuildMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
+
+	// create the MB
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+
+	return pm;
+}
+
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
+bool FEQuartDogBone::BuildMultiBlockMesh4()
 {
 	// get parameters
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
@@ -150,7 +169,7 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	b4.SetSizes(nx, ny2, nz);
 	b4.SetZoning(gr, 1, gz, false, false, bz);
 
-	UpdateMB();
+	BuildMB();
 
 	SetBlockFaceID(b1,  1, -1,  4, -1, 0, 8);
 	SetBlockFaceID(b2, -1,  4, -1,  7, 0, 8);
@@ -162,12 +181,12 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	MBFace& F3 = GetBlockFace(2, 1); SetFaceEdgeID(F3, 1, 16, 8, 15);
 	MBFace& F4 = GetBlockFace(2, 2); SetFaceEdgeID(F4, 2, 17, 9, 16);
 	MBFace& F5 = GetBlockFace(0, 2); SetFaceEdgeID(F5, 3, -1, 10, 17);
-	MBEdge& E1 = GetEdge(F5.m_edge[0]);	E1.edge.m_ntype = EDGE_3P_CIRC_ARC; E1.edge.m_cnode = 10; E1.m_winding = -1;
-	MBEdge& E2 = GetEdge(F5.m_edge[2]); E2.edge.m_ntype = EDGE_3P_CIRC_ARC; E2.edge.m_cnode = 21;
+	MBEdge& E1 = GetEdge(F5.m_edge[0]);	E1.m_ntype = EDGE_3P_CIRC_ARC; E1.m_cnode = 10; E1.m_orient = -1;
+	MBEdge& E2 = GetEdge(F5.m_edge[2]); E2.m_ntype = EDGE_3P_CIRC_ARC; E2.m_cnode = 21;
 
 	MBFace& F6 = GetBlockFace(1, 1); SetFaceEdgeID(F6, 3, 18, 10, -1);
-	MBEdge& E3 = GetEdge(F6.m_edge[0]); E3.edge.m_ntype = EDGE_3P_CIRC_ARC; E3.edge.m_cnode = 10; E3.m_winding = -1;
-	MBEdge& E4 = GetEdge(F6.m_edge[2]); E4.edge.m_ntype = EDGE_3P_CIRC_ARC; E4.edge.m_cnode = 21;
+	MBEdge& E3 = GetEdge(F6.m_edge[0]); E3.m_ntype = EDGE_3P_CIRC_ARC; E3.m_cnode = 10; E3.m_orient = -1;
+	MBEdge& E4 = GetEdge(F6.m_edge[2]); E4.m_ntype = EDGE_3P_CIRC_ARC; E4.m_cnode = 21;
 
 	MBFace& F7 = GetBlockFace(3, 1); SetFaceEdgeID(F7, 4, 19, 11, 18);
 	MBFace& F8 = GetBlockFace(3, 2); SetFaceEdgeID(F8, 5, 20, 12, 19);
@@ -190,14 +209,13 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh4()
 	m_MBNode[18].SetID(13);
 	m_MBNode[19].SetID(14);
 
-	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	UpdateMB();
 
-	return pm;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
+bool FEQuartDogBone::BuildMultiBlockMesh6()
 {
 	// get parameters
 	double cw = m_pobj->GetFloatValue(GQuartDogBone::CWIDTH);
@@ -314,7 +332,7 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	b6.SetSizes(NX, ny3, nz);
 	b6.SetZoning(gr, 1, gz, false, false, bz);
 
-	UpdateMB();
+	BuildMB();
 
 	SetBlockFaceID(b1,  1, -1, -1,  7, 0, 8);
 	SetBlockFaceID(b2,  1,  2, -1, -1, 0, 8);
@@ -336,10 +354,10 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	MBFace& F11 = GetBlockFace(4, 3); SetFaceEdgeID(F11, 6, -1, 13, -1);
 	MBFace& F12 = GetBlockFace(0, 3); SetFaceEdgeID(F12, 6, 14, 13, -1);
 
-	MBEdge& E1 = GetEdge(F6.m_edge[0]);	E1.edge.m_ntype = EDGE_3P_CIRC_ARC; E1.edge.m_cnode = 13; E1.m_winding = -1;
-	MBEdge& E2 = GetEdge(F6.m_edge[2]); E2.edge.m_ntype = EDGE_3P_CIRC_ARC; E2.edge.m_cnode = 27;
-	MBEdge& E3 = GetEdge(F7.m_edge[0]); E3.edge.m_ntype = EDGE_3P_CIRC_ARC; E3.edge.m_cnode = 13; E3.m_winding = -1;
-	MBEdge& E4 = GetEdge(F7.m_edge[2]); E4.edge.m_ntype = EDGE_3P_CIRC_ARC; E4.edge.m_cnode = 27;
+	MBEdge& E1 = GetEdge(F6.m_edge[0]);	E1.m_ntype = EDGE_3P_CIRC_ARC; E1.m_cnode = 13; E1.m_orient = -1;
+	MBEdge& E2 = GetEdge(F6.m_edge[2]); E2.m_ntype = EDGE_3P_CIRC_ARC; E2.m_cnode = 27;
+	MBEdge& E3 = GetEdge(F7.m_edge[0]); E3.m_ntype = EDGE_3P_CIRC_ARC; E3.m_cnode = 13; E3.m_orient = -1;
+	MBEdge& E4 = GetEdge(F7.m_edge[2]); E4.m_ntype = EDGE_3P_CIRC_ARC; E4.m_cnode = 27;
 
 	m_MBNode[ 0].SetID(0);
 	m_MBNode[ 2].SetID(1);
@@ -357,15 +375,14 @@ FEMesh* FEQuartDogBone::BuildMultiBlockMesh6()
 	m_MBNode[26].SetID(13);
 	m_MBNode[25].SetID(14);
 
-	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	UpdateMB();
 
-	return pm;
+	return true;
 }
 
 
 //-----------------------------------------------------------------------------
-FEMesh* FEQuartDogBone::BuildMeshLegacy()
+FSMesh* FEQuartDogBone::BuildMeshLegacy()
 {
 	assert(m_pobj);
 
@@ -460,7 +477,7 @@ FEMesh* FEQuartDogBone::BuildMeshLegacy()
 	b5.SetSizes(nx,my,nz);
 
 
-	UpdateMB();
+	BuildMB();
 
 	SetBlockFaceID(b1, 1, -1, -1,  7, 0, 8);
 	SetBlockFaceID(b2, 1, -1,  4, -1, 0, 8);
@@ -498,10 +515,10 @@ FEMesh* FEQuartDogBone::BuildMeshLegacy()
 	m_MBNode[21].SetID(14);
 
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// get all the nodes from block 1
-	vector<int> node;
+	std::vector<int> node;
 	pm->FindNodesFromPart(1, node);
 	
 	// project these nodes onto the cylinder

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <MathLib/Transform.h>
+#include <FECore/FETransform.h>
 #include <vector>
 
 namespace Post {
@@ -35,7 +35,7 @@ namespace Post {
 
 class CGLPlaneCutPlot : public CGLPlot  
 {
-	enum { SHOW_PLANE, CUT_HIDDEN, SHOW_MESH, TRANSPARENCY, NORMAL_X, NORMAL_Y, NORMAL_Z, OFFSET };
+	enum { SHOW_PLANE, CUT_HIDDEN, SHOW_MESH, MESH_COLOR, TRANSPARENCY, NORMAL_X, NORMAL_Y, NORMAL_Z, OFFSET };
 
 	class GLSlice
 	{
@@ -74,7 +74,7 @@ class CGLPlaneCutPlot : public CGLPlot
 	};
 
 public:
-	CGLPlaneCutPlot(CGLModel* po);
+	CGLPlaneCutPlot();
 	virtual ~CGLPlaneCutPlot();
 
 	void SetTransform(Transform& T) { m_T = T; }
@@ -124,6 +124,7 @@ public:
 	bool	m_bcut_hidden;	// cut hidden materials
 	bool	m_bshow_mesh;
 	float	m_transparency;
+	GLColor	m_meshColor;
 
 protected:
 	vec3d		m_normal;	// plane normal (not normalized yet!)

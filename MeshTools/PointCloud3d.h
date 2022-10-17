@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,10 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <vector>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include "Plane.h"
-
-//using namespace std;
 
 class PointCloud3d
 {
@@ -78,7 +76,7 @@ public:
     double FitPlane(Plane& p);
     
     // Extract points closest to plane
-    void ExtractPlanarPoints(Plane plane, double dist, PointCloud3d& pcex, vector<bool>& slct);
+    void ExtractPlanarPoints(Plane plane, double dist, PointCloud3d& pcex, std::vector<bool>& slct);
     
     // Get principal axes
     void PrincipalAxes(vec3d& c, double l[3], vec3d v[3]);
@@ -90,10 +88,10 @@ public:
     void Translate(vec3d c);
     
 public:
-    vector <vec3d>  m_p;        // point coordinates
+    std::vector <vec3d>  m_p;        // point coordinates
     vec3d           m_pmin;     // bounding box min
     vec3d           m_pmax;     // bounding box max
-    vector <vec2d>  m_u;        // parametric coordinates of points
+    std::vector <vec2d>  m_u;        // parametric coordinates of points
     vec2d           m_umin;     // parametric bounding box min
     vec2d           m_umax;     // parametric bounding box max
 };

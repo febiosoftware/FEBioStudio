@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -65,11 +65,13 @@ FECone::FECone(GCone* po)
 
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
+
+	AddChoiceParam(0, "elem_type", "Element Type")->SetEnumNames("HEX8\0HEX20\0HEX27\0");
 }
 
 extern double gain2(double x, double r, double n);
 
-FEMesh* FECone::BuildMesh()
+bool FECone::BuildMultiBlock()
 {
 	assert(m_pobj);
 
@@ -105,51 +107,51 @@ FEMesh* FECone::BuildMesh()
 	if (m_Rb < 0) m_Rb = 0;
 	if (m_Rb > 1) m_Rb = 1;
 
-	double d00 = m_Rb*R0 / sqrt(2.0);	// bottom inside
+	double d00 = m_Rb * R0 / sqrt(2.0);	// bottom inside
 	double d01 = R0 / sqrt(2.0);		// bottom outside
-	double d10 = m_Rb*R1 / sqrt(2.0);	// top inside
+	double d10 = m_Rb * R1 / sqrt(2.0);	// top inside
 	double d11 = R1 / sqrt(2.0);		// top outside
 
 	// create the MB nodes
 	m_MBNode.resize(34);
 	m_MBNode[0].m_r = vec3d(-d00, -d00, 0);
-	m_MBNode[1].m_r = vec3d(   0, -d00, 0);
-	m_MBNode[2].m_r = vec3d( d00, -d00, 0);
-	m_MBNode[3].m_r = vec3d(-d00,    0, 0);
-	m_MBNode[4].m_r = vec3d(   0,    0, 0);
-	m_MBNode[5].m_r = vec3d( d00,    0, 0);
-	m_MBNode[6].m_r = vec3d(-d00,  d00, 0);
-	m_MBNode[7].m_r = vec3d(   0,  d00, 0);
-	m_MBNode[8].m_r = vec3d( d00,  d00, 0);
+	m_MBNode[1].m_r = vec3d(0, -d00, 0);
+	m_MBNode[2].m_r = vec3d(d00, -d00, 0);
+	m_MBNode[3].m_r = vec3d(-d00, 0, 0);
+	m_MBNode[4].m_r = vec3d(0, 0, 0);
+	m_MBNode[5].m_r = vec3d(d00, 0, 0);
+	m_MBNode[6].m_r = vec3d(-d00, d00, 0);
+	m_MBNode[7].m_r = vec3d(0, d00, 0);
+	m_MBNode[8].m_r = vec3d(d00, d00, 0);
 
-	m_MBNode[ 9].m_r = vec3d(-d10, -d10, h);
-	m_MBNode[10].m_r = vec3d(   0, -d10, h);
-	m_MBNode[11].m_r = vec3d( d10, -d10, h);
-	m_MBNode[12].m_r = vec3d(-d10,    0, h);
-	m_MBNode[13].m_r = vec3d(   0,    0, h);
-	m_MBNode[14].m_r = vec3d( d10,    0, h);
-	m_MBNode[15].m_r = vec3d(-d10,  d10, h);
-	m_MBNode[16].m_r = vec3d(   0,  d10, h);
-	m_MBNode[17].m_r = vec3d( d10,  d10, h);
+	m_MBNode[9].m_r = vec3d(-d10, -d10, h);
+	m_MBNode[10].m_r = vec3d(0, -d10, h);
+	m_MBNode[11].m_r = vec3d(d10, -d10, h);
+	m_MBNode[12].m_r = vec3d(-d10, 0, h);
+	m_MBNode[13].m_r = vec3d(0, 0, h);
+	m_MBNode[14].m_r = vec3d(d10, 0, h);
+	m_MBNode[15].m_r = vec3d(-d10, d10, h);
+	m_MBNode[16].m_r = vec3d(0, d10, h);
+	m_MBNode[17].m_r = vec3d(d10, d10, h);
 
 	m_MBNode[18].m_r = vec3d(-d01, -d01, 0);
-	m_MBNode[19].m_r = vec3d(   0,  -R0, 0);
-	m_MBNode[20].m_r = vec3d( d01, -d01, 0);
-	m_MBNode[21].m_r = vec3d(  R0,    0, 0);
-	m_MBNode[22].m_r = vec3d( d01,  d01, 0);
-	m_MBNode[23].m_r = vec3d(   0,   R0, 0);
-	m_MBNode[24].m_r = vec3d(-d01,  d01, 0);
-	m_MBNode[25].m_r = vec3d( -R0,    0, 0);
+	m_MBNode[19].m_r = vec3d(0, -R0, 0);
+	m_MBNode[20].m_r = vec3d(d01, -d01, 0);
+	m_MBNode[21].m_r = vec3d(R0, 0, 0);
+	m_MBNode[22].m_r = vec3d(d01, d01, 0);
+	m_MBNode[23].m_r = vec3d(0, R0, 0);
+	m_MBNode[24].m_r = vec3d(-d01, d01, 0);
+	m_MBNode[25].m_r = vec3d(-R0, 0, 0);
 
 	m_MBNode[26].m_r = vec3d(-d11, -d11, h);
-	m_MBNode[27].m_r = vec3d(   0,  -R1, h);
-	m_MBNode[28].m_r = vec3d( d11, -d11, h);
-	m_MBNode[29].m_r = vec3d(  R1,    0, h);
-	m_MBNode[30].m_r = vec3d( d11,  d11, h);
-	m_MBNode[31].m_r = vec3d(   0,   R1, h);
-	m_MBNode[32].m_r = vec3d(-d11,  d11, h);
-	m_MBNode[33].m_r = vec3d( -R1,    0, h);
-	
+	m_MBNode[27].m_r = vec3d(0, -R1, h);
+	m_MBNode[28].m_r = vec3d(d11, -d11, h);
+	m_MBNode[29].m_r = vec3d(R1, 0, h);
+	m_MBNode[30].m_r = vec3d(d11, d11, h);
+	m_MBNode[31].m_r = vec3d(0, R1, h);
+	m_MBNode[32].m_r = vec3d(-d11, d11, h);
+	m_MBNode[33].m_r = vec3d(-R1, 0, h);
+
 	// create the MB blocks
 	m_MBlock.resize(12);
 	MBBlock& b1 = m_MBlock[0];
@@ -225,7 +227,7 @@ FEMesh* FECone::BuildMesh()
 	b12.SetZoning(fr, 1, fz, false, false, m_bz);
 
 	// update the MB data
-	UpdateMB();
+	BuildMB();
 
 	// assign face ID's
 	SetBlockFaceID(b1, -1, -1, -1, -1, 4, 5);
@@ -250,22 +252,22 @@ FEMesh* FECone::BuildMesh()
 	MBFace& F7 = GetBlockFace(5, 1); SetFaceEdgeID(F7, 3, -1, 7, 11);
 	MBFace& F8 = GetBlockFace(6, 1); SetFaceEdgeID(F8, 3, 8, 7, -1);
 
-	GetFaceEdge(F1, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F1, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F1, 2).m_winding = -1;
-	GetFaceEdge(F2, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F2, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F2, 2).m_winding = -1;
-	GetFaceEdge(F3, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F3, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F3, 2).m_winding = -1;
-	GetFaceEdge(F4, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F4, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F4, 2).m_winding = -1;
-	GetFaceEdge(F5, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F5, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F5, 2).m_winding = -1;
-	GetFaceEdge(F6, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F6, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F6, 2).m_winding = -1;
-	GetFaceEdge(F7, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F7, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F7, 2).m_winding = -1;
-	GetFaceEdge(F8, 0).edge.m_ntype = EDGE_ZARC;
-	GetFaceEdge(F8, 2).edge.m_ntype = EDGE_ZARC; GetFaceEdge(F8, 2).m_winding = -1;
+	GetFaceEdge(F1, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F1, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F1, 2).m_orient = -1;
+	GetFaceEdge(F2, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F2, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F2, 2).m_orient = -1;
+	GetFaceEdge(F3, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F3, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F3, 2).m_orient = -1;
+	GetFaceEdge(F4, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F4, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F4, 2).m_orient = -1;
+	GetFaceEdge(F5, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F5, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F5, 2).m_orient = -1;
+	GetFaceEdge(F6, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F6, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F6, 2).m_orient = -1;
+	GetFaceEdge(F7, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F7, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F7, 2).m_orient = -1;
+	GetFaceEdge(F8, 0).m_ntype = EDGE_ZARC;
+	GetFaceEdge(F8, 2).m_ntype = EDGE_ZARC; GetFaceEdge(F8, 2).m_orient = -1;
 
 	m_MBNode[21].SetID(0);
 	m_MBNode[23].SetID(1);
@@ -276,8 +278,26 @@ FEMesh* FECone::BuildMesh()
 	m_MBNode[33].SetID(6);
 	m_MBNode[27].SetID(7);
 
+	UpdateMB();
+
+	return true;
+}
+
+FSMesh* FECone::BuildMesh()
+{
+	BuildMultiBlock();
+
+	// set element type
+	int nelem = GetIntValue(ELEM_TYPE);
+	switch (nelem)
+	{
+	case 0: SetElementType(FE_HEX8 ); break;
+	case 1: SetElementType(FE_HEX20); break;
+	case 2: SetElementType(FE_HEX27); break;
+	}
+
 	// create the MB
-	FEMesh* pm = FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
 
 	// update the mesh
 	pm->UpdateMesh();

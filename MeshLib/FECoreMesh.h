@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,20 +31,18 @@ SOFTWARE.*/
 #include <vector>
 #include <functional>
 
-using std::vector;
-
 //-----------------------------------------------------------------------------
 //! This class defines a simple mesh structure that provides basic container
 //! services for storing mesh data. It only stores nodes, edges, faces. It implements 
 //! an interface for accessing element data, but derived classes need to implement this. 
-class FECoreMesh : public FEMeshBase
+class FSCoreMesh : public FSMeshBase
 {
 public:
 	//! constructor
-	FECoreMesh();
+	FSCoreMesh();
 
 	//! destructor
-	virtual ~FECoreMesh();
+	virtual ~FSCoreMesh();
 
 	//! allocate space for mesh
 	virtual void Create(int nodes, int elems, int faces = 0, int edges = 0) = 0;
@@ -72,15 +70,15 @@ public: // interface for accessing elements
 	void TagAllElements(int ntag);
 
 	// select a list of elements
-	void SelectElements(const vector<int>& elem);
+	void SelectElements(const std::vector<int>& elem);
 
 public:
-	void ShowElements(vector<int>& elem, bool show = true);
+	void ShowElements(std::vector<int>& elem, bool show = true);
 	void UpdateItemVisibility();
 	void ShowAllElements();
 
 public:
-	vec3d ElementCenter(FEElement_& el) const;
+	vec3d ElementCenter(const FEElement_& el) const;
 
 	// get the local positions of an element
 	void ElementNodeLocalPositions(const FEElement_& e, vec3d* r) const;
@@ -92,6 +90,7 @@ public:
 	double PentaVolume(const FEElement_& el);
 	double TetVolume(const FEElement_& el);
 	double PyramidVolume(const FEElement_& el);
+	double QuadVolume(const FEElement_& el);
 
 	//! see if this is a shell mesh
 	bool IsShell() const;
@@ -112,16 +111,16 @@ public:
 	bool IsExterior(FEElement_* pe) const;
 
 	// find a face of an element
-	int FindFace(FEElement_* pe, FEFace& f, FEFace& fe);
+	int FindFace(FEElement_* pe, FSFace& f, FSFace& fe);
 
 	// Find and label all exterior nodes
 	void MarkExteriorNodes();
 
 	// returns a list of node indices that belong to a part with part ID gid
-	void FindNodesFromPart(int gid, vector<int>& node);
+	void FindNodesFromPart(int gid, std::vector<int>& node);
 
 	// find a node from its ID
-	FENode* FindNodeFromID(int gid);
+	FSNode* FindNodeFromID(int gid);
 
 	int CountNodePartitions() const;
 	int CountEdgePartitions() const;
@@ -130,8 +129,8 @@ public:
 	int CountSmoothingGroups() const;
 };
 
-inline FEElement_* FECoreMesh::ElementPtr(int n) { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }
-inline const FEElement_* FECoreMesh::ElementPtr(int n) const { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }
+inline FEElement_* FSCoreMesh::ElementPtr(int n) { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }
+inline const FEElement_* FSCoreMesh::ElementPtr(int n) const { return ((n >= 0) && (n<Elements()) ? &ElementRef(n) : 0); }
 
 // --- I N T E G R A T E ---
 double IntegrateQuad(vec3d* r, float* v);
@@ -150,6 +149,8 @@ double penta6_volume(vec3d* r, bool bJ = false);
 double penta15_volume(vec3d* r, bool bJ = false);
 double pyra5_volume(vec3d* r, bool bJ = false);
 double pyra13_volume(vec3d* r, bool bJ = false);
+double tri3_volume(vec3d* r, vec3d* D, bool bJ = false);
+double quad4_volume(vec3d* r, vec3d* D, bool bJ = false);
 
 // helper functions
-void ForAllElements(FECoreMesh& mesh, std::function<void(FEElement_& el)> f);
+void ForAllElements(FSCoreMesh& mesh, std::function<void(FEElement_& el)> f);

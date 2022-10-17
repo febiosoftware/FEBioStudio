@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -54,7 +54,7 @@ public:
 	};
 
 public:
-	FEBioExport12(FEProject& prj);
+	FEBioExport12(FSProject& prj);
 	virtual ~FEBioExport12();
 
 	void Clear();
@@ -65,80 +65,80 @@ public: // set export attributes
 	void SetSectionFlag(int n, bool bwrite) { m_section[n] = bwrite; }
 
 protected:
-	bool PrepareExport(FEProject& prj);
+	bool PrepareExport(FSProject& prj);
 
-	void WriteModuleSection(FEAnalysisStep* pstep);
-	void WriteControlSection(FEAnalysisStep* pstep);
+	void WriteModuleSection(FSAnalysisStep* pstep);
+	void WriteControlSection(FSAnalysisStep* pstep);
 	void WriteMaterialSection();
 	void WriteGeometrySection();
 	void WriteGeometryNodes();
 	void WriteGeometryElements();
 	void WriteGeometryElementData();
-	void WriteBoundarySection(FEStep& s);
-	void WriteLoadsSection(FEStep& s);
-	void WriteContactSection(FEStep& s);
+	void WriteBoundarySection(FSStep& s);
+	void WriteLoadsSection(FSStep& s);
+	void WriteContactSection(FSStep& s);
 	void WriteInitialSection();
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
 	void WriteStepSection();
-	void WriteConstraintSection(FEStep& s);
+	void WriteConstraintSection(FSStep& s);
 
-	void WriteSolidControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicControlParams(FEAnalysisStep* pstep);
-	void WriteBiphasicSoluteControlParams(FEAnalysisStep* pstep);
-	void WriteHeatTransferControlParams(FEAnalysisStep* pstep);
+	void WriteSolidControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicControlParams(FSAnalysisStep* pstep);
+	void WriteBiphasicSoluteControlParams(FSAnalysisStep* pstep);
+	void WriteHeatTransferControlParams(FSAnalysisStep* pstep);
 
-	void WriteBCFixed(FEStep& s);
-	void WriteBCFixedDisplacement(FEFixedDisplacement&  rbc, FEStep& s);
-	void WriteBCFixedRotation(FEFixedRotation&      rbc, FEStep& s);
-	void WriteBCFixedFluidPressure(FEFixedFluidPressure& rbc, FEStep& s);
-	void WriteBCFixedTemperature(FEFixedTemperature&   rbc, FEStep& s);
-	void WriteBCFixedConcentration(FEFixedConcentration& rbc, FEStep& s);
+	void WriteBCFixed(FSStep& s);
+	void WriteBCFixedDisplacement(FSFixedDisplacement&  rbc, FSStep& s);
+	void WriteBCFixedRotation(FSFixedRotation&      rbc, FSStep& s);
+	void WriteBCFixedFluidPressure(FSFixedFluidPressure& rbc, FSStep& s);
+	void WriteBCFixedTemperature(FSFixedTemperature&   rbc, FSStep& s);
+	void WriteBCFixedConcentration(FSFixedConcentration& rbc, FSStep& s);
 
-	void WriteBCPrescribed(FEStep& s);
-	void WriteBCPrescribedDisplacement(FEPrescribedDisplacement  &rbc, FEStep& s);
-	void WriteBCPrescribedRotation(FEPrescribedRotation      &rbc, FEStep& s);
-	void WriteBCPrescribedFluidPressure(FEPrescribedFluidPressure &rbc, FEStep& s);
-	void WriteBCPrescribedTemperature(FEPrescribedTemperature   &rbc, FEStep& s);
-	void WriteBCPrescribedConcentration(FEPrescribedConcentration &rbc, FEStep& s);
+	void WriteBCPrescribed(FSStep& s);
+	void WriteBCPrescribedDisplacement(FSPrescribedDisplacement  &rbc, FSStep& s);
+	void WriteBCPrescribedRotation(FSPrescribedRotation      &rbc, FSStep& s);
+	void WriteBCPrescribedFluidPressure(FSPrescribedFluidPressure &rbc, FSStep& s);
+	void WriteBCPrescribedTemperature(FSPrescribedTemperature   &rbc, FSStep& s);
+	void WriteBCPrescribedConcentration(FSPrescribedConcentration &rbc, FSStep& s);
 
-	void WriteLoadNodal(FEStep& s);
-	void WriteLoadPressure(FEStep& s);
-	void WriteLoadTraction(FEStep& s);
-	void WriteFluidFlux(FEStep& s);
-	void WriteHeatFlux(FEStep& s);
-	void WriteConvectiveHeatFlux(FEStep& s);
-	void WriteSoluteFlux(FEStep& s);
-	void WriteBPNormalTraction(FEStep& s);
-	void WriteBodyForces(FEStep& s);
-	void WriteHeatSources(FEStep& s);
+	void WriteLoadNodal(FSStep& s);
+	void WriteLoadPressure(FSStep& s);
+	void WriteLoadTraction(FSStep& s);
+	void WriteFluidFlux(FSStep& s);
+	void WriteHeatFlux(FSStep& s);
+	void WriteConvectiveHeatFlux(FSStep& s);
+	void WriteSoluteFlux(FSStep& s);
+	void WriteBPNormalTraction(FSStep& s);
+	void WriteBodyForces(FSStep& s);
+	void WriteHeatSources(FSStep& s);
 
-	void WriteContactSliding(FEStep& s);
-	void WriteContactTied(FEStep& s);
-	void WriteContactSticky(FEStep& s);
-	void WriteContactPeriodic(FEStep& s);
-	void WriteContactRigid(FEStep& s);
-	void WriteContactPoro(FEStep& s);
-	void WriteContactPoroSolute(FEStep& s);
-	void WriteContactMultiphasic(FEStep& s);
-	void WriteContactWall(FEStep& s);
-	void WriteContactJoint(FEStep& s);
-	void WriteContactTC(FEStep& s);
-	void WriteContactTiedPoro(FEStep& s);
-	void WriteSpringTied(FEStep& s);
+	void WriteContactSliding(FSStep& s);
+	void WriteContactTied(FSStep& s);
+	void WriteContactSticky(FSStep& s);
+	void WriteContactPeriodic(FSStep& s);
+	void WriteContactRigid(FSStep& s);
+	void WriteContactPoro(FSStep& s);
+	void WriteContactPoroSolute(FSStep& s);
+	void WriteContactMultiphasic(FSStep& s);
+	void WriteContactWall(FSStep& s);
+	void WriteContactJoint(FSStep& s);
+	void WriteContactTC(FSStep& s);
+	void WriteContactTiedPoro(FSStep& s);
+	void WriteSpringTied(FSStep& s);
 
 	void WriteDiscrete();
-	void WriteMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMultiMaterial(FEMaterial* pmat, XMLElement& el);
-	void WriteMaterialParams(FEMaterial* pm);
-	void WriteFiberMaterial(FEOldFiberMaterial& f);
+	void WriteMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMultiMaterial(FSMaterial* pmat, XMLElement& el);
+	void WriteMaterialParams(FSMaterial* pm);
+	void WriteFiberMaterial(FSOldFiberMaterial& f);
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurface(XMLElement& el, FEItemListBuilder* pl);
 
 protected:
-	FEModel*		m_pfem;
+	FSModel*		m_pfem;
 
 protected:
 	bool HasSurface(FEItemListBuilder* pl);

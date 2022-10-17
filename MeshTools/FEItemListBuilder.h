@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -53,9 +53,21 @@ enum DOMAIN_TYPE
 };
 
 //-----------------------------------------------------------------------------
-// This class is an abstract base class for any class that can build FEItem lists.
-// Currently this is the GItem class for geometry objects and FEGroup class for
-// FE meshes. Each derived class must be able to define how to build FEItem lists.
+enum MESH_ITEM_FLAGS
+{
+	FE_NODE_FLAG = 0x01,
+	FE_EDGE_FLAG = 0x02,
+	FE_FACE_FLAG = 0x04,
+	FE_ELEM_FLAG = 0x08,
+	FE_PART_FLAG = 0x10,
+
+	FE_ALL_FLAGS = 0xFF
+};
+
+//-----------------------------------------------------------------------------
+// This class is an abstract base class for any class that can build MeshItem lists.
+// Currently this is the GItem class for geometry objects and FSGroup class for
+// FE meshes. Each derived class must be able to define how to build MeshItem lists.
 //
 class FEItemListBuilder : public FSObject
 {
@@ -66,9 +78,9 @@ public:
 	typedef std::list<int>::const_iterator ConstIterator;
 
 public:
-	FEItemListBuilder(int ntype);
+	FEItemListBuilder(int ntype, unsigned int flags);
 
-	virtual FENodeList*	BuildNodeList() = 0;
+	virtual FSNodeList*	BuildNodeList() = 0;
 	virtual FEFaceList*	BuildFaceList() = 0;
 	virtual FEElemList*	BuildElemList() = 0;
 	
@@ -76,8 +88,11 @@ public:
 
 	virtual bool IsValid() const;
 
+	bool Supports(unsigned int itemFlag) const;
+
 	void clear() { m_Item.clear(); }
 	void add(int n) { m_Item.push_back(n); }
+	void add(const std::list<int>& nodeList);
 	void remove(int i);
 	int size() const { return (int)m_Item.size(); }
 	Iterator begin() { return m_Item.begin(); }
@@ -104,6 +119,8 @@ protected:
 	list<int>	m_Item;
 
 	int	m_ntype;
+
+	unsigned int	m_flags;
 
 	int	m_nID;	// the unique group ID
 	static int m_ncount;

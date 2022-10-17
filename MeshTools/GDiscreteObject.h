@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -190,11 +190,11 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-	void SetMaterial(FEDiscreteMaterial* mat);
-	FEDiscreteMaterial* GetMaterial();
+	void SetMaterial(FSDiscreteMaterial* mat);
+	FSDiscreteMaterial* GetMaterial();
 
 private:
-	FEDiscreteMaterial*	m_mat;
+	FSDiscreteMaterial*	m_mat;
 };
 
 //-----------------------------------------------------------------------------

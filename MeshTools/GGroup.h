@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,28 +30,28 @@ SOFTWARE.*/
 #include "FEGroup.h"
 #include "FESelection.h"
 
-class FEModel;
+class FSModel;
 class GPartSelection;
 class GFaceSelection;
 class GEdgeSelection;
 class GNodeSelection;
 
 //-----------------------------------------------------------------------------
-// The GGroup performs the same function for GObjects as the FEGroup is for
+// The GGroup performs the same function for GObjects as the FSGroup is for
 // meshes. Its main purpose is to convert groups into FEItemList.
 //
 class GGroup : public FEItemListBuilder
 {
 public:
-	GGroup(FEModel* ps, int ntype);
+	GGroup(FSModel* ps, int ntype, unsigned int flags);
 	~GGroup(void);
 
-	FENodeList*	BuildNodeList() { return 0; }
+	FSNodeList*	BuildNodeList() { return 0; }
 	FEFaceList*	BuildFaceList() { return 0; }
 	FEElemList*	BuildElemList() { return 0; }
 
 protected:
-	FEModel*	m_ps;
+	FSModel*	m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -59,14 +59,14 @@ protected:
 class GNodeList : public GGroup
 {
 public:
-	GNodeList(FEModel* ps) : GGroup(ps, GO_NODE){}
-	GNodeList(FEModel* ps, GNodeSelection* pn);
+	GNodeList(FSModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
+	GNodeList(FSModel* ps, GNodeSelection* pn);
 
 	vector<GNode*>	GetNodeList();
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 
 	bool IsValid() const override;
 };
@@ -76,14 +76,15 @@ public:
 class GFaceList : public GGroup
 {
 public:
-	GFaceList(FEModel* ps) : GGroup(ps, GO_FACE){}
-	GFaceList(FEModel* ps, GFaceSelection* pf);
+	GFaceList(FSModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
+	GFaceList(FSModel* ps, GFaceSelection* pf);
+	GFaceList(FSModel* ps, GFace* pf);
 
 	vector<GFace*>	GetFaceList();
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 	FEFaceList*	BuildFaceList() override;
 
 	bool IsValid() const override;
@@ -94,8 +95,8 @@ public:
 class GEdgeList : public GGroup
 {
 public:
-	GEdgeList(FEModel* ps) : GGroup(ps, GO_EDGE){}
-	GEdgeList(FEModel* ps, GEdgeSelection* pe);
+	GEdgeList(FSModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
+	GEdgeList(FSModel* ps, GEdgeSelection* pe);
 
 	vector<GEdge*>	GetEdgeList();
 
@@ -103,7 +104,7 @@ public:
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 
 	bool IsValid() const override;
 };
@@ -113,8 +114,8 @@ public:
 class GPartList : public GGroup
 {
 public:
-	GPartList(FEModel* ps) : GGroup(ps, GO_PART){}
-	GPartList(FEModel* ps, GPartSelection* pg);
+	GPartList(FSModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG){}
+	GPartList(FSModel* ps, GPartSelection* pg);
 
 	void Create(GObject* po);
 
@@ -122,13 +123,13 @@ public:
 
 	FEItemListBuilder* Copy() override;
 
-	FENodeList* BuildNodeList() override;
+	FSNodeList* BuildNodeList() override;
 	FEElemList* BuildElemList() override;
 	FEFaceList*	BuildFaceList() override;
 
 	bool IsValid() const override;
 
 	static GPartList* CreateNew();
-	static void SetModel(FEModel* mdl);
-	static FEModel* m_model;
+	static void SetModel(FSModel* mdl);
+	static FSModel* m_model;
 };

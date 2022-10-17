@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "PropertyList.h"
 #include <QtCore/QString>
-#include <MathLib/math3d.h>
 #include <vector>
 
 class FSObject;
@@ -49,6 +48,7 @@ protected:
 	void BuildParamList(FSObject* po, bool showNonPersistent = false);
 
 	void AddParameter(Param& p);
+	void AddParameterList(FSObject* po);
 	QVariant GetPropertyValue(Param& p);
 	void SetPropertyValue(Param& p, const QVariant& v);
 

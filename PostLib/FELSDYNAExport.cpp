@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FELSDYNAExport.h"
+#include <iostream>
 using namespace Post;
 
 //-----------------------------------------------------------------------------
@@ -64,7 +65,7 @@ bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfi
 	for (i=0; i<mesh.Nodes(); ++i) mesh.Node(i).m_ntag = 0;
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		n = f.Nodes();
 		for (j=0; j<n; ++j) mesh.Node(f.n[j]).m_ntag = 1;
 	}
@@ -80,7 +81,7 @@ bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfi
 	fprintf(fp, "*NODE\n");
 	for (i=0; i<mesh.Nodes(); ++i)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if (node.m_ntag > 0)
 		{
 			vec3f r = to_vec3f(node.r);
@@ -94,7 +95,7 @@ bool FELSDYNAExport::ExportSurface(FEPostModel &fem, int ntime, const char *szfi
 	fprintf(fp, "*ELEMENT_SHELL_THICKNESS\n");
 	for (i=0; i<mesh.Faces(); ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 		int n[4];
 		n[0] = mesh.Node(f.n[0]).m_ntag;
 		n[1] = mesh.Node(f.n[1]).m_ntag;
@@ -131,7 +132,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 	for (i=0; i<NN; ++i) m.Node(i).m_ntag = -1;
 	for (i=0; i<NF; ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		if (f.IsSelected())
 		{
 			int n = f.Nodes();
@@ -146,7 +147,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 	int n = 1;
 	for (i=0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_ntag == 1)
 		{
 			node.m_ntag = n++;
@@ -159,7 +160,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 	int l = 1;
 	for (i=0; i<NF; ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		if (f.IsSelected())
 		{
 			int n[4], nf = f.Nodes();
@@ -180,7 +181,7 @@ bool FELSDYNAExport::ExportSelectedSurface(FEPostModel &fem, int ntime, const ch
 		fprintf(fp, "*NODAL_RESULTS\n");
 		for (int i=0; i<NN; ++i)
 		{
-			FENode& node = m.Node(i);
+			FSNode& node = m.Node(i);
 			if (node.m_ntag != -1)
 			{
 				double v = ps->m_NODE[i].m_val;
@@ -225,7 +226,7 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 	fprintf(fp, "*NODE\n");
 	for (i=0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_ntag != -1)
 		{
 			vec3f r = to_vec3f(node.r);
@@ -284,8 +285,19 @@ bool FELSDYNAExport::ExportMesh(FEPostModel& fem, int ntime, const char* szfile)
 						n[3] = e.m_node[3];
 						n[4] = e.m_node[4];
 						break;
+					default:
+						assert(false);
 					}
-					for (j=0; j<8; ++j) n[j] = m.Node(n[j]).m_ntag;
+					for (j = 0; j < 8; ++j) {
+						if ((n[j] >= 0 && (n[j] < m.Nodes())))
+						{
+							int tmp = m.Node(n[j]).m_ntag; n[j] = tmp;
+						}
+						else {
+							fclose(fp);
+							return false;
+						}
+					}
 					fprintf(fp, "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d\n", i+1, e.m_MatID+1, n[0], n[1], n[2], n[3], n[4], n[5], n[6], n[7]);
 				}
 			}
@@ -344,7 +356,7 @@ void FELSDYNAExport::NodalResults(FEPostModel &fem, int ntime, FILE* fp)
 	fprintf(fp, "*NODAL_RESULTS\n");
 	for (int i=0; i<NN; ++i)
 	{
-		FENode& node = m.Node(i);
+		FSNode& node = m.Node(i);
 		if (node.m_ntag != -1)
 		{
 			double v = ps->m_NODE[i].m_val;

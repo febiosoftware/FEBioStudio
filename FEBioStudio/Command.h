@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,12 +26,13 @@ SOFTWARE.*/
 
 #pragma once
 #include <string>
+#include <vector>
 #include "ViewSettings.h"
 
 class CDocument;
 class CCommandManager;
 class CGLView;
-class FEAnalysisStep;
+class FSAnalysisStep;
 
 //----------------------------------------------------------------
 class CCommand;
@@ -78,7 +79,7 @@ protected:
 	friend class CCommandManager;
 };
 
-typedef vector<CCommand*> CCmdPtrArray;
+typedef std::vector<CCommand*> CCmdPtrArray;
 
 //----------------------------------------------------------------
 // CCmdGroup

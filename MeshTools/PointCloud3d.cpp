@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -208,10 +208,10 @@ void PointCloud3d::ParametricBoundingBox()
     {
         m_umin = m_umax = m_u[0];
         for (int i=1; i<n; ++i) {
-            m_umin.x = fmin(m_umin.x, m_u[i].x);
-            m_umax.x = fmax(m_umax.x, m_u[i].x);
-            m_umin.y = fmin(m_umin.y, m_u[i].y);
-            m_umax.y = fmax(m_umax.y, m_u[i].y);
+            m_umin.x() = fmin(m_umin.x(), m_u[i].x());
+            m_umax.x() = fmax(m_umax.x(), m_u[i].x());
+            m_umin.y() = fmin(m_umin.y(), m_u[i].y());
+            m_umax.y() = fmax(m_umax.y(), m_u[i].y());
         }
     }
 }
@@ -249,7 +249,7 @@ double PointCloud3d::FitPlane(Plane& p)
 //-------------------------------------------------------------------------------
 // Extract points closest to plane (within dist)
 void PointCloud3d::ExtractPlanarPoints(Plane plane, double dist,
-                                       PointCloud3d& pcex, vector<bool>& slct)
+                                       PointCloud3d& pcex, std::vector<bool>& slct)
 {
     pcex.Clear();
     if (slct.size() == 0) slct.resize(Points(),false);

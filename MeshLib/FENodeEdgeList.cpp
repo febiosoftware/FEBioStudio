@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,27 +26,29 @@ SOFTWARE.*/
 
 #include "FENodeEdgeList.h"
 #include "FELineMesh.h"
+#include <assert.h>
+using namespace std;
 
-FENodeEdgeList::FENodeEdgeList(FELineMesh* mesh) : m_mesh(mesh)
+FSNodeEdgeList::FSNodeEdgeList(FSLineMesh* mesh) : m_mesh(mesh)
 {
 	if (mesh) Build(mesh);
 }
 
-void FENodeEdgeList::Clear()
+void FSNodeEdgeList::Clear()
 {
 	m_edge.clear();
 }
 
-bool FENodeEdgeList::IsEmpty() const
+bool FSNodeEdgeList::IsEmpty() const
 {
 	return m_edge.empty();
 }
 
-void FENodeEdgeList::Build(FELineMesh* pmesh, bool segsOnly)
+void FSNodeEdgeList::Build(FSLineMesh* pmesh, bool segsOnly)
 {
 	m_mesh = pmesh;
 	assert(pmesh);
-	FELineMesh& mesh = *m_mesh;
+	FSLineMesh& mesh = *m_mesh;
 
 	// allocate valence array
 	int N = mesh.Nodes();
@@ -57,7 +59,7 @@ void FENodeEdgeList::Build(FELineMesh* pmesh, bool segsOnly)
 	int NE = mesh.Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		const FEEdge& edge = mesh.Edge(i);
+		const FSEdge& edge = mesh.Edge(i);
 		if ((segsOnly == false) || (edge.IsExterior()))
 		{
 			int n0 = edge.n[0];
@@ -73,17 +75,17 @@ void FENodeEdgeList::Build(FELineMesh* pmesh, bool segsOnly)
 }
 
 // Return the edge for a given node
-const FEEdge* FENodeEdgeList::Edge(int node, int edge) const
+const FSEdge* FSNodeEdgeList::Edge(int node, int edge) const
 {
 	return m_mesh->EdgePtr(m_edge[node][edge]);
 }
 
-int FENodeEdgeList::EdgeIndex(int node, int edge) const 
+int FSNodeEdgeList::EdgeIndex(int node, int edge) const 
 { 
 	return m_edge[node][edge]; 
 }
 
-const std::vector<int>& FENodeEdgeList::EdgeIndexList(int node) const
+const std::vector<int>& FSNodeEdgeList::EdgeIndexList(int node) const
 {
 	return m_edge[node];
 }

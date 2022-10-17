@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,11 +33,11 @@ SOFTWARE.*/
 
 class VTKMesh;
 
-class FEVTKimport :	public FEFileImport
+class FEVTKimport :	public FSFileImport
 {
 
 public:
-	FEVTKimport(FEProject& prj);
+	FEVTKimport(FSProject& prj);
 	~FEVTKimport(void);
 
 	bool Load(const char* szfile);

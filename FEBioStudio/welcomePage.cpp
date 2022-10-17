@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,6 +42,7 @@ ul { line-height: 150%; list-style-type: none; }\
 <body>\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
 <p style=\"font-size: 14pt\">_VERSION_</p>\
+<p style=\"font-size: 14pt\">FEBio Studio 2 is currently in beta. You can help development by <a href=\"#bugreport\" style=\"font-size: 14pt\">submitting a bug report.</a></p>\
 _UPDATE_INFO_\
 <h1>Start</h1>\
 <table width=100%>\
@@ -66,6 +67,7 @@ _RECENT_PROJECTS_\
 <li><a href=\"#febio\">FEBio Website</li>\
 <li><a href=\"#help\">FEBio Knowledgebase</li>\
 <li><a href=\"#forum\">FEBio Forum</li>\
+<li><a href=\"#bugreport\">Submit a Bug Report</li>\
 </ul>\
 </td>\
 <td>\
@@ -124,10 +126,10 @@ void CWelcomePage::Activate()
 		prjLinks += link;
 	}
 
-	QString version = QString("Version %1.%2.%3").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION);
+	QString version = QString("Version %1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
 #ifdef DEVCOMMIT
-	version = QString("Dev Version %1.%2.%3.%4").arg(VERSION).arg(SUBVERSION).arg(SUBSUBVERSION).arg(DEVCOMMIT);
+	version = QString("Dev Version %1.%2.%3.%4").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION).arg(DEVCOMMIT);
 #endif
 
 	QString page(welcome);

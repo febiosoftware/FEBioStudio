@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "ParamBlock.h"
+#include"ClassDescriptor.h"
 #include <string>
 
 //-----------------------------------------------------------------------------
@@ -53,6 +54,11 @@ public:
 	// return true if parameter list was modified
 	virtual bool UpdateData(bool bsave = true);
 
+	virtual void SetTypeString(const std::string& s) { m_typeStr = s; }
+	virtual const char* GetTypeString() const { return m_typeStr.c_str(); }
+
+	bool IsType(const char* sztype) const;
+
 public:
 	void SetParent(FSObject* parent);
 	FSObject* GetParent();
@@ -60,9 +66,14 @@ public:
 	virtual size_t RemoveChild(FSObject* po);
 	virtual void InsertChild(size_t pos, FSObject* po);
 
+	void SetTypeString(const char* sz) { m_typeStr = sz; }
+
 private:
 	std::string		m_name;
 	std::string		m_info;
 	FSObject*		m_parent;
+
+private:
+	std::string		m_typeStr;
 };
 

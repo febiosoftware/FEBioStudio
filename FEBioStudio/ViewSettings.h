@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <FSCore/color.h>
 
 //-----------------------------------------------------------------------------
@@ -58,11 +58,18 @@ struct VIEW_SETTINGS
 	bool	m_bjoint;	//!< show rigid joints
 	bool	m_bwall;	//!< show rigid walls
 	bool	m_brigid;	//!< show rigid kinematics
+	
 	bool	m_bfiber;	//!< show material fibers
+	int		m_fibColor;
+	int		m_fibLineStyle;
+
 	bool	m_bcontour;	//!< show contour plot
 	bool	m_blma;		//!< show local material axes
 	double	m_fiber_scale;	//!< scale factor for rendering fibers
+	double	m_fiber_width;	//!< line width
 	bool	m_showHiddenFibers;	//!< show fibers/axes on hidden parts
+	bool	m_showSelectFibersOnly;	//!< only show fibers on selected objects
+
 	bool	m_showDiscrete;		//!< render discrete sets
 	bool	m_showRigidLabels;	//!< show labels on rigid bodies
 
@@ -75,6 +82,9 @@ struct VIEW_SETTINGS
 	bool	m_bline_smooth;		//!< line smoothing flag
 	bool	m_bpoint_smooth;	//!< point smoothing flag
 	bool	m_bzsorting;
+
+	int		m_defaultFGColorOption;	//!< determines how default FG color for widgets is set (0=theme, 1=user)
+	GLColor	m_defaultFGColor;		//!< the default FG color (when m_defaultFGColorOption == 1)
 
 	bool	m_snapToGrid;		//!< snap to grid
 	bool	m_snapToNode;		//!< snap to nodes

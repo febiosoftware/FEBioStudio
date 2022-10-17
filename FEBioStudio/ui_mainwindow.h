@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "RepositoryPanel.h"
 #include "GLView.h"
+#include "ImageSliceView.h"
 #include <QApplication>
 #include <QAction>
 #include <QActionGroup>
@@ -33,7 +34,6 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QFile>
 #include <QDockWidget>
-//#include <QDesktopWidget>
 #include <QStatusBar>
 #include <QToolBar>
 #include <QProgressBar>
@@ -48,12 +48,20 @@ SOFTWARE.*/
 #include <QtCore/QDir>
 #include <QtCore/QStandardPaths>
 #include <QFontComboBox>
+#include <QTreeView>
+#include <QDragEnterEvent>
+#include <QDropEvent>
+#include <QMimeData>
+#include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
+#include "ModelTree.h"
 #include "CurveEditor.h"
 #include "MeshInspector.h"
 #include "LogPanel.h"
 #include "BuildPanel.h"
+#include "ImageSettingsPanel.h"
+#include "2DImageTimeView.h"
 #include "GLControlBar.h"
 #include "Document.h"
 #include "DataFieldSelector.h"
@@ -64,14 +72,18 @@ SOFTWARE.*/
 #include "DlgMeasure.h"
 #include "DlgPlaneCut.h"
 #include "PostToolBar.h"
+#include "ImageToolBar.h"
 #include "FEBioStudioProject.h"
 #include "welcomePage.h"
 #include "IconProvider.h"
 #include "TimelinePanel.h"
 #include "UpdateChecker.h"
 #include "XMLEditor.h"
+#include "WebDefines.h"
+#include "FEBioJobManager.h"
+#include "XMLDocument.h"
+#include "DlgFiberViz.h"
 #include <PyLib/PythonToolsPanel.h>
-
 #include <vector>
 
 class QProcess;
@@ -106,6 +118,53 @@ public:
 	CGLControlBar* glc;
 };
 
+class CentralStackedWidget : public QStackedWidget
+{
+public:
+    CentralStackedWidget(CMainWindow* wnd) : m_wnd(wnd)
+    {
+        setAcceptDrops(true);
+    }
+
+    void dragEnterEvent(QDragEnterEvent *e) override
+    {
+        if (e->mimeData()->hasUrls()) {
+            e->acceptProposedAction();
+        }
+    }
+
+    void dropEvent(QDropEvent *e) override
+    {
+        foreach (const QUrl &url, e->mimeData()->urls()) {
+            QString fileName = url.toLocalFile();
+
+            FileReader* fileReader = nullptr;
+
+            QFileInfo file(fileName);
+
+            // Create a file reader
+            // NOTE: For FEB files I prefer to open the file as a separate model,
+            // so I need this hack. 
+            if (file.suffix() != "feb") fileReader = m_wnd->CreateFileReader(fileName);
+
+            CDocument* doc = m_wnd->GetDocument();
+
+            // make sure we have one
+            if (fileReader && doc)
+            {
+                m_wnd->ReadFile(doc, fileName, fileReader, 0);
+            }
+            else {
+                m_wnd->OpenFile(fileName, false, false);
+            }
+        }
+    }
+
+private:
+    CMainWindow* m_wnd;
+
+};
+
 class Ui::CMainWindow
 {
 	enum
@@ -119,6 +178,9 @@ public:
 	enum Viewer {
 		HTML_VIEWER,
 		TEXT_VIEWER,
+        XML_VIEWER,
+        IMG_SLICE,
+		TIME_VIEW_2D,
 		GL_VIEWER
 	};
 
@@ -126,14 +188,18 @@ public:
 	CMainTabBar*	tab;
 	::CMainWindow*	m_wnd;
 
-	QStackedWidget*	stack;
+	CentralStackedWidget* stack;
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
+    ::XMLTreeView*  xmlTree;
+    CImageSliceView* sliceView;
+    ::C2DImageTimeView* timeView2D;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
 	QMenu* menuEditTxt;
+    QMenu* menuEditXml;
 	QMenu* menuPhysics;
 	QMenu* menuTools;
 	QMenu* menuPost;
@@ -144,6 +210,7 @@ public:
 	QMenu* menuRecentFiles;
 	QMenu* menuRecentProjects;
 	QMenu* menuRecentGeomFiles;
+	QMenu* menuImportImage;
 	QMenu* menuWindows;
 	QMenu* menuViews;
 
@@ -165,6 +232,9 @@ public:
 	::CDlgMeasure*	measureTool;
 	::CDlgPlaneCut*	planeCutTool;
 	::CTimelinePanel*	timePanel;
+    ::CImagePanel*	imagePanel;
+    ::CImageSettingsPanel*	imageSettingsPanel;
+	::CDlgFiberViz* fiberViz;
 
 	QToolBar*	mainToolBar;
 	QStatusBar*	statusBar;
@@ -173,12 +243,16 @@ public:
 
 	CPostToolBar*	postToolBar;
 	QToolBar*	buildToolBar;
+    CImageToolBar* imageToolBar;
 
 	QToolBar* pFontToolBar;
 	QFontComboBox*	pFontStyle;
 	QSpinBox*		pFontSize;
 	QAction*		actionFontBold;
 	QAction*		actionFontItalic;
+
+    QToolBar* xmlToolbar;
+    QAction* actionEditXmlAsText;
 
 	QAction* actionSelectObjects;
 	QAction* actionSelectParts;
@@ -189,14 +263,25 @@ public:
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
 
-	QAction* actionAddBC;
+	QAction* actionAddNodalBC;
+	QAction* actionAddSurfaceBC;
+	QAction* actionAddGeneralBC;
+
 	QAction* actionAddNodalLoad;
 	QAction* actionAddSurfLoad;
 	QAction* actionAddBodyLoad;
+
 	QAction* actionAddIC;
+
 	QAction* actionAddContact;
-	QAction* actionAddConstraint;
-	QAction* actionAddRigidConstraint;
+
+	QAction* actionAddSurfaceNLC;
+	QAction* actionAddBodyNLC;
+	QAction* actionAddGenericNLC;
+
+	QAction* actionAddRigidBC;
+	QAction* actionAddRigidIC;
+	QAction* actionAddRigidLoad;
 	QAction* actionAddRigidConnector;
 	QAction* actionAddStep;
 	QAction* actionAddMaterial;
@@ -212,6 +297,7 @@ public:
 	QStringList	m_recentFiles;
 	QStringList	m_recentGeomFiles;
 	QStringList m_recentProjects;
+	QStringList m_recentPlugins;
 
 	QAction* actionUndoViewChange;
 	QAction* actionRedoViewChange;
@@ -249,13 +335,10 @@ public:
 
 	QString		m_defaultProjectParent;
 
-	QProcess*	m_process;
-	bool		m_bkillProcess;
+	CFEBioJobManager*	m_jobManager;
 
 	int			m_theme;	// 0 = default, 1 = dark
 	bool		m_clearUndoOnSave;
-
-	bool	m_showNewDialog;
 
 	bool	m_isAnimating;
 
@@ -285,30 +368,17 @@ public:
 
 		measureTool = nullptr;
 		planeCutTool = nullptr;
-
-		m_showNewDialog = true;
+		fiberViz = nullptr;
 	}
 
 	void setupUi(::CMainWindow* wnd)
 	{
 		m_wnd = wnd;
 
-		m_launch_configs.push_back(CLaunchConfig());
-		m_launch_configs.back().type = LOCAL;
-		m_launch_configs.back().name = std::string("FEBio 3.0");
-
-#ifdef WIN32
-		m_launch_configs.back().path = std::string("$(FEBioDir)\\febio3.exe");
-#else
-		m_launch_configs.back().path = std::string("$(FEBioStudioDir)/febio3");
-#endif
-
 #ifdef WIN32
 		m_defaultProjectParent = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
 #endif
-
-		m_process = 0;
-		m_bkillProcess = false;
+		m_jobManager = new CFEBioJobManager(wnd);
 
 		m_isAnimating = false;
 
@@ -320,7 +390,6 @@ public:
 		m_updateAvailable = false;
 		m_updateOnClose = false;
 		m_updateDevChannel = false;
-		
 
 		// initialize current path
 		currentPath = QDir::currentPath();
@@ -338,7 +407,7 @@ public:
 		tab = new CMainTabBar(wnd);
 		tab->setObjectName("tab");
 
-		stack = new QStackedWidget;
+		stack = new CentralStackedWidget(wnd);
 
 		htmlViewer = new QTextBrowser;
 		htmlViewer->setObjectName("htmlview");
@@ -349,6 +418,18 @@ public:
 		xmlEdit = new XMLEditor(wnd);
 		xmlEdit->setObjectName("xmledit");
 		stack->addWidget(xmlEdit);
+
+        xmlTree = new ::XMLTreeView(wnd);
+        xmlTree->setObjectName("xmlTree");
+		stack->addWidget(xmlTree);
+
+        sliceView = new ::CImageSliceView(wnd);
+        sliceView->setObjectName("sliceView");
+        stack->addWidget(sliceView);
+
+        timeView2D = new ::C2DImageTimeView(wnd);
+        timeView2D->setObjectName("timeView2D");
+        stack->addWidget(timeView2D);
 
 		// create the GL viewer widget
 		glw = new CGLViewer(wnd);
@@ -384,6 +465,10 @@ public:
 		indeterminateProgress->setMaximumHeight(15);
 
 		QMetaObject::connectSlotsByName(wnd);
+
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
+        QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
 	}
 
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false)
@@ -401,7 +486,9 @@ public:
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
 		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
+        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
+        // QAction* actionReadInfo       = addAction("Read Model Info ..."   , "actionReadInfo"  , "info");;
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
 		QAction* actionSaveAs     = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
 		QAction* actionSaveAll    = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
@@ -414,28 +501,34 @@ public:
 		QAction* actionOpenProject   = addAction("Open Project ...", "actionOpenProject");
 		QAction* actionImportProject = addAction("Import Project Archive ...", "actionImportProject");
 		QAction* actionExportProject = addAction("Export Project Archive ...", "actionExportProject");
-		QAction* actionImportImg  = addAction("Import Image ...", "actionImportImage");
+		QAction* actionImportRawImage  = addAction("Raw ...", "actionImportRawImage");
+		QAction* actionImportDICOMImage  = addAction("DICOM/DICOM Sequence ...", "actionImportDICOMImage");
+		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
+		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
+		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
+        QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
+        QAction* actionConvertFsm2Feb    = addAction("FSM to FEB ...", "actionConvertFsm2Feb");
 		QAction* actionConvertGeo = addAction("Geometry Files ...", "actionConvertGeo");
 		QAction* actionExit       = addAction("Exit"       , "actionExit"  );
 
 		// --- Edit menu ---
 		QAction* actionUndo              = addAction("Undo", "actionUndo", "undo"); actionUndo->setShortcuts(QKeySequence::Undo);
 		QAction* actionRedo              = addAction("Redo", "actionRedo", "redo"); actionRedo->setShortcuts(QKeySequence::Redo);
-		QAction* actionInvertSelection   = addAction("Invert Selection"  , "actionInvertSelection"  ); actionInvertSelection->setShortcut(Qt::AltModifier + Qt::Key_I);
+		QAction* actionInvertSelection   = addAction("Invert Selection"  , "actionInvertSelection"  ); actionInvertSelection->setShortcut(Qt::AltModifier | Qt::Key_I);
 		QAction* actionClearSelection    = addAction("Clear Selection"   , "actionClearSelection"   );
 		QAction* actionDeleteSelection   = addAction("Delete Selection"  , "actionDeleteSelection"  ); actionDeleteSelection->setShortcuts(QKeySequence::Delete);
-		QAction* actionNameSelection     = addAction("Name Selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier + Qt::Key_G);
+		QAction* actionNameSelection     = addAction("Name Selection ...", "actionNameSelection"    ); actionNameSelection->setShortcut(Qt::ControlModifier | Qt::Key_G);
 		QAction* actionHideSelection     = addAction("Hide Selection"    , "actionHideSelection"    ); actionHideSelection->setShortcut(Qt::Key_H);
-		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier + Qt::Key_H);
-		QAction* actionSyncSelection     = addAction("Sync selection"    , "actionSyncSelection"    ); actionSyncSelection->setShortcut(Qt::AltModifier + Qt::Key_F);
+		QAction* actionHideUnselected    = addAction("Hide Unselected"   , "actionHideUnselected"   ); actionHideUnselected->setShortcut(Qt::ShiftModifier | Qt::Key_H);
+		QAction* actionSyncSelection     = addAction("Sync selection"    , "actionSyncSelection"    ); actionSyncSelection->setShortcut(Qt::AltModifier | Qt::Key_F);
 		QAction* actionUnhideAll         = addAction("Unhide All"        , "actionUnhideAll"        );
-		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); //actionFind->setShortcut(Qt::ControlModifier + Qt::Key_F);
+		QAction* actionFind              = addAction("Find ..."          , "actionFind"             ); //actionFind->setShortcut(Qt::ControlModifier | Qt::Key_F);
 		QAction* actionSelectRange       = addAction("Select Range ...", "actionSelectRange"     );
 		QAction* actionToggleVisible     = addAction("Toggle Visibility" , "actionToggleVisible"    , "toggle_visible");
-		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier + Qt::Key_T);
+		QAction* actionTransform         = addAction("Transform ..."     , "actionTransform"        ); actionTransform->setShortcut(Qt::ControlModifier | Qt::Key_T);
 		QAction* actionCollapseTransform = addAction("Collapse Transform", "actionCollapseTransform");
-		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); // actionClone->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionClone             = addAction("Clone Object ..."  , "actionClone"            , "clone"); // actionClone->setShortcut(Qt::ControlModifier | Qt::Key_D);
 		QAction* actionCopyObject        = addAction("Copy Object"       , "actionCopyObject");
 		QAction* actionPasteObject       = addAction("Paste Object"      , "actionPasteObject");
 		QAction* actionCloneGrid         = addAction("Clone Grid ..."    , "actionCloneGrid"        , "clonegrid");
@@ -446,30 +539,47 @@ public:
 		QAction* actionPurge             = addAction("Purge ..."         , "actionPurge"            );
 
 		QAction* actionFace2Elems             = addAction("Face to Element Selection", "actionFaceToElem");
+		QAction* actionSurfaceToFaces         = addAction("Surface to Face Selection", "actionSurfaceToFaces");
 		QAction* actionSelectOverlap          = addAction("Select surface overlap ...", "actionSelectOverlap");
 		QAction* actionSelectIsolatedVertices = addAction("Select isolated vertices", "actionSelectIsolatedVertices");
-		QAction* actionGrowSelection          = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier + Qt::Key_Plus);
-		QAction* actionShrinkSelection        = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier + Qt::Key_Minus);
+		QAction* actionGrowSelection          = addAction("Grow selection", "actionGrowSelection"); actionGrowSelection->setShortcut(Qt::ControlModifier | Qt::Key_Plus);
+		QAction* actionShrinkSelection        = addAction("Shrink selection", "actionShrinkSelection"); actionShrinkSelection->setShortcut(Qt::ControlModifier | Qt::Key_Minus);
 
 		// --- Edit (txt) menu ---
-		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F + Qt::ControlModifier);
-		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::Key_F3);
-		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier + Qt::Key_Slash);
-		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier + Qt::Key_D);
+		QAction* actionFindTxt = addAction("Find ...", "actionFindTxt"); actionFindTxt->setShortcut(Qt::Key_F | Qt::ControlModifier);
+		QAction* actionFindAgain = addAction("Find Again", "actionFindAgain"); actionFindAgain->setShortcut(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_F);
+		QAction* actionToggleComment = addAction("Toggle Line Comment", "actionToggleComment"); actionToggleComment->setShortcut(Qt::ControlModifier | Qt::Key_Slash);
+		QAction* actionDuplicateLine = addAction("Copy Line Down", "actionDuplicateLine"); actionDuplicateLine->setShortcut(Qt::ControlModifier | Qt::Key_D);
 		QAction* actionDeleteLine = addAction("Delete Line", "actionDeleteLine"); actionDeleteLine->setShortcut(Qt::ControlModifier | Qt::ShiftModifier | Qt::Key_L);
 
+        // -- Edit (xml) menut ---
+        QAction* actionAddAttribute = addAction("Add Attribute", "actionAddAttribute");
+        actionAddAttribute->setIcon(CIconProvider::GetIcon("selectAdd", QColor(Qt::red), Shape::Circle));
+        
+        QAction* actionAddElement = addAction("Add Element", "actionAddElement");
+        actionAddElement->setIcon(CIconProvider::GetIcon("selectAdd", QColor(Qt::blue), Shape::Circle));
+        
+        QAction* actionRemoveRow = addAction("Remove Row", "actionRemoveRow", "selectDel");
+
 		// --- Physics menu ---
-		actionAddBC              = addAction("Add Boundary Condition ..."    , "actionAddBC"       ); actionAddBC->setShortcut(Qt::ControlModifier + Qt::Key_B);
+		actionAddNodalBC         = addAction("Add Nodal BC..."               , "actionAddNodalBC"  ); actionAddNodalBC->setShortcut(Qt::ControlModifier | Qt::Key_B);
+		actionAddSurfaceBC       = addAction("Add Surface BC..."             , "actionAddSurfaceBC");
+		actionAddGeneralBC       = addAction("Add Linear Constraint ..."     , "actionAddGeneralBC");
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
-		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier + Qt::Key_L);
+		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
-		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier + Qt::Key_I);
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
+		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
-		actionAddConstraint      = addAction("Add Constraint..."             , "actionAddConstraint");
-		actionAddRigidConstraint = addAction("Add Rigid Constraint ..."      , "actionAddRigidConstraint");
+		actionAddSurfaceNLC      = addAction("Add Surface Constraint..."     , "actionAddSurfaceNLC");
+		actionAddBodyNLC         = addAction("Add Body Constraint..."        , "actionAddBodyNLC");
+		actionAddGenericNLC      = addAction("Add General Constraint..."     , "actionAddGenericNLC");
+		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
+		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
-		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier + Qt::Key_M);
+		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier | Qt::Key_M);
 		actionSoluteTable        = addAction("Solute Table ..."              , "actionSoluteTable");
 		actionSBMTable           = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
 		actionAddReaction        = addAction("Chemical Reaction Editor ..."  , "actionAddReaction");
@@ -482,11 +592,15 @@ public:
 		QAction* actionMeshDiagnostic = addAction("Mesh Diagnostic ...", "actionMeshDiagnostic"); actionMeshDiagnostic->setShortcut(Qt::Key_F11);
 		QAction* actionElasticityConvertor = addAction("Elasticity Converter ...", "actionElasticityConvertor");
 		QAction* actionUnitConverter = addAction("Unit Converter ...", "actionUnitConverter");
+		QAction* actionMaterialTest  = addAction("Material test ...", "actionMaterialTest");
 		QAction* actionKinemat = addAction("Kinemat ...", "actionKinemat");
 		QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
 		QAction* actionFEBioRun  = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 		QAction* actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
 		QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
+		QAction* actionFEBioTangent  = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
+		QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
+		QAction* actionFEBioPlugins = addAction("Manage FEBio plugins ...", "actionFEBioPlugins");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 #ifdef _DEBUG
@@ -504,11 +618,16 @@ public:
 		QAction* actionStreamLinePlot = addAction("Streamlines Plot", "actionStreamLinePlot", "streamlines");
 		QAction* actionParticleFlowPlot = addAction("Particleflow Plot", "actionParticleFlowPlot", "particle");
 		QAction* actionVolumeFlowPlot = addAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
-		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
-		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
+
+		QAction* actionImageSlicer   = addAction("Image Slicer", "actionImageSlicer", "imageslice");
+		QAction* actionVolumeRender  = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
-		QAction* actionAddProbe = addAction("Add Probe", "actionAddProbe");
-		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); // actionGraph->setShortcut(Qt::Key_F3);
+		QAction* actionImageWarp     = addAction("Image Warp", "actionImageWarp");
+
+		QAction* actionAddProbe = addAction("Probe", "actionAddProbe", "probe");
+		QAction* actionAddRuler = addAction("Ruler", "actionAddRuler", "ruler");
+		QAction* actionMusclePath = addAction("Muscle Path ...", "actionMusclePath");
+		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
 		QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
@@ -543,8 +662,8 @@ public:
 
 
 		// --- View menu ---
-		actionUndoViewChange  = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_U);
-		actionRedoViewChange  = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier + Qt::Key_R);
+		actionUndoViewChange  = addAction("Undo View Change", "actionUndoViewChange"); actionUndoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_U);
+		actionRedoViewChange  = addAction("Redo View Change", "actionRedoViewChange"); actionRedoViewChange->setShortcut(Qt::ControlModifier | Qt::Key_R);
 		actionZoomSelect      = addAction("Zoom to Selection", "actionZoomSelect"); actionZoomSelect->setShortcut(Qt::Key_F);
 		actionZoomExtents     = addAction("Zoom to Selection", "actionZoomExtents");
 		actionViewCapture     = addAction("Show Capture Frame", "actionViewCapture"); actionViewCapture->setCheckable(true); actionViewCapture->setShortcut(Qt::Key_0);
@@ -556,7 +675,7 @@ public:
 		actionOrtho           = addAction("Orthographic Projection", "actionOrtho"); actionOrtho->setCheckable(true); actionOrtho->setShortcut(Qt::Key_P);
 		actionShowNormals     = addAction("Show Normals", "actionShowNormals"); actionShowNormals->setCheckable(true); actionShowNormals->setShortcut(Qt::Key_N);
 		actionRenderMode      = addAction("Toggle Render Mode", "actionRenderMode"); actionRenderMode->setCheckable(true); actionRenderMode->setShortcut(Qt::Key_W);
-		actionShowFibers      = addAction("Toggle Fibers", "actionShowFibers"); actionShowFibers->setCheckable(true); 
+		actionShowFibers      = addAction("Show Fibers", "actionShowFibers");
 		actionShowMatAxes     = addAction("Toggle Material Axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
 		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
 		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
@@ -570,10 +689,10 @@ public:
 		actionTop             = addAction("Top"  , "actionTop"    ); actionTop   ->setShortcut(Qt::Key_9 | Qt::KeypadModifier);
 		actionBottom          = addAction("Bottom", "actionBottom"); actionBottom->setShortcut(Qt::Key_3 | Qt::KeypadModifier);
         actionIsometric       = addAction("Isometric", "actionIsometric"); actionIsometric->setShortcut(Qt::Key_5 | Qt::KeypadModifier);
-		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL + Qt::Key_K);
+		QAction* actionViewVPSave = addAction("Save Viewpoint", "actionViewVPSave"); actionViewVPSave->setShortcut(Qt::CTRL | Qt::Key_K);
 		QAction* actionViewVPPrev = addAction("Prev Viewpoint", "actionViewVPPrev"); actionViewVPPrev->setShortcut(Qt::Key_J);
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
-		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S + Qt::AltModifier);
+		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S | Qt::AltModifier);
 
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
@@ -582,6 +701,7 @@ public:
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionWelcome = addAction("Show Welcome Page", "actionWelcome");
+        QAction* actionBugReport = addAction("Submit a Bug Report", "actionBugReport");
 		QAction* actionAbout = addAction("About FEBio Studio", "actionAbout");
 	
 		// other actions
@@ -631,6 +751,7 @@ public:
 		menuFile   = new QMenu("File", menuBar);
 		menuEdit   = new QMenu("Edit", menuBar);
 		menuEditTxt = new QMenu("Edit", menuBar);
+        menuEditXml = new QMenu("Edit", menuBar);
 		menuPhysics= new QMenu("Physics", menuBar);
 		menuFEBio  = new QMenu("FEBio", menuBar);
 		menuPost   = new QMenu("Post", menuBar);
@@ -655,13 +776,17 @@ public:
 		recentGeomFilesActionGroup = new QActionGroup(mainWindow);
 		recentGeomFilesActionGroup->setObjectName("recentGeomFiles");
 
+		menuImportImage = new QMenu("Import Image");
+
 		// File menu
 		menuBar->addAction(menuFile->menuAction());
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addAction(actionNewProject);
+        menuFile->addAction(actionNewImageDoc);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
+        // menuFile->addAction(actionReadInfo);
 		menuFile->addAction(menuRecentFiles->menuAction());
 		menuFile->addAction(actionOpenProject);
 		menuFile->addAction(menuRecentProjects->menuAction());
@@ -681,10 +806,18 @@ public:
 		menuFile->addAction(actionExportProject);
 #endif
 		menuFile->addSeparator();
-		menuFile->addAction(actionImportImg);
+		menuFile->addAction(menuImportImage->menuAction());
+		menuImportImage->addAction(actionImportRawImage);
+		menuImportImage->addAction(actionImportDICOMImage);
+		menuImportImage->addAction(actionImportTiffImage);
+		menuImportImage->addAction(actionImportOMETiffImage);
+		menuImportImage->addAction(actionImportImageSequence);
+		
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");
 		ConvertMenu->addAction(actionConvertFeb);
+        ConvertMenu->addAction(actionConvertFeb2Fsm);
+        ConvertMenu->addAction(actionConvertFsm2Feb);
 		ConvertMenu->addAction(actionConvertGeo);
 
 		menuFile->addAction(ConvertMenu->menuAction());
@@ -693,6 +826,7 @@ public:
 
 		QMenu* moreSelection = new QMenu("More selection options");
 		moreSelection->addAction(actionFace2Elems);
+		moreSelection->addAction(actionSurfaceToFaces);
 		moreSelection->addAction(actionSelectOverlap);
 		moreSelection->addAction(actionSelectIsolatedVertices);
 		moreSelection->addAction(actionGrowSelection);
@@ -736,16 +870,31 @@ public:
 		menuEditTxt->addAction(actionDuplicateLine);
 		menuEditTxt->addAction(actionDeleteLine);
 
+        // Edit (xml) menu
+        menuBar->addAction(menuEditXml->menuAction());
+        menuEditXml->addAction(actionUndo);
+		menuEditXml->addAction(actionRedo);
+		menuEditXml->addSeparator();
+        menuEditXml->addAction(actionAddAttribute);
+        menuEditXml->addAction(actionAddElement);
+        menuEditXml->addAction(actionRemoveRow);
+
 		// Physics menu
 		menuBar->addAction(menuPhysics->menuAction());
-		menuPhysics->addAction(actionAddBC);
+		menuPhysics->addAction(actionAddNodalBC);
+		menuPhysics->addAction(actionAddSurfaceBC);
+		menuPhysics->addAction(actionAddGeneralBC);
 		menuPhysics->addAction(actionAddNodalLoad);
 		menuPhysics->addAction(actionAddSurfLoad);
 		menuPhysics->addAction(actionAddBodyLoad);
 		menuPhysics->addAction(actionAddIC);
 		menuPhysics->addAction(actionAddContact);
-		menuPhysics->addAction(actionAddConstraint);
-		menuPhysics->addAction(actionAddRigidConstraint);
+		menuPhysics->addAction(actionAddSurfaceNLC);
+		menuPhysics->addAction(actionAddBodyNLC);
+		menuPhysics->addAction(actionAddGenericNLC);
+		menuPhysics->addAction(actionAddRigidBC);
+		menuPhysics->addAction(actionAddRigidIC);
+		menuPhysics->addAction(actionAddRigidLoad);
 		menuPhysics->addAction(actionAddRigidConnector);
 		menuPhysics->addAction(actionAddMaterial);
 		menuPhysics->addAction(actionAddStep);
@@ -762,6 +911,9 @@ public:
 		menuFEBio->addAction(actionFEBioRun);
 		menuFEBio->addAction(actionFEBioStop);
 		menuFEBio->addAction(actionFEBioOptimize);
+		menuFEBio->addAction(actionFEBioTangent);
+		menuFEBio->addAction(actionFEBioInfo);
+		menuFEBio->addAction(actionFEBioPlugins);
 
 		// Post menu
 		menuBar->addAction(menuPost->menuAction());
@@ -775,11 +927,14 @@ public:
 		menuPost->addAction(actionStreamLinePlot);
 		menuPost->addAction(actionParticleFlowPlot);
 		menuPost->addAction(actionVolumeFlowPlot);
+		menuPost->addAction(actionAddProbe);
+		menuPost->addAction(actionAddRuler);
+		menuPost->addAction(actionMusclePath);
 		menuPost->addSeparator();
 		menuPost->addAction(actionImageSlicer);
 		menuPost->addAction(actionVolumeRender);
 		menuPost->addAction(actionMarchingCubes);
-		menuPost->addAction(actionAddProbe);
+		menuPost->addAction(actionImageWarp);
 		menuPost->addSeparator();
 		menuPost->addAction(actionGraph);
 		menuPost->addSeparator();
@@ -806,6 +961,7 @@ public:
 		menuTools->addAction(actionMeshDiagnostic);
 		menuTools->addAction(actionUnitConverter);
 		menuTools->addAction(actionElasticityConvertor);
+		menuTools->addAction(actionMaterialTest);
 		menuTools->addAction(actionKinemat);
 		menuTools->addAction(actionPlotMix);
 		menuTools->addAction(actionOptions);
@@ -868,6 +1024,8 @@ public:
 		menuHelp->addAction(actionFEBioResources);
 		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioPubs);
+        menuHelp->addSeparator();
+        menuHelp->addAction(actionBugReport);
 		menuHelp->addSeparator();
 		menuHelp->addAction(actionAbout);
 
@@ -945,6 +1103,13 @@ public:
 		postToolBar->setDisabled(true);
 		postToolBar->hide();
 
+        // Image tool bar
+        imageToolBar = new CImageToolBar(mainWindow);
+        imageToolBar->setObjectName("imageToolBar");
+		imageToolBar->setWindowTitle("Image Toolbar");
+        mainWindow->addToolBar(Qt::TopToolBarArea, imageToolBar);
+		imageToolBar->hide();
+
 		// Font tool bar
 		pFontToolBar = new QToolBar(mainWindow);
 		pFontToolBar->setObjectName("FontToolBar");
@@ -960,6 +1125,23 @@ public:
 		pFontToolBar->addAction(actionFontItalic = addAction("Italic", "fontItalic", "font_italic")); actionFontItalic->setCheckable(true);
 		pFontToolBar->addAction(actionProperties);
 		pFontToolBar->setEnabled(false);
+
+        // XML toolbar
+        xmlToolbar = new QToolBar(mainWindow);
+        xmlToolbar->setObjectName("xmlToolbar");
+        xmlToolbar->setWindowTitle("XML Toolbar");
+		mainWindow->addToolBar(Qt::TopToolBarArea, xmlToolbar);
+
+        actionEditXmlAsText = addAction("Edit as Text", "actionEditXmlAsText", "txt", true);
+        
+        xmlToolbar->addAction(actionEditXmlAsText);
+        xmlToolbar->addSeparator();
+        xmlToolbar->addAction(actionAddAttribute);
+        xmlToolbar->addAction(actionAddElement);
+        xmlToolbar->addAction(actionRemoveRow);
+        xmlToolbar->addSeparator();
+        xmlToolbar->addAction(actionUndo);
+        xmlToolbar->addAction(actionRedo);
 	}
 
 	void SetSelectionMode(int nselect)
@@ -1008,7 +1190,7 @@ public:
 //		m_wnd->tabifyDockWidget(dock2, dock3);
 
  		QDockWidget* dock4 = new QDockWidget("Output", m_wnd); dock4->setObjectName("dockLog");
-		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
 		logPanel = new ::CLogPanel(dock4);
 		dock4->setWidget(logPanel);
 		menuWindows->addAction(dock4->toggleViewAction());
@@ -1041,12 +1223,18 @@ public:
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
 
-#ifdef HAS_PYTHON
-		QDockWidget* dock9 = new QDockWidget("Python", m_wnd); dock9->setObjectName("dockPython");
-		pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock9);
-		pythonToolsPanel->initPython();
-		dock9->setWidget(pythonToolsPanel);
+        QDockWidget* dock9 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
+		dock9->setWidget(imageSettingsPanel);
 		menuWindows->addAction(dock9->toggleViewAction());
+		m_wnd->tabifyDockWidget(dock4, dock9);
+
+#ifdef HAS_PYTHON
+		QDockWidget* dock10 = new QDockWidget("Python", m_wnd); dock10->setObjectName("dockPython");
+		pythonToolsPanel = new ::CPythonToolsPanel(wnd, dock10);
+		pythonToolsPanel->initPython();
+		dock10->setWidget(pythonToolsPanel);
+		menuWindows->addAction(dock10->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock3, dock7);
 #endif
 
@@ -1094,6 +1282,11 @@ public:
 		setRecentFileList(m_recentProjects, recentFiles, menuRecentProjects, recentProjectsActionGroup);
 	}
 
+	void setRecentPlugins(QStringList& recentPlugins)
+	{
+		setRecentFileList(m_recentPlugins, recentPlugins, nullptr, nullptr);
+	}
+
 	void setRecentGeomFiles(QStringList& recentFiles)
 	{
 		setRecentFileList(m_recentGeomFiles, recentFiles, menuRecentGeomFiles, recentGeomFilesActionGroup);
@@ -1107,6 +1300,11 @@ public:
 	void addToRecentProjects(const QString& file)
 	{
 		addToRecentFilesList(m_recentProjects, file, menuRecentProjects, recentProjectsActionGroup);
+	}
+
+	void addToRecentPlugins(const QString& file)
+	{
+		addToRecentFilesList(m_recentPlugins, file);
 	}
 
 	void addToRecentGeomFiles(const QString& file)
@@ -1162,9 +1360,11 @@ private:
 		{
 			QString file = dstList.at(i);
 
-			QAction* pa = menu->addAction(file);
-
-			actionGroup->addAction(pa);
+			if (menu)
+			{
+				QAction* pa = menu->addAction(file);
+				if (actionGroup) actionGroup->addAction(pa);
+			}
 		}
 	}
 
@@ -1223,7 +1423,60 @@ private:
 		}
 	}
 
+	void addToRecentFilesList(QStringList& dstList, const QString& file)
+	{
+		QString fileName = file;
+
+#ifdef WIN32
+		// on windows, make sure that all filenames use backslashes
+		fileName.replace('/', '\\');
+#endif
+
+		if (dstList.isEmpty())
+		{
+			dstList.append(fileName);
+		}
+		else
+		{
+			// see if the file already exists or not
+			int n = dstList.indexOf(fileName);
+			if (n >= 0)
+			{
+				// if the file exists, we move it to the top
+				if (n != 0)
+				{
+					dstList.removeAt(n);
+					dstList.push_front(fileName);
+				}
+			}
+			else
+			{
+				int N = dstList.count();
+				if (N >= MAX_RECENT_FILES)
+				{
+					// remove the last one
+					dstList.removeLast();
+				}
+
+				// add a new file item
+				dstList.push_front(fileName);
+			}
+		}
+	}
+
 public:
+	void ShowDefaultBackground()
+	{
+		htmlViewer->setDocument(nullptr);
+		htmlViewer->setHtml(QString(" \
+					<!DOCTYPE html> \
+					<html> \
+					<body style = \"background-color:#808080;\"> \
+					</body> \
+					</html>"\
+		));
+	}
+
 	void setUIConfig(int config)
 	{
 		if (config == ::CMainWindow::HTML_CONFIG)
@@ -1233,13 +1486,16 @@ public:
 			// no open documents
 			menuEdit->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(false);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
 
 			buildToolBar->hide();
 			postToolBar->hide();
+            imageToolBar->hide();
 			pFontToolBar->hide();
+            xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1249,21 +1505,40 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
 		}
 		else if (config == ::CMainWindow::MODEL_CONFIG)
 		{
-			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+            if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::MODEL_VIEW)
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+
+                modelViewer->SetFilter(FILTER_NONE);
+            }
+            else if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
+            {
+                stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
+                modelViewer->SetFilter(FILTER_IMAGES);
+            }
+            else
+            {
+                modelViewer->SetFilter(FILTER_IMAGES);
+                stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
+            }
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
 			menuEditTxt->menuAction()->setVisible(false);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(true);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(true);
 
 			buildToolBar->show();
 			postToolBar->hide();
+            imageToolBar->show();
 			pFontToolBar->show();
+            xmlToolbar->hide();
 
 			glw->glc->show();
 
@@ -1281,13 +1556,16 @@ public:
 			// post mode
 			menuEdit->menuAction()->setVisible(true);
 			menuEditTxt->menuAction()->setVisible(false);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(true);
 			menuRecord->menuAction()->setVisible(true);
 
 			buildToolBar->hide();
 			postToolBar->show();
+            imageToolBar->hide();
 			pFontToolBar->show();
+            xmlToolbar->hide();
 
 			glw->glc->show();
 
@@ -1297,6 +1575,7 @@ public:
 			timePanel->parentWidget()->show();
 			logPanel->parentWidget()->show();
 			infoPanel->parentWidget()->show();
+            imageSettingsPanel->parentWidget()->hide();
 
 			showTimeline();
 		}
@@ -1306,13 +1585,16 @@ public:
 
 			menuEdit->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(true);
+            menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
 
 			buildToolBar->hide();
 			postToolBar->hide();
+            imageToolBar->hide();
 			pFontToolBar->hide();
+            xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1322,6 +1604,80 @@ public:
 			logPanel->parentWidget()->hide();
 			infoPanel->parentWidget()->hide();
 			timePanel->parentWidget()->hide();
+            imageSettingsPanel->parentWidget()->hide();
+		}
+        else if (config == ::CMainWindow::XML_CONFIG)
+		{
+            CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(m_wnd->GetDocument());
+            if(xmlDoc)
+            {
+                actionEditXmlAsText->blockSignals(true);
+                actionEditXmlAsText->setChecked(xmlDoc->EditingText());
+                actionEditXmlAsText->blockSignals(false);
+
+                if(xmlDoc->EditingText())
+                {
+                    stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
+
+                    menuEdit->menuAction()->setVisible(false);
+                    menuEditTxt->menuAction()->setVisible(true);
+                    menuEditXml->menuAction()->setVisible(false);
+                    menuPhysics->menuAction()->setVisible(false);
+                    menuPost->menuAction()->setVisible(false);
+                    menuRecord->menuAction()->setVisible(false);
+
+                    buildToolBar->hide();
+                    postToolBar->hide();
+                    pFontToolBar->hide();
+                    xmlToolbar->show();
+
+                    glw->glc->hide();
+
+                    modelViewer->parentWidget()->hide();
+                    buildPanel->parentWidget()->hide();
+                    postPanel->parentWidget()->hide();
+                    logPanel->parentWidget()->hide();
+                    infoPanel->parentWidget()->hide();
+                    timePanel->parentWidget()->hide();
+                    imageSettingsPanel->parentWidget()->hide();
+
+                    for(int index = 1; index < xmlToolbar->actions().size(); index++)
+                    {
+                        xmlToolbar->actions()[index]->setVisible(false);
+                    }
+                }
+                else
+                {
+                    stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
+
+                    menuEdit->menuAction()->setVisible(false);
+                    menuEditTxt->menuAction()->setVisible(false);
+                    menuEditXml->menuAction()->setVisible(true);
+                    menuPhysics->menuAction()->setVisible(false);
+                    menuPost->menuAction()->setVisible(false);
+                    menuRecord->menuAction()->setVisible(false);
+
+                    buildToolBar->hide();
+                    postToolBar->hide();
+                    pFontToolBar->hide();
+                    xmlToolbar->show();
+
+                    glw->glc->hide();
+
+                    modelViewer->parentWidget()->hide();
+                    buildPanel->parentWidget()->hide();
+                    postPanel->parentWidget()->hide();
+                    logPanel->parentWidget()->hide();
+                    infoPanel->parentWidget()->hide();
+                    timePanel->parentWidget()->hide();
+                    imageSettingsPanel->parentWidget()->hide();
+
+                    for(auto action : xmlToolbar->actions())
+                    {
+                        action->setVisible(true);
+                    }
+                }
+            }
 		}
 	}
 };

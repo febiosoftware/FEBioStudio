@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -45,20 +45,34 @@ SOFTWARE.*/
 
 CSummaryWindow::CSummaryWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
-	QString title = "FEBio Studio: Summary";
-	setWindowTitle(title);
+	QString wndTitle = windowTitle();
+	wndTitle += ":Summary";
+	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
+	setWindowTitle(wndTitle);
 
 	QCheckBox* selectionOnly = new QCheckBox("Selection only");
 	AddToolBarWidget(selectionOnly);
 	QObject::connect(selectionOnly, SIGNAL(stateChanged(int)), this, SLOT(onSelectionOnlyChanged(int)));
 
+	QCheckBox* volAvg = new QCheckBox("Volume average");
+	volAvg->setChecked(true);
+	AddToolBarWidget(volAvg);
+	QObject::connect(volAvg, SIGNAL(stateChanged(int)), this, SLOT(onVolumeAverageChanged(int)));
+
 	m_bselectionOnly = false;
+	m_bvolumeAverage = true;
 	m_ncurrentData = -1;
 }
 
 void CSummaryWindow::onSelectionOnlyChanged(int n)
 {
 	m_bselectionOnly = (n == Qt::Checked);
+	Update(false, true);
+}
+
+void CSummaryWindow::onVolumeAverageChanged(int n)
+{
+	m_bvolumeAverage = (n == Qt::Checked);
 	Update(false, true);
 }
 
@@ -69,13 +83,13 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	{
 		if (doc->IsValid())
 		{
-			SetYDataSelector(new CModelDataSelector(doc->GetFEModel(), Post::DATA_SCALAR));
+			SetYDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::DATA_SCALAR));
 		}
 		else return;
 	}
 
 	Post::CGLModel* po = doc->GetGLModel();
-	Post::FEPostModel* pfem = doc->GetFEModel();
+	Post::FEPostModel* pfem = doc->GetFSModel();
 	Post::FEPostMesh* pfe = po->GetActiveMesh();
 	int nodes = pfe->Nodes();
 
@@ -96,7 +110,7 @@ void CSummaryWindow::Update(bool breset, bool bfit)
 	bool bsel = m_bselectionOnly;
 
 	// see if volume average is checked
-	bool bvol = true; // ui->volumeAverage->isChecked();
+	bool bvol = m_bvolumeAverage;
 
 	// decide if we want to find the node/face/elem stat
 	int neval = -1;
@@ -196,7 +210,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalNodeRange(Post::FEPostModel& fem, int 
 	int NN = mesh.Nodes();
 	for (int i=0; i<NN; i++)
 	{
-		FENode& node = mesh.Node(i);
+		FSNode& node = mesh.Node(i);
 		if ((bsel == false) || (node.IsSelected()))
 		{
 			float val = state.m_NODE[i].m_val;
@@ -227,7 +241,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalEdgeRange(Post::FEPostModel& fem, int 
 	int NE = mesh.Edges();
 	for (int i=0; i<NE; i++)
 	{
-		FEEdge& edge = mesh.Edge(i);
+		FSEdge& edge = mesh.Edge(i);
 		if ((bsel == false) || (edge.IsSelected()))
 		{
 			float val = state.m_EDGE[i].m_val;
@@ -299,7 +313,7 @@ CSummaryWindow::RANGE CSummaryWindow::EvalFaceRange(Post::FEPostModel& fem, int 
 	int NF = mesh.Faces();
 	for (int i=0; i<NF; i++)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		if ((bsel == false) || (f.IsSelected()))
 		{

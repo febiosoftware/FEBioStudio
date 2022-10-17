@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FERevolveFaces.h"
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FEMeshBuilder.h>
+using namespace std;
 
 FERevolveFaces::FERevolveFaces() : FEModifier("Revolve faces")
 {
@@ -48,13 +49,13 @@ inline bool pointOnAxis(const vec3d& c, const vec3d& n, const vec3d& p)
     return (Lr < 1e-10);
 }
 
-FEMesh* FERevolveFaces::Apply(FEMesh* pm)
+FSMesh* FERevolveFaces::Apply(FSMesh* pm)
 {
     //if (pm->IsType(FE_QUAD4)) return RevolveShellMesh(pm);
     return RevolveSolidMesh(pm);
 }
 
-FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
+FSMesh* FERevolveFaces::RevolveSolidMesh(FSMesh* pm)
 {
     bool isQuad = false;
     
@@ -76,7 +77,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     int ne1 = 0;
     for (int i=0; i<NF; ++i)
     {
-        FEFace& f = pm->Face(i);
+        FSFace& f = pm->Face(i);
         
         if (f.IsSelected())
         {
@@ -104,7 +105,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     
     for (int i=0; i<NN0; ++i)
     {
-        FENode& node = pm->Node(i);
+        FSNode& node = pm->Node(i);
         if (node.m_ntag == 1)
         {
             // if a node lies on the axis of rotation we do not need to duplicate it
@@ -129,7 +130,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     
     // allocate new mesh
     int NN1 = NN0 + nn*nseg;
-    FEMesh* pmnew = new FEMesh(*pm);
+    FSMesh* pmnew = new FSMesh(*pm);
     pmnew->Create(NN1, 0);
     
     // loop over all tagged nodes
@@ -145,8 +146,8 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
             double wl = w * l / nseg;
             quatd Q(wl, axis);
             
-            FENode& node = pmnew->Node(nodeList[i]);
-            FENode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
+            FSNode& node = pmnew->Node(nodeList[i]);
+            FSNode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
             
             vec3d r = pm->LocalToGlobal(node.r) - center;
             Q.RotateVector(r);
@@ -161,7 +162,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
                 quatd Q(wl, axis);
                 
                 // create middle node for quadratic meshes
-                FENode& node3 = pmnew->Node(1 + NN0 + (l - 1)*nn + node.m_ntag);
+                FSNode& node3 = pmnew->Node(1 + NN0 + (l - 1)*nn + node.m_ntag);
                 
                 vec3d r = pm->LocalToGlobal(node.r) - center;
                 Q.RotateVector(r);
@@ -183,11 +184,11 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     {
         for (int i=0; i<pm->Faces(); ++i)
         {
-            FEFace& face = pmnew->Face(i);
+            FSFace& face = pmnew->Face(i);
             if (pm->Face(i).IsSelected())
             {
                 int nf = face.Nodes();
-                FEElement& el = pmnew->Element(n);
+                FSElement& el = pmnew->Element(n);
                 
                 if (nf == 6)
                 {
@@ -561,7 +562,7 @@ FEMesh* FERevolveFaces::RevolveSolidMesh(FEMesh* pm)
     return pmnew;
 }
 
-FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
+FSMesh* FERevolveFaces::RevolveShellMesh(FSMesh* pm)
 {
     // for now, only quad4 meshes
     //if (pm->IsType(FE_QUAD4) == false) return 0;
@@ -579,7 +580,7 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
     int nn = 0;
     for (int i = 0; i<NN0; ++i)
     {
-        FENode& node = pm->Node(i);
+        FSNode& node = pm->Node(i);
         
         // if a node lies on the axis of rotation we do not need to duplicate it
         vec3d r = pm->NodePosition(i);
@@ -596,7 +597,7 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
     
     // allocate new mesh
     int NN1 = NN0 + nn*nseg;
-    FEMesh* pmnew = new FEMesh(*pm);
+    FSMesh* pmnew = new FSMesh(*pm);
     pmnew->Create(NN1, 0);
     
     // revolve the tagged nodes
@@ -609,9 +610,9 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
         // loop over all tagged nodes
         for (int i = 0; i<nn; ++i)
         {
-            FENode& node = pmnew->Node(nodeList[i]);
+            FSNode& node = pmnew->Node(nodeList[i]);
             
-            FENode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
+            FSNode& node2 = pmnew->Node(NN0 + (l - 1)*nn + node.m_ntag);
             
             vec3d r = pm->LocalToGlobal(node.r) - center;
             Q.RotateVector(r);
@@ -629,10 +630,10 @@ FEMesh* FERevolveFaces::RevolveShellMesh(FEMesh* pm)
     {
         for (int i = 0; i<pm->Faces(); ++i)
         {
-            FEFace& face = pmnew->Face(i);
+            FSFace& face = pmnew->Face(i);
             
             int nf = face.Nodes();
-            FEElement& el = pmnew->Element(n);
+            FSElement& el = pmnew->Element(n);
             
             if (nf == 3)
             {

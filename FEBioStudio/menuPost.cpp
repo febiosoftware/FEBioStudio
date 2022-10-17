@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "MainWindow.h"
+#include "DlgStartThread.h"
 #include "ui_mainwindow.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLMirrorPlane.h>
@@ -38,10 +39,15 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/VolRender.h>
+#include <PostLib/VolumeRender2.h>
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLRuler.h>
+#include <PostGL/GLMusclePath.h>
+#include <PostGL/GLLinePlot.h>
+#include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
 #include "PostDocument.h"
@@ -53,6 +59,7 @@ SOFTWARE.*/
 #include "DlgTimeSettings.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
+#include <ImageLib/ImageFilter.h>
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -72,7 +79,7 @@ void CMainWindow::on_actionPlaneCut_triggered()
 		return;
 	}
 
-	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot(glm);
+	Post::CGLPlaneCutPlot* pp = new Post::CGLPlaneCutPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -88,7 +95,7 @@ void CMainWindow::on_actionMirrorPlane_triggered()
 		return;
 	}
 
-	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane(glm);
+	Post::CGLMirrorPlane* pp = new Post::CGLMirrorPlane();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -104,7 +111,7 @@ void CMainWindow::on_actionVectorPlot_triggered()
 		return;
 	}
 
-	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot(glm);
+	Post::CGLVectorPlot* pp = new Post::CGLVectorPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -120,7 +127,7 @@ void CMainWindow::on_actionTensorPlot_triggered()
 		return;
 	}
 
-	Post::GLTensorPlot* pp = new Post::GLTensorPlot(glm);
+	Post::GLTensorPlot* pp = new Post::GLTensorPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -136,7 +143,7 @@ void CMainWindow::on_actionStreamLinePlot_triggered()
 		return;
 	}
 
-	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot(glm);
+	Post::CGLStreamLinePlot* pp = new Post::CGLStreamLinePlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -152,7 +159,7 @@ void CMainWindow::on_actionParticleFlowPlot_triggered()
 		return;
 	}
 
-	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot(glm);
+	Post::CGLParticleFlowPlot* pp = new Post::CGLParticleFlowPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -168,7 +175,7 @@ void CMainWindow::on_actionVolumeFlowPlot_triggered()
 		return;
 	}
 
-	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot(glm);
+	Post::GLVolumeFlowPlot* pp = new Post::GLVolumeFlowPlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -210,6 +217,7 @@ void CMainWindow::on_actionImageSlicer_triggered()
 	else if (postDoc)
 	{
 		ui->postPanel->Update();
+		ui->postPanel->SelectObject(slicer);
 	}
 	RedrawGL();
 }
@@ -236,7 +244,8 @@ void CMainWindow::on_actionVolumeRender_triggered()
 		return;
 	}
 
-	Post::CVolRender* vr = new Post::CVolRender(img);
+//	Post::CVolRender* vr = new Post::CVolRender(img);
+	Post::CVolumeRender2* vr = new Post::CVolumeRender2(img);
 	vr->Create();
 	img->AddImageRenderer(vr);
 
@@ -248,13 +257,27 @@ void CMainWindow::on_actionVolumeRender_triggered()
 	else if (postDoc)
 	{
 		ui->postPanel->Update();
+		ui->postPanel->SelectObject(vr);
 	}
 	RedrawGL();
 }
 
 void CMainWindow::on_actionMarchingCubes_triggered()
 {
-	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	// get the document
+	CDocument* modelDoc = GetModelDocument();
+	CDocument* postDoc = GetPostDocument();
+
+	Post::CImageModel* img = nullptr;
+	if (modelDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+	}
+	else if (postDoc)
+	{
+		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	}
+
 	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
@@ -264,8 +287,42 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	Post::CMarchingCubes* mc = new Post::CMarchingCubes(img);
 	mc->Create();
 	img->AddImageRenderer(mc);
-	ui->modelViewer->Update();
-	ui->modelViewer->Select(mc);
+	if (modelDoc)
+	{
+		ui->modelViewer->Update();
+		ui->modelViewer->Select(mc);
+	}
+	else if (postDoc)
+	{
+		ui->postPanel->Update();
+		ui->postPanel->SelectObject(mc);
+	}
+	RedrawGL();
+}
+
+void CMainWindow::on_actionImageWarp_triggered()
+{
+	// get the document
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr) return;
+
+	// get the selected image model
+	Post::CImageModel* img = nullptr;
+	img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	if (img == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
+		return;
+	}
+
+	// create the image warp filter
+	Post::CGLModel& mdl = *postDoc->GetGLModel();
+	WarpImageFilter* warp = new WarpImageFilter(&mdl);
+	img->AddImageFilter(warp);
+	img->ApplyFilters();
+	ui->postPanel->Update(true);
+	ui->postPanel->SelectObject(warp);
+
 	RedrawGL();
 }
 
@@ -278,10 +335,42 @@ void CMainWindow::on_actionAddProbe_triggered()
 		return;
 	}
 
-	Post::GLProbe* probe = new Post::GLProbe(glm);
+	Post::GLProbe* probe = new Post::GLProbe();
 	glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionAddRuler_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLRuler* ruler = new Post::GLRuler();
+	glm->AddPlot(ruler);
+
+	UpdatePostPanel(true, ruler);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionMusclePath_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLMusclePath* musclePath = new Post::GLMusclePath();
+	glm->AddPlot(musclePath);
+
+	UpdatePostPanel(true, musclePath);
 	RedrawGL();
 }
 
@@ -290,7 +379,7 @@ void CMainWindow::on_actionIsosurfacePlot_triggered()
 	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot(glm);
+	Post::CGLIsoSurfacePlot* pp = new Post::CGLIsoSurfacePlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -302,7 +391,7 @@ void CMainWindow::on_actionSlicePlot_triggered()
 	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr) return;
 
-	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot(glm);
+	Post::CGLSlicePlot* pp = new Post::CGLSlicePlot();
 	glm->AddPlot(pp);
 
 	UpdatePostPanel(true, pp);
@@ -312,12 +401,12 @@ void CMainWindow::on_actionSlicePlot_triggered()
 
 void CMainWindow::on_actionDisplacementMap_triggered()
 {
-/*	CDocument* doc = GetDocument();
+	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 	if (doc->IsValid() == false) return;
 
-	CGLModel* pm = doc->GetGLModel();
-	if (pm->GetDisplacementMap() == 0)
+	Post::CGLModel* pm = doc->GetGLModel();
+	if (pm->GetDisplacementMap() == nullptr)
 	{
 		if (pm->AddDisplacementMap() == false)
 		{
@@ -326,14 +415,13 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 		else
 		{
 			doc->UpdateFEModel(true);
-			ui->modelViewer->Update(true);
+			ui->postPanel->Update(true);
 		}
 	}
 	else
 	{
 		QMessageBox::information(this, "FEBio Studio", "This model already has a displacement map.");
 	}
-*/
 }
 
 void CMainWindow::on_actionGraph_triggered()
@@ -414,10 +502,106 @@ void CMainWindow::on_actionImportPoints_triggered()
 	dlg.exec();
 }
 
+class processLinesThread : public CustomThread
+{
+public:
+	processLinesThread(Post::LineDataModel& lines) : m_lines(lines)
+	{
+		m_stopRequest = false;
+	}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		m_stopRequest = false;
+		// process the line data
+		int states = m_lines.States();
+		m_completed = 0;
+#pragma omp parallel for schedule(dynamic)
+		for (int nstate = 0; nstate < states; ++nstate)
+		{
+			if (m_stopRequest == false)
+			{
+				Post::LineData& lineData = m_lines.GetLineData(nstate);
+				lineData.processLines();
+			}
+#pragma omp atomic
+			m_completed++;
+		}
+		m_completed = states;
+		emit resultReady(m_stopRequest==false);
+	}
+
+public:
+	bool hasProgress() override { return true; }
+
+	double progress() override 
+	{ 
+		double pct = 100.0 * m_completed / m_lines.States();
+		return pct; 
+	}
+
+	const char* currentTask() override { return "processing line data"; }
+
+	void stop() override { m_stopRequest = true; }
+
+private:
+	bool	m_stopRequest;
+	int		m_completed;
+	Post::LineDataModel& m_lines;
+};
+
+//------------------------------------------------------------------------------
 void CMainWindow::on_actionImportLines_triggered()
 {
 	CDlgImportLines dlg(this);
-	dlg.exec();
+	if (dlg.exec())
+	{
+		CPostDocument* doc = ui->m_wnd->GetPostDocument();
+		if (doc == nullptr) return;
+
+		string fileName = dlg.GetFileName().toStdString();
+		string name = dlg.GetName().toStdString();
+
+		Post::FEPostModel* fem = doc->GetFSModel();
+
+		// allocate line model
+		Post::LineDataModel* lineData = new Post::LineDataModel(fem);
+
+		Post::Ang2LineDataSource* src = new Post::Ang2LineDataSource(lineData);
+
+		bool bsuccess = src->Load(fileName.c_str());
+
+		if (bsuccess)
+		{
+			// add a line plot for visualizing the line data
+			Post::CGLLinePlot* pgl = new Post::CGLLinePlot();
+			pgl->SetLineDataModel(lineData);
+			pgl->SetName(name);
+			ui->m_wnd->UpdatePostPanel(false, pgl);
+
+			processLinesThread* thread = new processLinesThread(*lineData);
+			CDlgStartThread dlg2(this, thread);
+			
+			bool bsuccess = false;
+			if (dlg2.exec())
+			{
+				bool bsuccess = dlg2.GetReturnCode();
+				if (bsuccess)
+				{
+					doc->GetGLModel()->AddPlot(pgl);
+					ui->postPanel->Update();
+					ui->postPanel->SelectObject(pgl);
+				}
+				else delete pgl;
+			}
+			else delete pgl;
+		}
+		else
+		{
+			delete lineData;
+			QMessageBox::critical(0, "FEBio Studio", "Failed reading line data file.");
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -439,7 +623,7 @@ void CMainWindow::SetCurrentTimeValue(float ftime)
 
 	// update the rest
 	//	UpdateTools(false);
-	//	UpdateGraphs(false);
+	UpdateGraphs(false);
 	RedrawGL();
 }
 
@@ -453,7 +637,7 @@ void CMainWindow::onTimer()
 
 	TIMESETTINGS& time = doc->GetTimeSettings();
 
-	int N = doc->GetFEModel()->GetStates();
+	int N = doc->GetFSModel()->GetStates();
 	int N0 = time.m_start;
 	int N1 = time.m_end;
 
@@ -583,7 +767,7 @@ void CMainWindow::on_selectData_currentValueChanged(int index)
 		RedrawGL();
 	}
 
-	//	UpdateGraphs(false);
+	UpdateGraphs(false);
 
 	//	if (ui->modelViewer->isVisible()) ui->modelViewer->Update(false);
 }
@@ -706,17 +890,12 @@ void CMainWindow::on_selectTime_valueChanged(int n)
 	if (doc == nullptr) return;
 	doc->SetActiveState(n - 1);
 	RedrawGL();
-	ui->modelViewer->RefreshProperties();
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(false);
 
-	int graphs = ui->graphList.size();
-	QList<CGraphWindow*>::iterator it = ui->graphList.begin();
-	for (int i = 0; i < graphs; ++i, ++it)
-	{
-		CGraphWindow* w = *it;
-		w->Update(false);
-	}
+	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
+
+	UpdateGraphs(false);
 }
 
 //-----------------------------------------------------------------------------

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,12 +27,14 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "FEBioJob.h"
+#include <vector>
 
 //-----------------------------------------------------------------------------
 typedef FSObjectList<CFEBioJob> CFEBioJobList;
 
 //-----------------------------------------------------------------------------
 class CModelContext;
+class FSObject;
 
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
@@ -49,12 +51,14 @@ public:
 	void Load(IArchive& ar) override;
 	void Save(OArchive& ar) override;
 
+	bool Initialize() override;
+
 public:
 	//! Get the project
-	FEProject& GetProject();
+	FSProject& GetProject();
 
 	// get the FE model
-	FEModel* GetFEModel();
+	FSModel* GetFSModel();
 
 	// get the geometry
 	GModel* GetGModel();
@@ -68,30 +72,26 @@ public:
 	void Activate() override;
 	void Deactivate() override;
 
+	void SetActiveItem(FSObject* po);
+	FSObject* GetActiveItem();
+
 public:
 	void AddObject(GObject* po);
 
 	void DeleteObject(FSObject* po);
 
 	// helper function for applying a modifier
-	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FEGroup* sel = 0, bool clearSel = true);
-	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FEGroup* sel = 0);
+	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel = 0, bool clearSel = true);
+	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
 
 public: // selection
-	FESelection* GetCurrentSelection();
+	FESelection* GetCurrentSelection() override;
 	void UpdateSelection(bool report = true) override;
-
-	void GrowNodeSelection(FEMeshBase* pm);
-	void GrowFaceSelection(FEMeshBase* pm, bool respectPartitions = true);
-	void GrowEdgeSelection(FEMeshBase* pm);
-	void GrowElementSelection(FEMesh* pm, bool respectPartitions = true);
-	void ShrinkNodeSelection(FEMeshBase* pm);
-	void ShrinkFaceSelection(FEMeshBase* pm);
-	void ShrinkEdgeSelection(FEMeshBase* pm);
-	void ShrinkElementSelection(FEMesh* pm);
 
 	void HideCurrentSelection();
 	void HideUnselected();
+
+	void SelectItems(FSObject* po, const std::vector<int>& l, int n);
 
 public:
 	int FEBioJobs() const;
@@ -106,7 +106,7 @@ public:
 	bool GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt);
 
 	// import geometry (geometry is added to current project)
-	bool ImportGeometry(FEFileImport* preader, const char* szfile);
+	bool ImportGeometry(FSFileImport* preader, const char* szfile);
 
 public:
 	// checks the model for issues and returns the warnings as a string array
@@ -114,10 +114,11 @@ public:
 
 	bool ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList);
 	bool ImportMaterials(const std::string& fileName);
+	bool ImportFEBioMaterials(const std::string& fileName);
 
 private:
 	// the FE Project
-	FEProject	m_Project;
+	FSProject	m_Project;
 
 	// the job list
 	CFEBioJobList	m_JobList;

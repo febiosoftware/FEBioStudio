@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData.h"
+#include <FSCore/FSObject.h>
 #include <typeinfo>
 #include <string>
 
@@ -45,21 +46,15 @@ enum DataFieldFlags {
 
 //-----------------------------------------------------------------------------
 // Base class describing a data field
-class FEDataField
+class ModelDataField : public FSObject
 {
 public:
-	FEDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
+	ModelDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
 
-	virtual ~FEDataField();
-
-	//! get the name of the field
-	const std::string& GetName() const;
-
-	//! set the name of the field
-	void SetName(const std::string& newName);
+	virtual ~ModelDataField();
 
 	//! Create a copy
-	virtual FEDataField* Clone() const = 0;
+	virtual ModelDataField* Clone() const = 0;
 
 	//! FEMeshData constructor
 	virtual FEMeshData* CreateData(FEState* pstate) = 0;
@@ -91,17 +86,21 @@ public:
 	//! return the name of a component
 	std::string componentName(int ncomp, Data_Tensor_Type ntype);
 
-	virtual const std::type_info& TypeInfo() { return typeid(FEDataField); }
+	virtual const std::type_info& TypeInfo() { return typeid(ModelDataField); }
 
 	unsigned int Flags() const { return m_flag; }
 
 	void SetArraySize(int n) { m_arraySize = n; }
 	int GetArraySize() const { return m_arraySize; }
 
-	void SetArrayNames(vector<string>& n);
-	vector<string> GetArrayNames() const;
+	void SetArrayNames(std::vector<string>& n);
+	std::vector<string> GetArrayNames() const;
 
 	FEPostModel* GetModel() { return m_fem; }
+
+public:
+	void SetUnits(const char* sz);
+	const char* GetUnits() const;
 
 protected:
 	int				m_nfield;	//!< field ID
@@ -109,27 +108,22 @@ protected:
 	Data_Format		m_nfmt;		//!< data format
 	Data_Class		m_nclass;	//!< data class
 	unsigned int	m_flag;		//!< flags
-	std::string		m_name;		//!< data field name
+	std::string		m_units;	//!< units
 
 	int				m_arraySize;	//!< data size for arrays
-	vector<string>	m_arrayNames;	//!< (optional) names of array components
+	std::vector<string>	m_arrayNames;	//!< (optional) names of array components
 
 	FEPostModel*	m_fem;
-
-public:
-	// TODO: Add properties list for data fields (e.g. strains and curvature could use this)
-	// strain parameters
-	int		m_nref;	// reference state
 };
 
 //-----------------------------------------------------------------------------
-template<typename T> class FEDataField_T : public FEDataField
+template<typename T> class FEDataField_T : public ModelDataField
 {
 public:
-	FEDataField_T(FEPostModel* fem, unsigned int flag = 0) : FEDataField(fem, T::Type(), T::Format(), T::Class(), flag) {}
+	FEDataField_T(FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, T::Type(), T::Format(), T::Class(), flag) {}
 	FEMeshData* CreateData(FEState* pstate) { return new T(pstate, this); }
 
-	virtual FEDataField* Clone() const
+	virtual ModelDataField* Clone() const
 	{
 		FEDataField_T<T>* newData = new FEDataField_T<T>(m_fem);
 		newData->SetName(GetName());
@@ -140,36 +134,36 @@ public:
 };
 
 //-----------------------------------------------------------------------------
-typedef vector<FEDataField*>::iterator FEDataFieldPtr;
+typedef std::vector<ModelDataField*>::iterator FEDataFieldPtr;
 
 
 //-----------------------------------------------------------------------------
-class FEArrayDataField : public FEDataField
+class FEArrayDataField : public ModelDataField
 {
 public:
 	FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag = 0);
 
-	FEDataField* Clone() const override;
+	ModelDataField* Clone() const override;
 
 	FEMeshData* CreateData(FEState* pstate) override;
 };
 
 //-----------------------------------------------------------------------------
-class FEArrayVec3DataField : public FEDataField
+class FEArrayVec3DataField : public ModelDataField
 {
 public:
 	FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag = 0);
 
-	FEDataField* Clone() const override;
+	ModelDataField* Clone() const override;
 
 	FEMeshData* CreateData(FEState* pstate) override;
 };
 
 //-------------------------------------------------------------------------------
-bool ExportDataField(FEPostModel& fem, const FEDataField& df, const char* szfile);
-bool ExportNodeDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
-bool ExportFaceDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
-bool ExportElementDataField(FEPostModel& fem, const FEDataField& df, FILE* fp);
+bool ExportDataField(FEPostModel& fem, const ModelDataField& df, const char* szfile, bool selOnly, const std::vector<int>& states);
+bool ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states);
+bool ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states);
+bool ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states);
 
 //-----------------------------------------------------------------------------
 void InitStandardDataFields();
@@ -183,12 +177,12 @@ bool AddNodeDataFromFile(FEPostModel& fem, const char* szfile, const char* sznam
 bool AddFaceDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype);
 bool AddElemDataFromFile(FEPostModel& fem, const char* szfile, const char* szname, int ntype);
 
-class FEPlotObjectData : public FEDataField
+class PlotObjectData : public ModelDataField
 {
 public:
-	FEPlotObjectData(FEPostModel* fem, Data_Type ntype) : FEDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
+	PlotObjectData(FEPostModel* fem, Data_Type ntype) : ModelDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
 
-	FEDataField* Clone() const override { assert(false); return nullptr; };
+	ModelDataField* Clone() const override { assert(false); return nullptr; };
 	FEMeshData* CreateData(FEState* pstate) override { assert(false); return nullptr; }
 };
 }

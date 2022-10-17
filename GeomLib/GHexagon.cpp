@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -75,12 +75,12 @@ void GHexagon::Create()
 	for (int i=0; i<18; ++i) AddLine(ET[i][0], ET[i][1]);
 
 	//3. build part
-	AddPart();
+	AddSolidPart();
 
 	//4. build the faces
-	vector<int> edge;
+	std::vector<int> edge;
 	edge.resize(6);
-	for (int i = 0; i<6; ++i) edge[i] = i;
+	for (int i = 0; i<6; ++i) edge[5 - i] = i;
 	AddFacet(edge, FACE_POLYGON);
 
 	int FE[][4] = {

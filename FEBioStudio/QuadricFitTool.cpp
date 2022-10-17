@@ -78,14 +78,14 @@ bool CQuadricFitTool::OnApply()
             return false;
         }
         
-        FEMesh& mesh = *po->GetFEMesh();
+        FSMesh& mesh = *po->GetFEMesh();
         
         int N = mesh.Nodes();
         int F = mesh.Faces();
         for (int i = 0; i<N; ++i) mesh.Node(i).m_ntag = 0;
         for (int i = 0; i<F; ++i)
         {
-            FEFace& f = mesh.Face(i);
+            FSFace& f = mesh.Face(i);
             if ((m_bsel == false) || (f.IsSelected()))
             {
                 int nf = f.Nodes();
@@ -117,27 +117,8 @@ bool CQuadricFitTool::OnApply()
         m_c = fit->m_c;
 
         m_qtype = fit->GetType();
-        
-        switch (m_qtype) {
-            case QuadricFit::Q_ELLIPSOID: m_quadric = QString("Ellipsoid"); break;
-            case QuadricFit::Q_ELLIPTIC_PARABOLOID: m_quadric = QString("Elliptic Paraboloid"); break;
-            case QuadricFit::Q_HYPERBOLIC_PARABOLOID: m_quadric = QString("Hyperbolic Paraboloid"); break;
-            case QuadricFit::Q_ELLIPTIC_HYPERBOLOID_1: m_quadric = QString("Elliptic Hyperboloid of One Sheet"); break;
-            case QuadricFit::Q_ELLIPTIC_HYPERBOLOID_2: m_quadric = QString("Elliptic Hyperboloid of Two Sheets"); break;
-            case QuadricFit::Q_ELLIPTIC_CONE: m_quadric = QString("Elliptic Cone"); break;
-            case QuadricFit::Q_ELLIPTIC_CYLINDER: m_quadric = QString("Elliptic Cylinder"); break;
-            case QuadricFit::Q_PARABOLIC_CYLINDER: m_quadric = QString("Parabolic Cylinder"); break;
-            case QuadricFit::Q_SPHEROID: m_quadric = QString("Spheroid"); break;
-            case QuadricFit::Q_SPHERE: m_quadric = QString("Sphere"); break;
-            case QuadricFit::Q_CIRCULAR_PARABOLOID: m_quadric = QString("Circular Paraboloid"); break;
-            case QuadricFit::Q_CIRCULAR_HYPERBOLOID_1: m_quadric = QString("Circular Hyperboloid of One Sheet"); break;
-            case QuadricFit::Q_CIRCULAR_HYPERBOLOID_2: m_quadric = QString("Circular Hyperboloid of Two Sheets"); break;
-            case QuadricFit::Q_CIRCULAR_CONE: m_quadric = QString("Circular Cone"); break;
-            case QuadricFit::Q_CIRCULAR_CYLINDER: m_quadric = QString("Circular Cylinder"); break;
-            case QuadricFit::Q_UNKNOWN: m_quadric = QString("Unknown"); break;
-            default: break;
-        }
-        
+        std::string quadric = fit->GetStringType(m_qtype);
+        m_quadric = QString(quadric.c_str());
     }
     
     return true;

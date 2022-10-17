@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEPLYExport::FEPLYExport(FEProject& prj) : FEFileExport(prj)
+FEPLYExport::FEPLYExport(FSProject& prj) : FEFileExport(prj)
 {
 
 }
@@ -48,23 +48,23 @@ struct PLY_FACE {
 bool FEPLYExport::Write(const char* szfile)
 {
 	// get the GModel
-	GModel& mdl = m_prj.GetFEModel().GetModel();
+	GModel& mdl = m_prj.GetFSModel().GetModel();
 
 	// the vertex and face list
-	vector<vec3d> vertices; vertices.reserve(100000);
-	vector<PLY_FACE> faces; faces.reserve(100000);
+	std::vector<vec3d> vertices; vertices.reserve(100000);
+	std::vector<PLY_FACE> faces; faces.reserve(100000);
 	
 	int objs = mdl.Objects();
 	for (int i = 0; i < objs; ++i)
 	{
-		FEMesh* mesh = mdl.Object(i)->GetFEMesh();
+		FSMesh* mesh = mdl.Object(i)->GetFEMesh();
 		if (mesh)
 		{
 			int n0 = vertices.size();
 			int NN = mesh->Nodes();
 			for (int j = 0; j < NN; ++j)
 			{
-				FENode& node = mesh->Node(j);
+				FSNode& node = mesh->Node(j);
 				vec3d r = mesh->LocalToGlobal(node.r);
 				vertices.push_back(r);
 			}
@@ -72,7 +72,7 @@ bool FEPLYExport::Write(const char* szfile)
 			int NE = mesh->Elements();
 			for (int j = 0; j < NE; ++j)
 			{
-				FEElement& el = mesh->Element(j);
+				FSElement& el = mesh->Element(j);
 				if ((el.Type() == FE_TRI3) || (el.Type() == FE_QUAD4))
 				{
 					PLY_FACE f;

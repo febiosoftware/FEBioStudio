@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,6 +38,11 @@ CGLPlot::~CGLPlot()
 {
 }
 
+void CGLPlot::Reload()
+{
+
+}
+
 void CGLPlot::UpdateTexture() 
 {
 
@@ -53,7 +58,7 @@ int CGLPlot::GetRenderOrder() const
 	return m_renderOrder;
 }
 
-CGLLegendPlot::CGLLegendPlot(CGLModel* po) : CGLPlot(po)
+CGLLegendPlot::CGLLegendPlot()
 {
 	m_pbar = nullptr;
 }
@@ -97,4 +102,10 @@ void CGLLegendPlot::ShowLegend(bool b)
 	{
 		if (b) m_pbar->show(); else m_pbar->hide();
 	}
+}
+
+void CGLLegendPlot::Activate(bool b)
+{
+	CGLPlot::Activate(b);
+	if (b) ShowLegend(true); else ShowLegend(false);
 }

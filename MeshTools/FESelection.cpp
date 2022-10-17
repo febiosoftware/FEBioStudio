@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -76,6 +76,22 @@ int GObjectSelection::Prev()
 	return n;
 }
 
+FEItemListBuilder* GObjectSelection::CreateItemList()
+{
+	GPartList* partList = new GPartList(m_pfem);
+	GModel& m = m_pfem->GetModel();
+	int N = m.Objects();
+	for (int i = 0; i < N; ++i)
+	{
+		GObject* po = m.Object(i);
+		if (po->IsSelected())
+		{
+			int parts = po->Parts();
+			for (int j = 0; j < parts; ++j) partList->add(po->Part(j)->GetID());
+		}
+	}
+	return partList;
+}
 
 void GObjectSelection::Invert()
 {
@@ -224,7 +240,7 @@ GPartSelection::Iterator::Iterator(GPartSelection* ps)
 {
 	m_npart = -1;
 	m_pg = 0;
-	m_ps = ps->GetFEModel();
+	m_ps = ps->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	int N = m.Parts();
 	for (int i=0; i<N; ++i)
@@ -359,7 +375,7 @@ FEItemListBuilder* GPartSelection::CreateItemList()
 
 GFaceSelection::Iterator::Iterator(GFaceSelection* ps)
 {
-	m_ps = ps->GetFEModel();
+	m_ps = ps->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_nsurf = -1;
 	m_pf = 0;
@@ -520,7 +536,7 @@ FEItemListBuilder* GFaceSelection::CreateItemList()
 
 GEdgeSelection::Iterator::Iterator(GEdgeSelection* pg)
 {
-	m_ps = pg->GetFEModel();
+	m_ps = pg->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_nedge = -1;
 	m_pe = 0;
@@ -653,7 +669,7 @@ FEItemListBuilder* GEdgeSelection::CreateItemList()
 
 GNodeSelection::Iterator::Iterator(GNodeSelection* pg)
 {
-	m_ps = pg->GetFEModel();
+	m_ps = pg->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_node = -1;
 	m_pn = 0;
@@ -802,7 +818,7 @@ FEItemListBuilder* GNodeSelection::CreateItemList()
 
 GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 {
-	m_ps = pg->GetFEModel();
+	m_ps = pg->GetFSModel();
 	GModel& m = m_ps->GetModel();
 	m_item = -1;
 	m_pn = 0;
@@ -958,7 +974,7 @@ void GDiscreteSelection::Update()
 //////////////////////////////////////////////////////////////////////
 
 
-FEElementSelection::Iterator::Iterator(FEMesh* pm)
+FEElementSelection::Iterator::Iterator(FSMesh* pm)
 {
 	m_pm = pm;
 	m_n = 0;
@@ -997,7 +1013,7 @@ void FEElementSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Elements();
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	GObject* po = m_pMesh->GetGObject();
 
@@ -1051,7 +1067,7 @@ void FEElementSelection::Translate(vec3d dr)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1099,7 +1115,7 @@ void FEElementSelection::Rotate(quatd q, vec3d rc)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1145,7 +1161,7 @@ void FEElementSelection::Scale(double s, vec3d dr, vec3d c)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1189,12 +1205,12 @@ quatd FEElementSelection::GetOrientation()
 
 FEItemListBuilder* FEElementSelection::CreateItemList()
 {
-	FEMesh* pm = GetMesh();
+	FSMesh* pm = GetMesh();
 	GObject* po = pm->GetGObject();
 	vector<int> elset;
 	for (int i=0; i<pm->Elements(); ++i) 
 		if (pm->Element(i).IsSelected()) elset.push_back(i);
-	return new FEPart(po, elset);
+	return new FSPart(po, elset);
 }
 
 FEElement_* FEElementSelection::Element(int i)
@@ -1211,7 +1227,7 @@ int FEFaceSelection::Count()
 {
 	if (m_pMesh == 0) return 0;
 	int N = 0;
-	FEFace* pf = m_pMesh->FacePtr();
+	FSFace* pf = m_pMesh->FacePtr();
 	for (int i=0; i<m_pMesh->Faces(); ++i, ++pf)
 		if (pf->IsSelected()) ++N;
 
@@ -1222,7 +1238,7 @@ void FEFaceSelection::Invert()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Faces(); 
-	FEFace* pf = m_pMesh->FacePtr();
+	FSFace* pf = m_pMesh->FacePtr();
 	for (int i=0; i<N; ++i, ++pf)
 		if (pf->IsVisible())
 		{
@@ -1235,8 +1251,8 @@ void FEFaceSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Faces();
-	FENode* pn = m_pMesh->NodePtr();
-	FEFace* pf = m_pMesh->FacePtr();
+	FSNode* pn = m_pMesh->NodePtr();
+	FSFace* pf = m_pMesh->FacePtr();
 	GObject* po = m_pMesh->GetGObject();
 
 	int m = 0;
@@ -1251,7 +1267,7 @@ void FEFaceSelection::Update()
 	{
 		if (pf->IsSelected())
 		{
-			FEFace& f = *pf;
+			FSFace& f = *pf;
 			n = f.n;
 			for (j=0; j<pf->Nodes(); ++j)
 			{
@@ -1281,7 +1297,7 @@ void FEFaceSelection::Translate(vec3d dr)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1330,7 +1346,7 @@ void FEFaceSelection::Rotate(quatd q, vec3d rc)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1374,7 +1390,7 @@ void FEFaceSelection::Scale(double s, vec3d dr, vec3d c)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1412,7 +1428,7 @@ quatd FEFaceSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FEFaceSelection::Iterator::Iterator(FEMeshBase* pm)
+FEFaceSelection::Iterator::Iterator(FSMeshBase* pm)
 { 
 	m_pm = pm;
 	m_n = 0;
@@ -1429,14 +1445,14 @@ void FEFaceSelection::Iterator::operator ++()
 
 FEItemListBuilder* FEFaceSelection::CreateItemList()
 {
-	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 
 	GObject* po = pm->GetGObject();
 	vector<int> fs;
 	for (int i=0; i<pm->Faces(); ++i)
 		if (pm->Face(i).IsSelected()) fs.push_back(i);
-	return new FESurface(po, fs);
+	return new FSSurface(po, fs);
 }
 
 FEFaceSelection::Iterator FEFaceSelection::begin()
@@ -1452,7 +1468,7 @@ int FEEdgeSelection::Count()
 {
 	if (m_pMesh == 0) return 0;
 	int N = 0;
-	FEEdge* pe = m_pMesh->EdgePtr();
+	FSEdge* pe = m_pMesh->EdgePtr();
 	for (int i=0; i<m_pMesh->Edges(); ++i, ++pe)
 		if (pe->IsSelected()) ++N;
 
@@ -1463,7 +1479,7 @@ void FEEdgeSelection::Invert()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Edges(); 
-	FEEdge* pe = m_pMesh->EdgePtr();
+	FSEdge* pe = m_pMesh->EdgePtr();
 	for (int i=0; i<N; ++i, ++pe)
 		if (pe->IsVisible())
 		{
@@ -1476,8 +1492,8 @@ void FEEdgeSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Edges();
-	FENode* pn = m_pMesh->NodePtr();
-	FEEdge* pe = m_pMesh->EdgePtr();
+	FSNode* pn = m_pMesh->NodePtr();
+	FSEdge* pe = m_pMesh->EdgePtr();
 
 	int m = 0;
 
@@ -1491,7 +1507,7 @@ void FEEdgeSelection::Update()
 	{
 		if (pe->IsSelected())
 		{
-			FEEdge& e = *pe;
+			FSEdge& e = *pe;
 			n = e.n;
 			for (j=0; j<e.Nodes(); ++j)
 			{
@@ -1521,7 +1537,7 @@ void FEEdgeSelection::Translate(vec3d dr)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1569,7 +1585,7 @@ void FEEdgeSelection::Rotate(quatd q, vec3d rc)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1614,7 +1630,7 @@ void FEEdgeSelection::Scale(double s, vec3d dr, vec3d c)
 
 	int N = m_pMesh->Nodes();
 	// clear the tags
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 
 	for (i=0; i<N; ++i)  pn[i].m_ntag = 0;
 
@@ -1651,7 +1667,7 @@ quatd FEEdgeSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FEEdgeSelection::Iterator::Iterator(FELineMesh* pm)
+FEEdgeSelection::Iterator::Iterator(FSLineMesh* pm)
 { 
 	m_pm = pm;
 	m_n = 0;
@@ -1668,13 +1684,13 @@ void FEEdgeSelection::Iterator::operator ++()
 
 FEItemListBuilder* FEEdgeSelection::CreateItemList()
 {
-	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 	GObject* po = pm->GetGObject();
 	vector<int> es;
 	for (int i=0; i<pm->Edges(); ++i)
 		if (pm->Edge(i).IsSelected()) es.push_back(i);
-	return new FEEdgeSet(po, es);
+	return new FSEdgeSet(po, es);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1685,7 +1701,7 @@ int FENodeSelection::Count()
 {
 	if (m_pMesh == 0) return 0;
 	int N = 0;
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	for (int i=0; i<m_pMesh->Nodes(); ++i, ++pn)
 		if (pn->IsSelected()) ++N;
 
@@ -1701,7 +1717,7 @@ void FENodeSelection::Invert()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Nodes(); 
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	for (int i=0; i<N; ++i, ++pn)
 		if (pn->IsVisible())
 		{
@@ -1714,7 +1730,7 @@ void FENodeSelection::Update()
 {
 	if (m_pMesh == 0) return;
 	int N = m_pMesh->Nodes();
-	FENode* pn = m_pMesh->NodePtr();
+	FSNode* pn = m_pMesh->NodePtr();
 	GObject* po = m_pMesh->GetGObject();
 
 	int m = 0;
@@ -1839,7 +1855,7 @@ quatd FENodeSelection::GetOrientation()
 	if (m_pMesh == 0) return quatd(0, 0, 0, 1); else return m_pMesh->GetGObject()->GetTransform().GetRotation();
 }
 
-FENodeSelection::Iterator::Iterator(FELineMesh* pm)
+FENodeSelection::Iterator::Iterator(FSLineMesh* pm)
 { 
 	m_pm = pm;
 	m_n = 0;
@@ -1855,12 +1871,12 @@ void FENodeSelection::Iterator::operator ++()
 
 FEItemListBuilder* FENodeSelection::CreateItemList()
 {
-	FEMesh* pm = dynamic_cast<FEMesh*>(GetMesh());
+	FSMesh* pm = dynamic_cast<FSMesh*>(GetMesh());
 	if (pm == nullptr) return nullptr;
 
 	GObject* po = pm->GetGObject();
 	vector<int> ns;
 	for (int i=0; i<pm->Nodes(); ++i)
 		if (pm->Node(i).IsSelected()) ns.push_back(i);
-	return new FENodeSet(po, ns);
+	return new FSNodeSet(po, ns);
 }

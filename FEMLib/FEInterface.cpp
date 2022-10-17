@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -36,26 +36,25 @@ using std::set;
 using std::unique_ptr;
 
 //=============================================================================
-// FEInterface
+// FSInterface
 //-----------------------------------------------------------------------------
 
-FEInterface::FEInterface(int ntype, FEModel* ps, int nstep)
+FSInterface::FSInterface(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
+	m_superClassID = FESURFACEINTERFACE_ID;
 	m_bActive = true;
-	m_ps = ps;
-	m_sztype = "(not defined)";
 }
 
 //-----------------------------------------------------------------------------
-FEInterface::~FEInterface()
+FSInterface::~FSInterface()
 {
 
 }
 
 //-----------------------------------------------------------------------------
-void FEInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
+void FSInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 {
 	if (pitem)
 	{
@@ -66,40 +65,42 @@ void FEInterface::SaveList(FEItemListBuilder* pitem, OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
+FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 {
 	FEItemListBuilder* pitem = 0;
 
-	if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FEInterface::LoadList");
+	FSModel* fem = GetFSModel();
+
+	if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FSInterface::LoadList");
 	unsigned int ntype = ar.GetChunkID();
 	switch (ntype)
 	{
-	case GO_NODE: pitem = new GNodeList(m_ps); break;
-	case GO_EDGE: pitem = new GEdgeList(m_ps); break;
-	case GO_FACE: pitem = new GFaceList(m_ps); break;
-	case GO_PART: pitem = new GPartList(m_ps); break;
-	case FE_NODESET: pitem = new FENodeSet((GObject*)0); break;
-	case FE_EDGESET: pitem = new FEEdgeSet((GObject*)0); break;
-	case FE_SURFACE: pitem = new FESurface((GObject*)0); break;
-	case FE_PART   : pitem = new FEPart   ((GObject*)0); break;
+	case GO_NODE: pitem = new GNodeList(fem); break;
+	case GO_EDGE: pitem = new GEdgeList(fem); break;
+	case GO_FACE: pitem = new GFaceList(fem); break;
+	case GO_PART: pitem = new GPartList(fem); break;
+	case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
+	case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
+	case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;
+	case FE_PART   : pitem = new FSPart   ((GObject*)0); break;
 	default:
 		assert(false);
 	}
-	if (pitem == 0) throw ReadError("unknown item list type (FEInterface::LoadList)");
+	if (pitem == 0) throw ReadError("unknown item list type (FSInterface::LoadList)");
 
 	pitem->Load(ar);
 	ar.CloseChunk();
 
 	int nret = ar.OpenChunk();
-	if (nret != IArchive::IO_END) throw ReadError("error in FEInterface::LoadList");
+	if (nret != IArchive::IO_END) throw ReadError("error in FSInterface::LoadList");
 
-	// set the parent mesh for FEGroup's
-	FEGroup* pg = dynamic_cast<FEGroup*>(pitem);
+	// set the parent mesh for FSGroup's
+	FSGroup* pg = dynamic_cast<FSGroup*>(pitem);
 	if (pg)
 	{
-		if (m_ps->FindGroupParent(pg) == false)
+		if (fem->FindGroupParent(pg) == false)
 		{
-			ar.log("Invalid object ID in FEInterface::LoadList");
+			ar.log("Invalid object ID in FSInterface::LoadList");
 			delete pitem;
 			pitem = nullptr;
 		}
@@ -109,24 +110,24 @@ FEItemListBuilder* FEInterface::LoadList(IArchive& ar)
 }
 
 //=============================================================================
-// FEPairedInterface
+// FSPairedInterface
 //-----------------------------------------------------------------------------
 
-FEPairedInterface::FEPairedInterface(int ntype, FEModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
+FSPairedInterface::FSPairedInterface(int ntype, FSModel* ps, int nstep) : FSInterface(ntype, ps, nstep)
 {
 	m_surf1 = 0;
 	m_surf2 = 0;
 }
 
 //-----------------------------------------------------------------------------
-FEPairedInterface::~FEPairedInterface()
+FSPairedInterface::~FSPairedInterface()
 {
 	delete m_surf1;
 	delete m_surf2;
 }
 
 //-----------------------------------------------------------------------------
-void FEPairedInterface::SwapPrimarySecondary()
+void FSPairedInterface::SwapPrimarySecondary()
 {
 	FEItemListBuilder* tmp = m_surf1;
 	m_surf1 = m_surf2;
@@ -134,7 +135,7 @@ void FEPairedInterface::SwapPrimarySecondary()
 }
 
 //-----------------------------------------------------------------------------
-void FEPairedInterface::Save(OArchive& ar)
+void FSPairedInterface::Save(OArchive& ar)
 {
 	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
 	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());
@@ -148,23 +149,23 @@ void FEPairedInterface::Save(OArchive& ar)
 	if (m_surf1)
 	{
 		ar.BeginChunk(CID_INTERFACE_SURFACE1);
-		FEInterface::SaveList(m_surf1, ar);
+		FSInterface::SaveList(m_surf1, ar);
 		ar.EndChunk();
 	}
 	if (m_surf2)
 	{
 		ar.BeginChunk(CID_INTERFACE_SURFACE2);
-		FEInterface::SaveList(m_surf2, ar);
+		FSInterface::SaveList(m_surf2, ar);
 		ar.EndChunk();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FEPairedInterface::Load(IArchive &ar)
+void FSPairedInterface::Load(IArchive &ar)
 {
-	TRACE("FEPairedInterface::Load");
+	TRACE("FSPairedInterface::Load");
 
-	GModel& mdl = m_ps->GetModel();
+	GModel& mdl = GetFSModel()->GetModel();
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -175,8 +176,8 @@ void FEPairedInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_SURFACE1: m_surf1 = FEInterface::LoadList(ar); break;
-		case CID_INTERFACE_SURFACE2: m_surf2 = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1: m_surf1 = FSInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE2: m_surf2 = FSInterface::LoadList(ar); break;
 		case CID_SI_MASTER: // obsolete in 1.8
 		{
 			// The old master surface is now the secondary surface
@@ -194,7 +195,7 @@ void FEPairedInterface::Load(IArchive &ar)
 		}
 		break;
 		default:
-			throw ReadError("unknown CID in FEPairedInterface::Load");
+			throw ReadError("unknown CID in FSPairedInterface::Load");
 		}
 
 		ar.CloseChunk();
@@ -203,22 +204,30 @@ void FEPairedInterface::Load(IArchive &ar)
 
 
 //=============================================================================
-// FESoloInterface
+// FSSoloInterface
 //-----------------------------------------------------------------------------
 
-FESoloInterface::FESoloInterface(int ntype, FEModel* ps, int nstep) : FEInterface(ntype, ps, nstep)
+FSSoloInterface::FSSoloInterface(int ntype, FSModel* ps, int nstep) : FSInterface(ntype, ps, nstep)
 {
 	m_pItem = 0;
+	m_itemType = FE_FACE_FLAG;
 }
 
 //-----------------------------------------------------------------------------
-FESoloInterface::~FESoloInterface()
+FSSoloInterface::~FSSoloInterface()
 {
 	delete m_pItem;
 }
 
 //-----------------------------------------------------------------------------
-void FESoloInterface::Save(OArchive& ar)
+FEItemListBuilder* FSSoloInterface::GetItemList() { return m_pItem; }
+void FSSoloInterface::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
+
+unsigned int FSSoloInterface::GetMeshItemType() const { return m_itemType; }
+void FSSoloInterface::SetMeshItemType(unsigned int meshItem) { m_itemType = meshItem; };
+
+//-----------------------------------------------------------------------------
+void FSSoloInterface::Save(OArchive& ar)
 {
 	ar.WriteChunk(CID_INTERFACE_NAME  , GetName());
 	ar.WriteChunk(CID_FEOBJ_INFO      , GetInfo());
@@ -232,15 +241,15 @@ void FESoloInterface::Save(OArchive& ar)
 	if (m_pItem)
 	{
 		ar.BeginChunk(CID_INTERFACE_SURFACE1);
-		FEInterface::SaveList(m_pItem, ar);
+		FSInterface::SaveList(m_pItem, ar);
 		ar.EndChunk();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FESoloInterface::Load(IArchive &ar)
+void FSSoloInterface::Load(IArchive &ar)
 {
-	TRACE("FESoloInterface::Load");
+	TRACE("FSSoloInterface::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -251,9 +260,9 @@ void FESoloInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP  : ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_SURFACE1 : m_pItem = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1 : m_pItem = FSInterface::LoadList(ar); break;
 		default:
-			throw ReadError("unknown CID in FESoloInterface::Load");
+			throw ReadError("unknown CID in FSSoloInterface::Load");
 		}
 		ar.CloseChunk();
 	}
@@ -261,18 +270,18 @@ void FESoloInterface::Load(IArchive &ar)
 
 
 //=============================================================================
-// FERigidInterface
+// FSRigidInterface
 //-----------------------------------------------------------------------------
 
 //-----------------------------------------------------------------------------
-FERigidInterface::FERigidInterface(FEModel* ps, int nstep) : FESoloInterface(FE_RIGID_INTERFACE, ps, nstep)
+FSRigidInterface::FSRigidInterface(FSModel* ps, int nstep) : FSSoloInterface(FE_RIGID_INTERFACE, ps, nstep)
 { 
 	SetTypeString("Rigid");
 	m_pmat = 0; 
 }
 
 //-----------------------------------------------------------------------------
-FERigidInterface::FERigidInterface(FEModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep) : FESoloInterface(FE_RIGID_INTERFACE, ps, nstep)
+FSRigidInterface::FSRigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder* pi, int nstep) : FSSoloInterface(FE_RIGID_INTERFACE, ps, nstep)
 {
 	SetTypeString("Rigid");
 	m_pmat = pm; 
@@ -280,7 +289,7 @@ FERigidInterface::FERigidInterface(FEModel* ps, GMaterial* pm, FEItemListBuilder
 }
 
 //-----------------------------------------------------------------------------
-void FERigidInterface::Save(OArchive &ar)
+void FSRigidInterface::Save(OArchive &ar)
 {
 	int mid = (m_pmat? m_pmat->GetID() : -1);
 	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
@@ -290,15 +299,15 @@ void FERigidInterface::Save(OArchive &ar)
 	if (m_pItem) 
 	{ 
 		ar.BeginChunk(CID_INTERFACE_SURFACE2);
-		FEInterface::SaveList(m_pItem, ar);
+		FSInterface::SaveList(m_pItem, ar);
 		ar.EndChunk();
 	}
 }
 
 //-----------------------------------------------------------------------------
-void FERigidInterface::Load(IArchive &ar)
+void FSRigidInterface::Load(IArchive &ar)
 {
-	TRACE("FERigidInterface::Load");
+	TRACE("FSRigidInterface::Load");
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -316,20 +325,20 @@ void FERigidInterface::Load(IArchive &ar)
 			{
 				int mid;
 				ar.read(mid);
-				m_pmat = m_ps->GetMaterialFromID(mid);
+				m_pmat = GetFSModel()->GetMaterialFromID(mid);
 			}
 			break;
-		case CID_INTERFACE_SURFACE2: m_pItem = FEInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE2: m_pItem = FSInterface::LoadList(ar); break;
 		case CID_RI_LIST:	// obsolete in 1.8
 			{
 				int nid; ar.read(nid); 
-				GModel& mdl = m_ps->GetModel();
+				GModel& mdl = GetFSModel()->GetModel();
 				m_pItem = mdl.FindNamedSelection(nid);
 				assert(m_pItem);
 			}
 			break;
 		default:
-			throw ReadError("unknown CID in FERigidInterface::Load");
+			throw ReadError("unknown CID in FSRigidInterface::Load");
 		}
 
 		ar.CloseChunk();
@@ -337,10 +346,10 @@ void FERigidInterface::Load(IArchive &ar)
 }
 
 //=============================================================================
-// FERigidWallInterface
+// FSRigidWallInterface
 //-----------------------------------------------------------------------------
 
-FERigidWallInterface::FERigidWallInterface(FEModel* ps, int nstep) : FESoloInterface(FE_RIGID_WALL, ps, nstep)
+FSRigidWallInterface::FSRigidWallInterface(FSModel* ps, int nstep) : FSSoloInterface(FE_RIGID_WALL, ps, nstep)
 {
 	SetTypeString("Rigid Wall");
 
@@ -355,7 +364,7 @@ FERigidWallInterface::FERigidWallInterface(FEModel* ps, int nstep) : FESoloInter
 }
 
 //-----------------------------------------------------------------------------
-void FERigidWallInterface::GetPlaneEquation(double a[4])
+void FSRigidWallInterface::GetPlaneEquation(double a[4])
 {
 	a[0] = GetParam(PA).GetFloatValue();
 	a[1] = GetParam(PB).GetFloatValue();
@@ -364,10 +373,10 @@ void FERigidWallInterface::GetPlaneEquation(double a[4])
 }
 
 //=============================================================================
-// FERigidSphereInterface
+// FSRigidSphereInterface
 //-----------------------------------------------------------------------------
 
-FERigidSphereInterface::FERigidSphereInterface(FEModel* ps, int nstep) : FESoloInterface(FE_RIGID_SPHERE_CONTACT, ps, nstep)
+FSRigidSphereInterface::FSRigidSphereInterface(FSModel* ps, int nstep) : FSSoloInterface(FE_RIGID_SPHERE_CONTACT, ps, nstep)
 {
 	SetTypeString("Rigid Sphere");
 
@@ -379,38 +388,32 @@ FERigidSphereInterface::FERigidSphereInterface(FEModel* ps, int nstep) : FESoloI
 
 	// the default load curve defines a linear ramp
 	// we don't want that here. By default, the plane should not move
-	FELoadCurve LC;
+	LoadCurve LC;
 	LC.Clear();
-	LC.Add(LOADPOINT(0, 0));
-	LC.Add(LOADPOINT(0, 0));
-	AddDoubleParam(0.0, "ux", "x displacment")->SetLoadCurve(LC);
-	AddDoubleParam(0.0, "uy", "y displacment")->SetLoadCurve(LC);
-	AddDoubleParam(0.0, "uz", "z displacment")->SetLoadCurve(LC);
+	LC.Add(0, 0);
+	LC.Add(0, 0);
+	AddDoubleParam(0.0, "ux", "x displacment");
+	AddDoubleParam(0.0, "uy", "y displacment");
+	AddDoubleParam(0.0, "uz", "z displacment");
 }
 
 //-----------------------------------------------------------------------------
-FELoadCurve* FERigidSphereInterface::GetLoadCurve(int i)
-{ 
-	return GetParamLC(FERigidSphereInterface::UX + i);
-}
-
-//-----------------------------------------------------------------------------
-double FERigidSphereInterface::Radius()
+double FSRigidSphereInterface::Radius()
 {
 	return GetFloatValue(RADIUS);
 }
 
 //-----------------------------------------------------------------------------
-vec3d FERigidSphereInterface::Center()
+vec3d FSRigidSphereInterface::Center()
 {
 	return GetVecValue(CENTER);
 }
 
 //=============================================================================
-// FESlidingInterface
+// FSSlidingInterface
 //-----------------------------------------------------------------------------
 
-FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_SLIDING_INTERFACE, ps, nstep)
+FSSlidingInterface::FSSlidingInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_SLIDING_INTERFACE, ps, nstep)
 {
 	SetTypeString("Sliding contact");
 
@@ -431,10 +434,10 @@ FESlidingInterface::FESlidingInterface(FEModel* ps, int nstep) : FEPairedInterfa
 }
 
 //=============================================================================
-// FESlidingWithGapsInterface
+// FSSlidingWithGapsInterface
 //-----------------------------------------------------------------------------
 
-FESlidingWithGapsInterface::FESlidingWithGapsInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_SLIDING_WITH_GAPS, ps, nstep)
+FSSlidingWithGapsInterface::FSSlidingWithGapsInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_SLIDING_WITH_GAPS, ps, nstep)
 {
 	SetTypeString("Sliding with gaps");
 
@@ -454,10 +457,10 @@ FESlidingWithGapsInterface::FESlidingWithGapsInterface(FEModel* ps, int nstep) :
 }
 
 //=============================================================================
-// FEFacetOnFacetInterface
+// FSFacetOnFacetInterface
 //-----------------------------------------------------------------------------
 
-FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_FACET_ON_FACET_SLIDING, ps, nstep)
+FSFacetOnFacetInterface::FSFacetOnFacetInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_FACET_ON_FACET_SLIDING, ps, nstep)
 {
 	SetTypeString("Facet-on-facet sliding");
 
@@ -478,10 +481,10 @@ FEFacetOnFacetInterface::FEFacetOnFacetInterface(FEModel* ps, int nstep) : FEPai
 }
 
 //=============================================================================
-// FETiedInterface
+// FSTiedInterface
 //-----------------------------------------------------------------------------
 
-FETiedInterface::FETiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIED_INTERFACE, ps, nstep)
+FSTiedInterface::FSTiedInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_TIED_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied contact");
 
@@ -493,10 +496,10 @@ FETiedInterface::FETiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_
 }
 
 //=============================================================================
-// FEF2FTiedInterface
+// FSF2FTiedInterface
 //-----------------------------------------------------------------------------
 
-FEF2FTiedInterface::FEF2FTiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_FACET_ON_FACET_TIED, ps, nstep)
+FSF2FTiedInterface::FSF2FTiedInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_FACET_ON_FACET_TIED, ps, nstep)
 {
 	SetTypeString("Tied facet-on-facet");
 
@@ -508,10 +511,10 @@ FEF2FTiedInterface::FEF2FTiedInterface(FEModel* ps, int nstep) : FEPairedInterfa
 }
 
 //=============================================================================
-// FEStickyInterface
+// FSStickyInterface
 //-----------------------------------------------------------------------------
 
-FEStickyInterface::FEStickyInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_STICKY_INTERFACE, ps, nstep)
+FSStickyInterface::FSStickyInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_STICKY_INTERFACE, ps, nstep)
 {
 	SetTypeString("Sticky contact");
 
@@ -525,10 +528,10 @@ FEStickyInterface::FEStickyInterface(FEModel* ps, int nstep) : FEPairedInterface
 }
 
 //=============================================================================
-// FEPeriodicBoundary
+// FSPeriodicBoundary
 //-----------------------------------------------------------------------------
 
-FEPeriodicBoundary::FEPeriodicBoundary(FEModel* ps, int nstep) : FEPairedInterface(FE_PERIODIC_BOUNDARY, ps, nstep)
+FSPeriodicBoundary::FSPeriodicBoundary(FSModel* ps, int nstep) : FSPairedInterface(FE_PERIODIC_BOUNDARY, ps, nstep)
 {
 	SetTypeString("periodic boundary");
 
@@ -539,36 +542,45 @@ FEPeriodicBoundary::FEPeriodicBoundary(FEModel* ps, int nstep) : FEPairedInterfa
 }
 
 //=============================================================================
-// FEPoroContact
+// FSPoroContact
 //-----------------------------------------------------------------------------
 
-FEPoroContact::FEPoroContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO_INTERFACE, ps, nstep)
+FSPoroContact::FSPoroContact(FSModel* ps, int nstep) : FSPairedInterface(FE_PORO_INTERFACE, ps, nstep)
 {
 	SetTypeString("Biphasic contact");
 
-	AddBoolParam  (false, "laugon"             , "augmented Lagrangian"  );
-	AddDoubleParam(0.2  , "tolerance"          , "augmentation tolerance");
-    AddDoubleParam(0    , "gaptol"             , "gap tolerance"         );
-    AddDoubleParam(0    , "ptol"               , "pressure tolerance"    );
-	AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
-	AddBoolParam  (false, "two_pass"           , "two pass"              );
-	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
-	AddDoubleParam(0.0  , "pressure_penalty"   , "pressure penalty"      );
-	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
-	AddDoubleParam(1.0  , "search_radius"      , "search radius"         );
-    AddIntParam   (0    , "seg_up"             , "segment updates"       );
-    AddDoubleParam(0    , "minaug"             , "min augmentations"     );
-    AddDoubleParam(10   , "maxaug"             , "max augmentations"     );
-	AddDoubleParam(0.01 , "search_tol"         , "search tolerance"      );
-	AddBoolParam(false  , "update_penalty"     , "update-penalty"        );
-	AddBoolParam(false  , "smooth_aug"         , "Augmentation smoothing");
+	AddBoolParam  (false, "laugon"                , "augmented Lagrangian"         );
+	AddDoubleParam(0.2  , "tolerance"             , "augmentation tolerance"       );
+    AddDoubleParam(0    , "gaptol"                , "gap tolerance"                );
+    AddDoubleParam(0    , "ptol"                  , "pressure tolerance"           );
+    AddDoubleParam(1.0  , "penalty"               , "penalty factor"               );
+	AddBoolParam  (false, "two_pass"              , "two pass"                     );
+	AddBoolParam  (false, "auto_penalty"          , "auto-penalty"                 );
+	AddDoubleParam(0.0  , "pressure_penalty"      , "pressure penalty"             );
+	AddBoolParam  (false, "symmetric_stiffness"   , "symmetric stiffness"          );
+	AddDoubleParam(1.0  , "search_radius"         , "search radius"                );
+	AddIntParam   (0    , "seg_up"                , "segment updates"              );
+	AddDoubleParam(0    , "minaug"                , "min augmentations"            );
+	AddDoubleParam(10   , "maxaug"                , "max augmentations"            );
+	AddDoubleParam(0.01 , "search_tol"            , "search tolerance"             );
+	AddBoolParam  (false, "update_penalty"        , "update-penalty"               );
+	AddBoolParam  (false, "smooth_aug"            , "augmentation smoothing"       );
+	AddDoubleParam(0    , "fric_coeff"            , "friction coefficient"         );
+    AddDoubleParam(0    , "contact_frac"          , "solid-solid area fraction"    );
+    AddBoolParam  (false, "smooth_fls"            , "smooth fluid load support"    );
+    AddIntParam   (0    , "knmult"                , "higher-order stiffness"       );
+    AddBoolParam  (false, "node_reloc"            , "relocated nodes"              );
+    AddBoolParam  (false, "flip_primary"          , "flip normal on primary"       );
+    AddBoolParam  (false, "flip_secondary"        , "flip normal on secondary"     );
+    AddBoolParam  (false, "shell_bottom_primary"  , "use shell bottom on primary"  );
+    AddBoolParam  (false, "shell_bottom_secondary", "use shell bottom on secondary");
 }
 
 //=============================================================================
-// FEPoroSoluteContact
+// FSPoroSoluteContact
 //-----------------------------------------------------------------------------
 
-FEPoroSoluteContact::FEPoroSoluteContact(FEModel* ps, int nstep) : FEPairedInterface(FE_PORO_SOLUTE_INTERFACE, ps, nstep)
+FSPoroSoluteContact::FSPoroSoluteContact(FSModel* ps, int nstep) : FSPairedInterface(FE_PORO_SOLUTE_INTERFACE, ps, nstep)
 {
 	SetTypeString("Biphasic-solute contact");
 
@@ -594,10 +606,10 @@ FEPoroSoluteContact::FEPoroSoluteContact(FEModel* ps, int nstep) : FEPairedInter
 }
 
 //=============================================================================
-// FEMultiphasicContact
+// FSMultiphasicContact
 //-----------------------------------------------------------------------------
 
-FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInterface(FE_MULTIPHASIC_INTERFACE, ps, nstep)
+FSMultiphasicContact::FSMultiphasicContact(FSModel* ps, int nstep) : FSPairedInterface(FE_MULTIPHASIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Multiphasic contact");
 
@@ -613,12 +625,12 @@ FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInt
 	AddBoolParam  (false, "symmetric_stiffness"  , "symmetric stiffness"    );
 	AddDoubleParam(1.0  , "concentration_penalty", "concentration penalty"  );
 	AddDoubleParam(0.0  , "ambient_pressure"     , "ambient pressure"       );
-	int NS = m_ps->Solutes();
+	int NS = GetFSModel()->Solutes();
     for (int i=0; i<NS; ++i) {
         char szvar1[256],szvar2[256];
 		sprintf(szvar1, "ambient_concentration");
 		sprintf(szvar2, "ambient concentration %d", i+1);
-		FESoluteData& sol = m_ps->GetSoluteData(i);
+		SoluteData& sol = GetFSModel()->GetSoluteData(i);
         const char* sz1 = strdup(szvar1);
         const char* sz2 = strdup(szvar2);
         AddIndxDoubleParam(0.0  , "sol", i+1, sz1, sz2);
@@ -631,42 +643,42 @@ FEMultiphasicContact::FEMultiphasicContact(FEModel* ps, int nstep) : FEPairedInt
 }
 
 //=============================================================================
-// FETensionCompressionInterface
+// FSTensionCompressionInterface
 //-----------------------------------------------------------------------------
 
-FETensionCompressionInterface::FETensionCompressionInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TENSCOMP_INTERFACE, ps, nstep)
+FSTensionCompressionInterface::FSTensionCompressionInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_TENSCOMP_INTERFACE, ps, nstep)
 {
 	SetTypeString("Sliding-elastic contact");
 
-	AddBoolParam  (false, "laugon"             , "augmented Lagrangian"  );
-	AddDoubleParam(0.2  , "tolerance"          , "augmentation tolerance");
-	AddDoubleParam(0.0  , "gaptol"             , "gap tolerance"         );
-	AddDoubleParam(1.0  , "penalty"            , "penalty factor"        );
-	AddBoolParam  (false, "auto_penalty"       , "auto-penalty"          );
-	AddBoolParam  (false, "two_pass"           , "two pass"              );
-	AddDoubleParam(0.01 , "search_tol"         , "projection tolerance"  );
-	AddBoolParam  (false, "symmetric_stiffness", "symmetric stiffness"   );
-	AddDoubleParam(1.0  , "search_radius"      , "search radius"         );
-	AddIntParam   (0    , "seg_up"             , "segment updates"       );
-	AddBoolParam  (false, "tension"            , "Tension contact"       );
-	AddDoubleParam(0    , "minaug"             , "min augmentations"     );
-	AddDoubleParam(10   , "maxaug"             , "max augmentations"     );
-	AddDoubleParam(0    , "fric_coeff"         , "friction coefficient"  );
-	AddBoolParam  (false, "smooth_aug"         , "Augmentation smoothing");
-	AddBoolParam  (false, "node_reloc"         , "Relocated nodes"       );
-    AddBoolParam  (false, "flip_primary"       , "flip normal on primary"  );
-    AddBoolParam  (false, "flip_secondary"     , "flip normal on secondary");
-	AddIntParam   (0    , "knmult"             , "higher-order stiffness");
-	AddBoolParam  (false, "update_penalty"     , "update-penalty");
+	AddBoolParam  (false, "laugon"                , "augmented Lagrangian"         );
+	AddDoubleParam(0.2  , "tolerance"             , "augmentation tolerance"       );
+	AddDoubleParam(0.0  , "gaptol"                , "gap tolerance"                );
+	AddDoubleParam(1.0  , "penalty"               , "penalty factor"               );
+	AddBoolParam  (false, "auto_penalty"          , "auto-penalty"                 );
+	AddBoolParam  (false, "two_pass"              , "two pass"                     );
+	AddDoubleParam(0.01 , "search_tol"            , "projection tolerance"         );
+	AddBoolParam  (false, "symmetric_stiffness"   , "symmetric stiffness"          );
+	AddDoubleParam(1.0  , "search_radius"         , "search radius"                );
+	AddIntParam   (0    , "seg_up"                , "segment updates"              );
+	AddBoolParam  (false, "tension"               , "Tension contact"              );
+	AddDoubleParam(0    , "minaug"                , "min augmentations"            );
+	AddDoubleParam(10   , "maxaug"                , "max augmentations"            );
+	AddDoubleParam(0    , "fric_coeff"            , "friction coefficient"         );
+	AddBoolParam  (false, "smooth_aug"            , "Augmentation smoothing"       );
+	AddBoolParam  (false, "node_reloc"            , "Relocated nodes"              );
+    AddBoolParam  (false, "flip_primary"          , "flip normal on primary"       );
+    AddBoolParam  (false, "flip_secondary"        , "flip normal on secondary"     );
+	AddIntParam   (0    , "knmult"                , "higher-order stiffness"       );
+	AddBoolParam  (false, "update_penalty"        , "update-penalty"               );
     AddBoolParam  (false, "shell_bottom_primary"  , "use shell bottom on primary"  );
     AddBoolParam  (false, "shell_bottom_secondary", "use shell bottom on secondary");
 }
 
 //=============================================================================
-// FETiedBiphasicInterface
+// FSTiedBiphasicInterface
 //-----------------------------------------------------------------------------
 
-FETiedBiphasicInterface::FETiedBiphasicInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIEDBIPHASIC_INTERFACE, ps, nstep)
+FSTiedBiphasicInterface::FSTiedBiphasicInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_TIEDBIPHASIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied biphasic contact");
 
@@ -687,10 +699,10 @@ FETiedBiphasicInterface::FETiedBiphasicInterface(FEModel* ps, int nstep) : FEPai
 }
 
 //=============================================================================
-// FETiedMultiphasicInterface
+// FSTiedMultiphasicInterface
 //-----------------------------------------------------------------------------
 
-FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIEDMULTIPHASIC_INTERFACE, ps, nstep)
+FSTiedMultiphasicInterface::FSTiedMultiphasicInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_TIEDMULTIPHASIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied multiphasic contact");
 
@@ -713,10 +725,10 @@ FETiedMultiphasicInterface::FETiedMultiphasicInterface(FEModel* ps, int nstep) :
 }
 
 //=============================================================================
-// FETiedElasticInterface
+// FSTiedElasticInterface
 //-----------------------------------------------------------------------------
 
-FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_TIED_ELASTIC_INTERFACE, ps, nstep)
+FSTiedElasticInterface::FSTiedElasticInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_TIED_ELASTIC_INTERFACE, ps, nstep)
 {
 	SetTypeString("Tied-elastic");
 
@@ -736,10 +748,22 @@ FETiedElasticInterface::FETiedElasticInterface(FEModel* ps, int nstep) : FEPaire
 }
 
 //=============================================================================
-// FEGapHeatFluxInterface
+FSContactPotentialInterface::FSContactPotentialInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_CONTACTPOTENTIAL_CONTACT, ps, nstep)
+{
+	SetTypeString("contact potential");
+
+	AddDoubleParam(0, "kc");
+	AddDoubleParam(4, "p", "power");
+	AddDoubleParam(1, "R_in");
+	AddDoubleParam(2, "R_out");
+	AddDoubleParam(0, "w_tol");
+}
+
+//=============================================================================
+// FSGapHeatFluxInterface
 //-----------------------------------------------------------------------------
 
-FEGapHeatFluxInterface::FEGapHeatFluxInterface(FEModel* fem, int nstep) : FEPairedInterface(FE_GAPHEATFLUX_INTERFACE, fem, nstep)
+FSGapHeatFluxInterface::FSGapHeatFluxInterface(FSModel* fem, int nstep) : FSPairedInterface(FE_GAPHEATFLUX_INTERFACE, fem, nstep)
 {
 	SetTypeString("Gap heat flux");
 
@@ -748,22 +772,22 @@ FEGapHeatFluxInterface::FEGapHeatFluxInterface(FEModel* fem, int nstep) : FEPair
 }
 
 //=============================================================================
-// FERigidJoint
+// FSRigidJoint
 //-----------------------------------------------------------------------------
 
-FERigidJoint::FERigidJoint(FEModel* ps, int nstep) : FEInterface(FE_RIGID_JOINT, ps, nstep)
+FSRigidJoint::FSRigidJoint(FSModel* ps, int nstep) : FSInterface(FE_RIGID_JOINT, ps, nstep)
 { 
 	m_pbodyA = m_pbodyB = 0;
 
 	SetTypeString("Rigid joint");
 
-	AddDoubleParam(0.1         , "tol", "augmentation tolerance");
-	AddDoubleParam(1           , "pen", "penalty factor"        );
-	AddVecParam   (vec3d(0,0,0), "rj" , "joint position"        );
+	AddDoubleParam(0.1         , "tolerance", "augmentation tolerance");
+	AddDoubleParam(1           , "penalty"  , "penalty factor"        );
+	AddVecParam   (vec3d(0,0,0), "joint"    , "joint position"        );
 }
 
 //-----------------------------------------------------------------------------
-void FERigidJoint::Save(OArchive& ar)
+void FSRigidJoint::Save(OArchive& ar)
 {
 	ar.WriteChunk(CID_INTERFACE_NAME, GetName());
 	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
@@ -781,9 +805,9 @@ void FERigidJoint::Save(OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-void FERigidJoint::Load(IArchive& ar)
+void FSRigidJoint::Load(IArchive& ar)
 {
-	TRACE("FERigidJoint::Load");
+	TRACE("FSRigidJoint::Load");
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		switch (ar.GetChunkID())
@@ -800,68 +824,68 @@ void FERigidJoint::Load(IArchive& ar)
 		case CID_RJ_RIGIDBODY_A: 
 			{
 				int mid; ar.read(mid);
-				m_pbodyA = m_ps->GetMaterialFromID(mid);
+				m_pbodyA = GetFSModel()->GetMaterialFromID(mid);
 			}
 			break;
 		case CID_RJ_RIGIDBODY_B: 
 			{
 				int mid; ar.read(mid);
-				m_pbodyB = m_ps->GetMaterialFromID(mid);
+				m_pbodyB = GetFSModel()->GetMaterialFromID(mid);
 			}
 			break;
 		default:
-			throw ReadError("unknown CID in FERigidJoint::Load");
+			throw ReadError("unknown CID in FSRigidJoint::Load");
 		}
 		ar.CloseChunk();
 	}
 }
 
 //=============================================================================
-// FESpringTiedInterface
+// FSSpringTiedInterface
 //-----------------------------------------------------------------------------
 
-FESpringTiedInterface::FESpringTiedInterface(FEModel* ps, int nstep) : FEPairedInterface(FE_SPRINGTIED_INTERFACE,ps, nstep)
+FSSpringTiedInterface::FSSpringTiedInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_SPRINGTIED_INTERFACE,ps, nstep)
 {
 	SetTypeString("Spring-tied contact");
 
 	AddDoubleParam(0.0, "E", "Spring constant");
 }
 
-double FESpringTiedInterface::SpringConstant() const
+double FSSpringTiedInterface::SpringConstant() const
 {
 	return GetFloatValue(ECONST);
 }
 
-void FESpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
+void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 {
 	FEFaceList* pfl = m_surf1->BuildFaceList();
-	FENodeList* pnl = m_surf2->BuildNodeList();
+	FSNodeList* pnl = m_surf2->BuildNodeList();
 	if ((pfl == 0) || (pnl == 0)) return;
 
 	unique_ptr<FEFaceList> ps(pfl);
-	unique_ptr<FENodeList> pm(pnl);
+	unique_ptr<FSNodeList> pm(pnl);
 
 	set<pair<int, int> > S;
 
 	FEFaceList::Iterator its = ps->First();
 	for (int i=0; i<ps->Size(); ++i, ++its)
 	{
-		FEFace& f = *(its->m_pi);
-		FEMesh& mesh = dynamic_cast<FEMesh&>(*(its->m_pm));
+		FSFace& f = *(its->m_pi);
+		FSMesh& mesh = dynamic_cast<FSMesh&>(*(its->m_pm));
 		int nf = f.Nodes();
 		for (int n=0; n<nf; ++n)
 		{
-			FENode& ns = mesh.Node(f.n[n]);
-			vec3d nn = f.m_nn[n];
+			FSNode& ns = mesh.Node(f.n[n]);
+			vec3d nn = to_vec3d(f.m_nn[n]);
 			vec3d nr = ns.r;
 
 			int i0 = ns.m_nid;
 			int i1 = -1;
 			double Dmin = 0;
-			FENodeList::Iterator itm = pm->First();
+			FSNodeList::Iterator itm = pm->First();
 			for (int j=0; j<pm->Size(); ++j, ++itm)
 			{
-				FENode& nj = *(itm->m_pi);
+				FSNode& nj = *(itm->m_pi);
 				vec3d q = (itm->m_pi)->r;
 
 				vec3d s = nr + nn*((q - nr)*nn);
@@ -890,17 +914,17 @@ void FESpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 }
 
 //=============================================================================
-// FELinearConstraintSet
+// FSLinearConstraintSet
 //-----------------------------------------------------------------------------
 
-FELinearConstraintSet::FELinearConstraintSet()
+FSLinearConstraintSet::FSLinearConstraintSet()
 {
 	m_atol = 0.1;
 	m_penalty = 1.0;
 	m_nmaxaug = 50;
 }
 
-FELinearConstraintSet::FELinearConstraintSet(const FELinearConstraintSet& lcs)
+FSLinearConstraintSet::FSLinearConstraintSet(const FSLinearConstraintSet& lcs)
 {
 	m_atol = lcs.m_atol;
 	m_penalty = lcs.m_penalty;
@@ -909,7 +933,7 @@ FELinearConstraintSet::FELinearConstraintSet(const FELinearConstraintSet& lcs)
 	m_set = lcs.m_set;
 }
 
-FELinearConstraintSet& FELinearConstraintSet::operator = (const FELinearConstraintSet& lcs)
+FSLinearConstraintSet& FSLinearConstraintSet::operator = (const FSLinearConstraintSet& lcs)
 {
 	m_atol = lcs.m_atol;
 	m_penalty = lcs.m_penalty;
@@ -918,4 +942,42 @@ FELinearConstraintSet& FELinearConstraintSet::operator = (const FELinearConstrai
 	m_set = lcs.m_set;
 
 	return (*this);
+}
+
+//=============================================================================
+FEBioInterface::FEBioInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_FEBIO_INTERFACE, ps, nstep)
+{
+
+}
+
+void FEBioInterface::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSPairedInterface::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioInterface::Load(IArchive& ar)
+{
+	TRACE("FEBioInterface::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSPairedInterface::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,7 +60,7 @@ C3DImage::~C3DImage()
 
 void C3DImage::CleanUp()
 {
-	delete [] m_pb;
+	if(m_pb) delete [] m_pb;
 	m_pb = 0;
 	m_cx = m_cy = m_cz = 0;
 }
@@ -364,15 +364,123 @@ void C3DImage::GetSampledSliceZ(CImage& im, double f)
 	// copy image data
 	Byte* pd = im.GetBytes();
 
-	for (int y = 0; y<m_cy; y++)
+	if (Depth() == 1)
 	{
-		double fy = y / (double)(m_cy - 1.0);
-		for (int x = 0; x<m_cx; x++)
+		for (int y = 0; y < m_cy; y++)
 		{
-			double fx = x / (double)(m_cx - 1.0);
-			*pd++ = Peek(fx, fy, f);
+			double fy = y / (double)(m_cy - 1.0);
+			for (int x = 0; x < m_cx; x++)
+			{
+				double fx = x / (double)(m_cx - 1.0);
+				*pd++ = Value(fx, fy, 0);
+			}
 		}
 	}
+	else
+	{
+		for (int y = 0; y < m_cy; y++)
+		{
+			double fy = y / (double)(m_cy - 1.0);
+			for (int x = 0; x < m_cx; x++)
+			{
+				double fx = x / (double)(m_cx - 1.0);
+				*pd++ = Peek(fx, fy, f);
+			}
+		}
+	}
+}
+
+void C3DImage::GetThresholdedSliceX(CImage& im, int n, int min, int max)
+{
+    // create image data
+	if ((im.Width() != m_cy) || (im.Height() != m_cz)) im.Create(m_cy, m_cz);
+
+	Byte* ps;
+	Byte* pd = im.GetBytes();
+
+	// copy image data
+	for (int z=0; z<m_cz; z++)
+	{
+		ps = m_pb + z*m_cx*m_cy + n;
+		for (int y=0; y<m_cy; y++, ps += m_cx)
+        {
+            if(*ps < min)
+            {
+                *pd = 0;
+            }
+            else if (*ps > max)
+            {
+                *pd = 255;
+            }
+            else
+            {
+                *pd = 255 * (float)(*ps - min)/(max-min);
+            }
+            
+            *pd++;
+        }
+	}
+}
+
+void C3DImage::GetThresholdedSliceY(CImage& im, int n, int min, int max)
+{
+    // create image data
+	if ((im.Width() != m_cx) || (im.Height() != m_cz)) im.Create(m_cx, m_cz);
+
+	Byte* ps;
+	Byte* pd = im.GetBytes();
+
+	// copy image data
+	for (int z=0; z<m_cz; z++)
+	{
+		ps = m_pb + z*m_cx*m_cy + n*m_cx;
+		for (int x=0; x<m_cx; x++, ps++)
+        {
+            if(*ps < min)
+            {
+                *pd = 0;
+            }
+            else if (*ps > max)
+            {
+                *pd = 255;
+            }
+            else
+            {
+                *pd = 255 * (float)(*ps - min)/(max-min);
+            }
+            
+            *pd++;
+        }
+	}
+}
+
+void C3DImage::GetThresholdedSliceZ(CImage& im, int n, int min, int max)
+{
+    // create image data
+	if ((im.Width() != m_cx) || (im.Height() != m_cy)) im.Create(m_cx, m_cy);
+
+	// copy image data
+	Byte* pd = im.GetBytes();
+	Byte* ps = m_pb + n*m_cx*m_cy;
+
+	for (int i=0; i<m_cx*m_cy; i++, ps++)
+    {
+        if(*ps < min)
+            {
+                *pd = 0;
+            }
+            else if (*ps > max)
+            {
+                *pd = 255;
+            }
+            else
+            {
+                *pd = 255 * (float)(*ps - min)/(max-min);
+            }
+            
+            *pd++;
+    }
+
 }
 
 void C3DImage::Invert()

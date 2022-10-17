@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,7 +34,7 @@ class CGLMirrorPlane : public CGLPlot
 	enum { PLANE, SHOW_PLANE, TRANSPARENCY, OFFSET };
 
 public:
-	CGLMirrorPlane(CGLModel* fem);
+	CGLMirrorPlane();
 
 	// render the object to the 3D view
 	void Render(CGLContext& rc) override;

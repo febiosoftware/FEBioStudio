@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,8 +30,12 @@ SOFTWARE.*/
 
 namespace Post {
 
-class GLVolumeFlowPlot : public CGLPlot
+class GLVolumeFlowPlot : public CGLLegendPlot
 {
+	enum {DATA_FIELD, COLOR_MAP, SMOOTH_COLOR_MAP, RANGE_DIVISIONS, OPACITY_SCALE, MESH_DIVISIONS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
+
+	enum { MAX_MESH_DIVS = 5};
+
 public:
 	class Slice
 	{
@@ -52,7 +56,7 @@ public:
 	};
 
 public:
-	GLVolumeFlowPlot(CGLModel* mdl);
+	GLVolumeFlowPlot();
 
 	void Render(CGLContext& rc) override;
 
@@ -67,10 +71,12 @@ private:
 
 private:
 	int			m_nfield;
-	int			m_nrange;		//!< range option (0=dynamic, 1=user)
-	float		m_fmin, m_fmax;	//!< user-defined range 
 	float		m_offset;
 	float		m_alpha;
+	bool		m_bsmooth;
+	int			m_nDivs;
+	int			m_meshDivs;
+	DATA_RANGE	m_range;	// range for legend
 	CColorTexture	m_Col;		// colormap
 
 private:
@@ -82,7 +88,6 @@ private:
 	vector<vec2f>	m_rng;	// value range
 	DataMap<float>	m_map;	// nodal values map
 	vector<float>	m_val;	// current nodal values
-	vec2f			m_crng;	// current range
 	BOX				m_box;
 };
 } // namespace Post

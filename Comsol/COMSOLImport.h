@@ -5,7 +5,7 @@
 #include <list>
 #include <vector>
 #include <string>
-
+#include <map>
 //using namespace std;
 
 using std::map;
@@ -14,11 +14,11 @@ using std::map;
 // Developed by Michael Fernandez (mjf2152@columbia.edu) at Columbia (10/22/13)
 // based on FEIDEAS and AbaqusImport.
 
-class COMSOLimport : public FEFileImport
+class COMSOLimport : public FSFileImport
 {
 
 public:
-	COMSOLimport(FEProject& prj);
+	COMSOLimport(FSProject& prj);
 	virtual ~COMSOLimport();
 	bool	Load(const char* szfile);
 	bool	m_domainstosets;	// create element sets by comsol domain
@@ -57,7 +57,7 @@ protected:
 	};
 	typedef list<ELEMENT_SET>::iterator Telset_itr;
 		
-	bool BuildMesh(FEModel& fem);
+	bool BuildMesh(FSModel& fem);
 	bool ReadHeader(char* szline);
 	bool ReadNodes(char* szline);
 	bool ReadElementType(char* szline);
@@ -75,7 +75,7 @@ protected:
 	typedef map<int,string>::iterator Telsetmap_itr;
 
 	list<ELEMENT_SET>	m_ElSet;	// element sets, one per comsol domain/element type combination
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
     int m_totalelems;
     int m_node0;
 };

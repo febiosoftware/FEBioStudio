@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,9 +28,9 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
-#define VERSION			1
-#define SUBVERSION		5
-#define SUBSUBVERSION	0
+#define FBS_VERSION			2
+#define FBS_SUBVERSION		0
+#define FBS_SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
 // FSM FILE VERSION
@@ -38,21 +38,26 @@ SOFTWARE.*/
 // 3.1: Added support for mesh layers
 // 3.2: Added support for checkable parameters
 // 3.3: Modified how some discrete element sets are stored
-// 3.4: Added load_type parameter to FERigidForce
+// 3.4: Added load_type parameter to FSRigidForce
 // 3.5: Added density, k to uncoupled-prestrain material
 // 3.6: Added search_radius parameter to f2f contact. 
-// 3.7: Made value parameter of FEInitFluidPressure variable. 
+// 3.7: Made value parameter of FSInitFluidPressure variable. 
 // 3.8: Added filename to log data
 // 3.9: Made fixed charge density a variable parameter for multi- and triphasic materials. 
 // 3.10: Added density to prestrain elastic material.
 // 3.11: changes to FEMeshData classes. 
 // 3.12: Added shell nodal normal flag to GPart
-// 3.13: Added "relative" flag to FERigidDisplacement. 
+// 3.13: Added "relative" flag to FSRigidDisplacement. 
 // 3.14: Added additional meshing parameters to FEQuartDogBone.
-#define SAVE_VERSION	0x0003000E
+// 4.0: new version starting with FEBio Studio 2.
+#define FBS2_FILE		0x00040000	// first version number used by FBS2. Don't change!
+#define SAVE_VERSION	0x00040000
 
 // lowest supported version number
-#define MIN_PRV_VERSION	0x0001000D
+#define MIN_FSM_VERSION	0x0001000D
+
+#define FBS_MAJOR_VERSION(a) ((a) >> 16)
+#define FBS_MINOR_VERSION(a) ((a) & 0x0000FFFF)
 
 //-----------------------------------------------------------------------------
 // SVN VERSION

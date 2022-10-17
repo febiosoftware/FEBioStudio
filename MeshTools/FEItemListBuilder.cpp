@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,12 +28,14 @@ SOFTWARE.*/
 
 int FEItemListBuilder::m_ncount = 1;
 
-FEItemListBuilder::FEItemListBuilder(int ntype)
+FEItemListBuilder::FEItemListBuilder(int ntype, unsigned int flags)
 {
 	// set the unique group ID
 	m_nID = m_ncount++;
 
 	m_ntype = ntype;
+
+	m_flags = flags;
 }
 
 void FEItemListBuilder::SetID(int nid)
@@ -45,6 +47,11 @@ void FEItemListBuilder::SetID(int nid)
 bool FEItemListBuilder::IsValid() const
 { 
 	return (m_Item.empty() == false); 
+}
+
+bool FEItemListBuilder::Supports(unsigned int itemFlag) const
+{
+	return (m_flags & itemFlag);
 }
 
 void FEItemListBuilder::Save(OArchive& ar)
@@ -84,6 +91,11 @@ void FEItemListBuilder::Load(IArchive &ar)
 		ar.CloseChunk();
 	}
 	assert((int) m_Item.size() == N);
+}
+
+void FEItemListBuilder::add(const std::list<int>& nodeList)
+{
+	m_Item.insert(m_Item.end(), nodeList.begin(), nodeList.end());
 }
 
 void FEItemListBuilder::remove(int n)

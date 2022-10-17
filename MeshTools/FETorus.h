@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,20 +32,22 @@ class GTorus;
 class FETorus : public FEMultiBlockMesh
 {
 public:
-	enum { NDIV, NSEG };
+	enum { NDIV, NSEG, ELEM_TYPE };
 
 public:
 	FETorus(){}
 	FETorus(GTorus* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiBlockMesh();
+	FSMesh* BuildMeshLegacy();
+	FSMesh* BuildMultiBlockMesh();
+
+	bool BuildMultiBlock() override;
 
 protected:
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j)
 	{

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -35,6 +35,8 @@ using namespace Post;
 // CGLColorMap
 //-----------------------------------------------------------------------------
 
+int CGLColorMap::m_defaultRngType = Range_Type::RANGE_DYNAMIC;
+
 CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 {
 	AddIntParam (-1, "Data field", "Data field")->SetEnumNames("@data_scalar");
@@ -43,13 +45,16 @@ CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 	AddBoolParam(true, "Nodal smoothing");
 	AddIntParam (10, "Range divisions")->SetIntRange(1, 100);
 	AddBoolParam(true, "Show Legend");
-	AddIntParam (0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddIntParam (m_defaultRngType, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User max");
-	AddIntParam (0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
+	AddIntParam (m_defaultRngType, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
 	AddDoubleParam(0, "User min");
+	AddBoolParam(false, "Show min/max markers");
+	AddColorParam(GLColor(200, 200, 200), "Inactive color");
 
 	m_range.min = m_range.max = 0;
-	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
+	m_range.mintype = m_range.maxtype = m_defaultRngType;
+	m_rmin = m_rmax = vec3d(0, 0, 0);
 
 	m_nfield = 0;
 	m_breset = true;
@@ -119,6 +124,12 @@ bool CGLColorMap::UpdateData(bool bsave)
 }
 
 //-----------------------------------------------------------------------------
+bool CGLColorMap::ShowMinMaxMarkers() const
+{
+	return GetBoolValue(SHOW_MINMAX_MARKERS);
+}
+
+//-----------------------------------------------------------------------------
 void CGLColorMap::SetEvalField(int n)
 {
 	if (n != m_nfield)
@@ -144,6 +155,12 @@ void CGLColorMap::SetColorSmooth(bool b)
 }
 
 //-----------------------------------------------------------------------------
+GLColor CGLColorMap::GetInactiveColor()
+{
+	return GetColorValue(INACTIVE_COLOR);
+}
+
+//-----------------------------------------------------------------------------
 void CGLColorMap::Update()
 {
 	Update(GetModel()->CurrentTimeIndex(), 0.f, false);
@@ -157,7 +174,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 	// get the mesh
 	FEPostMesh* pm = po->GetActiveMesh();
-	FEPostModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFSModel();
 
 	int N = pfem->GetStates();
 	if (N == 0) return;
@@ -178,6 +195,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 
 	float w = dt / df;
 
+	m_rmin = m_rmax = vec3d(0, 0, 0);
+
 	// update the range
 	float fmin = 1e29f, fmax = -1e29f;
 	ValArray& faceData0 = s0.m_FaceData;
@@ -195,11 +214,12 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 				ELEMDATA& d1 = s1.m_ELEM[i];
 				if ((d0.m_state & StatusFlags::ACTIVE) && (d1.m_state & StatusFlags::ACTIVE))
 				{
+					vec3d r = pm->ElementCenter(el);
 					float f0 = d0.m_val;
 					float f1 = d1.m_val;
 					float f = f0 + (f1 - f0)*w;
-					if (f > fmax) fmax = f;
-					if (f < fmin) fmin = f;
+					if (f > fmax) { fmax = f; m_rmax = r; }
+					if (f < fmin) { fmin = f; m_rmin = r; }
 				}
 			}
 		}
@@ -220,8 +240,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 						float f0 = elemData0.value(i, j);
 						float f1 = elemData1.value(i, j);
 						float f = f0 + (f1 - f0)*w;
-						if (f > fmax) fmax = f;
-						if (f < fmin) fmin = f;
+						if (f > fmax) { fmax = f; m_rmax = pm->Node(el.m_node[j]).r; }
+						if (f < fmin) { fmin = f; m_rmin = pm->Node(el.m_node[j]).r; }
 					}
 				}
 			}
@@ -232,7 +252,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		// evaluate all nodes to find range
 		for (int i = 0; i<pm->Nodes(); ++i)
 		{
-			FENode& node = pm->Node(i);
+			FSNode& node = pm->Node(i);
 			NODEDATA& d0 = s0.m_NODE[i];
 			NODEDATA& d1 = s1.m_NODE[i];
 			if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
@@ -241,8 +261,8 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 				float f1 = d1.m_val;
 				float f = f0 + (f1 - f0)*w;
 				node.m_ntag = 1;
-				if (f > fmax) fmax = f;
-				if (f < fmin) fmin = f;
+				if (f > fmax) { fmax = f; m_rmax = pm->Node(i).r; }
+				if (f < fmin) { fmin = f; m_rmin = pm->Node(i).r; }
 			}
 			else node.m_ntag = 0;
 		}
@@ -250,22 +270,23 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		// evaluate face values for texture generation
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsEnabled())
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					int nj = face.n[j];
-					FENode& node = pm->Node(nj);
+					FSNode& node = pm->Node(nj);
 					NODEDATA& d0 = s0.m_NODE[nj];
 					NODEDATA& d1 = s1.m_NODE[nj];
 					if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
 					{
 						float f0 = d0.m_val;
 						float f1 = d1.m_val;
-						float f = f0 + (f1 - f0)*w;
+						float f = f0 + (f1 - f0) * w;
 						face.m_tex[j] = f;
 					}
+					else face.m_tex[j] = 0.f;
 				}
 			}
 		}
@@ -276,7 +297,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 			for (int j = 0; j < 2; ++j)
 			{
 				int nj = (j == 0 ? de.n0 : de.n1);
-				FENode& node = pm->Node(nj);
+				FSNode& node = pm->Node(nj);
 				NODEDATA& d0 = s0.m_NODE[nj];
 				NODEDATA& d1 = s1.m_NODE[nj];
 				if ((node.IsEnabled()) && (d0.m_ntag > 0) && (d1.m_ntag > 0))
@@ -295,10 +316,10 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		int NF = pm->Faces();
 		for (int i = 0; i<NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			FACEDATA& fd0 = s0.m_FACE[i];
 			FACEDATA& fd1 = s1.m_FACE[i];
-			//			if (face.IsEnabled() && (face.m_ntag > 0))
+			if (face.IsEnabled() && (fd0.m_ntag > 0))
 			{
 				face.m_ntag = 1;
 				int nf = face.Nodes();
@@ -403,7 +424,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 	float dti = 1.f / (max - min);
 	for (int i = 0; i<pm->Faces(); ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		FACEDATA& fd = s0.m_FACE[i];
 		if (face.IsEnabled())
 		{
@@ -456,7 +477,7 @@ void CGLColorMap::Update(int ntime, float dt, bool breset)
 		int NF = surf.Faces();
 		for (int j=0; j<NF; ++j)
 		{
-			FEFace& face = surf.Face(j);
+			FSFace& face = surf.Face(j);
 			if (face.m_elem[0].eid == -1) face.Deactivate();
 			else
 			{
@@ -505,7 +526,7 @@ void CGLColorMap::UpdateState(int ntime, bool breset)
 {
 	// get the model
 	CGLModel* po = GetModel();
-	FEPostModel* pfem = po->GetFEModel();
+	FEPostModel* pfem = po->GetFSModel();
 
 	// make sure the field variable is still valid
 	if (pfem->IsValidFieldCode(m_nfield, ntime) == false)

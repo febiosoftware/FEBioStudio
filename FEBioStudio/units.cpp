@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "units.h"
 #include "UnitParser.h"
-#include <FSCore/paramunit.h>
+#include <FECore/units.h>
 
 #ifdef _DEBUG
 static int unit_system = Units::SI;
@@ -44,6 +44,14 @@ QStringList Units::SupportedUnitSystems()
 	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "µm-nN-s" << "CGS";
 
 	return s;
+}
+
+int Units::FindUnitSytemFromName(const char* sz)
+{
+	if (sz == nullptr) return -1;
+	QStringList sl = SupportedUnitSystems();
+	int n = sl.indexOf(sz); assert((n >= 0) && (n < sl.size()));
+	return n;
 }
 
 static const char* unit_table[][12] = {

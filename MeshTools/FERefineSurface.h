@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,8 +34,8 @@ public:
 
 	void SetIterations(int n);
 
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 protected:
-	FESurfaceMesh* Split(FESurfaceMesh* pm);
+	FSSurfaceMesh* Split(FSSurfaceMesh* pm);
 };

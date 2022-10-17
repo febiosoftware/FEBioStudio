@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,20 +31,21 @@ class GQuartDogBone;
 class FEQuartDogBone : public FEMultiBlockMesh
 {
 public:
-	enum {N_X, N_Y, N_Z, R_BIAS, Z_BIAS, BZ};
+	enum {N_X, N_Y, N_Z, R_BIAS, Z_BIAS, BZ, ELEM_TYPE};
 
 public:
 	FEQuartDogBone(){}
 	FEQuartDogBone(GQuartDogBone* po);
 
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	FEMesh* BuildMeshLegacy();
-	FEMesh* BuildMultiBlockMesh4();
-	FEMesh* BuildMultiBlockMesh6();
+	FSMesh* BuildMeshLegacy();
+
+	bool BuildMultiBlock() override;
+	bool BuildMultiBlockMesh6();
+	bool BuildMultiBlockMesh4();
 
 protected:
 	GQuartDogBone* m_pobj;
-
 };

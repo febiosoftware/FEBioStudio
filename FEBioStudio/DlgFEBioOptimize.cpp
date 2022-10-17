@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,11 +44,12 @@ SOFTWARE.*/
 #include <QClipboard>
 #include <QApplication>
 #include <QtCore/QMimeData>
+#include "DlgImportData.h"
 
 class Ui::CDlgSelectParam
 {
 public:
-	FEModel*		m_fem;
+	FSModel*		m_fem;
 	QTreeWidget*	tree;
 	QString			m_text;
 	int				m_paramOption;
@@ -73,7 +74,7 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), w, SLOT(reject()));
 	}
 
-	void AddMaterial(FEMaterial* mat, QTreeWidgetItem* item)
+	void AddMaterial(FSMaterial* mat, QTreeWidgetItem* item)
 	{
 		for (int j = 0; j < mat->Parameters(); ++j)
 		{
@@ -84,12 +85,12 @@ public:
 
 		for (int j = 0; j < mat->Properties(); ++j)
 		{
-			FEMaterialProperty& prop = mat->GetProperty(j);
+			FSProperty& prop = mat->GetProperty(j);
 			int nsize = prop.Size();
 			QString propName = QString::fromStdString(prop.GetName());
 			for (int k = 0; k < nsize; ++k)
 			{
-				FEMaterial* mj = mat->GetProperty(j).GetMaterial(k);
+				FSMaterial* mj = mat->GetMaterialProperty(j, k);
 				if (mj)
 				{
 					QString matName = propName;
@@ -114,7 +115,7 @@ public:
 			{
 				GMaterial* mat = m_fem->GetMaterial(i);
 				QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 1);
-				FEMaterial* matProps = mat->GetMaterialProperties();
+				FSMaterial* matProps = mat->GetMaterialProperties();
 
 				AddMaterial(matProps, matItem);
 				root->addChild(matItem);
@@ -127,8 +128,8 @@ public:
 			for (int i = 0; i < NMAT; ++i)
 			{
 				GMaterial* mat = m_fem->GetMaterial(i);
-				FEMaterial* matProps = mat->GetMaterialProperties();
-				if (dynamic_cast<FERigidMaterial*>(matProps)) {
+				FSMaterial* matProps = mat->GetMaterialProperties();
+				if (matProps->IsRigid()) {
 					QTreeWidgetItem* matItem = new QTreeWidgetItem(QStringList() << QString::fromStdString(mat->GetName()), 3);
 					matItem->addChild(new QTreeWidgetItem(QStringList() << "Fx", 2));
 					matItem->addChild(new QTreeWidgetItem(QStringList() << "Fy", 2));
@@ -177,14 +178,14 @@ QString CDlgSelectParam::text()
 }
 
 
-CDlgSelectParam::CDlgSelectParam(FEModel* fem, int paramOption, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgSelectParam)
+CDlgSelectParam::CDlgSelectParam(FSModel* fem, int paramOption, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgSelectParam)
 {
 	ui->m_fem = fem;
 	ui->m_paramOption = paramOption;
 	ui->setup(this);
 }
 
-CSelectParam::CSelectParam(FEModel* fem, int paramOption, QWidget* parent) : m_fem(fem), QWidget(parent)
+CSelectParam::CSelectParam(FSModel* fem, int paramOption, QWidget* parent) : m_fem(fem), QWidget(parent)
 {
 	m_paramOption = paramOption;
 
@@ -214,7 +215,7 @@ void CSelectParam::onSelectClicked()
 class Ui::CDlgFEBioOptimize
 {
 public:
-	FEModel*	m_fem;
+	FSModel*	m_fem;
 	FEBioOpt	opt;
 	int			m_theme;
 
@@ -452,7 +453,7 @@ CDlgFEBioOptimize::CDlgFEBioOptimize(CMainWindow* parent) : QWizard(parent), ui(
 
 	setWindowTitle("Generate FEBio optimization");
 	ui->m_theme = parent->currentTheme();
-	ui->m_fem = doc->GetFEModel();
+	ui->m_fem = doc->GetFSModel();
 	ui->setup(this);
 
 	QMetaObject::connectSlotsByName(this);
@@ -475,11 +476,11 @@ void CDlgFEBioOptimize::on_addData_clicked()
 	if (dlg.exec())
 	{
 		ui->dataTable->setRowCount(0);
-		std::vector<LOADPOINT> pts = dlg.GetPoints();
+		std::vector<vec2d> pts = dlg.GetPoints();
 		for (int i = 0; i < pts.size(); ++i)
 		{
-			LOADPOINT& p = pts[i];
-			ui->addDataPoint(p.time, p.load);
+			vec2d& p = pts[i];
+			ui->addDataPoint(p.x(), p.y());
 		}
 	}
 }
@@ -493,33 +494,98 @@ void CDlgFEBioOptimize::on_pasteData_clicked()
 
 	if (mimeData->hasText())
 	{
-		QString text = clipboard->text();
-		if (text.isEmpty())
-		{
-			QMessageBox::information(this, "FEBio Studio", "No valid clipboard data found.");
-			return;
-		}
-		ui->dataTable->setRowCount(0);
-		QStringList lines = text.split('\n');
-		for (int i = 0; i < lines.size(); ++i)
-		{
-			QString s = lines.at(i);
-			QStringList pt = s.split('\t');
-			if (pt.size() == 2)
-			{
-				bool bok0, bok1;
-				QString s0 = pt.at(0);
-				QString s1 = pt.at(1);
-				
-				double x = pt.at(0).toDouble(&bok0);
-				double y = pt.at(1).toDouble(&bok1);
-				if (bok0 && bok1) ui->addDataPoint(x, y);
-			}
-		}
+        QString text = clipboard->text();
+        CDlgImportData dlg(text, DataType::DOUBLE, 2);
+        if(dlg.exec())
+        {
+            QList<QStringList> values = dlg.GetValues();
+
+            ui->dataTable->setRowCount(0);
+
+            for(auto row : values)
+            {
+                double x = row.at(0).toDouble();
+                double y = row.at(1).toDouble();
+                ui->addDataPoint(x, y);
+            }
+        }
 	}
 	else
 	{
 		QMessageBox::information(this, "FEBio Studio", "No valid clipboard data found.");
 	}
 
+}
+
+//==========================================================================================================
+
+class CDlgFEBioTangentUI
+{
+public:
+	FEBioTangentDiagnostic data;
+
+public:
+	QComboBox* matList;
+	QComboBox* scenarios;
+	QLineEdit* strain;
+
+	void setup(CDlgFEBioTangent* dlg)
+	{
+		matList = new QComboBox;
+		scenarios = new QComboBox;
+		strain = new QLineEdit;
+		strain->setValidator(new QDoubleValidator);
+
+		QFormLayout* form = new QFormLayout;
+		form->addRow("Material:", matList);
+		form->addRow("Scenario:", scenarios);
+		form->addRow("strain:", strain);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(form);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		l->addWidget(bb);
+
+		dlg->setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+	}
+};
+
+CDlgFEBioTangent::CDlgFEBioTangent(CMainWindow* parent) : QDialog(parent), ui(new CDlgFEBioTangentUI)
+{
+	ui->setup(this);
+
+	CModelDocument* doc = parent->GetModelDocument();
+	if (doc)
+	{
+		FSModel* fem = doc->GetFSModel(); assert(fem);
+		int nmat = fem->Materials();
+		for (int i = 0; i < nmat; ++i)
+		{
+			GMaterial* mat = fem->GetMaterial(i);
+			ui->matList->addItem(QString::fromStdString(mat->GetName()));
+		}
+	}
+
+	ui->scenarios->addItem("uni-axial");
+	ui->scenarios->addItem("simple shear");
+
+	ui->strain->setText(QString::number(0.1));
+}
+
+FEBioTangentDiagnostic CDlgFEBioTangent::GetData()
+{
+	return ui->data;
+}
+
+void CDlgFEBioTangent::accept()
+{
+	ui->data.m_matIndex = ui->matList->currentIndex();
+	ui->data.m_scenario = ui->scenarios->currentIndex();
+	ui->data.m_strain = ui->strain->text().toDouble();
+
+	QDialog::accept();
 }

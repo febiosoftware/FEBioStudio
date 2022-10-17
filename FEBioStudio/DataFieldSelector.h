@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -67,6 +67,30 @@ class CTimeStepSelector : public CDataSelector
 public:
 	CTimeStepSelector();
 
+	void BuildMenu(QMenu* menu) override;
+};
+
+// Derived class for muscle paths
+class CMusclePathDataSelector : public CDataSelector
+{
+public:
+	CMusclePathDataSelector();
+	void BuildMenu(QMenu* menu) override;
+};
+
+// Derived class for probes
+class CProbeDataSelector : public CDataSelector
+{
+public:
+	CProbeDataSelector();
+	void BuildMenu(QMenu* menu) override;
+};
+
+// Derived class for rulers
+class CRulerDataSelector : public CDataSelector
+{
+public:
+	CRulerDataSelector();
 	void BuildMenu(QMenu* menu) override;
 };
 

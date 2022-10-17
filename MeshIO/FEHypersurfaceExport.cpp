@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEHypersurfaceExport::FEHypersurfaceExport(FEProject& prj) : FEFileExport(prj)
+FEHypersurfaceExport::FEHypersurfaceExport(FSProject& prj) : FEFileExport(prj)
 {
 }
 
@@ -55,7 +55,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 	fprintf(fp, "\t}\n");
 	fprintf(fp, "}\n\n");
 
-	FEModel* ps = &m_prj.GetFEModel();
+	FSModel* ps = &m_prj.GetFSModel();
 	GModel& model = ps->GetModel();
 
 	// count total nr of faces
@@ -65,7 +65,7 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected() && po->GetFEMesh())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			int NF = m.Faces();
 			for (int i=0; i<NF; ++i)
 			{
@@ -82,12 +82,12 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Nodes(); ++j) m.Node(j).m_ntag = 0;
 
 			for (j=0; j<m.Faces(); ++j)
 			{
-				FEFace& f = m.Face(j);
+				FSFace& f = m.Face(j);
 				for (k=0; k<f.Nodes(); ++k) m.Node(f.n[k]).m_ntag = 1;
 			}
 
@@ -102,10 +102,10 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Nodes(); ++j)
 			{
-				FENode& n = m.Node(j);
+				FSNode& n = m.Node(j);
 				vec3d r = po->GetTransform().LocalToGlobal(n.r);
 				if (n.m_ntag) fprintf(fp, "%g %g %g\n", r.x, r.y, r.z);
 			}
@@ -123,10 +123,10 @@ bool FEHypersurfaceExport::Write(const char* szfile)
 		GObject* po = model.Object(i);
 		if (po->IsSelected())
 		{
-			FEMesh& m = *po->GetFEMesh();
+			FSMesh& m = *po->GetFEMesh();
 			for (j=0; j<m.Faces(); ++j)
 			{
-				FEFace& f = m.Face(j);
+				FSFace& f = m.Face(j);
 				if (f.Nodes() == 3)
 				{
 					nf[0] = m.Node(f.n[0]).m_ntag;

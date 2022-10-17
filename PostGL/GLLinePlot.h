@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,17 +26,25 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
+#include "LineDataModel.h"
 #include <PostLib/FEState.h>
 namespace Post {
 
 //-----------------------------------------------------------------------------
 // Line rendering of imported line data
-class CGLLinePlot : public CGLPlot
+class CGLLinePlot : public CGLLegendPlot
 {
-	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, SHOW_ALWAYS };
+	enum { DATA_FIELD, COLOR_MODE, SOLID_COLOR, COLOR_MAP, RENDER_MODE, LINE_WIDTH, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN, SHOW_ALWAYS, SHOW_LEGEND };
+
+	enum COLOR_MODE {
+		COLOR_SOLID,
+		COLOR_SEGMENT,
+		COLOR_LINE_DATA,
+		COLOR_MODEL_DATA
+	};
 
 public:
-	CGLLinePlot(CGLModel* po);
+	CGLLinePlot();
 	virtual ~CGLLinePlot();
 
 	void Render(CGLContext& rc) override;
@@ -63,10 +71,17 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	void Reload() override;
+
+public:
+	void SetLineDataModel(LineDataModel* lineData);
+	LineDataModel* GetLineDataModel();
+
 protected:
-	void RenderLines(FEState& s);
-	void Render3DLines(FEState& s);
-	bool ShowLine(LINEDATA& l, FEState& s);
+	void RenderLines(FEState& s, int ntime);
+	void Render3DLines(FEState& s, int ntime);
+	void Render3DSmoothLines(FEState& s, int ntime);
+	bool ShowLine(LINESEGMENT& l, FEState& s);
 
 private:
 	float		m_line;		//!< line thickness
@@ -75,49 +90,124 @@ private:
 	int			m_ncolor;	//!< color option
 	int			m_nfield;
 	bool		m_show;		//!< hide when containing elements are hidden
+	DATA_RANGE	m_range;	// range for legend
+	bool		m_showLegend;
 	CColorTexture	m_Col;	//!< line color (when m_ncolor is not solid)
 
+	LineDataModel* m_lineData;
+};
+
+//-----------------------------------------------------------------------------
+#define MAX_POINT_DATA_FIELDS	32
+
+class PointData
+{
+public:
+	struct POINT
+	{
+		int		nlabel;
+		vec3f	m_r;
+		float	val[MAX_POINT_DATA_FIELDS];
+	};
+
+public:
+
+	void AddPoint(vec3f a, int nlabel);
+
+	void AddPoint(vec3f a, const std::vector<float>& data, int nlabel);
+
+	int Points() const { return (int)m_pt.size(); }
+
+	POINT& Point(int n) { return m_pt[n]; }
+
+public:
+	vector<POINT>	m_pt;
+};
+
+//-----------------------------------------------------------------------------
+class PointDataSource;
+
+class PointDataModel
+{
+public:
+	PointDataModel(FEPostModel* fem);
+	~PointDataModel();
+	void Clear();
+
+	FEPostModel* GetFEModel() { return m_fem; }
+
+	void SetPointDataSource(PointDataSource* src) { m_src = src; }
+	PointDataSource* GetPointDataSource() { return m_src; }
+
+	void AddDataField(const std::string& dataName);
+	std::vector<std::string> GetDataNames() { return m_dataNames; }
+
+	int GetDataFields() const { return (int)m_dataNames.size(); }
+
+	PointData& GetPointData(size_t state) { return m_point[state]; }
+
+	bool Reload();
+
 private:
-	vec2f	m_rng;
+	FEPostModel* m_fem;
+	PointDataSource* m_src;
+	std::vector<PointData>	m_point;
+	std::vector<std::string>	m_dataNames;
+};
+
+class PointDataSource
+{
+public:
+	PointDataSource(PointDataModel* mdl) : m_mdl(mdl) { mdl->SetPointDataSource(this); }
+	virtual ~PointDataSource() {}
+
+	virtual bool Load(const char* szfile) = 0;
+	virtual bool Reload() = 0;
+
+	PointDataModel* GetPointDataModel() { return m_mdl; }
+
+private:
+	PointDataModel* m_mdl;
 };
 
 //-----------------------------------------------------------------------------
 // point cloud rendering of imported point data
-class CGLPointPlot : public CGLPlot
+class CGLPointPlot : public CGLLegendPlot
 {
-	enum {MAX_SETTINGS = 4};
-
-	enum { POINT_SIZE, COLOR, RENDER_MODE };
-
-	struct SETTINGS
-	{
-		float		size;		//!< point size
-		GLColor		col;		//!< rendering color
-		int			nmode;		//!< rendering mode
-		int			nvisible;	//!< visible flag
-	};
+	enum { POINT_SIZE, POINT_SIZE_SOURCE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
 public:
-	CGLPointPlot(CGLModel* po);
+	CGLPointPlot();
 	virtual ~CGLPointPlot();
 
 	void Render(CGLContext& rc) override;
 
-	float GetPointSize(int n = 0) { return m_set[n].size; }
-	void SetPointSize(float f, int n = 0) { m_set[n].size = f; }
+	float GetPointSize() { return m_pointSize; }
+	void SetPointSize(float f) { m_pointSize = f; }
 
-	GLColor GetPointColor(int n = 0) { return m_set[n].col; }
-	void SetPointColor(GLColor c, int n = 0) { m_set[n].col = c; }
-
-	int GetRenderMode(int n = 0) { return m_set[n].nmode; }
-	void SetRenderMode(int m, int n = 0) { m_set[n].nmode = m; }
-
-	int GetVisible(int n = 0) { return m_set[n].nvisible; }
-	void SetVisible(int nvis, int n = 0) { m_set[n].nvisible = nvis; }
+	GLColor GetPointColor() { return m_solidColor; }
+	void SetPointColor(GLColor c) { m_solidColor = c; }
 
 	bool UpdateData(bool bsave = true) override;
 
+public:
+	void SetPointDataModel(PointDataModel* pointData);
+
+	void Reload() override;
+
 private:
-	SETTINGS	m_set[MAX_SETTINGS];
+	void RenderPoints();
+	void RenderSpheres();
+
+private:
+	float		m_pointSize;	//!< point size
+	int			m_renderMode;	//!< render mode
+	int			m_colorMode;	//!< color mode
+	GLColor		m_solidColor;	//!< rendering color
+	CColorTexture	m_Col;		//!< line color (when m_ncolor is not solid)
+	bool		m_showLegend;	//!< show legend bar or not
+	DATA_RANGE	m_range;	// range for legend
+
+	PointDataModel* m_pointData;
 };
 }

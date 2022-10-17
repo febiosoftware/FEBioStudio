@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -164,16 +164,13 @@ bool CPaletteManager::Save(const string& file, const CPalette& pal)
 
 bool CPaletteManager::Load(const string& file)
 {
-	FILE* fp = fopen(file.c_str(), "rt");
-	if (fp == 0) return false;
-
-	// attach an xml parser to the file stream
+	// Open the file in an xml reader
 	XMLReader xml;
-	if (xml.Attach(fp) == false) { fclose(fp); return false; }
+	if (xml.Open(file.c_str()) == false) return false;
 
 	// find the root tag
 	XMLTag tag;
-	if (xml.FindTag("PostViewResource", tag) == false) { fclose(fp); return false; }
+	if (xml.FindTag("PostViewResource", tag) == false) return false; 
 
 	char szbuf[256] = { 0 };
 	++tag;
@@ -219,8 +216,6 @@ bool CPaletteManager::Load(const string& file)
 		else xml.SkipTag(tag);
 	}
 	while (!tag.isend());
-
-	fclose(fp);
 
 	return true;
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEDomain.h"
+using namespace std;
 
 const int FEDQuad::m_edge[4][2] = {
     { 0, 1 }, { 1, 2 }, { 2, 3 }, { 3, 0 }
@@ -84,10 +85,10 @@ int mod(int a, int b)
 }
 
 /////////////////////////////////////////////////////////////////////////////////
-// FEDomain
+// FSDomain
 /////////////////////////////////////////////////////////////////////////////////
 
-FEDomain::~FEDomain()
+FSDomain::~FSDomain()
 {
     VertexList.clear();
     EdgeList.clear();
@@ -100,7 +101,7 @@ FEDomain::~FEDomain()
 
 //-------------------------------------------------------------------------------
 // Find a vertex in the master VertexList by its tag number
-int FEDomain::FindVertexByTagNumber(int n)
+int FSDomain::FindVertexByTagNumber(int n)
 {
     for (int i=0; i<VertexList.size(); ++i)
         if (VertexList[i].m_ntag == n) return i;
@@ -110,7 +111,7 @@ int FEDomain::FindVertexByTagNumber(int n)
 
 //-------------------------------------------------------------------------------
 // Find an edge in the master EdgeList
-int FEDomain::FindEdge(FEDEdge edge)
+int FSDomain::FindEdge(FEDEdge edge)
 {
     // only search the list of edges connected to the first vertex of this edge
     FEDVertex v = Vertex(edge.v[0]);
@@ -128,7 +129,7 @@ int FEDomain::FindEdge(FEDEdge edge)
 // Find an edge in the master EdgeList
 // If the edge is found, pos = true means that the sense of edge is the same as
 // the entry in EdgeList, pos = false means that the sense is opposite.
-int FEDomain::FindEdge(FEDEdge edge, bool& pos)
+int FSDomain::FindEdge(FEDEdge edge, bool& pos)
 {
     // only search the list of edges connected to the first vertex of this edge
     FEDVertex v = Vertex(edge.v[0]);
@@ -148,7 +149,7 @@ int FEDomain::FindEdge(FEDEdge edge, bool& pos)
 
 //-------------------------------------------------------------------------------
 // Find a quad in the master QuadList
-int FEDomain::FindQuad(FEDQuad quad)
+int FSDomain::FindQuad(FEDQuad quad)
 {
     // only search the list of quads connected to the first vertex of this quad
     bool found_quad, found_node;
@@ -172,7 +173,7 @@ int FEDomain::FindQuad(FEDQuad quad)
 
 //-------------------------------------------------------------------------------
 // Find a quad in the master QuadList
-int FEDomain::FindQuad(FEDQuad quad, bool& pos, int& ist)
+int FSDomain::FindQuad(FEDQuad quad, bool& pos, int& ist)
 {
     // only search the list of quads connected to the first vertex of this quad
     FEDVertex v = Vertex(quad.v[0]);
@@ -215,8 +216,8 @@ int FEDomain::FindQuad(FEDQuad quad, bool& pos, int& ist)
 }
 
 //-------------------------------------------------------------------------------
-// Find a quad in the master QuadList from a FEFace
-int FEDomain::FindQuadFromFace(FEFace face)
+// Find a quad in the master QuadList from a FSFace
+int FSDomain::FindQuadFromFace(FSFace face)
 {
     if (face.Nodes() != 4) return -1;
     int v[4];
@@ -230,7 +231,7 @@ int FEDomain::FindQuadFromFace(FEFace face)
 
 //-------------------------------------------------------------------------------
 // Find a tri in the master TriList
-int FEDomain::FindTri(FEDTri tri)
+int FSDomain::FindTri(FEDTri tri)
 {
     // only search the list of tris connected to the first vertex of this tri
     bool found_tri, found_node;
@@ -254,7 +255,7 @@ int FEDomain::FindTri(FEDTri tri)
 
 //-------------------------------------------------------------------------------
 // Find a tri in the master TriList
-int FEDomain::FindTri(FEDTri tri, bool& pos, int& ist)
+int FSDomain::FindTri(FEDTri tri, bool& pos, int& ist)
 {
     // only search the list of quads connected to the first vertex of this quad
     FEDVertex v = Vertex(tri.v[0]);
@@ -289,8 +290,8 @@ int FEDomain::FindTri(FEDTri tri, bool& pos, int& ist)
 }
 
 //-------------------------------------------------------------------------------
-// Find a tri in the master TriList from a FEFace
-int FEDomain::FindTriFromFace(FEFace face)
+// Find a tri in the master TriList from a FSFace
+int FSDomain::FindTriFromFace(FSFace face)
 {
     if (face.Nodes() != 3) return -1;
     int v[3];
@@ -304,7 +305,7 @@ int FEDomain::FindTriFromFace(FEFace face)
 
 //-------------------------------------------------------------------------------
 // Find a box in the master BoxList by its tag number
-int FEDomain::FindBox(int n)
+int FSDomain::FindBox(int n)
 {
     for (int i=0; i<Boxes(); ++i)
         if (Box(i).m_ntag == n) return i;
@@ -314,7 +315,7 @@ int FEDomain::FindBox(int n)
 
 //-------------------------------------------------------------------------------
 // Find a wedge in the master WedgeList by its tag number
-int FEDomain::FindWedge(int n)
+int FSDomain::FindWedge(int n)
 {
     for (int i=0; i<Wedges(); ++i)
         if (Wedge(i).m_ntag == n) return i;
@@ -324,7 +325,7 @@ int FEDomain::FindWedge(int n)
 
 //-------------------------------------------------------------------------------
 // Find a tet in the master TetList by its tag number
-int FEDomain::FindTet(int n)
+int FSDomain::FindTet(int n)
 {
     for (int i=0; i<Tets(); ++i)
         if (Tet(i).m_ntag == n) return i;
@@ -334,7 +335,7 @@ int FEDomain::FindTet(int n)
 
 //-------------------------------------------------------------------------------
 // Add a vertex to this domain
-int FEDomain::AddVertex(FEDVertex vtx)
+int FSDomain::AddVertex(FEDVertex vtx)
 {
     // get new vertex number
     int vn = Vertices();
@@ -346,7 +347,7 @@ int FEDomain::AddVertex(FEDVertex vtx)
 
 //-------------------------------------------------------------------------------
 // Add an edge to this domain
-int FEDomain::AddEdge(FEDEdge edge)
+int FSDomain::AddEdge(FEDEdge edge)
 {
     // get new edge number
     int en = Edges();
@@ -362,7 +363,7 @@ int FEDomain::AddEdge(FEDEdge edge)
 
 //-------------------------------------------------------------------------------
 // Add a quad to this domain
-int FEDomain::AddQuad(FEDQuad quad)
+int FSDomain::AddQuad(FEDQuad quad)
 {
     // get new quad number
     int qn = Quads();
@@ -381,7 +382,7 @@ int FEDomain::AddQuad(FEDQuad quad)
 
 //-------------------------------------------------------------------------------
 // Add a tri to this domain
-int FEDomain::AddTri(FEDTri tri)
+int FSDomain::AddTri(FEDTri tri)
 {
     // get new tri number
     int tn = Tris();
@@ -399,7 +400,7 @@ int FEDomain::AddTri(FEDTri tri)
 
 //-------------------------------------------------------------------------------
 // Add a box from a list of vertices in this domain
-int FEDomain::AddBox(vector<int> vlist, int ntag, int gid)
+int FSDomain::AddBox(vector<int> vlist, int ntag, int gid)
 {
     // check vlist
     if (vlist.size() < 8)
@@ -466,7 +467,7 @@ int FEDomain::AddBox(vector<int> vlist, int ntag, int gid)
 
 //-------------------------------------------------------------------------------
 // Add a wedge from a list of vertices in this domain
-int FEDomain::AddWedge(vector<int> vlist, int ntag, int gid)
+int FSDomain::AddWedge(vector<int> vlist, int ntag, int gid)
 {
     // check vlist
     if (vlist.size() < 6)
@@ -557,7 +558,7 @@ int FEDomain::AddWedge(vector<int> vlist, int ntag, int gid)
 
 //-------------------------------------------------------------------------------
 // Add a tet from a list of vertices in this domain
-int FEDomain::AddTet(vector<int> vlist, int ntag, int gid)
+int FSDomain::AddTet(vector<int> vlist, int ntag, int gid)
 {
     // check vlist
     if (vlist.size() < 4)
@@ -624,7 +625,7 @@ int FEDomain::AddTet(vector<int> vlist, int ntag, int gid)
 //-------------------------------------------------------------------------------
 // Split a box into two wedges
 // Use before setting mesh parameters and meshing
-void FEDomain::SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2])
+void FSDomain::SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2])
 {
     int wdg_opt0[2][12][6] = {
         {
@@ -671,7 +672,7 @@ void FEDomain::SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2])
                 vlist[j] = box.v[wdg_opt1[i][iedge][j]];
         }
         // create the wedge
-        iwdg[i] = AddWedge(vlist,box.m_ntag);
+        iwdg[i] = AddWedge(vlist,box.m_ntag, box.m_gid);
     }
     
     // tag the box to be excluded from the domain
@@ -686,7 +687,7 @@ void FEDomain::SplitBoxIntoWedges(int ibox, int iedge, int iopt, int iwdg[2])
 //-------------------------------------------------------------------------------
 // Split a wedge into three tets
 // Use before setting mesh parameters and meshing
-void FEDomain::SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3])
+void FSDomain::SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3])
 {
     int tet[6][3][4] = {
         {{0,1,2,3},{1,2,3,4},{2,3,4,5}},
@@ -708,7 +709,7 @@ void FEDomain::SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3])
         for (int j=0; j<4; ++j)
             vlist[j] = wdg.v[tet[ivtx][i][j]];
         // create the tet
-        itet[i] = AddTet(vlist,wdg.m_ntag);
+        itet[i] = AddTet(vlist,wdg.m_ntag,wdg.m_gid);
     }
     
     // tag the wedge to be excluded from the domain
@@ -720,10 +721,10 @@ void FEDomain::SplitWedgeIntoTets(int iwdg, int ivtx, int itet[3])
 }
 
 //-------------------------------------------------------------------------------
-// Add an element as a domain in FEDomain
-bool FEDomain::AddElement(int iel)
+// Add an element as a domain in FSDomain
+bool FSDomain::AddElement(int iel)
 {
-    const FEElement& el = m_pmesh->Element(iel);
+    const FSElement& el = m_pmesh->Element(iel);
     int gid = el.m_gid;
     
     vector<int> vlist(el.Nodes());
@@ -733,7 +734,7 @@ bool FEDomain::AddElement(int iel)
         int n = el.m_node[i];
         int vn = FindVertexByTagNumber(n);
         if (vn == -1) {
-            FENode node = m_pmesh->Node(el.m_node[i]);
+            FSNode node = m_pmesh->Node(el.m_node[i]);
             FEDVertex v(el.m_node[i], node.r);
             vlist[i] = AddVertex(v);
         }
@@ -774,7 +775,7 @@ bool FEDomain::AddElement(int iel)
 
 //-------------------------------------------------------------------------------
 // Reset mesh parameters
-void FEDomain::ResetMeshParameters()
+void FSDomain::ResetMeshParameters()
 {
     for (int i=0; i<Edges(); ++i) {
         Edge(i).nseg = -1;
@@ -784,7 +785,7 @@ void FEDomain::ResetMeshParameters()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDomain::MeshEdges()
+bool FSDomain::MeshEdges()
 {
     for (int i=0; i<Edges(); ++i) {
         FEDEdge* edge = EdgePtr(i);
@@ -795,7 +796,7 @@ bool FEDomain::MeshEdges()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDomain::MeshQuads()
+bool FSDomain::MeshQuads()
 {
     for (int i=0; i<Quads(); ++i) {
         FEDQuad* quad = QuadPtr(i);
@@ -808,7 +809,7 @@ bool FEDomain::MeshQuads()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDomain::MeshTris()
+bool FSDomain::MeshTris()
 {
     for (int i=0; i<Tris(); ++i) {
         FEDTri* tri = TriPtr(i);
@@ -821,7 +822,7 @@ bool FEDomain::MeshTris()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDomain::MeshBoxes()
+bool FSDomain::MeshBoxes()
 {
     for (int i=0; i<Boxes(); ++i) {
         FEDBox* box = BoxPtr(i);
@@ -834,7 +835,7 @@ bool FEDomain::MeshBoxes()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDomain::MeshWedges()
+bool FSDomain::MeshWedges()
 {
     for (int i=0; i<Wedges(); ++i) {
         FEDWedge* wdg = WedgePtr(i);
@@ -846,7 +847,7 @@ bool FEDomain::MeshWedges()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDomain::MeshTets()
+bool FSDomain::MeshTets()
 {
     for (int i=0; i<Tets(); ++i) {
         FEDTet* tet = TetPtr(i);
@@ -858,7 +859,7 @@ bool FEDomain::MeshTets()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDomain::MeshDomain()
+bool FSDomain::MeshDomain()
 {
     // mesh edges, quads and boxes
     if (!MeshEdges() ) return false;
@@ -882,7 +883,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Vertices(); ++i) {
         FEDVertex* vtx = VertexPtr(i);
         if (vtx->m_ntag == -1) {
-            FENode& node = m_pmesh->Node(n0 + n1);
+            FSNode& node = m_pmesh->Node(n0 + n1);
             node.r = vtx->r;
             // store node number in vertex tag
             node.m_ntag = vtx->m_ntag = n0 + n1;
@@ -908,7 +909,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Boxes(); ++i) {
         FEDBox* box = BoxPtr(i);
         for (int j=0; j<box->elem.size(); ++j) {
-            FEElement& el = m_pmesh->Element(ne0 + ne1);
+            FSElement& el = m_pmesh->Element(ne0 + ne1);
             el.SetType(FE_HEX8);
             el.m_gid = box->m_gid; assert(el.m_gid >= 0);
             for (int k=0; k<8; ++k)
@@ -920,7 +921,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Wedges(); ++i) {
         FEDWedge* wdg = WedgePtr(i);
         for (int j=0; j<wdg->elem.size(); ++j) {
-            FEElement& el = m_pmesh->Element(ne0 + ne1);
+            FSElement& el = m_pmesh->Element(ne0 + ne1);
             el.m_gid = wdg->m_gid; assert(el.m_gid >= 0);
             if (wdg->elem[j].size() == 8) {
                 el.SetType(FE_HEX8);
@@ -940,7 +941,7 @@ bool FEDomain::MeshDomain()
     for (int i=0; i<Tets(); ++i) {
         FEDTet* tet = TetPtr(i);
         for (int j=0; j<tet->elem.size(); ++j) {
-            FEElement& el = m_pmesh->Element(ne0 + ne1);
+            FSElement& el = m_pmesh->Element(ne0 + ne1);
             el.m_gid = tet->m_gid; assert(el.m_gid >= 0);
             if (tet->elem[j].size() == 4) {
                 el.SetType(FE_TET4);
@@ -1083,7 +1084,7 @@ void FEDEdge::GenerateBias()
 }
 
 //-------------------------------------------------------------------------------
-bool FEDEdge::CreateMesh(FEDomain* pdom)
+bool FEDEdge::CreateMesh(FSDomain* pdom)
 {
     // check if we can mesh
     if (nseg < 1) return false;
@@ -1149,7 +1150,7 @@ FEDQuad& FEDQuad::operator=(const FEDQuad quad)
 }
 
 //-------------------------------------------------------------------------------
-bool FEDQuad::CreateMesh(FEDomain* pdom)
+bool FEDQuad::CreateMesh(FSDomain* pdom)
 {
     // in 2D
     // edge 0 of quad = eta1 axis
@@ -1281,7 +1282,7 @@ int FEDTri::FindVertex(int vtx)
 }
 
 //-------------------------------------------------------------------------------
-bool FEDTri::CreateMesh(FEDomain* pdom)
+bool FEDTri::CreateMesh(FSDomain* pdom)
 {
     // in 2D
     // edge 0 of tri = eta1 axis
@@ -1430,7 +1431,7 @@ FEDBox& FEDBox::operator=(const FEDBox box)
 
 //-------------------------------------------------------------------------------
 // Find a box box face by node numbers
-int FEDBox::FindBoxFace(FEFace face)
+int FEDBox::FindBoxFace(FSFace face)
 {
     int v[4];
     // find the vertices from the node list
@@ -1588,7 +1589,7 @@ bool FEDBox::SetMeshSingleFace(int face, int n, double b, bool d)
 }
 
 //-------------------------------------------------------------------------------
-bool FEDBox::CreateMesh(FEDomain* pdom)
+bool FEDBox::CreateMesh(FSDomain* pdom)
 {
     // create the box mesh by stacking quad meshes from box face 4 to face 5
     // assume that mesh bias is identical in (faces 4 and 5)
@@ -1852,7 +1853,7 @@ FEDWedge& FEDWedge::operator=(const FEDWedge wdg)
 
 //-------------------------------------------------------------------------------
 // Find a wedge face by node numbers
-int FEDWedge::FindWedgeFace(FEFace face)
+int FEDWedge::FindWedgeFace(FSFace face)
 {
     int v[4];
     // find the vertices from the node list
@@ -2145,7 +2146,7 @@ bool FEDWedge::SetMeshSingleEdge(int edge, int n, double b, bool d)
 }
 
 //-------------------------------------------------------------------------------
-bool FEDWedge::CreateMesh(FEDomain* pdom)
+bool FEDWedge::CreateMesh(FSDomain* pdom)
 {
     // create the wedge mesh by stacking tri meshes from wedge face 3 to face 4
     // assume that mesh bias is identical in (faces 3 and 4)
@@ -2515,7 +2516,7 @@ FEDTet& FEDTet::operator=(const FEDTet tet)
 
 //-------------------------------------------------------------------------------
 // Find a tet face by node numbers
-int FEDTet::FindTetFace(FEFace face)
+int FEDTet::FindTetFace(FSFace face)
 {
     if (face.Nodes() != 3) return-1;
     int v[3];
@@ -2812,7 +2813,7 @@ bool FEDTet::SetMeshFromEdge(int iedge, int nseg, double bias, bool dble)
 }
 
 //-------------------------------------------------------------------------------
-bool FEDTet::CreateMesh(FEDomain* pdom)
+bool FEDTet::CreateMesh(FSDomain* pdom)
 {
     switch (m_type) {
         case 0:

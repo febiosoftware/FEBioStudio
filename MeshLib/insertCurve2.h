@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,9 +27,8 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include "TriMesh.h"
-//using namespace std;
 
-class FESurfaceMesh;
+class FSSurfaceMesh;
 class GEdge;
 class vec3d;
 
@@ -38,9 +37,9 @@ class InsertCurves2
 public:
 	InsertCurves2();
 
-	FESurfaceMesh* Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList, bool binsertEdges);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm, std::vector<GEdge*>& curveList, bool binsertEdges);
 
 private:
-	void ProjectCurve(FESurfaceMesh* mesh, vector<vec3d>& curve);
+	void ProjectCurve(FSSurfaceMesh* mesh, std::vector<vec3d>& curve);
 	void insertEdge(TriMesh& mesh, TriMesh::NODEP pa, TriMesh::NODEP pb, int ntag);
 };

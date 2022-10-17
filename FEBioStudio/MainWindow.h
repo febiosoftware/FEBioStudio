@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,10 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <QMainWindow>
 #include <QCloseEvent>
-#include <MathLib/math3d.h>
 #include <QtCore/QProcess>
 #include <FSCore/box.h>
 #include <MeshTools/GMaterial.h>
+#include <FECore/vec3d.h>
 
 class FSObject;
 class CDocument;
@@ -44,6 +44,7 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
+class CImagePanel;
 class CPythonToolsPanel;
 class QMenu;
 class CGraphWindow;
@@ -55,7 +56,9 @@ class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
+class CImageSliceView;
 class GObject;
+enum class ImageFileType;
 
 namespace Ui {
 	class CMainWindow;
@@ -76,6 +79,7 @@ public:
 		MODEL_CONFIG,		// model document	(i.e. fsm file)
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
+        XML_CONFIG,		    // text document	(i.e. feb file)
 	};
 
 public:
@@ -139,6 +143,9 @@ public:
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
 
+    // get the image panel
+	CImagePanel* GetImagePanel();
+
 	// get the python panel
 	CPythonToolsPanel* GetPythonToolsPanel();
 
@@ -167,12 +174,6 @@ public:
 	// set clear command stack on save
 	void setClearCommandStackOnSave(bool b);
 
-	//! Process drag event
-    void dragEnterEvent(QDragEnterEvent *e);
-    
-    //! Process drop event
-    void dropEvent(QDropEvent *e);
-
 	//! get the mesh mode
 	int GetMeshMode();
 
@@ -181,10 +182,6 @@ public:
 
 	// get the current project
 	FEBioStudioProject* GetProject();
-
-	// show New dialog box option
-	void setShowNewDialog(bool b);
-	bool showNewDialog();
 
 	// autoSave Interval
 	void setAutoSaveInterval(int interval);
@@ -259,8 +256,8 @@ public:
 	// Update the physics menu based on active modules
 	void UpdatePhysicsUi();
 
-	// clear the recent project list
-	void ClearRecentProjectsList();
+	// clear the recent files list
+	void ClearRecentFilesList();
 
 	// remove a graph from the list
 	void RemoveGraph(CGraphWindow* graph);
@@ -273,6 +270,11 @@ public:
 
 	// set the current time of the current post doc
 	void SetCurrentTime(int n);
+
+    void UpdateUiView();
+
+	// the selection was transformed (i.e. translated, rotated, or scaled)
+	void OnSelectionTransformed();
 
 private:
 	void writeSettings();
@@ -315,11 +317,14 @@ private:
 	void ShowWelcomePage();
 	void CloseWelcomePage();
 
+	void ProcessITKImage(const QString& fileName, ImageFileType type);
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
 	void on_actionOpenProject_triggered();
 	void on_actionOpen_triggered();
+    // void on_actionReadInfo_triggered();
 	void on_actionSave_triggered();
 	void on_actionSaveAs_triggered();
 	void on_actionSaveAll_triggered();
@@ -331,8 +336,14 @@ public slots:
 	void on_actionExportGeometry_triggered();
 	void on_actionImportProject_triggered();
 	void on_actionExportProject_triggered();
-	void on_actionImportImage_triggered();
+	void on_actionImportRawImage_triggered();
+	void on_actionImportDICOMImage_triggered();
+	void on_actionImportTiffImage_triggered();
+	void on_actionImportOMETiffImage_triggered();
+	void on_actionImportImageSequence_triggered();
 	void on_actionConvertFeb_triggered();
+    void on_actionConvertFeb2Fsm_triggered();
+    void on_actionConvertFsm2Feb_triggered();
 	void on_actionConvertGeo_triggered();
 	void on_actionExit_triggered();
 	void on_recentFiles_triggered(QAction* action);
@@ -365,6 +376,7 @@ public slots:
 	void on_actionExtract_triggered();
 	void on_actionEditProject_triggered();
 	void on_actionFaceToElem_triggered();
+	void on_actionSurfaceToFaces_triggered();
 	void on_actionSelectOverlap_triggered();
 	void on_actionGrowSelection_triggered();
 	void on_actionShrinkSelection_triggered();
@@ -377,16 +389,26 @@ public slots:
 	void on_actionDuplicateLine_triggered();
 	void on_actionDeleteLine_triggered();
 
-	void on_actionAddBC_triggered();
+	// Physics menu
+	void on_actionAddNodalBC_triggered();
+	void on_actionAddSurfaceBC_triggered();
+	void on_actionAddGeneralBC_triggered();
 	void on_actionAddNodalLoad_triggered();
 	void on_actionAddSurfLoad_triggered();
 	void on_actionAddBodyLoad_triggered();
+	void on_actionAddRigidLoad_triggered();
 	void on_actionAddIC_triggered();
 	void on_actionAddContact_triggered();
-	void on_actionAddConstraint_triggered();
-	void on_actionAddRigidConstraint_triggered();
+	void on_actionAddSurfaceNLC_triggered();
+	void on_actionAddBodyNLC_triggered();
+	void on_actionAddGenericNLC_triggered();
+	void on_actionAddRigidBC_triggered();
+	void on_actionAddRigidIC_triggered();
 	void on_actionAddRigidConnector_triggered();
 	void on_actionAddMaterial_triggered();
+	void on_actionAddMeshAdaptor_triggered();
+	void on_actionAddLoadController_triggered();
+	void on_actionAddMeshData_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
@@ -397,15 +419,20 @@ public slots:
 	void on_actionMeshInspector_triggered();
 	void on_actionMeshDiagnostic_triggered();
 	void on_actionElasticityConvertor_triggered();
+	void on_actionMaterialTest_triggered();
 	void on_actionUnitConverter_triggered();
 	void on_actionKinemat_triggered();
 	void on_actionPlotMix_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
 	void on_actionFEBioOptimize_triggered();
+	void on_actionFEBioTangent_triggered();
+	void on_actionFEBioInfo_triggered();
+	void on_actionFEBioPlugins_triggered();
 	void on_actionOptions_triggered();
+#ifdef _DEBUG
 	void on_actionLayerInfo_triggered();
-
+#endif
 	// Post menu actions
 	void on_actionPlaneCut_triggered();
 	void on_actionMirrorPlane_triggered();
@@ -420,7 +447,10 @@ public slots:
 	void on_actionImageSlicer_triggered();
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
+	void on_actionImageWarp_triggered();
 	void on_actionAddProbe_triggered();
+	void on_actionAddRuler_triggered();
+	void on_actionMusclePath_triggered();
 	void on_actionGraph_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
@@ -448,7 +478,7 @@ public slots:
 	void on_actionBackfaceCulling_toggled(bool b);
 	void on_actionViewSmooth_toggled(bool bchecked);
 	void on_actionShowNormals_toggled(bool b);
-	void on_actionShowFibers_toggled(bool b);
+	void on_actionShowFibers_triggered();
 	void on_actionShowMatAxes_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
 	void on_actionToggleLight_triggered();
@@ -475,6 +505,7 @@ public slots:
 	void on_actionFEBioPubs_triggered();
 	void on_actionAbout_triggered();
 	void on_actionWelcome_triggered();
+    void on_actionBugReport_triggered();
 
 	void on_actionSelect_toggled(bool b);
 	void on_actionTranslate_toggled(bool b);
@@ -524,11 +555,18 @@ public slots:
 
 	void on_htmlview_anchorClicked(const QUrl& link);
 	void on_xmledit_textChanged();
+    void on_xmlTree_modelEdited();
 
 	void on_clearProject();
 	void on_closeProject();
 	void on_closeFile(const QString& file);
 	void on_addToProject(const QString& file);
+
+    // XML toolbar
+    void on_actionEditXmlAsText_triggered(bool checked);
+    void on_actionAddAttribute_triggered();
+    void on_actionAddElement_triggered();
+    void on_actionRemoveRow_triggered();
 
 	// slots from Post panel
 	void OnPostObjectStateChanged();
@@ -558,13 +596,10 @@ public slots:
 	void on_glview_pointPicked(const vec3d& r);
 	void on_glview_selectionChanged();
 
-	void onRunFinished(int exitCode, QProcess::ExitStatus es);
-	void onReadyRead();
-	void onErrorOccurred(QProcess::ProcessError err);
-
-	void onExportMaterials(const vector<GMaterial*>& matList);
+	void onExportMaterials(const std::vector<GMaterial*>& matList);
 	void onExportAllMaterials();
 	void onImportMaterials();
+	void onImportMaterialsFromModel(CModelDocument* src);
 
 	void DeleteAllMaterials();
 	void DeleteAllBC();
@@ -572,12 +607,19 @@ public slots:
 	void DeleteAllIC();
 	void DeleteAllContact();
 	void DeleteAllConstraints();
-	void DeleteAllRigidConstraints();
+	void DeleteAllRigidLoads();
+	void DeleteAllRigidBCs();
+	void DeleteAllRigidICs();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
 	void DeleteAllJobs();
+	void OnDeleteAllLoadControllers();
+	void OnDeleteAllMeshData();
 
 	CGLView* GetGLView();
+    CImageSliceView* GetImageSliceView();
+
+	void UpdateGraphs(bool breset);
 
 	Post::CGLModel* GetCurrentModel();
 
@@ -602,9 +644,14 @@ public slots:
 
 	void autoUpdateCheck(bool update);
 
+	void updateOutput(const QString& txt);
+
 public:
 	QStringList GetRecentFileList();
 	QStringList GetRecentProjectsList();
+	QStringList GetRecentPluginsList();
+
+	void AddRecentPlugin(const QString& fileName);
 
 	QString ProjectFolder();
 	QString ProjectName();
@@ -620,13 +667,19 @@ public:
 	int FindView(CDocument* doc);
 	GObject* GetActiveObject();
 
+    QSize GetEditorSize();
+
+	static CMainWindow* GetInstance();
+
 private:
 	Ui::CMainWindow*	ui;
 
 	CDocManager*		m_DocManager;
 
 	CFileThread*		m_fileThread;
-	vector<QueuedFile>	m_fileQueue;
+	std::vector<QueuedFile>	m_fileQueue;
+
+	static CMainWindow*		m_mainWnd;
 };
 
 class CResource

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -99,8 +99,8 @@ void GExtrudeModifier::Apply(GObject* po)
 
 	// create new top-surfaces
 	int F = po->Faces();
-	vector<int> node;
-	vector<pair<int, int> > edge;
+	std::vector<int> node;
+	std::vector< std::pair<int, int> > edge;
 	for (int n = 1; n <= NDIV; ++n)
 	{
 		for (int i = 0; i < F; ++i)
@@ -155,7 +155,7 @@ void GExtrudeModifier::Apply(GObject* po)
 	assert(po->Parts()==1);
 
 	// but we should have one for each face
-	for (int i=1; i<F*NDIV; ++i) po->AddPart();
+	for (int i=1; i<F*NDIV; ++i) po->AddSolidPart();
 	const int NP = po->Parts();
 
 	// Now, we need to figure out which faces belong to which parts
@@ -210,7 +210,7 @@ GMesh* GExtrudeModifier::BuildGMesh(GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-FEMesh* GExtrudeModifier::BuildFEMesh(GObject* po)
+FSMesh* GExtrudeModifier::BuildFEMesh(GObject* po)
 {
 	FETetGenMesher tet(po);
 	tet.SetFloatValue(FETetGenMesher::ELSIZE, 0.2);

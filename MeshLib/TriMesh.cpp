@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -801,7 +801,7 @@ TriMesh::NODEP insertPoint(TriMesh& mesh, const vec3d& r, const double eps)
 	return closestNode;
 }
 
-void insertEdge(TriMesh& mesh, TriMesh::NODEP n0, TriMesh::NODEP n1, vector<TriMesh::NODEP>& nodeList, int tag, const double eps)
+void insertEdge(TriMesh& mesh, TriMesh::NODEP n0, TriMesh::NODEP n1, std::vector<TriMesh::NODEP>& nodeList, int tag, const double eps)
 {
 	stack<NodePair> S;
 	S.push(NodePair(n0, n1));
@@ -1233,7 +1233,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 
 		// tag all the faces within distance L for removal
 		mesh.tagAllFaces(0);
-		vector<TriMesh::FACEP> removalList;
+		std::vector<TriMesh::FACEP> removalList;
 		closestFace->ntag = 2;
 		removalList.push_back(closestFace);
 
@@ -1296,7 +1296,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 		}
 
 		// extract the outside boundary of the removal list
-		vector<TriMesh::EDGEP> border;
+		std::vector<TriMesh::EDGEP> border;
 		for (int i=0; i<(int)removalList.size(); ++i)
 		{
 			TriMesh::FACEP fi = removalList[i];
@@ -1323,7 +1323,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 		}
 
 		// create the node list
-		vector<TriMesh::NODEP> nodeList;
+		std::vector<TriMesh::NODEP> nodeList;
 		if (w == 1) 
 		{
 			nodeList.push_back(e0->node[0]);
@@ -1336,7 +1336,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 		}
 		TriMesh::NODEP n2 = nodeList[1];
 
-		vector<TriMesh::EDGEP> contour;
+		std::vector<TriMesh::EDGEP> contour;
 		contour.push_back(e0);
 
 		for (int i=0; i<border.size(); ++i) border[i]->ntag = 0;
@@ -1490,7 +1490,7 @@ TriMesh::NODEP insertDelaunyPoint(TriMesh& mesh, const vec3d& r, bool remesh, co
 		star.m_node = newNode;
 
 		// create new edges
-		vector<TriMesh::EDGEP> newEdges;
+		std::vector<TriMesh::EDGEP> newEdges;
 		for (int i=0; i<nodeList.size(); ++i)
 		{
 			TriMesh::EDGEP newEdge = mesh.addEdge(nodeList[i], newNode);

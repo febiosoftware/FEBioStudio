@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,12 +31,12 @@ namespace Post {
 //-----------------------------------------------------------------------------
 class FEPostMesh;
 class FEPostModel;
-class FEDataField;
-class FEPart;
-class FESurface;
+class ModelDataField;
+class FSPart;
+class FSSurface;
 class FEState;
 class FEMeshData;
-class FEDomain;
+class MeshDomain;
 
 //-----------------------------------------------------------------------------
 // Class for writing FEBio XPLT files.
@@ -162,22 +162,22 @@ protected:
 	bool WriteDictionary(FEPostModel& fem);
 	bool WriteMaterials (FEPostModel& fem);
 	bool WriteGeometry  (FEPostModel& fem);
-	bool WriteDataField (FEDataField& data);
+	bool WriteDataField (ModelDataField& data);
 
 	bool WriteNodeSection   (FEPostModel& fem);
 	bool WritePartSection   (FEPostMesh& m);
 	bool WriteSurfaceSection(FEPostMesh& m);
 
-	bool WritePart(FEPostMesh& m, FEDomain& part);
+	bool WritePart(FEPostMesh& m, MeshDomain& part);
 
 	bool WriteState(FEPostModel& fem, FEState& state);
 	bool WriteNodeData(FEPostModel& fem, FEState& state);
 	bool WriteElemData(FEPostModel& fem, FEState& state);
 	bool WriteFaceData(FEPostModel& fem, FEState& state);
 
-	bool FillNodeDataArray(vector<float>& val, FEMeshData& data);
-	bool FillElemDataArray(vector<float>& val, FEMeshData& data, FEPart& part);
-	bool FillFaceDataArray(vector<float>& val, FEMeshData& data, FESurface& part);
+	bool FillNodeDataArray(std::vector<float>& val, FEMeshData& data);
+	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data, FSPart& part);
+	bool FillFaceDataArray(std::vector<float>& val, FEMeshData& data, FSSurface& part);
 
 	bool error(const char* sz);
 

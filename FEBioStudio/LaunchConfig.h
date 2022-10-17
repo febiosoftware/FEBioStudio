@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,14 +29,16 @@ SOFTWARE.*/
 #include <string>
 #include <FSCore/FSObject.h>
 
-enum launchTypes{LOCAL=0, REMOTE, PBS, SLURM, CUSTOM};
+enum launchTypes{LOCAL=0, REMOTE, PBS, SLURM, CUSTOM, DEFAULT};
 
 class CLaunchConfig : public FSObject
 {
 
 public:
-	CLaunchConfig(){}
-	~CLaunchConfig(){}
+	CLaunchConfig();
+	CLaunchConfig(launchTypes launchType, const std::string& configName);
+
+	~CLaunchConfig();
 	CLaunchConfig(const CLaunchConfig &old);
 	void operator=(const CLaunchConfig &old);
 

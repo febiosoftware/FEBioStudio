@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,8 +31,8 @@ SOFTWARE.*/
 using std::list;
 
 //-----------------------------------------------------------------------------
-// Forward declaration of the FECoreMesh
-class FECoreMesh;
+// Forward declaration of the FSCoreMesh
+class FSCoreMesh;
 
 //-----------------------------------------------------------------------------
 // The FEItemList stores a list of pointers to FEItems (nodes, faces, elements)
@@ -43,8 +43,8 @@ template <class T> class FEItemList_T
 public:
 	struct ITEM
 	{
-		ITEM(FECoreMesh* pm, T* pi, int lid = -1) { m_pm = pm; m_pi = pi; m_lid = lid; }
-		FECoreMesh*	m_pm;
+		ITEM(FSCoreMesh* pm, T* pi, int lid = -1) { m_pm = pm; m_pi = pi; m_lid = lid; }
+		FSCoreMesh*	m_pm;
 		T*		m_pi;
 		int		m_lid;
 	};
@@ -54,7 +54,7 @@ public:
 public:
 	FEItemList_T(){}
 
-	void Add(FECoreMesh* pm, T* pn, int lid = -1) { m_Item.push_back(ITEM(pm, pn, lid)); }
+	void Add(FSCoreMesh* pm, T* pn, int lid = -1) { m_Item.push_back(ITEM(pm, pn, lid)); }
 	int Size() { return (int)m_Item.size(); }
 	Iterator First() { return m_Item.begin(); }
 	Iterator End() { return m_Item.end(); }
@@ -65,13 +65,13 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Specialization for nodes
-class FENode;
-typedef FEItemList_T<FENode> FENodeList;
+class FSNode;
+typedef FEItemList_T<FSNode> FSNodeList;
 
 //-----------------------------------------------------------------------------
 // Specialization for faces
-class FEFace;
-typedef FEItemList_T<FEFace> FEFaceList;
+class FSFace;
+typedef FEItemList_T<FSFace> FEFaceList;
 
 //-----------------------------------------------------------------------------
 // Specialization for elements

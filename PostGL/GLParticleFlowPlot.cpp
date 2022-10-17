@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,8 +29,12 @@ SOFTWARE.*/
 #include "GLModel.h"
 using namespace Post;
 
-CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*mdl->GetActiveMesh())
+REGISTER_CLASS(CGLParticleFlowPlot, CLASS_PLOT, "particle-flow", 0);
+
+CGLParticleFlowPlot::CGLParticleFlowPlot()
 {
+	SetTypeString("particle-flow");
+
 	static int n = 1;
 	char szname[128] = { 0 };
 	sprintf(szname, "ParticleFlow.%02d", n++);
@@ -45,6 +49,8 @@ CGLParticleFlowPlot::CGLParticleFlowPlot(CGLModel* mdl) : CGLPlot(mdl), m_find(*
 	AddDoubleParam(0, "Step size");
 	AddBoolParam(false, "Show path lines");
 	AddIntParam(0, "Path line length");
+
+	m_find = nullptr;
 
 	m_nvec = -1;
 	m_showPath = false;
@@ -215,12 +221,13 @@ void CGLParticleFlowPlot::Update(int ntime, float dt, bool breset)
 	bool bdisp = mdl->HasDisplacementMap();
 	if (breset || bdisp)
 	{
+		if (m_find == nullptr) m_find = new FEFindElement(*mdl->GetActiveMesh());
 		// choose reference frame or current frame, depending on whether we have a displacement map
-		m_find.Init(bdisp ? 1 : 0);
+		m_find->Init(bdisp ? 1 : 0);
 	}
 
-	FEMeshBase* pm = mdl->GetActiveMesh();
-	FEPostModel* pfem = mdl->GetFEModel();
+	FSMeshBase* pm = mdl->GetActiveMesh();
+	FEPostModel* pfem = mdl->GetFSModel();
 
 	if (m_map.States() == 0)
 	{
@@ -348,8 +355,8 @@ void CGLParticleFlowPlot::UpdateParticleColors()
 vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok)
 {
 	vec3f v(0.f, 0.f, 0.f);
-	vec3f ve0[FEElement::MAX_NODES];
-	vec3f ve1[FEElement::MAX_NODES];
+	vec3f ve0[FSElement::MAX_NODES];
+	vec3f ve1[FSElement::MAX_NODES];
 	FEPostMesh& mesh = *GetModel()->GetActiveMesh();
 
 	vector<vec3f>& val0 = m_map.State(ntime    );
@@ -357,7 +364,7 @@ vec3f CGLParticleFlowPlot::Velocity(const vec3f& r, int ntime, float w, bool& ok
 
 	int nelem;
 	double q[3];
-	if (m_find.FindElement(r, nelem, q))
+	if (m_find->FindElement(r, nelem, q))
 	{
 		ok = true;
 		FEElement_& el = mesh.ElementRef(nelem);
@@ -384,12 +391,12 @@ void CGLParticleFlowPlot::AdvanceParticles(int n0, int n1)
 	// get the model
 	CGLModel* mdl = GetModel();
 	if (mdl == 0) return;
-	FEPostModel& fem = *mdl->GetFEModel();
+	FEPostModel& fem = *mdl->GetFSModel();
 
 	// get the mesh
-	FEMeshBase& mesh = *mdl->GetActiveMesh();
+	FSMeshBase& mesh = *mdl->GetActiveMesh();
 
-	BOX box = m_find.BoundingBox();
+	BOX box = m_find->BoundingBox();
 	float R = box.GetMaxExtent();
 	float dt = m_dt;
 	if (dt <= 0.f) return;
@@ -461,14 +468,14 @@ void CGLParticleFlowPlot::SeedParticles()
 	if (mdl == 0) return;
 
 	// get the number of states
-	FEPostModel* fem = mdl->GetFEModel();
+	FEPostModel* fem = mdl->GetFSModel();
 	int NS = fem->GetStates();
 
 	// make sure there is a valid seed time
 	if ((m_seedTime < 0) || (m_seedTime >= NS)) return;
 
 	// get the mesh
-	FEMeshBase& mesh = *mdl->GetActiveMesh();
+	FSMeshBase& mesh = *mdl->GetActiveMesh();
 
 	vector<vec3f>& val = m_map.State(m_seedTime);
 
@@ -480,7 +487,7 @@ void CGLParticleFlowPlot::SeedParticles()
 #pragma omp parallel for shared (NF)
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = mesh.Face(i);
+		FSFace& f = mesh.Face(i);
 
 		// evaluate the average velocity at this face
 		int nf = f.Nodes();

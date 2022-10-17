@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,8 +34,29 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // constructor
-FEMeshValuator::FEMeshValuator(FEMesh& mesh) : m_mesh(mesh)
+FEMeshValuator::FEMeshValuator(FSMesh& mesh) : m_mesh(mesh)
 {
+	m_curvature_levels = 1;
+	m_curvature_maxiters = 10;
+	m_curvature_extquad = false;
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshValuator::SetCurvatureLevels(int levels)
+{
+	m_curvature_levels = levels;
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshValuator::SetCurvatureMaxIters(int maxIters)
+{
+	m_curvature_maxiters = maxIters;
+}
+
+//-----------------------------------------------------------------------------
+void FEMeshValuator::SetCurvatureExtQuad(bool b)
+{
+	m_curvature_extquad = b;
 }
 
 //-----------------------------------------------------------------------------
@@ -47,29 +68,66 @@ void FEMeshValuator::Evaluate(int nfield)
 	int NE = m_mesh.Elements();
 	Mesh_Data& data = m_mesh.GetMeshData();
 	data.Init(&m_mesh, 0.0, 0);
-	if (nfield < 11)
+	if (nfield < MAX_DEFAULT_FIELDS)
 	{
-		for (int i = 0; i < NE; ++i)
+		if ((nfield == 11) || (nfield == 12))
 		{
-			FEElement& el = m_mesh.Element(i);
-			if (el.IsVisible())
+			if (m_mesh.IsShell())
 			{
-				try {
-					double val = EvaluateElement(i, nfield);
-					data.SetElementValue(i, val);
-					data.SetElementDataTag(i, 1);
-				}
-				catch (...)
+				int NN = m_mesh.Nodes();
+				vector<double> nodeData(NN, 0.0);
+				for (int i = 0; i < NN; ++i)
 				{
-					data.SetElementDataTag(i, 0);
+					try {
+						double val = EvaluateNode(i, nfield);
+						nodeData[i] = val;
+					}
+					catch (...)
+					{
+
+					}
+				}
+
+				for (int i = 0; i < NE; ++i)
+				{
+					FSElement& el = m_mesh.Element(i);
+					if (el.IsVisible())
+					{
+						data.SetElementDataTag(i, 1);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							double vj = nodeData[el.m_node[j]];
+							data.SetElementValue(i, j, vj);
+						}
+					}
 				}
 			}
-			else data.SetElementDataTag(i, 0);
+		}
+		else
+		{
+			for (int i = 0; i < NE; ++i)
+			{
+				FSElement& el = m_mesh.Element(i);
+				if (el.IsVisible())
+				{
+					try {
+						double val = EvaluateElement(i, nfield);
+						data.SetElementValue(i, val);
+						data.SetElementDataTag(i, 1);
+					}
+					catch (...)
+					{
+						data.SetElementDataTag(i, 0);
+					}
+				}
+				else data.SetElementDataTag(i, 0);
+			}
 		}
 	}
 	else
 	{
-		nfield -= 11;
+		nfield -= MAX_DEFAULT_FIELDS;
 		if ((nfield >= 0) && (nfield < m_mesh.MeshDataFields()))
 		{
 			FEMeshData* meshData = m_mesh.GetMeshDataField(nfield);
@@ -78,10 +136,10 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::NODE_DATA:
 			{
 				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
-				FEMesh* mesh = nodeData.GetMesh();
+				FSMesh* mesh = nodeData.GetMesh();
 				for (int i=0; i < mesh->Elements(); ++i)
 				{ 
-					FEElement& el = mesh->Element(i);
+					FSElement& el = mesh->Element(i);
 					int ne = el.Nodes();
 					for (int j = 0; j < ne; ++j)
 					{
@@ -98,7 +156,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::ELEMENT_DATA:
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
-				const FEPart* pg = elemData.GetPart();
+				const FSPart* pg = elemData.GetPart();
 				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int i = 0; i < pg->size(); ++i, ++it)
 				{
@@ -154,7 +212,7 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 {
 	if (err) *err = 0;
 	double val = 0, sum = 0;
-	const FEElement& el = m_mesh.Element(n);
+	const FSElement& el = m_mesh.Element(n);
 	switch (nfield)
 	{
 	case 0: // element volume
@@ -196,9 +254,39 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 	case 10:
 		val = FEMeshMetrics::MaxEdgeLength(m_mesh, el);
 		break;
+	case 11:
+		if (el.IsShell())
+		{
+			val = 0.0;
+		}
+		break;
+	case 12:
+		if (el.IsShell())
+		{
+			val = 0.0;
+		}
+		break;
 	default:
 		val = 0.0;
 	}
 
+	return val;
+}
+
+//-----------------------------------------------------------------------------
+// Evaluate element data
+double FEMeshValuator::EvaluateNode(int n, int nfield, int* err)
+{
+	if (err) *err = 0;
+	double val = 0, sum = 0;
+	switch (nfield)
+	{
+	case 11:
+		val = FEMeshMetrics::Curvature(m_mesh, n, 2, m_curvature_levels, m_curvature_maxiters, m_curvature_extquad);
+		break;
+	case 12:
+		val = FEMeshMetrics::Curvature(m_mesh, n, 3, m_curvature_levels, m_curvature_maxiters, m_curvature_extquad);
+		break;
+	}
 	return val;
 }

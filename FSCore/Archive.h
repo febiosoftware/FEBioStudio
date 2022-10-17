@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,8 +27,10 @@ SOFTWARE.*/
 #pragma once
 #include <stdio.h>
 #include <string.h>
-#include <MathLib/math3d.h>
-#include <MathLib/mat3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/quatd.h>
+#include <FECore/mat3d.h>
+#include <FEBioPlot/PltArchive.h>
 #include "color.h"
 #include "CallTracer.h"
 #include <stack>
@@ -62,47 +64,6 @@ private:
 	int		m_nalloc;	// actual amount of allocated data
 };
 
-//-----------------------------------------------------------------------------
-//! helper class for writing buffered data to file
-class IOFileStream
-{
-public:
-	IOFileStream(FILE* fp = nullptr, bool owner = true);
-	~IOFileStream();
-
-	bool Create(const char* szfile);
-	bool Open(const char* szfile);
-	bool Append(const char* szfile);
-	void Close();
-
-	void Write(void* pd, size_t Size, size_t Count);
-
-	void Flush();
-
-	// \todo temporary reading functions. Needs to be replaced with buffered functions
-	size_t read(void* pd, size_t Size, size_t Count);
-	long tell();
-	void seek(long noff, int norigin);
-
-	void BeginStreaming();
-	void EndStreaming();
-
-	void SetCompression(int n) { m_ncompress = n; }
-
-	FILE* FilePtr() { return m_fp; }
-
-	bool IsValid() { return (m_fp != nullptr); }
-
-private:
-	FILE*	m_fp;
-	bool	m_fileOwner;
-	size_t	m_bufsize;		//!< buffer size
-	size_t	m_current;		//!< current index
-	unsigned char*	m_buf;	//!< buffer
-	unsigned char*	m_pout;	//!< temp buffer when writing
-	int		m_ncompress;	//!< compression level
-};
-
 //----------------------
 // Input archive
 
@@ -131,6 +92,9 @@ public:
 	// open for reading
 	bool Open(const char* szfile, unsigned int signature);
 	bool Open(FILE* file, unsigned int signature);
+
+	// see if there is a valid file pointer
+	bool IsValid() const;
 
 	// Open a chunk
 	int OpenChunk();
@@ -170,6 +134,14 @@ public:
 		return IO_OK; 
 	}
 
+	IOResult read(mat3ds& a)
+	{
+		double d[6];
+		read(d, 6);
+		a = mat3ds(d[0], d[1], d[2], d[3], d[4], d[5]);
+		return IO_OK;
+	}
+
 	IOResult read(char* sz)
 	{
 		IOResult ret;
@@ -199,6 +171,17 @@ public:
 
 	IOResult read(std::vector<int>& v);
 	IOResult read(std::vector<double>& v);
+	IOResult read(std::vector<vec2d>& v);
+
+	template <class T> IOResult read(std::vector<T>& v)
+	{
+		CHUNK* pc = m_Chunk.top();
+		int nsize = pc->nsize / sizeof(T);
+		v.resize(nsize);
+		int nread = (int)fread(&v[0], sizeof(T), nsize, m_fp);
+		if (nread != nsize) return IO_ERROR;
+		return IO_OK;
+	}
 
 	// conversion to FILE* 
 	operator FILE* () { return m_fp; }
@@ -229,165 +212,6 @@ protected:
 
 //----------------------
 // Output archive
-
-class OBranch;
-
-class OChunk
-{
-public:
-	OChunk(unsigned int nid) { m_nID = nid; m_pParent = 0; }
-	virtual ~OChunk() {}
-
-	unsigned int GetID() { return m_nID; }
-
-	virtual void Write(IOFileStream* fp) = 0;
-	virtual int Size() = 0;
-
-	void SetParent(OBranch* pparent) { m_pParent = pparent; }
-	OBranch* GetParent() { return m_pParent; }
-
-protected:
-	int			m_nID;
-	OBranch*	m_pParent;
-};
-
-class OBranch : public OChunk
-{
-public:
-	OBranch(unsigned int nid) : OChunk(nid) {}
-	~OBranch()
-	{
-		list<OChunk*>::iterator pc;
-		for (pc = m_child.begin(); pc != m_child.end(); ++pc) delete (*pc);
-		m_child.clear();
-	}
-
-	int Size()
-	{
-		int nsize = 0;
-		list<OChunk*>::iterator pc;
-		for (pc = m_child.begin(); pc != m_child.end(); ++pc) nsize += (*pc)->Size() + 2*sizeof(unsigned int);
-		return nsize;
-	}
-
-	void Write(IOFileStream* fp)
-	{
-		fp->Write(&m_nID, sizeof(unsigned int), 1);
-
-		unsigned int nsize = Size();
-		fp->Write(&nsize, sizeof(unsigned int), 1);
-
-		list<OChunk*>::iterator pc;
-		for (pc = m_child.begin(); pc != m_child.end(); ++pc) (*pc)->Write(fp);
-	}
-
-	void AddChild(OChunk* pc) { m_child.push_back(pc); pc->SetParent(this); }
-
-protected:
-	list<OChunk*>	m_child;
-};
-
-template <typename T>
-class OLeaf : public OChunk
-{
-public:
-	OLeaf(unsigned int nid, const T& d) : OChunk(nid) { m_d = d; }
-
-	int Size() { return sizeof(T); }
-
-	void Write(IOFileStream* fp)
-	{
-		fp->Write(&m_nID  , sizeof(unsigned int), 1);
-		unsigned int nsize = sizeof(T);
-		fp->Write(&nsize, sizeof(unsigned int), 1);
-		fp->Write(&m_d, sizeof(T), 1);
-	}
-
-protected:
-	T	m_d;
-};
-
-template <typename T>
-class OLeaf<T*> : public OChunk
-{
-public:
-	OLeaf(unsigned int nid, const T* pd, int nsize) : OChunk(nid)
-	{
-		assert(nsize > 0);
-		m_pd = new T[nsize];
-		memcpy(m_pd, pd, sizeof(T)*nsize);
-		m_nsize = nsize;
-	}
-	~OLeaf() { delete m_pd; }
-
-	int Size() { return sizeof(T)*m_nsize; }
-	void Write(IOFileStream* fp)
-	{
-		fp->Write(&m_nID, sizeof(unsigned int), 1);
-		unsigned int nsize = Size();
-		fp->Write(&nsize, sizeof(unsigned int), 1);
-		fp->Write(m_pd, sizeof(T), m_nsize);
-	}
-
-protected:
-	T*		m_pd;
-	int		m_nsize;
-};
-
-template <>
-class OLeaf<const char*> : public OChunk
-{
-public:
-	OLeaf(unsigned int nid, const char* sz) : OChunk(nid)
-	{
-		int l = (int)strlen(sz);
-		m_psz = new char[l+1];
-		memcpy(m_psz, sz, l+1);
-	}
-	~OLeaf() { delete m_psz; }
-
-	int Size() { return (int)strlen(m_psz) + sizeof(int); }
-	void Write(IOFileStream* fp)
-	{
-		fp->Write(&m_nID, sizeof(unsigned int), 1);
-		unsigned int nsize = Size();
-		fp->Write(&nsize, sizeof(unsigned int), 1);
-		int l = nsize - sizeof(int);
-		fp->Write(&l, sizeof(int), 1);
-		fp->Write(m_psz, sizeof(char), l);
-	}
-
-protected:
-	char*	m_psz;
-};
-
-template <typename T>
-class OLeaf<vector<T> > : public OChunk
-{
-public:
-	OLeaf(unsigned int nid, const vector<T>& a) : OChunk(nid)
-	{
-		m_nsize = (int)a.size();
-		assert(m_nsize > 0);
-		m_pd = new T[m_nsize];
-		memcpy(m_pd, &a[0], sizeof(T)*m_nsize);
-	}
-	~OLeaf() { delete m_pd; }
-
-	int Size() { return sizeof(T)*m_nsize; }
-	void Write(IOFileStream* fp)
-	{
-		fp->Write(&m_nID, sizeof(unsigned int), 1);
-		unsigned int nsize = Size();
-		fp->Write(&nsize, sizeof(unsigned int), 1);
-		fp->Write(m_pd, sizeof(T), m_nsize);
-	}
-
-protected:
-	T*		m_pd;
-	int		m_nsize;
-};
-
 class OArchive  
 {
 public:
@@ -432,7 +256,7 @@ public:
 	}
 
 protected:
-	IOFileStream	m_fp;		// the file pointer
+	FileStream	m_fp;		// the file pointer
 
 	OBranch*	m_pRoot;	// chunk tree root
 	OBranch*	m_pChunk;	// current chunk

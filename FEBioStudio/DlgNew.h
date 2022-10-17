@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,11 +38,19 @@ class CDlgNew : public QDialog
 	Q_OBJECT
 
 public:
+	enum CreateMode {
+		CREATE_NEW_MODEL,
+		CREATE_FROM_TEMPLATE
+	};
+
+public:
 	CDlgNew(CMainWindow* parent);
 
 	void accept();
 
-	int getTemplate();
+	int GetSelection();
+
+	int CreateMode();
 
 	void showEvent(QShowEvent* ev);
 

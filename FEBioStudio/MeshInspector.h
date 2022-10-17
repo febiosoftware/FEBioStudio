@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,7 @@ namespace Ui {
 }
 
 class CMainWindow;
-class FEMesh;
+class FSMesh;
 class GObject;
 
 class CMeshInspector : public QMainWindow
@@ -52,6 +52,11 @@ private slots:
 	void on_var_currentIndexChanged(int n);
 	void on_col_currentIndexChanged(int n);
 	void on_select_clicked();
+	void on_curvatureLevels_valueChanged(int n);
+	void on_curvatureMaxIters_valueChanged(int n);
+	void on_curvatureExtQuad_stateChanged(int n);
+	void on_table_cellChanged(int r, int c);
+	void on_logScale_clicked();
 
 private:
 	void UpdateData(int ndata);

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,12 +33,12 @@ SOFTWARE.*/
 #include "FENodeFaceList.h"
 #include <MeshTools/GLMesh.h>
 
-FESurfaceMesh::FESurfaceMesh()
+FSSurfaceMesh::FSSurfaceMesh()
 {
 	
 }
 
-FESurfaceMesh::FESurfaceMesh(const FESurfaceMesh& mesh)
+FSSurfaceMesh::FSSurfaceMesh(const FSSurfaceMesh& mesh)
 {
 	m_Node = mesh.m_Node;
 	m_Edge = mesh.m_Edge;
@@ -46,11 +46,11 @@ FESurfaceMesh::FESurfaceMesh(const FESurfaceMesh& mesh)
 	m_box = mesh.m_box;
 }
 
-FESurfaceMesh::~FESurfaceMesh()
+FSSurfaceMesh::~FSSurfaceMesh()
 {
 }
 
-FESurfaceMesh::FESurfaceMesh(TriMesh& dyna)
+FSSurfaceMesh::FSSurfaceMesh(TriMesh& dyna)
 {
 	TriMesh::NodeIterator nodePtr(dyna);
 	for (; nodePtr.isValid(); ++nodePtr) nodePtr->ntag = -1;
@@ -79,7 +79,7 @@ FESurfaceMesh::FESurfaceMesh(TriMesh& dyna)
 	{
 		if (nodePtr->ntag >= 0)
 		{
-			FENode& node = Node(nodePtr->ntag);
+			FSNode& node = Node(nodePtr->ntag);
 			node.r = nodePtr->r;
 			node.m_gid = nodePtr->gid;
 		}
@@ -88,7 +88,7 @@ FESurfaceMesh::FESurfaceMesh(TriMesh& dyna)
 	TriMesh::EdgeIterator edgePtr(dyna);
 	for (int i=0; i<NE; ++i, ++edgePtr)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		edge.SetType(FE_EDGE2);
 		edge.n[0] = edgePtr->node[0]->ntag; assert(edge.n[0] >= 0);
 		edge.n[1] = edgePtr->node[1]->ntag; assert(edge.n[1] >= 0);
@@ -98,7 +98,7 @@ FESurfaceMesh::FESurfaceMesh(TriMesh& dyna)
 	facePtr.reset();
 	for (int i = 0; i<NF; ++i, ++facePtr)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		face.SetType(FE_FACE_TRI3);
 		face.n[0] = facePtr->node[0]->ntag; assert((face.n[0] >= 0) && (face.n[0] < NN));
 		face.n[1] = facePtr->node[1]->ntag; assert((face.n[1] >= 0) && (face.n[1] < NN));
@@ -121,7 +121,7 @@ FESurfaceMesh::FESurfaceMesh(TriMesh& dyna)
 }
 
 //-----------------------------------------------------------------------------
-FESurfaceMesh::FESurfaceMesh(GLMesh& m)
+FSSurfaceMesh::FSSurfaceMesh(GLMesh& m)
 {
 	int NN = m.Nodes();
 	int NF = m.Faces();
@@ -130,7 +130,7 @@ FESurfaceMesh::FESurfaceMesh(GLMesh& m)
 	Create(NN, NE, NF);
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		GMesh::NODE& gnode = m.Node(i);
 		node.r = gnode.r;
 		node.m_gid = gnode.pid;
@@ -138,7 +138,7 @@ FESurfaceMesh::FESurfaceMesh(GLMesh& m)
 
 	for (int i = 0; i < NE; ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		GMesh::EDGE& gedge = m.Edge(i);
 		edge.n[0] = gedge.n[0];
 		edge.n[1] = gedge.n[1];
@@ -147,7 +147,7 @@ FESurfaceMesh::FESurfaceMesh(GLMesh& m)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		GMesh::FACE& gface = m.Face(i);
 		face.SetType(FE_FACE_TRI3);
 		face.n[0] = gface.n[0];
@@ -159,7 +159,7 @@ FESurfaceMesh::FESurfaceMesh(GLMesh& m)
 	Update();
 }
 
-FESurfaceMesh& FESurfaceMesh::operator = (const FESurfaceMesh& mesh)
+FSSurfaceMesh& FSSurfaceMesh::operator = (const FSSurfaceMesh& mesh)
 {
 	m_Node = mesh.m_Node;
 	m_Edge = mesh.m_Edge;
@@ -168,7 +168,7 @@ FESurfaceMesh& FESurfaceMesh::operator = (const FESurfaceMesh& mesh)
 	return (*this);
 }
 
-bool FESurfaceMesh::IsType(FEFaceType type)
+bool FSSurfaceMesh::IsType(FEFaceType type)
 {
 	int NF = Faces();
 	for (int i=0; i<NF; ++i)
@@ -178,7 +178,7 @@ bool FESurfaceMesh::IsType(FEFaceType type)
 	return true;
 }
 
-void FESurfaceMesh::Create(unsigned int nodes, unsigned int edges, unsigned int faces)
+void FSSurfaceMesh::Create(unsigned int nodes, unsigned int edges, unsigned int faces)
 {
 	if (nodes) m_Node.resize(nodes);
 	if (edges) m_Edge.resize(edges);
@@ -194,7 +194,7 @@ void FESurfaceMesh::Create(unsigned int nodes, unsigned int edges, unsigned int 
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::Update()
+void FSSurfaceMesh::Update()
 {
 	UpdateFaceNeighbors();
 	UpdateEdgeNeighbors();
@@ -205,7 +205,7 @@ void FESurfaceMesh::Update()
 //-----------------------------------------------------------------------------
 // Build the mesh data structures
 // It is assumed that all faces have been assigned to a partition
-void FESurfaceMesh::BuildMesh()
+void FSSurfaceMesh::BuildMesh()
 {
 #ifdef _DEBUG
 	// Make sure all faces are partitioned
@@ -236,7 +236,7 @@ void FESurfaceMesh::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::RebuildMesh(double smoothingAngle)
+void FSSurfaceMesh::RebuildMesh(double smoothingAngle)
 {
 	// We need to build the neighbors before we can call autopartition
 	UpdateFaceNeighbors();
@@ -250,7 +250,7 @@ void FESurfaceMesh::RebuildMesh(double smoothingAngle)
 
 //-----------------------------------------------------------------------------
 // This assumes that face neighbors are determined.
-void FESurfaceMesh::AutoPartition(double smoothingAngle)
+void FSSurfaceMesh::AutoPartition(double smoothingAngle)
 {
 	// auto-smooth the surface
 	if (smoothingAngle > 0.0)
@@ -261,7 +261,7 @@ void FESurfaceMesh::AutoPartition(double smoothingAngle)
 		int NF = Faces();
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = Face(i);
+			FSFace& face = Face(i);
 			face.m_gid = face.m_sid;
 		}
 	}
@@ -289,12 +289,12 @@ void FESurfaceMesh::AutoPartition(double smoothingAngle)
 // It is assumed that all edge neighbors have been identified and that all edges 
 // that are part of the contour are identified with a gid >= 0.
 // Note that any preexisting partitioning will be overwritten.
-void FESurfaceMesh::AutoPartitionEdges()
+void FSSurfaceMesh::AutoPartitionEdges()
 {
 	// Tag candidate edges
 	for (int i = 0; i < Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0) edge.m_ntag = 0;
 		else edge.m_ntag = -1;
 	}
@@ -319,19 +319,19 @@ void FESurfaceMesh::AutoPartitionEdges()
 		{
 			int edgeId = s.top(); s.pop();
 
-			FEEdge& edge = Edge(edgeId);
+			FSEdge& edge = Edge(edgeId);
 			edge.m_ntag = 1;
 			edge.m_gid = ng;
 			
 			if (edge.m_nbr[0] != -1)
 			{
-				FEEdge& e0 = Edge(edge.m_nbr[0]);
+				FSEdge& e0 = Edge(edge.m_nbr[0]);
 				if (e0.m_ntag == 0) s.push(edge.m_nbr[0]);
 			}
 
 			if (edge.m_nbr[1] != -1)
 			{
-				FEEdge& e1 = Edge(edge.m_nbr[1]);
+				FSEdge& e1 = Edge(edge.m_nbr[1]);
 				if (e1.m_ntag == 0) s.push(edge.m_nbr[1]);
 			}
 		}
@@ -346,21 +346,21 @@ void FESurfaceMesh::AutoPartitionEdges()
 // Only edges that have a non-negative gid are considered. The actual 
 // gid values are not used. Edges are connected if they share a node that
 // has a valence of exactly two. 
-void FESurfaceMesh::UpdateEdgeNeighbors()
+void FSSurfaceMesh::UpdateEdgeNeighbors()
 {
-	FENodeEdgeList NET;
+	FSNodeEdgeList NET;
 	NET.Build(this);
 
 	for (int i=0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		edge.m_nbr[0] = -1;
 		edge.m_nbr[1] = -1;
 	}
 
 	for (int i=0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			for (int j=0; j<2; ++j)
@@ -392,17 +392,17 @@ void FESurfaceMesh::UpdateEdgeNeighbors()
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::UpdateFaceNeighbors()
+void FSSurfaceMesh::UpdateFaceNeighbors()
 {
 	// build the node-face table
-	FENodeFaceList NFT;
+	FSNodeFaceList NFT;
 	NFT.Build(this);
 
 	// find all face neighbours
 	int NF = Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& f = Face(i);
+		FSFace& f = Face(i);
 
 		int nf = f.Nodes();
 		int n = f.Edges();
@@ -416,7 +416,7 @@ void FESurfaceMesh::UpdateFaceNeighbors()
 			{
 				if (i != NFT.FaceIndex(n1, k))
 				{
-					FEFace& f2 = *NFT.Face(n1, k);
+					FSFace& f2 = *NFT.Face(n1, k);
 					if (f2.HasEdge(n1, n2))
 					{
 						f.m_nbr[j] = NFT.FaceIndex(n1, k);
@@ -430,15 +430,15 @@ void FESurfaceMesh::UpdateFaceNeighbors()
 
 //-----------------------------------------------------------------------------
 // Rebuilds the edge arrays for each face
-void FESurfaceMesh::UpdateFaceEdges()
+void FSSurfaceMesh::UpdateFaceEdges()
 {
 	// build the node edge table
-	FENodeEdgeList NET(this);
+	FSNodeEdgeList NET(this);
 
 	// loop over all faces
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 
 		// clear the edges
 		int ne = face.Edges();
@@ -447,13 +447,13 @@ void FESurfaceMesh::UpdateFaceEdges()
 		// find the edges
 		for (int j=0; j<ne; ++j)
 		{
-			FEEdge ej = face.GetEdge(j);
+			FSEdge ej = face.GetEdge(j);
 
 			int val = NET.Edges(ej.n[0]);
 			for (int k=0; k<val; ++k)
 			{
 				int ek = NET.EdgeIndex(ej.n[0], k);
-				FEEdge* pek = EdgePtr(ek);
+				FSEdge* pek = EdgePtr(ek);
 
 				if (ej == *pek)
 				{
@@ -468,7 +468,7 @@ void FESurfaceMesh::UpdateFaceEdges()
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::UpdateFaces()
+void FSSurfaceMesh::UpdateFaces()
 {
 	// rebuild the face neighbors
 	UpdateFaceNeighbors();
@@ -480,7 +480,7 @@ void FESurfaceMesh::UpdateFaces()
 //-----------------------------------------------------------------------------
 // Builds the edges of the mesh.
 // This also creates an initial partition
-void FESurfaceMesh::BuildEdges()
+void FSSurfaceMesh::BuildEdges()
 {
 	// clear all edges
 	m_Edge.clear();
@@ -492,7 +492,7 @@ void FESurfaceMesh::BuildEdges()
 	int nedges = 0;
 	for (int i=0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		int ne = face.Edges();
 		for (int j=0; j<ne; ++j)
 		{
@@ -508,14 +508,14 @@ void FESurfaceMesh::BuildEdges()
 	nedges = 0;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		int ne = face.Edges();
 		for (int j = 0; j<ne; ++j)
 		{
-			FEFace* fj = (face.m_nbr[j] == -1 ? 0 : FacePtr(face.m_nbr[j]));
+			FSFace* fj = (face.m_nbr[j] == -1 ? 0 : FacePtr(face.m_nbr[j]));
 			if ((fj == 0) || (fj->m_ntag > face.m_ntag))
 			{
-				FEEdge edge = face.GetEdge(j);
+				FSEdge edge = face.GetEdge(j);
 				edge.m_gid = (fj == 0 ? 0 : (fj->m_gid != face.m_gid ? 0 : -1));
 				edge.m_face[0] = i;
 				face.m_edge[j] = nedges;
@@ -523,7 +523,7 @@ void FESurfaceMesh::BuildEdges()
 			}
 			else if (fj && (fj->m_ntag < face.m_ntag))
 			{
-				FEEdge edge = face.GetEdge(j);
+				FSEdge edge = face.GetEdge(j);
 				int m = fj->FindEdge(edge);
 				assert(m != -1);
 				face.m_edge[j] = fj->m_edge[m];
@@ -537,7 +537,7 @@ void FESurfaceMesh::BuildEdges()
 //-----------------------------------------------------------------------------
 // Partition the selected edges
 //
-void FESurfaceMesh::PartitionEdgeSelection(int partition)
+void FSSurfaceMesh::PartitionEdgeSelection(int partition)
 {
 	// get the current number of partitions
 	int nsg = CountEdgePartitions();
@@ -548,7 +548,7 @@ void FESurfaceMesh::PartitionEdgeSelection(int partition)
 	int N = Edges();
 	for (int i = 0; i<N; ++i)
 	{
-		FEEdge& e = Edge(i);
+		FSEdge& e = Edge(i);
 		if (e.IsSelected())
 		{
 			e.m_gid = partition;
@@ -563,13 +563,13 @@ void FESurfaceMesh::PartitionEdgeSelection(int partition)
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::PartitionNodeSelection()
+void FSSurfaceMesh::PartitionNodeSelection()
 {
 	int nsg = CountNodePartitions();
 	vector<int> nodes;
 	for (int i=0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.IsSelected() && (node.m_gid == -1))
 		{
 			node.m_gid = nsg++;
@@ -579,7 +579,7 @@ void FESurfaceMesh::PartitionNodeSelection()
 
 	// see if we need to split an edge
 	nsg = CountEdgePartitions();
-	FENodeEdgeList NET(this);
+	FSNodeEdgeList NET(this);
 	for (int i=0; i<(int)nodes.size(); ++i)
 	{
 		// find an edge
@@ -588,18 +588,18 @@ void FESurfaceMesh::PartitionNodeSelection()
 		for (int j=0; j<val; ++j)
 		{
 			int eid = NET.EdgeIndex(ni, j);
-			FEEdge& edge = Edge(eid);
+			FSEdge& edge = Edge(eid);
 			if (edge.m_gid >= 0)
 			{
 				int gid = edge.m_gid;
 
-				FEEdge* pe = 0;
+				FSEdge* pe = 0;
 				do
 				{
 					int val = NET.Edges(ni);
 					for (int k=0; k<val; ++k)
 					{
-						FEEdge& ek = Edge(NET.EdgeIndex(ni, k));
+						FSEdge& ek = Edge(NET.EdgeIndex(ni, k));
 						if ((&ek != pe) && (ek.m_gid == gid))
 						{
 							ek.m_gid = nsg;
@@ -625,48 +625,48 @@ void FESurfaceMesh::PartitionNodeSelection()
 
 //-----------------------------------------------------------------------------
 // count node partitions
-int FESurfaceMesh::CountNodePartitions() const
+int FSSurfaceMesh::CountNodePartitions() const
 {
 	int max_gid = -1;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		const FENode& node = Node(i);
+		const FSNode& node = Node(i);
 		if (node.m_gid > max_gid) max_gid = node.m_gid;
 	}
 	return max_gid + 1;
 }
 
 //-----------------------------------------------------------------------------
-int FESurfaceMesh::CountEdgePartitions() const
+int FSSurfaceMesh::CountEdgePartitions() const
 {
 	int max_gid = -1;
 	for (int i = 0; i<Edges(); ++i)
 	{
-		const FEEdge& edge = Edge(i);
+		const FSEdge& edge = Edge(i);
 		if (edge.m_gid > max_gid) max_gid = edge.m_gid;
 	}
 	return max_gid + 1;
 }
 
 //-----------------------------------------------------------------------------
-int FESurfaceMesh::CountFacePartitions() const
+int FSSurfaceMesh::CountFacePartitions() const
 {
 	int max_gid = -1;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		const FEFace& face = Face(i);
+		const FSFace& face = Face(i);
 		if (face.m_gid > max_gid) max_gid = face.m_gid;
 	}
 	return max_gid + 1;
 }
 
 //-----------------------------------------------------------------------------
-int FESurfaceMesh::CountSmoothingGroups() const
+int FSSurfaceMesh::CountSmoothingGroups() const
 {
 	int max_sg = -1;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		const FEFace& face = Face(i);
+		const FSFace& face = Face(i);
 		if (face.m_sid > max_sg) max_sg = face.m_sid;
 	}
 	return max_sg + 1;
@@ -675,13 +675,13 @@ int FESurfaceMesh::CountSmoothingGroups() const
 //-----------------------------------------------------------------------------
 // This functions update the node GIds to make sure that no indices are skipped.
 // This needs to be called after the number of nodes changes.
-void FESurfaceMesh::UpdateNodePartitions()
+void FSSurfaceMesh::UpdateNodePartitions()
 {
 	// find the largest GID
 	int max_gid = -1;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_gid > max_gid) max_gid = node.m_gid;
 	}
 
@@ -692,7 +692,7 @@ void FESurfaceMesh::UpdateNodePartitions()
 	vector<int> gid(max_gid + 1, -1);
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_gid >= 0) gid[node.m_gid] = 1;
 	}
 
@@ -708,7 +708,7 @@ void FESurfaceMesh::UpdateNodePartitions()
 	{
 		for (int i = 0; i<Nodes(); ++i)
 		{
-			FENode& node = Node(i);
+			FSNode& node = Node(i);
 			if (node.m_gid >= 0) node.m_gid = gid[node.m_gid];
 		}
 	}
@@ -717,13 +717,13 @@ void FESurfaceMesh::UpdateNodePartitions()
 //-----------------------------------------------------------------------------
 // This functions update the edge GIds to make sure that no indices are skipped.
 // This needs to be called after the number of edges changes.
-void FESurfaceMesh::UpdateEdgePartitions()
+void FSSurfaceMesh::UpdateEdgePartitions()
 {
 	// find the largest GID
 	int max_gid = -1;
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid > max_gid) max_gid = edge.m_gid;
 	}
 
@@ -734,7 +734,7 @@ void FESurfaceMesh::UpdateEdgePartitions()
 	vector<int> gid(max_gid + 1, -1);
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0) gid[edge.m_gid] = 1;
 	}
 
@@ -750,7 +750,7 @@ void FESurfaceMesh::UpdateEdgePartitions()
 	{
 		for (int i = 0; i<Edges(); ++i)
 		{
-			FEEdge& edge = Edge(i);
+			FSEdge& edge = Edge(i);
 			if (edge.m_gid >= 0) edge.m_gid = gid[edge.m_gid];
 		}
 	}
@@ -759,13 +759,13 @@ void FESurfaceMesh::UpdateEdgePartitions()
 //-----------------------------------------------------------------------------
 // This functions update the face GIds to make sure that no indices are skipped.
 // This needs to be called after the number of faces changes.
-void FESurfaceMesh::UpdateFacePartitions()
+void FSSurfaceMesh::UpdateFacePartitions()
 {
 	// find the largest GID
 	int max_gid = -1;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.m_gid > max_gid) max_gid = face.m_gid;
 	}
 
@@ -776,7 +776,7 @@ void FESurfaceMesh::UpdateFacePartitions()
 	vector<int> gid(max_gid + 1, -1);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.m_gid >= 0) gid[face.m_gid] = 1;
 	}
 
@@ -792,7 +792,7 @@ void FESurfaceMesh::UpdateFacePartitions()
 	{
 		for (int i = 0; i<Faces(); ++i)
 		{
-			FEFace& face = Face(i);
+			FSFace& face = Face(i);
 			if (face.m_gid >= 0) face.m_gid = gid[face.m_gid];
 		}
 	}
@@ -801,13 +801,13 @@ void FESurfaceMesh::UpdateFacePartitions()
 //-----------------------------------------------------------------------------
 // This functions update the face smoothing Ids to make sure that no indices are skipped.
 // This needs to be called after the number of faces changes.
-void FESurfaceMesh::UpdateSmoothingGroups()
+void FSSurfaceMesh::UpdateSmoothingGroups()
 {
 	// find the largest SG
 	int max_sg = -1;
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.m_sid > max_sg) max_sg = face.m_sid;
 	}
 
@@ -818,7 +818,7 @@ void FESurfaceMesh::UpdateSmoothingGroups()
 	vector<int> sg(max_sg + 1, -1);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.m_sid >= 0) sg[face.m_sid] = 1;
 	}
 
@@ -834,7 +834,7 @@ void FESurfaceMesh::UpdateSmoothingGroups()
 	{
 		for (int i = 0; i<Faces(); ++i)
 		{
-			FEFace& face = Face(i);
+			FSFace& face = Face(i);
 			if (face.m_sid >= 0) face.m_sid = sg[face.m_sid];
 		}
 	}
@@ -843,12 +843,12 @@ void FESurfaceMesh::UpdateSmoothingGroups()
 
 //-----------------------------------------------------------------------------
 // Delete selected nodes
-void FESurfaceMesh::DeleteSelectedNodes()
+void FSSurfaceMesh::DeleteSelectedNodes()
 {
 	// tag all selected nodes
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		node.m_ntag = (node.IsSelected() ? 1 : 0);
 	}
 
@@ -858,12 +858,12 @@ void FESurfaceMesh::DeleteSelectedNodes()
 
 //-----------------------------------------------------------------------------
 // Delete selected edges
-void FESurfaceMesh::DeleteSelectedEdges()
+void FSSurfaceMesh::DeleteSelectedEdges()
 {
 	// tag all selected edges
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		edge.m_ntag = (edge.IsSelected() ? 1 : 0);
 	}
 
@@ -873,12 +873,12 @@ void FESurfaceMesh::DeleteSelectedEdges()
 
 //-----------------------------------------------------------------------------
 // Delete selected faces
-void FESurfaceMesh::DeleteSelectedFaces()
+void FSSurfaceMesh::DeleteSelectedFaces()
 {
 	// tag all selected faces
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		face.m_ntag = (face.IsSelected() ? 1 : 0);
 	}
 
@@ -888,12 +888,12 @@ void FESurfaceMesh::DeleteSelectedFaces()
 
 //-----------------------------------------------------------------------------
 // This function deletes tagged nodes by deleting all the faces that contain this node
-void FESurfaceMesh::DeleteTaggedNodes(int tag)
+void FSSurfaceMesh::DeleteTaggedNodes(int tag)
 {
 	// tag all the elements that has this node
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		face.m_ntag = 0;
 		int nf = face.Nodes();
 		for (int j = 0; j<nf; ++j)
@@ -912,12 +912,12 @@ void FESurfaceMesh::DeleteTaggedNodes(int tag)
 
 //-----------------------------------------------------------------------------
 // This function deletes tagged edges by deleting all the faces that contain this edge
-void FESurfaceMesh::DeleteTaggedEdges(int tag)
+void FSSurfaceMesh::DeleteTaggedEdges(int tag)
 {
 	// tag all elements that reference a tagged edge
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		face.m_ntag = 0;
 		int ne = face.Edges();
 		for (int j = 0; j<ne; ++j)
@@ -935,7 +935,7 @@ void FESurfaceMesh::DeleteTaggedEdges(int tag)
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::DeleteTaggedFaces(int tag)
+void FSSurfaceMesh::DeleteTaggedFaces(int tag)
 {
 	// Create a face index table
 	int NF = Faces();
@@ -943,20 +943,20 @@ void FESurfaceMesh::DeleteTaggedFaces(int tag)
 	int c = 0;
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.m_ntag != tag) index[i] = c++;
 	}
 
 	// remove references to faces that are about to be deleted.
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.m_ntag == tag)
 		{
 			int ne = face.Edges();
 			for (int j=0; j<ne; ++j)
 			{
-				FEEdge& edge = Edge(face.m_edge[j]);
+				FSEdge& edge = Edge(face.m_edge[j]);
 				if (edge.m_face[0] == i)
 				{
 					edge.m_face[0] = edge.m_face[1];
@@ -977,7 +977,7 @@ void FESurfaceMesh::DeleteTaggedFaces(int tag)
 	NF = Faces();
 	for (int i=0; i<NF; ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		for (int j=0; j<face.Edges(); ++j)
 		{
 			if (face.m_nbr[j] != -1) 
@@ -991,7 +991,7 @@ void FESurfaceMesh::DeleteTaggedFaces(int tag)
 	int NE = Edges();
 	for (int i=0; i<NE; ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_face[0] >= 0) edge.m_face[0] = index[edge.m_face[0]];
 		if (edge.m_face[1] >= 0) edge.m_face[1] = index[edge.m_face[1]];
 	}
@@ -1017,19 +1017,19 @@ void FESurfaceMesh::DeleteTaggedFaces(int tag)
 
 //-----------------------------------------------------------------------------
 // Remove nodes that are not referenced by any faces.
-void FESurfaceMesh::RemoveIsolatedNodes()
+void FSSurfaceMesh::RemoveIsolatedNodes()
 {
 	// find the isolated nodes
 	TagAllNodes(-1);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		int n = face.Nodes();
 		for (int j = 0; j<n; ++j) Node(face.n[j]).m_ntag = 1;
 	}
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		int n = edge.Nodes();
 		for (int j = 0; j<n; ++j) Node(edge.n[j]).m_ntag = 1;
 	}
@@ -1038,14 +1038,14 @@ void FESurfaceMesh::RemoveIsolatedNodes()
 	int n = 0;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_ntag == 1) node.m_ntag = n++;
 	}
 
 	// fix face node numbering
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		int n = face.Nodes();
 		for (int j = 0; j<n; ++j) face.n[j] = Node(face.n[j]).m_ntag;
 	}
@@ -1053,7 +1053,7 @@ void FESurfaceMesh::RemoveIsolatedNodes()
 	// fix edge node numbering
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		int n = edge.Nodes();
 		for (int j = 0; j<n; ++j) edge.n[j] = Node(edge.n[j]).m_ntag;
 	}
@@ -1062,8 +1062,8 @@ void FESurfaceMesh::RemoveIsolatedNodes()
 	n = 0;
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& n1 = Node(i);
-		FENode& n2 = Node(n);
+		FSNode& n1 = Node(i);
+		FSNode& n2 = Node(n);
 
 		if (n1.m_ntag >= 0)
 		{
@@ -1081,13 +1081,13 @@ void FESurfaceMesh::RemoveIsolatedNodes()
 
 //-----------------------------------------------------------------------------
 // Remove edges that are not referenced by any faces.
-void FESurfaceMesh::RemoveIsolatedEdges()
+void FSSurfaceMesh::RemoveIsolatedEdges()
 {
 	// find the isolated edges
 	TagAllEdges(-1);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		int n = face.Edges();
 		for (int j = 0; j<n; ++j) Edge(face.m_edge[j]).m_ntag = 1;
 	}
@@ -1096,14 +1096,14 @@ void FESurfaceMesh::RemoveIsolatedEdges()
 	int n = 0;
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_ntag == 1) edge.m_ntag = n++;
 	}
 
 	// fix face edge numbering
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		int n = face.Edges();
 		for (int j = 0; j<n; ++j) face.m_edge[j] = Edge(face.m_edge[j]).m_ntag;
 	}
@@ -1112,8 +1112,8 @@ void FESurfaceMesh::RemoveIsolatedEdges()
 	n = 0;
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& e1 = Edge(i);
-		FEEdge& e2 = Edge(n);
+		FSEdge& e1 = Edge(i);
+		FSEdge& e2 = Edge(n);
 
 		if (e1.m_ntag >= 0)
 		{
@@ -1132,13 +1132,13 @@ void FESurfaceMesh::RemoveIsolatedEdges()
 
 //-----------------------------------------------------------------------------
 // Assign gids to the nodes based on the edge gids.
-void FESurfaceMesh::AutoPartitionNodes()
+void FSSurfaceMesh::AutoPartitionNodes()
 {
 	// loop over all edges
 	vector<int> tag(Nodes(), -1);
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			if (edge.m_nbr[0] == -1) tag[edge.n[0]] = 1;
@@ -1149,7 +1149,7 @@ void FESurfaceMesh::AutoPartitionNodes()
 	int ng = 0;
 	for (int i=0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (tag[i] != -1)
 		{
 			node.m_gid = ng++;
@@ -1159,25 +1159,25 @@ void FESurfaceMesh::AutoPartitionNodes()
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::ResizeNodes(int newSize)
+void FSSurfaceMesh::ResizeNodes(int newSize)
 {
 	m_Node.resize(newSize);
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::ResizeEdges(int newSize)
+void FSSurfaceMesh::ResizeEdges(int newSize)
 {
 	m_Edge.resize(newSize);
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::ResizeFaces(int newSize)
+void FSSurfaceMesh::ResizeFaces(int newSize)
 {
 	m_Face.resize(newSize);
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::RemoveDuplicateEdges()
+void FSSurfaceMesh::RemoveDuplicateEdges()
 {
 	// clear tags
 	TagAllEdges(0);
@@ -1188,10 +1188,10 @@ void FESurfaceMesh::RemoveDuplicateEdges()
 	int NE = Edges();
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& ei = Edge(i);
+		FSEdge& ei = Edge(i);
 		for (int j = i + 1; j<NE; ++j)
 		{
-			FEEdge& ej = Edge(j);
+			FSEdge& ej = Edge(j);
 			if (ei == ej)
 			{
 				if (ei.m_gid == -1)
@@ -1219,7 +1219,7 @@ void FESurfaceMesh::RemoveDuplicateEdges()
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
+void FSSurfaceMesh::Attach(const FSSurfaceMesh& mesh)
 {
 	// get counts
 	int nn0 = Nodes();
@@ -1252,8 +1252,8 @@ void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
 		m_Node.resize(nodes);
 		for (int i = 0; i<nn1; ++i)
 		{
-			FENode& n0 = m_Node[nn0 + i];
-			const FENode& n1 = mesh.m_Node[i];
+			FSNode& n0 = m_Node[nn0 + i];
+			const FSNode& n1 = mesh.m_Node[i];
 			n0 = n1;
 			if (n0.m_gid >= 0) n0.m_gid = n1.m_gid + ng;
 			if (po2) n0.r = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(n1.r));
@@ -1271,8 +1271,8 @@ void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
 		m_Edge.resize(edges);
 		for (int i = 0; i<nl1; ++i)
 		{
-			FEEdge& l0 = m_Edge[nl0 + i];
-			const FEEdge& l1 = mesh.m_Edge[i];
+			FSEdge& l0 = m_Edge[nl0 + i];
+			const FSEdge& l1 = mesh.m_Edge[i];
 
 			l0 = l1;
 
@@ -1299,8 +1299,8 @@ void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
 		m_Face.resize(faces);
 		for (int i = 0; i<nf1; ++i)
 		{
-			FEFace& f0 = m_Face[nf0 + i];
-			const FEFace& f1 = mesh.m_Face[i];
+			FSFace& f0 = m_Face[nf0 + i];
+			const FSFace& f1 = mesh.m_Face[i];
 			f0 = f1;
 			f0.m_gid = f1.m_gid + ng;
 			f0.m_sid = f1.m_sid + nsg;
@@ -1319,7 +1319,7 @@ void FESurfaceMesh::Attach(const FESurfaceMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldTolerance)
+void FSSurfaceMesh::AttachAndWeld(const FSSurfaceMesh& mesh, double weldTolerance)
 {
 	// get the owning objects (for converting between coordinate systems)
 	// TODO: I would like to get rid of this. I could pass the transform objects as parameters. Alternatively,
@@ -1337,7 +1337,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	vector<int> tag(NN0, 0);
 	for (int i=0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0) 
 		{
 			tag[edge.n[0]] = 1;
@@ -1348,7 +1348,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	{
 		if (tag[i] == 1)
 		{
-			FENode& node = Node(i);
+			FSNode& node = Node(i);
 			nodeList0.push_back(pair<int, vec3d>(i, node.r));
 		}
 	}
@@ -1366,7 +1366,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	tag.resize(NN1, 0);
 	for (int i=0; i<mesh.Edges(); ++i)
 	{
-		const FEEdge& edge = mesh.Edge(i);
+		const FSEdge& edge = mesh.Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			tag[edge.n[0]] = 1;
@@ -1382,7 +1382,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 		{
 			double Dmin = 1e99;
 			int jmin = -1;
-			const FENode& nodei = mesh.Node(i);
+			const FSNode& nodei = mesh.Node(i);
 			vec3d ri;
 			if (po2) ri = po1->GetTransform().GlobalToLocal(po2->GetTransform().LocalToGlobal(nodei.r));
 			else ri = nodei.r;
@@ -1418,10 +1418,10 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	// create the new nodes
 	for (int i=0; i<NN1; i++)
 	{
-		const FENode& node1 = mesh.Node(i);
+		const FSNode& node1 = mesh.Node(i);
 		if (tag[i] >= NN0)
 		{
-			FENode& node0 = Node(tag[i]);
+			FSNode& node0 = Node(tag[i]);
 			node0 = node1;
 
 			if (node1.m_gid >= 0) node0.m_gid = node1.m_gid + ng0;
@@ -1430,7 +1430,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 		}
 		else
 		{
-			FENode& node0 = Node(tag[i]);
+			FSNode& node0 = Node(tag[i]);
 			if ((node1.m_gid >= 0) && (node0.m_gid == -1)) node0.m_gid = node1.m_gid + ng0;
 		}
 	}
@@ -1443,7 +1443,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	int newEdges = NE0;
 	for (int i=0; i<mesh.Edges(); ++i)
 	{
-		const FEEdge& edge = mesh.Edge(i);
+		const FSEdge& edge = mesh.Edge(i);
 		if (edge.m_gid == -1) newEdges++;
 		else
 		{
@@ -1452,7 +1452,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 			if ((m0>=NN0) || (m1 >= NN0)) newEdges++;
 			else
 			{
-				FEEdge* edge = FindEdge(m0, m1);
+				FSEdge* edge = FindEdge(m0, m1);
 				if (edge == 0) newEdges++;
 			}
 		}
@@ -1471,12 +1471,12 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	// first copy non-feature edges
 	for (int i=0; i<NE1; ++i)
 	{
-		const FEEdge& edge1 = mesh.Edge(i);
+		const FSEdge& edge1 = mesh.Edge(i);
 		if (edge1.m_gid == -1)
 		{
 			int m0 = tag[edge1.n[0]];
 			int m1 = tag[edge1.n[1]];
-			FEEdge& edge0 = Edge(newEdges++);
+			FSEdge& edge0 = Edge(newEdges++);
 			edge0 = edge1;
 			edge0.n[0] = m0;
 			edge0.n[1] = m1;
@@ -1488,14 +1488,14 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	{
 		for (int j=0; j<NE1; ++j)
 		{
-			const FEEdge& edge1 = mesh.Edge(j);
+			const FSEdge& edge1 = mesh.Edge(j);
 			if (edge1.m_gid == i)
 			{
 				int m0 = tag[edge1.n[0]];
 				int m1 = tag[edge1.n[1]];
 				if ((m0 >= NN0) || (m1 >= NN0)) 
 				{
-					FEEdge& edge0 = Edge(newEdges++);
+					FSEdge& edge0 = Edge(newEdges++);
 					edge0 = edge1;
 
 					edge0.m_gid = edge1.m_gid + ng0;
@@ -1507,7 +1507,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 				{
 					// we need to mark the original edge, since it could need a new group ID
 					// so find this edge
-					FEEdge* edge0 = FindEdge(m0, m1);
+					FSEdge* edge0 = FindEdge(m0, m1);
 
 					if (edge0)
 					{
@@ -1516,7 +1516,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 					}
 					else
 					{
-						FEEdge& edge0 = Edge(newEdges++);
+						FSEdge& edge0 = Edge(newEdges++);
 						edge0 = edge1;
 
 						edge0.m_gid = edge1.m_gid + ng0;
@@ -1537,7 +1537,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	vector<int> val(Nodes(), 0);
 	for (int i=0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			val[edge.n[0]]++;
@@ -1548,7 +1548,7 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	{
 		if ((val[i] > 0) && (val[i] != 2))
 		{
-			FENode& node = Node(i);
+			FSNode& node = Node(i);
 			if (node.m_gid == -1) node.m_gid = ng++;
 		}
 	}
@@ -1565,8 +1565,8 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 	Create(0, 0, NF0 + NF1);
 	for (int i=0; i<NF1; ++i)
 	{
-		FEFace& face0 = Face(NF0 + i);
-		const FEFace& face1 = mesh.Face(i);
+		FSFace& face0 = Face(NF0 + i);
+		const FSFace& face1 = mesh.Face(i);
 		face0 = face1;
 
 		face0.m_gid = face1.m_gid + ng;
@@ -1583,9 +1583,9 @@ void FESurfaceMesh::AttachAndWeld(const FESurfaceMesh& mesh, double weldToleranc
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::AddFacet(int n0, int n1, int n2)
+void FSSurfaceMesh::AddFacet(int n0, int n1, int n2)
 {
-	FEFace face;
+	FSFace face;
 	face.SetType(FE_FACE_TRI3);
 	face.m_gid = 0;
 	face.n[0] = n0; assert(n0 < Nodes());
@@ -1595,7 +1595,7 @@ void FESurfaceMesh::AddFacet(int n0, int n1, int n2)
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::Save(OArchive& ar)
+void FSSurfaceMesh::Save(OArchive& ar)
 {
 	int nodes = Nodes();
 	int faces = Faces();
@@ -1613,7 +1613,7 @@ void FESurfaceMesh::Save(OArchive& ar)
 	// write the nodes
 	ar.BeginChunk(CID_MESH_NODE_SECTION);
 	{
-		FENode* pn = NodePtr();
+		FSNode* pn = NodePtr();
 		for (int i = 0; i<nodes; ++i, ++pn)
 		{
 			ar.BeginChunk(CID_MESH_NODE);
@@ -1629,7 +1629,7 @@ void FESurfaceMesh::Save(OArchive& ar)
 	// write the faces
 	ar.BeginChunk(CID_MESH_FACE_SECTION);
 	{
-		FEFace* pf = FacePtr();
+		FSFace* pf = FacePtr();
 		for (int i = 0; i<faces; ++i, ++pf)
 		{
 			ar.BeginChunk(CID_MESH_FACE);
@@ -1651,7 +1651,7 @@ void FESurfaceMesh::Save(OArchive& ar)
 	// write the edges
 	ar.BeginChunk(CID_MESH_EDGE_SECTION);
 	{
-		FEEdge* pe = EdgePtr();
+		FSEdge* pe = EdgePtr();
 		for (int i = 0; i<edges; ++i, ++pe)
 		{
 			int nn = pe->Nodes();
@@ -1669,9 +1669,9 @@ void FESurfaceMesh::Save(OArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-void FESurfaceMesh::Load(IArchive& ar)
+void FSSurfaceMesh::Load(IArchive& ar)
 {
-	TRACE("FESurfaceMesh::Load");
+	TRACE("FSSurfaceMesh::Load");
 
 	// the first chunk must be the header
 	ar.OpenChunk();
@@ -1704,7 +1704,7 @@ void FESurfaceMesh::Load(IArchive& ar)
 		case CID_MESH_NODE_SECTION:
 		{
 			int n = 0;
-			FENode* pn = NodePtr();
+			FSNode* pn = NodePtr();
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -1731,7 +1731,7 @@ void FESurfaceMesh::Load(IArchive& ar)
 		case CID_MESH_FACE_SECTION:
 		{
 			int n = 0;
-			FEFace* pf = FacePtr();
+			FSFace* pf = FacePtr();
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -1780,7 +1780,7 @@ void FESurfaceMesh::Load(IArchive& ar)
 		case CID_MESH_EDGE_SECTION:
 		{
 			int n = 0;
-			FEEdge* pe = EdgePtr();
+			FSEdge* pe = EdgePtr();
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				int nid = ar.GetChunkID();
@@ -1838,14 +1838,14 @@ void FESurfaceMesh::Load(IArchive& ar)
 }
 
 // Create a TriMesh from a surface mesh
-void BuildTriMesh(TriMesh& dyna, FESurfaceMesh* pm)
+void BuildTriMesh(TriMesh& dyna, FSSurfaceMesh* pm)
 {
 	// build the nodes
 	int NN = pm->Nodes();
 	vector<TriMesh::NODEP> nodePtr;
 	for (int i = 0; i<NN; ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		TriMesh::NODEP n = dyna.addNode(node.r);
 		n->ntag = i;
 		n->gid = node.m_gid;
@@ -1857,7 +1857,7 @@ void BuildTriMesh(TriMesh& dyna, FESurfaceMesh* pm)
 	vector<TriMesh::EDGEP> edgePtr;
 	for (int i = 0; i<NE; ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		TriMesh::EDGEP e = dyna.addEdge(nodePtr[edge.n[0]], nodePtr[edge.n[1]]);
 		e->gid = edge.m_gid;
 		edgePtr.push_back(e);
@@ -1867,7 +1867,7 @@ void BuildTriMesh(TriMesh& dyna, FESurfaceMesh* pm)
 	int NF = pm->Faces();
 	for (int i = 0; i<NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		TriMesh::FACE f;
 		f.ntag = 0;
 		f.node[0] = nodePtr[face.n[0]];
@@ -1891,7 +1891,7 @@ void BuildTriMesh(TriMesh& dyna, FESurfaceMesh* pm)
 	}
 }
 
-void FESurfaceMesh::ShowFaces(const vector<int>& face, bool bshow)
+void FSSurfaceMesh::ShowFaces(const vector<int>& face, bool bshow)
 {
 	if (bshow)
         for (int i : face) Face(i).Show();
@@ -1901,20 +1901,20 @@ void FESurfaceMesh::ShowFaces(const vector<int>& face, bool bshow)
 	UpdateItemVisibility();
 }
 
-void FESurfaceMesh::ShowAllFaces()
+void FSSurfaceMesh::ShowAllFaces()
 {
 	for (int i=0; i<Nodes(); ++i) Node(i).Show();
 	for (int i=0; i<Edges(); ++i) Edge(i).Show();
 	for (int i=0; i<Faces(); ++i) Face(i).Show();
 }
 
-void FESurfaceMesh::UpdateItemVisibility()
+void FSSurfaceMesh::UpdateItemVisibility()
 {
 	// tag all visible nodes
 	TagAllNodes(0);
 	for (int i = 0; i<Faces(); ++i)
 	{
-		FEFace& face = Face(i);
+		FSFace& face = Face(i);
 		if (face.IsVisible())
 		{
 			int nf = face.Nodes();
@@ -1925,31 +1925,31 @@ void FESurfaceMesh::UpdateItemVisibility()
 	// update visibility of all other items
 	for (int i = 0; i<Nodes(); ++i)
 	{
-		FENode& node = Node(i);
+		FSNode& node = Node(i);
 		if (node.m_ntag == 1) node.Show(); else node.Hide();
 	}
 
 	for (int i = 0; i<Edges(); ++i)
 	{
-		FEEdge& edge = Edge(i);
+		FSEdge& edge = Edge(i);
 		if ((Node(edge.n[0]).m_ntag == 0) || (Node(edge.n[1]).m_ntag == 0)) edge.Hide();
 		else edge.Show();
 	}
 }
 
-void FESurfaceMesh::SelectFaces(const vector<int>& faceList)
+void FSSurfaceMesh::SelectFaces(const vector<int>& faceList)
 {
     for (int i : faceList) Face(i).Select();
 }
 
 //================================================================================
 // Is the mesh closed (i.e. do all faces have neighbors)
-bool MeshTools::IsMeshClosed(FESurfaceMesh& m)
+bool MeshTools::IsMeshClosed(FSSurfaceMesh& m)
 {
 	int NF = m.Faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = m.Face(i);
+		FSFace& f = m.Face(i);
 		int ne = f.Edges();
 		for (int j = 0; j < ne; ++j)
 		{

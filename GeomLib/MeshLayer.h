@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,7 +33,7 @@ SOFTWARE.*/
 class GModel;
 class GObject;
 class FEMesher;
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 class MeshLayer;
@@ -74,7 +74,7 @@ public:
 
 public:
 	const FEMesher* GetFEMesher(int layer, int obj);
-	const FEMesh* GetFEMesh(int layer, int obj);
+	const FSMesh* GetFEMesh(int layer, int obj);
 	int FEMeshes(int layer);
 
 public:

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,6 +29,11 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <MeshLib/FEMesh.h>
 
+// NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
+#if defined(WIN32) && defined(_DEBUG)
+#undef HAS_NETGEN
+#endif
+
 #ifdef HAS_NETGEN
 
 #include <TopTools_IndexedMapOfShape.hxx>
@@ -52,7 +57,7 @@ namespace nglib {
 #endif
 
 #ifdef HAS_NETGEN
-FEMesh* NGMeshToFEMesh(netgen::Mesh* ng, bool secondOrder);
+FSMesh* NGMeshToFEMesh(netgen::Mesh* ng, bool secondOrder);
 #endif
 
 NetGenMesher::NetGenMesher() : m_occ(nullptr)
@@ -77,7 +82,7 @@ namespace netgen
 #endif
 }
 
-FEMesh*	NetGenMesher::BuildMesh()
+FSMesh*	NetGenMesher::BuildMesh()
 {
 #ifdef HAS_NETGEN
 	using namespace nglib;
@@ -188,7 +193,7 @@ FEMesh*	NetGenMesher::BuildMesh()
 	}
 
 	// Build the FE mesh
-	FEMesh* mesh = NGMeshToFEMesh(ngmesh.get(), GetBoolValue(SECONDORDER));
+	FSMesh* mesh = NGMeshToFEMesh(ngmesh.get(), GetBoolValue(SECONDORDER));
 
 	Ng_Exit();
 
@@ -221,7 +226,7 @@ void NetGenMesher::Terminate()
 }
 
 #ifdef HAS_NETGEN
-FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
+FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 {
 	using namespace netgen;
 
@@ -229,7 +234,7 @@ FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 	int elems = ngmesh->GetNE();
 	int faces = ngmesh->GetNSE();
 
-	FEMesh* mesh = new FEMesh();
+	FSMesh* mesh = new FSMesh();
 	mesh->Create(nodes, elems, faces);
 
 	// copy nodes
@@ -242,7 +247,7 @@ FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 		double y = (*ngmesh)[pi](1);
 		double z = (*ngmesh)[pi](2);
 
-		FENode& ni = mesh->Node(i);
+		FSNode& ni = mesh->Node(i);
 		ni.r = vec3d(x, y, z);
 	}
 
@@ -254,7 +259,7 @@ FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 		Element2d sel = (*ngmesh)[sei];
 //		if (invertsurf) sel.Invert();
 
-		FEFace& face = mesh->Face(i);
+		FSFace& face = mesh->Face(i);
 		face.m_gid = ngmesh->GetFaceDescriptor(sel.GetIndex()).SurfNr() - 1;
 		face.m_sid = face.m_gid;
 
@@ -286,7 +291,7 @@ FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 		Element ngel = (*ngmesh)[ei];
 
 		// Note that I need to invert the element
-		FEElement& el = mesh->Element(i);
+		FSElement& el = mesh->Element(i);
 		el.m_gid = 0;
 
 		if (secondOrder == false)
@@ -322,7 +327,7 @@ FEMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 	if (R2 == 0) R2 = 1.0; else R2 *= R2;
 	for (i = 0; i<mesh->Nodes(); ++i)
 	{
-		FENode& node = mesh->Node(i);
+		FSNode& node = mesh->Node(i);
 		vec3d& ri = node.r;
 		node.m_gid = -1;
 		for (j = 0; j<m_occ->Nodes(); ++j)

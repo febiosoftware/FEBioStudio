@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -281,7 +281,11 @@ GLMesh* triangulate(GFace& face)
 	fn.Normalize();
 
 	// find the rotation to bring it back to the x-y plane
-	quatd q(fn, vec3d(0, 0, 1)), qi = q.Inverse();
+	quatd q(fn, vec3d(0, 0, 1));
+	if (q.Norm() == 0.0)
+		q = quatd(PI, vec3d(1, 0, 0));
+	
+	quatd qi = q.Inverse();
 
 	// create all nodes
 	int ne = face.Edges();
@@ -292,6 +296,11 @@ GLMesh* triangulate(GFace& face)
 		int en0 = (ew == 1 ? e.m_node[0] : e.m_node[1]);
 		int en1 = (ew == 1 ? e.m_node[1] : e.m_node[0]);
 		int n0 = obj.Node(en0)->GetLocalID();
+
+		// Not sure if this will always work, but if the face is inverted (e.g. bottom face of cylinder)
+		// then q will also invert the winding of the GM_CIRCLE_ARC, and so we need to flip the edges orientation. 
+		int orient = (fn * vec3d(0, 0, 1) > 0 ? e.m_orient : -e.m_orient);
+
 		switch (e.m_ntype)
 		{
 		case EDGE_LINE:
@@ -314,7 +323,7 @@ GLMesh* triangulate(GFace& face)
 			vec2d a1(r1.x, r1.y);
 			vec2d a2(r2.x, r2.y);
 
-			GM_CIRCLE_ARC ca(a0, a1, a2);
+			GM_CIRCLE_ARC ca(a0, a1, a2, orient);
 
 			if (ew == 1) c.AddNode(r1, n0); else c.AddNode(r2, n0);
 
@@ -412,4 +421,87 @@ GLMesh* triangulate(GFace& face)
 	for (int i = 0; i < pm->Faces(); ++i) pm->Face(i).pid = face.GetLocalID();
 
 	return pm;
+}
+
+// TODO: Not sure if this works well, but initial testing appears promising. 
+std::vector<vec3d> convex_hull2d(const std::vector<vec3d>& p)
+{
+	int N = p.size();
+	if (N <= 2) return p;
+
+	std::vector<vec3d> q;
+	int n0 = 0;
+	vec3d a = p[0], b;
+	do
+	{
+		// find another point such that all points are to the left of the line
+		int n1 = -1;
+		for (int j = 0; j < N; ++j)
+		{
+			b = p[j];
+			bool bok = true;
+			for (int i = 0; i < q.size(); ++i)
+			{
+				vec3d c = q[i];
+				if ((b - c).SqrLength() < 1e-12)
+				{
+					bok = false;
+					break;
+				}
+			}
+
+			if (bok && (j != n0))
+			{
+				if ((b - a).SqrLength() > 1e-12)
+				{
+					bool intersects = false;
+					for (int k = 0; k < N; ++k)
+					{
+						if ((k != n0) && (k != j))
+						{
+							vec3d c = p[k];
+
+							double Lca = (a - c).SqrLength();
+							double Lcb = (b - c).SqrLength();
+
+							if ((Lca > 1e-12) && (Lcb > 1e-12))
+							{
+								double A2 = (b.x - a.x) * (c.y - a.y) - (c.x - a.x) * (b.y - a.y);
+								if (A2 < 0)
+								{
+									intersects = true;
+									break;
+								}
+							}
+						}
+					}
+
+					if (intersects == false)
+					{
+						n1 = j;
+						break;
+					}
+				}
+			}
+		}
+
+		if (n1 != -1)
+		{
+			if (q.empty()) q.push_back(a);
+			q.push_back(b);
+
+			n0 = n1;
+			a = p[n0];
+			n1 = -1;
+		}
+		else
+		{
+			if (q.empty() == false) break;
+			n0++;
+			if (n0 >= N) break;
+			a = p[n0];
+		}
+	} while (true);
+
+	return q;
 }

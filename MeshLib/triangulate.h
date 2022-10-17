@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,9 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 #include <vector>
-//using namespace std;
 
 class GLMesh;
 class GFace;
@@ -65,8 +64,8 @@ public:
 	void Clear();
 
 protected:
-	vector<NODE>	m_Node;
-	vector<EDGE>	m_Edge;
+	std::vector<NODE>	m_Node;
+	std::vector<EDGE>	m_Edge;
 };
 
 //-----------------------------------------------------------------------------
@@ -78,7 +77,7 @@ protected:
 // returns twice the (signed) area of the triangle <a,b,c>
 inline double Area2(const vec2d& a, const vec2d& b, const vec2d& c)
 {
-	return (b.x - a.x)*(c.y - a.y) - (c.x - a.x)*(b.y - a.y);
+	return (b.x() - a.x())*(c.y() - a.y()) - (c.x() - a.x())*(b.y() - a.y());
 }
 
 // returns true if point c lies on the left side of the edge [a,b]
@@ -95,8 +94,8 @@ inline bool Between(const vec2d& a, const vec2d& b, const vec2d& c)
 {
 	if (!IsCollinear(a, b, c)) return false;
 
-	if (a.x != b.x) return ((a.x <= c.x) && (c.x <= b.x)) || ((a.x >= c.x) && (c.x >= b.x));
-	else return ((a.y <= c.y) && (c.y <= b.y)) || ((a.y >= c.y) && (c.y >= b.y));
+	if (a.x() != b.x()) return ((a.x() <= c.x()) && (c.x() <= b.x())) || ((a.x() >= c.x()) && (c.x() >= b.x()));
+	else return ((a.y() <= c.y()) && (c.y() <= b.y())) || ((a.y() >= c.y()) && (c.y() >= b.y()));
 }
 
 // see if edges [a,b] properly intersect edge [c,d]
@@ -126,3 +125,6 @@ inline bool Intersect(const vec2d& a, const vec2d& b, const vec2d& c, const vec2
 //-----------------------------------------------------------------------------
 GLMesh* triangulate(GTriangulate& c);
 GLMesh* triangulate(GFace& face);
+
+//-----------------------------------------------------------------------------
+std::vector<vec3d> convex_hull2d(const std::vector<vec3d>& p);

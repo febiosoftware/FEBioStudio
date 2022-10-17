@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,6 +33,10 @@ class CMainWindow;
 class CDlgImportLinesUI;
 class CDlgImportPointsUI;
 
+namespace Post {
+	class LineDataModel;
+}
+
 //-----------------------------------------------------------------------------
 class CDlgImportLines : public QDialog
 {
@@ -42,13 +46,12 @@ public:
 	// constructor
 	CDlgImportLines(CMainWindow* wnd);
 
+	QString GetFileName();
+	QString GetName();
+
 private slots:
 	void OnApply();
 	void OnBrowse();
-
-private:
-	bool ReadOldFormat(const char* szfile);
-	int ReadAng2Format(const char* szfile);
 
 private:
 	CDlgImportLinesUI*		ui;

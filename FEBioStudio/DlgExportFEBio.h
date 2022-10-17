@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,25 +26,39 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
+#include <QComboBox>
 
 namespace Ui {
 	class CDlgExportFEBio;
 }
+
+class CFEBioFormatSelector : public QComboBox
+{
+public:
+	CFEBioFormatSelector(QWidget* pw = nullptr);
+
+	int FEBioFormat() const;
+	void setFEBioFormat(int n);
+};
 
 class CDlgExportFEBio : public QDialog
 {
 	Q_OBJECT
 
 private:
-	enum { MAX_SECTIONS = 15 };
+	enum { MAX_SECTIONS = 16 };
 
 public:
 	CDlgExportFEBio(QWidget* parent);
 
 	void accept();
 
+	int FEBioFormat() const;
+
+	void SetFEBioFormat(int n);
+
 public:
-	static int		m_nversion;
+	static int		m_nindex;
 	bool	m_nsection[MAX_SECTIONS];
 	bool	m_bexportSelections;
 	bool	m_compress;

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,7 +31,7 @@ SOFTWARE.*/
 // GRing
 //=============================================================================
 
-GRing::GRing() : GPrimitive(GRING)
+GRing::GRing() : GShellPrimitive(GRING)
 {
 	m_Ri = 0.5;
 	m_Ro = 1;
@@ -73,14 +73,14 @@ void GRing::Create()
 	// 3. build the parts
 	assert(m_Part.empty());
 	m_Part.reserve(1);
-	AddPart();
+	AddShellPart();
 
 	// 4. build the faces
 	int FT[4][4] = {{ 0, 1, 5, 4}, { 1, 2, 6, 5}, { 2, 3, 7, 6}, { 3, 0, 4, 7}};
 	int FE[4][4] = {{ 0, 9, 4, 8}, { 1,10, 5, 9}, { 2,11, 6,10}, { 3, 8, 7,11}};
 
 	assert(m_Face.empty());
-	vector<int> edge;
+	std::vector<int> edge;
 	for (i=0; i<4; ++i)
 	{
 		edge.resize(4);

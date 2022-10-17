@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,16 +29,16 @@ SOFTWARE.*/
 #include <set>
 #include "FEFace.h"
 
-class FEMeshBase;
-class FEMesh;
-class FESurfaceMesh;
-class FELineMesh;
+class FSMeshBase;
+class FSMesh;
+class FSSurfaceMesh;
+class FSLineMesh;
 
-class FENodeNodeTable
+class FSNodeNodeTable
 {
 public:
-	FENodeNodeTable(const FESurfaceMesh& mesh);
-	FENodeNodeTable(const FEMesh& mesh, bool surfOnly = false);
+	FSNodeNodeTable(const FSSurfaceMesh& mesh);
+	FSNodeNodeTable(const FSMesh& mesh, bool surfOnly = false);
 
 	std::set<int>& operator [] (int i) { return NNT[i]; }
 
@@ -46,14 +46,14 @@ private:
 	std::vector< std::set<int> > NNT;
 };
 
-class FEEdgeList
+class FSEdgeList
 {
 public:
-	FEEdgeList();
-	FEEdgeList(const FESurfaceMesh& mesh);
-	FEEdgeList(const FEMesh& mesh, bool surfOnly = false);
+	FSEdgeList();
+	FSEdgeList(const FSSurfaceMesh& mesh);
+	FSEdgeList(const FSMesh& mesh, bool surfOnly = false);
 
-	void BuildFromMeshEdges(FELineMesh& mesh);
+	void BuildFromMeshEdges(FSLineMesh& mesh);
 
 	int size() const { return (int) ET.size(); }
 
@@ -64,25 +64,25 @@ private:
 	std::vector< std::pair<int, int> > ET;
 };
 
-class FEFaceTable
+class FSFaceTable
 {
 public:
-	FEFaceTable(const FEMesh& mesh);
+	FSFaceTable(const FSMesh& mesh);
 
 	int size() const { return (int) FT.size(); }
 
-	FEFace& operator [] (int i) { return FT[i]; }
+	FSFace& operator [] (int i) { return FT[i]; }
 
-	const FEFace& operator [] (int i) const { return FT[i]; }
+	const FSFace& operator [] (int i) const { return FT[i]; }
 
 private:
-	std::vector<FEFace>	FT;
+	std::vector<FSFace>	FT;
 };
 
-class FEFaceEdgeList
+class FSFaceEdgeList
 {
 public:
-	FEFaceEdgeList(const FEMeshBase& mesh, const FEEdgeList& ET);
+	FSFaceEdgeList(const FSMeshBase& mesh, const FSEdgeList& ET);
 
 	std::vector<int>& operator [] (int i) { return FET[i]; }
 
@@ -90,10 +90,10 @@ private:
 	std::vector< std::vector<int> > FET;
 };
 
-class FEElementEdgeList
+class FSElementEdgeList
 {
 public:
-	FEElementEdgeList(const FEMesh& mesh, const FEEdgeList& ET);
+	FSElementEdgeList(const FSMesh& mesh, const FSEdgeList& ET);
 
 	std::vector<int>& operator [] (int i) { return EET[i]; }
 
@@ -105,10 +105,10 @@ private:
 	std::vector< std::vector<int> > EET;
 };
 
-class FEElementFaceList
+class FSElementFaceList
 {
 public:
-	FEElementFaceList(const FEMesh& mesh, const FEFaceTable& FT);
+	FSElementFaceList(const FSMesh& mesh, const FSFaceTable& FT);
 
 	std::vector<int>& operator [] (int i) { return EFT[i]; }
 
@@ -116,10 +116,10 @@ private:
 	std::vector< std::vector<int> > EFT;
 };
 
-class FEFaceFaceList
+class FSFaceFaceList
 {
 public:
-	FEFaceFaceList(const FEMesh& mesh, const FEFaceTable& FT);
+	FSFaceFaceList(const FSMesh& mesh, const FSFaceTable& FT);
 
 	int operator [] (int i) { return FFT[i]; }
 
@@ -127,10 +127,10 @@ private:
 	std::vector<int> FFT;
 };
 
-class FEEdgeIndexList
+class FSEdgeIndexList
 {
 public:
-	FEEdgeIndexList(const FEMesh& mesh, const FEEdgeList& ET);
+	FSEdgeIndexList(const FSMesh& mesh, const FSEdgeList& ET);
 
 	int operator [] (int i) { return EET[i]; }
 
@@ -138,10 +138,10 @@ private:
 	std::vector<int> EET;
 };
 
-class FEEdgeEdgeList
+class FSEdgeEdgeList
 {
 public:
-	FEEdgeEdgeList(const FEMesh& mesh, int edgeId = -1);
+	FSEdgeEdgeList(const FSMesh& mesh, int edgeId = -1);
 
 	int size() { return (int)EEL.size(); }
 
@@ -151,11 +151,11 @@ private:
 	std::vector< std::vector<int> > EEL;
 };
 
-class FEEdgeFaceList
+class FSEdgeFaceList
 {
 public:
-	FEEdgeFaceList(const FEMesh& mesh);
-	FEEdgeFaceList(const FESurfaceMesh& mesh);
+	FSEdgeFaceList(const FSMesh& mesh);
+	FSEdgeFaceList(const FSSurfaceMesh& mesh);
 
 	int size() { return (int) EFL.size(); }
 

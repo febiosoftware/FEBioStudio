@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,8 +44,10 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include <PostLib/FEMeshData.h>
 #include <PostLib/ColorMap.h>
+#include "InputWidgets.h"
 #include "DragBox.h"
 #include "units.h"
+
 
 //-----------------------------------------------------------------------------
 CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent)
@@ -61,6 +63,7 @@ CEditVariableProperty::CEditVariableProperty(QWidget* parent) : QComboBox(parent
 	m_prop = nullptr;
 
 	QObject::connect(this, SIGNAL(currentIndexChanged(int)), this, SLOT(onCurrentIndexChanged(int)));
+	QObject::connect(this, SIGNAL(editTextChanged(const QString&)), this, SLOT(onEditTextChanged(const QString&)));
 }
 
 void CEditVariableProperty::setProperty(CProperty* p, QVariant data)
@@ -93,8 +96,12 @@ void CEditVariableProperty::setProperty(CProperty* p, QVariant data)
 
 void CEditVariableProperty::onCurrentIndexChanged(int index)
 {
-	if (index == 0) m_prop->type = CProperty::Float;
-	else m_prop->type = CProperty::MathString;
+	switch (index)
+	{
+	case 0: m_prop->type = CProperty::Float; break;
+	case 1: m_prop->type = CProperty::MathString; break;
+	case 2: m_prop->type = CProperty::String; break;
+	}
 
 	if (m_prop->param)
 	{
@@ -107,6 +114,34 @@ void CEditVariableProperty::onCurrentIndexChanged(int index)
 	setEditText("0");
 
 	emit typeChanged();
+}
+
+void CEditVariableProperty::onEditTextChanged(const QString& txt)
+{
+	if (txt.isEmpty()) return;
+	if (m_prop->param == nullptr) return;
+
+	Param* p = m_prop->param;
+	if ((txt[0] == '=') && (p->GetParamType() != Param_MATH))
+	{
+		m_prop->type = CProperty::MathString;
+		p->SetParamType(Param_MATH);
+		blockSignals(true);
+		setCurrentIndex(1);
+		setEditText(txt);
+		blockSignals(false);
+		emit typeChanged();
+	}
+	else if ((txt[0] == '\"') && (p->GetParamType() != Param_STRING))
+	{
+		m_prop->type = CProperty::String;
+		p->SetParamType(Param_STRING);
+		blockSignals(true);
+		setCurrentIndex(2);
+		setEditText(txt);
+		blockSignals(false);
+		emit typeChanged();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -188,9 +223,13 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel& fem = *Post::FEPostModel::GetInstance();
-					std::string s = fem.GetDataManager()->getDataString(v.toInt(), Post::DATA_SCALAR);
-					if (s.empty()) s = "(please select)";
+					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					std::string s;
+					if (fem)
+					{
+						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_SCALAR);
+					}
+					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
 				}
 				else if (role == Qt::EditRole) return v;
@@ -199,9 +238,13 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel& fem = *Post::FEPostModel::GetInstance();
-					std::string s = fem.GetDataManager()->getDataString(v.toInt(), Post::DATA_VECTOR);
-					if (s.empty()) s = "(please select)";
+					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					std::string s;
+					if (fem)
+					{
+						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_VECTOR);
+					}
+					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
 				}
 				else if (role == Qt::EditRole) return v;
@@ -210,9 +253,13 @@ public:
 			{
 				if (role == Qt::DisplayRole)
 				{
-					Post::FEPostModel& fem = *Post::FEPostModel::GetInstance();
-					std::string s = fem.GetDataManager()->getDataString(v.toInt(), Post::DATA_TENSOR2);
-					if (s.empty()) s = "(please select)";
+					Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+					std::string s;
+					if (fem)
+					{
+						s = fem->GetDataManager()->getDataString(v.toInt(), Post::DATA_TENSOR2);
+					}
+					if (s.empty()) s = "(select)";
 					return QVariant(s.c_str());
 				}
 				else if (role == Qt::EditRole) return v;
@@ -419,8 +466,8 @@ public:
 			else if (prop.type == CProperty::DataScalar)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel& fem = *Post::FEPostModel::GetInstance();
-				pc->BuildMenu(Post::FEPostModel::GetInstance(), Post::DATA_SCALAR);
+				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				if (fem) pc->BuildMenu(fem, Post::DATA_SCALAR);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
@@ -429,8 +476,8 @@ public:
 			else if (prop.type == CProperty::DataVec3)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel& fem = *Post::FEPostModel::GetInstance();
-				pc->BuildMenu(Post::FEPostModel::GetInstance(), Post::DATA_VECTOR);
+				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				if (fem) pc->BuildMenu(fem, Post::DATA_VECTOR);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
@@ -439,8 +486,8 @@ public:
 			else if (prop.type == CProperty::DataMat3)
 			{
 				CDataFieldSelector* pc = new CDataFieldSelector(parent);
-				Post::FEPostModel& fem = *Post::FEPostModel::GetInstance();
-				pc->BuildMenu(Post::FEPostModel::GetInstance(), Post::DATA_TENSOR2);
+				Post::FEPostModel* fem = Post::FEPostModel::GetInstance(); assert(fem);
+				if (fem) pc->BuildMenu(fem, Post::DATA_TENSOR2);
 				int nfield = data.toInt();
 				pc->setCurrentValue(nfield);
 				m_view->connect(pc, SIGNAL(currentValueChanged(int)), m_view, SLOT(onDataChanged()));
@@ -448,13 +495,26 @@ public:
 			}
 			else if (prop.type == CProperty::Int)
 			{
-				QSpinBox* pc = new QSpinBox(parent);
-				pc->setRange(prop.imin, prop.imax);
-				pc->setValue(data.toInt());
-				pc->setAccelerated(true);
-				if (prop.bauto) pc->setSpecialValueText("auto");
-				m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
-				return pc;
+				if(prop.brange)
+				{
+					CIntSlider* pc = new CIntSlider(parent);
+					pc->setRange(prop.imin, prop.imax);
+					pc->setValue(data.toInt());
+					m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
+					return pc;
+				}
+				else
+				{
+					QSpinBox* pc = new QSpinBox(parent);
+					pc->setRange(prop.imin, prop.imax);
+					pc->setValue(data.toInt());
+					pc->setAccelerated(true);
+					if (prop.bauto) pc->setSpecialValueText("auto");
+					m_view->connect(pc, SIGNAL(valueChanged(int)), m_view, SLOT(onDataChanged()));
+					return pc;
+				}
+
+				
 			}
 			else if (prop.type == CProperty::Enum)
 			{
@@ -488,6 +548,9 @@ public:
 
 		CColorButton* col = qobject_cast<CColorButton*>(editor);
 		if (col) { model->setData(index, col->color(), Qt::EditRole); return; }
+
+		CIntSlider* slider = dynamic_cast<CIntSlider*>(editor);
+		if (slider) { model->setData(index, slider->getValue()); return; }
 
 		QStyledItemDelegate::setModelData(editor, model, index);
 	}

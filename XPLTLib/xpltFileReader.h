@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -60,22 +60,23 @@ public:
 protected:
 	xpltFileReader*		m_xplt;
 	xpltArchive&		m_ar;
-	vector<int>			m_wrng;	// warning list
+	std::vector<int>	m_wrng;	// warning list
 };
 
 class xpltFileReader : public Post::FEFileReader
 {
 protected:
 	// file tags
-	enum { 
-		PLT_ROOT						= 0x01000000,
-		PLT_HEADER						= 0x01010000,
-			PLT_HDR_VERSION				= 0x01010001,
-			PLT_HDR_NODES				= 0x01010002,	// obsolete in 2.0
-			PLT_HDR_MAX_FACET_NODES		= 0x01010003,	// obsolete in 2.0 (redefined in each Surface section)
-			PLT_HDR_COMPRESSION			= 0x01010004,	
-			PLT_HDR_AUTHOR				= 0x01010005,	// new in 2.0
-			PLT_HDR_SOFTWARE			= 0x01010006,	// new in 2.0
+	enum {
+		PLT_ROOT = 0x01000000,
+		PLT_HEADER = 0x01010000,
+		PLT_HDR_VERSION = 0x01010001,
+		PLT_HDR_NODES = 0x01010002,	// obsolete in 2.0
+		PLT_HDR_MAX_FACET_NODES = 0x01010003,	// obsolete in 2.0 (redefined in each Surface section)
+		PLT_HDR_COMPRESSION = 0x01010004,
+		PLT_HDR_AUTHOR = 0x01010005,	// new in 2.0
+		PLT_HDR_SOFTWARE = 0x01010006,	// new in 2.0
+		PLT_HDR_UNITS = 0x01010007,	// new in 4.0
 	};
 
 	// size of name variables
@@ -90,6 +91,7 @@ public:
 		int	nmax_facet_nodes;			//!< max nodes per facet (depends on version; not used >= 2.0)
 		char author[DI_NAME_SIZE];		//!< name of author
 		char software[DI_NAME_SIZE];	//!< name of software that generated the file
+		char units[DI_NAME_SIZE];
 	};
 
 public:
@@ -100,15 +102,17 @@ public:
 	bool Load(const char* szfile) override;
 
 	void SetReadStateFlag(int n) { m_read_state_flag = n; }
-	void SetReadStatesList(const vector<int>& l) { m_state_list = l; }
+	void SetReadStatesList(const std::vector<int>& l) { m_state_list = l; }
 
 	int GetReadStateFlag() const { return m_read_state_flag; }
-	vector<int> GetReadStates() const { return m_state_list; }
+	std::vector<int> GetReadStates() const { return m_state_list; }
 
 public:
 	xpltArchive& GetArchive() { return m_ar; }
 
 	const HEADER& GetHeader() const { return m_hdr; }
+
+	const char* GetUnits() const { return (m_hdr.units[0] ? m_hdr.units : nullptr); }
 
 protected:
 	bool ReadHeader();
@@ -120,7 +124,7 @@ private:
 
 	// Options
 	int			m_read_state_flag;	//!< flag setting option for reading states
-	vector<int>	m_state_list;		//!< list of states to read (only when m_read_state_flag == XPLT_READ_STATES_FROM_LIST)
+	std::vector<int>	m_state_list;		//!< list of states to read (only when m_read_state_flag == XPLT_READ_STATES_FROM_LIST)
 
 	friend class xpltParser;
 };

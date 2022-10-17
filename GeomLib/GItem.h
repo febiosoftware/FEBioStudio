@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-
-class FEEdgeSet;
+#include "GPartSection.h"
+class FSEdgeSet;
 
 //-----------------------------------------------------------------------------
 // State values for GItem state
@@ -68,6 +68,14 @@ enum {
 #define PART_COMPLEX	1		// general domain definition; surfaces can be of any type
 
 //-----------------------------------------------------------------------------
+namespace GO {
+	enum Orientation:int {
+		CW = -1,
+		CCW = 1
+	};
+}
+
+//-----------------------------------------------------------------------------
 // forward declarations
 class GBaseObject;
 
@@ -81,7 +89,7 @@ class GItem : public FSObject
 {
 public:
 	// Constructor. Takes parent object as parameter
-	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE; m_gid = 0; m_lid = -1; m_po = po; }
+	GItem(GBaseObject* po = 0) { m_state = GEO_VISIBLE; m_gid = 0; m_lid = -1; m_po = po; m_weight = 0.0; }
 	virtual ~GItem() { m_po = 0; }
 
 	// get/set global ID
@@ -114,6 +122,9 @@ public:
 	unsigned int GetState() const { return m_state; }
 	void SetState(unsigned int state) { m_state = state; }
 
+	void SetMeshWeight(double w) { m_weight = w; }
+	double GetMeshWeight() const { return m_weight; }
+
 public:
 	int		m_ntag;	// multi-purpose tag
 
@@ -122,9 +133,10 @@ protected:
 	int				m_gid;		// global ID (one-based)
 	int				m_lid;		// local ID (zero-based)
 
+	double	m_weight;	// weight used for meshing
+
 	GBaseObject*	m_po;	// pointer to object this item belongs to
 };
-
 
 //-----------------------------------------------------------------------------
 // Intermediate base class defining a counter for each derived item class that
@@ -153,20 +165,37 @@ class GPart : public GItem_T<GPart>
 {
 public:
 	GPart();
+	~GPart();
+
 	GPart(GBaseObject* po);
 
 	GPart(const GPart& p);
 	void operator = (const GPart& p);
 
+	bool IsSolid() const;
+	bool IsShell() const;
+	bool IsBeam () const;
+
 public:
 	int GetMaterialID() const { return m_matid; }
 	void SetMaterialID(int mid) { m_matid = mid; }
 
-	void setShellNormalNodal(bool b);
-	bool shellNormalNodal() const;
+	void SetSection(GPartSection* section);
+	GPartSection* GetSection() const;
+    
+public:
+	int Nodes() const { return (int)m_node.size(); }
+	int Edges() const { return (int)m_edge.size(); }
+	int Faces() const { return (int)m_face.size(); }
 
 protected:
 	int		m_matid;
+	GPartSection* m_section;
+
+public:
+	std::vector<int>	m_node;
+	std::vector<int>	m_face;
+	std::vector<int>	m_edge;
 };
 
 //-----------------------------------------------------------------------------
@@ -195,11 +224,13 @@ public:
 
 	bool HasEdge(int i);
 
+	void Invert();
+
 public:
 	int				m_ntype;	// face type
 	int				m_nPID[3];	// part ID's
-	vector<int>		m_node;		// node ID's
-	vector<EDGE>	m_edge;		// edges defining face
+	std::vector<int>	m_node;		// node ID's
+	std::vector<EDGE>	m_edge;		// edges defining face
 };
 
 //-----------------------------------------------------------------------------
@@ -207,8 +238,8 @@ public:
 class GEdge : public GItem_T<GEdge>
 {
 public:
-	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
-	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; }
+	GEdge() : GItem_T<GEdge>(0) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;  }
+	GEdge(GBaseObject* po) : GItem_T<GEdge>(po) { m_node[0] = m_node[1] = -1; m_ntype = EDGE_UNKNOWN; m_orient = GO::CCW;}
 
 	GEdge(const GEdge& e);
 	void operator = (const GEdge& e);
@@ -226,11 +257,12 @@ public:
 
 	int Type() const { return m_ntype; }
 
-	FEEdgeSet* GetFEEdgeSet() const;
+	FSEdgeSet* GetFEEdgeSet() const;
 
 public:
 	int		m_node[2];	// indices of GNodes
 	int		m_cnode;	// center node for arcs
+	int		m_orient;	// orientation for arcs
 	int		m_ntype;	// type identifier
 };
 

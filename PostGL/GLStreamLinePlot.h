@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -72,7 +72,7 @@ public:
 	};
 
 public:
-	CGLStreamLinePlot(CGLModel* fem);
+	CGLStreamLinePlot();
 
 	void Render(CGLContext& rc) override;
 
@@ -135,7 +135,7 @@ private:
 	vector<StreamLine>	m_streamLines;
 	vector<float>		m_prob;
 
-	FEFindElement	m_find;
+	FEFindElement*	m_find;
 
 	int		m_rangeType;				//!< dynamic, static, or user-defined
 	double	m_userMin, m_userMax;		//!< range for user-defined range

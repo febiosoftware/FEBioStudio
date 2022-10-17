@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QFileDialog>
 #include <QFormLayout>
+#include <QCheckBox>
+#include <QRadioButton>
 #include <QAction>
 #include <QMenu>
 #include <QComboBox>
@@ -62,10 +64,10 @@ SOFTWARE.*/
 class CCurvatureProps : public CPropertyList
 {
 public:
-	Post::FECurvatureField*	m_pf;
+	Post::CurvatureField*	m_pf;
 
 public:
-	CCurvatureProps(Post::FECurvatureField* pf) : m_pf(pf)
+	CCurvatureProps(Post::CurvatureField* pf) : m_pf(pf)
 	{
 		addProperty("Smoothness", CProperty::Int);
 		addProperty("Max iterations", CProperty::Int);
@@ -154,10 +156,10 @@ public:
 class CStrainProps : public CPropertyList
 {
 private:
-	Post::FEStrainDataField*	m_ps;
+	Post::StrainDataField*	m_ps;
 
 public:
-	CStrainProps(Post::FEStrainDataField* ps, int maxStates) : m_ps(ps)
+	CStrainProps(Post::StrainDataField* ps, int maxStates) : m_ps(ps)
 	{
 		addProperty("reference state", CProperty::Int)->setIntRange(0, maxStates);
 	}
@@ -166,7 +168,7 @@ public:
 	{
 		switch (i)
 		{
-		case 0: return m_ps->m_nref + 1; break;
+		case 0: return m_ps->ReferenceState() + 1; break;
 		}
 
 		return QVariant();
@@ -176,7 +178,7 @@ public:
 	{
 		switch (i)
 		{
-		case 0: m_ps->m_nref = v.toInt() - 1; break;
+		case 0: m_ps->SetReferenceState(v.toInt() - 1); break;
 		}
 	}
 };
@@ -188,6 +190,7 @@ public:
 	{
 		addProperty("Assign to surface1", CProperty::Action, "");
 		addProperty("Assign to surface2", CProperty::Action, "");
+		addProperty("Signed distance", CProperty::Bool);
 		addProperty("", CProperty::Action, "Apply");
 	}
 
@@ -202,6 +205,10 @@ public:
 		{
 			int n = m_map->GetSurfaceSize(1);
 			return QString("(%1 Faces)").arg(n);
+		}
+		if (i == 2)
+		{
+			return m_map->m_bsigned;
 		}
 		return QVariant();
 	}
@@ -219,6 +226,11 @@ public:
 			SetModified(true);
 		}
 		else if (i == 2)
+		{
+			bool b = v.toBool();
+			m_map->m_bsigned = b;
+		}
+		else if (i == 3)
 		{
 			m_map->Apply();
 		}
@@ -310,7 +322,7 @@ public:
 		endResetModel();
 	}
 
-	Post::FEPostModel* GetFEModel() { return m_fem; }
+	Post::FEPostModel* GetFSModel() { return m_fem; }
 
 	int rowCount(const QModelIndex& index) const
 	{
@@ -347,7 +359,7 @@ public:
 			int nrow = index.row();
 			int ncol = index.column();
 			Post::FEDataManager& dm = *m_fem->GetDataManager();
-			Post::FEDataField* pd = *dm.DataField(nrow);
+			Post::ModelDataField* pd = *dm.DataField(nrow);
 
 			if (ncol == 0) return QString::fromStdString(pd->GetName());
 			else if (ncol == 1) return QString(pd->TypeStr());
@@ -392,7 +404,7 @@ public:
 	::CPropertyListForm*	m_prop;
 	QLineEdit*	name;
 
-	Post::FEDataField*	m_activeField;
+	Post::ModelDataField*	m_activeField;
 
 public:
 	void setupUi(::CPostDataPanel* parent)
@@ -590,6 +602,7 @@ public:
 		pselect->addItem("Fraction Anisotropy");
 		pselect->addItem("Convert Format");
 		pselect->addItem("Eigen vectors");
+		pselect->addItem("Time Derivative");
 
 		QLabel* label;
 		label = new QLabel("Filter:");
@@ -692,7 +705,7 @@ void CDlgFilter::setDataOperands(const std::vector<QString>& opNames)
 	}
 }
 
-void CDlgFilter::setDataField(Post::FEDataField* pdf)
+void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 {
 	ui->src->setText(QString::fromStdString(pdf->GetName()));
 
@@ -809,13 +822,13 @@ void CPostDataPanel::Update(bool breset)
 	CPostDocument* pdoc = GetActiveDocument();
 	if (pdoc)
 	{
-		Post::FEPostModel* oldFem = ui->data->GetFEModel();
-		Post::FEPostModel* newFem = pdoc->GetFEModel();
+		Post::FEPostModel* oldFem = ui->data->GetFSModel();
+		Post::FEPostModel* newFem = pdoc->GetFSModel();
 
 		if ((oldFem != newFem) || breset)
 		{
 			ui->m_prop->setPropertyList(nullptr);
-			ui->data->SetFEModel(pdoc->GetFEModel());
+			ui->data->SetFEModel(pdoc->GetFSModel());
 		}
 	}
 	else
@@ -841,7 +854,7 @@ void CPostDataPanel::on_AddStandard_triggered()
 	if (ok)
 	{
 		Post::CGLModel* glm = GetActiveDocument()->GetGLModel();
-		Post::FEPostModel* fem = glm->GetFEModel();
+		Post::FEPostModel* fem = glm->GetFSModel();
 
 		vector<int> L;
 		if (glm->GetSelectionMode() == Post::SELECT_FACES)
@@ -872,7 +885,7 @@ void CPostDataPanel::on_AddFromFile_triggered()
 	CDlgAddDataFile dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel* fem = doc->GetFEModel();
+		Post::FEPostModel* fem = doc->GetFSModel();
 		bool bret = false;
 		switch (dlg.m_nclass)
 		{
@@ -902,7 +915,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 	CDlgAddEquation dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 
 		QString name = dlg.GetDataName();
 
@@ -940,7 +953,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 			pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
 
 			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFEModel();
+			Post::FEPostModel& fem = *doc.GetFSModel();
 			fem.AddDataField(pd, name.toStdString());
 		}
 		break;
@@ -954,7 +967,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 			for (int i=0; i<9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
 
 			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFEModel();
+			Post::FEPostModel& fem = *doc.GetFSModel();
 			fem.AddDataField(pd, name.toStdString());
 		}
 		};
@@ -973,9 +986,9 @@ void CPostDataPanel::on_CopyButton_clicked()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			bool bret = false;
@@ -999,9 +1012,9 @@ void CPostDataPanel::on_DeleteButton_clicked()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			QString name = QString::fromStdString(pdf->GetName());
@@ -1024,9 +1037,9 @@ void CPostDataPanel::on_AddFilter_triggered()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			// build a list of compatible data fields
@@ -1034,7 +1047,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 			vector<int> dataIds;
 			for (int i = 0; i<dm.DataFields(); ++i)
 			{
-				Post::FEDataField* pdi = *dm.DataField(i);
+				Post::ModelDataField* pdi = *dm.DataField(i);
 				QString name = QString::fromStdString(pdi->GetName());
 				if ((pdi != pdf) &&
 					(pdi->DataClass() == pdf->DataClass()) &&
@@ -1059,7 +1072,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				// get the name for the new field
 				string sname = dlg.getNewName().toStdString();
 
-				Post::FEDataField* newData = 0;
+				Post::ModelDataField* newData = 0;
 				bool bret = true;
 				int nfield = pdf->GetFieldID();
 				switch (dlg.m_nflt)
@@ -1127,6 +1140,12 @@ void CPostDataPanel::on_AddFilter_triggered()
 					bret = (newData != nullptr);
 				}
 				break;
+				case 8: // time derivative
+				{
+					newData = DataTimeRate(fem, pdf, sname);
+					bret = (newData != nullptr);
+				}
+				break;
 				default:
 					QMessageBox::critical(this, "Data Filter", "Don't know this filter.");
 				}
@@ -1146,6 +1165,79 @@ void CPostDataPanel::on_AddFilter_triggered()
 	}
 }
 
+
+//=============================================================================
+class Ui::CDlgExportData
+{
+public:
+	QCheckBox* cb;
+	QRadioButton* pb1;
+	QRadioButton* pb2;
+	QRadioButton* pb3;
+	QLineEdit* pitems;
+
+public:
+	void setup(QDialog* dlg)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+
+		cb = new QCheckBox("Selection only");
+		l->addWidget(cb);
+
+		QVBoxLayout* pg = new QVBoxLayout;
+		pg->addWidget(pb1 = new QRadioButton("Write all states"));
+		pg->addWidget(pb2 = new QRadioButton("Write current state only"));
+		pg->addWidget(pb3 = new QRadioButton("Write states from list:"));
+		l->addLayout(pg);
+
+		pb1->setChecked(true);
+
+		l->addWidget(pitems = new QLineEdit);
+		l->addWidget(new QLabel("(e.g.:1,2,3:6,10:100:5)"));
+		
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+
+		l->addWidget(bb);
+		dlg->setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+	}
+};
+
+CDlgExportData::CDlgExportData(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgExportData())
+{
+	ui->setup(this);
+}
+
+CDlgExportData::~CDlgExportData()
+{
+	delete ui;
+}
+
+bool CDlgExportData::selectionOnly() const
+{
+	return ui->cb->isChecked();
+}
+
+int CDlgExportData::stateOutputOption() const
+{
+	int nop = -1;
+	if (ui->pb1->isChecked()) nop = 0;
+	if (ui->pb2->isChecked()) nop = 1;
+	if (ui->pb3->isChecked()) nop = 2;
+	return nop;
+}
+
+QString CDlgExportData::stateList() const
+{
+	return ui->pitems->text();
+}
+
+// see DlgFind.cpp
+bool string_to_int_list(QString listString, std::vector<int>& list);
+
+//=============================================================================
 void CPostDataPanel::on_ExportButton_clicked()
 {
 	QItemSelectionModel* select = ui->list->selectionModel();
@@ -1154,18 +1246,45 @@ void CPostDataPanel::on_ExportButton_clicked()
 	{
 		int nsel = selRow.at(0).row();
 		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFEModel();
+		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
-		Post::FEDataField* pdf = *dm.DataField(nsel);
+		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
 		{
 			QString file = QFileDialog::getSaveFileName(this, "Export Data");
 			if (file.isEmpty() == false)
 			{
-				std::string sfile = file.toStdString();
-				if (Post::ExportDataField(fem, *pdf, sfile.c_str()) == false)
+				CDlgExportData dlg(this);
+				if (dlg.exec())
 				{
-					QMessageBox::critical(this, "Export Data", "Export Failed!");
+					bool selectionOnly = dlg.selectionOnly();
+
+					int op = dlg.stateOutputOption();
+					vector<int> states;
+					switch (op)
+					{
+					case 0: for (int i = 0; i < fem.GetStates(); ++i) states.push_back(i); break;
+					case 1: states.push_back(fem.CurrentTimeIndex()); break;
+					case 2:
+					{
+						QString s = dlg.stateList();
+						if (string_to_int_list(s, states) == false)
+						{
+							QMessageBox::critical(this, "Export Data", "List of export states is not valid.");
+							return;
+						}
+					}
+					break;
+					default:
+						assert(false);
+						return;
+					}
+
+					std::string sfile = file.toStdString();
+					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, states) == false)
+					{
+						QMessageBox::critical(this, "Export Data", "Export Failed!");
+					}
 				}
 			}
 		}
@@ -1181,11 +1300,11 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 
 	int nstates = fem->GetStates();
 
-	Post::FEDataField* p = *dm.DataField(n);
+	Post::ModelDataField* p = *dm.DataField(n);
 
-	if ((dynamic_cast<Post::FECurvatureField*>(p)))
+	if ((dynamic_cast<Post::CurvatureField*>(p)))
 	{
-		Post::FECurvatureField* pf = dynamic_cast<Post::FECurvatureField*>(p);
+		Post::CurvatureField* pf = dynamic_cast<Post::CurvatureField*>(p);
 		ui->m_prop->setPropertyList(new CCurvatureProps(pf));
 	}
 	else if (dynamic_cast<Post::FEMathDataField*>(p))
@@ -1198,9 +1317,9 @@ void CPostDataPanel::on_dataList_clicked(const QModelIndex& index)
 		Post::FEMathVec3DataField* pm = dynamic_cast<Post::FEMathVec3DataField*>(p);
 		ui->m_prop->setPropertyList(new CMathDataVec3Props(pm));
 	}
-	else if (dynamic_cast<Post::FEStrainDataField*>(p))
+	else if (dynamic_cast<Post::StrainDataField*>(p))
 	{
-		Post::FEStrainDataField* ps = dynamic_cast<Post::FEStrainDataField*>(p);
+		Post::StrainDataField* ps = dynamic_cast<Post::StrainDataField*>(p);
 		ui->m_prop->setPropertyList(new CStrainProps(ps, nstates));
 	}
 	else if (dynamic_cast<Post::FEDistanceMap*>(p))
@@ -1228,7 +1347,7 @@ void CPostDataPanel::on_fieldName_editingFinished()
 		ui->m_activeField->SetName(t.toStdString());
 		Update(true);
 		CPostDocument& doc = *GetActiveDocument();
-//		doc.GetFEModel()->UpdateDependants();
+//		doc.GetFSModel()->UpdateDependants();
 	}
 }
 

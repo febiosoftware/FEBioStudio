@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include "GLHighlighter.h"
 #include "Commands.h"
+#include <FEBioLink/FEBioClass.h>
 //using namespace std;
 
 using std::stringstream;
@@ -54,7 +55,7 @@ public:
 	::CSelectionBox*	m_node[2];
 	QComboBox*			m_list;
 	int					m_type[2];
-	FEMeshBase*			m_mesh[2];
+	FSMeshBase*			m_mesh[2];
 	QComboBox*			m_method;
 
 	GCurveMeshObject*	m_curves;
@@ -128,7 +129,7 @@ CCreateSpringPane::CCreateSpringPane(CCreatePanel* parent) : CCreatePane(parent)
 void CCreateSpringPane::showEvent(QShowEvent* ev)
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-	GModel& geom = doc->GetFEModel()->GetModel();
+	GModel& geom = doc->GetFSModel()->GetModel();
 
 	ui->m_type[0] = ui->m_type[1] = -1;
 	ui->m_mesh[0] = ui->m_mesh[1] = 0;
@@ -171,20 +172,24 @@ void CCreateSpringPane::on_newSet_clicked()
 	if (dlg.exec())
 	{
 		CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-		GModel& geom = doc->GetFEModel()->GetModel();
+		FSModel* fem = doc->GetFSModel();
+		GModel& geom = fem->GetModel();
 
 		QString name = dlg.m_name;
 		int ntype = dlg.m_type;
 
 		// allocate discrete material
-		FEDiscreteMaterial* dmat = nullptr;
+		FSDiscreteMaterial* dmat = nullptr;
 		switch (ntype)
 		{
-		case 0: dmat = new FELinearSpringMaterial; break;
-		case 1: dmat = new FENonLinearSpringMaterial; break;
-		case 2: dmat = new FEHillContractileMaterial; break;
-		default:
-			assert(false);
+		case 0: dmat = FEBio::CreateDiscreteMaterial("linear spring", fem); break;
+		case 1: dmat = FEBio::CreateDiscreteMaterial("nonlinear spring", fem); break;
+		case 2: dmat = FEBio::CreateDiscreteMaterial("Hill", fem); break;
+		}
+
+		if (dmat == nullptr)
+		{
+			QMessageBox::critical(this, "Create Springs", "Failed to create discrete material.");
 			return;
 		}
 
@@ -222,7 +227,7 @@ bool CCreateSpringPane::updateTempObject()
 	ui->m_curves->ClearMesh();
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-	GModel& geom = doc->GetFEModel()->GetModel();
+	GModel& geom = doc->GetFSModel()->GetModel();
 
 	if (ui->m_list->count() == 0) return true;
 
@@ -238,7 +243,7 @@ bool CCreateSpringPane::updateTempObject()
 		GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[0]->GetGObject());
 		if (po == 0) return false;
 
-		FEMesh* m = po->GetFEMesh();
+		FSMesh* m = po->GetFEMesh();
 		if (m == 0) return false;
 
 		for (int i = 0; i<(int)fenodes.size(); ++i)
@@ -269,7 +274,7 @@ bool CCreateSpringPane::updateTempObject()
 		GMeshObject* po = dynamic_cast<GMeshObject*>(ui->m_mesh[1]->GetGObject());
 		if (po == 0) return false;
 
-		FEMesh* m = po->GetFEMesh();
+		FSMesh* m = po->GetFEMesh();
 		if (m == 0) return false;
 
 		for (int i = 0; i<(int)fenodes.size(); ++i)
@@ -364,7 +369,7 @@ bool CCreateSpringPane::getNodeSelection(vector<int>& nodeList, int n)
 		if (ui->m_type[n] == -1) ui->m_type[n] = SELECT_FE_NODES;
 		if (ui->m_type[n] != SELECT_FE_NODES) return false;
 
-		FEMeshBase* pm = dynamic_cast<FEMeshBase*>(sel->GetMesh());
+		FSMeshBase* pm = dynamic_cast<FSMeshBase*>(sel->GetMesh());
 
 		if (ui->m_mesh[n] == 0) ui->m_mesh[n] = pm;
 		if (ui->m_mesh[n] != sel->GetMesh()) return false;
@@ -376,7 +381,7 @@ bool CCreateSpringPane::getNodeSelection(vector<int>& nodeList, int n)
 		int N = sel->Size();
 		for (int i=0; i<N; ++i, ++it)
 		{
-			FENode* node = it;
+			FSNode* node = it;
 			nodeList.push_back(node->m_ntag);
 		}
 
@@ -492,7 +497,7 @@ void CCreateSpringPane::on_node2_selButtonClicked()
 FSObject* CCreateSpringPane::Create()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
-	GModel& geom = doc->GetFEModel()->GetModel();
+	GModel& geom = doc->GetFSModel()->GetModel();
 
 	if (ui->m_list->count() == 0)
 	{

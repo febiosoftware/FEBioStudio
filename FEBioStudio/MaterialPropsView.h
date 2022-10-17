@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -67,25 +67,4 @@ private slots:
 
 private:
 	CMaterialPropsModel*	m_model;
-};
-
-
-//-----------------------------------------------------------------------------
-class CEditVariableParam : public QComboBox
-{
-	Q_OBJECT
-
-public:
-	CEditVariableParam(QWidget* parent = nullptr);
-
-	void setParam(Param* p);
-
-public slots:
-	void onCurrentIndexChanged(int index);
-
-signals:
-	void typeChanged();
-
-private:
-	Param*	m_param;
 };

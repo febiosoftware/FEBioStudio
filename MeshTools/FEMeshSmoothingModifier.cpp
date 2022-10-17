@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,8 +28,10 @@ SOFTWARE.*/
 #include "FEMeshSmoothingModifier.h"
 #include <MeshLib/FENodeFaceList.h>
 #include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/MeshTools.h>
 #include "FEFillHole.h"
 #include <algorithm>
+using namespace std;
 
 //-----------------------------------------------------------------------------
 //! Constructor
@@ -47,13 +49,13 @@ FEMeshSmoothingModifier::FEMeshSmoothingModifier() : FEModifier("Mesh Smoothing"
 //! Create the decimate mesh. 
 //! \todo This implementation will only work with closed surfaces. 
 
-FEMesh* FEMeshSmoothingModifier::Apply(FEMesh* pm)
+FSMesh* FEMeshSmoothingModifier::Apply(FSMesh* pm)
 {
 	// make sure this is a triangle mesh
 	if (pm->IsType(FE_TRI3) == false) return 0;
 
 	// make a copy of this mesh
-	FEMesh* pnew = new FEMesh(*pm);
+	FSMesh* pnew = new FSMesh(*pm);
 
 	//marking the edge nodes.
 	vector<int> hashmap; 
@@ -62,7 +64,7 @@ FEMesh* FEMeshSmoothingModifier::Apply(FEMesh* pm)
 		hashmap.push_back(0);	
 	for (int i =0;i<pm->Edges();++i)
 	{
-		FEEdge& ed = pm->Edge(i);
+		FSEdge& ed = pm->Edge(i);
 		hashmap[ed.n[0]] = -1;
 		hashmap[ed.n[1]] = -1;
 	}
@@ -91,10 +93,10 @@ FEMesh* FEMeshSmoothingModifier::Apply(FEMesh* pm)
 	return pnew;
 }
 
-void FEMeshSmoothingModifier::Laplacian_Smoothing(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Laplacian_Smoothing(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
-	FENodeNodeList NNL(pnew);
+	FSNodeNodeList NNL(pnew);
 
 	for(int j =0 ;j<m_iteration;j++)
 	{
@@ -102,7 +104,7 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing(FEMesh* pnew,vector<int> hashm
 		{
 			if(hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d r_new; 
 				for (int k = 0; k<NNL.Valence(i);k++)
 				{
@@ -117,10 +119,10 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing(FEMesh* pnew,vector<int> hashm
 	}
 }
 
-void FEMeshSmoothingModifier::Laplacian_Smoothing2(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Laplacian_Smoothing2(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
-	FENodeNodeList NNL(pnew);
+	FSNodeNodeList NNL(pnew);
 
 	for(int j =0 ;j<m_iteration;j++)
 	{
@@ -128,13 +130,13 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing2(FEMesh* pnew,vector<int> hash
 		{
 			if(hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d r_new; 
 				double sum_dist=0;
 				for (int k = 0; k<NNL.Valence(i);k++)
 				{
 					vec3d x = pnew->Node(NNL.Node(i, k)).r;
-					double dist = distance(x,ni.r);
+					double dist = (x - ni.r).Length();
 					r_new = r_new + (x * dist);
 					sum_dist += dist;
 				}
@@ -146,10 +148,10 @@ void FEMeshSmoothingModifier::Laplacian_Smoothing2(FEMesh* pnew,vector<int> hash
 	}
 }
 
-void FEMeshSmoothingModifier::Taubin_Smoothing(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Taubin_Smoothing(FSMesh* pnew,vector<int> hashmap)
 {
 	//Creating a node node list
-	FENodeNodeList NNL(pnew);
+	FSNodeNodeList NNL(pnew);
 	
 	vector<vec3d>phi_node;
 	phi_node.reserve(pnew->Nodes());
@@ -157,7 +159,7 @@ void FEMeshSmoothingModifier::Taubin_Smoothing(FEMesh* pnew,vector<int> hashmap)
 	{		
 		for(int i = 0; i < pnew->Nodes() ; i++)
 		{
-			FENode& ni = pnew->Node(i);
+			FSNode& ni = pnew->Node(i);
 			vec3d r_sum;
 			for (int k = 0; k<NNL.Valence(i);k++)
 			{
@@ -172,7 +174,7 @@ void FEMeshSmoothingModifier::Taubin_Smoothing(FEMesh* pnew,vector<int> hashmap)
 		{
 			if(hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d phi_old = phi_node[i];
 
 				vec3d r_sq_sum,phi_sq_old; 
@@ -191,14 +193,14 @@ void FEMeshSmoothingModifier::Taubin_Smoothing(FEMesh* pnew,vector<int> hashmap)
 	}
 }
 
-void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int> hashmap)
+void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FSMesh* pnew,vector<int> hashmap)
 {
 	//creating Node Element list
-	FENodeFaceList NFL;
+	FSNodeFaceList NFL;
 	NFL.Build(pnew);
 
 	//calculating m(R) for each face i.e for each triangle	
-	vector<FEFace*> mR ;
+	vector<FSFace*> mR ;
 	vector<vec3d>m_R;
 	vector<vec3d>m_R_new;	
 	mR.reserve(pnew->Faces());
@@ -208,15 +210,15 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 	//for first iteration m_R are normals
 	for(int i =0; i< pnew->Faces();i++)
 	{
-		FEFace& fa = pnew->Face(i);
-		m_R.push_back(fa.m_fn);
+		FSFace& fa = pnew->Face(i);
+		m_R.push_back(to_vec3d(fa.m_fn));
 	}
 	for (int iter = 0 ; iter< m_iteration;iter++)
 	{				
 		//for each face calculate m_R
 		for(int i =0;i<pnew->Faces();i++)
 		{
-			FEFace& fa = pnew->Face(i);				
+			FSFace& fa = pnew->Face(i);				
 			vec3d centroid_R = (pnew->Node(fa.n[0]).r + pnew->Node(fa.n[1]).r + pnew->Node(fa.n[2]).r )/3;
 			//finding the neighbouring faces
 			for(int j =0 ;j<3 ;j++)
@@ -224,7 +226,7 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 				int nodeID = fa.n[j];
 				for (int k = 0; k<NFL.Valence(nodeID);k++)
 				{
-					FEFace *fa1 = NFL.Face(nodeID,k);
+					FSFace *fa1 = NFL.Face(nodeID,k);
 					if(fa1->m_ntag != 1 && fa1->m_elem[0].eid != i)
 					{
 						fa1->m_ntag = 1;
@@ -237,13 +239,13 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 			m_R_new.push_back(vec3d(0,0,0));
 			for(int k =0;k<mR.size();k++)
 			{
-				FEFace *fa1 = mR[k];
+				FSFace *fa1 = mR[k];
 				vec3d r[3]; //three nodes of the face
 				r[0] = pnew->Node(fa1->n[0]).r;
 				r[1] = pnew->Node(fa1->n[1]).r;
 				r[2] = pnew->Node(fa1->n[2]).r;
 				vec3d centroid_S = (r[0]+r[1]+r[2])/3;
-				double dist = distance(centroid_S,centroid_R);
+				double dist = (centroid_S - centroid_R).Length();
 				double angle = acos((fa.m_fn * fa1->m_fn)/(fa.m_fn.Length() * fa1->m_fn.Length()));//angle between the normals
 				double weight1 = area_triangle(r) * exp(-m_threshold1 * angle*angle*dist*dist);
 				weight += weight1;
@@ -264,12 +266,12 @@ void FEMeshSmoothingModifier::Crease_Enhancing_Diffusion(FEMesh* pnew,vector<int
 		{
 			if(hashmap[i] == 0) //not the edge node
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				vec3d vR; 
 				double weight=0;
 				for (int k = 0; k<NFL.Valence(i);k++)
 				{
-					FEFace *fa1 = NFL.Face(i,k);
+					FSFace *fa1 = NFL.Face(i,k);
 					vec3d r[3]; //three nodes of the face
 					r[0] = pnew->Node(fa1->n[0]).r;
 					r[1] = pnew->Node(fa1->n[1]).r;
@@ -293,7 +295,7 @@ double frand(double dmin = 0.0, double dmax = 1.0)
 	return (dmin + f*(dmax - dmin));
 }
 
-void FEMeshSmoothingModifier::Add_Noise(FEMesh* pnew, vector<int> hashmap)
+void FEMeshSmoothingModifier::Add_Noise(FSMesh* pnew, vector<int> hashmap)
 {
 	for (int j = 0; j<m_iteration; j++)
 	{
@@ -301,7 +303,7 @@ void FEMeshSmoothingModifier::Add_Noise(FEMesh* pnew, vector<int> hashmap)
 		{
 			if (hashmap[i] == 0)
 			{
-				FENode& ni = pnew->Node(i);
+				FSNode& ni = pnew->Node(i);
 				int temp = 1;
 				ni.r.x += frand(-m_noise, m_noise);
 				ni.r.y += frand(-m_noise, m_noise);

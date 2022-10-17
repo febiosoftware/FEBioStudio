@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -41,11 +41,11 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // base class for mesh item classes.
 //
-class FEItem
+class MeshItem
 {
 public:
-	FEItem() { m_state = 0; m_nid = -1; m_gid = 0; m_ntag = 0; }
-	virtual ~FEItem() {}
+	MeshItem() { m_state = 0; m_nid = -1; m_gid = 0; m_ntag = 0; }
+	virtual ~MeshItem() {}
 
 	bool IsHidden() const { return ((m_state & FE_HIDDEN) != 0); }
 	bool IsSelected() const { return ((m_state & FE_SELECTED) != 0); }

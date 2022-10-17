@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,7 +38,7 @@ SOFTWARE.*/
 
 #include <QPainter>
 #include <PostLib/ColorMap.h>
-#include <MathLib/math3d.h>
+#include <FECore/quatd.h>
 
 class CGLView;
 class CGLWidgetManager;
@@ -54,7 +54,8 @@ class CGLWidgetManager;
 class GLWidget
 {
 public:
-	enum FillMode { NONE, COLOR1, COLOR2, HORIZONTAL, VERTICAL };
+	enum FillMode { FILL_NONE, FILL_COLOR1, FILL_COLOR2, FILL_HORIZONTAL, FILL_VERTICAL };
+	enum LineMode { LINE_NONE, LINE_SOLID };
 
 public:
 	GLWidget(int x, int y, int w, int h, const char* szlabel = 0);
@@ -64,15 +65,23 @@ public:
 
 	void set_color(GLColor fgc, GLColor bgc);
 
-	void set_fg_color(GLColor c) { m_fgc = c; }
+	void set_fg_color(GLColor c, bool setoverrideflag = true) { m_fgc = c; if (setoverrideflag) m_boverridefgc = true; }
 	void set_fg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_fgc = GLColor(r,g,b,a); }
 	GLColor get_fg_color() { return m_fgc; }
+	bool isfgc_overridden() const { return m_boverridefgc; }
 
-	void set_bg_style(int n) { m_nbg = n; }
-	void set_bg_color(GLColor c1, GLColor c2) { m_bgc[0] = c1; m_bgc[1] = c2; }
-	void set_bg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_bgc[0] = GLColor(r,g,b,a); }
-	GLColor get_bg_color(int i) { return m_bgc[i]; }
-	int get_bg_style() { return m_nbg; }
+	void set_bg_style(int n) { m_bgFillMode = n; }
+	void set_bg_color(GLColor c1, GLColor c2) { m_bgFillColor[0] = c1; m_bgFillColor[1] = c2; }
+	void set_bg_color(GLubyte r, GLubyte g, GLubyte b, GLubyte a = 255) { m_bgFillColor[0] = GLColor(r,g,b,a); }
+	GLColor get_bg_color(int i) { return m_bgFillColor[i]; }
+	int get_bg_style() { return m_bgFillMode; }
+
+	void set_bg_line_style(int n) { m_bgLineMode = n; }
+	void set_bg_line_color(GLColor c) { m_bgLineColor = c; }
+	int get_bg_line_style() const { return m_bgLineMode; }
+	GLColor get_bg_line_color() const { return m_bgLineColor; }
+	void set_bg_line_size(int n) { m_bgLineSize = n; }
+	int get_bg_line_size() const { return m_bgLineSize; }
 
 	void copy_label(const char* szlabel);
 	void set_label(const char* szlabel);
@@ -123,6 +132,8 @@ public:
 
 public:
 	static void set_base_color(GLColor c) { m_base = c; }
+	static void set_default_font(const QFont& font) { m_defaultFont = font; }
+	static const QFont& get_default_font() { return m_defaultFont; }
 
 public:
 	static void clearStringTable();
@@ -135,6 +146,8 @@ protected:
 	int m_w, m_h;
 	int	m_minw, m_minh;
 	bool	m_balloc;
+
+	bool	m_boverridefgc;	// flag to see if fg color was overridden.
 	
 	char*			m_szlabel;
 
@@ -145,12 +158,16 @@ protected:
 	unsigned int m_layer;
 
 	GLColor	m_fgc;
-	GLColor m_bgc[2];
-	int		m_nbg;	// background style
+	GLColor m_bgFillColor[2], m_bgLineColor;
+	int		m_bgFillMode;	// background fille style
+	int		m_bgLineMode;	// background line style
+	int		m_bgLineSize;
 
 	static GLWidget* m_pfocus;	// the widget that has the focus
 
 	static	GLColor	m_base;	// base color
+
+	static QFont	m_defaultFont;
 
 	bool	m_bshow;	// show the widget or not
 
@@ -163,6 +180,13 @@ protected:
 
 class GLBox : public GLWidget
 {
+public:
+	enum AlignOption {
+		LeftJustified,
+		Centered,
+		RightJustified
+	};
+
 public:
 	GLBox(int x, int y, int w, int h, const char* szlabel = 0);
 
@@ -177,6 +201,7 @@ public:
 	bool	m_bshadow;	// render shadows
 	GLColor	m_shc;		// shadow color
 	int		m_margin;
+	int		m_align;
 };
 
 //-----------------------------------------------------------------------------
@@ -185,10 +210,10 @@ class GLLegendBar : public GLWidget
 {
 public:
 	enum { GRADIENT, DISCRETE };
-	enum { HORIZONTAL, VERTICAL };
+	enum { ORIENT_HORIZONTAL, ORIENT_VERTICAL };
 
 public:
-	GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, int orientation = VERTICAL);
+	GLLegendBar(Post::CColorTexture* pm, int x, int y, int w, int h, int orientation = ORIENT_VERTICAL);
 
 	void draw(QPainter* painter);
 
@@ -215,11 +240,16 @@ public:
 	int GetDivisions();
 	void SetDivisions(int n);
 
+	float LineThickness() const { return m_lineWidth; }
+	void SetLineThickness(float f) { m_lineWidth = f; }
+
 protected:
 	void draw_gradient_vert(QPainter* painter);
 	void draw_gradient_horz(QPainter* painter);
 	void draw_discrete_vert(QPainter* painter);
 	void draw_discrete_horz(QPainter* painter);
+
+	void draw_bg(int x0, int y0, int x1, int y1, QPainter* painter);
 
 protected:
 	int		m_ntype;	// type of bar
@@ -230,6 +260,7 @@ protected:
 	int		m_nprec;	// precision
 	float	m_fmin;		// min of range
 	float	m_fmax;		// max of range
+	float	m_lineWidth;	// line width
 
 	Post::CColorTexture*		m_pMap;
 };

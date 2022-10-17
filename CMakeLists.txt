@@ -45,19 +45,22 @@ if(Qt_Ver VERSION_EQUAL 6)
             find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
                 PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
                 PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
-                DOC "Qt CMake Directory")
+                DOC "Qt CMake Directory"
+                NO_DEFAULT_PATH)
         elseif(APPLE)
             find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
                 PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                     $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
                 PATH_SUFFIXES "clang_64"
-                DOC "${Qt_Version} CMake Directory")
+                DOC "${Qt_Version} CMake Directory"
+                NO_DEFAULT_PATH)
         else()
             find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
                 PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                     $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
                 PATH_SUFFIXES "gcc_64"
-                DOC "Qt CMake Directory")
+                DOC "Qt CMake Directory"
+                NO_DEFAULT_PATH)
         endif()
         
         if(Qt_TEMP)
@@ -166,15 +169,29 @@ if(USE_MMG)
         list(APPEND MMG_LIBS ${MMG_LIB})
         unset(MMG_LIB)
     endforeach(name)
+    
+    if(MMG_DBG_LIB_DIR STREQUAL "")
+        unset(MMG_DBG_LIBS)
+    else()
+        foreach(name IN LISTS MMG_LIB_NAMES)
+            findLib(MMG_DBG_LIB_DIR MMG_LIB ${name})
+            list(APPEND MMG_DBG_LIBS ${MMG_LIB})
+            unset(MMG_LIB)
+        endforeach(name)    
+    endif()
 endif()
 
 if(USE_TETGEN)
     findLib(TETGEN_LIB_DIR TETGEN_LIB tet tetgen)
+    
+    if(TETGEN_DBG_LIB_DIR STREQUAL "")
+        unset(TETGEN_DBG_LIB)
+    else()
+        findLib(TETGEN_DBG_LIB_DIR TETGEN_DBG_LIB tet tetgen)
+    endif()
 endif()
 
 if(CAD_FEATURES)
-    set(NETGEN_LIBS "")
-    
     set(NETGEN_LIB_NAMES nglib csg interface occ)
     
     # This NetGen library is called "meshing" on Windows and "mesh" elsewhere.
@@ -190,10 +207,16 @@ if(CAD_FEATURES)
         unset(NETGEN_LIB)
     endforeach(name)
     
-    unset(NETGEN_LIB_NAMES)
+    if(NETGEN_DBG_LIB_DIR STREQUAL "")
+        unset(NETGEN_DBG_LIBS)
+    else()
+        foreach(name IN LISTS NETGEN_LIB_NAMES)
+            findLib(NETGEN_DBG_LIB_DIR NETGEN_LIB ${name})
+            list(APPEND NETGEN_DBG_LIBS ${NETGEN_LIB})
+            unset(NETGEN_LIB)
+        endforeach(name)    
+    endif()
 
-    set(OCCT_LIBS "")
-    
     set(OCCT_LIB_NAMES TKernel TKGeomBase TKTopAlgo TKPrim TKMesh TKMath TKBRep TKSTL TKFillet TKBO TKIGES TKSTEP TKSTEPBase TKXSBase TKG3d TKLCAF TKVCAF)
     foreach(name IN LISTS OCCT_LIB_NAMES)
         findLib(OCCT_LIB_DIR OCCT_LIB ${name})
@@ -201,13 +224,26 @@ if(CAD_FEATURES)
         unset(OCCT_LIB)
     endforeach(name)
     
-    unset(OCCT_LIB_NAMES)
+    if(OCCT_DBG_LIB_DIR STREQUAL "")
+        unset(OCCT_DBG_LIBS)
+    else()
+        foreach(name IN LISTS OCCT_LIB_NAMES)
+            findLib(OCCT_DBG_LIB_DIR OCCT_LIB ${name})
+            list(APPEND OCCT_DBG_LIBS ${OCCT_LIB})
+            unset(OCCT_LIB)
+        endforeach(name)    
+    endif()
+    
 endif()
 
 if(USE_SSH)
     findLib(SSH_LIB_DIR SSH_LIB ssh)
     
-    set(SSL_LIBS "")
+    if(SSH_DBG_LIB_DIR STREQUAL "")
+        unset(SSH_DBG_LIB)
+    else()
+        findLib(SSH_DBG_LIB_DIR SSH_DBG_LIB ssh)
+    endif()
     
     findLib(SSL_LIB_DIR CRYPTO_LIB crypto libcrypto)
     list(APPEND SSL_LIBS ${CRYPTO_LIB})
@@ -216,17 +252,39 @@ if(USE_SSH)
     findLib(SSL_LIB_DIR SSL_LIB ssl libssl)
     list(APPEND SSL_LIBS ${SSL_LIB})
     unset(SSL_LIB)
+    
+    if(SSL_DBG_LIB_DIR STREQUAL "")
+        unset(SSL_DBG_LIBS)
+    else()
+        findLib(SSL_DBG_LIB_DIR CRYPTO_LIB crypto libcrypto)
+        list(APPEND SSL_DBG_LIBS ${CRYPTO_LIB})
+        unset(CRYPTO_LIB)
+        
+        findLib(SSL_DBG_LIB_DIR SSL_LIB ssl libssl)
+        list(APPEND SSL_DBG_LIBS ${SSL_LIB})
+        unset(SSL_LIB)  
+    endif()
 endif()
 
 if(MODEL_REPO)
     findLib(QUAZIP_LIB_DIR QUAZIP_LIB ${QUAZIP_NAMES})
+    
+    if(QUAZIP_DBG_LIB_DIR STREQUAL "")
+        unset(QUAZIP_DBG_LIB)
+    else()
+        findLib(QUAZIP_DBG_LIB_DIR QUAZIP_DBG_LIB ${QUAZIP_NAMES})
+    endif()
 	
     findLib(SQLITE_LIB_DIR SQLITE_LIB sqlite3)
+    
+    if(SQLITE_DBG_LIB_DIR STREQUAL "")
+        unset(SQLITE_DBG_LIB)
+    else()
+        findLib(SQLITE_DBG_LIB_DIR SQLITE_DBG_LIB sqlite3)
+    endif()
 endif()
 
 if(USE_FFMPEG)
-    set(FFMPEG_LIBS "")
-    
     if(WIN32)
         set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     else()
@@ -239,13 +297,67 @@ if(USE_FFMPEG)
         unset(FFMPEG_LIB)
     endforeach(name)
     
-    unset(FFMPEG_LIB_NAMES)
+    if(FFMPEG_DBG_LIB_DIR STREQUAL "")
+        unset(FFMPEG_DBG_LIBS)
+    else()
+        foreach(name IN LISTS FFMPEG_LIB_NAMES)
+            findLib(FFMPEG_DBG_LIB_DIR FFMPEG_LIB ${name})
+            list(APPEND FFMPEG_DBG_LIBS ${FFMPEG_LIB})
+            unset(FFMPEG_LIB)
+        endforeach(name)    
+    endif()
+    
+endif()
+
+# Find FEBio Libs
+if (WIN32)
+    set(FEBio_DEBUG_LIBS "")
+    set(FEBio_RELEASE_LIBS "")
+
+    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
+
+    set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
+    set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
+
+    foreach(name IN LISTS FEBio_LIB_NAMES)
+        findLib(FEBio_DEBUG_DIR FEBio_LIB ${name})
+        list(APPEND FEBio_DEBUG_LIBS ${FEBio_LIB})
+        unset(FEBio_LIB)
+    endforeach(name)
+
+    foreach(name IN LISTS FEBio_LIB_NAMES)
+        findLib(FEBio_RELEASE_DIR FEBio_LIB ${name})
+        list(APPEND FEBio_RELEASE_LIBS ${FEBio_LIB})
+        unset(FEBio_LIB)
+    endforeach(name)
+
+    unset(FEBio_LIB_NAMES)
+else()
+    set(FEBio_LIBS "")
+
+    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
+
+    foreach(name IN LISTS FEBio_LIB_NAMES)
+        findLib(FEBio_LIB_DIR FEBio_LIB ${name})
+        list(APPEND FEBio_LIBS ${FEBio_LIB})
+        unset(FEBio_LIB)
+    endforeach(name)
+
+    unset(FEBio_LIB_NAMES)
+endif()
+
+##### Stupid OMP stuff for stupid macOS #####
+
+if(UNIX)
+    option(USE_MKL_OMP "Link to MKL OMP instead of System OMP" OFF)
+    set(MKL_OMP "" CACHE PATH "Path to the MKL OMP library")
+    mark_as_advanced(USE_MKL_OMP MKL_OMP)
 endif()
 
 ##### Set appropriate defines and includes #####
 
 if(WIN32)
-    add_definitions(-DWIN32)
+    add_definitions(-DWIN32 -D_CRT_SECURE_NO_WARNINGS)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
@@ -319,6 +431,12 @@ if(USE_FFMPEG)
 	include_directories(${FFMPEG_INC})
 endif()
 
+if(APPLE)
+    include_directories(${GLEW_INCLUDE_DIR})
+else()
+    include_directories(${GLEW_INCLUDE_DIRS})
+endif()
+
 if(USE_PYTHON)
     include_directories(${PYBIND11_INC})
 endif()
@@ -330,6 +448,14 @@ endif()
 
 include_directories(${ZLIB_INCLUDE_DIR})
 
+if(USE_ITK)
+    add_definitions(-DHAS_ITK)
+    #~ include(${ITK_USE_FILE})
+    include_directories(${SimpleITK_INCLUDE_DIRS})
+endif()
+
+include_directories(${FEBio_INC})
+
 ##### Find Source Files #####
 
 macro(findHdrSrc name)
@@ -339,7 +465,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MathLib MeshIO MeshLib MeshTools Nike3D PostGL PostLib XML XPLTLib PyLib)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
@@ -354,8 +480,11 @@ if(Qt_Ver VERSION_EQUAL 6)
   link_libraries(Qt6::Core5Compat Qt6::OpenGLWidgets)
 endif()
 
-if(${Qt_Version}WebEngineWidgets_FOUND)
-	link_libraries(${Qt_Version}::WebEngineWidgets)
+# set the name of the executable
+if (WIN32)
+    set(FBS_BIN_NAME FEBioStudio2)
+else()
+    set(FBS_BIN_NAME FEBioStudio)
 endif()
 
 if(USE_PYTHON)
@@ -364,19 +493,22 @@ if(USE_PYTHON)
 endif()
 
 if(WIN32)
-	add_executable(FEBioStudio WIN32 ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
-	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	add_executable(${FBS_BIN_NAME} WIN32 ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+    include(set_icon.cmake)
+    set_icon(${FBS_BIN_NAME} icons/febiostudio.ico)
+
 elseif(APPLE)
 	# set bundle icon
 	set(FBS_ICON ${CMAKE_CURRENT_SOURCE_DIR}/icons/FEBioStudio.icns)
 	set(MACOSX_BUNDLE_ICON_FILE FEBioStudio.icns)
 	set_source_files_properties(${FBS_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 	
-	add_executable(FEBioStudio MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
-	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	add_executable(${FBS_BIN_NAME} MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
 else()
-	add_executable(FEBioStudio ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
-	set_property(TARGET FEBioStudio PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+	add_executable(${FBS_BIN_NAME} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
+	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
 endif()
 
 macro(addLib name)
@@ -423,21 +555,23 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
         crossExecProcess(BRANCH_NAME)
 
         string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
+        string(COMPARE EQUAL ${BRANCH_NAME} "febiostudio2"  ISFEBIO4)
         
         # Get the commit info and set the DEVCOMMIT macro
-        if(SUCCESS EQUAL 0 AND ISDEVELOP)
+        if(SUCCESS EQUAL 0 AND (ISDEVELOP OR ISFEBIO4))
             
             set(CMD git rev-parse --short=9 HEAD)
             crossExecProcess(DEVCOMMIT)
             
             if(${SUCCESS} EQUAL 0)
-                target_compile_definitions(FEBioStudio PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
+                target_compile_definitions(${FBS_BIN_NAME} PUBLIC "DEVCOMMIT=\"${DEVCOMMIT}\"")
             endif()
         endif()
     else()
         message(WARNING "Could not find git in system PATH. Development version info will not be addded.")
     endif()
 endif()
+
 
 ##### Link Libraries #####
 
@@ -446,61 +580,144 @@ elseif(APPLE)
 else()
     set_property(TARGET MeshTools PROPERTY CXX_STANDARD 17)
     
-    target_link_libraries(FEBioStudio -static-libstdc++ -static-libgcc)
+    target_link_libraries(${FBS_BIN_NAME} -static-libstdc++ -static-libgcc)
     
-	target_link_libraries(FEBioStudio -Wl,--start-group)
+	target_link_libraries(${FBS_BIN_NAME} -Wl,--start-group)
 endif()
 
 if(USE_TEEM)
-  target_link_libraries(FEBioStudio ${TEEM_LIB})
-  target_link_libraries(FEBioStudio ${LIBTIFF_LIB})
+  target_link_libraries(${FBS_BIN_NAME} ${TEEM_LIB})
+  target_link_libraries(${FBS_BIN_NAME} ${LIBTIFF_LIB})
 endif()
 
 if(USE_DICOM)
-  target_link_libraries(FEBioStudio ${DICOM_LIBS})
+  target_link_libraries(${FBS_BIN_NAME} ${DICOM_LIBS})
 endif()
 
-if(NOT WIN32)
-    if(${OpenMP_C_FOUND})
-        target_link_libraries(FEBioStudio ${OpenMP_C_LIBRARIES})
+if(UNIX)
+    if(${USE_MKL_OMP})
+        target_link_libraries(${FBS_BIN_NAME} ${MKL_OMP})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} ${OpenMP_C_LIBRARIES})
     endif()
 endif()
 
 if(USE_MMG)
-	target_link_libraries(FEBioStudio ${MMG_LIBS})
+	target_link_libraries(${FBS_BIN_NAME} optimized ${MMG_LIBS})
+    
+    if(DEFINED MMG_DBG_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} debug ${MMG_DBG_LIBS})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${MMG_LIBS})
+    endif()
 endif()
 
 if(USE_TETGEN)
-	target_link_libraries(FEBioStudio ${TETGEN_LIB})
+	target_link_libraries(${FBS_BIN_NAME} optimized ${TETGEN_LIB})
+    
+    if(DEFINED TETGEN_DBG_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} debug ${TETGEN_DBG_LIB})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${TETGEN_LIB})
+    endif()
 endif()
 
 if(CAD_FEATURES)
-	target_link_libraries(FEBioStudio ${NETGEN_LIBS})
+	target_link_libraries(${FBS_BIN_NAME} optimized ${NETGEN_LIBS})
+    
+    if(DEFINED NETGEN_DBG_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} debug ${NETGEN_DBG_LIBS})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${NETGEN_LIBS})
+    endif()
 
-    target_link_libraries(FEBioStudio ${OCCT_LIBS})
+    target_link_libraries(${FBS_BIN_NAME} optimized ${OCCT_LIBS})
+    
+    if(DEFINED OCCT_DBG_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} debug ${OCCT_DBG_LIBS})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${OCCT_LIBS})
+    endif()
 endif()
 
 if(USE_SSH)
-	target_link_libraries(FEBioStudio ${SSH_LIB})
-    target_link_libraries(FEBioStudio ${SSL_LIBS})
+	target_link_libraries(${FBS_BIN_NAME} optimized ${SSH_LIB})
+    
+    if(DEFINED SSH_DBG_LIB)
+        target_link_libraries(${FBS_BIN_NAME} debug ${SSH_DBG_LIB})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${SSH_LIB})
+    endif()
+    
+    target_link_libraries(${FBS_BIN_NAME} optimized ${SSL_LIBS})
+    
+    if(DEFINED SSL_DBG_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} debug ${SSL_DBG_LIBS})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${SSL_LIBS})
+    endif()
 endif()
 
 if(MODEL_REPO)
-	target_link_libraries(FEBioStudio ${QUAZIP_LIB})
-    target_link_libraries(FEBioStudio ${SQLITE_LIB})
+	target_link_libraries(${FBS_BIN_NAME} optimized ${QUAZIP_LIB})
+    
+    if(DEFINED QUAZIP_DBG_LIB)
+        target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_DBG_LIB})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_LIB})
+    endif()
+    
+    target_link_libraries(${FBS_BIN_NAME} optimized ${SQLITE_LIB})
+    
+    if(DEFINED SQLITE_DBG_LIB)
+        target_link_libraries(${FBS_BIN_NAME} debug ${SQLITE_DBG_LIB})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${SQLITE_LIB})
+    endif()
 endif()
 
 if(USE_FFMPEG)
-    target_link_libraries(FEBioStudio ${FFMPEG_LIBS})
+    target_link_libraries(${FBS_BIN_NAME} optimized ${FFMPEG_LIBS})
+    
+    if(DEFINED FFMPEG_DBG_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} debug ${FFMPEG_DBG_LIBS})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${FFMPEG_LIBS})
+    endif()
 endif()
 
-target_link_libraries(FEBioStudio ${ZLIB_LIBRARY_RELEASE})
-target_link_libraries(FEBioStudio ${OPENGL_LIBRARY})
-target_link_libraries(FEBioStudio ${FEBIOSTUDIO_LIBS})
+if(USE_ITK)
+    target_link_libraries(${FBS_BIN_NAME} ${SimpleITK_LIBRARIES})
+endif()
+
+target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
+target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
+
+if(APPLE)
+    target_link_libraries(${FBS_BIN_NAME} ${GLEW_SHARED_LIBRARY_RELEASE} ${GLEW_LIBRARIES})
+else()
+    target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES})
+endif()
+
+target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
+
+if (WIN32)
+
+    foreach(name IN LISTS FEBio_RELEASE_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} optimized ${name})
+    endforeach()
+
+    foreach(name IN LISTS FEBio_DEBUG_LIBS)
+        target_link_libraries(${FBS_BIN_NAME} debug ${name})
+    endforeach()
+else()
+    target_link_libraries(${FBS_BIN_NAME} ${FEBio_LIBS})
+endif()
 
 if(WIN32)
-    target_link_libraries(FEBioStudio vfw32.lib)
+    target_link_libraries(${FBS_BIN_NAME} vfw32.lib)
 elseif(APPLE)
 else()
-    target_link_libraries(FEBioStudio -Wl,--end-group)
+    target_link_libraries(${FBS_BIN_NAME} -Wl,--end-group)
 endif()
+

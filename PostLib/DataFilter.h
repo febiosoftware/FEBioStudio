@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,11 +26,11 @@ SOFTWARE.*/
 
 #pragma once
 #include <string>
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
 
 namespace Post {
 
-class FEDataField;
+class ModelDataField;
 
 //-----------------------------------------------------------------------------
 // Forward declaration of FEPostModel class
@@ -59,12 +59,15 @@ bool DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tensorFiel
 
 //-----------------------------------------------------------------------------
 // Extract a component from a data field
-FEDataField* DataComponent(FEPostModel& fem, FEDataField* dataField, int ncomp, const std::string& sname);
+ModelDataField* DataComponent(FEPostModel& fem, ModelDataField* dataField, int ncomp, const std::string& sname);
 
 //-----------------------------------------------------------------------------
 // convert between formats
-FEDataField* DataConvert(FEPostModel& fem, FEDataField* dataField, int newFormat, const std::string& name);
+ModelDataField* DataConvert(FEPostModel& fem, ModelDataField* dataField, int newFormat, const std::string& name);
 
 //-----------------------------------------------------------------------------
-FEDataField* DataEigenTensor(FEPostModel& fem, FEDataField* dataField, const std::string& name);
+ModelDataField* DataEigenTensor(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
+
+//-----------------------------------------------------------------------------
+ModelDataField* DataTimeRate(FEPostModel& fem, ModelDataField* dataField, const std::string& name);
 }

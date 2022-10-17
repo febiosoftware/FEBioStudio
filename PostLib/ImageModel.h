@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,12 +31,18 @@ SOFTWARE.*/
 #include <FSCore/box.h>
 #include <FSCore/FSObjectList.h>
 #include "GLImageRenderer.h"
+#include <ImageLib/ImageFilter.h>
 #include "GLObject.h"
+#include <FEBioStudio/ImageViewSettings.h>
 
-#ifdef HAS_TEEM
-  #include <ImageLib/tif_reader.h>
-  #include <ImageLib/nrrd_reader.h>
-#endif
+// #ifdef HAS_ITK
+// class CImageSITK;
+// typedef ImageToFilter CImageSITK;
+// #else
+// typedef ImageToFilter C3DImage;
+// #endif
+
+enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
 
 class C3DImage;
 
@@ -54,17 +60,14 @@ public:
 	void SetFileName(const std::string& fileName);
 	std::string GetFileName() const;
 
-#ifdef HAS_TEEM
-  bool LoadTiffData(std::wstring& filename);
-  bool LoadNrrdData(std::wstring& filename);
-#endif
-
-#ifdef HAS_DICOM
-  bool LoadDicomData(const std::string &filename);
-#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
+	bool LoadITKData(const std::string &filename, ImageFileType type);
+    bool LoadITKSeries(const std::vector<std::string> &filenames);
 
 	C3DImage* Get3DImage() { return m_img; }
+
+    void ClearFilters();
+    C3DImage* GetImageToFilter(bool allocate = false);
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
@@ -78,21 +81,11 @@ public:
 	void SetImageModel(CImageModel* imgModel);
 
 private:
-#ifdef HAS_TEEM
-    //works for Tiff and Nrrd structs. Returns a nrrd*.
-    template<class Reader>
-	Nrrd* GetNrrd(std::unique_ptr<Reader>& reader, std::wstring &fileName)
-	{
-	  reader->SetFile(fileName);
-      reader->Preprocess();
-      return reader->Convert(0,0,0);
-	}
-#endif
-
     void SetValues(const std::string &fileName, int x, int y, int z);
     void AssignImage(C3DImage* im);
 
 	C3DImage*	m_img;
+    C3DImage*   m_originalImage;
 	CImageModel*	m_imgModel;
     unsigned char* data = nullptr;
 };
@@ -102,21 +95,23 @@ class CImageModel : public CGLObject
 public:
 	CImageModel(CGLModel* mdl);
 	~CImageModel();
-#ifdef HAS_TEEM
-  bool LoadTiffData(std::wstring& filename);
-  bool LoadNrrdData(std::wstring& filename);
-#endif
 
-#ifdef HAS_DICOM
-  bool LoadDicomData(const std::string &filename);
-#endif
 	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
+	bool LoadITKData(const std::string &filename, ImageFileType type);
+    bool LoadITKSeries(const std::vector<std::string> &filenames);
 
 	int ImageRenderers() const { return (int)m_render.Size(); }
 	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
 	size_t RemoveRenderer(CGLImageRenderer* render);
 
 	void AddImageRenderer(CGLImageRenderer* render);
+
+    int ImageFilters() const { return (int)m_filters.Size(); }
+	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
+	size_t RemoveFilter(CImageFilter* filter);
+    void MoveFilter(int fromIndex, int toIndex) { m_filters.Move(fromIndex, toIndex); }
+
+	void AddImageFilter(CImageFilter* imageFilter);
 
 	const BOX& GetBoundingBox() const { return m_box; }
 
@@ -128,6 +123,8 @@ public:
 
 	void Render(CGLContext& rc);
 
+	void ApplyFilters();
+
 	bool UpdateData(bool bsave = true) override;
 
 	void Save(OArchive& ar) override;
@@ -135,11 +132,23 @@ public:
 
 	CImageSource* GetImageSource();
 
+    CImageViewSettings* GetViewSettings() { return &viewSettings; }
+
+    Byte ValueAtGlobalPos(vec3d pos);
+
+	C3DImage* Get3DImage() { return (m_img ? m_img->Get3DImage() : nullptr); }
+
+public:
+	bool ExportRAWImage(const std::string& filename);
+
 private:
 	BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
 	FSObjectList<CGLImageRenderer>	m_render;	//!< image renderers
+	FSObjectList<CImageFilter> m_filters;
 
 	CImageSource*	m_img;
+
+    CImageViewSettings viewSettings;
 };
 }

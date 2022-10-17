@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -42,6 +42,9 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include <string.h>
 #include "DlgEditLConfigs.h"
+#include "DlgExportFEBio.h"
+#include <FEBioLink/FEBioClass.h>
+#include <FECore/fecore_enum.h>
 
 
 class Ui::CDlgRun
@@ -53,11 +56,11 @@ public:
 	QCheckBox*	debug;
 	QCheckBox*	writeNotes;
 	QLineEdit*	configFile;
-	QLineEdit*	taskName;
+	QComboBox*	taskName;
 	QLineEdit*	taskFile;
 	QCheckBox*	autoSave;
 
-	QComboBox*	febioFile;
+	CFEBioFormatSelector* febioFormat;
 	
 	QCheckBox* editCmd;
 	QLineEdit*	cmd;
@@ -101,10 +104,8 @@ public:
 		jobFolder = new QWidget;
 		jobFolder->setLayout(cwdLayout);
 
-		febioFile = new QComboBox;
-		febioFile->addItem("FEBio 2.5 format");
-		febioFile->addItem("FEBio 3.0 format");
-		febioFile->setCurrentIndex(1);
+		febioFormat = new CFEBioFormatSelector;
+		febioFormat->setFEBioFormat(0x0400);
 
 		autoSave = new QCheckBox("Save model before running FEBio");
 		autoSave->setChecked(true);
@@ -117,7 +118,14 @@ public:
 		configLayout->addWidget(configFile);
 		configLayout->addWidget(selectConfigFile);
 
-		taskName = new QLineEdit;
+		taskName = new QComboBox; taskName->setEditable(true);
+		std::vector<FEBio::FEBioClassInfo> ci = FEBio::FindAllClasses(-1, FETASK_ID);
+		for (int i = 0; i < ci.size(); ++i)
+		{
+			taskName->addItem(ci[i].sztype);
+		}
+		taskName->setCurrentIndex(-1);
+
 		taskFile = new QLineEdit;
 
 		QFormLayout* form = new QFormLayout;
@@ -131,7 +139,7 @@ public:
 		settings->setLayout(form);
 
 		QFormLayout* febl = new QFormLayout;
-		febl->addRow("FEBio file format:", febioFile);
+		febl->addRow("FEBio file format:", febioFormat);
 		febl->addRow("", writeNotes = new QCheckBox("Write Notes"));
 
 		febops = new QGroupBox("FEBio export settings:");
@@ -148,7 +156,7 @@ public:
 
 		editCmd = new QCheckBox("override command");
 		cmd = new QLineEdit; cmd->setEnabled(false);
-		cmd->setText("-i $(Filename)");
+		cmd->setText("-i \"$(Filename)\"");
 
 		QVBoxLayout* v = new QVBoxLayout;
 		v->addLayout(ext);
@@ -191,7 +199,7 @@ public:
 		QObject::connect(editCmd, SIGNAL(toggled(bool)), cmd, SLOT(setEnabled(bool)));
 		QObject::connect(selectConfigFile, SIGNAL(clicked()), dlg, SLOT(on_selectConfigFile()));
 		QObject::connect(configFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
-		QObject::connect(taskName, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
+		QObject::connect(taskName, SIGNAL(currentTextChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 		QObject::connect(taskFile, SIGNAL(textChanged(const QString&)), dlg, SLOT(updateDefaultCommand()));
 	}
 };
@@ -246,13 +254,13 @@ void CDlgRun::updateDefaultCommand()
 
 	if (ui->cmd->isEnabled() == false)
 	{
-		QString t("-i $(Filename)");
+		QString t("-i \"$(Filename)\"");
 		if (bg) t += " -g";
 
 		QString configFile = ui->configFile->text();
 		if (configFile.isEmpty() == false) t += " -config $(ConfigFile)";
 
-		QString taskName = ui->taskName->text();
+		QString taskName = ui->taskName->currentText();
 		if (taskName.isEmpty() == false)
 		{
 			t += " -task=\"" + taskName + "\"";
@@ -323,7 +331,7 @@ void CDlgRun::SetLaunchConfig(std::vector<CLaunchConfig>& launchConfigs, int nde
 
 void CDlgRun::SetFEBioFileVersion(int fileVersion)
 {
-	ui->febioFile->setCurrentIndex(fileVersion);
+	ui->febioFormat->setFEBioFormat(fileVersion);
 }
 
 QString CDlgRun::GetWorkingDirectory()
@@ -358,7 +366,7 @@ int CDlgRun::GetLaunchConfig()
 
 int CDlgRun::GetFEBioFileVersion()
 {
-	return ui->febioFile->currentIndex();
+	return ui->febioFormat->FEBioFormat();
 }
 
 bool CDlgRun::WriteNotes()

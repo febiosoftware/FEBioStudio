@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -38,12 +38,12 @@ public:
 	FEShellTorus(){}
 	FEShellTorus(GTorus* po);
 	
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 protected:
-	void BuildNodes(FEMesh* pm);
-	void BuildFaces(FEMesh* pm);
-	void BuildEdges(FEMesh* pm);
+	void BuildNodes(FSMesh* pm);
+	void BuildFaces(FSMesh* pm);
+	void BuildEdges(FSMesh* pm);
 
 	int NodeIndex(int i, int j) { return (i%(4*m_nd))*(4*m_ns) + j%(4*m_ns); }
 

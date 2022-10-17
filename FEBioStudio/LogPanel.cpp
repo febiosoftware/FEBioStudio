@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -130,7 +130,9 @@ void CLogPanel::AddText(const QString& txt, int n)
 	}
 	cursor.setCharFormat(ui->defaultTextCharFormat);
 	cursor.movePosition(QTextCursor::End);
-	ui->txt[n]->setTextCursor(cursor);
+
+	// NOTE: Calling this sometimes causes a crash. Not sure why. 
+	ui->txt[n]->ensureCursorVisible();
 }
 
 void CLogPanel::parseEscapeSequence(int attribute, QListIterator< QString > & i, QTextCharFormat & textCharFormat, QTextCharFormat const & defaultTextCharFormat)

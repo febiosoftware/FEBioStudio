@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-COMSOLimport::COMSOLimport(FEProject& prj) : FEFileImport(prj)
+COMSOLimport::COMSOLimport(FSProject& prj) : FSFileImport(prj)
 {
 	m_domainstosets = false;
 	m_bautopart = true;
@@ -52,7 +52,7 @@ COMSOLimport::~COMSOLimport()
 
 bool COMSOLimport::Load(const char* szfile)
 {
-	FEModel& fem = m_prj.GetFEModel();
+	FSModel& fem = m_prj.GetFSModel();
 	m_pfem = &fem;
 	
 	char szline[256] = {0};
@@ -210,7 +210,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 		import_this_type = false;
 	}
 
-	vector< list<ELEMENT>::iterator > newElems;
+	std::vector< std::list<ELEMENT>::iterator > newElems;
 
 	for (int i=0;i<newelems;++i){
 		if (!NextGoodLine(szline)) 
@@ -350,7 +350,7 @@ bool COMSOLimport::ReadElementType(char* szline)
 	// no errors encountered
 	return true;
 }
-bool COMSOLimport::BuildMesh(FEModel& fem)
+bool COMSOLimport::BuildMesh(FSModel& fem)
 {
 	int i, j;
     
@@ -359,7 +359,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
 	int elems = (int)m_Elem.size();
     
 	// create new mesh
-	FEMesh* pm = new FEMesh;
+	FSMesh* pm = new FSMesh;
 	pm->Create(nodes, elems);
     
 	// create the node-lookup table
@@ -373,7 +373,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
 	}
     
 	int nsize = imax - imin + 1;
-	vector<int> NLT; NLT.resize(nsize);
+	std::vector<int> NLT; NLT.resize(nsize);
 	for (i=0; i<nsize; ++i) NLT[i] = -1;
     
 	in = m_Node.begin();
@@ -381,7 +381,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
     
 	// create the nodes
 	in = m_Node.begin();
-	FENode* pn = pm->NodePtr();
+	FSNode* pn = pm->NodePtr();
 	for (i=0; i<nodes; ++i, ++in, ++pn)
 	{
 		pn->r.x = in->x;
@@ -428,7 +428,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
 			list<Telem_itr>::iterator pe = pes->elem.begin();
 			for (j=0; j<n; ++j, ++pe)
 			{
-				FEElement& el = pm->Element((*pe)->id);
+				FSElement& el = pm->Element((*pe)->id);
 				el.m_gid = i;
 			}
 		}
@@ -458,7 +458,7 @@ bool COMSOLimport::BuildMesh(FEModel& fem)
 			for (i=0; i<elsets; ++i, ++pes)
 			{
 				int n = (int)pes->elem.size(); // how many elements are in the element set? -> n
-				FEPart* pg = new FEPart(po);
+				FSPart* pg = new FSPart(po);
 				pg->SetName(pes->szname);
 				list<Telem_itr>::iterator pe = pes->elem.begin();
 				for (j=0; j<n; ++j, ++pe) pg->add((*pe)->id);

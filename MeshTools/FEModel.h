@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,9 @@ SOFTWARE.*/
 #include "FEMLib/FECoreModel.h"
 #include "FEMLib/FEBoundaryCondition.h"
 #include "FEMLib/FEAnalysisStep.h"
+#include "FEMLib/FEMeshAdaptor.h"
+#include "FEMLib/FELoadController.h"
+#include "FEMLib/FEMeshDataGenerator.h"
 #include "GMaterial.h"
 #include "FEDataVariable.h"
 #include "FESoluteData.h"
@@ -39,30 +42,19 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 
 //-----------------------------------------------------------------------------
-// For convenience, we define the following variable IDs
-// TODO: It looks like only FE_VAR_CONCENTRATION is used. Maybe see if this can be eliminated.
-#define FE_VAR_DISPLACEMENT		0
-#define FE_VAR_ROTATION			1
-#define FE_VAR_FLUID_PRESSURE	2
-#define FE_VAR_TEMPERATURE		3
-#define FE_VAR_CONCENTRATION	4
-#define FE_VAR_VELOCITY			5
-#define FE_VAR_FLUID_DILATAION	6
-
-//-----------------------------------------------------------------------------
 class GModel;
-class FEReactionMaterial;
+class FSReactionMaterial;
 
 //-----------------------------------------------------------------------------
 //! The FE model stores all FE data.
 //
 //! It stores the geometry, the material list, and the analysis data.
-class FEModel : public FECoreModel 
+class FSModel : public FSCoreModel
 {
 public:
 	// constructor/destructor
-	FEModel();
-	virtual ~FEModel();
+	FSModel();
+	virtual ~FSModel();
 
 	// clear the model
 	void Clear();
@@ -77,9 +69,13 @@ public:
 	void DeleteAllIC();
 	void DeleteAllContact();
 	void DeleteAllConstraints();
-	void DeleteAllRigidConstraints();
+	void DeleteAllRigidBCs();
+	void DeleteAllRigidICs();
+	void DeleteAllRigidLoads();
 	void DeleteAllRigidConnectors();
 	void DeleteAllSteps();
+	void DeleteAllLoadControllers();
+	void DeleteAllMeshDataGenerators();
 
 	// clear the selections of all the bc, loads, etc.
 	void ClearSelections();
@@ -116,7 +112,7 @@ public:
 	GMaterial* FindMaterial(const char* szname);
 
     // find a rigid connector from its ID
-    FERigidConnector* GetRigidConnectorFromID(int id);
+    FSRigidConnector* GetRigidConnectorFromID(int id);
 
 	// --- serialization ---
 
@@ -128,16 +124,20 @@ public:
 
 	// --- Analysis steps ---
 	int Steps();
-	FEStep* GetStep(int i);
-	FEStep* FindStep(int nid);
-	int GetStepIndex(FEStep* ps);
+	FSStep* GetStep(int i);
+	FSStep* FindStep(int nid);
+	int GetStepIndex(FSStep* ps);
 
-	void AddStep(FEStep* ps);
-	int DeleteStep(FEStep* ps);
-	void InsertStep(int n, FEStep* ps);
-	void SwapSteps(FEStep* ps0, FEStep* ps1);
+	void AddStep(FSStep* ps);
+	int DeleteStep(FSStep* ps);
+	void InsertStep(int n, FSStep* ps);
+	void SwapSteps(FSStep* ps0, FSStep* ps1);
 
-	void AssignComponentToStep(FEStepComponent* pc, FEStep* ps);
+	//! replaces step i with newStep. 
+	//! Returns pointer to old step
+	FSStep* ReplaceStep(int i, FSStep* newStep);
+
+	void AssignComponentToStep(FSStepComponent* pc, FSStep* ps);
 
 	// --- data variables ---
 	int DataVariables();
@@ -148,7 +148,7 @@ public:
 	void UpdateData();
 
 	// --- miscellaneous ---
-	FESoluteData& GetSoluteData(int i);
+	SoluteData& GetSoluteData(int i);
 	int Solutes();
 	int FindSolute(const char* sz);
 	void AddSolute(const std::string& name, int z, double M, double d);
@@ -157,14 +157,31 @@ public:
 
 	void GetSoluteNames(char* szbuf);
 	void GetSBMNames(char* szbuf);
+	void GetSpeciesNames(char* szbuf);
 	void GetRigidMaterialNames(char* szbuf);
 	void GetDOFNames(FEDOFVariable& var, char* szbuf);
+	void GetDOFNames(FEDOFVariable& var, std::vector<string>& dofList);
+	void GetDOFSymbols(FEDOFVariable& var, std::vector<string>& dofList);
 	void GetVariableNames(const char* szvar, char* szbuf);
 	
-	const char* GetVariableName(const char* szvar, int n);
-	const char* GetEnumValue(const char* szenum, int n);
+	const char* GetVariableName(const char* szvar, int n, bool longName = true);
 
-	FESoluteData& GetSBMData(int i);
+public:
+	// These functions deal with enums
+	// Enums are identified via:
+	// - Key  : The string name of an option (there is a long and short key)
+	// - Value: The numeric value of the option
+	// - Index: The 0-based index into the array of options
+	const char* GetEnumKey(const Param& param, bool longName = true);
+	int GetEnumValue(const Param& param);
+	int GetEnumIndex(const Param& param);
+	bool GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum);
+	bool SetEnumIndex(Param& param, int index);
+	bool SetEnumValue(Param& param, int nvalue);
+	bool SetEnumKey(Param& param, const std::string& key);
+
+public:
+	SoluteData& GetSBMData(int i);
 	int SBMs();
 	int FindSBM(const char* sz);
 	void AddSBM(const std::string& name, int z, double M, double d);
@@ -172,24 +189,40 @@ public:
 	void ClearSBMs();
     
     int Reactions();
-    FEReactionMaterial* GetReaction(int id);
+    FSReactionMaterial* GetReaction(int id);
 
 	// find (and assign) the group's parent
-	bool FindGroupParent(FEGroup* pg);
-
-public:
-	int DataMaps() const;
-	void AddDataMap(FEDataMapGenerator* map);
-	int RemoveMap(FEDataMapGenerator* map);
-	FEDataMapGenerator* GetDataMap(int i);
+	bool FindGroupParent(FSGroup* pg);
 
 public:
 	int Variables() const { return (int)m_DOF.size(); }
 	FEDOFVariable& Variable(int i) { return m_DOF[i]; }
-	FEDOFVariable* AddVariable(const char* szvar);
+	FEDOFVariable* AddVariable(const std::string& varName);
 	int GetVariableIndex(const char* sz);
 	FEDOFVariable& GetVariable(const char* sz);
     int GetDOFIndex(const char* sz);
+	void ClearVariables();
+	const char* GetDOFSymbol(int n) const;
+	const char* GetDOFName(int n) const;
+
+public:
+	int LoadControllers() const;
+	FSLoadController* GetLoadController(int i);
+	void AddLoadController(FSLoadController* plc);
+	int RemoveLoadController(FSLoadController* plc);
+
+	// helper function for creating load curves
+	FSLoadController* AddLoadCurve(LoadCurve& lc);
+
+	FSLoadController* GetLoadControllerFromID(int lc);
+
+	void UpdateLoadControllerReferenceCounts();
+
+public:
+	int MeshDataGenerators() const;
+	FSMeshDataGenerator* GetMeshDataGenerator(int i);
+	void AddMeshDataGenerator(FSMeshDataGenerator* plc);
+	int RemoveMeshDataGenerator(FSMeshDataGenerator* plc);
 
 public:
 	int CountBCs(int type);
@@ -199,34 +232,41 @@ public:
 	int CountRigidConstraints(int type);
 	int CountRigidConnectors(int type);
 
+    void SetSkipGeometry(bool skip);
+
 protected:
 	// I/O helper functions
-	void LoadData      (IArchive& ar);
-	void LoadSoluteData(IArchive& ar);
-	void LoadSBMData   (IArchive& ar);
-	void LoadMaterials (IArchive& ar);
-	void LoadSteps     (IArchive& ar);
+	void LoadData              (IArchive& ar);
+	void LoadSoluteData        (IArchive& ar);
+	void LoadSBMData           (IArchive& ar);
+	void LoadMaterials         (IArchive& ar);
+	void LoadSteps             (IArchive& ar);
+	void LoadLoadControllers   (IArchive& ar);
+	void LoadMeshDataGenerators(IArchive& ar);
 
 protected:
 	GModel*					m_pModel;	//!< Model geometry
-	vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
+	std::vector<FEDOFVariable>	m_DOF;		//!< degree of freedom list
 
 	FSObjectList<GMaterial>			m_pMat;		//!< Material list
-	FSObjectList<FEStep>			m_pStep;	//!< Analysis data
+	FSObjectList<FSStep>			m_pStep;	//!< Analysis data
 	FSObjectList<FEDataVariable>	m_Var;		//!< data variables
-	FSObjectList<FESoluteData>		m_Sol;		//!< solute data variables
-	FSObjectList<FESoluteData>		m_SBM;		//!< solid-bound molecule data variables
-	FSObjectList<FEDataMapGenerator>	m_Map;		//!< data maps
+	FSObjectList<SoluteData>		m_Sol;		//!< solute data variables
+	FSObjectList<SoluteData>		m_SBM;		//!< solid-bound molecule data variables
+	FSObjectList<FSLoadController>		m_LC;		//!< load controllers
+	FSObjectList<FSMeshDataGenerator>	m_MD;		//!< mesh data generators
+
+    bool m_skipGeometry; //!< Skip geometry section when loading file
 };
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of interfaces of a specific type that have been defined.
-template <class T> int CountInterfaces(FEModel& fem)
+template <class T> int CountInterfaces(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->Interfaces(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->Interface(j));
@@ -238,12 +278,12 @@ template <class T> int CountInterfaces(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of constraints of a specific type that have been defined.
-template <class T> int CountConstraints(FEModel& fem)
+template <class T> int CountConstraints(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->Constraints(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->Constraint(j));
@@ -255,12 +295,12 @@ template <class T> int CountConstraints(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountBCs(FEModel& fem)
+template <class T> int CountBCs(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->BCs(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->BC(j));
@@ -272,12 +312,12 @@ template <class T> int CountBCs(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountICs(FEModel& fem)
+template <class T> int CountICs(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->ICs(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->IC(j));
@@ -289,12 +329,12 @@ template <class T> int CountICs(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountLoads(FEModel& fem)
+template <class T> int CountLoads(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->Loads(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->Load(j));
@@ -305,13 +345,31 @@ template <class T> int CountLoads(FEModel& fem)
 }
 
 //-----------------------------------------------------------------------------
+// helper function for identifying the number of rigid constraints of a specific type that have been defined.
+template <class T> int CountRigidConstraints(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->RigidConstraints(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->RigidConstraint(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+
+//-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
-template <class T> int CountConnectors(FEModel& fem)
+template <class T> int CountConnectors(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
+		FSStep* ps = fem.GetStep(i);
 		for (int j = 0; j<ps->RigidConnectors(); ++j)
 		{
 			T* pbc = dynamic_cast<T*>(ps->RigidConnector(j));
@@ -323,15 +381,66 @@ template <class T> int CountConnectors(FEModel& fem)
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of rigid constraints of a specific type that have been defined.
-template <class T> int CountRigidConstraints(FEModel& fem)
+template <class T> int CountRigidBCs(FSModel& fem)
 {
 	int nc = 0;
 	for (int i = 0; i<fem.Steps(); ++i)
 	{
-		FEStep* ps = fem.GetStep(i);
-		for (int j = 0; j<ps->RigidConstraints(); ++j)
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j<ps->RigidBCs(); ++j)
 		{
-			T* pbc = dynamic_cast<T*>(ps->RigidConstraint(j));
+			T* pbc = dynamic_cast<T*>(ps->RigidBC(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+//-----------------------------------------------------------------------------
+// helper function for identifying the number of rigid constraints of a specific type that have been defined.
+template <class T> int CountRigidICs(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->RigidICs(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->RigidIC(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+//-----------------------------------------------------------------------------
+// helper function for identifying the number of rigid constraints of a specific type that have been defined.
+template <class T> int CountRigidLoads(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->RigidLoads(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->RigidLoad(j));
+			if (pbc) nc++;
+		}
+	}
+	return nc;
+}
+
+//-----------------------------------------------------------------------------
+// helper function for identifying the number of mesh adaptors.
+template <class T> int CountMeshAdaptors(FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->MeshAdaptors(); ++j)
+		{
+			T* pbc = dynamic_cast<T*>(ps->MeshAdaptor(j));
 			if (pbc) nc++;
 		}
 	}
@@ -342,11 +451,14 @@ template <class T> int CountRigidConstraints(FEModel& fem)
 std::string Namify(const char* sz);
 
 // functions for creating default names
-std::string defaultBCName(FEModel* fem, FEBoundaryCondition* pbc);
-std::string defaultICName(FEModel* fem, FEInitialCondition* pic);
-std::string defaultLoadName(FEModel* fem, FELoad* pbc);
-std::string defaultInterfaceName(FEModel* fem, FEInterface* pi);
-std::string defaultConstraintName(FEModel* fem, FEModelConstraint* pi);
-std::string defaultRigidConnectorName(FEModel* fem, FERigidConnector* pc);
-std::string defaultRigidConstraintName(FEModel* fem, FERigidConstraint* pc);
-std::string defaultStepName(FEModel* fem, FEAnalysisStep* ps);
+std::string defaultBCName(FSModel* fem, FSBoundaryCondition* pbc);
+std::string defaultICName(FSModel* fem, FSInitialCondition* pic);
+std::string defaultLoadName(FSModel* fem, FSLoad* pbc);
+std::string defaultInterfaceName(FSModel* fem, FSInterface* pi);
+std::string defaultConstraintName(FSModel* fem, FSModelConstraint* pi);
+std::string defaultRigidConnectorName(FSModel* fem, FSRigidConnector* pc);
+std::string defaultRigidBCName(FSModel* fem, FSRigidBC* pc);
+std::string defaultRigidICName(FSModel* fem, FSRigidIC* pc);
+std::string defaultRigidLoadName(FSModel* fem, FSRigidLoad* pc);
+std::string defaultMeshAdaptorName(FSModel* fem, FSMeshAdaptor* pc);
+std::string defaultStepName(FSModel* fem, FSStep* ps);

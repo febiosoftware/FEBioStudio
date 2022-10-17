@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "BivariatePolynomialSpline.h"
-#include "MathLib/LUSolver.h"
+#include <FECore/LUSolver.h>
 #include <stdio.h>
 
 inline int Factorial(int n) {
@@ -48,11 +48,11 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
     }
     
     // create solver and matrix
-    LUSolver        solver;
-    DenseMatrix     matrix;
+    LUSolver solver;
+    FECore::DenseMatrix     matrix;
     solver.SetMatrix(&matrix);
     int N = m_n + 1;
-    matrix.Create(N*N);
+    matrix.Create(N*N, N*N);
     
     // get summations of the powers of u and v
     int np = m_pc->Points();
@@ -61,7 +61,7 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
         for (int j=0; j<=2*m_n; ++j) {
             sum[i][j] = 0;
             for (int k=0; k<np; ++k)
-                sum[i][j] += pow(m_pc->m_u[k].x, i)*pow(m_pc->m_u[k].y, j);
+                sum[i][j] += pow(m_pc->m_u[k].x(), i)*pow(m_pc->m_u[k].y(), j);
         }
     }
     
@@ -91,7 +91,7 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
         for (int j=0; j<N; ++j) {
             irow = i + j*N;
             for (int l=0; l<np; ++l) {
-                uv = pow(m_pc->m_u[l].x, i)*pow(m_pc->m_u[l].y, j);
+                uv = pow(m_pc->m_u[l].x(), i)*pow(m_pc->m_u[l].y(), j);
                 m_c[0][irow] += m_pc->m_p[l].x*uv;
                 m_c[1][irow] += m_pc->m_p[l].y*uv;
                 m_c[2][irow] += m_pc->m_p[l].z*uv;
@@ -100,9 +100,9 @@ bool BivariatePolynomialSpline::GetSplineCoeficients()
     }
     
     // perform the back substitution
-    solver.BackSolve(m_c[0], m_c[0]);
-    solver.BackSolve(m_c[1], m_c[1]);
-    solver.BackSolve(m_c[2], m_c[2]);
+    solver.BackSolve(m_c[0].data(), m_c[0].data());
+    solver.BackSolve(m_c[1].data(), m_c[1].data());
+    solver.BackSolve(m_c[2].data(), m_c[2].data());
     
     return true;
 }

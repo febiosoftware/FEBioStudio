@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,12 +29,13 @@ SOFTWARE.*/
 #include "FESurfaceMesh.h"
 #include "FECurveMesh.h"
 #include <GeomLib/GObject.h>
+#include <MeshTools/FECurveMesher.h>
 
 InsertCurves::InsertCurves()
 {
 }
 
-FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList, bool insertEdges, double tol)
+FSSurfaceMesh* InsertCurves::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList, bool insertEdges, double tol)
 {
 	// make sure we have at least one curve
 	if (curveList.empty()) return 0;
@@ -54,7 +55,16 @@ FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList,
 		// get a mesh for this curve
 		GObject* pco = dynamic_cast<GObject*>(pc->Object());
 		FECurveMesh* ps = pco->GetFECurveMesh(pc->GetLocalID());
-		if (ps == 0) return 0;
+		if (ps == 0)
+		{
+			if (pco->GetType() == GCURVE)
+			{
+				FECurveMesher curveMesher;
+				ps = curveMesher.BuildMesh(pc);
+				if (ps == 0) return 0;
+			}
+			else return 0;
+		}
 
 		// insert all the nodes
 		int N = ps->Nodes();
@@ -73,7 +83,7 @@ FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList,
 			int NE = ps->Edges();
 			for (int i=0; i<NE; ++i)
 			{
-				FEEdge& e = ps->Edge(i);
+				FSEdge& e = ps->Edge(i);
 				insertEdge(dyna, nodeList[e.n[0]], nodeList[e.n[1]], nodeList, n + 1, tol);
 			}
 		}
@@ -104,5 +114,5 @@ FESurfaceMesh* InsertCurves::Apply(FESurfaceMesh* pm, vector<GEdge*>& curveList,
 	}	
 
 	// create and return new surface mesh object from the triMesh
-	return new FESurfaceMesh(dyna);
+	return new FSSurfaceMesh(dyna);
 }

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -164,7 +164,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 	fem.Clear();
 
 	// add a materials
-	FEMaterial mat;
+	Material mat;
 	fem.AddMaterial(mat);
 
 	// build the mesh
@@ -174,7 +174,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 	// create nodes
 	for (i=0; i<nodes; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		NODE& node = m_Node[i];
 		n.r.x = node.r.x;
 		n.r.y = node.r.y;
@@ -184,7 +184,7 @@ bool GMeshImport::BuildMesh(FEPostModel& fem)
 	// create elements
 	for (i=0; i<elems; ++i)
 	{
-		FEElement& el = static_cast<FEElement&>(pm->ElementRef(i));
+		FSElement& el = static_cast<FSElement&>(pm->ElementRef(i));
 		ELEM& E = m_Elem[i];
 
 		el.m_MatID = 0;

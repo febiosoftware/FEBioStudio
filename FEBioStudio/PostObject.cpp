@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,13 +28,13 @@ SOFTWARE.*/
 #include "PostObject.h"
 #include <PostGL/GLModel.h>
 
-CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FEMesh*)nullptr)
+CPostObject::CPostObject(Post::CGLModel* glm) : GMeshObject((FSMesh*)nullptr)
 {
 	// store the model
 	m_glm = glm;
 
 	// Set the FE mesh and update
-	SetFEMesh(glm->GetFEModel()->GetFEMesh(0));
+	SetFEMesh(glm->GetFSModel()->GetFEMesh(0));
 	Update(true);
 }
 
@@ -48,7 +48,7 @@ CPostObject::~CPostObject()
 
 BOX CPostObject::GetBoundingBox()
 {
-	FEMesh* mesh = GetFEMesh();
+	FSMesh* mesh = GetFEMesh();
 	if (mesh) return mesh->GetBoundingBox();
 	else return BOX();
 }
@@ -80,7 +80,7 @@ void CPostObject::UpdateMesh()
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{
 			GMesh::NODE& nd = mesh->Node(i);
-			FENode& ns = postMesh->Node(nd.nid);
+			FSNode& ns = postMesh->Node(nd.nid);
 
 			nd.r = ns.r;
 		}

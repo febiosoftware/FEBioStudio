@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -439,7 +439,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 	// assign nodes
 	for (int i=0; i<zone.m_nn; ++i)
 	{
-		FENode& n = pm->Node(i);
+		FSNode& n = pm->Node(i);
 		float* v = zone.m_Node[i].v;
 		n.r = vec3d(v[0], v[1], v[2]);
 	}
@@ -448,7 +448,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 	// assign elements
 	for (int i=0; i<zone.m_ne; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		switch (zone.m_ntype)
 		{
 		case ZONE_TRIANGLE: e.SetType(FE_TRI3); break;
@@ -464,7 +464,7 @@ bool FEASCIIImport::BuildMesh(FEPostModel &fem)
 
 	// create a single material
 	fem.ClearMaterials();
-	FEMaterial m;
+	Material m;
 	m.diffuse = GLColor(192,192,192);
 	m.ambient = GLColor(192,192,192);
 	m.specular = GLColor(0,0,0);

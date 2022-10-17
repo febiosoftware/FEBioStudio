@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FESurfaceModifier.h"
 
-class FEFace;
+class FSFace;
 
 //-----------------------------------------------------------------------------
 //! This class implements a modifier that coarses a plygonal mesh using an
@@ -58,7 +58,7 @@ private:
 		vec3d	m_sgamma;	// sum of "gamma's"
 		double	m_srho;		// sum of "rho's"
 		int		m_val;		// valence (i.e. number of cells assigned to this cluster)
-		vector<int> m_fid; //face ids of the faces in this cluster
+		std::vector<int> m_fid; //face ids of the faces in this cluster
 		
 	};
 
@@ -87,32 +87,32 @@ public:
 	FECVDDecimationModifier();
 
 	//! Apply the decimation modifier
-	FESurfaceMesh* Apply(FESurfaceMesh* pm);
+	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
 private:
 	//! Initialize data structures
-	bool Initialize(FESurfaceMesh* pm);
+	bool Initialize(FSSurfaceMesh* pm);
 
 	//! Minimize the energy
-	bool Minimize(FESurfaceMesh* pm);
+	bool Minimize(FSSurfaceMesh* pm);
 
 	//! Triangulate
-	FESurfaceMesh* Triangulate(FESurfaceMesh* pm);
-	FESurfaceMesh* Triangulate2(FESurfaceMesh* pm);	// uses hole-filling algorithm
+	FSSurfaceMesh* Triangulate(FSSurfaceMesh* pm);
+	FSSurfaceMesh* Triangulate2(FSSurfaceMesh* pm);	// uses hole-filling algorithm
 
-	FESurfaceMesh* CalculateCVD(FESurfaceMesh* pm);
+	FSSurfaceMesh* CalculateCVD(FSSurfaceMesh* pm);
 
 	//! swap triangles
-	bool Swap(FEFace& face, int nface, int ncluster);
+	bool Swap(FSFace& face, int nface, int ncluster);
 
 public:
 	bool	m_bcvd;
 	double	m_gradient; //gradiant for curvature
 
 private:
-	vector<Cluster>	m_Cluster;
-	vector<int>		m_tag;
-	vector<double>	m_rho;		// rho for all triangles
-	vector<vec3d>	m_gamma;	// centroids of all triangles
-	list<EDGE>		m_Edge;		// edge list
+	std::vector<Cluster>	m_Cluster;
+	std::vector<int>		m_tag;
+	std::vector<double>	m_rho;		// rho for all triangles
+	std::vector<vec3d>	m_gamma;	// centroids of all triangles
+	std::list<EDGE>		m_Edge;		// edge list
 };

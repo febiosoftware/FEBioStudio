@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -50,7 +50,7 @@ bool FERAWImageReader::Load(const char* szfile)
 	if (Open(szfile, "rb") == false) return errf("Failed opening file.");
 
 	// add one material to the scene
-	FEMaterial mat;
+	Material mat;
 	m_fem->AddMaterial(mat);
 
 	// figure out the mesh dimensions
@@ -88,7 +88,7 @@ bool FERAWImageReader::Load(const char* szfile)
 		for (int j=0; j<m_ops.ny; ++j)
 			for (int i=0; i<m_ops.nx; ++i)
 			{
-				FENode& nd = pm->Node(n++);
+				FSNode& nd = pm->Node(n++);
 				nd.r.x = (double) i * dx;
 				nd.r.y = (double) j * dy;
 				nd.r.z = (double) k * dz;
@@ -101,7 +101,7 @@ bool FERAWImageReader::Load(const char* szfile)
 		for (int j=0; j<m_ops.ny-1; ++j)
 			for (int i=0; i<m_ops.nx-1; ++i)
 			{
-				FEElement& e = pm->Element(n++);
+				FSElement& e = pm->Element(n++);
 				e.SetType(FE_QUAD4);
 				e.m_node[0] = j*(m_ops.nx) + i;
 				e.m_node[1] = j*(m_ops.nx) + i+1;
@@ -117,7 +117,7 @@ bool FERAWImageReader::Load(const char* szfile)
 			for (int j=0; j<m_ops.ny-1; ++j)
 				for (int i=0; i<m_ops.nx-1; ++i)
 				{
-					FEElement& e = pm->Element(n++);
+					FSElement& e = pm->Element(n++);
 					e.SetType(FE_HEX8);
 					e.m_node[0] = k*(m_ops.nx*m_ops.ny) + j*(m_ops.nx) + i;
 					e.m_node[1] = k*(m_ops.nx*m_ops.ny) + j*(m_ops.nx) + i+1;

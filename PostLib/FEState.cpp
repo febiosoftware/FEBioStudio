@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "FEMeshData_T.h"
 
 using namespace Post;
+using namespace std;
 
 ObjectData::ObjectData()
 {
@@ -115,7 +116,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	// allocate face data
 	for (int i=0; i<faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = face.Nodes();
 		m_FaceData.append(nf);
 	}
@@ -147,7 +148,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
-			Post::FEPlotObjectData& dj = *po.m_data[j];
+			Post::PlotObjectData& dj = *po.m_data[j];
 
 			switch (dj.Type())
 			{
@@ -176,7 +177,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 		di.data = new ObjectData;
 		for (int j = 0; j < ndata; ++j)
 		{
-			Post::FEPlotObjectData& dj = *po.m_data[j];
+			Post::PlotObjectData& dj = *po.m_data[j];
 
 			switch (dj.Type())
 			{
@@ -200,7 +201,7 @@ FEState::FEState(float time, FEPostModel* fem, Post::FEPostMesh* pmesh) : m_fem(
 	FEDataFieldPtr it = pdm->FirstDataField();
 	for (int i=0; i<N; ++i, ++it)
 	{
-		FEDataField& d = *(*it);
+		ModelDataField& d = *(*it);
 		m_Data.push_back(d.CreateData(this));
 	}
 }
@@ -260,7 +261,7 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 	pn = pdm->FirstDataField();
 	for (int i = 0; i < N; ++i, ++pn)
 	{
-		FEDataField& d = *(*pn);
+		ModelDataField& d = *(*pn);
 		FEMeshData& md = m_Data[i];
 		if (d.DataClass() == CLASS_NODE)
 		{
@@ -342,7 +343,7 @@ void FEState::RebuildData()
 	m_FaceData.clear();
 	for (int i = 0; i < faces; ++i)
 	{
-		FEFace& face = mesh.Face(i);
+		FSFace& face = mesh.Face(i);
 		int nf = face.Nodes();
 		m_FaceData.append(nf);
 	}
@@ -386,30 +387,86 @@ void FEState::RebuildData()
 }
 
 //-----------------------------------------------------------------------------
-void FEState::AddLine(vec3f a, vec3f b, float data_a, float data_b, int el0, int el1)
-{
-	LINEDATA L;
-	L.m_r0 = a;
-	L.m_r1 = b;
-	L.m_user_data[0] = data_a;
-	L.m_user_data[1] = data_b;
-	L.m_elem[0] = el0;
-	L.m_elem[1] = el1;
-	m_Line.push_back(L);
-}
-
-//-----------------------------------------------------------------------------
-void FEState::AddPoint(vec3f a, int nlabel)
-{
-	POINTDATA p;
-	p.m_r = a;
-	p.nlabel = nlabel;
-	m_Point.push_back(p);
-}
-
-//-----------------------------------------------------------------------------
 OBJECT_DATA& FEState::GetObjectData(int n)
 {
 	if (n < m_objPt.size()) return m_objPt[n];
 	else return m_objLn[n - m_objPt.size()];
 }
+
+//-----------------------------------------------------------------------------
+class OctreeBox
+{
+public:
+	OctreeBox(BOX box, int levels) : m_box(box), m_level(levels)
+	{
+		if (levels == 0)
+		{
+			for (int i = 0; i < 8; ++i) m_child[i] = nullptr;
+			return;
+		}
+
+		double R = box.Radius();
+
+		double x0 = box.x0, x1 = box.x1;
+		double y0 = box.y0, y1 = box.y1;
+		double z0 = box.z0, z1 = box.z1;
+		int n = 0;
+		for (int i = 0; i < 2; ++i)
+		for (int j = 0; j < 2; ++j)
+		for (int k = 0; k < 2; ++k)
+		{
+			double xa = x0 + i * (x1 - x0) * 0.5;
+			double ya = y0 + j * (y1 - y0) * 0.5;
+			double za = z0 + k * (z1 - z0) * 0.5;
+			double xb = x0 + (i+1.0) * (x1 - x0) * 0.5;
+			double yb = y0 + (j+1.0) * (y1 - y0) * 0.5;
+			double zb = z0 + (k+1.0) * (z1 - z0) * 0.5;
+			BOX boxi(xa, ya, za, xb, yb, zb);
+			boxi.Inflate(R * 1e-7);
+			m_child[n++] = new OctreeBox(boxi, levels - 1);
+		}
+	}
+	~OctreeBox() { for (int i = 0; i < 8; ++i) delete m_child[i]; }
+
+	int addNode(vector<vec3d>& points, const vec3d& r)
+	{
+		const double eps = 1e-12;
+		if (m_level == 0)
+		{
+			if (m_box.IsInside(r))
+			{
+				for (int i = 0; i < m_nodes.size(); ++i)
+				{
+					vec3d& ri = points[m_nodes[i]];
+					if ((ri - r).SqrLength() <= eps)
+					{
+						// node is already in list
+						return m_nodes[i];
+					}
+				}
+
+				// if we get here, the node is in this box, 
+				// but not in the points array yet, so add it
+				points.push_back(r);
+				m_nodes.push_back(points.size() - 1);
+				return points.size() - 1;
+			}
+			else return -1;
+		}
+		else
+		{
+			for (int i = 0; i < 8; ++i)
+			{
+				int n = m_child[i]->addNode(points, r);
+				if (n >= 0) return n;
+			}
+			return -1;
+		}
+	}
+
+private:
+	int			m_level;
+	BOX			m_box;
+	OctreeBox*	m_child[8];
+	vector<int>	m_nodes;
+};

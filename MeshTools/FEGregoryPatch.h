@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -51,23 +51,23 @@ public:
 	FEGregoryPatch(void);
 	~FEGregoryPatch(void);
 
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
 
 	GNode&  GetNode(int i) { return m_GNode[i]; }
-	FEMesh* BuildFEMesh();
+	FSMesh* BuildFEMesh();
 	void BuildPatchData();
 
 protected:
 	void BuildPatches();
-	void BuildFaces(FEMesh* pm);
+	void BuildFaces(FSMesh* pm);
 
 	vec3d EvalPatch(GPatch& p, double r, double s);
 
 	int NodeIndex(int i, int j) { return j*(m_nx*m_mx+1) + i; }
 
 protected:
-	vector<GNode>	m_GNode;
-	vector<GPatch>	m_GPatch;
+	std::vector<GNode>	m_GNode;
+	std::vector<GPatch>	m_GPatch;
 
 	double	m_w, m_h;
 	int	m_nx, m_ny;

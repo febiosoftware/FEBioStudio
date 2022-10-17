@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,22 +26,29 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModelConstraint.h"
+#include <MeshTools/FEItemListBuilder.h>
 
-FEModelConstraint::FEModelConstraint(int ntype, FEModel* fem, int nstep) : FEModelComponent(ntype, fem, nstep)
+FSModelConstraint::FSModelConstraint(int ntype, FSModel* fem, int nstep) : FSDomainComponent(ntype, fem, nstep)
 {
-
+	m_superClassID = FENLCONSTRAINT_ID;
+	SetMeshItemType(0);
 }
 
-FESurfaceConstraint::FESurfaceConstraint(int ntype, FEModel* fem, int nstep) : FEModelConstraint(ntype, fem, nstep)
+FSSurfaceConstraint::FSSurfaceConstraint(int ntype, FSModel* fem, int nstep) : FSModelConstraint(ntype, fem, nstep)
 {
+	SetMeshItemType(FE_FACE_FLAG);
+}
 
+FSBodyConstraint::FSBodyConstraint(int ntype, FSModel* fem, int nstep) : FSModelConstraint(ntype, fem, nstep)
+{
+	SetMeshItemType(FE_ELEM_FLAG);
 }
 
 //=============================================================================
-// FEVolumeConstraint
+// FSVolumeConstraint
 //-----------------------------------------------------------------------------
 
-FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESurfaceConstraint(FE_VOLUME_CONSTRAINT, ps, nstep)
+FSVolumeConstraint::FSVolumeConstraint(FSModel* ps, int nstep) : FSSurfaceConstraint(FE_VOLUME_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("volume");
 
@@ -51,10 +58,10 @@ FEVolumeConstraint::FEVolumeConstraint(FEModel* ps, int nstep) : FESurfaceConstr
 }
 
 //=============================================================================
-// FEWarpingConstraint
+// FSWarpingConstraint
 //-----------------------------------------------------------------------------
 
-FEWarpingConstraint::FEWarpingConstraint(FEModel* fem) : FEModelConstraint(FE_WARP_CONSTRAINT, fem)
+FSWarpingConstraint::FSWarpingConstraint(FSModel* fem) : FSModelConstraint(FE_WARP_CONSTRAINT, fem)
 {
 	SetTypeString("warp-image");
 
@@ -67,10 +74,10 @@ FEWarpingConstraint::FEWarpingConstraint(FEModel* fem) : FEModelConstraint(FE_WA
 }
 
 //=============================================================================
-// FENormalFlowSurface
+// FSNormalFlowSurface
 //-----------------------------------------------------------------------------
 
-FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceConstraint(FE_NORMAL_FLUID_FLOW, ps, nstep)
+FSNormalFlowSurface::FSNormalFlowSurface(FSModel* ps, int nstep) : FSSurfaceConstraint(FE_NORMAL_FLUID_FLOW, ps, nstep)
 {
 	SetTypeString("normal fluid flow");
 
@@ -83,10 +90,10 @@ FENormalFlowSurface::FENormalFlowSurface(FEModel* ps, int nstep) : FESurfaceCons
 }
 
 //=============================================================================
-// FESymmetryPlane
+// FSSymmetryPlane
 //-----------------------------------------------------------------------------
 
-FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESurfaceConstraint(FE_SYMMETRY_PLANE, ps, nstep)
+FSSymmetryPlane::FSSymmetryPlane(FSModel* ps, int nstep) : FSSurfaceConstraint(FE_SYMMETRY_PLANE, ps, nstep)
 {
 	SetTypeString("symmetry plane");
 
@@ -98,10 +105,10 @@ FESymmetryPlane::FESymmetryPlane(FEModel* ps, int nstep) : FESurfaceConstraint(F
 }
 
 //=============================================================================
-// FEFrictionlessFluidWall
+// FSFrictionlessFluidWall
 //-----------------------------------------------------------------------------
 
-FEFrictionlessFluidWall::FEFrictionlessFluidWall(FEModel* ps, int nstep) : FESurfaceConstraint(FE_FRICTIONLESS_FLUID_WALL, ps, nstep)
+FSFrictionlessFluidWall::FSFrictionlessFluidWall(FSModel* ps, int nstep) : FSSurfaceConstraint(FE_FRICTIONLESS_FLUID_WALL, ps, nstep)
 {
     SetTypeString("frictionless fluid wall");
 
@@ -113,7 +120,7 @@ FEFrictionlessFluidWall::FEFrictionlessFluidWall(FEModel* ps, int nstep) : FESur
 }
 
 //=============================================================================
-FEPrestrainConstraint::FEPrestrainConstraint(FEModel* ps, int nstep) : FEModelConstraint(FE_PRESTRAIN_CONSTRAINT, ps, nstep)
+FSPrestrainConstraint::FSPrestrainConstraint(FSModel* ps, int nstep) : FSModelConstraint(FE_PRESTRAIN_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("prestrain");
 
@@ -124,7 +131,7 @@ FEPrestrainConstraint::FEPrestrainConstraint(FEModel* ps, int nstep) : FEModelCo
 }
 
 //=============================================================================
-FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : FEModelConstraint(FE_INSITUSTRETCH_CONSTRAINT, ps, nstep)
+FSInSituStretchConstraint::FSInSituStretchConstraint(FSModel* ps, int nstep) : FSModelConstraint(FE_INSITUSTRETCH_CONSTRAINT, ps, nstep)
 {
 	SetTypeString("in-situ stretch");
 
@@ -135,3 +142,144 @@ FEInSituStretchConstraint::FEInSituStretchConstraint(FEModel* ps, int nstep) : F
 	AddDoubleParam(0.0, "max_stretch");
 	AddBoolParam(true, "isochoric");
 }
+
+//=============================================================================
+FEBioNLConstraint::FEBioNLConstraint(FSModel* fem, int nstep) : FSModelConstraint(FE_FEBIO_NLCONSTRAINT, fem, nstep)
+{
+
+}
+
+void FEBioNLConstraint::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelConstraint::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioNLConstraint::Load(IArchive& ar)
+{
+	TRACE("FEBioNLConstraint::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSModelConstraint::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+//=============================================================================
+FEBioSurfaceConstraint::FEBioSurfaceConstraint(FSModel* fem, int nstep) : FSSurfaceConstraint(FE_FEBIO_SURFACECONSTRAINT, fem, nstep)
+{
+
+}
+
+void FEBioSurfaceConstraint::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelConstraint::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioSurfaceConstraint::Load(IArchive& ar)
+{
+	TRACE("FEBioSurfaceConstraint::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSSurfaceConstraint::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+//=============================================================================
+FEBioBodyConstraint::FEBioBodyConstraint(FSModel* fem, int nstep) : FSBodyConstraint(FE_FEBIO_BODYCONSTRAINT, fem, nstep)
+{
+
+}
+
+void FEBioBodyConstraint::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSModelConstraint::Save(ar);
+	}
+	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
+}
+
+void FEBioBodyConstraint::Load(IArchive& ar)
+{
+	TRACE("FEBioBodyConstraint::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSBodyConstraint::Load(ar); break;
+		case CID_PROPERTY_LIST  : LoadFEBioProperties(this, ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
+
+//=============================================================================
+// FEFixedNormalDisplacement
+//-----------------------------------------------------------------------------
+
+FSFixedNormalDisplacement::FSFixedNormalDisplacement(FSModel* ps, int nstep) : FSSurfaceConstraint(FE_FIXED_NORMAL_DISPLACEMENT, ps, nstep)
+{
+    SetTypeString("fixed normal displacement");
+    
+    AddBoolParam(true, "laugon", "augmented lagrangian");
+    AddDoubleParam(0.2, "tol", "augmentation tolerance");
+    AddDoubleParam(1  , "penalty", "penalty factor");
+    AddDoubleParam(0  , "minaug", "min. augmentations");
+    AddDoubleParam(10 , "maxaug", "max. augmentations");
+    AddBoolParam(false , "shell_bottom", "shell bottom");
+}
+

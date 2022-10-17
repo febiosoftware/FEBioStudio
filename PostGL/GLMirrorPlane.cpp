@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,8 +29,12 @@ SOFTWARE.*/
 #include "GLModel.h"
 using namespace Post;
 
-CGLMirrorPlane::CGLMirrorPlane(CGLModel* fem) : CGLPlot(fem)
+REGISTER_CLASS(CGLMirrorPlane, CLASS_PLOT, "mirror", 0);
+
+CGLMirrorPlane::CGLMirrorPlane()
 {
+	SetTypeString("mirror");
+
 	static int n = 1;
 	m_id = n;
 	char szname[128] = { 0 };
@@ -114,7 +118,7 @@ void CGLMirrorPlane::RenderPlane()
 {
 	CGLModel* mdl = GetModel();
 
-	BOX box = mdl->GetFEModel()->GetBoundingBox();
+	BOX box = mdl->GetFSModel()->GetBoundingBox();
 
 	// plane center
 	vec3d rc = box.Center();
@@ -130,7 +134,7 @@ void CGLMirrorPlane::RenderPlane()
 	glTranslatef(rc.x, rc.y, rc.z);
 	glTranslatef(-0.5f*m_offset*m_norm.x, -0.5f*m_offset*m_norm.y, -0.5f*m_offset*m_norm.z);
 
-	quatd q = quatd(vec3d(0, 0, 1), m_norm);
+	quatd q = quatd(vec3d(0, 0, 1), to_vec3d(m_norm));
 	float w = q.GetAngle();
 	if (w != 0)
 	{

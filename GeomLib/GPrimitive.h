@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "GObject.h"
+#include "GMultiBox.h"
 #include <FSCore/ParamBlock.h>
 
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 // The GPrimitive class manages the parts, surfaces and nodesets automatically
@@ -44,16 +44,20 @@ public:
 	GPrimitive(int ntype) : GObject(ntype) {}
 
 	// get the editable mesh
-	FEMeshBase* GetEditableMesh() override;
-	FELineMesh* GetEditableLineMesh() override;
+	FSMeshBase* GetEditableMesh() override;
+	FSLineMesh* GetEditableLineMesh() override;
 
 	// update the object's data
 	bool Update(bool b = true) override;
 
-	void Save(OArchive& ar) override;
-	void Load(IArchive& ar) override;
-
 	GObject* Clone() override;
+};
+
+// use this base class for shell primitives
+class GShellPrimitive : public GPrimitive
+{
+public:
+	GShellPrimitive(int ntype) : GPrimitive(ntype) {}
 };
 
 //-----------------------------------------------------------------------------
@@ -333,7 +337,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // 2D circular disc
-class GDisc : public GPrimitive
+class GDisc : public GShellPrimitive
 {
 public:
 	enum {RADIUS};
@@ -349,7 +353,7 @@ protected:
 
 //-----------------------------------------------------------------------------
 // 2D rectangular patch
-class GPatch : public GPrimitive
+class GPatch : public GShellPrimitive
 {
 public:
 	enum {W, H};
@@ -366,7 +370,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // 2D ring
-class GRing : public GPrimitive
+class GRing : public GShellPrimitive
 {
 public:
 	enum {RIN, ROUT};
@@ -383,7 +387,7 @@ private:
 
 //-----------------------------------------------------------------------------
 // a shell tube (cylinder without capped ends)
-class GThinTube  : public GPrimitive
+class GThinTube  : public GShellPrimitive
 {
 public:
 	enum {RAD, H};
@@ -399,7 +403,7 @@ private:
 };
 
 //-----------------------------------------------------------------------------
-class GCylindricalPatch : public GPrimitive
+class GCylindricalPatch : public GShellPrimitive
 {
 public:
 	enum { W, H, R };
@@ -419,11 +423,31 @@ private:
 
 //-----------------------------------------------------------------------------
 // Gregory patch
-class GGregoryPatch : public GPrimitive
+class GGregoryPatch : public GShellPrimitive
 {
 public:
-	GGregoryPatch(FEMesh* pm) : GPrimitive(GGREGORY_PATCH) { SetFEMesh(pm); }
+	GGregoryPatch(FSMesh* pm);
 
 public:
 	void UpdateMesh();
+};
+
+//-----------------------------------------------------------------------------
+class GBoxInBox : public GPrimitive
+{
+public:
+	GBoxInBox();
+	bool Update(bool b = true) override;
+
+	double OuterWidth() const;
+	double OuterHeight() const;
+	double OuterDepth() const;
+
+	double InnerWidth() const;
+	double InnerHeight() const;
+	double InnerDepth() const;
+
+private:
+	void Create() override;
+	FEMesher* CreateDefaultMesher() override;
 };

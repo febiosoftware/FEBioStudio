@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -34,8 +34,8 @@ class CPropertyListForm;
 class CPostDocument;
 class GObject;
 class GDecoration;
-class FEMesh;
-class FEMeshBase;
+class FSMesh;
+class FSMeshBase;
 
 //-----------------------------------------------------------------------------
 // A tool implements a general purpose extension.
@@ -84,8 +84,8 @@ public:
 	void SetDecoration(GDecoration* deco);
 
 	// get the active mesh
-	FEMesh* GetActiveMesh();
-	FEMeshBase* GetActiveEditMesh();
+	FSMesh* GetActiveMesh();
+	FSMeshBase* GetActiveEditMesh();
 
 private:
 	QString			m_name;

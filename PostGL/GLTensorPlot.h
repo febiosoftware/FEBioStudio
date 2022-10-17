@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -37,7 +37,7 @@ namespace Post {
 
 class GLTensorPlot : public CGLLegendPlot
 {
-	enum { DATA_FIELD, METHOD, COLOR_MAP, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
+	enum { DATA_FIELD, METHOD, COLOR_MAP, RANGE_DIVS, CLIP, SHOW_HIDDEN, SCALE, DENSITY, GLYPH, GLYPH_COLOR, SOLID_COLOR, AUTO_SCALE, NORMALIZE, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN };
 
 public:
 	enum Glyph_Type {
@@ -67,7 +67,7 @@ private:
 	};
 
 public:
-	GLTensorPlot(CGLModel* po);
+	GLTensorPlot();
 
 	void Render(CGLContext& rc) override;
 
@@ -121,6 +121,7 @@ protected:
 	int		m_ntensor;	// tensor field
 	int		m_nglyph;	// glyph type
 	int		m_ncol;		// color type
+	int		m_ndivs;	// range divisions
 	DATA_RANGE	m_range;
 
 	float	m_scale;

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,12 +26,37 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
+#include <QGroupBox>
 
 namespace Ui{
 	class CDlgBoxProps;
 	class CDlgLegendProps;
 	class CDlgTriadProps;
 	class CDlgCaptureFrameProps;
+};
+
+class CFontWidgetUI;
+
+class CFontWidget : public QGroupBox
+{
+	Q_OBJECT
+
+public:
+	CFontWidget(QWidget* parent = 0);
+	~CFontWidget();
+
+public:
+	void setFont(const QFont& font, const QColor& col);
+
+	QFont getFont() const;
+
+	QColor getFontColor() const;
+
+public slots:
+	void onMakeDefault();
+
+private:
+	CFontWidgetUI* ui;
 };
 
 class GLWidget;

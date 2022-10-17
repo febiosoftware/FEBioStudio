@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,39 +26,15 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/Serializable.h>
+#include <FECore/fecore_enum.h>
 #include <stdlib.h>
 #include "FEModel.h"
 #include "PlotDataSettings.h"
+#include <ostream>
 
 //-----------------------------------------------------------------------------
 #define FE_STATIC	0
 #define FE_DYNAMIC	1
-
-//-----------------------------------------------------------------------------
-enum FEPlotLevel {
-	FE_PLOT_NEVER,
-	FE_PLOT_MAJOR_ITRS,
-	FE_PLOT_MINOR_ITRS,
-	FE_PLOT_MUST_POINTS,
-	FE_PLOT_FINAL,
-	FE_PLOT_AUGMENTS,
-	FE_PLOT_STEP_FINAL
-};
-
-//-----------------------------------------------------------------------------
-// FE Super classes
-enum FESuperClass
-{
-	FE_ANALYSIS,
-	FE_ESSENTIAL_BC,
-	FE_SURFACE_LOAD,
-	FE_BODY_LOAD,
-	FE_INITIAL_CONDITION,
-	FE_INTERFACE,
-	FE_RIGID_CONSTRAINT,
-	FE_RIGID_CONNECTOR,
-	FE_CONSTRAINT
-};
 
 //-----------------------------------------------------------------------------
 // Module flags
@@ -75,20 +51,21 @@ enum MODULE_FLAG
 	MODULE_REACTIONS			= 0x0040,
     MODULE_FLUID_FSI			= 0x0080,
 	MODULE_REACTION_DIFFUSION	= 0x0100,
+    MODULE_POLAR_FLUID          = 0x0120,
 
 	MODULE_ALL = 0xFFFF
 };
 
 //-----------------------------------------------------------------------------
 // Output for log file
-class FELogData
+class FSLogData
 {
 public:
 	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR };
 
 public:
-    FELogData(){ matID = -1; groupID = -1; rcID = -1; }
-	FELogData(const FELogData& d)
+	FSLogData(){ matID = -1; groupID = -1; rcID = -1; }
+	FSLogData(const FSLogData& d)
 	{
 		type = d.type;
 		sdata = d.sdata;
@@ -97,7 +74,7 @@ public:
 		groupID = d.groupID;
         rcID = d.rcID;
 	}
-	void operator = (const FELogData& d)
+	void operator = (const FSLogData& d)
 	{
 		type = d.type;
 		sdata = d.sdata;
@@ -131,28 +108,28 @@ public:
 
 public:
 	int LogDataSize() { return (int)m_log.size(); }
-	FELogData& LogData(int i) { return m_log[i]; }
-	void AddLogData(FELogData& d) { m_log.push_back(d); }
+	FSLogData& LogData(int i) { return m_log[i]; }
+	void AddLogData(FSLogData& d) { m_log.push_back(d); }
 	void ClearLogData() { m_log.clear(); }
 	void RemoveLogData(int item);
 
 private:
-	vector<FELogData>		m_log;		// log data
+	std::vector<FSLogData>		m_log;		// log data
 };
 
 //-----------------------------------------------------------------------------
-//! The FEProject class stores all the FE data.
-class FEProject : public CSerializable
+//! The FSProject class stores all the FE data.
+class FSProject : public CSerializable
 {
 public:
 	//! constructor 
-	FEProject(void);
+	FSProject(void);
 
 	//! class destructor
-	virtual ~FEProject(void);
+	virtual ~FSProject(void);
 
 	// get the FE data
-	FEModel& GetFEModel() { return m_fem; }
+	FSModel& GetFSModel() { return m_fem; }
 
 	//! save project to file
 	void Save(OArchive& ar);
@@ -178,18 +155,44 @@ public:
 	//! Get the log file settings
 	CLogDataSettings& GetLogDataSettings() { return m_log; }
 
-	//! activate plot variables for a new step
-	void ActivatePlotVariables(FEAnalysisStep* step);
+	//! set default plot variables
+	void SetDefaultPlotVariables();
 
-	unsigned int GetModule() const;
-	void SetModule(unsigned int mod);
+	int GetModule() const;
+	void SetModule(int mod, bool setDefaultPlotVariables = true);
+
+	std::string GetModuleName() const;
 
 	static void InitModules();
 
+	void SetUnits(int units);
+	int GetUnits() const;
+
+public:
+	// convert the old format to the new
+	void ConvertToNewFormat(std::ostream& log);
+
+protected:
+	void ConvertMaterials(std::ostream& log);
+	bool ConvertSteps(std::ostream& log);
+	bool ConvertDiscrete(std::ostream& log);
+	void ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febStep, FSAnalysisStep& oldStep);
+	void ConvertStep(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepBCs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepRigidConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertStepRigidConnectors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertLinearConstraints(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+	void ConvertMeshAdaptors(std::ostream& log, FSStep& newStep, FSStep& oldStep);
+
 private:
-	unsigned int		m_module;	// active module
 	string				m_title;	// Project Title
-	FEModel				m_fem;		// FE model data
+	FSModel				m_fem;		// FE model data
+	int					m_module;	// active module
+	int					m_units;	// unit system (read from feb file)
 	CPlotDataSettings	m_plt;		// plot file settings
 	CLogDataSettings	m_log;		// log file settings
 };

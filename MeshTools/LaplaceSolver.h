@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 using std::vector;
 
-class FEMesh;
+class FSMesh;
 
 //-----------------------------------------------------------------------------
 //! This class solves the Laplace equation using an iterative method
@@ -47,7 +47,7 @@ public:
 	// Input: val = initial values for all nodes
 	//        bn  = boundary flags: 0 = free, 1 = fixed
 	// Output: val = solution
-	bool Solve(FEMesh* pm, vector<double>& val, vector<int>& bn, int elemTag = 0);
+	bool Solve(FSMesh* pm, vector<double>& val, vector<int>& bn, int elemTag = 0);
 
 public: // output
 	int GetIterationCount() const;

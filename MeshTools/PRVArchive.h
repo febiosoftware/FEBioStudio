@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FSCore/Archive.h>
 
 //-----------------------------------------------------------------------------
-class FEModel;
+class FSModel;
 
 //-----------------------------------------------------------------------------
 // The PreView archive
@@ -47,7 +47,7 @@ public:
 	void Close();
 
 private:
-	FEModel*	m_pfem;
+	FSModel*	m_pfem;
 	int			m_nc;	// counter
 	IArchive	m_ar;	// the archive
 };

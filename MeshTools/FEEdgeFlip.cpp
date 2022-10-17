@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEEdgeFlip.h"
 #include <MeshLib/MeshTools.h>
 #include <MeshLib/FESurfaceMesh.h>
+using namespace std;
 
 FEEdgeFlip::FEEdgeFlip() : FESurfaceModifier("Flip Edges")
 {
@@ -48,27 +49,36 @@ void FEEdgeFlip::Cleanup()
 	if (m_EFL) { delete m_EFL; m_EFL = 0; }
 }
 
-FESurfaceMesh* FEEdgeFlip::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 {	
 	// make sure this is a tri-mesh
 	if (pm->IsType(FE_FACE_TRI3) == false) return nullptr;
 
 	// copy the mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh(*pm);
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
+
+	// see if any edges are selected
+	bool forceFlip = false;
+	bool selectedOnly = false;
+	if (newMesh->CountSelectedEdges() > 0)
+	{
+		selectedOnly = true;
+		forceFlip = true;
+	}
 
 	// allocate the data structures we'll need
 	// create the edge list
-	m_EL = new FEEdgeList(*newMesh);
+	m_EL = new FSEdgeList(*newMesh);
 	int NE = m_EL->size();
 
 	// create the edge-face list
-	m_FEL = new FEFaceEdgeList(*newMesh, *m_EL);
+	m_FEL = new FSFaceEdgeList(*newMesh, *m_EL);
 
 	// create the edge-face list
-	m_EFL = new FEEdgeFaceList(*newMesh);
+	m_EFL = new FSEdgeFaceList(*newMesh);
 
 	// mark the edges we don't want to flip
-	MarkEdges(newMesh);
+	MarkEdges(newMesh, selectedOnly);
 
 	// repeat until we can't find any more edges to flip
 	bool bdone = false;
@@ -84,7 +94,7 @@ FESurfaceMesh* FEEdgeFlip::Apply(FESurfaceMesh* pm)
 			if (m_tag[i] == 1)
 			{
 				// Try to flip this edge
-				if (FlipEdge(i, newMesh))
+				if (FlipEdge(i, newMesh, forceFlip))
 				{
 					// The edge was flipped, so we're not done yet
 					bdone = false;
@@ -106,11 +116,11 @@ FESurfaceMesh* FEEdgeFlip::Apply(FESurfaceMesh* pm)
 
 // Mark the edges the we can and cannot flip.
 // This means don't flip feature edges.
-void FEEdgeFlip::MarkEdges(FESurfaceMesh* mesh)
+void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh, bool selectedOnly)
 {
-	FEEdgeList& EL = *m_EL;
-	FEFaceEdgeList& FEL = *m_FEL;
-	FEEdgeFaceList& EFL = *m_EFL;
+	FSEdgeList& EL = *m_EL;
+	FSFaceEdgeList& FEL = *m_FEL;
+	FSEdgeFaceList& EFL = *m_EFL;
 
 	// number of (surface) edges
 	int NE = EFL.size(); assert(NE == EL.size());
@@ -121,12 +131,18 @@ void FEEdgeFlip::MarkEdges(FESurfaceMesh* mesh)
 	mesh->TagAllNodes(0);
 	for (int i = 0; i<mesh->Edges(); ++i)
 	{
-		FEEdge& edge = mesh->Edge(i);
+		FSEdge& edge = mesh->Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			mesh->Node(edge.n[0]).m_ntag = 1;
 			mesh->Node(edge.n[1]).m_ntag = 1;
 
+			edgeList.push_back(i);
+		}
+		else if (selectedOnly && (edge.IsSelected() == false))
+		{
+			mesh->Node(edge.n[0]).m_ntag = 1;
+			mesh->Node(edge.n[1]).m_ntag = 1;
 			edgeList.push_back(i);
 		}
 	}
@@ -141,7 +157,7 @@ void FEEdgeFlip::MarkEdges(FESurfaceMesh* mesh)
 		{
 			for (int j = 0; j<(int)edgeList.size(); ++j)
 			{
-				FEEdge& ej = mesh->Edge(edgeList[j]);
+				FSEdge& ej = mesh->Edge(edgeList[j]);
 				if (((ej.n[0] == n0) && (ej.n[1] == n1)) || ((ej.n[0] == n1) && (ej.n[1] == n0)))
 				{
 					m_tag[i] = 0;
@@ -160,14 +176,14 @@ void FEEdgeFlip::MarkEdges(FESurfaceMesh* mesh)
 
 // Try to flip an edge
 // Will return true on success (the edge was flipped), or false on failure
-bool FEEdgeFlip::FlipEdge(int iedge, FESurfaceMesh* mesh)
+bool FEEdgeFlip::FlipEdge(int iedge, FSSurfaceMesh* mesh, bool forceFlip)
 {
 	int a[3], b[3];
 	vec3d ra[3], rb[3];
 
-	FEEdgeList& EL = *m_EL;
-	FEFaceEdgeList& FEL = *m_FEL;
-	FEEdgeFaceList& EFL = *m_EFL;
+	FSEdgeList& EL = *m_EL;
+	FSFaceEdgeList& FEL = *m_FEL;
+	FSEdgeFaceList& EFL = *m_EFL;
 
 	// get the edge and its nodes
 	std::pair<int, int>& edge = EL[iedge];
@@ -181,8 +197,8 @@ bool FEEdgeFlip::FlipEdge(int iedge, FESurfaceMesh* mesh)
 	if (faceList.size() != 2) return false;
 
 	// get the two adjacent faces
-	FEFace& f0 = mesh->Face(faceList[0]);
-	FEFace& f1 = mesh->Face(faceList[1]);
+	FSFace& f0 = mesh->Face(faceList[0]);
+	FSFace& f1 = mesh->Face(faceList[1]);
 
 	// we need to find start node for each face
 	int k0 = -1;
@@ -226,8 +242,12 @@ bool FEEdgeFlip::FlipEdge(int iedge, FESurfaceMesh* mesh)
 	assert(a[1] == b[0]);
 
 	// see if we should flip the edge
-	bool flip = ShouldFlip(a, b, mesh);
-	if (flip == false) return false;
+	if (forceFlip == false)
+	{
+		bool flip = ShouldFlip(a, b, mesh);
+		if (flip == false) return false;
+	}
+	else m_tag[iedge] = 0;
 
 	// Do the actual edge flipping
 	DoFlipEdge(iedge, a, b, k0, k1, mesh);
@@ -237,11 +257,11 @@ bool FEEdgeFlip::FlipEdge(int iedge, FESurfaceMesh* mesh)
 }
 
 // Do the actual edge flipping
-void FEEdgeFlip::DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FESurfaceMesh* mesh)
+void FEEdgeFlip::DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FSSurfaceMesh* mesh)
 {
-	FEEdgeList& EL = *m_EL;
-	FEFaceEdgeList& FEL = *m_FEL;
-	FEEdgeFaceList& EFL = *m_EFL;
+	FSEdgeList& EL = *m_EL;
+	FSFaceEdgeList& FEL = *m_FEL;
+	FSEdgeFaceList& EFL = *m_EFL;
 	vector<int> tmp0(3), tmp1(3);
 
 	// flip the edge
@@ -249,14 +269,14 @@ void FEEdgeFlip::DoFlipEdge(int iedge, int a[3], int b[3], int k0, int k1, FESur
 	edge.first = a[2];
 	edge.second = b[2];
 
-	FEEdge& e = mesh->Edge(iedge);
+	FSEdge& e = mesh->Edge(iedge);
 	e.n[0] = a[2];
 	e.n[1] = b[2];
 
 	// get the face list of the node
 	std::vector<int>& faceList = EFL[iedge];
-	FEFace& f0 = mesh->Face(faceList[0]);
-	FEFace& f1 = mesh->Face(faceList[1]);
+	FSFace& f0 = mesh->Face(faceList[0]);
+	FSFace& f1 = mesh->Face(faceList[1]);
 
 	// flip the faces
 	f0.n[0] = b[2];
@@ -335,7 +355,7 @@ bool isConvex(const vec3d& A, const vec3d& B, const vec3d& C, const vec3d& D)
 }
 
 // helper function to see if an edge should be flipped
-bool FEEdgeFlip::ShouldFlip(int a[3], int b[3], FESurfaceMesh* mesh)
+bool FEEdgeFlip::ShouldFlip(int a[3], int b[3], FSSurfaceMesh* mesh)
 {
 	// get the nodal coordinates
 	vec3d A = mesh->Node(a[0]).r;

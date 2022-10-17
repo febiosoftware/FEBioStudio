@@ -63,5 +63,21 @@ namespace QUAD4 {
 		case 3: q[0] = -1; q[1] =  1; break;
 		}
 	}
+
+	inline void gauss_data(double* gr, double* gs, double* gt, double* gw)
+	{
+		const double a = 1.0 / sqrt(3.0);
+		const double w = 1.0;
+
+		gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = w;
+		gr[1] =  a; gs[1] = -a; gt[1] = -a; gw[1] = w;
+		gr[2] =  a; gs[2] =  a; gt[2] = -a; gw[2] = w;
+		gr[3] = -a; gs[3] =  a; gt[3] = -a; gw[3] = w;
+
+		gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = w;
+		gr[5] =  a; gs[5] = -a; gt[5] = a; gw[5] = w;
+		gr[6] =  a; gs[6] =  a; gt[6] = a; gw[6] = w;
+		gr[7] = -a; gs[7] =  a; gt[7] = a; gw[7] = w;
+	}
 }
 

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,14 +27,14 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESurfaceIntersect.h"
 
-int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
+int FESurfaceIntersect::Apply(FSSurface* psrc, FSSurface* ptrg, double mindist)
 {
 	// get the parent mesh 
 	// and make sure it is a triangle mesh
-	FEMesh* pm = psrc->GetMesh();
+	FSMesh* pm = psrc->GetMesh();
 
 	// build the slave surface node list
-	FENodeList* pn = psrc->BuildNodeList();
+	FSNodeList* pn = psrc->BuildNodeList();
 
 	// build the target facet list
 	FEFaceList* pfs = psrc->BuildFaceList();
@@ -45,11 +45,11 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 
 	// loop over all the surface nodes
 	int N = pn->Size();
-	FENodeList::Iterator it = pn->First();
+	FSNodeList::Iterator it = pn->First();
 	for (int i=0; i<N; ++i, ++it)
 	{
 		// get the next node
-		FENode& node = *(it->m_pi);
+		FSNode& node = *(it->m_pi);
 
 		// find the distance to the target surface
 		double D = Distance(*pft, node.r);
@@ -64,7 +64,7 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 	// select all nodes that are tagged
 	for (int i=0; i<pm->Nodes(); ++i)
 	{
-		FENode& node = pm->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.m_ntag == 1) node.Select(); else node.Unselect();
 	}
 
@@ -75,7 +75,7 @@ int FESurfaceIntersect::Apply(FESurface* psrc, FESurface* ptrg, double mindist)
 	FEFaceList::Iterator pi;
 	for (pi = pfs->First(); pi != pfs->End(); ++pi)
 	{
-		FEFace& f = *(pi->m_pi);
+		FSFace& f = *(pi->m_pi);
 		int nf = f.Nodes();
 		for (int j=0; j<nf; ++j)
 		{
@@ -142,8 +142,8 @@ double FESurfaceIntersect::Distance(FEFaceList& s, const vec3d& r)
 	vec3d p[3];
 	for (pf = s.First(); pf != s.End(); ++pf)
 	{
-		FEFace& f = *(pf->m_pi);
-		FECoreMesh& m = *(pf->m_pm);
+		FSFace& f = *(pf->m_pi);
+		FSCoreMesh& m = *(pf->m_pm);
 		if (f.Type() == FE_FACE_TRI3)
 		{
 			// get the vertex coordinates

@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,12 +33,13 @@ SOFTWARE.*/
 #include <mmg/mmg2d/libmmg2d.h>
 #endif
 #include <MeshLib/FEMeshBuilder.h>
+using namespace std;
 
 extern int ET_TET[6][2]; // in lut.cpp
 extern int ET_TRI[3][2]; // in lut.cpp
 
 //=========================================================================================
-FEMMGRemesh::FEMMGRemesh() : FEModifier("MMG Remesh")
+MMGRemesh::MMGRemesh() : FEModifier("MMG Remesh")
 {
 	AddDoubleParam(0.0, "H", "Element size");
 
@@ -48,15 +49,66 @@ FEMMGRemesh::FEMMGRemesh() : FEModifier("MMG Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FEMesh* FEMMGRemesh::Apply(FEMesh* pm)
+FSMesh* MMGRemesh::Apply(FSMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
-	if (pm->IsType(FE_TET4)) return RemeshTET4(pm);
+	if (pm->IsType(FE_TET4))
+	{
+		pm->TagAllElements(0);
+		return RemeshTET4(pm);
+	}
 	else if (pm->IsType(FE_TRI3)) return RemeshTRI3(pm);
 	else { SetError("This is not a TET4 mesh"); return 0; }
 }
 
-FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
+FSMesh* MMGRemesh::Apply(FSGroup* pg)
+{
+	if (pg == nullptr) return nullptr;
+	FSMesh* pm = pg->GetMesh();
+	if (pm == nullptr) return nullptr;
+	if (pm->IsType(FE_TET4) == false) return Apply(pm);
+
+	if (dynamic_cast<FSPart*>(pg))
+	{
+		pm->TagAllElements(0);
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			if (pm->Element(i).IsSelected()) pm->Element(i).m_ntag = 1;
+		}
+		return RemeshTET4(pm);
+	}
+	else if (dynamic_cast<FSSurface*>(pg))
+	{
+		pm->TagAllNodes(0);
+		pm->TagAllElements(0);
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			if (pm->Face(i).IsSelected())
+			{
+				FSFace& face = pm->Face(i);
+				int nn = face.Nodes();
+				for (int j = 0; j < nn; ++j) pm->Node(face.n[j]).m_ntag = 1;
+			}
+		}
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			FSElement& el = pm->Element(i);
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j)
+			{
+				if (pm->Node(el.m_node[j]).m_ntag == 1)
+				{
+					el.m_ntag = 1;
+					break;
+				}
+			}
+		}
+		return RemeshTET4(pm);
+	}
+	else return Apply(pg->GetMesh());
+}
+
+FSMesh* MMGRemesh::RemeshTET4(FSMesh* pm)
 {
 #ifdef HAS_MMG
 	int NE = pm->Elements();
@@ -91,40 +143,40 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS+1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMG3D_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, i + 1);
 	}
 
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& e = pm->Element(i);
+		FSElement& e = pm->Element(i);
 		int* n = e.m_node;
 		MMG3D_Set_tetrahedron(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, n[3] + 1, e.m_gid, i + 1);
 	}
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMG3D_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -148,8 +200,8 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
-		if (el.IsSelected()) nsel++;
+		FSElement& el = pm->Element(i);
+		if (el.m_ntag == 1) nsel++;
 	}
 
 	if (nsel == 0)
@@ -165,15 +217,15 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 		{
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement& e = pm->Element(i);
-				if (e.IsSelected() == false) MMG3D_Set_requiredTetrahedron(mmgMesh, i + 1);
+				FSElement& e = pm->Element(i);
+				if (e.m_ntag != 1) MMG3D_Set_requiredTetrahedron(mmgMesh, i + 1);
 			}
 		}
 
 		// build the edge length table
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			for (int j = 0; j < 6; ++j)
 			{
 				int a = el.m_node[ET_TET[j][0]];
@@ -199,8 +251,8 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
-			if (el.IsSelected())
+			FSElement& el = pm->Element(i);
+			if (el.m_ntag == 1)
 			{
 				for (int j = 0; j < el.Nodes(); ++j)
 				{
@@ -233,7 +285,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FEMesh* newMesh = new FEMesh();
+	FSMesh* newMesh = new FSMesh();
 
 	// get the new mesh sizes
 	MMG3D_Get_meshSize(mmgMesh, &NN, &NE, NULL, &NF, NULL, &NC);
@@ -242,7 +294,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMG3D_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
@@ -252,7 +304,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	// get the tetra
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = newMesh->Element(i);
+		FSElement& el = newMesh->Element(i);
 		el.SetType(FE_TET4);
 		int* n = el.m_node;
 		MMG3D_Get_tetrahedron(mmgMesh, n, n + 1, n + 2, n + 3, &el.m_gid, NULL);
@@ -265,7 +317,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = newMesh->Face(i);
+		FSFace& f = newMesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		int* n = f.n;
 		MMG3D_Get_triangle(mmgMesh, n, n + 1, n + 2, &f.m_gid, NULL);
@@ -277,7 +329,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;
@@ -308,7 +360,7 @@ FEMesh* FEMMGRemesh::RemeshTET4(FEMesh* pm)
 #endif
 }
 
-FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
+FSMesh* MMGRemesh::RemeshTRI3(FSMesh* pm)
 {
 	assert(pm->IsType(FE_TRI3));
 
@@ -345,33 +397,33 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS + 1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMGS_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, i + 1);
 	}
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMGS_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -395,7 +447,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NE; ++i)
 	{
-		FEElement& el = pm->Element(i);
+		FSElement& el = pm->Element(i);
 		if (el.IsSelected()) nsel++;
 	}
 
@@ -412,7 +464,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 		{
 			for (int i = 0; i < NE; ++i)
 			{
-				FEElement& e = pm->Element(i);
+				FSElement& e = pm->Element(i);
 				if (e.IsSelected() == false) MMGS_Set_requiredTriangle(mmgMesh, i + 1);
 			}
 		}
@@ -420,7 +472,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 		// build the edge length table
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			for (int j = 0; j < 3; ++j)
 			{
 				int a = el.m_node[ET_TRI[j][0]];
@@ -446,7 +498,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 
 		for (int i = 0; i < NE; ++i)
 		{
-			FEElement& el = pm->Element(i);
+			FSElement& el = pm->Element(i);
 			if (el.IsSelected())
 			{
 				for (int j = 0; j < el.Nodes(); ++j)
@@ -480,7 +532,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FEMesh* newMesh = new FEMesh();
+	FSMesh* newMesh = new FSMesh();
 
 	// get the new mesh sizes
 	MMGS_Get_meshSize(mmgMesh, &NN, &NF, &NE);
@@ -489,7 +541,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMGS_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
@@ -499,7 +551,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEElement& el = newMesh->Element(i);
+		FSElement& el = newMesh->Element(i);
 		el.SetType(FE_TRI3);
 		int* n = el.m_node;
 		MMGS_Get_triangle(mmgMesh, n, n + 1, n + 2, &el.m_gid, NULL);
@@ -507,7 +559,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 		el.m_node[1]--;
 		el.m_node[2]--;
 
-		FEFace& f = newMesh->Face(i);
+		FSFace& f = newMesh->Face(i);
 		f.SetType(FE_FACE_TRI3);
 		f.m_gid = el.m_gid;
 		f.n[0] = el.m_node[0];
@@ -518,7 +570,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;
@@ -550,7 +602,7 @@ FEMesh* FEMMGRemesh::RemeshTRI3(FEMesh* pm)
 }
 
 //================================================================================================
-FEMMGSurfaceRemesh::FEMMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
+MMGSurfaceRemesh::MMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
 {
 	AddDoubleParam(0.0, "H", "Element size");
 
@@ -560,7 +612,7 @@ FEMMGSurfaceRemesh::FEMMGSurfaceRemesh() : FESurfaceModifier("MMG Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* MMGSurfaceRemesh::Apply(FSSurfaceMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
@@ -597,33 +649,33 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS + 1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMGS_Set_vertex(mmgMesh, r.x, r.y, r.z, vi.m_gid, i + 1);
 	}
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMGS_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
 /*	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -647,7 +699,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected()) nsel++;
 	}
 
@@ -664,7 +716,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 		{
 			for (int i = 0; i < NF; ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				if (face.IsSelected() == false) MMGS_Set_requiredTriangle(mmgMesh, i + 1);
 			}
 		}
@@ -672,7 +724,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 		// build the edge length table
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			for (int j = 0; j < 3; ++j)
 			{
 				int a = face.n[ET_TRI[j][0]];
@@ -698,7 +750,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsSelected())
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -732,7 +784,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh();
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh();
 
 	// get the new mesh sizes
 	MMGS_Get_meshSize(mmgMesh, &NN, &NF, &NC);
@@ -741,7 +793,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMGS_Get_vertex(mmgMesh, &ri.x, &ri.y, &ri.z, &vi.m_gid, &isCorner, NULL);
@@ -751,7 +803,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = newMesh->Face(i);
+		FSFace& face = newMesh->Face(i);
 		face.SetType(FE_FACE_TRI3);
 		int* n = face.n;
 		MMGS_Get_triangle(mmgMesh, n, n + 1, n + 2, &face.m_gid, NULL);
@@ -763,7 +815,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;
@@ -791,7 +843,7 @@ FESurfaceMesh* FEMMGSurfaceRemesh::Apply(FESurfaceMesh* pm)
 }
 
 //================================================================================================
-FEMMG2DRemesh::FEMMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
+MMG2DRemesh::MMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
 {
 	AddDoubleParam(0.0, "H", "Element size");
 
@@ -801,7 +853,7 @@ FEMMG2DRemesh::FEMMG2DRemesh() : FESurfaceModifier("MMG2D Remesh")
 	AddBoolParam(true, "Only remesh selection");
 }
 
-FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
+FSSurfaceMesh* MMG2DRemesh::Apply(FSSurfaceMesh* pm)
 {
 	if (pm == nullptr) { SetError("This object has no mesh."); return 0; }
 	assert(pm->IsType(FE_FACE_TRI3));
@@ -813,7 +865,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	pm->TagAllNodes(0);
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& edge = pm->Edge(i);
+		FSEdge& edge = pm->Edge(i);
 		if (edge.m_gid >= 0)
 		{
 			NC++;
@@ -844,20 +896,20 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	int NS = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		if (f.m_gid > NS) NS = f.m_gid;
 	}
 	vector<int> ST(NS + 1, 0);
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		ST[f.m_gid] = f.m_sid;
 	}
 
 	// build the MMG mesh
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		vec3d r = vi.pos();
 		MMG2D_Set_vertex(mmgMesh, r.x, r.y, vi.m_gid, i + 1);
 	}
@@ -865,7 +917,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// set the required vertices
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = pm->Node(i);
+		FSNode& vi = pm->Node(i);
 		if ((vi.m_gid >= 0) || (vi.m_ntag > 0))
 		{
 			MMG2D_Set_requiredVertex(mmgMesh, i + 1);
@@ -874,7 +926,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& f = pm->Face(i);
+		FSFace& f = pm->Face(i);
 		int* n = f.n;
 		MMG2D_Set_triangle(mmgMesh, n[0] + 1, n[1] + 1, n[2] + 1, f.m_gid, i + 1);
 	}
@@ -882,7 +934,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	int nc = 0;
 	for (int i = 0; i < pm->Edges(); ++i)
 	{
-		FEEdge& e = pm->Edge(i);
+		FSEdge& e = pm->Edge(i);
 		if (e.m_gid >= 0)
 		{
 			int* n = e.n;
@@ -908,7 +960,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	int nsel = 0;
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = pm->Face(i);
+		FSFace& face = pm->Face(i);
 		if (face.IsSelected()) nsel++;
 	}
 
@@ -925,7 +977,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 		{
 			for (int i = 0; i < NF; ++i)
 			{
-				FEFace& face = pm->Face(i);
+				FSFace& face = pm->Face(i);
 				if (face.IsSelected() == false) MMGS_Set_requiredTriangle(mmgMesh, i + 1);
 			}
 		}
@@ -933,7 +985,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 		// build the edge length table
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			for (int j = 0; j < 3; ++j)
 			{
 				int a = face.n[ET_TRI[j][0]];
@@ -959,7 +1011,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 
 		for (int i = 0; i < NF; ++i)
 		{
-			FEFace& face = pm->Face(i);
+			FSFace& face = pm->Face(i);
 			if (face.IsSelected())
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -995,7 +1047,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	}
 
 	// convert back to prv mesh
-	FESurfaceMesh* newMesh = new FESurfaceMesh();
+	FSSurfaceMesh* newMesh = new FSSurfaceMesh();
 
 	// get the new mesh sizes
 	int NQ = 0;
@@ -1006,7 +1058,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		FENode& vi = newMesh->Node(i);
+		FSNode& vi = newMesh->Node(i);
 		vec3d& ri = vi.r;
 		int isCorner = 0;
 		MMG2D_Get_vertex(mmgMesh, &ri.x, &ri.y, &vi.m_gid, &isCorner, NULL);
@@ -1016,7 +1068,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// get the triangles
 	for (int i = 0; i < NF; ++i)
 	{
-		FEFace& face = newMesh->Face(i);
+		FSFace& face = newMesh->Face(i);
 		face.SetType(FE_FACE_TRI3);
 		int* n = face.n;
 		MMG2D_Get_triangle(mmgMesh, n, n + 1, n + 2, &face.m_gid, NULL);
@@ -1029,7 +1081,7 @@ FESurfaceMesh* FEMMG2DRemesh::Apply(FESurfaceMesh* pm)
 	// get the edges
 	for (int i = 0; i < NC; ++i)
 	{
-		FEEdge& e = newMesh->Edge(i);
+		FSEdge& e = newMesh->Edge(i);
 		e.SetType(FE_EDGE2);
 		int* n = e.n;
 		int isRidge;

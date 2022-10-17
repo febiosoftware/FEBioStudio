@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -32,12 +32,16 @@ class GSphere;
 class FESphere : public FEMultiBlockMesh
 {
 public:
-	enum { RATIO, NDIV, NSEG, GD, GR, GD2, GR2 };
+//	enum { RATIO, NDIV, NSEG, GD, GR, GD2, GR2, ELEM_TYPE };
+	enum { RATIO, NDIV, NSEG, GR, GR2, ELEM_TYPE };
 
 public:
 	FESphere(){}
 	FESphere(GSphere* po);
-	FEMesh* BuildMesh();
+	FSMesh* BuildMesh();
+
+protected:
+	bool BuildMultiBlock() override;
 
 protected:
 	GSphere* m_pobj;

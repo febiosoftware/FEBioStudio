@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2020 University of Utah, The Trustees of Columbia University in 
+Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MathLib/math3d.h>
+#include <FECore/vec3d.h>
+#include <FECore/quatd.h>
 #include <vector>
-//using namespace std;
 
 class ConchoidFit  
 {
@@ -35,14 +35,14 @@ public:
 	ConchoidFit();
 	virtual ~ConchoidFit();
 
-	void Fit(const vector<vec3d>& y, int maxiter = 100);
+	void Fit(const std::vector<vec3d>& y, int maxiter = 100);
 
 	double ObjFunc(double l);
 
-	void Apply(vector<vec3d>& y);
+	void Apply(std::vector<vec3d>& y);
 
 protected:
-	void Regression(const vector<vec3d>& y, vec3d& rc, quatd& q, double& a, double& b);
+	void Regression(const std::vector<vec3d>& y, vec3d& rc, quatd& q, double& a, double& b);
 	vec3d Transform(vec3d& rc, quatd& q, const vec3d& p)
 	{
 		vec3d r = p - rc;
@@ -50,7 +50,7 @@ protected:
 		return r;
 	}
 
-	vec3d GetOrientation(const vector<vec3d>& y);
+	vec3d GetOrientation(const std::vector<vec3d>& y);
 
 	void FindMinimum();
 
@@ -61,5 +61,5 @@ public:
 
 	double	m_a, m_b;	// conchoid parameters
 
-	vector<vec3d> m_y;
+	std::vector<vec3d> m_y;
 };
