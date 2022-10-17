@@ -39,7 +39,7 @@ class CPyOutput : public QObject
 public:
     CPyOutput() 
     {
-        auto panel =  PRV::getMainWindow()->GetPythonToolsPanel();
+        auto panel =  FBS::getMainWindow()->GetPythonToolsPanel();
 
         QObject::connect(this, &CPyOutput::output, panel, &CPythonToolsPanel::addLog);
     }

@@ -36,7 +36,7 @@ SOFTWARE.*/
 
 void PySetProgressText(const char* txt)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto panel = wnd->GetPythonToolsPanel();
 
     QMetaObject::invokeMethod(panel, "setProgressText", Q_ARG(const QString&, txt));
@@ -44,7 +44,7 @@ void PySetProgressText(const char* txt)
 
 void PySetProgress(int prog)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto panel = wnd->GetPythonToolsPanel();
 
     QMetaObject::invokeMethod(panel, "setProgress", Q_ARG(int, prog));
@@ -52,7 +52,7 @@ void PySetProgress(int prog)
 
 void PySetProgress(float prog)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto panel = wnd->GetPythonToolsPanel();
 
     QMetaObject::invokeMethod(panel, "setProgress", Q_ARG(int, (int)(prog*100)));
@@ -60,7 +60,7 @@ void PySetProgress(float prog)
 
 CPythonInputHandler* PyGetInput(int type, const char* txt)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto inputHandler = wnd->GetPythonToolsPanel()->getInputHandler();
 
     QMetaObject::invokeMethod(inputHandler, "getInput", Q_ARG(int, type), Q_ARG(const QString&, txt));

@@ -64,7 +64,7 @@ void CPythonToolsPanel::Update(bool breset)
 {
 	if (m_activeTool)
 	{
-		m_activeTool->Update();
+		m_activeTool->CAbstractTool::Update();
 	}
 }
 

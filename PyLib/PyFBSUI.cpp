@@ -50,12 +50,12 @@ SOFTWARE.*/
 
 void openFile(const char *fileName)
 {
-    PRV::getMainWindow()->OpenFile(fileName);
+    FBS::getMainWindow()->OpenFile(fileName);
 }
 
 CPythonDummyTool* PythonTool_init(const char* name, pybind11::function func)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
 
     return pythonToolsPanel->addDummyTool(name, func);
@@ -73,7 +73,7 @@ GBox* GBox_init(vec3d pos, double width, double height, double depth)
 
     gbox->GetTransform().SetPosition(pos);
 
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
     if(!doc)
     {

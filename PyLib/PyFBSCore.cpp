@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "PyFBSCore.h"
 
 #ifdef HAS_PYTHON
-
 #include <pybind11/pybind11.h>
 #include <pybind11/operators.h>
 #include <pybind11/stl.h>
@@ -41,7 +40,7 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <MeshTools/FEShellDisc.h>
 
-#include <MathLib/mat3d.h>
+#include <FECore/mat3d.h>
 
 void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
 {
@@ -86,7 +85,7 @@ void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, 
 	}
 
 	// Create and allocate a new mesh. This is the mesh that we'll add to the model. 
-	FEMesh* newMesh = new FEMesh();
+	FSMesh* newMesh = new FSMesh();
 	newMesh->Create(nodePositions.size(), discMesh->Elements() * (points.size() - 1));
 
 	// Update the positions of all of the nodes in the new mesh
@@ -124,12 +123,12 @@ void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, 
 
 	newMesh->RebuildMesh();
 
-	FEProject project;
+	FSProject project;
 
 	GMeshObject* gmesh = new GMeshObject(newMesh);
 	gmesh->SetName(name);
 
-	FEModel& fem = project.GetFEModel();
+	FSModel& fem = project.GetFSModel();
 	fem.GetModel().AddObject(gmesh);
 
     FEVTKExport vtk(project);
@@ -168,7 +167,6 @@ void init_FBSCore(pybind11::module& m)
             }
     );
 }
-
 #else
 void init_FBSCore(pybind11::module_& m) {}
 #endif

@@ -34,13 +34,14 @@ SOFTWARE.*/
 #include <MeshTools/FEShellDisc.h>
 #include <GeomLib/GMeshObject.h>
 #include "PyExceptions.h"
+#include <FEMLib/FEDiscreteMaterial.h>
 
 #include <GeomLib/GPrimitive.h>
 
 
 GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
 
     if(!doc)
@@ -49,20 +50,21 @@ GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
     }
 
     auto gmodel = doc->GetGModel();
+	FSModel* fem = doc->GetFSModel();
 
     auto set = new GDiscreteSpringSet(gmodel);
 
     if(strcmp(type, "Linear") == 0)
     {
-        set->SetMaterial(new FELinearSpringMaterial);
+        set->SetMaterial(new FSLinearSpringMaterial(fem));
     }
     else if(strcmp(type, "Nonlinear") == 0)
     {
-        set->SetMaterial(new FENonLinearSpringMaterial);
+        set->SetMaterial(new FSNonLinearSpringMaterial(fem));
     }
     else if(strcmp(type, "Hill") == 0)
     {
-        set->SetMaterial(new FEHillContractileMaterial);
+        set->SetMaterial(new FSHillContractileMaterial(fem));
     }
     else
     {
@@ -79,7 +81,7 @@ GDiscreteSpringSet* SpringSet_init(const char* name, char* type)
 
 int FindOrMakeNode(vec3d r, double tol)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
     if(!doc)
     {
@@ -95,12 +97,12 @@ int FindOrMakeNode(vec3d r, double tol)
 	// find closest node
 	int imin = -1;
 	double l2min = 0.0;
-	FEMesh* m = po->GetFEMesh();
+	FSMesh* m = po->GetFEMesh();
 	int N = m->Nodes();
 	imin = -1;
 	for (int i = 0; i < N; ++i)
 	{
-		FENode& ni = m->Node(i);
+		FSNode& ni = m->Node(i);
 		if (ni.IsExterior())
 		{
 			vec3d ri = m->LocalToGlobal(ni.r);
@@ -123,7 +125,7 @@ int FindOrMakeNode(vec3d r, double tol)
 
 void IntersectWithObject(vec3d& r0, vec3d& r1, double tol)
 {
-    auto wnd = PRV::getMainWindow();
+    auto wnd = FBS::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
     if(!doc)
     {
@@ -136,7 +138,7 @@ void IntersectWithObject(vec3d& r0, vec3d& r1, double tol)
         throw pyGenericExcept("There is no currently selected object.");
     }
 
-	FEMesh* mesh = po->GetFEMesh();
+	FSMesh* mesh = po->GetFEMesh();
 
 	vec3d n = r1 - r0; n.Normalize();
 
@@ -177,7 +179,7 @@ void IntersectWithObject(vec3d& r0, vec3d& r1, double tol)
 
 void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, int div, int seg, double ratio)
 {
-	auto wnd = PRV::getMainWindow();
+	auto wnd = FBS::getMainWindow();
     auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
     if(!doc)
     {
@@ -225,7 +227,7 @@ void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, i
 	}
 
 	// Create and allocate a new mesh. This is the mesh that we'll add to the model. 
-	FEMesh* newMesh = new FEMesh();
+	FSMesh* newMesh = new FSMesh();
 	newMesh->Create(nodePositions.size(), discMesh->Elements() * (points.size() - 1));
 
 	// Update the positions of all of the nodes in the new mesh
@@ -266,6 +268,6 @@ void meshFromCurve(std::vector<vec3d> points, double radius, std::string name, i
 	GMeshObject* gmesh = new GMeshObject(newMesh);
 	gmesh->SetName(name);
 
-	auto fem = doc->GetFEModel();
+	auto fem = doc->GetFSModel();
 	fem->GetModel().AddObject(gmesh);
 }

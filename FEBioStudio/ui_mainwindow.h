@@ -1235,7 +1235,7 @@ public:
 		pythonToolsPanel->initPython();
 		dock10->setWidget(pythonToolsPanel);
 		menuWindows->addAction(dock10->toggleViewAction());
-		m_wnd->tabifyDockWidget(dock3, dock7);
+		m_wnd->tabifyDockWidget(dock3, dock10);
 #endif
 
 		// make sure the file viewer is the visible tab
