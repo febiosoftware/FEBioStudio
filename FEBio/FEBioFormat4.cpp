@@ -630,6 +630,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	else if (strcmp(sztype, "TRI3G9"      ) == 0) ntype = FE_TRI3;
 	else if (strcmp(sztype, "TRI6G14"     ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "TRI6G21"     ) == 0) ntype = FE_TRI6;
+	else if (strcmp(sztype, "line2"       ) == 0) ntype = FE_BEAM2;
 	else throw XMLReader::InvalidTag(tag);
 
 	// get the optional material attribute
