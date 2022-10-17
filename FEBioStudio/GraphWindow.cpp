@@ -1733,6 +1733,13 @@ void CModelGraphWindow::setDataSource(int n)
 		if ((n >= 0) && (n < fem.PlotObjects()))
 		{
 			SetYDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
+
+			int plotType = GetCurrentPlotType();
+			if ((plotType == SCATTER_PLOT) || (plotType == TIME_SCATTER_PLOT))
+			{
+				SetXDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
+			}
+
 			Update(false, true);
 		}
 		n -= fem.PlotObjects();
@@ -1809,32 +1816,25 @@ CPlotData* CModelGraphWindow::nextData()
 }
 
 //-----------------------------------------------------------------------------
-void CModelGraphWindow::addObjectData(int n)
+void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFEModel();
-	if ((n < 0) || (n >= fem.PlotObjects())) return;
-
-	int nsteps = m_lastState - m_firstState + 1;
-	vector<float> xdata(nsteps);
-	vector<float> ydata(nsteps);
-
-	Post::FEPostModel::PlotObject* po = fem.GetPlotObject(n);
-
-	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+	Post::FEPostModel::PlotObject* po = fem.GetPlotObject(nobj);
+	int nsteps = fem.GetStates();
 
 	for (int j = 0; j < nsteps; ++j)
 	{
 		Post::FEState* state = fem.GetState(j + m_firstState);
-		Post::OBJECT_DATA& pointData = state->GetObjectData(n);
+		Post::OBJECT_DATA& pointData = state->GetObjectData(nobj);
 
 		Post::ObjectData* data = pointData.data;
 
 		// get the data ID
-		int ndata = FIELD_CODE(m_dataY);
+		int ndata = FIELD_CODE(nfield);
 
 		// get the component
-		int ncomp = FIELD_COMP(m_dataY);
+		int ncomp = FIELD_COMP(nfield);
 
 		Post::FEDataField* dataField = po->m_data[ndata];
 
@@ -1857,8 +1857,49 @@ void CModelGraphWindow::addObjectData(int n)
 			assert(false);
 		}
 
-		ydata[j] = val;
+		pval[j] = val;
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelGraphWindow::addObjectData(int n)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFEModel();
+	if ((n < 0) || (n >= fem.PlotObjects())) return;
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps);
+
+	Post::FEPostModel::PlotObject* po = fem.GetPlotObject(n);
+
+	switch (m_xtype)
+	{
+	case 0: // time values
+	{
+		for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+	}
+	break;
+	case 1: // step values
+	{
+		for (int j = 0; j < nsteps; j++) xdata[j] = (float)j + 1.f + m_firstState;
+	}
+	break;
+	case 2: // scatter
+	{
+		TrackObjectHistory(n, xdata.data(), m_dataX);
+	}
+	break;
+	case 3: // time-scatter
+	{
+		// TODO: implement this!
+		TrackObjectHistory(n, xdata.data(), m_dataX);
+	}
+	break;
+	}
+
+	TrackObjectHistory(n, ydata.data(), m_dataY);
 
 	CPlotData* plot = nextData();
 	plot->setLabel(QString::fromStdString((po->GetName())));
