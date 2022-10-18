@@ -37,7 +37,7 @@ class CImageModel;
 
 class CImageSlicer : public CGLImageRenderer
 {
-	enum { ORIENTATION, OFFSET, COLOR_MAP };
+	enum { ORIENTATION, OFFSET, COLOR_MAP, TRANSPARENCY };
 
 public:
 	CImageSlicer(CImageModel* img);
