@@ -207,6 +207,8 @@ WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) : m_glm(glm)
 	char sz[64] = { 0 };
 	sprintf(sz, "WarpImageFilter%02d", n++);
 	SetName(sz);
+
+	AddBoolParam(true, "scale_dim", "Scale dimensions");
 }
 
 void WarpImageFilter::ApplyFilter()
@@ -221,16 +223,28 @@ void WarpImageFilter::ApplyFilter()
 	Post::FEState* state = gm.GetActiveState();
 	Post::FERefState* ps = state->m_ref;
 
+	// get the original bounding box
+	BOX box0 = mdl->GetBoundingBox();
+
+	// get the (current) bounding box of the mesh
 	FSMesh* mesh = gm.GetActiveMesh();
 	BOX box = mesh->GetBoundingBox();
+
+	// calculate scale factors
+	double sx = box.Width() / box0.Width();
+	double sy = box.Height() / box0.Height();
+	double sz = (im->Depth() == 1 ? 1.0 : box.Depth() / box0.Depth());
 
 	double w = box.Width();
 	double h = box.Height();
 	double d = box.Depth();
 
-	int nx = im->Width();
-	int ny = im->Height();
-	int nz = im->Depth();
+	bool dimScale = GetBoolValue(SCALE_DIM);
+
+	int nx = (dimScale ? (int)(sx*im->Width ()) : im->Width ());
+	int ny = (dimScale ? (int)(sy*im->Height()) : im->Height());
+	int nz = (dimScale ? (int)(sz*im->Depth ()) : im->Depth ());
+
 	int voxels = nx * ny * nz;
 	Byte* dst_buf = new Byte[voxels];
 	Byte* dst = dst_buf;
@@ -244,9 +258,9 @@ void WarpImageFilter::ApplyFilter()
 
 	if (im->Depth() == 1)
 	{
-		for (int j = 0; j < im->Height(); ++j)
+		for (int j = 0; j < ny; ++j)
 		{
-			for (int i = 0; i < im->Width(); ++i)
+			for (int i = 0; i < nx; ++i)
 			{
 				// get the spatial coordinates of the voxel
 				double x = r0.x + (r1.x - r0.x) * (i * wx);
@@ -285,11 +299,11 @@ void WarpImageFilter::ApplyFilter()
 		fe.Init();
 
 		// 3D case
-		for (int k = 0; k < im->Depth(); ++k)
+		for (int k = 0; k < nz; ++k)
 		{
-			for (int j = 0; j < im->Height(); ++j)
+			for (int j = 0; j < ny; ++j)
 			{
-				for (int i = 0; i < im->Width(); ++i)
+				for (int i = 0; i < nx; ++i)
 				{
 					// get the spatial coordinates of the voxel
 					double x = r0.x + (r1.x - r0.x) * (i * wx);
@@ -324,8 +338,8 @@ void WarpImageFilter::ApplyFilter()
 		}
 	}
 
-	Byte* b = mdl->GetImageSource()->GetImageToFilter(true)->GetBytes();
-	memcpy(b, dst_buf, voxels);
+	C3DImage* im2 = mdl->GetImageSource()->GetImageToFilter(false);
+	im2->Create(nx, ny, nz, dst_buf);
 
 	// update the model's box
 	mdl->SetBoundingBox(box);

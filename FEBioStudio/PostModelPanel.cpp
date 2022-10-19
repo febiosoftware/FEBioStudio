@@ -334,6 +334,8 @@ public:
 		addProperty("x-max", CProperty::Float);
 		addProperty("y-max", CProperty::Float);
 		addProperty("z-max", CProperty::Float);
+
+		addProperty("dimensions", CProperty::String)->setFlags(CProperty::Visible);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -348,6 +350,16 @@ public:
 		case 4: return box.x1; break;
 		case 5: return box.y1; break;
 		case 6: return box.z1; break;
+		case 7: 
+		{
+			C3DImage* im = m_img->Get3DImage();
+			if (im)
+			{
+				return QString("%1,%2,%3").arg(im->Width()).arg(im->Height()).arg(im->Depth());
+			}
+			else return QString("0,0,0");
+		}
+		break;
 		}
 		return QVariant();
 	}
@@ -364,6 +376,7 @@ public:
 		case 4: box.x1 = val.toFloat(); break;
 		case 5: box.y1 = val.toFloat(); break;
 		case 6: box.z1 = val.toFloat(); break;
+		case 7: break; // I don't think we would ever get here
 		}
 		m_img->SetBoundingBox(box);
 	}

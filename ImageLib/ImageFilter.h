@@ -78,6 +78,8 @@ public:
 
 class WarpImageFilter : public CImageFilter
 {
+	enum { SCALE_DIM };
+
 public:
 	WarpImageFilter(Post::CGLModel* glm);
 	void ApplyFilter() override;
