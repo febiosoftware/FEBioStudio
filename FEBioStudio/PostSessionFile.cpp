@@ -85,12 +85,12 @@ bool PostSessionFileReader::Load(const char* szfile)
 	m_szfile = szfile;
 
 	XMLReader xml;
-	if (xml.Open(szfile) == false) return false;
+	if (xml.Open(szfile) == false) return errf("Failed opening post session file.");
 
 	XMLTag tag;
 	if (xml.FindTag("febiostudio_post_session", tag) == false)
 	{
-		return false;
+		return errf("This is not a valid post session file");
 	}
 
 	m_doc->SetGLModel(nullptr);
@@ -194,7 +194,7 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 			m_openFile = kine; // assign this before we load so that we can monitor progress.
 			kine->Load(nullptr); // this class doesn't use the file name passed, so we just pass nullptr.
 		}
-		else return false;
+		else return errf("Don't know type attribute value");
 	}
 	else
 	{
@@ -204,14 +204,14 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 		m_openFile = xplt; // assign this before we load so that we can monitor progress.
 		if (xplt->Load(szfile) == false)
 		{
-			return false;
+			return errf("Failed loading plot file %s", szfile);
 		}
 
 		// now create a GL model
 		m_doc->SetGLModel(new Post::CGLModel(m_fem));
 
 		// initialize
-		if (m_doc->Initialize() == false) return false;
+		if (m_doc->Initialize() == false) return errf("Failed initializing document");
 		m_doc->SetInitFlag(true);
 	}
 
@@ -226,14 +226,14 @@ bool PostSessionFileReader::parse_open(XMLTag& tag)
 	m_openFile = xplt; // assign this before we load so that we can monitor progress.
 	if (xplt->Load(szfile) == false)
 	{
-		return false;
+		return errf("Failed opening plot file\n%s", szfile);
 	}
 
 	// now create a GL model
 	m_doc->SetGLModel(new Post::CGLModel(m_fem));
 
 	// initialize
-	if (m_doc->Initialize() == false) return false;
+	if (m_doc->Initialize() == false) return errf("Failed to initialize document");
 	m_doc->SetInitFlag(true);
 
 	return true;
@@ -294,7 +294,7 @@ bool PostSessionFileReader::parse_material(XMLTag& tag)
 			++tag;
 		} while (!tag.isend());
 	}
-	else return false;
+	else return errf("Invalid material ID");
 
 	return true;
 }
@@ -305,7 +305,7 @@ bool PostSessionFileReader::parse_datafield(XMLTag& tag)
 	Post::FEPostModel& fem = *m_doc->GetFSModel();
 	Post::FEDataManager& dm = *fem.GetDataManager();
 	int n = dm.FindDataField(szname);
-	if (n < 0) return false;
+	if (n < 0) return errf("Failed finding data field %s", szname);
 
 	Post::ModelDataField* data = *dm.DataField(n);
 	fsps_read_parameters(data, tag);
