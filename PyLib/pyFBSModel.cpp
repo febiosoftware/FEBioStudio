@@ -35,18 +35,38 @@ SOFTWARE.*/
 #include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioStudio/Commands.h>
+#include <FEBioLink/FEBioClass.h>
+#include <MeshTools/GModel.h>
+#include <FEBio/FEBioExport4.h>
+
+CModelDocument* GetActiveDocument()
+{
+	CMainWindow* wnd = FBS::getMainWindow();
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
+	return doc;
+}
+
+FSModel* GetActiveModel()
+{
+	CModelDocument* doc = GetActiveDocument();
+	return doc->GetFSModel();
+}
+
+GModel* GetActiveGModel()
+{
+	CModelDocument* doc = GetActiveDocument();
+	return doc->GetGModel();
+}
 
 // This function will add an object to the currently active model
 void AddObjectToModel(GObject* po)
 {
-	auto wnd = FBS::getMainWindow();
-	auto doc = dynamic_cast<CModelDocument*>(wnd->GetDocument());
-	doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), po), po->GetName());
-	wnd->UpdateModel(po);
+	GModel* gm = GetActiveGModel();
+	gm->AddObject(po);
 }
 
 // Create a box primitve
-GBox* CreateBox(std::string& name, vec3d pos, double width, double height, double depth)
+GObject* CreateBox(std::string& name, vec3d pos, double width, double height, double depth)
 {
 	// create the box
 	GBox* gbox = new GBox();
@@ -63,12 +83,65 @@ GBox* CreateBox(std::string& name, vec3d pos, double width, double height, doubl
 	return gbox;
 }
 
+GMaterial* AddMaterial(std::string& name, std::string& type)
+{
+	FSModel* fem = GetActiveModel();
+	FSMaterial* pm = FEBio::CreateMaterial(type, fem);
+	if (pm)
+	{
+		GMaterial* gm = new GMaterial;
+		gm->SetName(name);
+		gm->SetMaterialProperties(pm);
+		fem->AddMaterial(gm);
+		return gm;
+	}
+	return nullptr;
+}
+
+FSStep* AddStep(std::string& name)
+{
+	FSModel* fem = GetActiveModel();
+	FSStep* step = FEBio::CreateStep("solid", fem);
+	if (step) fem->AddStep(step);
+	return step;
+}
+
+bool ExportFEB(std::string& fileName)
+{
+	CModelDocument* doc = GetActiveDocument();
+	FEBioExport4 feb(doc->GetProject());
+	return feb.Write(fileName.c_str());
+}
+
 // Initializes the fbs.mdl module
 void init_FBSModel(pybind11::module& m)
 {
 	pybind11::module mdl = m.def_submodule("mdl", "Module used to interact with an FEBio model.");
 
 	mdl.def("CreateBox", CreateBox);
+	mdl.def("AddMaterial", AddMaterial);
+	mdl.def("AddStep", AddStep);
+	mdl.def("ExportFEB", ExportFEB);
+
+	pybind11::class_<FSStep, std::unique_ptr<FSStep, pybind11::nodelete>>(mdl, "FSStep");
+
+	pybind11::class_<GMaterial, std::unique_ptr<GMaterial, pybind11::nodelete>>(mdl, "GMaterial")
+		.def("set", [](GMaterial* gm, std::string& paramName, float value) {
+			FSMaterial* pm = gm->GetMaterialProperties();
+			if (pm) {
+				Param* p = pm->GetParam(paramName.c_str());
+				if (p) p->SetFloatValue(value);
+			}
+		});
+
+	pybind11::class_<GObject, std::unique_ptr<GObject, pybind11::nodelete>>(mdl, "GObject")
+		.def("AssignMaterial", [](GObject* po, GMaterial* pm) {
+			for (int i = 0; i < po->Parts(); ++i) po->Part(i)->SetMaterialID(pm->GetID());
+		})
+		.def("BuildMesh", [](GObject* po) {
+			po->BuildMesh();
+			});
+
 }
 #else
 void init_FBSModel(pybind11::module_& m) {}

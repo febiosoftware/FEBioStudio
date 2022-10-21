@@ -173,6 +173,7 @@ void CPythonToolsPanel::endThread()
 
 	ui->stopRunning();
 
+	m_wnd->UpdateModel();
 	m_wnd->UpdateUI();
 }
 
