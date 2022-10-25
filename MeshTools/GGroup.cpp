@@ -194,6 +194,33 @@ FSNodeList* GEdgeList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
+FEEdgeList* GEdgeList::BuildEdgeList()
+{
+	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	FEEdgeList* ps = new FEEdgeList();
+	int N = m_Item.size();
+	FEItemListBuilder::Iterator it = m_Item.begin();
+
+	for (int n = 0; n < N; ++n, ++it)
+	{
+		GEdge* pe = model.FindEdge(*it);
+		int gid = pe->GetLocalID();
+		GObject* po = dynamic_cast<GObject*>(pe->Object());
+		FSMesh& m = *po->GetFEMesh();
+		for (int i = 0; i < m.Edges(); ++i)
+		{
+			FSEdge& e = m.Edge(i);
+			if (e.m_gid == gid)
+			{
+				ps->Add(&m, &e);
+			}
+		}
+	}
+
+	return ps;
+}
+
+//-----------------------------------------------------------------------------
 vector<GEdge*> GEdgeList::GetEdgeList()
 {
 	vector<GEdge*> edgeList;

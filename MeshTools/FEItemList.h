@@ -69,6 +69,11 @@ class FSNode;
 typedef FEItemList_T<FSNode> FSNodeList;
 
 //-----------------------------------------------------------------------------
+// Specialization for edges
+class FSEdge;
+typedef FEItemList_T<FSEdge> FEEdgeList;
+
+//-----------------------------------------------------------------------------
 // Specialization for faces
 class FSFace;
 typedef FEItemList_T<FSFace> FEFaceList;

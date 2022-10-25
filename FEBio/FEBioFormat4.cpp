@@ -388,6 +388,7 @@ bool FEBioFormat4::ParseMeshSection(XMLTag& tag)
 		if      (tag == "Nodes"      ) ParseGeometryNodes      (DefaultPart(), tag);
 		else if (tag == "Elements"   ) ParseGeometryElements   (DefaultPart(), tag);
 		else if (tag == "NodeSet"    ) ParseGeometryNodeSet    (DefaultPart(), tag);
+		else if (tag == "Edge"       ) ParseGeometryEdgeSet    (DefaultPart(), tag);
 		else if (tag == "Surface"    ) ParseGeometrySurface    (DefaultPart(), tag);
 		else if (tag == "ElementSet" ) ParseGeometryElementSet (DefaultPart(), tag);
 		else if (tag == "DiscreteSet") ParseGeometryDiscreteSet(DefaultPart(), tag);
@@ -779,6 +780,51 @@ void FEBioFormat4::ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag&
 
 	part->AddSurfacePair(FEBioInputModel::SurfacePair(name, surf2, surf1));
 }
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseGeometryEdgeSet(FEBioInputModel::Part* part, XMLTag& tag)
+{
+	if (part == 0) throw XMLReader::InvalidTag(tag);
+
+	// get the name
+	const char* szname = tag.AttributeValue("name");
+
+	// see if a edgeset with this name is already defined
+	// if found, we'll continue, but we'll generate a warning.
+	FEBioInputModel::EdgeSet* ps = part->FindEdgeSet(szname);
+	if (ps) FileReader()->AddLogEntry("An edge named %s is already defined.", szname);
+
+	// create a new edge
+	FEBioInputModel::EdgeSet s;
+	s.m_name = szname;
+
+	if (tag.isleaf() == false)
+	{
+		// read the surface data
+		int nf[FSElement::MAX_NODES], N;
+		++tag;
+		do
+		{
+			// read the line element
+			if (tag == "line2") N = 2;
+			else if (tag == "line3") N = 3;
+			else throw XMLReader::InvalidTag(tag);
+
+			// read the node numbers
+			tag.value(nf, N);
+
+			// make zero-based
+			vector<int> node(N);
+			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			s.m_edge.push_back(node);
+
+			++tag;
+		} while (!tag.isend());
+	}
+
+	part->AddEdgeSet(s);
+}
+
 
 //-----------------------------------------------------------------------------
 void FEBioFormat4::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag)

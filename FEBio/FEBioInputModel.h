@@ -48,16 +48,32 @@ public:
 	void UpdateMeshData();
 
 	int FindFace(const int* n, int nn, int noff = 0);
+	int FindEdge(const int* n, int nn, int noff = 0);
+
 	int FindFace(const std::vector<int>& n, int noff = 0);
+	int FindEdge(const std::vector<int>& n, int noff = 0);
 
 	FSElement* FindElementFromID(int nid);
 
 private:
+	void BuildFaceTable();
+	void BuildEdgeTable();
+	void BuildElementTable();
+
+private:
 	FSMesh				m_mesh;
+
+	// edge table
+	std::vector<int>	m_iEdge;
+	std::vector<int*>	m_pEdge;
+	std::vector<int>	m_nEdge;
+
+	// face table
 	std::vector<int>	m_iFace;
 	std::vector<int*>	m_pFace;
 	std::vector<int>	m_nFace;
 
+	// element table
 	std::vector<FSElement*>		m_elem;
 	int							m_maxID, m_minID;
 };
@@ -99,6 +115,28 @@ public:
 	private:
 		std::string			m_name;
 		std::vector<int>	m_node;
+	};
+
+	// class for storing edges
+	class EdgeSet
+	{
+	public:
+		EdgeSet() { m_refs = 0; }
+
+		const std::string& name() const { return m_name; }
+
+		int edges() const { return (int)m_edge.size(); }
+
+		const std::vector<int>& edge(int i) const { return m_edge[i]; }
+
+		void addEdge(const std::vector<int>& node) { m_edge.push_back(node); }
+
+		void clear() { m_edge.clear(); }
+
+	public:
+		std::string						m_name;
+		std::vector< std::vector<int> > m_edge;
+		int		m_refs;
 	};
 
 	// class for storing surfaces
@@ -270,6 +308,12 @@ public:
 		NodeSet* FindNodeSet(const std::string& name);
 
 	public:
+		void AddEdgeSet(const EdgeSet& eset) { m_edge.push_back(eset); }
+		int EdgeSets() const { return (int)m_edge.size(); }
+		EdgeSet& GetEdgeSet(int i) { return m_edge[i]; }
+		EdgeSet* FindEdgeSet(const std::string& name);
+
+	public:
 		Domain* AddDomain(const string& name, int matID);
 		int Domains() const { return (int)m_dom.size(); }
 		Domain& GetDomain(int i) { return m_dom[i]; }
@@ -314,6 +358,7 @@ public:
 
 	private:
 		std::vector<NodeSet>		m_nset;
+		std::vector<EdgeSet>		m_edge;
 		std::vector<Surface>		m_surf;
 		std::vector<ElementSet>		m_eset;
 		std::vector<Domain>			m_dom;
@@ -356,9 +401,11 @@ public:
 
 	public:
 		FSNodeSet* BuildFENodeSet(const NodeSet& nset);
+		FSEdgeSet* BuildFEEdgeSet(EdgeSet& surf);
 		FSSurface* BuildFESurface(Surface& surf);
 
 		FSNodeSet* BuildFENodeSet(const char* szname);
+		FSEdgeSet* BuildFEEdgeSet(const char* szname);
 		FSSurface* BuildFESurface(const char* szname);
 		FSPart*    BuildFEPart   (const char* szname);
 
@@ -483,6 +530,7 @@ public:
 	FSNodeSet* FindNodeSet(const char* szname);
 	Surface* FindSurface(const char* szname);
 	FSNodeSet* BuildFENodeSet(const char* szname);
+	FSEdgeSet* BuildFEEdgeSet(const char* szname);
 	FSSurface* BuildFESurface(const char* szname);
 	FSPart* BuildFEPart(const char* szname);
 	FSPart* BuildFEPart(Domain* dom);

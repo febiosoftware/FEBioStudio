@@ -51,6 +51,7 @@ public:
 	int Type() { return m_ntype; }
 
 	FSNodeList* BuildNodeList() { return 0; }
+	FEEdgeList* BuildEdgeList() { return 0; }
 	FEFaceList* BuildFaceList() { return 0; }
 	FEElemList* BuildElemList() { return 0; }
 
@@ -124,6 +125,8 @@ public:
 	~FSEdgeSet(){}
 
 	FSNodeList* BuildNodeList();
+
+	FEEdgeList* BuildEdgeList();
 
 	FSEdge* Edge(FEItemListBuilder::Iterator it);
 
