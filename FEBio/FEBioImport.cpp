@@ -502,6 +502,28 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		}
 	}
 
+	// make unused edges into named selections
+	for (int i = 0; i < m_febio->Instances(); ++i)
+	{
+		// get the next instance
+		FEBioInputModel::PartInstance& partInstance = *m_febio->GetInstance(i);
+		FEBioInputModel::Part* part = partInstance.GetPart();
+		GMeshObject* po = partInstance.GetGObject();
+		for (int j = 0; j < part->EdgeSets(); ++j)
+		{
+			FEBioInputModel::EdgeSet& edge = part->GetEdgeSet(j);
+			if (edge.m_refs == 0)
+			{
+				FSEdgeSet* pset = partInstance.BuildFEEdgeSet(edge.name().c_str());
+				if (pset)
+				{
+					pset->SetName(edge.name());
+					po->AddFEEdgeSet(pset);
+				}
+			}
+		}
+	}
+
 	// add all the parts to the model
 	for (int i = 0; i<m_febio->Instances(); ++i)
 	{
