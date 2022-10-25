@@ -101,6 +101,7 @@ public:
 	QRadioButton* pb1;
 	QRadioButton* pb2;
 	QRadioButton* pb3;
+	QRadioButton* pb4;
 	QLineEdit* pitems;
 
 public:
@@ -110,8 +111,9 @@ public:
 
 		QVBoxLayout* pg = new QVBoxLayout;
 		pg->addWidget(pb1 = new QRadioButton("Read all states"));
-		pg->addWidget(pb2 = new QRadioButton("Read last state only"));
-		pg->addWidget(pb3 = new QRadioButton("Read states from list:"));
+		pg->addWidget(pb2 = new QRadioButton("Read all converged states (status = 0)"));
+		pg->addWidget(pb3 = new QRadioButton("Read last state only"));
+		pg->addWidget(pb4 = new QRadioButton("Read states from list:"));
 		pv->addLayout(pg);
 
 		pb1->setChecked(true);
@@ -141,6 +143,7 @@ void CDlgImportXPLT::accept()
 	if (ui->pb1->isChecked()) m_nop = 0;
 	if (ui->pb2->isChecked()) m_nop = 1;
 	if (ui->pb3->isChecked()) m_nop = 2;
+	if (ui->pb4->isChecked()) m_nop = 3;
 
 	std::string s = ui->pitems->text().toStdString();
 	char buf[256] = {0}; 

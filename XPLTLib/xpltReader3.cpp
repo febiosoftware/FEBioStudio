@@ -194,6 +194,14 @@ bool XpltReader3::Load(FEPostModel& fem)
 				if (m_pstate) { delete m_pstate; m_pstate = 0; }
 				if (ReadStateSection(fem) == false) break;
 				if (read_state_flag == XPLT_READ_ALL_STATES) { fem.AddState(m_pstate); m_pstate = 0; }
+				else if (read_state_flag == XPLT_READ_ALL_CONVERGED_STATES) 
+				{ 
+					if (m_pstate->m_status == 0)
+					{
+						fem.AddState(m_pstate);
+						m_pstate = 0;
+					}
+				}
 				else if (read_state_flag == XPLT_READ_STATES_FROM_LIST)
 				{
 					vector<int> state_list = m_xplt->GetReadStates();
