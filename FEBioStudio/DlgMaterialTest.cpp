@@ -151,6 +151,11 @@ void CDlgMaterialTest::onRun()
 	FSMaterial* pm = mat->GetMaterialProperties();
 	if (pm == nullptr) return;
 
+	if (pm->IsRigid())
+	{
+		QMessageBox::critical(this, "Material Test", "Cannot run material test on rigid material.");
+		return;
+	}
 
 	MaterialTest mt;
 	mt.mat = pm;

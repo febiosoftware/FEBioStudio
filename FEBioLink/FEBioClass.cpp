@@ -1262,12 +1262,29 @@ FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FE
 //			case FE_PARAM_STD_VECTOR_STRING: fp->value<vector<string> >() = pi.GetVectorStringValue(); break;
 			case FE_PARAM_DOUBLE_MAPPED:
 			{
-				FEParamDouble& v = fp->value<FEParamDouble>();
-				if (pi.GetParamType() == Param_FLOAT)
+				if (fp->dim() == 3)
 				{
-					v = pi.GetFloatValue();
+					if (pi.GetParamType() == Param_VEC3D)
+					{
+						FEParamDouble& x = fp->value<FEParamDouble>(0);
+						FEParamDouble& y = fp->value<FEParamDouble>(1);
+						FEParamDouble& z = fp->value<FEParamDouble>(2);
+						vec3d v = pi.GetVec3dValue();
+						x = v.x;
+						y = v.y;
+						z = v.z;
+					}
+					else assert(false);
 				}
-				else assert(false);
+				else
+				{
+					FEParamDouble& v = fp->value<FEParamDouble>();
+					if (pi.GetParamType() == Param_FLOAT)
+					{
+						v = pi.GetFloatValue();
+					}
+					else assert(false);
+				}
 			}
 			break;
 			case FE_PARAM_VEC3D_MAPPED:
