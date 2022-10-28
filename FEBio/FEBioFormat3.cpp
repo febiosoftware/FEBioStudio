@@ -1429,10 +1429,14 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			FEBioInputModel& feb = GetFEBioModel();
 			FSModel& fem = feb.GetFSModel();
 
-			const char* szset = tag.AttributeValue("elem_set");
+
+			// TODO: add support for this
+			ParseUnknownTag(tag);
+
+/*			const char* szset = tag.AttributeValue("elem_set");
 			if (strcmp(szgen, "surface-to-surface map") == 0)
 			{
-/*				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
+				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
 				s2s->m_generator = szgen;
 				s2s->m_var = var->cvalue();
 				s2s->m_elset = szset;
@@ -1499,8 +1503,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				} while (!tag.isend());
 
 				feb.GetFSModel().AddDataMap(s2s);
-				*/
 			}
+		*/
 		}
 		else ParseUnknownTag(tag);
 	}
