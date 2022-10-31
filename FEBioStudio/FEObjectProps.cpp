@@ -739,18 +739,18 @@ CPartProperties::CPartProperties(GPart* pg, FEModel& fem) : CObjectProps(pg)
 
 QVariant CPartProperties::GetPropertyValue(int i)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::GetPropertyValue(i);
+	if (i < m_pg->Parameters()) return CObjectProps::GetPropertyValue(i);
 	return m_lid;
 }
 
 void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i < m_pg->Parameters() - 1) return CObjectProps::SetPropertyValue(i, v);
+	if (i < m_pg->Parameters()) return CObjectProps::SetPropertyValue(i, v);
 	m_lid = v.toInt();
 	if (m_lid >= 0)
 	{
 		GMaterial* mat = m_fem->GetMaterial(m_lid);
-		m_pg->SetMaterialID(mat->GetID());
+		if (mat) m_pg->SetMaterialID(mat->GetID());
 	}
 	else m_pg->SetMaterialID(-1);
 }
