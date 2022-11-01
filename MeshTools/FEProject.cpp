@@ -815,7 +815,7 @@ void convert_fibers(std::ostream& log, FSModelComponent* pd, const FSOldFiberMat
 
 void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMaterial* axis)
 {
-	if (axis == nullptr) return;
+	if ((axis == nullptr) || (axis->m_naopt == -1)) return;
 	FSModel* fem = pd->GetFSModel();
 
 	// see if the febio material has the mat_axis property defined. 
