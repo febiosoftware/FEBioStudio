@@ -415,6 +415,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 			{
 				// NOTE: This is only used for reading in must-point curves of older files.
 				*pc.m_plc = m_febio->GetLoadCurve(pc.m_lc);
+				pc.m_plc->SetID(pc.m_lc);
 			}
 		}
 	}
