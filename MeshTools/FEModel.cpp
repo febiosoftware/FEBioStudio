@@ -2351,6 +2351,7 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 	for (int n = 0; n < Steps(); ++n)
 	{
 		FSStep* step = GetStep(n);
+		UpdateLCRefsCount(step, LCT);
 
 		// process BCs
 		for (int i = 0; i < step->BCs(); ++i)
