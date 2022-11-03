@@ -328,20 +328,7 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 1; i < fem.Steps(); ++i)
 	{
 		FSStep* pstep = fem.GetStep(i);
-		BuildLoadCurves(t1, pstep);
-		for (int j = 0; j < pstep->Properties(); ++j)
-		{
-			FSProperty& prop = pstep->GetProperty(j);
-			if (prop.Size() != 0)
-			{
-				FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(prop.GetComponent());
-				if (pmc)
-				{
-					string name = pstep->GetName() + "." + prop.GetName();
-					BuildLoadCurves(t1, pmc, name);
-				}
-			}
-		}
+		BuildLoadCurves(t1, pstep, pstep->GetName());
 	}
 }
 
