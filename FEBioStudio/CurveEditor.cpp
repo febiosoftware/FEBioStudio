@@ -640,6 +640,7 @@ void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
 	{
 		panel = 1;
 		ui->plot->SetLoadCurve(plc->CreateLoadCurve());
+		ui->plot->on_zoomToFit_clicked();
 		ui->plot->repaint();
 	}
 	else if (plc->IsType("math"))
