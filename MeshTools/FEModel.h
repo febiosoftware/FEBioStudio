@@ -311,6 +311,9 @@ template <class T> int CountBCs(FSModel& fem)
 }
 
 //-----------------------------------------------------------------------------
+int CountBCsByTypeString(const std::string& typeStr, FSModel& fem);
+
+//-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.
 template <class T> int CountICs(FSModel& fem)
 {

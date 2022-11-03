@@ -2445,3 +2445,20 @@ int FSModel::RemoveMeshDataGenerator(FSMeshDataGenerator* pmd)
 {
 	return (int)m_MD.Remove(pmd);
 }
+
+//----------------------------------------------------------------------------------------
+int CountBCsByTypeString(const std::string& typeStr, FSModel& fem)
+{
+	int nc = 0;
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* ps = fem.GetStep(i);
+		for (int j = 0; j < ps->BCs(); ++j)
+		{
+			FSBoundaryCondition* pbc = ps->BC(j);
+			string t = pbc->GetTypeString();
+			if (t == typeStr) nc++;
+		}
+	}
+	return nc;
+}

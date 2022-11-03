@@ -1658,6 +1658,7 @@ bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
 			else if (type == "rigid"     ) ParseBCRigid(m_pBCStep, tag);
 			else if (type == "fluid rotational velocity") ParseBCFluidRotationalVelocity(m_pBCStep, tag);
 			else if (type == "normal displacement") ParseBCNormalDisplacement(m_pBCStep, tag);
+			else if (type == "linear constraint") ParseBCLinearConstraint(m_pBCStep, tag);
 			else ParseUnknownTag(tag);
 		}
 		else ParseUnknownTag(tag);
@@ -2066,6 +2067,30 @@ void FEBioFormat3::ParseBCNormalDisplacement(FSStep* pstep, XMLTag& tag)
 	}
 }
 
+void FEBioFormat3::ParseBCLinearConstraint(FSStep* pstep, XMLTag& tag)
+{
+	FSModel& fem = GetFSModel();
+	std::string comment = tag.comment();
+
+	// read the name attribute
+	string name;
+	const char* sz = tag.AttributeValue("name", true);
+	if (sz == 0)
+	{
+		char szbuf[256] = { 0 };
+		sprintf(szbuf, "LinearConstraint%02d", CountBCsByTypeString("linear constraint", fem) + 1);
+		name = szbuf;
+	}
+	else name = string(sz);
+
+	FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("linear constraint", &fem);
+	pbc->SetName(name);
+	pbc->SetInfo(comment);
+
+	pstep->AddBC(pbc);
+
+	ParseModelComponent(pbc, tag);
+}
 
 //=============================================================================
 //
