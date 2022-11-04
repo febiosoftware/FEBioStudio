@@ -1300,7 +1300,9 @@ void CGraphWindow::on_selectY_currentValueChanged(int)
 //-----------------------------------------------------------------------------
 void CGraphWindow::on_selectPlot_currentIndexChanged(int index)
 {
-	Update(true);
+	int n = ui->dataSource->currentIndex();
+	setDataSource(n);
+	Update(false);
 }
 
 //-----------------------------------------------------------------------------
