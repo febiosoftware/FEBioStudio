@@ -505,6 +505,7 @@ FEF2FTiedInterface::FEF2FTiedInterface(FEModel* ps, int nstep) : FEPairedInterfa
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddDoubleParam(0, "minaug", "min augmentations");
 	AddDoubleParam(10, "maxaug", "max augmentations");
+	AddBoolParam(false, "gap_offset", "gap offset");
 }
 
 //=============================================================================
