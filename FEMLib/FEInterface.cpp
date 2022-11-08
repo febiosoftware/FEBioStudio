@@ -508,6 +508,7 @@ FSF2FTiedInterface::FSF2FTiedInterface(FSModel* ps, int nstep) : FSPairedInterfa
 	AddDoubleParam(1.0, "penalty", "penalty factor");
 	AddDoubleParam(0, "minaug", "min augmentations");
 	AddDoubleParam(10, "maxaug", "max augmentations");
+	AddBoolParam(false, "gap_offset", "gap offset");
 }
 
 //=============================================================================
