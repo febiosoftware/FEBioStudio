@@ -278,13 +278,15 @@ void FSProject::Load(IArchive &ar)
 
 	if (ar.Version() < 0x00040000)
 	{
-		ar.log("Converting FE model:");
-		ar.log("===================");
 		std::ostringstream log;
 		ConvertToNewFormat(log);
 		string s = log.str();
-		if (s.empty() == false) ar.log(s.c_str());
-		else ar.log("No issues found!");
+		if (s.empty() == false)
+		{
+			ar.log("Converting FE model:");
+			ar.log("===================");
+			ar.log(s.c_str());
+		}
 	}
 }
 
