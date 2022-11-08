@@ -421,6 +421,7 @@ bool FEBioFormat4::ParseMeshDomainsSection(XMLTag& tag)
 		{
 			if      (tag == "SolidDomain") ParseSolidDomain(tag);
 			else if (tag == "ShellDomain") ParseShellDomain(tag);
+			else if (tag == "BeamDomain" ) ParseBeamDomain (tag);
 			else ParseUnknownTag(tag);
 			++tag;
 		} while (!tag.isend());
@@ -490,7 +491,7 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 
 		FEShellFormulation* shell = nullptr;
 		const char* szelem = tag.AttributeValue("type", true);
-		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
+		if (szelem) shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
 		dom->SetElementFormulation(shell);
 		dom->SetType(FEBioInputModel::Domain::SHELL);
@@ -514,6 +515,42 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 					++tag;
 				} 
 				while (!tag.isend());
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseBeamDomain(XMLTag& tag)
+{
+	FEBioInputModel::Part* part = DefaultPart();
+
+	const char* szname = tag.AttributeValue("name");
+	const char* szmat = tag.AttributeValue("mat", true);
+	if (szmat)
+	{
+		FEBioInputModel& febio = GetFEBioModel();
+		int matID = febio.GetMaterialIndex(szmat);
+		if (matID == -1) matID = atoi(szmat) - 1;
+
+		FEBioInputModel::Domain* dom = part->FindDomain(szname);
+		if (dom) dom->SetMatID(matID);
+
+		FEBeamFormulation* beam = nullptr;
+		const char* szelem = tag.AttributeValue("type", true);
+		if (szelem) beam = FEBio::CreateBeamFormulation(szelem, &febio.GetFSModel());
+
+		dom->SetElementFormulation(beam);
+		dom->SetType(FEBioInputModel::Domain::BEAM);
+
+		// read the domain parameters
+		if (tag.isleaf() == false)
+		{
+			if (beam)
+				ReadParameters(*beam, tag);
+			else
+			{
+				ParseUnknownTag(tag);
 			}
 		}
 	}

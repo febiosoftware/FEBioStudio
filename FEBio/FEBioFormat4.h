@@ -78,6 +78,7 @@ private:
 
 	void ParseSolidDomain(XMLTag& tag);
 	void ParseShellDomain(XMLTag& tag);
+	void ParseBeamDomain (XMLTag& tag);
 
 private:
 	// boundary condition input functions
