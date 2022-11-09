@@ -4728,6 +4728,12 @@ void CGLView::TagBackfacingElements(FSMesh& mesh)
 					el.m_ntag = 0;
 				}
 			}
+
+			// we should always be able to select beam elements
+			if (el.IsBeam())
+			{
+				el.m_ntag = 0;
+			}
 		}
 	}
 }
