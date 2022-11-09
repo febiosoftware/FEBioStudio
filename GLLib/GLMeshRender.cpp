@@ -46,6 +46,7 @@ GLMeshRender::GLMeshRender()
 {
 	m_bShell2Solid = false;
 	m_bBeam2Solid = false;
+	m_bSolidBeamRadius = 1.f;
 	m_nshellref = 0;
 	m_ndivs = 1;
 	m_pointSize = 7.f;

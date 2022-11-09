@@ -152,6 +152,10 @@ void CGLModel::ShowBeam2Solid(bool b) { m_render.m_bBeam2Solid = b; }
 bool CGLModel::ShowBeam2Solid() const { return m_render.m_bBeam2Solid; }
 
 //-----------------------------------------------------------------------------
+void CGLModel::SolidBeamRadius(float f) { m_render.m_bSolidBeamRadius = f; }
+float CGLModel::SolidBeamRadius() const { return m_render.m_bSolidBeamRadius; }
+
+//-----------------------------------------------------------------------------
 int CGLModel::ShellReferenceSurface() const { return m_render.m_nshellref; }
 void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 
@@ -721,7 +725,8 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 	if (L2min == 0.0) return;
 	double Lmin = sqrt(L2min);
 
-	double W = Lmin*0.25;
+	double f = m_render.m_bSolidBeamRadius;
+	double W = Lmin*0.25*f;
 
 	// render un-selected, active elements
 	if (m_pcol->IsActive())

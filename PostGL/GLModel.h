@@ -167,6 +167,9 @@ public:
 	void ShowBeam2Solid(bool b);
 	bool ShowBeam2Solid() const;
 
+	void SolidBeamRadius(float f);
+	float SolidBeamRadius() const;
+
 	void SetSubDivisions(int ndivs);
 	int GetSubDivisions();
 

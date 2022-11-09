@@ -43,6 +43,9 @@ public:
 	void ShowShell2Hex(bool b) { m_bShell2Solid = b; }
 	bool ShowShell2Hex() { return m_bShell2Solid; }
 
+	void SetSolidBeamRadiusScale(float f) { m_bSolidBeamRadius = f; }
+	float GetSolidBeamRadiusScale() const { return m_bSolidBeamRadius; }
+
 	void ShowBeam2Hex(bool b) { m_bBeam2Solid = b; }
 	bool ShowBeam2Hex() { return m_bBeam2Solid; }
 
@@ -120,6 +123,7 @@ public:
 	int			m_ndivs;			//!< divisions for smooth render
 	bool		m_bShell2Solid;		//!< render shells as solid
 	bool		m_bBeam2Solid;		//!< render beams (truss, line elements) as solid
+	float		m_bSolidBeamRadius;	//!< radius scale factor when rendering beams as solid
 	int			m_nshellref;		//!< shell reference surface
 	float		m_pointSize;		//!< size of points
 	bool		m_bfaceColor;		//!< use face colors when rendering
