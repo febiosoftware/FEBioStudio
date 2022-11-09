@@ -69,7 +69,8 @@ private:
 		bool	m_bnorm;	// calculate normals or not
 		bool	m_boutline;	// render as outline
 		bool	m_bghost;	// render ghost
-		bool	m_bShell2Hex; // render shells as hexes
+		bool	m_bShell2Solid; // render shells as solids
+		bool	m_bBeam2Solid; // render beams as solids
 		int		m_nshellref;	// shell reference surface
 		int		m_nDivs;	// nr of element subdivisions
 		int		m_nrender;	// render mode

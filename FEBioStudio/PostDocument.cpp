@@ -85,7 +85,8 @@ void ModelData::ReadData(Post::CGLModel* po)
 	m_mdl.m_ntime = po->CurrentTimeIndex();
 	m_mdl.m_bnorm = po->m_bnorm;
 	m_mdl.m_bghost = po->m_bghost;
-	m_mdl.m_bShell2Hex = po->ShowShell2Solid();
+	m_mdl.m_bShell2Solid = po->ShowShell2Solid();
+	m_mdl.m_bBeam2Solid = po->ShowBeam2Solid();
 	m_mdl.m_nshellref = po->ShellReferenceSurface();
 	m_mdl.m_nDivs = po->m_nDivs;
 	m_mdl.m_nrender = po->m_nrender;
@@ -134,7 +135,8 @@ void ModelData::WriteData(Post::CGLModel* po)
 	// set model data
 	po->m_bnorm = m_mdl.m_bnorm;
 	po->m_bghost = m_mdl.m_bghost;
-	po->ShowShell2Solid(m_mdl.m_bShell2Hex);
+	po->ShowShell2Solid(m_mdl.m_bShell2Solid);
+	po->ShowBeam2Solid(m_mdl.m_bBeam2Solid);
 	po->ShellReferenceSurface(m_mdl.m_nshellref);
 	po->m_nDivs = m_mdl.m_nDivs;
 	po->m_nrender = m_mdl.m_nrender;

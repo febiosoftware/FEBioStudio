@@ -84,8 +84,9 @@ public:
 		addProperty("Outline color"            , CProperty::Color);
 		addProperty("Node color"               , CProperty::Color);
 		addProperty("Selection color"          , CProperty::Color);
-		addProperty("Shells as hexes"          , CProperty::Bool);
+		addProperty("Render shells as solids"  , CProperty::Bool);
 		addProperty("Shell reference surface"  , CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
+		addProperty("Render beams as solids"   , CProperty::Bool);
 		addProperty("Smoothing angle"          , CProperty::Float);
 	}
 
@@ -102,7 +103,8 @@ public:
 		case 5: v = toQColor(m_fem->m_sel_col); break;
 		case 6: v = m_fem->ShowShell2Solid(); break;
 		case 7: v = m_fem->ShellReferenceSurface(); break;
-		case 8: v = m_fem->GetSmoothingAngle(); break;
+		case 8: v = m_fem->ShowBeam2Solid(); break;
+		case 9: v = m_fem->GetSmoothingAngle(); break;
 		}
 		return v;
 	}
@@ -119,7 +121,8 @@ public:
 		case 5: m_fem->m_sel_col = toGLColor(v.value<QColor>()); break;
 		case 6: m_fem->ShowShell2Solid(v.toBool()); break;
 		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
-		case 8: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 8: m_fem->ShowBeam2Solid(v.toBool()); break;
+		case 9: m_fem->SetSmoothingAngle(v.toDouble());  break;
 		}
 	}
 

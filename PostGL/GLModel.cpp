@@ -148,6 +148,10 @@ void CGLModel::ShowShell2Solid(bool b) { m_render.m_bShell2Solid = b; }
 bool CGLModel::ShowShell2Solid() const { return m_render.m_bShell2Solid; }
 
 //-----------------------------------------------------------------------------
+void CGLModel::ShowBeam2Solid(bool b) { m_render.m_bBeam2Solid = b; }
+bool CGLModel::ShowBeam2Solid() const { return m_render.m_bBeam2Solid; }
+
+//-----------------------------------------------------------------------------
 int CGLModel::ShellReferenceSurface() const { return m_render.m_nshellref; }
 void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 
@@ -576,6 +580,19 @@ void CGLModel::RenderPlots(CGLContext& rc, int renderOrder)
 //-----------------------------------------------------------------------------
 void CGLModel::RenderDiscrete(CGLContext& rc)
 {
+	if (ShowBeam2Solid())
+	{
+		RenderDiscreteAsSolid(rc);
+	}
+	else
+	{
+		RenderDiscreteAsLines(rc);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
+{
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	Post::FEPostMesh& mesh = *GetActiveMesh();
@@ -674,6 +691,119 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 
 	glPopAttrib();
 }
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
+{
+	glPushAttrib(GL_ENABLE_BIT);
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	int curMat = -1;
+	bool bvisible = true;
+
+	// find the shortest edge (that's not zero)
+	double L2min = 0.0;
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe)
+		{
+			vec3d r0 = mesh.Node(edge.n0).r;
+			vec3d r1 = mesh.Node(edge.n1).r;
+			double L = (r1 - r0).norm2();
+
+			if ((L2min == 0.0) || (L < L2min))
+			{
+				L2min = L;
+			}
+		}
+	}
+	if (L2min == 0.0) return;
+	double Lmin = sqrt(L2min);
+
+	double W = Lmin*0.25;
+
+	// render un-selected, active elements
+	if (m_pcol->IsActive())
+	{
+		glEnable(GL_TEXTURE_1D);
+
+		glColor3ub(255, 255, 255);
+		for (int i = 0; i < m_edge.Edges(); ++i)
+		{
+			GLEdge::EDGE& edge = m_edge.Edge(i);
+			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			if (pe && !pe->IsSelected() && pe->IsVisible())
+			{
+				int mat = edge.mat;
+				if (mat != curMat)
+				{
+					Material* pmat = m_ps->GetMaterial(mat);
+					curMat = mat;
+					bvisible = pmat->bvisible;
+					if (!pmat->benable) bvisible = false;
+				}
+
+				if (bvisible)
+				{
+					vec3d r0 = mesh.Node(edge.n0).r;
+					vec3d r1 = mesh.Node(edge.n1).r;
+					float t0 = edge.tex[0];
+					float t1 = edge.tex[1];
+					glx::drawCappedCylinder(r0, r1, W, t0, t1);
+				}
+			}
+		}
+	}
+
+	// turn-off texturing for the rest
+	glDisable(GL_TEXTURE_1D);
+
+	// loop over un-selected, inactive elements
+	curMat = -1;
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe && !pe->IsSelected() && pe->IsVisible())
+		{
+			int mat = edge.mat;
+			if (mat != curMat)
+			{
+				Material* pmat = m_ps->GetMaterial(mat);
+				GLColor c = pmat->diffuse;
+				glColor3ub(c.r, c.g, c.b);
+				curMat = mat;
+				bvisible = pmat->bvisible;
+				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
+			}
+
+			if (bvisible)
+			{
+				vec3d r0 = mesh.Node(edge.n0).r;
+				vec3d r1 = mesh.Node(edge.n1).r;
+				glx::drawCappedCylinder(r0, r1, W);
+			}
+		}
+	}
+
+	// loop over selected elements
+	glColor3ub(255, 0, 0);
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe && pe->IsSelected() && pe->IsVisible())
+		{
+			vec3d r0 = mesh.Node(edge.n0).r;
+			vec3d r1 = mesh.Node(edge.n1).r;
+			glx::drawCappedCylinder(r0, r1, W);
+		}
+	}
+
+	glPopAttrib();
+}
+
 
 //-----------------------------------------------------------------------------
 void CGLModel::RenderFaces(FEPostModel* ps, CGLContext& rc)

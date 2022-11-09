@@ -164,6 +164,9 @@ public:
 	int ShellReferenceSurface() const;
 	void ShellReferenceSurface(int n);
 
+	void ShowBeam2Solid(bool b);
+	bool ShowBeam2Solid() const;
+
 	void SetSubDivisions(int ndivs);
 	int GetSubDivisions();
 
@@ -199,6 +202,8 @@ public:
 	void RenderNormals(CGLContext& rc);
 	void RenderGhost  (CGLContext& rc);
 	void RenderDiscrete(CGLContext& rc);
+	void RenderDiscreteAsLines(CGLContext& rc);
+	void RenderDiscreteAsSolid(CGLContext& rc);
 
 	void RenderSelection(CGLContext& rc);
 
