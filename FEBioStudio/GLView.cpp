@@ -1477,6 +1477,7 @@ void CGLView::paintGL()
 	rc.m_showOutline = view.m_bfeat;
 	rc.m_showMesh = view.m_bmesh;
 	rc.m_q = cam.GetOrientation();
+	rc.m_springThick = view.m_line_size;
 
 	// prepare for rendering
 	PrepModel();
@@ -1936,36 +1937,31 @@ void CGLView::PrepModel()
 	//	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
 
-	// set the diffuse lighting intensity
-	CDocument* pdoc = GetDocument();
-	if (pdoc && pdoc->IsValid())
-	{
-		VIEW_SETTINGS& view = GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
-		// set the line width
-		glLineWidth(view.m_line_size);
+	// set the line width
+	glLineWidth(view.m_line_size);
 
-		// turn on/off lighting
-		if (view.m_bLighting)
-			glEnable(GL_LIGHTING);
-		else
-			glDisable(GL_LIGHTING);
+	// turn on/off lighting
+	if (view.m_bLighting)
+		glEnable(GL_LIGHTING);
+	else
+		glDisable(GL_LIGHTING);
 
-		GLfloat d = view.m_diffuse;
-		GLfloat dv[4] = { d, d, d, 1.f };
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
+	GLfloat d = view.m_diffuse;
+	GLfloat dv[4] = { d, d, d, 1.f };
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
 
-		// set the ambient lighting intensity
-		GLfloat f = view.m_ambient;
-		GLfloat av[4] = { f, f, f, 1.f };
-		glLightfv(GL_LIGHT0, GL_AMBIENT, av);
+	// set the ambient lighting intensity
+	GLfloat f = view.m_ambient;
+	GLfloat av[4] = { f, f, f, 1.f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, av);
 
-		// position the light
-		vec3f lp = GetLightPosition(); lp.Normalize();
-		GLfloat fv[4] = { 0 };
-		fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
-		glLightfv(GL_LIGHT0, GL_POSITION, fv);
-	}
+	// position the light
+	vec3f lp = GetLightPosition(); lp.Normalize();
+	GLfloat fv[4] = { 0 };
+	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
+	glLightfv(GL_LIGHT0, GL_POSITION, fv);
 
 	// position the camera
 	PositionCamera();
