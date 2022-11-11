@@ -1243,6 +1243,11 @@ void ParamContainer::LoadParam(IArchive& ar)
 					param->SetParamType(p.GetParamType());
 					*param = p;
 				}
+				else if ((param->GetParamType() == Param_STRING) && (p.GetParamType() == Param_MATH))
+				{
+					std::string smath = p.GetMathString();
+					param->SetStringValue(smath);
+				}
 				else
 				{
 					// TODO: print some type of error message that parameters are mismatched	
