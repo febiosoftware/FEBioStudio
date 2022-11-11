@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 #include <vector>
+#include <FECore/vec3d.h>
 
 namespace Ui {
 	class CDlgFind;
@@ -39,8 +40,10 @@ public:
 
 public:
 	std::vector<int>	m_item;	// item list
+	vec3d	m_coord;
 	bool	m_bsel[4];
 	bool	m_bclear;	// clear current selection
+	int		m_method;
 
 	void accept();
 
