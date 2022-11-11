@@ -87,6 +87,7 @@ public:
 CDlgPlaneCut::CDlgPlaneCut(CMainWindow* wnd) : QDialog(wnd), ui(new UIDlgPlaneCut)
 {
 	setWindowTitle("Plane cut");
+	setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 	ui->m_view = wnd->GetGLView();
 	ui->setup(this);
 }
