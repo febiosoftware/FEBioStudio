@@ -168,6 +168,7 @@ public:
 	void SetVectorVec2dValue(const std::vector<vec2d>& v) { assert(m_ntype == Param_STD_VECTOR_VEC2D); val<std::vector<vec2d> >() = v; }
 
 	void SetArrayIntValue   (const std::vector<int   >& v);
+	void SetArrayIntValue   (int* pd, int nsize);
 	void SetArrayDoubleValue(const std::vector<double>& v);
 
 	double GetFloatValue () const {assert(m_ntype == Param_FLOAT ); return val<double>(); }
@@ -668,6 +669,7 @@ public:
 	void SetParamString(const char* szparam, const std::string& s) { GetParam(szparam)->SetStringValue(s); }
 	void SetParamVectorInt   (const char* szparam, const std::vector<int   >& a) { GetParam(szparam)->SetVectorIntValue(a); }
 	void SetParamVectorDouble(const char* szparam, const std::vector<double>& a) { GetParam(szparam)->SetVectorDoubleValue(a); }
+	void SetParamIntArray(const char* szparam, int* pd, int n) { GetParam(szparam)->SetArrayIntValue(pd, n); }
 
 	int    GetParamInt  (const char* szparam) { return GetParam(szparam)->GetIntValue(); }
 	double GetParamFloat(const char* szparam) { return GetParam(szparam)->GetFloatValue(); }

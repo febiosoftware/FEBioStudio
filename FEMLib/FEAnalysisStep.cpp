@@ -1375,6 +1375,12 @@ void STEP_SETTINGS::Defaults()
 	// output optios
 	plot_level = 1; // Major iterations
 	plot_stride = 1;
+	plot_zero = false;
+	plot_range[0] = 0;
+	plot_range[1] = -1;
+	output_level = 1; // = FE_Output_Level::FE_OUTPUT_MAJOR_ITRS
+
+	adapter_re_solve = true;
 
 	// constants
 //	Rc = 0; //8.314e-6;

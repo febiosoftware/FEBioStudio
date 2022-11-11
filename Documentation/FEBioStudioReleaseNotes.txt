@@ -6,6 +6,60 @@
 
 ===========================================================================
 
+ R E L E A S E   2.0   ?/?/2022
+
+===========================================================================
+
+* This release is a major overhaul of the code. One of the main goals was a better integration with FEBio. The results of this integration are: 
+ - New features in FEBio will be automatically available in FEBio Studio and FEBio Studio now supports FEBio features that previously were not available (e.g. advanced load controllers, mesh adaptors, mesh data, linear constraints, and more). 
+ - FEBio Studio can read FEBio plugins, so plugin developers can now setup their models directly within the UI. 
+ - Improved consistency between febio input file structure and febio studio model tree. 
+
+* Note that FEBio Studio 2 uses a different extension (*.fs2). Since FEBio Studio 2 can be installed alongside FEBio Studio 1, we opted to change the extension so that it is easier to distinguish new files from older files. FEBio Studio 2 continues to read the older fsm files. 
+
+* This version also has several new 3D image processing capabilities. [EXPAND]
+
+* Python capabilities? [Too soon?]
+
+* Added new dialog for reporting bugs. (menu Help\Submit a bug report)
+
+
+BUILD: 
+* FEBio plugins can now be loaded using the menu FEBio\Manage FEBio plugins. 
+* Load controllers are now available and editable directly from the model tree. (Curve Editor window is still available)
+* Support was added for truss elements. 
+* Parameters in Properties pane on Model panel indicate whether they have load controller assigned. 
+* Added support for reading and writing edges to feb4 format.
+* Improved Abaqus file reader (Support was added or improved for keywords SURFACE, DSLOAD, AMPLITUDE, BOUNDARY, MATERIAL). 
+* A warning indicator was added to the model tree to indicate whether there are issues with the model. 
+* Added support for "smooth step" interpolation for point curves. 
+* Added button to logfile properties to edit the log variables.
+* Edge flipping can now also be applied to selection.
+* Added a Material Test tool, which allows users to generate stress-strain curves for the materials in their model. 
+* Mesh inspector was improved. 
+* Element formulations can now be chosen on the part properties. 
+* A tool was added that converts a sketch into a discrete element network. 
+* Files from repository panel can now be dragged and dropped on the main window to open them.
+* Added support for importing mesh selections from feb file.
+* When visualizing fibers, a new toolbox appears that allows users to customize the fiber rendering options. 
+* Added option to take cross product of generated vector field in fiber generator tool.
+
+POST:
+* Line (beam, truss) elements can now be rendered as solid. 
+* Fixed issue with selecting plot type in graph window.
+* Added option to xplt reader to read only converged states.
+* Added state's status flag to Post State panel.
+* Implemented warp image filter that can apply an FE deformation to a 3D image. 
+* 3D images can now be saved to RAW format (right-click on image model and select save from context menu)
+* Fixed the Post\Add Displacement map menu. 
+* Improvements were made to post session file. 
+* Fixed issue with rendering data for penta elements.
+* Fixed issue where capture frame was only shown on first plot file loaded.
+* When units were used to build the model, the units will be displayed on the post side as well (Requires using feb4 format for the febio input file).
+
+
+===========================================================================
+
  R E L E A S E   1.8   6/15/2022
 
 ===========================================================================
