@@ -239,6 +239,11 @@ struct STEP_SETTINGS
 	// output options
 	int	plot_level;		// plot level
 	int	plot_stride;	// plot stride parameter
+	bool plot_zero;		// plot zero state
+	int	plot_range[2];	// plot range
+	int output_level;	// output level
+
+	bool adapter_re_solve;
 
 	// solute constants
 //	double	Rc;				// universal gas constant

@@ -366,6 +366,13 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 				}
 			}
             else if (tag == "plot_stride") tag.value(ops.plot_stride);
+			else if (tag == "plot_zero_state") tag.value(ops.plot_zero);
+			else if (tag == "plot_range")
+			{
+				tag.value(ops.plot_range, 2);
+			}
+			else if (tag == "output_level") tag.value(ops.output_level);
+			else if (tag == "adaptor_re_solve") tag.value(ops.adapter_re_solve);
 			else ParseUnknownTag(tag);
 		}
 		++tag;
