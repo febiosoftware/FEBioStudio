@@ -17,9 +17,11 @@
 
 * Note that FEBio Studio 2 uses a different extension (*.fs2). Since FEBio Studio 2 can be installed alongside FEBio Studio 1, we opted to change the extension so that it is easier to distinguish new files from older files. FEBio Studio 2 continues to read the older fsm files. 
 
-* This version also has several new 3D image processing capabilities. [EXPAND]
-
-* Python capabilities? [Too soon?]
+* This version also has several new 3D image processing capabilities.
+ - Support for reading 3d images in several formats, including DICOM, TIFF, OME TIFF, RAW. 
+ - A basic image filtering pipeline was implemented. 
+ - A tool was added that can interpolate an image onto a mesh and generate mesh data. The mesh data can then be assigned to material parameters. 
+ - Improved volume rendering capabilities. 
 
 * Added new dialog for reporting bugs. (menu Help\Submit a bug report)
 
