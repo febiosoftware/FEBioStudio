@@ -34,6 +34,7 @@ namespace Ui {
 
 class CMainWindow;
 class FSMesh;
+class FSSurfaceMesh;
 class GObject;
 
 class CMeshInspector : public QMainWindow
@@ -60,6 +61,8 @@ private slots:
 
 private:
 	void UpdateData(int ndata);
+	void UpdateFEMeshData(FSMesh* pm, int ndata);
+	void UpdateSurfaceMeshData(FSSurfaceMesh* pm, int ndata);
 
 private:
 	Ui::CMeshInspector*	ui;

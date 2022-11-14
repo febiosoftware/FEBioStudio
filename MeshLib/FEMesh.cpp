@@ -105,6 +105,25 @@ void Mesh_Data::Init(FSMesh* mesh, double initVal, int initTag)
 }
 
 //-----------------------------------------------------------------------------
+void Mesh_Data::Init(FSSurfaceMesh* mesh, double initVal, int initTag)
+{
+	int NF = mesh->Faces();
+	m_data.resize(NF);
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& f = mesh->Face(i);
+		DATA& di = m_data[i];
+		int ne = f.Nodes();
+		di.nval = ne;
+		di.tag = initTag;
+		for (int j = 0; j < ne; ++j)
+		{
+			di.val[j] = initVal;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 // get the average element value
 double Mesh_Data::GetElementAverageValue(int elem)
 {

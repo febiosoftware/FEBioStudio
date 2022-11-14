@@ -58,6 +58,7 @@ public:
 	void Clear();
 
 	void Init(FSMesh* mesh, double initVal, int initTag);
+	void Init(FSSurfaceMesh* mesh, double initVal, int initTag);
 
 	bool IsValid() const { return (m_data.empty() == false); }
 
