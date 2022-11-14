@@ -410,7 +410,7 @@ public:
 			return;
 		}
 
-		const int MAX_TYPE = 8;
+		const int MAX_TYPE = 7;
 		static int FT[] = {
 			FE_TRI3, FE_TRI6, FE_TRI7, FE_TRI10, FE_QUAD4, FE_QUAD8, FE_QUAD9, 0 };
 
