@@ -63,6 +63,7 @@ public:
 	void Clear();
 
 	void Init(FEMesh* mesh, double initVal, int initTag);
+	void Init(FESurfaceMesh* mesh, double initVal, int initTag);
 
 	bool IsValid() const { return (m_data.empty() == false); }
 

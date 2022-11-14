@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <MeshTools/GGroup.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FEElementData.h>
+#include <MeshLib/MeshTools.h>
 
 //-----------------------------------------------------------------------------
 // constructor
@@ -289,4 +290,108 @@ double FEMeshValuator::EvaluateNode(int n, int nfield, int* err)
 		break;
 	}
 	return val;
+}
+
+//=======================================================================================================
+
+//-----------------------------------------------------------------------------
+// constructor
+FESurfaceMeshValuator::FESurfaceMeshValuator(FESurfaceMesh& mesh) : m_mesh(mesh)
+{
+	m_curvature_levels = 1;
+	m_curvature_maxiters = 10;
+	m_curvature_extquad = false;
+}
+
+//-----------------------------------------------------------------------------
+void FESurfaceMeshValuator::SetCurvatureLevels(int levels)
+{
+	m_curvature_levels = levels;
+}
+
+//-----------------------------------------------------------------------------
+void FESurfaceMeshValuator::SetCurvatureMaxIters(int maxIters)
+{
+	m_curvature_maxiters = maxIters;
+}
+
+//-----------------------------------------------------------------------------
+void FESurfaceMeshValuator::SetCurvatureExtQuad(bool b)
+{
+	m_curvature_extquad = b;
+}
+
+//-----------------------------------------------------------------------------
+// evaluate the particular data field
+bool FESurfaceMeshValuator::Evaluate(int nfield, Mesh_Data& data)
+{
+	// evaluate mesh
+	int n = 0;
+	int NF = m_mesh.Faces();
+	data.Init(&m_mesh, 0.0, 0);
+	if (nfield < MAX_DEFAULT_FIELDS)
+	{
+		for (int i = 0; i < NF; ++i)
+		{
+			FEFace& face = m_mesh.Face(i);
+			try {
+				double val = EvaluateFace(i, nfield);
+				data.SetElementValue(i, val);
+				data.SetElementDataTag(i, 1);
+			}
+			catch (...)
+			{
+				data.SetElementDataTag(i, 0);
+			}
+		}
+	}
+	else
+	{
+		// Nothing to do here
+	}
+
+	// update stats
+	data.UpdateValueRange();
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// Evaluate element data
+double FESurfaceMeshValuator::EvaluateFace(int n, int nfield, int* err)
+{
+	if (err) *err = 0;
+	double val = 0, sum = 0;
+	FEFace& face = m_mesh.Face(n);
+
+	// get the face nodal coordinates
+	vec3d r[FEFace::MAX_NODES];
+	for (int i = 0; i < face.Nodes(); ++i) r[i] = m_mesh.Node(face.n[i]).r;
+
+	switch (nfield)
+	{
+	case 0: // face area
+		val = m_mesh.FaceArea(face);
+		break;
+	case 1:
+		if (face.Type() == FE_FACE_TRI3) val = TriangleQuality(r);
+		break;
+	case 2:
+		val = FEMeshMetrics::MinEdgeLength(m_mesh, face);
+		break;
+	case 3:
+		val = FEMeshMetrics::MaxEdgeLength(m_mesh, face);
+		break;
+	default:
+		val = 0.0;
+	}
+
+	return val;
+}
+
+//-----------------------------------------------------------------------------
+// Evaluate element data
+double FESurfaceMeshValuator::EvaluateNode(int n, int nfield, int* err)
+{
+	return 0.0;
 }
