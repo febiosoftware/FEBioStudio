@@ -36,10 +36,16 @@ SOFTWARE.*/
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioStudio/Commands.h>
 #include <FEBioLink/FEBioClass.h>
-#include <MeshTools/GModel.h>
-#include <GeomLib/GItem.h>
-#include <FEBio/FEBioExport4.h>
 #include <MeshTools/FEModel.h>
+#include <MeshTools/GModel.h>
+#include <GeomLib/GObject.h>
+#include <GeomLib/GBaseObject.h>
+#include <GeomLib/GItem.h>
+
+#include <FEBio/FEBioExport4.h>
+
+#include "pyFSMesh.h"
+
 
 CModelDocument* GetActiveDocument()
 {
@@ -170,51 +176,38 @@ void init_FBSModel(pybind11::module& m)
         .def("SwapSteps", &FSModel::SwapSteps)
         .def("ReplaceStep", &FSModel::ReplaceStep)
         .def("AssignComponentToStep", &FSModel::AssignComponentToStep)
+
+        // --- Object functions ---
+        .def("Objects", [] (FSModel& self){return self.GetModel().Objects();})
+        .def("Object", [] (FSModel& self, int i){return self.GetModel().Object(i);})
+        .def("FindObject", [] (FSModel& self, int i){return self.GetModel().FindObject(i);})
+        .def("FindObject", [] (FSModel& self, const string& str){return self.GetModel().FindObject(str);})
+        .def("FindObjectIndex", [] (FSModel& self, GObject* obj){return self.GetModel().FindObjectIndex(obj);})
+        .def("ReplaceObject", [] (FSModel& self, int i, GObject* obj){return self.GetModel().ReplaceObject(i, obj);})
+        .def("ReplaceObject", [] (FSModel& self, GObject* obj1, GObject* obj2){return self.GetModel().ReplaceObject(obj1, obj2);})
+        .def("AddObject", [] (FSModel& self, GObject* obj){return self.GetModel().AddObject(obj);})
+        .def("RemoveObject", [] (FSModel& self, GObject* obj){return self.GetModel().RemoveObject(obj);})
+        .def("InsertObject", [] (FSModel& self, GObject* obj, int i){return self.GetModel().InsertObject(obj, i);})
         ;
     ///////////////// FSModel /////////////////
 
-    ///////////////// GModel /////////////////
-    mdl.def("GetActiveGModel", &GetActiveGModel);
+    ///////////////// GObject /////////////////
+    pybind11::class_<GObject, std::unique_ptr<GObject, pybind11::nodelete>>(mdl, "GObject")
+        .def("Parts", &GBaseObject::Parts)
+        .def("Faces", &GBaseObject::Faces)
+        .def("Edges", &GBaseObject::Edges)
+        .def("Nodes", &GBaseObject::Nodes)
+        .def("Part", [](GObject& self, int i){return self.Part(i);})
+        .def("Face", [](GObject& self, int i){return self.Face(i);})
+        .def("Edge", [](GObject& self, int i){return self.Edge(i);})
+        .def("Node", [](GObject& self, int i){return self.Node(i);})
+        .def("Part", [](GObject& self, int i){return self.Part(i);})
 
-    pybind11::class_<GModel, std::unique_ptr<GModel, pybind11::nodelete>>(mdl, "GModel")
-        .def("Clear", &GModel::Clear)
-        .def("ClearGroups", &GModel::ClearGroups)
-        .def("ClearDiscrete", &GModel::ClearDiscrete)
+        .def("GetFEMesh", [](GObject& self){return self.GetFEMesh();})
 
-        // --- Object functions ---
-        .def("Objects", &GModel::Objects)
-        .def("Object", &GModel::Object)
-        .def("FindObject", static_cast<GObject* (GModel::*)(int)>(&GModel::FindObject))
-        .def("FindObject", static_cast<GObject* (GModel::*)(const string&)>(&GModel::FindObject))
-        .def("FindObjectIndex", &GModel::FindObjectIndex)
-        .def("ReplaceObject", static_cast<void (GModel::*)(int, GObject*)>(&GModel::ReplaceObject))
-        .def("ReplaceObject", static_cast<void (GModel::*)(GObject*, GObject*)>(&GModel::ReplaceObject))
-        .def("AddObject", &GModel::AddObject)
-        .def("RemoveObject", &GModel::RemoveObject)
-        .def("InsertObject", &GModel::InsertObject)
 
-        // --- part functions ---
-        .def("Parts", &GModel::Parts)
-        .def("Part", &GModel::Part)
-        .def("FindPart", &GModel::FindPart)
-
-        // --- surface functions ---
-        .def("Surfaces", &GModel::Surfaces)
-        .def("Surface", &GModel::Surface)
-        .def("FindSurface", &GModel::FindSurface)
-
-        // --- edge functions ---
-        .def("Edges", &GModel::Edges)
-        .def("Edge", &GModel::Edge)
-        .def("FindEdge", &GModel::FindEdge)
-        .def("FindEdgeFromName", &GModel::FindEdgeFromName)
-
-        // --- node functions ---
-        .def("Nodes", &GModel::Nodes)
-        .def("Node", &GModel::Node)
-        .def("FindNode", &GModel::FindNode)
         ;
-    ///////////////// GModel /////////////////
+    ///////////////// GObject /////////////////
 
     ///////////////// GNode /////////////////
     pybind11::class_<GNode, std::unique_ptr<GNode, pybind11::nodelete>>(mdl, "GNode")
@@ -225,6 +218,10 @@ void init_FBSModel(pybind11::module& m)
         .def("MakeRequired", &GNode::MakeRequired)
         ;
     ///////////////// GNode /////////////////
+
+    
+    init_FSMesh(mdl);
+    
 
 	mdl.def("CreateBox", CreateBox);
 	mdl.def("AddMaterial", AddMaterial);
@@ -242,15 +239,15 @@ void init_FBSModel(pybind11::module& m)
 			}
 		});
 
-	pybind11::class_<GObject, std::unique_ptr<GObject, pybind11::nodelete>>(mdl, "GObject")
-		.def("AssignMaterial", [](GObject* po, GMaterial* pm) {
-			for (int i = 0; i < po->Parts(); ++i) po->Part(i)->SetMaterialID(pm->GetID());
-		})
-        .def("BuildMesh", &GObject::BuildMesh);
-			// });
-		// .def("BuildMesh", [](GObject* po) {
-		// 	po->BuildMesh();
-		// 	});
+	// pybind11::class_<GObject, std::unique_ptr<GObject, pybind11::nodelete>>(mdl, "GObject")
+	// 	.def("AssignMaterial", [](GObject* po, GMaterial* pm) {
+	// 		for (int i = 0; i < po->Parts(); ++i) po->Part(i)->SetMaterialID(pm->GetID());
+	// 	})
+    //     .def("BuildMesh", &GObject::BuildMesh);
+	// 		// });
+	// 	// .def("BuildMesh", [](GObject* po) {
+	// 	// 	po->BuildMesh();
+	// 	// 	});
 
 }
 #else

@@ -47,7 +47,6 @@ SOFTWARE.*/
 #include "PythonInputHandler.h"
 #include "PyOutput.h"
 
-
 void openFile(const char *fileName)
 {
     FBS::getMainWindow()->OpenFile(fileName);
@@ -93,17 +92,6 @@ void init_FBSUI(pybind11::module& m)
         .def(pybind11::init())
         .def("write", &CPyOutput::write)
         .def("flush", &CPyOutput::flush);
-
-/*    pybind11::class_<GBox, std::unique_ptr<GBox, pybind11::nodelete>>(ui, "GBox")
-        .def(pybind11::init(&GBox_init))
-        .def_property("position", 
-                [](const GBox& g){
-                    return g.GetTransform().GetPosition();
-                }, 
-                [](GBox* g, vec3d& pos){
-                    g->GetTransform().SetPosition(pos);
-                });
-*/
 
     pybind11::class_<GDiscreteSpringSet, std::unique_ptr<GDiscreteSpringSet, pybind11::nodelete>>(ui, "SpringSet")
         .def(pybind11::init(&SpringSet_init))
