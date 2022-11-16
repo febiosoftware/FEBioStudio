@@ -93,6 +93,8 @@ SOFTWARE.*/
 #include <PostLib/VolRender.h>
 #include <PostLib/VolumeRender2.h>
 #include <PostGL/GLColorMap.h>
+#include <PostLib/ColorMap.h>
+#include <GLWLib/convert.h>
 
 extern GLColor col[];
 
@@ -1796,6 +1798,33 @@ void CMainWindow::writeSettings()
 		settings.setValue(configName + "/text", confi.getText().c_str());
 	}
 	settings.endGroup();
+
+	// store user colormaps
+	int n = Post::ColorMapManager::UserColorMaps();
+	settings.beginGroup("usercolormaps");
+	{
+		settings.remove("");
+		for (int i = 0; i < n; ++i)
+		{
+			Post::CColorMap& c = Post::ColorMapManager::GetColorMap(Post::ColorMapManager::USER + i);
+			string sname = Post::ColorMapManager::GetColorMapName(Post::ColorMapManager::USER + i);
+			settings.beginGroup(QString::fromStdString(sname));
+			{
+				int m = c.Colors();
+				settings.setValue("colors", m);
+				for (int j = 0; j < m; ++j)
+				{
+					QString sj = QString::number(j);
+					float v = c.GetColorPos(j);
+					QColor col = toQColor(c.GetColor(j));
+					settings.setValue(sj + "/pos", v);
+					settings.setValue(sj + "/col", col);
+				}
+			}
+			settings.endGroup();
+		}
+	}
+	settings.endGroup();
 }
 
 void CMainWindow::readThemeSetting()
@@ -1902,6 +1931,30 @@ void CMainWindow::readSettings()
 		ui->m_launch_configs.back().customFile = settings.value(configName + "/customFile").toString().toStdString();
 		ui->m_launch_configs.back().setText(settings.value(configName + "/text").toString().toStdString());
 
+	}
+	settings.endGroup();
+
+	settings.beginGroup("usercolormaps");
+	QStringList l = settings.childGroups();
+	for (int i = 0; i < l.size(); ++i)
+	{
+		QString name = l.at(i);
+		Post::CColorMap c; c.SetColors(0);
+		settings.beginGroup(name);
+		{
+			int m = settings.value("colors", 0).toInt();
+			c.SetColors(m);
+			for (int j = 0; j < m; ++j)
+			{
+				QString sj = QString::number(j);
+				float    v = settings.value(sj + "/pos").toFloat();
+				QColor col = settings.value(sj + "/col").value<QColor>();
+				c.SetColorPos(j, v);
+				c.SetColor(j, toGLColor(col));
+			}
+		}
+		settings.endGroup();
+		if (c.Colors() > 0) Post::ColorMapManager::AddColormap(name.toStdString(), c);
 	}
 	settings.endGroup();
 
