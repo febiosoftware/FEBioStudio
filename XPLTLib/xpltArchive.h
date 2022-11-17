@@ -166,7 +166,7 @@ public: // reading
 	int GetCompression();
 	void SetCompression(int n);
 
-	int DecompressChunk(unsigned int& nid, unsigned int& nsize);
+	bool DecompressChunk(unsigned int& nid, unsigned int& nsize);
 
 protected:
 	Imp& im;

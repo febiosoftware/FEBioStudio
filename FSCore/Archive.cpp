@@ -27,8 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "Archive.h"
 #include <sstream>
-#include "zlib.h"
-static z_stream strm;
+#include <stdarg.h>
 
 using std::stringstream;
 
