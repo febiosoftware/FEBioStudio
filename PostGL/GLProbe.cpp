@@ -262,6 +262,7 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 
 	if ((nelem == -1) && (nmin != -1))
 	{
+		nelem = nmin;
 		vec3d dr = to_vec3d(r0 - rmin);
 
 		FSElement& e = mesh.Element(nmin);

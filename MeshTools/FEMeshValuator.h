@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <MeshLib/FEMesh.h>
+#include <MeshLib/FESurfaceMesh.h>
 
 class FEMeshValuator
 {
@@ -49,6 +50,35 @@ public:
 
 private:
 	FSMesh& m_mesh;
+
+	// properties for curvature
+	int	m_curvature_levels;
+	int	m_curvature_maxiters;
+	bool m_curvature_extquad;
+};
+
+class FESurfaceMeshValuator
+{
+	enum { MAX_DEFAULT_FIELDS = 4 };
+
+public:
+	// constructor
+	FESurfaceMeshValuator(FSSurfaceMesh& mesh);
+
+	// evaluate the particular data field
+	bool Evaluate(int nfield, Mesh_Data& data);
+
+	// evaluate just one item
+	double EvaluateFace(int i, int nfield, int* err = 0);
+	double EvaluateNode(int i, int nfield, int* err = 0);
+
+public:
+	void SetCurvatureLevels(int levels);
+	void SetCurvatureMaxIters(int maxIters);
+	void SetCurvatureExtQuad(bool b);
+
+private:
+	FSSurfaceMesh& m_mesh;
 
 	// properties for curvature
 	int	m_curvature_levels;

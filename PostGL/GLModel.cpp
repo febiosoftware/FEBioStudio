@@ -148,6 +148,14 @@ void CGLModel::ShowShell2Solid(bool b) { m_render.m_bShell2Solid = b; }
 bool CGLModel::ShowShell2Solid() const { return m_render.m_bShell2Solid; }
 
 //-----------------------------------------------------------------------------
+void CGLModel::ShowBeam2Solid(bool b) { m_render.m_bBeam2Solid = b; }
+bool CGLModel::ShowBeam2Solid() const { return m_render.m_bBeam2Solid; }
+
+//-----------------------------------------------------------------------------
+void CGLModel::SolidBeamRadius(float f) { m_render.m_bSolidBeamRadius = f; }
+float CGLModel::SolidBeamRadius() const { return m_render.m_bSolidBeamRadius; }
+
+//-----------------------------------------------------------------------------
 int CGLModel::ShellReferenceSurface() const { return m_render.m_nshellref; }
 void CGLModel::ShellReferenceSurface(int n) { m_render.m_nshellref = n; }
 
@@ -576,6 +584,19 @@ void CGLModel::RenderPlots(CGLContext& rc, int renderOrder)
 //-----------------------------------------------------------------------------
 void CGLModel::RenderDiscrete(CGLContext& rc)
 {
+	if (ShowBeam2Solid())
+	{
+		RenderDiscreteAsSolid(rc);
+	}
+	else
+	{
+		RenderDiscreteAsLines(rc);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
+{
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 	Post::FEPostMesh& mesh = *GetActiveMesh();
@@ -674,6 +695,120 @@ void CGLModel::RenderDiscrete(CGLContext& rc)
 
 	glPopAttrib();
 }
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
+{
+	glPushAttrib(GL_ENABLE_BIT);
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	int curMat = -1;
+	bool bvisible = true;
+
+	// find the shortest edge (that's not zero)
+	double L2min = 0.0;
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe)
+		{
+			vec3d r0 = mesh.Node(edge.n0).r;
+			vec3d r1 = mesh.Node(edge.n1).r;
+			double L = (r1 - r0).norm2();
+
+			if ((L2min == 0.0) || (L < L2min))
+			{
+				L2min = L;
+			}
+		}
+	}
+	if (L2min == 0.0) return;
+	double Lmin = sqrt(L2min);
+
+	double f = m_render.m_bSolidBeamRadius;
+	double W = Lmin*0.25*f;
+
+	// render un-selected, active elements
+	if (m_pcol->IsActive())
+	{
+		glEnable(GL_TEXTURE_1D);
+
+		glColor3ub(255, 255, 255);
+		for (int i = 0; i < m_edge.Edges(); ++i)
+		{
+			GLEdge::EDGE& edge = m_edge.Edge(i);
+			FEElement_* pe = mesh.ElementPtr(edge.elem);
+			if (pe && !pe->IsSelected() && pe->IsVisible())
+			{
+				int mat = edge.mat;
+				if (mat != curMat)
+				{
+					Material* pmat = m_ps->GetMaterial(mat);
+					curMat = mat;
+					bvisible = pmat->bvisible;
+					if (!pmat->benable) bvisible = false;
+				}
+
+				if (bvisible)
+				{
+					vec3d r0 = mesh.Node(edge.n0).r;
+					vec3d r1 = mesh.Node(edge.n1).r;
+					float t0 = edge.tex[0];
+					float t1 = edge.tex[1];
+					glx::drawCappedCylinder(r0, r1, W, t0, t1);
+				}
+			}
+		}
+	}
+
+	// turn-off texturing for the rest
+	glDisable(GL_TEXTURE_1D);
+
+	// loop over un-selected, inactive elements
+	curMat = -1;
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe && !pe->IsSelected() && pe->IsVisible())
+		{
+			int mat = edge.mat;
+			if (mat != curMat)
+			{
+				Material* pmat = m_ps->GetMaterial(mat);
+				GLColor c = pmat->diffuse;
+				glColor3ub(c.r, c.g, c.b);
+				curMat = mat;
+				bvisible = pmat->bvisible;
+				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
+			}
+
+			if (bvisible)
+			{
+				vec3d r0 = mesh.Node(edge.n0).r;
+				vec3d r1 = mesh.Node(edge.n1).r;
+				glx::drawCappedCylinder(r0, r1, W);
+			}
+		}
+	}
+
+	// loop over selected elements
+	glColor3ub(255, 0, 0);
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe && pe->IsSelected() && pe->IsVisible())
+		{
+			vec3d r0 = mesh.Node(edge.n0).r;
+			vec3d r1 = mesh.Node(edge.n1).r;
+			glx::drawCappedCylinder(r0, r1, W);
+		}
+	}
+
+	glPopAttrib();
+}
+
 
 //-----------------------------------------------------------------------------
 void CGLModel::RenderFaces(FEPostModel* ps, CGLContext& rc)
@@ -996,7 +1131,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	glEnable(GL_CULL_FACE);
 
 	GLColor d = pmat->diffuse;
-	GLColor c[4];
+	GLColor c[FSFace::MAX_NODES];
 	double tm = pmat->transparency;
 
 	int ndivs = GetSubDivisions();
@@ -1037,7 +1172,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		{
 			FSFace& face = dom.Face(zlist[i].first);
 
-			GLubyte a[4] = { 255, 255, 255, 255 };
+			GLubyte a[FSFace::MAX_NODES] = { 0 };
 			if (transMode == RENDER_TRANS_NORMAL_WEIGHTED)
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -1068,18 +1203,15 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 			if (benable)
 			{
-				c[0] = GLColor(255, 255, 255, a[0]);
-				c[1] = GLColor(255, 255, 255, a[1]);
-				c[2] = GLColor(255, 255, 255, a[2]);
-				c[3] = GLColor(255, 255, 255, a[3]);
+				for (int j = 0; j < face.Nodes(); ++j)
+					c[j] = GLColor(255, 255, 255, a[j]);
 			}
 			else
 			{
-				c[0] = GLColor(d.r, d.g, d.b, a[0]);
-				c[1] = GLColor(d.r, d.g, d.b, a[1]);
-				c[2] = GLColor(d.r, d.g, d.b, a[2]);
-				c[3] = GLColor(d.r, d.g, d.b, a[3]);
+				for (int j = 0; j < face.Nodes(); ++j)
+					c[j] = GLColor(d.r, d.g, d.b, a[j]);
 			}
+
 
 			// okay, we got one, so let's render it
 			m_render.RenderFace(face, pm, c, ndivs);
@@ -1095,7 +1227,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
 			{
-				GLubyte a[4];
+				GLubyte a[FSFace::MAX_NODES];
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					vec3d r = to_vec3d(face.m_nn[j]);
@@ -1106,17 +1238,13 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 				if (benable)
 				{
-					c[0] = GLColor(255, 255, 255, a[0]);
-					c[1] = GLColor(255, 255, 255, a[1]);
-					c[2] = GLColor(255, 255, 255, a[2]);
-					c[3] = GLColor(255, 255, 255, a[3]);
+					for (int j = 0; j < face.Nodes(); ++j)
+						c[j] = GLColor(255, 255, 255, a[j]);
 				}
 				else
 				{
-					c[0] = GLColor(d.r, d.g, d.b, a[0]);
-					c[1] = GLColor(d.r, d.g, d.b, a[1]);
-					c[2] = GLColor(d.r, d.g, d.b, a[2]);
-					c[3] = GLColor(d.r, d.g, d.b, a[3]);
+					for (int j = 0; j < face.Nodes(); ++j)
+						c[j] = GLColor(d.r, d.g, d.b, a[j]);
 				}
 
 				// okay, we got one, so let's render it
@@ -1133,7 +1261,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
 			{
-				GLubyte a[4];
+				GLubyte a[FSFace::MAX_NODES];
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					vec3d r = to_vec3d(face.m_nn[j]);
@@ -1144,17 +1272,13 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 				if (benable)
 				{
-					c[0] = GLColor(255, 255, 255, a[0]);
-					c[1] = GLColor(255, 255, 255, a[1]);
-					c[2] = GLColor(255, 255, 255, a[2]);
-					c[3] = GLColor(255, 255, 255, a[3]);
+					for (int j=0; j<face.Nodes(); ++j)
+						c[j] = GLColor(255, 255, 255, a[j]);
 				}
 				else
 				{
-					c[0] = GLColor(d.r, d.g, d.b, a[0]);
-					c[1] = GLColor(d.r, d.g, d.b, a[1]);
-					c[2] = GLColor(d.r, d.g, d.b, a[2]);
-					c[3] = GLColor(d.r, d.g, d.b, a[3]);
+					for (int j = 0; j < face.Nodes(); ++j)
+						c[j] = GLColor(d.r, d.g, d.b, a[j]);
 				}
 
 				// okay, we got one, so let's render it

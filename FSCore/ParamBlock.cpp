@@ -922,6 +922,15 @@ void Param::SetArrayIntValue(const std::vector<int>& v)
 	for (int i = 0; i < n; ++i) d[i] = v[i];
 }
 
+void Param::SetArrayIntValue(int* pd, int nsize)
+{
+	assert(m_ntype == Param_ARRAY_INT);
+	auto& d = val<std::vector<int> >();
+	assert(d.size() == nsize);
+	int n = MIN(d.size(), nsize);
+	for (int i = 0; i < n; ++i) d[i] = pd[i];
+}
+
 void Param::SetArrayDoubleValue(const std::vector<double>& v)
 {
 	assert(m_ntype == Param_ARRAY_DOUBLE);
@@ -1233,6 +1242,11 @@ void ParamContainer::LoadParam(IArchive& ar)
 				{
 					param->SetParamType(p.GetParamType());
 					*param = p;
+				}
+				else if ((param->GetParamType() == Param_STRING) && (p.GetParamType() == Param_MATH))
+				{
+					std::string smath = p.GetMathString();
+					param->SetStringValue(smath);
 				}
 				else
 				{

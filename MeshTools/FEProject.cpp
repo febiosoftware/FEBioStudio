@@ -1852,6 +1852,10 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 
 	febStep.SetParamInt("plot_level", ops.plot_level);
 	febStep.SetParamInt("plot_stride", ops.plot_stride);
+	febStep.SetParamBool("plot_zero_state", ops.plot_zero);
+	febStep.SetParamIntArray("plot_range", ops.plot_range, 2);
+	febStep.SetParamInt("output_level", ops.output_level);
+	febStep.SetParamBool("adaptor_re_solve", ops.adapter_re_solve);
 
 	// auto time stepper settings
 	FSProperty* timeStepperProp = febStep.FindProperty("time_stepper");

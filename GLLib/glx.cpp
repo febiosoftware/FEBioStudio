@@ -400,6 +400,44 @@ void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
 	}
 }
 
+void glx::drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N)
+{
+	vec3d n = r1 - r0; n.Normalize();
+	quatd q(vec3d(0, 0, 1), n);
+
+	glBegin(GL_QUAD_STRIP);
+	for (int i = 0; i <= N; ++i)
+	{
+		double w = 2 * PI * i / (double)N;
+		double x = cos(w);
+		double y = sin(w);
+
+		vec3d ri0(R * x, R * y, 0); q.RotateVector(ri0);
+		vec3d ri1(R * x, R * y, 0); q.RotateVector(ri1);
+		vec3d ra = r0 + ri0;
+		vec3d rb = r1 + ri1;
+
+		vec3d na(x, y, 0.0); q.RotateVector(na);
+		vec3d nb(x, y, 0.0); q.RotateVector(nb);
+
+		glTexCoord1d(t0); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+		glTexCoord1d(t1); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+	}
+	glEnd();
+}
+
+void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N)
+{
+	vec3d n = r1 - r0; n.Normalize();
+
+	// render cylinder
+	glx::drawCylinder(r0, r1, R, t0, t1, N);
+
+	// render caps
+	glx::drawHalfSphere(r0, R, -n, t0);
+	glx::drawHalfSphere(r1, R, n, t1);
+}
+
 void glx::quad4(vec3d r[4], vec3d n[4])
 {
 	vertex3d(r[0], n[0]); vertex3d(r[1], n[1]); vertex3d(r[2], n[2]);

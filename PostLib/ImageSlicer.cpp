@@ -51,7 +51,7 @@ CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 	ss << "ImageSlicer" << n++;
 	SetName(ss.str());
 
-	AddIntParam(0, "Image orientation")->SetEnumNames("X\0Y\0Z\0");
+	AddIntParam(2, "Image orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0.5, "Image offset")->SetFloatRange(0.0, 1.0);
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 	AddDoubleParam(1, "Transparency")->SetFloatRange(0.0, 1.0);
@@ -111,6 +111,12 @@ void CImageSlicer::UpdateSlice()
 
 	int nop = GetOrientation();
 	double off = GetOffset();
+
+	// For 2D images, the X, Y options shouldn't do anything
+	if (im3d.Depth() == 1)
+	{
+		nop = 2;
+	}
 
 	// get the 2D image
 	CImage im2d;
