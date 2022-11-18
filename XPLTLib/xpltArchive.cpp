@@ -27,7 +27,10 @@ SOFTWARE.*/
 #include "xpltArchive.h"
 #include <assert.h>
 #include <FSCore/Archive.h>
+
+#ifdef HAVE_ZLIB
 #include <zlib.h>
+#endif
 
 #ifdef WIN32
 typedef __int64 off_type;
@@ -74,7 +77,9 @@ public:
 	// read data
 	stack<CHUNK*>	m_Chunk;
 
+#ifdef HAVE_ZLIB
 	z_stream		strm;
+#endif
 	char* m_buf;		// data buffer
 	void* m_pdata;	// data pointer
 	unsigned int	m_bufsize;	// size of data buffer
@@ -242,18 +247,21 @@ bool xpltArchive::Open(FileStream* fp)
 	im.m_bend = false;
 
 	// initialize decompression stream
+#ifdef HAVE_ZLIB
 	im.strm.zalloc = Z_NULL;
 	im.strm.zfree = Z_NULL;
 	im.strm.opaque = Z_NULL;
 	im.strm.avail_in = 0;
 	im.strm.next_in = Z_NULL;
 	im.strm.avail_out = 0;
+#endif
 
 	return true;
 }
 
-int xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
+bool xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 {
+#ifdef HAVE_ZLIB
 	const int CHUNK = 16384;
 	nsize = -1;
 
@@ -319,7 +327,10 @@ int xpltArchive::DecompressChunk(unsigned int& nid, unsigned int& nsize)
 
 	/* clean up and return */
 	(void)inflateEnd(&im.strm);
-	return ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+//	return (ret == Z_STREAM_END ? Z_OK : Z_DATA_ERROR;
+	return (ret == Z_STREAM_END ? true : false);
+#endif
+	return false;
 }
 
 
@@ -380,7 +391,7 @@ int xpltArchive::OpenChunk()
 		else
 		{
 			// we need to decompress the chunk
-			if (DecompressChunk(id, nsize) != Z_OK) return IO_ERROR;
+			if (DecompressChunk(id, nsize) == false) return IO_ERROR;
 		}
 
 		// create a new chunk
