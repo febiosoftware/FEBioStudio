@@ -1131,7 +1131,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	glEnable(GL_CULL_FACE);
 
 	GLColor d = pmat->diffuse;
-	GLColor c[4];
+	GLColor c[FSFace::MAX_NODES];
 	double tm = pmat->transparency;
 
 	int ndivs = GetSubDivisions();
@@ -1172,7 +1172,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		{
 			FSFace& face = dom.Face(zlist[i].first);
 
-			GLubyte a[4] = { 255, 255, 255, 255 };
+			GLubyte a[FSFace::MAX_NODES] = { 0 };
 			if (transMode == RENDER_TRANS_NORMAL_WEIGHTED)
 			{
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -1203,18 +1203,15 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 			if (benable)
 			{
-				c[0] = GLColor(255, 255, 255, a[0]);
-				c[1] = GLColor(255, 255, 255, a[1]);
-				c[2] = GLColor(255, 255, 255, a[2]);
-				c[3] = GLColor(255, 255, 255, a[3]);
+				for (int j = 0; j < face.Nodes(); ++j)
+					c[j] = GLColor(255, 255, 255, a[j]);
 			}
 			else
 			{
-				c[0] = GLColor(d.r, d.g, d.b, a[0]);
-				c[1] = GLColor(d.r, d.g, d.b, a[1]);
-				c[2] = GLColor(d.r, d.g, d.b, a[2]);
-				c[3] = GLColor(d.r, d.g, d.b, a[3]);
+				for (int j = 0; j < face.Nodes(); ++j)
+					c[j] = GLColor(d.r, d.g, d.b, a[j]);
 			}
+
 
 			// okay, we got one, so let's render it
 			m_render.RenderFace(face, pm, c, ndivs);
@@ -1230,7 +1227,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
 			{
-				GLubyte a[4];
+				GLubyte a[FSFace::MAX_NODES];
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					vec3d r = to_vec3d(face.m_nn[j]);
@@ -1241,17 +1238,13 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 				if (benable)
 				{
-					c[0] = GLColor(255, 255, 255, a[0]);
-					c[1] = GLColor(255, 255, 255, a[1]);
-					c[2] = GLColor(255, 255, 255, a[2]);
-					c[3] = GLColor(255, 255, 255, a[3]);
+					for (int j = 0; j < face.Nodes(); ++j)
+						c[j] = GLColor(255, 255, 255, a[j]);
 				}
 				else
 				{
-					c[0] = GLColor(d.r, d.g, d.b, a[0]);
-					c[1] = GLColor(d.r, d.g, d.b, a[1]);
-					c[2] = GLColor(d.r, d.g, d.b, a[2]);
-					c[3] = GLColor(d.r, d.g, d.b, a[3]);
+					for (int j = 0; j < face.Nodes(); ++j)
+						c[j] = GLColor(d.r, d.g, d.b, a[j]);
 				}
 
 				// okay, we got one, so let's render it
@@ -1268,7 +1261,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
 			{
-				GLubyte a[4];
+				GLubyte a[FSFace::MAX_NODES];
 				for (int j = 0; j < face.Nodes(); ++j)
 				{
 					vec3d r = to_vec3d(face.m_nn[j]);
@@ -1279,17 +1272,13 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 				if (benable)
 				{
-					c[0] = GLColor(255, 255, 255, a[0]);
-					c[1] = GLColor(255, 255, 255, a[1]);
-					c[2] = GLColor(255, 255, 255, a[2]);
-					c[3] = GLColor(255, 255, 255, a[3]);
+					for (int j=0; j<face.Nodes(); ++j)
+						c[j] = GLColor(255, 255, 255, a[j]);
 				}
 				else
 				{
-					c[0] = GLColor(d.r, d.g, d.b, a[0]);
-					c[1] = GLColor(d.r, d.g, d.b, a[1]);
-					c[2] = GLColor(d.r, d.g, d.b, a[2]);
-					c[3] = GLColor(d.r, d.g, d.b, a[3]);
+					for (int j = 0; j < face.Nodes(); ++j)
+						c[j] = GLColor(d.r, d.g, d.b, a[j]);
 				}
 
 				// okay, we got one, so let's render it
