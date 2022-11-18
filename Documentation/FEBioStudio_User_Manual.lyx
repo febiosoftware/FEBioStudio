@@ -8044,6 +8044,13 @@ Flips the selected edge.
 
 \begin_layout Subsubsection
 MMG Remesh
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:MMG-Remesh-2D"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -8417,6 +8424,13 @@ Click Apply to generate the mesh.
 
 \begin_layout Subsection
 Meshing Editable Surfaces
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Meshing-Editable-Surfaces"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -8761,9 +8775,9 @@ Boundary Layer
 \end_layout
 
 \begin_layout Standard
-For certain types of analysis (e.g.
- biphasic) it may be important to refine the mesh near the boundary to capture
- rapid boundary layer effects.
+For certain types of analyses (e.g.
+ biphasic or computational fluid dynamics), it may be important to refine
+ the mesh near the boundary to capture rapid boundary layer effects.
  The Boundary Layer tool can be used to generate a thin layer of refined
  elements.
  The tool requires a facet selection.
@@ -8797,7 +8811,39 @@ Note that this tool may introduce different types of elements.
  For instance, when applied to a tetrahedral mesh, the boundary layer may
  contain tetrahedral, wedge, and hexahedral elements.
  The quality of the elements in the boundary layer may also be degraded.
- 
+\end_layout
+
+\begin_layout Standard
+If a tetrahedral mesh was generated with TetGen (Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Meshing-Editable-Surfaces"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), the boundary layer tool may fail.
+ In that case, remesh it with MMG (Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:MMG-Remesh-3D"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and try the boundary layer tool again.
 \end_layout
 
 \begin_layout Subsubsection
@@ -8972,6 +9018,13 @@ This tool mirrors the mesh with respect to the selected mirror plane and
 
 \series bold
 MMG Remesh
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:MMG-Remesh-3D"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
