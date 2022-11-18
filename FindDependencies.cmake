@@ -639,9 +639,13 @@ find_package(OpenGL REQUIRED)
 find_package(GLEW REQUIRED)
 
 # ZLIB
-find_package(ZLIB REQUIRED)
-if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)
+find_package(ZLIB)
+if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)		
+	option(USE_ZLIB "Required for reading compressed xplt files" ON)
     mark_as_advanced(ZLIB_INCLUDE_DIR ZLIB_LIBRARY_RELEASE)
+else()
+	option(USE_ZLIB "Required for reading compressed xplt files" OFF)
+    mark_as_advanced(CLEAR ZLIB_INCLUDE_DIR ZLIB_LIBRARY_RELEASE)
 endif()
 
 # OpenMP

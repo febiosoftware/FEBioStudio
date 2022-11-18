@@ -309,6 +309,15 @@ if(USE_FFMPEG)
     
 endif()
 
+if(USE_ZLIB)
+	if(NOT EXISTS ${ZLIB_LIBRARY_RELEASE})
+		message(SEND_ERROR "Could not find ZLIB. Check ZLIB_LIBRARY_RELEASE.")
+	endif()
+	if(NOT EXISTS ${ZLIB_INCLUDE_DIR}/zlib.h)
+		message(SEND_ERROR "Could not find zlib.h. Check ZLIB_INCLUDE_DIR.")
+	endif()
+endif()
+
 # Find FEBio Libs
 if (WIN32)
     set(FEBio_DEBUG_LIBS "")
@@ -437,7 +446,11 @@ else()
     include_directories(${GLEW_INCLUDE_DIRS})
 endif()
 
-include_directories(${ZLIB_INCLUDE_DIR})
+# Link ZLIB
+if(USE_ZLIB)
+    add_definitions(-DHAVE_ZLIB)
+    include_directories(${ZLIB_INCLUDE_DIR})
+endif()
 
 if(USE_ITK)
     add_definitions(-DHAS_ITK)
@@ -676,7 +689,10 @@ if(USE_ITK)
     target_link_libraries(${FBS_BIN_NAME} ${SimpleITK_LIBRARIES})
 endif()
 
-target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
+if(USE_ZLIB)
+    target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
+endif()
+
 target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
 
 if(APPLE)
