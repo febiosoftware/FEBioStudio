@@ -482,13 +482,6 @@ void CGLModel::Render(CGLContext& rc)
 
 	m_bshowMesh = rc.m_showMesh;
 
-	// Render discrete elements
-	float lineWidth;
-	glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-	glLineWidth(rc.m_springThick);
-	RenderDiscrete(rc);
-	glLineWidth(lineWidth);
-
 	int mode = GetSelectionMode();
 
 	// render the faces
@@ -538,6 +531,13 @@ void CGLModel::Render(CGLContext& rc)
 		RenderNodes(fem, rc);
 		rc.m_cam->LineDrawMode(false);
 	}
+
+	// Render discrete elements
+	float lineWidth;
+	glGetFloatv(GL_LINE_WIDTH, &lineWidth);
+	glLineWidth(rc.m_springThick);
+	RenderDiscrete(rc);
+	glLineWidth(lineWidth);
 
 	// first render all the plots that need to be rendered after the model
 	// (i.e. planecuts)
@@ -763,8 +763,9 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 
 	// turn-off texturing for the rest
 	glDisable(GL_TEXTURE_1D);
+	glEnable(GL_CULL_FACE);
 
-	// loop over un-selected, inactive elements
+	// loop over un-selected, inactive elements, non-transparent
 	curMat = -1;
 	for (int i = 0; i < m_edge.Edges(); ++i)
 	{
@@ -776,10 +777,11 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 			if (mat != curMat)
 			{
 				Material* pmat = m_ps->GetMaterial(mat);
+				bvisible = pmat->bvisible && (pmat->transparency > 0.999f);
 				GLColor c = pmat->diffuse;
-				glColor3ub(c.r, c.g, c.b);
+				byte a = (byte) (255.f * pmat->transparency);
+				glColor4ub(c.r, c.g, c.b, a);
 				curMat = mat;
-				bvisible = pmat->bvisible;
 				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
 			}
 
@@ -791,6 +793,36 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 			}
 		}
 	}
+
+	// loop over un-selected, inactive elements, transparent
+	curMat = -1;
+	for (int i = 0; i < m_edge.Edges(); ++i)
+	{
+		GLEdge::EDGE& edge = m_edge.Edge(i);
+		FEElement_* pe = mesh.ElementPtr(edge.elem);
+		if (pe && !pe->IsSelected() && pe->IsVisible())
+		{
+			int mat = edge.mat;
+			if (mat != curMat)
+			{
+				Material* pmat = m_ps->GetMaterial(mat);
+				bvisible = pmat->bvisible && (pmat->transparency < 0.999f);
+				GLColor c = pmat->diffuse;
+				byte a = (byte)(255.f * pmat->transparency);
+				glColor4ub(c.r, c.g, c.b, a);
+				curMat = mat;
+				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
+			}
+
+			if (bvisible)
+			{
+				vec3d r0 = mesh.Node(edge.n0).r;
+				vec3d r1 = mesh.Node(edge.n1).r;
+				glx::drawCappedCylinder(r0, r1, W);
+			}
+		}
+	}
+
 
 	// loop over selected elements
 	glColor3ub(255, 0, 0);
