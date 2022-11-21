@@ -17,21 +17,21 @@ else()
     set(TEMP_PATHS ${CMAKE_SOURCE_DIR}/.. ${CMAKE_SOURCE_DIR}/../.. $ENV{HOME}/ $ENV{HOME}/*)
 endif()
     
-find_path(FEBio_SDK FECore/Archive.h
+find_path(FEBio_SDK FECore/stdafx.h
     PATHS ${TEMP_PATHS}
     PATH_SUFFIXES FEBio
     DOC "Path to the FEBio SDK, or git repo.")
     
 if(NOT FEBio_SDK)
     if(WIN32)
-        set(TEMP_PATHS $ENV{PROGRAMFILES}/* $ENV{HOMEPATH}/*)
+        set(TEMP_PATHS $ENV{PROGRAMFILES}/* ${CMAKE_SOURCE_DIR}/.. $ENV{HOMEPATH}/* )
     elseif(APPLE)
-        set(TEMP_PATHS /Applications/* $ENV{HOME}/*)
+        set(TEMP_PATHS /Applications/* ${CMAKE_SOURCE_DIR}/.. $ENV{HOME}/*)
     else()
-        set(TEMP_PATHS $ENV{HOME}/*)
+        set(TEMP_PATHS ${CMAKE_SOURCE_DIR}/.. $ENV{HOME}/*)
     endif() 
     
-    find_path(FEBio_SDK "include/FECore/Archive.h"
+    find_path(FEBio_SDK "include/FECore/stdafx.h"
         PATHS ${TEMP_PATHS}
         PATH_SUFFIXES sdk
         DOC "Path to the FEBio SDK, or git repo.")
@@ -97,7 +97,7 @@ if(NEWPATH)
     endif()
 endif()
 
-set(OLD_SDK ${FEBio_SDK} CACHE PATH "Don't edit. Old SDK path used to automatically make changes." FORCE)
+set(OLD_SDK ${FEBio_SDK} CACHE INTERNAL "Old SDK path.")
 mark_as_advanced(OLD_SDK)
 
 
