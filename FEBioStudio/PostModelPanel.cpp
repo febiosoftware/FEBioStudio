@@ -1261,6 +1261,12 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		QMenu menu(this);
 		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
 		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
+
+		if (dynamic_cast<Post::GLProbe*>(po))
+		{
+			menu.addAction("Export probe data ...", this, SLOT(OnExportProbeData()));
+		}
+
 		menu.exec(ev->globalPos());
 		return;
 	}
@@ -1467,4 +1473,47 @@ void CPostModelPanel::OnExportImage()
 			QMessageBox::information(GetMainWindow(), "Export image", msg);
 		}
 	}	
+}
+
+void CPostModelPanel::OnExportProbeData()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	int nfield = glm->GetColorMap()->GetEvalField();
+	if (nfield <= 0)
+	{
+		QMessageBox::critical(this, "Export", "No datafield selected.");
+		return;
+	}
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "Text file (*.txt)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		const char* szfile = sfile.c_str();
+		FILE* fp = fopen(szfile, "wt");
+		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+		{
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				if (probe)
+				{
+					double val = 0.0;
+					if (probe->TrackModelData())
+						val = probe->DataValue(nfield, nstep);
+
+					fprintf(fp, "%lg,", val);
+				}
+			}
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+	}
 }
