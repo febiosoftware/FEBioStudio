@@ -36,7 +36,9 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <GLLib/glx.h>
 #include <stack>
-//using namespace std;
+
+typedef unsigned char byte;
+
 using namespace Post;
 
 //-----------------------------------------------------------------------------
