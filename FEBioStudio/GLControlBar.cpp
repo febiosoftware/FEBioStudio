@@ -253,6 +253,9 @@ void CGLControlBar::Update()
 
 	int meshMode = ui->m_wnd->GetMeshMode();
 
+	// for post-docs we always use mesh_mode_volume
+	if (ui->m_wnd->GetPostDocument()) meshMode = MESH_MODE_VOLUME;
+
 	if (meshMode == MESH_MODE_VOLUME)
 	{
 		if (po && po->GetFEMesh())
