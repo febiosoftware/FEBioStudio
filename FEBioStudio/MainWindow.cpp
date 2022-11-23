@@ -3405,3 +3405,13 @@ QSize CMainWindow::GetEditorSize()
 {
     return ui->stack->size();
 }
+
+void CMainWindow::on_doCommand(QString msg)
+{
+	AddLogEntry(msg);
+}
+
+void CMainWindow::on_selectionChanged()
+{
+	ReportSelection();
+}

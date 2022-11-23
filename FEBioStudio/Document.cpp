@@ -459,6 +459,8 @@ CUndoDocument::CUndoDocument(CMainWindow* wnd) : CDocument(wnd)
 
 	// Clear the command history
 	m_pCmd->Clear();
+
+	QObject::connect(this, SIGNAL(doCommand(QString)), wnd, SLOT(on_doCommand(QString)));
 }
 
 //-----------------------------------------------------------------------------
@@ -519,8 +521,7 @@ const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 //-----------------------------------------------------------------------------
 bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
 {
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	emit doCommand(QString("Executing command: %1\n").arg(pcmd->GetName()));
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
 	if (b) UpdateSelection();

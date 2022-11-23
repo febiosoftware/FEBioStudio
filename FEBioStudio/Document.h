@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "ViewSettings.h"
 #include "GLScene.h"
 #include <GLLib/GView.h>
+#include <QObject>
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -126,8 +127,10 @@ private:
 //-----------------------------------------------------------------------------
 // Document class stores data and implements serialization of data to and from file.
 //
-class CDocument : public CSerializable
+class CDocument : public QObject, public CSerializable
 {
+	Q_OBJECT
+
 public:
 	// --- constructor/destructor ---
 	CDocument(CMainWindow* wnd);
@@ -234,6 +237,8 @@ protected:
 // Base class for documents that use the undo stack
 class CUndoDocument : public CDocument
 {
+	Q_OBJECT
+
 public:
     CUndoDocument(CMainWindow* wnd);
     ~CUndoDocument();
@@ -255,6 +260,9 @@ public:
 	const std::string& GetCommandErrorString() const;
 
     virtual void UpdateSelection(bool breport = true);
+
+signals:
+	void doCommand(QString s);
 
 protected:
 	// The command manager

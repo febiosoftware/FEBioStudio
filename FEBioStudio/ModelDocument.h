@@ -39,6 +39,8 @@ class FSObject;
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
 {
+	Q_OBJECT
+
 public:
 	CModelDocument(CMainWindow* wnd);
 	~CModelDocument();
@@ -115,6 +117,9 @@ public:
 	bool ExportMaterials(const std::string& fileName, const vector<GMaterial*>& matList);
 	bool ImportMaterials(const std::string& fileName);
 	bool ImportFEBioMaterials(const std::string& fileName);
+
+signals:
+	void selectionChanged();
 
 private:
 	// the FE Project

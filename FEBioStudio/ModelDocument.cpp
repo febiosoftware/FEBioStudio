@@ -121,6 +121,8 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 	m_scene = new CGLModelScene(this);
 
 	SetFileWriter(new CModelFileWriter(this));
+
+	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
 
 void CModelDocument::Clear()
@@ -698,7 +700,10 @@ void CModelDocument::UpdateSelection(bool report)
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
-	if (report) m_wnd->ReportSelection();
+	if (report)
+	{
+		emit selectionChanged();
+	}
 }
 
 //-----------------------------------------------------------------------------

@@ -313,6 +313,7 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -536,6 +537,10 @@ public slots:
 	void on_actionTimeSettings_triggered();
 	void on_actionColorMap_toggled(bool bchecked);
 	void on_selectTime_valueChanged(int n);
+
+	// signals from documents
+	void on_doCommand(QString msg);
+	void on_selectionChanged();
 
 	// Font toolbar
 	void on_fontStyle_currentFontChanged(const QFont& font);
