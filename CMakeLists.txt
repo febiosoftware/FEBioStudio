@@ -55,10 +55,10 @@ if(Qt_Ver VERSION_EQUAL 6)
                 DOC "${Qt_Version} CMake Directory"
                 NO_DEFAULT_PATH)
         else()
-            find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+            find_path(Qt_TEMP cmake/Qt6/Qt6Config.cmake
                 PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                     $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-                PATH_SUFFIXES "gcc_64"
+                PATH_SUFFIXES "gcc_64" "lib"
                 DOC "Qt CMake Directory"
                 NO_DEFAULT_PATH)
         endif()
@@ -288,7 +288,7 @@ if(USE_FFMPEG)
     if(WIN32)
         set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     else()
-        set(FFMPEG_LIB_NAMES avformat avcodec avresample avutil swresample swscale)
+        set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     endif()
     
     foreach(name IN LISTS FFMPEG_LIB_NAMES)
