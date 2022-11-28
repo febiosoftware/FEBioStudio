@@ -89,6 +89,9 @@ bool FEHollowSphere::BuildMultiBlock()
 	double d1 = R1/sqrt(2.0);
 	double D1 = R1/sqrt(3.0);
 
+	double fr = m_gr;
+	bool br = m_br;
+
 	// create the MB nodes
 	m_MBNode.resize(52);
 	m_MBNode[ 0].m_r = vec3d(-D0,-D0,-D0);
@@ -186,6 +189,31 @@ bool FEHollowSphere::BuildMultiBlock()
 		m_MBlock[i].SetSizes(ns,nd,nd);
 		m_MBlock[i].SetID(0);
 	}
+
+	m_MBlock[ 0].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 1].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 2].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 3].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 4].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 5].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 6].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 7].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 8].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[ 9].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[10].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[11].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[12].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[13].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[14].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[15].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[16].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[17].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[18].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[19].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[20].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[21].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[22].SetZoning(fr, 1, 1, br, false, false);
+	m_MBlock[23].SetZoning(fr, 1, 1, br, false, false);
 
 	// update the MB data
 	BuildMB();
