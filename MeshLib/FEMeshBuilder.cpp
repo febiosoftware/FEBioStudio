@@ -56,6 +56,19 @@ FSNode* FEMeshBuilder::AddNode(const vec3d& r)
 	return &m_mesh.m_Node[m_mesh.m_Node.size() - 1];
 }
 
+// Add a triangle
+FSElement* FEMeshBuilder::AddTriangle(int n0, int n1, int n2)
+{
+	FSElement elem;
+	elem.SetType(FE_TRI3);
+	elem.m_node[0] = n0;
+	elem.m_node[1] = n1;
+	elem.m_node[2] = n2;
+	m_mesh.m_Elem.push_back(elem);
+
+	return &m_mesh.m_Elem[m_mesh.Elements() - 1];
+}
+
 //-----------------------------------------------------------------------------
 // Remove nodes that are not attached to anything
 void FEMeshBuilder::RemoveIsolatedNodes()

@@ -1277,6 +1277,35 @@ FSMesh* FEAddNode::Apply(FSMesh* pm)
 }
 
 //=============================================================================
+// FEAddTriangle
+//-----------------------------------------------------------------------------
+FEAddTriangle::FEAddTriangle() : FEModifier("Add Triangle")
+{
+	AddIntParam(0, "node0", "Node 1");
+	AddIntParam(0, "node1", "Node 2");
+	AddIntParam(0, "node2", "Node 3");
+}
+
+FSMesh* FEAddTriangle::Apply(FSMesh* pm)
+{
+	int n0 = GetIntValue(0) - 1;
+	int n1 = GetIntValue(1) - 1;
+	int n2 = GetIntValue(2) - 1;
+
+	int NN = pm->Nodes();
+	if ((n0 < 0) || (n0 >= NN)) return nullptr;
+	if ((n1 < 0) || (n1 >= NN)) return nullptr;
+	if ((n2 < 0) || (n2 >= NN)) return nullptr;
+
+	FSMesh* newMesh = new FSMesh(*pm);
+
+	FEMeshBuilder meshBuilder(*newMesh);
+	meshBuilder.AddTriangle(n0, n1, n2);
+
+	return newMesh;
+}
+
+//=============================================================================
 // FEInvertElements
 //-----------------------------------------------------------------------------
 

@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FECore/vec3d.h>
 
 class FSNode;
+class FSElement;
 class FSMesh;
 class FSEdgeSet;
 class FSNodeSet;
@@ -61,6 +62,9 @@ public:
 
 	// Add an (isolated) node. The node will be partitioned.
 	FSNode* AddNode(const vec3d& r);
+
+	// Add a triangle
+	FSElement* AddTriangle(int n0, int n1, int n2);
 
 	// Remove nodes that are not attached to anything
 	void RemoveIsolatedNodes();

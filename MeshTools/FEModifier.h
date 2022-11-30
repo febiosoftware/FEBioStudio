@@ -441,6 +441,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEAddTriangle : public FEModifier
+{
+public:
+	FEAddTriangle();
+
+	FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
 class FEInvertMesh : public FEModifier
 {
 public:
