@@ -1368,190 +1368,262 @@ void CMainWindow::autoUpdateCheck(bool update)
 void CMainWindow::ReportSelection()
 {
 	CModelDocument* doc = GetModelDocument();
-	if (doc == nullptr) return;
+	if (doc)
+	{
+		FESelection* sel = doc->GetCurrentSelection();
+		if ((sel == 0) || (sel->Size() == 0))
+		{
+			ClearStatusMessage();
+			return;
+		}
 
-	FESelection* sel = doc->GetCurrentSelection();
-	if ((sel == 0) || (sel->Size() == 0)) 
-	{
-		ClearStatusMessage();
-		return;
-	}
-
-	GetCreatePanel()->setInput(sel);
-	int N = sel->Size();
-	QString msg;
-	switch (sel->Type())
-	{
-	case SELECT_OBJECTS:
-	{
-		GObjectSelection& s = dynamic_cast<GObjectSelection&>(*sel);
-		if (N == 1)
+		GetCreatePanel()->setInput(sel);
+		int N = sel->Size();
+		QString msg;
+		switch (sel->Type())
 		{
-			GObject* po = s.Object(0);
-			msg = QString("Object \"%1\" selected (Id = %2)").arg(QString::fromStdString(po->GetName())).arg(po->GetID());
-		}
-		else msg = QString("%1 Objects selected").arg(N);
-	}
-	break;
-	case SELECT_PARTS:
-	{
-		if (N == 1)
+		case SELECT_OBJECTS:
 		{
-			GPartSelection& ps = dynamic_cast<GPartSelection&>(*sel);
-			GPartSelection::Iterator it(&ps);
-			msg = QString("Part \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Parts selected").arg(N);
-	}
-	break;
-	case SELECT_SURFACES:
-	{
-		if (N == 1)
-		{
-			GFaceSelection& fs = dynamic_cast<GFaceSelection&>(*sel);
-			GFaceSelection::Iterator it(&fs);
-			msg = QString("Surface \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Surfaces selected").arg(N);
-	}
-	break;
-	case SELECT_CURVES:
-	{
-		GEdgeSelection& es = dynamic_cast<GEdgeSelection&>(*sel);
-		if (N == 1)
-		{
-			GEdgeSelection::Iterator it(&es);
-			msg = QString("Curve \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Curves selected").arg(N);
-	}
-	break;
-	case SELECT_NODES:
-	{
-		if (N == 1)
-		{
-			GNodeSelection& ns = dynamic_cast<GNodeSelection&>(*sel);
-			GNodeSelection::Iterator it(&ns);
-			msg = QString("Node \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Nodes selected").arg(N);
-	}
-	break;
-	case SELECT_DISCRETE_OBJECT:
-	{
-		if (N == 1)
-		{
-			msg = QString("1 discrete object selected");
-		}
-		else msg = QString("%1 discrete objects selected").arg(N);
-	}
-	break;
-	case SELECT_FE_ELEMENTS:
-	{
-		msg = QString("%1 elements selected").arg(N);
-	}
-	break;
-	case SELECT_FE_FACES:
-	{
-		msg = QString("%1 faces selected").arg(N);
-	}
-	break;
-	case SELECT_FE_EDGES:
-	{
-		msg = QString("%1 edges selected").arg(N);
-	}
-	break;
-	case SELECT_FE_NODES:
-	{
-		msg = QString("%1 nodes selected").arg(N);
-	}
-	break;
-	}
-	SetStatusMessage(msg);
-	AddLogEntry(msg + "\n");
-
-	FEElementSelection* es = dynamic_cast<FEElementSelection*>(sel);
-	if (es)
-	{
-		if (es->Size() == 1)
-		{
-			FEElement_* el = es->Element(0);
-			switch (el->Type())
+			GObjectSelection& s = dynamic_cast<GObjectSelection&>(*sel);
+			if (N == 1)
 			{
-			case FE_HEX8   : AddLogEntry("  Type = HEX8"   ); break;
-			case FE_TET4   : AddLogEntry("  Type = TET4"   ); break;
-			case FE_TET5   : AddLogEntry("  Type = TET5"   ); break;
-			case FE_PENTA6 : AddLogEntry("  Type = PENTA6" ); break;
-			case FE_QUAD4  : AddLogEntry("  Type = QUAD4"  ); break;
-			case FE_TRI3   : AddLogEntry("  Type = TRI3"   ); break;
-			case FE_BEAM2  : AddLogEntry("  Type = BEAM2"  ); break;
-			case FE_HEX20  : AddLogEntry("  Type = HEX20"  ); break;
-			case FE_QUAD8  : AddLogEntry("  Type = QUAD8"  ); break;
-			case FE_BEAM3  : AddLogEntry("  Type = BEAM3"  ); break;
-			case FE_TET10  : AddLogEntry("  Type = TET10"  ); break;
-			case FE_TRI6   : AddLogEntry("  Type = TRI6"   ); break;
-			case FE_TET15  : AddLogEntry("  Type = TET15"  ); break;
-			case FE_HEX27  : AddLogEntry("  Type = HEX27"  ); break;
-			case FE_TRI7   : AddLogEntry("  Type = TRI7"   ); break;
-			case FE_QUAD9  : AddLogEntry("  Type = QUAD9"  ); break;
-			case FE_PENTA15: AddLogEntry("  Type = PENTA15"); break;
-			case FE_PYRA5  : AddLogEntry("  Type = PYRA5"  ); break;
-			case FE_TET20  : AddLogEntry("  Type = TET20"  ); break;
-			case FE_TRI10  : AddLogEntry("  Type = TRI10"  ); break;
-            case FE_PYRA13 : AddLogEntry("  Type = PYRA13" ); break;
+				GObject* po = s.Object(0);
+				msg = QString("Object \"%1\" selected (Id = %2)").arg(QString::fromStdString(po->GetName())).arg(po->GetID());
 			}
-			AddLogEntry("\n");
-
-			AddLogEntry("  nodes: ");
-			int n = el->Nodes();
-			for (int i=0; i<n; ++i)
+			else msg = QString("%1 Objects selected").arg(N);
+		}
+		break;
+		case SELECT_PARTS:
+		{
+			if (N == 1)
 			{
-				AddLogEntry(QString::number(el->m_node[i]));
-				if (i < n - 1) AddLogEntry(", ");
-				else AddLogEntry("\n");
+				GPartSelection& ps = dynamic_cast<GPartSelection&>(*sel);
+				GPartSelection::Iterator it(&ps);
+				msg = QString("Part \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
 			}
-
-			AddLogEntry("  neighbors: ");
-			n = 0;
-			if (el->IsSolid()) n = el->Faces();
-			else if (el->IsShell()) n = el->Edges();
-
-			for (int i=0; i<n; ++i)
+			else msg = QString("%1 Parts selected").arg(N);
+		}
+		break;
+		case SELECT_SURFACES:
+		{
+			if (N == 1)
 			{
-				AddLogEntry(QString::number(el->m_nbr[i]));
-				if (i < n - 1) AddLogEntry(", ");
-				else AddLogEntry("\n");
+				GFaceSelection& fs = dynamic_cast<GFaceSelection&>(*sel);
+				GFaceSelection::Iterator it(&fs);
+				msg = QString("Surface \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+			}
+			else msg = QString("%1 Surfaces selected").arg(N);
+		}
+		break;
+		case SELECT_CURVES:
+		{
+			GEdgeSelection& es = dynamic_cast<GEdgeSelection&>(*sel);
+			if (N == 1)
+			{
+				GEdgeSelection::Iterator it(&es);
+				msg = QString("Curve \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+			}
+			else msg = QString("%1 Curves selected").arg(N);
+		}
+		break;
+		case SELECT_NODES:
+		{
+			if (N == 1)
+			{
+				GNodeSelection& ns = dynamic_cast<GNodeSelection&>(*sel);
+				GNodeSelection::Iterator it(&ns);
+				msg = QString("Node \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+			}
+			else msg = QString("%1 Nodes selected").arg(N);
+		}
+		break;
+		case SELECT_DISCRETE_OBJECT:
+		{
+			if (N == 1)
+			{
+				msg = QString("1 discrete object selected");
+			}
+			else msg = QString("%1 discrete objects selected").arg(N);
+		}
+		break;
+		case SELECT_FE_ELEMENTS:
+		{
+			msg = QString("%1 elements selected").arg(N);
+		}
+		break;
+		case SELECT_FE_FACES:
+		{
+			msg = QString("%1 faces selected").arg(N);
+		}
+		break;
+		case SELECT_FE_EDGES:
+		{
+			msg = QString("%1 edges selected").arg(N);
+		}
+		break;
+		case SELECT_FE_NODES:
+		{
+			msg = QString("%1 nodes selected").arg(N);
+		}
+		break;
+		}
+		SetStatusMessage(msg);
+		AddLogEntry(msg + "\n");
+
+		FEElementSelection* es = dynamic_cast<FEElementSelection*>(sel);
+		if (es)
+		{
+			if (es->Size() == 1)
+			{
+				FEElement_* el = es->Element(0);
+				switch (el->Type())
+				{
+				case FE_HEX8: AddLogEntry("  Type = HEX8"); break;
+				case FE_TET4: AddLogEntry("  Type = TET4"); break;
+				case FE_TET5: AddLogEntry("  Type = TET5"); break;
+				case FE_PENTA6: AddLogEntry("  Type = PENTA6"); break;
+				case FE_QUAD4: AddLogEntry("  Type = QUAD4"); break;
+				case FE_TRI3: AddLogEntry("  Type = TRI3"); break;
+				case FE_BEAM2: AddLogEntry("  Type = BEAM2"); break;
+				case FE_HEX20: AddLogEntry("  Type = HEX20"); break;
+				case FE_QUAD8: AddLogEntry("  Type = QUAD8"); break;
+				case FE_BEAM3: AddLogEntry("  Type = BEAM3"); break;
+				case FE_TET10: AddLogEntry("  Type = TET10"); break;
+				case FE_TRI6: AddLogEntry("  Type = TRI6"); break;
+				case FE_TET15: AddLogEntry("  Type = TET15"); break;
+				case FE_HEX27: AddLogEntry("  Type = HEX27"); break;
+				case FE_TRI7: AddLogEntry("  Type = TRI7"); break;
+				case FE_QUAD9: AddLogEntry("  Type = QUAD9"); break;
+				case FE_PENTA15: AddLogEntry("  Type = PENTA15"); break;
+				case FE_PYRA5: AddLogEntry("  Type = PYRA5"); break;
+				case FE_TET20: AddLogEntry("  Type = TET20"); break;
+				case FE_TRI10: AddLogEntry("  Type = TRI10"); break;
+				case FE_PYRA13: AddLogEntry("  Type = PYRA13"); break;
+				}
+				AddLogEntry("\n");
+
+				AddLogEntry("  nodes: ");
+				int n = el->Nodes();
+				for (int i = 0; i < n; ++i)
+				{
+					AddLogEntry(QString::number(el->m_node[i]));
+					if (i < n - 1) AddLogEntry(", ");
+					else AddLogEntry("\n");
+				}
+
+				AddLogEntry("  neighbors: ");
+				n = 0;
+				if (el->IsSolid()) n = el->Faces();
+				else if (el->IsShell()) n = el->Edges();
+
+				for (int i = 0; i < n; ++i)
+				{
+					AddLogEntry(QString::number(el->m_nbr[i]));
+					if (i < n - 1) AddLogEntry(", ");
+					else AddLogEntry("\n");
+				}
+			}
+		}
+
+		FEFaceSelection* fs = dynamic_cast<FEFaceSelection*>(sel);
+		if (fs)
+		{
+			if (fs->Size() == 1)
+			{
+				FEFaceSelection::Iterator it = fs->begin();
+				FSFace* pf = it;
+				switch (pf->Type())
+				{
+				case FE_FACE_TRI3: AddLogEntry("  Type = TRI3"); break;
+				case FE_FACE_QUAD4: AddLogEntry("  Type = QUAD4"); break;
+				case FE_FACE_TRI6: AddLogEntry("  Type = TRI6"); break;
+				case FE_FACE_TRI7: AddLogEntry("  Type = TRI7"); break;
+				case FE_FACE_QUAD8: AddLogEntry("  Type = QUAD8"); break;
+				case FE_FACE_QUAD9: AddLogEntry("  Type = QUAD9"); break;
+				case FE_FACE_TRI10: AddLogEntry("  Type = TRI10"); break;
+				}
+				AddLogEntry("\n");
+
+				AddLogEntry("  neighbors: ");
+				int n = pf->Edges();
+				for (int i = 0; i < n; ++i)
+				{
+					AddLogEntry(QString::number(pf->m_nbr[i]));
+					if (i < n - 1) AddLogEntry(", ");
+					else AddLogEntry("\n");
+				}
 			}
 		}
 	}
 
-	FEFaceSelection* fs = dynamic_cast<FEFaceSelection*>(sel);
-	if (fs)
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc && postDoc->IsValid())
 	{
-		if (fs->Size() == 1)
+		Post::CGLModel* mdl = postDoc->GetGLModel();
+		int mode = mdl->GetSelectionMode();
+		switch (mode)
 		{
-			FEFaceSelection::Iterator it = fs->begin();
-			FSFace* pf = it;
-			switch (pf->Type())
+		case Post::SELECT_NODES:
+		{
+			std::vector<FSNode*> sel = mdl->GetNodeSelection();
+			AddLogEntry(QString("%1 node(s) selected\n").arg(sel.size()));
+		}
+		break;
+		case Post::SELECT_EDGES:
+		{
+			std::vector<FSEdge*> sel = mdl->GetEdgeSelection();
+			AddLogEntry(QString("%1 edge(s) selected\n").arg(sel.size()));
+		}
+		break;
+		case Post::SELECT_FACES:
+		{
+			std::vector<FSFace*> sel = mdl->GetFaceSelection();
+			if (sel.size() == 1)
 			{
-			case FE_FACE_TRI3 : AddLogEntry("  Type = TRI3"); break;
-			case FE_FACE_QUAD4: AddLogEntry("  Type = QUAD4"); break;
-			case FE_FACE_TRI6 : AddLogEntry("  Type = TRI6"); break;
-			case FE_FACE_TRI7 : AddLogEntry("  Type = TRI7"); break;
-			case FE_FACE_QUAD8: AddLogEntry("  Type = QUAD8"); break;
-			case FE_FACE_QUAD9: AddLogEntry("  Type = QUAD9"); break;
-			case FE_FACE_TRI10: AddLogEntry("  Type = TRI10"); break;
+				FSFace* f = sel[0];
+				if (f)
+				{
+					vec3f n = f->m_fn;
+					QString stype;
+					switch (f->Type())
+					{
+					case FE_FACE_TRI3 : stype = "TRI3" ; break;
+					case FE_FACE_QUAD4: stype = "QUAD4"; break;
+					case FE_FACE_TRI6 : stype = "TRI6" ; break;
+					case FE_FACE_TRI7 : stype = "TRI7" ; break;
+					case FE_FACE_QUAD8: stype = "QUAD8"; break;
+					case FE_FACE_QUAD9: stype = "QUAD9"; break;
+					case FE_FACE_TRI10: stype = "TRI10"; break;
+					default:
+						assert(false);
+						stype = "(unknown)";
+					}
+					QString nodeList;
+					int nn = f->Nodes();
+					for (int i = 0; i < nn; ++i)
+					{
+						nodeList.append(QString::number(f->n[i] + 1));
+						if (i < nn - 1) nodeList.append(", ");
+					}
+					AddLogEntry("1 face selected:\n");
+					AddLogEntry(QString("  ID    : %1\n").arg(f->GetID()));
+					AddLogEntry(QString("  type  : %1\n").arg(stype));
+					AddLogEntry(QString("  nodes : %1\n").arg(nodeList));
+					AddLogEntry(QString("  normal: %1, %2, %3\n").arg(n.x).arg(n.y).arg(n.z));
+				}
 			}
-			AddLogEntry("\n");
-
-			AddLogEntry("  neighbors: ");
-			int n = pf->Edges();
-			for (int i = 0; i<n; ++i)
+			else
 			{
-				AddLogEntry(QString::number(pf->m_nbr[i]));
-				if (i < n - 1) AddLogEntry(", ");
-				else AddLogEntry("\n");
+				AddLogEntry(QString("%1 faces selected\n").arg(sel.size()));
 			}
+		}
+		break;
+		case Post::SELECT_ELEMS:
+		{
+			std::vector<FEElement_*> sel = mdl->GetElementSelection();
+			AddLogEntry(QString("%1 element(s) selected\n").arg(sel.size()));
+		}
+		break;
 		}
 	}
 }

@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include "PostSessionFile.h"
 #include "units.h"
 #include "GLPostScene.h"
+#include "MainWindow.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -244,6 +245,8 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_scene = new CGLPostScene(this);
 
 	SetItemMode(ITEM_ELEM);
+
+	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
 
 CPostDocument::~CPostDocument()
@@ -660,6 +663,8 @@ void CPostDocument::UpdateSelection(bool report)
 {
 	Post::CGLModel* mdl = GetGLModel();
 	if (mdl) mdl->UpdateSelectionLists();
+
+	emit selectionChanged();
 }
 
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)
