@@ -49,6 +49,9 @@ CGLSlicePlot::CGLSlicePlot()
 
 	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddIntParam(10, "divs", "Range divisions");
+	AddBoolParam(false, "smooth", "Gradient smoothing");
+	AddDoubleParam(1.0, "transparency", "Transparency")->SetFloatRange(0,1);
 	AddBoolParam(true, "Allow clipping");
 	AddBoolParam(true, "Show legend"   );
 	AddIntParam(0, "Slices");
@@ -68,7 +71,7 @@ CGLSlicePlot::CGLSlicePlot()
 	m_lastTime = 0;
 	m_lastDt = 0.f;
 
-	m_Col.SetDivisions(m_nslices);
+	m_Col.SetDivisions(10);
 	m_Col.SetSmooth(false);
 
 	m_nrange = 0;
@@ -93,6 +96,12 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		m_nfield = GetIntValue(DATA_FIELD);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		AllowClipping(GetBoolValue(CLIP));
+
+		int divs = GetIntValue(RANGE_DIVS);
+		bool smooth = GetBoolValue(GRAD_SMOOTH);
+		m_Col.SetDivisions(divs);
+		m_Col.SetSmooth(smooth);
+
 		// TODO: show legend
 		m_nslices = GetIntValue(SLICES);
 		m_offset = GetFloatValue(SLICE_OFFSET);
@@ -107,6 +116,8 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 	{
 		SetIntValue(DATA_FIELD, m_nfield);
 		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetIntValue(RANGE_DIVS, m_Col.GetDivisions());
+		SetBoolValue(GRAD_SMOOTH, m_Col.GetSmooth());
 		SetBoolValue(CLIP, AllowClipping());
 		SetIntValue(SLICES, m_nslices);
 		SetFloatValue(SLICE_OFFSET, m_offset);
@@ -145,6 +156,8 @@ void CGLSlicePlot::Render(CGLContext& rc)
 
 	GLTexture1D& tex = m_Col.GetTexture();
 
+	Byte a = Byte(255.0*GetFloatValue(TRANSPARENCY));
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_1D);
 	glDisable(GL_LIGHTING);
@@ -159,7 +172,7 @@ void CGLSlicePlot::Render(CGLContext& rc)
 		fmin += 1e-3*Df;
 		fmax -= 1e-3*Df;
 	}
-	glColor3ub(255, 255, 255);
+	glColor4ub(255, 255, 255, a);
 	if (m_nslices == 1)
 	{
 		float ref = fmin + m_offset*(fmax - fmin);
