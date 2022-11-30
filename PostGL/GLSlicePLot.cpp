@@ -59,6 +59,7 @@ CGLSlicePlot::CGLSlicePlot()
 	AddDoubleParam(0, "X-normal" );
 	AddDoubleParam(0, "Y-normal" );
 	AddDoubleParam(0, "Z-normal" );
+	AddBoolParam(true, "Show box");
 
 	m_nslices = 10;
 	m_nfield = 0;
@@ -127,10 +128,20 @@ void CGLSlicePlot::SetSliceOffset(float f)
 	if (m_offset > 1.f) m_offset = 1.f;
 }
 
+// in glview.cpp
+void RenderBox(const BOX& bbox, bool partial, double scale);
+
 void CGLSlicePlot::Render(CGLContext& rc)
 {
 	if (m_nfield == 0) return;
-	m_box = GetModel()->GetFSModel()->GetBoundingBox();
+	if (m_box.IsValid() == false) return;
+
+	bool showBox = GetBoolValue(SHOW_BOX);
+	if (showBox)
+	{
+		glColor3ub(200, 200, 200);
+		RenderBox(m_box, false, 1.0);
+	}
 
 	GLTexture1D& tex = m_Col.GetTexture();
 
@@ -215,11 +226,13 @@ void CGLSlicePlot::RenderSlice(float ref)
 			case FE_HEX20  : nt = HEX_NT; break;
 			case FE_HEX27  : nt = HEX_NT; break;
 			case FE_PENTA6 : nt = PEN_NT; break;
-            case FE_PENTA15: nt = PEN_NT; break;
-            case FE_TET4   : nt = TET_NT; break;
-            case FE_TET5   : nt = TET_NT; break;
-            case FE_PYRA5  : nt = PYR_NT; break;
-            case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_PENTA15: nt = PEN_NT; break;
+			case FE_TET4   : nt = TET_NT; break;
+			case FE_TET5   : nt = TET_NT; break;
+			case FE_PYRA5  : nt = PYR_NT; break;
+			case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_TET10  : nt = TET_NT; break;
+			case FE_TET15  : nt = TET_NT; break;
 			default:
 				assert(false);
 				return;
@@ -295,11 +308,40 @@ void CGLSlicePlot::Update()
 }
 
 //-----------------------------------------------------------------------------
+void CGLSlicePlot::UpdateBoundingBox()
+{
+	CGLModel* mdl = GetModel();
+	FEPostModel* ps = mdl->GetFSModel();
+	FEPostMesh* pm = mdl->GetActiveMesh();
+
+	// only count enabled parts
+	BOX box;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement_& el = pm->ElementRef(i);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
+		if (pmat->benable && el.IsVisible())
+		{
+			int ne = el.Nodes();
+			for (int k = 0; k < ne; ++k)
+			{
+				FSNode& node = pm->Node(el.m_node[k]);
+				box += node.pos();
+			}
+		}
+	}
+
+	m_box = box;
+}
+
+//-----------------------------------------------------------------------------
 void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FSMeshBase* pm = mdl->GetActiveMesh();
+	UpdateBoundingBox();
+
+	FEPostMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
@@ -321,21 +363,38 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 		m_map.SetTag(ntime, m_nfield);
 		vector<float>& val = m_map.State(ntime);
 
-		NODEDATA nd;
-		for (int i=0; i<NN; ++i)
+		// only count enabled parts
+		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			pfem->EvaluateNode(i, ntime, m_nfield, nd);
-			val[i] = nd.m_val;
+			FEElement_& el = pm->ElementRef(i);
+			Material* pmat = pfem->GetMaterial(el.m_MatID);
+			if (pmat->benable && el.IsVisible())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k)
+				{
+					FSNode& node = pm->Node(el.m_node[k]);
+					node.m_ntag = 1;
+				}
+			}
 		}
 
-		// evaluate the range
-		float fmin, fmax;
-		fmin = fmax = val[0];
-		for (int i=0;i<NN; ++i)
+		float fmin = 1e34, fmax = -1e34;
+		for (int i=0; i<NN; ++i)
 		{
-			if (val[i] < fmin) fmin = val[i];
-			if (val[i] > fmax) fmax = val[i];
+			FSNode& node = pm->Node(i);
+			if (node.m_ntag == 1)
+			{
+				NODEDATA nd;
+				pfem->EvaluateNode(i, ntime, m_nfield, nd);
+				val[i] = nd.m_val;
+
+				if (val[i] < fmin) fmin = val[i];
+				if (val[i] > fmax) fmax = val[i];
+			}
+			else val[i] = 0.0f;
 		}
+
 		m_rng[ntime] = vec2f(fmin, fmax);
 	}
 
