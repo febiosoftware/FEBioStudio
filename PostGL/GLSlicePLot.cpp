@@ -111,6 +111,8 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		m_norm.x = GetFloatValue(NORMAL_X);
 		m_norm.y = GetFloatValue(NORMAL_Y);
 		m_norm.z = GetFloatValue(NORMAL_Z);
+
+		Update();
 	}
 	else
 	{
@@ -360,6 +362,9 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();
 
+	m_lastTime = ntime;
+	m_lastDt = dt;
+
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
 
 	if (m_map.States() != pfem->GetStates())
@@ -377,6 +382,7 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 		vector<float>& val = m_map.State(ntime);
 
 		// only count enabled parts
+		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
 		{
 			FEElement_& el = pm->ElementRef(i);
