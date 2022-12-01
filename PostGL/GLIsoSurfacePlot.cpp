@@ -282,11 +282,15 @@ void CGLIsoSurfacePlot::UpdateSlice(float ref, GLColor col)
 			case FE_HEX20  : nt = HEX_NT; break;
 			case FE_HEX27  : nt = HEX_NT; break;
 			case FE_PENTA6 : nt = PEN_NT; break;
-            case FE_PENTA15: nt = PEN_NT; break;
-            case FE_TET4   : nt = TET_NT; break;
+			case FE_PENTA15: nt = PEN_NT; break;
+			case FE_TET4   : nt = TET_NT; break;
 			case FE_TET5   : nt = TET_NT; break;
-            case FE_PYRA5  : nt = PYR_NT; break;
-            case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_PYRA5  : nt = PYR_NT; break;
+			case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_TET10  : nt = TET_NT; break;
+			case FE_TET15  : nt = TET_NT; break;
+			default:
+				assert(false);
 			}
 
 			// get the nodal values
