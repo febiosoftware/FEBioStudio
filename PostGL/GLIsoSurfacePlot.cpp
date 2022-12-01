@@ -224,21 +224,17 @@ void CGLIsoSurfacePlot::Render(CGLContext& rc)
 void CGLIsoSurfacePlot::UpdateMesh()
 {
 	m_mesh.Clear();
+	if (m_nslices <= 0) return;
 
-	vec2f r = m_crng;
-	float crng = (r.y - r.x);
-	if (crng == 0.f) crng = 1.f;
+	float vmin = m_crng.x;
+	float vmax = m_crng.y;
+	float D = vmax - vmin;
 
-	// scale a little to make sure the range extrema will be shown
-	r.x *= .99f;
-	r.y *= .99f;
-
-	float denom = (m_nslices <= 1 ? 1.f : m_nslices - 1.f);
 	for (int i = 0; i < m_nslices; ++i)
 	{
-		float ref = r.x + (float)i / denom * (r.y - r.x);
+		float ref = vmin + ((float)i + 0.5f)* D / (m_nslices);
 
-		float w = (ref - m_crng.x) / crng;
+		float w = (ref - vmin) / D;
 
 		CColorMap& map = m_Col.ColorMap();
 		GLColor col = map.map(w);
@@ -404,21 +400,38 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		m_map.SetTag(ntime, m_nfield);
 		vector<float>& val = m_map.State(ntime);
 
-		// evaluate nodal values
-		NODEDATA nd;
-		for (int i=0; i<NN; ++i) 
+		// only count enabled parts
+		pm->TagAllNodes(0);
+		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			pfem->EvaluateNode(i, ntime, m_nfield, nd);
-			val[i] = nd.m_val;
+			FEElement_& el = pm->ElementRef(i);
+			Material* pmat = pfem->GetMaterial(el.m_MatID);
+			if (pmat->benable && el.IsVisible())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k)
+				{
+					FSNode& node = pm->Node(el.m_node[k]);
+					node.m_ntag = 1;
+				}
+			}
 		}
 
-		// evaluate the range
-		float fmin, fmax;
-		fmin = fmax = val[0];
-		for (int i=0;i<NN; ++i)
+		// evaluate nodal values
+		float fmin = 1e34, fmax = -1e34;
+		for (int i=0; i<NN; ++i) 
 		{
-			if (val[i] < fmin) fmin = val[i];
-			if (val[i] > fmax) fmax = val[i];
+			FSNode& node = pm->Node(i);
+			if (node.m_ntag == 1)
+			{
+				NODEDATA nd;
+				pfem->EvaluateNode(i, ntime, m_nfield, nd);
+				val[i] = nd.m_val;
+
+				if (val[i] < fmin) fmin = val[i];
+				if (val[i] > fmax) fmax = val[i];
+			}
+			else val[i] = 0.0f;
 		}
 
 		m_rng[ntime] = vec2f(fmin, fmax);
@@ -463,7 +476,16 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
-	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
+	float vmin = m_crng.x;
+	float vmax = m_crng.y;
+	if (m_nslices > 0)
+	{
+		double D = vmax - vmin;
+		double d = 0.5 * D / m_nslices;
+		vmin += d;
+		vmax -= d;
+	}
+	GetLegendBar()->SetRange(vmin, vmax);
 
 	// Update the mesh
 	UpdateMesh();
