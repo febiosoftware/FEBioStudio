@@ -215,7 +215,7 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.stl)";
 	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
@@ -224,6 +224,8 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
 	filters << "VTK files (*.vtk)";
+	filters << "LSDYNA keyword (*.k)";
+	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
 
 	QFileDialog dlg(this, "Open");

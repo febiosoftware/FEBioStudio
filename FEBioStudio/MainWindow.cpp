@@ -85,6 +85,8 @@ SOFTWARE.*/
 #include "FEBioThread.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
+#include <PostLib/FELSDYNAimport.h>
+#include <PostLib/FESTLimport.h>
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
@@ -513,6 +515,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	}
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("k"   , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("stl" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
 	{
 		// load the post file
@@ -983,6 +987,16 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
 			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("k", Qt::CaseInsensitive) == 0)
+		{
+			Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(doc->GetFSModel());
+			ReadFile(doc, fileName, reader, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("stl", Qt::CaseInsensitive) == 0)
+		{
+			Post::FESTLimport* reader = new Post::FESTLimport(doc->GetFSModel());
+			ReadFile(doc, fileName, reader, QueuedFile::NEW_DOCUMENT);
 		}
 		else if (ext.isEmpty())
 		{
