@@ -50,7 +50,7 @@ CGLSlicePlot::CGLSlicePlot()
 	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
 	AddIntParam(10, "divs", "Range divisions");
-	AddBoolParam(false, "smooth", "Gradient smoothing");
+	AddBoolParam(true, "smooth", "Gradient smoothing");
 	AddDoubleParam(1.0, "transparency", "Transparency")->SetFloatRange(0,1);
 	AddBoolParam(true, "Allow clipping");
 	AddBoolParam(true, "Show legend"   );
