@@ -382,6 +382,25 @@ vector<int> findElementsByCoordinates(FSMesh* pm, const vec3d& p)
 	return items;
 }
 
+vector<int> findNodesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	int nmin = -1;
+	double D2min = 0;
+	vector<int> items;
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		vec3d ri = pm->NodePosition(i);
+
+		if (box.IsInside(ri))
+		{
+			items.push_back(i);
+		}
+	}
+
+	return items;
+}
+
 void CMainWindow::on_actionFind_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
@@ -417,12 +436,19 @@ void CMainWindow::on_actionFind_triggered()
 		{
 			items = dlg.m_item;
 		}
-		else
+		else if (dlg.m_method == 1)
 		{
 			switch (nitem)
 			{
 			case ITEM_NODE: items = findNodesByCoordinates   (pm, dlg.m_coord); break;
 			case ITEM_ELEM: items = findElementsByCoordinates(pm, dlg.m_coord); break;
+			}
+		}
+		else
+		{
+			switch (nitem)
+			{
+			case ITEM_NODE: items = findNodesByRange(pm, dlg.m_min, dlg.m_max); break;
 			}
 		}
 
