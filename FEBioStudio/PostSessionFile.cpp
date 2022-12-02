@@ -583,6 +583,25 @@ bool PostSessionFileWriter::Write(const char* szfile)
 				xml.add_empty(plt);
 			}
 		}
+		else if (dynamic_cast<FEKinematFileReader*>(reader))
+		{
+			FEKinematFileReader* kine = dynamic_cast<FEKinematFileReader*>(reader);
+	
+			// create absolute file names for model and kine files
+			std::string modelFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetModelFile())).toStdString();
+			std::string kineFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetKineFile())).toStdString();
+
+			XMLElement el("model");
+			el.add_attribute("type", "kinemat");
+			xml.add_branch(el);
+			{
+				xml.add_leaf("model_file", modelFile);
+				xml.add_leaf("kine_file", kineFile);
+				int n[3] = { kine->GetMin(), kine->GetMax(), kine->GetStep() };
+				xml.add_leaf("range", n, 3);
+			}
+			xml.close_branch();
+		}
 		else
 		{
 			// save plot file
