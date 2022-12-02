@@ -199,12 +199,27 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 	else
 	{
 		const char* szfile = tag.AttributeValue("file");
+		std::string modelFile = currentDir.absoluteFilePath(szfile).toStdString();
 
-		xpltFileReader* xplt = new xpltFileReader(m_fem);
-		m_openFile = xplt; // assign this before we load so that we can monitor progress.
-		if (xplt->Load(szfile) == false)
+		// check the extension
+		const char* szext = strrchr(szfile, '.');
+		if (strcmp(szext, ".xplt") == 0)
 		{
-			return errf("Failed loading plot file %s", szfile);
+			xpltFileReader* xplt = new xpltFileReader(m_fem);
+			m_openFile = xplt; // assign this before we load so that we can monitor progress.
+		}
+		else if (strcmp(szext, ".k") == 0)
+		{
+			Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(m_fem);
+			m_openFile = reader;
+		}
+		else return errf("Don't know how to read file.");
+
+		if (m_openFile == nullptr) return errf("No file reader allocated.");
+
+		if (m_openFile->Load(modelFile.c_str()) == false)
+		{
+			return errf("Failed loading model file\n%s", modelFile.c_str());
 		}
 
 		// now create a GL model
@@ -220,13 +235,32 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 
 bool PostSessionFileReader::parse_open(XMLTag& tag)
 {
-	const char* szfile = tag.AttributeValue("file");
+	// we'll use this for converting to absolute file paths.
+	QFileInfo fi(m_szfile);
+	QDir currentDir(fi.absolutePath());
 
-	xpltFileReader* xplt = new xpltFileReader(m_fem);
-	m_openFile = xplt; // assign this before we load so that we can monitor progress.
-	if (xplt->Load(szfile) == false)
+	const char* szfile = tag.AttributeValue("file");
+	std::string modelFile = currentDir.absoluteFilePath(szfile).toStdString();
+
+	// check the extension
+	const char* szext = strrchr(szfile, '.');
+	if (strcmp(szext, ".xplt") == 0)
 	{
-		return errf("Failed opening plot file\n%s", szfile);
+		xpltFileReader* xplt = new xpltFileReader(m_fem);
+		m_openFile = xplt; // assign this before we load so that we can monitor progress.
+	}
+	else if (strcmp(szext, ".k") == 0)
+	{
+		Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(m_fem);
+		m_openFile = reader;
+	}
+	else return errf("Don't know how to read file.");
+
+	if (m_openFile == nullptr) return errf("No file reader allocated.");
+
+	if (m_openFile->Load(modelFile.c_str()) == false)
+	{
+		return errf("Failed loading model file\n%s", modelFile.c_str());
 	}
 
 	// now create a GL model
