@@ -113,11 +113,18 @@ bool FEPartitionSelection::UpdateData(bool bsave)
 
 FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 {
+	int gid = -1;
 	bool newPartition = GetBoolValue(0);
-	int gid = GetIntValue(1) - 1;
-	if (newPartition) gid = -1;
-	FSMesh* newMesh = new FSMesh(*pm);
+	if (newPartition == false)
+	{
+		GObject* po = pm->GetGObject();
+		int pid = GetIntValue(1);
+		GPart* pg = po->FindPart(pid);
+		if (pg == nullptr) return nullptr;
+		gid = pg->GetLocalID();
+	}
 
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.PartitionElementSelection(gid);
 
@@ -126,12 +133,19 @@ FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 
 FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 {
-	bool newPartition = GetBoolValue(0);
-	int gid = GetIntValue(1) - 1;
-	if (newPartition) gid = -1;
-
 	FSMesh* oldMesh = pg->GetMesh();
 	if (oldMesh == 0) return 0;
+
+	int gid = -1;
+	bool newPartition = GetBoolValue(0);
+	if (newPartition == false)
+	{
+		GObject* po = oldMesh->GetGObject();
+		int pid = GetIntValue(1);
+		GPart* pg = po->FindPart(pid);
+		if (pg == nullptr) return nullptr;
+		gid = pg->GetLocalID();
+	}
 
 	FSMesh* newMesh = new FSMesh(*oldMesh);
 	FEMeshBuilder meshBuilder(*newMesh);

@@ -1298,9 +1298,6 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 		}
 	}
 
-	// since we may have lost a partition, reindex the partitions
-	m_mesh.UpdateElementPartitions();
-
 	// add new faces, if found
 	int nfp = m_mesh.CountFacePartitions();
 	int newFaces = 0;
@@ -1379,7 +1376,6 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 			nfp++;
 		}
 	}
-	m_mesh.UpdateFacePartitions();
 
 	// repartition the edges and nodes
 	BuildEdges();
