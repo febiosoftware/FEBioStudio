@@ -2619,8 +2619,8 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 
 	menu.addAction(ui->actionRenderMode);
 
-	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc == nullptr)
+	CModelDocument* doc = GetModelDocument();
+	if (doc)
 	{
 		menu.addAction(ui->actionShowNormals);
 		menu.addAction(ui->actionShowFibers);
@@ -2637,28 +2637,32 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		a = display->addAction("Unselected only"); a->setCheckable(true); if (vs.m_transparencyMode == 2) a->setChecked(true);
 		QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
 		menu.addAction(display->menuAction());
+
+		QMenu* colorMode = new QMenu("Color mode");
+		a = colorMode->addAction("Default"); a->setCheckable(true); if (vs.m_objectColor == 0) a->setChecked(true);
+		a = colorMode->addAction("By object"); a->setCheckable(true); if (vs.m_objectColor == 1) a->setChecked(true);
+		a = colorMode->addAction("By material type"); a->setCheckable(true); if (vs.m_objectColor == 2) a->setChecked(true);
+		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+		menu.addAction(colorMode->menuAction());
+
 		menu.addSeparator();
 
-		CModelDocument* doc = GetModelDocument();
-		if (doc)
+		GModel* gm = doc->GetGModel();
+		int layers = gm->MeshLayers();
+		if (layers > 1)
 		{
-			GModel* gm = doc->GetGModel();
-			int layers = gm->MeshLayers();
-			if (layers > 1)
+			QMenu* sub = new QMenu("Set Active Mesh Layer");
+			int activeLayer = gm->GetActiveMeshLayer();
+			for (int i = 0; i < layers; ++i)
 			{
-				QMenu* sub = new QMenu("Set Active Mesh Layer");
-				int activeLayer = gm->GetActiveMeshLayer();
-				for (int i = 0; i < layers; ++i)
-				{
-					string s = gm->GetMeshLayerName(i);
-					QAction* a = sub->addAction(QString::fromStdString(s));
-					a->setCheckable(true);
-					if (i == activeLayer) a->setChecked(true);
-				}
-				QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
-				menu.addAction(sub->menuAction());
-				menu.addSeparator();
+				string s = gm->GetMeshLayerName(i);
+				QAction* a = sub->addAction(QString::fromStdString(s));
+				a->setCheckable(true);
+				if (i == activeLayer) a->setChecked(true);
 			}
+			QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
+			menu.addAction(sub->menuAction());
+			menu.addSeparator();
 		}
 	}
 	menu.addAction(ui->actionOptions);
@@ -2701,6 +2705,18 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 	if      (ac->text() == "None"           ) vs.m_transparencyMode = 0;
 	else if (ac->text() == "Selected only"  ) vs.m_transparencyMode = 1;
 	else if (ac->text() == "Unselected only") vs.m_transparencyMode = 2;
+
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::OnSelectObjectColorMode(QAction* ac)
+{
+	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+
+	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
+	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
+	else if (ac->text() == "By material type") vs.m_objectColor = OBJECT_COLOR_MODE::MATERIAL_TYPE;
 
 	RedrawGL();
 }

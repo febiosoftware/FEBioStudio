@@ -29,6 +29,13 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 
 //-----------------------------------------------------------------------------
+enum OBJECT_COLOR_MODE {
+	DEFAULT_COLOR,
+	OBJECT_COLOR,
+	MATERIAL_TYPE
+};
+
+//-----------------------------------------------------------------------------
 //! view settings
 struct VIEW_SETTINGS
 {
