@@ -35,6 +35,7 @@ class QGridLayout;
 class QResizeEvent;
 class QWheelEvent;
 class CIntSlider;
+class QComboBox;
 
 class CGLView;
 class CMainWindow;
@@ -58,7 +59,7 @@ public:
     };
 
 public:
-    CImageSlice(SliceDir sliceDir);
+    CImageSlice(SliceDir sliceDir, bool constAxis = true, QWidget* extraWidget = nullptr);
 
     void SetImage(Post::CImageModel* imgModel);
 
@@ -73,9 +74,13 @@ signals:
 
 private slots:
     void on_slider_changed(int val);
+    void on_currentIndexChanged(int index);
 
 protected:
     void wheelEvent(QWheelEvent* event) override;
+
+private:
+    void UpdateSliceCount();
 
 private:
     Post::CImageModel* m_imgModel;
@@ -86,6 +91,7 @@ private:
     CIntSlider* m_slider;
 
     SliceDir m_sliceDir;
+    QComboBox* m_sliceChoice;
 
 };
 
