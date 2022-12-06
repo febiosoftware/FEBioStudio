@@ -940,11 +940,9 @@ void CModelViewer::OnShowPart()
 		if (pg) 
 		{
 			m.ShowPart(pg);
-
-			QTreeWidgetItem* item = ui->tree->FindItem(pg);
-			if (item) item->setForeground(0, Qt::black);
 		}
 	}
+	Update();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->RedrawGL();
 }
