@@ -176,6 +176,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Convert a tri3 mesh to a quad mesh
+//
+class FETri2Quad : public FEModifier
+{
+public:
+	FETri2Quad() : FEModifier("Tri2Quad") {}
+	FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
 // Convert a hex mesh into a tet-mesh
 //
 class FEHex2Tet : public FEModifier
