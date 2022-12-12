@@ -96,6 +96,8 @@ public:
 
     void checkForUpdate(bool dev = false, bool updaterUpdateCheck = false);
 
+    QString getServerMessage();
+
 public slots:
 	void linkActivated(const QString& link);
 
@@ -149,6 +151,8 @@ public:
 	QString updaterBase;
 
 	QString UUID;
+
+    QString serverMessage;
 
 	//Made this so that QStringView can look up without making a copy.
 	const QString UPDATE       = "update";

@@ -138,6 +138,11 @@ void CUpdateWidget::checkForAppUpdateResponse(QNetworkReply *r)
 {
 	int statusCode = r->attribute(QNetworkRequest::HttpStatusCodeAttribute).toInt();
 
+    if(r->hasRawHeader("message"))
+    {
+        serverMessage = r->rawHeader("message");
+    }
+
 	std::cout << statusCode << std::endl;
 
 	if(statusCode != 200)
@@ -675,6 +680,11 @@ void CUpdateWidget::linkActivated(const QString& link)
 	dlg.resize(QSize(600,500));
 
 	dlg.exec();
+}
+
+QString CUpdateWidget::getServerMessage()
+{
+    return serverMessage;
 }
 
 ///// Update Checker Dialog

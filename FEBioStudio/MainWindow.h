@@ -187,6 +187,7 @@ public:
 	int autoSaveInterval();
 
 	// autoUpdate Check
+    QString GetServerMessage();
 	bool updaterPresent();
 	bool updateAvailable();
 
