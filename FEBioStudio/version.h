@@ -29,7 +29,7 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
 #define VERSION			1
-#define SUBVERSION		8
+#define SUBVERSION		9
 #define SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
