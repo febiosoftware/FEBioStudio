@@ -128,7 +128,7 @@ void CImageSlice::SetImage(Post::CImageModel* imgModel)
 
 void CImageSlice::UpdateSliceCount()
 {
-    C3DImage* img = m_imgModel->GetImageSource()->Get3DImage();
+    C3DImage* img = m_imgModel->Get3DImage();
 
     int n;
     switch (m_sliceDir)
@@ -158,7 +158,7 @@ void CImageSlice::Update()
 
     int slice = m_slider->getValue();
 
-    C3DImage* img = m_imgModel->GetImageSource()->Get3DImage();    
+    C3DImage* img = m_imgModel->Get3DImage();    
 
     int min = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
     int max = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);

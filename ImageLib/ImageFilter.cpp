@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "ImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
 #include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <ImageLib/ImageSITK.h>
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>

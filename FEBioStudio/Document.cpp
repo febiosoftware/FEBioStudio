@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
 #include <MeshTools/GModel.h>
 #include <MeshTools/FENodeData.h>
@@ -844,7 +845,8 @@ Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx,
 	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
 
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
-	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
+    po->SetBoundingBox(box);
+	if (!po->LoadImageSource(new Post::CRawImageSource(po, relFile, nx, ny, nz)))
 	{
 		delete po;
 		return nullptr;
@@ -867,8 +869,7 @@ Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFile
 	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
 
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-	if (po->LoadITKData(relFile, type) == false)
+	if (!po->LoadImageSource(new Post::CITKImageSource(po, filename, type)))
 	{
 		delete po;
 		return nullptr;
@@ -898,7 +899,7 @@ Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
 
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
 
-	if (po->LoadITKSeries(stdFiles) == false)
+	if (!po->LoadImageSource(new Post::CITKSeriesImageSource(po, stdFiles)))
 	{
 		delete po;
 		return nullptr;
