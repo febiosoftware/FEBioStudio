@@ -350,6 +350,7 @@ public:
 	int		m_defaultUnits;
 
 	CUpdateWidget m_updateWidget;
+    QString m_serverMessage;
 	bool m_updaterPresent;
 	bool m_updateAvailable;
 	bool m_updateOnClose;
