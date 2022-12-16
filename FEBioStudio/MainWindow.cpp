@@ -457,6 +457,12 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 	else if (ref == "#help") on_actionFEBioResources_triggered();
 	else if (ref == "#forum") on_actionFEBioForum_triggered();
 	else if (ref == "#update") on_actionUpdate_triggered();
+    else if (ref.contains("#http"))
+    {
+        QString temp = link.toString().replace("#http", "https://");
+
+        QDesktopServices::openUrl(QUrl(temp));
+    }
     else if (ref == "#bugreport") on_actionBugReport_triggered();
 	else
 	{
@@ -1373,6 +1379,7 @@ void CMainWindow::autosave()
 void CMainWindow::autoUpdateCheck(bool update)
 {
 	ui->m_updateAvailable = update;
+    ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
 
 	int n = ui->tab->findView("Welcome");
 	if (n != -1)
@@ -1775,6 +1782,11 @@ void CMainWindow::setAutoSaveInterval(int interval)
 int CMainWindow::autoSaveInterval()
 {
 	return ui->m_autoSaveInterval;
+}
+
+QString CMainWindow::GetServerMessage()
+{
+    return ui->m_serverMessage;
 }
 
 bool CMainWindow::updaterPresent()

@@ -62,6 +62,30 @@ POST:
 
 ===========================================================================
 
+ R E L E A S E   1.9   12/12/2022
+
+===========================================================================
+
+* Fixed zoning in hollow sphere.
+* Added support for editable surfaces in mesh inspector.
+* Added support for new gap_offset flag in FEF2FTiedInterface class.
+* Fixed issue with scatter plots for object sources.
+* Fixed bug causing graph window and curve editor size to not save properly. Graph editor save dialog now remembers previous location
+* The "angles" fiber material now supports maps.
+* Fixed issue with rendering data for penta elements.
+* Fixed issued with exporting element data maps when the corresponding part was split on export.
+* Added support for inverting selections in post document.
+* Added support for new prescribed fiber active contraction material.
+* Added support for importing mesh selections from feb file.
+* Set home location in StartSSHSession.
+* Added missing parameter in FERigidForce.
+* Fixed Fluid RCR load in Fluid and Fluid-FSI module to properly output in febio3 format.  
+* Changed Fluid Flow Resistance load to match Fluid RCR and only display/save loadcurves for the pressure offset. Added units to the parameters associated with these surface loads.
+* Added "facet area" standard data field.
+
+
+===========================================================================
+
  R E L E A S E   1.8   6/15/2022
 
 ===========================================================================
