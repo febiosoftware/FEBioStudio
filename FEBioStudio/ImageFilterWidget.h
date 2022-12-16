@@ -32,6 +32,7 @@ SOFTWARE.*/
 
 class QListWidget;
 class CPropertyListView;
+class CMainWindow;
 
 namespace Post
 {

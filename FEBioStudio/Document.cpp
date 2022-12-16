@@ -51,7 +51,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
-#include "ImageReadThread.h"
+#include "ImageThread.h"
 #include <MeshTools/GModel.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -843,7 +843,7 @@ bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
 {
     static int n = 1;
 
-    CDlgStartImageThread dlg(m_wnd, new CImageReadThread(imgModel));
+    CDlgStartImageThread dlg(new CImageReadThread(imgModel), m_wnd);
 
     if(!dlg.exec())
     {

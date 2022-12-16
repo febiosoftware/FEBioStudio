@@ -28,12 +28,22 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QProgressBar>
 #include <QBoxLayout>
+#include <QDialogButtonBox>
 #include <QCloseEvent>
-#include "ImageReadThread.h"
+#include "ImageThread.h"
 #include <PostLib/ImageModel.h>
+#include <ImageLib/ImageFilter.h>
+
+CImageThread::CImageThread(Post::CImageModel* imgModel)
+    : m_imgModel(imgModel), m_error("")
+{
+
+}
+
+//--------------------------------------------------------------------
 
 CImageReadThread::CImageReadThread(Post::CImageModel* imgModel)
-    : m_imgModel(imgModel)
+    : CImageThread(imgModel)
 {
 
 }
@@ -41,6 +51,8 @@ CImageReadThread::CImageReadThread(Post::CImageModel* imgModel)
 void CImageReadThread::run()
 {
     m_success = true;
+
+    emit newStatus("Reading Image Data...");
 
     try
     {
@@ -57,29 +69,81 @@ void CImageReadThread::run()
     }
 }
 
+//--------------------------------------------------------------------
+
+CImageFilterThread::CImageFilterThread(Post::CImageModel* imgModel)
+    : CImageThread(imgModel), m_canceled(false)
+{
+
+}
+    
+void CImageFilterThread::run()
+{
+    m_success = true;
+
+    try
+    {
+        for(int index = 0; index < m_imgModel->ImageFilters(); index++)
+        {
+            emit newStatus(QString("Applying %1...").arg(m_imgModel->GetImageFilter(index)->GetName().c_str()));
+
+            if(m_canceled)
+            {
+                break;
+            }
+
+            m_imgModel->GetImageFilter(index)->ApplyFilter();
+        }
+
+        if(m_canceled)
+        {
+            m_success = false;
+            return;
+        }
+    }
+    catch(std::runtime_error& e)
+    {
+        m_success = false;
+        m_error = e.what();
+    }
+}
+
+void CImageFilterThread::cancel()
+{
+    m_canceled = true;
+}
+
 
 class Ui::CDlgStartImageThread
 {
 public:
-    CImageReadThread*	m_thread;
+    CImageThread*	m_thread;
+    bool            m_cancelable;
 
 public:
-	QLabel*			m_task;
+	QLabel*			m_status;
 	QProgressBar*	m_progress;
+    QDialogButtonBox* m_box;
 
 public:
-    void setupUI(QDialog* parent, CImageReadThread* thread)
+    void setupUI(QDialog* parent, CImageThread* thread)
     {
         m_thread = thread;
+        m_cancelable = dynamic_cast<CImageFilterThread*>(thread) != nullptr;
 
         QVBoxLayout* layout = new QVBoxLayout;
 
-        layout->addWidget(m_task = new QLabel("Reading Image Data..."));
+        layout->addWidget(m_status = new QLabel(""));
         
         m_progress = new QProgressBar();
         m_progress->setMinimum(0);
         m_progress->setMaximum(0);
         layout->addWidget(m_progress);
+
+        if(m_cancelable)
+        {
+            layout->addWidget(m_box = new QDialogButtonBox(QDialogButtonBox::Cancel));
+        }
 
         parent->setLayout(layout);
     }
@@ -87,12 +151,20 @@ public:
 };
 
 
-CDlgStartImageThread::CDlgStartImageThread(QWidget* parent, CImageReadThread* thread)
+CDlgStartImageThread::CDlgStartImageThread(CImageThread* thread, QWidget* parent)
     : QDialog(parent), ui(new Ui::CDlgStartImageThread)
 {
     ui->setupUI(this, thread);
 
     connect(thread, &QThread::finished, this, &CDlgStartImageThread::threadFinished);
+    connect(thread, &CImageThread::newStatus, this, &CDlgStartImageThread::on_status_changed);
+
+    if(ui->m_cancelable)
+    {
+        connect(ui->m_box, &QDialogButtonBox::rejected, this, &CDlgStartImageThread::on_canceled);
+    }
+
+
     thread->start();
 }
 
@@ -102,7 +174,10 @@ void CDlgStartImageThread::threadFinished()
 
     if(!ui->m_thread->getSuccess())
     {
-        QMessageBox::critical(this, "FEBio Studio", ui->m_thread->getError());
+        if(!QString(ui->m_thread->getError()).isEmpty())
+        {
+            QMessageBox::critical(this, "FEBio Studio", ui->m_thread->getError());
+        }
 
         reject();
         return;
@@ -111,9 +186,28 @@ void CDlgStartImageThread::threadFinished()
     accept();
 }
 
+void CDlgStartImageThread::on_canceled()
+{
+    dynamic_cast<CImageFilterThread*>(ui->m_thread)->cancel();
+
+    ui->m_status->setText("Canceling...");
+}
+
+void CDlgStartImageThread::on_status_changed(QString status)
+{
+    ui->m_status->setText(status);
+}
+
 void CDlgStartImageThread::closeEvent(QCloseEvent* ev)
 {
-    QMessageBox::critical(this, "FEBio Studio", "This operation cannot be canceled.");
+    if(ui->m_cancelable)
+    {
+        on_canceled();
+    }
+    else
+    {
+        QMessageBox::critical(this, "FEBio Studio", "This operation cannot be canceled.");
+    }
 
-    ev->ignore();
+    ev->ignore();    
 }

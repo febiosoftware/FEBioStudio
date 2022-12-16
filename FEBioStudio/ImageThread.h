@@ -32,21 +32,44 @@ namespace Post
     class CImageModel;
 }
 
-class CImageReadThread : public QThread
+class CImageThread : public QThread
 {
+    Q_OBJECT
 public:
-    CImageReadThread(Post::CImageModel* imgModel);
+    CImageThread(Post::CImageModel* imgModel);
     
     bool getSuccess() { return m_success; }
     const char* getError() { return m_error; }
 
-    void run() override;
+signals:
+    void newStatus(QString status);
 
-private:
+protected:
     Post::CImageModel* m_imgModel;
 
     bool m_success;
     const char* m_error;
+};
+
+class CImageReadThread : public CImageThread
+{
+public:
+    CImageReadThread(Post::CImageModel* imgModel);
+    
+    void run() override;
+};
+
+class CImageFilterThread : public CImageThread
+{
+public:
+    CImageFilterThread(Post::CImageModel* imgModel);
+    
+    void run() override;
+
+    void cancel();
+
+private:
+    bool m_canceled;
 };
 
 namespace Ui
@@ -58,12 +81,14 @@ class CDlgStartImageThread : public QDialog
 {
     Q_OBJECT
 public:
-    CDlgStartImageThread(QWidget* parent, CImageReadThread* thread);
+    CDlgStartImageThread(CImageThread* thread, QWidget* parent = nullptr);
 
     void closeEvent(QCloseEvent* ev) override;
 
 private slots:
 	void threadFinished();
+    void on_canceled();
+    void on_status_changed(QString status);
 
 private:
     Ui::CDlgStartImageThread* ui;

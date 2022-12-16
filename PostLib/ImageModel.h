@@ -58,9 +58,13 @@ public:
 	int ImageRenderers() const { return (int)m_render.Size(); }
 	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
 	size_t RemoveRenderer(CGLImageRenderer* render);
+    void UpdateRenderers();
 
 	void AddImageRenderer(CGLImageRenderer* render);
 
+    // Applies filters using GUI thread!
+    void ApplyFilters();
+    void ClearFilters();
     int ImageFilters() const { return (int)m_filters.Size(); }
 	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
 	size_t RemoveFilter(CImageFilter* filter);
@@ -77,8 +81,6 @@ public:
 	void ShowBox(bool b);
 
 	void Render(CGLContext& rc);
-
-	void ApplyFilters();
 
 	bool UpdateData(bool bsave = true) override;
 

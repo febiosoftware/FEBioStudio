@@ -157,9 +157,22 @@ void CImageModel::ApplyFilters()
 	} 
 }
 
+void CImageModel::ClearFilters()
+{
+    m_img->ClearFilters();
+}
+
 size_t CImageModel::RemoveRenderer(CGLImageRenderer* render)
 {
 	return m_render.Remove(render);
+}
+
+void CImageModel::UpdateRenderers()
+{
+    for (int i = 0; i < (int)m_render.Size(); ++i)
+	{
+		m_render[i]->Update();
+	} 
 }
 
 void CImageModel::AddImageRenderer(CGLImageRenderer* render)
