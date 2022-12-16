@@ -1545,6 +1545,11 @@ void CMainWindow::on_actionImportGeometry_triggered()
 void CMainWindow::on_actionImportRawImage_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
@@ -1598,6 +1603,13 @@ void CMainWindow::on_actionImportRawImage_triggered()
 }
 void CMainWindow::on_actionImportDICOMImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1614,6 +1626,13 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 
 void CMainWindow::on_actionImportTiffImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1631,6 +1650,13 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 void CMainWindow::on_actionImportOMETiffImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1647,6 +1673,13 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
 
 void CMainWindow::on_actionImportImageSequence_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
