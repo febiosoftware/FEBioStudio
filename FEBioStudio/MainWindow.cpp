@@ -3432,8 +3432,17 @@ void CMainWindow::CloseWelcomePage()
 
 		Post::CImageModel* imageModel = nullptr;
 
-		imageModel = doc->ImportITK(fileName.toStdString(), type);
-		if (imageModel == nullptr)
+        try
+        {
+            imageModel = doc->ImportITK(fileName.toStdString(), type);
+        }
+        catch(std::exception& e)
+        {
+            QMessageBox::critical(this, "FEBio Studio", e.what());
+            return;
+        }
+		
+		if (!imageModel)
 		{
 			QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
 			return;

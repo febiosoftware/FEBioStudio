@@ -83,9 +83,18 @@ bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
         rescaleFiler.SetOutputMaximum(255);
         m_sitkImage = rescaleFiler.Execute(m_sitkImage);
 
-        sitk::CastImageFilter castFilter;
-        castFilter.SetOutputPixelType(sitk::sitkUInt8);
-        m_sitkImage = castFilter.Execute(m_sitkImage);
+        try
+        {
+            sitk::CastImageFilter castFilter;
+            castFilter.SetOutputPixelType(sitk::sitkUInt8);
+            m_sitkImage = castFilter.Execute(m_sitkImage);
+        }
+        catch(itk::simple::GenericException& e)
+        {
+            throw std::runtime_error("FEBio Studio is not currently capable of reading multichannel images.");
+        }
+        
+        
     }
 
     FinalizeImage();

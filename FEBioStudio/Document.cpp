@@ -869,7 +869,22 @@ Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFile
 	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
 
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
-	if (!po->LoadImageSource(new Post::CITKImageSource(po, filename, type)))
+
+    bool success = false;
+    // we must catch this here in order to ensure that the image model, and by extension the image
+    // source, and image itself all get properly deleted. We throw the exception again in order to 
+    // propigate the error message back to the GUI
+    try
+    {
+        success = po->LoadImageSource(new Post::CITKImageSource(po, filename, type));
+    }
+    catch(std::runtime_error& e)
+    {
+        delete po;
+        throw e;
+    }
+
+	if (!success)
 	{
 		delete po;
 		return nullptr;
@@ -899,7 +914,21 @@ Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
 
 	Post::CImageModel* po = new Post::CImageModel(nullptr);
 
-	if (!po->LoadImageSource(new Post::CITKSeriesImageSource(po, stdFiles)))
+    bool success = false;
+    // we must catch this here in order to ensure that the image model, and by extension the image
+    // source, and image itself all get properly deleted. We throw the exception again in order to 
+    // propigate the error message back to the GUI
+    try
+    {
+        success = po->LoadImageSource(new Post::CITKSeriesImageSource(po, stdFiles));
+    }
+    catch(std::runtime_error& e)
+    {
+        delete po;
+        throw e;
+    }
+
+	if (!success)
 	{
 		delete po;
 		return nullptr;

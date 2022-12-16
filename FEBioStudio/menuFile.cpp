@@ -1660,9 +1660,16 @@ void CMainWindow::on_actionImportImageSequence_triggered()
         CGLDocument* doc = GetGLDocument();
 
         Post::CImageModel* imageModel = nullptr;
+        try
+        {
+            imageModel = doc->ImportITKStack(files);
+        }
+        catch(const std::runtime_error& e)
+        {
+            QMessageBox::critical(this, "FEBio Studio", e.what());
+        }
 
-        imageModel = doc->ImportITKStack(files);
-        if (imageModel == nullptr)
+        if (!imageModel)
         {
             QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
             return;
