@@ -51,7 +51,9 @@ public:
 	CImageModel(CGLModel* mdl);
 	~CImageModel();
 
-    bool LoadImageSource(CImageSource* imgSource);
+    void SetImageSource(CImageSource* imgSource);
+    bool Load();
+
 
 	int ImageRenderers() const { return (int)m_render.Size(); }
 	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }

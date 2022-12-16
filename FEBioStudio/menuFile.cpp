@@ -80,6 +80,7 @@ SOFTWARE.*/
 #include <MeshIO/BREPImport.h>
 #include <MeshIO/STEPImport.h>
 #include <Abaqus/AbaqusExport.h>
+#include <FSCore/FSDir.h>
 #include "DlgImportAbaqus.h"
 #include "DlgRAWImport.h"
 #include "DlgImportCOMSOL.h"
@@ -100,6 +101,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/AbaqusExport.h>
 #include <MeshTools/GModel.h>
@@ -1569,12 +1571,19 @@ void CMainWindow::on_actionImportRawImage_triggered()
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-			imageModel = doc->ImportImage(filedlg.selectedFiles()[0].toStdString(), dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (imageModel == nullptr)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-				return;
-			}
+            // we pass the relative path to the image model
+	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
+
+            imageModel = new Post::CImageModel(nullptr);
+            imageModel->SetBoundingBox(box);
+            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz));
+
+            if(!doc->ImportImage(imageModel))
+            {
+                delete imageModel;
+                imageModel = nullptr;
+            }
+
 		}
 
 		if(imageModel)
@@ -1690,22 +1699,22 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         if(files.length() == 0) return;
 
+        std::vector<std::string> stdFiles;
+        for(auto filename : files)
+        {
+            // we pass the relative path to the image model
+            stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+        }
+
         CGLDocument* doc = GetGLDocument();
 
-        Post::CImageModel* imageModel = nullptr;
-        try
-        {
-            imageModel = doc->ImportITKStack(files);
-        }
-        catch(const std::runtime_error& e)
-        {
-            QMessageBox::critical(this, "FEBio Studio", e.what());
-        }
+        Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+        imageModel->SetImageSource(new Post::CITKSeriesImageSource(imageModel, stdFiles));
 
-        if (!imageModel)
+        if(!doc->ImportImage(imageModel))
         {
-            QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-            return;
+            delete imageModel;
+            imageModel = nullptr;
         }
 
         if(imageModel)

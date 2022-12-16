@@ -94,6 +94,8 @@ SOFTWARE.*/
 #include <PostLib/Palette.h>
 #include <PostLib/VolRender.h>
 #include <PostLib/VolumeRender2.h>
+#include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
@@ -3430,23 +3432,17 @@ void CMainWindow::CloseWelcomePage()
 	{
 		CGLDocument* doc = GetGLDocument();
 
-		Post::CImageModel* imageModel = nullptr;
+        // we pass the relative path to the image model
+	    string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
 
-        try
+		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+        imageModel->SetImageSource(new Post::CITKImageSource(imageModel, relFile, type));
+
+        if(!doc->ImportImage(imageModel))
         {
-            imageModel = doc->ImportITK(fileName.toStdString(), type);
+            delete imageModel;
+            imageModel = nullptr;
         }
-        catch(std::exception& e)
-        {
-            QMessageBox::critical(this, "FEBio Studio", e.what());
-            return;
-        }
-		
-		if (!imageModel)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-			return;
-		}
 
 		if(imageModel)
 		{

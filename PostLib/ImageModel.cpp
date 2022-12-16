@@ -87,7 +87,7 @@ bool CImageModel::UpdateData(bool bsave)
 	return false;
 }
 
-bool CImageModel::LoadImageSource(CImageSource* imgSource)
+void CImageModel::SetImageSource(CImageSource* imgSource)
 {
     if(m_img)
     {
@@ -96,6 +96,11 @@ bool CImageModel::LoadImageSource(CImageSource* imgSource)
     }
 
     m_img = imgSource;
+}
+
+bool CImageModel::Load()
+{
+    if(!m_img) return false;
 
     if (!m_img->Load())
 	{

@@ -51,6 +51,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
+#include "ImageReadThread.h"
 #include <MeshTools/GModel.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -837,111 +838,26 @@ void CGLDocument::LoadResources(IArchive& ar)
 
 //-----------------------------------------------------------------------------
 // import image data
-Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
-{
-	static int n = 1;
 
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-    po->SetBoundingBox(box);
-	if (!po->LoadImageSource(new Post::CRawImageSource(po, relFile, nx, ny, nz)))
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFileType type)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-    bool success = false;
-    // we must catch this here in order to ensure that the image model, and by extension the image
-    // source, and image itself all get properly deleted. We throw the exception again in order to 
-    // propigate the error message back to the GUI
-    try
-    {
-        success = po->LoadImageSource(new Post::CITKImageSource(po, filename, type));
-    }
-    catch(std::runtime_error& e)
-    {
-        delete po;
-        throw e;
-    }
-
-	if (!success)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
+bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
 {
     static int n = 1;
-	
 
-    std::vector<std::string> stdFiles;
-    for(auto filename : filenames)
+    CDlgStartImageThread dlg(m_wnd, new CImageReadThread(imgModel));
+
+    if(!dlg.exec())
     {
-        // we pass the relative path to the image model
-	    stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+        return false;
     }
 
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
+    stringstream ss;
+    ss << "ImageModel" << n++;
+    imgModel->SetName(ss.str());
 
-    bool success = false;
-    // we must catch this here in order to ensure that the image model, and by extension the image
-    // source, and image itself all get properly deleted. We throw the exception again in order to 
-    // propigate the error message back to the GUI
-    try
-    {
-        success = po->LoadImageSource(new Post::CITKSeriesImageSource(po, stdFiles));
-    }
-    catch(std::runtime_error& e)
-    {
-        delete po;
-        throw e;
-    }
+    // add it to the project
+    AddImageModel(imgModel);
 
-	if (!success)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
+    return true;
 }
 
 int CGLDocument::ImageModels() const
