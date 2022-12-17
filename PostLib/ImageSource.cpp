@@ -237,11 +237,11 @@ bool CITKSeriesImageSource::Load()
 
 #else
 //========================================================================
-CITKImageSource::CITKImageSource(CImageModel* imgModel, std::string& filename, ImageFileType type) 
+CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type)
     : CImageSource(imgModel) {}
 bool CITKImageSource::Load() { return false; }
 //========================================================================
-CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel, std::vector<std::string>& filenames)
+CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames)
     : CImageSource(imgModel) {}
 bool CITKSeriesImageSource::Load() { return false; }
 #endif
