@@ -1025,4 +1025,13 @@ private:
 	int	m_nstress;	// total stress field
 	int	m_nflp;		// fluid pressure field
 };
+
+//-----------------------------------------------------------------------------
+class FEElementMaterial : public FEElemData_T<float, DATA_ITEM>
+{
+public:
+	FEElementMaterial(FEState* state, ModelDataField* pdf);
+	void eval(int n, float* pv);
+};
+
 }

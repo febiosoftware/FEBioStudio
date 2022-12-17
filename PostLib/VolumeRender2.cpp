@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "VolumeRender2.h"
 #include <GL/glew.h>
 #include "ImageModel.h"
+#include "ImageSource.h"
 #include <GLLib/GLContext.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>

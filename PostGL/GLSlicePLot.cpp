@@ -49,6 +49,9 @@ CGLSlicePlot::CGLSlicePlot()
 
 	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddIntParam(10, "divs", "Range divisions");
+	AddBoolParam(true, "smooth", "Gradient smoothing");
+	AddDoubleParam(1.0, "transparency", "Transparency")->SetFloatRange(0,1);
 	AddBoolParam(true, "Allow clipping");
 	AddBoolParam(true, "Show legend"   );
 	AddIntParam(0, "Slices");
@@ -59,6 +62,7 @@ CGLSlicePlot::CGLSlicePlot()
 	AddDoubleParam(0, "X-normal" );
 	AddDoubleParam(0, "Y-normal" );
 	AddDoubleParam(0, "Z-normal" );
+	AddBoolParam(true, "Show box");
 
 	m_nslices = 10;
 	m_nfield = 0;
@@ -67,7 +71,7 @@ CGLSlicePlot::CGLSlicePlot()
 	m_lastTime = 0;
 	m_lastDt = 0.f;
 
-	m_Col.SetDivisions(m_nslices);
+	m_Col.SetDivisions(10);
 	m_Col.SetSmooth(false);
 
 	m_nrange = 0;
@@ -92,6 +96,12 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		m_nfield = GetIntValue(DATA_FIELD);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		AllowClipping(GetBoolValue(CLIP));
+
+		int divs = GetIntValue(RANGE_DIVS);
+		bool smooth = GetBoolValue(GRAD_SMOOTH);
+		m_Col.SetDivisions(divs);
+		m_Col.SetSmooth(smooth);
+
 		// TODO: show legend
 		m_nslices = GetIntValue(SLICES);
 		m_offset = GetFloatValue(SLICE_OFFSET);
@@ -101,11 +111,15 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		m_norm.x = GetFloatValue(NORMAL_X);
 		m_norm.y = GetFloatValue(NORMAL_Y);
 		m_norm.z = GetFloatValue(NORMAL_Z);
+
+		Update();
 	}
 	else
 	{
 		SetIntValue(DATA_FIELD, m_nfield);
 		SetIntValue(COLOR_MAP, m_Col.GetColorMap());
+		SetIntValue(RANGE_DIVS, m_Col.GetDivisions());
+		SetBoolValue(GRAD_SMOOTH, m_Col.GetSmooth());
 		SetBoolValue(CLIP, AllowClipping());
 		SetIntValue(SLICES, m_nslices);
 		SetFloatValue(SLICE_OFFSET, m_offset);
@@ -127,12 +141,24 @@ void CGLSlicePlot::SetSliceOffset(float f)
 	if (m_offset > 1.f) m_offset = 1.f;
 }
 
+// in glview.cpp
+void RenderBox(const BOX& bbox, bool partial, double scale);
+
 void CGLSlicePlot::Render(CGLContext& rc)
 {
 	if (m_nfield == 0) return;
-	m_box = GetModel()->GetFSModel()->GetBoundingBox();
+	if (m_box.IsValid() == false) return;
+
+	bool showBox = GetBoolValue(SHOW_BOX);
+	if (showBox)
+	{
+		glColor3ub(200, 200, 200);
+		RenderBox(m_box, false, 1.0);
+	}
 
 	GLTexture1D& tex = m_Col.GetTexture();
+
+	Byte a = Byte(255.0*GetFloatValue(TRANSPARENCY));
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_1D);
@@ -148,7 +174,7 @@ void CGLSlicePlot::Render(CGLContext& rc)
 		fmin += 1e-3*Df;
 		fmax -= 1e-3*Df;
 	}
-	glColor3ub(255, 255, 255);
+	glColor4ub(255, 255, 255, a);
 	if (m_nslices == 1)
 	{
 		float ref = fmin + m_offset*(fmax - fmin);
@@ -215,11 +241,13 @@ void CGLSlicePlot::RenderSlice(float ref)
 			case FE_HEX20  : nt = HEX_NT; break;
 			case FE_HEX27  : nt = HEX_NT; break;
 			case FE_PENTA6 : nt = PEN_NT; break;
-            case FE_PENTA15: nt = PEN_NT; break;
-            case FE_TET4   : nt = TET_NT; break;
-            case FE_TET5   : nt = TET_NT; break;
-            case FE_PYRA5  : nt = PYR_NT; break;
-            case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_PENTA15: nt = PEN_NT; break;
+			case FE_TET4   : nt = TET_NT; break;
+			case FE_TET5   : nt = TET_NT; break;
+			case FE_PYRA5  : nt = PYR_NT; break;
+			case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_TET10  : nt = TET_NT; break;
+			case FE_TET15  : nt = TET_NT; break;
 			default:
 				assert(false);
 				return;
@@ -295,15 +323,47 @@ void CGLSlicePlot::Update()
 }
 
 //-----------------------------------------------------------------------------
+void CGLSlicePlot::UpdateBoundingBox()
+{
+	CGLModel* mdl = GetModel();
+	FEPostModel* ps = mdl->GetFSModel();
+	FEPostMesh* pm = mdl->GetActiveMesh();
+
+	// only count enabled parts
+	BOX box;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement_& el = pm->ElementRef(i);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
+		if (pmat->benable && el.IsVisible())
+		{
+			int ne = el.Nodes();
+			for (int k = 0; k < ne; ++k)
+			{
+				FSNode& node = pm->Node(el.m_node[k]);
+				box += node.pos();
+			}
+		}
+	}
+
+	m_box = box;
+}
+
+//-----------------------------------------------------------------------------
 void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FSMeshBase* pm = mdl->GetActiveMesh();
+	UpdateBoundingBox();
+
+	FEPostMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();
+
+	m_lastTime = ntime;
+	m_lastDt = dt;
 
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
 
@@ -321,21 +381,39 @@ void CGLSlicePlot::Update(int ntime, float dt, bool breset)
 		m_map.SetTag(ntime, m_nfield);
 		vector<float>& val = m_map.State(ntime);
 
-		NODEDATA nd;
-		for (int i=0; i<NN; ++i)
+		// only count enabled parts
+		pm->TagAllNodes(0);
+		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			pfem->EvaluateNode(i, ntime, m_nfield, nd);
-			val[i] = nd.m_val;
+			FEElement_& el = pm->ElementRef(i);
+			Material* pmat = pfem->GetMaterial(el.m_MatID);
+			if (pmat->benable && el.IsVisible())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k)
+				{
+					FSNode& node = pm->Node(el.m_node[k]);
+					node.m_ntag = 1;
+				}
+			}
 		}
 
-		// evaluate the range
-		float fmin, fmax;
-		fmin = fmax = val[0];
-		for (int i=0;i<NN; ++i)
+		float fmin = 1e34, fmax = -1e34;
+		for (int i=0; i<NN; ++i)
 		{
-			if (val[i] < fmin) fmin = val[i];
-			if (val[i] > fmax) fmax = val[i];
+			FSNode& node = pm->Node(i);
+			if (node.m_ntag == 1)
+			{
+				NODEDATA nd;
+				pfem->EvaluateNode(i, ntime, m_nfield, nd);
+				val[i] = nd.m_val;
+
+				if (val[i] < fmin) fmin = val[i];
+				if (val[i] > fmax) fmax = val[i];
+			}
+			else val[i] = 0.0f;
 		}
+
 		m_rng[ntime] = vec2f(fmin, fmax);
 	}
 

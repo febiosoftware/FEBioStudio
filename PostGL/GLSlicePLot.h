@@ -33,7 +33,24 @@ namespace Post {
 
 class CGLSlicePlot : public CGLLegendPlot  
 {
-	enum { DATA_FIELD, COLOR_MAP, CLIP, SHOW_LEGEND, SLICES, SLICE_OFFSET, RANGE, RANGE_MAX, RANGE_MIN, NORMAL_X, NORMAL_Y, NORMAL_Z };
+	enum { 
+		DATA_FIELD, 
+		COLOR_MAP, 
+		RANGE_DIVS,
+		GRAD_SMOOTH,
+		TRANSPARENCY,
+		CLIP, 
+		SHOW_LEGEND, 
+		SLICES, 
+		SLICE_OFFSET, 
+		RANGE, 
+		RANGE_MAX, 
+		RANGE_MIN, 
+		NORMAL_X, 
+		NORMAL_Y, 
+		NORMAL_Z, 
+		SHOW_BOX 
+	};
 
 public:
 	CGLSlicePlot();
@@ -74,6 +91,8 @@ public:
 
 protected:
 	void RenderSlice(float ref);
+
+	void UpdateBoundingBox();
 
 protected:
 	int			m_nslices;	// nr. of iso surface slices

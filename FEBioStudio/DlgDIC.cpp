@@ -297,7 +297,7 @@ CDrawROI::CDrawROI(Post::CImageModel* model)
     setMinimumSize(300,300);
 
     CImage imgSlice;
-    m_model->GetImageSource()->Get3DImage()->GetSliceX(imgSlice, 256);
+    m_model->Get3DImage()->GetSliceX(imgSlice, 256);
 
     m_slice = QPixmap::fromImage(QImage(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8)).transformed(QTransform().scale(1,-1));
 

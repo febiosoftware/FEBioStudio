@@ -564,6 +564,7 @@ public:
 				break;
 				case Param_MAT3DS: {
 					mat3ds m = StringToMat3ds(value.toString());
+					p.SetMat3dsValue(m);
 					p.SetModified(true);
 				}
 				break;

@@ -41,6 +41,7 @@ public:
 public:
 	std::vector<int>	m_item;	// item list
 	vec3d	m_coord;
+	vec3d	m_min, m_max;
 	bool	m_bsel[4];
 	bool	m_bclear;	// clear current selection
 	int		m_method;

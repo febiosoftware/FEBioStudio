@@ -80,6 +80,7 @@ SOFTWARE.*/
 #include <MeshIO/BREPImport.h>
 #include <MeshIO/STEPImport.h>
 #include <Abaqus/AbaqusExport.h>
+#include <FSCore/FSDir.h>
 #include "DlgImportAbaqus.h"
 #include "DlgRAWImport.h"
 #include "DlgImportCOMSOL.h"
@@ -100,6 +101,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/AbaqusExport.h>
 #include <MeshTools/GModel.h>
@@ -215,7 +217,7 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.stl)";
 	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
@@ -224,6 +226,8 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
 	filters << "VTK files (*.vtk)";
+	filters << "LSDYNA keyword (*.k)";
+	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
 
 	QFileDialog dlg(this, "Open");
@@ -1543,6 +1547,11 @@ void CMainWindow::on_actionImportGeometry_triggered()
 void CMainWindow::on_actionImportRawImage_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
@@ -1562,12 +1571,19 @@ void CMainWindow::on_actionImportRawImage_triggered()
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-			imageModel = doc->ImportImage(filedlg.selectedFiles()[0].toStdString(), dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (imageModel == nullptr)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-				return;
-			}
+            // we pass the relative path to the image model
+	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
+
+            imageModel = new Post::CImageModel(nullptr);
+            imageModel->SetBoundingBox(box);
+            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz));
+
+            if(!doc->ImportImage(imageModel))
+            {
+                delete imageModel;
+                imageModel = nullptr;
+            }
+
 		}
 
 		if(imageModel)
@@ -1596,6 +1612,13 @@ void CMainWindow::on_actionImportRawImage_triggered()
 }
 void CMainWindow::on_actionImportDICOMImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1612,6 +1635,13 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 
 void CMainWindow::on_actionImportTiffImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1629,6 +1659,13 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 void CMainWindow::on_actionImportOMETiffImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1645,6 +1682,13 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
 
 void CMainWindow::on_actionImportImageSequence_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1655,15 +1699,22 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         if(files.length() == 0) return;
 
+        std::vector<std::string> stdFiles;
+        for(auto filename : files)
+        {
+            // we pass the relative path to the image model
+            stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+        }
+
         CGLDocument* doc = GetGLDocument();
 
-        Post::CImageModel* imageModel = nullptr;
+        Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+        imageModel->SetImageSource(new Post::CITKSeriesImageSource(imageModel, stdFiles));
 
-        imageModel = doc->ImportITKStack(files);
-        if (imageModel == nullptr)
+        if(!doc->ImportImage(imageModel))
         {
-            QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-            return;
+            delete imageModel;
+            imageModel = nullptr;
         }
 
         if(imageModel)

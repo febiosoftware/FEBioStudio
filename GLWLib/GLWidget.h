@@ -110,6 +110,8 @@ public:
 
 		if (m_w < m_minw) m_w = m_minw;
 		if (m_h < m_minh) m_h = m_minh;
+
+		m_nsnap = 0;
 	}
 
 	void show() { m_bshow = true; }

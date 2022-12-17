@@ -289,11 +289,6 @@ public:
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
 
-	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
-
-    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
-    Post::CImageModel* ImportITKStack(QStringList& filenames);
-
 	// --- view state ---
 	VIEW_STATE GetViewState() { return m_vs; }
 	void SetViewState(VIEW_STATE vs);
@@ -327,6 +322,7 @@ public:
 	std::string getModelInfo() const { return m_info; }
 
 public:
+    bool ImportImage(Post::CImageModel* imgModel);
 	int ImageModels() const;
 	virtual void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);

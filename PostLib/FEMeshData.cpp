@@ -2083,3 +2083,19 @@ void SolidStress::eval(int n, mat3fs* pv)
 	}
 	else *pv = mat3fs(0.f,0.f,0.f,0.f,0.f,0.f);
 }
+
+FEElementMaterial::FEElementMaterial(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf)
+{
+
+}
+
+void FEElementMaterial::eval(int n, float* pv)
+{
+	// get the state
+	FEState& state = *GetFEState();
+
+	FEPostMesh* mesh = state.GetFEMesh();
+	FSElement& el = mesh->Element(n);
+	pv[0] = (float) el.m_MatID;
+}
+

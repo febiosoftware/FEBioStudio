@@ -184,6 +184,7 @@ public:
 	int autoSaveInterval();
 
 	// autoUpdate Check
+    QString GetServerMessage();
 	bool updaterPresent();
 	bool updateAvailable();
 
@@ -575,6 +576,7 @@ public slots:
 
 	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);
+	void OnSelectObjectColorMode(QAction* ac);
 
 	void CloseView(int n, bool forceClose = false);
 	void CloseView(CDocument* doc);

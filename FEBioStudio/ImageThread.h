@@ -24,73 +24,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <QWidget>
-#include <QListWidget>
-#include <QDropEvent>
-#include <QModelIndex>
-#include <iostream>
-
-class QListWidget;
-class CPropertyListView;
-class CMainWindow;
+#include <QThread>
+#include <QDialog>
 
 namespace Post
 {
     class CImageModel;
 }
 
-class QModelIndex;
-
-class FilterListWidget : public QListWidget
+class CImageThread : public QThread
 {
     Q_OBJECT
-
 public:
-    FilterListWidget() {}
+    CImageThread(Post::CImageModel* imgModel);
+    
+    bool getSuccess() { return m_success; }
+    const char* getError() { return m_error; }
 
 signals:
-    void internalMove(int fromIndex, int toIndex);
+    void newStatus(QString status);
 
 protected:
-    void dropEvent(QDropEvent *event)
-    {
-        int fromIndex = currentRow();
+    Post::CImageModel* m_imgModel;
 
-        QListWidget::dropEvent(event);
-
-        int toIndex = currentRow();
-
-        if(fromIndex != toIndex)
-        {
-            emit internalMove(fromIndex, toIndex);
-        }
-    }
+    bool m_success;
+    const char* m_error;
 };
 
-
-class CImageFilterWidget : public QWidget
+class CImageReadThread : public CImageThread
 {
-    Q_OBJECT
-
 public:
-    CImageFilterWidget();
+    CImageReadThread(Post::CImageModel* imgModel);
+    
+    void run() override;
+};
 
-    void SetImageModel(Post::CImageModel* img);
+class CImageFilterThread : public CImageThread
+{
+public:
+    CImageFilterThread(Post::CImageModel* imgModel);
+    
+    void run() override;
 
-public slots:
-    void Update();
-
-private slots:
-    void on_list_itemSelectionChanged();
-    void on_list_internalMove(int fromIndex, int toIndex);
-    void on_addFilterBtn_clicked();
-    void on_delFilterBtn_clicked();
-    void on_applyFilters_clicked();
+    void cancel();
 
 private:
-    Post::CImageModel* m_imgModel;
-    
-    QListWidget* m_list;
-    CPropertyListView* m_filterProps;
+    bool m_canceled;
+};
+
+namespace Ui
+{
+    class CDlgStartImageThread;
+}
+
+class CDlgStartImageThread : public QDialog
+{
+    Q_OBJECT
+public:
+    CDlgStartImageThread(CImageThread* thread, QWidget* parent = nullptr);
+
+    void closeEvent(QCloseEvent* ev) override;
+
+private slots:
+	void threadFinished();
+    void on_canceled();
+    void on_status_changed(QString status);
+
+private:
+    Ui::CDlgStartImageThread* ui;
 
 };

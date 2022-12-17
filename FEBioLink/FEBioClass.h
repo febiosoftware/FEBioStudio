@@ -112,7 +112,6 @@ namespace FEBio {
 	enum ClassSearchFlags {
 		IncludeModuleDependencies  = 0x01,
 		IncludeFECoreClasses       = 0x02,
-		IncludeExperimentalClasses = 0x04,
 		AllFlags = 0xFF
 	};
 

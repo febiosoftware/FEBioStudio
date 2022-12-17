@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include "IconProvider.h"
 #include "ImageFilterWidget.h"
+#include "ImageThread.h"
 #include <PostLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DlgImageFilter.h"
@@ -183,6 +184,15 @@ void CImageFilterWidget::on_applyFilters_clicked()
 {
     if(m_imgModel)
     {
-        m_imgModel->ApplyFilters();
+        m_imgModel->ClearFilters();
+
+        CDlgStartImageThread dlg(new CImageFilterThread(m_imgModel));
+
+        if(!dlg.exec())
+        {
+            m_imgModel->ClearFilters();
+        }
+
+        m_imgModel->UpdateRenderers();
     }
 }

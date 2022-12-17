@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "ImageModel.h"
+#include "ImageSource.h"
 #include <ImageLib/3DImage.h>
-// #include <ImageLib/ITKImage.h>
 #include <ImageLib/ImageSITK.h>
 #include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
@@ -37,203 +37,6 @@ SOFTWARE.*/
 #include <assert.h>
 
 using namespace Post;
-
-CImageSource::CImageSource(CImageModel* imgModel)
-{
-	AddStringParam("", "file name")->SetState(Param_VISIBLE);
-	AddIntParam(0, "NX")->SetState(Param_VISIBLE);
-	AddIntParam(1, "NY")->SetState(Param_VISIBLE);
-	AddIntParam(2, "NZ")->SetState(Param_VISIBLE);
-
-	m_img = nullptr;
-    m_originalImage = nullptr;
-	m_imgModel = imgModel;
-}
-
-CImageModel* CImageSource::GetImageModel()
-{
-	return m_imgModel;
-}
-
-void CImageSource::SetImageModel(CImageModel* imgModel) 
-{
-	m_imgModel = imgModel;
-}
-
-CImageSource::~CImageSource()
-{
-    if(m_img != m_originalImage)
-    {
-        delete m_img;
-    }
-	
-    delete m_originalImage;
-}
-
-void CImageSource::SetFileName(const std::string& file)
-{
-	SetStringValue(0, file);
-}
-
-std::string CImageSource::GetFileName() const
-{
-	return GetStringValue(0);
-}
-
-bool CImageSource::LoadImageData(const std::string& fileName, int nx, int ny, int nz)
-{
-  C3DImage* im = new C3DImage;
-  if (im->Create(nx, ny, nz) == false)
-  {
-    delete im;
-    return false;
-  }
-
-  if (im->LoadFromFile(fileName.c_str(), 8) == false)
-  {
-    delete im;
-    return false;
-  }
-
-  SetValues(fileName,nx,ny,nz);
-  AssignImage(im);
-
-  return true;
-}
-
-#ifdef HAS_ITK
-bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type)
-{
-	CImageSITK* im = new CImageSITK();  
-
-	if(!im->LoadFromFile(filename.c_str(), type == ImageFileType::DICOM))
-	{
-		delete im;
-		return false;
-	}
-
-	std::vector<unsigned int> size = im->GetSize();
-	std::vector<double> origin = im->GetOrigin();
-	std::vector<double> spacing = im->GetSpacing();
-
-	BOX box(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
-	m_imgModel->SetBoundingBox(box);
-
-	SetValues(filename,im->Width(),im->Height(),im->Depth());
-	AssignImage(im);
-
-	return true;
-}
-
-bool CImageSource::LoadITKSeries(const std::vector<std::string> &filenames)
-{
-    CImageSITK* im = new CImageSITK();  
-
-	if(!im->LoadFromStack(filenames))
-	{
-		delete im;
-		return false;
-	}
-
-	std::vector<unsigned int> size = im->GetSize();
-	std::vector<double> origin = im->GetOrigin();
-	std::vector<double> spacing = im->GetSpacing();
-
-	BOX box(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
-	m_imgModel->SetBoundingBox(box);
-
-	SetValues(filenames[0],im->Width(),im->Height(),im->Depth());
-	AssignImage(im);
-
-	return true;
-}
-
-#else
-bool CImageSource::LoadITKData(const std::string& filename, ImageFileType type) { return false; }
-#endif
-
-void CImageSource::ClearFilters()
-{
-    if( m_img != m_originalImage)
-    {
-        delete m_img;
-        m_img = m_originalImage;
-    }
-}
-
-C3DImage* CImageSource::GetImageToFilter(bool allocate)
-{
-
-#ifdef HAS_ITK
-
-    if(m_img == m_originalImage)
-    {
-        if(allocate)
-        {
-            int nx = m_originalImage->Width();
-            int ny = m_originalImage->Height();
-            int nz = m_originalImage->Depth();
-
-            m_img = new CImageSITK(nx, ny, nz);
-        }
-        else
-        {
-            m_img = new CImageSITK();
-        }
-    }
-
-#else
-
-    if(m_img == m_originalImage)
-    {
-        int nx = m_originalImage->Width();
-        int ny = m_originalImage->Height();
-        int nz = m_originalImage->Depth();
-
-        m_img = new C3DImage();
-        m_img->Create(nx, ny, nz);
-    }
-
-#endif
-
-    return m_img;
-}
-
-void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
-{
-	SetStringValue(0, fileName);
-	SetIntValue(1, x);
-	SetIntValue(2, y);
-	SetIntValue(3, z);
-}
-
-void CImageSource::AssignImage(C3DImage* im)
-{
-//   delete m_img;
-//   m_img = im;
-
-    delete m_originalImage;
-    m_originalImage = im;
-    m_img = im;
-}
-
-void CImageSource::Save(OArchive& ar)
-{
-	FSObject::Save(ar);
-}
-
-int CImageSource::Width() const { return GetIntValue(1);  }
-int CImageSource::Height() const { return GetIntValue(2); }
-int CImageSource::Depth() const { return GetIntValue(3); }
-
-void CImageSource::Load(IArchive& ar)
-{
-	FSObject::Load(ar);
-	string file = GetFileName();
-	LoadImageData(file, Width(), Height(), Depth());
-}
-
-//========================================================================
 
 CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
 {
@@ -284,72 +87,32 @@ bool CImageModel::UpdateData(bool bsave)
 	return false;
 }
 
-bool CImageModel::LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box)
+void CImageModel::SetImageSource(CImageSource* imgSource)
 {
-	if (m_img == nullptr) m_img = new CImageSource(this);
+    if(m_img)
+    {
+        delete m_img;
+        m_img = nullptr;
+    }
 
-	if (m_img->LoadImageData(fileName, nx, ny, nz) == false)
+    m_img = imgSource;
+}
+
+bool CImageModel::Load()
+{
+    if(!m_img) return false;
+
+    if (!m_img->Load())
 	{
 		delete m_img;
 		m_img = nullptr;
 		return false;
 	}
 
-	// set the default name by extracting the base of the file name
-	string fileBase = FSDir::fileBase(fileName);
-	m_img->SetName(fileBase);
-
-	m_box = box;
-	UpdateData(false);
+    UpdateData(false);
 
 	return true;
 }
-
-#ifdef HAS_ITK
-bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type)
-{
-	if (m_img == nullptr) m_img = new CImageSource(this);
-
-	if (m_img->LoadITKData(filename, type) == false)
-	{
-		delete m_img;
-		m_img = nullptr;
-		return false;
-	}
-
-	// set the default name by extracting the base of the file name
-	string fileBase = FSDir::fileBase(filename);
-	m_img->SetName(fileBase);
-
-	UpdateData(false);
-
-	return true;
-}
-
-bool CImageModel::LoadITKSeries(const std::vector<std::string> &filenames)
-{
-    if (m_img == nullptr) m_img = new CImageSource(this);
-
-	if (m_img->LoadITKSeries(filenames) == false)
-	{
-		delete m_img;
-		m_img = nullptr;
-		return false;
-	}
-
-	// set the default name by extracting the base of the file name
-	string fileBase = FSDir::fileBase(filenames[0]);
-	m_img->SetName(fileBase);
-
-	UpdateData(false);
-
-	return true;
-}
-
-#else
-bool CImageModel::LoadITKData(const std::string& filename, ImageFileType type) { return false; }
-bool CImageModel::LoadITKSeries(const std::vector<std::string> &filenames) { return false; }
-#endif
 
 bool CImageModel::ShowBox() const
 {
@@ -394,9 +157,22 @@ void CImageModel::ApplyFilters()
 	} 
 }
 
+void CImageModel::ClearFilters()
+{
+    m_img->ClearFilters();
+}
+
 size_t CImageModel::RemoveRenderer(CGLImageRenderer* render)
 {
 	return m_render.Remove(render);
+}
+
+void CImageModel::UpdateRenderers()
+{
+    for (int i = 0; i < (int)m_render.Size(); ++i)
+	{
+		m_render[i]->Update();
+	} 
 }
 
 void CImageModel::AddImageRenderer(CGLImageRenderer* render)
@@ -464,6 +240,11 @@ Byte CImageModel::ValueAtGlobalPos(vec3d pos)
 	}
 }
 
+C3DImage* CImageModel::Get3DImage()
+{ 
+    return (m_img ? m_img->Get3DImage() : nullptr); 
+}
+
 void CImageModel::Load(IArchive& ar)
 {
 	delete m_img; m_img = nullptr;
@@ -478,8 +259,8 @@ void CImageModel::Load(IArchive& ar)
 			break;
 		case 1:
 			{
-				m_img = new CImageSource(this);
-				m_img->Load(ar);
+				// m_img = new CImageSource(this);
+				// m_img->Load(ar);
 			}
 			break;
 		}

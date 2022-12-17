@@ -49,7 +49,9 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
+#include "ImageThread.h"
 #include <MeshTools/GModel.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FESurfaceData.h>
@@ -836,82 +838,26 @@ void CGLDocument::LoadResources(IArchive& ar)
 
 //-----------------------------------------------------------------------------
 // import image data
-Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
-{
-	static int n = 1;
 
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFileType type)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-	if (po->LoadITKData(relFile, type) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
+bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
 {
     static int n = 1;
-	
 
-    std::vector<std::string> stdFiles;
-    for(auto filename : filenames)
+    CDlgStartImageThread dlg(new CImageReadThread(imgModel), m_wnd);
+
+    if(!dlg.exec())
     {
-        // we pass the relative path to the image model
-	    stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+        return false;
     }
 
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
+    stringstream ss;
+    ss << "ImageModel" << n++;
+    imgModel->SetName(ss.str());
 
-	if (po->LoadITKSeries(stdFiles) == false)
-	{
-		delete po;
-		return nullptr;
-	}
+    // add it to the project
+    AddImageModel(imgModel);
 
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
+    return true;
 }
 
 int CGLDocument::ImageModels() const

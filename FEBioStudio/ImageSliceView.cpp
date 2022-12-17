@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QTransform>
 #include <QGraphicsPixmapItem>
 #include <QSlider>
+#include <QComboBox>
 #include <QToolBar>
 #include "MainWindow.h"
 #include "Document.h"
@@ -47,7 +48,7 @@ SOFTWARE.*/
 
 #include "ImageSliceView.h"
 
-CImageSlice::CImageSlice(SliceDir sliceDir)
+CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget)
     : m_imgModel(nullptr)
 {
     m_sliceDir = sliceDir;
@@ -64,26 +65,48 @@ CImageSlice::CImageSlice(SliceDir sliceDir)
     QHBoxLayout* sliderLayout = new QHBoxLayout;
     sliderLayout->setContentsMargins(0,0,0,0);
 
-    QString txt;
-    switch (m_sliceDir)
+    if(extraWidget)
     {
-    case X:
-        txt = "X:";
-        break;
-    case Y:
-        txt = "Y:";
-        break;
-    case Z:
-        txt = "Z:";
-        break;
-    default:
-        break;
+        sliderLayout->addWidget(extraWidget);
     }
-    
-    sliderLayout->addWidget(new QLabel(txt));
+
+    if(constAxis)
+    {
+        QString txt;
+        switch (m_sliceDir)
+        {
+        case X:
+            txt = "X:";
+            break;
+        case Y:
+            txt = "Y:";
+            break;
+        case Z:
+            txt = "Z:";
+            break;
+        default:
+            break;
+        }
+        
+        sliderLayout->addWidget(new QLabel(txt));
+    }
+    else
+    {
+        m_sliceChoice = new QComboBox;
+        m_sliceChoice->addItem("X");
+        m_sliceChoice->addItem("Y");
+        m_sliceChoice->addItem("Z");
+        m_sliceChoice->setCurrentIndex(m_sliceDir);
+
+        sliderLayout->addWidget(m_sliceChoice);
+
+        connect(m_sliceChoice, &QComboBox::currentIndexChanged, this, &CImageSlice::on_currentIndexChanged);
+    }    
 
     m_slider = new CIntSlider;
     sliderLayout->addWidget(m_slider);
+
+
 
     m_layout->addLayout(sliderLayout);
 
@@ -100,7 +123,12 @@ void CImageSlice::SetImage(Post::CImageModel* imgModel)
 
     if(!m_imgModel) return;
 
-    C3DImage* img = imgModel->GetImageSource()->Get3DImage();
+    UpdateSliceCount();
+}
+
+void CImageSlice::UpdateSliceCount()
+{
+    C3DImage* img = m_imgModel->Get3DImage();
 
     int n;
     switch (m_sliceDir)
@@ -117,7 +145,7 @@ void CImageSlice::SetImage(Post::CImageModel* imgModel)
     default:
         break;
     }
-    
+
     m_slider->setRange(0, n-1);
     m_slider->setValue(n/2);
 }
@@ -130,7 +158,7 @@ void CImageSlice::Update()
 
     int slice = m_slider->getValue();
 
-    C3DImage* img = m_imgModel->GetImageSource()->Get3DImage();    
+    C3DImage* img = m_imgModel->Get3DImage();    
 
     int min = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
     int max = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
@@ -212,6 +240,18 @@ int CImageSlice::GetSliceCount()
 void CImageSlice::on_slider_changed(int val)
 {
     Update();
+}
+
+void CImageSlice::on_currentIndexChanged(int index)
+{
+    bool same = index == m_sliceDir;
+    m_sliceDir = (SliceDir)index;
+
+    if(!same)
+    {
+        UpdateSliceCount();
+        Update();
+    }
 }
 
 void CImageSlice::wheelEvent(QWheelEvent* event)

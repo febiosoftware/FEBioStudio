@@ -117,6 +117,8 @@ protected:
 
 class CPostDocument : public CGLDocument
 {
+	Q_OBJECT
+
 public:
 	CPostDocument(CMainWindow* wnd, CModelDocument* parent = nullptr);
 	~CPostDocument();
@@ -202,6 +204,9 @@ public:
 
 private:
 	void ApplyPalette(const Post::CPalette& pal);
+
+signals:
+	void selectionChanged();
 
 private:
 	CModelDocument*	m_doc;
