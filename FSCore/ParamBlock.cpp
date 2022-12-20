@@ -316,6 +316,9 @@ Param::Param(const Param& p)
 	m_flags = p.m_flags;
 	m_paramGroup = p.m_paramGroup;
 
+	// we cannot copy the watch parameter!
+	m_watch = nullptr;
+
 	m_lc = p.m_lc;
 
 	m_bcopy = false;
@@ -973,6 +976,18 @@ ParamBlock::ParamBlock(const ParamBlock &b)
 		Param* p = new Param(s);
 		m_Param.push_back(p);
 	}
+
+	// restore watched parameters
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& d = *m_Param[i];
+		if (s.m_watch)
+		{
+			Param* w = Find(s.GetShortName()); assert(w);
+			d.SetWatchVariable(w);
+		}
+	}
 }
 
 ParamBlock& ParamBlock::operator =(const ParamBlock &b)
@@ -986,6 +1001,19 @@ ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 		Param* p = new Param(s);
 		m_Param.push_back(p);
 	}
+
+	// restore watched parameters
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& d = *m_Param[i];
+		if (s.m_watch)
+		{
+			Param* w = Find(s.m_watch->GetShortName()); assert(w);
+			d.SetWatchVariable(w);
+		}
+	}
+
 	return *this;
 }
 
