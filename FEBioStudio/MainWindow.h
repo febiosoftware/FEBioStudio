@@ -337,6 +337,7 @@ public slots:
 	void on_actionImportTiffImage_triggered();
 	void on_actionImportOMETiffImage_triggered();
 	void on_actionImportImageSequence_triggered();
+    void on_actionImportImageOther_triggered();
 	void on_actionConvertFeb_triggered();
     void on_actionConvertFeb2Fsm_triggered();
     void on_actionConvertFsm2Feb_triggered();
