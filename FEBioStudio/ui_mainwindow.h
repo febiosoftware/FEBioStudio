@@ -505,6 +505,7 @@ public:
 		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
 		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
 		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
+        QAction* actionImportImageOther  = addAction("Other ...", "actionImportImageOther");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
         QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
         QAction* actionConvertFsm2Feb    = addAction("FSM to FEB ...", "actionConvertFsm2Feb");
@@ -811,6 +812,7 @@ public:
 		menuImportImage->addAction(actionImportTiffImage);
 		menuImportImage->addAction(actionImportOMETiffImage);
 		menuImportImage->addAction(actionImportImageSequence);
+        menuImportImage->addAction(actionImportImageOther);
 		
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");

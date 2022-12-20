@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include "GLObject.h"
 #include <FEBioStudio/ImageViewSettings.h>
 
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
+enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
 
 class C3DImage;
 
