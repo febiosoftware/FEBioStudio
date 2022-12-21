@@ -829,6 +829,18 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// mass action chemical reaction
+class FSMassActionReaction : public FSReactionMaterial
+{
+public:
+	FSMassActionReaction(FSModel* fem);
+
+protected:
+	DECLARE_REGISTERED(FSMassActionReaction);
+};
+
+
+//-----------------------------------------------------------------------------
 // mass action forward chemical reaction
 class FSMassActionForward : public FSReactionMaterial
 {

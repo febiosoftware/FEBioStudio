@@ -1812,23 +1812,26 @@ FSReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 	FSReactionMaterial* pm = 0;
 	if (strcmp(sztype, "mass action") == 0) 
 	{
-		pm = new FSMassActionForward(fem);
+		pm = new FSMassActionReaction(fem);
 
 		++tag;
 		do
 		{
 			if (tag == "equation")
 			{
-				ProcessReactionEquation(GetFSModel(), pm, tag.m_szval.c_str());
+//				ProcessReactionEquation(GetFSModel(), pm, tag.m_szval.c_str());
+				pm->SetParamString("equation", tag.m_szval.c_str());
 			}
 			else if (tag == "rate_constant")
 			{
 				double k;
 				tag.value(k);
 
-				FSReactionRateConst* rc = new FSReactionRateConst(fem);
-				rc->SetRateConstant(k);
-				pm->SetForwardRate(rc);
+				pm->SetParamFloat("rate_constant", k);
+
+//				FSReactionRateConst* rc = new FSReactionRateConst(fem);
+//				rc->SetRateConstant(k);
+//				pm->SetForwardRate(rc);
 			}
 			++tag;
 		}
