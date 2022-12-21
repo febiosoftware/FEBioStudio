@@ -72,9 +72,9 @@ public:
 
 	void AddImageFilter(CImageFilter* imageFilter);
 
-	const BOX& GetBoundingBox() const { return m_box; }
+	BOX GetBoundingBox();
 
-	void SetBoundingBox(BOX b) { m_box = b; }
+	void SetBoundingBox(BOX b);
 
 	bool ShowBox() const;
 
@@ -99,7 +99,7 @@ public:
 	bool ExportRAWImage(const std::string& filename);
 
 private:
-	BOX				m_box;						//!< physical dimensions of image
+	// BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
 	FSObjectList<CGLImageRenderer>	m_render;	//!< image renderers
 	FSObjectList<CImageFilter> m_filters;

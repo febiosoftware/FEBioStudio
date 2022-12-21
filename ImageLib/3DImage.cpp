@@ -51,6 +51,8 @@ C3DImage::C3DImage()
 {
 	m_pb = 0;
 	m_cx = m_cy = m_cz = 0;
+
+    m_box = BOX(0., 0., 0., 1., 1., 1.);
 }
 
 C3DImage::~C3DImage()

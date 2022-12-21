@@ -1575,8 +1575,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
 
             imageModel = new Post::CImageModel(nullptr);
-            imageModel->SetBoundingBox(box);
-            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz));
+            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
 
             if(!doc->ImportImage(imageModel))
             {

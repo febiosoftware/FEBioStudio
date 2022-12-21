@@ -40,15 +40,6 @@ using namespace Post;
 
 CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
 {
-	AddBoolParam(true, "show box");
-	AddDoubleParam(0, "x0");
-	AddDoubleParam(0, "y0");
-	AddDoubleParam(0, "z0");
-	AddDoubleParam(1, "x1");
-	AddDoubleParam(1, "y1");
-	AddDoubleParam(1, "z1");
-
-	m_box = BOX(0., 0., 0., 1., 1., 1.);
 	m_showBox = true;
 	m_img = nullptr;
 
@@ -62,27 +53,27 @@ CImageModel::~CImageModel()
 
 bool CImageModel::UpdateData(bool bsave)
 {
-	if (bsave)
-	{
-		m_showBox = GetBoolValue(0);
-		m_box.x0 = GetFloatValue(1);
-		m_box.y0 = GetFloatValue(2);
-		m_box.z0 = GetFloatValue(3);
-		m_box.x1 = GetFloatValue(4);
-		m_box.y1 = GetFloatValue(5);
-		m_box.z1 = GetFloatValue(6);
-		for (int i = 0; i < (int)m_render.Size(); ++i) m_render[i]->Update();
-	}
-	else
-	{
-		SetBoolValue(0, m_showBox);
-		SetFloatValue(1, m_box.x0);
-		SetFloatValue(2, m_box.y0);
-		SetFloatValue(3, m_box.z0);
-		SetFloatValue(4, m_box.x1);
-		SetFloatValue(5, m_box.y1);
-		SetFloatValue(6, m_box.z1);
-	}
+	// if (bsave)
+	// {
+	// 	m_showBox = GetBoolValue(0);
+	// 	m_box.x0 = GetFloatValue(1);
+	// 	m_box.y0 = GetFloatValue(2);
+	// 	m_box.z0 = GetFloatValue(3);
+	// 	m_box.x1 = GetFloatValue(4);
+	// 	m_box.y1 = GetFloatValue(5);
+	// 	m_box.z1 = GetFloatValue(6);
+	// 	for (int i = 0; i < (int)m_render.Size(); ++i) m_render[i]->Update();
+	// }
+	// else
+	// {
+	// 	SetBoolValue(0, m_showBox);
+	// 	SetFloatValue(1, m_box.x0);
+	// 	SetFloatValue(2, m_box.y0);
+	// 	SetFloatValue(3, m_box.z0);
+	// 	SetFloatValue(4, m_box.x1);
+	// 	SetFloatValue(5, m_box.y1);
+	// 	SetFloatValue(6, m_box.z1);
+	// }
 
 	return false;
 }
@@ -192,6 +183,24 @@ void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 	m_filters.Add(imageFilter);
 }
 
+BOX CImageModel::GetBoundingBox()
+{
+    if(m_img && m_img->Get3DImage())
+    {
+        return m_img->Get3DImage()->GetBoundingBox();
+    }
+
+    return BOX(0,0,0,1,1,1);
+}
+
+void CImageModel::SetBoundingBox(BOX b)
+{
+    if(m_img && m_img->Get3DImage())
+    {
+        m_img->Get3DImage()->SetBoundingBox(b);
+    }
+}
+
 void CImageModel::Save(OArchive& ar)
 {
 	ar.BeginChunk(0);
@@ -217,24 +226,26 @@ CImageSource* CImageModel::GetImageSource()
 
 Byte CImageModel::ValueAtGlobalPos(vec3d pos)
 {
-    if(pos.x < m_box.x0 || pos.x > m_box.x1 ||
-        pos.y < m_box.y0 || pos.y > m_box.y1 ||
-        pos.z < m_box.z0 || pos.z > m_box.z1)
+    BOX box = m_img->Get3DImage()->GetBoundingBox();
+
+    if(pos.x < box.x0 || pos.x > box.x1 ||
+        pos.y < box.y0 || pos.y > box.y1 ||
+        pos.z < box.z0 || pos.z > box.z1)
     {
         return 0;
     }
 
 	if (Get3DImage()->Depth() == 1)
 	{
-		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
-		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
+		double x = (pos.x - box.x0) / (box.x1 - box.x0);
+		double y = (pos.y - box.y0) / (box.y1 - box.y0);
 		return m_img->Get3DImage()->Value(x, y, 0);
 	}
 	else
 	{
-		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
-		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
-		double z = (pos.z - m_box.z0) / (m_box.z1 - m_box.z0);
+		double x = (pos.x - box.x0) / (box.x1 - box.x0);
+		double y = (pos.y - box.y0) / (box.y1 - box.y0);
+		double z = (pos.z - box.z0) / (box.z1 - box.z0);
 
 		return m_img->Get3DImage()->Peek(x, y, z);
 	}

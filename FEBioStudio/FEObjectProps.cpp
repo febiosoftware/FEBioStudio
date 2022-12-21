@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 #include "ModelViewer.h"
+#include <PostLib/ImageModel.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -985,4 +986,81 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 			m_pg->SetMaterialID(m->GetID());
 		}
 	}
+}
+
+//=======================================================================================
+CImageModelProperties::CImageModelProperties(Post::CImageModel* model)
+    : m_model(model), CObjectProps(nullptr)
+{
+    addProperty("Show Box", CProperty::Bool);
+    addProperty("x0", CProperty::Float);
+    addProperty("y0", CProperty::Float);
+    addProperty("z0", CProperty::Float);
+    addProperty("x1", CProperty::Float);
+    addProperty("y1", CProperty::Float);
+    addProperty("z1", CProperty::Float);
+
+}
+
+QVariant CImageModelProperties::GetPropertyValue(int i)
+{
+    BOX box = m_model->GetBoundingBox();
+
+    switch (i)
+    {
+    case SHOWBOX:
+        return m_model->ShowBox();
+    case X0:
+        return box.x0;
+    case Y0:
+        return box.y0;
+    case Z0:
+        return box.z0;
+    case X1:
+        return box.x1;
+    case Y1:
+        return box.y1;
+    case Z1:
+        return box.z1;
+    default:
+        return false;
+    }
+}
+
+void CImageModelProperties::SetPropertyValue(int i, const QVariant& v)
+{
+    BOX box = m_model->GetBoundingBox();
+
+    switch (i)
+    {
+    case SHOWBOX:
+        m_model->ShowBox(v.toBool());
+        break;
+    case X0:
+        box.x0 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Y0:
+        box.y0 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Z0:
+        box.z0 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case X1:
+        box.x1 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Y1:
+        box.y1 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Z1:
+        box.z1 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    default:
+        break;
+    }
 }

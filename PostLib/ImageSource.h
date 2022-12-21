@@ -31,6 +31,7 @@ enum class ImageFileType;
 #include <vector>
 #include <string>
 #include <FSCore/FSObjectList.h>
+#include <FSCore/box.h>
 
 class C3DImage;
 
@@ -71,13 +72,14 @@ protected:
 class CRawImageSource : public CImageSource
 {
 public:
-    CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz);
+    CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz, BOX box);
 
     bool Load() override;
 
 private:
     std::string m_filename;
     int m_nx, m_ny, m_nz;
+    BOX m_box;
 };
 
 class CITKImageSource : public CImageSource

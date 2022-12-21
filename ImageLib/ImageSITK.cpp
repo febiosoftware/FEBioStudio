@@ -167,19 +167,17 @@ bool CImageSITK::LoadFromStack(std::vector<std::string> filenames)
 
 void CImageSITK::FinalizeImage()
 {
-    // finalImage = originalImage;
     m_pb = m_sitkImage.GetBufferAsUInt8();
 
     m_cx = m_sitkImage.GetWidth();
     m_cy = m_sitkImage.GetHeight();
     m_cz = m_sitkImage.GetDepth();
 
-    std::vector<double> spacing = m_sitkImage.GetSpacing();
+    std::vector<unsigned int> size = m_sitkImage.GetSize();
+	std::vector<double> origin = m_sitkImage.GetOrigin();
+	std::vector<double> spacing = m_sitkImage.GetSpacing();
 
-    std::cout << spacing[0] << " " << spacing[1] << " " << spacing[2] << std::endl;
-
-    std::vector<double> origin = m_sitkImage.GetOrigin();
-    std::cout << origin[0] << " " << origin[1] << " " << origin[2] << std::endl;
+	m_box = BOX(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
 }
 
 std::vector<unsigned int> CImageSITK::GetSize()

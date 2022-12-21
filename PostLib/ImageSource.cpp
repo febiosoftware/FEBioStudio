@@ -146,8 +146,8 @@ void CImageSource::AssignImage(C3DImage* im)
 
 //========================================================================
 
-CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz)
-    : CImageSource(imgModel), m_filename(filename), m_nx(nx), m_ny(ny), m_nz(nz)
+CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz, BOX box)
+    : CImageSource(imgModel), m_filename(filename), m_nx(nx), m_ny(ny), m_nz(nz), m_box(box)
 {
 
 }
@@ -166,6 +166,8 @@ bool CRawImageSource::Load()
         delete im;
         return false;
     }
+
+    im->SetBoundingBox(m_box);
 
     AssignImage(im);
 
@@ -193,13 +195,6 @@ bool CITKImageSource::Load()
 		return false;
 	}
 
-	std::vector<unsigned int> size = im->GetSize();
-	std::vector<double> origin = im->GetOrigin();
-	std::vector<double> spacing = im->GetSpacing();
-
-	BOX box(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
-	m_imgModel->SetBoundingBox(box);
-
 	AssignImage(im);
 
 	return true;
@@ -222,13 +217,6 @@ bool CITKSeriesImageSource::Load()
 		delete im;
 		return false;
 	}
-
-	std::vector<unsigned int> size = im->GetSize();
-	std::vector<double> origin = im->GetOrigin();
-	std::vector<double> spacing = im->GetSpacing();
-
-	BOX box(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
-	m_imgModel->SetBoundingBox(box);
 
 	AssignImage(im);
 
