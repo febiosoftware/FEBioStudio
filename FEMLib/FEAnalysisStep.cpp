@@ -1004,6 +1004,7 @@ void FSStep::Load(IArchive &ar)
 					}
 
 					pb->Load(ar);
+					pb->SetStep(GetID());
 
 					if (ar.Version() < 0x0001000F)
 					{
@@ -1079,6 +1080,7 @@ void FSStep::Load(IArchive &ar)
 					pl->Load(ar);
 
 					// add BC
+					pl->SetStep(GetID());
 					AddLoad(pl);
 
 					ar.CloseChunk();
@@ -1098,6 +1100,7 @@ void FSStep::Load(IArchive &ar)
 					if (pi)
 					{
 						pi->Load(ar);
+						pi->SetStep(GetID());
 						AddIC(pi);
 					}
 
@@ -1126,6 +1129,7 @@ void FSStep::Load(IArchive &ar)
 						if (pc)
 						{
 							pc->Load(ar);
+							pc->SetStep(GetID());
 							AddConstraint(pc);
 						}
 						else throw ReadError("error parsing unknown CID_INTERFACE_SECTION FSStep::Load");
@@ -1136,6 +1140,7 @@ void FSStep::Load(IArchive &ar)
 						pi->Load(ar);
 
 						// add interface to step
+						pi->SetStep(GetID());
 						AddInterface(pi);
 					}
 
@@ -1162,6 +1167,7 @@ void FSStep::Load(IArchive &ar)
 					pmc->Load(ar);
 
 					// add constraint to step
+					pmc->SetStep(GetID());
 					AddConstraint(pmc);
 				}
 
@@ -1185,7 +1191,11 @@ void FSStep::Load(IArchive &ar)
 						vector<FSRigidConstraint*> rc = convertOldToNewRigidConstraint(fem, rc_old);
 
 						// add rigid constraints
-						for (int i=0; i<(int) rc.size(); ++i) AddRC(rc[i]);
+						for (int i = 0; i < (int)rc.size(); ++i)
+						{
+							rc[i]->SetStep(GetID());
+							AddRC(rc[i]);
+						}
 					}
 					else
 					{
@@ -1195,6 +1205,7 @@ void FSStep::Load(IArchive &ar)
 						if (rc)
 						{
 							rc->Load(ar);
+							rc->SetStep(GetID());
 							AddRC(rc);
 						}
 					}
@@ -1216,6 +1227,7 @@ void FSStep::Load(IArchive &ar)
 					if (pi)
 					{
 						pi->Load(ar);
+						pi->SetStep(GetID());
 						AddRigidConnector(pi);
 					}
                     
@@ -1235,6 +1247,7 @@ void FSStep::Load(IArchive &ar)
 					if (pl)
 					{
 						pl->Load(ar);
+						pl->SetStep(GetID());
 						AddRigidLoad(pl);
 					}
                     
@@ -1254,6 +1267,7 @@ void FSStep::Load(IArchive &ar)
 				if (pc)
 				{
 					pc->Load(ar);
+					pc->SetStep(GetID());
 					AddRigidBC(pc);
 				}
 
@@ -1273,6 +1287,7 @@ void FSStep::Load(IArchive &ar)
 				if (ic)
 				{
 					ic->Load(ar);
+					ic->SetStep(GetID());
 					AddRigidIC(ic);
 				}
 
@@ -1291,6 +1306,7 @@ void FSStep::Load(IArchive &ar)
 				if (pma)
 				{
 					pma->Load(ar);
+					pma->SetStep(GetID());
 					AddMeshAdaptor(pma);
 				}
 
