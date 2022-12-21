@@ -211,4 +211,6 @@ namespace FEBio {
 	void DeleteClass(void* p);
 
 	FECoreBase* CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FEModel* fem);
+
+	FSModelComponent* CloneModelComponent(FSModelComponent* pmc, FSModel* fem);
 }

@@ -582,13 +582,18 @@ void FSStep::AddComponent(FSStepComponent* pc)
 {
 	// remove it from the old step
 	pc->SetStep(GetID());
-	if      MoveComponent(FSBoundaryCondition, AddBC);
-	else if MoveComponent(FSLoad             , AddLoad);
-	else if MoveComponent(FSInterface        , AddInterface);
-	else if MoveComponent(FSInitialCondition , AddIC);
-	else if MoveComponent(FSRigidConstraint  , AddRC);
-	else if MoveComponent(FSRigidConnector   , AddRigidConnector);
-	else if MoveComponent(FSModelConstraint  , AddConstraint);
+	if      MoveComponent(FSBoundaryCondition  , AddBC);
+	else if MoveComponent(FSLoad               , AddLoad);
+	else if MoveComponent(FSInitialCondition   , AddIC);
+	else if MoveComponent(FSInterface          , AddInterface);
+	else if MoveComponent(FSModelConstraint    , AddConstraint);
+	else if MoveComponent(FSRigidConstraint    , AddRC);
+	else if MoveComponent(FSRigidLoad          , AddRigidLoad);
+	else if MoveComponent(FSRigidBC            , AddRigidBC);
+	else if MoveComponent(FSRigidIC            , AddRigidIC);
+	else if MoveComponent(FSLinearConstraintSet, AddLinearConstraint);
+	else if MoveComponent(FSRigidConnector     , AddRigidConnector);
+	else if MoveComponent(FSMeshAdaptor        , AddMeshAdaptor);
 	else assert(false);
 }
 
@@ -598,13 +603,18 @@ void FSStep::AddComponent(FSStepComponent* pc)
 void FSStep::RemoveComponent(FSStepComponent* pc)
 {
 	assert(pc->GetStep() == GetID());
-	if      TryRemoveComponent(FSBoundaryCondition, m_BC);
-	else if TryRemoveComponent(FSLoad             , m_FC);
-	else if TryRemoveComponent(FSInitialCondition , m_IC);
-	else if TryRemoveComponent(FSInterface        , m_Int);
-	else if TryRemoveComponent(FSModelConstraint  , m_NLC);
-	else if TryRemoveComponent(FSRigidConstraint  , m_RC);
-	else if TryRemoveComponent(FSRigidConnector   , m_CN);
+	if      TryRemoveComponent(FSBoundaryCondition  , m_BC);
+	else if TryRemoveComponent(FSLoad               , m_FC);
+	else if TryRemoveComponent(FSInitialCondition   , m_IC);
+	else if TryRemoveComponent(FSInterface          , m_Int);
+	else if TryRemoveComponent(FSModelConstraint    , m_NLC);
+	else if TryRemoveComponent(FSRigidConstraint    , m_RC);
+	else if TryRemoveComponent(FSRigidLoad          , m_RL);
+	else if TryRemoveComponent(FSRigidBC            , m_RBC);
+	else if TryRemoveComponent(FSRigidIC            , m_RIC);
+	else if TryRemoveComponent(FSLinearConstraintSet, m_LC);
+	else if TryRemoveComponent(FSRigidConnector     , m_CN);
+	else if TryRemoveComponent(FSMeshAdaptor        , m_MA);
 	else assert(false);
 }
 
