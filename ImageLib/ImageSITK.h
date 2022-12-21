@@ -42,6 +42,9 @@ public:
     bool LoadFromFile(std::string, bool isDicom);
     bool LoadFromStack(std::vector<std::string> filenames);
 
+    BOX GetBoundingBox() override;
+    void SetBoundingBox(BOX& box) override;
+
     std::vector<unsigned int> GetSize();
     std::vector<double> GetOrigin();
     std::vector<double> GetSpacing();

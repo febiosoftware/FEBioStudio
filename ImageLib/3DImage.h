@@ -49,8 +49,8 @@ public:
 	int Height() { return m_cy; }
 	int Depth () { return m_cz; }
 
-    const BOX& GetBoundingBox() const { return m_box; }
-    void SetBoundingBox(BOX& box) { m_box = box; }
+    virtual BOX GetBoundingBox() { return m_box; }
+    virtual void SetBoundingBox(BOX& box) { m_box = box; }
 
 	Byte& value(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
 	Byte Value(double fx, double fy, int nz);
@@ -82,6 +82,8 @@ public:
 protected:
 	Byte*	m_pb;	// image data
 	int		m_cx, m_cy, m_cz; // pixel dimensions
+
+private:
     BOX     m_box; // physical bounds
 };
 
