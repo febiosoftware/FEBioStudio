@@ -31,16 +31,13 @@ SOFTWARE.*/
 
 using namespace Post;
 
-CImageSource::CImageSource(CImageModel* imgModel)
+CImageSource::CImageSource(int type, CImageModel* imgModel)
+    : m_type(type), m_imgModel(imgModel), m_img(nullptr), m_originalImage(nullptr)
 {
-	AddStringParam("", "file name")->SetState(Param_VISIBLE);
-	AddIntParam(0, "NX")->SetState(Param_VISIBLE);
-	AddIntParam(1, "NY")->SetState(Param_VISIBLE);
-	AddIntParam(2, "NZ")->SetState(Param_VISIBLE);
-
-	m_img = nullptr;
-    m_originalImage = nullptr;
-	m_imgModel = imgModel;
+	// AddStringParam("", "file name")->SetState(Param_VISIBLE);
+	// AddIntParam(0, "NX")->SetState(Param_VISIBLE);
+	// AddIntParam(1, "NY")->SetState(Param_VISIBLE);
+	// AddIntParam(2, "NZ")->SetState(Param_VISIBLE);
 }
 
 CImageModel* CImageSource::GetImageModel()
@@ -128,26 +125,16 @@ void CImageSource::AssignImage(C3DImage* im)
     m_img = im;
 }
 
-// void CImageSource::Save(OArchive& ar)
-// {
-// 	FSObject::Save(ar);
-// }
-
-// int CImageSource::Width() const { return GetIntValue(1);  }
-// int CImageSource::Height() const { return GetIntValue(2); }
-// int CImageSource::Depth() const { return GetIntValue(3); }
-
-// void CImageSource::Load(IArchive& ar)
-// {
-// 	FSObject::Load(ar);
-// 	string file = GetFileName();
-// 	LoadImageData(file, Width(), Height(), Depth());
-// }
-
 //========================================================================
 
 CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz, BOX box)
-    : CImageSource(imgModel), m_filename(filename), m_nx(nx), m_ny(ny), m_nz(nz), m_box(box)
+    : CImageSource(CImageSource::RAW, imgModel), m_filename(filename), m_nx(nx), m_ny(ny), m_nz(nz), m_box(box)
+{
+
+}
+
+CRawImageSource::CRawImageSource(CImageModel* imgModel)
+    : CImageSource(CImageSource::RAW, imgModel)
 {
 
 }
@@ -174,15 +161,115 @@ bool CRawImageSource::Load()
     return true;
 }
 
+void CRawImageSource::Save(OArchive& ar)
+{
+    ar.WriteChunk(0, m_filename);
+    
+    ar.WriteChunk(1, m_nx);
+    ar.WriteChunk(2, m_ny);
+    ar.WriteChunk(3, m_nx);
+
+    ar.WriteChunk(4, m_box.x0);
+    ar.WriteChunk(5, m_box.y0);
+    ar.WriteChunk(6, m_box.z0);
+    ar.WriteChunk(7, m_box.x1);
+    ar.WriteChunk(8, m_box.y1);
+    ar.WriteChunk(9, m_box.z1);
+}
+
+void CRawImageSource::Load(IArchive& ar)
+{
+    BOX tempBox;
+    bool foundBox = false;
+
+    while (ar.OpenChunk() == IArchive::IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case 0:
+			ar.read(m_filename);
+			break;
+
+		case 1:
+			ar.read(m_nx);
+            break;
+        case 2:
+			ar.read(m_ny);
+            break;
+        case 3:
+			ar.read(m_nz);
+            break;
+
+        case 4:
+			ar.read(m_box.x0);
+            break;
+        case 5:
+			ar.read(m_box.y0);
+            break;
+        case 6:
+			ar.read(m_box.z0);
+            break;
+        case 7:
+			ar.read(m_box.x1);
+            break;
+        case 8:
+			ar.read(m_box.y1);
+            break;
+        case 9:
+			ar.read(m_box.z1);
+            break;
+
+        case 100:
+			ar.read(tempBox.x0);
+            foundBox = true;
+            break;
+        case 101:
+			ar.read(tempBox.y0);
+            break;
+        case 102:
+			ar.read(tempBox.z0);
+            break;
+        case 103:
+			ar.read(tempBox.x1);
+            break;
+        case 104:
+			ar.read(tempBox.y1);
+            break;
+        case 105:
+			ar.read(tempBox.z1);
+            break;
+		}
+		ar.CloseChunk();
+	}
+
+    // Read in image data
+    Load();
+
+    // Set location of image if it was saved
+    if(foundBox)
+    {
+        m_img->SetBoundingBox(tempBox);
+    }
+
+}
+
 
 #ifdef HAS_ITK
 
 //========================================================================
 
 CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type) 
-    : CImageSource(imgModel), m_filename(filename), m_type(type)
+    : CImageSource(CImageSource::ITK, imgModel), m_filename(filename), m_type(type)
 {
     
+}
+
+CITKImageSource::CITKImageSource(CImageModel* imgModel)
+    : CImageSource(CImageSource::ITK, imgModel)
+{
+
 }
 
 bool CITKImageSource::Load()
@@ -200,10 +287,87 @@ bool CITKImageSource::Load()
 	return true;
 }
 
+void CITKImageSource::Save(OArchive& ar)
+{
+    ar.WriteChunk(0, m_filename);
+    ar.WriteChunk(1, (int)m_type);
+
+    BOX box = m_originalImage->GetBoundingBox();
+    ar.WriteChunk(100, box.x0);
+    ar.WriteChunk(101, box.y0);
+    ar.WriteChunk(102, box.z0);
+    ar.WriteChunk(103, box.x1);
+    ar.WriteChunk(104, box.y1);
+    ar.WriteChunk(105, box.z1);
+}
+
+void CITKImageSource::Load(IArchive& ar)
+{
+    BOX tempBox;
+    bool foundBox = false;
+
+    while (ar.OpenChunk() == IArchive::IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case 0:
+			ar.read(m_filename);
+			break;
+		case 1:
+        {
+            int type;
+            ar.read(type);
+            m_type = (ImageFileType)type;
+            break;
+        }
+			
+
+        case 100:
+			ar.read(tempBox.x0);
+            foundBox = true;
+            break;
+        case 101:
+			ar.read(tempBox.y0);
+            break;
+        case 102:
+			ar.read(tempBox.z0);
+            break;
+        case 103:
+			ar.read(tempBox.x1);
+            break;
+        case 104:
+			ar.read(tempBox.y1);
+            break;
+        case 105:
+			ar.read(tempBox.z1);
+            break;
+		}
+		ar.CloseChunk();
+	}
+
+    // Read in image data
+    Load();
+
+    // Set location of image if it was saved
+    if(foundBox)
+    {
+        m_img->SetBoundingBox(tempBox);
+    }
+
+}
+
 //========================================================================
 
 CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames)
-    : CImageSource(imgModel), m_filenames(filenames)
+    : CImageSource(CImageSource::SERIES, imgModel), m_filenames(filenames)
+{
+
+}
+
+CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel)
+    : CImageSource(CImageSource::SERIES, imgModel)
 {
 
 }
@@ -223,15 +387,87 @@ bool CITKSeriesImageSource::Load()
 	return true;
 }
 
+void CITKSeriesImageSource::Save(OArchive& ar)
+{
+    for(auto filename : m_filenames)
+    {
+        ar.WriteChunk(0, filename);
+    }
+
+    BOX box = m_originalImage->GetBoundingBox();
+    ar.WriteChunk(100, box.x0);
+    ar.WriteChunk(101, box.y0);
+    ar.WriteChunk(102, box.z0);
+    ar.WriteChunk(103, box.x1);
+    ar.WriteChunk(104, box.y1);
+    ar.WriteChunk(105, box.z1);
+}
+
+void CITKSeriesImageSource::Load(IArchive& ar)
+{
+    BOX tempBox;
+    bool foundBox = false;
+
+    while (ar.OpenChunk() == IArchive::IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case 0:
+        {
+            std::string temp;
+            ar.read(temp);
+            m_filenames.push_back(temp);
+            break;
+        }
+
+        case 100:
+			ar.read(tempBox.x0);
+            foundBox = true;
+            break;
+        case 101:
+			ar.read(tempBox.y0);
+            break;
+        case 102:
+			ar.read(tempBox.z0);
+            break;
+        case 103:
+			ar.read(tempBox.x1);
+            break;
+        case 104:
+			ar.read(tempBox.y1);
+            break;
+        case 105:
+			ar.read(tempBox.z1);
+            break;
+		}
+		ar.CloseChunk();
+	}
+
+    // Read in image data
+    Load();
+
+    // Set location of image if it was saved
+    if(foundBox)
+    {
+        m_img->SetBoundingBox(tempBox);
+    }
+}
+
 #else
 //========================================================================
 CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type)
-    : CImageSource(imgModel) {}
+    : CImageSource(ImageSourceType::ITK, imgModel) {}
 bool CITKImageSource::Load() { return false; }
+void CITKImageSource::Save(OArchive& ar) {}
+void CITKImageSource::Load(OArchive& ar) {}
 //========================================================================
 CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames)
-    : CImageSource(imgModel) {}
+    : CImageSource(ImageSourceType::SERIES, imgModel) {}
 bool CITKSeriesImageSource::Load() { return false; }
+void CITKSeriesImageSource::Save(OArchive& ar) {}
+void CITKSeriesImageSource::Load(OArchive& ar) {}
 #endif
 
 //========================================================================

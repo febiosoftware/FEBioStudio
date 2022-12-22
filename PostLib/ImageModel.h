@@ -82,8 +82,6 @@ public:
 
 	void Render(CGLContext& rc);
 
-	bool UpdateData(bool bsave = true) override;
-
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 

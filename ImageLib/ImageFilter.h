@@ -36,9 +36,17 @@ class CGLModel;
 class CImageFilter : public FSObject
 {
 public:
-    CImageFilter();
+    enum TYPES
+    {
+        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP
+    };
+
+public:
+    CImageFilter(int type);
 
     virtual void ApplyFilter() = 0;
+
+    int Type() { return m_type; }
 
     void SetImageModel(Post::CImageModel* model);
 
@@ -46,6 +54,9 @@ public:
 
 protected:
     Post::CImageModel* m_model;
+
+private:
+    int m_type;
 };
 
 class ThresholdImageFilter : public CImageFilter

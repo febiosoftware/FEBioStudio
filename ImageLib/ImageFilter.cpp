@@ -31,9 +31,6 @@ SOFTWARE.*/
 #include <ImageLib/ImageSITK.h>
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>
-#include <chrono>
-#include <ctime>
-#include <iostream>
 
 #ifdef HAS_ITK
 #include <sitkSmoothingRecursiveGaussianImageFilter.h>
@@ -42,9 +39,7 @@ SOFTWARE.*/
 namespace sitk = itk::simple;
 #endif
 
-
-
-CImageFilter::CImageFilter() : m_model(nullptr)
+CImageFilter::CImageFilter(int type) : m_type(type), m_model(nullptr)
 {
 
 }
@@ -61,6 +56,7 @@ Post::CImageModel* CImageFilter::GetImageModel()
 
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
 ThresholdImageFilter::ThresholdImageFilter()
+    : CImageFilter(CImageFilter::THRESHOLD)
 {
     static int n = 1;
 
@@ -84,12 +80,9 @@ void ThresholdImageFilter::ApplyFilter()
 
     if(min >= max) return;
 
-    auto start = std::chrono::system_clock::now();
-
     Byte* originalBytes = image->GetBytes();
-    Byte* filteredBytes = m_model->GetImageSource()->GetImageToFilter(true)->GetBytes();
-
-    int factor = 255;
+    auto imageToFilter = m_model->GetImageSource()->GetImageToFilter(true);
+    Byte* filteredBytes = imageToFilter->GetBytes();
 
     for(int i = 0; i < image->Width()*image->Height()*image->Depth(); i++)
     {
@@ -104,17 +97,15 @@ void ThresholdImageFilter::ApplyFilter()
 
     }
 
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+    BOX temp = image->GetBoundingBox();
+    imageToFilter->SetBoundingBox(temp);
 }
 
 #ifdef HAS_ITK
 
 REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
 MeanImageFilter::MeanImageFilter()
+    : CImageFilter(CImageFilter::MEAN)
 {
     static int n = 1;
 
@@ -138,8 +129,6 @@ void MeanImageFilter::ApplyFilter()
 
     CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
 
-    auto start = std::chrono::system_clock::now();
-
     sitk::MeanImageFilter filter;
 
     std::vector<unsigned int> indexRadius;
@@ -151,16 +140,11 @@ void MeanImageFilter::ApplyFilter()
     filter.SetRadius(indexRadius);
 
     filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
-
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
 }
 
 REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
 GaussianImageFilter::GaussianImageFilter()
+    : CImageFilter(CImageFilter::GAUSSBLUR)
 {
     static int n = 1;
 
@@ -182,8 +166,6 @@ void GaussianImageFilter::ApplyFilter()
 
     CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
 
-    auto start = std::chrono::system_clock::now();
-
     sitk::SmoothingRecursiveGaussianImageFilter filter;
 
     const double sigma = GetFloatValue(0);
@@ -191,18 +173,12 @@ void GaussianImageFilter::ApplyFilter()
     filter.SetSigma(sigma);
 
     filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
-
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-
 }
 
 #endif
 
-WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) : m_glm(glm)
+WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) 
+    : m_glm(glm), CImageFilter(CImageFilter::WARP)
 {
 	static int n = 1;
 	char sz[64] = { 0 };
