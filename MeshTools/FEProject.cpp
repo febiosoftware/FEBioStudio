@@ -1501,30 +1501,43 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 		case FE_NODAL_DOF_LOAD:
 		{
 			FSNodalDOFLoad* pnl = dynamic_cast<FSNodalDOFLoad*>(pl);
-
-			febLoad = FEBio::CreateNodalLoad("nodal_force", fem);
 			int bc = pnl->GetDOF();
 			double s = pnl->GetLoad();
 
-			if (bc >= 3)
+			if (bc < 6)
 			{
-				febLoad->SetParamBool("shell_bottom", true);
-				bc -= 3;
-			}
+				febLoad = FEBio::CreateNodalLoad("nodal_force", fem);
 
-			vec3d f;
-			switch (bc)
+				if (bc >= 3)
+				{
+					febLoad->SetParamBool("shell_bottom", true);
+					bc -= 3;
+				}
+
+				vec3d f;
+				switch (bc)
+				{
+				case 0: f = vec3d(s, 0, 0); break;
+				case 1: f = vec3d(0, s, 0); break;
+				case 2: f = vec3d(0, 0, s); break;
+				}
+
+				Param* pf = febLoad->GetParam("value"); assert(pf);
+				pf->SetVec3dValue(f);
+
+				int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
+				pf->SetLoadCurveID(lc);
+			}
+			else if (bc == 6)
 			{
-			case 0: f = vec3d(s, 0, 0); break;
-			case 1: f = vec3d(0, s, 0); break;
-			case 2: f = vec3d(0, 0, s); break;
+				febLoad = FEBio::CreateNodalLoad("nodal fluidflux", fem);
+
+				Param* pf = febLoad->GetParam("value"); assert(pf);
+				pf->SetFloatValue(s);
+
+				int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
+				pf->SetLoadCurveID(lc);
 			}
-
-			Param* pf = febLoad->GetParam("value"); assert(pf);
-			pf->SetVec3dValue(f);
-
-			int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
-			pf->SetLoadCurveID(lc);
 		}
 		break;
 		case FE_FLUID_ROTATIONAL_VELOCITY:
