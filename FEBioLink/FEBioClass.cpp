@@ -1347,3 +1347,72 @@ FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FE
 
 	return pc;
 }
+
+FSModelComponent* CreateFSModelComponent(int classId, FSModel* fsm)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+
+	const FECoreFactory* fac = fecore.GetFactoryClass(classId); assert(fac);
+	int superClassID = fac->GetSuperClassID();
+
+	int baseClassId = FEBio::GetBaseClassIndex(fac->GetBaseClassName());
+
+	// create the FS model class
+	FSModelComponent* pc = CreateFSClass(superClassID, baseClassId, fsm);
+	pc->SetClassID(classId);
+	pc->SetSuperClassID(superClassID);
+	pc->SetTypeString(fac->GetTypeStr());
+
+	return pc;
+}
+
+FSModelComponent* FEBio::CloneModelComponent(FSModelComponent* pmc, FSModel* fem)
+{
+	FSModelComponent* pd = CreateFSModelComponent(pmc->GetClassID(), fem); assert(pd);
+	if (pd == nullptr) return nullptr;
+
+	// copy parameter groups
+	ParamBlock& PL = pmc->GetParamBlock();
+	ParamBlock& PB = pd->GetParamBlock();
+
+	PB.ClearParamGroups();
+	for (int i = 0; i < PL.ParameterGroups(); ++i)
+	{
+		PB.SetActiveGroup(PL.GetParameterGroupName(i));
+	}
+	PB.SetActiveGroup(nullptr);
+
+	// copy parameters
+	PB = PL;
+
+	// copy the properties
+	for (int i = 0; i < pmc->Properties(); ++i)
+	{
+		FSProperty& prop = pmc->GetProperty(i);
+
+		// copy the property
+		FSProperty* pp = pd->AddProperty(prop.GetName(), prop.GetPropertyType(), prop.maxSize(), prop.GetFlags());
+		pp->SetDefaultType(prop.GetDefaultType());
+		pp->SetSuperClassID(prop.GetSuperClassID());
+		pp->SetLongName(prop.GetLongName());
+
+		// copy the property components
+		pp->Clear();
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FSModelComponent* pmj = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+			FSModelComponent* pdj = nullptr;
+			if (pmj) pdj = CloneModelComponent(pmj, fem);
+			pp->AddComponent(pmj);
+		}
+	}
+
+	if (dynamic_cast<FSDomainComponent*>(pd))
+	{
+		FSDomainComponent* pc = dynamic_cast<FSDomainComponent*>(pmc); assert(pc);
+		FSDomainComponent* pdc = dynamic_cast<FSDomainComponent*>(pd);
+		pdc->SetMeshItemType(pc->GetMeshItemType());
+	}
+
+	return pd;
+}

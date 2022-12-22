@@ -1609,6 +1609,18 @@ FSExternalProductMaterial::FSExternalProductMaterial(FSModel* fem) : FSReactionS
 }
 
 //=============================================================================
+//								MASS ACTION REACTION
+//=============================================================================
+
+REGISTER_MATERIAL(FSMassActionReaction, MODULE_REACTIONS, FE_MASS_ACTION_REACTION, FE_MAT_REACTION, "mass action", 0);
+
+FSMassActionReaction::FSMassActionReaction(FSModel* fem) : FSReactionMaterial(FE_MASS_ACTION_REACTION, fem)
+{
+	AddStringParam("", "equation");
+	AddDoubleParam(0, "rate_constant");
+}
+
+//=============================================================================
 //								MASS ACTION FORWARD REACTION
 //=============================================================================
 
