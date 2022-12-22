@@ -35,9 +35,37 @@ SOFTWARE.*/
 #ifdef HAS_ITK
 #include <sitkSmoothingRecursiveGaussianImageFilter.h>
 #include <sitkMeanImageFilter.h>
+#include <sitkAdaptiveHistogramEqualizationImageFilter.h>
 
 namespace sitk = itk::simple;
 #endif
+
+class ITKException : public std::exception
+{
+public:
+    ITKException(std::exception& e)
+    {
+        std::string str = e.what();
+        int pos = str.find("\n");
+
+        if(pos == str.npos)
+        {
+            m_what = str.c_str();
+        }
+        else
+        {
+            m_what = str.substr(pos+1, str.npos).c_str();
+        }
+    }
+
+    const char* what() const noexcept override
+    {
+        return m_what.c_str();
+    }
+
+private:
+    std::string m_what;
+};
 
 CImageFilter::CImageFilter(int type, Post::CImageModel* model) : m_type(type), m_model(model)
 {
@@ -114,9 +142,9 @@ MeanImageFilter::MeanImageFilter(Post::CImageModel* model)
     n += 1;
     SetName(sz);
 
-    AddIntParam(1, "x Radius");
-    AddIntParam(1, "y Radius");
-    AddIntParam(1, "z Radius");
+    AddIntParam(1, "x Radius")->SetIntRange(0, 9999999);
+    AddIntParam(1, "y Radius")->SetIntRange(0, 9999999);
+    AddIntParam(1, "z Radius")->SetIntRange(0, 9999999);
 }
 
 void MeanImageFilter::ApplyFilter()
@@ -139,7 +167,14 @@ void MeanImageFilter::ApplyFilter()
 
     filter.SetRadius(indexRadius);
 
-    filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
+    try
+    {
+        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
+    }
+    catch(std::exception& e)
+    {
+        throw ITKException(e);
+    }
 }
 
 REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
@@ -168,11 +203,62 @@ void GaussianImageFilter::ApplyFilter()
 
     sitk::SmoothingRecursiveGaussianImageFilter filter;
 
-    const double sigma = GetFloatValue(0);
-    std::cout << sigma << std::endl;
-    filter.SetSigma(sigma);
+    filter.SetSigma(GetFloatValue(0));
 
-    filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
+    try
+    {
+        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
+    }
+    catch(std::exception& e)
+    {
+        throw ITKException(e);
+    }
+}
+
+// I've commented this registration out for now. This filter is always returning an error
+// saying, "Failed to allocate memory for image"
+// REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
+AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(Post::CImageModel* model)
+: CImageFilter(ADAPTHISTEQ, model)
+{
+static int n = 1;
+
+char sz[64];
+sprintf(sz, "AdaptiveHistogramEqualization%02d", n);
+n += 1;
+SetName(sz);
+
+AddDoubleParam(0.3, "Aplha")->SetFloatRange(0, 1);
+AddDoubleParam(0.3, "Beta")->SetFloatRange(0, 1);
+
+AddIntParam(5, "x Radius")->SetIntRange(0, 9999999);
+AddIntParam(5, "y Radius")->SetIntRange(0, 9999999);
+AddIntParam(5, "z Radius")->SetIntRange(0, 9999999);
+}
+
+void AdaptiveHistogramEqualizationFilter::ApplyFilter()
+{
+    if(!m_model) return;
+
+    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
+
+    if(!image) return;
+
+    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
+
+    sitk::AdaptiveHistogramEqualizationImageFilter filter;
+    filter.SetAlpha(GetFloatValue(0));
+    filter.SetBeta(GetFloatValue(1));
+    filter.SetRadius({(unsigned int)GetIntValue(0), (unsigned int)GetIntValue(1), (unsigned int)GetIntValue(2)});
+
+    try
+    {
+        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
+    }
+    catch(std::exception& e)
+    {
+        throw ITKException(e);
+    }
 }
 
 #endif

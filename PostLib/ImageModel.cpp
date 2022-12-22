@@ -310,6 +310,12 @@ void CImageModel::Load(IArchive& ar)
                         temp->Load(ar);
                         m_filters.Add(temp);
                     }
+                    case CImageFilter::ADAPTHISTEQ:
+                    {
+                        auto temp = new AdaptiveHistogramEqualizationFilter(this);
+                        temp->Load(ar);
+                        m_filters.Add(temp);
+                    }
                     default:
                         break;
                     }

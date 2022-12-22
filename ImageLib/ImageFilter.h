@@ -38,7 +38,7 @@ class CImageFilter : public FSObject
 public:
     enum TYPES
     {
-        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP
+        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP, ADAPTHISTEQ
     };
 
 public:
@@ -81,6 +81,14 @@ class GaussianImageFilter : public CImageFilter
 {
 public:
     GaussianImageFilter(Post::CImageModel* model = nullptr);
+
+    void ApplyFilter() override;
+};
+
+class AdaptiveHistogramEqualizationFilter : public CImageFilter
+{
+public:
+    AdaptiveHistogramEqualizationFilter(Post::CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
