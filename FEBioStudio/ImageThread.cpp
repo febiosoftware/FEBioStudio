@@ -101,7 +101,7 @@ void CImageFilterThread::run()
             return;
         }
     }
-    catch(std::runtime_error& e)
+    catch(std::exception& e)
     {
         m_success = false;
         m_error = e.what();
@@ -174,9 +174,9 @@ void CDlgStartImageThread::threadFinished()
 
     if(!ui->m_thread->getSuccess())
     {
-        if(!QString(ui->m_thread->getError()).isEmpty())
+        if(!QString(ui->m_thread->getError().c_str()).isEmpty())
         {
-            QMessageBox::critical(this, "FEBio Studio", ui->m_thread->getError());
+            QMessageBox::critical(this, "FEBio Studio", ui->m_thread->getError().c_str());
         }
 
         reject();

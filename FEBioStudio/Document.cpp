@@ -850,9 +850,16 @@ bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
         return false;
     }
 
-    stringstream ss;
-    ss << "ImageModel" << n++;
-    imgModel->SetName(ss.str());
+    if(imgModel->GetImageSource()->GetName().empty())
+    {
+        stringstream ss;
+        ss << "ImageModel" << n++;
+        imgModel->SetName(ss.str());
+    }
+    else
+    {
+        imgModel->SetName(imgModel->GetImageSource()->GetName());
+    }
 
     // add it to the project
     AddImageModel(imgModel);

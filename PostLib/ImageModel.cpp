@@ -293,20 +293,26 @@ void CImageModel::Load(IArchive& ar)
                     {
                     case CImageFilter::THRESHOLD:
                     {
-                        auto temp = new ThresholdImageFilter;
+                        auto temp = new ThresholdImageFilter(this);
                         temp->Load(ar);
                         m_filters.Add(temp);
                         break;
                     }
                     case CImageFilter::MEAN:
                     {
-                        auto temp = new MeanImageFilter;
+                        auto temp = new MeanImageFilter(this);
                         temp->Load(ar);
                         m_filters.Add(temp);
                     }
                     case CImageFilter::GAUSSBLUR:
                     {
-                        auto temp = new GaussianImageFilter;
+                        auto temp = new GaussianImageFilter(this);
+                        temp->Load(ar);
+                        m_filters.Add(temp);
+                    }
+                    case CImageFilter::ADAPTHISTEQ:
+                    {
+                        auto temp = new AdaptiveHistogramEqualizationFilter(this);
                         temp->Load(ar);
                         m_filters.Add(temp);
                     }
