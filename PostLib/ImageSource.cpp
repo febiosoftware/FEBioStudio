@@ -28,16 +28,13 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageSITK.h>
+#include <FSCore/FSDir.h>
 
 using namespace Post;
 
 CImageSource::CImageSource(int type, CImageModel* imgModel)
     : m_type(type), m_imgModel(imgModel), m_img(nullptr), m_originalImage(nullptr)
 {
-	// AddStringParam("", "file name")->SetState(Param_VISIBLE);
-	// AddIntParam(0, "NX")->SetState(Param_VISIBLE);
-	// AddIntParam(1, "NY")->SetState(Param_VISIBLE);
-	// AddIntParam(2, "NZ")->SetState(Param_VISIBLE);
 }
 
 CImageModel* CImageSource::GetImageModel()
@@ -107,19 +104,8 @@ C3DImage* CImageSource::GetImageToFilter(bool allocate)
     return m_img;
 }
 
-// void CImageSource::SetValues(const std::string& fileName, int x, int y, int z)
-// {
-// 	SetStringValue(0, fileName);
-// 	SetIntValue(1, x);
-// 	SetIntValue(2, y);
-// 	SetIntValue(3, z);
-// }
-
 void CImageSource::AssignImage(C3DImage* im)
 {
-//   delete m_img;
-//   m_img = im;
-
     delete m_originalImage;
     m_originalImage = im;
     m_img = im;
@@ -130,7 +116,7 @@ void CImageSource::AssignImage(C3DImage* im)
 CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz, BOX box)
     : CImageSource(CImageSource::RAW, imgModel), m_filename(filename), m_nx(nx), m_ny(ny), m_nz(nz), m_box(box)
 {
-
+    SetName(FSDir::fileName(filename));
 }
 
 CRawImageSource::CRawImageSource(CImageModel* imgModel)
@@ -263,7 +249,7 @@ void CRawImageSource::Load(IArchive& ar)
 CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type) 
     : CImageSource(CImageSource::ITK, imgModel), m_filename(filename), m_type(type)
 {
-    
+    SetName(FSDir::fileName(filename));
 }
 
 CITKImageSource::CITKImageSource(CImageModel* imgModel)
@@ -363,7 +349,7 @@ void CITKImageSource::Load(IArchive& ar)
 CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames)
     : CImageSource(CImageSource::SERIES, imgModel), m_filenames(filenames)
 {
-
+    SetName(FSDir::fileName(filenames[0]));
 }
 
 CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel)
