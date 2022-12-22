@@ -42,7 +42,7 @@ public:
     };
 
 public:
-    CImageFilter(int type);
+    CImageFilter(int type, Post::CImageModel* model);
 
     virtual void ApplyFilter() = 0;
 
@@ -62,7 +62,7 @@ private:
 class ThresholdImageFilter : public CImageFilter
 {
 public:
-    ThresholdImageFilter();
+    ThresholdImageFilter(Post::CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
@@ -72,7 +72,7 @@ public:
 class MeanImageFilter : public CImageFilter
 {
 public:
-    MeanImageFilter();
+    MeanImageFilter(Post::CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
@@ -80,7 +80,7 @@ public:
 class GaussianImageFilter : public CImageFilter
 {
 public:
-    GaussianImageFilter();
+    GaussianImageFilter(Post::CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };

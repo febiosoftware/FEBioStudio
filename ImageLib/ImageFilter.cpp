@@ -39,7 +39,7 @@ SOFTWARE.*/
 namespace sitk = itk::simple;
 #endif
 
-CImageFilter::CImageFilter(int type) : m_type(type), m_model(nullptr)
+CImageFilter::CImageFilter(int type, Post::CImageModel* model) : m_type(type), m_model(model)
 {
 
 }
@@ -55,8 +55,8 @@ Post::CImageModel* CImageFilter::GetImageModel()
 }
 
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
-ThresholdImageFilter::ThresholdImageFilter()
-    : CImageFilter(CImageFilter::THRESHOLD)
+ThresholdImageFilter::ThresholdImageFilter(Post::CImageModel* model)
+    : CImageFilter(CImageFilter::THRESHOLD, model)
 {
     static int n = 1;
 
@@ -104,8 +104,8 @@ void ThresholdImageFilter::ApplyFilter()
 #ifdef HAS_ITK
 
 REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
-MeanImageFilter::MeanImageFilter()
-    : CImageFilter(CImageFilter::MEAN)
+MeanImageFilter::MeanImageFilter(Post::CImageModel* model)
+    : CImageFilter(CImageFilter::MEAN, model)
 {
     static int n = 1;
 
@@ -143,8 +143,8 @@ void MeanImageFilter::ApplyFilter()
 }
 
 REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
-GaussianImageFilter::GaussianImageFilter()
-    : CImageFilter(CImageFilter::GAUSSBLUR)
+GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model)
+    : CImageFilter(CImageFilter::GAUSSBLUR, model)
 {
     static int n = 1;
 
@@ -178,7 +178,7 @@ void GaussianImageFilter::ApplyFilter()
 #endif
 
 WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) 
-    : m_glm(glm), CImageFilter(CImageFilter::WARP)
+    : m_glm(glm), CImageFilter(CImageFilter::WARP, nullptr)
 {
 	static int n = 1;
 	char sz[64] = { 0 };
