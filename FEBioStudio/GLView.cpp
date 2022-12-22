@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <GL/glew.h>
 #include "GLView.h"
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
@@ -64,6 +65,8 @@ SOFTWARE.*/
 #include <PostLib/ImageSlicer.h>
 #include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
+
+static bool initGlew = false;
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -1193,6 +1196,17 @@ void CGLView::initializeGL()
 
 	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
 	//	GLfloat dif2[] = {.3f, .3f, .4f, 1.f};
+
+	if (initGlew == false)
+	{
+		GLenum err = glewInit();
+		if (err != GLEW_OK)
+		{
+			const char* szerr = (const char*)glewGetErrorString(err);
+			assert(err == GLEW_OK);
+		}
+		initGlew = true;
+	}
 
 	glEnable(GL_DEPTH_TEST);
 	//	glEnable(GL_CULL_FACE);

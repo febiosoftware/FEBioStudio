@@ -167,7 +167,7 @@ void CRawImageSource::Save(OArchive& ar)
     
     ar.WriteChunk(1, m_nx);
     ar.WriteChunk(2, m_ny);
-    ar.WriteChunk(3, m_nx);
+    ar.WriteChunk(3, m_nz);
 
     ar.WriteChunk(4, m_box.x0);
     ar.WriteChunk(5, m_box.y0);

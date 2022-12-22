@@ -191,18 +191,21 @@ void CImageModel::Save(OArchive& ar)
 		ar.EndChunk();
 	}
 
-    for(int index = 0; index < m_filters.Size(); index++)
-    {
-        ar.BeginChunk(2);
-        {
-            ar.BeginChunk(m_filters[index]->Type());
-            {
-                m_filters[index]->Save(ar);
-            }
-            ar.EndChunk();
-        }
-        ar.EndChunk();
-    }
+	if (m_filters.IsEmpty() == false)
+	{
+		ar.BeginChunk(2);
+		{
+			for (int index = 0; index < m_filters.Size(); index++)
+			{
+				ar.BeginChunk(m_filters[index]->Type());
+				{
+					m_filters[index]->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
 }
 
 CImageSource* CImageModel::GetImageSource()
@@ -255,7 +258,7 @@ void CImageModel::Load(IArchive& ar)
 			break;
 		case 1:
 			{
-                ar.OpenChunk();
+				while (ar.OpenChunk() == IArchive::IO_OK)
                 {
                     int nid2 = ar.GetChunkID();
 
@@ -276,13 +279,13 @@ void CImageModel::Load(IArchive& ar)
                     default:
                         break;
                     }
-                }
-                ar.CloseChunk();
+					ar.CloseChunk();
+				}
 			}
 			break;
         case 2:
 			{
-                ar.OpenChunk();
+				while (ar.OpenChunk() == IArchive::IO_OK)
                 {
                     int nid2 = ar.GetChunkID();
 
@@ -310,8 +313,8 @@ void CImageModel::Load(IArchive& ar)
                     default:
                         break;
                     }
-                }
-                ar.CloseChunk();
+					ar.CloseChunk();
+				}
 			}
 			break;
 		}

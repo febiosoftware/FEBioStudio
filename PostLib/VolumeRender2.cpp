@@ -33,8 +33,6 @@ SOFTWARE.*/
 #include <sstream>
 using namespace Post;
 
-static bool initGlew = false;
-
 static int n = 1;
 
 CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
@@ -45,12 +43,6 @@ CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 	AddChoiceParam(0, "Color map")->SetEnumNames("Grayscale\0Red\0Green\0Blue\0Fire\0");
 
 	m_texID = 0;
-
-	if (initGlew == false)
-	{
-		glewInit();
-		initGlew = true;
-	}
 
 	std::stringstream ss;
 	ss << "VolumeRender" << n++;
