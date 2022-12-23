@@ -261,6 +261,16 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
     }
 }
 
+#else
+MeanImageFilter::MeanImageFilter(Post::CImageModel* model) : CImageFilter(0, nullptr) {}
+void MeanImageFilter::ApplyFilter() {}
+
+GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model) : CImageFilter(0, nullptr) {}
+void GaussianImageFilter::ApplyFilter() {}
+
+AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(Post::CImageModel* model) : CImageFilter(0, nullptr) {}
+void AdaptiveHistogramEqualizationFilter::ApplyFilter() {}
+
 #endif
 
 WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) 

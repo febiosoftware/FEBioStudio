@@ -444,16 +444,18 @@ void CITKSeriesImageSource::Load(IArchive& ar)
 #else
 //========================================================================
 CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type)
-    : CImageSource(ImageSourceType::ITK, imgModel) {}
+    : CImageSource(0, imgModel) {}
+CITKImageSource::CITKImageSource(CImageModel* imgModel) : CImageSource(0, imgModel) {}
 bool CITKImageSource::Load() { return false; }
 void CITKImageSource::Save(OArchive& ar) {}
-void CITKImageSource::Load(OArchive& ar) {}
+void CITKImageSource::Load(IArchive& ar) {}
 //========================================================================
 CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames)
-    : CImageSource(ImageSourceType::SERIES, imgModel) {}
+    : CImageSource(0, imgModel) {}
+CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel) : CImageSource(0, imgModel) {}
 bool CITKSeriesImageSource::Load() { return false; }
 void CITKSeriesImageSource::Save(OArchive& ar) {}
-void CITKSeriesImageSource::Load(OArchive& ar) {}
+void CITKSeriesImageSource::Load(IArchive& ar) {}
 #endif
 
 //========================================================================

@@ -67,8 +67,6 @@ public:
     void ApplyFilter() override;
 };
 
-#ifdef HAS_ITK
-
 class MeanImageFilter : public CImageFilter
 {
 public:
@@ -92,8 +90,6 @@ public:
 
     void ApplyFilter() override;
 };
-
-#endif
 
 class WarpImageFilter : public CImageFilter
 {
