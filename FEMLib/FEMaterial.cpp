@@ -430,6 +430,21 @@ FSArrudaBoyce::FSArrudaBoyce(FSModel* fem) : FSMaterial(FE_ARRUDA_BOYCE, fem)
 }
 
 //////////////////////////////////////////////////////////////////////
+// FEArrudaBoyceUC - Arruda-Boyce unconstrained
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FSArrudaBoyceUC, MODULE_MECH, FE_ARRUDA_BOYCE_UC, FE_MAT_ELASTIC_UNCOUPLED, "Arruda-Boyce unconstrained", MaterialFlags::TOPLEVEL);
+
+FSArrudaBoyceUC::FSArrudaBoyceUC(FSModel* fem) : FSMaterial(FE_ARRUDA_BOYCE_UC, fem)
+{
+	AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
+	AddDoubleParam(0.00001, "ksi");
+	AddDoubleParam(100.0, "N");
+	AddIntParam(30, "n_term");
+	AddDoubleParam(0, "kappa");
+}
+
+//////////////////////////////////////////////////////////////////////
 // FSCarterHayes - Carter-Hayes elasticity
 //////////////////////////////////////////////////////////////////////
 

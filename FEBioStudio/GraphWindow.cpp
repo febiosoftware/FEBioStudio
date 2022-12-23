@@ -741,7 +741,7 @@ public:
 		QObject::connect(m_markerType, SIGNAL(currentIndexChanged(int)), mapper, SLOT(map())); mapper->setMapping(m_markerType, 2);
 		QObject::connect(m_markerSize, SIGNAL(valueChanged(int)), mapper, SLOT(map())); mapper->setMapping(m_markerSize, 3);
 
-		QObject::connect(mapper, SIGNAL(mapped(int)), w, SLOT(onDataChange(int)));
+		QObject::connect(mapper, SIGNAL(mappedInt(int)), w, SLOT(onDataChange(int)));
 	}
 };
 
