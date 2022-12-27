@@ -7969,7 +7969,7 @@ Scale
  Scale value specifies the desired reduction in the total number of nodes
  in the final decimated mesh.
  For example a 0.4 value of scale will result in the final decimated mesh
- with 40 {%} of current number of nodes.
+ with 40% of current number of nodes.
 \end_layout
 
 \begin_layout Subsubsection
