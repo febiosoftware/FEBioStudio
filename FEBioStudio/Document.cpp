@@ -53,9 +53,9 @@ SOFTWARE.*/
 #include <ImageLib/ImageFilter.h>
 #include "ImageThread.h"
 #include <GeomLib/GModel.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FEElementData.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include <QFileInfo>

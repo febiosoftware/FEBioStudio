@@ -32,9 +32,9 @@ SOFTWARE.*/
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FEElementData.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioModule.h>

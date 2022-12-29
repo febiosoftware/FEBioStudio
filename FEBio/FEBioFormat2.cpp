@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FEMKernel.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/FEElementData.h>
+#include <MeshLib/FEElementData.h>
 #include <GeomLib/GModel.h>
 #include <sstream>
 #include <FEBioLink/FEBioModule.h>

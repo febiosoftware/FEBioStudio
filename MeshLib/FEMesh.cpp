@@ -32,9 +32,9 @@ SOFTWARE.*/
 #include "FENodeElementList.h"
 #include "FENodeFaceList.h"
 #include "FENodeEdgeList.h"
-#include "MeshTools/FENodeData.h"
-#include "MeshTools/FESurfaceData.h"
-#include "MeshTools/FEElementData.h"
+#include "FENodeData.h"
+#include "FESurfaceData.h"
+#include "FEElementData.h"
 #include "FEMeshBuilder.h"
 #include <MeshTools/GLMesh.h>
 #include <algorithm>

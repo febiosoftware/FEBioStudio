@@ -23,75 +23,59 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-#include "stdafx.h"
-#include "FESurfaceData.h"
+#include "FENodeData.h"
 #include <MeshLib/FEMesh.h>
+#include <GeomLib/GObject.h>
 
-FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA), m_surface(nullptr)
+FENodeData::FENodeData(GObject* po) : FEMeshData(FEMeshData::NODE_DATA)
 {
-	SetMesh(mesh);
+	m_po = po;
+	m_nodeSet = nullptr;
 }
 
-FESurfaceData::~FESurfaceData()
+FENodeData::FENodeData(const FENodeData& d) : FEMeshData(FEMeshData::NODE_DATA)
 {
-	delete m_surface;
 }
 
-FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FEMeshData::SURFACE_DATA)
+FENodeData& FENodeData::operator=(const FENodeData& d)
 {
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
-	m_surface = d.m_surface;
+	return *this;
 }
 
-void FESurfaceData::operator = (const FESurfaceData& d)
+void FENodeData::Create(double v)
 {
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
-	m_surface = d.m_surface;
+	delete m_nodeSet;
+	m_nodeSet = new FSNodeSet(m_po);
+	m_nodeSet->CreateFromMesh();
+	FSMesh* pm = m_po->GetFEMesh();
+	SetMesh(pm);
+	m_data.assign(pm->Nodes(), v);
 }
 
-void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
+void FENodeData::Create(FSNodeSet* nset, double v)
 {
-	SetMesh(mesh);
-	m_surface = surface;
-	m_dataType = dataType;
-	m_data.assign(surface->size(), 0.0);
+	delete m_nodeSet;
+	m_nodeSet = nset;
+	assert(m_po->GetFEMesh() == nset->GetMesh());
+	SetMesh(nset->GetMesh());
+	m_data.assign(nset->size(), v);
 }
 
-double& FESurfaceData::operator [] (int index)
+void FENodeData::Save(OArchive& ar)
 {
-	return m_data[index];
-}
-
-std::vector<double>* FESurfaceData::getData()
-{
-	return &m_data;
-}
-
-void FESurfaceData::Save(OArchive& ar)
-{
-	int NF = m_surface->size();
+	int NN = GetMesh()->Nodes();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
-	ar.WriteChunk(CID_MESH_DATA_TYPE, (int) m_dataType);
-
-	// Surface must be saved first so that the number of facets in the surface can be
-	// queried before the data is read during the load operation.
-	ar.BeginChunk(CID_MESH_DATA_SURFACE);
+	ar.BeginChunk(CID_MESH_DATA_NODESET);
 	{
-		m_surface->Save(ar);
+		m_nodeSet->Save(ar);
 	}
 	ar.EndChunk();
-
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NF);
+	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NN);
 }
 
-void FESurfaceData::Load(IArchive& ar)
+void FENodeData::Load(IArchive& ar)
 {
 	GObject* po = GetMesh()->GetGObject();
 	while (IArchive::IO_OK == ar.OpenChunk())
@@ -103,24 +87,30 @@ void FESurfaceData::Load(IArchive& ar)
 			ar.read(szname);
 			SetName(szname);
 		}
-		else if(nid == CID_MESH_DATA_TYPE)
+		else if (nid == CID_MESH_DATA_NODESET)
 		{
-			int dType;
-			ar.read(dType);
-			m_dataType = (FEMeshData::DATA_TYPE) dType;
-		}
-		else if(nid == CID_MESH_DATA_SURFACE)
-		{
-			m_surface = new FSSurface(po);
-			m_surface->Load(ar);
+			m_nodeSet = new FSNodeSet(po);
+			m_nodeSet->Load(ar);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
-			int n = m_surface->size();
-			m_data.resize(n);
-			ar.read(&m_data[0], n);
+			// Older files defined node data on the entire mesh. The node sets were 
+			// not saved.
+			if (m_nodeSet == nullptr)
+			{
+				Create();
+			}
+
+			int NN = m_nodeSet->size();
+			ar.read(&m_data[0], NN);
 		}
 
 		ar.CloseChunk();
 	}
+}
+
+// get the item list
+FEItemListBuilder* FENodeData::GetItemList()
+{
+	return m_nodeSet;
 }
