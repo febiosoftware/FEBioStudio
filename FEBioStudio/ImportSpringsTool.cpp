@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
 #include <QDir>
 

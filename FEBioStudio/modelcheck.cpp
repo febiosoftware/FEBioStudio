@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidLoad.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <stdarg.h>
 #include <sstream>
 

@@ -71,7 +71,7 @@ SOFTWARE.*/
 #include "DlgImportXPLT.h"
 #include "Commands.h"
 #include <XPLTLib/xpltFileReader.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "DocManager.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"

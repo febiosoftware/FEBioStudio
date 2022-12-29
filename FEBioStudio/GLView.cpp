@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
 #include <PostLib/ImageSlicer.h>

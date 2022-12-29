@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/FEProject.h>
 #include <sstream>
 #include <iomanip>

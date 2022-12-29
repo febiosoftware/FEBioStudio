@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "GLModelScene.h"
 #include "GLView.h"
 #include "ModelDocument.h"
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLMeshRender.h>

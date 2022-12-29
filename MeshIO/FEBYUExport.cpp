@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FEBYUExport.h"
 #include <MeshTools/FEProject.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 FEBYUExport::FEBYUExport(FSProject& prj) : FSFileExport(prj)
 {

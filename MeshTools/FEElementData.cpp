@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEElementData.h"
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 #include "GGroup.h"
 
 //-----------------------------------------------------------------------------

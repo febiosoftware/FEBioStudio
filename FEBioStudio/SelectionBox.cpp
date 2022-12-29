@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include <MeshTools/FEItemListBuilder.h>
 #include <MeshTools/GGroup.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
 

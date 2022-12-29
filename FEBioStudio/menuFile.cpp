@@ -104,7 +104,7 @@ SOFTWARE.*/
 #include <PostLib/ImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/AbaqusExport.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>

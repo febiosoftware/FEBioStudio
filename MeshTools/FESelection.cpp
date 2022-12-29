@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "GGroup.h"
 #include "GLMesh.h"
 #include <GeomLib/GObject.h>
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 
 //////////////////////////////////////////////////////////////////////
 // FESelection

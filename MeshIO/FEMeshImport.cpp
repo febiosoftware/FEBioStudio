@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEMeshImport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 using namespace std;
 
 FEMeshImport::FEMeshImport(FSProject& prj) : FSFileImport(prj)

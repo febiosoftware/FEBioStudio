@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEBioLink/FEBioModule.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "FEBioFormatOld.h"
 #include "FEBioFormat12.h"
 #include "FEBioFormat2.h"

@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "AbaqusExport.h"
 #include <MeshTools/FEProject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 
 FEAbaqusExport::FEAbaqusExport(FSProject& prj) : FSFileExport(prj)

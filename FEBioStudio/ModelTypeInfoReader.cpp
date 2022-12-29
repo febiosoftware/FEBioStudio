@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include <FEBio/FEBioImport.h>
 #include <MeshTools/FEModel.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidConstraint.h>

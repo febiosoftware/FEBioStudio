@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <PostLib/Palette.h>
 #include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 //---------------------------------------
 // NOTE: We need to include these FEBio files to make sure we get the correct
 //       implementations for the type_to_string and string_to_type functions.

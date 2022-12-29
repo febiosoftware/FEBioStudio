@@ -24,7 +24,6 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "stdafx.h"
 #include <sstream>
 #include "GModel.h"
 #include <GeomLib/GPrimitive.h>
@@ -33,7 +32,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GOCCObject.h>
-#include "GModifiedObject.h"
+#include <MeshTools/GModifiedObject.h>
 #include <FSCore/FSObjectList.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <MeshTools/FEItemListBuilder.h>

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "SpringGenerator.h"
 #include "GDiscreteObject.h"
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 
 CSpringGenerator::CSpringGenerator(GModel& model) : m_model(model)
 {

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FELSDYNAexport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/FEProject.h>
 #include <memory>
 

@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
 #include <sstream>
 ////using namespace std;

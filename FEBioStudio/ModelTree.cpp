@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include <QtCore/QFileInfo>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/GGroup.h>
 #include "MainWindow.h"
 #include "SSHThread.h"

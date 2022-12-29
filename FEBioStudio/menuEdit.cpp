@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "XMLDocument.h"
 #include "Commands.h"
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <QMessageBox>
 #include <QInputDialog>
 #include <GeomLib/GPrimitive.h>

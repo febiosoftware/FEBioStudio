@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
 
 FEBioFormatOld::FEBioFormatOld(FEBioFileImport* fileReader, FEBioInputModel& febio) : FEBioFormat(fileReader, febio)

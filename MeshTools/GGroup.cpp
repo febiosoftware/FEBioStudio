@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GGroup.h"
 #include "FEModel.h"
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 
 GGroup::GGroup(FSModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)

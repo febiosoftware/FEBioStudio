@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FENodeData.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/GGroup.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>

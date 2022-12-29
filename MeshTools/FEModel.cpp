@@ -44,7 +44,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioModule.h>
 #include <FEMLib/FEMKernel.h>
 #include "GGroup.h"
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 #include <vector>
 #include <sstream>
 #include <algorithm>

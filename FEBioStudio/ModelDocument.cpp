@@ -35,10 +35,9 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelFileWriter.h"
 #include <QMessageBox>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
-#include <MeshTools/GModel.h>
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
 #include "GLModelScene.h"

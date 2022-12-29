@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FEElementFormulation.h>
 #include "GGroup.h"
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GObject.h>

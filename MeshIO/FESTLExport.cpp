@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FESTLExport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/FEProject.h>
 
 void stl_write_face(FILE* fp, const vec3d& fn, const vec3d& r0, const vec3d& r1, const vec3d& r2)

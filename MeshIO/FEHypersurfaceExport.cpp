@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEHypersurfaceExport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/FEProject.h>
 
 FEHypersurfaceExport::FEHypersurfaceExport(FSProject& prj) : FSFileExport(prj)

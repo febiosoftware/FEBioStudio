@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include <CUILib/HistogramViewer.h>
 #include <PostLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"

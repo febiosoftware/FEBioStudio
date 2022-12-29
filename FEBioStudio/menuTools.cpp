@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "ModelDocument.h"
 #include "PostDocument.h"
 #include "DlgStartThread.h"

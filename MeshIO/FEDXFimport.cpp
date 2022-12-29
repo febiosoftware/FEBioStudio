@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #include "FEDXFimport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 #define ABS(x) ((x) > 0 ? (x) : -(x))
 

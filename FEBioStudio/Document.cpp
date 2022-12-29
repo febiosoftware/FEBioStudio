@@ -52,7 +52,7 @@ SOFTWARE.*/
 #include <PostLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
 #include "ImageThread.h"
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FEElementData.h>

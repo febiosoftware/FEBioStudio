@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMaterial.h>
 #include <MeshTools/GGroup.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <sstream>
 

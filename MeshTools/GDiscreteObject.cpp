@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GDiscreteObject.h"
 #include <FSCore/Archive.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <sstream>
 
 GDiscreteObject::GDiscreteObject(GModel* gm, int ntype)
