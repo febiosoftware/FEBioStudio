@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FEModifier.h>
 #include <MeshLib/FECurveMesh.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include "GOCCObject.h"
 

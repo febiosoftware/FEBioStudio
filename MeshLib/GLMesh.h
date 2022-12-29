@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include "GMesh.h"
-#include "MeshLib/FEElement.h"
 
 //-----------------------------------------------------------------------------
 // This class adds rendering capabilities to the GMesh class

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <list>
 #include <stack>
 #include <sstream>

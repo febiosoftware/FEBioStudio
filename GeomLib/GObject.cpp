@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/FEMesher.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <MeshTools/GLMesher.h>
 #include <sstream>
 

@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
 #include <MeshLib/FESurfaceMesh.h>
-#include "GLMesh.h"
+#include <MeshLib/GLMesh.h>
 #include <list>
 //using namespace std;
 

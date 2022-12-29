@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FESphere.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 
 //=============================================================================
 // GSphere

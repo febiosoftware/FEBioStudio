@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESelection.h"
 #include <GeomLib/GGroup.h>
-#include "GLMesh.h"
+#include <MeshLib/GLMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 
