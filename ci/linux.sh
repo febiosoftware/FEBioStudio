@@ -11,10 +11,10 @@ cmake -L . -B cmbuild \
 	-DSSH_LIB_DIR=$LIB_DIR \
 	-DUSE_SSH=ON \
 	-DUSE_SSL=ON \
+	-DCAD_FEATURES=OFF \
 	-DNETGEN_LIB_DIR=/usr/local \
 	-DUSE_NETGEN=ON \
 	-DUSE_ITK=ON \
-
 
 pushd cmbuild
 make -j $(nproc)
