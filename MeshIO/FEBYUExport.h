@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshTools/FEFileExport.h>
+#include "FEFileExport.h"
 
 class FEBYUExport : public FEFileExport
 {

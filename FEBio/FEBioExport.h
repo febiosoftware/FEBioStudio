@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEFileExport.h>
+#include <MeshIO/FEFileExport.h>
 #include <XML/XMLWriter.h>
 #include "FEBioException.h"
 #include <MeshTools/FEProject.h>

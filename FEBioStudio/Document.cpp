@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiPatch.h>
-#include <MeshTools/FEFileExport.h>
+#include <MeshIO/FEFileExport.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <MeshIO/PRVObjectFormat.h>
