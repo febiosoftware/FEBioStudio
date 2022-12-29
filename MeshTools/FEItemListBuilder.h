@@ -27,7 +27,6 @@ SOFTWARE.*/
 #pragma once
 #include "FEItemList.h"
 #include <FSCore/FSObject.h>
-#include <FEMLib/FECoreModel.h>
 #include <list>
 
 //-----------------------------------------------------------------------------

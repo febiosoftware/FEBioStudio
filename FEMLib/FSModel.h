@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "MeshLib/FEMesh.h"
 #include "FEMLib/FEInterface.h"
 #include "FEMLib/FEConnector.h"
-#include "FEMLib/FECoreModel.h"
+#include <FSCore/FSObject.h>
 #include "FEMLib/FEBoundaryCondition.h"
 #include "FEMLib/FEAnalysisStep.h"
 #include "FEMLib/FEMeshAdaptor.h"
@@ -49,7 +49,7 @@ class FSReactionMaterial;
 //! The FE model stores all FE data.
 //
 //! It stores the geometry, the material list, and the analysis data.
-class FSModel : public FSCoreModel
+class FSModel : public FSObject
 {
 public:
 	// constructor/destructor
