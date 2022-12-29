@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <FEMLib/FELoadController.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FEElementFormulation.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>

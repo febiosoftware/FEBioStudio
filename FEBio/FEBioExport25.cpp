@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <MeshTools/FEElementData.h>
 #include <MeshTools/FESurfaceData.h>
 #include <GeomLib/GModel.h>

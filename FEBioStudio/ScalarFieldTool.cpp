@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <MeshTools/FENodeData.h>
 #include <MeshTools/FEElementData.h>
 #include <QLineEdit>

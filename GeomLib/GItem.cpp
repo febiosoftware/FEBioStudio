@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "GObject.h"
 #include "geom.h"
 #include "GPartSection.h"
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FECoreMesh.h"
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <MeshTools/FEMeshData.h>
 #include <vector>
 #include <set>

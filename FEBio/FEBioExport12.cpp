@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <memory>
 #include <FECore/FETransform.h>
 

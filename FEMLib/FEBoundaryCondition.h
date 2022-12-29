@@ -1,6 +1,6 @@
 #pragma once
 #include "FEDomainComponent.h"
-#include "MeshTools/FEGroup.h"
+#include <GeomLib/FSGroup.h>
 #include <MeshLib/FEItemListBuilder.h>
 #include <list>
 //using namespace std;

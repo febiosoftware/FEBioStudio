@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioFormat3.h"
 #include <FEMLib/FERigidConstraint.h>
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <MeshTools/FESurfaceData.h>
 #include <MeshTools/FENodeData.h>
 #include <GeomLib/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FERigidLoad.h>

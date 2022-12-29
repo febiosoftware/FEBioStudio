@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FESurfaceModifier.h"
 #include <MeshLib/FESurfaceMesh.h>
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <stdarg.h>
 
 FESurfaceModifier::FESurfaceModifier(const std::string& name)

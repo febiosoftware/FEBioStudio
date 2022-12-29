@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <GeomLib/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <MeshTools/FEBox.h>
 #include <MeshTools/FEMesher.h>
 #include <GeomLib/GPrimitive.h>

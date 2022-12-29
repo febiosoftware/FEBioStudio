@@ -54,7 +54,7 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
 #include <GLWLib/convert.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
 #include <PostLib/ImageModel.h>

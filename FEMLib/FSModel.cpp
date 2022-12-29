@@ -43,7 +43,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
 #include "FEMKernel.h"
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <vector>
 #include <sstream>

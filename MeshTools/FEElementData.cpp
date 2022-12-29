@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include "GGroup.h"
+#include <GeomLib/GGroup.h>
 
 //-----------------------------------------------------------------------------
 FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)

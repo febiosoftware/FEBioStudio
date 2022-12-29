@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEConnector.h"
 #include "FSModel.h"
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <set>
 #include <memory>
 //using namespace std;

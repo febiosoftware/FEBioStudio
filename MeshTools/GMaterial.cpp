@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GMaterial.h"
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMaterial.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <sstream>

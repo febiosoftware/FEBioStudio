@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QGridLayout>
 #include <QMessageBox>
 #include <MeshLib/FEItemListBuilder.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 #include "MainWindow.h"

@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FSCore/ParamBlock.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <GeomLib/GMeshObject.h>
 #include <MeshTools/GModifiedObject.h>

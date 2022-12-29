@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData.h"
-#include "FEGroup.h"
+#include <GeomLib/FSGroup.h>
 #include <vector>
 
 class FESurfaceData : public FEMeshData

@@ -40,7 +40,7 @@ SOFTWARE.*/
 #include <stdarg.h>
 #include <FECore/units.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include "GGroup.h"
+#include <GeomLib/GGroup.h>
 
 std::string FEModifier::m_error;
 

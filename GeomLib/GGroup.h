@@ -27,8 +27,8 @@ SOFTWARE.*/
 #pragma once
 
 #include <MeshLib/FEItemListBuilder.h>
-#include "FEGroup.h"
-#include "FESelection.h"
+#include "FSGroup.h"
+#include <MeshTools/FESelection.h>
 
 class FSModel;
 class GPartSelection;
