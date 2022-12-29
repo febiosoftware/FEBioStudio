@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEPLYExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 FEPLYExport::FEPLYExport(FSProject& prj) : FSFileExport(prj)
 {

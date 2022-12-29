@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FEVTKExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 FEVTKExport::FEVTKExport(FSProject& prj) : FSFileExport(prj)
 {

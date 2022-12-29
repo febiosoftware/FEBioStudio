@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEMultiMaterial.h"
 #include "FEMaterialFactory.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <sstream>
 #include <FECore/units.h>
 #include <FEBioLink/FEBioClass.h>

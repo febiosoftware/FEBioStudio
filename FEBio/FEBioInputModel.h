@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEElementFormulation.h>
 
 class GMeshObject;

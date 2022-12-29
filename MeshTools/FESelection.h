@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEGroup.h"
-#include "FEModel.h"
+#include <FEMLib/FSModel.h>
 #include "GDiscreteObject.h"
 #include <vector>
 //using namespace std;

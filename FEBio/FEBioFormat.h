@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <XML/XMLReader.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include "FEBioInputModel.h"

@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include "InputWidgets.h"
 
 class Ui::CDlgAddNodalLoad

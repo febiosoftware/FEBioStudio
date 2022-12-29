@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <MeshIO/FSFileExport.h>
 #include <XML/XMLWriter.h>
 #include "FEBioException.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <sstream>
 #include <map>
 

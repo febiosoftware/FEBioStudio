@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/Serializable.h>
-#include "FEItemListBuilder.h"
+#include <MeshTools/FEItemListBuilder.h>
 
 class FSProject;
 

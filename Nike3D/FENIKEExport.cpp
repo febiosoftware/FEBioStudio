@@ -29,7 +29,7 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 
 #include "FENIKEExport.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
 // FENIKEExport

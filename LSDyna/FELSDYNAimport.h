@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "MeshIO/FileReader.h"
-#include "MeshTools/FEProject.h"
+#include <FEMLib/FSProject.h>
 #include "LSDYNAModel.h"
 
 #include <list>

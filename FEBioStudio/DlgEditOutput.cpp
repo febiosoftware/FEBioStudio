@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DlgEditOutput.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <MeshTools/GGroup.h>

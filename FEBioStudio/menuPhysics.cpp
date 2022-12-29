@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include "DlgAddRigidConnector.h"
 #include "MaterialEditor.h"
 #include "DlgEditProject.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>

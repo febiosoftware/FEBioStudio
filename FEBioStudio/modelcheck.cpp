@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "modelcheck.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEMaterial.h>

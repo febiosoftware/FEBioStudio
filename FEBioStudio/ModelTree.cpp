@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ModelTree.h"
 #include "ModelDocument.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FERigidLoad.h>

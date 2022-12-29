@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEGroup.h"
 #include <MeshLib/FEMesh.h>
-#include "FEModel.h"
+#include <FEMLib/FSModel.h>
 #include <GeomLib/GObject.h>
 using namespace std;
 

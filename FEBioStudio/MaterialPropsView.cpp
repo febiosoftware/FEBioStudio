@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <QComboBox>
 #include "units.h"
 #include "PropertyList.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include "EditVariableParam.h"
 

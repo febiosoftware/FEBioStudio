@@ -33,8 +33,8 @@ SOFTWARE.*/
 #include <QListWidget>
 #include <QFormLayout>
 #include <QMessageBox>
-#include <MeshTools/FEModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSModel.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
 #include <FEBioLink/FEBioInterface.h>

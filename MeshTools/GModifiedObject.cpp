@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GModifiedObject.h"
-#include "FEModel.h"
+#include <FEMLib/FSModel.h>
 #include <MeshTools/GLMesh.h>
 
 //-----------------------------------------------------------------------------

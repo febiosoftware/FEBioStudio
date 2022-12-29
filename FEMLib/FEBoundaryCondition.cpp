@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEBoundaryCondition.h"
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/FEModel.h>
+#include "FSModel.h"
 #include <MeshTools/GGroup.h>
 #include <FECore/units.h>
 #include <FECore/fecore_enum.h>

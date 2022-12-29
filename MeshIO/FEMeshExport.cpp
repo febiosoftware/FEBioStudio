@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FEMeshExport.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <memory>
 //using namespace std;
 

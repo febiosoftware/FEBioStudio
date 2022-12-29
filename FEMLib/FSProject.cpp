@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "FEProject.h"
+#include "FSProject.h"
 #include <FEMLib/FEMKernel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <FEMLib/FELoadController.h>
 #include <FEMLib/FEMeshDataGenerator.h>
 #include <FEMLib/FEElementFormulation.h>
-#include "GGroup.h"
+#include <MeshTools/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>

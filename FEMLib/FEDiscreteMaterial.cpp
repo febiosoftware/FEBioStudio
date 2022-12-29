@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEDiscreteMaterial.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <FSCore/ParamBlock.h>
 #include <FECore/units.h>
 #include <FEBioLink/FEBioInterface.h>

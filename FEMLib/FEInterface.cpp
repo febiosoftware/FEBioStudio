@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEInterface.h"
-#include <MeshTools/FEModel.h>
+#include "FSModel.h"
 #include <MeshTools/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <set>

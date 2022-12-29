@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "ModelFileReader.h"
 #include "FEBioStudio.h"
 #include <FEBio/FEBioImport.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FEModelConstraint.h>

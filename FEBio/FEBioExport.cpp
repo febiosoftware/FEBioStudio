@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <MeshTools/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <sstream>
 #include <iomanip>
 

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/Serializable.h>
 #include <FECore/fecore_enum.h>
 #include <stdlib.h>
-#include "FEModel.h"
+#include "FSModel.h"
 #include "PlotDataSettings.h"
 #include <ostream>
 

@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "FEModelComponent.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
-#include <MeshTools/FEModel.h>
+#include "FSModel.h"
 #include "FECoreMaterial.h"	// for FEElementRef
 #include "FEMaterial.h" // for fiber generator defines
 #include <exception>

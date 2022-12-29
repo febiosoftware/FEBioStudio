@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <FECore/FEModule.h>
 #include <FEBioLib/FEBioModel.h>
 #include <FEBioLib/febio.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FEStepComponent.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 using namespace FEBio;
 

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GGroup.h"
-#include "FEModel.h"
+#include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 

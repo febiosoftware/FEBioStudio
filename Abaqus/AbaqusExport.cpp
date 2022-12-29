@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "AbaqusExport.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 

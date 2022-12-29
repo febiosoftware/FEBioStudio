@@ -34,9 +34,9 @@ SOFTWARE.*/
 #include "FEMLib/FEMeshAdaptor.h"
 #include "FEMLib/FELoadController.h"
 #include "FEMLib/FEMeshDataGenerator.h"
-#include "GMaterial.h"
-#include "FEDataVariable.h"
-#include "FESoluteData.h"
+#include <MeshTools/GMaterial.h>
+#include <MeshTools/FEDataVariable.h>
+#include <MeshTools/FESoluteData.h>
 #include "FEMLib/FEDOF.h"
 #include "FEMLib/FEInitialCondition.h"
 #include <FSCore/FSObjectList.h>

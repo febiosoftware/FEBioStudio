@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMaterial.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <FECore/units.h>
 #include "FEDiscreteMaterial.h"
 #include <FEBioLink/FEBioClass.h>

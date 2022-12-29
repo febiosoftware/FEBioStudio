@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include "PlotWidget.h"
 #include "IconProvider.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEMLib/FEBase.h>
 #include <FEBioLink/FEBioClass.h>
