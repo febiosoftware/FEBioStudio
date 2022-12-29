@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <MeshLib/FEElementData.h>
 #include <MeshLib/FESurfaceData.h>
 #include <MeshLib/FENodeData.h>

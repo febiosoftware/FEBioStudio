@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioInputModel.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
 #include "FEBioImport.h"
 #include <string.h>

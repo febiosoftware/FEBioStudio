@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <MeshTools/GModifiedObject.h>
 #include <FSCore/FSObjectList.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <MeshLib/FEItemListBuilder.h>
 #include "GGroup.h"
 #include <MeshLib/FEMesh.h>

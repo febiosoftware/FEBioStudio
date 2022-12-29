@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMaterial.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <string.h>

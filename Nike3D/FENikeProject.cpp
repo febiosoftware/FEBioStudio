@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
 #include <memory>
 //using namespace std;

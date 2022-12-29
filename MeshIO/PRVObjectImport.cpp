@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <FEMLib/FSProject.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 
 //-----------------------------------------------------------------------------
 PRVObjectImport::PRVObjectImport(FSProject& prj) : FSFileImport(prj)

@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "FEBioExport12.h"
 #include <FEMLib/FERigidConstraint.h>
 #include <GeomLib/GModel.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>

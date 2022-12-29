@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <GeomLib/FSGroup.h>
 #include <FEMLib/FSModel.h>
-#include "GDiscreteObject.h"
+#include <FEMLib/GDiscreteObject.h>
 #include <vector>
 //using namespace std;
 

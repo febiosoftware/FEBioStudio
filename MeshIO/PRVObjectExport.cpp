@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FSCore/Archive.h>
 #include "PRVObjectFormat.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FSProject.h>
 

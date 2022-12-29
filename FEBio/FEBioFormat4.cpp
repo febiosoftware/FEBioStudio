@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <MeshLib/FEElementData.h>
 #include <MeshLib/FESurfaceData.h>
 #include <MeshLib/FENodeData.h>
