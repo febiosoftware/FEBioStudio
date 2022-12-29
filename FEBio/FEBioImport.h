@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshTools/GMaterial.h>
+#include <FEMLib/GMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FSProject.h>
 #include <MeshIO/FileReader.h>

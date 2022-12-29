@@ -26,19 +26,19 @@ SOFTWARE.*/
 
 #pragma once
 #include "MeshLib/FEMesh.h"
-#include "FEMLib/FEInterface.h"
-#include "FEMLib/FEConnector.h"
+#include "FEInterface.h"
+#include "FEConnector.h"
 #include <FSCore/FSObject.h>
-#include "FEMLib/FEBoundaryCondition.h"
-#include "FEMLib/FEAnalysisStep.h"
-#include "FEMLib/FEMeshAdaptor.h"
-#include "FEMLib/FELoadController.h"
-#include "FEMLib/FEMeshDataGenerator.h"
-#include <MeshTools/GMaterial.h>
-#include <MeshTools/FEDataVariable.h>
-#include <MeshTools/FESoluteData.h>
-#include "FEMLib/FEDOF.h"
-#include "FEMLib/FEInitialCondition.h"
+#include "FEBoundaryCondition.h"
+#include "FEAnalysisStep.h"
+#include "FEMeshAdaptor.h"
+#include "FELoadController.h"
+#include "FEMeshDataGenerator.h"
+#include "GMaterial.h"
+#include "FEDataVariable.h"
+#include "FESoluteData.h"
+#include "FEDOF.h"
+#include "FEInitialCondition.h"
 #include <FSCore/FSObjectList.h>
 
 //-----------------------------------------------------------------------------

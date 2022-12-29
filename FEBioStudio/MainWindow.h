@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QCloseEvent>
 #include <QtCore/QProcess>
 #include <FSCore/box.h>
-#include <MeshTools/GMaterial.h>
+#include <FEMLib/GMaterial.h>
 #include <FECore/vec3d.h>
 
 class FSObject;

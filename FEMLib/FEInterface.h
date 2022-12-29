@@ -1,7 +1,7 @@
 #pragma once
 #include "FEStepComponent.h"
 #include <MeshLib/FEItemListBuilder.h>
-#include "MeshTools/GMaterial.h"
+#include "GMaterial.h"
 #include <list>
 #include "IHasItemList.h"
 //using namespace std;

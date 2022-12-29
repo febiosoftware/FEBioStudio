@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "MaterialPropsView.h"
-#include <MeshTools/GMaterial.h>
+#include <FEMLib/GMaterial.h>
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <QPainter>

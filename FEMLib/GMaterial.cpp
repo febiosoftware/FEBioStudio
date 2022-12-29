@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GMaterial.h"
-#include <FEMLib/FEUserMaterial.h>
-#include <FEMLib/FEMaterial.h>
+#include "FEUserMaterial.h"
+#include "FEMaterial.h"
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>

@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FERigidConstraint.h>
-#include <MeshTools/GMaterial.h>
+#include <FEMLib/GMaterial.h>
 #include <FEMLib/FSProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
