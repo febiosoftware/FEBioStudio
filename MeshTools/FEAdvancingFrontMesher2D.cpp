@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FECurveMesh.h>
-#include <MeshTools/FEMMGRemesh.h>
+#include "FEMMGRemesh.h"
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
 #include <MeshLib/FESurfaceMesh.h>
