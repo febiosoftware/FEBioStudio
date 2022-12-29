@@ -366,6 +366,13 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 				}
 			}
             else if (tag == "plot_stride") tag.value(ops.plot_stride);
+			else if (tag == "plot_zero_state") tag.value(ops.plot_zero);
+			else if (tag == "plot_range")
+			{
+				tag.value(ops.plot_range, 2);
+			}
+			else if (tag == "output_level") tag.value(ops.output_level);
+			else if (tag == "adaptor_re_solve") tag.value(ops.adapter_re_solve);
 			else ParseUnknownTag(tag);
 		}
 		++tag;
@@ -1429,10 +1436,14 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			FEBioInputModel& feb = GetFEBioModel();
 			FSModel& fem = feb.GetFSModel();
 
-			const char* szset = tag.AttributeValue("elem_set");
+
+			// TODO: add support for this
+			ParseUnknownTag(tag);
+
+/*			const char* szset = tag.AttributeValue("elem_set");
 			if (strcmp(szgen, "surface-to-surface map") == 0)
 			{
-/*				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
+				FESurfaceToSurfaceMap* s2s = new FESurfaceToSurfaceMap;
 				s2s->m_generator = szgen;
 				s2s->m_var = var->cvalue();
 				s2s->m_elset = szset;
@@ -1499,8 +1510,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				} while (!tag.isend());
 
 				feb.GetFSModel().AddDataMap(s2s);
-				*/
 			}
+		*/
 		}
 		else ParseUnknownTag(tag);
 	}
@@ -1654,6 +1665,7 @@ bool FEBioFormat3::ParseBoundarySection(XMLTag& tag)
 			else if (type == "rigid"     ) ParseBCRigid(m_pBCStep, tag);
 			else if (type == "fluid rotational velocity") ParseBCFluidRotationalVelocity(m_pBCStep, tag);
 			else if (type == "normal displacement") ParseBCNormalDisplacement(m_pBCStep, tag);
+			else if (type == "linear constraint") ParseBCLinearConstraint(m_pBCStep, tag);
 			else ParseUnknownTag(tag);
 		}
 		else ParseUnknownTag(tag);
@@ -2062,6 +2074,30 @@ void FEBioFormat3::ParseBCNormalDisplacement(FSStep* pstep, XMLTag& tag)
 	}
 }
 
+void FEBioFormat3::ParseBCLinearConstraint(FSStep* pstep, XMLTag& tag)
+{
+	FSModel& fem = GetFSModel();
+	std::string comment = tag.comment();
+
+	// read the name attribute
+	string name;
+	const char* sz = tag.AttributeValue("name", true);
+	if (sz == 0)
+	{
+		char szbuf[256] = { 0 };
+		sprintf(szbuf, "LinearConstraint%02d", CountBCsByTypeString("linear constraint", fem) + 1);
+		name = szbuf;
+	}
+	else name = string(sz);
+
+	FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("linear constraint", &fem);
+	pbc->SetName(name);
+	pbc->SetInfo(comment);
+
+	pstep->AddBC(pbc);
+
+	ParseModelComponent(pbc, tag);
+}
 
 //=============================================================================
 //
@@ -3831,12 +3867,13 @@ bool FEBioFormat3::ParseLoadCurve(XMLTag& tag, LoadCurve& lc)
 		if (tag == "interpolate")
 		{
 			string interpolate = tag.szvalue();
-			if      ((interpolate == "step"  ) || (interpolate == "STEP"  )) lc.SetInterpolator(PointCurve::STEP);
-			else if ((interpolate == "linear") || (interpolate == "LINEAR")) lc.SetInterpolator(PointCurve::LINEAR);
-			else if ((interpolate == "smooth") || (interpolate == "SMOOTH")) lc.SetInterpolator(PointCurve::SMOOTH);
-            else if ((interpolate == "cubic spline") || (interpolate == "CUBIC SPLINE")) lc.SetInterpolator(PointCurve::CSPLINE);
-            else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetInterpolator(PointCurve::CPOINTS);
-            else if ((interpolate == "approximation") || (interpolate == "APPROXIMATION")) lc.SetInterpolator(PointCurve::APPROX);
+			if      ((interpolate == "step"          ) || (interpolate == "STEP"          )) lc.SetInterpolator(PointCurve::STEP);
+			else if ((interpolate == "linear"        ) || (interpolate == "LINEAR"        )) lc.SetInterpolator(PointCurve::LINEAR);
+			else if ((interpolate == "smooth"        ) || (interpolate == "SMOOTH"        )) lc.SetInterpolator(PointCurve::SMOOTH);
+			else if ((interpolate == "cubic spline"  ) || (interpolate == "CUBIC SPLINE"  )) lc.SetInterpolator(PointCurve::CSPLINE);
+			else if ((interpolate == "control points") || (interpolate == "CONTROL POINTS")) lc.SetInterpolator(PointCurve::CPOINTS);
+			else if ((interpolate == "approximation" ) || (interpolate == "APPROXIMATION" )) lc.SetInterpolator(PointCurve::APPROX);
+			else if ((interpolate == "smooth step"   ) || (interpolate == "SMOOTH STEP"   )) lc.SetInterpolator(PointCurve::SMOOTH_STEP);
 			else FileReader()->AddLogEntry("unknown interpolation type for loadcurve %d (line %d)", nid, tag.m_nstart_line);
 		}
 		else if (tag == "extend")

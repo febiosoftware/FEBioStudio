@@ -134,14 +134,32 @@ AbaqusModel::NODE_SET* AbaqusModel::FindNodeSet(const char* sznset)
 // find a part with a particular element set
 AbaqusModel::ELEMENT_SET* AbaqusModel::FindElementSet(const char* szelemset)
 {
-	list<AbaqusModel::PART*>::iterator it;
-	for (it = m_Part.begin(); it != m_Part.end(); ++it)
+	char szbuf[256] = { 0 };
+	const char* ch = strchr(szelemset, '.');
+	if (ch)
 	{
-		AbaqusModel::PART& part = *(*it);
-		list<AbaqusModel::ELEMENT_SET>::iterator ps = part.FindElementSet(szelemset);
-		if (ps != part.m_ElSet.end())
+		strncpy(szbuf, szelemset, (int)(ch - szelemset));
+		AbaqusModel::INSTANCE* inst = FindInstance(szbuf);
+		if (inst == nullptr) return nullptr;
+
+		AbaqusModel::PART* pg = inst->GetPart();
+		list<AbaqusModel::ELEMENT_SET>::iterator ps = pg->FindElementSet(ch+1);
+		if (ps != pg->m_ElSet.end())
 		{
 			return &(*ps);
+		}
+	}
+	else
+	{
+		list<AbaqusModel::PART*>::iterator it;
+		for (it = m_Part.begin(); it != m_Part.end(); ++it)
+		{
+			AbaqusModel::PART& part = *(*it);
+			list<AbaqusModel::ELEMENT_SET>::iterator ps = part.FindElementSet(szelemset);
+			if (ps != part.m_ElSet.end())
+			{
+				return &(*ps);
+			}
 		}
 	}
 
@@ -499,4 +517,32 @@ void AbaqusModel::INSTANCE::GetRotation(double t[7])
 	t[0] = m_rot[0]; t[1] = m_rot[1]; t[2] = m_rot[2];
 	t[3] = m_rot[3]; t[4] = m_rot[4]; t[5] = m_rot[5];
 	t[6] = m_rot[6];
+}
+
+//-----------------------------------------------------------------------------
+void AbaqusModel::AddAmplitude(const AbaqusModel::Amplitude& a)
+{
+	m_Amp.push_back(a);
+}
+
+int AbaqusModel::Amplitudes() const
+{
+	return (int)m_Amp.size();
+}
+
+const AbaqusModel::Amplitude& AbaqusModel::GetAmplitude(int n) const
+{
+	return m_Amp[n];
+}
+
+int AbaqusModel::FindAmplitude(const char* szname) const
+{
+	for (int i = 0; i < m_Amp.size(); ++i)
+	{
+		if (szicmp(szname, m_Amp[i].m_name.c_str()))
+		{
+			return i;
+		}
+	}
+	return -1;
 }

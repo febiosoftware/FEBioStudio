@@ -220,6 +220,7 @@ protected:
 	void WriteGeometryNodes();
 	void WriteGeometryElements(bool writeMats = true, bool useMatNames = false);
 	void WriteGeometryPart(Part* part, GPart* pg, bool writeMats = true, bool useMatNames = false);
+	void WriteGeometryEdges();
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
 	void WriteGeometrySurfacePairs();
@@ -277,6 +278,7 @@ protected:
 
 	void WriteSurfaceSection(FEFaceList& s);
 	void WriteSurfaceSection(NamedItemList& l);
+	void WriteEdgeSection(NamedItemList& l);
 	void WriteElementList(FEElemList& el);
 
 protected:
@@ -290,6 +292,7 @@ protected:
 	string GetElementSetName(FEItemListBuilder* pl);
 
 	void AddNodeSet(const std::string& name, FEItemListBuilder* pl);
+	void AddEdgeSet(const std::string& name, FEItemListBuilder* pl);
 	void AddSurface(const std::string& name, FEItemListBuilder* pl);
 	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
 
@@ -302,6 +305,7 @@ protected:
 	std::vector<NamedItemList>		m_pSurf;	//!< list of named surfaces
 	std::vector<NamedItemList>		m_pNSet;	//!< list of named node sets
 	std::vector<NamedItemList>		m_pESet;	//!< list of named element sets
+	std::vector<NamedItemList>		m_pEdge;	//!< list of named edges
 
 	std::vector<ElementSet>		m_ElSet;	//!< the element sets
 

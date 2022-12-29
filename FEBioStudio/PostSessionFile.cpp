@@ -85,12 +85,12 @@ bool PostSessionFileReader::Load(const char* szfile)
 	m_szfile = szfile;
 
 	XMLReader xml;
-	if (xml.Open(szfile) == false) return false;
+	if (xml.Open(szfile) == false) return errf("Failed opening post session file.");
 
 	XMLTag tag;
 	if (xml.FindTag("febiostudio_post_session", tag) == false)
 	{
-		return false;
+		return errf("This is not a valid post session file");
 	}
 
 	m_doc->SetGLModel(nullptr);
@@ -194,24 +194,39 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 			m_openFile = kine; // assign this before we load so that we can monitor progress.
 			kine->Load(nullptr); // this class doesn't use the file name passed, so we just pass nullptr.
 		}
-		else return false;
+		else return errf("Don't know type attribute value");
 	}
 	else
 	{
 		const char* szfile = tag.AttributeValue("file");
+		std::string modelFile = currentDir.absoluteFilePath(szfile).toStdString();
 
-		xpltFileReader* xplt = new xpltFileReader(m_fem);
-		m_openFile = xplt; // assign this before we load so that we can monitor progress.
-		if (xplt->Load(szfile) == false)
+		// check the extension
+		const char* szext = strrchr(szfile, '.');
+		if (strcmp(szext, ".xplt") == 0)
 		{
-			return false;
+			xpltFileReader* xplt = new xpltFileReader(m_fem);
+			m_openFile = xplt; // assign this before we load so that we can monitor progress.
+		}
+		else if (strcmp(szext, ".k") == 0)
+		{
+			Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(m_fem);
+			m_openFile = reader;
+		}
+		else return errf("Don't know how to read file.");
+
+		if (m_openFile == nullptr) return errf("No file reader allocated.");
+
+		if (m_openFile->Load(modelFile.c_str()) == false)
+		{
+			return errf("Failed loading model file\n%s", modelFile.c_str());
 		}
 
 		// now create a GL model
 		m_doc->SetGLModel(new Post::CGLModel(m_fem));
 
 		// initialize
-		if (m_doc->Initialize() == false) return false;
+		if (m_doc->Initialize() == false) return errf("Failed initializing document");
 		m_doc->SetInitFlag(true);
 	}
 
@@ -220,20 +235,39 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 
 bool PostSessionFileReader::parse_open(XMLTag& tag)
 {
-	const char* szfile = tag.AttributeValue("file");
+	// we'll use this for converting to absolute file paths.
+	QFileInfo fi(m_szfile);
+	QDir currentDir(fi.absolutePath());
 
-	xpltFileReader* xplt = new xpltFileReader(m_fem);
-	m_openFile = xplt; // assign this before we load so that we can monitor progress.
-	if (xplt->Load(szfile) == false)
+	const char* szfile = tag.AttributeValue("file");
+	std::string modelFile = currentDir.absoluteFilePath(szfile).toStdString();
+
+	// check the extension
+	const char* szext = strrchr(szfile, '.');
+	if (strcmp(szext, ".xplt") == 0)
 	{
-		return false;
+		xpltFileReader* xplt = new xpltFileReader(m_fem);
+		m_openFile = xplt; // assign this before we load so that we can monitor progress.
+	}
+	else if (strcmp(szext, ".k") == 0)
+	{
+		Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(m_fem);
+		m_openFile = reader;
+	}
+	else return errf("Don't know how to read file.");
+
+	if (m_openFile == nullptr) return errf("No file reader allocated.");
+
+	if (m_openFile->Load(modelFile.c_str()) == false)
+	{
+		return errf("Failed loading model file\n%s", modelFile.c_str());
 	}
 
 	// now create a GL model
 	m_doc->SetGLModel(new Post::CGLModel(m_fem));
 
 	// initialize
-	if (m_doc->Initialize() == false) return false;
+	if (m_doc->Initialize() == false) return errf("Failed to initialize document");
 	m_doc->SetInitFlag(true);
 
 	return true;
@@ -294,7 +328,7 @@ bool PostSessionFileReader::parse_material(XMLTag& tag)
 			++tag;
 		} while (!tag.isend());
 	}
-	else return false;
+	else return errf("Invalid material ID");
 
 	return true;
 }
@@ -305,7 +339,7 @@ bool PostSessionFileReader::parse_datafield(XMLTag& tag)
 	Post::FEPostModel& fem = *m_doc->GetFSModel();
 	Post::FEDataManager& dm = *fem.GetDataManager();
 	int n = dm.FindDataField(szname);
-	if (n < 0) return false;
+	if (n < 0) return errf("Failed finding data field %s", szname);
 
 	Post::ModelDataField* data = *dm.DataField(n);
 	fsps_read_parameters(data, tag);
@@ -548,6 +582,25 @@ bool PostSessionFileWriter::Write(const char* szfile)
 				plt.add_attribute("file", plotFile);
 				xml.add_empty(plt);
 			}
+		}
+		else if (dynamic_cast<FEKinematFileReader*>(reader))
+		{
+			FEKinematFileReader* kine = dynamic_cast<FEKinematFileReader*>(reader);
+	
+			// create absolute file names for model and kine files
+			std::string modelFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetModelFile())).toStdString();
+			std::string kineFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetKineFile())).toStdString();
+
+			XMLElement el("model");
+			el.add_attribute("type", "kinemat");
+			xml.add_branch(el);
+			{
+				xml.add_leaf("model_file", modelFile);
+				xml.add_leaf("kine_file", kineFile);
+				int n[3] = { kine->GetMin(), kine->GetMax(), kine->GetStep() };
+				xml.add_leaf("range", n, 3);
+			}
+			xml.close_branch();
 		}
 		else
 		{

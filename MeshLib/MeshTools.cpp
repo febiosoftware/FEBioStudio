@@ -1103,6 +1103,68 @@ void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* 
 }
 
 //-----------------------------------------------------------------------------
+bool project_inside_element2d(FEElement_& el, vec3d* x, const vec2d& p, double q[2])
+{
+	if (el.IsShell() == false) return false;
+
+	const double tol = 1e-7;
+	const int nmax = 10;
+
+	int ne = el.Nodes();
+	double dq[2], R[2];
+	mat2d K;
+	double u2, N[FSElement::MAX_NODES], G[2][FSElement::MAX_NODES];
+	int n = 0;
+	do
+	{
+		el.shape_2d(N, q[0], q[1]);
+		el.shape_deriv_2d(G[0], G[1], q[0], q[1]);
+
+		R[0] = p.x();
+		R[1] = p.y();
+		for (int i = 0; i < ne; ++i)
+		{
+			R[0] -= N[i] * x[i].x;
+			R[1] -= N[i] * x[i].y;
+		}
+
+		K.zero();
+		for (int i = 0; i < ne; ++i)
+		{
+			K[0][0] -= G[0][i] * x[i].x; K[0][1] -= G[1][i] * x[i].x;
+			K[1][0] -= G[0][i] * x[i].y; K[1][1] -= G[1][i] * x[i].y;
+		}
+
+		mat2d Ki = K.inverse();
+
+		dq[0] = Ki[0][0] * R[0] + Ki[0][1] * R[1];
+		dq[1] = Ki[1][0] * R[0] + Ki[1][1] * R[1];
+
+		q[0] -= dq[0];
+		q[1] -= dq[1];
+
+		u2 = dq[0] * dq[0] + dq[1] * dq[1];
+		++n;
+	}
+	while ((u2 > tol * tol) && (n < nmax));
+
+	bool inside = false;
+	switch (el.Type())
+	{
+	case FE_TRI3:
+		inside = (q[0] >= -tol) && (q[1] >= -tol) && (q[0] + q[1] <= 1.0 + tol);
+		break;
+	case FE_QUAD4:
+		inside =((q[0] >= -1.0 - tol) && (q[0] <= 1.0 + tol) && (q[1] >= -1.0 - tol) && (q[1] <= 1.0 + tol));
+		break;
+	default:
+		assert(false);
+	}
+	return inside;
+}
+
+
+//-----------------------------------------------------------------------------
 bool ProjectInsideReferenceElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3])
 {
 	r[0] = r[1] = r[2] = 0.f;

@@ -129,6 +129,15 @@ string FEBioExport4::GetNodeSetName(FEItemListBuilder* pl)
 	for (int i = 0; i < N; ++i)
 		if (m_pNSet[i].m_list == pl) return m_pNSet[i].m_name.c_str();
 
+	// search the edgesets
+	N = (int)m_pEdge.size();
+	for (int i = 0; i < N; ++i)
+		if (m_pEdge[i].m_list == pl)
+		{
+			string edgeName = m_pEdge[i].m_name;
+			return string("@edge:") + edgeName;
+		}
+
 	// search the surfaces
 	N = (int)m_pSurf.size();
 	for (int i = 0; i < N; ++i)
@@ -167,6 +176,24 @@ void FEBioExport4::AddNodeSet(const std::string& name, FEItemListBuilder* pl)
 	}
 
 	m_pNSet.push_back(NamedItemList(name, pl));
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::AddEdgeSet(const std::string& name, FEItemListBuilder* pl)
+{
+	// see if the node set is already defined
+	for (int i = 0; i < m_pEdge.size(); ++i)
+	{
+		if (m_pEdge[i].m_name == name)
+		{
+			// add it, but mark it as duplicate
+//			assert(false);
+			m_pEdge.push_back(NamedItemList(name, pl, true));
+			return;
+		}
+	}
+
+	m_pEdge.push_back(NamedItemList(name, pl));
 }
 
 //-----------------------------------------------------------------------------
@@ -318,6 +345,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 
 				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
 				else if ((ps->Type() == GO_PART) || (ps->Type() == FE_PART)) AddElemSet(name, ps);
+				else if ((ps->Type() == GO_EDGE) || (ps->Type() == FE_EDGESET)) AddEdgeSet(name, ps);
 				else AddNodeSet(name, ps);
 			}
 		}
@@ -1093,6 +1121,9 @@ void FEBioExport4::WriteMeshSection()
 	// write the node sets
 	WriteGeometryNodeSets();
 
+	// write the edges
+	WriteGeometryEdges();
+
 	// write named surfaces
 	WriteGeometrySurfaces();
 
@@ -1418,6 +1449,23 @@ void FEBioExport4::WriteGeometrySurfaces()
 }
 
 //-----------------------------------------------------------------------------
+void FEBioExport4::WriteGeometryEdges()
+{
+	int NC = (int)m_pEdge.size();
+	for (int i = 0; i < NC; ++i)
+	{
+		XMLElement el("Edge");
+		el.add_attribute("name", m_pEdge[i].m_name.c_str());
+		m_xml.add_branch(el);
+		{
+			WriteEdgeSection(m_pEdge[i]);
+		}
+		m_xml.close_branch();
+	}
+}
+
+
+//-----------------------------------------------------------------------------
 void FEBioExport4::WriteGeometryElementSets()
 {
 	int NS = (int)m_pESet.size();
@@ -1433,8 +1481,11 @@ void FEBioExport4::WriteGeometryElementSets()
 		FEElemList::Iterator pe = ps->First();
 		for (int i = 0; i < NE; ++i, ++pe)
 		{
-			FEElement_& el = *(pe->m_pi);
-			elemIds.push_back(el.m_nid);
+			if (pe->m_pi)
+			{
+				FEElement_& el = *(pe->m_pi);
+				elemIds.push_back(el.m_nid);
+			}
 		}
 
 		m_xml.add_leaf(el, elemIds);
@@ -2970,6 +3021,41 @@ void FEBioExport4::WriteSurfaceSection(NamedItemList& l)
 		}
 		ef.add_attribute("id", n);
 		ef.value(nn, nfn);
+		m_xml.add_leaf(ef);
+	}
+}
+
+
+void FEBioExport4::WriteEdgeSection(NamedItemList& l)
+{
+	FEItemListBuilder* pl = l.m_list;
+	FEEdgeList* pel = pl->BuildEdgeList();
+	if (pel == nullptr) throw InvalidItemListBuilder(l.m_name);
+	std::unique_ptr<FEEdgeList> ps(pel);
+
+	XMLElement ef;
+	int n = 1, nn[3];
+
+	FEEdgeList& e = *pel;
+	int NE = e.Size();
+	FEEdgeList::Iterator pe = e.First();
+
+	for (int j = 0; j < NE; ++j, ++n, ++pe)
+	{
+		if (pe->m_pi == 0) throw InvalidItemListBuilder(l.m_name);
+		FSEdge& edge = *(pe->m_pi);
+		FSCoreMesh* pm = pe->m_pm;
+		int nen = edge.Nodes();
+		for (int k = 0; k < nen; ++k) nn[k] = pm->Node(edge.n[k]).m_nid;
+		switch (nen)
+		{
+		case 2: ef.name("line2"); break;
+		case 3: ef.name("line3"); break;
+		default:
+			assert(false);
+		}
+		ef.add_attribute("id", n);
+		ef.value(nn, nen);
 		m_xml.add_leaf(ef);
 	}
 }

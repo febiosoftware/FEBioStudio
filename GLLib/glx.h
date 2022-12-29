@@ -48,7 +48,12 @@ void drawCircle(const vec3d& c, double R, int N);
 void drawPoint(const vec3d& p);
 void drawLine(const vec3d& a, const vec3d& b);
 void drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
-void drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+
+void line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB);
+void line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB);
+void line(const vec3d& a, const vec3d& b);
+void line(const vec3f& a, const vec3f& b);
+
 void drawArc(const vec3d& c, double R, double w0, double w1, int N);
 void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
 
@@ -56,6 +61,8 @@ void drawSphere(const vec3d& r, float R);
 void drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f);
 void drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f, int nsegs = 16);
 void drawSmoothPath(const std::vector<vec3d>& path, float R);
+void drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
+void drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
 
 void quad4(vec3d r[4], vec3d n[4]);
 void quad4(vec3d r[4], vec3d n[4], GLColor c[4]);
@@ -82,6 +89,8 @@ void lineLoop(const vec3d r[9]);
 void drawLine(double x0, double y0, double x1, double y1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1);
 void drawLine(double x0, double y0, double z0, double x1, double y1, double z1, double x2, double y2, double z2);
+
+void drawBox(double wx, double wy, double wz);
 
 inline void vertex3d(const vec3d& r) { glVertex3d(r.x, r.y, r.z); }
 inline void vertex3d(const vec3d& r, double t) { glTexCoord1d(t); glVertex3d(r.x, r.y, r.z); }

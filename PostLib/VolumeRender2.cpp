@@ -26,13 +26,12 @@ SOFTWARE.*/
 #include "VolumeRender2.h"
 #include <GL/glew.h>
 #include "ImageModel.h"
+#include "ImageSource.h"
 #include <GLLib/GLContext.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
 #include <sstream>
 using namespace Post;
-
-static bool initGlew = false;
 
 static int n = 1;
 
@@ -44,12 +43,6 @@ CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 	AddChoiceParam(0, "Color map")->SetEnumNames("Grayscale\0Red\0Green\0Blue\0Fire\0");
 
 	m_texID = 0;
-
-	if (initGlew == false)
-	{
-		glewInit();
-		initGlew = true;
-	}
 
 	std::stringstream ss;
 	ss << "VolumeRender" << n++;
@@ -67,6 +60,11 @@ CVolumeRender2::~CVolumeRender2()
 void CVolumeRender2::Create()
 {
 	m_vrReset = true;
+}
+
+void CVolumeRender2::Update()
+{
+	Create();
 }
 
 void CVolumeRender2::Init()

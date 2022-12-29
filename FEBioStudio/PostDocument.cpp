@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include "PostSessionFile.h"
 #include "units.h"
 #include "GLPostScene.h"
+#include "MainWindow.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -85,7 +86,8 @@ void ModelData::ReadData(Post::CGLModel* po)
 	m_mdl.m_ntime = po->CurrentTimeIndex();
 	m_mdl.m_bnorm = po->m_bnorm;
 	m_mdl.m_bghost = po->m_bghost;
-	m_mdl.m_bShell2Hex = po->ShowShell2Solid();
+	m_mdl.m_bShell2Solid = po->ShowShell2Solid();
+	m_mdl.m_bBeam2Solid = po->ShowBeam2Solid();
 	m_mdl.m_nshellref = po->ShellReferenceSurface();
 	m_mdl.m_nDivs = po->m_nDivs;
 	m_mdl.m_nrender = po->m_nrender;
@@ -134,7 +136,8 @@ void ModelData::WriteData(Post::CGLModel* po)
 	// set model data
 	po->m_bnorm = m_mdl.m_bnorm;
 	po->m_bghost = m_mdl.m_bghost;
-	po->ShowShell2Solid(m_mdl.m_bShell2Hex);
+	po->ShowShell2Solid(m_mdl.m_bShell2Solid);
+	po->ShowBeam2Solid(m_mdl.m_bBeam2Solid);
 	po->ShellReferenceSurface(m_mdl.m_nshellref);
 	po->m_nDivs = m_mdl.m_nDivs;
 	po->m_nrender = m_mdl.m_nrender;
@@ -242,6 +245,8 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_scene = new CGLPostScene(this);
 
 	SetItemMode(ITEM_ELEM);
+
+	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
 
 CPostDocument::~CPostDocument()
@@ -658,6 +663,8 @@ void CPostDocument::UpdateSelection(bool report)
 {
 	Post::CGLModel* mdl = GetGLModel();
 	if (mdl) mdl->UpdateSelectionLists();
+
+	emit selectionChanged();
 }
 
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)

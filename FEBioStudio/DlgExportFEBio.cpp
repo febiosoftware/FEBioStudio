@@ -73,7 +73,7 @@ public:
 	QCheckBox*	sel;
 	QCheckBox*	comp;
 	QCheckBox*	notes;
-	QCheckBox* pc[15];
+	QCheckBox* pc[16];
 
 public:
 	void setupUi(QWidget* parent)

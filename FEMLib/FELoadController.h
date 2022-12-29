@@ -29,11 +29,15 @@ public:
 	// helper function for converting FEBio "loadcurve" to a LoadCurve
 	virtual LoadCurve* CreateLoadCurve();
 
+	void SetReferenceCount(int n) { m_count = n; }
+	int GetReferenceCount() const { return m_count; }
+
 private:
 	int	m_ntype;
 
 private:
 	int			m_nUID;	//!< unique ID
+	int			m_count;	//!< nr of parameters that reference this lc
 	static	int	m_nref;
 };
 

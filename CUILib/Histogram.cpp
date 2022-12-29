@@ -72,7 +72,7 @@ void CHistogramViewer::Update()
 {
 	if (m_img == nullptr) return;
 
-	C3DImage* im = m_img->GetImageSource()->Get3DImage();
+	C3DImage* im = m_img->Get3DImage();
 
 	std::vector<double> h(256, 0.0);
 	for (int k = 0; k < im->Depth(); ++k)

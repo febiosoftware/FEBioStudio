@@ -39,7 +39,9 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QCheckBox>
 #include <MeshLib/FEMesh.h>
+#include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GObject.h>
+#include <GeomLib/GSurfaceMeshObject.h>
 
 class CMeshInfo : public QGroupBox
 {
@@ -72,6 +74,18 @@ public:
 			nodes->setText("---");
 			faces->setText("---");
 			elems->setText("---");
+
+			if (dynamic_cast<GSurfaceMeshObject*>(po))
+			{
+				GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+				FSSurfaceMesh* psm = pso->GetSurfaceMesh();
+				if (psm)
+				{
+					nodes->setText(QString::number(psm->Nodes()));
+					faces->setText(QString::number(psm->Faces()));
+					elems->setText("0");
+				}
+			}
 		}
 	}
 
@@ -180,7 +194,7 @@ public:
 	QSpinBox* curvatureMaxIters;
 	QCheckBox* curvatureExtQuad;
 
-	FSMesh*		m_pm;
+	FSMeshBase*		m_pm;
 
 	
 
@@ -265,27 +279,70 @@ public:
 
 	void setMesh(GObject* po)
 	{
+		info->setMesh(po);
+		if (po == 0)
+		{
+			table->setRowCount(0);
+			var->clear();
+			m_pm = nullptr;
+			return;
+		}
+
+		FSMesh* pm = po->GetFEMesh();
+		if (pm) setFEMesh(pm);
+		else {
+			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+			if (pso)
+			{
+				setSurfaceMesh(pso->GetSurfaceMesh());
+			}
+		}
+	}
+
+	void setFEMesh(FSMesh* pm)
+	{
 		const int MAX_ELEM = 21;
 		static int ET[] = {
-			FE_HEX8, FE_TET4, FE_PENTA6, FE_QUAD4, FE_TRI3, FE_BEAM2, FE_HEX20, FE_QUAD8, FE_BEAM3, FE_TET10, FE_TRI6, FE_TET15, FE_HEX27, FE_TRI7, FE_QUAD9, FE_TET20, FE_TRI10, FE_PYRA5, FE_PENTA15, FE_TET5, FE_PYRA13, 0};
+			FE_HEX8, FE_TET4, FE_PENTA6, FE_QUAD4, FE_TRI3, FE_BEAM2, FE_HEX20, FE_QUAD8, FE_BEAM3, FE_TET10, FE_TRI6, FE_TET15, FE_HEX27, FE_TRI7, FE_QUAD9, FE_TET20, FE_TRI10, FE_PYRA5, FE_PENTA15, FE_TET5, FE_PYRA13, 0 };
 
 		static const char* EN[] = {
-			"HEX8", "TET4", "PENTA6", "QUAD4", "TRI3", "BEAM2", "HEX20", "QUAD8", "LINE3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "TET20", "TRI10", "PYRA5", "PENTA15", "TET5", "PYRA13", "(unknown)"};
+			"HEX8", "TET4", "PENTA6", "QUAD4", "TRI3", "BEAM2", "HEX20", "QUAD8", "LINE3", "TET10", "TRI6", "TET15", "HEX27", "TRI7", "QUAD9", "TET20", "TRI10", "PYRA5", "PENTA15", "TET5", "PYRA13", "(unknown)" };
 
-		info->setMesh(po);
-		if (po == 0) 
+		if (pm == 0)
 		{
 			table->setRowCount(0);
 			m_pm = nullptr;
 			return;
 		}
 
-		FSMesh* pm = po->GetFEMesh();
-		if (pm == 0)
+		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
+		QStringList items;
+		items << "Element Volume";
+		items << "Jacobian";
+		items << "Shell thickness";
+		items << "Shell area";
+		items << "Tet quality";
+		items << "Tet minimal dihedral angle";
+		items << "Tet maximal dihedral angle";
+		items << "Triangle quality";
+		items << "Tet10 midside node offset";
+		items << "Minimum element edge length";
+		items << "Maximum element edge length";
+		items << "1-Principal curvature";
+		items << "2-Principal curvature";
+		var->clear();
+		var->addItems(items);
+
+		// Add data fields
+		if (pm && pm->MeshDataFields())
 		{
-			table->setRowCount(0);
-			m_pm = nullptr;
-			return;
+			var->insertSeparator(var->count());
+
+			for (int i = 0; i < pm->MeshDataFields(); ++i)
+			{
+				FEMeshData& di = *pm->GetMeshDataField(i);
+				var->addItem(QString::fromStdString(di.GetName()));
+			}
 		}
 
 		// We get ever when the selection has changed, but we don't
@@ -349,35 +406,80 @@ public:
 			}
 		}
 		table->blockSignals(false);
+	}
+
+	void setSurfaceMesh(FSSurfaceMesh* pm)
+	{
+		if (pm == 0)
+		{
+			table->setRowCount(0);
+			m_pm = nullptr;
+			return;
+		}
+
+		// NOTE That the order matches FEFaceType
+		const int MAX_TYPE = 8;
+		static int FT[] = {
+			0, FE_FACE_TRI3, FE_FACE_QUAD4, FE_FACE_TRI6, FE_FACE_TRI7, FE_FACE_QUAD8, FE_FACE_QUAD9, FE_FACE_TRI10 };
+
+		static const char* FN[] = {
+			"(unknown)", "TRI3", "QUAD4", "TRI6", "TRI7", "QUAD8", "QUAD9", "TRI10" };
 
 		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
 		QStringList items;
-		items << "Element Volume";
-		items << "Jacobian";
-		items << "Shell thickness";
-		items << "Shell area";
-		items << "Tet quality";
-		items << "Tet minimal dihedral angle";
-		items << "Tet maximal dihedral angle";
+		items << "Face area";
 		items << "Triangle quality";
-		items << "Tet10 midside node offset";
 		items << "Minimum element edge length";
 		items << "Maximum element edge length";
-		items << "1-Principal curvature";
-		items << "2-Principal curvature";
 		var->clear();
 		var->addItems(items);
 
-		// Add data fields
-		if (pm->MeshDataFields())
-		{
-			var->insertSeparator(var->count());
+		// We get ever when the selection has changed, but we don't
+		// want to update when the mesh hasn't changed.
+		if (m_pm == pm) return;
+		m_pm = pm;
 
-			for (int i = 0; i<pm->MeshDataFields(); ++i)
+		int n[MAX_TYPE] = { 0 };
+		int NF = pm->Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& f = pm->Face(i);
+			switch (f.Type())
 			{
-				FEMeshData& di = *pm->GetMeshDataField(i);
-				var->addItem(QString::fromStdString(di.GetName()));
+			case FE_FACE_TRI3 : n[1]++; break;
+			case FE_FACE_QUAD4: n[2]++; break;
+			case FE_FACE_TRI6 : n[3]++; break;
+			case FE_FACE_TRI7 : n[4]++; break;
+			case FE_FACE_QUAD8: n[5]++; break;
+			case FE_FACE_QUAD9: n[6]++; break;
+			case FE_FACE_TRI10: n[7]++; break;
+			default:
+				assert(false);
+				n[0]++; break;
 			}
 		}
+
+		int m = 0;
+		for (int i = 0; i < MAX_TYPE; ++i) if (n[i] != 0) m++;
+
+		// fill the rows
+		table->blockSignals(true);
+		table->setRowCount(m); m = 0;
+		for (int i = 0; i < MAX_TYPE; ++i)
+		{
+			if (n[i] != 0)
+			{
+				QTableWidgetItem* item = new QTableWidgetItem(FN[i]);
+				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsUserCheckable);
+				item->setCheckState(Qt::Checked);
+				item->setData(Qt::UserRole, FT[i]);
+				table->setItem(m, 0, item);
+				item = new QTableWidgetItem(QString::number(n[i]));
+				item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+				table->setItem(m, 1, item);
+				m++;
+			}
+		}
+		table->blockSignals(false);
 	}
 };

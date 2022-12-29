@@ -81,6 +81,9 @@ public:
 	//! find a node index
 	int FindNodeIndex(int node) const;
 
+	//! see if the edge has a node
+	bool HasNode(int node) const;
+
 	//! Get the edge type
 	int Type() const { return m_type; }
 

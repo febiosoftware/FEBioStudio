@@ -109,7 +109,7 @@ void CImageViewer::SetImageModel(CImageModel* img)
 	ui->m_img = img;
 	if (img)
 	{
-		C3DImage& im3d = *ui->m_img->GetImageSource()->Get3DImage();
+		C3DImage& im3d = *ui->m_img->Get3DImage();
 
 		int n = im3d.Depth();
 		ui->m_slider->setRange(0, n-1);
@@ -153,7 +153,7 @@ void CImageViewer::Update()
 	ui->m_gs->clear();
 	if (ui->m_img == nullptr) return;
 
-	C3DImage& im3d = *ui->m_img->GetImageSource()->Get3DImage();
+	C3DImage& im3d = *ui->m_img->Get3DImage();
 	int NX = im3d.Width();
 	int NY = im3d.Height();
 
@@ -193,7 +193,7 @@ void CImageViewer::UpdatePath()
 		Post::FEPostMesh* mesh = mdl->GetActiveMesh();
 		if (mesh == nullptr) return;
 
-		C3DImage& im3d = *ui->m_img->GetImageSource()->Get3DImage();
+		C3DImage& im3d = *ui->m_img->Get3DImage();
 		int NX = im3d.Width();
 		int NY = im3d.Height();
 

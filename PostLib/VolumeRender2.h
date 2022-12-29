@@ -43,6 +43,8 @@ public:
 
 	void Render(CGLContext& rc) override;
 
+	void Update() override;
+
 private:
 	void Init();
 	void InitTexture();

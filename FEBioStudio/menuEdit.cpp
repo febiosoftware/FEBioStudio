@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <GeomLib/GPrimitive.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
+#include <MeshLib/FEFindElement.h>
 #include <sstream>
 
 using std::stringstream;
@@ -342,6 +343,64 @@ void CMainWindow::on_actionUnhideAll_triggered()
 	}
 }
 
+vector<int> findNodesByCoordinates(FSMesh* pm, const vec3d& p)
+{
+	int nmin = -1;
+	double D2min = 0;
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		vec3d r0 = pm->NodePosition(i);
+
+		double L2 = (p - r0).norm2();
+		if ((nmin == -1) || (L2 < D2min))
+		{
+			nmin = i;
+			D2min = L2;
+		}
+	}
+
+	const double eps = 1e-15;
+	vector<int> items;
+	if ((nmin != -1) && (D2min < eps)) items.push_back(nmin);
+
+	return items;
+}
+
+vector<int> findElementsByCoordinates(FSMesh* pm, const vec3d& p)
+{
+	vector<int> items;
+	FEFindElement FE(*pm);
+	FE.Init();
+	int nelem = -1;
+	double r[3] = { 0 };
+	vec3f x = to_vec3f(p);
+	if (FE.FindElement(x, nelem, r))
+	{
+		items.push_back(nelem);
+	}
+
+	return items;
+}
+
+vector<int> findNodesByRange(FSMesh* pm, const vec3d& r0, const vec3d& r1)
+{
+	BOX box(r0, r1);
+	int nmin = -1;
+	double D2min = 0;
+	vector<int> items;
+	for (int i = 0; i < pm->Nodes(); ++i)
+	{
+		vec3d ri = pm->NodePosition(i);
+
+		if (box.IsInside(ri))
+		{
+			items.push_back(i);
+		}
+	}
+
+	return items;
+}
+
 void CMainWindow::on_actionFind_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
@@ -372,22 +431,47 @@ void CMainWindow::on_actionFind_triggered()
 
 		SetItemSelectionMode(SELECT_OBJECT, nitem);
 
-		vector<int> items = dlg.m_item;
-
-		CGLControlBar* pb = ui->glw->glc;
-		switch (nitem)
+		vector<int> items;
+		if (dlg.m_method == 0)
 		{
-		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pm, items, !dlg.m_bclear)); break;
-		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pm, items, !dlg.m_bclear)); break;
-		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pm, items, !dlg.m_bclear)); break;
-		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, items, !dlg.m_bclear)); break;
+			items = dlg.m_item;
+		}
+		else if (dlg.m_method == 1)
+		{
+			switch (nitem)
+			{
+			case ITEM_NODE: items = findNodesByCoordinates   (pm, dlg.m_coord); break;
+			case ITEM_ELEM: items = findElementsByCoordinates(pm, dlg.m_coord); break;
+			}
+		}
+		else
+		{
+			switch (nitem)
+			{
+			case ITEM_NODE: items = findNodesByRange(pm, dlg.m_min, dlg.m_max); break;
+			}
 		}
 
-		CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
-		if (postDoc) postDoc->GetGLModel()->UpdateSelectionLists();
+		if (items.empty() == false)
+		{
+			switch (nitem)
+			{
+			case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pm, items, !dlg.m_bclear)); break;
+			case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pm, items, !dlg.m_bclear)); break;
+			case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pm, items, !dlg.m_bclear)); break;
+			case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, items, !dlg.m_bclear)); break;
+			}
 
-		ReportSelection();
-		RedrawGL();
+			CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+			if (postDoc) postDoc->GetGLModel()->UpdateSelectionLists();
+
+			ReportSelection();
+			RedrawGL();
+		}
+		else
+		{
+			QMessageBox::information(this, "Find", "Nothing to select!");
+		}
 	}
 }
 

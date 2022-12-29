@@ -187,6 +187,82 @@ mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nst
 }
 
 //-----------------------------------------------------------------------------
+// This function calculates the deformation gradient for a given state with respect to a user-
+// defined reference state.
+mat2d deform_grad_2d(FEPostModel& fem, int n, double r, double s, int nstate, int nref = 0)
+{
+	// get the mesh
+	FEState& state = *fem.GetState(nstate);
+	Post::FEPostMesh& m = *state.GetFEMesh();
+
+	// get the element
+	FEElement_& el = m.ElementRef(n);
+	int N = el.Nodes();
+
+	// we can only define this for shell elements
+	if (el.IsShell() == false)
+	{
+		// for non-solid elements, let's return the identity for now
+		return mat2d(1.0, 0.0, 0.0, 1.0);
+	}
+
+	// get the nodal positions
+	const int MN = FSElement::MAX_NODES;
+	vec3f X[MN], x[MN];
+	if (nref < 0)
+	{
+		Post::FERefState* ref = state.m_ref;
+		for (int i = 0; i < N; i++)
+		{
+			int node = el.m_node[i];
+			X[i] = ref->m_Node[node].m_rt;
+			x[i] = fem.NodePosition(node, nstate);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < N; i++)
+		{
+			int node = el.m_node[i];
+			X[i] = fem.NodePosition(node, nref);
+			x[i] = fem.NodePosition(node, nstate);
+		}
+	}
+
+	// get the shape function derivatives
+	double Hr[MN], Hs[MN];
+	el.shape_deriv_2d(Hr, Hs, r, s);
+
+	// evaluate jacobian
+	mat2d J; J.zero();
+	for (int i = 0; i < N; i++)
+	{
+		J[0][0] += X[i].x * Hr[i]; J[0][1] += X[i].x * Hs[i];
+		J[1][0] += X[i].y * Hr[i]; J[1][1] += X[i].y * Hs[i];
+	}
+
+	// invert jacobian
+	mat2d Ji = J.inverse();
+
+	// evaluate dH/dX = J^(-T)*dH/dr
+	double HX[MN], HY[MN];
+	for (int i = 0; i < N; i++)
+	{
+		HX[i] = Ji[0][0] * Hr[i] + Ji[1][0] * Hs[i];
+		HY[i] = Ji[0][1] * Hr[i] + Ji[1][1] * Hs[i];
+	}
+
+	// evaluate deformation gradient F
+	mat2d F; F.zero();
+	for (int i = 0; i < N; i++)
+	{
+		F[0][0] += x[i].x * HX[i]; F[0][1] += x[i].x * HY[i];
+		F[1][0] += x[i].y * HX[i]; F[1][1] += x[i].y * HY[i];
+	}
+	return F;
+}
+
+//-----------------------------------------------------------------------------
 // Deformation gradient
 DeformationGradient::DeformationGradient(FEState* pm, ModelDataField* pdf) : FEElemData_T<mat3d, DATA_COMP>(pm, pdf)
 {
@@ -448,6 +524,92 @@ void LagrangeStrain::eval(int n, mat3fs* pv)
     E.xz = (float) (0.5*(C[0][2]));
 	
 	*pv = E;
+}
+
+//-----------------------------------------------------------------------------
+// Green-Lagrange strain for 2D elements, evaluated at element center
+//
+void LagrangeStrain2D::eval(int n, mat3fs* pv)
+{
+	// get the element
+	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// get the state
+	int nstate = m_state->GetID();
+
+	if (e.IsShell() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
+	// get the iso-parameteric coordinates of the element center
+	double q[2];
+	e.iso_coord_2d(-1, q);
+
+	// get the deformation gradient
+	mat2d F = deform_grad_2d(*GetFSModel(), n, q[0], q[1], nstate, -1);
+
+	// evaluate right Cauchy-Green C = Ft*F
+	double C[2][2] = { 0 };
+	for (int k = 0; k < 2; k++)
+	{
+		C[0][0] += F[k][0] * F[k][0]; C[0][1] += F[k][0] * F[k][1];
+		C[1][0] += F[k][1] * F[k][0]; C[1][1] += F[k][1] * F[k][1];
+	}
+
+	// evaluate E
+	mat3fs E;
+	E.x = (float)(0.5 * (C[0][0] - 1));
+	E.y = (float)(0.5 * (C[1][1] - 1));
+	E.z = 0.f;
+	E.xy = (float)(0.5 * (C[0][1]));
+	E.yz = 0.f;
+	E.xz = 0.f;
+
+	*pv = E;
+}
+
+
+//-----------------------------------------------------------------------------
+// infinitesimal strain for 2D elements, evaluated at element center
+void InfStrain2D::eval(int n, mat3fs* pv)
+{
+	// get the element
+	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// get the state
+	int nstate = m_state->GetID();
+
+	if (e.IsShell() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
+	// get the iso-parameteric coordinates of the element center
+	double q[2];
+	e.iso_coord_2d(-1, q);
+
+	// get the deformation gradient
+	mat2d F = deform_grad_2d(*GetFSModel(), n, q[0], q[1], nstate, -1);
+
+	// evaluate strain tensor U = F-I
+	double U[2][2];
+	U[0][0] = F[0][0] - 1; U[0][1] = F[0][1];
+	U[1][0] = F[1][0]; U[1][1] = F[1][1] - 1;
+
+	// evaluate small strain tensor eij = 0.5*(Uij + Uji)
+	mat3fs E;
+	E.x = (float)(U[0][0]);
+	E.y = (float)(U[1][1]);
+	E.z = 0.0f;
+	E.xy = (float)(0.5 * (U[0][1] + U[1][0]));
+	E.yz = 0.0f;
+	E.xz = 0.0f;
+
+	// a-ok
+	(*pv) = E;
 }
 
 //-----------------------------------------------------------------------------
@@ -1921,3 +2083,19 @@ void SolidStress::eval(int n, mat3fs* pv)
 	}
 	else *pv = mat3fs(0.f,0.f,0.f,0.f,0.f,0.f);
 }
+
+FEElementMaterial::FEElementMaterial(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf)
+{
+
+}
+
+void FEElementMaterial::eval(int n, float* pv)
+{
+	// get the state
+	FEState& state = *GetFEState();
+
+	FEPostMesh* mesh = state.GetFEMesh();
+	FSElement& el = mesh->Element(n);
+	pv[0] = (float) el.m_MatID;
+}
+

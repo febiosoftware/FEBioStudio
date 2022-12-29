@@ -214,7 +214,14 @@ void CDlgFEBioPlugins::onMenuTriggered(QAction* action)
 
 void CDlgFEBioPlugins::onLoadPlugin()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
+#ifdef WIN32
+    QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
+#elif __APPLE__
+    QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dylib)");
+#else
+    QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.so)");
+#endif
+	
 	if (fileName.isEmpty() == false)
 	{
 		fileName = QDir::toNativeSeparators(fileName);

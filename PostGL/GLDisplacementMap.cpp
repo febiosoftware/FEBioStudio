@@ -48,13 +48,15 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		FEPostModel* pfem = GetModel()->GetFSModel();
+		Post::CGLModel& glm = *GetModel();
+		FEPostModel* pfem = glm.GetFSModel();
 
 		bool bupdate = false;
 		int dispField = GetIntValue(DATA_FIELD);
 		if (pfem && (pfem->GetDisplacementField() != dispField))
 		{
 			pfem->SetDisplacementField(dispField);
+			glm.UpdateDisplacements(pfem->CurrentTimeIndex(), true);
 			bupdate = true;
 		}
 

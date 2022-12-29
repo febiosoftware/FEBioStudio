@@ -28,12 +28,16 @@ SOFTWARE.*/
 #include "DlgFind.h"
 #include <QBoxLayout>
 #include <QGridLayout>
+#include <QFormLayout>
 #include <QDialogButtonBox>
 #include <QRadioButton>
 #include <QLabel>
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QMessageBox>
+#include <QComboBox>
+#include <QStackedWidget>
+#include "PropertyList.h" // for StringToVec3d
 
 bool string_to_int_list(QString listString, std::vector<int>& list);
 
@@ -44,8 +48,13 @@ public:
 	QRadioButton* pselEdges;
 	QRadioButton* pselFaces;
 	QRadioButton* pselElems;
-	QLineEdit* pitem;
+	QComboBox* method;
+	QLineEdit* pids;
+	QLineEdit* pcoord;
+	QLineEdit* pmin;
+	QLineEdit* pmax;
 	QCheckBox* pclear;
+	QStackedWidget* stack;
 
 public:
 	void setupUi(QDialog* parent)
@@ -64,13 +73,43 @@ public:
 		pvg->addWidget(pselElems);
 		pvb->addLayout(pvg);
 
+		QHBoxLayout* hb = new QHBoxLayout;
+		hb->addWidget(new QLabel("method:"));
+		method = new QComboBox(); method->addItems(QStringList() << "ID" << "coordinates" << "coordinates range");
+		hb->addWidget(method);
+		method->setSizePolicy(QSizePolicy::Expanding, method->sizePolicy().verticalPolicy());
+		pvb->addLayout(hb);
+
+		stack = new QStackedWidget;
+		
+		QWidget* wid = new QWidget;
 		QGridLayout* pgrid = new QGridLayout;
-		QLabel* label = new QLabel("Item:");
-		pitem = new QLineEdit; label->setBuddy(pitem);
-		pgrid->addWidget(label, 0, 0); pgrid->addWidget(pitem, 0, 1);
+		QLabel* label = new QLabel("IDs:");
+		pids = new QLineEdit; label->setBuddy(pids);
+		pgrid->addWidget(label, 0, 0); pgrid->addWidget(pids, 0, 1);
 		label = new QLabel("e.g. 1, 2:5, 4:20:5");
 		pgrid->addWidget(label, 1,1);
-		pvb->addLayout(pgrid);
+		wid->setLayout(pgrid);
+		stack->addWidget(wid);
+
+		QWidget* wcoord = new QWidget;
+		pgrid = new QGridLayout;
+		label = new QLabel("x,y,z:");
+		pcoord = new QLineEdit; label->setBuddy(pcoord);
+		pgrid->addWidget(label, 0, 0); pgrid->addWidget(pcoord, 0, 1);
+		label = new QLabel("e.g. 1.0, 2.0, 3.0");
+		pgrid->addWidget(label, 1, 1);
+		wcoord->setLayout(pgrid);
+		stack->addWidget(wcoord);
+
+		QWidget* wrange = new QWidget;
+		QFormLayout* form = new QFormLayout;
+		form->addRow("x0, y0, z0", pmin = new QLineEdit);
+		form->addRow("x1, y1, z1", pmax = new QLineEdit);
+		wrange->setLayout(form);
+		stack->addWidget(wrange);
+
+		pvb->addWidget(stack);
 
 		pclear = new QCheckBox("Clear current selection");
 		pvb->addWidget(pclear);
@@ -80,8 +119,9 @@ public:
 		pvb->addWidget(buttonBox);
 		parent->setLayout(pvb);
 
-		pitem->setFocus();
+		pids->setFocus();
 
+		QObject::connect(method, SIGNAL(currentIndexChanged(int)), stack, SLOT(setCurrentIndex(int)));
 		QObject::connect(buttonBox, SIGNAL(accepted()), parent, SLOT(accept()));
 		QObject::connect(buttonBox, SIGNAL(rejected()), parent, SLOT(reject()));
 	}
@@ -90,6 +130,8 @@ public:
 CDlgFind::CDlgFind(QWidget* parent, int nsel) : QDialog(parent), ui(new Ui::CDlgFind)
 {
 	ui->setupUi(this);
+
+	m_method = 0;
 
 	if (nsel == 0) ui->pselNodes->setChecked(true);
 	if (nsel == 1) ui->pselEdges->setChecked(true);
@@ -104,16 +146,30 @@ void CDlgFind::accept()
 	if (ui->pselFaces->isChecked()) m_bsel[2] = true; else m_bsel[2] = false;
 	if (ui->pselElems->isChecked()) m_bsel[3] = true; else m_bsel[3] = false;
 
+	m_method = ui->method->currentIndex();
+
 	m_bclear = false;
 	if (ui->pclear->isChecked()) m_bclear = true;
 
-	// std::string s = ui->pitem->text().toStdString();
-	// char sz[256] = {0};
-	// strcpy(sz, s.c_str());
-	if (string_to_int_list(ui->pitem->text(), m_item) == false)
+	if (m_method == 0)
 	{
-		QMessageBox::critical(this, "Find", "Invalid item list");
-		return;
+		// std::string s = ui->pitem->text().toStdString();
+		// char sz[256] = {0};
+		// strcpy(sz, s.c_str());
+		if (string_to_int_list(ui->pids->text(), m_item) == false)
+		{
+			QMessageBox::critical(this, "Find", "Invalid item list");
+			return;
+		}
+	}
+	else if (m_method == 1)
+	{
+		m_coord = StringToVec3d(ui->pcoord->text());
+	}
+	else
+	{
+		m_min = StringToVec3d(ui->pmin->text());
+		m_max = StringToVec3d(ui->pmax->text());
 	}
 
 	QDialog::accept();

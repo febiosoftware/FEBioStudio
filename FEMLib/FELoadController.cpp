@@ -8,6 +8,7 @@ FSLoadController::FSLoadController(FSModel* fem, int ntype) : FSModelComponent(f
 {
 	SetSuperClassID(FELOADCONTROLLER_ID);
 	m_ntype = ntype;
+	m_count = 0;
 
 	// set unique ID
 	m_nUID = m_nref++;

@@ -159,7 +159,12 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 
 	bool includeModuleDependencies = (flags & ClassSearchFlags::IncludeModuleDependencies);
 	bool includeFECoreClasses = includeModuleDependencies;// (flags & ClassSearchFlags::IncludeFECoreClasses);
-	bool includeExperimentals = (flags & ClassSearchFlags::IncludeExperimentalClasses);
+
+#ifdef FEBIO_EXPERIMENTAL
+	bool includeExperimentals = true;
+#else
+	bool includeExperimentals = false;
+#endif
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	vector<int> mods;
@@ -676,11 +681,16 @@ vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 	vector<FEBio::FEBioModule> mods;
 	for (int i = 0; i < fecore.Modules(); ++i)
 	{
-		FEBio::FEBioModule mod;
-		mod.m_szname = fecore.GetModuleName(i);
-		mod.m_szdesc = fecore.GetModuleDescription(i);
-		mod.m_id = i + 1;
-		mods.push_back(mod);
+#ifndef FEBIO_EXPERIMENTAL
+		if (fecore.GetModuleStatus(i) > 0)
+#endif
+		{
+			FEBio::FEBioModule mod;
+			mod.m_szname = fecore.GetModuleName(i);
+			mod.m_szdesc = fecore.GetModuleDescription(i);
+			mod.m_id = i + 1;
+			mods.push_back(mod);
+		}
 	}
 
 	return mods;
@@ -1262,12 +1272,29 @@ FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FE
 //			case FE_PARAM_STD_VECTOR_STRING: fp->value<vector<string> >() = pi.GetVectorStringValue(); break;
 			case FE_PARAM_DOUBLE_MAPPED:
 			{
-				FEParamDouble& v = fp->value<FEParamDouble>();
-				if (pi.GetParamType() == Param_FLOAT)
+				if (fp->dim() == 3)
 				{
-					v = pi.GetFloatValue();
+					if (pi.GetParamType() == Param_VEC3D)
+					{
+						FEParamDouble& x = fp->value<FEParamDouble>(0);
+						FEParamDouble& y = fp->value<FEParamDouble>(1);
+						FEParamDouble& z = fp->value<FEParamDouble>(2);
+						vec3d v = pi.GetVec3dValue();
+						x = v.x;
+						y = v.y;
+						z = v.z;
+					}
+					else assert(false);
 				}
-				else assert(false);
+				else
+				{
+					FEParamDouble& v = fp->value<FEParamDouble>();
+					if (pi.GetParamType() == Param_FLOAT)
+					{
+						v = pi.GetFloatValue();
+					}
+					else assert(false);
+				}
 			}
 			break;
 			case FE_PARAM_VEC3D_MAPPED:
@@ -1319,4 +1346,73 @@ FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FE
 	}
 
 	return pc;
+}
+
+FSModelComponent* CreateFSModelComponent(int classId, FSModel* fsm)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+
+	const FECoreFactory* fac = fecore.GetFactoryClass(classId); assert(fac);
+	int superClassID = fac->GetSuperClassID();
+
+	int baseClassId = FEBio::GetBaseClassIndex(fac->GetBaseClassName());
+
+	// create the FS model class
+	FSModelComponent* pc = CreateFSClass(superClassID, baseClassId, fsm);
+	pc->SetClassID(classId);
+	pc->SetSuperClassID(superClassID);
+	pc->SetTypeString(fac->GetTypeStr());
+
+	return pc;
+}
+
+FSModelComponent* FEBio::CloneModelComponent(FSModelComponent* pmc, FSModel* fem)
+{
+	FSModelComponent* pd = CreateFSModelComponent(pmc->GetClassID(), fem); assert(pd);
+	if (pd == nullptr) return nullptr;
+
+	// copy parameter groups
+	ParamBlock& PL = pmc->GetParamBlock();
+	ParamBlock& PB = pd->GetParamBlock();
+
+	PB.ClearParamGroups();
+	for (int i = 0; i < PL.ParameterGroups(); ++i)
+	{
+		PB.SetActiveGroup(PL.GetParameterGroupName(i));
+	}
+	PB.SetActiveGroup(nullptr);
+
+	// copy parameters
+	PB = PL;
+
+	// copy the properties
+	for (int i = 0; i < pmc->Properties(); ++i)
+	{
+		FSProperty& prop = pmc->GetProperty(i);
+
+		// copy the property
+		FSProperty* pp = pd->AddProperty(prop.GetName(), prop.GetPropertyType(), prop.maxSize(), prop.GetFlags());
+		pp->SetDefaultType(prop.GetDefaultType());
+		pp->SetSuperClassID(prop.GetSuperClassID());
+		pp->SetLongName(prop.GetLongName());
+
+		// copy the property components
+		pp->Clear();
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FSModelComponent* pmj = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+			FSModelComponent* pdj = nullptr;
+			if (pmj) pdj = CloneModelComponent(pmj, fem);
+			pp->AddComponent(pmj);
+		}
+	}
+
+	if (dynamic_cast<FSDomainComponent*>(pd))
+	{
+		FSDomainComponent* pc = dynamic_cast<FSDomainComponent*>(pmc); assert(pc);
+		FSDomainComponent* pdc = dynamic_cast<FSDomainComponent*>(pd);
+		pdc->SetMeshItemType(pc->GetMeshItemType());
+	}
+
+	return pd;
 }

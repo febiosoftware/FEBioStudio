@@ -56,7 +56,7 @@ public:
 
 	int columnCount(const QModelIndex& parent) const
 	{
-		return 2;
+		return 3;
 	}
 
 	void SetFEModel(Post::FEPostModel* pfem)
@@ -74,6 +74,7 @@ public:
 			{
 			case 0: return QVariant(QString("State")); break;
 			case 1: return QVariant(QString("Time")); break;
+			case 2: return QVariant(QString("Status")); break;
 			}
 		}
 		return QAbstractTableModel::headerData(section, orient, role);
@@ -84,13 +85,42 @@ public:
 		if (m_fem == 0) return QVariant();
 
 		if (!index.isValid()) return QVariant();
+
+		int c = index.column();
+		int r = index.row();
 		if (role == Qt::DisplayRole)
 		{
-			if (index.column() == 0) return index.row()+1;
-			else 
+			switch (c)
 			{
-				Post::FEState* s = m_fem->GetState(index.row());
+			case 0: return r + 1; break;
+			case 1:
+			{
+				Post::FEState* s = m_fem->GetState(r);
 				if (s) return s->m_time;
+			}
+			break;
+			case 2:
+			{
+				Post::FEState* s = m_fem->GetState(r);
+				if (s) return s->m_status;
+			}
+			break;
+			}
+		}
+		if (role == Qt::DecorationRole)
+		{
+			if (c == 2)
+			{
+				Post::FEState* s = m_fem->GetState(r);
+				if (s)
+				{
+					switch (s->m_status)
+					{
+					case 0: return QColor(Qt::green ); break;
+					case 1: return QColor(Qt::red   ); break;
+					case 2: return QColor(Qt::yellow); break;
+					}
+				}
 			}
 		}
 		return QVariant();

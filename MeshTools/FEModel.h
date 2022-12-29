@@ -216,6 +216,8 @@ public:
 
 	FSLoadController* GetLoadControllerFromID(int lc);
 
+	void UpdateLoadControllerReferenceCounts();
+
 public:
 	int MeshDataGenerators() const;
 	FSMeshDataGenerator* GetMeshDataGenerator(int i);
@@ -307,6 +309,9 @@ template <class T> int CountBCs(FSModel& fem)
 	}
 	return nc;
 }
+
+//-----------------------------------------------------------------------------
+int CountBCsByTypeString(const std::string& typeStr, FSModel& fem);
 
 //-----------------------------------------------------------------------------
 // helper function for identifying the number of BCs of a specific type that have been defined.

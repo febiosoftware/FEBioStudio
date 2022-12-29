@@ -835,6 +835,40 @@ void GMeshObject::Save(OArchive &ar)
 					}
 					ar.EndChunk();
 				}
+
+				GPartSection* section = p.GetSection();
+				if (section)
+				{
+					GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
+					if (solid)
+					{
+						ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
+						{
+							solid->Save(ar);
+						}
+						ar.EndChunk();
+					}
+
+					GShellSection* shell = dynamic_cast<GShellSection*>(section);
+					if (shell)
+					{
+						ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
+						{
+							shell->Save(ar);
+						}
+						ar.EndChunk();
+					}
+
+					GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
+					if (beam)
+					{
+						ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
+						{
+							beam->Save(ar);
+						}
+						ar.EndChunk();
+					}
+				}
 			}
 			ar.EndChunk();
 		}
@@ -842,38 +876,44 @@ void GMeshObject::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the surfaces
-	ar.BeginChunk(CID_OBJ_FACE_LIST);
+	if (Faces() > 0)
 	{
-		for (int i=0; i<Faces(); ++i)
+		ar.BeginChunk(CID_OBJ_FACE_LIST);
 		{
-			ar.BeginChunk(CID_OBJ_FACE);
+			for (int i = 0; i < Faces(); ++i)
 			{
-				GFace& f = *Face(i);
-				int nid = f.GetID();
-				ar.WriteChunk(CID_OBJ_FACE_ID, nid);
-				ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
+				ar.BeginChunk(CID_OBJ_FACE);
+				{
+					GFace& f = *Face(i);
+					int nid = f.GetID();
+					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
+					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
+				}
+				ar.EndChunk();
 			}
-			ar.EndChunk();
 		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
 
 	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_LIST);
+	if (Edges() > 0)
 	{
-		for (int i=0; i<Edges(); ++i)
+		ar.BeginChunk(CID_OBJ_EDGE_LIST);
 		{
-			ar.BeginChunk(CID_OBJ_EDGE);
+			for (int i = 0; i < Edges(); ++i)
 			{
-				GEdge& e = *Edge(i);
-				int nid = e.GetID();
-				ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-				ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
+				ar.BeginChunk(CID_OBJ_EDGE);
+				{
+					GEdge& e = *Edge(i);
+					int nid = e.GetID();
+					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
+					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
+				}
+				ar.EndChunk();
 			}
-			ar.EndChunk();
 		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
 
 	// save the nodes
 	// note that it is possible that an object doesn't have any nodes
@@ -1008,6 +1048,27 @@ void GMeshObject::Load(IArchive& ar)
 //							p->ParamContainer::Load(ar);
 						}
 						break;
+						case CID_OBJ_PART_SOLIDSECTION:
+						{
+							GSolidSection* solid = new GSolidSection(p);
+							p->SetSection(solid);
+							solid->Load(ar);
+						}
+						break;
+						case CID_OBJ_PART_SHELLSECTION:
+						{
+							GShellSection* shell = new GShellSection(p);
+							p->SetSection(shell);
+							shell->Load(ar);
+						}
+						break;
+						case CID_OBJ_PART_BEAMSECTION:
+						{
+							GBeamSection* beam = new GBeamSection(p);
+							p->SetSection(beam);
+							beam->Load(ar);
+						}
+						break;
 						}
 						ar.CloseChunk();
 					}
@@ -1023,8 +1084,7 @@ void GMeshObject::Load(IArchive& ar)
 		// object surfaces
 		case CID_OBJ_FACE_LIST:
 			{
-				assert(nfaces > 0);
-				m_Face.reserve(nfaces);
+				if (nfaces > 0) m_Face.reserve(nfaces);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{

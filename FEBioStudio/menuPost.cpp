@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include "DlgTimeSettings.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
+#include <ImageLib/ImageFilter.h>
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -299,6 +300,32 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	RedrawGL();
 }
 
+void CMainWindow::on_actionImageWarp_triggered()
+{
+	// get the document
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr) return;
+
+	// get the selected image model
+	Post::CImageModel* img = nullptr;
+	img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	if (img == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
+		return;
+	}
+
+	// create the image warp filter
+	Post::CGLModel& mdl = *postDoc->GetGLModel();
+	WarpImageFilter* warp = new WarpImageFilter(&mdl);
+	img->AddImageFilter(warp);
+	img->ApplyFilters();
+	ui->postPanel->Update(true);
+	ui->postPanel->SelectObject(warp);
+
+	RedrawGL();
+}
+
 void CMainWindow::on_actionAddProbe_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
@@ -374,12 +401,12 @@ void CMainWindow::on_actionSlicePlot_triggered()
 
 void CMainWindow::on_actionDisplacementMap_triggered()
 {
-/*	CDocument* doc = GetDocument();
+	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 	if (doc->IsValid() == false) return;
 
-	CGLModel* pm = doc->GetGLModel();
-	if (pm->GetDisplacementMap() == 0)
+	Post::CGLModel* pm = doc->GetGLModel();
+	if (pm->GetDisplacementMap() == nullptr)
 	{
 		if (pm->AddDisplacementMap() == false)
 		{
@@ -388,14 +415,13 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 		else
 		{
 			doc->UpdateFEModel(true);
-			ui->modelViewer->Update(true);
+			ui->postPanel->Update(true);
 		}
 	}
 	else
 	{
 		QMessageBox::information(this, "FEBio Studio", "This model already has a displacement map.");
 	}
-*/
 }
 
 void CMainWindow::on_actionGraph_triggered()

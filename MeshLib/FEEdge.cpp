@@ -103,6 +103,12 @@ int FSEdge::FindNodeIndex(int node) const
 }
 
 //-----------------------------------------------------------------------------
+bool FSEdge::HasNode(int node) const
+{
+	return (FindNodeIndex(node) != -1);
+}
+
+//-----------------------------------------------------------------------------
 void FSEdge::SetType(FEEdgeType type)
 { 
 	assert(m_type == FE_EDGE_INVALID);

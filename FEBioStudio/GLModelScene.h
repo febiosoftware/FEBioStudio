@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "Document.h"
 
 class CModelDocument;
+class GPart;
 
 class CGLModelScene : public CGLScene
 {
@@ -63,7 +64,6 @@ private:
 
 	// rendering functions for FEMeshes
 	void RenderFEElements   (CGLContext& rc, GObject* po);
-	void RenderFEAllElements(CGLContext& rc, FSMesh* pm, bool bext = false);
 	void RenderFEFaces      (CGLContext& rc, GObject* po);
 	void RenderFEEdges      (CGLContext& rc, GObject* po);
 	void RenderFENodes      (CGLContext& rc, GObject* po);
@@ -84,6 +84,7 @@ private:
 private:
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);
+	void SetMatProps(CGLContext& rc, GPart* pg);
 
 	// set some default GL material properties
 	void SetDefaultMatProps();

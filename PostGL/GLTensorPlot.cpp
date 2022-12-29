@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <stdlib.h>
+#include <GLLib/glx.h>
 using namespace Post;
 
 REGISTER_CLASS(GLTensorPlot, CLASS_PLOT, "tensor", 0);
@@ -598,7 +599,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 		if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
 
-		glColor3ub(m_gcl.r, m_gcl.g, m_gcl.b);
+		glx::glcolor(m_gcl);
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
@@ -613,12 +614,12 @@ void GLTensorPlot::Render(CGLContext& rc)
 				{
 					float w = (t.f  - fmin)/ (fmax - fmin);
 					GLColor c = map.map(w);
-					glColor3ub(c.r, c.g, c.b);
+					glx::glcolor(c);
 				}
 
-				glTranslatef(r.x, r.y, r.z);
+				glx::translate(r);
 				RenderGlyphs(t, scale*auto_scale, pglyph);
-				glTranslatef(-r.x, -r.y, -r.z);
+				glx::translate(-r);
 			}
 		}
 	}
@@ -699,11 +700,8 @@ void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricO
 			if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
 		}
 
-		glBegin(GL_LINES);
-		glColor3ub(c[i].r, c[i].g, c[i].b);
-		glVertex3f(0.f, 0.f, 0.f);
-		glVertex3f(0.f, 0.f, L);
-		glEnd();
+		glx::glcolor(c[i]);
+		glx::drawLine(0, 0, 0, 0, 0, L);
 
 		glPopMatrix();
 	}
@@ -763,46 +761,6 @@ void GLTensorPlot::RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph)
 	glMultMatrixf(&m[0][0]);
 
 	glScalef(scale*sx, scale*sy, scale*sz);
-	glBegin(GL_QUADS);
-	{
-		float r0 = 0.5f;
-		glNormal3d(1, 0, 0);
-		glVertex3d(r0, -r0, -r0);
-		glVertex3d(r0, r0, -r0);
-		glVertex3d(r0, r0, r0);
-		glVertex3d(r0, -r0, r0);
-
-		glNormal3d(-1, 0, 0);
-		glVertex3d(-r0, r0, -r0);
-		glVertex3d(-r0, -r0, -r0);
-		glVertex3d(-r0, -r0, r0);
-		glVertex3d(-r0, r0, r0);
-
-		glNormal3d(0, 1, 0);
-		glVertex3d(r0, r0, -r0);
-		glVertex3d(-r0, r0, -r0);
-		glVertex3d(-r0, r0, r0);
-		glVertex3d(r0, r0, r0);
-
-		glNormal3d(0, -1, 0);
-		glVertex3d(-r0, -r0, -r0);
-		glVertex3d(r0, -r0, -r0);
-		glVertex3d(r0, -r0, r0);
-		glVertex3d(-r0, -r0, r0);
-
-		glNormal3d(0, 0, 1);
-		glVertex3d(-r0, r0, r0);
-		glVertex3d(r0, r0, r0);
-		glVertex3d(r0, -r0, r0);
-		glVertex3d(-r0, -r0, r0);
-
-		glNormal3d(0, 0, -1);
-		glVertex3d(r0, r0, -r0);
-		glVertex3d(-r0, r0, -r0);
-		glVertex3d(-r0, -r0, -r0);
-		glVertex3d(r0, -r0, -r0);
-	}
-	glEnd();
+	glx::drawBox(0.5, 0.5, 0.5);
 	glPopMatrix();
-
 }

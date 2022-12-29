@@ -24,37 +24,73 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
+#include <QThread>
 #include <QDialog>
 
-class UIDlgPlaneCut;
-
-class CMainWindow;
-
-class CDlgPlaneCut : public QDialog
+namespace Post
 {
-	Q_OBJECT
+    class CImageModel;
+}
 
+class CImageThread : public QThread
+{
+    Q_OBJECT
 public:
-	CDlgPlaneCut(CMainWindow* wnd);
-	~CDlgPlaneCut();
+    CImageThread(Post::CImageModel* imgModel);
+    
+    bool getSuccess() { return m_success; }
+    std::string getError() { return m_error; }
 
-	void Update();
+signals:
+    void newStatus(QString status);
 
-	void showEvent(QShowEvent* ev) override;
-	void closeEvent(QCloseEvent* ev) override;
-	void reject() override;
+protected:
+    Post::CImageModel* m_imgModel;
 
-public slots:
-	void onDataChanged();
+    bool m_success;
+    std::string m_error;
+};
 
-	void onXClicked();
-	void onYClicked();
-	void onZClicked();
+class CImageReadThread : public CImageThread
+{
+public:
+    CImageReadThread(Post::CImageModel* imgModel);
+    
+    void run() override;
+};
+
+class CImageFilterThread : public CImageThread
+{
+public:
+    CImageFilterThread(Post::CImageModel* imgModel);
+    
+    void run() override;
+
+    void cancel();
 
 private:
-	void setOrientation(double x, double y, double z);
+    bool m_canceled;
+};
+
+namespace Ui
+{
+    class CDlgStartImageThread;
+}
+
+class CDlgStartImageThread : public QDialog
+{
+    Q_OBJECT
+public:
+    CDlgStartImageThread(CImageThread* thread, QWidget* parent = nullptr);
+
+    void closeEvent(QCloseEvent* ev) override;
+
+private slots:
+	void threadFinished();
+    void on_canceled();
+    void on_status_changed(QString status);
 
 private:
-	UIDlgPlaneCut*	ui;
+    Ui::CDlgStartImageThread* ui;
+
 };

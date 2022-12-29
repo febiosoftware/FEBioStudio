@@ -51,9 +51,10 @@ CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
 	ss << "ImageSlicer" << n++;
 	SetName(ss.str());
 
-	AddIntParam(0, "Image orientation")->SetEnumNames("X\0Y\0Z\0");
+	AddIntParam(2, "Image orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0.5, "Image offset")->SetFloatRange(0.0, 1.0);
 	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddDoubleParam(1, "Transparency")->SetFloatRange(0.0, 1.0);
 
 	m_Col.SetColorMap(ColorMapManager::GRAY);
 
@@ -90,8 +91,8 @@ bool CImageSlicer::UpdateData(bool bsave)
 
 void CImageSlicer::Create()
 {
-	CImageSource* src = GetImageModel()->GetImageSource();
-	if (src == nullptr) return;
+	C3DImage* img = GetImageModel()->Get3DImage();
+	if (img == nullptr) return;
 
 	// call update to initialize all other data
 	Update();
@@ -105,11 +106,16 @@ void CImageSlicer::Update()
 
 void CImageSlicer::UpdateSlice()
 {
-	CImageSource* src = GetImageModel()->GetImageSource();
-	C3DImage& im3d = *src->Get3DImage();
+	C3DImage& im3d = *GetImageModel()->Get3DImage();
 
 	int nop = GetOrientation();
 	double off = GetOffset();
+
+	// For 2D images, the X, Y options shouldn't do anything
+	if (im3d.Depth() == 1)
+	{
+		nop = 2;
+	}
 
 	// get the 2D image
 	CImage im2d;
@@ -158,6 +164,9 @@ void CImageSlicer::BuildLUT()
 {
 	CColorMap& map = m_Col.ColorMap();
 
+	float f = GetFloatValue(TRANSPARENCY);
+	Byte a = Byte(255.f * f);
+
 	// build the LUT
 	for (int i = 0; i<256; ++i)
 	{
@@ -166,7 +175,7 @@ void CImageSlicer::BuildLUT()
 		m_LUTC[0][i] = c.r;
 		m_LUTC[1][i] = c.g;
 		m_LUTC[2][i] = c.b;
-		m_LUTC[3][i] = c.a;
+		m_LUTC[3][i] = a;
 	}
 }
 

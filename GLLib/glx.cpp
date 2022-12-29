@@ -139,10 +139,31 @@ void glx::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GL
 }
 
 //-----------------------------------------------------------------------------
-void glx::drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
+void glx::line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glColor3ub(colA.r, colA.g, colA.b); glVertex3d(a.x, a.y, a.z);
 	glColor3ub(colB.r, colB.g, colB.b); glVertex3d(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB)
+{
+	glColor3ub(colA.r, colA.g, colA.b); glVertex3f(a.x, a.y, a.z);
+	glColor3ub(colB.r, colB.g, colB.b); glVertex3f(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3d& a, const vec3d& b)
+{
+	glVertex3d(a.x, a.y, a.z);
+	glVertex3d(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3f& a, const vec3f& b)
+{
+	glVertex3f(a.x, a.y, a.z);
+	glVertex3f(b.x, b.y, b.z);
 }
 
 //-----------------------------------------------------------------------------
@@ -379,6 +400,44 @@ void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
 	}
 }
 
+void glx::drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N)
+{
+	vec3d n = r1 - r0; n.Normalize();
+	quatd q(vec3d(0, 0, 1), n);
+
+	glBegin(GL_QUAD_STRIP);
+	for (int i = 0; i <= N; ++i)
+	{
+		double w = 2 * PI * i / (double)N;
+		double x = cos(w);
+		double y = sin(w);
+
+		vec3d ri0(R * x, R * y, 0); q.RotateVector(ri0);
+		vec3d ri1(R * x, R * y, 0); q.RotateVector(ri1);
+		vec3d ra = r0 + ri0;
+		vec3d rb = r1 + ri1;
+
+		vec3d na(x, y, 0.0); q.RotateVector(na);
+		vec3d nb(x, y, 0.0); q.RotateVector(nb);
+
+		glTexCoord1d(t0); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+		glTexCoord1d(t1); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+	}
+	glEnd();
+}
+
+void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N)
+{
+	vec3d n = r1 - r0; n.Normalize();
+
+	// render cylinder
+	glx::drawCylinder(r0, r1, R, t0, t1, N);
+
+	// render caps
+	glx::drawHalfSphere(r0, R, -n, t0);
+	glx::drawHalfSphere(r1, R, n, t1);
+}
+
 void glx::quad4(vec3d r[4], vec3d n[4])
 {
 	vertex3d(r[0], n[0]); vertex3d(r[1], n[1]); vertex3d(r[2], n[2]);
@@ -583,6 +642,50 @@ void glx::drawLine(double x0, double y0, double z0, double x1, double y1, double
 		glVertex3d(x0, y0, z0);
 		glVertex3d(x1, y1, z1);
 		glVertex3d(x2, y2, z2);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void glx::drawBox(double wx, double wy, double wz)
+{
+	glBegin(GL_QUADS);
+	{
+		glNormal3d(1, 0, 0);
+		glVertex3d(wx, -wy, -wz);
+		glVertex3d(wx,  wy, -wz);
+		glVertex3d(wx,  wy,  wz);
+		glVertex3d(wx, -wy,  wz);
+
+		glNormal3d(-1, 0, 0);
+		glVertex3d(-wx,  wy, -wz);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d(-wx, -wy,  wz);
+		glVertex3d(-wx,  wy,  wz);
+
+		glNormal3d(0, 1, 0);
+		glVertex3d( wx, wy, -wz);
+		glVertex3d(-wx, wy, -wz);
+		glVertex3d(-wx, wy,  wz);
+		glVertex3d( wx, wy,  wz);
+
+		glNormal3d(0, -1, 0);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d( wx, -wy, -wz);
+		glVertex3d( wx, -wy,  wz);
+		glVertex3d(-wx, -wy,  wz);
+
+		glNormal3d(0, 0, 1);
+		glVertex3d(-wx,  wy, wz);
+		glVertex3d( wx,  wy, wz);
+		glVertex3d( wx, -wy, wz);
+		glVertex3d(-wx, -wy, wz);
+
+		glNormal3d(0, 0, -1);
+		glVertex3d( wx,  wy, -wz);
+		glVertex3d(-wx,  wy, -wz);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d( wx, -wy, -wz);
 	}
 	glEnd();
 }

@@ -54,10 +54,12 @@ public:
 		QVBoxLayout* l = new QVBoxLayout;
 
 		QPushButton* addFiles = new QPushButton("Add files ...");
+		QPushButton* addFolder = new QPushButton("Add folder ...");
 		QPushButton* delFile = new QPushButton("Remove");
 		QPushButton* clearFiles = new QPushButton("Clear");
 		QVBoxLayout* b = new QVBoxLayout;
 		b->addWidget(addFiles);
+		b->addWidget(addFolder);
 		b->addWidget(delFile);
 		b->addWidget(clearFiles);
 		b->addStretch();
@@ -93,6 +95,7 @@ public:
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
 		QObject::connect(addFiles, SIGNAL(clicked()), dlg, SLOT(on_addFiles()));
+		QObject::connect(addFolder, SIGNAL(clicked()), dlg, SLOT(on_addFolder()));
 		QObject::connect(delFile, SIGNAL(clicked()), dlg, SLOT(on_removeFile()));
 		QObject::connect(clearFiles, SIGNAL(clicked()), dlg, SLOT(on_clearFiles()));
 		QObject::connect(selectOutPath, SIGNAL(clicked()), dlg, SLOT(on_selectOutPath()));
@@ -153,6 +156,24 @@ void CDlgConvertFEBio::on_addFiles()
 		for (int i = 0; i < fileNames.size(); ++i)
 		{
 			QString fileName = fileNames[i];
+			if (ui->fileList->findItems(fileName, Qt::MatchExactly).isEmpty())
+			{
+				ui->fileList->addItem(fileName);
+			}
+		}
+	}
+}
+
+void CDlgConvertFEBio::on_addFolder()
+{
+	QString folder = QFileDialog::getExistingDirectory(this, "Select Folder");
+	if (folder.isEmpty() == false)
+	{
+		QDir dir(folder);
+		QStringList fileNames = dir.entryList(QStringList() << "*.feb");
+		for (int i = 0; i < fileNames.size(); ++i)
+		{
+			QString fileName = dir.absoluteFilePath(fileNames[i]);
 			if (ui->fileList->findItems(fileName, Qt::MatchExactly).isEmpty())
 			{
 				ui->fileList->addItem(fileName);

@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <GL/glew.h>
 #include "GLView.h"
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
@@ -64,6 +65,8 @@ SOFTWARE.*/
 #include <PostLib/ImageSlicer.h>
 #include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
+
+static bool initGlew = false;
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -1194,6 +1197,17 @@ void CGLView::initializeGL()
 	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
 	//	GLfloat dif2[] = {.3f, .3f, .4f, 1.f};
 
+	if (initGlew == false)
+	{
+		GLenum err = glewInit();
+		if (err != GLEW_OK)
+		{
+			const char* szerr = (const char*)glewGetErrorString(err);
+			assert(err == GLEW_OK);
+		}
+		initGlew = true;
+	}
+
 	glEnable(GL_DEPTH_TEST);
 	//	glEnable(GL_CULL_FACE);
 	glFrontFace(GL_CCW);
@@ -1477,6 +1491,7 @@ void CGLView::paintGL()
 	rc.m_showOutline = view.m_bfeat;
 	rc.m_showMesh = view.m_bmesh;
 	rc.m_q = cam.GetOrientation();
+	rc.m_springThick = view.m_line_size;
 
 	// prepare for rendering
 	PrepModel();
@@ -1936,36 +1951,31 @@ void CGLView::PrepModel()
 	//	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
 
-	// set the diffuse lighting intensity
-	CDocument* pdoc = GetDocument();
-	if (pdoc && pdoc->IsValid())
-	{
-		VIEW_SETTINGS& view = GetViewSettings();
+	VIEW_SETTINGS& view = GetViewSettings();
 
-		// set the line width
-		glLineWidth(view.m_line_size);
+	// set the line width
+	glLineWidth(view.m_line_size);
 
-		// turn on/off lighting
-		if (view.m_bLighting)
-			glEnable(GL_LIGHTING);
-		else
-			glDisable(GL_LIGHTING);
+	// turn on/off lighting
+	if (view.m_bLighting)
+		glEnable(GL_LIGHTING);
+	else
+		glDisable(GL_LIGHTING);
 
-		GLfloat d = view.m_diffuse;
-		GLfloat dv[4] = { d, d, d, 1.f };
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
+	GLfloat d = view.m_diffuse;
+	GLfloat dv[4] = { d, d, d, 1.f };
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
 
-		// set the ambient lighting intensity
-		GLfloat f = view.m_ambient;
-		GLfloat av[4] = { f, f, f, 1.f };
-		glLightfv(GL_LIGHT0, GL_AMBIENT, av);
+	// set the ambient lighting intensity
+	GLfloat f = view.m_ambient;
+	GLfloat av[4] = { f, f, f, 1.f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, av);
 
-		// position the light
-		vec3f lp = GetLightPosition(); lp.Normalize();
-		GLfloat fv[4] = { 0 };
-		fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
-		glLightfv(GL_LIGHT0, GL_POSITION, fv);
-	}
+	// position the light
+	vec3f lp = GetLightPosition(); lp.Normalize();
+	GLfloat fv[4] = { 0 };
+	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
+	glLightfv(GL_LIGHT0, GL_POSITION, fv);
 
 	// position the camera
 	PositionCamera();
@@ -4727,6 +4737,12 @@ void CGLView::TagBackfacingElements(FSMesh& mesh)
 				{
 					el.m_ntag = 0;
 				}
+			}
+
+			// we should always be able to select beam elements
+			if (el.IsBeam())
+			{
+				el.m_ntag = 0;
 			}
 		}
 	}

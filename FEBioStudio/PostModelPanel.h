@@ -72,6 +72,8 @@ private slots:
 	void OnShowAllElements();
 	void OnMoveUpInRenderingQueue();
 	void OnMoveDownInRenderingQueue();
+	void OnExportImage();
+	void OnExportProbeData();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 

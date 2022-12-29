@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+
 #include <vector>
 #include <string>
 #include <memory>
@@ -35,60 +36,14 @@ SOFTWARE.*/
 #include "GLObject.h"
 #include <FEBioStudio/ImageViewSettings.h>
 
-// #ifdef HAS_ITK
-// class CImageSITK;
-// typedef ImageToFilter CImageSITK;
-// #else
-// typedef ImageToFilter C3DImage;
-// #endif
-
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
+enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
 
 class C3DImage;
 
 namespace Post {
 
-class CImageModel;
+class CImageSource;
 class CGLImageRenderer;
-
-class CImageSource : public FSObject
-{
-public:
-	CImageSource(CImageModel* imgModel = nullptr);
-	~CImageSource();
-
-	void SetFileName(const std::string& fileName);
-	std::string GetFileName() const;
-
-	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz);
-	bool LoadITKData(const std::string &filename, ImageFileType type);
-    bool LoadITKSeries(const std::vector<std::string> &filenames);
-
-	C3DImage* Get3DImage() { return m_img; }
-
-    void ClearFilters();
-    C3DImage* GetImageToFilter(bool allocate = false);
-
-	void Save(OArchive& ar);
-	void Load(IArchive& ar);
-
-	int Width() const;
-	int Height() const;
-	int Depth() const;
-
-public:
-	CImageModel* GetImageModel();
-	void SetImageModel(CImageModel* imgModel);
-
-private:
-    void SetValues(const std::string &fileName, int x, int y, int z);
-    void AssignImage(C3DImage* im);
-
-	C3DImage*	m_img;
-    C3DImage*   m_originalImage;
-	CImageModel*	m_imgModel;
-    unsigned char* data = nullptr;
-};
 
 class CImageModel : public CGLObject
 {
@@ -96,16 +51,20 @@ public:
 	CImageModel(CGLModel* mdl);
 	~CImageModel();
 
-	bool LoadImageData(const std::string& fileName, int nx, int ny, int nz, const BOX& box);
-	bool LoadITKData(const std::string &filename, ImageFileType type);
-    bool LoadITKSeries(const std::vector<std::string> &filenames);
+    void SetImageSource(CImageSource* imgSource);
+    bool Load();
+
 
 	int ImageRenderers() const { return (int)m_render.Size(); }
 	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
 	size_t RemoveRenderer(CGLImageRenderer* render);
+    void UpdateRenderers();
 
 	void AddImageRenderer(CGLImageRenderer* render);
 
+    // Applies filters using GUI thread!
+    void ApplyFilters();
+    void ClearFilters();
     int ImageFilters() const { return (int)m_filters.Size(); }
 	CImageFilter* GetImageFilter(int i) { return m_filters[i]; }
 	size_t RemoveFilter(CImageFilter* filter);
@@ -113,19 +72,15 @@ public:
 
 	void AddImageFilter(CImageFilter* imageFilter);
 
-	const BOX& GetBoundingBox() const { return m_box; }
+	BOX GetBoundingBox();
 
-	void SetBoundingBox(BOX b) { m_box = b; }
+	void SetBoundingBox(BOX b);
 
 	bool ShowBox() const;
 
 	void ShowBox(bool b);
 
 	void Render(CGLContext& rc);
-
-	void ApplyFilters();
-
-	bool UpdateData(bool bsave = true) override;
 
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
@@ -136,8 +91,13 @@ public:
 
     Byte ValueAtGlobalPos(vec3d pos);
 
+	C3DImage* Get3DImage();
+
+public:
+	bool ExportRAWImage(const std::string& filename);
+
 private:
-	BOX				m_box;						//!< physical dimensions of image
+	// BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
 	FSObjectList<CGLImageRenderer>	m_render;	//!< image renderers
 	FSObjectList<CImageFilter> m_filters;

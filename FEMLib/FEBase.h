@@ -29,6 +29,8 @@ public:
 	FSProperty(const std::string& name, int propType, FSCoreBase* parent, int nsize = 1, unsigned int flags = 0);
 	~FSProperty();
 
+	FSProperty(const FSProperty& p);
+
 	// clears the component list for this property
 	void Clear();
 

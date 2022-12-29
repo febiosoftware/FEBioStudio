@@ -42,7 +42,7 @@ ul { line-height: 150%; list-style-type: none; }\
 <body>\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
 <p style=\"font-size: 14pt\">_VERSION_</p>\
-<p style=\"font-size: 14pt\">FEBio Studio 2 is currently in beta. You can help development by <a href=\"#bugreport\" style=\"font-size: 14pt\">submitting a bug report.</a></p>\
+_SERVER_MESSAGE_\
 _UPDATE_INFO_\
 <h1>Start</h1>\
 <table width=100%>\
@@ -143,9 +143,22 @@ void CWelcomePage::Activate()
 	if(m_wnd->updateAvailable())
 	{
 		updateText = "<p style=\"font-size:14pt\">";
-		updateText += "A new update is available! Click <a style=\"font-size:14pt\" href=\"#update\">here</a> for more information.</p>";
+		updateText += "A new update is available! Click <a style=\"font-size:14pt\" href=\"#update\">here</a> for more information.</p>"; 
 	}
 	page.replace("_UPDATE_INFO_", updateText);
+
+    QString serverMessage;
+    QString temp = m_wnd->GetServerMessage();
+    temp = temp.replace("https://", "#http");
+    if(!temp.isEmpty())
+    {
+        serverMessage = "<p style=\"font-size:14pt\">";
+        serverMessage += temp;
+        serverMessage += "</p>";
+    }  
+
+    page.replace("_SERVER_MESSAGE_", serverMessage);
+    
 
 	m_txt.setHtml(page);
 }

@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GLLib/glx.h>
+#include <GLLib/GLMeshRender.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshLib/MeshMetrics.h>
@@ -1518,26 +1519,7 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				// if this part is not the current part defining the 
-				// material, we need to change the mat props
-				if (pg != pgmat)
-				{
-					if (vs.m_objectColor == 0)
-					{
-						GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-						SetMatProps(pmat);
-						GLColor c = po->GetColor();
-						if (pmat) c = pmat->Diffuse();
-						glColor3ub(c.r, c.g, c.b);
-						pgmat = pg;
-					}
-					else
-					{
-						SetMatProps(0);
-						GLColor c = po->GetColor();
-						glColor3ub(c.r, c.g, c.b);
-					}
-				}
+				SetMatProps(rc, pg);
 
 				if (vs.m_transparencyMode != 0)
 				{
@@ -1761,26 +1743,7 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 		// make sure we have a part
 		if (pg)
 		{
-			// if this part is not the current part defining the 
-			// material, we need to change the mat props
-			if (vs.m_objectColor == 0)
-			{
-				if (pg != pgmat)
-				{
-					GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-					SetMatProps(pmat);
-					GLColor c = po->GetColor();
-					if (pmat) c = pmat->Diffuse();
-					glColor3ub(c.r, c.g, c.b);
-					pgmat = pg;
-				}
-			}
-			else
-			{
-				SetMatProps(0);
-				GLColor c = po->GetColor();
-				glColor3ub(c.r, c.g, c.b);
-			}
+			SetMatProps(rc, pg);
 
 			if (vs.m_transparencyMode != 0)
 			{
@@ -1887,27 +1850,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				// if this part is not the current part defining the 
-				// material, we need to change the mat props
-				if (vs.m_objectColor == 0)
-				{
-					if (pg != pgmat)
-					{
-						GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-						SetMatProps(pmat);
-						GLColor c = po->GetColor();
-						if (pmat) c = pmat->Diffuse();
-
-						glColor3ub(c.r, c.g, c.b);
-						pgmat = pg;
-					}
-				}
-				else
-				{
-					SetMatProps(0);
-					GLColor c = po->GetColor();
-					glColor3ub(c.r, c.g, c.b);
-				}
+				SetMatProps(rc, pg);
 
 				if (vs.m_transparencyMode != 0)
 				{
@@ -1979,16 +1922,7 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 		{
 			// if this part is not the current part defining the 
 			// material, we need to change the mat props
-			if (vs.m_objectColor == 0)
-			{
-				GMaterial* pmat = fem.GetMaterialFromID(pg->GetMaterialID());
-				SetMatProps(pmat);
-				GLColor c = po->GetColor();
-				if (pmat) c = pmat->Diffuse();
-
-				glColor3ub(c.r, c.g, c.b);
-				pgmat = pg;
-			}
+			SetMatProps(rc, pg);
 
 			if ((nitem == ITEM_MESH) && (nsel == SELECT_PART) && pg->IsSelected())
 			{
@@ -2168,6 +2102,8 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 	glColor3ub(dif.r, dif.g, dif.b);
 	int nmatid = -1;
 
+	GPart* pgmat = nullptr;
+
 	double vmin, vmax;
 	Post::CColorMap map;
 	Mesh_Data& data = pm->GetMeshData();
@@ -2222,25 +2158,10 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 				}
 				else
 				{
-					if (view.m_objectColor == 0)
+					if (pg != pgmat)
 					{
-						if (pg->GetMaterialID() != nmatid)
-						{
-							nmatid = pg->GetMaterialID();
-							GMaterial* pmat = fem.GetMaterialFromID(nmatid);
-							SetMatProps(pmat);
-							dif = (pmat ? pmat->Diffuse() : col);
-							glColor3ub(dif.r, dif.g, dif.b);
-
-							int glmode = 0;
-							if (pmat && (pmat->m_nrender != 0))
-							{
-								GLint n[2];
-								glGetIntegerv(GL_POLYGON_MODE, n);
-								glmode = n[1];
-								if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-							}
-						}
+						SetMatProps(rc, pg);
+						pgmat = pg;
 					}
 
 					// Render the face
@@ -2506,6 +2427,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	vector<int> selectedElements;
 	int NE = pm->Elements();
 	bool hasBeamElements = false;
+	GPart* pgmat = nullptr;
 	for (i = 0; i < NE; ++i)
 	{
 		FSElement& el = pm->Element(i);
@@ -2556,30 +2478,10 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 				}
 				else
 				{
-					if (view.m_objectColor == 0)
+					if (pg != pgmat)
 					{
-						if (pg->GetMaterialID() != nmatid)
-						{
-							GMaterial* pmat = 0;
-							if (pg->GetMaterialID() != nmatid)
-							{
-								nmatid = pg->GetMaterialID();
-								pmat = fem.GetMaterialFromID(nmatid);
-								SetMatProps(pmat);
-							}
-
-							dif = (pmat != 0 ? pmat->Diffuse() : col);
-
-							glColor3ub(dif.r, dif.g, dif.b);
-
-							if (pmat && (pmat->m_nrender != 0))
-							{
-								GLint n[2];
-								glGetIntegerv(GL_POLYGON_MODE, n);
-								glmode = n[1];
-								if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-							}
-						}
+						SetMatProps(rc, pg);
+						pgmat = pg;
 					}
 
 					switch (el.Type())
@@ -2857,390 +2759,11 @@ void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 }
 
 //-----------------------------------------------------------------------------
-// This function is used for selecting elements
-void CGLModelScene::RenderFEAllElements(CGLContext& rc, FSMesh* pm, bool bexterior)
-{
-	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
-
-	// get the document
-	CModelDocument* pdoc = m_doc;
-	if (pdoc == nullptr) return;
-
-	VIEW_SETTINGS& view = glview->GetViewSettings();
-
-	bool bcull = view.m_bcull;
-	bool bok;
-	int i, j;
-
-	glPushAttrib(GL_ENABLE_BIT);
-	if (bcull == false) glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-
-	for (i = 0; i < pm->Elements(); i++)
-	{
-		FSElement& e = pm->Element(i);
-
-		bok = e.IsVisible();
-		if (bexterior && (e.IsExterior() == false)) bok = false;
-
-		if (bok)
-		{
-			switch (e.Type())
-			{
-			case FE_HEX8:
-			{
-				glBegin(GL_QUADS);
-				{
-					for (j = 0; j < 6; j++)
-					{
-						bok = true;
-						if (bcull)
-						{
-							bok = false;
-							if ((e.m_nbr[j] == -1) || (!pm->Element(e.m_nbr[j]).IsVisible()))
-							{
-								bok = true;
-							}
-						}
-
-						// don't render when the neighbor is a shell
-						// we have to do this otherwise the shell will not be selected.
-						if ((e.m_nbr[j] != -1) && (pm->Element(e.m_nbr[j]).IsShell())) bok = false;
-
-						if (bok)
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTHEX8[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTHEX8[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTHEX8[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTHEX8[j][3]]).r;
-
-							vec3d n = (r2 - r1) ^ (r3 - r1);
-							n.Normalize();
-
-							glNormal3d(n.x, n.y, n.z);
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-							glVertex3d(r4.x, r4.y, r4.z);
-						}
-					}
-				}
-				glEnd();
-			}
-			break;
-			case FE_HEX20:
-			{
-				glBegin(GL_TRIANGLES);
-				{
-					for (j = 0; j < 6; j++)
-					{
-						bok = true;
-						if (bcull)
-						{
-							bok = false;
-							if ((e.m_nbr[j] == -1) || (!pm->Element(e.m_nbr[j]).IsVisible()))
-							{
-								bok = true;
-							}
-						}
-
-						if (bok)
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTHEX20[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTHEX20[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTHEX20[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTHEX20[j][3]]).r;
-							const vec3d& r5 = pm->Node(e.m_node[FTHEX20[j][4]]).r;
-							const vec3d& r6 = pm->Node(e.m_node[FTHEX20[j][5]]).r;
-							const vec3d& r7 = pm->Node(e.m_node[FTHEX20[j][6]]).r;
-							const vec3d& r8 = pm->Node(e.m_node[FTHEX20[j][7]]).r;
-
-							vec3d n = (r2 - r1) ^ (r3 - r1);
-							n.Normalize();
-
-							glNormal3d(n.x, n.y, n.z);
-							glVertex3d(r1.x, r1.y, r1.z); glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r8.x, r8.y, r8.z);
-							glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r2.x, r2.y, r2.z); glVertex3d(r6.x, r6.y, r6.z);
-							glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r3.x, r3.y, r3.z); glVertex3d(r7.x, r7.y, r7.z);
-							glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r4.x, r4.y, r4.z); glVertex3d(r8.x, r8.y, r8.z);
-							glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r8.x, r8.y, r8.z);
-							glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r8.x, r8.y, r8.z);
-						}
-					}
-				}
-				glEnd();
-			}
-			break;
-			case FE_HEX27:
-			{
-				glBegin(GL_TRIANGLES);
-				{
-					for (j = 0; j < 6; j++)
-					{
-						bok = true;
-						if (bcull)
-						{
-							bok = false;
-							if ((e.m_nbr[j] == -1) || (!pm->Element(e.m_nbr[j]).IsVisible()))
-							{
-								bok = true;
-							}
-						}
-
-						if (bok)
-						{
-							const vec3d& r0 = pm->Node(e.m_node[FTHEX27[j][0]]).r;
-							const vec3d& r1 = pm->Node(e.m_node[FTHEX27[j][1]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTHEX27[j][2]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTHEX27[j][3]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTHEX27[j][4]]).r;
-							const vec3d& r5 = pm->Node(e.m_node[FTHEX27[j][5]]).r;
-							const vec3d& r6 = pm->Node(e.m_node[FTHEX27[j][6]]).r;
-							const vec3d& r7 = pm->Node(e.m_node[FTHEX27[j][7]]).r;
-							const vec3d& r8 = pm->Node(e.m_node[FTHEX27[j][8]]).r;
-
-							vec3d n = (r1 - r0) ^ (r2 - r0);
-							n.Normalize();
-
-							glNormal3d(n.x, n.y, n.z);
-							glVertex3d(r0.x, r0.y, r0.z); glVertex3d(r4.x, r4.y, r4.z); glVertex3d(r8.x, r8.y, r8.z);
-							glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r0.x, r0.y, r0.z);
-							glVertex3d(r4.x, r4.y, r4.z); glVertex3d(r1.x, r1.y, r1.z); glVertex3d(r5.x, r5.y, r5.z);
-							glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r4.x, r4.y, r4.z);
-							glVertex3d(r7.x, r7.y, r7.z); glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r6.x, r6.y, r6.z);
-							glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r3.x, r3.y, r3.z); glVertex3d(r7.x, r7.y, r7.z);
-							glVertex3d(r8.x, r8.y, r8.z); glVertex3d(r5.x, r5.y, r5.z); glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r2.x, r2.y, r2.z); glVertex3d(r6.x, r6.y, r6.z); glVertex3d(r8.x, r8.y, r8.z);
-						}
-					}
-				}
-				glEnd();
-			}
-			break;
-			case FE_PENTA6:
-			case FE_PENTA15:
-			{
-				glBegin(GL_QUADS);
-				{
-					for (j = 0; j < 3; j++)
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
-
-						vec3d n = (r2 - r1) ^ (r3 - r1);
-						n.Normalize();
-
-						glNormal3d(n.x, n.y, n.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-						glVertex3d(r4.x, r4.y, r4.z);
-					}
-				}
-				glEnd();
-
-				glBegin(GL_TRIANGLES);
-				{
-					for (j = 3; j < 5; j++)
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-
-						vec3d n = (r2 - r1) ^ (r3 - r1);
-						n.Normalize();
-
-						glNormal3d(n.x, n.y, n.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-					}
-				}
-				glEnd();
-			}
-			break;
-			case FE_TET4:
-			case FE_TET5:
-			case FE_TET10:
-			case FE_TET15:
-			case FE_TET20:
-			{
-				glBegin(GL_TRIANGLES);
-				{
-					for (j = 0; j < 4; j++)
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTTET[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTTET[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTTET[j][2]]).r;
-
-						//							vec3d n = (r2 - r1)^(r3 - r1);
-						//							n.Normalize();
-
-						//							glNormal3d(n.x, n.y, n.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-					}
-				}
-				glEnd();
-			}
-			break;
-			case FE_PYRA5:
-			{
-				glBegin(GL_TRIANGLES);
-				{
-					for (j = 0; j < 4; j++)
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
-
-						vec3d n = (r2 - r1) ^ (r3 - r1);
-						n.Normalize();
-
-						glNormal3d(n.x, n.y, n.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-					}
-				}
-				glEnd();
-
-				glBegin(GL_QUADS);
-				{
-					const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[4][0]]).r;
-					const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[4][1]]).r;
-					const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
-					const vec3d& r4 = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
-
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-
-					glNormal3d(n.x, n.y, n.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-				}
-				glEnd();
-
-			}
-			break;
-			case FE_PYRA13:
-			{
-				glBegin(GL_TRIANGLES);
-				{
-					for (j = 0; j < 4; j++)
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
-
-						vec3d n = (r2 - r1) ^ (r3 - r1);
-						n.Normalize();
-
-						glNormal3d(n.x, n.y, n.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-					}
-				}
-				glEnd();
-
-				glBegin(GL_QUADS);
-				{
-					const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
-					const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
-					const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
-					const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
-
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-
-					glNormal3d(n.x, n.y, n.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-				}
-				glEnd();
-
-			}
-			case FE_QUAD4:
-			case FE_QUAD8:
-			case FE_QUAD9:
-			{
-				const vec3d& r1 = pm->Node(e.m_node[0]).r;
-				const vec3d& r2 = pm->Node(e.m_node[1]).r;
-				const vec3d& r3 = pm->Node(e.m_node[2]).r;
-				const vec3d& r4 = pm->Node(e.m_node[3]).r;
-
-				vec3d n = (r2 - r1) ^ (r3 - r1);
-				n.Normalize();
-
-				glBegin(GL_QUADS);
-				{
-					glNormal3d(n.x, n.y, n.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-				}
-				glEnd();
-			}
-			break;
-			case FE_TRI3:
-			case FE_TRI6:
-			{
-				const vec3d& r1 = pm->Node(e.m_node[0]).r;
-				const vec3d& r2 = pm->Node(e.m_node[1]).r;
-				const vec3d& r3 = pm->Node(e.m_node[2]).r;
-
-				vec3d n = (r2 - r1) ^ (r3 - r1);
-				n.Normalize();
-
-				glBegin(GL_TRIANGLES);
-				{
-					glNormal3d(n.x, n.y, n.z);
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-				}
-				glEnd();
-			}
-			break;
-			case FE_BEAM2:
-			{
-				const vec3d& r1 = pm->Node(e.m_node[0]).r;
-				const vec3d& r2 = pm->Node(e.m_node[1]).r;
-				glBegin(GL_LINES);
-				{
-					glNormal3d(1, 1, 1);
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-				}
-				glEnd();
-			}
-			break;
-			default:
-				assert(false);
-			}
-		}
-	}
-
-	glPopAttrib();
-}
-
-//-----------------------------------------------------------------------------
 void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 {
 	if ((po == 0) || !po->IsVisible()) return;
 
 	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
 
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
@@ -3561,34 +3084,21 @@ void CGLModelScene::RenderNormals(CGLContext& rc, GObject* po, double scale)
 		vis[n] = po->IsFaceVisible(gface);
 	}
 
-	glBegin(GL_LINES);
+	// tag the faces we want to render
+	int N = pm->Faces();
+	for (int i = 0; i < N; ++i)
 	{
-		int N = pm->Faces();
-		for (int i = 0; i < N; ++i)
+		FSFace& face = pm->Face(i);
+		bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
+		if (face.IsVisible() && bvis)
 		{
-			FSFace& face = pm->Face(i);
-			bool bvis = ((face.m_gid >= 0) && (face.m_gid < NS) ? vis[face.m_gid] : true);
-			if (face.IsVisible() && bvis)
-			{
-				vec3d fn = to_vec3d(face.m_fn);
-
-				int n = face.Nodes();
-				vec3d p = vec3d(0, 0, 0);
-				for (int j = 0; j < n; ++j) p += pm->Node(face.n[j]).r;
-				p /= (double)n;
-
-				vec3d q = p + fn * R;
-
-				float r = (float)fabs(fn.x);
-				float g = (float)fabs(fn.y);
-				float b = (float)fabs(fn.z);
-
-				glx::drawLine_(p, q, GLColor::White(), GLColor::FromRGBf(r, g, b));
-			}
+			face.m_ntag = 1;
 		}
+		else face.m_ntag = 0;
 	}
-	glEnd();
-	glPopAttrib();
+
+	GLMeshRender render;
+	render.RenderNormals(pm, R, 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -3629,6 +3139,70 @@ void CGLModelScene::SetDefaultMatProps()
 	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emi);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+}
+
+//-----------------------------------------------------------------------------
+void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
+{
+	if (pg == nullptr) return;
+	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
+
+	CGLView* glview = rc.m_view;
+	VIEW_SETTINGS& vs = glview->GetViewSettings();
+	GObject* po = dynamic_cast<GObject*>(pg->Object());
+	FSModel* fem = m_doc->GetFSModel();
+
+	switch (vs.m_objectColor)
+	{
+	case OBJECT_COLOR_MODE::DEFAULT_COLOR:
+	{
+		GMaterial* pmat = fem->GetMaterialFromID(pg->GetMaterialID());
+		SetMatProps(pmat);
+		GLColor c = po->GetColor();
+		if (pmat) c = pmat->Diffuse();
+		glColor3ub(c.r, c.g, c.b);
+
+		/*		if (pmat && (pmat->m_nrender != 0))
+				{
+					GLint n[2];
+					glmode = glGetIntegerv(GL_POLYGON_MODE, n);
+					if (n[1] != GL_LINE) glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+				}
+		*/
+	}
+	break;
+	case OBJECT_COLOR_MODE::OBJECT_COLOR:
+	{
+		SetDefaultMatProps();
+		GLColor c = po->GetColor();
+		GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+		col[0] = (float)c.r / 255.f;
+		col[1] = (float)c.g / 255.f;
+		col[2] = (float)c.b / 255.f;
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+//		glColor3ub(c.r, c.g, c.b);
+	}
+	break;
+	case OBJECT_COLOR_MODE::MATERIAL_TYPE:
+	{
+		GLColor c;
+		GMaterial* gmat = fem->GetMaterialFromID(pg->GetMaterialID());
+		if (gmat == nullptr) c = GLColor(200, 200, 200);
+		else
+		{
+			FSMaterial* pm = gmat->GetMaterialProperties();
+			if (pm == nullptr) c = GLColor(0, 0, 0);
+			else if (pm->IsRigid()) c = GLColor(210, 200, 164);
+			else c = GLColor(200, 128, 128);
+		}
+		GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+		col[0] = (float)c.r / 255.f;
+		col[1] = (float)c.g / 255.f;
+		col[2] = (float)c.b / 255.f;
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+	}
+	break;
+	}
 }
 
 void CGLModelScene::RenderRigidLabels(CGLContext& rc)

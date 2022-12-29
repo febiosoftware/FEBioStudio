@@ -261,6 +261,26 @@ private:
 	CFEBioJob*	m_job;
 };
 
+class CLCValidator : public CObjectValidator
+{
+public:
+	CLCValidator(FSLoadController* plc) : m_plc(plc) {}
+
+	QString GetErrorString() const override
+	{
+		if (m_plc && m_plc->GetReferenceCount() > 0) return "";
+		return "Load controller is not used.";
+	}
+
+	bool IsValid() override
+	{
+		return (m_plc && m_plc->GetReferenceCount() > 0);
+	}
+
+private:
+	FSLoadController* m_plc;
+};
+
 class CFEBioJobProps : public CPropertyList
 {
 public:
@@ -417,8 +437,9 @@ public:
 		addProperty("Outline color", CProperty::Color);
 		addProperty("Node color", CProperty::Color);
 		addProperty("Selection color", CProperty::Color);
-		addProperty("Shells as hexes", CProperty::Bool);
+		addProperty("Render shells as solid", CProperty::Bool);
 		addProperty("Shell reference surface", CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
+		addProperty("Render beams as solid", CProperty::Bool);
 		addProperty("Smoothing angle", CProperty::Float);
 	}
 
@@ -435,7 +456,8 @@ public:
 		case 5: v = toQColor(m_fem->m_sel_col); break;
 		case 6: v = m_fem->ShowShell2Solid(); break;
 		case 7: v = m_fem->ShellReferenceSurface(); break;
-		case 8: v = m_fem->GetSmoothingAngle(); break;
+		case 8: v = m_fem->ShowBeam2Solid(); break;
+		case 9: v = m_fem->GetSmoothingAngle(); break;
 		}
 		return v;
 	}
@@ -452,7 +474,8 @@ public:
 		case 5: m_fem->m_sel_col = toGLColor(v.value<QColor>());
 		case 6: m_fem->ShowShell2Solid(v.toBool()); break;
 		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
-		case 8: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 8: m_fem->ShowBeam2Solid(v.toBool()); break;
+		case 9: m_fem->SetSmoothingAngle(v.toDouble());  break;
 		}
 	}
 
@@ -648,6 +671,7 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 		t2->setIcon(0, QIcon(":/icons/warning.png"));
 		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 		if (parent) parent->setExpanded(true);
+		if (m_view) m_view->IncWarningCount();
 	}
 	else
 	{
@@ -1163,7 +1187,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
 		Post::CImageModel* img = doc->GetImageModel(i);
-		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CObjectProps(img), 0);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), 0);
 	}
 }
 
@@ -1891,7 +1915,7 @@ void CModelTree::UpdateLoadControllers(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		FSLoadController* plc = fem.GetLoadController(i);
 		string name = plc->GetName();
-		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, 0, plc);
+		AddTreeItem(t1, QString::fromStdString(name), MT_LOAD_CONTROLLER, 0, plc, nullptr, new CLCValidator(plc));
 	}
 
 	int n = t1->childCount();

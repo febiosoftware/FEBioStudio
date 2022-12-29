@@ -179,15 +179,12 @@ public:
 	// get the current project
 	FEBioStudioProject* GetProject();
 
-	// show New dialog box option
-	void setShowNewDialog(bool b);
-	bool showNewDialog();
-
 	// autoSave Interval
 	void setAutoSaveInterval(int interval);
 	int autoSaveInterval();
 
 	// autoUpdate Check
+    QString GetServerMessage();
 	bool updaterPresent();
 	bool updateAvailable();
 
@@ -317,6 +314,7 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -339,6 +337,7 @@ public slots:
 	void on_actionImportTiffImage_triggered();
 	void on_actionImportOMETiffImage_triggered();
 	void on_actionImportImageSequence_triggered();
+    void on_actionImportImageOther_triggered();
 	void on_actionConvertFeb_triggered();
     void on_actionConvertFeb2Fsm_triggered();
     void on_actionConvertFsm2Feb_triggered();
@@ -445,6 +444,7 @@ public slots:
 	void on_actionImageSlicer_triggered();
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
+	void on_actionImageWarp_triggered();
 	void on_actionAddProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionMusclePath_triggered();
@@ -540,6 +540,10 @@ public slots:
 	void on_actionColorMap_toggled(bool bchecked);
 	void on_selectTime_valueChanged(int n);
 
+	// signals from documents
+	void on_doCommand(QString msg);
+	void on_selectionChanged();
+
 	// Font toolbar
 	void on_fontStyle_currentFontChanged(const QFont& font);
 	void on_fontSize_valueChanged(int i);
@@ -573,6 +577,7 @@ public slots:
 
 	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);
+	void OnSelectObjectColorMode(QAction* ac);
 
 	void CloseView(int n, bool forceClose = false);
 	void CloseView(CDocument* doc);

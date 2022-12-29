@@ -316,6 +316,9 @@ Param::Param(const Param& p)
 	m_flags = p.m_flags;
 	m_paramGroup = p.m_paramGroup;
 
+	// we cannot copy the watch parameter!
+	m_watch = nullptr;
+
 	m_lc = p.m_lc;
 
 	m_bcopy = false;
@@ -922,6 +925,15 @@ void Param::SetArrayIntValue(const std::vector<int>& v)
 	for (int i = 0; i < n; ++i) d[i] = v[i];
 }
 
+void Param::SetArrayIntValue(int* pd, int nsize)
+{
+	assert(m_ntype == Param_ARRAY_INT);
+	auto& d = val<std::vector<int> >();
+	assert(d.size() == nsize);
+	int n = MIN(d.size(), nsize);
+	for (int i = 0; i < n; ++i) d[i] = pd[i];
+}
+
 void Param::SetArrayDoubleValue(const std::vector<double>& v)
 {
 	assert(m_ntype == Param_ARRAY_DOUBLE);
@@ -964,6 +976,18 @@ ParamBlock::ParamBlock(const ParamBlock &b)
 		Param* p = new Param(s);
 		m_Param.push_back(p);
 	}
+
+	// restore watched parameters
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& d = *m_Param[i];
+		if (s.m_watch)
+		{
+			Param* w = Find(s.GetShortName()); assert(w);
+			d.SetWatchVariable(w);
+		}
+	}
 }
 
 ParamBlock& ParamBlock::operator =(const ParamBlock &b)
@@ -977,6 +1001,19 @@ ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 		Param* p = new Param(s);
 		m_Param.push_back(p);
 	}
+
+	// restore watched parameters
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& d = *m_Param[i];
+		if (s.m_watch)
+		{
+			Param* w = Find(s.m_watch->GetShortName()); assert(w);
+			d.SetWatchVariable(w);
+		}
+	}
+
 	return *this;
 }
 
@@ -1233,6 +1270,11 @@ void ParamContainer::LoadParam(IArchive& ar)
 				{
 					param->SetParamType(p.GetParamType());
 					*param = p;
+				}
+				else if ((param->GetParamType() == Param_STRING) && (p.GetParamType() == Param_MATH))
+				{
+					std::string smath = p.GetMathString();
+					param->SetStringValue(smath);
 				}
 				else
 				{

@@ -47,6 +47,7 @@ public slots:
 private slots:
     void on_actionPlayPause_triggered();
     void on_timer_timeout();
+    void on_interval_valueChanged();
 
 private:
     Ui::C2DImageTimeView* ui;

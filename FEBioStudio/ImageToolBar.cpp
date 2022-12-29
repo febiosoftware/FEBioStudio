@@ -42,7 +42,7 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
     m_showSliceView = new QAction(CIconProvider::GetIcon("Image"), "Slice View");
     m_showSliceView->setCheckable(true);
 
-    m_show2dImageView = new QAction(CIconProvider::GetIcon("Image", "play"), "2D Time View");
+    m_show2dImageView = new QAction(CIconProvider::GetIcon("Image", "play"), "Slice Sequence View");
     m_show2dImageView->setCheckable(true);
 
     QActionGroup* viewGroup = new QActionGroup(this);

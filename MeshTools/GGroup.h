@@ -46,9 +46,10 @@ public:
 	GGroup(FSModel* ps, int ntype, unsigned int flags);
 	~GGroup(void);
 
-	FSNodeList*	BuildNodeList() { return 0; }
-	FEFaceList*	BuildFaceList() { return 0; }
-	FEElemList*	BuildElemList() { return 0; }
+	FSNodeList*	BuildNodeList() override { return 0; }
+	FEEdgeList*	BuildEdgeList() override { return 0; }
+	FEFaceList*	BuildFaceList() override { return 0; }
+	FEElemList*	BuildElemList() override { return 0; }
 
 protected:
 	FSModel*	m_ps;
@@ -78,6 +79,7 @@ class GFaceList : public GGroup
 public:
 	GFaceList(FSModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
 	GFaceList(FSModel* ps, GFaceSelection* pf);
+	GFaceList(FSModel* ps, GFace* pf);
 
 	vector<GFace*>	GetFaceList();
 
@@ -104,6 +106,8 @@ public:
 	FEItemListBuilder* Copy() override;
 
 	FSNodeList* BuildNodeList() override;
+
+	FEEdgeList* BuildEdgeList() override;
 
 	bool IsValid() const override;
 };

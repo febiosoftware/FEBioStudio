@@ -121,6 +121,8 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 	m_scene = new CGLModelScene(this);
 
 	SetFileWriter(new CModelFileWriter(this));
+
+	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
 
 void CModelDocument::Clear()
@@ -451,18 +453,8 @@ bool CModelDocument::LoadTemplate(int n)
 {
 	int N = TemplateManager::Templates();
 	if ((n<0) || (n >= N)) return false;
-
-	const DocTemplate& doc = TemplateManager::GetTemplate(n);
-
-	/*	string fileName = TemplateManager::TemplatePath() + doc.fileName;
-	const char* szfile = fileName.c_str();
-
-	PRVArchive ar;
-	if (ar.Load(szfile) == false) return false;
-	*/
-	m_Project.SetModule(doc.module);
-
-	return true;
+	DocTemplate& doc = TemplateManager::GetTemplate(n);
+	return doc.Load(this);
 }
 
 bool CModelDocument::GenerateFEBioOptimizationFile(const std::string& fileName, FEBioOpt& opt)
@@ -708,7 +700,10 @@ void CModelDocument::UpdateSelection(bool report)
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
-	if (report) m_wnd->ReportSelection();
+	if (report)
+	{
+		emit selectionChanged();
+	}
 }
 
 //-----------------------------------------------------------------------------

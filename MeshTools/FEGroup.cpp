@@ -338,6 +338,24 @@ FSNodeList* FSEdgeSet::BuildNodeList()
 	return pg;
 }
 
+FEEdgeList* FSEdgeSet::BuildEdgeList()
+{
+	FSMesh* pm = m_pObj->GetFEMesh();
+	if (pm == 0) return 0;
+
+	FEEdgeList* pg = new FEEdgeList();
+
+	FEItemListBuilder::Iterator it = m_Item.begin();
+	int N = (int)m_Item.size();
+	for (int i = 0; i < N; ++i, ++it)
+	{
+		FSEdge& e = pm->Edge(*it);
+		pg->Add(pm, &e);
+	}
+
+	return pg;
+}
+
 //////////////////////////////////////////////////////////////////////
 // FSNodeSet
 //////////////////////////////////////////////////////////////////////

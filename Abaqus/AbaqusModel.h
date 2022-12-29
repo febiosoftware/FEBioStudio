@@ -142,6 +142,23 @@ public:
 		vector<ENTRY>	m_data;
 	};
 
+	class Amplitude
+	{
+	public:
+		enum AmplitudeType {
+			AMP_TABULAR,
+			AMP_SMOOTH_STEP
+		};
+
+	public:
+		Amplitude() { m_type = 0; }
+
+	public:
+		string	m_name;
+		int		m_type;
+		std::vector<vec2d>	m_points;
+	};
+
 	// part
 	class PART
 	{
@@ -262,8 +279,9 @@ public:
 		char	szname[256];
 		int		mattype;
 		int		ntype;
+		int		nparam;
 		double	dens;
-		double	d[5];
+		double	d[10];
 	};
 
 	// surface loads
@@ -278,14 +296,6 @@ public:
 
 	public:
 		DSLOAD(){}
-		DSLOAD(const DSLOAD& d)
-		{
-			m_surf = d.m_surf;
-		}
-		void operator = (const DSLOAD& d)
-		{
-			m_surf = d.m_surf;
-		}
 
 		void add(SURFACE* s, double p)
 		{
@@ -295,6 +305,7 @@ public:
 
 	public:
 		vector<SURF>	m_surf;
+		int				m_ampl = -1;
 	};
 
 	// Boundary conditions
@@ -303,21 +314,13 @@ public:
 	public:
 		struct NSET
 		{
-			double		load;
-			int			ndof;
-			NODE_SET*	nodeSet;
+			double		load = 0.0;
+			int			ndof = -1;
+			NODE_SET*	nodeSet = nullptr;
 		};
 
 	public:
 		BOUNDARY(){}
-		BOUNDARY(const BOUNDARY& d)
-		{
-			m_nodeSet = d.m_nodeSet;
-		}
-		void operator = (const BOUNDARY& d)
-		{
-			m_nodeSet = d.m_nodeSet;
-		}
 
 		void add(NODE_SET* ns, int ndof, double v)
 		{
@@ -327,6 +330,7 @@ public:
 
 	public:
 		vector<NSET>	m_nodeSet;
+		int				m_ampl = -1;
 	};
 
 	// Steps
@@ -416,6 +420,12 @@ public:
 
 	list<STEP>& StepList() { return m_Step; }
 
+public:
+	void AddAmplitude(const Amplitude& a);
+	int Amplitudes() const;
+	const Amplitude& GetAmplitude(int n) const;
+	int FindAmplitude(const char* szname) const;
+
 private:
 	FSModel*	m_fem;		// the model
 
@@ -431,4 +441,5 @@ private:	// physics
 	list<BOUNDARY>		m_Boundary;		// boundary conditions
 	list<STEP>			m_Step;			// steps
 	STEP*				m_pStep;		// current step
+	std::vector<Amplitude>		m_Amp;
 };

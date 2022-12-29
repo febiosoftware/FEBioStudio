@@ -69,6 +69,8 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
+#include <PostLib/ImageModel.h>
+#include <QFileDialog>
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -82,8 +84,10 @@ public:
 		addProperty("Outline color"            , CProperty::Color);
 		addProperty("Node color"               , CProperty::Color);
 		addProperty("Selection color"          , CProperty::Color);
-		addProperty("Shells as hexes"          , CProperty::Bool);
+		addProperty("Render shells as solids"  , CProperty::Bool);
 		addProperty("Shell reference surface"  , CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
+		addProperty("Render beams as solids"   , CProperty::Bool);
+		addProperty("Solid beam radius"       , CProperty::Float);
 		addProperty("Smoothing angle"          , CProperty::Float);
 	}
 
@@ -100,7 +104,9 @@ public:
 		case 5: v = toQColor(m_fem->m_sel_col); break;
 		case 6: v = m_fem->ShowShell2Solid(); break;
 		case 7: v = m_fem->ShellReferenceSurface(); break;
-		case 8: v = m_fem->GetSmoothingAngle(); break;
+		case 8: v = m_fem->ShowBeam2Solid(); break;
+		case 9: v = m_fem->SolidBeamRadius(); break;
+		case 10: v = m_fem->GetSmoothingAngle(); break;
 		}
 		return v;
 	}
@@ -117,7 +123,9 @@ public:
 		case 5: m_fem->m_sel_col = toGLColor(v.value<QColor>()); break;
 		case 6: m_fem->ShowShell2Solid(v.toBool()); break;
 		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
-		case 8: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 8: m_fem->ShowBeam2Solid(v.toBool()); break;
+		case 9: m_fem->SolidBeamRadius(v.toFloat()); break;
+		case 10: m_fem->SetSmoothingAngle(v.toDouble());  break;
 		}
 	}
 
@@ -332,6 +340,8 @@ public:
 		addProperty("x-max", CProperty::Float);
 		addProperty("y-max", CProperty::Float);
 		addProperty("z-max", CProperty::Float);
+
+		addProperty("dimensions", CProperty::String)->setFlags(CProperty::Visible);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -346,6 +356,16 @@ public:
 		case 4: return box.x1; break;
 		case 5: return box.y1; break;
 		case 6: return box.z1; break;
+		case 7: 
+		{
+			C3DImage* im = m_img->Get3DImage();
+			if (im)
+			{
+				return QString("%1,%2,%3").arg(im->Width()).arg(im->Height()).arg(im->Depth());
+			}
+			else return QString("0,0,0");
+		}
+		break;
 		}
 		return QVariant();
 	}
@@ -362,6 +382,7 @@ public:
 		case 4: box.x1 = val.toFloat(); break;
 		case 5: box.y1 = val.toFloat(); break;
 		case 6: box.z1 = val.toFloat(); break;
+		case 7: break; // I don't think we would ever get here
 		}
 		m_img->SetBoundingBox(box);
 	}
@@ -867,6 +888,15 @@ void CPostModelPanel::BuildModelTree()
 					ui->AddItem(pi1, marchCube, QString::fromStdString(render->GetName()), "marching_cubes", new CObjectProps(marchCube));
 				}
 			}
+
+			for (int j = 0; j < img->ImageFilters(); ++j)
+			{
+				CImageFilter* flt = img->GetImageFilter(j);
+				if (flt)
+				{
+					ui->AddItem(pi1, flt, QString::fromStdString(flt->GetName()), "", new CObjectProps(flt));
+				}
+			}
 		}
 	
 		// view settings
@@ -1117,6 +1147,14 @@ void CPostModelPanel::on_deleteButton_clicked()
 			Update(true);
 		}
 	}
+	else if (dynamic_cast<CImageFilter*>(pobj))
+	{
+		CImageFilter* imf = dynamic_cast<CImageFilter*>(pobj);
+		Post::CImageModel* mdl = imf->GetImageModel();
+		mdl->RemoveFilter(imf);
+		delete imf;
+		Update(true);
+	}
 	else QMessageBox::information(this, "FEBio Studio", "Cannot delete this object");
 }
 
@@ -1223,8 +1261,22 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		QMenu menu(this);
 		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
 		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
+
+		if (dynamic_cast<Post::GLProbe*>(po))
+		{
+			menu.addAction("Export probe data ...", this, SLOT(OnExportProbeData()));
+		}
+
 		menu.exec(ev->globalPos());
 		return;
+	}
+
+	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+	if (img)
+	{
+		QMenu menu(this);
+		menu.addAction("Export image ...", this, SLOT(OnExportImage()));
+		menu.exec(ev->globalPos());
 	}
 }
 
@@ -1396,5 +1448,72 @@ void CPostModelPanel::OnMoveDownInRenderingQueue()
 		selectObject(plt);
 
 		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnExportImage()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export image", "", "Raw image (*.raw)");
+	if (filename.isEmpty() == false)
+	{
+		if (img->ExportRAWImage(filename.toStdString()) == false)
+		{
+			QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+			QMessageBox::critical(GetMainWindow(), "Export image", msg);
+		}
+		else
+		{
+			QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+			QMessageBox::information(GetMainWindow(), "Export image", msg);
+		}
+	}	
+}
+
+void CPostModelPanel::OnExportProbeData()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	int nfield = glm->GetColorMap()->GetEvalField();
+	if (nfield <= 0)
+	{
+		QMessageBox::critical(this, "Export", "No datafield selected.");
+		return;
+	}
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "Text file (*.txt)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		const char* szfile = sfile.c_str();
+		FILE* fp = fopen(szfile, "wt");
+		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+		{
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				if (probe)
+				{
+					double val = 0.0;
+					if (probe->TrackModelData())
+						val = probe->DataValue(nfield, nstep);
+
+					fprintf(fp, "%lg,", val);
+				}
+			}
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
 	}
 }

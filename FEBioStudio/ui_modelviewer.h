@@ -40,6 +40,38 @@ SOFTWARE.*/
 #include "ModelSearch.h"
 #include "MainWindow.h"
 
+class WarningLabel : public QWidget
+{
+public:
+	WarningLabel(QWidget* parent = nullptr) : QWidget(parent)
+	{
+		QHBoxLayout* h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("<img src=\":/icons/warning.png\">"));
+		h->addWidget(m_l = new QLabel);
+		setLayout(h);
+		m_warnings = 0;
+
+		setWarnings(0);
+	}
+
+	void setWarnings(int n)
+	{
+		m_warnings = n;
+		m_l->setText(QString("(%1)").arg(n));
+		setToolTip(QString("%1 warnings").arg(n));
+	}
+
+	void increase()
+	{
+		setWarnings(m_warnings + 1);
+	}
+
+private:
+	QLabel* m_l;
+	int		m_warnings;
+};
+
 class Ui::CModelViewer
 {
 public:
@@ -50,6 +82,7 @@ public:
 	::CModelPropsPanel*	props;
 
 	QComboBox*	m_filter;
+	WarningLabel* m_errs;
 
 	QToolButton* srcButton;
 
@@ -91,12 +124,15 @@ public:
 		m_filter->setObjectName("filter");
 		m_filter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
+		m_errs = new WarningLabel;
+
 		QHBoxLayout* hf = new QHBoxLayout;
 		hf->setContentsMargins(0,0,0,0);
 		QLabel* l = new QLabel("Filter:");
 		l->setBuddy(m_filter);
 		hf->addWidget(l);
 		hf->addWidget(m_filter);
+		hf->addWidget(m_errs);
 
 		// model tree
 		tree = new CModelTree(wnd);
@@ -157,5 +193,10 @@ public:
 		{
 			srcButton->setChecked(false);
 		}
+	}
+
+	void setWarningCount(int n)
+	{
+		m_errs->setWarnings(n);
 	}
 };

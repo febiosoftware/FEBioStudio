@@ -99,9 +99,23 @@ void CMeshInspector::UpdateData(int ndata)
 	if (ndata > ui->MAX_EVAL_FIELDS) ndata--;
 
 	FSMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
-	if (pm == 0) return;
+	if (pm == 0)
+	{
+		if (dynamic_cast<GSurfaceMeshObject*>(m_po))
+		{
+			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(m_po);
+			FSSurfaceMesh* psm = pso->GetSurfaceMesh();
+			if (psm == nullptr) return;
 
-	
+			UpdateSurfaceMeshData(psm, ndata);
+		}
+		else return;
+	}
+	else UpdateFEMeshData(pm, ndata);
+}
+
+void CMeshInspector::UpdateFEMeshData(FSMesh* pm, int ndata)
+{
 	const int MAX_ELEM = 21;
 	vector<bool> ET(MAX_ELEM, false);
 	for (int i = 0; i < ui->table->rowCount(); ++i)
@@ -202,6 +216,112 @@ void CMeshInspector::UpdateData(int ndata)
 	for (int i=0; i<M; ++i)
 	{
 		double v = vmin + i*(vmax - vmin)/(M-1);
+		pltData->addPoint(v, bin[i]);
+	}
+	ui->plot->addPlotData(pltData);
+	ui->plot->OnZoomToFit();
+}
+
+void CMeshInspector::UpdateSurfaceMeshData(FSSurfaceMesh* pm, int ndata)
+{
+	const int MAX_TYPE = 8;
+	vector<bool> FT(MAX_TYPE, false);
+	for (int i = 0; i < ui->table->rowCount(); ++i)
+	{
+		QTableWidgetItem* item = ui->table->item(i, 0);
+		if (item->checkState() == Qt::Checked)
+		{
+			int e = item->data(Qt::UserRole).toInt(); assert((e >= 0) && (e < MAX_TYPE));
+			FT[e] = true;
+		}
+	}
+
+	FESurfaceMeshValuator eval(*pm);
+
+	int curvatureLevels = ui->curvatureLevels->value();
+	int curvatureMaxIters = ui->curvatureMaxIters->value();
+	bool curvatureExtQuad = ui->curvatureExtQuad->isChecked();
+	eval.SetCurvatureLevels(curvatureLevels);
+	eval.SetCurvatureMaxIters(curvatureMaxIters);
+	eval.SetCurvatureExtQuad(curvatureExtQuad);
+
+	int NF = pm->Faces();
+	vector<double> v; v.reserve(NF * FSElement::MAX_NODES);
+	double vmax = -1e99, vmin = 1e99, vavg = 0;
+	Mesh_Data data;
+	data.Init(pm, 0, 0);
+	eval.Evaluate(ndata, data);
+	if (data.IsValid())
+	{
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = pm->Face(i);
+			if (FT[face.Type()])
+			{
+				int nf = face.Nodes();
+				if (data[i].tag)
+				{
+					int nerr;
+					for (int j = 0; j < nf; ++j)
+					{
+						double vj = data.GetElementValue(i, j);
+						vavg += vj;
+						v.push_back(vj);
+					}
+				}
+			}
+			else data[i].tag = 0;
+		}
+		data.UpdateValueRange();
+		data.GetValueRange(vmin, vmax);
+	}
+	int NC = v.size();
+	if (NC > 0) vavg /= (double)NC; else { vmin = vmax = vavg = 0.0; }
+	ui->stats->setRange(vmin, vmax, vavg);
+
+	ui->sel->setRange(vmin, vmax);
+
+	// determine number of bins
+	// sqrt rule
+//	int M = (int)ceil(sqrt((double)NC));
+
+	// sturges rule
+	int M = (int)ceil(log2(NC) + 1);
+
+	// rice rule
+//	int M = (int)ceil(2.0*pow(NC, 1.0/3.0));
+
+	if (M < 1) M = 1;
+	if (M > width() / 3) M = width() / 3;
+
+	if (fabs(vmax - vmin) < 1e-5) vmax++;
+	vector<double> bin; bin.assign(M, 0.0);
+	double ymax = 0;
+	for (int i = 0; i < NC; ++i)
+	{
+		int n = (int)(M * (v[i] - vmin) / (vmax - vmin));
+		if (n < 0) n = 0;
+		if (n >= M) n = M - 1;
+		if (n >= 0) bin[n] += 1;
+		if (bin[n] > ymax) ymax = bin[n];
+	}
+
+	if (ui->logScale->isChecked())
+	{
+		for (int i = 0; i < M; ++i)
+		{
+			if (bin[i] > 0) bin[i] = log10(bin[i]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < M; ++i) bin[i] /= (double)NC;
+	}
+
+	CPlotData* pltData = new CPlotData;
+	for (int i = 0; i < M; ++i)
+	{
+		double v = vmin + i * (vmax - vmin) / (M - 1);
 		pltData->addPoint(v, bin[i]);
 	}
 	ui->plot->addPlotData(pltData);

@@ -192,6 +192,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 	FEBio::SetActiveModule(moduleId);
 	FSProject& prj = FileReader()->GetProject();
 	prj.SetModule(moduleId, false);
+	m_nAnalysis = moduleId;
 
 	if (tag.isempty() == false)
 	{
@@ -387,6 +388,7 @@ bool FEBioFormat4::ParseMeshSection(XMLTag& tag)
 		if      (tag == "Nodes"      ) ParseGeometryNodes      (DefaultPart(), tag);
 		else if (tag == "Elements"   ) ParseGeometryElements   (DefaultPart(), tag);
 		else if (tag == "NodeSet"    ) ParseGeometryNodeSet    (DefaultPart(), tag);
+		else if (tag == "Edge"       ) ParseGeometryEdgeSet    (DefaultPart(), tag);
 		else if (tag == "Surface"    ) ParseGeometrySurface    (DefaultPart(), tag);
 		else if (tag == "ElementSet" ) ParseGeometryElementSet (DefaultPart(), tag);
 		else if (tag == "DiscreteSet") ParseGeometryDiscreteSet(DefaultPart(), tag);
@@ -419,6 +421,7 @@ bool FEBioFormat4::ParseMeshDomainsSection(XMLTag& tag)
 		{
 			if      (tag == "SolidDomain") ParseSolidDomain(tag);
 			else if (tag == "ShellDomain") ParseShellDomain(tag);
+			else if (tag == "BeamDomain" ) ParseBeamDomain (tag);
 			else ParseUnknownTag(tag);
 			++tag;
 		} while (!tag.isend());
@@ -452,6 +455,7 @@ void FEBioFormat4::ParseSolidDomain(XMLTag& tag)
 
 		FEBioInputModel::Domain* dom = part->FindDomain(szname);
 		if (dom) dom->SetMatID(matID);
+		dom->SetType(FEBioInputModel::Domain::SOLID);
 
 		FESolidFormulation* eform = nullptr;
 		const char* szelem = tag.AttributeValue("type", true);
@@ -487,9 +491,10 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 
 		FEShellFormulation* shell = nullptr;
 		const char* szelem = tag.AttributeValue("type", true);
-		if (szelem) shell = shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
+		if (szelem) shell = FEBio::CreateShellFormulation(szelem, &febio.GetFSModel());
 
 		dom->SetElementFormulation(shell);
+		dom->SetType(FEBioInputModel::Domain::SHELL);
 
 		// read the domain parameters
 		if (tag.isleaf() == false)
@@ -506,10 +511,46 @@ void FEBioFormat4::ParseShellDomain(XMLTag& tag)
 						tag.value(h);
 						dom->SetDefaultShellThickness(h);
 					}
-					else tag.skip();
+					else ParseUnknownTag(tag);
 					++tag;
 				} 
 				while (!tag.isend());
+			}
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseBeamDomain(XMLTag& tag)
+{
+	FEBioInputModel::Part* part = DefaultPart();
+
+	const char* szname = tag.AttributeValue("name");
+	const char* szmat = tag.AttributeValue("mat", true);
+	if (szmat)
+	{
+		FEBioInputModel& febio = GetFEBioModel();
+		int matID = febio.GetMaterialIndex(szmat);
+		if (matID == -1) matID = atoi(szmat) - 1;
+
+		FEBioInputModel::Domain* dom = part->FindDomain(szname);
+		if (dom) dom->SetMatID(matID);
+
+		FEBeamFormulation* beam = nullptr;
+		const char* szelem = tag.AttributeValue("type", true);
+		if (szelem) beam = FEBio::CreateBeamFormulation(szelem, &febio.GetFSModel());
+
+		dom->SetElementFormulation(beam);
+		dom->SetType(FEBioInputModel::Domain::BEAM);
+
+		// read the domain parameters
+		if (tag.isleaf() == false)
+		{
+			if (beam)
+				ReadParameters(*beam, tag);
+			else
+			{
+				ParseUnknownTag(tag);
 			}
 		}
 	}
@@ -627,6 +668,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	else if (strcmp(sztype, "TRI3G9"      ) == 0) ntype = FE_TRI3;
 	else if (strcmp(sztype, "TRI6G14"     ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "TRI6G21"     ) == 0) ntype = FE_TRI6;
+	else if (strcmp(sztype, "line2"       ) == 0) ntype = FE_BEAM2;
 	else throw XMLReader::InvalidTag(tag);
 
 	// get the optional material attribute
@@ -775,6 +817,51 @@ void FEBioFormat4::ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag&
 
 	part->AddSurfacePair(FEBioInputModel::SurfacePair(name, surf2, surf1));
 }
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseGeometryEdgeSet(FEBioInputModel::Part* part, XMLTag& tag)
+{
+	if (part == 0) throw XMLReader::InvalidTag(tag);
+
+	// get the name
+	const char* szname = tag.AttributeValue("name");
+
+	// see if a edgeset with this name is already defined
+	// if found, we'll continue, but we'll generate a warning.
+	FEBioInputModel::EdgeSet* ps = part->FindEdgeSet(szname);
+	if (ps) FileReader()->AddLogEntry("An edge named %s is already defined.", szname);
+
+	// create a new edge
+	FEBioInputModel::EdgeSet s;
+	s.m_name = szname;
+
+	if (tag.isleaf() == false)
+	{
+		// read the surface data
+		int nf[FSElement::MAX_NODES], N;
+		++tag;
+		do
+		{
+			// read the line element
+			if (tag == "line2") N = 2;
+			else if (tag == "line3") N = 3;
+			else throw XMLReader::InvalidTag(tag);
+
+			// read the node numbers
+			tag.value(nf, N);
+
+			// make zero-based
+			vector<int> node(N);
+			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			s.m_edge.push_back(node);
+
+			++tag;
+		} while (!tag.isend());
+	}
+
+	part->AddEdgeSet(s);
+}
+
 
 //-----------------------------------------------------------------------------
 void FEBioFormat4::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag)

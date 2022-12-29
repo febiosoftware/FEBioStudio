@@ -124,13 +124,13 @@ status open
 User's Manual
 \series default
 \emph on
-Version 1.8
+Version 2.0
 \end_layout
 
 \begin_layout Date
 
 \series bold
-Last Updated: June 14, 2022
+Last Updated: December 12, 2022
 \end_layout
 
 \begin_layout Standard
@@ -7969,7 +7969,7 @@ Scale
  Scale value specifies the desired reduction in the total number of nodes
  in the final decimated mesh.
  For example a 0.4 value of scale will result in the final decimated mesh
- with 40 {%} of current number of nodes.
+ with 40% of current number of nodes.
 \end_layout
 
 \begin_layout Subsubsection
@@ -8044,6 +8044,13 @@ Flips the selected edge.
 
 \begin_layout Subsubsection
 MMG Remesh
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:MMG-Remesh-2D"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -8417,6 +8424,13 @@ Click Apply to generate the mesh.
 
 \begin_layout Subsection
 Meshing Editable Surfaces
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Meshing-Editable-Surfaces"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -8761,9 +8775,9 @@ Boundary Layer
 \end_layout
 
 \begin_layout Standard
-For certain types of analysis (e.g.
- biphasic) it may be important to refine the mesh near the boundary to capture
- rapid boundary layer effects.
+For certain types of analyses (e.g.
+ biphasic or computational fluid dynamics), it may be important to refine
+ the mesh near the boundary to capture rapid boundary layer effects.
  The Boundary Layer tool can be used to generate a thin layer of refined
  elements.
  The tool requires a facet selection.
@@ -8797,7 +8811,39 @@ Note that this tool may introduce different types of elements.
  For instance, when applied to a tetrahedral mesh, the boundary layer may
  contain tetrahedral, wedge, and hexahedral elements.
  The quality of the elements in the boundary layer may also be degraded.
- 
+\end_layout
+
+\begin_layout Standard
+If a tetrahedral mesh was generated with TetGen (Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Meshing-Editable-Surfaces"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+), the boundary layer tool may fail.
+ In that case, remesh it with MMG (Section
+\begin_inset space ~
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:MMG-Remesh-3D"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) and try the boundary layer tool again.
 \end_layout
 
 \begin_layout Subsubsection
@@ -8972,6 +9018,13 @@ This tool mirrors the mesh with respect to the selected mirror plane and
 
 \series bold
 MMG Remesh
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:MMG-Remesh-3D"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -19067,58 +19120,335 @@ Loading 3D image data
 \end_layout
 
 \begin_layout Standard
-Currently, only RAW image data is supported.
+FEBio Studio uses SimpleITK to read and manipulate image data, and so it
+ supports reading a large number of image formats.
+ At the moment, FEBio Studio does only supports single channel, 8-bit images.
+ When a higher bit image is loaded in, it is scaled down to 8 bits.
+ Multichannel images (including color images) cannot be read in at all.
  To load image data, select the File
 \backslash
-Import Image menu, which will show the standard File Open dialog box.
- In the filter selection, select the 
-\begin_inset Quotes eld
-\end_inset
-
-Raw image data
-\begin_inset Quotes erd
-\end_inset
-
- option.
- Then, locate the image file on the file system and click OK.
+Import Image from the main menu, and then select the type of image that
+ you would like to import, which will show the standard File Open dialog
+ box.
+ Locate the image file on the file system and click OK.
  
 \end_layout
 
 \begin_layout Standard
-Next, a dialog box will appear where you can enter the dimensions of the
- image, as well as the physical range that corresponds to the image.
- 
-\end_layout
-
-\begin_layout Standard
-By default, the image data will be loaded into the active model, unless
- no model has been loaded yet.
- In that case, the image will be loaded in a new and empty model.
+By default, the image data will be loaded into the active model.
  Thus, if you wish to view the image on top of a FE model, you first need
  to load that model, make sure it is active one, and then load the image
  data.
+ When the image data is loaded in, a 3D volume renderer will be added to
+ your model, displaying the image.
+\end_layout
+
+\begin_layout Subsection
+Supported Image Types
+\end_layout
+
+\begin_layout Subsubsection
+Raw
 \end_layout
 
 \begin_layout Standard
-After loading the image data, a new item appears in the Model Viewer.
- When selected, you can modify the physical range of the image.
- In addition, two tabs will appear next to the Properties tab, namely 
+Raw images contain no header information, and so in order to import them,
+ you must provide information about the physical location of the image,
+ and the physical and pixel dimensions of the image.
+ When you import a raw image, a dialog box will appear where you can enter
+ this information.
+\end_layout
+
+\begin_layout Subsubsection
+DICOM
+\end_layout
+
+\begin_layout Standard
+DICOM images are read using SimpleITK.
+ In order to load in a sequence of DICOM images, simply select one of the
+ DICOM files from the File Dialog.
+ FEBio Studio uses builtin SimpleITK functionality to parse the header data
+ of the DICOM images to locate and read all of the files that belong to
+ the same dataset as the file you specified.
+\end_layout
+
+\begin_layout Subsubsection
+TIFF
+\end_layout
+
+\begin_layout Standard
+TIFF images are read using SimpleITK.
+ To load in a TIFF image, simple select it from the File Dialog.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+OME TIFF
+\end_layout
+
+\begin_layout Standard
+OME TIFF images are read using SimpleITK.
+ To load in an OME TIFF image, you should select the xml file containing
+ the OME header data from the File Dialog.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Image Sequence
+\end_layout
+
+\begin_layout Standard
+If you have a sequence of 2D image files that together make up a single
+ 3D image, you can load them in using this option.
+ Simply select all of the images files that correspond to your image stack
+ in the File Dialog.
+ To ensure that they are loaded in the proper order, please make sure that
+ they are organized alphabetically by file name.
+\end_layout
+
+\begin_layout Standard
+Do not use this option to load in a sequence of DICOM files.
+ See the section on DICOM images for more information.
+\end_layout
+
+\begin_layout Section
+Image GUI Environment
+\end_layout
+
+\begin_layout Standard
+FEBio Studio has various GUI elements dedicated to viewing and manipulating
+ image data.
+ Some of these GUI elements only appear when an image is selected from the
+ model tree in an open model.
+\end_layout
+
+\begin_layout Subsection
+Properties Box
+\end_layout
+
+\begin_layout Standard
+The image properties box will appear in the Model panel when you select
+ an image in the model tree.
+ The box has three tabs: 
 \emph on
-Image Viewer 
+Properties
 \emph default
-and 
+, 
+\emph on
+Filters
+\emph default
+, and 
 \emph on
 Histogram
 \emph default
 .
- With the Image Viewer you can scroll through the image slices of the 3D
- image stack.
- The Histogram shows the histogram of the image stack.
+ The Properties tab shows the physical bounds of the image in real space,
+ and allows you to edit them.
+ The Filters tab allows you to add, edit, and apply various filters to the
+ images (please see the section on Filters for more information).
+ The Histogram tab displays a histogram of the data from the selected image.
+\end_layout
+
+\begin_layout Subsection
+View Settings Panel
+\end_layout
+
+\begin_layout Standard
+The View Settings Panel will only be visible after an image has been selected.
+ It allows you to customize various display settings for the current image.
+ These display settings will be remembered for each image, and will be used
+ across all display modes for the image.
+ The settings include:
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Alpha Scale 
+\emph default
+- Sets the overall alpha scale, which scales the transparency of the image.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Min Intensity 
+\emph default
+- Minimum cutoff image intensity.
+ Voxels with an intensity below this value will be rendered with a transparency
+ set to the value of the 
+\emph on
+min alpha
+\emph default
+ parameter.
+ 
+\end_layout
+
+\begin_layout Itemize
+Max Intensity - Maximum cutoff image intensity.
+ Voxels with an intensity above this value will be rendered with a transparency
+ set to the value of the 
+\emph on
+max alpha
+\emph default
+ parameter.
+\end_layout
+
+\begin_layout Subsection
+Slice View
+\end_layout
+
+\begin_layout Standard
+To access the Slice View, click the Slice View button on the Image Toolbar.
+ This view shows slices of the image in each of the cardinal directions,
+ along with a 3D render of the image which shows the corresponding location
+ of each of the slices.
+ 
+\end_layout
+
+\begin_layout Standard
+Below each of the slices, the direction of the slice is displayed along
+ with the index of the slice in that direction and a slider.
+ You can change which slice is displayed by either editing the slice index
+ number, dragging the slider, or hovering over the slice and scrolling with
+ your mouse wheel.
+ As a given slice is moved, the corresponding slice on the 3D render will
+ move with it.
+\end_layout
+
+\begin_layout Subsection
+Slice Sequence View
+\end_layout
+
+\begin_layout Standard
+To access the Slice Sequence View, click the Slice Sequence View button
+ on the Image Toolbar.
+ This view allows you to automatically step through the slices of your image
+ at a fixed interval.
+ This is particularly useful if your image data consists of 2D images taken
+ at different times.
+ 
+\end_layout
+
+\begin_layout Standard
+Below the slice, there are various controls for this view.
+ The Play/Pause button will start or stop the animation.
+ The Interval value is the amount of time in milliseconds that the view
+ will pause between each slice.
+ Its default value is 40ms, which corresponds to 25 frames per second.
+ The Slice Direction dropdown allows you to change from which direction
+ the slice be shown.
+ The number and slider next to the Slice Direction dropdown show the current
+ slice index and relative slice position.
+ The slice index can be changed manually by editing the slice index number,
+ dragging the slider, or hovering over the slice and scrolling with your
+ mouse wheel.
+ If, however, the view is currently animating, the value will be automatically
+ advanced as soon as it is edited.
+\end_layout
+
+\begin_layout Section
+Filters
+\end_layout
+
+\begin_layout Standard
+FEBio Studio allows you to apply various filters to your images.
+ These features are still under development, and as such there are not yet
+ many filters available.
+ In order to add, edit, or apply filters to your image, select the image
+ from the Model Tree, then select the Filters tab in the 3D Image box in
+ the Model panel.
+\end_layout
+
+\begin_layout Subsection
+Adding, Removing, and Editing Filters
+\end_layout
+
+\begin_layout Standard
+The Filter GUI consists of two boxes, the Filters box and the Filter Properties
+ box, and an Apply button.
+ Due to the time-intensive nature of some filters, filters are only applied
+ to the image when you click the Apply button.
+ The effects of any addition, removal, editing, or reordering of filters
+ will not be applied to the image until the Apply button is clicked.
+ The following actions can be done in the Filter GUI:
+\end_layout
+
+\begin_layout Itemize
+To add a new filter, click the green plus icon to the right of the Filters
+ box.
+ This will open a dialog box which will allow you to select the type of
+ filter you'd like to add.
+ 
+\end_layout
+
+\begin_layout Itemize
+To remove a filter, select it from the list of filters, and click the red
+ X icon.
+ 
+\end_layout
+
+\begin_layout Itemize
+To change the order in which filters are applied, simply drag and drop the
+ filters in the Filters box to reorder them.
+ The filters will be applied in order from top to bottom.
+\end_layout
+
+\begin_layout Itemize
+To change a filter's properties, select the filter from the Filters box.
+ The filter's properties will appear, and can be edited in the Filter Properties
+ box.
+ 
+\end_layout
+
+\begin_layout Subsection
+Available Filters
+\end_layout
+
+\begin_layout Standard
+The image filtering functionality in FEBio Studio is new, and under active
+ development.
+ As such, there are only a small number of filters currently available.
+ Many more filters will be added soon.
+\end_layout
+
+\begin_layout Standard
+There are three filters currently available: a threshold filter, a mean
+ image filter, and a Gaussian blur filter.
+ 
+\end_layout
+
+\begin_layout Standard
+The threshold filter allows you to set a minimum and maximum intensity value
+ for your image.
+ Pixel values below your minimum will be set to 0, those above your maximum
+ will be set to 255, and all other pixel values will be scaled between 0
+ and 255 linearly.
+ 
+\end_layout
+
+\begin_layout Standard
+The mean image filter will assign each pixel the value of the average of
+ all surrounding pixels within a given radius.
+ The X, Y, and Z radii can each be set individually.
+ 
+\end_layout
+
+\begin_layout Standard
+The Gaussian blur filter applies a Gaussian blur to the image.
+ The sigma value of the Gaussian distribution can be specified in the filter
+ properties.
+\end_layout
+
+\begin_layout Standard
+Any other filters that may appear should be considered experimental for
+ now.
  
 \end_layout
 
 \begin_layout Section
-Visualizing 3D Image Data
+Other 3D Image Visualization Options
 \end_layout
 
 \begin_layout Standard

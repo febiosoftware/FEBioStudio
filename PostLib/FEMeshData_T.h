@@ -880,6 +880,24 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// TODO: This should be mat2fs, but that type doesn't exist yet. 
+class LagrangeStrain2D : public FEElemData_T<mat3fs, DATA_ITEM>
+{
+public:
+	LagrangeStrain2D(FEState* state, ModelDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf) {}
+	void eval(int n, mat3fs* pv);
+};
+
+//-----------------------------------------------------------------------------
+// TODO: This should be mat2fs, but that type doesn't exist yet. 
+class InfStrain2D : public FEElemData_T<mat3fs, DATA_ITEM>
+{
+public:
+	InfStrain2D(FEState* state, ModelDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf) {}
+	void eval(int n, mat3fs* pv);
+};
+
+//-----------------------------------------------------------------------------
 class BiotStrain : public ElemStrain
 {
 public:
@@ -1007,4 +1025,13 @@ private:
 	int	m_nstress;	// total stress field
 	int	m_nflp;		// fluid pressure field
 };
+
+//-----------------------------------------------------------------------------
+class FEElementMaterial : public FEElemData_T<float, DATA_ITEM>
+{
+public:
+	FEElementMaterial(FEState* state, ModelDataField* pdf);
+	void eval(int n, float* pv);
+};
+
 }

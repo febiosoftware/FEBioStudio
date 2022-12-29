@@ -1077,6 +1077,64 @@ double MaxEdgeLength(const FSMesh& mesh, const FSElement& e)
 	return Lmax;
 }
 
+// get the min edge length of a face
+double MinEdgeLength(const FSMeshBase& mesh, const FSFace& f)
+{
+	int edges = 0;
+	const int(*ET)[2] = 0;
+	int shape = f.Shape();
+	switch (shape)
+	{
+	case FE_FACE_TRI: edges = 3; ET = ET_TRI; break;
+	case FE_FACE_QUAD: edges = 4; ET = ET_QUAD; break;
+	default:
+		assert(false);
+		return 0;
+	}
+
+	// find the smallest edge
+	double Lmin = 1e99;
+	for (int i = 0; i < edges; ++i)
+	{
+		vec3d r1 = mesh.Node(f.n[ET[i][0]]).pos();
+		vec3d r2 = mesh.Node(f.n[ET[i][1]]).pos();
+
+		double L = (r2 - r1).Length();
+		if (L < Lmin) Lmin = L;
+	}
+
+	return Lmin;
+}
+
+// get the max edge length of a face
+double MaxEdgeLength(const FSMeshBase& mesh, const FSFace& f)
+{
+	int edges = 0;
+	const int(*ET)[2] = 0;
+	int shape = f.Shape();
+	switch (shape)
+	{
+	case FE_FACE_TRI : edges = 3; ET = ET_TRI; break;
+	case FE_FACE_QUAD: edges = 4; ET = ET_QUAD; break;
+	default:
+		assert(false);
+		return 0;
+	}
+
+	// find the smallest edge
+	double Lmax = 0.0;
+	for (int i = 0; i < edges; ++i)
+	{
+		vec3d r1 = mesh.Node(f.n[ET[i][0]]).pos();
+		vec3d r2 = mesh.Node(f.n[ET[i][1]]).pos();
+
+		double L = (r2 - r1).Length();
+		if (L > Lmax) Lmax = L;
+	}
+
+	return Lmax;
+}
+
 double Curvature(FSMesh& mesh, int node, int measure, int levels, int maxIters, bool extQuad)
 {
 	// get the reference nodal position

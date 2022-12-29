@@ -918,9 +918,11 @@ void StandardDataFieldManager::Init()
 	Add<StrainDataField >("Left stretch"        , StrainDataField::LEFT_STRETCH      );
 	Add<StrainDataField >("Left Hencky"         , StrainDataField::LEFT_HENCKY       );
 	Add<StrainDataField >("Almansi strain"      , StrainDataField::ALMANSI           );
+	Add<FEDataField_T<LagrangeStrain2D     > >("Lagrange Strain 2D");
+	Add<FEDataField_T<InfStrain2D          > >("Infinitesimal Strain 2D");
 	Add<FEDataField_T<ElementVolume        > >("Volume"                    );
-	Add<FEDataField_T<VolumeRatio             > >("Volume ratio"              );
-	Add<FEDataField_T<VolumeStrain            > >("Volume strain"             );
+	Add<FEDataField_T<VolumeRatio          > >("Volume ratio"              );
+	Add<FEDataField_T<VolumeStrain         > >("Volume strain"             );
 	Add<FEDataField_T<AspectRatio          > >("Aspect ratio"              );
 	Add<CurvatureField >("1-Princ curvature"         , CurvatureField::PRINC1_CURVATURE);
 	Add<CurvatureField >("2-Princ curvature"         , CurvatureField::PRINC2_CURVATURE);
@@ -934,6 +936,7 @@ void StandardDataFieldManager::Init()
 	Add<FEDistanceMap >("Distance map");
 	Add<FEAreaCoverage>("Area coverage");
 	Add<FEDataField_T<FEFacetArea> >("Facet area");
+	Add<FEDataField_T<FEElementMaterial> >("Material ID");
 }
 
 void Post::InitStandardDataFields()

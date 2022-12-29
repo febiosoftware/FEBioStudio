@@ -338,8 +338,6 @@ public:
 	int			m_theme;	// 0 = default, 1 = dark
 	bool		m_clearUndoOnSave;
 
-	bool	m_showNewDialog;
-
 	bool	m_isAnimating;
 
 	QList<::CGraphWindow*>	graphList;
@@ -352,6 +350,7 @@ public:
 	int		m_defaultUnits;
 
 	CUpdateWidget m_updateWidget;
+    QString m_serverMessage;
 	bool m_updaterPresent;
 	bool m_updateAvailable;
 	bool m_updateOnClose;
@@ -369,8 +368,6 @@ public:
 		measureTool = nullptr;
 		planeCutTool = nullptr;
 		fiberViz = nullptr;
-
-		m_showNewDialog = true;
 	}
 
 	void setupUi(::CMainWindow* wnd)
@@ -508,6 +505,7 @@ public:
 		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
 		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
 		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
+        QAction* actionImportImageOther  = addAction("Other ...", "actionImportImageOther");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
         QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
         QAction* actionConvertFsm2Feb    = addAction("FSM to FEB ...", "actionConvertFsm2Feb");
@@ -620,9 +618,12 @@ public:
 		QAction* actionStreamLinePlot = addAction("Streamlines Plot", "actionStreamLinePlot", "streamlines");
 		QAction* actionParticleFlowPlot = addAction("Particleflow Plot", "actionParticleFlowPlot", "particle");
 		QAction* actionVolumeFlowPlot = addAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
-		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
-		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
+
+		QAction* actionImageSlicer   = addAction("Image Slicer", "actionImageSlicer", "imageslice");
+		QAction* actionVolumeRender  = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
+		QAction* actionImageWarp     = addAction("Image Warp", "actionImageWarp");
+
 		QAction* actionAddProbe = addAction("Probe", "actionAddProbe", "probe");
 		QAction* actionAddRuler = addAction("Ruler", "actionAddRuler", "ruler");
 		QAction* actionMusclePath = addAction("Muscle Path ...", "actionMusclePath");
@@ -809,8 +810,9 @@ public:
 		menuImportImage->addAction(actionImportRawImage);
 		menuImportImage->addAction(actionImportDICOMImage);
 		menuImportImage->addAction(actionImportTiffImage);
-		menuImportImage->addAction(actionImportOMETiffImage);
+//		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 		menuImportImage->addAction(actionImportImageSequence);
+        menuImportImage->addAction(actionImportImageOther);
 		
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");
@@ -926,13 +928,14 @@ public:
 		menuPost->addAction(actionStreamLinePlot);
 		menuPost->addAction(actionParticleFlowPlot);
 		menuPost->addAction(actionVolumeFlowPlot);
+		menuPost->addAction(actionAddProbe);
+		menuPost->addAction(actionAddRuler);
+		menuPost->addAction(actionMusclePath);
 		menuPost->addSeparator();
 		menuPost->addAction(actionImageSlicer);
 		menuPost->addAction(actionVolumeRender);
 		menuPost->addAction(actionMarchingCubes);
-		menuPost->addAction(actionAddProbe);
-		menuPost->addAction(actionAddRuler);
-		menuPost->addAction(actionMusclePath);
+		menuPost->addAction(actionImageWarp);
 		menuPost->addSeparator();
 		menuPost->addAction(actionGraph);
 		menuPost->addSeparator();
@@ -1188,7 +1191,7 @@ public:
 //		m_wnd->tabifyDockWidget(dock2, dock3);
 
  		QDockWidget* dock4 = new QDockWidget("Output", m_wnd); dock4->setObjectName("dockLog");
-		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
 		logPanel = new ::CLogPanel(dock4);
 		dock4->setWidget(logPanel);
 		menuWindows->addAction(dock4->toggleViewAction());

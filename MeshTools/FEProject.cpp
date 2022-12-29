@@ -278,13 +278,15 @@ void FSProject::Load(IArchive &ar)
 
 	if (ar.Version() < 0x00040000)
 	{
-		ar.log("Converting FE model:");
-		ar.log("===================");
 		std::ostringstream log;
 		ConvertToNewFormat(log);
 		string s = log.str();
-		if (s.empty() == false) ar.log(s.c_str());
-		else ar.log("No issues found!");
+		if (s.empty() == false)
+		{
+			ar.log("Converting FE model:");
+			ar.log("===================");
+			ar.log(s.c_str());
+		}
 	}
 }
 
@@ -742,6 +744,7 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		default:
 			assert(false);
 		}
+		m_module = FEBio::GetActiveModule();
 	}
 
 	ConvertMaterials(log);
@@ -814,7 +817,7 @@ void convert_fibers(std::ostream& log, FSModelComponent* pd, const FSOldFiberMat
 
 void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMaterial* axis)
 {
-	if (axis == nullptr) return;
+	if ((axis == nullptr) || (axis->m_naopt == -1)) return;
 	FSModel* fem = pd->GetFSModel();
 
 	// see if the febio material has the mat_axis property defined. 
@@ -828,6 +831,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 	FSModelComponent* febAxis = nullptr;
 	switch (axis->m_naopt)
 	{
+	case -1: break;
 	case FE_AXES_LOCAL:
 	{
 		febAxis = FEBio::CreateClass(FEMAT3DVALUATOR_ID, "local", fem); assert(febAxis);
@@ -880,7 +884,7 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 	}
 	break;
 	default:
-		log << "Unkown mat axis type" << std::endl;
+		log << "Unknown mat axis type" << std::endl;
 	}
 
 	if (febAxis) matAxis->SetComponent(febAxis);
@@ -1497,30 +1501,43 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 		case FE_NODAL_DOF_LOAD:
 		{
 			FSNodalDOFLoad* pnl = dynamic_cast<FSNodalDOFLoad*>(pl);
-
-			febLoad = FEBio::CreateNodalLoad("nodal_force", fem);
 			int bc = pnl->GetDOF();
 			double s = pnl->GetLoad();
 
-			if (bc >= 3)
+			if (bc < 6)
 			{
-				febLoad->SetParamBool("shell_bottom", true);
-				bc -= 3;
-			}
+				febLoad = FEBio::CreateNodalLoad("nodal_force", fem);
 
-			vec3d f;
-			switch (bc)
+				if (bc >= 3)
+				{
+					febLoad->SetParamBool("shell_bottom", true);
+					bc -= 3;
+				}
+
+				vec3d f;
+				switch (bc)
+				{
+				case 0: f = vec3d(s, 0, 0); break;
+				case 1: f = vec3d(0, s, 0); break;
+				case 2: f = vec3d(0, 0, s); break;
+				}
+
+				Param* pf = febLoad->GetParam("value"); assert(pf);
+				pf->SetVec3dValue(f);
+
+				int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
+				pf->SetLoadCurveID(lc);
+			}
+			else if (bc == 6)
 			{
-			case 0: f = vec3d(s, 0, 0); break;
-			case 1: f = vec3d(0, s, 0); break;
-			case 2: f = vec3d(0, 0, s); break;
+				febLoad = FEBio::CreateNodalLoad("nodal fluidflux", fem);
+
+				Param* pf = febLoad->GetParam("value"); assert(pf);
+				pf->SetFloatValue(s);
+
+				int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
+				pf->SetLoadCurveID(lc);
 			}
-
-			Param* pf = febLoad->GetParam("value"); assert(pf);
-			pf->SetVec3dValue(f);
-
-			int lc = pnl->GetParam(FSNodalDOFLoad::LOAD).GetLoadCurveID();
-			pf->SetLoadCurveID(lc);
 		}
 		break;
 		case FE_FLUID_ROTATIONAL_VELOCITY:
@@ -1848,6 +1865,10 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 
 	febStep.SetParamInt("plot_level", ops.plot_level);
 	febStep.SetParamInt("plot_stride", ops.plot_stride);
+	febStep.SetParamBool("plot_zero_state", ops.plot_zero);
+	febStep.SetParamIntArray("plot_range", ops.plot_range, 2);
+	febStep.SetParamInt("output_level", ops.output_level);
+	febStep.SetParamBool("adaptor_re_solve", ops.adapter_re_solve);
 
 	// auto time stepper settings
 	FSProperty* timeStepperProp = febStep.FindProperty("time_stepper");
@@ -1863,11 +1884,11 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 
 		if (ops.bmust)
 		{
+			FSModel* fem = febStep.GetFSModel();
 			LoadCurve* lc = oldStep.GetMustPointLoadCurve();
-			if (lc->Points() > 0)
+			if (lc && (lc->GetID() >= 0) && (lc->GetID() < fem->LoadControllers()))
 			{
-				FSModel* fem = febStep.GetFSModel();
-				FSLoadController* plc = fem->AddLoadCurve(*lc);
+				FSLoadController* plc = fem->GetLoadController(lc->GetID());
 				timeStepper->GetParam("dtmax")->SetLoadCurveID(plc->GetID());
 			}
 		}
