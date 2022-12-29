@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include "FESurfaceData.h"
 #include "FEElementData.h"
 #include "FEMeshBuilder.h"
-#include <MeshTools/GLMesh.h>
 #include <algorithm>
 #include <unordered_set>
 #include <map>
