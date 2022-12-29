@@ -438,8 +438,10 @@ void CFiberODFWidget::on_runButton_pressed()
         // add spherical harmonics and position to material
         int classID = FEBio::GetClassId(FECLASS_ID, "fiber-odf");
         FSModelComponent* fiberODF = FEBio::CreateClass(classID,  m_mat->GetModel());
-        fiberODF->AddVectorDoubleParam(sphHarm);
-        fiberODF->AddVecParam(position);
+        fiberODF->GetParam("shp_harmonics")->SetVectorDoubleValue(sphHarm);
+        fiberODF->GetParam("position")->SetVec3dValue(position);
+        // fiberODF->AddVectorDoubleParam(sphHarm);
+        // fiberODF->AddVecParam(position);
         m_mat->GetMaterialProperties()->GetProperty(0).AddComponent(fiberODF);
 
         // Recalc ODF based on spherical harmonics
