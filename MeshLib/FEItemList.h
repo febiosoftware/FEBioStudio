@@ -26,9 +26,6 @@ SOFTWARE.*/
 
 #pragma once
 #include <list>
-//using namespace std;
-
-using std::list;
 
 //-----------------------------------------------------------------------------
 // Forward declaration of the FSCoreMesh
@@ -60,7 +57,7 @@ public:
 	Iterator End() { return m_Item.end(); }
 
 protected:
-	list<ITEM>	m_Item;
+	std::list<ITEM>	m_Item;
 };
 
 //-----------------------------------------------------------------------------

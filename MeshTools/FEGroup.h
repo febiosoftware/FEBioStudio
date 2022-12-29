@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include "FEItemListBuilder.h"
+#include <MeshLib/FEItemListBuilder.h>
 
 class FSNode;
 class FSEdge;

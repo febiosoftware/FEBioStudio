@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include "FEItemListBuilder.h"
+#include <MeshLib/FEItemListBuilder.h>
 #include "FEGroup.h"
 #include "FESelection.h"
 

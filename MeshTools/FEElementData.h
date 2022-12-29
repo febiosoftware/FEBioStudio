@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMeshData.h"
-#include "FEItemList.h"
+#include <MeshLib/FEItemList.h>
 #include <string>
 #include <vector>
 

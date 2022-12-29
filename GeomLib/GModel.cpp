@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <MeshTools/GModifiedObject.h>
 #include <FSCore/FSObjectList.h>
 #include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/FEItemListBuilder.h>
+#include <MeshLib/FEItemListBuilder.h>
 #include <MeshTools/GGroup.h>
 #include <MeshLib/FEMesh.h>
 #include <FEMLib/FEAnalysisStep.h>

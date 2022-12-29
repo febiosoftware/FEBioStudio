@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEItemList.h"
 #include <FSCore/FSObject.h>
+#include "FEItemList.h"
 #include <list>
 
 //-----------------------------------------------------------------------------
@@ -110,13 +110,13 @@ public:
 
 	int Type() { return m_ntype; }
 
-	void Merge(list<int>& o);
-	void Subtract(list<int>& o);
+	void Merge(std::list<int>& o);
+	void Subtract(std::list<int>& o);
 
-	list<int> CopyItems() { return m_Item; }
+	std::list<int> CopyItems() { return m_Item; }
 
 protected:
-	list<int>	m_Item;
+	std::list<int>	m_Item;
 
 	int	m_ntype;
 
