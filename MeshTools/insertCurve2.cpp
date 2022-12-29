@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "insertCurve2.h"
-#include "FESurfaceMesh.h"
-#include "FECurveMesh.h"
+#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FECurveMesh.h>
 #include <GeomLib/GObject.h>
-#include "MeshTools.h"
-#include <MeshTools/FECurveMesher.h>
-#include "TriMesh.h"
+#include <MeshLib/MeshTools.h>
+#include "FECurveMesher.h"
+#include <MeshLib/TriMesh.h>
 using namespace std;
 
 InsertCurves2::InsertCurves2()

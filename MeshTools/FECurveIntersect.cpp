@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include <MeshLib/FECurveMesh.h>
 #include <MeshLib/TriMesh.h>
 #include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/insertCurve.h>
-#include <MeshLib/insertCurve2.h>
+#include "insertCurve.h"
+#include "insertCurve2.h"
 
 FECurveIntersect::FECurveIntersect() : FESurfaceModifier("Intersect Curve")
 {

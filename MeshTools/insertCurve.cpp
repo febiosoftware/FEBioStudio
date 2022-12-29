@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "insertCurve.h"
-#include "TriMesh.h"
-#include "FESurfaceMesh.h"
-#include "FECurveMesh.h"
+#include <MeshLib/TriMesh.h>
+#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/FECurveMesh.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/FECurveMesher.h>
+#include "FECurveMesher.h"
 
 InsertCurves::InsertCurves()
 {
