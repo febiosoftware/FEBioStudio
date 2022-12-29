@@ -24,27 +24,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include <MeshIO/FileWriter.h>
-#include <string>
+// FEFileExport.cpp: implementation of the FEFileExport class.
+//
+//////////////////////////////////////////////////////////////////////
 
-class FSProject;
+#include "stdafx.h"
+#include "FSFileExport.h"
+#include <stdarg.h>
 
-class FEFileExport : public FileWriter
+//////////////////////////////////////////////////////////////////////
+// Construction/Destruction
+//////////////////////////////////////////////////////////////////////
+
+FSFileExport::FSFileExport(FSProject& prj) : m_prj(prj)
 {
-public:
-	FEFileExport(FSProject& prj);
-	virtual ~FEFileExport();
 
-	void ClearLog();
+}
 
-	// return the error message
-	std::string GetErrorMessage() { return m_err; }
+FSFileExport::~FSFileExport()
+{
 
-protected:
-	bool errf(const char* szerr, ...);
+}
 
-protected:
-	std::string	m_err;	// error message
-	FSProject&	m_prj;
-};
+void FSFileExport::ClearLog()
+{
+	m_err.clear();
+}
+
+bool FSFileExport::errf(const char* szerr, ...)
+{
+	// get a pointer to the argument list
+	va_list	args;
+
+	// copy to string
+	char szmsg[256] = {0};
+	va_start(args, szerr);
+	vsprintf(szmsg, szerr, args);
+	va_end(args);
+
+	m_err += szmsg;
+	m_err += "\n";
+
+	return false;
+}

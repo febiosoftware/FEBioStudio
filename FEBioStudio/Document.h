@@ -90,7 +90,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class CMainWindow;
-class FEFileExport;
+class FSFileExport;
 class CDocument;
 class FEModifier;
 class FESurfaceModifier;

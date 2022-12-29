@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <memory>
 //using namespace std;
 
-FEMeshExport::FEMeshExport(FSProject& prj) : FEFileExport(prj)
+FEMeshExport::FEMeshExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

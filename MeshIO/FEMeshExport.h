@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEFileExport.h"
+#include "FSFileExport.h"
 
-class FEMeshExport : public FEFileExport
+class FEMeshExport : public FSFileExport
 {
 public:
 	FEMeshExport(FSProject& prj);

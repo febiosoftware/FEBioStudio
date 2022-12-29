@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FETetGenExport::FETetGenExport(FSProject& prj) : FEFileExport(prj)
+FETetGenExport::FETetGenExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

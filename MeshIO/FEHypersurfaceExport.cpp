@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEHypersurfaceExport::FEHypersurfaceExport(FSProject& prj) : FEFileExport(prj)
+FEHypersurfaceExport::FEHypersurfaceExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

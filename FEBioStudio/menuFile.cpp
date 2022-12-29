@@ -1799,7 +1799,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 			FSProject prj;
 			FEBioFileImport reader(prj);
 
-			FEFileExport* exporter = 0;
+			FSFileExport* exporter = 0;
 			if (nformat == 0x0400)
 			{
 				// write version 4
@@ -1964,7 +1964,7 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 			{
 				FSProject& prj = doc.GetProject();
 
-				FEFileExport* exporter = 0;
+				FSFileExport* exporter = 0;
 				if (nformat == 0x0400)
 				{
 					// write version 4
@@ -2104,7 +2104,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 					{
 						FSProject& prj = importer->GetProject();
 
-						FEFileExport* exporter = nullptr;
+						FSFileExport* exporter = nullptr;
 						switch (format)
 						{
 						case 0: exporter = new FEVTKExport(prj); ext = "vtk"; break;

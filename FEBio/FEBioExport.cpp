@@ -99,7 +99,7 @@ template <> std::string type_to_string<mat3d>(const mat3d& v)
 }
 
 //=============================================================================
-FEBioExport::FEBioExport(FSProject& prj) : FEFileExport(prj)
+FEBioExport::FEBioExport(FSProject& prj) : FSFileExport(prj)
 {
 	m_compress = false;
 	m_exportSelections = false;

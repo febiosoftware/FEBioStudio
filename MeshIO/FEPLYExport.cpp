@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEPLYExport::FEPLYExport(FSProject& prj) : FEFileExport(prj)
+FEPLYExport::FEPLYExport(FSProject& prj) : FSFileExport(prj)
 {
 
 }

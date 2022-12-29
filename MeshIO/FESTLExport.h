@@ -26,11 +26,11 @@ SOFTWARE.*/
 
 #pragma once
 
-#include "FEFileExport.h"
+#include "FSFileExport.h"
 
 class GObject;
 
-class FESTLExport : public FEFileExport
+class FESTLExport : public FSFileExport
 {
 public:
 	FESTLExport(FSProject& prj);

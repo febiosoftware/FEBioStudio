@@ -24,46 +24,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-// FEFileExport.cpp: implementation of the FEFileExport class.
-//
-//////////////////////////////////////////////////////////////////////
+#pragma once
+#include <MeshIO/FileWriter.h>
+#include <string>
 
-#include "stdafx.h"
-#include "FEFileExport.h"
-#include <stdarg.h>
+class FSProject;
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-FEFileExport::FEFileExport(FSProject& prj) : m_prj(prj)
+class FSFileExport : public FileWriter
 {
+public:
+	FSFileExport(FSProject& prj);
+	virtual ~FSFileExport();
 
-}
+	void ClearLog();
 
-FEFileExport::~FEFileExport()
-{
+	// return the error message
+	std::string GetErrorMessage() { return m_err; }
 
-}
+protected:
+	bool errf(const char* szerr, ...);
 
-void FEFileExport::ClearLog()
-{
-	m_err.clear();
-}
-
-bool FEFileExport::errf(const char* szerr, ...)
-{
-	// get a pointer to the argument list
-	va_list	args;
-
-	// copy to string
-	char szmsg[256] = {0};
-	va_start(args, szerr);
-	vsprintf(szmsg, szerr, args);
-	va_end(args);
-
-	m_err += szmsg;
-	m_err += "\n";
-
-	return false;
-}
+protected:
+	std::string	m_err;	// error message
+	FSProject&	m_prj;
+};

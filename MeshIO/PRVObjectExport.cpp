@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-PRVObjectExport::PRVObjectExport(FSProject& prj) : FEFileExport(prj)
+PRVObjectExport::PRVObjectExport(FSProject& prj) : FSFileExport(prj)
 {
 	m_selectedObjectsOnly = true;
 	m_exportDiscrete = true;

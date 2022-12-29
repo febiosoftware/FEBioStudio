@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEFileExport.h"
+#include "FSFileExport.h"
 
-class FEPLYExport : public FEFileExport
+class FEPLYExport : public FSFileExport
 {
 public:
 	FEPLYExport(FSProject& prj);

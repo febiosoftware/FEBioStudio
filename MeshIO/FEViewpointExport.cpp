@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/GModel.h>
 #include <MeshTools/FEProject.h>
 
-FEViewpointExport::FEViewpointExport(FSProject& prj) : FEFileExport(prj)
+FEViewpointExport::FEViewpointExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

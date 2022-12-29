@@ -35,7 +35,7 @@ SOFTWARE.*/
 // FENIKEExport
 //-----------------------------------------------------------------------------
 
-FENIKEExport::FENIKEExport(FSProject& prj) : FEFileExport(prj)
+FENIKEExport::FENIKEExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 
