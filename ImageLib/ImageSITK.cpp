@@ -189,7 +189,13 @@ void CImageSITK::SetBoundingBox(BOX& box)
 
     std::vector<unsigned int> size = m_sitkImage.GetSize();
 
-    m_sitkImage.SetSpacing({box.x1/size[0], box.y1/size[1], box.z1/size[2]});
+	try {
+	    m_sitkImage.SetSpacing({box.x1/size[0], box.y1/size[1], box.z1/size[2]});
+	}
+	catch (...)
+	{
+		// ITK doesn't like zero spacing.
+	}
 }
 
 std::vector<unsigned int> CImageSITK::GetSize()

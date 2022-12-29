@@ -810,7 +810,7 @@ public:
 		menuImportImage->addAction(actionImportRawImage);
 		menuImportImage->addAction(actionImportDICOMImage);
 		menuImportImage->addAction(actionImportTiffImage);
-		menuImportImage->addAction(actionImportOMETiffImage);
+//		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 		menuImportImage->addAction(actionImportImageSequence);
         menuImportImage->addAction(actionImportImageOther);
 		
