@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <QSlider>
 #include <QLineEdit>
 #include <QValidator>
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 class CIntInput : public QLineEdit

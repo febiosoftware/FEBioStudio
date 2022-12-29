@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "tools.h"
 #include <assert.h>
-#include <FECore/mat3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 bool ProjectToFacet(vec3f* y, int nf, vec3f& x, vec3f& t, vec3f& q, double tol)

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "Tool.h"
-#include <FECore/mat3d.h>
+#include <FSCore/math3d.h>
 
 class CPlaneCutTool : public CBasicTool
 {

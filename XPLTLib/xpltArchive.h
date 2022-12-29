@@ -28,8 +28,7 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <string.h>
 #include <vector>
-#include <FECore/vec3d.h>
-#include <FECore/tens4d.h>
+#include <FSCore/math3d.h>
 #include <FSCore/Archive.h>
 
 //-----------------------------------------------------------------------------

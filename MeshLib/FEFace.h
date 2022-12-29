@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEItem.h"
 #include "FEEdge.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 // Face shapes

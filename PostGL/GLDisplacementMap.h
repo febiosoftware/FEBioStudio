@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLDataMap.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <vector>
 
 namespace Post {
