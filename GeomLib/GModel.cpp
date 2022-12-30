@@ -38,7 +38,6 @@ SOFTWARE.*/
 #include <MeshLib/FEItemListBuilder.h>
 #include "GGroup.h"
 #include <MeshLib/FEMesh.h>
-#include <FEMLib/FEAnalysisStep.h>
 #include <GeomLib/MeshLayer.h>
 
 

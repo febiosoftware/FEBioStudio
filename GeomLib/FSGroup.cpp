@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "FSGroup.h"
 #include <MeshLib/FEMesh.h>
 #include <FEMLib/FSModel.h>
-#include <GeomLib/GObject.h>
+#include "GObject.h"
 using namespace std;
 
 //////////////////////////////////////////////////////////////////////
