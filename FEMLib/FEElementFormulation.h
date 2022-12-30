@@ -1,5 +1,5 @@
 #pragma once
-#include <FEMLib/FEModelComponent.h>
+#include "FEModelComponent.h"
 
 class FSModel;
 

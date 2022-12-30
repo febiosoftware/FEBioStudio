@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <FEMLib/FEDiscreteMaterial.h>
+#include "FEDiscreteMaterial.h"
 #include <GeomLib/GItem.h>
 
 #define FE_DISCRETE_OBJECT		0

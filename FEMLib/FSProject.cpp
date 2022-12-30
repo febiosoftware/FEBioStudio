@@ -26,16 +26,16 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FSProject.h"
-#include <FEMLib/FEMKernel.h>
-#include <FEMLib/FESurfaceLoad.h>
-#include <FEMLib/FEBodyLoad.h>
-#include <FEMLib/FERigidConstraint.h>
-#include <FEMLib/FEMultiMaterial.h>
-#include <FEMLib/FEModelConstraint.h>
-#include <FEMLib/FERigidLoad.h>
-#include <FEMLib/FELoadController.h>
-#include <FEMLib/FEMeshDataGenerator.h>
-#include <FEMLib/FEElementFormulation.h>
+#include "FEMKernel.h"
+#include "FESurfaceLoad.h"
+#include "FEBodyLoad.h"
+#include "FERigidConstraint.h"
+#include "FEMultiMaterial.h"
+#include "FEModelConstraint.h"
+#include "FERigidLoad.h"
+#include "FELoadController.h"
+#include "FEMeshDataGenerator.h"
+#include "FEElementFormulation.h"
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>

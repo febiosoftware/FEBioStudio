@@ -102,20 +102,7 @@ void FSGroup::Load(IArchive &ar)
 		case ID: ar.read(n); SetID(n); break;
 		case NAME: { char sz[256]; ar.read(sz); SetName(sz); } break;
 		case MESHID: ar.read(m_objID); break;
-/*			{
-				PRVArchive& prv = dynamic_cast<PRVArchive&>(ar);
-				FSModel& fem = *prv.GetFSModel();
-				int meshid;
-				ar.read(meshid);
-				if (meshid != -1)
-				{
-					GObject* po = fem.GetModel().FindObject(meshid);
-					if (po == 0) throw ReadError("Invalid mesh ID in FSGroup::Load");
-					SetMesh(po->GetFEMesh());
-				}
-			}
-			break;
-*/		case SIZE: ar.read(N); break;
+		case SIZE: ar.read(N); break;
 		case ITEM: ar.read(n); m_Item.push_back(n); break;
 		default:
 			throw ReadError("unknown CID in FSGroup::Load");
