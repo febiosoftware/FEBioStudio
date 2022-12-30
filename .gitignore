@@ -401,3 +401,6 @@ Documentation/htmlManual
 # macOS Stuff
 .DS_Store
 */.DS_Store
+
+febio-sdk
+*.zip
