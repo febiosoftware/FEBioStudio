@@ -123,6 +123,10 @@ endif()
 
 ##### Search for library and include directories #####
 
+if(WIN32)
+  list(APPEND CMAKE_PREFIX_PATH ${DEPENDENCIES})
+endif()
+
 include(FindDependencies.cmake)
 
 #### Check if paths are valid and find libs ####
