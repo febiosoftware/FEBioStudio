@@ -69,7 +69,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
       - name: Build
         run: |
-          ci/linux.sh
+          ci/linux/build.sh
       - name: Upload Artifacts
         uses: actions/upload-artifact@v3
         with:
@@ -77,7 +77,34 @@ jobs:
           path: |
             cmbuild/bin
             cmbuild/lib
-            !cmbuild/lib/*.a
+  repo-artifacts:
+    name: Upload artifacts to repo
+    needs:
+      - build # required to wait when the main job is done
+    runs-on: ubuntu-latest
+    if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: febiostudio2-${{runner.os}}-${{runner.arch}}
+          path: |
+            cmbuild
+      - name: Configure SSH
+        run: |
+          ci/linux/configure-ssh.sh
+        env:
+          SSH_USER: ${{ secrets.REPO_USER }}
+          SSH_KEY: ${{ secrets.REPO_KEY }}
+          SSH_HOST: ${{ secrets.REPO_HOST }}
+      - name: Stage Build to Repo
+        run: |
+          scp cmbuild/bin/* repo:~/update2/FEBioStudio2Dev/Linux/stage/bin
+          ssh repo "chmod +x update2/FEBioStudio2Dev/Linux/stage/bin/FEBioStudio"
+      - name: Make Dev Release
+        run: |
+          ssh repo "python3 update2/FEBioStudio2Dev/makeDevRelease.py -l"
   stop-runner:
     name: Stop self-hosted EC2 runner
     needs:
