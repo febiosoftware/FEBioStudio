@@ -77,6 +77,33 @@ jobs:
           path: |
             cmbuild/bin
             cmbuild/lib
+  repo-artifacts:
+   name: Upload artifacts to repo
+   needs:
+     - build # required to get output from the start-runner job
+   runs-on: ubuntu-latest
+   if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
+   steps:
+     - name: Checkout
+       uses: actions/checkout@v3
+     - uses: actions/download-artifact@v3
+       with:
+         name: febiostudio2-Windows-${{runner.arch}}
+         path: |
+           cmbuild
+     - name: Configure SSH
+       run: |
+         ci/linux/configure-ssh.sh
+       env:
+         SSH_USER: ${{ secrets.REPO_USER }}
+         SSH_KEY: ${{ secrets.REPO_KEY }}
+         SSH_HOST: ${{ secrets.REPO_HOST }}
+     - name: Stage Build to Repo
+       run: |
+         scp cmbuild/Release/* repo:~/update2/FEBioStudio2Dev/Windows/stage/bin
+     - name: Make Dev Release
+       run: |
+         ssh repo "python3 update2/FEBioStudio2Dev/makeDevRelease.py -w"
   stop-runner:
     name: Stop self-hosted EC2 runner
     needs:
@@ -100,30 +127,3 @@ jobs:
           github-token: ${{ secrets.GH_TOKEN}}
           label: ${{ needs.start-runner.outputs.label }}
           ec2-instance-id: ${{ needs.start-runner.outputs.ec2-instance-id }}
-# repo-artifacts:
-#   name: Upload artifacts to repo
-#   needs:
-#     - build # required to get output from the start-runner job
-#   runs-on: ubuntu-latest
-#   if: ${{ always() }} # required to stop the runner even if the error happened in the previous jobs
-#   steps:
-#     - name: Checkout
-#       uses: actions/checkout@v3
-#     - uses: actions/download-artifact@v3
-#       with:
-#         name: febio4-Windows-X64
-#         path: |
-#           cmbuild
-#     - name: Configure SSH
-#       run: |
-#         ci/configure-ssh.sh
-#       env:
-#         SSH_USER: ${{ secrets.REPO_USER }}
-#         SSH_KEY: ${{ secrets.REPO_KEY }}
-#         SSH_HOST: ${{ secrets.REPO_HOST }}
-#     - name: Stage Build to Repo
-#       run: |
-#         scp cmbuild/Release/* repo:~/update2/FEBioStudio2Dev/Windows/stage/bin
-#     - name: Make Dev Release
-#       run: |
-#         ssh repo "python3 update2/FEBioStudio2Dev/makeDevRelease.py -w"
