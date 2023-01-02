@@ -14,7 +14,7 @@ env:
   AWS_REGION: us-east-1
   AWS_SUBNET_ID: subnet-064f21b53fc72cf44
   AWS_SG_ID: sg-0ca7912782cf1538b
-  AMI_ID: ami-04bb42ae8c0b24120
+  AMI_ID: ami-019d68322b584b04a
   AWS_INSTANCE_TYPE: c5a.8xlarge
   AWS_AVAILABILITY_ZONE: us-east-1b
   OS: windows
@@ -63,22 +63,20 @@ jobs:
         uses: actions/checkout@v3
       - name: Fetch latest febio-sdk
         run: |
-          choco install jq unzip -y
           ci/windows/febio-sdk.ps1
-          bash --login -c ls -lr febio-sdk/*
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
           ARTIFACT_NAME: febio4-sdk-Windows-X64
-            #- name: Build
-            #  run: |
-            #    ci/windows/build.bat
-            #- name: Upload Artifacts
-            #  uses: actions/upload-artifact@v3
-            #  with:
-            #    name: febiostudio2-${{runner.os}}-${{runner.arch}}
-            #    path: |
-            #      cmbuild/bin
-            #      cmbuild/lib
+      - name: Build
+        run: |
+          ci/windows/build.bat
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: febiostudio2-${{runner.os}}-${{runner.arch}}
+          path: |
+            cmbuild/bin
+            cmbuild/lib
   stop-runner:
     name: Stop self-hosted EC2 runner
     needs:

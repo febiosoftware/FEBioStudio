@@ -1,5 +1,5 @@
 call "%ONEAPI_ROOT%\setvars.bat"
-set DEPENDENCIES="third-party-deps"
+set DEPENDENCIES="c:\third-party-deps"
 set LIB_INC="%DEPENDENCIES%\include
 set LIB_DIR="%DEPENDENCIES%\lib"
 set FFMPEG_DIR="%DEPENDENCIES%\FFmpeg"
@@ -10,8 +10,8 @@ set GLEW_DIR="%DEPENDENCIES%\lib"
 set /a "PROC=%NUMBER_OF_PROCESSORS% - 4"
 cmake -version
 
-REM TODO: Cmake requires 3 runs to generate correctly
-for /l %%a in (1, 1, 3) do (
+REM TODO: Cmake requires 6 runs to generate correctly
+for /l %%a in (1, 1, 6) do (
 cmake -L . -B cmbuild ^
   -DFEBio_SDK=febio-sdk ^
   -DQt_Root=%QT_ROOT% ^
