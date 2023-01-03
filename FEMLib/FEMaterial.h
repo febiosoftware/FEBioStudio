@@ -2680,6 +2680,10 @@ public:
 
 	vec3d GetFiber(FEElementRef& el) override;
 
+	// local material axes
+	bool HasMaterialAxes() const override;
+	mat3d GetMatAxes(FEElementRef& el) const override;
+
 	bool UpdateData(bool bsave) override;
 
 	// return a string for the material type

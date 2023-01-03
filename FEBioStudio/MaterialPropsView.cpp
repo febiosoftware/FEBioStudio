@@ -165,7 +165,7 @@ public:
 				FSTransverselyIsotropic* tiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
 				addFiberParameters(tiso->GetFiberMaterial());
 			}
-			else if (pm->HasMaterialAxes())
+			else if (pm->m_axes)
 			{
 				addParameters(pm->m_axes);
 			}

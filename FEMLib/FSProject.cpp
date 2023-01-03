@@ -887,7 +887,11 @@ void convert_mat_axis(std::ostream& log, FSModelComponent* pd, const FSAxisMater
 		log << "Unknown mat axis type" << std::endl;
 	}
 
-	if (febAxis) matAxis->SetComponent(febAxis);
+	if (febAxis)
+	{
+		febAxis->UpdateData(false);
+		matAxis->SetComponent(febAxis);
+	}
 }
 
 void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelComponent* ps)
@@ -908,7 +912,7 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 	if (dynamic_cast<const FSMaterial*>(ps))
 	{
 		const FSMaterial* pm = dynamic_cast<const FSMaterial*>(ps);
-		if (pm->HasMaterialAxes())
+		if (pm->m_axes)
 		{
 			convert_mat_axis(log, pd, pm->m_axes);
 		}

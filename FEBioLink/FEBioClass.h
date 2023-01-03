@@ -63,6 +63,7 @@ class FEShellFormulation;
 class FEBeamFormulation;
 class FSMeshAdaptor;
 class FSVec3dValuator;
+class FSMat3dValuator;
 
 // forward declarations of FECore classes
 class FEModel;
@@ -166,6 +167,7 @@ namespace FEBio {
 	FESolidFormulation*  CreateSolidFormulation (const std::string& typeStr, FSModel* fem);
 	FEBeamFormulation*   CreateBeamFormulation  (const std::string& typeStr, FSModel* fem);
 	FSVec3dValuator*     CreateVec3dValuator    (const std::string& typeStr, FSModel* fem);
+	FSMat3dValuator*     CreateMat3dValuator    (const std::string& typeStr, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL);
 	FSModelComponent* CreateClass(int classId, FSModel* fem, unsigned int flags = 0);
@@ -218,6 +220,7 @@ namespace FEBio {
 	std::map<unsigned int, const char*> GetSuperClassMap();
 
 	vec3d GetMaterialFiber(void* vec3dvaluator, const vec3d& p);
+	mat3d GetMaterialAxis (void* mat3dvaluator, const vec3d& p);
 
 	void DeleteClass(void* p);
 

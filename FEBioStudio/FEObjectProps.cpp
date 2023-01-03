@@ -540,7 +540,7 @@ void CMaterialProps::BuildPropertyList()
 	}
 	else
 	{
-		if (pm && pm->HasMaterialAxes())
+		if (pm && pm->m_axes)
 		{
 			// add the material axes selection option
 			QStringList val;
@@ -564,7 +564,7 @@ void CMaterialProps::BuildPropertyList()
             case FE_AXES_ANGLES:
                 addProperty("theta", CProperty::String);
                 addProperty("phi", CProperty::String);
-                    break;
+                break;
 			}
 		}
 	}

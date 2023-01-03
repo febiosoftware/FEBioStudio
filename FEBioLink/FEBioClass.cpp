@@ -376,7 +376,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
 	case FETIMECONTROLLER_ID  : pc = new FSGenericClass(fem); break;
 	case FEVEC3DVALUATOR_ID   : pc = new FSVec3dValuator(fem); break;
-	case FEMAT3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
+	case FEMAT3DVALUATOR_ID   : pc = new FSMat3dValuator(fem); break;
 	case FEMAT3DSVALUATOR_ID  : pc = new FSGenericClass(fem); break;
 	case FESOLIDDOMAIN_ID     : pc = new FESolidFormulation(fem); break;
 	case FESHELLDOMAIN_ID     : pc = new FEShellFormulation(fem); break;
@@ -912,6 +912,18 @@ vec3d FEBio::GetMaterialFiber(void* vec3dvaluator, const vec3d& p)
 	return v; 
 }
 
+mat3d FEBio::GetMaterialAxis(void* mat3dvaluator, const vec3d& p)
+{
+	FECoreBase* pc = (FECoreBase*)mat3dvaluator;
+	FEMat3dValuator* val = dynamic_cast<FEMat3dValuator*>(pc); assert(val);
+	if (val == nullptr) return mat3d::identity();
+	FEMaterialPoint mp;
+	mp.m_r0 = mp.m_rt = p;
+	mat3d v = (*val)(mp);
+	v.unit();
+	return v;
+}
+
 void FEBio::DeleteClass(void* p)
 {
 	FECoreBase* pc = (FECoreBase*)p;
@@ -1196,6 +1208,11 @@ FSVec3dValuator* FEBio::CreateVec3dValuator(const std::string& typeStr, FSModel*
 	return CreateModelComponent<FSVec3dValuator>(FEVEC3DVALUATOR_ID, typeStr, fem);
 }
 
+FSMat3dValuator* FEBio::CreateMat3dValuator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FSMat3dValuator>(FEMAT3DVALUATOR_ID, typeStr, fem);
+}
+
 FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
 {
 	if (typeStr.empty())
@@ -1234,10 +1251,10 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
 	case FEMESHADAPTOR_ID     : return CreateMeshAdaptor     (typeStr, fem); break;
 	case FEVEC3DVALUATOR_ID   : return CreateVec3dValuator   (typeStr, fem); break;
+	case FEMAT3DVALUATOR_ID   : return CreateMat3dValuator   (typeStr, fem); break;
 	case FESOLVER_ID          :
 	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
-	case FEMAT3DVALUATOR_ID  :
 	case FEMAT3DSVALUATOR_ID :
 	case FEMESHADAPTORCRITERION_ID:
 	{
