@@ -16,7 +16,7 @@ env:
   AWS_SUBNET_ID: subnet-064f21b53fc72cf44
   AWS_SG_ID: sg-0ca7912782cf1538b
   AMI_ID: ami-02174e6b877bfe676
-  AWS_INSTANCE_TYPE: c5a.8xlarge
+  AWS_INSTANCE_TYPE: c5a.4xlarge
   AWS_AVAILABILITY_ZONE: us-east-1b
   OS: linux
   KEY_PAIR: win
