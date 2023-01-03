@@ -575,6 +575,8 @@ public slots:
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
+	void checkJobProgress();
+
 	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);
 	void OnSelectObjectColorMode(QAction* ac);

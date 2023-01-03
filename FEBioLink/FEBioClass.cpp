@@ -804,12 +804,54 @@ bool interrup_cb(FEModel* fem, unsigned int nwhen, void* pd)
 	return true;
 }
 
+bool progress_cb(FEModel* pfem, unsigned int nwhen, void* pd)
+{
+	FEBioModel& fem = static_cast<FEBioModel&>(*pfem);
+
+	FEBioProgressTracker* progressTracker = (FEBioProgressTracker*)pd;
+	if (pd == nullptr) return true;
+
+	// get the number of steps
+	int nsteps = fem.Steps();
+
+	// calculate progress
+	double starttime = fem.GetStartTime();
+	double endtime = fem.GetEndTime();
+	double f = 0.0;
+	if (nwhen != CB_INIT)
+	{
+		double ftime = fem.GetCurrentTime();
+		if (endtime != starttime) f = (ftime - starttime) / (endtime - starttime);
+		else
+		{
+			// this only happens (I think) when the model is solved
+			f = 1.0;
+		}
+	}
+
+	double pct = 0.0;
+	if (nsteps > 1)
+	{
+		int N = nsteps;
+		int n = fem.GetCurrentStepIndex();
+		pct = 100.0 * ((double)n  + f) / (double)N;
+	}
+	else
+	{
+		pct = 100.0 * f;
+	}
+
+	progressTracker->SetProgress(pct);
+
+	return true;
+}
+
 void FEBio::TerminateRun()
 {
 	terminateRun = true;
 }
 
-int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker)
 {
 	terminateRun = false;
 
@@ -821,8 +863,11 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 		fem.GetLogFile().SetLogStream(new FBSLogStream(outputHandler));
 	}
 
-	// attach a callback to interrupt
+	// attach a callback to interrupt and measure progress
 	fem.AddCallback(interrup_cb, CB_ALWAYS, nullptr);
+
+	if (progressTracker)
+		fem.AddCallback(progress_cb, CB_MAJOR_ITERS, progressTracker);
 
 	try {
 		febio::CMDOPTIONS ops;

@@ -199,7 +199,18 @@ namespace FEBio {
 		virtual void write(const char* sztxt) = 0;
 	};
 
-	int runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
+	class FEBioProgressTracker
+	{
+	public:
+		FEBioProgressTracker() {}
+		virtual ~FEBioProgressTracker() {};
+		virtual void SetProgress(double pct) = 0;
+	};
+
+	int runModel(const std::string& fileName, 
+		FEBioOutputHandler* outputHandler = nullptr,
+		FEBioProgressTracker* progressTracker = nullptr);
+
 	void TerminateRun();
 
 	const char* GetSuperClassString(int superClassID);

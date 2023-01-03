@@ -338,6 +338,22 @@ void CMainWindow::UpdateTitle()
 		case VIDEO_MODE::VIDEO_STOPPED  : title += " (RECORDING STOPPED)"; break;
 		}
 	}
+
+	if (ui->m_jobManager->IsJobRunning())
+	{
+		CFEBioJob* job = CFEBioJob::GetActiveJob(); assert(job);
+		if (job)
+		{
+			string name = job->GetName();
+			title += " [ RUNNING: " + QString::fromStdString(name);
+			if (job->HasProgress())
+			{
+				int pct = (int) job->GetProgress();
+				title += " (" + QString::number(pct) + "%)";
+			}
+			title += "]";
+		}
+	}
 	
 	setWindowTitle(title);
 }
@@ -3280,6 +3296,19 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	}
 
 	UpdateModel(job, false);
+
+	// start a time to measure progress
+	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
+}
+
+void CMainWindow::checkJobProgress()
+{
+	UpdateTitle();
+
+	if (ui->m_jobManager->IsJobRunning())
+	{
+		QTimer::singleShot(100, this, SLOT(checkJobProgress()));
+	}
 }
 
 void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
