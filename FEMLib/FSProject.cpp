@@ -1353,7 +1353,8 @@ void FSProject::ConvertStepContact(std::ostream& log, FSStep& newStep, FSStep& o
 			FSRigidInterface* pr = dynamic_cast<FSRigidInterface*>(pi);
 			FSBoundaryCondition* pbc = FEBio::CreateBoundaryCondition("rigid", fem);
 
-			pbc->SetParamInt("rb", pr->GetRigidBody()->GetID());
+			GMaterial* rb = pr->GetRigidBody();
+			if (rb) pbc->SetParamInt("rb", rb->GetID());
 
 			pbc->SetItemList(pr->GetItemList());
 			pr->SetItemList(nullptr);
