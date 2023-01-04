@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#define MANUAL_PATH "https://help.febio.org/FEBioUser-4-0/"
+#define MANUAL_PATH "https://help.febio.org/docs/FEBioUser-4-0/"
 
 #define INTRODUCTION_HTML "UM40-Chapter-1.html"
 #define OVERVIEW_OF_FEBIO_HTML "UM40-Section-1.1.html"
