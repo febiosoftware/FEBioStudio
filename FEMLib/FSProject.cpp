@@ -986,6 +986,10 @@ void copyModelComponent(std::ostream& log, FSModelComponent* pd, const FSModelCo
 							{
 								copyModelComponent(log, pcn, pcj);
 								pi->SetComponent(pcn, j);
+
+								// we call this to ensure that classes that maintain
+								// a pointer to an FEBio class can sync parameters.
+								pcn->UpdateData(true);
 							}
 							else
 							{
