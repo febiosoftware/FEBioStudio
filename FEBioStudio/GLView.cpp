@@ -2215,6 +2215,19 @@ void CGLView::RenderImageData()
         for (int i = 0; i < doc->ImageModels(); ++i)
         {
             Post::CImageModel* img = doc->GetImageModel(i);
+
+            if(img->ImageAnalyses() > 0)
+            {
+                for(int j = 0; j < img->ImageAnalyses(); j++)
+                {
+                    auto current = img->GetImageAnalysis(j);
+                    if(current->display())
+                    {
+                        current->render();
+                    }
+                }
+            }
+           
             BOX box = img->GetBoundingBox();
     		// GLColor c = img->GetColor();
             GLColor c(255, 128, 128);

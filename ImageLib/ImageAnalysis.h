@@ -24,61 +24,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "3DImage.h"
+#pragma once
 
-#ifdef HAS_ITK
+#include <FSCore/FSObject.h>
 
-#include <SimpleITK.h>
-
-class CImageSITK : public C3DImage
+namespace Post
 {
-public:
-    CImageSITK();
-    CImageSITK(int nx, int ny, int nz);
-    ~CImageSITK();
-
-    bool LoadFromFile(std::string, bool isDicom);
-    bool LoadFromStack(std::vector<std::string> filenames);
-
-    BOX GetBoundingBox() override;
-    void SetBoundingBox(BOX& box) override;
-
-    std::vector<unsigned int> GetSize();
-    std::vector<double> GetOrigin();
-    std::vector<double> GetSpacing();
-
-    itk::simple::Image GetSItkImage();
-    void SetItkImage(itk::simple::Image image);
-
-    void Update();
-
-private:
-    bool ParseImageHeader();
-
-    int ReadScalarImage();
-
-    template<class TImage>
-    bool ReadImage();
-
-    void GetNamesForSequence();
-
-    void FinalizeImage();
-
-
-private:
-    const char* m_filename;
-
-    bool m_delBuffer;
-    // const char* m_imageFilename;
-    // ImageFileType m_type;
-    // IOPixelType pixelType;
-    // IOComponentType componentType;
-    // itk::SmartPointer<FinalImageType> originalImage;
-    // typename FinalImageType::Pointer finalImage;
-
-    itk::simple::Image m_sitkImage;
-
-    // std::vector<std::string> sequenceFiles;
+    class CImageModel;
 };
 
-#endif
+class CImageAnalysis : public FSObject
+{
+public:
+    CImageAnalysis(Post::CImageModel* img);
+
+    virtual void run() = 0;
+    virtual void render() {}
+    virtual bool display() {}
+protected:
+    Post::CImageModel* m_img;
+
+};

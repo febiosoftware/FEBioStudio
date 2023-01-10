@@ -24,61 +24,64 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "3DImage.h"
+#pragma once
 
-#ifdef HAS_ITK
-
+#include "ImageAnalysis.h"
 #include <SimpleITK.h>
+#include <MeshTools/GLMesh.h>
+#include <GLLib/GLMeshRender.h>
+#include <FECore/vec3d.h>
 
-class CImageSITK : public C3DImage
+namespace sitk = itk::simple;
+
+class matrix;
+
+struct CODF
 {
 public:
-    CImageSITK();
-    CImageSITK(int nx, int ny, int nz);
-    ~CImageSITK();
+    CODF();
 
-    bool LoadFromFile(std::string, bool isDicom);
-    bool LoadFromStack(std::vector<std::string> filenames);
-
-    BOX GetBoundingBox() override;
-    void SetBoundingBox(BOX& box) override;
-
-    std::vector<unsigned int> GetSize();
-    std::vector<double> GetOrigin();
-    std::vector<double> GetSpacing();
-
-    itk::simple::Image GetSItkImage();
-    void SetItkImage(itk::simple::Image image);
-
-    void Update();
-
-private:
-    bool ParseImageHeader();
-
-    int ReadScalarImage();
-
-    template<class TImage>
-    bool ReadImage();
-
-    void GetNamesForSequence();
-
-    void FinalizeImage();
-
-
-private:
-    const char* m_filename;
-
-    bool m_delBuffer;
-    // const char* m_imageFilename;
-    // ImageFileType m_type;
-    // IOPixelType pixelType;
-    // IOComponentType componentType;
-    // itk::SmartPointer<FinalImageType> originalImage;
-    // typename FinalImageType::Pointer finalImage;
-
-    itk::simple::Image m_sitkImage;
-
-    // std::vector<std::string> sequenceFiles;
+    std::vector<double> m_odf;
+    std::vector<double> m_sphHarmonics;
+    vec3d m_position;
+    GLMesh m_mesh;
+    std::vector<double> m_scales;
+    double m_radius;
 };
 
-#endif
+class CFiberODFAnalysis : public CImageAnalysis
+{
+public:
+    CFiberODFAnalysis(Post::CImageModel* img);
+    ~CFiberODFAnalysis();
+
+    void run() override;
+    void render() override;
+
+    int ODFs() { return m_ODFs.size(); }
+    CODF* GetODF(int i);
+
+    bool display() override;
+
+private:
+    void clear();
+
+    void butterworthFilter(sitk::Image& img);
+    sitk::Image powerSpectrum(sitk::Image& img);
+    void fftRadialFilter(sitk::Image& img);
+    void reduceAmp(sitk::Image& img, std::vector<double>* reduced);
+
+    std::unique_ptr<matrix> complLapBel_Coef();
+    double GFA(std::vector<double>& vals);
+
+    void buildMeshes();
+
+private:
+    std::vector<CODF*> m_ODFs;
+
+    GLMeshRender m_render;
+
+    double m_lengthScale;
+    double m_hausd;
+    double m_grad;
+};

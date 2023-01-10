@@ -152,6 +152,11 @@ void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 	m_filters.Add(imageFilter);
 }
 
+size_t CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
+{
+    return m_analyses.Remove(analysis);
+}
+
 BOX CImageModel::GetBoundingBox()
 {
     if(m_img && m_img->Get3DImage())

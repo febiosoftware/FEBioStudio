@@ -710,6 +710,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<GObject*>(po)) return "Object";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
 	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image volume";
+    else if (dynamic_cast<CImageAnalysis*>(po)) return "Image Analysis";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";

@@ -67,6 +67,7 @@ SOFTWARE.*/
 #include "DynamicStackedWidget.h"
 #include "ImageFilterWidget.h"
 #include "FiberODFWidget.h"
+#include <ImageLib/FiberODFAnalysis.h>
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -276,7 +277,8 @@ class Ui::CModelPropsPanel
 		PROPS_PANEL,
 		SELECTION1_PANEL,
 		SELECTION2_PANEL,
-		IMAGE_PANEL
+		IMAGE_PANEL,
+        FIBERODF_PANEL
 	};
 
 	enum {
@@ -286,8 +288,7 @@ class Ui::CModelPropsPanel
 		PROPS_FECLASS,
 		PROPS_PLOT,
 		PROPS_MATH,
-		PROPS_MATH_INTERVAL,
-        PROPS_FIBERODF
+		PROPS_MATH_INTERVAL
 	};
 
 public:
@@ -335,9 +336,6 @@ public:
 		math2->SetOrdinate("t");
 		math2->showRangeOptions(true);
 
-        fiberODF = new ::CFiberODFWidget;
-        fiberODF->setObjectName("fiberODF");
-
 		obj = new CObjectPropsPanel;
 		obj->setObjectName("object");
 
@@ -355,7 +353,6 @@ public:
 		propStack->addWidget(plt);
 		propStack->addWidget(math);
 		propStack->addWidget(math2);
-        propStack->addWidget(fiberODF);
 
 		sel1 = new CItemListSelectionBox;
 		sel1->setObjectName("select1");
@@ -371,6 +368,9 @@ public:
         imageTab->addTab(imageFilters = new CImageFilterWidget, "Filters");
 		imageTab->addTab(histoView = new CHistogramViewer, "Histogram");
 
+        fiberODF = new ::CFiberODFWidget(wnd);
+        fiberODF->setObjectName("fiberODF");
+
 		// compose toolbox
 		tool = new CToolBox;
 		tool->addTool("Info", obj);
@@ -382,6 +382,7 @@ public:
 		tool->addTool("Selection", sel1);
 		tool->addTool("Selection", sel2);
 		tool->addTool("3D Image", imageTab);
+        tool->addTool("Fiber ODF Analysis", fiberODF);
 
 		// hide all panels initially
 //		tool->getToolItem(OBJECT_PANEL)->setVisible(false);
@@ -391,6 +392,8 @@ public:
 //		tool->getToolItem(PROPS_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION1_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION2_PANEL)->setVisible(false);
+        tool->getToolItem(IMAGE_PANEL)->setVisible(false);
+        tool->getToolItem(FIBERODF_PANEL)->setVisible(false);
 
 		stack = new QStackedWidget;
 		QLabel* label = new QLabel("");
@@ -538,13 +541,15 @@ public:
 		math2->setMinMaxRange(v[0], v[1]);
 	}
 
-    void showFiberODFWidget(GMaterial* mat)
+    void showFiberODFWidget(bool b, CFiberODFAnalysis* analysis = nullptr)
     {
-        props->Update(0);
-		form->setPropertyList(0);
-		propStack->setCurrentIndex(PROPS_FIBERODF);
 
-        fiberODF->setMaterial(mat);
+        // props->Update(nullptr);
+		// form->setPropertyList(nullptr);
+
+        fiberODF->setAnalysis(analysis);
+
+        tool->getToolItem(FIBERODF_PANEL)->setVisible(b);
     }
 
 	void showImagePanel(bool b, Post::CImageModel* img = nullptr, CPropertyList* props = nullptr)
@@ -671,6 +676,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	{
 		ui->showProperties(true);
 		ui->showImagePanel(false);
+        ui->showFiberODFWidget(false);
 		// Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
 		// if (imgSrc)
 		// {
@@ -785,17 +791,17 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		{
             std::string stype = CGLDocument::GetTypeString(m_currentObject);
 
-            if(strcmp(stype.c_str(), "Material [custom fiber distribution]") == 0)
-            {
-                ui->showFiberODFWidget(dynamic_cast<GMaterial*>(po));
-            }
-            else
-            {
+            // if(strcmp(stype.c_str(), "Material [custom fiber distribution]") == 0)
+            // {
+            //     ui->showFiberODFWidget(dynamic_cast<GMaterial*>(po));
+            // }
+            // else
+            // {
                 GMaterial* mo = dynamic_cast<GMaterial*>(po);
     //			ui->setMaterialData(mo);
                 ui->setFEClassData(mo->GetMaterialProperties(), mo->GetModel());
                 ui->showPropsPanel(true);
-            }
+            // }
 		}
 		else if (dynamic_cast<FSLoadController*>(po))
 		{
@@ -824,6 +830,12 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			ui->setFEClassData(pds->GetMaterial(), pds->GetModel()->GetFSModel());
 			ui->showPropsPanel(true);
 		}
+        else if (dynamic_cast<CFiberODFAnalysis*>(po))
+        {
+            ui->showFiberODFWidget(true, dynamic_cast<CFiberODFAnalysis*>(po));
+            ui->setPropertyList(props);
+            ui->showPropsPanel(true);
+        }
 		else if (props)
 		{
 			if (flags & 1)

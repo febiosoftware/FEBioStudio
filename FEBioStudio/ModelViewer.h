@@ -174,6 +174,8 @@ public slots:
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 
+    void OnAddFiberODFAnalysis();
+
 signals:
 	void currentObjectChanged(FSObject* po);
 
