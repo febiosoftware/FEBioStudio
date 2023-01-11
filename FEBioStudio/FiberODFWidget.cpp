@@ -481,7 +481,7 @@ void CFiberODFWidget::on_copyToMatButton_pressed()
 
         auto current = model->GetMaterial(index)->GetMaterialProperties();
 
-        if(std::string("custom fiber distribution").compare(current->GetTypeString()) == 0)
+        if(std::string("fiberODF").compare(current->GetTypeString()) == 0)
         {
             materials.push_back(std::pair<std::string, FSMaterial*>(name, current));
             continue;
@@ -495,7 +495,7 @@ void CFiberODFWidget::on_copyToMatButton_pressed()
 
     if(materials.size() == 0)
     {
-        layout->addWidget(new QLabel("There are no custom fiber distribution materials in the current model."));
+        layout->addWidget(new QLabel("There are no fiberODF materials in the current model."));
 
         layout->addWidget(new QDialogButtonBox(QDialogButtonBox::Ok));
         dlg.exec();
@@ -556,7 +556,7 @@ void CFiberODFWidget::findMaterials(FSMaterial* mat, std::string name, std::vect
 
             if(current)
             {
-                if(std::string("custom fiber distribution").compare(current->GetTypeString()) == 0)
+                if(std::string("fiberODF").compare(current->GetTypeString()) == 0)
                 {
                     materials.push_back(std::pair<std::string, FSMaterial*>(name, current));
                 }

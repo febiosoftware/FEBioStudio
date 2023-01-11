@@ -170,7 +170,7 @@
 //     GMaterial* gmat = new GMaterial(pmat);
 //     gmat->SetName("FiberODF");
 
-//     FSMaterial* pmat2 = FEBio::CreateMaterial("custom fiber distribution", fem);
+//     FSMaterial* pmat2 = FEBio::CreateMaterial("fiberODF", fem);
 //     pmat2->SetParamVectorDouble("shp_harmonics", sphHarm);
 
 //     pmat->AddProperty(0, pmat2);

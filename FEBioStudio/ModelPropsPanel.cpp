@@ -791,17 +791,10 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		{
             std::string stype = CGLDocument::GetTypeString(m_currentObject);
 
-            // if(strcmp(stype.c_str(), "Material [custom fiber distribution]") == 0)
-            // {
-            //     ui->showFiberODFWidget(dynamic_cast<GMaterial*>(po));
-            // }
-            // else
-            // {
-                GMaterial* mo = dynamic_cast<GMaterial*>(po);
-    //			ui->setMaterialData(mo);
-                ui->setFEClassData(mo->GetMaterialProperties(), mo->GetModel());
-                ui->showPropsPanel(true);
-            // }
+            GMaterial* mo = dynamic_cast<GMaterial*>(po);
+//			ui->setMaterialData(mo);
+            ui->setFEClassData(mo->GetMaterialProperties(), mo->GetModel());
+            ui->showPropsPanel(true);
 		}
 		else if (dynamic_cast<FSLoadController*>(po))
 		{
