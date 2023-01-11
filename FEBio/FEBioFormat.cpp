@@ -2344,7 +2344,7 @@ bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 
 			// convert some obsolete variables
 			if (strcmp(sztype, "shell relative volume") == 0) sztype = "relative volume";
-			if (strcmp(sztype, "shell strain"         ) == 0) sztype = "Lagrange strain";
+//			if (strcmp(sztype, "shell strain"         ) == 0) sztype = "Lagrange strain";
 
 			const char* szsurf = tag.AttributeValue("surface", true);
 			if (szsurf) 
