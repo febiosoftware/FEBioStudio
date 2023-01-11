@@ -2223,7 +2223,7 @@ void CGLView::RenderImageData()
                     auto current = img->GetImageAnalysis(j);
                     if(current->display())
                     {
-                        current->render();
+                        current->render(&doc->GetView()->GetCamera());
                     }
                 }
             }

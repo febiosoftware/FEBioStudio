@@ -47,6 +47,7 @@ class CFiberGLWidget : public QOpenGLWidget
 public:
     CFiberGLWidget();
 
+    void setAnalysis(CFiberODFAnalysis* analysis);
     void setODF(CODF* odf);
 
 protected:
@@ -60,8 +61,9 @@ protected:
     int heightForWidth(int w) const override;
 
 private:
+    CFiberODFAnalysis* m_analysis;
     CODF* m_ODF;
-    GLMesh m_mesh;
+    // GLMesh m_mesh;
     GLMeshRender m_renderer;
     CGLCamera m_cam;
 

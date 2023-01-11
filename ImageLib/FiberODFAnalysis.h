@@ -45,7 +45,7 @@ public:
     std::vector<double> m_sphHarmonics;
     vec3d m_position;
     GLMesh m_mesh;
-    std::vector<double> m_scales;
+    GLMesh m_remesh;
     double m_radius;
 };
 
@@ -56,10 +56,13 @@ public:
     ~CFiberODFAnalysis();
 
     void run() override;
-    void render() override;
+    void render(CGLCamera* cam) override;
 
     int ODFs() { return m_ODFs.size(); }
     CODF* GetODF(int i);
+
+    bool renderRemeshed();
+    bool renderMeshLines();
 
     bool display() override;
 
@@ -75,6 +78,7 @@ private:
     double GFA(std::vector<double>& vals);
 
     void buildMeshes();
+    void remeshSphere(CODF* odf);
 
 private:
     std::vector<CODF*> m_ODFs;

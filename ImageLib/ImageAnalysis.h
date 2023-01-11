@@ -33,13 +33,15 @@ namespace Post
     class CImageModel;
 };
 
+class CGLCamera;
+
 class CImageAnalysis : public FSObject
 {
 public:
     CImageAnalysis(Post::CImageModel* img);
 
     virtual void run() = 0;
-    virtual void render() {}
+    virtual void render(CGLCamera* cam = nullptr) {}
     virtual bool display() {}
 protected:
     Post::CImageModel* m_img;

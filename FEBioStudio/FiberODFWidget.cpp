@@ -64,55 +64,23 @@ SOFTWARE.*/
 using std::vector;
 using std::complex;
 
-CFiberGLWidget::CFiberGLWidget() : m_ODF(nullptr)
+CFiberGLWidget::CFiberGLWidget() : m_ODF(nullptr), m_analysis(nullptr)
 {
     setMouseTracking(true);
 
     QSizePolicy policy(QSizePolicy::Preferred, QSizePolicy::Preferred);
     policy.setHeightForWidth(true);
     setSizePolicy(policy);
+}
 
-    m_mesh.Create(NPTS, NCON);
-
-    // create nodes
-    for (int i=0; i<NPTS; ++i)
-    {
-        auto& node = m_mesh.Node(i);
-        node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
-    }
-
-    // create elements
-    for (int i=0; i<NCON; ++i)
-    {
-        auto& el = m_mesh.Face(i);
-        el.n[0] = CONN1[i]-1;
-        el.n[1] = CONN2[i]-1;
-        el.n[2] = CONN3[i]-1;
-    }
-
-    m_mesh.Update();
+void CFiberGLWidget::setAnalysis(CFiberODFAnalysis* analysis)
+{
+    m_analysis = analysis;
 }
 
 void CFiberGLWidget::setODF(CODF* odf)
 {
     m_ODF = odf;
-
-    if(m_ODF)
-    {
-        Post::CColorMap map;
-        map.jet();
-
-        for (int i=0; i<NCON; ++i)
-        {
-            auto& el = m_mesh.Face(i);
-
-            el.c[0] = map.map(odf->m_scales[el.n[0]]);
-            el.c[1] = map.map(odf->m_scales[el.n[1]]);
-            el.c[2] = map.map(odf->m_scales[el.n[2]]);
-        }
-
-        // m_mesh.Update();
-    }
 }
 
 void CFiberGLWidget::initializeGL()
@@ -186,7 +154,38 @@ void CFiberGLWidget::paintGL()
 
     m_cam.Transform();
 
-    m_renderer.RenderGLMesh(&m_mesh);
+    if(m_analysis && m_ODF)
+    {
+        GLMesh* mesh;
+
+        if(m_analysis->renderRemeshed())
+        {
+            mesh = &m_ODF->m_remesh;
+        }
+        else
+        {
+            mesh = &m_ODF->m_mesh;
+        }
+
+        m_renderer.RenderGLMesh(mesh);
+
+        if(m_analysis->renderMeshLines())
+        {
+            m_cam.LineDrawMode(true);
+            m_cam.Transform();
+
+            glColor3f(0,0,0);
+            glLineWidth(0.01);
+
+            m_renderer.RenderGLMeshLines(mesh);
+
+            m_cam.LineDrawMode(false);
+            m_cam.Transform();
+        }
+        
+    }
+
+    
 
     // render the GL widgets
     glMatrixMode(GL_PROJECTION);
@@ -202,6 +201,25 @@ void CFiberGLWidget::paintGL()
     m_ptriad->draw(&painter);
 
     QOpenGLWidget::paintGL();
+
+
+    // cam.LineDrawMode(true);
+	// 	cam.Transform();
+
+	// 	// Render mesh lines
+	// 	//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
+	// 	if (view.m_bmesh) RenderMeshLines(rc);
+
+	// 	if (view.m_bfeat || (view.m_nrender == RENDER_WIREFRAME))
+	// 	{
+	// 		// don't draw feature edges in edge mode, since the edges are the feature edges
+	// 		// (Don't draw feature edges when we are rendering FE edges)
+	// 		int nselect = m_doc->GetSelectionMode();
+	// 		if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges(rc);
+	// 	}
+
+	// 	cam.LineDrawMode(false);
+	// 	cam.Transform();
 }
 
 void CFiberGLWidget::mousePressEvent(QMouseEvent* ev)
@@ -340,6 +358,7 @@ public:
 
     void update(CFiberODFAnalysis* analysis)
     {
+        glWidget->setAnalysis(analysis);
         glWidget->setODF(nullptr);
 
         if(!analysis || analysis->ODFs() == 0)

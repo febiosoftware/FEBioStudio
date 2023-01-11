@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include <MeshTools/GLMesh.h>
 #include <GL/glu.h>
+#include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
 #include "ImageSITK.h"
@@ -40,9 +41,9 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV , DISP};
+enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, REMESHED};
 
-CODF::CODF() : m_odf(NPTS, 0.0), m_scales(NPTS, 0.0) {};
+CODF::CODF() : m_odf(NPTS, 0.0) {};
 
 CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     : CImageAnalysis(img), m_lengthScale(10), m_hausd(0.05), 
@@ -60,6 +61,8 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddIntParam(1, "Y Divisions");
     AddIntParam(1, "Z Divisions");
     AddBoolParam(true, "Display in graphics view");
+    AddBoolParam(false, "Render Mesh Lines");
+    AddBoolParam(false, "Show Remeshed ODF");
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
@@ -224,17 +227,8 @@ void CFiberODFAnalysis::run()
         std::cout << "Position:" << std::endl;
         std::cout << odf->m_position.x << "," << odf->m_position.y << "," << odf->m_position.z << std::endl;
 
-        // add spherical harmonics and position to material
-        // int classID = FEBio::GetClassId(FECLASS_ID, "fiber-odf");
-        // FSModelComponent* fiberODF = FEBio::CreateClass(classID,  m_mat->GetModel());
-        // fiberODF->GetParam("shp_harmonics")->SetVectorDoubleValue(sphHarm);
-        // fiberODF->GetParam("position")->SetVec3dValue(position);
-        // // fiberODF->AddVectorDoubleParam(sphHarm);
-        // // fiberODF->AddVecParam(position);
-        // m_mat->GetMaterialProperties()->GetProperty(0).AddComponent(fiberODF);
-
         // Recalc ODF based on spherical harmonics
-        // (*T).mult(sphHarm, *m_ODF);
+        (*T).mult(odf->m_sphHarmonics, odf->m_odf);
 
         // ui->glWidget->setMesh(buildMesh());
 
@@ -255,104 +249,59 @@ void CFiberODFAnalysis::run()
     }
 
     buildMeshes();
-
-    
-
-    // // Calc Gradient
-    // vector<double> gradient;
-    // altGradient(m_order, sphHarm, gradient);
-
-    // makeDataField(po, gradient, "Gradient");
-
-    // // Remesh sphere
-    // vector<vec3d> nodePos;
-    // vector<vec3i> elems;
-    // remesh(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
-
-    // FSMesh* newMesh = new FSMesh();
-
-	// // get the new mesh sizes
-    // int NN = nodePos.size();
-    // int NF = elems.size();
-	// newMesh->Create(NN, NF);
-
-	// // get the vertex coordinates
-	// for (int i = 0; i < NN; ++i)
-	// {
-	// 	FSNode& vi = newMesh->Node(i);
-	// 	vi.r = nodePos[i];
-	// }
-
-    // // create elements
-	// for (int i=0; i<NF; ++i)
-	// {
-    //     FSElement& el = newMesh->Element(i);
-    //     el.SetType(FE_TRI3);
-    //     int* n = el.m_node;
-	// 	el.m_node[0] = elems[i].x;
-	// 	el.m_node[1] = elems[i].y;
-	// 	el.m_node[2] = elems[i].z;
-	// }
-
-    // newMesh->RebuildMesh();
-
-	// GMeshObject* po2 = new GMeshObject(newMesh);
-    // po2->SetName("Remeshed");
-
-	// // add the object to the model
-	// fem->GetModel().AddObject(po2);
-
-    // // Create ODF mapping for new sphere
-
-    // int nodes = newMesh->Nodes();
-
-    // double* xCoords = new double[nodes] {};
-    // double* yCoords = new double[nodes] {};
-    // double* zCoords = new double[nodes] {};
-    // for(int index = 0; index < nodes; index++)
-    // {
-    //     vec3d vec = newMesh->Node(index).pos();
-
-    //     xCoords[index] = vec.x;
-    //     yCoords[index] = vec.y;
-    //     zCoords[index] = vec.z;
-    // }
-
-    // theta = new double[nodes] {};
-    // phi = new double[nodes] {};
-
-    // getSphereCoords(nodes, xCoords, yCoords, zCoords, theta, phi);
-
-    // T = compSH(m_order, nodes, theta, phi);
-
-    // delete[] xCoords;
-    // delete[] yCoords;
-    // delete[] zCoords;
-    // delete[] theta;
-    // delete[] phi;
-
-    // std::vector<double> newODF(nodes, 0);  
-    // (*T).mult(sphHarm, newODF);
-
-    // makeDataField(po2, newODF, "ODF");
-
-    // ui->stack->setCurrentIndex(1);
 }
 
-void CFiberODFAnalysis::render()
+void CFiberODFAnalysis::render(CGLCamera* cam)
 {
     glPushAttrib(GL_ENABLE_BIT);
     glEnable(GL_COLOR_MATERIAL);
     GLfloat spc[4] = { 0, 0, 0, 1.f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 
+    bool remeshed = GetBoolValue(REMESHED);
+    bool meshLines = GetBoolValue(MESHLINES);
+
     for(auto odf : m_ODFs)
     {
         glPushMatrix();
         glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
         glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
-        m_render.RenderGLMesh(&odf->m_mesh);
+        
+        GLMesh* mesh;
+
+        if(remeshed)
+        {
+            mesh = &odf->m_remesh;
+        }
+        else
+        {
+            mesh = &odf->m_mesh;
+        }
+
+        m_render.RenderGLMesh(mesh);
+
         glPopMatrix();
+
+        if(meshLines)
+        {
+            cam->LineDrawMode(true);
+            cam->Transform();
+
+            glPushMatrix();
+            glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+            glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
+
+            glColor3f(0,0,0);
+
+            m_render.RenderGLMeshLines(mesh);
+
+             glPopMatrix();
+
+            cam->LineDrawMode(false);
+            cam->Transform();
+        }
+        
+        // glPopMatrix();
     }
 
     glPopAttrib();
@@ -378,6 +327,16 @@ CODF* CFiberODFAnalysis::GetODF(int i)
     {
         return nullptr;
     }
+}
+
+bool CFiberODFAnalysis::renderRemeshed()
+{
+    return GetBoolValue(REMESHED);
+}
+
+bool CFiberODFAnalysis::renderMeshLines()
+{
+    return GetBoolValue(MESHLINES);
 }
 
 void CFiberODFAnalysis::butterworthFilter(sitk::Image& img)
@@ -650,8 +609,6 @@ void CFiberODFAnalysis::buildMeshes()
 
     for(auto odf : m_ODFs)
     {
-        // odf->m_scales.reserve(NPTS);
-
         double min = *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
         double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
         double scale = 1/(max - min);
@@ -659,14 +616,11 @@ void CFiberODFAnalysis::buildMeshes()
         GLMesh* pm = &odf->m_mesh;
         pm->Create(NPTS, NCON);
 
-        double radius = odf->m_radius;
-        vec3d position = odf->m_position;
         // create nodes
         for (int i=0; i<NPTS; ++i)
         {
             auto& node = pm->Node(i);
             node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
-            // node.r = vec3d(XCOORDS[i]*radius + position.x, YCOORDS[i]*radius + position.y, ZCOORDS[i]*radius + position.z);
         }
 
         // create elements
@@ -677,22 +631,91 @@ void CFiberODFAnalysis::buildMeshes()
             el.n[1] = CONN2[i]-1;
             el.n[2] = CONN3[i]-1;
 
-            double val1 = odf->m_odf[el.n[0]]*scale;
-            double val2 = odf->m_odf[el.n[1]]*scale;
-            double val3 = odf->m_odf[el.n[2]]*scale;
-
-            odf->m_scales[el.n[0]] = val1;
-            odf->m_scales[el.n[1]] = val2;
-            odf->m_scales[el.n[2]] = val3;
-
-            el.c[0] = map.map(val1);
-            el.c[1] = map.map(val2);
-            el.c[2] = map.map(val3);
+            el.c[0] = map.map(odf->m_odf[el.n[0]]*scale);
+            el.c[1] = map.map(odf->m_odf[el.n[1]]*scale);
+            el.c[2] = map.map(odf->m_odf[el.n[2]]*scale);
         }
 
         // update the mesh
         pm->Update();
 
-        // m_meshes.push_back(pm);
+        // remesh sphere
+        remeshSphere(odf);
     }
+}
+
+void CFiberODFAnalysis::remeshSphere(CODF* odf)
+{
+    // Calc Gradient
+    vector<double> gradient;
+    // altGradient(GetIntValue(ORDER), odf->m_sphHarmonics, gradient);
+    altGradient(GetIntValue(ORDER), odf->m_odf, gradient);
+
+    // Remesh sphere
+    vector<vec3d> nodePos;
+    vector<vec3i> elems;
+    remeshFull(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
+
+    GLMesh* mesh = &odf->m_remesh;
+	// get the new mesh sizes
+    int NN = nodePos.size();
+    int NF = elems.size();
+	mesh->Create(NN, NF);
+
+	// get the vertex coordinates
+	for (int i = 0; i < NN; ++i)
+	{
+		auto& node = mesh->Node(i);
+		node.r = nodePos[i];
+	}
+
+    double* xCoords = new double[NN] {};
+    double* yCoords = new double[NN] {};
+    double* zCoords = new double[NN] {};
+    for(int index = 0; index < NN; index++)
+    {
+        vec3d vec = mesh->Node(index).r;
+
+        xCoords[index] = vec.x;
+        yCoords[index] = vec.y;
+        zCoords[index] = vec.z;
+    }
+
+    double* theta = new double[NN] {};
+    double* phi = new double[NN] {};
+
+    getSphereCoords(NN, xCoords, yCoords, zCoords, theta, phi);
+
+    auto T = compSH(GetIntValue(ORDER), NN, theta, phi);
+
+    delete[] xCoords;
+    delete[] yCoords;
+    delete[] zCoords;
+    delete[] theta;
+    delete[] phi;
+
+    std::vector<double> newODF(NN, 0);  
+    (*T).mult(odf->m_sphHarmonics, newODF);
+
+    double min = *std::min_element(newODF.begin(), newODF.end());
+    double max = *std::max_element(newODF.begin(), newODF.end());
+    double scale = 1/(max - min);
+
+    Post::CColorMap map;
+    map.jet();
+
+    // create elements
+	for (int i=0; i<NF; ++i)
+	{
+        auto& el = mesh->Face(i);
+        el.n[0] = elems[i].x;
+        el.n[1] = elems[i].y;
+        el.n[2] = elems[i].z;
+
+        el.c[0] = map.map(newODF[el.n[0]]*scale);
+        el.c[1] = map.map(newODF[el.n[1]]*scale);
+        el.c[2] = map.map(newODF[el.n[2]]*scale);
+	}
+
+    mesh->Update();
 }
