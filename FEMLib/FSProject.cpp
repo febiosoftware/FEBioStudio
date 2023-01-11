@@ -1924,6 +1924,7 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 			if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
 			if (solver->GetParam("logSolve"             )) solver->SetParamBool("logSolve"             , ops.logSolve);
 			if (solver->GetParam("equation_scheme"      )) solver->SetParamInt ("equation_scheme"      , ops.neqscheme);
+			if (solver->GetParam("optimize_bw"          )) solver->SetParamBool("optimize_bw"          , ops.bminbw);
 
 			if (ops.nmatfmt != 0)
 			{

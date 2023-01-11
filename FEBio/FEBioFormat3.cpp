@@ -312,6 +312,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					else if (tag == "reform_each_time_step") tag.value(ops.brefstep);
 					else if (tag == "logSolve") tag.value(ops.logSolve);
 					else if (tag == "equation_scheme") tag.value(ops.neqscheme);
+					else if (tag == "optimize_bw") tag.value(ops.bminbw);
 					else ReadParam(*pstep, tag);
 					++tag;
 				}
