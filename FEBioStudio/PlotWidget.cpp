@@ -2812,11 +2812,28 @@ void CMathPlotWidget::SetOrdinate(const std::string& x)
 	else m_ord = x;
 }
 
+void CMathPlotWidget::ClearVariables()
+{
+	m_Var.clear();
+}
+
+void CMathPlotWidget::SetVariable(const QString& name, double val)
+{
+	m_Var.push_back(std::pair<QString, double>(name, val));
+}
+
 void CMathPlotWidget::SetMath(const QString& txt)
 {
 	std::string m = txt.toStdString();
 	m_math.Clear();
 	m_math.AddVariable(m_ord);
+
+	for (int i = 0; i < m_Var.size(); ++i)
+	{
+		std::pair<QString, double>& vi = m_Var[i];
+		std::string mi = vi.first.toStdString();
+		m_math.AddVariable(mi, vi.second);
+	}
 
 	getPlotData(0).clear();
 
@@ -2995,6 +3012,9 @@ void CMathEditWidget::setMinMaxRange(double rmin, double rmax)
 {
 	ui->plot->SetHighlightInterval(rmin, rmax);
 }
+
+void CMathEditWidget::ClearVariables() { ui->plot->ClearVariables(); }
+void CMathEditWidget::SetVariable(const QString& name, double val) { ui->plot->SetVariable(name, val); }
 
 void CMathEditWidget::SetMath(const QString& txt)
 {

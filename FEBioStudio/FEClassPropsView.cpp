@@ -1767,6 +1767,22 @@ public:
 			else if (pf && pf->IsType("math"))
 			{
 				Param* p = pf->GetParam("math");
+				math->ClearVariables();
+
+				FSModel* fem = pf->GetFSModel();
+				if (fem)
+				{
+					for (int i = 0; i < fem->Parameters(); ++i)
+					{
+						Param& pi = fem->GetParam(i);
+						if (pi.GetFlags() & FS_PARAM_USER)
+						{
+							QString n = QString("fem.%1").arg(pi.GetShortName());
+							math->SetVariable(n, pi.GetFloatValue());
+						}
+					}
+				}
+
 				math->SetMath(QString::fromStdString(p->GetStringValue()));
 				stack->setCurrentIndex(1);
 				stack->show();
