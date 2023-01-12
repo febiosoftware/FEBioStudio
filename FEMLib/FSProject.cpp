@@ -1985,21 +1985,36 @@ bool FSProject::ConvertDiscrete(std::ostream& log)
 					double s = pm->GetParam("scale")->GetFloatValue();
 
 					Param* pF = pm->GetParam("force");
-					double F = pF->GetFloatValue();
 
-					febMat->SetParamInt("measure", m);
-					febMat->SetParamFloat("scale", s*F);
-
-					int lcid = pF->GetLoadCurveID();
-					if (lcid >= 0)
+					if (pF->GetParamType() == Param_FLOAT)
 					{
-						FEBioLoadController* plc = dynamic_cast<FEBioLoadController*>(fem.GetLoadControllerFromID(lcid));
-						LoadCurve& lc = *plc->CreateLoadCurve();
+						double F = pF->GetFloatValue();
 
-						FEBioFunction1D* pf = dynamic_cast<FEBioFunction1D*>(FEBio::CreateFunction1D("point", &fem));
-						LoadCurve& f1d = *pf->CreateLoadCurve();
-						f1d = lc;
-						pf->UpdateData(true);
+						febMat->SetParamInt("measure", m);
+						febMat->SetParamFloat("scale", s * F);
+
+						int lcid = pF->GetLoadCurveID();
+						if (lcid >= 0)
+						{
+							FEBioLoadController* plc = dynamic_cast<FEBioLoadController*>(fem.GetLoadControllerFromID(lcid));
+							LoadCurve& lc = *plc->CreateLoadCurve();
+
+							FEBioFunction1D* pf = dynamic_cast<FEBioFunction1D*>(FEBio::CreateFunction1D("point", &fem));
+							LoadCurve& f1d = *pf->CreateLoadCurve();
+							f1d = lc;
+							pf->UpdateData(true);
+
+							FSProperty* pForce = febMat->FindProperty("force"); assert(pForce);
+							if (pForce) pForce->SetComponent(pf);
+						}
+					}
+					else if (pF->GetParamType() == Param_MATH)
+					{
+						string smath = pF->GetMathString();
+						FEBioFunction1D* pf = dynamic_cast<FEBioFunction1D*>(FEBio::CreateFunction1D("math", &fem));
+
+						Param* pm = pf->GetParam("math"); assert(pm);
+						if (pm) pm->SetStringValue(smath);
 
 						FSProperty* pForce = febMat->FindProperty("force"); assert(pForce);
 						if (pForce) pForce->SetComponent(pf);

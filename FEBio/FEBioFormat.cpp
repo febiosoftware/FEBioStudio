@@ -438,10 +438,21 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 	}
 	else if (*atype == "math")
 	{
+		string smath;
+		if (tag.isleaf()) smath = tag.szvalue();
+		else
+		{
+			++tag;
+			do {
+				if (tag == "math") smath = tag.szvalue();
+				++tag;
+			} while (!tag.isend());
+		}
+
 		if (pp->IsVariable())
 		{
 			pp->SetParamType(Param_MATH);
-			pp->SetMathString(tag.szvalue());
+			pp->SetMathString(smath);
 		}
 		else FileReader()->AddLogEntry("Cannot assign math to non-variable parameter %s", pp->GetShortName());
 	}
