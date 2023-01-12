@@ -246,13 +246,13 @@ void CFiberGLWidget::mouseMoveEvent(QMouseEvent* ev)
 
     if (balt)
     {
-        quatd qz = quatd((y - m_y0)*0.01f, vec3d(0, 0, -1));
+        quatd qz = quatd((y - m_y0)*0.01f, vec3d(0, 0, 1));
         m_cam.Orbit(qz);
     }
     else
     {
-        quatd qx = quatd((y - m_y0)*0.01f, vec3d(-1, 0, 0));
-        quatd qy = quatd((x - m_x0)*0.01f, vec3d(0, -1, 0));
+        quatd qx = quatd((y - m_y0)*0.01f, vec3d(1, 0, 0));
+        quatd qy = quatd((x - m_x0)*0.01f, vec3d(0, 1, 0));
 
         m_cam.Orbit(qx);
         m_cam.Orbit(qy);
