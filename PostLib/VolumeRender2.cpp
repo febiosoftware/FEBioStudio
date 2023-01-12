@@ -213,7 +213,7 @@ void CVolumeRender2::Render(CGLContext& rc)
 	CImageSource* src = img.GetImageSource();
 	if (src == nullptr) return;
 
-	if (m_vrReset)
+	if (m_vrInit && m_vrReset)
 	{
 		ReloadTexture();
 		m_vrReset = false;
