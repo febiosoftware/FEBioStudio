@@ -25,17 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FiberODFAnalysis.h"
+#include <qopengl.h>
+#include <GL/glu.h>
 #include <PostLib/ImageModel.h>
 #include <FEAMR/sphericalHarmonics.h>
 #include <FEAMR/spherePoints.h>
 #include <MeshTools/FENNQuery.h>
 #include <PostLib/ColorMap.h>
 #include <MeshTools/GLMesh.h>
-#include <GL/glu.h>
 #include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
 #include "ImageSITK.h"
+
+#ifndef M_PI
+#define M_PI 3.141592653589793
+#endif
 
 namespace sitk = itk::simple;
 using std::vector;
@@ -422,13 +427,13 @@ sitk::Image CFiberODFAnalysis::powerSpectrum(sitk::Image& img)
     float* data = PS.GetBufferAsFloat();
 
     #pragma omp parallel for
-    for(uint32_t x = 0; x <nx; x++)
+    for(int x = 0; x <nx; x++)
     {
-        for(uint32_t y = 0; y < ny; y++)
+        for(int y = 0; y < ny; y++)
         {
-            for(uint32_t z = 0; z < nz; z++)
+            for(int z = 0; z < nz; z++)
             {
-                std::vector<uint32_t> index = {x,y,z};
+                std::vector<uint32_t> index = {(unsigned int)x,(unsigned int)y,(unsigned int)z};
                 
                 complex<float> val = img.GetPixelAsComplexFloat32(index);
 

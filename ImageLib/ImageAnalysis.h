@@ -42,7 +42,7 @@ public:
 
     virtual void run() = 0;
     virtual void render(CGLCamera* cam = nullptr) {}
-    virtual bool display() {}
+	virtual bool display() { return false; }
 protected:
     Post::CImageModel* m_img;
 
