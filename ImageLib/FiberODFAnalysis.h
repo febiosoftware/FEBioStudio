@@ -45,7 +45,9 @@ public:
     std::vector<double> m_sphHarmonics;
     vec3d m_position;
     GLMesh m_mesh;
+    GLMesh m_radialMesh;
     GLMesh m_remesh;
+    GLMesh m_radialRemesh;
     double m_radius;
 };
 
@@ -63,6 +65,7 @@ public:
 
     bool renderRemeshed();
     bool renderMeshLines();
+    bool showRadial();
 
     bool display() override;
 

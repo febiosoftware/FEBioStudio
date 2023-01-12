@@ -41,7 +41,7 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, REMESHED};
+enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, REMESHED, RADIAL};
 
 CODF::CODF() : m_odf(NPTS, 0.0) {};
 
@@ -63,6 +63,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddBoolParam(true, "Display in graphics view");
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(false, "Show Remeshed ODF");
+    AddBoolParam(false, "Show Radial Mesh");
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
@@ -269,13 +270,29 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
         
         GLMesh* mesh;
 
-        if(remeshed)
+        bool radial = showRadial();
+
+        if(renderRemeshed())
         {
-            mesh = &odf->m_remesh;
+            if(radial)
+            {
+                mesh = &odf->m_radialRemesh;
+            }
+            else
+            {
+                mesh = &odf->m_remesh;
+            }
         }
         else
         {
-            mesh = &odf->m_mesh;
+            if(radial)
+            {
+                mesh = &odf->m_radialMesh;
+            }
+            else
+            {
+                mesh = &odf->m_mesh;
+            }
         }
 
         m_render.RenderGLMesh(mesh);
@@ -337,6 +354,11 @@ bool CFiberODFAnalysis::renderRemeshed()
 bool CFiberODFAnalysis::renderMeshLines()
 {
     return GetBoolValue(MESHLINES);
+}
+
+bool CFiberODFAnalysis::showRadial()
+{
+    return GetBoolValue(RADIAL);
 }
 
 void CFiberODFAnalysis::butterworthFilter(sitk::Image& img)
@@ -616,11 +638,18 @@ void CFiberODFAnalysis::buildMeshes()
         GLMesh* pm = &odf->m_mesh;
         pm->Create(NPTS, NCON);
 
+        GLMesh* radial = &odf->m_radialMesh;
+        radial->Create(NPTS, NCON);
+
         // create nodes
         for (int i=0; i<NPTS; ++i)
         {
             auto& node = pm->Node(i);
             node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+
+            auto& radialNode = radial->Node(i);
+            double val = (odf->m_odf[i]-min)*scale;
+            radialNode.r = vec3d(XCOORDS[i]*val, YCOORDS[i]*val, ZCOORDS[i]*val);
         }
 
         // create elements
@@ -634,10 +663,20 @@ void CFiberODFAnalysis::buildMeshes()
             el.c[0] = map.map(odf->m_odf[el.n[0]]*scale);
             el.c[1] = map.map(odf->m_odf[el.n[1]]*scale);
             el.c[2] = map.map(odf->m_odf[el.n[2]]*scale);
+
+            auto& radialEl = radial->Face(i);
+            radialEl.n[0] = CONN1[i]-1;
+            radialEl.n[1] = CONN2[i]-1;
+            radialEl.n[2] = CONN3[i]-1;
+
+            radialEl.c[0] = map.map(odf->m_odf[radialEl.n[0]]*scale);
+            radialEl.c[1] = map.map(odf->m_odf[radialEl.n[1]]*scale);
+            radialEl.c[2] = map.map(odf->m_odf[radialEl.n[2]]*scale);
         }
 
         // update the mesh
         pm->Update();
+        radial->Update();
 
         // remesh sphere
         remeshSphere(odf);
@@ -718,4 +757,33 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
 	}
 
     mesh->Update();
+
+    // create radial mesh
+    GLMesh* radial = &odf->m_radialRemesh;
+    radial->Create(NN, NF);
+
+	// get the vertex coordinates
+	for (int i = 0; i < NN; ++i)
+    {
+        vec3d vec = mesh->Node(i).r;
+
+        auto& radialNode = radial->Node(i);
+        double val = (newODF[i]-min)*scale;
+        radialNode.r = vec3d(vec.x*val, vec.y*val, vec.z*val);
+    }
+
+    // create elements
+    for (int i=0; i<NF; ++i)
+    {
+        auto& radialEl = radial->Face(i);
+        radialEl.n[0] = elems[i].x;
+        radialEl.n[1] = elems[i].y;
+        radialEl.n[2] = elems[i].z;
+
+        radialEl.c[0] = map.map(newODF[radialEl.n[0]]*scale);
+        radialEl.c[1] = map.map(newODF[radialEl.n[1]]*scale);
+        radialEl.c[2] = map.map(newODF[radialEl.n[2]]*scale);
+    }
+
+    radial->Update();
 }

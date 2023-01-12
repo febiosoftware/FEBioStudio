@@ -144,6 +144,8 @@ void CFiberGLWidget::resizeGL(int w, int h)
 
 void CFiberGLWidget::paintGL()
 {
+    glEnable(GL_DEPTH_TEST);
+
     // set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -152,19 +154,36 @@ void CFiberGLWidget::paintGL()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+    m_cam.SetTargetDistance(50);
     m_cam.Transform();
 
     if(m_analysis && m_ODF)
     {
         GLMesh* mesh;
 
+        bool radial = m_analysis->showRadial();
+
         if(m_analysis->renderRemeshed())
         {
-            mesh = &m_ODF->m_remesh;
+            if(radial)
+            {
+                mesh = &m_ODF->m_radialRemesh;
+            }
+            else
+            {
+                mesh = &m_ODF->m_remesh;
+            }
         }
         else
         {
-            mesh = &m_ODF->m_mesh;
+            if(radial)
+            {
+                mesh = &m_ODF->m_radialMesh;
+            }
+            else
+            {
+                mesh = &m_ODF->m_mesh;
+            }
         }
 
         m_renderer.RenderGLMesh(mesh);
@@ -201,25 +220,6 @@ void CFiberGLWidget::paintGL()
     m_ptriad->draw(&painter);
 
     QOpenGLWidget::paintGL();
-
-
-    // cam.LineDrawMode(true);
-	// 	cam.Transform();
-
-	// 	// Render mesh lines
-	// 	//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
-	// 	if (view.m_bmesh) RenderMeshLines(rc);
-
-	// 	if (view.m_bfeat || (view.m_nrender == RENDER_WIREFRAME))
-	// 	{
-	// 		// don't draw feature edges in edge mode, since the edges are the feature edges
-	// 		// (Don't draw feature edges when we are rendering FE edges)
-	// 		int nselect = m_doc->GetSelectionMode();
-	// 		if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges(rc);
-	// 	}
-
-	// 	cam.LineDrawMode(false);
-	// 	cam.Transform();
 }
 
 void CFiberGLWidget::mousePressEvent(QMouseEvent* ev)
