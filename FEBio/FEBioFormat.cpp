@@ -691,6 +691,26 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
+		else if (tag == "Variables")
+		{
+			++tag;
+			do
+			{
+				if (tag == "var")
+				{
+					const char* szname = tag.AttributeValue("name", true);
+					if (szname)
+					{
+						double v = 0;
+						tag.value(v);
+						Param* p = fem.AddDoubleParam(v, strdup(szname)); // TODO: memory leak!!
+						p->SetFlags(p->GetFlags() | FS_PARAM_USER);
+					}
+				}
+				else ParseUnknownTag(tag);
+				++tag;
+			} while (!tag.isend());
+		}
 		else if (tag == "Solutes")
 		{
 			// clear solutes (TODO: I don't think this is necessary)
