@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QMessageBox>
 #include <fstream>
 #include <vector>
 #include <GL/glu.h>
@@ -58,6 +59,7 @@ SOFTWARE.*/
 #include <FECore/fecore_enum.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <FEAMR/spherePoints.h>
+#include "DlgStartThread.h"
 
 #include <iostream>
 
@@ -448,11 +450,47 @@ void CFiberODFWidget::setAnalysis(CFiberODFAnalysis* analysis)
     ui->update(analysis);
 }
 
+class ImageAnalysisThread : public CustomThread
+{
+public:
+	ImageAnalysisThread(CImageAnalysis* analysis) : m_analysis(analysis) {}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		if (m_analysis) m_analysis->run();
+		emit resultReady(true);
+	}
+
+public:
+	bool hasProgress() override { return (m_analysis != nullptr); }
+
+	double progress() override { return (m_analysis ? m_analysis->GetProgress().percent : 0.0); }
+
+	const char* currentTask() override { return (m_analysis ? m_analysis->GetProgress().task : ""); }
+
+	void stop() override { if (m_analysis) m_analysis->Terminate(); }
+
+private:
+	CImageAnalysis* m_analysis = nullptr;
+};
+
 void CFiberODFWidget::on_runButton_pressed()
 {
     if(!m_analysis) return;
 
-    m_analysis->run();
+	CDlgStartThread dlg(m_wnd, new ImageAnalysisThread(m_analysis));
+	if (dlg.exec())
+	{
+		bool bsuccess = dlg.GetReturnCode();
+		if (bsuccess == false)
+		{
+			QMessageBox::critical(this, "Apply Image Analysis", "Image analysis failed");
+		}
+		else
+		{
+		}
+		m_wnd->RedrawGL();
+	}
 
     ui->update(m_analysis);
 }

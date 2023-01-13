@@ -83,6 +83,8 @@ private:
     void buildMeshes();
     void remeshSphere(CODF* odf);
 
+	void updateProgress(double f);
+
 private:
     std::vector<CODF*> m_ODFs;
 
@@ -91,4 +93,10 @@ private:
     double m_lengthScale;
     double m_hausd;
     double m_grad;
+
+	// progress tracking
+	int	m_stepsCompleted;
+	int	m_totalSteps;
+	double	m_progress;
+	std::string	m_task;
 };

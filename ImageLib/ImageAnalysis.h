@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include <FSCore/FSObject.h>
+#include <FSCore/FSThreadedTask.h>
 
 namespace Post
 {
@@ -35,7 +36,7 @@ namespace Post
 
 class CGLCamera;
 
-class CImageAnalysis : public FSObject
+class CImageAnalysis : public FSThreadedTask
 {
 public:
     CImageAnalysis(Post::CImageModel* img);

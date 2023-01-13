@@ -29,12 +29,14 @@ SOFTWARE.*/
 struct FSTaskProgress
 {
 	bool		valid;
+	bool		cancelled;
 	double		percent;
 	const char*	task;
 
 	FSTaskProgress()
 	{
 		valid = false;
+		cancelled = false;
 		percent = 0.0;
 		task = "";
 	}
@@ -42,6 +44,7 @@ struct FSTaskProgress
 	FSTaskProgress(double p, const char* sz)
 	{
 		valid = false;
+		cancelled = false;
 		percent = p;
 		task = sz;
 	}
@@ -59,11 +62,16 @@ public:
 	virtual void Terminate();
 
 protected:
+	// reset progress 
+	void resetProgress();
+
 	// set progress in percent (value between 0 and 100)
 	void setProgress(double d);
 
 	// set task, and optionally, set progress in percent (value between 0 and 100)
 	void setCurrentTask(const char* sz, double progress = 0.0);
+
+	bool IsCancelled() const;
 
 private:
 	FSTaskProgress m_progress;

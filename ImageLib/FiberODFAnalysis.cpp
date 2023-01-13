@@ -88,6 +88,8 @@ void CFiberODFAnalysis::clear()
 void CFiberODFAnalysis::run()
 {
     clear();
+	resetProgress();
+	setCurrentTask("Starting ODF Analysis ...");
 
     CImageSITK* imgSITK = dynamic_cast<CImageSITK*>(m_img->Get3DImage());
     if(!imgSITK) return;
@@ -137,12 +139,31 @@ void CFiberODFAnalysis::run()
     matrix A = (*T)*(*C);
     matrix B = (transposeT*(*T)).inverse()*transposeT;
 
+	m_totalSteps = xDiv * yDiv * zDiv;
+
     int currentX = 0;
     int currentY = 0;
     int currentZ = 0;
     int currentLoop = 0;
-    while(true)
+	m_progress = 0;
+	setCurrentTask("Building ODFs ...");
+	while(true)
     {
+		// check progress
+		m_stepsCompleted = currentZ + currentY * zDiv + currentX * zDiv * yDiv;
+
+		// see if user cancelled
+		if (IsCancelled())
+		{
+			clear();
+			return;
+		}
+
+		std::stringstream ss;
+		ss << "Building ODFS (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
+		m_task = ss.str();
+		setCurrentTask(m_task.c_str(), m_progress);
+
         extractFilter.SetIndex(std::vector<int> {(int)xDivSize*currentX, (int)yDivSize*currentY, (int)zDivSize*currentZ});
         sitk::Image current = extractFilter.Execute(img);
         
@@ -181,11 +202,19 @@ void CFiberODFAnalysis::run()
         // delete image
         current = sitk::Image();
         
-        // Apply qBall algorithm
-        CODF* odf = new CODF;
-        // odf->m_odf.reserve(NPTS);
+		// see if user cancelled
+		if (IsCancelled())
+		{
+			clear();
+			return;
+		}
+
+		// Apply qBall algorithm
+		CODF* odf = new CODF;
+		// odf->m_odf.reserve(NPTS);
 
         A.mult(B, reduced, odf->m_odf);
+		updateProgress(0.75);
 
         // normalize odf
         double gfa = GFA(odf->m_odf);
@@ -252,7 +281,9 @@ void CFiberODFAnalysis::run()
             currentY = 0;
             currentX++;
         }
+		updateProgress(1.0);
     }
+	setCurrentTask("Building meshes ...", 100);
 
     buildMeshes();
 }
@@ -492,6 +523,11 @@ void CFiberODFAnalysis::fftRadialFilter(sitk::Image& img)
     }
 }
 
+void CFiberODFAnalysis::updateProgress(double f)
+{
+	m_progress = 100.0 * (m_stepsCompleted + f) / m_totalSteps;
+	setProgress(m_progress);
+}
 
 void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced)
 {
@@ -513,6 +549,8 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
     double yStep = img.GetSpacing()[1];
     double zStep = img.GetSpacing()[2];
 
+	double zcount = 0;
+
     #pragma omp parallel shared(img, points)
     {
         FSNNQuery query(&points);
@@ -520,7 +558,7 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
         
         std::vector<double> tmp(NPTS, 0.0);
 
-        #pragma omp for
+        #pragma omp for schedule(dynamic)
         for (int z = 0; z < nz; z++)
         {
             for (int y = 0; y < ny; y++)
@@ -546,8 +584,15 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
                     tmp[closestIndex] += data[index];
                 }
             }
+
+			#pragma omp critical
+			{
+				zcount++;
+				updateProgress(0.5*zcount / nz);
+			}
         }
         
+		#pragma omp for
         for (int i = 0; i < NPTS; ++i)
         {
             #pragma omp critical

@@ -39,6 +39,7 @@ FSTaskProgress FSThreadedTask::GetProgress()
 void FSThreadedTask::Terminate()
 {
 	m_progress.valid = false;
+	m_progress.cancelled = true;
 }
 
 void FSThreadedTask::setProgress(double progress)
@@ -49,8 +50,21 @@ void FSThreadedTask::setProgress(double progress)
 	m_progress.percent = progress;
 }
 
+void FSThreadedTask::resetProgress()
+{
+	m_progress.valid = false;
+	m_progress.percent = 0;
+	m_progress.cancelled = false;
+	m_progress.task = nullptr;
+}
+
 void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 {
 	setProgress(progress);
 	m_progress.task = sz;
+}
+
+bool FSThreadedTask::IsCancelled() const
+{
+	return m_progress.cancelled;
 }
