@@ -745,7 +745,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 
 				// if we've reached at the end of the line
 				// then we load the next line
-				if (strlen(ch) == 1)
+				if (strlen(ch) == 1 || strcmp(ch,", ") == 0)
 				{
 					read_line(szline, fp);
 					ch = szline;
