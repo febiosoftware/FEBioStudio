@@ -1599,7 +1599,15 @@ void FSProject::ConvertStepLoads(std::ostream& log, FSStep& newStep, FSStep& old
 			}
 			else if (dynamic_cast<FSBodyLoad*>(pl))
 			{
-				febLoad = FEBio::CreateBodyLoad(pl->GetTypeString(), fem);
+				// NOTE: the fluid module used to use the solid module's const body force,
+				// but that was replaced by a "fluid body force". 
+				const char* szmod = FEBio::GetActiveModuleName();
+				if ((strcmp(szmod, "fluid") == 0) &&
+					(strcmp(pl->GetTypeString(), "const") == 0)) {
+					febLoad = FEBio::CreateBodyLoad("fluid body force", fem);
+				}
+				else
+					febLoad = FEBio::CreateBodyLoad(pl->GetTypeString(), fem);
 			}
 			assert(febLoad);
 
