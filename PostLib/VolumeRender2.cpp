@@ -71,18 +71,21 @@ void CVolumeRender2::Init()
 {
 	assert(m_vrInit == false);
 	if (m_vrInit) return;
-	m_vrInit = true;
 
-	InitTexture();
-	InitShaders();
+	if (InitTexture())
+	{
+		m_vrInit = true;
+		m_vrReset = false;
+		InitShaders();
+	}
 }
 
-void CVolumeRender2::InitTexture()
+bool CVolumeRender2::InitTexture()
 {
 	// load texture data
 	CImageModel& img = *GetImageModel();
 	CImageSource* src = img.GetImageSource();
-	if (src == nullptr) return;
+	if (src == nullptr) return false;
 
 	C3DImage& im3d = *src->Get3DImage();
 
@@ -91,22 +94,25 @@ void CVolumeRender2::InitTexture()
 	int ny = im3d.Height();
 	int nz = im3d.Depth();
 
-	glGenTextures(1, &m_texID);
+	if (m_texID == 0) glGenTextures(1, &m_texID);
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
 
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	// set texture parameter for 2D textures
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
 
 	// This will copy the image data to texture memory, so in principle we won't need im3d anymore
-	glTexImage3D(GL_TEXTURE_3D, 0, 1, nx, ny, nz, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+
+	return true;
 }
 
 void CVolumeRender2::ReloadTexture()
@@ -124,7 +130,8 @@ void CVolumeRender2::ReloadTexture()
 	int nz = im3d.Depth();
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
-	glTexImage3D(GL_TEXTURE_3D, 0, 1, nx, ny, nz, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
 }
 
 const char* shadertxt = \
@@ -213,12 +220,6 @@ void CVolumeRender2::Render(CGLContext& rc)
 	CImageSource* src = img.GetImageSource();
 	if (src == nullptr) return;
 
-	if (m_vrReset)
-	{
-		ReloadTexture();
-		m_vrReset = false;
-	}
-
 	C3DImage& im3d = *src->Get3DImage();
 
 	// get the original image dimensions
@@ -226,12 +227,20 @@ void CVolumeRender2::Render(CGLContext& rc)
 	int ny = im3d.Height();
 	int nz = im3d.Depth();
 
+	// make sure volume renderer is initialized
+	if (m_vrInit == false) Init();
+	else if (m_vrReset) 
+	{
+		ReloadTexture();
+		m_vrReset = false;
+	}
+
+	// If we failed to initialize, we're done
+	if (m_vrInit == false) return;
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_3D);
 	glDisable(GL_LIGHTING);
-
-	// make sure volume renderer is initialized
-	if (m_vrInit == false) Init();
 	
 	// bind texture
 	glBindTexture(GL_TEXTURE_3D, m_texID);

@@ -47,7 +47,7 @@ public:
 
 private:
 	void Init();
-	void InitTexture();
+	bool InitTexture();
 	void InitShaders();
 	void ReloadTexture();
 
