@@ -140,6 +140,13 @@ bool CRawImageSource::Load()
         return false;
     }
 
+#ifdef HAS_ITK
+	CImageSITK* itkimg = new CImageSITK();
+	itkimg->CreateFrom3DImage(im);
+	delete im;
+	im = itkimg;
+#endif
+
     im->SetBoundingBox(m_box);
 
     AssignImage(im);

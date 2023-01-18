@@ -52,6 +52,28 @@ CImageSITK::~CImageSITK()
     m_pb = nullptr;
 }
 
+bool CImageSITK::CreateFrom3DImage(C3DImage* im)
+{
+#ifdef HAS_ITK
+	if (im == nullptr) return false;
+
+	int nx = im->Width();
+	int ny = im->Height();
+	int nz = im->Depth();
+
+	m_sitkImage = sitk::Image(nx, ny, nz, sitk::PixelIDValueEnum::sitkUInt8);
+	uint8_t* pb = m_sitkImage.GetBufferAsUInt8();
+	uint8_t* ps = (uint8_t*) im->GetBytes();
+	memcpy(pb, ps, nx * ny * nz);
+	
+	FinalizeImage();
+
+	return true;
+#else
+	return false;
+#endif
+}
+
 bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
 {
     m_filename = filename.c_str();

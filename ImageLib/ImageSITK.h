@@ -37,6 +37,8 @@ public:
     CImageSITK(int nx, int ny, int nz);
     ~CImageSITK();
 
+	bool CreateFrom3DImage(C3DImage* im);
+
     bool LoadFromFile(std::string, bool isDicom);
     bool LoadFromStack(std::vector<std::string> filenames);
 
