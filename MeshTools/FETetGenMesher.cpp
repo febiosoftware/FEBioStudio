@@ -54,7 +54,7 @@ FETetGenMesher::FETetGenMesher(GObject* po) : m_po(po)
 	AddIntParam(0, "eltype", "element type")->SetEnumNames("Tet4\0Tet10\0Tet15\0Tet20\0");
 	AddBoolParam(true, "splitfaces", "split faces");
 	AddBoolParam(false, "hole", "hole");
-	AddVecParam(vec3d(0,0,0), "", "");
+	AddVecParam(vec3d(0,0,0), "hole_coord", "hole coordinates");
 }
 
 //-----------------------------------------------------------------------------

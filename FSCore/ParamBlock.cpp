@@ -1094,7 +1094,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	int nid = p.GetParamID();
 	int ntype = (int) p.GetParamType();
 
-//	ar.WriteChunk(CID_PARAM_ID, nid);
+	ar.WriteChunk(CID_PARAM_ID, nid);
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());
