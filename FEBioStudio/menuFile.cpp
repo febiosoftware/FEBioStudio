@@ -1542,6 +1542,10 @@ void CMainWindow::on_actionImportGeometry_triggered()
 			RedrawGL();
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "Import Geometry", "Importing geometry requires an active model.\nPlease create a new model or open an existing model first.");
+	}
 }
 
 void CMainWindow::on_actionImportRawImage_triggered()
