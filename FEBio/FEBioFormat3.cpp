@@ -3827,33 +3827,49 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioInputModel &febio = GetFEBioModel();
-
-	// read all loadcurves
+	// read all load controllers
 	++tag;
 	do
 	{
-		if (tag == "load_controller")
-		{
-			// create the loadcurve
-			LoadCurve lc;
-
-			// remove default points
-			lc.Clear();
-
-			// get the load curve ID
-			int nid = tag.Attribute("id").value<int>();
-			lc.SetID(nid);
-
-			ParseLoadCurve(tag, lc);
-
-			febio.AddLoadCurve(lc);
-		}
+		if (tag == "load_controller") ParseLoadController(tag);
 		else ParseUnknownTag(tag);
-
 		++tag;
+	} while (!tag.isend());
+
+	return true;
+}
+
+bool FEBioFormat3::ParseLoadController(XMLTag& tag)
+{
+	if (tag.isleaf()) return true;
+
+	// get the type attribute
+	const char* sztype = tag.AttributeValue("type");
+
+	// create the load controller
+	FSModel& fem = GetFSModel();
+	FSLoadController* plc = FEBio::CreateLoadController(sztype, &fem);
+	if (plc == nullptr)
+	{
+		ParseUnknownTag(tag);
+		return false;
 	}
-	while (!tag.isend());
+
+	std::string name;
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname) name = szname;
+	else
+	{
+		int n = fem.LoadControllers();
+		std::stringstream ss;
+		ss << "LC" << n + 1;
+		name = ss.str();
+	}
+	plc->SetName(name);
+
+	fem.AddLoadController(plc);
+
+	ParseModelComponent(plc, tag);
 
 	return true;
 }
