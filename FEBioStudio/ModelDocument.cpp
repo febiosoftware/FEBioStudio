@@ -145,9 +145,6 @@ void CModelDocument::Activate()
 	m_context->Pull();
 
 	// reset active module
-	unsigned int m = m_Project.GetModule();
-	m_Project.SetModule(m);
-
 	FEBio::SetActiveProject(&m_Project);
 }
 
