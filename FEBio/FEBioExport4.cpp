@@ -2327,7 +2327,7 @@ void FEBioExport4::WriteElementDataFields()
 			{
 				double v[FSElement::MAX_NODES] = { 0 };
 				FEPartData& data = *partData;
-				GPartList* partList = data.GetPartList(&fem);
+				GPartList* partList = data.GetPartList(&fem.GetModel());
 				std::vector<GPart*> partArray = partList->GetPartList();
 				FEElemList* elemList = data.BuildElemList();
 				for (int np = 0; np < partArray.size(); ++np)

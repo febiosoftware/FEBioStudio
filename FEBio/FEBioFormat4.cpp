@@ -1435,7 +1435,7 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 				GPart* pg = feb.FindGPart(szset);
 				if (pg)
 				{
-					GPartList* partList = new GPartList(fem);
+					GPartList* partList = new GPartList(&fem->GetModel());
 					partList->add(pg->GetID());
 					mda->SetItemList(partList);
 				}

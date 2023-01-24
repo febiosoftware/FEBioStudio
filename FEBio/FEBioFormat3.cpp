@@ -1599,6 +1599,7 @@ bool FEBioFormat3::ParseMeshAdaptorSection(XMLTag& tag)
 
 	FEBioInputModel& feb = GetFEBioModel();
 	FSModel* fem = &GetFSModel();
+	GModel* gm = &fem->GetModel();
 
 	++tag;
 	do {
@@ -1624,7 +1625,7 @@ bool FEBioFormat3::ParseMeshAdaptorSection(XMLTag& tag)
 				GPart* pg = feb.FindGPart(szset);
 				if (pg)
 				{
-					GPartList* partList = new GPartList(fem);
+					GPartList* partList = new GPartList(gm);
 					partList->add(pg->GetID());
 					mda->SetItemList(partList);
 				}

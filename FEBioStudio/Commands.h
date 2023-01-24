@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEConnector.h>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FSModel.h>
 #include <FSCore/ParamBlock.h>
 #include <GeomLib/GGroup.h>
 #include <FEMLib/GDiscreteObject.h>

@@ -24,11 +24,11 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GGroup.h"
-#include <FEMLib/FSModel.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
+#include <MeshLib/FEMesh.h>
 
-GGroup::GGroup(FSModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
+GGroup::GGroup(GModel* ps, int ntype, unsigned int flags) : FEItemListBuilder(ntype, flags)
 {
 	m_ps = ps;
 }
@@ -43,8 +43,7 @@ GGroup::~GGroup(void)
 
 FSNodeList* GNodeList::BuildNodeList()
 {
-	FSModel* pfem = dynamic_cast<FSModel*>(m_ps);
-	GModel& m = pfem->GetModel();
+	GModel& m = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	FSNodeList* ps = new FSNodeList();
@@ -70,7 +69,7 @@ FSNodeList* GNodeList::BuildNodeList()
 }
 
 //-----------------------------------------------------------------------------
-GNodeList::GNodeList(FSModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE, FE_NODE_FLAG)
+GNodeList::GNodeList(GModel* ps, GNodeSelection* pg) : GGroup(ps, GO_NODE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	assert(N);
@@ -90,7 +89,7 @@ FEItemListBuilder* GNodeList::Copy()
 vector<GNode*> GNodeList::GetNodeList()
 {
 	vector<GNode*> nodeList;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
@@ -107,7 +106,7 @@ bool GNodeList::IsValid() const
 {
 	if (GGroup::IsValid() == false) return false;
 
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
@@ -123,7 +122,7 @@ bool GNodeList::IsValid() const
 // GEdgeList
 //-----------------------------------------------------------------------------
 
-GEdgeList::GEdgeList(FSModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_NODE_FLAG)
+GEdgeList::GEdgeList(GModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_NODE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -136,7 +135,7 @@ GEdgeList::GEdgeList(FSModel* ps, GEdgeSelection* pg) : GGroup(ps, GO_EDGE, FE_N
 //-----------------------------------------------------------------------------
 FSNodeList* GEdgeList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	GModel& model = *m_ps;
 	FSNodeList* ps = new FSNodeList();
 	int N = m_Item.size(), i, n;
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -194,7 +193,7 @@ FSNodeList* GEdgeList::BuildNodeList()
 //-----------------------------------------------------------------------------
 FEEdgeList* GEdgeList::BuildEdgeList()
 {
-	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	GModel& model = *m_ps;
 	FEEdgeList* ps = new FEEdgeList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -222,7 +221,7 @@ FEEdgeList* GEdgeList::BuildEdgeList()
 vector<GEdge*> GEdgeList::GetEdgeList()
 {
 	vector<GEdge*> edgeList;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
@@ -237,7 +236,7 @@ vector<GEdge*> GEdgeList::GetEdgeList()
 //-----------------------------------------------------------------------------
 GEdge* GEdgeList::GetEdge(int n)
 {
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	if ((n < 0) || (n >= N)) return nullptr;
 
@@ -260,7 +259,7 @@ bool GEdgeList::IsValid() const
 {
 	if (GGroup::IsValid() == false) return false;
 
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
@@ -276,7 +275,7 @@ bool GEdgeList::IsValid() const
 // GFaceList
 //-----------------------------------------------------------------------------
 
-GFaceList::GFaceList(FSModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
+GFaceList::GFaceList(GModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
 {
 	int N = pg->Count();
 	if (N > 0)
@@ -287,7 +286,7 @@ GFaceList::GFaceList(FSModel* ps, GFaceSelection* pg) : GGroup(ps, GO_FACE, FE_N
 }
 
 //-----------------------------------------------------------------------------
-GFaceList::GFaceList(FSModel* ps, GFace* pf) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
+GFaceList::GFaceList(GModel* ps, GFace* pf) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG)
 {
 	if (pf) add(pf->GetID());
 }
@@ -295,7 +294,7 @@ GFaceList::GFaceList(FSModel* ps, GFace* pf) : GGroup(ps, GO_FACE, FE_NODE_FLAG 
 //-----------------------------------------------------------------------------
 FSNodeList* GFaceList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size(), n, i;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -362,7 +361,7 @@ FSNodeList* GFaceList::BuildNodeList()
 //-----------------------------------------------------------------------------
 FEFaceList* GFaceList::BuildFaceList()
 {
-	GModel& m = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	GModel& m = *m_ps;
 	FEFaceList* ps = new FEFaceList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -395,7 +394,7 @@ FEItemListBuilder* GFaceList::Copy()
 vector<GFace*> GFaceList::GetFaceList()
 {
 	vector<GFace*> surfList;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
@@ -412,7 +411,7 @@ bool GFaceList::IsValid() const
 {
 	if (GGroup::IsValid() == false) return false;
 
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
@@ -427,21 +426,7 @@ bool GFaceList::IsValid() const
 //-----------------------------------------------------------------------------
 // GPartList
 //-----------------------------------------------------------------------------
-
-FSModel* GPartList::m_model = nullptr;
-
-GPartList* GPartList::CreateNew()
-{
-	assert(m_model);
-	return new GPartList(m_model);
-}
-
-void GPartList::SetModel(FSModel* mdl)
-{
-	m_model = mdl;
-}
-
-GPartList::GPartList(FSModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG)
+GPartList::GPartList(GModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG)
 {
 	int N = pg->Count();
 	GPartSelection::Iterator it(pg);
@@ -459,7 +444,7 @@ void GPartList::Create(GObject* po)
 //-----------------------------------------------------------------------------
 FEElemList* GPartList::BuildElemList()
 {
-	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	GModel& model = *m_ps;
 	FEElemList* ps = new FEElemList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -481,7 +466,7 @@ FEElemList* GPartList::BuildElemList()
 //-----------------------------------------------------------------------------
 FSNodeList* GPartList::BuildNodeList()
 {
-	GModel& model = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size(), n, i, j;
 	FEItemListBuilder::Iterator it = m_Item.begin();
 
@@ -549,7 +534,7 @@ FSNodeList* GPartList::BuildNodeList()
 //-----------------------------------------------------------------------------
 FEFaceList*	GPartList::BuildFaceList()
 {
-	GModel& m = dynamic_cast<FSModel*>(m_ps)->GetModel();
+	GModel& m = *m_ps;
 	FEFaceList* ps = new FEFaceList();
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
@@ -593,7 +578,7 @@ FEItemListBuilder* GPartList::Copy()
 vector<GPart*> GPartList::GetPartList()
 {
 	vector<GPart*> partList;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::Iterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)
@@ -610,7 +595,7 @@ bool GPartList::IsValid() const
 {
 	if (GGroup::IsValid() == false) return false;
 
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 	int N = m_Item.size();
 	FEItemListBuilder::ConstIterator it = m_Item.begin();
 	for (int n = 0; n<N; ++n, ++it)

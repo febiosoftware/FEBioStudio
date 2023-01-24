@@ -70,15 +70,16 @@ FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 	FEItemListBuilder* pitem = 0;
 
 	FSModel* fem = GetFSModel();
+	GModel* gm = &fem->GetModel();
 
 	if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FSInterface::LoadList");
 	unsigned int ntype = ar.GetChunkID();
 	switch (ntype)
 	{
-	case GO_NODE: pitem = new GNodeList(fem); break;
-	case GO_EDGE: pitem = new GEdgeList(fem); break;
-	case GO_FACE: pitem = new GFaceList(fem); break;
-	case GO_PART: pitem = new GPartList(fem); break;
+	case GO_NODE: pitem = new GNodeList(gm); break;
+	case GO_EDGE: pitem = new GEdgeList(gm); break;
+	case GO_FACE: pitem = new GFaceList(gm); break;
+	case GO_PART: pitem = new GPartList(gm); break;
 	case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
 	case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
 	case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;

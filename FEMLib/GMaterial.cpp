@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 
 using std::stringstream;
@@ -182,11 +183,12 @@ void GMaterial::Load(IArchive &ar)
 
 FEItemListBuilder* GMaterial::GetItemList()
 {
-	if (m_partList == nullptr) m_partList = new GPartList(m_ps);
+	GModel& mdl = m_ps->GetModel();
+
+	if (m_partList == nullptr) m_partList = new GPartList(&mdl);
 	m_partList->clear();
 
 	// set the items
-	GModel& mdl = m_ps->GetModel();
 	int NO = mdl.Objects();
 	for (int i = 0; i < NO; ++i)
 	{

@@ -1284,28 +1284,28 @@ void GModel::Load(IArchive &ar)
                 break;
             case CID_OBJ_GPARTGROUP:
                 {
-                    GPartList* pg = new GPartList(imp->m_ps);
+                    GPartList* pg = new GPartList(this);
                     pg->Load(ar);
                     AddPartList(pg);
                 }
                 break;
             case CID_OBJ_GFACEGROUP:
                 {
-                    GFaceList* pg = new GFaceList(imp->m_ps);
+                    GFaceList* pg = new GFaceList(this);
                     pg->Load(ar);
                     AddFaceList(pg);
                 }
                 break;
             case CID_OBJ_GEDGEGROUP:
                 {
-                    GEdgeList* pg = new GEdgeList(imp->m_ps);
+                    GEdgeList* pg = new GEdgeList(this);
                     pg->Load(ar);
                     AddEdgeList(pg);
                 }
                 break;
             case CID_OBJ_GNODEGROUP:
                 {
-                    GNodeList* pg = new GNodeList(imp->m_ps);
+                    GNodeList* pg = new GNodeList(this);
                     pg->Load(ar);
                     AddNodeList(pg);
                 }

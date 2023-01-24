@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "FEMeshDataGenerator.h"
 #include <GeomLib/GGroup.h>
+#include <FEMLib/FSModel.h>
 
 FSMeshDataGenerator::FSMeshDataGenerator(FSModel* fem, int ntype) : FSModelComponent(fem)
 {

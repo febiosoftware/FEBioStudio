@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "FEDomainComponent.h"
+#include <FEMLib/FSModel.h>
 #include <GeomLib/GGroup.h>
 #include "FEMKernel.h"
 
@@ -97,14 +98,15 @@ void FSDomainComponent::Load(IArchive& ar)
 		{
 			ar.OpenChunk();
 			{
+				GModel* pgm = &fem->GetModel();
 				int ntype = ar.GetChunkID();
 				m_pItem = 0;
 				switch (ntype)
 				{
-				case GO_NODE: m_pItem = new GNodeList(fem); break;
-				case GO_EDGE: m_pItem = new GEdgeList(fem); break;
-				case GO_FACE: m_pItem = new GFaceList(fem); break;
-				case GO_PART: m_pItem = new GPartList(fem); break;
+				case GO_NODE: m_pItem = new GNodeList(pgm); break;
+				case GO_EDGE: m_pItem = new GEdgeList(pgm); break;
+				case GO_FACE: m_pItem = new GFaceList(pgm); break;
+				case GO_PART: m_pItem = new GPartList(pgm); break;
 				case FE_NODESET: m_pItem = new FSNodeSet((GObject*)0); break;
 				case FE_EDGESET: m_pItem = new FSEdgeSet((GObject*)0); break;
 				case FE_SURFACE: m_pItem = new FSSurface((GObject*)0); break;

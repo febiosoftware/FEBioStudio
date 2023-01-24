@@ -1430,8 +1430,6 @@ void FSModel::Load(IArchive& ar)
 	// clear the model
 	Clear();
 
-	GPartList::SetModel(this);
-
     m_pModel->SetLoadOnlyDiscreteFlag(m_skipGeometry);
 
 	// read the model data
@@ -1451,8 +1449,6 @@ void FSModel::Load(IArchive& ar)
 		}
 		ar.CloseChunk();
 	}
-
-	GPartList::SetModel(nullptr);
 }
 
 //-----------------------------------------------------------------------------

@@ -190,7 +190,7 @@ GModel* CModelDocument::GetGModel()
 GObject* CModelDocument::GetActiveObject()
 {
 	GObject* po = nullptr;
-	GObjectSelection sel(GetFSModel());
+	GObjectSelection sel(GetGModel());
 	if (sel.Count() == 1) po = sel.Object(0);
 	return po;
 }
@@ -657,17 +657,18 @@ void CModelDocument::UpdateSelection(bool report)
 
 	// get the mesh mode
 	int meshMode = m_wnd->GetMeshMode();
+	GModel* gm = &ps->GetModel();
 
 	if (m_vs.nitem == ITEM_MESH)
 	{
 		switch (m_vs.nselect)
 		{
-		case SELECT_OBJECT: m_psel = new GObjectSelection(ps); break;
-		case SELECT_PART: m_psel = new GPartSelection(ps); break;
-		case SELECT_FACE: m_psel = new GFaceSelection(ps); break;
-		case SELECT_EDGE: m_psel = new GEdgeSelection(ps); break;
-		case SELECT_NODE: m_psel = new GNodeSelection(ps); break;
-		case SELECT_DISCRETE: m_psel = new GDiscreteSelection(ps); break;
+		case SELECT_OBJECT: m_psel = new GObjectSelection(gm); break;
+		case SELECT_PART: m_psel = new GPartSelection(gm); break;
+		case SELECT_FACE: m_psel = new GFaceSelection(gm); break;
+		case SELECT_EDGE: m_psel = new GEdgeSelection(gm); break;
+		case SELECT_NODE: m_psel = new GNodeSelection(gm); break;
+		case SELECT_DISCRETE: m_psel = new GDiscreteSelection(gm); break;
 		}
 	}
 	else
@@ -676,20 +677,20 @@ void CModelDocument::UpdateSelection(bool report)
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(ps, pm); break;
-			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(ps, pm); break;
-			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(ps, pm); break;
-			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(ps, pm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
+			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(gm, pm); break;
+			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(gm, pm); break;
+			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(gm, pm); break;
 			}
 		}
 		else
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(ps, pm); break;
-			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(ps, pmb); break;
-			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(ps, plm); break;
-			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(ps, plm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
+			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(gm, pmb); break;
+			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(gm, plm); break;
+			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(gm, plm); break;
 			}
 		}
 	}
