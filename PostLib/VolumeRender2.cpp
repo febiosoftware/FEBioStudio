@@ -109,8 +109,11 @@ bool CVolumeRender2::InitTexture()
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
 
 	// This will copy the image data to texture memory, so in principle we won't need im3d anymore
+	int n = 0;
+	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 
 	return true;
 }
@@ -130,8 +133,11 @@ void CVolumeRender2::ReloadTexture()
 	int nz = im3d.Depth();
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
+	int n = 0;
+	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 }
 
 const char* shadertxt = \
