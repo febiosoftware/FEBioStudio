@@ -326,143 +326,66 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 void FEBioExport4::BuildItemLists(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
+	GModel& model = fem.GetModel();
 
-	// get the nodesets (bc's)
-	for (int i = 0; i < fem.Steps(); ++i)
+	// add the user-defined nodesets
+	int nsets = model.NodeLists();
+	for (int i = 0; i < nsets; ++i)
 	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j < pstep->BCs(); ++j)
+		GNodeList* pnl = model.NodeList(i);
+		AddNodeSet(pnl->GetName(), pnl);
+	}
+
+	// add the user-defined edges
+	int esets = model.EdgeLists();
+	for (int i = 0; i < nsets; ++i)
+	{
+		GEdgeList* pel = model.EdgeList(i);
+		AddEdgeSet(pel->GetName(), pel);
+	}
+
+	// add the user-defined surfaces
+	int faces = model.FaceLists();
+	for (int i = 0; i < faces; ++i)
+	{
+		GFaceList* pfl = model.FaceList(i);
+		AddSurface(pfl->GetName(), pfl);
+	}
+
+	// add the user-defined mesh selections
+	int nobj = model.Objects();
+	for (int i = 0; i < nobj; ++i)
+	{
+		GObject* po = model.Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm)
 		{
-			FSBoundaryCondition* pl = pstep->BC(j);
-			if (pl && pl->IsActive() && (pl->GetMeshItemType() != 0))
+			int nsets = po->FENodeSets();
+			for (int j = 0; j < nsets; ++j)
 			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pl);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pl->GetName();
-
-				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else if ((ps->Type() == GO_PART) || (ps->Type() == FE_PART)) AddElemSet(name, ps);
-				else if ((ps->Type() == GO_EDGE) || (ps->Type() == FE_EDGESET)) AddEdgeSet(name, ps);
-				else AddNodeSet(name, ps);
-			}
-		}
-		for (int j = 0; j < pstep->Loads(); ++j)
-		{
-			FSLoad* pload = pstep->Load(j);
-			if (pload && pload->IsActive() && (pload->GetMeshItemType() != 0))
-			{
-				int meshItemType = pload->GetMeshItemType();
-				FEItemListBuilder* ps = pload->GetItemList();
-
-				if (ps)
-				{
-					string name = ps->GetName();
-					if (name.empty()) name = pload->GetName();
-
-					if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-					else if (ps->Type() == GO_PART) AddElemSet(name, ps);
-					else AddNodeSet(name, ps);
-				}
-				else if ((meshItemType != FE_PART_FLAG) && (meshItemType != FE_ELEM_FLAG))
-				{
-					throw InvalidItemListBuilder(pload);
-				}
-			}
-		}
-		for (int j = 0; j < pstep->ICs(); ++j)
-		{
-			// this is only for nodal loads
-			FSInitialCondition* pi = pstep->IC(j);
-			if (pi && pi->IsActive() && (pi->GetMeshItemType() != 0))
-			{
-				FEItemListBuilder* ps = pi->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pi);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pi->GetName();
-
-				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else AddNodeSet(name, ps);
-			}
-		}
-		for (int j = 0; j < pstep->Interfaces(); ++j)
-		{
-			FSSoloInterface* pri = dynamic_cast<FSSoloInterface*>(pstep->Interface(j));
-			if (pri && pri->IsActive())
-			{
-				FEItemListBuilder* ps = pri->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pri);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pri->GetName();
-
-				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else AddNodeSet(name, ps);
+				FSNodeSet* ps = po->GetFENodeSet(j);
+				AddNodeSet(ps->GetName(), ps);
 			}
 
-			FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(pstep->Interface(j));
-			if (pci && pci->IsActive())
+			int esets = po->FEEdgeSets();
+			for (int j = 0; j < esets; ++j)
 			{
-				FEItemListBuilder* pss = pci->GetPrimarySurface();
-				if (pss == 0) throw InvalidItemListBuilder(pci);
-
-				string name = pss->GetName();
-				if (name.empty())
-				{
-					stringstream ss; ss << pci->GetName() << "_primary";
-					name = ss.str();
-				}
-				AddSurface(name, pss);
-
-				FEItemListBuilder* pms = pci->GetSecondarySurface();
-				if (pms == 0) throw InvalidItemListBuilder(pci);
-
-				name = pms->GetName();
-				if (name.empty())
-				{
-					stringstream ss; ss << pci->GetName() << "_secondary";
-					name = ss.str();
-				}
-				AddSurface(name, pms);
+				FSEdgeSet* ps = po->GetFEEdgeSet(j);
+				AddEdgeSet(ps->GetName(), ps);
 			}
-		}
-		for (int j = 0; j < pstep->Constraints(); ++j)
-		{
-			FSModelConstraint* pj = pstep->Constraint(j);
-			if (pj->IsActive())
+
+			int nsurf = po->FESurfaces();
+			for (int j = 0; j < nsurf; ++j)
 			{
-				FSSurfaceConstraint* psf = dynamic_cast<FSSurfaceConstraint*>(pj);
-				if (psf && psf->IsActive())
-				{
-					FEItemListBuilder* pi = psf->GetItemList();
-					if (pi == 0) throw InvalidItemListBuilder(pi);
-
-					string name = pi->GetName();
-					if (name.empty()) name = psf->GetName();
-
-					AddSurface(name, pi);
-				}
+				FSSurface* ps = po->GetFESurface(j);
+				AddSurface(ps->GetName(), ps);
 			}
-		}
-		for (int j = 0; j < pstep->MeshAdaptors(); ++j)
-		{
-			FSMeshAdaptor* pma = pstep->MeshAdaptor(j);
-			if (pma->IsActive())
+
+			int neset = po->FEParts();
+			for (int j = 0; j < neset; ++j)
 			{
-				FEItemListBuilder* pi = pma->GetItemList();
-				if (pi)
-				{
-					// don't add part-lists with only one member.
-					// they are handled differently. 
-					string name = pi->GetName();
-					if ((dynamic_cast<GPartList*>(pi) == nullptr) || (pi->size() != 1))
-					{
-						if (name.empty()) name = pma->GetName();
-						AddElemSet(name, pi);
-					}
-				}
+				FSPart* pg = po->GetFEPart(j);
+				AddElemSet(pg->GetName(), pg);
 			}
 		}
 	}
@@ -490,41 +413,6 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		}
 	}
 
-	// Write the user-defined surfaces
-	if (m_exportSelections)
-	{
-		GModel& model = fem.GetModel();
-		int faces = model.FaceLists();
-		for (int i = 0; i < faces; ++i)
-		{
-			GFaceList* pfl = model.FaceList(i);
-			AddSurface(pfl->GetName(), pfl);
-		}
-
-		int nobj = model.Objects();
-		for (int i = 0; i < nobj; ++i)
-		{
-			GObject* po = model.Object(i);
-			FSMesh* pm = po->GetFEMesh();
-			if (pm)
-			{
-				int nsurf = po->FESurfaces();
-				for (int j = 0; j < nsurf; ++j)
-				{
-					FSSurface* ps = po->GetFESurface(j);
-					AddSurface(ps->GetName(), ps);
-				}
-
-				int neset = po->FEParts();
-				for (int j = 0; j < neset; ++j)
-				{
-					FSPart* pg = po->GetFEPart(j);
-					AddElemSet(pg->GetName(), pg);
-				}
-			}
-		}
-	}
-
 	// check all the (surface) plot variables
 	CPlotDataSettings& plt = prj.GetPlotDataSettings();
 	for (int i = 0; i < plt.PlotVariables(); ++i)
@@ -541,7 +429,6 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		}
 	}
 
-	GModel& model = fem.GetModel();
 	CLogDataSettings& log = prj.GetLogDataSettings();
 	for (int i = 0; i < log.LogDataSize(); ++i)
 	{
