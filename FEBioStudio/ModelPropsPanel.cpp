@@ -857,14 +857,17 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		if (hil && (hil->GetMeshItemType() != 0))
 		{
 			ui->showSelectionPanel1(true);
-			SetSelection(0, hil->GetItemList());
+
+			if (dynamic_cast<GMaterial*>(m_currentObject) == nullptr)
+				SetSelection(0, hil->GetItemList(), true);
+			else
+				SetSelection(0, hil->GetItemList(), false);
 			return;
 		}
 
 		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
 		if (pl) { 
-			SetSelection(0, pl); 
-			ui->sel1->showNameType(false);
+			SetSelection(0, pl, false); 
 			return;
 		}
 
@@ -874,8 +877,8 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			ui->setSelection1Title("Primary");
 			ui->setSelection2Title("Secondary");
 			ui->showSelectionPanel2(true);
-			SetSelection(0, pi->GetPrimarySurface());
-			SetSelection(1, pi->GetSecondarySurface());
+			SetSelection(0, pi->GetPrimarySurface(), true);
+			SetSelection(1, pi->GetSecondarySurface(), true);
 			return;
 		}
 
@@ -894,11 +897,14 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 {
 	CItemListSelectionBox* sel = ui->selectionPanel(n);
-	if (item)
-	{
-		sel->showNameType(true);
-	}
 	sel->SetItemList(item);
+}
+
+void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item, bool showNameType)
+{
+	CItemListSelectionBox* sel = ui->selectionPanel(n);
+	sel->SetItemList(item);
+	sel->showNameType(showNameType);
 }
 
 void CModelPropsPanel::SetSelection(GDiscreteElementSet* set)

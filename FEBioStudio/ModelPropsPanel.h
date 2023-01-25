@@ -217,6 +217,7 @@ private slots:
 
 private:
 	void SetSelection(int n, FEItemListBuilder* it);
+	void SetSelection(int n, FEItemListBuilder* it, bool showNameType);
 	void SetSelection(GDiscreteElementSet* set);
 
 	void addSelection(int n);
