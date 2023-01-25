@@ -249,6 +249,8 @@ public: // Selection
 	void UpdateSelectionLists(int mode = -1);
 	void ClearSelectionLists();
 
+	vec3d GetSelectionCenter();
+
 	void SelectNodes(vector<int>& items, bool bclear);
 	void SelectEdges(vector<int>& items, bool bclear);
 	void SelectFaces(vector<int>& items, bool bclear);

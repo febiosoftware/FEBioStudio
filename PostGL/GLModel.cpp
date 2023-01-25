@@ -2478,6 +2478,59 @@ void CGLModel::ClearSelectionLists()
 }
 
 //-----------------------------------------------------------------------------
+vec3d CGLModel::GetSelectionCenter()
+{
+	vec3d c(0, 0, 0);
+	int nsel = GetSelectionMode();
+	FEPostMesh* pm = GetActiveMesh();
+	switch (nsel)
+	{
+	case Post::SELECT_NODES:
+	{
+		const std::vector<FSNode*>& ns = GetNodeSelection();
+		if (ns.empty() == false)
+		{
+			for (auto n : ns) c += n->pos();
+			c /= (double)ns.size();
+		}
+	}
+	break;
+	case Post::SELECT_EDGES:
+	{
+		const std::vector<FSEdge*>& es = GetEdgeSelection();
+		if (es.empty() == false)
+		{
+			for (auto e : es) c += pm->EdgeCenter(*e);
+			c /= (double)es.size();
+		}
+	}
+	break;
+	case Post::SELECT_FACES:
+	{
+		const std::vector<FSFace*>& fs = GetFaceSelection();
+		if (fs.empty() == false)
+		{
+			for (auto f : fs) c += pm->FaceCenter(*f);
+			c /= (double)fs.size();
+		}
+	}
+	break;
+	case Post::SELECT_ELEMS:
+	{
+		const std::vector<FEElement_*>& es = GetElementSelection();
+		if (es.empty() == false)
+		{
+			for (auto e : es) c += pm->ElementCenter(*e);
+			c /= (double)es.size();
+		}
+	}
+	break;
+	}
+
+	return c;
+}
+
+//-----------------------------------------------------------------------------
 void CGLModel::UpdateSelectionLists(int mode)
 {
 	Post::FEPostMesh& m = *GetActiveMesh();
