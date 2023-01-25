@@ -123,8 +123,8 @@ FSPairedInterface::FSPairedInterface(int ntype, FSModel* ps, int nstep) : FSInte
 //-----------------------------------------------------------------------------
 FSPairedInterface::~FSPairedInterface()
 {
-	delete m_surf1;
-	delete m_surf2;
+	m_surf1 = nullptr;
+	m_surf2 = nullptr;
 }
 
 //-----------------------------------------------------------------------------
@@ -147,18 +147,8 @@ void FSPairedInterface::Save(OArchive& ar)
 		ParamContainer::Save(ar);
 	}
 	ar.EndChunk();
-	if (m_surf1)
-	{
-		ar.BeginChunk(CID_INTERFACE_SURFACE1);
-		FSInterface::SaveList(m_surf1, ar);
-		ar.EndChunk();
-	}
-	if (m_surf2)
-	{
-		ar.BeginChunk(CID_INTERFACE_SURFACE2);
-		FSInterface::SaveList(m_surf2, ar);
-		ar.EndChunk();
-	}
+	if (m_surf1) ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, m_surf1->GetID());
+	if (m_surf2) ar.WriteChunk(CID_INTERFACE_SURFACE2_ID, m_surf2->GetID());
 }
 
 //-----------------------------------------------------------------------------
@@ -172,13 +162,45 @@ void FSPairedInterface::Load(IArchive &ar)
 	{
 		switch (ar.GetChunkID())
 		{
-		case CID_INTERFACE_NAME: { string name; ar.read(name); SetName(name); };
+		case CID_INTERFACE_NAME: { string name; ar.read(name); SetName(name); } break;
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_SURFACE1: m_surf1 = FSInterface::LoadList(ar); break;
-		case CID_INTERFACE_SURFACE2: m_surf2 = FSInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1_ID: { int nid = -1; ar.read(nid); m_surf1 = mdl.FindNamedSelection(nid); } break;
+		case CID_INTERFACE_SURFACE2_ID: { int nid = -1; ar.read(nid); m_surf2 = mdl.FindNamedSelection(nid); } break;
+		case CID_INTERFACE_SURFACE1: // obsolete in 2.1
+		{
+			FEItemListBuilder* surf1 = FSInterface::LoadList(ar);
+			if (surf1)
+			{
+				if (surf1->GetName().empty())
+				{
+					string s = GetName();
+					s += "Primary";
+					surf1->SetName(s);
+					mdl.AddNamedSelection(surf1);
+					SetPrimarySurface(surf1);
+				}
+			}
+		}
+		break;
+		case CID_INTERFACE_SURFACE2: // obsolete in 2.1
+		{
+			FEItemListBuilder* surf2 = FSInterface::LoadList(ar);
+			if (surf2)
+			{
+				if (surf2->GetName().empty())
+				{
+					string s = GetName();
+					s += "Secondary";
+					surf2->SetName(s);
+					mdl.AddNamedSelection(surf2);
+					SetPrimarySurface(surf2);
+				}
+			}
+		}
+		break;
 		case CID_SI_MASTER: // obsolete in 1.8
 		{
 			// The old master surface is now the secondary surface
