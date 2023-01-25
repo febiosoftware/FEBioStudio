@@ -161,7 +161,8 @@ public:
 						QString name;
 						if (m_index == -1)
 						{
-							string sname = FSCore::beautify_string(p.GetLongName());
+							string sname = p.GetLongName();
+//							string sname = FSCore::beautify_string(p.GetLongName());
 							name = QString::fromStdString(sname);
 						}
 						else
