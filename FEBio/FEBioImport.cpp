@@ -463,72 +463,14 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		if (domain.empty() == false)
 		{
 			//NOTE: This assumes the domain name is a surface
-			FEItemListBuilder* surf = mdl.FindNamedSelection(domain);
+			FEItemListBuilder* surf = m_febio->FindNamedSurface(domain);
 			if (surf)
 			{
 				pv->addDomain(surf);
 			}
 			else 
 			{
-				FEBioInputModel::Surface* surf = m_febio->FindSurface(domain.c_str());
-				if (surf)
-				{
-					FSSurface* ps = m_febio->BuildFESurface(domain.c_str());
-					GObject* po = ps->GetGObject(); assert(po);
-					if (po)
-					{
-						po->AddFESurface(ps);
-						pv->addDomain(ps);
-					}
-				}
-				else AddLogEntry("Could not find surface named %s", domain.c_str());
-			}
-		}
-	}
-
-	// make unused surfaces into named selections.
-	// This can happen when surfaces are used in features that 
-	// are not supported. The features will be skipped, but we may 
-	// want to retain the surfaces.
-	for (int i = 0; i < m_febio->Instances(); ++i)
-	{
-		// get the next instance
-		FEBioInputModel::PartInstance& partInstance = *m_febio->GetInstance(i);
-		FEBioInputModel::Part* part = partInstance.GetPart();
-		GMeshObject* po = partInstance.GetGObject();
-		for (int j = 0; j < part->Surfaces(); ++j)
-		{
-			FEBioInputModel::Surface& surf = part->GetSurface(j);
-			if (surf.m_refs == 0)
-			{
-				FSSurface* psurf = partInstance.BuildFESurface(surf.name().c_str());
-				if (psurf)
-				{
-					psurf->SetName(surf.name());
-					po->AddFESurface(psurf);
-				}
-			}
-		}
-	}
-
-	// make unused edges into named selections
-	for (int i = 0; i < m_febio->Instances(); ++i)
-	{
-		// get the next instance
-		FEBioInputModel::PartInstance& partInstance = *m_febio->GetInstance(i);
-		FEBioInputModel::Part* part = partInstance.GetPart();
-		GMeshObject* po = partInstance.GetGObject();
-		for (int j = 0; j < part->EdgeSets(); ++j)
-		{
-			FEBioInputModel::EdgeSet& edge = part->GetEdgeSet(j);
-			if (edge.m_refs == 0)
-			{
-				FSEdgeSet* pset = partInstance.BuildFEEdgeSet(edge.name().c_str());
-				if (pset)
-				{
-					pset->SetName(edge.name());
-					po->AddFEEdgeSet(pset);
-				}
+				AddLogEntry("Could not find surface named %s", domain.c_str());
 			}
 		}
 	}

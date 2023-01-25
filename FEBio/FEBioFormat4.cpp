@@ -430,12 +430,8 @@ bool FEBioFormat4::ParseMeshDomainsSection(XMLTag& tag)
 	// don't forget to update the mesh
 	GetFEBioModel().UpdateGeometry();
 
-	// If we only import geometry, make sure to copy all
-	// the mesh selections, otherwise this information will be lost.
-	if (m_geomOnly)
-	{
-		GetFEBioModel().CopyMeshSelections();
-	}
+	// copy all mesh selections to named selections
+	GetFEBioModel().CopyMeshSelections();
     
     return true;
 }
@@ -597,13 +593,14 @@ void FEBioFormat4::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 	}
 
 	// create the nodeset 
-	if (name.empty() == false)
+/*	if (name.empty() == false)
 	{
 		vector<int> nodeList(nn);
 		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id - 1;
 		FEBioInputModel::NodeSet nset(name, nodeList);
 		part->AddNodeSet(nset);
 	}
+*/
 }
 
 //-----------------------------------------------------------------------------
@@ -733,8 +730,9 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	}
 
 	// create new element set
-	FEBioInputModel::ElementSet* set = new FEBioInputModel::ElementSet(szname, elemSet);
+/*	FEBioInputModel::ElementSet* set = new FEBioInputModel::ElementSet(szname, elemSet);
 	part->AddElementSet(*set);
+*/
 }
 
 
@@ -1495,12 +1493,12 @@ void FEBioFormat4::ParseBC(FSStep* pstep, XMLTag& tag)
 	FEItemListBuilder* pg = nullptr;
 	if (aset)
 	{
-		pg = febio.BuildItemList(aset->cvalue());
+		pg = febio.FindNamedSelection(aset->cvalue());
 		if (pg == 0) FileReader()->AddLogEntry("Unknown node set \"%s\". (line %d)", aset->cvalue(), tag.m_nstart_line);
 	}
 	else if (asrf)
 	{
-		pg = febio.BuildFESurface(asrf->cvalue());
+		pg = febio.FindNamedSurface(asrf->cvalue());
 		if (pg == 0) FileReader()->AddLogEntry("Unknown surface \"%s\". (line %d)", aset->cvalue(), tag.m_nstart_line);
 	}
 
@@ -1589,7 +1587,7 @@ void FEBioFormat4::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	XMLAtt& aset = tag.Attribute("node_set");
 
 	// create the node set
-	FEItemListBuilder* pg = febio.BuildItemList(aset.cvalue());
+	FEItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
 	char szbuf[256];
 	sprintf(szbuf, "NodalLoadSet%02d", CountLoads<FSNodalLoad>(fem)+1);
@@ -1633,7 +1631,7 @@ void FEBioFormat4::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 
 	// find the surface
 	XMLAtt& surf = tag.Attribute("surface");
-	FSSurface* psurf = febio.BuildFESurface(surf.cvalue());
+	FSSurface* psurf = febio.FindNamedSurface(surf.cvalue());
 	if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, surf);
 
 	// get the type attribute
@@ -1726,7 +1724,7 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 			{
 				// get the node set
 				const char* szset = tag.AttributeValue("node_set");
-				FEItemListBuilder* pg = febio.BuildItemList(szset);
+				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) AddLogEntry("Failed to create nodeset %s for %s", szset, szname);
 
 				// process initial condition
@@ -1805,14 +1803,14 @@ void FEBioFormat4::ParseContact(FSStep *pstep, XMLTag &tag)
 		if (surfPair->masterID() >= 0)
 		{
 			string name1 = part->GetSurface(surfPair->masterID()).name();
-			FSSurface* master = febio.BuildFESurface(name1.c_str());
+			FSSurface* master = febio.FindNamedSurface(name1.c_str());
 			pci->SetSecondarySurface(master);
 		}
 
 		if (surfPair->slaveID() >= 0)
 		{
 			string name2 = part->GetSurface(surfPair->slaveID()).name();
-			FSSurface* slave = febio.BuildFESurface(name2.c_str());
+			FSSurface* slave = febio.FindNamedSurface(name2.c_str());
 			pci->SetPrimarySurface(slave);
 		}
 	}
@@ -2031,7 +2029,7 @@ void FEBioFormat4::ParseNLConstraint(FSStep* pstep, XMLTag& tag)
 	const char* szsurf = tag.AttributeValue("surface", true);
 	if (szsurf)
 	{
-		psurf = febio.BuildFESurface(szsurf);
+		psurf = febio.FindNamedSurface(szsurf);
 		if (psurf == 0) AddLogEntry("Failed creating surface %s", szsurf);
 	}
 

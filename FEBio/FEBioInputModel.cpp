@@ -1516,3 +1516,97 @@ int FEBioInputModel::GetMaterialIndex(const char* szmat)
 	}
 	return -1;
 }
+
+FSNodeSet* FEBioInputModel::FindNamedNodeSet(const std::string& name)
+{
+	return dynamic_cast<FSNodeSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_NODE_FLAG));
+}
+
+FSSurface* FEBioInputModel::FindNamedSurface(const std::string& name)
+{
+	return dynamic_cast<FSSurface*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_FACE_FLAG));
+}
+
+//-----------------------------------------------------------------------------
+FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, unsigned int filter)
+{
+	string sname = name;
+	if (filter == MESH_ITEM_FLAGS::FE_ALL_FLAGS)
+	{
+		filter = MESH_ITEM_FLAGS::FE_NODE_FLAG;
+
+		if (name[0] == '@')
+		{
+			size_t p = name.find("@surface:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 9, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_FACE_FLAG;
+			}
+
+			p = name.find("@edge:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 6, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_EDGE_FLAG;
+			}
+
+			p = name.find("@part:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 6, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_PART_FLAG;
+			}
+		}
+	}
+
+	// search all objects
+	for (int n = 0; n < Instances(); ++n)
+	{
+		PartInstance& part = *GetInstance(n);
+
+		GObject* po = part.GetGObject();
+
+		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
+		{
+			int N = po->FEParts();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEPart(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_FACE_FLAG)
+		{
+			int N = po->FESurfaces();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFESurface(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_EDGE_FLAG)
+		{
+			int N = po->FEEdgeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_NODE_FLAG)
+		{
+			int N = po->FENodeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+	}
+
+	return 0;
+}

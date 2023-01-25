@@ -937,38 +937,47 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GModel::FindNamedSelection(const std::string& name)
+FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned int filter)
 {
-	int i, N;
-	FEItemListBuilder* pg = 0;
-
-	// search the GGroups
-	N = PartLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
 	{
-		pg = PartList(i);
-		if (pg->GetName() == name) return pg;
+		// search the GGroups
+		int N = PartLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = PartList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
-	N = FaceLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_FACE_FLAG)
 	{
-		pg = FaceList(i);
-		if (pg->GetName() == name) return pg;
+		int N = FaceLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = FaceList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
-	N = EdgeLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_EDGE_FLAG)
 	{
-		pg = EdgeList(i);
-		if (pg->GetName() == name) return pg;
+		int N = EdgeLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = EdgeList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
-	N = NodeLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_NODE_FLAG)
 	{
-		pg = NodeList(i);
-		if (pg->GetName() == name) return pg;
+		int N = NodeLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = NodeList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
 	// search all objects
@@ -977,25 +986,44 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name)
 		GObject* po = Object(n);
 		FSMesh* pm = po->GetFEMesh();
 
-		N = po->FEParts();
-		for (i = 0; i<N; ++i)
+		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
 		{
-			pg = po->GetFEPart(i);
-			if (pg->GetName() == name) return pg;
+			int N = po->FEParts();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEPart(i);
+				if (pg->GetName() == name) return pg;
+			}
 		}
 
-		N = po->FESurfaces();
-		for (i = 0; i<N; ++i)
+		if (filter & MESH_ITEM_FLAGS::FE_FACE_FLAG)
 		{
-			pg = po->GetFESurface(i);
-			if (pg->GetName() == name) return pg;
+			int N = po->FESurfaces();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFESurface(i);
+				if (pg->GetName() == name) return pg;
+			}
 		}
 
-		N = po->FENodeSets();
-		for (i = 0; i<N; ++i)
+		if (filter & MESH_ITEM_FLAGS::FE_EDGE_FLAG)
 		{
-			pg = po->GetFENodeSet(i);
-			if (pg->GetName() == name) return pg;
+			int N = po->FEEdgeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
+				if (pg->GetName() == name) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_NODE_FLAG)
+		{
+			int N = po->FENodeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				if (pg->GetName() == name) return pg;
+			}
 		}
 	}
 

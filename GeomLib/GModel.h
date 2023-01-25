@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include <FSCore/box.h>
+#include <MeshLib/FEItemListBuilder.h>
 #include <vector>
 
 class GObject;
@@ -172,7 +173,7 @@ public:
 	// count named selections
 	int CountNamedSelections() const;
 	FEItemListBuilder* FindNamedSelection(int nid);
-	FEItemListBuilder* FindNamedSelection(const std::string& name);
+	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned int filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
 	std::vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
 	void AddNamedSelection(FEItemListBuilder* itemList);
 
