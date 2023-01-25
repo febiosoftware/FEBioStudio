@@ -32,7 +32,7 @@ namespace Post {
 
 class GLVolumeFlowPlot : public CGLLegendPlot
 {
-	enum {DATA_FIELD, COLOR_MAP, SMOOTH_COLOR_MAP, RANGE_DIVISIONS, OPACITY_SCALE, MESH_DIVISIONS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
+	enum {DATA_FIELD, COLOR_MAP, SMOOTH_COLOR_MAP, RANGE_DIVISIONS, OPACITY_SCALE, OPACITY_STRENGTH, MESH_DIVISIONS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
 	enum { MAX_MESH_DIVS = 5};
 
@@ -68,11 +68,13 @@ private:
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);
 	void UpdateNodalData(int ntime, bool breset);
 	void RenderSlices(std::vector<Slice>& slice, int step);
+	void UpdateBoundingBox();
 
 private:
 	int			m_nfield;
 	float		m_offset;
 	float		m_alpha;
+	float		m_gain;
 	bool		m_bsmooth;
 	int			m_nDivs;
 	int			m_meshDivs;

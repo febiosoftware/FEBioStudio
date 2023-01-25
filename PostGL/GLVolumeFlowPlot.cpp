@@ -49,6 +49,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	AddBoolParam(true, "Smooth color map");
 	AddIntParam(10, "Range divisions")->SetIntRange(2, 50);
 	AddDoubleParam(0.2, "Opacity scale")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(1.0, "Opacity strength")->SetFloatRange(0.001, 0.999);
 	AddIntParam(1, "Mesh subdivisions")->SetIntRange(1, MAX_MESH_DIVS);
 	AddBoolParam(false, "Show legend");
 	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
@@ -57,6 +58,7 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	AddDoubleParam(0, "User min");
 
 	m_alpha = 0.2f;
+	m_gain = 0.5f;
 	m_nfield = 0;
 	m_bsmooth = true;
 	m_nDivs = 10;
@@ -81,6 +83,7 @@ bool GLVolumeFlowPlot::UpdateData(bool bsave)
 		m_bsmooth = GetBoolValue(SMOOTH_COLOR_MAP);
 		m_nDivs = GetIntValue(RANGE_DIVISIONS);
 		m_alpha = GetFloatValue(OPACITY_SCALE);
+		m_gain = GetFloatValue(OPACITY_STRENGTH);
 		m_meshDivs = GetIntValue(MESH_DIVISIONS);
 		if (GetLegendBar())
 		{
@@ -104,6 +107,7 @@ bool GLVolumeFlowPlot::UpdateData(bool bsave)
 		SetBoolValue(SMOOTH_COLOR_MAP, m_bsmooth);
 		SetIntValue(RANGE_DIVISIONS, m_nDivs);
 		SetFloatValue(OPACITY_SCALE, m_alpha);
+		SetFloatValue(OPACITY_STRENGTH, m_gain);
 		SetIntValue(MESH_DIVISIONS, m_meshDivs);
 		if (GetLegendBar())
 		{
@@ -178,26 +182,45 @@ void GLVolumeFlowPlot::Update(int ntime, float dt, bool breset)
 	}
 }
 
+//-----------------------------------------------------------------------------
+void GLVolumeFlowPlot::UpdateBoundingBox()
+{
+	CGLModel* mdl = GetModel();
+	FEPostModel* ps = mdl->GetFSModel();
+	FEPostMesh* pm = mdl->GetActiveMesh();
+
+	// only count enabled parts
+	BOX box;
+	for (int i = 0; i < pm->Elements(); ++i)
+	{
+		FEElement_& el = pm->ElementRef(i);
+		Material* pmat = ps->GetMaterial(el.m_MatID);
+		if (pmat->benable && el.IsVisible())
+		{
+			int ne = el.Nodes();
+			for (int k = 0; k < ne; ++k)
+			{
+				FSNode& node = pm->Node(el.m_node[k]);
+				box += node.pos();
+			}
+		}
+	}
+
+	m_box = box;
+}
+
 void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 {
 	CGLModel* mdl = GetModel();
 
-	FSMeshBase* pm = mdl->GetActiveMesh();
+	FEPostMesh* pm = mdl->GetActiveMesh();
 	FEPostModel* pfem = mdl->GetFSModel();
 
 	int NN = pm->Nodes();
 	int NS = pfem->GetStates();
 
 	// update the box
-	BOX b(pm->Node(0).r, pm->Node(0).r);
-	for (int i = 0; i < NN; ++i)
-	{
-		vec3d& ri = pm->Node(i).r;
-		if (ri.x < b.x0) b.x0 = ri.x; if (ri.x > b.x1) b.x1 = ri.x;
-		if (ri.y < b.y0) b.y0 = ri.y; if (ri.y > b.y1) b.y1 = ri.y;
-		if (ri.z < b.z0) b.z0 = ri.z; if (ri.z > b.z1) b.z1 = ri.z;
-	}
-	m_box = b;
+	UpdateBoundingBox();
 
 	if (breset) { m_map.Clear(); m_rng.clear(); m_val.clear(); }
 
@@ -215,22 +238,38 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 		m_map.SetTag(ntime, m_nfield);
 		vector<float>& val = m_map.State(ntime);
 
-		NODEDATA nd;
-		for (int i = 0; i<NN; ++i)
+		// only count enabled parts
+		pm->TagAllNodes(0);
+		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			pfem->EvaluateNode(i, ntime, m_nfield, nd);
-			val[i] = nd.m_val;
+			FEElement_& el = pm->ElementRef(i);
+			Material* pmat = pfem->GetMaterial(el.m_MatID);
+			if (pmat->benable && el.IsVisible())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k)
+				{
+					FSNode& node = pm->Node(el.m_node[k]);
+					node.m_ntag = 1;
+				}
+			}
 		}
 
-		// evaluate the range
-		float fmin, fmax;
-		fmin = fmax = val[0];
-		for (int i = 0; i<NN; ++i)
+		float fmin = 1e34, fmax = -1e34;
+		for (int i = 0; i < NN; ++i)
 		{
-			if (val[i] < fmin) fmin = val[i];
-			if (val[i] > fmax) fmax = val[i];
+			FSNode& node = pm->Node(i);
+			if (node.m_ntag == 1)
+			{
+				NODEDATA nd;
+				pfem->EvaluateNode(i, ntime, m_nfield, nd);
+				val[i] = nd.m_val;
+
+				if (val[i] < fmin) fmin = val[i];
+				if (val[i] > fmax) fmax = val[i];
+			}
+			else val[i] = 0.0f;
 		}
-		if (fmin == fmax) fmax++;
 
 		m_rng[ntime] = vec2f(fmin, fmax);
 	}
@@ -256,6 +295,7 @@ void GLVolumeFlowPlot::UpdateNodalData(int ntime, bool breset)
 
 	m_range.min = fmin;
 	m_range.max = fmax;
+	if (fmax == fmin) m_range.max += 1;
 
 	if (GetLegendBar())
 	{
@@ -350,6 +390,9 @@ void GLVolumeFlowPlot::CreateSlice(Slice& slice, const vec3d& norm, float ref)
 			case FE_PENTA15: nt = PEN_NT; break;
 			case FE_TET4: nt = TET_NT; break;
 			case FE_TET5: nt = TET_NT; break;
+			case FE_TET10: nt = TET_NT; break;
+			case FE_TET15: nt = TET_NT; break;
+			case FE_TET20: nt = TET_NT; break;
             case FE_PYRA5: nt = PYR_NT; break;
             case FE_PYRA13: nt = PYR_NT; break;
 			default:
@@ -496,6 +539,9 @@ void GLVolumeFlowPlot::Render(CGLContext& rc)
 	glPopAttrib();
 }
 
+// in FSMesh.cpp
+double gain(double g, double x);
+
 void GLVolumeFlowPlot::RenderSlices(std::vector<GLVolumeFlowPlot::Slice>& slice, int step)
 {
 	// determine the order in which we have to render the slices
@@ -524,25 +570,28 @@ void GLVolumeFlowPlot::RenderSlices(std::vector<GLVolumeFlowPlot::Slice>& slice,
 
 				v = face.v[0];
 				a = (v > 0 ? (v < 1 ? v : 1) : 0);
+				a = m_alpha* gain(m_gain, a);
 				c = col.map(v);
 //				glColor4ub(c.r, c.g, c.b, 255 *face.v[0] * m_alpha);
-				glColor4d(1.0, 1.0, 1.0, a * m_alpha);
+				glColor4d(1.0, 1.0, 1.0, a);
 				glTexCoord1d(face.v[0]);
 				glVertex3f(face.r[0].x, face.r[0].y, face.r[0].z);
 
 				v = face.v[1];
 				a = (v > 0 ? (v < 1 ? v : 1) : 0);
+				a = m_alpha * gain(m_gain, a);
 				c = col.map(face.v[1]);
 //				glColor4ub(c.r, c.g, c.b, 255 *face.v[1] * m_alpha);
-				glColor4d(1.0, 1.0, 1.0, a * m_alpha);
+				glColor4d(1.0, 1.0, 1.0, a);
 				glTexCoord1d(face.v[1]);
 				glVertex3f(face.r[1].x, face.r[1].y, face.r[1].z);
 
 				v = face.v[2];
 				a = (v > 0 ? (v < 1 ? v : 1) : 0);
+				a = m_alpha * gain(m_gain, a);
 				c = col.map(face.v[2]);
 //				glColor4ub(c.r, c.g, c.b, 255 *face.v[2] * m_alpha);
-				glColor4d(1.0, 1.0, 1.0, a * m_alpha);
+				glColor4d(1.0, 1.0, 1.0, a);
 				glTexCoord1d(face.v[2]);
 				glVertex3f(face.r[2].x, face.r[2].y, face.r[2].z);
 			}
