@@ -390,67 +390,6 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		}
 	}
 
-	// extract mesh data selections
-	for (int i = 0; i < fem.MeshDataGenerators(); ++i)
-	{
-		FSMeshDataGenerator* gen = fem.GetMeshDataGenerator(i);
-		FEItemListBuilder* pi = gen->GetItemList();
-
-		if (pi)
-		{
-			string name = pi->GetName();
-			if (name.empty()) name = gen->GetName();
-
-			switch (gen->Type())
-			{
-			case FE_FEBIO_NODEDATA_GENERATOR: AddNodeSet(name, pi); break;
-//			case FE_FEBIO_EDGEDATA_GENERATOR: AddEdgeSet(name, pi); break;
-			case FE_FEBIO_FACEDATA_GENERATOR: AddSurface(name, pi); break;
-			case FE_FEBIO_ELEMDATA_GENERATOR: AddElemSet(name, pi); break;
-			default:
-				assert(false);
-			}
-		}
-	}
-
-	// check all the (surface) plot variables
-	CPlotDataSettings& plt = prj.GetPlotDataSettings();
-	for (int i = 0; i < plt.PlotVariables(); ++i)
-	{
-		CPlotVariable& var = plt.PlotVariable(i);
-		if (var.domainType() == DOMAIN_SURFACE)
-		{
-			int ND = var.Domains();
-			for (int j = 0; j < ND; ++j)
-			{
-				FEItemListBuilder* pl = var.GetDomain(j);
-				AddSurface(pl->GetName(), pl);
-			}
-		}
-	}
-
-	CLogDataSettings& log = prj.GetLogDataSettings();
-	for (int i = 0; i < log.LogDataSize(); ++i)
-	{
-		FSLogData& di = log.LogData(i);
-		if ((di.type == FSLogData::LD_ELEM) && (di.groupID != -1))
-		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
-			if (pg)
-			{
-				AddElemSet(pg->GetName(), pg);
-			}
-		}
-		if ((di.type == FSLogData::LD_NODE) && (di.groupID != -1))
-		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
-			if (pg)
-			{
-				AddNodeSet(pg->GetName(), pg);
-			}
-		}
-	}
-
 	// export item lists for mesh data
 	for (int i = 0; i < model.Objects(); ++i)
 	{
