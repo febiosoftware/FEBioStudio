@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QFormLayout>
 #include <QTabWidget>
+#include <QListWidget>
+#include <QDialogButtonBox>
 #include "ModelDocument.h"
 #include "MainWindow.h"
 #include "ObjectProps.h"
@@ -261,6 +263,43 @@ void CGItemPropsPanel::setID(int nid)
 void CGItemPropsPanel::on_name_textEdited(const QString& t)
 {
 	emit nameChanged(t);
+}
+
+//=============================================================================
+CDlgPickNamedSelection::CDlgPickNamedSelection(QWidget* parent) : QDialog(parent)
+{
+	setWindowTitle("Choose Selection");
+
+	QVBoxLayout* l = new QVBoxLayout;
+
+	l->addWidget(m_list = new QListWidget);
+
+	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+	l->addWidget(bb);
+
+	setLayout(l);
+
+	QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+	QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+}
+
+void CDlgPickNamedSelection::setNameList(const QStringList& names)
+{
+	m_list->clear();
+	m_list->addItems(names);
+}
+
+void CDlgPickNamedSelection::setSelection(const QString& name)
+{
+	auto l = m_list->findItems(name, Qt::MatchExactly);
+	if (l.empty() == false) m_list->setCurrentItem(l.at(0));
+}
+
+QString CDlgPickNamedSelection::getSelection()
+{
+	QListWidgetItem* it = m_list->currentItem();
+	if (it == nullptr) return QString();
+	else return it->text();
 }
 
 //=============================================================================
@@ -1164,6 +1203,64 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 
 void CModelPropsPanel::on_select1_clearButtonClicked() { clearSelection(0); }
 void CModelPropsPanel::on_select2_clearButtonClicked() { clearSelection(1); }
+
+void CModelPropsPanel::on_select1_pickClicked()
+{
+	IHasItemList* hil = dynamic_cast<IHasItemList*>(m_currentObject);
+	if (hil == nullptr) return;
+
+	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
+	if (pmc == nullptr) return;
+
+	FSModel* fem = pmc->GetFSModel();
+	if (fem == nullptr) return;
+
+	GModel& gm = fem->GetModel();
+
+	QStringList names;
+	int meshType = hil->GetMeshItemType();
+	if (meshType & FE_NODE_FLAG)
+	{
+		auto l = gm.AllNamedSelections(GO_NODE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_NODESET);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+	if ((meshType & FE_FACE_FLAG) || (meshType & FE_NODE_FLAG))
+	{
+		auto l = gm.AllNamedSelections(GO_FACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_SURFACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+
+	FEItemListBuilder* pil = hil->GetItemList();
+
+	CDlgPickNamedSelection dlg(this);
+	dlg.setNameList(names);
+	if (pil) dlg.setSelection(QString::fromStdString(pil->GetName()));
+	if (dlg.exec())
+	{
+		QString qs = dlg.getSelection();
+		if (qs.isEmpty() == false)
+		{
+			std::string s = qs.toStdString();
+			if ((pil == nullptr) || (s != pil->GetName()))
+			{
+				FEItemListBuilder* pi = gm.FindNamedSelection(s);
+				hil->SetItemList(pi);
+				SetSelection(0, pi);
+			}
+		}
+	}
+}
+
+void CModelPropsPanel::on_select2_pickClicked()
+{
+
+}
 
 void CModelPropsPanel::clearSelection(int n)
 {

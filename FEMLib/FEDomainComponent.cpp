@@ -3,6 +3,7 @@
 #include <FEMLib/FSModel.h>
 #include <GeomLib/GGroup.h>
 #include "FEMKernel.h"
+#include <sstream>
 
 FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 {
@@ -24,7 +25,7 @@ FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* 
 
 FSDomainComponent::~FSDomainComponent(void)
 {
-	if (m_pItem) delete m_pItem;
+	m_pItem = nullptr;
 }
 
 FEItemListBuilder* FSDomainComponent::GetItemList() { return m_pItem; }
@@ -52,26 +53,15 @@ void FSDomainComponent::Save(OArchive& ar)
 	// write the selection type
 	ar.WriteChunk(SELECTION_TYPE, m_itemType);
 
+	// write list ID
+	if (m_pItem) ar.WriteChunk(LIST_ID, m_pItem->GetID());
+
 	// write the parameters
 	ar.BeginChunk(PARAMS);
 	{
 		ParamContainer::Save(ar);
 	}
 	ar.EndChunk();
-
-	// write the list
-	if (m_pItem)
-	{
-		ar.BeginChunk(LIST);
-		{
-			ar.BeginChunk(m_pItem->Type());
-			{
-				m_pItem->Save(ar);
-			}
-			ar.EndChunk();
-		}
-		ar.EndChunk();
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -81,6 +71,7 @@ void FSDomainComponent::Load(IArchive& ar)
 	TRACE("FSDomainComponent::Load");
 
 	FSModel* fem = GetFSModel();
+	GModel* pgm = &fem->GetModel();
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -94,39 +85,62 @@ void FSDomainComponent::Load(IArchive& ar)
 		case PARAMS:
 			ParamContainer::Load(ar);
 			break;
+		case LIST_ID:
+		{
+			int nid = 0;
+			ar.read(nid);
+			m_pItem = pgm->FindNamedSelection(nid);
+		}
+		break;
 		case LIST:
 		{
+			// NOTE: We should only get here for older files (< FBS2.1)
+			//       since domain components no longer manage their own lists.
+			//       If we get here, we'll read the list and then add it to the model
 			ar.OpenChunk();
 			{
-				GModel* pgm = &fem->GetModel();
 				int ntype = ar.GetChunkID();
-				m_pItem = 0;
+				FEItemListBuilder* pItem = nullptr;
 				switch (ntype)
 				{
-				case GO_NODE: m_pItem = new GNodeList(pgm); break;
-				case GO_EDGE: m_pItem = new GEdgeList(pgm); break;
-				case GO_FACE: m_pItem = new GFaceList(pgm); break;
-				case GO_PART: m_pItem = new GPartList(pgm); break;
-				case FE_NODESET: m_pItem = new FSNodeSet((GObject*)0); break;
-				case FE_EDGESET: m_pItem = new FSEdgeSet((GObject*)0); break;
-				case FE_SURFACE: m_pItem = new FSSurface((GObject*)0); break;
-				case FE_PART: m_pItem = new FSPart((GObject*)0); break;
+				case GO_NODE: pItem = new GNodeList(pgm); break;
+				case GO_EDGE: pItem = new GEdgeList(pgm); break;
+				case GO_FACE: pItem = new GFaceList(pgm); break;
+				case GO_PART: pItem = new GPartList(pgm); break;
+				case FE_NODESET: pItem = new FSNodeSet((GObject*)0); break;
+				case FE_EDGESET: pItem = new FSEdgeSet((GObject*)0); break;
+				case FE_SURFACE: pItem = new FSSurface((GObject*)0); break;
+				case FE_PART: pItem = new FSPart((GObject*)0); break;
 				default:
 					assert(false);
 					throw ReadError("Unknown FEItemListBuilder type in FSBoundaryCondition::Load");
 				}
-				m_pItem->Load(ar);
+				pItem->Load(ar);
 
 				// set the parent mesh for FSGroup's
-				FSGroup* pg = dynamic_cast<FSGroup*>(m_pItem);
+				FSGroup* pg = dynamic_cast<FSGroup*>(pItem);
 				if (pg)
 				{
 					if (fem->FindGroupParent(pg) == false)
 					{
 						ar.log("Invalid mesh ID in FSDomainComponent::Load");
-						delete m_pItem;
-						m_pItem = nullptr;
+						delete pItem;
+						pItem = nullptr;
 					}
+				}
+
+				// add the item to the model
+				if (pItem)
+				{
+					// this selection probably doesn't have a name yet.
+					// We'll give it the same name as the domain component
+					if (pItem->GetName().empty())
+					{
+						pItem->SetName(GetName());
+					}
+
+					pgm->AddNamedSelection(pItem);
+					m_pItem = pItem;
 				}
 			}
 			ar.CloseChunk();

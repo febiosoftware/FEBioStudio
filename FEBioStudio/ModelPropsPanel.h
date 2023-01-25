@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QWidget>
+#include <QDialog>
 #include <vector>
 //using namespace std;
 
@@ -43,6 +44,7 @@ class CColorButton;
 class QComboBox;
 class QCheckBox;
 class GDiscreteElementSet;
+class QListWidget;
 
 namespace Ui {
 	class CModelPropsPanel;
@@ -150,6 +152,20 @@ private:
 	QLabel*			m_id;
 };
 
+class CDlgPickNamedSelection : public QDialog
+{
+public:
+	CDlgPickNamedSelection(QWidget* parent);
+
+	void setNameList(const QStringList& names);
+	void setSelection(const QString& name);
+
+	QString getSelection();
+
+private:
+	QListWidget* m_list;
+};
+
 
 class CModelPropsPanel : public QWidget
 {
@@ -179,6 +195,8 @@ private slots:
 	void on_select2_clearButtonClicked();
 	void on_select1_nameChanged(const QString& t);
 	void on_select2_nameChanged(const QString& t);
+	void on_select1_pickClicked();
+	void on_select2_pickClicked();
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
 	void on_gitem_nameChanged(const QString&);

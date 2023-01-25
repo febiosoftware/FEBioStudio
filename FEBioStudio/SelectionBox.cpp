@@ -57,6 +57,7 @@ public:
 
 	QToolButton*	clr;
 	QToolButton*	collapse;
+	QToolButton*	pick;
 
 	bool	m_collapsed;
 
@@ -67,8 +68,15 @@ public:
 
 		m_collapsed = false;
 
+		QHBoxLayout* hb = new QHBoxLayout;
+		hb->setContentsMargins(0, 0, 0, 0);
+		hb->addWidget(name = new QLineEdit);
+		hb->addWidget(pick = new QToolButton); 
+		pick->setObjectName("pick");
+		pick->setText("...");
+
 		QFormLayout* form = new QFormLayout;
-		form->addRow("Name:", name = new QLineEdit); name->setObjectName("name");
+		form->addRow("Name:", hb); name->setObjectName("name");
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0,0,0,0);
@@ -217,6 +225,11 @@ void CSelectionBox::on_toggleCollapse_toggled(bool b)
 			it->setText(m_items[i].m_label);
 		}
 	}
+}
+
+void CSelectionBox::on_pick_clicked(bool b)
+{
+	emit pickClicked();
 }
 
 void CSelectionBox::on_name_textEdited(const QString& t)

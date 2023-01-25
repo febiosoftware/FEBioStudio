@@ -1081,6 +1081,27 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 }
 
 //-----------------------------------------------------------------------------
+void GModel::AddNamedSelection(FEItemListBuilder* itemList)
+{
+	if      (dynamic_cast<GNodeList*>(itemList)) AddNodeList(dynamic_cast<GNodeList*>(itemList));
+	else if (dynamic_cast<GEdgeList*>(itemList)) AddEdgeList(dynamic_cast<GEdgeList*>(itemList));
+	else if (dynamic_cast<GFaceList*>(itemList)) AddFaceList(dynamic_cast<GFaceList*>(itemList));
+	else if (dynamic_cast<GPartList*>(itemList)) AddPartList(dynamic_cast<GPartList*>(itemList));
+	else if (dynamic_cast<FSGroup*>(itemList))
+	{
+		FSGroup* pg = dynamic_cast<FSGroup*>(itemList);
+		GObject* po = pg->GetGObject(); assert(pg);
+		if (po)
+		{
+			if (dynamic_cast<FSNodeSet*>(pg)) po->AddFENodeSet(dynamic_cast<FSNodeSet*>(pg));
+			if (dynamic_cast<FSEdgeSet*>(pg)) po->AddFEEdgeSet(dynamic_cast<FSEdgeSet*>(pg));
+			if (dynamic_cast<FSSurface*>(pg)) po->AddFESurface(dynamic_cast<FSSurface*>(pg));
+			if (dynamic_cast<FSPart   *>(pg)) po->AddFEPart   (dynamic_cast<FSPart*>(pg));
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
 void GModel::Save(OArchive &ar)
 {
 	ar.WriteChunk(CID_FEOBJ_INFO, GetInfo());

@@ -62,6 +62,7 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
+	GModel& gm = fem.GetModel();
 	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, FEBio::GetBaseClassIndex("FENodalBC"), &fem, true, true, this);
 	if (dlg.exec())
 	{
@@ -93,7 +94,12 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 				case SELECT_FE_NODES:
 					{
 						FEItemListBuilder* items = psel->CreateItemList();
-						if (items) pbc->SetItemList(items);
+						if (items)
+						{
+							items->SetName(name);
+							gm.AddNamedSelection(items);
+							pbc->SetItemList(items);
+						}
 					}
 					break;
 				}
@@ -112,6 +118,7 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
+	GModel& gm = fem.GetModel();
 	CDlgAddPhysicsItem dlg("Add Boundary Condition", FEBC_ID, FEBio::GetBaseClassIndex("FESurfaceBC"), &fem, true, true, this);
 	if (dlg.exec())
 	{
@@ -139,7 +146,12 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 				case SELECT_FE_FACES:
 				{
 					FEItemListBuilder* items = psel->CreateItemList();
-					if (items) pbc->SetItemList(items);
+					if (items)
+					{
+						items->SetName(name);
+						gm.AddNamedSelection(items);
+						pbc->SetItemList(items);
+					}
 				}
 				break;
 				}
@@ -187,6 +199,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
+	GModel& gm = fem.GetModel();
 	CDlgAddPhysicsItem dlg("Add Nodal Load", FELOAD_ID, FEBio::GetBaseClassIndex("FENodalLoad"), &fem, true, true, this);
 	if (dlg.exec())
 	{
@@ -214,7 +227,12 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 				case SELECT_FE_NODES:
 				{
 					FEItemListBuilder* items = psel->CreateItemList();
-					pnl->SetItemList(items);
+					if (items)
+					{
+						items->SetName(name);
+						gm.AddNamedSelection(items);
+						pnl->SetItemList(items);
+					}
 				}
 				break;
 				}
@@ -234,6 +252,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = prj.GetFSModel();
+	GModel& gm = fem.GetModel();
 	CDlgAddPhysicsItem dlg("Add Surface Load", FELOAD_ID, FEBio::GetBaseClassIndex("FESurfaceLoad"), &fem, true, true, this);
 	if (dlg.exec())
 	{
@@ -257,7 +276,12 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 				case SELECT_FE_FACES:
 					{
 						FEItemListBuilder* items = psel->CreateItemList();
-						psl->SetItemList(items);
+						if (items)
+						{
+							items->SetName(name);
+							gm.AddNamedSelection(items);
+							psl->SetItemList(items);
+						}
 					}
 					break;
 				}
@@ -332,6 +356,7 @@ void CMainWindow::on_actionAddIC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
+	GModel& gm = fem.GetModel();
 	CDlgAddPhysicsItem dlg("Add Initial Condition", FEIC_ID, -1, &fem, true, true, this);
 	if (dlg.exec())
 	{
@@ -363,7 +388,12 @@ void CMainWindow::on_actionAddIC_triggered()
 					case SELECT_FE_NODES:
 					{
 						FEItemListBuilder* items = psel->CreateItemList();
-						pic->SetItemList(items);
+						if (items)
+						{
+							items->SetName(name);
+							gm.AddNamedSelection(items);
+							pic->SetItemList(items);
+						}
 					}
 					break;
 					}
@@ -385,6 +415,7 @@ void CMainWindow::on_actionAddContact_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
+	GModel& gm = fem.GetModel();
 	CDlgAddPhysicsItem dlg("Add Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
 	if (dlg.exec())
 	{
@@ -414,6 +445,8 @@ void CMainWindow::on_actionAddContact_triggered()
 					case SELECT_FE_FACES:
 						{
 							FEItemListBuilder* items = psel->CreateItemList();
+							items->SetName(name);
+							gm.AddNamedSelection(items);
 							si.SetItemList(items);
 						}
 						break;
@@ -466,6 +499,7 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
+	GModel& gm = fem.GetModel();
 	CDlgAddPhysicsItem dlg("Add Surface Constraint", FENLCONSTRAINT_ID, FEBio::GetBaseClassIndex("FESurfaceConstraint"), &fem, true, true, this);
 	if (dlg.exec())
 	{
@@ -490,6 +524,8 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 				case SELECT_FE_FACES:
 				{
 					FEItemListBuilder* items = psel->CreateItemList();
+					items->SetName(name);
+					gm.AddNamedSelection(items);
 					pi->SetItemList(items);
 				}
 				break;

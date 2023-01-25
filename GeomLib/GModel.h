@@ -174,6 +174,7 @@ public:
 	FEItemListBuilder* FindNamedSelection(int nid);
 	FEItemListBuilder* FindNamedSelection(const std::string& name);
 	std::vector<FEItemListBuilder*> AllNamedSelections(int ntype = 0);
+	void AddNamedSelection(FEItemListBuilder* itemList);
 
 	// --- GPartList ---
 	void AddPartList(GPartList* pg);
