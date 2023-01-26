@@ -1417,6 +1417,23 @@ protected:
 };
 
 //-----------------------------------------------------------------------------
+class CCmdDeleteFSModelComponent: public CCommand
+{
+public:
+	CCmdDeleteFSModelComponent(FSModelComponent* po);
+	~CCmdDeleteFSModelComponent();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSModelComponent* m_obj;
+	FSObject*	m_parent;
+	bool		m_delObject;
+	size_t		m_insertPos;
+};
+
+//-----------------------------------------------------------------------------
 class CCmdDeleteFSObject : public CCommand
 {
 public:

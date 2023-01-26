@@ -7,38 +7,20 @@
 
 FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 {
-	m_pItem = 0;
 	m_nstepID = nstep;
 	m_ntype = ntype;
-
-	m_itemType = 0;
 }
 
 FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, FEItemListBuilder* pi, int nstep) : FSStepComponent(ps)
 {
 	m_ntype = ntype;
 	m_nstepID = nstep;
-	m_pItem = pi;
-
-	m_itemType = 0;
+	SetItemList(pi);
+	SetMeshItemType(0);
 }
 
 FSDomainComponent::~FSDomainComponent(void)
 {
-	m_pItem = nullptr;
-}
-
-FEItemListBuilder* FSDomainComponent::GetItemList() { return m_pItem; }
-void FSDomainComponent::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
-unsigned int FSDomainComponent::GetMeshItemType() const
-{
-	return m_itemType;
-}
-
-void FSDomainComponent::SetMeshItemType(unsigned int itemType)
-{
-	m_itemType = itemType;
 }
 
 void FSDomainComponent::Save(OArchive& ar)
@@ -51,10 +33,11 @@ void FSDomainComponent::Save(OArchive& ar)
 	ar.WriteChunk(STEP, m_nstepID);
 
 	// write the selection type
-	ar.WriteChunk(SELECTION_TYPE, m_itemType);
+	ar.WriteChunk(SELECTION_TYPE, GetMeshItemType());
 
 	// write list ID
-	if (m_pItem) ar.WriteChunk(LIST_ID, m_pItem->GetID());
+	FEItemListBuilder* pl = GetItemList();
+	if (pl) ar.WriteChunk(LIST_ID, pl->GetID());
 
 	// write the parameters
 	ar.BeginChunk(PARAMS);
@@ -81,7 +64,7 @@ void FSDomainComponent::Load(IArchive& ar)
 		case NAME: { string name; ar.read(name); SetName(name); } break;
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case STEP: ar.read(m_nstepID); break;
-		case SELECTION_TYPE: ar.read(m_itemType); break;
+		case SELECTION_TYPE: { unsigned int itemType = 0; ar.read(itemType); SetMeshItemType(itemType); } break;
 		case PARAMS:
 			ParamContainer::Load(ar);
 			break;
@@ -89,7 +72,8 @@ void FSDomainComponent::Load(IArchive& ar)
 		{
 			int nid = 0;
 			ar.read(nid);
-			m_pItem = pgm->FindNamedSelection(nid);
+			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			SetItemList(pItem);
 		}
 		break;
 		case LIST:
@@ -140,7 +124,7 @@ void FSDomainComponent::Load(IArchive& ar)
 					}
 
 					pgm->AddNamedSelection(pItem);
-					m_pItem = pItem;
+					SetItemList(pItem);
 				}
 			}
 			ar.CloseChunk();
@@ -152,20 +136,7 @@ void FSDomainComponent::Load(IArchive& ar)
 }
 
 //-----------------------------------------------------------------------------
-FSMeshSelection::FSMeshSelection(FSModel* fem) : FSModelComponent(fem), m_pItem(nullptr)
+FSMeshSelection::FSMeshSelection(FSModel* fem) : FSModelComponent(fem)
 {
-	m_itemType = 0;
-}
-
-FEItemListBuilder* FSMeshSelection::GetItemList() { return m_pItem; }
-void FSMeshSelection::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
-unsigned int FSMeshSelection::GetMeshItemType() const
-{
-	return m_itemType;
-}
-
-void FSMeshSelection::SetMeshItemType(unsigned int meshItem)
-{
-	m_itemType = meshItem;
+	
 }

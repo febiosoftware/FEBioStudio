@@ -269,7 +269,11 @@ void CModelDocument::DeleteObject(FSObject* po)
 			}
 */
 		}
-		DoCommand(new CCmdDeleteFSObject(po));
+
+		if (dynamic_cast<FSModelComponent*>(po))
+			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+		else
+			DoCommand(new CCmdDeleteFSObject(po));
 	}
 	else if (dynamic_cast<FEMeshData*>(po))
 	{

@@ -3410,6 +3410,51 @@ void CCmdDeleteGObject::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
+// CCmdDeleteFSModelComponent
+//-----------------------------------------------------------------------------
+
+CCmdDeleteFSModelComponent::CCmdDeleteFSModelComponent(FSModelComponent* po) : CCommand(string("Delete ") + po->GetName())
+{
+	assert(po->GetParent());
+	m_obj = po;
+	m_parent = po->GetParent();
+	m_delObject = false;
+}
+
+CCmdDeleteFSModelComponent::~CCmdDeleteFSModelComponent()
+{
+	if (m_delObject) delete m_obj;
+}
+
+void CCmdDeleteFSModelComponent::Execute()
+{
+	m_insertPos = m_parent->RemoveChild(m_obj);
+	m_obj->SetParent(nullptr);
+	m_delObject = true;
+
+	FSHasItemList* pil = dynamic_cast<FSHasItemList*>(m_obj);
+	if (pil)
+	{
+		FEItemListBuilder* pl = pil->GetItemList();
+		if (pl) pl->DecRef();
+	}
+}
+
+void CCmdDeleteFSModelComponent::UnExecute()
+{
+	m_parent->InsertChild(m_insertPos, m_obj);
+	assert(m_obj->GetParent() == m_parent);
+	m_delObject = false;
+
+	FSHasItemList* pil = dynamic_cast<FSHasItemList*>(m_obj);
+	if (pil)
+	{
+		FEItemListBuilder* pl = pil->GetItemList();
+		if (pl) pl->IncRef();
+	}
+}
+
+//-----------------------------------------------------------------------------
 // CCmdDeleteFSObject
 //-----------------------------------------------------------------------------
 

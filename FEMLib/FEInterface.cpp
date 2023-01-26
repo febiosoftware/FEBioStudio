@@ -232,22 +232,14 @@ void FSPairedInterface::Load(IArchive &ar)
 
 FSSoloInterface::FSSoloInterface(int ntype, FSModel* ps, int nstep) : FSInterface(ntype, ps, nstep)
 {
-	m_pItem = 0;
-	m_itemType = FE_FACE_FLAG;
+	SetMeshItemType(FE_FACE_FLAG);
 }
 
 //-----------------------------------------------------------------------------
 FSSoloInterface::~FSSoloInterface()
 {
-	delete m_pItem;
+
 }
-
-//-----------------------------------------------------------------------------
-FEItemListBuilder* FSSoloInterface::GetItemList() { return m_pItem; }
-void FSSoloInterface::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
-unsigned int FSSoloInterface::GetMeshItemType() const { return m_itemType; }
-void FSSoloInterface::SetMeshItemType(unsigned int meshItem) { m_itemType = meshItem; };
 
 //-----------------------------------------------------------------------------
 void FSSoloInterface::Save(OArchive& ar)
@@ -256,23 +248,25 @@ void FSSoloInterface::Save(OArchive& ar)
 	ar.WriteChunk(CID_FEOBJ_INFO      , GetInfo());
 	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
 	ar.WriteChunk(CID_INTERFACE_STEP  , m_nstepID);
+	FEItemListBuilder* pl = GetItemList();
+	if (pl)
+	{
+		ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, pl->GetID());
+	}
 	ar.BeginChunk(CID_INTERFACE_PARAMS);
 	{
 		ParamContainer::Save(ar);
 	}
 	ar.EndChunk();
-	if (m_pItem)
-	{
-		ar.BeginChunk(CID_INTERFACE_SURFACE1);
-		FSInterface::SaveList(m_pItem, ar);
-		ar.EndChunk();
-	}
 }
 
 //-----------------------------------------------------------------------------
 void FSSoloInterface::Load(IArchive &ar)
 {
 	TRACE("FSSoloInterface::Load");
+
+	FSModel* fem = GetFSModel();
+	GModel* pgm = &fem->GetModel();
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -283,7 +277,34 @@ void FSSoloInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP  : ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_SURFACE1 : m_pItem = FSInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1_ID : 
+		{
+			int nid = 0;
+			ar.read(nid);
+			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			SetItemList(pItem);
+		}
+		break;
+		case CID_INTERFACE_SURFACE1 :
+		{
+			// NOTE: We should only get here for older files (< FBS2.1)
+			//       since model components no longer manage their own lists.
+			//       If we get here, we'll read the list and then add it to the model
+			FEItemListBuilder* pItem = FSInterface::LoadList(ar);
+			if (pItem)
+			{
+				// this selection probably doesn't have a name yet.
+				// We'll give it the same name as the domain component
+				if (pItem->GetName().empty())
+				{
+					pItem->SetName(GetName());
+				}
+
+				pgm->AddNamedSelection(pItem);
+				SetItemList(pItem);
+			}
+		}
+		break;
 		default:
 			throw ReadError("unknown CID in FSSoloInterface::Load");
 		}
@@ -308,7 +329,7 @@ FSRigidInterface::FSRigidInterface(FSModel* ps, GMaterial* pm, FEItemListBuilder
 {
 	SetTypeString("Rigid");
 	m_pmat = pm; 
-	m_pItem = pi; 
+	SetItemList(pi); 
 }
 
 //-----------------------------------------------------------------------------
@@ -319,11 +340,11 @@ void FSRigidInterface::Save(OArchive &ar)
 	ar.WriteChunk(CID_INTERFACE_ACTIVE, m_bActive);
 	ar.WriteChunk(CID_INTERFACE_STEP, m_nstepID);
 	ar.WriteChunk(CID_RI_RIGIDBODY, mid);
-	if (m_pItem) 
+
+	FEItemListBuilder* pl = GetItemList();
+	if (pl) 
 	{ 
-		ar.BeginChunk(CID_INTERFACE_SURFACE2);
-		FSInterface::SaveList(m_pItem, ar);
-		ar.EndChunk();
+		ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, pl->GetID());
 	}
 }
 
@@ -331,6 +352,9 @@ void FSRigidInterface::Save(OArchive &ar)
 void FSRigidInterface::Load(IArchive &ar)
 {
 	TRACE("FSRigidInterface::Load");
+
+	FSModel* fem = GetFSModel();
+	GModel* pgm = &fem->GetModel();
 
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
@@ -351,13 +375,40 @@ void FSRigidInterface::Load(IArchive &ar)
 				m_pmat = GetFSModel()->GetMaterialFromID(mid);
 			}
 			break;
-		case CID_INTERFACE_SURFACE2: m_pItem = FSInterface::LoadList(ar); break;
+		case CID_INTERFACE_SURFACE1_ID:
+		{
+			int nid = 0;
+			ar.read(nid);
+			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			SetItemList(pItem);
+		}
+		break;
+		case CID_INTERFACE_SURFACE2: 
+		{
+			// NOTE: We should only get here for older files (< FBS2.1)
+			//       since model components no longer manage their own lists.
+			//       If we get here, we'll read the list and then add it to the model
+			FEItemListBuilder* pItem = FSInterface::LoadList(ar);
+			if (pItem)
+			{
+				// this selection probably doesn't have a name yet.
+				// We'll give it the same name as the domain component
+				if (pItem->GetName().empty())
+				{
+					pItem->SetName(GetName());
+				}
+
+				pgm->AddNamedSelection(pItem);
+				SetItemList(pItem);
+			}
+		}
+		break;
 		case CID_RI_LIST:	// obsolete in 1.8
 			{
 				int nid; ar.read(nid); 
-				GModel& mdl = GetFSModel()->GetModel();
-				m_pItem = mdl.FindNamedSelection(nid);
-				assert(m_pItem);
+				FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+				assert(pItem);
+				SetItemList(pItem);
 			}
 			break;
 		default:

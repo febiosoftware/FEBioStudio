@@ -281,6 +281,29 @@ private:
 	FSLoadController* m_plc;
 };
 
+class CGroupValidator : public CObjectValidator
+{
+public:
+	CGroupValidator(FEItemListBuilder* pl) : m_pl(pl) {}
+
+	QString GetErrorString() const override
+	{
+		if (m_pl && m_pl->GetReferenceCount() > 0) return "";
+		return "Named selection is not used.";
+	}
+
+	bool IsValid() override
+	{
+		return (m_pl && m_pl->GetReferenceCount() > 0);
+	}
+
+private:
+	FEItemListBuilder* m_pl;
+};
+
+
+
+//=============================================================================
 class CFEBioJobProps : public CPropertyList
 {
 public:
@@ -1340,28 +1363,28 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	for (int j = 0; j<gparts; ++j)
 	{
 		GPartList* pg = model.PartList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, 0, pg);
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, 0, pg, 0, new CGroupValidator(pg));
 	}
 
 	int gsurfs = model.FaceLists();
 	for (int j = 0; j<gsurfs; ++j)
 	{
 		GFaceList* pg = model.FaceList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, 0, pg);
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 	}
 
 	int gedges = model.EdgeLists();
 	for (int j = 0; j<gedges; ++j)
 	{
 		GEdgeList* pg = model.EdgeList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, 0, pg);
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 	}
 
 	int gnodes = model.NodeLists();
 	for (int j = 0; j<gnodes; ++j)
 	{
 		GNodeList* pg = model.NodeList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 	}
 
 	// add the mesh groups
@@ -1376,7 +1399,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			for (int j = 0; j<nsets; ++j)
 			{
 				FSNodeSet* pg = po->GetFENodeSet(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1392,7 +1415,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			for (int j = 0; j<surfs; ++j)
 			{
 				FSSurface* pg = po->GetFESurface(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, 0, pg);
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1408,7 +1431,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			for (int j = 0; j<edges; ++j)
 			{
 				FSEdgeSet* pg = po->GetFEEdgeSet(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, 0, pg);
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1424,7 +1447,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			for (int j = 0; j<parts; ++j)
 			{
 				FSPart* pg = po->GetFEPart(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}

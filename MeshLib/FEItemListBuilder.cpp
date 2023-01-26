@@ -36,6 +36,8 @@ FEItemListBuilder::FEItemListBuilder(int ntype, unsigned int flags)
 	m_ntype = ntype;
 
 	m_flags = flags;
+
+	m_refs = 0;
 }
 
 void FEItemListBuilder::SetID(int nid)
@@ -143,3 +145,7 @@ void FEItemListBuilder::Subtract(list<int>& o)
 		else ++it;
 	}
 }
+
+int FEItemListBuilder::GetReferenceCount() const { return m_refs; }
+void FEItemListBuilder::IncRef() { m_refs++; }
+void FEItemListBuilder::DecRef() { m_refs--; assert(m_refs >= 0); }

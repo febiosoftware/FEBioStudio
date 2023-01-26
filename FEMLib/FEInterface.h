@@ -29,7 +29,7 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that only require one
 //! surface definition (e.g. rigid interface, rigid wall interface)
-class FSSoloInterface : public FSInterface, public IHasItemList
+class FSSoloInterface : public FSInterface, public FSHasItemList
 {
 public:
 	FSSoloInterface(int ntype, FSModel* ps, int nstep);
@@ -37,17 +37,6 @@ public:
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-public: // IHasItemList
-	FEItemListBuilder* GetItemList() override;
-	void SetItemList(FEItemListBuilder* pi) override;
-
-	unsigned int GetMeshItemType() const override;
-	void SetMeshItemType(unsigned int meshItem) override;
-
-protected:
-	FEItemListBuilder*	m_pItem;	// list of items that define interface
-	unsigned int		m_itemType;
 };
 
 //-----------------------------------------------------------------------------

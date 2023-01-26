@@ -12,23 +12,16 @@ enum MeshDataGeneratorType
 	FE_FEBIO_ELEMDATA_GENERATOR = 4,
 };
 
-class FSMeshDataGenerator : public FSModelComponent, public IHasItemList
+// TODO: serilization!!
+class FSMeshDataGenerator : public FSModelComponent, public FSHasItemList
 {
 public:
 	FSMeshDataGenerator(FSModel* fem, int ntype);
 
 	int Type() const;
 
-public:
-	FEItemListBuilder* GetItemList() override;
-	void SetItemList(FEItemListBuilder* pi) override;
-	unsigned int GetMeshItemType() const override;
-	void SetMeshItemType(unsigned int meshItem) override;
-
 private:
 	int	m_ntype;
-	unsigned int	m_itemType;	// the type of mesh item that can be assigned to this list
-	FEItemListBuilder* m_pItem;	// list of item indices to apply the BC too
 };
 
 //===========================================================================

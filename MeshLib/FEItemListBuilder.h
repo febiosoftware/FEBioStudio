@@ -115,10 +115,17 @@ public:
 
 	std::list<int> CopyItems() { return m_Item; }
 
+public:
+	int GetReferenceCount() const;
+	void IncRef();
+	void DecRef();
+
 protected:
 	std::list<int>	m_Item;
 
 	int	m_ntype;
+
+	int m_refs;	// reference count
 
 	unsigned int	m_flags;
 
