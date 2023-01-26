@@ -147,7 +147,7 @@ void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh, bool selectedOnly)
 		}
 	}
 
-	m_tag.resize(NE, 1);
+	m_tag.assign(NE, 1);
 	for (int i = 0; i<NE; ++i)
 	{
 		std::pair<int, int>& edge = EL[i];
