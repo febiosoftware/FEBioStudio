@@ -225,11 +225,13 @@ private:
 	void delSelection(int n);
 	void selSelection(int n);
 	void clearSelection(int n);
+	void PickSelection(int n);
 
 signals:
 	void nameChanged(const QString& txt);
 	void selectionChanged();
 	void dataChanged(bool b);
+	void modelChanged();
 
 private:
 	Ui::CModelPropsPanel* ui;

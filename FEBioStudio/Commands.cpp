@@ -3255,7 +3255,7 @@ CCmdSetItemList::CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl) : CCo
 
 CCmdSetItemList::~CCmdSetItemList()
 {
-	if (m_pl) delete m_pl;
+	
 }
 
 void CCmdSetItemList::Execute()
@@ -3350,7 +3350,7 @@ CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int
 
 CCmdRemoveItemListBuilder::~CCmdRemoveItemListBuilder()
 {
-	if (m_pitem) delete m_pitem;
+	
 }
 
 void CCmdRemoveItemListBuilder::Execute()

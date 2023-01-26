@@ -524,6 +524,11 @@ void CModelViewer::on_props_dataChanged(bool b)
 	}
 }
 
+void CModelViewer::on_props_modelChanged()
+{
+	Update();
+}
+
 void CModelViewer::on_filter_currentIndexChanged(int n)
 {
 	FSObject* po = GetCurrentObject();

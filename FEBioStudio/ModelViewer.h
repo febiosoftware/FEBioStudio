@@ -108,6 +108,7 @@ public slots:
 	void on_props_nameChanged(const QString& txt);
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);
+	void on_props_modelChanged();
 	void on_filter_currentIndexChanged(int n);
 
 public slots:

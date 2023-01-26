@@ -943,11 +943,13 @@ void CModelPropsPanel::addSelection(int n)
 	FESelection* ps = pdoc->GetCurrentSelection();
 	if ((ps == 0) || (ps->Size() == 0)) return;
 
+	GModel& mdl = *pdoc->GetGModel();
+
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
-	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-	if (pmc)
+	IHasItemList* pil = dynamic_cast<IHasItemList*>(m_currentObject);
+	if (pil)
 	{
 		// create the item list from the selection
 		FEItemListBuilder* pg = ps->CreateItemList();
@@ -958,13 +960,13 @@ void CModelPropsPanel::addSelection(int n)
 		}
 
 		// get the current item list
-		FEItemListBuilder* pl = pmc->GetItemList();
+		FEItemListBuilder* pl = pil->GetItemList();
 
 		// see whether the current list exists or not
 		if (pl == nullptr)
 		{
 			// see if we can assign it
-			int itemType = pmc->GetMeshItemType();
+			int itemType = pil->GetMeshItemType();
 			if (pg->Supports(itemType) == false)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
@@ -972,8 +974,17 @@ void CModelPropsPanel::addSelection(int n)
 				return;
 			}
 
-			pdoc->DoCommand(new CCmdSetItemList(pmc, pg));
-			SetSelection(0, pmc->GetItemList());
+			// for model components, we need to give this new lis a name and add it to the model
+			FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
+			if (pmc)
+			{
+				pg->SetName(pmc->GetName());
+				mdl.AddNamedSelection(pg);
+				emit modelChanged();
+			}
+
+			pdoc->DoCommand(new CCmdSetItemList(pil, pg));
+			SetSelection(0, pil->GetItemList());
 		}
 		else
 		{
@@ -998,7 +1009,7 @@ void CModelPropsPanel::addSelection(int n)
 				}
 			}
 			SetSelection(0, pl);
-			pmc->SetItemList(pl);
+			pil->SetItemList(pl);
 			delete pg;
 		}
 		emit selectionChanged();
@@ -1019,6 +1030,16 @@ void CModelPropsPanel::addSelection(int n)
 		FEItemListBuilder* pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 		if (pl == 0)
 		{
+			// set a name 
+			string name = pi->GetName();
+			name += (n == 0 ? "Primary" : "Secondary");
+			pg->SetName(name);
+
+			// add it to the model
+			mdl.AddNamedSelection(pg);
+			emit modelChanged();
+
+			// assign it to the interface
 			if (n == 0) pi->SetPrimarySurface(pg);
 			else pi->SetSecondarySurface(pg);
 			SetSelection(n, pg);
@@ -1210,11 +1231,11 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 void CModelPropsPanel::on_select1_clearButtonClicked() { clearSelection(0); }
 void CModelPropsPanel::on_select2_clearButtonClicked() { clearSelection(1); }
 
-void CModelPropsPanel::on_select1_pickClicked()
-{
-	IHasItemList* hil = dynamic_cast<IHasItemList*>(m_currentObject);
-	if (hil == nullptr) return;
+void CModelPropsPanel::on_select1_pickClicked() { PickSelection(0); }
+void CModelPropsPanel::on_select2_pickClicked() { PickSelection(1); }
 
+void CModelPropsPanel::PickSelection(int n)
+{
 	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
 	if (pmc == nullptr) return;
 
@@ -1223,8 +1244,17 @@ void CModelPropsPanel::on_select1_pickClicked()
 
 	GModel& gm = fem->GetModel();
 
+	IHasItemList* hil = dynamic_cast<IHasItemList*>(m_currentObject);
+	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
+
+	// find the required mesh type
+	int meshType = -1;
+	if (hil) meshType = hil->GetMeshItemType();
+	else if (pi) meshType = FE_FACE_FLAG;
+	else return;
+
+	// build the candidate list
 	QStringList names;
-	int meshType = hil->GetMeshItemType();
 	if (meshType & FE_NODE_FLAG)
 	{
 		auto l = gm.AllNamedSelections(GO_NODE);
@@ -1242,30 +1272,33 @@ void CModelPropsPanel::on_select1_pickClicked()
 		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
 	}
 
-	FEItemListBuilder* pil = hil->GetItemList();
+	// get the current selection
+	FEItemListBuilder* pl = nullptr;
+	if (hil) pl = hil->GetItemList();
+	else if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
 
 	CDlgPickNamedSelection dlg(this);
 	dlg.setNameList(names);
-	if (pil) dlg.setSelection(QString::fromStdString(pil->GetName()));
+	if (pl) dlg.setSelection(QString::fromStdString(pl->GetName()));
 	if (dlg.exec())
 	{
 		QString qs = dlg.getSelection();
 		if (qs.isEmpty() == false)
 		{
 			std::string s = qs.toStdString();
-			if ((pil == nullptr) || (s != pil->GetName()))
+			if ((pl == nullptr) || (s != pl->GetName()))
 			{
-				FEItemListBuilder* pi = gm.FindNamedSelection(s);
-				hil->SetItemList(pi);
-				SetSelection(0, pi);
+				pl = gm.FindNamedSelection(s);
+				if (hil) hil->SetItemList(pl);
+				else if (pi)
+				{
+					if (n == 0) pi->SetPrimarySurface(pl);
+					else pi->SetSecondarySurface(pl);
+				}
+				SetSelection(n, pl);
 			}
 		}
 	}
-}
-
-void CModelPropsPanel::on_select2_pickClicked()
-{
-
 }
 
 void CModelPropsPanel::clearSelection(int n)
