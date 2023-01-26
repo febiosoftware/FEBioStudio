@@ -128,6 +128,22 @@ FSPairedInterface::~FSPairedInterface()
 }
 
 //-----------------------------------------------------------------------------
+void FSPairedInterface::SetPrimarySurface(FEItemListBuilder* pg)
+{ 
+	if (m_surf1) m_surf1->DecRef();
+	m_surf1 = pg; 
+	if (m_surf1) m_surf1->IncRef();
+}
+
+//-----------------------------------------------------------------------------
+void FSPairedInterface::SetSecondarySurface(FEItemListBuilder* pg)
+{ 
+	if (m_surf2) m_surf2->DecRef();
+	m_surf2 = pg;
+	if (m_surf2) m_surf2->IncRef();
+}
+
+//-----------------------------------------------------------------------------
 void FSPairedInterface::SwapPrimarySecondary()
 {
 	FEItemListBuilder* tmp = m_surf1;
@@ -205,16 +221,16 @@ void FSPairedInterface::Load(IArchive &ar)
 		{
 			// The old master surface is now the secondary surface
 			int nid; ar.read(nid);
-			m_surf2 = mdl.FindNamedSelection(nid);
-			assert(m_surf2);
+			FEItemListBuilder* surf2 = mdl.FindNamedSelection(nid); assert(surf2);
+			SetSecondarySurface(surf2);
 		}
 		break;
 		case CID_SI_SLAVE: // obsolete in 1.8
 		{
 			// The old slave surface is now the primary surface
 			int nid; ar.read(nid);
-			m_surf1 = mdl.FindNamedSelection(nid);
-			assert(m_surf1);
+			FEItemListBuilder* surf1 = mdl.FindNamedSelection(nid); assert(surf1);
+			SetPrimarySurface(surf1);
 		}
 		break;
 		default:
@@ -933,8 +949,8 @@ double FSSpringTiedInterface::SpringConstant() const
 
 void FSSpringTiedInterface::BuildSpringList(vector<pair<int, int> >& L)
 {
-	FEFaceList* pfl = m_surf1->BuildFaceList();
-	FSNodeList* pnl = m_surf2->BuildNodeList();
+	FEFaceList* pfl = GetPrimarySurface()->BuildFaceList();
+	FSNodeList* pnl = GetSecondarySurface()->BuildNodeList();
 	if ((pfl == 0) || (pnl == 0)) return;
 
 	unique_ptr<FEFaceList> ps(pfl);

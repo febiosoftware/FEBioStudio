@@ -3454,6 +3454,50 @@ void CCmdDeleteFSModelComponent::UnExecute()
 	}
 }
 
+
+//-----------------------------------------------------------------------------
+// CCmdDeleteFSPairedInterface
+//-----------------------------------------------------------------------------
+
+CCmdDeleteFSPairedInterface::CCmdDeleteFSPairedInterface(FSPairedInterface* po) : CCommand(string("Delete ") + po->GetName())
+{
+	assert(po->GetParent());
+	m_obj = po;
+	m_parent = po->GetParent();
+	m_delObject = false;
+}
+
+CCmdDeleteFSPairedInterface::~CCmdDeleteFSPairedInterface()
+{
+	if (m_delObject) delete m_obj;
+}
+
+void CCmdDeleteFSPairedInterface::Execute()
+{
+	m_insertPos = m_parent->RemoveChild(m_obj);
+	m_obj->SetParent(nullptr);
+	m_delObject = true;
+
+	FEItemListBuilder* s1 = m_obj->GetPrimarySurface();
+	if (s1) s1->DecRef();
+
+	FEItemListBuilder* s2 = m_obj->GetSecondarySurface();
+	if (s2) s2->DecRef();
+}
+
+void CCmdDeleteFSPairedInterface::UnExecute()
+{
+	m_parent->InsertChild(m_insertPos, m_obj);
+	assert(m_obj->GetParent() == m_parent);
+	m_delObject = false;
+
+	FEItemListBuilder* s1 = m_obj->GetPrimarySurface();
+	if (s1) s1->IncRef();
+
+	FEItemListBuilder* s2 = m_obj->GetSecondarySurface();
+	if (s2) s2->IncRef();
+}
+
 //-----------------------------------------------------------------------------
 // CCmdDeleteFSObject
 //-----------------------------------------------------------------------------

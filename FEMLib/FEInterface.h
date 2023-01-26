@@ -48,8 +48,8 @@ public:
 	FSPairedInterface(int ntype, FSModel* ps, int nstep);
 	~FSPairedInterface();
 
-	void SetPrimarySurface(FEItemListBuilder* pg) { m_surf1 = pg; }
-	void SetSecondarySurface(FEItemListBuilder* pg) { m_surf2 = pg; }
+	void SetPrimarySurface(FEItemListBuilder* pg);
+	void SetSecondarySurface(FEItemListBuilder* pg);
 
 	FEItemListBuilder*	GetPrimarySurface() { return m_surf1; }
 	FEItemListBuilder*	GetSecondarySurface() { return m_surf2;  }
@@ -62,7 +62,7 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
-public:
+private:
 	FEItemListBuilder*	m_surf1;	// primary surface item list
 	FEItemListBuilder*	m_surf2;	// secondary syurface item list
 };

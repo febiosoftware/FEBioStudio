@@ -270,7 +270,9 @@ void CModelDocument::DeleteObject(FSObject* po)
 */
 		}
 
-		if (dynamic_cast<FSModelComponent*>(po))
+		if (dynamic_cast<FSPairedInterface*>(po))
+			DoCommand(new CCmdDeleteFSPairedInterface(dynamic_cast<FSPairedInterface*>(po)));
+		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
