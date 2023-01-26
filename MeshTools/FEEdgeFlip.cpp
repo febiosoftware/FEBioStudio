@@ -57,19 +57,11 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 	// copy the mesh
 	FSSurfaceMesh* newMesh = new FSSurfaceMesh(*pm);
 
-	// see if any edges are selected
-	bool forceFlip = false;
-	bool selectedOnly = false;
-	if (newMesh->CountSelectedEdges() > 0)
-	{
-		selectedOnly = true;
-		forceFlip = true;
-	}
-
 	// allocate the data structures we'll need
 	// create the edge list
 	m_EL = new FSEdgeList(*newMesh);
 	int NE = m_EL->size();
+	m_tag.assign(NE, 1);
 
 	// create the edge-face list
 	m_FEL = new FSFaceEdgeList(*newMesh, *m_EL);
@@ -77,27 +69,60 @@ FSSurfaceMesh* FEEdgeFlip::Apply(FSSurfaceMesh* pm)
 	// create the edge-face list
 	m_EFL = new FSEdgeFaceList(*newMesh);
 
-	// mark the edges we don't want to flip
-	MarkEdges(newMesh, selectedOnly);
+	// see if any edges are selected
+	bool forceFlip = false;
+	bool selectedOnly = false;
+	int selectedEdges = newMesh->CountSelectedEdges();
 
-	// repeat until we can't find any more edges to flip
-	bool bdone = false;
-	while (bdone == false)
+	// if there is only one selected edge, let's take a shortcut
+	if (selectedEdges == 1)
 	{
-		// assume we are done
-		bdone = true;
-
-		// try all edges
-		for (int i=0; i<NE; ++i)
+		// find the selected mesh
+		int isel = -1;
+		for (int i = 0; i < newMesh->Edges(); ++i)
 		{
-			// only flip edges that are not marked
-			if (m_tag[i] == 1)
+			if (newMesh->Edge(i).IsSelected())
 			{
-				// Try to flip this edge
-				if (FlipEdge(i, newMesh, forceFlip))
+				isel = i;
+				break;
+			}
+		}
+		assert(isel != -1);
+		if (isel == -1) return nullptr;
+
+		// flip this edge
+		FlipEdge(isel, newMesh, true);
+	}
+	else 
+	{
+		if (selectedEdges > 0)
+		{
+			selectedOnly = true;
+			forceFlip = true;
+		}
+
+		// mark the edges we don't want to flip
+		MarkEdges(newMesh, selectedOnly);
+
+		// repeat until we can't find any more edges to flip
+		bool bdone = false;
+		while (bdone == false)
+		{
+			// assume we are done
+			bdone = true;
+
+			// try all edges
+			for (int i = 0; i < NE; ++i)
+			{
+				// only flip edges that are not marked
+				if (m_tag[i] == 1)
 				{
-					// The edge was flipped, so we're not done yet
-					bdone = false;
+					// Try to flip this edge
+					if (FlipEdge(i, newMesh, forceFlip))
+					{
+						// The edge was flipped, so we're not done yet
+						bdone = false;
+					}
 				}
 			}
 		}
@@ -147,7 +172,6 @@ void FEEdgeFlip::MarkEdges(FSSurfaceMesh* mesh, bool selectedOnly)
 		}
 	}
 
-	m_tag.assign(NE, 1);
 	for (int i = 0; i<NE; ++i)
 	{
 		std::pair<int, int>& edge = EL[i];
