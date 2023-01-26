@@ -685,7 +685,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	// (we also allow "elset", although "name" is the correct attribute)
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname == 0) szname = tag.AttributeValue("elset", true);
-	if (szname == 0) szname = "_no_name";
+	if (szname == 0) throw XMLReader::MissingAttribute(tag, "name");
 
 	// make sure no parts have the same name
 	string name = szname;

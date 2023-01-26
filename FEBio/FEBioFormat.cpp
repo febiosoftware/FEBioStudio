@@ -2480,6 +2480,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					po->AddFEPart(pg);
 					logVar.SetGroupID(pg->GetID());
 				}
+				else AddLogEntry("Could not find element set \"%s\"", szset);
 			}
 			else if (tag.isempty() == false)
 			{
