@@ -894,6 +894,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	// which mesh is active (surface or volume)
 	int meshMode = m_pWnd->GetMeshMode();
+	if (postDoc) meshMode = MESH_MODE_VOLUME;
 
 	m_bextrude = false;
 
