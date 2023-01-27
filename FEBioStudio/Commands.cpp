@@ -3247,10 +3247,11 @@ void CCmdAddMaterial::UnExecute()
 // CCmdSetItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetItemList::CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl) : CCommand("Assign selection")
+CCmdSetItemList::CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n) : CCommand("Assign selection")
 {
 	m_pbc = pbc;
 	m_pl = pl;
+	m_index = n;
 }
 
 CCmdSetItemList::~CCmdSetItemList()
@@ -3260,8 +3261,8 @@ CCmdSetItemList::~CCmdSetItemList()
 
 void CCmdSetItemList::Execute()
 {
-	FEItemListBuilder* pold = m_pbc->GetItemList();
-	m_pbc->SetItemList(m_pl);
+	FEItemListBuilder* pold = m_pbc->GetItemList(m_index);
+	m_pbc->SetItemList(m_pl, m_index);
 	m_pl = pold;
 }
 
@@ -3332,18 +3333,9 @@ void CCmdRemoveFromItemListBuilder::UnExecute()
 // CCmdRemoveItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(IHasItemList* pmc) : CCommand("Remove selection")
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(IHasItemLists* pmc, int n) : CCommand("Remove selection")
 {
 	m_pmc = pmc;
-	m_ppi = nullptr;
-	m_pitem = nullptr;
-	m_index = -1;
-}
-
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n) : CCommand("Remove selection")
-{
-	m_pmc = nullptr;
-	m_ppi = pmc;
 	m_pitem = nullptr;
 	m_index = n;
 }
@@ -3355,22 +3347,13 @@ CCmdRemoveItemListBuilder::~CCmdRemoveItemListBuilder()
 
 void CCmdRemoveItemListBuilder::Execute()
 {
-	if (m_pmc)
-	{
-		m_pitem = m_pmc->GetItemList();
-		m_pmc->SetItemList(nullptr);
-	}
-	if (m_ppi)
-	{
-		m_pitem = m_ppi->GetItemList(m_index);
-		m_ppi->SetItemList(m_index, nullptr);
-	}
+	m_pitem = m_pmc->GetItemList(m_index);
+	m_pmc->SetItemList(nullptr, m_index);
 }
 
 void CCmdRemoveItemListBuilder::UnExecute()
 {
-	if (m_pmc) m_pmc->SetItemList(m_pitem);
-	if (m_ppi) m_ppi->SetItemList(m_index, m_pitem);
+	m_pmc->SetItemList(m_pitem, m_index);
 	m_pitem = nullptr;
 }
 
@@ -3432,11 +3415,14 @@ void CCmdDeleteFSModelComponent::Execute()
 	m_obj->SetParent(nullptr);
 	m_delObject = true;
 
-	FSHasItemList* pil = dynamic_cast<FSHasItemList*>(m_obj);
+	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_obj);
 	if (pil)
 	{
-		FEItemListBuilder* pl = pil->GetItemList();
-		if (pl) pl->DecRef();
+		for (int i = 0; i < pil->ItemLists(); ++i)
+		{
+			FEItemListBuilder* pl = pil->GetItemList(i);
+			if (pl) pl->DecRef();
+		}
 	}
 }
 
@@ -3446,57 +3432,17 @@ void CCmdDeleteFSModelComponent::UnExecute()
 	assert(m_obj->GetParent() == m_parent);
 	m_delObject = false;
 
-	FSHasItemList* pil = dynamic_cast<FSHasItemList*>(m_obj);
+	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_obj);
 	if (pil)
 	{
-		FEItemListBuilder* pl = pil->GetItemList();
-		if (pl) pl->IncRef();
+		for (int i = 0; i < pil->ItemLists(); ++i)
+		{
+			FEItemListBuilder* pl = pil->GetItemList(i);
+			if (pl) pl->IncRef();
+		}
 	}
 }
 
-
-//-----------------------------------------------------------------------------
-// CCmdDeleteFSPairedInterface
-//-----------------------------------------------------------------------------
-
-CCmdDeleteFSPairedInterface::CCmdDeleteFSPairedInterface(FSPairedInterface* po) : CCommand(string("Delete ") + po->GetName())
-{
-	assert(po->GetParent());
-	m_obj = po;
-	m_parent = po->GetParent();
-	m_delObject = false;
-}
-
-CCmdDeleteFSPairedInterface::~CCmdDeleteFSPairedInterface()
-{
-	if (m_delObject) delete m_obj;
-}
-
-void CCmdDeleteFSPairedInterface::Execute()
-{
-	m_insertPos = m_parent->RemoveChild(m_obj);
-	m_obj->SetParent(nullptr);
-	m_delObject = true;
-
-	FEItemListBuilder* s1 = m_obj->GetPrimarySurface();
-	if (s1) s1->DecRef();
-
-	FEItemListBuilder* s2 = m_obj->GetSecondarySurface();
-	if (s2) s2->DecRef();
-}
-
-void CCmdDeleteFSPairedInterface::UnExecute()
-{
-	m_parent->InsertChild(m_insertPos, m_obj);
-	assert(m_obj->GetParent() == m_parent);
-	m_delObject = false;
-
-	FEItemListBuilder* s1 = m_obj->GetPrimarySurface();
-	if (s1) s1->IncRef();
-
-	FEItemListBuilder* s2 = m_obj->GetSecondarySurface();
-	if (s2) s2->IncRef();
-}
 
 //-----------------------------------------------------------------------------
 // CCmdDeleteFSObject

@@ -9,7 +9,7 @@ class FEItemListBuilder;
 // Base class for anything applied to a partition of the model's geometry.
 // This includes, boundary conditions, nodal loads, surface loads, body loads,
 // constraints, etc.
-class FSDomainComponent : public FSStepComponent, public FSHasItemList
+class FSDomainComponent : public FSStepComponent, public FSHasOneItemList
 {
 public:
 	enum { NAME, PARAMS, LIST, STEP, SELECTION_TYPE, LIST_ID };
@@ -31,7 +31,7 @@ protected:
 
 //---------------------------------------------------------------------------------------------
 // This class is used to select mesh selections properties
-class FSMeshSelection : public FSModelComponent, public FSHasItemList
+class FSMeshSelection : public FSModelComponent, public FSHasOneItemList
 {
 public:
 	FSMeshSelection(FSModel* fem);

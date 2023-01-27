@@ -270,9 +270,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 */
 		}
 
-		if (dynamic_cast<FSPairedInterface*>(po))
-			DoCommand(new CCmdDeleteFSPairedInterface(dynamic_cast<FSPairedInterface*>(po)));
-		else if (dynamic_cast<FSModelComponent*>(po))
+		if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
@@ -812,11 +810,8 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 	// create the selection command
 	FEItemListBuilder* pl = 0;
 
-	IHasItemList* phs = dynamic_cast<IHasItemList*>(po);
-	if (phs) pl = phs->GetItemList();
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(po);
-	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+	IHasItemLists* phs = dynamic_cast<IHasItemLists*>(po);
+	if (phs) pl = phs->GetItemList(n);
 
 	GGroup* pg = dynamic_cast<GGroup*>(po);
 	if (pg) pl = pg;

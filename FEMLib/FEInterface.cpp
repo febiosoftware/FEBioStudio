@@ -116,39 +116,38 @@ FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 
 FSPairedInterface::FSPairedInterface(int ntype, FSModel* ps, int nstep) : FSInterface(ntype, ps, nstep)
 {
-	m_surf1 = 0;
-	m_surf2 = 0;
+	SetMeshItemType(FE_FACE_FLAG);
 }
 
 //-----------------------------------------------------------------------------
 FSPairedInterface::~FSPairedInterface()
 {
-	m_surf1 = nullptr;
-	m_surf2 = nullptr;
 }
 
 //-----------------------------------------------------------------------------
 void FSPairedInterface::SetPrimarySurface(FEItemListBuilder* pg)
 { 
-	if (m_surf1) m_surf1->DecRef();
-	m_surf1 = pg; 
-	if (m_surf1) m_surf1->IncRef();
+	SetItemList(pg, 0);
 }
 
 //-----------------------------------------------------------------------------
 void FSPairedInterface::SetSecondarySurface(FEItemListBuilder* pg)
 { 
-	if (m_surf2) m_surf2->DecRef();
-	m_surf2 = pg;
-	if (m_surf2) m_surf2->IncRef();
+	SetItemList(pg, 0);
 }
+
+//-----------------------------------------------------------------------------
+FEItemListBuilder* FSPairedInterface::GetPrimarySurface() { return GetItemList(0); }
+
+//-----------------------------------------------------------------------------
+FEItemListBuilder* FSPairedInterface::GetSecondarySurface() { return GetItemList(1); }
 
 //-----------------------------------------------------------------------------
 void FSPairedInterface::SwapPrimarySecondary()
 {
-	FEItemListBuilder* tmp = m_surf1;
-	m_surf1 = m_surf2;
-	m_surf2 = tmp;
+	FEItemListBuilder* tmp = GetItemList(0);
+	SetItemList(GetItemList(1), 0);
+	SetItemList(tmp, 1);
 }
 
 //-----------------------------------------------------------------------------
@@ -163,8 +162,11 @@ void FSPairedInterface::Save(OArchive& ar)
 		ParamContainer::Save(ar);
 	}
 	ar.EndChunk();
-	if (m_surf1) ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, m_surf1->GetID());
-	if (m_surf2) ar.WriteChunk(CID_INTERFACE_SURFACE2_ID, m_surf2->GetID());
+
+	FEItemListBuilder* surf1 = GetItemList(0);
+	FEItemListBuilder* surf2 = GetItemList(1);
+	if (surf1) ar.WriteChunk(CID_INTERFACE_SURFACE1_ID, surf1->GetID());
+	if (surf2) ar.WriteChunk(CID_INTERFACE_SURFACE2_ID, surf2->GetID());
 }
 
 //-----------------------------------------------------------------------------
@@ -183,8 +185,22 @@ void FSPairedInterface::Load(IArchive &ar)
 		case CID_INTERFACE_ACTIVE: ar.read(m_bActive); break;
 		case CID_INTERFACE_STEP: ar.read(m_nstepID); break;
 		case CID_INTERFACE_PARAMS: ParamContainer::Load(ar); break;
-		case CID_INTERFACE_SURFACE1_ID: { int nid = -1; ar.read(nid); m_surf1 = mdl.FindNamedSelection(nid); } break;
-		case CID_INTERFACE_SURFACE2_ID: { int nid = -1; ar.read(nid); m_surf2 = mdl.FindNamedSelection(nid); } break;
+		case CID_INTERFACE_SURFACE1_ID: 
+		{ 
+			int nid = -1; 
+			ar.read(nid); 
+			FEItemListBuilder* surf1 = mdl.FindNamedSelection(nid); 
+			SetItemList(surf1, 0);
+		}
+		break;
+		case CID_INTERFACE_SURFACE2_ID: 
+		{ 
+			int nid = -1; 
+			ar.read(nid); 
+			FEItemListBuilder* surf2 = mdl.FindNamedSelection(nid); 
+			SetItemList(surf2, 1);
+		} 
+		break;
 		case CID_INTERFACE_SURFACE1: // obsolete in 2.1
 		{
 			FEItemListBuilder* surf1 = FSInterface::LoadList(ar);

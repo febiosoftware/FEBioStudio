@@ -329,10 +329,18 @@ void CModelViewer::on_selectButton_clicked()
 		GObject* pm = dynamic_cast<GObject*>(po);
 		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
-	else if (dynamic_cast<IHasItemList*>(po))
+	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
-		IHasItemList* pil = dynamic_cast<IHasItemList*>(po);
-		FEItemListBuilder* pitem = pil->GetItemList();
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
+		FEItemListBuilder* ps1 = pci->GetPrimarySurface();
+		FEItemListBuilder* ps2 = pci->GetSecondarySurface();
+		if (ps1) SelectItemList(ps1);
+		if (ps2) SelectItemList(ps2);
+	}
+	else if (dynamic_cast<IHasItemLists*>(po))
+	{
+		IHasItemLists* pil = dynamic_cast<IHasItemLists*>(po);
+		FEItemListBuilder* pitem = pil->GetItemList(0);
 		if (pitem) SelectItemList(pitem);
 	}
 	else if (dynamic_cast<FEItemListBuilder*>(po))
@@ -367,18 +375,6 @@ void CModelViewer::on_selectButton_clicked()
 		GModel& fem = pdoc->GetFSModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
-	}
-	else if (dynamic_cast<FSPairedInterface*>(po))
-	{
-		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
-		FEItemListBuilder* pml = pci->GetSecondarySurface();
-		FEItemListBuilder* psl = pci->GetPrimarySurface();
-
-		if (pml == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(pml);
-
-		if (psl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(psl, true);
 	}
 	else if (dynamic_cast<GMaterial*>(po))
 	{

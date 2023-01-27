@@ -12,8 +12,8 @@ enum MeshDataGeneratorType
 	FE_FEBIO_ELEMDATA_GENERATOR = 4,
 };
 
-// TODO: serilization!!
-class FSMeshDataGenerator : public FSModelComponent, public FSHasItemList
+// TODO: serialization!!
+class FSMeshDataGenerator : public FSModelComponent, public FSHasOneItemList
 {
 public:
 	FSMeshDataGenerator(FSModel* fem, int ntype);

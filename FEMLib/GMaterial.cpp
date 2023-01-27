@@ -181,8 +181,9 @@ void GMaterial::Load(IArchive &ar)
 	}
 }
 
-FEItemListBuilder* GMaterial::GetItemList()
+FEItemListBuilder* GMaterial::GetItemList(int n)
 {
+	assert(n == 0);
 	GModel& mdl = m_ps->GetModel();
 
 	if (m_partList == nullptr) m_partList = new GPartList(&mdl);
@@ -207,8 +208,10 @@ FEItemListBuilder* GMaterial::GetItemList()
 	return m_partList;
 }
 
-void GMaterial::SetItemList(FEItemListBuilder* pi)
+void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
 {
+	assert(n == 0);
+
 	// clear all parts that have this material
 	// set the items
 	GModel& mdl = m_ps->GetModel();

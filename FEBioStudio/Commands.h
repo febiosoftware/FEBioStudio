@@ -1341,15 +1341,16 @@ protected:
 class CCmdSetItemList : public CCommand
 {
 public:
-	CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl);
+	CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n);
 	~CCmdSetItemList();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	IHasItemList*		m_pbc;
+	IHasItemLists*		m_pbc;
 	FEItemListBuilder*	m_pl;
+	int					m_index;
 };
 
 //-----------------------------------------------------------------------------
@@ -1386,8 +1387,7 @@ protected:
 class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveItemListBuilder(IHasItemList* pmc);
-	CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n);
+	CCmdRemoveItemListBuilder(IHasItemLists* pmc, int n = 0);
 	~CCmdRemoveItemListBuilder();
 
 	void Execute();
@@ -1395,8 +1395,7 @@ public:
 
 private:
 	FEItemListBuilder*	m_pitem;
-	IHasItemList*		m_pmc;
-	FSPairedInterface*	m_ppi;
+	IHasItemLists*		m_pmc;
 	int	m_index;
 };
 
@@ -1428,23 +1427,6 @@ public:
 
 protected:
 	FSModelComponent* m_obj;
-	FSObject*	m_parent;
-	bool		m_delObject;
-	size_t		m_insertPos;
-};
-
-//-----------------------------------------------------------------------------
-class CCmdDeleteFSPairedInterface : public CCommand
-{
-public:
-	CCmdDeleteFSPairedInterface(FSPairedInterface* po);
-	~CCmdDeleteFSPairedInterface();
-
-	void Execute();
-	void UnExecute();
-
-protected:
-	FSPairedInterface* m_obj;
 	FSObject*	m_parent;
 	bool		m_delObject;
 	size_t		m_insertPos;

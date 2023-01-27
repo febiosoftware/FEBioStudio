@@ -853,24 +853,6 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
 
-		IHasItemList* hil = dynamic_cast<IHasItemList*>(m_currentObject);
-		if (hil && (hil->GetMeshItemType() != 0))
-		{
-			ui->showSelectionPanel1(true);
-
-			if (dynamic_cast<GMaterial*>(m_currentObject) == nullptr)
-				SetSelection(0, hil->GetItemList(), true);
-			else
-				SetSelection(0, hil->GetItemList(), false);
-			return;
-		}
-
-		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
-		if (pl) { 
-			SetSelection(0, pl, false); 
-			return;
-		}
-
 		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 		if (pi)
 		{
@@ -879,6 +861,24 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 			ui->showSelectionPanel2(true);
 			SetSelection(0, pi->GetPrimarySurface(), true);
 			SetSelection(1, pi->GetSecondarySurface(), true);
+			return;
+		}
+
+		IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
+		if (hil && (hil->GetMeshItemType() != 0))
+		{
+			ui->showSelectionPanel1(true);
+
+			if (dynamic_cast<GMaterial*>(m_currentObject) == nullptr)
+				SetSelection(0, hil->GetItemList(0), true);
+			else
+				SetSelection(0, hil->GetItemList(0), false);
+			return;
+		}
+
+		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+		if (pl) { 
+			SetSelection(0, pl, false); 
 			return;
 		}
 
@@ -948,7 +948,7 @@ void CModelPropsPanel::addSelection(int n)
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
-	IHasItemList* pil = dynamic_cast<IHasItemList*>(m_currentObject);
+	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_currentObject);
 	if (pil)
 	{
 		// create the item list from the selection
@@ -960,7 +960,7 @@ void CModelPropsPanel::addSelection(int n)
 		}
 
 		// get the current item list
-		FEItemListBuilder* pl = pil->GetItemList();
+		FEItemListBuilder* pl = pil->GetItemList(n);
 
 		// see whether the current list exists or not
 		if (pl == nullptr)
@@ -983,8 +983,8 @@ void CModelPropsPanel::addSelection(int n)
 				emit modelChanged();
 			}
 
-			pdoc->DoCommand(new CCmdSetItemList(pil, pg));
-			SetSelection(0, pil->GetItemList());
+			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n));
+			SetSelection(0, pil->GetItemList(n));
 		}
 		else
 		{
@@ -1009,67 +1009,9 @@ void CModelPropsPanel::addSelection(int n)
 				}
 			}
 			SetSelection(0, pl);
-			pil->SetItemList(pl);
+			pil->SetItemList(pl, n);
 			delete pg;
 		}
-		emit selectionChanged();
-		return;
-	}
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi)
-	{
-		if ((ps->Type() != SELECT_SURFACES) && (ps->Type() != SELECT_FE_FACES) && (ps->Type() != SELECT_PARTS))
-		{
-			QMessageBox::critical(this, "FEBio Studio", "The selection cannot be assigned to this interface.");
-			return;
-		}
-
-		FEItemListBuilder* pg = ps->CreateItemList();
-
-		FEItemListBuilder* pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-		if (pl == 0)
-		{
-			// set a name 
-			string name = pi->GetName();
-			name += (n == 0 ? "Primary" : "Secondary");
-			pg->SetName(name);
-
-			// add it to the model
-			mdl.AddNamedSelection(pg);
-			emit modelChanged();
-
-			// assign it to the interface
-			if (n == 0) pi->SetPrimarySurface(pg);
-			else pi->SetSecondarySurface(pg);
-			SetSelection(n, pg);
-		}
-		else
-		{
-			// merge with the current list
-			if (pg->Type() != pl->Type())
-			{
-				QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
-			}
-			else
-			{
-				// for groups, make sure that they are on the same mesh
-				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
-				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
-				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
-				{
-					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
-				}
-				else
-				{
-					list<int> l = pg->CopyItems();
-					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
-				}
-			}
-			SetSelection(n, pl);
-			delete pg;
-		}
-
 		emit selectionChanged();
 		return;
 	}
@@ -1125,11 +1067,8 @@ void CModelPropsPanel::subSelection(int n)
 	// get the item list
 	FEItemListBuilder* pl = nullptr;
 
-	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-	if (pmc) pl = pmc->GetItemList();
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+	if (pmc) pl = pmc->GetItemList(n);
 
 	FEItemListBuilder* pil = dynamic_cast<FEItemListBuilder*>(m_currentObject);
 	if (pil) pl = pil;
@@ -1146,7 +1085,7 @@ void CModelPropsPanel::subSelection(int n)
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
 		}
 
-		if (pmc) pmc->SetItemList(pl);
+		if (pmc) pmc->SetItemList(pl, n);
 
 		SetSelection(n, pl);
 		delete pg;
@@ -1164,10 +1103,10 @@ void CModelPropsPanel::delSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	if (dynamic_cast<IHasItemList*>(m_currentObject))
+	if (dynamic_cast<IHasItemLists*>(m_currentObject))
 	{
-		IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-		pl = pmc->GetItemList();
+		IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+		pl = pmc->GetItemList(n);
 		if (pl)
 		{
 			CSelectionBox* sel = ui->selectionPanel(n);
@@ -1176,33 +1115,8 @@ void CModelPropsPanel::delSelection(int n)
 
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
 
-			pmc->SetItemList(pl);
+			pmc->SetItemList(pl, n);
 
-			SetSelection(n, pl);
-			emit selectionChanged();
-		}
-	}
-	else
-	{
-		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-		if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-
-		CSelectionBox* sel = ui->selectionPanel(n);
-
-		if (pl)
-		{
-			list<int> items;
-			sel->getSelectedItems(items);
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
-			SetSelection(n, pl);
-			emit selectionChanged();
-		}
-		else if (dynamic_cast<FEItemListBuilder*>(m_currentObject))
-		{
-			pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
-			list<int> items;
-			sel->getSelectedItems(items);
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
 			SetSelection(n, pl);
 			emit selectionChanged();
 		}
@@ -1216,12 +1130,8 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 {
 	FEItemListBuilder* pl = 0;
 
-	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-	if (pmc) pl = pmc->GetItemList();
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi) pl = pi->GetPrimarySurface();
-
+	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+	if (pmc) pl = pmc->GetItemList(0);
 	if (pl == 0) return;
 
 	string sname = t.toStdString();
@@ -1244,13 +1154,11 @@ void CModelPropsPanel::PickSelection(int n)
 
 	GModel& gm = fem->GetModel();
 
-	IHasItemList* hil = dynamic_cast<IHasItemList*>(m_currentObject);
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
+	IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
 
 	// find the required mesh type
 	int meshType = -1;
 	if (hil) meshType = hil->GetMeshItemType();
-	else if (pi) meshType = FE_FACE_FLAG;
 	else return;
 
 	// build the candidate list
@@ -1274,8 +1182,7 @@ void CModelPropsPanel::PickSelection(int n)
 
 	// get the current selection
 	FEItemListBuilder* pl = nullptr;
-	if (hil) pl = hil->GetItemList();
-	else if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+	if (hil) pl = hil->GetItemList(n);
 
 	CDlgPickNamedSelection dlg(this);
 	dlg.setNameList(names);
@@ -1289,12 +1196,7 @@ void CModelPropsPanel::PickSelection(int n)
 			if ((pl == nullptr) || (s != pl->GetName()))
 			{
 				pl = gm.FindNamedSelection(s);
-				if (hil) hil->SetItemList(pl);
-				else if (pi)
-				{
-					if (n == 0) pi->SetPrimarySurface(pl);
-					else pi->SetSecondarySurface(pl);
-				}
+				if (hil) hil->SetItemList(pl, n);
 				SetSelection(n, pl);
 			}
 		}
@@ -1307,24 +1209,13 @@ void CModelPropsPanel::clearSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	if (dynamic_cast<IHasItemList*>(m_currentObject))
+	if (dynamic_cast<IHasItemLists*>(m_currentObject))
 	{
-		IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-		pl = pmc->GetItemList();
+		IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+		pl = pmc->GetItemList(n);
 		if (pl)
 		{
-			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc));
-			SetSelection(n, nullptr);
-			emit selectionChanged();
-		}
-	}
-	else if (dynamic_cast<FSPairedInterface*>(m_currentObject))
-	{
-		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-		pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-		if (pl)
-		{
-			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pi, n));
+			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc, n));
 			SetSelection(n, nullptr);
 			emit selectionChanged();
 		}

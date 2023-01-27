@@ -29,7 +29,7 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that only require one
 //! surface definition (e.g. rigid interface, rigid wall interface)
-class FSSoloInterface : public FSInterface, public FSHasItemList
+class FSSoloInterface : public FSInterface, public FSHasOneItemList
 {
 public:
 	FSSoloInterface(int ntype, FSModel* ps, int nstep);
@@ -42,7 +42,7 @@ public:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that require two surfaces
 //!
-class FSPairedInterface : public FSInterface
+class FSPairedInterface : public FSInterface, public FSHasTwoItemLists
 {
 public:
 	FSPairedInterface(int ntype, FSModel* ps, int nstep);
@@ -51,20 +51,13 @@ public:
 	void SetPrimarySurface(FEItemListBuilder* pg);
 	void SetSecondarySurface(FEItemListBuilder* pg);
 
-	FEItemListBuilder*	GetPrimarySurface() { return m_surf1; }
-	FEItemListBuilder*	GetSecondarySurface() { return m_surf2;  }
-
-	FEItemListBuilder* GetItemList(int index) { return (index == 0 ? GetPrimarySurface() : GetSecondarySurface()); }
-	void SetItemList(int index, FEItemListBuilder* itemList) { (index == 0 ? SetPrimarySurface(itemList) : SetSecondarySurface(itemList)); }
+	FEItemListBuilder*	GetPrimarySurface();
+	FEItemListBuilder*	GetSecondarySurface();
 
 	void SwapPrimarySecondary();
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-private:
-	FEItemListBuilder*	m_surf1;	// primary surface item list
-	FEItemListBuilder*	m_surf2;	// secondary syurface item list
 };
 
 //-----------------------------------------------------------------------------
