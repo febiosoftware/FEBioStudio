@@ -71,7 +71,7 @@ static Units::UnitSymbol unit_table[][12] = {
 	{{"µm", 1e-6},{"g",1e-3},{"s",1},{"K",1},{"pA",1e-12},{"amol",1e-18},{"nN",1e-9},{"kPa",1e3},{"fJ",1e-15},{"fW",1e-15}, {"mV",1e-3},{"mM",1}},
 
 	// CGS units
-	{{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"Ba",0.1}, {"erg",1e-7},{"erg/s",1e-7},{"mV",1e-3},{"mM", 1}}
+	{{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"[F/L^2]",0.1}, {"erg",1e-7},{"[E/t]",1e-7},{"mV",1e-3},{"mM", 1}}
 };
 
 QString Units::GetUnitString(const char* szunit)
