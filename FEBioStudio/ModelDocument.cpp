@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
 #include "GLModelScene.h"
+#include "units.h"
 
 class CModelContext
 {
@@ -636,6 +637,27 @@ bool CModelDocument::ImportFEBioMaterials(const std::string& fileName)
 	if (fileName.empty()) return false;
 	FEBioFileImport feb(GetProject());
 	return feb.ImportMaterials(fileName.c_str());
+}
+
+//-----------------------------------------------------------------------------
+void CModelDocument::SetUnitSystem(int unitSystem)
+{
+	CGLDocument::SetUnitSystem(unitSystem);
+
+	FSModel* fem = GetFSModel();
+	if (fem)
+	{
+		// -- update global constants
+		// universal gas constant
+		const double R = 8.314462618153; // value in SI units
+		Param* pR = fem->GetParam("R");
+		if (pR) pR->SetFloatValue(Units::Convert(R, UNIT_GAS_CONSTANT, Units::SI, unitSystem));
+
+		// faraday's constant
+		const double Fc = 9.648533212331e4;  // value in SI units
+		Param* pFc = fem->GetParam("Fc");
+		if (pFc) pFc->SetFloatValue(Units::Convert(Fc, UNIT_FARADAY_CONSTANT, Units::SI, unitSystem));
+	}
 }
 
 //-----------------------------------------------------------------------------

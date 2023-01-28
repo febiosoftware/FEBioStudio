@@ -343,7 +343,7 @@ protected:
 	void LoadResources(IArchive& ar);
 
 public:
-	void SetUnitSystem(int unitSystem);
+	virtual void SetUnitSystem(int unitSystem);
 	int GetUnitSystem() const;
 
 protected:
