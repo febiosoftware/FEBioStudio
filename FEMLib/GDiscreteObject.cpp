@@ -482,6 +482,7 @@ void GDiscreteSpringSet::Load(IArchive& ar)
 					case FE_DISCRETE_LINEAR_SPRING   : m_mat = new FSLinearSpringMaterial(fem); break;
 					case FE_DISCRETE_NONLINEAR_SPRING: m_mat = new FSNonLinearSpringMaterial(fem); break;
 					case FE_DISCRETE_HILL            : m_mat = new FSHillContractileMaterial(fem); break;
+					case FE_DISCRETE_FEBIO_MATERIAL  : m_mat = new FEBioDiscreteMaterial(fem); break;
 					default:
 						assert(false);
 						throw ReadError("Unknown discrete material");
