@@ -2023,13 +2023,12 @@ void CMainWindow::readSettings()
 	QStringList launch_config_names;
 	launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
 
-	// Overwrite the default if they have launch configurations saved.
-	if(launch_config_names.count() > 0)
-	{
-		ui->m_launch_configs.clear();
-		// create the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
-	}
+	// clear launch configurations
+	ui->m_launch_configs.clear();
+
+	// create the default launch configuration
+	ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+
 
 	for(QString conf : launch_config_names)
 	{
