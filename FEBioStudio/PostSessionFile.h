@@ -4,6 +4,7 @@
 
 class CPostDocument;
 class XMLTag;
+class XMLWriter;
 
 namespace Post {
 	class FEPostModel;
@@ -29,6 +30,7 @@ private:
 	bool parse_mesh_surface(XMLTag& tag);
 	bool parse_mesh_elementset(XMLTag& tag);
 	bool parse_plot(XMLTag& tag);
+	bool parse_view(XMLTag& tag);
 
 private: // obsolete tags (for backward compatibility with 1.0)
 	bool parse_open(XMLTag& tag);
@@ -45,9 +47,20 @@ class PostSessionFileWriter : public FileWriter
 {
 public:
 	PostSessionFileWriter(CPostDocument* doc);
+	~PostSessionFileWriter();
 
 	bool Write(const char* szfile) override;
 
 private:
+	void WriteModel();
+	void WriteMaterials();
+	void WriteDataFields();
+	void WriteMeshSelections();
+	void WritePlots();
+	void WriteView();
+
+private:
 	CPostDocument* m_doc;
+	XMLWriter* m_xml;
+	string	m_fileName;
 };
