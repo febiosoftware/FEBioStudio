@@ -101,8 +101,11 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		bool smooth = GetBoolValue(GRAD_SMOOTH);
 		m_Col.SetDivisions(divs);
 		m_Col.SetSmooth(smooth);
-
-		// TODO: show legend
+		if (GetLegendBar())
+		{
+			bool b = GetBoolValue(SHOW_LEGEND);
+			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
+		}
 		m_nslices = GetIntValue(SLICES);
 		m_offset = GetFloatValue(SLICE_OFFSET);
 		m_nrange = GetIntValue(RANGE);
@@ -129,6 +132,10 @@ bool CGLSlicePlot::UpdateData(bool bsave)
 		SetFloatValue(NORMAL_X, m_norm.x);
 		SetFloatValue(NORMAL_Y, m_norm.y);
 		SetFloatValue(NORMAL_Z, m_norm.z);
+		if (GetLegendBar())
+		{
+			SetBoolValue(SHOW_LEGEND, GetLegendBar()->visible());
+		}
 	}
 
 	return false;
