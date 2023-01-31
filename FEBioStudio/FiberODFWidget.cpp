@@ -301,6 +301,7 @@ public:
 	// fitting tab widgets
 	QLineEdit* meanDir;
 	QLineEdit* FA;
+	QLineEdit* GFA;
 
 public:
     void setupUI(::CFiberODFWidget* parent)
@@ -357,6 +358,7 @@ public:
 		fitTabLayout->setLabelAlignment(Qt::AlignRight);
 		fitTabLayout->addRow("mean direction:", meanDir = new QLineEdit); meanDir->setReadOnly(true);
 		fitTabLayout->addRow("FA:", FA = new QLineEdit); FA->setReadOnly(true);
+		fitTabLayout->addRow("GFA:", GFA = new QLineEdit); GFA->setReadOnly(true);
 		fitTab->setLayout(fitTabLayout);
 		tabs->addTab(fitTab, "Fitting");
 
@@ -450,6 +452,7 @@ private:
 		vec3d v = odf->m_meanDir;
 		meanDir->setText(Vec3dToString(v));
 		FA->setText(QString::number(odf->m_FA));
+		GFA->setText(QString::number(odf->m_GFA));
 	}
 };
 

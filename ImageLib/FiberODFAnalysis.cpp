@@ -841,6 +841,29 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
     radial->Update();
 }
 
+double rms(const vector<double>& x)
+{
+	if (x.empty()) return 0.0;
+	double rms = 0.0;
+	for (double xi : x) rms += xi * xi;
+	rms = sqrt(rms / (double)x.size());
+	return rms;
+}
+
+double stddev(const vector<double>& x)
+{
+	if (x.empty()) return 0.0;
+	double mu = 0.0;
+	size_t n = x.size();
+	for (size_t i = 0; i < n; ++i) mu += x[i];
+	mu /= (double)x.size();
+
+	double sum = 0.0;
+	for (size_t i = 0; i < n; ++i) sum += (x[i] - mu) * (x[i] - mu);
+	sum = sqrt(sum / ((double)n - 1.0));
+	return sum;
+}
+
 void CFiberODFAnalysis::calculateFits()
 {
 	for (auto odf : m_ODFs)
@@ -884,5 +907,36 @@ void CFiberODFAnalysis::calculateFits()
 		double l02 = l[0] - l[2];
 		double FA = sqrt(0.5)*sqrt(l01*l01 + l12*l12 + l02*l02)/sqrt(l0*l0 + l1*l1 + l2*l2);
 		odf->m_FA = FA;
+
+		// TODO: do optimization of EDF parameters
+		double alpha[3] = { 1,1,1 };
+
+		// calculate EFD ODF
+		vector<double>& EDFODF = odf->m_EFD_ODF;
+		EDFODF.assign(npt, 0.0);
+		double D11 = alpha[0] / l[0];
+		double D22 = alpha[1] / l[1];
+		double D33 = alpha[2] / l[2];
+		matrix Vt = V.transpose();
+		double sum = 0.0;
+		for (int i = 0; i < npt; ++i)
+		{
+			vector<double> r{ A[i][0], A[i][1], A[i][2] };
+			vector<double> q = Vt * r;
+			q[0] /= D11;
+			q[1] /= D22;
+			q[2] /= D33;
+			double odf_i = 1.0 / sqrt(q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
+			odf->m_EFD_ODF[i] = odf_i;
+			sum += odf_i;
+		}
+
+		// normalize
+		if (sum != 0.0)
+			for (int i = 0; i < npt; ++i) EDFODF[i] /= sum;
+
+		// calculate generalized FA
+		double GFA = stddev(EDFODF) / rms(EDFODF);
+		odf->m_GFA = GFA;
 	}
 }
