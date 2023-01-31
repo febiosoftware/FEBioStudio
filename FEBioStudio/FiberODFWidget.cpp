@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QLabel>
 #include <QBoxLayout>
+#include <QFormLayout>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QComboBox>
@@ -59,6 +60,7 @@ SOFTWARE.*/
 #include <ImageLib/FiberODFAnalysis.h>
 #include <FEAMR/spherePoints.h>
 #include "DlgStartThread.h"
+#include "PropertyList.h"
 
 #include <iostream>
 
@@ -296,6 +298,9 @@ public:
     QPushButton* copyToMatButton;
     QPushButton* saveToCSVButton;
 
+	// fitting tab widgets
+	QLineEdit* meanDir;
+
 public:
     void setupUI(::CFiberODFWidget* parent)
     {
@@ -346,6 +351,12 @@ public:
         sphHarmTab->setLayout(sphHarmTabLayout);
         tabs->addTab(sphHarmTab, "Spherical Harmonics");
 
+		QWidget* fitTab = new QWidget;
+		QFormLayout* fitTabLayout = new QFormLayout;
+		fitTabLayout->addRow("mean direction", meanDir = new QLineEdit);
+		fitTab->setLayout(fitTabLayout);
+		tabs->addTab(fitTab, "Fitting");
+
         secondPage->setLayout(secondPageLayout);
         stack->addWidget(secondPage);
 
@@ -372,6 +383,7 @@ public:
             glWidget->setODF(analysis->GetODF(0));
             updateTable(analysis);
             stack->setCurrentIndex(1);
+			updateFittingTab(analysis);
         }
         else
         {
@@ -429,6 +441,12 @@ private:
         sphHarmTable->setVerticalHeaderLabels(headers);
     }
 
+	void updateFittingTab(CFiberODFAnalysis* analysis)
+	{
+		CODF* odf = analysis->GetODF(0);
+		vec3d v = odf->m_meanDir;
+		meanDir->setText(Vec3dToString(v));
+	}
 };
 
 CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)

@@ -213,6 +213,7 @@ void CFiberODFAnalysis::run()
 		CODF* odf = new CODF;
 		// odf->m_odf.reserve(NPTS);
 
+		// odf = A*B*reduced
         A.mult(B, reduced, odf->m_odf);
 		updateProgress(0.75);
 
@@ -284,8 +285,10 @@ void CFiberODFAnalysis::run()
 		updateProgress(1.0);
     }
 	setCurrentTask("Building meshes ...", 100);
-
     buildMeshes();
+
+	setCurrentTask("Calculating fits ...", 100);
+	calculateFits();
 }
 
 void CFiberODFAnalysis::render(CGLCamera* cam)
@@ -836,4 +839,40 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
     }
 
     radial->Update();
+}
+
+void CFiberODFAnalysis::calculateFits()
+{
+	for (auto odf : m_ODFs)
+	{
+		// build matrix of nodal coordinates, weighted by ODF
+		int npt = odf->m_mesh.Nodes();
+		matrix A(npt, 3);
+		for (int i = 0; i < npt; ++i)
+		{
+			vec3d ri = odf->m_mesh.Node(i).r;
+			double f = odf->m_odf[i];
+			A[i][0] = f*ri.x;
+			A[i][1] = f*ri.y;
+			A[i][2] = f*ri.z;
+		}
+
+		// calculate covariance 
+		matrix c = covariance(A);
+
+		// calculate eigenvalues and eigenvectors
+		// NOTE: V must be correct size; l must be empty.
+		matrix V(3, 3); V.zero();
+		vector<double> l;
+		c.eigen_vectors(V, l);
+
+		// find largest eigenvalue
+		int ind = 0; double lmax = l[0];
+		if (l[1] > lmax) { ind = 1; lmax = l[1]; }
+		if (l[2] > lmax) { ind = 2; lmax = l[2]; }
+
+		// the mean direction is the eigen vector with the largest eigenvalue
+		vec3d meanDir(V[0][ind], V[1][ind], V[2][ind]);
+		odf->m_meanDir = meanDir;
+	}
 }

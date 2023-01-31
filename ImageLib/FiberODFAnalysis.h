@@ -49,6 +49,9 @@ public:
     GLMesh m_remesh;
     GLMesh m_radialRemesh;
     double m_radius;
+
+	// fitting parameters
+	vec3d	m_meanDir;	// mean direction
 };
 
 class CFiberODFAnalysis : public CImageAnalysis
@@ -82,6 +85,8 @@ private:
 
     void buildMeshes();
     void remeshSphere(CODF* odf);
+
+	void calculateFits();
 
 	void updateProgress(double f);
 
