@@ -45,7 +45,7 @@ CGLLinePlot::CGLLinePlot()
 	SetName(szname);
 
 	AddIntParam(0, "data_field")->SetEnumNames("@data_scalar");
-	AddIntParam(0, "color_mode")->SetEnumNames("Solid\0Segments\0Line Data\0Model Data\0");
+	AddIntParam(0, "color_mode")->SetEnumNames("solid\0segments\0line data\0model data\0");
 	AddColorParam(GLColor(255, 0, 0), "solid_color");
 	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
 	AddIntParam(0, "render_mode")->SetEnumNames("lines\0lines 3D\0smooth lines 3D\0");

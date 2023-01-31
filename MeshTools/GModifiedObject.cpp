@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GModifiedObject.h"
-#include "FEModel.h"
-#include <MeshTools/GLMesh.h>
+#include <FEMLib/FSModel.h>
+#include <MeshLib/GLMesh.h>
 
 //-----------------------------------------------------------------------------
 GModifiedObject::GModifiedObject(GObject* po) : GObject(GMODIFIED_OBJECT)

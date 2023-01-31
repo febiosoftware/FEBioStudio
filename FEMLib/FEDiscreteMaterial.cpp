@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEDiscreteMaterial.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <FSCore/ParamBlock.h>
 #include <FECore/units.h>
 #include <FEBioLink/FEBioInterface.h>
@@ -56,7 +56,7 @@ REGISTER_MATERIAL(FSNonLinearSpringMaterial, MODULE_MECH, FE_DISCRETE_NONLINEAR_
 
 FSNonLinearSpringMaterial::FSNonLinearSpringMaterial(FSModel* fem) : FSDiscreteMaterial(FE_DISCRETE_NONLINEAR_SPRING, fem)
 {
-	AddScienceParam(1, UNIT_FORCE, "force", "spring force");
+	AddScienceParam(1, UNIT_FORCE, "force", "spring force")->MakeVariable(true);
 	AddDoubleParam(1, "scale", "scale");
 	AddChoiceParam(0, "measure", "deformation measure")->SetEnumNames("elongation\0strain\0stretch\0");
 }

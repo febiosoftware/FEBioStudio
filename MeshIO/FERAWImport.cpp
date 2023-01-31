@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FERAWImport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 //-----------------------------------------------------------------------------
 FERAWImport::FERAWImport(FSProject& prj) : FSFileImport(prj)

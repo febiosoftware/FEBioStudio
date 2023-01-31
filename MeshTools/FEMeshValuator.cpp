@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "FEMeshValuator.h"
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/triangulate.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FEElementData.h>
+#include <GeomLib/GGroup.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FEElementData.h>
 #include <MeshLib/MeshTools.h>
 
 //-----------------------------------------------------------------------------

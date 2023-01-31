@@ -46,6 +46,16 @@ private:
 	CFEBioThread* m_thread;
 };
 
+class FEBioThreadProgress : public FEBio::FEBioProgressTracker
+{
+public:
+	FEBioThreadProgress(CFEBioJob* job) : m_job(job) {}
+	void SetProgress(double pct) override { m_job->SetProgress(pct); }
+
+private:
+	CFEBioJob* m_job;
+};
+
 CFEBioThread::CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : m_wnd(wnd), m_job(job)
 {
 	QObject::connect(this, SIGNAL(finished()), this, SIGNAL(QObject::deleteLater()));
@@ -63,6 +73,7 @@ void CFEBioThread::run()
 
 	// set ...
 	m_job->SetStatus(CFEBioJob::RUNNING);
+	m_job->SetProgress(0.0);
 
 	QString Cmd = QString::fromStdString(m_job->m_cmd);
 	Cmd.replace("$(Filename)", QString::fromStdString(m_job->GetFEBFileName()));
@@ -70,7 +81,8 @@ void CFEBioThread::run()
 
 	// go!
 	FEBioThreadOutput threadOutput(this);
-	int n = FEBio::runModel(cmd, &threadOutput);
+	FEBioThreadProgress progressTracker(m_job);
+	int n = FEBio::runModel(cmd, &threadOutput, &progressTracker);
 
 	emit resultsReady(n, QProcess::ExitStatus::NormalExit);
 }

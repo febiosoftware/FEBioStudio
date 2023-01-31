@@ -36,10 +36,10 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QGridLayout>
 #include <QMessageBox>
-#include <MeshTools/FEItemListBuilder.h>
-#include <MeshTools/GGroup.h>
+#include <MeshLib/FEItemListBuilder.h>
+#include <GeomLib/GGroup.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
 

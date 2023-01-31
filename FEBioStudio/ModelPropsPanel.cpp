@@ -54,12 +54,12 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
 #include <GLWLib/convert.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
 #include <PostLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"

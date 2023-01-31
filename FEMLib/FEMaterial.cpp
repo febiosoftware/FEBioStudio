@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMaterial.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <FECore/units.h>
 #include "FEDiscreteMaterial.h"
 #include <FEBioLink/FEBioClass.h>
@@ -3513,6 +3513,34 @@ vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 		v = fiber->GetFiberVector(el);
 	}
 	return v;
+}
+
+bool FEBioMaterial::HasMaterialAxes() const
+{
+	if (FindProperty("mat_axis"))
+	{
+		return true;
+	}
+	else return false;
+}
+
+mat3d FEBioMaterial::GetMatAxes(FEElementRef& el) const
+{
+	mat3d Q; Q.zero();
+
+	const FSProperty* pm = FindProperty("mat_axis");
+	if (pm)
+	{
+		const FSMat3dValuator* matAxis = dynamic_cast<const FSMat3dValuator*>(pm->GetComponent());
+		if (matAxis)
+		{
+			// evaluate the fiber direction
+			Q = matAxis->GetMatAxis(el);
+		}
+	}
+	else Q = mat3d::identity();
+
+	return Q;
 }
 
 void FEBioMaterial::Save(OArchive& ar)

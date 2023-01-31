@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include "FEHollowSphere.h"
 
 //=============================================================================

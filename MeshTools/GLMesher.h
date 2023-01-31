@@ -28,7 +28,7 @@ class GObject;
 class GFace;
 class GEdge;
 class GLMesh;
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 // class to build GLMesh for a GObject
 class GLMesher

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "VTUImport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <XML/XMLReader.h>
 
 class VTKDataArray

@@ -29,13 +29,13 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 
 #include "FENIKEExport.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
 // FENIKEExport
 //-----------------------------------------------------------------------------
 
-FENIKEExport::FENIKEExport(FSProject& prj) : FEFileExport(prj)
+FENIKEExport::FENIKEExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

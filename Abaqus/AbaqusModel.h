@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <list>
 #include <vector>
 #include <map>

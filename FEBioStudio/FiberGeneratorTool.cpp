@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <MeshTools/GradientMap.h>
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/FENodeData.h>
+#include <MeshLib/FENodeData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>

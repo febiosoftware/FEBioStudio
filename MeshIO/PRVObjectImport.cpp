@@ -28,10 +28,10 @@ SOFTWARE.*/
 #include "PRVObjectImport.h"
 #include <FSCore/Serializable.h>
 #include "PRVObjectFormat.h"
-#include <MeshTools/FEProject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/FSProject.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 
 //-----------------------------------------------------------------------------
 PRVObjectImport::PRVObjectImport(FSProject& prj) : FSFileImport(prj)

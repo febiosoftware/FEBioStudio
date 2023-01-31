@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
 #include <PostLib/ImageSlicer.h>
@@ -894,6 +894,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	// which mesh is active (surface or volume)
 	int meshMode = m_pWnd->GetMeshMode();
+	if (postDoc) meshMode = MESH_MODE_VOLUME;
 
 	m_bextrude = false;
 

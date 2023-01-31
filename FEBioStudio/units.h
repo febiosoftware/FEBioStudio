@@ -28,8 +28,15 @@ SOFTWARE.*/
 #include <QString>
 #include <QStringList>
 #include <FSCore/ParamBlock.h>
+#include <FECore/units.h>
 
 namespace Units {
+
+	struct UnitSymbol
+	{
+		const char* s;	// symbol string
+		double		f;	// SI scale factor
+	};
 
 	enum UNIT_SYSTEM
 	{
@@ -69,5 +76,8 @@ namespace Units {
 	QString GetUnitString(int unit_system, const char* sz);
 	QString GetUnitString(int unit_system, Unit_Symbol us);
 
-	const char* GetUnitSymbol(int unit_system, Unit_Symbol us);
+	UnitSymbol GetUnitSymbol(int unit_system, Unit_Symbol us);
+
+	// convert a value 
+	double Convert(double val, const char* szunit, int src, int dst);
 }

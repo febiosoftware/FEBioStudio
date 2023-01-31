@@ -26,10 +26,10 @@ SOFTWARE.*/
 
 #include "FETetGenExport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 
-FETetGenExport::FETetGenExport(FSProject& prj) : FEFileExport(prj)
+FETetGenExport::FETetGenExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

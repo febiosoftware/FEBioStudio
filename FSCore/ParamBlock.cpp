@@ -370,7 +370,7 @@ Param& Param::operator = (const Param& p)
 //  m_szindx = p.m_szindx;
 //  m_nindx = p.m_nindx;
 //	m_offset = p.m_offset;
-	m_varType = p.m_varType;
+//	m_varType = p.m_varType;
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 //	m_flags = p.m_flags;
@@ -1094,7 +1094,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	int nid = p.GetParamID();
 	int ntype = (int) p.GetParamType();
 
-//	ar.WriteChunk(CID_PARAM_ID, nid);
+	ar.WriteChunk(CID_PARAM_ID, nid);
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());

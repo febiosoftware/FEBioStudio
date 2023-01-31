@@ -30,10 +30,10 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESelection.h"
-#include "GGroup.h"
-#include "GLMesh.h"
+#include <GeomLib/GGroup.h>
+#include <MeshLib/GLMesh.h>
 #include <GeomLib/GObject.h>
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 
 //////////////////////////////////////////////////////////////////////
 // FESelection

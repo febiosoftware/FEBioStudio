@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <MeshTools/FEMesher.h>
 #include <GeomLib/GPrimitive.h>
 #include <GeomLib/GMultiBox.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/MeshLayer.h>
 #include <MeshLib/FEMeshBuilder.h>
 

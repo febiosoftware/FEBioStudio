@@ -26,13 +26,13 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "modelcheck.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidLoad.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <stdarg.h>
 #include <sstream>
 

@@ -27,8 +27,8 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioInputModel.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
 #include "FEBioImport.h"
 #include <string.h>
 #include <stdarg.h>
@@ -726,6 +726,7 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 	{
 		// could be a domain?
 		Domain* dom = m_part->FindDomain(szname);
+		if (dom == nullptr) return nullptr;
 
 		// get the element list
 		elemList = dom->GetElementIDList();

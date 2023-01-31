@@ -29,10 +29,10 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEAnalysisStep.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FERigidConstraint.h>
-#include <MeshTools/GMaterial.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/GMaterial.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEBioLink/FEBioInterface.h>
@@ -50,7 +50,7 @@ FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
 QStringList FEObjectProps::GetEnumValues(const char* ch)
 {
 	QStringList ops;
-	char sz[512] = { 0 };
+	char sz[1024] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (m_fem)
@@ -540,7 +540,7 @@ void CMaterialProps::BuildPropertyList()
 	}
 	else
 	{
-		if (pm && pm->HasMaterialAxes())
+		if (pm && pm->m_axes)
 		{
 			// add the material axes selection option
 			QStringList val;
@@ -564,7 +564,7 @@ void CMaterialProps::BuildPropertyList()
             case FE_AXES_ANGLES:
                 addProperty("theta", CProperty::String);
                 addProperty("phi", CProperty::String);
-                    break;
+                break;
 			}
 		}
 	}

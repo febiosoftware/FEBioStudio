@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <MeshLib/FEMeshBase.h>
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 
 // tools for finding intersections
 struct Ray

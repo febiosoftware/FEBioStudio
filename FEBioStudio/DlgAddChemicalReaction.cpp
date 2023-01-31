@@ -787,7 +787,7 @@ void CDlgAddChemicalReaction::apply()
 	FSMaterialProperty* fwd = m_reaction->GetForwardRate();
 	if ((fwd == nullptr) || (m_fwdMat != fwd->Type()))
 	{
-		FSMaterialProperty* fwdRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(fwd->Type(), fem)); assert(fwdRate);
+		FSMaterialProperty* fwdRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(m_fwdMat, fem)); assert(fwdRate);
 		m_reaction->SetForwardRate(fwdRate);
 	}
 
@@ -797,7 +797,7 @@ void CDlgAddChemicalReaction::apply()
 	{
 		if ((rev == nullptr) || (rev->Type() != m_revMat))
 		{
-			FSMaterialProperty* revRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(fwd->Type(), fem)); assert(revRate);
+			FSMaterialProperty* revRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(m_revMat, fem)); assert(revRate);
 			m_reaction->SetReverseRate(revRate);
 		}
 	}

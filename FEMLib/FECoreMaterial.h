@@ -69,8 +69,8 @@ public:
 	virtual vec3d GetFiber(FEElementRef& el) { return vec3d(0,0,0); };
 	
 	// local material axes
-	bool HasMaterialAxes() const;
-	mat3d GetMatAxes(FEElementRef& el) const;
+	virtual bool HasMaterialAxes() const;
+	virtual mat3d GetMatAxes(FEElementRef& el) const;
 
 	// set the axis material
 	virtual void SetAxisMaterial(FSAxisMaterial* Q);

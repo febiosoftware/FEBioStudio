@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include "ModelDocument.h"
 #include "Commands.h"
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 class Ui::CCurvePicker
 {

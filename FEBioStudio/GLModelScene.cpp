@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "GLModelScene.h"
 #include "GLView.h"
 #include "ModelDocument.h"
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLMeshRender.h>
@@ -844,7 +844,7 @@ class GLFiberRenderer
 {
 public:
 	GLFiberRenderer() {}
-	void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c);
+	void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q = mat3d::identity());
 
 	void Init();
 
@@ -896,11 +896,13 @@ void GLFiberRenderer::Finish()
 	glPopAttrib();
 }
 
-void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c)
+void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q)
 {
 	if (pmat->HasFibers())
 	{
-		vec3d q = pmat->GetFiber(rel);
+		vec3d q0 = pmat->GetFiber(rel);
+
+		vec3d q = Q * q0;
 
 		// This vector is defined in global coordinates, except for user-defined fibers, which
 		// are assumed to be in local coordinates
@@ -942,6 +944,11 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 		}
 	}
 
+	if (pmat->HasMaterialAxes())
+	{
+		Q = Q*pmat->GetMatAxes(rel);
+	}
+
 	int index = 0;
 	for (int i = 0; i < pmat->Properties(); ++i)
 	{
@@ -952,7 +959,7 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 			if (matj)
 			{
 				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
-				RenderFiber(po, matj, rel, c);
+				RenderFiber(po, matj, rel, c, Q);
 			}
 		}
 	}
@@ -1108,7 +1115,7 @@ void CGLModelScene::RenderLocalMaterialAxes(CGLContext& rc)
 								glx::drawLine(c, c + q * h);
 							}
 						}
-						else if (pmat)
+						else if (pmat && pmat->HasMaterialAxes())
 						{
 							vec3d c(0, 0, 0);
 							for (int k = 0; k < el.Nodes(); ++k) c += pm->NodePosition(el.m_node[k]);

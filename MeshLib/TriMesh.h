@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <list>
 #include <vector>
 

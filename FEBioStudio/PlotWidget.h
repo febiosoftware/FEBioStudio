@@ -405,6 +405,9 @@ public:
 
 	void SetMath(const QString& txt);
 
+	void ClearVariables();
+	void SetVariable(const QString& name, double val);
+
 	void setLeftExtendMode(int n);
 	void setRightExtendMode(int n);
 
@@ -418,6 +421,8 @@ public slots:
 private:
 	MSimpleExpression	m_math;
 	std::string			m_ord;
+
+	std::vector< std::pair<QString, double> >	m_Var;
 
 	int		m_leftExtend;
 	int		m_rghtExtend;
@@ -435,6 +440,8 @@ public:
 
 	void SetOrdinate(const QString& ord);
 	void SetMath(const QString& txt);
+	void ClearVariables();
+	void SetVariable(const QString& name, double val);
 
 	void showRangeOptions(bool b);
 

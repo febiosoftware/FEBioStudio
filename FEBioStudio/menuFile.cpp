@@ -104,7 +104,7 @@ SOFTWARE.*/
 #include <PostLib/ImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/AbaqusExport.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
@@ -376,6 +376,13 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return false;
+
+	CGLDocument* glDoc = dynamic_cast<CGLDocument*>(doc);
+	if (glDoc && (glDoc->GetFileWriter() == nullptr))
+	{
+		on_actionSaveAs_triggered();
+		return true;
+	}
 
 	// start log message
 	ui->logPanel->AddText(QString("Saving file: %1 ...").arg(fileName));
@@ -962,6 +969,13 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 //-----------------------------------------------------------------------------
 void CMainWindow::SavePostDoc()
 {
+	CPostDocument* doc = GetPostDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
+
+	string fileName = doc->GetDocTitle();
+	size_t n = fileName.rfind('.');
+	if (n != string::npos) fileName.erase(n);
+
 	QStringList filters;
 	filters << "FEBio Studio Post Session (*.fsps)"
 		<< "FEBio xplt files (*.xplt)"
@@ -979,6 +993,7 @@ void CMainWindow::SavePostDoc()
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilters(filters);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	dlg.selectFile(QString::fromStdString(fileName));
 	if (dlg.exec())
 	{
 		QStringList files = dlg.selectedFiles();
@@ -990,9 +1005,6 @@ void CMainWindow::SavePostDoc()
 		if (fileName.isEmpty()) return;
 		string sfilename = fileName.toStdString();
 		const char* szfilename = sfilename.c_str();
-
-		CPostDocument* doc = GetPostDocument();
-		if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 		Post::FEPostModel& fem = *doc->GetFSModel();
 
@@ -1184,7 +1196,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 			if (n != string::npos)
 			{
 				string ext = fileName.substr(n);
-				if (ext == ".fsm")
+				if ((ext == ".fsm") || (ext == ".feb"))
 				{
 					fileName.replace(n, 4, ".fs2");
 				}
@@ -1542,6 +1554,10 @@ void CMainWindow::on_actionImportGeometry_triggered()
 			RedrawGL();
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "Import Geometry", "Importing geometry requires an active model.\nPlease create a new model or open an existing model first.");
+	}
 }
 
 void CMainWindow::on_actionImportRawImage_triggered()
@@ -1799,7 +1815,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 			FSProject prj;
 			FEBioFileImport reader(prj);
 
-			FEFileExport* exporter = 0;
+			FSFileExport* exporter = 0;
 			if (nformat == 0x0400)
 			{
 				// write version 4
@@ -1964,7 +1980,7 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 			{
 				FSProject& prj = doc.GetProject();
 
-				FEFileExport* exporter = 0;
+				FSFileExport* exporter = 0;
 				if (nformat == 0x0400)
 				{
 					// write version 4
@@ -2104,7 +2120,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 					{
 						FSProject& prj = importer->GetProject();
 
-						FEFileExport* exporter = nullptr;
+						FSFileExport* exporter = nullptr;
 						switch (format)
 						{
 						case 0: exporter = new FEVTKExport(prj); ext = "vtk"; break;

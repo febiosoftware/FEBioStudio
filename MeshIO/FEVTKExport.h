@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshTools/FEFileExport.h>
+#include "FSFileExport.h"
 
 //-----------------------------------------------------------------------------
 struct VTKEXPORT
@@ -36,7 +36,7 @@ struct VTKEXPORT
 	bool	bscalardata;	// user scalar data
 };
 
-class FEVTKExport : public FEFileExport
+class FEVTKExport : public FSFileExport
 {
 public:
 	FEVTKExport(FSProject& prj);

@@ -29,8 +29,8 @@ SOFTWARE.*/
 #include <QCloseEvent>
 #include <QtCore/QProcess>
 #include <FSCore/box.h>
-#include <MeshTools/GMaterial.h>
-#include <FECore/vec3d.h>
+#include <FEMLib/GMaterial.h>
+#include <FSCore/math3d.h>
 
 class FSObject;
 class CDocument;
@@ -574,6 +574,8 @@ public slots:
 	void OnPostObjectPropsChanged(FSObject* po);
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
+
+	void checkJobProgress();
 
 	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);

@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEFileExport.h>
+#include "FSFileExport.h"
 
-class FEHypersurfaceExport : public FEFileExport
+class FEHypersurfaceExport : public FSFileExport
 {
 public:
 	FEHypersurfaceExport(FSProject& prj);

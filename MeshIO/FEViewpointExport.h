@@ -26,9 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshTools/FEFileExport.h>
+#include "FSFileExport.h"
 
-class FEViewpointExport : public FEFileExport
+class FEViewpointExport : public FSFileExport
 {
 public:
 	FEViewpointExport(FSProject& prj);

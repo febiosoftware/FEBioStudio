@@ -6,7 +6,7 @@
 
 ===========================================================================
 
- R E L E A S E   2.0   ?/?/2022
+ R E L E A S E   2.0   1/5/2023
 
 ===========================================================================
 
@@ -45,6 +45,7 @@ BUILD:
 * Added support for importing mesh selections from feb file.
 * When visualizing fibers, a new toolbox appears that allows users to customize the fiber rendering options. 
 * Added option to take cross product of generated vector field in fiber generator tool.
+* When running an FEBio model with the default configuration, the progress will be indicated in the main window title bar. 
 
 POST:
 * Line (beam, truss) elements can now be rendered as solid. 

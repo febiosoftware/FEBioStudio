@@ -8770,7 +8770,7 @@ Partitions the surface, edges, and nodes of the mesh based on an angle criterion
 
 \begin_layout Subsubsection
 
-\series bold
+
 Boundary Layer
 \end_layout
 
@@ -8848,7 +8848,7 @@ noprefix "false"
 
 \begin_layout Subsubsection
 
-\series bold
+
 Convert Mesh
 \end_layout
 
@@ -8872,7 +8872,7 @@ When converting between linear element types, elements may be split and
 
 \begin_layout Subsubsection
 
-\series bold
+
 Create shells from faces
 \end_layout
 
@@ -8884,7 +8884,7 @@ This tool creates a layer of shells from a face selection.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Detach Elements
 \end_layout
 
@@ -8896,7 +8896,7 @@ This tool detaches the element selection from the rest of the mesh.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Discard Mesh
 \end_layout
 
@@ -8907,7 +8907,7 @@ This discards the volume mesh and only retains the surface as a shell mesh.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Extrude Faces
 \end_layout
 
@@ -8921,7 +8921,7 @@ The selected faces are extruded.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Fix Mesh
 \end_layout
 
@@ -8933,7 +8933,7 @@ Thsi tool offers several options for repairing common problems in volume
 
 \begin_layout Subsubsection
 
-\series bold
+
 Inflate
 \end_layout
 
@@ -8988,7 +8988,7 @@ symmetric mesh bias
 
 \begin_layout Subsubsection
 
-\series bold
+
 Invert
 \end_layout
 
@@ -9004,7 +9004,7 @@ This tool can be used to invert the selected elements.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Mirror
 \end_layout
 
@@ -9016,7 +9016,7 @@ This tool mirrors the mesh with respect to the selected mirror plane and
 
 \begin_layout Subsubsection
 
-\series bold
+
 MMG Remesh
 \begin_inset CommandInset label
 LatexCommand label
@@ -9103,7 +9103,7 @@ only remesh selection
 
 \begin_layout Subsubsection
 
-\series bold
+
 Partition
 \end_layout
 
@@ -9121,7 +9121,7 @@ This tool is useful when the auto-partition tool did not create a desirable
 
 \begin_layout Subsubsection
 
-\series bold
+
 Rebuild Mesh
 \end_layout
 
@@ -9143,7 +9143,7 @@ This tool should not be used often.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Refine Mesh
 \end_layout
 
@@ -9157,7 +9157,7 @@ Refines the triangular shell mesh uniformly by dividing each triangular
 
 \begin_layout Subsubsection
 
-\series bold
+
 Revolve Faces
 \end_layout
 
@@ -9189,7 +9189,7 @@ segments divisions during rotation
 
 \begin_layout Subsubsection
 
-\series bold
+
 Rezone
 \end_layout
 
@@ -9203,7 +9203,7 @@ This tool can be used to locally rezone a mesh.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Set Axis
 \end_layout
 
@@ -9304,7 +9304,7 @@ cylindrical The last option under the generator pull-down menu of Set Axes
 
 \begin_layout Subsubsection
 
-\series bold
+
 Set Axis from curvature
 \end_layout
 
@@ -9355,7 +9355,7 @@ This tool may be particularly useful with meshes that represent anatomical
 
 \begin_layout Subsubsection
 
-\series bold
+
 Set Fibers
 \end_layout
 
@@ -9394,7 +9394,7 @@ node-numbering This option is generally useful only when the mesh consists
 
 \begin_layout Subsubsection
 
-\series bold
+
 Shell Thickness
 \end_layout
 
@@ -9404,7 +9404,7 @@ Set the shell thickness for the selected shell elements.
 
 \begin_layout Subsubsection
 
-\series bold
+
 Smooth
 \end_layout
 
@@ -9451,7 +9451,7 @@ Project
 
 \begin_layout Subsubsection
 
-\series bold
+
 TetGen
 \end_layout
 
@@ -9498,7 +9498,7 @@ feather
 
 \begin_layout Subsubsection
 
-\series bold
+
 Weld Nodes
 \end_layout
 

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "PostLib/ColorMap.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 #ifdef __APPLE__
 #include <OpenGL/gl.h>

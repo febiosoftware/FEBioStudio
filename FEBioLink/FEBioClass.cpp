@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <FECore/FEModule.h>
 #include <FEBioLib/FEBioModel.h>
 #include <FEBioLib/febio.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FEStepComponent.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 using namespace FEBio;
 
@@ -376,7 +376,7 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
 	case FETIMECONTROLLER_ID  : pc = new FSGenericClass(fem); break;
 	case FEVEC3DVALUATOR_ID   : pc = new FSVec3dValuator(fem); break;
-	case FEMAT3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
+	case FEMAT3DVALUATOR_ID   : pc = new FSMat3dValuator(fem); break;
 	case FEMAT3DSVALUATOR_ID  : pc = new FSGenericClass(fem); break;
 	case FESOLIDDOMAIN_ID     : pc = new FESolidFormulation(fem); break;
 	case FESHELLDOMAIN_ID     : pc = new FEShellFormulation(fem); break;
@@ -804,12 +804,54 @@ bool interrup_cb(FEModel* fem, unsigned int nwhen, void* pd)
 	return true;
 }
 
+bool progress_cb(FEModel* pfem, unsigned int nwhen, void* pd)
+{
+	FEBioModel& fem = static_cast<FEBioModel&>(*pfem);
+
+	FEBioProgressTracker* progressTracker = (FEBioProgressTracker*)pd;
+	if (pd == nullptr) return true;
+
+	// get the number of steps
+	int nsteps = fem.Steps();
+
+	// calculate progress
+	double starttime = fem.GetStartTime();
+	double endtime = fem.GetEndTime();
+	double f = 0.0;
+	if (nwhen != CB_INIT)
+	{
+		double ftime = fem.GetCurrentTime();
+		if (endtime != starttime) f = (ftime - starttime) / (endtime - starttime);
+		else
+		{
+			// this only happens (I think) when the model is solved
+			f = 1.0;
+		}
+	}
+
+	double pct = 0.0;
+	if (nsteps > 1)
+	{
+		int N = nsteps;
+		int n = fem.GetCurrentStepIndex();
+		pct = 100.0 * ((double)n  + f) / (double)N;
+	}
+	else
+	{
+		pct = 100.0 * f;
+	}
+
+	progressTracker->SetProgress(pct);
+
+	return true;
+}
+
 void FEBio::TerminateRun()
 {
 	terminateRun = true;
 }
 
-int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker)
 {
 	terminateRun = false;
 
@@ -821,8 +863,11 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 		fem.GetLogFile().SetLogStream(new FBSLogStream(outputHandler));
 	}
 
-	// attach a callback to interrupt
+	// attach a callback to interrupt and measure progress
 	fem.AddCallback(interrup_cb, CB_ALWAYS, nullptr);
+
+	if (progressTracker)
+		fem.AddCallback(progress_cb, CB_MAJOR_ITERS, progressTracker);
 
 	try {
 		febio::CMDOPTIONS ops;
@@ -865,6 +910,18 @@ vec3d FEBio::GetMaterialFiber(void* vec3dvaluator, const vec3d& p)
 	vec3d v = (*val)(mp);
 	v.unit();
 	return v; 
+}
+
+mat3d FEBio::GetMaterialAxis(void* mat3dvaluator, const vec3d& p)
+{
+	FECoreBase* pc = (FECoreBase*)mat3dvaluator;
+	FEMat3dValuator* val = dynamic_cast<FEMat3dValuator*>(pc); assert(val);
+	if (val == nullptr) return mat3d::identity();
+	FEMaterialPoint mp;
+	mp.m_r0 = mp.m_rt = p;
+	mat3d v = (*val)(mp);
+	v.unit();
+	return v;
 }
 
 void FEBio::DeleteClass(void* p)
@@ -1151,6 +1208,11 @@ FSVec3dValuator* FEBio::CreateVec3dValuator(const std::string& typeStr, FSModel*
 	return CreateModelComponent<FSVec3dValuator>(FEVEC3DVALUATOR_ID, typeStr, fem);
 }
 
+FSMat3dValuator* FEBio::CreateMat3dValuator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FSMat3dValuator>(FEMAT3DVALUATOR_ID, typeStr, fem);
+}
+
 FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
 {
 	if (typeStr.empty())
@@ -1189,10 +1251,10 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
 	case FEMESHADAPTOR_ID     : return CreateMeshAdaptor     (typeStr, fem); break;
 	case FEVEC3DVALUATOR_ID   : return CreateVec3dValuator   (typeStr, fem); break;
+	case FEMAT3DVALUATOR_ID   : return CreateMat3dValuator   (typeStr, fem); break;
 	case FESOLVER_ID          :
 	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
-	case FEMAT3DVALUATOR_ID  :
 	case FEMAT3DSVALUATOR_ID :
 	case FEMESHADAPTORCRITERION_ID:
 	{

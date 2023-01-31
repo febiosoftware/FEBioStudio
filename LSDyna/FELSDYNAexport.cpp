@@ -26,14 +26,14 @@ SOFTWARE.*/
 
 #include "FELSDYNAexport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 #include <memory>
 
 using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
-FELSDYNAexport::FELSDYNAexport(FSProject& prj) : FEFileExport(prj)
+FELSDYNAexport::FELSDYNAexport(FSProject& prj) : FSFileExport(prj)
 {
 	m_fp = 0;
 

@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "FEDomainComponent.h"
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include "FEMKernel.h"
 
 FSDomainComponent::FSDomainComponent(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)

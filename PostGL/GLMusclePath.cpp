@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshTools/FETetGenMesher.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/triangulate.h>
 #include <GLLib/glx.h>

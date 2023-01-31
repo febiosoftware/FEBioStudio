@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ModelTree.h"
 #include "ModelDocument.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FERigidLoad.h>
@@ -47,8 +47,8 @@ SOFTWARE.*/
 #include <QtCore/QFileInfo>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include "MainWindow.h"
 #include "SSHThread.h"
 #include "SSHHandler.h"
@@ -441,6 +441,7 @@ public:
 		addProperty("Shell reference surface", CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
 		addProperty("Render beams as solid", CProperty::Bool);
 		addProperty("Smoothing angle", CProperty::Float);
+		addProperty("Render internal surfaces", CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -458,6 +459,7 @@ public:
 		case 7: v = m_fem->ShellReferenceSurface(); break;
 		case 8: v = m_fem->ShowBeam2Solid(); break;
 		case 9: v = m_fem->GetSmoothingAngle(); break;
+		case 10: v = m_fem->RenderInnerSurfaces(); break;
 		}
 		return v;
 	}
@@ -476,6 +478,7 @@ public:
 		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
 		case 8: m_fem->ShowBeam2Solid(v.toBool()); break;
 		case 9: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 10: m_fem->RenderInnerSurfaces(v.toBool()); break;
 		}
 	}
 

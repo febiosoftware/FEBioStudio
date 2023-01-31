@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <MeshLib/FEElement.h>
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <vector>
 //using namespace std;
 

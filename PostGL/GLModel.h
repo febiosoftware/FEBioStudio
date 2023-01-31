@@ -220,6 +220,9 @@ public:
 	void AddDecoration(GDecoration* pd);
 	void RemoveDecoration(GDecoration* pd);
 
+	bool RenderInnerSurfaces();
+	void RenderInnerSurfaces(bool b);
+
 protected:
 	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
 	void RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m, bool activeOnly);
@@ -245,6 +248,8 @@ public: // Selection
 	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
 	void UpdateSelectionLists(int mode = -1);
 	void ClearSelectionLists();
+
+	vec3d GetSelectionCenter();
 
 	void SelectNodes(vector<int>& items, bool bclear);
 	void SelectEdges(vector<int>& items, bool bclear);
@@ -375,6 +380,7 @@ public:
 	GLColor		m_col_inactive;	//!< color for inactive parts
 	GLColor		m_ghost_color;	//!< color for the "ghost"
 	double		m_stol;			//!< smoothing threshold
+	bool		m_renderInnerSurface;	//!< render the inner surfaces
 
 	bool		m_bshowMesh;
 	bool		m_doZSorting;

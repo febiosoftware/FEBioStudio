@@ -335,7 +335,12 @@ void CMainWindow::on_actionAddProbe_triggered()
 		return;
 	}
 
+	// get the selection center
+	vec3d c = glm->GetSelectionCenter();
+
+	// create the probe and set its initial position
 	Post::GLProbe* probe = new Post::GLProbe();
+	probe->SetInitialPosition(c);
 	glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);

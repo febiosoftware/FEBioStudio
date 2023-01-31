@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 CMaterialMapTool::CMaterialMapTool(CMainWindow* wnd) : CBasicTool(wnd, "Material Map", HAS_APPLY_BUTTON)
 {

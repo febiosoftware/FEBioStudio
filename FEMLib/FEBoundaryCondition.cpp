@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "FEBoundaryCondition.h"
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/FEModel.h>
-#include <MeshTools/GGroup.h>
+#include "FSModel.h"
+#include <GeomLib/GGroup.h>
 #include <FECore/units.h>
 #include <FECore/fecore_enum.h>
 
@@ -442,6 +442,15 @@ void FEBioBoundaryCondition::Save(OArchive& ar)
 		FSBoundaryCondition::Save(ar);
 	}
 	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
 }
 
 void FEBioBoundaryCondition::Load(IArchive& ar)
@@ -454,6 +463,7 @@ void FEBioBoundaryCondition::Load(IArchive& ar)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
 		case CID_FEBIO_BASE_DATA: FSBoundaryCondition::Load(ar); break;
+		case CID_PROPERTY_LIST  : LoadFEBioProperties(this, ar); break;
 		default:
 			assert(false);
 		}

@@ -25,14 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEFileExport.h>
+#include <MeshIO/FSFileExport.h>
 #include "FENikeProject.h"
 
 //-----------------------------------------------------------------------------
 // This class takes an FSProject, converts it to a Nike project and
 // stores it to a file.
 //
-class FENIKEExport : public FEFileExport
+class FENIKEExport : public FSFileExport
 {
 public:
 	FENIKEExport(FSProject& prj);

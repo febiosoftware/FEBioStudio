@@ -48,6 +48,8 @@ public:
 
 	bool TrackModelData() const;
 
+	void SetInitialPosition(const vec3d& r);
+
 public:
 	GLColor GetColor() const;
 	void SetColor(const GLColor& c);

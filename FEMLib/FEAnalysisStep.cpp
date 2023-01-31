@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEAnalysisStep.h"
-#include <MeshTools/FEModel.h>
-#include <FEMLib/FERigidConstraint.h>
-#include <FEMLib/FERigidLoad.h>
-#include <MeshTools/FEProject.h>
+#include "FSModel.h"
+#include "FERigidConstraint.h"
+#include "FERigidLoad.h"
+#include "FSProject.h"
 #include "FEInitialCondition.h"
 #include "FESurfaceLoad.h"
 #include "FEMKernel.h"

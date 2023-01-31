@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEMultiMaterial.h"
 #include "FEMaterialFactory.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <sstream>
 #include <FECore/units.h>
 #include <FEBioLink/FEBioClass.h>
@@ -641,14 +641,22 @@ FSMaterialProperty* FEBioReactionMaterial::GetReverseRate()
 
 bool FEBioReactionMaterial::GetOvrd() const
 {
-    // TODO:
-    return false;
+	bool b = false;
+	if (m_reaction)
+	{
+		Param* p = m_reaction->GetParam("override_vbar"); assert(p);
+		if (p) b = p->GetBoolValue();
+	}
+	return b;
 }
 
 void FEBioReactionMaterial::SetOvrd(bool b)
 {
-    // TODO:
-    assert(false);
+	if (m_reaction)
+	{
+		Param* p = m_reaction->GetParam("override_vbar"); assert(p);
+		if (p) p->SetBoolValue(b);
+	}
 }
 
 int FEBioReactionMaterial::Reactants() const

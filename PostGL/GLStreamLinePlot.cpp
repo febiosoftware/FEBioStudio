@@ -44,16 +44,16 @@ CGLStreamLinePlot::CGLStreamLinePlot()
 	sprintf(szname, "StreamLines.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
-	AddIntParam(0, "Color map" )->SetEnumNames("@color_map");
-	AddBoolParam(true, "Allow clipping");
-	AddDoubleParam(0, "Step size");
-	AddDoubleParam(0, "Density")->SetFloatRange(0.0, 1.0, 0.01);
-	AddDoubleParam(0, "Velocity threshold");
-	AddIntParam(0, "Range Type")->SetEnumNames("Dynamic\0Static\0User\0");
-	AddIntParam(0, "Range divisions")->SetIntRange(1, 100);
-	AddDoubleParam(0., "User Range Max");
-	AddDoubleParam(0., "User Range Min");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "color_map" )->SetEnumNames("@color_map");
+	AddBoolParam(true, "allow_clipping");
+	AddDoubleParam(0, "step_size");
+	AddDoubleParam(0, "density")->SetFloatRange(0.0, 1.0, 0.01);
+	AddDoubleParam(0, "velocity_threshold");
+	AddIntParam(0, "range_type")->SetEnumNames("Dynamic\0Static\0User\0");
+	AddIntParam(0, "range_divisions")->SetIntRange(1, 100);
+	AddDoubleParam(0., "user_range_max");
+	AddDoubleParam(0., "user_range_min");
 
 	m_find = nullptr;
 

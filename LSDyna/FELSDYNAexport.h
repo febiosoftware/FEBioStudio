@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include "MeshTools/FEFileExport.h"
+#include <MeshIO/FSFileExport.h>
 
 //-----------------------------------------------------------------------------
 struct LSDYNAEXPORT
@@ -36,7 +36,7 @@ struct LSDYNAEXPORT
 };
 
 //-----------------------------------------------------------------------------
-class FELSDYNAexport : public FEFileExport
+class FELSDYNAexport : public FSFileExport
 {
 public:
 	FELSDYNAexport(FSProject& prj);

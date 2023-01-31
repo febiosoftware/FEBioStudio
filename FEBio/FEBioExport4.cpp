@@ -30,13 +30,12 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FEElementData.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GGroup.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioModule.h>
 #include <memory>
 #include <sstream>
@@ -2870,16 +2869,40 @@ void FEBioExport4::WriteGlobalsSection()
 
 	if (fem.Parameters())
 	{
+		int userParams = 0;
 		m_xml.add_branch("Constants");
 		{
 			int N = fem.Parameters();
 			for (int i = 0; i < N; ++i)
 			{
 				Param& p = fem.GetParam(i);
-				m_xml.add_leaf(p.GetShortName(), p.GetFloatValue());
+				if ((p.GetFlags() & FS_PARAM_USER) == 0)
+					m_xml.add_leaf(p.GetShortName(), p.GetFloatValue());
+				else
+					userParams++;
 			}
 		}
 		m_xml.close_branch();
+
+		if (userParams > 0)
+		{
+			m_xml.add_branch("Variables");
+			{
+				int N = fem.Parameters();
+				for (int i = 0; i < N; ++i)
+				{
+					Param& p = fem.GetParam(i);
+					if ((p.GetFlags() & FS_PARAM_USER) != 0)
+					{
+						XMLElement el("var");
+						el.add_attribute("name", p.GetShortName());
+						el.value(p.GetFloatValue());
+						m_xml.add_leaf(el);
+					}
+				}
+			}
+			m_xml.close_branch();
+		}
 
 		if (fem.Solutes() > 0)
 		{
