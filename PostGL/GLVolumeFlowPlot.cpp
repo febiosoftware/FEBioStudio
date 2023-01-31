@@ -44,18 +44,18 @@ GLVolumeFlowPlot::GLVolumeFlowPlot()
 	sprintf(szname, "VolumeFlow%d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddBoolParam(true, "Smooth color map");
-	AddIntParam(10, "Range divisions")->SetIntRange(2, 50);
-	AddDoubleParam(0.2, "Opacity scale")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(1.0, "Opacity strength")->SetFloatRange(0.001, 0.999);
-	AddIntParam(1, "Mesh subdivisions")->SetIntRange(1, MAX_MESH_DIVS);
-	AddBoolParam(false, "Show legend");
-	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(0, "User max");
-	AddIntParam(0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(0, "User min");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_scalar");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "smooth_color_map");
+	AddIntParam(10, "range_divisions")->SetIntRange(2, 50);
+	AddDoubleParam(0.2, "ppacity_scale")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(1.0, "opacity_strength")->SetFloatRange(0.001, 0.999);
+	AddIntParam(1, "mesh_subdivisions")->SetIntRange(1, MAX_MESH_DIVS);
+	AddBoolParam(false, "show_legend");
+	AddIntParam(0, "max_range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "user_max");
+	AddIntParam(0, "min_range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "user_min");
 
 	m_alpha = 0.2f;
 	m_gain = 0.5f;

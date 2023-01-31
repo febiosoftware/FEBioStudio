@@ -40,15 +40,15 @@ CGLParticleFlowPlot::CGLParticleFlowPlot()
 	sprintf(szname, "ParticleFlow.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddBoolParam(true, "Allow clipping");
-	AddIntParam(0, "Seed step");
-	AddDoubleParam(0, "Velocity threshold");
-	AddDoubleParam(0, "Seeding density")->SetFloatRange(0.0, 1.0, 0.01);
-	AddDoubleParam(0, "Step size");
-	AddBoolParam(false, "Show path lines");
-	AddIntParam(0, "Path line length");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "allow_clipping");
+	AddIntParam(0, "seed_step");
+	AddDoubleParam(0, "velocity_threshold");
+	AddDoubleParam(0, "seeding_density")->SetFloatRange(0.0, 1.0, 0.01);
+	AddDoubleParam(0, "step_size");
+	AddBoolParam(false, "show_path_lines");
+	AddIntParam(0, "path_line_length");
 
 	m_find = nullptr;
 

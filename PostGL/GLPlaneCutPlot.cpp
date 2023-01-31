@@ -64,14 +64,14 @@ CGLPlaneCutPlot::CGLPlaneCutPlot()
 	sprintf(szname, "Planecut.%02d", n++);
 	SetName(szname);
 
-	AddBoolParam(true, "Show plane");
-	AddBoolParam(true, "Cut hidden");
-	AddBoolParam(true, "Show mesh" );
-	AddColorParam(GLColor(0, 0, 0), "Mesh color");
-	AddDoubleParam(0, "Transparency")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(0, "X-normal")->SetFloatRange(-1.0, 1.0);
-	AddDoubleParam(0, "Y-normal")->SetFloatRange(-1.0, 1.0);
-	AddDoubleParam(0, "Z-normal")->SetFloatRange(-1.0, 1.0);
+	AddBoolParam(true, "show_plane");
+	AddBoolParam(true, "cut_hidden");
+	AddBoolParam(true, "show_mesh" );
+	AddColorParam(GLColor(0, 0, 0), "mesh_color");
+	AddDoubleParam(0, "transparency")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0, "x-normal")->SetFloatRange(-1.0, 1.0);
+	AddDoubleParam(0, "y-normal")->SetFloatRange(-1.0, 1.0);
+	AddDoubleParam(0, "z-normal")->SetFloatRange(-1.0, 1.0);
 	AddDoubleParam(0, "offset")->SetFloatRange(-1.0, 1.0, 0.01);
 
 	m_normal = vec3d(1, 0, 0);

@@ -47,22 +47,22 @@ CGLSlicePlot::CGLSlicePlot()
 
 	m_norm = vec3f(1,0,0);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_scalar");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
 	AddIntParam(10, "divs", "Range divisions");
 	AddBoolParam(true, "smooth", "Gradient smoothing");
-	AddDoubleParam(1.0, "transparency", "Transparency")->SetFloatRange(0,1);
-	AddBoolParam(true, "Allow clipping");
-	AddBoolParam(true, "Show legend"   );
-	AddIntParam(0, "Slices");
-	AddDoubleParam(0, "Slice offset")->SetFloatRange(0.0, 1.0);
-	AddIntParam(0, "Range")->SetEnumNames("dynamic\0user\0");
-	AddDoubleParam(0, "Range max");
-	AddDoubleParam(0, "Range min");
-	AddDoubleParam(0, "X-normal" );
-	AddDoubleParam(0, "Y-normal" );
-	AddDoubleParam(0, "Z-normal" );
-	AddBoolParam(true, "Show box");
+	AddDoubleParam(1.0, "transparency")->SetFloatRange(0,1);
+	AddBoolParam(true, "allow_clipping");
+	AddBoolParam(true, "show_legend"   );
+	AddIntParam(0, "slices");
+	AddDoubleParam(0, "slice_offset")->SetFloatRange(0.0, 1.0);
+	AddIntParam(0, "range")->SetEnumNames("dynamic\0user\0");
+	AddDoubleParam(0, "range_max");
+	AddDoubleParam(0, "range_min");
+	AddDoubleParam(0, "x-normal" );
+	AddDoubleParam(0, "y-normal" );
+	AddDoubleParam(0, "z-normal" );
+	AddBoolParam(true, "show_box");
 
 	m_nslices = 10;
 	m_nfield = 0;
