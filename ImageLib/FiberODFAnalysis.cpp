@@ -860,6 +860,8 @@ void CFiberODFAnalysis::calculateFits()
 		// calculate covariance 
 		matrix c = covariance(A);
 
+		// TODO: do power scaling and normalize by determinant. 
+
 		// calculate eigenvalues and eigenvectors
 		// NOTE: V must be correct size; l must be empty.
 		matrix V(3, 3); V.zero();
@@ -874,5 +876,13 @@ void CFiberODFAnalysis::calculateFits()
 		// the mean direction is the eigen vector with the largest eigenvalue
 		vec3d meanDir(V[0][ind], V[1][ind], V[2][ind]);
 		odf->m_meanDir = meanDir;
+
+		// calculate fractional anisotropy
+		double l0 = l[0], l1 = l[1], l2 = l[2];
+		double l01 = l[0] - l[1];
+		double l12 = l[1] - l[2];
+		double l02 = l[0] - l[2];
+		double FA = sqrt(0.5)*sqrt(l01*l01 + l12*l12 + l02*l02)/sqrt(l0*l0 + l1*l1 + l2*l2);
+		odf->m_FA = FA;
 	}
 }

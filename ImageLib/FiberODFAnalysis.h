@@ -52,6 +52,7 @@ public:
 
 	// fitting parameters
 	vec3d	m_meanDir;	// mean direction
+	double	m_FA;		// fractional anisotropy
 };
 
 class CFiberODFAnalysis : public CImageAnalysis
