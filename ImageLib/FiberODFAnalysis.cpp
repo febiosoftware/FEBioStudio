@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEAMR/spherePoints.h>
 #include <MeshTools/FENNQuery.h>
 #include <PostLib/ColorMap.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>

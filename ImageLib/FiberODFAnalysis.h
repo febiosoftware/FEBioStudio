@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 #include "ImageAnalysis.h"
 #include <SimpleITK.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <GLLib/GLMeshRender.h>
 #include <FECore/vec3d.h>
 

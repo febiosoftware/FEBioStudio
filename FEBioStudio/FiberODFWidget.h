@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include <QWidget>
 #include <QOpenGLWidget>
-#include <MeshTools/GLMesh.h> 
+#include <MeshLib/GLMesh.h> 
 #include <GLLib/GLMeshRender.h>
 #include <GLLib/GLCamera.h>
 #include <SimpleITK.h>

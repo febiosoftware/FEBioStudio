@@ -49,11 +49,10 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
-#include <MeshTools/FEModel.h>
-#include <MeshTools/GMaterial.h>
+#include <FEMLib/FSModel.h>
+#include <FEMLib/GMaterial.h>
 #include <FEMLib/FECoreMaterial.h>
 #include <GLWLib/GLWidget.h>
-#include <MeshTools/GMaterial.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FECoreMaterial.h>
 #include <FECore/fecore_enum.h>
