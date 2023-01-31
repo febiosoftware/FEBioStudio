@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <complex>
 #include <sstream>
 #include "ImageSITK.h"
+#include "levmar.h"
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -864,16 +865,141 @@ double stddev(const vector<double>& x)
 	return sum;
 }
 
+vector<double> EFD_ODF(
+	const vector<double>& odf,
+	const vector<vec3d>& x, 
+	const vector<double>& alpha, 
+	const matrix& V,
+	const vector<double>& l)
+{
+	int npt = (int)odf.size();
+	vector<double> EFDODF(npt, 0.0);
+	double D11 = alpha[0] / l[0];
+	double D22 = alpha[1] / l[1];
+	double D33 = alpha[2] / l[2];
+	matrix Vt = V.transpose();
+	double sum = 0.0;
+	for (int i = 0; i < npt; ++i)
+	{
+		vector<double> r{ x[i].x, x[i].y, x[i].z };
+		vector<double> q = Vt * r;
+		q[0] /= D11;
+		q[1] /= D22;
+		q[2] /= D33;
+		double odf_i = 1.0 / sqrt(q[0] * q[0] + q[1] * q[1] + q[2] * q[2]);
+		EFDODF[i] = odf_i;
+		sum += odf_i;
+	}
+
+	// normalize
+	if (sum != 0.0)
+		for (int i = 0; i < npt; ++i) EFDODF[i] /= sum;
+
+	return EFDODF;
+}
+
+struct OBJDATA
+{
+	const vector<double>* podf;
+	const vector<vec3d>* px;
+	const matrix* pV;
+	const vector<double>* pl;
+	double odfmax;
+};
+
+void objfun(double* p, double* hx, int m, int n, void* adata)
+{
+	// get the ODF data
+	OBJDATA& data = *((OBJDATA*)adata);
+	const vector<double>& odf = *data.podf;
+	const vector<vec3d>& x = *data.px;
+	const matrix& V = *data.pV;
+	const vector<double>& l = *data.pl;
+
+	// set values of alpha
+	vector<double> alpha = { p[0], p[1], p[2] };
+
+	// calculate the EDF_ODF
+	vector<double> efd = EFD_ODF(odf, x, alpha, V, l);
+
+	// evaluate measurement
+	const double eps = 1e-12;
+	double odfmax = data.odfmax;
+	for (int i = 0; i < n; ++i)
+	{
+		double Wi = (odf[i] + eps) / (10.0 * odfmax);
+		hx[i] = Wi*(efd[i] - odf[i]);
+	}
+
+	// evaluate objective function
+	double o = 0.0;
+	for (int i = 0; i < n; ++i) o += hx[i] * hx[i];
+	std::cerr << o << std::endl;
+}
+
+double vmax(const vector<double>& v)
+{
+	if (v.empty()) return 0.0;
+	double vm = v[0];
+	int im = 0;
+	size_t n = v.size();
+	for (int i = 1; i < n; ++i)
+	{
+		if (v[i] > vm)
+		{
+			vm = v[i];
+			im = i;
+		}
+	}
+	return vm;
+}
+
+vector<double> optimize_edf(
+	const vector<double>& alpha0, 
+	const vector<double>& odf, 
+	const vector<vec3d>& x,
+	const matrix& V,
+	const vector<double>& l)
+{
+	const int itmax = 100;
+	const double tol = 0.001;
+	const double tau = 1e-3;
+	const double fdiff = 0.001;
+	double opts[5] = { tau, tol, tol, tol, fdiff };
+
+	int n = (int)alpha0.size();
+	vector<double> lb; lb.assign(n, 0.1);
+	vector<double> ub; ub.assign(n, 100.0);
+
+	OBJDATA data;
+	data.podf = &odf;
+	data.px = &x;
+	data.pl = &l;
+	data.pV = &V;
+	data.odfmax = vmax(odf);
+	vector<double> alpha = alpha0;
+
+	// call levmar.
+	// returns nr of iterations or -1 on failure
+	int niter = dlevmar_bc_dif(objfun, alpha.data(), nullptr, n, odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, 0, 0, 0, (void*)&data);
+
+	return alpha;
+}
+
 void CFiberODFAnalysis::calculateFits()
 {
 	for (auto odf : m_ODFs)
 	{
-		// build matrix of nodal coordinates, weighted by ODF
+		// get the spatial coordinates
 		int npt = odf->m_mesh.Nodes();
+		vector<vec3d> x(npt);
+		for (int i = 0; i < npt; ++i) x[i] = odf->m_mesh.Node(i).r;
+
+		// build matrix of nodal coordinates, weighted by ODF
 		matrix A(npt, 3);
 		for (int i = 0; i < npt; ++i)
 		{
-			vec3d ri = odf->m_mesh.Node(i).r;
+			vec3d ri = x[i];
 			double f = odf->m_odf[i];
 			A[i][0] = f*ri.x;
 			A[i][1] = f*ri.y;
@@ -908,32 +1034,13 @@ void CFiberODFAnalysis::calculateFits()
 		double FA = sqrt(0.5)*sqrt(l01*l01 + l12*l12 + l02*l02)/sqrt(l0*l0 + l1*l1 + l2*l2);
 		odf->m_FA = FA;
 
-		// TODO: do optimization of EDF parameters
-		double alpha[3] = { 1,1,1 };
+		// do optimization of EDF parameters
+		vector<double> alpha = optimize_edf({ 1.0, 1.0, 1.0 }, odf->m_odf, x, V, l);
+		odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
 
 		// calculate EFD ODF
 		vector<double>& EDFODF = odf->m_EFD_ODF;
-		EDFODF.assign(npt, 0.0);
-		double D11 = alpha[0] / l[0];
-		double D22 = alpha[1] / l[1];
-		double D33 = alpha[2] / l[2];
-		matrix Vt = V.transpose();
-		double sum = 0.0;
-		for (int i = 0; i < npt; ++i)
-		{
-			vector<double> r{ A[i][0], A[i][1], A[i][2] };
-			vector<double> q = Vt * r;
-			q[0] /= D11;
-			q[1] /= D22;
-			q[2] /= D33;
-			double odf_i = 1.0 / sqrt(q[0]*q[0] + q[1]*q[1] + q[2]*q[2]);
-			odf->m_EFD_ODF[i] = odf_i;
-			sum += odf_i;
-		}
-
-		// normalize
-		if (sum != 0.0)
-			for (int i = 0; i < npt; ++i) EDFODF[i] /= sum;
+		EDFODF = EFD_ODF(odf->m_odf, x, alpha, V, l);
 
 		// calculate generalized FA
 		double GFA = stddev(EDFODF) / rms(EDFODF);

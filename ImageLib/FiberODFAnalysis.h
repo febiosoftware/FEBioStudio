@@ -54,7 +54,8 @@ public:
 	vec3d	m_meanDir;	// mean direction
 	double	m_FA;		// fractional anisotropy
 	vector<double>	m_EFD_ODF;	// The EDF ODF
-	double	m_GFA;		// generalized fractional anisotropy
+	vec3d	m_EFD_alpha;	// alpha values of EFD fit
+	double	m_GFA;			// generalized fractional anisotropy
 };
 
 class CFiberODFAnalysis : public CImageAnalysis

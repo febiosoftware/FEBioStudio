@@ -302,6 +302,7 @@ public:
 	QLineEdit* meanDir;
 	QLineEdit* FA;
 	QLineEdit* GFA;
+	QLineEdit* alpha;
 
 public:
     void setupUI(::CFiberODFWidget* parent)
@@ -359,6 +360,7 @@ public:
 		fitTabLayout->addRow("mean direction:", meanDir = new QLineEdit); meanDir->setReadOnly(true);
 		fitTabLayout->addRow("FA:", FA = new QLineEdit); FA->setReadOnly(true);
 		fitTabLayout->addRow("GFA:", GFA = new QLineEdit); GFA->setReadOnly(true);
+		fitTabLayout->addRow("EFD alpha:", alpha = new QLineEdit); alpha->setReadOnly(true);
 		fitTab->setLayout(fitTabLayout);
 		tabs->addTab(fitTab, "Fitting");
 
@@ -449,10 +451,10 @@ private:
 	void updateFittingTab(CFiberODFAnalysis* analysis)
 	{
 		CODF* odf = analysis->GetODF(0);
-		vec3d v = odf->m_meanDir;
-		meanDir->setText(Vec3dToString(v));
+		meanDir->setText(Vec3dToString(odf->m_meanDir));
 		FA->setText(QString::number(odf->m_FA));
 		GFA->setText(QString::number(odf->m_GFA));
+		alpha->setText(Vec3dToString(odf->m_EFD_alpha));
 	}
 };
 
