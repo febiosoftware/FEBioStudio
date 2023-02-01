@@ -67,7 +67,7 @@ public:
     void run() override;
     void render(CGLCamera* cam) override;
 
-    int ODFs() { return m_ODFs.size(); }
+	int ODFs() const;
     CODF* GetODF(int i);
 
     bool renderRemeshed();
@@ -93,6 +93,13 @@ private:
 	void calculateFits();
 
 	void updateProgress(double f);
+
+	vector<double> optimize_edf(
+		const vector<double>& alpha0,
+		const vector<double>& odf,
+		const vector<vec3d>& x,
+		const matrix& V,
+		const vector<double>& l);
 
 private:
     std::vector<CODF*> m_ODFs;

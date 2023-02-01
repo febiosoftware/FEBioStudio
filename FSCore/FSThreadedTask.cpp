@@ -99,6 +99,7 @@ void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 {
 	setProgress(progress);
 	m_progress.task = sz;
+	Log("%s\n", sz);
 }
 
 bool FSThreadedTask::IsCancelled() const

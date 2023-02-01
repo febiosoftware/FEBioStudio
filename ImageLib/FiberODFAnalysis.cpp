@@ -374,6 +374,11 @@ bool CFiberODFAnalysis::display()
     return GetBoolValue(DISP);
 }
 
+int CFiberODFAnalysis:: ODFs() const 
+{ 
+	return (int) m_ODFs.size(); 
+}
+
 CODF* CFiberODFAnalysis::GetODF(int i)
 {
     try
@@ -756,8 +761,8 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
 
     GLMesh* mesh = &odf->m_remesh;
 	// get the new mesh sizes
-    int NN = nodePos.size();
-    int NF = elems.size();
+    int NN = (int)nodePos.size();
+    int NF = (int)elems.size();
 	mesh->Create(NN, NF);
 
 	// get the vertex coordinates
@@ -910,6 +915,7 @@ struct OBJDATA
 	const vector<double>* pl;
 	double odfmax;
 	vector<double>* pefd;
+	FSThreadedTask* plog = nullptr;
 };
 
 void objfun(double* p, double* hx, int m, int n, void* adata)
@@ -938,9 +944,12 @@ void objfun(double* p, double* hx, int m, int n, void* adata)
 	}
 
 	// evaluate objective function
-	double o = 0.0;
-	for (int i = 0; i < n; ++i) o += hx[i] * hx[i];
-	std::cerr << o << std::endl;
+	if (data.plog)
+	{
+		double o = 0.0;
+		for (int i = 0; i < n; ++i) o += hx[i] * hx[i];
+		data.plog->Log("%lg\n", o);
+	}
 }
 
 double vmax(const vector<double>& v)
@@ -960,14 +969,14 @@ double vmax(const vector<double>& v)
 	return vm;
 }
 
-vector<double> optimize_edf(
+vector<double> CFiberODFAnalysis::optimize_edf(
 	const vector<double>& alpha0, 
 	const vector<double>& odf, 
 	const vector<vec3d>& x,
 	const matrix& V,
 	const vector<double>& l)
 {
-	const int itmax = 100;
+	const int itmax = 10;// 100;
 	const double tol = 0.001;
 	const double tau = 1e-3;
 	const double fdiff = 0.001;
@@ -985,22 +994,24 @@ vector<double> optimize_edf(
 	data.pV = &V;
 	data.odfmax = vmax(odf);
 	data.pefd = &tmp;
+	data.plog = this;
 	vector<double> alpha = alpha0;
 
 	// call levmar.
 	// returns nr of iterations or -1 on failure
-	int niter = dlevmar_bc_dif(objfun, alpha.data(), nullptr, n, odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, 0, 0, 0, (void*)&data);
+	int niter = dlevmar_bc_dif(objfun, alpha.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, 0, 0, 0, (void*)&data);
+	Log("levmar iterations = %d\n", niter);
 
 	return alpha;
 }
 
 void CFiberODFAnalysis::calculateFits()
 {
-	Log("Starting fitting ...\n");
 	setProgress(0);
 	for (int i=0; i<m_ODFs.size(); ++i)
 	{
 		setProgress((100.0* i)/ m_ODFs.size());
+		Log("ODF %d:\n", i + 1);
 
 		auto odf = m_ODFs[i];
 
@@ -1022,6 +1033,10 @@ void CFiberODFAnalysis::calculateFits()
 
 		// calculate covariance 
 		matrix c = covariance(A);
+		Log("covariance matrix:\n");
+		Log("\t%lg,%lg,%lg\n", c[0][0], c[0][1], c[0][2]);
+		Log("\t%lg,%lg,%lg\n", c[1][0], c[1][1], c[1][2]);
+		Log("\t%lg,%lg,%lg\n", c[2][0], c[2][1], c[2][2]);
 
 		// TODO: do power scaling and normalize by determinant. 
 
@@ -1030,6 +1045,11 @@ void CFiberODFAnalysis::calculateFits()
 		matrix V(3, 3); V.zero();
 		vector<double> l;
 		c.eigen_vectors(V, l);
+		Log("\neigenvalues: %lg, %lg, %lg\n", l[0], l[1], l[2]);
+		Log("eigen vectors:\n");
+		Log("\t%lg,%lg,%lg\n", V[0][0], V[0][1], V[0][2]);
+		Log("\t%lg,%lg,%lg\n", V[1][0], V[1][1], V[1][2]);
+		Log("\t%lg,%lg,%lg\n", V[2][0], V[2][1], V[2][2]);
 
 		// find largest eigenvalue
 		int ind = 0; double lmax = l[0];
@@ -1039,6 +1059,7 @@ void CFiberODFAnalysis::calculateFits()
 		// the mean direction is the eigen vector with the largest eigenvalue
 		vec3d meanDir(V[0][ind], V[1][ind], V[2][ind]);
 		odf->m_meanDir = meanDir;
+		Log("\nmean direction: %lg, %lg, %lg\n", meanDir.x, meanDir.y, meanDir.z);
 
 		// calculate fractional anisotropy
 		double l0 = l[0], l1 = l[1], l2 = l[2];
@@ -1047,10 +1068,12 @@ void CFiberODFAnalysis::calculateFits()
 		double l02 = l[0] - l[2];
 		double FA = sqrt(0.5)*sqrt(l01*l01 + l12*l12 + l02*l02)/sqrt(l0*l0 + l1*l1 + l2*l2);
 		odf->m_FA = FA;
+		Log("fractional anisotropy: %lg\n", FA);
 
 		// do optimization of EDF parameters
 		vector<double> alpha = optimize_edf({ 1.0, 1.0, 1.0 }, odf->m_odf, x, V, l);
 		odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
+		Log("optimized alpha: %lg, %lg, %lg\n", alpha[0], alpha[1], alpha[2]);
 
 		// calculate EFD ODF
 		vector<double>& EFDODF = odf->m_EFD_ODF;
@@ -1059,6 +1082,7 @@ void CFiberODFAnalysis::calculateFits()
 		// calculate generalized FA
 		double GFA = stddev(EFDODF) / rms(EFDODF);
 		odf->m_GFA = GFA;
+		Log("generalized fractional anisotropy: %lg\n", GFA);
 	}
 	setProgress(100);
 }
