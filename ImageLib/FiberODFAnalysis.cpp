@@ -683,11 +683,15 @@ void CFiberODFAnalysis::buildMeshes()
     Post::CColorMap map;
     map.jet();
 
-    for(auto odf : m_ODFs)
+	setProgress(0);
+    for(int i=0; i<m_ODFs.size(); ++i)
     {
-        double min = *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
+		setProgress((100.0 * i) / m_ODFs.size());
+
+		auto odf = m_ODFs[i];
+		double min = 0.0;// *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
         double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
-        double scale = 1/(max - min);
+        double scale = 1.0/(max - min);
 
         GLMesh* pm = &odf->m_mesh;
         pm->Create(NPTS, NCON);
@@ -735,6 +739,7 @@ void CFiberODFAnalysis::buildMeshes()
         // remesh sphere
         remeshSphere(odf);
     }
+	setProgress(100);
 }
 
 void CFiberODFAnalysis::remeshSphere(CODF* odf)
@@ -865,20 +870,21 @@ double stddev(const vector<double>& x)
 	return sum;
 }
 
-vector<double> EFD_ODF(
+void EFD_ODF(
 	const vector<double>& odf,
 	const vector<vec3d>& x, 
 	const vector<double>& alpha, 
 	const matrix& V,
-	const vector<double>& l)
+	const vector<double>& l,
+	vector<double>& EFDODF)
 {
 	int npt = (int)odf.size();
-	vector<double> EFDODF(npt, 0.0);
 	double D11 = alpha[0] / l[0];
 	double D22 = alpha[1] / l[1];
 	double D33 = alpha[2] / l[2];
 	matrix Vt = V.transpose();
 	double sum = 0.0;
+	EFDODF.resize(npt);
 	for (int i = 0; i < npt; ++i)
 	{
 		vector<double> r{ x[i].x, x[i].y, x[i].z };
@@ -894,8 +900,6 @@ vector<double> EFD_ODF(
 	// normalize
 	if (sum != 0.0)
 		for (int i = 0; i < npt; ++i) EFDODF[i] /= sum;
-
-	return EFDODF;
 }
 
 struct OBJDATA
@@ -905,6 +909,7 @@ struct OBJDATA
 	const matrix* pV;
 	const vector<double>* pl;
 	double odfmax;
+	vector<double>* pefd;
 };
 
 void objfun(double* p, double* hx, int m, int n, void* adata)
@@ -915,12 +920,13 @@ void objfun(double* p, double* hx, int m, int n, void* adata)
 	const vector<vec3d>& x = *data.px;
 	const matrix& V = *data.pV;
 	const vector<double>& l = *data.pl;
+	vector<double>& efd = *data.pefd;
 
 	// set values of alpha
 	vector<double> alpha = { p[0], p[1], p[2] };
 
-	// calculate the EDF_ODF
-	vector<double> efd = EFD_ODF(odf, x, alpha, V, l);
+	// calculate the EFD_ODF
+	EFD_ODF(odf, x, alpha, V, l, efd);
 
 	// evaluate measurement
 	const double eps = 1e-12;
@@ -971,12 +977,14 @@ vector<double> optimize_edf(
 	vector<double> lb; lb.assign(n, 0.1);
 	vector<double> ub; ub.assign(n, 100.0);
 
+	vector<double> tmp(NPTS);
 	OBJDATA data;
 	data.podf = &odf;
 	data.px = &x;
 	data.pl = &l;
 	data.pV = &V;
 	data.odfmax = vmax(odf);
+	data.pefd = &tmp;
 	vector<double> alpha = alpha0;
 
 	// call levmar.
@@ -988,8 +996,13 @@ vector<double> optimize_edf(
 
 void CFiberODFAnalysis::calculateFits()
 {
-	for (auto odf : m_ODFs)
+	setProgress(0);
+	for (int i=0; i<m_ODFs.size(); ++i)
 	{
+		setProgress((100.0* i)/ m_ODFs.size());
+
+		auto odf = m_ODFs[i];
+
 		// get the spatial coordinates
 		int npt = odf->m_mesh.Nodes();
 		vector<vec3d> x(npt);
@@ -1039,11 +1052,12 @@ void CFiberODFAnalysis::calculateFits()
 		odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
 
 		// calculate EFD ODF
-		vector<double>& EDFODF = odf->m_EFD_ODF;
-		EDFODF = EFD_ODF(odf->m_odf, x, alpha, V, l);
+		vector<double>& EFDODF = odf->m_EFD_ODF;
+		EFD_ODF(odf->m_odf, x, alpha, V, l, EFDODF);
 
 		// calculate generalized FA
-		double GFA = stddev(EDFODF) / rms(EDFODF);
+		double GFA = stddev(EFDODF) / rms(EFDODF);
 		odf->m_GFA = GFA;
 	}
+	setProgress(100);
 }
