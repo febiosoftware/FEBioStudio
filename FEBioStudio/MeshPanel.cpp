@@ -369,7 +369,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	if (mesher == 0) return;
 
 	MeshingThread* thread = new MeshingThread(activeObject);
-	CDlgStartThread dlg(this, thread);
+	CDlgStartThread dlg(GetMainWindow(), thread);
 	if (dlg.exec())
 	{
 		// see if the meshing was successful
@@ -417,7 +417,7 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	}
 
 	ModifierThread* thread = new ModifierThread(doc, m_mod, activeObject, sel);
-	CDlgStartThread dlg(this, thread);
+	CDlgStartThread dlg(GetMainWindow(), thread);
 	dlg.setTask(QString::fromStdString(m_mod->GetName()));
 	if (dlg.exec())
 	{

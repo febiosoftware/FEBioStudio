@@ -44,16 +44,18 @@ public:
 
 signals:
 	void resultReady(bool);
+	void writeLog(QString msg);
 };
 
 class CDlgStartThreadUI;
+class CMainWindow;
 
 class CDlgStartThread : public QDialog
 {
 	Q_OBJECT
 
 public:
-	CDlgStartThread(QWidget* parent, CustomThread* thread);
+	CDlgStartThread(CMainWindow* parent, CustomThread* thread);
 
 	void closeEvent(QCloseEvent* ev) override;
 

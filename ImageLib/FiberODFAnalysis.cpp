@@ -996,6 +996,7 @@ vector<double> optimize_edf(
 
 void CFiberODFAnalysis::calculateFits()
 {
+	Log("Starting fitting ...\n");
 	setProgress(0);
 	for (int i=0; i<m_ODFs.size(); ++i)
 	{

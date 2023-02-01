@@ -50,6 +50,14 @@ struct FSTaskProgress
 	}
 };
 
+class TaskLogger
+{
+public:
+	TaskLogger() {}
+	virtual ~TaskLogger() {}
+	virtual void Log(const std::string& msg) = 0;
+};
+
 class FSThreadedTask : public FSObject
 {
 public:
@@ -60,6 +68,10 @@ public:
 
 	// The thread is about to be terminated
 	virtual void Terminate();
+
+	void SetTaskLogger(TaskLogger* logger);
+
+	void Log(const char* sz, ...);
 
 protected:
 	// reset progress 
@@ -75,4 +87,5 @@ protected:
 
 private:
 	FSTaskProgress m_progress;
+	TaskLogger* m_log;
 };

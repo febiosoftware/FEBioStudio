@@ -25,10 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "FSThreadedTask.h"
+#include <cstdarg>
 
 FSThreadedTask::FSThreadedTask()
 {
-
+	m_log = nullptr;
 }
 
 FSTaskProgress FSThreadedTask::GetProgress()
@@ -40,6 +41,42 @@ void FSThreadedTask::Terminate()
 {
 	m_progress.valid = false;
 	m_progress.cancelled = true;
+}
+
+void FSThreadedTask::SetTaskLogger(TaskLogger* logger)
+{
+	m_log = logger;
+}
+
+void FSThreadedTask::Log(const char* sz, ...)
+{
+	if (m_log == nullptr) return;
+
+	if ((sz == 0) || (*sz == 0)) return;
+
+	// get a pointer to the argument list
+	va_list	args;
+
+	// copy to string
+	char* szlog = NULL;
+
+	va_start(args, sz);
+
+	// count how many chars we need to allocate
+	int l = vsnprintf(nullptr, 0, sz, args) + 1;
+	if (l > 1)
+	{
+		szlog = new char[l]; assert(szlog);
+		if (szlog)
+		{
+			vsnprintf(szlog, l, sz, args);
+		}
+	}
+	va_end(args);
+	if (szlog == NULL) return;
+
+	m_log->Log(szlog);
+	delete [] szlog;
 }
 
 void FSThreadedTask::setProgress(double progress)

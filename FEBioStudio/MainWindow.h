@@ -121,9 +121,6 @@ public:
 	// show the log panel
 	void ShowLogPanel();
 
-	// add to the log 
-	void AddLogEntry(const QString& txt);
-
 	// add to the output window
 	void AddOutputEntry(const QString& txt);
 
@@ -539,6 +536,9 @@ public slots:
 	void on_actionTimeSettings_triggered();
 	void on_actionColorMap_toggled(bool bchecked);
 	void on_selectTime_valueChanged(int n);
+
+	// add to the log 
+	void AddLogEntry(QString txt);
 
 	// signals from documents
 	void on_doCommand(QString msg);

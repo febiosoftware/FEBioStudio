@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "DlgStartThread.h"
+#include "MainWindow.h"
 #include <QLabel>
 #include <QProgressBar>
 #include <QBoxLayout>
@@ -106,14 +107,16 @@ public:
 
 
 //=============================================================================
-CDlgStartThread::CDlgStartThread(QWidget* parent, CustomThread* thread) : QDialog(parent), ui(new CDlgStartThreadUI)
+CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QDialog(parent), ui(new CDlgStartThreadUI)
 {
 	ui->setup(this);
 	
 	ui->m_thread = thread;
+	parent->ShowLogPanel();
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
+	QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
 
 	ui->m_thread->start();
 	QTimer::singleShot(100, this, SLOT(checkProgress()));

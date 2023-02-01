@@ -476,15 +476,38 @@ void CFiberODFWidget::setAnalysis(CFiberODFAnalysis* analysis)
     ui->update(analysis);
 }
 
-class ImageAnalysisThread : public CustomThread
+class ImageAnalysisThread;
+
+class ImageAnalysisLogger : public TaskLogger
 {
 public:
-	ImageAnalysisThread(CImageAnalysis* analysis) : m_analysis(analysis) {}
+	ImageAnalysisLogger(ImageAnalysisThread* thread) : m_thread(thread) {}
+
+	void Log(const std::string& msg) override;
+
+private:
+	ImageAnalysisThread* m_thread;
+};
+
+class ImageAnalysisThread : public CustomThread
+{
+
+public:
+	ImageAnalysisThread(CImageAnalysis* analysis) : m_analysis(analysis), m_logger(this) {}
 
 	void run() Q_DECL_OVERRIDE
 	{
-		if (m_analysis) m_analysis->run();
+		if (m_analysis)
+		{
+			m_analysis->SetTaskLogger(&m_logger);
+			m_analysis->run();
+		}
 		emit resultReady(true);
+	}
+
+	void WriteLog(QString msg)
+	{
+		emit writeLog(msg);
 	}
 
 public:
@@ -498,7 +521,14 @@ public:
 
 private:
 	CImageAnalysis* m_analysis = nullptr;
+	ImageAnalysisLogger m_logger;
 };
+
+void ImageAnalysisLogger::Log(const std::string& msg)
+{
+	assert(m_thread);
+	if (m_thread) m_thread->WriteLog(QString::fromStdString(msg));
+}
 
 void CFiberODFWidget::on_runButton_pressed()
 {
