@@ -944,12 +944,15 @@ void objfun(double* p, double* hx, int m, int n, void* adata)
 	}
 
 	// evaluate objective function
+//#ifdef _DEBUG
 	if (data.plog)
 	{
 		double o = 0.0;
 		for (int i = 0; i < n; ++i) o += hx[i] * hx[i];
-		data.plog->Log("%lg\n", o);
+		for (int i = 0; i < m; ++i) data.plog->Log("%lg, ", p[i]);
+		data.plog->Log("(%lg)\n", o);
 	}
+//#endif
 }
 
 double vmax(const vector<double>& v)
@@ -969,6 +972,17 @@ double vmax(const vector<double>& v)
 	return vm;
 }
 
+double matrix_max(const matrix& v)
+{
+	double vm = v(0,0);
+	for (int i = 0; i < v.rows(); ++i)
+		for (int j = 0; j < v.columns(); ++j)
+		{
+			if (v(i,j) > vm) vm = v(i, j);
+		}
+	return vm;
+}
+
 vector<double> CFiberODFAnalysis::optimize_edf(
 	const vector<double>& alpha0, 
 	const vector<double>& odf, 
@@ -977,13 +991,13 @@ vector<double> CFiberODFAnalysis::optimize_edf(
 	const vector<double>& l)
 {
 	const int itmax = 10;// 100;
-	const double tol = 0.001;
-	const double tau = 1e-3;
-	const double fdiff = 0.001;
-	double opts[5] = { tau, tol, tol, tol, fdiff };
+	const double tau = 1e-3; // don't change. not sure what this does. 
+	const double tol = 1e-9;
+	const double fdiff = 1e-7;
+	double opts[5] = { tau, 1e-17, 1e-17, tol, fdiff };
 
 	int n = (int)alpha0.size();
-	vector<double> lb; lb.assign(n, 0.1);
+	vector<double> lb; lb.assign(n, 0.01);
 	vector<double> ub; ub.assign(n, 100.0);
 
 	vector<double> tmp(NPTS);
@@ -996,13 +1010,50 @@ vector<double> CFiberODFAnalysis::optimize_edf(
 	data.pefd = &tmp;
 	data.plog = this;
 	vector<double> alpha = alpha0;
+	double info[LM_INFO_SZ] = { 0.0 };
 
 	// call levmar.
 	// returns nr of iterations or -1 on failure
-	int niter = dlevmar_bc_dif(objfun, alpha.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, 0, 0, 0, (void*)&data);
-	Log("levmar iterations = %d\n", niter);
+	int niter = dlevmar_bc_dif(objfun, alpha.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
+	Log("levmar completed:\n");
+	Log("initial ||e||_2  : %lg\n", info[0]);
+	Log("||e||_2          : %lg\n", info[1]);
+	Log("||J^Te||_inf     : %lg\n", info[2]);
+	Log("||Dp||_2         : %lg\n", info[3]);
+	Log("mu/max[J^TJ]_ii] : %lg\n", info[4]);
+	Log("nr. of iterations: %lg\n", info[5]);
+	Log("reason for termination: ");
+	int reason = (int)info[6];
+	switch (reason)
+	{
+	case 1: Log("stopped by small gradient J^Te\n"); break;
+	case 2: Log("stopped by small Dp\n"); break;
+	case 3: Log("stopped by itmax\n"); break;
+	case 4: Log("singular matrix. Restart from current p with increased mu.\n"); break;
+	case 5: Log("no further error reduction is possible.Restart with increased mu.\n"); break;
+	case 6: Log("stopped by small ||e||_2.\n"); break;
+	case 7: Log("stopped by invalid(i.e.NaN or Inf) \"func\" values.This is a user error\n"); break;
+	default:
+		Log("Mars is not in retrograde.\n");
+	}
+	Log("nr of function evaluations : %lg\n", info[7]);
+	Log("nr of Jacobian evaluations : %lg\n", info[8]);
+	Log("nr of linear systems solved: %lg\n", info[9]);
+	Log("\n");
 
 	return alpha;
+}
+
+double det_matrix3(const matrix& a)
+{
+	double d = 0;
+	d += a[0][0] * a[1][1] * a[2][2];
+	d += a[0][1] * a[1][2] * a[2][0];
+	d += a[0][2] * a[1][0] * a[2][1];
+	d -= a[2][0] * a[1][1] * a[0][2];
+	d -= a[0][1] * a[1][0] * a[2][2];
+	d -= a[0][0] * a[1][2] * a[2][1];
+	return d;
 }
 
 void CFiberODFAnalysis::calculateFits()
@@ -1033,13 +1084,24 @@ void CFiberODFAnalysis::calculateFits()
 
 		// calculate covariance 
 		matrix c = covariance(A);
+
+		// find "largest" exponent
+		double maxnum = matrix_max(c);
+		double power = ceil(log10(maxnum) - 1);
+		Log("power= %lg\n", power);
+		// adjust spd by this power.
+		c *= pow(10, -power);
+
 		Log("covariance matrix:\n");
 		Log("\t%lg,%lg,%lg\n", c[0][0], c[0][1], c[0][2]);
 		Log("\t%lg,%lg,%lg\n", c[1][0], c[1][1], c[1][2]);
 		Log("\t%lg,%lg,%lg\n", c[2][0], c[2][1], c[2][2]);
 
-		// TODO: do power scaling and normalize by determinant. 
-
+		// TODO: do power scaling?
+/*		double D = det_matrix3(c);
+		for (int i = 0; i < 3; ++i)
+			for (int j = 0; j < 3; ++j) c(i, j) /= D;
+*/
 		// calculate eigenvalues and eigenvectors
 		// NOTE: V must be correct size; l must be empty.
 		matrix V(3, 3); V.zero();
