@@ -47,7 +47,7 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, REMESHED, RADIAL};
+enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, REMESHED, RADIAL, FITTING};
 
 CODF::CODF() : m_odf(NPTS, 0.0) {};
 
@@ -70,6 +70,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(false, "Show Remeshed ODF");
     AddBoolParam(false, "Show Radial Mesh");
+    AddBoolParam(true, "Do fitting analysis");
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
@@ -288,8 +289,11 @@ void CFiberODFAnalysis::run()
 	setCurrentTask("Building meshes ...", 100);
     buildMeshes();
 
-	setCurrentTask("Calculating fits ...", 100);
-	calculateFits();
+	if (GetBoolValue(FITTING))
+	{
+		setCurrentTask("Calculating fits ...", 100);
+		calculateFits();
+	}
 }
 
 void CFiberODFAnalysis::render(CGLCamera* cam)
