@@ -298,7 +298,8 @@ public:
     QPushButton* copyToMatButton;
     QPushButton* saveToCSVButton;
 
-	// fitting tab widgets
+	// analysis tab widgets
+	QLineEdit* pos;
 	QLineEdit* meanDir;
 	QLineEdit* FA;
 	QLineEdit* GFA;
@@ -323,13 +324,18 @@ public:
         QVBoxLayout* secondPageLayout = new QVBoxLayout;
         secondPageLayout->setContentsMargins(0,0,0,0);
 
+		QHBoxLayout* odfl = new QHBoxLayout;
+		odfl->addWidget(new QLabel("Select ODF:"));
+		odfl->addWidget(odfSelector = new QComboBox);
+		QSizePolicy sp = odfSelector->sizePolicy();
+		odfSelector->setSizePolicy(QSizePolicy::Expanding, sp.verticalPolicy());
+		secondPageLayout->addLayout(odfl);
         secondPageLayout->addWidget(tabs = new QTabWidget);
 
         QWidget* odfTab = new QWidget;
         QVBoxLayout* odfTabLayout = new QVBoxLayout;
         odfTabLayout->setContentsMargins(0,0,0,0);
 
-        odfTabLayout->addWidget(odfSelector = new QComboBox);
         odfTabLayout->addWidget(glWidget = new CFiberGLWidget);
 
         odfTab->setLayout(odfTabLayout);
@@ -339,8 +345,9 @@ public:
         QVBoxLayout* sphHarmTabLayout = new QVBoxLayout;
         sphHarmTabLayout->setContentsMargins(0,0,0,0);
 
-        sphHarmTable = new QTableWidget(0,2);
+        sphHarmTable = new QTableWidget(0,1);
         sphHarmTable->horizontalHeader()->hide();
+		sphHarmTable->horizontalHeader()->setStretchLastSection(true);
         sphHarmTabLayout->addWidget(sphHarmTable);
 
         QHBoxLayout* buttonLayout = new QHBoxLayout;
@@ -357,12 +364,13 @@ public:
 		QWidget* fitTab = new QWidget;
 		QFormLayout* fitTabLayout = new QFormLayout;
 		fitTabLayout->setLabelAlignment(Qt::AlignRight);
+		fitTabLayout->addRow("position:", pos = new QLineEdit); pos->setReadOnly(true);
 		fitTabLayout->addRow("mean direction:", meanDir = new QLineEdit); meanDir->setReadOnly(true);
 		fitTabLayout->addRow("FA:", FA = new QLineEdit); FA->setReadOnly(true);
 		fitTabLayout->addRow("GFA:", GFA = new QLineEdit); GFA->setReadOnly(true);
 		fitTabLayout->addRow("EFD alpha:", alpha = new QLineEdit); alpha->setReadOnly(true);
 		fitTab->setLayout(fitTabLayout);
-		tabs->addTab(fitTab, "Fitting");
+		tabs->addTab(fitTab, "Analysis");
 
         secondPage->setLayout(secondPageLayout);
         stack->addWidget(secondPage);
@@ -388,9 +396,8 @@ public:
         {
             odfSelector->hide();
             glWidget->setODF(analysis->GetODF(0));
-            updateTable(analysis);
-            stack->setCurrentIndex(1);
-			updateFittingTab(analysis);
+			stack->setCurrentIndex(1);
+			updateData(analysis);
         }
         else
         {
@@ -403,54 +410,59 @@ public:
             }
 
             odfSelector->blockSignals(false);
-
             odfSelector->setCurrentIndex(0);
             glWidget->setODF(analysis->GetODF(0));
             odfSelector->show();
+			stack->setCurrentIndex(1);
 
-            updateTable(analysis);
-
-            stack->setCurrentIndex(1);
+			updateData(analysis);
         }
     }
+
+	int currentODF() 
+	{ 
+		if (odfSelector->isVisible() == false) return 0;
+		else return odfSelector->currentIndex(); 
+	}
+
+	void updateData(CFiberODFAnalysis* analysis)
+	{
+		updateTable(analysis);
+		updateFittingTab(analysis);
+	}
 
 private:
-    void updateTable(CFiberODFAnalysis* analysis)
-    {
-        sphHarmTable->clear();
+	void updateTable(CFiberODFAnalysis* analysis)
+	{
+		sphHarmTable->clear();
+		int nodf = currentODF();
+		if ((nodf < 0) || (nodf >= analysis->ODFs())) return;
+		CODF* current = analysis->GetODF(nodf);
 
-        sphHarmTable->setRowCount(analysis->ODFs()*2);
+		vector<double>& sph = current->m_sphHarmonics;
+		if (sph.empty()) return;
 
-        QStringList headers;
-        
-        for(int i = 0; i < analysis->ODFs(); i++)
-        {
-            CODF* current = analysis->GetODF(i);
+		sphHarmTable->setRowCount(sph.size());
 
-            sphHarmTable->setItem(i*2, 0, new QTableWidgetItem("Spherical Harmonics"));
-            sphHarmTable->setItem(i*2+1, 0, new QTableWidgetItem("Position"));
+		QStringList headers;
+		QTableWidgetItem* ti;
+		for(int i=0; i<sph.size(); ++i)
+		{
+			double val = sph[i];
+			sphHarmTable->setItem(i, 0, ti = new QTableWidgetItem(QString::number(val)));
+			ti->setFlags(Qt::ItemFlag::ItemIsEnabled | Qt::ItemFlag::ItemIsSelectable);
+			headers << QString::number(i);
+		}
 
-            QString sphHarmString;
-            for(double val : current->m_sphHarmonics)
-            {
-                sphHarmString += QString::number(val) + ", ";
-            }
-            sphHarmString.chop(2);
-
-            sphHarmTable->setItem(i*2, 1, new QTableWidgetItem(sphHarmString));
-
-            QString posString = QString("%1, %2, %3").arg(current->m_position.x).arg(current->m_position.y).arg(current->m_position.z);
-            sphHarmTable->setItem(i*2+1, 1, new QTableWidgetItem(posString));
-
-            headers << QString::number(i+1) << QString::number(i+1);
-        }
-
-        sphHarmTable->setVerticalHeaderLabels(headers);
-    }
+		sphHarmTable->setVerticalHeaderLabels(headers);
+	}
 
 	void updateFittingTab(CFiberODFAnalysis* analysis)
 	{
-		CODF* odf = analysis->GetODF(0);
+		int nodf = currentODF();
+		if ((nodf < 0) || (nodf >= analysis->ODFs())) return;
+		CODF* odf = analysis->GetODF(nodf);
+		pos->setText(Vec3dToString(odf->m_position));
 		meanDir->setText(Vec3dToString(odf->m_meanDir));
 		FA->setText(QString::number(odf->m_FA));
 		GFA->setText(QString::number(odf->m_GFA));
@@ -558,6 +570,7 @@ void CFiberODFWidget::on_odfSelector_currentIndexChanged(int index)
 
     ui->glWidget->setODF(m_analysis->GetODF(index));
     ui->glWidget->repaint();
+	ui->updateData(m_analysis);
 }
 
 void CFiberODFWidget::on_copyToMatButton_pressed()
