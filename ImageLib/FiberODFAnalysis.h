@@ -36,7 +36,7 @@ namespace sitk = itk::simple;
 
 class matrix;
 
-class CODF
+struct CODF
 {
 public:
 	CODF();

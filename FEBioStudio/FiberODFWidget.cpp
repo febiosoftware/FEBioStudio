@@ -255,8 +255,10 @@ public:
 	QLineEdit* pos;
 	QLineEdit* meanDir;
 	QLineEdit* FA;
-	QLineEdit* GFA;
-	QLineEdit* alpha;
+	QLineEdit* EFD_GFA;
+	QLineEdit* EFD_alpha;
+	QLineEdit* VM3_GFA;
+	QLineEdit* VM3_beta;
 
 public:
     void setupUI(::CFiberODFWidget* parent)
@@ -320,8 +322,10 @@ public:
 		fitTabLayout->addRow("position:", pos = new QLineEdit); pos->setReadOnly(true);
 		fitTabLayout->addRow("mean direction:", meanDir = new QLineEdit); meanDir->setReadOnly(true);
 		fitTabLayout->addRow("FA:", FA = new QLineEdit); FA->setReadOnly(true);
-		fitTabLayout->addRow("GFA:", GFA = new QLineEdit); GFA->setReadOnly(true);
-		fitTabLayout->addRow("EFD alpha:", alpha = new QLineEdit); alpha->setReadOnly(true);
+		fitTabLayout->addRow("EFD GFA:", EFD_GFA = new QLineEdit); EFD_GFA->setReadOnly(true);
+		fitTabLayout->addRow("EFD alpha:", EFD_alpha = new QLineEdit); EFD_alpha->setReadOnly(true);
+		fitTabLayout->addRow("VM3 GFA:", VM3_GFA = new QLineEdit); VM3_GFA->setReadOnly(true);
+		fitTabLayout->addRow("VM3 beta:", VM3_beta = new QLineEdit); VM3_beta->setReadOnly(true);
 		fitTab->setLayout(fitTabLayout);
 		tabs->addTab(fitTab, "Analysis");
 
@@ -418,8 +422,10 @@ private:
 		pos->setText(Vec3dToString(odf->m_position));
 		meanDir->setText(Vec3dToString(odf->m_meanDir));
 		FA->setText(QString::number(odf->m_FA));
-		GFA->setText(QString::number(odf->m_EFD_GFA));
-		alpha->setText(Vec3dToString(odf->m_EFD_alpha));
+		EFD_GFA->setText(QString::number(odf->m_EFD_GFA));
+		EFD_alpha->setText(Vec3dToString(odf->m_EFD_alpha));
+		VM3_GFA->setText(QString::number(odf->m_VM3_GFA));
+		VM3_beta->setText(Vec3dToString(odf->m_VM3_beta));
 	}
 };
 
