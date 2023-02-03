@@ -155,121 +155,56 @@ void CFiberODFAnalysis::run()
 		m_stepsCompleted = currentZ + currentY * zDiv + currentX * zDiv * yDiv;
 
 		// see if user cancelled
-		if (IsCancelled())
-		{
-			clear();
-			return;
-		}
+		if (IsCancelled()) { clear(); return; }
 
 		std::stringstream ss;
 		ss << "Building ODFS (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
 		m_task = ss.str();
 		setCurrentTask(m_task.c_str(), m_progress);
 
-        extractFilter.SetIndex(std::vector<int> {(int)xDivSize*currentX, (int)yDivSize*currentY, (int)zDivSize*currentZ});
-        sitk::Image current = extractFilter.Execute(img);
-        
-        // sitk::ImageFileWriter writer;
-        // QString name = QString("/home/mherron/Desktop/test%1.tif").arg(currentLoop++);
-        // writer.SetFileName(name.toStdString());
-        // writer.Execute(current);
+		// extract the sub-image
+		extractFilter.SetIndex(std::vector<int> {(int)xDivSize* currentX, (int)yDivSize* currentY, (int)zDivSize* currentZ});
+		sitk::Image current = extractFilter.Execute(img);
 
-        // Apply Butterworth filter
-        butterworthFilter(current);
-        
-        current = sitk::Cast(current, sitk::sitkFloat32);
-        
-        // Apply FFT and FFT shift
-        current = sitk::FFTPad(current);
-        current = sitk::ForwardFFT(current);
-        current = sitk::FFTShift(current);
+		// process it
+		processImage(current);
 
-        // Obtain Power Spectrum
-        current = powerSpectrum(current);
-
-        // Remove DC component (does not have a direction and does not 
-        // constitute fibrillar structures)
-        // NOTE: For some reason, this doesn't perfectly match zeroing out the same point in MATLAB
-        // and results in a slightly different max value in the ODF
-        auto currentSize = current.GetSize();
-        std::vector<uint32_t> index {currentSize[0]/2 + 1, currentSize[1]/2 + 1, currentSize[2]/2 + 1};
-        current.SetPixelAsFloat(index, 0);
-
-        // Apply Radial FFT Filter
-        fftRadialFilter(current);
-
-        std::vector<double> reduced = std::vector<double>(NPTS,0);
-        reduceAmp(current, &reduced);
-
-        // delete image
-        current = sitk::Image();
-        
-		// see if user cancelled
-		if (IsCancelled())
-		{
-			clear();
-			return;
-		}
-
-		// Apply qBall algorithm
+		// allocated new odf
 		CODF* odf = new CODF;
-		// odf->m_odf.reserve(NPTS);
+		odf->m_sphHarmonics.resize(C->columns());
+		odf->m_position = vec3d(size[0] * spacing[0] / (xDiv * 2) * (currentX * 2 + 1) + origin[0], size[1] * spacing[1] / (yDiv * 2) * (currentY * 2 + 1) + origin[1], size[2] * spacing[2] / (zDiv * 2) * (currentZ * 2 + 1) + origin[2]);
+		odf->m_radius = radius;
+		m_ODFs.push_back(odf);
+
+		std::vector<double> reduced = std::vector<double>(NPTS, 0);
+		reduceAmp(current, &reduced);
+
+		// delete image
+		current = sitk::Image();
+
+		// see if user cancelled
+		if (IsCancelled()) { clear(); return; }
 
 		// odf = A*B*reduced
-        A.mult(B, reduced, odf->m_odf);
-		updateProgress(0.75);
+		A.mult(B, reduced, odf->m_odf);
+		updateProgressIncrement(0.75);
 
-        // normalize odf
-        double gfa = GFA(odf->m_odf);
-        double min = *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
-        double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
+		// normalize odf
+		normalizeODF(odf);
 
-        double sum = 0;
-        for(int index = 0; index < odf->m_odf.size(); index++)
-        {
-            double val = (odf->m_odf)[index] - (min + (max - min)*0.1*gfa);
+		// Calculate spherical harmonics
+		B.mult(odf->m_odf, odf->m_sphHarmonics);
 
-            if(val < 0)
-            {
-                odf->m_odf[index] = 0;
-            }
-            else
-            {
-                odf->m_odf[index] = val;
-            }
-            
-            sum += odf->m_odf[index];
-        }
+		// Recalc ODF based on spherical harmonics
+		(*T).mult(odf->m_sphHarmonics, odf->m_odf);
 
-        for(int index = 0; index < odf->m_odf.size(); index++)
-        {
-            odf->m_odf[index] /= sum;
-        }
+		// build the mesh
+		buildMesh(odf);
 
-        // Calculate spherical harmonics
-        odf->m_sphHarmonics.resize(C->columns());   
-        B.mult(odf->m_odf, odf->m_sphHarmonics);
+		// do the fitting stats
+		if (GetBoolValue(FITTING)) calculateFits(odf);
 
-        odf->m_position = vec3d(size[0]*spacing[0]/(xDiv*2)*(currentX*2+1) + origin[0], size[1]*spacing[1]/(yDiv*2)*(currentY*2+1) + origin[1], size[2]*spacing[2]/(zDiv*2)*(currentZ*2+1) + origin[2]);
-        odf->m_radius = radius;
-        m_ODFs.push_back(odf);
-
-        std::cout << "X: " << currentX << " Y: " << currentY << " Z: " << currentZ << std::endl;
-        std::cout << "Spherical Harmonics:" << std::endl;
-        for(int index = 0; index < odf->m_sphHarmonics.size() - 1; index++)
-        {
-            std::cout << odf->m_sphHarmonics[index] << ",";
-        }
-        std::cout << odf->m_sphHarmonics[odf->m_sphHarmonics.size() - 1] << std::endl;
-
-        std::cout << "Position:" << std::endl;
-        std::cout << odf->m_position.x << "," << odf->m_position.y << "," << odf->m_position.z << std::endl;
-
-        // Recalc ODF based on spherical harmonics
-        (*T).mult(odf->m_sphHarmonics, odf->m_odf);
-
-        // ui->glWidget->setMesh(buildMesh());
-
+		// update iterators
         if((currentX + 1 == xDiv) && (currentY + 1 == yDiv) && (currentZ + 1 == zDiv)) break;
 
         currentZ++;
@@ -284,15 +219,71 @@ void CFiberODFAnalysis::run()
             currentY = 0;
             currentX++;
         }
-		updateProgress(1.0);
+		updateProgressIncrement(1.0);
     }
-	setCurrentTask("Building meshes ...", 100);
-    buildMeshes();
+	setProgress(100);
+}
 
-	if (GetBoolValue(FITTING))
+void CFiberODFAnalysis::processImage(sitk::Image& current)
+{
+	// sitk::ImageFileWriter writer;
+	// QString name = QString("/home/mherron/Desktop/test%1.tif").arg(currentLoop++);
+	// writer.SetFileName(name.toStdString());
+	// writer.Execute(current);
+
+	// Apply Butterworth filter
+	butterworthFilter(current);
+
+	current = sitk::Cast(current, sitk::sitkFloat32);
+
+	// Apply FFT and FFT shift
+	current = sitk::FFTPad(current);
+	current = sitk::ForwardFFT(current);
+	current = sitk::FFTShift(current);
+
+	// Obtain Power Spectrum
+	current = powerSpectrum(current);
+
+	// Remove DC component (does not have a direction and does not 
+	// constitute fibrillar structures)
+	// NOTE: For some reason, this doesn't perfectly match zeroing out the same point in MATLAB
+	// and results in a slightly different max value in the ODF
+	auto currentSize = current.GetSize();
+	std::vector<uint32_t> index{ currentSize[0] / 2 + 1, currentSize[1] / 2 + 1, currentSize[2] / 2 + 1 };
+	current.SetPixelAsFloat(index, 0);
+
+	// Apply Radial FFT Filter
+	fftRadialFilter(current);
+}
+
+
+void CFiberODFAnalysis::normalizeODF(CODF* odf)
+{
+	// normalize odf
+	double gfa = GFA(odf->m_odf);
+	double min = *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
+	double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
+
+	double sum = 0;
+	for (int index = 0; index < odf->m_odf.size(); index++)
 	{
-		setCurrentTask("Calculating fits ...", 100);
-		calculateFits();
+		double val = (odf->m_odf)[index] - (min + (max - min) * 0.1 * gfa);
+
+		if (val < 0)
+		{
+			odf->m_odf[index] = 0;
+		}
+		else
+		{
+			odf->m_odf[index] = val;
+		}
+
+		sum += odf->m_odf[index];
+	}
+
+	for (int index = 0; index < odf->m_odf.size(); index++)
+	{
+		odf->m_odf[index] /= sum;
 	}
 }
 
@@ -536,7 +527,7 @@ void CFiberODFAnalysis::fftRadialFilter(sitk::Image& img)
     }
 }
 
-void CFiberODFAnalysis::updateProgress(double f)
+void CFiberODFAnalysis::updateProgressIncrement(double f)
 {
 	m_progress = 100.0 * (m_stepsCompleted + f) / m_totalSteps;
 	setProgress(m_progress);
@@ -601,7 +592,7 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
 			#pragma omp critical
 			{
 				zcount++;
-				updateProgress(0.5*zcount / nz);
+				updateProgressIncrement(0.5*zcount / nz);
 			}
         }
         
@@ -687,68 +678,60 @@ double CFiberODFAnalysis::GFA(std::vector<double>& vals)
     return stdDev/rms;
 }
 
-void CFiberODFAnalysis::buildMeshes()
+void CFiberODFAnalysis::buildMesh(CODF* odf)
 {
     Post::CColorMap map;
     map.jet();
 
-	setProgress(0);
-    for(int i=0; i<m_ODFs.size(); ++i)
-    {
-		setProgress((100.0 * i) / m_ODFs.size());
+	double min = 0.0;// *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
+	double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
+	double scale = 1.0/(max - min);
 
-		auto odf = m_ODFs[i];
-		double min = 0.0;// *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
-        double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
-        double scale = 1.0/(max - min);
+	GLMesh* pm = &odf->m_mesh;
+	pm->Create(NPTS, NCON);
 
-        GLMesh* pm = &odf->m_mesh;
-        pm->Create(NPTS, NCON);
+	GLMesh* radial = &odf->m_radialMesh;
+	radial->Create(NPTS, NCON);
 
-        GLMesh* radial = &odf->m_radialMesh;
-        radial->Create(NPTS, NCON);
+	// create nodes
+	for (int i=0; i<NPTS; ++i)
+	{
+		auto& node = pm->Node(i);
+		node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
 
-        // create nodes
-        for (int i=0; i<NPTS; ++i)
-        {
-            auto& node = pm->Node(i);
-            node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+		auto& radialNode = radial->Node(i);
+		double val = (odf->m_odf[i]-min)*scale;
+		radialNode.r = vec3d(XCOORDS[i]*val, YCOORDS[i]*val, ZCOORDS[i]*val);
+	}
 
-            auto& radialNode = radial->Node(i);
-            double val = (odf->m_odf[i]-min)*scale;
-            radialNode.r = vec3d(XCOORDS[i]*val, YCOORDS[i]*val, ZCOORDS[i]*val);
-        }
+	// create elements
+	for (int i=0; i<NCON; ++i)
+	{
+		auto& el = pm->Face(i);
+		el.n[0] = CONN1[i]-1;
+		el.n[1] = CONN2[i]-1;
+		el.n[2] = CONN3[i]-1;
 
-        // create elements
-        for (int i=0; i<NCON; ++i)
-        {
-            auto& el = pm->Face(i);
-            el.n[0] = CONN1[i]-1;
-            el.n[1] = CONN2[i]-1;
-            el.n[2] = CONN3[i]-1;
+		el.c[0] = map.map(odf->m_odf[el.n[0]]*scale);
+		el.c[1] = map.map(odf->m_odf[el.n[1]]*scale);
+		el.c[2] = map.map(odf->m_odf[el.n[2]]*scale);
 
-            el.c[0] = map.map(odf->m_odf[el.n[0]]*scale);
-            el.c[1] = map.map(odf->m_odf[el.n[1]]*scale);
-            el.c[2] = map.map(odf->m_odf[el.n[2]]*scale);
+		auto& radialEl = radial->Face(i);
+		radialEl.n[0] = CONN1[i]-1;
+		radialEl.n[1] = CONN2[i]-1;
+		radialEl.n[2] = CONN3[i]-1;
 
-            auto& radialEl = radial->Face(i);
-            radialEl.n[0] = CONN1[i]-1;
-            radialEl.n[1] = CONN2[i]-1;
-            radialEl.n[2] = CONN3[i]-1;
+		radialEl.c[0] = map.map(odf->m_odf[radialEl.n[0]]*scale);
+		radialEl.c[1] = map.map(odf->m_odf[radialEl.n[1]]*scale);
+		radialEl.c[2] = map.map(odf->m_odf[radialEl.n[2]]*scale);
+	}
 
-            radialEl.c[0] = map.map(odf->m_odf[radialEl.n[0]]*scale);
-            radialEl.c[1] = map.map(odf->m_odf[radialEl.n[1]]*scale);
-            radialEl.c[2] = map.map(odf->m_odf[radialEl.n[2]]*scale);
-        }
+    // update the mesh
+    pm->Update();
+    radial->Update();
 
-        // update the mesh
-        pm->Update();
-        radial->Update();
-
-        // remesh sphere
-        remeshSphere(odf);
-    }
-	setProgress(100);
+    // remesh sphere
+    remeshSphere(odf);
 }
 
 void CFiberODFAnalysis::remeshSphere(CODF* odf)
@@ -1060,95 +1043,85 @@ double det_matrix3(const matrix& a)
 	return d;
 }
 
-void CFiberODFAnalysis::calculateFits()
+void CFiberODFAnalysis::calculateFits(CODF* odf)
 {
-	setProgress(0);
-	for (int i=0; i<m_ODFs.size(); ++i)
-	{
-		setProgress((100.0* i)/ m_ODFs.size());
-		Log("ODF %d:\n", i + 1);
-
-		auto odf = m_ODFs[i];
-
 		// get the spatial coordinates
 		int npt = odf->m_mesh.Nodes();
 		vector<vec3d> x(npt);
 		for (int i = 0; i < npt; ++i) x[i] = odf->m_mesh.Node(i).r;
 
-		// build matrix of nodal coordinates, weighted by ODF
-		matrix A(npt, 3);
-		for (int i = 0; i < npt; ++i)
-		{
-			vec3d ri = x[i];
-			double f = odf->m_odf[i];
-			A[i][0] = f*ri.x;
-			A[i][1] = f*ri.y;
-			A[i][2] = f*ri.z;
-		}
-
-		// calculate covariance 
-		matrix c = covariance(A);
-
-		// find "largest" exponent
-		double maxnum = matrix_max(c);
-		double power = ceil(log10(maxnum) - 1);
-		Log("power= %lg\n", power);
-		// adjust spd by this power.
-		c *= pow(10, -power);
-
-		Log("covariance matrix:\n");
-		Log("\t%lg,%lg,%lg\n", c[0][0], c[0][1], c[0][2]);
-		Log("\t%lg,%lg,%lg\n", c[1][0], c[1][1], c[1][2]);
-		Log("\t%lg,%lg,%lg\n", c[2][0], c[2][1], c[2][2]);
-
-		// TODO: do power scaling?
-/*		double D = det_matrix3(c);
-		for (int i = 0; i < 3; ++i)
-			for (int j = 0; j < 3; ++j) c(i, j) /= D;
-*/
-		// calculate eigenvalues and eigenvectors
-		// NOTE: V must be correct size; l must be empty.
-		matrix V(3, 3); V.zero();
-		vector<double> l;
-		c.eigen_vectors(V, l);
-		Log("\neigenvalues: %lg, %lg, %lg\n", l[0], l[1], l[2]);
-		Log("eigen vectors:\n");
-		Log("\t%lg,%lg,%lg\n", V[0][0], V[0][1], V[0][2]);
-		Log("\t%lg,%lg,%lg\n", V[1][0], V[1][1], V[1][2]);
-		Log("\t%lg,%lg,%lg\n", V[2][0], V[2][1], V[2][2]);
-
-		// find largest eigenvalue
-		int ind = 0; double lmax = l[0];
-		if (l[1] > lmax) { ind = 1; lmax = l[1]; }
-		if (l[2] > lmax) { ind = 2; lmax = l[2]; }
-
-		// the mean direction is the eigen vector with the largest eigenvalue
-		vec3d meanDir(V[0][ind], V[1][ind], V[2][ind]);
-		odf->m_meanDir = meanDir;
-		Log("\nmean direction: %lg, %lg, %lg\n", meanDir.x, meanDir.y, meanDir.z);
-
-		// calculate fractional anisotropy
-		double l0 = l[0], l1 = l[1], l2 = l[2];
-		double l01 = l[0] - l[1];
-		double l12 = l[1] - l[2];
-		double l02 = l[0] - l[2];
-		double FA = sqrt(0.5)*sqrt(l01*l01 + l12*l12 + l02*l02)/sqrt(l0*l0 + l1*l1 + l2*l2);
-		odf->m_FA = FA;
-		Log("fractional anisotropy: %lg\n", FA);
-
-		// do optimization of EDF parameters
-		vector<double> alpha = optimize_edf({ 1.0, 1.0, 1.0 }, odf->m_odf, x, V, l);
-		odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
-		Log("optimized alpha: %lg, %lg, %lg\n", alpha[0], alpha[1], alpha[2]);
-
-		// calculate EFD ODF
-		vector<double>& EFDODF = odf->m_EFD_ODF;
-		EFD_ODF(odf->m_odf, x, alpha, V, l, EFDODF);
-
-		// calculate generalized FA
-		double GFA = stddev(EFDODF) / rms(EFDODF);
-		odf->m_GFA = GFA;
-		Log("generalized fractional anisotropy: %lg\n", GFA);
+	// build matrix of nodal coordinates, weighted by ODF
+	matrix A(npt, 3);
+	for (int i = 0; i < npt; ++i)
+	{
+		vec3d ri = x[i];
+		double f = odf->m_odf[i];
+		A[i][0] = f*ri.x;
+		A[i][1] = f*ri.y;
+		A[i][2] = f*ri.z;
 	}
-	setProgress(100);
+
+	// calculate covariance 
+	matrix c = covariance(A);
+
+	// find "largest" exponent
+	double maxnum = matrix_max(c);
+	double power = ceil(log10(maxnum) - 1);
+	Log("power= %lg\n", power);
+	// adjust spd by this power.
+	c *= pow(10, -power);
+
+	Log("covariance matrix:\n");
+	Log("\t%lg,%lg,%lg\n", c[0][0], c[0][1], c[0][2]);
+	Log("\t%lg,%lg,%lg\n", c[1][0], c[1][1], c[1][2]);
+	Log("\t%lg,%lg,%lg\n", c[2][0], c[2][1], c[2][2]);
+
+	// TODO: do power scaling?
+/*		double D = det_matrix3(c);
+	for (int i = 0; i < 3; ++i)
+		for (int j = 0; j < 3; ++j) c(i, j) /= D;
+*/
+	// calculate eigenvalues and eigenvectors
+	// NOTE: V must be correct size; l must be empty.
+	matrix V(3, 3); V.zero();
+	vector<double> l;
+	c.eigen_vectors(V, l);
+	Log("\neigenvalues: %lg, %lg, %lg\n", l[0], l[1], l[2]);
+	Log("eigen vectors:\n");
+	Log("\t%lg,%lg,%lg\n", V[0][0], V[0][1], V[0][2]);
+	Log("\t%lg,%lg,%lg\n", V[1][0], V[1][1], V[1][2]);
+	Log("\t%lg,%lg,%lg\n", V[2][0], V[2][1], V[2][2]);
+
+	// find largest eigenvalue
+	int ind = 0; double lmax = l[0];
+	if (l[1] > lmax) { ind = 1; lmax = l[1]; }
+	if (l[2] > lmax) { ind = 2; lmax = l[2]; }
+
+	// the mean direction is the eigen vector with the largest eigenvalue
+	vec3d meanDir(V[0][ind], V[1][ind], V[2][ind]);
+	odf->m_meanDir = meanDir;
+	Log("\nmean direction: %lg, %lg, %lg\n", meanDir.x, meanDir.y, meanDir.z);
+
+	// calculate fractional anisotropy
+	double l0 = l[0], l1 = l[1], l2 = l[2];
+	double l01 = l[0] - l[1];
+	double l12 = l[1] - l[2];
+	double l02 = l[0] - l[2];
+	double FA = sqrt(0.5)*sqrt(l01*l01 + l12*l12 + l02*l02)/sqrt(l0*l0 + l1*l1 + l2*l2);
+	odf->m_FA = FA;
+	Log("fractional anisotropy: %lg\n", FA);
+
+	// do optimization of EDF parameters
+	vector<double> alpha = optimize_edf({ 1.0, 1.0, 1.0 }, odf->m_odf, x, V, l);
+	odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
+	Log("optimized alpha: %lg, %lg, %lg\n", alpha[0], alpha[1], alpha[2]);
+
+	// calculate EFD ODF
+	vector<double>& EFDODF = odf->m_EFD_ODF;
+	EFD_ODF(odf->m_odf, x, alpha, V, l, EFDODF);
+
+	// calculate generalized FA
+	double GFA = stddev(EFDODF) / rms(EFDODF);
+	odf->m_GFA = GFA;
+	Log("generalized fractional anisotropy: %lg\n", GFA);
 }

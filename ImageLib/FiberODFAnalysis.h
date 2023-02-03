@@ -87,12 +87,13 @@ private:
     std::unique_ptr<matrix> complLapBel_Coef();
     double GFA(std::vector<double>& vals);
 
-    void buildMeshes();
+	void processImage(sitk::Image& img);
+	void normalizeODF(CODF* odf);
+    void buildMesh(CODF* odf);
     void remeshSphere(CODF* odf);
+	void calculateFits(CODF* odf);
 
-	void calculateFits();
-
-	void updateProgress(double f);
+	void updateProgressIncrement(double f);
 
 	vector<double> optimize_edf(
 		const vector<double>& alpha0,
