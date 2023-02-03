@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <sstream>
 #include "ImageSITK.h"
 #include "levmar.h"
+#include <FECore/besselIK.h>
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -912,6 +913,68 @@ void EFD_ODF(
 		for (int i = 0; i < npt; ++i) EFDODF[i] /= sum;
 }
 
+vec3d sph2cart(double az, double elv, double r)
+{
+	double ca = cos(az);
+	double sa = sin(az);
+	double ce = cos(elv);
+	double se = sin(elv);
+
+	return vec3d(r * ca * ce, r * sa * ce, r * se);
+}
+
+vec3d cart2sph(const vec3d& p)
+{
+	double r = p.norm();
+	double elv = asin(p.z / r);
+	double az = acos(p.x / r) - PI;
+	return vec3d(az, elv, r);
+}
+
+void VM3_ODF(
+	const vector<double>& odf,
+	const vector<vec3d>& x,
+	const vector<double>& beta,
+	vector<double>& VM3ODF)
+{
+	// concentration parameter(1 / dispersion)
+	double b = fabs(beta[0]);
+
+	double az = beta[1]; 
+	double elv = beta[2];
+
+	// convert inclinationand azimuth into cartesian coordinates
+	vec3d mu = sph2cart(az, elv, 1);
+
+	// ensure unit vector
+	mu.unit();
+
+	// normalizing constant of Von - Mises Fisher distribution
+	// bessel function of the first kind order 0
+	double nc = b / (2.0 * PI * i0(b));
+
+	double sum = 0.0;
+	int npt = (int)odf.size();
+	VM3ODF.resize(npt);
+	for (int i = 0; i < npt; ++i)
+	{
+		vec3d r(x[i].x, x[i].y, x[i].z);
+
+		// determine angle difference between mean directionand current
+		// direction x
+		double theta = acos(mu*r);
+
+		double odf_i = nc * exp(b * (cos(2.0 * theta) + 1.0));
+
+		VM3ODF[i] = odf_i;
+		sum += odf_i;
+	}
+
+	// normalize
+	if (sum != 0.0)
+		for (int i = 0; i < npt; ++i) VM3ODF[i] /= sum;
+}
+
 struct OBJDATA
 {
 	const vector<double>* podf;
@@ -923,7 +986,7 @@ struct OBJDATA
 	FSThreadedTask* plog = nullptr;
 };
 
-void objfun(double* p, double* hx, int m, int n, void* adata)
+void efd_objfun(double* p, double* hx, int m, int n, void* adata)
 {
 	// get the ODF data
 	OBJDATA& data = *((OBJDATA*)adata);
@@ -958,6 +1021,42 @@ void objfun(double* p, double* hx, int m, int n, void* adata)
 		data.plog->Log("(%lg)\n", o);
 	}
 //#endif
+}
+
+
+void vm3_objfun(double* p, double* hx, int m, int n, void* adata)
+{
+	// get the ODF data
+	OBJDATA& data = *((OBJDATA*)adata);
+	const vector<double>& odf = *data.podf;
+	const vector<vec3d>& x = *data.px;
+	vector<double>& vm3 = *data.pefd;
+
+	// set values of beta
+	vector<double> beta = { p[0], p[1], p[2] };
+
+	// calculate the EFD_ODF
+	VM3_ODF(odf, x, beta, vm3);
+
+	// evaluate measurement
+	const double eps = 1e-12;
+	double odfmax = data.odfmax;
+	for (int i = 0; i < n; ++i)
+	{
+		double Wi = (odf[i] + eps) / (10.0 * odfmax);
+		hx[i] = Wi * (vm3[i] - odf[i]);
+	}
+
+	// evaluate objective function
+//#ifdef _DEBUG
+	if (data.plog)
+	{
+		double o = 0.0;
+		for (int i = 0; i < n; ++i) o += hx[i] * hx[i];
+		for (int i = 0; i < m; ++i) data.plog->Log("%lg, ", p[i]);
+		data.plog->Log("(%lg)\n", o);
+	}
+	//#endif
 }
 
 double vmax(const vector<double>& v)
@@ -1019,7 +1118,7 @@ vector<double> CFiberODFAnalysis::optimize_edf(
 
 	// call levmar.
 	// returns nr of iterations or -1 on failure
-	int niter = dlevmar_bc_dif(objfun, alpha.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
+	int niter = dlevmar_bc_dif(efd_objfun, alpha.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
 	Log("levmar completed:\n");
 	Log("initial ||e||_2  : %lg\n", info[0]);
 	Log("||e||_2          : %lg\n", info[1]);
@@ -1047,6 +1146,65 @@ vector<double> CFiberODFAnalysis::optimize_edf(
 	Log("\n");
 
 	return alpha;
+}
+
+vector<double> CFiberODFAnalysis::optimize_vm3(
+	const vector<double>& beta0,
+	const vector<double>& odf,
+	const vector<vec3d>& x)
+{
+	const int itmax = 10;// 100;
+	const double tau = 1e-3; // don't change. not sure what this does. 
+	const double tol = 1e-9;
+	const double fdiff = 1e-7;
+	double opts[5] = { tau, 1e-17, 1e-17, tol, fdiff };
+
+	int n = (int)beta0.size();
+	vector<double> lb = {0.01, -PI, -PI/2};
+	vector<double> ub = {1e3, PI, PI/2};
+
+	vector<double> tmp(NPTS);
+	OBJDATA data;
+	data.podf = &odf;
+	data.px = &x;
+	data.pl = nullptr;
+	data.pV = nullptr;
+	data.odfmax = vmax(odf);
+	data.pefd = &tmp;
+	data.plog = this;
+	vector<double> beta = beta0;
+	double info[LM_INFO_SZ] = { 0.0 };
+
+	// call levmar.
+	// returns nr of iterations or -1 on failure
+	int niter = dlevmar_bc_dif(vm3_objfun, beta.data(), nullptr, n, (int)odf.size(), lb.data(), ub.data(), 0, itmax, nullptr, info, 0, 0, (void*)&data);
+	Log("levmar completed:\n");
+	Log("initial ||e||_2  : %lg\n", info[0]);
+	Log("||e||_2          : %lg\n", info[1]);
+	Log("||J^Te||_inf     : %lg\n", info[2]);
+	Log("||Dp||_2         : %lg\n", info[3]);
+	Log("mu/max[J^TJ]_ii] : %lg\n", info[4]);
+	Log("nr. of iterations: %lg\n", info[5]);
+	Log("reason for termination: ");
+	int reason = (int)info[6];
+	switch (reason)
+	{
+	case 1: Log("stopped by small gradient J^Te\n"); break;
+	case 2: Log("stopped by small Dp\n"); break;
+	case 3: Log("stopped by itmax\n"); break;
+	case 4: Log("singular matrix. Restart from current p with increased mu.\n"); break;
+	case 5: Log("no further error reduction is possible.Restart with increased mu.\n"); break;
+	case 6: Log("stopped by small ||e||_2.\n"); break;
+	case 7: Log("stopped by invalid(i.e.NaN or Inf) \"func\" values.This is a user error\n"); break;
+	default:
+		Log("Mars is not in retrograde.\n");
+	}
+	Log("nr of function evaluations : %lg\n", info[7]);
+	Log("nr of Jacobian evaluations : %lg\n", info[8]);
+	Log("nr of linear systems solved: %lg\n", info[9]);
+	Log("\n");
+
+	return beta;
 }
 
 double det_matrix3(const matrix& a)
@@ -1130,6 +1288,7 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	Log("fractional anisotropy: %lg\n", FA);
 
 	// do optimization of EDF parameters
+	Log("Fitting EFD\n");
 	vector<double> alpha = optimize_edf({ 1.0, 1.0, 1.0 }, odf->m_odf, x, V, l);
 	odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
 	Log("optimized alpha: %lg, %lg, %lg\n", alpha[0], alpha[1], alpha[2]);
@@ -1139,7 +1298,23 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	EFD_ODF(odf->m_odf, x, alpha, V, l, EFDODF);
 
 	// calculate generalized FA
-	double GFA = stddev(EFDODF) / rms(EFDODF);
-	odf->m_GFA = GFA;
-	Log("generalized fractional anisotropy: %lg\n", GFA);
+	odf->m_EFD_GFA = stddev(EFDODF) / rms(EFDODF);
+	Log("generalized fractional anisotropy: %lg\n", stddev(EFDODF) / rms(EFDODF));
+
+	// do optimization of VM3 parameters
+	Log("Fitting VM3\n");
+
+	// convert mean direction from cartesian to spherical
+	vec3d sp = cart2sph(odf->m_meanDir);
+	vector<double> beta = optimize_vm3({1.0, sp.x, sp.y}, odf->m_odf, x);
+	odf->m_VM3_beta = vec3d(beta[0], beta[1], beta[2]);
+	Log("optimized beta: %lg, %lg, %lg\n", beta[0], beta[1], beta[2]);
+
+	// calculate VM3 ODF
+	vector<double>& VM3ODF = odf->m_VM3_ODF;
+	VM3_ODF(odf->m_odf, x, beta, VM3ODF);
+
+	// calculate generalized FA
+	odf->m_VM3_GFA = stddev(EFDODF) / rms(EFDODF);
+	Log("generalized fractional anisotropy: %lg\n", odf->m_VM3_GFA);
 }

@@ -58,7 +58,11 @@ public:
 	double	m_FA;		// fractional anisotropy
 	vector<double>	m_EFD_ODF;	// The EDF ODF
 	vec3d	m_EFD_alpha;	// alpha values of EFD fit
-	double	m_GFA;			// generalized fractional anisotropy
+	double	m_EFD_GFA;			// generalized fractional anisotropy
+
+	vector<double>	m_VM3_ODF;	// The EDF ODF
+	vec3d	m_VM3_beta;			// beta values of EFD fit
+	double	m_VM3_GFA;			// generalized fractional anisotropy
 };
 
 class CFiberODFAnalysis : public CImageAnalysis
@@ -106,6 +110,11 @@ private:
 		const vector<vec3d>& x,
 		const matrix& V,
 		const vector<double>& l);
+
+	vector<double> optimize_vm3(
+		const vector<double>& beta0,
+		const vector<double>& odf,
+		const vector<vec3d>& x);
 
 private:
     std::vector<CODF*> m_ODFs;

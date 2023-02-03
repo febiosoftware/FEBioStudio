@@ -465,7 +465,7 @@ private:
 		pos->setText(Vec3dToString(odf->m_position));
 		meanDir->setText(Vec3dToString(odf->m_meanDir));
 		FA->setText(QString::number(odf->m_FA));
-		GFA->setText(QString::number(odf->m_GFA));
+		GFA->setText(QString::number(odf->m_EFD_GFA));
 		alpha->setText(Vec3dToString(odf->m_EFD_alpha));
 	}
 };
