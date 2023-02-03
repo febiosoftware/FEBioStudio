@@ -160,54 +160,7 @@ void CFiberGLWidget::paintGL()
     m_cam.SetTargetDistance(50);
     m_cam.Transform();
 
-    if(m_analysis && m_ODF)
-    {
-        GLMesh* mesh;
-
-        bool radial = m_analysis->showRadial();
-
-        if(m_analysis->renderRemeshed())
-        {
-            if(radial)
-            {
-                mesh = &m_ODF->m_radialRemesh;
-            }
-            else
-            {
-                mesh = &m_ODF->m_remesh;
-            }
-        }
-        else
-        {
-            if(radial)
-            {
-                mesh = &m_ODF->m_radialMesh;
-            }
-            else
-            {
-                mesh = &m_ODF->m_mesh;
-            }
-        }
-
-        m_renderer.RenderGLMesh(mesh);
-
-        if(m_analysis->renderMeshLines())
-        {
-            m_cam.LineDrawMode(true);
-            m_cam.Transform();
-
-            glColor3f(0,0,0);
-            glLineWidth(0.01);
-
-            m_renderer.RenderGLMeshLines(mesh);
-
-            m_cam.LineDrawMode(false);
-            m_cam.Transform();
-        }
-        
-    }
-
-    
+	if (m_analysis && m_ODF) m_analysis->renderODFMesh(m_ODF, &m_cam);
 
     // render the GL widgets
     glMatrixMode(GL_PROJECTION);

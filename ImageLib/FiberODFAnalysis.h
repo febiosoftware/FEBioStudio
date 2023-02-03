@@ -36,21 +36,22 @@ namespace sitk = itk::simple;
 
 class matrix;
 
-struct CODF
+class CODF
 {
 public:
-    CODF();
+	CODF();
 
-    std::vector<double> m_odf;
-    std::vector<double> m_sphHarmonics;
-    vec3d m_position;
-    GLMesh m_mesh;
-    GLMesh m_radialMesh;
-    GLMesh m_remesh;
-    GLMesh m_radialRemesh;
-    double m_radius;
+	std::vector<double> m_odf;
+	std::vector<double> m_sphHarmonics;
+	vec3d m_position;
+	GLMesh m_mesh;
+	GLMesh m_remesh;
+	double m_radius;
 
-	BOX	m_box;
+	vector<double>	newODF;
+	vector<vec3d>	remeshCoord;
+
+	BOX		m_box;
 	bool	m_selected = false;
 
 	// fitting parameters
@@ -77,13 +78,17 @@ public:
 	int ODFs() const;
     CODF* GetODF(int i);
 
-    bool renderRemeshed();
     bool renderMeshLines();
     bool showRadial();
 
     bool display() override;
 
 	void SelectODF(int n);
+
+	bool UpdateData(bool bsave) override;
+
+public:
+	void renderODFMesh(CODF* odf, CGLCamera* cam);
 
 private:
     void clear();
@@ -99,8 +104,12 @@ private:
 	void processImage(sitk::Image& img);
 	void normalizeODF(CODF* odf);
     void buildMesh(CODF* odf);
-    void remeshSphere(CODF* odf);
+    void buildRemesh(CODF* odf);
 	void calculateFits(CODF* odf);
+	void UpdateMesh(CODF* odf, const vector<double>& val, bool bradial);
+	void UpdateRemesh(CODF* odf, bool bradial);
+
+	void UpdateAllMeshes();
 
 	void updateProgressIncrement(double f);
 
@@ -124,6 +133,10 @@ private:
     double m_lengthScale;
     double m_hausd;
     double m_grad;
+
+	// update settings
+	int		m_nshowMesh;
+	bool	m_bshowRadial;
 
 	// progress tracking
 	int	m_stepsCompleted;

@@ -48,10 +48,12 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, REMESHED, RADIAL, FITTING};
+enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, SHOW_MESH};
 
+//==================================================================
 CODF::CODF() : m_odf(NPTS, 0.0) {};
 
+//==================================================================
 CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     : CImageAnalysis(img), m_lengthScale(10), m_hausd(0.05), 
         m_grad(1.3)
@@ -61,6 +63,9 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	ss << "Fiber ODF Analysis" << n++;
 	SetName(ss.str());
 
+	m_nshowMesh = 0;
+	m_bshowRadial = false;
+
     AddIntParam(16, "Harmonic Order");
     AddDoubleParam(30, "Low Freq Cutoff (pixels)");
     AddDoubleParam(2.0, "High Freq Cutoff (pixels)");
@@ -69,9 +74,9 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddIntParam(1, "Z Divisions");
     AddBoolParam(true, "Display in graphics view");
     AddBoolParam(false, "Render Mesh Lines");
-    AddBoolParam(false, "Show Remeshed ODF");
-    AddBoolParam(false, "Show Radial Mesh");
+    AddBoolParam(m_bshowRadial, "Show Radial Mesh");
     AddBoolParam(true, "Do fitting analysis");
+	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0VM3\0");
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
@@ -200,8 +205,9 @@ void CFiberODFAnalysis::run()
 		// Recalc ODF based on spherical harmonics
 		(*T).mult(odf->m_sphHarmonics, odf->m_odf);
 
-		// build the mesh
+		// build the meshes
 		buildMesh(odf);
+		buildRemesh(odf);
 
 		// do the fitting stats
 		if (GetBoolValue(FITTING)) calculateFits(odf);
@@ -225,6 +231,40 @@ void CFiberODFAnalysis::run()
     }
 	setProgress(100);
 	SelectODF(0);
+	UpdateAllMeshes();
+}
+
+bool CFiberODFAnalysis::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		if ((m_bshowRadial != GetBoolValue(RADIAL)) ||
+			(m_nshowMesh   != GetIntValue(SHOW_MESH)))
+		{ 
+			m_bshowRadial = GetBoolValue(RADIAL);
+			m_nshowMesh   = GetIntValue(SHOW_MESH); 
+
+			UpdateAllMeshes();
+		}
+	}
+
+	return false;
+}
+
+void CFiberODFAnalysis::UpdateAllMeshes()
+{
+	bool bradial = GetBoolValue(RADIAL);
+	int nshow = GetIntValue(SHOW_MESH);
+	for (auto odf : m_ODFs)
+	{
+		switch (nshow)
+		{
+		case 0: UpdateMesh(odf, odf->m_odf, bradial); break;
+		case 1: UpdateRemesh(odf, bradial); break;
+		case 2: UpdateMesh(odf, odf->m_EFD_ODF, bradial); break;
+		case 3: UpdateMesh(odf, odf->m_VM3_ODF, bradial); break;
+		}
+	}
 }
 
 void CFiberODFAnalysis::processImage(sitk::Image& current)
@@ -300,13 +340,10 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
     GLfloat spc[4] = { 0, 0, 0, 1.f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 
-    bool remeshed = GetBoolValue(REMESHED);
-    bool meshLines = GetBoolValue(MESHLINES);
-
-    for(auto odf : m_ODFs)
-    {
-        glPushMatrix();
-        glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+	for (auto odf : m_ODFs)
+	{
+		glPushMatrix();
+		glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
 
 		if (odf->m_selected)
 		{
@@ -314,68 +351,47 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 			RenderBox(odf->m_box, false, 0.99);
 		}
 
-        glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
-        
-        GLMesh* mesh;
+		glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
+		renderODFMesh(odf, cam);
 
-        bool radial = showRadial();
-
-        if(renderRemeshed())
-        {
-            if(radial)
-            {
-                mesh = &odf->m_radialRemesh;
-            }
-            else
-            {
-                mesh = &odf->m_remesh;
-            }
-        }
-        else
-        {
-            if(radial)
-            {
-                mesh = &odf->m_radialMesh;
-            }
-            else
-            {
-                mesh = &odf->m_mesh;
-            }
-        }
-
-        m_render.RenderGLMesh(mesh);
-
-        glPopMatrix();
-
-        if(meshLines)
-        {
-            cam->LineDrawMode(true);
-            cam->Transform();
-
-            glPushMatrix();
-            glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
-            glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
-
-            glColor3f(0,0,0);
-
-            m_render.RenderGLMeshLines(mesh);
-
-             glPopMatrix();
-
-            cam->LineDrawMode(false);
-            cam->Transform();
-        }
-        
-        // glPopMatrix();
-    }
+		glPopMatrix();
+	}
 
     glPopAttrib();
 }
 
-// void CFiberODFAnalysis::render()
-// {
+void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
+{
+	bool meshLines = GetBoolValue(MESHLINES);
+	int showMesh = GetIntValue(SHOW_MESH);
 
-// }
+	GLMesh* mesh = nullptr;
+	if (showMesh == 1) mesh = &odf->m_remesh;
+	else mesh = &odf->m_mesh;
+
+	m_render.RenderGLMesh(mesh);
+
+	if (meshLines)
+	{
+/*		cam->LineDrawMode(true);
+		cam->Transform();
+
+		glPushMatrix();
+		glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+		glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
+*/
+		glColor3f(0, 0, 0);
+
+		m_render.RenderGLMeshLines(mesh);
+/*
+		glPopMatrix();
+
+		cam->LineDrawMode(false);
+		cam->Transform();
+*/
+	}
+}
+
 
 bool CFiberODFAnalysis::display()
 {
@@ -403,11 +419,6 @@ void CFiberODFAnalysis::SelectODF(int n)
 {
 	for (auto odf : m_ODFs) odf->m_selected = false;
 	if ((n >= 0) && (n < m_ODFs.size())) m_ODFs[n]->m_selected = true;
-}
-
-bool CFiberODFAnalysis::renderRemeshed()
-{
-    return GetBoolValue(REMESHED);
 }
 
 bool CFiberODFAnalysis::renderMeshLines()
@@ -699,82 +710,87 @@ double CFiberODFAnalysis::GFA(std::vector<double>& vals)
 
 void CFiberODFAnalysis::buildMesh(CODF* odf)
 {
-    Post::CColorMap map;
-    map.jet();
-
-	double min = 0.0;// *std::min_element(odf->m_odf.begin(), odf->m_odf.end());
-	double max = *std::max_element(odf->m_odf.begin(), odf->m_odf.end());
-	double scale = 1.0/(max - min);
-
-	GLMesh* pm = &odf->m_mesh;
-	pm->Create(NPTS, NCON);
-
-	GLMesh* radial = &odf->m_radialMesh;
-	radial->Create(NPTS, NCON);
+	GLMesh& mesh = odf->m_mesh;
+	odf->m_mesh.Create(NPTS, NCON);
 
 	// create nodes
 	for (int i=0; i<NPTS; ++i)
 	{
-		auto& node = pm->Node(i);
+		auto& node = mesh.Node(i);
 		node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
-
-		auto& radialNode = radial->Node(i);
-		double val = (odf->m_odf[i]-min)*scale;
-		radialNode.r = vec3d(XCOORDS[i]*val, YCOORDS[i]*val, ZCOORDS[i]*val);
 	}
 
 	// create elements
 	for (int i=0; i<NCON; ++i)
 	{
-		auto& el = pm->Face(i);
+		auto& el = mesh.Face(i);
 		el.n[0] = CONN1[i]-1;
 		el.n[1] = CONN2[i]-1;
 		el.n[2] = CONN3[i]-1;
-
-		el.c[0] = map.map(odf->m_odf[el.n[0]]*scale);
-		el.c[1] = map.map(odf->m_odf[el.n[1]]*scale);
-		el.c[2] = map.map(odf->m_odf[el.n[2]]*scale);
-
-		auto& radialEl = radial->Face(i);
-		radialEl.n[0] = CONN1[i]-1;
-		radialEl.n[1] = CONN2[i]-1;
-		radialEl.n[2] = CONN3[i]-1;
-
-		radialEl.c[0] = map.map(odf->m_odf[radialEl.n[0]]*scale);
-		radialEl.c[1] = map.map(odf->m_odf[radialEl.n[1]]*scale);
-		radialEl.c[2] = map.map(odf->m_odf[radialEl.n[2]]*scale);
 	}
 
-    // update the mesh
-    pm->Update();
-    radial->Update();
-
-    // remesh sphere
-    remeshSphere(odf);
+	// update the mesh
+	mesh.Update();
 }
 
-void CFiberODFAnalysis::remeshSphere(CODF* odf)
+void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, bool bradial)
 {
-    // Calc Gradient
+	Post::CColorMap map;
+	map.jet();
+
+	double min = 0.0;// *std::min_element(val.begin(), val.end());
+	double max = *std::max_element(val.begin(), val.end());
+	double scale = 1.0 / (max - min);
+
+	// create nodes
+	GLMesh& mesh = odf->m_mesh;
+	for (int i = 0; i < NPTS; ++i)
+	{
+		auto& node = mesh.Node(i);
+
+		if (bradial)
+		{
+			double val_i = (val[i] - min) * scale;
+			node.r = vec3d(XCOORDS[i] * val_i, YCOORDS[i] * val_i, ZCOORDS[i] * val_i);
+		}
+		else node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
+	}
+
+	// create elements
+	for (int i = 0; i < NCON; ++i)
+	{
+		auto& el = mesh.Face(i);
+		el.c[0] = map.map(val[el.n[0]] * scale);
+		el.c[1] = map.map(val[el.n[1]] * scale);
+		el.c[2] = map.map(val[el.n[2]] * scale);
+	}
+
+	mesh.Update();
+}
+
+void CFiberODFAnalysis::buildRemesh(CODF* odf)
+{
+	vector<double>& val = odf->m_odf;
+
+    // Calc Gradient norm of ODF
     vector<double> gradient;
-    // altGradient(GetIntValue(ORDER), odf->m_sphHarmonics, gradient);
-    altGradient(GetIntValue(ORDER), odf->m_odf, gradient);
+    altGradient(GetIntValue(ORDER), val, gradient);
 
     // Remesh sphere
     vector<vec3d> nodePos;
     vector<vec3i> elems;
     remeshFull(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
 
-    GLMesh* mesh = &odf->m_remesh;
 	// get the new mesh sizes
+	GLMesh& mesh = odf->m_remesh;
     int NN = (int)nodePos.size();
     int NF = (int)elems.size();
-	mesh->Create(NN, NF);
+	mesh.Create(NN, NF);
 
 	// get the vertex coordinates
 	for (int i = 0; i < NN; ++i)
 	{
-		auto& node = mesh->Node(i);
+		auto& node = mesh.Node(i);
 		node.r = nodePos[i];
 	}
 
@@ -783,7 +799,7 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
     double* zCoords = new double[NN] {};
     for(int index = 0; index < NN; index++)
     {
-        vec3d vec = mesh->Node(index).r;
+        vec3d vec = mesh.Node(index).r;
 
         xCoords[index] = vec.x;
         yCoords[index] = vec.y;
@@ -797,13 +813,17 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
 
     auto T = compSH(GetIntValue(ORDER), NN, theta, phi);
 
+	// store the new coordinates
+	odf->remeshCoord = nodePos;
+
     delete[] xCoords;
     delete[] yCoords;
     delete[] zCoords;
     delete[] theta;
     delete[] phi;
 
-    std::vector<double> newODF(NN, 0);  
+	vector<double>& newODF = odf->newODF;
+    newODF.assign(NN, 0);  
     (*T).mult(odf->m_sphHarmonics, newODF);
 
     double min = *std::min_element(newODF.begin(), newODF.end());
@@ -816,7 +836,7 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
     // create elements
 	for (int i=0; i<NF; ++i)
 	{
-        auto& el = mesh->Face(i);
+        auto& el = mesh.Face(i);
         el.n[0] = elems[i].x;
         el.n[1] = elems[i].y;
         el.n[2] = elems[i].z;
@@ -825,37 +845,29 @@ void CFiberODFAnalysis::remeshSphere(CODF* odf)
         el.c[1] = map.map(newODF[el.n[1]]*scale);
         el.c[2] = map.map(newODF[el.n[2]]*scale);
 	}
+    mesh.Update();
+}
 
-    mesh->Update();
+void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
+{
+	vector<double>& val = odf->newODF;
+	double min = 0;// *std::min_element(val.begin(), val.end());
+	double max = *std::max_element(val.begin(), val.end());
+	double scale = (min == max ? 1.0 : 1.0 / (max - min));
 
-    // create radial mesh
-    GLMesh* radial = &odf->m_radialRemesh;
-    radial->Create(NN, NF);
-
-	// get the vertex coordinates
-	for (int i = 0; i < NN; ++i)
-    {
-        vec3d vec = mesh->Node(i).r;
-
-        auto& radialNode = radial->Node(i);
-        double val = (newODF[i]-min)*scale;
-        radialNode.r = vec3d(vec.x*val, vec.y*val, vec.z*val);
-    }
-
-    // create elements
-    for (int i=0; i<NF; ++i)
-    {
-        auto& radialEl = radial->Face(i);
-        radialEl.n[0] = elems[i].x;
-        radialEl.n[1] = elems[i].y;
-        radialEl.n[2] = elems[i].z;
-
-        radialEl.c[0] = map.map(newODF[radialEl.n[0]]*scale);
-        radialEl.c[1] = map.map(newODF[radialEl.n[1]]*scale);
-        radialEl.c[2] = map.map(newODF[radialEl.n[2]]*scale);
-    }
-
-    radial->Update();
+	// create nodes
+	GLMesh& mesh = odf->m_remesh;
+	for (int i = 0; i < mesh.Nodes(); ++i)
+	{
+		auto& node = mesh.Node(i);
+		node.r = odf->remeshCoord[i];
+		if (bradial)
+		{
+			double val_i = (val[i] - min) * scale;
+			node.r *= val_i;
+		}
+	}
+	mesh.Update();
 }
 
 double rms(const vector<double>& x)
@@ -1221,10 +1233,10 @@ double det_matrix3(const matrix& a)
 
 void CFiberODFAnalysis::calculateFits(CODF* odf)
 {
-		// get the spatial coordinates
-		int npt = odf->m_mesh.Nodes();
-		vector<vec3d> x(npt);
-		for (int i = 0; i < npt; ++i) x[i] = odf->m_mesh.Node(i).r;
+	// get the spatial coordinates
+	int npt = NPTS;
+	vector<vec3d> x(npt);
+	for (int i = 0; i < npt; ++i) x[i] = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
 
 	// build matrix of nodal coordinates, weighted by ODF
 	matrix A(npt, 3);
@@ -1252,7 +1264,7 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	Log("\t%lg,%lg,%lg\n", c[1][0], c[1][1], c[1][2]);
 	Log("\t%lg,%lg,%lg\n", c[2][0], c[2][1], c[2][2]);
 
-	// TODO: do power scaling?
+	// determinant scaling
 /*		double D = det_matrix3(c);
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 3; ++j) c(i, j) /= D;
