@@ -902,9 +902,9 @@ void EFD_ODF(
 	vector<double>& EFDODF)
 {
 	int npt = (int)odf.size();
-	double D11 = alpha[0] / l[0];
-	double D22 = alpha[1] / l[1];
-	double D33 = alpha[2] / l[2];
+	double D11 = alpha[0] * l[0];
+	double D22 = alpha[1] * l[1];
+	double D33 = alpha[2] * l[2];
 	matrix Vt = V.transpose();
 	double sum = 0.0;
 	EFDODF.resize(npt);
