@@ -50,6 +50,9 @@ public:
     GLMesh m_radialRemesh;
     double m_radius;
 
+	BOX	m_box;
+	bool	m_selected = false;
+
 	// fitting parameters
 	vec3d	m_meanDir;	// mean direction
 	double	m_FA;		// fractional anisotropy
@@ -75,6 +78,8 @@ public:
     bool showRadial();
 
     bool display() override;
+
+	void SelectODF(int n);
 
 private:
     void clear();

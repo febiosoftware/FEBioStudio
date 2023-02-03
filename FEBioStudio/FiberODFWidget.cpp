@@ -568,9 +568,11 @@ void CFiberODFWidget::on_odfSelector_currentIndexChanged(int index)
 {
     if(!m_analysis) return;
 
+	m_analysis->SelectODF(index);
     ui->glWidget->setODF(m_analysis->GetODF(index));
     ui->glWidget->repaint();
 	ui->updateData(m_analysis);
+	m_wnd->RedrawGL();
 }
 
 void CFiberODFWidget::on_copyToMatButton_pressed()

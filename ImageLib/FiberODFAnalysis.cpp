@@ -175,7 +175,8 @@ void CFiberODFAnalysis::run()
 		odf->m_position = vec3d(size[0] * spacing[0] / (xDiv * 2) * (currentX * 2 + 1) + origin[0], size[1] * spacing[1] / (yDiv * 2) * (currentY * 2 + 1) + origin[1], size[2] * spacing[2] / (zDiv * 2) * (currentZ * 2 + 1) + origin[2]);
 		odf->m_radius = radius;
 		m_ODFs.push_back(odf);
-
+		odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
+		
 		std::vector<double> reduced = std::vector<double>(NPTS, 0);
 		reduceAmp(current, &reduced);
 
@@ -222,6 +223,7 @@ void CFiberODFAnalysis::run()
 		updateProgressIncrement(1.0);
     }
 	setProgress(100);
+	SelectODF(0);
 }
 
 void CFiberODFAnalysis::processImage(sitk::Image& current)
@@ -287,6 +289,9 @@ void CFiberODFAnalysis::normalizeODF(CODF* odf)
 	}
 }
 
+// in glview.cpp
+void RenderBox(const BOX& bbox, bool partial, double scale);
+
 void CFiberODFAnalysis::render(CGLCamera* cam)
 {
     glPushAttrib(GL_ENABLE_BIT);
@@ -301,6 +306,13 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
     {
         glPushMatrix();
         glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+
+		if (odf->m_selected)
+		{
+			glColor3ub(255, 255, 0);
+			RenderBox(odf->m_box, false, 0.99);
+		}
+
         glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
         
         GLMesh* mesh;
@@ -384,6 +396,12 @@ CODF* CFiberODFAnalysis::GetODF(int i)
     {
         return nullptr;
     }
+}
+
+void CFiberODFAnalysis::SelectODF(int n)
+{
+	for (auto odf : m_ODFs) odf->m_selected = false;
+	if ((n >= 0) && (n < m_ODFs.size())) m_ODFs[n]->m_selected = true;
 }
 
 bool CFiberODFAnalysis::renderRemeshed()
