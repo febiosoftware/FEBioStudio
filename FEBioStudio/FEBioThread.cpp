@@ -76,7 +76,11 @@ void CFEBioThread::run()
 	m_job->SetProgress(0.0);
 
 	QString Cmd = QString::fromStdString(m_job->m_cmd);
-	Cmd.replace("$(Filename)", QString::fromStdString(m_job->GetFEBFileName()));
+
+	// get the job file name (NOTE that we put quotes around it to deal with spaces)
+	QString fileName = QString("\"%1\"").arg(QString::fromStdString(m_job->GetFEBFileName()));
+
+	Cmd.replace("$(Filename)", fileName);
 	string cmd = Cmd.toStdString();
 
 	// go!
