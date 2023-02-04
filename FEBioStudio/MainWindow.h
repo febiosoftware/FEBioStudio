@@ -497,6 +497,8 @@ public slots:
 
 	void on_actionUpdate_triggered(bool dev = false);
 	void on_actionFEBioURL_triggered();
+	void on_actionFEBioUM_triggered();
+	void on_actionFEBioTM_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
 	void on_actionFEBioPubs_triggered();
