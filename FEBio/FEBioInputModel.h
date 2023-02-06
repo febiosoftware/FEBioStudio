@@ -275,20 +275,20 @@ public:
 	public:
 		SurfacePair();
 		SurfacePair(const SurfacePair& sp);
-		SurfacePair(const std::string& name, int masterID, int slaveID);
+		SurfacePair(const std::string& name, int surf1ID, int surf2ID);
 		void operator = (const SurfacePair& sp);
 
 		const std::string& name() const { return m_name; }
 
-		int masterID() const { return m_masterID; }
-		int slaveID() const { return m_slaveID; }
+		int PrimarySurfaceID() const { return m_surf1_ID; }
+		int SecondarySurfaceID() const { return m_surf2_ID; }
 
 		void SetPart(Part* part) { m_part = part; }
 		Part* GetPart() { return m_part; }
 
 	private:
 		std::string m_name;
-		int	m_masterID, m_slaveID;
+		int	m_surf1_ID, m_surf2_ID;
 		Part*	m_part;
 	};
 

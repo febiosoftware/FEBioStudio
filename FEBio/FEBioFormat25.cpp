@@ -472,28 +472,28 @@ void FEBioFormat25::ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag
 	if (part == 0) throw XMLReader::InvalidTag(tag);
 
 	std::string name = tag.AttributeValue("name");
-	int masterID = -1, slaveID = -1;
+	int surf1ID = -1, surf2ID = -1;
 	++tag;
 	do
 	{
 		if (tag == "master")
 		{
 			const char* szsurf = tag.AttributeValue("surface");
-			masterID = part->FindSurfaceIndex(szsurf);
-			if (masterID == -1) throw XMLReader::InvalidAttributeValue(tag, "master", szsurf);
+			surf2ID = part->FindSurfaceIndex(szsurf);
+			if (surf2ID == -1) throw XMLReader::InvalidAttributeValue(tag, "master", szsurf);
 		}
 		else if (tag == "slave")
 		{
 			const char* szsurf = tag.AttributeValue("surface");
-			slaveID = part->FindSurfaceIndex(szsurf);
-			if (slaveID == -1) throw XMLReader::InvalidAttributeValue(tag, "slave", szsurf);
+			surf1ID = part->FindSurfaceIndex(szsurf);
+			if (surf1ID == -1) throw XMLReader::InvalidAttributeValue(tag, "slave", szsurf);
 		}
 		else throw XMLReader::InvalidTag(tag);
 		++tag;
 	}
 	while (!tag.isend());
 
-	part->AddSurfacePair(FEBioInputModel::SurfacePair(name, masterID, slaveID));
+	part->AddSurfacePair(FEBioInputModel::SurfacePair(name, surf1ID, surf2ID));
 }
 
 //-----------------------------------------------------------------------------
@@ -2592,13 +2592,13 @@ void FEBioFormat25::ParseContact(FSStep *pstep, XMLTag &tag)
                 assert(part);
                 if (part)
                 {
-                    string name1 = part->GetSurface(surfPair->masterID()).name();
-                    string name2 = part->GetSurface(surfPair->slaveID()).name();
-                    FSSurface* master = febio.BuildFESurface(name1.c_str());
-                    FSSurface* slave  = febio.BuildFESurface(name2.c_str());
+                    string name1 = part->GetSurface(surfPair->PrimarySurfaceID()).name();
+                    string name2 = part->GetSurface(surfPair->SecondarySurfaceID()).name();
+                    FSSurface* surf1 = febio.BuildFESurface(name1.c_str());
+                    FSSurface* surf2  = febio.BuildFESurface(name2.c_str());
 
-                    pci->SetSecondarySurface(master);
-                    pci->SetPrimarySurface(slave);
+                    pci->SetPrimarySurface(surf1);
+                    pci->SetSecondarySurface(surf2);
                 }
             }
 			

@@ -133,7 +133,7 @@ void FSPairedInterface::SetPrimarySurface(FEItemListBuilder* pg)
 //-----------------------------------------------------------------------------
 void FSPairedInterface::SetSecondarySurface(FEItemListBuilder* pg)
 { 
-	SetItemList(pg, 0);
+	SetItemList(pg, 1);
 }
 
 //-----------------------------------------------------------------------------

@@ -821,27 +821,27 @@ FEBioInputModel::SurfacePair::SurfacePair() : m_part(0)
 {
 }
 
-FEBioInputModel::SurfacePair::SurfacePair(const std::string& name, int masterID, int slaveID) : m_part(0)
+FEBioInputModel::SurfacePair::SurfacePair(const std::string& name, int surf1ID, int surf2ID) : m_part(0)
 {
 	m_name = name;
-	m_masterID = masterID;
-	m_slaveID = slaveID;
+	m_surf1_ID = surf1ID;
+	m_surf2_ID = surf2ID;
 }
 
 FEBioInputModel::SurfacePair::SurfacePair(const SurfacePair& sp)
 {
 	m_part = sp.m_part;
 	m_name = sp.m_name;
-	m_masterID = sp.m_masterID;
-	m_slaveID  = sp.m_slaveID;
+	m_surf1_ID = sp.m_surf1_ID;
+	m_surf2_ID = sp.m_surf2_ID;
 }
 
 void FEBioInputModel::SurfacePair::operator = (const SurfacePair& sp)
 {
 	m_part = sp.m_part;
 	m_name = sp.m_name;
-	m_masterID = sp.m_masterID;
-	m_slaveID = sp.m_slaveID;
+	m_surf1_ID = sp.m_surf1_ID;
+	m_surf2_ID = sp.m_surf2_ID;
 }
 
 //=============================================================================

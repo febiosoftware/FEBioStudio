@@ -967,7 +967,7 @@ void FEBioFormat3::ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag&
 	}
 	while (!tag.isend());
 
-	part->AddSurfacePair(FEBioInputModel::SurfacePair(name, surf2, surf1));
+	part->AddSurfacePair(FEBioInputModel::SurfacePair(name, surf1, surf2));
 }
 
 //-----------------------------------------------------------------------------
@@ -2667,18 +2667,18 @@ void FEBioFormat3::ParseContact(FSStep *pstep, XMLTag &tag)
 			assert(part);
 			if (part)
 			{
-				if (surfPair->masterID() >= 0)
+				if (surfPair->PrimarySurfaceID() >= 0)
 				{
-					string name1 = part->GetSurface(surfPair->masterID()).name();
-					FSSurface* master = febio.BuildFESurface(name1.c_str());
-					pci->SetSecondarySurface(master);
+					string name1 = part->GetSurface(surfPair->PrimarySurfaceID()).name();
+					FSSurface* surf1 = febio.BuildFESurface(name1.c_str());
+					pci->SetPrimarySurface(surf1);
 				}
 
-				if (surfPair->slaveID() >= 0)
+				if (surfPair->SecondarySurfaceID() >= 0)
 				{
-					string name2 = part->GetSurface(surfPair->slaveID()).name();
-					FSSurface* slave = febio.BuildFESurface(name2.c_str());
-					pci->SetPrimarySurface(slave);
+					string name2 = part->GetSurface(surfPair->SecondarySurfaceID()).name();
+					FSSurface* surf2 = febio.BuildFESurface(name2.c_str());
+					pci->SetSecondarySurface(surf2);
 				}
 			}
 
