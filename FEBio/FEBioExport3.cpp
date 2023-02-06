@@ -650,17 +650,17 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
 		FSLogData& di = log.LogData(i);
-		if ((di.type == FSLogData::LD_ELEM) && (di.groupID != -1))
+		if ((di.type == FSLogData::LD_ELEM) && (di.itemID != -1))
 		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
+			FEItemListBuilder* pg = model.FindNamedSelection(di.itemID);
 			if (pg)
 			{
 				AddElemSet(pg->GetName(), pg);
 			}
 		}
-		if ((di.type == FSLogData::LD_NODE) && (di.groupID != -1))
+		if ((di.type == FSLogData::LD_NODE) && (di.itemID != -1))
 		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
+			FEItemListBuilder* pg = model.FindNamedSelection(di.itemID);
 			if (pg)
 			{
 				AddNodeSet(pg->GetName(), pg);
@@ -5064,7 +5064,7 @@ void FEBioExport3::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+					FEItemListBuilder* pg = mdl.FindNamedSelection(d.itemID);
 					if (pg)
 					{
 						e.add_attribute("node_set", pg->GetName());
@@ -5083,7 +5083,7 @@ void FEBioExport3::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+					FEItemListBuilder* pg = mdl.FindNamedSelection(d.itemID);
 					if (pg)
 					{
 						e.add_attribute("elem_set", pg->GetName());
@@ -5102,7 +5102,7 @@ void FEBioExport3::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					GMaterial* pm = fem.GetMaterialFromID(d.matID);
+					GMaterial* pm = fem.GetMaterialFromID(d.itemID);
 					if (pm)
 					{
 						e.value(pm->m_ntag);
@@ -5122,10 +5122,10 @@ void FEBioExport3::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-                    FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
+                    FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.itemID);
                     if (rc)
                     {
-                        e.value(d.rcID);
+                        e.value(d.itemID);
                         m_xml.add_leaf(e);
                     }
                     else m_xml.add_empty(e);

@@ -3010,7 +3010,7 @@ void FEBioExport4::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+					FEItemListBuilder* pg = mdl.FindNamedSelection(d.itemID);
 					if (pg)
 					{
 						e.add_attribute("node_set", pg->GetName());
@@ -3029,7 +3029,7 @@ void FEBioExport4::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+					FEItemListBuilder* pg = mdl.FindNamedSelection(d.itemID);
 					if (pg)
 					{
 						e.add_attribute("elem_set", pg->GetName());
@@ -3048,7 +3048,7 @@ void FEBioExport4::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					GMaterial* pm = fem.GetMaterialFromID(d.matID);
+					GMaterial* pm = fem.GetMaterialFromID(d.itemID);
 					if (pm)
 					{
 						e.value(pm->m_ntag);
@@ -3068,10 +3068,10 @@ void FEBioExport4::WriteOutputSection()
 						e.add_attribute("file", d.fileName);
 					}
 
-					FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
+					FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.itemID);
 					if (rc)
 					{
-						e.value(d.rcID);
+						e.value(d.itemID);
 						m_xml.add_leaf(e);
 					}
 					else m_xml.add_empty(e);

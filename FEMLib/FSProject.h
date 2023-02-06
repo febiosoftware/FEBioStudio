@@ -64,33 +64,27 @@ public:
 	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR, LD_FACE };
 
 public:
-	FSLogData(){ matID = -1; groupID = -1; rcID = -1; }
+	FSLogData() { type = -1; itemID = -1; }
 	FSLogData(const FSLogData& d)
 	{
 		type = d.type;
 		sdata = d.sdata;
 		fileName = d.fileName;
-		matID = d.matID;
-		groupID = d.groupID;
-        rcID = d.rcID;
+		itemID = d.itemID;
 	}
 	void operator = (const FSLogData& d)
 	{
 		type = d.type;
 		sdata = d.sdata;
 		fileName = d.fileName;
-		matID = d.matID;
-		groupID = d.groupID;
-		rcID = d.rcID;
+		itemID = d.itemID;
 	}
 
 public:
-	int			type;			// type of data (node, element, rigid)
+	int			type;			// type of data
 	string		sdata;			// data string
 	string		fileName;		// file name (optional)
-	int			matID;			// for LD_RIGID
-	int			groupID;		// for LD_NODE, LD_ELEM
-    int         rcID;           // for LD_CNCTR
+	int			itemID;			// ID of referenced item
 };
 
 //-----------------------------------------------------------------------------

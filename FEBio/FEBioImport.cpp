@@ -501,7 +501,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		FSLogData ld;
 		ld.type = v.type();
 		ld.sdata = v.data();
-		ld.groupID = v.GroupID();
+		ld.itemID = v.GroupID();
 		ld.fileName = v.file();
 		log.AddLogData(ld);
 	}

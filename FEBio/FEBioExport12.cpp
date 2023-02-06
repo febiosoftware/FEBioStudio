@@ -4127,7 +4127,7 @@ void FEBioExport12::WriteOutputSection()
 						e.name("node_data");
 						e.add_attribute("data", d.sdata);
 
-						GGroup* pg = dynamic_cast<GGroup*>(mdl.FindNamedSelection(d.groupID));
+						GGroup* pg = dynamic_cast<GGroup*>(mdl.FindNamedSelection(d.itemID));
 						if (pg)
 						{
 							vector<int> L;
@@ -4146,7 +4146,7 @@ void FEBioExport12::WriteOutputSection()
 						e.name("element_data");
 						e.add_attribute("data", d.sdata);
 
-						GGroup* pg = dynamic_cast<GGroup*>(mdl.FindNamedSelection(d.groupID));
+						GGroup* pg = dynamic_cast<GGroup*>(mdl.FindNamedSelection(d.itemID));
 						if (pg)
 						{
 							vector<int> L;
@@ -4165,7 +4165,7 @@ void FEBioExport12::WriteOutputSection()
 						e.name("rigid_body_data");
 						e.add_attribute("data", d.sdata);
 
-						GMaterial* pm = fem.GetMaterialFromID(d.matID);
+						GMaterial* pm = fem.GetMaterialFromID(d.itemID);
 						if (pm)
 						{
 							e.value(pm->m_ntag);

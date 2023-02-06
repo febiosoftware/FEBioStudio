@@ -518,17 +518,17 @@ void CDlgEditOutput::UpdateLogTable()
 		QString list;
 		if (logi.type == FSLogData::LD_RIGID)
 		{
-			if (logi.matID == -1) list = "(all rigid bodies)";
-			else list = QString::fromStdString(fem.GetMaterialFromID(logi.matID)->GetName());
+			if (logi.itemID == -1) list = "(all rigid bodies)";
+			else list = QString::fromStdString(fem.GetMaterialFromID(logi.itemID)->GetName());
 		}
         else if (logi.type == FSLogData::LD_CNCTR)
         {
-            if (logi.rcID == -1) list = "(all rigid connectors)";
-            else list = QString::fromStdString(fem.GetRigidConnectorFromID(logi.rcID)->GetName());
+            if (logi.itemID == -1) list = "(all rigid connectors)";
+            else list = QString::fromStdString(fem.GetRigidConnectorFromID(logi.itemID)->GetName());
         }
 		else
 		{
-			if (logi.groupID == -1)
+			if (logi.itemID == -1)
 			{
 				if (logi.type == FSLogData::LD_NODE) list = "(all nodes)";
 				else list = "(all elements)";
@@ -536,7 +536,7 @@ void CDlgEditOutput::UpdateLogTable()
 			else
 			{
 				GModel& mdl = fem.GetModel();
-				FEItemListBuilder* item = mdl.FindNamedSelection(logi.groupID); assert(item);
+				FEItemListBuilder* item = mdl.FindNamedSelection(logi.itemID); assert(item);
 				if (item)
 				{
 					list = QString::fromStdString(item->GetName());
@@ -669,9 +669,9 @@ void CDlgEditOutput::onLogAdd()
 	FSLogData ld;
 	ld.type = ntype;
 	ld.sdata = data.toStdString();
-	if (ld.type == FSLogData::LD_RIGID) ld.matID = nlist;
-    else if (ld.type == FSLogData::LD_CNCTR) ld.rcID = nlist;
-	else ld.groupID = nlist;
+	if (ld.type == FSLogData::LD_RIGID) ld.itemID = nlist;
+    else if (ld.type == FSLogData::LD_CNCTR) ld.itemID = nlist;
+	else ld.itemID = nlist;
 
 	// add it to the list
 	m_prj.GetLogDataSettings().AddLogData(ld);

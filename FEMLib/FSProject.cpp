@@ -64,9 +64,7 @@ void CLogDataSettings::Save(OArchive& ar)
 		{
 			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.type);
 			ar.WriteChunk(CID_PRJ_LOGDATA_DATA, v.sdata);
-			ar.WriteChunk(CID_PRJ_LOGDATA_MID , v.matID);
-			ar.WriteChunk(CID_PRJ_LOGDATA_GID , v.groupID);
-            ar.WriteChunk(CID_PRJ_LOGDATA_CID , v.rcID);
+			ar.WriteChunk(CID_PRJ_LOGDATA_GID , v.itemID);
 			ar.WriteChunk(CID_PRJ_LOGDATA_FILE, v.fileName);
 		}
 		ar.EndChunk();
@@ -80,7 +78,7 @@ void CLogDataSettings::Load(IArchive& ar)
 		if (ar.GetChunkID() == CID_PRJ_LOGDATA_ITEM)
 		{
 			string data, file;
-			int ntype;
+			int ntype = -1;
 			int mid = -1, gid = -1, cid = -1;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
@@ -97,11 +95,15 @@ void CLogDataSettings::Load(IArchive& ar)
 			}
 
 			FSLogData d;
-			d.type = ntype;
+			d.type = ntype; assert(ntype >= 0);
 			d.sdata = data;
-			d.matID = mid;
-			d.groupID = gid;
-            d.rcID = cid;
+
+			// NOTE: We used to store separately IDs for different types
+			//       Now, only the itemID (previously groupID) is retained.
+			if (cid != -1) d.itemID = cid;
+			if (mid != -1) d.itemID = mid;
+			if (gid != -1) d.itemID = gid;
+
 			d.fileName = file;
 			AddLogData(d);
 		}
