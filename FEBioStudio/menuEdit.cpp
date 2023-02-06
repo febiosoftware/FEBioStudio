@@ -633,7 +633,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FEElementSelection* pes = dynamic_cast<FEElementSelection*>(psel); assert(pes);
-			FSPart* pg = dynamic_cast<FSPart*>(pes->CreateItemList());
+			FSElemSet* pg = dynamic_cast<FSElemSet*>(pes->CreateItemList());
 			if (pg)
 			{
 				pg->SetName(szname);

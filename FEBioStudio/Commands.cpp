@@ -171,14 +171,14 @@ void CCmdAddConstraint::UnExecute()
 void CCmdAddPart::Execute()
 {
 	// add the group to the mesh
-	m_po->AddFEPart(m_pg);
+	m_po->AddFEElemSet(m_pg);
 	m_bdel = false;
 }
 
 void CCmdAddPart::UnExecute()
 {
 	// remove the mesh from the model
-	m_po->RemoveFEPart(m_pg);
+	m_po->RemoveFEElemSet(m_pg);
 	m_bdel = true;
 }
 

@@ -1531,7 +1531,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		}
 		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-		FSPart* pg = feb.BuildFEPart(set->cvalue());
+		FSElemSet* pg = feb.BuildFEElemSet(set->cvalue());
 		if (pg == nullptr) throw XMLReader::InvalidAttributeValue(tag, "elem_set", set->cvalue());
 
 		FSMesh* mesh = pg->GetMesh();

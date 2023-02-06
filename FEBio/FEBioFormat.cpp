@@ -2471,7 +2471,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
 			{
-				FSPart* pg = fem.FindNamedElementSet(szset);
+				FSElemSet* pg = fem.FindNamedElementSet(szset);
 				if (pg)
 				{
 					logVar.SetGroupID(pg->GetID());
@@ -2492,10 +2492,10 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					GMeshObject* po = inst->GetGObject();
 
 					char sz[32] = { 0 };
-					sprintf(sz, "elementset%02d", po->FEParts() + 1);
-					FSPart* ps = new FSPart(po, l);
+					sprintf(sz, "elementset%02d", po->FEElemSets() + 1);
+					FSElemSet* ps = new FSElemSet(po, l);
 					ps->SetName(sz);
-					po->AddFEPart(ps);
+					po->AddFEElemSet(ps);
 
 					logVar.SetGroupID(ps->GetID());
 				}

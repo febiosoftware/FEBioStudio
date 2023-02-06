@@ -840,7 +840,7 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 				case FE_NODESET: SetItemMode(ITEM_NODE); pcmd = new CCmdSelectFENodes(pm, l, false); break;
 				case FE_EDGESET: SetItemMode(ITEM_EDGE); pcmd = new CCmdSelectFEEdges(pm, l, false); break;
 				case FE_SURFACE: SetItemMode(ITEM_FACE); pcmd = new CCmdSelectFaces(pm, l, false); break;
-				case FE_PART   : SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, l, false); break;
+				case FE_ELEMSET: SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, l, false); break;
 				default:
 					assert(false);
 				}

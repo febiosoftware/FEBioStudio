@@ -157,7 +157,7 @@ FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 		meshBuilder.PartitionFaceSelection(gid);
 	}
 
-	FSPart* p = dynamic_cast<FSPart*>(pg);
+	FSElemSet* p = dynamic_cast<FSElemSet*>(pg);
 	if (p)
 	{
 		meshBuilder.PartitionElementSelection(gid);

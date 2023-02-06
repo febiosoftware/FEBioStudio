@@ -443,9 +443,9 @@ bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 	GObject* po = m_doc->GetActiveObject();
 	if (po)
 	{
-		FSPart* pg = new FSPart(po, elemList);
+		FSElemSet* pg = new FSElemSet(po, elemList);
 		pg->SetName(szname);
-		po->AddFEPart(pg);
+		po->AddFEElemSet(pg);
 	}
 
 	return true;
@@ -717,9 +717,9 @@ bool PostSessionFileWriter::Write(const char* szfile)
 				xml.close_branch();
 			}
 
-			for (int i = 0; i < po->FEParts(); ++i)
+			for (int i = 0; i < po->FEElemSets(); ++i)
 			{
-				FSPart* pg = po->GetFEPart(i);
+				FSElemSet* pg = po->GetFEElemSet(i);
 
 				XMLElement el("mesh:elementset");
 				el.add_attribute("name", pg->GetName());

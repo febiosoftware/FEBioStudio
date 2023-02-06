@@ -797,18 +797,18 @@ void CPostModelPanel::BuildModelTree()
 				}
 
 				// add element sets
-				int eset = mesh.Parts() + (po ? po->FEParts() : 0);
+				int eset = mesh.ElemSets() + (po ? po->FEElemSets() : 0);
 				pi3 = ui->AddItem(pi2, nullptr, QString("Element Sets (%1)").arg(eset), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.Parts(); ++i)
+				for (int i = 0; i < mesh.ElemSets(); ++i)
 				{
-					Post::FSPart& part = mesh.Part(i);
+					Post::FSElemSet& part = mesh.ElemSet(i);
 					ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
 				}
 				if (po)
 				{
-					for (int i = 0; i < po->FEParts(); ++i)
+					for (int i = 0; i < po->FEElemSets(); ++i)
 					{
-						FSPart* pg = po->GetFEPart(i);
+						FSElemSet* pg = po->GetFEElemSet(i);
 						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
 					}
 				}
@@ -1045,7 +1045,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		doc->DoCommand(new CCmdSelectFaces(ps2->GetMesh(), items, false));
 	}
 
-	FSPart* pg = dynamic_cast<FSPart*>(po);
+	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
 	{
 		std::list<int> items = pg->CopyItems();
@@ -1053,7 +1053,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		doc->SetItemMode(ITEM_ELEM);
 		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
 	}
-	Post::FSPart* pg2 = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg2 = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg2)
 	{
 		std::vector<int> items = pg2->GetElementList();
@@ -1141,12 +1141,12 @@ void CPostModelPanel::on_deleteButton_clicked()
 			Update(true);
 		}
 	}
-	else if (dynamic_cast<FSPart*>(po))
+	else if (dynamic_cast<FSElemSet*>(po))
 	{
 		GObject* poa = doc->GetActiveObject();
 		if (poa)
 		{
-			poa->RemoveFEPart(dynamic_cast<FSPart*>(po));
+			poa->RemoveFEElemSet(dynamic_cast<FSElemSet*>(po));
 			Update(true);
 		}
 	}
@@ -1239,7 +1239,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		return;
 	}
 
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		QMenu menu(this);
@@ -1248,7 +1248,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
 		QMenu menu(this);
@@ -1351,14 +1351,14 @@ void CPostModelPanel::OnSelectElements()
 
 	CPostDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
         vector<int>pgl = pg->GetElementList();
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
@@ -1379,12 +1379,12 @@ void CPostModelPanel::OnHideElements()
 	CPostDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
 		list<int> items = pg2->CopyItems();

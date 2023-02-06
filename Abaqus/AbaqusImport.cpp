@@ -1963,11 +1963,11 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			for (i=0; i<elsets; ++i, ++pes)
 			{
 				int n = (int)pes->elem.size();
-				FSPart* pg = new FSPart(po);
+				FSElemSet* pg = new FSElemSet(po);
 				pg->SetName(pes->szname);
 				vector<int>::iterator pe = pes->elem.begin();
 				for (j=0; j<n; ++j, ++pe) pg->add(part.FindElement(*pe)->lid);
-				po->AddFEPart(pg);
+				po->AddFEElemSet(pg);
 			}
 		}
 	}

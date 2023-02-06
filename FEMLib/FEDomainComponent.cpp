@@ -94,7 +94,7 @@ void FSDomainComponent::Load(IArchive& ar)
 				case FE_NODESET: pItem = new FSNodeSet((GObject*)0); break;
 				case FE_EDGESET: pItem = new FSEdgeSet((GObject*)0); break;
 				case FE_SURFACE: pItem = new FSSurface((GObject*)0); break;
-				case FE_PART: pItem = new FSPart((GObject*)0); break;
+				case FE_ELEMSET: pItem = new FSElemSet((GObject*)0); break;
 				default:
 					assert(false);
 					throw ReadError("Unknown FEItemListBuilder type in FSBoundaryCondition::Load");

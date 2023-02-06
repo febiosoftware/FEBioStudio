@@ -697,7 +697,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";
-	else if (dynamic_cast<FSPart*>(po)) return "element selection";
+	else if (dynamic_cast<FSElemSet*>(po)) return "element selection";
 	else if (dynamic_cast<FSSurface*>(po)) return "face selection";
 	else if (dynamic_cast<FSEdgeSet*>(po)) return "edge selection";
 	else if (dynamic_cast<FSNodeSet*>(po)) return "node selection";

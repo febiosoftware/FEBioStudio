@@ -113,10 +113,10 @@ void FSGroup::Load(IArchive &ar)
 }
 
 //////////////////////////////////////////////////////////////////////
-// FSPart
+// FSElemSet
 //////////////////////////////////////////////////////////////////////
 
-FSPart::FSPart(GObject* po, const vector<int>& elset) : FSGroup(po, FE_PART, FE_NODE_FLAG | FE_ELEM_FLAG)
+FSElemSet::FSElemSet(GObject* po, const vector<int>& elset) : FSGroup(po, FE_ELEMSET, FE_NODE_FLAG | FE_ELEM_FLAG)
 {
 	int nsel = (int) elset.size();
 	if (nsel > 0)
@@ -125,21 +125,21 @@ FSPart::FSPart(GObject* po, const vector<int>& elset) : FSGroup(po, FE_PART, FE_
 	}
 }
 
-void FSPart::Copy(FSPart* pg)
+void FSElemSet::Copy(FSElemSet* pg)
 {
 	m_Item = pg->m_Item;
 	SetName(pg->GetName());
 }
 
-FEItemListBuilder* FSPart::Copy()
+FEItemListBuilder* FSElemSet::Copy()
 {
-	FSPart* pg = new FSPart(m_pObj);
+	FSElemSet* pg = new FSElemSet(m_pObj);
 	pg->m_Item = m_Item;
 	return pg;
 }
 
 //-----------------------------------------------------------------------------
-void FSPart::CreateFromMesh()
+void FSElemSet::CreateFromMesh()
 {
 	Clear();
 	FSMesh* m = GetMesh();
@@ -149,7 +149,7 @@ void FSPart::CreateFromMesh()
 }
 
 //-----------------------------------------------------------------------------
-FEElemList* FSPart::BuildElemList()
+FEElemList* FSElemSet::BuildElemList()
 {
 	FSMesh* pm = m_pObj->GetFEMesh();
 	if (pm==0) return 0;
@@ -167,7 +167,7 @@ FEElemList* FSPart::BuildElemList()
 }
 
 //-----------------------------------------------------------------------------
-FSNodeList* FSPart::BuildNodeList()
+FSNodeList* FSElemSet::BuildNodeList()
 {
 	int i, j;
 	FSMesh* pm = m_pObj->GetFEMesh();

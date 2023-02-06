@@ -1443,10 +1443,10 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			int parts = po->FEParts();
+			int parts = po->FEElemSets();
 			for (int j = 0; j<parts; ++j)
 			{
-				FSPart* pg = po->GetFEPart(j);
+				FSElemSet* pg = po->GetFEElemSet(j);
 				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg, 0, new CGroupValidator(pg));
 			}
 		}

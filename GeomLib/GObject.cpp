@@ -75,7 +75,7 @@ public:
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
 	GLMesh*		m_pGMesh;	//!< the mesh for rendering
 
-	FSObjectList<FSPart>		m_pFEPart;
+	FSObjectList<FSElemSet>		m_pFEPart;
 	FSObjectList<FSSurface>		m_pFESurf;
 	FSObjectList<FSEdgeSet>		m_pFEESet;
 	FSObjectList<FSNodeSet>		m_pFENSet;
@@ -267,7 +267,7 @@ FSNodeSet* GObject::FindFENodeSet(const string& name)
 // Find a group based on its global ID
 FSGroup* GObject::FindFEGroup(int nid)
 {
-	for (int i = 0; i<FEParts(); ++i)
+	for (int i = 0; i<FEElemSets(); ++i)
 	if (imp->m_pFEPart[i]->GetID() == nid) return imp->m_pFEPart[i];
 
 	for (int i = 0; i<FESurfaces(); ++i)
@@ -283,7 +283,7 @@ FSGroup* GObject::FindFEGroup(int nid)
 }
 
 //-----------------------------------------------------------------------------
-int GObject::FEParts() const { return (int) imp->m_pFEPart.Size(); }
+int GObject::FEElemSets() const { return (int) imp->m_pFEPart.Size(); }
 
 //-----------------------------------------------------------------------------
 int GObject::FESurfaces() const { return (int)imp->m_pFESurf.Size(); }
@@ -295,7 +295,7 @@ int GObject::FEEdgeSets() const { return (int)imp->m_pFEESet.Size(); }
 int GObject::FENodeSets() const { return (int)imp->m_pFENSet.Size(); }
 
 //-----------------------------------------------------------------------------
-void GObject::AddFEPart(FSPart*    pg) { imp->m_pFEPart.Add(pg); }
+void GObject::AddFEElemSet(FSElemSet* pg) { imp->m_pFEPart.Add(pg); }
 
 //-----------------------------------------------------------------------------
 void GObject::AddFESurface(FSSurface* pg) { imp->m_pFESurf.Add(pg); }
@@ -307,7 +307,7 @@ void GObject::AddFEEdgeSet(FSEdgeSet* pg) { imp->m_pFEESet.Add(pg); }
 void GObject::AddFENodeSet(FSNodeSet* pg) { imp->m_pFENSet.Add(pg); }
 
 //-----------------------------------------------------------------------------
-FSPart* GObject::GetFEPart(int n) { return (n >= 0 && n<(int) imp->m_pFEPart.Size() ? imp->m_pFEPart[n] : 0); }
+FSElemSet* GObject::GetFEElemSet(int n) { return (n >= 0 && n<(int) imp->m_pFEPart.Size() ? imp->m_pFEPart[n] : 0); }
 
 //-----------------------------------------------------------------------------
 FSSurface* GObject::GetFESurface(int n) { return (n >= 0 && n<(int)imp->m_pFESurf.Size() ? imp->m_pFESurf[n] : 0); }
@@ -320,7 +320,7 @@ FSNodeSet* GObject::GetFENodeSet(int n) { return (n >= 0 && n<(int)imp->m_pFENSe
 
 //-----------------------------------------------------------------------------
 // Remove a named part from the mesh
-int GObject::RemoveFEPart(FSPart* pg)
+int GObject::RemoveFEElemSet(FSElemSet* pg)
 {
 	return imp->m_pFEPart.Remove(pg);
 }
@@ -346,7 +346,7 @@ int GObject::RemoveFENodeSet(FSNodeSet* pg)
 }
 
 //-----------------------------------------------------------------------------
-void GObject::InsertFEPart(int n, FSPart* pg) { imp->m_pFEPart.Insert(n, pg); }
+void GObject::InsertFEElemSet(int n, FSElemSet* pg) { imp->m_pFEPart.Insert(n, pg); }
 
 //-----------------------------------------------------------------------------
 void GObject::InsertFESurface(int n, FSSurface* pg) { imp->m_pFESurf.Insert(n, pg); }

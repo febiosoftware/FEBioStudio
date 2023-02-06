@@ -237,7 +237,7 @@ public:
 		default:
 			switch (item->Type())
 			{
-			case FE_PART: type = "Elements"; break;
+			case FE_ELEMSET: type = "Elements"; break;
 			case FE_SURFACE: type = "Facets"; break;
 			case FE_EDGESET: type = "Edges"; break;
 			case FE_NODESET: type = "Nodes"; break;

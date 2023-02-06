@@ -708,7 +708,7 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const FEBioInputModel::
 	return ps;
 }
 
-FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
+FSElemSet* FEBioInputModel::PartInstance::BuildFEElemSet(const char* szname)
 {
 	vector<int> elemList;
 
@@ -733,8 +733,8 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 
 	if (elemList.empty()) return nullptr;
 
-	// create the part
-	FSPart* pg = new FSPart(m_po, elemList);
+	// create the element set
+	FSElemSet* pg = new FSElemSet(m_po, elemList);
 
 	// copy the name
 	pg->SetName(szname);
@@ -1089,12 +1089,12 @@ void FEBioInputModel::CopyMeshSelections()
 			for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
 
 			// create the part
-			FSPart* pg = new FSPart(po, elemList);
+			FSElemSet* pg = new FSElemSet(po, elemList);
 
 			// copy the name
 			pg->SetName(es.name());
 
-			po->AddFEPart(pg);
+			po->AddFEElemSet(pg);
 		}
 	}
 }
@@ -1130,7 +1130,7 @@ FEItemListBuilder* FEBioInputModel::BuildItemList(const char* szname)
 		}
 		else if (strncmp(szname, "@elem_set", n) == 0)
 		{
-			return BuildFEPart(szname + n + 1);
+			return BuildFEElemSet(szname + n + 1);
 		}
 		else return nullptr;
 	}
@@ -1414,7 +1414,7 @@ FSSurface* FEBioInputModel::BuildFESurface(const char* szname)
 	}
 }
 
-FSPart* FEBioInputModel::BuildFEPart(const char* szname)
+FSElemSet* FEBioInputModel::BuildFEElemSet(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1433,8 +1433,8 @@ FSPart* FEBioInputModel::BuildFEPart(const char* szname)
 		// find the instance with this name
 		PartInstance* part = FindInstance(szpart);
 
-		FSPart* pg = 0;
-		if (part) pg = part->BuildFEPart(szset);
+		FSElemSet* pg = 0;
+		if (part) pg = part->BuildFEElemSet(szset);
 
 		delete[] szset;
 		delete[] szpart;
@@ -1447,15 +1447,15 @@ FSPart* FEBioInputModel::BuildFEPart(const char* szname)
 		if (Instances() != 1) return 0;
 
 		PartInstance* part = GetInstance(0);
-		return part->BuildFEPart(szname);
+		return part->BuildFEElemSet(szname);
 	}
 }
 
-FSPart* FEBioInputModel::BuildFEPart(FEBioInputModel::Domain* dom)
+FSElemSet* FEBioInputModel::BuildFEElemSet(FEBioInputModel::Domain* dom)
 {
 	PartInstance* part = GetInstance(0);
 
-	FSPart* pg = new FSPart(part->GetGObject(), dom->GetElementIDList());
+	FSElemSet* pg = new FSElemSet(part->GetGObject(), dom->GetElementIDList());
 
 	pg->SetName(dom->name());
 
@@ -1527,9 +1527,9 @@ FSSurface* FEBioInputModel::FindNamedSurface(const std::string& name)
 	return dynamic_cast<FSSurface*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_FACE_FLAG));
 }
 
-FSPart* FEBioInputModel::FindNamedElementSet(const std::string& name)
+FSElemSet* FEBioInputModel::FindNamedElementSet(const std::string& name)
 {
-	return dynamic_cast<FSPart*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_ELEM_FLAG));
+	return dynamic_cast<FSElemSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_ELEM_FLAG));
 }
 
 //-----------------------------------------------------------------------------
@@ -1593,10 +1593,10 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 
 		if (filter & MESH_ITEM_FLAGS::FE_ELEM_FLAG)
 		{
-			int N = po->FEParts();
+			int N = po->FEElemSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEPart(i);
+				FEItemListBuilder* pg = po->GetFEElemSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
 		}

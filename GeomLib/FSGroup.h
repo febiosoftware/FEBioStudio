@@ -81,12 +81,12 @@ protected:
 //-----------------------------------------------------------------------------
 // class describing a group of elements
 //
-class FSPart : public FSGroup
+class FSElemSet : public FSGroup
 {
 public:
-	FSPart(GObject* po) : FSGroup(po, FE_PART, FE_NODE_FLAG | FE_ELEM_FLAG) {}
-	FSPart(GObject* po, const std::vector<int>&  elset);
-	~FSPart(){}
+	FSElemSet(GObject* po) : FSGroup(po, FE_ELEMSET, FE_NODE_FLAG | FE_ELEM_FLAG) {}
+	FSElemSet(GObject* po, const std::vector<int>&  elset);
+	~FSElemSet(){}
 
 	void CreateFromMesh();
 
@@ -94,7 +94,7 @@ public:
 	FSNodeList* BuildNodeList();
 
 	FEItemListBuilder* Copy();
-	void Copy(FSPart* pg);
+	void Copy(FSElemSet* pg);
 };
 
 //-----------------------------------------------------------------------------

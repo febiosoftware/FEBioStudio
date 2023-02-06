@@ -407,7 +407,7 @@ public:
 		FSNodeSet* BuildFENodeSet(const char* szname);
 		FSEdgeSet* BuildFEEdgeSet(const char* szname);
 		FSSurface* BuildFESurface(const char* szname);
-		FSPart*    BuildFEPart   (const char* szname);
+		FSElemSet* BuildFEElemSet(const char* szname);
 
 	public:
 		vec3d	m_pos;
@@ -530,8 +530,8 @@ public:
 	FSNodeSet* BuildFENodeSet(const char* szname);
 	FSEdgeSet* BuildFEEdgeSet(const char* szname);
 	FSSurface* BuildFESurface(const char* szname);
-	FSPart* BuildFEPart(const char* szname);
-	FSPart* BuildFEPart(Domain* dom);
+	FSElemSet* BuildFEElemSet(const char* szname);
+	FSElemSet* BuildFEElemSet(Domain* dom);
 	GPart* FindGPart(const char* szname);
 	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
@@ -542,7 +542,7 @@ public:
 	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
 	FSNodeSet* FindNamedNodeSet(const std::string& name);
 	FSSurface* FindNamedSurface(const std::string& name);
-	FSPart* FindNamedElementSet(const std::string& name);
+	FSElemSet* FindNamedElementSet(const std::string& name);
 
 public:
 	bool	m_shellNodalNormals;

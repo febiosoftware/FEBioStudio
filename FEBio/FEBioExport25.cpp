@@ -692,15 +692,15 @@ void FEBioExport25::BuildElemSetList(FSProject& prj)
 			AddElemSet(pg->GetName(), pg);
 		}
 
-		// object level parts
+		// object level element sets
 		int objs = model.Objects();
 		for (int i = 0; i < objs; ++i)
 		{
 			GObject* po = model.Object(i);
-			int sets = po->FEParts();
+			int sets = po->FEElemSets();
 			for (int j = 0; j < sets; ++j)
 			{
-				FSPart* pg = po->GetFEPart(j);
+				FSElemSet* pg = po->GetFEElemSet(j);
 				AddElemSet(pg->GetName(), pg);
 			}
 		}
@@ -3144,7 +3144,7 @@ void FEBioExport25::WriteMeshDataFields()
 			{
 				FEElementData& data = *elemData;
 
-				const FSPart* pg = data.GetPart();
+				const FSElemSet* pg = data.GetPart();
 
 				double scale = data.GetScaleFactor();
 

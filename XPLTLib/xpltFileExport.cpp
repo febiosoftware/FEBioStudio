@@ -616,10 +616,10 @@ bool xpltFileExport::WriteElemData(FEPostModel& fem, FEState& state)
 				vector<float> val;
 				m_ar.BeginChunk(PLT_STATE_VAR_DATA);
 				{
-					int ND = mesh.Parts();
+					int ND = mesh.ElemSets();
 					for (int i=0; i<ND; ++i)
 					{
-						FSPart& part = mesh.Part(i);
+						FSElemSet& part = mesh.ElemSet(i);
 
 						if (FillElemDataArray(val, data, part) == false) return false;
 
@@ -741,7 +741,7 @@ bool xpltFileExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& mes
 }
 
 //-----------------------------------------------------------------------------
-bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSPart& part)
+bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSElemSet& part)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);

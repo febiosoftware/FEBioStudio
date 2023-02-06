@@ -157,7 +157,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::ELEMENT_DATA:
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
-				const FSPart* pg = elemData.GetPart();
+				const FSElemSet* pg = elemData.GetPart();
 				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int i = 0; i < pg->size(); ++i, ++it)
 				{

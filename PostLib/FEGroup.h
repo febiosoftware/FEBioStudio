@@ -89,10 +89,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Class that describes a group of elements
-class FSPart : public Post::MeshItemList
+class FSElemSet : public Post::MeshItemList
 {
 public:
-	FSPart(FSCoreMesh* pm) : MeshItemList(pm, FE_PART) {}
+	FSElemSet(FSCoreMesh* pm) : MeshItemList(pm, FE_ELEMSET) {}
 
 	int Size() const { return (int) m_Elem.size(); }
 

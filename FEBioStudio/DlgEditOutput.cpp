@@ -612,10 +612,10 @@ void CDlgEditOutput::UpdateLogItemList()
 			for (int i = 0; i<mdl.Objects(); ++i)
 			{
 				GObject* po = mdl.Object(i);
-				int NES = po->FEParts();
+				int NES = po->FEElemSets();
 				for (int i = 0; i<NES; ++i)
 				{
-					FSPart* pg = po->GetFEPart(i);
+					FSElemSet* pg = po->GetFEElemSet(i);
 					ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 				}
 			}

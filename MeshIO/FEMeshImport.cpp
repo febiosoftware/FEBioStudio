@@ -182,11 +182,11 @@ void FEMeshImport::BuildMesh(FSProject& prj)
 	GMeshObject* po = new GMeshObject(pm);
 	if (nparts > 1)
 	{
-		vector<FSPart*> P(nparts);
+		vector<FSElemSet*> P(nparts);
 		char sz[256] = {0};
 		for (i=0; i<nparts; ++i)
 		{
-			P[i] = new FSPart(po);
+			P[i] = new FSElemSet(po);
 			sprintf(sz, "Part%02d", i+1);
 			P[i]->SetName(sz);
 		}
@@ -199,7 +199,7 @@ void FEMeshImport::BuildMesh(FSProject& prj)
 
 		for (i=0; i<nparts; ++i)
 		{
-			if (P[i]->size()) po->AddFEPart(P[i]);
+			if (P[i]->size()) po->AddFEElemSet(P[i]);
 			else delete P[i];
 		}
 	}

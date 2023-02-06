@@ -298,9 +298,9 @@ void FEBioExport3::AddElemSet(const std::string& name, FEItemListBuilder* pl)
 	{
 		switch (pl->Type())
 		{
-		case FE_PART:
+		case FE_ELEMSET:
 		{
-			FSPart* pg = dynamic_cast<FSPart*>(pl); assert(pg);
+			FSElemSet* pg = dynamic_cast<FSElemSet*>(pl); assert(pg);
 			GObject* po = pg->GetGObject();
 			Part* part = FindPart(po);
 			ElementList* es = part->FindElementSet(name);
@@ -619,10 +619,10 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 					AddSurface(ps->GetName(), ps);
 				}
 
-				int neset = po->FEParts();
+				int neset = po->FEElemSets();
 				for (int j = 0; j < neset; ++j)
 				{
-					FSPart* pg = po->GetFEPart(j);
+					FSElemSet* pg = po->GetFEElemSet(j);
 					AddElemSet(pg->GetName(), pg);
 				}
 			}
@@ -697,14 +697,14 @@ void FEBioExport3::BuildItemLists(FSProject& prj)
 				case FEMeshData::ELEMENT_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
-					FSPart* pg = const_cast<FSPart*>(map->GetPart());
+					FSElemSet* pg = const_cast<FSElemSet*>(map->GetPart());
 
 					if (pg)
 					{
 						string name = pg->GetName();
 						if (name.empty()) name = data->GetName();
 
-						// It is possible that a FSPart has the same name as the domain
+						// It is possible that a FSElemSet has the same name as the domain
 						// from which it was created. In that case we don't want to 
 						// write this element set.
 						for (int j = 0; j < po->Parts(); ++j)
@@ -2891,9 +2891,9 @@ void FEBioExport3::WriteGeometryElementSetsNew()
 				}
 			}
 			break;
-			case FE_PART:
+			case FE_ELEMSET:
 			{
-				FSPart* part = dynamic_cast<FSPart*>(pl); assert(part);
+				FSElemSet* part = dynamic_cast<FSElemSet*>(pl); assert(part);
 				GObject* po = part->GetGObject();
 				string name = string(po->GetName()) + "." + sname;
 				m_xml.add_leaf("elem_set", name);
@@ -3611,7 +3611,7 @@ void FEBioExport3::WriteElementDataFields()
 			if (meshData)
 			{
 				FEElementData& data = *meshData;
-				const FSPart* pg = data.GetPart();
+				const FSElemSet* pg = data.GetPart();
 
 				string name = pg->GetName();
 				if (name.empty()) name = data.GetName();

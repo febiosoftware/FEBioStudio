@@ -32,7 +32,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 // forward declarations
-class FSPart;
+class FSElemSet;
 class FSSurface;
 class FSEdgeSet;
 class FSNodeSet;
@@ -219,27 +219,27 @@ protected:
 
 public:
 	// --- G R O U P S ---
-	int FEParts()    const;
+	int FEElemSets() const;
 	int FESurfaces() const;
 	int FEEdgeSets() const;
 	int FENodeSets() const;
 
-	void AddFEPart   (FSPart*    pg);
+	void AddFEElemSet(FSElemSet* pg);
 	void AddFESurface(FSSurface* pg);
 	void AddFEEdgeSet(FSEdgeSet* pg);
 	void AddFENodeSet(FSNodeSet* pg);
 
-	FSPart*    GetFEPart   (int n);
+	FSElemSet* GetFEElemSet(int n);
 	FSSurface* GetFESurface(int n);
 	FSEdgeSet* GetFEEdgeSet(int n);
 	FSNodeSet* GetFENodeSet(int n);
 
-	int RemoveFEPart(FSPart* pg);
+	int RemoveFEElemSet(FSElemSet* pg);
 	int RemoveFESurface(FSSurface* pg);
 	int RemoveFEEdgeSet(FSEdgeSet* pg);
 	int RemoveFENodeSet(FSNodeSet* pg);
 
-	void InsertFEPart   (int n, FSPart*    pg);
+	void InsertFEElemSet(int n, FSElemSet* pg);
 	void InsertFESurface(int n, FSSurface* pg);
 	void InsertFEEdgeSet(int n, FSEdgeSet* pg);
 	void InsertFENodeSet(int n, FSNodeSet* pg);

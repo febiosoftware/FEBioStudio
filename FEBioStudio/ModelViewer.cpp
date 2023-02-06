@@ -414,7 +414,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
 	case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
 	case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
-	case FE_PART:
+	case FE_ELEMSET:
 		{
 			pdoc->SetSelectionMode(SELECT_OBJECT);
 			pdoc->SetItemMode(ITEM_ELEM);

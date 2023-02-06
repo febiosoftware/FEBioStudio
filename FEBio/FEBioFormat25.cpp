@@ -892,7 +892,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 		}
 		else
 		{
-			FSPart* pg = feb.BuildFEPart(szset);
+			FSElemSet* pg = feb.BuildFEElemSet(szset);
 			if (pg == nullptr) ParseUnknownAttribute(tag, "elem_set");
 			else
 			{
@@ -1016,7 +1016,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 			FEBioInputModel::Domain* dom = feb.FindDomain(szset);
 			if (dom)
 			{
-				FSPart* pg = feb.BuildFEPart(dom);
+				FSElemSet* pg = feb.BuildFEElemSet(dom);
 				if (pg)
 				{
 					FSMesh* mesh = pg->GetMesh();

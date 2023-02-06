@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <string>
 #include <vector>
 
-class FSPart;
+class FSElemSet;
 class GPartList;
 class FSModel;
 class GModel;
@@ -48,7 +48,7 @@ public:
 	FEElementData& operator = (const FEElementData& d);
 
 	// create a data field
-	void Create(FSMesh* pm, FSPart* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
+	void Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
 
 	// size of data field
 	int Size() { return (int)m_data.size(); }
@@ -70,7 +70,7 @@ public:
 	double& operator [] (int i) { return m_data[i]; }
 
 	// Get the element set
-	const FSPart* GetPart() const { return m_part; }
+	const FSElemSet* GetPart() const { return m_part; }
 
 	void FillRandomBox(double fmin, double fmax);
 
@@ -85,7 +85,7 @@ public:
 
 private:
 	std::vector<double>	m_data;		//!< data values
-	FSPart*				m_part;		//!< the part to which the data applies
+	FSElemSet*			m_part;		//!< the part to which the data applies
 	double				m_scale;	//!< scale factor
 
 	int	m_stride;

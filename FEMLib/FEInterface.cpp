@@ -83,7 +83,7 @@ FEItemListBuilder* FSInterface::LoadList(IArchive& ar)
 	case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
 	case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
 	case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;
-	case FE_PART   : pitem = new FSPart   ((GObject*)0); break;
+	case FE_ELEMSET: pitem = new FSElemSet((GObject*)0); break;
 	default:
 		assert(false);
 	}

@@ -1511,7 +1511,7 @@ void FSMesh::Save(OArchive &ar)
 
 	// TODO: Move this stuff to the GObject serialization
 	GObject* po = GetGObject();
-	int parts = po->FEParts();
+	int parts = po->FEElemSets();
 	int surfs = po->FESurfaces();
 	int nsets = po->FENodeSets();
 
@@ -1523,7 +1523,7 @@ void FSMesh::Save(OArchive &ar)
 			for (int i=0; i<parts; ++i)
 			{
 				// get the boundary condition
-				FSPart* pg = po->GetFEPart(i);
+				FSElemSet* pg = po->GetFEElemSet(i);
 
 				// store the group data
 				ar.BeginChunk(CID_MESH_PART);
@@ -1890,14 +1890,14 @@ void FSMesh::Load(IArchive& ar)
 		case CID_MESH_PART_SECTION:
 			{
 				// TODO: move to GObject serialization
-				FSPart* pg = 0;
+				FSElemSet* pg = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
 					assert(ar.GetChunkID() == CID_MESH_PART);
-					pg = new FSPart(po);
+					pg = new FSElemSet(po);
 					pg->Load(ar);
-					po->AddFEPart(pg);
+					po->AddFEElemSet(pg);
 
 					ar.CloseChunk();
 				}			
@@ -2081,7 +2081,7 @@ FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surfac
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FSMesh::AddElementDataField(const string& sz, FSPart* part, FEMeshData::DATA_TYPE dataType)
+FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
 	map->Create(this, part, dataType);

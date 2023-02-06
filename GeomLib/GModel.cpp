@@ -860,7 +860,7 @@ int GModel::CountNamedSelections() const
 		nsel += obj->FENodeSets();
 		nsel += obj->FESurfaces();
 		nsel += obj->FEEdgeSets();
-		nsel += obj->FEParts();
+		nsel += obj->FEElemSets();
 	}
 
 	return nsel;
@@ -911,10 +911,10 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 		GObject* po = Object(n);
 		FSMesh* pm = po->GetFEMesh();
 
-		N = po->FEParts();
+		N = po->FEElemSets();
 		for (i = 0; i<N; ++i)
 		{
-			pg = po->GetFEPart(i);
+			pg = po->GetFEElemSet(i);
 			if (pg->GetID() == nid) return pg;
 		}
 
@@ -988,10 +988,10 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned 
 
 		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
 		{
-			int N = po->FEParts();
+			int N = po->FEElemSets();
 			for (int i = 0; i < N; ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEPart(i);
+				FEItemListBuilder* pg = po->GetFEElemSet(i);
 				if (pg->GetName() == name) return pg;
 			}
 		}
@@ -1079,9 +1079,9 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 
 		if (ntype == DOMAIN_PART)
 		{
-			for (int i = 0; i<po->FEParts(); ++i)
+			for (int i = 0; i<po->FEElemSets(); ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEPart(i);
+				FEItemListBuilder* pg = po->GetFEElemSet(i);
 				list.push_back(pg);
 			}
 		}
@@ -1124,7 +1124,7 @@ void GModel::AddNamedSelection(FEItemListBuilder* itemList)
 			if (dynamic_cast<FSNodeSet*>(pg)) po->AddFENodeSet(dynamic_cast<FSNodeSet*>(pg));
 			if (dynamic_cast<FSEdgeSet*>(pg)) po->AddFEEdgeSet(dynamic_cast<FSEdgeSet*>(pg));
 			if (dynamic_cast<FSSurface*>(pg)) po->AddFESurface(dynamic_cast<FSSurface*>(pg));
-			if (dynamic_cast<FSPart   *>(pg)) po->AddFEPart   (dynamic_cast<FSPart*>(pg));
+			if (dynamic_cast<FSElemSet*>(pg)) po->AddFEElemSet(dynamic_cast<FSElemSet*>(pg));
 		}
 	}
 }

@@ -1134,7 +1134,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	quatd q = rc.m_cam->GetOrientation();
 
 	// make sure a part with this material exists
-	if (m >= pm->Parts()) return;
+	if (m >= pm->ElemSets()) return;
 
 	glPushAttrib(GL_ENABLE_BIT);
 

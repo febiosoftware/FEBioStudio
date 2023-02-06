@@ -39,7 +39,7 @@ FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FSMesh* pm, FSPart* part, FEMeshData::DATA_TYPE dataType)
+void FEElementData::Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(pm);
 	m_part = part;
@@ -176,7 +176,7 @@ void FEElementData::Load(IArchive& ar)
 		}
 		else if (nid == CID_MESH_DATA_PART)
 		{
-			m_part = new FSPart(po);
+			m_part = new FSElemSet(po);
 			m_part->Load(ar);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)

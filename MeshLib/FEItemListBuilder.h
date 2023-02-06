@@ -38,7 +38,7 @@ enum ITEMLIST_TYPE {
 	FE_NODESET,
 	FE_EDGESET,
 	FE_SURFACE,
-	FE_PART,
+	FE_ELEMSET,
 };
 
 //-----------------------------------------------------------------------------

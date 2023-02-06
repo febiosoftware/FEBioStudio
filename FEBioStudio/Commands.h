@@ -137,7 +137,7 @@ protected:
 class CCmdAddPart : public CCommand
 {
 public:
-	CCmdAddPart(GObject* po, FSPart* pg) : CCommand("Add Part") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddPart(GObject* po, FSElemSet* pg) : CCommand("Add Element Set") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddPart() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -145,7 +145,7 @@ public:
 
 protected:
 	GObject*		m_po;
-	FSPart*		m_pg;
+	FSElemSet*		m_pg;
 	bool		m_bdel;
 };
 

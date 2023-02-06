@@ -1211,7 +1211,7 @@ FEItemListBuilder* FEElementSelection::CreateItemList()
 	vector<int> elset;
 	for (int i=0; i<pm->Elements(); ++i) 
 		if (pm->Element(i).IsSelected()) elset.push_back(i);
-	return new FSPart(po, elset);
+	return new FSElemSet(po, elset);
 }
 
 FEElement_* FEElementSelection::Element(int i)
