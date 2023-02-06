@@ -61,7 +61,7 @@ enum MODULE_FLAG
 class FSLogData
 {
 public:
-	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR };
+	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR, LD_FACE };
 
 public:
 	FSLogData(){ matID = -1; groupID = -1; rcID = -1; }

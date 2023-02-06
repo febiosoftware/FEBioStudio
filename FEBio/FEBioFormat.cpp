@@ -2422,11 +2422,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szset = tag.AttributeValue("node_set", true);
 			if (szset)
 			{
-				FSNodeSet* nset = fem.BuildFENodeSet(szset);
+				FSNodeSet* nset = fem.FindNamedNodeSet(szset);
 				if (nset)
 				{
-					GObject* po = nset->GetGObject();
-					po->AddFENodeSet(nset);
 					logVar.SetGroupID(nset->GetID());
 				}
 			}
@@ -2473,11 +2471,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
 			{
-				FSPart* pg = fem.BuildFEPart(szset);
+				FSPart* pg = fem.FindNamedElementSet(szset);
 				if (pg)
 				{
-					GObject* po = pg->GetGObject();
-					po->AddFEPart(pg);
 					logVar.SetGroupID(pg->GetID());
 				}
 			}
@@ -2505,6 +2501,28 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 				}
 			}
 
+			fem.AddLogVariable(logVar);
+		}
+		else if (tag == "surface_data")
+		{
+			const char* szdata = tag.AttributeValue("data", true);
+			if (szdata == 0) szdata = "";
+
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_FACE, szdata);
+
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
+
+			const char* szset = tag.AttributeValue("surface", true);
+			if (szset)
+			{
+				FSSurface* pg = fem.FindNamedSurface(szset);
+				if (pg)
+				{
+					GObject* po = pg->GetGObject();
+					logVar.SetGroupID(pg->GetID());
+				}
+			}
 			fem.AddLogVariable(logVar);
 		}
 		else if (tag == "rigid_body_data")

@@ -1129,7 +1129,7 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-	FSNodeSet* nodeSet = feb.BuildFENodeSet(nset->cvalue());
+	FSNodeSet* nodeSet = feb.FindNamedNodeSet(nset->cvalue());
 	if (nodeSet)
 	{
 		FSMesh* feMesh = nodeSet->GetMesh();
@@ -1192,7 +1192,7 @@ bool FEBioFormat4::ParseSurfaceDataSection(XMLTag& tag)
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-	FSSurface* feSurf = feb.BuildFESurface(surf->cvalue());
+	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();
 
 	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);

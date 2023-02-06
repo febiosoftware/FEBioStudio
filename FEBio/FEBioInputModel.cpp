@@ -1527,6 +1527,11 @@ FSSurface* FEBioInputModel::FindNamedSurface(const std::string& name)
 	return dynamic_cast<FSSurface*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_FACE_FLAG));
 }
 
+FSPart* FEBioInputModel::FindNamedElementSet(const std::string& name)
+{
+	return dynamic_cast<FSPart*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_ELEM_FLAG));
+}
+
 //-----------------------------------------------------------------------------
 FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, unsigned int filter)
 {
@@ -1551,6 +1556,13 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 				filter = MESH_ITEM_FLAGS::FE_EDGE_FLAG;
 			}
 
+			p = name.find("@elem_set:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 10, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_ELEM_FLAG;
+			}
+
 			p = name.find("@part:");
 			if (p != string::npos)
 			{
@@ -1567,7 +1579,19 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 
 		GObject* po = part.GetGObject();
 
+/*		// TODO: I think this should grab GPartList
 		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
+		{
+			int N = po->FEParts();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEPart(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+*/
+
+		if (filter & MESH_ITEM_FLAGS::FE_ELEM_FLAG)
 		{
 			int N = po->FEParts();
 			for (int i = 0; i < N; ++i)
