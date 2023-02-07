@@ -498,12 +498,23 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 	{
 		FEBioInputModel::LogVariable& v = m_febio->GetLogVariable(i);
 
-		FSLogData ld;
-		ld.type = v.type();
-		ld.sdata = v.data();
-		ld.itemID = v.GroupID();
-		ld.fileName = v.file();
-		log.AddLogData(ld);
+		FSLogData* ld = nullptr;
+		switch (v.type())
+		{
+		case FSLogData::LD_NODE: ld = new FSLogNodeData(mdl.FindNamedSelection(v.GroupID())); break;
+		case FSLogData::LD_FACE: ld = new FSLogFaceData(mdl.FindNamedSelection(v.GroupID())); break;
+		case FSLogData::LD_ELEM: ld = new FSLogElemData(mdl.FindNamedSelection(v.GroupID())); break;
+		case FSLogData::LD_RIGID: ld = new FSLogRigidData(v.GroupID()); break;
+		case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(v.GroupID()); break;
+		}
+		break;
+
+		if (ld)
+		{
+			ld->SetDataString(v.data());
+			ld->SetFileName(v.file());
+			log.AddLogData(ld);
+		}
 	}
 
 	if (m_nversion < 0x0400)

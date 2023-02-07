@@ -64,27 +64,82 @@ public:
 	enum { LD_NODE, LD_ELEM, LD_RIGID, LD_CNCTR, LD_FACE };
 
 public:
-	FSLogData() { type = -1; itemID = -1; }
-	FSLogData(const FSLogData& d)
-	{
-		type = d.type;
-		sdata = d.sdata;
-		fileName = d.fileName;
-		itemID = d.itemID;
-	}
-	void operator = (const FSLogData& d)
-	{
-		type = d.type;
-		sdata = d.sdata;
-		fileName = d.fileName;
-		itemID = d.itemID;
-	}
+	FSLogData(int ntype) { m_type = ntype; }
+	virtual ~FSLogData() {}
 
+	int Type() const { return m_type; }
+
+	void SetDataString(const std::string& data) { m_sdata = data; }
+	std::string GetDataString() const { return m_sdata; }
+
+	void SetFileName(const std::string& fileName) { m_fileName = fileName; }
+	std::string GetFileName() const { return m_fileName; }
+
+private:
+	int			m_type;			// type of data
+	string		m_sdata;		// data string
+	string		m_fileName;		// file name (optional)
+};
+
+//-----------------------------------------------------------------------------
+class FSLogNodeData : public FSLogData, public FSHasOneItemList
+{
 public:
-	int			type;			// type of data
-	string		sdata;			// data string
-	string		fileName;		// file name (optional)
-	int			itemID;			// ID of referenced item
+	FSLogNodeData() : FSLogData(LD_NODE) { SetMeshItemType(FE_NODE_FLAG); }
+	FSLogNodeData(FEItemListBuilder* pl) : FSLogData(LD_NODE) { 
+		SetMeshItemType(FE_NODE_FLAG); 
+		SetItemList(pl); 
+	}
+};
+
+//-----------------------------------------------------------------------------
+class FSLogElemData : public FSLogData, public FSHasOneItemList
+{
+public:
+	FSLogElemData() : FSLogData(LD_ELEM) { SetMeshItemType(FE_ELEM_FLAG); }
+	FSLogElemData(FEItemListBuilder* pl) : FSLogData(LD_ELEM) {
+		SetMeshItemType(FE_ELEM_FLAG);
+		SetItemList(pl);
+	}
+};
+
+//-----------------------------------------------------------------------------
+class FSLogFaceData : public FSLogData, public FSHasOneItemList
+{
+public:
+	FSLogFaceData() : FSLogData(LD_FACE) { SetMeshItemType(FE_FACE_FLAG); }
+	FSLogFaceData(FEItemListBuilder* pl) : FSLogData(LD_FACE) {
+		SetMeshItemType(FE_FACE_FLAG);
+		SetItemList(pl);
+	}
+};
+
+//-----------------------------------------------------------------------------
+class FSLogRigidData : public FSLogData
+{
+public:
+	FSLogRigidData() : FSLogData(LD_RIGID) { m_matID = -1; }
+	FSLogRigidData(int matID) : FSLogData(LD_RIGID) { m_matID = matID; }
+
+	void SetMatID(int mid) { m_matID = mid; }
+	int GetMatID() const { return m_matID; }
+
+private:
+	int	m_matID;
+};
+
+//-----------------------------------------------------------------------------
+class FSLogConnectorData : public FSLogData
+{
+public:
+	FSLogConnectorData() : FSLogData(LD_CNCTR) { m_rcID = -1; }
+	FSLogConnectorData(int rcid) : FSLogData(LD_CNCTR) { m_rcID = rcid; }
+
+	void SetConnectorID(int rcid) { m_rcID = rcid; }
+	int GetConnectorID() const { return m_rcID; }
+
+private:
+	int	m_rcID;
 };
 
 //-----------------------------------------------------------------------------
@@ -93,6 +148,7 @@ class CLogDataSettings
 {
 public:
 	CLogDataSettings();
+	~CLogDataSettings();
 
 	//! save to file
 	void Save(OArchive& ar);
@@ -100,15 +156,18 @@ public:
 	//! load from file
 	void Load(IArchive& ar);
 
+	void SetFSModel(FSModel* fem);
+
 public:
 	int LogDataSize() { return (int)m_log.size(); }
-	FSLogData& LogData(int i) { return m_log[i]; }
-	void AddLogData(FSLogData& d) { m_log.push_back(d); }
-	void ClearLogData() { m_log.clear(); }
+	FSLogData& LogData(int i);
+	void AddLogData(FSLogData* d);
+	void ClearLogData();
 	void RemoveLogData(int item);
 
 private:
-	std::vector<FSLogData>		m_log;		// log data
+	FSModel* m_fem;
+	std::vector<FSLogData*>		m_log;		// log data
 };
 
 //-----------------------------------------------------------------------------

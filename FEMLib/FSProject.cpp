@@ -45,12 +45,29 @@ SOFTWARE.*/
 //using namespace std;
 
 //=================================================================================================
-CLogDataSettings::CLogDataSettings()
+CLogDataSettings::CLogDataSettings() : m_fem(nullptr)
 {
 }
 
+CLogDataSettings::~CLogDataSettings()
+{
+	ClearLogData();
+}
+
+void CLogDataSettings::ClearLogData()
+{ 
+	for (auto p : m_log) delete p;
+	m_log.clear();
+}
+
+void CLogDataSettings::SetFSModel(FSModel* fem) { m_fem = fem; }
+
+FSLogData& CLogDataSettings::LogData(int i) { return *m_log[i]; }
+void CLogDataSettings::AddLogData(FSLogData* d) { m_log.push_back(d); }
+
 void CLogDataSettings::RemoveLogData(int item)
 {
+	delete m_log[item];
 	m_log.erase(m_log.begin() + item);
 }
 
@@ -59,13 +76,42 @@ void CLogDataSettings::Save(OArchive& ar)
 	const int N = (int) m_log.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FSLogData& v = m_log[i];
+		FSLogData& v = *m_log[i];
 		ar.BeginChunk(CID_PRJ_LOGDATA_ITEM);
 		{
-			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.type);
-			ar.WriteChunk(CID_PRJ_LOGDATA_DATA, v.sdata);
-			ar.WriteChunk(CID_PRJ_LOGDATA_GID , v.itemID);
-			ar.WriteChunk(CID_PRJ_LOGDATA_FILE, v.fileName);
+			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.Type());
+			ar.WriteChunk(CID_PRJ_LOGDATA_DATA, v.GetDataString());
+			ar.WriteChunk(CID_PRJ_LOGDATA_FILE, v.GetFileName());
+
+			switch (v.Type())
+			{
+			case FSLogData::LD_NODE:
+			case FSLogData::LD_ELEM:
+			case FSLogData::LD_FACE:
+			{
+				FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&v); assert(pil);
+				if (pil)
+				{
+					FEItemListBuilder* pl = pil->GetItemList();
+					if (pl) ar.WriteChunk(CID_PRJ_LOGDATA_GID, pl->GetID());
+				}
+			}
+			break;
+			case FSLogData::LD_RIGID:
+			{
+				FSLogRigidData* prd = dynamic_cast<FSLogRigidData*>(&v); assert(prd);
+				if (prd) ar.WriteChunk(CID_PRJ_LOGDATA_MID, prd->GetMatID());
+			}
+			break;
+			case FSLogData::LD_CNCTR:
+			{
+				FSLogConnectorData* prc = dynamic_cast<FSLogConnectorData*>(&v); assert(prc);
+				if (prc) ar.WriteChunk(CID_PRJ_LOGDATA_CID, prc->GetConnectorID());
+			}
+			break;
+			default:
+				assert(false);
+			}
 		}
 		ar.EndChunk();
 	}
@@ -94,18 +140,26 @@ void CLogDataSettings::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 
-			FSLogData d;
-			d.type = ntype; assert(ntype >= 0);
-			d.sdata = data;
+			GModel& gm = m_fem->GetModel();
 
-			// NOTE: We used to store separately IDs for different types
-			//       Now, only the itemID (previously groupID) is retained.
-			if (cid != -1) d.itemID = cid;
-			if (mid != -1) d.itemID = mid;
-			if (gid != -1) d.itemID = gid;
+			FSLogData* ld = nullptr;
+			switch (ntype)
+			{
+			case FSLogData::LD_NODE: ld = new FSLogNodeData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_FACE: ld = new FSLogFaceData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_ELEM: ld = new FSLogElemData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_RIGID: ld = new FSLogRigidData(mid); break;
+			case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(cid); break;
+			default:
+				assert(false);
+			}
 
-			d.fileName = file;
-			AddLogData(d);
+			if (ld)
+			{
+				ld->SetDataString(data);
+				ld->SetFileName(file);
+				AddLogData(ld);
+			}
 		}
 		ar.CloseChunk();
 	}
@@ -122,6 +176,8 @@ FSProject::FSProject(void) : m_plt(*this)
 	m_module = -1;
 
 	m_units = 0; // 0 = no unit system
+
+	m_log.SetFSModel(&m_fem);
 
 	static bool init = false;
 	if (init == false)
