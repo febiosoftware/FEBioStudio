@@ -219,8 +219,8 @@ REGISTER_MATERIAL(FSIsotropicElastic, MODULE_MECH, FE_ISOTROPIC_ELASTIC, FE_MAT_
 FSIsotropicElastic::FSIsotropicElastic(FSModel* fem) : FSMaterial(FE_ISOTROPIC_ELASTIC, fem)
 {
 	AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->SetPersistent(false);
-	AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus");
-	AddScienceParam(0, UNIT_NONE   ,       "v", "Poisson's ratio");
+	AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus")->MakeVariable(true);
+	AddScienceParam(0, UNIT_NONE   ,       "v", "Poisson's ratio")->MakeVariable(true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -3435,7 +3435,7 @@ REGISTER_MATERIAL(FSPlasticFlowCurvePaper, MODULE_MECH, FE_MAT_PLASTIC_FLOW_PAPE
 
 FSPlasticFlowCurvePaper::FSPlasticFlowCurvePaper(FSModel* fem) : FSMaterialProp(FE_MAT_PLASTIC_FLOW_PAPER, fem)
 {
-	AddDoubleParam(0, "Y0");
+	AddDoubleParam(0, "Y0")->MakeVariable(true);
 	AddDoubleParam(0, "Ymax");
 	AddDoubleParam(1, "w0");
 	AddDoubleParam(0, "we");
