@@ -568,7 +568,6 @@ public:
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
 		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
 		actionAddSurfaceNLC      = addAction("Add Surface Constraint..."     , "actionAddSurfaceNLC");
@@ -576,7 +575,7 @@ public:
 		actionAddGenericNLC      = addAction("Add General Constraint..."     , "actionAddGenericNLC");
 		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
 		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
 		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier | Qt::Key_M);
