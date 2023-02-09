@@ -76,9 +76,7 @@ bool GQuartDogBone::Update(bool b)
 	m_Node[14]->LocalPosition() = vec3d(     0, ch+R+L, h);
 	m_Node[15]->LocalPosition() = vec3d(  cw-W, ch+R  , h);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------

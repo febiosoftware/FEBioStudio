@@ -73,9 +73,7 @@ bool GTruncatedEllipsoid::Update(bool b)
 	m_Node[8]->LocalPosition() = vec3d( 0, -(Rb+wt)*cw,  (Rc+wt)*sw);
 	m_Node[9]->LocalPosition() = vec3d( 0, -(Rb-wt)*cw,  (Rc-wt)*sw);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 void GTruncatedEllipsoid::Create()

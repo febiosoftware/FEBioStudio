@@ -163,9 +163,7 @@ bool GMeshObject::Update(bool b)
 	UpdateNodes();
 	UpdateEdges();
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update(b);
 }
 
 //-----------------------------------------------------------------------------
@@ -1207,7 +1205,7 @@ void GMeshObject::Load(IArchive& ar)
 	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
 	UpdateEdges(); // we need to call this since the edge nodes are not stored
 	UpdateNodes(); // we need to call this because the GNode::m_fenode is not stored
-	BuildGMesh();
+	GObject::Update(false);
 }
 
 //-----------------------------------------------------------------------------

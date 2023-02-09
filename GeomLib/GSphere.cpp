@@ -61,9 +61,7 @@ bool GSphere::Update(bool b)
 	m_Node[4]->LocalPosition() = vec3d( 0,  0,-R);
 	m_Node[5]->LocalPosition() = vec3d( 0,  0, R);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------

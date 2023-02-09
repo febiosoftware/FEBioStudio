@@ -454,6 +454,7 @@ void GObject::ReplaceSurfaceMesh(FSSurfaceMesh* pm)
 //-----------------------------------------------------------------------------
 bool GObject::Update(bool b)
 {
+	for (int i = 0; i < Parts(); ++i) Part(i)->Update(b);
 	BuildGMesh();
 	return GBaseObject::Update(b);
 }

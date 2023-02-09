@@ -338,10 +338,8 @@ bool GOCCBottle::Update(bool b)
 	// build the GObject structure
 	BuildGObject();
 
-	// build the viz mesh
-	BuildGMesh();
+	return GObject::Update();
 
-	return true;
 #else
 	return false;
 #endif // HAS_OCC

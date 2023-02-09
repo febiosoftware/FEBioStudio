@@ -47,9 +47,6 @@ public:
 	FSMeshBase* GetEditableMesh() override;
 	FSLineMesh* GetEditableLineMesh() override;
 
-	// update the object's data
-	bool Update(bool b = true) override;
-
 	GObject* Clone() override;
 };
 
