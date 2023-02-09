@@ -188,6 +188,7 @@ FEItemListBuilder* GMaterial::GetItemList()
 	// set the items
 	GModel& mdl = m_ps->GetModel();
 	int NO = mdl.Objects();
+	m_pos = vec3d(0, 0, 0);
 	for (int i = 0; i < NO; ++i)
 	{
 		GObject* po = mdl.Object(i);
@@ -197,10 +198,13 @@ FEItemListBuilder* GMaterial::GetItemList()
 			GPart* pg = po->Part(j);
 			if (pg->GetMaterialID() == GetID())
 			{
+				BOX b = pg->GetGlobalBox();
 				m_partList->add(pg->GetID());
+				m_pos += b.Center();
 			}
 		}
 	}
+	if (m_partList->size() > 0) m_pos /= (double)m_partList->size();
 
 	return m_partList;
 }

@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
+#include <GeomLib/GGroup.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLMeshRender.h>
 #include <FEMLib/FEModelConstraint.h>
@@ -459,7 +460,12 @@ void CGLModelScene::RenderRigidBodies(CGLContext& rc)
 
 			glColor3ub(c.r, c.g, c.b);
 
-			vec3d r = pm->GetParamVec3d("center_of_mass");
+			// We'll position the rigid body glyph, either in the center of rigid part,
+			// or in the center_of_mass parameter if the override_com is true.
+			vec3d r(0, 0, 0);
+			bool b = pm->GetParamBool("override_com");
+			if (b) r = pm->GetParamVec3d("center_of_mass");
+			else r = pgm->GetPosition();
 
 			glPushMatrix();
 			glTranslatef((float)r.x, (float)r.y, (float)r.z);
@@ -3229,8 +3235,13 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 		if (pm && pm->IsRigid())
 		{
 			GLTAG tag;
-			tag.r = pm->GetParamVec3d("center_of_mass");
 			tag.ntag = 0;
+
+			// We'll position the rigid body glyph, either in the center of rigid part,
+			// or in the center_of_mass parameter if the override_com is true.
+			bool b = pm->GetParamBool("override_com");
+			if (b) tag.r = pm->GetParamVec3d("center_of_mass");
+			else tag.r = mat->GetPosition();
 
 			string name = mat->GetName();
 			int l = name.size(); if (l > 63) l = 63;

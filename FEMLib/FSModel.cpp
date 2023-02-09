@@ -1452,6 +1452,14 @@ void FSModel::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
+	// update materials item lists
+	// (This is needed so that the rigid material's glyphs can be positioned correctly.)
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* pm = GetMaterial(i);
+		pm->GetItemList();
+	}
+
 	GPartList::SetModel(nullptr);
 }
 

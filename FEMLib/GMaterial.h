@@ -80,6 +80,8 @@ public:
 	void Specular(GLColor c) { m_specular = c; }
 	void AmbientDiffuse(GLColor c) { m_ambient = m_diffuse = c; }
 
+	vec3d GetPosition() const { return m_pos; }
+
 public:	// IHasItemList
 	FEItemListBuilder* GetItemList() override;
 	virtual unsigned int GetMeshItemType() const override;
@@ -99,6 +101,7 @@ public:
 	int			m_nrender;		// rendering mode
 
 	int		m_ntag;	// used for I/O
+	vec3d	m_pos;	// location where glyph will be rendered (e.g. for rigid bodies)
 
 protected:
 	GLColor		m_diffuse;	// diffuse color of material
