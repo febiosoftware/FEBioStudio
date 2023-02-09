@@ -88,7 +88,8 @@ public:
 		QHBoxLayout* h3 = new QHBoxLayout;
 		h3->addWidget(new QLabel("Data format:"));
 		m_domain = new QComboBox;
-		m_domain->addItem("Element data");
+		m_domain->addItem("Element (continuous)");
+		m_domain->addItem("Element (constant)");
 		m_domain->addItem("Node data");
 		h3->addWidget(m_domain);
 
@@ -265,7 +266,7 @@ void CScalarFieldTool::OnApply()
 	pm->TagAllElements(1);
 	int ntype = ui->m_domain->currentIndex();
 	int matId = -1;
-	if (ntype == 0)
+	if ((ntype == 0) || (ntype == 1))
 	{
 		pm->TagAllElements(-1);
 		int n = ui->m_matList->currentIndex();
@@ -320,7 +321,7 @@ void CScalarFieldTool::OnApply()
 	wnd->AddLogEntry(QString("iteration count: %1\n").arg(niters));
 	wnd->AddLogEntry(QString("Final relative norm: %1\n").arg(L.GetRelativeNorm()));
 
-	if (ntype == 0)
+	if (ntype == 0) // element (mult)
 	{
 		// create element data
 		int parts = po->Parts();
@@ -351,6 +352,39 @@ void CScalarFieldTool::OnApply()
 				double v = val[el.m_node[j]];
 				pdata->SetValue(i, j, v);
 			}
+		}
+		delete elemList;
+	}
+	else if (ntype == 1) // element (item)
+	{
+		// create element data
+		int parts = po->Parts();
+		vector<int> partList;
+		for (int i = 0; i < parts; ++i)
+		{
+			GPart* pg = po->Part(i);
+			if (pg->GetMaterialID() == matId)
+			{
+				partList.push_back(i);
+			}
+		}
+
+		FEPartData* pdata = new FEPartData(po->GetFEMesh());
+		pdata->SetName(name.toStdString());
+		pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+		pm->AddMeshDataField(pdata);
+
+		FEElemList* elemList = pdata->BuildElemList();
+		int NE = elemList->Size();
+		auto it = elemList->First();
+		for (int i = 0; i < NE; ++i, ++it)
+		{
+			FEElement_& el = *it->m_pi;
+			int ne = el.Nodes();
+			double v = 0.0;
+			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
+
+			pdata->set(i, v);
 		}
 		delete elemList;
 	}
