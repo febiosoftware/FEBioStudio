@@ -144,6 +144,7 @@ const char* shadertxt = \
 "uniform sampler3D sampler;                               "\
 "uniform float Imin;                                      "\
 "uniform float Imax;                                      "\
+"uniform float gamma;                                     "\
 "uniform int cmap;                                        "\
 "vec4 grayScale(const float f);                           "\
 "vec4 red(const float f);                                 "\
@@ -157,6 +158,7 @@ const char* shadertxt = \
 "   f = (f - Imin) / (Imax - Imin);                       "\
 "   f = clamp(f, 0.0, 1.0);                               "\
 "   if (f <= 0.0) discard;                                "\
+"   if (gamma != 1.0) f = pow(f, gamma);                  "\
 "   if      (cmap == 0) { c = grayScale(f); }             "\
 "   else if (cmap == 1) { c = red(f); }                   "\
 "   else if (cmap == 2) { c = green(f); }                 "\
@@ -257,6 +259,7 @@ void CVolumeRender2::Render(CGLContext& rc)
 	GLint IminID = glGetUniformLocation(m_prgID, "Imin");
 	GLint ImaxID = glGetUniformLocation(m_prgID, "Imax");
 	GLint cmapID = glGetUniformLocation(m_prgID, "cmap");
+	GLint gammaID = glGetUniformLocation(m_prgID, "gamma");
 
 	// float Imin = (float) GetFloatValue(MIN_INTENSITY);
 	// float Imax = (float) GetFloatValue(MAX_INTENSITY);
@@ -264,10 +267,12 @@ void CVolumeRender2::Render(CGLContext& rc)
 
     float Imin = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
 	float Imax = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
+	float gamma = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::GAMMA);
 	int cmap = (int)GetIntValue(COLOR_MAP);
 
 	glUniform1f(IminID, Imin);
 	glUniform1f(ImaxID, Imax);
+	glUniform1f(gammaID, gamma);
 	glUniform1i(cmapID, cmap);
 
 	// get the view direction
