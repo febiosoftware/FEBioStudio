@@ -4896,7 +4896,7 @@ void CGLView::TagBackfacingFaces(FSMeshBase& mesh)
 	{
 		FSFace& f = mesh.Face(i);
 
-		if (f.IsExterior())
+		if (f.IsExternal())
 		{
 			switch (f.Type())
 			{
@@ -4975,7 +4975,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
 			FSFace& f = pm->Face(i);
-			if (f.IsExterior()) f.m_ntag = 0;
+			if (f.IsExternal()) f.m_ntag = 0;
 			else f.m_ntag = -1;
 		}
 	}

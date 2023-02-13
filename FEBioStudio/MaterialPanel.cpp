@@ -121,6 +121,7 @@ public:
 	QLineEdit*	name;
 	QToolButton* pshow;
 	QToolButton* pcheck;
+	QLineEdit* m_flt;
 
 	bool update;
 
@@ -131,6 +132,11 @@ public:
 
 		QVBoxLayout* pg = new QVBoxLayout;
 		pg->setContentsMargins(0,0,0,0);
+
+		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(new QLabel("Filter:"));
+		h->addWidget(m_flt = new QLineEdit); m_flt->setObjectName("filter");
+		pg->addLayout(h);
 
 		QSplitter* psplitter = new QSplitter;
 		psplitter->setOrientation(Qt::Vertical);
@@ -174,6 +180,11 @@ public:
 		parent->setLayout(pg);
 
 		QMetaObject::connectSlotsByName(parent);
+	}
+
+	QString GetFilterText()
+	{
+		return m_flt->text();
 	}
 
 	void setColor(QListWidgetItem* item, GLColor c)
@@ -226,15 +237,21 @@ void CMaterialPanel::Update(bool breset)
 	Post::FEPostModel* fem = pdoc->GetFSModel();
 	if (fem)
 	{
+		QString flt = ui->GetFilterText();
+
 		int nmat = fem->Materials();
 		for (int i=0; i<nmat; ++i)
 		{
 			Post::Material& mat = *fem->GetMaterial(i);
 
-			QListWidgetItem* it = new QListWidgetItem(mat.GetName());
-			ui->m_list->addItem(it);
-
-			ui->setColor(it, mat.diffuse);
+			QString name(mat.GetName());
+			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
+			{
+				QListWidgetItem* it = new QListWidgetItem(mat.GetName());
+				it->setData(Qt::UserRole, i);
+				ui->m_list->addItem(it);
+				ui->setColor(it, mat.diffuse);
+			}
 		}
 
 		if (nmat > 0)
@@ -251,16 +268,21 @@ void CMaterialPanel::UpdateStates()
 	if (fem == 0) return;
 
 	int nmat = fem->Materials();
-	for (int i=0; i<nmat; ++i)
+	int items = ui->m_list->count();
+	for (int i=0; i<items; ++i)
 	{
-		Post::Material& mat = *fem->GetMaterial(i);
 		QListWidgetItem* pi = ui->m_list->item(i);
-		QFont font = pi->font();
-		font.setItalic(!mat.visible());
-		font.setBold(mat.enabled());
-		pi->setFont(font);
 
-//		pi->setBackgroundColor((mat.enabled() ? Qt::white : Qt::yellow));
+		int imat = pi->data(Qt::UserRole).toInt();
+		if ((imat >= 0) && (imat < nmat))
+		{
+			Post::Material& mat = *fem->GetMaterial(imat);
+			QFont font = pi->font();
+			font.setItalic(!mat.visible());
+			font.setBold(mat.enabled());
+			pi->setFont(font);
+//			pi->setBackgroundColor((mat.enabled() ? Qt::white : Qt::yellow));
+		}
 	}
 }
 
@@ -269,18 +291,24 @@ void CMaterialPanel::on_materialList_currentRowChanged(int nrow)
 	CPostDocument* doc = GetActiveDocument();
 	if (doc && doc->IsValid())
 	{
-		Post::FEPostModel& fem = *doc->GetFSModel();
-		if ((nrow >= 0) && (nrow < fem.Materials()))
+		if ((nrow >= 0) && (nrow < ui->m_list->count()))
 		{
-			Post::Material* pmat = fem.GetMaterial(nrow);
-			m_pmat->SetMaterial(pmat);
-			ui->m_prop->Update(m_pmat);
-			ui->name->setText(QString(pmat->GetName()));
+			QListWidgetItem* pi = ui->m_list->item(nrow);
+			int imat = pi->data(Qt::UserRole).toInt();
 
-			ui->update = false;
-			ui->pcheck->setChecked(pmat->enabled());
-			ui->pshow->setChecked(pmat->visible());
-			ui->update = true;
+			Post::FEPostModel& fem = *doc->GetFSModel();
+			if ((imat >= 0) && (imat < fem.Materials()))
+			{
+				Post::Material* pmat = fem.GetMaterial(imat);
+				m_pmat->SetMaterial(pmat);
+				ui->m_prop->Update(m_pmat);
+				ui->name->setText(QString(pmat->GetName()));
+
+				ui->update = false;
+				ui->pcheck->setChecked(pmat->enabled());
+				ui->pshow->setChecked(pmat->visible());
+				ui->update = true;
+			}
 		}
 	}
 }
@@ -302,7 +330,8 @@ void CMaterialPanel::on_showButton_toggled(bool b)
 	for (int i=0; i<ncount; ++i)
 	{
 		QModelIndex index = selection.at(i);
-		int nmat = index.row();
+		QListWidgetItem* it = ui->m_list->item(index.row());
+		int nmat = it->data(Qt::UserRole).toInt();
 
 		Post::Material& mat = *fem.GetMaterial(nmat);
 		if (b)
@@ -338,7 +367,8 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 	for (int i=0; i<ncount; ++i)
 	{
 		QModelIndex index = selection.at(i);
-		int nmat = index.row();
+		QListWidgetItem* it = ui->m_list->item(index.row());
+		int nmat = it->data(Qt::UserRole).toInt();
 
 		Post::Material& mat = *fem.GetMaterial(nmat);
 
@@ -358,22 +388,27 @@ void CMaterialPanel::on_editName_editingFinished()
 	QModelIndex n = ui->m_list->currentIndex();
 	if (n.isValid())
 	{
-		int nmat = n.row();
+		QListWidgetItem* it = ui->m_list->item(n.row());
+		int nmat = it->data(Qt::UserRole).toInt();
 
 		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::Material& mat = *fem.GetMaterial(nmat);
 
-		QListWidgetItem* item = ui->m_list->item(nmat);
 		string name = ui->name->text().toStdString();
 		mat.SetName(name.c_str());
-		item->setText(ui->name->text());
+		it->setText(ui->name->text());
 	}
 }
 
-void CMaterialPanel::SetItemColor(int nmat, GLColor c)
+void CMaterialPanel::SetItemColor(int index, GLColor c)
 {
-	QListWidgetItem* item = ui->m_list->item(nmat);
+	QListWidgetItem* item = ui->m_list->item(index);
 	ui->setColor(item, c);
+}
+
+void CMaterialPanel::on_filter_textChanged(const QString& txt)
+{
+	Update(true);
 }
 
 void CMaterialPanel::on_matprops_dataChanged(int nprop)
@@ -388,11 +423,11 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 	if (currentIndex.isValid() == false) return;
 
 	// get the current material
-	int nmat = currentIndex.row();
+	int nmat = ui->m_list->item(currentIndex.row())->data(Qt::UserRole).toInt();
 	Post::Material& currentMat = *fem.GetMaterial(nmat);
 
 	// update color of corresponding item in material list
-	if (nprop == 1) SetItemColor(nmat, currentMat.diffuse);
+	if (nprop == 1) SetItemColor(currentIndex.row(), currentMat.diffuse);
 
 	// update all the other selected materials
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
@@ -403,7 +438,7 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 		QModelIndex index = selection.at(i);
 		if (index.row() != currentIndex.row())
 		{
-			int imat = index.row();
+			int imat = ui->m_list->item(index.row())->data(Qt::UserRole).toInt();
 			Post::Material& mati = *fem.GetMaterial(imat);
 
 			switch (nprop)
@@ -427,7 +462,7 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 			};
 
 			// update color of corresponding item in material list
-			if (nprop == 1) SetItemColor(imat, mati.diffuse);
+			if (nprop == 1) SetItemColor(index.row(), mati.diffuse);
 		}
 	}
 

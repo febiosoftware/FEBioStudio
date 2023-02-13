@@ -568,7 +568,6 @@ public:
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
 		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
 		actionAddSurfaceNLC      = addAction("Add Surface Constraint..."     , "actionAddSurfaceNLC");
@@ -576,7 +575,7 @@ public:
 		actionAddGenericNLC      = addAction("Add General Constraint..."     , "actionAddGenericNLC");
 		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
 		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
 		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier | Qt::Key_M);
@@ -698,6 +697,8 @@ public:
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
 		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
+		QAction* actionFEBioUM = addAction("FEBio User Manual", "actionFEBioUM");
+		QAction* actionFEBioTM = addAction("FEBio Theory Manual", "actionFEBioTM");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionWelcome = addAction("Show Welcome Page", "actionWelcome");
@@ -1023,6 +1024,8 @@ public:
 		menuHelp->addSeparator();
 		menuHelp->addAction(actionFEBioURL);
 		menuHelp->addAction(actionFEBioResources);
+		menuHelp->addAction(actionFEBioUM);
+		menuHelp->addAction(actionFEBioTM);
 		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioPubs);
         menuHelp->addSeparator();

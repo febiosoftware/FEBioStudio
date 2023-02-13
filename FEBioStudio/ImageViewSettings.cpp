@@ -31,5 +31,6 @@ CImageViewSettings::CImageViewSettings()
     AddDoubleParam(0.1, "Alpha Scale")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(0.5, "Min Intensity")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(1.0, "Max Intensity")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(1.0, "Gamma correction")->SetFloatRange(0.0, 2.0);
 }
 
