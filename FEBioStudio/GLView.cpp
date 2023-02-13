@@ -1591,6 +1591,9 @@ void CGLView::paintGL()
 			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
 			m_Widget->DrawWidget(m_ptriad, &painter);
 			if (m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
+
+			// draw special widgets
+			m_Widget->DrawWidgetsInLayer(&painter, 0xFF);
 		}
 	}
 	else

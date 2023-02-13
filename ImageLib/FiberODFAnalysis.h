@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <MeshLib/GLMesh.h>
 #include <GLLib/GLMeshRender.h>
 #include <FECore/vec3d.h>
+#include <GLWLib/GLWidget.h>
+#include <PostLib/ColorMap.h>
 
 namespace sitk = itk::simple;
 
@@ -111,6 +113,7 @@ private:
 	void UpdateRemesh(CODF* odf, bool bradial);
 
 	void UpdateAllMeshes();
+	void UpdateStats();
 
 	void updateProgressIncrement(double f);
 
@@ -135,14 +138,21 @@ private:
     double m_hausd;
     double m_grad;
 
+	// overall stats
+	double	m_FAmin, m_FAmax;	// min, max range of FA
+
 	// update settings
 	int		m_nshowMesh;
 	bool	m_bshowRadial;
 	bool	m_nshowSelectionBox;
+	int		m_ncolormode;
 
 	// progress tracking
 	int	m_stepsCompleted;
 	int	m_totalSteps;
 	double	m_progress;
 	std::string	m_task;
+
+	Post::CColorTexture	m_tex;
+	GLLegendBar* m_pbar;
 };

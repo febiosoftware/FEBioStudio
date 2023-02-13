@@ -39,6 +39,10 @@ SOFTWARE.*/
 #include "ImageSITK.h"
 #include "levmar.h"
 #include <FECore/besselIK.h>
+#include <GLWLib/GLWidgetManager.h>
+#ifdef min
+#undef min
+#endif
 
 #ifndef M_PI
 #define M_PI 3.141592653589793
@@ -48,7 +52,7 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, SHOW_MESH, SHOW_SELBOX};
+enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, SHOW_MESH, SHOW_SELBOX, COLOR_MODE};
 
 //==================================================================
 CODF::CODF() : m_odf(NPTS, 0.0) {};
@@ -66,6 +70,9 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	m_nshowMesh = 0;
 	m_bshowRadial = false;
 	m_nshowSelectionBox = true;
+	m_ncolormode = 0;
+
+	m_FAmin = m_FAmax = 0.0;
 
     AddIntParam(16, "Harmonic Order");
     AddDoubleParam(30, "Low Freq Cutoff (pixels)");
@@ -79,11 +86,24 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddBoolParam(true, "Do fitting analysis");
 	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0VM3\0");
 	AddBoolParam(m_nshowSelectionBox, "Show Selection box");
+	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
+
+	m_tex.SetDivisions(10);
+	m_tex.SetSmooth(true);
+
+	m_pbar = new GLLegendBar(&m_tex, 0, 0, 120, 600, GLLegendBar::ORIENT_VERTICAL);
+	m_pbar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
+	m_pbar->SetType(GLLegendBar::GRADIENT);
+	m_pbar->copy_label("ODF");
+	m_pbar->ShowTitle(true);
+
+	CGLWidgetManager::GetInstance()->AddWidget(m_pbar, 0xFF);
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
 {
     clear();
+	CGLWidgetManager::GetInstance()->RemoveWidget(m_pbar);
 }
 
 void CFiberODFAnalysis::clear()
@@ -234,6 +254,7 @@ void CFiberODFAnalysis::run()
 	setProgress(100);
 	SelectODF(0);
 	UpdateAllMeshes();
+	UpdateStats();
 }
 
 bool CFiberODFAnalysis::UpdateData(bool bsave)
@@ -247,6 +268,12 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 			m_nshowMesh   = GetIntValue(SHOW_MESH); 
 
 			UpdateAllMeshes();
+		}
+
+		if (m_ncolormode != GetIntValue(COLOR_MODE))
+		{
+			m_ncolormode = GetIntValue(COLOR_MODE);
+			UpdateStats();
 		}
 	}
 
@@ -266,6 +293,33 @@ void CFiberODFAnalysis::UpdateAllMeshes()
 		case 2: UpdateMesh(odf, odf->m_EFD_ODF, bradial); break;
 		case 3: UpdateMesh(odf, odf->m_VM3_ODF, bradial); break;
 		}
+	}
+}
+
+void CFiberODFAnalysis::UpdateStats()
+{
+	// collect some global stats
+	if (m_ODFs.empty() == false)
+	{
+		m_FAmin = m_FAmax = m_ODFs[0]->m_FA;
+		for (auto odf : m_ODFs)
+		{
+			double fa = odf->m_FA;
+			if (fa < m_FAmin) m_FAmin = fa;
+			if (fa > m_FAmax) m_FAmax = fa;
+		}
+	}
+
+	int colorMode = GetIntValue(COLOR_MODE);
+	if (colorMode == 0)
+	{
+		m_pbar->SetRange(0.0, 1.0);
+		m_pbar->copy_label("ODF");
+	}
+	else
+	{
+		m_pbar->SetRange(m_FAmin, m_FAmax);
+		m_pbar->copy_label("FA");
 	}
 }
 
@@ -368,12 +422,28 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 {
 	bool meshLines = GetBoolValue(MESHLINES);
 	int showMesh = GetIntValue(SHOW_MESH);
+	int ncolor = GetIntValue(COLOR_MODE);
 
 	GLMesh* mesh = nullptr;
 	if (showMesh == 1) mesh = &odf->m_remesh;
 	else mesh = &odf->m_mesh;
 
+	glPushAttrib(GL_ENABLE_BIT);
+	if (ncolor == 0) glEnable(GL_COLOR_MATERIAL);
+	else
+	{
+		Post::CColorMap map;
+		map.jet();
+		map.SetRange(m_FAmin, m_FAmax);
+		GLColor c = map.map(odf->m_FA);
+
+		glColor3ub(c.r, c.g, c.b);
+		glDisable(GL_COLOR_MATERIAL);
+	}
+
 	m_render.RenderGLMesh(mesh);
+
+	glPopAttrib();
 
 	if (meshLines)
 	{
