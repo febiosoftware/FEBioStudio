@@ -53,6 +53,7 @@ public:
 
 	BOX		m_box;
 	bool	m_selected = false;
+	bool	m_active = true;
 
 	// fitting parameters
 	vec3d	m_meanDir;	// mean direction
@@ -137,6 +138,7 @@ private:
 	// update settings
 	int		m_nshowMesh;
 	bool	m_bshowRadial;
+	bool	m_nshowSelectionBox;
 
 	// progress tracking
 	int	m_stepsCompleted;

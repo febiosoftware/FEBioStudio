@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <QSpinBox>
 #include <QPainter>
 #include <QMouseEvent>
+#include <QCheckBox>
 #include <QMessageBox>
 #include <fstream>
 #include <vector>
@@ -244,6 +245,7 @@ public:
     QWidget* secondPage;
     QTabWidget* tabs;
     QComboBox* odfSelector;
+    QCheckBox* odfCheck;
     CFiberGLWidget* glWidget;
     
     QWidget* sphHarmTab;
@@ -282,6 +284,7 @@ public:
 		QHBoxLayout* odfl = new QHBoxLayout;
 		odfl->addWidget(new QLabel("Select ODF:"));
 		odfl->addWidget(odfSelector = new QComboBox);
+		odfl->addWidget(odfCheck = new QCheckBox); odfCheck->setChecked(true);
 		QSizePolicy sp = odfSelector->sizePolicy();
 		odfSelector->setSizePolicy(QSizePolicy::Expanding, sp.verticalPolicy());
 		secondPageLayout->addLayout(odfl);
@@ -436,6 +439,7 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
 
     connect(ui->runButton, &QPushButton::pressed, this, &CFiberODFWidget::on_runButton_pressed);
     connect(ui->odfSelector, &QComboBox::currentIndexChanged, this, &CFiberODFWidget::on_odfSelector_currentIndexChanged);
+    connect(ui->odfCheck, &QCheckBox::stateChanged, this, &CFiberODFWidget::on_odfCheck_stateChanged);
     connect(ui->saveToCSVButton, &QPushButton::pressed, this, &CFiberODFWidget::on_saveToCSVButton_pressed);
     connect(ui->copyToMatButton, &QPushButton::pressed, this, &CFiberODFWidget::on_copyToMatButton_pressed);
 }
@@ -528,9 +532,23 @@ void CFiberODFWidget::on_odfSelector_currentIndexChanged(int index)
     if(!m_analysis) return;
 
 	m_analysis->SelectODF(index);
-    ui->glWidget->setODF(m_analysis->GetODF(index));
+	CODF* odf = m_analysis->GetODF(index);
+
+	ui->odfCheck->blockSignals(true);
+	ui->odfCheck->setChecked(odf->m_active);
+	ui->odfCheck->blockSignals(false);
+
+    ui->glWidget->setODF(odf);
     ui->glWidget->repaint();
 	ui->updateData(m_analysis);
+	m_wnd->RedrawGL();
+}
+
+void CFiberODFWidget::on_odfCheck_stateChanged(int state)
+{
+	int n = ui->currentODF();
+	CODF* odf = m_analysis->GetODF(n);
+	odf->m_active = (state == Qt::Checked);
 	m_wnd->RedrawGL();
 }
 

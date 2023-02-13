@@ -48,7 +48,7 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, SHOW_MESH};
+enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, SHOW_MESH, SHOW_SELBOX};
 
 //==================================================================
 CODF::CODF() : m_odf(NPTS, 0.0) {};
@@ -65,6 +65,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 
 	m_nshowMesh = 0;
 	m_bshowRadial = false;
+	m_nshowSelectionBox = true;
 
     AddIntParam(16, "Harmonic Order");
     AddDoubleParam(30, "Low Freq Cutoff (pixels)");
@@ -77,6 +78,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
     AddBoolParam(true, "Do fitting analysis");
 	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0VM3\0");
+	AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 }
 
 CFiberODFAnalysis::~CFiberODFAnalysis()
@@ -340,19 +342,21 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
     GLfloat spc[4] = { 0, 0, 0, 1.f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 
+	bool showSelBox = GetBoolValue(SHOW_SELBOX);
+
 	for (auto odf : m_ODFs)
 	{
 		glPushMatrix();
 		glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
 
-		if (odf->m_selected)
+		if (odf->m_selected && showSelBox)
 		{
 			glColor3ub(255, 255, 0);
 			RenderBox(odf->m_box, false, 0.99);
 		}
 
 		glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
-		renderODFMesh(odf, cam);
+		if (odf->m_active) renderODFMesh(odf, cam);
 
 		glPopMatrix();
 	}
