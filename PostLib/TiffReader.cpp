@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "TiffReader.h"
 #include <ImageLib/3DImage.h>
+#include <ImageLib/ImageSITK.h>
 
 #ifndef  WORD
 #define WORD	uint16_t
@@ -132,6 +133,13 @@ bool CTiffImageSource::Load()
 	// clean up
 	for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i];
 	m_pd.clear();
+
+#ifdef HAS_ITK
+	CImageSITK* itkimg = new CImageSITK();
+	itkimg->CreateFrom3DImage(im);
+	delete im;
+	im = itkimg;
+#endif
 
 	BOX box(0, 0, 0, m_cx, m_cy, nz);
 	im->SetBoundingBox(box);
