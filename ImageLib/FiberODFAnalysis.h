@@ -63,10 +63,12 @@ public:
 	vector<double>	m_EFD_ODF;	// The EDF ODF
 	vec3d	m_EFD_alpha;	// alpha values of EFD fit
 	double	m_EFD_GFA;			// generalized fractional anisotropy
+	double	m_EFD_FRD;			// Fisher-Rao distance
 
 	vector<double>	m_VM3_ODF;	// The EDF ODF
 	vec3d	m_VM3_beta;			// beta values of EFD fit
 	double	m_VM3_GFA;			// generalized fractional anisotropy
+	double	m_VM3_FRD;			// Fisher-Rao distance
 };
 
 class CFiberODFAnalysis : public CImageAnalysis

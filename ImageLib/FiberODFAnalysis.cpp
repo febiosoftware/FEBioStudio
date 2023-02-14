@@ -186,7 +186,7 @@ void CFiberODFAnalysis::run()
 		if (IsCancelled()) { clear(); return; }
 
 		std::stringstream ss;
-		ss << "Building ODFS (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
+		ss << "\n\nBuilding ODFS (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
 		m_task = ss.str();
 		setCurrentTask(m_task.c_str(), m_progress);
 
@@ -226,6 +226,8 @@ void CFiberODFAnalysis::run()
 
 		// Recalc ODF based on spherical harmonics
 		(*T).mult(odf->m_sphHarmonics, odf->m_odf);
+
+		normalizeODF(odf);
 
 		// build the meshes
 		buildMesh(odf);
@@ -1305,6 +1307,25 @@ double det_matrix3(const matrix& a)
 	return d;
 }
 
+double computeFisherRao(std::vector<double>& odf1, std::vector<double>& odf2)
+{
+	//sqaure root transform
+	double dot = 0.0;
+	for (int i = 0; i < odf1.size(); ++i)
+	{
+		double p1 = sqrt(odf1[i]);
+		double p2 = sqrt(odf2[i]);
+		dot += p1 * p2;
+	}
+
+	// compute tangent vectors
+	// distance
+	double distRad = acos(dot);
+	double distDeg = distRad * 180.0 / PI;
+
+	return distDeg;
+}
+
 void CFiberODFAnalysis::calculateFits(CODF* odf)
 {
 	// get the spatial coordinates
@@ -1374,7 +1395,7 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	Log("fractional anisotropy: %lg\n", FA);
 
 	// do optimization of EDF parameters
-	Log("Fitting EFD\n");
+	Log("\nFitting EFD\n");
 	vector<double> alpha = optimize_edf({ 1.0, 1.0, 1.0 }, odf->m_odf, x, V, l);
 	odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
 	Log("optimized alpha: %lg, %lg, %lg\n", alpha[0], alpha[1], alpha[2]);
@@ -1387,8 +1408,12 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	odf->m_EFD_GFA = stddev(EFDODF) / rms(EFDODF);
 	Log("generalized fractional anisotropy: %lg\n", stddev(EFDODF) / rms(EFDODF));
 
+	// calculate Fisher-Rao distance
+	odf->m_EFD_FRD = computeFisherRao(odf->m_odf, odf->m_EFD_ODF);
+	Log("Fisher-Rao distance: %lg\n", odf->m_EFD_FRD);
+
 	// do optimization of VM3 parameters
-	Log("Fitting VM3\n");
+	Log("\nFitting VM3\n");
 
 	// convert mean direction from cartesian to spherical
 	vec3d sp = cart2sph(odf->m_meanDir);
@@ -1403,4 +1428,8 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	// calculate generalized FA
 	odf->m_VM3_GFA = stddev(EFDODF) / rms(EFDODF);
 	Log("generalized fractional anisotropy: %lg\n", odf->m_VM3_GFA);
+
+	// calculate Fisher-Rao distance
+	odf->m_VM3_FRD = computeFisherRao(odf->m_odf, odf->m_VM3_ODF);
+	Log("Fisher-Rao distance: %lg\n", odf->m_VM3_FRD);
 }
