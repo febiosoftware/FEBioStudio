@@ -30,7 +30,7 @@ SOFTWARE.*/
 class CImageViewSettings : public FSObject
 {
 public:
-    enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, GAMMA};
+    enum {ALPHA_SCALE, GAMMA, MIN_INTENSITY, MAX_INTENSITY, MIN_ALPHA, MAX_ALPHA, HUE, SAT, LUM };
 
 public:
     CImageViewSettings();
