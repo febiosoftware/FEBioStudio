@@ -144,47 +144,52 @@ const char* shadertxt = \
 "uniform sampler3D sampler;                               "\
 "uniform float Imin;                                      "\
 "uniform float Imax;                                      "\
+"uniform float Amin;                                      "\
+"uniform float Amax;                                      "\
 "uniform float gamma;                                     "\
 "uniform int cmap;                                        "\
-"vec4 grayScale(const float f);                           "\
-"vec4 red(const float f);                                 "\
-"vec4 green(const float f);                               "\
-"vec4 blue(const float f);                                "\
-"vec4 fire(const float f);                                "\
+"vec3 grayScale(const float f);                           "\
+"vec3 red(const float f);                                 "\
+"vec3 green(const float f);                               "\
+"vec3 blue(const float f);                                "\
+"vec3 fire(const float f);                                "\
 "void main(void)                                          "\
 "{                                                        "\
-"	vec4 c = texture(sampler, gl_TexCoord[0]);            "\
-"   float f = c.x;                                        "\
+"	vec4 t = texture(sampler, gl_TexCoord[0]);            "\
+"   float f = t.x;                                        "\
 "   f = (f - Imin) / (Imax - Imin);                       "\
 "   f = clamp(f, 0.0, 1.0);                               "\
 "   if (f <= 0.0) discard;                                "\
+"   float a = Amin + f*(Amax - Amin);                     "\
 "   if (gamma != 1.0) f = pow(f, gamma);                  "\
-"   if      (cmap == 0) { c = grayScale(f); }             "\
-"   else if (cmap == 1) { c = red(f); }                   "\
-"   else if (cmap == 2) { c = green(f); }                 "\
-"   else if (cmap == 3) { c = blue(f); }                  "\
-"   else if (cmap == 4) { c = fire(f); }                  "\
-"   else c = vec4(0,0,0,f);                               "\
-"   gl_FragColor = gl_Color*c;                            "\
+"   vec3 c3;                                              "\
+"   if      (cmap == 0) { c3 = grayScale(f); }            "\
+"   else if (cmap == 1) { c3 = red(f); }                  "\
+"   else if (cmap == 2) { c3 = green(f); }                "\
+"   else if (cmap == 3) { c3 = blue(f); }                 "\
+"   else if (cmap == 4) { c3 = fire(f); }                 "\
+"   else c3 = vec3(0,0,0);                                "\
+"   vec4 c4 = vec4(c3.x, c3.y, c3.z, a);                  "\
+"   gl_FragColor = gl_Color*c4;                            "\
 "}                                                        "\
 "                                                         "\
-"vec4 grayScale(const float f) { return vec4(f, f, f, f);}"\
-"vec4 red(const float f)   { return vec4(f, 0, 0, f);}    "\
-"vec4 green(const float f) { return vec4(0, f, 0, f);}    "\
-"vec4 blue(const float f)  { return vec4(0, 0, f, f);}    "\
-"vec4 fire(const float f)  {                              "\
-"   vec3 c1 = vec3(0.0, 0., 0.);                                  "\
-"   vec3 c2 = vec3(0.5, 0., 1.);                                  "\
-"   vec3 c3 = vec3(1.0, 0., 0.);                                   "\
-"   vec3 c4 = vec3(1.0, 1., 0.);                                   "\
-"   vec3 c5 = vec3(1.0, 1., 1.);                                   "\
-"   vec3 c = vec3(0.0,0.,0.);                                            "\
-"   float wa, wb;                                     "\
+"vec3 grayScale(const float f) { return vec3(f, f, f);}   "\
+"vec3 red(const float f)   { return vec3(f, 0, 0);}       "\
+"vec3 green(const float f) { return vec3(0, f, 0);}       "\
+"vec3 blue(const float f)  { return vec3(0, 0, f);}       "\
+"vec3 fire(const float f)  {                              "\
+"   vec3 c1 = vec3(0.0, 0., 0.);                          "\
+"   vec3 c2 = vec3(0.5, 0., 1.);                          "\
+"   vec3 c3 = vec3(1.0, 0., 0.);                          "\
+"   vec3 c4 = vec3(1.0, 1., 0.);                          "\
+"   vec3 c5 = vec3(1.0, 1., 1.);                          "\
+"   vec3 c = vec3(0.0,0.,0.);                             "\
+"   float wa, wb;                                         "\
 "   if      (f >= 0.75) { wb = 2.0*(f - 0.75); wa = 1.0 - wb; c = c4*vec3(wa,wa,wa) + c5*vec3(wb,wb,wb); }"\
 "   else if (f >= 0.50) { wb = 2.0*(f - 0.50); wa = 1.0 - wb; c = c3*vec3(wa,wa,wa) + c4*vec3(wb,wb,wb); }"\
 "   else if (f >= 0.25) { wb = 2.0*(f - 0.25); wa = 1.0 - wb; c = c2*vec3(wa,wa,wa) + c3*vec3(wb,wb,wb); }"\
 "   else if (f >= 0.00) { wb = 2.0*(f - 0.00); wa = 1.0 - wb; c = c1*vec3(wa,wa,wa) + c2*vec3(wb,wb,wb); }"\
-"  return vec4(c.x, c.y, c.z, f);                               "\
+"  return vec3(c.x, c.y, c.z);                            "\
 "}                                                        "\
 "";
 
@@ -220,6 +225,42 @@ void CVolumeRender2::InitShaders()
 
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
+
+GLColor HSL2RGB(double H, double S, double L)
+{
+	double C = (1.0 - fabs(2.0 * L - 1.0)) * S;
+	double Hp = H / 60.0;
+	double X = C * (1.0 - fabs(fmod(Hp, 2.0) - 1.0));
+	double R1 = 0, G1 = 0, B1 = 0;
+	if      ((Hp >= 0) && (Hp < 1)) { R1 = C; G1 = X; B1 = 0; }
+	else if ((Hp >= 1) && (Hp < 2)) { R1 = X; G1 = C; B1 = 0; }
+	else if ((Hp >= 2) && (Hp < 3)) { R1 = 0; G1 = C; B1 = X; }
+	else if ((Hp >= 3) && (Hp < 4)) { R1 = 0; G1 = X; B1 = C; }
+	else if ((Hp >= 4) && (Hp < 5)) { R1 = X; G1 = 0; B1 = C; }
+	else if ((Hp >= 5) && (Hp < 6)) { R1 = C; G1 = 0; B1 = X; }
+	double m = L - C / 2.0;
+	double r = R1 + m, g = G1 + m, b = B1 + m;
+	GLColor c((GLubyte)(255.0 * r), (GLubyte)(255.0 * g), (GLubyte)(255.0 * b));
+	return c;
+}
+
+GLColor HSV2RGB(double H, double S, double V)
+{
+	double C = V*S;
+	double Hp = H / 60.0;
+	double X = C * (1.0 - fabs(fmod(Hp, 2.0) - 1.0));
+	double R1 = 0, G1 = 0, B1 = 0;
+	if      ((Hp >= 0) && (Hp < 1)) { R1 = C; G1 = X; B1 = 0; }
+	else if ((Hp >= 1) && (Hp < 2)) { R1 = X; G1 = C; B1 = 0; }
+	else if ((Hp >= 2) && (Hp < 3)) { R1 = 0; G1 = C; B1 = X; }
+	else if ((Hp >= 3) && (Hp < 4)) { R1 = 0; G1 = X; B1 = C; }
+	else if ((Hp >= 4) && (Hp < 5)) { R1 = X; G1 = 0; B1 = C; }
+	else if ((Hp >= 5) && (Hp < 6)) { R1 = C; G1 = 0; B1 = X; }
+	double m = V - C;
+	double r = R1 + m, g = G1 + m, b = B1 + m;
+	GLColor c((GLubyte)(255.0 * r), (GLubyte)(255.0 * g), (GLubyte)(255.0 * b));
+	return c;
+}
 
 void CVolumeRender2::Render(CGLContext& rc)
 {
@@ -258,6 +299,8 @@ void CVolumeRender2::Render(CGLContext& rc)
 
 	GLint IminID = glGetUniformLocation(m_prgID, "Imin");
 	GLint ImaxID = glGetUniformLocation(m_prgID, "Imax");
+	GLint AminID = glGetUniformLocation(m_prgID, "Amin");
+	GLint AmaxID = glGetUniformLocation(m_prgID, "Amax");
 	GLint cmapID = glGetUniformLocation(m_prgID, "cmap");
 	GLint gammaID = glGetUniformLocation(m_prgID, "gamma");
 
@@ -265,13 +308,24 @@ void CVolumeRender2::Render(CGLContext& rc)
 	// float Imax = (float) GetFloatValue(MAX_INTENSITY);
 	// int cmap = (int)GetIntValue(COLOR_MAP);
 
-    float Imin = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
-	float Imax = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
-	float gamma = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::GAMMA);
-	int cmap = (int)GetIntValue(COLOR_MAP);
+	CImageViewSettings* vs = GetImageModel()->GetViewSettings();
+
+	float Imin = (float) vs->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
+	float Imax = (float) vs->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
+	float Amin = (float) vs->GetFloatValue(CImageViewSettings::MIN_ALPHA);
+	float Amax = (float) vs->GetFloatValue(CImageViewSettings::MAX_ALPHA);
+	float gamma = (float) vs->GetFloatValue(CImageViewSettings::GAMMA);
+	float hue = vs->GetFloatValue(CImageViewSettings::HUE);
+	float sat = vs->GetFloatValue(CImageViewSettings::SAT);
+	float lum = vs->GetFloatValue(CImageViewSettings::LUM);
+	int cmap = (int) GetIntValue(COLOR_MAP);
+
+	GLColor col = HSV2RGB(hue, sat, lum);
 
 	glUniform1f(IminID, Imin);
 	glUniform1f(ImaxID, Imax);
+	glUniform1f(AminID, Amin);
+	glUniform1f(AmaxID, Amax);
 	glUniform1f(gammaID, gamma);
 	glUniform1i(cmapID, cmap);
 
@@ -308,7 +362,8 @@ void CVolumeRender2::Render(CGLContext& rc)
 
 	// Prepare for rendering of the scene
 	double alphaScale = GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::ALPHA_SCALE);
-	glColor4f(1.f, 1.f, 1.f, alphaScale);
+	glColor4ub(col.r, col.g, col.b, (GLubyte) (255.0*alphaScale));
+//	glColor4ub(255, 0, 0, (GLubyte) (255.0*alphaScale));
 	glBegin(GL_TRIANGLES);
 
 	// the normal will be view direction

@@ -23,19 +23,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include "ImageSource.h"
+#include <stdio.h>
+#include <string>
 
-#include "ImageViewSettings.h"
-
-CImageViewSettings::CImageViewSettings()
+class CTiffImageSource : public Post::CImageSource
 {
-    AddDoubleParam(0.1, "Alpha Scale")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(1.0, "Gamma correction")->SetFloatRange(0.0, 2.0);
-	AddDoubleParam(0.0, "Min Intensity")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(1.0, "Max Intensity")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(0.0, "Min alpha")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(1.0, "Max alpha")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(0.0, "Hue")->SetFloatRange(0.0, 360.0);
-	AddDoubleParam(0.0, "Saturation")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(1.0, "Luminance")->SetFloatRange(0.0, 1.0);
-}
+public:
+	CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename);
+	CTiffImageSource(Post::CImageModel* imgModel);
+	~CTiffImageSource();
 
+	bool Load() override;
+
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+private:
+	bool readImage();
+
+private:
+	std::string m_filename;
+	bool	m_bigE;
+	FILE* m_fp;
+	std::vector<Byte*>	m_pd;
+	int	m_cx, m_cy;
+};
