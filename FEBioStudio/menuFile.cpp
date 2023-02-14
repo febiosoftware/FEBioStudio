@@ -123,6 +123,7 @@ SOFTWARE.*/
 #include <PostLib/VTKImport.h>
 #include <PostLib/VolRender.h>
 #include <PostLib/VolumeRender2.h>
+#include <PostLib/TiffReader.h>
 #include <sstream>
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
@@ -1667,9 +1668,40 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
-	}
+//		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
 
+		// we pass the relative path to the image model
+		string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
+
+		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
+
+		if (!doc->ImportImage(imageModel))
+		{
+			delete imageModel;
+			imageModel = nullptr;
+			return;
+		}
+
+		Update(0, true);
+		ZoomTo(imageModel->GetBoundingBox());
+
+		// only for model docs
+		if (dynamic_cast<CModelDocument*>(doc))
+		{
+			Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+			vr->Create();
+			imageModel->AddImageRenderer(vr);
+
+			Update(0, true);
+			ShowInModelViewer(imageModel);
+		}
+		else
+		{
+			Update(0, true);
+		}
+		ZoomTo(imageModel->GetBoundingBox());
+	}
 }
 
 void CMainWindow::on_actionImportOMETiffImage_triggered()
