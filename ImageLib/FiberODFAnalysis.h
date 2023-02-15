@@ -58,6 +58,9 @@ public:
 	bool	m_active = true;
 
 	// fitting parameters
+	double	m_el[3];	// eigenvalues
+	vec3d	m_ev[3];	// eigenvectors
+
 	vec3d	m_meanDir;	// mean direction
 	double	m_FA;		// fractional anisotropy
 	vector<double>	m_EFD_ODF;	// The EDF ODF

@@ -55,7 +55,13 @@ using std::complex;
 enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, SHOW_MESH, SHOW_SELBOX, COLOR_MODE};
 
 //==================================================================
-CODF::CODF() : m_odf(NPTS, 0.0) {};
+CODF::CODF() : m_odf(NPTS, 0.0) 
+{
+	m_el[0] = m_el[1] = m_el[2] = 1.0;
+	m_ev[0] = vec3d(1, 0, 0);
+	m_ev[1] = vec3d(0, 1, 0);
+	m_ev[2] = vec3d(0, 0, 1);
+};
 
 //==================================================================
 CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
@@ -84,7 +90,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
     AddBoolParam(true, "Do fitting analysis");
-	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0VM3\0");
+	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
 	AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
 
@@ -186,7 +192,8 @@ void CFiberODFAnalysis::run()
 		if (IsCancelled()) { clear(); return; }
 
 		std::stringstream ss;
-		ss << "\n\nBuilding ODFS (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
+		Log("\n\n");
+		ss << "Building ODFS (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
 		m_task = ss.str();
 		setCurrentTask(m_task.c_str(), m_progress);
 
@@ -293,7 +300,8 @@ void CFiberODFAnalysis::UpdateAllMeshes()
 		case 0: UpdateMesh(odf, odf->m_odf, bradial); break;
 		case 1: UpdateRemesh(odf, bradial); break;
 		case 2: UpdateMesh(odf, odf->m_EFD_ODF, bradial); break;
-		case 3: UpdateMesh(odf, odf->m_VM3_ODF, bradial); break;
+		case 3: break; // no mesh will be used for this
+		case 4: UpdateMesh(odf, odf->m_VM3_ODF, bradial); break;
 		}
 	}
 }
@@ -391,6 +399,35 @@ void CFiberODFAnalysis::normalizeODF(CODF* odf)
 // in glview.cpp
 void RenderBox(const BOX& bbox, bool partial, double scale);
 
+void RenderEllipsoid(GLUquadricObj* po, float scale, float* l, vec3f* e)
+{
+	if (scale <= 0.f) return;
+
+	float smax = 0.f;
+	float sx = fabs(l[0]); if (sx > smax) smax = sx;
+	float sy = fabs(l[1]); if (sy > smax) smax = sy;
+	float sz = fabs(l[2]); if (sz > smax) smax = sz;
+	if (smax < 1e-7f) return;
+
+	if (sx < 0.01 * smax) sx = 0.01f * smax;
+	if (sy < 0.01 * smax) sy = 0.01f * smax;
+	if (sz < 0.01 * smax) sz = 0.01f * smax;
+
+	glPushMatrix();
+	vec3f n = e[0] ^ e[1];
+	if (n * e[2] < 0) e[2] = -e[2];
+	GLfloat m[4][4] = { 0 };
+	m[3][3] = 1.f;
+	m[0][0] = e[0].x; m[0][1] = e[0].y; m[0][2] = e[0].z;
+	m[1][0] = e[1].x; m[1][1] = e[1].y; m[1][2] = e[1].z;
+	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
+	glMultMatrixf(&m[0][0]);
+
+	glScalef(scale * sx, scale * sy, scale * sz);
+	gluSphere(po, 1.f, 32, 32);
+	glPopMatrix();
+}
+
 void CFiberODFAnalysis::render(CGLCamera* cam)
 {
     glPushAttrib(GL_ENABLE_BIT);
@@ -400,21 +437,72 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 
 	bool showSelBox = GetBoolValue(SHOW_SELBOX);
 
-	for (auto odf : m_ODFs)
+	int showMesh = GetIntValue(SHOW_MESH);
+	if (showMesh == 3)
 	{
-		glPushMatrix();
-		glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+		Post::CColorMap map;
+		map.jet();
+		map.SetRange(m_FAmin, m_FAmax);
+		glEnable(GL_COLOR_MATERIAL);
 
-		if (odf->m_selected && showSelBox)
+		GLUquadricObj* pglyph = gluNewQuadric();
+		gluQuadricNormals(pglyph, GLU_SMOOTH);
+
+		for (auto odf : m_ODFs)
 		{
-			glColor3ub(255, 255, 0);
-			RenderBox(odf->m_box, false, 0.99);
+			glPushMatrix();
+			glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+
+			if (odf->m_selected && showSelBox)
+			{
+				glColor3ub(255, 255, 0);
+				RenderBox(odf->m_box, false, 0.99);
+			}
+
+			if (odf->m_active)
+			{
+				GLColor c = map.map(odf->m_FA);
+				glColor3ub(c.r, c.g, c.b);
+
+				float l[3], lmax = -1e34;
+				vec3f e[3];
+				for (int i = 0; i < 3; ++i)
+				{
+					l[i] = (float)(odf->m_el[i] * odf->m_EFD_alpha(i));
+					if (l[i] > lmax) lmax = l[i];
+					e[i] = to_vec3f(odf->m_ev[i]);
+				}
+				if (lmax > 0.f)
+				{
+					l[0] /= lmax;
+					l[1] /= lmax;
+					l[2] /= lmax;
+					RenderEllipsoid(pglyph, odf->m_radius, l, e);
+				}
+			}
+			glPopMatrix();
 		}
 
-		glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
-		if (odf->m_active) renderODFMesh(odf, cam);
+		gluDeleteQuadric(pglyph);
+	}
+	else
+	{
+		for (auto odf : m_ODFs)
+		{
+			glPushMatrix();
+			glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
 
-		glPopMatrix();
+			if (odf->m_selected && showSelBox)
+			{
+				glColor3ub(255, 255, 0);
+				RenderBox(odf->m_box, false, 0.99);
+			}
+
+			glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
+			if (odf->m_active) renderODFMesh(odf, cam);
+
+			glPopMatrix();
+		}
 	}
 
     glPopAttrib();
@@ -428,9 +516,9 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 
 	GLMesh* mesh = nullptr;
 	if (showMesh == 1) mesh = &odf->m_remesh;
+	else if (showMesh == 3) return;
 	else mesh = &odf->m_mesh;
 
-	glPushAttrib(GL_ENABLE_BIT);
 	if (ncolor == 0) glEnable(GL_COLOR_MATERIAL);
 	else
 	{
@@ -439,13 +527,12 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 		map.SetRange(m_FAmin, m_FAmax);
 		GLColor c = map.map(odf->m_FA);
 
+		glEnable(GL_COLOR_MATERIAL);
 		glColor3ub(c.r, c.g, c.b);
 		glDisable(GL_COLOR_MATERIAL);
 	}
 
 	m_render.RenderGLMesh(mesh);
-
-	glPopAttrib();
 
 	if (meshLines)
 	{
@@ -1374,6 +1461,12 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	Log("\t%lg,%lg,%lg\n", V[0][0], V[0][1], V[0][2]);
 	Log("\t%lg,%lg,%lg\n", V[1][0], V[1][1], V[1][2]);
 	Log("\t%lg,%lg,%lg\n", V[2][0], V[2][1], V[2][2]);
+	odf->m_el[0] = l[0];
+	odf->m_el[1] = l[1];
+	odf->m_el[2] = l[2];
+	odf->m_ev[0] = vec3d(V[0][0], V[1][0], V[2][0]);
+	odf->m_ev[1] = vec3d(V[0][1], V[1][1], V[2][1]);
+	odf->m_ev[2] = vec3d(V[0][2], V[1][2], V[2][2]);
 
 	// find largest eigenvalue
 	int ind = 0; double lmax = l[0];
