@@ -654,17 +654,20 @@ sitk::Image CFiberODFAnalysis::powerSpectrum(sitk::Image& img)
     sitk::Image PS(nx, ny, nz, sitk::sitkFloat32);
     float* data = PS.GetBufferAsFloat();
 
-    #pragma omp parallel for
-    for(int x = 0; x <nx; x++)
-    {
-        for(int y = 0; y < ny; y++)
-        {
-            for(int z = 0; z < nz; z++)
-            {
-                std::vector<uint32_t> index = {(unsigned int)x,(unsigned int)y,(unsigned int)z};
-                
-                complex<float> val = img.GetPixelAsComplexFloat32(index);
+	float* cd = (float*) (img.GetBufferAsVoid());
 
+    #pragma omp parallel for
+	for (int z = 0; z < nz; z++)
+	{
+		float* ci = cd + 2 * z * nx * ny;
+		for (int y = 0; y < ny; y++)
+		{
+			for(int x = 0; x <nx; x++)
+			{
+				// NOTE: ITK's indexing is really slow. 
+//				std::vector<uint32_t> index = {(unsigned int)x,(unsigned int)y,(unsigned int)z};
+//				complex<float> val = img.GetPixelAsComplexFloat32(index);
+				complex<float> val = { (*ci++), (*ci++) };
                 float ps = abs(val);
 
                 int newIndex = x + y*nx + z*nx*ny;
@@ -787,15 +790,14 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
 				zcount++;
 				updateProgressIncrement(0.5*zcount / nz);
 			}
-        }
-        
-		#pragma omp for
-        for (int i = 0; i < NPTS; ++i)
-        {
-            #pragma omp critical
-            (*reduced)[i] += tmp[i];
-        }
-    }
+		}
+
+#pragma omp critical
+		for (int i = 0; i < NPTS; ++i)
+		{
+			(*reduced)[i] += tmp[i];
+		}
+	}
 }
 
 enum NUMTYPE { REALTYPE, IMAGTYPE, COMPLEXTYPE };
