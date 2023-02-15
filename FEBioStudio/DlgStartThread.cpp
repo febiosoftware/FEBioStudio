@@ -30,7 +30,11 @@ SOFTWARE.*/
 #include <QProgressBar>
 #include <QBoxLayout>
 #include <QPushButton>
+#include <QFormLayout>
 #include <QTimer>
+#include <chrono>
+using namespace std::chrono;
+using dseconds = duration<double>;
 
 //=======================================================================================
 CustomThread::CustomThread()
@@ -72,6 +76,10 @@ public:
 	QLabel*			m_task;
 	QProgressBar*	m_progress;
 	QPushButton*	m_stop;
+	QLabel*			m_time;
+	QLabel*			m_timeLeft;
+
+	time_point<steady_clock>	m_start;	//!< time at start
 
 public:
 	CDlgStartThreadUI()
@@ -92,6 +100,11 @@ public:
 		l->addWidget(m_progress = new QProgressBar);
 		m_progress->setRange(0, 0);
 		m_progress->setValue(0);
+
+		QFormLayout* h1 = new QFormLayout;
+		h1->addRow("Time elapsed: ", m_time = new QLabel); m_time->setAlignment(Qt::AlignLeft);
+		h1->addRow("Time remaining: ", m_timeLeft = new QLabel); m_timeLeft->setAlignment(Qt::AlignLeft);
+		l->addLayout(h1);
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addStretch();
@@ -118,8 +131,10 @@ CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QD
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
 	QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
 
+	ui->m_start = steady_clock::now();
+
 	ui->m_thread->start();
-	QTimer::singleShot(100, this, SLOT(checkProgress()));
+	QTimer::singleShot(500, this, SLOT(checkProgress()));
 }
 
 void CDlgStartThread::setTask(const QString& taskString)
@@ -152,8 +167,24 @@ void CDlgStartThread::cancel()
 	ui->m_thread->stop();
 }
 
+QString sec2str(double fsec)
+{
+	int nhour = (int)(fsec / 3600.0); fsec -= nhour * 3600;
+	int nmin = (int)(fsec / 60.0); fsec -= nmin * 60;
+	int nsec = (int)(fsec + 0.5);
+
+	char sz[64] = { 0 };
+	sprintf(sz, "%d:%02d:%02d", nhour, nmin, nsec);
+
+	return QString(sz);
+}
+
 void CDlgStartThread::checkProgress()
 {
+	time_point<steady_clock> pause = steady_clock::now();
+	double fsec = duration_cast<dseconds>(pause - ui->m_start).count();
+	ui->m_time->setText(sec2str(fsec));
+
 	if (ui->m_bdone)
 	{
 		if (ui->m_cancelled)
@@ -177,9 +208,16 @@ void CDlgStartThread::checkProgress()
 				ui->m_szcurrentTask = sztask;
 				ui->m_task->setText(ui->m_szcurrentTask);
 			}
+
+			double f = p / 100.0;
+			if (f > 0.01)
+			{
+				double frem = fsec * (1.0 - f) / f;
+				ui->m_timeLeft->setText(sec2str(frem));
+			}
 		}
 
-		QTimer::singleShot(100, this, SLOT(checkProgress()));
+		QTimer::singleShot(500, this, SLOT(checkProgress()));
 	}
 }
 
