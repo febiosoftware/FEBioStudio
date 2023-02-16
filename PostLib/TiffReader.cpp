@@ -31,6 +31,32 @@ SOFTWARE.*/
 #define DWORD	uint32_t
 #endif // ! WORD
 
+enum TifCompression {
+	TIF_COMPRESSION_NONE = 1,
+	TIF_COMPRESSION_CCITTRLE = 2,
+	TIF_COMPRESSION_CCITTFAX3 = 3, // = COMPRESSION_CCITT_T4
+	TIF_COMPRESSION_CCITTFAX4 = 4, // = COMPRESSION_CCITT_T6
+	TIF_COMPRESSION_LZW = 5,
+	TIF_COMPRESSION_OJPEG = 6,
+	TIF_COMPRESSION_JPEG = 7,
+	TIF_COMPRESSION_NEXT = 32766,
+	TIF_COMPRESSION_CCITTRLEW = 32771,
+	TIF_COMPRESSION_PACKBITS = 32773,
+	TIF_COMPRESSION_THUNDERSCAN = 32809,
+	TIF_COMPRESSION_IT8CTPAD = 32895,
+	TIF_COMPRESSION_IT8LW = 32896,
+	TIF_COMPRESSION_IT8MP = 32897,
+	TIF_COMPRESSION_IT8BL = 32898,
+	TIF_COMPRESSION_PIXARFILM = 32908,
+	TIF_COMPRESSION_PIXARLOG = 32909,
+	TIF_COMPRESSION_DEFLATE = 32946,
+	TIF_COMPRESSION_ADOBE_DEFLATE = 8,
+	TIF_COMPRESSION_DCS = 32947,
+	TIF_COMPRESSION_JBIG = 34661,
+	TIF_COMPRESSION_SGILOG = 34676,
+	TIF_COMPRESSION_SGILOG24 = 34677,
+	TIF_COMPRESSION_JP2000 = 34712
+};
 
 typedef struct _TiffHeader
 {
@@ -61,11 +87,17 @@ CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::strin
 
 CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel) : CImageSource(RAW, imgModel)
 {
-
+	m_fp = nullptr;
 }
 
 CTiffImageSource::~CTiffImageSource()
 {
+	if (m_fp) fclose(m_fp);
+	if (m_pd.empty() == false)
+	{
+		for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i];
+		m_pd.clear();
+	}
 }
 
 void byteswap(WORD& v)
@@ -107,10 +139,20 @@ bool CTiffImageSource::Load()
 	fseek(m_fp, hdr.IFDOffset, SEEK_SET);
 
 	// read the image
-	bool bdone = false;
-	while (bdone == false)
+	try {
+		bool bdone = false;
+		while (bdone == false)
+		{
+			bdone = (readImage() != true);
+		}
+	}
+	catch (std::exception e)
 	{
-		bdone = (readImage() != true);
+		return false;
+	}
+	catch (...)
+	{
+		return false;
 	}
 	fclose(m_fp);
 
@@ -180,7 +222,7 @@ bool CTiffImageSource::readImage()
 
 	// process tags
 	DWORD imWidth = 0, imLength = 0;
-	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts;
+	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts, bitsPerSample = 0, compression = 0;
 	for (int i = 0; i < ifd.NumDirEntries; ++i)
 	{
 		TIFTAG& t = ifd.TagList[i];
@@ -188,6 +230,8 @@ bool CTiffImageSource::readImage()
 		{
 		case 256: imWidth = t.DataOffset; break;
 		case 257: imLength = t.DataOffset; break;
+		case 258: bitsPerSample = t.DataOffset; break;
+		case 259: compression = t.DataOffset; break;
 		case 278: rowsPerStrip = t.DataOffset; break;
 		case 273: stripOffsets = t.DataOffset; break;
 		case 279: stripByteCounts = t.DataOffset; break;
@@ -195,6 +239,18 @@ bool CTiffImageSource::readImage()
 	}
 	m_cx = imWidth;
 	m_cy = imLength;
+
+	if (bitsPerSample != 8)
+	{
+		delete[] ifd.TagList;
+		throw std::exception("Only 8 bit tif supported.");
+	}
+
+	if (compression != TIF_COMPRESSION_NONE)
+	{
+		delete[] ifd.TagList;
+		throw std::exception("Only uncompressed tif supported.");
+	}
 
 	// allocate buffer for image
 	DWORD imSize = imWidth * imLength;
