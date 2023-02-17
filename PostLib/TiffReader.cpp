@@ -80,6 +80,14 @@ typedef struct _TifIfd
 	DWORD   NextIFDOffset;    /* Offset to next IFD  */
 } TIFIFD;
 
+typedef struct _TifStrip
+{
+	DWORD	offset;
+	DWORD	byteCount;
+} TIFSTRIP;
+
+size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size);
+
 CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(RAW, imgModel)
 {
 	m_filename = filename;
@@ -167,7 +175,12 @@ bool CTiffImageSource::Load()
 	DWORD imSize = m_cx * m_cy;
 	for (int i = 0; i < nz; ++i)
 	{
-		memcpy(buf, m_pd[i], imSize);
+		if (m_bits == 8) memcpy(buf, m_pd[i], imSize);
+		else
+		{
+			Byte* b = m_pd[i];
+			for (int j = 0; j < imSize; ++j, b += 2) buf[j] = b[0];
+		}
 		buf += imSize;
 	}
 
@@ -223,6 +236,7 @@ bool CTiffImageSource::readImage()
 	// process tags
 	DWORD imWidth = 0, imLength = 0;
 	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts, bitsPerSample = 0, compression = 0;
+	int numberOfStrips = 1;
 	for (int i = 0; i < ifd.NumDirEntries; ++i)
 	{
 		TIFTAG& t = ifd.TagList[i];
@@ -233,37 +247,100 @@ bool CTiffImageSource::readImage()
 		case 258: bitsPerSample = t.DataOffset; break;
 		case 259: compression = t.DataOffset; break;
 		case 278: rowsPerStrip = t.DataOffset; break;
-		case 273: stripOffsets = t.DataOffset; break;
+		case 273: { stripOffsets = t.DataOffset; numberOfStrips = t.DataCount; break; }
 		case 279: stripByteCounts = t.DataOffset; break;
 		}
 	}
 	m_cx = imWidth;
 	m_cy = imLength;
+	m_bits = bitsPerSample;
 
-	if (bitsPerSample != 8)
+	if ((bitsPerSample != 8) && (bitsPerSample != 16))
 	{
 		delete[] ifd.TagList;
-		throw std::exception("Only 8 bit tif supported.");
+		throw std::exception("Only 8 and 16 bit tif supported.");
 	}
 
-	if (compression != TIF_COMPRESSION_NONE)
+	if ((compression != TIF_COMPRESSION_NONE) && (compression != TIF_COMPRESSION_LZW))
 	{
 		delete[] ifd.TagList;
-		throw std::exception("Only uncompressed tif supported.");
+		throw std::exception("Only uncompressed and LZW compressed tiff are supported.");
+	}
+
+	// find the strips
+	if (numberOfStrips == 0) throw std::exception("no strips");
+	std::vector<TIFSTRIP> strips(numberOfStrips);
+	if (numberOfStrips == 1)
+	{
+		strips[0].offset = stripOffsets;
+		strips[0].byteCount = stripByteCounts;
+	}
+	else
+	{
+		fseek(m_fp, stripOffsets, SEEK_SET);
+		DWORD* tmp = new DWORD[numberOfStrips];
+		fread(tmp, sizeof(DWORD), numberOfStrips, m_fp);
+		for (int i = 0; i < numberOfStrips; ++i)
+		{
+			if (m_bigE) byteswap(tmp[i]);
+			strips[i].offset = tmp[i];
+		}
+
+		fseek(m_fp, stripByteCounts, SEEK_SET);
+		fread(tmp, sizeof(DWORD), numberOfStrips, m_fp);
+		for (int i = 0; i < numberOfStrips; ++i)
+		{
+			if (m_bigE) byteswap(tmp[i]);
+			strips[i].byteCount = tmp[i];
+		}
+		delete[] tmp;
 	}
 
 	// allocate buffer for image
-	DWORD imSize = imWidth * imLength;
+	DWORD imSize = imWidth * imLength * (bitsPerSample == 16 ? 2 : 1);
 	Byte* buf = new Byte[imSize];
+	Byte* tmp = buf;
 	m_pd.push_back(buf);
 
+	// This assumes only one strip per image!!
 	DWORD bytesRead = 0;
-	int strip = 0;
+	int nstrip = 0;
 	while (bytesRead < imSize)
 	{
-		fseek(m_fp, stripOffsets, SEEK_SET);
-		fread(buf, stripByteCounts, 1, m_fp);
-		bytesRead += stripByteCounts;
+		TIFSTRIP& strip = strips[nstrip++];
+		fseek(m_fp, strip.offset, SEEK_SET);
+
+		if (compression == TIF_COMPRESSION_NONE)
+		{
+			fread(tmp, strip.byteCount, 1, m_fp);
+			bytesRead += strip.byteCount;
+/*
+			FILE* fp = fopen("C:\\Users\\Steve\\Documents\\Tiff\\plane1.txt", "wt");
+			Byte* d = tmp;
+			for (int j = 0; j < 724; ++j)
+			{
+				for (int i = 0; i < 724 * 2; ++i)
+				{
+					int c = *d++;
+					fprintf(fp, "%d ", c);
+				}
+				fprintf(fp, "\n");
+			}
+			fclose(fp);
+*/
+			tmp += stripByteCounts;
+		}
+		else if (compression == TIF_COMPRESSION_LZW)
+		{
+			// read the compressed stream
+			Byte* stream = new Byte[strip.byteCount];
+			fread(stream, strip.byteCount, 1, m_fp);
+
+			// decompress the zream
+			int decompressedSize = lzw_decompress(tmp, stream, imSize);
+			bytesRead += decompressedSize;
+			tmp += decompressedSize;
+		}
 	}
 
 	// cleanup
@@ -284,4 +361,158 @@ void CTiffImageSource::Save(OArchive& ar)
 void CTiffImageSource::Load(IArchive& ar)
 {
 
+}
+
+class LZWDecompress
+{
+	enum {
+		CLEAR_CODE = 256,
+		EOI_CODE = 257
+	};
+
+public:
+	LZWDecompress(Byte* src) : m_src(src) 
+	{ 
+		m_s = m_src; m_startBit = 0; m_bps = 9; 
+		buildMask(m_bps);
+	}
+
+	void writeString(const std::vector<Byte>& entry)
+	{
+		for (const Byte& b : entry) { (*m_d++) = b; m_dsize++; }
+		int a = 0;
+	}
+
+	size_t decompress(Byte* dst, size_t max_buf_size)
+	{
+		m_d = dst;
+		m_dsize = 0;
+		DWORD code = 0, oldcode = 0;
+		while ((code = nextCode()) != EOI_CODE)
+		{
+			if (code == CLEAR_CODE)
+			{
+				initDictionary();
+				code = nextCode();
+				if (code == EOI_CODE) break;
+				writeString(m_dic[code]);
+				oldcode = code;
+			}
+			else
+			{
+				if (code < m_dic.size())
+				{
+					writeString(m_dic[code]);
+					std::vector<Byte> sc = m_dic[oldcode];
+					sc.push_back(m_dic[code][0]);
+					addToDictionary(sc);
+					oldcode = code;
+				}
+				else
+				{
+					std::vector<Byte> OutString = m_dic[oldcode];
+					OutString.push_back(m_dic[oldcode][0]);
+					writeString(OutString);
+					addToDictionary(OutString);
+					oldcode = code;
+				}
+			}
+			assert(m_dsize <= max_buf_size);
+		}
+		return m_dsize;
+	}
+
+	void addToDictionary(const std::vector<Byte>& s)
+	{
+		m_dic.push_back(s);
+		if (m_dic.size() == 511)
+		{
+			m_bps = 10;
+			buildMask(m_bps);
+		}
+		else if (m_dic.size() == 1023)
+		{
+			m_bps = 11;
+			buildMask(m_bps);
+		}
+		else if (m_dic.size() == 2047)
+		{
+			m_bps = 12;
+			buildMask(m_bps);
+		}
+		assert(m_dic.size() < 4096);
+	}
+
+	void buildMask(int n)
+	{
+		DWORD m = 0;
+		for (int i = 0; i < n; ++i) m |= (1 << (15-i));
+		m_mask = m;
+	}
+
+	DWORD nextCode()
+	{
+		DWORD code = 0;
+		int bitsread = 0;
+		WORD buf = m_s[0];
+		while (bitsread < m_bps)
+		{
+			code |= ((buf >> (7 - m_startBit)) & 0x01) << (m_bps - bitsread - 1);
+			bitsread++;
+			m_startBit++;
+			if (m_startBit == 8)
+			{
+				m_s++;
+				buf = m_s[0];
+				m_startBit = 0;
+			}
+		}
+		return code;
+	}
+
+	void initDictionary()
+	{
+		m_dic.clear();
+		for (Byte i = 0; i < 255; ++i) m_dic.push_back({ i });
+		m_dic.push_back({ 255 });
+		m_dic.push_back({ 0 });
+		m_dic.push_back({ 0 });
+		m_bps = 9;
+	}
+
+	const std::vector<Byte>& operator [] (size_t n) { return m_dic[n]; }
+
+private:
+	Byte* m_src;
+	Byte* m_s;
+	Byte* m_d;
+	size_t	m_dsize;
+	int	  m_startBit;
+	int	  m_bps;
+	DWORD	m_mask;
+
+	std::vector< std::vector<Byte> >	m_dic;
+};
+
+// this function decompresses a LZW compressed strip
+// the src is the compressed data, and dst is used to store the decoded strip
+size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size)
+{
+	LZWDecompress lzw(src);
+	size_t n = lzw.decompress(dst, max_dst_size);
+
+/*	FILE* fp = fopen("C:\\Users\\Steve\\Documents\\Tiff\\plane1_decompressed.txt", "wt");
+	Byte* d = dst;
+	for (int j = 0; j < 724; ++j)
+	{
+		for (int i = 0; i < 724 * 2; ++i)
+		{
+			int c = *d++;
+			fprintf(fp, "%d ", c);
+		}
+		fprintf(fp, "\n");
+	}
+	fclose(fp);
+*/
+	return n;
 }

@@ -49,4 +49,5 @@ private:
 	FILE* m_fp;
 	std::vector<Byte*>	m_pd;
 	int	m_cx, m_cy;
+	int	m_bits;
 };
