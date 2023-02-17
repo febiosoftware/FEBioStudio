@@ -114,11 +114,12 @@ private:
     void buildMesh(CODF* odf);
     void buildRemesh(CODF* odf);
 	void calculateFits(CODF* odf);
-	void UpdateMesh(CODF* odf, const vector<double>& val, bool bradial);
+	void UpdateMesh(CODF* odf, const vector<double>& val, double vmin, double vmax, bool bradial);
 	void UpdateRemesh(CODF* odf, bool bradial);
 
 	void UpdateAllMeshes();
 	void UpdateStats();
+	void UpdateColorBar();
 
 	void updateProgressIncrement(double f);
 
@@ -145,12 +146,18 @@ private:
 
 	// overall stats
 	double	m_FAmin, m_FAmax;	// min, max range of FA
+	double	m_ODFmin, m_ODFmax;
+	double	m_EFDmin, m_EFDmax;
+	double	m_VM3min, m_VM3max;
 
 	// update settings
 	int		m_nshowMesh;
 	bool	m_bshowRadial;
 	bool	m_nshowSelectionBox;
 	int		m_ncolormode;
+	int		m_ndivs;
+	int		m_rangeOption;
+	double	m_userMin, m_userMax;
 
 	// progress tracking
 	int	m_stepsCompleted;

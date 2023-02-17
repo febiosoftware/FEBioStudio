@@ -52,7 +52,11 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, SHOW_MESH, SHOW_SELBOX, COLOR_MODE};
+enum { 
+	ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, 
+	SHOW_MESH, SHOW_SELBOX, COLOR_MODE,
+	DIVS, RANGE, USERMIN, USERMAX
+};
 
 //==================================================================
 CODF::CODF() : m_odf(NPTS, 0.0) 
@@ -77,6 +81,10 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	m_bshowRadial = false;
 	m_nshowSelectionBox = true;
 	m_ncolormode = 0;
+	m_rangeOption = 0;
+	m_userMin = 0;
+	m_userMax = 1;
+	m_ndivs = 10;
 
 	m_FAmin = m_FAmax = 0.0;
 
@@ -93,6 +101,10 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
 	AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
+	AddIntParam(m_ndivs, "Divisions")->SetIntRange(1,100);
+	AddIntParam(m_rangeOption, "Range")->SetEnumNames("automatic\0user\0");
+	AddDoubleParam(m_userMin, "User min");
+	AddDoubleParam(m_userMax, "User max");
 
 	m_tex.SetDivisions(10);
 	m_tex.SetSmooth(true);
@@ -262,27 +274,54 @@ void CFiberODFAnalysis::run()
     }
 	setProgress(100);
 	SelectODF(0);
-	UpdateAllMeshes();
 	UpdateStats();
+	UpdateAllMeshes();
+	UpdateColorBar();
 }
 
 bool CFiberODFAnalysis::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
+		bool updateMeshes = false;
 		if ((m_bshowRadial != GetBoolValue(RADIAL)) ||
 			(m_nshowMesh   != GetIntValue(SHOW_MESH)))
 		{ 
 			m_bshowRadial = GetBoolValue(RADIAL);
 			m_nshowMesh   = GetIntValue(SHOW_MESH); 
-
-			UpdateAllMeshes();
+			updateMeshes = true;
 		}
 
 		if (m_ncolormode != GetIntValue(COLOR_MODE))
 		{
 			m_ncolormode = GetIntValue(COLOR_MODE);
-			UpdateStats();
+			UpdateColorBar();
+		}
+
+		if (m_rangeOption != GetIntValue(RANGE))
+		{
+			m_rangeOption = GetIntValue(RANGE);
+			updateMeshes = true;
+		}
+
+		if ((m_userMin != GetFloatValue(USERMIN)) ||
+			(m_userMax != GetFloatValue(USERMAX)))
+		{
+			m_userMin = GetFloatValue(USERMIN);
+			m_userMax = GetFloatValue(USERMAX);
+			updateMeshes = true;
+		}
+
+		if (m_ndivs != GetIntValue(DIVS))
+		{
+			m_ndivs = GetIntValue(DIVS);
+			m_pbar->SetDivisions(m_ndivs);
+		}
+
+		if (updateMeshes)
+		{
+			UpdateAllMeshes();
+			UpdateColorBar();
 		}
 	}
 
@@ -297,11 +336,11 @@ void CFiberODFAnalysis::UpdateAllMeshes()
 	{
 		switch (nshow)
 		{
-		case 0: UpdateMesh(odf, odf->m_odf, bradial); break;
+		case 0: UpdateMesh(odf, odf->m_odf, m_ODFmin, m_ODFmax, bradial); break;
 		case 1: UpdateRemesh(odf, bradial); break;
-		case 2: UpdateMesh(odf, odf->m_EFD_ODF, bradial); break;
+		case 2: UpdateMesh(odf, odf->m_EFD_ODF, m_EFDmin, m_EFDmax, bradial); break;
 		case 3: break; // no mesh will be used for this
-		case 4: UpdateMesh(odf, odf->m_VM3_ODF, bradial); break;
+		case 4: UpdateMesh(odf, odf->m_VM3_ODF, m_VM3min, m_VM3max, bradial); break;
 		}
 	}
 }
@@ -309,22 +348,79 @@ void CFiberODFAnalysis::UpdateAllMeshes()
 void CFiberODFAnalysis::UpdateStats()
 {
 	// collect some global stats
-	if (m_ODFs.empty() == false)
+	if (m_ODFs.empty()) return;
+
+	// global ODF ranges
+	m_ODFmin = 1e12;
+	m_ODFmax = 0;
+	for (auto odf : m_ODFs)
 	{
-		m_FAmin = m_FAmax = m_ODFs[0]->m_FA;
-		for (auto odf : m_ODFs)
-		{
-			double fa = odf->m_FA;
-			if (fa < m_FAmin) m_FAmin = fa;
-			if (fa > m_FAmax) m_FAmax = fa;
-		}
+		vector<double>& val = odf->m_odf;
+		double min = *std::min_element(val.begin(), val.end());
+		double max = *std::max_element(val.begin(), val.end());
+		if (min < m_ODFmin) m_ODFmin = min;
+		if (max > m_ODFmax) m_ODFmax = max;
 	}
 
+	// global EFD ranges
+	m_EFDmin = 1e12;
+	m_EFDmax = 0;
+	for (auto odf : m_ODFs)
+	{
+		vector<double>& val = odf->m_EFD_ODF;
+		double min = *std::min_element(val.begin(), val.end());
+		double max = *std::max_element(val.begin(), val.end());
+		if (min < m_EFDmin) m_EFDmin = min;
+		if (max > m_EFDmax) m_EFDmax = max;
+	}
+
+	// global VM3 ranges
+	m_VM3min = 1e12;
+	m_VM3max = 0;
+	for (auto odf : m_ODFs)
+	{
+		vector<double>& val = odf->m_VM3_ODF;
+		double min = *std::min_element(val.begin(), val.end());
+		double max = *std::max_element(val.begin(), val.end());
+		if (min < m_VM3min) m_VM3min = min;
+		if (max > m_VM3max) m_VM3max = max;
+	}
+
+	// global FA
+	m_FAmin = m_FAmax = m_ODFs[0]->m_FA;
+	for (auto odf : m_ODFs)
+	{
+		double fa = odf->m_FA;
+		if (fa < m_FAmin) m_FAmin = fa;
+		if (fa > m_FAmax) m_FAmax = fa;
+	}
+}
+
+void CFiberODFAnalysis::UpdateColorBar()
+{
 	int colorMode = GetIntValue(COLOR_MODE);
 	if (colorMode == 0)
 	{
-		m_pbar->SetRange(0.0, 1.0);
-		m_pbar->copy_label("ODF");
+		int nshow = GetIntValue(SHOW_MESH);
+		double vmin = 0, vmax = 1.0;
+		const char* szlabel = "";
+		switch (nshow)
+		{
+		case 0: vmin = m_ODFmin; vmax = m_ODFmax; szlabel = "ODF"; break;
+		case 1: vmin = m_ODFmin; vmax = m_ODFmax; szlabel = "ODF"; break;
+		case 2: vmin = m_EFDmin; vmax = m_EFDmax; szlabel = "EFD"; break;
+		case 3: break; // no mesh will be used for this
+		case 4: vmin = m_VM3min; vmax = m_VM3max; szlabel = "VM3"; break;
+		}
+
+		if (m_rangeOption != 0)
+		{
+			vmin = m_userMin;
+			vmax = m_userMax;
+		}
+
+		m_pbar->SetRange(vmin, vmax);
+		m_pbar->copy_label(szlabel);
 	}
 	else
 	{
@@ -898,14 +994,22 @@ void CFiberODFAnalysis::buildMesh(CODF* odf)
 	mesh.Update();
 }
 
-void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, bool bradial)
+void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double vmin, double vmax, bool bradial)
 {
 	Post::CColorMap map;
 	map.jet();
 
-	double min = 0.0;// *std::min_element(val.begin(), val.end());
-	double max = *std::max_element(val.begin(), val.end());
-	double scale = 1.0 / (max - min);
+	if (m_rangeOption != 0)
+	{
+		vmin = m_userMin;
+		vmax = m_userMax;
+	}
+
+	if (vmin == vmax) vmax++;
+	double scale = 1.0 / (vmax - vmin);
+
+	double rmax = *std::max_element(val.begin(), val.end());
+	if (rmax == 0.0) rmax = 1.0;
 
 	// create nodes
 	GLMesh& mesh = odf->m_mesh;
@@ -915,7 +1019,7 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, bool br
 
 		if (bradial)
 		{
-			double val_i = (val[i] - min) * scale;
+			double val_i = val[i] / rmax;
 			node.r = vec3d(XCOORDS[i] * val_i, YCOORDS[i] * val_i, ZCOORDS[i] * val_i);
 		}
 		else node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
@@ -925,9 +1029,9 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, bool br
 	for (int i = 0; i < NCON; ++i)
 	{
 		auto& el = mesh.Face(i);
-		el.c[0] = map.map(val[el.n[0]] * scale);
-		el.c[1] = map.map(val[el.n[1]] * scale);
-		el.c[2] = map.map(val[el.n[2]] * scale);
+		el.c[0] = map.map((val[el.n[0]] - vmin) * scale);
+		el.c[1] = map.map((val[el.n[1]] - vmin) * scale);
+		el.c[2] = map.map((val[el.n[2]] - vmin) * scale);
 	}
 
 	mesh.Update();
