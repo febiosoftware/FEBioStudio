@@ -118,23 +118,34 @@ bool TimeRangeOptions::autoRangeUpdate()
 	return ui->autoRange->isChecked();
 }
 
-void TimeRangeOptions::setUserTimeRange(int imin, int imax)
+void TimeRangeOptions::setUserTimeRange(int imin, int imax, int istep)
 {
-	ui->timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
+	if (istep == 1)
+		ui->timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
+	else
+		ui->timeRange->setText(QString("%1:%2:%3").arg(imin).arg(imax).arg(istep));
 }
 
-void TimeRangeOptions::getUserTimeRange(int& imin, int& imax)
+void TimeRangeOptions::getUserTimeRange(int& imin, int& imax, int& istep)
 {
 	QStringList l = ui->timeRange->text().split(':');
 	imin = imax = 0;
 	if (l.size() == 1)
 	{
 		imin = imax = l.at(0).toInt();
+		istep = 1;
 	}
-	else if (l.size() > 1)
+	else if (l.size() == 2)
 	{
 		imin = l.at(0).toInt();
 		imax = l.at(1).toInt();
+		istep = 1;
+	}
+	else if (l.size() > 2)
+	{
+		imin = l.at(0).toInt();
+		imax = l.at(1).toInt();
+		istep = l.at(2).toInt();
 	}
 }
 
@@ -991,6 +1002,7 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 1;
 	m_nUserMax = -1;
+	m_nUserStep = 1;
 
 	// delete the window when it's closed
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -1015,7 +1027,7 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 
 	if (ui->range)
 	{
-		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax);
+		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax, m_nUserStep);
 	}
 	setMinimumWidth(500);
 
@@ -1079,14 +1091,15 @@ int CGraphWindow::GetTimeTrackOption()
 }
 
 //-----------------------------------------------------------------------------
-void CGraphWindow::GetUserTimeRange(int& minTime, int& maxTime)
+void CGraphWindow::GetUserTimeRange(int& minTime, int& maxTime, int& step)
 {
 	minTime = m_nUserMin - 1;
 	maxTime = (m_nUserMax != -1 ? m_nUserMax - 1 : -1);
+	step = m_nUserStep;
 }
 
 //-----------------------------------------------------------------------------
-void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
+void CGraphWindow::GetTimeRange(int& minTime, int& maxTime, int& timeStep)
 {
 	CPostDocument* doc = GetPostDoc();
 	if (doc == nullptr) return;
@@ -1096,12 +1109,12 @@ void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
 	int nsteps = doc->GetStates();
 
 	// Figure out the time range
-	int nmin = 0, nmax = 0;
+	int nmin = 0, nmax = 0, nstep = 1;
 	int trackTime = GetTimeTrackOption();
 	if (trackTime == TRACK_USER_RANGE)
 	{
 		// get the user defined range
-		GetUserTimeRange(nmin, nmax);
+		GetUserTimeRange(nmin, nmax, nstep);
 	}
 	else if (trackTime == TRACK_TIME)
 	{
@@ -1123,6 +1136,7 @@ void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
 
 	minTime = nmin;
 	maxTime = nmax;
+	timeStep = nstep;
 }
 
 //-----------------------------------------------------------------------------
@@ -1401,7 +1415,7 @@ void CGraphWindow::on_range_optionsChanged()
 	case 1: m_nTrackTime = TRACK_CURRENT_TIME; break;
 	case 2: m_nTrackTime = TRACK_USER_RANGE;
 	{
-		ui->range->getUserTimeRange(m_nUserMin, m_nUserMax);
+		ui->range->getUserTimeRange(m_nUserMin, m_nUserMax, m_nUserStep);
 
 		CPostDocument* doc = GetPostDoc();
 		if (doc)
@@ -1425,7 +1439,7 @@ void CGraphWindow::on_range_optionsChanged()
 			}
 		}
 
-		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax);
+		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax, m_nUserStep);
 	}
 	break;
 	default:
@@ -1489,6 +1503,7 @@ CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) :
 {
 	m_firstState = -1;
 	m_lastState = -1;
+	m_incState = 1;
 
 	m_dataX = -1;
 	m_dataY = -1;
@@ -1569,8 +1584,8 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	//	if (m_bUserRange && (breset == false)) return;
 
 	// Get the time step range
-	int nmin = 0, nmax = 0;
-	GetTimeRange(nmin, nmax);
+	int nmin = 0, nmax = 0, nstep = 1;
+	GetTimeRange(nmin, nmax, nstep);
 
 	// plot type
 	int nplotType = GetCurrentPlotType();
@@ -1634,6 +1649,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 
 	m_firstState = nmin;
 	m_lastState = nmax;
+	m_incState = nstep;
 
 	// we need to update the displacement map for all time steps
 	// since the strain calculations depend on it
@@ -2083,9 +2099,13 @@ void CModelGraphWindow::addSelectedNodes()
 				state1 = tmp;
 			}
 
+			int ninc = m_incState;
+			if (ninc < 1) ninc = 1;
+
 			int nsteps = state1 - state0 + 1;
-			if (nsteps > 32) nsteps = 32;
-			for (int i = state0; i < state0 + nsteps; ++i)
+			if (nsteps / ninc > 32) nsteps = 32 * ninc;
+
+			for (int i = state0; i < state0 + nsteps; i += ninc)
 			{
 				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
@@ -2102,9 +2122,10 @@ void CModelGraphWindow::addSelectedNodes()
 					// evaluate y-field
 					TrackNodeHistory(sel[i], &ydata[0], m_dataY, state0, state0 + nsteps - 1);
 
-					for (int j = 0; j < nsteps; ++j)
+					int m = 0;
+					for (int j = 0; j < nsteps; j += ninc)
 					{
-						CPlotData& p = GetPlotWidget()->getPlotData(j);
+						CPlotData& p = GetPlotWidget()->getPlotData(m++);
 						p.addPoint(xdata[j], ydata[j]);
 					}
 				}
@@ -2244,8 +2265,13 @@ void CModelGraphWindow::addSelectedFaces()
 		if (sel.empty() == false)
 		{
 			int nsteps = m_lastState - m_firstState + 1;
-			if (nsteps > 32) nsteps = 32;
-			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
+
+			int ninc = m_incState;
+			if (ninc < 1) ninc = 1;
+
+			if (nsteps / ninc > 32) nsteps = 32*ninc;
+
+			for (int i = m_firstState; i < m_firstState + nsteps; i += ninc)
 			{
 				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
@@ -2261,9 +2287,10 @@ void CModelGraphWindow::addSelectedFaces()
 				// evaluate y-field
 				TrackFaceHistory(sel[i], &ydata[0], m_dataY, m_firstState, m_lastState);
 
+				int m = 0;
 				for (int j = 0; j < nsteps; ++j)
 				{
-					CPlotData& p = GetPlotWidget()->getPlotData(j);
+					CPlotData& p = GetPlotWidget()->getPlotData(m++);
 					p.addPoint(xdata[j], ydata[j]);
 				}
 			}
@@ -2365,9 +2392,13 @@ void CModelGraphWindow::addSelectedElems()
 
 		if (sel.empty() == false)
 		{
+			int ninc = m_incState;
+			if (ninc < 1) ninc = 1;
+
 			int nsteps = m_lastState - m_firstState + 1;
-			if (nsteps > 32) nsteps = 32;
-			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
+			if (nsteps / ninc > 32) nsteps = 32 * ninc;
+
+			for (int i = m_firstState; i < m_firstState + nsteps; i += ninc)
 			{
 				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
@@ -2384,9 +2415,10 @@ void CModelGraphWindow::addSelectedElems()
 					// evaluate y-field
 					TrackElementHistory(sel[i], &ydata[0], m_dataY, m_firstState, m_lastState);
 
-					for (int j = 0; j < nsteps; ++j)
+					int m = 0;
+					for (int j = 0; j < nsteps; j += ninc)
 					{
-						CPlotData& p = GetPlotWidget()->getPlotData(j);
+						CPlotData& p = GetPlotWidget()->getPlotData(m++);
 						p.addPoint(xdata[j], ydata[j]);
 					}
 				}
