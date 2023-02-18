@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "FESTLExport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 
 void stl_write_face(FILE* fp, const vec3d& fn, const vec3d& r0, const vec3d& r1, const vec3d& r2)
 {
@@ -76,7 +76,7 @@ void stl_write_solid(FILE* fp, FSMeshBase* pm, const char* solidName)
 	fprintf(fp, "endsolid\n");
 }
 
-FESTLExport::FESTLExport(FSProject& prj) : FEFileExport(prj)
+FESTLExport::FESTLExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

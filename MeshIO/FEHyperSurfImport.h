@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include "FileReader.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 class FEHyperSurfImport : public FSFileImport
 {

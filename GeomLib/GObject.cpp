@@ -25,12 +25,12 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "GObject.h"
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <MeshLib/FECurveMesh.h>
 #include <FSCore/FSObjectList.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/FEMesher.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <MeshTools/GLMesher.h>
 #include <sstream>
 

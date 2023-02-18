@@ -38,7 +38,7 @@
 #include "SelectionBox.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/ICPRegistration.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include "MainWindow.h"
 #include "Commands.h"
 

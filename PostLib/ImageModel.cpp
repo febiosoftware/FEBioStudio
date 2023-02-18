@@ -40,51 +40,13 @@ using namespace Post;
 
 CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
 {
-	AddBoolParam(true, "show box");
-	AddDoubleParam(0, "x0");
-	AddDoubleParam(0, "y0");
-	AddDoubleParam(0, "z0");
-	AddDoubleParam(1, "x1");
-	AddDoubleParam(1, "y1");
-	AddDoubleParam(1, "z1");
-
-	m_box = BOX(0., 0., 0., 1., 1., 1.);
 	m_showBox = true;
 	m_img = nullptr;
-
-	UpdateData(false);
 }
 
 CImageModel::~CImageModel()
 {
 	delete m_img;
-}
-
-bool CImageModel::UpdateData(bool bsave)
-{
-	if (bsave)
-	{
-		m_showBox = GetBoolValue(0);
-		m_box.x0 = GetFloatValue(1);
-		m_box.y0 = GetFloatValue(2);
-		m_box.z0 = GetFloatValue(3);
-		m_box.x1 = GetFloatValue(4);
-		m_box.y1 = GetFloatValue(5);
-		m_box.z1 = GetFloatValue(6);
-		for (int i = 0; i < (int)m_render.Size(); ++i) m_render[i]->Update();
-	}
-	else
-	{
-		SetBoolValue(0, m_showBox);
-		SetFloatValue(1, m_box.x0);
-		SetFloatValue(2, m_box.y0);
-		SetFloatValue(3, m_box.z0);
-		SetFloatValue(4, m_box.x1);
-		SetFloatValue(5, m_box.y1);
-		SetFloatValue(6, m_box.z1);
-	}
-
-	return false;
 }
 
 void CImageModel::SetImageSource(CImageSource* imgSource)
@@ -108,8 +70,6 @@ bool CImageModel::Load()
 		m_img = nullptr;
 		return false;
 	}
-
-    UpdateData(false);
 
 	return true;
 }
@@ -192,6 +152,24 @@ void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 	m_filters.Add(imageFilter);
 }
 
+BOX CImageModel::GetBoundingBox()
+{
+    if(m_img && m_img->Get3DImage())
+    {
+        return m_img->Get3DImage()->GetBoundingBox();
+    }
+
+    return BOX(0,0,0,1,1,1);
+}
+
+void CImageModel::SetBoundingBox(BOX b)
+{
+    if(m_img && m_img->Get3DImage())
+    {
+        m_img->Get3DImage()->SetBoundingBox(b);
+    }
+}
+
 void CImageModel::Save(OArchive& ar)
 {
 	ar.BeginChunk(0);
@@ -204,7 +182,27 @@ void CImageModel::Save(OArchive& ar)
 	{
 		ar.BeginChunk(1);
 		{
-			m_img->Save(ar);
+            ar.BeginChunk((int)m_img->Type());
+            {
+                m_img->Save(ar);
+            }
+            ar.EndChunk();
+		}
+		ar.EndChunk();
+	}
+
+	if (m_filters.IsEmpty() == false)
+	{
+		ar.BeginChunk(2);
+		{
+			for (int index = 0; index < m_filters.Size(); index++)
+			{
+				ar.BeginChunk(m_filters[index]->Type());
+				{
+					m_filters[index]->Save(ar);
+				}
+				ar.EndChunk();
+			}
 		}
 		ar.EndChunk();
 	}
@@ -217,24 +215,26 @@ CImageSource* CImageModel::GetImageSource()
 
 Byte CImageModel::ValueAtGlobalPos(vec3d pos)
 {
-    if(pos.x < m_box.x0 || pos.x > m_box.x1 ||
-        pos.y < m_box.y0 || pos.y > m_box.y1 ||
-        pos.z < m_box.z0 || pos.z > m_box.z1)
+    BOX box = m_img->Get3DImage()->GetBoundingBox();
+
+    if(pos.x < box.x0 || pos.x > box.x1 ||
+        pos.y < box.y0 || pos.y > box.y1 ||
+        pos.z < box.z0 || pos.z > box.z1)
     {
         return 0;
     }
 
 	if (Get3DImage()->Depth() == 1)
 	{
-		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
-		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
+		double x = (pos.x - box.x0) / (box.x1 - box.x0);
+		double y = (pos.y - box.y0) / (box.y1 - box.y0);
 		return m_img->Get3DImage()->Value(x, y, 0);
 	}
 	else
 	{
-		double x = (pos.x - m_box.x0) / (m_box.x1 - m_box.x0);
-		double y = (pos.y - m_box.y0) / (m_box.y1 - m_box.y0);
-		double z = (pos.z - m_box.z0) / (m_box.z1 - m_box.z0);
+		double x = (pos.x - box.x0) / (box.x1 - box.x0);
+		double y = (pos.y - box.y0) / (box.y1 - box.y0);
+		double z = (pos.z - box.z0) / (box.z1 - box.z0);
 
 		return m_img->Get3DImage()->Peek(x, y, z);
 	}
@@ -247,7 +247,6 @@ C3DImage* CImageModel::Get3DImage()
 
 void CImageModel::Load(IArchive& ar)
 {
-	delete m_img; m_img = nullptr;
 	while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
@@ -259,16 +258,81 @@ void CImageModel::Load(IArchive& ar)
 			break;
 		case 1:
 			{
-				// m_img = new CImageSource(this);
-				// m_img->Load(ar);
+				while (ar.OpenChunk() == IArchive::IO_OK)
+                {
+                    int nid2 = ar.GetChunkID();
+
+                    switch (nid2)
+                    {
+                    case CImageSource::RAW:
+                        m_img = new CRawImageSource(this);
+                        m_img->Load(ar);
+                        break;
+                    case CImageSource::ITK:
+                        m_img = new CITKImageSource(this);
+                        m_img->Load(ar);
+                        break;
+                    case CImageSource::SERIES:
+                        m_img = new CITKSeriesImageSource(this);
+                        m_img->Load(ar);
+                        break;
+                    default:
+                        break;
+                    }
+					ar.CloseChunk();
+				}
+			}
+			break;
+        case 2:
+			{
+				while (ar.OpenChunk() == IArchive::IO_OK)
+                {
+                    int nid2 = ar.GetChunkID();
+
+                    switch (nid2)
+                    {
+                    case CImageFilter::THRESHOLD:
+                    {
+                        auto temp = new ThresholdImageFilter(this);
+                        temp->Load(ar);
+                        m_filters.Add(temp);
+                        break;
+                    }
+                    case CImageFilter::MEAN:
+                    {
+                        auto temp = new MeanImageFilter(this);
+                        temp->Load(ar);
+                        m_filters.Add(temp);
+                    }
+                    case CImageFilter::GAUSSBLUR:
+                    {
+                        auto temp = new GaussianImageFilter(this);
+                        temp->Load(ar);
+                        m_filters.Add(temp);
+                    }
+                    case CImageFilter::ADAPTHISTEQ:
+                    {
+                        auto temp = new AdaptiveHistogramEqualizationFilter(this);
+                        temp->Load(ar);
+                        m_filters.Add(temp);
+                    }
+                    default:
+                        break;
+                    }
+					ar.CloseChunk();
+				}
 			}
 			break;
 		}
 		ar.CloseChunk();
 	}
 
-	// let's try to load the file
-	UpdateData();
+    ApplyFilters();
+
+    // Create Volume Renderer
+    auto vr = new Post::CVolumeRender2(this);
+    vr->Create();
+    m_render.Add(vr);
 }
 
 bool CImageModel::ExportRAWImage(const std::string& filename)

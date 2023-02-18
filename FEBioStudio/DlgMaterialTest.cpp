@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <unordered_map>
 #include <FEMLib/FEMKernel.h>
-#include "MeshTools/FEProject.h"
+#include <FEMLib/FSProject.h>
 #include "DlgMaterialTest.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FSCore/FSCore.h>

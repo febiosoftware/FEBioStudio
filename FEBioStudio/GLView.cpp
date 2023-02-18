@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
+#include <GL/glew.h>
 #include "GLView.h"
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
@@ -58,12 +59,14 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PostObject.h"
 #include <PostLib/ImageSlicer.h>
 #include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
+
+static bool initGlew = false;
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -891,6 +894,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	// which mesh is active (surface or volume)
 	int meshMode = m_pWnd->GetMeshMode();
+	if (postDoc) meshMode = MESH_MODE_VOLUME;
 
 	m_bextrude = false;
 
@@ -1193,6 +1197,17 @@ void CGLView::initializeGL()
 
 	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
 	//	GLfloat dif2[] = {.3f, .3f, .4f, 1.f};
+
+	if (initGlew == false)
+	{
+		GLenum err = glewInit();
+		if (err != GLEW_OK)
+		{
+			const char* szerr = (const char*)glewGetErrorString(err);
+			assert(err == GLEW_OK);
+		}
+		initGlew = true;
+	}
 
 	glEnable(GL_DEPTH_TEST);
 	//	glEnable(GL_CULL_FACE);
@@ -4868,7 +4883,7 @@ void CGLView::TagBackfacingFaces(FSMeshBase& mesh)
 	{
 		FSFace& f = mesh.Face(i);
 
-		if (f.IsExterior())
+		if (f.IsExternal())
 		{
 			switch (f.Type())
 			{
@@ -4947,7 +4962,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 		for (int i = 0; i < pm->Faces(); ++i)
 		{
 			FSFace& f = pm->Face(i);
-			if (f.IsExterior()) f.m_ntag = 0;
+			if (f.IsExternal()) f.m_ntag = 0;
 			else f.m_ntag = -1;
 		}
 	}

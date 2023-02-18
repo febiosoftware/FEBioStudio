@@ -26,12 +26,12 @@ SOFTWARE.*/
 
 #include "FEMeshExport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 #include <memory>
 //using namespace std;
 
-FEMeshExport::FEMeshExport(FSProject& prj) : FEFileExport(prj)
+FEMeshExport::FEMeshExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

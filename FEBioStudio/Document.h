@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <MeshTools/FESelection.h>
 #include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
@@ -90,7 +90,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class CMainWindow;
-class FEFileExport;
+class FSFileExport;
 class CDocument;
 class FEModifier;
 class FESurfaceModifier;
@@ -343,7 +343,7 @@ protected:
 	void LoadResources(IArchive& ar);
 
 public:
-	void SetUnitSystem(int unitSystem);
+	virtual void SetUnitSystem(int unitSystem);
 	int GetUnitSystem() const;
 
 protected:

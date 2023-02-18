@@ -41,10 +41,10 @@ CGLMirrorPlane::CGLMirrorPlane()
 	sprintf(szname, "MirrorPlane.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Mirror Plane")->SetEnumNames("X\0Y\0Z\0");
-	AddBoolParam(true, "Show plane");
-	AddDoubleParam(0.25, "Transparency")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(0.f, "Offset");
+	AddIntParam(0, "mirror_plane")->SetEnumNames("x\0y\0z\0");
+	AddBoolParam(true, "show_plane");
+	AddDoubleParam(0.25, "transparency")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.f, "offset");
 
 	m_plane = 0;
 	m_showPlane = true;

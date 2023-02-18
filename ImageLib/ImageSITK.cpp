@@ -167,19 +167,35 @@ bool CImageSITK::LoadFromStack(std::vector<std::string> filenames)
 
 void CImageSITK::FinalizeImage()
 {
-    // finalImage = originalImage;
     m_pb = m_sitkImage.GetBufferAsUInt8();
 
     m_cx = m_sitkImage.GetWidth();
     m_cy = m_sitkImage.GetHeight();
     m_cz = m_sitkImage.GetDepth();
+}
 
-    std::vector<double> spacing = m_sitkImage.GetSpacing();
+BOX CImageSITK::GetBoundingBox()
+{
+    std::vector<unsigned int> size = m_sitkImage.GetSize();
+	std::vector<double> origin = m_sitkImage.GetOrigin();
+	std::vector<double> spacing = m_sitkImage.GetSpacing();
 
-    std::cout << spacing[0] << " " << spacing[1] << " " << spacing[2] << std::endl;
+	return BOX(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
+}
 
-    std::vector<double> origin = m_sitkImage.GetOrigin();
-    std::cout << origin[0] << " " << origin[1] << " " << origin[2] << std::endl;
+void CImageSITK::SetBoundingBox(BOX& box)
+{
+    m_sitkImage.SetOrigin({box.x0, box.y0, box.z0});
+
+    std::vector<unsigned int> size = m_sitkImage.GetSize();
+
+	try {
+	    m_sitkImage.SetSpacing({box.x1/size[0], box.y1/size[1], box.z1/size[2]});
+	}
+	catch (...)
+	{
+		// ITK doesn't like zero spacing.
+	}
 }
 
 std::vector<unsigned int> CImageSITK::GetSize()

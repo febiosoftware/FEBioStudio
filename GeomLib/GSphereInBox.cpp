@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FESphereInBox.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 
 //-----------------------------------------------------------------------------
 GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)

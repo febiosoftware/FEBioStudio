@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FESurfaceLoad.h"
 #include <FECore/units.h>
-#include <MeshTools/FEItemListBuilder.h>
+#include <MeshLib/FEItemListBuilder.h>
 #include <FECore/fecore_enum.h>
 
 FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps) : FSLoad(ntype, ps)

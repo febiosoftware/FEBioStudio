@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEMaterial.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <FECore/units.h>
 #include "FEDiscreteMaterial.h"
 #include <FEBioLink/FEBioClass.h>
@@ -219,8 +219,8 @@ REGISTER_MATERIAL(FSIsotropicElastic, MODULE_MECH, FE_ISOTROPIC_ELASTIC, FE_MAT_
 FSIsotropicElastic::FSIsotropicElastic(FSModel* fem) : FSMaterial(FE_ISOTROPIC_ELASTIC, fem)
 {
 	AddScienceParam(1, UNIT_DENSITY, "density", "density"        )->SetPersistent(false);
-	AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus");
-	AddScienceParam(0, UNIT_NONE   ,       "v", "Poisson's ratio");
+	AddScienceParam(0, UNIT_PRESSURE ,       "E", "Young's modulus")->MakeVariable(true);
+	AddScienceParam(0, UNIT_NONE   ,       "v", "Poisson's ratio")->MakeVariable(true);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -427,6 +427,21 @@ FSArrudaBoyce::FSArrudaBoyce(FSModel* fem) : FSMaterial(FE_ARRUDA_BOYCE, fem)
 	AddScienceParam(0, UNIT_PRESSURE , "mu", "Initial modulus");
 	AddScienceParam(0, UNIT_NONE   , "N", "links");
 	AddScienceParam(0, UNIT_PRESSURE , "k", "Bulk modulus")->SetPersistent(false);
+}
+
+//////////////////////////////////////////////////////////////////////
+// FEArrudaBoyceUC - Arruda-Boyce unconstrained
+//////////////////////////////////////////////////////////////////////
+
+REGISTER_MATERIAL(FSArrudaBoyceUC, MODULE_MECH, FE_ARRUDA_BOYCE_UC, FE_MAT_ELASTIC_UNCOUPLED, "Arruda-Boyce unconstrained", MaterialFlags::TOPLEVEL);
+
+FSArrudaBoyceUC::FSArrudaBoyceUC(FSModel* fem) : FSMaterial(FE_ARRUDA_BOYCE_UC, fem)
+{
+	AddScienceParam(1, UNIT_DENSITY, "density", "Material density")->SetPersistent(false);
+	AddDoubleParam(0.00001, "ksi");
+	AddDoubleParam(100.0, "N");
+	AddIntParam(30, "n_term");
+	AddDoubleParam(0, "kappa");
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -3420,7 +3435,7 @@ REGISTER_MATERIAL(FSPlasticFlowCurvePaper, MODULE_MECH, FE_MAT_PLASTIC_FLOW_PAPE
 
 FSPlasticFlowCurvePaper::FSPlasticFlowCurvePaper(FSModel* fem) : FSMaterialProp(FE_MAT_PLASTIC_FLOW_PAPER, fem)
 {
-	AddDoubleParam(0, "Y0");
+	AddDoubleParam(0, "Y0")->MakeVariable(true);
 	AddDoubleParam(0, "Ymax");
 	AddDoubleParam(1, "w0");
 	AddDoubleParam(0, "we");
@@ -3498,6 +3513,34 @@ vec3d FEBioMaterial::GetFiber(FEElementRef& el)
 		v = fiber->GetFiberVector(el);
 	}
 	return v;
+}
+
+bool FEBioMaterial::HasMaterialAxes() const
+{
+	if (FindProperty("mat_axis"))
+	{
+		return true;
+	}
+	else return false;
+}
+
+mat3d FEBioMaterial::GetMatAxes(FEElementRef& el) const
+{
+	mat3d Q; Q.zero();
+
+	const FSProperty* pm = FindProperty("mat_axis");
+	if (pm)
+	{
+		const FSMat3dValuator* matAxis = dynamic_cast<const FSMat3dValuator*>(pm->GetComponent());
+		if (matAxis)
+		{
+			// evaluate the fiber direction
+			Q = matAxis->GetMatAxis(el);
+		}
+	}
+	else Q = mat3d::identity();
+
+	return Q;
 }
 
 void FEBioMaterial::Save(OArchive& ar)

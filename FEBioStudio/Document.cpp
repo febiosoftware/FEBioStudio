@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiPatch.h>
-#include <MeshTools/FEFileExport.h>
+#include <MeshIO/FSFileExport.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <MeshIO/PRVObjectFormat.h>
@@ -52,10 +52,10 @@ SOFTWARE.*/
 #include <PostLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
 #include "ImageThread.h"
-#include <MeshTools/GModel.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FEElementData.h>
+#include <GeomLib/GModel.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include <QFileInfo>
@@ -850,9 +850,16 @@ bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
         return false;
     }
 
-    stringstream ss;
-    ss << "ImageModel" << n++;
-    imgModel->SetName(ss.str());
+    if(imgModel->GetImageSource()->GetName().empty())
+    {
+        stringstream ss;
+        ss << "ImageModel" << n++;
+        imgModel->SetName(ss.str());
+    }
+    else
+    {
+        imgModel->SetName(imgModel->GetImageSource()->GetName());
+    }
 
     // add it to the project
     AddImageModel(imgModel);

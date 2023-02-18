@@ -51,17 +51,17 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot()
 	sprintf(szname, "Isosurface.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddDoubleParam(1.0, "Transparency")->SetFloatRange(0.0, 1.0, 0.01);
-	AddBoolParam(true, "Allow clipping");
-	AddBoolParam(true, "Slice hidden");
-	AddIntParam(1, "Slices");
-	AddBoolParam(true, "Show Legend");
-	AddBoolParam(true, "Smooth");
-	AddIntParam(0, "Range Type")->SetEnumNames("Dynamic\0Static\0User\0");
-	AddDoubleParam(1.0, "User Range Max");
-	AddDoubleParam(0.0, "User Range Min");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_scalar");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
+	AddDoubleParam(1.0, "transparency")->SetFloatRange(0.0, 1.0, 0.01);
+	AddBoolParam(true, "allow_clipping");
+	AddBoolParam(true, "slice_hidden");
+	AddIntParam(1, "slices");
+	AddBoolParam(true, "show_Legend");
+	AddBoolParam(true, "smooth");
+	AddIntParam(0, "range_Type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(1.0, "user_range_max");
+	AddDoubleParam(0.0, "user_range_min");
 
 	m_nslices = 5;
 	m_bsmooth = true;

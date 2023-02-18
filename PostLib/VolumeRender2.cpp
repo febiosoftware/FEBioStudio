@@ -33,8 +33,6 @@ SOFTWARE.*/
 #include <sstream>
 using namespace Post;
 
-static bool initGlew = false;
-
 static int n = 1;
 
 CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
@@ -45,12 +43,6 @@ CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 	AddChoiceParam(0, "Color map")->SetEnumNames("Grayscale\0Red\0Green\0Blue\0Fire\0");
 
 	m_texID = 0;
-
-	if (initGlew == false)
-	{
-		glewInit();
-		initGlew = true;
-	}
 
 	std::stringstream ss;
 	ss << "VolumeRender" << n++;
@@ -79,18 +71,21 @@ void CVolumeRender2::Init()
 {
 	assert(m_vrInit == false);
 	if (m_vrInit) return;
-	m_vrInit = true;
 
-	InitTexture();
-	InitShaders();
+	if (InitTexture())
+	{
+		m_vrInit = true;
+		m_vrReset = false;
+		InitShaders();
+	}
 }
 
-void CVolumeRender2::InitTexture()
+bool CVolumeRender2::InitTexture()
 {
 	// load texture data
 	CImageModel& img = *GetImageModel();
 	CImageSource* src = img.GetImageSource();
-	if (src == nullptr) return;
+	if (src == nullptr) return false;
 
 	C3DImage& im3d = *src->Get3DImage();
 
@@ -99,22 +94,28 @@ void CVolumeRender2::InitTexture()
 	int ny = im3d.Height();
 	int nz = im3d.Depth();
 
-	glGenTextures(1, &m_texID);
+	if (m_texID == 0) glGenTextures(1, &m_texID);
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
 
-	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
 	// set texture parameter for 2D textures
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
 
 	// This will copy the image data to texture memory, so in principle we won't need im3d anymore
-	glTexImage3D(GL_TEXTURE_3D, 0, 1, nx, ny, nz, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	int n = 0;
+	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
+
+	return true;
 }
 
 void CVolumeRender2::ReloadTexture()
@@ -132,52 +133,63 @@ void CVolumeRender2::ReloadTexture()
 	int nz = im3d.Depth();
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
-	glTexImage3D(GL_TEXTURE_3D, 0, 1, nx, ny, nz, 0, GL_LUMINANCE, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	int n = 0;
+	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
+	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 }
 
 const char* shadertxt = \
 "uniform sampler3D sampler;                               "\
 "uniform float Imin;                                      "\
 "uniform float Imax;                                      "\
+"uniform float Amin;                                      "\
+"uniform float Amax;                                      "\
+"uniform float gamma;                                     "\
 "uniform int cmap;                                        "\
-"vec4 grayScale(const float f);                           "\
-"vec4 red(const float f);                                 "\
-"vec4 green(const float f);                               "\
-"vec4 blue(const float f);                                "\
-"vec4 fire(const float f);                                "\
+"vec3 grayScale(const float f);                           "\
+"vec3 red(const float f);                                 "\
+"vec3 green(const float f);                               "\
+"vec3 blue(const float f);                                "\
+"vec3 fire(const float f);                                "\
 "void main(void)                                          "\
 "{                                                        "\
-"	vec4 c = texture(sampler, gl_TexCoord[0]);            "\
-"   float f = c.x;                                        "\
+"	vec4 t = texture(sampler, gl_TexCoord[0]);            "\
+"   float f = t.x;                                        "\
 "   f = (f - Imin) / (Imax - Imin);                       "\
 "   f = clamp(f, 0.0, 1.0);                               "\
 "   if (f <= 0.0) discard;                                "\
-"   if      (cmap == 0) { c = grayScale(f); }             "\
-"   else if (cmap == 1) { c = red(f); }                   "\
-"   else if (cmap == 2) { c = green(f); }                 "\
-"   else if (cmap == 3) { c = blue(f); }                  "\
-"   else if (cmap == 4) { c = fire(f); }                  "\
-"   else c = vec4(0,0,0,f);                               "\
-"   gl_FragColor = gl_Color*c;                            "\
+"   float a = Amin + f*(Amax - Amin);                     "\
+"   if (gamma != 1.0) f = pow(f, gamma);                  "\
+"   vec3 c3;                                              "\
+"   if      (cmap == 0) { c3 = grayScale(f); }            "\
+"   else if (cmap == 1) { c3 = red(f); }                  "\
+"   else if (cmap == 2) { c3 = green(f); }                "\
+"   else if (cmap == 3) { c3 = blue(f); }                 "\
+"   else if (cmap == 4) { c3 = fire(f); }                 "\
+"   else c3 = vec3(0,0,0);                                "\
+"   vec4 c4 = vec4(c3.x, c3.y, c3.z, a);                  "\
+"   gl_FragColor = gl_Color*c4;                            "\
 "}                                                        "\
 "                                                         "\
-"vec4 grayScale(const float f) { return vec4(f, f, f, f);}"\
-"vec4 red(const float f)   { return vec4(f, 0, 0, f);}    "\
-"vec4 green(const float f) { return vec4(0, f, 0, f);}    "\
-"vec4 blue(const float f)  { return vec4(0, 0, f, f);}    "\
-"vec4 fire(const float f)  {                              "\
-"   vec3 c1 = vec3(0.0, 0., 0.);                                  "\
-"   vec3 c2 = vec3(0.5, 0., 1.);                                  "\
-"   vec3 c3 = vec3(1.0, 0., 0.);                                   "\
-"   vec3 c4 = vec3(1.0, 1., 0.);                                   "\
-"   vec3 c5 = vec3(1.0, 1., 1.);                                   "\
-"   vec3 c = vec3(0.0,0.,0.);                                            "\
-"   float wa, wb;                                     "\
+"vec3 grayScale(const float f) { return vec3(f, f, f);}   "\
+"vec3 red(const float f)   { return vec3(f, 0, 0);}       "\
+"vec3 green(const float f) { return vec3(0, f, 0);}       "\
+"vec3 blue(const float f)  { return vec3(0, 0, f);}       "\
+"vec3 fire(const float f)  {                              "\
+"   vec3 c1 = vec3(0.0, 0., 0.);                          "\
+"   vec3 c2 = vec3(0.5, 0., 1.);                          "\
+"   vec3 c3 = vec3(1.0, 0., 0.);                          "\
+"   vec3 c4 = vec3(1.0, 1., 0.);                          "\
+"   vec3 c5 = vec3(1.0, 1., 1.);                          "\
+"   vec3 c = vec3(0.0,0.,0.);                             "\
+"   float wa, wb;                                         "\
 "   if      (f >= 0.75) { wb = 2.0*(f - 0.75); wa = 1.0 - wb; c = c4*vec3(wa,wa,wa) + c5*vec3(wb,wb,wb); }"\
 "   else if (f >= 0.50) { wb = 2.0*(f - 0.50); wa = 1.0 - wb; c = c3*vec3(wa,wa,wa) + c4*vec3(wb,wb,wb); }"\
 "   else if (f >= 0.25) { wb = 2.0*(f - 0.25); wa = 1.0 - wb; c = c2*vec3(wa,wa,wa) + c3*vec3(wb,wb,wb); }"\
 "   else if (f >= 0.00) { wb = 2.0*(f - 0.00); wa = 1.0 - wb; c = c1*vec3(wa,wa,wa) + c2*vec3(wb,wb,wb); }"\
-"  return vec4(c.x, c.y, c.z, f);                               "\
+"  return vec3(c.x, c.y, c.z);                            "\
 "}                                                        "\
 "";
 
@@ -214,18 +226,48 @@ void CVolumeRender2::InitShaders()
 extern int LUT[256][15];
 extern int ET_HEX[12][2];
 
+GLColor HSL2RGB(double H, double S, double L)
+{
+	double C = (1.0 - fabs(2.0 * L - 1.0)) * S;
+	double Hp = H / 60.0;
+	double X = C * (1.0 - fabs(fmod(Hp, 2.0) - 1.0));
+	double R1 = 0, G1 = 0, B1 = 0;
+	if      ((Hp >= 0) && (Hp < 1)) { R1 = C; G1 = X; B1 = 0; }
+	else if ((Hp >= 1) && (Hp < 2)) { R1 = X; G1 = C; B1 = 0; }
+	else if ((Hp >= 2) && (Hp < 3)) { R1 = 0; G1 = C; B1 = X; }
+	else if ((Hp >= 3) && (Hp < 4)) { R1 = 0; G1 = X; B1 = C; }
+	else if ((Hp >= 4) && (Hp < 5)) { R1 = X; G1 = 0; B1 = C; }
+	else if ((Hp >= 5) && (Hp < 6)) { R1 = C; G1 = 0; B1 = X; }
+	double m = L - C / 2.0;
+	double r = R1 + m, g = G1 + m, b = B1 + m;
+	GLColor c((GLubyte)(255.0 * r), (GLubyte)(255.0 * g), (GLubyte)(255.0 * b));
+	return c;
+}
+
+GLColor HSV2RGB(double H, double S, double V)
+{
+	double C = V*S;
+	double Hp = H / 60.0;
+	double X = C * (1.0 - fabs(fmod(Hp, 2.0) - 1.0));
+	double R1 = 0, G1 = 0, B1 = 0;
+	if      ((Hp >= 0) && (Hp < 1)) { R1 = C; G1 = X; B1 = 0; }
+	else if ((Hp >= 1) && (Hp < 2)) { R1 = X; G1 = C; B1 = 0; }
+	else if ((Hp >= 2) && (Hp < 3)) { R1 = 0; G1 = C; B1 = X; }
+	else if ((Hp >= 3) && (Hp < 4)) { R1 = 0; G1 = X; B1 = C; }
+	else if ((Hp >= 4) && (Hp < 5)) { R1 = X; G1 = 0; B1 = C; }
+	else if ((Hp >= 5) && (Hp < 6)) { R1 = C; G1 = 0; B1 = X; }
+	double m = V - C;
+	double r = R1 + m, g = G1 + m, b = B1 + m;
+	GLColor c((GLubyte)(255.0 * r), (GLubyte)(255.0 * g), (GLubyte)(255.0 * b));
+	return c;
+}
+
 void CVolumeRender2::Render(CGLContext& rc)
 {
 	// load texture data
 	CImageModel& img = *GetImageModel();
 	CImageSource* src = img.GetImageSource();
 	if (src == nullptr) return;
-
-	if (m_vrReset)
-	{
-		ReloadTexture();
-		m_vrReset = false;
-	}
 
 	C3DImage& im3d = *src->Get3DImage();
 
@@ -234,12 +276,20 @@ void CVolumeRender2::Render(CGLContext& rc)
 	int ny = im3d.Height();
 	int nz = im3d.Depth();
 
+	// make sure volume renderer is initialized
+	if (m_vrInit == false) Init();
+	else if (m_vrReset) 
+	{
+		ReloadTexture();
+		m_vrReset = false;
+	}
+
+	// If we failed to initialize, we're done
+	if (m_vrInit == false) return;
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_3D);
 	glDisable(GL_LIGHTING);
-
-	// make sure volume renderer is initialized
-	if (m_vrInit == false) Init();
 	
 	// bind texture
 	glBindTexture(GL_TEXTURE_3D, m_texID);
@@ -249,18 +299,34 @@ void CVolumeRender2::Render(CGLContext& rc)
 
 	GLint IminID = glGetUniformLocation(m_prgID, "Imin");
 	GLint ImaxID = glGetUniformLocation(m_prgID, "Imax");
+	GLint AminID = glGetUniformLocation(m_prgID, "Amin");
+	GLint AmaxID = glGetUniformLocation(m_prgID, "Amax");
 	GLint cmapID = glGetUniformLocation(m_prgID, "cmap");
+	GLint gammaID = glGetUniformLocation(m_prgID, "gamma");
 
 	// float Imin = (float) GetFloatValue(MIN_INTENSITY);
 	// float Imax = (float) GetFloatValue(MAX_INTENSITY);
 	// int cmap = (int)GetIntValue(COLOR_MAP);
 
-    float Imin = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
-	float Imax = (float) GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
-	int cmap = (int)GetIntValue(COLOR_MAP);
+	CImageViewSettings* vs = GetImageModel()->GetViewSettings();
+
+	float Imin = (float) vs->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
+	float Imax = (float) vs->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
+	float Amin = (float) vs->GetFloatValue(CImageViewSettings::MIN_ALPHA);
+	float Amax = (float) vs->GetFloatValue(CImageViewSettings::MAX_ALPHA);
+	float gamma = (float) vs->GetFloatValue(CImageViewSettings::GAMMA);
+	float hue = vs->GetFloatValue(CImageViewSettings::HUE);
+	float sat = vs->GetFloatValue(CImageViewSettings::SAT);
+	float lum = vs->GetFloatValue(CImageViewSettings::LUM);
+	int cmap = (int) GetIntValue(COLOR_MAP);
+
+	GLColor col = HSV2RGB(hue, sat, lum);
 
 	glUniform1f(IminID, Imin);
 	glUniform1f(ImaxID, Imax);
+	glUniform1f(AminID, Amin);
+	glUniform1f(AmaxID, Amax);
+	glUniform1f(gammaID, gamma);
 	glUniform1i(cmapID, cmap);
 
 	// get the view direction
@@ -296,7 +362,8 @@ void CVolumeRender2::Render(CGLContext& rc)
 
 	// Prepare for rendering of the scene
 	double alphaScale = GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::ALPHA_SCALE);
-	glColor4f(1.f, 1.f, 1.f, alphaScale);
+	glColor4ub(col.r, col.g, col.b, (GLubyte) (255.0*alphaScale));
+//	glColor4ub(255, 0, 0, (GLubyte) (255.0*alphaScale));
 	glBegin(GL_TRIANGLES);
 
 	// the normal will be view direction

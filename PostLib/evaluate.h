@@ -25,8 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
-#include <FECore/tens4d.h>
+#include <FSCore/math3d.h>
 
 // extract components of tensor types
 float component(const vec3f& v, int n);

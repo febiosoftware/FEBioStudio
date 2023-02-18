@@ -316,6 +316,9 @@ Param::Param(const Param& p)
 	m_flags = p.m_flags;
 	m_paramGroup = p.m_paramGroup;
 
+	// we cannot copy the watch parameter!
+	m_watch = nullptr;
+
 	m_lc = p.m_lc;
 
 	m_bcopy = false;
@@ -367,7 +370,7 @@ Param& Param::operator = (const Param& p)
 //  m_szindx = p.m_szindx;
 //  m_nindx = p.m_nindx;
 //	m_offset = p.m_offset;
-	m_varType = p.m_varType;
+//	m_varType = p.m_varType;
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 //	m_flags = p.m_flags;
@@ -973,6 +976,18 @@ ParamBlock::ParamBlock(const ParamBlock &b)
 		Param* p = new Param(s);
 		m_Param.push_back(p);
 	}
+
+	// restore watched parameters
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& d = *m_Param[i];
+		if (s.m_watch)
+		{
+			Param* w = Find(s.GetShortName()); assert(w);
+			d.SetWatchVariable(w);
+		}
+	}
 }
 
 ParamBlock& ParamBlock::operator =(const ParamBlock &b)
@@ -986,6 +1001,19 @@ ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 		Param* p = new Param(s);
 		m_Param.push_back(p);
 	}
+
+	// restore watched parameters
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& d = *m_Param[i];
+		if (s.m_watch)
+		{
+			Param* w = Find(s.m_watch->GetShortName()); assert(w);
+			d.SetWatchVariable(w);
+		}
+	}
+
 	return *this;
 }
 
@@ -1066,7 +1094,7 @@ void ParamContainer::SaveParam(Param &p, OArchive& ar)
 	int nid = p.GetParamID();
 	int ntype = (int) p.GetParamType();
 
-//	ar.WriteChunk(CID_PARAM_ID, nid);
+	ar.WriteChunk(CID_PARAM_ID, nid);
 	ar.WriteChunk(CID_PARAM_TYPE, ntype);
 	ar.WriteChunk(CID_PARAM_CHECKED, p.IsChecked());
 	ar.WriteChunk(CID_PARAM_NAME, p.GetShortName());

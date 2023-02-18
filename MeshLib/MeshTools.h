@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEMesh.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include "FEMeshBase.h"
 #include "FECoreMesh.h"
 

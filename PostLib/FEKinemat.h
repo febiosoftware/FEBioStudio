@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <list>
 #include <vector>
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 namespace Post {
 	class FEPostModel;

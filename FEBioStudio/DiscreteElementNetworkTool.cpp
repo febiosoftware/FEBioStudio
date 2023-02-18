@@ -30,7 +30,7 @@
 #include <QBoxLayout>
 #include <QMessageBox>
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
 #include "MainWindow.h"

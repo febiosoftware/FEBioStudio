@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEFileExport.h>
+#include <MeshIO/FSFileExport.h>
 #include <XML/XMLWriter.h>
 #include "FEBioException.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <sstream>
 #include <map>
 
@@ -54,7 +54,7 @@ enum FEBioExportSections
 	FEBIO_MAX_SECTIONS		// = max nr of sections
 };
 
-class FEBioExport : public FEFileExport
+class FEBioExport : public FSFileExport
 {
 public:
 	FEBioExport(FSProject& prj);

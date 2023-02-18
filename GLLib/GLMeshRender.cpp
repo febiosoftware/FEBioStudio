@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElement.h>
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/quad8.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <GLLib/glx.h>
 
 //-----------------------------------------------------------------------------

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <QDialog>
 #include <string>
 #include <vector>
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 class CMainWindow;
 class QModelIndex;

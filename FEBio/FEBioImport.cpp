@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEBioLink/FEBioModule.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "FEBioFormatOld.h"
 #include "FEBioFormat12.h"
 #include "FEBioFormat2.h"
@@ -384,7 +384,7 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		assert(fem.LoadControllers() == 0);
 		for (int i = 0; i < NLC; ++i)
 		{
-			fem.AddLoadCurve(m_febio->GetLoadCurve(i))->GetID();
+			fem.AddLoadCurve(m_febio->GetLoadCurve(i));
 		}
 	}
 
@@ -414,8 +414,16 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 			if (pc.m_plc) 
 			{
 				// NOTE: This is only used for reading in must-point curves of older files.
-				*pc.m_plc = m_febio->GetLoadCurve(pc.m_lc);
-				pc.m_plc->SetID(pc.m_lc);
+				FEBioLoadController* plc = dynamic_cast<FEBioLoadController*>(fem.GetLoadController(pc.m_lc));
+				if (plc)
+				{
+					LoadCurve* lc = plc->CreateLoadCurve();
+					if (lc)
+					{
+						*pc.m_plc = *lc;
+						pc.m_plc->SetID(pc.m_lc);
+					}
+				}
 			}
 		}
 	}

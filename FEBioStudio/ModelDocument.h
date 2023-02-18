@@ -118,6 +118,8 @@ public:
 	bool ImportMaterials(const std::string& fileName);
 	bool ImportFEBioMaterials(const std::string& fileName);
 
+	void SetUnitSystem(int unitSystem) override;
+
 signals:
 	void selectionChanged();
 

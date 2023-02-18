@@ -26,19 +26,19 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBioFormat4.h"
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/FEElementData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <MeshLib/FEElementData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FENodeData.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
 #include <assert.h>
@@ -685,7 +685,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	// (we also allow "elset", although "name" is the correct attribute)
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname == 0) szname = tag.AttributeValue("elset", true);
-	if (szname == 0) szname = "_no_name";
+	if (szname == 0) throw XMLReader::MissingAttribute(tag, "name");
 
 	// make sure no parts have the same name
 	string name = szname;

@@ -25,9 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEGroup.h"
-#include "FEModel.h"
-#include "GDiscreteObject.h"
+#include <GeomLib/FSGroup.h>
+#include <FEMLib/FSModel.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <vector>
 //using namespace std;
 

@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FETube.h"
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GPrimitive.h>
-#include <MeshTools/FEMultiBlockMesh.h>
+#include "FEMultiBlockMesh.h"
 
 //////////////////////////////////////////////////////////////////////
 // FETube

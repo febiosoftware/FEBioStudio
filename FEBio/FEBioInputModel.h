@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEElementFormulation.h>
 
 class GMeshObject;
@@ -402,14 +402,12 @@ public:
 	public:
 		FSNodeSet* BuildFENodeSet(const NodeSet& nset);
 		FSEdgeSet* BuildFEEdgeSet(EdgeSet& surf);
-		FSSurface* BuildFESurface(Surface& surf);
+		FSSurface* BuildFESurface(const Surface& surf);
 
 		FSNodeSet* BuildFENodeSet(const char* szname);
 		FSEdgeSet* BuildFEEdgeSet(const char* szname);
 		FSSurface* BuildFESurface(const char* szname);
 		FSPart*    BuildFEPart   (const char* szname);
-
-		FSSurface* BuildFESurface(const Surface& surf);
 
 	public:
 		vec3d	m_pos;

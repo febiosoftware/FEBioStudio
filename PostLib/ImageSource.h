@@ -31,6 +31,7 @@ enum class ImageFileType;
 #include <vector>
 #include <string>
 #include <FSCore/FSObjectList.h>
+#include <FSCore/box.h>
 
 class C3DImage;
 
@@ -42,18 +43,26 @@ class CGLImageRenderer;
 class CImageSource : public FSObject
 {
 public:
-	CImageSource(CImageModel* imgModel = nullptr);
+    enum Types 
+    { 
+        RAW = 0, ITK, SERIES
+    };
+
+public:
+	CImageSource(int type, CImageModel* imgModel = nullptr);
 	~CImageSource();
 
     virtual bool Load() = 0;
+
+    int Type() { return m_type; }
+
+    virtual void Save(OArchive& ar) = 0;
+	virtual void Load(IArchive& ar) = 0;
 
 	C3DImage* Get3DImage() { return m_img; }
 
     void ClearFilters();
     C3DImage* GetImageToFilter(bool allocate = false);
-
-	// void Save(OArchive& ar);
-	// void Load(IArchive& ar);
 
 public:
 	CImageModel* GetImageModel();
@@ -61,6 +70,9 @@ public:
 
 protected:
     void AssignImage(C3DImage* im);
+
+protected:
+    int m_type;
 
 	C3DImage*	m_img;
     C3DImage*   m_originalImage;
@@ -71,21 +83,30 @@ protected:
 class CRawImageSource : public CImageSource
 {
 public:
-    CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz);
+    CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz, BOX box);
+    CRawImageSource(CImageModel* imgModel);
 
     bool Load() override;
+
+    void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
     std::string m_filename;
     int m_nx, m_ny, m_nz;
+    BOX m_box;
 };
 
 class CITKImageSource : public CImageSource
 {
 public:
     CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type);
+    CITKImageSource(CImageModel* imgModel);
 
     bool Load() override;
+
+    void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
     std::string m_filename;
@@ -96,8 +117,12 @@ class CITKSeriesImageSource : public CImageSource
 {
 public:
     CITKSeriesImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames);
+    CITKSeriesImageSource(CImageModel* imgModel);
 
     bool Load() override;
+
+    void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
     std::vector<std::string> m_filenames;

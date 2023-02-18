@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEPostModel.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include "FEMeshData_T.h"
 
 namespace Post {

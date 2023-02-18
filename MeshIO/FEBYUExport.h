@@ -26,9 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshTools/FEFileExport.h>
+#include "FSFileExport.h"
 
-class FEBYUExport : public FEFileExport
+class FEBYUExport : public FSFileExport
 {
 public:
 	FEBYUExport(FSProject& prj);

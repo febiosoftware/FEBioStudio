@@ -39,7 +39,7 @@ public:
     CImageThread(Post::CImageModel* imgModel);
     
     bool getSuccess() { return m_success; }
-    const char* getError() { return m_error; }
+    std::string getError() { return m_error; }
 
 signals:
     void newStatus(QString status);
@@ -48,7 +48,7 @@ protected:
     Post::CImageModel* m_imgModel;
 
     bool m_success;
-    const char* m_error;
+    std::string m_error;
 };
 
 class CImageReadThread : public CImageThread

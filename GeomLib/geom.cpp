@@ -26,8 +26,7 @@ SOFTWARE.*/
 
 #include "geom.h"
 #include <assert.h>
-#include <FECore/mat3d.h>
-#include <FECore/quatd.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 // solves the quadratic: a*x^2 + b*x + c = 0

@@ -27,8 +27,8 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioInputModel.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
 #include "FEBioImport.h"
 #include <string.h>
 #include <stdarg.h>
@@ -528,44 +528,6 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 	return pns;
 }
 
-FSSurface* FEBioInputModel::PartInstance::BuildFESurface(FEBioInputModel::Surface& surf)
-{
-	// create face list
-	vector<int> faceList;
-	int NF = surf.faces();
-	for (int i = 0; i<NF; ++i)
-	{
-		const vector<int>& face = surf.face(i);
-		int faceID = m_part->m_mesh.FindFace(face);
-		if (faceID >= 0) faceList.push_back(faceID);
-		else
-		{
-			stringstream ss;
-			ss << "Cannot find facet: ";
-			for (int j = 0; j < face.size(); ++j)
-			{
-				ss << face[j];
-				if (j != face.size() - 1) ss << ",";
-			}
-			string s = ss.str();
-			AddLogEntry(s.c_str());
-		}
-	}
-
-	// create the surface
-	FSSurface* ps = new FSSurface(m_po, faceList);
-
-	// copy the name
-	std::string name = surf.name();
-	ps->SetName(name.c_str());
-
-	// increment surface reference counter
-	surf.m_refs++;
-
-	// all done
-	return ps;
-}
-
 FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::NodeSet& nset)
 {
 	// create the surface
@@ -764,6 +726,7 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 	{
 		// could be a domain?
 		Domain* dom = m_part->FindDomain(szname);
+		if (dom == nullptr) return nullptr;
 
 		// get the element list
 		elemList = dom->GetElementIDList();

@@ -77,6 +77,8 @@ CGLModel::CGLModel(FEPostModel* ps)
 
 	m_brenderPlotObjects = true;
 
+	m_renderInnerSurface = true;
+
 	m_bshowMesh = true;
 
 	m_line_col = GLColor(0, 0, 0);
@@ -1259,7 +1261,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			FSFace& face = dom.Face(i);
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 
-			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
+			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible() && (m_renderInnerSurface || face.IsExterior()))
 			{
 				GLubyte a[FSFace::MAX_NODES];
 				for (int j = 0; j < face.Nodes(); ++j)
@@ -1371,6 +1373,18 @@ void CGLModel::RenderInnerSurface(int m, bool btex)
 	glEnd();
 
 	if (btex) glEnable(GL_TEXTURE_1D);
+}
+
+//-----------------------------------------------------------------------------
+bool CGLModel::RenderInnerSurfaces()
+{
+	return m_renderInnerSurface;
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderInnerSurfaces(bool b)
+{
+	m_renderInnerSurface = b;
 }
 
 //-----------------------------------------------------------------------------
@@ -1659,7 +1673,7 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m, bool 
 					else face.m_ntag = 2;
 				}
 			}
-			else if (el0.IsVisible() && el1.IsVisible())
+			else if (el0.IsVisible() && el1.IsVisible() && m_renderInnerSurface)
 			{
 				if (el0.m_MatID == m)
 				{
@@ -2461,6 +2475,59 @@ void CGLModel::ClearSelectionLists()
 	m_edgeSelection.clear();
 	m_faceSelection.clear();
 	m_elemSelection.clear();
+}
+
+//-----------------------------------------------------------------------------
+vec3d CGLModel::GetSelectionCenter()
+{
+	vec3d c(0, 0, 0);
+	int nsel = GetSelectionMode();
+	FEPostMesh* pm = GetActiveMesh();
+	switch (nsel)
+	{
+	case Post::SELECT_NODES:
+	{
+		const std::vector<FSNode*>& ns = GetNodeSelection();
+		if (ns.empty() == false)
+		{
+			for (auto n : ns) c += n->pos();
+			c /= (double)ns.size();
+		}
+	}
+	break;
+	case Post::SELECT_EDGES:
+	{
+		const std::vector<FSEdge*>& es = GetEdgeSelection();
+		if (es.empty() == false)
+		{
+			for (auto e : es) c += pm->EdgeCenter(*e);
+			c /= (double)es.size();
+		}
+	}
+	break;
+	case Post::SELECT_FACES:
+	{
+		const std::vector<FSFace*>& fs = GetFaceSelection();
+		if (fs.empty() == false)
+		{
+			for (auto f : fs) c += pm->FaceCenter(*f);
+			c /= (double)fs.size();
+		}
+	}
+	break;
+	case Post::SELECT_ELEMS:
+	{
+		const std::vector<FEElement_*>& es = GetElementSelection();
+		if (es.empty() == false)
+		{
+			for (auto e : es) c += pm->ElementCenter(*e);
+			c /= (double)es.size();
+		}
+	}
+	break;
+	}
+
+	return c;
 }
 
 //-----------------------------------------------------------------------------

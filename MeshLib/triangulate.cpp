@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "triangulate.h"
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GLMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
 

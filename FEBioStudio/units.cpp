@@ -54,25 +54,24 @@ int Units::FindUnitSytemFromName(const char* sz)
 	return n;
 }
 
-static const char* unit_table[][12] = {
+static Units::UnitSymbol unit_table[][12] = {
 	// dimensions
-	{"L","M","t","T","I","n","F","P","E","W","V","c"},
+	{{"L", 1},{"M", 1},{"t", 1},{"T", 1},{"I", 1},{"n", 1},{"F", 1},{"P", 1},{"E", 1},{"W",1},{"V",1},{"c", 1}},
 
 	// SI units
-	{"m","kg","s","K","A","mol","N","Pa","J","W","V","mM"},
+	{{"m", 1}, {"kg",1},{"s",1},{"K",1},{"A",1},{"mol",1},{"N",1},{"Pa",1},{"J",1},{"W",1},{"V",1},{"mM",1}},
 
 	// MMTS units
-	{"mm","tonne","s","K","A","nmol","N","MPa","mJ","mW","mV","mM"},
-    
-    // MMKS units
-    {"mm","kg","s","K","mA","nmol","mN","kPa","µJ","µW","mV","mM"},
-    
-    // UMNNS units
-    {"µm","g","s","K","pA","amol","nN","kPa","fJ","fW","mV","mM"},
+	{{"mm",1e-3},{"tonne",1e3},{"s",1},{"K",1},{"A",1},{"nmol",1e-9},{"N",1},{"MPa",1e6},{"mJ",1e-3},{"mW",1e-3},{"mV",1e-3},{"mM",1}},
+
+	// MMKS units
+	{{"mm",1e-3},{"kg",1},{"s",1},{"K",1},{"mA",1e-3},{"nmol",1e-9},{"mN",1e-3},{"kPa",1e3},{"µJ",1e-6},{"µW",1e-6}, {"mV",1e-3}, {"mM",1}},
+
+	// UMNNS units
+	{{"µm", 1e-6},{"g",1e-3},{"s",1},{"K",1},{"pA",1e-12},{"amol",1e-18},{"nN",1e-9},{"kPa",1e3},{"fJ",1e-15},{"fW",1e-15}, {"mV",1e-3},{"mM",1}},
 
 	// CGS units
-	{"cm","g","s","K","cA","µmol","dyn","[F/L^2]","erg","[E/t]","mV","mM"}
-
+	{{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"[F/L^2]",0.1}, {"erg",1e-7},{"[E/t]",1e-7},{"mV",1e-3},{"mM", 1}}
 };
 
 QString Units::GetUnitString(const char* szunit)
@@ -80,9 +79,9 @@ QString Units::GetUnitString(const char* szunit)
 	return GetUnitString(unit_system, szunit);
 }
 
-const char* Units::GetUnitSymbol(int unitSystem, Units::Unit_Symbol us)
+Units::UnitSymbol Units::GetUnitSymbol(int unitSystem, Units::Unit_Symbol us)
 {
-	if (unitSystem == Units::NONE) return "";
+	if (unitSystem == Units::NONE) return Units::UnitSymbol{ "",1 };
 	return unit_table[unitSystem - 1][us];
 }
 
@@ -125,4 +124,20 @@ QString Units::GetUnitString(int unit_system, const char* szunit)
 	if (unit_system == Units::DIMENSIONAL) s = QString("[") + s + QString("]");
 
 	return s;
+}
+
+double Units::Convert(double val, const char* szunit, int src, int dst)
+{
+	if (szunit == nullptr) return 0.0;
+
+	UnitParser parser_src(src);
+	Unit unit_src = parser_src.parseUnitString(szunit);
+	double s = unit_src.TotalScaleFactor();
+
+	UnitParser parser_dst(dst);
+	Unit unit_dst = parser_dst.parseUnitString(szunit);
+	double d = unit_dst.TotalScaleFactor();
+	if (d == 0.0) return 0.0;
+
+	return val * s / d;
 }

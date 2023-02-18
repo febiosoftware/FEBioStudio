@@ -34,8 +34,8 @@ SOFTWARE.*/
 #include <vector>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
 #include <sstream>
 ////using namespace std;
@@ -745,7 +745,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 
 				// if we've reached at the end of the line
 				// then we load the next line
-				if (strlen(ch) == 1)
+				if (strlen(ch) == 1 || strcmp(ch,", ") == 0)
 				{
 					read_line(szline, fp);
 					ch = szline;

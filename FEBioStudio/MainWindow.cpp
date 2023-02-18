@@ -71,7 +71,7 @@ SOFTWARE.*/
 #include "DlgImportXPLT.h"
 #include "Commands.h"
 #include <XPLTLib/xpltFileReader.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "DocManager.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
@@ -336,6 +336,22 @@ void CMainWindow::UpdateTitle()
 		case VIDEO_MODE::VIDEO_PAUSED   : title += " (RECORDING PAUSED)"; break;
 		case VIDEO_MODE::VIDEO_RECORDING: title += " (RECORDING)"; break;
 		case VIDEO_MODE::VIDEO_STOPPED  : title += " (RECORDING STOPPED)"; break;
+		}
+	}
+
+	if (ui->m_jobManager->IsJobRunning())
+	{
+		CFEBioJob* job = CFEBioJob::GetActiveJob(); assert(job);
+		if (job)
+		{
+			string name = job->GetName();
+			title += " [ RUNNING: " + QString::fromStdString(name);
+			if (job->HasProgress())
+			{
+				int pct = (int) job->GetProgress();
+				title += " (" + QString::number(pct) + "%)";
+			}
+			title += "]";
 		}
 	}
 	
@@ -2007,13 +2023,12 @@ void CMainWindow::readSettings()
 	QStringList launch_config_names;
 	launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
 
-	// Overwrite the default if they have launch configurations saved.
-	if(launch_config_names.count() > 0)
-	{
-		ui->m_launch_configs.clear();
-		// create the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
-	}
+	// clear launch configurations
+	ui->m_launch_configs.clear();
+
+	// create the default launch configuration
+	ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+
 
 	for(QString conf : launch_config_names)
 	{
@@ -3280,6 +3295,19 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	}
 
 	UpdateModel(job, false);
+
+	// start a time to measure progress
+	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
+}
+
+void CMainWindow::checkJobProgress()
+{
+	UpdateTitle();
+
+	if (ui->m_jobManager->IsJobRunning())
+	{
+		QTimer::singleShot(100, this, SLOT(checkJobProgress()));
+	}
 }
 
 void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)

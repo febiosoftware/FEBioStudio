@@ -25,8 +25,7 @@
  SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
-#include <FECore/quatd.h>
+#include <FSCore/math3d.h>
 #include <vector>
 #include <string>
 #include "Quadric.h"

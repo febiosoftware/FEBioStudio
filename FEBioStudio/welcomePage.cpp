@@ -42,7 +42,6 @@ ul { line-height: 150%; list-style-type: none; }\
 <body>\
 <p style=\"font-size: 36pt\"><img src=\":/icons/FEBioStudio.png\" style=\"float:left\"><b>FEBio Studio</b></p>\
 <p style=\"font-size: 14pt\">_VERSION_</p>\
-<p style=\"font-size: 14pt\">FEBio Studio 2 is currently in beta. You can help development by <a href=\"#bugreport\" style=\"font-size: 14pt\">submitting a bug report.</a></p>\
 _SERVER_MESSAGE_\
 _UPDATE_INFO_\
 <h1>Start</h1>\
@@ -138,7 +137,11 @@ void CWelcomePage::Activate()
 	page.replace("_RECENT_FILES_", fileLinks);
 	page.replace("_RECENT_PROJECTS_", prjLinks);
 
-	page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
+	int theme = m_wnd->currentTheme();
+	if (theme == 0)
+		page.replace("_BGCOLOR_", "#fffae7");
+	else
+		page.replace("_BGCOLOR_", qApp->palette().color(QPalette::Base).name());
 
 	QString updateText;
 	if(m_wnd->updateAvailable())

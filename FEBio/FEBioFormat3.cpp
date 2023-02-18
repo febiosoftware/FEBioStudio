@@ -27,17 +27,17 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioFormat3.h"
 #include <FEMLib/FERigidConstraint.h>
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/FEElementData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <MeshLib/FEElementData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FENodeData.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FERigidLoad.h>
@@ -312,6 +312,7 @@ bool FEBioFormat3::ParseControlSection(XMLTag& tag)
 					else if (tag == "reform_each_time_step") tag.value(ops.brefstep);
 					else if (tag == "logSolve") tag.value(ops.logSolve);
 					else if (tag == "equation_scheme") tag.value(ops.neqscheme);
+					else if (tag == "optimize_bw") tag.value(ops.bminbw);
 					else ReadParam(*pstep, tag);
 					++tag;
 				}
@@ -3826,33 +3827,49 @@ bool FEBioFormat3::ParseLoadDataSection(XMLTag& tag)
 	// make sure the section is not empty
 	if (tag.isleaf()) return true;
 
-	FEBioInputModel &febio = GetFEBioModel();
-
-	// read all loadcurves
+	// read all load controllers
 	++tag;
 	do
 	{
-		if (tag == "load_controller")
-		{
-			// create the loadcurve
-			LoadCurve lc;
-
-			// remove default points
-			lc.Clear();
-
-			// get the load curve ID
-			int nid = tag.Attribute("id").value<int>();
-			lc.SetID(nid);
-
-			ParseLoadCurve(tag, lc);
-
-			febio.AddLoadCurve(lc);
-		}
+		if (tag == "load_controller") ParseLoadController(tag);
 		else ParseUnknownTag(tag);
-
 		++tag;
+	} while (!tag.isend());
+
+	return true;
+}
+
+bool FEBioFormat3::ParseLoadController(XMLTag& tag)
+{
+	if (tag.isleaf()) return true;
+
+	// get the type attribute
+	const char* sztype = tag.AttributeValue("type");
+
+	// create the load controller
+	FSModel& fem = GetFSModel();
+	FSLoadController* plc = FEBio::CreateLoadController(sztype, &fem);
+	if (plc == nullptr)
+	{
+		ParseUnknownTag(tag);
+		return false;
 	}
-	while (!tag.isend());
+
+	std::string name;
+	const char* szname = tag.AttributeValue("name", true);
+	if (szname) name = szname;
+	else
+	{
+		int n = fem.LoadControllers();
+		std::stringstream ss;
+		ss << "LC" << n + 1;
+		name = ss.str();
+	}
+	plc->SetName(name);
+
+	fem.AddLoadController(plc);
+
+	ParseModelComponent(plc, tag);
 
 	return true;
 }

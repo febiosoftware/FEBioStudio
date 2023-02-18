@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FileReader.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <vector>
 
 class FEBYUimport :	public FSFileImport

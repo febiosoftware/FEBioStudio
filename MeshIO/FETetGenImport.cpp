@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FETetGenImport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 //-----------------------------------------------------------------------------
 FETetGenImport::FETetGenImport(FSProject& prj) : FSFileImport(prj)

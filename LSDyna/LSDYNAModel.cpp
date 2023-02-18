@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "LSDYNAModel.h"
-#include "MeshTools/FEModel.h"
+#include <FEMLib/FSModel.h>
 #include "GeomLib/GMeshObject.h"
 #include "FEMLib/FEMultiMaterial.h"
 

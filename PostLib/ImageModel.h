@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include "GLObject.h"
 #include <FEBioStudio/ImageViewSettings.h>
 
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, SEQUENCE};
+enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
 
 class C3DImage;
 
@@ -72,17 +72,15 @@ public:
 
 	void AddImageFilter(CImageFilter* imageFilter);
 
-	const BOX& GetBoundingBox() const { return m_box; }
+	BOX GetBoundingBox();
 
-	void SetBoundingBox(BOX b) { m_box = b; }
+	void SetBoundingBox(BOX b);
 
 	bool ShowBox() const;
 
 	void ShowBox(bool b);
 
 	void Render(CGLContext& rc);
-
-	bool UpdateData(bool bsave = true) override;
 
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
@@ -99,7 +97,7 @@ public:
 	bool ExportRAWImage(const std::string& filename);
 
 private:
-	BOX				m_box;						//!< physical dimensions of image
+	// BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
 	FSObjectList<CGLImageRenderer>	m_render;	//!< image renderers
 	FSObjectList<CImageFilter> m_filters;

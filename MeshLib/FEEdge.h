@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEItem.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 // Edge types

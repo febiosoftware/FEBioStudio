@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <FEBioLib/febio.h>
 #include <FEMLib/FEMaterial.h>
 #include <FECore/FEMaterial.h>
-#include <FEBioLink/FEBioClass.h>
+#include "FEBioClass.h"
 
 bool FEBio::RunMaterialTest(MaterialTest test, std::vector<pair<double, double> >& out)
 {

@@ -26,11 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DlgEditOutput.h"
-#include <MeshTools/FEProject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/FSProject.h>
+#include <GeomLib/GModel.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/GGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <GeomLib/GObject.h>
 #include <QBoxLayout>
 #include <QDialogButtonBox>

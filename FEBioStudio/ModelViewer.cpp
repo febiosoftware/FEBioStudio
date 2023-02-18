@@ -43,7 +43,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/MeshLayer.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
 #include <PostLib/ImageModel.h>
@@ -1030,8 +1030,12 @@ void CModelViewer::OnCopyMaterial()
 	GMaterial* pmat = dynamic_cast<GMaterial*>(m_currentObject); assert(pmat);
 	if (pmat == 0) return;
 
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel* fem = pdoc->GetFSModel();
+
 	// create a copy of the material
-	GMaterial* pmat2 = pmat->Clone();
+	FEBioMaterial* pm = dynamic_cast<FEBioMaterial*>(FEBio::CloneModelComponent(pmat->GetMaterialProperties(), fem));
+	GMaterial* pmat2 = new GMaterial(pm);
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1142,16 +1146,12 @@ void CModelViewer::OnCopyInterface()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the interface
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSInterface* piCopy = dynamic_cast<FSInterface*>(fecore->Create(fem, FESURFACEINTERFACE_ID, pic->Type()));
+	FSInterface* piCopy = dynamic_cast<FSInterface*>(FEBio::CloneModelComponent(pic, fem));
 	assert(piCopy);
 
 	// create a name
 	string name = defaultInterfaceName(fem, pic);
 	piCopy->SetName(name);
-
-	// copy parameters
-	piCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the interface to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
@@ -1171,16 +1171,12 @@ void CModelViewer::OnCopyBC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the bc
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(fecore->Create(fem, FEBC_ID, pbc->Type()));
+	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(FEBio::CloneModelComponent(pbc, fem));
 	assert(pbcCopy);
 
 	// create a name
 	string name = defaultBCName(fem, pbc);
 	pbcCopy->SetName(name);
-
-	// copy parameters
-	pbcCopy->GetParamBlock() = pbc->GetParamBlock();
 
 	// add the bc to the doc
 	FSStep* step = fem->GetStep(pbc->GetStep());
@@ -1200,16 +1196,12 @@ void CModelViewer::OnCopyIC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the ic
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(fecore->Create(fem, FEIC_ID, pic->Type()));
+	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(FEBio::CloneModelComponent(pic, fem));
 	assert(picCopy);
 
 	// create a name
 	string name = defaultICName(fem, pic);
 	picCopy->SetName(name);
-
-	// copy parameters
-	picCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the ic to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
@@ -1229,16 +1221,12 @@ void CModelViewer::OnCopyRigidConnector()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
+	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidConnectorName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1257,16 +1245,13 @@ void CModelViewer::OnCopyConstraint()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
+
+	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultConstraintName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the constraint to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1286,16 +1271,12 @@ void CModelViewer::OnCopyLoad()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSLoad* plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FELOAD_ID, pl->Type()));
+	FSLoad* plCopy = dynamic_cast<FSLoad*>(FEBio::CloneModelComponent(pl, fem));
 	assert(plCopy);
 
 	// create a name
 	string name = defaultLoadName(fem, pl);
 	plCopy->SetName(name);
-
-	// copy parameters
-	plCopy->GetParamBlock() = pl->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pl->GetStep());
@@ -1315,16 +1296,12 @@ void CModelViewer::OnCopyRigidBC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidBC* pcCopy = dynamic_cast<FSRigidBC*>(fecore->Create(fem, FEBC_ID, pc->Type()));
+	FSRigidBC* pcCopy = dynamic_cast<FSRigidBC*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidBCName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1345,16 +1322,12 @@ void CModelViewer::OnCopyRigidIC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidIC* pcCopy = dynamic_cast<FSRigidIC*>(fecore->Create(fem, FEIC_ID, pc->Type()));
+	FSRigidIC* pcCopy = dynamic_cast<FSRigidIC*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidICName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1368,24 +1341,25 @@ void CModelViewer::OnCopyRigidIC()
 
 void CModelViewer::OnCopyStep()
 {
-	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
+	FSStep* ps = dynamic_cast<FSStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
+	if (dynamic_cast<FSInitialStep*>(ps)) return;
+
+	// copy the step
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FSModel* fem = pdoc->GetFSModel();
 
-	// copy the step
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSAnalysisStep* psCopy = dynamic_cast<FSAnalysisStep*>(fecore->Create(fem, FEANALYSIS_ID, ps->GetType()));
-	assert(psCopy);
+	FEBioAnalysisStep* psCopy = dynamic_cast<FEBioAnalysisStep*>(FEBio::CloneModelComponent(ps, fem)); assert(psCopy);
+	if (psCopy == nullptr)
+	{
+		QMessageBox::critical(this, "Copy Step", "Failed to copy step.");
+		return;
+	}
 
 	// create a name
 	string name = defaultStepName(fem, ps);
 	psCopy->SetName(name);
-
-	// copy parameters
-	psCopy->GetParamBlock() = ps->GetParamBlock();
-	psCopy->GetSettings() = ps->GetSettings();
 
 	// add the step to the doc
 	pdoc->DoCommand(new CCmdAddStep(fem, psCopy));

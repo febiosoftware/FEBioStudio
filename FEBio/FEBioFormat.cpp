@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "FEBioImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
 
@@ -438,10 +438,21 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 	}
 	else if (*atype == "math")
 	{
+		string smath;
+		if (tag.isleaf()) smath = tag.szvalue();
+		else
+		{
+			++tag;
+			do {
+				if (tag == "math") smath = tag.szvalue();
+				++tag;
+			} while (!tag.isend());
+		}
+
 		if (pp->IsVariable())
 		{
 			pp->SetParamType(Param_MATH);
-			pp->SetMathString(tag.szvalue());
+			pp->SetMathString(smath);
 		}
 		else FileReader()->AddLogEntry("Cannot assign math to non-variable parameter %s", pp->GetShortName());
 	}
@@ -688,6 +699,26 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				Param* p = fem.GetParam(sz);
 				if (p) p->SetFloatValue(v);
 				else fem.AddDoubleParam(v, strdup(sz));  // TODO: memory leak!!
+				++tag;
+			} while (!tag.isend());
+		}
+		else if (tag == "Variables")
+		{
+			++tag;
+			do
+			{
+				if (tag == "var")
+				{
+					const char* szname = tag.AttributeValue("name", true);
+					if (szname)
+					{
+						double v = 0;
+						tag.value(v);
+						Param* p = fem.AddDoubleParam(v, strdup(szname)); // TODO: memory leak!!
+						p->SetFlags(p->GetFlags() | FS_PARAM_USER);
+					}
+				}
+				else ParseUnknownTag(tag);
 				++tag;
 			} while (!tag.isend());
 		}
@@ -1812,23 +1843,26 @@ FSReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 	FSReactionMaterial* pm = 0;
 	if (strcmp(sztype, "mass action") == 0) 
 	{
-		pm = new FSMassActionForward(fem);
+		pm = new FSMassActionReaction(fem);
 
 		++tag;
 		do
 		{
 			if (tag == "equation")
 			{
-				ProcessReactionEquation(GetFSModel(), pm, tag.m_szval.c_str());
+//				ProcessReactionEquation(GetFSModel(), pm, tag.m_szval.c_str());
+				pm->SetParamString("equation", tag.m_szval.c_str());
 			}
 			else if (tag == "rate_constant")
 			{
 				double k;
 				tag.value(k);
 
-				FSReactionRateConst* rc = new FSReactionRateConst(fem);
-				rc->SetRateConstant(k);
-				pm->SetForwardRate(rc);
+				pm->SetParamFloat("rate_constant", k);
+
+//				FSReactionRateConst* rc = new FSReactionRateConst(fem);
+//				rc->SetRateConstant(k);
+//				pm->SetForwardRate(rc);
 			}
 			++tag;
 		}
@@ -2341,7 +2375,7 @@ bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 
 			// convert some obsolete variables
 			if (strcmp(sztype, "shell relative volume") == 0) sztype = "relative volume";
-			if (strcmp(sztype, "shell strain"         ) == 0) sztype = "Lagrange strain";
+//			if (strcmp(sztype, "shell strain"         ) == 0) sztype = "Lagrange strain";
 
 			const char* szsurf = tag.AttributeValue("surface", true);
 			if (szsurf) 
@@ -2446,6 +2480,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					po->AddFEPart(pg);
 					logVar.SetGroupID(pg->GetID());
 				}
+				else AddLogEntry("Could not find element set \"%s\"", szset);
 			}
 			else if (tag.isempty() == false)
 			{

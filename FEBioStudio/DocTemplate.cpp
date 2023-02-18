@@ -29,11 +29,11 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <QtCore/QDir>
 #include <XML/XMLReader.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include <MeshTools/FEBox.h>
 #include <MeshTools/FEMesher.h>
 #include <GeomLib/GPrimitive.h>

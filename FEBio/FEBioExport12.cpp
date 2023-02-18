@@ -30,14 +30,14 @@ SOFTWARE.*/
 
 #include "FEBioExport12.h"
 #include <FEMLib/FERigidConstraint.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <memory>
 #include <FECore/FETransform.h>
 

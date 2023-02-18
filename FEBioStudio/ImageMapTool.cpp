@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <PostLib/ImageModel.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/FEElementData.h>
+#include <MeshLib/FEElementData.h>
 #include <ImageLib/3DImage.h>
 
 class UIImageMapTool : public QWidget
