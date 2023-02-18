@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "TiffReader.h"
 #include <ImageLib/3DImage.h>
+#include <stdexcept>
 
 #ifndef  WORD
 #define WORD	uint16_t
@@ -258,17 +259,17 @@ bool CTiffImageSource::readImage()
 	if ((bitsPerSample != 8) && (bitsPerSample != 16))
 	{
 		delete[] ifd.TagList;
-		throw std::exception("Only 8 and 16 bit tif supported.");
+		throw std::domain_error("Only 8 and 16 bit tif supported.");
 	}
 
 	if ((compression != TIF_COMPRESSION_NONE) && (compression != TIF_COMPRESSION_LZW))
 	{
 		delete[] ifd.TagList;
-		throw std::exception("Only uncompressed and LZW compressed tiff are supported.");
+		throw std::domain_error("Only uncompressed and LZW compressed tiff are supported.");
 	}
 
 	// find the strips
-	if (numberOfStrips == 0) throw std::exception("no strips");
+	if (numberOfStrips == 0) throw std::invalid_argument("no strips");
 	std::vector<TIFSTRIP> strips(numberOfStrips);
 	if (numberOfStrips == 1)
 	{
