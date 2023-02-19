@@ -91,6 +91,7 @@ size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size);
 
 CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(RAW, imgModel)
 {
+	m_fp = nullptr;
 	m_filename = filename;
 }
 
@@ -373,7 +374,8 @@ class LZWDecompress
 
 public:
 	LZWDecompress(Byte* src) : m_src(src) 
-	{ 
+	{
+		m_max_size = 0;
 		m_s = m_src; m_startBit = 0; m_bps = 9; 
 		buildMask(m_bps);
 	}
@@ -388,6 +390,7 @@ public:
 	{
 		m_d = dst;
 		m_dsize = 0;
+		m_max_size = max_buf_size;
 		DWORD code = 0, oldcode = 0;
 		while ((code = nextCode()) != EOI_CODE)
 		{
@@ -426,6 +429,8 @@ public:
 	void addToDictionary(const std::vector<Byte>& s)
 	{
 		m_dic.push_back(s);
+		if (m_dsize == m_max_size) return;
+
 		if (m_dic.size() == 511)
 		{
 			m_bps = 10;
@@ -488,6 +493,7 @@ private:
 	Byte* m_s;
 	Byte* m_d;
 	size_t	m_dsize;
+	DWORD m_max_size;
 	int	  m_startBit;
 	int	  m_bps;
 	DWORD	m_mask;
