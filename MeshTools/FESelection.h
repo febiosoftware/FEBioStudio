@@ -62,6 +62,8 @@ public:
 	vec3d GetPivot() { return m_box.Center(); };
 	int Size();
 
+	bool Supports(unsigned int itemFlag) const;
+
 	virtual void Invert() = 0;
 
 	virtual void Translate(vec3d dr) = 0;

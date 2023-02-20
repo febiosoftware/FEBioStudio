@@ -49,6 +49,32 @@ FESelection::~FESelection()
 
 }
 
+bool FESelection::Supports(unsigned int itemFlag) const
+{
+	if (itemFlag == 0) return false;
+
+	bool b = false;
+	switch (Type())
+	{
+	case SELECT_NODES:
+	case SELECT_FE_NODES:
+		b = (itemFlag & FE_NODE_FLAG);
+		break;
+	case SELECT_SURFACES:
+	case SELECT_FE_FACES:
+		b = (itemFlag & (FE_FACE_FLAG | FE_NODE_FLAG));
+		break;
+	case SELECT_CURVES:
+	case SELECT_FE_EDGES:
+		b = (itemFlag & (FE_EDGE_FLAG | FE_NODE_FLAG));
+		break;
+	case SELECT_PARTS:
+		b = (itemFlag & (FE_PART_FLAG | FE_FACE_FLAG | FE_NODE_FLAG));
+		break;
+	}
+	return b;
+}
+
 //////////////////////////////////////////////////////////////////////
 // GObjectSelection
 //////////////////////////////////////////////////////////////////////

@@ -344,29 +344,15 @@ void CMainWindow::on_actionAddIC_triggered()
 			if (name.empty()) name = defaultICName(&fem, pic);
 			pic->SetName(name);
 
-			if (dynamic_cast<FSInitialNodalDOF*>(pic))
+			// figure out the selection
+			FESelection* psel = doc->GetCurrentSelection();
+			if (psel && psel->Size())
 			{
-				// figure out the selection
-				FESelection* psel = doc->GetCurrentSelection();
-				if (psel && psel->Size())
+				int itemType = pic->GetMeshItemType();
+				if (psel->Supports(itemType))
 				{
-					int ntype = psel->Type();
-					switch (ntype)
-					{
-					case SELECT_PARTS:
-					case SELECT_SURFACES:
-					case SELECT_CURVES:
-					case SELECT_NODES:
-					case SELECT_FE_ELEMENTS:
-					case SELECT_FE_FACES:
-					case SELECT_FE_EDGES:
-					case SELECT_FE_NODES:
-					{
-						FEItemListBuilder* items = psel->CreateItemList();
-						pic->SetItemList(items);
-					}
-					break;
-					}
+					FEItemListBuilder* items = psel->CreateItemList();
+					pic->SetItemList(items);
 				}
 			}
 
