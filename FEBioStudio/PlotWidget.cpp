@@ -1692,6 +1692,7 @@ void CCurvePlotWidget::SetLoadCurve(LoadCurve* lc)
 		data->setFillColor(QColor(92, 255, 164));
 		data->setLineWidth(2);
 		data->setMarkerSize(5);
+		repaint();
 	}
 }
 
