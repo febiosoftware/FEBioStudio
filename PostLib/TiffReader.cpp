@@ -316,21 +316,7 @@ bool CTiffImageSource::readImage()
 		{
 			fread(tmp, strip.byteCount, 1, m_fp);
 			bytesRead += strip.byteCount;
-/*
-			FILE* fp = fopen("C:\\Users\\Steve\\Documents\\Tiff\\plane1.txt", "wt");
-			Byte* d = tmp;
-			for (int j = 0; j < 724; ++j)
-			{
-				for (int i = 0; i < 724 * 2; ++i)
-				{
-					int c = *d++;
-					fprintf(fp, "%d ", c);
-				}
-				fprintf(fp, "\n");
-			}
-			fclose(fp);
-*/
-			tmp += stripByteCounts;
+			tmp += strip.byteCount;
 		}
 		else if (compression == TIF_COMPRESSION_LZW)
 		{
@@ -507,19 +493,5 @@ size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size)
 {
 	LZWDecompress lzw(src);
 	size_t n = lzw.decompress(dst, max_dst_size);
-
-/*	FILE* fp = fopen("C:\\Users\\Steve\\Documents\\Tiff\\plane1_decompressed.txt", "wt");
-	Byte* d = dst;
-	for (int j = 0; j < 724; ++j)
-	{
-		for (int i = 0; i < 724 * 2; ++i)
-		{
-			int c = *d++;
-			fprintf(fp, "%d ", c);
-		}
-		fprintf(fp, "\n");
-	}
-	fclose(fp);
-*/
 	return n;
 }
