@@ -93,6 +93,7 @@ public:
 	void InsertInterface(int n, FSInterface* pi);
 	int RemoveInterface(FSInterface* pi);
 	void RemoveAllInterfaces();
+	void ReplaceInterface(FSInterface* pold, FSInterface* pnew);
 
 	// non-linear constraints
 	int Constraints();

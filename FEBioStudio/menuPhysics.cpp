@@ -805,3 +805,40 @@ void CMainWindow::on_actionEditProject_triggered()
 	dlg.exec();
 	UpdatePhysicsUi();
 }
+
+void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)
+{
+	if (pci == nullptr) return;
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Replace Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
+	if (dlg.exec())
+	{
+		FSPairedInterface* pi = FEBio::CreateFEBioClass<FSPairedInterface>(dlg.GetClassID(), &fem); assert(pi);
+		if (pi)
+		{
+			FEBio::InitDefaultProps(pi);
+
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = pci->GetName();
+			pi->SetName(name);
+
+			// swap the surfaces
+			pi->SetPrimarySurface(pci->GetPrimarySurface()); pci->SetPrimarySurface(nullptr);
+			pi->SetSecondarySurface(pci->GetSecondarySurface()); pci->SetSecondarySurface(nullptr);
+
+			// try to map parameters
+			pi->MapParams(*pci);
+
+			// assign it to the correct step
+			FSStep* step = fem.GetStep(pci->GetStep());
+			pi->SetStep(step->GetID());
+			step->ReplaceInterface(pci, pi);
+			UpdateModel(pi);
+		}
+	}
+}

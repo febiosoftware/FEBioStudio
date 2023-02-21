@@ -57,6 +57,8 @@ class FEBioStudioProject;
 class CGLView;
 class CImageSliceView;
 class GObject;
+class FSPairedInterface;
+
 enum class ImageFileType;
 
 namespace Ui {
@@ -621,6 +623,8 @@ public slots:
 	void DeleteAllJobs();
 	void OnDeleteAllLoadControllers();
 	void OnDeleteAllMeshData();
+
+	void OnReplaceContactInterface(FSPairedInterface* pci);
 
 	CGLView* GetGLView();
     CImageSliceView* GetImageSliceView();

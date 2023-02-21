@@ -279,6 +279,12 @@ void FSStep::RemoveAllInterfaces()
 }
 
 //-----------------------------------------------------------------------------
+void FSStep::ReplaceInterface(FSInterface* pold, FSInterface* pnew)
+{
+	imp->m_Int.Replace(pold, pnew);
+}
+
+//-----------------------------------------------------------------------------
 int FSStep::Constraints()
 {
 	return (int) imp->m_NLC.Size();

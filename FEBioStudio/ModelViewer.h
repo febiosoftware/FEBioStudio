@@ -164,7 +164,8 @@ public slots:
 	void OnExportAllMaterials();
 	void OnImportMaterials(QAction*);
 	void OnDeleteAllMaterials();
-	void OnSwapMasterSlave();
+	void OnSwapContactSurfaces();
+	void OnReplaceContactInterface();
 	void OnDeleteAllBC();
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();
