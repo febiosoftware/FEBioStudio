@@ -197,7 +197,18 @@ GObject* CModelDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() { return m_Project.GetFSModel().GetModel().GetBoundingBox(); }
+BOX CModelDocument::GetModelBox() 
+{ 
+	BOX box = m_Project.GetFSModel().GetModel().GetBoundingBox(); 
+
+	// add any image models
+	for (int i = 0; i < ImageModels(); ++i)
+	{
+		box += GetImageModel(i)->GetBoundingBox();
+	}
+
+	return box;
+}
 
 //-----------------------------------------------------------------------------
 void CModelDocument::AddObject(GObject* po)
