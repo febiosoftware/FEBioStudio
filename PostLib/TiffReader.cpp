@@ -115,7 +115,8 @@ public:
 		m_ifd.clear();
 	}
 
-	bool Load();
+	bool Open();
+	bool ReadIFDs();
 	bool readIFD();
 	bool readImage(_TifIfd& ifd);
 
@@ -160,13 +161,40 @@ void byteswap(DWORD& v)
 
 bool CTiffImageSource::Load()
 {
-	if (m->Load() == false) return false;
+	if (m->Open() == false) return false;
+
+	// read all IFDs
+	setCurrentTask("Reading IFDs ...");
+	if (m->ReadIFDs() == false) return false;
+
+	// read the images
+	try {
+		char buf[256] = { 0 };
+		int n = m->m_ifd.size();
+		for (int i = 0; i < n; ++i)
+		{
+			sprintf(buf, "reading image [%d/%d]", i + 1, n);
+			setCurrentTask(buf);
+			setProgress((100.0 * i) / n);
+			if (m->readImage(m->m_ifd[i]) == false) break;
+
+			if (IsCanceled()) return false;
+		}
+	}
+	catch (std::exception e)
+	{
+		return false;
+	}
+	catch (...)
+	{
+		return false;
+	}
+	setProgress(100.0);
+	fclose(m->m_fp);
 
 	// see if we read any image data
 	if (m->m_pd.size() == 0) return false;
 	int nz = m->m_pd.size();
-
-	_TifIfd& ifd = m->m_ifd[0];
 
 	// build the 3D image
 	C3DImage* im = new C3DImage;
@@ -194,7 +222,7 @@ bool CTiffImageSource::Load()
 	return true;
 }
 
-bool CTiffImageSource::Impl::Load()
+bool CTiffImageSource::Impl::Open()
 {
 	if (filename.empty()) return false;
 	const char* szfile = filename.c_str();
@@ -217,6 +245,11 @@ bool CTiffImageSource::Impl::Load()
 	if (m_bigE) byteswap(hdr.IFDOffset);
 	fseek(m_fp, hdr.IFDOffset, SEEK_SET);
 
+	return true;
+}
+
+bool CTiffImageSource::Impl::ReadIFDs()
+{
 	// read the IFDs
 	try {
 		bool bdone = false;
@@ -229,23 +262,6 @@ bool CTiffImageSource::Impl::Load()
 
 	// see if anything was read in
 	if (m_ifd.empty()) return false;
-
-	// read the images
-	try {
-		for (int i=0; i<m_ifd.size(); ++i)
-		{
-			if (readImage(m_ifd[i]) == false) break;
-		}
-	}
-	catch (std::exception e)
-	{
-		return false;
-	}
-	catch (...)
-	{
-		return false;
-	}
-	fclose(m_fp);
 
 	return true;
 }

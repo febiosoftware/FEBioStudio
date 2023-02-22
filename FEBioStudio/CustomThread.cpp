@@ -50,3 +50,13 @@ void CustomThread::stop()
 {
 
 }
+
+QString CustomThread::GetErrorString()
+{
+	return m_error;
+}
+
+void CustomThread::SetErrorString(const QString& s)
+{
+	m_error = s;
+}

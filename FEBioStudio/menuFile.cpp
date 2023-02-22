@@ -1594,7 +1594,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
             imageModel = new Post::CImageModel(nullptr);
             imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
 
-            if(!doc->ImportImage(imageModel))
+            if(!ImportImage(imageModel))
             {
                 delete imageModel;
                 imageModel = nullptr;
@@ -1676,7 +1676,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
 
-		if (!doc->ImportImage(imageModel))
+		if (!ImportImage(imageModel))
 		{
 			delete imageModel;
 			imageModel = nullptr;
@@ -1777,7 +1777,7 @@ void CMainWindow::on_actionImportImageSequence_triggered()
         Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
         imageModel->SetImageSource(new Post::CITKSeriesImageSource(imageModel, stdFiles));
 
-        if(!doc->ImportImage(imageModel))
+        if(!ImportImage(imageModel))
         {
             delete imageModel;
             imageModel = nullptr;

@@ -836,37 +836,6 @@ void CGLDocument::LoadResources(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// import image data
-
-bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
-{
-    static int n = 1;
-
-    CDlgStartImageThread dlg(new CImageReadThread(imgModel), m_wnd);
-
-    if(!dlg.exec())
-    {
-        return false;
-    }
-
-    if(imgModel->GetImageSource()->GetName().empty())
-    {
-        stringstream ss;
-        ss << "ImageModel" << n++;
-        imgModel->SetName(ss.str());
-    }
-    else
-    {
-        imgModel->SetName(imgModel->GetImageSource()->GetName());
-    }
-
-    // add it to the project
-    AddImageModel(imgModel);
-
-    return true;
-}
-
 int CGLDocument::ImageModels() const
 {
 	return (int)m_img.Size();

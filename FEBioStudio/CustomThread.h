@@ -33,6 +33,9 @@ class CustomThread : public QThread
 public:
 	CustomThread();
 
+	QString GetErrorString();
+
+public:
 	virtual bool hasProgress();
 
 	virtual double progress();
@@ -41,6 +44,13 @@ public:
 
 	virtual void stop();
 
+protected:
+	void SetErrorString(const QString& s);
+
 signals:
 	void resultReady(bool);
+	void taskChanged(QString s);
+
+private:
+	QString	m_error;
 };

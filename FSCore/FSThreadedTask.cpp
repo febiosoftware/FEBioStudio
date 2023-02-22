@@ -39,6 +39,12 @@ FSTaskProgress FSThreadedTask::GetProgress()
 void FSThreadedTask::Terminate()
 {
 	m_progress.valid = false;
+	m_progress.canceled = true;
+}
+
+bool FSThreadedTask::IsCanceled() const
+{
+	return m_progress.canceled;
 }
 
 void FSThreadedTask::setProgress(double progress)

@@ -83,10 +83,12 @@ SOFTWARE.*/
 #include "version.h"
 #include "LocalJobProcess.h"
 #include "FEBioThread.h"
+#include "DlgStartThread.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/FELSDYNAimport.h>
 #include <PostLib/FESTLimport.h>
+#include "ImageThread.h"
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
@@ -3467,6 +3469,35 @@ void CMainWindow::CloseWelcomePage()
 	}
 }
 
+bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
+{
+	static int n = 1;
+	CGLDocument* doc = GetGLDocument();
+	if (doc == nullptr) return false;
+
+	CDlgStartThread dlg(this, new CImageReadThread(imgModel));
+
+	if (dlg.exec())
+	{
+		if (imgModel->GetImageSource()->GetName().empty())
+		{
+			std::stringstream ss;
+			ss << "ImageModel" << n++;
+			imgModel->SetName(ss.str());
+		}
+		else
+		{
+			imgModel->SetName(imgModel->GetImageSource()->GetName());
+		}
+
+		// add it to the project
+		doc->AddImageModel(imgModel);
+
+		return true;
+	}
+	return false;
+}
+
 #ifdef HAS_ITK
 	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type)
 	{
@@ -3478,7 +3509,7 @@ void CMainWindow::CloseWelcomePage()
 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
         imageModel->SetImageSource(new Post::CITKImageSource(imageModel, relFile, type));
 
-        if(!doc->ImportImage(imageModel))
+        if(!ImportImage(imageModel))
         {
             delete imageModel;
             imageModel = nullptr;

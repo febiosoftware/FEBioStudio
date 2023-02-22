@@ -68,6 +68,7 @@ namespace Ui {
 namespace Post {
 	class CGLModel;
 	class CGLObject;
+	class CImageModel;
 }
 
 class CMainWindow : public QMainWindow
@@ -316,6 +317,7 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
+	bool ImportImage(Post::CImageModel* imgModel);
 
 public slots:
 	void on_actionNewModel_triggered();

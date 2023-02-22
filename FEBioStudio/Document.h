@@ -322,7 +322,6 @@ public:
 	std::string getModelInfo() const { return m_info; }
 
 public:
-    bool ImportImage(Post::CImageModel* imgModel);
 	int ImageModels() const;
 	virtual void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);

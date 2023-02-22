@@ -32,6 +32,7 @@ enum class ImageFileType;
 #include <string>
 #include <FSCore/FSObjectList.h>
 #include <FSCore/box.h>
+#include <FSCore/FSThreadedTask.h>
 
 class C3DImage;
 
@@ -40,7 +41,7 @@ namespace Post {
 class CImageModel;
 class CGLImageRenderer;
 
-class CImageSource : public FSObject
+class CImageSource : public FSThreadedTask
 {
 public:
     enum Types 
