@@ -89,25 +89,58 @@ typedef struct _TifStrip
 
 size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size);
 
-CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(RAW, imgModel)
+class CTiffImageSource::Impl
 {
-	m_fp = nullptr;
-	m_filename = filename;
+public:
+	Impl() { m_fp = nullptr; }
+	~Impl() { clear(); }
+
+	void clear()
+	{
+		if (m_fp) {
+			fclose(m_fp); m_fp = nullptr;
+		}
+		if (m_pd.empty() == false)
+		{
+			for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i];
+			m_pd.clear();
+		}
+
+		for (int i = 0; i < m_ifd.size(); ++i)
+		{
+			// cleanup
+			_TifIfd& ifd = m_ifd[i];
+			delete[] ifd.TagList;
+		}
+		m_ifd.clear();
+	}
+
+	bool Load();
+	bool readIFD();
+	bool readImage(_TifIfd& ifd);
+
+public:
+	std::string filename;
+	bool	m_bigE = false;
+	FILE* m_fp = nullptr;
+	std::vector<Byte*>	m_pd;
+	std::vector<_TifIfd>	m_ifd;
+	int	m_cx = 0, m_cy = 0;
+	int	m_bits = 0;
+};
+
+CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(RAW, imgModel), m(new CTiffImageSource::Impl)
+{
+	m->filename = filename;
 }
 
-CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel) : CImageSource(RAW, imgModel)
+CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel) : CImageSource(RAW, imgModel), m(new CTiffImageSource::Impl)
 {
-	m_fp = nullptr;
 }
 
 CTiffImageSource::~CTiffImageSource()
 {
-	if (m_fp) fclose(m_fp);
-	if (m_pd.empty() == false)
-	{
-		for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i];
-		m_pd.clear();
-	}
+	delete m;
 }
 
 void byteswap(WORD& v)
@@ -127,8 +160,44 @@ void byteswap(DWORD& v)
 
 bool CTiffImageSource::Load()
 {
-	if (m_filename.empty()) return false;
-	const char* szfile = m_filename.c_str();
+	if (m->Load() == false) return false;
+
+	// see if we read any image data
+	if (m->m_pd.size() == 0) return false;
+	int nz = m->m_pd.size();
+
+	_TifIfd& ifd = m->m_ifd[0];
+
+	// build the 3D image
+	C3DImage* im = new C3DImage;
+	im->Create(m->m_cx, m->m_cy, nz);
+	Byte* buf = im->GetBytes();
+	DWORD imSize = m->m_cx * m->m_cy;
+	for (int i = 0; i < nz; ++i)
+	{
+		if (m->m_bits == 8) memcpy(buf, m->m_pd[i], imSize);
+		else
+		{
+			Byte* b = m->m_pd[i];
+			for (int j = 0; j < imSize; ++j, b += 2) buf[j] = b[0];
+		}
+		buf += imSize;
+	}
+
+	BOX box(0, 0, 0, m->m_cx, m->m_cy, nz);
+	im->SetBoundingBox(box);
+	AssignImage(im);
+
+	// clean up
+	m->clear();
+
+	return true;
+}
+
+bool CTiffImageSource::Impl::Load()
+{
+	if (filename.empty()) return false;
+	const char* szfile = filename.c_str();
 	m_fp = fopen(szfile, "rb");
 	if (m_fp == 0) return false;
 
@@ -148,12 +217,24 @@ bool CTiffImageSource::Load()
 	if (m_bigE) byteswap(hdr.IFDOffset);
 	fseek(m_fp, hdr.IFDOffset, SEEK_SET);
 
-	// read the image
+	// read the IFDs
 	try {
 		bool bdone = false;
-		while (bdone == false)
+		while (bdone == false) bdone = readIFD();
+	}
+	catch (...)
+	{
+		return false;
+	}
+
+	// see if anything was read in
+	if (m_ifd.empty()) return false;
+
+	// read the images
+	try {
+		for (int i=0; i<m_ifd.size(); ++i)
 		{
-			bdone = (readImage() != true);
+			if (readImage(m_ifd[i]) == false) break;
 		}
 	}
 	catch (std::exception e)
@@ -166,49 +247,26 @@ bool CTiffImageSource::Load()
 	}
 	fclose(m_fp);
 
-	// see if we read any image data
-	if (m_pd.size() == 0) return false;
-	int nz = m_pd.size();
-
-	// build the 3D image
-	C3DImage* im = new C3DImage;
-	im->Create(m_cx, m_cy, nz);
-	Byte* buf = im->GetBytes();
-	DWORD imSize = m_cx * m_cy;
-	for (int i = 0; i < nz; ++i)
-	{
-		if (m_bits == 8) memcpy(buf, m_pd[i], imSize);
-		else
-		{
-			Byte* b = m_pd[i];
-			for (int j = 0; j < imSize; ++j, b += 2) buf[j] = b[0];
-		}
-		buf += imSize;
-	}
-
-	// clean up
-	for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i];
-	m_pd.clear();
-
-	BOX box(0, 0, 0, m_cx, m_cy, nz);
-	im->SetBoundingBox(box);
-	AssignImage(im);
-
 	return true;
 }
 
-bool CTiffImageSource::readImage()
+bool CTiffImageSource::Impl::readIFD()
 {
 	// read the IFD
 	TIFIFD ifd;
 	fread(&ifd.NumDirEntries, sizeof(WORD), 1, m_fp);
 	if (m_bigE) byteswap(ifd.NumDirEntries);
-	if ((ifd.NumDirEntries <= 0) || (ifd.NumDirEntries >= 65536)) return false;
+	if ((ifd.NumDirEntries <= 0) || (ifd.NumDirEntries >= 65536))
+	{
+		throw std::domain_error("Invalid number of entries in IFD.");
+	}
 
 	// read the tags
 	ifd.TagList = new _TifTag[ifd.NumDirEntries];
 	int nread = fread(ifd.TagList, sizeof(_TifTag), ifd.NumDirEntries, m_fp);
-	if (nread != ifd.NumDirEntries) { delete[] ifd.TagList; return false; }
+	if (nread != ifd.NumDirEntries)  throw std::domain_error("Fatal error reading IFD.");
+
+	// swap if necessary
 	if (m_bigE)
 	{
 		for (int i = 0; i < ifd.NumDirEntries; ++i)
@@ -230,11 +288,23 @@ bool CTiffImageSource::readImage()
 		}
 	}
 
+	// store the IFD
+	m_ifd.push_back(ifd);
+
 	// read the next IDF offset
 	DWORD nextIFD = 0;
 	fread(&nextIFD, sizeof(DWORD), 1, m_fp);
 	if (m_bigE) byteswap(nextIFD);
 
+	// jump to the next IFD
+	if (nextIFD != 0) fseek(m_fp, nextIFD, SEEK_SET);
+	else return true;
+
+	return false;
+}
+
+bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
+{
 	// process tags
 	DWORD imWidth = 0, imLength = 0;
 	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts, bitsPerSample = 0, compression = 0;
@@ -259,13 +329,11 @@ bool CTiffImageSource::readImage()
 
 	if ((bitsPerSample != 8) && (bitsPerSample != 16))
 	{
-		delete[] ifd.TagList;
 		throw std::domain_error("Only 8 and 16 bit tif supported.");
 	}
 
 	if ((compression != TIF_COMPRESSION_NONE) && (compression != TIF_COMPRESSION_LZW))
 	{
-		delete[] ifd.TagList;
 		throw std::domain_error("Only uncompressed and LZW compressed tiff are supported.");
 	}
 
@@ -330,13 +398,6 @@ bool CTiffImageSource::readImage()
 			tmp += decompressedSize;
 		}
 	}
-
-	// cleanup
-	delete[] ifd.TagList;
-
-	// jump to the next IFD
-	if (nextIFD != 0) fseek(m_fp, nextIFD, SEEK_SET);
-	else return false;
 
 	return true;
 }
