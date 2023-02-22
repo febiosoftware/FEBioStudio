@@ -32,32 +32,6 @@ SOFTWARE.*/
 #include <QTimer>
 
 //=======================================================================================
-CustomThread::CustomThread()
-{
-
-}
-
-bool CustomThread::hasProgress()
-{
-	return false;
-}
-
-double CustomThread::progress()
-{
-	return 0.0;
-}
-
-const char* CustomThread::currentTask()
-{
-	return "";
-}
-
-void CustomThread::stop()
-{
-
-}
-
-//=======================================================================================
 class CDlgStartThreadUI
 {
 public:

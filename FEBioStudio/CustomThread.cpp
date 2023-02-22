@@ -23,32 +23,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <QDialog>
+#include "stdafx.h"
 #include "CustomThread.h"
 
-class CDlgStartThreadUI;
-
-class CDlgStartThread : public QDialog
+CustomThread::CustomThread()
 {
-	Q_OBJECT
 
-public:
-	CDlgStartThread(QWidget* parent, CustomThread* thread);
+}
 
-	void closeEvent(QCloseEvent* ev) override;
+bool CustomThread::hasProgress()
+{
+	return false;
+}
 
-	void accept();
+double CustomThread::progress()
+{
+	return 0.0;
+}
 
-	bool GetReturnCode();
+const char* CustomThread::currentTask()
+{
+	return "";
+}
 
-	void setTask(const QString& taskString);
+void CustomThread::stop()
+{
 
-private slots:
-	void threadFinished(bool b);
-	void checkProgress();
-	void cancel();
-
-private:
-	CDlgStartThreadUI*	ui;
-};
+}

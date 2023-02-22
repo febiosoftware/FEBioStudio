@@ -24,31 +24,23 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <QDialog>
-#include "CustomThread.h"
+#include <QThread>
 
-class CDlgStartThreadUI;
-
-class CDlgStartThread : public QDialog
+class CustomThread : public QThread
 {
 	Q_OBJECT
 
 public:
-	CDlgStartThread(QWidget* parent, CustomThread* thread);
+	CustomThread();
 
-	void closeEvent(QCloseEvent* ev) override;
+	virtual bool hasProgress();
 
-	void accept();
+	virtual double progress();
 
-	bool GetReturnCode();
+	virtual const char* currentTask();
 
-	void setTask(const QString& taskString);
+	virtual void stop();
 
-private slots:
-	void threadFinished(bool b);
-	void checkProgress();
-	void cancel();
-
-private:
-	CDlgStartThreadUI*	ui;
+signals:
+	void resultReady(bool);
 };
