@@ -1774,7 +1774,28 @@ FSPolarFluidAnalysis::FSPolarFluidAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_
     AddDoubleParam(0.001, "ftol", "Fluid dilatation tolerance");
     AddDoubleParam(0.001, "gtol", "Angular fluid velocity tolerance");
     AddDoubleParam(0.01 , "etol", "Energy tolerance");
-    AddDoubleParam(0    , "rtol", "Residual tolerance");
+    AddDoubleParam(0.001, "rtol", "Residual tolerance");
+    AddDoubleParam(0.9  , "lstol", "Line search tolerance");
+    AddDoubleParam(1e-20, "min_residual", "Minumum residual");
+    AddDoubleParam(1e+20, "max_residual", "Maximum residual");
+    AddDoubleParam(0    , "rhoi", "Spectral radius");
+    AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
+    AddChoiceParam(1    , "equation_scheme", "Equation Scheme");
+    
+    m_ops.nanalysis = 1; // set dynamic analysis
+    m_ops.nmatfmt = 0;   // set non-symmetric flag
+}
+
+//-----------------------------------------------------------------------------
+FSFluidSolutesAnalysis::FSFluidSolutesAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_FLUID_SOLUTES)
+{
+    SetTypeString("Fluid-Solutes");
+    
+    AddDoubleParam(0.001, "vtol", "Fluid velocity tolerance");
+    AddDoubleParam(0.001, "ftol", "Fluid dilatation tolerance");
+    AddDoubleParam(0.01 , "ctol", "Solute concentration tolerance");
+    AddDoubleParam(0.01 , "etol", "Energy tolerance");
+    AddDoubleParam(0.001, "rtol", "Residual tolerance");
     AddDoubleParam(0.9  , "lstol", "Line search tolerance");
     AddDoubleParam(1e-20, "min_residual", "Minumum residual");
     AddDoubleParam(1e+20, "max_residual", "Maximum residual");

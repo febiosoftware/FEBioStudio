@@ -339,6 +339,7 @@ void FSProject::InitModules()
 	FEMaterialFactory::AddCategory("heat transfer"       , MODULE_HEAT               , FE_MAT_HEAT_TRANSFER);
 	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID              , FE_MAT_FLUID);
     FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI          , FE_MAT_FLUID_FSI);
+    FEMaterialFactory::AddCategory("fluid-solutes"       , MODULE_FLUID_SOLUTES      , FE_MAT_FLUID_SOLUTES);
     FEMaterialFactory::AddCategory("polar fluid"         , MODULE_POLAR_FLUID        , FE_MAT_POLAR_FLUID);
 	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION , FE_MAT_REACTION_DIFFUSION);
 	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				 , FE_MAT_RIGID);
@@ -474,6 +475,9 @@ void FSProject::InitModules()
     REGISTER_FE_CLASS(FSFixedFluidAngularVelocity     , MODULE_POLAR_FLUID, FEBC_ID      , FE_FIXED_FLUID_ANGULAR_VELOCITY        , "Zero fluid angular velocity");
     REGISTER_FE_CLASS(FSPrescribedFluidAngularVelocity, MODULE_POLAR_FLUID, FEBC_ID      , FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY   , "Prescribed fluid angular velocity");
 
+    // --- FLUID-SOLUTES MODULE ---
+    REGISTER_FE_CLASS(FSFluidSolutesNaturalFlux       , MODULE_FLUID_SOLUTES, FELOAD_ID            , FE_FLUID_SOLUTES_NATURAL_FLUX      , "Solute natural flux");
+
 	// --- REACTION-DIFFUSION MODULE ---
 	REGISTER_FE_CLASS(FSReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FEANALYSIS_ID   , FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");
 	REGISTER_FE_CLASS(FSConcentrationFlux        , MODULE_REACTION_DIFFUSION, FELOAD_ID  , FE_CONCENTRATION_FLUX, "Concentration Flux");
@@ -521,6 +525,7 @@ void FSProject::SetDefaultPlotVariables()
 	{
 		m_plt.AddPlotVariable("displacement", true);
 		m_plt.AddPlotVariable("stress", true);
+        m_plt.AddPlotVariable("relative volume", true);
 	}
 	else if (strcmp(szmod, "biphasic") == 0)
 	{
@@ -529,6 +534,7 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("relative volume", true);
 		m_plt.AddPlotVariable("solid stress", true);
 		m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
 		m_plt.AddPlotVariable("fluid flux", true);
 	}
 	else if (strcmp(szmod, "heat") == 0)
@@ -575,6 +581,23 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
 	}
+    else if (strcmp(szmod, "fluid-solutes") == 0)
+    {
+        m_plt.AddPlotVariable("displacement", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("effective solute concentration", true);
+        m_plt.AddPlotVariable("solute concentration", true);
+        m_plt.AddPlotVariable("solute flux", true);
+    }
     else if (strcmp(szmod, "polar fluid") == 0)
     {
         m_plt.AddPlotVariable("displacement", true);

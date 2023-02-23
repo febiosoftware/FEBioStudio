@@ -210,6 +210,7 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
     else if (atype == "polar fluid") m_nAnalysis = FE_STEP_POLAR_FLUID;
+    else if (atype == "fluid-solutes" ) m_nAnalysis = FE_STEP_FLUID_SOLUTES;
 	else if (atype == "explicit-solid") m_nAnalysis = FE_STEP_EXPLICIT_SOLID;
 	else
 	{
