@@ -435,17 +435,27 @@ class LZWDecompress
 		EOI_CODE = 257
 	};
 
+	typedef std::pair<Byte*, int>	Entry;
+
 public:
 	LZWDecompress(Byte* src) : m_src(src) 
 	{
 		m_max_size = 0;
 		m_s = m_src; m_startBit = 0; m_bps = 9; 
 		buildMask(m_bps);
+		m_pageSize = 0;
 	}
 
-	void writeString(const std::vector<Byte>& entry)
+	~LZWDecompress()
 	{
-		for (const Byte& b : entry) { (*m_d++) = b; m_dsize++; }
+		clearDictionary();
+	}
+
+	void writeString(const Entry& entry)
+	{
+		Byte* b = entry.first;
+		int size = entry.second;
+		for (int i = 0; i < size; ++i) { (*m_d++) = *b++; m_dsize++; }
 		int a = 0;
 	}
 
@@ -470,15 +480,13 @@ public:
 				if (code < m_dic.size())
 				{
 					writeString(m_dic[code]);
-					std::vector<Byte> sc = m_dic[oldcode];
-					sc.push_back(m_dic[code][0]);
+					Entry sc = appendEntry(m_dic[oldcode], m_dic[code].first[0]);
 					addToDictionary(sc);
 					oldcode = code;
 				}
 				else
 				{
-					std::vector<Byte> OutString = m_dic[oldcode];
-					OutString.push_back(m_dic[oldcode][0]);
+					Entry OutString = appendEntry(m_dic[oldcode], m_dic[oldcode].first[0]);
 					writeString(OutString);
 					addToDictionary(OutString);
 					oldcode = code;
@@ -487,29 +495,6 @@ public:
 			assert(m_dsize <= max_buf_size);
 		}
 		return m_dsize;
-	}
-
-	void addToDictionary(const std::vector<Byte>& s)
-	{
-		m_dic.push_back(s);
-		if (m_dsize == m_max_size) return;
-
-		if (m_dic.size() == 511)
-		{
-			m_bps = 10;
-			buildMask(m_bps);
-		}
-		else if (m_dic.size() == 1023)
-		{
-			m_bps = 11;
-			buildMask(m_bps);
-		}
-		else if (m_dic.size() == 2047)
-		{
-			m_bps = 12;
-			buildMask(m_bps);
-		}
-		assert(m_dic.size() < 4096);
 	}
 
 	void buildMask(int n)
@@ -539,17 +524,85 @@ public:
 		return code;
 	}
 
+	Entry appendEntry(const Entry& entry, Byte b)
+	{
+		int newSize = entry.second + 1;
+		Entry tmp = newEntry(newSize);
+		memcpy(tmp.first, entry.first, entry.second);
+		tmp.first[entry.second] = b;
+		return tmp;
+	}
+
+	void addToDictionary(const Entry& s)
+	{
+		m_dic.push_back(s);
+		if (m_dsize == m_max_size) return;
+
+		if (m_dic.size() == 511)
+		{
+			m_bps = 10;
+			buildMask(m_bps);
+		}
+		else if (m_dic.size() == 1023)
+		{
+			m_bps = 11;
+			buildMask(m_bps);
+		}
+		else if (m_dic.size() == 2047)
+		{
+			m_bps = 12;
+			buildMask(m_bps);
+		}
+		assert(m_dic.size() < 4096);
+	}
+
+	void clearDictionary()
+	{
+		for (int i = 0; i < m_pages.size(); ++i) delete[] m_pages[i];
+		m_pages.clear();
+		m_dic.clear();
+		m_pageSize = 0;
+	}
+
+	void addDictionary(Byte b)
+	{
+		Entry entry = newEntry(1);
+		entry.first[0] = b;
+		m_dic.push_back(entry);
+	}
+
 	void initDictionary()
 	{
-		m_dic.clear();
-		for (Byte i = 0; i < 255; ++i) m_dic.push_back({ i });
-		m_dic.push_back({ 255 });
-		m_dic.push_back({ 0 });
-		m_dic.push_back({ 0 });
+		clearDictionary();
+		for (int i = 0; i < 256; ++i) addDictionary(i);
+		addDictionary(0);
+		addDictionary(0);
 		m_bps = 9;
 	}
 
-	const std::vector<Byte>& operator [] (size_t n) { return m_dic[n]; }
+	Entry newEntry(int nsize)
+	{
+		if (nsize > m_pageSize)
+		{
+			// start a new page
+			m_pageSize = DEFAULT_PAGE_SIZE;
+			if (nsize > m_pageSize) m_pageSize = nsize;
+
+			m_currentPage = new Byte[m_pageSize];
+			m_pages.push_back(m_currentPage);
+		}
+
+		Entry entry{ m_currentPage, nsize };
+		m_pageSize -= nsize;
+		m_currentPage += nsize;
+
+		return entry;
+	}
+
+	const Entry& operator [] (size_t n) { return m_dic[n]; }
+
+private:
+	enum { DEFAULT_PAGE_SIZE = 16384 }; // 16K
 
 private:
 	Byte* m_src;
@@ -561,7 +614,11 @@ private:
 	int	  m_bps;
 	DWORD	m_mask;
 
-	std::vector< std::vector<Byte> >	m_dic;
+	std::vector<Entry>	m_dic;
+
+	std::vector<Byte*>	m_pages;
+	Byte* m_currentPage;
+	size_t m_pageSize;
 };
 
 // this function decompresses a LZW compressed strip
