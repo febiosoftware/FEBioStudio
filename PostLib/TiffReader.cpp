@@ -161,11 +161,11 @@ void byteswap(DWORD& v)
 
 bool CTiffImageSource::Load()
 {
-	if (m->Open() == false) return false;
+	if (m->Open() == false) return error("failed opending file.");
 
 	// read all IFDs
 	setCurrentTask("Reading IFDs ...");
-	if (m->ReadIFDs() == false) return false;
+	if (m->ReadIFDs() == false) return error("failed to read IFDs");
 
 	// read the images
 	try {
@@ -183,17 +183,17 @@ bool CTiffImageSource::Load()
 	}
 	catch (std::exception e)
 	{
-		return false;
+		return error(e.what());
 	}
 	catch (...)
 	{
-		return false;
+		return error("unknown exception");
 	}
 	setProgress(100.0);
 	fclose(m->m_fp);
 
 	// see if we read any image data
-	if (m->m_pd.size() == 0) return false;
+	if (m->m_pd.size() == 0) return error("no image data read.");
 	int nz = m->m_pd.size();
 
 	// build the 3D image
@@ -323,7 +323,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 {
 	// process tags
 	DWORD imWidth = 0, imLength = 0;
-	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts, bitsPerSample = 0, compression = 0;
+	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts = 0, bitsPerSample = 0, compression = TIF_COMPRESSION_NONE;
 	int numberOfStrips = 1;
 	for (int i = 0; i < ifd.NumDirEntries; ++i)
 	{

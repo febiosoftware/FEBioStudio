@@ -60,3 +60,19 @@ void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 	setProgress(progress);
 	m_progress.task = sz;
 }
+
+void FSThreadedTask::setErrorString(const std::string& s)
+{
+	m_error = s;
+}
+
+bool FSThreadedTask::error(const std::string& s)
+{
+	setErrorString(s);
+	return false;
+}
+
+std::string FSThreadedTask::getErrorString() const
+{
+	return m_error;
+}

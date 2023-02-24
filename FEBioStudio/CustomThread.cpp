@@ -53,10 +53,15 @@ void CustomThread::stop()
 
 QString CustomThread::GetErrorString()
 {
-	return m_error;
+	m_mutex.lock();
+	QString err = m_error;
+	m_mutex.unlock();
+	return err;
 }
 
 void CustomThread::SetErrorString(const QString& s)
 {
+	m_mutex.lock();
 	m_error = s;
+	m_mutex.unlock();
 }

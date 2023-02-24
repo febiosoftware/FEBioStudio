@@ -48,9 +48,15 @@ void CImageReadThread::run()
 	bool success = true;
 	try
 	{
-		if(!m_imgModel->Load())
+		Post::CImageSource* src = m_imgModel->GetImageSource();
+		if (src)
 		{
-			bool success = false;
+			success = src->Load();
+			if (success == false) SetErrorString(QString::fromStdString(src->getErrorString()));
+		}
+		else 
+		{
+			success = false;
 			SetErrorString("Failed importing image data.");
 		}
 	}

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QThread>
+#include <QMutex>
 
 class CustomThread : public QThread
 {
@@ -53,4 +54,5 @@ signals:
 
 private:
 	QString	m_error;
+	QMutex	m_mutex;
 };
