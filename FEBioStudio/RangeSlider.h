@@ -63,4 +63,5 @@ private:
 	double	m_min, m_max;
 	double	m_val1, m_val2;
 	int		m_sel;
+	QPoint	m_p0;
 };

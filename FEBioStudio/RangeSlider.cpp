@@ -59,14 +59,14 @@ QRect CRangeSlider::selectionRect()
 
 QRect CRangeSlider::leftHandleRect()
 {
-	QRect rt = rect();
+	QRect rt = grooveRect();
 	int x1 = rt.left() + rt.width() * ((m_val1 - m_min) / (m_max - m_min));
 	return QRect(x1 - handleWidth / 2, rt.center().y() - handleHeight / 2, handleWidth, handleHeight);
 }
 
 QRect CRangeSlider::rightHandleRect()
 {
-	QRect rt = rect();
+	QRect rt = grooveRect();
 	int x2 = rt.left() + rt.width() * ((m_val2 - m_min) / (m_max - m_min));
 	return QRect(x2 - handleWidth / 2, rt.center().y() - handleHeight / 2, handleWidth, handleHeight);
 }
@@ -121,6 +121,7 @@ void CRangeSlider::mousePressEvent(QMouseEvent* ev)
 	ev->accept();
 
 	QPoint pt = ev->pos();
+	m_p0 = pt;
 
 	// see if a handle is selected 
 	QRect rt1 = leftHandleRect();
@@ -136,6 +137,13 @@ void CRangeSlider::mousePressEvent(QMouseEvent* ev)
 		m_sel = 1;
 		return;
 	}
+
+	QRect rts = selectionRect();
+	if (rts.contains(pt))
+	{
+		m_sel = 2;
+		return;
+	}
 }
 
 void CRangeSlider::mouseMoveEvent(QMouseEvent* ev)
@@ -146,19 +154,33 @@ void CRangeSlider::mouseMoveEvent(QMouseEvent* ev)
 
 	int x = ev->pos().x();
 
+	QRect rt = grooveRect();
 	if (m_sel == 0)
 	{
-		QRect rt = grooveRect();
 		double f = (double)(x - rt.left()) / (double)rt.width();
 		double newVal = m_min + f * (m_max - m_min);
 		setLeftPosition(newVal);
 	}
 	else if (m_sel == 1)
 	{
-		QRect rt = grooveRect();
 		double f = (double)(x - rt.left()) / (double)rt.width();
 		double newVal = m_min + f * (m_max - m_min);
 		setRightPosition(newVal);
+	}
+	else if (m_sel == 2)
+	{
+		int xp = m_p0.x();
+		int dx = x - xp;
+		double df = (double) dx / (double) rt.width();
+
+		double v1 = m_val1 + df;
+		double v2 = m_val2 + df;
+		if ((v1 > m_min) && (v2 < m_max))
+		{
+			setPositions(v1, v2);
+		}
+
+		m_p0 = ev->pos();
 	}
 }
 
