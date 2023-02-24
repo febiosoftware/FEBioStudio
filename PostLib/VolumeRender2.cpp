@@ -320,7 +320,7 @@ void CVolumeRender2::Render(CGLContext& rc)
 	float lum = vs->GetFloatValue(CImageViewSettings::LUM);
 	int cmap = (int) GetIntValue(COLOR_MAP);
 
-	GLColor col = HSV2RGB(hue, sat, lum);
+	GLColor col = HSV2RGB(360.0*hue, sat, lum);
 
 	glUniform1f(IminID, Imin);
 	glUniform1f(ImaxID, Imax);
