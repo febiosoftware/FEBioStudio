@@ -37,6 +37,8 @@ CRangeSlider::CRangeSlider(QWidget* parent) : QWidget(parent)
 	m_val2 = 0.7;
 
 	m_sel = -1;
+
+	m_selColor = QColor::fromRgb(0, 128, 255);
 }
 
 const int handleWidth  = 11;
@@ -77,8 +79,6 @@ void CRangeSlider::paintEvent(QPaintEvent* event)
 
 	QPainter painter(this);
 
-	QColor selColor(0, 128, 255);
-
 	// draw the background groove
 	QRect groove = grooveRect();
 	painter.setPen(QPen(QColor::fromRgb(64,64,64)));
@@ -86,7 +86,7 @@ void CRangeSlider::paintEvent(QPaintEvent* event)
 
 	// draw the selection
 	QRect selRect = selectionRect();
-	painter.setBrush(QBrush(selColor));
+	painter.setBrush(QBrush(m_selColor));
 	painter.drawRect(selRect);
 
 	// draw left handle
@@ -265,12 +265,18 @@ double CRangeSlider::rightPosition() const { return m_val2; }
 QSize CRangeSlider::sizeHint() const
 {
 	const int sliderLength = 84;
-	return QSize(sliderLength, 2 * handleHeight);
+	return QSize(sliderLength, 3 * handleHeight / 2);
 }
 
 QSize CRangeSlider::minimumSizeHint() const
 {
 	QSize s = sizeHint();
-	s.setWidth(2 * handleWidth + 10);
+	s.setWidth(3 * handleWidth / 2);
 	return s;
+}
+
+void CRangeSlider::setSelectionColor(QColor c)
+{
+	m_selColor = c;
+	repaint();
 }

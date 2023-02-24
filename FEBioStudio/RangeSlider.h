@@ -38,6 +38,8 @@ public:
 	void setPositions(double leftVal, double rightVal);
 	void setRange(double minVal, double maxVal);
 
+	void setSelectionColor(QColor c);
+
 	double leftPosition() const;
 	double rightPosition() const;
 
@@ -64,4 +66,5 @@ private:
 	double	m_val1, m_val2;
 	int		m_sel;
 	QPoint	m_p0;
+	QColor	m_selColor;
 };

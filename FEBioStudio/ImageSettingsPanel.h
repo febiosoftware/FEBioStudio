@@ -67,6 +67,8 @@ public:
 
 	~CImageParam2();
 
+	void setColor(QColor c);
+
 public slots:
 	void updateSpinBox();
 	void updateSlider();

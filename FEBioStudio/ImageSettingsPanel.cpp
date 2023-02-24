@@ -156,6 +156,11 @@ CImageParam2::~CImageParam2()
 	delete ui;
 }
 
+void CImageParam2::setColor(QColor c)
+{
+	ui->slider->setSelectionColor(c);
+}
+
 void CImageParam2::updateSlider()
 {
 	double val1 = ui->slider->leftPosition();
@@ -234,6 +239,10 @@ public:
 			::CImageParam2* clipx     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPX_MIN), &settings->GetParam(CImageViewSettings::CLIPX_MAX));
 			::CImageParam2* clipy     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPY_MIN), &settings->GetParam(CImageViewSettings::CLIPY_MAX));
 			::CImageParam2* clipz     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
+
+			clipx->setColor(QColor::fromRgb(255, 0, 0));
+			clipy->setColor(QColor::fromRgb(0, 255, 0));
+			clipz->setColor(QColor::fromRgb(0, 0, 255));
 
 			addWidget(scale, "Alpha scale");
 			addWidget(gamma, "Gamma correction");
