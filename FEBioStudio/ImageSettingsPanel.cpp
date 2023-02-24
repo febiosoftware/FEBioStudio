@@ -231,6 +231,9 @@ public:
 
 			::CImageParam2* intensity = new ::CImageParam2(&settings->GetParam(CImageViewSettings::MIN_INTENSITY), &settings->GetParam(CImageViewSettings::MAX_INTENSITY));
 			::CImageParam2* alphaRng  = new ::CImageParam2(&settings->GetParam(CImageViewSettings::MIN_ALPHA), &settings->GetParam(CImageViewSettings::MAX_ALPHA));
+			::CImageParam2* clipx     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPX_MIN), &settings->GetParam(CImageViewSettings::CLIPX_MAX));
+			::CImageParam2* clipy     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPY_MIN), &settings->GetParam(CImageViewSettings::CLIPY_MAX));
+			::CImageParam2* clipz     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
 
 			addWidget(scale, "Alpha scale");
 			addWidget(gamma, "Gamma correction");
@@ -240,6 +243,9 @@ public:
 
 			addWidget(intensity, "Intensity");
 			addWidget(alphaRng , "Alpha range");
+			addWidget(clipx, "Clip X");
+			addWidget(clipy, "Clip Y");
+			addWidget(clipz, "Clip Z");
         }
     }
 

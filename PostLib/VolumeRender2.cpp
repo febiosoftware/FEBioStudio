@@ -360,6 +360,28 @@ void CVolumeRender2::Render(CGLContext& rc)
 		if (ti > tmax) tmax = ti;
 	}
 
+	double g[3][2] = {
+		{vs->GetFloatValue(CImageViewSettings::CLIPX_MIN), vs->GetFloatValue(CImageViewSettings::CLIPX_MAX)},
+		{vs->GetFloatValue(CImageViewSettings::CLIPY_MIN), vs->GetFloatValue(CImageViewSettings::CLIPY_MAX)},
+		{vs->GetFloatValue(CImageViewSettings::CLIPZ_MIN), vs->GetFloatValue(CImageViewSettings::CLIPZ_MAX)}
+	};
+
+	GLdouble clip[6][4] = {
+		{ 1, 0, 0, -(r0.x + g[0][0]*(r1.x - r0.x))},
+		{-1, 0, 0,  (r0.x + g[0][1]*(r1.x - r0.x))},
+		{ 0, 1, 0, -(r0.y + g[1][0]*(r1.y - r0.y))},
+		{ 0,-1, 0,  (r0.y + g[1][1]*(r1.y - r0.y))},
+		{ 0, 0, 1, -(r0.z + g[2][0]*(r1.z - r0.z))},
+		{ 0, 0,-1,  (r0.z + g[2][1]*(r1.z - r0.z))},
+	};
+
+	glClipPlane(GL_CLIP_PLANE0, clip[0]); glEnable(GL_CLIP_PLANE0);
+	glClipPlane(GL_CLIP_PLANE1, clip[1]); glEnable(GL_CLIP_PLANE1);
+	glClipPlane(GL_CLIP_PLANE2, clip[2]); glEnable(GL_CLIP_PLANE2);
+	glClipPlane(GL_CLIP_PLANE3, clip[3]); glEnable(GL_CLIP_PLANE3);
+	glClipPlane(GL_CLIP_PLANE4, clip[4]); glEnable(GL_CLIP_PLANE4);
+	glClipPlane(GL_CLIP_PLANE5, clip[5]); glEnable(GL_CLIP_PLANE5);
+
 	// Prepare for rendering of the scene
 	double alphaScale = GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::ALPHA_SCALE);
 	glColor4ub(col.r, col.g, col.b, (GLubyte) (255.0*alphaScale));
@@ -421,6 +443,13 @@ void CVolumeRender2::Render(CGLContext& rc)
 	glEnd();
 
 	glUseProgram(0);
+
+	glDisable(GL_CLIP_PLANE0);
+	glDisable(GL_CLIP_PLANE1);
+	glDisable(GL_CLIP_PLANE2);
+	glDisable(GL_CLIP_PLANE3);
+	glDisable(GL_CLIP_PLANE4);
+	glDisable(GL_CLIP_PLANE5);
 
 	glPopAttrib();
 }

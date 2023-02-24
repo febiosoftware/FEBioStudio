@@ -37,5 +37,11 @@ CImageViewSettings::CImageViewSettings()
 	AddDoubleParam(0.0, "Hue")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(0.0, "Saturation")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(1.0, "Luminance")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.0, "clipx_min")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(1.0, "clipx_max")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.0, "clipy_min")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(1.0, "clipy_max")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.0, "clipz_min")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(1.0, "clipz_max")->SetFloatRange(0.0, 1.0);
 }
 
