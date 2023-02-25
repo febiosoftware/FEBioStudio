@@ -51,21 +51,14 @@ public:
         delete slider;
     }
     
-    void setup(::CImageParam* parent, Param* param)
+    void setup(::CImageParam* parent)
     {
-        m_param = param;
+        m_param = nullptr;
 
         QHBoxLayout* layout = new QHBoxLayout;
         layout->setContentsMargins(0,0,0,0);
 
         layout->addWidget(slider = new CDoubleSlider);
-
-        if(param->GetFloatMax() != 0)
-        {
-            slider->setRange(param->GetFloatMin(), param->GetFloatMax());
-        }
-
-        slider->setValue(m_param->GetFloatValue());
 
         QObject::connect(slider, &CDoubleSlider::valueChanged, parent, &::CImageParam::updateParam);
 
@@ -73,9 +66,23 @@ public:
     }
 };
 
-CImageParam::CImageParam(Param* param) : ui(new Ui::CImageParam)
+CImageParam::CImageParam() : ui(new Ui::CImageParam)
 {
-    ui->setup(this, param);
+    ui->setup(this);
+}
+
+void CImageParam::setParam(Param* param)
+{
+	ui->m_param = param;
+	if (param == nullptr) return;
+
+	ui->slider->blockSignals(true);
+	if (param->GetFloatMax() != 0)
+	{
+		ui->slider->setRange(param->GetFloatMin(), param->GetFloatMax());
+	}
+	ui->slider->setValue(param->GetFloatValue());
+	ui->slider->blockSignals(false);
 }
 
 CImageParam::~CImageParam()
@@ -85,8 +92,8 @@ CImageParam::~CImageParam()
 
 void CImageParam::updateParam()
 {
+	if (ui->m_param == nullptr) return;
     ui->m_param->SetFloatValue(ui->slider->getValue());
-
     emit paramChanged();
 }
 //=======================================================================================
@@ -108,10 +115,10 @@ public:
 		delete slider;
 	}
 
-	void setup(::CImageParam2* parent, Param* param1, Param* param2)
+	void setup(::CImageParam2* parent)
 	{
-		m_param1 = param1;
-		m_param2 = param2;
+		m_param1 = nullptr;
+		m_param2 = nullptr;
 
 		QHBoxLayout* layout = new QHBoxLayout;
 		layout->setContentsMargins(0, 0, 0, 0);
@@ -119,22 +126,6 @@ public:
 		layout->addWidget(spinLeft  = new QDoubleSpinBox);
 		layout->addWidget(slider    = new CRangeSlider);
 		layout->addWidget(spinRight = new QDoubleSpinBox);
-
-		double vmin = param1->GetFloatMin();
-		double vmax = param1->GetFloatMax();
-		double val1 = param1->GetFloatValue();
-		double val2 = param2->GetFloatValue();
-
-		spinLeft->setRange(vmin, vmax); 
-		spinLeft->setSingleStep((vmax - vmin) / 100);
-		spinLeft->setValue(val1);
-
-		spinRight->setRange(vmin, vmax); 
-		spinRight->setSingleStep((vmax - vmin) / 100);
-		spinRight->setValue(val2);
-
-		slider->setRange(vmin, vmax);
-		slider->setPositions(val1, val2);
 
 		QObject::connect(slider, &CRangeSlider::positionChanged, parent, &::CImageParam2::updateSlider);
 		QObject::connect(spinLeft , &QDoubleSpinBox::valueChanged, parent, &::CImageParam2::updateSpinBox);
@@ -146,9 +137,38 @@ public:
 	}
 };
 
-CImageParam2::CImageParam2(Param* param1, Param* param2) : ui(new Ui::CImageParam2)
+CImageParam2::CImageParam2() : ui(new Ui::CImageParam2)
 {
-	ui->setup(this, param1, param2);
+	ui->setup(this);
+}
+
+void CImageParam2::setParams(Param* param1, Param* param2)
+{
+	ui->m_param1 = param1;
+	ui->m_param2 = param2;
+	if ((param1 == nullptr) || (param2 == nullptr)) return;
+
+	double vmin = param1->GetFloatMin();
+	double vmax = param1->GetFloatMax();
+	double val1 = param1->GetFloatValue();
+	double val2 = param2->GetFloatValue();
+
+	ui->spinLeft->blockSignals(true);
+	ui->spinLeft->setRange(vmin, vmax);
+	ui->spinLeft->setSingleStep((vmax - vmin) / 100);
+	ui->spinLeft->setValue(val1);
+	ui->spinLeft->blockSignals(false);
+
+	ui->spinRight->blockSignals(true);
+	ui->spinRight->setRange(vmin, vmax);
+	ui->spinRight->setSingleStep((vmax - vmin) / 100);
+	ui->spinRight->setValue(val2);
+	ui->spinRight->blockSignals(false);
+
+	ui->slider->blockSignals(true);
+	ui->slider->setRange(vmin, vmax);
+	ui->slider->setPositions(val1, val2);
+	ui->slider->blockSignals(false);
 }
 
 CImageParam2::~CImageParam2()
@@ -163,6 +183,8 @@ void CImageParam2::setColor(QColor c)
 
 void CImageParam2::updateSlider()
 {
+	if ((ui->m_param1 == nullptr) || (ui->m_param2 == nullptr)) return;
+
 	double val1 = ui->slider->leftPosition();
 	double val2 = ui->slider->rightPosition();
 	ui->m_param1->SetFloatValue(val1);
@@ -198,7 +220,17 @@ public:
     QFormLayout* leftPanel;
     QFormLayout* rightPanel;
 
-	std::vector<QWidget*>	m_children;
+	::CImageParam* scale;
+	::CImageParam* gamma;
+	::CImageParam* hue;
+	::CImageParam* sat;
+	::CImageParam* lum;
+
+	::CImageParam2* intensity;
+	::CImageParam2* alphaRng;
+	::CImageParam2* clipx;
+	::CImageParam2* clipy;
+	::CImageParam2* clipz;
 
 public:
     void setup(::CImageSettingsPanel* panel)
@@ -212,63 +244,79 @@ public:
 		layout->addLayout(leftPanel);
 		layout->addLayout(rightPanel);
 
+		scale = new ::CImageParam();
+		gamma = new ::CImageParam();
+		hue   = new ::CImageParam();
+		sat   = new ::CImageParam();
+		lum   = new ::CImageParam();
+
+		intensity = new ::CImageParam2();
+		alphaRng = new ::CImageParam2();
+		clipx = new ::CImageParam2();
+		clipy = new ::CImageParam2();
+		clipz = new ::CImageParam2();
+
+		clipx->setColor(QColor::fromRgb(255, 0, 0));
+		clipy->setColor(QColor::fromRgb(0, 255, 0));
+		clipz->setColor(QColor::fromRgb(0, 0, 255));
+
+		addWidget(scale, "Alpha scale");
+		addWidget(gamma, "Gamma correction");
+		addWidget(hue, "Hue");
+		addWidget(sat, "Saturation");
+		addWidget(lum, "Luminance");
+
+		addWidget(intensity, "Intensity");
+		addWidget(alphaRng, "Alpha range");
+		addWidget(clipx, "Clip X");
+		addWidget(clipy, "Clip Y");
+		addWidget(clipz, "Clip Z");
+
         panel->setLayout(layout);
     }
 
     void setImageModel(Post::CImageModel* img)
     {
-        for(auto w : m_children)
-        {
-            delete w;
-        }
-
-        m_children.clear();
-
         if(img)
         {
             CImageViewSettings* settings = img->GetViewSettings();
 
-			::CImageParam* scale = new ::CImageParam(&settings->GetParam(CImageViewSettings::ALPHA_SCALE));
-			::CImageParam* gamma = new ::CImageParam(&settings->GetParam(CImageViewSettings::GAMMA));
-			::CImageParam* hue   = new ::CImageParam(&settings->GetParam(CImageViewSettings::HUE));
-			::CImageParam* sat   = new ::CImageParam(&settings->GetParam(CImageViewSettings::SAT));
-			::CImageParam* lum   = new ::CImageParam(&settings->GetParam(CImageViewSettings::LUM));
+			scale->setParam(&settings->GetParam(CImageViewSettings::ALPHA_SCALE));
+			gamma->setParam(&settings->GetParam(CImageViewSettings::GAMMA));
+			hue  ->setParam(&settings->GetParam(CImageViewSettings::HUE));
+			sat  ->setParam(&settings->GetParam(CImageViewSettings::SAT));
+			lum  ->setParam(&settings->GetParam(CImageViewSettings::LUM));
 
-			::CImageParam2* intensity = new ::CImageParam2(&settings->GetParam(CImageViewSettings::MIN_INTENSITY), &settings->GetParam(CImageViewSettings::MAX_INTENSITY));
-			::CImageParam2* alphaRng  = new ::CImageParam2(&settings->GetParam(CImageViewSettings::MIN_ALPHA), &settings->GetParam(CImageViewSettings::MAX_ALPHA));
-			::CImageParam2* clipx     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPX_MIN), &settings->GetParam(CImageViewSettings::CLIPX_MAX));
-			::CImageParam2* clipy     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPY_MIN), &settings->GetParam(CImageViewSettings::CLIPY_MAX));
-			::CImageParam2* clipz     = new ::CImageParam2(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
-
-			clipx->setColor(QColor::fromRgb(255, 0, 0));
-			clipy->setColor(QColor::fromRgb(0, 255, 0));
-			clipz->setColor(QColor::fromRgb(0, 0, 255));
-
-			addWidget(scale, "Alpha scale");
-			addWidget(gamma, "Gamma correction");
-			addWidget(hue  , "Hue");
-			addWidget(sat  , "Saturation");
-			addWidget(lum  , "Luminance");
-
-			addWidget(intensity, "Intensity");
-			addWidget(alphaRng , "Alpha range");
-			addWidget(clipx, "Clip X");
-			addWidget(clipy, "Clip Y");
-			addWidget(clipz, "Clip Z");
+			intensity->setParams(&settings->GetParam(CImageViewSettings::MIN_INTENSITY), &settings->GetParam(CImageViewSettings::MAX_INTENSITY));
+			alphaRng ->setParams(&settings->GetParam(CImageViewSettings::MIN_ALPHA), &settings->GetParam(CImageViewSettings::MAX_ALPHA));
+			clipx    ->setParams(&settings->GetParam(CImageViewSettings::CLIPX_MIN), &settings->GetParam(CImageViewSettings::CLIPX_MAX));
+			clipy    ->setParams(&settings->GetParam(CImageViewSettings::CLIPY_MIN), &settings->GetParam(CImageViewSettings::CLIPY_MAX));
+			clipz    ->setParams(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
         }
+		else
+		{
+			scale->setParam(nullptr);
+			gamma->setParam(nullptr);
+			hue->setParam(nullptr);
+			sat->setParam(nullptr);
+			lum->setParam(nullptr);
+			intensity->setParams(nullptr, nullptr);
+			alphaRng->setParams(nullptr, nullptr);
+			clipx->setParams(nullptr, nullptr);
+			clipy->setParams(nullptr, nullptr);
+			clipz->setParams(nullptr, nullptr);
+		}
     }
 
 	void addWidget(::CImageParam* w, const QString& name)
 	{
 		leftPanel->addRow(name, w);
-		m_children.push_back(w);
 		QObject::connect(w, &::CImageParam::paramChanged, m_panel, &::CImageSettingsPanel::ParamChanged);
 	}
 
 	void addWidget(::CImageParam2* w, const QString& name)
 	{
 		rightPanel->addRow(name, w);
-		m_children.push_back(w);
 		QObject::connect(w, &::CImageParam2::paramChanged, m_panel, &::CImageSettingsPanel::ParamChanged);
 	}
 

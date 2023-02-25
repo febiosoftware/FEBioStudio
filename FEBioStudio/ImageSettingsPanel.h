@@ -44,7 +44,9 @@ class CImageParam : public QWidget
     Q_OBJECT
 
 public:
-    CImageParam(Param* param);
+    CImageParam();
+
+	void setParam(Param* param);
 
     ~CImageParam();
 
@@ -63,7 +65,8 @@ class CImageParam2 : public QWidget
 	Q_OBJECT
 
 public:
-	CImageParam2(Param* param1, Param* param2);
+	CImageParam2();
+	void setParams(Param* param1, Param* param2);
 
 	~CImageParam2();
 
