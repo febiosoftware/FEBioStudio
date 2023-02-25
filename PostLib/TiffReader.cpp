@@ -59,6 +59,21 @@ enum TifCompression {
 	TIF_COMPRESSION_JP2000 = 34712
 };
 
+enum TifPhotometric {
+	PHOTOMETRIC_MINISWHITE = 0,
+	PHOTOMETRIC_MINISBLACK = 1,
+	PHOTOMETRIC_RGB = 2,
+	PHOTOMETRIC_PALETTE = 3,
+	PHOTOMETRIC_MASK = 4,
+	PHOTOMETRIC_SEPARATED = 5,
+	PHOTOMETRIC_YCBCR = 6,
+	PHOTOMETRIC_CIELAB = 8,
+	PHOTOMETRIC_ICCLAB = 9,
+	PHOTOMETRIC_ITULAB = 10,
+	PHOTOMETRIC_LOGL = 32844,
+	PHOTOMETRIC_LOGLUV = 32845
+};
+
 typedef struct _TiffHeader
 {
 	WORD  Identifier;  /* Byte-order Identifier */
@@ -89,6 +104,15 @@ typedef struct _TifStrip
 
 size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size);
 
+typedef struct _TiffImage
+{
+	DWORD	nx;
+	DWORD	ny;
+	WORD	photometric;
+	WORD	bps;
+	Byte* pd;
+};
+
 class CTiffImageSource::Impl
 {
 public:
@@ -102,7 +126,7 @@ public:
 		}
 		if (m_pd.empty() == false)
 		{
-			for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i];
+			for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i].pd;
 			m_pd.clear();
 		}
 
@@ -124,10 +148,8 @@ public:
 	std::string filename;
 	bool	m_bigE = false;
 	FILE* m_fp = nullptr;
-	std::vector<Byte*>	m_pd;
+	std::vector<_TiffImage>	m_pd;
 	std::vector<_TifIfd>	m_ifd;
-	int	m_cx = 0, m_cy = 0;
-	int	m_bits = 0;
 };
 
 CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(RAW, imgModel), m(new CTiffImageSource::Impl)
@@ -196,23 +218,39 @@ bool CTiffImageSource::Load()
 	if (m->m_pd.size() == 0) return error("no image data read.");
 	int nz = m->m_pd.size();
 
+	int nx = m->m_pd[0].nx;
+	int ny = m->m_pd[0].ny;
+
 	// build the 3D image
 	C3DImage* im = new C3DImage;
-	im->Create(m->m_cx, m->m_cy, nz);
+	im->Create(nx, ny, nz);
 	Byte* buf = im->GetBytes();
-	DWORD imSize = m->m_cx * m->m_cy;
+	DWORD imSize = nx * ny;
 	for (int i = 0; i < nz; ++i)
 	{
-		if (m->m_bits == 8) memcpy(buf, m->m_pd[i], imSize);
+		_TiffImage& im = m->m_pd[i];
+		if (im.bps == 8)
+		{
+			memcpy(buf, im.pd, imSize);
+
+			if (im.photometric == PHOTOMETRIC_MINISWHITE)
+			{
+				for (int n = 0; n < imSize; ++n)
+				{
+					Byte b = buf[n];
+					buf[n] = 255 - b;
+				}
+			}
+		}
 		else
 		{
-			Byte* b = m->m_pd[i];
+			Byte* b = im.pd;
 			for (int j = 0; j < imSize; ++j, b += 2) buf[j] = b[0];
 		}
 		buf += imSize;
 	}
 
-	BOX box(0, 0, 0, m->m_cx, m->m_cy, nz);
+	BOX box(0, 0, 0, nx, ny, nz);
 	im->SetBoundingBox(box);
 	AssignImage(im);
 
@@ -325,6 +363,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	DWORD imWidth = 0, imLength = 0;
 	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts = 0, bitsPerSample = 0, compression = TIF_COMPRESSION_NONE;
 	int numberOfStrips = 1;
+	int photometric = PHOTOMETRIC_MINISBLACK;
 	for (int i = 0; i < ifd.NumDirEntries; ++i)
 	{
 		TIFTAG& t = ifd.TagList[i];
@@ -334,14 +373,12 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 		case 257: imLength = t.DataOffset; break;
 		case 258: bitsPerSample = t.DataOffset; break;
 		case 259: compression = t.DataOffset; break;
+		case 262: photometric = t.DataOffset; break;
 		case 278: rowsPerStrip = t.DataOffset; break;
 		case 273: { stripOffsets = t.DataOffset; numberOfStrips = t.DataCount; break; }
 		case 279: stripByteCounts = t.DataOffset; break;
 		}
 	}
-	m_cx = imWidth;
-	m_cy = imLength;
-	m_bits = bitsPerSample;
 
 	if ((bitsPerSample != 8) && (bitsPerSample != 16))
 	{
@@ -351,6 +388,12 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	if ((compression != TIF_COMPRESSION_NONE) && (compression != TIF_COMPRESSION_LZW))
 	{
 		throw std::domain_error("Only uncompressed and LZW compressed tiff are supported.");
+	}
+
+	if (stripByteCounts == 0)
+	{
+		if (compression == TIF_COMPRESSION_NONE) stripByteCounts = imWidth * imLength * (bitsPerSample == 16 ? 2 : 1);
+		else throw std::domain_error("Invalid stripbyte count.");
 	}
 
 	// find the strips
@@ -386,7 +429,13 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	DWORD imSize = imWidth * imLength * (bitsPerSample == 16 ? 2 : 1);
 	Byte* buf = new Byte[imSize];
 	Byte* tmp = buf;
-	m_pd.push_back(buf);
+	_TiffImage im;
+	im.nx = imWidth;
+	im.ny = imWidth;
+	im.bps = bitsPerSample;
+	im.pd = buf;
+	im.photometric = photometric;
+	m_pd.push_back(im);
 
 	// This assumes only one strip per image!!
 	DWORD bytesRead = 0;
