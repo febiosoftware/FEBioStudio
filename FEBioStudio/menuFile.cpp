@@ -1668,8 +1668,10 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 	{
 //		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
 
+		std::string fileName = filedlg.selectedFiles()[0].toStdString();
+
 		// we pass the relative path to the image model
-		string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
+		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
 
 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
@@ -1680,6 +1682,9 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 			imageModel = nullptr;
 			return;
 		}
+
+		// take the name from the source
+		imageModel->SetName(FSDir::fileName(fileName));
 
 		Update(0, true);
 		ZoomTo(imageModel->GetBoundingBox());
