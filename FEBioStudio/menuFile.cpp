@@ -121,8 +121,7 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/TiffReader.h>
 #include <sstream>
 #include "PostObject.h"
@@ -1610,8 +1609,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 			// only for model docs
 			if (dynamic_cast<CModelDocument*>(doc))
 			{
-//				Post::CVolRender* vr = new Post::CVolRender(imageModel);
-				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 				vr->Create();
 				imageModel->AddImageRenderer(vr);
 
@@ -1689,7 +1687,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 		// only for model docs
 		if (dynamic_cast<CModelDocument*>(doc))
 		{
-			Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 			vr->Create();
 			imageModel->AddImageRenderer(vr);
 
@@ -1791,7 +1789,7 @@ void CMainWindow::on_actionImportImageSequence_triggered()
             // only for model docs
             if (dynamic_cast<CModelDocument*>(doc))
             {
-                Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+                Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
                 vr->Create();
                 imageModel->AddImageRenderer(vr);
 

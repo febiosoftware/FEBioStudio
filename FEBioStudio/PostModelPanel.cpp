@@ -53,8 +53,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <ImageLib/3DImage.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
@@ -867,13 +866,7 @@ void CPostModelPanel::BuildModelTree()
 			{
 				Post::CGLImageRenderer* render = img->GetImageRenderer(j);
 
-				Post::CVolRender* volRender = dynamic_cast<Post::CVolRender*>(render);
-				if (volRender)
-				{
-					ui->AddItem(pi1, volRender, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender));
-				}
-
-				Post::CVolumeRender2* volRender2 = dynamic_cast<Post::CVolumeRender2*>(render);
+				Post::CVolumeRenderer* volRender2 = dynamic_cast<Post::CVolumeRenderer*>(render);
 				if (volRender2)
 				{
 					ui->AddItem(pi1, volRender2, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender2));

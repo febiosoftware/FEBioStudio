@@ -23,7 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "VolumeRender2.h"
+#include "VolumeRenderer.h"
 #include <GL/glew.h>
 #include "ImageModel.h"
 #include "ImageSource.h"
@@ -35,7 +35,7 @@ using namespace Post;
 
 static int n = 1;
 
-CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
+CVolumeRenderer::CVolumeRenderer(CImageModel* img) : CGLImageRenderer(img)
 {
 	// AddDoubleParam(0.1, "alpha scale")->SetFloatRange(0.0, 1.0);
 	// AddDoubleParam(0.5, "min intensity")->SetFloatRange(0.0, 1.0);
@@ -43,6 +43,7 @@ CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 	AddChoiceParam(0, "Color map")->SetEnumNames("Grayscale\0Red\0Green\0Blue\0Fire\0");
 
 	m_texID = 0;
+	m_prgID = 0;
 
 	std::stringstream ss;
 	ss << "VolumeRender" << n++;
@@ -52,22 +53,22 @@ CVolumeRender2::CVolumeRender2(CImageModel* img) : CGLImageRenderer(img)
 	m_vrReset = false;
 }
 
-CVolumeRender2::~CVolumeRender2()
+CVolumeRenderer::~CVolumeRenderer()
 {
 
 }
 
-void CVolumeRender2::Create()
+void CVolumeRenderer::Create()
 {
 	m_vrReset = true;
 }
 
-void CVolumeRender2::Update()
+void CVolumeRenderer::Update()
 {
 	Create();
 }
 
-void CVolumeRender2::Init()
+void CVolumeRenderer::Init()
 {
 	assert(m_vrInit == false);
 	if (m_vrInit) return;
@@ -80,7 +81,7 @@ void CVolumeRender2::Init()
 	}
 }
 
-bool CVolumeRender2::InitTexture()
+bool CVolumeRenderer::InitTexture()
 {
 	// load texture data
 	CImageModel& img = *GetImageModel();
@@ -118,7 +119,7 @@ bool CVolumeRender2::InitTexture()
 	return true;
 }
 
-void CVolumeRender2::ReloadTexture()
+void CVolumeRenderer::ReloadTexture()
 {
 	// load texture data
 	CImageModel& img = *GetImageModel();
@@ -193,7 +194,7 @@ const char* shadertxt = \
 "}                                                        "\
 "";
 
-void CVolumeRender2::InitShaders()
+void CVolumeRenderer::InitShaders()
 {
 	// create the fragment shader
 	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -262,7 +263,7 @@ GLColor HSV2RGB(double H, double S, double V)
 	return c;
 }
 
-void CVolumeRender2::Render(CGLContext& rc)
+void CVolumeRenderer::Render(CGLContext& rc)
 {
 	// load texture data
 	CImageModel& img = *GetImageModel();

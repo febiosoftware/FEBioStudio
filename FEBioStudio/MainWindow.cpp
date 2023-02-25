@@ -94,8 +94,7 @@ SOFTWARE.*/
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSource.h>
 #include <PostGL/GLColorMap.h>
@@ -3523,8 +3522,7 @@ bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
 			// only for model docs
 			if (dynamic_cast<CModelDocument*>(doc))
 			{
-                // Post::CVolRender* vr = new Post::CVolRender(imageModel);
-				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 				vr->Create();
 				imageModel->AddImageRenderer(vr);
 

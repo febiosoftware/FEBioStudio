@@ -30,14 +30,14 @@ namespace Post {
 
 class CImageModel;
 
-class CVolumeRender2 : public CGLImageRenderer
+class CVolumeRenderer : public CGLImageRenderer
 {
 	// enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
     enum {COLOR_MAP};
 
 public:
-	CVolumeRender2(CImageModel* img);
-	~CVolumeRender2();
+	CVolumeRenderer(CImageModel* img);
+	~CVolumeRenderer();
 
 	void Create();
 
