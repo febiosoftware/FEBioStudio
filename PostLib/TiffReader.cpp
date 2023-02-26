@@ -209,6 +209,7 @@ bool CTiffImageSource::Load()
 
 			if (IsCanceled()) return false;
 		}
+		setCurrentTask("finishing...");
 	}
 	catch (std::exception e)
 	{
