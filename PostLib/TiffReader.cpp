@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "TiffReader.h"
 #include <ImageLib/3DImage.h>
+#include "ImageModel.h"
 #include <stdexcept>
 
 #ifndef  WORD
@@ -110,6 +111,7 @@ typedef struct _TiffImage
 	DWORD	ny;
 	WORD	photometric;
 	WORD	bps;
+	Byte* description;
 	Byte* pd;
 };
 
@@ -124,10 +126,15 @@ public:
 		if (m_fp) {
 			fclose(m_fp); m_fp = nullptr;
 		}
-		if (m_pd.empty() == false)
+		if (m_img.empty() == false)
 		{
-			for (int i = 0; i < m_pd.size(); ++i) delete[] m_pd[i].pd;
-			m_pd.clear();
+			for (int i = 0; i < m_img.size(); ++i)
+			{
+				_TiffImage& im = m_img[i];
+				if (im.description) delete[] im.description;
+				delete[] im.pd;
+			}
+			m_img.clear();
 		}
 
 		for (int i = 0; i < m_ifd.size(); ++i)
@@ -148,7 +155,7 @@ public:
 	std::string filename;
 	bool	m_bigE = false;
 	FILE* m_fp = nullptr;
-	std::vector<_TiffImage>	m_pd;
+	std::vector<_TiffImage>	m_img;
 	std::vector<_TifIfd>	m_ifd;
 };
 
@@ -215,11 +222,18 @@ bool CTiffImageSource::Load()
 	fclose(m->m_fp);
 
 	// see if we read any image data
-	if (m->m_pd.size() == 0) return error("no image data read.");
-	int nz = m->m_pd.size();
+	if (m->m_img.size() == 0) return error("no image data read.");
+	int nz = m->m_img.size();
 
-	int nx = m->m_pd[0].nx;
-	int ny = m->m_pd[0].ny;
+	int nx = m->m_img[0].nx;
+	int ny = m->m_img[0].ny;
+
+	Byte* szdescription = m->m_img[0].description;
+	if (szdescription && GetImageModel())
+	{
+		Post::CImageModel* mdl = GetImageModel();
+		mdl->SetInfo((char*)szdescription);
+	}
 
 	// build the 3D image
 	C3DImage* im = new C3DImage;
@@ -228,7 +242,7 @@ bool CTiffImageSource::Load()
 	DWORD imSize = nx * ny;
 	for (int i = 0; i < nz; ++i)
 	{
-		_TiffImage& im = m->m_pd[i];
+		_TiffImage& im = m->m_img[i];
 		if (im.bps == 8)
 		{
 			memcpy(buf, im.pd, imSize);
@@ -364,6 +378,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	DWORD rowsPerStrip = 0, stripOffsets = 0, stripByteCounts = 0, bitsPerSample = 0, compression = TIF_COMPRESSION_NONE;
 	int numberOfStrips = 1;
 	int photometric = PHOTOMETRIC_MINISBLACK;
+	int descrCount = 0, descrOffset = 0;
 	for (int i = 0; i < ifd.NumDirEntries; ++i)
 	{
 		TIFTAG& t = ifd.TagList[i];
@@ -374,6 +389,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 		case 258: bitsPerSample = t.DataOffset; break;
 		case 259: compression = t.DataOffset; break;
 		case 262: photometric = t.DataOffset; break;
+		case 270: { descrCount = t.DataCount; descrOffset = t.DataOffset; } break;
 		case 278: rowsPerStrip = t.DataOffset; break;
 		case 273: { stripOffsets = t.DataOffset; numberOfStrips = t.DataCount; break; }
 		case 279: stripByteCounts = t.DataOffset; break;
@@ -394,6 +410,16 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	{
 		if (compression == TIF_COMPRESSION_NONE) stripByteCounts = imWidth * imLength * (bitsPerSample == 16 ? 2 : 1);
 		else throw std::domain_error("Invalid stripbyte count.");
+	}
+
+	// read the description if present
+	Byte* description = nullptr;
+	if ((descrCount > 0) && (descrOffset > 0))
+	{
+		description = new Byte[descrCount + 1];
+		fseek(m_fp, descrOffset, SEEK_SET);
+		int nread = fread(description, 1, descrCount, m_fp); assert(nread == descrCount);
+		description[0] = 0; // don't think this is necessary, but let's just to be safe
 	}
 
 	// find the strips
@@ -435,7 +461,8 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	im.bps = bitsPerSample;
 	im.pd = buf;
 	im.photometric = photometric;
-	m_pd.push_back(im);
+	im.description = description;
+	m_img.push_back(im);
 
 	// This assumes only one strip per image!!
 	DWORD bytesRead = 0;
