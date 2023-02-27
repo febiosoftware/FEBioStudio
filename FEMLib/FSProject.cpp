@@ -257,7 +257,8 @@ void FSProject::Load(IArchive &ar)
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
 			int moduleId = MapOldToNewModules(oldModuleId);
-			assert(moduleId != -1);
+			// if the moduleID == -1, then this file likely requires a plugin
+			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
 			SetModule(moduleId);
 		} 
 		break;
@@ -1675,7 +1676,7 @@ void FSProject::ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 //		case FE_INIT_SHELL_FLUID_PRESSURE  : break;
 		case FE_INIT_CONCENTRATION         : febic = FEBio::CreateInitialCondition("initial concentration", fem); break;
 //		case FE_INIT_SHELL_CONCENTRATION   : break;
-//		case FE_INIT_TEMPERATURE           : break;
+		case FE_INIT_TEMPERATURE           : febic = FEBio::CreateInitialCondition("initial temperature", fem); break; break;
 		case FE_INIT_FLUID_DILATATION      : febic = FEBio::CreateInitialCondition("initial fluid dilatation", fem); break;
 		case FE_INIT_PRESTRAIN             : febic = FEBio::CreateInitialCondition("prestrain", fem); break;
 		default:

@@ -125,13 +125,13 @@ FSInitShellFluidPressure::FSInitShellFluidPressure(FSModel* ps, FEItemListBuilde
 FSInitTemperature::FSInitTemperature(FSModel* ps) : FSInitialNodalDOF(FE_INIT_TEMPERATURE, ps)
 {
 	SetTypeString("Initial Temperature");
-	AddDoubleParam(0, "Temperature")->SetUnit(UNIT_TEMPERATURE);
+	AddDoubleParam(0, "value", "Temperature")->SetUnit(UNIT_TEMPERATURE);
 }
 
 FSInitTemperature::FSInitTemperature(FSModel* ps, FEItemListBuilder* pi, double val, int nstep) : FSInitialNodalDOF(FE_INIT_TEMPERATURE, ps, pi, nstep)
 {
 	SetTypeString("Initial Temperature");
-	AddDoubleParam(val, "Temperature")->SetUnit(UNIT_TEMPERATURE);
+	AddDoubleParam(val, "value", "Temperature")->SetUnit(UNIT_TEMPERATURE);
 }
 
 //-----------------------------------------------------------------------------
