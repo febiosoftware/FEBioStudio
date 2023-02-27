@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "TiffReader.h"
 #include <ImageLib/3DImage.h>
 #include "ImageModel.h"
+#include <XML/XMLReader.h>
 #include <stdexcept>
 
 #ifndef  WORD
@@ -113,7 +114,7 @@ typedef struct _TiffImage
 	WORD	bps;
 	Byte* description;
 	Byte* pd;
-};
+} TIFIMAGE;
 
 class CTiffImageSource::Impl
 {
@@ -224,26 +225,64 @@ bool CTiffImageSource::Load()
 
 	// see if we read any image data
 	if (m->m_img.size() == 0) return error("no image data read.");
-	int nz = m->m_img.size();
-
+	int nc = 1;	// nr of channels
 	int nx = m->m_img[0].nx;
 	int ny = m->m_img[0].ny;
 
-	Byte* szdescription = m->m_img[0].description;
+	char* szdescription = (char*)m->m_img[0].description;
 	if (szdescription && GetImageModel())
 	{
 		Post::CImageModel* mdl = GetImageModel();
-		mdl->SetInfo((char*)szdescription);
+		mdl->SetInfo(szdescription);
+
+		// see if this is an xml formatted text
+		if (strncmp(szdescription, "<?xml", 5) == 0)
+		{
+			string xmlString(szdescription);
+			XMLReader xml;
+			if (xml.OpenString(xmlString))
+			{
+				XMLTag tag;
+				if (xml.FindTag("OME", tag))
+				{
+					++tag;
+					do
+					{
+						if (tag == "Image")
+						{
+							++tag;
+							do
+							{
+								if (tag == "Pixels")
+								{
+									int sizeC = tag.AttributeValue<int>("SizeC", 1);
+									nc = sizeC;
+								}
+								else xml.SkipTag(tag);
+								++tag;
+							} while (!tag.isend());
+						}
+						else xml.SkipTag(tag);
+						++tag;
+					} while (!tag.isend());
+				}
+			}
+		}
 	}
 
+	// figure out number of z-slices (= images / channels)
+	int images = m->m_img.size();
+	int nz = images / nc; assert((images % nc) == 0);
+
 	// build the 3D image
+	// note that we only read in one channel if multiple are present
 	C3DImage* im = new C3DImage;
 	im->Create(nx, ny, nz);
 	Byte* buf = im->GetBytes();
 	DWORD imSize = nx * ny;
-	for (int i = 0; i < nz; ++i)
+	for (int i = 0, slice = 0; i < nz; ++i, slice += nc)
 	{
-		_TiffImage& im = m->m_img[i];
+		_TiffImage& im = m->m_img[slice];
 		if (im.bps == 8)
 		{
 			memcpy(buf, im.pd, imSize);
@@ -420,7 +459,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 		description = new Byte[descrCount + 1];
 		fseek(m_fp, descrOffset, SEEK_SET);
 		int nread = fread(description, 1, descrCount, m_fp); assert(nread == descrCount);
-		description[0] = 0; // don't think this is necessary, but let's just to be safe
+		description[nread] = 0; // don't think this is necessary, but let's just to be safe
 	}
 
 	// find the strips
