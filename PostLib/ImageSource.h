@@ -93,6 +93,9 @@ public:
 	void Load(IArchive& ar) override;
 
 private:
+	bool LoadFromFile(const char* szfile, C3DImage* im, int nbits);
+
+private:
     std::string m_filename;
     int m_nx, m_ny, m_nz;
     BOX m_box;
