@@ -321,10 +321,10 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
     // check if parameter is indexed by looking for tag attributes other than "lc"
     const char* szi = 0;
     int idx = 0;
-    for (int i=0; i<tag.m_natt; ++i) {
-        if (strcmp(tag.m_att[i].name(), "lc") != 0) {
-            szi = tag.m_att[i].name();
-            idx = atoi(tag.m_att[i].cvalue());
+    for (XMLAtt& att : tag.m_att) {
+        if (strcmp(att.name(), "lc") != 0) {
+            szi = att.name();
+            idx = atoi(att.cvalue());
             break;
         }
     }
@@ -2569,9 +2569,8 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// first, process potential attribute parameters
-	for (int i = 0; i < tag.m_natt; ++i)
+	for (XMLAtt& att : tag.m_att)
 	{
-		XMLAtt& att = tag.m_att[i];
 		Param* param = pmc->GetParam(att.name());
 		if (param)
 		{
@@ -2581,7 +2580,7 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 			case Param_CHOICE:
 			{
 				if (param->GetEnumNames())
-					ReadChoiceParam(*param, att.m_szatv);
+					ReadChoiceParam(*param, att.m_val.c_str());
 				else
 				{
 					int n;
