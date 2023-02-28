@@ -733,7 +733,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solute")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").cvalue();
+					string name = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -749,7 +749,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							++tag;
 						} while (!tag.isend());
 					}
-					fem.AddSolute(sz, z, M, d);
+					fem.AddSolute(name, z, M, d);
 				}
 				else ParseUnknownTag(tag);
 				++tag;
@@ -766,7 +766,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solid_bound")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").cvalue();
+					string name = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -781,7 +781,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							else ParseUnknownTag(tag);
 							++tag;
 						} while (!tag.isend());
-						fem.AddSBM(sz, z, M, d);
+						fem.AddSBM(name, z, M, d);
 					}
 				}
 				else ParseUnknownTag(tag);
