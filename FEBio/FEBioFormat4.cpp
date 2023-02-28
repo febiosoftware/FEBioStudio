@@ -189,6 +189,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 {
 	XMLAtt& atype = tag.Attribute("type");
 	int moduleId = FEBio::GetModuleId(atype.cvalue()); assert(moduleId >= 0);
+	if (moduleId < -1) throw XMLReader::InvalidAttributeValue(tag, "type", atype.m_val.c_str());
 	FEBio::SetActiveModule(moduleId);
 	FSProject& prj = FileReader()->GetProject();
 	prj.SetModule(moduleId, false);
