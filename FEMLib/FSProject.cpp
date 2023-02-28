@@ -688,6 +688,7 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 		pi->SetLoadCurveID(p.GetLoadCurveID());
 	}
 	else { 
+		log << "error: cannot find parameter \"" << p.GetShortName() << "\"\n";
 		return false; 
 	}
 
