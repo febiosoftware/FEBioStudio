@@ -43,5 +43,7 @@ CImageViewSettings::CImageViewSettings()
 	AddDoubleParam(1.0, "clipy_max")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(0.0, "clipz_min")->SetFloatRange(0.0, 1.0);
 	AddDoubleParam(1.0, "clipz_max")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.000, "chue1")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.333, "chue2")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0.667, "chue3")->SetFloatRange(0.0, 1.0);
 }
-

@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "PropertyListForm.h"
 #include "ObjectProps.h"
 #include <PostLib/ImageModel.h>
+#include <ImageLib/3DImage.h>
 #include "InputWidgets.h"
 #include "RangeSlider.h"
 #include <vector>
@@ -217,8 +218,8 @@ void CImageParam2::updateSpinBox()
 class Ui::CImageSettingsPanel
 {
 public:
-    QFormLayout* leftPanel;
-    QFormLayout* rightPanel;
+	QWidget*	w[3];
+	QFormLayout* panel[3];
 
 	::CImageParam* scale;
 	::CImageParam* gamma;
@@ -232,17 +233,30 @@ public:
 	::CImageParam2* clipy;
 	::CImageParam2* clipz;
 
-public:
-    void setup(::CImageSettingsPanel* panel)
-    {
-        m_panel = panel;
+	::CImageParam* chue1;
+	::CImageParam* chue2;
+	::CImageParam* chue3;
 
-        leftPanel = new QFormLayout;
-        rightPanel = new QFormLayout;
+public:
+    void setup(::CImageSettingsPanel* parent)
+    {
+        m_parent = parent;
+
+        panel[0] = new QFormLayout;
+        panel[1] = new QFormLayout;
+        panel[2] = new QFormLayout;
+
+		w[0] = new QWidget;
+		w[1] = new QWidget;
+		w[2] = new QWidget;
+		w[0]->setLayout(panel[0]);
+		w[1]->setLayout(panel[1]);
+		w[2]->setLayout(panel[2]);
 
 		QHBoxLayout* layout = new QHBoxLayout;
-		layout->addLayout(leftPanel);
-		layout->addLayout(rightPanel);
+		layout->addWidget(w[0]);
+		layout->addWidget(w[1]);
+		layout->addWidget(w[2]);
 
 		scale = new ::CImageParam();
 		gamma = new ::CImageParam();
@@ -260,19 +274,27 @@ public:
 		clipy->setColor(QColor::fromRgb(0, 255, 0));
 		clipz->setColor(QColor::fromRgb(0, 0, 255));
 
-		addWidget(scale, "Alpha scale");
-		addWidget(gamma, "Gamma correction");
-		addWidget(hue, "Hue");
-		addWidget(sat, "Saturation");
-		addWidget(lum, "Luminance");
+		chue1 = new ::CImageParam();
+		chue2 = new ::CImageParam();
+		chue3 = new ::CImageParam();
 
-		addWidget(intensity, "Intensity");
-		addWidget(alphaRng, "Alpha range");
-		addWidget(clipx, "Clip X");
-		addWidget(clipy, "Clip Y");
-		addWidget(clipz, "Clip Z");
+		addWidget(scale, "Alpha scale", 0);
+		addWidget(gamma, "Gamma correction", 0);
+		addWidget(hue, "Hue", 0);
+		addWidget(sat, "Saturation", 0);
+		addWidget(lum, "Luminance", 0);
 
-        panel->setLayout(layout);
+		addWidget(intensity, "Intensity", 1);
+		addWidget(alphaRng, "Alpha range", 1);
+		addWidget(clipx, "Clip X", 1);
+		addWidget(clipy, "Clip Y", 1);
+		addWidget(clipz, "Clip Z", 1);
+
+		addWidget(chue1, "Channel1 Hue", 2);
+		addWidget(chue2, "Channel2 Hue", 2);
+		addWidget(chue3, "Channel3 Hue", 2);
+
+		parent->setLayout(layout);
     }
 
     void setImageModel(Post::CImageModel* img)
@@ -292,7 +314,23 @@ public:
 			clipx    ->setParams(&settings->GetParam(CImageViewSettings::CLIPX_MIN), &settings->GetParam(CImageViewSettings::CLIPX_MAX));
 			clipy    ->setParams(&settings->GetParam(CImageViewSettings::CLIPY_MIN), &settings->GetParam(CImageViewSettings::CLIPY_MAX));
 			clipz    ->setParams(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
-        }
+
+			C3DImage* im = img->Get3DImage();
+			if (im && (im->BPS() == C3DImage::BPS_RGB))
+			{
+				chue1->setParam(&settings->GetParam(CImageViewSettings::CHANNEL1_HUE));
+				chue2->setParam(&settings->GetParam(CImageViewSettings::CHANNEL2_HUE));
+				chue3->setParam(&settings->GetParam(CImageViewSettings::CHANNEL3_HUE));
+				w[2]->show();
+			}
+			else
+			{
+				chue1->setParam(nullptr);
+				chue2->setParam(nullptr);
+				chue3->setParam(nullptr);
+				w[2]->hide();
+			}
+		}
 		else
 		{
 			scale->setParam(nullptr);
@@ -305,23 +343,26 @@ public:
 			clipx->setParams(nullptr, nullptr);
 			clipy->setParams(nullptr, nullptr);
 			clipz->setParams(nullptr, nullptr);
+			chue1->setParam(nullptr);
+			chue2->setParam(nullptr);
+			chue3->setParam(nullptr);
 		}
     }
 
-	void addWidget(::CImageParam* w, const QString& name)
+	void addWidget(::CImageParam* w, const QString& name, int panelIndex)
 	{
-		leftPanel->addRow(name, w);
-		QObject::connect(w, &::CImageParam::paramChanged, m_panel, &::CImageSettingsPanel::ParamChanged);
+		panel[panelIndex]->addRow(name, w);
+		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
 	}
 
-	void addWidget(::CImageParam2* w, const QString& name)
+	void addWidget(::CImageParam2* w, const QString& name, int panelIndex)
 	{
-		rightPanel->addRow(name, w);
-		QObject::connect(w, &::CImageParam2::paramChanged, m_panel, &::CImageSettingsPanel::ParamChanged);
+		panel[panelIndex]->addRow(name, w);
+		QObject::connect(w, &::CImageParam2::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
 	}
 
 private:
-	::CImageSettingsPanel* m_panel;
+	::CImageSettingsPanel* m_parent;
 };
 
 CImageSettingsPanel::CImageSettingsPanel(CMainWindow* wnd, QWidget* parent)

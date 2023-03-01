@@ -244,6 +244,9 @@ const char* shadertxt_rgb = \
 "uniform float Amin;                                      "\
 "uniform float Amax;                                      "\
 "uniform float gamma;                                     "\
+"uniform vec3 col1;                                       "\
+"uniform vec3 col2;                                       "\
+"uniform vec3 col3;                                       "\
 "uniform int cmap;                                        "\
 "void main(void)                                          "\
 "{                                                        "\
@@ -256,8 +259,11 @@ const char* shadertxt_rgb = \
 "   if (f <= 0.0) discard;                                "\
 "   if (gamma != 1.0) f = pow(f, gamma);                  "\
 "   float a = Amin + f*(Amax - Amin);                     "\
-"   vec4 c4 = vec4(t.x, t.y, t.z, a);                      "\
-"   gl_FragColor = gl_Color*c4;                            "\
+"   vec3 c1 = vec3(t.x*col1.x, t.x*col1.y, t.x*col1.z);   "\
+"   vec3 c2 = vec3(t.y*col2.x, t.y*col2.y, t.y*col2.z);   "\
+"   vec3 c3 = vec3(t.z*col3.x, t.z*col3.y, t.z*col3.z);   "\
+"   vec3 c4 = c1 + c2 + c3;                               "\
+"   gl_FragColor = gl_Color*vec4(c4.x, c4.y, c4.z, a);    "\
 "}                                                        "\
 "";
 
@@ -411,6 +417,29 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glUniform1f(gammaID, gamma);
 	glUniform1i(cmapID, cmap);
 	glUniform1f(IsclID, m_Iscale);
+
+	if (im3d.BPS() == C3DImage::BPS_RGB)
+	{
+		GLint col1ID = glGetUniformLocation(m_prgID, "col1");
+		GLint col2ID = glGetUniformLocation(m_prgID, "col2");
+		GLint col3ID = glGetUniformLocation(m_prgID, "col3");
+
+		float hue1 = vs->GetFloatValue(CImageViewSettings::CHANNEL1_HUE);
+		float hue2 = vs->GetFloatValue(CImageViewSettings::CHANNEL2_HUE);
+		float hue3 = vs->GetFloatValue(CImageViewSettings::CHANNEL3_HUE);
+
+		GLColor col1 = HSV2RGB(360.0 * hue1, 1.0, 1.0);
+		GLColor col2 = HSV2RGB(360.0 * hue2, 1.0, 1.0);
+		GLColor col3 = HSV2RGB(360.0 * hue3, 1.0, 1.0);
+
+		float c1[3] = { col1.r / 255.f, col1.g / 255.f, col1.b / 255.f };
+		float c2[3] = { col2.r / 255.f, col2.g / 255.f, col2.b / 255.f };
+		float c3[3] = { col3.r / 255.f, col3.g / 255.f, col3.b / 255.f };
+
+		glUniform3f(col1ID, c1[0], c1[1], c1[2]);
+		glUniform3f(col2ID, c2[0], c2[1], c2[2]);
+		glUniform3f(col3ID, c3[0], c3[1], c3[2]);
+	}
 
 	// get the view direction
 	vec3d view(0, 0, 1);
