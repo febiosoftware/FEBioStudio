@@ -330,6 +330,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Convert a penta6 mesh into a tet4 mesh
+//
+class FEPenta6ToTet4 : public FEModifier
+{
+public:
+    FEPenta6ToTet4() : FEModifier("Penta6-to-Tet4"){}
+    FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
 // helper class for smoothing a quad8 mesh
 class FEQuad8Smooth
 {
