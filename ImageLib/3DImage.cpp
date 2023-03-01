@@ -79,7 +79,7 @@ bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int bps)
 	{
 	  CleanUp();
 	  m_bps = bps;
-	  assert((m_bps >= 1) && (m_bps <= 3));
+	  assert((m_bps >= 1) && (m_bps <= 6));
 
       if(data == nullptr)
       {

@@ -76,6 +76,14 @@ enum TifPhotometric {
 	PHOTOMETRIC_LOGLUV = 32845
 };
 
+namespace ome {
+	enum DimensionOrder {
+		Unknown,
+		XYZTC,
+		XYCZT,
+	};
+}
+
 typedef struct _TiffHeader
 {
 	WORD  Identifier;  /* Byte-order Identifier */
@@ -229,6 +237,7 @@ bool CTiffImageSource::Load()
 	int nx = m->m_img[0].nx;
 	int ny = m->m_img[0].ny;
 	int nbps = m->m_img[0].bps;
+	int dimOrder = ome::DimensionOrder::Unknown;
 
 	char* szdescription = (char*)m->m_img[0].description;
 	if (szdescription && GetImageModel())
@@ -258,6 +267,13 @@ bool CTiffImageSource::Load()
 								{
 									int sizeC = tag.AttributeValue<int>("SizeC", 1);
 									nc = sizeC;
+
+									const char* szdimOrder = tag.AttributeValue("DimensionOrder", true);
+									if (szdimOrder)
+									{
+										if (strcmp(szdimOrder, "XYZTC") == 0) dimOrder = ome::DimensionOrder::XYZTC;
+										if (strcmp(szdimOrder, "XYCZT") == 0) dimOrder = ome::DimensionOrder::XYCZT;
+									}
 								}
 								else xml.SkipTag(tag);
 								++tag;
@@ -327,20 +343,68 @@ bool CTiffImageSource::Load()
 	}
 	else if (nc == 3)
 	{
-		// This will be mapped to a RGB image
-		im->Create(nx, ny, nz, nullptr, 0, nc);
-		DWORD imSize = nx * ny;
-		for (int k = 0; k < images; ++k)
+		if (nbps == 8)
 		{
-			_TiffImage& tif = m->m_img[k];
-			int slice = k / 3;
-			int channel = k % 3;
-			Byte* buf = im->GetBytes() + slice * imSize * 3;
-			if (tif.bps == 8)
+			// This will be mapped to a RGB image
+			im->Create(nx, ny, nz, nullptr, 0, nc);
+			DWORD imSize = nx * ny;
+			for (int k = 0; k < images; ++k)
 			{
-				for (int i = 0; i < imSize; ++i)
+				_TiffImage& tif = m->m_img[k];
+				int slice = k / 3;
+				int channel = k % 3;
+				Byte* buf = im->GetBytes() + slice * imSize * 3;
+				if (tif.bps == 8)
 				{
-					buf[3 * i + channel] = tif.pd[i];
+					for (int i = 0; i < imSize; ++i)
+					{
+						buf[3 * i + channel] = tif.pd[i];
+					}
+				}
+			}
+		}
+		else if (nbps == 16)
+		{
+			// This will be mapped to a RGB image
+			im->Create(nx, ny, nz, nullptr, 0, C3DImage::BPS_RGB16);
+			DWORD imSize = nx * ny;
+			assert(dimOrder != ome::DimensionOrder::Unknown);
+			if (dimOrder == ome::DimensionOrder::XYCZT)
+			{
+				for (int k = 0; k < images; ++k)
+				{
+					_TiffImage& tif = m->m_img[k];
+					int slice = k / 3;
+					int channel = k % 3;
+					WORD* buf = (WORD*)im->GetBytes() + slice * imSize * 3;
+					if (tif.bps == 16)
+					{
+						WORD* b = (WORD*)tif.pd;
+						for (int i = 0; i < imSize; ++i)
+						{
+							buf[3 * i + channel] = b[i];
+							if (m->m_bigE) byteswap(buf[3 * i + channel]);
+						}
+					}
+				}
+			}
+			else if (dimOrder == ome::DimensionOrder::XYZTC)
+			{
+				for (int k = 0; k < images; ++k)
+				{
+					_TiffImage& tif = m->m_img[k];
+					int slice = k % nz;
+					int channel = k / nz;
+					WORD* buf = (WORD*)im->GetBytes() + slice * imSize * 3;
+					if (tif.bps == 16)
+					{
+						WORD* b = (WORD*)tif.pd;
+						for (int i = 0; i < imSize; ++i)
+						{
+							buf[3 * i + channel] = b[i];
+							if (m->m_bigE) byteswap(buf[3 * i + channel]);
+						}
+					}
 				}
 			}
 		}

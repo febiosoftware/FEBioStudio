@@ -33,7 +33,7 @@ SOFTWARE.*/
 class C3DImage
 {
 public:
-	enum { BPS_8 = 1, BPS_16 = 2, BPS_RGB = 3};
+	enum { BPS_8 = 1, BPS_16 = 2, BPS_RGB8 = 3, BPS_RGB16 = 6 };
 
 public:
 	C3DImage();

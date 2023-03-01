@@ -316,7 +316,7 @@ public:
 			clipz    ->setParams(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
 
 			C3DImage* im = img->Get3DImage();
-			if (im && (im->BPS() == C3DImage::BPS_RGB))
+			if (im && ((im->BPS() == C3DImage::BPS_RGB8) || (im->BPS() == C3DImage::BPS_RGB16)))
 			{
 				chue1->setParam(&settings->GetParam(CImageViewSettings::CHANNEL1_HUE));
 				chue2->setParam(&settings->GetParam(CImageViewSettings::CHANNEL2_HUE));

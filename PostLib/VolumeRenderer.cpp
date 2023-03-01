@@ -110,6 +110,18 @@ bool CVolumeRenderer::InitTexture()
 		}
 		m_Iscale = 65535.f / (float)maxVal;
 	}
+	else if (im3d.BPS() == C3DImage::BPS_RGB16)
+	{
+		int maxVal = 256;
+		word* w = (word*)im3d.GetBytes();
+		int N = nx * ny * nz*3;
+		for (int i = 0; i < N; ++i)
+		{
+			if (w[i] > maxVal) maxVal = w[i];
+		}
+		m_Iscale = 65535.f / (float)maxVal;
+	}
+
 
 	if (m_texID == 0) glGenTextures(1, &m_texID);
 
@@ -133,7 +145,8 @@ bool CVolumeRenderer::InitTexture()
 	{
 	case C3DImage::BPS_8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
 	case C3DImage::BPS_16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-	case C3DImage::BPS_RGB: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case C3DImage::BPS_RGB8: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case C3DImage::BPS_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
 	}
 	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 
@@ -176,7 +189,8 @@ void CVolumeRenderer::ReloadTexture()
 	{
 	case C3DImage::BPS_8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
 	case C3DImage::BPS_16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-	case C3DImage::BPS_RGB: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case C3DImage::BPS_RGB8: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case C3DImage::BPS_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
 	}
 	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 }
@@ -250,12 +264,16 @@ const char* shadertxt_rgb = \
 "uniform int cmap;                                        "\
 "void main(void)                                          "\
 "{                                                        "\
-"	vec4 t = texture(sampler, gl_TexCoord[0]);            "\
+"	vec4 t = texture(sampler, gl_TexCoord[0])*Iscl;       "\
+"   t.x = (t.x - Imin) / (Imax - Imin);                   "\
+"   t.x = clamp(t.x, 0.0, 1.0);                           "\
+"   t.y = (t.y - Imin) / (Imax - Imin);                   "\
+"   t.y = clamp(t.y, 0.0, 1.0);                           "\
+"   t.z = (t.z - Imin) / (Imax - Imin);                   "\
+"   t.z = clamp(t.z, 0.0, 1.0);                           "\
 "   float f = t.x;                                        "\
 "   if (t.y > f) f = t.y;                                 "\
 "   if (t.z > f) f = t.z;                                 "\
-"   f = (f - Imin) / (Imax - Imin);                       "\
-"   f = clamp(f, 0.0, 1.0);                               "\
 "   if (f <= 0.0) discard;                                "\
 "   if (gamma != 1.0) f = pow(f, gamma);                  "\
 "   float a = Amin + f*(Amax - Amin);                     "\
@@ -281,7 +299,8 @@ void CVolumeRenderer::InitShaders()
 	{
 	case C3DImage::BPS_8  : shadertxt = shadertxt_8bit; break;
 	case C3DImage::BPS_16 : shadertxt = shadertxt_8bit; break;
-	case C3DImage::BPS_RGB: shadertxt = shadertxt_rgb; break;
+	case C3DImage::BPS_RGB8: shadertxt = shadertxt_rgb; break;
+	case C3DImage::BPS_RGB16: shadertxt = shadertxt_rgb; break;
 	default:
 		return;
 	}
@@ -418,7 +437,7 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glUniform1i(cmapID, cmap);
 	glUniform1f(IsclID, m_Iscale);
 
-	if (im3d.BPS() == C3DImage::BPS_RGB)
+	if ((im3d.BPS() == C3DImage::BPS_RGB8) || (im3d.BPS() == C3DImage::BPS_RGB16))
 	{
 		GLint col1ID = glGetUniformLocation(m_prgID, "col1");
 		GLint col2ID = glGetUniformLocation(m_prgID, "col2");
