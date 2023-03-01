@@ -113,7 +113,14 @@ bool CVolumeRenderer::InitTexture()
 	int n = 0;
 	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	if (im3d.BPS() == C3DImage::BPS_8)
+	{
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	}
+	else if (im3d.BPS() == C3DImage::BPS_RGB)
+	{
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	}
 	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 
 	return true;
@@ -137,11 +144,18 @@ void CVolumeRenderer::ReloadTexture()
 	int n = 0;
 	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	if (im3d.BPS() == C3DImage::BPS_8)
+	{
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	}
+	else if (im3d.BPS() == C3DImage::BPS_RGB)
+	{
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE, im3d.GetBytes());
+	}
 	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 }
 
-const char* shadertxt = \
+const char* shadertxt_8bit = \
 "uniform sampler3D sampler;                               "\
 "uniform float Imin;                                      "\
 "uniform float Imax;                                      "\
@@ -194,8 +208,49 @@ const char* shadertxt = \
 "}                                                        "\
 "";
 
+
+const char* shadertxt_rgb = \
+"uniform sampler3D sampler;                               "\
+"uniform float Imin;                                      "\
+"uniform float Imax;                                      "\
+"uniform float Amin;                                      "\
+"uniform float Amax;                                      "\
+"uniform float gamma;                                     "\
+"uniform int cmap;                                        "\
+"void main(void)                                          "\
+"{                                                        "\
+"	vec4 t = texture(sampler, gl_TexCoord[0]);            "\
+"   float f = t.x;                                        "\
+"   if (t.y > f) f = t.y;                                 "\
+"   if (t.z > f) f = t.z;                                 "\
+"   f = (f - Imin) / (Imax - Imin);                       "\
+"   f = clamp(f, 0.0, 1.0);                               "\
+"   if (f <= 0.0) discard;                                "\
+"   if (gamma != 1.0) f = pow(f, gamma);                  "\
+"   float a = Amin + f*(Amax - Amin);                     "\
+"   vec4 c4 = vec4(t.x, t.y, t.z, a);                      "\
+"   gl_FragColor = gl_Color*c4;                            "\
+"}                                                        "\
+"";
+
 void CVolumeRenderer::InitShaders()
 {
+	// load texture data
+	CImageModel& img = *GetImageModel();
+	CImageSource* src = img.GetImageSource();
+	if (src == nullptr) return;
+
+	C3DImage& im3d = *src->Get3DImage();
+
+	const char* shadertxt = nullptr;
+	switch (im3d.BPS())
+	{
+	case C3DImage::BPS_8  : shadertxt = shadertxt_8bit; break;
+	case C3DImage::BPS_RGB: shadertxt = shadertxt_rgb; break;
+	default:
+		return;
+	}
+
 	// create the fragment shader
 	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
 

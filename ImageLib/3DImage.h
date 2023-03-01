@@ -33,11 +33,14 @@ SOFTWARE.*/
 class C3DImage
 {
 public:
+	enum { BPS_8 = 1, BPS_16 = 2, BPS_RGB = 3};
+
+public:
 	C3DImage();
 	virtual ~C3DImage();
 	void CleanUp();
 
-	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0);
+	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0, int bps = BPS_8);
 
 	void BitBlt(CImage& im, int nslice);
 	void StretchBlt(CImage& im, int nslice);
@@ -46,6 +49,7 @@ public:
 	int Width () { return m_cx; }
 	int Height() { return m_cy; }
 	int Depth () { return m_cz; }
+	int BPS() const { return m_bps; }
 
     virtual BOX GetBoundingBox() { return m_box; }
     virtual void SetBoundingBox(BOX& box) { m_box = box; }
@@ -80,6 +84,7 @@ public:
 protected:
 	Byte*	m_pb;	// image data
 	int		m_cx, m_cy, m_cz; // pixel dimensions
+	int		m_bps;	// bytes per sample
 
 private:
     BOX     m_box; // physical bounds

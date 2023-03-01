@@ -50,7 +50,8 @@ int closest_pow2(int n)
 C3DImage::C3DImage()
 {
 	m_pb = 0;
-	m_cx = m_cy = m_cz = 0;
+	m_cx = m_cy = m_cz = 0; 
+	m_bps = BPS_8;
 
     m_box = BOX(0., 0., 0., 1., 1., 1.);
 }
@@ -67,21 +68,23 @@ void C3DImage::CleanUp()
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize)
+bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int bps)
 {
     // Check to make sure this does not allocate memory of size 0.
     if(nx*ny*nz == 0)
       return false;
 
 	// reallocate data if necessary
-	if (nx*ny*nz != m_cx*m_cy*m_cz)
+	if ((nx*ny*nz != m_cx*m_cy*m_cz) || (m_bps != bps))
 	{
 	  CleanUp();
+	  m_bps = bps;
+	  assert((m_bps >= 1) && (m_bps <= 3));
 
       if(data == nullptr)
       {
         if(dataSize == 0)
-          m_pb = new Byte[nx*ny*nz];
+          m_pb = new Byte[nx*ny*nz*m_bps];
         else
           m_pb = new Byte[dataSize];
 

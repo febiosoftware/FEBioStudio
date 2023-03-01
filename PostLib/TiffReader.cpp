@@ -275,33 +275,55 @@ bool CTiffImageSource::Load()
 	int nz = images / nc; assert((images % nc) == 0);
 
 	// build the 3D image
-	// note that we only read in one channel if multiple are present
 	C3DImage* im = new C3DImage;
-	im->Create(nx, ny, nz);
-	Byte* buf = im->GetBytes();
-	DWORD imSize = nx * ny;
-	for (int i = 0, slice = 0; i < nz; ++i, slice += nc)
+	if (nc == 1)
 	{
-		_TiffImage& im = m->m_img[slice];
-		if (im.bps == 8)
+		im->Create(nx, ny, nz);
+		Byte* buf = im->GetBytes();
+		DWORD imSize = nx * ny;
+		for (int i = 0; i < nz; ++i)
 		{
-			memcpy(buf, im.pd, imSize);
-
-			if (im.photometric == PHOTOMETRIC_MINISWHITE)
+			_TiffImage& im = m->m_img[i];
+			if (im.bps == 8)
 			{
-				for (int n = 0; n < imSize; ++n)
+				memcpy(buf, im.pd, imSize);
+
+				if (im.photometric == PHOTOMETRIC_MINISWHITE)
 				{
-					Byte b = buf[n];
-					buf[n] = 255 - b;
+					for (int n = 0; n < imSize; ++n)
+					{
+						Byte b = buf[n];
+						buf[n] = 255 - b;
+					}
+				}
+			}
+			else
+			{
+				Byte* b = im.pd;
+				for (int j = 0; j < imSize; ++j, b += 2) buf[j] = b[0];
+			}
+			buf += imSize;
+		}
+	}
+	else if (nc == 3)
+	{
+		// This will be mapped to a RGB image
+		im->Create(nx, ny, nz, nullptr, 0, nc);
+		DWORD imSize = nx * ny;
+		for (int k = 0; k < images; ++k)
+		{
+			_TiffImage& tif = m->m_img[k];
+			int slice = k / 3;
+			int channel = k % 3;
+			Byte* buf = im->GetBytes() + slice * imSize * 3;
+			if (tif.bps == 8)
+			{
+				for (int i = 0; i < imSize; ++i)
+				{
+					buf[3 * i + channel] = tif.pd[i];
 				}
 			}
 		}
-		else
-		{
-			Byte* b = im.pd;
-			for (int j = 0; j < imSize; ++j, b += 2) buf[j] = b[0];
-		}
-		buf += imSize;
 	}
 
 	BOX box(0, 0, 0, nx, ny, nz);
@@ -497,7 +519,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	Byte* tmp = buf;
 	_TiffImage im;
 	im.nx = imWidth;
-	im.ny = imWidth;
+	im.ny = imLength;
 	im.bps = bitsPerSample;
 	im.pd = buf;
 	im.photometric = photometric;
