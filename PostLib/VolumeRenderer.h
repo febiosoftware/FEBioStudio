@@ -54,6 +54,7 @@ private:
 private:
 	unsigned int m_texID;
 	unsigned int m_prgID;
+	float	m_Iscale;
 	bool	m_vrInit;
 	bool	m_vrReset;
 };

@@ -228,6 +228,7 @@ bool CTiffImageSource::Load()
 	int nc = 1;	// nr of channels
 	int nx = m->m_img[0].nx;
 	int ny = m->m_img[0].ny;
+	int nbps = m->m_img[0].bps;
 
 	char* szdescription = (char*)m->m_img[0].description;
 	if (szdescription && GetImageModel())
@@ -278,14 +279,14 @@ bool CTiffImageSource::Load()
 	C3DImage* im = new C3DImage;
 	if (nc == 1)
 	{
-		im->Create(nx, ny, nz);
-		Byte* buf = im->GetBytes();
-		DWORD imSize = nx * ny;
-		for (int i = 0; i < nz; ++i)
+		if (nbps == 8)
 		{
-			_TiffImage& im = m->m_img[i];
-			if (im.bps == 8)
+			im->Create(nx, ny, nz);
+			Byte* buf = im->GetBytes();
+			DWORD imSize = nx * ny;
+			for (int i = 0; i < nz; ++i)
 			{
+				_TiffImage& im = m->m_img[i];
 				memcpy(buf, im.pd, imSize);
 
 				if (im.photometric == PHOTOMETRIC_MINISWHITE)
@@ -296,13 +297,32 @@ bool CTiffImageSource::Load()
 						buf[n] = 255 - b;
 					}
 				}
+				buf += imSize;
 			}
-			else
+		}
+		else if (nbps == 16)
+		{
+			im->Create(nx, ny, nz, nullptr, 0, C3DImage::BPS_16);
+			WORD* buf = (WORD*)im->GetBytes();
+			DWORD imSize = nx * ny;
+			for (int i = 0; i < nz; ++i)
 			{
-				Byte* b = im.pd;
-				for (int j = 0; j < imSize; ++j, b += 2) buf[j] = b[0];
+				_TiffImage& im = m->m_img[i];
+				WORD* b = (WORD*)im.pd;
+				if (m->m_bigE)
+				{
+					for (int j = 0; j < imSize; ++j)
+					{
+						buf[j] = *b++;
+						byteswap(buf[j]);
+					}
+				}
+				else
+				{
+					for (int j = 0; j < imSize; ++j) buf[j] = *b++;
+				}
+				buf += imSize;
 			}
-			buf += imSize;
 		}
 	}
 	else if (nc == 3)
