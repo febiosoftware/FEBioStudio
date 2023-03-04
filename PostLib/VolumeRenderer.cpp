@@ -196,6 +196,7 @@ void CVolumeRenderer::ReloadTexture()
 }
 
 const char* shadertxt_8bit = \
+"#version 120\n"\
 "uniform sampler3D sampler;                               "\
 "uniform float Imin;                                      "\
 "uniform float Imax;                                      "\
@@ -211,7 +212,7 @@ const char* shadertxt_8bit = \
 "vec3 fire(const float f);                                "\
 "void main(void)                                          "\
 "{                                                        "\
-"	vec4 t = texture(sampler, gl_TexCoord[0]);            "\
+"	vec4 t = texture3D(sampler, gl_TexCoord[0].xyz);      "\
 "   float f = t.x*Iscl;                                   "\
 "   f = (f - Imin) / (Imax - Imin);                       "\
 "   f = clamp(f, 0.0, 1.0);                               "\
@@ -251,6 +252,7 @@ const char* shadertxt_8bit = \
 
 
 const char* shadertxt_rgb = \
+"#version 120\n"\
 "uniform sampler3D sampler;                               "\
 "uniform float Imin;                                      "\
 "uniform float Iscl;                                      "\
@@ -264,7 +266,7 @@ const char* shadertxt_rgb = \
 "uniform int cmap;                                        "\
 "void main(void)                                          "\
 "{                                                        "\
-"	vec4 t = texture(sampler, gl_TexCoord[0])*Iscl;       "\
+"	vec4 t = texture(sampler, gl_TexCoord[0].xyz)*Iscl;       "\
 "   t.x = (t.x - Imin) / (Imax - Imin);                   "\
 "   t.x = clamp(t.x, 0.0, 1.0);                           "\
 "   t.y = (t.y - Imin) / (Imax - Imin);                   "\
@@ -282,6 +284,14 @@ const char* shadertxt_rgb = \
 "   vec3 c3 = vec3(t.z*col3.x, t.z*col3.y, t.z*col3.z);   "\
 "   vec3 c4 = c1 + c2 + c3;                               "\
 "   gl_FragColor = gl_Color*vec4(c4.x, c4.y, c4.z, a);    "\
+"}                                                        "\
+"";
+
+const char* vertex_shader = \
+"#version 130\n"\
+"void main(void)                                          "\
+"{                                                        "\
+"   gl_Position = gl_ModelViewProjectionMatrix*gl_Vertex;   "\
 "}                                                        "\
 "";
 
@@ -307,30 +317,44 @@ void CVolumeRenderer::InitShaders()
 
 	// create the fragment shader
 	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
+//	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
 
 	// set the shader text
 	glShaderSource(fragShader, 1, &shadertxt, NULL);
+//	glShaderSource(vertShader, 1, &vertex_shader, NULL);
 
 	// compile the shader
-	glCompileShader(fragShader);
 	int success;
+	glCompileShader(fragShader);
 	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-	if (success == false)
+	if (success == 0)
 	{
 		const int MAX_INFO_LOG_SIZE = 1024;
 		GLchar infoLog[MAX_INFO_LOG_SIZE];
 		glGetShaderInfoLog(fragShader, MAX_INFO_LOG_SIZE, NULL, infoLog);
 		fprintf(stderr, infoLog);
 	}
-	assert(success);
+
+//	glCompileShader(vertShader);
+//	glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
+//	if (success == 0)
+//	{
+//		const int MAX_INFO_LOG_SIZE = 1024;
+//		GLchar infoLog[MAX_INFO_LOG_SIZE];
+//		glGetShaderInfoLog(vertShader, MAX_INFO_LOG_SIZE, NULL, infoLog);
+//		fprintf(stderr, infoLog);
+//	}
 
 	// create the program
 	m_prgID = glCreateProgram();
 	glAttachShader(m_prgID, fragShader);
+//	glAttachShader(m_prgID, vertShader);
 
 	glLinkProgram(m_prgID);
 	glGetProgramiv(m_prgID, GL_LINK_STATUS, &success); 
-	assert(success);
+
+	glDeleteShader(fragShader);
+//	glDeleteShader(vertShader);
 }
 
 extern int LUT[256][15];
