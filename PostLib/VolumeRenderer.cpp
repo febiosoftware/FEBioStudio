@@ -160,7 +160,7 @@ void CVolumeRenderer::ReloadTexture()
 	// 3 coord, max 5 triangles per slice, 3 vertex per triangle, (nt+1) slices
 	double* vc = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
 	double* vt = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
-	m_mesh.SetData(vc, nullptr, vt, 0);
+	m_mesh.SetVertexData(vc, nullptr, vt);
 }
 
 const char* shadertxt_8bit = \

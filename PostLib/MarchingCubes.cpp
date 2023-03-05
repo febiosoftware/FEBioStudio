@@ -434,24 +434,14 @@ void CMarchingCubes::CreateSurface()
 	// create vertex arrays from mesh
 	int faces = mesh.Faces();
 	int nodes = faces * 3;
-	double* vc = new double[3 * nodes];
-	double* vn = new double[3 * nodes];
+	m_mesh.SetVertexData(new double[3 * nodes], new double[3 * nodes], nullptr, nullptr);
+	m_mesh.BeginMesh();
 	for (int i = 0; i < faces; ++i)
 	{
 		Post::TriMesh::TRI& face = mesh.Face(i);
-		for (int j = 0; j < 3; ++j)
-		{
-			vc[9 * i + 3 * j    ] = face.m_node[j].x;
-			vc[9 * i + 3 * j + 1] = face.m_node[j].y;
-			vc[9 * i + 3 * j + 2] = face.m_node[j].z;
-
-			vn[9 * i + 3 * j    ] = face.m_norm[j].x;
-			vn[9 * i + 3 * j + 1] = face.m_norm[j].y;
-			vn[9 * i + 3 * j + 2] = face.m_norm[j].z;
-		}
+		for (int j = 0; j < 3; ++j) m_mesh.AddVertex(face.m_node[j], face.m_norm[j]);
 	}
-
-	m_mesh.SetData(vc, vn, nullptr, nodes);
+	m_mesh.EndMesh();
 }
 
 void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, Byte val[4], vec3f r[4], const vec3f& faceNormal)
