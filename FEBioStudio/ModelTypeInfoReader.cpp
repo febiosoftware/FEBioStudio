@@ -171,6 +171,7 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
                 case FE_STEP_POLAR_FLUID       : module = "polar fluid"; break;
 				case FE_STEP_EXPLICIT_SOLID    : module = "explicit-solid"; break;
                 case FE_STEP_FLUID_SOLUTES     : module = "fluid-solutes"; break;
+                case FE_STEP_THERMO_FLUID      : module = "thermo-fluid"; break;
 				case FE_STEP_FEBIO_ANALYSIS    :
                 {
                     int mod = prj.GetModule();
