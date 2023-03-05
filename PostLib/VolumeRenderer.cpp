@@ -57,7 +57,8 @@ CVolumeRenderer::CVolumeRenderer(CImageModel* img) : CGLImageRenderer(img)
 
 CVolumeRenderer::~CVolumeRenderer()
 {
-
+	delete[] m_v;
+	delete[] m_t;
 }
 
 void CVolumeRenderer::Create()
@@ -75,82 +76,16 @@ void CVolumeRenderer::Init()
 	assert(m_vrInit == false);
 	if (m_vrInit) return;
 
-	if (InitTexture())
-	{
-		m_vrInit = true;
-		m_vrReset = false;
-		InitShaders();
-	}
-}
+	if (GetImageModel() == nullptr) return;
 
-bool CVolumeRenderer::InitTexture()
-{
-	// load texture data
-	CImageModel& img = *GetImageModel();
-	CImageSource* src = img.GetImageSource();
-	if (src == nullptr) return false;
-
-	C3DImage& im3d = *src->Get3DImage();
-
-	// get the original image dimensions
-	int nx = im3d.Width();
-	int ny = im3d.Height();
-	int nz = im3d.Depth();
-
-	// for 16-bit we calculate the max value
-	m_Iscale = 1.f;
-	if (im3d.BPS() == C3DImage::BPS_16)
-	{
-		int maxVal = 256;
-		word* w = (word*)im3d.GetBytes();
-		int N = nx * ny * nz;
-		for (int i = 0; i < N; ++i)
-		{
-			if (w[i] > maxVal) maxVal = w[i];
-		}
-		m_Iscale = 65535.f / (float)maxVal;
-	}
-	else if (im3d.BPS() == C3DImage::BPS_RGB16)
-	{
-		int maxVal = 256;
-		word* w = (word*)im3d.GetBytes();
-		int N = nx * ny * nz*3;
-		for (int i = 0; i < N; ++i)
-		{
-			if (w[i] > maxVal) maxVal = w[i];
-		}
-		m_Iscale = 65535.f / (float)maxVal;
-	}
-
-
+	// generate a texture ID
 	if (m_texID == 0) glGenTextures(1, &m_texID);
 
-	glBindTexture(GL_TEXTURE_3D, m_texID);
+	ReloadTexture();
 
-//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-	// set texture parameter for 2D textures
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
-
-	// This will copy the image data to texture memory, so in principle we won't need im3d anymore
-	int n = 0;
-	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	switch (im3d.BPS())
-	{
-	case C3DImage::BPS_8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
-	case C3DImage::BPS_16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-	case C3DImage::BPS_RGB8: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
-	case C3DImage::BPS_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-	}
-	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
-
-	return true;
+	m_vrInit = true;
+	m_vrReset = false;
+	InitShaders();
 }
 
 void CVolumeRenderer::ReloadTexture()
@@ -180,8 +115,31 @@ void CVolumeRenderer::ReloadTexture()
 		}
 		m_Iscale = 65535.f / (float)maxVal;
 	}
+	else if (im3d.BPS() == C3DImage::BPS_RGB16)
+	{
+		int maxVal = 256;
+		word* w = (word*)im3d.GetBytes();
+		int N = nx * ny * nz * 3;
+		for (int i = 0; i < N; ++i)
+		{
+			if (w[i] > maxVal) maxVal = w[i];
+		}
+		m_Iscale = 65535.f / (float)maxVal;
+	}
+
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
+
+	//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+	// set texture parameter for 2D textures
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP);
+
 	int n = 0;
 	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -193,6 +151,20 @@ void CVolumeRenderer::ReloadTexture()
 	case C3DImage::BPS_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
 	}
 	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
+
+	// allocate vertex arrays
+	double wx = (double)nx;
+	double wy = (double)ny;
+	double wz = (double)nz;
+	double wt = 2 * sqrt(wx * wx + wy * wy + wz * wz);
+	m_nslices = (int)wt;
+
+	if (m_v) delete[] m_v;
+	if (m_t) delete[] m_t;
+
+	// 3 coord, max 5 triangles per slice, 3 vertex per triangle, (nt+1) slices
+	m_v = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
+	m_t = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
 }
 
 const char* shadertxt_8bit = \
@@ -398,6 +370,17 @@ GLColor HSV2RGB(double H, double S, double V)
 
 void CVolumeRenderer::Render(CGLContext& rc)
 {
+	// make sure volume renderer is initialized
+	if (m_vrInit == false) Init();
+	else if (m_vrReset) 
+	{
+		ReloadTexture();
+		m_vrReset = false;
+	}
+
+	// If we failed to initialize, we're done
+	if (m_vrInit == false) return;
+
 	// load texture data
 	CImageModel& img = *GetImageModel();
 	CImageSource* src = img.GetImageSource();
@@ -410,20 +393,12 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	int ny = im3d.Height();
 	int nz = im3d.Depth();
 
-	// make sure volume renderer is initialized
-	if (m_vrInit == false) Init();
-	else if (m_vrReset) 
-	{
-		ReloadTexture();
-		m_vrReset = false;
-	}
-
-	// If we failed to initialize, we're done
-	if (m_vrInit == false) return;
-
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_3D);
 	glDisable(GL_LIGHTING);
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	
 	// bind texture
 	glBindTexture(GL_TEXTURE_3D, m_texID);
@@ -484,43 +459,18 @@ void CVolumeRenderer::Render(CGLContext& rc)
 		glUniform3f(col3ID, c3[0], c3[1], c3[2]);
 	}
 
-	// get the view direction
-	vec3d view(0, 0, 1);
-	quatd q = rc.m_q;
-	q.Inverse().RotateVector(view);
-
-	// get the bounding box corners
-	BOX box = img.GetBoundingBox();
-	double W = box.Width();
-	double H = box.Height();
-	double D = box.Depth();
-	vec3d r0 = box.r0();
-	vec3d r1 = box.r1();
-	vec3d c[8];
-	c[0] = vec3d(r0.x, r0.y, r0.z);
-	c[1] = vec3d(r1.x, r0.y, r0.z);
-	c[2] = vec3d(r1.x, r1.y, r0.z);
-	c[3] = vec3d(r0.x, r1.y, r0.z);
-	c[4] = vec3d(r0.x, r0.y, r1.z);
-	c[5] = vec3d(r1.x, r0.y, r1.z);
-	c[6] = vec3d(r1.x, r1.y, r1.z);
-	c[7] = vec3d(r0.x, r1.y, r1.z);
-
-	// find the min, max projection distance
-	double tmin = 1e99, tmax = -1e99;
-	for (int i = 0; i < 8; ++i)
-	{
-		double ti = view * c[i];
-		if (ti < tmin) tmin = ti;
-		if (ti > tmax) tmax = ti;
-	}
-
 	double g[3][2] = {
 		{vs->GetFloatValue(CImageViewSettings::CLIPX_MIN), vs->GetFloatValue(CImageViewSettings::CLIPX_MAX)},
 		{vs->GetFloatValue(CImageViewSettings::CLIPY_MIN), vs->GetFloatValue(CImageViewSettings::CLIPY_MAX)},
 		{vs->GetFloatValue(CImageViewSettings::CLIPZ_MIN), vs->GetFloatValue(CImageViewSettings::CLIPZ_MAX)}
 	};
 
+	// get the bounding box
+	BOX box = img.GetBoundingBox();
+	vec3d r0 = box.r0();
+	vec3d r1 = box.r1();
+
+	// activate clipping planes
 	GLdouble clip[6][4] = {
 		{ 1, 0, 0, -(r0.x + g[0][0]*(r1.x - r0.x))},
 		{-1, 0, 0,  (r0.x + g[0][1]*(r1.x - r0.x))},
@@ -540,21 +490,79 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	// Prepare for rendering of the scene
 	double alphaScale = GetImageModel()->GetViewSettings()->GetFloatValue(CImageViewSettings::ALPHA_SCALE);
 	glColor4ub(col.r, col.g, col.b, (GLubyte) (255.0*alphaScale));
-//	glColor4ub(255, 0, 0, (GLubyte) (255.0*alphaScale));
-	glBegin(GL_TRIANGLES);
+
+	// get the view direction
+	vec3d view(0, 0, 1);
+	quatd q = rc.m_q;
+	q.Inverse().RotateVector(view);
 
 	// the normal will be view direction
 	glNormal3d(view.x, view.y, view.z);
 
-	// set a sampling density
-	double wx = (double)nx;
-	double wy = (double)ny;
-	double wz = (double)nz;
-	double wt = 2*sqrt(wx * wx + wy * wy + wz * wz);
-	int nt = (int)wt;
-	for (int i = 0; i <= nt; ++i)
+	// update geometry and render
+	if (m_v && m_t) 
 	{
-		double t = tmin + (double)i * (tmax - tmin) / nt;
+		UpdateGeometry(view);
+
+		glVertexPointer(3, GL_DOUBLE, 0, m_v);
+		glTexCoordPointer(3, GL_DOUBLE, 0, m_t);
+		glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
+	}
+
+	// clean up
+	glUseProgram(0);
+
+	glDisable(GL_CLIP_PLANE0);
+	glDisable(GL_CLIP_PLANE1);
+	glDisable(GL_CLIP_PLANE2);
+	glDisable(GL_CLIP_PLANE3);
+	glDisable(GL_CLIP_PLANE4);
+	glDisable(GL_CLIP_PLANE5);
+
+	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	glDisableClientState(GL_VERTEX_ARRAY);
+
+	glPopAttrib();
+}
+
+void CVolumeRenderer::UpdateGeometry(const vec3d& view)
+{
+	CImageModel& img = *GetImageModel();
+
+	// get the bounding box corners
+	BOX box = img.GetBoundingBox();
+	double W = box.Width();
+	double H = box.Height();
+	double D = box.Depth();
+	vec3d r0 = box.r0();
+	vec3d r1 = box.r1();
+
+	// coordinates of box
+	vec3d c[8];
+	c[0] = vec3d(r0.x, r0.y, r0.z);
+	c[1] = vec3d(r1.x, r0.y, r0.z);
+	c[2] = vec3d(r1.x, r1.y, r0.z);
+	c[3] = vec3d(r0.x, r1.y, r0.z);
+	c[4] = vec3d(r0.x, r0.y, r1.z);
+	c[5] = vec3d(r1.x, r0.y, r1.z);
+	c[6] = vec3d(r1.x, r1.y, r1.z);
+	c[7] = vec3d(r0.x, r1.y, r1.z);
+
+	// find the min, max projection distance
+	double tmin = 1e99, tmax = -1e99;
+	for (int i = 0; i < 8; ++i)
+	{
+		double ti = view * c[i];
+		if (ti < tmin) tmin = ti;
+		if (ti > tmax) tmax = ti;
+	}
+
+	GLdouble* vr = m_v;
+	GLdouble* vt = m_t;
+	m_vertexCount = 0;
+	for (int i = 0; i <= m_nslices; ++i)
+	{
+		double t = tmin + (double)i * (tmax - tmin) / m_nslices;
 
 		// figure out the case
 		int ncase = 0;
@@ -572,7 +580,6 @@ void CVolumeRenderer::Render(CGLContext& rc)
 			if (*pf == -1) break;
 
 			// calculate nodal positions
-			vec3d vr[3], vt[3];
 			for (int k = 0; k < 3; k++)
 			{
 				int n1 = ET_HEX[pf[k]][0];
@@ -580,31 +587,21 @@ void CVolumeRenderer::Render(CGLContext& rc)
 
 				double w = (t - nv[n1]) / (nv[n2] - nv[n1]);
 
-				vr[k] = c[n1] * (1 - w) + c[n2] * w;
-				vt[k].x = (vr[k].x - r0.x) / W;
-				vt[k].y = (vr[k].y - r0.y) / H;
-				vt[k].z = (vr[k].z - r0.z) / D;
-			}
+				vr[0] = c[n1].x * (1 - w) + c[n2].x * w;
+				vr[1] = c[n1].y * (1 - w) + c[n2].y * w;
+				vr[2] = c[n1].z * (1 - w) + c[n2].z * w;
 
-			// render the face
-			glTexCoord3d(vt[0].x, vt[0].y, vt[0].z); glVertex3d(vr[0].x, vr[0].y, vr[0].z);
-			glTexCoord3d(vt[1].x, vt[1].y, vt[1].z); glVertex3d(vr[1].x, vr[1].y, vr[1].z);
-			glTexCoord3d(vt[2].x, vt[2].y, vt[2].z); glVertex3d(vr[2].x, vr[2].y, vr[2].z);
+				vt[0] = (vr[0] - r0.x) / W;
+				vt[1] = (vr[1] - r0.y) / H;
+				vt[2] = (vr[2] - r0.z) / D;
+
+				vr += 3;
+				vt += 3;
+				m_vertexCount++;
+			}
 
 			// on to the next face
 			pf += 3;
 		}
 	}
-	glEnd();
-
-	glUseProgram(0);
-
-	glDisable(GL_CLIP_PLANE0);
-	glDisable(GL_CLIP_PLANE1);
-	glDisable(GL_CLIP_PLANE2);
-	glDisable(GL_CLIP_PLANE3);
-	glDisable(GL_CLIP_PLANE4);
-	glDisable(GL_CLIP_PLANE5);
-
-	glPopAttrib();
 }

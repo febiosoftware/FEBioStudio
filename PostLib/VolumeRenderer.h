@@ -47,9 +47,9 @@ public:
 
 private:
 	void Init();
-	bool InitTexture();
 	void InitShaders();
 	void ReloadTexture();
+	void UpdateGeometry(const vec3d& view);
 
 private:
 	unsigned int m_texID;
@@ -57,6 +57,11 @@ private:
 	float	m_Iscale;
 	bool	m_vrInit;
 	bool	m_vrReset;
+
+	double* m_v = nullptr;
+	double* m_t = nullptr;
+	int	m_nslices = 0;
+	int	m_vertexCount = 0;
 };
 
 }
