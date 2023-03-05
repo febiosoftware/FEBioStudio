@@ -373,7 +373,7 @@ public:
 	void UpdatePlaneCut(bool breset = false);
 
 private:
-	GLMesh* BuildPlaneCut(FSModel& fem);
+	GMesh* BuildPlaneCut(FSModel& fem);
 
 public:
 	void SetColorMap(Post::CColorMap& map);
@@ -389,7 +389,7 @@ public:
 
 	bool ShowPlaneCut();
 
-	GLMesh* PlaneCutMesh();
+	GMesh* PlaneCutMesh();
 
 	int PlaneCutMode();
 
@@ -491,7 +491,7 @@ private:
 	bool		m_showPlaneCut;
 	int			m_planeCutMode;
 	double		m_plane[4];
-	GLMesh*		m_planeCut;
+	GMesh*		m_planeCut;
 
 	std::string		m_oglVersionString;
 };

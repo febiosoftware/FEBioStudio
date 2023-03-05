@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <list>
 #include <stack>
 #include <sstream>
@@ -674,7 +674,7 @@ FSMesh* GMeshObject::BuildMesh()
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GLMesh* gmesh = new GLMesh();
+	GMesh* gmesh = new GMesh();
 
 	// we'll extract the data from the FE mesh
 	FSMesh* pm = GetFEMesh();

@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "GLWLib/GLWidget.h"
 #include "PostLib/DataMap.h"
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 namespace Post {
 
@@ -105,7 +105,7 @@ protected:
 	vector<float>	m_val;	// current nodal values
 	vector<vec3f>	m_grd;	// current gradient values
 
-	GLMesh	m_mesh;	// the mesh to render
+	GMesh	m_mesh;	// the mesh to render
 
 	int		m_lastTime;
 	float	m_lastdt;

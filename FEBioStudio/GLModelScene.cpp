@@ -86,7 +86,7 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	if (glview->ShowPlaneCut())
 	{
-		GLMesh* planecut = glview->PlaneCutMesh();
+		GMesh* planecut = glview->PlaneCutMesh();
 		if (planecut == nullptr) glview->UpdatePlaneCut();
 		if (glview->PlaneCutMode() == 0)
 		{
@@ -1300,7 +1300,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 			glPushMatrix();
 			SetModelView(po);
 
-			GLMesh& m = *po->GetRenderMesh();
+			GMesh& m = *po->GetRenderMesh();
 			renderer.RenderGLEdges(&m);
 
 			glPopMatrix();
@@ -1400,7 +1400,7 @@ void CGLModelScene::RenderEdges(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = rc.m_view->GetMeshRenderer();
 
-	GLMesh& m = *po->GetRenderMesh();
+	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
@@ -1425,7 +1425,7 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = rc.m_view->GetMeshRenderer();
 
-	GLMesh& m = *po->GetRenderMesh();
+	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
@@ -1496,9 +1496,9 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 
 	VIEW_SETTINGS& vs = glview->GetViewSettings();
 
-	// get the GLMesh
+	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GLMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
 	// render non-selected faces
@@ -1554,7 +1554,7 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = rc.m_view->GetMeshRenderer();
 
-	GLMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
 	// render the selected faces
@@ -1717,9 +1717,9 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 
 	VIEW_SETTINGS& vs = glview->GetViewSettings();
 
-	// get the GLMesh
+	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GLMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh();
 	assert(pm);
 
 	// render non-selected parts
@@ -1789,7 +1789,7 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 		glEnable(GL_POLYGON_STIPPLE);
 		SetMatProps(0);
 		glColor3ub(0, 0, 255);
-		GLMesh& m = *po->GetRenderMesh();
+		GMesh& m = *po->GetRenderMesh();
 		int NF = po->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
@@ -1824,9 +1824,9 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	VIEW_SETTINGS& vs = glview->GetViewSettings();
 
-	// get the GLMesh
+	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GLMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh();
 	if (pm == 0) return;
 	assert(pm);
 
@@ -1909,9 +1909,9 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 
 	VIEW_SETTINGS& vs = glview->GetViewSettings();
 
-	// get the GLMesh
+	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GLMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh();
 	if (pm == 0) return;
 
 	GLMeshRender& renderer = glview->GetMeshRenderer();

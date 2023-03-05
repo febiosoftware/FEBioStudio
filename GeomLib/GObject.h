@@ -44,7 +44,7 @@ class FSMeshBase;
 class FSLineMesh;
 class FSNode;
 class FSGroup;
-class GLMesh;
+class GMesh;
 class GObject;
 
 //-----------------------------------------------------------------------------
@@ -176,7 +176,7 @@ public:
 	virtual void BuildGMesh();
 
 	// get the render mesh
-	GLMesh*	GetRenderMesh();
+	GMesh*	GetRenderMesh();
 
 	// get the local bounding box 
 	BOX GetLocalBox() const;
@@ -213,7 +213,7 @@ public:
 
 protected:
 	// set the render mesh
-	void SetRenderMesh(GLMesh* mesh);
+	void SetRenderMesh(GMesh* mesh);
 
 	void SetValidFlag(bool b);
 

@@ -125,7 +125,7 @@ void drawEdge(CGLView* view, GEdge* edge, GLColor c)
 	glPushMatrix();
 	SetModelView(po);
 
-	GLMesh& m = *po->GetRenderMesh();
+	GMesh& m = *po->GetRenderMesh();
 	view->GetMeshRenderer().RenderGLEdges(&m, edge->GetLocalID());
 
 	GNode* n0 = po->Node(edge->m_node[0]);

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElement.h>
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/quad8.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <GLLib/glx.h>
 
 //-----------------------------------------------------------------------------
@@ -1328,7 +1328,7 @@ void GLMeshRender::RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderGLMesh(GLMesh* pm, int nid)
+void GLMeshRender::RenderGLMesh(GMesh* pm, int nid)
 {
 	vec3d r0, r1, r2;
 	vec3d n0, n1, n2;
@@ -1410,7 +1410,7 @@ void GLMeshRender::RenderGLMesh(GLMesh* pm, int nid)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
+void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 {
 	vec3d r0, r1;
 	if (pm == 0) return;
@@ -1459,7 +1459,7 @@ void GLMeshRender::RenderGLEdges(GLMesh* pm, int nid)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderGLMeshLines(GLMesh* pm)
+void GLMeshRender::RenderGLMeshLines(GMesh* pm)
 {
 	if (pm == 0) return;
 

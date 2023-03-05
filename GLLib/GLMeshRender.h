@@ -33,7 +33,7 @@ class FSFace;
 class FSLineMesh;
 class FSCoreMesh;
 class FSMeshBase;
-class GLMesh;
+class GMesh;
 
 class GLMeshRender
 {
@@ -54,9 +54,9 @@ public:
 	void SetDivisions(int ndivs) { m_ndivs = ndivs; }
 
 public:
-	void RenderGLMesh(GLMesh* pm, int nid = -1);
-	void RenderGLEdges(GLMesh* pm, int nid = -1);
-	void RenderGLMeshLines(GLMesh* pm);
+	void RenderGLMesh(GMesh* pm, int nid = -1);
+	void RenderGLEdges(GMesh* pm, int nid = -1);
+	void RenderGLMeshLines(GMesh* pm);
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);

@@ -2673,7 +2673,7 @@ bool CGLView::SelectPivot(int x, int y)
 //-----------------------------------------------------------------------------
 bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 {
-	GLMesh* mesh = po->GetRenderMesh();
+	GMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return false;
 
 	Intersection qtmp;
@@ -2790,7 +2790,7 @@ void CGLView::SelectParts(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh();
+			GMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
 				int NF = mesh->Faces();
@@ -2893,7 +2893,7 @@ void CGLView::SelectSurfaces(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh();
+			GMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
 				int NF = mesh->Faces();
@@ -2980,7 +2980,7 @@ void CGLView::SelectEdges(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
 				int edges = mesh->Edges();
@@ -3061,7 +3061,7 @@ void CGLView::HighlightEdge(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
 				int edges = mesh->Edges();
@@ -4164,7 +4164,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GLMesh* mesh = po->GetRenderMesh();
+		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			bool intersect = false;
@@ -4237,7 +4237,7 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GLMesh* mesh = po->GetRenderMesh();
+		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			for (int j = 0; j<mesh->Faces(); ++j)
@@ -4306,7 +4306,7 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	for (int i=0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GLMesh* mesh = po->GetRenderMesh();
+		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			for (int j=0; j<mesh->Faces(); ++j)
@@ -5632,7 +5632,7 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-GLMesh* CGLView::BuildPlaneCut(FSModel& fem)
+GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 {
 	GModel& mdl = fem.GetModel();
 	VIEW_SETTINGS& vs = GetViewSettings();
@@ -5650,7 +5650,7 @@ GLMesh* CGLView::BuildPlaneCut(FSModel& fem)
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
-	GLMesh* planeCut = new GLMesh;
+	GMesh* planeCut = new GMesh;
 
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -5959,7 +5959,7 @@ bool CGLView::ShowPlaneCut()
 	return m_showPlaneCut;
 }
 
-GLMesh* CGLView::PlaneCutMesh()
+GMesh* CGLView::PlaneCutMesh()
 {
 	return m_planeCut;
 }

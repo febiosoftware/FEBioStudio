@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshTools/FEMesher.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <MeshTools/GLMesher.h>
 #include <sstream>
 
@@ -73,7 +73,7 @@ public:
 
 	FSMesh*		m_pmesh;	//!< the mesh that this object manages
 	FEMesher*	m_pMesher;	//!< the mesher builds the actual mesh
-	GLMesh*		m_pGMesh;	//!< the mesh for rendering
+	GMesh*		m_pGMesh;	//!< the mesh for rendering
 
 	FSObjectList<FSPart>		m_pFEPart;
 	FSObjectList<FSSurface>		m_pFESurf;
@@ -166,7 +166,7 @@ void GObject::SetFEMesh(FSMesh* pm)
 
 //-----------------------------------------------------------------------------
 // set the render mesh
-void GObject::SetRenderMesh(GLMesh* mesh)
+void GObject::SetRenderMesh(GMesh* mesh)
 {
 	delete imp->m_pGMesh;
 	imp->m_pGMesh = mesh;
@@ -542,7 +542,7 @@ bool GObject::IsFaceVisible(const GFace* pf) const
 
 //-----------------------------------------------------------------------------
 // get the render mesh
-GLMesh*	GObject::GetRenderMesh()
+GMesh*	GObject::GetRenderMesh()
 { 
 	return imp->m_pGMesh;
 }
