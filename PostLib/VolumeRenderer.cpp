@@ -57,8 +57,6 @@ CVolumeRenderer::CVolumeRenderer(CImageModel* img) : CGLImageRenderer(img)
 
 CVolumeRenderer::~CVolumeRenderer()
 {
-	delete[] m_v;
-	delete[] m_t;
 }
 
 void CVolumeRenderer::Create()
@@ -159,12 +157,10 @@ void CVolumeRenderer::ReloadTexture()
 	double wt = 2 * sqrt(wx * wx + wy * wy + wz * wz);
 	m_nslices = (int)wt;
 
-	if (m_v) delete[] m_v;
-	if (m_t) delete[] m_t;
-
 	// 3 coord, max 5 triangles per slice, 3 vertex per triangle, (nt+1) slices
-	m_v = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
-	m_t = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
+	double* vc = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
+	double* vt = new GLdouble[3 * 5 * 3 * (m_nslices + 1)];
+	m_mesh.SetData(vc, nullptr, vt, 0);
 }
 
 const char* shadertxt_8bit = \
@@ -397,9 +393,6 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glEnable(GL_TEXTURE_3D);
 	glDisable(GL_LIGHTING);
 
-	glEnableClientState(GL_VERTEX_ARRAY);
-	glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	
 	// bind texture
 	glBindTexture(GL_TEXTURE_3D, m_texID);
 
@@ -500,14 +493,8 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glNormal3d(view.x, view.y, view.z);
 
 	// update geometry and render
-	if (m_v && m_t) 
-	{
-		UpdateGeometry(view);
-
-		glVertexPointer(3, GL_DOUBLE, 0, m_v);
-		glTexCoordPointer(3, GL_DOUBLE, 0, m_t);
-		glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
-	}
+	UpdateGeometry(view);
+	m_mesh.Render();
 
 	// clean up
 	glUseProgram(0);
@@ -519,8 +506,6 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glDisable(GL_CLIP_PLANE4);
 	glDisable(GL_CLIP_PLANE5);
 
-	glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	glDisableClientState(GL_VERTEX_ARRAY);
 
 	glPopAttrib();
 }
@@ -557,9 +542,9 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 		if (ti > tmax) tmax = ti;
 	}
 
-	GLdouble* vr = m_v;
-	GLdouble* vt = m_t;
-	m_vertexCount = 0;
+	m_mesh.BeginMesh();
+	GLdouble vr[3];
+	GLdouble vt[3];
 	for (int i = 0; i <= m_nslices; ++i)
 	{
 		double t = tmin + (double)i * (tmax - tmin) / m_nslices;
@@ -595,13 +580,12 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 				vt[1] = (vr[1] - r0.y) / H;
 				vt[2] = (vr[2] - r0.z) / D;
 
-				vr += 3;
-				vt += 3;
-				m_vertexCount++;
+				m_mesh.AddVertex(vr, nullptr, vt);
 			}
 
 			// on to the next face
 			pf += 3;
 		}
 	}
+	m_mesh.EndMesh();
 }

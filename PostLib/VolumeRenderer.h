@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLImageRenderer.h"
+#include <GLLib/GLVAMesh.h>
 
 namespace Post {
 
@@ -58,10 +59,8 @@ private:
 	bool	m_vrInit;
 	bool	m_vrReset;
 
-	double* m_v = nullptr;
-	double* m_t = nullptr;
 	int	m_nslices = 0;
-	int	m_vertexCount = 0;
+	GLVAMesh m_mesh;
 };
 
 }

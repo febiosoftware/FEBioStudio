@@ -94,8 +94,8 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 	AddBoolParam(true, "invert space");
 	AddBoolParam(true, "allow clipping");
 
-	m_val = 0.5f;
-	m_oldVal = -1.f;
+	m_val = 0.5;
+	m_oldVal = -1.0;
 	m_bsmooth = true;
 	m_bcloseSurface = true;
 	m_binvertSpace = false;
@@ -113,14 +113,16 @@ bool CMarchingCubes::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		m_val = GetFloatValue(ISO_VALUE);
-		m_bsmooth = GetBoolValue(SMOOTH);
-		m_col = GetColorValue(COLOR);
-		m_bcloseSurface = GetBoolValue(CLOSE_SURFACE);
-		m_binvertSpace = GetBoolValue(INVERT_SPACE);
-		AllowClipping(GetBoolValue(CLIP));
+		bool update = false;
 
-		CreateSurface();
+		if (m_val != GetFloatValue(ISO_VALUE)) { m_val = GetFloatValue(ISO_VALUE);  update = true; }
+		if (m_bsmooth != GetBoolValue(SMOOTH)) { m_bsmooth = GetBoolValue(SMOOTH); update = true; }
+		if (m_bcloseSurface != GetBoolValue(CLOSE_SURFACE)) { m_bcloseSurface = GetBoolValue(CLOSE_SURFACE); update = true; };
+		if (m_binvertSpace != GetBoolValue(INVERT_SPACE)) { m_binvertSpace = GetBoolValue(INVERT_SPACE); update = true; }
+		AllowClipping(GetBoolValue(CLIP));
+		m_col = GetColorValue(COLOR);
+
+		if (update) CreateSurface();
 	}
 	else
 	{
@@ -171,8 +173,6 @@ void CMarchingCubes::CreateSurface()
 {
 	m_oldVal = m_val;
 
-	m_mesh.Clear();
-
 	CImageModel& im = *GetImageModel();
 	if (im.Get3DImage() == nullptr) return;
 	C3DImage& im3d = *im.Get3DImage();
@@ -188,11 +188,14 @@ void CMarchingCubes::CreateSurface()
 	float dyi = (b.y1 - b.y0) / (NY - 1);
 	float dzi = (b.z1 - b.z0) / (NZ - 1);
 
-	Byte ref = (Byte)(m_val * 255.f);
+	Byte ref = (Byte)(m_val * 255.0);
 	float fref = (float)ref;
 	m_ref = ref;
 
 	C3DGradientMap grad(im3d, b);
+
+	// construct a mesh object
+	TriMesh mesh;
 
 	#pragma omp parallel default(shared)
 	{
@@ -315,7 +318,7 @@ void CMarchingCubes::CreateSurface()
 							if (nfaces == MAX_FACES)
 							{
 								#pragma omp critical
-								m_mesh.Merge(temp, nfaces);
+								mesh.Merge(temp, nfaces);
 								nfaces = 0;
 							}
 						}
@@ -331,7 +334,7 @@ void CMarchingCubes::CreateSurface()
 		}
 
 		#pragma omp critical
-		m_mesh.Merge(temp, nfaces);
+		mesh.Merge(temp, nfaces);
 	}
 
 	// create surface meshes
@@ -364,7 +367,7 @@ void CMarchingCubes::CreateSurface()
 					r[3].x = x; r[3].y = b.y0 + j      *dyi; r[3].z = b.z0 + (k + 1)*dzi;
 
 					// add the triangles
-					AddSurfaceTris(val, r, faceNormal);
+					AddSurfaceTris(mesh, val, r, faceNormal);
 				}
 			}
 		}
@@ -393,7 +396,7 @@ void CMarchingCubes::CreateSurface()
 					r[3].x = b.x0 + i    *dxi; r[3].y = y; r[3].z = b.z0 + (k + 1)*dzi;
 
 					// add the triangles
-					AddSurfaceTris(val, r, faceNormal);
+					AddSurfaceTris(mesh, val, r, faceNormal);
 				}
 			}
 		}
@@ -422,14 +425,36 @@ void CMarchingCubes::CreateSurface()
 					r[3].x = b.x0 + i      *dxi; r[3].y = b.y0 + (j + 1)*dyi; r[3].z = z;
 
 					// add the triangles
-					AddSurfaceTris(val, r, faceNormal);
+					AddSurfaceTris(mesh, val, r, faceNormal);
 				}
 			}
 		}
 	}
+
+	// create vertex arrays from mesh
+	int faces = mesh.Faces();
+	int nodes = faces * 3;
+	double* vc = new double[3 * nodes];
+	double* vn = new double[3 * nodes];
+	for (int i = 0; i < faces; ++i)
+	{
+		Post::TriMesh::TRI& face = mesh.Face(i);
+		for (int j = 0; j < 3; ++j)
+		{
+			vc[9 * i + 3 * j    ] = face.m_node[j].x;
+			vc[9 * i + 3 * j + 1] = face.m_node[j].y;
+			vc[9 * i + 3 * j + 2] = face.m_node[j].z;
+
+			vn[9 * i + 3 * j    ] = face.m_norm[j].x;
+			vn[9 * i + 3 * j + 1] = face.m_norm[j].y;
+			vn[9 * i + 3 * j + 2] = face.m_norm[j].z;
+		}
+	}
+
+	m_mesh.SetData(vc, vn, nullptr, nodes);
 }
 
-void CMarchingCubes::AddSurfaceTris(Byte val[4], vec3f r[4], const vec3f& faceNormal)
+void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, Byte val[4], vec3f r[4], const vec3f& faceNormal)
 {
 	// calculate the case of the voxel
 	int ncase = 0;
@@ -477,7 +502,7 @@ void CMarchingCubes::AddSurfaceTris(Byte val[4], vec3f r[4], const vec3f& faceNo
 			tri.m_norm[m] = faceNormal;
 		}
 
-		m_mesh.AddFace(tri);
+		mesh.AddFace(tri);
 
 		pf += 3;
 	}
@@ -491,16 +516,5 @@ void CMarchingCubes::SetIsoValue(float v)
 void CMarchingCubes::Render(CGLContext& rc)
 {
 	glColor3ub(m_col.r, m_col.g, m_col.b);
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < m_mesh.Faces(); ++i)
-	{
-		TriMesh::TRI& face = m_mesh.Face(i);
-		glNormal3f(face.m_norm[0].x, face.m_norm[0].y, face.m_norm[0].z);
-		glVertex3f(face.m_node[0].x, face.m_node[0].y, face.m_node[0].z);
-		glNormal3f(face.m_norm[1].x, face.m_norm[1].y, face.m_norm[1].z);
-		glVertex3f(face.m_node[1].x, face.m_node[1].y, face.m_node[1].z);
-		glNormal3f(face.m_norm[2].x, face.m_norm[2].y, face.m_norm[2].z);
-		glVertex3f(face.m_node[2].x, face.m_node[2].y, face.m_node[2].z);
-	}
-	glEnd();
+	m_mesh.Render();
 }

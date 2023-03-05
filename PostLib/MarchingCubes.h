@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <vector>
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
+#include <GLLib/GLVAMesh.h>
 
 namespace Post {
 
@@ -95,18 +96,18 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 private:
-	void AddSurfaceTris(Byte val[4], vec3f r[4], const vec3f& faceNormal);
+	void AddSurfaceTris(TriMesh& mesh, Byte val[4], vec3f r[4], const vec3f& faceNormal);
 
 	void CreateSurface();
 
 private:
-	float	m_val, m_oldVal;		// iso-surface value
+	double	m_val, m_oldVal;		// iso-surface value
 	bool	m_bsmooth;
 	bool	m_bcloseSurface;
 	bool	m_binvertSpace;
 	GLColor	m_col;
-	TriMesh	m_mesh;
-
 	Byte m_ref;
+
+	GLVAMesh	m_mesh;
 };
 }
