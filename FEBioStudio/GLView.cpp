@@ -1493,6 +1493,7 @@ void CGLView::paintGL()
 	int nitem = pdoc->GetItemMode();
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
 	CGLContext& rc = m_rc;
 	rc.m_view = this;
@@ -1757,11 +1758,9 @@ void CGLView::SetupProjection()
 	double R = box.Radius();
 	VIEW_SETTINGS& vs = GetViewSettings();
 
-	// NOTE: For some reason the camera position is coming back with the opposite sign
-	//       so I need to add p and c, instead of subtract. Need to look into this closer. 
 	vec3d p = cam.GlobalPosition();
 	vec3d c = box.Center();
-	double L = (c + p).Length();
+	double L = (c - p).Length();
 
 	view.m_ffar = (L + R) * 2;
 	view.m_fnear = 0.01f*view.m_ffar;

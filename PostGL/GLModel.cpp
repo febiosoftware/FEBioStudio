@@ -1863,7 +1863,9 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
 	
-	quatd q = rc.m_cam->GetOrientation();
+	CGLCamera& cam = *rc.m_cam;
+	quatd q = cam.GetOrientation();
+	vec3d p = cam.GlobalPosition();
 	int ndivs = GetSubDivisions();
 
 	vector<vec3d> points; points.reserve(1024);
@@ -1911,11 +1913,23 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 					{
 						vec3d n1 = to_vec3d(f.m_fn);
 						vec3d n2 = to_vec3d(f2.m_fn);
-						q.RotateVector(n1);
-						q.RotateVector(n2);
-						if (n1.z * n2.z <= 0)
+
+						if (cam.IsOrtho())
 						{
-							bdraw = true;
+							q.RotateVector(n1);
+							q.RotateVector(n2);
+							if (n1.z * n2.z <= 0)
+							{
+								bdraw = true;
+							}
+						}
+						else
+						{
+							vec3d e1 = p - pm->FaceCenter(f);
+							vec3d e2 = p - pm->FaceCenter(f2);
+							double d1 = e1 * n1;
+							double d2 = e2 * n2;
+							if (d1 * d2 <= 0) bdraw = true;
 						}
 					}
 				}
