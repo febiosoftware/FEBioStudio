@@ -200,6 +200,36 @@ void GLVAMesh::ZSortFaces(const CGLCamera& cam)
 	m_bvalid = true;
 }
 
+void GLVAMesh::SortBackwards()
+{
+	if (m_bvalid == false) return;
+	m_bvalid = false;
+	delete[] m_ind;
+
+	unsigned int faces = m_vertexCount / 3; assert((m_vertexCount % 3) == 0);
+
+	// build the new index list
+	m_ind = new unsigned int[3 * faces];
+	for (int i = 0; i < faces; ++i)
+	{
+		int n = faces - i - 1;
+		m_ind[3 * i] = 3 * n;
+		m_ind[3 * i + 1] = 3 * n + 1;
+		m_ind[3 * i + 2] = 3 * n + 2;
+	}
+
+	m_bvalid = true;
+}
+
+void GLVAMesh::SortForwards()
+{
+	if (m_bvalid == false) return;
+	m_bvalid = false;
+	delete[] m_ind;
+	m_ind = nullptr;
+	m_bvalid = true;
+}
+
 void GLVAMesh::Render()
 {
 	if (!m_bvalid) return;
