@@ -65,6 +65,9 @@ SOFTWARE.*/
 #include <PostLib/ImageSlicer.h>
 #include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
+#include <chrono>
+using namespace std::chrono;
+using dseconds = std::chrono::duration<double>;
 
 static bool initGlew = false;
 
@@ -392,6 +395,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_grid.SetView(this);
 
 	m_btrack = false;
+
+	m_showFPS = false;
 
 	Reset();
 
@@ -1471,6 +1476,9 @@ void CGLView::repaintEvent()
 
 void CGLView::paintGL()
 {
+	time_point<steady_clock> startTime;
+	startTime = steady_clock::now();
+
 	// Get the current document
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr)
@@ -1637,6 +1645,25 @@ void CGLView::paintGL()
 		painter.setPen(QPen(Qt::red));
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rect(), "Recording paused", to);
+		painter.end();
+	}
+
+	// stop time
+	time_point<steady_clock> stopTime;
+	stopTime = steady_clock::now();
+
+	double sec = duration_cast<dseconds>(stopTime - startTime).count();
+	if (m_showFPS)
+	{
+		QPainter painter(this);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		QTextOption to;
+		QFont font = painter.font();
+		font.setPointSize(12);
+		painter.setFont(font);
+		painter.setPen(QPen(Qt::red));
+		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
+		painter.drawText(rect(), QString("FPS: %1").arg(1.0 / sec), to);
 		painter.end();
 	}
 
@@ -6030,4 +6057,9 @@ void CGLView::RenderPlaneCut()
 		cam.Transform();
 	}
 	glPopAttrib();
+}
+
+void CGLView::ToggleFPS()
+{
+	m_showFPS = !m_showFPS;
 }

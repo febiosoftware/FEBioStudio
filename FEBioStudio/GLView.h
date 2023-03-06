@@ -239,6 +239,8 @@ public:
 
 	std::string GetOGLVersionString();
 
+	void ToggleFPS();
+
 protected:
 	void mousePressEvent  (QMouseEvent* ev);
 	void mouseMoveEvent   (QMouseEvent* ev);
@@ -415,6 +417,8 @@ protected:
 	int			m_dxp, m_dyp;
 	View_Mode	m_nview;
 	Snap_Mode	m_nsnap;
+
+	bool	m_showFPS;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;

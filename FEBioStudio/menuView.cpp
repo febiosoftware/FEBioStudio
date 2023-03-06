@@ -311,3 +311,9 @@ void CMainWindow::on_actionToggleConnected_triggered()
 {
 	ui->glw->glc->toggleSelectConnected();
 }
+
+void CMainWindow::on_actionToggleFPS_triggered()
+{
+	GetGLView()->ToggleFPS();
+	RedrawGL();
+}

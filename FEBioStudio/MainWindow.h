@@ -498,6 +498,7 @@ public slots:
 	void on_actionViewVPNext_triggered();
 	void on_actionSyncViews_triggered();
 	void on_actionToggleConnected_triggered();
+	void on_actionToggleFPS_triggered();
 
 	void on_actionUpdate_triggered(bool dev = false);
 	void on_actionFEBioURL_triggered();

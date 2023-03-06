@@ -693,6 +693,8 @@ public:
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
 		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S | Qt::AltModifier);
 
+		QAction* actionToggleFPS = addAction("Toggle FPS", "actionToggleFPS"); actionToggleFPS->setShortcut(Qt::Key_F12 | Qt::ControlModifier);
+
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
@@ -993,6 +995,7 @@ public:
 		menuView->addAction(actionTrack);
 		menuView->addAction(actionToggleLight);
 		menuView->addAction(actionToggleConnected);
+		menuView->addAction(actionToggleFPS);
 		menuView->addSeparator();
 
 		menuViews = menuView->addMenu("Standard views");
