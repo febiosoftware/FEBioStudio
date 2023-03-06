@@ -2213,77 +2213,67 @@ void CGLModel::RenderEdges(FEPostModel* ps, CGLContext& rc)
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 
-	vec3d r[3];
-
 	Post::FEPostMesh& mesh = *GetActiveMesh();
 	int NE = mesh.Edges();
 
+	GLLineMesh lineMesh;
+	lineMesh.AllocVertexBuffers(NE * 4, GLVAMesh::FLAG_VERTEX);
+
 	// render unselected edges
 	glColor3ub(0, 0, 255);
-	glBegin(GL_LINES);
+	lineMesh.BeginMesh();
+	for (int i = 0; i<NE; ++i)
 	{
-		for (int i = 0; i<NE; ++i)
+		FSEdge& edge = mesh.Edge(i);
+		if (edge.IsVisible() && (edge.IsSelected() == false))
 		{
-			FSEdge& edge = mesh.Edge(i);
-			if (edge.IsVisible() && (edge.IsSelected() == false))
+			switch (edge.Type())
 			{
-				switch (edge.Type())
-				{
-				case FE_EDGE2:
-					r[0] = mesh.Node(edge.n[0]).r;
-					r[1] = mesh.Node(edge.n[1]).r;
-					glVertex3d(r[0].x, r[0].y, r[0].z);
-					glVertex3d(r[1].x, r[1].y, r[1].z);
-					break;
-				case FE_EDGE3:
-					r[0] = mesh.Node(edge.n[0]).r;
-					r[1] = mesh.Node(edge.n[1]).r;
-					r[2] = mesh.Node(edge.n[2]).r;
-					glVertex3d(r[0].x, r[0].y, r[0].z);
-					glVertex3d(r[1].x, r[1].y, r[1].z);
-					glVertex3d(r[1].x, r[1].y, r[1].z);
-					glVertex3d(r[2].x, r[2].y, r[2].z);
-					break;
-				}
+			case FE_EDGE2:
+				lineMesh.AddVertex(mesh.Node(edge.n[0]).r);
+				lineMesh.AddVertex(mesh.Node(edge.n[1]).r);
+				break;
+			case FE_EDGE3:
+				lineMesh.AddVertex(mesh.Node(edge.n[0]).r);
+				lineMesh.AddVertex(mesh.Node(edge.n[1]).r);
+				lineMesh.AddVertex(mesh.Node(edge.n[1]).r);
+				lineMesh.AddVertex(mesh.Node(edge.n[2]).r);
+				break;
 			}
 		}
 	}
-	glEnd();
+	lineMesh.EndMesh();
+	lineMesh.Render();
 
 	// render selected edges
 	if (GetSelectionMode() == SELECT_EDGES)
 	{
 		glDisable(GL_DEPTH_TEST);
 		glColor3ub(255, 255, 0);
-		glBegin(GL_LINES);
+
+		lineMesh.BeginMesh();
+		for (int i = 0; i<NE; ++i)
 		{
-			for (int i = 0; i<NE; ++i)
+			FSEdge& edge = mesh.Edge(i);
+			if (edge.IsVisible() && edge.IsSelected())
 			{
-				FSEdge& edge = mesh.Edge(i);
-				if (edge.IsVisible() && edge.IsSelected())
+				switch (edge.Type())
 				{
-					switch (edge.Type())
-					{
-					case FE_EDGE2:
-						r[0] = mesh.Node(edge.n[0]).r;
-						r[1] = mesh.Node(edge.n[1]).r;
-						glVertex3d(r[0].x, r[0].y, r[0].z);
-						glVertex3d(r[1].x, r[1].y, r[1].z);
-						break;
-					case FE_EDGE3:
-						r[0] = mesh.Node(edge.n[0]).r;
-						r[1] = mesh.Node(edge.n[1]).r;
-						r[2] = mesh.Node(edge.n[2]).r;
-						glVertex3d(r[0].x, r[0].y, r[0].z);
-						glVertex3d(r[1].x, r[1].y, r[1].z);
-						glVertex3d(r[1].x, r[1].y, r[1].z);
-						glVertex3d(r[2].x, r[2].y, r[2].z);
-						break;
-					}
+				case FE_EDGE2:
+					lineMesh.AddVertex(mesh.Node(edge.n[0]).r);
+					lineMesh.AddVertex(mesh.Node(edge.n[1]).r);
+					break;
+				case FE_EDGE3:
+					lineMesh.AddVertex(mesh.Node(edge.n[0]).r);
+					lineMesh.AddVertex(mesh.Node(edge.n[1]).r);
+					lineMesh.AddVertex(mesh.Node(edge.n[1]).r);
+					lineMesh.AddVertex(mesh.Node(edge.n[2]).r);
+					break;
 				}
 			}
 		}
-		glEnd();
+		lineMesh.EndMesh();
+		lineMesh.Render();
 	}
 
 	// restore attributes
