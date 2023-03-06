@@ -89,6 +89,6 @@ private:
 	vector<float>	m_val;	// current nodal values
 	BOX				m_box;
 
-	GLVAMesh	m_mesh;
+	GLTriMesh	m_mesh;
 };
 } // namespace Post

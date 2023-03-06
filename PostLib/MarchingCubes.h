@@ -108,6 +108,6 @@ private:
 	GLColor	m_col;
 	Byte m_ref;
 
-	GLVAMesh	m_mesh;
+	GLTriMesh	m_mesh;
 };
 }

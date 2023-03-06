@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GLWLib/GLWidget.h"
 #include <PostLib/FEPostMesh.h>
 #include <MeshLib/FEFindElement.h>
+#include <GLLib/GLVAMesh.h>
 
 namespace Post {
 
@@ -113,6 +114,8 @@ protected:
 
 	vec3f Velocity(const vec3f& r, bool& ok);
 
+	void UpdateMesh();
+
 private:
 	int	m_nvec;	// vector field
 
@@ -140,5 +143,7 @@ private:
 	int		m_rangeType;				//!< dynamic, static, or user-defined
 	double	m_userMin, m_userMax;		//!< range for user-defined range
 	double	m_rngMin, m_rngMax;
+
+	GLLineMesh	m_mesh;
 };
 }

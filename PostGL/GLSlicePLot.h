@@ -118,6 +118,6 @@ protected:
 	int m_lastTime;
 	float	m_lastDt;
 
-	GLVAMesh	m_mesh;
+	GLTriMesh	m_mesh;
 };
 }

@@ -130,7 +130,7 @@ public:
 	bool		m_bfaceColor;		//!< use face colors when rendering
 
 private:
-	GLVAMesh	m_glmesh;
+	GLTriMesh	m_glmesh;
 };
 
 // drawing routines for edges

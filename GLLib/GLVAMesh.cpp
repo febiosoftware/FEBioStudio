@@ -38,8 +38,9 @@ SOFTWARE.*/
 #include <algorithm>
 #include "GLCamera.h"
 
-GLVAMesh::GLVAMesh()
+GLVAMesh::GLVAMesh(unsigned int mode)
 {
+	m_mode = mode;
 	m_vr = nullptr;
 	m_vn = nullptr;
 	m_vt = nullptr;
@@ -155,7 +156,35 @@ void GLVAMesh::SetTransparency(ubyte a)
 	for (int i = 0; i < m_vertexCount; ++i) m_vc[4 * i + 3] = a;
 }
 
-void GLVAMesh::ZSortFaces(const CGLCamera& cam)
+void GLVAMesh::Render()
+{
+	if (!m_bvalid) return;
+
+	glEnableClientState(GL_VERTEX_ARRAY);
+	if (m_vn) glEnableClientState(GL_NORMAL_ARRAY);
+	if (m_vt) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+	if (m_vc) glEnableClientState(GL_COLOR_ARRAY);
+
+	glVertexPointer(3, GL_DOUBLE, 0, m_vr);
+	if (m_vn) glNormalPointer(GL_DOUBLE, 0, m_vn);
+	if (m_vt) glTexCoordPointer(3, GL_DOUBLE, 0, m_vt);
+	if (m_vc) glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_vc);
+
+	if (m_ind)
+		glDrawElements(m_mode, m_vertexCount, GL_UNSIGNED_INT, m_ind);
+	else
+		glDrawArrays(m_mode, 0, m_vertexCount);
+
+	glDisableClientState(GL_VERTEX_ARRAY);
+	if (m_vn) glDisableClientState(GL_NORMAL_ARRAY);
+	if (m_vt) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+	if (m_vc) glDisableClientState(GL_COLOR_ARRAY);
+}
+
+//===================================================================================
+GLTriMesh::GLTriMesh() : GLVAMesh(GL_TRIANGLES) {}
+
+void GLTriMesh::ZSortFaces(const CGLCamera& cam)
 {
 	if (m_bvalid == false) return;
 	m_bvalid = false;
@@ -168,7 +197,7 @@ void GLVAMesh::ZSortFaces(const CGLCamera& cam)
 	vec3d r[3];
 	for (int i = 0; i < faces; ++i)
 	{
-		r[0] = vec3d(m_vr[9 * i    ], m_vr[9 * i + 1], m_vr[9 * i + 2]);
+		r[0] = vec3d(m_vr[9 * i], m_vr[9 * i + 1], m_vr[9 * i + 2]);
 		r[1] = vec3d(m_vr[9 * i + 3], m_vr[9 * i + 4], m_vr[9 * i + 5]);
 		r[2] = vec3d(m_vr[9 * i + 6], m_vr[9 * i + 7], m_vr[9 * i + 8]);
 
@@ -184,7 +213,7 @@ void GLVAMesh::ZSortFaces(const CGLCamera& cam)
 
 	// sort the zlist
 	std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
-			return a.second < b.second;
+		return a.second < b.second;
 		});
 
 	// build the new index list
@@ -192,15 +221,15 @@ void GLVAMesh::ZSortFaces(const CGLCamera& cam)
 	for (int i = 0; i < faces; ++i)
 	{
 		int n = zlist[i].first;
-		m_ind[3*i  ] = 3*n;
-		m_ind[3*i+1] = 3*n+1;
-		m_ind[3*i+2] = 3*n+2;
+		m_ind[3 * i] = 3 * n;
+		m_ind[3 * i + 1] = 3 * n + 1;
+		m_ind[3 * i + 2] = 3 * n + 2;
 	}
 
 	m_bvalid = true;
 }
 
-void GLVAMesh::SortBackwards()
+void GLTriMesh::SortBackwards()
 {
 	if (m_bvalid == false) return;
 	m_bvalid = false;
@@ -221,7 +250,7 @@ void GLVAMesh::SortBackwards()
 	m_bvalid = true;
 }
 
-void GLVAMesh::SortForwards()
+void GLTriMesh::SortForwards()
 {
 	if (m_bvalid == false) return;
 	m_bvalid = false;
@@ -230,27 +259,5 @@ void GLVAMesh::SortForwards()
 	m_bvalid = true;
 }
 
-void GLVAMesh::Render()
-{
-	if (!m_bvalid) return;
-
-	glEnableClientState(GL_VERTEX_ARRAY);
-	if (m_vn) glEnableClientState(GL_NORMAL_ARRAY);
-	if (m_vt) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-	if (m_vc) glEnableClientState(GL_COLOR_ARRAY);
-
-	glVertexPointer(3, GL_DOUBLE, 0, m_vr);
-	if (m_vn) glNormalPointer(GL_DOUBLE, 0, m_vn);
-	if (m_vt) glTexCoordPointer(3, GL_DOUBLE, 0, m_vt);
-	if (m_vc) glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_vc);
-
-	if (m_ind)
-		glDrawElements(GL_TRIANGLES, m_vertexCount, GL_UNSIGNED_INT, m_ind);
-	else
-		glDrawArrays(GL_TRIANGLES, 0, m_vertexCount);
-
-	glDisableClientState(GL_VERTEX_ARRAY);
-	if (m_vn) glDisableClientState(GL_NORMAL_ARRAY);
-	if (m_vt) glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-	if (m_vc) glDisableClientState(GL_COLOR_ARRAY);
-}
+//===================================================================================
+GLLineMesh::GLLineMesh() : GLVAMesh(GL_LINES) {}

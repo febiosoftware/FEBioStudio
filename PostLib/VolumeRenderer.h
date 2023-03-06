@@ -60,7 +60,7 @@ private:
 	bool	m_vrReset;
 
 	int	m_nslices = 0;
-	GLVAMesh m_mesh;
+	GLTriMesh m_mesh;
 };
 
 }

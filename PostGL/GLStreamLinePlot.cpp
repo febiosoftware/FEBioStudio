@@ -136,26 +136,7 @@ void CGLStreamLinePlot::Render(CGLContext& rc)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_1D);
 
-	for (int i=0; i<NSL; ++i)
-	{
-		StreamLine& sl = m_streamLines[i];
-
-		int NP = sl.Points();
-		if (NP > 1)
-		{
-			glBegin(GL_LINE_STRIP);
-			for (int j = 0; j<NP; ++j)
-			{
-				StreamPoint& pt = sl[j];
-				GLColor& c = pt.c;
-				vec3f& r = pt.r;
-
-				glColor3ub(c.r, c.g, c.b);
-				glVertex3f(r.x, r.y, r.z);
-			}
-			glEnd();
-		}
-	}
+	m_mesh.Render();
 
 	glPopAttrib();
 }
@@ -258,8 +239,11 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 
 	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
 
-	// update stream lins
+	// update stream lines
 	UpdateStreamLines();
+
+	// update the mesh
+	UpdateMesh();
 }
 
 vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
@@ -442,4 +426,40 @@ void CGLStreamLinePlot::ColorStreamLines()
 			pt.c = col.map(w);
 		}
 	}
+}
+
+void CGLStreamLinePlot::UpdateMesh()
+{
+	int NSL = (int)m_streamLines.size();
+
+	// count vertices
+	int verts = 0;
+	for (int i = 0; i < NSL; ++i)
+	{
+		StreamLine& sl = m_streamLines[i];
+		if (sl.Points() > 1)
+			verts += 2*(sl.Points() - 2) + 2;
+	}
+
+	// allocate mesh
+	m_mesh.AllocVertexBuffers(verts, GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_COLOR);
+
+	// build mesh
+	m_mesh.BeginMesh();
+	for (int i = 0; i < NSL; ++i)
+	{
+		StreamLine& sl = m_streamLines[i];
+		int NP = sl.Points();
+		if (NP > 1)
+		{
+			for (int j = 0; j < NP - 1; ++j)
+			{
+				StreamPoint& p0 = sl[j];
+				StreamPoint& p1 = sl[j+1];
+				m_mesh.AddVertex(p0.r, p0.c);
+				m_mesh.AddVertex(p1.r, p1.c);
+			}
+		}
+	}
+	m_mesh.EndMesh();
 }

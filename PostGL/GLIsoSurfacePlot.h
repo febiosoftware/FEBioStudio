@@ -106,7 +106,7 @@ protected:
 	vector<float>	m_val;	// current nodal values
 	vector<vec3f>	m_grd;	// current gradient values
 
-	GLVAMesh	m_glmesh; // the mesh to render
+	GLTriMesh	m_glmesh; // the mesh to render
 
 	int		m_lastTime;
 	float	m_lastdt;

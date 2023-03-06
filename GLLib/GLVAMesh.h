@@ -34,7 +34,9 @@ class CGLCamera;
 #define ubyte unsigned char
 #endif
 
-// Mesh used for GL rendering using vertex arrays
+// Mesh class used for GL rendering using vertex arrays
+// This base class has a protected constructor, so cannot be used directly.
+// Instead, use one of the derived classes below. 
 class GLVAMesh
 {
 public:
@@ -45,10 +47,8 @@ public:
 		FLAG_COLOR   = 8,
 	};
 
-public:
-	GLVAMesh();
-	~GLVAMesh();
 
+public:
 	// clear all mesh data
 	void Clear();
 
@@ -64,6 +64,7 @@ public:
 	void AddVertex(const vec3d& r, const vec3d& n);
 	void AddVertex(const vec3f& r, const vec3f& n);
 	void AddVertex(const vec3f& r, double tex);
+	void AddVertex(const vec3f& r, const GLColor& c);
 	void AddVertex(const vec3d& r, double tex, const GLColor& c);
 
 	// this when done building the mesh
@@ -79,14 +80,11 @@ public:
 	// set the transparency of the mesh
 	void SetTransparency(ubyte a);
 
-	// z-sort the faces
-	void ZSortFaces(const CGLCamera& cam);
+protected:
+	GLVAMesh(unsigned int mode);
+	virtual ~GLVAMesh();
 
-	// sort backwards/forwards
-	void SortBackwards();
-	void SortForwards();
-
-private:
+protected:
 	double* m_vr = nullptr;	// vertex coordinates
 	double* m_vn = nullptr;	// vertex normals
 	double* m_vt = nullptr;	// vertex texture coordinates
@@ -96,6 +94,8 @@ private:
 	unsigned int m_vertexCount = 0;	// number of vertices
 	unsigned int m_maxVertexCount = 0;	// max number of vertices
 	bool	m_bvalid;	// is the mesh valid and ready for rendering?
+
+	unsigned int m_mode;	// primitive type to render (set by derived classes)
 };
 
 inline void GLVAMesh::AddVertex(double* r, double* n, double* t)
@@ -152,3 +152,30 @@ inline void GLVAMesh::AddVertex(const vec3f& r, double tex)
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
+
+inline void GLVAMesh::AddVertex(const vec3f& r, const GLColor& c)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
+}
+
+// Triangle mesh
+class GLTriMesh : public GLVAMesh
+{
+public:
+	GLTriMesh();
+
+	// z-sort the faces
+	void ZSortFaces(const CGLCamera& cam);
+
+	// sort backwards/forwards
+	void SortBackwards();
+	void SortForwards();
+};
+
+class GLLineMesh : public GLVAMesh
+{
+public:
+	GLLineMesh();
+};
