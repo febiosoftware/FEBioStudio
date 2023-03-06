@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <MeshLib/quad8.h>
 #include <MeshLib/GMesh.h>
 #include <GLLib/glx.h>
+#include <GLLib/GLVAMesh.h>
 
 //-----------------------------------------------------------------------------
 extern int ET_HEX[12][2];
@@ -1328,85 +1329,22 @@ void GLMeshRender::RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderGLMesh(GMesh* pm, int nid)
+void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 {
-	vec3d r0, r1, r2;
-	vec3d n0, n1, n2;
-	if (nid == -1)
+	if (surfID == -1)
 	{
-		int N = pm->Faces();
-		glBegin(GL_TRIANGLES);
-		{
-			for (int i = 0; i<N; ++i)
-			{
-				GMesh::FACE& f = pm->Face(i);
-				r0 = pm->Node(f.n[0]).r;
-				r1 = pm->Node(f.n[1]).r;
-				r2 = pm->Node(f.n[2]).r;
-
-				n0 = f.nn[0];
-				n1 = f.nn[1];
-				n2 = f.nn[2];
-
-				glxColor(f.c[0]); glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
-				glxColor(f.c[1]); glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glxColor(f.c[2]); glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-			}
-		}
-		glEnd();
+		m_glmesh.CreateFromGMesh(*pm);
 	}
-	else if (nid < (int) pm->m_FIL.size())
+	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
 	{
-		assert(pm->m_FIL.size() > 0);
-		if (m_bfaceColor)
-		{
-			glBegin(GL_TRIANGLES);
-			{
-				pair<int, int> fil = pm->m_FIL[nid];
-				for (int i = 0; i < fil.second; ++i)
-				{
-					GMesh::FACE& f = pm->Face(i + fil.first);
-					assert(f.pid == nid);
-					r0 = pm->Node(f.n[0]).r;
-					r1 = pm->Node(f.n[1]).r;
-					r2 = pm->Node(f.n[2]).r;
+		unsigned int flags = GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_NORMAL;
+		if (m_bfaceColor) flags |= GLVAMesh::FLAG_COLOR;
 
-					n0 = f.nn[0];
-					n1 = f.nn[1];
-					n2 = f.nn[2];
-
-					glxColor(f.c[0]); glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
-					glxColor(f.c[1]); glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-					glxColor(f.c[2]); glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				}
-			}
-			glEnd();
-		}
-		else
-		{
-			glBegin(GL_TRIANGLES);
-			{
-				pair<int, int> fil = pm->m_FIL[nid];
-				for (int i = 0; i < fil.second; ++i)
-				{
-					GMesh::FACE& f = pm->Face(i + fil.first);
-					assert(f.pid == nid);
-					r0 = pm->Node(f.n[0]).r;
-					r1 = pm->Node(f.n[1]).r;
-					r2 = pm->Node(f.n[2]).r;
-
-					n0 = f.nn[0];
-					n1 = f.nn[1];
-					n2 = f.nn[2];
-
-					glNormal3d(n0.x, n0.y, n0.z); glVertex3d(r0.x, r0.y, r0.z);
-					glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-					glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				}
-			}
-			glEnd();
-		}
+		m_glmesh.CreateFromGMesh(*pm, surfID, flags);
 	}
+	else return;
+
+	m_glmesh.Render();
 }
 
 //-----------------------------------------------------------------------------

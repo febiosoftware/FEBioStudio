@@ -38,11 +38,22 @@ class CGLCamera;
 class GLVAMesh
 {
 public:
+	enum Flags {
+		FLAG_VERTEX = 1,
+		FLAG_NORMAL = 2,
+		FLAG_TEXTURE = 4,
+		FLAG_COLOR   = 8,
+	};
+
+public:
 	GLVAMesh();
 	~GLVAMesh();
 
-	// Set the data buffers directly 
-	void SetVertexData(double* vr, double* vn = nullptr, double* vt = nullptr, ubyte* vc = nullptr);
+	// clear all mesh data
+	void Clear();
+
+	// allocate vertex buffers
+	void AllocVertexBuffers(int maxVertices, unsigned flags);
 
 	// call this to start building the mesh
 	void BeginMesh();
@@ -50,13 +61,16 @@ public:
 	// add a vertex to the mesh
 	void AddVertex(double* r, double* n, double* t);
 	void AddVertex(const vec3d& r, const vec3d& n, const GLColor& c);
+	void AddVertex(const vec3d& r, const vec3d& n);
 	void AddVertex(const vec3f& r, const vec3f& n);
+	void AddVertex(const vec3f& r, double tex);
 
 	// this when done building the mesh
 	void EndMesh();
 
 	// create from a GMesh
 	void CreateFromGMesh(const GMesh& gmsh);
+	void CreateFromGMesh(const GMesh& gmsh, int surfaceID, unsigned int flags);
 
 	// render the mesh
 	void Render();
@@ -75,6 +89,7 @@ private:
 	unsigned int* m_ind = nullptr; // vertex indices (used for z-sorting)
 	
 	unsigned int m_vertexCount = 0;	// number of vertices
+	unsigned int m_maxVertexCount = 0;	// max number of vertices
 	bool	m_bvalid;	// is the mesh valid and ready for rendering?
 };
 
@@ -106,4 +121,21 @@ inline void GLVAMesh::AddVertex(const vec3f& r, const vec3f& n)
 	
 	if (m_vc) { m_vc[4 * i] = 0; m_vc[4 * i + 1] = 0; m_vc[4 * i + 2] = 0; m_vc[4 * i + 3] = 255; }
 	if (m_vt) { m_vt[3 * i] = 0; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
+}
+
+inline void GLVAMesh::AddVertex(const vec3d& r, const vec3d& n)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
+
+	if (m_vc) { m_vc[4 * i] = 0; m_vc[4 * i + 1] = 0; m_vc[4 * i + 2] = 0; m_vc[4 * i + 3] = 255; }
+	if (m_vt) { m_vt[3 * i] = 0; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
+}
+
+inline void GLVAMesh::AddVertex(const vec3f& r, double tex)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }

@@ -46,33 +46,56 @@ GLVAMesh::GLVAMesh()
 	m_vc = nullptr;
 	m_ind = nullptr;
 	m_vertexCount = 0;
+	m_maxVertexCount = 0;
 	m_bvalid = false;
 }
 
 GLVAMesh::~GLVAMesh()
 {
+	Clear();
+}
+
+// clear all mesh data
+void GLVAMesh::Clear()
+{
+	m_bvalid = false;
 	m_vertexCount = 0;
+	m_maxVertexCount = 0;
 	delete[] m_vr;
 	delete[] m_vn;
 	delete[] m_vt;
 	delete[] m_vc;
 	delete[] m_ind;
-	m_bvalid = false;
 }
 
-void GLVAMesh::SetVertexData(double* vr, double* vn, double* vt, ubyte* vc)
+void GLVAMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
 {
 	m_bvalid = false;
 	m_vertexCount = 0;
-	delete[] m_vr;
-	delete[] m_vn;
-	delete[] m_vt;
-	delete[] m_vc;
-	delete[] m_ind; m_ind = nullptr;
-	m_vr = vr;
-	m_vn = vn;
-	m_vt = vt;
-	m_vc = vc;
+	if (flags & FLAG_VERTEX)
+	{
+		if ((m_vr == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vr; m_vr = new double[3 * maxVertices]; }
+	}
+	else { delete[] m_vr; m_vr = nullptr; }
+
+	if (flags & FLAG_NORMAL)
+	{
+		if ((m_vn == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vn; m_vn = new double[3 * maxVertices]; }
+	}
+	else { delete[] m_vn; m_vn = nullptr; }
+
+	if (flags & FLAG_TEXTURE)
+	{
+		if ((m_vt == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vt; m_vt = new double[3 * maxVertices]; }
+	}
+	else { delete[] m_vt; m_vt = nullptr; }
+
+	if (flags & FLAG_COLOR)
+	{
+		if ((m_vc == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vc; m_vc = new ubyte[4 * maxVertices]; }
+	}
+	else { delete[] m_vc; m_vc = nullptr; }
+	m_maxVertexCount = maxVertices;
 }
 
 void GLVAMesh::BeginMesh()
@@ -89,7 +112,7 @@ void GLVAMesh::EndMesh()
 void GLVAMesh::CreateFromGMesh(const GMesh& gmsh)
 {
 	int faces = gmsh.Faces();
-	SetVertexData(new double[9 * faces], new double[9 * faces], nullptr, new ubyte[12*faces]);
+	AllocVertexBuffers(3 * faces, FLAG_VERTEX | FLAG_NORMAL | FLAG_COLOR);
 
 	BeginMesh();
 	for (int i = 0; i < gmsh.Faces(); ++i)
@@ -99,6 +122,28 @@ void GLVAMesh::CreateFromGMesh(const GMesh& gmsh)
 		{
 			auto& vj = gmsh.Node(tri.n[j]);
 			AddVertex(vj.r, tri.nn[j], tri.c[j]);
+		}
+	}
+	EndMesh();
+}
+
+void GLVAMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
+{
+	if ((surfID < 0) || (surfID >= gmsh.m_FIL.size())) { assert(false); return; }
+
+	pair<int, int> fil = gmsh.m_FIL[surfID];
+	int faces = fil.second;
+	AllocVertexBuffers(3 * faces, flags);
+
+	BeginMesh();
+	for (int i = 0; i < faces; ++i)
+	{
+		const GMesh::FACE& f = gmsh.Face(i + fil.first);
+		assert(f.pid == surfID);
+		for (int j = 0; j < 3; ++j)
+		{
+			auto& vj = gmsh.Node(f.n[j]);
+			AddVertex(vj.r, f.nn[j], f.c[j]);
 		}
 	}
 	EndMesh();

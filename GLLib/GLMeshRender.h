@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
+#include "GLVAMesh.h"
 
 class FEElement_;
 class FSEdge;
@@ -127,6 +128,9 @@ public:
 	int			m_nshellref;		//!< shell reference surface
 	float		m_pointSize;		//!< size of points
 	bool		m_bfaceColor;		//!< use face colors when rendering
+
+private:
+	GLVAMesh	m_glmesh;
 };
 
 // drawing routines for edges
