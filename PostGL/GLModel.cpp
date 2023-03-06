@@ -912,6 +912,42 @@ void CGLModel::RenderElems(FEPostModel* ps, CGLContext& rc)
 			RenderSolidPart(ps, rc, m);
 		}
 	}
+
+	// next, we render the mesh lines
+	if (m_bshowMesh && (GetSelectionMode() != SELECT_EDGES))
+	{
+		for (int m = 0; m < ps->Materials(); ++m)
+		{
+			// get the material
+			Material* pmat = ps->GetMaterial(m);
+
+			// make sure the material is visible
+			if (pmat->bvisible && pmat->bmesh)
+			{
+				// store attributes
+				glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+
+				glDisable(GL_LIGHTING);
+				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+				if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
+
+				rc.m_cam->LineDrawMode(true);
+
+				// set the material properties
+				GLColor c = pmat->meshcol;
+				glColor3ub(c.r, c.g, c.b);
+				RenderMeshLines(ps, m);
+
+				rc.m_cam->LineDrawMode(false);
+
+				CGLPlaneCutPlot::EnableClipPlanes();
+
+				// restore attributes
+				glPopAttrib();
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1540,36 +1576,10 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 	{
 		if (pmat->benable && m_pcol->IsActive())
 			RenderSolidMaterial(rc, ps, mat, true);
-		RenderOutline(rc, mat);
-	}
 
-	// Render the mesh lines
-	if (m_bshowMesh && (GetSelectionMode() != SELECT_EDGES))
-	{
-		// store attributes
-		glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
-
-		glDisable(GL_LIGHTING);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-		if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
-
-		// make sure the material is visible
-		if (pmat->bvisible && pmat->bmesh)
-		{
-			rc.m_cam->LineDrawMode(true);
-
-			// set the material properties
-			GLColor c = pmat->meshcol;
-			glColor3ub(c.r, c.g, c.b);
-			RenderMeshLines(ps, mat);
-
-			rc.m_cam->LineDrawMode(false);
-		}
-		CGLPlaneCutPlot::EnableClipPlanes();
-
-		// restore attributes
-		glPopAttrib();
+		// only render the outline if it's not already shown
+		if (rc.m_showOutline == false)
+			RenderOutline(rc, mat);
 	}
 }
 
@@ -1852,26 +1862,33 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 {
 	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
-
-	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_LIGHTING);
-
-	GLColor c = m_line_col;
-	glColor3ub(c.r,c.g,c.b);
-
+	
 	quatd q = rc.m_cam->GetOrientation();
-
 	int ndivs = GetSubDivisions();
 
-	for (int i=0; i<pm->Faces(); ++i)
+	vector<vec3d> points; points.reserve(1024);
+
+	vector<int> faceList;
+	if (nmat != -1)
 	{
-		FSFace& f = pm->Face(i);
+		assert((nmat >= 0) && (nmat < pm->Domains()));
+		faceList = pm->Domain(nmat).FaceList();
+	}
+	else
+	{
+		faceList.resize(pm->Faces());
+		for (int i = 0; i < pm->Faces(); ++i) faceList[i] = i;
+	}
+	if (faceList.empty()) return;
+
+	for (int i = 0; i < faceList.size(); ++i)
+	{
+		FSFace& f = pm->Face(faceList[i]);
 		FEElement_& el = pm->ElementRef(f.m_elem[0].eid);
 		if (f.IsVisible() && el.IsVisible() && ((nmat == -1) || (el.m_MatID == nmat)))
 		{
 			int n = f.Edges();
-			for (int j=0; j<n; ++j)
+			for (int j = 0; j < n; ++j)
 			{
 				bool bdraw = false;
 
@@ -1890,24 +1907,138 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 					{
 						bdraw = true;
 					}
-/*					else
+					else
 					{
-						vec3f n1 = f.m_fn;
-						vec3f n2 = f2.m_fn;
+						vec3d n1 = to_vec3d(f.m_fn);
+						vec3d n2 = to_vec3d(f2.m_fn);
 						q.RotateVector(n1);
 						q.RotateVector(n2);
-						if (n1.z*n2.z <= 0) 
+						if (n1.z * n2.z <= 0)
 						{
 							bdraw = true;
 						}
 					}
-*/				}
+				}
 
-				if (bdraw) m_render.RenderFaceEdge(f, j, pm, ndivs);
+				if (bdraw)
+				{
+					int n = f.Edges();
+					int a = f.n[j];
+					int b = f.n[(j + 1) % n];
+					if (a > b) { a ^= b; b ^= a; a ^= b; }
+
+					switch (f.m_type)
+					{
+					case FE_FACE_TRI3:
+					case FE_FACE_QUAD4:
+					{
+						points.push_back(pm->Node(a).r);
+						points.push_back(pm->Node(b).r);
+					}
+					break;
+					case FE_FACE_QUAD8:
+					case FE_FACE_QUAD9:
+					{
+						vec3d r1 = pm->Node(a).r;
+						vec3d r2 = pm->Node(b).r;
+						vec3d r3 = pm->Node(f.n[j + 4]).r;
+
+						float r, H[3];
+						vec3d p;
+						int n = (ndivs <= 1 ? 2 : ndivs);
+						for (int i = 0; i < n; ++i)
+						{
+							r = -1.f + 2.f * i / n;
+							H[0] = 0.5f * r * (r - 1.f);
+							H[1] = 0.5f * r * (r + 1.f);
+							H[2] = 1.f - r * r;
+							p = r1 * H[0] + r2 * H[1] + r3 * H[2];
+							points.push_back(p);
+
+							r = -1.f + 2.f * (i + 1) / n;
+							H[0] = 0.5f * r * (r - 1.f);
+							H[1] = 0.5f * r * (r + 1.f);
+							H[2] = 1.f - r * r;
+							p = r1 * H[0] + r2 * H[1] + r3 * H[2];
+							points.push_back(p);
+						}
+					}
+					break;
+					case FE_FACE_TRI6:
+					case FE_FACE_TRI7:
+					{
+						vec3d r1 = pm->Node(a).r;
+						vec3d r2 = pm->Node(b).r;
+						vec3d r3 = pm->Node(f.n[j + 3]).r;
+
+						float r, H[3];
+						vec3d p;
+						int n = (ndivs <= 1 ? 2 : ndivs);
+						for (int i = 0; i < n; ++i)
+						{
+							r = -1.f + 2.f * i / n;
+							H[0] = 0.5f * r * (r - 1.f);
+							H[1] = 0.5f * r * (r + 1.f);
+							H[2] = 1.f - r * r;
+							p = r1 * H[0] + r2 * H[1] + r3 * H[2];
+							points.push_back(p);
+
+							r = -1.f + 2.f * (i + 1) / n;
+							H[0] = 0.5f * r * (r - 1.f);
+							H[1] = 0.5f * r * (r + 1.f);
+							H[2] = 1.f - r * r;
+							p = r1 * H[0] + r2 * H[1] + r3 * H[2];
+							points.push_back(p);
+						}
+					}
+					break;
+					case FE_FACE_TRI10:
+					{
+						FSEdge e = f.GetEdge(j);
+
+						vec3d r[4];
+						r[0] = pm->Node(e.n[0]).r;
+						r[1] = pm->Node(e.n[1]).r;
+						r[2] = pm->Node(e.n[2]).r;
+						r[3] = pm->Node(e.n[3]).r;
+
+						vec3d p = r[0];
+						int n = (ndivs < 3 ? 3 : ndivs);
+						for (int i = 1; i <= n; ++i)
+						{
+							float w = (float)i / n;
+							vec3d q = e.eval(r, w);
+							points.push_back(p);
+							points.push_back(q);
+							p = q;
+						}
+					}
+					break;
+					default:
+						assert(false);
+					}
+				}
 			}
 		}
 	}
 
+	// build the line mesh
+	GLLineMesh lineMesh;
+	lineMesh.AllocVertexBuffers(points.size(), GLVAMesh::FLAG_VERTEX);
+	lineMesh.BeginMesh();
+	for (auto& p : points) lineMesh.AddVertex(p);
+	lineMesh.EndMesh();
+
+	// render the active edges
+	glPushAttrib(GL_ENABLE_BIT);
+	{
+		glDisable(GL_LIGHTING);
+
+		GLColor c = m_line_col;
+		glColor3ub(c.r, c.g, c.b);
+
+		lineMesh.Render();
+	}
 	glPopAttrib();
 }
 

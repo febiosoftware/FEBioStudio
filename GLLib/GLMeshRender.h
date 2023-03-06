@@ -64,7 +64,6 @@ public:
 
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
-	void RenderFaceEdge(FSFace& face, int j, FSMeshBase* pm, int ndivs);
 
 	void RenderMeshLines(FSMeshBase* pm);
 	void RenderSelectedFEFaces(FSMeshBase* pm);
