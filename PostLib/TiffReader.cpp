@@ -230,6 +230,7 @@ bool CTiffImageSource::Load()
 	}
 	setProgress(100.0);
 	fclose(m->m_fp);
+	m->m_fp = nullptr;
 
 	// see if we read any image data
 	if (m->m_img.size() == 0) return error("no image data read.");
