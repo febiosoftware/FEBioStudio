@@ -35,6 +35,7 @@ class FSMeshAdaptor;
 #define FE_STEP_POLAR_FLUID         11
 #define FE_STEP_EXPLICIT_SOLID		12
 #define FE_STEP_FLUID_SOLUTES       13
+#define FE_STEP_THERMO_FLUID        14
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
@@ -388,6 +389,13 @@ class FSFluidSolutesAnalysis : public FSAnalysisStep
 {
 public:
     FSFluidSolutesAnalysis(FSModel* ps);
+};
+
+//-----------------------------------------------------------------------------
+class FSThermoFluidAnalysis : public FSAnalysisStep
+{
+public:
+    FSThermoFluidAnalysis(FSModel* ps);
 };
 
 //==============================================================================

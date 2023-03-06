@@ -436,7 +436,8 @@ public:
 					}
 					else
 					{
-						string sname = FSCore::beautify_string(p.GetLongName().c_str());
+//						string sname = FSCore::beautify_string(p.GetLongName().c_str());
+                        string sname = p.GetLongName().c_str();
 						QString s = QString::fromStdString(sname);
 						if (p.maxSize() != 1)
 						{

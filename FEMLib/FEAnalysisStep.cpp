@@ -1807,6 +1807,27 @@ FSFluidSolutesAnalysis::FSFluidSolutesAnalysis(FSModel* ps) : FSAnalysisStep(ps,
     m_ops.nmatfmt = 0;   // set non-symmetric flag
 }
 
+//-----------------------------------------------------------------------------
+FSThermoFluidAnalysis::FSThermoFluidAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_THERMO_FLUID)
+{
+    SetTypeString("Thermofluid");
+    
+    AddDoubleParam(0.001, "vtol", "Fluid velocity tolerance");
+    AddDoubleParam(0.001, "ftol", "Fluid dilatation tolerance");
+    AddDoubleParam(0.01 , "ttol", "Temperature tolerance");
+    AddDoubleParam(0.01 , "etol", "Energy tolerance");
+    AddDoubleParam(0.001, "rtol", "Residual tolerance");
+    AddDoubleParam(0.9  , "lstol", "Line search tolerance");
+    AddDoubleParam(1e-20, "min_residual", "Minumum residual");
+    AddDoubleParam(1e+20, "max_residual", "Maximum residual");
+    AddDoubleParam(0    , "rhoi", "Spectral radius");
+    AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
+    AddChoiceParam(1    , "equation_scheme", "Equation Scheme");
+    
+    m_ops.nanalysis = 1; // set dynamic analysis
+    m_ops.nmatfmt = 0;   // set non-symmetric flag
+}
+
 //==================================================================================
 FEBioAnalysisStep::FEBioAnalysisStep(FSModel* ps) : FSStep(ps, FE_STEP_FEBIO_ANALYSIS)
 {

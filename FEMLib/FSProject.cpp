@@ -341,6 +341,7 @@ void FSProject::InitModules()
 	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID              , FE_MAT_FLUID);
     FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI          , FE_MAT_FLUID_FSI);
     FEMaterialFactory::AddCategory("fluid-solutes"       , MODULE_FLUID_SOLUTES      , FE_MAT_FLUID_SOLUTES);
+    FEMaterialFactory::AddCategory("thermo-fluid"        , MODULE_THERMO_FLUID       , FE_MAT_THERMO_FLUID);
     FEMaterialFactory::AddCategory("polar fluid"         , MODULE_POLAR_FLUID        , FE_MAT_POLAR_FLUID);
 	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION , FE_MAT_REACTION_DIFFUSION);
 	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				 , FE_MAT_RIGID);
@@ -598,6 +599,31 @@ void FSProject::SetDefaultPlotVariables()
         m_plt.AddPlotVariable("effective solute concentration", true);
         m_plt.AddPlotVariable("solute concentration", true);
         m_plt.AddPlotVariable("solute flux", true);
+    }
+    else if (strcmp(szmod, "thermo-fluid") == 0)
+    {
+        m_plt.AddPlotVariable("displacement", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("fluid temperature", true);
+        m_plt.AddPlotVariable("fluid heat flux", true);
+        m_plt.AddPlotVariable("fluid specific free energy", true);
+        m_plt.AddPlotVariable("fluid specific entropy", true);
+        m_plt.AddPlotVariable("fluid specific internal energy", true);
+        m_plt.AddPlotVariable("fluid specific gage enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific free enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific strain energy", true);
+        m_plt.AddPlotVariable("fluid isochoric specific heat capacity", true);
+        m_plt.AddPlotVariable("fluid isobaric specific heat capacity", true);
+        m_plt.AddPlotVariable("fluid thermal conductivity" , true);
     }
     else if (strcmp(szmod, "polar fluid") == 0)
     {
