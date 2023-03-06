@@ -252,3 +252,35 @@ bool FEBioFunction1D::UpdateData(bool bsave)
 
 	return false;
 }
+
+void FEBioFunction1D::Save(OArchive& ar)
+{
+	ar.BeginChunk(CID_FEBIO_META_DATA);
+	{
+		SaveClassMetaData(this, ar);
+	}
+	ar.EndChunk();
+
+	ar.BeginChunk(CID_FEBIO_BASE_DATA);
+	{
+		FSFunction1D::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FEBioFunction1D::Load(IArchive& ar)
+{
+	TRACE("FEBioFunction1D::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
+		case CID_FEBIO_BASE_DATA: FSFunction1D::Load(ar); break;
+		default:
+			assert(false);
+		}
+		ar.CloseChunk();
+	}
+}
