@@ -62,11 +62,11 @@ void GLVAMesh::Clear()
 	m_bvalid = false;
 	m_vertexCount = 0;
 	m_maxVertexCount = 0;
-	delete[] m_vr;
-	delete[] m_vn;
-	delete[] m_vt;
-	delete[] m_vc;
-	delete[] m_ind;
+	delete[] m_vr; m_vr = nullptr;
+	delete[] m_vn; m_vn = nullptr;
+	delete[] m_vt; m_vt = nullptr;
+	delete[] m_vc; m_vc = nullptr;
+	delete[] m_ind; m_ind = nullptr;
 }
 
 void GLVAMesh::AllocVertexBuffers(int maxVertices, unsigned flags)

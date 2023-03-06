@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <FECore/FETransform.h>
+#include <GLLib/GLVAMesh.h>
 #include <vector>
 
 namespace Post {
@@ -43,7 +44,6 @@ class CGLPlaneCutPlot : public CGLPlot
 		struct FACE
 		{
 			int		mat;
-			vec3d	norm;
 			vec3d	r[3];
 			float	tex[3];
 			bool	bactive;
@@ -109,10 +109,15 @@ protected:
 
 	void ReleasePlane();
 	static int GetFreePlane();
-	void UpdateSlice();
 
 	void AddDomain(FEPostMesh* pm, int n);
 	void AddFaces(FEPostMesh* pm);
+
+	void UpdatePlaneCut();
+	void UpdateTriMesh();
+	void UpdateLineMesh();
+	void UpdateOutlineMesh();
+	void UpdateSlice();
 
 public:
 	static int ClipPlanes();
@@ -147,5 +152,12 @@ protected:
 	int		m_nclip;								// clip plane number
 	static	std::vector<int>				m_clip;	// avaialabe clip planes
 	static	std::vector<CGLPlaneCutPlot*>	m_pcp;
+
+	GLTriMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
+	GLTriMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
+	GLLineMesh	m_lineMesh;	// for rendering mesh lines
+	GLLineMesh	m_outlineMesh;	// for rendering the outline
+
+	bool	m_bupdateSlice; // update slice before rendering
 };
 }

@@ -60,11 +60,14 @@ public:
 
 	// add a vertex to the mesh
 	void AddVertex(double* r, double* n, double* t);
+	void AddVertex(const vec3d& r);
 	void AddVertex(const vec3d& r, const vec3d& n, const GLColor& c);
 	void AddVertex(const vec3d& r, const vec3d& n);
 	void AddVertex(const vec3f& r, const vec3f& n);
 	void AddVertex(const vec3f& r, double tex);
+	void AddVertex(const vec3d& r, double tex);
 	void AddVertex(const vec3f& r, const GLColor& c);
+	void AddVertex(const vec3d& r, const GLColor& c);
 	void AddVertex(const vec3d& r, double tex, const GLColor& c);
 
 	// this when done building the mesh
@@ -106,6 +109,12 @@ inline void GLVAMesh::AddVertex(double* r, double* n, double* t)
 	if (r && m_vt) { m_vt[3 * i] = t[0]; m_vt[3 * i + 1] = t[1]; m_vt[3 * i + 2] = t[2]; }
 
 	if (m_vc) { m_vc[4 * i] = 0; m_vc[4 * i + 1] = 0; m_vc[4 * i + 2] = 0; m_vc[4 * i + 3] = 255; }
+}
+
+inline void GLVAMesh::AddVertex(const vec3d& r)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 }
 
 inline void GLVAMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
@@ -153,7 +162,21 @@ inline void GLVAMesh::AddVertex(const vec3f& r, double tex)
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
+inline void GLVAMesh::AddVertex(const vec3d& r, double tex)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
+}
+
 inline void GLVAMesh::AddVertex(const vec3f& r, const GLColor& c)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
+}
+
+inline void GLVAMesh::AddVertex(const vec3d& r, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
