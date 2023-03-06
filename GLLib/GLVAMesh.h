@@ -83,6 +83,9 @@ public:
 	// set the transparency of the mesh
 	void SetTransparency(ubyte a);
 
+	// is the mesh valid
+	bool IsValid() const { return m_bvalid; }
+
 protected:
 	GLVAMesh(unsigned int mode);
 	virtual ~GLVAMesh();
