@@ -58,7 +58,6 @@ public:
 public:
 	void RenderGLMesh(GMesh* pm, int nid = -1);
 	void RenderGLEdges(GMesh* pm, int nid = -1);
-	void RenderGLMeshLines(GMesh* pm);
 	void RenderOutline(CGLContext& rc, GMesh* pm);
 
 public:
