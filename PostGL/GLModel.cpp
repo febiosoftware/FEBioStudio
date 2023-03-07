@@ -479,12 +479,12 @@ void CGLModel::Render(CGLContext& rc)
 	CGLPlaneCutPlot::EnableClipPlanes();
 
 	// set the render interior nodes flag
-	RenderInteriorNodes(rc.m_bext == false);
+	RenderInteriorNodes(rc.m_settings.m_bext == false);
 
 	// get the FE model
 	FEPostModel* fem = GetFSModel();
 
-	m_bshowMesh = rc.m_showMesh;
+	m_bshowMesh = rc.m_settings.m_bmesh;
 
 	int mode = GetSelectionMode();
 
@@ -504,7 +504,7 @@ void CGLModel::Render(CGLContext& rc)
 	}
 
 	// render outline
-	if (rc.m_showOutline)
+	if (rc.m_settings.m_bfeat)
 	{
 		GLColor c = m_line_col;
 		glColor3ub(c.r, c.g, c.b);
@@ -542,7 +542,7 @@ void CGLModel::Render(CGLContext& rc)
 	// Render discrete elements
 	float lineWidth;
 	glGetFloatv(GL_LINE_WIDTH, &lineWidth);
-	glLineWidth(rc.m_springThick);
+	glLineWidth(rc.m_settings.m_line_size);
 	RenderDiscrete(rc);
 	glLineWidth(lineWidth);
 
@@ -1581,7 +1581,7 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 			RenderSolidMaterial(rc, ps, mat, true);
 
 		// only render the outline if it's not already shown
-		if (rc.m_showOutline == false)
+		if (rc.m_settings.m_bfeat == false)
 		{
 			SetMaterialParams(pmat);
 			RenderOutline(rc, mat);

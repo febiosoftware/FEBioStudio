@@ -267,7 +267,7 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 		rc.m_cam->LineDrawMode(false);
 	}
 
-	if (rc.m_showOutline)
+	if (rc.m_settings.m_bfeat)
 	{
 		RenderOutline();
 	}

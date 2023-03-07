@@ -36,10 +36,11 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include "modelcheck.h"
 #include <QtCore/QString>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 #include "GLScene.h"
 #include <GLLib/GView.h>
 #include <QObject>
+#include "Command.h"
 
 //-----------------------------------------------------------------------------
 // Transform Modes

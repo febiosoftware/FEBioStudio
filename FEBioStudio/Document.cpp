@@ -71,7 +71,7 @@ using std::stringstream;
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 
-void VIEW_SETTINGS::Defaults(int ntheme)
+void GLViewSettings::Defaults(int ntheme)
 {
 	m_bgrid = true;
 	m_bmesh = true;

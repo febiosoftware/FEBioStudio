@@ -1319,7 +1319,7 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	if (doc == nullptr) return;
 	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
 
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	int itemMode = doc->GetItemMode();
 	switch (itemMode)

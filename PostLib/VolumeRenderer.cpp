@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include "ImageSource.h"
 #include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
 #include <sstream>
@@ -518,7 +519,7 @@ void CVolumeRenderer::Render(CGLContext& rc)
 
 	// get the view direction
 	vec3d view(0, 0, 1);
-	quatd q = rc.m_q;
+	quatd q = rc.m_cam->GetOrientation();
 	q.Inverse().RotateVector(view);
 
 	// the normal will be view direction

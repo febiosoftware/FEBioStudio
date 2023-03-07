@@ -79,7 +79,7 @@ void CGLModelScene::Render(CGLContext& rc)
 	// We don't need this for rendering model docs
 	glDisable(GL_COLOR_MATERIAL);
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	int nitem = m_doc->GetItemMode();
 
 	CGLCamera& cam = *rc.m_cam;
@@ -188,7 +188,7 @@ void CGLModelScene::RenderModel(CGLContext& rc)
 	CGLView* glview = rc.m_view;
 	if (glview == nullptr) return;
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 
 	CGLCamera& cam = *rc.m_cam;
 
@@ -352,7 +352,7 @@ void CGLModelScene::RenderSelectionBox(CGLContext& rc)
 	CGLView* glview = rc.m_view;
 	if (glview == nullptr) return;
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 
 	// get the model
 	FSModel* ps = pdoc->GetFSModel();
@@ -953,7 +953,7 @@ void CGLModelScene::RenderMaterialFibers(CGLContext& rc)
 	CGLView* glview = rc.m_view;
 	if (glview == nullptr) return;
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 
 	// get the model
 	FSModel* ps = pdoc->GetFSModel();
@@ -1046,7 +1046,7 @@ void CGLModelScene::RenderLocalMaterialAxes(CGLContext& rc)
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	BOX box = model.GetBoundingBox();
 	double h = 0.05 * box.GetMaxExtent() * view.m_fiber_scale;
 
@@ -1217,7 +1217,7 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 	GModel& model = *pdoc->GetGModel();
 	int nitem = pdoc->GetItemMode();
 
-	VIEW_SETTINGS& vs = glview->GetViewSettings();
+	GLViewSettings& vs = glview->GetViewSettings();
 	GLColor c = vs.m_mcol;
 	glColor3ub(c.r, c.g, c.b);
 
@@ -1477,7 +1477,7 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	VIEW_SETTINGS& vs = glview->GetViewSettings();
+	GLViewSettings& vs = glview->GetViewSettings();
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
@@ -1698,7 +1698,7 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	VIEW_SETTINGS& vs = glview->GetViewSettings();
+	GLViewSettings& vs = glview->GetViewSettings();
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
@@ -1805,7 +1805,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	CGLView* glview = rc.m_view;
 
-	VIEW_SETTINGS& vs = glview->GetViewSettings();
+	GLViewSettings& vs = glview->GetViewSettings();
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
@@ -1890,7 +1890,7 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 
 	CGLView* glview = rc.m_view;
 
-	VIEW_SETTINGS& vs = glview->GetViewSettings();
+	GLViewSettings& vs = glview->GetViewSettings();
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
@@ -1941,7 +1941,7 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 {
 	CGLView* glview = rc.m_view;
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	quatd q = rc.m_cam->GetOrientation();
 
 	GLMeshRender& renderer = glview->GetMeshRenderer();
@@ -2077,7 +2077,7 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	FSModel& fem = *doc->GetFSModel();
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0)
@@ -2208,7 +2208,7 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	FSModel& fem = *doc->GetFSModel();
 
 	GLColor col = po->GetColor();
@@ -2248,7 +2248,7 @@ void CGLModelScene::RenderSurfaceMeshEdges(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	FSModel& fem = *doc->GetFSModel();
 	FSLineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
@@ -2279,7 +2279,7 @@ void CGLModelScene::RenderSurfaceMeshNodes(CGLContext& rc, GObject* po)
 	CGLView* glview = rc.m_view;
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
 
 	// set the point size
@@ -2352,7 +2352,7 @@ void CGLModelScene::RenderFEEdges(CGLContext& rc, GObject* po)
 	CGLView* glview = rc.m_view;
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	FSModel& fem = *doc->GetFSModel();
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
@@ -2388,7 +2388,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	assert(pm);
 	if (pm == 0) return;
 
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	GLColor dif;
 
 	GLColor col = po->GetColor();
@@ -3098,7 +3098,7 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
 	CGLView* glview = rc.m_view;
-	VIEW_SETTINGS& vs = glview->GetViewSettings();
+	GLViewSettings& vs = glview->GetViewSettings();
 	GObject* po = dynamic_cast<GObject*>(pg->Object());
 	FSModel* fem = m_doc->GetFSModel();
 
@@ -3161,7 +3161,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 	if (fem == nullptr) return;
 
 	CGLView* glview = rc.m_view;
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 
 	vector<GLTAG> vtag;
 

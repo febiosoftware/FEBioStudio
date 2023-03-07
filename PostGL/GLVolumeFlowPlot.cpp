@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLVolumeFlowPlot.h"
 #include "GLModel.h"
 #include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 using namespace Post;
 
 extern int LUT[256][15];
@@ -445,7 +446,7 @@ void GLVolumeFlowPlot::Render(CGLContext& rc)
 
 	// get view direction
 	vec3d view(0,0,1);
-	quatd q = rc.m_q;
+	quatd q = rc.m_cam->GetOrientation();
 	q.Inverse().RotateVector(view);
 
 	// the normal will be view direction

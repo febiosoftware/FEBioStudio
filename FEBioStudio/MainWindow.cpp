@@ -191,7 +191,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		// NOTE: I'm not sure if I can set the dark theme before I can create the document.
 		//       Since the bg colors are already set, I need to do this here. Make sure
 		//       the values set here coincide with the values from CDocument::NewDocument
-/*		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+/*		GLViewSettings& v = m_doc->GetViewSettings();
 		v.m_col1 = GLColor(83, 83, 83);
 		v.m_col2 = GLColor(128, 128, 128);
 		v.m_nbgstyle = BG_HORIZONTAL;
@@ -207,7 +207,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	{
 		qApp->setStyle(QStyleFactory::create("adwaita-dark"));
 
-//		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+//		GLViewSettings& v = m_doc->GetViewSettings();
 //		v.m_col1 = GLColor(83, 83, 83);
 //		v.m_col2 = GLColor(128, 128, 128);
 //		v.m_nbgstyle = BG_HORIZONTAL;
@@ -1829,7 +1829,7 @@ int CMainWindow::GetDefaultUnitSystem() const
 
 void CMainWindow::writeSettings()
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
@@ -1955,7 +1955,7 @@ void CMainWindow::readThemeSetting()
 
 void CMainWindow::readSettings()
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
@@ -2104,7 +2104,7 @@ void CMainWindow::UpdateToolbar()
 
 	if (doc->IsValid() == false) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
@@ -2659,7 +2659,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		menu.addSeparator();
 
 		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
-		VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
 		QMenu* display = new QMenu("Object transparency mode");
 		QAction* a;
 		a = display->addAction("None"); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
@@ -2730,7 +2730,7 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	if      (ac->text() == "None"           ) vs.m_transparencyMode = 0;
 	else if (ac->text() == "Selected only"  ) vs.m_transparencyMode = 1;
@@ -2742,7 +2742,7 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;

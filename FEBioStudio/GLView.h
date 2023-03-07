@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 
 class CMainWindow;
 class CGLDocument;
@@ -227,7 +227,7 @@ public:
 	}
 
 	// --- view settings ---
-	VIEW_SETTINGS& GetViewSettings() { return m_view; }
+	GLViewSettings& GetViewSettings() { return m_view; }
 
 	void ShowMeshData(bool b);
 
@@ -485,7 +485,7 @@ public:
 	CGLContext	m_rc;
 
 private:
-	VIEW_SETTINGS	m_view;
+	GLViewSettings	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
 
 	CGLCamera	m_oldCam;
