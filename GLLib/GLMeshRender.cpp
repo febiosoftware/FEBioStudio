@@ -1413,6 +1413,7 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		GMesh::FACE& f = pm->Face(i);
+		vec3d n1 = f.fn;
 
 		for (int j = 0; j < 3; ++j)
 		{
@@ -1425,7 +1426,6 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 			else
 			{
 				GMesh::FACE& f2 = pm->Face(f.nbr[j]);
-				vec3d n1 = f.fn;
 				vec3d n2 = f2.fn;
 
 				if (cam.IsOrtho())
@@ -1436,13 +1436,12 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 				}
 				else
 				{
-					vec3d c1 = (pm->Node(f.n[0]).r + pm->Node(f.n[1]).r + pm->Node(f.n[2]).r) / 3.0;
-					vec3d c2 = (pm->Node(f2.n[0]).r + pm->Node(f2.n[1]).r + pm->Node(f2.n[2]).r) / 3.0;
-
-					vec3d e1 = p - c1;
-					vec3d e2 = p - c2;
-					double d1 = e1 * n1;
-					double d2 = e2 * n2;
+					int a = j;
+					int b = (j + 1) % 3;
+					vec3d c = (pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r)* 0.5;
+					vec3d pc = p - c;
+					double d1 = pc * n1;
+					double d2 = pc * n2;
 					if (d1 * d2 <= 0) bdraw = true;
 				}
 			}

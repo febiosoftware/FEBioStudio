@@ -133,18 +133,6 @@ void CGLModelScene::Render(CGLContext& rc)
 		cam.Transform();
 	}
 
-	//// render the temp object
-	//CCreatePanel* cp = m_pWnd->GetCreatePanel();
-	//if (cp)
-	//{
-	//	GObject* po = cp->GetTempObject();
-	//	if (po)
-	//	{
-	//		RenderObject(po);
-	//		RenderEdges(po);
-	//	}
-	//}
-
 	// render physics
 	if (m_doc->IsValid())
 	{
@@ -155,14 +143,6 @@ void CGLModelScene::Render(CGLContext& rc)
 		if (view.m_blma  ) RenderLocalMaterialAxes(rc);
 	}
 
-	// render the command window gizmo's
-	/*	CCommandPanel* pcw = m_pWnd->GetCommandWindow()->GetActivePanel();
-	if (pcw)
-	{
-	GLCanvas glc(this);
-	pcw->Render(&glc);
-	}
-	*/
 	// render the selected parts
 	if (m_doc->IsValid())
 	{
@@ -2773,16 +2753,12 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 {
 	if ((po == 0) || !po->IsVisible()) return;
 
-	CGLView* glview = rc.m_view;
-
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
-	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT | GL_LINE_BIT);
-	glDisable(GL_LIGHTING);
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	vector<vec3d> points; points.reserve(65536);
 
-		// loop over all elements
+	// loop over all elements
 	for (int i = 0; i < pm->Elements(); i++)
 	{
 		const FEElement_& e = pm->ElementRef(i);
@@ -2798,20 +2774,15 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 
 					if ((pen == 0) || (!pen->IsVisible()))
 					{
-						glBegin(GL_LINE_LOOP);
-						{
+						const vec3d& r1 = pm->Node(e.m_node[FTHEX8[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTHEX8[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTHEX8[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTHEX8[j][3]]).r;
 
-							const vec3d& r1 = pm->Node(e.m_node[FTHEX8[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTHEX8[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTHEX8[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTHEX8[j][3]]).r;
-
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-							glVertex3d(r4.x, r4.y, r4.z);
-						}
-						glEnd();
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r4);
+						points.push_back(r4); points.push_back(r1);
 					}
 				}
 			}
@@ -2825,28 +2796,23 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 
 					if ((pen == 0) || (!pen->IsVisible()))
 					{
-						glBegin(GL_LINE_LOOP);
-						{
+						const vec3d& r1 = pm->Node(e.m_node[FTHEX20[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTHEX20[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTHEX20[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTHEX20[j][3]]).r;
+						const vec3d& r5 = pm->Node(e.m_node[FTHEX20[j][4]]).r;
+						const vec3d& r6 = pm->Node(e.m_node[FTHEX20[j][5]]).r;
+						const vec3d& r7 = pm->Node(e.m_node[FTHEX20[j][6]]).r;
+						const vec3d& r8 = pm->Node(e.m_node[FTHEX20[j][7]]).r;
 
-							const vec3d& r1 = pm->Node(e.m_node[FTHEX20[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTHEX20[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTHEX20[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTHEX20[j][3]]).r;
-							const vec3d& r5 = pm->Node(e.m_node[FTHEX20[j][4]]).r;
-							const vec3d& r6 = pm->Node(e.m_node[FTHEX20[j][5]]).r;
-							const vec3d& r7 = pm->Node(e.m_node[FTHEX20[j][6]]).r;
-							const vec3d& r8 = pm->Node(e.m_node[FTHEX20[j][7]]).r;
-
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r5.x, r5.y, r5.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r6.x, r6.y, r6.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-							glVertex3d(r7.x, r7.y, r7.z);
-							glVertex3d(r4.x, r4.y, r4.z);
-							glVertex3d(r8.x, r8.y, r8.z);
-						}
-						glEnd();
+						points.push_back(r1); points.push_back(r5);
+						points.push_back(r5); points.push_back(r2);
+						points.push_back(r2); points.push_back(r6);
+						points.push_back(r6); points.push_back(r3);
+						points.push_back(r3); points.push_back(r7);
+						points.push_back(r7); points.push_back(r4);
+						points.push_back(r4); points.push_back(r8);
+						points.push_back(r8); points.push_back(r1);
 					}
 				}
 			}
@@ -2860,19 +2826,15 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 
 					if ((pen == 0) || (!pen->IsVisible()))
 					{
-						glBegin(GL_LINE_LOOP);
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
+						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
 
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-							glVertex3d(r4.x, r4.y, r4.z);
-						}
-						glEnd();
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r4);
+						points.push_back(r4); points.push_back(r1);
 					}
 				}
 
@@ -2882,17 +2844,13 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 
 					if ((pen == 0) || (!pen->IsVisible()))
 					{
-						glBegin(GL_LINE_LOOP);
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
 
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-						}
-						glEnd();
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r1);
 					}
 				}
 			}
@@ -2901,17 +2859,13 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 			{
 				for (int j = 0; j < 4; j++)
 				{
-					glBegin(GL_LINE_LOOP);
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
+					const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
+					const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
+					const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
 
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-					}
-					glEnd();
+					points.push_back(r1); points.push_back(r2);
+					points.push_back(r2); points.push_back(r3);
+					points.push_back(r3); points.push_back(r1);
 				}
 
 				glBegin(GL_LINE_LOOP);
@@ -2921,10 +2875,10 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 					const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
 					const vec3d& r4 = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
 
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r4.x, r4.y, r4.z);
+					points.push_back(r1); points.push_back(r2);
+					points.push_back(r2); points.push_back(r3);
+					points.push_back(r3); points.push_back(r4);
+					points.push_back(r4); points.push_back(r1);
 				}
 				glEnd();
 
@@ -2935,47 +2889,37 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 			{
 				for (int j = 0; j < 4; j++)
 				{
-					glBegin(GL_LINE_LOOP);
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[j][3]]).r;
-						const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[j][4]]).r;
-						const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[j][5]]).r;
+					const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
+					const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+					const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+					const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[j][3]]).r;
+					const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[j][4]]).r;
+					const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[j][5]]).r;
 
-						glVertex3d(r1.x, r1.y, r1.z);
-						glVertex3d(r4.x, r4.y, r4.z);
-						glVertex3d(r2.x, r2.y, r2.z);
-						glVertex3d(r5.x, r5.y, r5.z);
-						glVertex3d(r3.x, r3.y, r3.z);
-						glVertex3d(r6.x, r6.y, r6.z);
-					}
-					glEnd();
+					points.push_back(r1); points.push_back(r4);
+					points.push_back(r4); points.push_back(r2);
+					points.push_back(r2); points.push_back(r5);
+					points.push_back(r5); points.push_back(r3);
+					points.push_back(r3); points.push_back(r6);
 				}
 
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
-					const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
-					const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
-					const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
-					const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[4][4]]).r;
-					const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[4][5]]).r;
-					const vec3d& r7 = pm->Node(e.m_node[FTPYRA13[4][6]]).r;
-					const vec3d& r8 = pm->Node(e.m_node[FTPYRA13[4][7]]).r;
+				const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+				const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+				const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+				const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+				const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[4][4]]).r;
+				const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[4][5]]).r;
+				const vec3d& r7 = pm->Node(e.m_node[FTPYRA13[4][6]]).r;
+				const vec3d& r8 = pm->Node(e.m_node[FTPYRA13[4][7]]).r;
 
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r5.x, r5.y, r5.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r6.x, r6.y, r6.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r7.x, r7.y, r7.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-					glVertex3d(r8.x, r8.y, r8.z);
-				}
-				glEnd();
-
+				points.push_back(r1); points.push_back(r5);
+				points.push_back(r5); points.push_back(r2);
+				points.push_back(r2); points.push_back(r6);
+				points.push_back(r6); points.push_back(r3);
+				points.push_back(r3); points.push_back(r7);
+				points.push_back(r7); points.push_back(r4);
+				points.push_back(r4); points.push_back(r8);
+				points.push_back(r8); points.push_back(r1);
 			}
 			break;
 
@@ -2988,17 +2932,13 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 					if ((pen == 0) || (!pen->IsVisible()))
 					{
-						glBegin(GL_LINE_LOOP);
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTTET[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTTET[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTTET[j][2]]).r;
+						const vec3d& r1 = pm->Node(e.m_node[FTTET[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTTET[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTTET[j][2]]).r;
 
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-						}
-						glEnd();
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r1);
 					}
 				}
 			}
@@ -3011,23 +2951,19 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
 					if ((pen == 0) || (!pen->IsVisible()))
 					{
-						glBegin(GL_LINE_LOOP);
-						{
-							const vec3d& r1 = pm->Node(e.m_node[FTTET10[j][0]]).r;
-							const vec3d& r2 = pm->Node(e.m_node[FTTET10[j][1]]).r;
-							const vec3d& r3 = pm->Node(e.m_node[FTTET10[j][2]]).r;
-							const vec3d& r4 = pm->Node(e.m_node[FTTET10[j][3]]).r;
-							const vec3d& r5 = pm->Node(e.m_node[FTTET10[j][4]]).r;
-							const vec3d& r6 = pm->Node(e.m_node[FTTET10[j][5]]).r;
+						const vec3d& r1 = pm->Node(e.m_node[FTTET10[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTTET10[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTTET10[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTTET10[j][3]]).r;
+						const vec3d& r5 = pm->Node(e.m_node[FTTET10[j][4]]).r;
+						const vec3d& r6 = pm->Node(e.m_node[FTTET10[j][5]]).r;
 
-							glVertex3d(r1.x, r1.y, r1.z);
-							glVertex3d(r4.x, r4.y, r4.z);
-							glVertex3d(r2.x, r2.y, r2.z);
-							glVertex3d(r5.x, r5.y, r5.z);
-							glVertex3d(r3.x, r3.y, r3.z);
-							glVertex3d(r6.x, r6.y, r6.z);
-						}
-						glEnd();
+						points.push_back(r1); points.push_back(r4);
+						points.push_back(r4); points.push_back(r2);
+						points.push_back(r2); points.push_back(r5);
+						points.push_back(r5); points.push_back(r3);
+						points.push_back(r3); points.push_back(r6);
+						points.push_back(r6); points.push_back(r1);
 					}
 				}
 			}
@@ -3036,41 +2972,45 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 			case FE_QUAD8:
 			case FE_QUAD9:
 			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(e.m_node[0]).r;
-					const vec3d& r2 = pm->Node(e.m_node[1]).r;
-					const vec3d& r3 = pm->Node(e.m_node[2]).r;
-					const vec3d& r4 = pm->Node(e.m_node[3]).r;
+				const vec3d& r1 = pm->Node(e.m_node[0]).r;
+				const vec3d& r2 = pm->Node(e.m_node[1]).r;
+				const vec3d& r3 = pm->Node(e.m_node[2]).r;
+				const vec3d& r4 = pm->Node(e.m_node[3]).r;
 
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-					glVertex3d(r4.x, r4.y, r4.z);
-				}
-				glEnd();
+				points.push_back(r1); points.push_back(r2);
+				points.push_back(r2); points.push_back(r3);
+				points.push_back(r3); points.push_back(r4);
+				points.push_back(r4); points.push_back(r1);
 			}
 			break;
 			case FE_TRI3:
 			case FE_TRI6:
 			{
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(e.m_node[0]).r;
-					const vec3d& r2 = pm->Node(e.m_node[1]).r;
-					const vec3d& r3 = pm->Node(e.m_node[2]).r;
+				const vec3d& r1 = pm->Node(e.m_node[0]).r;
+				const vec3d& r2 = pm->Node(e.m_node[1]).r;
+				const vec3d& r3 = pm->Node(e.m_node[2]).r;
 
-					glVertex3d(r1.x, r1.y, r1.z);
-					glVertex3d(r2.x, r2.y, r2.z);
-					glVertex3d(r3.x, r3.y, r3.z);
-				}
-				glEnd();
+				points.push_back(r1); points.push_back(r2);
+				points.push_back(r2); points.push_back(r3);
+				points.push_back(r3); points.push_back(r1);
 			}
 			break;
 			} // switch
 		} // if
 	} // for
+	if (points.empty()) return;
 
+	// build the line mesh
+	GLLineMesh mesh;
+	mesh.AllocVertexBuffers(points.size(), GLVAMesh::FLAG_VERTEX);
+	mesh.BeginMesh();
+	for (auto& v : points) mesh.AddVertex(v);
+	mesh.EndMesh();
+
+	// render the mesh
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	mesh.Render();
 	glPopAttrib();
 }
 

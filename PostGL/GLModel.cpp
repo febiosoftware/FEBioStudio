@@ -1933,10 +1933,12 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 						}
 						else
 						{
-							vec3d e1 = p - pm->FaceCenter(f);
-							vec3d e2 = p - pm->FaceCenter(f2);
-							double d1 = e1 * n1;
-							double d2 = e2 * n2;
+							int a = j;
+							int b = (j + 1) % n;
+							vec3d c = (pm->Node(f.n[a]).r + pm->Node(f2.n[b]).r) * 0.5;
+							vec3d pc = p - c;
+							double d1 = pc * n1;
+							double d2 = pc * n2;
 							if (d1 * d2 <= 0) bdraw = true;
 						}
 					}
