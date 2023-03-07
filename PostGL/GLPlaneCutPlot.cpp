@@ -252,8 +252,6 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 	// set the clip plane coefficients
 	glClipPlane(GL_CLIP_PLANE0 + m_nclip, a);
 
-	if (GetModel()->IsActive() == false) return;
-
 	// make sure the current clip plane is not active
 	glDisable(GL_CLIP_PLANE0 + m_nclip);
 

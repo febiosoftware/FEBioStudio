@@ -102,7 +102,7 @@ protected:
 	vector<EDGE>	m_Edge;
 };
 
-class CGLModel : public CGLVisual
+class CGLModel : public FSObject
 {
 public:
 	CGLModel(FEPostModel* ps);
@@ -187,7 +187,7 @@ public:
 
 public:
 	// call this to render the model
-	void Render(CGLContext& rc) override;
+	void Render(CGLContext& rc);
 
 	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
