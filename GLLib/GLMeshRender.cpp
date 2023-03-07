@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <MeshLib/GMesh.h>
 #include <GLLib/glx.h>
 #include <GLLib/GLVAMesh.h>
+#include <GLLib/GLContext.h>
+#include <GLLib/GLCamera.h>
 
 //-----------------------------------------------------------------------------
 extern int ET_HEX[12][2];
@@ -1418,6 +1420,79 @@ void GLMeshRender::RenderGLMeshLines(GMesh* pm)
 	glEnd();
 
 	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
+{
+	// get some settings
+	CGLCamera& cam = *rc.m_cam;
+	quatd q = cam.GetOrientation();
+	vec3d p = cam.GlobalPosition();
+
+	// this array will collect all points to render
+	vector<vec3d> points; points.reserve(1024);
+
+	// loop over all faces
+	for (int i = 0; i < pm->Faces(); ++i)
+	{
+		GMesh::FACE& f = pm->Face(i);
+
+		for (int j = 0; j < 3; ++j)
+		{
+			bool bdraw = false;
+
+			if (f.nbr[j] < 0)
+			{
+				bdraw = true;
+			}
+			else
+			{
+				GMesh::FACE& f2 = pm->Face(f.nbr[j]);
+				vec3d n1 = f.fn;
+				vec3d n2 = f2.fn;
+
+				if (cam.IsOrtho())
+				{
+					q.RotateVector(n1);
+					q.RotateVector(n2);
+					if (n1.z * n2.z <= 0) bdraw = true;
+				}
+				else
+				{
+					vec3d c1 = (pm->Node(f.n[0]).r + pm->Node(f.n[1]).r + pm->Node(f.n[2]).r) / 3.0;
+					vec3d c2 = (pm->Node(f2.n[0]).r + pm->Node(f2.n[1]).r + pm->Node(f2.n[2]).r) / 3.0;
+
+					vec3d e1 = p - c1;
+					vec3d e2 = p - c2;
+					double d1 = e1 * n1;
+					double d2 = e2 * n2;
+					if (d1 * d2 <= 0) bdraw = true;
+				}
+			}
+
+			if (bdraw)
+			{
+				int a = f.n[j];
+				int b = f.n[(j + 1) % 3];
+				if (a > b) { a ^= b; b ^= a; a ^= b; }
+
+				points.push_back(pm->Node(a).r);
+				points.push_back(pm->Node(b).r);
+			}
+		}
+	}
+	if (points.empty()) return;
+
+	// build the line mesh
+	GLLineMesh lineMesh;
+	lineMesh.AllocVertexBuffers(points.size(), GLVAMesh::FLAG_VERTEX);
+	lineMesh.BeginMesh();
+	for (auto& p : points) lineMesh.AddVertex(p);
+	lineMesh.EndMesh();
+
+	// render the active edges
+	lineMesh.Render();
 }
 
 //-----------------------------------------------------------------------------

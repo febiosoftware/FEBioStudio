@@ -1287,6 +1287,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
+	glEnable(GL_COLOR_MATERIAL);
 	glColor3ub(0, 0, 0);
 
 	FSModel* ps = doc->GetFSModel();
@@ -1302,6 +1303,8 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 
 			GMesh& m = *po->GetRenderMesh();
 			renderer.RenderGLEdges(&m);
+
+			renderer.RenderOutline(rc, &m);
 
 			glPopMatrix();
 		}
