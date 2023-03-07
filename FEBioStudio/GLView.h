@@ -268,7 +268,7 @@ public:
 	void ZoomExtents(bool banimate = true);
 
 	// prep the GL view for rendering
-	void PrepModel();
+	void PrepScene();
 
 	// setup the projection matrix
 	void SetupProjection();

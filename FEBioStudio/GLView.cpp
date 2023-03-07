@@ -1504,7 +1504,7 @@ void CGLView::paintGL()
 	rc.m_springThick = view.m_line_size;
 
 	// prepare for rendering
-	PrepModel();
+	PrepScene();
 
 	// render the backgound
 	RenderBackground();
@@ -1950,7 +1950,7 @@ void CGLView::TrackSelection(bool b)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::PrepModel()
+void CGLView::PrepScene()
 {
 	GLfloat specular[] = { 1.f, 1.f, 1.f, 1.f };
 
