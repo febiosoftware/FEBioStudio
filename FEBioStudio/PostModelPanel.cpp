@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPointPlot.h>
 #include <PostGL/GLStreamLinePlot.h>
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLVolumeFlowPlot.h>
