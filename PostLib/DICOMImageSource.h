@@ -23,45 +23,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include "GLImageRenderer.h"
-#include <GLLib/GLVAMesh.h>
 
-namespace Post {
+#include "ImageSource.h"
 
-class CImageModel;
-
-class CVolumeRenderer : public CGLImageRenderer
+class CDICOMImageSource : public Post::CImageSource
 {
-	// enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
-    enum {COLOR_MAP};
-
 public:
-	CVolumeRenderer(CImageModel* img);
-	~CVolumeRenderer();
+    CDICOMImageSource(Post::CImageModel* imgModel, const std::vector<std::string>& filenames);
+    CDICOMImageSource(Post::CImageModel* imgModel);
 
-	void Create();
+    bool Load() override;
 
-	void Render(CGLContext& rc) override;
-
-	void Update() override;
-
-private:
-	void Init();
-	void InitShaders();
-	void ReloadTexture();
-	void UpdateGeometry(const vec3d& view);
+    void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
-	unsigned int m_texID;
-	unsigned int m_prgID;
-    float 	m_IscaleMin;
-    float 	m_Iscale;
-	bool	m_vrInit;
-	bool	m_vrReset;
+    // std::string m_filename;
+    std::vector<std::string> m_filenames;
+    // std::string m_filename;
+    // ImageFileType m_type;
 
-	int	m_nslices = 0;
-	GLTriMesh m_mesh;
+
 };
-
-}

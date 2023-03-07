@@ -168,7 +168,7 @@ public:
 	std::vector<_TifIfd>	m_ifd;
 };
 
-CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(RAW, imgModel), m(new CTiffImageSource::Impl)
+CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(TIFF, imgModel), m(new CTiffImageSource::Impl)
 {
 	m->filename = filename;
 }
@@ -319,7 +319,7 @@ bool CTiffImageSource::Load()
 		}
 		else if (nbps == 16)
 		{
-			im->Create(nx, ny, nz, nullptr, 0, C3DImage::BPS_16);
+			im->Create(nx, ny, nz, nullptr, 0, C3DImage::UINT_16);
 			WORD* buf = (WORD*)im->GetBytes();
 			DWORD imSize = nx * ny;
 			for (int i = 0; i < nz; ++i)
@@ -367,7 +367,7 @@ bool CTiffImageSource::Load()
 		else if (nbps == 16)
 		{
 			// This will be mapped to a RGB image
-			im->Create(nx, ny, nz, nullptr, 0, C3DImage::BPS_RGB16);
+			im->Create(nx, ny, nz, nullptr, 0, C3DImage::UINT_RGB16);
 			DWORD imSize = nx * ny;
 			assert(dimOrder != ome::DimensionOrder::Unknown);
 			if (dimOrder == ome::DimensionOrder::XYCZT)

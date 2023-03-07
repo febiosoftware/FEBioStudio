@@ -46,7 +46,7 @@ class CImageSource : public FSThreadedTask
 public:
     enum Types 
     { 
-        RAW = 0, ITK, SERIES
+        RAW = 0, ITK, SERIES, TIFF, DICOM
     };
 
 public:

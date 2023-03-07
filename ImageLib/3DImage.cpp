@@ -51,7 +51,8 @@ C3DImage::C3DImage()
 {
 	m_pb = 0;
 	m_cx = m_cy = m_cz = 0; 
-	m_bps = BPS_8;
+	m_bps = 1;
+    m_pixelType = UINT_8;
 
     m_box = BOX(0., 0., 0., 1., 1., 1.);
 }
@@ -68,30 +69,51 @@ void C3DImage::CleanUp()
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int bps)
+bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int pixelType)
 {
     // Check to make sure this does not allocate memory of size 0.
     if(nx*ny*nz == 0)
       return false;
 
 	// reallocate data if necessary
-	if ((nx*ny*nz != m_cx*m_cy*m_cz) || (m_bps != bps))
+	if ((nx*ny*nz != m_cx*m_cy*m_cz) || (m_pixelType != pixelType))
 	{
-	  CleanUp();
-	  m_bps = bps;
-	  assert((m_bps >= 1) && (m_bps <= 6));
+	    CleanUp();
 
-      if(data == nullptr)
-      {
-        if(dataSize == 0)
-          m_pb = new Byte[nx*ny*nz*m_bps];
+        m_pixelType = pixelType;
+
+        if(pixelType == INT_8 || pixelType == UINT_8)
+        {
+            m_bps = 1;
+        }
+        else if(pixelType == INT_16 || pixelType == UINT_16)
+        {
+            m_bps = 2;
+        }
+        else if(pixelType == INT_RGB8 || pixelType == UINT_RGB8)
+        {
+            m_bps = 3;
+        }
+        else if(pixelType == INT_RGB16 || pixelType == UINT_RGB16)
+        {
+            m_bps = 6;
+        }
         else
-          m_pb = new Byte[dataSize];
+        {
+            assert(false);
+        }
 
-        if (m_pb == nullptr) return false;
-      }
-      else
-        m_pb = data;
+        if(data == nullptr)
+        {
+            if(dataSize == 0)
+                m_pb = new Byte[nx*ny*nz*m_bps];
+            else
+                m_pb = new Byte[dataSize];
+
+            if (m_pb == nullptr) return false;
+        }
+        else
+            m_pb = data;
 	}
 
 	m_cx = nx;

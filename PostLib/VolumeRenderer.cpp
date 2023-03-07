@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
 #include <sstream>
+#include <limits>
 using namespace Post;
 
 static int n = 1;
@@ -52,7 +53,6 @@ CVolumeRenderer::CVolumeRenderer(CImageModel* img) : CGLImageRenderer(img)
 	m_vrInit = false;
 	m_vrReset = false;
 
-	m_Iscale = 1.0f;
 }
 
 CVolumeRenderer::~CVolumeRenderer()
@@ -100,30 +100,51 @@ void CVolumeRenderer::ReloadTexture()
 	int ny = im3d.Height();
 	int nz = im3d.Depth();
 
-	// for 16-bit we calculate the max value
-	m_Iscale = 1.f;
-	if (im3d.BPS() == C3DImage::BPS_16)
+    int pType = im3d.PixelType();
+
+	// find the min and max values
+    size_t N  = nx * ny * nz;
+    if(pType == C3DImage::INT_RGB8 || pType == C3DImage::UINT_RGB8 || pType == C3DImage::INT_RGB16 || pType == C3DImage::UINT_RGB16)
+    {
+        N *= 3;
+    }
+
+    int max8 = 255;
+    int max16 = 65535;
+
+    float max;
+    float min;
+	if (pType == C3DImage::INT_8 || pType == C3DImage::INT_RGB8)
 	{
-		int maxVal = 256;
-		word* w = (word*)im3d.GetBytes();
-		int N = nx * ny * nz;
-		for (int i = 0; i < N; ++i)
-		{
-			if (w[i] > maxVal) maxVal = w[i];
-		}
-		m_Iscale = 65535.f / (float)maxVal;
+        int8_t* data = (int8_t*)im3d.GetBytes();
+
+		max = (float)*std::max_element(data, data+N)/(max8/2);
+        min = (float)*std::min_element(data, data+N)/(max8/2);
+    }
+    else if(pType == C3DImage::UINT_8 || pType == C3DImage::UINT_RGB8)
+    {
+        uint8_t* data = (uint8_t*)im3d.GetBytes();
+
+        max = (float)*std::max_element(data, data+N)/max8;
+        min = (float)*std::min_element(data, data+N)/max8;
+    }
+    else if( pType == C3DImage::INT_16 || pType == C3DImage::INT_RGB16)
+    {
+		int16_t* data = (int16_t*)im3d.GetBytes();
+
+		max = (float)*std::max_element(data, data+N)/(max16/2);
+        min = (float)*std::min_element(data, data+N)/(max16/2);
 	}
-	else if (im3d.BPS() == C3DImage::BPS_RGB16)
-	{
-		int maxVal = 256;
-		word* w = (word*)im3d.GetBytes();
-		int N = nx * ny * nz * 3;
-		for (int i = 0; i < N; ++i)
-		{
-			if (w[i] > maxVal) maxVal = w[i];
-		}
-		m_Iscale = 65535.f / (float)maxVal;
-	}
+    else if(pType == C3DImage::UINT_16 || pType == C3DImage::UINT_RGB16)
+    {
+        uint16_t* data = (uint16_t*)im3d.GetBytes();
+
+		max = (float)*std::max_element(data, data+N)/max16;
+        min = (float)*std::min_element(data, data+N)/max16;
+    }
+
+    m_Iscale = 1/(max - min);
+    m_IscaleMin = min;
 
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
@@ -141,12 +162,16 @@ void CVolumeRenderer::ReloadTexture()
 	int n = 0;
 	glGetIntegerv(GL_UNPACK_ALIGNMENT, &n);
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-	switch (im3d.BPS())
+	switch (im3d.PixelType())
 	{
-	case C3DImage::BPS_8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
-	case C3DImage::BPS_16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-	case C3DImage::BPS_RGB8: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
-	case C3DImage::BPS_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
+	case C3DImage::INT_8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_BYTE , im3d.GetBytes()); break;
+	case C3DImage::INT_16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_SHORT, im3d.GetBytes()); break;
+	case C3DImage::INT_RGB8: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_BYTE , im3d.GetBytes()); break;
+	case C3DImage::INT_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_SHORT, im3d.GetBytes()); break;
+    case C3DImage::UINT_8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case C3DImage::UINT_16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
+	case C3DImage::UINT_RGB8: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case C3DImage::UINT_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
 	}
 	glPixelStorei(GL_UNPACK_ALIGNMENT, n);
 
@@ -167,6 +192,7 @@ const char* shadertxt_8bit = \
 "uniform float Imin;                                      "\
 "uniform float Imax;                                      "\
 "uniform float Iscl;                                      "\
+"uniform float IsclMin;                                   "\
 "uniform float Amin;                                      "\
 "uniform float Amax;                                      "\
 "uniform float gamma;                                     "\
@@ -179,7 +205,7 @@ const char* shadertxt_8bit = \
 "void main(void)                                          "\
 "{                                                        "\
 "	vec4 t = texture3D(sampler, gl_TexCoord[0].xyz);      "\
-"   float f = t.x*Iscl;                                   "\
+"   float f = (t.x-IsclMin)*Iscl;                         "\
 "   f = (f - Imin) / (Imax - Imin);                       "\
 "   f = clamp(f, 0.0, 1.0);                               "\
 "   if (f <= 0.0) discard;                                "\
@@ -222,6 +248,7 @@ const char* shadertxt_rgb = \
 "uniform sampler3D sampler;                               "\
 "uniform float Imin;                                      "\
 "uniform float Iscl;                                      "\
+"uniform float IsclMin;                                   "\
 "uniform float Imax;                                      "\
 "uniform float Amin;                                      "\
 "uniform float Amax;                                      "\
@@ -232,7 +259,7 @@ const char* shadertxt_rgb = \
 "uniform int cmap;                                        "\
 "void main(void)                                          "\
 "{                                                        "\
-"	vec4 t = texture(sampler, gl_TexCoord[0].xyz)*Iscl;       "\
+"   vec4 t = (texture(sampler, gl_TexCoord[0].xyz)-IsclMin)*Iscl;"\
 "   t.x = (t.x - Imin) / (Imax - Imin);                   "\
 "   t.x = clamp(t.x, 0.0, 1.0);                           "\
 "   t.y = (t.y - Imin) / (Imax - Imin);                   "\
@@ -271,12 +298,16 @@ void CVolumeRenderer::InitShaders()
 	C3DImage& im3d = *src->Get3DImage();
 
 	const char* shadertxt = nullptr;
-	switch (im3d.BPS())
+	switch (im3d.PixelType())
 	{
-	case C3DImage::BPS_8  : shadertxt = shadertxt_8bit; break;
-	case C3DImage::BPS_16 : shadertxt = shadertxt_8bit; break;
-	case C3DImage::BPS_RGB8: shadertxt = shadertxt_rgb; break;
-	case C3DImage::BPS_RGB16: shadertxt = shadertxt_rgb; break;
+    case C3DImage::UINT_8  : shadertxt = shadertxt_8bit; break;
+	case C3DImage::INT_8  : shadertxt = shadertxt_8bit; break;
+	case C3DImage::UINT_16  : shadertxt = shadertxt_8bit; break;
+    case C3DImage::INT_16 : shadertxt = shadertxt_8bit; break;
+	case C3DImage::UINT_RGB8  : shadertxt = shadertxt_rgb; break;
+    case C3DImage::INT_RGB8: shadertxt = shadertxt_rgb; break;
+	case C3DImage::UINT_RGB16  : shadertxt = shadertxt_rgb; break;
+    case C3DImage::INT_RGB16: shadertxt = shadertxt_rgb; break;
 	default:
 		return;
 	}
@@ -404,6 +435,7 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	GLint cmapID = glGetUniformLocation(m_prgID, "cmap");
 	GLint gammaID = glGetUniformLocation(m_prgID, "gamma");
 	GLint IsclID   = glGetUniformLocation(m_prgID, "Iscl");
+    GLint IsclMinID   = glGetUniformLocation(m_prgID, "IsclMin");
 
 	CImageViewSettings* vs = GetImageModel()->GetViewSettings();
 
@@ -426,8 +458,10 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glUniform1f(gammaID, gamma);
 	glUniform1i(cmapID, cmap);
 	glUniform1f(IsclID, m_Iscale);
+    glUniform1f(IsclMinID, m_IscaleMin);
 
-	if ((im3d.BPS() == C3DImage::BPS_RGB8) || (im3d.BPS() == C3DImage::BPS_RGB16))
+	if ((im3d.PixelType() == C3DImage::INT_RGB8) || (im3d.PixelType() == C3DImage::UINT_RGB8) 
+        || (im3d.PixelType() == C3DImage::INT_RGB16) || (im3d.PixelType() == C3DImage::UINT_RGB16))
 	{
 		GLint col1ID = glGetUniformLocation(m_prgID, "col1");
 		GLint col2ID = glGetUniformLocation(m_prgID, "col2");

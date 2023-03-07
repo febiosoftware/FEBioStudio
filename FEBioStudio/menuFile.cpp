@@ -102,6 +102,7 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSource.h>
+#include <PostLib/DICOMImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/AbaqusExport.h>
 #include <GeomLib/GModel.h>
@@ -1624,6 +1625,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 		}
 	}
 }
+
 void CMainWindow::on_actionImportDICOMImage_triggered()
 {
     CGLDocument* doc = GetGLDocument();
@@ -1634,7 +1636,7 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
     }
 
 	QFileDialog filedlg(this);
-	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
 	QStringList filters;
@@ -1643,7 +1645,48 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 
 	if (filedlg.exec())
 	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
+        std::vector<std::string> filenames;
+        for(auto name : filedlg.selectedFiles())
+        {
+            filenames.push_back(name.toStdString());
+        }
+
+        // string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
+
+        Post::CImageModel* imageModel = nullptr;
+
+		// ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::DICOM);
+
+        imageModel = new Post::CImageModel(nullptr);
+        imageModel->SetImageSource(new CDICOMImageSource(imageModel, filenames));
+
+        if(!ImportImage(imageModel))
+        {
+            delete imageModel;
+            imageModel = nullptr;
+        }
+
+        if(imageModel)
+		{
+			Update(0, true);
+			ZoomTo(imageModel->GetBoundingBox());
+
+			// only for model docs
+			if (dynamic_cast<CModelDocument*>(doc))
+			{
+				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
+				vr->Create();
+				imageModel->AddImageRenderer(vr);
+
+				Update(0, true);
+				ShowInModelViewer(imageModel);
+			}
+			else
+			{
+				Update(0, true);
+			}
+			ZoomTo(imageModel->GetBoundingBox());
+		}
 	}
 }
 
