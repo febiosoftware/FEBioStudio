@@ -201,6 +201,7 @@ public:
 	void RenderSurface(FEPostModel* ps, CGLContext& rc);
 
 public:
+	void RenderMeshLines(CGLContext& rc);
 	void RenderOutline(CGLContext& rc, int nmat = -1);
 	void RenderNormals(CGLContext& rc);
 	void RenderGhost  (CGLContext& rc);

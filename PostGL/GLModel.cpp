@@ -503,6 +503,12 @@ void CGLModel::Render(CGLContext& rc)
 		RenderSurface(m_ps, rc);
 	}
 
+	// render mesh lines
+	if (m_bshowMesh && (GetSelectionMode() != SELECT_EDGES))
+	{
+		RenderMeshLines(rc);
+	}
+
 	// render outline
 	if (rc.m_settings.m_bfeat)
 	{
@@ -562,6 +568,44 @@ void CGLModel::Render(CGLContext& rc)
 
 	// render all the objects
 	if (m_brenderPlotObjects) RenderObjects(rc);
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderMeshLines(CGLContext& rc)
+{
+	FEPostModel* fem = GetFSModel();
+	if (fem == nullptr) return;
+	for (int m = 0; m < fem->Materials(); ++m)
+	{
+		// get the material
+		Material* pmat = fem->GetMaterial(m);
+
+		// make sure the material is visible
+		if (pmat->bvisible && pmat->bmesh)
+		{
+			// store attributes
+			glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+
+			glDisable(GL_LIGHTING);
+			glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+			if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
+
+			rc.m_cam->LineDrawMode(true);
+
+			// set the material properties
+			GLColor c = pmat->meshcol;
+			glColor3ub(c.r, c.g, c.b);
+			RenderMeshLines(fem, m);
+
+			rc.m_cam->LineDrawMode(false);
+
+			CGLPlaneCutPlot::EnableClipPlanes();
+
+			// restore attributes
+			glPopAttrib();
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -913,42 +957,6 @@ void CGLModel::RenderElems(FEPostModel* ps, CGLContext& rc)
 		if (pmat->bvisible && (pmat->transparency <= .99f) && (pmat->transparency>0.001f))
 		{
 			RenderSolidPart(ps, rc, m);
-		}
-	}
-
-	// next, we render the mesh lines
-	if (m_bshowMesh && (GetSelectionMode() != SELECT_EDGES))
-	{
-		for (int m = 0; m < ps->Materials(); ++m)
-		{
-			// get the material
-			Material* pmat = ps->GetMaterial(m);
-
-			// make sure the material is visible
-			if (pmat->bvisible && pmat->bmesh)
-			{
-				// store attributes
-				glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
-
-				glDisable(GL_LIGHTING);
-				glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-
-				if (pmat->bclip == false) CGLPlaneCutPlot::DisableClipPlanes();
-
-				rc.m_cam->LineDrawMode(true);
-
-				// set the material properties
-				GLColor c = pmat->meshcol;
-				glColor3ub(c.r, c.g, c.b);
-				RenderMeshLines(ps, m);
-
-				rc.m_cam->LineDrawMode(false);
-
-				CGLPlaneCutPlot::EnableClipPlanes();
-
-				// restore attributes
-				glPopAttrib();
-			}
 		}
 	}
 }
