@@ -811,7 +811,9 @@ public:
 		menuFile->addSeparator();
 		menuFile->addAction(menuImportImage->menuAction());
 		menuImportImage->addAction(actionImportRawImage);
+#ifdef HAS_DCMTK
 		menuImportImage->addAction(actionImportDICOMImage);
+#endif
 		menuImportImage->addAction(actionImportTiffImage);
 //		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 		menuImportImage->addAction(actionImportImageSequence);
