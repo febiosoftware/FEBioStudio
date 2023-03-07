@@ -1568,6 +1568,8 @@ void FSModel::LoadSteps(IArchive& ar)
 		case FE_STEP_REACTION_DIFFUSION : ps = new FSReactionDiffusionAnalysis(this); break;
         case FE_STEP_POLAR_FLUID        : ps = new FSPolarFluidAnalysis (this); break;
 		case FE_STEP_FEBIO_ANALYSIS     : ps = new FEBioAnalysisStep(this); break;
+        case FE_STEP_FLUID_SOLUTES      : ps = new FSFluidSolutesAnalysis(this); break;
+        case FE_STEP_THERMO_FLUID       : ps = new FSThermoFluidAnalysis(this); break;
 		default:
 			throw ReadError("unknown CID in FSModel::LoadSteps");
 		}

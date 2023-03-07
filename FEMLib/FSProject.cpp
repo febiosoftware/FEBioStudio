@@ -471,6 +471,14 @@ void FSProject::InitModules()
     REGISTER_FE_CLASS(FSFSITraction             , MODULE_FLUID_FSI, FELOAD_ID  , FE_FSI_TRACTION     , "FSI Interface Traction");
     REGISTER_FE_CLASS(FSBFSITraction            , MODULE_FLUID_FSI, FELOAD_ID  , FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction");
     
+    // --- THERMOFLUID MODULE ---
+    REGISTER_FE_CLASS(FSThermoFluidAnalysis     , MODULE_THERMO_FLUID, FEANALYSIS_ID    , FE_STEP_THERMO_FLUID      , "Thermofluid Mechanics");
+    REGISTER_FE_CLASS(FSFixedTemperature        , MODULE_THERMO_FLUID, FEBC_ID          , FE_FIXED_TEMPERATURE      , "Zero temperature");
+    REGISTER_FE_CLASS(FSPrescribedTemperature   , MODULE_THERMO_FLUID, FEBC_ID          , FE_PRESCRIBED_TEMPERATURE , "Prescribed temperature");
+    REGISTER_FE_CLASS(FSInitTemperature         , MODULE_THERMO_FLUID, FEIC_ID          , FE_INIT_TEMPERATURE       , "Temperature");
+    REGISTER_FE_CLASS(FSHeatFlux                , MODULE_THERMO_FLUID, FELOAD_ID        , FE_HEAT_FLUX              , "Heat flux");
+    REGISTER_FE_CLASS(FSHeatSource              , MODULE_THERMO_FLUID, FELOAD_ID        , FE_HEAT_SOURCE            , "Heat source");
+
 
     // --- POLAR FLUID MODULE ---
     REGISTER_FE_CLASS(FSPolarFluidAnalysis            , MODULE_POLAR_FLUID, FEANALYSIS_ID, FE_STEP_POLAR_FLUID, "Polar Fluid Mechanics");
@@ -788,6 +796,8 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		case FE_STEP_MULTIPHASIC       : FEBio::SetActiveModule("multiphasic"       ); break;
 		case FE_STEP_FLUID             : FEBio::SetActiveModule("fluid"             ); break;
 		case FE_STEP_FLUID_FSI         : FEBio::SetActiveModule("fluid-FSI"         ); break;
+        case FE_STEP_FLUID_SOLUTES     : FEBio::SetActiveModule("fluid-solutes"     ); break;
+        case FE_STEP_THERMO_FLUID      : FEBio::SetActiveModule("thermo-fluid"      ); break;
         case FE_STEP_POLAR_FLUID       : FEBio::SetActiveModule("polar fluid"       ); break;
 		case FE_STEP_REACTION_DIFFUSION: FEBio::SetActiveModule("reaction-diffusion"); break; // requires plugin!
 		case FE_STEP_HEAT_TRANSFER     : FEBio::SetActiveModule("heat"              ); break; // requires plugin!

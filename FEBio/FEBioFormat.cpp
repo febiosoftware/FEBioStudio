@@ -182,6 +182,8 @@ FSAnalysisStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* sz
 	case FE_STEP_REACTION_DIFFUSION: pstep = new FSReactionDiffusionAnalysis(&fem); break;
     case FE_STEP_POLAR_FLUID       : pstep = new FSPolarFluidAnalysis (&fem); break;
 	case FE_STEP_EXPLICIT_SOLID    : pstep = new FSExplicitSolidAnalysis(&fem); break;
+    case FE_STEP_FLUID_SOLUTES     : pstep = new FSFluidSolutesAnalysis(&fem); break;
+    case FE_STEP_THERMO_FLUID      : pstep = new FSThermoFluidAnalysis(&fem); break;
 	default:
 		pstep = new FSNonLinearMechanics(&fem);
 		FileReader()->AddLogEntry("Unknown step type. Creating Structural Mechanics step");
@@ -648,7 +650,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	{
 		// default analysis depends on step type
 		int ntype = m_pstep->GetType();
-		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
+		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_FLUID_SOLUTES) || (ntype == FE_STEP_THERMO_FLUID) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
 		else ops.nanalysis = FE_STATIC;
 	}
 
