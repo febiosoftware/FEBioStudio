@@ -506,6 +506,9 @@ void CGLModel::Render(CGLContext& rc)
 	// render outline
 	if (rc.m_showOutline)
 	{
+		GLColor c = m_line_col;
+		glColor3ub(c.r, c.g, c.b);
+
 		rc.m_cam->LineDrawMode(true);
 		RenderOutline(rc);
 		rc.m_cam->LineDrawMode(false);
@@ -1579,7 +1582,10 @@ void CGLModel::RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat)
 
 		// only render the outline if it's not already shown
 		if (rc.m_showOutline == false)
+		{
+			SetMaterialParams(pmat);
 			RenderOutline(rc, mat);
+		}
 	}
 }
 
@@ -1588,7 +1594,12 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m, bool 
 {
 	// make sure a part with this material exists
 	FEPostMesh* pm = GetActiveMesh();
-	if (m >= pm->Domains()) return;
+	if (pm == nullptr) return;
+	if ((m<0) || (m >= pm->Domains())) return;
+
+	MeshDomain& dom = pm->Domain(m);
+	int NF = dom.Faces();
+	if (NF == 0) return;
 
 	// get the material
 	Material* pmat = ps->GetMaterial(m);
@@ -1627,8 +1638,6 @@ void CGLModel::RenderSolidMaterial(CGLContext& rc, FEPostModel* ps, int m, bool 
 	// tag == 2 : draw inactive
 	// TODO: It seems that this can be precomputed and stored somewhere in the domains
 	int numActiveFaces = 0;
-	MeshDomain& dom = pm->Domain(m);
-	int NF = dom.Faces();
 	for (int i = 0; i<NF; ++i)
 	{
 		FSFace& face = dom.Face(i);
@@ -1862,16 +1871,13 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 {
 	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
-	
-	quatd q = rc.m_cam->GetOrientation();
-	int ndivs = GetSubDivisions();
 
-	vector<vec3d> points; points.reserve(1024);
-
+	// get the face list
 	vector<int> faceList;
 	if (nmat != -1)
 	{
 		assert((nmat >= 0) && (nmat < pm->Domains()));
+		if (pm->Domain(nmat).Faces() == 0) return;
 		faceList = pm->Domain(nmat).FaceList();
 	}
 	else
@@ -1881,11 +1887,20 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	}
 	if (faceList.empty()) return;
 
+	// get some settings
+	CGLCamera& cam = *rc.m_cam;
+	quatd q = cam.GetOrientation();
+	vec3d p = cam.GlobalPosition();
+	int ndivs = GetSubDivisions();
+
+	// this array will collect all points to render
+	vector<vec3d> points; points.reserve(1024);
+
+	// loop over all faces
 	for (int i = 0; i < faceList.size(); ++i)
 	{
 		FSFace& f = pm->Face(faceList[i]);
-		FEElement_& el = pm->ElementRef(f.m_elem[0].eid);
-		if (f.IsVisible() && el.IsVisible() && ((nmat == -1) || (el.m_MatID == nmat)))
+		if (f.IsVisible())
 		{
 			int n = f.Edges();
 			for (int j = 0; j < n; ++j)
@@ -1899,11 +1914,9 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 				else
 				{
 					FSFace& f2 = pm->Face(f.m_nbr[j]);
-					if (f.m_gid != f2.m_gid)
-					{
-						bdraw = true;
-					}
-					else if (f.m_sid != f2.m_sid)
+					if ((f.m_gid != f2.m_gid) ||
+						(f.m_sid != f2.m_sid) ||
+						(f2.IsVisible() == false))
 					{
 						bdraw = true;
 					}
@@ -1911,11 +1924,20 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 					{
 						vec3d n1 = to_vec3d(f.m_fn);
 						vec3d n2 = to_vec3d(f2.m_fn);
-						q.RotateVector(n1);
-						q.RotateVector(n2);
-						if (n1.z * n2.z <= 0)
+
+						if (cam.IsOrtho())
 						{
-							bdraw = true;
+							q.RotateVector(n1);
+							q.RotateVector(n2);
+							if (n1.z * n2.z <= 0) bdraw = true;
+						}
+						else
+						{
+							vec3d e1 = p - pm->FaceCenter(f);
+							vec3d e2 = p - pm->FaceCenter(f2);
+							double d1 = e1 * n1;
+							double d2 = e2 * n2;
+							if (d1 * d2 <= 0) bdraw = true;
 						}
 					}
 				}
@@ -2033,10 +2055,6 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	glPushAttrib(GL_ENABLE_BIT);
 	{
 		glDisable(GL_LIGHTING);
-
-		GLColor c = m_line_col;
-		glColor3ub(c.r, c.g, c.b);
-
 		lineMesh.Render();
 	}
 	glPopAttrib();
@@ -2084,8 +2102,7 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 		for (int i=0; i<dom.Faces(); ++i)
 		{
 			FSFace& face = dom.Face(i);
-			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
-			if (face.IsVisible() && el.IsVisible())
+			if (face.IsVisible())
 			{
 				// okay, we got one, so let's render it
 				m_render.RenderFaceOutline(face, pm, ndivs);

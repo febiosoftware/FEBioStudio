@@ -144,6 +144,10 @@ public:
 	// get the position in global coordinates
 	vec3d GlobalPosition() const;
 
+	// is orthographic project
+	bool IsOrtho() const; 
+	void SetOrthoProjection(bool b);
+
 public:
 	VecInterpolator		m_pos;	// position of target in global coordinates
 	VecInterpolator		m_trg;	// position of target in local coordinates
@@ -153,6 +157,7 @@ public:
 private:
 	double	m_speed;
 	double	m_bias;
+	bool	m_bortho;
 
 	double	m_depthScale;	// depth scale for line drawing
 };

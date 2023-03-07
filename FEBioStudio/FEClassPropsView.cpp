@@ -1771,6 +1771,21 @@ public:
 				Param* p = pf->GetParam("math");
 				math->ClearVariables();
 
+				// we need to figure out what variable is used as the ordinate
+				MSimpleExpression tmp;
+				if (tmp.Create(p->GetStringValue(), true))
+				{
+					for (int i = 0; i < tmp.Variables(); ++i)
+					{
+						MVariable* vi = tmp.Variable(i);
+						if (strstr(vi->Name().c_str(), "fem.") == nullptr)
+						{
+							// let's assume this is ordinate name
+							math->SetOrdinate(QString::fromStdString(vi->Name()));
+						}
+					}
+				}
+
 				FSModel* fem = pf->GetFSModel();
 				if (fem)
 				{
