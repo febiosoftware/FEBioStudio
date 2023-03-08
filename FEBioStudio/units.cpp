@@ -54,24 +54,24 @@ int Units::FindUnitSytemFromName(const char* sz)
 	return n;
 }
 
-static Units::UnitSymbol unit_table[][12] = {
+static Units::UnitSymbol unit_table[][13] = {
 	// dimensions
-	{{"L", 1},{"M", 1},{"t", 1},{"T", 1},{"I", 1},{"n", 1},{"F", 1},{"P", 1},{"E", 1},{"W",1},{"V",1},{"c", 1}},
+    {{"L", 1},{"M", 1},{"t", 1},{"T", 1},{"I", 1},{"n", 1},{"F", 1},{"P", 1},{"E", 1},{"W",1},{"V",1},{"c", 1},{"R", 1}},
 
 	// SI units
-	{{"m", 1}, {"kg",1},{"s",1},{"K",1},{"A",1},{"mol",1},{"N",1},{"Pa",1},{"J",1},{"W",1},{"V",1},{"mM",1}},
+    {{"m", 1}, {"kg",1},{"s",1},{"K",1},{"A",1},{"mol",1},{"N",1},{"Pa",1},{"J",1},{"W",1},{"V",1},{"mM",1}, {"C", 1}},
 
 	// MMTS units
-	{{"mm",1e-3},{"tonne",1e3},{"s",1},{"K",1},{"A",1},{"nmol",1e-9},{"N",1},{"MPa",1e6},{"mJ",1e-3},{"mW",1e-3},{"mV",1e-3},{"mM",1}},
+    {{"mm",1e-3},{"tonne",1e3},{"s",1},{"K",1},{"A",1},{"nmol",1e-9},{"N",1},{"MPa",1e6},{"mJ",1e-3},{"mW",1e-3},{"mV",1e-3},{"mM",1}, {"C", 1}},
 
 	// MMKS units
-	{{"mm",1e-3},{"kg",1},{"s",1},{"K",1},{"mA",1e-3},{"nmol",1e-9},{"mN",1e-3},{"kPa",1e3},{"µJ",1e-6},{"µW",1e-6}, {"mV",1e-3}, {"mM",1}},
+    {{"mm",1e-3},{"kg",1},{"s",1},{"K",1},{"mA",1e-3},{"nmol",1e-9},{"mN",1e-3},{"kPa",1e3},{"µJ",1e-6},{"µW",1e-6}, {"mV",1e-3}, {"mM",1}, {"C", 1}},
 
 	// UMNNS units
-	{{"µm", 1e-6},{"g",1e-3},{"s",1},{"K",1},{"pA",1e-12},{"amol",1e-18},{"nN",1e-9},{"kPa",1e3},{"fJ",1e-15},{"fW",1e-15}, {"mV",1e-3},{"mM",1}},
+    {{"µm", 1e-6},{"g",1e-3},{"s",1},{"K",1},{"pA",1e-12},{"amol",1e-18},{"nN",1e-9},{"kPa",1e3},{"fJ",1e-15},{"fW",1e-15}, {"mV",1e-3},{"mM",1}, {"C", 1}},
 
 	// CGS units
-	{{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"[F/L^2]",0.1}, {"erg",1e-7},{"[E/t]",1e-7},{"mV",1e-3},{"mM", 1}}
+    {{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"[F/L^2]",0.1}, {"erg",1e-7},{"[E/t]",1e-7},{"mV",1e-3},{"mM", 1}, {"C", 1}}
 };
 
 QString Units::GetUnitString(const char* szunit)
@@ -101,6 +101,7 @@ QString Units::GetUnitString(int unit_system, Unit_Symbol us)
 	case POWER        : return GetUnitString(unit_system, UNIT_POWER        ); break;
 	case VOLTAGE      : return GetUnitString(unit_system, UNIT_VOLTAGE      ); break;
 	case CONCENTRATION: return GetUnitString(unit_system, UNIT_CONCENTRATION); break;
+    case RELATIVE_TEMPERATURE: return GetUnitString(unit_system, UNIT_RELATIVE_TEMPERATURE); break;
 	default:
 		assert(false);
 	}
