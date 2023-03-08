@@ -594,44 +594,45 @@ void FSProject::SetDefaultPlotVariables()
     else if (strcmp(szmod, "fluid-solutes") == 0)
     {
         m_plt.AddPlotVariable("displacement", true);
-        m_plt.AddPlotVariable("fluid pressure", true);
         m_plt.AddPlotVariable("effective fluid pressure", true);
-        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("effective solute concentration", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
         m_plt.AddPlotVariable("fluid stress", true);
         m_plt.AddPlotVariable("fluid velocity", true);
-        m_plt.AddPlotVariable("fluid acceleration", true);
-        m_plt.AddPlotVariable("fluid vorticity", true);
-        m_plt.AddPlotVariable("fluid rate of deformation", true);
-        m_plt.AddPlotVariable("fluid dilatation", true);
         m_plt.AddPlotVariable("fluid volume ratio", true);
-        m_plt.AddPlotVariable("effective solute concentration", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
         m_plt.AddPlotVariable("solute concentration", true);
         m_plt.AddPlotVariable("solute flux", true);
     }
     else if (strcmp(szmod, "thermo-fluid") == 0)
     {
         m_plt.AddPlotVariable("displacement", true);
-        m_plt.AddPlotVariable("fluid pressure", true);
         m_plt.AddPlotVariable("effective fluid pressure", true);
-        m_plt.AddPlotVariable("nodal fluid velocity", true);
-        m_plt.AddPlotVariable("fluid stress", true);
-        m_plt.AddPlotVariable("fluid velocity", true);
         m_plt.AddPlotVariable("fluid acceleration", true);
-        m_plt.AddPlotVariable("fluid vorticity", true);
-        m_plt.AddPlotVariable("fluid rate of deformation", true);
         m_plt.AddPlotVariable("fluid dilatation", true);
-        m_plt.AddPlotVariable("fluid volume ratio", true);
-        m_plt.AddPlotVariable("fluid temperature", true);
         m_plt.AddPlotVariable("fluid heat flux", true);
+        m_plt.AddPlotVariable("fluid isobaric specific heat capacity", true);
+        m_plt.AddPlotVariable("fluid isochoric specific heat capacity", true);
+        m_plt.AddPlotVariable("nodal fluid temperature", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
         m_plt.AddPlotVariable("fluid specific free energy", true);
         m_plt.AddPlotVariable("fluid specific entropy", true);
         m_plt.AddPlotVariable("fluid specific internal energy", true);
         m_plt.AddPlotVariable("fluid specific gage enthalpy", true);
         m_plt.AddPlotVariable("fluid specific free enthalpy", true);
         m_plt.AddPlotVariable("fluid specific strain energy", true);
-        m_plt.AddPlotVariable("fluid isochoric specific heat capacity", true);
-        m_plt.AddPlotVariable("fluid isobaric specific heat capacity", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid temperature", true);
         m_plt.AddPlotVariable("fluid thermal conductivity" , true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
     }
     else if (strcmp(szmod, "polar fluid") == 0)
     {
