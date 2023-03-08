@@ -160,6 +160,7 @@ Unit UnitParser::symbol()
 	case 'W': s = Units::GetUnitSymbol(m_unit_system, Units::POWER); break;
 	case 'V': s = Units::GetUnitSymbol(m_unit_system, Units::VOLTAGE); break;
 	case 'c': s = Units::GetUnitSymbol(m_unit_system, Units::CONCENTRATION); break;
+	case 'R': s = Units::GetUnitSymbol(m_unit_system, Units::RELATIVE_TEMPERATURE); break;
 	case 'd': s = Units::UnitSymbol{ DEG, 0}; break;
 	case 'r': s = Units::UnitSymbol{ RAD, 0}; break;
 	}
