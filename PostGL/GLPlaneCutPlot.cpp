@@ -353,7 +353,7 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 	}
 	else
 	{
-		m_activeMesh.AllocVertexBuffers(activePoints.size(), GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_TEXTURE);
+		m_activeMesh.AllocVertexBuffers(activePoints.size(), GLMesh::FLAG_VERTEX | GLMesh::FLAG_TEXTURE);
 		m_activeMesh.BeginMesh();
 		{
 			for (auto& v : activePoints) m_activeMesh.AddVertex(v.first, v.second);
@@ -367,7 +367,7 @@ void CGLPlaneCutPlot::UpdateTriMesh()
 	}
 	else
 	{
-		m_inactiveMesh.AllocVertexBuffers(inactivePoints.size(), GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_COLOR);
+		m_inactiveMesh.AllocVertexBuffers(inactivePoints.size(), GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR);
 		m_inactiveMesh.BeginMesh();
 		{
 			for (auto& v : inactivePoints) m_inactiveMesh.AddVertex(v.first, v.second);
@@ -561,7 +561,7 @@ void CGLPlaneCutPlot::UpdateLineMesh()
 	}
 	else
 	{
-		m_lineMesh.AllocVertexBuffers(points.size(), GLVAMesh::FLAG_VERTEX);
+		m_lineMesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
 		m_lineMesh.BeginMesh();
 		{
 			for (auto& v : points) m_lineMesh.AddVertex(v);
@@ -593,7 +593,7 @@ void CGLPlaneCutPlot::RenderMesh()
 //-----------------------------------------------------------------------------
 void CGLPlaneCutPlot::UpdateOutlineMesh()
 {
-	m_outlineMesh.AllocVertexBuffers(m_slice.Edges() * 2, GLVAMesh::FLAG_VERTEX);
+	m_outlineMesh.AllocVertexBuffers(m_slice.Edges() * 2, GLMesh::FLAG_VERTEX);
 	m_outlineMesh.BeginMesh();
 	for (int i = 0; i < m_slice.Edges(); ++i)
 	{

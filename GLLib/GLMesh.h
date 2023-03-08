@@ -37,7 +37,7 @@ class CGLCamera;
 // Mesh class used for GL rendering using vertex arrays
 // This base class has a protected constructor, so cannot be used directly.
 // Instead, use one of the derived classes below. 
-class GLVAMesh
+class GLMesh
 {
 public:
 	enum Flags {
@@ -97,8 +97,8 @@ public:
 	bool IsValid() const { return m_bvalid; }
 
 protected:
-	GLVAMesh(unsigned int mode);
-	virtual ~GLVAMesh();
+	GLMesh(unsigned int mode);
+	virtual ~GLMesh();
 
 protected:
 	double* m_vr = nullptr;	// vertex coordinates
@@ -114,7 +114,7 @@ protected:
 	unsigned int m_mode;	// primitive type to render (set by derived classes)
 };
 
-inline void GLVAMesh::AddVertex(double* r, double* n, double* t)
+inline void GLMesh::AddVertex(double* r, double* n, double* t)
 {
 	size_t i = m_vertexCount++;
 	if (r && m_vr) { m_vr[3 * i] = r[0]; m_vr[3 * i + 1] = r[1]; m_vr[3 * i + 2] = r[2]; }
@@ -124,13 +124,13 @@ inline void GLVAMesh::AddVertex(double* r, double* n, double* t)
 	if (m_vc) { m_vc[4 * i] = 0; m_vc[4 * i + 1] = 0; m_vc[4 * i + 2] = 0; m_vc[4 * i + 3] = 255; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3d& r)
+inline void GLMesh::AddVertex(const vec3d& r)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
+inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
@@ -140,7 +140,7 @@ inline void GLVAMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c
 	if (m_vt) { m_vt[3 * i] =   0; m_vt[3 * i + 1] =   0; m_vt[3 * i + 2] =   0; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3d& r, double tex, const GLColor& c)
+inline void GLMesh::AddVertex(const vec3d& r, double tex, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
@@ -148,7 +148,7 @@ inline void GLVAMesh::AddVertex(const vec3d& r, double tex, const GLColor& c)
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3f& r, const vec3f& n)
+inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (double)r.x; m_vr[3 * i + 1] = (double)r.y; m_vr[3 * i + 2] = (double)r.z; }
@@ -158,7 +158,7 @@ inline void GLVAMesh::AddVertex(const vec3f& r, const vec3f& n)
 	if (m_vt) { m_vt[3 * i] = 0; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3d& r, const vec3d& n)
+inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
@@ -168,35 +168,35 @@ inline void GLVAMesh::AddVertex(const vec3d& r, const vec3d& n)
 	if (m_vt) { m_vt[3 * i] = 0; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3f& r, double tex)
+inline void GLMesh::AddVertex(const vec3f& r, double tex)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3d& r, double tex)
+inline void GLMesh::AddVertex(const vec3d& r, double tex)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3f& r, const GLColor& c)
+inline void GLMesh::AddVertex(const vec3f& r, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
-inline void GLVAMesh::AddVertex(const vec3d& r, const GLColor& c)
+inline void GLMesh::AddVertex(const vec3d& r, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
-inline void GLVAMesh::AddVertex(const Vertex& v)
+inline void GLMesh::AddVertex(const Vertex& v)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = v.r.x; m_vr[3 * i + 1] = v.r.y; m_vr[3 * i + 2] = v.r.z; }
@@ -206,7 +206,7 @@ inline void GLVAMesh::AddVertex(const Vertex& v)
 }
 
 // Triangle mesh
-class GLTriMesh : public GLVAMesh
+class GLTriMesh : public GLMesh
 {
 public:
 	GLTriMesh();
@@ -220,21 +220,21 @@ public:
 };
 
 // quad mesh
-class GLQuadMesh : public GLVAMesh
+class GLQuadMesh : public GLMesh
 {
 public:
 	GLQuadMesh();
 };
 
 // line mesh
-class GLLineMesh : public GLVAMesh
+class GLLineMesh : public GLMesh
 {
 public:
 	GLLineMesh();
 };
 
 // point mesh
-class GLPointMesh : public GLVAMesh
+class GLPointMesh : public GLMesh
 {
 public:
 	GLPointMesh();

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 #include <vector>
 
 namespace Post {
@@ -70,7 +70,7 @@ private:
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);
 	void UpdateNodalData(int ntime, bool breset);
 	void UpdateBoundingBox();
-	void UpdateMesh(std::vector<Slice>& slice, GLVAMesh& mesh);
+	void UpdateMesh(std::vector<Slice>& slice, GLMesh& mesh);
 
 private:
 	int			m_nfield;

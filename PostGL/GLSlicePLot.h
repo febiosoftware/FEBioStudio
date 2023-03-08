@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "GLWLib/GLWidget.h"
 #include "PostLib/DataMap.h"
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 

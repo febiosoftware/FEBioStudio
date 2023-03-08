@@ -3002,7 +3002,7 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 
 	// build the line mesh
 	GLLineMesh mesh;
-	mesh.AllocVertexBuffers(points.size(), GLVAMesh::FLAG_VERTEX);
+	mesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
 	mesh.BeginMesh();
 	for (auto& v : points) mesh.AddVertex(v);
 	mesh.EndMesh();

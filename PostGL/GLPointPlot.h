@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <PostLib/FEState.h>
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 

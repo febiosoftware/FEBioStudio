@@ -2056,7 +2056,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 
 	// build the line mesh
 	GLLineMesh lineMesh;
-	lineMesh.AllocVertexBuffers(points.size(), GLVAMesh::FLAG_VERTEX);
+	lineMesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
 	lineMesh.BeginMesh();
 	for (auto& p : points) lineMesh.AddVertex(p);
 	lineMesh.EndMesh();
@@ -2375,7 +2375,7 @@ void CGLModel::RenderEdges(FEPostModel* ps, CGLContext& rc)
 	int NE = mesh.Edges();
 
 	GLLineMesh lineMesh;
-	lineMesh.AllocVertexBuffers(NE * 4, GLVAMesh::FLAG_VERTEX);
+	lineMesh.AllocVertexBuffers(NE * 4, GLMesh::FLAG_VERTEX);
 
 	// render unselected edges
 	glColor3ub(0, 0, 255);

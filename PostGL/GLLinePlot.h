@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "LineDataModel.h"
 #include <PostLib/FEState.h>
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 namespace Post {
 
 //-----------------------------------------------------------------------------

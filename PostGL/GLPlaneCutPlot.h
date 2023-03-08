@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <FECore/FETransform.h>
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 #include <vector>
 
 namespace Post {

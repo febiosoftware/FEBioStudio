@@ -23,7 +23,7 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "GLVAMesh.h"
+#include "GLMesh.h"
 #ifdef WIN32
 #include <Windows.h>
 #include <gl/GL.h>
@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <algorithm>
 #include "GLCamera.h"
 
-GLVAMesh::GLVAMesh(unsigned int mode)
+GLMesh::GLMesh(unsigned int mode)
 {
 	m_mode = mode;
 	m_vr = nullptr;
@@ -51,13 +51,13 @@ GLVAMesh::GLVAMesh(unsigned int mode)
 	m_bvalid = false;
 }
 
-GLVAMesh::~GLVAMesh()
+GLMesh::~GLMesh()
 {
 	Clear();
 }
 
 // clear all mesh data
-void GLVAMesh::Clear()
+void GLMesh::Clear()
 {
 	m_bvalid = false;
 	m_vertexCount = 0;
@@ -69,7 +69,7 @@ void GLVAMesh::Clear()
 	delete[] m_ind; m_ind = nullptr;
 }
 
-void GLVAMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
+void GLMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
 {
 	m_bvalid = false;
 	m_vertexCount = 0;
@@ -99,7 +99,7 @@ void GLVAMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
 	m_maxVertexCount = maxVertices;
 }
 
-void GLVAMesh::AllocVertexBuffers(const std::vector<GLVAMesh::Vertex>& verts, unsigned flags)
+void GLMesh::AllocVertexBuffers(const std::vector<GLMesh::Vertex>& verts, unsigned flags)
 {
 	AllocVertexBuffers(verts.size(), flags);
 	BeginMesh();
@@ -107,18 +107,18 @@ void GLVAMesh::AllocVertexBuffers(const std::vector<GLVAMesh::Vertex>& verts, un
 	EndMesh();
 }
 
-void GLVAMesh::BeginMesh()
+void GLMesh::BeginMesh()
 {
 	m_vertexCount = 0;
 	m_bvalid = false;
 }
 
-void GLVAMesh::EndMesh()
+void GLMesh::EndMesh()
 {
 	m_bvalid = ((m_vr != nullptr) && (m_vertexCount != 0));
 }
 
-void GLVAMesh::CreateFromGMesh(const GMesh& gmsh)
+void GLMesh::CreateFromGMesh(const GMesh& gmsh)
 {
 	int faces = gmsh.Faces();
 	AllocVertexBuffers(3 * faces, FLAG_VERTEX | FLAG_NORMAL | FLAG_COLOR);
@@ -136,7 +136,7 @@ void GLVAMesh::CreateFromGMesh(const GMesh& gmsh)
 	EndMesh();
 }
 
-void GLVAMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
+void GLMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags)
 {
 	if ((surfID < 0) || (surfID >= gmsh.m_FIL.size())) { assert(false); return; }
 
@@ -158,13 +158,13 @@ void GLVAMesh::CreateFromGMesh(const GMesh& gmsh, int surfID, unsigned int flags
 	EndMesh();
 }
 
-void GLVAMesh::SetTransparency(ubyte a)
+void GLMesh::SetTransparency(ubyte a)
 {
 	if (m_vc == nullptr) return;
 	for (int i = 0; i < m_vertexCount; ++i) m_vc[4 * i + 3] = a;
 }
 
-void GLVAMesh::Render()
+void GLMesh::Render()
 {
 	if (!m_bvalid) return;
 
@@ -190,7 +190,7 @@ void GLVAMesh::Render()
 }
 
 //===================================================================================
-GLTriMesh::GLTriMesh() : GLVAMesh(GL_TRIANGLES) {}
+GLTriMesh::GLTriMesh() : GLMesh(GL_TRIANGLES) {}
 
 void GLTriMesh::ZSortFaces(const CGLCamera& cam)
 {
@@ -268,10 +268,10 @@ void GLTriMesh::SortForwards()
 }
 
 //===================================================================================
-GLQuadMesh::GLQuadMesh() : GLVAMesh(GL_QUADS) {}
+GLQuadMesh::GLQuadMesh() : GLMesh(GL_QUADS) {}
 
 //===================================================================================
-GLLineMesh::GLLineMesh() : GLVAMesh(GL_LINES) {}
+GLLineMesh::GLLineMesh() : GLMesh(GL_LINES) {}
 
 //===================================================================================
-GLPointMesh::GLPointMesh() : GLVAMesh(GL_POINTS) {}
+GLPointMesh::GLPointMesh() : GLMesh(GL_POINTS) {}

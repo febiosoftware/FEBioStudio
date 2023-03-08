@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
-#include "GLVAMesh.h"
+#include "GLMesh.h"
 
 class FEElement_;
 class FSEdge;

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <vector>
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 

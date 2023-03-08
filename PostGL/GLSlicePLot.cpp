@@ -399,7 +399,7 @@ void CGLSlicePlot::UpdateMesh()
 	activeElements.reserve(pm->Faces());
 	int faces = CountFaces(activeElements);
 
-	m_mesh.AllocVertexBuffers(3 * faces, GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_TEXTURE);
+	m_mesh.AllocVertexBuffers(3 * faces, GLMesh::FLAG_VERTEX | GLMesh::FLAG_TEXTURE);
 
 	float ev[8];	// element nodal values
 	float ex[8];	// element nodal distances

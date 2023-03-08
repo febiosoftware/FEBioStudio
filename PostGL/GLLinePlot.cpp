@@ -378,7 +378,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	}
 	if (maxseg == 0) maxseg = 1;
 
-	m_lineMesh.AllocVertexBuffers(2 * NL, GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_COLOR);
+	m_lineMesh.AllocVertexBuffers(2 * NL, GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR);
 
 	if (m_ncolor == COLOR_SOLID)
 	{
@@ -458,7 +458,7 @@ void CGLLinePlot::Update3DLines(FEState& s, int ntime)
 	int NL = lineData.Lines();
 
 	int vertices = NL * NSEG * 4;
-	m_quadMesh.AllocVertexBuffers(vertices, GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_NORMAL | GLVAMesh::FLAG_TEXTURE);
+	m_quadMesh.AllocVertexBuffers(vertices, GLMesh::FLAG_VERTEX | GLMesh::FLAG_NORMAL | GLMesh::FLAG_TEXTURE);
 
 	m_quadMesh.BeginMesh();
 	for (int i = 0; i < NL; ++i)
@@ -540,7 +540,7 @@ void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, floa
 		y[i] = sin(w);
 	}
 
-	GLVAMesh::Vertex v;
+	GLMesh::Vertex v;
 	const int N = ndivs;
 	for (int j = 0; j < M; ++j)
 	{
@@ -583,7 +583,7 @@ void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, floa
 
 void tesselateHalfSphere(GLTriMesh& mesh, const vec3d& r0, float R, const vec3d& n0, float tex, GLColor c, int ndivs, int nsecs)
 {
-	GLVAMesh::Vertex v;
+	GLMesh::Vertex v;
 
 	quatd q0(vec3d(0, 0, 1), n0);
 	const int M = nsecs;
@@ -701,9 +701,9 @@ void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 	const int NSEC = 4;  // spherical sections for half-sphere
 
 	// allocate mesh
-	unsigned int flags = GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_NORMAL;
-	if (m_ncolor == COLOR_SEGMENT) flags |= GLVAMesh::FLAG_COLOR;
-	if (m_ncolor > COLOR_SEGMENT) flags |= GLVAMesh::FLAG_TEXTURE;
+	unsigned int flags = GLMesh::FLAG_VERTEX | GLMesh::FLAG_NORMAL;
+	if (m_ncolor == COLOR_SEGMENT) flags |= GLMesh::FLAG_COLOR;
+	if (m_ncolor > COLOR_SEGMENT) flags |= GLMesh::FLAG_TEXTURE;
 	int vertsPerLine = NSEG * NDIV * 6 + 2 * ((NSEC - 1) * NDIV * 6 + 3 * NDIV);
 	int totalVerts = NL * vertsPerLine;
 	m_triMesh.AllocVertexBuffers(totalVerts);

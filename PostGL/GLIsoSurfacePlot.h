@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "GLWLib/GLWidget.h"
 #include "PostLib/DataMap.h"
 #include <MeshLib/GMesh.h>
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 

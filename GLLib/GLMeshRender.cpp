@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <MeshLib/quad8.h>
 #include <MeshLib/GMesh.h>
 #include <GLLib/glx.h>
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 
@@ -1339,8 +1339,8 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 	}
 	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
 	{
-		unsigned int flags = GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_NORMAL;
-		if (m_bfaceColor) flags |= GLVAMesh::FLAG_COLOR;
+		unsigned int flags = GLMesh::FLAG_VERTEX | GLMesh::FLAG_NORMAL;
+		if (m_bfaceColor) flags |= GLMesh::FLAG_COLOR;
 
 		m_glmesh.CreateFromGMesh(*pm, surfID, flags);
 	}
@@ -1461,7 +1461,7 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 
 	// build the line mesh
 	GLLineMesh lineMesh;
-	lineMesh.AllocVertexBuffers(points.size(), GLVAMesh::FLAG_VERTEX);
+	lineMesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
 	lineMesh.BeginMesh();
 	for (auto& p : points) lineMesh.AddVertex(p);
 	lineMesh.EndMesh();

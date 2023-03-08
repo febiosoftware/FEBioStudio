@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLImageRenderer.h"
-#include <GLLib/GLVAMesh.h>
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 
