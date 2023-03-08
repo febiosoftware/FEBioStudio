@@ -200,8 +200,16 @@ public:
 	void SortForwards();
 };
 
+// line mesh
 class GLLineMesh : public GLVAMesh
 {
 public:
 	GLLineMesh();
+};
+
+// point mesh
+class GLPointMesh : public GLVAMesh
+{
+public:
+	GLPointMesh();
 };

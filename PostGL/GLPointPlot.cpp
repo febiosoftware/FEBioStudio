@@ -247,82 +247,85 @@ void CGLPointPlot::Render(CGLContext& rc)
 
 void CGLPointPlot::RenderPoints()
 {
-	FEPostModel& fem = *GetModel()->GetFSModel();
-	int ns = fem.CurrentTimeIndex();
-	
-	PointData& pd = m_pointData->GetPointData(ns);
-
-	int ndata = GetIntValue(DATA_FIELD);
-	if (ndata < 0) ndata = 0;
-
-	// evaluate the range
-	float fmin = 1e34f, fmax = -1e34f;
-	int NP = pd.Points();
-	for (int i = 0; i < NP; ++i)
-	{
-		PointData::POINT& p = pd.Point(i);
-		float v = p.val[ndata];
-
-		if (v < fmin) fmin = v;
-		if (v > fmax) fmax = v;
-	}
-	if (fmax == fmin) fmax++;
-
-	switch (m_range.mintype)
-	{
-	case 1: if (fmin > m_range.min) fmin = m_range.min; break;
-	case 2: fmin = m_range.min; break;
-	}
-
-	switch (m_range.maxtype)
-	{
-	case 1: if (fmax < m_range.max) fmax = m_range.max; break;
-	case 2: fmax = m_range.max; break;
-	}
-
-	m_range.min = fmin;
-	m_range.max = fmax;
-
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(fmin, fmax);
-	}
-
-	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-
 	GLfloat size_old;
 	glGetFloatv(GL_POINT_SIZE, &size_old);
 	glPushAttrib(GL_ENABLE_BIT);
 	{
-		glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
-
 		glPointSize(m_pointSize);
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 
-		glBegin(GL_POINTS);
-		{
-			for (int i = 0; i < NP; ++i)
-			{
-				PointData::POINT& p = pd.Point(i);
-
-				if (m_colorMode == 1)
-				{
-					double w = (p.val[ndata] - fmin) / (fmax - fmin);
-					GLColor c = map.map(w);
-					glColor3ub(c.r, c.g, c.b);
-				}
-
-				glVertex3f(p.m_r.x, p.m_r.y, p.m_r.z);
-			}
-		}
-		glEnd();
+		m_pointMesh.Render();
 	}
 	glPopAttrib();
 	glPointSize(size_old);
 }
 
 void CGLPointPlot::RenderSpheres()
+{
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+
+	glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
+
+	GLUquadricObj* pobj = gluNewQuadric();
+
+	double pointSize = m_pointSize;
+
+	int pointSizeSource = GetIntValue(POINT_SIZE_SOURCE);
+
+	FEPostModel& fem = *GetModel()->GetFSModel();
+	int ns = fem.CurrentTimeIndex();
+	PointData& pd = m_pointData->GetPointData(ns);
+
+	for (int i = 0; i < pd.Points(); ++i)
+	{
+		PointData::POINT& p = pd.Point(i);
+		vec3f& c = p.m_r;
+
+		if (m_colorMode == 1)
+		{
+			GLColor c = map.map(p.tex);
+			glColor3ub(c.r, c.g, c.b);
+		}
+
+		if (pointSizeSource > 0)
+		{
+			pointSize = m_pointSize*fabs(p.val[pointSizeSource - 1]);
+		}
+
+		if (pointSize > 0)
+		{
+			glPushMatrix();
+			{
+				glTranslatef(c.x, c.y, c.z);
+				gluSphere(pobj, pointSize, 32, 32);
+			}
+			glPopMatrix();
+		}
+	}
+	gluDeleteQuadric(pobj);
+}
+
+void CGLPointPlot::Update(int ntime, float dt, bool breset)
+{
+	m_pointMesh.Clear();
+
+	FEPostModel& fem = *GetModel()->GetFSModel();
+	int ns = GetModel()->CurrentTimeIndex();
+	if ((ns < 0) || (ns >= fem.GetStates())) return;
+	if (m_pointData->GetPointData(ns).Points() <= 0) return;
+
+	// update range (this also evaluates the "texture" coordinates
+	UpdateRange();
+
+	switch (m_renderMode)
+	{
+	case 0: UpdatePointMesh(); break;
+	case 1: UpdateTriMesh(); break;
+	}
+}
+
+void CGLPointPlot::UpdateRange()
 {
 	FEPostModel& fem = *GetModel()->GetFSModel();
 	int ns = fem.CurrentTimeIndex();
@@ -372,42 +375,40 @@ void CGLPointPlot::RenderSpheres()
 		GetLegendBar()->SetRange(fmin, fmax);
 	}
 
-	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-
-	glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
-
-	GLUquadricObj* pobj = gluNewQuadric();
-
-	double pointSize = m_pointSize;
-
-	int pointSizeSource = GetIntValue(POINT_SIZE_SOURCE);
-
 	for (int i = 0; i < pd.Points(); ++i)
 	{
 		PointData::POINT& p = pd.Point(i);
-		vec3f& c = p.m_r;
+		p.tex = (p.val[ndata] - fmin) / (fmax - fmin);
+	}
+}
 
-		if (m_colorMode == 1)
-		{
-			double w = (p.val[ndata] - fmin) / (fmax - fmin);
-			GLColor c = map.map(w);
-			glColor3ub(c.r, c.g, c.b);
-		}
+void CGLPointPlot::UpdatePointMesh()
+{
+	m_pointMesh.Clear();
 
-		if (pointSizeSource > 0)
-		{
-			pointSize = m_pointSize*fabs(p.val[pointSizeSource - 1]);
-		}
+	FEPostModel& fem = *GetModel()->GetFSModel();
+	int ns = fem.CurrentTimeIndex();
+	PointData& pd = m_pointData->GetPointData(ns);
 
-		if (pointSize > 0)
+	int NP = pd.Points(); 
+	m_pointMesh.AllocVertexBuffers(NP, GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_COLOR);
+
+	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+
+	GLColor c = m_solidColor;
+	m_pointMesh.BeginMesh();
+	{
+		for (int i = 0; i < NP; ++i)
 		{
-			glPushMatrix();
-			{
-				glTranslatef(c.x, c.y, c.z);
-				gluSphere(pobj, pointSize, 32, 32);
-			}
-			glPopMatrix();
+			PointData::POINT& p = pd.Point(i);
+			if (m_colorMode == 1) c = map.map(p.tex);
+			m_pointMesh.AddVertex(p.m_r, c);
 		}
 	}
-	gluDeleteQuadric(pobj);
+	m_pointMesh.EndMesh();
+}
+
+void CGLPointPlot::UpdateTriMesh()
+{
+
 }

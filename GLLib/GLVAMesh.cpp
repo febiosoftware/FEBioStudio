@@ -261,3 +261,6 @@ void GLTriMesh::SortForwards()
 
 //===================================================================================
 GLLineMesh::GLLineMesh() : GLVAMesh(GL_LINES) {}
+
+//===================================================================================
+GLPointMesh::GLPointMesh() : GLVAMesh(GL_POINTS) {}

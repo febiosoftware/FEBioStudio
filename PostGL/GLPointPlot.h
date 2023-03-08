@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <PostLib/FEState.h>
+#include <GLLib/GLVAMesh.h>
 
 namespace Post {
 
@@ -40,6 +41,7 @@ public:
 		int		nlabel;
 		vec3f	m_r;
 		float	val[MAX_POINT_DATA_FIELDS];
+		float	tex; // current normalized value
 	};
 
 public:
@@ -122,6 +124,8 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	void Update(int ntime, float dt, bool breset);
+
 public:
 	void SetPointDataModel(PointDataModel* pointData);
 
@@ -130,6 +134,10 @@ public:
 private:
 	void RenderPoints();
 	void RenderSpheres();
+
+	void UpdateRange();
+	void UpdatePointMesh();
+	void UpdateTriMesh();
 
 private:
 	float		m_pointSize;	//!< point size
@@ -141,5 +149,7 @@ private:
 	DATA_RANGE	m_range;	// range for legend
 
 	PointDataModel* m_pointData;
+
+	GLPointMesh	m_pointMesh;	// mesh used for rendering points
 };
 } // namespace Post
