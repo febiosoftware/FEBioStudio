@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <ImageLib/3DImage.h>
 #include <ImageLib/3DGradientMap.h>
+#include <MeshLib/FEMesh.h>
 #include <sstream>
 #include <assert.h>
 //using namespace std;
@@ -294,13 +295,13 @@ void CMarchingCubes::CreateSurface()
 								float w = (fref - (float)val[n1]) / ((float)val[n2] - (float)val[n1]);
 								assert((w >= 0.f) && (w <= 1.f));
 
-								tri.m_node[m] = r[n1] * (1.f - w) + r[n2] * w;
+								tri.m_node[2 - m] = r[n1] * (1.f - w) + r[n2] * w;
 
 								if (m_bsmooth)
 								{
 									vec3f normal = g[n1] * (1.f - w) + g[n2] * w;
 									normal.Normalize();
-									tri.m_norm[m] = (m_binvertSpace ? -normal : normal);
+									tri.m_norm[2 - m] = (m_binvertSpace ? normal : -normal);
 								}
 							}
 
@@ -507,4 +508,29 @@ void CMarchingCubes::Render(CGLContext& rc)
 {
 	glColor3ub(m_col.r, m_col.g, m_col.b);
 	m_mesh.Render();
+}
+
+bool CMarchingCubes::GetMesh(FSMesh& mesh)
+{
+	int nodes = m_mesh.Vertices();
+	int faces = nodes / 3; assert((nodes % 3) == 0);
+	mesh.Create(nodes, 0, faces);
+	for (int i = 0; i < nodes; ++i)
+	{
+		GLMesh::Vertex v = m_mesh.GetVertex(i);
+		mesh.Node(i).r = v.r;
+	}
+
+	for (int i = 0; i < faces; ++i)
+	{
+		FSFace& face = mesh.Face(i);
+		face.SetType(FE_FACE_TRI3);
+		face.n[0] = 3 * i;
+		face.n[1] = 3 * i + 1;
+		face.n[2] = 3 * i + 2;
+	}
+
+	mesh.UpdateNormals();
+
+	return true;
 }

@@ -41,11 +41,11 @@ class GLMesh
 {
 public:
 	enum Flags {
-		FLAG_VERTEX  = 1,
-		FLAG_NORMAL  = 2,
+		FLAG_VERTEX = 1,
+		FLAG_NORMAL = 2,
 		FLAG_TEXTURE = 4,
-		FLAG_COLOR   = 8,
-		FLAG_ALL     = 15
+		FLAG_COLOR = 8,
+		FLAG_ALL = 15
 	};
 
 	struct Vertex
@@ -96,6 +96,12 @@ public:
 
 	// is the mesh valid
 	bool IsValid() const { return m_bvalid; }
+
+	// return the number of vertices in the mesh
+	int Vertices() const { return m_vertexCount; }
+
+	// return vertex data
+	Vertex GetVertex(size_t i) const;
 
 protected:
 	GLMesh(unsigned int mode);
@@ -200,6 +206,16 @@ inline void GLMesh::AddVertex(const Vertex& v)
 	if (m_vn) { m_vn[3 * i] = v.n.x; m_vn[3 * i + 1] = v.n.y; m_vn[3 * i + 2] = v.n.z; }
 	if (m_vt) { m_vt[3 * i] = v.t.x; m_vt[3 * i + 1] = v.t.y; m_vt[3 * i + 2] = v.t.z; }
 	if (m_vc) { m_vc[4 * i] = v.c.r; m_vc[4 * i + 1] = v.c.g; m_vc[4 * i + 2] = v.c.b; m_vc[4 * i + 3] = v.c.a; }
+}
+
+inline GLMesh::Vertex GLMesh::GetVertex(size_t i) const
+{
+	Vertex v;
+	if (m_vr) { double* r = m_vr + (3 * i); v.r = vec3d(r[0], r[1], r[2]); }
+	if (m_vn) { double* n = m_vn + (3 * i); v.n = vec3d(n[0], n[1], n[2]); }
+	if (m_vt) { double* t = m_vt + (3 * i); v.t = vec3d(t[0], t[1], t[2]); }
+	if (m_vc) { ubyte* c = m_vc + (4 * i); v.c = GLColor(c[0], c[1], c[2], c[3]); }
+	return v;
 }
 
 // Triangle mesh

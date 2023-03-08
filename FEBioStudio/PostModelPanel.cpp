@@ -59,6 +59,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
+#include <MeshIO/FESTLExport.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLProbe.h>
@@ -1274,6 +1275,16 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		QMenu menu(this);
 		menu.addAction("Export image ...", this, SLOT(OnExportImage()));
 		menu.exec(ev->globalPos());
+		return;
+	}
+
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QMenu menu(this);
+		menu.addAction("Export surface ...", this, SLOT(OnExportMCSurface()));
+		menu.exec(ev->globalPos());
+		return;
 	}
 }
 
@@ -1470,6 +1481,29 @@ void CPostModelPanel::OnExportImage()
 			QMessageBox::information(GetMainWindow(), "Export image", msg);
 		}
 	}	
+}
+
+void CPostModelPanel::OnExportMCSurface()
+{
+	FSObject* po = ui->currentObject();
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QFileDialog dlg;
+		QString fileName = dlg.getSaveFileName(this, "Export surface", "", "STL mesh (*.stl)");
+		if (fileName.isEmpty() == false)
+		{
+			string filename = fileName.toStdString();
+			FSMesh mesh;
+			mc->GetMesh(mesh);
+			FSProject dummy;
+			FESTLExport stl(dummy);
+
+			bool b = stl.Write(filename.c_str(), &mesh);
+			if (b) QMessageBox::information(this, "Export surface", "File written successfully.");
+			else QMessageBox::critical(this, "Export surface", "Failed exporting surface.");
+		}
+	}
 }
 
 void CPostModelPanel::OnExportProbeData()

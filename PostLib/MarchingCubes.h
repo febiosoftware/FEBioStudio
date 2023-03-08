@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <FSCore/color.h>
 #include <GLLib/GLMesh.h>
 
+class FSMesh;
+
 namespace Post {
 
 class CImageModel;
@@ -94,6 +96,8 @@ public:
 	void Update() override;
 
 	bool UpdateData(bool bsave = true) override;
+
+	bool GetMesh(FSMesh& mesh);
 
 private:
 	void AddSurfaceTris(TriMesh& mesh, Byte val[4], vec3f r[4], const vec3f& faceNormal);
