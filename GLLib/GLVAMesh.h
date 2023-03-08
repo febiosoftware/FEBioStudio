@@ -41,19 +41,28 @@ class GLVAMesh
 {
 public:
 	enum Flags {
-		FLAG_VERTEX = 1,
-		FLAG_NORMAL = 2,
+		FLAG_VERTEX  = 1,
+		FLAG_NORMAL  = 2,
 		FLAG_TEXTURE = 4,
 		FLAG_COLOR   = 8,
+		FLAG_ALL     = 15
 	};
 
+	struct Vertex
+	{
+		vec3d	r;
+		vec3d	n;
+		vec3d	t;
+		GLColor	c;
+	};
 
 public:
 	// clear all mesh data
 	void Clear();
 
 	// allocate vertex buffers
-	void AllocVertexBuffers(int maxVertices, unsigned flags);
+	void AllocVertexBuffers(int maxVertices, unsigned flags = FLAG_ALL);
+	void AllocVertexBuffers(const std::vector<Vertex>& verts, unsigned flags = FLAG_ALL);
 
 	// call this to start building the mesh
 	void BeginMesh();
@@ -69,6 +78,7 @@ public:
 	void AddVertex(const vec3f& r, const GLColor& c);
 	void AddVertex(const vec3d& r, const GLColor& c);
 	void AddVertex(const vec3d& r, double tex, const GLColor& c);
+	void AddVertex(const Vertex& v);
 
 	// this when done building the mesh
 	void EndMesh();
@@ -186,6 +196,15 @@ inline void GLVAMesh::AddVertex(const vec3d& r, const GLColor& c)
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
+inline void GLVAMesh::AddVertex(const Vertex& v)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = v.r.x; m_vr[3 * i + 1] = v.r.y; m_vr[3 * i + 2] = v.r.z; }
+	if (m_vn) { m_vn[3 * i] = v.n.x; m_vn[3 * i + 1] = v.n.y; m_vn[3 * i + 2] = v.n.z; }
+	if (m_vt) { m_vt[3 * i] = v.t.x; m_vt[3 * i + 1] = v.t.y; m_vt[3 * i + 2] = v.t.z; }
+	if (m_vc) { m_vc[4 * i] = v.c.r; m_vc[4 * i + 1] = v.c.g; m_vc[4 * i + 2] = v.c.b; m_vc[4 * i + 3] = v.c.a; }
+}
+
 // Triangle mesh
 class GLTriMesh : public GLVAMesh
 {
@@ -198,6 +217,13 @@ public:
 	// sort backwards/forwards
 	void SortBackwards();
 	void SortForwards();
+};
+
+// quad mesh
+class GLQuadMesh : public GLVAMesh
+{
+public:
+	GLQuadMesh();
 };
 
 // line mesh
