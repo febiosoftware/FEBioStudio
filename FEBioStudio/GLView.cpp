@@ -317,71 +317,6 @@ bool FreeRegion::IsInside(int x, int y) const
 }
 
 //-----------------------------------------------------------------------------
-
-inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
-{
-	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);
-	glVertex3d(x, y, z); glVertex3d(x, y + dy, z);
-	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
-}
-
-void RenderBox(const BOX& bbox, bool partial, double scale)
-{
-	// push attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// set attributes
-	glEnable(GL_LINE_SMOOTH);
-	glDisable(GL_LIGHTING);
-
-	BOX box = bbox;
-	box.Scale(scale);
-
-	if (partial)
-	{
-		double dx = box.Width()*0.3;
-		double dy = box.Height()*0.3;
-		double dz = box.Depth()*0.3;
-		glBegin(GL_LINES);
-		{
-			render_triad(box.x0, box.y0, box.z0,  dx,  dy, dz);
-			render_triad(box.x1, box.y0, box.z0, -dx,  dy, dz);
-			render_triad(box.x1, box.y1, box.z0, -dx, -dy, dz);
-			render_triad(box.x0, box.y1, box.z0,  dx, -dy, dz);
-
-			render_triad(box.x0, box.y0, box.z1,  dx,  dy, -dz);
-			render_triad(box.x1, box.y0, box.z1, -dx,  dy, -dz);
-			render_triad(box.x1, box.y1, box.z1, -dx, -dy, -dz);
-			render_triad(box.x0, box.y1, box.z1,  dx, -dy, -dz);
-		}
-		glEnd();
-	}
-	else
-	{
-		glBegin(GL_LINES);
-		{
-			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
-			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
-			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
-			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
-
-			glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
-			glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
-			glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
-			glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
-
-			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
-			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
-			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
-			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
-		}
-		glEnd();
-	}
-
-	// restore attributes
-	glPopAttrib();
-}
-
 CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_pWnd(pwnd), m_Ttor(this), m_Rtor(this), m_Stor(this)
 {
 	QSurfaceFormat fmt = format();
@@ -2243,7 +2178,7 @@ void CGLView::RenderImageData()
     		// GLColor c = img->GetColor();
             GLColor c(255, 128, 128);
             glColor3ub(c.r, c.g, c.b);
-            if (img->ShowBox()) RenderBox(box, false);
+            if (img->ShowBox()) glx::renderBox(box, false);
             img->Render(m_rc);
         }
     }
@@ -2257,7 +2192,7 @@ void CGLView::RenderImageData()
             BOX box = img->GetBoundingBox();
             GLColor c(255, 128, 128);
             glColor3ub(c.r, c.g, c.b);
-            if (img->ShowBox()) RenderBox(box, false);
+            if (img->ShowBox()) glx::renderBox(box, false);
             img->Render(m_rc);
 
             sliceView->RenderSlicers(m_rc);
@@ -6007,7 +5942,7 @@ void CGLView::RenderPlaneCut()
 	BOX box = doc->GetGModel()->GetBoundingBox();
 
 	glColor3ub(200, 0, 200);
-	RenderBox(box, false);
+	glx::renderBox(box, false);
 
 	FSModel& fem = *doc->GetFSModel();
 	int MAT = fem.Materials();

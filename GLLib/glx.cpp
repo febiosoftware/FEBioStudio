@@ -1273,3 +1273,67 @@ void glx::renderContractileForce(const vec3d& a, const vec3d& b, double R)
 {
 	glx::drawLine(a, b);
 }
+
+inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
+{
+	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);
+	glVertex3d(x, y, z); glVertex3d(x, y + dy, z);
+	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
+}
+
+void glx::renderBox(const BOX& bbox, bool partial, double scale)
+{
+	// push attributes
+	glPushAttrib(GL_ENABLE_BIT);
+
+	// set attributes
+	glEnable(GL_LINE_SMOOTH);
+	glDisable(GL_LIGHTING);
+
+	BOX box = bbox;
+	box.Scale(scale);
+
+	if (partial)
+	{
+		double dx = box.Width() * 0.3;
+		double dy = box.Height() * 0.3;
+		double dz = box.Depth() * 0.3;
+		glBegin(GL_LINES);
+		{
+			render_triad(box.x0, box.y0, box.z0, dx, dy, dz);
+			render_triad(box.x1, box.y0, box.z0, -dx, dy, dz);
+			render_triad(box.x1, box.y1, box.z0, -dx, -dy, dz);
+			render_triad(box.x0, box.y1, box.z0, dx, -dy, dz);
+
+			render_triad(box.x0, box.y0, box.z1, dx, dy, -dz);
+			render_triad(box.x1, box.y0, box.z1, -dx, dy, -dz);
+			render_triad(box.x1, box.y1, box.z1, -dx, -dy, -dz);
+			render_triad(box.x0, box.y1, box.z1, dx, -dy, -dz);
+		}
+		glEnd();
+	}
+	else
+	{
+		glBegin(GL_LINES);
+		{
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+
+			glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
+
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
+		}
+		glEnd();
+	}
+
+	// restore attributes
+	glPopAttrib();
+}

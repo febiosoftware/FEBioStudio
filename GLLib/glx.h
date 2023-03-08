@@ -34,6 +34,7 @@ SOFTWARE.*/
     #include <GL/glu.h>
 #endif
 #include <vector>
+#include <FSCore/box.h>
 
 namespace glx {
 
@@ -120,4 +121,6 @@ void renderAxis(double R);
 void renderSpring(const vec3d& a, const vec3d& b, double R);
 void renderDamper(const vec3d& a, const vec3d& b, double R);
 void renderContractileForce(const vec3d& a, const vec3d& b, double R);
+
+void renderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
 }

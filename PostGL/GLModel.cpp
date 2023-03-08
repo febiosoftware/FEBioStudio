@@ -1251,6 +1251,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 		});
 
 		// render the list
+		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < zlist.size(); ++i)
 		{
 			FSFace& face = dom.Face(zlist[i].first);
@@ -1299,10 +1300,12 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			// okay, we got one, so let's render it
 			m_render.RenderFace(face, pm, c, ndivs);
 		}
+		glEnd();
 	}
 	else
 	{
 		glCullFace(GL_FRONT);
+		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < NF; ++i)
 		{
 			FSFace& face = dom.Face(i);
@@ -1334,9 +1337,11 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				m_render.RenderFace(face, pm, c, ndivs);
 			}
 		}
+		glEnd();
 
 		// and then we draw the front-facing ones.
 		glCullFace(GL_BACK);
+		glBegin(GL_TRIANGLES);
 		for (int i = 0; i < NF; ++i)
 		{
 			FSFace& face = dom.Face(i);
@@ -1368,6 +1373,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				m_render.RenderFace(face, pm, c, ndivs);
 			}
 		}
+		glEnd();
 	}
 
 	glPopAttrib();

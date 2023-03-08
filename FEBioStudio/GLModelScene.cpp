@@ -384,14 +384,14 @@ void CGLModelScene::RenderSelectionBox(CGLContext& rc)
 					glColor3ub(255, 255, 255);
 					if (po->IsSelected())
 					{
-						RenderBox(po->GetLocalBox(), true, 1.025);
+						glx::renderBox(po->GetLocalBox(), true, 1.025);
 					}
 				}
 				else if (po == poa)
 				{
 					glColor3ub(164, 0, 164);
 					assert(po->IsSelected());
-					RenderBox(po->GetLocalBox(), true, 1.025);
+					glx::renderBox(po->GetLocalBox(), true, 1.025);
 				}
 				glPopMatrix();
 			}
@@ -402,7 +402,7 @@ void CGLModelScene::RenderSelectionBox(CGLContext& rc)
 		glPushMatrix();
 		SetModelView(poa);
 		glColor3ub(255, 255, 0);
-		RenderBox(poa->GetLocalBox(), true, 1.025);
+		glx::renderBox(poa->GetLocalBox(), true, 1.025);
 		glPopMatrix();
 	}
 }
@@ -1590,6 +1590,10 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 		{
 			glColor3ub(255, 0, 0);
 			vec3d rf[FSElement::MAX_NODES];
+
+			GLTriMesh mesh;
+			mesh.AllocVertexBuffers(pm->Faces() * 18, GLMesh::FLAG_VERTEX); // each face can have a max of 6 * 3 vertices 
+			mesh.BeginMesh();
 			for (int i = 0; i < pm->Faces(); ++i)
 			{
 				FSFace& f = pm->Face(i);
@@ -1603,81 +1607,35 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 						switch (nf)
 						{
 						case 3:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-							}
-							glEnd();
+						case 10:
+							mesh.AddTriangle(rf[0], rf[1], rf[2]);
 							break;
 						case 4:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-							}
-							glEnd();
+							mesh.AddTriangle(rf[0], rf[1], rf[2]);
+							mesh.AddTriangle(rf[2], rf[3], rf[0]);
 							break;
 						case 6:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-							}
-							glEnd();
+						case 7:
+							mesh.AddTriangle(rf[0], rf[3], rf[5]);
+							mesh.AddTriangle(rf[3], rf[1], rf[4]);
+							mesh.AddTriangle(rf[5], rf[4], rf[2]);
+							mesh.AddTriangle(rf[3], rf[4], rf[5]);
 							break;
 						case 8:
 						case 9:
-							glBegin(GL_TRIANGLES);
-							{
-								glVertex3d(rf[0].x, rf[0].y, rf[0].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[7].x, rf[7].y, rf[7].z);
-
-								glVertex3d(rf[1].x, rf[1].y, rf[1].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-
-								glVertex3d(rf[2].x, rf[2].y, rf[2].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-
-								glVertex3d(rf[3].x, rf[3].y, rf[3].z);
-								glVertex3d(rf[7].x, rf[7].y, rf[7].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-								glVertex3d(rf[7].x, rf[7].y, rf[7].z);
-
-								glVertex3d(rf[4].x, rf[4].y, rf[4].z);
-								glVertex3d(rf[5].x, rf[5].y, rf[5].z);
-								glVertex3d(rf[6].x, rf[6].y, rf[6].z);
-							}
-							glEnd();
+							mesh.AddTriangle(rf[0], rf[4], rf[7]);
+							mesh.AddTriangle(rf[1], rf[5], rf[4]);
+							mesh.AddTriangle(rf[2], rf[6], rf[5]);
+							mesh.AddTriangle(rf[3], rf[7], rf[6]);
+							mesh.AddTriangle(rf[4], rf[6], rf[7]);
+							mesh.AddTriangle(rf[4], rf[5], rf[6]);
 							break;
 						}
 					}
 				}
 			}
+			mesh.EndMesh();
+			mesh.Render();
 		}
 #endif
 		glDisable(GL_POLYGON_STIPPLE);
@@ -2101,6 +2059,7 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 	if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
+	glBegin(GL_TRIANGLES);
 	for (int i = 0; i < pm->Faces(); i++)
 	{
 		FSFace& face = pm->Face(i);
@@ -2139,11 +2098,7 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 						glColor3ub(dif.r, dif.g, dif.b);
 
 						// Render the face
-						glBegin(GL_TRIANGLES);
-						{
-							renderer.RenderFEFace(face, pm);
-						}
-						glEnd();
+						renderer.RenderFEFace(face, pm);
 					}
 				}
 				else
@@ -2155,15 +2110,12 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 					}
 
 					// Render the face
-					glBegin(GL_TRIANGLES);
-					{
-						renderer.RenderFEFace(face, pm);
-					}
-					glEnd();
+					renderer.RenderFEFace(face, pm);
 				}
 			}
 		}
 	}
+	glEnd();
 
 	// render beam elements
 	RenderAllBeamElements(rc, po);

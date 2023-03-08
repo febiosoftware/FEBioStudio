@@ -69,6 +69,7 @@ public:
 
 	// add a vertex to the mesh
 	void AddVertex(double* r, double* n, double* t);
+	void AddVertex(const vec3f& r);
 	void AddVertex(const vec3d& r);
 	void AddVertex(const vec3d& r, const vec3d& n, const GLColor& c);
 	void AddVertex(const vec3d& r, const vec3d& n);
@@ -120,8 +121,12 @@ inline void GLMesh::AddVertex(double* r, double* n, double* t)
 	if (r && m_vr) { m_vr[3 * i] = r[0]; m_vr[3 * i + 1] = r[1]; m_vr[3 * i + 2] = r[2]; }
 	if (n && m_vn) { m_vn[3 * i] = n[0]; m_vn[3 * i + 1] = n[1]; m_vn[3 * i + 2] = n[2]; }
 	if (r && m_vt) { m_vt[3 * i] = t[0]; m_vt[3 * i + 1] = t[1]; m_vt[3 * i + 2] = t[2]; }
+}
 
-	if (m_vc) { m_vc[4 * i] = 0; m_vc[4 * i + 1] = 0; m_vc[4 * i + 2] = 0; m_vc[4 * i + 3] = 255; }
+inline void GLMesh::AddVertex(const vec3f& r)
+{
+	size_t i = m_vertexCount++;
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 }
 
 inline void GLMesh::AddVertex(const vec3d& r)
@@ -136,8 +141,6 @@ inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
-
-	if (m_vt) { m_vt[3 * i] =   0; m_vt[3 * i + 1] =   0; m_vt[3 * i + 2] =   0; }
 }
 
 inline void GLMesh::AddVertex(const vec3d& r, double tex, const GLColor& c)
@@ -153,9 +156,6 @@ inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n)
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = (double)r.x; m_vr[3 * i + 1] = (double)r.y; m_vr[3 * i + 2] = (double)r.z; }
 	if (m_vn) { m_vn[3 * i] = (double)n.x; m_vn[3 * i + 1] = (double)n.y; m_vn[3 * i + 2] = (double)n.z; }
-	
-	if (m_vc) { m_vc[4 * i] = 0; m_vc[4 * i + 1] = 0; m_vc[4 * i + 2] = 0; m_vc[4 * i + 3] = 255; }
-	if (m_vt) { m_vt[3 * i] = 0; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
 inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n)
@@ -163,9 +163,6 @@ inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n)
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
-
-	if (m_vc) { m_vc[4 * i] = 0; m_vc[4 * i + 1] = 0; m_vc[4 * i + 2] = 0; m_vc[4 * i + 3] = 255; }
-	if (m_vt) { m_vt[3 * i] = 0; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
 inline void GLMesh::AddVertex(const vec3f& r, double tex)
@@ -211,6 +208,8 @@ class GLTriMesh : public GLMesh
 public:
 	GLTriMesh();
 
+	void AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2);
+
 	// z-sort the faces
 	void ZSortFaces(const CGLCamera& cam);
 
@@ -218,6 +217,13 @@ public:
 	void SortBackwards();
 	void SortForwards();
 };
+
+inline void GLTriMesh::AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2)
+{
+	AddVertex(r0);
+	AddVertex(r1);
+	AddVertex(r2);
+}
 
 // quad mesh
 class GLQuadMesh : public GLMesh

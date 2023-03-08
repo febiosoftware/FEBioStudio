@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "PostLib/constants.h"
 #include "GLModel.h"
 #include <GLLib/GLContext.h>
+#include <GLLib/glx.h>
 using namespace Post;
 
 extern int LUT[256][15];
@@ -149,9 +150,6 @@ void CGLSlicePlot::SetSliceOffset(float f)
 	if (m_offset > 1.f) m_offset = 1.f;
 }
 
-// in glview.cpp
-void RenderBox(const BOX& bbox, bool partial, double scale);
-
 void CGLSlicePlot::Render(CGLContext& rc)
 {
 	if (m_nfield == 0) return;
@@ -161,7 +159,7 @@ void CGLSlicePlot::Render(CGLContext& rc)
 	if (showBox)
 	{
 		glColor3ub(200, 200, 200);
-		RenderBox(m_box, false, 1.0);
+		glx::renderBox(m_box, false, 1.0);
 	}
 
 	GLTexture1D& tex = m_Col.GetTexture();

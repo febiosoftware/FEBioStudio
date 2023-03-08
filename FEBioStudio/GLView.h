@@ -501,5 +501,4 @@ private:
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);
-void RenderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
 void SetModelView(GObject* po);
