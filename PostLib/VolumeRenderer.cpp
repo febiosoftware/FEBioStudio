@@ -247,9 +247,9 @@ const char* shadertxt_8bit = \
 const char* shadertxt_rgb = \
 "#version 120\n"\
 "uniform sampler3D sampler;                               "\
-"uniform float Imin;                                      "\
 "uniform float Iscl;                                      "\
 "uniform float IsclMin;                                   "\
+"uniform float Imin;                                      "\
 "uniform float Imax;                                      "\
 "uniform float Amin;                                      "\
 "uniform float Amax;                                      "\
@@ -260,7 +260,7 @@ const char* shadertxt_rgb = \
 "uniform int cmap;                                        "\
 "void main(void)                                          "\
 "{                                                        "\
-"   vec4 t = (texture(sampler, gl_TexCoord[0].xyz)-IsclMin)*Iscl;"\
+"   vec4 t = (texture3D(sampler, gl_TexCoord[0].xyz)-IsclMin)*Iscl;"\
 "   t.x = (t.x - Imin) / (Imax - Imin);                   "\
 "   t.x = clamp(t.x, 0.0, 1.0);                           "\
 "   t.y = (t.y - Imin) / (Imax - Imin);                   "\

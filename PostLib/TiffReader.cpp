@@ -347,7 +347,7 @@ bool CTiffImageSource::Load()
 		if (nbps == 8)
 		{
 			// This will be mapped to a RGB image
-			im->Create(nx, ny, nz, nullptr, 0, nc);
+			im->Create(nx, ny, nz, nullptr, 0, C3DImage::UINT_RGB8);
 			DWORD imSize = nx * ny;
 			for (int k = 0; k < images; ++k)
 			{
