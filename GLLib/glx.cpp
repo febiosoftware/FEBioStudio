@@ -301,7 +301,7 @@ void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 }
 
 //-----------------------------------------------------------------------------
-static vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
+vec3d glx::interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
 {
 	double ax[4], ay[4], az[4];
 	ax[0] = r0.x; ax[1] = n0.x; ax[2] = 3.0 * (r1.x - r0.x) - 2.0 * n0.x - n1.x; ax[3] = n1.x + n0.x - 2.0 * (r1.x - r0.x);

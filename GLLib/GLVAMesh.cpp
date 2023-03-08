@@ -99,6 +99,14 @@ void GLVAMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
 	m_maxVertexCount = maxVertices;
 }
 
+void GLVAMesh::AllocVertexBuffers(const std::vector<GLVAMesh::Vertex>& verts, unsigned flags)
+{
+	AllocVertexBuffers(verts.size(), flags);
+	BeginMesh();
+	for (auto& v : verts) AddVertex(v);
+	EndMesh();
+}
+
 void GLVAMesh::BeginMesh()
 {
 	m_vertexCount = 0;
@@ -258,6 +266,9 @@ void GLTriMesh::SortForwards()
 	m_ind = nullptr;
 	m_bvalid = true;
 }
+
+//===================================================================================
+GLQuadMesh::GLQuadMesh() : GLVAMesh(GL_QUADS) {}
 
 //===================================================================================
 GLLineMesh::GLLineMesh() : GLVAMesh(GL_LINES) {}
