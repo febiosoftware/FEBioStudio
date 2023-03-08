@@ -371,6 +371,13 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	int NL = lineData.Lines();
 	if (NL == 0) { m_lineMesh.Clear(); return; }
 
+	int maxseg = 0;
+	for (int i = 0; i < NL; ++i)
+	{
+		if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
+	}
+	if (maxseg == 0) maxseg = 1;
+
 	m_lineMesh.AllocVertexBuffers(2 * NL, GLVAMesh::FLAG_VERTEX | GLVAMesh::FLAG_COLOR);
 
 	if (m_ncolor == COLOR_SOLID)
@@ -391,13 +398,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	{
 		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
-		int maxseg = 0;
-		int NL = lineData.Lines();
-		for (int i = 0; i < NL; ++i)
-		{
-			if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
-		}
-		if (maxseg == 0) maxseg = 1;
+	m_lineMesh.Render();
 
 		m_lineMesh.BeginMesh();
 		for (int i = 0; i < NL; ++i)
