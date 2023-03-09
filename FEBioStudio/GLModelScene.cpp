@@ -2332,20 +2332,16 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
+	FSMesh* pm = po->GetFEMesh(); assert(pm);
+	if (pm == 0) return;
+
 	CGLView* glview = rc.m_view;
 	GLMeshRender& renderer = glview->GetMeshRenderer();
 
-	FSModel& fem = *pdoc->GetFSModel();
-	FSMesh* pm = po->GetFEMesh();
-	assert(pm);
-	if (pm == 0) return;
-
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	GLColor dif;
 
 	GLColor col = po->GetColor();
-
-	int i;
 
 	int nmatid = -1;
 	dif = po->GetColor();
@@ -2353,35 +2349,35 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	SetMatProps(0);
 	int glmode = 0;
 
-	Post::CColorMap& colorMap = glview->GetColorMap();
-
-	double vmin, vmax;
 	Mesh_Data& data = pm->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour)
-	{
-		data.GetValueRange(vmin, vmax); colorMap.SetRange((float)vmin, (float)vmax);
-
-		glEnable(GL_COLOR_MATERIAL);
-	}
 
 	// render the unselected faces
 	vector<int> selectedElements;
 	int NE = pm->Elements();
 	bool hasBeamElements = false;
-	GPart* pgmat = nullptr;
-	glBegin(GL_TRIANGLES);
-	for (i = 0; i < NE; ++i)
+	if (showContour)
 	{
-		FSElement& el = pm->Element(i);
-		if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+		// Color is determined by data and colormap
+		double vmin, vmax;
+		data.GetValueRange(vmin, vmax);
 
-		if (!el.IsSelected() && el.IsVisible())
+		Post::CColorMap& colorMap = glview->GetColorMap();
+		colorMap.SetRange((float)vmin, (float)vmax);
+		
+		glEnable(GL_COLOR_MATERIAL);
+
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < NE; ++i)
 		{
-			GPart* pg = po->Part(el.m_gid);
-			if (pg->IsVisible())
+			FSElement& el = pm->Element(i);
+			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+			if (el.IsBeam()) hasBeamElements = true;
+
+			if (!el.IsSelected() && el.IsVisible())
 			{
-				if (showContour)
+				GPart* pg = po->Part(el.m_gid);
+				if (pg->IsVisible())
 				{
 					GLColor c[FSElement::MAX_NODES];
 					int ne = el.Nodes();
@@ -2393,33 +2389,29 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 							c[j] = GLColor(212, 212, 212);
 					}
 
-					switch (el.Type())
-					{
-					case FE_HEX8   : renderer.RenderHEX8(&el, pm, c); break;
-					case FE_HEX20  : renderer.RenderHEX20(&el, pm, true); break;
-					case FE_HEX27  : renderer.RenderHEX27(&el, pm, true); break;
-					case FE_PENTA6 : renderer.RenderPENTA6(&el, pm, c); break;
-					case FE_PENTA15: renderer.RenderPENTA15(&el, pm, true); break;
-					case FE_TET4   : renderer.RenderTET4(&el, pm, c); break;
-					case FE_TET5   : renderer.RenderTET4(&el, pm, c); break;
-					case FE_TET10  : renderer.RenderTET10(&el, pm, c); break;
-					case FE_TET15  : renderer.RenderTET15(&el, pm, true); break;
-					case FE_TET20  : renderer.RenderTET20(&el, pm, true); break;
-					case FE_QUAD4  : renderer.RenderQUAD(&el, pm, c); break;
-					case FE_QUAD8  : renderer.RenderQUAD8(&el, pm, true); break;
-					case FE_QUAD9  : renderer.RenderQUAD9(&el, pm, true); break;
-					case FE_TRI3   : renderer.RenderTRI3(&el, pm, c); break;
-					case FE_TRI6   : renderer.RenderTRI6(&el, pm, true); break;
-					case FE_PYRA5  : renderer.RenderPYRA5(&el, pm, true); break;
-					case FE_PYRA13 : renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2  : break;
-					case FE_BEAM3  : break;
-					default:
-						assert(false);
-					}
-
+					// render the element
+					renderer.RenderElement(&el, pm, c);
 				}
-				else
+			}
+		}
+		glEnd();
+	}
+	else
+	{
+		// color is determined by material
+		glDisable(GL_COLOR_MATERIAL);
+		GPart* pgmat = nullptr;
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& el = pm->Element(i);
+			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+			if (el.IsBeam()) hasBeamElements = true;
+
+			if (!el.IsSelected() && el.IsVisible())
+			{
+				GPart* pg = po->Part(el.m_gid);
+				if (pg->IsVisible())
 				{
 					if (pg != pgmat)
 					{
@@ -2427,35 +2419,13 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 						pgmat = pg;
 					}
 
-					switch (el.Type())
-					{
-					case FE_HEX8   : renderer.RenderHEX8(&el, pm, true); break;
-					case FE_HEX20  : renderer.RenderHEX20(&el, pm, true); break;
-					case FE_HEX27  : renderer.RenderHEX27(&el, pm, true); break;
-					case FE_PENTA6 : renderer.RenderPENTA(&el, pm, true); break;
-					case FE_PENTA15: renderer.RenderPENTA15(&el, pm, true); break;
-					case FE_TET4   : renderer.RenderTET4(&el, pm, true); break;
-					case FE_TET5   : renderer.RenderTET4(&el, pm, true); break;
-					case FE_TET10  : renderer.RenderTET10(&el, pm, true); break;
-					case FE_TET15  : renderer.RenderTET15(&el, pm, true); break;
-					case FE_TET20  : renderer.RenderTET20(&el, pm, true); break;
-					case FE_QUAD4  : renderer.RenderQUAD(&el, pm, true); break;
-					case FE_QUAD8  : renderer.RenderQUAD8(&el, pm, true); break;
-					case FE_QUAD9  : renderer.RenderQUAD9(&el, pm, true); break;
-					case FE_TRI3   : renderer.RenderTRI3(&el, pm, true); break;
-					case FE_TRI6   : renderer.RenderTRI6(&el, pm, true); break;
-					case FE_PYRA5  : renderer.RenderPYRA5(&el, pm, true); break;
-					case FE_PYRA13 : renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2  : hasBeamElements = true; break;
-					case FE_BEAM3  : break;
-					default:
-						assert(false);
-					}
+					// render the element
+					renderer.RenderElement(&el, pm, true);
 				}
 			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	if (hasBeamElements)
 	{
@@ -2478,35 +2448,15 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		hasBeamElements = false;
 		int NE = (int)selectedElements.size();
 		glBegin(GL_TRIANGLES);
-		for (i = 0; i < NE; ++i)
+		for (int i = 0; i < NE; ++i)
 		{
 			FEElement_& el = pm->Element(selectedElements[i]);
 			if (el.IsVisible())
 			{
-				switch (el.Type())
-				{
-				case FE_HEX8   : renderer.RenderHEX8(&el, pm, false); break;
-				case FE_HEX20  : renderer.RenderHEX20(&el, pm, false); break;
-				case FE_HEX27  : renderer.RenderHEX27(&el, pm, false); break;
-				case FE_PENTA6 : renderer.RenderPENTA(&el, pm, false); break;
-				case FE_PENTA15: renderer.RenderPENTA15(&el, pm, true); break;
-				case FE_TET4   : renderer.RenderTET4(&el, pm, false); break;
-				case FE_TET5   : renderer.RenderTET4(&el, pm, false); break;
-				case FE_TET10  : renderer.RenderTET10(&el, pm, false); break;
-				case FE_TET15  : renderer.RenderTET15(&el, pm, false); break;
-				case FE_TET20  : renderer.RenderTET20(&el, pm, false); break;
-				case FE_QUAD4  : renderer.RenderQUAD(&el, pm, false); break;
-				case FE_QUAD8  : renderer.RenderQUAD8(&el, pm, false); break;
-				case FE_QUAD9  : renderer.RenderQUAD9(&el, pm, false); break;
-				case FE_TRI3   : renderer.RenderTRI3(&el, pm, false); break;
-				case FE_TRI6   : renderer.RenderTRI6(&el, pm, false); break;
-				case FE_PYRA5  : renderer.RenderPYRA5(&el, pm, false); break;
-				case FE_PYRA13 : renderer.RenderPYRA13(&el, pm, false); break;
-				case FE_BEAM2  : hasBeamElements = true;  break;
-				case FE_BEAM3  : break;
-				default:
-					assert(false);
-				}
+				renderer.RenderElement(&el, pm, false);
+
+				// check for beams
+				if (el.IsBeam()) hasBeamElements = true;
 			}
 		}
 		glEnd();
@@ -2518,7 +2468,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		glColor3ub(255, 255, 0);
 
 		glBegin(GL_LINES);
-		for (i = 0; i < NE; ++i)
+		for (int i = 0; i < NE; ++i)
 		{
 			FEElement_& el = pm->Element(selectedElements[i]);
 			int ne = el.Nodes();

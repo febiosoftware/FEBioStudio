@@ -77,10 +77,12 @@ public:
 
 public:
 	// drawing routines for elements
+	void RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderHEX8   (FEElement_ *pe, FSCoreMesh *pm, bool bsel);
 	void RenderHEX20  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderHEX27  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderPENTA  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderTET4   (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderTET10  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderTET15  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
@@ -91,16 +93,26 @@ public:
 	void RenderTRI3   (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderTRI6   (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderPYRA5  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderPENTA15(FEElement_* pe, FSCoreMesh *pm, bool bsel);
     void RenderPYRA13 (FEElement_* pe, FSCoreMesh* pm, bool bsel);
     void RenderBEAM2  (FEElement_* pe, FSCoreMesh* pm, bool bsel);
 
-	void RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
-	void RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
-	void RenderTET10(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTRI3(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderQUAD(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderElement(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderHEX8   (FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
+	void RenderHEX20  (FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
+	void RenderHEX27  (FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
+	void RenderPENTA6 (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderTET4   (FEElement_ *pe, FSCoreMesh *pm, GLColor* col);
+	void RenderTET10  (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderTET15  (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderTET20  (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderTRI3   (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderTRI6   (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderQUAD   (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderQUAD8  (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderQUAD9  (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderPYRA5  (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	void RenderPYRA13 (FEElement_* pe, FSCoreMesh* pm, GLColor* col);
 
 public:
 	// drawing routines for faces
