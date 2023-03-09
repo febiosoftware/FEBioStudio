@@ -2370,6 +2370,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	int NE = pm->Elements();
 	bool hasBeamElements = false;
 	GPart* pgmat = nullptr;
+	glBegin(GL_TRIANGLES);
 	for (i = 0; i < NE; ++i)
 	{
 		FSElement& el = pm->Element(i);
@@ -2454,6 +2455,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 			}
 		}
 	}
+	glEnd();
 
 	if (hasBeamElements)
 	{
@@ -2475,6 +2477,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	{
 		hasBeamElements = false;
 		int NE = (int)selectedElements.size();
+		glBegin(GL_TRIANGLES);
 		for (i = 0; i < NE; ++i)
 		{
 			FEElement_& el = pm->Element(selectedElements[i]);
@@ -2493,8 +2496,8 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 				case FE_TET15  : renderer.RenderTET15(&el, pm, false); break;
 				case FE_TET20  : renderer.RenderTET20(&el, pm, false); break;
 				case FE_QUAD4  : renderer.RenderQUAD(&el, pm, false); break;
-				case FE_QUAD8  : break;
-				case FE_QUAD9  : break;
+				case FE_QUAD8  : renderer.RenderQUAD8(&el, pm, false); break;
+				case FE_QUAD9  : renderer.RenderQUAD9(&el, pm, false); break;
 				case FE_TRI3   : renderer.RenderTRI3(&el, pm, false); break;
 				case FE_TRI6   : renderer.RenderTRI6(&el, pm, false); break;
 				case FE_PYRA5  : renderer.RenderPYRA5(&el, pm, false); break;
@@ -2506,6 +2509,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 				}
 			}
 		}
+		glEnd();
 
 		// render a yellow highlight around selected elements
 		glPushAttrib(GL_ENABLE_BIT);

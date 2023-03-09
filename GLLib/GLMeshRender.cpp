@@ -72,34 +72,25 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4;
 	vec3f n1, n2, n3, n4;
-	glBegin(GL_QUADS);
+	for (int i = 0; i<6; ++i)
 	{
-		for (int i = 0; i<6; ++i)
-		{
-			r1 = pm->Node(e.m_node[FTHEX8[i][0]]).r;
-			r2 = pm->Node(e.m_node[FTHEX8[i][1]]).r;
-			r3 = pm->Node(e.m_node[FTHEX8[i][2]]).r;
-			r4 = pm->Node(e.m_node[FTHEX8[i][3]]).r;
+		r1 = pm->Node(e.m_node[FTHEX8[i][0]]).r;
+		r2 = pm->Node(e.m_node[FTHEX8[i][1]]).r;
+		r3 = pm->Node(e.m_node[FTHEX8[i][2]]).r;
+		r4 = pm->Node(e.m_node[FTHEX8[i][3]]).r;
 
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if (pen == 0)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if (pen == 0)
+		{
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
+			assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
+			if (pf)
 			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
-				assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
-				if (pf)
-				{
-					n1 = pf->m_nn[0];
-					n2 = pf->m_nn[1];
-					n3 = pf->m_nn[2];
-					n4 = pf->m_nn[3];
-				}
-				else
-				{
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-					n1 = n2 = n3 = n4 = to_vec3f(n);
-				}
+				n1 = pf->m_nn[0];
+				n2 = pf->m_nn[1];
+				n3 = pf->m_nn[2];
+				n4 = pf->m_nn[3];
 			}
 			else
 			{
@@ -107,17 +98,25 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 				n.Normalize();
 				n1 = n2 = n3 = n4 = to_vec3f(n);
 			}
+		}
+		else
+		{
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = n4 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || ((!pen->IsVisible()) || (pen->IsSelected() && pen->IsSolid() && bsel)))
-			{
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-				glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-			}
+		if ((pen == 0) || ((!pen->IsVisible()) || (pen->IsSelected() && pen->IsSolid() && bsel)))
+		{
+			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
+
+			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
+			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
+			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -137,34 +136,25 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	vec3d r1, r2, r3, r4;
 	vec3f n1, n2, n3, n4;
 	GLColor c[4];
-	glBegin(GL_QUADS);
+	for (int i = 0; i<6; ++i)
 	{
-		for (int i = 0; i<6; ++i)
-		{
-			r1 = pm->Node(e.m_node[FTHEX8[i][0]]).r;
-			r2 = pm->Node(e.m_node[FTHEX8[i][1]]).r;
-			r3 = pm->Node(e.m_node[FTHEX8[i][2]]).r;
-			r4 = pm->Node(e.m_node[FTHEX8[i][3]]).r;
+		r1 = pm->Node(e.m_node[FTHEX8[i][0]]).r;
+		r2 = pm->Node(e.m_node[FTHEX8[i][1]]).r;
+		r3 = pm->Node(e.m_node[FTHEX8[i][2]]).r;
+		r4 = pm->Node(e.m_node[FTHEX8[i][3]]).r;
 
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if (pen == 0)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if (pen == 0)
+		{
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
+			assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
+			if (pf)
 			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
-				assert(&pm->ElementRef(pf->m_elem[0].eid) == pe);
-				if (pf)
-				{
-					n1 = pf->m_nn[0];
-					n2 = pf->m_nn[1];
-					n3 = pf->m_nn[2];
-					n4 = pf->m_nn[3];
-				}
-				else
-				{
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-					n1 = n2 = n3 = n4 = to_vec3f(n);
-				}
+				n1 = pf->m_nn[0];
+				n2 = pf->m_nn[1];
+				n3 = pf->m_nn[2];
+				n4 = pf->m_nn[3];
 			}
 			else
 			{
@@ -172,22 +162,30 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 				n.Normalize();
 				n1 = n2 = n3 = n4 = to_vec3f(n);
 			}
+		}
+		else
+		{
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = n4 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()))
-			{
-				c[0] = col[FTHEX8[i][0]];
-				c[1] = col[FTHEX8[i][1]];
-				c[2] = col[FTHEX8[i][2]];
-				c[3] = col[FTHEX8[i][3]];
+		if ((pen == 0) || (!pen->IsVisible()))
+		{
+			c[0] = col[FTHEX8[i][0]];
+			c[1] = col[FTHEX8[i][1]];
+			c[2] = col[FTHEX8[i][2]];
+			c[3] = col[FTHEX8[i][3]];
 
-				glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glxColor(c[1]); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
-				glNormal3d(n4.x, n4.y, n4.z); glxColor(c[3]); glVertex3d(r4.x, r4.y, r4.z);
-			}
+			glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n2.x, n2.y, n2.z); glxColor(c[1]); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
+
+			glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
+			glNormal3d(n4.x, n4.y, n4.z); glxColor(c[3]); glVertex3d(r4.x, r4.y, r4.z);
+			glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -200,43 +198,34 @@ void GLMeshRender::RenderHEX20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FEElement_& e = *pe;
 	vec3d r[9];
 	vec3f n[9];
-	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<6; ++i)
 	{
-		for (int i = 0; i<6; ++i)
-		{
-			r[0] = pm->Node(e.m_node[FTHEX20[i][0]]).r;
-			r[1] = pm->Node(e.m_node[FTHEX20[i][1]]).r;
-			r[2] = pm->Node(e.m_node[FTHEX20[i][2]]).r;
-			r[3] = pm->Node(e.m_node[FTHEX20[i][3]]).r;
-			r[4] = pm->Node(e.m_node[FTHEX20[i][4]]).r;
-			r[5] = pm->Node(e.m_node[FTHEX20[i][5]]).r;
-			r[6] = pm->Node(e.m_node[FTHEX20[i][6]]).r;
-			r[7] = pm->Node(e.m_node[FTHEX20[i][7]]).r;
-			r[8] = QUAD8::eval(r, 0.0, 0.0);
+		r[0] = pm->Node(e.m_node[FTHEX20[i][0]]).r;
+		r[1] = pm->Node(e.m_node[FTHEX20[i][1]]).r;
+		r[2] = pm->Node(e.m_node[FTHEX20[i][2]]).r;
+		r[3] = pm->Node(e.m_node[FTHEX20[i][3]]).r;
+		r[4] = pm->Node(e.m_node[FTHEX20[i][4]]).r;
+		r[5] = pm->Node(e.m_node[FTHEX20[i][5]]).r;
+		r[6] = pm->Node(e.m_node[FTHEX20[i][6]]).r;
+		r[7] = pm->Node(e.m_node[FTHEX20[i][7]]).r;
+		r[8] = QUAD8::eval(r, 0.0, 0.0);
 
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if (pen == 0)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if (pen == 0)
+		{
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
+			if (pf)
 			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
-				if (pf)
-				{
-					n[0] = pf->m_nn[0];
-					n[1] = pf->m_nn[1];
-					n[2] = pf->m_nn[2];
-					n[3] = pf->m_nn[3];
-					n[4] = pf->m_nn[4];
-					n[5] = pf->m_nn[5];
-					n[6] = pf->m_nn[6];
-					n[7] = pf->m_nn[7];
-					n[8] = (n[0] + n[1] + n[2] + n[3]); n[8].Normalize();
-				}
-				else
-				{
-					vec3d nn = (r[1] - r[0]) ^ (r[2] - r[0]);
-					nn.Normalize();
-					n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = to_vec3f(nn);
-				}
+				n[0] = pf->m_nn[0];
+				n[1] = pf->m_nn[1];
+				n[2] = pf->m_nn[2];
+				n[3] = pf->m_nn[3];
+				n[4] = pf->m_nn[4];
+				n[5] = pf->m_nn[5];
+				n[6] = pf->m_nn[6];
+				n[7] = pf->m_nn[7];
+				n[8] = (n[0] + n[1] + n[2] + n[3]); n[8].Normalize();
 			}
 			else
 			{
@@ -244,44 +233,49 @@ void GLMeshRender::RenderHEX20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 				nn.Normalize();
 				n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = to_vec3f(nn);
 			}
+		}
+		else
+		{
+			vec3d nn = (r[1] - r[0]) ^ (r[2] - r[0]);
+			nn.Normalize();
+			n[0] = n[1] = n[2] = n[3] = n[4] = n[5] = n[6] = n[7] = n[8] = to_vec3f(nn);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glx::vertex3d(r[0], n[0]);
-				glx::vertex3d(r[4], n[4]);
-				glx::vertex3d(r[7], n[7]);
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glx::vertex3d(r[0], n[0]);
+			glx::vertex3d(r[4], n[4]);
+			glx::vertex3d(r[7], n[7]);
 
-				glx::vertex3d(r[4], n[4]);
-				glx::vertex3d(r[1], n[1]);
-				glx::vertex3d(r[5], n[5]);
+			glx::vertex3d(r[4], n[4]);
+			glx::vertex3d(r[1], n[1]);
+			glx::vertex3d(r[5], n[5]);
 
-				glx::vertex3d(r[5], n[5]);
-				glx::vertex3d(r[2], n[2]);
-				glx::vertex3d(r[6], n[6]);
+			glx::vertex3d(r[5], n[5]);
+			glx::vertex3d(r[2], n[2]);
+			glx::vertex3d(r[6], n[6]);
 
-				glx::vertex3d(r[6], n[6]);
-				glx::vertex3d(r[3], n[3]);
-				glx::vertex3d(r[7], n[7]);
+			glx::vertex3d(r[6], n[6]);
+			glx::vertex3d(r[3], n[3]);
+			glx::vertex3d(r[7], n[7]);
 
-				glx::vertex3d(r[8], n[8]);
-				glx::vertex3d(r[7], n[7]);
-				glx::vertex3d(r[4], n[4]);
+			glx::vertex3d(r[8], n[8]);
+			glx::vertex3d(r[7], n[7]);
+			glx::vertex3d(r[4], n[4]);
 
-				glx::vertex3d(r[8], n[8]);
-				glx::vertex3d(r[4], n[4]);
-				glx::vertex3d(r[5], n[5]);
+			glx::vertex3d(r[8], n[8]);
+			glx::vertex3d(r[4], n[4]);
+			glx::vertex3d(r[5], n[5]);
 
-				glx::vertex3d(r[8], n[8]);
-				glx::vertex3d(r[5], n[5]);
-				glx::vertex3d(r[6], n[6]);
+			glx::vertex3d(r[8], n[8]);
+			glx::vertex3d(r[5], n[5]);
+			glx::vertex3d(r[6], n[6]);
 
-				glx::vertex3d(r[8], n[8]);
-				glx::vertex3d(r[6], n[6]);
-				glx::vertex3d(r[7], n[7]);
-			}
+			glx::vertex3d(r[8], n[8]);
+			glx::vertex3d(r[6], n[6]);
+			glx::vertex3d(r[7], n[7]);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -294,41 +288,32 @@ void GLMeshRender::RenderHEX27(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
 	vec3f n1, n2, n3, n4, n5, n6, n7, n8;
-	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<6; ++i)
 	{
-		for (int i = 0; i<6; ++i)
-		{
-			r1 = pm->Node(e.m_node[FTHEX20[i][0]]).r;
-			r2 = pm->Node(e.m_node[FTHEX20[i][1]]).r;
-			r3 = pm->Node(e.m_node[FTHEX20[i][2]]).r;
-			r4 = pm->Node(e.m_node[FTHEX20[i][3]]).r;
-			r5 = pm->Node(e.m_node[FTHEX20[i][4]]).r;
-			r6 = pm->Node(e.m_node[FTHEX20[i][5]]).r;
-			r7 = pm->Node(e.m_node[FTHEX20[i][6]]).r;
-			r8 = pm->Node(e.m_node[FTHEX20[i][7]]).r;
+		r1 = pm->Node(e.m_node[FTHEX20[i][0]]).r;
+		r2 = pm->Node(e.m_node[FTHEX20[i][1]]).r;
+		r3 = pm->Node(e.m_node[FTHEX20[i][2]]).r;
+		r4 = pm->Node(e.m_node[FTHEX20[i][3]]).r;
+		r5 = pm->Node(e.m_node[FTHEX20[i][4]]).r;
+		r6 = pm->Node(e.m_node[FTHEX20[i][5]]).r;
+		r7 = pm->Node(e.m_node[FTHEX20[i][6]]).r;
+		r8 = pm->Node(e.m_node[FTHEX20[i][7]]).r;
 
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if (pen == 0)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if (pen == 0)
+		{
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
+			if (pf)
 			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
-				if (pf)
-				{
-					n1 = pf->m_nn[0];
-					n2 = pf->m_nn[1];
-					n3 = pf->m_nn[2];
-					n4 = pf->m_nn[3];
-					n5 = pf->m_nn[4];
-					n6 = pf->m_nn[5];
-					n7 = pf->m_nn[6];
-					n8 = pf->m_nn[7];
-				}
-				else
-				{
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-					n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
-				}
+				n1 = pf->m_nn[0];
+				n2 = pf->m_nn[1];
+				n3 = pf->m_nn[2];
+				n4 = pf->m_nn[3];
+				n5 = pf->m_nn[4];
+				n6 = pf->m_nn[5];
+				n7 = pf->m_nn[6];
+				n8 = pf->m_nn[7];
 			}
 			else
 			{
@@ -336,36 +321,41 @@ void GLMeshRender::RenderHEX27(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 				n.Normalize();
 				n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
 			}
+		}
+		else
+		{
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glx::vertex3d(r1, n1);
-				glx::vertex3d(r5, n5);
-				glx::vertex3d(r8, n8);
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glx::vertex3d(r1, n1);
+			glx::vertex3d(r5, n5);
+			glx::vertex3d(r8, n8);
 
-				glx::vertex3d(r5, n5);
-				glx::vertex3d(r2, n2);
-				glx::vertex3d(r6, n6);
+			glx::vertex3d(r5, n5);
+			glx::vertex3d(r2, n2);
+			glx::vertex3d(r6, n6);
 
-				glx::vertex3d(r6, n6);
-				glx::vertex3d(r3, n3);
-				glx::vertex3d(r7, n7);
+			glx::vertex3d(r6, n6);
+			glx::vertex3d(r3, n3);
+			glx::vertex3d(r7, n7);
 
-				glx::vertex3d(r7, n7);
-				glx::vertex3d(r4, n4);
-				glx::vertex3d(r8, n8);
+			glx::vertex3d(r7, n7);
+			glx::vertex3d(r4, n4);
+			glx::vertex3d(r8, n8);
 
-				glx::vertex3d(r5, n5);
-				glx::vertex3d(r6, n6);
-				glx::vertex3d(r8, n8);
+			glx::vertex3d(r5, n5);
+			glx::vertex3d(r6, n6);
+			glx::vertex3d(r8, n8);
 
-				glx::vertex3d(r6, n6);
-				glx::vertex3d(r7, n7);
-				glx::vertex3d(r8, n8);
-			}
+			glx::vertex3d(r6, n6);
+			glx::vertex3d(r7, n7);
+			glx::vertex3d(r8, n8);
 		}
 	}
-	glEnd();
 }
 
 
@@ -377,74 +367,64 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PENTA6));
 	FEElement_& e = *pe;
-	glBegin(GL_TRIANGLES);
+	vec3d r[4];
+	vec3d n[4];
+	for (int j = 0; j<3; j++)
 	{
-		vec3d r[4];
-		vec3d n[4];
-		for (int j = 0; j<3; j++)
+		r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+		r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+		r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+		r[3] = pm->Node(e.m_node[FTPENTA[j][3]]).r;
+
+		FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+		if (pen == 0)
 		{
-			r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-			r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-			r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-			r[3] = pm->Node(e.m_node[FTPENTA[j][3]]).r;
+			FSFace* pf = pm->FacePtr(e.m_face[j]);
+			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+			n[0] = to_vec3d(pf->m_nn[0]);
+			n[1] = to_vec3d(pf->m_nn[1]);
+			n[2] = to_vec3d(pf->m_nn[2]);
+			n[3] = to_vec3d(pf->m_nn[3]);
+		}
+		else
+		{
+			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+			fn.Normalize();
+			n[0] = n[1] = n[2] = n[3] = fn;
+		}
 
-			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[j]);
-				assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-				n[0] = to_vec3d(pf->m_nn[0]);
-				n[1] = to_vec3d(pf->m_nn[1]);
-				n[2] = to_vec3d(pf->m_nn[2]);
-				n[3] = to_vec3d(pf->m_nn[3]);
-			}
-			else
-			{
-				vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
-				fn.Normalize();
-				n[0] = n[1] = n[2] = n[3] = fn;
-			}
-
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glx::quad4(r, n);
-			}
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glx::quad4(r, n);
 		}
 	}
-	glEnd();
 
-	glBegin(GL_TRIANGLES);
+	for (int j = 3; j<5; j++)
 	{
-		vec3d r[3];
-		vec3f n[3];
-		for (int j = 3; j<5; j++)
+		r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+		r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+		r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+
+		FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+		if (pen == 0)
 		{
-			r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-			r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-			r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+			FSFace* pf = pm->FacePtr(e.m_face[j]);
+			n[0] = to_vec3d(pf->m_nn[0]);
+			n[1] = to_vec3d(pf->m_nn[1]);
+			n[2] = to_vec3d(pf->m_nn[2]);
+		}
+		else
+		{
+			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+			fn.Normalize();
+			n[0] = n[1] = n[2] = fn;
+		}
 
-			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[j]);
-				n[0] = pf->m_nn[0];
-				n[1] = pf->m_nn[1];
-				n[2] = pf->m_nn[2];
-			}
-			else
-			{
-				vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
-				fn.Normalize();
-				n[0] = n[1] = n[2] = to_vec3f(fn);
-			}
-
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glx::tri3(r, n);
-			}
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glx::tri3(r, n);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -455,85 +435,75 @@ void GLMeshRender::RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_PENTA6));
 	FEElement_& e = *pe;
-	glBegin(GL_TRIANGLES);
+
+	vec3d r[4];
+	vec3d n[4];
+	GLColor c[4];
+	for (int j = 0; j < 3; j++)
 	{
-		vec3d r[4];
-		vec3d n[4];
-		GLColor c[4];
-		for (int j = 0; j < 3; j++)
+		r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+		r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+		r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+		r[3] = pm->Node(e.m_node[FTPENTA[j][3]]).r;
+
+		c[0] = col[FTPENTA[j][0]];
+		c[1] = col[FTPENTA[j][1]];
+		c[2] = col[FTPENTA[j][2]];
+		c[3] = col[FTPENTA[j][3]];
+
+		FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+		if (pen == 0)
 		{
-			r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-			r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-			r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-			r[3] = pm->Node(e.m_node[FTPENTA[j][3]]).r;
+			FSFace* pf = pm->FacePtr(e.m_face[j]);
+			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+			n[0] = to_vec3d(pf->m_nn[0]);
+			n[1] = to_vec3d(pf->m_nn[1]);
+			n[2] = to_vec3d(pf->m_nn[2]);
+			n[3] = to_vec3d(pf->m_nn[3]);
+		}
+		else
+		{
+			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+			fn.Normalize();
+			n[0] = n[1] = n[2] = n[3] = fn;
+		}
 
-			c[0] = col[FTPENTA[j][0]];
-			c[1] = col[FTPENTA[j][1]];
-			c[2] = col[FTPENTA[j][2]];
-			c[3] = col[FTPENTA[j][3]];
-
-			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[j]);
-				assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
-				n[0] = to_vec3d(pf->m_nn[0]);
-				n[1] = to_vec3d(pf->m_nn[1]);
-				n[2] = to_vec3d(pf->m_nn[2]);
-				n[3] = to_vec3d(pf->m_nn[3]);
-			}
-			else
-			{
-				vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
-				fn.Normalize();
-				n[0] = n[1] = n[2] = n[3] = fn;
-			}
-
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
-			{
-				glx::quad4(r, n, c);
-			}
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
+		{
+			glx::quad4(r, n, c);
 		}
 	}
-	glEnd();
 
-	glBegin(GL_TRIANGLES);
+	for (int j = 3; j < 5; j++)
 	{
-		vec3d r[3];
-		vec3f n[3];
-		GLColor c[3];
-		for (int j = 3; j < 5; j++)
+		r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+		r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+		r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+
+		c[0] = col[FTPENTA[j][0]];
+		c[1] = col[FTPENTA[j][1]];
+		c[2] = col[FTPENTA[j][2]];
+
+		FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+		if (pen == 0)
 		{
-			r[0] = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-			r[1] = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-			r[2] = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+			FSFace* pf = pm->FacePtr(e.m_face[j]);
+			n[0] = to_vec3d(pf->m_nn[0]);
+			n[1] = to_vec3d(pf->m_nn[1]);
+			n[2] = to_vec3d(pf->m_nn[2]);
+		}
+		else
+		{
+			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+			fn.Normalize();
+			n[0] = n[1] = n[2] = fn;
+		}
 
-			c[0] = col[FTPENTA[j][0]];
-			c[1] = col[FTPENTA[j][1]];
-			c[2] = col[FTPENTA[j][2]];
-
-			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[j]);
-				n[0] = pf->m_nn[0];
-				n[1] = pf->m_nn[1];
-				n[2] = pf->m_nn[2];
-			}
-			else
-			{
-				vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
-				fn.Normalize();
-				n[0] = n[1] = n[2] = to_vec3f(fn);
-			}
-
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
-			{
-				glx::tri3(r, n, c);
-			}
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected()))
+		{
+			glx::tri3(r, n, c);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -546,41 +516,32 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3, r4, r5, r6, r7, r8;
 	vec3f n1, n2, n3, n4, n5, n6, n7, n8;
-	glBegin(GL_TRIANGLES);
+	for (int j = 0; j<3; j++)
 	{
-		for (int j = 0; j<3; j++)
-		{
-			r1 = pm->Node(e.m_node[FTPENTA15[j][0]]).r;
-			r2 = pm->Node(e.m_node[FTPENTA15[j][1]]).r;
-			r3 = pm->Node(e.m_node[FTPENTA15[j][2]]).r;
-			r4 = pm->Node(e.m_node[FTPENTA15[j][3]]).r;
-			r5 = pm->Node(e.m_node[FTPENTA15[j][4]]).r;
-			r6 = pm->Node(e.m_node[FTPENTA15[j][5]]).r;
-			r7 = pm->Node(e.m_node[FTPENTA15[j][6]]).r;
-			r8 = pm->Node(e.m_node[FTPENTA15[j][7]]).r;
+		r1 = pm->Node(e.m_node[FTPENTA15[j][0]]).r;
+		r2 = pm->Node(e.m_node[FTPENTA15[j][1]]).r;
+		r3 = pm->Node(e.m_node[FTPENTA15[j][2]]).r;
+		r4 = pm->Node(e.m_node[FTPENTA15[j][3]]).r;
+		r5 = pm->Node(e.m_node[FTPENTA15[j][4]]).r;
+		r6 = pm->Node(e.m_node[FTPENTA15[j][5]]).r;
+		r7 = pm->Node(e.m_node[FTPENTA15[j][6]]).r;
+		r8 = pm->Node(e.m_node[FTPENTA15[j][7]]).r;
 
-			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-			if (pen == 0)
+		FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+		if (pen == 0)
+		{
+			FSFace* pf = pm->FacePtr(e.m_face[j]);
+			assert(pf);
+			if (pf)
 			{
-				FSFace* pf = pm->FacePtr(e.m_face[j]);
-				assert(pf);
-				if (pf)
-				{
-					n1 = pf->m_nn[0];
-					n2 = pf->m_nn[1];
-					n3 = pf->m_nn[2];
-					n4 = pf->m_nn[3];
-					n5 = pf->m_nn[4];
-					n6 = pf->m_nn[5];
-					n7 = pf->m_nn[6];
-					n8 = pf->m_nn[7];
-				}
-				else
-				{
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-					n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
-				}
+				n1 = pf->m_nn[0];
+				n2 = pf->m_nn[1];
+				n3 = pf->m_nn[2];
+				n4 = pf->m_nn[3];
+				n5 = pf->m_nn[4];
+				n6 = pf->m_nn[5];
+				n7 = pf->m_nn[6];
+				n8 = pf->m_nn[7];
 			}
 			else
 			{
@@ -588,68 +549,64 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 				n.Normalize();
 				n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
 			}
+		}
+		else
+		{
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = n4 = n5 = n6 = n7 = n8 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-				glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
+			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
 
-				glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
+			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
+			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
 
-				glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-				glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-				glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
+			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
+			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
+			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
 
-				glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-				glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-				glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
+			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
+			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
+			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
 
-				glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-				glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-				glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
+			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
+			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
+			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
 
-				glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-				glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
-				glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
-			}
+			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
+			glNormal3d(n7.x, n7.y, n7.z); glVertex3d(r7.x, r7.y, r7.z);
+			glNormal3d(n8.x, n8.y, n8.z); glVertex3d(r8.x, r8.y, r8.z);
 		}
 	}
-	glEnd();
 
-	glBegin(GL_TRIANGLES);
+	for (int j = 3; j<5; j++)
 	{
-		for (int j = 3; j<5; j++)
-		{
-			r1 = pm->Node(e.m_node[FTPENTA15[j][0]]).r;
-			r2 = pm->Node(e.m_node[FTPENTA15[j][1]]).r;
-			r3 = pm->Node(e.m_node[FTPENTA15[j][2]]).r;
-			r4 = pm->Node(e.m_node[FTPENTA15[j][3]]).r;
-			r5 = pm->Node(e.m_node[FTPENTA15[j][4]]).r;
-			r6 = pm->Node(e.m_node[FTPENTA15[j][5]]).r;
+		r1 = pm->Node(e.m_node[FTPENTA15[j][0]]).r;
+		r2 = pm->Node(e.m_node[FTPENTA15[j][1]]).r;
+		r3 = pm->Node(e.m_node[FTPENTA15[j][2]]).r;
+		r4 = pm->Node(e.m_node[FTPENTA15[j][3]]).r;
+		r5 = pm->Node(e.m_node[FTPENTA15[j][4]]).r;
+		r6 = pm->Node(e.m_node[FTPENTA15[j][5]]).r;
 
-			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-			if (pen == 0)
+		FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
+		if (pen == 0)
+		{
+			FSFace* pf = pm->FacePtr(e.m_face[j]);
+			assert(pf);
+			if (pf)
 			{
-				FSFace* pf = pm->FacePtr(e.m_face[j]);
-				assert(pf);
-				if (pf)
-				{
-					n1 = pf->m_nn[0];
-					n2 = pf->m_nn[1];
-					n3 = pf->m_nn[2];
-					n4 = pf->m_nn[3];
-					n5 = pf->m_nn[4];
-					n6 = pf->m_nn[5];
-				}
-				else
-				{
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-					n1 = n2 = n3 = n4 = n5 = n6 = to_vec3f(n);
-				}
+				n1 = pf->m_nn[0];
+				n2 = pf->m_nn[1];
+				n3 = pf->m_nn[2];
+				n4 = pf->m_nn[3];
+				n5 = pf->m_nn[4];
+				n6 = pf->m_nn[5];
 			}
 			else
 			{
@@ -657,28 +614,33 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 				n.Normalize();
 				n1 = n2 = n3 = n4 = n5 = n6 = to_vec3f(n);
 			}
+		}
+		else
+		{
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = n4 = n5 = n6 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-				glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
+			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
 
-				glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
+			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
+			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
 
-				glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-				glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-				glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
+			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
+			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
+			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
 
-				glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
-				glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
-				glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
-			}
+			glNormal3d(n4.x, n4.y, n4.z); glVertex3d(r4.x, r4.y, r4.z);
+			glNormal3d(n5.x, n5.y, n5.z); glVertex3d(r5.x, r5.y, r5.z);
+			glNormal3d(n6.x, n6.y, n6.z); glVertex3d(r6.x, r6.y, r6.z);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -741,47 +703,43 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	vec3d r1, r2, r3;
 	vec3f n1, n2, n3;
 	GLColor c[3];
-	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<4; ++i)
 	{
-		for (int i = 0; i<4; ++i)
+		bool bdraw = true;
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if ((pen == 0) || (!pen->IsVisible()))
 		{
-			bool bdraw = true;
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if ((pen == 0) || (!pen->IsVisible()))
+			if (e.m_face[i] >= 0)
 			{
-				if (e.m_face[i] >= 0)
-				{
-					FSFace* pf = pm->FacePtr(e.m_face[i]);
-					r1 = pm->Node(pf->n[0]).r;
-					r2 = pm->Node(pf->n[1]).r;
-					r3 = pm->Node(pf->n[2]).r;
+				FSFace* pf = pm->FacePtr(e.m_face[i]);
+				r1 = pm->Node(pf->n[0]).r;
+				r2 = pm->Node(pf->n[1]).r;
+				r3 = pm->Node(pf->n[2]).r;
 
-					n1 = pf->m_nn[0];
-					n2 = pf->m_nn[1];
-					n3 = pf->m_nn[2];
-				}
-				else
-				{
-					r1 = pm->Node(e.m_node[FTTET[i][0]]).r;
-					r2 = pm->Node(e.m_node[FTTET[i][1]]).r;
-					r3 = pm->Node(e.m_node[FTTET[i][2]]).r;
-
-					vec3d n = (r2 - r1) ^ (r3 - r1);
-					n.Normalize();
-					n1 = n2 = n3 = to_vec3f(n);
-				}
-
-				c[0] = col[FTTET[i][0]];
-				c[1] = col[FTTET[i][1]];
-				c[2] = col[FTTET[i][2]];
-
-				glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glxColor(c[1]); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
+				n1 = pf->m_nn[0];
+				n2 = pf->m_nn[1];
+				n3 = pf->m_nn[2];
 			}
+			else
+			{
+				r1 = pm->Node(e.m_node[FTTET[i][0]]).r;
+				r2 = pm->Node(e.m_node[FTTET[i][1]]).r;
+				r3 = pm->Node(e.m_node[FTTET[i][2]]).r;
+
+				vec3d n = (r2 - r1) ^ (r3 - r1);
+				n.Normalize();
+				n1 = n2 = n3 = to_vec3f(n);
+			}
+
+			c[0] = col[FTTET[i][0]];
+			c[1] = col[FTTET[i][1]];
+			c[2] = col[FTTET[i][2]];
+
+			glNormal3d(n1.x, n1.y, n1.z); glxColor(c[0]); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n2.x, n2.y, n2.z); glxColor(c[1]); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n3.x, n3.y, n3.z); glxColor(c[2]); glVertex3d(r3.x, r3.y, r3.z);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -802,13 +760,9 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	n[1] = to_vec3d(pf->m_nn[1]);
 	n[2] = to_vec3d(pf->m_nn[2]);
 
-	glBegin(GL_TRIANGLES);
-	{
-		glx::vertex3d(r[0], n[0], col[0]);
-		glx::vertex3d(r[1], n[1], col[1]);
-		glx::vertex3d(r[2], n[2], col[2]);
-	}
-	glEnd();
+	glx::vertex3d(r[0], n[0], col[0]);
+	glx::vertex3d(r[1], n[1], col[1]);
+	glx::vertex3d(r[2], n[2], col[2]);
 }
 
 //-----------------------------------------------------------------------------
@@ -831,17 +785,13 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 	n[2] = to_vec3d(pf->m_nn[2]);
 	n[3] = to_vec3d(pf->m_nn[3]);
 
-	glBegin(GL_TRIANGLES);
-	{
-		glx::vertex3d(r[0], n[0], col[0]);
-		glx::vertex3d(r[1], n[1], col[1]);
-		glx::vertex3d(r[2], n[2], col[2]);
+	glx::vertex3d(r[0], n[0], col[0]);
+	glx::vertex3d(r[1], n[1], col[1]);
+	glx::vertex3d(r[2], n[2], col[2]);
 
-		glx::vertex3d(r[2], n[2], col[2]);
-		glx::vertex3d(r[3], n[3], col[3]);
-		glx::vertex3d(r[0], n[0], col[0]);
-	}
-	glEnd();
+	glx::vertex3d(r[2], n[2], col[2]);
+	glx::vertex3d(r[3], n[3], col[3]);
+	glx::vertex3d(r[0], n[0], col[0]);
 }
 
 //-----------------------------------------------------------------------------
@@ -851,44 +801,40 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3f n1, n2, n3;
-	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<4; ++i)
 	{
-		for (int i = 0; i<4; ++i)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if (pen == 0)
 		{
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
 
-				r1 = pm->Node(pf->n[0]).r;
-				r2 = pm->Node(pf->n[1]).r;
-				r3 = pm->Node(pf->n[2]).r;
+			r1 = pm->Node(pf->n[0]).r;
+			r2 = pm->Node(pf->n[1]).r;
+			r3 = pm->Node(pf->n[2]).r;
 
-				n1 = pf->m_nn[0];
-				n2 = pf->m_nn[1];
-				n3 = pf->m_nn[2];
-			}
-			else
-			{
-				r1 = pm->Node(e.m_node[FTTET10[i][0]]).r;
-				r2 = pm->Node(e.m_node[FTTET10[i][1]]).r;
-				r3 = pm->Node(e.m_node[FTTET10[i][2]]).r;
+			n1 = pf->m_nn[0];
+			n2 = pf->m_nn[1];
+			n3 = pf->m_nn[2];
+		}
+		else
+		{
+			r1 = pm->Node(e.m_node[FTTET10[i][0]]).r;
+			r2 = pm->Node(e.m_node[FTTET10[i][1]]).r;
+			r3 = pm->Node(e.m_node[FTTET10[i][2]]).r;
 
-				vec3d n = (r2 - r1) ^ (r3 - r1);
-				n.Normalize();
-				n1 = n2 = n3 = to_vec3f(n);
-			}
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			}
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -899,44 +845,40 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, GLColor* c)
 	vec3d r1, r2, r3;
 	vec3f n1, n2, n3;
 	GLColor c1, c2, c3;
-	glBegin(GL_TRIANGLES);
+	for (int i = 0; i < 4; ++i)
 	{
-		for (int i = 0; i < 4; ++i)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+
+		r1 = pm->Node(e.m_node[FTTET10[i][0]]).r;
+		r2 = pm->Node(e.m_node[FTTET10[i][1]]).r;
+		r3 = pm->Node(e.m_node[FTTET10[i][2]]).r;
+
+		if (pen == 0)
 		{
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
+			n1 = pf->m_nn[0];
+			n2 = pf->m_nn[1];
+			n3 = pf->m_nn[2];
+		}
+		else
+		{
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = to_vec3f(n);
+		}
 
-			r1 = pm->Node(e.m_node[FTTET10[i][0]]).r;
-			r2 = pm->Node(e.m_node[FTTET10[i][1]]).r;
-			r3 = pm->Node(e.m_node[FTTET10[i][2]]).r;
+		c1 = c[FTTET10[i][0]];
+		c2 = c[FTTET10[i][1]];
+		c3 = c[FTTET10[i][2]];
 
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
-				n1 = pf->m_nn[0];
-				n2 = pf->m_nn[1];
-				n3 = pf->m_nn[2];
-			}
-			else
-			{
-				vec3d n = (r2 - r1) ^ (r3 - r1);
-				n.Normalize();
-				n1 = n2 = n3 = to_vec3f(n);
-			}
-
-			c1 = c[FTTET10[i][0]];
-			c2 = c[FTTET10[i][1]];
-			c3 = c[FTTET10[i][2]];
-
-			if ((pen == 0) || (!pen->IsVisible()))
-			{
-				glNormal3d(n1.x, n1.y, n1.z); glColor3ub(c1.r, c1.g, c1.b); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glColor3ub(c2.r, c2.g, c2.b); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n3.x, n3.y, n3.z); glColor3ub(c3.r, c3.g, c3.b); glVertex3d(r3.x, r3.y, r3.z);
-			}
+		if ((pen == 0) || (!pen->IsVisible()))
+		{
+			glNormal3d(n1.x, n1.y, n1.z); glColor3ub(c1.r, c1.g, c1.b); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n2.x, n2.y, n2.z); glColor3ub(c2.r, c2.g, c2.b); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n3.x, n3.y, n3.z); glColor3ub(c3.r, c3.g, c3.b); glVertex3d(r3.x, r3.y, r3.z);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -946,44 +888,40 @@ void GLMeshRender::RenderTET15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3f n1, n2, n3;
-	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<4; ++i)
 	{
-		for (int i = 0; i<4; ++i)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if (pen == 0)
 		{
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
 
-				r1 = pm->Node(pf->n[0]).r;
-				r2 = pm->Node(pf->n[1]).r;
-				r3 = pm->Node(pf->n[2]).r;
+			r1 = pm->Node(pf->n[0]).r;
+			r2 = pm->Node(pf->n[1]).r;
+			r3 = pm->Node(pf->n[2]).r;
 
-				n1 = pf->m_nn[0];
-				n2 = pf->m_nn[1];
-				n3 = pf->m_nn[2];
-			}
-			else
-			{
-				r1 = pm->Node(e.m_node[FTTET15[i][0]]).r;
-				r2 = pm->Node(e.m_node[FTTET15[i][1]]).r;
-				r3 = pm->Node(e.m_node[FTTET15[i][2]]).r;
+			n1 = pf->m_nn[0];
+			n2 = pf->m_nn[1];
+			n3 = pf->m_nn[2];
+		}
+		else
+		{
+			r1 = pm->Node(e.m_node[FTTET15[i][0]]).r;
+			r2 = pm->Node(e.m_node[FTTET15[i][1]]).r;
+			r3 = pm->Node(e.m_node[FTTET15[i][2]]).r;
 
-				vec3d n = (r2 - r1) ^ (r3 - r1);
-				n.Normalize();
-				n1 = n2 = n3 = to_vec3f(n);
-			}
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			}
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
 		}
 	}
-	glEnd();
 }
 
 //-----------------------------------------------------------------------------
@@ -993,46 +931,41 @@ void GLMeshRender::RenderTET20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	FEElement_& e = *pe;
 	vec3d r1, r2, r3;
 	vec3f n1, n2, n3;
-	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<4; ++i)
 	{
-		for (int i = 0; i<4; ++i)
+		FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
+		if (pen == 0)
 		{
-			FEElement_* pen = (e.m_nbr[i] != -1 ? pm->ElementPtr(e.m_nbr[i]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[i]);
-				assert(pf);
+			FSFace* pf = pm->FacePtr(e.m_face[i]);
+			assert(pf);
 
-				r1 = pm->Node(pf->n[0]).r;
-				r2 = pm->Node(pf->n[1]).r;
-				r3 = pm->Node(pf->n[2]).r;
+			r1 = pm->Node(pf->n[0]).r;
+			r2 = pm->Node(pf->n[1]).r;
+			r3 = pm->Node(pf->n[2]).r;
 
-				n1 = pf->m_nn[0];
-				n2 = pf->m_nn[1];
-				n3 = pf->m_nn[2];
-			}
-			else
-			{
-				r1 = pm->Node(e.m_node[FTTET20[i][0]]).r;
-				r2 = pm->Node(e.m_node[FTTET20[i][1]]).r;
-				r3 = pm->Node(e.m_node[FTTET20[i][2]]).r;
+			n1 = pf->m_nn[0];
+			n2 = pf->m_nn[1];
+			n3 = pf->m_nn[2];
+		}
+		else
+		{
+			r1 = pm->Node(e.m_node[FTTET20[i][0]]).r;
+			r2 = pm->Node(e.m_node[FTTET20[i][1]]).r;
+			r3 = pm->Node(e.m_node[FTTET20[i][2]]).r;
 
-				vec3d n = (r2 - r1) ^ (r3 - r1);
-				n.Normalize();
-				n1 = n2 = n3 = to_vec3f(n);
-			}
+			vec3d n = (r2 - r1) ^ (r3 - r1);
+			n.Normalize();
+			n1 = n2 = n3 = to_vec3f(n);
+		}
 
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
-				glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
-				glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
-			}
+		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+		{
+			glNormal3d(n1.x, n1.y, n1.z); glVertex3d(r1.x, r1.y, r1.z);
+			glNormal3d(n2.x, n2.y, n2.z); glVertex3d(r2.x, r2.y, r2.z);
+			glNormal3d(n3.x, n3.y, n3.z); glVertex3d(r3.x, r3.y, r3.z);
 		}
 	}
-	glEnd();
 }
-
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
@@ -1054,11 +987,7 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	n[2] = to_vec3d(pf->m_nn[2]);
 	n[3] = to_vec3d(pf->m_nn[3]);
 
-	glBegin(GL_TRIANGLES);
-	{
-		glx::quad4(r, n);
-	}
-	glEnd();
+	glx::quad4(r, n);
 }
 
 //-----------------------------------------------------------------------------
@@ -1081,11 +1010,7 @@ void GLMeshRender::RenderQUAD8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	n[2] = to_vec3d(pf->m_nn[2]);
 	n[3] = to_vec3d(pf->m_nn[3]);
 
-	glBegin(GL_TRIANGLES);
-	{
-		glx::quad4(r, n);
-	}
-	glEnd();
+	glx::quad4(r, n);
 }
 
 //-----------------------------------------------------------------------------
@@ -1108,11 +1033,7 @@ void GLMeshRender::RenderQUAD9(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	n[2] = to_vec3d(pf->m_nn[2]);
 	n[3] = to_vec3d(pf->m_nn[3]);
 
-	glBegin(GL_TRIANGLES);
-	{
-		glx::quad4(r, n);
-	}
-	glEnd();
+	glx::quad4(r, n);
 }
 
 //-----------------------------------------------------------------------------
@@ -1133,11 +1054,7 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	n[1] = pf->m_nn[1];
 	n[2] = pf->m_nn[2];
 
-	glBegin(GL_TRIANGLES);
-	{
-		glx::tri3(r, n);
-	}
-	glEnd();
+	glx::tri3(r, n);
 }
 
 //-----------------------------------------------------------------------------
@@ -1158,11 +1075,7 @@ void GLMeshRender::RenderTRI6(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	n[1] = pf->m_nn[1];
 	n[2] = pf->m_nn[2];
 
-	glBegin(GL_TRIANGLES);
-	{
-		glx::tri3(r, n);
-	}
-	glEnd();
+	glx::tri3(r, n);
 }
 
 //-----------------------------------------------------------------------------
@@ -1173,69 +1086,61 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	vec3d r[4];
 	vec3d n[4];
 
-	glBegin(GL_TRIANGLES);
+	for (int j = 0; j<4; j++)
 	{
-		for (int j = 0; j<4; j++)
-		{
-			r[0] = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
-			r[1] = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
-			r[2] = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
+		r[0] = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
+		r[1] = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
+		r[2] = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
 
-			FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-			if (pen == 0)
-			{
-				FSFace* pf = pm->FacePtr(e.m_face[j]);
-				n[0] = to_vec3d(pf->m_nn[0]);
-				n[1] = to_vec3d(pf->m_nn[1]);
-				n[2] = to_vec3d(pf->m_nn[2]);
-			}
-			else
-			{
-				vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
-				fn.Normalize();
-				n[0] = n[1] = n[2] = fn;
-			}
-
-			if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-			{
-				glx::vertex3d(r[0], n[0]);
-				glx::vertex3d(r[1], n[1]);
-				glx::vertex3d(r[2], n[2]);
-			}
-		}
-	}
-	glEnd();
-
-	glBegin(GL_TRIANGLES);
-	{
-		r[0] = pm->Node(e.m_node[FTPYRA5[4][0]]).r;
-		r[1] = pm->Node(e.m_node[FTPYRA5[4][1]]).r;
-		r[2] = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
-		r[3] = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
-
-		FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
+		FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
 		if (pen == 0)
 		{
-			FSFace* pf = pm->FacePtr(e.m_face[4]);
-			assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+			FSFace* pf = pm->FacePtr(e.m_face[j]);
 			n[0] = to_vec3d(pf->m_nn[0]);
 			n[1] = to_vec3d(pf->m_nn[1]);
 			n[2] = to_vec3d(pf->m_nn[2]);
-			n[3] = to_vec3d(pf->m_nn[3]);
 		}
 		else
 		{
 			vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
 			fn.Normalize();
-			n[0] = n[1] = n[2] = n[3] = fn;
+			n[0] = n[1] = n[2] = fn;
 		}
 
 		if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
 		{
-			glx::quad4(r, n);
+			glx::vertex3d(r[0], n[0]);
+			glx::vertex3d(r[1], n[1]);
+			glx::vertex3d(r[2], n[2]);
 		}
 	}
-	glEnd();
+
+	r[0] = pm->Node(e.m_node[FTPYRA5[4][0]]).r;
+	r[1] = pm->Node(e.m_node[FTPYRA5[4][1]]).r;
+	r[2] = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
+	r[3] = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
+
+	FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
+	if (pen == 0)
+	{
+		FSFace* pf = pm->FacePtr(e.m_face[4]);
+		assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+		n[0] = to_vec3d(pf->m_nn[0]);
+		n[1] = to_vec3d(pf->m_nn[1]);
+		n[2] = to_vec3d(pf->m_nn[2]);
+		n[3] = to_vec3d(pf->m_nn[3]);
+	}
+	else
+	{
+		vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+		fn.Normalize();
+		n[0] = n[1] = n[2] = n[3] = fn;
+	}
+
+	if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+	{
+		glx::quad4(r, n);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1246,69 +1151,61 @@ void GLMeshRender::RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
     vec3d r[4];
     vec3d n[4];
     
-    glBegin(GL_TRIANGLES);
-    {
         for (int j = 0; j<4; j++)
         {
             r[0] = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
-            r[1] = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
-            r[2] = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+        r[1] = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+        r[2] = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
             
-            FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
-            if (pen == 0)
-            {
-                FSFace* pf = pm->FacePtr(e.m_face[j]);
-                n[0] = to_vec3d(pf->m_nn[0]);
-                n[1] = to_vec3d(pf->m_nn[1]);
-                n[2] = to_vec3d(pf->m_nn[2]);
-            }
-            else
-            {
-                vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
-                fn.Normalize();
-                n[0] = n[1] = n[2] = fn;
-            }
-            
-            if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
-            {
-                glx::vertex3d(r[0], n[0]);
-                glx::vertex3d(r[1], n[1]);
-                glx::vertex3d(r[2], n[2]);
-            }
-        }
-    }
-    glEnd();
-    
-    glBegin(GL_TRIANGLES);
-    {
-        r[0] = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
-        r[1] = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
-        r[2] = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
-        r[3] = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
-        
-        FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
+        FEElement_* pen = (e.m_nbr[j] != -1 ? pm->ElementPtr(e.m_nbr[j]) : 0);
         if (pen == 0)
         {
-            FSFace* pf = pm->FacePtr(e.m_face[4]);
-            assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+            FSFace* pf = pm->FacePtr(e.m_face[j]);
             n[0] = to_vec3d(pf->m_nn[0]);
             n[1] = to_vec3d(pf->m_nn[1]);
             n[2] = to_vec3d(pf->m_nn[2]);
-            n[3] = to_vec3d(pf->m_nn[3]);
         }
         else
         {
             vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
             fn.Normalize();
-            n[0] = n[1] = n[2] = n[3] = fn;
+            n[0] = n[1] = n[2] = fn;
         }
-        
+            
         if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
         {
-            glx::quad4(r, n);
+            glx::vertex3d(r[0], n[0]);
+            glx::vertex3d(r[1], n[1]);
+            glx::vertex3d(r[2], n[2]);
         }
     }
-    glEnd();
+    
+    r[0] = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+    r[1] = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+    r[2] = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+    r[3] = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+        
+    FEElement_* pen = (e.m_nbr[4] != -1 ? pm->ElementPtr(e.m_nbr[4]) : 0);
+    if (pen == 0)
+    {
+        FSFace* pf = pm->FacePtr(e.m_face[4]);
+        assert(pm->ElementPtr(pf->m_elem[0].eid) == pe);
+        n[0] = to_vec3d(pf->m_nn[0]);
+        n[1] = to_vec3d(pf->m_nn[1]);
+        n[2] = to_vec3d(pf->m_nn[2]);
+        n[3] = to_vec3d(pf->m_nn[3]);
+    }
+    else
+    {
+        vec3d fn = (r[1] - r[0]) ^ (r[2] - r[0]);
+        fn.Normalize();
+        n[0] = n[1] = n[2] = n[3] = fn;
+    }
+        
+    if ((pen == 0) || (!pen->IsVisible()) || (pen->IsSelected() && bsel))
+    {
+        glx::quad4(r, n);
+    }
 }
 
 //-----------------------------------------------------------------------------

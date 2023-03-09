@@ -73,7 +73,7 @@ void quad9(vec3d r[9], vec3f n[9], float t[9]);
 
 void tri3(vec3d r[3], vec3f n[3]);
 void tri3(vec3d r[3], vec3d n[3]);
-void tri3(vec3d r[3], vec3f n[3], GLColor c[3]);
+void tri3(vec3d r[3], vec3d n[3], GLColor c[3]);
 void tri3(vec3d r[3], vec3f n[3], float t[3]);
 
 void tri6(vec3d r[6], vec3f n[6], float t[6]);

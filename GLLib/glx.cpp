@@ -519,7 +519,7 @@ void glx::tri3(vec3d r[3], vec3d n[3])
 	vertex3d(r[2], n[2]);
 }
 
-void glx::tri3(vec3d r[3], vec3f n[3], GLColor c[3])
+void glx::tri3(vec3d r[3], vec3d n[3], GLColor c[3])
 {
 	vertex3d(r[0], n[0], c[0]);
 	vertex3d(r[1], n[1], c[1]);
