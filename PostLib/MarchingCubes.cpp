@@ -518,7 +518,7 @@ bool CMarchingCubes::GetMesh(FSMesh& mesh)
 	for (int i = 0; i < nodes; ++i)
 	{
 		GLMesh::Vertex v = m_mesh.GetVertex(i);
-		mesh.Node(i).r = v.r;
+		mesh.Node(i).r = to_vec3d(v.r);
 	}
 
 	for (int i = 0; i < faces; ++i)

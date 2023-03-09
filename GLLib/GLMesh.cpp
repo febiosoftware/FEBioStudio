@@ -75,19 +75,19 @@ void GLMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
 	m_vertexCount = 0;
 	if (flags & FLAG_VERTEX)
 	{
-		if ((m_vr == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vr; m_vr = new double[3 * maxVertices]; }
+		if ((m_vr == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vr; m_vr = new float[3 * maxVertices]; }
 	}
 	else { delete[] m_vr; m_vr = nullptr; }
 
 	if (flags & FLAG_NORMAL)
 	{
-		if ((m_vn == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vn; m_vn = new double[3 * maxVertices]; }
+		if ((m_vn == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vn; m_vn = new float[3 * maxVertices]; }
 	}
 	else { delete[] m_vn; m_vn = nullptr; }
 
 	if (flags & FLAG_TEXTURE)
 	{
-		if ((m_vt == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vt; m_vt = new double[3 * maxVertices]; }
+		if ((m_vt == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vt; m_vt = new float[3 * maxVertices]; }
 	}
 	else { delete[] m_vt; m_vt = nullptr; }
 
@@ -173,9 +173,9 @@ void GLMesh::Render()
 	if (m_vt) glEnableClientState(GL_TEXTURE_COORD_ARRAY);
 	if (m_vc) glEnableClientState(GL_COLOR_ARRAY);
 
-	glVertexPointer(3, GL_DOUBLE, 0, m_vr);
-	if (m_vn) glNormalPointer(GL_DOUBLE, 0, m_vn);
-	if (m_vt) glTexCoordPointer(3, GL_DOUBLE, 0, m_vt);
+	glVertexPointer(3, GL_FLOAT, 0, m_vr);
+	if (m_vn) glNormalPointer(GL_FLOAT, 0, m_vn);
+	if (m_vt) glTexCoordPointer(3, GL_FLOAT, 0, m_vt);
 	if (m_vc) glColorPointer(4, GL_UNSIGNED_BYTE, 0, m_vc);
 
 	if (m_ind)

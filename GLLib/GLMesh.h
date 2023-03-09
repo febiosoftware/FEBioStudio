@@ -50,9 +50,9 @@ public:
 
 	struct Vertex
 	{
-		vec3d	r;
-		vec3d	n;
-		vec3d	t;
+		vec3f	r;
+		vec3f	n;
+		vec3f	t;
 		GLColor	c;
 	};
 
@@ -74,11 +74,11 @@ public:
 	void AddVertex(const vec3d& r, const vec3d& n, const GLColor& c);
 	void AddVertex(const vec3d& r, const vec3d& n);
 	void AddVertex(const vec3f& r, const vec3f& n);
-	void AddVertex(const vec3f& r, double tex);
-	void AddVertex(const vec3d& r, double tex);
+	void AddVertex(const vec3f& r, float tex);
+	void AddVertex(const vec3d& r, float tex);
 	void AddVertex(const vec3f& r, const GLColor& c);
 	void AddVertex(const vec3d& r, const GLColor& c);
-	void AddVertex(const vec3d& r, double tex, const GLColor& c);
+	void AddVertex(const vec3d& r, float tex, const GLColor& c);
 	void AddVertex(const Vertex& v);
 
 	// this when done building the mesh
@@ -108,9 +108,9 @@ protected:
 	virtual ~GLMesh();
 
 protected:
-	double* m_vr = nullptr;	// vertex coordinates
-	double* m_vn = nullptr;	// vertex normals
-	double* m_vt = nullptr;	// vertex texture coordinates
+	float* m_vr = nullptr;	// vertex coordinates
+	float* m_vn = nullptr;	// vertex normals
+	float* m_vt = nullptr;	// vertex texture coordinates
 	ubyte* m_vc = nullptr; // vertex color (4 x unsigned byte)
 	unsigned int* m_ind = nullptr; // vertex indices (used for z-sorting)
 	
@@ -124,9 +124,9 @@ protected:
 inline void GLMesh::AddVertex(double* r, double* n, double* t)
 {
 	size_t i = m_vertexCount++;
-	if (r && m_vr) { m_vr[3 * i] = r[0]; m_vr[3 * i + 1] = r[1]; m_vr[3 * i + 2] = r[2]; }
-	if (n && m_vn) { m_vn[3 * i] = n[0]; m_vn[3 * i + 1] = n[1]; m_vn[3 * i + 2] = n[2]; }
-	if (r && m_vt) { m_vt[3 * i] = t[0]; m_vt[3 * i + 1] = t[1]; m_vt[3 * i + 2] = t[2]; }
+	if (r && m_vr) { m_vr[3 * i] = (float)r[0]; m_vr[3 * i + 1] = (float)r[1]; m_vr[3 * i + 2] = (float)r[2]; }
+	if (n && m_vn) { m_vn[3 * i] = (float)n[0]; m_vn[3 * i + 1] = (float)n[1]; m_vn[3 * i + 2] = (float)n[2]; }
+	if (r && m_vt) { m_vt[3 * i] = (float)t[0]; m_vt[3 * i + 1] = (float)t[1]; m_vt[3 * i + 2] = (float)t[2]; }
 }
 
 inline void GLMesh::AddVertex(const vec3f& r)
@@ -138,21 +138,21 @@ inline void GLMesh::AddVertex(const vec3f& r)
 inline void GLMesh::AddVertex(const vec3d& r)
 {
 	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 }
 
 inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
-	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
+	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
+	if (m_vn) { m_vn[3 * i] = (float)n.x; m_vn[3 * i + 1] = (float)n.y; m_vn[3 * i + 2] = (float)n.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r, double tex, const GLColor& c)
+inline void GLMesh::AddVertex(const vec3d& r, float tex, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
@@ -160,28 +160,28 @@ inline void GLMesh::AddVertex(const vec3d& r, double tex, const GLColor& c)
 inline void GLMesh::AddVertex(const vec3f& r, const vec3f& n)
 {
 	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = (double)r.x; m_vr[3 * i + 1] = (double)r.y; m_vr[3 * i + 2] = (double)r.z; }
-	if (m_vn) { m_vn[3 * i] = (double)n.x; m_vn[3 * i + 1] = (double)n.y; m_vn[3 * i + 2] = (double)n.z; }
+	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
 }
 
 inline void GLMesh::AddVertex(const vec3d& r, const vec3d& n)
 {
 	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
-	if (m_vn) { m_vn[3 * i] = n.x; m_vn[3 * i + 1] = n.y; m_vn[3 * i + 2] = n.z; }
+	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
+	if (m_vn) { m_vn[3 * i] = (float)n.x; m_vn[3 * i + 1] = (float)n.y; m_vn[3 * i + 2] = (float)n.z; }
 }
 
-inline void GLMesh::AddVertex(const vec3f& r, double tex)
+inline void GLMesh::AddVertex(const vec3f& r, float tex)
 {
 	size_t i = m_vertexCount++;
 	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
-inline void GLMesh::AddVertex(const vec3d& r, double tex)
+inline void GLMesh::AddVertex(const vec3d& r, float tex)
 {
 	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 	if (m_vt) { m_vt[3 * i] = tex; m_vt[3 * i + 1] = 0; m_vt[3 * i + 2] = 0; }
 }
 
@@ -195,7 +195,7 @@ inline void GLMesh::AddVertex(const vec3f& r, const GLColor& c)
 inline void GLMesh::AddVertex(const vec3d& r, const GLColor& c)
 {
 	size_t i = m_vertexCount++;
-	if (m_vr) { m_vr[3 * i] = r.x; m_vr[3 * i + 1] = r.y; m_vr[3 * i + 2] = r.z; }
+	if (m_vr) { m_vr[3 * i] = (float)r.x; m_vr[3 * i + 1] = (float)r.y; m_vr[3 * i + 2] = (float)r.z; }
 	if (m_vc) { m_vc[4 * i] = c.r; m_vc[4 * i + 1] = c.g; m_vc[4 * i + 2] = c.b; m_vc[4 * i + 3] = c.a; }
 }
 
@@ -211,9 +211,9 @@ inline void GLMesh::AddVertex(const Vertex& v)
 inline GLMesh::Vertex GLMesh::GetVertex(size_t i) const
 {
 	Vertex v;
-	if (m_vr) { double* r = m_vr + (3 * i); v.r = vec3d(r[0], r[1], r[2]); }
-	if (m_vn) { double* n = m_vn + (3 * i); v.n = vec3d(n[0], n[1], n[2]); }
-	if (m_vt) { double* t = m_vt + (3 * i); v.t = vec3d(t[0], t[1], t[2]); }
+	if (m_vr) { float* r = m_vr + (3 * i); v.r = vec3f(r[0], r[1], r[2]); }
+	if (m_vn) { float* n = m_vn + (3 * i); v.n = vec3f(n[0], n[1], n[2]); }
+	if (m_vt) { float* t = m_vt + (3 * i); v.t = vec3f(t[0], t[1], t[2]); }
 	if (m_vc) { ubyte* c = m_vc + (4 * i); v.c = GLColor(c[0], c[1], c[2], c[3]); }
 	return v;
 }

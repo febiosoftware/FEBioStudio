@@ -569,9 +569,9 @@ void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, floa
 				int L[2][3] = { {0,1,2}, {2,3,0} };
 				for (int k = 0; k < 2; ++k)
 				{
-					v = { r[L[k][0]], n[L[k][0]], vec3d(tex[L[k][0]],0,0), c }; mesh.AddVertex(v);
-					v = { r[L[k][1]], n[L[k][1]], vec3d(tex[L[k][1]],0,0), c }; mesh.AddVertex(v);
-					v = { r[L[k][2]], n[L[k][2]], vec3d(tex[L[k][2]],0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][0]]), to_vec3f(n[L[k][0]]), vec3f(tex[L[k][0]],0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][1]]), to_vec3f(n[L[k][1]]), vec3f(tex[L[k][1]],0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][2]]), to_vec3f(n[L[k][2]]), vec3f(tex[L[k][2]],0,0), c }; mesh.AddVertex(v);
 				}
 			}
 
@@ -633,9 +633,9 @@ void tesselateHalfSphere(GLTriMesh& mesh, const vec3d& r0, float R, const vec3d&
 				int L[2][3] = { {0,1,2}, {2,3,0} };
 				for (int k = 0; k < 2; ++k)
 				{
-					v = { r[L[k][0]], n[L[k][0]], vec3d(tex,0,0), c }; mesh.AddVertex(v);
-					v = { r[L[k][1]], n[L[k][1]], vec3d(tex,0,0), c }; mesh.AddVertex(v);
-					v = { r[L[k][2]], n[L[k][2]], vec3d(tex,0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][0]]), to_vec3f(n[L[k][0]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][1]]), to_vec3f(n[L[k][1]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][2]]), to_vec3f(n[L[k][2]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
 				}
 			}
 		}
@@ -667,9 +667,9 @@ void tesselateHalfSphere(GLTriMesh& mesh, const vec3d& r0, float R, const vec3d&
 				q0.RotateVector(n[0]);
 				q0.RotateVector(n[1]);
 
-				v = {   rb,   nb, vec3d(tex, 0, 0), c }; mesh.AddVertex(v);
-				v = { r[0], n[0], vec3d(tex, 0, 0), c }; mesh.AddVertex(v);
-				v = { r[1], n[1], vec3d(tex, 0, 0), c }; mesh.AddVertex(v);
+				v = { to_vec3f(  rb), to_vec3f(  nb), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
+				v = { to_vec3f(r[0]), to_vec3f(n[0]), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
+				v = { to_vec3f(r[1]), to_vec3f(n[1]), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
 			}
 		}
 	}
