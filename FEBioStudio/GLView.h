@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include "GTriad.h"
 #include "GGrid.h"
 #include <MeshLib/Intersect.h>
-#include <GLLib/GLMeshRender.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
@@ -315,8 +314,6 @@ public:
 	bool GetPivotMode() { return m_bpivot; }
 	void SetPivotMode(bool b) { m_bpivot = b; }
 
-	GLMeshRender& GetMeshRenderer() { return m_renderer; }
-
 	void changeViewMode(View_Mode vm);
 
 	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
@@ -405,7 +402,6 @@ protected slots:
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window
-	GLMeshRender	m_renderer; // the renderer for this view
 
 	CBasicCmdManager m_Cmd;	// view command history
 

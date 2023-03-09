@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
+#include <GLLib/GLMeshRender.h>
 
 class CModelDocument;
 class GPart;
@@ -35,6 +36,8 @@ public:
 	CGLModelScene(CModelDocument* doc);
 
 	void Render(CGLContext& rc) override;
+
+	GLMeshRender& GetMeshRenderer();
 
 private:
 	void RenderModel(CGLContext& rc);
@@ -91,4 +94,5 @@ private:
 
 private:
 	CModelDocument* m_doc;
+	GLMeshRender	m_renderer;
 };
