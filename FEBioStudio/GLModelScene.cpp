@@ -69,6 +69,8 @@ CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 
 }
 
+GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
+
 void CGLModelScene::Render(CGLContext& rc)
 {
 	if (m_doc == nullptr) return;
@@ -1209,15 +1211,12 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view; assert(glview);
-	if (glview == nullptr) return;
-
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	GModel& model = *pdoc->GetGModel();
 	int nitem = pdoc->GetItemMode();
 
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 	GLColor c = vs.m_mcol;
 	glColor3ub(c.r, c.g, c.b);
 
@@ -1260,10 +1259,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
-	if (glview == nullptr) return;
-
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
@@ -1381,7 +1377,7 @@ void CGLModelScene::RenderEdges(CGLContext& rc, GObject* po)
 	glDisable(GL_LIGHTING);
 	glColor3ub(0, 0, 255);
 
-	GLMeshRender& renderer = rc.m_view->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
@@ -1406,7 +1402,7 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 	glColor3ub(255, 255, 0);
 	vec3d r1, r2;
 
-	GLMeshRender& renderer = rc.m_view->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
@@ -1473,11 +1469,9 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	GLMeshRender& renderer = GetMeshRenderer();
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
-
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
@@ -1535,7 +1529,7 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 {
 	if (!po->IsVisible()) return;
 
-	GLMeshRender& renderer = rc.m_view->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	GMesh* pm = po->GetRenderMesh();
 	assert(pm);
@@ -1654,9 +1648,9 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 
 	CGLView* glview = rc.m_view;
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
@@ -1719,9 +1713,7 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 {
 	if (!po->IsVisible()) return;
 
-	CGLView* glview = rc.m_view;
-
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	glPushAttrib(GL_ENABLE_BIT);
 	{
@@ -1771,7 +1763,7 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 	if (pm == 0) return;
 	assert(pm);
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	// render non-selected faces
 	GPart* pgmat = 0; // the part that defines the material
@@ -1846,16 +1838,14 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 	int nitem = m_doc->GetItemMode();
 	int nsel = m_doc->GetSelectionMode();
 
-	CGLView* glview = rc.m_view;
-
-	GLViewSettings& vs = glview->GetViewSettings();
+	GLViewSettings& vs = rc.m_settings;
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
 	GMesh* pm = po->GetRenderMesh();
 	if (pm == 0) return;
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	GPart* pgmat = 0; // the part that defines the material
 	glPushAttrib(GL_ENABLE_BIT);
@@ -1899,10 +1889,10 @@ void CGLModelScene::RenderFENodes(CGLContext& rc, GObject* po)
 {
 	CGLView* glview = rc.m_view;
 
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	quatd q = rc.m_cam->GetOrientation();
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	// set the point size
 	float fsize = view.m_node_size;
@@ -2031,11 +2021,9 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	GLMeshRender& renderer = GetMeshRenderer();
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
-
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	FSModel& fem = *doc->GetFSModel();
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0)
@@ -2156,11 +2144,9 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	GLMeshRender& renderer = GetMeshRenderer();
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
-
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	FSModel& fem = *doc->GetFSModel();
 
 	GLColor col = po->GetColor();
@@ -2196,11 +2182,9 @@ void CGLModelScene::RenderSurfaceMeshEdges(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
+	GLMeshRender& renderer = GetMeshRenderer();
 
-	GLMeshRender& renderer = glview->GetMeshRenderer();
-
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	FSModel& fem = *doc->GetFSModel();
 	FSLineMesh* pm = po->GetEditableLineMesh();
 	assert(pm);
@@ -2228,10 +2212,9 @@ void CGLModelScene::RenderSurfaceMeshNodes(CGLContext& rc, GObject* po)
 	CGLDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	quatd q = pdoc->GetView()->GetCamera().GetOrientation();
 
 	// set the point size
@@ -2301,10 +2284,9 @@ void CGLModelScene::RenderFEEdges(CGLContext& rc, GObject* po)
 	CModelDocument* doc = m_doc;
 	if (doc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
-	GLViewSettings& view = glview->GetViewSettings();
+	GLViewSettings& view = rc.m_settings;
 	FSModel& fem = *doc->GetFSModel();
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
@@ -2332,20 +2314,15 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
-
-	FSModel& fem = *pdoc->GetFSModel();
-	FSMesh* pm = po->GetFEMesh();
-	assert(pm);
+	FSMesh* pm = po->GetFEMesh(); assert(pm);
 	if (pm == 0) return;
 
-	GLViewSettings& view = glview->GetViewSettings();
+	GLMeshRender& renderer = GetMeshRenderer();
+	GLViewSettings& view = rc.m_settings;
+
 	GLColor dif;
 
 	GLColor col = po->GetColor();
-
-	int i;
 
 	int nmatid = -1;
 	dif = po->GetColor();
@@ -2353,35 +2330,35 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	SetMatProps(0);
 	int glmode = 0;
 
-	Post::CColorMap& colorMap = glview->GetColorMap();
-
-	double vmin, vmax;
 	Mesh_Data& data = pm->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour)
-	{
-		data.GetValueRange(vmin, vmax); colorMap.SetRange((float)vmin, (float)vmax);
-
-		glEnable(GL_COLOR_MATERIAL);
-	}
 
 	// render the unselected faces
 	vector<int> selectedElements;
 	int NE = pm->Elements();
 	bool hasBeamElements = false;
-	GPart* pgmat = nullptr;
-	glBegin(GL_TRIANGLES);
-	for (i = 0; i < NE; ++i)
+	if (showContour)
 	{
-		FSElement& el = pm->Element(i);
-		if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+		// Color is determined by data and colormap
+		double vmin, vmax;
+		data.GetValueRange(vmin, vmax);
 
-		if (!el.IsSelected() && el.IsVisible())
+		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		colorMap.SetRange((float)vmin, (float)vmax);
+		
+		glEnable(GL_COLOR_MATERIAL);
+
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < NE; ++i)
 		{
-			GPart* pg = po->Part(el.m_gid);
-			if (pg->IsVisible())
+			FSElement& el = pm->Element(i);
+			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+			if (el.IsBeam()) hasBeamElements = true;
+
+			if (!el.IsSelected() && el.IsVisible())
 			{
-				if (showContour)
+				GPart* pg = po->Part(el.m_gid);
+				if (pg->IsVisible())
 				{
 					GLColor c[FSElement::MAX_NODES];
 					int ne = el.Nodes();
@@ -2393,33 +2370,29 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 							c[j] = GLColor(212, 212, 212);
 					}
 
-					switch (el.Type())
-					{
-					case FE_HEX8   : renderer.RenderHEX8(&el, pm, c); break;
-					case FE_HEX20  : renderer.RenderHEX20(&el, pm, true); break;
-					case FE_HEX27  : renderer.RenderHEX27(&el, pm, true); break;
-					case FE_PENTA6 : renderer.RenderPENTA6(&el, pm, c); break;
-					case FE_PENTA15: renderer.RenderPENTA15(&el, pm, true); break;
-					case FE_TET4   : renderer.RenderTET4(&el, pm, c); break;
-					case FE_TET5   : renderer.RenderTET4(&el, pm, c); break;
-					case FE_TET10  : renderer.RenderTET10(&el, pm, c); break;
-					case FE_TET15  : renderer.RenderTET15(&el, pm, true); break;
-					case FE_TET20  : renderer.RenderTET20(&el, pm, true); break;
-					case FE_QUAD4  : renderer.RenderQUAD(&el, pm, c); break;
-					case FE_QUAD8  : renderer.RenderQUAD8(&el, pm, true); break;
-					case FE_QUAD9  : renderer.RenderQUAD9(&el, pm, true); break;
-					case FE_TRI3   : renderer.RenderTRI3(&el, pm, c); break;
-					case FE_TRI6   : renderer.RenderTRI6(&el, pm, true); break;
-					case FE_PYRA5  : renderer.RenderPYRA5(&el, pm, true); break;
-					case FE_PYRA13 : renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2  : break;
-					case FE_BEAM3  : break;
-					default:
-						assert(false);
-					}
-
+					// render the element
+					renderer.RenderElement(&el, pm, c);
 				}
-				else
+			}
+		}
+		glEnd();
+	}
+	else
+	{
+		// color is determined by material
+		glDisable(GL_COLOR_MATERIAL);
+		GPart* pgmat = nullptr;
+		glBegin(GL_TRIANGLES);
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& el = pm->Element(i);
+			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+			if (el.IsBeam()) hasBeamElements = true;
+
+			if (!el.IsSelected() && el.IsVisible())
+			{
+				GPart* pg = po->Part(el.m_gid);
+				if (pg->IsVisible())
 				{
 					if (pg != pgmat)
 					{
@@ -2427,35 +2400,13 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 						pgmat = pg;
 					}
 
-					switch (el.Type())
-					{
-					case FE_HEX8   : renderer.RenderHEX8(&el, pm, true); break;
-					case FE_HEX20  : renderer.RenderHEX20(&el, pm, true); break;
-					case FE_HEX27  : renderer.RenderHEX27(&el, pm, true); break;
-					case FE_PENTA6 : renderer.RenderPENTA(&el, pm, true); break;
-					case FE_PENTA15: renderer.RenderPENTA15(&el, pm, true); break;
-					case FE_TET4   : renderer.RenderTET4(&el, pm, true); break;
-					case FE_TET5   : renderer.RenderTET4(&el, pm, true); break;
-					case FE_TET10  : renderer.RenderTET10(&el, pm, true); break;
-					case FE_TET15  : renderer.RenderTET15(&el, pm, true); break;
-					case FE_TET20  : renderer.RenderTET20(&el, pm, true); break;
-					case FE_QUAD4  : renderer.RenderQUAD(&el, pm, true); break;
-					case FE_QUAD8  : renderer.RenderQUAD8(&el, pm, true); break;
-					case FE_QUAD9  : renderer.RenderQUAD9(&el, pm, true); break;
-					case FE_TRI3   : renderer.RenderTRI3(&el, pm, true); break;
-					case FE_TRI6   : renderer.RenderTRI6(&el, pm, true); break;
-					case FE_PYRA5  : renderer.RenderPYRA5(&el, pm, true); break;
-					case FE_PYRA13 : renderer.RenderPYRA13(&el, pm, true); break;
-					case FE_BEAM2  : hasBeamElements = true; break;
-					case FE_BEAM3  : break;
-					default:
-						assert(false);
-					}
+					// render the element
+					renderer.RenderElement(&el, pm, true);
 				}
 			}
 		}
+		glEnd();
 	}
-	glEnd();
 
 	if (hasBeamElements)
 	{
@@ -2478,35 +2429,15 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		hasBeamElements = false;
 		int NE = (int)selectedElements.size();
 		glBegin(GL_TRIANGLES);
-		for (i = 0; i < NE; ++i)
+		for (int i = 0; i < NE; ++i)
 		{
 			FEElement_& el = pm->Element(selectedElements[i]);
 			if (el.IsVisible())
 			{
-				switch (el.Type())
-				{
-				case FE_HEX8   : renderer.RenderHEX8(&el, pm, false); break;
-				case FE_HEX20  : renderer.RenderHEX20(&el, pm, false); break;
-				case FE_HEX27  : renderer.RenderHEX27(&el, pm, false); break;
-				case FE_PENTA6 : renderer.RenderPENTA(&el, pm, false); break;
-				case FE_PENTA15: renderer.RenderPENTA15(&el, pm, true); break;
-				case FE_TET4   : renderer.RenderTET4(&el, pm, false); break;
-				case FE_TET5   : renderer.RenderTET4(&el, pm, false); break;
-				case FE_TET10  : renderer.RenderTET10(&el, pm, false); break;
-				case FE_TET15  : renderer.RenderTET15(&el, pm, false); break;
-				case FE_TET20  : renderer.RenderTET20(&el, pm, false); break;
-				case FE_QUAD4  : renderer.RenderQUAD(&el, pm, false); break;
-				case FE_QUAD8  : renderer.RenderQUAD8(&el, pm, false); break;
-				case FE_QUAD9  : renderer.RenderQUAD9(&el, pm, false); break;
-				case FE_TRI3   : renderer.RenderTRI3(&el, pm, false); break;
-				case FE_TRI6   : renderer.RenderTRI6(&el, pm, false); break;
-				case FE_PYRA5  : renderer.RenderPYRA5(&el, pm, false); break;
-				case FE_PYRA13 : renderer.RenderPYRA13(&el, pm, false); break;
-				case FE_BEAM2  : hasBeamElements = true;  break;
-				case FE_BEAM3  : break;
-				default:
-					assert(false);
-				}
+				renderer.RenderElement(&el, pm, false);
+
+				// check for beams
+				if (el.IsBeam()) hasBeamElements = true;
 			}
 		}
 		glEnd();
@@ -2518,7 +2449,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		glColor3ub(255, 255, 0);
 
 		glBegin(GL_LINES);
-		for (i = 0; i < NE; ++i)
+		for (int i = 0; i < NE; ++i)
 		{
 			FEElement_& el = pm->Element(selectedElements[i]);
 			int ne = el.Nodes();
@@ -2608,8 +2539,7 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == nullptr) return;
 
-	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
@@ -2638,8 +2568,7 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 //-----------------------------------------------------------------------------
 void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 {
-	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	if (po == nullptr) return;
 	FSMesh* pm = po->GetFEMesh();
@@ -2672,8 +2601,7 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 //-----------------------------------------------------------------------------
 void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 {
-	CGLView* glview = rc.m_view;
-	GLMeshRender& renderer = glview->GetMeshRenderer();
+	GLMeshRender& renderer = GetMeshRenderer();
 
 	if (po == nullptr) return;
 	FSMesh* pm = po->GetFEMesh();

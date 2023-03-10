@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include <PostLib/ImageSlicer.h>
 #include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
+#include "GLModelScene.h"
 #include <chrono>
 using namespace std::chrono;
 using dseconds = std::chrono::duration<double>;
@@ -5947,9 +5948,7 @@ void CGLView::RenderPlaneCut()
 	FSModel& fem = *doc->GetFSModel();
 	int MAT = fem.Materials();
 
-	GLMeshRender& mr = GetMeshRenderer();
-
-	bool oldFaceColorMode = mr.GetFaceColor();
+	GLMeshRender mr;
 
 	// render the unselected faces
 	glColor3ub(255, 255, 255);
@@ -5967,8 +5966,6 @@ void CGLView::RenderPlaneCut()
 	mr.SetFaceColor(false);
 	mr.RenderGLMesh(m_planeCut, 1);
 
-	mr.SetFaceColor(oldFaceColorMode);
-
 	if (GetViewSettings().m_bmesh)
 	{
 		glDisable(GL_LIGHTING);
@@ -5979,10 +5976,10 @@ void CGLView::RenderPlaneCut()
 		cam.LineDrawMode(true);
 		cam.Transform();
 		
-		GetMeshRenderer().RenderGLEdges(m_planeCut, 0);
+		mr.RenderGLEdges(m_planeCut, 0);
 		glDisable(GL_DEPTH_TEST);
 		glColor3ub(255, 255, 0);
-		GetMeshRenderer().RenderGLEdges(m_planeCut, 1);
+		mr.RenderGLEdges(m_planeCut, 1);
 
 		cam.LineDrawMode(false);
 		cam.Transform();

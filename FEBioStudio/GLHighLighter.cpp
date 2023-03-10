@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLHighlighter.h"
 #include "GLView.h"
+#include <GLLib/GLMeshRender.h>
 #include <GeomLib/GObject.h>
 
 GLHighlighter GLHighlighter::m_This;
@@ -115,7 +116,7 @@ bool GLHighlighter::IsTracking()
 	return m_This.m_btrack;
 }
 
-void drawEdge(CGLView* view, GEdge* edge, GLColor c)
+void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
 {
 	GObject* po = dynamic_cast<GObject*>(edge->Object());
 	if (po == 0) return;
@@ -126,7 +127,7 @@ void drawEdge(CGLView* view, GEdge* edge, GLColor c)
 	SetModelView(po);
 
 	GMesh& m = *po->GetRenderMesh();
-	view->GetMeshRenderer().RenderGLEdges(&m, edge->GetLocalID());
+	renderer.RenderGLEdges(&m, edge->GetLocalID());
 
 	GNode* n0 = po->Node(edge->m_node[0]);
 	GNode* n1 = po->Node(edge->m_node[1]);
@@ -161,16 +162,18 @@ void GLHighlighter::draw()
 
 	glLineWidth(2.0f);
 
+	GLMeshRender renderer;
+
     for (GItem* item : m_This.m_item)
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(item);
-		if (edge) drawEdge(view, edge, m_This.m_pickColor);
+		if (edge) drawEdge(renderer, edge, m_This.m_pickColor);
 	}
 
 	if (m_This.m_activeItem)
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(m_This.m_activeItem);
-		if (edge) drawEdge(view, edge, m_This.m_activeColor);
+		if (edge) drawEdge(renderer, edge, m_This.m_activeColor);
 	}
 	glLineWidth(line_old);
 

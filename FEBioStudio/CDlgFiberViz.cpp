@@ -129,7 +129,7 @@ void CDlgFiberViz::showEvent(QShowEvent* ev)
 	double w = view.m_fiber_width;
 	bool bhf = view.m_showHiddenFibers;
 	bool bsf = view.m_showSelectFibersOnly;
-	GLColor c = view.m_fibColor;
+	int c = view.m_fibColor;
 	int ls = view.m_fibLineStyle;
 
 	int n = double_to_int(v);

@@ -1841,10 +1841,10 @@ void CMainWindow::writeSettings()
 	settings.setValue("theme", ui->m_theme);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
-	settings.setValue("bgColor1", (int)vs.m_col1);
-	settings.setValue("bgColor2", (int)vs.m_col2);
-	settings.setValue("fgColor", (int)vs.m_fgcol);
-	settings.setValue("meshColor", (int)vs.m_mcol);
+	settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
+	settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
+	settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
+	settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
 	settings.setValue("bgStyle", vs.m_nbgstyle);
 	settings.setValue("lighting", vs.m_bLighting);
 	settings.setValue("shadows", vs.m_bShadows);
@@ -1854,7 +1854,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
-	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor);
+	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
@@ -1964,10 +1964,10 @@ void CMainWindow::readSettings()
 	ui->m_theme = settings.value("theme", 0).toInt();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
-	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1).toInt());
-	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2).toInt());
-	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol).toInt());
-	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol).toInt());
+	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
+	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
+	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
+	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
 	vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 	vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 	vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
@@ -1977,7 +1977,7 @@ void CMainWindow::readSettings()
 	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
-	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor).toInt());
+	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
 
 	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 	GLWidget::set_default_font(font);
