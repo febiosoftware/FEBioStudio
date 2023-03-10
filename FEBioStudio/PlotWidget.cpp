@@ -1936,6 +1936,7 @@ public:
 		lineType->addItem("Control points");
 		lineType->addItem("Approximation");
 		lineType->addItem("Smooth step");
+        lineType->addItem("Akima spline");
 
 		extendMode = new QComboBox; extendMode->setObjectName("extendMode");
 		extendMode->addItem("Constant");
