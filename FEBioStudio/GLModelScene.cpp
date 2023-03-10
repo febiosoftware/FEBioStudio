@@ -1346,23 +1346,14 @@ void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 	if (pm)
 	{
 		glColor3ub(255, 0, 0);
-		for (int i = 0; i < pm->Nodes(); ++i)
-		{
-			FSNode& n = pm->Node(i);
-			if (n.m_gid > -1)
+		m_renderer.RenderFENodes(*pm, [&](const FSNode& node) {
+			if (node.m_gid > -1)
 			{
-				GNode& gn = *po->Node(n.m_gid);
-				if (gn.IsSelected())
-				{
-					vec3d r = n.r;
-					glBegin(GL_POINTS);
-					{
-						glVertex3d(r.x, r.y, r.z);
-					}
-					glEnd();
-				}
+				GNode& gn = *po->Node(node.m_gid);
+				if (gn.IsSelected()) return true;
 			}
-		}
+			return false;
+			});
 	}
 #endif
 
@@ -1431,30 +1422,19 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 	}
 
 #ifdef _DEBUG
-	// Render FE edges onto of GMesh edges to make sure they are consistent
+	// Render FE edges onto GMesh edges to make sure they are consistent
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
 	{
 		glColor3ub(255, 0, 0);
-		for (int i = 0; i < pm->Edges(); ++i)
-		{
-			FSEdge& e = pm->Edge(i);
-			if (e.m_gid > -1)
+		m_renderer.RenderFEEdges(*pm, [&](const FSEdge& edge) {
+			if (edge.m_gid > -1)
 			{
-				GEdge& ge = *po->Edge(e.m_gid);
-				if (ge.IsSelected())
-				{
-					vec3d r0 = pm->Node(e.n[0]).r;
-					vec3d r1 = pm->Node(e.n[1]).r;
-					glBegin(GL_LINES);
-					{
-						glVertex3d(r0.x, r0.y, r0.z);
-						glVertex3d(r1.x, r1.y, r1.z);
-					}
-					glEnd();
-				}
+				GEdge* ge = po->Edge(edge.m_gid);
+				if (ge && ge->IsSelected()) return true;
 			}
-		}
+			return false;
+			});
 	}
 #endif
 	glPopAttrib();
@@ -2032,39 +2012,34 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 		return;
 	}
 
-	GLColor col = po->GetColor();
-	GLColor dif = col;
+	GLColor dif = po->GetColor();
 	SetMatProps(0);
 	glColor3ub(dif.r, dif.g, dif.b);
-	int nmatid = -1;
 
-	GPart* pgmat = nullptr;
-
-	double vmin, vmax;
-	Post::CColorMap map;
 	Mesh_Data& data = pm->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
-	if (showContour) { data.GetValueRange(vmin, vmax); map.SetRange((float)vmin, (float)vmax); }
 
 	// render the unselected faces
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i < pm->Faces(); i++)
+	if (showContour)
 	{
-		FSFace& face = pm->Face(i);
+		Post::CColorMap map;
+		double vmin, vmax;
+		data.GetValueRange(vmin, vmax); 
+		map.SetRange((float)vmin, (float)vmax);
 
-		FSElement& el = pm->Element(face.m_elem[0].eid);
-		GPart* pg = po->Part(el.m_gid);
-		if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
-		{
-			FSElement& el1 = pm->Element(face.m_elem[1].eid);
-			pg = po->Part(el1.m_gid);
-		}
+		renderer.RenderFEFaces(pm, [&](const FSFace& face, GLColor* c) {
 
-		if (!face.IsSelected() && face.IsVisible())
-		{
-			if (pg && pg->IsVisible())
+			if (!face.IsSelected() && face.IsVisible())
 			{
-				if (showContour)
+				FSElement& el = pm->Element(face.m_elem[0].eid);
+				GPart* pg = po->Part(el.m_gid);
+				if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
+				{
+					FSElement& el1 = pm->Element(face.m_elem[1].eid);
+					pg = po->Part(el1.m_gid);
+				}
+
+				if (pg && pg->IsVisible())
 				{
 					if (data.GetElementDataTag(face.m_elem[0].eid) > 0)
 					{
@@ -2072,24 +2047,43 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 						int nn = el.GetLocalFaceIndices(face.m_elem[0].lid, fnl);
 						assert(nn == face.Nodes());
 
-						GLColor c[FSFace::MAX_NODES];
 						int nf = face.Nodes();
 						for (int j = 0; j < nf; ++j)
 							c[j] = map.map(data.GetElementValue(face.m_elem[0].eid, fnl[j]));
 
 						// Render the face
-						renderer.RenderFace(face, pm, c, 1);
+						return true;
 					}
 					else
 					{
-						dif = GLColor(212, 212, 212);
-						glColor3ub(dif.r, dif.g, dif.b);
+						GLColor col(212, 212, 212);
+						int nf = face.Nodes();
+						for (int j = 0; j < nf; ++j) c[j] = col;
 
 						// Render the face
-						renderer.RenderFEFace(face, pm);
+						return true;
 					}
 				}
-				else
+			}
+			return false;
+			});
+	}
+	else
+	{
+		GPart* pgmat = nullptr;
+
+		renderer.RenderFEFaces(pm, [&](const FSFace& face) {
+			FSElement& el = pm->Element(face.m_elem[0].eid);
+			GPart* pg = po->Part(el.m_gid);
+			if ((pg->IsVisible() == false) && (face.m_elem[1].eid != -1))
+			{
+				FSElement& el1 = pm->Element(face.m_elem[1].eid);
+				pg = po->Part(el1.m_gid);
+			}
+
+			if (!face.IsSelected() && face.IsVisible())
+			{
+				if (pg && pg->IsVisible())
 				{
 					if (pg != pgmat)
 					{
@@ -2098,12 +2092,13 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 					}
 
 					// Render the face
-					renderer.RenderFEFace(face, pm);
+					return true;
 				}
 			}
-		}
+
+			return false;
+			});
 	}
-	glEnd();
 
 	// render beam elements
 	RenderAllBeamElements(rc, po);
@@ -2115,13 +2110,13 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_STIPPLE);
 	glColor3ub(255, 0, 0);
-	renderer.RenderSelectedFEFaces(pm);
+	renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
 
 	// render the selected face outline
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glColor3ub(255, 255, 0);
-	renderer.RenderSelectedFEFacesOutline(pm);
+	renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
 
 	glPopAttrib();
 }
@@ -2155,7 +2150,9 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 
 	// render the unselected faces
 	// Note that we do not render internal faces
-	renderer.RenderUnselectedFEFaces(surfaceMesh);
+	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
+		return (!face.IsSelected() && face.IsVisible());
+		});
 
 	// render the selected faces
 	// override some settings
@@ -2165,13 +2162,13 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 	glDisable(GL_LIGHTING);
 	glEnable(GL_POLYGON_STIPPLE);
 	glColor3ub(255, 128, 0);
-	renderer.RenderSelectedFEFaces(surfaceMesh);
+	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
 
 	// render the selected face outline
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 	glColor3ub(255, 255, 0);
-	renderer.RenderSelectedFEFacesOutline(surfaceMesh);
+	renderer.RenderFEFacesOutline(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
 
 	glPopAttrib();
 }
@@ -2332,9 +2329,11 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 
 	Mesh_Data& data = pm->GetMeshData();
 	bool showContour = (view.m_bcontour && data.IsValid());
+	
+	for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
+	vector<int> selectedElements;
 
 	// render the unselected faces
-	vector<int> selectedElements;
 	int NE = pm->Elements();
 	bool hasBeamElements = false;
 	if (showContour)
@@ -2348,44 +2347,41 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		
 		glEnable(GL_COLOR_MATERIAL);
 
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < NE; ++i)
-		{
-			FSElement& el = pm->Element(i);
-			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
-			if (el.IsBeam()) hasBeamElements = true;
+		renderer.RenderFEElements(*pm, [&](const FEElement_& el) {
+				int i = el.m_ntag;
+				if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+				if (el.IsBeam()) hasBeamElements = true;
 
-			if (!el.IsSelected() && el.IsVisible())
-			{
-				GPart* pg = po->Part(el.m_gid);
-				if (pg->IsVisible())
+				if (!el.IsSelected() && el.IsVisible())
 				{
-					GLColor c[FSElement::MAX_NODES];
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j)
+					GPart* pg = po->Part(el.m_gid);
+					if (pg->IsVisible())
 					{
-						if (data.GetElementDataTag(i) > 0)
-							c[j] = colorMap.map(data.GetElementValue(i, j));
-						else
-							c[j] = GLColor(212, 212, 212);
-					}
+						GLColor c[FSElement::MAX_NODES];
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							if (data.GetElementDataTag(i) > 0)
+								c[j] = colorMap.map(data.GetElementValue(i, j));
+							else
+								c[j] = GLColor(212, 212, 212);
+						}
 
-					// render the element
-					renderer.RenderElement(&el, pm, c);
+						// render the element
+						return true;
+					}
 				}
-			}
-		}
-		glEnd();
+				return false;
+			});
 	}
 	else
 	{
 		// color is determined by material
 		glDisable(GL_COLOR_MATERIAL);
 		GPart* pgmat = nullptr;
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < NE; ++i)
-		{
-			FSElement& el = pm->Element(i);
+
+		renderer.RenderFEElements(*pm, [&](const FEElement_& el) {
+			int i = el.m_ntag;
 			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 			if (el.IsBeam()) hasBeamElements = true;
 
@@ -2401,11 +2397,11 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 					}
 
 					// render the element
-					renderer.RenderElement(&el, pm, true);
+					return true;
 				}
 			}
-		}
-		glEnd();
+			return false;
+			});
 	}
 
 	if (hasBeamElements)
@@ -2427,20 +2423,11 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 	if (selectedElements.empty() == false)
 	{
 		hasBeamElements = false;
-		int NE = (int)selectedElements.size();
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < NE; ++i)
-		{
-			FEElement_& el = pm->Element(selectedElements[i]);
-			if (el.IsVisible())
-			{
-				renderer.RenderElement(&el, pm, false);
-
+		renderer.RenderFEElements(*pm, selectedElements, [&](const FEElement_& el) {
 				// check for beams
 				if (el.IsBeam()) hasBeamElements = true;
-			}
-		}
-		glEnd();
+				return true;
+			});
 
 		// render a yellow highlight around selected elements
 		glPushAttrib(GL_ENABLE_BIT);
@@ -2448,77 +2435,11 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		glDisable(GL_LIGHTING);
 		glColor3ub(255, 255, 0);
 
-		glBegin(GL_LINES);
-		for (int i = 0; i < NE; ++i)
+		for (int i = 0; i < selectedElements.size(); ++i)
 		{
 			FEElement_& el = pm->Element(selectedElements[i]);
-			int ne = el.Nodes();
-			if (el.IsVisible())
-			{
-				switch (el.Type())
-				{
-				case FE_HEX8:
-				case FE_HEX20:
-				case FE_HEX27:
-					for (int j = 0; j < 12; ++j)
-					{
-						int n0 = el.m_node[ET_HEX[j][0]];
-						int n1 = el.m_node[ET_HEX[j][1]];
-
-						vec3d r0 = pm->Node(n0).pos();
-						vec3d r1 = pm->Node(n1).pos();
-
-						glx::vertex3d(r0);
-						glx::vertex3d(r1);
-					}
-					break;
-				case FE_TET4:
-				case FE_TET10:
-				case FE_TET15:
-					for (int j = 0; j < 6; ++j)
-					{
-						int n0 = el.m_node[ET_TET[j][0]];
-						int n1 = el.m_node[ET_TET[j][1]];
-
-						vec3d r0 = pm->Node(n0).pos();
-						vec3d r1 = pm->Node(n1).pos();
-
-						glx::vertex3d(r0);
-						glx::vertex3d(r1);
-					}
-					break;
-				case FE_PYRA5:
-				case FE_PYRA13:
-					for (int j = 0; j < 8; ++j)
-					{
-						int n0 = el.m_node[ET_PYR[j][0]];
-						int n1 = el.m_node[ET_PYR[j][1]];
-
-						vec3d r0 = pm->Node(n0).pos();
-						vec3d r1 = pm->Node(n1).pos();
-
-						glx::vertex3d(r0);
-						glx::vertex3d(r1);
-					}
-					break;
-				case FE_TRI3:
-				case FE_QUAD4:
-					for (int i = 0; i < ne; ++i)
-					{
-						int n0 = el.m_node[i];
-						int n1 = el.m_node[(i + 1) % ne];
-
-						vec3d r0 = pm->Node(n0).pos();
-						vec3d r1 = pm->Node(n1).pos();
-
-						glx::vertex3d(r0);
-						glx::vertex3d(r1);
-					}
-					break;
-				}
-			}
+			renderer.RenderElementOutline(el, pm, 1);
 		}
-		glEnd();
 
 		glPopAttrib();
 
@@ -2640,262 +2561,9 @@ void CGLModelScene::RenderMeshLines(CGLContext& rc, GObject* po)
 	FSMesh* pm = po->GetFEMesh();
 	if (pm == 0) return;
 
-	vector<vec3d> points; points.reserve(65536);
-
-	// loop over all elements
-	for (int i = 0; i < pm->Elements(); i++)
-	{
-		const FEElement_& e = pm->ElementRef(i);
-		if (e.IsVisible() && (po->Part(e.m_gid)->IsVisible()))
-		{
-			switch (e.Type())
-			{
-			case FE_HEX8:
-			{
-				for (int j = 0; j < 6; j++)
-				{
-					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-					if ((pen == 0) || (!pen->IsVisible()))
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTHEX8[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTHEX8[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTHEX8[j][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTHEX8[j][3]]).r;
-
-						points.push_back(r1); points.push_back(r2);
-						points.push_back(r2); points.push_back(r3);
-						points.push_back(r3); points.push_back(r4);
-						points.push_back(r4); points.push_back(r1);
-					}
-				}
-			}
-			break;
-			case FE_HEX20:
-			case FE_HEX27:
-			{
-				for (int j = 0; j < 6; j++)
-				{
-					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-					if ((pen == 0) || (!pen->IsVisible()))
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTHEX20[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTHEX20[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTHEX20[j][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTHEX20[j][3]]).r;
-						const vec3d& r5 = pm->Node(e.m_node[FTHEX20[j][4]]).r;
-						const vec3d& r6 = pm->Node(e.m_node[FTHEX20[j][5]]).r;
-						const vec3d& r7 = pm->Node(e.m_node[FTHEX20[j][6]]).r;
-						const vec3d& r8 = pm->Node(e.m_node[FTHEX20[j][7]]).r;
-
-						points.push_back(r1); points.push_back(r5);
-						points.push_back(r5); points.push_back(r2);
-						points.push_back(r2); points.push_back(r6);
-						points.push_back(r6); points.push_back(r3);
-						points.push_back(r3); points.push_back(r7);
-						points.push_back(r7); points.push_back(r4);
-						points.push_back(r4); points.push_back(r8);
-						points.push_back(r8); points.push_back(r1);
-					}
-				}
-			}
-			break;
-			case FE_PENTA6:
-			case FE_PENTA15:
-			{
-				for (int j = 0; j < 3; j++)
-				{
-					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-					if ((pen == 0) || (!pen->IsVisible()))
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
-
-						points.push_back(r1); points.push_back(r2);
-						points.push_back(r2); points.push_back(r3);
-						points.push_back(r3); points.push_back(r4);
-						points.push_back(r4); points.push_back(r1);
-					}
-				}
-
-				for (int j = 3; j < 5; j++)
-				{
-					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-
-					if ((pen == 0) || (!pen->IsVisible()))
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
-
-						points.push_back(r1); points.push_back(r2);
-						points.push_back(r2); points.push_back(r3);
-						points.push_back(r3); points.push_back(r1);
-					}
-				}
-			}
-			break;
-			case FE_PYRA5:
-			{
-				for (int j = 0; j < 4; j++)
-				{
-					const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
-					const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
-					const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
-
-					points.push_back(r1); points.push_back(r2);
-					points.push_back(r2); points.push_back(r3);
-					points.push_back(r3); points.push_back(r1);
-				}
-
-				glBegin(GL_LINE_LOOP);
-				{
-					const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[4][0]]).r;
-					const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[4][1]]).r;
-					const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
-					const vec3d& r4 = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
-
-					points.push_back(r1); points.push_back(r2);
-					points.push_back(r2); points.push_back(r3);
-					points.push_back(r3); points.push_back(r4);
-					points.push_back(r4); points.push_back(r1);
-				}
-				glEnd();
-
-			}
-			break;
-
-			case FE_PYRA13:
-			{
-				for (int j = 0; j < 4; j++)
-				{
-					const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
-					const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
-					const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
-					const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[j][3]]).r;
-					const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[j][4]]).r;
-					const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[j][5]]).r;
-
-					points.push_back(r1); points.push_back(r4);
-					points.push_back(r4); points.push_back(r2);
-					points.push_back(r2); points.push_back(r5);
-					points.push_back(r5); points.push_back(r3);
-					points.push_back(r3); points.push_back(r6);
-				}
-
-				const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
-				const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
-				const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
-				const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
-				const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[4][4]]).r;
-				const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[4][5]]).r;
-				const vec3d& r7 = pm->Node(e.m_node[FTPYRA13[4][6]]).r;
-				const vec3d& r8 = pm->Node(e.m_node[FTPYRA13[4][7]]).r;
-
-				points.push_back(r1); points.push_back(r5);
-				points.push_back(r5); points.push_back(r2);
-				points.push_back(r2); points.push_back(r6);
-				points.push_back(r6); points.push_back(r3);
-				points.push_back(r3); points.push_back(r7);
-				points.push_back(r7); points.push_back(r4);
-				points.push_back(r4); points.push_back(r8);
-				points.push_back(r8); points.push_back(r1);
-			}
-			break;
-
-			case FE_TET4:
-			case FE_TET5:
-			case FE_TET20:
-			{
-				for (int j = 0; j < 4; j++)
-				{
-					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-					if ((pen == 0) || (!pen->IsVisible()))
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTTET[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTTET[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTTET[j][2]]).r;
-
-						points.push_back(r1); points.push_back(r2);
-						points.push_back(r2); points.push_back(r3);
-						points.push_back(r3); points.push_back(r1);
-					}
-				}
-			}
-			break;
-			case FE_TET10:
-			case FE_TET15:
-			{
-				for (int j = 0; j < 4; j++)
-				{
-					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
-					if ((pen == 0) || (!pen->IsVisible()))
-					{
-						const vec3d& r1 = pm->Node(e.m_node[FTTET10[j][0]]).r;
-						const vec3d& r2 = pm->Node(e.m_node[FTTET10[j][1]]).r;
-						const vec3d& r3 = pm->Node(e.m_node[FTTET10[j][2]]).r;
-						const vec3d& r4 = pm->Node(e.m_node[FTTET10[j][3]]).r;
-						const vec3d& r5 = pm->Node(e.m_node[FTTET10[j][4]]).r;
-						const vec3d& r6 = pm->Node(e.m_node[FTTET10[j][5]]).r;
-
-						points.push_back(r1); points.push_back(r4);
-						points.push_back(r4); points.push_back(r2);
-						points.push_back(r2); points.push_back(r5);
-						points.push_back(r5); points.push_back(r3);
-						points.push_back(r3); points.push_back(r6);
-						points.push_back(r6); points.push_back(r1);
-					}
-				}
-			}
-			break;
-			case FE_QUAD4:
-			case FE_QUAD8:
-			case FE_QUAD9:
-			{
-				const vec3d& r1 = pm->Node(e.m_node[0]).r;
-				const vec3d& r2 = pm->Node(e.m_node[1]).r;
-				const vec3d& r3 = pm->Node(e.m_node[2]).r;
-				const vec3d& r4 = pm->Node(e.m_node[3]).r;
-
-				points.push_back(r1); points.push_back(r2);
-				points.push_back(r2); points.push_back(r3);
-				points.push_back(r3); points.push_back(r4);
-				points.push_back(r4); points.push_back(r1);
-			}
-			break;
-			case FE_TRI3:
-			case FE_TRI6:
-			{
-				const vec3d& r1 = pm->Node(e.m_node[0]).r;
-				const vec3d& r2 = pm->Node(e.m_node[1]).r;
-				const vec3d& r3 = pm->Node(e.m_node[2]).r;
-
-				points.push_back(r1); points.push_back(r2);
-				points.push_back(r2); points.push_back(r3);
-				points.push_back(r3); points.push_back(r1);
-			}
-			break;
-			} // switch
-		} // if
-	} // for
-	if (points.empty()) return;
-
-	// build the line mesh
-	GLLineMesh mesh;
-	mesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
-	mesh.BeginMesh();
-	for (auto& v : points) mesh.AddVertex(v);
-	mesh.EndMesh();
-
-	// render the mesh
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_LIGHTING);
-	mesh.Render();
-	glPopAttrib();
+	m_renderer.RenderMeshLines(*pm, [=](const FEElement_& el) {
+		return (el.IsVisible() && (po->Part(el.m_gid)->IsVisible()));
+		});
 }
 
 void CGLModelScene::RenderNormals(CGLContext& rc, GObject* po, double scale)

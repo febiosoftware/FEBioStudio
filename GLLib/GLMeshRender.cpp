@@ -63,6 +63,43 @@ void GLMeshRender::SetFaceColor(bool b) { m_bfaceColor = b; }
 bool GLMeshRender::GetFaceColor() const { return m_bfaceColor; }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList)
+{
+	int NE = (int)elemList.size();
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i < NE; ++i)
+	{
+		FEElement_& el = mesh.Element(elemList[i]);
+		RenderElement(&el, &mesh, false);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el)> f)
+{
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i<mesh.Elements(); ++i)
+	{
+		FEElement_& el = mesh.Element(i);
+		if (f(el)) RenderElement(&el, &mesh, false);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f)
+{
+	glBegin(GL_TRIANGLES);
+	for (size_t i : elemList)
+	{
+		FEElement_& el = mesh.Element(i);
+		if (f(el)) RenderElement(&el, &mesh, false);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 {
 	switch (pe->Type())
@@ -2065,6 +2102,44 @@ void GLMeshRender::RenderFENodes(FSLineMesh* mesh)
 }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNode& node)> f)
+{
+	GLfloat old_size;
+	glGetFloatv(GL_POINT_SIZE, &old_size);
+	glPointSize(m_pointSize);
+	glBegin(GL_POINTS);
+	{
+		for (int i = 0; i < mesh.Nodes(); ++i)
+		{
+			FSNode& node = mesh.Node(i);
+			if (f(node)) glx::vertex3d(node.r);
+		}
+	}
+	glEnd();
+	glPointSize(old_size);
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f)
+{
+	glBegin(GL_LINES);
+	{
+		for (int i = 0; i < mesh.Edges(); ++i)
+		{
+			FSEdge& e = mesh.Edge(i);
+			if (f(e))
+			{
+				vec3d r0 = mesh.Node(e.n[0]).r;
+				vec3d r1 = mesh.Node(e.n[1]).r;
+				glVertex3d(r0.x, r0.y, r0.z);
+				glVertex3d(r1.x, r1.y, r1.z);
+			}
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderSelectedFEEdges(FSLineMesh* pm)
 {
 	glBegin(GL_LINES);
@@ -2179,17 +2254,347 @@ void GLMeshRender::RenderMeshLines(FSMeshBase* pm)
 	glPopAttrib();
 }
 
+void GLMeshRender::RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f)
+{
+	vector<vec3d> points; points.reserve(65536);
+	FSMesh* pm = &mesh;
+	// loop over all elements
+	for (int i = 0; i < mesh.Elements(); i++)
+	{
+		const FEElement_& e = mesh.ElementRef(i);
+		if (f(e))
+		{
+			switch (e.Type())
+			{
+			case FE_HEX8:
+			{
+				for (int j = 0; j < 6; j++)
+				{
+					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : mesh.ElementPtr(e.m_nbr[j]));
+
+					if ((pen == 0) || (!pen->IsVisible()))
+					{
+						const vec3d& r1 = pm->Node(e.m_node[FTHEX8[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTHEX8[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTHEX8[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTHEX8[j][3]]).r;
+
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r4);
+						points.push_back(r4); points.push_back(r1);
+					}
+				}
+			}
+			break;
+			case FE_HEX20:
+			case FE_HEX27:
+			{
+				for (int j = 0; j < 6; j++)
+				{
+					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+
+					if ((pen == 0) || (!pen->IsVisible()))
+					{
+						const vec3d& r1 = pm->Node(e.m_node[FTHEX20[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTHEX20[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTHEX20[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTHEX20[j][3]]).r;
+						const vec3d& r5 = pm->Node(e.m_node[FTHEX20[j][4]]).r;
+						const vec3d& r6 = pm->Node(e.m_node[FTHEX20[j][5]]).r;
+						const vec3d& r7 = pm->Node(e.m_node[FTHEX20[j][6]]).r;
+						const vec3d& r8 = pm->Node(e.m_node[FTHEX20[j][7]]).r;
+
+						points.push_back(r1); points.push_back(r5);
+						points.push_back(r5); points.push_back(r2);
+						points.push_back(r2); points.push_back(r6);
+						points.push_back(r6); points.push_back(r3);
+						points.push_back(r3); points.push_back(r7);
+						points.push_back(r7); points.push_back(r4);
+						points.push_back(r4); points.push_back(r8);
+						points.push_back(r8); points.push_back(r1);
+					}
+				}
+			}
+			break;
+			case FE_PENTA6:
+			case FE_PENTA15:
+			{
+				for (int j = 0; j < 3; j++)
+				{
+					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+
+					if ((pen == 0) || (!pen->IsVisible()))
+					{
+						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTPENTA[j][3]]).r;
+
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r4);
+						points.push_back(r4); points.push_back(r1);
+					}
+				}
+
+				for (int j = 3; j < 5; j++)
+				{
+					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+
+					if ((pen == 0) || (!pen->IsVisible()))
+					{
+						const vec3d& r1 = pm->Node(e.m_node[FTPENTA[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTPENTA[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTPENTA[j][2]]).r;
+
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r1);
+					}
+				}
+			}
+			break;
+			case FE_PYRA5:
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[j][0]]).r;
+					const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[j][1]]).r;
+					const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[j][2]]).r;
+
+					points.push_back(r1); points.push_back(r2);
+					points.push_back(r2); points.push_back(r3);
+					points.push_back(r3); points.push_back(r1);
+				}
+
+				glBegin(GL_LINE_LOOP);
+				{
+					const vec3d& r1 = pm->Node(e.m_node[FTPYRA5[4][0]]).r;
+					const vec3d& r2 = pm->Node(e.m_node[FTPYRA5[4][1]]).r;
+					const vec3d& r3 = pm->Node(e.m_node[FTPYRA5[4][2]]).r;
+					const vec3d& r4 = pm->Node(e.m_node[FTPYRA5[4][3]]).r;
+
+					points.push_back(r1); points.push_back(r2);
+					points.push_back(r2); points.push_back(r3);
+					points.push_back(r3); points.push_back(r4);
+					points.push_back(r4); points.push_back(r1);
+				}
+				glEnd();
+
+			}
+			break;
+
+			case FE_PYRA13:
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[j][0]]).r;
+					const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[j][1]]).r;
+					const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[j][2]]).r;
+					const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[j][3]]).r;
+					const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[j][4]]).r;
+					const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[j][5]]).r;
+
+					points.push_back(r1); points.push_back(r4);
+					points.push_back(r4); points.push_back(r2);
+					points.push_back(r2); points.push_back(r5);
+					points.push_back(r5); points.push_back(r3);
+					points.push_back(r3); points.push_back(r6);
+				}
+
+				const vec3d& r1 = pm->Node(e.m_node[FTPYRA13[4][0]]).r;
+				const vec3d& r2 = pm->Node(e.m_node[FTPYRA13[4][1]]).r;
+				const vec3d& r3 = pm->Node(e.m_node[FTPYRA13[4][2]]).r;
+				const vec3d& r4 = pm->Node(e.m_node[FTPYRA13[4][3]]).r;
+				const vec3d& r5 = pm->Node(e.m_node[FTPYRA13[4][4]]).r;
+				const vec3d& r6 = pm->Node(e.m_node[FTPYRA13[4][5]]).r;
+				const vec3d& r7 = pm->Node(e.m_node[FTPYRA13[4][6]]).r;
+				const vec3d& r8 = pm->Node(e.m_node[FTPYRA13[4][7]]).r;
+
+				points.push_back(r1); points.push_back(r5);
+				points.push_back(r5); points.push_back(r2);
+				points.push_back(r2); points.push_back(r6);
+				points.push_back(r6); points.push_back(r3);
+				points.push_back(r3); points.push_back(r7);
+				points.push_back(r7); points.push_back(r4);
+				points.push_back(r4); points.push_back(r8);
+				points.push_back(r8); points.push_back(r1);
+			}
+			break;
+
+			case FE_TET4:
+			case FE_TET5:
+			case FE_TET20:
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+					if ((pen == 0) || (!pen->IsVisible()))
+					{
+						const vec3d& r1 = pm->Node(e.m_node[FTTET[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTTET[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTTET[j][2]]).r;
+
+						points.push_back(r1); points.push_back(r2);
+						points.push_back(r2); points.push_back(r3);
+						points.push_back(r3); points.push_back(r1);
+					}
+				}
+			}
+			break;
+			case FE_TET10:
+			case FE_TET15:
+			{
+				for (int j = 0; j < 4; j++)
+				{
+					FEElement_* pen = (e.m_nbr[j] == -1 ? 0 : pm->ElementPtr(e.m_nbr[j]));
+					if ((pen == 0) || (!pen->IsVisible()))
+					{
+						const vec3d& r1 = pm->Node(e.m_node[FTTET10[j][0]]).r;
+						const vec3d& r2 = pm->Node(e.m_node[FTTET10[j][1]]).r;
+						const vec3d& r3 = pm->Node(e.m_node[FTTET10[j][2]]).r;
+						const vec3d& r4 = pm->Node(e.m_node[FTTET10[j][3]]).r;
+						const vec3d& r5 = pm->Node(e.m_node[FTTET10[j][4]]).r;
+						const vec3d& r6 = pm->Node(e.m_node[FTTET10[j][5]]).r;
+
+						points.push_back(r1); points.push_back(r4);
+						points.push_back(r4); points.push_back(r2);
+						points.push_back(r2); points.push_back(r5);
+						points.push_back(r5); points.push_back(r3);
+						points.push_back(r3); points.push_back(r6);
+						points.push_back(r6); points.push_back(r1);
+					}
+				}
+			}
+			break;
+			case FE_QUAD4:
+			case FE_QUAD8:
+			case FE_QUAD9:
+			{
+				const vec3d& r1 = pm->Node(e.m_node[0]).r;
+				const vec3d& r2 = pm->Node(e.m_node[1]).r;
+				const vec3d& r3 = pm->Node(e.m_node[2]).r;
+				const vec3d& r4 = pm->Node(e.m_node[3]).r;
+
+				points.push_back(r1); points.push_back(r2);
+				points.push_back(r2); points.push_back(r3);
+				points.push_back(r3); points.push_back(r4);
+				points.push_back(r4); points.push_back(r1);
+			}
+			break;
+			case FE_TRI3:
+			case FE_TRI6:
+			{
+				const vec3d& r1 = pm->Node(e.m_node[0]).r;
+				const vec3d& r2 = pm->Node(e.m_node[1]).r;
+				const vec3d& r3 = pm->Node(e.m_node[2]).r;
+
+				points.push_back(r1); points.push_back(r2);
+				points.push_back(r2); points.push_back(r3);
+				points.push_back(r3); points.push_back(r1);
+			}
+			break;
+			} // switch
+		} // if
+	} // for
+	if (points.empty()) return;
+
+	// build the line mesh
+	GLLineMesh lineMesh;
+	lineMesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
+	lineMesh.BeginMesh();
+	for (auto& v : points) lineMesh.AddVertex(v);
+	lineMesh.EndMesh();
+
+	// render the mesh
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	lineMesh.Render();
+	glPopAttrib();
+}
+
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderSelectedFEFaces(FSMeshBase* pm)
+void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList)
+{
+	if (faceList.empty()) return;
+	glBegin(GL_TRIANGLES);
+	{
+		for (size_t i : faceList)
+		{
+			FSFace& face = pm->Face(i);
+			RenderFEFace(face, pm);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFaces(FSMeshBase* pm, std::function<bool(const FSFace& face)> f)
 {
 	glBegin(GL_TRIANGLES);
 	{
-		for (int i = 0; i < pm->Faces(); i++)
+		size_t faces = pm->Faces();
+		for (size_t i = 0; i<faces; ++i)
 		{
 			FSFace& face = pm->Face(i);
-			if (face.IsSelected())
+			if (f(face)) RenderFEFace(face, pm);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList, std::function<bool(const FSFace& face)> f)
+{
+	if (faceList.empty()) return;
+	glBegin(GL_TRIANGLES);
+	{
+		for (size_t i : faceList)
+		{
+			FSFace& face = pm->Face(i);
+			if (f(face)) RenderFEFace(face, pm);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f)
+{
+	GLColor c[FSFace::MAX_NODES];
+	glBegin(GL_TRIANGLES);
+	{
+		size_t faces = pm->Faces();
+		for (size_t i = 0; i < faces; ++i)
+		{
+			FSFace& face = pm->Face(i);
+			if (f(face, c)) RenderFace(face, pm, c, 1);
+		}
+	}
+	glEnd();
+
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList)
+{
+	glBegin(GL_LINES);
+	for (size_t i : faceList)
+	{
+		FSFace& face = pm->Face(i);
+		int ne = face.Edges();
+		for (int j = 0; j < ne; ++j)
+		{
+			FSFace* pf = (face.m_nbr[j] >= 0 ? pm->FacePtr(face.m_nbr[j]) : 0);
+			if ((pf == 0) || !pf->IsSelected() || !pf->IsVisible())
 			{
-				RenderFEFace(face, pm);
+				int jp1 = (j + 1) % ne;
+				const vec3d& r1 = pm->Node(face.n[j]).r;
+				const vec3d& r2 = pm->Node(face.n[jp1]).r;
+
+				glVertex3d(r1.x, r1.y, r1.z);
+				glVertex3d(r2.x, r2.y, r2.z);
 			}
 		}
 	}
@@ -2197,33 +2602,15 @@ void GLMeshRender::RenderSelectedFEFaces(FSMeshBase* pm)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderUnselectedFEFaces(FSMeshBase* pm)
-{
-	glBegin(GL_TRIANGLES);
-	{
-		for (int i = 0; i < pm->Faces(); i++)
-		{
-			FSFace& face = pm->Face(i);
-			if (!face.IsSelected() && face.IsVisible())
-			{
-				RenderFEFace(face, pm);
-			}
-		}
-	}
-	glEnd();
-}
-
-//-----------------------------------------------------------------------------
-void GLMeshRender::RenderSelectedFEFacesOutline(FSMeshBase* pm)
+void GLMeshRender::RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f)
 {
 	glBegin(GL_LINES);
 	for (int i = 0; i < pm->Faces(); i++)
 	{
 		FSFace& face = pm->Face(i);
-		if (face.IsSelected())
+		int ne = face.Edges();
+		if (f(face))
 		{
-			int fn = face.Nodes();
-			int ne = face.Edges();
 			for (int j = 0; j < ne; ++j)
 			{
 				FSFace* pf = (face.m_nbr[j] >= 0 ? pm->FacePtr(face.m_nbr[j]) : 0);

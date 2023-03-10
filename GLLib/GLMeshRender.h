@@ -26,9 +26,11 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
+#include <functional>
 #include "GLMesh.h"
 
 class FEElement_;
+class FSNode;
 class FSEdge;
 class FSFace;
 class FSLineMesh;
@@ -36,6 +38,7 @@ class FSCoreMesh;
 class FSMeshBase;
 class GMesh;
 class CGLContext;
+class FSMesh;
 
 class GLMeshRender
 {
@@ -62,21 +65,36 @@ public:
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);
+	void RenderFENodes(FSLineMesh& mesh, std::function<bool(const FSNode& node)> f);
+
+public:
+	void RenderFEEdges(FSLineMesh& mesh, std::function<bool(const FSEdge& edge)> f);
 
 	void RenderSelectedFEEdges(FSLineMesh* pm);
 	void RenderUnselectedFEEdges(FSLineMesh* pm);
 
 	void RenderMeshLines(FSMeshBase* pm);
-	void RenderSelectedFEFaces(FSMeshBase* pm);
-	void RenderUnselectedFEFaces(FSMeshBase* pm);
-	void RenderSelectedFEFacesOutline(FSMeshBase* pm);
+	void RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
+
+	void RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList);
+	void RenderFEFaces(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
+	void RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList, std::function<bool(const FSFace& face)> f);
+
+	void RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
+
+	void RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList);
+	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
 
 	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndivs);
 
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);
 
 public:
-	// drawing routines for elements
+	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList);
+	void RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
+	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f);
+
+private:
 	void RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderHEX8(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderHEX20(FEElement_* pe, FSCoreMesh* pm, bool bsel);
@@ -94,8 +112,11 @@ public:
 	void RenderTRI6(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 	void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+
+public:
 	void RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 
+private:
 	void RenderElement(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
 	void RenderHEX8(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
 	void RenderHEX20(FEElement_* pe, FSCoreMesh* pm, GLColor* col);

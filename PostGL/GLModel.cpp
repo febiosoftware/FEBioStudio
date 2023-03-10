@@ -1019,34 +1019,18 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// render the selected faces
 	if (mode == SELECT_FACES)
 	{
-		glBegin(GL_TRIANGLES);
-		for (int i=0; i<pm->Faces(); ++i)
-		{
-			FSFace& face = pm->Face(i);
-			if (face.IsSelected())
-			{
-				// okay, we got one, so let's render it
-				m_render.RenderFace(face, pm);
-			}
-		}
-		glEnd();
+		m_render.RenderFEFaces(pm, [](const FSFace& face) {
+			return face.IsSelected();
+			});
 	}
 
 	// render the selected elements
 	if (mode == SELECT_ELEMS)
 	{
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i<pm->Faces(); ++i)
-		{
-			FSFace& face = pm->Face(i);
+		m_render.RenderFEFaces(pm, [=](const FSFace& face) {
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
-			if (el.IsSelected())
-			{
-				// okay, we got one, so let's render it
-				m_render.RenderFace(face, pm);
-			}
-		}
-		glEnd();
+			return el.IsSelected();
+			});
 	}
 
 	// render the outline of the selected elements
@@ -1067,101 +1051,12 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// now do the selected faces
 	if (mode == SELECT_FACES)
 	{
-		vec3f r[FSFace::MAX_NODES];
 		const vector<FSFace*> faceSelection = GetFaceSelection();
 		for (int i = 0; i<(int)faceSelection.size(); ++i)
 		{
 			FSFace& f = *faceSelection[i]; 
-			if (f.IsSelected() == false) continue;
-
-			int n = f.Nodes();
-			for (int j=0; j<n; ++j) r[j] = to_vec3f(pm->Node(f.n[j]).r);
-			switch (f.m_type)
-			{
-			case FE_FACE_TRI3:
-				glBegin(GL_LINE_LOOP);
-				{
-					glVertex3f(r[0].x, r[0].y, r[0].z);
-					glVertex3f(r[1].x, r[1].y, r[1].z);
-					glVertex3f(r[2].x, r[2].y, r[2].z);
-				}
-				glEnd();
-				break;
-			case FE_FACE_QUAD4:
-				glBegin(GL_LINE_LOOP);
-				{
-					glVertex3f(r[0].x, r[0].y, r[0].z);
-					glVertex3f(r[1].x, r[1].y, r[1].z);
-					glVertex3f(r[2].x, r[2].y, r[2].z);
-					glVertex3f(r[3].x, r[3].y, r[3].z);
-				}
-				glEnd();
-				break;
-			case FE_FACE_TRI6:
-				glBegin(GL_LINE_LOOP);
-				{
-					RenderFace2Outline(pm, f, ndivs);
-				}
-				glEnd();
-				break;
-			case FE_FACE_TRI7:
-				glBegin(GL_LINE_LOOP);
-				{
-					glVertex3f(r[0].x, r[0].y, r[0].z);
-					glVertex3f(r[3].x, r[3].y, r[3].z);
-					glVertex3f(r[1].x, r[1].y, r[1].z);
-					glVertex3f(r[4].x, r[4].y, r[4].z);
-					glVertex3f(r[2].x, r[2].y, r[2].z);
-					glVertex3f(r[5].x, r[5].y, r[5].z);
-				}
-				glEnd();
-				break;
-			case FE_FACE_TRI10:
-				glBegin(GL_LINE_LOOP);
-				{
-					glVertex3f(r[0].x, r[0].y, r[0].z);
-					glVertex3f(r[3].x, r[3].y, r[3].z);
-					glVertex3f(r[4].x, r[4].y, r[4].z);
-					glVertex3f(r[1].x, r[1].y, r[1].z);
-					glVertex3f(r[5].x, r[5].y, r[5].z);
-					glVertex3f(r[6].x, r[6].y, r[6].z);
-					glVertex3f(r[2].x, r[2].y, r[2].z);
-					glVertex3f(r[8].x, r[8].y, r[8].z);
-					glVertex3f(r[7].x, r[7].y, r[7].z);
-				}
-				glEnd();
-				break;
-			case FE_FACE_QUAD8:
-				glBegin(GL_LINE_LOOP);
-				{
-					glVertex3f(r[0].x, r[0].y, r[0].z);
-					glVertex3f(r[4].x, r[4].y, r[4].z);
-					glVertex3f(r[1].x, r[1].y, r[1].z);
-					glVertex3f(r[5].x, r[5].y, r[5].z);
-					glVertex3f(r[2].x, r[2].y, r[2].z);
-					glVertex3f(r[6].x, r[6].y, r[6].z);
-					glVertex3f(r[3].x, r[3].y, r[3].z);
-					glVertex3f(r[7].x, r[7].y, r[7].z);
-				}
-				glEnd();
-				break;
-			case FE_FACE_QUAD9:
-				glBegin(GL_LINE_LOOP);
-				{
-					glVertex3f(r[0].x, r[0].y, r[0].z);
-					glVertex3f(r[4].x, r[4].y, r[4].z);
-					glVertex3f(r[1].x, r[1].y, r[1].z);
-					glVertex3f(r[5].x, r[5].y, r[5].z);
-					glVertex3f(r[2].x, r[2].y, r[2].z);
-					glVertex3f(r[6].x, r[6].y, r[6].z);
-					glVertex3f(r[3].x, r[3].y, r[3].z);
-					glVertex3f(r[7].x, r[7].y, r[7].z);
-				}
-				glEnd();
-				break;
-			default:
-				assert(false);
-			}
+			if (f.IsSelected())
+				m_render.RenderFaceOutline(f, pm, ndivs);
 		}
 	}
 
@@ -1499,18 +1394,9 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 	}
 	else
 	{
-		glBegin(GL_TRIANGLES);
-		int NF = dom.Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = dom.Face(i);
-			if (face.m_ntag == 1)
-			{
-				// okay, we got one, so let's render it
-				m_render.RenderFace(face, pm);
-			}
-		}
-		glEnd();
+		m_render.RenderFEFaces(pm, dom.FaceList(), [](const FSFace& f) {
+			return (f.m_ntag == 1);
+			});
 	}
 
 	// render inactive faces
@@ -1556,18 +1442,9 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		}
 		else
 		{
-			glBegin(GL_TRIANGLES);
-			int NF = dom.Faces();
-			for (int i = 0; i < NF; ++i)
-			{
-				FSFace& face = dom.Face(i);
-				if (face.m_ntag == 2)
-				{
-					// okay, we got one, so let's render it
-					m_render.RenderFace(face, pm);
-				}
-			}
-			glEnd();
+			m_render.RenderFEFaces(pm, dom.FaceList(), [](const FSFace& f) {
+				return (f.m_ntag == 2);
+				});
 		}
 		if (btex) glEnable(GL_TEXTURE_1D);
 	}
@@ -2259,7 +2136,6 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
-
 	glDisable(GL_LIGHTING);
 
 	// reset tags and check visibility
@@ -2292,35 +2168,16 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 
 	// render all unselected tagged nodes
 	glColor3ub(m_node_col.r, m_node_col.g, m_node_col.b);
-	glBegin(GL_POINTS);
-	for (int i = 0; i<pm->Nodes(); ++i)
-	{
-		FSNode& node = pm->Node(i);
-		if (node.IsExterior() && node.m_ntag && (node.IsSelected() == false))
-		{
-			// get the nodal coordinate
-			vec3d& r = node.r;
+	m_render.RenderFENodes(*pm, [](const FSNode& node) {
+		return (node.IsExterior() && node.m_ntag && (node.IsSelected() == false));
+		});
 
-			// render the point
-			glVertex3d(r.x, r.y, r.z);
-		}
-	}
 	if (m_brenderInteriorNodes)
 	{
-		for (int i = 0; i<pm->Nodes(); ++i)
-		{
-			FSNode& node = pm->Node(i);
-			if ((node.IsExterior() == false) && node.m_ntag && (node.IsSelected() == false))
-			{
-				// get the nodal coordinate
-				vec3d& r = node.r;
-
-				// render the point
-				glVertex3d(r.x, r.y, r.z);
-			}
-		}
+		m_render.RenderFENodes(*pm, [](const FSNode& node) {
+			return ((node.IsExterior() == false) && node.m_ntag && (node.IsSelected() == false));
+			});
 	}
-	glEnd();
 
 	// render selected tagged nodes
 	if (GetSelectionMode() == SELECT_NODES)
@@ -2329,39 +2186,18 @@ void CGLModel::RenderNodes(FEPostModel* ps, CGLContext& rc)
 
 		// render exterior selected nodes first
 		glColor3ub(255, 255, 0);
-		glBegin(GL_POINTS);
-		for (int i = 0; i<pm->Nodes(); ++i)
-		{
-			FSNode& node = pm->Node(i);
-			if (node.IsExterior() && node.m_ntag && node.IsSelected())
-			{
-				// get the nodal coordinate
-				vec3d r = node.r;
 
-				// render the point
-				glVertex3d(r.x, r.y, r.z);
-			}
-		}
-		glEnd();
+		m_render.RenderFENodes(*pm, [](const FSNode& node) {
+			return (node.IsExterior() && node.m_ntag && node.IsSelected());
+			});
 
 		// render interior nodes
 		if (m_brenderInteriorNodes)
 		{
 			glColor3ub(255, 0, 0);
-			glBegin(GL_POINTS);
-			for (int i = 0; i<pm->Nodes(); ++i)
-			{
-				FSNode& node = pm->Node(i);
-				if ((node.IsExterior() == false) && node.m_ntag && node.IsSelected())
-				{
-					// get the nodal coordinate
-					vec3d r = node.r;
-
-					// render the point
-					glVertex3d(r.x, r.y, r.z);
-				}
-			}
-			glEnd();
+			m_render.RenderFENodes(*pm, [](const FSNode& node) {
+				return ((node.IsExterior() == false) && node.m_ntag && node.IsSelected());
+				});
 		}
 	}
 
