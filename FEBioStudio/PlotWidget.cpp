@@ -1723,6 +1723,7 @@ LoadCurve* CCurvePlotWidget::GetLoadCurve()
 void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 {
 	if (m_lc == 0) return;
+    m_lc->Update();
 
 	int N = data.size();
 
