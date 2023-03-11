@@ -253,6 +253,7 @@ class GLLineMesh : public GLMesh
 {
 public:
 	GLLineMesh();
+	GLLineMesh(int maxLines, unsigned int flags);
 };
 
 // point mesh
@@ -260,4 +261,5 @@ class GLPointMesh : public GLMesh
 {
 public:
 	GLPointMesh();
+	GLPointMesh(int maxVertices, unsigned int flags);
 };

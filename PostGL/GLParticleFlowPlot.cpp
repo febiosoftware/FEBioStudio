@@ -157,24 +157,49 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_1D);
 
-	glBegin(GL_POINTS);
+	// build a point mesh
+	GLPointMesh mesh(NP, GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR);
+	mesh.BeginMesh();
 	for (int i=0; i<NP; ++i)
 	{
 		FlowParticle& p = m_particles[i];
-		if (p.m_balive)
-		{
-			glColor3ub(p.m_col.r, p.m_col.g, p.m_col.b);
-			glVertex3f(p.m_r.x, p.m_r.y, p.m_r.z);
-		}
+		if (p.m_balive) mesh.AddVertex(p.m_r, p.m_col);
 	}
-	glEnd();
+	mesh.EndMesh();
+
+	// render the points
+	mesh.Render();
 
 	if (m_showPath)
 	{
 		int ntime = GetModel()->CurrentTimeIndex();
 		if (ntime >= m_seedTime + 1)
 		{
+			// count line segments
+			int lines = 0;
+			for (int i = 0; i < NP; ++i)
+			{
+				FlowParticle& p = m_particles[i];
+
+				int tend = ntime;
+				if (tend > p.m_ndeath) tend = p.m_ndeath;
+
+				int n0 = m_seedTime;
+				if (m_pathLength > 0)
+				{
+					n0 = ntime - m_pathLength;
+					if (n0 < m_seedTime) n0 = m_seedTime;
+					if (n0 > tend) n0 = tend;
+				}
+
+				lines += tend - n0 + 1;
+			}
+
+			// allocate line mesh
+			GLLineMesh lineMesh(lines, GLMesh::FLAG_VERTEX);
+
 			glColor3ub(0,0,255);
+			lineMesh.BeginMesh();
 			for (int i = 0; i<NP; ++i)
 			{
 				FlowParticle& p = m_particles[i];
@@ -190,16 +215,18 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 					if (n0 > tend) n0 = tend;
 				}
 
-				glBegin(GL_LINE_STRIP);
+				for (int n=n0; n<tend; ++n)
 				{
-					for (int n=n0; n<=tend; ++n)
-					{
-						vec3f& r = p.m_pos[n];
-						glVertex3f(r.x, r.y, r.z);
-					}					
-				}
-				glEnd();
+					vec3f& r0 = p.m_pos[n];
+					vec3f& r1 = p.m_pos[n+1];
+					lineMesh.AddVertex(r0);
+					lineMesh.AddVertex(r1);
+				}					
 			}
+			lineMesh.EndMesh();
+
+			// render the lines
+			lineMesh.Render();
 		}
 	}
 

@@ -273,5 +273,15 @@ GLQuadMesh::GLQuadMesh() : GLMesh(GL_QUADS) {}
 //===================================================================================
 GLLineMesh::GLLineMesh() : GLMesh(GL_LINES) {}
 
+GLLineMesh::GLLineMesh(int maxLines, unsigned int flags) : GLMesh(GL_LINES) 
+{
+	AllocVertexBuffers(2*maxLines, flags);
+}
+
 //===================================================================================
 GLPointMesh::GLPointMesh() : GLMesh(GL_POINTS) {}
+
+GLPointMesh::GLPointMesh(int maxVertices, unsigned int flags) : GLMesh(GL_POINTS)
+{
+	AllocVertexBuffers(maxVertices, flags);
+}
