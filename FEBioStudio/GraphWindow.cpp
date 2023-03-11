@@ -63,6 +63,7 @@ SOFTWARE.*/
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <FECore/MathObject.h>
+#include "units.h"
 
 class TimeRangeOptionsUI
 {
@@ -1625,6 +1626,8 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 //		if ((nmin == m_firstState) && (nmax == m_lastState) && (m_dataX == m_dataXPrev) && (m_dataY == m_dataYPrev) && (m_xtype == m_xtypeprev)) return;
 //	}
 
+	int currentSource = currentDataSource();
+
 	// set current time point index (TODO: Not sure if this is still used)
 	//	pview->SetCurrentTimeIndex(ntime);
 
@@ -1636,6 +1639,24 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	// get the title
 	QString xtext = GetCurrentXText();
 	QString ytext = GetCurrentYText();
+
+	// get the units (if defined)
+	if (currentSource == 0)
+	{
+		const char* szunits = fem.GetDataManager()->getDataUnits(m_dataX);
+		if (szunits)
+		{
+			QString s = Units::GetUnitString(szunits);
+			xtext += QString(" [%1]").arg(s);
+		}
+		szunits = fem.GetDataManager()->getDataUnits(m_dataY);
+		if (szunits)
+		{
+			QString s = Units::GetUnitString(szunits);
+			ytext += QString(" [%1]").arg(s);
+		}
+	}
+
 	SetXAxisLabel(xtext);
 	SetYAxisLabel(ytext);
 	if (nplotType == LINE_PLOT)
@@ -1664,7 +1685,6 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	ClearPlotsData();
 	m_pltCounter = 0;
 
-	int currentSource = currentDataSource();
 	if (currentSource == 0)
 	{
 		// add selections
