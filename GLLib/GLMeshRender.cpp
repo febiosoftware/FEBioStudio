@@ -35,6 +35,68 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/GLCamera.h>
 
+// drawing routines for faces
+// Note: Call these functions from within glBegin(GL_TRIANGLES)\glEnd() section
+void RenderQUAD4(FSMeshBase* pm, const FSFace& f);
+void RenderQUAD8(FSMeshBase* pm, const FSFace& f);
+void RenderQUAD9(FSMeshBase* pm, const FSFace& f);
+void RenderTRI3(FSMeshBase* pm, const FSFace& f);
+void RenderTRI6(FSMeshBase* pm, const FSFace& f);
+void RenderTRI7(FSMeshBase* pm, const FSFace& f);
+void RenderTRI10(FSMeshBase* pm, const FSFace& f);
+
+void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI3(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI6(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI7(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothTRI10(FSCoreMesh* pm, FSFace& face, int ndivs);
+
+void RenderFace1Outline(FSCoreMesh* pm, FSFace& face);
+void RenderFace2Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
+
+void RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderHEX8(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderHEX20(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderHEX27(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderPENTA(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderTET4(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderTET10(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderTET15(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderTET20(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderQUAD(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderTRI3(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderTRI6(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+
+void RenderElement(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderHEX8(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderHEX20(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderHEX27(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderTET4(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderTET10(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderTET15(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderTET20(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderTRI3(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderTRI6(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderQUAD(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+
+// drawing routines for edges
+// Note: Call this from within glBegin(GL_LINES)\glEnd() section
+void RenderFEEdge(FSEdge& edge, FSLineMesh* pm);
+
 //-----------------------------------------------------------------------------
 extern int ET_HEX[12][2];
 extern int ET_HEX20[12][3];
@@ -100,7 +162,7 @@ void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemLi
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel)
+void RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 {
 	switch (pe->Type())
 	{
@@ -129,7 +191,7 @@ void GLMeshRender::RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderElement(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
+void RenderElement(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 {
 	switch (pe->Type())
 	{
@@ -167,7 +229,7 @@ inline void glxColor(const GLColor& c)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX8));
 	FEElement_& e = *pe;
@@ -224,7 +286,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
+void RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 {
 	assert(pe->IsType(FE_HEX8));
 	FEElement_& e = *pe;
@@ -287,7 +349,7 @@ void GLMeshRender::RenderHEX8(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLMeshRender::RenderHEX27(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderHEX27(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX27));
 	FEElement_& e = *pe;
@@ -373,7 +435,7 @@ void GLMeshRender::RenderHEX27(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	}
 }
 
-void GLMeshRender::RenderHEX27(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderHEX27(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_HEX27));
 	FEElement_& e = *pe;
@@ -465,7 +527,7 @@ void GLMeshRender::RenderHEX27(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLMeshRender::RenderHEX20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderHEX20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_HEX20));
 	FEElement_& e = *pe;
@@ -542,7 +604,7 @@ void GLMeshRender::RenderHEX20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderHEX20(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderHEX20(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_HEX20));
 	FEElement_& e = *pe;
@@ -623,7 +685,7 @@ void GLMeshRender::RenderHEX20(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLMeshRender::RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PENTA6));
 	FEElement_& e = *pe;
@@ -691,7 +753,7 @@ void GLMeshRender::RenderPENTA(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLMeshRender::RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_PENTA6));
 	FEElement_& e = *pe;
@@ -770,7 +832,7 @@ void GLMeshRender::RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 // TODO: This may not always give the desired result: I render using both
 //		 element and face data. But that cannot always be guaranteed to be consistent.
 //		 What I need to do is only render using element or face data, but not both.
-void GLMeshRender::RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PENTA15));
 	FEElement_& e = *pe;
@@ -903,7 +965,7 @@ void GLMeshRender::RenderPENTA15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 	}
 }
 
-void GLMeshRender::RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_PENTA15));
 	FEElement_& e = *pe;
@@ -1038,7 +1100,7 @@ void GLMeshRender::RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
 	FEElement_& e = *pe;
@@ -1086,7 +1148,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
+void RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 {
 	assert(pe->IsType(FE_TET4) || pe->IsType(FE_TET5));
 	FEElement_& e = *pe;
@@ -1133,7 +1195,7 @@ void GLMeshRender::RenderTET4(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
+void RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 {
 	assert(pe->IsType(FE_TRI3));
 	FEElement_& e = *pe;
@@ -1156,7 +1218,7 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
+void RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 {
 	assert(pe->IsType(FE_QUAD4));
 	FEElement_& e = *pe;
@@ -1185,7 +1247,7 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTET10(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET10));
 	FEElement_& e = *pe;
@@ -1228,7 +1290,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, GLColor* c)
+void RenderTET10(FEElement_ *pe, FSCoreMesh *pm, GLColor* c)
 {
 	assert(pe->IsType(FE_TET10));
 	FEElement_& e = *pe;
@@ -1272,7 +1334,7 @@ void GLMeshRender::RenderTET10(FEElement_ *pe, FSCoreMesh *pm, GLColor* c)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTET15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET15));
 	FEElement_& e = *pe;
@@ -1315,7 +1377,7 @@ void GLMeshRender::RenderTET15(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderTET15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_TET15));
 	FEElement_& e = *pe;
@@ -1363,7 +1425,7 @@ void GLMeshRender::RenderTET15(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTET20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TET20));
 	FEElement_& e = *pe;
@@ -1407,7 +1469,7 @@ void GLMeshRender::RenderTET20(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTET20(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderTET20(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_TET20));
 	FEElement_& e = *pe;
@@ -1455,7 +1517,7 @@ void GLMeshRender::RenderTET20(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD4));
 	FEElement_& e = *pe;
@@ -1478,7 +1540,7 @@ void GLMeshRender::RenderQUAD(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderQUAD8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderQUAD8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD8));
 	FEElement_& e = *pe;
@@ -1501,7 +1563,7 @@ void GLMeshRender::RenderQUAD8(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
+void RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 {
 	assert(pe->IsType(FE_QUAD8));
 	FEElement_& e = *pe;
@@ -1524,7 +1586,7 @@ void GLMeshRender::RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderQUAD9(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderQUAD9(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_QUAD9));
 	FEElement_& e = *pe;
@@ -1547,7 +1609,7 @@ void GLMeshRender::RenderQUAD9(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
+void RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 {
 	assert(pe->IsType(FE_QUAD9));
 	FEElement_& e = *pe;
@@ -1570,7 +1632,7 @@ void GLMeshRender::RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI3));
 	FEElement_& e = *pe;
@@ -1591,7 +1653,7 @@ void GLMeshRender::RenderTRI3(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTRI6(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderTRI6(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_TRI6));
 	FEElement_& e = *pe;
@@ -1612,7 +1674,7 @@ void GLMeshRender::RenderTRI6(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderTRI6(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
+void RenderTRI6(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 {
 	assert(pe->IsType(FE_TRI6));
 	FEElement_& e = *pe;
@@ -1633,7 +1695,7 @@ void GLMeshRender::RenderTRI6(FEElement_* pe, FSCoreMesh* pm, GLColor* c)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
 	assert(pe->IsType(FE_PYRA5));
 	FEElement_& e = *pe;
@@ -1698,7 +1760,7 @@ void GLMeshRender::RenderPYRA5(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_PYRA5));
 	FEElement_& e = *pe;
@@ -1764,7 +1826,7 @@ void GLMeshRender::RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
+void RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 {
     assert(pe->IsType(FE_PYRA13));
     FEElement_& e = *pe;
@@ -1829,7 +1891,7 @@ void GLMeshRender::RenderPYRA13(FEElement_ *pe, FSCoreMesh *pm, bool bsel)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
+void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col)
 {
 	assert(pe->IsType(FE_PYRA13));
 	FEElement_& e = *pe;
@@ -2515,6 +2577,20 @@ void GLMeshRender::RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElem
 }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<FSFace>& faceList, std::function<bool(const FSFace& face)> f)
+{
+	if (faceList.empty()) return;
+	glBegin(GL_TRIANGLES);
+	{
+		for (const FSFace& face : faceList)
+		{
+			if (f(face)) RenderFEFace(face, pm);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList)
 {
 	if (faceList.empty()) return;
@@ -2560,6 +2636,22 @@ void GLMeshRender::RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceLis
 }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, const std::vector<int>& faceList, std::function<bool(const FSFace& face, GLColor* c)> f)
+{
+	if (faceList.empty()) return;
+	GLColor c[FSFace::MAX_NODES];
+	glBegin(GL_TRIANGLES);
+	{
+		for (size_t i : faceList)
+		{
+			FSFace& face = pm->Face(i);
+			if (f(face, c)) RenderFace(face, pm, c);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f)
 {
 	GLColor c[FSFace::MAX_NODES];
@@ -2569,7 +2661,7 @@ void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace
 		for (size_t i = 0; i < faces; ++i)
 		{
 			FSFace& face = pm->Face(i);
-			if (f(face, c)) RenderFace(face, pm, c, 1);
+			if (f(face, c)) RenderFace(face, pm, c);
 		}
 	}
 	glEnd();
@@ -2675,7 +2767,7 @@ void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int ndivs)
+void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4])
 {
 	if (m_bShell2Solid)
 	{
@@ -2706,7 +2798,7 @@ void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int nd
 	case FE_FACE_QUAD4:
 	case FE_FACE_QUAD8:
 	case FE_FACE_QUAD9:
-		if (ndivs <= 1)
+		if (m_ndivs <= 1)
 		{
 			glNormal3f(n1.x, n1.y, n1.z); glColor4ub(c[0].r, c[0].g, c[0].b, c[0].a); glTexCoord1f(t[0]); glVertex3f(r1.x, r1.y, r1.z);
 			glNormal3f(n2.x, n2.y, n2.z); glColor4ub(c[1].r, c[1].g, c[1].b, c[1].a); glTexCoord1f(t[1]); glVertex3f(r2.x, r2.y, r2.z);
@@ -2718,7 +2810,7 @@ void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int nd
 		}
 		else
 		{
-			RenderSmoothQUAD4(pm, face, ndivs);
+			RenderSmoothQUAD4(pm, face, m_ndivs);
 		}
 		break;
 	case FE_FACE_TRI3:
@@ -2735,7 +2827,7 @@ void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int nd
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs)
+void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm)
 {
 	if (m_bShell2Solid)
 	{
@@ -2760,8 +2852,8 @@ void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs)
 		case FE_FACE_TRI6:
 		case FE_FACE_TRI7:
 		case FE_FACE_QUAD8:
-		case FE_FACE_QUAD9: RenderFace2Outline(pm, face, ndivs); break;
-		case FE_FACE_TRI10: RenderFace3Outline(pm, face, ndivs); break;
+		case FE_FACE_QUAD9: RenderFace2Outline(pm, face, m_ndivs); break;
+		case FE_FACE_TRI10: RenderFace3Outline(pm, face, m_ndivs); break;
 		default:
 			assert(false);
 		}
@@ -2772,7 +2864,7 @@ void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEFace(FSFace& face, FSMeshBase* pm)
+void GLMeshRender::RenderFEFace(const FSFace& face, FSMeshBase* pm)
 {
 	switch (face.Type())
 	{
@@ -3103,7 +3195,7 @@ void RenderFEEdge(FSEdge& edge, FSLineMesh* pm)
 }
 
 //-----------------------------------------------------------------------------
-void RenderQUAD4(FSMeshBase* pm, FSFace& f)
+void RenderQUAD4(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD4);
 
@@ -3122,7 +3214,7 @@ void RenderQUAD4(FSMeshBase* pm, FSFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 8-noded quad
-void RenderQUAD8(FSMeshBase* pm, FSFace& f)
+void RenderQUAD8(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD8);
 
@@ -3140,7 +3232,7 @@ void RenderQUAD8(FSMeshBase* pm, FSFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 9-noded quad
-void RenderQUAD9(FSMeshBase* pm, FSFace& f)
+void RenderQUAD9(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_QUAD9);
 
@@ -3158,7 +3250,7 @@ void RenderQUAD9(FSMeshBase* pm, FSFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 3-noded tri
-void RenderTRI3(FSMeshBase* pm, FSFace& f)
+void RenderTRI3(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI3);
 
@@ -3176,7 +3268,7 @@ void RenderTRI3(FSMeshBase* pm, FSFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 6-noded tri
-void RenderTRI6(FSMeshBase* pm, FSFace& f)
+void RenderTRI6(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI6);
 
@@ -3194,7 +3286,7 @@ void RenderTRI6(FSMeshBase* pm, FSFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 7-noded tri
-void RenderTRI7(FSMeshBase* pm, FSFace& f)
+void RenderTRI7(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI7);
 
@@ -3212,7 +3304,7 @@ void RenderTRI7(FSMeshBase* pm, FSFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a 10-noded tri
-void RenderTRI10(FSMeshBase* pm, FSFace& f)
+void RenderTRI10(FSMeshBase* pm, const FSFace& f)
 {
 	assert(f.m_type == FE_FACE_TRI10);
 
@@ -3466,7 +3558,7 @@ void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndivs)
+void GLMeshRender::RenderElementOutline(FEElement_& el, FSCoreMesh* pm)
 {
 	glBegin(GL_LINES);
 	switch (el.Type())
@@ -3590,7 +3682,7 @@ void GLMeshRender::RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndiv
 			a[0] = to_vec3f(r0);
 			a[1] = to_vec3f(r1);
 			a[2] = to_vec3f(r2);
-			const int M = (ndivs < 2 ? 2 : ndivs);
+			const int M = (m_ndivs < 2 ? 2 : m_ndivs);
 			for (int n = 1; n<=M; ++n)
 			{
 				double t = n / (double)M;

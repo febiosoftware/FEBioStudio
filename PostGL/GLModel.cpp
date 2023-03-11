@@ -1044,7 +1044,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 		for (int i = 0; i<(int)elemSelection.size(); ++i)
 		{
 			FEElement_& el = *elemSelection[i]; assert(el.IsSelected());
-			m_render.RenderElementOutline(el, pm, ndivs);
+			m_render.RenderElementOutline(el, pm);
 		}
 	}
 
@@ -1056,7 +1056,7 @@ void CGLModel::RenderSelection(CGLContext &rc)
 		{
 			FSFace& f = *faceSelection[i]; 
 			if (f.IsSelected())
-				m_render.RenderFaceOutline(f, pm, ndivs);
+				m_render.RenderFaceOutline(f, pm);
 		}
 	}
 
@@ -1102,24 +1102,22 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 
 	// render the unselected faces
 	MeshDomain& dom = pm->Domain(m);
-	int NF = dom.Faces();
 
 	// for better transparency we first draw all the backfacing polygons.
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_CULL_FACE);
 
 	GLColor d = pmat->diffuse;
-	GLColor c[FSFace::MAX_NODES];
 	double tm = pmat->transparency;
 
 	int ndivs = GetSubDivisions();
+	m_render.SetDivisions(ndivs);
 
 	int mode = GetSelectionMode();
 
 	if (m_doZSorting)
 	{
-		glDisable(GL_CULL_FACE);
-
+		int NF = dom.Faces();
 		vector< pair<int, double> > zlist; zlist.reserve(NF);
 		// first, build a list of faces
 		for (int i = 0; i < NF; ++i)
@@ -1145,12 +1143,14 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 			return a.second < b.second;
 		});
 
-		// render the list
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < zlist.size(); ++i)
-		{
-			FSFace& face = dom.Face(zlist[i].first);
+		// build the sorted face list
+		const vector<int>& faceList = dom.FaceList();
+		vector<int> sortedFaceList(zlist.size());
+		for (size_t i = 0; i < zlist.size(); ++i) sortedFaceList[i] = faceList[zlist[i].first];
 
+		// render the list
+		glDisable(GL_CULL_FACE);
+		m_render.RenderFEFaces(pm, sortedFaceList, [&](const FSFace& face, GLColor* c) {
 			GLubyte a[FSFace::MAX_NODES] = { 0 };
 			if (transMode == RENDER_TRANS_NORMAL_WEIGHTED)
 			{
@@ -1191,19 +1191,14 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 					c[j] = GLColor(d.r, d.g, d.b, a[j]);
 			}
 
-
-			// okay, we got one, so let's render it
-			m_render.RenderFace(face, pm, c, ndivs);
-		}
-		glEnd();
+			return true;
+		});
 	}
 	else
 	{
 		glCullFace(GL_FRONT);
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = dom.Face(i);
+		m_render.RenderFEFaces(pm, dom.FaceList(), [&](const FSFace& face, GLColor* c) {
+
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible() && (m_renderInnerSurface || face.IsExterior()))
@@ -1214,7 +1209,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 					vec3d r = to_vec3d(face.m_nn[j]);
 					q.RotateVector(r);
 					double z = 1 - fabs(r.z);
-					a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
+					a[j] = (GLubyte)(255 * (tm + 0.5 * (1 - tm) * (z * z)));
 				}
 
 				if (benable)
@@ -1229,17 +1224,14 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				}
 
 				// okay, we got one, so let's render it
-				m_render.RenderFace(face, pm, c, ndivs);
+				return true;
 			}
-		}
-		glEnd();
+			return false;
+		});
 
 		// and then we draw the front-facing ones.
 		glCullFace(GL_BACK);
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = dom.Face(i);
+		m_render.RenderFEFaces(pm, dom.FaceList(), [&](const FSFace& face, GLColor* c) {
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 
 			if (((mode != SELECT_ELEMS) || !el.IsSelected()) && face.IsVisible())
@@ -1250,12 +1242,12 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 					vec3d r = to_vec3d(face.m_nn[j]);
 					q.RotateVector(r);
 					double z = 1 - fabs(r.z);
-					a[j] = (GLubyte)(255 * (tm + 0.5*(1 - tm)*(z*z)));
+					a[j] = (GLubyte)(255 * (tm + 0.5 * (1 - tm) * (z * z)));
 				}
 
 				if (benable)
 				{
-					for (int j=0; j<face.Nodes(); ++j)
+					for (int j = 0; j < face.Nodes(); ++j)
 						c[j] = GLColor(255, 255, 255, a[j]);
 				}
 				else
@@ -1265,10 +1257,10 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				}
 
 				// okay, we got one, so let's render it
-				m_render.RenderFace(face, pm, c, ndivs);
+				return true;
 			}
-		}
-		glEnd();
+			return false;
+		});
 	}
 
 	glPopAttrib();
@@ -1296,29 +1288,15 @@ void CGLModel::RenderInnerSurface(int m, bool btex)
 
 	// render active faces
 	if (btex) glEnable(GL_TEXTURE_1D);
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i<surf.Faces(); ++i)
-	{
-		FSFace& face = surf.Face(i);
-		if (face.IsActive())
-		{
-			m_render.RenderFace(face, pm);
-		}
-	}
-	glEnd();
+	m_render.RenderFEFaces(pm, surf.FaceList(), [](const FSFace& face) {
+		return (face.IsActive());
+		});
 
 	// render inactive faces
 	if (btex) glDisable(GL_TEXTURE_1D);
-	glBegin(GL_TRIANGLES);
-	for (int i = 0; i<surf.Faces(); ++i)
-	{
-		FSFace& face = surf.Face(i);
-		if (face.IsActive() == false)
-		{
-			m_render.RenderFace(face, pm);
-		}
-	}
-	glEnd();
+	m_render.RenderFEFaces(pm, surf.FaceList(), [](const FSFace& face) {
+		return (face.IsActive() == false);
+		});
 
 	if (btex) glEnable(GL_TEXTURE_1D);
 }
@@ -1344,7 +1322,7 @@ void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 	for (int i = 0; i<inSurf.Faces(); ++i)
 	{
 		FSFace& facet = inSurf.Face(i);
-		m_render.RenderFaceOutline(facet, pm, ndivs);
+		m_render.RenderFaceOutline(facet, pm);
 	}
 }
 
@@ -1383,14 +1361,13 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 			return a.second < b.second;
 		});
 
+		// build the sorted face list
+		const vector<int>& faceList = dom.FaceList();
+		vector<int> sortedFaceList(zlist.size());
+		for (size_t i = 0; i < zlist.size(); ++i) sortedFaceList[i] = faceList[zlist[i].first];
+
 		// render the list
-		glBegin(GL_TRIANGLES);
-		for (int i = 0; i < zlist.size(); ++i)
-		{
-			FSFace& face = dom.Face(zlist[i].first);
-			m_render.RenderFace(face, pm);
-		}
-		glEnd();
+		m_render.RenderFEFaces(pm, sortedFaceList);
 	}
 	else
 	{
@@ -1431,14 +1408,13 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 				return a.second < b.second;
 				});
 
+			// build the sorted face list
+			const vector<int>& faceList = dom.FaceList();
+			vector<int> sortedFaceList(zlist.size());
+			for (size_t i = 0; i < zlist.size(); ++i) sortedFaceList[i] = faceList[zlist[i].first];
+
 			// render the list
-			glBegin(GL_TRIANGLES);
-			for (int i = 0; i < zlist.size(); ++i)
-			{
-				FSFace& face = dom.Face(zlist[i].first);
-				m_render.RenderFace(face, pm);
-			}
-			glEnd();
+			m_render.RenderFEFaces(pm, sortedFaceList);
 		}
 		else
 		{
@@ -1987,6 +1963,7 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 	Post::FEPostMesh* pm = GetActiveMesh();
 
 	int ndivs = GetSubDivisions();
+	m_render.SetDivisions(ndivs);
 
 	// now loop over all faces and see which face belongs to this material
 	if (nmat < pm->Domains())
@@ -1998,7 +1975,7 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 			if (face.IsVisible())
 			{
 				// okay, we got one, so let's render it
-				m_render.RenderFaceOutline(face, pm, ndivs);
+				m_render.RenderFaceOutline(face, pm);
 			}
 		}
 	}

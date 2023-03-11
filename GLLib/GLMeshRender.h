@@ -77,15 +77,17 @@ public:
 	void RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
 
 	void RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList);
+	void RenderFEFaces(FSMeshBase* pm, const std::vector<FSFace>& faceList, std::function<bool(const FSFace& face)> f);
 	void RenderFEFaces(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
 	void RenderFEFaces(FSMeshBase* pm, const std::vector<int>& faceList, std::function<bool(const FSFace& face)> f);
+	void RenderFEFaces(FSCoreMesh* pm, const std::vector<int>& faceList, std::function<bool(const FSFace& face, GLColor* c)> f);
 
 	void RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
 
 	void RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList);
 	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
 
-	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm, int ndivs);
+	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm);
 
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);
 
@@ -94,54 +96,17 @@ public:
 	void RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
 	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f);
 
-private:
-	void RenderElement(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderHEX8(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderHEX20(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderHEX27(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderPENTA(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderTET4(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderTET10(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderTET15(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderTET20(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderQUAD(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderTRI3(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderTRI6(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-	void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, bool bsel);
-
 public:
 	void RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 
 private:
-	void RenderElement(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderHEX8(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderHEX20(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderHEX27(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderPENTA6(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderPENTA15(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTET4(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTET10(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTET15(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTET20(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTRI3(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderTRI6(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderQUAD(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderQUAD8(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderQUAD9(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderPYRA5(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
-	void RenderPYRA13(FEElement_* pe, FSCoreMesh* pm, GLColor* col);
+	// drawing routines for faces
+	void RenderFEFace(const FSFace& face, FSMeshBase* pm);
+	void RenderFace(FSFace& face, FSCoreMesh* pm);
+	void RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4]);
 
 public:
-	// drawing routines for faces
-	void RenderFEFace(FSFace& face, FSMeshBase* pm);
-	void RenderFace(FSFace& face, FSCoreMesh* pm);
-	void RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4], int ndivs);
-
-	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm, int ndivs);
+	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm);
 
 	void SetFaceColor(bool b);
 	bool GetFaceColor() const;
@@ -165,29 +130,3 @@ public:
 private:
 	GLTriMesh	m_glmesh;
 };
-
-// drawing routines for edges
-// Note: Call this from within glBegin(GL_LINES)\glEnd() section
-void RenderFEEdge(FSEdge& edge, FSLineMesh* pm);
-
-// drawing routines for faces
-// Note: Call these functions from within glBegin(GL_TRIANGLES)\glEnd() section
-void RenderQUAD4(FSMeshBase* pm, FSFace& f);
-void RenderQUAD8(FSMeshBase* pm, FSFace& f);
-void RenderQUAD9(FSMeshBase* pm, FSFace& f);
-void RenderTRI3 (FSMeshBase* pm, FSFace& f);
-void RenderTRI6 (FSMeshBase* pm, FSFace& f);
-void RenderTRI7 (FSMeshBase* pm, FSFace& f);
-void RenderTRI10(FSMeshBase* pm, FSFace& f);
-
-void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI3 (FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI6 (FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI7 (FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI10(FSCoreMesh* pm, FSFace& face, int ndivs);
-
-void RenderFace1Outline(FSCoreMesh* pm, FSFace& face);
-void RenderFace2Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs);

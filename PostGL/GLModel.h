@@ -77,6 +77,8 @@ public:
 
 	FSFace& Face(int i) { return m_Face[i]; }
 
+	const vector<FSFace>& FaceList() const { return m_Face; }
+
 private:
 	vector<FSFace>	m_Face;
 };

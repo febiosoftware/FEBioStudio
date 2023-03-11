@@ -2438,7 +2438,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		for (int i = 0; i < selectedElements.size(); ++i)
 		{
 			FEElement_& el = pm->Element(selectedElements[i]);
-			renderer.RenderElementOutline(el, pm, 1);
+			renderer.RenderElementOutline(el, pm);
 		}
 
 		glPopAttrib();
