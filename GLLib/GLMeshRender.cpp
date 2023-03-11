@@ -1996,7 +1996,6 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 	for (int i = 0; i < pm->Faces(); ++i)
 	{
 		GMesh::FACE& f = pm->Face(i);
-		vec3d n1 = f.fn;
 
 		for (int j = 0; j < 3; ++j)
 		{
@@ -2009,6 +2008,7 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 			else
 			{
 				GMesh::FACE& f2 = pm->Face(f.nbr[j]);
+				vec3d n1 = f.fn;
 				vec3d n2 = f2.fn;
 
 				if (cam.IsOrtho())
