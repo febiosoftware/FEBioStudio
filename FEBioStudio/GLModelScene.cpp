@@ -1566,7 +1566,7 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 			vec3d rf[FSElement::MAX_NODES];
 
 			GLTriMesh mesh;
-			mesh.AllocVertexBuffers(pm->Faces() * 18, GLMesh::FLAG_VERTEX); // each face can have a max of 6 * 3 vertices 
+			mesh.Create(pm->Faces() * 6); // each face can have a max of 6 * 3 vertices 
 			mesh.BeginMesh();
 			for (int i = 0; i < pm->Faces(); ++i)
 			{

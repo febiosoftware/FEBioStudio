@@ -1984,7 +1984,7 @@ void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
 	}
 	else if ((surfID >= 0) && (surfID < (int)pm->m_FIL.size()))
 	{
-		unsigned int flags = GLMesh::FLAG_VERTEX | GLMesh::FLAG_NORMAL;
+		unsigned int flags = GLMesh::FLAG_NORMAL;
 		if (m_bfaceColor) flags |= GLMesh::FLAG_COLOR;
 
 		m_glmesh.CreateFromGMesh(*pm, surfID, flags);
@@ -2106,7 +2106,7 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 
 	// build the line mesh
 	GLLineMesh lineMesh;
-	lineMesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
+	lineMesh.Create(points.size() / 2);
 	lineMesh.BeginMesh();
 	for (auto& p : points) lineMesh.AddVertex(p);
 	lineMesh.EndMesh();
@@ -2564,7 +2564,7 @@ void GLMeshRender::RenderMeshLines(FSMesh& mesh, std::function<bool(const FEElem
 
 	// build the line mesh
 	GLLineMesh lineMesh;
-	lineMesh.AllocVertexBuffers(points.size(), GLMesh::FLAG_VERTEX);
+	lineMesh.Create(points.size() / 2);
 	lineMesh.BeginMesh();
 	for (auto& v : points) lineMesh.AddVertex(v);
 	lineMesh.EndMesh();

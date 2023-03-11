@@ -442,7 +442,7 @@ void CGLStreamLinePlot::UpdateMesh()
 	}
 
 	// allocate mesh
-	m_mesh.AllocVertexBuffers(verts, GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR);
+	m_mesh.Create(verts / 2, GLMesh::FLAG_COLOR);
 
 	// build mesh
 	m_mesh.BeginMesh();

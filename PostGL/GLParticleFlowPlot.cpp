@@ -158,7 +158,7 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 	glDisable(GL_TEXTURE_1D);
 
 	// build a point mesh
-	GLPointMesh mesh(NP, GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR);
+	GLPointMesh mesh(NP, GLMesh::FLAG_COLOR);
 	mesh.BeginMesh();
 	for (int i=0; i<NP; ++i)
 	{
@@ -196,7 +196,7 @@ void CGLParticleFlowPlot::Render(CGLContext& rc)
 			}
 
 			// allocate line mesh
-			GLLineMesh lineMesh(lines, GLMesh::FLAG_VERTEX);
+			GLLineMesh lineMesh(lines);
 
 			glColor3ub(0,0,255);
 			lineMesh.BeginMesh();

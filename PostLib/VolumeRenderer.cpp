@@ -183,8 +183,8 @@ void CVolumeRenderer::ReloadTexture()
 	double wt = 2 * sqrt(wx * wx + wy * wy + wz * wz);
 	m_nslices = (int)wt;
 
-	// max 5 triangles per slice, 3 vertex per triangle, (m_nslices+1) slices
-	m_mesh.AllocVertexBuffers(5 * 3 * (m_nslices + 1), GLMesh::FLAG_VERTEX | GLMesh::FLAG_TEXTURE);
+	// max 5 triangles per slice, (m_nslices+1) slices
+	m_mesh.Create(5 * (m_nslices + 1), GLMesh::FLAG_TEXTURE);
 }
 
 const char* shadertxt_8bit = \

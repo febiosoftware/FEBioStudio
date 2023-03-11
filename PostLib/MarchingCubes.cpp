@@ -434,8 +434,7 @@ void CMarchingCubes::CreateSurface()
 
 	// create vertex arrays from mesh
 	int faces = mesh.Faces();
-	int nodes = faces * 3;
-	m_mesh.AllocVertexBuffers(nodes, GLMesh::FLAG_VERTEX | GLMesh::FLAG_NORMAL);
+	m_mesh.Create(faces, GLMesh::FLAG_NORMAL);
 	m_mesh.BeginMesh();
 	for (int i = 0; i < faces; ++i)
 	{

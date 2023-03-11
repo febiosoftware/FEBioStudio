@@ -69,15 +69,11 @@ void GLMesh::Clear()
 	delete[] m_ind; m_ind = nullptr;
 }
 
-void GLMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
+void GLMesh::AllocVertexBuffers(size_t maxVertices, unsigned flags)
 {
 	m_bvalid = false;
 	m_vertexCount = 0;
-	if (flags & FLAG_VERTEX)
-	{
-		if ((m_vr == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vr; m_vr = new float[3 * maxVertices]; }
-	}
-	else { delete[] m_vr; m_vr = nullptr; }
+	if ((m_vr == nullptr) || (maxVertices > m_maxVertexCount)) { delete[] m_vr; m_vr = new float[3 * maxVertices]; }
 
 	if (flags & FLAG_NORMAL)
 	{
@@ -99,14 +95,6 @@ void GLMesh::AllocVertexBuffers(int maxVertices, unsigned flags)
 	m_maxVertexCount = maxVertices;
 }
 
-void GLMesh::AllocVertexBuffers(const std::vector<GLMesh::Vertex>& verts, unsigned flags)
-{
-	AllocVertexBuffers(verts.size(), flags);
-	BeginMesh();
-	for (auto& v : verts) AddVertex(v);
-	EndMesh();
-}
-
 void GLMesh::BeginMesh()
 {
 	m_vertexCount = 0;
@@ -121,7 +109,7 @@ void GLMesh::EndMesh()
 void GLMesh::CreateFromGMesh(const GMesh& gmsh)
 {
 	int faces = gmsh.Faces();
-	AllocVertexBuffers(3 * faces, FLAG_VERTEX | FLAG_NORMAL | FLAG_COLOR);
+	AllocVertexBuffers(3 * faces, FLAG_NORMAL | FLAG_COLOR);
 
 	BeginMesh();
 	for (int i = 0; i < gmsh.Faces(); ++i)
@@ -191,6 +179,11 @@ void GLMesh::Render()
 
 //===================================================================================
 GLTriMesh::GLTriMesh() : GLMesh(GL_TRIANGLES) {}
+
+void GLTriMesh::Create(size_t maxTriangles, unsigned int flags)
+{
+	AllocVertexBuffers(3 * maxTriangles, flags);
+}
 
 void GLTriMesh::ZSortFaces(const CGLCamera& cam)
 {
@@ -270,6 +263,11 @@ void GLTriMesh::SortForwards()
 //===================================================================================
 GLQuadMesh::GLQuadMesh() : GLMesh(GL_QUADS) {}
 
+void GLQuadMesh::Create(int maxQuads, unsigned int flags)
+{
+	AllocVertexBuffers(4 * maxQuads, flags);
+}
+
 //===================================================================================
 GLLineMesh::GLLineMesh() : GLMesh(GL_LINES) {}
 
@@ -278,10 +276,20 @@ GLLineMesh::GLLineMesh(int maxLines, unsigned int flags) : GLMesh(GL_LINES)
 	AllocVertexBuffers(2*maxLines, flags);
 }
 
+void GLLineMesh::Create(int maxLines, unsigned int flags)
+{
+	AllocVertexBuffers(2 * maxLines, flags);
+}
+
 //===================================================================================
 GLPointMesh::GLPointMesh() : GLMesh(GL_POINTS) {}
 
 GLPointMesh::GLPointMesh(int maxVertices, unsigned int flags) : GLMesh(GL_POINTS)
+{
+	AllocVertexBuffers(maxVertices, flags);
+}
+
+void GLPointMesh::Create(int maxVertices, unsigned int flags)
 {
 	AllocVertexBuffers(maxVertices, flags);
 }

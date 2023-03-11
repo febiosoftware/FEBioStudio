@@ -41,10 +41,9 @@ class GLMesh
 {
 public:
 	enum Flags {
-		FLAG_VERTEX = 1,
-		FLAG_NORMAL = 2,
-		FLAG_TEXTURE = 4,
-		FLAG_COLOR = 8,
+		FLAG_NORMAL  = 1,
+		FLAG_TEXTURE = 2,
+		FLAG_COLOR   = 4,
 		FLAG_ALL = 15
 	};
 
@@ -59,10 +58,6 @@ public:
 public:
 	// clear all mesh data
 	void Clear();
-
-	// allocate vertex buffers
-	void AllocVertexBuffers(int maxVertices, unsigned flags = FLAG_ALL);
-	void AllocVertexBuffers(const std::vector<Vertex>& verts, unsigned flags = FLAG_ALL);
 
 	// call this to start building the mesh
 	void BeginMesh();
@@ -107,6 +102,8 @@ protected:
 	GLMesh(unsigned int mode);
 	virtual ~GLMesh();
 
+	void AllocVertexBuffers(size_t maxVertices, unsigned flags);
+
 protected:
 	float* m_vr = nullptr;	// vertex coordinates
 	float* m_vn = nullptr;	// vertex normals
@@ -114,8 +111,8 @@ protected:
 	ubyte* m_vc = nullptr; // vertex color (4 x unsigned byte)
 	unsigned int* m_ind = nullptr; // vertex indices (used for z-sorting)
 	
-	unsigned int m_vertexCount = 0;	// number of vertices
-	unsigned int m_maxVertexCount = 0;	// max number of vertices
+	size_t m_vertexCount = 0;	// number of vertices
+	size_t m_maxVertexCount = 0;	// max number of vertices
 	bool	m_bvalid;	// is the mesh valid and ready for rendering?
 
 	unsigned int m_mode;	// primitive type to render (set by derived classes)
@@ -224,6 +221,8 @@ class GLTriMesh : public GLMesh
 public:
 	GLTriMesh();
 
+	void Create(size_t maxTriangles, unsigned int flags = 0);
+
 	void AddTriangle(const vec3d& r0, const vec3d& r1, const vec3d& r2);
 
 	// z-sort the faces
@@ -246,20 +245,50 @@ class GLQuadMesh : public GLMesh
 {
 public:
 	GLQuadMesh();
+
+	void Create(int maxQuads, unsigned int flags = 0);
 };
 
+//=============================================================================
 // line mesh
 class GLLineMesh : public GLMesh
 {
 public:
 	GLLineMesh();
-	GLLineMesh(int maxLines, unsigned int flags);
+	GLLineMesh(int maxLines, unsigned int flags = 0);
+
+	void Create(int maxLines, unsigned int flags = 0);
+
+	void AddLine(const vec3f& r0, const vec3f& r1);
+	void AddLine(const vec3d& r0, const vec3d& r1);
+	void AddLine(const vec3f& r0, const vec3f& r1, GLColor& c);
 };
 
+inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1)
+{
+	AddVertex(r0);
+	AddVertex(r1);
+}
+
+inline void GLLineMesh::AddLine(const vec3d& r0, const vec3d& r1)
+{
+	AddVertex(r0);
+	AddVertex(r1);
+}
+
+inline void GLLineMesh::AddLine(const vec3f& r0, const vec3f& r1, GLColor& c)
+{
+	AddVertex(r0, c);
+	AddVertex(r1, c);
+}
+
+//=============================================================================
 // point mesh
 class GLPointMesh : public GLMesh
 {
 public:
 	GLPointMesh();
-	GLPointMesh(int maxVertices, unsigned int flags);
+	GLPointMesh(int maxVertices, unsigned int flags = 0);
+
+	void Create(int maxVertices, unsigned int flags = 0);
 };

@@ -391,7 +391,7 @@ void CGLPointPlot::UpdatePointMesh()
 	PointData& pd = m_pointData->GetPointData(ns);
 
 	int NP = pd.Points(); 
-	m_pointMesh.AllocVertexBuffers(NP, GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR);
+	m_pointMesh.Create(NP, GLMesh::FLAG_COLOR);
 
 	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 

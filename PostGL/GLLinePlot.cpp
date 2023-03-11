@@ -378,7 +378,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 	}
 	if (maxseg == 0) maxseg = 1;
 
-	m_lineMesh.AllocVertexBuffers(2 * NL, GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR);
+	m_lineMesh.Create(NL, GLMesh::FLAG_COLOR);
 
 	if (m_ncolor == COLOR_SOLID)
 	{
@@ -388,8 +388,7 @@ void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
 			LINESEGMENT& l = lineData.Line(i);
 			if (m_show || ShowLine(l, s))
 			{
-				m_lineMesh.AddVertex(l.m_r0, m_col);
-				m_lineMesh.AddVertex(l.m_r1, m_col);
+				m_lineMesh.AddLine(l.m_r0, l.m_r1, m_col);
 			}
 		}
 		m_lineMesh.EndMesh();
@@ -457,8 +456,8 @@ void CGLLinePlot::Update3DLines(FEState& s, int ntime)
 	const int NSEG = 8;
 	int NL = lineData.Lines();
 
-	int vertices = NL * NSEG * 4;
-	m_quadMesh.AllocVertexBuffers(vertices, GLMesh::FLAG_VERTEX | GLMesh::FLAG_NORMAL | GLMesh::FLAG_TEXTURE);
+	int quads = NL * NSEG;
+	m_quadMesh.Create(quads, GLMesh::FLAG_NORMAL | GLMesh::FLAG_TEXTURE);
 
 	m_quadMesh.BeginMesh();
 	for (int i = 0; i < NL; ++i)
@@ -701,12 +700,12 @@ void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 	const int NSEC = 4;  // spherical sections for half-sphere
 
 	// allocate mesh
-	unsigned int flags = GLMesh::FLAG_VERTEX | GLMesh::FLAG_NORMAL;
+	unsigned int flags = GLMesh::FLAG_NORMAL;
 	if (m_ncolor == COLOR_SEGMENT) flags |= GLMesh::FLAG_COLOR;
 	if (m_ncolor > COLOR_SEGMENT) flags |= GLMesh::FLAG_TEXTURE;
-	int vertsPerLine = NSEG * NDIV * 6 + 2 * ((NSEC - 1) * NDIV * 6 + 3 * NDIV);
-	int totalVerts = NL * vertsPerLine;
-	m_triMesh.AllocVertexBuffers(totalVerts);
+	int trisPerLine = NSEG * NDIV * 2 + 2 * ((NSEC - 1) * NDIV * 2 + NDIV);
+	int totalTris = NL * trisPerLine;
+	m_triMesh.Create(totalTris, flags);
 
 	m_triMesh.BeginMesh();
 	for (int i = 0; i < NL; ++i)

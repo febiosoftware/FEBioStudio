@@ -70,7 +70,7 @@ private:
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);
 	void UpdateNodalData(int ntime, bool breset);
 	void UpdateBoundingBox();
-	void UpdateMesh(std::vector<Slice>& slice, GLMesh& mesh);
+	void UpdateMesh(std::vector<Slice>& slice, GLTriMesh& mesh);
 
 private:
 	int			m_nfield;

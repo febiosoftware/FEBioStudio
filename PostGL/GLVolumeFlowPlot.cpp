@@ -466,7 +466,7 @@ void GLVolumeFlowPlot::Render(CGLContext& rc)
 // in FSMesh.cpp
 double gain(double g, double x);
 
-void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GLMesh& mesh)
+void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, GLTriMesh& mesh)
 {
 	// count the faces
 	int totalFaces = 0;
@@ -478,7 +478,7 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 	}
 
 	// allocate the mesh
-	mesh.AllocVertexBuffers(3 * totalFaces, GLMesh::FLAG_VERTEX | GLMesh::FLAG_COLOR | GLMesh::FLAG_TEXTURE);
+	mesh.Create(totalFaces, GLMesh::FLAG_COLOR | GLMesh::FLAG_TEXTURE);
 
 	// white color (we only modify the alpha below)
 	GLColor c(255, 255, 255);
