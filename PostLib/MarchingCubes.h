@@ -68,7 +68,7 @@ protected:
 
 class CMarchingCubes : public CGLImageRenderer
 {
-	enum { ISO_VALUE, SMOOTH, COLOR, CLOSE_SURFACE, INVERT_SPACE, CLIP };
+	enum { ISO_VALUE, SMOOTH, CLOSE_SURFACE, INVERT_SPACE, CLIP, COLOR, SPECULAR_COLOR, SHININESS };
 
 public:
 	CMarchingCubes(CImageModel* img);
@@ -104,12 +104,16 @@ private:
 
 	void CreateSurface();
 
+	void ProcessImage();
+
 private:
 	double	m_val, m_oldVal;		// iso-surface value
 	bool	m_bsmooth;
 	bool	m_bcloseSurface;
 	bool	m_binvertSpace;
 	GLColor	m_col;
+	GLColor	m_spc;
+	double	m_shininess;
 	Byte m_ref;
 
 	GLTriMesh	m_mesh;

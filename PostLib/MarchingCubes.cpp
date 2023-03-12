@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <ImageLib/3DGradientMap.h>
 #include <MeshLib/FEMesh.h>
 #include <sstream>
+#include <algorithm>
 #include <assert.h>
 //using namespace std;
 
@@ -90,10 +91,12 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 
 	AddDoubleParam(0, "isosurface value")->SetFloatRange(0.0, 1.0);
 	AddBoolParam(true, "smooth surface");
-	AddColorParam(GLColor::White(), "surface color");
 	AddBoolParam(true, "close surface");
 	AddBoolParam(true, "invert space");
 	AddBoolParam(true, "allow clipping");
+	AddColorParam(GLColor::White(), "surface color");
+	AddColorParam(GLColor::White(), "specular color");
+	AddDoubleParam(0, "shininess")->SetFloatRange(0.0, 1.0);
 
 	m_val = 0.5;
 	m_oldVal = -1.0;
@@ -101,6 +104,10 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 	m_bcloseSurface = true;
 	m_binvertSpace = false;
 	m_col = GLColor(200, 185, 185);
+	m_spc = GLColor(85, 85, 85);
+	m_shininess = 0.25;
+
+	ProcessImage();
 
 	UpdateData(false);
 
@@ -125,6 +132,8 @@ bool CMarchingCubes::UpdateData(bool bsave)
 		if (m_binvertSpace != GetBoolValue(INVERT_SPACE)) { m_binvertSpace = GetBoolValue(INVERT_SPACE); update = true; }
 		AllowClipping(GetBoolValue(CLIP));
 		m_col = GetColorValue(COLOR);
+		m_spc = GetColorValue(SPECULAR_COLOR);
+		m_shininess = GetFloatValue(SHININESS);
 
 		if (update) CreateSurface();
 	}
@@ -132,10 +141,12 @@ bool CMarchingCubes::UpdateData(bool bsave)
 	{
 		SetFloatValue(ISO_VALUE, m_val);
 		SetBoolValue(SMOOTH, m_bsmooth);
-		SetColorValue(COLOR, m_col);
 		SetBoolValue(CLOSE_SURFACE, m_bcloseSurface);
 		SetBoolValue(INVERT_SPACE, m_binvertSpace);
 		SetBoolValue(CLIP, AllowClipping());
+		SetColorValue(COLOR, m_col);
+		SetColorValue(SPECULAR_COLOR, m_spc);
+		SetFloatValue(SHININESS, m_shininess);
 	}
 
 	return false;
@@ -145,7 +156,6 @@ void CMarchingCubes::SetSmooth(bool b)
 { 
 	m_bsmooth = b; 
 	m_oldVal = -1.f;
-//	Create();
 }
 
 void CMarchingCubes::SetInvertSpace(bool b)
@@ -508,7 +518,11 @@ void CMarchingCubes::SetIsoValue(float v)
 
 void CMarchingCubes::Render(CGLContext& rc)
 {
+	GLfloat spc[4] = { m_spc.r / 255.f, m_spc.g / 255.f, m_spc.b / 255.f, 1.f };
 	glColor3ub(m_col.r, m_col.g, m_col.b);
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, (GLint)(128*m_shininess));
+
 	m_mesh.Render();
 }
 
@@ -535,4 +549,76 @@ bool CMarchingCubes::GetMesh(FSMesh& mesh)
 	mesh.UpdateNormals();
 
 	return true;
+}
+
+// The purpose of this function is to find an initial value for m_val that does 
+// not generate too many triangles. 
+void CMarchingCubes::ProcessImage()
+{
+	CImageModel& im = *GetImageModel();
+	if (im.Get3DImage() == nullptr) return;
+	C3DImage& im3d = *im.Get3DImage();
+
+	int NX = im3d.Width();
+	int NY = im3d.Height();
+	int NZ = im3d.Depth();
+	if ((NX == 1) || (NY == 1) || (NZ == 1)) return;
+
+	Byte val[8];
+
+	std::vector<std::pair<unsigned int, unsigned int> > bin;
+	bin.resize(256);
+	for (int i = 0; i < 256; ++i) {
+		bin[i].first = i; bin[i].second = 0;
+	}
+
+	for (int k = 0; k < NZ - 1; ++k)
+	{
+		for (int j = 0; j < NY - 1; ++j)
+		{
+			for (int i = 0; i < NX - 1; ++i)
+			{
+				// get the voxel's values
+				if (i == 0)
+				{
+					val[0] = im3d.value(i, j, k);
+					val[3] = im3d.value(i, j + 1, k);
+					val[4] = im3d.value(i, j, k + 1);
+					val[7] = im3d.value(i, j + 1, k + 1);
+				}
+
+				val[1] = im3d.value(i + 1, j, k);
+				val[2] = im3d.value(i + 1, j + 1, k);
+				val[5] = im3d.value(i + 1, j, k + 1);
+				val[6] = im3d.value(i + 1, j + 1, k + 1);
+
+				// find the min/max
+				Byte min = val[0], max = val[0];
+				for (int l = 1; l < 8; ++l)
+				{
+					if (val[l] < min) min = val[l];
+					if (val[l] > max) max = val[l];
+				}
+
+				for (int l = min; l <= max; ++l) bin[l].second++;
+
+				// keep this for next i
+				val[0] = val[1];
+				val[4] = val[5];
+				val[3] = val[2];
+				val[7] = val[6];
+			}
+		}
+	}
+
+	// sort the bins
+	std::sort(bin.begin(), bin.end(), [](pair<unsigned int, unsigned int>& a, pair<unsigned int, unsigned int>& b) {
+		return a.second < b.second;
+		});
+
+	// pick the 25%
+	int ival = bin[64].first;
+
+	// set the initial value
+	m_val = ival / 255.0;
 }
