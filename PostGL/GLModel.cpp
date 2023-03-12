@@ -1112,7 +1112,7 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 	if (m_doZSorting)
 	{
 		int NF = dom.Faces();
-		vector< pair<int, double> > zlist; zlist.reserve(NF);
+		std::map< double, int> zmap;
 		// first, build a list of faces
 		for (int i = 0; i < NF; ++i)
 		{
@@ -1128,19 +1128,15 @@ void CGLModel::RenderTransparentMaterial(CGLContext& rc, FEPostModel* ps, int m)
 				vec3d q = rc.m_cam->WorldToCam(r);
 
 				// add it to the z-list
-				zlist.push_back(pair<int, double>(i, q.z));
+				zmap[q.z] = i;
 			}
 		}
 
-		// sort the zlist
-		std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
-			return a.second < b.second;
-		});
-
 		// build the sorted face list
 		const vector<int>& faceList = dom.FaceList();
-		vector<int> sortedFaceList(zlist.size());
-		for (size_t i = 0; i < zlist.size(); ++i) sortedFaceList[i] = faceList[zlist[i].first];
+		vector<int> sortedFaceList(zmap.size());
+		auto it = zmap.begin();
+		for (size_t i = 0; i < zmap.size(); ++i, ++it) sortedFaceList[i] = faceList[it->second];
 
 		// render the list
 		glDisable(GL_CULL_FACE);
@@ -1333,7 +1329,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 	if (zsort)
 	{
 		int NF = dom.Faces();
-		vector< pair<int, double> > zlist; zlist.reserve(NF);
+		std::map< double, int> zmap;
 		for (int i = 0; i < NF; ++i)
 		{
 			FSFace& face = dom.Face(i);
@@ -1346,19 +1342,15 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 				vec3d q = rc.m_cam->WorldToCam(r);
 
 				// add it to the z-list
-				zlist.push_back(pair<int, double>(i, q.z));
+				zmap[q.z] = i;
 			}
 		}
 
-		// sort the zlist
-		std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
-			return a.second < b.second;
-		});
-
 		// build the sorted face list
 		const vector<int>& faceList = dom.FaceList();
-		vector<int> sortedFaceList(zlist.size());
-		for (size_t i = 0; i < zlist.size(); ++i) sortedFaceList[i] = faceList[zlist[i].first];
+		vector<int> sortedFaceList(zmap.size());
+		auto it = zmap.begin();
+		for (size_t i = 0; i < zmap.size(); ++i, it++) sortedFaceList[i] = faceList[it->second];
 
 		// render the list
 		m_render.RenderFEFaces(pm, sortedFaceList);
@@ -1380,7 +1372,7 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 		if (zsort)
 		{
 			int NF = dom.Faces();
-			vector< pair<int, double> > zlist; zlist.reserve(NF);
+			std::map< double, int> zmap;
 			for (int i = 0; i < NF; ++i)
 			{
 				FSFace& face = dom.Face(i);
@@ -1393,19 +1385,15 @@ void CGLModel::RenderSolidDomain(CGLContext& rc, MeshDomain& dom, bool btex, boo
 					vec3d q = rc.m_cam->WorldToCam(r);
 
 					// add it to the z-list
-					zlist.push_back(pair<int, double>(i, q.z));
+					zmap[q.z] = i;
 				}
 			}
 
-			// sort the zlist
-			std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
-				return a.second < b.second;
-				});
-
 			// build the sorted face list
 			const vector<int>& faceList = dom.FaceList();
-			vector<int> sortedFaceList(zlist.size());
-			for (size_t i = 0; i < zlist.size(); ++i) sortedFaceList[i] = faceList[zlist[i].first];
+			vector<int> sortedFaceList(zmap.size());
+			auto it = zmap.begin();
+			for (size_t i = 0; i < zmap.size(); ++i, ++it) sortedFaceList[i] = faceList[it->second];
 
 			// render the list
 			m_render.RenderFEFaces(pm, sortedFaceList);
