@@ -83,6 +83,12 @@ enum Snap_Mode
 	SNAP_GRID
 };
 
+enum Planecut_Mode
+{
+	PLANECUT,
+	HIDE_ELEMENTS
+};
+
 //-----------------------------------------------------------------------------
 // tag structure
 struct GLTAG

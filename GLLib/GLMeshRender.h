@@ -43,6 +43,12 @@ class FSMesh;
 class GLMeshRender
 {
 public:
+	enum RenderMode {
+		DefaultMode,
+		SelectionMode,
+		OutlineMode
+	};
+public:
 	GLMeshRender();
 
 	void ShowShell2Hex(bool b) { m_bShell2Solid = b; }
@@ -57,6 +63,12 @@ public:
 	void SetPointSize(float f) { m_pointSize = f; }
 
 	void SetDivisions(int ndivs) { m_ndivs = ndivs; }
+
+public:
+	void SetRenderMode(RenderMode mode);
+
+	void PushState();
+	void PopState();
 
 public:
 	void RenderGLMesh(GMesh* pm, int nid = -1);
@@ -85,16 +97,21 @@ public:
 	void RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
 
 	void RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList);
+	void RenderFEFacesOutline(FSCoreMesh* pm, const std::vector<FSFace*>& faceList);
 	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
 
+	void RenderFEElementsOutline(FSMesh& mesh, const std::vector<int>& elemList);
+	void RenderFEElementsOutline(FSCoreMesh* pm, const std::vector<FEElement_*>& elemList);
+
+private:
 	void RenderElementOutline(FEElement_& el, FSCoreMesh* pm);
 
-	void RenderNormals(FSMeshBase* pm, float scale, int tag);
-
 public:
-	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList);
+	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, bool bsel = false);
 	void RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
 	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f);
+
+	void RenderNormals(FSMeshBase* pm, float scale, int tag);
 
 public:
 	void RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel);
@@ -126,6 +143,7 @@ public:
 	int			m_nshellref;		//!< shell reference surface
 	float		m_pointSize;		//!< size of points
 	bool		m_bfaceColor;		//!< use face colors when rendering
+	RenderMode	m_renderMode;
 
 private:
 	GLTriMesh	m_glmesh;

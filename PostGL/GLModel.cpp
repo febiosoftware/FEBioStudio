@@ -1005,12 +1005,11 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
 
-	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT);
+	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT | GL_POLYGON_BIT);
 
 	// now render the selected faces
 	glDisable(GL_TEXTURE_1D);
 	GLColor c = m_sel_col;
-	glColor4ub(c.r,c.g,c.g,128);
 	glDisable(GL_LIGHTING);
 
 	int ndivs = GetSubDivisions();
@@ -1019,6 +1018,8 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// render the selected faces
 	if (mode == SELECT_FACES)
 	{
+		glColor3ub(c.r, c.g, c.b);
+		m_render.SetRenderMode(GLMeshRender::SelectionMode);
 		m_render.RenderFEFaces(pm, [](const FSFace& face) {
 			return face.IsSelected();
 			});
@@ -1027,6 +1028,8 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	// render the selected elements
 	if (mode == SELECT_ELEMS)
 	{
+		glColor3ub(255, 64, 0);
+		m_render.SetRenderMode(GLMeshRender::SelectionMode);
 		m_render.RenderFEFaces(pm, [=](const FSFace& face) {
 			FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 			return el.IsSelected();
@@ -1034,30 +1037,21 @@ void CGLModel::RenderSelection(CGLContext &rc)
 	}
 
 	// render the outline of the selected elements
-	glDisable(GL_DEPTH_TEST);
-	glColor3ub(255,255,0);
+	m_render.SetRenderMode(GLMeshRender::OutlineMode);
+	glColor3f(1.f, 1.f, 0);
 
 	// do the selected elements first
 	if (mode == SELECT_ELEMS)
 	{
 		const vector<FEElement_*> elemSelection = GetElementSelection();
-		for (int i = 0; i<(int)elemSelection.size(); ++i)
-		{
-			FEElement_& el = *elemSelection[i]; assert(el.IsSelected());
-			m_render.RenderElementOutline(el, pm);
-		}
+		m_render.RenderFEElementsOutline(pm, elemSelection);
 	}
 
 	// now do the selected faces
 	if (mode == SELECT_FACES)
 	{
 		const vector<FSFace*> faceSelection = GetFaceSelection();
-		for (int i = 0; i<(int)faceSelection.size(); ++i)
-		{
-			FSFace& f = *faceSelection[i]; 
-			if (f.IsSelected())
-				m_render.RenderFaceOutline(f, pm);
-		}
+		m_render.RenderFEFacesOutline(pm, faceSelection);
 	}
 
 	glPopAttrib();

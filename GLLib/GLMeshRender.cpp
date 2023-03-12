@@ -116,6 +116,19 @@ GLMeshRender::GLMeshRender()
 	m_ndivs = 1;
 	m_pointSize = 7.f;
 	m_bfaceColor = false;
+	m_renderMode = DefaultMode;
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::PushState()
+{
+	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::PopState()
+{
+	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
@@ -125,16 +138,37 @@ void GLMeshRender::SetFaceColor(bool b) { m_bfaceColor = b; }
 bool GLMeshRender::GetFaceColor() const { return m_bfaceColor; }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList)
+void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, bool bsel)
 {
 	int NE = (int)elemList.size();
 	glBegin(GL_TRIANGLES);
 	for (int i = 0; i < NE; ++i)
 	{
 		FEElement_& el = mesh.Element(elemList[i]);
-		RenderElement(&el, &mesh, false);
+		RenderElement(&el, &mesh, bsel);
 	}
 	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::SetRenderMode(RenderMode mode)
+{
+	m_renderMode = mode;
+	switch (mode)
+	{
+	case DefaultMode: break;
+	case SelectionMode:
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+		glDisable(GL_CULL_FACE);
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		glEnable(GL_POLYGON_STIPPLE);
+		break;
+	case OutlineMode:
+		glDisable(GL_DEPTH_TEST);
+		glDisable(GL_LIGHTING);
+		break;
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -144,7 +178,7 @@ void GLMeshRender::RenderFEElements(FSMesh& mesh, std::function<bool(const FEEle
 	for (int i = 0; i<mesh.Elements(); ++i)
 	{
 		FEElement_& el = mesh.Element(i);
-		if (f(el)) RenderElement(&el, &mesh, false);
+		if (f(el)) RenderElement(&el, &mesh, true);
 	}
 	glEnd();
 }
@@ -2694,6 +2728,18 @@ void GLMeshRender::RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& 
 }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEFacesOutline(FSCoreMesh* pm, const std::vector<FSFace*>& faceList)
+{
+	glBegin(GL_LINES);
+	for (FSFace* pf : faceList)
+	{
+		FSFace& face = *pf;
+		RenderFaceOutline(face, pm);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f)
 {
 	glBegin(GL_LINES);
@@ -3554,6 +3600,25 @@ void RenderFace3Outline(FSCoreMesh* pm, FSFace& face, int ndivs)
 			vec3f p = e.eval(a, t);
 			glVertex3f(p.x, p.y, p.z);
 		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEElementsOutline(FSMesh& mesh, const std::vector<int>& elemList)
+{
+	for (int i : elemList)
+	{
+		FEElement_& el = mesh.Element(i);
+		RenderElementOutline(el, &mesh);
+	}
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEElementsOutline(FSCoreMesh* pm, const std::vector<FEElement_*>& elemList)
+{
+	for (FEElement_* pe : elemList)
+	{
+		RenderElementOutline(*pe, pm);
 	}
 }
 

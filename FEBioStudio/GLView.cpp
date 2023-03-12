@@ -365,7 +365,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	setMouseTracking(true);
 
 	m_showPlaneCut = false;
-	m_planeCutMode = 0;
+	m_planeCutMode = Planecut_Mode::PLANECUT;
 	m_plane[0] = 1.0;
 	m_plane[1] = 0.0;
 	m_plane[2] = 0.0;
@@ -5853,7 +5853,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 		}
 	}
 
-	if ((m_planeCutMode == 0) && (m_showPlaneCut))
+	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
 	{
 		m_planeCut = BuildPlaneCut(fem);
 	}
@@ -5959,10 +5959,8 @@ void CGLView::RenderPlaneCut()
 
 	// render the selected faces
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_POLYGON_STIPPLE);
-	glColor3ub(255, 0, 0);
+	mr.SetRenderMode(GLMeshRender::SelectionMode);
+	glColor3ub(255, 64, 0);
 	mr.SetFaceColor(false);
 	mr.RenderGLMesh(m_planeCut, 1);
 

@@ -41,6 +41,7 @@ public:
 
 private:
 	void RenderModel(CGLContext& rc);
+	void RenderGObject(CGLContext& rc, GObject* po);
 	void RenderSelectionBox(CGLContext& rc);
 	void RenderRigidBodies(CGLContext& rc);
 	void RenderRigidJoints(CGLContext& rc);

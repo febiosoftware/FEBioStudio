@@ -187,17 +187,34 @@ void CGLModelScene::RenderModel(CGLContext& rc)
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
 
-	CGLView* glview = rc.m_view;
-	if (glview == nullptr) return;
-
-	GLViewSettings& view = glview->GetViewSettings();
-
-	CGLCamera& cam = *rc.m_cam;
+	// we don't use backface culling when drawing
+	glDisable(GL_CULL_FACE);
 
 	// get the model
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible() && po->IsValid())
+		{
+			glPushMatrix();
+			SetModelView(po);
+			RenderGObject(rc, po);
+			glPopMatrix();
+		}
+	}
+}
 
+void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
+{
+	CModelDocument* pdoc = m_doc;
+	GLViewSettings& view = rc.m_settings;
+
+	CGLView* glview = rc.m_view;
+
+	CGLCamera& cam = *rc.m_cam;
+	
 	// Get the item mode
 	int item = pdoc->GetItemMode();
 
@@ -206,73 +223,55 @@ void CGLModelScene::RenderModel(CGLContext& rc)
 
 	GObject* poa = pdoc->GetActiveObject();
 
-	bool bnorm = view.m_bnorm;
-	double scale = view.m_scaleNormals;
-
-	// we don't use backface culling when drawing
-	//	if (view.m_bcull) glEnable(GL_CULL_FACE); else glDisable(GL_CULL_FACE);
-	glDisable(GL_CULL_FACE);
-
 	if (item == ITEM_MESH)
 	{
-		for (int i = 0; i < model.Objects(); ++i)
+		switch (nsel)
 		{
-			GObject* po = model.Object(i);
-			if (po->IsVisible() && po->IsValid())
+		case SELECT_OBJECT:
+		{
+			if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(rc, po);
+			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
 			{
-				glPushMatrix();
-				SetModelView(po);
-				switch (nsel)
-				{
-				case SELECT_OBJECT:
-				{
-					if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(rc, po);
-					else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == 1))
-					{
-						RenderFEElements(rc, po);
+				RenderFEElements(rc, po);
 
-						GLColor c = view.m_mcol;
-						glColor3ub(c.r, c.g, c.b);
-						RenderMeshLines(rc, po);
-					}
-					else RenderObject(rc, po);
-				}
-				break;
-				case SELECT_PART: RenderParts(rc, po); break;
-				case SELECT_FACE: RenderSurfaces(rc, po); break;
-				case SELECT_EDGE:
-				{
-					RenderObject(rc, po);
-					cam.LineDrawMode(true);
-					cam.Transform();
-					SetModelView(po);
-					RenderEdges(rc, po);
-					cam.LineDrawMode(false);
-					cam.Transform();
-					SetModelView(po);
-				}
-				break;
-				case SELECT_NODE:
-				{
-					RenderObject(rc, po);
-					cam.LineDrawMode(true);
-					cam.Transform();
-					SetModelView(po);
-					RenderNodes(rc, po);
-					cam.LineDrawMode(false);
-					cam.Transform();
-					SetModelView(po);
-				}
-				break;
-				case SELECT_DISCRETE:
-				{
-					RenderObject(rc, po);
-				}
-				break;
-				}
-				if (bnorm) RenderNormals(rc, po, scale);
-				glPopMatrix();
+				GLColor c = view.m_mcol;
+				glColor3ub(c.r, c.g, c.b);
+				RenderMeshLines(rc, po);
 			}
+			else RenderObject(rc, po);
+		}
+		break;
+		case SELECT_PART: RenderParts(rc, po); break;
+		case SELECT_FACE: RenderSurfaces(rc, po); break;
+		case SELECT_EDGE:
+		{
+			RenderObject(rc, po);
+			cam.LineDrawMode(true);
+			cam.Transform();
+			SetModelView(po);
+			RenderEdges(rc, po);
+			cam.LineDrawMode(false);
+			cam.Transform();
+			SetModelView(po);
+		}
+		break;
+		case SELECT_NODE:
+		{
+			RenderObject(rc, po);
+			cam.LineDrawMode(true);
+			cam.Transform();
+			SetModelView(po);
+			RenderNodes(rc, po);
+			cam.LineDrawMode(false);
+			cam.Transform();
+			SetModelView(po);
+		}
+		break;
+		case SELECT_DISCRETE:
+		{
+			RenderObject(rc, po);
+		}
+		break;
 		}
 	}
 	else
@@ -280,70 +279,62 @@ void CGLModelScene::RenderModel(CGLContext& rc)
 		// get the mesh mode
 		int meshMode = glview->GetMeshMode();
 
-		for (int i = 0; i < model.Objects(); ++i)
+		if (po == poa)
 		{
-			GObject* po = model.Object(i);
-			if (po->IsVisible() && po->IsValid())
+			if (meshMode == MESH_MODE_VOLUME)
 			{
-				glPushMatrix();
-				SetModelView(po);
-				if (po == poa)
+				if (item == ITEM_ELEM)
 				{
-					if (meshMode == MESH_MODE_VOLUME)
-					{
-						if (item == ITEM_ELEM)
-						{
-							RenderFEElements(rc, po);
-						}
-						else if (item == ITEM_FACE)
-						{
-							RenderFEFaces(rc, po);
-						}
-						else if (item == ITEM_EDGE)
-						{
-							RenderFEFaces(rc, po);
-							cam.LineDrawMode(true);
-							cam.Transform();
-							SetModelView(po);
-							RenderFEEdges(rc, po);
-							cam.LineDrawMode(false);
-							cam.Transform();
-						}
-						else if (item == ITEM_NODE)
-						{
-							RenderFEFaces(rc, po);
-							RenderFENodes(rc, po);
-						}
-					}
-					else
-					{
-						if (item == ITEM_FACE)
-						{
-							RenderSurfaceMeshFaces(rc, po);
-						}
-						else if (item == ITEM_EDGE)
-						{
-							RenderSurfaceMeshFaces(rc, po);
-							cam.LineDrawMode(true);
-							cam.Transform();
-							SetModelView(po);
-							RenderSurfaceMeshEdges(rc, po);
-							cam.LineDrawMode(false);
-							cam.Transform();
-						}
-						else if (item == ITEM_NODE)
-						{
-							RenderSurfaceMeshFaces(rc, po);
-							RenderSurfaceMeshNodes(rc, po);
-						}
-					}
+					RenderFEElements(rc, po);
 				}
-				else RenderObject(rc, po);
-				if (bnorm) RenderNormals(rc, po, scale);
-				glPopMatrix();
+				else if (item == ITEM_FACE)
+				{
+					RenderFEFaces(rc, po);
+				}
+				else if (item == ITEM_EDGE)
+				{
+					RenderFEFaces(rc, po);
+					cam.LineDrawMode(true);
+					cam.Transform();
+					SetModelView(po);
+					RenderFEEdges(rc, po);
+					cam.LineDrawMode(false);
+					cam.Transform();
+				}
+				else if (item == ITEM_NODE)
+				{
+					RenderFEFaces(rc, po);
+					RenderFENodes(rc, po);
+				}
+			}
+			else
+			{
+				if (item == ITEM_FACE)
+				{
+					RenderSurfaceMeshFaces(rc, po);
+				}
+				else if (item == ITEM_EDGE)
+				{
+					RenderSurfaceMeshFaces(rc, po);
+					cam.LineDrawMode(true);
+					cam.Transform();
+					SetModelView(po);
+					RenderSurfaceMeshEdges(rc, po);
+					cam.LineDrawMode(false);
+					cam.Transform();
+				}
+				else if (item == ITEM_NODE)
+				{
+					RenderSurfaceMeshFaces(rc, po);
+					RenderSurfaceMeshNodes(rc, po);
+				}
 			}
 		}
+		else RenderObject(rc, po);
 	}
+
+	// render normals if requested
+	if (view.m_bnorm) RenderNormals(rc, po, view.m_scaleNormals);
 }
 
 void CGLModelScene::RenderSelectionBox(CGLContext& rc)
@@ -1517,10 +1508,8 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 	// render the selected faces
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
 	{
+		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		glColor3ub(0, 0, 255);
-		glEnable(GL_POLYGON_STIPPLE);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
 		int NF = po->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
@@ -1697,9 +1686,7 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 
 	glPushAttrib(GL_ENABLE_BIT);
 	{
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glEnable(GL_POLYGON_STIPPLE);
+		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		SetMatProps(0);
 		glColor3ub(0, 0, 255);
 		GMesh& m = *po->GetRenderMesh();
@@ -2104,21 +2091,18 @@ void CGLModelScene::RenderFEFaces(CGLContext& rc, GObject* po)
 	RenderAllBeamElements(rc, po);
 
 	// render the selected faces
-	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_POLYGON_STIPPLE);
-	glColor3ub(255, 0, 0);
-	renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
+	renderer.PushState();
+	{
+		renderer.SetRenderMode(GLMeshRender::SelectionMode);
+		glColor3ub(255, 0, 0);
+		renderer.RenderFEFaces(pm, [](const FSFace& face) { return face.IsSelected(); });
 
-	// render the selected face outline
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glColor3ub(255, 255, 0);
-	renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
-
-	glPopAttrib();
+		// render the selected face outline
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		glColor3ub(255, 255, 0);
+		renderer.RenderFEFacesOutline(pm, [](const FSFace& face) { return face.IsSelected(); });
+	}
+	renderer.PopState();
 }
 
 //-----------------------------------------------------------------------------
@@ -2157,11 +2141,8 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 	// render the selected faces
 	// override some settings
 	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_POLYGON_STIPPLE);
-	glColor3ub(255, 128, 0);
+	renderer.SetRenderMode(GLMeshRender::SelectionMode);
+	glColor3ub(255, 64, 0);
 	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
 
 	// render the selected face outline
@@ -2410,18 +2391,15 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		RenderUnselectedBeamElements(rc, po);
 	}
 
-	// override some settings
-	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glColor4ub(255, 0, 0, 128);
-	glEnable(GL_POLYGON_STIPPLE);
-	glDisable(GL_LIGHTING);
-
-	// render the selected faces
+	// render the selected elements
 	if (pdoc == nullptr) return;
 	if (selectedElements.empty() == false)
 	{
+		renderer.PushState();
+		
+		renderer.SetRenderMode(GLMeshRender::SelectionMode);
+		glColor3f(1.f, 0, 0);
+
 		hasBeamElements = false;
 		renderer.RenderFEElements(*pm, selectedElements, [&](const FEElement_& el) {
 				// check for beams
@@ -2430,27 +2408,18 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 			});
 
 		// render a yellow highlight around selected elements
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glColor3ub(255, 255, 0);
-
-		for (int i = 0; i < selectedElements.size(); ++i)
-		{
-			FEElement_& el = pm->Element(selectedElements[i]);
-			renderer.RenderElementOutline(el, pm);
-		}
-
-		glPopAttrib();
+		renderer.SetRenderMode(GLMeshRender::OutlineMode);
+		glColor3f(1.f, 1.f, 0);
+		renderer.RenderFEElementsOutline(*pm, selectedElements);
 
 		if (hasBeamElements)
 		{
 			// render beam elements
 			RenderSelectedBeamElements(rc, po);
 		}
+	
+		renderer.PopState();
 	}
-
-	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
