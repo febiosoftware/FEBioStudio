@@ -668,6 +668,15 @@ void CModelDocument::SetUnitSystem(int unitSystem)
 		const double Fc = 9.648533212331e4;  // value in SI units
 		Param* pFc = fem->GetParam("Fc");
 		if (pFc) pFc->SetFloatValue(Units::Convert(Fc, UNIT_FARADAY_CONSTANT, Units::SI, unitSystem));
+
+        // reference temperature
+        Param* pT = fem->GetParam("T");
+        if (pT) pT->SetFloatValue(Units::Convert(pT->GetFloatValue(), UNIT_TEMPERATURE, Units::SI, unitSystem));
+
+        // reference pressure
+        Param* pP = fem->GetParam("P");
+        if (pP) pP->SetFloatValue(Units::Convert(pP->GetFloatValue(), UNIT_PRESSURE, Units::SI, unitSystem));
+
 	}
 }
 

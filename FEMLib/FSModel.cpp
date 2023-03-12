@@ -238,7 +238,8 @@ FSModel::FSModel() : m_skipGeometry(false)
     varAVel->AddDOF("Z-fluid angular velocity", "gz");
     
 	// define model parameters
-	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Absolute temperature");
+	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Referential absolute temperature");
+    AddScienceParam(0, UNIT_PRESSURE, "P", "Referential absolute pressure");
 	AddScienceParam(0, UNIT_GAS_CONSTANT, "R", "Gas constant");
 	AddScienceParam(0, UNIT_FARADAY_CONSTANT, "Fc", "Faraday's constant");
 }
