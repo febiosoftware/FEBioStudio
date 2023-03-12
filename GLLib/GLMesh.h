@@ -39,12 +39,29 @@ class CGLCamera;
 // Instead, use one of the derived classes below. 
 class GLMesh
 {
+private:
+	enum VertexBuffer
+	{
+		VERTEX_DATA,
+		NORMAL_DATA,
+		TEXTURE_DATA,
+		COLOR_DATA,
+		INDEX_DATA
+	};
+
 public:
 	enum Flags {
 		FLAG_NORMAL  = 1,
 		FLAG_TEXTURE = 2,
 		FLAG_COLOR   = 4,
 		FLAG_ALL = 15
+	};
+
+	enum RenderMode
+	{
+		ImmediateMode,
+		VertexArrayMode,
+		VBOMode
 	};
 
 	struct Vertex
@@ -58,6 +75,9 @@ public:
 public:
 	// clear all mesh data
 	void Clear();
+
+	// set the render mode
+	void SetRenderMode(RenderMode mode);
 
 	// call this to start building the mesh
 	void BeginMesh();
@@ -104,18 +124,32 @@ protected:
 
 	void AllocVertexBuffers(size_t maxVertices, unsigned flags);
 
+private:
+	void RenderImmediate();
+	void RenderVertexArrays();
+	void RenderVBO();
+
+	void InitVBO();
+
 protected:
 	float* m_vr = nullptr;	// vertex coordinates
 	float* m_vn = nullptr;	// vertex normals
 	float* m_vt = nullptr;	// vertex texture coordinates
 	ubyte* m_vc = nullptr; // vertex color (4 x unsigned byte)
+
 	unsigned int* m_ind = nullptr; // vertex indices (used for z-sorting)
+	bool m_useIndices;
 	
 	size_t m_vertexCount = 0;	// number of vertices
 	size_t m_maxVertexCount = 0;	// max number of vertices
+	unsigned int m_flags;
 	bool	m_bvalid;	// is the mesh valid and ready for rendering?
 
+	unsigned int	m_vbo[5];
+
 	unsigned int m_mode;	// primitive type to render (set by derived classes)
+	RenderMode	m_renderMode;
+	bool	m_initVBO;
 };
 
 inline void GLMesh::AddVertex(double* r, double* n, double* t)

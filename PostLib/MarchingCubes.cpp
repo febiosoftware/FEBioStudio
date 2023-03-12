@@ -103,6 +103,9 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 	m_col = GLColor(200, 185, 185);
 
 	UpdateData(false);
+
+	// let's use VBOs
+	m_mesh.SetRenderMode(GLMesh::VBOMode);
 }
 
 CMarchingCubes::~CMarchingCubes()
