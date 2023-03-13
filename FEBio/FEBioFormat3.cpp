@@ -1538,7 +1538,18 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		if (pg == nullptr) throw XMLReader::InvalidAttributeValue(tag, "elem_set", set->cvalue());
 
 		FSMesh* mesh = pg->GetMesh();
-		FEElementData* elemData = mesh->AddElementDataField(name->cvalue(), pg, dataType);
+
+		string sname;
+		if (name) sname = name->cvalue();
+		else
+		{
+			int n = mesh->MeshDataFields();
+			stringstream ss;
+			ss << "MeshData" << n + 1;
+			sname = ss.str();
+		}
+
+		FEElementData* elemData = mesh->AddElementDataField(sname, pg, dataType);
 
 		if (dataType == FEMeshData::DATA_SCALAR)
 		{
