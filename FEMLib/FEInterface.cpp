@@ -211,9 +211,9 @@ void FSPairedInterface::Load(IArchive &ar)
 					string s = GetName();
 					s += "Primary";
 					surf1->SetName(s);
-					mdl.AddNamedSelection(surf1);
-					SetPrimarySurface(surf1);
 				}
+				mdl.AddNamedSelection(surf1);
+				SetPrimarySurface(surf1);
 			}
 		}
 		break;
@@ -227,9 +227,9 @@ void FSPairedInterface::Load(IArchive &ar)
 					string s = GetName();
 					s += "Secondary";
 					surf2->SetName(s);
-					mdl.AddNamedSelection(surf2);
-					SetPrimarySurface(surf2);
 				}
+				mdl.AddNamedSelection(surf2);
+				SetSecondarySurface(surf2);
 			}
 		}
 		break;
