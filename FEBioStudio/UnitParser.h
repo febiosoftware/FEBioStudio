@@ -27,21 +27,21 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <QString>
-//using namespace std;
+#include "units.h"
 
 using std::vector;
 
-struct SYMBOL
-{
-	const char*		s;	// symbol string
-	int				p;	// power
-};
-
 class Unit
 {
+	struct Factor
+	{
+		Units::UnitSymbol	u;	// the unit
+		int					p;	// the power
+	};
+
 public:
 	Unit() {}
-	Unit(const char* symbol, int p = 1) { SYMBOL u{ symbol,p }; m_f.push_back(u); }
+	Unit(Units::UnitSymbol s, int p = 1) { m_f.push_back({ s, p }); }
 	Unit(const Unit& u) { m_f = u.m_f; }
 	void operator = (const Unit& u) { m_f = u.m_f; }
 
@@ -52,9 +52,9 @@ public:
 
 	void operator /= (const Unit& u)
 	{
-		for (vector<SYMBOL>::const_iterator it = u.m_f.begin(); it != u.m_f.end(); ++it)
+		for (vector<Factor>::const_iterator it = u.m_f.begin(); it != u.m_f.end(); ++it)
 		{
-			SYMBOL negu = *it;
+			Factor negu = *it;
 			negu.p = -negu.p;
 			m_f.push_back(negu);
 		}
@@ -67,8 +67,21 @@ public:
 
 	QString toString();
 
+	double TotalScaleFactor();
+
+	static Unit One()
+	{
+		Unit u;
+		Factor f;
+		f.u.s = "1";
+		f.u.f = 1.0;
+		f.p = 1;
+		u.m_f.push_back(f);
+		return u;
+	}
+
 public:
-	vector<SYMBOL>	m_f; // all factors making up unit
+	vector<Factor>	m_f; // all factors making up unit
 };
 
 class UnitParser

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FESphere.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 //=============================================================================
 // GSphere
@@ -69,7 +69,7 @@ bool GSphere::Update(bool b)
 //-----------------------------------------------------------------------------
 void GSphere::Create()
 {
-	SetRenderMesh(new GLMesh());
+	SetRenderMesh(new GMesh());
 
 	// create the nodes
 	assert(m_Node.empty());

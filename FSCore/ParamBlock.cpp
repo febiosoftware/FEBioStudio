@@ -370,7 +370,7 @@ Param& Param::operator = (const Param& p)
 //  m_szindx = p.m_szindx;
 //  m_nindx = p.m_nindx;
 //	m_offset = p.m_offset;
-	m_varType = p.m_varType;
+//	m_varType = p.m_varType;
 //	m_checkable = p.m_checkable;
 	m_checked = p.m_checked;
 //	m_flags = p.m_flags;
@@ -1308,6 +1308,19 @@ void ParamContainer::CopyParams(const ParamContainer& pc)
 		const Param& pj = pc.GetParam(i);
 		assert(pi.GetParamType() == pj.GetParamType());
 		pi = pj;
+	}
+}
+
+void ParamContainer::MapParams(const ParamContainer& pc)
+{
+	for (int i = 0; i < Parameters(); ++i)
+	{
+		const Param& pi = pc.GetParam(i);
+		Param* p = GetParam(pi.GetShortName());
+		if (p && (p->GetParamType() == pi.GetParamType()))
+		{
+			*p = pi;
+		}
 	}
 }
 

@@ -189,6 +189,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 {
 	XMLAtt& atype = tag.Attribute("type");
 	int moduleId = FEBio::GetModuleId(atype.cvalue()); assert(moduleId >= 0);
+	if (moduleId < -1) throw XMLReader::InvalidAttributeValue(tag, "type", atype.m_val.c_str());
 	FEBio::SetActiveModule(moduleId);
 	FSProject& prj = FileReader()->GetProject();
 	prj.SetModule(moduleId, false);
@@ -682,7 +683,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	// (we also allow "elset", although "name" is the correct attribute)
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname == 0) szname = tag.AttributeValue("elset", true);
-	if (szname == 0) szname = "_no_name";
+	if (szname == 0) throw XMLReader::MissingAttribute(tag, "name");
 
 	// make sure no parts have the same name
 	string name = szname;

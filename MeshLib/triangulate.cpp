@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "triangulate.h"
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
 
@@ -93,13 +93,13 @@ inline bool LeftOn   (vec3d& a, vec3d& b, vec3d& c) { return Area2(a, b, c) >= 0
 inline bool Collinear(vec3d& a, vec3d& b, vec3d& c) { return Area2(a, b, c) == 0; }
 
 //-----------------------------------------------------------------------------
-GLMesh* triangulate(GTriangulate& c)
+GMesh* triangulate(GTriangulate& c)
 {
 	assert(c.Nodes() == c.Edges());
 
 	int N = c.Nodes();
 
-	GLMesh* pm = new GLMesh;
+	GMesh* pm = new GMesh;
 	pm->Create(N, N-2, N);
 
 	// create the Nodes
@@ -258,7 +258,7 @@ double Area2(vec3d& a, vec3d& b, vec3d& c)
 }
 
 //-----------------------------------------------------------------------------
-GLMesh* triangulate(GFace& face)
+GMesh* triangulate(GFace& face)
 {
 	assert(face.m_ntype == FACE_POLYGON);
 
@@ -406,7 +406,7 @@ GLMesh* triangulate(GFace& face)
 		}
 	}
 
-	GLMesh* pm = triangulate(c);
+	GMesh* pm = triangulate(c);
 
 	// Position the face at the correct position
 	for (int i = 0; i < pm->Nodes(); ++i)

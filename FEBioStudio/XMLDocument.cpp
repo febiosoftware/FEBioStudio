@@ -114,25 +114,23 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
     child->SetTag(tag.Name());
     child->SetValue(szval);
 
-    for(int index = 0; index < tag.m_natt; index++)
+    for(XMLAtt& att : tag.m_att)
     {
-        XMLAtt attr =tag.m_att[index];
-
-        if(strcmp(attr.name(), "id") == 0)
+        if(strcmp(att.name(), "id") == 0)
         {
-            child->SetID(attr.cvalue());
+            child->SetID(att.cvalue());
         }
-        else if (strcmp(attr.name(), "name") == 0)
+        else if (strcmp(att.name(), "name") == 0)
         {
-            child->SetName(attr.cvalue());
+            child->SetName(att.cvalue());
         }
-        else if (strcmp(attr.name(), "type") == 0)
+        else if (strcmp(att.name(), "type") == 0)
         {
-            child->SetType(attr.cvalue());
+            child->SetType(att.cvalue());
         }
         else
         {
-            child->AddAttribtue(attr.name(), attr.cvalue());
+            child->AddAttribtue(att.name(), att.cvalue());
         }
     }
     
@@ -182,7 +180,9 @@ bool CXMLDocument::SaveDocument()
         if(writer.open(GetDocFilePath().c_str()) == false) return false;
 
         writeChild(static_cast<XMLTreeItem*>(m_treeModel->root().internalPointer()), writer);
-    }
+
+		return true;
+	}
 }
 
 void CXMLDocument::writeChild(XMLTreeItem* item, XMLWriter& writer)

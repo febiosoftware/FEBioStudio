@@ -71,7 +71,7 @@ using std::stringstream;
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 
-void VIEW_SETTINGS::Defaults(int ntheme)
+void GLViewSettings::Defaults(int ntheme)
 {
 	m_bgrid = true;
 	m_bmesh = true;
@@ -834,37 +834,6 @@ void CGLDocument::LoadResources(IArchive& ar)
 
 		ar.CloseChunk();
 	}
-}
-
-//-----------------------------------------------------------------------------
-// import image data
-
-bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
-{
-    static int n = 1;
-
-    CDlgStartImageThread dlg(new CImageReadThread(imgModel), m_wnd);
-
-    if(!dlg.exec())
-    {
-        return false;
-    }
-
-    if(imgModel->GetImageSource()->GetName().empty())
-    {
-        stringstream ss;
-        ss << "ImageModel" << n++;
-        imgModel->SetName(ss.str());
-    }
-    else
-    {
-        imgModel->SetName(imgModel->GetImageSource()->GetName());
-    }
-
-    // add it to the project
-    AddImageModel(imgModel);
-
-    return true;
 }
 
 int CGLDocument::ImageModels() const

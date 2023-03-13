@@ -315,6 +315,12 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 	return nelem;
 }
 
+void GLProbe::SetInitialPosition(const vec3d& r)
+{
+	m_initPos = r;
+	SetVecValue(INIT_POS, r);
+}
+
 bool GLProbe::TrackModelData() const
 {
 	return GetBoolValue(TRACK_DATA);

@@ -129,6 +129,7 @@ bool FEBioFormat25::ParseModuleSection(XMLTag &tag)
 	else
 	{
 		FileReader()->AddLogEntry("Unknown module type. (line %d)", tag.currentLine());
+		throw XMLReader::InvalidAttributeValue(tag, "type", atype.m_val.c_str());
 		return false;
 	}
 

@@ -39,6 +39,12 @@ FSTaskProgress FSThreadedTask::GetProgress()
 void FSThreadedTask::Terminate()
 {
 	m_progress.valid = false;
+	m_progress.canceled = true;
+}
+
+bool FSThreadedTask::IsCanceled() const
+{
+	return m_progress.canceled;
 }
 
 void FSThreadedTask::setProgress(double progress)
@@ -53,4 +59,20 @@ void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 {
 	setProgress(progress);
 	m_progress.task = sz;
+}
+
+void FSThreadedTask::setErrorString(const std::string& s)
+{
+	m_error = s;
+}
+
+bool FSThreadedTask::error(const std::string& s)
+{
+	setErrorString(s);
+	return false;
+}
+
+std::string FSThreadedTask::getErrorString() const
+{
+	return m_error;
 }

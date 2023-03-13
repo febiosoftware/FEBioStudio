@@ -612,12 +612,13 @@ void CDlgAddChemicalReaction::SetReaction(FSMaterialProperty* mat)
 			if (mp.HasSBM(spec.second - 0x100) == false) bvalid = false;
 		}
 
-		int index = spec.second;
 
 		bool bfound = false;
 		for (int j=0; j<nr; ++j)
 		{
 			FSMaterialProperty* rm = m_reaction->Reactant(j);
+
+			int index = spec.second;
 
 			// the species ID is a zero-based index into the solute+sbm table. 
 			int m = rm->GetParam("species")->GetIntValue();
@@ -787,7 +788,7 @@ void CDlgAddChemicalReaction::apply()
 	FSMaterialProperty* fwd = m_reaction->GetForwardRate();
 	if ((fwd == nullptr) || (m_fwdMat != fwd->Type()))
 	{
-		FSMaterialProperty* fwdRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(fwd->Type(), fem)); assert(fwdRate);
+		FSMaterialProperty* fwdRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(m_fwdMat, fem)); assert(fwdRate);
 		m_reaction->SetForwardRate(fwdRate);
 	}
 
@@ -797,7 +798,7 @@ void CDlgAddChemicalReaction::apply()
 	{
 		if ((rev == nullptr) || (rev->Type() != m_revMat))
 		{
-			FSMaterialProperty* revRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(fwd->Type(), fem)); assert(revRate);
+			FSMaterialProperty* revRate = dynamic_cast<FSMaterialProperty*>(FEBio::CreateClass(m_revMat, fem)); assert(revRate);
 			m_reaction->SetReverseRate(revRate);
 		}
 	}

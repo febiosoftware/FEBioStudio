@@ -26,13 +26,17 @@ SOFTWARE.*/
 
 #include <QHBoxLayout>
 #include <QGridLayout>
+#include <QFormLayout>
 #include <QLabel>
+#include <QSpinBox>
 #include "ImageSettingsPanel.h"
 #include "MainWindow.h"
 #include "PropertyListForm.h"
 #include "ObjectProps.h"
 #include <PostLib/ImageModel.h>
+#include <ImageLib/3DImage.h>
 #include "InputWidgets.h"
+#include "RangeSlider.h"
 #include <vector>
 
 class Ui::CImageParam
@@ -48,22 +52,14 @@ public:
         delete slider;
     }
     
-    void setup(::CImageParam* parent, Param* param)
+    void setup(::CImageParam* parent)
     {
-        m_param = param;
+        m_param = nullptr;
 
         QHBoxLayout* layout = new QHBoxLayout;
         layout->setContentsMargins(0,0,0,0);
 
-        layout->addWidget(new QLabel(QString(param->GetLongName()) + ":"));
         layout->addWidget(slider = new CDoubleSlider);
-
-        if(param->GetFloatMax() != 0)
-        {
-            slider->setRange(param->GetFloatMin(), param->GetFloatMax());
-        }
-
-        slider->setValue(m_param->GetFloatValue());
 
         QObject::connect(slider, &CDoubleSlider::valueChanged, parent, &::CImageParam::updateParam);
 
@@ -71,9 +67,23 @@ public:
     }
 };
 
-CImageParam::CImageParam(Param* param) : ui(new Ui::CImageParam)
+CImageParam::CImageParam() : ui(new Ui::CImageParam)
 {
-    ui->setup(this, param);
+    ui->setup(this);
+}
+
+void CImageParam::setParam(Param* param)
+{
+	ui->m_param = param;
+	if (param == nullptr) return;
+
+	ui->slider->blockSignals(true);
+	if (param->GetFloatMax() != 0)
+	{
+		ui->slider->setRange(param->GetFloatMin(), param->GetFloatMax());
+	}
+	ui->slider->setValue(param->GetFloatValue());
+	ui->slider->blockSignals(false);
 }
 
 CImageParam::~CImageParam()
@@ -83,68 +93,276 @@ CImageParam::~CImageParam()
 
 void CImageParam::updateParam()
 {
+	if (ui->m_param == nullptr) return;
     ui->m_param->SetFloatValue(ui->slider->getValue());
-
     emit paramChanged();
 }
+//=======================================================================================
 
+class Ui::CImageParam2
+{
+public:
+	CRangeSlider* slider;
+	QDoubleSpinBox* spinLeft;
+	QDoubleSpinBox* spinRight;
+
+	Param* m_param1;
+	Param* m_param2;
+
+public:
+
+	~CImageParam2()
+	{
+		delete slider;
+	}
+
+	void setup(::CImageParam2* parent)
+	{
+		m_param1 = nullptr;
+		m_param2 = nullptr;
+
+		QHBoxLayout* layout = new QHBoxLayout;
+		layout->setContentsMargins(0, 0, 0, 0);
+
+		layout->addWidget(spinLeft  = new QDoubleSpinBox);
+		layout->addWidget(slider    = new CRangeSlider);
+		layout->addWidget(spinRight = new QDoubleSpinBox);
+
+		QObject::connect(slider, &CRangeSlider::positionChanged, parent, &::CImageParam2::updateSlider);
+		QObject::connect(spinLeft , &QDoubleSpinBox::valueChanged, parent, &::CImageParam2::updateSpinBox);
+		QObject::connect(spinRight, &QDoubleSpinBox::valueChanged, parent, &::CImageParam2::updateSpinBox);
+
+		parent->setLayout(layout);
+
+		slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Ignored);
+	}
+};
+
+CImageParam2::CImageParam2() : ui(new Ui::CImageParam2)
+{
+	ui->setup(this);
+}
+
+void CImageParam2::setParams(Param* param1, Param* param2)
+{
+	ui->m_param1 = param1;
+	ui->m_param2 = param2;
+	if ((param1 == nullptr) || (param2 == nullptr)) return;
+
+	double vmin = param1->GetFloatMin();
+	double vmax = param1->GetFloatMax();
+	double val1 = param1->GetFloatValue();
+	double val2 = param2->GetFloatValue();
+
+	ui->spinLeft->blockSignals(true);
+	ui->spinLeft->setRange(vmin, vmax);
+	ui->spinLeft->setSingleStep((vmax - vmin) / 100);
+	ui->spinLeft->setValue(val1);
+	ui->spinLeft->blockSignals(false);
+
+	ui->spinRight->blockSignals(true);
+	ui->spinRight->setRange(vmin, vmax);
+	ui->spinRight->setSingleStep((vmax - vmin) / 100);
+	ui->spinRight->setValue(val2);
+	ui->spinRight->blockSignals(false);
+
+	ui->slider->blockSignals(true);
+	ui->slider->setRange(vmin, vmax);
+	ui->slider->setPositions(val1, val2);
+	ui->slider->blockSignals(false);
+}
+
+CImageParam2::~CImageParam2()
+{
+	delete ui;
+}
+
+void CImageParam2::setColor(QColor c)
+{
+	ui->slider->setSelectionColor(c);
+}
+
+void CImageParam2::updateSlider()
+{
+	if ((ui->m_param1 == nullptr) || (ui->m_param2 == nullptr)) return;
+
+	double val1 = ui->slider->leftPosition();
+	double val2 = ui->slider->rightPosition();
+	ui->m_param1->SetFloatValue(val1);
+	ui->m_param2->SetFloatValue(val2);
+
+	// update the spin boxes
+	ui->spinLeft->blockSignals(true); ui->spinLeft->setValue(val1); ui->spinLeft->blockSignals(false);
+	ui->spinRight->blockSignals(true); ui->spinRight->setValue(val2); ui->spinRight->blockSignals(false);
+
+	emit paramChanged();
+}
+
+void CImageParam2::updateSpinBox()
+{
+	double val1 = ui->spinLeft->value();
+	double val2 = ui->spinRight->value();
+	ui->m_param1->SetFloatValue(val1);
+	ui->m_param2->SetFloatValue(val2);
+
+	// update the slider
+	ui->slider->blockSignals(true); 
+	ui->slider->setPositions(val1, val2);
+	ui->slider->blockSignals(false);
+
+	emit paramChanged();
+}
+
+
+//=======================================================================================
 class Ui::CImageSettingsPanel
 {
 public:
-    QGridLayout* layout = new QGridLayout;
+	QWidget*	w[3];
+	QFormLayout* panel[3];
 
-    std::vector<::CImageParam*> params;
+	::CImageParam* scale;
+	::CImageParam* gamma;
+	::CImageParam* hue;
+	::CImageParam* sat;
+	::CImageParam* lum;
 
-    QLabel* noImage;
+	::CImageParam2* intensity;
+	::CImageParam2* alphaRng;
+	::CImageParam2* clipx;
+	::CImageParam2* clipy;
+	::CImageParam2* clipz;
+
+	::CImageParam* chue1;
+	::CImageParam* chue2;
+	::CImageParam* chue3;
 
 public:
-    void setup(::CImageSettingsPanel* panel)
+    void setup(::CImageSettingsPanel* parent)
     {
-        m_panel = panel;
+        m_parent = parent;
 
-        layout = new QGridLayout;
+        panel[0] = new QFormLayout;
+        panel[1] = new QFormLayout;
+        panel[2] = new QFormLayout;
 
-        noImage = new QLabel("(No Image Selected)");
-        layout->addWidget(noImage);
+		w[0] = new QWidget;
+		w[1] = new QWidget;
+		w[2] = new QWidget;
+		w[0]->setLayout(panel[0]);
+		w[1]->setLayout(panel[1]);
+		w[2]->setLayout(panel[2]);
 
-        panel->setLayout(layout);
+		QHBoxLayout* layout = new QHBoxLayout;
+		layout->addWidget(w[0]);
+		layout->addWidget(w[1]);
+		layout->addWidget(w[2]);
+
+		scale = new ::CImageParam();
+		gamma = new ::CImageParam();
+		hue   = new ::CImageParam();
+		sat   = new ::CImageParam();
+		lum   = new ::CImageParam();
+
+		intensity = new ::CImageParam2();
+		alphaRng = new ::CImageParam2();
+		clipx = new ::CImageParam2();
+		clipy = new ::CImageParam2();
+		clipz = new ::CImageParam2();
+
+		clipx->setColor(QColor::fromRgb(255, 0, 0));
+		clipy->setColor(QColor::fromRgb(0, 255, 0));
+		clipz->setColor(QColor::fromRgb(0, 0, 255));
+
+		chue1 = new ::CImageParam();
+		chue2 = new ::CImageParam();
+		chue3 = new ::CImageParam();
+
+		addWidget(scale, "Alpha scale", 0);
+		addWidget(gamma, "Gamma correction", 0);
+		addWidget(hue, "Hue", 0);
+		addWidget(sat, "Saturation", 0);
+		addWidget(lum, "Luminance", 0);
+
+		addWidget(intensity, "Intensity", 1);
+		addWidget(alphaRng, "Alpha range", 1);
+		addWidget(clipx, "Clip X", 1);
+		addWidget(clipy, "Clip Y", 1);
+		addWidget(clipz, "Clip Z", 1);
+
+		addWidget(chue1, "Channel1 Hue", 2);
+		addWidget(chue2, "Channel2 Hue", 2);
+		addWidget(chue3, "Channel3 Hue", 2);
+
+		parent->setLayout(layout);
     }
 
     void setImageModel(Post::CImageModel* img)
     {
-        
-        for(auto param : params)
-        {
-            delete param;
-        }
-
-        params.clear();
-
         if(img)
         {
-            noImage->hide();
-
             CImageViewSettings* settings = img->GetViewSettings();
 
-            for(int param = 0; param < settings->Parameters(); param++)
-            {
-                ::CImageParam* imgParam = new ::CImageParam(&settings->GetParam(param));
+			scale->setParam(&settings->GetParam(CImageViewSettings::ALPHA_SCALE));
+			gamma->setParam(&settings->GetParam(CImageViewSettings::GAMMA));
+			hue  ->setParam(&settings->GetParam(CImageViewSettings::HUE));
+			sat  ->setParam(&settings->GetParam(CImageViewSettings::SAT));
+			lum  ->setParam(&settings->GetParam(CImageViewSettings::LUM));
 
-                QObject::connect(imgParam, &::CImageParam::paramChanged, m_panel, &::CImageSettingsPanel::ParamChanged);
+			intensity->setParams(&settings->GetParam(CImageViewSettings::MIN_INTENSITY), &settings->GetParam(CImageViewSettings::MAX_INTENSITY));
+			alphaRng ->setParams(&settings->GetParam(CImageViewSettings::MIN_ALPHA), &settings->GetParam(CImageViewSettings::MAX_ALPHA));
+			clipx    ->setParams(&settings->GetParam(CImageViewSettings::CLIPX_MIN), &settings->GetParam(CImageViewSettings::CLIPX_MAX));
+			clipy    ->setParams(&settings->GetParam(CImageViewSettings::CLIPY_MIN), &settings->GetParam(CImageViewSettings::CLIPY_MAX));
+			clipz    ->setParams(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
 
-                params.push_back(imgParam);
-
-                layout->addWidget(imgParam, param/2, param % 2);
-            }
-        }
-        else
-        {
-            noImage->show();
-        }
+			C3DImage* im = img->Get3DImage();
+			if (im && ((im->PixelType() == C3DImage::INT_RGB8) || (im->PixelType() == C3DImage::UINT_RGB8) || (im->PixelType() == C3DImage::INT_RGB16)))
+			{
+				chue1->setParam(&settings->GetParam(CImageViewSettings::CHANNEL1_HUE));
+				chue2->setParam(&settings->GetParam(CImageViewSettings::CHANNEL2_HUE));
+				chue3->setParam(&settings->GetParam(CImageViewSettings::CHANNEL3_HUE));
+				w[2]->show();
+			}
+			else
+			{
+				chue1->setParam(nullptr);
+				chue2->setParam(nullptr);
+				chue3->setParam(nullptr);
+				w[2]->hide();
+			}
+		}
+		else
+		{
+			scale->setParam(nullptr);
+			gamma->setParam(nullptr);
+			hue->setParam(nullptr);
+			sat->setParam(nullptr);
+			lum->setParam(nullptr);
+			intensity->setParams(nullptr, nullptr);
+			alphaRng->setParams(nullptr, nullptr);
+			clipx->setParams(nullptr, nullptr);
+			clipy->setParams(nullptr, nullptr);
+			clipz->setParams(nullptr, nullptr);
+			chue1->setParam(nullptr);
+			chue2->setParam(nullptr);
+			chue3->setParam(nullptr);
+		}
     }
-private:
-    ::CImageSettingsPanel* m_panel;
 
+	void addWidget(::CImageParam* w, const QString& name, int panelIndex)
+	{
+		panel[panelIndex]->addRow(name, w);
+		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
+	}
+
+	void addWidget(::CImageParam2* w, const QString& name, int panelIndex)
+	{
+		panel[panelIndex]->addRow(name, w);
+		QObject::connect(w, &::CImageParam2::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
+	}
+
+private:
+	::CImageSettingsPanel* m_parent;
 };
 
 CImageSettingsPanel::CImageSettingsPanel(CMainWindow* wnd, QWidget* parent)

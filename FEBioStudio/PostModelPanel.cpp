@@ -48,17 +48,18 @@ SOFTWARE.*/
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPointPlot.h>
 #include <PostGL/GLStreamLinePlot.h>
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <ImageLib/3DImage.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
+#include <MeshIO/FESTLExport.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLProbe.h>
@@ -867,13 +868,7 @@ void CPostModelPanel::BuildModelTree()
 			{
 				Post::CGLImageRenderer* render = img->GetImageRenderer(j);
 
-				Post::CVolRender* volRender = dynamic_cast<Post::CVolRender*>(render);
-				if (volRender)
-				{
-					ui->AddItem(pi1, volRender, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender));
-				}
-
-				Post::CVolumeRender2* volRender2 = dynamic_cast<Post::CVolumeRender2*>(render);
+				Post::CVolumeRenderer* volRender2 = dynamic_cast<Post::CVolumeRenderer*>(render);
 				if (volRender2)
 				{
 					ui->AddItem(pi1, volRender2, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender2));
@@ -1280,6 +1275,16 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		QMenu menu(this);
 		menu.addAction("Export image ...", this, SLOT(OnExportImage()));
 		menu.exec(ev->globalPos());
+		return;
+	}
+
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QMenu menu(this);
+		menu.addAction("Export surface ...", this, SLOT(OnExportMCSurface()));
+		menu.exec(ev->globalPos());
+		return;
 	}
 }
 
@@ -1476,6 +1481,29 @@ void CPostModelPanel::OnExportImage()
 			QMessageBox::information(GetMainWindow(), "Export image", msg);
 		}
 	}	
+}
+
+void CPostModelPanel::OnExportMCSurface()
+{
+	FSObject* po = ui->currentObject();
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QFileDialog dlg;
+		QString fileName = dlg.getSaveFileName(this, "Export surface", "", "STL mesh (*.stl)");
+		if (fileName.isEmpty() == false)
+		{
+			string filename = fileName.toStdString();
+			FSMesh mesh;
+			mc->GetMesh(mesh);
+			FSProject dummy;
+			FESTLExport stl(dummy);
+
+			bool b = stl.Write(filename.c_str(), &mesh);
+			if (b) QMessageBox::information(this, "Export surface", "File written successfully.");
+			else QMessageBox::critical(this, "Export surface", "Failed exporting surface.");
+		}
+	}
 }
 
 void CPostModelPanel::OnExportProbeData()

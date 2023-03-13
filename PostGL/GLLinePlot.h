@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "LineDataModel.h"
 #include <PostLib/FEState.h>
+#include <GLLib/GLMesh.h>
 namespace Post {
 
 //-----------------------------------------------------------------------------
@@ -78,10 +79,14 @@ public:
 	LineDataModel* GetLineDataModel();
 
 protected:
-	void RenderLines(FEState& s, int ntime);
-	void Render3DLines(FEState& s, int ntime);
-	void Render3DSmoothLines(FEState& s, int ntime);
+	void RenderLines();
+	void Render3DLines();
+	void Render3DSmoothLines();
 	bool ShowLine(LINESEGMENT& l, FEState& s);
+
+	void UpdateLineMesh(FEState& s, int ntime);
+	void Update3DLines(FEState& s, int ntime);
+	void UpdateSmooth3DLines(FEState& s, int ntime);
 
 private:
 	float		m_line;		//!< line thickness
@@ -95,119 +100,9 @@ private:
 	CColorTexture	m_Col;	//!< line color (when m_ncolor is not solid)
 
 	LineDataModel* m_lineData;
-};
 
-//-----------------------------------------------------------------------------
-#define MAX_POINT_DATA_FIELDS	32
-
-class PointData
-{
-public:
-	struct POINT
-	{
-		int		nlabel;
-		vec3f	m_r;
-		float	val[MAX_POINT_DATA_FIELDS];
-	};
-
-public:
-
-	void AddPoint(vec3f a, int nlabel);
-
-	void AddPoint(vec3f a, const std::vector<float>& data, int nlabel);
-
-	int Points() const { return (int)m_pt.size(); }
-
-	POINT& Point(int n) { return m_pt[n]; }
-
-public:
-	vector<POINT>	m_pt;
-};
-
-//-----------------------------------------------------------------------------
-class PointDataSource;
-
-class PointDataModel
-{
-public:
-	PointDataModel(FEPostModel* fem);
-	~PointDataModel();
-	void Clear();
-
-	FEPostModel* GetFEModel() { return m_fem; }
-
-	void SetPointDataSource(PointDataSource* src) { m_src = src; }
-	PointDataSource* GetPointDataSource() { return m_src; }
-
-	void AddDataField(const std::string& dataName);
-	std::vector<std::string> GetDataNames() { return m_dataNames; }
-
-	int GetDataFields() const { return (int)m_dataNames.size(); }
-
-	PointData& GetPointData(size_t state) { return m_point[state]; }
-
-	bool Reload();
-
-private:
-	FEPostModel* m_fem;
-	PointDataSource* m_src;
-	std::vector<PointData>	m_point;
-	std::vector<std::string>	m_dataNames;
-};
-
-class PointDataSource
-{
-public:
-	PointDataSource(PointDataModel* mdl) : m_mdl(mdl) { mdl->SetPointDataSource(this); }
-	virtual ~PointDataSource() {}
-
-	virtual bool Load(const char* szfile) = 0;
-	virtual bool Reload() = 0;
-
-	PointDataModel* GetPointDataModel() { return m_mdl; }
-
-private:
-	PointDataModel* m_mdl;
-};
-
-//-----------------------------------------------------------------------------
-// point cloud rendering of imported point data
-class CGLPointPlot : public CGLLegendPlot
-{
-	enum { POINT_SIZE, POINT_SIZE_SOURCE, RENDER_MODE, COLOR_MODE, SOLID_COLOR, COLOR_MAP, DATA_FIELD, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
-
-public:
-	CGLPointPlot();
-	virtual ~CGLPointPlot();
-
-	void Render(CGLContext& rc) override;
-
-	float GetPointSize() { return m_pointSize; }
-	void SetPointSize(float f) { m_pointSize = f; }
-
-	GLColor GetPointColor() { return m_solidColor; }
-	void SetPointColor(GLColor c) { m_solidColor = c; }
-
-	bool UpdateData(bool bsave = true) override;
-
-public:
-	void SetPointDataModel(PointDataModel* pointData);
-
-	void Reload() override;
-
-private:
-	void RenderPoints();
-	void RenderSpheres();
-
-private:
-	float		m_pointSize;	//!< point size
-	int			m_renderMode;	//!< render mode
-	int			m_colorMode;	//!< color mode
-	GLColor		m_solidColor;	//!< rendering color
-	CColorTexture	m_Col;		//!< line color (when m_ncolor is not solid)
-	bool		m_showLegend;	//!< show legend bar or not
-	DATA_RANGE	m_range;	// range for legend
-
-	PointDataModel* m_pointData;
+	GLLineMesh	m_lineMesh;	// mesh used for line rendering
+	GLQuadMesh	m_quadMesh;	// mesh used for 3d line rendering
+	GLTriMesh	m_triMesh;	// mesh used for smooth 3d line rendering
 };
 }

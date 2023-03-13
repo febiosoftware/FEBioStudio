@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
 #include "GLModelScene.h"
+#include "units.h"
 
 class CModelContext
 {
@@ -196,7 +197,18 @@ GObject* CModelDocument::GetActiveObject()
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() { return m_Project.GetFSModel().GetModel().GetBoundingBox(); }
+BOX CModelDocument::GetModelBox() 
+{ 
+	BOX box = m_Project.GetFSModel().GetModel().GetBoundingBox(); 
+
+	// add any image models
+	for (int i = 0; i < ImageModels(); ++i)
+	{
+		box += GetImageModel(i)->GetBoundingBox();
+	}
+
+	return box;
+}
 
 //-----------------------------------------------------------------------------
 void CModelDocument::AddObject(GObject* po)
@@ -640,6 +652,36 @@ bool CModelDocument::ImportFEBioMaterials(const std::string& fileName)
 	if (fileName.empty()) return false;
 	FEBioFileImport feb(GetProject());
 	return feb.ImportMaterials(fileName.c_str());
+}
+
+//-----------------------------------------------------------------------------
+void CModelDocument::SetUnitSystem(int unitSystem)
+{
+	CGLDocument::SetUnitSystem(unitSystem);
+
+	FSModel* fem = GetFSModel();
+	if (fem)
+	{
+		// -- update global constants
+		// universal gas constant
+		const double R = 8.314462618153; // value in SI units
+		Param* pR = fem->GetParam("R");
+		if (pR) pR->SetFloatValue(Units::Convert(R, UNIT_GAS_CONSTANT, Units::SI, unitSystem));
+
+		// faraday's constant
+		const double Fc = 9.648533212331e4;  // value in SI units
+		Param* pFc = fem->GetParam("Fc");
+		if (pFc) pFc->SetFloatValue(Units::Convert(Fc, UNIT_FARADAY_CONSTANT, Units::SI, unitSystem));
+
+        // reference temperature
+        Param* pT = fem->GetParam("T");
+        if (pT) pT->SetFloatValue(Units::Convert(pT->GetFloatValue(), UNIT_TEMPERATURE, Units::SI, unitSystem));
+
+        // reference pressure
+        Param* pP = fem->GetParam("P");
+        if (pP) pP->SetFloatValue(Units::Convert(pP->GetFloatValue(), UNIT_PRESSURE, Units::SI, unitSystem));
+
+	}
 }
 
 //-----------------------------------------------------------------------------

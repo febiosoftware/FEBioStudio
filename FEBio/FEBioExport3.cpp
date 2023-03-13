@@ -1023,6 +1023,8 @@ void FEBioExport3::WriteModuleSection(FSStep* pstep)
 	case FE_STEP_FLUID_FSI: t.add_attribute("type", "fluid-FSI"); break;
 	case FE_STEP_REACTION_DIFFUSION: t.add_attribute("type", "reaction-diffusion"); m_useReactionMaterial2 = true; break;
     case FE_STEP_POLAR_FLUID: t.add_attribute("type", "polar fluid"); break;
+    case FE_STEP_FLUID_SOLUTES: t.add_attribute("type", "fluid-solutes"); break;
+    case FE_STEP_THERMO_FLUID: t.add_attribute("type", "thermo-fluid"); break;
 	case FE_STEP_FEBIO_ANALYSIS:
 	{
 		int mod = m_prj.GetModule();

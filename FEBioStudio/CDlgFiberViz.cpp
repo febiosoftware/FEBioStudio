@@ -122,14 +122,14 @@ double int_to_double(int n)
 
 void CDlgFiberViz::showEvent(QShowEvent* ev)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bfiber = true;
 
 	double v = view.m_fiber_scale;
 	double w = view.m_fiber_width;
 	bool bhf = view.m_showHiddenFibers;
 	bool bsf = view.m_showSelectFibersOnly;
-	GLColor c = view.m_fibColor;
+	int c = view.m_fibColor;
 	int ls = view.m_fibLineStyle;
 
 	int n = double_to_int(v);
@@ -147,7 +147,7 @@ void CDlgFiberViz::showEvent(QShowEvent* ev)
 
 void CDlgFiberViz::closeEvent(QCloseEvent* ev)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bfiber = false;
 }
 
@@ -162,7 +162,7 @@ void CDlgFiberViz::onDataChanged()
 	double v = int_to_double(ui->m_scale->value());
 	double w = int_to_double(ui->m_width->value());
 
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_fibColor = ncol;
 	view.m_fiber_scale = v;
 	view.m_fiber_width = w;

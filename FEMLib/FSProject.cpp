@@ -315,7 +315,8 @@ void FSProject::Load(IArchive &ar)
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
 			int moduleId = MapOldToNewModules(oldModuleId);
-			assert(moduleId != -1);
+			// if the moduleID == -1, then this file likely requires a plugin
+			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
 			SetModule(moduleId);
 		} 
 		break;
@@ -397,6 +398,8 @@ void FSProject::InitModules()
 	FEMaterialFactory::AddCategory("heat transfer"       , MODULE_HEAT               , FE_MAT_HEAT_TRANSFER);
 	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID              , FE_MAT_FLUID);
     FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI          , FE_MAT_FLUID_FSI);
+    FEMaterialFactory::AddCategory("fluid-solutes"       , MODULE_FLUID_SOLUTES      , FE_MAT_FLUID_SOLUTES);
+    FEMaterialFactory::AddCategory("thermo-fluid"        , MODULE_THERMO_FLUID       , FE_MAT_THERMO_FLUID);
     FEMaterialFactory::AddCategory("polar fluid"         , MODULE_POLAR_FLUID        , FE_MAT_POLAR_FLUID);
 	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION , FE_MAT_REACTION_DIFFUSION);
 	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				 , FE_MAT_RIGID);
@@ -526,11 +529,22 @@ void FSProject::InitModules()
     REGISTER_FE_CLASS(FSFSITraction             , MODULE_FLUID_FSI, FELOAD_ID  , FE_FSI_TRACTION     , "FSI Interface Traction");
     REGISTER_FE_CLASS(FSBFSITraction            , MODULE_FLUID_FSI, FELOAD_ID  , FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction");
     
+    // --- THERMOFLUID MODULE ---
+    REGISTER_FE_CLASS(FSThermoFluidAnalysis     , MODULE_THERMO_FLUID, FEANALYSIS_ID    , FE_STEP_THERMO_FLUID      , "Thermofluid Mechanics");
+    REGISTER_FE_CLASS(FSFixedTemperature        , MODULE_THERMO_FLUID, FEBC_ID          , FE_FIXED_TEMPERATURE      , "Zero temperature");
+    REGISTER_FE_CLASS(FSPrescribedTemperature   , MODULE_THERMO_FLUID, FEBC_ID          , FE_PRESCRIBED_TEMPERATURE , "Prescribed temperature");
+    REGISTER_FE_CLASS(FSInitTemperature         , MODULE_THERMO_FLUID, FEIC_ID          , FE_INIT_TEMPERATURE       , "Temperature");
+    REGISTER_FE_CLASS(FSHeatFlux                , MODULE_THERMO_FLUID, FELOAD_ID        , FE_HEAT_FLUX              , "Heat flux");
+    REGISTER_FE_CLASS(FSHeatSource              , MODULE_THERMO_FLUID, FELOAD_ID        , FE_HEAT_SOURCE            , "Heat source");
+
 
     // --- POLAR FLUID MODULE ---
     REGISTER_FE_CLASS(FSPolarFluidAnalysis            , MODULE_POLAR_FLUID, FEANALYSIS_ID, FE_STEP_POLAR_FLUID, "Polar Fluid Mechanics");
     REGISTER_FE_CLASS(FSFixedFluidAngularVelocity     , MODULE_POLAR_FLUID, FEBC_ID      , FE_FIXED_FLUID_ANGULAR_VELOCITY        , "Zero fluid angular velocity");
     REGISTER_FE_CLASS(FSPrescribedFluidAngularVelocity, MODULE_POLAR_FLUID, FEBC_ID      , FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY   , "Prescribed fluid angular velocity");
+
+    // --- FLUID-SOLUTES MODULE ---
+    REGISTER_FE_CLASS(FSFluidSolutesNaturalFlux       , MODULE_FLUID_SOLUTES, FELOAD_ID            , FE_FLUID_SOLUTES_NATURAL_FLUX      , "Solute natural flux");
 
 	// --- REACTION-DIFFUSION MODULE ---
 	REGISTER_FE_CLASS(FSReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FEANALYSIS_ID   , FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");
@@ -579,6 +593,7 @@ void FSProject::SetDefaultPlotVariables()
 	{
 		m_plt.AddPlotVariable("displacement", true);
 		m_plt.AddPlotVariable("stress", true);
+        m_plt.AddPlotVariable("relative volume", true);
 	}
 	else if (strcmp(szmod, "biphasic") == 0)
 	{
@@ -587,6 +602,7 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("relative volume", true);
 		m_plt.AddPlotVariable("solid stress", true);
 		m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
 		m_plt.AddPlotVariable("fluid flux", true);
 	}
 	else if (strcmp(szmod, "heat") == 0)
@@ -633,6 +649,49 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
 	}
+    else if (strcmp(szmod, "fluid-solutes") == 0)
+    {
+        m_plt.AddPlotVariable("displacement", true);
+        m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("effective solute concentration", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("solute concentration", true);
+        m_plt.AddPlotVariable("solute flux", true);
+    }
+    else if (strcmp(szmod, "thermo-fluid") == 0)
+    {
+        m_plt.AddPlotVariable("displacement", true);
+        m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid heat flux", true);
+        m_plt.AddPlotVariable("fluid isobaric specific heat capacity", true);
+        m_plt.AddPlotVariable("fluid isochoric specific heat capacity", true);
+        m_plt.AddPlotVariable("nodal fluid temperature", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
+        m_plt.AddPlotVariable("fluid specific free energy", true);
+        m_plt.AddPlotVariable("fluid specific entropy", true);
+        m_plt.AddPlotVariable("fluid specific internal energy", true);
+        m_plt.AddPlotVariable("fluid specific gage enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific free enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific strain energy", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid temperature", true);
+        m_plt.AddPlotVariable("fluid thermal conductivity" , true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+    }
     else if (strcmp(szmod, "polar fluid") == 0)
     {
         m_plt.AddPlotVariable("displacement", true);
@@ -722,6 +781,7 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 		pi->SetLoadCurveID(p.GetLoadCurveID());
 	}
 	else { 
+		log << "error: cannot find parameter \"" << p.GetShortName() << "\"\n";
 		return false; 
 	}
 
@@ -795,6 +855,8 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		case FE_STEP_MULTIPHASIC       : FEBio::SetActiveModule("multiphasic"       ); break;
 		case FE_STEP_FLUID             : FEBio::SetActiveModule("fluid"             ); break;
 		case FE_STEP_FLUID_FSI         : FEBio::SetActiveModule("fluid-FSI"         ); break;
+        case FE_STEP_FLUID_SOLUTES     : FEBio::SetActiveModule("fluid-solutes"     ); break;
+        case FE_STEP_THERMO_FLUID      : FEBio::SetActiveModule("thermo-fluid"      ); break;
         case FE_STEP_POLAR_FLUID       : FEBio::SetActiveModule("polar fluid"       ); break;
 		case FE_STEP_REACTION_DIFFUSION: FEBio::SetActiveModule("reaction-diffusion"); break; // requires plugin!
 		case FE_STEP_HEAT_TRANSFER     : FEBio::SetActiveModule("heat"              ); break; // requires plugin!
@@ -1710,7 +1772,7 @@ void FSProject::ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 //		case FE_INIT_SHELL_FLUID_PRESSURE  : break;
 		case FE_INIT_CONCENTRATION         : febic = FEBio::CreateInitialCondition("initial concentration", fem); break;
 //		case FE_INIT_SHELL_CONCENTRATION   : break;
-//		case FE_INIT_TEMPERATURE           : break;
+		case FE_INIT_TEMPERATURE           : febic = FEBio::CreateInitialCondition("initial temperature", fem); break; break;
 		case FE_INIT_FLUID_DILATATION      : febic = FEBio::CreateInitialCondition("initial fluid dilatation", fem); break;
 		case FE_INIT_PRESTRAIN             : febic = FEBio::CreateInitialCondition("prestrain", fem); break;
 		default:

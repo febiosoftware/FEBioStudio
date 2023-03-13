@@ -210,10 +210,13 @@ bool FEBioFormat3::ParseModuleSection(XMLTag &tag)
     else if (atype == "fluid-FSI"  ) m_nAnalysis = FE_STEP_FLUID_FSI;
 	else if (atype == "reaction-diffusion") m_nAnalysis = FE_STEP_REACTION_DIFFUSION;
     else if (atype == "polar fluid") m_nAnalysis = FE_STEP_POLAR_FLUID;
+    else if (atype == "fluid-solutes" ) m_nAnalysis = FE_STEP_FLUID_SOLUTES;
+    else if (atype == "thermo-fluid" ) m_nAnalysis = FE_STEP_THERMO_FLUID;
 	else if (atype == "explicit-solid") m_nAnalysis = FE_STEP_EXPLICIT_SOLID;
 	else
 	{
 		FileReader()->AddLogEntry("Unknown module type. (line %d)", tag.currentLine());
+		throw XMLReader::InvalidAttributeValue(tag, "type", atype.m_val.c_str());
 		return false;
 	}
 
@@ -2413,8 +2416,6 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 
-	char szname[256] = {0};
-
 	++tag;
 	do
 	{
@@ -2422,8 +2423,9 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 		{
 			const char* sztype = tag.AttributeValue("type");
 
-			char szbuf[64] = { 0 };
+			string name;
 			const char* szname = tag.AttributeValue("name", true);
+			if (szname) name = szname;
 
 			if (strcmp(sztype, "init_dof") == 0)
 			{
@@ -2551,6 +2553,13 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) throw XMLReader::MissingTag(tag, "node_set");
 
+				if (name.empty())
+				{
+					char szbuf[32] = { 0 };
+					sprintf(szbuf, "InitialVelocity%02d", CountICs<FSNodalVelocities>(fem) + 1);
+					name = szbuf;
+				}
+
 				vec3d v(0, 0, 0);
 				++tag;
 				do
@@ -2560,25 +2569,20 @@ bool FEBioFormat3::ParseInitialSection(XMLTag& tag)
 				} while (!tag.isend());
 				FSNodalVelocities* pic = new FSNodalVelocities(&fem, pg, v, m_pBCStep->GetID());
 
-				if (szname == nullptr)
-				{
-					sprintf(szbuf, "InitialVelocity%02d", CountICs<FSNodalVelocities>(fem) + 1);
-					szname = szbuf;
-				}
-
-				pic->SetName(szname);
+				pic->SetName(name);
 				m_pBCStep->AddComponent(pic);
 			}
 			else if (strcmp(sztype, "prestrain") == 0)
 			{
 				FSInitPrestrain* pip = new FSInitPrestrain(&fem);
 
-				if (szname == nullptr)
+				if (name.empty())
 				{
+					char szbuf[32] = { 0 };
 					sprintf(szbuf, "InitPrestrain%d", CountConstraints<FSInitPrestrain>(fem) + 1);
-					szname = szbuf;
+					name = szbuf;
 				}
-				pip->SetName(szname);
+				pip->SetName(name);
 				m_pBCStep->AddComponent(pip);
 
 				ReadParameters(*pip, tag);

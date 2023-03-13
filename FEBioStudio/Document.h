@@ -36,10 +36,11 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include "modelcheck.h"
 #include <QtCore/QString>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 #include "GLScene.h"
 #include <GLLib/GView.h>
 #include <QObject>
+#include "Command.h"
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -322,7 +323,6 @@ public:
 	std::string getModelInfo() const { return m_info; }
 
 public:
-    bool ImportImage(Post::CImageModel* imgModel);
 	int ImageModels() const;
 	virtual void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);
@@ -343,7 +343,7 @@ protected:
 	void LoadResources(IArchive& ar);
 
 public:
-	void SetUnitSystem(int unitSystem);
+	virtual void SetUnitSystem(int unitSystem);
 	int GetUnitSystem() const;
 
 protected:

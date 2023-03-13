@@ -27,12 +27,23 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 
 class CDocument;
 class CCommandManager;
 class CGLView;
 class FSAnalysisStep;
+
+//-----------------------------------------------------------------------------
+// view state
+// This stores the variables that define the state of the UI 
+struct VIEW_STATE
+{
+	int		nselect;	// selection mode
+	int		nstyle;		// selection style
+	int		ntrans;		// transform mode
+	int		nitem;		// modify mode
+};
 
 //----------------------------------------------------------------
 class CCommand;

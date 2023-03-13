@@ -36,8 +36,24 @@ enum OBJECT_COLOR_MODE {
 };
 
 //-----------------------------------------------------------------------------
+// render mode
+enum RenderMode {
+	RENDER_SOLID = 0,
+	RENDER_WIREFRAME = 1
+};
+
+//-----------------------------------------------------------------------------
+// background styles
+enum BackgroundStyle {
+	BG_COLOR1 = 0,
+	BG_COLOR2 = 1,
+	BG_HORIZONTAL = 2,
+	BG_VERTICAL = 3
+};
+
+//-----------------------------------------------------------------------------
 //! view settings
-struct VIEW_SETTINGS
+struct GLViewSettings
 {
 	bool	m_bcull;	//!< cull backface flag
 	bool	m_bconn;	//!< select connected
@@ -113,15 +129,4 @@ struct VIEW_SETTINGS
 	int		m_objectColor;			// 0 = default (by material), 1 = by object
 
 	void Defaults(int ntheme = 0);
-};
-
-//-----------------------------------------------------------------------------
-// view state
-// This stores the variables that define the state of the UI 
-struct VIEW_STATE
-{
-	int		nselect;	// selection mode
-	int		nstyle;		// selection style
-	int		ntrans;		// transform mode
-	int		nitem;		// modify mode
 };

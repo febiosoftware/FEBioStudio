@@ -726,6 +726,7 @@ FSElemSet* FEBioInputModel::PartInstance::BuildFEElemSet(const char* szname)
 	{
 		// could be a domain?
 		Domain* dom = m_part->FindDomain(szname);
+		if (dom == nullptr) return nullptr;
 
 		// get the element list
 		elemList = dom->GetElementIDList();

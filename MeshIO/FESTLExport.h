@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FSFileExport.h"
 
 class GObject;
+class FSMesh;
 
 class FESTLExport : public FSFileExport
 {
@@ -39,4 +40,6 @@ public:
 	bool Write(const char* szfile) override;
 
 	bool Write(const char* szfile, GObject* po);
+
+	bool Write(const char* szfile, FSMesh* pm);
 };

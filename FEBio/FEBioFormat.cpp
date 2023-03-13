@@ -182,6 +182,8 @@ FSAnalysisStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* sz
 	case FE_STEP_REACTION_DIFFUSION: pstep = new FSReactionDiffusionAnalysis(&fem); break;
     case FE_STEP_POLAR_FLUID       : pstep = new FSPolarFluidAnalysis (&fem); break;
 	case FE_STEP_EXPLICIT_SOLID    : pstep = new FSExplicitSolidAnalysis(&fem); break;
+    case FE_STEP_FLUID_SOLUTES     : pstep = new FSFluidSolutesAnalysis(&fem); break;
+    case FE_STEP_THERMO_FLUID      : pstep = new FSThermoFluidAnalysis(&fem); break;
 	default:
 		pstep = new FSNonLinearMechanics(&fem);
 		FileReader()->AddLogEntry("Unknown step type. Creating Structural Mechanics step");
@@ -321,10 +323,10 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
     // check if parameter is indexed by looking for tag attributes other than "lc"
     const char* szi = 0;
     int idx = 0;
-    for (int i=0; i<tag.m_natt; ++i) {
-        if (strcmp(tag.m_att[i].name(), "lc") != 0) {
-            szi = tag.m_att[i].name();
-            idx = atoi(tag.m_att[i].cvalue());
+    for (XMLAtt& att : tag.m_att) {
+        if (strcmp(att.name(), "lc") != 0) {
+            szi = att.name();
+            idx = atoi(att.cvalue());
             break;
         }
     }
@@ -648,7 +650,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	{
 		// default analysis depends on step type
 		int ntype = m_pstep->GetType();
-		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
+		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_FLUID_SOLUTES) || (ntype == FE_STEP_THERMO_FLUID) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
 		else ops.nanalysis = FE_STATIC;
 	}
 
@@ -733,7 +735,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solute")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").cvalue();
+					string name = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -749,7 +751,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							++tag;
 						} while (!tag.isend());
 					}
-					fem.AddSolute(sz, z, M, d);
+					fem.AddSolute(name, z, M, d);
 				}
 				else ParseUnknownTag(tag);
 				++tag;
@@ -766,7 +768,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solid_bound")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").cvalue();
+					string name = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -781,7 +783,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							else ParseUnknownTag(tag);
 							++tag;
 						} while (!tag.isend());
-						fem.AddSBM(sz, z, M, d);
+						fem.AddSBM(name, z, M, d);
 					}
 				}
 				else ParseUnknownTag(tag);
@@ -2476,6 +2478,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 				{
 					logVar.SetGroupID(pg->GetID());
 				}
+				else AddLogEntry("Could not find element set \"%s\"", szset);
 			}
 			else if (tag.isempty() == false)
 			{
@@ -2586,9 +2589,8 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// first, process potential attribute parameters
-	for (int i = 0; i < tag.m_natt; ++i)
+	for (XMLAtt& att : tag.m_att)
 	{
-		XMLAtt& att = tag.m_att[i];
 		Param* param = pmc->GetParam(att.name());
 		if (param)
 		{
@@ -2598,7 +2600,7 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 			case Param_CHOICE:
 			{
 				if (param->GetEnumNames())
-					ReadChoiceParam(*param, att.m_szatv);
+					ReadChoiceParam(*param, att.m_val.c_str());
 				else
 				{
 					int n;

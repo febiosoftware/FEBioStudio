@@ -1725,8 +1725,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(data->obj);
 		if (pci)
 		{
-			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
+			menu.addAction("Replace ...", this, SLOT(OnReplaceContactInterface()));
+			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapContactSurfaces()));
 		}
+
 		del = true;
 	}
 	break;
@@ -1857,7 +1859,7 @@ void CModelViewer::OnDeleteAllMaterials()
 	GetMainWindow()->DeleteAllMaterials();
 }
 
-void CModelViewer::OnSwapMasterSlave()
+void CModelViewer::OnSwapContactSurfaces()
 {
 	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pci)
@@ -1866,6 +1868,16 @@ void CModelViewer::OnSwapMasterSlave()
 		UpdateObject(m_currentObject);
 	}
 }
+
+void CModelViewer::OnReplaceContactInterface()
+{
+	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
+	if (pci)
+	{
+		GetMainWindow()->OnReplaceContactInterface(pci);
+	}
+}
+
 
 void CModelViewer::OnDeleteAllBC()
 {

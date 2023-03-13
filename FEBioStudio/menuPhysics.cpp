@@ -369,33 +369,19 @@ void CMainWindow::on_actionAddIC_triggered()
 			if (name.empty()) name = defaultICName(&fem, pic);
 			pic->SetName(name);
 
-			if (dynamic_cast<FSInitialNodalDOF*>(pic))
+			// figure out the selection
+			FESelection* psel = doc->GetCurrentSelection();
+			if (psel && psel->Size())
 			{
-				// figure out the selection
-				FESelection* psel = doc->GetCurrentSelection();
-				if (psel && psel->Size())
+				int itemType = pic->GetMeshItemType();
+				if (psel->Supports(itemType))
 				{
-					int ntype = psel->Type();
-					switch (ntype)
+					FEItemListBuilder* items = psel->CreateItemList();
+					if (items)
 					{
-					case SELECT_PARTS:
-					case SELECT_SURFACES:
-					case SELECT_CURVES:
-					case SELECT_NODES:
-					case SELECT_FE_ELEMENTS:
-					case SELECT_FE_FACES:
-					case SELECT_FE_EDGES:
-					case SELECT_FE_NODES:
-					{
-						FEItemListBuilder* items = psel->CreateItemList();
-						if (items)
-						{
-							items->SetName(name);
-							gm.AddNamedSelection(items);
-							pic->SetItemList(items);
-						}
-					}
-					break;
+						items->SetName(name);
+						gm.AddNamedSelection(items);
+						pic->SetItemList(items);
 					}
 				}
 			}
@@ -854,4 +840,41 @@ void CMainWindow::on_actionEditProject_triggered()
 	CDlgEditProject dlg(doc->GetProject(), this);
 	dlg.exec();
 	UpdatePhysicsUi();
+}
+
+void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)
+{
+	if (pci == nullptr) return;
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSProject& prj = doc->GetProject();
+	FSModel& fem = *doc->GetFSModel();
+	CDlgAddPhysicsItem dlg("Replace Contact Interface", FESURFACEINTERFACE_ID, -1, &fem, true, true, this);
+	if (dlg.exec())
+	{
+		FSPairedInterface* pi = FEBio::CreateFEBioClass<FSPairedInterface>(dlg.GetClassID(), &fem); assert(pi);
+		if (pi)
+		{
+			FEBio::InitDefaultProps(pi);
+
+			// create a name
+			std::string name = dlg.GetName();
+			if (name.empty()) name = pci->GetName();
+			pi->SetName(name);
+
+			// swap the surfaces
+			pi->SetPrimarySurface(pci->GetPrimarySurface()); pci->SetPrimarySurface(nullptr);
+			pi->SetSecondarySurface(pci->GetSecondarySurface()); pci->SetSecondarySurface(nullptr);
+
+			// try to map parameters
+			pi->MapParams(*pci);
+
+			// assign it to the correct step
+			FSStep* step = fem.GetStep(pci->GetStep());
+			pi->SetStep(step->GetID());
+			step->ReplaceInterface(pci, pi);
+			UpdateModel(pi);
+		}
+	}
 }

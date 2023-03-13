@@ -333,7 +333,7 @@ FSPrescribedTemperature::FSPrescribedTemperature(FSModel* ps) : FSPrescribedDOF(
 {
 	SetTypeString("Prescribed Temperature");
 //	SetVarID(ps->GetVariableIndex("temperature"));
-	SetScaleUnit(UNIT_TEMPERATURE);
+	SetScaleUnit(UNIT_RELATIVE_TEMPERATURE);
 }
 
 //-----------------------------------------------------------------------------
@@ -341,7 +341,7 @@ FSPrescribedTemperature::FSPrescribedTemperature(FSModel* ps, FEItemListBuilder*
 {
 	SetTypeString("Prescribed Temperature");
 //	SetVarID(ps->GetVariableIndex("temperature"));
-	SetScaleUnit(UNIT_TEMPERATURE);
+	SetScaleUnit(UNIT_RELATIVE_TEMPERATURE);
 }
 
 //=============================================================================
@@ -442,6 +442,15 @@ void FEBioBoundaryCondition::Save(OArchive& ar)
 		FSBoundaryCondition::Save(ar);
 	}
 	ar.EndChunk();
+
+	if (Properties() > 0)
+	{
+		ar.BeginChunk(CID_PROPERTY_LIST);
+		{
+			SaveFEBioProperties(this, ar);
+		}
+		ar.EndChunk();
+	}
 }
 
 void FEBioBoundaryCondition::Load(IArchive& ar)
@@ -454,6 +463,7 @@ void FEBioBoundaryCondition::Load(IArchive& ar)
 		{
 		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
 		case CID_FEBIO_BASE_DATA: FSBoundaryCondition::Load(ar); break;
+		case CID_PROPERTY_LIST  : LoadFEBioProperties(this, ar); break;
 		default:
 			assert(false);
 		}
