@@ -1004,6 +1004,15 @@ void CModelPropsPanel::addSelection(int n)
 				}
 				else
 				{
+					if (pl->GetReferenceCount() > 1)
+					{
+						const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
+						if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+						{
+							delete pg;
+							return;
+						}
+					}
 					list<int> l = pg->CopyItems();
 					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 				}
@@ -1075,6 +1084,15 @@ void CModelPropsPanel::subSelection(int n)
 
 	if (pl)
 	{
+		if (pl->GetReferenceCount() > 1)
+		{
+			const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
+			if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+
 		// create the item list builder
 		FEItemListBuilder* pg = ps->CreateItemList();
 
@@ -1109,6 +1127,15 @@ void CModelPropsPanel::delSelection(int n)
 		pl = pmc->GetItemList(n);
 		if (pl)
 		{
+			if (pl->GetReferenceCount() > 1)
+			{
+				const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
+				if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+				{
+					return;
+				}
+			}
+
 			CSelectionBox* sel = ui->selectionPanel(n);
 			list<int> items;
 			sel->getSelectedItems(items);
