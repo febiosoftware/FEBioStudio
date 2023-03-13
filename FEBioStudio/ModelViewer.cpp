@@ -315,6 +315,11 @@ void CModelViewer::on_syncButton_clicked()
     }
 }
 
+void CModelViewer::on_refreshButton_clicked()
+{
+	Update(false);
+}
+
 void CModelViewer::on_selectButton_clicked()
 {
 	// make sure we have an object

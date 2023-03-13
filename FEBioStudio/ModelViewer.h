@@ -105,6 +105,7 @@ public slots:
 	void on_deleteButton_clicked();
 	void on_searchButton_toggled(bool b);
 	void on_syncButton_clicked();
+	void on_refreshButton_clicked();
 	void on_props_nameChanged(const QString& txt);
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);
