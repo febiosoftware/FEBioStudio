@@ -64,9 +64,6 @@ public:
 	}
 	void set(int i, const mat3d& v);
 
-	// access operator
-	double& operator [] (int i) { return m_data[i]; }
-
 	// Get the element set
 	FSElemSet* GetPart();
 
@@ -82,7 +79,6 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	std::vector<double>	m_data;		//!< data values
 	double				m_scale;	//!< scale factor
 
 	int	m_stride;
@@ -111,9 +107,6 @@ public:
 	double get(int i) { return m_data[i]; }
 	void set(int i, double v) { m_data[i] = v; }
 
-	// access operator
-	double& operator [] (int i) { return m_data[i]; }
-
 	void SetValue(int item, int lid, double v);
 	double GetValue(int item, int lid);
 
@@ -128,7 +121,6 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	std::vector<double>		m_data;		//!< data values
 	int						m_maxElemItems;	
 	std::vector<int>		m_part;		//!< the part to which the data applies
 };

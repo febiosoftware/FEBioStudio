@@ -34,6 +34,14 @@ FENodeData::FENodeData(GObject* po) : FEMeshData(FEMeshData::NODE_DATA)
 	if (po) SetMesh(po->GetFEMesh());
 }
 
+FENodeData::FENodeData(GObject* po, FEMeshData::DATA_TYPE dataType) : FEMeshData(FEMeshData::NODE_DATA)
+{
+	m_po = po;
+	m_dataSize = 0;
+	m_dataType = dataType;
+	if (po) SetMesh(po->GetFEMesh());
+}
+
 FENodeData::FENodeData(const FENodeData& d) : FEMeshData(FEMeshData::NODE_DATA)
 {
 	assert(false);
@@ -47,7 +55,7 @@ FENodeData& FENodeData::operator=(const FENodeData& d)
 
 void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataType)
 {
-	SetItemList(nset);
+	FSHasOneItemList::SetItemList(nset);
 	m_dataType = dataType;
 	assert(m_po->GetFEMesh() == nset->GetMesh());
 	SetMesh(nset->GetMesh());
@@ -65,6 +73,11 @@ void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataTyp
 
 	int bufsize = nodes * m_dataSize;
 	m_data.assign(bufsize, v);
+}
+
+void FENodeData::SetItemList(FEItemListBuilder* pl, int n)
+{
+	Create(dynamic_cast<FSNodeSet*>(pl), 0.0, m_dataType);
 }
 
 void FENodeData::Save(OArchive& ar)

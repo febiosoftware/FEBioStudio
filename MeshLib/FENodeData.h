@@ -36,6 +36,7 @@ class FENodeData : public FEMeshData
 {
 public:
 	FENodeData(GObject* po);
+	FENodeData(GObject* po, FEMeshData::DATA_TYPE dataType);
 
 	void Create(FSNodeSet* nset, double v = 0.0, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
 
@@ -49,13 +50,14 @@ public:
 	vec3d GetVec3d(size_t i) const;
 	void SetVec3d(size_t i, const vec3d& v);
 
+	void SetItemList(FEItemListBuilder* pl, int n = 0) override;
+
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
 private:
 	int m_dataSize;	// size of each data item
-	std::vector<double>	m_data;
 	GObject*		m_po;
 
 private:

@@ -1060,11 +1060,12 @@ void CModelPropsPanel::addSelection(int n)
 				return;
 			}
 
-			// for model components, we need to give this new lis a name and add it to the model
+			// for model components and mesh data, we need to give this new lis a name and add it to the model
 			FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
-			if (pmc)
+			FEMeshData* pmd = dynamic_cast<FEMeshData*>(m_currentObject);
+			if (pmc || pmd)
 			{
-				pg->SetName(pmc->GetName());
+				pg->SetName(m_currentObject->GetName());
 				mdl.AddNamedSelection(pg);
 				emit modelChanged();
 			}

@@ -38,6 +38,10 @@ SOFTWARE.*/
 #include "DlgAddRigidConnector.h"
 #include "MaterialEditor.h"
 #include "DlgEditProject.h"
+#include "DlgAddMeshData.h"
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEMKernel.h>
@@ -736,7 +740,50 @@ void CMainWindow::on_actionAddLoadController_triggered()
 	}
 }
 
-void CMainWindow::on_actionAddMeshData_triggered()
+void CMainWindow::on_actionAddMeshDataMap_triggered()
+{
+	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	FSModel* fem = doc->GetFSModel();
+
+	GObject* po = doc->GetActiveObject();
+	if (po == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "Please select an object first.");
+		return;
+	}
+
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "Please mesh the object first.");
+		return;
+	}
+
+	CDlgAddMeshData dlg(this);
+	if (dlg.exec())
+	{
+		QString name = dlg.GetName();
+		if (name.isEmpty()) name = QString("MeshData%1").arg(fem->CountMeshDataFields() + 1);
+
+		FEMeshData* data = nullptr;
+		switch (dlg.GetType())
+		{
+		case FEMeshData::NODE_DATA   : data = new FENodeData(po, dlg.GetDataType()); break;
+		case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm); break;
+		case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm); break;
+		}
+
+		if (data)
+		{
+			data->SetName(name.toStdString());
+			pm->AddMeshDataField(data);
+		}
+	}
+}
+
+void CMainWindow::on_actionAddMeshDataGenerator_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
@@ -744,7 +791,7 @@ void CMainWindow::on_actionAddMeshData_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel* fem = &prj.GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Mesh Data", FEMESHDATAGENERATOR_ID, -1, fem, true, false, this);
+	CDlgAddPhysicsItem dlg("Add Mesh Data Generator", FEMESHDATAGENERATOR_ID, -1, fem, true, false, this);
 	if (dlg.exec())
 	{
 		FSMeshDataGenerator* pmd = FEBio::CreateFEBioClass<FSMeshDataGenerator>(dlg.GetClassID(), fem); assert(pmd);

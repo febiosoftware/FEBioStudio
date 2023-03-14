@@ -34,7 +34,6 @@ class FESurfaceData : public FEMeshData
 public:
 	FESurfaceData(FSMesh* mesh = nullptr);
 	~FESurfaceData();
-	double& operator [] (int index);
 
 	void Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
 
@@ -45,9 +44,6 @@ public:
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-private:
-	std::vector<double>	m_data;
 
 private:
 	FESurfaceData(const FESurfaceData& data);

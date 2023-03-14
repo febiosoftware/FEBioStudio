@@ -49,11 +49,6 @@ void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TY
 	m_data.assign(surface->size(), 0.0);
 }
 
-double& FESurfaceData::operator [] (int index)
-{
-	return m_data[index];
-}
-
 std::vector<double>* FESurfaceData::getData()
 {
 	return &m_data;

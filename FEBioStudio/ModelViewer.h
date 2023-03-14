@@ -176,6 +176,7 @@ public slots:
 	void OnDeleteAllRigidComponents();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
+	void OnEditMeshData();
 
 signals:
 	void currentObjectChanged(FSObject* po);

@@ -71,10 +71,18 @@ public:
 	// return mesh this data field belongs to
 	FSMesh* GetMesh() const;
 
+	// get the data
+	const std::vector<double>& GetData() const { return m_data; };
+	void SetData(const std::vector<double>& data) { m_data = data; }
+
+	// access operator
+	double& operator [] (int i) { return m_data[i]; }
+
 protected:
 	void SetMesh(FSMesh* mesh);
 	DATA_TYPE		m_dataType;
 	DATA_FORMAT		m_dataFmt;
+	std::vector<double>	m_data;
 
 private:
 	DATA_CLASS		m_dataClass;

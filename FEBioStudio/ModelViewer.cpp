@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QInputDialog>
 #include "DlgEditOutput.h"
+#include "DlgAddMeshData.h"
 #include "MaterialEditor.h"
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
@@ -1785,10 +1786,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_MESH_DATA_LIST:
-		menu.addAction("Add Mesh Data ..."   , wnd, SLOT(on_actionAddMeshData_triggered()));
+		menu.addAction("Add mesh data map ..."   , wnd, SLOT(on_actionAddMeshDataMap_triggered()));
+		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(on_actionAddMeshDataGenerator_triggered()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:
+		menu.addAction("Edit ...", this, SLOT(OnEditMeshData()));
 		del = true;
 		break;
 	case MT_JOBLIST:
@@ -1925,4 +1928,13 @@ void CModelViewer::OnDeleteAllSteps()
 void CModelViewer::OnDeleteAllJobs()
 {
 	GetMainWindow()->DeleteAllJobs();
+}
+
+void CModelViewer::OnEditMeshData()
+{
+	FEMeshData* data = dynamic_cast<FEMeshData*>(m_currentObject);
+	if (data == nullptr) return;
+
+	CDlgEditMeshData dlg(data, this);
+	dlg.exec();
 }
