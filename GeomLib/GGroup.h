@@ -117,7 +117,7 @@ public:
 class GPartList : public GGroup
 {
 public:
-	GPartList(GModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG){}
+	GPartList(GModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG){}
 	GPartList(GModel* ps, GPartSelection* pg);
 
 	void Create(GObject* po);
@@ -129,6 +129,8 @@ public:
 	FSNodeList* BuildNodeList() override;
 	FEElemList* BuildElemList() override;
 	FEFaceList*	BuildFaceList() override;
+
+	FSPartSet* BuildPartSet();
 
 	bool IsValid() const override;
 };

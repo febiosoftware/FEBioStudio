@@ -760,7 +760,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		if (elemData) return "Element data";
 
 		FEPartData* partData = dynamic_cast<FEPartData*>(po);
-		if (partData) return "Element data";
+		if (partData) return "Part data";
 
 		assert(false);
 		return "Mesh data";

@@ -36,6 +36,7 @@ class FSElemSet;
 class FSSurface;
 class FSEdgeSet;
 class FSNodeSet;
+class FSPartSet;
 class FECurveMesh;
 class FSSurfaceMesh;
 class FEMesher;
@@ -219,6 +220,7 @@ protected:
 
 public:
 	// --- G R O U P S ---
+	int FEPartSets() const;
 	int FEElemSets() const;
 	int FESurfaces() const;
 	int FEEdgeSets() const;
@@ -228,28 +230,33 @@ public:
 	void AddFESurface(FSSurface* pg);
 	void AddFEEdgeSet(FSEdgeSet* pg);
 	void AddFENodeSet(FSNodeSet* pg);
+	void AddFEPartSet(FSPartSet* pg);
 
 	FSElemSet* GetFEElemSet(int n);
 	FSSurface* GetFESurface(int n);
 	FSEdgeSet* GetFEEdgeSet(int n);
 	FSNodeSet* GetFENodeSet(int n);
+	FSPartSet* GetFEPartSet(int n);
 
 	int RemoveFEElemSet(FSElemSet* pg);
 	int RemoveFESurface(FSSurface* pg);
 	int RemoveFEEdgeSet(FSEdgeSet* pg);
 	int RemoveFENodeSet(FSNodeSet* pg);
+	int RemoveFEPartSet(FSPartSet* pg);
 
 	void InsertFEElemSet(int n, FSElemSet* pg);
 	void InsertFESurface(int n, FSSurface* pg);
 	void InsertFEEdgeSet(int n, FSEdgeSet* pg);
 	void InsertFENodeSet(int n, FSNodeSet* pg);
+	void InsertFEPartSet(int n, FSPartSet* pg);
 
 	FSGroup* FindFEGroup(int nid);
 
 	FSSurface* FindFESurface(const string& szname);
 	FSNodeSet* FindFENodeSet(const string& szname);
 
-	void ClearFEParts();
+	void ClearFEPartSets();
+	void ClearFEElementSets();
 	void ClearFESurfaces();
 	void ClearFEEdgeSets();
 	void ClearFENodeSets();

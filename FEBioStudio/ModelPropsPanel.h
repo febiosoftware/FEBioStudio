@@ -165,6 +165,8 @@ public:
 
 	void setDataType(int ndatatype);
 
+	void setDataFormat(int ndataformat);
+
 protected slots:
 	void on_name_textEdited(const QString&);
 
@@ -175,6 +177,7 @@ private:
 	QLineEdit* m_name;
 	QLabel* m_type;
 	QLabel* m_dataType;
+	QLabel* m_dataFmt;
 };
 
 class CDlgPickNamedSelection : public QDialog

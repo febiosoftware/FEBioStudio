@@ -199,6 +199,67 @@ FSNodeList* FSElemSet::BuildNodeList()
 }
 
 //////////////////////////////////////////////////////////////////////
+// FSPartSet
+//////////////////////////////////////////////////////////////////////
+
+FEItemListBuilder* FSPartSet::Copy()
+{
+	FSPartSet* pg = new FSPartSet(m_pObj);
+	pg->m_Item = m_Item;
+	return pg;
+}
+
+void FSPartSet::Copy(FSPartSet* pg)
+{
+	m_Item = pg->m_Item;
+	SetName(pg->GetName());
+}
+
+std::vector<int> FSPartSet::BuildElementIndexList()
+{
+	FSMesh* mesh = GetMesh();
+	assert(mesh);
+
+	std::vector<int> elemList;
+	int NE = mesh->Elements();
+	for (int i = 0; i < size(); ++i)
+	{
+		int pid = m_Item[i];
+		for (int j = 0; j < NE; ++j)
+		{
+			FSElement& el = mesh->Element(j);
+			if (el.m_gid == pid)
+			{
+				elemList.push_back(j);
+			}
+		}
+	}
+	return elemList;
+}
+
+std::vector<int> FSPartSet::BuildElementIndexList(const std::vector<int>& partList)
+{
+	FSMesh* mesh = GetMesh();
+	assert(mesh);
+
+	std::vector<int> elemList;
+	int NE = mesh->Elements();
+	for (int i = 0; i < partList.size(); ++i)
+	{
+		int pid = m_Item[partList[i]];
+		for (int j = 0; j < NE; ++j)
+		{
+			FSElement& el = mesh->Element(j);
+			if (el.m_gid == pid)
+			{
+				elemList.push_back(j);
+			}
+		}
+	}
+	return elemList;
+}
+
+//////////////////////////////////////////////////////////////////////
 // FSSurface
 //////////////////////////////////////////////////////////////////////
 

@@ -88,7 +88,7 @@ void FENodeData::Save(OArchive& ar)
 	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
 	FEItemListBuilder* pi = GetItemList();
 	if (pi) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, pi->GetID());
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int)m_data.size());
+	if (m_data.empty()==false) ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int)m_data.size());
 }
 
 void FENodeData::Load(IArchive& ar)
@@ -150,12 +150,11 @@ void FENodeData::Load(IArchive& ar)
 				nodeSet = new FSNodeSet(m_po);
 				nodeSet->CreateFromMesh();
 				nodeSet->SetName(GetName());
+				SetItemList(nodeSet);
 				m_po->AddFENodeSet(nodeSet);
 			}
-			else m_data.assign(nodeSet->size() * m_dataSize, 0);
 
-			int NN = nodeSet->size();
-			ar.read(&m_data[0], NN*m_dataSize);
+			ar.read(&m_data[0], m_data.size());
 		}
 
 		ar.CloseChunk();

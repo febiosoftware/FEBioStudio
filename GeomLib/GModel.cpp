@@ -861,6 +861,7 @@ int GModel::CountNamedSelections() const
 		nsel += obj->FESurfaces();
 		nsel += obj->FEEdgeSets();
 		nsel += obj->FEElemSets();
+		nsel += obj->FEPartSets();
 	}
 
 	return nsel;

@@ -62,6 +62,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
 #include <GeomLib/GModel.h>
+#include <MeshLib/FEElementData.h>
 #include "Commands.h"
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
@@ -280,6 +281,9 @@ CMeshDataInfoPanel::CMeshDataInfoPanel(QWidget* parent) : QWidget(parent)
 	l->addWidget(new QLabel("Data type:"), 2, 0, Qt::AlignRight);
 	l->addWidget(m_dataType = new QLabel, 2, 1);
 
+	l->addWidget(new QLabel("Data format:"), 3, 0, Qt::AlignRight);
+	l->addWidget(m_dataFmt = new QLabel, 3, 1);
+
 	setLayout(l);
 
 	QMetaObject::connectSlotsByName(this);
@@ -312,6 +316,18 @@ void CMeshDataInfoPanel::setDataType(int ndatatype)
 	case FEMeshData::DATA_MAT3D : m_dataType->setText("mat3"); break;
 	default:
 		m_dataType->setText("(unknown)");
+	}
+}
+
+void CMeshDataInfoPanel::setDataFormat(int ndataformat)
+{
+	switch (ndataformat)
+	{
+	case FEMeshData::DATA_ITEM: m_dataFmt->setText("item"); break;
+	case FEMeshData::DATA_NODE: m_dataFmt->setText("node"); break;
+	case FEMeshData::DATA_MULT: m_dataFmt->setText("mult"); break;
+	default:
+		m_dataFmt->setText("(unknown)");
 	}
 }
 
@@ -535,12 +551,14 @@ public:
 			data->setName(QString::fromStdString(meshdata->GetName()));
 			data->setType(meshdata->GetDataClass());
 			data->setDataType(meshdata->GetDataType());
+			data->setDataFormat(meshdata->GetDataFormat());
 		}
 		else
 		{
 			data->setName("");
 			data->setType(-1);
 			data->setDataType(-1);
+			data->setDataFormat(-1);
 		}
 
 		tool->getToolItem(MESHDATA_PANEL)->setVisible(b);
@@ -884,6 +902,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 				{
 					FEMeshData* pd = dynamic_cast<FEMeshData*>(po);
 					ui->showMeshDataInfo(true, pd);
+					ui->showObjectInfo(false);
 				}
 				else ui->showObjectInfo(true, false, nameEditable);
 			}
@@ -1060,7 +1079,42 @@ void CModelPropsPanel::addSelection(int n)
 				return;
 			}
 
-			// for model components and mesh data, we need to give this new lis a name and add it to the model
+			// for part data, we need to convert to an FSPartSet
+			FEPartData* pd = dynamic_cast<FEPartData*>(m_currentObject);
+			if (pd)
+			{
+				// make sure it's a part list
+				GPartList* partList = dynamic_cast<GPartList*>(pg);
+				if (pg == nullptr)
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+					delete pg;
+					return;
+				}
+
+				// extract the part set
+				FSPartSet* partSet = partList->BuildPartSet();
+				if (partSet == nullptr)
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+					delete pg;
+					return;
+				}
+
+				// make sure its on the same object
+				if (pd->GetMesh() != partSet->GetMesh())
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+					delete pg;
+					return;
+				}
+
+				// ok, we're good
+				delete pg;
+				pg = partSet;
+			}
+
+			// for model components and mesh data, we need to give this new list a name and add it to the model
 			FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
 			FEMeshData* pmd = dynamic_cast<FEMeshData*>(m_currentObject);
 			if (pmc || pmd)

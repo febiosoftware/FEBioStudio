@@ -61,7 +61,7 @@ public:
 		form->addRow("Data format:", m_fmt = new QComboBox);
 		layout->addLayout(form);
 
-		m_type->addItems(QStringList() << "Node data" << "Surface data" << "Element data");
+		m_type->addItems(QStringList() << "node data" << "surface data" << "element data" << "part data");
 		m_data->addItems(QStringList() << "scalar" << "vec3" << "mat3");
 		m_fmt ->addItems(QStringList() << "item" << "node" << "mult");
 
@@ -90,6 +90,7 @@ FEMeshData::DATA_CLASS CDlgAddMeshData::GetType()
 	case FEMeshData::NODE_DATA: return FEMeshData::NODE_DATA; break;
 	case FEMeshData::SURFACE_DATA: return FEMeshData::SURFACE_DATA; break;
 	case FEMeshData::ELEMENT_DATA: return FEMeshData::ELEMENT_DATA; break;
+	case FEMeshData::PART_DATA: return FEMeshData::PART_DATA; break;
 	default:
 		assert(false);
 	}

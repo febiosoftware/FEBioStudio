@@ -1511,22 +1511,43 @@ void FSMesh::Save(OArchive &ar)
 
 	// TODO: Move this stuff to the GObject serialization
 	GObject* po = GetGObject();
-	int parts = po->FEElemSets();
+	int partsets = po->FEPartSets();
+	int elemsets = po->FEElemSets();
 	int surfs = po->FESurfaces();
 	int nsets = po->FENodeSets();
 
-	// write the parts
-	if (parts > 0)
+	// write the element sets
+	if (elemsets > 0)
 	{
-		ar.BeginChunk(CID_MESH_PART_SECTION);
+		ar.BeginChunk(CID_MESH_ELEMSET_SECTION);
 		{
-			for (int i=0; i<parts; ++i)
+			for (int i=0; i< elemsets; ++i)
 			{
 				// get the boundary condition
 				FSElemSet* pg = po->GetFEElemSet(i);
 
 				// store the group data
-				ar.BeginChunk(CID_MESH_PART);
+				ar.BeginChunk(CID_MESH_ELEMENTSET);
+				{
+					pg->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	// write the part sets
+	if (partsets > 0)
+	{
+		ar.BeginChunk(CID_MESH_PARTSET_SECTION);
+		{
+			for (int i = 0; i < partsets; ++i)
+			{
+				FSPartSet* pg = po->GetFEPartSet(i);
+
+				// store the group data
+				ar.BeginChunk(CID_MESH_PARTSET);
 				{
 					pg->Save(ar);
 				}
@@ -1887,14 +1908,14 @@ void FSMesh::Load(IArchive& ar)
 				}
 			}
 			break;
-		case CID_MESH_PART_SECTION:
+		case CID_MESH_ELEMSET_SECTION:
 			{
 				// TODO: move to GObject serialization
 				FSElemSet* pg = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
-					assert(ar.GetChunkID() == CID_MESH_PART);
+					assert(ar.GetChunkID() == CID_MESH_ELEMENTSET);
 					pg = new FSElemSet(po);
 					pg->Load(ar);
 					po->AddFEElemSet(pg);
@@ -1903,6 +1924,22 @@ void FSMesh::Load(IArchive& ar)
 				}			
 			}
 			break;
+		case CID_MESH_PARTSET_SECTION:
+		{
+			// TODO: move to GObject serialization
+			FSPartSet* pg = 0;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				pg = 0;
+				assert(ar.GetChunkID() == CID_MESH_PARTSET);
+				pg = new FSPartSet(po);
+				pg->Load(ar);
+				po->AddFEPartSet(pg);
+
+				ar.CloseChunk();
+			}
+		}
+		break;
 		case CID_MESH_SURF_SECTION:
 			{
 				// TODO: move to GObject serialization

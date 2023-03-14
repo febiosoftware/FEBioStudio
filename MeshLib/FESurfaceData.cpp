@@ -53,7 +53,7 @@ void FESurfaceData::operator = (const FESurfaceData& d) {}
 void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
 {
 	SetMesh(mesh);
-	SetItemList(surface);
+	FSHasOneItemList::SetItemList(surface);
 	m_dataType = dataType;
 	m_dataFmt = dataFormat;
 
@@ -175,13 +175,7 @@ void FESurfaceData::Load(IArchive& ar)
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
-			FSSurface* surf = GetSurface();
-			if (surf)
-			{
-				int n = surf->size();
-				m_data.resize(n);
-				ar.read(&m_data[0], n);
-			}
+			ar.read(&m_data[0], m_data.size());
 		}
 
 		ar.CloseChunk();

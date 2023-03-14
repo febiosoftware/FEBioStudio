@@ -1406,7 +1406,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSNodeSet* pg = po->GetFENodeSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FENODE_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1423,7 +1423,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSSurface* pg = po->GetFESurface(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEFACE_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1440,12 +1440,12 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSEdgeSet* pg = po->GetFEEdgeSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEEDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
 
-	// d - parts
+	// d - element sets
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -1457,7 +1457,24 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSElemSet* pg = po->GetFEElemSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEELEM_GROUP, n, pg, 0, new CGroupValidator(pg));
+			}
+		}
+	}
+
+	// d - part sets
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm)
+		{
+			int parts = po->FEPartSets();
+			for (int j = 0; j < parts; ++j)
+			{
+				FSPartSet* pg = po->GetFEPartSet(j);
+				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEPART_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}

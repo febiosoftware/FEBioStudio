@@ -39,6 +39,7 @@ enum ITEMLIST_TYPE {
 	FE_EDGESET,
 	FE_SURFACE,
 	FE_ELEMSET,
+	FE_PARTSET
 };
 
 //-----------------------------------------------------------------------------
@@ -71,7 +72,7 @@ enum MESH_ITEM_FLAGS
 class FEItemListBuilder : public FSObject
 {
 public:
-	enum {ID, NAME, MESHID, SIZE, ITEM};
+	enum { ID, NAME, MESHID, SIZE, ITEM };
 
 	typedef std::vector<int>::iterator Iterator;
 	typedef std::vector<int>::const_iterator ConstIterator;
@@ -79,11 +80,11 @@ public:
 public:
 	FEItemListBuilder(int ntype, unsigned int flags);
 
-	virtual FSNodeList*	BuildNodeList() = 0;
-	virtual FEEdgeList*	BuildEdgeList() = 0;
-	virtual FEFaceList*	BuildFaceList() = 0;
-	virtual FEElemList*	BuildElemList() = 0;
-	
+	virtual FSNodeList* BuildNodeList() = 0;
+	virtual FEEdgeList* BuildEdgeList() = 0;
+	virtual FEFaceList* BuildFaceList() = 0;
+	virtual FEElemList* BuildElemList() = 0;
+
 	virtual FEItemListBuilder* Copy() = 0;
 
 	virtual bool IsValid() const;
@@ -114,6 +115,8 @@ public:
 	void Subtract(std::vector<int>& o);
 
 	std::vector<int> CopyItems() { return m_Item; }
+
+	int operator [] (size_t n) const { return m_Item[n]; }
 
 public:
 	int GetReferenceCount() const;

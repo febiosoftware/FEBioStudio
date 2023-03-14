@@ -511,6 +511,7 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 	default:
 		switch (item->Type())
 		{
+		case FE_PARTSET: type = "Parts"; break;
 		case FE_ELEMSET: type = "Elements"; break;
 		case FE_SURFACE: type = "Facets"; break;
 		case FE_EDGESET: type = "Edges"; break;

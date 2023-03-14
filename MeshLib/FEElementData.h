@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <vector>
 
 class FSElemSet;
-class GPartList;
+class FSPartSet;
 class FSModel;
 class GModel;
 
@@ -98,11 +98,10 @@ class FEPartData : public FEMeshData
 {
 public:
 	FEPartData(FSMesh* mesh = nullptr);
-	FEPartData(const FEPartData& d);
-	FEPartData& operator = (const FEPartData& d);
+	FEPartData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt);
 
 	// create a data field
-	bool Create(const std::vector<int>& partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
+	bool Create(FSPartSet* partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
 
 	// size of data field
 	int Size() const;
@@ -117,8 +116,10 @@ public:
 	// build the element list
 	FEElemList* BuildElemList();
 
-	// get the partlist
-	GPartList* GetPartList(GModel* fem);
+	// get the part list
+	FSPartSet* GetPartSet();
+
+	void SetItemList(FEItemListBuilder* item, int n = 0) override;
 
 public:
 	void Save(OArchive& ar);
@@ -126,7 +127,12 @@ public:
 
 private:
 	int						m_maxElemItems;	
-	std::vector<int>		m_part;		//!< the part to which the data applies
+
+private:
+	FEPartData(const FEPartData& d);
+	FEPartData& operator = (const FEPartData& d);
+
+	void AllocateData();
 };
 
 inline void FEPartData::SetValue(int i, int j, double v)

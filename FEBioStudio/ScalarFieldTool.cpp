@@ -325,19 +325,21 @@ void CScalarFieldTool::OnApply()
 	{
 		// create element data
 		int parts = po->Parts();
-		vector<int> partList;
+		FSPartSet* partSet = new FSPartSet(po);
+		partSet->SetName(name.toStdString());
 		for (int i = 0; i < parts; ++i)
 		{
 			GPart* pg = po->Part(i);
 			if (pg->GetMaterialID() == matId)
 			{
-				partList.push_back(i);
+				partSet->add(i);
 			}
 		}
+		po->AddFEPartSet(partSet);
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -359,19 +361,21 @@ void CScalarFieldTool::OnApply()
 	{
 		// create element data
 		int parts = po->Parts();
-		vector<int> partList;
+		FSPartSet* partSet = new FSPartSet(po);
+		partSet->SetName(name.toStdString());
 		for (int i = 0; i < parts; ++i)
 		{
 			GPart* pg = po->Part(i);
 			if (pg->GetMaterialID() == matId)
 			{
-				partList.push_back(i);
+				partSet->add(i);
 			}
 		}
+		po->AddFEPartSet(partSet);
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();

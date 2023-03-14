@@ -3644,13 +3644,12 @@ void FEBioExport3::WriteElementDataFields()
 			{
 				double v[FSElement::MAX_NODES] = { 0 };
 				FEPartData& data = *partData;
-				GPartList* partList = data.GetPartList(&fem.GetModel());
-				std::vector<GPart*> partArray = partList->GetPartList();
+				FSPartSet* partList = data.GetPartSet();
 				FEElemList* elemList = data.BuildElemList();
-				for (int np = 0; np < partArray.size(); ++np)
+				for (int np = 0; np < partList->size(); ++np)
 				{
-					GPart* pg = partArray[np];
-					int pid = pg->GetLocalID();
+					int pid = (*partList)[np];
+					GPart* pg = po->Part(pid);
 
 					// A part could have been split into multiple Elements sections.
 					// We need to do the same here.

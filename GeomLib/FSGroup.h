@@ -100,6 +100,23 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// class describing a group of elements, defined via a list of parts of an object
+//
+class FSPartSet : public FSGroup
+{
+public:
+	FSPartSet(GObject* po) : FSGroup(po, FE_PARTSET, FE_PART_FLAG) {}
+	FSPartSet(GObject* po, const std::vector<int>& parts);
+	~FSPartSet() {}
+
+	FEItemListBuilder* Copy();
+	void Copy(FSPartSet* pg);
+
+	std::vector<int> BuildElementIndexList();
+	std::vector<int> BuildElementIndexList(const std::vector<int>& partList);
+};
+
+//-----------------------------------------------------------------------------
 // CLASS: FSSurface
 // class describing a group of faces
 //

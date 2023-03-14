@@ -426,7 +426,7 @@ bool GFaceList::IsValid() const
 //-----------------------------------------------------------------------------
 // GPartList
 //-----------------------------------------------------------------------------
-GPartList::GPartList(GModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG)
+GPartList::GPartList(GModel* ps, GPartSelection* pg) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG)
 {
 	int N = pg->Count();
 	GPartSelection::Iterator it(pg);
@@ -564,6 +564,36 @@ FEFaceList*	GPartList::BuildFaceList()
 	}
 
 	return ps;
+}
+
+//-----------------------------------------------------------------------------
+FSPartSet* GPartList::BuildPartSet()
+{
+	GModel& model = *m_ps;
+
+	// first, make sure all parts belong to the same object
+	GObject* po = nullptr;
+	int N = m_Item.size();
+	FEItemListBuilder::Iterator it = m_Item.begin();
+	for (int n = 0; n < N; ++n, ++it)
+	{
+		GPart* pg = model.FindPart(*it);
+		GObject* pon = dynamic_cast<GObject*>(pg->Object());
+		if (po == nullptr) po = pon;
+		else if (po != pon) return nullptr;
+	}
+	if (po == nullptr) return nullptr;
+
+	// build the part set
+	FSPartSet* partSet = new FSPartSet(po);
+	it = m_Item.begin();
+	for (int n = 0; n < N; ++n, ++it)
+	{
+		GPart* pg = model.FindPart(*it);
+		partSet->add(pg->GetLocalID());
+	}
+
+	return partSet;
 }
 
 //-----------------------------------------------------------------------------
