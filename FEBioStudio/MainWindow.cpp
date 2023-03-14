@@ -100,6 +100,7 @@ SOFTWARE.*/
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
+#include <FSCore/FSLogger.h>
 
 extern GLColor col[];
 
@@ -138,6 +139,28 @@ void darkStyle()
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
 }
 
+//-----------------------------------------------------------------------------
+class FSMainWindowLogOutput : public FSLogOutput
+{
+public:
+	FSMainWindowLogOutput(CMainWindow* wnd) : m_wnd(wnd)
+	{
+		FSLogger::SetWatcher(this);
+	}
+
+	void Write(const std::string& msg)
+	{
+		QString s = QString::fromStdString(msg);
+		m_wnd->AddLogEntry(s);
+	}
+
+private:
+	CMainWindow* m_wnd;
+};
+
+FSMainWindowLogOutput* mainWindogLogger = nullptr;
+
+//-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -150,6 +173,8 @@ CMainWindow* CMainWindow::GetInstance()
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
+
+	mainWindogLogger = new FSMainWindowLogOutput(this);
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.
