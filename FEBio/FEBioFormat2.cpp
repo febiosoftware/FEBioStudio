@@ -604,7 +604,7 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 
 	// read the node list
-	std::list<int> nodeList;
+	std::vector<int> nodeList;
 	if (tag.isleaf() == false)
 	{
 		++tag;

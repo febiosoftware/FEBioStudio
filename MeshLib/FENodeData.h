@@ -57,7 +57,6 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	int m_dataSize;	// size of each data item
 	GObject*		m_po;
 
 private:

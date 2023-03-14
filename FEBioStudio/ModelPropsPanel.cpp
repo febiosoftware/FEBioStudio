@@ -1100,7 +1100,7 @@ void CModelPropsPanel::addSelection(int n)
 							return;
 						}
 					}
-					list<int> l = pg->CopyItems();
+					vector<int> l = pg->CopyItems();
 					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 				}
 			}
@@ -1134,7 +1134,7 @@ void CModelPropsPanel::addSelection(int n)
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
+				vector<int> l = pg->CopyItems();
 				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 			}
 		}
@@ -1186,7 +1186,7 @@ void CModelPropsPanel::subSelection(int n)
 		// subtract from the current list
 		if (pg->Type() == pl->Type())
 		{
-			list<int> l = pg->CopyItems();
+			vector<int> l = pg->CopyItems();
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
 		}
 
@@ -1224,7 +1224,7 @@ void CModelPropsPanel::delSelection(int n)
 			}
 
 			CSelectionBox* sel = ui->selectionPanel(n);
-			list<int> items;
+			vector<int> items;
 			sel->getSelectedItems(items);
 
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));

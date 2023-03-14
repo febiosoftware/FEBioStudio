@@ -771,7 +771,7 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		switch (dlg.GetType())
 		{
 		case FEMeshData::NODE_DATA   : data = new FENodeData(po, dlg.GetDataType()); break;
-		case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm); break;
+		case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
 		case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm); break;
 		}
 
@@ -780,6 +780,8 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 			data->SetName(name.toStdString());
 			pm->AddMeshDataField(data);
 		}
+
+		UpdateModel(data);
 	}
 }
 

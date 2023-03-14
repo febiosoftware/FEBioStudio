@@ -31,6 +31,7 @@ FEMeshData::FEMeshData(FEMeshData::DATA_CLASS dataClass)
 	: m_dataClass(dataClass), m_pMesh(0), m_dataType(FEMeshData::DATA_TYPE::DATA_SCALAR)
 {
 	m_dataFmt = DATA_ITEM;
+	m_dataSize = 0;
 
 	switch (m_dataClass)
 	{

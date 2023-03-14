@@ -131,7 +131,7 @@ public:
 				FSGroup* pm_new = dynamic_cast<FSGroup*>(items);
 				if (pm_prv && pm_new && (pm_prv->GetMesh() != pm_new->GetMesh())) return false;
 
-				list<int> itemlist = items->CopyItems();
+				vector<int> itemlist = items->CopyItems();
 				pl->Merge(itemlist);
 				delete items;
 			}

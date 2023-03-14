@@ -1001,7 +1001,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSNodeSet* pn = dynamic_cast<FSNodeSet*>(po);
 	if (pn)
 	{
-		std::list<int> items = pn->CopyItems();
+		std::vector<int> items = pn->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_NODE);
 		doc->DoCommand(new CCmdSelectFENodes(pn->GetMesh(), vitems, false));
@@ -1018,7 +1018,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSEdgeSet* pe = dynamic_cast<FSEdgeSet*>(po);
 	if (pe)
 	{
-		std::list<int> items = pe->CopyItems();
+		std::vector<int> items = pe->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_EDGE);
 		doc->DoCommand(new CCmdSelectFEEdges(pe->GetMesh(), vitems, false));
@@ -1027,7 +1027,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSSurface* ps = dynamic_cast<FSSurface*>(po);
 	if (ps)
 	{
-		std::list<int> items = ps->CopyItems();
+		std::vector<int> items = ps->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_FACE);
 		doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), vitems, false));
@@ -1043,7 +1043,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
 	{
-		std::list<int> items = pg->CopyItems();
+		std::vector<int> items = pg->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_ELEM);
 		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
@@ -1309,7 +1309,7 @@ void CPostModelPanel::OnSelectNodes()
 		CPostDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_NODE);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
@@ -1339,7 +1339,7 @@ void CPostModelPanel::OnSelectFaces()
 		CPostDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_FACE);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
@@ -1367,7 +1367,7 @@ void CPostModelPanel::OnSelectElements()
 	if (pg2)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
@@ -1392,7 +1392,7 @@ void CPostModelPanel::OnHideElements()
 	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));

@@ -631,7 +631,7 @@ void CMeshSelectionBox::onAddButtonClicked()
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
+				vector<int> l = pg->CopyItems();
 				pl->Merge(l);
 			}
 			
@@ -661,7 +661,7 @@ void CMeshSelectionBox::onSubButtonClicked()
 	// subtract from the current list
 	if (pg->Type() == pl->Type())
 	{
-		list<int> l = pg->CopyItems();
+		vector<int> l = pg->CopyItems();
 		pl->Subtract(l);
 	}
 
@@ -676,7 +676,7 @@ void CMeshSelectionBox::onDelButtonClicked()
 	FEItemListBuilder* pl = m_pms->GetItemList();
 	if (pl == nullptr) return;
 
-	list<int> items;
+	vector<int> items;
 	getSelectedItems(items);
 
 	pl->Subtract(items);

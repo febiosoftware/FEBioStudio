@@ -1357,14 +1357,14 @@ protected:
 class CCmdAddToItemListBuilder : public CCommand
 {
 public:
-	CCmdAddToItemListBuilder(FEItemListBuilder* pold, list<int>& lnew);
+	CCmdAddToItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	FEItemListBuilder* m_pold;
-	list<int>	m_lnew;
+	vector<int>	m_lnew;
 	vector<int>	m_tmp;
 };
 
@@ -1372,14 +1372,14 @@ protected:
 class CCmdRemoveFromItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, list<int>& lnew);
+	CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	FEItemListBuilder* m_pold;
-	list<int>	m_lnew;
+	vector<int>	m_lnew;
 	vector<int>	m_tmp;
 };
 

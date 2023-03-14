@@ -110,7 +110,7 @@ string FEBioExport4::GetElementSetName(FEItemListBuilder* pl)
 
 	if (dynamic_cast<GPartList*>(pl) && (pl->size() == 1))
 	{
-		std::list items = pl->CopyItems();
+		std::vector<int> items = pl->CopyItems();
 		int partId = *(items.begin());
 		GPart* pg = m_pfem->GetModel().FindPart(partId); assert(pg);
 		if (pg) return pg->GetName();
@@ -2232,7 +2232,8 @@ void FEBioExport4::WriteSurfaceDataSection()
 					int n1 = el.add_attribute("lid", 0);
 
 					int nid = 1;
-					for (double d : *(sd.getData()))
+					std::vector<double> data = sd.GetData();
+					for (double d : data)
 					{
 						el.set_attribute(n1, nid++);
 						el.value(d);

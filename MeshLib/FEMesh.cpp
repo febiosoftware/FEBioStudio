@@ -2063,7 +2063,7 @@ FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEM
 FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
-	data->Create(this, surface, dataType);
+	data->Create(this, surface, dataType, FEMeshData::DATA_ITEM);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;

@@ -63,7 +63,7 @@ public:
 
 		m_type->addItems(QStringList() << "Node data" << "Surface data" << "Element data");
 		m_data->addItems(QStringList() << "scalar" << "vec3" << "mat3");
-		m_fmt ->addItems(QStringList() << "node" << "item" << "mult");
+		m_fmt ->addItems(QStringList() << "item" << "node" << "mult");
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
@@ -115,8 +115,8 @@ FEMeshData::DATA_FORMAT CDlgAddMeshData::GetFormat()
 	int n = ui->m_fmt->currentIndex(); 
 	switch (n)
 	{
-	case FEMeshData::DATA_NODE: return FEMeshData::DATA_NODE; break;
 	case FEMeshData::DATA_ITEM: return FEMeshData::DATA_ITEM; break;
+	case FEMeshData::DATA_NODE: return FEMeshData::DATA_NODE; break;
 	case FEMeshData::DATA_MULT: return FEMeshData::DATA_MULT; break;
 	default:
 		assert(false);

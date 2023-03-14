@@ -897,8 +897,8 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 			if (pg == nullptr) ParseUnknownAttribute(tag, "elem_set");
 			else
 			{
-				list<int> items = pg->CopyItems();
-				list<int>::iterator it = items.begin();
+				vector<int> items = pg->CopyItems();
+				vector<int>::iterator it = items.begin();
 				FSMesh* mesh = pg->GetMesh();
 				++tag;
 				do

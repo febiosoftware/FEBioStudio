@@ -762,8 +762,8 @@ void PostSessionFileWriter::WriteMeshSelections()
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)
@@ -784,8 +784,8 @@ void PostSessionFileWriter::WriteMeshSelections()
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)
@@ -806,8 +806,8 @@ void PostSessionFileWriter::WriteMeshSelections()
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)
@@ -828,8 +828,8 @@ void PostSessionFileWriter::WriteMeshSelections()
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)

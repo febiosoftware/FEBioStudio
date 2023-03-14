@@ -111,6 +111,8 @@ public:
 	FSNodeList* BuildNodeList();
 	FEFaceList* BuildFaceList();
 
+	FSFace* GetFace(int n);
+
 	FEItemListBuilder* Copy();
 	void Copy(FSSurface* pg);
 };

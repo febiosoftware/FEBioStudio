@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include "FEItemList.h"
-#include <list>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 enum ITEMLIST_TYPE {
@@ -73,8 +73,8 @@ class FEItemListBuilder : public FSObject
 public:
 	enum {ID, NAME, MESHID, SIZE, ITEM};
 
-	typedef std::list<int>::iterator Iterator;
-	typedef std::list<int>::const_iterator ConstIterator;
+	typedef std::vector<int>::iterator Iterator;
+	typedef std::vector<int>::const_iterator ConstIterator;
 
 public:
 	FEItemListBuilder(int ntype, unsigned int flags);
@@ -92,7 +92,7 @@ public:
 
 	void clear() { m_Item.clear(); }
 	void add(int n) { m_Item.push_back(n); }
-	void add(const std::list<int>& nodeList);
+	void add(const std::vector<int>& nodeList);
 	void remove(int i);
 	int size() const { return (int)m_Item.size(); }
 	Iterator begin() { return m_Item.begin(); }
@@ -110,10 +110,10 @@ public:
 
 	int Type() { return m_ntype; }
 
-	void Merge(std::list<int>& o);
-	void Subtract(std::list<int>& o);
+	void Merge(std::vector<int>& o);
+	void Subtract(std::vector<int>& o);
 
-	std::list<int> CopyItems() { return m_Item; }
+	std::vector<int> CopyItems() { return m_Item; }
 
 public:
 	int GetReferenceCount() const;
@@ -121,7 +121,7 @@ public:
 	void DecRef();
 
 protected:
-	std::list<int>	m_Item;
+	std::vector<int>	m_Item;
 
 	int	m_ntype;
 

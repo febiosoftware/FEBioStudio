@@ -33,6 +33,15 @@ FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA
 	SetMesh(mesh);
 }
 
+FESurfaceData::FESurfaceData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::SURFACE_DATA)
+{
+	SetMesh(mesh);
+	m_dataType = dataType;
+	m_dataFmt = dataFormat;
+	m_dataSize = 0;
+	m_maxNodesPerFacet = 0;
+}
+
 FESurfaceData::~FESurfaceData()
 {
 	
@@ -41,17 +50,70 @@ FESurfaceData::~FESurfaceData()
 FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FEMeshData::SURFACE_DATA) {}
 void FESurfaceData::operator = (const FESurfaceData& d) {}
 
-void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
+void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
 {
 	SetMesh(mesh);
 	SetItemList(surface);
 	m_dataType = dataType;
-	m_data.assign(surface->size(), 0.0);
+	m_dataFmt = dataFormat;
+
+	AllocateData();
 }
 
-std::vector<double>* FESurfaceData::getData()
+void FESurfaceData::SetItemList(FEItemListBuilder* surf, int n)
 {
-	return &m_data;
+	FSHasOneItemList::SetItemList(surf);
+	AllocateData();
+}
+
+void FESurfaceData::AllocateData()
+{
+	m_dataSize = 0;
+	switch (m_dataType)
+	{
+	case FEMeshData::DATA_SCALAR: m_dataSize = 1; break;
+	case FEMeshData::DATA_VEC3D : m_dataSize = 3; break;
+	case FEMeshData::DATA_MAT3D : m_dataSize = 9; break;
+	default:
+		assert(false);
+		return;
+	}
+
+	FSSurface* surface = GetSurface();
+
+	m_data.clear();
+	if (surface)
+	{
+		int bufSize = 0;
+		int faces = surface->size();
+		switch (m_dataFmt)
+		{
+		case FEMeshData::DATA_NODE:
+		{
+			FSNodeList* pnl = surface->BuildNodeList();
+			bufSize = m_dataSize * pnl->Size();
+			delete pnl;
+		}
+		break;
+		case FEMeshData::DATA_ITEM:
+			bufSize = m_dataSize * faces;
+			break;
+		case FEMeshData::DATA_MULT:
+		{
+			m_maxNodesPerFacet = 0;
+			for (int i = 0; i < faces; ++i)
+			{
+				FSFace* pf = surface->GetFace(i);
+				int nf = pf->Nodes();
+				if (nf > m_maxNodesPerFacet) m_maxNodesPerFacet = nf;
+			}
+			bufSize = m_maxNodesPerFacet * m_dataSize;
+		}
+		break;
+		}
+
+		m_data.assign(bufSize, 0.0);
+	}
 }
 
 void FESurfaceData::Save(OArchive& ar)
@@ -60,12 +122,13 @@ void FESurfaceData::Save(OArchive& ar)
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
 	ar.WriteChunk(CID_MESH_DATA_TYPE, (int) m_dataType);
+	ar.WriteChunk(CID_MESH_DATA_FORMAT, (int) m_dataFmt);
 
 	// Surface must be saved first so that the number of facets in the surface can be
 	// queried before the data is read during the load operation.
 	FEItemListBuilder* pi = GetItemList();
 	if (pi) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, pi->GetID());
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int) m_data.size());
+	if (m_data.empty() == false) ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int) m_data.size());
 }
 
 void FESurfaceData::Load(IArchive& ar)
@@ -85,6 +148,12 @@ void FESurfaceData::Load(IArchive& ar)
 			int dType;
 			ar.read(dType);
 			m_dataType = (FEMeshData::DATA_TYPE) dType;
+		}
+		else if (nid == CID_MESH_DATA_FORMAT)
+		{
+			int dFmt;
+			ar.read(dFmt);
+			m_dataFmt = (FEMeshData::DATA_FORMAT)dFmt;
 		}
 		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
 		{

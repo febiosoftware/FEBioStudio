@@ -49,10 +49,11 @@ public:
 		DATA_MAT3D
 	};
 
+	// NOTE: this is serialized. Don't change order!
 	enum DATA_FORMAT {
-		DATA_NODE,
-		DATA_ITEM,
-		DATA_MULT
+		DATA_ITEM,	// one value per mesh item
+		DATA_NODE,	// one value for each node of selection
+		DATA_MULT	// n values for each mesh item, where n is the nr. of nodes of that item
 	};
 
 public:
@@ -82,6 +83,7 @@ protected:
 	void SetMesh(FSMesh* mesh);
 	DATA_TYPE		m_dataType;
 	DATA_FORMAT		m_dataFmt;
+	int				m_dataSize;	// size of each data item
 	std::vector<double>	m_data;
 
 private:

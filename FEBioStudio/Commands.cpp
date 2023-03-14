@@ -3275,7 +3275,7 @@ void CCmdSetItemList::UnExecute()
 // CCmdAddToItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, list<int>& lnew) : CCommand("Add to selection")
+CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Add to selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;
@@ -3304,7 +3304,7 @@ void CCmdAddToItemListBuilder::UnExecute()
 // CCmdRemoveFromItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, list<int>& lnew) : CCommand("Remove from selection")
+CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Remove from selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;

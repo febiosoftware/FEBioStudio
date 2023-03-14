@@ -216,6 +216,13 @@ FEItemListBuilder* FSSurface::Copy()
 	return pg;
 }
 
+FSFace* FSSurface::GetFace(int n)
+{
+	FSMesh* pm = m_pObj->GetFEMesh();
+	if (pm == nullptr) return nullptr;
+	return pm->FacePtr(n);
+}
+
 FEFaceList* FSSurface::BuildFaceList()
 {
 	FSMesh* pm = m_pObj->GetFEMesh();
