@@ -2073,7 +2073,7 @@ FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surfac
 FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
-	map->Create(this, part, dataType);
+	map->Create(this, part, dataType, FEMeshData::DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;

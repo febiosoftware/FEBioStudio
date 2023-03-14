@@ -149,6 +149,14 @@ void FSElemSet::CreateFromMesh()
 }
 
 //-----------------------------------------------------------------------------
+FEElement_* FSElemSet::GetElement(int n)
+{
+	FSMesh* m = GetMesh();
+	if (m == nullptr) return nullptr;
+	return m->ElementPtr(n);
+}
+
+//-----------------------------------------------------------------------------
 FEElemList* FSElemSet::BuildElemList()
 {
 	FSMesh* pm = m_pObj->GetFEMesh();

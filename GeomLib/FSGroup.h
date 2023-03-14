@@ -93,6 +93,8 @@ public:
 	FEElemList* BuildElemList();
 	FSNodeList* BuildNodeList();
 
+	FEElement_* GetElement(int n);
+
 	FEItemListBuilder* Copy();
 	void Copy(FSElemSet* pg);
 };

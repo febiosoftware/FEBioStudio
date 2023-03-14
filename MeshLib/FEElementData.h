@@ -44,9 +44,10 @@ public:
 
 public:
 	FEElementData(FSMesh* mesh = nullptr);
+	FEElementData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
 
 	// create a data field
-	void Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
+	void Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
 
 	// size of data field
 	int Size() { return (int)m_data.size(); }
@@ -64,8 +65,10 @@ public:
 	}
 	void set(int i, const mat3d& v);
 
+	void SetItemList(FEItemListBuilder* item, int n = 0) override;
+
 	// Get the element set
-	FSElemSet* GetPart();
+	FSElemSet* GetElementSet();
 
 	void FillRandomBox(double fmin, double fmax);
 
@@ -79,13 +82,14 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	double				m_scale;	//!< scale factor
-
-	int	m_stride;
+	double		m_scale;	//!< scale factor
+	int			m_maxNodesPerElem;
 
 private:
 	FEElementData(const FEElementData& d);
 	void operator = (const FEElementData& d);
+
+	void AllocateData();
 };
 
 //-----------------------------------------------------------------------------

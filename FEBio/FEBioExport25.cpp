@@ -3140,7 +3140,7 @@ void FEBioExport25::WriteMeshDataFields()
 			{
 				FEElementData& data = *elemData;
 
-				const FSElemSet* pg = data.GetPart();
+				const FSElemSet* pg = data.GetElementSet();
 
 				double scale = data.GetScaleFactor();
 

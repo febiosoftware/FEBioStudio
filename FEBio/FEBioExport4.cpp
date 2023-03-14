@@ -419,7 +419,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				case FEMeshData::ELEMENT_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
-					FSElemSet* pg = const_cast<FSElemSet*>(map->GetPart());
+					FSElemSet* pg = map->GetElementSet();
 
 					if (pg)
 					{
@@ -2111,7 +2111,7 @@ void FEBioExport4::WriteElementDataFields()
 			if (meshData)
 			{
 				FEElementData& data = *meshData;
-				const FSElemSet* pg = data.GetPart();
+				const FSElemSet* pg = data.GetElementSet();
 
 				string name = pg->GetName();
 				if (name.empty()) name = data.GetName();
