@@ -3568,11 +3568,13 @@ void CCmdRemoveMeshData::Execute()
 	FSMesh* mesh = m_data->GetMesh();
 	m_index = mesh->GetMeshDataIndex(m_data); assert(m_index >= 0);
 	mesh->RemoveMeshDataField(m_index);
+	if (m_data->GetItemList()) m_data->GetItemList()->DecRef();
 }
 
 void CCmdRemoveMeshData::UnExecute()
 {
 	FSMesh* mesh = m_data->GetMesh();
 	mesh->InsertMeshData(m_index, m_data);
+	if (m_data->GetItemList()) m_data->GetItemList()->IncRef();
 	m_index = -1;
 }
