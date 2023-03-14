@@ -1259,15 +1259,30 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 		else
 		{
 			FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
-			double val;
-			int lid;
 			++tag;
 			do
 			{
+				int lid = -1;
 				tag.AttributePtr("lid")->value(lid);
-				tag.value(val);
-
-				nodeData->set(lid - 1, val);
+				switch (dataType)
+				{
+				case FEMeshData::DATA_SCALAR: 
+				{
+					double val = 0.0;
+					tag.value(val);
+					nodeData->SetScalar(lid - 1, val);
+				}
+				break;
+				case FEMeshData::DATA_VEC3D:
+				{
+					vec3d val;
+					tag.value(val);
+					nodeData->SetVec3d(lid - 1, val);
+				}
+				break;
+				default:
+					assert(false);
+				}				
 
 				++tag;
 			} while (!tag.isend());
@@ -2205,9 +2220,6 @@ void FEBioFormat3::ParseNodeLoad(FSStep* pstep, XMLTag& tag)
 	// create the node set
 	FEItemListBuilder* pg = febio.FindNamedSelection(aset.cvalue());
 	if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, aset);
-	char szbuf[256];
-	sprintf(szbuf, "ForceNodeset%02d", CountLoads<FSNodalLoad>(fem)+1);
-	pg->SetName(szbuf);
 
 	// get the (optional) name
 	string name;

@@ -976,8 +976,10 @@ void CModelTree::Build(CModelDocument* doc)
 
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
+		// count mesh data fields. 
+		int n = fem.CountMeshDataFields();
 		// Mesh data
-		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA_LIST);
+		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA_LIST, n);
 		UpdateMeshData(t2, fem);
 	}
 

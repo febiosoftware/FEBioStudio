@@ -26,12 +26,13 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
+#include <FEMLib/IHasItemList.h>
 #include <string>
 //using namespace std;
 
 class FSMesh;
 
-class FEMeshData : public FSObject
+class FEMeshData : public FSObject, public FSHasOneItemList
 {
 public:
 	enum DATA_CLASS {
@@ -41,6 +42,7 @@ public:
 		PART_DATA
 	};
 
+	// NOTE: this is serialized. Don't change order!
 	enum DATA_TYPE {
 		DATA_SCALAR,
 		DATA_VEC3D,

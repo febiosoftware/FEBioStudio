@@ -152,6 +152,31 @@ private:
 	QLabel*			m_id;
 };
 
+class CMeshDataInfoPanel : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CMeshDataInfoPanel(QWidget* parent = 0);
+
+	void setName(const QString& name);
+
+	void setType(int ntype);
+
+	void setDataType(int ndatatype);
+
+protected slots:
+	void on_name_textEdited(const QString&);
+
+signals:
+	void nameChanged(const QString& newName);
+
+private:
+	QLineEdit* m_name;
+	QLabel* m_type;
+	QLabel* m_dataType;
+};
+
 class CDlgPickNamedSelection : public QDialog
 {
 public:
@@ -200,6 +225,7 @@ private slots:
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
 	void on_gitem_nameChanged(const QString&);
+	void on_data_nameChanged(const QString&);
 	void on_object_colorChanged(const QColor& col);
 	void on_props_dataChanged(int n);
 	void on_form_dataChanged(bool itemModified);

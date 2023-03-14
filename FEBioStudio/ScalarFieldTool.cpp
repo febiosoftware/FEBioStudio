@@ -390,9 +390,15 @@ void CScalarFieldTool::OnApply()
 	}
 	else
 	{
+		// create a node set from the mesh
+		FSNodeSet* nodeSet = new FSNodeSet(po);
+		nodeSet->CreateFromMesh();
+		nodeSet->SetName(name.toStdString());
+		po->AddFENodeSet(nodeSet);
+
 		// create node data
-		FENodeData* pdata = pm->AddNodeDataField(name.toStdString());
-		for (int i = 0; i < NN; i++) pdata->set(i, val[i]);
+		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, FEMeshData::DATA_SCALAR);
+		for (int i = 0; i < NN; i++) pdata->SetScalar(i, val[i]);
 	}
 
 	Clear();

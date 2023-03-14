@@ -2932,7 +2932,7 @@ void FEBioExport25::WriteSurfaceDataSection()
 				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
 				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
 
-				tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
+				tag.add_attribute("surface", sd.GetSurface()->GetName().c_str());
 
 				m_xml.add_branch(tag);
 				{

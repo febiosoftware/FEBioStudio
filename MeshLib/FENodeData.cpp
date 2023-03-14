@@ -30,49 +30,52 @@ SOFTWARE.*/
 FENodeData::FENodeData(GObject* po) : FEMeshData(FEMeshData::NODE_DATA)
 {
 	m_po = po;
-	m_nodeSet = nullptr;
+	m_dataSize = 0;
+	if (po) SetMesh(po->GetFEMesh());
 }
 
 FENodeData::FENodeData(const FENodeData& d) : FEMeshData(FEMeshData::NODE_DATA)
 {
+	assert(false);
 }
 
 FENodeData& FENodeData::operator=(const FENodeData& d)
 {
+	assert(false);
 	return *this;
 }
 
-void FENodeData::Create(double v)
+void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataType)
 {
-	delete m_nodeSet;
-	m_nodeSet = new FSNodeSet(m_po);
-	m_nodeSet->CreateFromMesh();
-	FSMesh* pm = m_po->GetFEMesh();
-	SetMesh(pm);
-	m_data.assign(pm->Nodes(), v);
-}
-
-void FENodeData::Create(FSNodeSet* nset, double v)
-{
-	delete m_nodeSet;
-	m_nodeSet = nset;
+	SetItemList(nset);
+	m_dataType = dataType;
 	assert(m_po->GetFEMesh() == nset->GetMesh());
 	SetMesh(nset->GetMesh());
-	m_data.assign(nset->size(), v);
+
+	int nodes = nset->size();
+	m_dataSize = 0;
+	switch (dataType)
+	{
+	case FEMeshData::DATA_SCALAR: m_dataSize = 1; break;
+	case FEMeshData::DATA_VEC3D : m_dataSize = 3; break;
+	case FEMeshData::DATA_MAT3D : m_dataSize = 9; break;
+	default:
+		assert(false);
+	}
+
+	int bufsize = nodes * m_dataSize;
+	m_data.assign(bufsize, v);
 }
 
 void FENodeData::Save(OArchive& ar)
 {
-	int NN = GetMesh()->Nodes();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
-	ar.BeginChunk(CID_MESH_DATA_NODESET);
-	{
-		m_nodeSet->Save(ar);
-	}
-	ar.EndChunk();
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NN);
+	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
+	FEItemListBuilder* pi = GetItemList();
+	if (pi) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, pi->GetID());
+	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int)m_data.size());
 }
 
 void FENodeData::Load(IArchive& ar)
@@ -87,30 +90,61 @@ void FENodeData::Load(IArchive& ar)
 			ar.read(szname);
 			SetName(szname);
 		}
+		else if (nid == CID_MESH_DATA_TYPE)
+		{
+			int dataType = 0;
+			ar.read(dataType);
+			m_dataType = (FEMeshData::DATA_TYPE) dataType;
+
+			switch (m_dataType)
+			{
+			case FEMeshData::DATA_SCALAR: m_dataSize = 1; break;
+			case FEMeshData::DATA_VEC3D : m_dataSize = 3; break;
+			case FEMeshData::DATA_MAT3D : m_dataSize = 9; break;
+			default:
+				assert(false);
+			}
+		}
+		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
+		{
+			int listId = -1;
+			ar.read(listId);
+			if (po)
+			{
+				FSNodeSet* pg = dynamic_cast<FSNodeSet*>(po->FindFEGroup(listId)); assert(pg);
+				SetItemList(pg);
+			}
+		}
 		else if (nid == CID_MESH_DATA_NODESET)
 		{
-			m_nodeSet = new FSNodeSet(po);
-			m_nodeSet->Load(ar);
+			// older files (pre 2.1) stored their own node sets. 
+			// now these are stored on the parent object
+			FSNodeSet* nodeSet = new FSNodeSet(po);
+			nodeSet->Load(ar);
+
+			// add it to the parent object
+			if (nodeSet->GetName().empty()) nodeSet->SetName(GetName());
+			SetItemList(nodeSet);
+			po->AddFENodeSet(nodeSet);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
 			// Older files defined node data on the entire mesh. The node sets were 
 			// not saved.
-			if (m_nodeSet == nullptr)
+			FSNodeSet* nodeSet = dynamic_cast<FSNodeSet*>(GetItemList());
+			if (nodeSet == nullptr)
 			{
-				Create();
+				nodeSet = new FSNodeSet(m_po);
+				nodeSet->CreateFromMesh();
+				nodeSet->SetName(GetName());
+				m_po->AddFENodeSet(nodeSet);
 			}
+			else m_data.assign(nodeSet->size() * m_dataSize, 0);
 
-			int NN = m_nodeSet->size();
-			ar.read(&m_data[0], NN);
+			int NN = nodeSet->size();
+			ar.read(&m_data[0], NN*m_dataSize);
 		}
 
 		ar.CloseChunk();
 	}
-}
-
-// get the item list
-FEItemListBuilder* FENodeData::GetItemList()
-{
-	return m_nodeSet;
 }

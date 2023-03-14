@@ -137,17 +137,20 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::NODE_DATA:
 			{
 				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
-				FSMesh* mesh = nodeData.GetMesh();
-				for (int i=0; i < mesh->Elements(); ++i)
-				{ 
-					FSElement& el = mesh->Element(i);
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j)
+				if (nodeData.GetDataType() == FEMeshData::DATA_SCALAR)
+				{
+					FSMesh* mesh = nodeData.GetMesh();
+					for (int i = 0; i < mesh->Elements(); ++i)
 					{
-						double val = nodeData.get(el.m_node[j]);
-						data.SetElementValue(i, j, val);
+						FSElement& el = mesh->Element(i);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							double val = nodeData.GetScalar(el.m_node[j]);
+							data.SetElementValue(i, j, val);
+						}
+						data.SetElementDataTag(i, 1);
 					}
-					data.SetElementDataTag(i, 1);
 				}
 			}
 			break;

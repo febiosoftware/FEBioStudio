@@ -780,7 +780,7 @@ bool FEBioFormat25::ParseNodeData(XMLTag& tag)
 		tag.AttributePtr("lid")->value(lid);
 		tag.value(val);
 
-		pd->set(lid - 1, val);
+		pd->SetScalar(lid - 1, val);
 
 		++tag;
 	} while (!tag.isend());

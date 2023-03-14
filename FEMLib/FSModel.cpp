@@ -1262,6 +1262,25 @@ void FSModel::New()
 }
 
 //-----------------------------------------------------------------------------
+int FSModel::CountMeshDataFields()
+{
+	// count the mesh data fields on the meshes
+	GModel& mdl = GetModel();
+	int total = 0;
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		FSMesh* mesh = po->GetFEMesh();
+		if (mesh) total += mesh->MeshDataFields();
+	}
+
+	// add the data generators
+	total += MeshDataGenerators();
+
+	return total;
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::Save(OArchive& ar)
 {
 	// save model data

@@ -44,8 +44,6 @@ public:
 
 public:
 	FEElementData(FSMesh* mesh = nullptr);
-	FEElementData(const FEElementData& d);
-	FEElementData& operator = (const FEElementData& d);
 
 	// create a data field
 	void Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR);
@@ -70,7 +68,7 @@ public:
 	double& operator [] (int i) { return m_data[i]; }
 
 	// Get the element set
-	const FSElemSet* GetPart() const { return m_part; }
+	FSElemSet* GetPart();
 
 	void FillRandomBox(double fmin, double fmax);
 
@@ -85,10 +83,13 @@ public:
 
 private:
 	std::vector<double>	m_data;		//!< data values
-	FSElemSet*			m_part;		//!< the part to which the data applies
 	double				m_scale;	//!< scale factor
 
 	int	m_stride;
+
+private:
+	FEElementData(const FEElementData& d);
+	void operator = (const FEElementData& d);
 };
 
 //-----------------------------------------------------------------------------

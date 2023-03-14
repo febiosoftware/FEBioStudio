@@ -2224,7 +2224,7 @@ void FEBioExport4::WriteSurfaceDataSection()
 				if      (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
 				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("data_type", "vec3");
 
-				tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
+				tag.add_attribute("surface", sd.GetSurface()->GetName().c_str());
 
 				m_xml.add_branch(tag);
 				{
@@ -2288,7 +2288,9 @@ void FEBioExport4::WriteNodeDataSection()
 					for (int i = 0; i < nd.Size(); ++i)
 					{
 						el.set_attribute(n1, nid++);
-						el.value(nd.get(i));
+
+						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.GetScalar(i));
+						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.GetVec3d (i));
 
 						m_xml.add_leaf(el, false);
 					}

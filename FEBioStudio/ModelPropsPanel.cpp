@@ -266,6 +266,61 @@ void CGItemPropsPanel::on_name_textEdited(const QString& t)
 }
 
 //=============================================================================
+CMeshDataInfoPanel::CMeshDataInfoPanel(QWidget* parent) : QWidget(parent)
+{
+	QGridLayout* l = new QGridLayout;
+
+	l->addWidget(new QLabel("Name:"), 0, 0, Qt::AlignRight);
+	l->addWidget(m_name = new QLineEdit, 0, 1);
+	m_name->setObjectName("name");
+
+	l->addWidget(new QLabel("Type:"), 1, 0, Qt::AlignRight);
+	l->addWidget(m_type = new QLabel, 1, 1);
+
+	l->addWidget(new QLabel("Data type:"), 2, 0, Qt::AlignRight);
+	l->addWidget(m_dataType = new QLabel, 2, 1);
+
+	setLayout(l);
+
+	QMetaObject::connectSlotsByName(this);
+}
+
+void CMeshDataInfoPanel::setName(const QString& name)
+{
+	m_name->setText(name);
+}
+
+void CMeshDataInfoPanel::setType(int data)
+{
+	switch (data)
+	{
+	case FEMeshData::NODE_DATA   : m_type->setText("Node data"   ); break;
+	case FEMeshData::SURFACE_DATA: m_type->setText("Surface data"); break;
+	case FEMeshData::ELEMENT_DATA: m_type->setText("Element data"); break;
+	case FEMeshData::PART_DATA   : m_type->setText("Part data"   ); break;
+	default:
+		m_type->setText("(unknown)");
+	}
+}
+
+void CMeshDataInfoPanel::setDataType(int ndatatype)
+{
+	switch (ndatatype)
+	{
+	case FEMeshData::DATA_SCALAR: m_dataType->setText("scalar"); break;
+	case FEMeshData::DATA_VEC3D : m_dataType->setText("vec3"); break;
+	case FEMeshData::DATA_MAT3D : m_dataType->setText("mat3"); break;
+	default:
+		m_dataType->setText("(unknown)");
+	}
+}
+
+void CMeshDataInfoPanel::on_name_textEdited(const QString& t)
+{
+	emit nameChanged(t);
+}
+
+//=============================================================================
 CDlgPickNamedSelection::CDlgPickNamedSelection(QWidget* parent) : QDialog(parent)
 {
 	setWindowTitle("Choose Selection");
@@ -309,6 +364,7 @@ class Ui::CModelPropsPanel
 		OBJECT_PANEL,
 		BCOBJECT_PANEL,
 		GITEM_PANEL,
+		MESHDATA_PANEL,
 		MESHINFO_PANEL,
 		PARTINFO_PANEL,
 		PROPS_PANEL,
@@ -344,6 +400,7 @@ public:
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
 	CGItemPropsPanel*		gitem;
+	CMeshDataInfoPanel*		data;
 	CMeshInfoPanel*	mesh;
 	CPartInfoPanel* part;
 	QTabWidget* imageTab;
@@ -380,6 +437,9 @@ public:
 		gitem = new CGItemPropsPanel;
 		gitem->setObjectName("gitem");
 
+		data = new CMeshDataInfoPanel;
+		data->setObjectName("data");
+
 		propStack = new DynamicStackedWidget;
 		propStack->addWidget(props);
 		propStack->addWidget(form);
@@ -408,6 +468,7 @@ public:
 		tool->addTool("Info", obj);
 		tool->addTool("Info", bcobj);
 		tool->addTool("Info", gitem);
+		tool->addTool("Info", data);
 		tool->addTool("Mesh Info", mesh);
 		tool->addTool("Mesh Info", part);
 		tool->addTool("Properties", propStack);
@@ -420,6 +481,7 @@ public:
 		tool->getToolItem(BCOBJECT_PANEL)->setVisible(false);
 		tool->getToolItem(MESHINFO_PANEL)->setVisible(false);
 		tool->getToolItem(PARTINFO_PANEL)->setVisible(false);
+		tool->getToolItem(MESHDATA_PANEL)->setVisible(false);
 //		tool->getToolItem(PROPS_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION1_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION2_PANEL)->setVisible(false);
@@ -464,6 +526,24 @@ public:
 			gitem->setID(nid);
 		}
 		tool->getToolItem(GITEM_PANEL)->setVisible(b);
+	}
+
+	void showMeshDataInfo(bool b, FEMeshData* meshdata = nullptr)
+	{
+		if (b && meshdata)
+		{
+			data->setName(QString::fromStdString(meshdata->GetName()));
+			data->setType(meshdata->GetDataClass());
+			data->setDataType(meshdata->GetDataType());
+		}
+		else
+		{
+			data->setName("");
+			data->setType(-1);
+			data->setDataType(-1);
+		}
+
+		tool->getToolItem(MESHDATA_PANEL)->setVisible(b);
 	}
 
 	void showPropsPanel(bool b) { tool->getToolItem(PROPS_PANEL)->setVisible(b); }
@@ -721,6 +801,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 
 		ui->showBCObjectInfo(false);
 		ui->showGItemInfo(false);
+		ui->showMeshDataInfo(false);
 
 		if (dynamic_cast<GObject*>(m_currentObject))
 			ui->showMeshInfoPanel(true);
@@ -798,6 +879,11 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 
 					ui->showObjectInfo(false);
 					ui->showGItemInfo(true, QString::fromStdString(git->GetName()), typeStr, git->GetID());
+				}
+				else if (dynamic_cast<FEMeshData*>(po))
+				{
+					FEMeshData* pd = dynamic_cast<FEMeshData*>(po);
+					ui->showMeshDataInfo(true, pd);
 				}
 				else ui->showObjectInfo(true, false, nameEditable);
 			}
@@ -1309,6 +1395,17 @@ void CModelPropsPanel::on_bcobject_nameChanged(const QString& txt)
 }
 
 void CModelPropsPanel::on_gitem_nameChanged(const QString& txt)
+{
+	if (m_currentObject)
+	{
+		std::string sname = txt.toStdString();
+		m_currentObject->SetName(sname.c_str());
+
+		emit nameChanged(txt);
+	}
+}
+
+void CModelPropsPanel::on_data_nameChanged(const QString& txt)
 {
 	if (m_currentObject)
 	{

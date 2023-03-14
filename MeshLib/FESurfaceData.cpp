@@ -26,37 +26,25 @@ SOFTWARE.*/
 
 #include "FESurfaceData.h"
 #include <MeshLib/FEMesh.h>
+#include <GeomLib/GObject.h>
 
-FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA), m_surface(nullptr)
+FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA)
 {
 	SetMesh(mesh);
 }
 
 FESurfaceData::~FESurfaceData()
 {
-	delete m_surface;
+	
 }
 
-FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FEMeshData::SURFACE_DATA)
-{
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
-	m_surface = d.m_surface;
-}
-
-void FESurfaceData::operator = (const FESurfaceData& d)
-{
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
-	m_surface = d.m_surface;
-}
+FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FEMeshData::SURFACE_DATA) {}
+void FESurfaceData::operator = (const FESurfaceData& d) {}
 
 void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(mesh);
-	m_surface = surface;
+	SetItemList(surface);
 	m_dataType = dataType;
 	m_data.assign(surface->size(), 0.0);
 }
@@ -73,7 +61,6 @@ std::vector<double>* FESurfaceData::getData()
 
 void FESurfaceData::Save(OArchive& ar)
 {
-	int NF = m_surface->size();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
@@ -81,13 +68,9 @@ void FESurfaceData::Save(OArchive& ar)
 
 	// Surface must be saved first so that the number of facets in the surface can be
 	// queried before the data is read during the load operation.
-	ar.BeginChunk(CID_MESH_DATA_SURFACE);
-	{
-		m_surface->Save(ar);
-	}
-	ar.EndChunk();
-
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NF);
+	FEItemListBuilder* pi = GetItemList();
+	if (pi) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, pi->GetID());
+	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int) m_data.size());
 }
 
 void FESurfaceData::Load(IArchive& ar)
@@ -108,16 +91,33 @@ void FESurfaceData::Load(IArchive& ar)
 			ar.read(dType);
 			m_dataType = (FEMeshData::DATA_TYPE) dType;
 		}
+		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
+		{
+			int listId = -1;
+			ar.read(listId);
+			if (po)
+			{
+				FSSurface* pg = dynamic_cast<FSSurface*>(po->FindFEGroup(listId)); assert(pg);
+				SetItemList(pg);
+			}
+		}
 		else if(nid == CID_MESH_DATA_SURFACE)
 		{
-			m_surface = new FSSurface(po);
-			m_surface->Load(ar);
+			// older files (pre 2.1) stored the surface on the mesh data
+			FSSurface* surface = new FSSurface(po);
+			surface->Load(ar);
+			po->AddFESurface(surface);
+			SetItemList(surface);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
-			int n = m_surface->size();
-			m_data.resize(n);
-			ar.read(&m_data[0], n);
+			FSSurface* surf = GetSurface();
+			if (surf)
+			{
+				int n = surf->size();
+				m_data.resize(n);
+				ar.read(&m_data[0], n);
+			}
 		}
 
 		ar.CloseChunk();

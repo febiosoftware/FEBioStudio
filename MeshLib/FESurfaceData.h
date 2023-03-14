@@ -33,16 +33,14 @@ class FESurfaceData : public FEMeshData
 {
 public:
 	FESurfaceData(FSMesh* mesh = nullptr);
-	FESurfaceData(const FESurfaceData& data);
 	~FESurfaceData();
-	void operator = (const FESurfaceData& data);
 	double& operator [] (int index);
 
 	void Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
 
 	std::vector<double>* getData();
 
-	FSSurface* getSurface() {return m_surface;}
+	FSSurface* GetSurface() {return dynamic_cast<FSSurface*>(GetItemList());}
 
 public:
 	void Save(OArchive& ar);
@@ -50,5 +48,8 @@ public:
 
 private:
 	std::vector<double>	m_data;
-	FSSurface* m_surface;
+
+private:
+	FESurfaceData(const FESurfaceData& data);
+	void operator = (const FESurfaceData& data);
 };

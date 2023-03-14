@@ -1944,10 +1944,9 @@ void FSMesh::Load(IArchive& ar)
 					{
 					case CID_MESH_NODE_DATA:
 						{
-							FENodeData* pmap = AddNodeDataField("(unnamed)");
-							int NN = Nodes();
-							pmap->Create(NN);
-							pmap->Load(ar);
+							FENodeData* data = new FENodeData(GetGObject());
+							data->Load(ar);
+							m_meshData.push_back(data);
 						}
 						break;
 					case CID_MESH_SURFACE_DATA:
@@ -2051,20 +2050,10 @@ void FSMesh::AddMeshDataField(FEMeshData* data)
 }
 
 //-----------------------------------------------------------------------------
-FENodeData* FSMesh::AddNodeDataField(const string& sz, double v)
-{
-	FENodeData* data = new FENodeData(GetGObject());
-	data->Create(v);
-	data->SetName(sz);
-	m_meshData.push_back(data);
-	return data;
-}
-
-//-----------------------------------------------------------------------------
 FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
 {
 	FENodeData* data = new FENodeData(GetGObject());
-	data->Create(nodeset, 0.0);
+	data->Create(nodeset, 0.0, dataType);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;

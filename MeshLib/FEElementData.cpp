@@ -34,7 +34,6 @@ FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA
 {
 	m_scale = 1.0;
 	m_stride = 0;
-	m_part = nullptr;
 	SetMesh(mesh);
 }
 
@@ -42,34 +41,18 @@ FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA
 void FEElementData::Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
 {
 	SetMesh(pm);
-	m_part = part;
+	SetItemList(part);
 	m_dataType = dataType;
 	m_stride = ItemSize();
 	m_data.assign(part->size()*m_stride, 0.0);
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::ELEMENT_DATA)
-{
-	SetMesh(d.GetMesh());
-	SetName(d.GetName());
-	m_data = d.m_data;
-	m_part = d.m_part;
-	m_dataType = d.m_dataType;
-	m_stride = d.m_stride;
-}
+FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::ELEMENT_DATA) {}
+void FEElementData::operator = (const FEElementData& d) {}
 
 //-----------------------------------------------------------------------------
-FEElementData& FEElementData::operator = (const FEElementData& d)
-{
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
-	m_part = d.m_part;
-	m_dataType = d.m_dataType;
-	m_stride = d.m_stride;
-	return (*this);
-}
+FSElemSet* FEElementData::GetPart() { return dynamic_cast<FSElemSet*>(GetItemList()); }
 
 //-----------------------------------------------------------------------------
 void FEElementData::FillRandomBox(double fmin, double fmax)
@@ -140,15 +123,10 @@ void FEElementData::Save(OArchive& ar)
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
-	ar.BeginChunk(CID_MESH_DATA_PART);
-	{
-		m_part->Save(ar);
-	}
-	ar.EndChunk();
+	FEItemListBuilder* pi = GetItemList();
+	if (pi) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, pi->GetID());
 
-	int NE = m_part->size();
-	assert(m_data.size() == NE * m_stride);
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE*m_stride);
+	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int) m_data.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -174,19 +152,37 @@ void FEElementData::Load(IArchive& ar)
 		{
 			ar.read(m_scale);
 		}
+		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
+		{
+			int listId = -1;
+			ar.read(listId);
+			if (po)
+			{
+				FSElemSet* pg = dynamic_cast<FSElemSet*>(po->FindFEGroup(listId)); assert(pg);
+				SetItemList(pg);
+			}
+		}
 		else if (nid == CID_MESH_DATA_PART)
 		{
-			m_part = new FSElemSet(po);
-			m_part->Load(ar);
+			// older files (pre 2.1) used to store their own element sets. Now, the parent GObject stores
+			// all element sets and we only need a pointer. 
+			FSElemSet* part = new FSElemSet(po);
+			part->Load(ar);
+			if (part->GetName().empty()) part->SetName(GetName());
+			po->AddFEElemSet(part);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
-			int NE = m_part->size();
-			m_stride = ItemSize();
+			FSElemSet* part = GetPart();
+			if (part)
+			{
+				int NE = part->size();
+				m_stride = ItemSize();
 
-			int dataSize = NE * m_stride;
-			m_data.resize(dataSize);
-			ar.read(&m_data[0], dataSize);
+				int dataSize = NE * m_stride;
+				m_data.resize(dataSize);
+				ar.read(&m_data[0], dataSize);
+			}
 		}
 
 		ar.CloseChunk();
