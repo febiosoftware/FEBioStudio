@@ -116,21 +116,7 @@ GMaterial* GMaterial::Clone()
 const char* GMaterial::GetFullName()
 {
 	static char sz[256];
-
-	if (m_pm->Type() == FE_USER_MATERIAL)
-	{
-		FSUserMaterial* pm = dynamic_cast<FSUserMaterial*>(m_pm);
-		sprintf(sz, "%s (%s)", GetName().c_str(), pm->GetTypeString());
-	}
-	else
-	{
-		FEMaterialFactory* pMF = FEMaterialFactory::GetInstance();
-
-		FEMatDescriptor* pmd = pMF->Find(m_pm->Type());
-		assert(pmd);
-		sprintf(sz, "%s (%s)", GetName().c_str(), pmd->GetTypeString());
-	}
-
+	sprintf(sz, "%s (%s)", GetName().c_str(), m_pm->GetTypeString());
 	return sz;
 }
 

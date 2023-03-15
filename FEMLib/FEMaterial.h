@@ -2682,6 +2682,8 @@ public:
 
 	vec3d GetFiber(FEElementRef& el) override;
 
+	FSMaterial* Clone() override;
+
 	// local material axes
 	bool HasMaterialAxes() const override;
 	mat3d GetMatAxes(FEElementRef& el) const override;

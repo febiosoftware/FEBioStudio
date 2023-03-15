@@ -101,6 +101,7 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
 #include <FSCore/FSLogger.h>
+#include <FEBioLink/FEBioClass.h>
 
 extern GLColor col[];
 
@@ -2861,19 +2862,21 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if ((doc == nullptr) || (doc == srcDoc) || (srcDoc == nullptr)) return;
 
-	FSModel* fem = srcDoc->GetFSModel();
-	if (fem->Materials() == 0)
+	FSModel* srcfem = srcDoc->GetFSModel();
+	if (srcfem->Materials() == 0)
 	{
 		QMessageBox::information(this, "Import Materials", "The selected source file does not contain any materials.");
 		return;
 	}
 
 	QStringList items;
-	for (int i = 0; i < fem->Materials(); ++i)
+	for (int i = 0; i < srcfem->Materials(); ++i)
 	{
-		GMaterial* gm = fem->GetMaterial(i);
+		GMaterial* gm = srcfem->GetMaterial(i);
 		items.push_back(gm->GetFullName());
 	}
+
+	FSModel* dstfem = doc->GetFSModel();
 
 	QInputDialog input;
 	input.setOption(QInputDialog::UseListViewForComboBoxItems);
@@ -2883,14 +2886,16 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	{
 		QString item = input.textValue();
 
-		for (int i = 0; i < fem->Materials(); ++i)
+		for (int i = 0; i < srcfem->Materials(); ++i)
 		{
-			GMaterial* gm = fem->GetMaterial(i);
+			GMaterial* gm = srcfem->GetMaterial(i);
 			QString name = gm->GetFullName();
 			if (name == item)
 			{
-				GMaterial* newMat = gm->Clone();
-				doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), newMat));
+				FSMaterial* pmsrc = gm->GetMaterialProperties();
+				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
+				GMaterial* newMat = new GMaterial(pmnew);
+				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat));
 				UpdateModel(newMat);
 				return;
 			}
