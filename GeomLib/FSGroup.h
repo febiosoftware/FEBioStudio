@@ -81,20 +81,39 @@ protected:
 //-----------------------------------------------------------------------------
 // class describing a group of elements
 //
-class FSPart : public FSGroup
+class FSElemSet : public FSGroup
 {
 public:
-	FSPart(GObject* po) : FSGroup(po, FE_PART, FE_NODE_FLAG | FE_ELEM_FLAG) {}
-	FSPart(GObject* po, const std::vector<int>&  elset);
-	~FSPart(){}
+	FSElemSet(GObject* po) : FSGroup(po, FE_ELEMSET, FE_NODE_FLAG | FE_ELEM_FLAG) {}
+	FSElemSet(GObject* po, const std::vector<int>&  elset);
+	~FSElemSet(){}
 
 	void CreateFromMesh();
 
 	FEElemList* BuildElemList();
 	FSNodeList* BuildNodeList();
 
+	FEElement_* GetElement(int n);
+
 	FEItemListBuilder* Copy();
-	void Copy(FSPart* pg);
+	void Copy(FSElemSet* pg);
+};
+
+//-----------------------------------------------------------------------------
+// class describing a group of elements, defined via a list of parts of an object
+//
+class FSPartSet : public FSGroup
+{
+public:
+	FSPartSet(GObject* po) : FSGroup(po, FE_PARTSET, FE_PART_FLAG) {}
+	FSPartSet(GObject* po, const std::vector<int>& parts);
+	~FSPartSet() {}
+
+	FEItemListBuilder* Copy();
+	void Copy(FSPartSet* pg);
+
+	std::vector<int> BuildElementIndexList();
+	std::vector<int> BuildElementIndexList(const std::vector<int>& partList);
 };
 
 //-----------------------------------------------------------------------------
@@ -110,6 +129,8 @@ public:
 
 	FSNodeList* BuildNodeList();
 	FEFaceList* BuildFaceList();
+
+	FSFace* GetFace(int n);
 
 	FEItemListBuilder* Copy();
 	void Copy(FSSurface* pg);

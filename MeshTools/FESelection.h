@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <GeomLib/FSGroup.h>
-#include <FEMLib/FSModel.h>
+#include <GeomLib/GModel.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <vector>
 //using namespace std;
@@ -61,6 +61,8 @@ public:
 	BOX GetBoundingBox() { return m_box; }
 	vec3d GetPivot() { return m_box.Center(); };
 	int Size();
+
+	bool Supports(unsigned int itemFlag) const;
 
 	virtual void Invert() = 0;
 
@@ -99,7 +101,7 @@ inline int FESelection::Size()
 class GObjectSelection : public FESelection
 {
 public:
-	GObjectSelection(FSModel* ps) : FESelection(SELECT_OBJECTS) { m_pfem = ps; Update(); }
+	GObjectSelection(GModel* ps) : FESelection(SELECT_OBJECTS) { m_mdl = ps; Update(); }
 	int Count() override;
 	virtual void Invert() override;
 	virtual void Update() override;
@@ -121,7 +123,7 @@ public:
 	string GetName() override;
 
 protected:
-	FSModel*	m_pfem;
+	GModel*		m_mdl;
 	vector<int>	m_item;
 };
 
@@ -143,7 +145,7 @@ public:
 		operator GPart* () { return m_pg; }
 
 	protected:
-		FSModel*	m_ps;
+		GModel*		m_ps;
 		GPart*		m_pg;
 		int			m_npart;
 	};
@@ -152,7 +154,7 @@ public:
 	int Prev();
 
 public:
-	GPartSelection(FSModel* ps) : FESelection(SELECT_PARTS) { m_ps = ps; Update(); }
+	GPartSelection(GModel* ps) : FESelection(SELECT_PARTS) { m_mdl = ps; Update(); }
 	int Count();
 	void Invert();
 	void Update();
@@ -161,12 +163,12 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation ();
 
-	FSModel* GetFSModel() { return m_ps; }
+	GModel* GetGModel() { return m_mdl; }
 
 	FEItemListBuilder* CreateItemList();
 
 protected:
-	FSModel*	m_ps;
+	GModel*	m_mdl;
 };
 
 //-----------------------------------------------------------------------------
@@ -187,7 +189,7 @@ public:
 		operator GFace* () { return m_pf; }
 
 	protected:
-		FSModel*	m_ps;
+		GModel*	m_ps;
 		GFace*	m_pf;
 		int			m_nsurf;
 	};
@@ -198,7 +200,7 @@ public:
 	FEItemListBuilder* CreateItemList();
 
 public:
-	GFaceSelection(FSModel* ps) : FESelection(SELECT_SURFACES) { m_ps = ps; Update(); }
+	GFaceSelection(GModel* ps) : FESelection(SELECT_SURFACES) { m_ps = ps; Update(); }
 	int Count();
 	void Invert();
 	void Update();
@@ -207,10 +209,10 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	FSModel* GetFSModel() { return m_ps; }
+	GModel* GetGModel() { return m_ps; }
 
 protected:
-	FSModel*	m_ps;
+	GModel*	m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -231,8 +233,8 @@ public:
 		operator GEdge* () { return m_pe; }
 
 	protected:
-		FSModel*	m_ps;
-		GEdge*		m_pe;
+		GModel*	m_ps;
+		GEdge*	m_pe;
 		int			m_nedge;
 	};
 
@@ -240,7 +242,7 @@ public:
 	int Prev();
 
 public:
-	GEdgeSelection(FSModel* ps) : FESelection(SELECT_CURVES) { m_ps = ps; Update(); }
+	GEdgeSelection(GModel* ps) : FESelection(SELECT_CURVES) { m_ps = ps; Update(); }
 	int Count();
 	void Invert();
 	void Update();
@@ -249,12 +251,12 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	FSModel* GetFSModel() { return m_ps; }
+	GModel* GetGModel() { return m_ps; }
 
 	FEItemListBuilder* CreateItemList();
 
 protected:
-	FSModel*	m_ps;
+	GModel*	m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -275,16 +277,16 @@ public:
 		operator GNode* () { return m_pn; }
 
 	protected:
-		FSModel*	m_ps;
-		GNode*		m_pn;
-		int			m_node;
+		GModel*	m_ps;
+		GNode*	m_pn;
+		int		m_node;
 	};
 
 	int Next();
 	int Prev();
 
 public:
-	GNodeSelection(FSModel* ps) : FESelection(SELECT_NODES) { m_ps = ps; Update(); }
+	GNodeSelection(GModel* ps) : FESelection(SELECT_NODES) { m_ps = ps; Update(); }
 	int Count();
 	void Invert();
 	void Update();
@@ -293,12 +295,12 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation () { return quatd(0,0,0); }
 
-	FSModel* GetFSModel() { return m_ps; }
+	GModel* GetGModel() { return m_ps; }
 
 	FEItemListBuilder* CreateItemList();
 
 protected:
-	FSModel*	m_ps;
+	GModel*	m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -319,7 +321,7 @@ public:
 		operator GDiscreteObject* () { return m_pn; }
 
 	protected:
-		FSModel*			m_ps;
+		GModel*				m_ps;
 		GDiscreteObject*	m_pn;
 		int					m_item;
 	};
@@ -328,7 +330,7 @@ public:
 	int Prev();
 
 public:
-	GDiscreteSelection(FSModel* ps) : FESelection(SELECT_DISCRETE_OBJECT) { m_ps = ps; Update(); }
+	GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE_OBJECT) { m_ps = ps; Update(); }
 	int Count();
 	void Invert();
 	void Update();
@@ -338,12 +340,12 @@ public:
 	void Scale(double s, vec3d dr, vec3d c) {}
 	quatd GetOrientation() { return quatd(0, 0, 0); }
 
-	FSModel* GetFSModel() { return m_ps; }
+	GModel* GetGModel() { return m_ps; }
 
 	FEItemListBuilder* CreateItemList() { return 0; }
 
 protected:
-	FSModel*	m_ps;
+	GModel*	m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -368,7 +370,7 @@ public:
 	};
 
 public:
-	FEElementSelection(FSModel* ps, FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEElementSelection(GModel* ps, FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -385,7 +387,7 @@ public:
 
 protected:
 	FSMesh*		m_pMesh;
-	FSModel*	m_ps;
+	GModel*		m_ps;
 	vector<int>	m_item;
 };
 
@@ -411,7 +413,7 @@ public:
 	};
 
 public:
-	FEFaceSelection(FSModel* ps, FSMeshBase* pm) : FESelection(SELECT_FE_FACES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEFaceSelection(GModel* ps, FSMeshBase* pm) : FESelection(SELECT_FE_FACES) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -428,7 +430,7 @@ public:
 
 protected:
 	FSMeshBase*		m_pMesh;
-	FSModel*		m_ps;
+	GModel*		m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -453,7 +455,7 @@ public:
 	};
 
 public:
-	FEEdgeSelection(FSModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_EDGES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEEdgeSelection(GModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_EDGES) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -468,7 +470,7 @@ public:
 
 protected:
 	FSLineMesh*		m_pMesh;
-	FSModel*		m_ps;
+	GModel*		m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -493,7 +495,7 @@ public:
 	};
 
 public:
-	FENodeSelection(FSModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_NODES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FENodeSelection(GModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_NODES) { m_ps = ps; m_pMesh = pm; Update(); }
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -510,5 +512,5 @@ public:
 
 protected:
 	FSLineMesh*	m_pMesh;
-	FSModel*	m_ps;
+	GModel*	m_ps;
 };

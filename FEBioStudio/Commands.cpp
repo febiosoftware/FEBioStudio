@@ -171,14 +171,14 @@ void CCmdAddConstraint::UnExecute()
 void CCmdAddPart::Execute()
 {
 	// add the group to the mesh
-	m_po->AddFEPart(m_pg);
+	m_po->AddFEElemSet(m_pg);
 	m_bdel = false;
 }
 
 void CCmdAddPart::UnExecute()
 {
 	// remove the mesh from the model
-	m_po->RemoveFEPart(m_pg);
+	m_po->RemoveFEElemSet(m_pg);
 	m_bdel = true;
 }
 
@@ -3247,21 +3247,22 @@ void CCmdAddMaterial::UnExecute()
 // CCmdSetItemList
 //-----------------------------------------------------------------------------
 
-CCmdSetItemList::CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl) : CCommand("Assign selection")
+CCmdSetItemList::CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n) : CCommand("Assign selection")
 {
 	m_pbc = pbc;
 	m_pl = pl;
+	m_index = n;
 }
 
 CCmdSetItemList::~CCmdSetItemList()
 {
-	if (m_pl) delete m_pl;
+	
 }
 
 void CCmdSetItemList::Execute()
 {
-	FEItemListBuilder* pold = m_pbc->GetItemList();
-	m_pbc->SetItemList(m_pl);
+	FEItemListBuilder* pold = m_pbc->GetItemList(m_index);
+	m_pbc->SetItemList(m_pl, m_index);
 	m_pl = pold;
 }
 
@@ -3274,7 +3275,7 @@ void CCmdSetItemList::UnExecute()
 // CCmdAddToItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, list<int>& lnew) : CCommand("Add to selection")
+CCmdAddToItemListBuilder::CCmdAddToItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Add to selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;
@@ -3303,7 +3304,7 @@ void CCmdAddToItemListBuilder::UnExecute()
 // CCmdRemoveFromItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, list<int>& lnew) : CCommand("Remove from selection")
+CCmdRemoveFromItemListBuilder::CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew) : CCommand("Remove from selection")
 {
 	m_pold = pold;
 	m_lnew = lnew;
@@ -3332,45 +3333,27 @@ void CCmdRemoveFromItemListBuilder::UnExecute()
 // CCmdRemoveItemListBuilder
 //-----------------------------------------------------------------------------
 
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(IHasItemList* pmc) : CCommand("Remove selection")
+CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(IHasItemLists* pmc, int n) : CCommand("Remove selection")
 {
 	m_pmc = pmc;
-	m_ppi = nullptr;
-	m_pitem = nullptr;
-	m_index = -1;
-}
-
-CCmdRemoveItemListBuilder::CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n) : CCommand("Remove selection")
-{
-	m_pmc = nullptr;
-	m_ppi = pmc;
 	m_pitem = nullptr;
 	m_index = n;
 }
 
 CCmdRemoveItemListBuilder::~CCmdRemoveItemListBuilder()
 {
-	if (m_pitem) delete m_pitem;
+	
 }
 
 void CCmdRemoveItemListBuilder::Execute()
 {
-	if (m_pmc)
-	{
-		m_pitem = m_pmc->GetItemList();
-		m_pmc->SetItemList(nullptr);
-	}
-	if (m_ppi)
-	{
-		m_pitem = m_ppi->GetItemList(m_index);
-		m_ppi->SetItemList(m_index, nullptr);
-	}
+	m_pitem = m_pmc->GetItemList(m_index);
+	m_pmc->SetItemList(nullptr, m_index);
 }
 
 void CCmdRemoveItemListBuilder::UnExecute()
 {
-	if (m_pmc) m_pmc->SetItemList(m_pitem);
-	if (m_ppi) m_ppi->SetItemList(m_index, m_pitem);
+	m_pmc->SetItemList(m_pitem, m_index);
 	m_pitem = nullptr;
 }
 
@@ -3408,6 +3391,58 @@ void CCmdDeleteGObject::UnExecute()
 	// delete the OML
 	m_poml = nullptr;
 }
+
+//-----------------------------------------------------------------------------
+// CCmdDeleteFSModelComponent
+//-----------------------------------------------------------------------------
+
+CCmdDeleteFSModelComponent::CCmdDeleteFSModelComponent(FSModelComponent* po) : CCommand(string("Delete ") + po->GetName())
+{
+	assert(po->GetParent());
+	m_obj = po;
+	m_parent = po->GetParent();
+	m_delObject = false;
+}
+
+CCmdDeleteFSModelComponent::~CCmdDeleteFSModelComponent()
+{
+	if (m_delObject) delete m_obj;
+}
+
+void CCmdDeleteFSModelComponent::Execute()
+{
+	m_insertPos = m_parent->RemoveChild(m_obj);
+	m_obj->SetParent(nullptr);
+	m_delObject = true;
+
+	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_obj);
+	if (pil)
+	{
+		for (int i = 0; i < pil->ItemLists(); ++i)
+		{
+			FEItemListBuilder* pl = pil->GetItemList(i);
+			if (pl) pl->DecRef();
+		}
+	}
+}
+
+void CCmdDeleteFSModelComponent::UnExecute()
+{
+	m_parent->InsertChild(m_insertPos, m_obj);
+	assert(m_obj->GetParent() == m_parent);
+	m_delObject = false;
+
+	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_obj);
+	if (pil)
+	{
+		for (int i = 0; i < pil->ItemLists(); ++i)
+		{
+			FEItemListBuilder* pl = pil->GetItemList(i);
+			if (pl) pl->IncRef();
+		}
+	}
+}
+
 
 //-----------------------------------------------------------------------------
 // CCmdDeleteFSObject
@@ -3533,11 +3568,13 @@ void CCmdRemoveMeshData::Execute()
 	FSMesh* mesh = m_data->GetMesh();
 	m_index = mesh->GetMeshDataIndex(m_data); assert(m_index >= 0);
 	mesh->RemoveMeshDataField(m_index);
+	if (m_data->GetItemList()) m_data->GetItemList()->DecRef();
 }
 
 void CCmdRemoveMeshData::UnExecute()
 {
 	FSMesh* mesh = m_data->GetMesh();
 	mesh->InsertMeshData(m_index, m_data);
+	if (m_data->GetItemList()) m_data->GetItemList()->IncRef();
 	m_index = -1;
 }

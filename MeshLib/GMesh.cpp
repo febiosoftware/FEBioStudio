@@ -178,7 +178,7 @@ void GMesh::AddFace(int* n, int nodes, int groupID, int smoothID, bool bext)
 	case 8: // QUAD8
 		{
 			// NOTE: Commented this out since I need a one-to-one correspondence
-			// between nodes from the original mesh and the GLMesh
+			// between nodes from the original mesh and the GMesh
 			// we add a central node to make the improve the rendering a bit
 /*			vec3d x[8];
 			for (int i = 0; i < 8; ++i) x[i] = Node(n[i]).r;

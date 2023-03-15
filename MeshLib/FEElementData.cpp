@@ -33,42 +33,92 @@ SOFTWARE.*/
 FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	m_scale = 1.0;
-	m_stride = 0;
-	m_part = nullptr;
 	SetMesh(mesh);
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FSMesh* pm, FSPart* part, FEMeshData::DATA_TYPE dataType)
+FEElementData::FEElementData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::ELEMENT_DATA)
+{
+	SetMesh(mesh);
+	m_dataType = dataType;
+	m_dataFmt = dataFormat;
+	m_dataSize = 0;
+	m_maxNodesPerElem = 0;
+}
+
+//-----------------------------------------------------------------------------
+void FEElementData::Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
 {
 	SetMesh(pm);
-	m_part = part;
 	m_dataType = dataType;
-	m_stride = ItemSize();
-	m_data.assign(part->size()*m_stride, 0.0);
+	m_dataFmt = dataFormat;
+	m_dataSize = ItemSize();
+	SetItemList(part);
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::ELEMENT_DATA)
+void FEElementData::AllocateData()
 {
-	SetMesh(d.GetMesh());
-	SetName(d.GetName());
-	m_data = d.m_data;
-	m_part = d.m_part;
-	m_dataType = d.m_dataType;
-	m_stride = d.m_stride;
+	m_dataSize = 0;
+	switch (m_dataType)
+	{
+	case FEMeshData::DATA_SCALAR: m_dataSize = 1; break;
+	case FEMeshData::DATA_VEC3D: m_dataSize = 3; break;
+	case FEMeshData::DATA_MAT3D: m_dataSize = 9; break;
+	default:
+		assert(false);
+		return;
+	}
+
+	FSElemSet* elemSet = GetElementSet();
+
+	m_data.clear();
+	if (elemSet)
+	{
+		int bufSize = 0;
+		int elems = elemSet->size();
+		switch (m_dataFmt)
+		{
+		case FEMeshData::DATA_NODE:
+		{
+			FSNodeList* pnl = elemSet->BuildNodeList();
+			bufSize = m_dataSize * pnl->Size();
+			delete pnl;
+		}
+		break;
+		case FEMeshData::DATA_ITEM:
+			bufSize = m_dataSize * elems;
+			break;
+		case FEMeshData::DATA_MULT:
+		{
+			m_maxNodesPerElem = 0;
+			for (int i = 0; i < elems; ++i)
+			{
+				FEElement_* pe = elemSet->GetElement(i);
+				int ne = pe->Nodes();
+				if (ne > m_maxNodesPerElem) m_maxNodesPerElem = ne;
+			}
+			bufSize = m_maxNodesPerElem * m_dataSize;
+		}
+		break;
+		}
+
+		m_data.assign(bufSize, 0.0);
+	}
 }
 
 //-----------------------------------------------------------------------------
-FEElementData& FEElementData::operator = (const FEElementData& d)
+FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::ELEMENT_DATA) {}
+void FEElementData::operator = (const FEElementData& d) {}
+
+//-----------------------------------------------------------------------------
+FSElemSet* FEElementData::GetElementSet() { return dynamic_cast<FSElemSet*>(GetItemList()); }
+
+//-----------------------------------------------------------------------------
+void FEElementData::SetItemList(FEItemListBuilder* item, int n)
 {
-	SetName(d.GetName());
-	SetMesh(d.GetMesh());
-	m_data = d.m_data;
-	m_part = d.m_part;
-	m_dataType = d.m_dataType;
-	m_stride = d.m_stride;
-	return (*this);
+	FSHasOneItemList::SetItemList(item);
+	AllocateData();
 }
 
 //-----------------------------------------------------------------------------
@@ -113,16 +163,16 @@ int FEElementData::ItemSize() const
 //-----------------------------------------------------------------------------
 void FEElementData::get(int n, double* d)
 {
-	assert((m_stride > 0) && (m_stride == ItemSize()));
-	for (int i = 0; i < m_stride; ++i)
-		d[i] = m_data[m_stride * n + i];
+	assert((m_dataSize > 0) && (m_dataSize == ItemSize()));
+	for (int i = 0; i < m_dataSize; ++i)
+		d[i] = m_data[m_dataSize * n + i];
 }
 
 //-----------------------------------------------------------------------------
 void FEElementData::set(int n, const mat3d& v)
 {
 	assert(m_dataType == DATA_MAT3D);
-	assert(m_stride == 9);
+	assert(m_dataSize == 9);
 	int m = 0;
 	for (int i = 0; i < 3; ++i)
 		for (int j = 0; j < 3; ++j, ++m)
@@ -136,19 +186,15 @@ void FEElementData::Save(OArchive& ar)
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
 	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
+	ar.WriteChunk(CID_MESH_DATA_FORMAT, (int)m_dataFmt);
 	ar.WriteChunk(CID_MESH_DATA_SCALE, m_scale);
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
-	ar.BeginChunk(CID_MESH_DATA_PART);
-	{
-		m_part->Save(ar);
-	}
-	ar.EndChunk();
+	FEItemListBuilder* pi = GetItemList();
+	if (pi) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, pi->GetID());
 
-	int NE = m_part->size();
-	assert(m_data.size() == NE * m_stride);
-	ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], NE*m_stride);
+	if (m_data.empty() == false) ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int) m_data.size());
 }
 
 //-----------------------------------------------------------------------------
@@ -170,23 +216,39 @@ void FEElementData::Load(IArchive& ar)
 			ar.read(dType);
 			m_dataType = (FEMeshData::DATA_TYPE) dType;
 		}
+		else if (nid == CID_MESH_DATA_FORMAT)
+		{
+			int dFmt;
+			ar.read(dFmt);
+			m_dataFmt = (FEMeshData::DATA_FORMAT)dFmt;
+		}
 		else if (nid == CID_MESH_DATA_SCALE)
 		{
 			ar.read(m_scale);
 		}
+		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
+		{
+			int listId = -1;
+			ar.read(listId);
+			if (po)
+			{
+				FSElemSet* pg = dynamic_cast<FSElemSet*>(po->FindFEGroup(listId)); assert(pg);
+				SetItemList(pg);
+			}
+		}
 		else if (nid == CID_MESH_DATA_PART)
 		{
-			m_part = new FSPart(po);
-			m_part->Load(ar);
+			// older files (pre 2.1) used to store their own element sets. Now, the parent GObject stores
+			// all element sets and we only need a pointer. 
+			FSElemSet* part = new FSElemSet(po);
+			part->Load(ar);
+			if (part->GetName().empty()) part->SetName(GetName());
+			po->AddFEElemSet(part);
+			SetItemList(part);
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{
-			int NE = m_part->size();
-			m_stride = ItemSize();
-
-			int dataSize = NE * m_stride;
-			m_data.resize(dataSize);
-			ar.read(&m_data[0], dataSize);
+			ar.read(&m_data[0], m_data.size());
 		}
 
 		ar.CloseChunk();
@@ -200,6 +262,15 @@ FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 	m_maxElemItems = 1;
 }
 
+FEPartData::FEPartData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt) : FEMeshData(FEMeshData::PART_DATA)
+{
+	SetMesh(mesh);
+	m_dataType = dataType;
+	m_dataFmt = dataFmt;
+	m_dataSize = 0;
+	m_maxElemItems = 0;
+}
+
 FEPartData::FEPartData(const FEPartData& d) : FEMeshData(FEMeshData::PART_DATA)
 {
 
@@ -211,19 +282,30 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 }
 
 // create a data field
-bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
+bool FEPartData::Create(FSPartSet* partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
 {
 	FSMesh* mesh = GetMesh();
 	assert(mesh);
 	m_data.clear();
-	m_part = partList;
 
+	m_dataType = dataType;
+	m_dataFmt = dataFmt;
+
+	SetItemList(partList);
+
+	return true;
+}
+
+void FEPartData::AllocateData()
+{
+	FSMesh* mesh = GetMesh();
 	int NE = mesh->Elements();
 	int maxNodes = 0;
 	int nsize = 0;
-	for (int i = 0; i < partList.size(); ++i)
+	FSPartSet* partList = GetPartSet();
+	for (int i = 0; i < partList->size(); ++i)
 	{
-		int pid = partList[i];
+		int pid = (*partList)[i];
 		for (int i = 0; i < NE; ++i)
 		{
 			FSElement& el = mesh->Element(i);
@@ -236,20 +318,21 @@ bool FEPartData::Create(const vector<int>& partList, FEMeshData::DATA_TYPE dataT
 		}
 	}
 
-	m_dataFmt = dataFmt;
-	if (dataFmt == DATA_ITEM)
+	if (m_dataFmt == DATA_ITEM)
 	{
 		m_maxElemItems = 1;
 	}
-	else if (dataFmt == DATA_MULT)
+	else if (m_dataFmt == DATA_NODE)
+	{
+		m_maxElemItems = 1;
+	}
+	else if (m_dataFmt == DATA_MULT)
 	{
 		m_maxElemItems = maxNodes;
 		nsize *= maxNodes;
 	}
 
 	m_data.resize(nsize);
-
-	return true;
 }
 
 FEElemList* FEPartData::BuildElemList()
@@ -259,9 +342,10 @@ FEElemList* FEPartData::BuildElemList()
 
 	FEElemList* elemList = new FEElemList;
 	int NE = mesh->Elements();
-	for (int i = 0; i < m_part.size(); ++i)
+	FSPartSet* partList = GetPartSet();
+	for (int i = 0; i < partList->size(); ++i)
 	{
-		int pid = m_part[i];
+		int pid = (*partList)[i];
 		for (int j = 0; j < NE; ++j)
 		{
 			FSElement& el = mesh->Element(j);
@@ -274,16 +358,15 @@ FEElemList* FEPartData::BuildElemList()
 	return elemList;
 }
 
-GPartList* FEPartData::GetPartList(FSModel* fem)
+void FEPartData::SetItemList(FEItemListBuilder* item, int n)
 {
-	GObject* po = GetMesh()->GetGObject();
-	GPartList* partList = new GPartList(fem);
-	for (int i = 0; i < m_part.size(); ++i)
-	{
-		GPart* pg = po->Part(m_part[i]);
-		partList->add(pg->GetID());
-	}
-	return partList;
+	FSHasOneItemList::SetItemList(item);
+	AllocateData();
+}
+
+FSPartSet* FEPartData::GetPartSet()
+{
+	return dynamic_cast<FSPartSet*>(GetItemList());
 }
 
 // size of data field
@@ -303,9 +386,10 @@ void FEPartData::Save(OArchive& ar)
 
 	// Parts must be saved first so that the number of elements in the part can be
 	// queried before the data is read during the load operation.
-	ar.WriteChunk(CID_MESH_DATA_PART, m_part);
+	FSPartSet* partSet = GetPartSet();
+	if (partSet) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, partSet->GetID());
 
-	ar.WriteChunk(CID_MESH_DATA_VALUES, m_data);
+	if (m_data.empty() == false) ar.WriteChunk(CID_MESH_DATA_VALUES, m_data);
 }
 
 void FEPartData::Load(IArchive& ar)
@@ -336,9 +420,27 @@ void FEPartData::Load(IArchive& ar)
 		{
 			ar.read(m_maxElemItems);
 		}
+		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
+		{
+			int listId = -1;
+			ar.read(listId);
+			if (po)
+			{
+				FSPartSet* pg = dynamic_cast<FSPartSet*>(po->FindFEGroup(listId)); assert(pg);
+				SetItemList(pg);
+			}
+		}
 		else if (nid == CID_MESH_DATA_PART)
 		{
-			ar.read(m_part);
+			std::vector<int> part;
+			ar.read(part);
+			if (part.empty())
+			{
+				FSPartSet* ps = new FSPartSet(po);
+				ps->SetName(GetName());
+				for (int n : part) ps->add(n);
+				SetItemList(ps);
+			}
 		}
 		else if (nid == CID_MESH_DATA_VALUES)
 		{

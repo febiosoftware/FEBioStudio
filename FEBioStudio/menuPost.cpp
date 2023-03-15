@@ -38,8 +38,7 @@ SOFTWARE.*/
 #include <PostGL/GLIsoSurfacePlot.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
@@ -244,8 +243,7 @@ void CMainWindow::on_actionVolumeRender_triggered()
 		return;
 	}
 
-//	Post::CVolRender* vr = new Post::CVolRender(img);
-	Post::CVolumeRender2* vr = new Post::CVolumeRender2(img);
+	Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(img);
 	vr->Create();
 	img->AddImageRenderer(vr);
 

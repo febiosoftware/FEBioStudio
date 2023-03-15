@@ -23,24 +23,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "GLMesh.h"
 
-//-----------------------------------------------------------------------------
-GLMesh::GLMesh(void)
-{
-}
+#include "ImageSource.h"
 
-//-----------------------------------------------------------------------------
-GLMesh::GLMesh(GLMesh& m)
+class CDICOMImageSource : public Post::CImageSource
 {
-	m_Node = m.m_Node;
-	m_Edge = m.m_Edge;
-	m_Face = m.m_Face;
-	m_box = m.m_box;
-	Update();
-}
+public:
+    CDICOMImageSource(Post::CImageModel* imgModel, const std::vector<std::string>& filenames);
+    CDICOMImageSource(Post::CImageModel* imgModel);
 
-//-----------------------------------------------------------------------------
-GLMesh::~GLMesh(void)
-{
-}
+    bool Load() override;
+
+    void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
+private:
+    // std::string m_filename;
+    std::vector<std::string> m_filenames;
+    // std::string m_filename;
+    // ImageFileType m_type;
+
+
+};

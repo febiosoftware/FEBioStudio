@@ -56,6 +56,16 @@ void CMainWindow::on_actionFEBioURL_triggered()
 	QDesktopServices::openUrl(QUrl("https://febio.org/"));
 }
 
+void CMainWindow::on_actionFEBioUM_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioUser-4-0/UM40.html"));
+}
+
+void CMainWindow::on_actionFEBioTM_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioTheory-4-0/TM40.html"));
+}
+
 void CMainWindow::on_actionFEBioForum_triggered()
 {
 	QDesktopServices::openUrl(QUrl("https://forums.febio.org/"));

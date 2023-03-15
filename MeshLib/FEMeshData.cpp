@@ -24,11 +24,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEMeshData.h"
+#include "FEItemListBuilder.h"
+
 
 FEMeshData::FEMeshData(FEMeshData::DATA_CLASS dataClass)
 	: m_dataClass(dataClass), m_pMesh(0), m_dataType(FEMeshData::DATA_TYPE::DATA_SCALAR)
 {
 	m_dataFmt = DATA_ITEM;
+	m_dataSize = 0;
+
+	switch (m_dataClass)
+	{
+	case NODE_DATA   : SetMeshItemType(MESH_ITEM_FLAGS::FE_NODE_FLAG); break;
+	case SURFACE_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_FACE_FLAG); break;
+	case ELEMENT_DATA: SetMeshItemType(MESH_ITEM_FLAGS::FE_ELEM_FLAG); break;
+	case PART_DATA   : SetMeshItemType(MESH_ITEM_FLAGS::FE_PART_FLAG); break;
+	default:
+		assert(false);
+	}
 }
 
 FEMeshData::~FEMeshData()

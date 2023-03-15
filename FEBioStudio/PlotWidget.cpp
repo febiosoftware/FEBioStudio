@@ -60,6 +60,25 @@ SOFTWARE.*/
 
 using namespace std;
 
+#ifdef WIN32
+#include <float.h>
+#define ISNAN(x) _isnan(x)
+#endif
+
+#ifdef LINUX
+#ifdef CENTOS
+#define ISNAN(x) isnan(x)
+#else
+#define ISNAN(x) std::isnan(x)
+#endif
+#endif
+
+#ifdef __APPLE__
+#include <math.h>
+#define ISNAN(x) isnan(x)
+#endif
+
+
 //-----------------------------------------------------------------------------
 class CDlgPlotWidgetProps_Ui
 {
@@ -1692,6 +1711,7 @@ void CCurvePlotWidget::SetLoadCurve(LoadCurve* lc)
 		data->setFillColor(QColor(92, 255, 164));
 		data->setLineWidth(2);
 		data->setMarkerSize(5);
+		repaint();
 	}
 }
 
@@ -1703,6 +1723,7 @@ LoadCurve* CCurvePlotWidget::GetLoadCurve()
 void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 {
 	if (m_lc == 0) return;
+    m_lc->Update();
 
 	int N = data.size();
 
@@ -2775,6 +2796,7 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 	QPoint p0, p1;
 	int prevRegion = 0;
 	int curRegion = 0;
+	bool newSection = true;
 	for (int i = rt.left(); i < rt.right(); i += 2)
 	{
 		p1.setX(i);
@@ -2792,16 +2814,25 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 			y = m_math.value();
 		}
 
-		p.setY(y);
-		p1 = ViewToScreen(p);
-
-		if (i != rt.left())
+		if (ISNAN(y))
 		{
-			if (curRegion != prevRegion) p0.setY(p1.y());
-			painter.drawLine(p0, p1);
+			newSection = true;
+		}
+		else
+		{
+			p.setY(y);
+			p1 = ViewToScreen(p);
+
+			if (newSection == false)
+			{
+				if (curRegion != prevRegion) p0.setY(p1.y());
+				painter.drawLine(p0, p1);
+			}
+
+			p0 = p1;
+			newSection = false;
 		}
 
-		p0 = p1;
 		prevRegion = curRegion;
 	}
 }

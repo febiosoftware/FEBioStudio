@@ -227,7 +227,7 @@ bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& 
 }
 
 //-----------------------------------------------------------------------------
-bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q)
+bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q)
 {
 	vec3d rn[3];
 	int faces = mesh.Faces();

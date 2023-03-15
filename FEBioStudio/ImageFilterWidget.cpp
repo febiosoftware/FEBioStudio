@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageFilter.h>
 #include "DlgImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
+#include "DlgStartThread.h"
 
 CImageFilterWidget::CImageFilterWidget()
     : m_imgModel(nullptr)
@@ -204,7 +205,7 @@ void CImageFilterWidget::on_applyFilters_clicked()
     {
         m_imgModel->ClearFilters();
 
-        CDlgStartImageThread dlg(new CImageFilterThread(m_imgModel));
+        CDlgStartThread dlg(this, new CImageFilterThread(m_imgModel));
 
         if(!dlg.exec())
         {

@@ -1655,22 +1655,43 @@ void FSMesh::Save(OArchive &ar)
 
 	// TODO: Move this stuff to the GObject serialization
 	GObject* po = GetGObject();
-	int parts = po->FEParts();
+	int partsets = po->FEPartSets();
+	int elemsets = po->FEElemSets();
 	int surfs = po->FESurfaces();
 	int nsets = po->FENodeSets();
 
-	// write the parts
-	if (parts > 0)
+	// write the element sets
+	if (elemsets > 0)
 	{
-		ar.BeginChunk(CID_MESH_PART_SECTION);
+		ar.BeginChunk(CID_MESH_ELEMSET_SECTION);
 		{
-			for (int i=0; i<parts; ++i)
+			for (int i=0; i< elemsets; ++i)
 			{
 				// get the boundary condition
-				FSPart* pg = po->GetFEPart(i);
+				FSElemSet* pg = po->GetFEElemSet(i);
 
 				// store the group data
-				ar.BeginChunk(CID_MESH_PART);
+				ar.BeginChunk(CID_MESH_ELEMENTSET);
+				{
+					pg->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	// write the part sets
+	if (partsets > 0)
+	{
+		ar.BeginChunk(CID_MESH_PARTSET_SECTION);
+		{
+			for (int i = 0; i < partsets; ++i)
+			{
+				FSPartSet* pg = po->GetFEPartSet(i);
+
+				// store the group data
+				ar.BeginChunk(CID_MESH_PARTSET);
 				{
 					pg->Save(ar);
 				}
@@ -1830,6 +1851,8 @@ void FSMesh::Load(IArchive& ar)
 	{
 		int nid = ar.GetChunkID();
 
+		// the geometry can be read either as the old format (meshformat == 0, pre 2.1)
+		// or the new format (meshformat == 1)
 		if (meshStorage == 0)
 		{
 			switch (nid)
@@ -2040,256 +2063,271 @@ void FSMesh::Load(IArchive& ar)
 		}
 		else
 		{
+			switch (nid)
+			{
+			case CID_MESH_NODE_SECTION:
+			{
+				// read arrays
+				vector<int> id(nodes);
+				vector<vec3d> pos(nodes);
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+					switch (nid)
+					{
+					case CID_MESH_NODE_GID: ar.read(id); break;
+					case CID_MESH_NODE_POSITION: ar.read(pos); break;
+					}
+					ar.CloseChunk();
+				}
+
+				// apply to nodes
+				FSNode* pn = NodePtr();
+				for (int i = 0; i < nodes; ++i, ++pn)
+				{
+					pn->m_gid = id[i];
+					pn->r = pos[i];
+				}
+			}
+			break;
+			case CID_MESH_ELEMENT_SECTION:
+			{
+				vector<int> id(elems);
+				vector<vec3d> fiber(elems);
+
+				int qactive = 0;
+				int hcount = 0;
+				int elnodes = 0;
+
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+					switch (nid)
+					{
+					case CID_MESH_ELEMENT_TYPE:
+					{
+						vector<int> type(elems);
+						ar.read(type);
+						for (int i = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							pe->SetType(type[i]);
+							elnodes += pe->Nodes();
+							if (pe->IsShell()) hcount += pe->Nodes();
+						}
+					}
+					break;
+					case CID_MESH_ELEMENT_GID: ar.read(id); break;
+					case CID_MESH_ELEMENT_FIBER: ar.read(fiber); break;
+					case CID_MESH_ELEMENT_Q_ACTIVE:
+					{
+						vector<int> Qactive(elems);
+						ar.read(Qactive);
+						qactive = 0;
+						for (int i = 0; i < elems; ++i)
+							if (Qactive[i] != 0)
+							{
+								ElementPtr(i)->m_Qactive = true;
+								qactive++;
+							}
+							else ElementPtr(i)->m_Qactive = false;
+					}
+					break;
+					case CID_MESH_ELEMENT_Q:
+					{
+						assert(qactive > 0);
+						vector<mat3d> Q(qactive);
+						ar.read(Q);
+						for (int i = 0, n = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							if (pe->m_Qactive) pe->m_Q = Q[n++];
+						}
+					}
+					break;
+					case CID_MESH_SHELL_THICKNESS:
+					{
+						assert(hcount > 0);
+						vector<double> h(hcount);
+						ar.read(h);
+						for (int i = 0, n = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							if (pe->IsShell())
+							{
+								for (int j = 0; j < pe->Nodes(); ++j) pe->m_h[j] = h[n++];
+							}
+						}
+					}
+					break;
+					case CID_MESH_ELEMENT_NODES:
+					{
+						assert(elnodes > 0);
+						vector<int> eln(elnodes);
+						ar.read(eln);
+
+						for (int i = 0, n = 0, m = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							pe->m_gid = id[i];
+							pe->m_fiber = fiber[i];
+							for (int j = 0; j < pe->Nodes(); ++j) pe->m_node[j] = eln[n++];
+						}
+					}
+					break;
+					}
+
+					ar.CloseChunk();
+				}
+			}
+			break;
+			case CID_MESH_FACE_SECTION:
+			{
+				vector<int> gid(faces);
+				vector<int> sid(faces);
+
+				int fnodes = 0;
+				vector<int> fnode; // need to read the face types first
+
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+
+					switch (nid)
+					{
+					case CID_MESH_FACE_TYPE:
+					{
+						vector<int> type(faces);
+						ar.read(type);
+						FSFace* pf = FacePtr(0);
+						for (int i = 0; i < faces; ++i, ++pf)
+						{
+							switch (type[i])
+							{
+							case FE_FACE_TRI3: pf->SetType(FE_FACE_TRI3); break;
+							case FE_FACE_QUAD4: pf->SetType(FE_FACE_QUAD4); break;
+							case FE_FACE_TRI6: pf->SetType(FE_FACE_TRI6); break;
+							case FE_FACE_QUAD8: pf->SetType(FE_FACE_QUAD8); break;
+							case FE_FACE_TRI7: pf->SetType(FE_FACE_TRI7); break;
+							case FE_FACE_QUAD9: pf->SetType(FE_FACE_QUAD9); break;
+							case FE_FACE_TRI10: pf->SetType(FE_FACE_TRI10); break;
+							default:
+								assert(false);
+							}
+							fnodes += pf->Nodes();
+						}
+						fnode.resize(fnodes);
+					}
+					break;
+					case CID_MESH_FACE_GID: ar.read(gid); break;
+					case CID_MESH_FACE_SMOOTHID: ar.read(sid); break;
+					case CID_MESH_FACE_NODES:
+					{
+						assert(fnodes > 0);
+						ar.read(fnode);
+						fnodes = 0;
+						FSFace* pf = FacePtr(0);
+						for (int i = 0; i < faces; ++i, ++pf)
+						{
+							pf->m_gid = gid[i];
+							pf->m_sid = sid[i];
+							for (int j = 0; j < pf->Nodes(); ++j) pf->n[j] = fnode[fnodes++];
+						}
+					}
+					break;
+					}
+					ar.CloseChunk();
+				}
+			}
+			break;
+			case CID_MESH_EDGE_SECTION:
+			{
+				vector<int> gid(edges);
+				int enodes = 0;
+
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+
+					switch (nid)
+					{
+					case CID_MESH_EDGE_TYPE:
+					{
+						enodes = 0;
+						vector<int> type(edges);
+						ar.read(type);
+						FSEdge* pe = EdgePtr(0);
+						for (int i = 0; i < edges; ++i, ++pe)
+						{
+							switch (type[i])
+							{
+							case FE_EDGE2: pe->SetType(FE_EDGE2);  break;
+							case FE_EDGE3: pe->SetType(FE_EDGE3);  break;
+							case FE_EDGE4: pe->SetType(FE_EDGE4);  break;
+							default:
+								assert(false);
+								throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
+							}
+							enodes += pe->Nodes();
+						}
+					}
+					break;
+					case CID_MESH_EDGE_GID: ar.read(gid); break;
+					case CID_MESH_EDGE_NODES:
+					{
+						assert(enodes > 0);
+						vector<int> enode(enodes); // need to read types first!
+						ar.read(enode);
+						FSEdge* pe = EdgePtr(0);
+						for (int i = 0, n = 0; i < edges; ++i, ++pe)
+						{
+							pe->m_gid = gid[i];
+							for (int j = 0; j < pe->Nodes(); ++j) pe->n[j] = enode[n++];
+						}
+					}
+					break;
+					}
+
+					ar.CloseChunk();
+				}
+			}
+			break;
+			}
+		}
+
+		// read the rest
 		switch (nid)
 		{
-		case CID_MESH_NODE_SECTION:
-		{
-			// read arrays
-			vector<int> id(nodes);
-			vector<vec3d> pos(nodes);
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				int nid = ar.GetChunkID();
-				switch (nid)
-				{
-				case CID_MESH_NODE_GID     : ar.read(id); break;
-				case CID_MESH_NODE_POSITION: ar.read(pos); break;
-				}
-				ar.CloseChunk();
-			}
-
-			// apply to nodes
-			FSNode* pn = NodePtr();
-			for (int i = 0; i < nodes; ++i, ++pn)
-			{
-				pn->m_gid = id[i];
-				pn->r = pos[i];
-			}
-		}
-		break;
-		case CID_MESH_ELEMENT_SECTION:
-		{
-			vector<int> id(elems);
-			vector<vec3d> fiber(elems);
-
-			int qactive = 0;
-			int hcount = 0;
-			int elnodes = 0;
-
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				int nid = ar.GetChunkID();
-				switch (nid)
-				{
-				case CID_MESH_ELEMENT_TYPE: 
-				{
-					vector<int> type(elems);
-					ar.read(type);
-					for (int i = 0; i < elems; ++i)
-					{
-						FEElement_* pe = ElementPtr(i);
-						pe->SetType(type[i]);
-						elnodes += pe->Nodes();
-						if (pe->IsShell()) hcount += pe->Nodes();
-					}
-				}
-				break;
-				case CID_MESH_ELEMENT_GID: ar.read(id); break;
-				case CID_MESH_ELEMENT_FIBER: ar.read(fiber); break;
-				case CID_MESH_ELEMENT_Q_ACTIVE: 
-				{
-					vector<int> Qactive(elems);
-					ar.read(Qactive);
-					qactive = 0;
-					for (int i = 0; i < elems; ++i) 
-						if (Qactive[i] != 0)
-						{
-							ElementPtr(i)->m_Qactive = true;
-							qactive++;
-						}
-						else ElementPtr(i)->m_Qactive = false;
-				}
-				break;
-				case CID_MESH_ELEMENT_Q:
-				{
-					assert(qactive > 0);
-					vector<mat3d> Q(qactive);
-					ar.read(Q);
-					for (int i = 0, n = 0; i < elems; ++i)
-					{
-						FEElement_* pe = ElementPtr(i);
-						if (pe->m_Qactive) pe->m_Q = Q[n++];
-					}
-				}
-				break;
-				case CID_MESH_SHELL_THICKNESS:
-				{
-					assert(hcount > 0);
-					vector<double> h(hcount);
-					ar.read(h);
-					for (int i = 0, n = 0; i < elems; ++i)
-					{
-						FEElement_* pe = ElementPtr(i);
-						if (pe->IsShell())
-						{
-							for (int j = 0; j < pe->Nodes(); ++j) pe->m_h[j] = h[n++];
-						}
-					}
-				}
-				break;
-				case CID_MESH_ELEMENT_NODES: 
-				{
-					assert(elnodes > 0);
-					vector<int> eln(elnodes);
-					ar.read(eln);
-				
-					for (int i = 0, n = 0, m = 0; i < elems; ++i)
-					{
-						FEElement_* pe = ElementPtr(i);
-						pe->m_gid = id[i];
-						pe->m_fiber = fiber[i];
-						for (int j = 0; j < pe->Nodes(); ++j) pe->m_node[j] = eln[n++];
-					}
-				}
-				break;
-				}
-			
-				ar.CloseChunk();
-			}
-		}
-		break;
-		case CID_MESH_FACE_SECTION:
-		{
-			vector<int> gid(faces);
-			vector<int> sid(faces);
-
-			int fnodes = 0;
-			vector<int> fnode; // need to read the face types first
-
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				int nid = ar.GetChunkID();
-
-				switch(nid)
-				{
-				case CID_MESH_FACE_TYPE:
-				{
-					vector<int> type(faces);
-					ar.read(type);
-					FSFace* pf = FacePtr(0);
-					for (int i = 0; i < faces; ++i, ++pf)
-					{
-						switch (type[i])
-						{
-						case FE_FACE_TRI3 : pf->SetType(FE_FACE_TRI3); break;
-						case FE_FACE_QUAD4: pf->SetType(FE_FACE_QUAD4); break;
-						case FE_FACE_TRI6 : pf->SetType(FE_FACE_TRI6); break;
-						case FE_FACE_QUAD8: pf->SetType(FE_FACE_QUAD8); break;
-						case FE_FACE_TRI7 : pf->SetType(FE_FACE_TRI7); break;
-						case FE_FACE_QUAD9: pf->SetType(FE_FACE_QUAD9); break;
-						case FE_FACE_TRI10: pf->SetType(FE_FACE_TRI10); break;
-						default:
-							assert(false);
-						}
-						fnodes += pf->Nodes();
-					}
-					fnode.resize(fnodes);
-				}
-				break;
-				case CID_MESH_FACE_GID     : ar.read(gid); break;
-				case CID_MESH_FACE_SMOOTHID: ar.read(sid); break;
-				case CID_MESH_FACE_NODES   :
-				{
-					assert(fnodes > 0);
-					ar.read(fnode);
-					fnodes = 0;
-					FSFace* pf = FacePtr(0);
-					for (int i = 0; i < faces; ++i, ++pf)
-					{
-						pf->m_gid = gid[i];
-						pf->m_sid = sid[i];
-						for (int j = 0; j < pf->Nodes(); ++j) pf->n[j] = fnode[fnodes++];
-					}
-				}
-				break;
-				}
-				ar.CloseChunk();
-			}
-		}
-		break;
-		case CID_MESH_EDGE_SECTION:
-		{
-			vector<int> gid(edges);
-			int enodes = 0;
-
-			while (IArchive::IO_OK == ar.OpenChunk())
-			{
-				int nid = ar.GetChunkID();
-
-				switch (nid)
-				{
-				case CID_MESH_EDGE_TYPE: 
-				{
-					enodes = 0;
-					vector<int> type(edges);
-					ar.read(type);
-					FSEdge* pe = EdgePtr(0);
-					for (int i = 0; i < edges; ++i, ++pe)
-					{
-						switch (type[i])
-						{
-						case FE_EDGE2: pe->SetType(FE_EDGE2);  break;
-						case FE_EDGE3: pe->SetType(FE_EDGE3);  break;
-						case FE_EDGE4: pe->SetType(FE_EDGE4);  break;
-						default:
-							assert(false);
-							throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
-						}
-						enodes += pe->Nodes();
-					}
-				}
-				break;
-				case CID_MESH_EDGE_GID: ar.read(gid); break;
-				case CID_MESH_EDGE_NODES:
-				{
-					assert(enodes > 0);
-					vector<int> enode(enodes); // need to read types first!
-					ar.read(enode);
-					FSEdge* pe = EdgePtr(0);
-					for (int i = 0, n = 0; i < edges; ++i, ++pe)
-					{
-						pe->m_gid = gid[i];
-						for (int j = 0; j < pe->Nodes(); ++j) pe->n[j] = enode[n++];
-					}
-				}
-				break;
-				}
-
-				ar.CloseChunk();
-			}
-		}
-		break;
-		}
-		}
-
-		switch (nid)
-		{
-		case CID_MESH_PART_SECTION:
+		case CID_MESH_ELEMSET_SECTION:
 			{
 				// TODO: move to GObject serialization
-				FSPart* pg = 0;
+				FSElemSet* pg = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
-					assert(ar.GetChunkID() == CID_MESH_PART);
-					pg = new FSPart(po);
+					assert(ar.GetChunkID() == CID_MESH_ELEMENTSET);
+					pg = new FSElemSet(po);
 					pg->Load(ar);
-					po->AddFEPart(pg);
+					po->AddFEElemSet(pg);
 
 					ar.CloseChunk();
 				}			
 			}
 			break;
+		case CID_MESH_PARTSET_SECTION:
+		{
+			// TODO: move to GObject serialization
+			FSPartSet* pg = 0;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				pg = 0;
+				assert(ar.GetChunkID() == CID_MESH_PARTSET);
+				pg = new FSPartSet(po);
+				pg->Load(ar);
+				po->AddFEPartSet(pg);
+			}
+		}
+		break;
 		case CID_MESH_SURF_SECTION:
 			{
 				// TODO: move to GObject serialization
@@ -2331,18 +2369,14 @@ void FSMesh::Load(IArchive& ar)
 					{
 					case CID_MESH_NODE_DATA:
 						{
-							FENodeData* pmap = AddNodeDataField("(unnamed)");
-							int NN = Nodes();
-							pmap->Create(NN);
-							pmap->Load(ar);
+							FENodeData* data = new FENodeData(GetGObject());
+							data->Load(ar);
+							m_meshData.push_back(data);
 						}
 						break;
 					case CID_MESH_SURFACE_DATA:
 						{
 							FESurfaceData* pmap = new FESurfaceData(this);
-//							FESurfaceData* pmap = AddSurfaceDataField("(unnamed)", nullptr, FEMeshData::DATA_TYPE::DATA_SCALAR);
-//							int NF = Faces();
-//							pmap->Create(this, NF);
 							pmap->Load(ar);
 							m_meshData.push_back(pmap);
 						}
@@ -2438,20 +2472,10 @@ void FSMesh::AddMeshDataField(FEMeshData* data)
 }
 
 //-----------------------------------------------------------------------------
-FENodeData* FSMesh::AddNodeDataField(const string& sz, double v)
-{
-	FENodeData* data = new FENodeData(GetGObject());
-	data->Create(v);
-	data->SetName(sz);
-	m_meshData.push_back(data);
-	return data;
-}
-
-//-----------------------------------------------------------------------------
 FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
 {
 	FENodeData* data = new FENodeData(GetGObject());
-	data->Create(nodeset, 0.0);
+	data->Create(nodeset, 0.0, dataType);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
@@ -2461,17 +2485,17 @@ FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEM
 FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
-	data->Create(this, surface, dataType);
+	data->Create(this, surface, dataType, FEMeshData::DATA_ITEM);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FSMesh::AddElementDataField(const string& sz, FSPart* part, FEMeshData::DATA_TYPE dataType)
+FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
-	map->Create(this, part, dataType);
+	map->Create(this, part, dataType, FEMeshData::DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;

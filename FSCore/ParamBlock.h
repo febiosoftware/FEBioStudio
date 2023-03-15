@@ -682,7 +682,11 @@ public:
 	ParamBlock& GetParamBlock() { return m_Param; }
 	const ParamBlock& GetParamBlock() const { return m_Param; }
 
+	// copy parameters: requires a one-to-one match between parameters.
 	void CopyParams(const ParamContainer& pc);
+
+	// maps parameters. Matched are made using the param names. Does not require one-to-one mapping.
+	void MapParams(const ParamContainer& pc);
 
 public:
 	// This is a helper function to assign a loadcurve to a parameter. 

@@ -57,6 +57,7 @@ public:
 
 	QToolButton*	clr;
 	QToolButton*	collapse;
+	QToolButton*	pick;
 
 	bool	m_collapsed;
 
@@ -67,8 +68,15 @@ public:
 
 		m_collapsed = false;
 
+		QHBoxLayout* hb = new QHBoxLayout;
+		hb->setContentsMargins(0, 0, 0, 0);
+		hb->addWidget(name = new QLineEdit);
+		hb->addWidget(pick = new QToolButton); 
+		pick->setObjectName("pick");
+		pick->setText("...");
+
 		QFormLayout* form = new QFormLayout;
-		form->addRow("Name:", name = new QLineEdit); name->setObjectName("name");
+		form->addRow("Name:", hb); name->setObjectName("name");
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0,0,0,0);
@@ -217,6 +225,11 @@ void CSelectionBox::on_toggleCollapse_toggled(bool b)
 			it->setText(m_items[i].m_label);
 		}
 	}
+}
+
+void CSelectionBox::on_pick_clicked(bool b)
+{
+	emit pickClicked();
 }
 
 void CSelectionBox::on_name_textEdited(const QString& t)
@@ -498,7 +511,8 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 	default:
 		switch (item->Type())
 		{
-		case FE_PART   : type = "Elements"; break;
+		case FE_PARTSET: type = "Parts"; break;
+		case FE_ELEMSET: type = "Elements"; break;
 		case FE_SURFACE: type = "Facets"; break;
 		case FE_EDGESET: type = "Edges"; break;
 		case FE_NODESET: type = "Nodes"; break;
@@ -618,7 +632,7 @@ void CMeshSelectionBox::onAddButtonClicked()
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
+				vector<int> l = pg->CopyItems();
 				pl->Merge(l);
 			}
 			
@@ -648,7 +662,7 @@ void CMeshSelectionBox::onSubButtonClicked()
 	// subtract from the current list
 	if (pg->Type() == pl->Type())
 	{
-		list<int> l = pg->CopyItems();
+		vector<int> l = pg->CopyItems();
 		pl->Subtract(l);
 	}
 
@@ -663,7 +677,7 @@ void CMeshSelectionBox::onDelButtonClicked()
 	FEItemListBuilder* pl = m_pms->GetItemList();
 	if (pl == nullptr) return;
 
-	list<int> items;
+	vector<int> items;
 	getSelectedItems(items);
 
 	pl->Subtract(items);

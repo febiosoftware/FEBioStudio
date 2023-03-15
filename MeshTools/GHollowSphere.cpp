@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include <GeomLib/GPrimitive.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include "FEHollowSphere.h"
 
 //=============================================================================
@@ -80,7 +80,7 @@ bool GHollowSphere::Update(bool b)
 //-----------------------------------------------------------------------------
 void GHollowSphere::Create()
 {
-	SetRenderMesh(new GLMesh());
+	SetRenderMesh(new GMesh());
 
 	assert(m_Node.empty());
 	for (int i=0; i<12; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);

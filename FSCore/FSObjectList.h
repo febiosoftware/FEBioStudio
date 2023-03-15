@@ -118,6 +118,18 @@ public:
 		return dynamic_cast<T*>(replace(i, po));
 	}
 
+	T* Replace(T* pold, T* pnew)
+	{
+		for (int i = 0; i < Size(); ++i)
+		{
+			if (m_obs[i] == pold)
+			{
+				return Replace(i, pnew);
+			}
+		}
+		return nullptr;
+	}
+
 	T* operator [] (size_t i) { return dynamic_cast<T*>(m_obs[i]); }
 	const T* operator [] (size_t i) const { return dynamic_cast<T*>(m_obs[i]); }
 

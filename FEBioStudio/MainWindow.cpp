@@ -83,22 +83,25 @@ SOFTWARE.*/
 #include "version.h"
 #include "LocalJobProcess.h"
 #include "FEBioThread.h"
+#include "DlgStartThread.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/FELSDYNAimport.h>
 #include <PostLib/FESTLimport.h>
+#include "ImageThread.h"
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSource.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
+#include <FSCore/FSLogger.h>
+#include <FEBioLink/FEBioClass.h>
 
 extern GLColor col[];
 
@@ -137,6 +140,28 @@ void darkStyle()
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
 }
 
+//-----------------------------------------------------------------------------
+class FSMainWindowLogOutput : public FSLogOutput
+{
+public:
+	FSMainWindowLogOutput(CMainWindow* wnd) : m_wnd(wnd)
+	{
+		FSLogger::SetWatcher(this);
+	}
+
+	void Write(const std::string& msg)
+	{
+		QString s = QString::fromStdString(msg);
+		m_wnd->AddLogEntry(s);
+	}
+
+private:
+	CMainWindow* m_wnd;
+};
+
+FSMainWindowLogOutput* mainWindogLogger = nullptr;
+
+//-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -149,6 +174,8 @@ CMainWindow* CMainWindow::GetInstance()
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
+
+	mainWindogLogger = new FSMainWindowLogOutput(this);
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.
@@ -190,7 +217,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		// NOTE: I'm not sure if I can set the dark theme before I can create the document.
 		//       Since the bg colors are already set, I need to do this here. Make sure
 		//       the values set here coincide with the values from CDocument::NewDocument
-/*		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+/*		GLViewSettings& v = m_doc->GetViewSettings();
 		v.m_col1 = GLColor(83, 83, 83);
 		v.m_col2 = GLColor(128, 128, 128);
 		v.m_nbgstyle = BG_HORIZONTAL;
@@ -206,7 +233,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	{
 		qApp->setStyle(QStyleFactory::create("adwaita-dark"));
 
-//		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+//		GLViewSettings& v = m_doc->GetViewSettings();
 //		v.m_col1 = GLColor(83, 83, 83);
 //		v.m_col2 = GLColor(128, 128, 128);
 //		v.m_nbgstyle = BG_HORIZONTAL;
@@ -1828,7 +1855,7 @@ int CMainWindow::GetDefaultUnitSystem() const
 
 void CMainWindow::writeSettings()
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
@@ -1840,10 +1867,10 @@ void CMainWindow::writeSettings()
 	settings.setValue("theme", ui->m_theme);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
-	settings.setValue("bgColor1", (int)vs.m_col1);
-	settings.setValue("bgColor2", (int)vs.m_col2);
-	settings.setValue("fgColor", (int)vs.m_fgcol);
-	settings.setValue("meshColor", (int)vs.m_mcol);
+	settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
+	settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
+	settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
+	settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
 	settings.setValue("bgStyle", vs.m_nbgstyle);
 	settings.setValue("lighting", vs.m_bLighting);
 	settings.setValue("shadows", vs.m_bShadows);
@@ -1853,7 +1880,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
-	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor);
+	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
@@ -1954,7 +1981,7 @@ void CMainWindow::readThemeSetting()
 
 void CMainWindow::readSettings()
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
@@ -1963,10 +1990,10 @@ void CMainWindow::readSettings()
 	ui->m_theme = settings.value("theme", 0).toInt();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
-	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1).toInt());
-	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2).toInt());
-	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol).toInt());
-	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol).toInt());
+	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
+	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
+	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
+	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
 	vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 	vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 	vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
@@ -1976,7 +2003,7 @@ void CMainWindow::readSettings()
 	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
-	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor).toInt());
+	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
 
 	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 	GLWidget::set_default_font(font);
@@ -2023,13 +2050,12 @@ void CMainWindow::readSettings()
 	QStringList launch_config_names;
 	launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
 
-	// Overwrite the default if they have launch configurations saved.
-	if(launch_config_names.count() > 0)
-	{
-		ui->m_launch_configs.clear();
-		// create the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
-	}
+	// clear launch configurations
+	ui->m_launch_configs.clear();
+
+	// create the default launch configuration
+	ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+
 
 	for(QString conf : launch_config_names)
 	{
@@ -2104,7 +2130,7 @@ void CMainWindow::UpdateToolbar()
 
 	if (doc->IsValid() == false) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
@@ -2659,7 +2685,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		menu.addSeparator();
 
 		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
-		VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
 		QMenu* display = new QMenu("Object transparency mode");
 		QAction* a;
 		a = display->addAction("None"); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
@@ -2730,7 +2756,7 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	if      (ac->text() == "None"           ) vs.m_transparencyMode = 0;
 	else if (ac->text() == "Selected only"  ) vs.m_transparencyMode = 1;
@@ -2742,7 +2768,7 @@ void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
@@ -2836,19 +2862,21 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if ((doc == nullptr) || (doc == srcDoc) || (srcDoc == nullptr)) return;
 
-	FSModel* fem = srcDoc->GetFSModel();
-	if (fem->Materials() == 0)
+	FSModel* srcfem = srcDoc->GetFSModel();
+	if (srcfem->Materials() == 0)
 	{
 		QMessageBox::information(this, "Import Materials", "The selected source file does not contain any materials.");
 		return;
 	}
 
 	QStringList items;
-	for (int i = 0; i < fem->Materials(); ++i)
+	for (int i = 0; i < srcfem->Materials(); ++i)
 	{
-		GMaterial* gm = fem->GetMaterial(i);
+		GMaterial* gm = srcfem->GetMaterial(i);
 		items.push_back(gm->GetFullName());
 	}
+
+	FSModel* dstfem = doc->GetFSModel();
 
 	QInputDialog input;
 	input.setOption(QInputDialog::UseListViewForComboBoxItems);
@@ -2858,14 +2886,16 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	{
 		QString item = input.textValue();
 
-		for (int i = 0; i < fem->Materials(); ++i)
+		for (int i = 0; i < srcfem->Materials(); ++i)
 		{
-			GMaterial* gm = fem->GetMaterial(i);
+			GMaterial* gm = srcfem->GetMaterial(i);
 			QString name = gm->GetFullName();
 			if (name == item)
 			{
-				GMaterial* newMat = gm->Clone();
-				doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), newMat));
+				FSMaterial* pmsrc = gm->GetMaterialProperties();
+				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
+				GMaterial* newMat = new GMaterial(pmnew);
+				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat));
 				UpdateModel(newMat);
 				return;
 			}
@@ -3468,6 +3498,35 @@ void CMainWindow::CloseWelcomePage()
 	}
 }
 
+bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
+{
+	static int n = 1;
+	CGLDocument* doc = GetGLDocument();
+	if (doc == nullptr) return false;
+
+	CDlgStartThread dlg(this, new CImageReadThread(imgModel));
+
+	if (dlg.exec())
+	{
+		if (imgModel->GetImageSource()->GetName().empty())
+		{
+			std::stringstream ss;
+			ss << "ImageModel" << n++;
+			imgModel->SetName(ss.str());
+		}
+		else
+		{
+			imgModel->SetName(imgModel->GetImageSource()->GetName());
+		}
+
+		// add it to the project
+		doc->AddImageModel(imgModel);
+
+		return true;
+	}
+	return false;
+}
+
 #ifdef HAS_ITK
 	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type)
 	{
@@ -3479,7 +3538,7 @@ void CMainWindow::CloseWelcomePage()
 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
         imageModel->SetImageSource(new Post::CITKImageSource(imageModel, relFile, type));
 
-        if(!doc->ImportImage(imageModel))
+        if(!ImportImage(imageModel))
         {
             delete imageModel;
             imageModel = nullptr;
@@ -3493,8 +3552,7 @@ void CMainWindow::CloseWelcomePage()
 			// only for model docs
 			if (dynamic_cast<CModelDocument*>(doc))
 			{
-                // Post::CVolRender* vr = new Post::CVolRender(imageModel);
-				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 				vr->Create();
 				imageModel->AddImageRenderer(vr);
 

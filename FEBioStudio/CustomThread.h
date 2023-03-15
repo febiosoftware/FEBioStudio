@@ -23,17 +23,36 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "GMesh.h"
+#include <QThread>
+#include <QMutex>
 
-//-----------------------------------------------------------------------------
-// This class adds rendering capabilities to the GMesh class
-//
-class GLMesh : public GMesh
+class CustomThread : public QThread
 {
+	Q_OBJECT
+
 public:
-	GLMesh(void);
-	GLMesh(GLMesh& m);
-	~GLMesh(void);
+	CustomThread();
+
+	QString GetErrorString();
+
+public:
+	virtual bool hasProgress();
+
+	virtual double progress();
+
+	virtual const char* currentTask();
+
+	virtual void stop();
+
+protected:
+	void SetErrorString(const QString& s);
+
+signals:
+	void resultReady(bool);
+	void taskChanged(QString s);
+
+private:
+	QString	m_error;
+	QMutex	m_mutex;
 };

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FESphereInBox.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 //-----------------------------------------------------------------------------
 GSphereInBox::GSphereInBox() : GPrimitive(GSPHERE_IN_BOX)
@@ -73,7 +73,7 @@ bool GSphereInBox::Update(bool b)
 	BuildGMesh();
 
 	// project nodes onto surface
-	GLMesh* pm = GetRenderMesh();
+	GMesh* pm = GetRenderMesh();
 
 	// find all nodes for the inner surface and project to a sphere
 	for (int i=0; i<pm->Nodes(); ++i) pm->Node(i).tag = 0;

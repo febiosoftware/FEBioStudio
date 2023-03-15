@@ -59,7 +59,7 @@ void Post::FEPostMesh::CleanUp()
 	m_NFL.Clear();
 
 	ClearDomains();
-	ClearParts();
+	ClearElemSets();
 	ClearSurfaces();
 	ClearNodeSets();
 }
@@ -85,10 +85,10 @@ void Post::FEPostMesh::ClearDomains()
 
 //-----------------------------------------------------------------------------
 // Clear all the parts
-void Post::FEPostMesh::ClearParts()
+void Post::FEPostMesh::ClearElemSets()
 {
-	for (int i=0; i<(int) m_Part.size(); ++i) delete m_Part[i];
-	m_Part.clear();
+	for (int i=0; i<(int) m_ESet.size(); ++i) delete m_ESet[i];
+	m_ESet.clear();
 }
 
 //-----------------------------------------------------------------------------

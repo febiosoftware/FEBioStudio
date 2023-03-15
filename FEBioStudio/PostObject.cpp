@@ -75,7 +75,7 @@ void CPostObject::UpdateMesh()
 	}
 	else
 	{
-		GLMesh* mesh = GetRenderMesh(); assert(mesh);
+		GMesh* mesh = GetRenderMesh(); assert(mesh);
 
 		for (int i = 0; i < mesh->Nodes(); ++i)
 		{

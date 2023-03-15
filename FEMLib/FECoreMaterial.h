@@ -62,7 +62,7 @@ public:
 	// copy the material
 	virtual void copy(FSMaterial* pmat);
 
-	FSMaterial* Clone();
+	virtual FSMaterial* Clone();
 
 	// fiber stuff
 	virtual bool HasFibers() { return false; }

@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include <QThread>
+#include "CustomThread.h"
 #include <QDialog>
 
 namespace Post
@@ -32,65 +32,35 @@ namespace Post
     class CImageModel;
 }
 
-class CImageThread : public QThread
-{
-    Q_OBJECT
-public:
-    CImageThread(Post::CImageModel* imgModel);
-    
-    bool getSuccess() { return m_success; }
-    std::string getError() { return m_error; }
-
-signals:
-    void newStatus(QString status);
-
-protected:
-    Post::CImageModel* m_imgModel;
-
-    bool m_success;
-    std::string m_error;
-};
-
-class CImageReadThread : public CImageThread
+class CImageReadThread : public CustomThread
 {
 public:
     CImageReadThread(Post::CImageModel* imgModel);
     
     void run() override;
+
+	bool hasProgress() override;
+
+	double progress() override;
+
+	const char* currentTask() override;
+
+	void stop() override;
+
+private:
+	Post::CImageModel* m_imgModel;
 };
 
-class CImageFilterThread : public CImageThread
+class CImageFilterThread : public CustomThread
 {
 public:
     CImageFilterThread(Post::CImageModel* imgModel);
     
     void run() override;
 
-    void cancel();
+    void stop() override;
 
 private:
-    bool m_canceled;
-};
-
-namespace Ui
-{
-    class CDlgStartImageThread;
-}
-
-class CDlgStartImageThread : public QDialog
-{
-    Q_OBJECT
-public:
-    CDlgStartImageThread(CImageThread* thread, QWidget* parent = nullptr);
-
-    void closeEvent(QCloseEvent* ev) override;
-
-private slots:
-	void threadFinished();
-    void on_canceled();
-    void on_status_changed(QString status);
-
-private:
-    Ui::CDlgStartImageThread* ui;
-
+	Post::CImageModel* m_imgModel;
+	bool	m_canceled;
 };

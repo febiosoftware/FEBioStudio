@@ -225,16 +225,15 @@ void CImageMapTool::OnCreate()
 
     // create element data
     int parts = po->Parts();
-    vector<int> partList;
-    for (int i = 0; i < parts; ++i)
-    {
-        partList.push_back(i);
-    }
+	FSPartSet* partSet = new FSPartSet(po);
+    for (int i = 0; i < parts; ++i) partSet->add(i);
+	partSet->SetName(name.toStdString());
+	po->AddFEPartSet(partSet);
 
     FSMesh* mesh = po->GetFEMesh();
     FEPartData* pdata = new FEPartData(mesh);
     pdata->SetName(name.toStdString());
-    pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+    pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
     pm->AddMeshDataField(pdata);
 
     bool normalize = ui->normalize->isChecked();
