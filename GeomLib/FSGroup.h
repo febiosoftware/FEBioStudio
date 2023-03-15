@@ -34,6 +34,7 @@ class FSFace;
 class FSElement;
 class FSMesh;
 class GObject;
+class GPart;
 
 //-----------------------------------------------------------------------------
 // Base class for all groups
@@ -111,6 +112,8 @@ public:
 
 	FEItemListBuilder* Copy();
 	void Copy(FSPartSet* pg);
+
+	GPart* GetPart(size_t n);
 
 	std::vector<int> BuildElementIndexList();
 	std::vector<int> BuildElementIndexList(const std::vector<int>& partList);

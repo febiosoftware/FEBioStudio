@@ -536,14 +536,25 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 		setType(type);
 
 		// set the data
-		vector<int> items;
-		items.insert(items.end(), item->begin(), item->end());
-
-		//		sort(items.begin(), items.end());
-		//		unique(items.begin(), items.end());
-
 		setCollapsed(true);
-		for (int i = 0; i < (int)items.size(); ++i) addData(QString::number(items[i]), items[i], 0, false);
+		if (item->Type() == FE_PARTSET)
+		{
+			FSPartSet* pg = dynamic_cast<FSPartSet*>(item);
+			for (int i = 0; i < pg->size(); ++i)
+			{
+				GPart* part = pg->GetPart(i); assert(part);
+				if (part)
+				{
+					addData(QString::fromStdString(part->GetName()), part->GetLocalID(), 0, false);
+				}
+			}
+		}
+		else
+		{
+			vector<int> items;
+			items.insert(items.end(), item->begin(), item->end());
+			for (int i = 0; i < (int)items.size(); ++i) addData(QString::number(items[i]), items[i], 0, false);
+		}
 	}
 }
 

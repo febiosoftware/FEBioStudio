@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <MeshLib/FENodeData.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FERigidLoad.h>
@@ -1549,10 +1550,8 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		}
 		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-		FSElemSet* pg = feb.BuildFEElemSet(set->cvalue());
-		if (pg == nullptr) throw XMLReader::InvalidAttributeValue(tag, "elem_set", set->cvalue());
-
-		FSMesh* mesh = pg->GetMesh();
+		GObject* po = feb.GetInstance(0)->GetGObject();
+		FSMesh* mesh = po->GetFEMesh();
 
 		string sname;
 		if (name) sname = name->cvalue();
@@ -1564,7 +1563,31 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			sname = ss.str();
 		}
 
-		FEElementData* elemData = mesh->AddElementDataField(sname, pg, dataType);
+		FEMeshData* meshData = nullptr;
+
+		FSElemSet* pg = feb.FindNamedElementSet(set->cvalue());
+		if (pg == nullptr)
+		{
+			// we didn't find a named selection, but it could be a domain
+			FEBioInputModel::Domain* dom = feb.FindDomain(set->cvalue());
+			if (dom == nullptr)
+			{
+				throw XMLReader::InvalidAttributeValue(tag, "elem_set", set->cvalue());
+			}
+
+			// okay, let's build a part set for this then instead
+			GPart* pg = po->FindPartFromName(set->cvalue());
+			FSPartSet* partSet = new FSPartSet(po);
+			partSet->SetName(sname);
+			po->AddFEPartSet(partSet);
+			partSet->add(pg->GetLocalID());
+
+			meshData = mesh->AddPartDataField(sname, partSet, dataType);
+		}
+		else
+		{
+			meshData = mesh->AddElementDataField(sname, pg, dataType);
+		}
 
 		if (dataType == FEMeshData::DATA_SCALAR)
 		{
@@ -1576,7 +1599,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				tag.AttributePtr("lid")->value(lid);
 				tag.value(val);
 
-				(*elemData)[lid - 1] = val;
+				meshData->set(lid - 1, val);
 
 				++tag;
 			} while (!tag.isend());
@@ -1590,7 +1613,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			{
 				tag.AttributePtr("lid")->value(lid);
 				tag.value(val);
-				elemData->set(lid - 1, val);
+				meshData->set(lid - 1, val);
 				++tag;
 			} while (!tag.isend());
 		}
@@ -1603,7 +1626,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			{
 				tag.AttributePtr("lid")->value(lid);
 				tag.value(val);
-				elemData->set(lid - 1, val);
+				meshData->set(lid - 1, val);
 				++tag;
 			} while (!tag.isend());
 		}

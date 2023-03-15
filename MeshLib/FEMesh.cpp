@@ -2325,6 +2325,8 @@ void FSMesh::Load(IArchive& ar)
 				pg = new FSPartSet(po);
 				pg->Load(ar);
 				po->AddFEPartSet(pg);
+
+				ar.CloseChunk();
 			}
 		}
 		break;
@@ -2496,6 +2498,16 @@ FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, FE
 {
 	FEElementData* map = new FEElementData;
 	map->Create(this, part, dataType, FEMeshData::DATA_ITEM);
+	map->SetName(sz);
+	m_meshData.push_back(map);
+	return map;
+}
+
+//-----------------------------------------------------------------------------
+FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, FEMeshData::DATA_TYPE dataType)
+{
+	FEPartData* map = new FEPartData(this);
+	map->Create(part, dataType, FEMeshData::DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;

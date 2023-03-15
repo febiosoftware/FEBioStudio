@@ -1021,6 +1021,7 @@ bool FEBioFormat25::ParseElementData(XMLTag& tag)
 				if (pg)
 				{
 					FSMesh* mesh = pg->GetMesh();
+					pg->GetGObject()->AddFEElemSet(pg);
 					FEElementData* pd = mesh->AddElementDataField(var->cvalue(), pg, FEMeshData::DATA_TYPE::DATA_SCALAR);
 
 					double scale = tag.AttributeValue("scale", 1.0);

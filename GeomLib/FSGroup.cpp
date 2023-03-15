@@ -215,6 +215,11 @@ void FSPartSet::Copy(FSPartSet* pg)
 	SetName(pg->GetName());
 }
 
+GPart* FSPartSet::GetPart(size_t n)
+{
+	return m_pObj->Part(m_Item[n]);
+}
+
 std::vector<int> FSPartSet::BuildElementIndexList()
 {
 	FSMesh* mesh = GetMesh();
@@ -246,13 +251,27 @@ std::vector<int> FSPartSet::BuildElementIndexList(const std::vector<int>& partLi
 	int NE = mesh->Elements();
 	for (int i = 0; i < partList.size(); ++i)
 	{
-		int pid = m_Item[partList[i]];
-		for (int j = 0; j < NE; ++j)
+		// make sure this part is actually part of this set's part list
+		int m = -1;
+		for (int j = 0; j < m_Item.size(); ++j)
 		{
-			FSElement& el = mesh->Element(j);
-			if (el.m_gid == pid)
+			if (m_Item[j] == partList[i])
 			{
-				elemList.push_back(j);
+				m = j;
+				break;
+			}
+		}
+		assert(m != -1);
+		if (m != -1)
+		{
+			int pid = m_Item[m];
+			for (int j = 0; j < NE; ++j)
+			{
+				FSElement& el = mesh->Element(j);
+				if (el.m_gid == pid)
+				{
+					elemList.push_back(j);
+				}
 			}
 		}
 	}

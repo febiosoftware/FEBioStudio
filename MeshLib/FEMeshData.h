@@ -79,6 +79,10 @@ public:
 	// access operator
 	double& operator [] (int i) { return m_data[i]; }
 
+	void set(size_t i, double v);
+	void set(size_t i, const vec3d& v);
+	void set(size_t i, const mat3d& v);
+
 protected:
 	void SetMesh(FSMesh* mesh);
 	DATA_TYPE		m_dataType;
@@ -90,3 +94,25 @@ private:
 	DATA_CLASS		m_dataClass;
 	FSMesh*			m_pMesh;
 };
+
+inline void FEMeshData::set(size_t i, double v)
+{
+	assert(m_dataType == FEMeshData::DATA_SCALAR);
+	m_data[i] = v;
+}
+
+inline void FEMeshData::set(size_t i, const vec3d& v)
+{
+	assert(m_dataType == FEMeshData::DATA_VEC3D);
+	m_data[3*i  ] = v.x;
+	m_data[3*i+1] = v.y;
+	m_data[3*i+2] = v.z;
+}
+
+inline void FEMeshData::set(size_t i, const mat3d& v)
+{
+	assert(m_dataType == FEMeshData::DATA_MAT3D);
+	m_data[9 * i    ] = v(0,0); m_data[9 * i + 1] = v(0,1); m_data[9 * i + 2] = v(0,2);
+	m_data[9 * i + 3] = v(1,0); m_data[9 * i + 4] = v(1,1); m_data[9 * i + 5] = v(1,2);
+	m_data[9 * i + 6] = v(2,0); m_data[9 * i + 7] = v(2,1); m_data[9 * i + 8] = v(2,2);
+}
