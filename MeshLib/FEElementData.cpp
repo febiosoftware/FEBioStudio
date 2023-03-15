@@ -303,6 +303,7 @@ void FEPartData::AllocateData()
 	int maxNodes = 0;
 	int nsize = 0;
 	FSPartSet* partList = GetPartSet();
+	m_lut.assign(NE, -1);
 	for (int i = 0; i < partList->size(); ++i)
 	{
 		int pid = (*partList)[i];
@@ -313,9 +314,20 @@ void FEPartData::AllocateData()
 			{
 				int nn = el.Nodes();
 				if (nn > maxNodes) maxNodes = nn;
-				nsize++;
+
+				m_lut[i] = nsize++;
 			}
 		}
+	}
+
+	m_dataSize = 0;
+	switch (m_dataType)
+	{
+	case DATA_SCALAR: m_dataSize = 1; break;
+	case DATA_VEC3D : m_dataSize = 3; break;
+	case DATA_MAT3D : m_dataSize = 9; break;
+	default:
+		assert(false);
 	}
 
 	if (m_dataFmt == DATA_ITEM)
@@ -332,7 +344,7 @@ void FEPartData::AllocateData()
 		nsize *= maxNodes;
 	}
 
-	m_data.resize(nsize);
+	m_data.resize(nsize*m_dataSize);
 }
 
 FEElemList* FEPartData::BuildElemList()
@@ -363,6 +375,8 @@ void FEPartData::SetItemList(FEItemListBuilder* item, int n)
 	FSHasOneItemList::SetItemList(item);
 	AllocateData();
 }
+
+int FEPartData::GetElementIndex(int nelem) { return m_lut[nelem]; }
 
 FSPartSet* FEPartData::GetPartSet()
 {

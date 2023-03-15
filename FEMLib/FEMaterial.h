@@ -249,6 +249,7 @@
 #define FE_FIBER_USER			4
 #define FE_FIBER_ANGLES			5
 #define FE_FIBER_POLAR			6
+#define FE_FIBER_MAP			7
 
 // continuous fiber distributions
 #define FE_CFD_MATERIAL             700
@@ -699,6 +700,9 @@ public:
 	// used by POLAR method
 	vec3d	m_d0, m_d1;
 	double	m_R0, m_R1;
+
+	// used by map
+	string	m_map;
 
 public:
 	void Save(OArchive& ar) override;

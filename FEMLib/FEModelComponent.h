@@ -69,6 +69,7 @@ public:
 private:
 	int		m_naopt;
 	int		m_n[2];
+	string	m_map;
 };
 
 class FSMat3dValuator : public FSGenericClass

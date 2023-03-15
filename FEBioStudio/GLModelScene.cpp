@@ -818,6 +818,7 @@ class GLFiberRenderer
 public:
 	GLFiberRenderer() {}
 	void RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& rel, const vec3d& c, mat3d Q = mat3d::identity());
+	void RenderFiber(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q = mat3d::identity());
 
 	void Init();
 
@@ -933,6 +934,88 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 			{
 				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
 				RenderFiber(po, matj, rel, c, Q);
+			}
+			else
+			{
+				FSMaterialProperty* matProp = dynamic_cast<FSMaterialProperty*>(pmat->GetProperty(i).GetComponent(j));
+				if (matProp)
+				{
+					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+					RenderFiber(po, matProp, rel, c, Q);
+				}
+			}
+		}
+	}
+}
+
+void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEElementRef& rel, const vec3d& c, mat3d Q)
+{
+	if (pmat->HasFibers())
+	{
+		vec3d q0 = pmat->GetFiber(rel);
+
+		vec3d q = Q * q0;
+
+		// This vector is defined in global coordinates, except for user-defined fibers, which
+		// are assumed to be in local coordinates
+		FSTransverselyIsotropic* ptiso = dynamic_cast<FSTransverselyIsotropic*>(pmat);
+		if (ptiso && (ptiso->GetFiberMaterial()->m_naopt == FE_FIBER_USER))
+		{
+			q = po->GetTransform().LocalToGlobalNormal(q);
+		}
+
+		GLColor col = m_defaultCol;
+		if (m_colorOption == 0)
+		{
+			Byte r = (Byte)(255 * fabs(q.x));
+			Byte g = (Byte)(255 * fabs(q.y));
+			Byte b = (Byte)(255 * fabs(q.z));
+			col = GLColor(r, g, b);
+		}
+
+		vec3d p0 = c - q * (m_scale * 0.5);
+		vec3d p1 = c + q * (m_scale * 0.5);
+
+		glColor3ub(col.r, col.g, col.b);
+		if (m_lineStyle == 0)
+		{
+			glVertex3d(p0.x, p0.y, p0.z);
+			glVertex3d(p1.x, p1.y, p1.z);
+		}
+		else
+		{
+			glPushMatrix();
+
+			glx::translate(p0);
+			quatd Q(vec3d(0, 0, 1), q);
+			glx::rotate(Q);
+
+			gluCylinder(m_glyph, m_lineWidth, m_lineWidth, m_scale, 10, 1);
+
+			glPopMatrix();
+		}
+	}
+
+	int index = 0;
+	for (int i = 0; i < pmat->Properties(); ++i)
+	{
+		FSProperty& prop = pmat->GetProperty(i);
+		for (int j = 0; j < prop.Size(); ++j, ++index)
+		{
+			FSMaterial* matj = dynamic_cast<FSMaterial*>(pmat->GetProperty(i).GetComponent(j));
+			if (matj)
+			{
+				if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+				RenderFiber(po, matj, rel, c, Q);
+			}
+			else
+			{
+				FSMaterialProperty* matProp = dynamic_cast<FSMaterialProperty*>(pmat->GetProperty(i).GetComponent(j));
+				if (matProp)
+				{
+					if (m_colorOption == 2) m_defaultCol = fiberColorPalette[index % GMaterial::MAX_COLORS];
+					RenderFiber(po, matProp, rel, c, Q);
+				}
 			}
 		}
 	}

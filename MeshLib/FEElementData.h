@@ -119,6 +119,8 @@ public:
 	// get the part list
 	FSPartSet* GetPartSet();
 
+	int GetElementIndex(int nelem);
+
 	void SetItemList(FEItemListBuilder* item, int n = 0) override;
 
 public:
@@ -126,7 +128,8 @@ public:
 	void Load(IArchive& ar);
 
 private:
-	int						m_maxElemItems;	
+	int					m_maxElemItems;	
+	std::vector<int>	m_lut;
 
 private:
 	FEPartData(const FEPartData& d);

@@ -924,10 +924,21 @@ void convert_fibers(std::ostream& log, FSModelComponent* pd, const FSOldFiberMat
 			v = FEBio::CreateVec3dValuator("user", fem);
 		}
 		break;
+		case FE_FIBER_MAP:
+		{
+			v = FEBio::CreateVec3dValuator("map", fem);
+			v->SetParamString("map", pf->m_map);
+		}
+		break;
 		default:
 			log << "Unrecognized fiber generator.\n";
 		}
-		if (v) fiberProp->SetComponent(v);
+
+		if (v)
+		{
+			v->UpdateData(false);
+			fiberProp->SetComponent(v);
+		}
 	}
 	else
 	{

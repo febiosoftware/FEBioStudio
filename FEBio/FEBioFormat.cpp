@@ -1394,6 +1394,11 @@ void FEBioFormat::ParseFiberMaterial(FSOldFiberMaterial& fibermat, XMLTag& tag)
 			++tag;
 		} while (!tag.isend());
 	}
+	else if (atype == "map")
+	{
+		fiber.m_naopt = FE_FIBER_MAP;
+		tag.value(fiber.m_map);
+	}
 	else
 	{
 		ParseUnknownAttribute(tag, "type");
