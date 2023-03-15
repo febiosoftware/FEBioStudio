@@ -557,6 +557,9 @@ bool FEBioFileImport::ImportMaterials(const char* szfile)
 	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
+	// we may need to convert the new materials, so let's keep track of how many materials there are now.
+	int currentMatCount = fem.Materials();
+
 	// create a new FEBioInputModel
 	InitLog(this);
 	m_febio = new FEBioInputModel(fem);
@@ -574,6 +577,15 @@ bool FEBioFileImport::ImportMaterials(const char* szfile)
 		// check the version number of the file (This also allocates the format)
 		if (ParseVersion(tag) == false) return errf("Invalid version for febio_spec");
 
+		// first section must be Module
+		++tag;
+		if (tag != "Module")
+		{
+			return errf("Module section not found.");
+		}
+		m_fmt->ParseSection(tag);
+
+		// find the material tag
 		if (xml.FindTag("febio_spec/Material", tag) == false)
 		{
 			return errf("File does not contain Material section.");
@@ -605,6 +617,21 @@ bool FEBioFileImport::ImportMaterials(const char* szfile)
 	}
 
 	SetFileStream(nullptr);
+
+	if (m_nversion < 0x0400)
+	{
+		// older formats need to be converted
+		AddLogEntry("Converting materials:");
+		std::ostringstream log;
+		for (int i = currentMatCount; i < fem.Materials(); ++i)
+		{
+			GMaterial* mat = fem.GetMaterial(i);
+			m_prj.ConvertMaterial(mat, log);
+		}
+		string s = log.str();
+		if (s.empty() == false) AddLogEntry(s.c_str());
+		else AddLogEntry("No issues found!");
+	}
 
 	// we're done!
 	return bret;

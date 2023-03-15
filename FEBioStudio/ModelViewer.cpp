@@ -1570,7 +1570,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_MATERIAL_LIST:
 	{
 		menu.addAction("Add Material ...", wnd, SLOT(on_actionAddMaterial_triggered()));
-		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
+//		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
 
 		QMenu* sub = new QMenu("Import Materials");
 		QAction* ac = sub->addAction("From FEBio file ...");

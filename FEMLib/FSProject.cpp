@@ -1158,25 +1158,29 @@ FSMaterial* convert_material(std::ostream& log, FSMaterial* pm, FSModel* fem)
 void FSProject::ConvertMaterials(std::ostream& log)
 {
 	FSModel& fem = GetFSModel();
-
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		GMaterial* mat = fem.GetMaterial(i);
+		ConvertMaterial(mat, log);
+	}
+}
 
-		FSMaterial* pm = mat->GetMaterialProperties();
-		if (pm == nullptr)
+void FSProject::ConvertMaterial(GMaterial* mat, std::ostream& log)
+{
+	FSModel& fem = GetFSModel();
+	FSMaterial* pm = mat->GetMaterialProperties();
+	if (pm == nullptr)
+	{
+		log << "ERROR: Material \"" << mat->GetName() << "\" has no properties!" << std::endl;
+	}
+	else
+	{
+		FSMaterial* febMat = convert_material(log, pm, &fem);
+		if (febMat == nullptr)
 		{
-			log << "ERROR: Material \"" << mat->GetName() << "\" has no properties!" << std::endl;
+			log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
 		}
-		else
-		{
-			FSMaterial* febMat = convert_material(log, pm, &fem);
-			if (febMat == nullptr)
-			{
-				log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
-			}
-			else mat->SetMaterialProperties(febMat);
-		}
+		else mat->SetMaterialProperties(febMat);
 	}
 }
 

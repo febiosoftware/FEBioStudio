@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GLLib/GLCamera.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
+#include <FSCore/FSLogger.h>
 #include <sstream>
 #include <limits>
 using namespace Post;
@@ -189,104 +190,104 @@ void CVolumeRenderer::ReloadTexture()
 
 const char* shadertxt_8bit = \
 "#version 120\n"\
-"uniform sampler3D sampler;                               "\
-"uniform float Imin;                                      "\
-"uniform float Imax;                                      "\
-"uniform float Iscl;                                      "\
-"uniform float IsclMin;                                   "\
-"uniform float Amin;                                      "\
-"uniform float Amax;                                      "\
-"uniform float gamma;                                     "\
-"uniform int cmap;                                        "\
-"vec3 grayScale(const float f);                           "\
-"vec3 red(const float f);                                 "\
-"vec3 green(const float f);                               "\
-"vec3 blue(const float f);                                "\
-"vec3 fire(const float f);                                "\
-"void main(void)                                          "\
-"{                                                        "\
-"	vec4 t = texture3D(sampler, gl_TexCoord[0].xyz);      "\
-"   float f = (t.x-IsclMin)*Iscl;                         "\
-"   f = (f - Imin) / (Imax - Imin);                       "\
-"   f = clamp(f, 0.0, 1.0);                               "\
-"   if (f <= 0.0) discard;                                "\
-"   float a = Amin + f*(Amax - Amin);                     "\
-"   if (gamma != 1.0) f = pow(f, gamma);                  "\
-"   vec3 c3;                                              "\
-"   if      (cmap == 0) { c3 = grayScale(f); }            "\
-"   else if (cmap == 1) { c3 = red(f); }                  "\
-"   else if (cmap == 2) { c3 = green(f); }                "\
-"   else if (cmap == 3) { c3 = blue(f); }                 "\
-"   else if (cmap == 4) { c3 = fire(f); }                 "\
-"   else c3 = vec3(0,0,0);                                "\
-"   vec4 c4 = vec4(c3.x, c3.y, c3.z, a);                  "\
-"   gl_FragColor = gl_Color*c4;                            "\
-"}                                                        "\
-"                                                         "\
-"vec3 grayScale(const float f) { return vec3(f, f, f);}   "\
-"vec3 red(const float f)   { return vec3(f, 0, 0);}       "\
-"vec3 green(const float f) { return vec3(0, f, 0);}       "\
-"vec3 blue(const float f)  { return vec3(0, 0, f);}       "\
-"vec3 fire(const float f)  {                              "\
-"   vec3 c1 = vec3(0.0, 0., 0.);                          "\
-"   vec3 c2 = vec3(0.5, 0., 1.);                          "\
-"   vec3 c3 = vec3(1.0, 0., 0.);                          "\
-"   vec3 c4 = vec3(1.0, 1., 0.);                          "\
-"   vec3 c5 = vec3(1.0, 1., 1.);                          "\
-"   vec3 c = vec3(0.0,0.,0.);                             "\
-"   float wa, wb;                                         "\
-"   if      (f >= 0.75) { wb = 2.0*(f - 0.75); wa = 1.0 - wb; c = c4*vec3(wa,wa,wa) + c5*vec3(wb,wb,wb); }"\
-"   else if (f >= 0.50) { wb = 2.0*(f - 0.50); wa = 1.0 - wb; c = c3*vec3(wa,wa,wa) + c4*vec3(wb,wb,wb); }"\
-"   else if (f >= 0.25) { wb = 2.0*(f - 0.25); wa = 1.0 - wb; c = c2*vec3(wa,wa,wa) + c3*vec3(wb,wb,wb); }"\
-"   else if (f >= 0.00) { wb = 2.0*(f - 0.00); wa = 1.0 - wb; c = c1*vec3(wa,wa,wa) + c2*vec3(wb,wb,wb); }"\
-"  return vec3(c.x, c.y, c.z);                            "\
-"}                                                        "\
+"uniform sampler3D sampler;                               \n"\
+"uniform float Imin;                                      \n"\
+"uniform float Imax;                                      \n"\
+"uniform float Iscl;                                      \n"\
+"uniform float IsclMin;                                   \n"\
+"uniform float Amin;                                      \n"\
+"uniform float Amax;                                      \n"\
+"uniform float gamma;                                     \n"\
+"uniform int cmap;                                        \n"\
+"vec3 grayScale(const float f);                           \n"\
+"vec3 red(const float f);                                 \n"\
+"vec3 green(const float f);                               \n"\
+"vec3 blue(const float f);                                \n"\
+"vec3 fire(const float f);                                \n"\
+"void main(void)                                          \n"\
+"{                                                        \n"\
+"	vec4 t = texture3D(sampler, gl_TexCoord[0].xyz);      \n"\
+"   float f = (t.x-IsclMin)*Iscl;                         \n"\
+"   f = (f - Imin) / (Imax - Imin);                       \n"\
+"   f = clamp(f, 0.0, 1.0);                               \n"\
+"   if (f <= 0.0) discard;                                \n"\
+"   float a = Amin + f*(Amax - Amin);                     \n"\
+"   if (gamma != 1.0) f = pow(f, gamma);                  \n"\
+"   vec3 c3;                                              \n"\
+"   if      (cmap == 0) { c3 = grayScale(f); }            \n"\
+"   else if (cmap == 1) { c3 = red(f); }                  \n"\
+"   else if (cmap == 2) { c3 = green(f); }                \n"\
+"   else if (cmap == 3) { c3 = blue(f); }                 \n"\
+"   else if (cmap == 4) { c3 = fire(f); }                 \n"\
+"   else c3 = vec3(0,0,0);                                \n"\
+"   vec4 c4 = vec4(c3.x, c3.y, c3.z, a);                  \n"\
+"   gl_FragColor = gl_Color*c4;                           \n "\
+"}                                                        \n"\
+"                                                         \n"\
+"vec3 grayScale(const float f) { return vec3(f, f, f);}   \n"\
+"vec3 red(const float f)   { return vec3(f, 0, 0);}       \n"\
+"vec3 green(const float f) { return vec3(0, f, 0);}       \n"\
+"vec3 blue(const float f)  { return vec3(0, 0, f);}       \n"\
+"vec3 fire(const float f)  {                              \n"\
+"   vec3 c1 = vec3(0.0, 0., 0.);                          \n"\
+"   vec3 c2 = vec3(0.5, 0., 1.);                          \n"\
+"   vec3 c3 = vec3(1.0, 0., 0.);                          \n"\
+"   vec3 c4 = vec3(1.0, 1., 0.);                          \n"\
+"   vec3 c5 = vec3(1.0, 1., 1.);                          \n"\
+"   vec3 c = vec3(0.0,0.,0.);                             \n"\
+"   float wa, wb;                                         \n"\
+"   if      (f >= 0.75) { wb = 2.0*(f - 0.75); wa = 1.0 - wb; c = c4*vec3(wa,wa,wa) + c5*vec3(wb,wb,wb); }\n"\
+"   else if (f >= 0.50) { wb = 2.0*(f - 0.50); wa = 1.0 - wb; c = c3*vec3(wa,wa,wa) + c4*vec3(wb,wb,wb); }\n"\
+"   else if (f >= 0.25) { wb = 2.0*(f - 0.25); wa = 1.0 - wb; c = c2*vec3(wa,wa,wa) + c3*vec3(wb,wb,wb); }\n"\
+"   else if (f >= 0.00) { wb = 2.0*(f - 0.00); wa = 1.0 - wb; c = c1*vec3(wa,wa,wa) + c2*vec3(wb,wb,wb); }\n"\
+"  return vec3(c.x, c.y, c.z);                            \n"\
+"}                                                        \n"\
 "";
 
 
 const char* shadertxt_rgb = \
 "#version 120\n"\
-"uniform sampler3D sampler;                               "\
-"uniform float Iscl;                                      "\
-"uniform float IsclMin;                                   "\
-"uniform float Imin;                                      "\
-"uniform float Imax;                                      "\
-"uniform float Amin;                                      "\
-"uniform float Amax;                                      "\
-"uniform float gamma;                                     "\
-"uniform vec3 col1;                                       "\
-"uniform vec3 col2;                                       "\
-"uniform vec3 col3;                                       "\
-"uniform int cmap;                                        "\
-"void main(void)                                          "\
-"{                                                        "\
-"   vec4 t = (texture3D(sampler, gl_TexCoord[0].xyz)-IsclMin)*Iscl;"\
-"   t.x = (t.x - Imin) / (Imax - Imin);                   "\
-"   t.x = clamp(t.x, 0.0, 1.0);                           "\
-"   t.y = (t.y - Imin) / (Imax - Imin);                   "\
-"   t.y = clamp(t.y, 0.0, 1.0);                           "\
-"   t.z = (t.z - Imin) / (Imax - Imin);                   "\
-"   t.z = clamp(t.z, 0.0, 1.0);                           "\
-"   float f = t.x;                                        "\
-"   if (t.y > f) f = t.y;                                 "\
-"   if (t.z > f) f = t.z;                                 "\
-"   if (f <= 0.0) discard;                                "\
-"   if (gamma != 1.0) f = pow(f, gamma);                  "\
-"   float a = Amin + f*(Amax - Amin);                     "\
-"   vec3 c1 = vec3(t.x*col1.x, t.x*col1.y, t.x*col1.z);   "\
-"   vec3 c2 = vec3(t.y*col2.x, t.y*col2.y, t.y*col2.z);   "\
-"   vec3 c3 = vec3(t.z*col3.x, t.z*col3.y, t.z*col3.z);   "\
-"   vec3 c4 = c1 + c2 + c3;                               "\
-"   gl_FragColor = gl_Color*vec4(c4.x, c4.y, c4.z, a);    "\
-"}                                                        "\
+"uniform sampler3D sampler;                               \n"\
+"uniform float Iscl;                                      \n"\
+"uniform float IsclMin;                                   \n"\
+"uniform float Imin;                                      \n"\
+"uniform float Imax;                                      \n"\
+"uniform float Amin;                                      \n"\
+"uniform float Amax;                                      \n"\
+"uniform float gamma;                                     \n"\
+"uniform vec3 col1;                                       \n"\
+"uniform vec3 col2;                                       \n"\
+"uniform vec3 col3;                                       \n"\
+"uniform int cmap;                                        \n"\
+"void main(void)                                          \n"\
+"{                                                        \n"\
+"   vec4 t = (texture3D(sampler, gl_TexCoord[0].xyz)-IsclMin)*Iscl;\n"\
+"   t.x = (t.x - Imin) / (Imax - Imin);                   \n"\
+"   t.x = clamp(t.x, 0.0, 1.0);                           \n"\
+"   t.y = (t.y - Imin) / (Imax - Imin);                   \n"\
+"   t.y = clamp(t.y, 0.0, 1.0);                           \n"\
+"   t.z = (t.z - Imin) / (Imax - Imin);                   \n"\
+"   t.z = clamp(t.z, 0.0, 1.0);                           \n"\
+"   float f = t.x;                                        \n"\
+"   if (t.y > f) f = t.y;                                 \n"\
+"   if (t.z > f) f = t.z;                                 \n"\
+"   if (f <= 0.0) discard;                                \n"\
+"   if (gamma != 1.0) f = pow(f, gamma);                  \n"\
+"   float a = Amin + f*(Amax - Amin);                     \n"\
+"   vec3 c1 = vec3(t.x*col1.x, t.x*col1.y, t.x*col1.z);   \n"\
+"   vec3 c2 = vec3(t.y*col2.x, t.y*col2.y, t.y*col2.z);   \n"\
+"   vec3 c3 = vec3(t.z*col3.x, t.z*col3.y, t.z*col3.z);   \n"\
+"   vec3 c4 = c1 + c2 + c3;                               \n"\
+"   gl_FragColor = gl_Color*vec4(c4.x, c4.y, c4.z, a);    \n"\
+"}                                                        \n"\
 "";
 
 const char* vertex_shader = \
 "#version 130\n"\
-"void main(void)                                          "\
-"{                                                        "\
-"   gl_Position = gl_ModelViewProjectionMatrix*gl_Vertex;   "\
-"}                                                        "\
+"void main(void)                                          \n"\
+"{                                                        \n"\
+"   gl_Position = gl_ModelViewProjectionMatrix*gl_Vertex; \n "\
+"}                                                        \n"\
 "";
 
 void CVolumeRenderer::InitShaders()
@@ -325,12 +326,16 @@ void CVolumeRenderer::InitShaders()
 	int success;
 	glCompileShader(fragShader);
 	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-	if (success == 0)
+	if (success == 0) FSLogger::Write("fragment shader compilation failed:\n");
+	else FSLogger::Write("fragment shader compilation succeeded.\n");
+	GLint length = 0;
+	glGetShaderiv(fragShader, GL_INFO_LOG_LENGTH, &length);
+	if (length > 0)
 	{
-		const int MAX_INFO_LOG_SIZE = 1024;
-		GLchar infoLog[MAX_INFO_LOG_SIZE];
-		glGetShaderInfoLog(fragShader, MAX_INFO_LOG_SIZE, NULL, infoLog);
-		fprintf(stderr, infoLog);
+		GLchar* buf = new GLchar[length + 1];
+		glGetShaderInfoLog(fragShader, length + 1, NULL, buf);
+		FSLogger::Write(buf);
+		delete[] buf;
 	}
 
 //	glCompileShader(vertShader);

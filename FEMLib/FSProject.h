@@ -227,6 +227,8 @@ public:
 	// convert the old format to the new
 	void ConvertToNewFormat(std::ostream& log);
 
+	void ConvertMaterial(GMaterial* pm, std::ostream& log);
+
 protected:
 	void ConvertMaterials(std::ostream& log);
 	bool ConvertSteps(std::ostream& log);
