@@ -34,7 +34,7 @@ SOFTWARE.*/
 //===================================================================
 FSDiscreteMaterial::FSDiscreteMaterial(int ntype, FSModel* fem) : FSMaterial(ntype, fem)
 {
-
+	SetSuperClassID(FEDISCRETEMATERIAL_ID);
 }
 
 //===================================================================
