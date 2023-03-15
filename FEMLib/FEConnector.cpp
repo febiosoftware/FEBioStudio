@@ -40,6 +40,7 @@ FSRigidConnector::FSRigidConnector(int ntype, FSModel* ps, int nstep) : FSStepCo
     m_ntype = ntype;
 	SetStep(nstep);
     m_bActive = true;
+	SetSuperClassID(FENLCONSTRAINT_ID);
 }
 
 //-----------------------------------------------------------------------------
