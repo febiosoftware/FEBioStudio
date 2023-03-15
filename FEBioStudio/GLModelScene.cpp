@@ -1220,6 +1220,31 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
 
+	// build a lookup table for GNodes
+	vector<GNode*> nodes; nodes.reserve(1024);
+	int minId = -1, maxId = -1;
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		for (int j = 0; j < po->Nodes(); ++j)
+		{
+			GNode* nj = po->Node(j);
+			int nid = nj->GetID();
+			if ((minId == -1) || (nid < minId)) minId = nid;
+			if ((maxId == -1) || (nid > maxId)) maxId = nid;
+			nodes.push_back(nj);
+		}
+	}
+
+	int nsize = maxId - minId + 1;
+	vector<GNode*> lut(nsize, nullptr);
+	for (int i = 0; i < nodes.size(); ++i)
+	{
+		GNode* ni = nodes[i];
+		int nid = ni->GetID();
+		lut[nid - minId] = ni;
+	}	
+
 	// render the discrete objects
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_LIGHTING);
@@ -1237,16 +1262,16 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 			GLinearSpring* ps = dynamic_cast<GLinearSpring*>(po);
 			if (ps)
 			{
-				GNode* pn0 = model.FindNode(ps->m_node[0]);
-				GNode* pn1 = model.FindNode(ps->m_node[1]);
+				GNode* pn0 = lut[ps->m_node[0] - minId];
+				GNode* pn1 = lut[ps->m_node[1] - minId];
 				if (pn0 && pn1) RenderLine(*pn0, *pn1);
 			}
 
 			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(po);
 			if (pg)
 			{
-				GNode* pn0 = model.FindNode(pg->m_node[0]);
-				GNode* pn1 = model.FindNode(pg->m_node[1]);
+				GNode* pn0 = lut[ps->m_node[0] - minId];
+				GNode* pn1 = lut[ps->m_node[1] - minId];
 				if (pn0 && pn1) RenderLine(*pn0, *pn1);
 			}
 
@@ -1261,8 +1286,8 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 					if (bsel && el.IsSelected()) glColor3ub(255, 255, 0);
 					else glColor3ub(c.r, c.g, c.b);
 
-					GNode* pn0 = model.FindNode(el.Node(0));
-					GNode* pn1 = model.FindNode(el.Node(1));
+					GNode* pn0 = lut[el.Node(0) - minId];
+					GNode* pn1 = lut[el.Node(1) - minId];
 					if (pn0 && pn1) RenderLine(*pn0, *pn1);
 				}
 			}
@@ -1270,8 +1295,8 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 			GDeformableSpring* ds = dynamic_cast<GDeformableSpring*>(po);
 			if (ds)
 			{
-				GNode* pn0 = model.FindNode(ds->NodeID(0));
-				GNode* pn1 = model.FindNode(ds->NodeID(1));
+				GNode* pn0 = lut[ds->NodeID(0) - minId];
+				GNode* pn1 = lut[ds->NodeID(1) - minId];
 				if (pn0 && pn1) RenderLine(*pn0, *pn1);
 			}
 		}
