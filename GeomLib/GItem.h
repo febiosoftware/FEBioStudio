@@ -297,7 +297,11 @@ public:
 
 	void MakeRequired();
 
+	void SetNodeIndex(int n) { m_node = n; }
+	int GetNodeIndex() const { return m_node; }
+
 private:
 	vec3d		m_r;		// node position (in local coordinates)
 	int			m_ntype;	// node type
+	int			m_node;		// index of node in mesh
 };

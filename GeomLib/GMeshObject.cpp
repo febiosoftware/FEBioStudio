@@ -588,6 +588,7 @@ void GMeshObject::UpdateNodes()
 		{
 			node.m_gid = tag[node.m_gid];
 			GNode* pn = m_Node[node.m_gid];
+			pn->SetNodeIndex(i);
 			pn->LocalPosition() = node.r;
 			node.SetRequired(pn->IsRequired());
 		}
