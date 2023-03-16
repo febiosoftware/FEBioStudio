@@ -313,6 +313,10 @@ bool AbaqusImport::parse_file(FILE* fp)
 		{
 			if (!read_amplitude(szline, fp)) return errf("Error while reading keyword AMPLITUDE (line %d)", m_nline);
 		}
+		else if (szicnt(szline, "*END STEP"))
+		{
+			read_line(szline, fp);
+		}
 		else if (szicnt(szline, "*INCLUDE")) // include another file
 		{
 			// get the filename
@@ -340,6 +344,12 @@ bool AbaqusImport::parse_file(FILE* fp)
 		else
 		{
 			// read the next line
+			if (szline[0] == '*')
+			{
+				char* ch = strchr(szline, ',');
+				if (ch) *ch = 0;
+				errf("Skipping unrecognized keyword \"%s\" (line %d)", szline, m_nline);
+			}
 			read_line(szline, fp);
 		}
 	}
@@ -358,7 +368,7 @@ int AbaqusImport::parse_line(const char* szline, ATTRIBUTE* pa)
 	int k = 0;
 	char* sz = pa[n].szatt;
 	pa[0].szval[0] = 0;
-	while (m<l)
+	while ((m<l) && (n < MAX_ATTRIB))
 	{
 		c = szline[m];
 		switch (c)
@@ -413,7 +423,7 @@ bool AbaqusImport::read_heading(char* szline, FILE* fp)
 	int n = 0;
 	do
 	{
-		fgets(szline, 255, fp);
+		read_line(szline, fp);
 		if (feof(fp)) return false;
 
 		if (n == 0) strncpy(m_szTitle, szline, AbaqusModel::Max_Title);
@@ -429,7 +439,7 @@ bool AbaqusImport::read_heading(char* szline, FILE* fp)
 bool AbaqusImport::read_nodes(char* szline, FILE* fp)
 {
 	// parse the szline for optional parameters
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 
 	// get the active part
@@ -485,7 +495,7 @@ bool AbaqusImport::read_ngen(char* szline, FILE* fp)
 	AbaqusModel::PART& part = *m_inp.GetActivePart();
 
 	// scan the element line for optional parameters
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	// check the parameters
@@ -622,7 +632,7 @@ bool AbaqusImport::read_nfill(char* szline, FILE* fp)
 bool AbaqusImport::read_elements(char* szline, FILE* fp)
 {
 	// scan the element line for optional parameters
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	// check the parameters
@@ -664,7 +674,11 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 				ntype = -1;
 				bsprings = true;
 			}
-			else return errf("Element type %s not supported", sz);
+			else {
+				errf("Element type %s not supported (line %d)", sz, m_nline); 
+				skip_keyword(szline, m_fp); 
+				return true;
+			}
 		}
 		else if (szicmp(att[i].szatt, "ELSET"))
 		{
@@ -851,7 +865,7 @@ bool AbaqusImport::read_spring_elements(char* szline, FILE* fp)
 		int nc = 0;
 		while (!feof(fp) && (szline[0] != '*'))
 		{
-			ATTRIBUTE att[3];
+			ATTRIBUTE att[MAX_ATTRIB];
 			int natt = parse_line(szline, att);
 			if (natt != 3) return false;
 
@@ -907,7 +921,7 @@ bool AbaqusImport::read_spring_elements(char* szline, FILE* fp)
 bool AbaqusImport::read_element_sets(char* szline, FILE* fp)
 {
 	// read the attributes
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	char szname[256];
@@ -923,7 +937,12 @@ bool AbaqusImport::read_element_sets(char* szline, FILE* fp)
 	else pg = m_inp.GetActivePart();
 
 	// get the part
-	if (pg == 0) return false;
+	if (pg == 0)
+	{
+		errf("Error reading ELSET (line %d)", m_nline);
+		skip_keyword(szline, m_fp);
+		return true;
+	}
 	AbaqusModel::PART& part = *pg;
 
 	// check the attributes
@@ -996,7 +1015,7 @@ bool AbaqusImport::read_element_sets(char* szline, FILE* fp)
 bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 {
 	// read the attributes
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	// find the instance part (if any)
@@ -1095,7 +1114,7 @@ bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 bool AbaqusImport::read_surface(char* szline, FILE* fp)
 {
 	// read the attributes
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	char szname[256];
@@ -1125,7 +1144,12 @@ bool AbaqusImport::read_surface(char* szline, FILE* fp)
 		}
 	}
 
-	if (ntype != AbaqusModel::ST_ELEMENT) return false;
+	if (ntype != AbaqusModel::ST_ELEMENT)
+	{
+		errf("Failed reading SURFACE keyword (line %d)", m_nline);
+		skip_keyword(szline, fp);
+		return true;
+	}
 
 	// find the surface
 	AbaqusModel::SURFACE* ps = 0;
@@ -1217,7 +1241,7 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 	AbaqusModel::MATERIAL& mat = *m_inp.AddMaterial("");
 	mat.dens = 1.0;
 
-	ATTRIBUTE a[10];
+	ATTRIBUTE a[MAX_ATTRIB];
 	int natt = parse_line(szline, a);
 	const char* szname = find_attribute(a, natt, "NAME");
 	if (szname) strcpy(mat.szname, szname);
@@ -1332,7 +1356,7 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 bool AbaqusImport::read_part(char* szline, FILE* fp)
 {
 	if (m_inp.CurrentPart()) return errf("Error in file: new part was started before END PART was detected. (line %d)", m_nline);
-	ATTRIBUTE att[2];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 	if (natt == 0) return errf("Error: You need to add a NAME attribute when defining a part. (line %d)", m_nline);
 
@@ -1361,7 +1385,7 @@ bool AbaqusImport::read_end_part(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_instance(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	if (m_inp.CurrentPart()) return errf("Instance encountered while reading part.");
@@ -1963,11 +1987,11 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			for (i=0; i<elsets; ++i, ++pes)
 			{
 				int n = (int)pes->elem.size();
-				FSPart* pg = new FSPart(po);
+				FSElemSet* pg = new FSElemSet(po);
 				pg->SetName(pes->szname);
 				vector<int>::iterator pe = pes->elem.begin();
 				for (j=0; j<n; ++j, ++pe) pg->add(part.FindElement(*pe)->lid);
-				po->AddFEPart(pg);
+				po->AddFEElemSet(pg);
 			}
 		}
 	}
@@ -2175,7 +2199,7 @@ FSNodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_step(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 
 	const char* szname = find_attribute(att, 5, "name");
@@ -2222,7 +2246,7 @@ bool AbaqusImport::read_step(char* szline, FILE* fp)
 bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 {
 	AbaqusModel::BOUNDARY BC;
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 	const char* szampl = find_attribute(att, 4, "amplitude");
 	if (szampl)
@@ -2287,7 +2311,7 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 bool AbaqusImport::read_dsload(char* szline, FILE* fp)
 {
 	AbaqusModel::DSLOAD P;
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
 
 	int natt = parse_line(szline, att);
 	const char* sza = find_attribute(att, 4, "amplitude");
@@ -2319,7 +2343,7 @@ bool AbaqusImport::read_dsload(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_solid_section(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int n = parse_line(szline, att);
 
 	AbaqusModel::PART* pg = m_inp.GetActivePart(true);
@@ -2343,7 +2367,7 @@ bool AbaqusImport::read_static(char* szline, FILE* fp)
 	read_line(szline, fp);
 	if (szline[0] == '*') return true;
 	// parse it
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 
 	AbaqusModel::STEP* step = m_inp.CurrentStep();
@@ -2360,13 +2384,18 @@ bool AbaqusImport::read_static(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_orientation(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 	const char* szname = find_attribute(att, 3, "name");
 	read_line(szline, fp);
 
 	AbaqusModel::PART* pg = m_inp.CurrentPart();
-	if (pg == 0) return false;
+	if (pg == 0)
+	{
+		errf("Failed reading ORIENTATION keyword (line %d)", m_nline);
+		skip_keyword(szline, fp);
+		return true;
+	}
 
 	pg->AddOrientation(szname, szline);
 
@@ -2376,7 +2405,7 @@ bool AbaqusImport::read_orientation(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_distribution(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[8];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 	const char* szname = find_attribute(att, 5, "name");
 	if (szname == 0) return false;
@@ -2410,7 +2439,7 @@ bool AbaqusImport::read_distribution(char* szline, FILE* fp)
 
 bool AbaqusImport::read_amplitude(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[8];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 
 	const char* szname = find_attribute(att, 5, "name");

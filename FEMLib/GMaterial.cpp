@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 
 using std::stringstream;
@@ -116,21 +117,7 @@ GMaterial* GMaterial::Clone()
 const char* GMaterial::GetFullName()
 {
 	static char sz[256];
-
-	if (m_pm->Type() == FE_USER_MATERIAL)
-	{
-		FSUserMaterial* pm = dynamic_cast<FSUserMaterial*>(m_pm);
-		sprintf(sz, "%s (%s)", GetName().c_str(), pm->GetTypeString());
-	}
-	else
-	{
-		FEMaterialFactory* pMF = FEMaterialFactory::GetInstance();
-
-		FEMatDescriptor* pmd = pMF->Find(m_pm->Type());
-		assert(pmd);
-		sprintf(sz, "%s (%s)", GetName().c_str(), pmd->GetTypeString());
-	}
-
+	sprintf(sz, "%s (%s)", GetName().c_str(), m_pm->GetTypeString());
 	return sz;
 }
 
@@ -180,14 +167,17 @@ void GMaterial::Load(IArchive &ar)
 	}
 }
 
-FEItemListBuilder* GMaterial::GetItemList()
+FEItemListBuilder* GMaterial::GetItemList(int n)
 {
-	if (m_partList == nullptr) m_partList = new GPartList(m_ps);
+	assert(n == 0);
+	GModel& mdl = m_ps->GetModel();
+
+	if (m_partList == nullptr) m_partList = new GPartList(&mdl);
 	m_partList->clear();
 
 	// set the items
-	GModel& mdl = m_ps->GetModel();
 	int NO = mdl.Objects();
+	m_pos = vec3d(0, 0, 0);
 	for (int i = 0; i < NO; ++i)
 	{
 		GObject* po = mdl.Object(i);
@@ -197,16 +187,21 @@ FEItemListBuilder* GMaterial::GetItemList()
 			GPart* pg = po->Part(j);
 			if (pg->GetMaterialID() == GetID())
 			{
+				BOX b = pg->GetGlobalBox();
 				m_partList->add(pg->GetID());
+				m_pos += b.Center();
 			}
 		}
 	}
+	if (m_partList->size() > 0) m_pos /= (double)m_partList->size();
 
 	return m_partList;
 }
 
-void GMaterial::SetItemList(FEItemListBuilder* pi)
+void GMaterial::SetItemList(FEItemListBuilder* pi, int n)
 {
+	assert(n == 0);
+
 	// clear all parts that have this material
 	// set the items
 	GModel& mdl = m_ps->GetModel();

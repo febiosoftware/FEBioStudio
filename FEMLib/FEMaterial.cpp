@@ -3582,3 +3582,8 @@ bool FEBioMaterial::UpdateData(bool bsave)
 	if (bsave) FEBio::UpdateFEBioClass(this);
 	return false;
 }
+
+FSMaterial* FEBioMaterial::Clone()
+{
+	return dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(this, GetFSModel()));
+}

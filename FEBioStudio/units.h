@@ -63,6 +63,7 @@ namespace Units {
 		POWER,
         VOLTAGE,
         CONCENTRATION,
+        RELATIVE_TEMPERATURE
 	};
 
 	QStringList SupportedUnitSystems();

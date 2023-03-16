@@ -25,27 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QDialog>
-#include <QThread>
-
-class CustomThread : public QThread
-{
-	Q_OBJECT
-
-public:
-	CustomThread();
-
-	virtual bool hasProgress();
-
-	virtual double progress();
-
-	virtual const char* currentTask();
-
-	virtual void stop();
-
-signals:
-	void resultReady(bool);
-	void writeLog(QString msg);
-};
+#include "CustomThread.h"
 
 class CDlgStartThreadUI;
 class CMainWindow;

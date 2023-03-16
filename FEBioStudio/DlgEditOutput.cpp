@@ -505,46 +505,46 @@ void CDlgEditOutput::UpdateLogTable()
 		FSLogData& logi = log.LogData(i);
 
 		QString type;
-		switch (logi.type)
+		switch (logi.Type())
 		{
 		case FSLogData::LD_NODE : type = "Node"; break;
+		case FSLogData::LD_FACE : type = "Face"; break;
 		case FSLogData::LD_ELEM : type = "Element"; break;
 		case FSLogData::LD_RIGID: type = "Rigid body"; break;
         case FSLogData::LD_CNCTR: type = "Rigid connector"; break;
 		}
 
-		QString data = QString::fromStdString(logi.sdata);
+		QString data = QString::fromStdString(logi.GetDataString());
 
 		QString list;
-		if (logi.type == FSLogData::LD_RIGID)
+		if (logi.Type() == FSLogData::LD_RIGID)
 		{
-			if (logi.matID == -1) list = "(all rigid bodies)";
-			else list = QString::fromStdString(fem.GetMaterialFromID(logi.matID)->GetName());
+			FSLogRigidData& rd = dynamic_cast<FSLogRigidData&>(logi);
+			if (rd.GetMatID() == -1) list = "(all rigid bodies)";
+			else list = QString::fromStdString(fem.GetMaterialFromID(rd.GetMatID())->GetName());
 		}
-        else if (logi.type == FSLogData::LD_CNCTR)
+        else if (logi.Type() == FSLogData::LD_CNCTR)
         {
-            if (logi.rcID == -1) list = "(all rigid connectors)";
-            else list = QString::fromStdString(fem.GetRigidConnectorFromID(logi.rcID)->GetName());
+			FSLogConnectorData& cd = dynamic_cast<FSLogConnectorData&>(logi);
+			if (cd.GetConnectorID() == -1) list = "(all rigid connectors)";
+            else list = QString::fromStdString(fem.GetRigidConnectorFromID(cd.GetConnectorID())->GetName());
         }
 		else
 		{
-			if (logi.groupID == -1)
+			FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&logi);
+			FEItemListBuilder* pl = pil->GetItemList();
+			if (pl == nullptr)
 			{
-				if (logi.type == FSLogData::LD_NODE) list = "(all nodes)";
-				else list = "(all elements)";
+				if (logi.Type() == FSLogData::LD_NODE) list = "(all nodes)";
+				else if (logi.Type() == FSLogData::LD_ELEM) list = "(all elements)";
 			}
 			else
 			{
-				GModel& mdl = fem.GetModel();
-				FEItemListBuilder* item = mdl.FindNamedSelection(logi.groupID); assert(item);
-				if (item)
-				{
-					list = QString::fromStdString(item->GetName());
-				}
+				list = QString::fromStdString(pl->GetName());
 			}
 		}
 
-		QString fileName = QString::fromStdString(logi.fileName);
+		QString fileName = QString::fromStdString(logi.GetFileName());
 
 		ui->setLogTableItem(i, type, data, list, fileName);
 	}
@@ -612,10 +612,10 @@ void CDlgEditOutput::UpdateLogItemList()
 			for (int i = 0; i<mdl.Objects(); ++i)
 			{
 				GObject* po = mdl.Object(i);
-				int NES = po->FEParts();
+				int NES = po->FEElemSets();
 				for (int i = 0; i<NES; ++i)
 				{
-					FSPart* pg = po->GetFEPart(i);
+					FSElemSet* pg = po->GetFEElemSet(i);
 					ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 				}
 			}
@@ -665,16 +665,28 @@ void CDlgEditOutput::onLogAdd()
 	}
 	ui->logEdit->setText("");
 
+	FSModel& fem = m_prj.GetFSModel();
+	GModel& mdl = fem.GetModel();
+
 	// create new log entry
-	FSLogData ld;
-	ld.type = ntype;
-	ld.sdata = data.toStdString();
-	if (ld.type == FSLogData::LD_RIGID) ld.matID = nlist;
-    else if (ld.type == FSLogData::LD_CNCTR) ld.rcID = nlist;
-	else ld.groupID = nlist;
+	FSLogData* ld = nullptr;
+	switch (ntype)
+	{
+	case FSLogData::LD_NODE: ld = new FSLogNodeData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_FACE: ld = new FSLogFaceData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_ELEM: ld = new FSLogElemData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_RIGID: ld = new FSLogRigidData(nlist); break;
+	case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(nlist); break;
+	}
+
+	assert(ld);
+	if (ld)
+	{
+		ld->SetDataString(data.toStdString());
+		m_prj.GetLogDataSettings().AddLogData(ld);
+	}
 
 	// add it to the list
-	m_prj.GetLogDataSettings().AddLogData(ld);
 	UpdateLogTable();
 }
 
@@ -834,7 +846,7 @@ void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
 	{
 		FSLogData& ld = log.LogData(n);
 		QString t = item->text();
-		ld.fileName = t.toStdString();
+		ld.SetFileName(t.toStdString());
 	}
 }
 

@@ -31,8 +31,7 @@ SOFTWARE.*/
 #include <ImageLib/ImageSITK.h>
 #include <ImageLib/ImageFilter.h>
 #include "GLImageRenderer.h"
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
 #include <assert.h>
 
@@ -335,7 +334,7 @@ void CImageModel::Load(IArchive& ar)
     ApplyFilters();
 
     // Create Volume Renderer
-    auto vr = new Post::CVolumeRender2(this);
+    auto vr = new Post::CVolumeRenderer(this);
     vr->Create();
     m_render.Add(vr);
 }

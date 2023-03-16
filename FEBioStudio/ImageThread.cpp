@@ -33,59 +33,89 @@ SOFTWARE.*/
 #include "ImageThread.h"
 #include <PostLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
-
-CImageThread::CImageThread(Post::CImageModel* imgModel)
-    : m_imgModel(imgModel), m_error("")
-{
-
-}
+#include <PostLib/ImageSource.h>
 
 //--------------------------------------------------------------------
-
-CImageReadThread::CImageReadThread(Post::CImageModel* imgModel)
-    : CImageThread(imgModel)
+CImageReadThread::CImageReadThread(Post::CImageModel* imgModel) : m_imgModel(imgModel)
 {
 
 }
     
 void CImageReadThread::run()
 {
-    m_success = true;
+	emit taskChanged("Reading Image Data...");
 
-    emit newStatus("Reading Image Data...");
+	bool success = true;
+	try
+	{
+		Post::CImageSource* src = m_imgModel->GetImageSource();
+		if (src)
+		{
+			success = src->Load();
+			if (success == false) SetErrorString(QString::fromStdString(src->getErrorString()));
+		}
+		else 
+		{
+			success = false;
+			SetErrorString("Failed importing image data.");
+		}
+	}
+	catch(std::runtime_error& e)
+	{
+		success = false;
+		SetErrorString(e.what());
+	}
 
-    try
-    {
-        if(!m_imgModel->Load())
-        {
-            m_success = false;
-            m_error = "Failed importing image data.";
-        }
-    }
-    catch(std::runtime_error& e)
-    {
-        m_success = false;
-        m_error = e.what();
-    }
+	emit resultReady(success);
+}
+
+bool CImageReadThread::hasProgress()
+{
+	if (m_imgModel == nullptr) return false;
+	Post::CImageSource* src = m_imgModel->GetImageSource();
+	if (src) return (src->GetProgress().valid);
+	else return false;
+}
+
+double CImageReadThread::progress()
+{
+	if (m_imgModel == nullptr) return 0;
+	Post::CImageSource* src = m_imgModel->GetImageSource();
+	if (src) return src->GetProgress().percent;
+	return 0.0;
+}
+
+const char* CImageReadThread::currentTask()
+{
+	if (m_imgModel == nullptr) return "";
+	Post::CImageSource* src = m_imgModel->GetImageSource();
+	if (src) return src->GetProgress().task;
+	return "";
+}
+
+void CImageReadThread::stop()
+{
+	if (m_imgModel == nullptr) return;
+	Post::CImageSource* src = m_imgModel->GetImageSource();
+	if (src) src->Terminate();
 }
 
 //--------------------------------------------------------------------
 
-CImageFilterThread::CImageFilterThread(Post::CImageModel* imgModel)
-    : CImageThread(imgModel), m_canceled(false)
+CImageFilterThread::CImageFilterThread(Post::CImageModel* imgModel) : m_imgModel(imgModel)
 {
-
+	m_canceled = false;
 }
     
 void CImageFilterThread::run()
 {
-    m_success = true;
+    bool success = true;
 
     try
     {
         for(int index = 0; index < m_imgModel->ImageFilters(); index++)
         {
-            emit newStatus(QString("Applying %1...").arg(m_imgModel->GetImageFilter(index)->GetName().c_str()));
+            emit taskChanged(QString("Applying %1...").arg(m_imgModel->GetImageFilter(index)->GetName().c_str()));
 
             if(m_canceled)
             {
@@ -97,117 +127,19 @@ void CImageFilterThread::run()
 
         if(m_canceled)
         {
-            m_success = false;
-            return;
+            success = false;
         }
     }
     catch(std::exception& e)
     {
-        m_success = false;
-        m_error = e.what();
+        success = false;
+        SetErrorString(e.what());
     }
+
+	emit resultReady(success);
 }
 
-void CImageFilterThread::cancel()
+void CImageFilterThread::stop()
 {
     m_canceled = true;
-}
-
-
-class Ui::CDlgStartImageThread
-{
-public:
-    CImageThread*	m_thread;
-    bool            m_cancelable;
-
-public:
-	QLabel*			m_status;
-	QProgressBar*	m_progress;
-    QDialogButtonBox* m_box;
-
-public:
-    void setupUI(QDialog* parent, CImageThread* thread)
-    {
-        m_thread = thread;
-        m_cancelable = dynamic_cast<CImageFilterThread*>(thread) != nullptr;
-
-        QVBoxLayout* layout = new QVBoxLayout;
-
-        layout->addWidget(m_status = new QLabel(""));
-        
-        m_progress = new QProgressBar();
-        m_progress->setMinimum(0);
-        m_progress->setMaximum(0);
-        layout->addWidget(m_progress);
-
-        if(m_cancelable)
-        {
-            layout->addWidget(m_box = new QDialogButtonBox(QDialogButtonBox::Cancel));
-        }
-
-        parent->setLayout(layout);
-    }
-
-};
-
-
-CDlgStartImageThread::CDlgStartImageThread(CImageThread* thread, QWidget* parent)
-    : QDialog(parent), ui(new Ui::CDlgStartImageThread)
-{
-    ui->setupUI(this, thread);
-
-    connect(thread, &QThread::finished, this, &CDlgStartImageThread::threadFinished);
-    connect(thread, &CImageThread::newStatus, this, &CDlgStartImageThread::on_status_changed);
-
-    if(ui->m_cancelable)
-    {
-        connect(ui->m_box, &QDialogButtonBox::rejected, this, &CDlgStartImageThread::on_canceled);
-    }
-
-
-    thread->start();
-}
-
-void CDlgStartImageThread::threadFinished()
-{
-    ui->m_thread->deleteLater();
-
-    if(!ui->m_thread->getSuccess())
-    {
-        if(!QString(ui->m_thread->getError().c_str()).isEmpty())
-        {
-            QMessageBox::critical(this, "FEBio Studio", ui->m_thread->getError().c_str());
-        }
-
-        reject();
-        return;
-    }
-
-    accept();
-}
-
-void CDlgStartImageThread::on_canceled()
-{
-    dynamic_cast<CImageFilterThread*>(ui->m_thread)->cancel();
-
-    ui->m_status->setText("Canceling...");
-}
-
-void CDlgStartImageThread::on_status_changed(QString status)
-{
-    ui->m_status->setText(status);
-}
-
-void CDlgStartImageThread::closeEvent(QCloseEvent* ev)
-{
-    if(ui->m_cancelable)
-    {
-        on_canceled();
-    }
-    else
-    {
-        QMessageBox::critical(this, "FEBio Studio", "This operation cannot be canceled.");
-    }
-
-    ev->ignore();    
 }

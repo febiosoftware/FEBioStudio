@@ -633,14 +633,11 @@ void FEBioExport25::BuildNodeSetList(FSProject& prj)
 	for (int i = 0; i < ndata; ++i)
 	{
 		FSLogData& ld = logData.LogData(i);
-		if (ld.type == FSLogData::LD_NODE)
+		if (ld.Type() == FSLogData::LD_NODE)
 		{
-			// Find the node set
-			FEItemListBuilder* itemList = mdl.FindNamedSelection(ld.groupID);
-			if (itemList)
-			{
-				AddNodeSet(itemList->GetName(), itemList);
-			}
+			FSLogNodeData& nd = dynamic_cast<FSLogNodeData&>(ld);
+			FEItemListBuilder* pl = nd.GetItemList();
+			if (pl) AddNodeSet(pl->GetName(), pl);
 		}
 	}
 
@@ -652,7 +649,7 @@ void FEBioExport25::BuildNodeSetList(FSProject& prj)
 		FELogData& di = log.LogData(i);
 		if ((di.type == FELogData::LD_NODE) && (di.groupID != -1))
 		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
+			FEItemListBuilder* pg = model.FindNamedSelection(di.itemID);
 			if (pg)
 			{
 				AddNodeSet(pg->GetName(), pg);
@@ -671,13 +668,11 @@ void FEBioExport25::BuildElemSetList(FSProject& prj)
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
 		FSLogData& di = log.LogData(i);
-		if ((di.type == FSLogData::LD_ELEM) && (di.groupID != -1))
+		if (di.Type() == FSLogData::LD_ELEM)
 		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
-			if (pg)
-			{
-				AddElemSet(pg->GetName(), pg);
-			}
+			FSLogElemData& ed = dynamic_cast<FSLogElemData&>(di);
+			FEItemListBuilder* pl = ed.GetItemList();
+			if (pl) AddNodeSet(pl->GetName(), pl);
 		}
 	}
 
@@ -692,15 +687,15 @@ void FEBioExport25::BuildElemSetList(FSProject& prj)
 			AddElemSet(pg->GetName(), pg);
 		}
 
-		// object level parts
+		// object level element sets
 		int objs = model.Objects();
 		for (int i = 0; i < objs; ++i)
 		{
 			GObject* po = model.Object(i);
-			int sets = po->FEParts();
+			int sets = po->FEElemSets();
 			for (int j = 0; j < sets; ++j)
 			{
-				FSPart* pg = po->GetFEPart(j);
+				FSElemSet* pg = po->GetFEElemSet(j);
 				AddElemSet(pg->GetName(), pg);
 			}
 		}
@@ -1748,7 +1743,7 @@ void FEBioExport25::WriteMaterial(FSMaterial* pm, XMLElement& el)
 		if (pm->Parameters()) WriteMaterialParams(pm, true);
 
 		// write the components
-		int NC = pm->Properties();
+		int NC = (int)pm->Properties();
 		for (int i=0; i<NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);
@@ -1903,7 +1898,7 @@ void FEBioExport25::WriteReactionMaterial(FSMaterial* pmat, XMLElement& el)
         if (pmat->Parameters()) WriteMaterialParams(pmat);
         
         // write the components
-        int NC = pmat->Properties();
+        int NC = (int)pmat->Properties();
         for (int i = 0; i<NC; ++i)
         {
             FSProperty& mc = pmat->GetProperty(i);
@@ -2937,7 +2932,7 @@ void FEBioExport25::WriteSurfaceDataSection()
 				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
 				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
 
-				tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
+				tag.add_attribute("surface", sd.GetSurface()->GetName().c_str());
 
 				m_xml.add_branch(tag);
 				{
@@ -2945,7 +2940,8 @@ void FEBioExport25::WriteSurfaceDataSection()
 					int n1 = el.add_attribute("lid", 0);
 
 					int nid = 1;
-					for (double d : *(sd.getData()))
+					std::vector<double> data = sd.GetData();
+					for (double d : data)
 					{
 						el.set_attribute(n1, nid++);
 						el.value(d);
@@ -3144,7 +3140,7 @@ void FEBioExport25::WriteMeshDataFields()
 			{
 				FEElementData& data = *elemData;
 
-				const FSPart* pg = data.GetPart();
+				const FSElemSet* pg = data.GetElementSet();
 
 				double scale = data.GetScaleFactor();
 
@@ -5087,20 +5083,21 @@ void FEBioExport25::WriteOutputSection()
 			for (int i=0; i<N; ++i)
 			{
 				FSLogData& d = log.LogData(i);
-				switch (d.type)
+				switch (d.Type())
 				{
 				case FSLogData::LD_NODE:
 					{
 						XMLElement e;
 						e.name("node_data");
-						e.add_attribute("data", d.sdata);
+						e.add_attribute("data", d.GetDataString());
 
-						if (d.fileName.empty() == false)
+						if (d.GetFileName().empty() == false)
 						{
-							e.add_attribute("file", d.fileName);
+							e.add_attribute("file", d.GetFileName());
 						}
 
-						FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+						FSLogNodeData& nd = dynamic_cast<FSLogNodeData&>(d);
+						FEItemListBuilder* pg = nd.GetItemList();
 						if (pg)
 						{
 							e.add_attribute("node_set", pg->GetName());
@@ -5112,14 +5109,15 @@ void FEBioExport25::WriteOutputSection()
 					{
 						XMLElement e;
 						e.name("element_data");
-						e.add_attribute("data", d.sdata);
+						e.add_attribute("data", d.GetDataString());
 
-						if (d.fileName.empty() == false)
+						if (d.GetFileName().empty() == false)
 						{
-							e.add_attribute("file", d.fileName);
+							e.add_attribute("file", d.GetFileName());
 						}
 
-						FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+						FSLogElemData& ed = dynamic_cast<FSLogElemData&>(d);
+						FEItemListBuilder* pg = ed.GetItemList();
 						if (pg)
 						{
 							e.add_attribute("elem_set", pg->GetName());
@@ -5131,14 +5129,15 @@ void FEBioExport25::WriteOutputSection()
 					{
 						XMLElement e;
 						e.name("rigid_body_data");
-						e.add_attribute("data", d.sdata);
+						e.add_attribute("data", d.GetDataString());
 
-						if (d.fileName.empty() == false)
+						if (d.GetFileName().empty() == false)
 						{
-							e.add_attribute("file", d.fileName);
+							e.add_attribute("file", d.GetFileName());
 						}
 
-						GMaterial* pm = fem.GetMaterialFromID(d.matID);
+						FSLogRigidData& rd = dynamic_cast<FSLogRigidData&>(d);
+						GMaterial* pm = fem.GetMaterialFromID(rd.GetMatID());
 						if (pm) 
 						{
 							e.value(pm->m_ntag);
@@ -5151,17 +5150,18 @@ void FEBioExport25::WriteOutputSection()
                     {
                         XMLElement e;
                         e.name("rigid_connector_data");
-                        e.add_attribute("data", d.sdata);
+                        e.add_attribute("data", d.GetDataString());
 
-						if (d.fileName.empty() == false)
+						if (d.GetFileName().empty() == false)
 						{
-							e.add_attribute("file", d.fileName);
+							e.add_attribute("file", d.GetFileName());
 						}
 
-                        FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
+						FSLogConnectorData& cd = dynamic_cast<FSLogConnectorData&>(d);
+						FSRigidConnector* rc = fem.GetRigidConnectorFromID(cd.GetConnectorID());
                         if (rc)
                         {
-                            e.value(d.rcID);
+                            e.value(cd.GetConnectorID());
                             m_xml.add_leaf(e);
                         }
                         else m_xml.add_empty(e);

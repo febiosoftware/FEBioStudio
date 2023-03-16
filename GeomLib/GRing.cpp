@@ -114,7 +114,5 @@ bool GRing::Update(bool b)
 	m_Node[6]->LocalPosition() = vec3d(-R0,  0, 0);
 	m_Node[7]->LocalPosition() = vec3d( 0, -R0, 0);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }

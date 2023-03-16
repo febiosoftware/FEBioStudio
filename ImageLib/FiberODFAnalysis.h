@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 #include "ImageAnalysis.h"
 #include <SimpleITK.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <GLLib/GLMeshRender.h>
 #include <FECore/vec3d.h>
 #include <GLWLib/GLWidget.h>
@@ -46,8 +46,8 @@ public:
 	std::vector<double> m_odf;
 	std::vector<double> m_sphHarmonics;
 	vec3d m_position;
-	GLMesh m_mesh;
-	GLMesh m_remesh;
+	GMesh m_mesh;
+	GMesh m_remesh;
 	double m_radius;
 
 	vector<double>	newODF;

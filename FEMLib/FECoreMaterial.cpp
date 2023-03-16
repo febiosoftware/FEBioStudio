@@ -940,3 +940,21 @@ void FEBioMaterialProperty::Load(IArchive& ar)
 	// We call this to make sure that the FEBio class has the same parameters
 	UpdateData(true);
 }
+
+bool FEBioMaterialProperty::HasFibers()
+{
+	return (FindProperty("fiber") != nullptr);
+}
+
+vec3d FEBioMaterialProperty::GetFiber(FEElementRef& el)
+{
+	vec3d v(0, 0, 0);
+	FSProperty* pm = FindProperty("fiber");
+	FSVec3dValuator* fiber = dynamic_cast<FSVec3dValuator*>(pm->GetComponent());
+	if (fiber)
+	{
+		// evaluate the fiber direction
+		v = fiber->GetFiberVector(el);
+	}
+	return v;
+}

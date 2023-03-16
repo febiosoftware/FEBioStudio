@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <list>
 #include <stack>
 #include <sstream>
@@ -163,9 +163,7 @@ bool GMeshObject::Update(bool b)
 	UpdateNodes();
 	UpdateEdges();
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update(b);
 }
 
 //-----------------------------------------------------------------------------
@@ -588,6 +586,7 @@ void GMeshObject::UpdateNodes()
 		{
 			node.m_gid = tag[node.m_gid];
 			GNode* pn = m_Node[node.m_gid];
+			pn->SetNodeIndex(i);
 			pn->LocalPosition() = node.r;
 			node.SetRequired(pn->IsRequired());
 		}
@@ -674,7 +673,7 @@ FSMesh* GMeshObject::BuildMesh()
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GLMesh* gmesh = new GLMesh();
+	GMesh* gmesh = new GMesh();
 
 	// we'll extract the data from the FE mesh
 	FSMesh* pm = GetFEMesh();
@@ -1207,7 +1206,7 @@ void GMeshObject::Load(IArchive& ar)
 	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
 	UpdateEdges(); // we need to call this since the edge nodes are not stored
 	UpdateNodes(); // we need to call this because the GNode::m_fenode is not stored
-	BuildGMesh();
+	GObject::Update(false);
 }
 
 //-----------------------------------------------------------------------------

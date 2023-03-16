@@ -32,11 +32,12 @@ struct FSTaskProgress
 	bool		cancelled;
 	double		percent;
 	const char*	task;
+	bool		canceled;
 
 	FSTaskProgress()
 	{
 		valid = false;
-		cancelled = false;
+		canceled = false;
 		percent = 0.0;
 		task = "";
 	}
@@ -69,6 +70,11 @@ public:
 	// The thread is about to be terminated
 	virtual void Terminate();
 
+	// see if the task was canceled? 
+	virtual bool IsCanceled() const;
+
+	std::string getErrorString() const;
+
 	void SetTaskLogger(TaskLogger* logger);
 
 	void Log(const char* sz, ...);
@@ -83,9 +89,12 @@ protected:
 	// set task, and optionally, set progress in percent (value between 0 and 100)
 	void setCurrentTask(const char* sz, double progress = 0.0);
 
-	bool IsCancelled() const;
+	void setErrorString(const std::string& s);
+
+	bool error(const std::string& s);
 
 private:
 	FSTaskProgress m_progress;
+	std::string	m_error;
 	TaskLogger* m_log;
 };

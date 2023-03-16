@@ -860,7 +860,8 @@ int GModel::CountNamedSelections() const
 		nsel += obj->FENodeSets();
 		nsel += obj->FESurfaces();
 		nsel += obj->FEEdgeSets();
-		nsel += obj->FEParts();
+		nsel += obj->FEElemSets();
+		nsel += obj->FEPartSets();
 	}
 
 	return nsel;
@@ -911,10 +912,10 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 		GObject* po = Object(n);
 		FSMesh* pm = po->GetFEMesh();
 
-		N = po->FEParts();
+		N = po->FEElemSets();
 		for (i = 0; i<N; ++i)
 		{
-			pg = po->GetFEPart(i);
+			pg = po->GetFEElemSet(i);
 			if (pg->GetID() == nid) return pg;
 		}
 
@@ -937,38 +938,47 @@ FEItemListBuilder* GModel::FindNamedSelection(int nid)
 }
 
 //-----------------------------------------------------------------------------
-FEItemListBuilder* GModel::FindNamedSelection(const std::string& name)
+FEItemListBuilder* GModel::FindNamedSelection(const std::string& name, unsigned int filter)
 {
-	int i, N;
-	FEItemListBuilder* pg = 0;
-
-	// search the GGroups
-	N = PartLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
 	{
-		pg = PartList(i);
-		if (pg->GetName() == name) return pg;
+		// search the GGroups
+		int N = PartLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = PartList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
-	N = FaceLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_FACE_FLAG)
 	{
-		pg = FaceList(i);
-		if (pg->GetName() == name) return pg;
+		int N = FaceLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = FaceList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
-	N = EdgeLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_EDGE_FLAG)
 	{
-		pg = EdgeList(i);
-		if (pg->GetName() == name) return pg;
+		int N = EdgeLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = EdgeList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
-	N = NodeLists();
-	for (i = 0; i<N; ++i)
+	if (filter & MESH_ITEM_FLAGS::FE_NODE_FLAG)
 	{
-		pg = NodeList(i);
-		if (pg->GetName() == name) return pg;
+		int N = NodeLists();
+		for (int i = 0; i < N; ++i)
+		{
+			FEItemListBuilder* pg = NodeList(i);
+			if (pg->GetName() == name) return pg;
+		}
 	}
 
 	// search all objects
@@ -977,25 +987,44 @@ FEItemListBuilder* GModel::FindNamedSelection(const std::string& name)
 		GObject* po = Object(n);
 		FSMesh* pm = po->GetFEMesh();
 
-		N = po->FEParts();
-		for (i = 0; i<N; ++i)
+		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
 		{
-			pg = po->GetFEPart(i);
-			if (pg->GetName() == name) return pg;
+			int N = po->FEElemSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEElemSet(i);
+				if (pg->GetName() == name) return pg;
+			}
 		}
 
-		N = po->FESurfaces();
-		for (i = 0; i<N; ++i)
+		if (filter & MESH_ITEM_FLAGS::FE_FACE_FLAG)
 		{
-			pg = po->GetFESurface(i);
-			if (pg->GetName() == name) return pg;
+			int N = po->FESurfaces();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFESurface(i);
+				if (pg->GetName() == name) return pg;
+			}
 		}
 
-		N = po->FENodeSets();
-		for (i = 0; i<N; ++i)
+		if (filter & MESH_ITEM_FLAGS::FE_EDGE_FLAG)
 		{
-			pg = po->GetFENodeSet(i);
-			if (pg->GetName() == name) return pg;
+			int N = po->FEEdgeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
+				if (pg->GetName() == name) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_NODE_FLAG)
+		{
+			int N = po->FENodeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				if (pg->GetName() == name) return pg;
+			}
 		}
 	}
 
@@ -1051,9 +1080,9 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 
 		if (ntype == DOMAIN_PART)
 		{
-			for (int i = 0; i<po->FEParts(); ++i)
+			for (int i = 0; i<po->FEElemSets(); ++i)
 			{
-				FEItemListBuilder* pg = po->GetFEPart(i);
+				FEItemListBuilder* pg = po->GetFEElemSet(i);
 				list.push_back(pg);
 			}
 		}
@@ -1078,6 +1107,27 @@ vector<FEItemListBuilder*> GModel::AllNamedSelections(int ntype)
 	}
 
 	return list;
+}
+
+//-----------------------------------------------------------------------------
+void GModel::AddNamedSelection(FEItemListBuilder* itemList)
+{
+	if      (dynamic_cast<GNodeList*>(itemList)) AddNodeList(dynamic_cast<GNodeList*>(itemList));
+	else if (dynamic_cast<GEdgeList*>(itemList)) AddEdgeList(dynamic_cast<GEdgeList*>(itemList));
+	else if (dynamic_cast<GFaceList*>(itemList)) AddFaceList(dynamic_cast<GFaceList*>(itemList));
+	else if (dynamic_cast<GPartList*>(itemList)) AddPartList(dynamic_cast<GPartList*>(itemList));
+	else if (dynamic_cast<FSGroup*>(itemList))
+	{
+		FSGroup* pg = dynamic_cast<FSGroup*>(itemList);
+		GObject* po = pg->GetGObject(); assert(pg);
+		if (po)
+		{
+			if (dynamic_cast<FSNodeSet*>(pg)) po->AddFENodeSet(dynamic_cast<FSNodeSet*>(pg));
+			if (dynamic_cast<FSEdgeSet*>(pg)) po->AddFEEdgeSet(dynamic_cast<FSEdgeSet*>(pg));
+			if (dynamic_cast<FSSurface*>(pg)) po->AddFESurface(dynamic_cast<FSSurface*>(pg));
+			if (dynamic_cast<FSElemSet*>(pg)) po->AddFEElemSet(dynamic_cast<FSElemSet*>(pg));
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1284,28 +1334,28 @@ void GModel::Load(IArchive &ar)
                 break;
             case CID_OBJ_GPARTGROUP:
                 {
-                    GPartList* pg = new GPartList(imp->m_ps);
+                    GPartList* pg = new GPartList(this);
                     pg->Load(ar);
                     AddPartList(pg);
                 }
                 break;
             case CID_OBJ_GFACEGROUP:
                 {
-                    GFaceList* pg = new GFaceList(imp->m_ps);
+                    GFaceList* pg = new GFaceList(this);
                     pg->Load(ar);
                     AddFaceList(pg);
                 }
                 break;
             case CID_OBJ_GEDGEGROUP:
                 {
-                    GEdgeList* pg = new GEdgeList(imp->m_ps);
+                    GEdgeList* pg = new GEdgeList(this);
                     pg->Load(ar);
                     AddEdgeList(pg);
                 }
                 break;
             case CID_OBJ_GNODEGROUP:
                 {
-                    GNodeList* pg = new GNodeList(imp->m_ps);
+                    GNodeList* pg = new GNodeList(this);
                     pg->Load(ar);
                     AddNodeList(pg);
                 }

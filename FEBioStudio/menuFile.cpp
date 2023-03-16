@@ -102,6 +102,7 @@ SOFTWARE.*/
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
 #include <PostLib/ImageSource.h>
+#include <PostLib/DICOMImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/AbaqusExport.h>
 #include <GeomLib/GModel.h>
@@ -121,8 +122,7 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/TiffReader.h>
 #include <sstream>
 #include "PostObject.h"
@@ -1594,7 +1594,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
             imageModel = new Post::CImageModel(nullptr);
             imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
 
-            if(!doc->ImportImage(imageModel))
+            if(!ImportImage(imageModel))
             {
                 delete imageModel;
                 imageModel = nullptr;
@@ -1610,8 +1610,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 			// only for model docs
 			if (dynamic_cast<CModelDocument*>(doc))
 			{
-//				Post::CVolRender* vr = new Post::CVolRender(imageModel);
-				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 				vr->Create();
 				imageModel->AddImageRenderer(vr);
 
@@ -1626,6 +1625,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 		}
 	}
 }
+
 void CMainWindow::on_actionImportDICOMImage_triggered()
 {
     CGLDocument* doc = GetGLDocument();
@@ -1670,18 +1670,23 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 	{
 //		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
 
+		std::string fileName = filedlg.selectedFiles()[0].toStdString();
+
 		// we pass the relative path to the image model
-		string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
+		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
 
 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
 
-		if (!doc->ImportImage(imageModel))
+		if (!ImportImage(imageModel))
 		{
 			delete imageModel;
 			imageModel = nullptr;
 			return;
 		}
+
+		// take the name from the source
+		imageModel->SetName(FSDir::fileName(fileName));
 
 		Update(0, true);
 		ZoomTo(imageModel->GetBoundingBox());
@@ -1689,7 +1694,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 		// only for model docs
 		if (dynamic_cast<CModelDocument*>(doc))
 		{
-			Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 			vr->Create();
 			imageModel->AddImageRenderer(vr);
 
@@ -1777,7 +1782,7 @@ void CMainWindow::on_actionImportImageSequence_triggered()
         Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
         imageModel->SetImageSource(new Post::CITKSeriesImageSource(imageModel, stdFiles));
 
-        if(!doc->ImportImage(imageModel))
+        if(!ImportImage(imageModel))
         {
             delete imageModel;
             imageModel = nullptr;
@@ -1791,7 +1796,7 @@ void CMainWindow::on_actionImportImageSequence_triggered()
             // only for model docs
             if (dynamic_cast<CModelDocument*>(doc))
             {
-                Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+                Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
                 vr->Create();
                 imageModel->AddImageRenderer(vr);
 

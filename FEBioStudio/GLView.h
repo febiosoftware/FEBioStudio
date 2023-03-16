@@ -33,11 +33,10 @@ SOFTWARE.*/
 #include "GTriad.h"
 #include "GGrid.h"
 #include <MeshLib/Intersect.h>
-#include <GLLib/GLMeshRender.h>
 #include <GLWLib/GLWidgetManager.h>
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 
 class CMainWindow;
 class CGLDocument;
@@ -82,6 +81,12 @@ enum Snap_Mode
 {
 	SNAP_NONE,
 	SNAP_GRID
+};
+
+enum Planecut_Mode
+{
+	PLANECUT,
+	HIDE_ELEMENTS
 };
 
 //-----------------------------------------------------------------------------
@@ -227,7 +232,7 @@ public:
 	}
 
 	// --- view settings ---
-	VIEW_SETTINGS& GetViewSettings() { return m_view; }
+	GLViewSettings& GetViewSettings() { return m_view; }
 
 	void ShowMeshData(bool b);
 
@@ -238,6 +243,8 @@ public:
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
 
 	std::string GetOGLVersionString();
+
+	void ToggleFPS();
 
 protected:
 	void mousePressEvent  (QMouseEvent* ev);
@@ -266,7 +273,7 @@ public:
 	void ZoomExtents(bool banimate = true);
 
 	// prep the GL view for rendering
-	void PrepModel();
+	void PrepScene();
 
 	// setup the projection matrix
 	void SetupProjection();
@@ -312,8 +319,6 @@ public:
 
 	bool GetPivotMode() { return m_bpivot; }
 	void SetPivotMode(bool b) { m_bpivot = b; }
-
-	GLMeshRender& GetMeshRenderer() { return m_renderer; }
 
 	void changeViewMode(View_Mode vm);
 
@@ -373,7 +378,7 @@ public:
 	void UpdatePlaneCut(bool breset = false);
 
 private:
-	GLMesh* BuildPlaneCut(FSModel& fem);
+	GMesh* BuildPlaneCut(FSModel& fem);
 
 public:
 	void SetColorMap(Post::CColorMap& map);
@@ -389,7 +394,7 @@ public:
 
 	bool ShowPlaneCut();
 
-	GLMesh* PlaneCutMesh();
+	GMesh* PlaneCutMesh();
 
 	int PlaneCutMode();
 
@@ -403,7 +408,6 @@ protected slots:
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window
-	GLMeshRender	m_renderer; // the renderer for this view
 
 	CBasicCmdManager m_Cmd;	// view command history
 
@@ -415,6 +419,8 @@ protected:
 	int			m_dxp, m_dyp;
 	View_Mode	m_nview;
 	Snap_Mode	m_nsnap;
+
+	bool	m_showFPS;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;
@@ -481,7 +487,7 @@ public:
 	CGLContext	m_rc;
 
 private:
-	VIEW_SETTINGS	m_view;
+	GLViewSettings	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
 
 	CGLCamera	m_oldCam;
@@ -491,11 +497,10 @@ private:
 	bool		m_showPlaneCut;
 	int			m_planeCutMode;
 	double		m_plane[4];
-	GLMesh*		m_planeCut;
+	GMesh*		m_planeCut;
 
 	std::string		m_oglVersionString;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);
-void RenderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
 void SetModelView(GObject* po);

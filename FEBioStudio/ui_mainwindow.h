@@ -693,6 +693,8 @@ public:
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
 		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S | Qt::AltModifier);
 
+		QAction* actionToggleFPS = addAction("Toggle FPS", "actionToggleFPS"); actionToggleFPS->setShortcut(Qt::Key_F12 | Qt::ControlModifier);
+
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
@@ -993,6 +995,7 @@ public:
 		menuView->addAction(actionTrack);
 		menuView->addAction(actionToggleLight);
 		menuView->addAction(actionToggleConnected);
+		menuView->addAction(actionToggleFPS);
 		menuView->addSeparator();
 
 		menuViews = menuView->addMenu("Standard views");
@@ -1227,7 +1230,7 @@ public:
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
 
-        QDockWidget* dock9 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+        QDockWidget* dock9 = new QDockWidget("Image Settings", m_wnd); dock8->setObjectName("dockImageSettings");
 		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
 		dock9->setWidget(imageSettingsPanel);
 		menuWindows->addAction(dock9->toggleViewAction());

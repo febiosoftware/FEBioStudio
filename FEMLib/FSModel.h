@@ -83,6 +83,10 @@ public:
 	// reset model data
 	void New();
 
+	// count the mesh data fields (includes mesh data fields stored on the mesh 
+	// and the mesh data generators)
+	int CountMeshDataFields();
+
 	// return the model geometry
 	GModel& GetModel() { return *m_pModel; }
 

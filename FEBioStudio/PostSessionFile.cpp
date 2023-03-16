@@ -447,9 +447,9 @@ bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 	GObject* po = m_doc->GetActiveObject();
 	if (po)
 	{
-		FSPart* pg = new FSPart(po, elemList);
+		FSElemSet* pg = new FSElemSet(po, elemList);
 		pg->SetName(szname);
-		po->AddFEPart(pg);
+		po->AddFEElemSet(pg);
 	}
 
 	return true;
@@ -762,8 +762,8 @@ void PostSessionFileWriter::WriteMeshSelections()
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)
@@ -784,8 +784,8 @@ void PostSessionFileWriter::WriteMeshSelections()
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)
@@ -806,8 +806,8 @@ void PostSessionFileWriter::WriteMeshSelections()
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)
@@ -820,16 +820,16 @@ void PostSessionFileWriter::WriteMeshSelections()
 			xml.close_branch();
 		}
 
-		for (int i = 0; i < po->FEParts(); ++i)
-		{
-			FSPart* pg = po->GetFEPart(i);
+			for (int i = 0; i < po->FEElemSets(); ++i)
+			{
+				FSElemSet* pg = po->GetFEElemSet(i);
 
 			XMLElement el("mesh:elementset");
 			el.add_attribute("name", pg->GetName());
 			xml.add_branch(el);
 			{
-				std::list<int> items = pg->CopyItems();
-				std::list<int>::iterator it = items.begin();
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
 				int N = items.size();
 				int l[16];
 				for (int n = 0; n < N; n += 16)

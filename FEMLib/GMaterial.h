@@ -38,7 +38,7 @@ class GPartList;
 // This class defines a material. It stores the material properties (as a 
 // FSMaterial class), the material name and other attributes, mostly used for rendering
 //
-class GMaterial : public FSObject, public IHasItemList
+class GMaterial : public FSObject, public IHasItemLists
 {
 public:
 	enum {MAX_COLORS = 16};
@@ -80,12 +80,15 @@ public:
 	void Specular(GLColor c) { m_specular = c; }
 	void AmbientDiffuse(GLColor c) { m_ambient = m_diffuse = c; }
 
+	vec3d GetPosition() const { return m_pos; }
+
 public:	// IHasItemList
-	FEItemListBuilder* GetItemList() override;
+	int ItemLists() const override { return 1; }
+	FEItemListBuilder* GetItemList(int n = 0) override;
 	virtual unsigned int GetMeshItemType() const override;
 
 private:
-	void SetItemList(FEItemListBuilder* pi) override;
+	void SetItemList(FEItemListBuilder* pi, int n = 0) override;
 	virtual void SetMeshItemType(unsigned int meshItem){};
 
 public:
@@ -99,6 +102,7 @@ public:
 	int			m_nrender;		// rendering mode
 
 	int		m_ntag;	// used for I/O
+	vec3d	m_pos;	// location where glyph will be rendered (e.g. for rigid bodies)
 
 protected:
 	GLColor		m_diffuse;	// diffuse color of material

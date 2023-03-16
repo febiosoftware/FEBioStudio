@@ -30,37 +30,12 @@ SOFTWARE.*/
 #include <QProgressBar>
 #include <QBoxLayout>
 #include <QPushButton>
+#include <QMessageBox>
 #include <QFormLayout>
 #include <QTimer>
 #include <chrono>
 using namespace std::chrono;
 using dseconds = duration<double>;
-
-//=======================================================================================
-CustomThread::CustomThread()
-{
-
-}
-
-bool CustomThread::hasProgress()
-{
-	return false;
-}
-
-double CustomThread::progress()
-{
-	return 0.0;
-}
-
-const char* CustomThread::currentTask()
-{
-	return "";
-}
-
-void CustomThread::stop()
-{
-
-}
 
 //=======================================================================================
 class CDlgStartThreadUI
@@ -70,7 +45,7 @@ public:
 	bool			m_bdone;
 	bool			m_cancelled;
 	bool			m_breturn;
-	const char*		m_szcurrentTask;
+	QString			m_currentTask;
 
 public:
 	QLabel*			m_task;
@@ -88,7 +63,6 @@ public:
 		m_breturn = false;
 		m_thread = nullptr;
 		m_cancelled = false;
-		m_szcurrentTask = 0;
 	}
 
 	void setup(QDialog* dlg)
@@ -129,6 +103,7 @@ CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QD
 
 	setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 	QObject::connect(ui->m_thread, SIGNAL(resultReady(bool)), this, SLOT(threadFinished(bool)));
+	QObject::connect(ui->m_thread, SIGNAL(taskChanged(QString)), ui->m_task, SLOT(setText(QString)));
 	QObject::connect(ui->m_thread, SIGNAL(writeLog(QString)), parent, SLOT(AddLogEntry(QString)));
 
 	ui->m_start = steady_clock::now();
@@ -187,12 +162,15 @@ void CDlgStartThread::checkProgress()
 
 	if (ui->m_bdone)
 	{
-		if (ui->m_cancelled)
+		if (ui->m_breturn == false)
 		{
-			ui->m_breturn = false;
-			reject();
+			QString err = ui->m_thread->GetErrorString();
+			QMessageBox::critical(this, "Error", err);
 		}
-		else accept();
+		ui->m_thread->deleteLater();
+
+		if (ui->m_cancelled) ui->m_breturn = false;
+		if (ui->m_breturn) accept(); else reject();
 	}
 	else if (ui->m_cancelled == false)
 	{
@@ -202,11 +180,13 @@ void CDlgStartThread::checkProgress()
 			double p = ui->m_thread->progress();
 			ui->m_progress->setValue((int)p);
 
+			// NOTE: There could be a race condition here. What
+			//       if the task string is being updated while we get here? 
 			const char* sztask = ui->m_thread->currentTask();
-			if (sztask && (sztask != ui->m_szcurrentTask))
+			if (sztask)
 			{
-				ui->m_szcurrentTask = sztask;
-				ui->m_task->setText(ui->m_szcurrentTask);
+				ui->m_currentTask = QString(sztask);
+				ui->m_task->setText(ui->m_currentTask);
 			}
 
 			double f = p / 100.0;
@@ -223,10 +203,8 @@ void CDlgStartThread::checkProgress()
 
 void CDlgStartThread::threadFinished(bool b)
 {
-	ui->m_bdone = true;
 	ui->m_breturn = b;
-	ui->m_thread->deleteLater();
-	checkProgress();
+	ui->m_bdone = true;
 }
 
 bool CDlgStartThread::GetReturnCode()

@@ -40,7 +40,7 @@ FSTaskProgress FSThreadedTask::GetProgress()
 void FSThreadedTask::Terminate()
 {
 	m_progress.valid = false;
-	m_progress.cancelled = true;
+	m_progress.canceled = true;
 }
 
 void FSThreadedTask::SetTaskLogger(TaskLogger* logger)
@@ -79,6 +79,11 @@ void FSThreadedTask::Log(const char* sz, ...)
 	delete [] szlog;
 }
 
+bool FSThreadedTask::IsCanceled() const
+{
+	return m_progress.canceled;
+}
+
 void FSThreadedTask::setProgress(double progress)
 {
 	if (progress < 0.0) progress = 0.0;
@@ -102,7 +107,18 @@ void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 	Log("%s\n", sz);
 }
 
-bool FSThreadedTask::IsCancelled() const
+void FSThreadedTask::setErrorString(const std::string& s)
 {
-	return m_progress.cancelled;
+	m_error = s;
+}
+
+bool FSThreadedTask::error(const std::string& s)
+{
+	setErrorString(s);
+	return false;
+}
+
+std::string FSThreadedTask::getErrorString() const
+{
+	return m_error;
 }

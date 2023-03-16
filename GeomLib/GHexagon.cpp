@@ -50,9 +50,7 @@ bool GHexagon::Update(bool b)
 		m_Node[i + 6]->LocalPosition() = vec3d(x, y, H);
 	}
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 void GHexagon::Create()

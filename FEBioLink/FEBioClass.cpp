@@ -1465,7 +1465,7 @@ FSModelComponent* FEBio::CloneModelComponent(FSModelComponent* pmc, FSModel* fem
 			FSModelComponent* pmj = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
 			FSModelComponent* pdj = nullptr;
 			if (pmj) pdj = CloneModelComponent(pmj, fem);
-			pp->AddComponent(pmj);
+			pp->AddComponent(pdj);
 		}
 	}
 

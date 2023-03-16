@@ -444,6 +444,13 @@ void FSConcentrationFlux::SetSoluteID(int n)
 	SetIntValue(SOL_ID, n);
 }
 
+//-----------------------------------------------------------------------------
+FSFluidSolutesNaturalFlux::FSFluidSolutesNaturalFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_FLUID_SOLUTES_NATURAL_FLUX, ps, pi, nstep)
+{
+    SetTypeString("solute natural flux");
+    AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)");
+}
+
 //=======================================================================================
 FEBioSurfaceLoad::FEBioSurfaceLoad(FSModel* ps) : FSSurfaceLoad(FE_FEBIO_SURFACE_LOAD, ps)
 {

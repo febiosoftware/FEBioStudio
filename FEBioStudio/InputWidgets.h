@@ -171,8 +171,6 @@ public:
 
 		setLayout(layout);
 
-		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
-
 		connect(box, &QDoubleSpinBox::valueChanged, this, &CDoubleSlider::boxValueChanged);
 		connect(slider, &QSlider::valueChanged, this, &CDoubleSlider::sliderValueChanged);
 	}

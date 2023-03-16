@@ -368,6 +368,21 @@ void CMeshPanel::on_apply_clicked(bool b)
 	FEMesher* mesher = activeObject->GetFEMesher();
 	if (mesher == 0) return;
 
+	// check if the current mesh has any dependencies
+	if (activeObject->GetFEMesh())
+	{
+		GObject* o = activeObject;
+		int n = o->FENodeSets() + o->FEEdgeSets() + o->FESurfaces() + o->FEElemSets();
+		if (n > 0)
+		{
+			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
+			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+	}
+
 	MeshingThread* thread = new MeshingThread(activeObject);
 	CDlgStartThread dlg(GetMainWindow(), thread);
 	if (dlg.exec())
@@ -402,6 +417,21 @@ void CMeshPanel::on_apply2_clicked(bool b)
 
 	// make sure we have a modifier
 	if (m_mod == 0) return;
+
+	// check if the current mesh has any dependencies
+	if (activeObject->GetFEMesh())
+	{
+		GObject* o = activeObject;
+		int n = o->FENodeSets() + o->FEEdgeSets() + o->FESurfaces() + o->FEElemSets();
+		if (n > 0)
+		{
+			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
+			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+	}
 
 	FESelection* sel = doc->GetCurrentSelection();
 	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);

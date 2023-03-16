@@ -29,6 +29,9 @@ SOFTWARE.*/
 #include <vector>
 #include <FSCore/math3d.h>
 #include <FSCore/color.h>
+#include <GLLib/GLMesh.h>
+
+class FSMesh;
 
 namespace Post {
 
@@ -65,7 +68,7 @@ protected:
 
 class CMarchingCubes : public CGLImageRenderer
 {
-	enum { ISO_VALUE, SMOOTH, COLOR, CLOSE_SURFACE, INVERT_SPACE, CLIP };
+	enum { ISO_VALUE, SMOOTH, CLOSE_SURFACE, INVERT_SPACE, CLIP, COLOR, SPECULAR_COLOR, SHININESS };
 
 public:
 	CMarchingCubes(CImageModel* img);
@@ -94,19 +97,25 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	bool GetMesh(FSMesh& mesh);
+
 private:
-	void AddSurfaceTris(Byte val[4], vec3f r[4], const vec3f& faceNormal);
+	void AddSurfaceTris(TriMesh& mesh, Byte val[4], vec3f r[4], const vec3f& faceNormal);
 
 	void CreateSurface();
 
+	void ProcessImage();
+
 private:
-	float	m_val, m_oldVal;		// iso-surface value
+	double	m_val, m_oldVal;		// iso-surface value
 	bool	m_bsmooth;
 	bool	m_bcloseSurface;
 	bool	m_binvertSpace;
 	GLColor	m_col;
-	TriMesh	m_mesh;
-
+	GLColor	m_spc;
+	double	m_shininess;
 	Byte m_ref;
+
+	GLTriMesh	m_mesh;
 };
 }

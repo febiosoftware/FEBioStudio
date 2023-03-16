@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "FSGroup.h"
 #include <MeshTools/FESelection.h>
 
-class FSModel;
+class GModel;
 class GPartSelection;
 class GFaceSelection;
 class GEdgeSelection;
@@ -43,7 +43,7 @@ class GNodeSelection;
 class GGroup : public FEItemListBuilder
 {
 public:
-	GGroup(FSModel* ps, int ntype, unsigned int flags);
+	GGroup(GModel* ps, int ntype, unsigned int flags);
 	~GGroup(void);
 
 	FSNodeList*	BuildNodeList() override { return 0; }
@@ -52,7 +52,7 @@ public:
 	FEElemList*	BuildElemList() override { return 0; }
 
 protected:
-	FSModel*	m_ps;
+	GModel*	m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -60,8 +60,8 @@ protected:
 class GNodeList : public GGroup
 {
 public:
-	GNodeList(FSModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
-	GNodeList(FSModel* ps, GNodeSelection* pn);
+	GNodeList(GModel* ps) : GGroup(ps, GO_NODE, FE_NODE_FLAG){}
+	GNodeList(GModel* ps, GNodeSelection* pn);
 
 	vector<GNode*>	GetNodeList();
 
@@ -77,9 +77,9 @@ public:
 class GFaceList : public GGroup
 {
 public:
-	GFaceList(FSModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
-	GFaceList(FSModel* ps, GFaceSelection* pf);
-	GFaceList(FSModel* ps, GFace* pf);
+	GFaceList(GModel* ps) : GGroup(ps, GO_FACE, FE_NODE_FLAG | FE_FACE_FLAG){}
+	GFaceList(GModel* ps, GFaceSelection* pf);
+	GFaceList(GModel* ps, GFace* pf);
 
 	vector<GFace*>	GetFaceList();
 
@@ -96,8 +96,8 @@ public:
 class GEdgeList : public GGroup
 {
 public:
-	GEdgeList(FSModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
-	GEdgeList(FSModel* ps, GEdgeSelection* pe);
+	GEdgeList(GModel* ps) : GGroup(ps, GO_EDGE, FE_NODE_FLAG){}
+	GEdgeList(GModel* ps, GEdgeSelection* pe);
 
 	vector<GEdge*>	GetEdgeList();
 
@@ -117,8 +117,8 @@ public:
 class GPartList : public GGroup
 {
 public:
-	GPartList(FSModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG){}
-	GPartList(FSModel* ps, GPartSelection* pg);
+	GPartList(GModel* ps) : GGroup(ps, GO_PART, FE_NODE_FLAG | FE_FACE_FLAG | FE_ELEM_FLAG | FE_PART_FLAG){}
+	GPartList(GModel* ps, GPartSelection* pg);
 
 	void Create(GObject* po);
 
@@ -130,9 +130,7 @@ public:
 	FEElemList* BuildElemList() override;
 	FEFaceList*	BuildFaceList() override;
 
-	bool IsValid() const override;
+	FSPartSet* BuildPartSet();
 
-	static GPartList* CreateNew();
-	static void SetModel(FSModel* mdl);
-	static FSModel* m_model;
+	bool IsValid() const override;
 };

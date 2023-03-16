@@ -65,6 +65,10 @@ SOFTWARE.*/
 #include <PostLib/ImageSlicer.h>
 #include "ImageSliceView.h"
 #include <MeshTools/FEExtrudeFaces.h>
+#include "GLModelScene.h"
+#include <chrono>
+using namespace std::chrono;
+using dseconds = std::chrono::duration<double>;
 
 static bool initGlew = false;
 
@@ -314,71 +318,6 @@ bool FreeRegion::IsInside(int x, int y) const
 }
 
 //-----------------------------------------------------------------------------
-
-inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
-{
-	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);
-	glVertex3d(x, y, z); glVertex3d(x, y + dy, z);
-	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
-}
-
-void RenderBox(const BOX& bbox, bool partial, double scale)
-{
-	// push attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// set attributes
-	glEnable(GL_LINE_SMOOTH);
-	glDisable(GL_LIGHTING);
-
-	BOX box = bbox;
-	box.Scale(scale);
-
-	if (partial)
-	{
-		double dx = box.Width()*0.3;
-		double dy = box.Height()*0.3;
-		double dz = box.Depth()*0.3;
-		glBegin(GL_LINES);
-		{
-			render_triad(box.x0, box.y0, box.z0,  dx,  dy, dz);
-			render_triad(box.x1, box.y0, box.z0, -dx,  dy, dz);
-			render_triad(box.x1, box.y1, box.z0, -dx, -dy, dz);
-			render_triad(box.x0, box.y1, box.z0,  dx, -dy, dz);
-
-			render_triad(box.x0, box.y0, box.z1,  dx,  dy, -dz);
-			render_triad(box.x1, box.y0, box.z1, -dx,  dy, -dz);
-			render_triad(box.x1, box.y1, box.z1, -dx, -dy, -dz);
-			render_triad(box.x0, box.y1, box.z1,  dx, -dy, -dz);
-		}
-		glEnd();
-	}
-	else
-	{
-		glBegin(GL_LINES);
-		{
-			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
-			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
-			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
-			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
-
-			glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
-			glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
-			glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
-			glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
-
-			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
-			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
-			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
-			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
-		}
-		glEnd();
-	}
-
-	// restore attributes
-	glPopAttrib();
-}
-
 CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_pWnd(pwnd), m_Ttor(this), m_Rtor(this), m_Stor(this)
 {
 	QSurfaceFormat fmt = format();
@@ -392,6 +331,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_grid.SetView(this);
 
 	m_btrack = false;
+
+	m_showFPS = false;
 
 	Reset();
 
@@ -424,7 +365,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	setMouseTracking(true);
 
 	m_showPlaneCut = false;
-	m_planeCutMode = 0;
+	m_planeCutMode = Planecut_Mode::PLANECUT;
 	m_plane[0] = 1.0;
 	m_plane[1] = 0.0;
 	m_plane[2] = 0.0;
@@ -878,7 +819,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	int ntrans = pdoc->GetTransformMode();
 	int item = pdoc->GetItemMode();
@@ -1471,6 +1412,9 @@ void CGLView::repaintEvent()
 
 void CGLView::paintGL()
 {
+	time_point<steady_clock> startTime;
+	startTime = steady_clock::now();
+
 	// Get the current document
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr)
@@ -1480,22 +1424,20 @@ void CGLView::paintGL()
 		return;
 	}
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	int nitem = pdoc->GetItemMode();
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
 	CGLContext& rc = m_rc;
 	rc.m_view = this;
 	rc.m_cam = &cam;
-	rc.m_showOutline = view.m_bfeat;
-	rc.m_showMesh = view.m_bmesh;
-	rc.m_q = cam.GetOrientation();
-	rc.m_springThick = view.m_line_size;
+	rc.m_settings = view;
 
 	// prepare for rendering
-	PrepModel();
+	PrepScene();
 
 	// render the backgound
 	RenderBackground();
@@ -1643,6 +1585,25 @@ void CGLView::paintGL()
 		painter.end();
 	}
 
+	// stop time
+	time_point<steady_clock> stopTime;
+	stopTime = steady_clock::now();
+
+	double sec = duration_cast<dseconds>(stopTime - startTime).count();
+	if (m_showFPS)
+	{
+		QPainter painter(this);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		QTextOption to;
+		QFont font = painter.font();
+		font.setPointSize(12);
+		painter.setFont(font);
+		painter.setPen(QPen(Qt::red));
+		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
+		painter.drawText(rect(), QString("FPS: %1").arg(1.0 / sec), to);
+		painter.end();
+	}
+
 	// if the camera is animating, we need to redraw
 	if (cam.IsAnimating())
 	{
@@ -1731,13 +1692,11 @@ void CGLView::SetupProjection()
 	CGLCamera& cam = view.GetCamera();
 
 	double R = box.Radius();
-	VIEW_SETTINGS& vs = GetViewSettings();
+	GLViewSettings& vs = GetViewSettings();
 
-	// NOTE: For some reason the camera position is coming back with the opposite sign
-	//       so I need to add p and c, instead of subtract. Need to look into this closer. 
 	vec3d p = cam.GlobalPosition();
 	vec3d c = box.Center();
-	double L = (c + p).Length();
+	double L = (c - p).Length();
 
 	view.m_ffar = (L + R) * 2;
 	view.m_fnear = 0.01f*view.m_ffar;
@@ -1927,7 +1886,7 @@ void CGLView::TrackSelection(bool b)
 }
 
 //-----------------------------------------------------------------------------
-void CGLView::PrepModel()
+void CGLView::PrepScene()
 {
 	GLfloat specular[] = { 1.f, 1.f, 1.f, 1.f };
 
@@ -1955,7 +1914,7 @@ void CGLView::PrepModel()
 	//	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// set the line width
 	glLineWidth(view.m_line_size);
@@ -2113,7 +2072,7 @@ void CGLView::RenderBackground()
 	glDisable(GL_LIGHTING);
 	glDisable(GL_CULL_FACE);
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	GLColor c[4];
 
@@ -2207,7 +2166,7 @@ void CGLView::RenderImageData()
 
 	CGLCamera& cam = doc->GetView()->GetCamera();
 
-	VIEW_SETTINGS& vs = GetViewSettings();
+	GLViewSettings& vs = GetViewSettings();
 
 	glMatrixMode(GL_MODELVIEW);
 	glPushMatrix();
@@ -2236,7 +2195,7 @@ void CGLView::RenderImageData()
     		// GLColor c = img->GetColor();
             GLColor c(255, 128, 128);
             glColor3ub(c.r, c.g, c.b);
-            if (img->ShowBox()) RenderBox(box, false);
+            if (img->ShowBox()) glx::renderBox(box, false);
             img->Render(m_rc);
         }
     }
@@ -2250,7 +2209,7 @@ void CGLView::RenderImageData()
             BOX box = img->GetBoundingBox();
             GLColor c(255, 128, 128);
             glColor3ub(c.r, c.g, c.b);
-            if (img->ShowBox()) RenderBox(box, false);
+            if (img->ShowBox()) glx::renderBox(box, false);
             img->Render(m_rc);
 
             sliceView->RenderSlicers(m_rc);
@@ -2412,7 +2371,7 @@ void CGLView::SetViewMode(View_Mode n)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-    VIEW_SETTINGS& view = GetViewSettings();
+    GLViewSettings& view = GetViewSettings();
     int c = view.m_nconv;
 	quatd q;
 
@@ -2541,7 +2500,7 @@ void CGLView::TogglePerspective(bool b)
 
 void CGLView::ToggleDisplayNormals()
 {
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	view.m_bnorm = !view.m_bnorm;
 	repaint();
 }
@@ -2689,7 +2648,7 @@ bool CGLView::SelectPivot(int x, int y)
 //-----------------------------------------------------------------------------
 bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 {
-	GLMesh* mesh = po->GetRenderMesh();
+	GMesh* mesh = po->GetRenderMesh();
 	if (mesh == nullptr) return false;
 
 	Intersection qtmp;
@@ -2784,7 +2743,7 @@ void CGLView::SelectParts(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// Get the model
 	FSModel* ps = pdoc->GetFSModel();
@@ -2806,7 +2765,7 @@ void CGLView::SelectParts(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh();
+			GMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
 				int NF = mesh->Faces();
@@ -2887,7 +2846,7 @@ void CGLView::SelectSurfaces(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// get the fe model
 	FSModel* ps = pdoc->GetFSModel();
@@ -2909,7 +2868,7 @@ void CGLView::SelectSurfaces(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh();
+			GMesh* mesh = po->GetRenderMesh();
 			if (mesh)
 			{
 				int NF = mesh->Faces();
@@ -2969,7 +2928,7 @@ void CGLView::SelectEdges(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// get the fe model
 	FSModel* ps = pdoc->GetFSModel();
@@ -2996,7 +2955,7 @@ void CGLView::SelectEdges(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
 				int edges = mesh->Edges();
@@ -3051,7 +3010,7 @@ void CGLView::HighlightEdge(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// get the fe model
 	FSModel* ps = pdoc->GetFSModel();
@@ -3077,7 +3036,7 @@ void CGLView::HighlightEdge(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GLMesh* mesh = po->GetRenderMesh(); assert(mesh);
+			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
 			if (mesh)
 			{
 				int edges = mesh->Edges();
@@ -3117,7 +3076,7 @@ void CGLView::SelectNodes(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// get the fe model
 	FSModel* ps = pdoc->GetFSModel();
@@ -3191,7 +3150,7 @@ void CGLView::SelectDiscrete(int x, int y)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// get the fe model
 	FSModel* ps = pdoc->GetFSModel();
@@ -3331,7 +3290,7 @@ void CGLView::SelectFEElements(int x, int y)
 {
 	// get the document
 	CGLDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// Get the mesh
 	GObject* po = GetActiveObject();
@@ -3564,7 +3523,7 @@ void CGLView::SelectFEFaces(int x, int y)
 {
 	// get the document
 	CGLDocument* pdoc = GetDocument();
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// Get the active object
 	GObject* po = GetActiveObject();
@@ -3656,7 +3615,7 @@ void CGLView::SelectFEEdges(int x, int y)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// Get the mesh
 	GObject* po = GetActiveObject();
@@ -3820,7 +3779,7 @@ void CGLView::SelectSurfaceFaces(int x, int y)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// Get the active object
 	GSurfaceMeshObject* po = dynamic_cast<GSurfaceMeshObject*>(GetActiveObject());
@@ -3870,7 +3829,7 @@ void CGLView::SelectSurfaceEdges(int x, int y)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// Get the mesh
 	GObject* po = GetActiveObject();
@@ -3998,7 +3957,7 @@ void CGLView::SelectSurfaceNodes(int x, int y)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -4100,7 +4059,7 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return vec3d(0,0,0);
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	// if a temp object is available, see if we can pick a point
 	GObject* ptmp = m_pWnd->GetCreatePanel()->GetTempObject();
@@ -4164,7 +4123,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	if (pdoc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -4180,7 +4139,7 @@ void CGLView::RegionSelectObjects(const SelectRegion& region)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GLMesh* mesh = po->GetRenderMesh();
+		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			bool intersect = false;
@@ -4236,7 +4195,7 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	if (pdoc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -4253,7 +4212,7 @@ void CGLView::RegionSelectParts(const SelectRegion& region)
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GLMesh* mesh = po->GetRenderMesh();
+		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			for (int j = 0; j<mesh->Faces(); ++j)
@@ -4304,7 +4263,7 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	if (pdoc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -4322,7 +4281,7 @@ void CGLView::RegionSelectSurfaces(const SelectRegion& region)
 	for (int i=0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		GLMesh* mesh = po->GetRenderMesh();
+		GMesh* mesh = po->GetRenderMesh();
 		if (po->IsVisible() && mesh)
 		{
 			for (int j=0; j<mesh->Faces(); ++j)
@@ -4370,7 +4329,7 @@ void CGLView::RegionSelectEdges(const SelectRegion& region)
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the model
@@ -4427,7 +4386,7 @@ void CGLView::RegionSelectNodes(const SelectRegion& region)
 	if (doc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
@@ -4480,7 +4439,7 @@ void CGLView::RegionSelectDiscrete(const SelectRegion& region)
 	if (doc == nullptr) return;
 
 	// get the document
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = doc->GetSelectionStyle();
 
 	// Get the model
@@ -4552,7 +4511,7 @@ void CGLView::RegionSelectFENodes(const SelectRegion& region)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -4771,7 +4730,7 @@ void CGLView::RegionSelectFEElems(const SelectRegion& region)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -4953,7 +4912,7 @@ void CGLView::RegionSelectFEFaces(const SelectRegion& region)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5053,7 +5012,7 @@ void CGLView::RegionSelectFEEdges(const SelectRegion& region)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5117,7 +5076,7 @@ void CGLView::SelectFENodes(int x, int y)
 	CGLDocument* pdoc = GetDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 	int nsel = pdoc->GetSelectionStyle();
 
 	// Get the mesh
@@ -5438,7 +5397,7 @@ void CGLView::RenderTags()
 	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetViewSettings();
+	GLViewSettings& view = GetViewSettings();
 
 	GObject* po = GetActiveObject();
 	if (po == nullptr) return;
@@ -5648,10 +5607,10 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-GLMesh* CGLView::BuildPlaneCut(FSModel& fem)
+GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 {
 	GModel& mdl = fem.GetModel();
-	VIEW_SETTINGS& vs = GetViewSettings();
+	GLViewSettings& vs = GetViewSettings();
 	GObject* poa = m_pWnd->GetActiveObject();
 	double vmin, vmax;
 
@@ -5666,7 +5625,7 @@ GLMesh* CGLView::BuildPlaneCut(FSModel& fem)
 
 	int edge[15][2], edgeNode[15][2], etag[15];
 
-	GLMesh* planeCut = new GLMesh;
+	GMesh* planeCut = new GMesh;
 
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
@@ -5889,7 +5848,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
 	double ref = -m_plane[3];
 
-	VIEW_SETTINGS& vs = GetViewSettings();
+	GLViewSettings& vs = GetViewSettings();
 
 	if (breset)
 	{
@@ -5910,7 +5869,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 		}
 	}
 
-	if ((m_planeCutMode == 0) && (m_showPlaneCut))
+	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
 	{
 		m_planeCut = BuildPlaneCut(fem);
 	}
@@ -5975,7 +5934,7 @@ bool CGLView::ShowPlaneCut()
 	return m_showPlaneCut;
 }
 
-GLMesh* CGLView::PlaneCutMesh()
+GMesh* CGLView::PlaneCutMesh()
 {
 	return m_planeCut;
 }
@@ -6000,14 +5959,12 @@ void CGLView::RenderPlaneCut()
 	BOX box = doc->GetGModel()->GetBoundingBox();
 
 	glColor3ub(200, 0, 200);
-	RenderBox(box, false);
+	glx::renderBox(box, false);
 
 	FSModel& fem = *doc->GetFSModel();
 	int MAT = fem.Materials();
 
-	GLMeshRender& mr = GetMeshRenderer();
-
-	bool oldFaceColorMode = mr.GetFaceColor();
+	GLMeshRender mr;
 
 	// render the unselected faces
 	glColor3ub(255, 255, 255);
@@ -6018,14 +5975,10 @@ void CGLView::RenderPlaneCut()
 
 	// render the selected faces
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	glDisable(GL_CULL_FACE);
-	glDisable(GL_LIGHTING);
-	glEnable(GL_POLYGON_STIPPLE);
-	glColor3ub(255, 0, 0);
+	mr.SetRenderMode(GLMeshRender::SelectionMode);
+	glColor3ub(255, 64, 0);
 	mr.SetFaceColor(false);
 	mr.RenderGLMesh(m_planeCut, 1);
-
-	mr.SetFaceColor(oldFaceColorMode);
 
 	if (GetViewSettings().m_bmesh)
 	{
@@ -6037,13 +5990,18 @@ void CGLView::RenderPlaneCut()
 		cam.LineDrawMode(true);
 		cam.Transform();
 		
-		GetMeshRenderer().RenderGLEdges(m_planeCut, 0);
+		mr.RenderGLEdges(m_planeCut, 0);
 		glDisable(GL_DEPTH_TEST);
 		glColor3ub(255, 255, 0);
-		GetMeshRenderer().RenderGLEdges(m_planeCut, 1);
+		mr.RenderGLEdges(m_planeCut, 1);
 
 		cam.LineDrawMode(false);
 		cam.Transform();
 	}
 	glPopAttrib();
+}
+
+void CGLView::ToggleFPS()
+{
+	m_showFPS = !m_showFPS;
 }

@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FEAMR/spherePoints.h>
 #include <MeshTools/FENNQuery.h>
 #include <PostLib/ColorMap.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <GLLib/GLCamera.h>
 #include <complex>
 #include <sstream>
@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include "levmar.h"
 #include <FECore/besselIK.h>
 #include <GLWLib/GLWidgetManager.h>
+#include <GLLib/glx.h>
 #ifdef min
 #undef min
 #endif
@@ -201,7 +202,7 @@ void CFiberODFAnalysis::run()
 		m_stepsCompleted = currentZ + currentY * zDiv + currentX * zDiv * yDiv;
 
 		// see if user cancelled
-		if (IsCancelled()) { clear(); return; }
+		if (IsCanceled()) { clear(); return; }
 
 		std::stringstream ss;
 		Log("\n\n");
@@ -231,7 +232,7 @@ void CFiberODFAnalysis::run()
 		current = sitk::Image();
 
 		// see if user cancelled
-		if (IsCancelled()) { clear(); return; }
+		if (IsCanceled()) { clear(); return; }
 
 		// odf = A*B*reduced
 		A.mult(B, reduced, odf->m_odf);
@@ -492,9 +493,6 @@ void CFiberODFAnalysis::normalizeODF(CODF* odf)
 	}
 }
 
-// in glview.cpp
-void RenderBox(const BOX& bbox, bool partial, double scale);
-
 void RenderEllipsoid(GLUquadricObj* po, float scale, float* l, vec3f* e)
 {
 	if (scale <= 0.f) return;
@@ -552,7 +550,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 			if (odf->m_selected && showSelBox)
 			{
 				glColor3ub(255, 255, 0);
-				RenderBox(odf->m_box, false, 0.99);
+				glx::renderBox(odf->m_box, false, 0.99);
 			}
 
 			if (odf->m_active)
@@ -591,7 +589,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 			if (odf->m_selected && showSelBox)
 			{
 				glColor3ub(255, 255, 0);
-				RenderBox(odf->m_box, false, 0.99);
+				glx::renderBox(odf->m_box, false, 0.99);
 			}
 
 			glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
@@ -610,7 +608,7 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 	int showMesh = GetIntValue(SHOW_MESH);
 	int ncolor = GetIntValue(COLOR_MODE);
 
-	GLMesh* mesh = nullptr;
+	GMesh* mesh = nullptr;
 	if (showMesh == 1) mesh = &odf->m_remesh;
 	else if (showMesh == 3) return;
 	else mesh = &odf->m_mesh;
@@ -641,7 +639,7 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 */
 		glColor3f(0, 0, 0);
 
-		m_render.RenderGLMeshLines(mesh);
+		m_render.RenderGMeshLines(mesh);
 /*
 		glPopMatrix();
 
@@ -971,7 +969,7 @@ double CFiberODFAnalysis::GFA(std::vector<double>& vals)
 
 void CFiberODFAnalysis::buildMesh(CODF* odf)
 {
-	GLMesh& mesh = odf->m_mesh;
+	GMesh& mesh = odf->m_mesh;
 	odf->m_mesh.Create(NPTS, NCON);
 
 	// create nodes
@@ -1012,7 +1010,7 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 	if (rmax == 0.0) rmax = 1.0;
 
 	// create nodes
-	GLMesh& mesh = odf->m_mesh;
+	GMesh& mesh = odf->m_mesh;
 	for (int i = 0; i < NPTS; ++i)
 	{
 		auto& node = mesh.Node(i);
@@ -1051,7 +1049,7 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
     remeshFull(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
 
 	// get the new mesh sizes
-	GLMesh& mesh = odf->m_remesh;
+	GMesh& mesh = odf->m_remesh;
     int NN = (int)nodePos.size();
     int NF = (int)elems.size();
 	mesh.Create(NN, NF);
@@ -1125,7 +1123,7 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 	double scale = (min == max ? 1.0 : 1.0 / (max - min));
 
 	// create nodes
-	GLMesh& mesh = odf->m_remesh;
+	GMesh& mesh = odf->m_remesh;
 	for (int i = 0; i < mesh.Nodes(); ++i)
 	{
 		auto& node = mesh.Node(i);
