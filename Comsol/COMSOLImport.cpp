@@ -458,11 +458,11 @@ bool COMSOLimport::BuildMesh(FSModel& fem)
 			for (i=0; i<elsets; ++i, ++pes)
 			{
 				int n = (int)pes->elem.size(); // how many elements are in the element set? -> n
-				FSPart* pg = new FSPart(po);
+				FSElemSet* pg = new FSElemSet(po);
 				pg->SetName(pes->szname);
 				list<Telem_itr>::iterator pe = pes->elem.begin();
 				for (j=0; j<n; ++j, ++pe) pg->add((*pe)->id);
-				po->AddFEPart(pg);
+				po->AddFEElemSet(pg);
 			}
 		}
 	}

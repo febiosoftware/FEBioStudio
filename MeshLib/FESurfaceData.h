@@ -33,22 +33,25 @@ class FESurfaceData : public FEMeshData
 {
 public:
 	FESurfaceData(FSMesh* mesh = nullptr);
-	FESurfaceData(const FESurfaceData& data);
+	FESurfaceData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
 	~FESurfaceData();
-	void operator = (const FESurfaceData& data);
-	double& operator [] (int index);
 
-	void Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
+	void Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
 
-	std::vector<double>* getData();
+	FSSurface* GetSurface() {return dynamic_cast<FSSurface*>(GetItemList());}
 
-	FSSurface* getSurface() {return m_surface;}
+	void SetItemList(FEItemListBuilder* surf, int n = 0) override;
 
 public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
 private:
-	std::vector<double>	m_data;
-	FSSurface* m_surface;
+	FESurfaceData(const FESurfaceData& data);
+	void operator = (const FESurfaceData& data);
+
+	void AllocateData();
+
+private:
+	int	m_maxNodesPerFacet;
 };

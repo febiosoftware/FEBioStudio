@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <FEMLib/FEConnector.h>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
+#include <FEMLib/FSModel.h>
 #include <FSCore/ParamBlock.h>
 #include <GeomLib/GGroup.h>
 #include <FEMLib/GDiscreteObject.h>
@@ -136,7 +137,7 @@ protected:
 class CCmdAddPart : public CCommand
 {
 public:
-	CCmdAddPart(GObject* po, FSPart* pg) : CCommand("Add Part") { m_po = po; m_pg = pg; m_bdel = true; }
+	CCmdAddPart(GObject* po, FSElemSet* pg) : CCommand("Add Element Set") { m_po = po; m_pg = pg; m_bdel = true; }
 	~CCmdAddPart() { if (m_bdel) delete m_pg; }
 
 	void Execute();
@@ -144,7 +145,7 @@ public:
 
 protected:
 	GObject*		m_po;
-	FSPart*		m_pg;
+	FSElemSet*		m_pg;
 	bool		m_bdel;
 };
 
@@ -1340,29 +1341,30 @@ protected:
 class CCmdSetItemList : public CCommand
 {
 public:
-	CCmdSetItemList(IHasItemList* pbc, FEItemListBuilder* pl);
+	CCmdSetItemList(IHasItemLists* pbc, FEItemListBuilder* pl, int n);
 	~CCmdSetItemList();
 
 	void Execute();
 	void UnExecute();
 
 protected:
-	IHasItemList*		m_pbc;
+	IHasItemLists*		m_pbc;
 	FEItemListBuilder*	m_pl;
+	int					m_index;
 };
 
 //-----------------------------------------------------------------------------
 class CCmdAddToItemListBuilder : public CCommand
 {
 public:
-	CCmdAddToItemListBuilder(FEItemListBuilder* pold, list<int>& lnew);
+	CCmdAddToItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	FEItemListBuilder* m_pold;
-	list<int>	m_lnew;
+	vector<int>	m_lnew;
 	vector<int>	m_tmp;
 };
 
@@ -1370,14 +1372,14 @@ protected:
 class CCmdRemoveFromItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, list<int>& lnew);
+	CCmdRemoveFromItemListBuilder(FEItemListBuilder* pold, vector<int>& lnew);
 
 	void Execute();
 	void UnExecute();
 
 protected:
 	FEItemListBuilder* m_pold;
-	list<int>	m_lnew;
+	vector<int>	m_lnew;
 	vector<int>	m_tmp;
 };
 
@@ -1385,8 +1387,7 @@ protected:
 class CCmdRemoveItemListBuilder : public CCommand
 {
 public:
-	CCmdRemoveItemListBuilder(IHasItemList* pmc);
-	CCmdRemoveItemListBuilder(FSPairedInterface* pmc, int n);
+	CCmdRemoveItemListBuilder(IHasItemLists* pmc, int n = 0);
 	~CCmdRemoveItemListBuilder();
 
 	void Execute();
@@ -1394,8 +1395,7 @@ public:
 
 private:
 	FEItemListBuilder*	m_pitem;
-	IHasItemList*		m_pmc;
-	FSPairedInterface*	m_ppi;
+	IHasItemLists*		m_pmc;
 	int	m_index;
 };
 
@@ -1413,6 +1413,23 @@ protected:
 	GModel*			m_gm;
 	GObject*		m_po;
 	ObjectMeshList*	m_poml;
+};
+
+//-----------------------------------------------------------------------------
+class CCmdDeleteFSModelComponent: public CCommand
+{
+public:
+	CCmdDeleteFSModelComponent(FSModelComponent* po);
+	~CCmdDeleteFSModelComponent();
+
+	void Execute();
+	void UnExecute();
+
+protected:
+	FSModelComponent* m_obj;
+	FSObject*	m_parent;
+	bool		m_delObject;
+	size_t		m_insertPos;
 };
 
 //-----------------------------------------------------------------------------

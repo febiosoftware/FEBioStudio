@@ -304,7 +304,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		int ns0 = 0, ns1 = shells;
 		for (i = 0; i<nparts; ++i, ++ip)
 		{
-			FSPart* pg = new FSPart(m_po);
+			FSElemSet* pg = new FSElemSet(m_po);
 
 			pg->SetName(ip->szname);
 

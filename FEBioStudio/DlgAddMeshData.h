@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QDialog>
 #include <vector>
-#include <FSCore/ParamBlock.h>
+#include <MeshLib/FEMeshData.h>
 
 class CDlgAddMeshDataUI;
 class FSObject;
@@ -37,16 +37,33 @@ class CDlgAddMeshData : public QDialog
 	Q_OBJECT
 
 public:
-	CDlgAddMeshData(FSObject* po, QWidget* parent);
+	CDlgAddMeshData(QWidget* parent);
 
-public slots:
-	void onCustom();
-	void setItem(int i);
-
-	std::string GetMapName();
-	std::string GetParamName();
-	Param_Type GetParamType();
+	QString GetName();
+	FEMeshData::DATA_CLASS GetType();
+	FEMeshData::DATA_TYPE GetDataType();
+	FEMeshData::DATA_FORMAT GetFormat();
 
 private:
 	CDlgAddMeshDataUI*	ui;
+};
+
+//=======================================================================
+class CDlgEditMeshDataUI;
+class CDlgEditMeshData : public QDialog
+{
+	Q_OBJECT
+
+public:
+	CDlgEditMeshData(FEMeshData* data, QWidget* parent);
+	~CDlgEditMeshData();
+
+	void accept() override;
+
+public slots:
+	void OnCopyToClipboard();
+	void OnPasteFromClipboard();
+
+private:
+	CDlgEditMeshDataUI* ui;
 };

@@ -633,7 +633,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FEElementSelection* pes = dynamic_cast<FEElementSelection*>(psel); assert(pes);
-			FSPart* pg = dynamic_cast<FSPart*>(pes->CreateItemList());
+			FSElemSet* pg = dynamic_cast<FSElemSet*>(pes->CreateItemList());
 			if (pg)
 			{
 				pg->SetName(szname);
@@ -698,7 +698,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 			case SELECT_PART:
 			{
-				GPartList* pg = new GPartList(pfem, dynamic_cast<GPartSelection*>(psel));
+				GPartList* pg = new GPartList(mdl, dynamic_cast<GPartSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg));
 				++nparts;
@@ -707,7 +707,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			break;
 			case SELECT_FACE:
 			{
-				GFaceList* pg = new GFaceList(pfem, dynamic_cast<GFaceSelection*>(psel));
+				GFaceList* pg = new GFaceList(mdl, dynamic_cast<GFaceSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg));
 				++nsurfs;
@@ -716,7 +716,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			break;
 			case SELECT_EDGE:
 			{
-				GEdgeList* pg = new GEdgeList(pfem, dynamic_cast<GEdgeSelection*>(psel));
+				GEdgeList* pg = new GEdgeList(mdl, dynamic_cast<GEdgeSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg));
 				++nedges;
@@ -725,7 +725,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			break;
 			case SELECT_NODE:
 			{
-				GNodeList* pg = new GNodeList(pfem, dynamic_cast<GNodeSelection*>(psel));
+				GNodeList* pg = new GNodeList(mdl, dynamic_cast<GNodeSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg));
 				++nnodes;
@@ -1319,7 +1319,7 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	if (doc == nullptr) return;
 	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
 
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	int itemMode = doc->GetItemMode();
 	switch (itemMode)

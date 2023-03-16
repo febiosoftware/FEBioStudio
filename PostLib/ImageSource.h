@@ -32,6 +32,7 @@ enum class ImageFileType;
 #include <string>
 #include <FSCore/FSObjectList.h>
 #include <FSCore/box.h>
+#include <FSCore/FSThreadedTask.h>
 
 class C3DImage;
 
@@ -40,12 +41,12 @@ namespace Post {
 class CImageModel;
 class CGLImageRenderer;
 
-class CImageSource : public FSObject
+class CImageSource : public FSThreadedTask
 {
 public:
     enum Types 
     { 
-        RAW = 0, ITK, SERIES
+        RAW = 0, ITK, SERIES, TIFF, DICOM
     };
 
 public:
@@ -90,6 +91,9 @@ public:
 
     void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
+
+private:
+	bool LoadFromFile(const char* szfile, C3DImage* im, int nbits);
 
 private:
     std::string m_filename;

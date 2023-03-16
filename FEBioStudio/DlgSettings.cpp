@@ -1005,7 +1005,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 void CDlgSettings::UpdateSettings()
 {
-	VIEW_SETTINGS& view = m_pwnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = m_pwnd->GetGLView()->GetViewSettings();
 	CGLView* glview = m_pwnd->GetGLView();
 
 	ui->m_bg->m_bg1 = toQColor(view.m_col1);
@@ -1094,7 +1094,7 @@ void CDlgSettings::apply()
 {
 	CGLDocument* pdoc = m_pwnd->GetGLDocument();
 	CGLView* glview = m_pwnd->GetGLView();
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 
 	view.m_col1 = toGLColor(ui->m_bg->m_bg1);
 	view.m_col2 = toGLColor(ui->m_bg->m_bg2);
@@ -1225,7 +1225,7 @@ void CDlgSettings::onReset()
 {
 	CGLDocument* pdoc = m_pwnd->GetGLDocument();
 	CGLView* glview = m_pwnd->GetGLView();
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	int ntheme = m_pwnd->currentTheme();
 	view.Defaults(ntheme);
 	UpdateSettings();

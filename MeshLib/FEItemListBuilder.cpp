@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEItemListBuilder.h"
+#include <algorithm>
 
 int FEItemListBuilder::m_ncount = 1;
 
@@ -36,6 +37,8 @@ FEItemListBuilder::FEItemListBuilder(int ntype, unsigned int flags)
 	m_ntype = ntype;
 
 	m_flags = flags;
+
+	m_refs = 0;
 }
 
 void FEItemListBuilder::SetID(int nid)
@@ -93,7 +96,7 @@ void FEItemListBuilder::Load(IArchive &ar)
 	assert((int) m_Item.size() == N);
 }
 
-void FEItemListBuilder::add(const std::list<int>& nodeList)
+void FEItemListBuilder::add(const std::vector<int>& nodeList)
 {
 	m_Item.insert(m_Item.end(), nodeList.begin(), nodeList.end());
 }
@@ -106,14 +109,14 @@ void FEItemListBuilder::remove(int n)
 	m_Item.erase(pi);
 }
 
-void FEItemListBuilder::Merge(list<int>& o)
+void FEItemListBuilder::Merge(std::vector<int>& o)
 {
 	m_Item.insert(m_Item.end(), o.begin(), o.end());
 
 	if (m_Item.empty() == false)
 	{
 		// sort the items
-		m_Item.sort();
+		std::sort(m_Item.begin(), m_Item.end());
 
 		// remove duplicates
 		Iterator it1 = m_Item.begin(); 
@@ -127,9 +130,10 @@ void FEItemListBuilder::Merge(list<int>& o)
 	}
 }
 
-void FEItemListBuilder::Subtract(list<int>& o)
+void FEItemListBuilder::Subtract(std::vector<int>& o)
 {
-	m_Item.sort();
+	std::sort(m_Item.begin(), m_Item.end());
+
 	// NOTE: This algorithm assumes that both lists are sorted
 	Iterator it  = m_Item.begin();
 	Iterator it2 = o.begin();
@@ -143,3 +147,7 @@ void FEItemListBuilder::Subtract(list<int>& o)
 		else ++it;
 	}
 }
+
+int FEItemListBuilder::GetReferenceCount() const { return m_refs; }
+void FEItemListBuilder::IncRef() { m_refs++; }
+void FEItemListBuilder::DecRef() { m_refs--; assert(m_refs >= 0); }

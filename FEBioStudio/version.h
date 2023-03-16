@@ -50,8 +50,9 @@ SOFTWARE.*/
 // 3.13: Added "relative" flag to FSRigidDisplacement. 
 // 3.14: Added additional meshing parameters to FEQuartDogBone.
 // 4.0: new version starting with FEBio Studio 2.
+// 4.1: Item components are no longer stored on the model components. Added FSPartSet. New mesh storage format.
 #define FBS2_FILE		0x00040000	// first version number used by FBS2. Don't change!
-#define SAVE_VERSION	0x00040000
+#define SAVE_VERSION	0x00040001
 
 // lowest supported version number
 #define MIN_FSM_VERSION	0x0001000D

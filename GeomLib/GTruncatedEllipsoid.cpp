@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FETruncatedEllipsoid.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 GTruncatedEllipsoid::GTruncatedEllipsoid() : GPrimitive(GTRUNC_ELLIPSOID)
 {
@@ -78,7 +78,7 @@ bool GTruncatedEllipsoid::Update(bool b)
 
 void GTruncatedEllipsoid::Create()
 {
-	SetRenderMesh(new GLMesh());
+	SetRenderMesh(new GMesh());
 
 	assert(m_Node.empty());
 	for (int i=0; i<10; ++i) AddNode(vec3d(0,0,0), NODE_VERTEX, true);

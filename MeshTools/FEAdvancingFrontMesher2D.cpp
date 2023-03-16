@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
 #include <MeshLib/FESurfaceMesh.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <list>
 //using namespace std;
 
@@ -405,7 +405,7 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 }
 
 //================================================================================
-FSSurfaceMesh* GLMeshToSurfaceMesh(GLMesh& m)
+FSSurfaceMesh* GLMeshToSurfaceMesh(GMesh& m)
 {
 	int NN = m.Nodes();
 	int NF = m.Faces();
@@ -457,7 +457,7 @@ FSMesh* FEMMG2DMesher::BuildMesh()
 	// MMG needs a base mesh, so let's create one by doing a rough triangulation of the shape.
 	assert(m_po->Faces() == 1);
 	GFace& face = *m_po->Face(0);
-	GLMesh* gm = triangulate(face);
+	GMesh* gm = triangulate(face);
 
 	// MMG needs a FSSurfaceMesh, so convert
 	FSSurfaceMesh* pm = GLMeshToSurfaceMesh(*gm);

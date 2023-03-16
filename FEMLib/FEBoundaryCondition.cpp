@@ -333,7 +333,7 @@ FSPrescribedTemperature::FSPrescribedTemperature(FSModel* ps) : FSPrescribedDOF(
 {
 	SetTypeString("Prescribed Temperature");
 //	SetVarID(ps->GetVariableIndex("temperature"));
-	SetScaleUnit(UNIT_TEMPERATURE);
+	SetScaleUnit(UNIT_RELATIVE_TEMPERATURE);
 }
 
 //-----------------------------------------------------------------------------
@@ -341,7 +341,7 @@ FSPrescribedTemperature::FSPrescribedTemperature(FSModel* ps, FEItemListBuilder*
 {
 	SetTypeString("Prescribed Temperature");
 //	SetVarID(ps->GetVariableIndex("temperature"));
-	SetScaleUnit(UNIT_TEMPERATURE);
+	SetScaleUnit(UNIT_RELATIVE_TEMPERATURE);
 }
 
 //=============================================================================

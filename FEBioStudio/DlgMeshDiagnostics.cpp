@@ -299,7 +299,7 @@ void CDlgMeshDiagnosticsUI::checkMeshStats()
 	}
 	if (faceCount[FE_FACE_INVALID_TYPE] > 0)
 	{
-		logError(QString("%d invalid faces found.").arg(faceCount[FE_FACE_INVALID_TYPE]));
+		logError(QString("%1 invalid faces found.").arg(faceCount[FE_FACE_INVALID_TYPE]));
 	}
 
 	// break down edges

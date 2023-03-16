@@ -46,7 +46,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <MeshLib/FEFindElement.h>
 #include <PostGL/GLModel.h>
-#include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPointPlot.h>
 #include <sstream>
 using namespace std;
 

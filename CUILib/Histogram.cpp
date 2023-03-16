@@ -75,14 +75,22 @@ void CHistogramViewer::Update()
 	C3DImage* im = m_img->Get3DImage();
 
 	std::vector<double> h(256, 0.0);
-	for (int k = 0; k < im->Depth(); ++k)
+#pragma omp parallel 
 	{
-		for (int j = 0; j < im->Height(); ++j)
-			for (int i = 0; i < im->Width(); ++i)
-			{
-				int n = im->value(i, j, k);
-				h[n]++;
-			}
+		std::vector<double> ht(256, 0.0);
+#pragma omp for
+		for (int k = 0; k < im->Depth(); ++k)
+		{
+			for (int j = 0; j < im->Height(); ++j)
+				for (int i = 0; i < im->Width(); ++i)
+				{
+					int n = im->value(i, j, k);
+					ht[n]++;
+				}
+		}
+
+#pragma omp critical
+		for (int k = 0; k < 256; ++k) h[k] += ht[k];
 	}
 
 	if (m_logMode)

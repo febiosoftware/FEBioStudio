@@ -174,41 +174,41 @@ endif()
 
 # Dicom
 if(WIN32)
-	find_path(DICOM_INC dcmtk/dcmimgle/dcmimage.h
+	find_path(DCMTK_INC dcmtk/dcmimgle/dcmimage.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/dcmtk*" "src" "build" "build/dcmtk"
         DOC "Dicom include directory")
-	find_library(DICOM_LIB dcmimgle 
+	find_library(DCMTK_LIB dcmimgle 
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
 		DOC "Dicom library path")
 else()
-	find_path(DICOM_INC dcmtk/dcmimgle/dcmimage.h
+	find_path(DCMTK_INC dcmtk/dcmimgle/dcmimage.h
         PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "include/dcmtk*" "build" "build/include/dcmtk" "src" 
 		DOC "Dicom include directory")
-	find_library(DICOM_LIB dcmimgle
+	find_library(DCMTK_LIB dcmimgle
         PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "build/bin" "build/lib" "src/build/bin" "src/build/lib" "Release" "Debug"
 		DOC "Dicom library path")
 endif()
 
-if(DICOM_LIB)
-    get_filename_component(DICOM_TEMP ${DICOM_LIB} DIRECTORY)
-    set(DICOM_LIB_DIR ${DICOM_TEMP} CACHE PATH "Path to the Dicom lib directory (e.g. /opt/dcmtk/lib)")
-    unset(DICOM_TEMP)
-    unset(DICOM_LIB CACHE)
+if(DCMTK_LIB)
+    get_filename_component(DCMTK_TEMP ${DCMTK_LIB} DIRECTORY)
+    set(DCMTK_LIB_DIR ${DCMTK_TEMP} CACHE PATH "Path to the DCMTK lib directory (e.g. /opt/dcmtk/lib)")
+    unset(DCMTK_TEMP)
+    unset(DCMTK_LIB CACHE)
 else()
-	set(DICOM_LIB_DIR  CACHE PATH "Path to the Dicom lib directory (e.g. /opt/dcmtk/lib)")
-    unset(DICOM_LIB CACHE)
+	set(DCMTK_LIB_DIR  CACHE PATH "Path to the DCMTK lib directory (e.g. /opt/dcmtk/lib)")
+    unset(DCMTK_LIB CACHE)
 endif()
 
-if(DICOM_INC AND DICOM_LIB_DIR)		
-	option(USE_DICOM "Required for Dicom use" ON)
-    mark_as_advanced(DICOM_INC DICOM_LIB_DIR)
+if(DCMTK_INC AND DCMTK_LIB_DIR)		
+	option(USE_DCMTK "Required for Dicom use" ON)
+    mark_as_advanced(DCMTK_INC DCMTK_LIB_DIR)
 else()
-	option(USE_DICOM "Required for Dicom use" OFF)
-    mark_as_advanced(CLEAR DICOM_INC DICOM_LIB_DIR)
+	option(USE_DCMTK "Required for Dicom use" OFF)
+    mark_as_advanced(CLEAR DCMTK_INC DCMTK_LIB_DIR)
 endif()
 
 # MMG

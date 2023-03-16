@@ -359,10 +359,10 @@ void FEVTKExport::WriteCellData(FEState* ps)
                 vector<float> val;
                         
 				bool first = true;
-                int ND = mesh.Parts();
+                int ND = mesh.ElemSets();
                 for (int i=0; i<ND; ++i)
                 {
-                    FSPart& part = mesh.Part(i);
+					FSElemSet& part = mesh.ElemSet(i);
                             
                     if (FillElemDataArray(val, meshData, part))
                     {
@@ -642,7 +642,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 }
 
 //-----------------------------------------------------------------------------
-bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSPart& part)
+bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshData, Post::FSElemSet& part)
 {
 	FEPostModel& fem = *meshData.GetFSModel();
 	FEPostMesh& mesh = *fem.GetFEMesh(0);

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FECone.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 //=============================================================================
 // GCone
@@ -56,7 +56,7 @@ FEMesher* GCone::CreateDefaultMesher()
 //-----------------------------------------------------------------------------
 void GCone::Create()
 {
-	GLMesh* gmesh = new GLMesh();
+	GMesh* gmesh = new GMesh();
 	SetRenderMesh(gmesh);
 
 	// build the nodes

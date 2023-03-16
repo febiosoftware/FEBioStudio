@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <list>
 #include <stack>
 #include <sstream>
@@ -586,6 +586,7 @@ void GMeshObject::UpdateNodes()
 		{
 			node.m_gid = tag[node.m_gid];
 			GNode* pn = m_Node[node.m_gid];
+			pn->SetNodeIndex(i);
 			pn->LocalPosition() = node.r;
 			node.SetRequired(pn->IsRequired());
 		}
@@ -672,7 +673,7 @@ FSMesh* GMeshObject::BuildMesh()
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GLMesh* gmesh = new GLMesh();
+	GMesh* gmesh = new GMesh();
 
 	// we'll extract the data from the FE mesh
 	FSMesh* pm = GetFEMesh();

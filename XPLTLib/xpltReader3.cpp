@@ -1307,12 +1307,12 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	for (int n=0; n< m_xmesh.domains(); ++n)
 	{
 		Domain& s = m_xmesh.domain(n);
-		Post::FSPart* pg = new Post::FSPart(pmesh);
+		Post::FSElemSet* pg = new Post::FSElemSet(pmesh);
 		if (s.szname[0]==0) { sprintf(szname, "part%02d",n+1); pg->SetName(szname); }
 		else pg->SetName(s.szname);
 		pg->m_Elem.resize(s.ne);
 		pg->m_Elem = s.elist;
-		pmesh->AddPart(pg);
+		pmesh->AddElemSet(pg);
 	}
 
 	// store the current mesh

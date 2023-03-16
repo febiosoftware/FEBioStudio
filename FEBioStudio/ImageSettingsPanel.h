@@ -31,6 +31,7 @@ SOFTWARE.*/
 namespace Ui
 {
     class CImageParam;
+    class CImageParam2;
     class CImageSettingsPanel;
 }
 
@@ -43,7 +44,9 @@ class CImageParam : public QWidget
     Q_OBJECT
 
 public:
-    CImageParam(Param* param);
+    CImageParam();
+
+	void setParam(Param* param);
 
     ~CImageParam();
 
@@ -55,6 +58,29 @@ signals:
 
 private:
     Ui::CImageParam* ui;
+};
+
+class CImageParam2 : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CImageParam2();
+	void setParams(Param* param1, Param* param2);
+
+	~CImageParam2();
+
+	void setColor(QColor c);
+
+public slots:
+	void updateSpinBox();
+	void updateSlider();
+
+signals:
+	void paramChanged();
+
+private:
+	Ui::CImageParam2* ui;
 };
 
 class CImageSettingsPanel : public CCommandPanel

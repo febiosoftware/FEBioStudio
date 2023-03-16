@@ -45,12 +45,29 @@ SOFTWARE.*/
 //using namespace std;
 
 //=================================================================================================
-CLogDataSettings::CLogDataSettings()
+CLogDataSettings::CLogDataSettings() : m_fem(nullptr)
 {
 }
 
+CLogDataSettings::~CLogDataSettings()
+{
+	ClearLogData();
+}
+
+void CLogDataSettings::ClearLogData()
+{ 
+	for (auto p : m_log) delete p;
+	m_log.clear();
+}
+
+void CLogDataSettings::SetFSModel(FSModel* fem) { m_fem = fem; }
+
+FSLogData& CLogDataSettings::LogData(int i) { return *m_log[i]; }
+void CLogDataSettings::AddLogData(FSLogData* d) { m_log.push_back(d); }
+
 void CLogDataSettings::RemoveLogData(int item)
 {
+	delete m_log[item];
 	m_log.erase(m_log.begin() + item);
 }
 
@@ -59,15 +76,42 @@ void CLogDataSettings::Save(OArchive& ar)
 	const int N = (int) m_log.size();
 	for (int i = 0; i<N; ++i)
 	{
-		FSLogData& v = m_log[i];
+		FSLogData& v = *m_log[i];
 		ar.BeginChunk(CID_PRJ_LOGDATA_ITEM);
 		{
-			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.type);
-			ar.WriteChunk(CID_PRJ_LOGDATA_DATA, v.sdata);
-			ar.WriteChunk(CID_PRJ_LOGDATA_MID , v.matID);
-			ar.WriteChunk(CID_PRJ_LOGDATA_GID , v.groupID);
-            ar.WriteChunk(CID_PRJ_LOGDATA_CID , v.rcID);
-			ar.WriteChunk(CID_PRJ_LOGDATA_FILE, v.fileName);
+			ar.WriteChunk(CID_PRJ_LOGDATA_TYPE, v.Type());
+			ar.WriteChunk(CID_PRJ_LOGDATA_DATA, v.GetDataString());
+			ar.WriteChunk(CID_PRJ_LOGDATA_FILE, v.GetFileName());
+
+			switch (v.Type())
+			{
+			case FSLogData::LD_NODE:
+			case FSLogData::LD_ELEM:
+			case FSLogData::LD_FACE:
+			{
+				FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&v); assert(pil);
+				if (pil)
+				{
+					FEItemListBuilder* pl = pil->GetItemList();
+					if (pl) ar.WriteChunk(CID_PRJ_LOGDATA_GID, pl->GetID());
+				}
+			}
+			break;
+			case FSLogData::LD_RIGID:
+			{
+				FSLogRigidData* prd = dynamic_cast<FSLogRigidData*>(&v); assert(prd);
+				if (prd) ar.WriteChunk(CID_PRJ_LOGDATA_MID, prd->GetMatID());
+			}
+			break;
+			case FSLogData::LD_CNCTR:
+			{
+				FSLogConnectorData* prc = dynamic_cast<FSLogConnectorData*>(&v); assert(prc);
+				if (prc) ar.WriteChunk(CID_PRJ_LOGDATA_CID, prc->GetConnectorID());
+			}
+			break;
+			default:
+				assert(false);
+			}
 		}
 		ar.EndChunk();
 	}
@@ -80,7 +124,7 @@ void CLogDataSettings::Load(IArchive& ar)
 		if (ar.GetChunkID() == CID_PRJ_LOGDATA_ITEM)
 		{
 			string data, file;
-			int ntype;
+			int ntype = -1;
 			int mid = -1, gid = -1, cid = -1;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
@@ -96,14 +140,26 @@ void CLogDataSettings::Load(IArchive& ar)
 				ar.CloseChunk();
 			}
 
-			FSLogData d;
-			d.type = ntype;
-			d.sdata = data;
-			d.matID = mid;
-			d.groupID = gid;
-            d.rcID = cid;
-			d.fileName = file;
-			AddLogData(d);
+			GModel& gm = m_fem->GetModel();
+
+			FSLogData* ld = nullptr;
+			switch (ntype)
+			{
+			case FSLogData::LD_NODE: ld = new FSLogNodeData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_FACE: ld = new FSLogFaceData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_ELEM: ld = new FSLogElemData(gm.FindNamedSelection(gid)); break;
+			case FSLogData::LD_RIGID: ld = new FSLogRigidData(mid); break;
+			case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(cid); break;
+			default:
+				assert(false);
+			}
+
+			if (ld)
+			{
+				ld->SetDataString(data);
+				ld->SetFileName(file);
+				AddLogData(ld);
+			}
 		}
 		ar.CloseChunk();
 	}
@@ -120,6 +176,8 @@ FSProject::FSProject(void) : m_plt(*this)
 	m_module = -1;
 
 	m_units = 0; // 0 = no unit system
+
+	m_log.SetFSModel(&m_fem);
 
 	static bool init = false;
 	if (init == false)
@@ -257,7 +315,8 @@ void FSProject::Load(IArchive &ar)
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
 			int moduleId = MapOldToNewModules(oldModuleId);
-			assert(moduleId != -1);
+			// if the moduleID == -1, then this file likely requires a plugin
+			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
 			SetModule(moduleId);
 		} 
 		break;
@@ -339,6 +398,8 @@ void FSProject::InitModules()
 	FEMaterialFactory::AddCategory("heat transfer"       , MODULE_HEAT               , FE_MAT_HEAT_TRANSFER);
 	FEMaterialFactory::AddCategory("fluid"               , MODULE_FLUID              , FE_MAT_FLUID);
     FEMaterialFactory::AddCategory("fluid-FSI"           , MODULE_FLUID_FSI          , FE_MAT_FLUID_FSI);
+    FEMaterialFactory::AddCategory("fluid-solutes"       , MODULE_FLUID_SOLUTES      , FE_MAT_FLUID_SOLUTES);
+    FEMaterialFactory::AddCategory("thermo-fluid"        , MODULE_THERMO_FLUID       , FE_MAT_THERMO_FLUID);
     FEMaterialFactory::AddCategory("polar fluid"         , MODULE_POLAR_FLUID        , FE_MAT_POLAR_FLUID);
 	FEMaterialFactory::AddCategory("reaction-diffusion"  , MODULE_REACTION_DIFFUSION , FE_MAT_REACTION_DIFFUSION);
 	FEMaterialFactory::AddCategory("other"               , MODULE_MECH				 , FE_MAT_RIGID);
@@ -468,11 +529,22 @@ void FSProject::InitModules()
     REGISTER_FE_CLASS(FSFSITraction             , MODULE_FLUID_FSI, FELOAD_ID  , FE_FSI_TRACTION     , "FSI Interface Traction");
     REGISTER_FE_CLASS(FSBFSITraction            , MODULE_FLUID_FSI, FELOAD_ID  , FE_BFSI_TRACTION     , "Biphasic-FSI Interface Traction");
     
+    // --- THERMOFLUID MODULE ---
+    REGISTER_FE_CLASS(FSThermoFluidAnalysis     , MODULE_THERMO_FLUID, FEANALYSIS_ID    , FE_STEP_THERMO_FLUID      , "Thermofluid Mechanics");
+    REGISTER_FE_CLASS(FSFixedTemperature        , MODULE_THERMO_FLUID, FEBC_ID          , FE_FIXED_TEMPERATURE      , "Zero temperature");
+    REGISTER_FE_CLASS(FSPrescribedTemperature   , MODULE_THERMO_FLUID, FEBC_ID          , FE_PRESCRIBED_TEMPERATURE , "Prescribed temperature");
+    REGISTER_FE_CLASS(FSInitTemperature         , MODULE_THERMO_FLUID, FEIC_ID          , FE_INIT_TEMPERATURE       , "Temperature");
+    REGISTER_FE_CLASS(FSHeatFlux                , MODULE_THERMO_FLUID, FELOAD_ID        , FE_HEAT_FLUX              , "Heat flux");
+    REGISTER_FE_CLASS(FSHeatSource              , MODULE_THERMO_FLUID, FELOAD_ID        , FE_HEAT_SOURCE            , "Heat source");
+
 
     // --- POLAR FLUID MODULE ---
     REGISTER_FE_CLASS(FSPolarFluidAnalysis            , MODULE_POLAR_FLUID, FEANALYSIS_ID, FE_STEP_POLAR_FLUID, "Polar Fluid Mechanics");
     REGISTER_FE_CLASS(FSFixedFluidAngularVelocity     , MODULE_POLAR_FLUID, FEBC_ID      , FE_FIXED_FLUID_ANGULAR_VELOCITY        , "Zero fluid angular velocity");
     REGISTER_FE_CLASS(FSPrescribedFluidAngularVelocity, MODULE_POLAR_FLUID, FEBC_ID      , FE_PRESCRIBED_FLUID_ANGULAR_VELOCITY   , "Prescribed fluid angular velocity");
+
+    // --- FLUID-SOLUTES MODULE ---
+    REGISTER_FE_CLASS(FSFluidSolutesNaturalFlux       , MODULE_FLUID_SOLUTES, FELOAD_ID            , FE_FLUID_SOLUTES_NATURAL_FLUX      , "Solute natural flux");
 
 	// --- REACTION-DIFFUSION MODULE ---
 	REGISTER_FE_CLASS(FSReactionDiffusionAnalysis, MODULE_REACTION_DIFFUSION, FEANALYSIS_ID   , FE_STEP_REACTION_DIFFUSION, "Reaction-Diffusion");
@@ -521,6 +593,7 @@ void FSProject::SetDefaultPlotVariables()
 	{
 		m_plt.AddPlotVariable("displacement", true);
 		m_plt.AddPlotVariable("stress", true);
+        m_plt.AddPlotVariable("relative volume", true);
 	}
 	else if (strcmp(szmod, "biphasic") == 0)
 	{
@@ -529,6 +602,7 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("relative volume", true);
 		m_plt.AddPlotVariable("solid stress", true);
 		m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
 		m_plt.AddPlotVariable("fluid flux", true);
 	}
 	else if (strcmp(szmod, "heat") == 0)
@@ -575,6 +649,49 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
 	}
+    else if (strcmp(szmod, "fluid-solutes") == 0)
+    {
+        m_plt.AddPlotVariable("displacement", true);
+        m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("effective solute concentration", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("solute concentration", true);
+        m_plt.AddPlotVariable("solute flux", true);
+    }
+    else if (strcmp(szmod, "thermo-fluid") == 0)
+    {
+        m_plt.AddPlotVariable("displacement", true);
+        m_plt.AddPlotVariable("effective fluid pressure", true);
+        m_plt.AddPlotVariable("fluid acceleration", true);
+        m_plt.AddPlotVariable("fluid dilatation", true);
+        m_plt.AddPlotVariable("fluid heat flux", true);
+        m_plt.AddPlotVariable("fluid isobaric specific heat capacity", true);
+        m_plt.AddPlotVariable("fluid isochoric specific heat capacity", true);
+        m_plt.AddPlotVariable("nodal fluid temperature", true);
+        m_plt.AddPlotVariable("nodal fluid velocity", true);
+        m_plt.AddPlotVariable("fluid pressure", true);
+        m_plt.AddPlotVariable("fluid rate of deformation", true);
+        m_plt.AddPlotVariable("fluid specific free energy", true);
+        m_plt.AddPlotVariable("fluid specific entropy", true);
+        m_plt.AddPlotVariable("fluid specific internal energy", true);
+        m_plt.AddPlotVariable("fluid specific gage enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific free enthalpy", true);
+        m_plt.AddPlotVariable("fluid specific strain energy", true);
+        m_plt.AddPlotVariable("fluid stress", true);
+        m_plt.AddPlotVariable("fluid temperature", true);
+        m_plt.AddPlotVariable("fluid thermal conductivity" , true);
+        m_plt.AddPlotVariable("fluid velocity", true);
+        m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("fluid vorticity", true);
+    }
     else if (strcmp(szmod, "polar fluid") == 0)
     {
         m_plt.AddPlotVariable("displacement", true);
@@ -664,6 +781,7 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 		pi->SetLoadCurveID(p.GetLoadCurveID());
 	}
 	else { 
+		log << "error: cannot find parameter \"" << p.GetShortName() << "\"\n";
 		return false; 
 	}
 
@@ -737,6 +855,8 @@ void FSProject::ConvertToNewFormat(std::ostream& log)
 		case FE_STEP_MULTIPHASIC       : FEBio::SetActiveModule("multiphasic"       ); break;
 		case FE_STEP_FLUID             : FEBio::SetActiveModule("fluid"             ); break;
 		case FE_STEP_FLUID_FSI         : FEBio::SetActiveModule("fluid-FSI"         ); break;
+        case FE_STEP_FLUID_SOLUTES     : FEBio::SetActiveModule("fluid-solutes"     ); break;
+        case FE_STEP_THERMO_FLUID      : FEBio::SetActiveModule("thermo-fluid"      ); break;
         case FE_STEP_POLAR_FLUID       : FEBio::SetActiveModule("polar fluid"       ); break;
 		case FE_STEP_REACTION_DIFFUSION: FEBio::SetActiveModule("reaction-diffusion"); break; // requires plugin!
 		case FE_STEP_HEAT_TRANSFER     : FEBio::SetActiveModule("heat"              ); break; // requires plugin!
@@ -804,10 +924,21 @@ void convert_fibers(std::ostream& log, FSModelComponent* pd, const FSOldFiberMat
 			v = FEBio::CreateVec3dValuator("user", fem);
 		}
 		break;
+		case FE_FIBER_MAP:
+		{
+			v = FEBio::CreateVec3dValuator("map", fem);
+			v->SetParamString("map", pf->m_map);
+		}
+		break;
 		default:
 			log << "Unrecognized fiber generator.\n";
 		}
-		if (v) fiberProp->SetComponent(v);
+
+		if (v)
+		{
+			v->UpdateData(false);
+			fiberProp->SetComponent(v);
+		}
 	}
 	else
 	{
@@ -1038,25 +1169,29 @@ FSMaterial* convert_material(std::ostream& log, FSMaterial* pm, FSModel* fem)
 void FSProject::ConvertMaterials(std::ostream& log)
 {
 	FSModel& fem = GetFSModel();
-
 	for (int i = 0; i < fem.Materials(); ++i)
 	{
 		GMaterial* mat = fem.GetMaterial(i);
+		ConvertMaterial(mat, log);
+	}
+}
 
-		FSMaterial* pm = mat->GetMaterialProperties();
-		if (pm == nullptr)
+void FSProject::ConvertMaterial(GMaterial* mat, std::ostream& log)
+{
+	FSModel& fem = GetFSModel();
+	FSMaterial* pm = mat->GetMaterialProperties();
+	if (pm == nullptr)
+	{
+		log << "ERROR: Material \"" << mat->GetName() << "\" has no properties!" << std::endl;
+	}
+	else
+	{
+		FSMaterial* febMat = convert_material(log, pm, &fem);
+		if (febMat == nullptr)
 		{
-			log << "ERROR: Material \"" << mat->GetName() << "\" has no properties!" << std::endl;
+			log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
 		}
-		else
-		{
-			FSMaterial* febMat = convert_material(log, pm, &fem);
-			if (febMat == nullptr)
-			{
-				log << "Failed to create FEBio material " << pm->GetTypeString() << std::endl;
-			}
-			else mat->SetMaterialProperties(febMat);
-		}
+		else mat->SetMaterialProperties(febMat);
 	}
 }
 
@@ -1652,7 +1787,7 @@ void FSProject::ConvertStepICs(std::ostream& log, FSStep& newStep, FSStep& oldSt
 //		case FE_INIT_SHELL_FLUID_PRESSURE  : break;
 		case FE_INIT_CONCENTRATION         : febic = FEBio::CreateInitialCondition("initial concentration", fem); break;
 //		case FE_INIT_SHELL_CONCENTRATION   : break;
-//		case FE_INIT_TEMPERATURE           : break;
+		case FE_INIT_TEMPERATURE           : febic = FEBio::CreateInitialCondition("initial temperature", fem); break; break;
 		case FE_INIT_FLUID_DILATATION      : febic = FEBio::CreateInitialCondition("initial fluid dilatation", fem); break;
 		case FE_INIT_PRESTRAIN             : febic = FEBio::CreateInitialCondition("prestrain", fem); break;
 		default:

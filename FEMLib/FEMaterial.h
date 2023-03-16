@@ -18,6 +18,8 @@
 #define FE_MAT_DISCRETE				0x0100
 #define FE_MAT_1DFUNC				0x0200
 #define FE_MAT_POLAR_FLUID          0x0300
+#define FE_MAT_FLUID_SOLUTES        0x0400
+#define FE_MAT_THERMO_FLUID         0x0500
 
 // component classes
 // These values must not contain the top level class values in the lower bits!
@@ -247,6 +249,7 @@
 #define FE_FIBER_USER			4
 #define FE_FIBER_ANGLES			5
 #define FE_FIBER_POLAR			6
+#define FE_FIBER_MAP			7
 
 // continuous fiber distributions
 #define FE_CFD_MATERIAL             700
@@ -697,6 +700,9 @@ public:
 	// used by POLAR method
 	vec3d	m_d0, m_d1;
 	double	m_R0, m_R1;
+
+	// used by map
+	string	m_map;
 
 public:
 	void Save(OArchive& ar) override;
@@ -2679,6 +2685,8 @@ public:
 	bool HasFibers() override;
 
 	vec3d GetFiber(FEElementRef& el) override;
+
+	FSMaterial* Clone() override;
 
 	// local material axes
 	bool HasMaterialAxes() const override;

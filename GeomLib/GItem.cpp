@@ -47,11 +47,13 @@ template <> int GItem_T<GNode  >::m_ncount = 0;
 GNode::GNode() : GItem_T<GNode>(0) 
 { 
 	m_ntype = NODE_UNKNOWN; 
+	m_node = -1;
 }
 
 GNode::GNode(GBaseObject* po) : GItem_T<GNode>(po) 
 { 
 	m_ntype = NODE_UNKNOWN; 
+	m_node = -1;
 }
 
 GNode::GNode(const GNode &n)
@@ -63,6 +65,7 @@ GNode::GNode(const GNode &n)
 	m_ntype = n.m_ntype;
 	m_ntag = n.m_ntag;
 	m_po = n.m_po;
+	m_node = n.m_node;
 	SetName(n.GetName());
 }
 
@@ -75,6 +78,7 @@ void GNode::operator =(const GNode &n)
 	m_lid = n.m_lid;
 	m_ntype = n.m_ntype;
 	m_ntag = n.m_ntag;
+	m_node = n.m_node;
 //	m_po = n.m_po;
 	SetName(n.GetName());
 }
@@ -99,9 +103,9 @@ void GNode::MakeRequired()
 	if (po)
 	{
 		FSMesh* pm = po->GetFEMesh();
-		if (pm)
+		if (pm && (m_node >= 0) && (m_node < pm->Nodes()))
 		{
-			FSNode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
+			FSNode* pn = pm->NodePtr(m_node); assert(pn);
 			if (pn) pn->SetRequired(true);
 		}
 	}

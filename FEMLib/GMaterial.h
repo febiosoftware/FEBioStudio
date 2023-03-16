@@ -38,7 +38,7 @@ class GPartList;
 // This class defines a material. It stores the material properties (as a 
 // FSMaterial class), the material name and other attributes, mostly used for rendering
 //
-class GMaterial : public FSObject, public IHasItemList
+class GMaterial : public FSObject, public IHasItemLists
 {
 public:
 	enum {MAX_COLORS = 16};
@@ -83,11 +83,12 @@ public:
 	vec3d GetPosition() const { return m_pos; }
 
 public:	// IHasItemList
-	FEItemListBuilder* GetItemList() override;
+	int ItemLists() const override { return 1; }
+	FEItemListBuilder* GetItemList(int n = 0) override;
 	virtual unsigned int GetMeshItemType() const override;
 
 private:
-	void SetItemList(FEItemListBuilder* pi) override;
+	void SetItemList(FEItemListBuilder* pi, int n = 0) override;
 	virtual void SetMeshItemType(unsigned int meshItem){};
 
 public:

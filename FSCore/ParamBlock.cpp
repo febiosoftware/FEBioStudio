@@ -1311,6 +1311,19 @@ void ParamContainer::CopyParams(const ParamContainer& pc)
 	}
 }
 
+void ParamContainer::MapParams(const ParamContainer& pc)
+{
+	for (int i = 0; i < Parameters(); ++i)
+	{
+		const Param& pi = pc.GetParam(i);
+		Param* p = GetParam(pi.GetShortName());
+		if (p && (p->GetParamType() == pi.GetParamType()))
+		{
+			*p = pi;
+		}
+	}
+}
+
 void ParamContainer::AssignLoadCurve(Param& p, LoadCurve& lc)
 {
 	assert(false);

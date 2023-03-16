@@ -37,6 +37,8 @@ SOFTWARE.*/
 // 
 class AbaqusImport : public FSFileImport
 {
+	enum {MAX_ATTRIB = 16};
+
 	// attributes
 	struct ATTRIBUTE
 	{

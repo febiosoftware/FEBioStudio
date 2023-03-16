@@ -238,7 +238,8 @@ FSModel::FSModel() : m_skipGeometry(false)
     varAVel->AddDOF("Z-fluid angular velocity", "gz");
     
 	// define model parameters
-	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Absolute temperature");
+	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Referential absolute temperature");
+    AddScienceParam(0, UNIT_PRESSURE, "P", "Referential absolute pressure");
 	AddScienceParam(0, UNIT_GAS_CONSTANT, "R", "Gas constant");
 	AddScienceParam(0, UNIT_FARADAY_CONSTANT, "Fc", "Faraday's constant");
 }
@@ -1261,6 +1262,25 @@ void FSModel::New()
 }
 
 //-----------------------------------------------------------------------------
+int FSModel::CountMeshDataFields()
+{
+	// count the mesh data fields on the meshes
+	GModel& mdl = GetModel();
+	int total = 0;
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		FSMesh* mesh = po->GetFEMesh();
+		if (mesh) total += mesh->MeshDataFields();
+	}
+
+	// add the data generators
+	total += MeshDataGenerators();
+
+	return total;
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::Save(OArchive& ar)
 {
 	// save model data
@@ -1430,8 +1450,6 @@ void FSModel::Load(IArchive& ar)
 	// clear the model
 	Clear();
 
-	GPartList::SetModel(this);
-
     m_pModel->SetLoadOnlyDiscreteFlag(m_skipGeometry);
 
 	// read the model data
@@ -1459,8 +1477,6 @@ void FSModel::Load(IArchive& ar)
 		GMaterial* pm = GetMaterial(i);
 		pm->GetItemList();
 	}
-
-	GPartList::SetModel(nullptr);
 }
 
 //-----------------------------------------------------------------------------
@@ -1576,6 +1592,8 @@ void FSModel::LoadSteps(IArchive& ar)
 		case FE_STEP_REACTION_DIFFUSION : ps = new FSReactionDiffusionAnalysis(this); break;
         case FE_STEP_POLAR_FLUID        : ps = new FSPolarFluidAnalysis (this); break;
 		case FE_STEP_FEBIO_ANALYSIS     : ps = new FEBioAnalysisStep(this); break;
+        case FE_STEP_FLUID_SOLUTES      : ps = new FSFluidSolutesAnalysis(this); break;
+        case FE_STEP_THERMO_FLUID       : ps = new FSThermoFluidAnalysis(this); break;
 		default:
 			throw ReadError("unknown CID in FSModel::LoadSteps");
 		}
