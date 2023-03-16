@@ -352,6 +352,14 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 		AddSurface(pfl->GetName(), pfl);
 	}
 
+	// add the user-defined part lists
+	int parts = model.PartLists();
+	for (int i = 0; i < parts; ++i)
+	{
+		GPartList* pl = model.PartList(i);
+		AddNodeSet(pl->GetName(), pl);
+	}
+
 	// add the user-defined mesh selections
 	int nobj = model.Objects();
 	for (int i = 0; i < nobj; ++i)
