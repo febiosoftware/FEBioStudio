@@ -1680,7 +1680,7 @@ bool FEBioFormat3::ParseMeshAdaptorSection(XMLTag& tag)
 				}
 				else AddLogEntry("Failed to find element set %s", szset);
 			}
-			m_pBCStep->AddMeshAdaptor(mda);
+			m_pBCStep->AddComponent(mda);
 
 			ParseModelComponent(mda, tag);
 		}
@@ -2121,7 +2121,7 @@ void FEBioFormat3::ParseBCNormalDisplacement(FSStep* pstep, XMLTag& tag)
 		pbc->SetInfo(comment);
 
 		// add to the step
-		pstep->AddBC(pbc);
+		pstep->AddComponent(pbc);
 	}
 }
 
@@ -2145,7 +2145,7 @@ void FEBioFormat3::ParseBCLinearConstraint(FSStep* pstep, XMLTag& tag)
 	pbc->SetName(name);
 	pbc->SetInfo(comment);
 
-	pstep->AddBC(pbc);
+	pstep->AddComponent(pbc);
 
 	ParseModelComponent(pbc, tag);
 }
@@ -3325,7 +3325,7 @@ void FEBioFormat3::ParseRigidConnector(FSStep *pstep, XMLTag &tag, const int rc)
 	const char* szn = tag.AttributeValue("name", true);
 	if (szn) strcpy(szname, szn);
 	pi->SetName(szname);
-	pstep->AddRigidConnector(pi);
+	pstep->AddComponent(pi);
 
 	int na = -1, nb = -1;
 
@@ -3577,7 +3577,7 @@ void FEBioFormat3::ParseRigidCable(FSStep* pstep, XMLTag& tag)
 		prl->SetName(sz);
 	}
 
-	pstep->AddRigidLoad(prl);
+	pstep->AddComponent(prl);
 
 	// we need the rigid_cable_point property
 	FSProperty* points = prl->FindProperty("rigid_cable_point");

@@ -1490,7 +1490,7 @@ bool FEBioFormat4::ParseMeshAdaptorSection(XMLTag& tag)
 				else AddLogEntry("Failed to find element set %s", szset);
 			}
 
-			m_pBCStep->AddMeshAdaptor(mda);
+			m_pBCStep->AddComponent(mda);
 
 			ParseModelComponent(mda, tag);
 		}
@@ -1888,7 +1888,7 @@ void FEBioFormat4::ParseRigidBC(FSStep* pstep, XMLTag& tag)
 		return;
 	}
 	pi->SetName(name);
-	pstep->AddRigidBC(pi);
+	pstep->AddComponent(pi);
 
 	ParseModelComponent(pi, tag);
 }
@@ -1915,7 +1915,7 @@ void FEBioFormat4::ParseRigidIC(FSStep* pstep, XMLTag& tag)
 		return;
 	}
 	pi->SetName(name);
-	pstep->AddRigidIC(pi);
+	pstep->AddComponent(pi);
 	ParseModelComponent(pi, tag);
 }
 
@@ -1941,7 +1941,7 @@ void FEBioFormat4::ParseRigidLoad(FSStep* pstep, XMLTag& tag)
 		return;
 	}
 	pi->SetName(name);
-	pstep->AddRigidLoad(pi);
+	pstep->AddComponent(pi);
 	ParseModelComponent(pi, tag);
 }
 
@@ -1969,7 +1969,7 @@ void FEBioFormat4::ParseRigidConnector(FSStep *pstep, XMLTag &tag)
 		ParseUnknownAttribute(tag, "type");
 		return;
 	}
-	pstep->AddRigidConnector(pi);
+	pstep->AddComponent(pi);
 	ParseModelComponent(pi, tag);
 }
 
