@@ -93,7 +93,14 @@ private:
 	// set some default GL material properties
 	void SetDefaultMatProps();
 
+	void ActivateEnvironmentMap();
+	void DeactivateEnvironmentMap();
+	void LoadEnvironmentMap();
+
 private:
 	CModelDocument* m_doc;
 	GLMeshRender	m_renderer;
+
+	bool	m_bshowEnv;	// show environment map
+	unsigned int	m_envtex;	// enironment texture ID
 };
