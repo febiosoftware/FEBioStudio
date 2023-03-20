@@ -1623,7 +1623,7 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	VM3_ODF(odf->m_odf, x, beta, VM3ODF);
 
 	// calculate generalized FA
-	odf->m_VM3_GFA = stddev(EFDODF) / rms(EFDODF);
+	odf->m_VM3_GFA = stddev(VM3ODF) / rms(VM3ODF);
 	Log("generalized fractional anisotropy: %lg\n", odf->m_VM3_GFA);
 
 	// calculate Fisher-Rao distance
