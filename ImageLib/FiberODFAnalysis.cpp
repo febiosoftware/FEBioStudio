@@ -1594,6 +1594,13 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	// do optimization of EDF parameters
 	Log("\nFitting EFD\n");
 	vector<double> alpha = optimize_edf({ 1.0, 1.0, 1.0 }, odf->m_odf, x, V, l);
+
+	// the alpha values need to be scaled by l
+	alpha[0] *= l[0];
+	alpha[1] *= l[1];
+	alpha[2] *= l[2];
+
+	// store results
 	odf->m_EFD_alpha = vec3d(alpha[0], alpha[1], alpha[2]);
 	Log("optimized alpha: %lg, %lg, %lg\n", alpha[0], alpha[1], alpha[2]);
 
