@@ -338,7 +338,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 
 	// add the user-defined edges
 	int esets = model.EdgeLists();
-	for (int i = 0; i < nsets; ++i)
+	for (int i = 0; i < esets; ++i)
 	{
 		GEdgeList* pel = model.EdgeList(i);
 		AddEdgeSet(pel->GetName(), pel);
