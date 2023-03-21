@@ -486,7 +486,7 @@ public:
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
 		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
-        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
+//        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
         // QAction* actionReadInfo       = addAction("Read Model Info ..."   , "actionReadInfo"  , "info");;
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
@@ -787,7 +787,7 @@ public:
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addAction(actionNewProject);
-        menuFile->addAction(actionNewImageDoc);
+//        menuFile->addAction(actionNewImageDoc);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
         // menuFile->addAction(actionReadInfo);
