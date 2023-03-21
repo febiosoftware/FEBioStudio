@@ -207,7 +207,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	PM.SetCurrentIndex(PM.Palettes() - 1);
 
 	// read the theme option, before we build the UI
-	readThemeSetting();
+	if (reset == false)
+		readThemeSetting();
 
 	// activate dark style
 	if (ui->m_theme == 1)
