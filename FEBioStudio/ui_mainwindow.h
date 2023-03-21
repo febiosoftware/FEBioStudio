@@ -702,6 +702,7 @@ public:
 		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
 		QAction* actionFEBioUM = addAction("FEBio User Manual", "actionFEBioUM");
 		QAction* actionFEBioTM = addAction("FEBio Theory Manual", "actionFEBioTM");
+		QAction* actionFBSManual = addAction("FEBio Studio Manual", "actionFBSManual");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionWelcome = addAction("Show Welcome Page", "actionWelcome");
@@ -1030,6 +1031,7 @@ public:
 		menuHelp->addAction(actionFEBioResources);
 		menuHelp->addAction(actionFEBioUM);
 		menuHelp->addAction(actionFEBioTM);
+		menuHelp->addAction(actionFBSManual);
 		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioPubs);
         menuHelp->addSeparator();
