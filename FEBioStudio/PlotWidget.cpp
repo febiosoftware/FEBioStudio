@@ -112,6 +112,7 @@ public:
 
 CDlgPlotWidgetProps::CDlgPlotWidgetProps(QWidget* parent) : QDialog(parent), ui(new CDlgPlotWidgetProps_Ui)
 {
+	setWindowTitle("Map region");
 	ui->setup(this);
 }
 
@@ -1918,6 +1919,7 @@ public:
 	QToolButton* addPoint;
 	QToolButton* snap2grid;
 	QHBoxLayout* pltbutton;
+	QToolButton* map2rect;
 
 public:
 	QPointF					m_dragPt;
@@ -2020,10 +2022,12 @@ public:
 		zoomy->setIcon(QIcon(":/icons/zoom_y.png"));
 		zoomy->setToolTip("<font color=\"black\">Zoom Y extents");
 
-		QToolButton* map = new QToolButton; map->setObjectName("map");
-		map->setAutoRaise(true);
-		map->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
-		map->setToolTip("<font color=\"black\">Map to rectangle");
+		map2rect = new QToolButton;
+		map2rect->setAutoRaise(true);
+		map2rect->setCheckable(true);
+		map2rect->setChecked(false);
+		map2rect->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
+		map2rect->setToolTip("<font color=\"black\">Map to rectangle");
 
 		QToolButton* clear = new QToolButton; clear->setObjectName("clear");
 		clear->setAutoRaise(true);
@@ -2039,7 +2043,7 @@ public:
 		pltbutton->addWidget(zoomx);
 		pltbutton->addWidget(zoomy);
 		pltbutton->addWidget(zoom);
-		pltbutton->addWidget(map);
+		pltbutton->addWidget(map2rect);
 		pltbutton->addWidget(clear);
 		pltbutton->addStretch();
 		pltbutton->setSpacing(2);
@@ -2300,15 +2304,19 @@ void CCurveEditWidget::on_plot_doneZoomToRect()
 
 void CCurveEditWidget::on_plot_regionSelected(QRect rt)
 {
-	UpdateSelection();
-}
-
-void CCurveEditWidget::on_plot_doneSelectingRect(QRect rt)
-{
-	CDlgPlotWidgetProps dlg;
-	if (dlg.exec())
+	if (ui->map2rect->isChecked())
 	{
-		ui->plt->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		CDlgPlotWidgetProps dlg;
+		if (dlg.exec())
+		{
+			ui->plt->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		}
+		ui->map2rect->setChecked(false);
+	}
+	else
+	{
+		ui->plt->regionSelect(rt);
+		UpdateSelection();
 	}
 }
 
