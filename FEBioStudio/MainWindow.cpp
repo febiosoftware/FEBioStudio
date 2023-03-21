@@ -281,7 +281,10 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
 	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
-	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
+	if (ui->m_autoSaveInterval > 0)
+	{
+		ui->m_autoSaveTimer->start(ui->m_autoSaveInterval * 1000);
+	}
 
 	// Auto Update Check
 	if(ui->m_updaterPresent)
@@ -1820,7 +1823,10 @@ void CMainWindow::setAutoSaveInterval(int interval)
 	ui->m_autoSaveInterval = interval;
 
 	ui->m_autoSaveTimer->stop();
-	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
+	if (ui->m_autoSaveInterval > 0)
+	{
+		ui->m_autoSaveTimer->start(ui->m_autoSaveInterval * 1000);
+	}
 }
 
 int CMainWindow::autoSaveInterval()
