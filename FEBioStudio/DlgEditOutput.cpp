@@ -165,10 +165,11 @@ public:
 
 		// --- log file tab
 		logType = new QComboBox;
-		logType->addItem("Node");
-		logType->addItem("Element");
-		logType->addItem("Rigid body");
-        logType->addItem("Rigid connector");
+		logType->addItem("Node", FSLogData::LD_NODE);
+		logType->addItem("Face", FSLogData::LD_FACE);
+		logType->addItem("Element", FSLogData::LD_ELEM);
+		logType->addItem("Rigid body", FSLogData::LD_RIGID);
+		logType->addItem("Rigid connector", FSLogData::LD_CNCTR);
 
 		logList = new QComboBox;
 
@@ -556,12 +557,12 @@ void CDlgEditOutput::UpdateLogItemList()
 	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
-	int ntype = ui->logType->currentIndex();
+	int ntype = ui->logType->currentData().toInt();
 
 	if (ntype == FSLogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
 	if (ntype == FSLogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
 	if (ntype == FSLogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
-    if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+	if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
 
 	if ((ntype == FSLogData::LD_NODE) || (ntype == FSLogData::LD_ELEM))
 	{
@@ -618,6 +619,26 @@ void CDlgEditOutput::UpdateLogItemList()
 					FSElemSet* pg = po->GetFEElemSet(i);
 					ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 				}
+			}
+		}
+	}
+	else if (ntype == FSLogData::LD_FACE)
+	{
+		// add surfaces
+		for (int i = 0; i < mdl.FaceLists(); ++i)
+		{
+			GFaceList* pg = mdl.FaceList(i);
+			ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
+		}
+
+		for (int i = 0; i < mdl.Objects(); ++i)
+		{
+			GObject* po = mdl.Object(i);
+			int NS = po->FESurfaces();
+			for (int i = 0; i < NS; ++i)
+			{
+				FSSurface* ps = po->GetFESurface(i);
+				ui->logList->addItem(QString::fromStdString(ps->GetName()), ps->GetID());
 			}
 		}
 	}

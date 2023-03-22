@@ -3032,7 +3032,7 @@ void FEBioExport4::WriteOutputSection()
 				case FSLogData::LD_FACE:
 				{
 					XMLElement e;
-					e.name("surface_data");
+					e.name("face_data");
 					e.add_attribute("data", d.GetDataString());
 
 					if (d.GetFileName().empty() == false) e.add_attribute("file", d.GetFileName());
