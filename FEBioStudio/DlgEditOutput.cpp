@@ -46,6 +46,8 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QCompleter>
+#include "CustomLineEdit.h"
 #include <FEBioLink/FEBioClass.h>
 
 class Ui::CDlgAddSelection
@@ -107,7 +109,7 @@ public:
 	QComboBox* logType;
 	QTableWidget* table;
 	QComboBox* logList;
-	QLineEdit* logEdit;
+	CustomLineEdit* logEdit;
 
 	vector<CPlotVariable>	m_plt;
 
@@ -175,7 +177,9 @@ public:
 
 		QLabel* info = new QLabel("Enter a semi-colon delimited list of variables:");
 
-		logEdit = new QLineEdit;
+		logEdit = new CustomLineEdit;
+		logEdit->setWrapQuotes(false);
+		logEdit->setDelimiter(";");
 
 		QPushButton* addLogItem = new QPushButton("Add");
 		QPushButton* remLogItem = new QPushButton("Remove");
@@ -563,6 +567,23 @@ void CDlgEditOutput::UpdateLogItemList()
 	if (ntype == FSLogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
 	if (ntype == FSLogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
 	if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+
+	std::vector<FEBio::FEBioClassInfo> info;
+	switch (ntype)
+	{
+	case FSLogData::LD_NODE : info = FEBio::FindAllActiveClasses(FELOGNODEDATA_ID); break;
+	case FSLogData::LD_FACE : info = FEBio::FindAllActiveClasses(FELOGFACEDATA_ID); break;
+	case FSLogData::LD_ELEM : info = FEBio::FindAllActiveClasses(FELOGELEMDATA_ID); break;
+	case FSLogData::LD_RIGID: info = FEBio::FindAllActiveClasses(FELOGOBJECTDATA_ID); break;
+	case FSLogData::LD_CNCTR: info = FEBio::FindAllActiveClasses(FELOGNLCONSTRAINTDATA_ID); break;
+	}
+	
+	QStringList sl;
+	for (int i = 0; i < info.size(); ++i) sl << info[i].sztype;
+
+	QCompleter* c = new QCompleter(sl);
+	c->popup()->setMinimumWidth(100);
+	ui->logEdit->setMultipleCompleter(c);
 
 	if ((ntype == FSLogData::LD_NODE) || (ntype == FSLogData::LD_ELEM))
 	{
