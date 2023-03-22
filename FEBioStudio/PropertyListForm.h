@@ -103,7 +103,7 @@ private slots:
 
 signals:
 	// send when a widget is changed
-	void dataChanged(bool itemModified);
+	void dataChanged(bool itemModified, int index);
 
 private:
 	QVBoxLayout*	ui;
