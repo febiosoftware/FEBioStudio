@@ -9980,27 +9980,12 @@ reference "fig107"
 \end_inset
 
 .
- The Material Browser allows you to compose a material.
- Note that it doesn't allow you to set the material properties.
- They will be set in Model Viewer.
-\end_layout
-
-\begin_layout Standard
-In the first edit field you can enter a name for the material or leave it
- empty to accept a default name.
+ The Material Browser allows you to select a material and optionally provide
+ a name for the material.
+ If no name is given, FEBio Studio will generate a default one.
  The name of a material can also be changed later.
- Below the name field, a drop down list can be used to select the material
- category.
- The tree view below the category drop down box allows you to compose the
- material.
- When you select an item in this tree view, a drop-down box will appear
- next to it that allows you to choose a material type for the selected material
- component.
- Sometimes, selecting an option will create more material components.
- You do not need to select an option for all the components.
- You only need to set the ones that are relevant for your model.
- After you selected all the relevant components, click OK to create the
- material and add it to the model.
+ After you selected the material, click OK to create the material and add
+ it to the model.
  The material will become selected in the Model Viewer.
 \end_layout
 
@@ -10019,11 +10004,14 @@ name "subsec:setting"
 After you create a material, you can set the material parameters in the
  Model Viewer.
  More specifically, when you select a material in the Model Viewer, the
- material properties are displayed in the Properties rollout.
- Note that materials can have child components, which can be selected by
- expanding the tree item.
- The components will have their own set of material parameters that can
- be altered.
+ material parameters are displayed in the Properties rollout.
+ Note that materials can have child components, often referred to as material
+ properties.
+ Initially, these properties may not be set, in which case a drop-down box
+ next to their name will appear.
+ Selecting the <select...> option, will bring up another dialog box that allows
+ you to select which particular material property to assign.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -10323,12 +10311,29 @@ name "subsec:boundary"
 \end_layout
 
 \begin_layout Standard
+Boundary conditions are used to constrain the solution on parts of the boundary.
+ For example, in structural mechanics problems a boundary condition can
+ be used to fix nodes from moving.
+ 
+\end_layout
+
+\begin_layout Standard
 To apply a boundary condition, select the 
 \emph on
-Physics/Add Boundary Condition 
+Physics/Add Nodal BC 
 \emph default
-menu.
- A dialog box appears that shows a list of available boundary conditions.
+menu or the 
+\emph on
+Physics/Add Surface BC
+\emph default
+.
+ Most of the boundary conditions will be under the Nodal BC option.
+ Nodal boundary conditions can be applied to nodes, surfaces, edges, or
+ parts.
+ Some special boundary conditions that can only be assigned to surfaces
+ are found under the Surface BC menu option.
+ In either case, a dialog box appears that shows a list of available boundary
+ conditions.
 \end_layout
 
 \begin_layout Standard
@@ -10374,6 +10379,7 @@ name "fig111"
 \begin_layout Standard
 At the top of the dialog box the name of the boundary condition can be entered.
  Alternatively, this field can be left blank to accept a default name.
+ The name can also be changed later.
  Next, a drop-down list displays all the steps for which you can define
  a boundary condition.
  If you choose the 
@@ -10403,12 +10409,14 @@ and the
 prescribed constraints
 \emph default
 .
- For a fixed constraint, the corresponding degree of freedom is kept zero
- throughout the entire analysis.
- For a prescribed constraint, the value of the corresponding degree of freedom
- is defined through a load curve.
+ For a fixed constraint (e.g.
+ zero displacement), the corresponding degree of freedom is kept zero throughout
+ the entire analysis.
+ For a prescribed constraint (e.g.
+ prescribed displacement), the value of the corresponding degree of freedom
+ is defined by the user.
  You may wonder why the fixed constraints are available, since you can achieve
- the same result by defining a zero load curve for a prescribed constraint.
+ the same result by defining a zero value for a prescribed constraint.
  The reason is that the degrees of freedom for fixed constraints are removed
  from the linear system of equations, reducing the computational time to
  solve the linear system.
@@ -10419,8 +10427,8 @@ prescribed constraints
 \end_layout
 
 \begin_layout Standard
-It is important to understand that with each prescribed constraint a load
- curve is associated.
+It is important to know that with most prescribed constraints a default
+ load curve will be associated.
  The actual value for the constraint at any given time is the product of
  the scale factor which you will enter in the properties dialog for the
  boundary condition and the value of the load curve at that time.
@@ -10438,269 +10446,12 @@ reference "subsec:mylabel19"
 \end_layout
 
 \begin_layout Standard
-In the next sections we briefly discuss the available boundary conditions.
-\end_layout
-
-\begin_layout Subsection
-Fixed Displacement
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:fixed"
-
-\end_inset
-
+For details on the specific types of boundary conditions, please consult
+ the FEBio User's Manual.
+ The easiest way to access it, is to select a boundary condition and click
+ the Help button in the dialog box.
+ That should open the relevant page in a browser window.
  
-\end_layout
-
-\begin_layout Standard
-A 
-\emph on
-Fixed Displacement 
-\emph default
-boundary condition allows you to fix a boundary.
- In the properties list, the 
-\begin_inset Formula $x$
-\end_inset
-
-, 
-\begin_inset Formula $y$
-\end_inset
-
- and 
-\begin_inset Formula $z$
-\end_inset
-
-degrees of freedom are the translational degrees of freedom of the FE nodes.
-\end_layout
-
-\begin_layout Subsection
-Fixed Shell Displacement
-\end_layout
-
-\begin_layout Standard
-Certain shell element formulations used in FEBio have two sets of displacement
- degrees of freedom.
- One for the front-face of the shell, and one for the back face.
- The usual displacement degrees of freedom are used for the front-face of
- the shell, and the shell displacement degrees of freedom are used for the
- back-face of the shell.
- This boundary condition allows you to fix the back-face shell degrees of
- freedom.
-\end_layout
-
-\begin_layout Subsection
-Fixed Shell Rotation
-\end_layout
-
-\begin_layout Standard
-A 
-\emph on
-Fixed Rotation 
-\emph default
-allows you to fix the rotational degrees of freedom of a boundary.
- This is only used by certain types of shell elements.
-\end_layout
-
-\begin_layout Subsection
-Zero Fluid Pressure
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:mylabel56"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-This boundary condition can be used to set the fluid pressure to zero in
- biphasic analysis.
- A zero pressure boundary condition on a surface defines a free-draining
- surface, in other words, fluid will be able to leave the model through
- this surface.
-\end_layout
-
-\begin_layout Standard
-This boundary condition differs from a zero prescribed fluid pressure (see
- below) in that the degrees of freedom for a zero fluid pressure boundary
- will be removed from the linear system.
-\end_layout
-
-\begin_layout Subsection
-Zero Temperature
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:mylabel57"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-This boundary condition can be used to set the temperature of a boundary
- to zero in a heat transfer analysis.
- It differs from a zero prescribed temperature in that the degrees of freedom
- for a zero temperature boundary will be removed from the linear system.
-\end_layout
-
-\begin_layout Subsection
-Zero Solute Concentration
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:mylabel58"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-Use this boundary condition to set the solute concentration to zero for
- a multiphasic analysis (e.g., biphasic-solute, triphasic, etc.).
- It differs from a zero prescribed solute concentration in that the degrees
- of freedom for a zero solute concentration boundary will be removed from
- the linear system.
- Solutes must first be defined in the Solute Table.
-\end_layout
-
-\begin_layout Subsection
-Prescribed Displacement
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:prescribed"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-A 
-\emph on
-Prescribed Displacement 
-\emph default
-allows you to define the translational degrees of freedom of a boundary.
- The value of displacement is the product of the associated load curve and
- the scale factor which is entered in the properties dialog box on the Model
- Viewer.
-\end_layout
-
-\begin_layout Subsection
-Prescribed Shell Rotation
-\end_layout
-
-\begin_layout Standard
-This boundary condition allows you to prescribe the rotational degrees of
- freedom of a shell.
- This is only used by certain types of shell formulations.
-\end_layout
-
-\begin_layout Subsection
-Prescribed Shell Displacement
-\end_layout
-
-\begin_layout Standard
-This allows you to prescribe the back-face shell displacement degrees of
- freedom.
- This is only used by certain shell formulations.
-\end_layout
-
-\begin_layout Subsection
-Prescribed Fluid Pressure
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:mylabel59"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Use this boundary condition to prescribe the fluid pressure on a boundary
- for a biphasic analysis.
- The value of the prescribed pressure is the product of the associated load
- curve value and the scale factor which is entered in the properties dialog
- box.
-\end_layout
-
-\begin_layout Subsection
-Prescribed Temperature
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:mylabel60"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Use this boundary condition to prescribe the temperature on a boundary in
- heat transfer analysis.
- The value of the prescribed temperature is the product of the associated
- load curve value and the scale factor which is defined in the properties
- dialog box.
-\end_layout
-
-\begin_layout Subsection
-Prescribed Solute Concentration
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:mylabel61"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-Use this boundary condition to prescribe the solute concentration on a boundary
- in multiphasic analysis (e.g., biphasic-solute, triphasic, etc.).
- The value of the prescribed solute concentration is the product of the
- associated load curve value and the scale factor which is defined in the
- properties dialog box.
- Solutes must first be defined in the Solute Table.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename Figures/add_surface_load.png
-	width 2.14in
-	height 2.45in
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-The Add Surface Load dialog box.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig112"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Section
@@ -10738,55 +10489,61 @@ First, enter a name for the new surface load or leave the field empty to
  accept the default value.
  Then, select the step to which you wish to apply the load.
  Remember that applying a load to the initial step will cause the load to
- propagate through all the other steps, where if you select an analysis
- step, the load will only remain active during that step.
+ propagate through all the other steps.
+ If you select an analysis step, on the other hand, the load will only remain
+ active during that step.
 \end_layout
 
 \begin_layout Standard
 Next, select the type of load you wish to add from the list and click the
  OK button to confirm your choice.
- The load parameters can be entered in the properties box on the Model Viewer.
- The different available loads will be described in the following sections.
-\end_layout
-
-\begin_layout Subsection
-Pressure
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:pressure"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The pressure load allows you to apply a pressure follower force to a surface.
- These pressure forces are always directed along the local surface normal
- and therefore change when the object undergoes a large deformation.
- Also note that, like prescribed constraints, a load curve is associated
- with the pressure force which by default will ramp the pressure value from
- zero to whatever value you entered.
-\end_layout
-
-\begin_layout Subsection
-Traction forces
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:traction"
-
-\end_inset
-
+ The load parameters can be entered in the properties rollout on the Model
+ Viewer.
+ For details on the specific types of surface loads, please consult the
+ FEBio User's Manual.
+ The easiest way to access it, is to select a load and click the Help button
+ in the dialog box.
+ That should open the relevant page in a browser window.
  
 \end_layout
 
 \begin_layout Standard
-Traction forces are similar to pressure forces but differ in two regards.
- First, the force vector is entered directly and does not need to be perpendicul
-ar to the surface.
- Second, the force remains constant and does not change with deformation.
- Note that a load curve is associated with the traction load amplitude which
- by default will ramp the amplitude from zero to whatever value you entered.
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_surface_load.png
+	width 2.14in
+	height 2.45in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Add Surface Load dialog box.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig112"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Section
@@ -10797,6 +10554,40 @@ name "subsec:initial"
 
 \end_inset
 
+ 
+\end_layout
+
+\begin_layout Standard
+For dynamic problems, the user can define initial conditions in a similar
+ way as boundary conditions.
+ First, select the part, surface, edge or node to which you want to apply
+ the initial condition.
+ Then, from the Physics menu, select 
+\begin_inset Quotes eld
+\end_inset
+
+Initial Conditions
+\begin_inset Quotes erd
+\end_inset
+
+ to open the 
+\emph on
+Initial Conditions
+\emph default
+ dialog box.
+ This dialog box presents a list of available initial conditions that can
+ be applied to the current selection.
+\end_layout
+
+\begin_layout Standard
+First, enter a name for the initial condition or accept the default.
+ Then, select the step to which this initial condition needs to be applied.
+ Next, select the initial condition from the list of available choices.
+ For details on the specific types of initial conditions, please consult
+ the FEBio User's Manual.
+ The easiest way to access it, is to select an initial condition and click
+ the Help button in the dialog box.
+ That should open the relevant page in a browser window.
  
 \end_layout
 
@@ -10827,11 +10618,6 @@ name "fig113"
 
 \end_inset
 
- 
-\end_layout
-
-\end_inset
-
 
 \end_layout
 
@@ -10840,101 +10626,9 @@ name "fig113"
 
 \end_layout
 
-\begin_layout Standard
-For dynamic problems, the user can define initial conditions in a similar
- way as boundary conditions.
- First, select the part, surface, edge or node to which you want to apply
- the initial condition.
- Then, from the Physics menu, select 
-\begin_inset Quotes eld
 \end_inset
 
-Initial Conditions
-\begin_inset Quotes erd
-\end_inset
 
- to open the 
-\emph on
-Initial Conditions
-\emph default
- dialog box.
- This dialog box presents a list of available initial conditions that can
- be applied to the current selection.
-\end_layout
-
-\begin_layout Standard
-First, enter a name for the initial condition or accept the default.
- Then, select the step to which this initial condition needs to be applied.
- Next, select the initial condition from the list of available choices.
- The following sections describe the initial conditions in more detail.
-\end_layout
-
-\begin_layout Subsection
-Velocity
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:velocity"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-An initial velocity condition defines the velocity at the start of a simulation
- step.
- This condition will be applied to all the FE nodes of the current selection.
-\end_layout
-
-\begin_layout Subsection
-Shell Velocity
-\end_layout
-
-\begin_layout Standard
-This allows you to set the initial velocity of a shell's back face.
- This is only applicable for certain shell formulations.
-\end_layout
-
-\begin_layout Subsection
-Temperature
-\end_layout
-
-\begin_layout Standard
-Use this to set the initial temperature of a transient heat transfer analysis.
-\end_layout
-
-\begin_layout Subsection
-Concentration
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:concentration"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-Use this initial condition to set the initial solute concentration for the
- current selection in a multiphasic analysis (biphasic-solute, triphasic,
- etc.).
- Solutes must first be defined in the Solute Table.
-\end_layout
-
-\begin_layout Subsection
-Initial Fluid Pressure
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:initial"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Standard
-Use this initial condition to set the initial fluid pressure for the current
- selection in a biphasic or multiphasic analyses.
 \end_layout
 
 \begin_layout Section
@@ -10949,8 +10643,9 @@ name "subsec:mylabel26"
 \end_layout
 
 \begin_layout Standard
-To assign a boundary condition to a selection, first select the boundary
- condition (or boundary load, or initial condition) in the Model Viewer.
+To assign a boundary condition (or initial condition or load) to a selection,
+ first select the boundary condition (or load, or initial condition) in
+ the Model Viewer.
  Notice that a selection box appears below the tree view, which lists the
  model components to which this boundary condition is applied.
  Initially, this list may be empty.
