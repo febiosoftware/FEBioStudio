@@ -1004,7 +1004,6 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 	float ev[8];
 	vec3d ex[8];
-	int   en[8];
 
 	vec3d r[4];
 	float v[4];
@@ -1049,10 +1048,10 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FSNode& node = pm->Node(el.m_node[nt[k]]);
-				en[k] = el.m_node[k];
-				ev[k] = ps->m_NODE[en[k]].m_val;
-				ex[k] = to_vec3d(ps->m_NODE[en[k]].m_rt);
+				int m = el.m_node[nt[k]];
+				FSNode& node = pm->Node(m);
+				ev[k] = ps->m_NODE[m].m_val;
+				ex[k] = to_vec3d(ps->m_NODE[m].m_rt);
 			}
 
 			// calculate the case of the element
