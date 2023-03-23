@@ -1016,7 +1016,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	GetNormalizedEquations(a);
 	vec3d norm = GetPlaneNormal();
 
-	double ref = a[3];
+	double ref = -a[3];
 
 	// repeat over all elements
 	for (int i=0; i<pm->Elements(); ++i)
