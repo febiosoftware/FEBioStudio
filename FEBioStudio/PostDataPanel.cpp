@@ -1273,6 +1273,11 @@ void CPostDataPanel::on_ExportButton_clicked()
 							QMessageBox::critical(this, "Export Data", "List of export states is not valid.");
 							return;
 						}
+						else
+						{
+							// make zero-based
+							for (int i = 0; i < states.size(); ++i) states[i] -= 1;
+						}
 					}
 					break;
 					default:

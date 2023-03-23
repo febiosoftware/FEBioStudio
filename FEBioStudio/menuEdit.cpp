@@ -434,7 +434,69 @@ void CMainWindow::on_actionFind_triggered()
 		vector<int> items;
 		if (dlg.m_method == 0)
 		{
-			items = dlg.m_item;
+			if (dynamic_cast<CPostDocument*>(doc))
+			{
+				if (nitem == ITEM_NODE)
+				{
+					int NN = pm->Nodes();
+					int minId = -1, maxId = -1;
+					for (int i = 0; i < NN; ++i)
+					{
+						int nid = pm->Node(i).m_nid;
+						if ((nid > 0) && ((minId == -1) || (nid < minId))) minId = nid;
+						if ((nid > 0) && ((maxId == -1) || (nid > maxId))) maxId = nid;
+					}
+					int nsize = maxId - minId + 1;
+					vector<int> LUT(nsize, -1);
+					for (int i = 0; i < NN; ++i)
+					{
+						int nid = pm->Node(i).m_nid;
+						LUT[nid - minId] = i;
+					}
+
+					for (int i = 0; i < dlg.m_item.size(); ++i)
+					{
+						int m = dlg.m_item[i] - minId;
+						if ((m >= 0) && (m < LUT.size()))
+						{
+							items.push_back(LUT[m]);
+						}
+					}
+				}
+				if (nitem == ITEM_ELEM)
+				{
+					int NE = pm->Elements();
+					int minId = -1, maxId = -1;
+					for (int i = 0; i < NE; ++i)
+					{
+						int nid = pm->Element(i).m_nid;
+						if ((nid > 0) && ((minId == -1) || (nid < minId))) minId = nid;
+						if ((nid > 0) && ((maxId == -1) || (nid > maxId))) maxId = nid;
+					}
+					int nsize = maxId - minId + 1;
+					vector<int> LUT(nsize, -1);
+					for (int i = 0; i < NE; ++i)
+					{
+						int nid = pm->Element(i).m_nid;
+						LUT[nid - minId] = i;
+					}
+
+					for (int i = 0; i < dlg.m_item.size(); ++i)
+					{
+						int m = dlg.m_item[i] - minId;
+						if ((m >= 0) && (m < LUT.size()))
+						{
+							items.push_back(LUT[m]);
+						}
+					}
+				}
+			}
+			else
+			{
+				// make zero-based
+				items = dlg.m_item;
+				for (int i = 0; i < items.size(); ++i) items[i] -= 1;
+			}
 		}
 		else if (dlg.m_method == 1)
 		{
