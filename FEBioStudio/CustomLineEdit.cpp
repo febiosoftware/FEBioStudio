@@ -31,6 +31,8 @@ SOFTWARE.*/
 
 CustomLineEdit::CustomLineEdit(QWidget* parent)  : QLineEdit(parent), c(nullptr)
 {
+	m_wrapQuotes = true;
+	m_delim = " ";
 }
 
 void CustomLineEdit::setMultipleCompleter(QCompleter* completer)
@@ -38,6 +40,16 @@ void CustomLineEdit::setMultipleCompleter(QCompleter* completer)
     c = completer;
     c->setWidget(this);
     QObject::connect(c, SIGNAL(activated(QString)), this, SLOT(insertCompletion(QString)));
+}
+
+void CustomLineEdit::setWrapQuotes(bool b)
+{
+	m_wrapQuotes = b;
+}
+
+void CustomLineEdit::setDelimiter(QString d)
+{
+	m_delim = d;
 }
 
 void CustomLineEdit::keyPressEvent(QKeyEvent* e)
@@ -96,13 +108,13 @@ QString CustomLineEdit::cursorWord(const QString& sentence) const
 void CustomLineEdit::insertCompletion(QString arg)
 {
     // Surround the term in quotes if there's a space in it
-    if (arg.contains(' '))
+    if (m_wrapQuotes && arg.contains(' '))
     {
         arg = "\"" + arg + "\"";
     }
 
-    setText(text().replace(text().left(cursorPosition()).lastIndexOf(" ") + 1,
+    setText(text().replace(text().left(cursorPosition()).lastIndexOf(m_delim) + 1,
         cursorPosition() -
-        text().left(cursorPosition()).lastIndexOf(" ") - 1,
+        text().left(cursorPosition()).lastIndexOf(m_delim) - 1,
         arg));
 }

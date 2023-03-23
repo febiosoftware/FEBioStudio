@@ -1017,6 +1017,18 @@ ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 	return *this;
 }
 
+void ParamBlock::Copy(const ParamBlock& b)
+{
+	assert(b.m_Param.size() == m_Param.size());
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& p = *m_Param[i];
+		p = s;
+	}
+}
+
+
 //-----------------------------------------------------------------------------
 void ParamBlock::ClearParamGroups()
 {

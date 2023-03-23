@@ -338,7 +338,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 
 	// add the user-defined edges
 	int esets = model.EdgeLists();
-	for (int i = 0; i < nsets; ++i)
+	for (int i = 0; i < esets; ++i)
 	{
 		GEdgeList* pel = model.EdgeList(i);
 		AddEdgeSet(pel->GetName(), pel);
@@ -3032,7 +3032,7 @@ void FEBioExport4::WriteOutputSection()
 				case FSLogData::LD_FACE:
 				{
 					XMLElement e;
-					e.name("surface_data");
+					e.name("face_data");
 					e.add_attribute("data", d.GetDataString());
 
 					if (d.GetFileName().empty() == false) e.add_attribute("file", d.GetFileName());

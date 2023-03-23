@@ -364,6 +364,7 @@ public:
 		m_theme = 0;
 		m_defaultUnits = 0;
 		m_clearUndoOnSave = true;
+		m_autoSaveInterval = 600;
 
 		measureTool = nullptr;
 		planeCutTool = nullptr;

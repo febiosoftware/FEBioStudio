@@ -73,7 +73,7 @@ public:
 public:
 	void RenderGLMesh(GMesh* pm, int nid = -1);
 	void RenderGLEdges(GMesh* pm, int nid = -1);
-	void RenderOutline(CGLContext& rc, GMesh* pm);
+	void RenderOutline(CGLContext& rc, GMesh* pm, bool outline = false);
 
 public:
 	void RenderFENodes(FSLineMesh* mesh);
