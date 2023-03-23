@@ -561,6 +561,8 @@ public:
 	int GetIndexValue(int n) const { return m_Param[n]->GetIndexValue(); }
     const char* GetIndexName(int n) { return m_Param[n]->GetIndexName(); }
 
+	void Copy(const ParamBlock& pb);
+
 public:
 	int SetActiveGroup(const char* szgroup);
 	bool SetActiveGroup(int n);

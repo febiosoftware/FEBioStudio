@@ -914,7 +914,7 @@ bool CGLDocument::AutoSaveDocument()
 		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
 
 		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
-
+		SetModifiedFlag(false);
 		return success;
 	}
 	else

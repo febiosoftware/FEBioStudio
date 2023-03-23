@@ -2511,7 +2511,7 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 
 			fem.AddLogVariable(logVar);
 		}
-		else if (tag == "surface_data")
+		else if (tag == "face_data")
 		{
 			const char* szdata = tag.AttributeValue("data", true);
 			if (szdata == 0) szdata = "";

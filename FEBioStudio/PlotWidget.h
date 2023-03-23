@@ -355,7 +355,6 @@ public slots:
 	void on_plot_backgroundImageChanged();
 	void on_plot_doneZoomToRect();
 	void on_plot_regionSelected(QRect);
-	void on_plot_doneSelectingRect(QRect);
 	void on_xval_textEdited();
 	void on_yval_textEdited();
 	void on_deletePoint_clicked();
