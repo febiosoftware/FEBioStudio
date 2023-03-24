@@ -757,8 +757,13 @@ void CPlotWidget::fitToData(bool downSize)
 		r = rectUnion(r, ri);
 	}
 
-	if (r.height() == 0.0) r.setBottom(1.0);
-	if (r.height() == 0.0) r.setTop(0.0);
+	if (r.height() == 0.0)
+	{
+		double y = r.top();
+		if (y == 0.0) r = QRectF(r.left(), 0.0, r.width(), 1.0);
+		else if (y > 0) r = QRectF(r.left(), 0, r.width(), y);
+		else if (y < 0) r = QRectF(r.left(), y, r.width(), -y);
+	}
 
 	if (downSize == false)
 	{

@@ -2746,6 +2746,7 @@ void CGLModel::UpdateMeshState()
 		FSFace& f = mesh.Face(i);
 		f.Disable();
 		if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
+		else if ((f.m_elem[1].eid >= 0) && (mesh.ElementRef(f.m_elem[1].eid).IsEnabled())) f.Enable();
 	}
 }
 
