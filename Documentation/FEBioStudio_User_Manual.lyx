@@ -7853,7 +7853,7 @@ Several formats are supported, inlcuding:
 \begin_layout Itemize
 
 \series bold
-FEBio Studio Files (fsm):
+FEBio Studio Files (fs2, fsm):
 \series default
  This is the native FEBio Studio file format.
  (See note 1 below)
@@ -7909,9 +7909,10 @@ Comments:
 \end_layout
 
 \begin_layout Enumerate
-The FSM file format is the native file format used by FEBio Studio.
- This format is an extension of the the legacy software PreView's file format,
- which usually had the 
+The FS2 file format is the native file format used by FEBio Studio 2.
+ (Previous versions used the FSM extension.) This format is an extension
+ of the the legacy software PreView's file format, which usually had the
+ 
 \emph on
 .prv
 \emph default
@@ -7929,15 +7930,15 @@ format was used in the beta version of FEBio Studio before it was replaced
 \end_layout
 
 \begin_layout Enumerate
-FEBio Studio supports reading in FEBio Input files formats 1.2, 2.0, 2.5, and
- 3.0.
+FEBio Studio supports reading in FEBio Input files formats 1.2, 2.0, 2.5, 3.0,
+ and 4.0.
  
 \end_layout
 
 \begin_layout Enumerate
-When reading in FEBio plot files, FEBio Studio may add additional plot variables
-, depending on the contents of the plot file (see Appendix B for more informatio
-n on these data fields):
+When reading in FEBio plot files (.xplt extension), FEBio Studio may add
+ additional plot variables, depending on the contents of the plot file (see
+ Appendix B for more information on these data fields):
 \end_layout
 
 \begin_deeper
@@ -10678,109 +10679,6 @@ name "sec:mylabel8"
 \end_layout
 
 \begin_layout Section
-Rigid Body Constraints
-\begin_inset CommandInset label
-LatexCommand label
-name "subsec:rigid"
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-The degrees of freedom of rigid bodies can be constrained in the same way
- as any other degree of freedom in the model.
- Before you can apply a constraint to a rigid body, you need to define a
- rigid body.
- In FEBioStudio, rigid bodies are implicitly defined when you create a rigid
- body material.
- A rigid body constraint can now be applied using the 
-\emph on
-Physics/Add Rigid Constraint 
-\emph default
-menu.
- It is important to note that when a rigid body is created none of its degrees
- of freedom are initially constrained.
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename Figures/add_rigid_constraint.png
-	width 2.48in
-	height 3.13in
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-The Add Rigid Constraint dialog box allows users to constrain the degrees
- of freedom of a rigid body.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig114"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Standard
-In the 
-\emph on
-Add Rigid Constraint 
-\emph default
-dialog box first select the step in which this constraint will be active
- (or the 
-\emph on
-Initial 
-\emph default
-step if the constraint is to be active in all steps).
- Next, select the rigid body to which this constraint will be applied.
- Then, select a constraint from the list of available constraints that can
- be applied to a rigid body degree of freedom.
- The 
-\emph on
-Fixed Displacement/Rotation 
-\emph default
-constraint fixes the degree of freedom to zero.
- This implies that the rigid body will not be able to move or rotate in
- that degree of freedom.
- The 
-\emph on
-Prescribe Displacement/Rotation
-\emph default
- lets you prescribe the value of the degree of freedom over time.
- The 
-\emph on
-Prescribe Force/Torque 
-\emph default
-constraint lets you apply a force or a torque (with respect to the rigid
- body's center of mass) to a rigid degree of freedom.
- Note that the prescribed displacements and force constraints have a load
- curve associated with them that can be edited in the Curve Editor.
-\end_layout
-
-\begin_layout Section
 Contact
 \begin_inset CommandInset label
 LatexCommand label
@@ -10792,129 +10690,39 @@ name "subsec:contact"
 \end_layout
 
 \begin_layout Standard
-FEBioStudio can be used to set up several types of contact conditions.
- These contact conditions allow the connection of non-conforming meshes
- to each other or the specification of non-penetration constraints.
- FEBioStudio supports the following contact interface categories.
+In many cases, different parts of a model can come into contact with each
+ other.
+ Once parts make contact, there are many different ways in which their motion
+ can be constrained.
+ Parts can slide across each other, stick to one another, etc.
+ All these different contact behaviors can be modeled via contact definitions.
+ 
 \end_layout
 
 \begin_layout Standard
-\begin_inset Float table
-placement htbp
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Tabular
-<lyxtabular version="3" rows="4" columns="2">
-<features tabularvalignment="middle">
-<column alignment="left" valignment="top">
-<column alignment="left" valignment="top">
-<row>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\series bold
-Interface 
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-
-\series bold
-Description
-\series default
+Most contact definitions can be divided into one of two categories.
  
 \end_layout
 
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Rigid
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Connect a deformable mesh to a rigid body 
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="left" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Sliding
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="left" valignment="top" topline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Enforce a non-penetration constraint between two bodies 
-\end_layout
-
-\end_inset
-</cell>
-</row>
-<row>
-<cell alignment="left" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Tied 
-\end_layout
-
-\end_inset
-</cell>
-<cell alignment="left" valignment="top" topline="true" bottomline="true" rightline="true" usebox="none">
-\begin_inset Text
-
-\begin_layout Plain Layout
-Tie two non-conforming surfaces together 
-\end_layout
-
-\end_inset
-</cell>
-</row>
-</lyxtabular>
-
+\begin_layout Description
+tied Two, nonconforming, surfaces can be 
+\begin_inset Quotes eld
 \end_inset
 
-
-\begin_inset CommandInset label
-LatexCommand label
-name "tab3"
-
+glued
+\begin_inset Quotes erd
 \end_inset
 
+ together with a tied interface.
+ This is most commonly used when two parts are connected to each other at
+ an interface, but their meshes are not conforming.
  
 \end_layout
 
-\end_inset
-
-
+\begin_layout Description
+sliding A sliding interface allows two opposing surfaces to come into contact,
+ and then slide across each other.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -10935,6 +10743,46 @@ Initial
 Add 
 \emph default
 button.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_contact.png
+	width 2.33in
+	height 2.72in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Add Contact dialog box allows users to create initial conditions for
+ transient and dynamic analyses.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig8-1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -10989,24 +10837,24 @@ two-pass
  In a usual contact implementation, the required integrations are only performed
  over one of the surfaces, usually referred to as the 
 \emph on
-slave 
+primary 
 \emph default
 surface.
  If the contacting surfaces are perfectly smooth, it does not matter which
- surface acts as the slave or master surface.
+ surface acts as the primary or secondary surface.
  However, in an FE simulation the surfaces are discretized and are most
  likely non-conforming.
- Thus, the choice of master and slave surfaces is important and will introduce
- bias in the solution.
+ Thus, the choice of primary and secondary surfaces is important and will
+ introduce bias in the solution.
  It is usually advisable to select the more finely meshed surface as the
- slave.
+ primary.
  In the 
 \emph on
 two pass algorithm
 \emph default
 , an attempt is made to reduce the bias by performing the contact calculations
- twice, with the roles of slave and master surface switched for the second
- pass.
+ twice, with the roles of primary and secondary surface switched for the
+ second pass.
  Although it may appear that the two pass algorithm is always the best choice,
  this is not always so.
  Certain contact applications perform better using a single pass.
@@ -11020,337 +10868,646 @@ for a more detailed description of the contact model.
 \begin_layout Standard
 After the contact parameters are entered the user needs to define the 
 \emph on
-master 
+primary 
 \emph default
 and 
 \emph on
-slave 
+secondary
 \emph default
-surfaces.
+ contacting surfaces.
  To do this, first close the contact interface dialog and select the contact
  interface in the Model Editor.
  In the Model Editor you will now notice two selection boxes, one for the
- master surface and one for the slave surface.
+ primary surface and one for the secondary surface.
  The boxes work similarly as for boundary conditions.
- For instance, to add a surface of your model to the master surface, select
+ For instance, to add a surface of your model to the primary surface, select
  the surface in the Graphics View and press the '
 \begin_inset Formula $+$
 \end_inset
 
-' button in the master's surface selection box.
+' button in the primary's surface selection box.
 \end_layout
 
 \begin_layout Standard
-A description of the different contact definitions follows, although you
- should consult the FEBio User's Manual for a detailed overview of the parameter
-s and use of the various contact interfaces.
+For detailed descriptions of the different contact definitions follows,
+ please consult the FEBio User's Manual.
 \end_layout
 
-\begin_layout Subsection
-Rigid Interfaces
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:rigid"
+\begin_layout Section
+Nonlinear constraints
+\end_layout
 
-\end_inset
-
+\begin_layout Standard
+Aside from contact, FEBio offers several types of nonlinear constraints
+ that in some way constrains the solution of the finite element problem.
+ In FEBio Studio, these constraints are differeniated based on whether they
+ apply to surfaces or to volumetric bodies.
+ Constraints that don't quite fit in either category are referred to as
+ general constraints.
  
 \end_layout
 
 \begin_layout Standard
-There are two ways to make a deformable object interact with a rigid body,
- namely via a Rigid interface, or via a Rigid wall.
+Similar to contact, these nonlinear constraints are enforced using an Augmented
+ Lagrangian method.
+ 
+\end_layout
+
+\begin_layout Subsection
+Surface Constraints
 \end_layout
 
 \begin_layout Standard
-
-\series bold
-Rigid interfaces
-\series default
- are used to connect a part of the deformable mesh to a non-conforming rigid
- body.
- By 
-\begin_inset Quotes eld
-\end_inset
-
-non-conforming
-\begin_inset Quotes erd
-\end_inset
-
-, we mean that the nodes comprising the mesh of the deformable object do
- not mate directly to the nodes comprising the rigid body at the interface.
- In other words, no nodes are shared between the two objects.
- The rigid interface requires only one parameter: the rigid material that
- defines the rigid body.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-A rigid wall
-\series default
- interface is similar to a sliding interface except that the master surface
- is a rigid plane.
- The geometry of the plane is simplified since the master surface is implicitly
- defined by the plane equation of the wall and does not need to be modeled
- explicitly.
- The plane can also be assigned a prescribed displacement in the Curve Editor.
- Just look for the name of the rigid wall and edit the 
+A 
 \emph on
-displacement 
+surface constraint
 \emph default
-curve.
- In this case the plane equation generalizes to:
+ constrains the solution of the finite element problem (e.g.
+ displacement for a structural mechanics problem) at a surface.
+ To add a surface constraint, go to the menu 
+\emph on
+Phyics/Add Surface Constraint, 
+\emph default
+or right-click on the 
+\emph on
+Constraints 
+\emph default
+item in the model tree
+\emph on
+ 
+\emph default
+and select 
+\emph on
+Add Surface Constraint
+\emph default
+.
+ 
 \end_layout
 
 \begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
 \align center
+\begin_inset Graphics
+	filename Figures/add_surface_constraint.png
+	width 2.33in
+	height 2.72in
 
-\emph on
-ax 
-\emph default
-
-\begin_inset Formula $+$
 \end_inset
 
 
-\emph on
- by 
-\emph default
-
-\begin_inset Formula $+$
-\end_inset
-
-
-\emph on
- cz 
-\emph default
-
-\begin_inset Formula $+d+\varepsilon(t)$
-\end_inset
-
- =0 
 \end_layout
 
-\begin_layout Standard
-where 
-\begin_inset Formula $\varepsilon(t)$
-\end_inset
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
 
- is the plane offset defined by the loadcurve.
-\end_layout
-
-\begin_layout Standard
-After you select OK the rigid wall will be displayed in the Graphics View.
- If you don't see it, or if you wish to hide the rigid wall, you can set
- the appropriate option in the FEBioStudio Options dialog box.
- This dialog box can be accessed by pressing F6 or from the Tools/Options
- menu.
- In the dialog box, select the 
-\emph on
-Physics
-\emph default
- options from the list on the left side and then check (or uncheck if you
- wish to hide the walls) the 
-\emph on
-show rigid walls 
-\emph default
-option.
-\end_layout
-
-\begin_layout Subsection
-Sliding Interfaces
+\begin_layout Plain Layout
+The Add Surface Constraint dialog box allows users to add nonlinear constraints
+ on surfaces of the model.
 \begin_inset CommandInset label
 LatexCommand label
-name "subsubsec:sliding"
+name "fig8-2"
 
 \end_inset
 
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+For detailed descriptions of the surface constraints, please consult the
+ FEBio User's Manual.
+ You can press the Help button to take you directly to the relevant page
+ in the FEBio User Manual in an separate web browser window.
  
-\end_layout
-
-\begin_layout Standard
-A sliding interface defines a non-penetration constraint between two surfaces.
- This means that the surfaces are allowed to separate and slide across each
- other, but are not allowed to penetrate each other.
- If the contacting parts are biphasic or multiphasic, specialized contact
- interfaces can be used to allow fluid or solvent to flow across the contact
- interface when the parts are in contact.
- The following sliding interfaces are available.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Sliding node-on-facet
-\series default
- This is a simple sliding interface that uses a nodal integration rule.
- Although this interface may be somewhat faster than the other, it is also
- the least accurate.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Sliding facet-on-facet.
- 
-\series default
-This sliding interface is similar to the 
-\emph on
-sliding node-on-facet 
-\emph default
-but uses a more accurate integration rule for evaluating the contact forces.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Sliding-elastic.
- 
-\series default
-A sliding interface that uses a different algorithm for detecting contact
- and evaluating the contact integrals than the 
-\emph on
-sliding node-on-facet 
-\emph default
-and 
-\emph on
-sliding facet-on-facet
-\emph default
-.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Biphasic contact
-\series default
-.
- This contact interface is similar to 
-\emph on
-sliding-elastic
-\emph default
- but allows the fluid to flow across the contact interface for a biphasic
- analysis.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Biphasic-solute contact
-\series default
-.
- This contact interface is similar to 
-\emph on
-sliding-elastic
-\emph default
- but allows the fluid and the solute to flow across the contact interface
- for a biphasic-solute analysis.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Multiphasic contact
-\series default
-.
- This contact interface is similar to 
-\emph on
-sliding-elastic
-\emph default
- but allows the fluid and solutes to flow across the contact interface for
- a biphasic analysis.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Symmetry Plane
-\series default
-.
- Defines a symmetry plane for emulating axisymmetric analysis.
 \end_layout
 
 \begin_layout Subsection
-Tied Interfaces
+Body Constraints
 \end_layout
 
 \begin_layout Standard
-Tied interfaces can be used to tie two non-conforming surfaces together.
- It is also possible to make the tie temporary or define a tie-breaking
- criterion.
- Special versions of tied interfaces are available for biphasic and multiphasic
- analysis that allow the fluid and solvents to cross the interface.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Tied node-on-facet.
-
-\series default
- Similar to the 
+A 
 \emph on
-sliding node-on-facet
+body constraint
 \emph default
-, but surfaces are not allowed to slide across or break away from each other.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Tied facet-on-facet
-\series default
-.
- Similar to 
+ constrains the solution of the finite element problem (e.g.
+ displacement for a structural mechanics problem) on all the nodes of a
+ volumetric body part.
+ To add a body constraint, go to the menu 
 \emph on
-tied node-on-facet 
+Phyics/Add Body Constraint, 
 \emph default
-but a more accurate surface integration is performed to evaluate the contact
- forces.
-\end_layout
-
-\begin_layout Standard
-
-\series bold
-Sticky
-\series default
-.
- Identical to 
+or right-click on the 
 \emph on
-tied node-on-facet 
+Constraints 
 \emph default
-but users can define a criterion for tie-breaking.
+item in the model tree
+\emph on
+ 
+\emph default
+and select 
+\emph on
+Add Body Constraint
+\emph default
+.
+ 
 \end_layout
 
 \begin_layout Standard
+For detailed descriptions of the body constraints, please consult the FEBio
+ User's Manual.
+ You can press the Help button to take you directly to the relevant page
+ in the FEBio User Manual in an separate web browser window.
+ 
+\end_layout
 
-\series bold
-Periodic boundary
-\series default
-.
- This type of tied interface will allow you to force the displacement between
- two surfaces to be identical.
+\begin_layout Subsection
+General Constraints
 \end_layout
 
 \begin_layout Standard
-
-\series bold
-Tied biphasic contact
-\series default
+A 
+\emph on
+general constraint
+\emph default
+ constrains the solution of the finite element problem in some special way.
+ To add a general constraint, go to the menu 
+\emph on
+Phyics/Add Body Constraint, 
+\emph default
+or right-click on the 
+\emph on
+Constraints 
+\emph default
+item in the model tree
+\emph on
+ 
+\emph default
+and select 
+\emph on
+Add General Constraint
+\emph default
 .
- A special tied interface that allows the fluid in a biphasic analysis to
- flow across the contact interface.
+ 
 \end_layout
 
 \begin_layout Standard
+For detailed descriptions of the general constraints, please consult the
+ FEBio User's Manual.
+ You can press the Help button to take you directly to the relevant page
+ in the FEBio User Manual in an separate web browser window.
+ 
+\end_layout
 
-\series bold
-Tied multiphasic contact
-\series default
+\begin_layout Chapter
+Rigid Bodies
+\end_layout
+
+\begin_layout Standard
+Rigid bodies are bodies that are assumed to be undeformable.
+ They can only move and rotate and therefore are described by 6 degrees
+ of freedom, 3 for translation and 3 for rotation.
+ Rigid bodies are useful for modeling very stiff objects In FEBio (and FEBio
+ Studio).
+ Rigid bodies have their own set of constraints, initial conditions, and
+ loads.
+ They can also be connected via special model components called rigid connectors.
+ 
+\end_layout
+
+\begin_layout Standard
+Rigid bodies are implicitly created when a 
+\emph on
+rigid body 
+\emph default
+material is added to the model.
+ This implies that in principle rigid bodies do not need any geometry.
+ They are defined completely via the corresponding rigid material definition.
+ The only exception is that if the rigid body interacts with other, deformable,
+ parts of the model via contact, then the rigid body needs to have geometry.
+ Since the rigid body is defined via its material, you can easily make a
+ part of the model rigid by assigning it a rigid material.
+ 
+\end_layout
+
+\begin_layout Section
+Rigid Body Constraints
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:rigid-1"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+The degrees of freedom of rigid bodies can be constrained in the same way
+ as any other degree of freedom in the model.
+ Before you can apply a constraint to a rigid body, you need to define a
+ rigid body.
+ In FEBioStudio, rigid bodies are implicitly defined when you create a rigid
+ body material.
+ A rigid body constraint can now be applied using the 
+\emph on
+Physics/Add Rigid Constraint 
+\emph default
+menu.
+ It is important to note that when a rigid body is created none of its degrees
+ of freedom are initially constrained.
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_rigid_constraint.png
+	width 2.48in
+	height 3.13in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Add Rigid Constraint dialog box allows users to constrain the degrees
+ of freedom of a rigid body.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig9_1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the 
+\emph on
+Add Rigid Constraint 
+\emph default
+dialog box first select the step in which this constraint will be active
+ (or the 
+\emph on
+Initial 
+\emph default
+step if the constraint is to be active in all steps).
+ Next, select a constraint from the list of available rigid constraints.
+ Then click OK.
+ The constraint will be added to the 
+\emph on
+Rigid 
+\emph default
+item in the model tree.
+ 
+\end_layout
+
+\begin_layout Standard
+Please consult the FEBio User's Manual for more information on each rigid
+ constraint.
+ The easiest way to access it is to click the Help button on the dialog
+ box.
+ This will open the FEBio User Manual in a separate browser window.
+ 
+\end_layout
+
+\begin_layout Section
+Rigid Body Initial Conditions
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:rigid-2"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Rigid bodies can also be used in dynamic simulations.
+ Therefore it might be useful to set the initial conditions of the rigid
+ body's kinematic variables.
+ This can be accomplished by adding a rigid initial condition.
+ 
+\end_layout
+
+\begin_layout Standard
+A rigid body initial condition can be added using the 
+\emph on
+Physics/Add Rigid Initial Condition 
+\emph default
+menu.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_rigid_ic.png
+	width 2.48in
+	height 3.13in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Add Rigid Initial Condition dialog box allows users to set initial values
+ for rigid body kinematic variables.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig9_2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the dialog box that appears first select the step in which this constraint
+ will be active (or the 
+\emph on
+Initial 
+\emph default
+step if the initial condition is to be active in all steps).
+ Next, select an initial condition from the list of available options.
+ Then click OK.
+ The initial condition will be added to the 
+\emph on
+Rigid 
+\emph default
+item in the model tree.
+ 
+\end_layout
+
+\begin_layout Standard
+Please consult the FEBio User's Manual for more information on each rigid
+ initial condition.
+ The easiest way to access it is to click the Help button on the dialog
+ box.
+ This will open the FEBio User Manual in a separate browser window.
+ 
+\end_layout
+
+\begin_layout Section
+Rigid Body Loads
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:rigid-3"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A rigid body load can be added using the 
+\emph on
+Physics/Add Rigid Load 
+\emph default
+menu.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_rigid_load.png
+	width 2.48in
+	height 3.13in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Add Rigid Load dialog box allows users to apply various types of loads
+ to a rigid body.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig9_3"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the dialog box that appears first select the step in which this rigid
+ load will be active (or the 
+\emph on
+Initial 
+\emph default
+step if the initial condition is to be active in all steps).
+ Next, select a rigid load from the list of available options.
+ Then click OK.
+ The rigid load will be added to the 
+\emph on
+Rigid 
+\emph default
+item in the model tree.
+ 
+\end_layout
+
+\begin_layout Standard
+Please consult the FEBio User's Manual for more information on each rigid
+ load.
+ The easiest way to access it is to click the Help button on the dialog
+ box.
+ This will open the FEBio User Manual in a separate browser window.
+ 
+\end_layout
+
+\begin_layout Section
+Rigid Connectors
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:rigid-4"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Rigid bodies can be connected to each other via 
+\emph on
+rigid connectors
+\emph default
 .
- A special tied interface that allows the fluid and solvents in a multiphasic
- analysis to flow across the contact interface.
+ These connectors either constrain the motion (e.g.
+ joints), or apply forces to the participating rigid bodies (e.g.
+ springs).
+ 
+\end_layout
+
+\begin_layout Standard
+Rigid connectors can be added to the model using the 
+\emph on
+Physics/Add Rigid Connector
+\emph default
+ menu.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/add_rigid_connector.png
+	width 2.48in
+	height 3.13in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The Add Rigid Connector dialog box allows users to connect rigid bodies
+ in various ways.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig9_4"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+In the dialog box that appears first select the step in which this rigid
+ connector will be active (or the 
+\emph on
+Initial 
+\emph default
+step if the initial condition is to be active in all steps).
+ Next, select a rigid connector from the list of available options.
+ Then click OK.
+ The rigid connector will be added to the 
+\emph on
+Rigid 
+\emph default
+item in the model tree.
+ 
+\end_layout
+
+\begin_layout Standard
+Please consult the FEBio User's Manual for more information on each rigid
+ connector.
+ The easiest way to access it is to click the Help button on the dialog
+ box.
+ This will open the FEBio User Manual in a separate browser window.
+ 
+\end_layout
+
+\begin_layout Section
+The Rigid Boundary Condition
+\end_layout
+
+\begin_layout Standard
+As noted above, rigid bodies don't require geometry (except when used in
+ contact) and are implicitly defined via rigid body materials.
+ In order to tie a deformable body to a rigid body, a special boundary condition
+, the 
+\emph on
+rigid 
+\emph default
+boundary condition, is used.
+ The rigid boundary condition is added as any other boundary condition (e.g.
+ via the menu Physics/Add Nodal BC).
+ Any selection of a deformable object (e.g.
+ surface) that is assigned to this boundary condition will be tied to the
+ rigid body.
+ The rigid body that the selection ties to, is set as a parameter of the
+ rigid boundary condition.
+ 
+\end_layout
+
+\begin_layout Standard
+The rigid boundary condition should not be used to tie two rigid parts together.
+ The easiest way to tie rigid parts together is to assign them the same
+ rigid body material.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -11440,130 +11597,28 @@ item in the Model Editor and select
 Add 
 \emph default
 from the popup menu.
- A dialog box appears where you can now set the Step settings.
-\end_layout
-
-\begin_layout Standard
-The following analysis steps are available:
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Structural Mechanics
-\emph default
-: define a quasi-static or dynamic, large deformation, structural mechanics
- analysis 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Heat Transfer
-\emph default
-: steady-state or transient heat transfer analysis.
- 
-\end_layout
-
-\begin_layout Itemize
-\begin_inset Float figure
-wide false
-sideways false
-status open
-
-\begin_layout Plain Layout
-\align center
-\begin_inset Graphics
-	filename Figures/add_step.png
-	width 2.92in
-	height 3.14in
-
-\end_inset
-
-
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-The Add Analysis Step allows users to create steps for their model.
-\begin_inset CommandInset label
-LatexCommand label
-name "fig115"
-
-\end_inset
-
- 
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Biphasic
-\emph default
-: solve a coupled nonlinear transient or steady-state biphasic (solid
-\begin_inset Formula $+$
-\end_inset
-
-fluid) analysis.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Biphsic-solutes
-\emph default
-: solve a coupled nonlinear transient or steady-state biphasic anlysis with
- a single solute.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Multiphasic/Solutes
-\emph default
-: solve a coupled nonlinear transient or steady-state multiphasic that may
- have an unlimited number of solutes, solid-bound molecules, and chemical
- reactions.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Fluid Mechanics: 
-\emph default
-Define a dynamic fluid mechanics analysis.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Reaction-Diffusion
-\emph default
-: Define a transient reaction diffusion analysis.
+ A new step will be added to the Steps item in the model tree.
  
 \end_layout
 
 \begin_layout Standard
-After you select an analysis type and click OK the analysis parameters can
- be edited in the Model Viewer.
- These settings are discussed next.
+After the step was added, many settings can be modified to control how FEBio
+ will solve the analysis step.
+ Below, some of the most important settings are discussed.
+ For more details, please consult the FEBio User Manual.
+ 
+\begin_inset VSpace defskip
+\end_inset
+
+
 \end_layout
 
-\begin_layout Subsection
+\begin_layout Standard
+
+\series bold
 Analysis
+\series default
+
 \begin_inset CommandInset label
 LatexCommand label
 name "subsubsec:analysis"
@@ -11575,11 +11630,24 @@ name "subsubsec:analysis"
 
 \begin_layout Standard
 The analysis settings allow you to choose the specific analysis type.
- This usually means steady-state of transient/dynamic.
+ For instance, for structural mechanics problems, users can choose between
+ steady-state or dynamic.
+ 
 \end_layout
 
-\begin_layout Subsection
-Time Settings
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Time Stepping
+\series default
+
 \begin_inset CommandInset label
 LatexCommand label
 name "subsubsec:mylabel62"
@@ -11590,66 +11658,38 @@ name "subsubsec:mylabel62"
 \end_layout
 
 \begin_layout Standard
-These settings control the time step controller.
- The solution can be progressed using fixed time steps or adaptive time
- steps, depending on whether you check the 
-\emph on
-use auto time stepper 
-\emph default
-option.
- When checked, it activates the 
-\emph on
-auto timestep controller
-\emph default
- which will adapt the step size based on convergence information.
- The following parameters control the auto time step controller
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Timesteps
-\emph default
-: define the number of time steps to solve for.
- If the 
-\emph on
-auto timestep controller 
-\emph default
-is activated, this is merely a suggestion.
- The actual number of timesteps taken will vary based on the parameters
- below.
+These settings control the basic time stepping and allows users to set the
+ number of time steps and the size of each time step size.
+ If no time step controller is specified, FEBio will use a fixed time stepping
+ approach to solve the model.
  
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
 
-\emph on
-Step size
-\emph default
-: defines the initial timestep size that will be taken by the time controller.
- If 
-\emph on
-auto timestep controller 
-\emph default
-is activated, the actual time step size taken will vary based on the parameters
- below.
- The product of the 
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Auto-time stepper
+\end_layout
+
+\begin_layout Standard
+The auto-time stepper provides a way to adaptively adjust the time step
+ size depending on how the solution progresses.
+ The 
 \begin_inset Quotes eld
 \end_inset
 
-Timesteps
+default
 \begin_inset Quotes erd
 \end_inset
 
- parameter and the 
-\begin_inset Quotes eld
-\end_inset
-
-Stepsize
-\begin_inset Quotes erd
-\end_inset
-
- parameter determines the termination time.
+ auto-time stepper provides the following parameters.
  
 \end_layout
 
@@ -11675,7 +11715,7 @@ Optimal iterations
 \begin_layout Itemize
 
 \emph on
-Min step
+Min stepsize
 \emph default
 : the minimum stepsize that may be taken by the auto timestep controller.
  
@@ -11684,14 +11724,32 @@ Min step
 \begin_layout Itemize
 
 \emph on
-Max step
+Max stepsize
 \emph default
 : the maximum stepsize that may be taken by the auto time step controller.
- If a 
+ Note that a load curve may be attached to this parameter.
+ This load curve is often referred to as a 
 \emph on
-must point curve 
+must point curve
 \emph default
-is specified this value will be overridden by the value of this curve.
+.
+ In addition to setting the max time step size, the must point curve also
+ defines points through which the solution must pass.
+ Also note that when a must curve point is defined, FEBio will ignore the
+ value of max step (dtmax) variable.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\emph on
+Agressiveness
+\emph default
+: When set to 1, the time step size will be scaled by the 
+\emph on
+cutback 
+\emph default
+parameter.
  
 \end_layout
 
@@ -11700,34 +11758,28 @@ is specified this value will be overridden by the value of this curve.
 \emph on
 Cutback
 \emph default
-: select the method for reducing the step size if an iteration fails.
+: scale factor for reducing time step size.
+ Only used when 
+\emph on
+agressiveness
+\emph default
+ is set to 1.
  
 \end_layout
 
 \begin_layout Standard
-The
-\emph on
- use must-points 
-\emph default
-option allows to use so-called must-points.
- The must-points are time points, defined through a load curve, for which
- the solution will be forced to pass through.
- The 
-\emph on
-must point curve 
-\emph default
-is edited in the Curve Editor.
- The value of the must point curve defines the maximum time step size that
- can be taken up to that point.
- If a must point curve is defined, the 
-\emph on
-Max step 
-\emph default
-value in the Project Settings is ignored.
+\begin_inset VSpace defskip
+\end_inset
+
+
 \end_layout
 
-\begin_layout Subsection
-Nonlinear Solver
+\begin_layout Standard
+
+\series bold
+Solver Settings
+\series default
+
 \begin_inset CommandInset label
 LatexCommand label
 name "subsubsec:nonlinear"
@@ -11738,134 +11790,49 @@ name "subsubsec:nonlinear"
 \end_layout
 
 \begin_layout Standard
-Set the options for the nonlinear Newton solver which is used for the nonlinear
- analysis types (all analyses except the heat transfer analysis use this
- solver).
- The following options can be set.
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Displacement tolerance
-\emph default
-: convergence tolerance on displacement norm 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Energy tolerance
-\emph default
-: convergence tolerance on energy norm 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Residual tolerance
-\emph default
-: convergence tolerance on residual norm 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Line search tolerance
-\emph default
-: The convergence tolerance for the line search.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Minimal residual
-\emph default
-: If the residual norm drops below this value, the time step will automatically
- converge.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Quasi
-\emph default
--
-\emph on
-Newton method
-\emph default
-: Select the particular variation of Newton's method that will be used by
- the nonlinear solver.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Max reformations
-\emph default
-: Max number of stiffness reformations per time step 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Max BFGS updates
-\emph default
-: Max number of BFGS iterations between reformations 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Reform on diverge
-\emph default
-: When checked, the global stiffness matrix will be reformed if an iteration
- diverges.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\emph on
-Reform each timestep
-\emph default
-: When checked, the global stiffness matrix will be reformed at the beginning
- of each step.
- For linear or slightly nonlinear problems, turning this option off may
- result in significant performance improvements.
- 
-\end_layout
-
-\begin_layout Subsection
-Linear Solver 
-\begin_inset CommandInset label
-LatexCommand label
-name "subsubsec:linear"
-
-\end_inset
-
+This property allows users to select from a list of solvers that can be
+ used to solve the analysis.
+ For example, for structural mechanics models, users can choose between
+ an implicit and and explicit solver.
+ Each solver has additional parameters and properties.
+ Please consult the FEBio User Manual for details of the particular solvers.
  
 \end_layout
 
 \begin_layout Standard
-In any (implicit) finite element code like FEBio, the linear solver does
- most of the work.
- The type of linear equation that has to be solved depends on the type of
- analysis, but some of the settings can be user-controlled.
- The following settings can be changed.
+\begin_inset VSpace defskip
+\end_inset
+
+
 \end_layout
 
-\begin_layout Itemize
+\begin_layout Standard
 
-\emph on
-Matrix storage
-\emph default
-: Some algorithms have both a symmetric form or an unsymmetric form.
- This option will set the preferred matrix format.
+\series bold
+Output settings
+\end_layout
+
+\begin_layout Standard
+The output generated by FEBio can be controlled by the user.
+ In general, FEBio produces a plot file, which contains the results of the
+ FE analysis, and a log file.
+ The log file stores the screen output from FEBio, but can be customized
+ to store additional data.
+ Alternatively, this additional can be written to separate files.
+ See chapter 11 for more details on how to customize the FEBio output files.
+\end_layout
+
+\begin_layout Standard
+The output settings of the step allow users to control the intervals at
+ which FEBio will generate output during the step.
  
+\end_layout
+
+\begin_layout Standard
+\begin_inset Newpage newpage
+\end_inset
+
+
 \end_layout
 
 \begin_layout Chapter
@@ -12121,16 +12088,16 @@ To find a particular variable, you can enter the first letter(s) in the
 \end_layout
 
 \begin_layout Standard
-If the plot variable requires a domain to extract the data from, click the
- 
+If the plot variable requires a selection (e.g.
+ surface, or part) to extract the data from, click the 
 \begin_inset Quotes eld
 \end_inset
 
-Add domain
+Add Selection
 \begin_inset Quotes erd
 \end_inset
 
- button, and then choose a domain from the list.
+ button, and then choose from the list.
  
 \end_layout
 
@@ -12139,11 +12106,11 @@ Custom plot variables can be added as well, by clicking the
 \begin_inset Quotes eld
 \end_inset
 
-+
+Add...
 \begin_inset Quotes erd
 \end_inset
 
- button next to the Filter field.
+ button.
  A dialog box shows up that allows users to enter the name of the plot variable.
  This can be useful for adding plot variables that are not directly supported
  by FEBio Studio.
@@ -12268,17 +12235,6 @@ The name of the job.
 \begin_layout Itemize
 
 \series bold
-Launch Configuration: 
-\series default
-The launch configuration defines the path to the FEBio3 executable and some
- other data that is needed to locate and run FEBio on your local or a remote
- system.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
 Working directory:
 \series default
  Specify the location where FEBioStudio will store the FEBio input and output
@@ -12289,9 +12245,13 @@ Working directory:
 \begin_layout Itemize
 
 \series bold
-FEBio file format:
+Launch Configuration: 
 \series default
- Enter the format for the FEBio input file.
+The launch configuration defines how FEBio Studio will launch FEBio.
+ As of FEBio Studio 2.0, the default launch configuration will use the version
+ of FEBio that FEBio Studio was build with.
+ Other launch configurations can be created that start FEBio as a separate
+ process on either the local machine or even a remote server.
  
 \end_layout
 
@@ -12301,6 +12261,24 @@ FEBio file format:
 Save document before running FEBio: 
 \series default
 Check this to save the model file automatically before running FEBio.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+FEBio file format:
+\series default
+ Select the format for the FEBio input file.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Write Notes: 
+\series default
+Check this option for writing the notes associated with the model components.
  
 \end_layout
 
@@ -12342,7 +12320,7 @@ status open
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-The Run FEBio dialog box lets you call FEBio from within FEBioStudio.
+The Run FEBio dialog box lets you start FEBio from within FEBioStudio.
 \begin_inset CommandInset label
 LatexCommand label
 name "fig116"
@@ -12362,8 +12340,11 @@ name "fig116"
 
 \end_layout
 
-\begin_layout Subsection
-Advanced Settings
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -12372,15 +12353,6 @@ Clicking the
 Advanced 
 \emph default
 button will show additional options for controlling FEBio.
- 
-\end_layout
-
-\begin_layout Itemize
-
-\series bold
-Write Notes: 
-\series default
-Check this option for writing the notes associated with the model components.
  
 \end_layout
 
@@ -12806,7 +12778,7 @@ Job
 Model Tree
 \emph default
 .
- The queue status will printed to the 
+ The queue status will be printed to the 
 \emph on
 Output
 \emph default
@@ -12818,13 +12790,130 @@ Using FEBio Plugins
 \end_layout
 
 \begin_layout Standard
-FEBio supports plugins and the plugins are usually listed in the FEBio configura
-tion file.
- If you wish the use plugins, you need to make a custom configuration file.
- See the FEBio User's Manual for details about defining plugins in the configura
-tion file.
- Once you have your custom configuration file, you can enter that configuration
- file in the Advanced Settings in the Run FEBio dialog.
+FEBio supports plugins that allow users to add new features to FEBio easily.
+ As of FEBio Studio 2.0 plugins can be loaded into FEBio Studio and the model
+ components defined in the plugin will be integrated in the UI.
+ For example, if a plugin adds a new material, then the material will be
+ available in the Material Browser.
+ In addition, when using the 
+\emph on
+default 
+\emph default
+launch configuration, FEBio will automatically load all the plugins that
+ were loaded in FEBio Studio so that special configuration file is needed.
+ (For local and remote launch configuration you still need to prepare a
+ special config file.) 
+\end_layout
+
+\begin_layout Standard
+To load an FEBio plugin into FEBio Studio's user interface, select the menu
+ 
+\emph on
+FEBio
+\backslash
+Manage FEBio plugins
+\emph default
+.
+ A dialog appears that will list all currently loaded plugins and offers
+ options to load and unload FEBio plugins.
+ 
+\end_layout
+
+\begin_layout Standard
+\noindent
+\begin_inset Float figure
+placement h
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/febio_plugins.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The FEBio Plugins dialog box offers a way to load FEBio plugins into FEBio
+ Studio.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig12_3"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A plugin can be loaded by clicking the 
+\series bold
+Load 
+\series default
+button.
+ Previously loaded plugins can be selected from a dropdown, or select <other...>
+ to load a plugin from the file system.
+ After the plugin is loaded, the lower panel will show all the model components
+ that were added to FEBio Studio.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Important! 
+\series default
+It is important to note that only plugins can be loaded that were build
+ for the specific version that FEBio Studio uses.
+ Trying to load plugins that are not compatible may cause instability or
+ a crash.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset VSpace defskip
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\series bold
+Important! 
+\series default
+When loading a model file (either fs2 or feb) that needs a plugin, it is
+ important to 
+\emph on
+first 
+\emph default
+load the plugin into FEBio Studio.
+ Otherwise FEBio Studio will not be able to load the file.
  
 \end_layout
 
@@ -19300,11 +19389,12 @@ Histogram
 \end_layout
 
 \begin_layout Subsection
-View Settings Panel
+3D Image Settings Panel
 \end_layout
 
 \begin_layout Standard
-The View Settings Panel will only be visible after an image has been selected.
+The 3D Image Settings Panel will only be visible after an image has been
+ selected.
  It allows you to customize various display settings for the current image.
  These display settings will be remembered for each image, and will be used
  across all display modes for the image.
@@ -19313,36 +19403,109 @@ The View Settings Panel will only be visible after an image has been selected.
 
 \begin_layout Itemize
 
+\series bold
+Alpha Scale:
 \emph on
-Alpha Scale 
+ 
+\series default
 \emph default
-- Sets the overall alpha scale, which scales the transparency of the image.
+Sets the overall alpha scale, which scales the transparency of the image.
  
 \end_layout
 
 \begin_layout Itemize
 
-\emph on
-Min Intensity 
-\emph default
-- Minimum cutoff image intensity.
- Voxels with an intensity below this value will be rendered with a transparency
- set to the value of the 
-\emph on
-min alpha
-\emph default
- parameter.
+\series bold
+Gamma correction:
+\series default
+ Sets the gamma correction factor, which applies a nonlinear scaling of
+ the image intensity.
  
 \end_layout
 
 \begin_layout Itemize
-Max Intensity - Maximum cutoff image intensity.
- Voxels with an intensity above this value will be rendered with a transparency
- set to the value of the 
+
+\series bold
+Hue/Saturation/Luminance: 
+\series default
+Sets the hue (or color), saturation, luminance level of the primary color.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Intensity: 
+\series default
+Set the minimum and maximum cutoff image intensity.
+ Voxels with an intensity below the minimum (maximum) value will be rendered
+ with a transparency set to the value of the minimum (maximum) value of
+ the
 \emph on
-max alpha
+ alpha range
 \emph default
- parameter.
+ setting.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Alpha Range:
+\series default
+ Sets the minimum and maximum alpha (transparency) values.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Clip X/Y/Z: 
+\series default
+Sets the min and max image clipping values for the X, Y, and Z planes.
+ This allows users to only show a region of interest instead of the whole
+ 3D image.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement htbp
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename Figures/3dimage_settings.png
+	width 5in
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+The 3D Image Settings panel can be used to modify the appearance of 3D volumetri
+c images.
+\begin_inset CommandInset label
+LatexCommand label
+name "fig17_1"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Subsection
