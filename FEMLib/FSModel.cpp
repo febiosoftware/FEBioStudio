@@ -2373,6 +2373,14 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 		if (pm) UpdateLCRefsCount(pm, LCT);
 	}
 
+	// process discrete
+	GModel& gm = GetModel();
+	for (int i=0; i<gm.DiscreteObjects(); ++i)
+	{ 
+		GDiscreteSpringSet* po = dynamic_cast<GDiscreteSpringSet*>(gm.DiscreteObject(i));
+		if (po && po->GetMaterial()) UpdateLCRefsCount(po->GetMaterial(), LCT);
+	}
+
 	// process Steps
 	for (int n = 0; n < Steps(); ++n)
 	{
