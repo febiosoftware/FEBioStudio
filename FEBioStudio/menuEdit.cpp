@@ -463,7 +463,7 @@ void CMainWindow::on_actionFind_triggered()
 						}
 					}
 				}
-				if (nitem == ITEM_ELEM)
+				else if (nitem == ITEM_ELEM)
 				{
 					int NE = pm->Elements();
 					int minId = -1, maxId = -1;
@@ -489,6 +489,12 @@ void CMainWindow::on_actionFind_triggered()
 							items.push_back(LUT[m]);
 						}
 					}
+				}
+				else if (nitem == ITEM_FACE)
+				{
+					// make zero-based
+					items = dlg.m_item;
+					for (int i = 0; i < items.size(); ++i) items[i] -= 1;
 				}
 			}
 			else
