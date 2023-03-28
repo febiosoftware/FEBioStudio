@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <QFrame>
+#include <unordered_map>
 
 class QFormLayout;
 class CPropertyList;
@@ -108,5 +109,6 @@ signals:
 private:
 	QVBoxLayout*	ui;
 	CPropertyList*	m_list;
-	QList<QWidget*>	m_widget;
+	// QList<QWidget*>	m_widget;
+    std::unordered_map<QWidget*, int> m_widgets;
 };

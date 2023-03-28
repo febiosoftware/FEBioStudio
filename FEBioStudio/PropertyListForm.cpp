@@ -84,7 +84,7 @@ void CPropertyListForm::clear()
 	// reset list
 	m_list = 0;
 
-	m_widget.clear();
+	m_widgets.clear();
 }
 
 class MyCheckBox : public QCheckBox
@@ -195,7 +195,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			{
 				pg = new QGroupBox(pi.name);
 				ui->addWidget(pg);
-				m_widget.push_back(pw);
+                m_widgets[pw] = i;
 				pg->setFlat(true);
 
 				pg->setStyleSheet("QGroupBox { font-weight: bold; } ");
@@ -212,7 +212,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 				int index = v.toInt();
 				pw->setCurrentIndex(index);
 
-				m_widget.push_back(pw->m_pc);
+                m_widgets[pw->m_pc] = i;
 				connect(pw->m_pc, SIGNAL(currentIndexChanged(int)), this, SLOT(onDataChanged()));
 			}
 
@@ -285,7 +285,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			// add the widget to the list.
 			// Note that we always add the pw, even when it's zero. 
 			// This is because the m_widget list must have the same size as the property list
-			m_widget.push_back(pw);
+            m_widgets[pw] = i;
 		}
 	}
 //	ui->addStretch();
@@ -575,14 +575,15 @@ void CPropertyListForm::updateData()
 
 	// loop over all widgets
 	int nprops = m_list->Properties();
-	QList<QWidget*>::iterator it = m_widget.begin();
-	for (int i=0; i<nprops; ++i, ++it)
+	for (auto pair : m_widgets)
 	{
-		QWidget* pw = *it;
+		QWidget* pw = pair.first;
 		if (pw)
 		{
-			const CProperty& pi = m_list->Property(i);
-			QVariant v = m_list->GetPropertyValue(i);
+            int index = pair.second;
+
+			const CProperty& pi = m_list->Property(index);
+			QVariant v = m_list->GetPropertyValue(index);
 
 			if (pi.isEditable())
 			{
@@ -721,205 +722,180 @@ void CPropertyListForm::onDataChanged()
 	QWidget* pw = qobject_cast<QWidget*>(sender());
 	if (pw == 0) return;
 
-	// Locate the sender widget and its associated property
-	QList<QWidget*>::iterator it = m_widget.begin();
-	for (int i=0; i<m_widget.size(); ++i, ++it)
-	{
-		if (*it==pw)
-		{
-            // Some properties are hidden and so not all properties have a widget
-            // We've got to loop through the visible properties until we find the
-            // one that corresponds to the current widget
-            int widgetIndex = i;
-            int propIndex;
-            for(propIndex = 0; propIndex < m_list->Properties(); propIndex++)
-            {
-                CProperty* current = &m_list->Property(propIndex);
-                if(current->isVisible())
-                {
-                    if(widgetIndex == 0)
-                    {
-                        break;
-                    }
+    int propIndex = m_widgets.at(pw);
 
-                    widgetIndex--;
+    const CProperty& pi = m_list->Property(propIndex);
+    if (pi.isEditable())
+    {
+        switch (pi.type)
+        {
+        case CProperty::Int:
+            {
+                QSpinBox* spin = qobject_cast<QSpinBox*>(pw);
+                if (spin) m_list->SetPropertyValue(propIndex, spin->value());
+                else
+                {
+                    QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                    if (edit) m_list->SetPropertyValue(propIndex, edit->text().toInt());
                 }
             }
-
-			const CProperty& pi = m_list->Property(propIndex);
-			if (pi.isEditable())
-			{
-				switch (pi.type)
-				{
-				case CProperty::Int:
-					{
-						QSpinBox* spin = qobject_cast<QSpinBox*>(pw);
-						if (spin) m_list->SetPropertyValue(propIndex, spin->value());
-						else
-						{
-							QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-							if (edit) m_list->SetPropertyValue(propIndex, edit->text().toInt());
-						}
-					}
-					break;
-				case CProperty::Float:
-					{
+            break;
+        case CProperty::Float:
+            {
 //						QDoubleSpinBox* spin = qobject_cast<QDoubleSpinBox*>(pw);
 //						if (spin) m_list->SetPropertyValue(i, spin->value());
-						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->text().toDouble());
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text().toDouble());
 
-						CEditVariableProperty* var = qobject_cast<CEditVariableProperty*>(pw);
-						if (var)
-						{
-							QString s = var->currentText();
-							m_list->SetPropertyValue(propIndex, s.toDouble());
-						}
-					}
-					break;
-				case CProperty::Enum:
-				case CProperty::Group:
-					{
-						QComboBox* pc = qobject_cast<QComboBox*>(pw);
-						if (pc) m_list->SetPropertyValue(propIndex, pc->currentIndex());
-					}
-					break;
-				case CProperty::Bool:
-					{
+                CEditVariableProperty* var = qobject_cast<CEditVariableProperty*>(pw);
+                if (var)
+                {
+                    QString s = var->currentText();
+                    m_list->SetPropertyValue(propIndex, s.toDouble());
+                }
+            }
+            break;
+        case CProperty::Enum:
+        case CProperty::Group:
+            {
+                QComboBox* pc = qobject_cast<QComboBox*>(pw);
+                if (pc) m_list->SetPropertyValue(propIndex, pc->currentIndex());
+            }
+            break;
+        case CProperty::Bool:
+            {
 //						QComboBox* pc = qobject_cast<QComboBox*>(pw);
 //						if (pc) m_list->SetPropertyValue(i, pc->currentIndex());
-						QCheckBox* pc = qobject_cast<QCheckBox*>(pw);
-						if (pc) m_list->SetPropertyValue(propIndex, pc->isChecked());
-					}
-					break;
-				case CProperty::String:
-					{
-						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->text());
-						else {
-							QComboBox* box = qobject_cast<QComboBox*>(pw);
-							if (box) m_list->SetPropertyValue(propIndex, box->currentText());
-						}
-					}
-					break;
-				case CProperty::DataScalar:
-					{
-						CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
-						if (pc) m_list->SetPropertyValue(propIndex, pc->currentValue());
-					}
-					break;
-				case CProperty::ColorMap:
-					{
-						CColorMapSelector* pc = dynamic_cast<CColorMapSelector*>(pw);
-						if (pc) m_list->SetPropertyValue(propIndex, pc->currentIndex());
-					}
-					break;
-				case CProperty::DataVec3:
-					{
-						CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
-						if (pc) m_list->SetPropertyValue(propIndex, pc->currentValue());
-					}
-					break;
-				case CProperty::DataMat3:
-					{
-						CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
-						if (pc) m_list->SetPropertyValue(propIndex, pc->currentValue());
-					}
-					break;
-				case CProperty::Resource:
-					{
-						CResourceEdit* edit = qobject_cast<CResourceEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->resourceName());
-					}
-					break;
-				case CProperty::Curve:
-					{
-						CCurvePicker* pick = qobject_cast<CCurvePicker*>(pw);
-						if (pick) m_list->SetPropertyValue(propIndex, pick->curveName());
-					}
-					break;
-				case CProperty::CurveList:
-					{
-						CCurveListPicker* pick = qobject_cast<CCurveListPicker*>(pw);
-						if (pick) m_list->SetPropertyValue(propIndex, pick->curveNames());
-					}
-					break;
-				case CProperty::Action:
-					{
-						QPushButton* b = qobject_cast<QPushButton*>(pw);
-						if (b) m_list->SetPropertyValue(propIndex, true);
-					}
-					break;
-				case CProperty::MathString:
-					{
-						CEditVariableProperty* e = qobject_cast<CEditVariableProperty*>(pw);
-						if (e) m_list->SetPropertyValue(propIndex, e->currentText());
-						else
-						{
-							QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-							if (edit) m_list->SetPropertyValue(propIndex, edit->text());
-						}
-					}
-					break;
-				case CProperty::Vec3:
-					{
-						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->text());
-					}
-					break;
-				case CProperty::Vec2i:
-					{
-						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->text());
-					}
-					break;
-				case CProperty::Mat3:
-					{
-						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->text());
-					}
-					break;
-				case CProperty::Std_Vector_Int:
-					{
-						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+                QCheckBox* pc = qobject_cast<QCheckBox*>(pw);
+                if (pc) m_list->SetPropertyValue(propIndex, pc->isChecked());
+            }
+            break;
+        case CProperty::String:
+            {
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+                else {
+                    QComboBox* box = qobject_cast<QComboBox*>(pw);
+                    if (box) m_list->SetPropertyValue(propIndex, box->currentText());
+                }
+            }
+            break;
+        case CProperty::DataScalar:
+            {
+                CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
+                if (pc) m_list->SetPropertyValue(propIndex, pc->currentValue());
+            }
+            break;
+        case CProperty::ColorMap:
+            {
+                CColorMapSelector* pc = dynamic_cast<CColorMapSelector*>(pw);
+                if (pc) m_list->SetPropertyValue(propIndex, pc->currentIndex());
+            }
+            break;
+        case CProperty::DataVec3:
+            {
+                CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
+                if (pc) m_list->SetPropertyValue(propIndex, pc->currentValue());
+            }
+            break;
+        case CProperty::DataMat3:
+            {
+                CDataFieldSelector* pc = dynamic_cast<CDataFieldSelector*>(pw);
+                if (pc) m_list->SetPropertyValue(propIndex, pc->currentValue());
+            }
+            break;
+        case CProperty::Resource:
+            {
+                CResourceEdit* edit = qobject_cast<CResourceEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->resourceName());
+            }
+            break;
+        case CProperty::Curve:
+            {
+                CCurvePicker* pick = qobject_cast<CCurvePicker*>(pw);
+                if (pick) m_list->SetPropertyValue(propIndex, pick->curveName());
+            }
+            break;
+        case CProperty::CurveList:
+            {
+                CCurveListPicker* pick = qobject_cast<CCurveListPicker*>(pw);
+                if (pick) m_list->SetPropertyValue(propIndex, pick->curveNames());
+            }
+            break;
+        case CProperty::Action:
+            {
+                QPushButton* b = qobject_cast<QPushButton*>(pw);
+                if (b) m_list->SetPropertyValue(propIndex, true);
+            }
+            break;
+        case CProperty::MathString:
+            {
+                CEditVariableProperty* e = qobject_cast<CEditVariableProperty*>(pw);
+                if (e) m_list->SetPropertyValue(propIndex, e->currentText());
+                else
+                {
+                    QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                    if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+                }
+            }
+            break;
+        case CProperty::Vec3:
+            {
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+            }
+            break;
+        case CProperty::Vec2i:
+            {
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+            }
+            break;
+        case CProperty::Mat3:
+            {
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+            }
+            break;
+        case CProperty::Std_Vector_Int:
+            {
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text());
 
-						QListWidget* plist = qobject_cast<QListWidget*>(pw);
-						if (plist)
-						{
-							QString s;
-							for (int i = 0; i < plist->count(); ++i)
-							{
-								QListWidgetItem* it = plist->item(i);
-								if (it->checkState() == Qt::Checked)
-								{
-									if (s.isEmpty() == false) s += ",";
-									s += QString::number(i);
-								}
-							}
-							m_list->SetPropertyValue(propIndex, s);
-						}
-					}
-					break;
-				case CProperty::Std_Vector_Double:
-					{
-						QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
-						if (edit) m_list->SetPropertyValue(propIndex, edit->text());
-					}
-					break;
-				}
-			}
+                QListWidget* plist = qobject_cast<QListWidget*>(pw);
+                if (plist)
+                {
+                    QString s;
+                    for (int i = 0; i < plist->count(); ++i)
+                    {
+                        QListWidgetItem* it = plist->item(i);
+                        if (it->checkState() == Qt::Checked)
+                        {
+                            if (s.isEmpty() == false) s += ",";
+                            s += QString::number(i);
+                        }
+                    }
+                    m_list->SetPropertyValue(propIndex, s);
+                }
+            }
+            break;
+        case CProperty::Std_Vector_Double:
+            {
+                QLineEdit* edit = qobject_cast<QLineEdit*>(pw);
+                if (edit) m_list->SetPropertyValue(propIndex, edit->text());
+            }
+            break;
+        }
+    }
 
-			bool itemModified = (m_list ? m_list->IsModified() : false);
-			if (itemModified)
-			{
-				setPropertyList(m_list);
-				m_list->SetModified(false);
-			}
+    bool itemModified = (m_list ? m_list->IsModified() : false);
+    if (itemModified)
+    {
+        setPropertyList(m_list);
+        m_list->SetModified(false);
+    }
 
-			// send a signal that the data was changed
-			emit dataChanged(itemModified, propIndex);
-			return;
-		}
-	}
+    // send a signal that the data was changed
+    emit dataChanged(itemModified, propIndex);
+    return;
 }
