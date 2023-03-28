@@ -109,6 +109,5 @@ signals:
 private:
 	QVBoxLayout*	ui;
 	CPropertyList*	m_list;
-	// QList<QWidget*>	m_widget;
     std::unordered_map<QWidget*, int> m_widgets;
 };
