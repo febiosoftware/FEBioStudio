@@ -82,9 +82,11 @@ protected:
 
 	// build a surface
 	FSSurface* build_surface(AbaqusModel::SURFACE* ps);
+	FSSurface* find_surface(AbaqusModel::SURFACE* ps);
 
 	// build a nodeset
 	FSNodeSet* build_nodeset(AbaqusModel::NODE_SET* ns);
+	FSNodeSet* find_nodeset(AbaqusModel::NODE_SET* ns);
 
 	// Keyword parsers
 	bool read_heading            (char* szline, FILE* fp);
@@ -108,6 +110,7 @@ protected:
 	bool read_boundary           (char* szline, FILE* fp);
 	bool read_dsload             (char* szline, FILE* fp);
 	bool read_solid_section      (char* szline, FILE* fp);
+	bool read_shell_section      (char* szline, FILE* fp);
 	bool read_static             (char* szline, FILE* fp);
 	bool read_orientation        (char* szline, FILE* fp);
 	bool read_distribution       (char* szline, FILE* fp);

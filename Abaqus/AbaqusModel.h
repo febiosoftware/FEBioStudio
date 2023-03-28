@@ -118,6 +118,16 @@ public:
 		PART*	part;
 	};
 
+	// Shell section
+	struct SHELL_SECTION
+	{
+		char	szelset[Max_Name + 1];
+		char	szmat[Max_Name + 1];
+		char	szorient[Max_Name + 1];
+		PART*	part = nullptr;
+		double	m_shellThickness = 0.0;
+	};
+
 	struct Orientation
 	{
 		char	szname[Max_Name + 1];
@@ -164,7 +174,9 @@ public:
 	{
 	public:
 		// constructor
-		PART() { m_po = 0; }
+		PART();
+
+		~PART();
 
 		// return the part's name
 		const char* GetName() { return m_szname; }
@@ -189,25 +201,28 @@ public:
 		Telem_itr FindElement(int id);
 
 		// find an element set with a particular name
-		list<ELEMENT_SET>::iterator FindElementSet(const char* szname);
+		ELEMENT_SET* FindElementSet(const char* szname);
 
 		// adds an element set
-		list<ELEMENT_SET>::iterator AddElementSet(const char* szname);
+		ELEMENT_SET* AddElementSet(const char* szname);
 
 		// find a node set with a particular name
-		map<string, NODE_SET>::iterator FindNodeSet(const char* szname);
+		NODE_SET* FindNodeSet(const char* szname);
 
 		// adds a node set
-		map<string, NODE_SET>::iterator AddNodeSet(const char* szname);
+		NODE_SET* AddNodeSet(const char* szname);
 
 		// find a surface with a particular name
-		list<SURFACE>::iterator FindSurface(const char* szname);
+		SURFACE* FindSurface(const char* szname);
 
 		// add a surface
-		list<SURFACE>::iterator AddSurface(const char* szname);
+		SURFACE* AddSurface(const char* szname);
 
 		// add a solid section
 		list<SOLID_SECTION>::iterator AddSolidSection(const char* szset, const char* szmat, const char* szorient);
+
+		// add a solid section
+		list<SHELL_SECTION>::iterator AddShellSection(const char* szset, const char* szmat, const char* szorient);
 
 		// number of nodes
 		int Nodes() { return (int)m_Node.size(); }
@@ -229,15 +244,16 @@ public:
 
 	public:
 		char m_szname[256];
-		vector<NODE>			m_Node;		// list of nodes
-		vector<ELEMENT>			m_Elem;		// list of elements
-		list<SPRING>			m_Spring;	// list of springs
-		map<string, NODE_SET>	m_NSet;		// node sets
-		list<ELEMENT_SET>		m_ElSet;	// element sets
-		list<SURFACE>			m_Surf;		// surfaces
-		list<SOLID_SECTION>		m_Solid;	// solid section
-		list<Orientation>		m_Orient;
-		list<Distribution>		m_Distr;
+		vector<NODE>				m_Node;		// list of nodes
+		vector<ELEMENT>				m_Elem;		// list of elements
+		list<SPRING>				m_Spring;	// list of springs
+		map<string, NODE_SET*>		m_NSet;		// node sets
+		map<string, ELEMENT_SET*>	m_ESet;		// element sets
+		map<string, SURFACE*>		m_Surf;		// surfaces
+		list<SOLID_SECTION>			m_Solid;	// solid sections
+		list<SHELL_SECTION>			m_Shell;	// shell sections
+		list<Orientation>			m_Orient;
+		list<Distribution>			m_Distr;
 
 		vector<Tnode_itr>	m_NLT;	// Node look-up table
 		int					m_ioff;	// node id offset (min node id)
@@ -342,6 +358,31 @@ public:
 		double	time;
 	};
 
+	class ASSEMBLY
+	{
+	public:
+		ASSEMBLY();
+
+		~ASSEMBLY();
+
+		// add an instance
+		INSTANCE* AddInstance();
+
+		// Get the current instance
+		INSTANCE* CurrentInstance() { return m_currentInstance; }
+
+		// clear the current instance
+		void ClearCurrentInstance();
+
+		// get instance list
+		list<INSTANCE*>& InstanceList() { return m_Instance; }
+
+	public:
+		std::string	m_name;
+		list<INSTANCE*>	m_Instance;		// list of instances
+		INSTANCE*	m_currentInstance;	// current active instance
+	};
+
 public:
 	// constructor
 	AbaqusModel();
@@ -364,26 +405,11 @@ public:
 	// find a part with a particular element set
 	ELEMENT_SET* FindElementSet(const char* szelemset);
 
-	// add an instance
-	INSTANCE* AddInstance();
-
-	// find the instance
-	INSTANCE* FindInstance(const char* sz);
-
-	// Get the current instance
-	INSTANCE* CurrentInstance() { return m_pInst; }
-
-	// clear the current instance
-	void ClearCurrentInstance();
-
 	// get the current part
-	PART* CurrentPart() { return m_pPart; }
+	PART* CurrentPart() { return m_currentPart; }
 
 	// set the current part
-	void SetCurrentPart(PART* part) { m_pPart = part; }
-
-	// get instance list
-	list<INSTANCE*>& InstanceList() { return m_Inst; }
+	void SetCurrentPart(PART* part) { m_currentPart = part; }
 
 	// get part list
 	list<PART*>&	PartList() { return m_Part; }
@@ -416,9 +442,21 @@ public:
 	void SetCurrentStep(STEP* p);
 
 	// get the current step
-	STEP* CurrentStep() { return m_pStep; }
+	STEP* CurrentStep() { return m_currentStep; }
 
 	list<STEP>& StepList() { return m_Step; }
+
+	// get the Assembly
+	ASSEMBLY* GetAssembly() { return m_Assembly; }
+
+	// add an assembly
+	ASSEMBLY* CreateAssembly();
+
+	void SetCurrentAssembly(ASSEMBLY* a) { m_currentAssembly = a; }
+	ASSEMBLY* GetCurrentAssembly() { return m_currentAssembly; }
+
+	// find the instance
+	INSTANCE* FindInstance(const char* sz);
 
 public:
 	void AddAmplitude(const Amplitude& a);
@@ -430,16 +468,16 @@ private:
 	FSModel*	m_fem;		// the model
 
 	list<PART*>	m_Part;		// list of parts
-	PART*		m_pPart;	// current part
+	PART*		m_currentPart;	// current part
 
-	list<INSTANCE*>	m_Inst;		// list of instances
-	INSTANCE*		m_pInst;	// current active instance
+	ASSEMBLY*	m_Assembly;	// the assembly
+	ASSEMBLY*	m_currentAssembly;	// the current assembly (is not nullptr between ASSEMBLY and END ASSEMBLY
 
 private:	// physics
 	list<MATERIAL>		m_Mat;			// materials
 	list<DSLOAD>		m_SLoads;		// surface loads
 	list<BOUNDARY>		m_Boundary;		// boundary conditions
 	list<STEP>			m_Step;			// steps
-	STEP*				m_pStep;		// current step
+	STEP*				m_currentStep;	// current step
 	std::vector<Amplitude>		m_Amp;
 };
