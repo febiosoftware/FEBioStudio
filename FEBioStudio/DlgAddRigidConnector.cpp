@@ -44,7 +44,7 @@ SOFTWARE.*/
 class Ui::CDlgAddRigidConnector
 {
 public:
-	QVBoxLayout* mainLayout;
+    QWidget* mainWidget;
 	QLineEdit* name;
 	QComboBox* step;
 	QComboBox* matA;
@@ -76,9 +76,14 @@ public:
 		form->addRow("Rigid material A:", matA);
 		form->addRow("Rigid material B:", matB);
 
-		mainLayout = new QVBoxLayout;
-		mainLayout->addLayout(form);
-		mainLayout->addWidget(list);
+		QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+		layout->addLayout(form);
+		layout->addWidget(list);
+
+        mainWidget = new QWidget;
+        mainWidget->setLayout(layout);
 
 		QObject::connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), dlg, SLOT(accept()));
 	}
@@ -89,7 +94,7 @@ CDlgAddRigidConnector::CDlgAddRigidConnector(FSProject& prj, QWidget* parent) : 
 	setWindowTitle("Add Rigid Connector");
 
 	ui->setup(this);
-	SetLeftSideLayout(ui->mainLayout);
+    SetLeftSideWidget(ui->mainWidget);
 
 	// add the steps
 	FSModel& fem = prj.GetFSModel();

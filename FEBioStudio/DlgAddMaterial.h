@@ -24,34 +24,30 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "HelpDialog.h"
+#include "DlgAddPhysicsItem.h"
 
-class UIDlgAddPhysicsItem;
-class FSModel;
-
-class CDlgAddPhysicsItem : public CHelpDialog
+namespace Ui
 {
-	Q_OBJECT
+    class CDlgAddMaterial;
+}
+
+class CMainWindow;
+
+class CDlgAddMaterial : public CDlgAddPhysicsItem 
+{
+    Q_OBJECT
 
 public:
-	CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, QWidget* parent);
+    CDlgAddMaterial(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, CMainWindow* parent);
 
-	std::string GetName();
-	int GetStep();
-	int GetClassID();
-
-	void ShowNameAndCategoryFields(bool b);
-
-protected:
-	void SetURL();
-
-    void createTabs(const QString& firstTabName);
-    void addTab(QWidget* tab, const QString& tabName);
-
-public slots:
-	void Update();
 
 private:
-	UIDlgAddPhysicsItem*	ui;
+    void ReadXML();
+
+public slots:
+    void on_list_currentRowChanged(int index);
+
+private:
+    Ui::CDlgAddMaterial* ui;
+    CMainWindow* m_wnd;
 };

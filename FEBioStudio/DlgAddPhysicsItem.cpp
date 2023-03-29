@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include <QLineEdit>
 #include <QComboBox>
+#include <QTabWidget>
 #include <QTreeWidget>
 #include <QTreeWidgetItem>
 #include <QFormLayout>
@@ -49,6 +50,9 @@ using namespace std;
 class UIDlgAddPhysicsItem
 {
 public:
+    QTabWidget* tabs;
+    QWidget* mainWidget;
+
 	QTreeWidget* type;
 	QLineEdit* name;
 	QComboBox* step;
@@ -68,6 +72,8 @@ public:
 	void setup(CDlgAddPhysicsItem* dlg, bool showStepList)
 	{
 		// Setup UI
+        mainWidget = new QWidget;
+        
 		QString placeHolder = "(leave blank for default)";
 		name = new QLineEdit; name->setPlaceholderText(placeHolder);
 		name->setMinimumWidth(name->fontMetrics().size(Qt::TextSingleLine, placeHolder).width() * 1.3);
@@ -94,6 +100,7 @@ public:
 		nameAndCategory->setLayout(form);
 
 		QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->addWidget(new QLabel("Filter:"));
@@ -105,7 +112,8 @@ public:
 		layout->addLayout(h);
 		layout->addWidget(type);
 
-		dlg->SetLeftSideLayout(layout);
+        mainWidget->setLayout(layout);
+        dlg->SetLeftSideWidget(mainWidget);
 
 		QObject::connect(type, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), dlg, SLOT(accept()));
 		QObject::connect(flt, SIGNAL(textChanged(const QString&)), dlg, SLOT(Update()));
@@ -113,7 +121,36 @@ public:
 		QObject::connect(cat, SIGNAL(currentIndexChanged(int)), dlg, SLOT(Update()));
 
 		flt->setFocus();
+
+        tabs = nullptr;
+        parent = dlg;
 	}
+
+    void createTabs(const QString& firstTabName)
+    {
+        if(tabs != nullptr) return;
+
+        QVBoxLayout* tabLayout = new QVBoxLayout;
+        tabLayout->setContentsMargins(0,0,0,0);
+        
+        tabs = new QTabWidget;
+
+        tabs->addTab(mainWidget, firstTabName);
+
+        tabLayout->addWidget(tabs);
+
+        parent->SetLeftSideWidget(tabs);
+    }
+
+    void addTab(QWidget* tab, const QString& newTabName)
+    {
+        if(tabs == nullptr) return;
+
+        tabs->addTab(tab, newTabName);
+    }
+
+private:
+    ::CDlgAddPhysicsItem* parent;
 };
 
 CDlgAddPhysicsItem::CDlgAddPhysicsItem(QString windowName, int superID, int baseClassID, FSModel* fem, bool includeModuleDependencies, bool showStepList, QWidget* parent)
@@ -238,4 +275,14 @@ void CDlgAddPhysicsItem::SetURL()
     // cout << "SUPERID " << ui->m_superID << endl;
 
     // FECoreKernel::GetInstance().List((SUPER_CLASS_ID) ui->m_superID);
+}
+
+void CDlgAddPhysicsItem::createTabs(const QString& firstTabName)
+{
+    ui->createTabs(firstTabName);
+}
+
+void CDlgAddPhysicsItem::addTab(QWidget* tab, const QString& tabName)
+{
+    ui->addTab(tab, tabName);
 }

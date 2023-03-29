@@ -46,7 +46,7 @@ SOFTWARE.*/
 class Ui::CDlgAddRigidConstraint
 {
 public:
-	QVBoxLayout* mainLayout;
+    QWidget* mainWidget;
 	QLineEdit* name;
 	QComboBox* step;
 	QComboBox* mat;
@@ -69,9 +69,14 @@ public:
 		form->addRow("Step:", step);
 		form->addRow("Rigid material:", mat);
 
-		mainLayout = new QVBoxLayout;
-		mainLayout->addLayout(form);
-		mainLayout->addWidget(list);
+        QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+		layout->addLayout(form);
+		layout->addWidget(list);
+
+        mainWidget = new QWidget;
+        mainWidget->setLayout(layout);
 
 		QObject::connect(list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), parent, SLOT(accept()));
 	}
@@ -83,7 +88,7 @@ CDlgAddRigidConstraint::CDlgAddRigidConstraint(FSProject& prj, QWidget* parent) 
 
 	ui->setupUi(this);
 
-	SetLeftSideLayout(ui->mainLayout);
+	SetLeftSideWidget(ui->mainWidget);
 
 	// add the steps
 	FSModel& fem = prj.GetFSModel();

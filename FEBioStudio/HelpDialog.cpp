@@ -98,7 +98,7 @@ void CHelpDialog::on_help_clicked()
     }
 }
 
-void CHelpDialog::SetLeftSideLayout(QLayout* layout)
+void CHelpDialog::SetLeftSideWidget(QWidget* widget)
 {
-	ui->helpLayout->insertLayout(0, layout);
+	ui->helpLayout->insertWidget(0, widget);
 }

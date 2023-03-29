@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "ModelDocument.h"
 #include "DlgAddPhysicsItem.h"
+#include "DlgAddMaterial.h"
 #include "DlgAddNodalLoad.h"
 #include "DlgAddStep.h"
 #include "DlgSoluteTable.h"
@@ -706,7 +707,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel& fem = *doc->GetFSModel();
 
-	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, &fem, true, false, this);
+	CDlgAddMaterial dlg("Add Material", FEMATERIAL_ID, -1, &fem, true, false, this);
 	if (dlg.exec())
 	{
         int id = dlg.GetClassID();

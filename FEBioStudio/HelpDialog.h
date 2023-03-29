@@ -47,7 +47,7 @@ protected slots:
 	void on_help_clicked();
 
 public:
-	void SetLeftSideLayout(QLayout* layout);
+	void SetLeftSideWidget(QWidget* widget);
 
 	virtual void SetURL() = 0;
 

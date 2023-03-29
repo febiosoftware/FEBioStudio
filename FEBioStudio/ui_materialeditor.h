@@ -173,6 +173,7 @@ private:
 class Ui::CMaterialEditor
 {
 public:
+    QWidget* mainWidget;
 	QVBoxLayout* mainLayout;
 	QLineEdit*	name;
 	QComboBox*	matClass;
@@ -207,9 +208,14 @@ public:
 		tree->setHeaderLabels(labels);
 		ClearTree();
 
-		mainLayout = new QVBoxLayout;
-		mainLayout->addLayout(matForm);
-		mainLayout->addWidget(tree);
+		QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+		layout->addLayout(matForm);
+		layout->addWidget(tree);
+
+        mainWidget = new QWidget;
+        mainWidget->setLayout(layout);
 	}
 
 	void ClearTree()

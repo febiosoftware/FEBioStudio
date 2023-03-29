@@ -137,7 +137,7 @@ CMaterialEditor::CMaterialEditor(FSProject& prj, QWidget* parent) : CHelpDialog(
 
 	ui->m_fem = &prj.GetFSModel();
 
-	SetLeftSideLayout(ui->mainLayout);
+    SetLeftSideWidget(ui->mainWidget);
 
 	//String to be displayed by the help dialog when no material is selected
 	m_unselectedHelp = "Please select a material to view its help page.";
