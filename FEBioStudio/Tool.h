@@ -129,7 +129,6 @@ private slots:
 	void on_button_clicked();
 
 private:
-	CPropertyList*		m_list;
 	CPropertyListForm*	m_form;
 	unsigned int		m_flags;
 	QString				m_applyText;
