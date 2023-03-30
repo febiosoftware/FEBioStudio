@@ -1125,7 +1125,7 @@ void CModelPropsPanel::addSelection(int n)
 			}
 
 			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n));
-			SetSelection(0, pil->GetItemList(n));
+			SetSelection(n, pil->GetItemList(n));
 		}
 		else
 		{
@@ -1158,7 +1158,7 @@ void CModelPropsPanel::addSelection(int n)
 					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 				}
 			}
-			SetSelection(0, pl);
+			SetSelection(n, pl);
 			pil->SetItemList(pl, n);
 			delete pg;
 		}
@@ -1192,7 +1192,7 @@ void CModelPropsPanel::addSelection(int n)
 				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 			}
 		}
-		SetSelection(0, pl);
+		SetSelection(n, pl);
 
 		// don't forget to clean up
 		delete pg;
