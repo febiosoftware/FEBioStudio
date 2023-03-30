@@ -1070,7 +1070,7 @@ void CModelViewer::OnChangeMaterial()
         int id = dlg.GetClassID();
         if(id == -1) return;
 
-		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(-1, &fem);
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
 			gmat->SetMaterialProperties(pmat);
