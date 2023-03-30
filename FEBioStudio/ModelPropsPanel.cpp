@@ -1119,7 +1119,13 @@ void CModelPropsPanel::addSelection(int n)
 			FEMeshData* pmd = dynamic_cast<FEMeshData*>(m_currentObject);
 			if (pmc || pmd)
 			{
-				pg->SetName(m_currentObject->GetName());
+				string s = m_currentObject->GetName();
+				if (pil->ItemLists() == 2)
+				{
+					if (n == 0) s += "Primary";
+					else s += "Secondary";
+				}
+				pg->SetName(s);
 				mdl.AddNamedSelection(pg);
 				emit modelChanged();
 			}
