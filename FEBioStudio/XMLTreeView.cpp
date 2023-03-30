@@ -553,12 +553,10 @@ void XMLTreeView::setModel(QAbstractItemModel* newModel)
     // Set the column sizes the first time we set a model
     if(firstModel)
     {
-        int width = m_wnd->GetEditorSize().width();
-        setColumnWidth(TAG, width*0.25);
-        setColumnWidth(ID, width*0.05);
-        setColumnWidth(TYPE, width*0.15);
-        setColumnWidth(NAME, width*0.15);
-        setColumnWidth(VALUE, width*0.10);
+        if(m_wnd)
+        {
+            setColWidths(m_wnd->GetEditorSize().width());
+        }
     }
 
     current = static_cast<XMLTreeModel*>(newModel);
@@ -575,6 +573,15 @@ void XMLTreeView::setModel(QAbstractItemModel* newModel)
 CXMLDocument* XMLTreeView::GetDocument()
 {
     return dynamic_cast<CXMLDocument*>(m_wnd->GetDocument());
+}
+
+void XMLTreeView::setColWidths(int width)
+{
+    setColumnWidth(TAG, width*0.25);
+    setColumnWidth(ID, width*0.05);
+    setColumnWidth(TYPE, width*0.15);
+    setColumnWidth(NAME, width*0.15);
+    setColumnWidth(VALUE, width*0.10);
 }
 
 void XMLTreeView::on_removeSelectedRow_triggered()

@@ -114,7 +114,7 @@ public:
 private:
     void setParent(XMLTreeItem* parent);
 
-private:
+public:
     ItemType m_itemType;
     vector<XMLTreeItem*> m_children;
     QString m_tag;

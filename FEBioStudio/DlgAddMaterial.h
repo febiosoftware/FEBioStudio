@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "DlgAddPhysicsItem.h"
+#include <XML/XMLReader.h>
 
 namespace Ui
 {
@@ -32,6 +33,7 @@ namespace Ui
 }
 
 class CMainWindow;
+class XMLTreeItem;
 
 class CDlgAddMaterial : public CDlgAddPhysicsItem 
 {
@@ -43,6 +45,10 @@ public:
 
 private:
     void ReadXML();
+
+    XMLTreeItem* getChild(XMLTag& tag, int depth);
+
+    void printInfo(XMLTreeItem* item, int depth);
 
 public slots:
     void on_list_currentRowChanged(int index);

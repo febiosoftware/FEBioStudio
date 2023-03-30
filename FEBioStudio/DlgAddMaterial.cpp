@@ -27,7 +27,8 @@ SOFTWARE.*/
 #include "DlgAddMaterial.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
-#include "FEClassPropsView.h"
+#include "XMLTreeView.h"
+#include "XMLTreeModel.h"
 #include <QWidget>
 #include <QBoxLayout>
 #include <QListWidget>
@@ -38,6 +39,9 @@ SOFTWARE.*/
 #include <FEBio/FEBioInputModel.h>
 #include <FEBio/FEBioFormat4.h>
 #include "PublicationWidgetView.h"
+
+#include <iostream>
+
 
 class Publication
 {
@@ -60,22 +64,23 @@ public:
 class RepoMaterial
 {
 public:
-    RepoMaterial(QString name, QString description, std::vector<Publication>& pubs, FSMaterial* mat) :
-        m_name(name), m_description(description), m_pubs(pubs), m_mat(mat)
+    RepoMaterial(QString name, QString description, std::vector<Publication>& pubs, XMLTreeModel* model) :
+        m_name(name), m_description(description), m_pubs(pubs), m_model(model)
     {
 
     }
 
     ~RepoMaterial()
     {
-        if(m_mat) delete m_mat;
+        if(m_model) delete m_model;
     }
+
 
 public:
     QString m_name;
     QString m_description;
     std::vector<Publication> m_pubs;
-    FSMaterial* m_mat;
+    XMLTreeModel* m_model;
 
 };
 
@@ -88,7 +93,7 @@ public:
     QLabel* desc;
     ::CPublicationWidgetView* pubs;
 
-    FEClassEdit* edit;
+    ::XMLTreeView* tree;
 public:
 
     void setupUI(::CDlgAddMaterial* dlg, ::CMainWindow* wnd)
@@ -106,7 +111,7 @@ public:
 
         layout->addLayout(leftLayout);
         
-        layout->addWidget(edit = new FEClassEdit(wnd));
+        layout->addWidget(tree = new ::XMLTreeView(nullptr));
 
         tab->setLayout(layout);
     }
@@ -144,6 +149,16 @@ CDlgAddMaterial::CDlgAddMaterial(QString windowName, int superID, int baseClassI
 
     ReadXML();
 
+    std::cout << ui->m_mats[0].m_name.toStdString() << std::endl;
+    std::cout << ui->m_mats[0].m_description.toStdString() << std::endl;
+
+    auto& mat = ui->m_mats[0];
+
+    // std::cout << mat.m_model->data(mat.m_model->index(0,0), 0).toString().toStdString() << std::endl;
+    std::cout << mat.m_model->GetRoot()->child(0)->data(0).toStdString() << std::endl;
+
+    printInfo(ui->m_mats[0].m_model->GetRoot()->child(0), 0);
+
     ui->update();
 
 }
@@ -157,10 +172,6 @@ void CDlgAddMaterial::ReadXML()
     
     bool found = reader.FindTag("Materials", tag);
 
-    auto fem = m_wnd->GetModelDocument()->GetFSModel();
-    FEBioInputModel model(*fem);
-    FEBioFormat4 format(nullptr, model); 
-
     try
     {
         ++tag;
@@ -171,7 +182,7 @@ void CDlgAddMaterial::ReadXML()
                 string name;
                 string desc;
                 std::vector<Publication> pubs;
-                FSMaterial* mat = nullptr;
+                XMLTreeModel* treeModel;
 
                 ++tag;
                 do
@@ -292,35 +303,31 @@ void CDlgAddMaterial::ReadXML()
                     }
                     else if(tag == "material")
                     {
+                        // Dummy root item holds the header names
+                        XMLTreeItem* root = new XMLTreeItem(-1);
+                        root->SetTag("Item");
+                        root->SetID("ID");
+                        root->SetName("Name");
+                        root->SetType("Type");
+                        root->SetValue("Value");
+                        root->SetComment("Comment");
+
+                        root->appendChild(getChild(tag, -1));
+                        root->child(0)->SetExpanded(true);
                         
-                        // do
-                        // {
-                        //     ++tag;
+                        treeModel = new XMLTreeModel(root, nullptr);
 
-                            // get the material type
-                            XMLAtt& mtype = tag.Attribute("type");
-                            const char* sztype = mtype.cvalue();
-
-                            // get the material name
-                            XMLAtt* pan = tag.AttributePtr("name");
-                            const char* szname = pan->cvalue();
-
-                            // allocate a new material
-                            mat = FEBio::CreateMaterial(sztype, fem);
-
-                            // parse material
-		                    format.ParseModelComponent(mat, tag);
-
-                        //     ++tag;
-                        // } while (!tag.isend());
+                        ++tag;
                     }
 
                     ++tag;
                 } while (!tag.isend());
 
-
-                ui->m_mats.emplace_back(name.c_str(), desc.c_str(), pubs, mat);
-                
+                // ui->m_mats.emplace_back(name.c_str(), desc.c_str(), pubs, treeModel);
+                // std::cout << treeModel->GetRoot() << ", " << &treeModel->GetRoot()->m_children << ", " << treeModel->GetRoot()->m_children.size() << std::endl;
+                // std::cout << ui->m_mats[0].m_model->GetRoot() << ", " << &ui->m_mats[0].m_model->GetRoot()->m_children <<  ", " << ui->m_mats[0].m_model->GetRoot()->m_children.size()  << std::endl << std::endl;
+                // printInfo(treeModel->GetRoot()->child(0), 0);
+                // printInfo(ui->m_mats[0].m_model->GetRoot()->child(0), 0);
             }
 
             ++tag;
@@ -338,6 +345,86 @@ void CDlgAddMaterial::ReadXML()
 
 }
 
+XMLTreeItem* CDlgAddMaterial::getChild(XMLTag& tag, int depth)
+{
+    depth++; 
+
+    XMLTreeItem* child = new XMLTreeItem(depth);
+
+    // if(!tag.comment().empty())
+    // {
+    //     child->SetComment(tag.comment().c_str());
+    // }
+
+    char szval[256];
+    tag.value(szval);
+    child->SetTag(tag.Name());
+    child->SetValue(szval);
+
+    for(XMLAtt& att : tag.m_att)
+    {
+        if(strcmp(att.name(), "id") == 0)
+        {
+            child->SetID(att.cvalue());
+        }
+        else if (strcmp(att.name(), "name") == 0)
+        {
+            child->SetName(att.cvalue());
+        }
+        else if (strcmp(att.name(), "type") == 0)
+        {
+            child->SetType(att.cvalue());
+        }
+        else
+        {
+            child->AddAttribtue(att.name(), att.cvalue());
+        }
+    }
+    
+    if(tag.isleaf())
+    {   
+        return child;
+    }
+
+    int children = tag.children();
+    for(int index = 0; index < children; index++)
+    {
+        ++tag;
+        while(tag.isend())
+        {
+            ++tag;
+        }
+
+        child->appendChild(getChild(tag, depth));
+    }
+
+    return child;
+}
+
+void CDlgAddMaterial::printInfo(XMLTreeItem* item, int depth)
+{
+    for(int i = 0; i < depth; i++)
+    {
+        std::cout << "    ";
+    }
+
+    depth++;
+    
+    for(int col = 0; col < item->columnCount(); col++)
+    {
+        std::cout << item->data(col).toStdString();
+        
+        if(col != item->columnCount()) std::cout << ", ";
+    }
+
+    std::cout << std::endl;
+
+    for(int child = 0; child < item->childCount(); child++)
+    {
+        printInfo(item->child(child), depth);
+    }
+}
+
 void CDlgAddMaterial::on_list_currentRowChanged(int index)
 {
     auto& mat = ui->m_mats[index];
@@ -351,5 +438,7 @@ void CDlgAddMaterial::on_list_currentRowChanged(int index)
             pub.issue, pub.pages, pub.DOI, pub.authorGiven, pub.authorFamily);
     }
 
-    // ui->edit->SetFEClass(mat.m_mat, m_wnd->GetModelDocument()->GetFSModel());
+    printInfo(mat.m_model->GetRoot()->child(0), 0);
+
+    // ui->tree->setModel(mat.m_model);
 }

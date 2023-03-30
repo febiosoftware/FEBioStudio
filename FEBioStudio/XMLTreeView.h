@@ -82,6 +82,8 @@ public:
 
     CXMLDocument* GetDocument();
 
+    void setColWidths(int width);
+
 public slots:
     void on_removeSelectedRow_triggered();
     void on_addAttribute_triggered();
