@@ -6,6 +6,18 @@
 
 ===========================================================================
 
+ R E L E A S E   2.1.1   3/30/2023
+
+===========================================================================
+
+* Fixed naming issue when assigning selections to contact.
+* Fixed bug in assigning selections to contact interfaces.
+* Fixed bug in void change material feature.
+* Added SelectNearPlane tool
+* Improved support for reading Abaqus assembly, part instances, node sets, element sets, and surfaces.
+
+===========================================================================
+
  R E L E A S E   2.1   3/27/2023
 
 ===========================================================================
