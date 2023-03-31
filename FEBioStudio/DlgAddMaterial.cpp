@@ -70,6 +70,15 @@ public:
 
     }
 
+	RepoMaterial(RepoMaterial&& rm)
+	{
+		m_name = rm.m_name;
+		m_description = rm.m_description;
+		m_pubs = rm.m_pubs;
+		m_model = rm.m_model;
+		rm.m_model = nullptr;
+	}
+
     ~RepoMaterial()
     {
         if(m_model) delete m_model;
@@ -323,7 +332,7 @@ void CDlgAddMaterial::ReadXML()
                     ++tag;
                 } while (!tag.isend());
 
-                // ui->m_mats.emplace_back(name.c_str(), desc.c_str(), pubs, treeModel);
+                ui->m_mats.emplace_back(name.c_str(), desc.c_str(), pubs, treeModel);
                 // std::cout << treeModel->GetRoot() << ", " << &treeModel->GetRoot()->m_children << ", " << treeModel->GetRoot()->m_children.size() << std::endl;
                 // std::cout << ui->m_mats[0].m_model->GetRoot() << ", " << &ui->m_mats[0].m_model->GetRoot()->m_children <<  ", " << ui->m_mats[0].m_model->GetRoot()->m_children.size()  << std::endl << std::endl;
                 // printInfo(treeModel->GetRoot()->child(0), 0);
@@ -440,5 +449,5 @@ void CDlgAddMaterial::on_list_currentRowChanged(int index)
 
     printInfo(mat.m_model->GetRoot()->child(0), 0);
 
-    // ui->tree->setModel(mat.m_model);
+    ui->tree->setModel(mat.m_model);
 }
