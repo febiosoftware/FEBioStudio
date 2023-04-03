@@ -143,6 +143,8 @@ void CModelDocument::Clear()
 //-----------------------------------------------------------------------------
 void CModelDocument::Activate()
 {
+	CGLDocument::Activate();
+
 	m_context->Pull();
 
 	// reset active module

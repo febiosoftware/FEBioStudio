@@ -507,7 +507,6 @@ bool FEBioFileImport::UpdateFEModel(FSModel& fem)
 		case FSLogData::LD_RIGID: ld = new FSLogRigidData(v.GroupID()); break;
 		case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(v.GroupID()); break;
 		}
-		break;
 
 		if (ld)
 		{

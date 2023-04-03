@@ -23,36 +23,32 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <QLineEdit>
-#include <QCompleter>
 
-class CustomLineEdit : public QLineEdit
+#include "Tool.h"
+
+
+class CSelectNearPlaneTool : public CBasicTool
 {
-    Q_OBJECT
-
 public:
-    explicit CustomLineEdit(QWidget* parent = 0);
+    CSelectNearPlaneTool(CMainWindow* wnd);
 
-    void setMultipleCompleter(QCompleter* completer);
+	QWidget* createUi() override;
 
-	void setWrapQuotes(bool b);
-	void setDelimiter(QString d);
+	virtual bool OnApply() override;
 
-protected:
-    void keyPressEvent(QKeyEvent* e);
-
-    void focusInEvent(QFocusEvent* e);
+	// virtual void updateUi() override;
 
 private:
-    QString cursorWord(const QString& sentence) const;
-
-private slots:
-    void insertCompletion(QString arg);
+    void on_dataChanged(int index);
 
 private:
-    QCompleter* c;
-	QString m_delim;
-	bool	m_wrapQuotes;	// wrap quotes if string has spaces
+    enum Direction { X, Y, Z, FACE};
+
+private:
+    CPropertyListForm* m_pform;
+
+    int m_direction;
+    double m_position;
+    double m_threshold;
+    bool m_add;
 };
-

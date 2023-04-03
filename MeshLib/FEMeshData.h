@@ -83,6 +83,10 @@ public:
 	void set(size_t i, const vec3d& v);
 	void set(size_t i, const mat3d& v);
 
+	double getScalar(size_t i) const;
+	vec3d getVec3d(size_t i) const;
+	mat3d getMat3d(size_t i) const;
+
 protected:
 	void SetMesh(FSMesh* mesh);
 	DATA_TYPE		m_dataType;
@@ -115,4 +119,23 @@ inline void FEMeshData::set(size_t i, const mat3d& v)
 	m_data[9 * i    ] = v(0,0); m_data[9 * i + 1] = v(0,1); m_data[9 * i + 2] = v(0,2);
 	m_data[9 * i + 3] = v(1,0); m_data[9 * i + 4] = v(1,1); m_data[9 * i + 5] = v(1,2);
 	m_data[9 * i + 6] = v(2,0); m_data[9 * i + 7] = v(2,1); m_data[9 * i + 8] = v(2,2);
+}
+
+inline double FEMeshData::getScalar(size_t i) const 
+{
+	assert(m_dataType == FEMeshData::DATA_SCALAR);
+	return m_data[i];
+}
+
+inline vec3d FEMeshData::getVec3d(size_t i) const
+{
+	assert(m_dataType == FEMeshData::DATA_VEC3D);
+	return vec3d(m_data[3*i], m_data[3*i+1], m_data[3*i+2]);
+}
+
+inline mat3d FEMeshData::getMat3d(size_t i) const
+{
+	assert(m_dataType == FEMeshData::DATA_MAT3D);
+	const double* d = &m_data[0] + 9 * i;
+	return mat3d(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8]);
 }

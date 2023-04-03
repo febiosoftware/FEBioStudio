@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <QFrame>
+#include <unordered_map>
 
 class QFormLayout;
 class CPropertyList;
@@ -103,10 +104,10 @@ private slots:
 
 signals:
 	// send when a widget is changed
-	void dataChanged(bool itemModified);
+	void dataChanged(bool itemModified, int index);
 
 private:
 	QVBoxLayout*	ui;
 	CPropertyList*	m_list;
-	QList<QWidget*>	m_widget;
+    std::unordered_map<QWidget*, int> m_widgets;
 };

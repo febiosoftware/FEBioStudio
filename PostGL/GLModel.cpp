@@ -1769,7 +1769,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 					{
 						bdraw = true;
 					}
-					else
+					else if (rc.m_settings.m_nrender == RENDER_WIREFRAME)
 					{
 						vec3d n1 = to_vec3d(f.m_fn);
 						vec3d n2 = to_vec3d(f2.m_fn);
@@ -2746,6 +2746,7 @@ void CGLModel::UpdateMeshState()
 		FSFace& f = mesh.Face(i);
 		f.Disable();
 		if (mesh.ElementRef(f.m_elem[0].eid).IsEnabled()) f.Enable();
+		else if ((f.m_elem[1].eid >= 0) && (mesh.ElementRef(f.m_elem[1].eid).IsEnabled())) f.Enable();
 	}
 }
 

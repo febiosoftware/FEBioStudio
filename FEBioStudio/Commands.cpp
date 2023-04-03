@@ -2991,7 +2991,7 @@ CCmdChangeObjectParams::CCmdChangeObjectParams(GObject *po) : CCommand("Change p
 void CCmdChangeObjectParams::Execute()
 {
 	ParamBlock pb = m_po->GetParamBlock();
-	m_po->GetParamBlock() = m_Param;
+	m_po->GetParamBlock().Copy(m_Param);
 	m_po->Update();
 	m_Param = pb;
 }
@@ -2999,7 +2999,7 @@ void CCmdChangeObjectParams::Execute()
 void CCmdChangeObjectParams::UnExecute()
 {
 	ParamBlock pb = m_po->GetParamBlock();
-	m_po->GetParamBlock() = m_Param;
+	m_po->GetParamBlock().Copy(m_Param);
 	m_po->Update();
 	m_Param = pb;
 }

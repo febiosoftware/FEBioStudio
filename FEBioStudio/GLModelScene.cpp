@@ -1385,7 +1385,7 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 			GMesh& m = *po->GetRenderMesh();
 			renderer.RenderGLEdges(&m);
 
-			renderer.RenderOutline(rc, &m);
+			renderer.RenderOutline(rc, &m, (rc.m_settings.m_nrender == RENDER_WIREFRAME));
 
 			glPopMatrix();
 		}

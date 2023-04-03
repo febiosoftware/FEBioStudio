@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include "Logger.h"
 #include <sstream>
 #include <QTextStream>
+#include "units.h"
 
 using std::stringstream;
 
@@ -915,11 +916,20 @@ bool CGLDocument::AutoSaveDocument()
 		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
 
 		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
-
+		SetModifiedFlag(false);
 		return success;
 	}
 	else
 		return false;
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::Activate()
+{
+	CDocument::Activate();
+
+	// make sure the correct unit system is active
+	Units::SetUnitSystem(m_units);
 }
 
 //-----------------------------------------------------------------------------

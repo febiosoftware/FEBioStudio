@@ -282,6 +282,8 @@ public:
 
 	bool AutoSaveDocument() override;
 
+	void Activate() override;
+
 	// set/get the file reader
 	void SetFileReader(FileReader* fileReader);
 	FileReader* GetFileReader();

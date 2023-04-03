@@ -2078,7 +2078,7 @@ void GLMeshRender::RenderGLEdges(GMesh* pm, int nid)
 }
 
 //-----------------------------------------------------------------------------
-void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
+void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm, bool outline)
 {
 	// get some settings
 	CGLCamera& cam = *rc.m_cam;
@@ -2101,7 +2101,7 @@ void GLMeshRender::RenderOutline(CGLContext& rc, GMesh* pm)
 			{
 				bdraw = true;
 			}
-			else
+			else if (outline)
 			{
 				GMesh::FACE& f2 = pm->Face(f.nbr[j]);
 				vec3d n1 = f.fn;

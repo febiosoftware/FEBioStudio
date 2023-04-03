@@ -1992,7 +1992,7 @@ void FEBioFormat2::ParseConstraint(FSStep* pstep, XMLTag& tag)
 
 	ReadParameters(*plc, tag);
 
-	pstep->AddConstraint(plc);
+	pstep->AddComponent(plc);
 }
 
 //-----------------------------------------------------------------------------

@@ -1069,7 +1069,10 @@ void CModelViewer::OnChangeMaterial()
 	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, &fem, false, false, this);
 	if (dlg.exec())
 	{
-		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
+        int id = dlg.GetClassID();
+        if(id == -1) return;
+
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
 			gmat->SetMaterialProperties(pmat);
