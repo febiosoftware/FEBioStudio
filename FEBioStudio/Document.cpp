@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include "Logger.h"
 #include <sstream>
 #include <QTextStream>
+#include "units.h"
 
 using std::stringstream;
 
@@ -919,6 +920,15 @@ bool CGLDocument::AutoSaveDocument()
 	}
 	else
 		return false;
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::Activate()
+{
+	CDocument::Activate();
+
+	// make sure the correct unit system is active
+	Units::SetUnitSystem(m_units);
 }
 
 //-----------------------------------------------------------------------------
