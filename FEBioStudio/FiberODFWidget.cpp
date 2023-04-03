@@ -47,7 +47,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <fstream>
 #include <vector>
-#include <GL/glu.h>
 #include <PostLib/ColorMap.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
@@ -62,6 +61,12 @@ SOFTWARE.*/
 #include <FEAMR/spherePoints.h>
 #include "DlgStartThread.h"
 #include "PropertyList.h"
+
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#else
+#include <GL/glu.h>
+#endif
 
 #include <iostream>
 
