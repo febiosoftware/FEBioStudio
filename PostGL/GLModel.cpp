@@ -657,6 +657,8 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 	// render un-selected, active elements
 	if (m_pcol->IsActive())
 	{
+		m_pcol->GetColorMap()->GetTexture().MakeCurrent();
+
 		glEnable(GL_TEXTURE_1D);
 
 		glColor3ub(255, 255, 255);
