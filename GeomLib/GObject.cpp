@@ -120,6 +120,31 @@ void GObject::Copy(GObject* po)
 	GBaseObject::Copy(po);
 }
 
+bool GObject::CanDelete() const
+{
+	// see if any of the nodes are required
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		if (Node(i)->IsRequired()) return false;
+	}
+	return CanDeleteMesh();
+}
+
+bool GObject::CanDeleteMesh() const
+{
+	const FSMesh* pm = GetFEMesh();
+	if (pm == nullptr) return true;
+
+	// Check if there are any mesh dependencies.
+	// Note that part-sets aren't checked since they don't reference the mesh directly.
+	if ((FENodeSets() == 0) &&
+		(FESurfaces() == 0) &&
+		(FEEdgeSets() == 0) &&
+		(FEElemSets() == 0)) return true;
+
+	return false;
+}
+
 //-----------------------------------------------------------------------------
 // return type of Object
 int GObject::GetType() const { return imp->m_ntype; }
