@@ -372,8 +372,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 	if (activeObject->GetFEMesh())
 	{
 		GObject* o = activeObject;
-		int n = o->FENodeSets() + o->FEEdgeSets() + o->FESurfaces() + o->FEElemSets();
-		if (n > 0)
+		if (o->CanDeleteMesh() == false)
 		{
 			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
 			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
@@ -422,8 +421,7 @@ void CMeshPanel::on_apply2_clicked(bool b)
 	if (activeObject->GetFEMesh())
 	{
 		GObject* o = activeObject;
-		int n = o->FENodeSets() + o->FEEdgeSets() + o->FESurfaces() + o->FEElemSets();
-		if (n > 0)
+		if (o->CanDeleteMesh() == false)
 		{
 			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
 			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)

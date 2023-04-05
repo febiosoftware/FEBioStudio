@@ -270,6 +270,14 @@ void CModelDocument::DeleteObject(FSObject* po)
 	else if (dynamic_cast<GObject*>(po))
 	{
 		GObject* obj = dynamic_cast<GObject*>(po);
+
+		// check to see if there are any required nodes
+		if (obj->CanDelete() == false)
+		{
+			QMessageBox::warning(m_wnd, "FEBio Studio", "This object cannot be deleted since other model components depend on it.");
+			return;
+		}
+
 		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
 	}
 	else if (po->GetParent())

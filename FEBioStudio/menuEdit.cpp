@@ -239,9 +239,20 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			int nsel = doc->GetSelectionMode();
 			if (nsel == SELECT_OBJECT)
 			{
-				CCmdGroup* pcmd = new CCmdGroup("Delete");
 				FSModel* ps = doc->GetFSModel();
 				GModel& model = ps->GetModel();
+				// first see if we can delete the objects
+				for (int i = 0; i < model.Objects(); ++i)
+				{
+					GObject* po = model.Object(i);
+					if (po->CanDelete() == false)
+					{
+						QMessageBox::warning(this, "FEBio Studio", "This selection cannot be deleted since other model components depend on it.");
+						return;
+					}
+				}
+
+				CCmdGroup* pcmd = new CCmdGroup("Delete");
 				for (int i = 0; i<model.Objects(); ++i)
 				{
 					GObject* po = model.Object(i);

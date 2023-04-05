@@ -3526,7 +3526,7 @@ bool FEBioMaterial::HasMaterialAxes() const
 
 mat3d FEBioMaterial::GetMatAxes(FEElementRef& el) const
 {
-	mat3d Q; Q.zero();
+	mat3d Q = mat3d::identity();
 
 	const FSProperty* pm = FindProperty("mat_axis");
 	if (pm)
@@ -3538,7 +3538,6 @@ mat3d FEBioMaterial::GetMatAxes(FEElementRef& el) const
 			Q = matAxis->GetMatAxis(el);
 		}
 	}
-	else Q = mat3d::identity();
 
 	return Q;
 }
