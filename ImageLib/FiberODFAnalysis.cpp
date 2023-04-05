@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "FiberODFAnalysis.h"
 #include <qopengl.h>
-#include <GL/glu.h>
 #include <PostLib/ImageModel.h>
 #include <FEAMR/sphericalHarmonics.h>
 #include <FEAMR/spherePoints.h>
@@ -43,6 +42,12 @@ SOFTWARE.*/
 #include <GLLib/glx.h>
 #ifdef min
 #undef min
+#endif
+
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#else
+#include <GL/glu.h>
 #endif
 
 #ifndef M_PI
