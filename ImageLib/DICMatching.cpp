@@ -42,19 +42,27 @@ CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 	//save reference center points
 	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
 	CreateMovingImages();//create subsets
-	CImageSITK moving_mask = CreateSubsetMask();//create subset mask for fft
-	sitk::WriteImage(moving_mask.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\moving_mask.tif");
+	m_moving_mask = CreateSubsetMask();//create subset mask for fft
 	CreateFixedMasks(); //create search areas in deformed image
+	m_fixed_SITK_img = *m_def_img.GetSITKImage(); //fixed image
 
-	CImageSITK fixed = *m_def_img.GetSITKImage();
+	FFTCorrelation();
+}
 
-	for (int i = 0; i < m_movingImages.size(); i++)
+void CDICMatching::FFTCorrelation()
+{
+	//for (int n = 0; n < m_movingImages.size(); n++)
+	for(int n=0; n < m_ref_center_points.size(); n++)
 	{
-		std::vector<int> results = FFT_TemplateMatching(fixed.GetSItkImage(), m_movingImages[i].GetSItkImage(),
-			m_searchAreas[i].GetSItkImage(), moving_mask.GetSItkImage(), 1, 0);
+		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
+			m_searchAreas[n].GetSItkImage(), m_moving_mask.GetSItkImage(), 1, 0);
 
+		vec2i match;
+		match.x = results[0];
+		match.y = results[1];
+
+		m_match_points.push_back(match);
 	}
-
 }
 
 CDICMatching::~CDICMatching()
@@ -343,4 +351,14 @@ CDICImage& CDICMatching::GetRefImage()
 CDICImage& CDICMatching::GetDefImage()
 {
 	return m_def_img;
+}
+
+std::vector<vec2i> CDICMatching::GetMatchResults()
+{
+	return m_match_points;
+}
+
+std::vector<vec2i> CDICMatching::GetRefCenterPoints()
+{
+	return m_ref_center_points;
 }

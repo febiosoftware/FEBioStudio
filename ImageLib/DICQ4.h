@@ -43,7 +43,7 @@ public:
 	std::vector<double> Q4Functions(double xi, double eta);
 	void Local2Global();
 	void SavePointPairs();
-	vec2i ScalePoint(vec2d localCoord);
+	vec2d ScalePoint(vec2d localCoord);
 	double NormVal(double VAL);
 	std::vector<double> GetDispField(std::vector<double> GaussDisplacements);
 	std::vector<std::vector<double>> SplitDisps(std::vector<double> displacements);
@@ -60,7 +60,7 @@ public:
 	// cv::Mat Vec2Mat(std::vector<double>, int r, int c);
 	// std::vector<double> Mat2Vec(cv::Mat);
 	itk::simple::Image CreateKernel(int k_w, int k_h, int filterType);
-
+	void WriteVTKFile();
 
 private:
 	CDICMatching& m_match;
@@ -73,7 +73,7 @@ private:
 	std::vector<vec2i> m_match_centers;
 	double m_subSize;
 	// double m_subSpacing;
-	std::vector<std::pair<vec2d, vec2i>> m_NormCoordPairs; // Pair of points [-1 1] <-> [0 subSize]
+	std::vector<std::pair<vec2d, vec2d>> m_NormCoordPairs; // Pair of points [-1 1] <-> [0 subSize]
 	std::vector<vec2i> m_globalCoords;
 	std::vector<vec2d> m_xi_eta_points;
 	std::vector<double> m_U;

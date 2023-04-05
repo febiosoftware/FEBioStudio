@@ -50,7 +50,7 @@ bool CDICTool::OnApply()
 
     CDICMatching match(refImg, defImg, 1);
 
-    //CDICQ4 interp(match);
+    CDICQ4 interp(match);
 
     //for(int i = 0; i < 5; i++)
     //{

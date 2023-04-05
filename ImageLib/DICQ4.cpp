@@ -33,21 +33,13 @@ namespace sitk = itk::simple;
 
 CDICQ4::CDICQ4(CDICMatching& match)
 	: m_match(match), m_subs_per_row(match.GetRefImage().GetSubsPerRow()), m_subs_per_col(match.GetRefImage().GetSubsPerCol()),
-        m_subSize(match.GetRefImage().GetSubSize())
+        m_subSize(match.GetRefImage().GetSubSize()),m_match_centers(match.GetMatchResults()),m_ref_centers(match.GetRefCenterPoints())
 {
-
 	int temp = m_subs_per_row + 1;
-	m_stop = m_match.GetRefImage().GetNumSubs() - temp; //cannot do interp with bottom row 
+	m_stop = m_match_centers.size() - temp; //cannot do interp with bottom row 
 
 	ApplyQ4();
-
-	//std::cout << "NOdal DataSize: " << m_n_EXX.size() << std::endl; 
-	//std::cout << "subs per row: " << m_subs_per_row << std::endl;
-	//std::cout << "subs per col: " << m_subs_per_col << std::endl;
-	//std::cout << "num subs (i): " << m_ref_img.GetNumSubs() << std::endl;
-
-
-
+	WriteVTKFile();
 
 }
 
@@ -56,7 +48,7 @@ void CDICQ4::ApplyQ4()
 	Local2Global();
 	//loop through all subsets
 
-	std::vector<double> m_U_i, m_V_i, m_EXX_i, m_EYY_i, m_EXY_i;
+	std::vector<double> m_U_i, m_V_i;
 
 	for (double i = 0; i < m_stop; i++)
 	{
@@ -73,49 +65,19 @@ void CDICQ4::ApplyQ4()
 			std::vector<vec2i> NODES = GetNodesQ4(i);
 			std::vector<vec2i> DISP_NODES = GetDispNodesQ4(i);
 
-			//std::cout << "Initial Nodal Position: " << std::endl;
-			//std::cout << NODES << std::endl;
-			//std::cout << "Displaced Nodal Position: " << std::endl;
-			//std::cout << DISP_NODES << std::endl;
-
 			std::vector<double> gauss_disps = Q4GetGaussPtDisp(NODES, DISP_NODES);
 			std::vector<double> dispField = GetDispField(gauss_disps);
 
 			std::vector<std::vector<double>> splitDisps = SplitDisps(dispField);
-
-			//m_U = splitDisps[0];
-			//m_V = splitDisps[1];
 
 			std::vector<double> u_disps = splitDisps[0];
 			std::vector<double> v_disps = splitDisps[1];
 
 			for (int l = 0; l < u_disps.size(); l++)
 			{
-				//m_U.push_back(u_disps[l]);
-				//m_V.push_back(v_disps[l]);
 				m_U_i.push_back(u_disps[l]);
 				m_V_i.push_back(v_disps[l]);
 			}
-
-			std::vector<std::vector<double>> allStrains = GetStrainField(NODES, DISP_NODES);
-			std::vector<double> exx_pix = allStrains[0];
-			std::vector<double> eyy_pix = allStrains[1];
-			std::vector<double> exy_pix = allStrains[2];
-
-
-			for (int xx = 0; xx < exx_pix.size(); xx++)
-			{
-				//FILE << exx_pix[xx] << "," << eyy_pix[xx] << "," << exy_pix[xx] << "," << "\n";
-
-				//m_EXX.push_back(exx_pix[xx]);
-				//m_EYY.push_back(eyy_pix[xx]);
-				//m_EXY.push_back(exy_pix[xx]);
-				m_EXX_i.push_back(exx_pix[xx]);
-				m_EYY_i.push_back(eyy_pix[xx]);
-				m_EXY_i.push_back(exy_pix[xx]);
-			}
-
-
 
 		}
 
@@ -124,24 +86,8 @@ void CDICQ4::ApplyQ4()
 	}
 
 
-
-
-	// m_U = SmoothData(m_U_i);
-	// m_V = SmoothData(m_V_i);
-	// m_EXX = SmoothData(m_EXX_i);
-	// m_EYY = SmoothData(m_EYY_i);
-	// m_EXY = SmoothData(m_EXY_i);
-
     m_U = m_U_i;
 	m_V = m_V_i;
-	m_EXX = m_EXX_i;
-	m_EYY = m_EYY_i;
-	m_EXY = m_EXY_i;
-
-
-	//std::cout << "exx length: " << m_EXX.size() << std::endl;
-	//std::cout << "U length: " << m_U.size() << std::endl;
-	//std::cout << "V length: " << m_V.size() << std::endl;
 
 	GetNodeIndices();
 }
@@ -164,10 +110,10 @@ std::vector<vec2i> CDICQ4::GetDispNodesQ4(double ind)
 {
 	std::vector<vec2i> dispNodes;
 
-    dispNodes.push_back(m_match.GetDefImage().GetSubset(ind).Center());
-    dispNodes.push_back(m_match.GetDefImage().GetSubset(ind + 1).Center());
-    dispNodes.push_back(m_match.GetDefImage().GetSubset(ind + m_subs_per_row).Center());
-    dispNodes.push_back(m_match.GetDefImage().GetSubset(ind + m_subs_per_row + 1).Center());
+    dispNodes.push_back(m_match_centers[ind]);
+    dispNodes.push_back(m_match_centers[ind+1]);
+    dispNodes.push_back(m_match_centers[ind + m_subs_per_row]);
+    dispNodes.push_back(m_match_centers[ind + m_subs_per_row + 1]);
 
 	return dispNodes;
 }
@@ -494,9 +440,10 @@ void CDICQ4::Local2Global()
 {
 	SavePointPairs();
 
-	//std::ofstream L2G;
-	//L2G.open("L2G.csv");
-
+	std::ofstream debug;
+	debug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\debug.txt");
+	debug << "match points size: " << m_match_centers.size() << std::endl;
+	debug << "m stop: " << m_stop << "subs per row = " << m_subs_per_row << " " << m_subs_per_col << std::endl;
 	for (int i = 0; i < m_stop; i++)
 	{
 		int temp = i + 1;
@@ -505,21 +452,30 @@ void CDICQ4::Local2Global()
 
 		if (temp % (int)m_subs_per_row == 0)
 		{
+			debug << "cont'd" << std::endl;
 			continue;
 		}
 		else
 		{
 			//std::cout << "-------------ELEMENT #: " << i << " -------------" << std::endl;
 
-			std::vector<vec2i> NODES = GetNodesQ4(i);
+			std::vector<vec2i> NODES = GetNodesQ4(i); //check ref sub centers
 
-			vec2i R_i(NODES[0].x + (m_subSize / 2), NODES[0].y + (m_subSize / 2));
+			//cv::Point2d R_i(NODES[0].x + (m_subSize / 2.0), NODES[0].y + (m_subSize / 2.0));
+			vec2i R_i(NODES[0].x + (m_subSize / 2.0), NODES[0].y + (m_subSize / 2.0));
 
 			for (int p = 0; p < m_NormCoordPairs.size(); p++)
 			{
-				vec2i u_i = m_NormCoordPairs[p].second;
+				//cv::Point2d u_i = m_NormCoordPairs[p].second;
+				vec2d u_i = m_NormCoordPairs[p].second;
 
-				vec2i p_global(R_i.x + u_i.x - (m_subSize / 2), R_i.y + u_i.y - (m_subSize / 2));
+				//cv::Point2d p_global(R_i.x + u_i.x - (m_subSize / 2.0), R_i.y + u_i.y - (m_subSize / 2.0));
+				auto xp = R_i.x + u_i[0]; 
+				auto yp = R_i.y + u_i[1];
+
+				vec2i p_global(xp - (m_subSize / 2.0) + 1, yp - (m_subSize / 2.0) + 1);
+
+				debug << p_global.x  << ", " << p_global.y << std::endl;
 
 				//L2G << p_global << "\n";
 
@@ -531,8 +487,7 @@ void CDICQ4::Local2Global()
 		}
 	}
 
-	//L2G.close();
-
+	debug.close();
 }
 
 void CDICQ4::SavePointPairs()
@@ -545,9 +500,9 @@ void CDICQ4::SavePointPairs()
 		{
 			vec2d local(xi, eta);
             
-			std::pair<vec2d, vec2i> coordPair;
+			std::pair<vec2d, vec2d> coordPair;
 
-			vec2i normed = ScalePoint(vec2d(xi, -eta));
+			vec2d normed = ScalePoint(vec2d(xi, -eta));
 
 			coordPair.first = local;
 			coordPair.second = normed;
@@ -557,7 +512,7 @@ void CDICQ4::SavePointPairs()
 	}
 }
 
-vec2i CDICQ4::ScalePoint(vec2d localCoord) //local coord: [-1 1]
+vec2d CDICQ4::ScalePoint(vec2d localCoord) //local coord: [-1 1]
 {
 	double xi, eta, normX, normY;
 	xi = localCoord.x();
@@ -566,7 +521,7 @@ vec2i CDICQ4::ScalePoint(vec2d localCoord) //local coord: [-1 1]
 	normX = NormVal(xi);
 	normY = NormVal(eta);
 
-	vec2i normalized(normX, normY);
+	vec2d normalized(normX, normY);
 
 	return normalized;
 }
@@ -621,29 +576,20 @@ void CDICQ4::GetNodeIndices()
 
 					std::vector<int> indices = findPoints(v, N);
 
-					double exx = 0, exy = 0, eyy = 0, U = 0, V = 0;
+					double U = 0, V = 0;
 
 					for (int in = 0; in < indices.size(); in++)
 					{
 						//std::cout << "index: " << indices[in] << std::endl;
-						exx += m_EXX[indices[in]];
-						exy += m_EXY[indices[in]];
-						eyy += m_EYY[indices[in]];
 						U += m_U[indices[in]];
 						V += m_V[indices[in]];
 						//std::cout << "exx [" << in << "] = " << m_EXX[indices[in]] << std::endl;
 					}
 
 					//average data for each nodal point
-					double avg_exx = exx / indices.size();
-					double avg_exy = exy / indices.size();
-					double avg_eyy = eyy / indices.size();
 					double avg_u = U / indices.size();
 					double avg_v = V / indices.size();
 
-					m_n_EXX.push_back(avg_exx);
-					m_n_EXY.push_back(avg_exy);
-					m_n_EYY.push_back(avg_eyy);
 					m_n_U.push_back(avg_u);
 					m_n_V.push_back(avg_v);
 
@@ -658,7 +604,7 @@ void CDICQ4::GetNodeIndices()
 
 	SortNodalPoints();
 
-	// PrintNodalGridData();
+	//PrintNodalGridData();
 }
 
 
@@ -679,8 +625,7 @@ void CDICQ4::SortNodalPoints()
 	std::vector<int> indices_first, indices_second;
 	std::vector<vec2i> first;
 
-	// for (int i = 0; i < m_subs_per_row * 2.0; i++)
-    for (int i = 0; i < m_NodalPositions.size() * 2.0; i++)
+	for (int i = 0; i < m_subs_per_row * 2.0; i++)
 	{
 		first.push_back(m_NodalPositions[i]);
 	}
@@ -694,40 +639,24 @@ void CDICQ4::SortNodalPoints()
 	indices_second.insert(indices_second.begin(), indices_first.begin(), indices_first.end());
 
 	std::vector<vec2i> SORTED_PTs;
-	std::vector<double> S_EXX, S_EYY, S_EXY, S_U, S_V;
-
-
-	//std::cout << "f = " << m_subs_per_row * 2.0 << std::endl;
-	//std::cout << "actual sizes:   Nodal Poisitons: " << m_NodalPositions.size() << " EXX: " << m_n_EXX.size() << " U: " << m_n_U.size() << std::endl;
+	std::vector<double> S_U, S_V;
 
 	for (int f = 0; f < m_subs_per_row * 2.0; f++)
 	{
 		SORTED_PTs.push_back(m_NodalPositions[indices_second[f]]);
-		S_EXX.push_back(m_n_EXX[indices_second[f]]);
-		S_EYY.push_back(m_n_EYY[indices_second[f]]);
-		S_EXY.push_back(m_n_EXY[indices_second[f]]);
 		S_U.push_back(m_n_U[indices_second[f]]);
 		S_V.push_back(m_n_V[indices_second[f]]);
 	}
 
 	m_NodalPositions.erase(m_NodalPositions.begin(), m_NodalPositions.begin() + (m_subs_per_row * 2.0));
-	m_n_EXX.erase(m_n_EXX.begin(), m_n_EXX.begin() + (m_subs_per_row * 2.0));
-	m_n_EYY.erase(m_n_EYY.begin(), m_n_EYY.begin() + (m_subs_per_row * 2.0));
-	m_n_EXY.erase(m_n_EXY.begin(), m_n_EXY.begin() + (m_subs_per_row * 2.0));
 	m_n_U.erase(m_n_U.begin(), m_n_U.begin() + (m_subs_per_row * 2.0));
 	m_n_V.erase(m_n_V.begin(), m_n_V.begin() + (m_subs_per_row * 2.0));
 
 	SORTED_PTs.insert(SORTED_PTs.end(), m_NodalPositions.begin(), m_NodalPositions.end());
-	S_EXX.insert(S_EXX.end(), m_n_EXX.begin(), m_n_EXX.end());
-	S_EYY.insert(S_EYY.end(), m_n_EYY.begin(), m_n_EYY.end());
-	S_EXY.insert(S_EXY.end(), m_n_EXY.begin(), m_n_EXY.end());
 	S_U.insert(S_U.end(), m_n_U.begin(), m_n_U.end());
 	S_V.insert(S_V.end(), m_n_V.begin(), m_n_V.end());
 
 	m_NodalPositions = SORTED_PTs;
-	m_n_EXX = S_EXX;
-	m_n_EYY = S_EYY;
-	m_n_EXY = S_EXY;
 	m_n_U = S_U;
 	m_n_V = S_V;
 
@@ -763,6 +692,64 @@ std::vector<int> CDICQ4::findItem(std::vector<vec2i> const& v, int target, int x
 	return indices;
 }
 
+void CDICQ4::WriteVTKFile()
+{
+	std::string dataName;
+
+	dataName = "DIC_Results";
+	std::ofstream VTKFile;
+	std::string img_name = "deformedImg";
+
+	int imgNum = 0;
+
+	std::string str = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\" + dataName + "_0" + std::to_string(imgNum) + ".vtk";
+	const char* c = const_cast<char*>(str.c_str());
+
+	VTKFile.open(c);
+
+	VTKFile << "# vtk DataFile Version 2.0 \n";
+	VTKFile << img_name << ", subset size = " << m_subSize << "\n";
+	VTKFile << "ASCII\n";
+	VTKFile << "DATASET POLYDATA\n";
+
+	VTKFile << "POINTS " << m_NodalPositions.size() << " float\n";
+
+	for (int i = 0; i < m_NodalPositions.size(); i++)
+	{
+		VTKFile << m_NodalPositions[i].x << " " << m_NodalPositions[i].y << " " << 0 << " \n";
+	}
+
+	double R = m_subs_per_row;
+	double C = m_subs_per_col;
+
+	double n = (R - 1) * (C - 1);
+
+	VTKFile << "POLYGONS " << n << " " << n * 5 << "\n";
+
+	for (int row = 0; row < R - 1; row++)
+	{
+		for (int col = 0; col < C - 1; col++)
+		{
+			int n0 = col * (R)+row;
+			int n1 = col * (R)+row + 1;
+			int n2 = (col + 1) * (R)+row + 1;
+			int n3 = (col + 1) * (R)+row;
+
+			VTKFile << 4 << " " << n0 << " " << n1 << " " << n2 << " " << n3 << " \n";
+		}
+
+	}
+
+	VTKFile << "POINT_DATA " << m_n_U.size() << " double\n";
+	VTKFile << "VECTORS displacement float\n";
+
+	for (int d = 0; d < m_n_U.size(); d++)
+	{
+		VTKFile << m_n_U[d] << " " << m_n_V[d] << " " << 0 << "\n";
+	}
+
+	VTKFile.close();
+}
 
 
 //////////// PRINT /////////////////////////////
@@ -787,103 +774,116 @@ std::vector<int> CDICQ4::findItem(std::vector<vec2i> const& v, int target, int x
 // }
 
 //////////// WRITING VTK FILES FOR VIS IN FEBIO STUDIO /////////////////////////
-void CDICQ4::WriteVTK(int DOI, int imgNum)
-{
-	std::vector<double> DATA;
-	std::string dataName;
+//void CDICQ4::WriteVTK(int DOI, int imgNum)
+//{
+//	std::vector<double> DATA;
+//	std::string dataName;
+//
+//	switch (DOI)
+//	{
+//	case 0:
+//		dataName = "V_EXX";
+//		DATA = m_n_EXX;
+//		break;
+//	case 1:
+//		dataName = "V_EYY";
+//		DATA = m_n_EYY;
+//		break;
+//	case 2:
+//		dataName = "V_EXY";
+//		DATA = m_n_EXY;
+//		break;
+//	case 3:
+//		dataName = "V_U";
+//		DATA = m_n_U;
+//		break;
+//	case 4:
+//		dataName = "V_V";
+//		DATA = m_n_V;
+//		break;
+//	}
+//
+//	std::ofstream VTKFile;
+//	// std::string img_name = m_match.GetDefImage().GetFileName();
+//    std::string img_name = "def image";
+//
+//	std::string str = dataName + "_0" + std::to_string(imgNum) + ".vtk";
+//	const char* c = const_cast<char*>(str.c_str());
+//
+//	VTKFile.open(c);
+//
+//	VTKFile << "# vtk DataFile Version 2.0 \n";
+//	VTKFile << img_name << ", subset size = " << m_subSize << "\n";
+//	VTKFile << "ASCII\n";
+//	VTKFile << "DATASET POLYDATA\n";
+//
+//	VTKFile << "POINTS " << m_NodalPositions.size() << " float\n";
+//
+//	for (int i = 0; i < m_NodalPositions.size(); i++)
+//	{
+//		VTKFile << m_NodalPositions[i].x << " " << m_NodalPositions[i].y << " " << 0 << " \n";
+//	}
+//
+//	//double R = trunc(GetRefDim()[0]/ m_subSpacing); //find # of full size subsets per row, round down to whole number
+//	//double C = trunc(GetRefDim()[1] / m_subSpacing); //find # of full size subsets per col, round down to whole number
+//
+//	double R = m_subs_per_row;
+//	double C = m_subs_per_col;
+//
+//	double n = (R-1) * (C-1);
+//	//double n = m_ref_img.GetNumSubs();
+//
+//	//std::cout << "number subs total (n): " << n << std::endl;
+//
+//	VTKFile << "POLYGONS " << n << " " << n * 5 << "\n";
+//
+//	for (int row = 0; row < R-1 ; row++)
+//	{
+//		for (int col = 0; col < C-1 ; col++)
+//		{
+//			int n0 = col * (R)+row;
+//			int n1 = col * (R)+row + 1;
+//			int n2 = (col + 1) * (R)+row + 1;
+//			int n3 = (col + 1) * (R)+row;
+//
+//			VTKFile << 4 << " " << n0 << " " << n1 << " " << n2 << " " << n3 << " \n";
+//		}
+//
+//	}
+//
+//	VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
+//	//VTKFile << "VECTORS displacement float\n";
+//	VTKFile << "SCALARS data float 1\n";
+//	VTKFile << "LOOKUP_TABLE default\n";
+//
+//
+//	for (int d = 0; d < DATA.size(); d++)
+//	{
+//		//VTKFile << DATA[d] << " " << DATA[d] << " " << 0 << "\n";
+//		VTKFile <<  DATA[d] << "\n";
+//	}
+//
+//	VTKFile.close();
+//
+//}
 
-	switch (DOI)
-	{
-	case 0:
-		dataName = "V_EXX";
-		DATA = m_n_EXX;
-		break;
-	case 1:
-		dataName = "V_EYY";
-		DATA = m_n_EYY;
-		break;
-	case 2:
-		dataName = "V_EXY";
-		DATA = m_n_EXY;
-		break;
-	case 3:
-		dataName = "V_U";
-		DATA = m_n_U;
-		break;
-	case 4:
-		dataName = "V_V";
-		DATA = m_n_V;
-		break;
-	}
-
-	std::ofstream VTKFile;
-	// std::string img_name = m_match.GetDefImage().GetFileName();
-    std::string img_name = "def image";
-
-	std::string str = dataName + "_0" + std::to_string(imgNum) + ".vtk";
-	const char* c = const_cast<char*>(str.c_str());
-
-	VTKFile.open(c);
-
-	VTKFile << "# vtk DataFile Version 2.0 \n";
-	VTKFile << img_name << ", subset size = " << m_subSize << "\n";
-	VTKFile << "ASCII\n";
-	VTKFile << "DATASET POLYDATA\n";
-
-	VTKFile << "POINTS " << m_NodalPositions.size() << " float\n";
-
-	for (int i = 0; i < m_NodalPositions.size(); i++)
-	{
-		VTKFile << m_NodalPositions[i].x << " " << m_NodalPositions[i].y << " " << 0 << " \n";
-	}
-
-	//double R = trunc(GetRefDim()[0]/ m_subSpacing); //find # of full size subsets per row, round down to whole number
-	//double C = trunc(GetRefDim()[1] / m_subSpacing); //find # of full size subsets per col, round down to whole number
-
-	double R = m_subs_per_row;
-	double C = m_subs_per_col;
-
-	double n = (R-1) * (C-1);
-	//double n = m_ref_img.GetNumSubs();
-
-	//std::cout << "number subs total (n): " << n << std::endl;
-
-	VTKFile << "POLYGONS " << n << " " << n * 5 << "\n";
-
-	for (int row = 0; row < R-1 ; row++)
-	{
-		for (int col = 0; col < C-1 ; col++)
-		{
-			int n0 = col * (R)+row;
-			int n1 = col * (R)+row + 1;
-			int n2 = (col + 1) * (R)+row + 1;
-			int n3 = (col + 1) * (R)+row;
-
-			VTKFile << 4 << " " << n0 << " " << n1 << " " << n2 << " " << n3 << " \n";
-		}
-
-	}
-
-	VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
-	//VTKFile << "VECTORS displacement float\n";
-	VTKFile << "SCALARS data float 1\n";
-	VTKFile << "LOOKUP_TABLE default\n";
 
 
-	for (int d = 0; d < DATA.size(); d++)
-	{
-		//VTKFile << DATA[d] << " " << DATA[d] << " " << 0 << "\n";
-		VTKFile <<  DATA[d] << "\n";
-	}
 
-	VTKFile.close();
 
-}
 
-// std::vector<double> CDICQ4::GetRefDim()
-// {
-// 	return m_ref_img.GetImgDim();
-// }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 ////// DATA SMOOTHING /////////

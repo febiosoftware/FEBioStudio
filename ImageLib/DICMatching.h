@@ -43,16 +43,19 @@ public:
 	void CreateFixedMasks();
 	void CreateMovingImages();
 	std::vector<int> FFT_TemplateMatching(sitk::Image fixed, sitk::Image moving, sitk::Image fixed_mask, sitk::Image moving_mask, double overlapFraction, int idx);
-
+	void FFTCorrelation();
+	std::vector<vec2i> GetMatchResults();
+	std::vector<vec2i> GetRefCenterPoints();
 
 private:
 	CDICImage& m_ref_img;
 	CDICImage& m_def_img;
 	std::vector<CImageSITK> m_searchAreas;
-	std::vector<vec2i> m_match_center;
 	int m_iter;
 	std::vector<vec2i> m_match_points;
 	std::vector<vec2i> m_ref_center_points;
 	int m_subSize;
 	std::vector<CImageSITK> m_movingImages;
+	CImageSITK m_fixed_SITK_img;
+	CImageSITK m_moving_mask;
 };
