@@ -41,9 +41,13 @@ public:
 	// void ViewMatchResults();
 	CDICImage& GetRefImage();
 	CDICImage& GetDefImage();
-	void CreateSearchAreas();
+	//void CreateSearchAreas();
 	std::vector<vec2i> GetRefCenters(int ref_width, int ref_height, int subSize);
 	CImageSITK CreateSubsetMask();
+	void CreateFixedMasks();
+	void CreateMovingImages();
+
+
 
 	// std::vector<cv::Point> GetRefCenters();
 	// std::vector<cv::Point> GetMatchCenters();
@@ -53,11 +57,12 @@ private:
 	CDICImage& m_def_img;
 	// std::vector<Subset*> m_ref_subsets;
 	// std::vector<cv::Point> m_ref_subCenters;
-	std::vector<CImageSITK*> m_searchAreas;
+	std::vector<CImageSITK> m_searchAreas;
 	// std::vector<cv::Point> m_match_topLeft;
 	std::vector<vec2i> m_match_center;
 	int m_iter;
 	std::vector<vec2i> m_match_points;
 	std::vector<vec2i> m_ref_center_points;
 	int m_subSize;
+	std::vector<CImageSITK> m_movingImages;
 };
