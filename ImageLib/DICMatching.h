@@ -41,8 +41,9 @@ public:
 	// void ViewMatchResults();
 	CDICImage& GetRefImage();
 	CDICImage& GetDefImage();
-	CImageSITK CreateMovingImage(int sub_idx);
+	void CreateSearchAreas();
 	std::vector<vec2i> GetRefCenters(int ref_width, int ref_height, int subSize);
+	CImageSITK CreateSubsetMask();
 
 	// std::vector<cv::Point> GetRefCenters();
 	// std::vector<cv::Point> GetMatchCenters();

@@ -37,31 +37,29 @@ namespace sitk = itk::simple;
 CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize())
 {
-	//CreateSearchAreas();
-	//TemplateMatching();
-
-	std::vector<CDICSubset> ref_subsets = m_ref_img.GetSubsets();
+	std::vector<CDICSubset> moving_images = m_ref_img.GetSubsets();
+	CImageSITK moving_mask = CreateSubsetMask();
 
 	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
 
-    for (int i = 0; i < ref_subsets.size(); i++)
-    {
-		CDICSubset sub = ref_subsets[i];
+  //  for (int i = 0; i < ref_subsets.size(); i++)
+  //  {
+		//CDICSubset sub = ref_subsets[i];
 
-		std::string path;
-		if (i < 10)
-		{
-			path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub0" + std::to_string(i) + ".tif";
-		}
-		else
-		{
-			path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub" + std::to_string(i) + ".tif";
+		//std::string path;
+		//if (i < 10)
+		//{
+		//	path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub0" + std::to_string(i) + ".tif";
+		//}
+		//else
+		//{
+		//	path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub" + std::to_string(i) + ".tif";
 
-		}
-		
-		sitk::WriteImage(sub.GetSubsetImage()->GetSItkImage(), path);
+		//}
+		//
+		//sitk::WriteImage(sub.GetSubsetImage()->GetSItkImage(), path);
 
-    }
+  //  }
 
 
 }
@@ -91,98 +89,142 @@ std::vector<vec2i> CDICMatching::GetRefCenters(int ref_width, int ref_height, in
 	return ref_sub_centers;
 }
 
-CImageSITK CDICMatching::CreateMovingImage(int sub_idx)
+CImageSITK CDICMatching::CreateSubsetMask()
 {
-	int px = m_ref_center_points[sub_idx].x;
-	int py = m_ref_center_points[sub_idx].y;
+	//sitk::Image img(ref_width, ref_height, sitk::sitkFloat32);
+	CImageSITK img(m_subSize, m_subSize,1);
 
-	//sitk::Image sub(m_subSize, m_subSize, sitk::sitkFloat32);
-	CImageSITK sub(m_subSize, m_subSize,1);
+	Byte* maskBytes = img.GetBytes();
+	int m_width = m_subSize;
 
-	int range_x_low = px - m_subSize / 2;
-	int range_x_upper = px + m_subSize / 2;
-	int range_y_low = py - m_subSize / 2;
-	int range_y_upper = py + m_subSize / 2;
-	
-	std::ofstream debug;
-	debug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\debug.txt");
-
-	Byte* originalBytes = m_ref_img.GetSITKImage()->GetBytes();
-	Byte* subsetBytes = sub.GetBytes();
-
-	int originalWidth = m_ref_img.GetWidth();
-
-	for (int j = 0; j < sub.Height(); j++)
+	for (int j = 0; j < m_subSize; j++)
 	{
-		for (int i = 0; i < sub.Width(); i++)
+		for (int i = 0; i <m_subSize; i++)
 		{
-			subsetBytes[j * sub.Width() + i] = originalBytes[(j + py) * originalWidth + i + px];
+			maskBytes[j * m_width + i] = 255;
 		}
+
 	}
 
-	return sub;
-
+	return img;
 }
 
-
-
-//void CDICMatching::CreateSearchAreas()
+//
+//CDICSubset(CDICImage* image, int x0, int y0, int x1, int y1)
+//	: m_image(image), m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1),
+//	m_subset_image(x1 - x0, y1 - y0, 1)
 //{
-//	// for (int i = 0; i < m_ref_img.GetSubsets(); i++)
-//    double subSize = m_ref_img.GetSubSize();
-//    double searchAreaRatio = m_ref_img.GetSearchAreaRatio();
+//	m_width = m_x1 - m_x0;
+//	m_height = m_y1 - m_y0;
 //
-//    for(auto subset :  m_ref_img.GetSubsets())
+//	m_center = vec2i(m_x0 + m_width / 2, m_y0 + m_height / 2);
+//
+//	Byte* originalBytes = m_image->GetSITKImage()->GetBytes();
+//	Byte* subsetBytes = m_subset_image.GetBytes();
+//
+//	int originalWidth = m_image->GetSITKImage()->Width();
+//
+//	for (int j = 0; j < m_height; j++)
 //	{
-//		// cv::Point p = m_ref_subCenters[i];
-//        vec2i p = subset.Center();
+//		for (int i = 0; i < m_width; i++)
+//		{
+//			subsetBytes[j * m_width + i] = originalBytes[(j + y0) * originalWidth + i + x0];
+//		}
+//	}
+
+
+//CImageSITK CDICMatching::CreateMovingImage(int sub_idx)
+//{
+//	int px = m_ref_center_points[sub_idx].x;
+//	int py = m_ref_center_points[sub_idx].y;
 //
-//		//std::cout << p << std::endl; 
+//	//sitk::Image sub(m_subSize, m_subSize, sitk::sitkFloat32);
+//	CImageSITK sub(m_subSize, m_subSize,1);
 //
-//		vec2i tl(p.x - subSize / 2, p.y - subSize / 2);
-//		vec2i br(p.x + subSize / 2, p.y + subSize / 2);
+//	int range_x_low = px - m_subSize / 2;
+//	int range_x_upper = px + m_subSize / 2;
+//	int range_y_low = py - m_subSize / 2;
+//	int range_y_upper = py + m_subSize / 2;
+//	
+//	std::ofstream debug;
+//	debug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\debug.txt");
 //
-//        int infl = searchAreaRatio*subSize;
-//        
-//        tl.x - infl/2;
-//        tl.y -= infl/2;
-//        br.x += infl/2;
-//        br.y += infl/2;
+//	Byte* originalBytes = m_ref_img.GetSITKImage()->GetBytes();
+//	Byte* subsetBytes = sub.GetBytes();
 //
-//        // int inflSize = infl + subSize;
+//	int originalWidth = m_ref_img.GetWidth();
 //
-//        int width = m_def_img.GetSITKImage()->Width();
-//        int height = m_def_img.GetSITKImage()->Height();
-//
-//        CImageSITK* searchArea = new CImageSITK(width, height, 1);
-//        Byte* deformedBytes = m_def_img.GetSITKImage()->GetBytes();
-//        Byte* searchBytes = searchArea->GetBytes();
-//
-//
-//        for(int j = 0; j < height; j++)
-//        {
-//            for(int i = 0; i < width; i++)
-//            {
-//                int index = j*width+i;
-//                // if(i >= tl.x && i <= br.x && j >= tl.y && j <= br.y)   
-//                // {
-//                    searchBytes[index] = deformedBytes[index];
-//                // }
-//                // else
-//                // {
-//                //     searchBytes[index] = 0;
-//                // }
-//            }
-//        }
-//
-//		m_searchAreas.push_back(searchArea);
-//
+//	for (int j = 0; j < sub.Height(); j++)
+//	{
+//		for (int i = 0; i < sub.Width(); i++)
+//		{
+//			subsetBytes[j * sub.Width() + i] = originalBytes[(j + py) * originalWidth + i + px];
+//		}
 //	}
 //
-//	// std::cout << "SEARCH AREAS: " << m_searchAreas.size() << std::endl;
-//	// std::cout << "REF SUBSETS: " << m_ref_subsets.size() << std::endl;
+//	return sub;
 //
 //}
+
+
+
+void CDICMatching::CreateSearchAreas()
+{
+	// for (int i = 0; i < m_ref_img.GetSubsets(); i++)
+    double subSize = m_ref_img.GetSubSize();
+    double searchAreaRatio = m_ref_img.GetSearchAreaRatio();
+
+    for(auto subset :  m_ref_img.GetSubsets())
+	{
+		// cv::Point p = m_ref_subCenters[i];
+        vec2i p = subset.Center();
+
+		//std::cout << p << std::endl; 
+
+		vec2i tl(p.x - subSize / 2, p.y - subSize / 2);
+		vec2i br(p.x + subSize / 2, p.y + subSize / 2);
+
+        int infl = searchAreaRatio*subSize;
+        
+        tl.x - infl/2;
+        tl.y -= infl/2;
+        br.x += infl/2;
+        br.y += infl/2;
+
+        // int inflSize = infl + subSize;
+
+        int width = m_def_img.GetSITKImage()->Width();
+        int height = m_def_img.GetSITKImage()->Height();
+
+        CImageSITK* searchArea = new CImageSITK(width, height, 1);
+        Byte* deformedBytes = m_def_img.GetSITKImage()->GetBytes();
+        Byte* searchBytes = searchArea->GetBytes();
+
+
+        for(int j = 0; j < height; j++)
+        {
+            for(int i = 0; i < width; i++)
+            {
+                int index = j*width+i;
+                // if(i >= tl.x && i <= br.x && j >= tl.y && j <= br.y)   
+                // {
+                    searchBytes[index] = deformedBytes[index];
+                // }
+                // else
+                // {
+                //     searchBytes[index] = 0;
+                // }
+            }
+        }
+
+		m_searchAreas.push_back(searchArea);
+
+	}
+
+	// std::cout << "SEARCH AREAS: " << m_searchAreas.size() << std::endl;
+	// std::cout << "REF SUBSETS: " << m_ref_subsets.size() << std::endl;
+
+}
 
 //void CDICMatching::TemplateMatching()
 //{
