@@ -27,6 +27,9 @@ SOFTWARE.*/
 #pragma once
 
 #include "DICImage.h"
+#include "ImageLib/ImageSITK.h"
+
+namespace sitk = itk::simple;
 
 class CDICMatching
 {
@@ -38,7 +41,7 @@ public:
 	// void ViewMatchResults();
 	CDICImage& GetRefImage();
 	CDICImage& GetDefImage();
-	CDICImage& CreateMovingImage(int sub_idx);
+	CImageSITK CreateMovingImage(int sub_idx);
 	std::vector<vec2i> GetRefCenters(int ref_width, int ref_height, int subSize);
 
 	// std::vector<cv::Point> GetRefCenters();
@@ -55,4 +58,5 @@ private:
 	int m_iter;
 	std::vector<vec2i> m_match_points;
 	std::vector<vec2i> m_ref_center_points;
+	int m_subSize;
 };

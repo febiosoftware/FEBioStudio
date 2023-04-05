@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "DICMatching.h"
 #include "ImageSITK.h"
+#include <fstream>
 
 #include <sitkFFTNormalizedCorrelationImageFilter.h>
 #include <sitkNormalizedCorrelationImageFilter.h>
@@ -34,15 +35,31 @@ namespace sitk = itk::simple;
 
 //Constructor
 CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
-	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter)
+	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize())
 {
 	//CreateSearchAreas();
 	//TemplateMatching();
 
-	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_ref_img.GetSubSize());
+	std::vector<CDICSubset> ref_subsets = m_ref_img.GetSubsets();
 
-    for (int i = 0; i < m_ref_img.GetNumSubs(); i++)
+	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
+
+    for (int i = 0; i < ref_subsets.size(); i++)
     {
+		CDICSubset sub = ref_subsets[i];
+
+		std::string path;
+		if (i < 10)
+		{
+			path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub0" + std::to_string(i) + ".tif";
+		}
+		else
+		{
+			path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub" + std::to_string(i) + ".tif";
+
+		}
+		
+		sitk::WriteImage(sub.GetSubsetImage()->GetSItkImage(), path);
 
     }
 
@@ -74,13 +91,37 @@ std::vector<vec2i> CDICMatching::GetRefCenters(int ref_width, int ref_height, in
 	return ref_sub_centers;
 }
 
-CDICImage& CDICMatching::CreateMovingImage(int sub_idx)
+CImageSITK CDICMatching::CreateMovingImage(int sub_idx)
 {
-    
+	int px = m_ref_center_points[sub_idx].x;
+	int py = m_ref_center_points[sub_idx].y;
 
-    CDICImage img(m_ref_img);
+	//sitk::Image sub(m_subSize, m_subSize, sitk::sitkFloat32);
+	CImageSITK sub(m_subSize, m_subSize,1);
 
-    return img;
+	int range_x_low = px - m_subSize / 2;
+	int range_x_upper = px + m_subSize / 2;
+	int range_y_low = py - m_subSize / 2;
+	int range_y_upper = py + m_subSize / 2;
+	
+	std::ofstream debug;
+	debug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\debug.txt");
+
+	Byte* originalBytes = m_ref_img.GetSITKImage()->GetBytes();
+	Byte* subsetBytes = sub.GetBytes();
+
+	int originalWidth = m_ref_img.GetWidth();
+
+	for (int j = 0; j < sub.Height(); j++)
+	{
+		for (int i = 0; i < sub.Width(); i++)
+		{
+			subsetBytes[j * sub.Width() + i] = originalBytes[(j + py) * originalWidth + i + px];
+		}
+	}
+
+	return sub;
+
 }
 
 
