@@ -180,7 +180,7 @@ BOX CImageSITK::GetBoundingBox()
 	std::vector<double> origin = m_sitkImage.GetOrigin();
 	std::vector<double> spacing = m_sitkImage.GetSpacing();
 
-	return BOX(origin[0],origin[1],origin[2],spacing[0]*size[0],spacing[1]*size[1],spacing[2]*size[2]);
+	return BOX(origin[0],origin[1],origin[2],spacing[0]*size[0]+origin[0],spacing[1]*size[1]+origin[1],spacing[2]*size[2]+origin[2]);
 }
 
 void CImageSITK::SetBoundingBox(BOX& box)
@@ -190,7 +190,7 @@ void CImageSITK::SetBoundingBox(BOX& box)
     std::vector<unsigned int> size = m_sitkImage.GetSize();
 
 	try {
-	    m_sitkImage.SetSpacing({box.x1/size[0], box.y1/size[1], box.z1/size[2]});
+	    m_sitkImage.SetSpacing({(box.x1 - box.x0)/size[0], (box.y1 - box.y0)/size[1], (box.z1 - box.z0)/size[2]});
 	}
 	catch (...)
 	{
