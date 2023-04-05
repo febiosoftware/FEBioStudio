@@ -90,6 +90,9 @@ public:
 
     CImageSITK* GetSubsetImage(int i) { return m_subsets[i].GetSubsetImage(); }
 
+    int GetWidth();
+    int GetHeight();
+
 private:
     void MakeSubsets();
 

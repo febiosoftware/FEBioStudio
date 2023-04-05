@@ -33,11 +33,14 @@ class CDICMatching
 public:
 	CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter);
     ~CDICMatching();
-	void CreateSearchAreas();
-	void TemplateMatching();
+	//void CreateSearchAreas();
+	//void TemplateMatching();
 	// void ViewMatchResults();
 	CDICImage& GetRefImage();
 	CDICImage& GetDefImage();
+	CDICImage& CreateMovingImage(int sub_idx);
+	std::vector<vec2i> GetRefCenters(int ref_width, int ref_height, int subSize);
+
 	// std::vector<cv::Point> GetRefCenters();
 	// std::vector<cv::Point> GetMatchCenters();
 
@@ -49,6 +52,7 @@ private:
 	std::vector<CImageSITK*> m_searchAreas;
 	// std::vector<cv::Point> m_match_topLeft;
 	std::vector<vec2i> m_match_center;
-	// std::vector<cv::Mat> m_match_arrows;
 	int m_iter;
+	std::vector<vec2i> m_match_points;
+	std::vector<vec2i> m_ref_center_points;
 };

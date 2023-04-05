@@ -68,7 +68,6 @@ CDICSubset::CDICSubset(CDICImage* image, int x0, int y0, int x1, int y1)
     {
         for(int i = 0; i < m_width; i++)
         {
-
             subsetBytes[j*m_width+i] = originalBytes[(j+y0)*originalWidth+i+x0];
         }
     }
@@ -123,4 +122,14 @@ void CDICImage::MakeSubsets()
 	m_num_subs = i;
 	m_sub_cols = c - 1;
 	m_sub_rows = r + 1;
+}
+
+int CDICImage::GetWidth()
+{
+	return m_image->Width();
+}
+
+int CDICImage::GetHeight()
+{
+	return m_image->Height();
 }
