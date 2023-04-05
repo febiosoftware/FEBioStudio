@@ -27,9 +27,11 @@ SOFTWARE.*/
 #include "DICMatching.h"
 #include "ImageSITK.h"
 #include <fstream>
+#include <stdlib.h>
 
 #include <sitkFFTNormalizedCorrelationImageFilter.h>
 #include <sitkNormalizedCorrelationImageFilter.h>
+#include <algorithm>
 
 namespace sitk = itk::simple;
 
@@ -37,42 +39,27 @@ namespace sitk = itk::simple;
 CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize())
 {
-	CreateMovingImages();//create subsets
-	CImageSITK moving_mask = CreateSubsetMask();//create subset mask for fft
-	CreateFixedMasks(); //create search areas in deformed image
-
 	//save reference center points
 	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
+	CreateMovingImages();//create subsets
+	CImageSITK moving_mask = CreateSubsetMask();//create subset mask for fft
+	sitk::WriteImage(moving_mask.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\moving_mask.tif");
+	CreateFixedMasks(); //create search areas in deformed image
 
+	CImageSITK fixed = *m_def_img.GetSITKImage();
 
-    for (int i = 0; i < m_movingImages.size(); i++)
-    {
-		CImageSITK search = m_movingImages[i];
+	for (int i = 0; i < m_movingImages.size(); i++)
+	{
+		std::vector<int> results = FFT_TemplateMatching(fixed.GetSItkImage(), m_movingImages[i].GetSItkImage(),
+			m_searchAreas[i].GetSItkImage(), moving_mask.GetSItkImage(), 1, 0);
 
-		std::string path;
-		if (i < 10)
-		{
-			path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub0" + std::to_string(i) + ".tif";
-		}
-		else
-		{
-			path = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\subsets\\sub" + std::to_string(i) + ".tif";
-
-		}
-		
-		sitk::WriteImage(search.GetSItkImage(), path);
-
-    }
-
+	}
 
 }
 
 CDICMatching::~CDICMatching()
 {
-    //for(int i = 0; i < m_searchAreas.size(); i++)
-    //{
-    //    delete m_searchAreas[i];
-    //}
+
 }
 
 std::vector<vec2i> CDICMatching::GetRefCenters(int ref_width, int ref_height, int subSize)
@@ -95,21 +82,22 @@ std::vector<vec2i> CDICMatching::GetRefCenters(int ref_width, int ref_height, in
 CImageSITK CDICMatching::CreateSubsetMask()
 {
 	//sitk::Image img(ref_width, ref_height, sitk::sitkFloat32);
-	CImageSITK img(m_subSize, m_subSize,1);
+	sitk::Image moving_mask(m_subSize, m_subSize, sitk::sitkFloat32);
 
-	Byte* maskBytes = img.GetBytes();
-	int m_width = m_subSize;
-
-	for (int j = 0; j < m_subSize; j++)
+	for (unsigned int j = 0; j < moving_mask.GetHeight(); j++)
 	{
-		for (int i = 0; i <m_subSize; i++)
+		for (unsigned int i = 0; i < moving_mask.GetWidth(); i++)
 		{
-			maskBytes[j * m_width + i] = 255;
+			float v = 255;
+			moving_mask.SetPixelAsFloat({ i,j }, v);
 		}
-
 	}
 
-	return img;
+	CImageSITK mm(m_subSize, m_subSize, 1);
+	mm.SetItkImage(moving_mask);
+
+	return mm;
+
 }
 
 void CDICMatching::CreateMovingImages()
@@ -237,209 +225,115 @@ void CDICMatching::CreateFixedMasks()
 		m_searchAreas.push_back(IMG);
 	}
 
-
 }
 
+std::vector<int> CDICMatching::FFT_TemplateMatching(sitk::Image fixed, sitk::Image moving, sitk::Image fixed_mask, sitk::Image moving_mask, double overlapFraction, int idx)
+{
+	//Ensure Images of same type
+	if (moving.GetSpacing() != fixed.GetSpacing() | moving.GetDirection() != fixed.GetDirection() | moving.GetOrigin() != fixed.GetOrigin())
+	{
+		sitk::ResampleImageFilter resampler;
+		resampler.SetReferenceImage(fixed);
+		moving = resampler.Execute(moving);
+	}
 
-//void CDICMatching::CreateSearchAreas()
-//{
-//	// for (int i = 0; i < m_ref_img.GetSubsets(); i++)
-//    double subSize = m_ref_img.GetSubSize();
-//    double searchAreaRatio = m_ref_img.GetSearchAreaRatio();
-//
-//    for(auto subset :  m_ref_img.GetSubsets())
-//	{
-//		// cv::Point p = m_ref_subCenters[i];
-//        vec2i p = subset.Center();
-//
-//		//std::cout << p << std::endl; 
-//
-//		vec2i tl(p.x - subSize / 2, p.y - subSize / 2);
-//		vec2i br(p.x + subSize / 2, p.y + subSize / 2);
-//
-//        int infl = searchAreaRatio*subSize;
-//        
-//        tl.x - infl/2;
-//        tl.y -= infl/2;
-//        br.x += infl/2;
-//        br.y += infl/2;
-//
-//        // int inflSize = infl + subSize;
-//
-//        int width = m_def_img.GetSITKImage()->Width();
-//        int height = m_def_img.GetSITKImage()->Height();
-//
-//        CImageSITK* searchArea = new CImageSITK(width, height, 1);
-//        Byte* deformedBytes = m_def_img.GetSITKImage()->GetBytes();
-//        Byte* searchBytes = searchArea->GetBytes();
-//
-//
-//        for(int j = 0; j < height; j++)
-//        {
-//            for(int i = 0; i < width; i++)
-//            {
-//                int index = j*width+i;
-//                // if(i >= tl.x && i <= br.x && j >= tl.y && j <= br.y)   
-//                // {
-//                    searchBytes[index] = deformedBytes[index];
-//                // }
-//                // else
-//                // {
-//                //     searchBytes[index] = 0;
-//                // }
-//            }
-//        }
-//
-//		m_searchAreas.push_back(searchArea);
-//
-//	}
-//
-//	// std::cout << "SEARCH AREAS: " << m_searchAreas.size() << std::endl;
-//	// std::cout << "REF SUBSETS: " << m_ref_subsets.size() << std::endl;
-//
-//}
+	if (fixed_mask.GetPixelIDValue() != sitk::sitkFloat32)
+	{
+		sitk::CastImageFilter caster;
+		caster.SetOutputPixelType(sitk::sitkFloat32);
+		fixed_mask = caster.Execute(fixed_mask);
+	}
 
-//void CDICMatching::TemplateMatching()
-//{
-////     sitk::FFTNormalizedCorrelationImageFilter filter;
-//
-////     // filter.set
-//
-////     using FilterType = itk::FFTNormalizedCorrelationImageFilter< ShortImageType, DoubleImageType >;
-//
-//
-//// // FilterType::Pointer filter = FilterType::New();
-//
-//// // filter->SetFixedImage( fixedImage );
-//
-//    // sitk::FFTNormalizedCorrelationImageFilter filter;
-//    sitk::NormalizedCorrelationImageFilter filter;
-//
-//    // int height = m_searchAreas[index]->GetSItkImage()
-//
-//	for (int index = 0; index < m_searchAreas.size(); index++)
-//	{
-//		// Now perform template matching
-//        auto size = m_searchAreas[index]->GetSize();
-//
-//        CImageSITK mask(size[0], size[1], 1);
-//        Byte* maskBuffer = mask.GetBytes();
-//
-//        for(int i = 0; i < size[0]*size[1]; i++)
-//        {
-//            maskBuffer[i] = 1;
-//        }
-//
-//        // auto result = filter.Execute(m_searchAreas[index]->GetSItkImage(), m_ref_img.GetSubsetImage(index)->GetSItkImage());
-//        // auto result = filter.Execute(m_def_img.GetSITKImage()->GetSItkImage(), m_ref_img.GetSubsetImage(index)->GetSItkImage());
-//
-//        auto result = filter.Execute(m_searchAreas[index]->GetSItkImage(), mask.GetSItkImage(), m_ref_img.GetSubsetImage(index)->GetSItkImage());
-//        // auto result = filter.Execute(m_def_img.GetSITKImage()->GetSItkImage(), mask.GetSItkImage(), m_ref_img.GetSubsetImage(index)->GetSItkImage());
-//
-//        sitk::RescaleIntensityImageFilter rescaleFiler;
-//        rescaleFiler.SetOutputMinimum(0);
-//        rescaleFiler.SetOutputMaximum(255);
-//        auto temp = rescaleFiler.Execute(result);
-//
-//        sitk::CastImageFilter castFilter;
-//        castFilter.SetOutputPixelType(sitk::sitkUInt8);
-//        temp = castFilter.Execute(temp);
-//
-//        // sitk::WriteImage(m_searchAreas[index]->GetSItkImage(), "/home/mherron/Desktop/search.tif");
-//        // sitk::WriteImage(m_ref_img.GetSubsetImage(index)->GetSItkImage(), "/home/mherron/Desktop/subset.tif");
-//
-//        //sitk::WriteImage(temp, "/home/mherron/Desktop/test.png");
-//
-//
-//        size = result.GetSize();
-//        int width = size[0];
-//        int height = size[1];
-//
-//
-//
-//        double* resultBuffer = result.GetBufferAsDouble();
-//
-//        
-//        double min = -1;
-//        vec2i location;
-//
-//        for(int j = 0; j < height; j++)
-//        {
-//            for(int i = 0; i < width; i++)
-//            {
-//                double val = resultBuffer[j*width+i];
-//                if(val > min)
-//                {
-//                    min = val;
-//                    location.x = i;
-//                    location.y = j;
-//                }
-//
-//            }
-//
-//        }
-//
-//        vec2i fixedSize;
-//        fixedSize.x = size[0]/2 - location.x;
-//        fixedSize.y = size[1]/2 - location.y;
-//
-//
-//		// cv::Mat result;
-//		// matchTemplate(m_searchAreas[i], m_ref_subsets[i]->GetSubsetImg(), result, cv::TM_SQDIFF_NORMED);
-//
-//		// double minV, maxV;
-//		// cv::Point minLoc, maxLoc;
-//
-//		// normalize(result, result, 0, 1, cv::NORM_MINMAX, -1, cv::Mat());
-//
-//		// minMaxLoc(result, &minV, &maxV, &minLoc, &maxLoc, cv::Mat());
-//
-//		// //m_match_topLeft.push_back(minLoc);//top left corner of matched subset
-//
-//		// int xc = minLoc.x + m_subSize / 2;
-//		// int yc = minLoc.y + m_subSize / 2;
-//
-//        location.x += m_ref_img.GetSubSize() / 2;
-//        location.y += m_ref_img.GetSubSize() / 2;
-//
-//		m_match_center.push_back(location); //match subset in deformed center
-//	}
-//
-//	// ViewMatchResults();
-//}
+	if (moving_mask.GetPixelIDValue() != sitk::sitkFloat32)
+	{
+		sitk::CastImageFilter caster;
+		caster.SetOutputPixelType(sitk::sitkFloat32);
+		moving_mask = caster.Execute(moving_mask);
+	}
 
-// void Matching::ViewMatchResults()
-// {
-// 	cv::Mat img_display;
-// 	m_def_img.GetImage().copyTo(img_display);
+	//Apply Gaussian Smoothing Filter with appropriate pixel type
+	auto sigma = fixed.GetSpacing();
+	auto pixel_type = sitk::sitkFloat32;
 
-// 	for (int i = 0; i < m_match_center.size(); i++)
-// 	{
-// 		int distance = cv::norm(m_ref_subCenters[i] - m_match_center[i]);
+	//FFT input images
+	sitk::Image fft_fixed = sitk::Cast(sitk::SmoothingRecursiveGaussian(fixed, sigma), pixel_type);
+	sitk::Image fft_moving = sitk::Cast(sitk::SmoothingRecursiveGaussian(moving, sigma), pixel_type);
 
-// 		//std::cout << "distance = " << distance << std::endl;
+	//Execute FFT NCC
+	sitk::Image out = sitk::MaskedFFTNormalizedCorrelation(fft_fixed, fft_moving, fixed_mask, moving_mask, 0, overlapFraction);
+	out = sitk::SmoothingRecursiveGaussian(out); //Smooth
 
-// 		//if (distance > m_subSize*2) { continue; }
+	//Find maximum (aka best match)
+	sitk::MinimumMaximumImageFilter minMax;
+	minMax.Execute(out);
+	double max = minMax.GetMaximum();
 
-// 		//cv::rectangle(img_display, m_match_topLeft[i], cv::Point(m_match_topLeft[i].x + m_subSize, m_match_topLeft[i].y + m_subSize), cv::Scalar::all(0), 2, 8, 0);
-// 		//cv::rectangle(m_match_result, m_match_topLeft[i], cv::Point(m_match_topLeft[i].x + m_subSize, m_match_topLeft[i].y + m_subSize), cv::Scalar::all(0), 2, 8, 0);
-// 		//cv::circle(img_display, m_match_topLeft[i], 4, cv::Scalar(255, 0, 0), 4); //top left corner
-// 		//cv::circle(img_display, m_match_center[i], 4, cv::Scalar(0, 255, 0), 4); //match center position
-// 		//cv::circle(img_display, m_ref_subCenters[i], 4, cv::Scalar(0, 0, 255), 4);
-// 		cv::line(img_display, m_ref_subCenters[i], m_match_center[i], cv::Scalar(0, 255, 0), 6);
-// 	}
+	//Index max location
+	sitk::Image cc = sitk::ConnectedComponent(sitk::RegionalMaxima(out, 0.0, 1.0, true));
+	sitk::LabelStatisticsImageFilter stats;
+	stats.Execute(out, cc);
+	auto labels = stats.GetLabels();
 
-// 	//cv::imshow("RESULTS", img_display);
+	std::vector<std::pair<double, int64_t>> pairs;
 
-// 	std::string str = "matchImg_" + std::to_string(m_iter) + ".jpg";
-// 	cv::imwrite(str, img_display);
+	for (int i = 0; i < labels.size(); i++)
+	{
+		pairs.push_back(std::make_pair(stats.GetMean(labels[i]), labels[i]));
+	}
+
+	std::sort(pairs.begin(), pairs.end());
 
 
-// 	//cv::imshow("Ref", m_ref_img.GetImage());
-// 	//cv::imshow("def", m_def_img.GetImage());
-// 	//cv::waitKey(0);
+	for (int i = 0; i < pairs.size(); i++)
+	{
+		auto bb = stats.GetBoundingBox(pairs[i].second);
+		double pkx = bb[1];
+		double pky = bb[2];
 
-// }
+		auto pk = out.TransformContinuousIndexToPhysicalPoint({ pkx,pky });
+
+	}
+
+	auto bb = stats.GetBoundingBox(pairs[pairs.size() - 1].second);
+
+	//determine peak point
+	double peak_x = bb[1];
+	double peak_y = bb[2];
+
+	std::vector<double> peak_pt;
+
+	peak_pt.push_back(peak_x);
+	peak_pt.push_back(peak_y);
+
+	//convert to physical point
+	auto peak_phys = out.TransformContinuousIndexToPhysicalPoint(peak_pt);
+
+	//determine center of image (displacement w.r.t. center)
+	std::vector<double> center_pt;
+
+	auto out_size = out.GetSize();
+
+	center_pt.push_back(out_size[0] / 2);
+	center_pt.push_back(out_size[1] / 2);
+
+	auto center_phys = out.TransformContinuousIndexToPhysicalPoint(center_pt); //convert to physical point
+
+	//Calculate displacement/translation
+	auto disp_x = peak_phys[0] - center_phys[0];
+	auto disp_y = peak_phys[1] - center_phys[1];
+
+	std::vector<int> results;
+
+	results.push_back(peak_phys[0]);
+	results.push_back(peak_phys[1]);
+	results.push_back(center_phys[0]);
+	results.push_back(center_phys[1]);
+	results.push_back(disp_x);
+	results.push_back(disp_y);
+	results.push_back(max);
+
+	return results;
+}
 
 CDICImage& CDICMatching::GetRefImage()
 {
@@ -450,14 +344,3 @@ CDICImage& CDICMatching::GetDefImage()
 {
 	return m_def_img;
 }
-
-
-// std::vector<cv::Point> Matching::GetRefCenters()
-// {
-// 	return m_ref_subCenters;
-// }
-
-// std::vector<cv::Point> Matching::GetMatchCenters()
-// {
-// 	return m_match_center;
-// }

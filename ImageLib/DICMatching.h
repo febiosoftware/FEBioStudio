@@ -36,29 +36,19 @@ class CDICMatching
 public:
 	CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter);
     ~CDICMatching();
-	//void CreateSearchAreas();
-	//void TemplateMatching();
-	// void ViewMatchResults();
 	CDICImage& GetRefImage();
 	CDICImage& GetDefImage();
-	//void CreateSearchAreas();
 	std::vector<vec2i> GetRefCenters(int ref_width, int ref_height, int subSize);
 	CImageSITK CreateSubsetMask();
 	void CreateFixedMasks();
 	void CreateMovingImages();
+	std::vector<int> FFT_TemplateMatching(sitk::Image fixed, sitk::Image moving, sitk::Image fixed_mask, sitk::Image moving_mask, double overlapFraction, int idx);
 
-
-
-	// std::vector<cv::Point> GetRefCenters();
-	// std::vector<cv::Point> GetMatchCenters();
 
 private:
 	CDICImage& m_ref_img;
 	CDICImage& m_def_img;
-	// std::vector<Subset*> m_ref_subsets;
-	// std::vector<cv::Point> m_ref_subCenters;
 	std::vector<CImageSITK> m_searchAreas;
-	// std::vector<cv::Point> m_match_topLeft;
 	std::vector<vec2i> m_match_center;
 	int m_iter;
 	std::vector<vec2i> m_match_points;
