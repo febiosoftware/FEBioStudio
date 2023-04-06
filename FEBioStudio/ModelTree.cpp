@@ -1597,7 +1597,7 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 				CPropertyList* pl = new FEObjectProps(pic, &fem);
 
 				CObjectValidator* val = nullptr;
-				if (dynamic_cast<FSInitialNodalDOF*>(pic))
+				if (dynamic_cast<FSInitialCondition*>(pic))
 				{
 					val = new CBCValidator(pic);
 				}

@@ -1992,19 +1992,22 @@ void FSModel::ClearSelections()
 		for (int i=0; i<step->BCs(); ++i)
 		{
 			FSBoundaryCondition* pbc = step->BC(i);
-			delete pbc->GetItemList(); pbc->SetItemList(0);
+			FEItemListBuilder* pi = pbc->GetItemList();
+			pbc->SetItemList(0); delete pi;
 		}
 
 		for (int i=0; i<step->Loads(); ++i)
 		{
 			FSLoad* pl = step->Load(i);
-			delete pl->GetItemList(); pl->SetItemList(0);
+			FEItemListBuilder* pi = pl->GetItemList();
+			pl->SetItemList(0); delete pi;
 		}
 
 		for (int i = 0; i<step->ICs(); ++i)
 		{
 			FSInitialCondition* pic = step->IC(i);
-			delete pic->GetItemList(); pic->SetItemList(0);
+			FEItemListBuilder* pi = pic->GetItemList();
+			pic->SetItemList(0); delete pi;
 		}
 
 		for (int i=0; i<step->Interfaces(); ++i)
@@ -2014,20 +2017,22 @@ void FSModel::ClearSelections()
 			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
 				FSSoloInterface* pc = dynamic_cast<FSSoloInterface*>(pi);
-				delete pc->GetItemList(); pc->SetItemList(0);
+				FEItemListBuilder* pi = pc->GetItemList();
+				pc->SetItemList(0); delete pi;
 			}
 			else if (dynamic_cast<FSPairedInterface*>(pi))
 			{
 				FSPairedInterface* pc = dynamic_cast<FSPairedInterface*>(pi);
-				delete pc->GetSecondarySurface(); pc->SetSecondarySurface(0);
-				delete pc->GetPrimarySurface(); pc->SetPrimarySurface(0);
+				FEItemListBuilder* pi1 = pc->GetPrimarySurface(); pc->SetPrimarySurface(0); delete pi1;
+				FEItemListBuilder* pi2 = pc->GetSecondarySurface(); pc->SetSecondarySurface(0); delete pi2;
 			}
 		}
 
 		for (int i = 0; i < step->Constraints(); ++i)
 		{
 			FSModelConstraint* mc = step->Constraint(i);
-			delete mc->GetItemList(); mc->SetItemList(0);
+			FEItemListBuilder* pi = mc->GetItemList();
+			mc->SetItemList(0); delete pi;
 		}
 	}
 }

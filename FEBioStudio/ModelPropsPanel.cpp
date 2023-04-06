@@ -1127,11 +1127,12 @@ void CModelPropsPanel::addSelection(int n)
 				}
 				pg->SetName(s);
 				mdl.AddNamedSelection(pg);
-				emit modelChanged();
 			}
 
 			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n));
 			SetSelection(n, pil->GetItemList(n));
+
+			emit modelChanged();
 		}
 		else
 		{
