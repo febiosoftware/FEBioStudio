@@ -819,7 +819,7 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 	{
 		// first, see if a point is selected
 		QPoint pt = ev->pos();
-		const int eps = 3;
+		const int eps = 3 * devicePixelRatio();
 
 		m_newSelect = false;
 		for (int i = 0; i < (int)m_data.m_data.size(); ++i)
