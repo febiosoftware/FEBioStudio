@@ -184,6 +184,19 @@ void GLMeshRender::RenderFEElements(FSMesh& mesh, std::function<bool(const FEEle
 }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el, GLColor* c)> f)
+{
+	GLColor col[FSElement::MAX_NODES];
+	glBegin(GL_TRIANGLES);
+	for (int i = 0; i < mesh.Elements(); ++i)
+	{
+		FEElement_& el = mesh.Element(i);
+		if (f(el, col)) RenderElement(&el, &mesh, col);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f)
 {
 	glBegin(GL_TRIANGLES);

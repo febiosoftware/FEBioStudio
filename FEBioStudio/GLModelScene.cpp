@@ -2442,7 +2442,7 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		
 		glEnable(GL_COLOR_MATERIAL);
 
-		renderer.RenderFEElements(*pm, [&](const FEElement_& el) {
+		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
 				int i = el.m_ntag;
 				if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
 				if (el.IsBeam()) hasBeamElements = true;
@@ -2452,7 +2452,6 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 					GPart* pg = po->Part(el.m_gid);
 					if (pg->IsVisible())
 					{
-						GLColor c[FSElement::MAX_NODES];
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
 						{
