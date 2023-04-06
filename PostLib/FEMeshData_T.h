@@ -88,15 +88,17 @@ public:
 	{
 		int N = state->GetFEMesh()->Nodes();
 		m_stride = nsize;
-		m_data.resize(N*nsize, 0.f);
+		m_data.resize(N * nsize, 0.f);
 	}
 
-	float eval(int n, int comp) { return m_data[n*m_stride + comp]; }
+	float eval(int n, int comp) { return m_data[n * m_stride + comp]; }
 	void setData(std::vector<float>& data)
 	{
 		assert(data.size() == m_data.size());
 		m_data = data;
 	}
+
+	int components() const { return m_stride; }
 
 protected:
 	int				m_stride;
@@ -335,6 +337,8 @@ public:
 		}
 	}
 
+	int components() const { return m_stride; }
+
 protected:
 	int					m_stride;
 	std::vector<float>	m_data;
@@ -421,6 +425,8 @@ public:
 			m_elem[m] = m;
 		}
 	}
+
+	int components() const { return m_stride; }
 
 protected:
 	int					m_stride;
