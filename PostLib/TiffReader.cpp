@@ -28,6 +28,8 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include <XML/XMLReader.h>
 #include <stdexcept>
+#include <sstream>
+#include <iostream>
 
 #ifndef  WORD
 #define WORD	uint16_t
@@ -120,6 +122,8 @@ typedef struct _TiffImage
 	DWORD	ny;
 	WORD	photometric;
 	WORD	bps;
+	float	xres;
+	float	yres;
 	Byte* description;
 	Byte* pd;
 } TIFIMAGE;
@@ -240,6 +244,8 @@ bool CTiffImageSource::Load()
 	int nbps = m->m_img[0].bps;
 	int dimOrder = ome::DimensionOrder::Unknown;
 
+	float zspacing = 1.f;
+
 	char* szdescription = (char*)m->m_img[0].description;
 	if (szdescription && GetImageModel())
 	{
@@ -283,6 +289,31 @@ bool CTiffImageSource::Load()
 						else xml.SkipTag(tag);
 						++tag;
 					} while (!tag.isend());
+				}
+			}
+		}
+		else if (strncmp(szdescription, "ImageJ", 6) == 0)
+		{
+			string s(szdescription);
+			std::istringstream ss(s);
+			std::vector<string> strings;
+			while (std::getline(ss, s, '\n')) strings.push_back(s);
+
+			for (string& s : strings)
+			{
+				size_t n = s.find('=');
+				if (n != std::string::npos)
+				{
+					string sl = s.substr(0, n);
+					string sr = s.substr(n + 1, std::string::npos);
+					if (sl == "channels")
+					{
+						nc = atoi(sr.c_str());
+					}
+					else if (sl == "spacing")
+					{
+						zspacing = atof(sr.c_str());
+					}
 				}
 			}
 		}
@@ -411,7 +442,11 @@ bool CTiffImageSource::Load()
 		}
 	}
 
-	BOX box(0, 0, 0, nx, ny, nz);
+	float fx = (float) nx / m->m_img[0].xres;
+	float fy = (float) ny / m->m_img[0].yres;
+	float fz = (zspacing != 0 ? nz * zspacing : nz);
+
+	BOX box(0, 0, 0, fx, fy, fz);
 	im->SetBoundingBox(box);
 	AssignImage(im);
 
@@ -500,6 +535,7 @@ bool CTiffImageSource::Impl::readIFD()
 			else if (t.DataType == 1) byteswap(t.DataOffset);
 			else if (t.DataType == 2) byteswap(t.DataOffset);
 			else if (t.DataType == 4) byteswap(t.DataOffset);
+			else if (t.DataType == 5) byteswap(t.DataOffset);
 		}
 	}
 
@@ -526,6 +562,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	int numberOfStrips = 1;
 	int photometric = PHOTOMETRIC_MINISBLACK;
 	int descrCount = 0, descrOffset = 0;
+	int xres_off = -1, yres_off = -1;
 	for (int i = 0; i < ifd.NumDirEntries; ++i)
 	{
 		TIFTAG& t = ifd.TagList[i];
@@ -540,6 +577,8 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 		case 278: rowsPerStrip = t.DataOffset; break;
 		case 273: { stripOffsets = t.DataOffset; numberOfStrips = t.DataCount; break; }
 		case 279: stripByteCounts = t.DataOffset; break;
+		case 282: xres_off = t.DataOffset; break;
+		case 283: yres_off = t.DataOffset; break;
 		}
 	}
 
@@ -557,6 +596,32 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	{
 		if (compression == TIF_COMPRESSION_NONE) stripByteCounts = imWidth * imLength * (bitsPerSample == 16 ? 2 : 1);
 		else throw std::domain_error("Invalid stripbyte count.");
+	}
+
+	// get the x-resolution
+	float xres = 1.f;
+	if (xres_off != -1)
+	{
+		fseek(m_fp, xres_off, SEEK_SET);
+		unsigned int nom, den;
+		fread(&nom, sizeof(unsigned int), 1, m_fp);
+		fread(&den, sizeof(unsigned int), 1, m_fp);
+		if (m_bigE) { byteswap(nom); byteswap(den); }
+
+		xres = (float)nom / (float)den;
+	}
+
+	// get the x-resolution
+	float yres = 1.f;
+	if (yres_off != -1)
+	{
+		fseek(m_fp, yres_off, SEEK_SET);
+		unsigned int nom, den;
+		fread(&nom, sizeof(unsigned int), 1, m_fp);
+		fread(&den, sizeof(unsigned int), 1, m_fp);
+		if (m_bigE) { byteswap(nom); byteswap(den); }
+
+		yres = (float)nom / (float)den;
 	}
 
 	// read the description if present
@@ -609,6 +674,8 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	im.pd = buf;
 	im.photometric = photometric;
 	im.description = description;
+	im.xres = (xres != 0.f ? xres : 1.f);
+	im.yres = (yres != 0.f ? yres : 1.f);
 	m_img.push_back(im);
 
 	// This assumes only one strip per image!!
