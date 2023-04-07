@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "ImageModel.h"
 #include "ImageSource.h"
 #include <GLLib/GLContext.h>
+#include <GLLib/GLProgram.h>
 #include <GLLib/GLCamera.h>
 #include <ImageLib/3DImage.h>
 #include <FEBioStudio/ImageViewSettings.h>
@@ -38,6 +39,8 @@ using namespace Post;
 
 static int n = 1;
 
+GLProgram VRprg;
+
 CVolumeRenderer::CVolumeRenderer(CImageModel* img) : CGLImageRenderer(img)
 {
 	// AddDoubleParam(0.1, "alpha scale")->SetFloatRange(0.0, 1.0);
@@ -46,7 +49,6 @@ CVolumeRenderer::CVolumeRenderer(CImageModel* img) : CGLImageRenderer(img)
 	AddChoiceParam(0, "Color map")->SetEnumNames("Grayscale\0Red\0Green\0Blue\0Fire\0");
 
 	m_texID = 0;
-	m_prgID = 0;
 
 	std::stringstream ss;
 	ss << "VolumeRender" << n++;
@@ -314,50 +316,8 @@ void CVolumeRenderer::InitShaders()
 		return;
 	}
 
-	// create the fragment shader
-	GLuint fragShader = glCreateShader(GL_FRAGMENT_SHADER);
-//	GLuint vertShader = glCreateShader(GL_VERTEX_SHADER);
-
-	// set the shader text
-	glShaderSource(fragShader, 1, &shadertxt, NULL);
-//	glShaderSource(vertShader, 1, &vertex_shader, NULL);
-
-	// compile the shader
-	int success;
-	glCompileShader(fragShader);
-	glGetShaderiv(fragShader, GL_COMPILE_STATUS, &success);
-	if (success == 0) FSLogger::Write("fragment shader compilation failed:\n");
-	else FSLogger::Write("fragment shader compilation succeeded.\n");
-	GLint length = 0;
-	glGetShaderiv(fragShader, GL_INFO_LOG_LENGTH, &length);
-	if (length > 0)
-	{
-		GLchar* buf = new GLchar[length + 1];
-		glGetShaderInfoLog(fragShader, length + 1, NULL, buf);
-		FSLogger::Write(buf);
-		delete[] buf;
-	}
-
-//	glCompileShader(vertShader);
-//	glGetShaderiv(vertShader, GL_COMPILE_STATUS, &success);
-//	if (success == 0)
-//	{
-//		const int MAX_INFO_LOG_SIZE = 1024;
-//		GLchar infoLog[MAX_INFO_LOG_SIZE];
-//		glGetShaderInfoLog(vertShader, MAX_INFO_LOG_SIZE, NULL, infoLog);
-//		fprintf(stderr, infoLog);
-//	}
-
 	// create the program
-	m_prgID = glCreateProgram();
-	glAttachShader(m_prgID, fragShader);
-//	glAttachShader(m_prgID, vertShader);
-
-	glLinkProgram(m_prgID);
-	glGetProgramiv(m_prgID, GL_LINK_STATUS, &success); 
-
-	glDeleteShader(fragShader);
-//	glDeleteShader(vertShader);
+	VRprg.Create(nullptr, shadertxt);
 }
 
 extern int LUT[256][15];
@@ -432,16 +392,7 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glBindTexture(GL_TEXTURE_3D, m_texID);
 
 	// set program
-	glUseProgram(m_prgID);
-
-	GLint IminID = glGetUniformLocation(m_prgID, "Imin");
-	GLint ImaxID = glGetUniformLocation(m_prgID, "Imax");
-	GLint AminID = glGetUniformLocation(m_prgID, "Amin");
-	GLint AmaxID = glGetUniformLocation(m_prgID, "Amax");
-	GLint cmapID = glGetUniformLocation(m_prgID, "cmap");
-	GLint gammaID = glGetUniformLocation(m_prgID, "gamma");
-	GLint IsclID   = glGetUniformLocation(m_prgID, "Iscl");
-    GLint IsclMinID   = glGetUniformLocation(m_prgID, "IsclMin");
+	VRprg.Use();
 
 	CImageViewSettings* vs = GetImageModel()->GetViewSettings();
 
@@ -457,22 +408,18 @@ void CVolumeRenderer::Render(CGLContext& rc)
 
 	GLColor col = HSV2RGB(360.0*hue, sat, lum);
 
-	glUniform1f(IminID, Imin);
-	glUniform1f(ImaxID, Imax);
-	glUniform1f(AminID, Amin);
-	glUniform1f(AmaxID, Amax);
-	glUniform1f(gammaID, gamma);
-	glUniform1i(cmapID, cmap);
-	glUniform1f(IsclID, m_Iscale);
-    glUniform1f(IsclMinID, m_IscaleMin);
+	VRprg.SetFloat("Imin"   , Imin);
+	VRprg.SetFloat("Imax"   , Imax);
+	VRprg.SetFloat("Amin"   , Amin);
+	VRprg.SetFloat("Amax"   , Amax);
+	VRprg.SetFloat("gamma"  , gamma);
+	VRprg.SetInt  ("cmap"   , cmap);
+	VRprg.SetFloat("Iscl"   , m_Iscale);
+	VRprg.SetFloat("IsclMin", m_IscaleMin);
 
 	if ((im3d.PixelType() == C3DImage::INT_RGB8) || (im3d.PixelType() == C3DImage::UINT_RGB8) 
         || (im3d.PixelType() == C3DImage::INT_RGB16) || (im3d.PixelType() == C3DImage::UINT_RGB16))
 	{
-		GLint col1ID = glGetUniformLocation(m_prgID, "col1");
-		GLint col2ID = glGetUniformLocation(m_prgID, "col2");
-		GLint col3ID = glGetUniformLocation(m_prgID, "col3");
-
 		float hue1 = vs->GetFloatValue(CImageViewSettings::CHANNEL1_HUE);
 		float hue2 = vs->GetFloatValue(CImageViewSettings::CHANNEL2_HUE);
 		float hue3 = vs->GetFloatValue(CImageViewSettings::CHANNEL3_HUE);
@@ -485,9 +432,9 @@ void CVolumeRenderer::Render(CGLContext& rc)
 		float c2[3] = { col2.r / 255.f, col2.g / 255.f, col2.b / 255.f };
 		float c3[3] = { col3.r / 255.f, col3.g / 255.f, col3.b / 255.f };
 
-		glUniform3f(col1ID, c1[0], c1[1], c1[2]);
-		glUniform3f(col2ID, c2[0], c2[1], c2[2]);
-		glUniform3f(col3ID, c3[0], c3[1], c3[2]);
+		VRprg.SetFloat3("col1", c1);
+		VRprg.SetFloat3("col2", c2);
+		VRprg.SetFloat3("col3", c3);
 	}
 
 	double g[3][2] = {

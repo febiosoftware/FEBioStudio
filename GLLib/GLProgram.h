@@ -24,43 +24,27 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "GLImageRenderer.h"
-#include <GLLib/GLMesh.h>
 
-namespace Post {
-
-class CImageModel;
-
-class CVolumeRenderer : public CGLImageRenderer
+//=========================================================================
+// Class describing an OpenGL program.
+class GLProgram
 {
-	// enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
-    enum {COLOR_MAP};
+public:
+	// constructor
+	GLProgram();
+
+	// create the shaders, compile and link
+	bool Create(const char* szvert, const char* szfrag);
+
+	// use the GL program
+	void Use();
 
 public:
-	CVolumeRenderer(CImageModel* img);
-	~CVolumeRenderer();
-
-	void Create();
-
-	void Render(CGLContext& rc) override;
-
-	void Update() override;
+	// functions for setting uniforms
+	void SetInt(const char* szparam, int val);
+	void SetFloat(const char* szparam, float val);
+	void SetFloat3(const char* szparam, float v[3]);
 
 private:
-	void Init();
-	void InitShaders();
-	void ReloadTexture();
-	void UpdateGeometry(const vec3d& view);
-
-private:
-	unsigned int m_texID;
-    float 	m_IscaleMin;
-    float 	m_Iscale;
-	bool	m_vrInit;
-	bool	m_vrReset;
-
-	int	m_nslices = 0;
-	GLTriMesh m_mesh;
+	unsigned m_progId;
 };
-
-}
