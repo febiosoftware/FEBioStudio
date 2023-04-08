@@ -15,4 +15,4 @@ services:
   studio-build:
     <<: *default
     container_name: febio-build
-    command: bash -c "ci/git-safe.sh && ci/linux.sh"
+    command: bash -c "ci/linux/git-safe.sh && ci/linux/build.sh"
