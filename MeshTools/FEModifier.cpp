@@ -157,7 +157,7 @@ FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 		meshBuilder.PartitionFaceSelection(gid);
 	}
 
-	FSPart* p = dynamic_cast<FSPart*>(pg);
+	FSElemSet* p = dynamic_cast<FSElemSet*>(pg);
 	if (p)
 	{
 		meshBuilder.PartitionElementSelection(gid);
@@ -1186,6 +1186,7 @@ enum ConvertMeshOptions {
 	TET15_TO_TET4,
 	HEX8_TO_HEX20,
 	HEX20_TO_HEX8,
+    PENTA6_TO_TET4,
 	QUAD4_TO_QUAD8,
 	QUAD8_TO_QUAD4,
 	TRI3_TO_TRI6,
@@ -1209,6 +1210,7 @@ const char* FEConvertMeshOptions[] = {
 		"Tet15 to Tet4",
 		"Hex8 to Hex20",
 		"Hex20 to Hex8",
+        "Penta6 to Tet4",
 		"Quad4 to Quad8",
 		"Quad8 to Quad4",
 		"Tri3 to Tri6",
@@ -1294,6 +1296,7 @@ bool FEConvertMesh::UpdateData(bool bsave)
 	case FE_TET10: buildMeshConvertOptions(sz, TET10_TO_TET4, END_OF_LIST); break;
 	case FE_TET15: buildMeshConvertOptions(sz, TET15_TO_TET4, END_OF_LIST); break;
 	case FE_HEX20: buildMeshConvertOptions(sz, HEX20_TO_HEX8, END_OF_LIST); break;
+    case FE_PENTA6: buildMeshConvertOptions(sz, PENTA6_TO_TET4, END_OF_LIST); break;
 	case FE_QUAD8: buildMeshConvertOptions(sz, QUAD8_TO_QUAD4, END_OF_LIST); break;
 	case FE_TRI3 : buildMeshConvertOptions(sz, TRI3_TO_TRI6, TRI3_TO_QUAD4, END_OF_LIST); break;
 	case FE_TRI6 : buildMeshConvertOptions(sz, TRI6_TO_TRI3, END_OF_LIST); break;
@@ -1342,6 +1345,7 @@ FSMesh* FEConvertMesh::Apply(FSMesh* pm)
 	case TET15_TO_TET4 : m_mod = new FETet15ToTet4; break;
 	case HEX8_TO_HEX20 : m_mod = new FEHex8ToHex20(bsmooth); break;
 	case HEX20_TO_HEX8 : m_mod = new FEHex20ToHex8; break;
+    case PENTA6_TO_TET4: m_mod = new FEPenta6ToTet4; break;
 	case QUAD4_TO_QUAD8: m_mod = new FEQuad4ToQuad8(bsmooth); break;
 	case QUAD8_TO_QUAD4: m_mod = new FEQuad8ToQuad4; break;
 	case TRI3_TO_TRI6  : m_mod = new FETri3ToTri6(bsmooth); break;

@@ -139,3 +139,18 @@ bool FESTLExport::Write(const char* szfile, GObject* po)
 
 	return true;
 }
+
+bool FESTLExport::Write(const char* szfile, FSMesh* pm)
+{
+	if (pm == 0) return false;
+
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == 0) return false;
+
+	// write the solid
+	stl_write_solid(fp, pm, "marching_cubes_export");
+
+	fclose(fp);
+
+	return true;
+}

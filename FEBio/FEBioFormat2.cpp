@@ -593,7 +593,7 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	if (szset)
 	{
 		// see if we can find the nodeset
-		pg = part.BuildFENodeSet(szset);
+		pg = febio.FindNamedNodeSet(szset);
 
 		// make sure the set is found
 		if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
@@ -604,7 +604,7 @@ void FEBioFormat2::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 	}
 
 	// read the node list
-	std::list<int> nodeList;
+	std::vector<int> nodeList;
 	if (tag.isleaf() == false)
 	{
 		++tag;
@@ -754,7 +754,7 @@ void FEBioFormat2::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		if (tag.isleaf() == false) throw XMLReader::InvalidValue(tag);
 
 		// see if we can find the nodeset
-		pg = part.BuildFENodeSet(szset);
+		pg = febio.FindNamedNodeSet(szset);
 
 		// make sure the set is found
 		if (pg == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
@@ -974,6 +974,7 @@ void FEBioFormat2::ParseSurfaceLoad(FSStep* pstep, XMLTag& tag)
 FSSurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 {
 	// create a new surface
+	FEBioInputModel& febio = GetFEBioModel();
 	FEBioInputModel::PartInstance& part = GetInstance();
 
 	// see if the set is defined 
@@ -983,7 +984,7 @@ FSSurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 		const char* szset = tag.AttributeValue("set");
 
 		// find the surface
-		FSSurface* ps = part.BuildFESurface(szset);
+		FSSurface* ps = febio.FindNamedSurface(szset);
 		if (ps == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
 
 		return ps;
@@ -1012,6 +1013,7 @@ FSSurface* FEBioFormat2::ParseLoadSurface(XMLTag& tag)
 		while (!tag.isend());
 
 		FSSurface* ps = part.BuildFESurface(surf);
+		part.GetGObject()->AddFESurface(ps);
 
 		return ps;
 	}
@@ -1891,7 +1893,7 @@ FSSurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 		const char* szset = tag.AttributeValue("set");
 
 		// find the surface
-		FSSurface* psurf = part.BuildFESurface(szset);
+		FSSurface* psurf = febio.FindNamedSurface(szset);
 		if (psurf == 0) throw XMLReader::InvalidAttributeValue(tag, "set", szset);
 
 		return psurf;
@@ -1959,6 +1961,7 @@ FSSurface* FEBioFormat2::ParseContactSurface(XMLTag& tag, int format)
 
 		FEBioInputModel& febio = GetFEBioModel();
 		FSSurface *psurf = part.BuildFESurface(surf);
+		part.GetGObject()->AddFESurface(psurf);
 		return psurf;
 	}
 }
@@ -1989,7 +1992,7 @@ void FEBioFormat2::ParseConstraint(FSStep* pstep, XMLTag& tag)
 
 	ReadParameters(*plc, tag);
 
-	pstep->AddConstraint(plc);
+	pstep->AddComponent(plc);
 }
 
 //-----------------------------------------------------------------------------
@@ -3203,51 +3206,4 @@ bool FEBioFormat2::ParseStepSection(XMLTag &tag)
 	m_pBCStep = 0;
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-FSNodeSet* FEBioFormat2::ParseNodeSet(XMLTag& tag)
-{
-	GMeshObject* po = GetGObject();
-
-	// create a new node set
-	FSNodeSet* pg = new FSNodeSet(po);
-
-	const char* szset = tag.AttributeValue("nset", true);
-	if (szset)
-	{
-		// make sure this tag is empty
-		if (tag.isempty() == false) throw XMLReader::InvalidValue(tag);
-
-		// see if we can find the nodeset
-		FSNodeSet* ps = po->FindFENodeSet(szset);
-
-		// make sure the set is found
-		if (ps == 0) throw XMLReader::InvalidAttributeValue(tag, "nset", szset);
-
-		// create a copy of this node set
-		pg->Copy(ps);
-	}
-	else
-	{
-		// see if the name tag is defined
-		const char* szname = tag.AttributeValue("name", true);
-		if (szname) pg->SetName(szname);
-
-		// loop over all nodes
-		++tag;
-		do
-		{
-			// get the node ID
-			int n = tag.Attribute("id").value<int>();
-
-			// assign the node to this group
-			pg->add(n - 1);
-
-			++tag;
-		}
-		while (!tag.isend());
-	}
-
-	return pg;
 }

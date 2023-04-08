@@ -310,10 +310,14 @@ void CFiberGeneratorTool::OnApply()
 	wnd->AddLogEntry(QString("iteration count: %1\n").arg(niters));
 	wnd->AddLogEntry(QString("Final relative norm: %1\n").arg(L.GetRelativeNorm()));
 
+	// create a temporary node set from the mesh
+	FSNodeSet nodeSet(po);
+	nodeSet.CreateFromMesh();
+
 	// create node data
 	FENodeData data(m_po);
-	data.Create(0.0);
-	for (int i = 0; i < NN; i++) data.set(i, val[i]);
+	data.Create(&nodeSet, 0.0);
+	for (int i = 0; i < NN; i++) data.SetScalar(i, val[i]);
 
 	// calculate gradient and assign to element fiber
 	vector<vec3d> grad;

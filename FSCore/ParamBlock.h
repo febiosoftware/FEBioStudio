@@ -561,6 +561,8 @@ public:
 	int GetIndexValue(int n) const { return m_Param[n]->GetIndexValue(); }
     const char* GetIndexName(int n) { return m_Param[n]->GetIndexName(); }
 
+	void Copy(const ParamBlock& pb);
+
 public:
 	int SetActiveGroup(const char* szgroup);
 	bool SetActiveGroup(int n);
@@ -682,7 +684,11 @@ public:
 	ParamBlock& GetParamBlock() { return m_Param; }
 	const ParamBlock& GetParamBlock() const { return m_Param; }
 
+	// copy parameters: requires a one-to-one match between parameters.
 	void CopyParams(const ParamContainer& pc);
+
+	// maps parameters. Matched are made using the param names. Does not require one-to-one mapping.
+	void MapParams(const ParamContainer& pc);
 
 public:
 	// This is a helper function to assign a loadcurve to a parameter. 

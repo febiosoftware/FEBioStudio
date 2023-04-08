@@ -239,9 +239,20 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			int nsel = doc->GetSelectionMode();
 			if (nsel == SELECT_OBJECT)
 			{
-				CCmdGroup* pcmd = new CCmdGroup("Delete");
 				FSModel* ps = doc->GetFSModel();
 				GModel& model = ps->GetModel();
+				// first see if we can delete the objects
+				for (int i = 0; i < model.Objects(); ++i)
+				{
+					GObject* po = model.Object(i);
+					if (po->CanDelete() == false)
+					{
+						QMessageBox::warning(this, "FEBio Studio", "This selection cannot be deleted since other model components depend on it.");
+						return;
+					}
+				}
+
+				CCmdGroup* pcmd = new CCmdGroup("Delete");
 				for (int i = 0; i<model.Objects(); ++i)
 				{
 					GObject* po = model.Object(i);
@@ -434,7 +445,75 @@ void CMainWindow::on_actionFind_triggered()
 		vector<int> items;
 		if (dlg.m_method == 0)
 		{
-			items = dlg.m_item;
+			if (dynamic_cast<CPostDocument*>(doc))
+			{
+				if (nitem == ITEM_NODE)
+				{
+					int NN = pm->Nodes();
+					int minId = -1, maxId = -1;
+					for (int i = 0; i < NN; ++i)
+					{
+						int nid = pm->Node(i).m_nid;
+						if ((nid > 0) && ((minId == -1) || (nid < minId))) minId = nid;
+						if ((nid > 0) && ((maxId == -1) || (nid > maxId))) maxId = nid;
+					}
+					int nsize = maxId - minId + 1;
+					vector<int> LUT(nsize, -1);
+					for (int i = 0; i < NN; ++i)
+					{
+						int nid = pm->Node(i).m_nid;
+						LUT[nid - minId] = i;
+					}
+
+					for (int i = 0; i < dlg.m_item.size(); ++i)
+					{
+						int m = dlg.m_item[i] - minId;
+						if ((m >= 0) && (m < LUT.size()))
+						{
+							items.push_back(LUT[m]);
+						}
+					}
+				}
+				else if (nitem == ITEM_ELEM)
+				{
+					int NE = pm->Elements();
+					int minId = -1, maxId = -1;
+					for (int i = 0; i < NE; ++i)
+					{
+						int nid = pm->Element(i).m_nid;
+						if ((nid > 0) && ((minId == -1) || (nid < minId))) minId = nid;
+						if ((nid > 0) && ((maxId == -1) || (nid > maxId))) maxId = nid;
+					}
+					int nsize = maxId - minId + 1;
+					vector<int> LUT(nsize, -1);
+					for (int i = 0; i < NE; ++i)
+					{
+						int nid = pm->Element(i).m_nid;
+						LUT[nid - minId] = i;
+					}
+
+					for (int i = 0; i < dlg.m_item.size(); ++i)
+					{
+						int m = dlg.m_item[i] - minId;
+						if ((m >= 0) && (m < LUT.size()))
+						{
+							items.push_back(LUT[m]);
+						}
+					}
+				}
+				else if (nitem == ITEM_FACE)
+				{
+					// make zero-based
+					items = dlg.m_item;
+					for (int i = 0; i < items.size(); ++i) items[i] -= 1;
+				}
+			}
+			else
+			{
+				// make zero-based
+				items = dlg.m_item;
+				for (int i = 0; i < items.size(); ++i) items[i] -= 1;
+			}
 		}
 		else if (dlg.m_method == 1)
 		{
@@ -633,7 +712,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 		{
 			assert(po);
 			FEElementSelection* pes = dynamic_cast<FEElementSelection*>(psel); assert(pes);
-			FSPart* pg = dynamic_cast<FSPart*>(pes->CreateItemList());
+			FSElemSet* pg = dynamic_cast<FSElemSet*>(pes->CreateItemList());
 			if (pg)
 			{
 				pg->SetName(szname);
@@ -698,7 +777,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 			case SELECT_PART:
 			{
-				GPartList* pg = new GPartList(pfem, dynamic_cast<GPartSelection*>(psel));
+				GPartList* pg = new GPartList(mdl, dynamic_cast<GPartSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg));
 				++nparts;
@@ -707,7 +786,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			break;
 			case SELECT_FACE:
 			{
-				GFaceList* pg = new GFaceList(pfem, dynamic_cast<GFaceSelection*>(psel));
+				GFaceList* pg = new GFaceList(mdl, dynamic_cast<GFaceSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg));
 				++nsurfs;
@@ -716,7 +795,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			break;
 			case SELECT_EDGE:
 			{
-				GEdgeList* pg = new GEdgeList(pfem, dynamic_cast<GEdgeSelection*>(psel));
+				GEdgeList* pg = new GEdgeList(mdl, dynamic_cast<GEdgeSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg));
 				++nedges;
@@ -725,7 +804,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			break;
 			case SELECT_NODE:
 			{
-				GNodeList* pg = new GNodeList(pfem, dynamic_cast<GNodeSelection*>(psel));
+				GNodeList* pg = new GNodeList(mdl, dynamic_cast<GNodeSelection*>(psel));
 				pg->SetName(szname);
 				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg));
 				++nnodes;
@@ -1319,7 +1398,7 @@ void CMainWindow::on_actionGrowSelection_triggered()
 	if (doc == nullptr) return;
 	if (doc->GetSelectionMode() != SELECT_OBJECT) return;
 
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	int itemMode = doc->GetItemMode();
 	switch (itemMode)

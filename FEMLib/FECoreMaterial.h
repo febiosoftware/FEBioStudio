@@ -62,7 +62,7 @@ public:
 	// copy the material
 	virtual void copy(FSMaterial* pmat);
 
-	FSMaterial* Clone();
+	virtual FSMaterial* Clone();
 
 	// fiber stuff
 	virtual bool HasFibers() { return false; }
@@ -152,6 +152,9 @@ public:
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
 
+	virtual bool HasFibers() { return false; }
+	virtual vec3d GetFiber(FEElementRef& el) { return vec3d(0, 0, 0); }
+
 private:
 	int	m_ntype;
 };
@@ -163,4 +166,7 @@ public:
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
+
+	bool HasFibers() override;
+	vec3d GetFiber(FEElementRef& el) override;
 };

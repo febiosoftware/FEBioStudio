@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
+#include <FSCore/box.h>
 #include "GPartSection.h"
 class FSEdgeSet;
 
@@ -182,6 +183,11 @@ public:
 
 	void SetSection(GPartSection* section);
 	GPartSection* GetSection() const;
+
+	BOX GetLocalBox() const;
+	BOX GetGlobalBox() const;
+	void UpdateBoundingBox();
+	bool Update(bool b) override;
     
 public:
 	int Nodes() const { return (int)m_node.size(); }
@@ -191,6 +197,7 @@ public:
 protected:
 	int		m_matid;
 	GPartSection* m_section;
+	BOX		m_box;	// bounding box in local coordinate
 
 public:
 	std::vector<int>	m_node;
@@ -297,7 +304,11 @@ public:
 
 	void MakeRequired();
 
+	void SetNodeIndex(int n) { m_node = n; }
+	int GetNodeIndex() const { return m_node; }
+
 private:
 	vec3d		m_r;		// node position (in local coordinates)
 	int			m_ntype;	// node type
+	int			m_node;		// index of node in mesh
 };

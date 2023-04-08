@@ -245,7 +245,7 @@ void CGLControlBar::Update()
 	CGLDocument* pdoc = ui->m_wnd->GetGLDocument();
 	if (pdoc == nullptr) return;
 
-	VIEW_SETTINGS& vs = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& vs = ui->m_wnd->GetGLView()->GetViewSettings();
 
 	ui->showMesh->setChecked(vs.m_bmesh);
 
@@ -351,13 +351,13 @@ void CGLControlBar::onPivotClicked(bool b)
 
 void CGLControlBar::onSnapToGridClicked(bool b)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_snapToGrid = b;
 }
 
 void CGLControlBar::onSnapToNodeClicked(bool b)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_snapToNode = b;
 }
 
@@ -418,7 +418,7 @@ void CGLControlBar::onMeshButtonClicked(int id)
 
 void CGLControlBar::onSelectConnected(bool b)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bconn = b;
 }
 
@@ -429,24 +429,24 @@ void CGLControlBar::toggleSelectConnected()
 
 void CGLControlBar::onSelectClosestPath(bool b)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bselpath = b;
 }
 
 void CGLControlBar::onMaxAngleChanged(double v)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_fconn = v;
 }
 
 void CGLControlBar::onSelectBackfacing(bool b)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bcullSel = !b;
 }
 
 void CGLControlBar::onIgnoreInterior(bool b)
 {
-	VIEW_SETTINGS& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bext = b;
 }

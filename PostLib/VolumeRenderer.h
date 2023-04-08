@@ -25,19 +25,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLImageRenderer.h"
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 
 class CImageModel;
 
-class CVolumeRender2 : public CGLImageRenderer
+class CVolumeRenderer : public CGLImageRenderer
 {
 	// enum {ALPHA_SCALE, MIN_INTENSITY, MAX_INTENSITY, COLOR_MAP};
     enum {COLOR_MAP};
 
 public:
-	CVolumeRender2(CImageModel* img);
-	~CVolumeRender2();
+	CVolumeRenderer(CImageModel* img);
+	~CVolumeRenderer();
 
 	void Create();
 
@@ -47,15 +48,19 @@ public:
 
 private:
 	void Init();
-	bool InitTexture();
 	void InitShaders();
 	void ReloadTexture();
+	void UpdateGeometry(const vec3d& view);
 
 private:
 	unsigned int m_texID;
-	unsigned int m_prgID;
+    float 	m_IscaleMin;
+    float 	m_Iscale;
 	bool	m_vrInit;
 	bool	m_vrReset;
+
+	int	m_nslices = 0;
+	GLTriMesh m_mesh;
 };
 
 }

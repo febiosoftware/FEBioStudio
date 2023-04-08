@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 #include <MeshLib/FEMeshBase.h>
 #include <MeshLib/FEMesh.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 // tools for finding intersections
 struct Ray
@@ -76,7 +76,7 @@ bool FastIntersectQuad(const Ray& ray, const Quad& quad, Intersection& q);
 
 //-----------------------------------------------------------------------------
 bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& q);
-bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q);
+bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q);
 bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FSFace& face, Intersection& q);
 
 //-----------------------------------------------------------------------------

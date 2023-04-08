@@ -301,7 +301,7 @@ void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 }
 
 //-----------------------------------------------------------------------------
-static vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
+vec3d glx::interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
 {
 	double ax[4], ay[4], az[4];
 	ax[0] = r0.x; ax[1] = n0.x; ax[2] = 3.0 * (r1.x - r0.x) - 2.0 * n0.x - n1.x; ax[3] = n1.x + n0.x - 2.0 * (r1.x - r0.x);
@@ -519,7 +519,7 @@ void glx::tri3(vec3d r[3], vec3d n[3])
 	vertex3d(r[2], n[2]);
 }
 
-void glx::tri3(vec3d r[3], vec3f n[3], GLColor c[3])
+void glx::tri3(vec3d r[3], vec3d n[3], GLColor c[3])
 {
 	vertex3d(r[0], n[0], c[0]);
 	vertex3d(r[1], n[1], c[1]);
@@ -1272,4 +1272,68 @@ void glx::renderDamper(const vec3d& a, const vec3d& b, double R)
 void glx::renderContractileForce(const vec3d& a, const vec3d& b, double R)
 {
 	glx::drawLine(a, b);
+}
+
+inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
+{
+	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);
+	glVertex3d(x, y, z); glVertex3d(x, y + dy, z);
+	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
+}
+
+void glx::renderBox(const BOX& bbox, bool partial, double scale)
+{
+	// push attributes
+	glPushAttrib(GL_ENABLE_BIT);
+
+	// set attributes
+	glEnable(GL_LINE_SMOOTH);
+	glDisable(GL_LIGHTING);
+
+	BOX box = bbox;
+	box.Scale(scale);
+
+	if (partial)
+	{
+		double dx = box.Width() * 0.3;
+		double dy = box.Height() * 0.3;
+		double dz = box.Depth() * 0.3;
+		glBegin(GL_LINES);
+		{
+			render_triad(box.x0, box.y0, box.z0, dx, dy, dz);
+			render_triad(box.x1, box.y0, box.z0, -dx, dy, dz);
+			render_triad(box.x1, box.y1, box.z0, -dx, -dy, dz);
+			render_triad(box.x0, box.y1, box.z0, dx, -dy, dz);
+
+			render_triad(box.x0, box.y0, box.z1, dx, dy, -dz);
+			render_triad(box.x1, box.y0, box.z1, -dx, dy, -dz);
+			render_triad(box.x1, box.y1, box.z1, -dx, -dy, -dz);
+			render_triad(box.x0, box.y1, box.z1, dx, -dy, -dz);
+		}
+		glEnd();
+	}
+	else
+	{
+		glBegin(GL_LINES);
+		{
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+
+			glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
+
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
+		}
+		glEnd();
+	}
+
+	// restore attributes
+	glPopAttrib();
 }

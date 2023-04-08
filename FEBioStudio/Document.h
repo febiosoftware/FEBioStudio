@@ -36,10 +36,11 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include "modelcheck.h"
 #include <QtCore/QString>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 #include "GLScene.h"
 #include <GLLib/GView.h>
 #include <QObject>
+#include "Command.h"
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -281,6 +282,8 @@ public:
 
 	bool AutoSaveDocument() override;
 
+	void Activate() override;
+
 	// set/get the file reader
 	void SetFileReader(FileReader* fileReader);
 	FileReader* GetFileReader();
@@ -322,7 +325,6 @@ public:
 	std::string getModelInfo() const { return m_info; }
 
 public:
-    bool ImportImage(Post::CImageModel* imgModel);
 	int ImageModels() const;
 	virtual void AddImageModel(Post::CImageModel* img);
 	Post::CImageModel* GetImageModel(int i);

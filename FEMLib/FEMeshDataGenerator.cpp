@@ -1,28 +1,14 @@
 #include "stdafx.h"
 #include "FEMeshDataGenerator.h"
 #include <GeomLib/GGroup.h>
+#include <FEMLib/FSModel.h>
 
 FSMeshDataGenerator::FSMeshDataGenerator(FSModel* fem, int ntype) : FSModelComponent(fem)
 {
 	m_ntype = ntype;
-	m_pItem = nullptr;
-	m_itemType = 0;
 }
 
 int FSMeshDataGenerator::Type() const { return m_ntype; }
-
-FEItemListBuilder* FSMeshDataGenerator::GetItemList() { return m_pItem; }
-void FSMeshDataGenerator::SetItemList(FEItemListBuilder* pi) { m_pItem = pi; }
-
-unsigned int FSMeshDataGenerator::GetMeshItemType() const
-{
-	return m_itemType;
-}
-
-void FSMeshDataGenerator::SetMeshItemType(unsigned int meshItem)
-{
-	m_itemType = meshItem;
-}
 
 //=============================================================================
 int FSNodeDataGenerator::m_nref = 1;

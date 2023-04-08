@@ -91,6 +91,8 @@ public:
 	Param* getParam(const QModelIndex& index);
 	FSProperty* getProperty(const QModelIndex& index);
 
+	FSProperty* getSelectedProperty();
+
 protected:
 	void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 	void drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -113,6 +115,8 @@ public:
 
 	void SetFEClass(FSCoreBase* pc, FSModel* fem);
 	FSProperty* getProperty(const QModelIndex& index);
+
+	FSProperty* getSelectedProperty();
 
 private slots:
 	void on_clicked(const QModelIndex& index);

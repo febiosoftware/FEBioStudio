@@ -65,13 +65,14 @@ SOFTWARE.*/
 #include "Logger.h"
 #include <sstream>
 #include <QTextStream>
+#include "units.h"
 
 using std::stringstream;
 
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 
-void VIEW_SETTINGS::Defaults(int ntheme)
+void GLViewSettings::Defaults(int ntheme)
 {
 	m_bgrid = true;
 	m_bmesh = true;
@@ -697,7 +698,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";
-	else if (dynamic_cast<FSPart*>(po)) return "element selection";
+	else if (dynamic_cast<FSElemSet*>(po)) return "element selection";
 	else if (dynamic_cast<FSSurface*>(po)) return "face selection";
 	else if (dynamic_cast<FSEdgeSet*>(po)) return "edge selection";
 	else if (dynamic_cast<FSNodeSet*>(po)) return "node selection";
@@ -760,7 +761,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		if (elemData) return "Element data";
 
 		FEPartData* partData = dynamic_cast<FEPartData*>(po);
-		if (partData) return "Element data";
+		if (partData) return "Part data";
 
 		assert(false);
 		return "Mesh data";
@@ -834,37 +835,6 @@ void CGLDocument::LoadResources(IArchive& ar)
 
 		ar.CloseChunk();
 	}
-}
-
-//-----------------------------------------------------------------------------
-// import image data
-
-bool CGLDocument::ImportImage(Post::CImageModel* imgModel)
-{
-    static int n = 1;
-
-    CDlgStartImageThread dlg(new CImageReadThread(imgModel), m_wnd);
-
-    if(!dlg.exec())
-    {
-        return false;
-    }
-
-    if(imgModel->GetImageSource()->GetName().empty())
-    {
-        stringstream ss;
-        ss << "ImageModel" << n++;
-        imgModel->SetName(ss.str());
-    }
-    else
-    {
-        imgModel->SetName(imgModel->GetImageSource()->GetName());
-    }
-
-    // add it to the project
-    AddImageModel(imgModel);
-
-    return true;
 }
 
 int CGLDocument::ImageModels() const
@@ -945,11 +915,20 @@ bool CGLDocument::AutoSaveDocument()
 		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
 
 		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
-
+		SetModifiedFlag(false);
 		return success;
 	}
 	else
 		return false;
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::Activate()
+{
+	CDocument::Activate();
+
+	// make sure the correct unit system is active
+	Units::SetUnitSystem(m_units);
 }
 
 //-----------------------------------------------------------------------------

@@ -57,6 +57,8 @@ class FEBioStudioProject;
 class CGLView;
 class CImageSliceView;
 class GObject;
+class FSPairedInterface;
+
 enum class ImageFileType;
 
 namespace Ui {
@@ -66,6 +68,7 @@ namespace Ui {
 namespace Post {
 	class CGLModel;
 	class CGLObject;
+	class CImageModel;
 }
 
 class CMainWindow : public QMainWindow
@@ -314,6 +317,7 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
+	bool ImportImage(Post::CImageModel* imgModel);
 
 public slots:
 	void on_actionNewModel_triggered();
@@ -405,7 +409,8 @@ public slots:
 	void on_actionAddMaterial_triggered();
 	void on_actionAddMeshAdaptor_triggered();
 	void on_actionAddLoadController_triggered();
-	void on_actionAddMeshData_triggered();
+	void on_actionAddMeshDataMap_triggered();
+	void on_actionAddMeshDataGenerator_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
@@ -494,11 +499,13 @@ public slots:
 	void on_actionViewVPNext_triggered();
 	void on_actionSyncViews_triggered();
 	void on_actionToggleConnected_triggered();
+	void on_actionToggleFPS_triggered();
 
 	void on_actionUpdate_triggered(bool dev = false);
 	void on_actionFEBioURL_triggered();
 	void on_actionFEBioUM_triggered();
 	void on_actionFEBioTM_triggered();
+	void on_actionFBSManual_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
 	void on_actionFEBioPubs_triggered();
@@ -621,6 +628,8 @@ public slots:
 	void DeleteAllJobs();
 	void OnDeleteAllLoadControllers();
 	void OnDeleteAllMeshData();
+
+	void OnReplaceContactInterface(FSPairedInterface* pci);
 
 	CGLView* GetGLView();
     CImageSliceView* GetImageSliceView();

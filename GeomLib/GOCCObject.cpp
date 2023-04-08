@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GOCCObject.h"
 #include <MeshTools/NetGenMesher.h>
-#include <MeshLib/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <MeshLib/FEMesh.h>
 
 #ifdef HAS_OCC
@@ -184,7 +184,7 @@ void GOCCObject::BuildGMesh()
 	}
 
 	// create a new GMesh object
-	GLMesh* gmesh = new GLMesh;
+	GMesh* gmesh = new GMesh;
 	gmesh->Create(aNbNodes, aNbTriangles, aNbEdges);
 
 	Standard_Integer aNodeOffset = 0;
@@ -338,10 +338,8 @@ bool GOCCBottle::Update(bool b)
 	// build the GObject structure
 	BuildGObject();
 
-	// build the viz mesh
-	BuildGMesh();
+	return GObject::Update();
 
-	return true;
 #else
 	return false;
 #endif // HAS_OCC

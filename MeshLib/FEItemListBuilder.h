@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include "FEItemList.h"
-#include <list>
+#include <vector>
 
 //-----------------------------------------------------------------------------
 enum ITEMLIST_TYPE {
@@ -38,7 +38,8 @@ enum ITEMLIST_TYPE {
 	FE_NODESET,
 	FE_EDGESET,
 	FE_SURFACE,
-	FE_PART,
+	FE_ELEMSET,
+	FE_PARTSET
 };
 
 //-----------------------------------------------------------------------------
@@ -71,19 +72,19 @@ enum MESH_ITEM_FLAGS
 class FEItemListBuilder : public FSObject
 {
 public:
-	enum {ID, NAME, MESHID, SIZE, ITEM};
+	enum { ID, NAME, MESHID, SIZE, ITEM };
 
-	typedef std::list<int>::iterator Iterator;
-	typedef std::list<int>::const_iterator ConstIterator;
+	typedef std::vector<int>::iterator Iterator;
+	typedef std::vector<int>::const_iterator ConstIterator;
 
 public:
 	FEItemListBuilder(int ntype, unsigned int flags);
 
-	virtual FSNodeList*	BuildNodeList() = 0;
-	virtual FEEdgeList*	BuildEdgeList() = 0;
-	virtual FEFaceList*	BuildFaceList() = 0;
-	virtual FEElemList*	BuildElemList() = 0;
-	
+	virtual FSNodeList* BuildNodeList() = 0;
+	virtual FEEdgeList* BuildEdgeList() = 0;
+	virtual FEFaceList* BuildFaceList() = 0;
+	virtual FEElemList* BuildElemList() = 0;
+
 	virtual FEItemListBuilder* Copy() = 0;
 
 	virtual bool IsValid() const;
@@ -92,7 +93,7 @@ public:
 
 	void clear() { m_Item.clear(); }
 	void add(int n) { m_Item.push_back(n); }
-	void add(const std::list<int>& nodeList);
+	void add(const std::vector<int>& nodeList);
 	void remove(int i);
 	int size() const { return (int)m_Item.size(); }
 	Iterator begin() { return m_Item.begin(); }
@@ -110,15 +111,24 @@ public:
 
 	int Type() { return m_ntype; }
 
-	void Merge(std::list<int>& o);
-	void Subtract(std::list<int>& o);
+	void Merge(std::vector<int>& o);
+	void Subtract(std::vector<int>& o);
 
-	std::list<int> CopyItems() { return m_Item; }
+	std::vector<int> CopyItems() { return m_Item; }
+
+	int operator [] (size_t n) const { return m_Item[n]; }
+
+public:
+	int GetReferenceCount() const;
+	void IncRef();
+	void DecRef();
 
 protected:
-	std::list<int>	m_Item;
+	std::vector<int>	m_Item;
 
 	int	m_ntype;
+
+	int m_refs;	// reference count
 
 	unsigned int	m_flags;
 

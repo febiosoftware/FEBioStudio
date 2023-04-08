@@ -77,6 +77,8 @@ public:
 
 	FSFace& Face(int i) { return m_Face[i]; }
 
+	const vector<FSFace>& FaceList() const { return m_Face; }
+
 private:
 	vector<FSFace>	m_Face;
 };
@@ -102,7 +104,7 @@ protected:
 	vector<EDGE>	m_Edge;
 };
 
-class CGLModel : public CGLVisual
+class CGLModel : public FSObject
 {
 public:
 	CGLModel(FEPostModel* ps);
@@ -187,7 +189,7 @@ public:
 
 public:
 	// call this to render the model
-	void Render(CGLContext& rc) override;
+	void Render(CGLContext& rc);
 
 	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
@@ -201,6 +203,7 @@ public:
 	void RenderSurface(FEPostModel* ps, CGLContext& rc);
 
 public:
+	void RenderMeshLines(CGLContext& rc);
 	void RenderOutline(CGLContext& rc, int nmat = -1);
 	void RenderNormals(CGLContext& rc);
 	void RenderGhost  (CGLContext& rc);

@@ -103,6 +103,5 @@ bool GDisc::Update(bool b)
 	m_Node[3]->LocalPosition() = vec3d( 0,-R, 0);
 	m_Node[4]->LocalPosition() = vec3d( 0, 0, 0);
 
-	BuildGMesh();
-	return true;
+	return GObject::Update();
 }

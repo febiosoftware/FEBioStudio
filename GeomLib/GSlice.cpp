@@ -68,9 +68,7 @@ bool GSlice::Update(bool b)
 	m_Node[4]->LocalPosition() = vec3d(m_R, 0, m_H);
 	m_Node[5]->LocalPosition() = vec3d(  x, y, m_H);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------

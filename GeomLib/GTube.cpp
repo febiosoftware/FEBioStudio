@@ -86,9 +86,7 @@ bool GTube::Update(bool b)
 	m_Node[16]->LocalPosition() = vec3d(  0, 0, 0);
 	m_Node[17]->LocalPosition() = vec3d(  0, 0, H);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------

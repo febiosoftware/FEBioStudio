@@ -80,6 +80,8 @@ VTKimport::VTKimport(FEPostModel* fem) : FEFileReader(fem)
 	m_readingPointData = false;
 	m_readingCellData = false;
 	m_vtk = nullptr;
+	m_currentTime = 0.0;
+	m_fileCount = 0;
 }
 
 VTKimport::~VTKimport(void)
@@ -111,7 +113,7 @@ bool VTKimport::Load(const char* szfile)
 	if (UpdateModel() == false) return false;
 
 	// build the state 
-	if (BuildState(0) == false) return false;
+	if (BuildState(m_currentTime) == false) return false;
 
 	// This file might be part of a series, so check and try to read it in
 	if (ProcessSeries(szfile) == false) return false;
@@ -151,10 +153,10 @@ bool VTKimport::ProcessSeries(const char* szfile)
 
 		char szfilen[1024] = { 0 };
 
-		int nfile = nroot;
+		m_fileCount = nroot;
 		do {
-			nfile++;
-			sprintf(szfilen, szfmt, nfile);
+			m_fileCount++;
+			sprintf(szfilen, szfmt, m_fileCount);
 
 			delete m_vtk;
 			m_vtk = new VTKModel;
@@ -172,7 +174,7 @@ bool VTKimport::ProcessSeries(const char* szfile)
 			if (m_vtk->m_el.size() != pm->Elements()) break;
 
 			// build the state
-			if (BuildState(nfile) == false) return false;
+			if (BuildState(m_currentTime) == false) return false;
 		} while (true);
 	}
 
@@ -255,6 +257,11 @@ bool VTKimport::readHeader()
 
 	// skip the second line (title)
 	ch = fgets(szline, 255, m_fp); if (ch == 0) return false;
+	if (strncmp(szline, "time", 4) == 0)
+	{
+		m_currentTime = atof(szline + 4);
+	}
+	else m_currentTime = m_fileCount;
 
 	// third line should be BINARY or ASCII (we only support ASCII)
 	ch = fgets(szline, 255, m_fp); if (ch == 0) return false;

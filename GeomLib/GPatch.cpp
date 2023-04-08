@@ -68,9 +68,7 @@ bool GPatch::Update(bool b)
 		n.LocalPosition() = vec3d(x[i], y[i], 0);
 	}
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------

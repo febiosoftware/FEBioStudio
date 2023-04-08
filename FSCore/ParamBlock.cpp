@@ -1017,6 +1017,18 @@ ParamBlock& ParamBlock::operator =(const ParamBlock &b)
 	return *this;
 }
 
+void ParamBlock::Copy(const ParamBlock& b)
+{
+	assert(b.m_Param.size() == m_Param.size());
+	for (int i = 0; i < b.m_Param.size(); ++i)
+	{
+		const Param& s = b[i];
+		Param& p = *m_Param[i];
+		p = s;
+	}
+}
+
+
 //-----------------------------------------------------------------------------
 void ParamBlock::ClearParamGroups()
 {
@@ -1308,6 +1320,19 @@ void ParamContainer::CopyParams(const ParamContainer& pc)
 		const Param& pj = pc.GetParam(i);
 		assert(pi.GetParamType() == pj.GetParamType());
 		pi = pj;
+	}
+}
+
+void ParamContainer::MapParams(const ParamContainer& pc)
+{
+	for (int i = 0; i < Parameters(); ++i)
+	{
+		const Param& pi = pc.GetParam(i);
+		Param* p = GetParam(pi.GetShortName());
+		if (p && (p->GetParamType() == pi.GetParamType()))
+		{
+			*p = pi;
+		}
 	}
 }
 

@@ -50,7 +50,9 @@ int closest_pow2(int n)
 C3DImage::C3DImage()
 {
 	m_pb = 0;
-	m_cx = m_cy = m_cz = 0;
+	m_cx = m_cy = m_cz = 0; 
+	m_bps = 1;
+    m_pixelType = UINT_8;
 
     m_box = BOX(0., 0., 0., 1., 1., 1.);
 }
@@ -67,60 +69,56 @@ void C3DImage::CleanUp()
 	m_cx = m_cy = m_cz = 0;
 }
 
-bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize)
+bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int pixelType)
 {
     // Check to make sure this does not allocate memory of size 0.
     if(nx*ny*nz == 0)
       return false;
 
 	// reallocate data if necessary
-	if (nx*ny*nz != m_cx*m_cy*m_cz)
+	if ((nx*ny*nz != m_cx*m_cy*m_cz) || (m_pixelType != pixelType))
 	{
-	  CleanUp();
+	    CleanUp();
 
-      if(data == nullptr)
-      {
-        if(dataSize == 0)
-          m_pb = new Byte[nx*ny*nz];
+        m_pixelType = pixelType;
+
+        if(pixelType == INT_8 || pixelType == UINT_8)
+        {
+            m_bps = 1;
+        }
+        else if(pixelType == INT_16 || pixelType == UINT_16)
+        {
+            m_bps = 2;
+        }
+        else if(pixelType == INT_RGB8 || pixelType == UINT_RGB8)
+        {
+            m_bps = 3;
+        }
+        else if(pixelType == INT_RGB16 || pixelType == UINT_RGB16)
+        {
+            m_bps = 6;
+        }
         else
-          m_pb = new Byte[dataSize];
+        {
+            assert(false);
+        }
 
-        if (m_pb == nullptr) return false;
-      }
-      else
-        m_pb = data;
+        if(data == nullptr)
+        {
+            if(dataSize == 0)
+                m_pb = new Byte[nx*ny*nz*m_bps];
+            else
+                m_pb = new Byte[dataSize];
+
+            if (m_pb == nullptr) return false;
+        }
+        else
+            m_pb = data;
 	}
 
 	m_cx = nx;
 	m_cy = ny;
 	m_cz = nz;
-
-	return true;
-}
-
-bool C3DImage::LoadFromFile(const char* szfile, int nbits)
-{
-	FILE* fp = fopen(szfile, "rb");
-	if (fp == 0) return false;
-
-	size_t nsize = m_cx*m_cy*m_cz;
-	if (nbits == 16)
-	{
-		word* m_ptmp = new word[nsize];
-		size_t nread = fread(m_ptmp, sizeof(word), nsize, fp);
-		for(size_t i=0; i<nsize; i++)
-			m_pb[i] = m_ptmp[i] >> 8;
-		delete [] m_ptmp;
-		if (nsize != nread) return false;
-	}
-	else
-	{
-		size_t nread = fread(m_pb, 1, nsize, fp);
-		if (nsize != nread) return false;
-	}
-
-	// cleanup
-	fclose(fp);
 
 	return true;
 }

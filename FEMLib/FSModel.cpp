@@ -238,7 +238,8 @@ FSModel::FSModel() : m_skipGeometry(false)
     varAVel->AddDOF("Z-fluid angular velocity", "gz");
     
 	// define model parameters
-	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Absolute temperature");
+	AddScienceParam(0, UNIT_TEMPERATURE, "T", "Referential absolute temperature");
+    AddScienceParam(0, UNIT_PRESSURE, "P", "Referential absolute pressure");
 	AddScienceParam(0, UNIT_GAS_CONSTANT, "R", "Gas constant");
 	AddScienceParam(0, UNIT_FARADAY_CONSTANT, "Fc", "Faraday's constant");
 }
@@ -1261,6 +1262,25 @@ void FSModel::New()
 }
 
 //-----------------------------------------------------------------------------
+int FSModel::CountMeshDataFields()
+{
+	// count the mesh data fields on the meshes
+	GModel& mdl = GetModel();
+	int total = 0;
+	for (int i = 0; i < mdl.Objects(); ++i)
+	{
+		GObject* po = mdl.Object(i);
+		FSMesh* mesh = po->GetFEMesh();
+		if (mesh) total += mesh->MeshDataFields();
+	}
+
+	// add the data generators
+	total += MeshDataGenerators();
+
+	return total;
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::Save(OArchive& ar)
 {
 	// save model data
@@ -1430,8 +1450,6 @@ void FSModel::Load(IArchive& ar)
 	// clear the model
 	Clear();
 
-	GPartList::SetModel(this);
-
     m_pModel->SetLoadOnlyDiscreteFlag(m_skipGeometry);
 
 	// read the model data
@@ -1452,7 +1470,13 @@ void FSModel::Load(IArchive& ar)
 		ar.CloseChunk();
 	}
 
-	GPartList::SetModel(nullptr);
+	// update materials item lists
+	// (This is needed so that the rigid material's glyphs can be positioned correctly.)
+	for (int i = 0; i < Materials(); ++i)
+	{
+		GMaterial* pm = GetMaterial(i);
+		pm->GetItemList();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1568,6 +1592,8 @@ void FSModel::LoadSteps(IArchive& ar)
 		case FE_STEP_REACTION_DIFFUSION : ps = new FSReactionDiffusionAnalysis(this); break;
         case FE_STEP_POLAR_FLUID        : ps = new FSPolarFluidAnalysis (this); break;
 		case FE_STEP_FEBIO_ANALYSIS     : ps = new FEBioAnalysisStep(this); break;
+        case FE_STEP_FLUID_SOLUTES      : ps = new FSFluidSolutesAnalysis(this); break;
+        case FE_STEP_THERMO_FLUID       : ps = new FSThermoFluidAnalysis(this); break;
 		default:
 			throw ReadError("unknown CID in FSModel::LoadSteps");
 		}
@@ -1966,19 +1992,22 @@ void FSModel::ClearSelections()
 		for (int i=0; i<step->BCs(); ++i)
 		{
 			FSBoundaryCondition* pbc = step->BC(i);
-			delete pbc->GetItemList(); pbc->SetItemList(0);
+			FEItemListBuilder* pi = pbc->GetItemList();
+			pbc->SetItemList(0); delete pi;
 		}
 
 		for (int i=0; i<step->Loads(); ++i)
 		{
 			FSLoad* pl = step->Load(i);
-			delete pl->GetItemList(); pl->SetItemList(0);
+			FEItemListBuilder* pi = pl->GetItemList();
+			pl->SetItemList(0); delete pi;
 		}
 
 		for (int i = 0; i<step->ICs(); ++i)
 		{
 			FSInitialCondition* pic = step->IC(i);
-			delete pic->GetItemList(); pic->SetItemList(0);
+			FEItemListBuilder* pi = pic->GetItemList();
+			pic->SetItemList(0); delete pi;
 		}
 
 		for (int i=0; i<step->Interfaces(); ++i)
@@ -1988,20 +2017,22 @@ void FSModel::ClearSelections()
 			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
 				FSSoloInterface* pc = dynamic_cast<FSSoloInterface*>(pi);
-				delete pc->GetItemList(); pc->SetItemList(0);
+				FEItemListBuilder* pi = pc->GetItemList();
+				pc->SetItemList(0); delete pi;
 			}
 			else if (dynamic_cast<FSPairedInterface*>(pi))
 			{
 				FSPairedInterface* pc = dynamic_cast<FSPairedInterface*>(pi);
-				delete pc->GetSecondarySurface(); pc->SetSecondarySurface(0);
-				delete pc->GetPrimarySurface(); pc->SetPrimarySurface(0);
+				FEItemListBuilder* pi1 = pc->GetPrimarySurface(); pc->SetPrimarySurface(0); delete pi1;
+				FEItemListBuilder* pi2 = pc->GetSecondarySurface(); pc->SetSecondarySurface(0); delete pi2;
 			}
 		}
 
 		for (int i = 0; i < step->Constraints(); ++i)
 		{
 			FSModelConstraint* mc = step->Constraint(i);
-			delete mc->GetItemList(); mc->SetItemList(0);
+			FEItemListBuilder* pi = mc->GetItemList();
+			mc->SetItemList(0); delete pi;
 		}
 	}
 }
@@ -2345,6 +2376,14 @@ void FSModel::UpdateLoadControllerReferenceCounts()
 		GMaterial* mat = GetMaterial(i);
 		FSMaterial* pm = mat->GetMaterialProperties();
 		if (pm) UpdateLCRefsCount(pm, LCT);
+	}
+
+	// process discrete
+	GModel& gm = GetModel();
+	for (int i=0; i<gm.DiscreteObjects(); ++i)
+	{ 
+		GDiscreteSpringSet* po = dynamic_cast<GDiscreteSpringSet*>(gm.DiscreteObject(i));
+		if (po && po->GetMaterial()) UpdateLCRefsCount(po->GetMaterial(), LCT);
 	}
 
 	// process Steps

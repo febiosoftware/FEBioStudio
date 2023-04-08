@@ -325,19 +325,21 @@ void CScalarFieldTool::OnApply()
 	{
 		// create element data
 		int parts = po->Parts();
-		vector<int> partList;
+		FSPartSet* partSet = new FSPartSet(po);
+		partSet->SetName(name.toStdString());
 		for (int i = 0; i < parts; ++i)
 		{
 			GPart* pg = po->Part(i);
 			if (pg->GetMaterialID() == matId)
 			{
-				partList.push_back(i);
+				partSet->add(i);
 			}
 		}
+		po->AddFEPartSet(partSet);
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -359,19 +361,21 @@ void CScalarFieldTool::OnApply()
 	{
 		// create element data
 		int parts = po->Parts();
-		vector<int> partList;
+		FSPartSet* partSet = new FSPartSet(po);
+		partSet->SetName(name.toStdString());
 		for (int i = 0; i < parts; ++i)
 		{
 			GPart* pg = po->Part(i);
 			if (pg->GetMaterialID() == matId)
 			{
-				partList.push_back(i);
+				partSet->add(i);
 			}
 		}
+		po->AddFEPartSet(partSet);
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -390,9 +394,15 @@ void CScalarFieldTool::OnApply()
 	}
 	else
 	{
+		// create a node set from the mesh
+		FSNodeSet* nodeSet = new FSNodeSet(po);
+		nodeSet->CreateFromMesh();
+		nodeSet->SetName(name.toStdString());
+		po->AddFENodeSet(nodeSet);
+
 		// create node data
-		FENodeData* pdata = pm->AddNodeDataField(name.toStdString());
-		for (int i = 0; i < NN; i++) pdata->set(i, val[i]);
+		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, FEMeshData::DATA_SCALAR);
+		for (int i = 0; i < NN; i++) pdata->SetScalar(i, val[i]);
 	}
 
 	Clear();

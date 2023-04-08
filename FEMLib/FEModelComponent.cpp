@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "FSModel.h"
 #include "FECoreMaterial.h"	// for FEElementRef
 #include "FEMaterial.h" // for fiber generator defines
+#include <MeshLib/FEElementData.h>
 #include <exception>
 #include <sstream>
 
@@ -282,6 +283,11 @@ bool FSVec3dValuator::UpdateData(bool bsave)
 {
 	const char* sztype = GetTypeString();
 	if (sztype && (strcmp(sztype, "user" ) == 0)) m_naopt = FE_FIBER_USER;
+	if (sztype && (strcmp(sztype, "map") == 0))
+	{
+		m_naopt = FE_FIBER_MAP;
+		m_map = GetParam("map")->GetStringValue();
+	}
 	if (sztype && (strcmp(sztype, "local") == 0))
 	{
 		m_naopt = FE_FIBER_LOCAL;
@@ -320,6 +326,39 @@ vec3d FSVec3dValuator::GetFiberVector(const FEElementRef& el)
 			v.unit();
 		}
 		return v;
+	}
+	break;
+	case FE_FIBER_MAP:
+	{
+		FSMesh* pm = dynamic_cast<FSMesh*>(el.m_pmesh);
+		if (pm)
+		{
+			FEMeshData* pmd = pm->FindMeshDataField(m_map);
+			if (pmd)
+			{
+				FEElementData* ped = dynamic_cast<FEElementData*>(pmd);
+				FEPartData* ppd = dynamic_cast<FEPartData*>(pmd);
+				if (ped)
+				{
+					double d[3];
+					ped->get(el.m_nelem, d);
+					return vec3d(d[0], d[1], d[2]);
+				}
+				if (ppd)
+				{
+					int m = ppd->GetElementIndex(el.m_nelem);
+					if (m >= 0)
+					{
+						double d[3];
+						d[0] = ppd->get(3 * m);
+						d[1] = ppd->get(3 * m + 1);
+						d[2] = ppd->get(3 * m + 2);
+						return vec3d(d[0], d[1], d[2]);
+					}
+				}
+			}
+		}
+		return vec3d(0, 0, 0);
 	}
 	break;
 	}

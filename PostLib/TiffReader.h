@@ -30,6 +30,8 @@ SOFTWARE.*/
 
 class CTiffImageSource : public Post::CImageSource
 {
+	class Impl;
+
 public:
 	CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename);
 	CTiffImageSource(Post::CImageModel* imgModel);
@@ -41,13 +43,5 @@ public:
 	void Load(IArchive& ar) override;
 
 private:
-	bool readImage();
-
-private:
-	std::string m_filename;
-	bool	m_bigE;
-	FILE* m_fp;
-	std::vector<Byte*>	m_pd;
-	int	m_cx, m_cy;
-	int	m_bits;
+	Impl* m;
 };

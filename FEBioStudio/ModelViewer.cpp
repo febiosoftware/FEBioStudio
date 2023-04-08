@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QInputDialog>
 #include "DlgEditOutput.h"
+#include "DlgAddMeshData.h"
 #include "MaterialEditor.h"
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
@@ -315,6 +316,11 @@ void CModelViewer::on_syncButton_clicked()
     }
 }
 
+void CModelViewer::on_refreshButton_clicked()
+{
+	Update(false);
+}
+
 void CModelViewer::on_selectButton_clicked()
 {
 	// make sure we have an object
@@ -329,10 +335,18 @@ void CModelViewer::on_selectButton_clicked()
 		GObject* pm = dynamic_cast<GObject*>(po);
 		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
-	else if (dynamic_cast<IHasItemList*>(po))
+	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
-		IHasItemList* pil = dynamic_cast<IHasItemList*>(po);
-		FEItemListBuilder* pitem = pil->GetItemList();
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
+		FEItemListBuilder* ps1 = pci->GetPrimarySurface();
+		FEItemListBuilder* ps2 = pci->GetSecondarySurface();
+		if (ps1) SelectItemList(ps1);
+		if (ps2) SelectItemList(ps2);
+	}
+	else if (dynamic_cast<IHasItemLists*>(po))
+	{
+		IHasItemLists* pil = dynamic_cast<IHasItemLists*>(po);
+		FEItemListBuilder* pitem = pil->GetItemList(0);
 		if (pitem) SelectItemList(pitem);
 	}
 	else if (dynamic_cast<FEItemListBuilder*>(po))
@@ -367,18 +381,6 @@ void CModelViewer::on_selectButton_clicked()
 		GModel& fem = pdoc->GetFSModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
-	}
-	else if (dynamic_cast<FSPairedInterface*>(po))
-	{
-		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
-		FEItemListBuilder* pml = pci->GetSecondarySurface();
-		FEItemListBuilder* psl = pci->GetPrimarySurface();
-
-		if (pml == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(pml);
-
-		if (psl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(psl, true);
 	}
 	else if (dynamic_cast<GMaterial*>(po))
 	{
@@ -418,7 +420,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
 	case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
 	case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
-	case FE_PART:
+	case FE_ELEMSET:
 		{
 			pdoc->SetSelectionMode(SELECT_OBJECT);
 			pdoc->SetItemMode(ITEM_ELEM);
@@ -522,6 +524,11 @@ void CModelViewer::on_props_dataChanged(bool b)
 		CMainWindow* wnd = GetMainWindow();
 		wnd->RedrawGL();
 	}
+}
+
+void CModelViewer::on_props_modelChanged()
+{
+	Update();
 }
 
 void CModelViewer::on_filter_currentIndexChanged(int n)
@@ -1060,7 +1067,10 @@ void CModelViewer::OnChangeMaterial()
 	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, &fem, false, false, this);
 	if (dlg.exec())
 	{
-		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
+        int id = dlg.GetClassID();
+        if(id == -1) return;
+
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
 			gmat->SetMaterialProperties(pmat);
@@ -1563,7 +1573,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_MATERIAL_LIST:
 	{
 		menu.addAction("Add Material ...", wnd, SLOT(on_actionAddMaterial_triggered()));
-		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
+//		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
 
 		QMenu* sub = new QMenu("Import Materials");
 		QAction* ac = sub->addAction("From FEBio file ...");
@@ -1724,8 +1734,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(data->obj);
 		if (pci)
 		{
-			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
+			menu.addAction("Replace ...", this, SLOT(OnReplaceContactInterface()));
+			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapContactSurfaces()));
 		}
+
 		del = true;
 	}
 	break;
@@ -1777,10 +1789,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_MESH_DATA_LIST:
-		menu.addAction("Add Mesh Data ..."   , wnd, SLOT(on_actionAddMeshData_triggered()));
+		menu.addAction("Add mesh data map ..."   , wnd, SLOT(on_actionAddMeshDataMap_triggered()));
+		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(on_actionAddMeshDataGenerator_triggered()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:
+		menu.addAction("Edit ...", this, SLOT(OnEditMeshData()));
 		del = true;
 		break;
 	case MT_JOBLIST:
@@ -1856,7 +1870,7 @@ void CModelViewer::OnDeleteAllMaterials()
 	GetMainWindow()->DeleteAllMaterials();
 }
 
-void CModelViewer::OnSwapMasterSlave()
+void CModelViewer::OnSwapContactSurfaces()
 {
 	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pci)
@@ -1865,6 +1879,16 @@ void CModelViewer::OnSwapMasterSlave()
 		UpdateObject(m_currentObject);
 	}
 }
+
+void CModelViewer::OnReplaceContactInterface()
+{
+	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
+	if (pci)
+	{
+		GetMainWindow()->OnReplaceContactInterface(pci);
+	}
+}
+
 
 void CModelViewer::OnDeleteAllBC()
 {
@@ -1907,4 +1931,13 @@ void CModelViewer::OnDeleteAllSteps()
 void CModelViewer::OnDeleteAllJobs()
 {
 	GetMainWindow()->DeleteAllJobs();
+}
+
+void CModelViewer::OnEditMeshData()
+{
+	FEMeshData* data = dynamic_cast<FEMeshData*>(m_currentObject);
+	if (data == nullptr) return;
+
+	CDlgEditMeshData dlg(data, this);
+	dlg.exec();
 }

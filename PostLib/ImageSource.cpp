@@ -134,7 +134,7 @@ bool CRawImageSource::Load()
         return false;
     }
 
-    if (im->LoadFromFile(m_filename.c_str(), 8) == false)
+    if (LoadFromFile(m_filename.c_str(), im, 8) == false)
     {
         delete im;
         return false;
@@ -145,6 +145,37 @@ bool CRawImageSource::Load()
     AssignImage(im);
 
     return true;
+}
+
+bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im, int nbits)
+{
+	FILE* fp = fopen(szfile, "rb");
+	if (fp == 0) return false;
+
+	size_t nsize = m_nx * m_ny * m_nz;
+	if (nsize == 0) return false;
+
+	Byte* buf = im->GetBytes();
+
+	if (nbits == 16)
+	{
+		word* m_ptmp = new word[nsize];
+		size_t nread = fread(m_ptmp, sizeof(word), nsize, fp);
+		for (size_t i = 0; i < nsize; i++)
+			buf[i] = m_ptmp[i] >> 8;
+		delete[] m_ptmp;
+		if (nsize != nread) return false;
+	}
+	else
+	{
+		size_t nread = fread(buf, 1, nsize, fp);
+		if (nsize != nread) return false;
+	}
+
+	// cleanup
+	fclose(fp);
+
+	return true;
 }
 
 void CRawImageSource::Save(OArchive& ar)

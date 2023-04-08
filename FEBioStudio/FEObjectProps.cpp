@@ -755,7 +755,7 @@ void CLogfileProperties::Update()
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
 		FSLogData& ld = log.LogData(i);
-		addProperty(QString::fromStdString(ld.sdata), CProperty::Bool)->setFlags(CProperty::Visible);
+		addProperty(QString::fromStdString(ld.GetDataString()), CProperty::Bool)->setFlags(CProperty::Visible);
 	}
 
 	addProperty("", CProperty::Action, "Edit log variables ...");

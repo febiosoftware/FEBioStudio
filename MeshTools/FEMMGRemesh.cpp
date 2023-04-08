@@ -68,7 +68,7 @@ FSMesh* MMGRemesh::Apply(FSGroup* pg)
 	if (pm == nullptr) return nullptr;
 	if (pm->IsType(FE_TET4) == false) return Apply(pm);
 
-	if (dynamic_cast<FSPart*>(pg))
+	if (dynamic_cast<FSElemSet*>(pg))
 	{
 		pm->TagAllElements(0);
 		for (int i = 0; i < pm->Elements(); ++i)

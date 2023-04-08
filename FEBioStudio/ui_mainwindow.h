@@ -364,6 +364,7 @@ public:
 		m_theme = 0;
 		m_defaultUnits = 0;
 		m_clearUndoOnSave = true;
+		m_autoSaveInterval = 600;
 
 		measureTool = nullptr;
 		planeCutTool = nullptr;
@@ -485,7 +486,7 @@ public:
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
 		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
-        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
+//        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
         // QAction* actionReadInfo       = addAction("Read Model Info ..."   , "actionReadInfo"  , "info");;
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
@@ -693,12 +694,15 @@ public:
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
 		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S | Qt::AltModifier);
 
+		QAction* actionToggleFPS = addAction("Toggle FPS", "actionToggleFPS"); actionToggleFPS->setShortcut(Qt::Key_F12 | Qt::ControlModifier);
+
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
 		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
 		QAction* actionFEBioUM = addAction("FEBio User Manual", "actionFEBioUM");
 		QAction* actionFEBioTM = addAction("FEBio Theory Manual", "actionFEBioTM");
+		QAction* actionFBSManual = addAction("FEBio Studio Manual", "actionFBSManual");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionWelcome = addAction("Show Welcome Page", "actionWelcome");
@@ -784,7 +788,7 @@ public:
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addAction(actionNewProject);
-        menuFile->addAction(actionNewImageDoc);
+//        menuFile->addAction(actionNewImageDoc);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
         // menuFile->addAction(actionReadInfo);
@@ -993,6 +997,7 @@ public:
 		menuView->addAction(actionTrack);
 		menuView->addAction(actionToggleLight);
 		menuView->addAction(actionToggleConnected);
+		menuView->addAction(actionToggleFPS);
 		menuView->addSeparator();
 
 		menuViews = menuView->addMenu("Standard views");
@@ -1026,6 +1031,7 @@ public:
 		menuHelp->addAction(actionFEBioResources);
 		menuHelp->addAction(actionFEBioUM);
 		menuHelp->addAction(actionFEBioTM);
+		menuHelp->addAction(actionFBSManual);
 		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioPubs);
         menuHelp->addSeparator();
@@ -1227,7 +1233,7 @@ public:
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
 
-        QDockWidget* dock9 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+		QDockWidget* dock9 = new QDockWidget("3D Image Settings", m_wnd); dock8->setObjectName("dockImageSettings");
 		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
 		dock9->setWidget(imageSettingsPanel);
 		menuWindows->addAction(dock9->toggleViewAction());

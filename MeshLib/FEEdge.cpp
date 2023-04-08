@@ -169,3 +169,13 @@ vec3f FSEdge::eval(vec3f* d, double r)
 	for (int i = 0; i<Nodes(); ++i) a += d[i] * ((float)H[i]);
 	return a;
 }
+
+//-----------------------------------------------------------------------------
+vec3d FSEdge::eval(vec3d* d, double r)
+{
+	double H[FSEdge::MAX_NODES];
+	shape(H, r);
+	vec3d a(0, 0, 0);
+	for (int i = 0; i < Nodes(); ++i) a += d[i] * ((float)H[i]);
+	return a;
+}
