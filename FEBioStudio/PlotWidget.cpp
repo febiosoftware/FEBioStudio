@@ -2681,6 +2681,7 @@ void CCurveEditWidget::on_open_clicked(bool b)
 			{
 				*plc = lc;
 				SetLoadCurve(plc);
+				emit dataChanged();
 			}
 		}
 	}
