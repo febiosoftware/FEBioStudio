@@ -1,8 +1,8 @@
 on:
   #schedule:
   #  - cron: '00 7 * * *' #0630 UTC kick off full build and regression
-  # push:
-  #   branches: [ ci/* ]
+  push:
+   branches: [ ci/* ]
   workflow_dispatch:
     inputs:
       runTests:
@@ -14,7 +14,7 @@ env:
   AWS_REGION: us-east-1
   AWS_SUBNET_ID: subnet-064f21b53fc72cf44
   AWS_SG_ID: sg-0ca7912782cf1538b
-  AMI_ID: ami-019d68322b584b04a
+  AMI_ID: ami-03ec355dfb8dfb48a
   AWS_INSTANCE_TYPE: c5a.4xlarge
   AWS_AVAILABILITY_ZONE: us-east-1b
   OS: windows
@@ -58,15 +58,31 @@ jobs:
     needs:
       - start-runner # required to get output from the start-runner job
     runs-on: ${{ needs.start-runner.outputs.label }} # run the job on the newly created runner
+    outputs:
+      git_describe: ${{ steps.git-describe.outputs.git_describe }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - id: git-describe
+        run: |
+          echo "git_describe=$(git describe --tags)" >> "$GITHUB_OUTPUT"
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
       - name: Fetch latest febio-sdk
         run: |
-          ci/windows/febio-sdk.ps1
+          ci/windows/febio-sdk.bat
         env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-          ARTIFACT_NAME: febio4-sdk-Windows-X64
+          OS: ${{runner.os}}
+          FEBIO_SDK_BRANCH: ${{ github.ref_name}}
+          PACKAGE_NAME: febio
+          PACKAGE: febio-sdk-v4.1-76-g66fdd5b39.tar.gz
+          BUCKET: febio-packages
       - name: Build
         run: |
           ci/windows/build.bat
