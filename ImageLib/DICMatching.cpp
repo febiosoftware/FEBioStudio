@@ -110,6 +110,13 @@ CImageSITK CDICMatching::CreateSubsetMask()
 
 void CDICMatching::CreateMovingImages()
 {
+	std::ofstream bug;
+	bug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\match.txt");
+
+	bug << "ref center sizE: " << m_ref_center_points.size() << std::endl;
+	bug << "subSize : " << m_subSize << std::endl;
+
+
 	sitk::Image ref = m_ref_img.GetSITKImage()->GetSItkImage();
 	if (ref.GetPixelIDValue() != sitk::sitkFloat32)
 	{
@@ -130,11 +137,13 @@ void CDICMatching::CreateMovingImages()
 		int range_y_low = py - m_subSize / 2;
 		int range_y_upper = py + m_subSize / 2;
 		
+		bug << "iteration: " << ii << std::endl;
 
 		for (unsigned int j = 0; j < m_subSize; j++)
 		{
 			for (unsigned int i = 0; i < m_subSize; i++)
 			{
+				bug << "second loop" << std::endl;
 				auto val = ref.GetPixelAsFloat({ range_x_low + i,range_y_low + j });
 				sub.SetPixelAsFloat({ i,j }, val);
 			}

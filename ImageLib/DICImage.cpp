@@ -31,25 +31,6 @@ SOFTWARE.*/
 
 namespace sitk = itk::simple;
 
-// CDICRect::CDICRect(vec2i tl, vec2i br)
-//     : m_tl(tl), m_br(br)
-// {
-
-// }
-
-// CDICRect CDICRect::operator+(int val)
-// {
-//     return CDICRect(vec2i(m_tl.x + val, m_tl.y + val), vec2i(m_br.x + val, m_br.y + val));
-// }
-
-// CDICRect CDICRect::operator+(vec2i val)
-// {
-//     return CDICRect(vec2i(m_tl.x + val.x, m_tl.y + val.y), vec2i(m_br.x + val.x, m_br.y + val.y));
-// }
-
-
-
-
 CDICSubset::CDICSubset(CDICImage* image, int x0, int y0, int x1, int y1)
     : m_image(image), m_x0(x0), m_y0(y0), m_x1(x1), m_y1(y1),
         m_subset_image(x1 - x0, y1 - y0, 1)
