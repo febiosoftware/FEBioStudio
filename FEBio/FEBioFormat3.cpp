@@ -1058,14 +1058,15 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	FEBioModel& feb = GetFEBioModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
-	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
+	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 	XMLAtt* surf = tag.AttributePtr("surface");
+	XMLAtt* gen  = tag.AttributePtr("generator");
 
 	FEMeshData::DATA_TYPE dataType;
 	if (dataTypeAtt)
 	{
 		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		else if (*dataTypeAtt == "vec3") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
@@ -1073,20 +1074,50 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	FESurface* feSurf = feb.BuildFESurface(surf->cvalue());
 	FEMesh* feMesh = feSurf->GetMesh();
 
-	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
-
-	double val;
-	int lid;
-	++tag;
-	do
+	if (gen)
 	{
-		tag.AttributePtr("lid")->value(lid);
-		tag.value(val);
+		if (*gen == "const")
+		{
+			if (dataType == FEMeshData::DATA_TYPE::DATA_VEC3D)
+			{
+				vec3d v;
 
-		(*sd)[lid - 1] = val;
+				FESurfaceConstVec3d* map = new FESurfaceConstVec3d();
+				map->SetName(name->m_szval);
+				map->m_elset = surf->cvalue();
 
+				++tag;
+				do
+				{
+					if (tag == "value")
+					{
+						tag.value(v);
+					}
+					++tag;
+				} while (!tag.isend());
+
+				map->SetValue(v);
+				feb.GetFEModel().AddDataMap(map);
+			}
+		}
+	}
+	else
+	{
+		FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+
+		double val;
+		int lid;
 		++tag;
-	} while (!tag.isend());
+		do
+		{
+			tag.AttributePtr("lid")->value(lid);
+			tag.value(val);
+
+			(*sd)[lid - 1] = val;
+
+			++tag;
+		} while (!tag.isend());
+	}
 
 	return true;
 }

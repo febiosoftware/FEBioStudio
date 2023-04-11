@@ -8,9 +8,19 @@ class FEComponent;
 class FEDataMapGenerator : public FEBase
 {
 public:
-	FEDataMapGenerator();
+	enum Type {
+		NODE_DATA_GENERATOR = 1,
+		ELEM_DATA_GENERATOR = 2,
+		FACE_DATA_GENERATOR = 3
+	};
 
 public:
+	FEDataMapGenerator();
+
+	int Type() const { return m_type; }
+
+public:
+	unsigned int	m_type;
 	std::string		m_var;			// var value
 	std::string		m_generator;	// generator name
 	std::string		m_elset;		// element set
@@ -26,4 +36,13 @@ public:
 
 	std::string GetBottomSurface() const;
 	std::string GetTopSurface() const;
+};
+
+class FESurfaceConstVec3d : public FEDataMapGenerator
+{
+public:
+	FESurfaceConstVec3d();
+
+	vec3d Value() const;
+	void SetValue(const vec3d& v);
 };

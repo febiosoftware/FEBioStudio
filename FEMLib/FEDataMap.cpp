@@ -28,12 +28,14 @@ SOFTWARE.*/
 
 FEDataMapGenerator::FEDataMapGenerator()
 {
-
+	m_type = 0;
 }
 
 //======================================================================
 FESurfaceToSurfaceMap::FESurfaceToSurfaceMap()
 {
+	m_type = ELEM_DATA_GENERATOR;
+
 	AddStringParam("", "bottom_surface", "Bottom surface");
 	AddStringParam("", "top_surface"   , "Top surface");
 	AddDoubleParam(1.0, "function");
@@ -44,3 +46,22 @@ void FESurfaceToSurfaceMap::SetTopSurface(const std::string& surfName) { SetStri
 
 std::string FESurfaceToSurfaceMap::GetBottomSurface() const { return GetStringValue(0); }
 std::string FESurfaceToSurfaceMap::GetTopSurface() const { return GetStringValue(1); }
+
+//======================================================================
+FESurfaceConstVec3d::FESurfaceConstVec3d()
+{
+	m_type = FACE_DATA_GENERATOR;
+	AddVecParam(vec3d(0, 0, 0), "value");
+
+	m_generator = "const";
+}
+
+vec3d FESurfaceConstVec3d::Value() const
+{
+	return GetVecValue(0);
+}
+
+void FESurfaceConstVec3d::SetValue(const vec3d& v)
+{
+	SetVecValue(0, v);
+}

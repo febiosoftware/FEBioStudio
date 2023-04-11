@@ -3249,45 +3249,64 @@ void FEBioExport3::WriteElementDataSection()
 //-----------------------------------------------------------------------------
 void FEBioExport3::WriteMeshData(FEDataMapGenerator* map)
 {
-	XMLElement meshData("ElementData");
-	meshData.add_attribute("var", map->m_var);
-	meshData.add_attribute("generator", map->m_generator);
-	meshData.add_attribute("elem_set", map->m_elset);
-
-
-	m_xml.add_branch(meshData);
+	if (map->Type() == FEDataMapGenerator::ELEM_DATA_GENERATOR)
 	{
-		FESurfaceToSurfaceMap* s2s = dynamic_cast<FESurfaceToSurfaceMap*>(map);
-		if (s2s)
+		XMLElement meshData("ElementData");
+		meshData.add_attribute("var", map->m_var);
+		meshData.add_attribute("generator", map->m_generator);
+		meshData.add_attribute("elem_set", map->m_elset);
+
+		m_xml.add_branch(meshData);
 		{
-			string bottomSurf = s2s->GetBottomSurface();
-			string topSurf    = s2s->GetTopSurface();
-			m_xml.add_leaf("bottom_surface", bottomSurf);
-			m_xml.add_leaf("top_surface"   , topSurf);
-			
-			XMLElement e("function");
-			e.add_attribute("type", "point");
-			m_xml.add_branch(e);
+			FESurfaceToSurfaceMap* s2s = dynamic_cast<FESurfaceToSurfaceMap*>(map);
+			if (s2s)
 			{
-				Param* p = s2s->GetParam("function");
-				if (p->GetLoadCurve())
+				string bottomSurf = s2s->GetBottomSurface();
+				string topSurf = s2s->GetTopSurface();
+				m_xml.add_leaf("bottom_surface", bottomSurf);
+				m_xml.add_leaf("top_surface", topSurf);
+
+				XMLElement e("function");
+				e.add_attribute("type", "point");
+				m_xml.add_branch(e);
 				{
-					FELoadCurve& lc = *p->GetLoadCurve();
-					m_xml.add_branch("points");
+					Param* p = s2s->GetParam("function");
+					if (p->GetLoadCurve())
 					{
-						for (int i = 0; i < lc.Size(); ++i)
+						FELoadCurve& lc = *p->GetLoadCurve();
+						m_xml.add_branch("points");
 						{
-							double v[2] = { lc[i].time, lc[i].load };
-							m_xml.add_leaf("point", v, 2);
+							for (int i = 0; i < lc.Size(); ++i)
+							{
+								double v[2] = { lc[i].time, lc[i].load };
+								m_xml.add_leaf("point", v, 2);
+							}
 						}
+						m_xml.close_branch();
 					}
-					m_xml.close_branch();
 				}
+				m_xml.close_branch();
 			}
-			m_xml.close_branch();
 		}
+		m_xml.close_branch();
 	}
-	m_xml.close_branch();
+	else if (map->Type() == FEDataMapGenerator::FACE_DATA_GENERATOR)
+	{
+		XMLElement meshData("SurfaceData");
+		meshData.add_attribute("name", map->GetName().c_str());
+		meshData.add_attribute("generator", map->m_generator);
+		meshData.add_attribute("surface", map->m_elset);
+
+		m_xml.add_branch(meshData);
+		{
+			FESurfaceConstVec3d* surfMap = dynamic_cast<FESurfaceConstVec3d*>(map);
+			if (surfMap)
+			{
+				m_xml.add_leaf("value", surfMap->Value());
+			}
+		}
+		m_xml.close_branch();
+	}
 }
 
 //-----------------------------------------------------------------------------
