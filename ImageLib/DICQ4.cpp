@@ -97,10 +97,10 @@ std::vector<vec2i> CDICQ4::GetNodesQ4(double ind)
 {
 	std::vector<vec2i> nodes;
 
-    nodes.push_back(m_match.GetRefImage().GetSubset(ind).Center());
-    nodes.push_back(m_match.GetRefImage().GetSubset(ind + 1).Center());
-    nodes.push_back(m_match.GetRefImage().GetSubset(ind + m_subs_per_row).Center());
-    nodes.push_back(m_match.GetRefImage().GetSubset(ind + m_subs_per_row + 1).Center());
+    nodes.push_back(m_ref_centers[ind]);
+    nodes.push_back(m_ref_centers[ind + 1]);
+    nodes.push_back(m_ref_centers[ind + m_subs_per_row]);
+    nodes.push_back(m_ref_centers[ind + m_subs_per_row + 1]);
 
 	return nodes;
 }
@@ -659,6 +659,7 @@ void CDICQ4::SortNodalPoints()
 	m_NodalPositions = SORTED_PTs;
 	m_n_U = S_U;
 	m_n_V = S_V;
+
 
 }
 

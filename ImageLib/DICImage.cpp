@@ -55,6 +55,7 @@ CDICSubset::CDICSubset(CDICImage* image, int x0, int y0, int x1, int y1)
 
 }
 
+
 CDICImage::CDICImage(CImageSITK* image, double window, double sigma, int subSize, int subSpacing, double searchAreaRatio)
     : m_image(image), m_windowSize(window), m_sigma(sigma), m_subSize(subSize), m_subSpacing(subSpacing), 
         m_searchAreaRatio(searchAreaRatio)
@@ -70,8 +71,8 @@ void CDICImage::MakeSubsets()
 	int img_h = m_image->Height();
 	int sub_size = M * N;
 
-	int x1 = 0;
-	int y1 = 0;
+	//int x1 = 0;
+	//int y1 = 0;
 
 	int i = 0; //to sum
 	int c = 0;
@@ -85,15 +86,13 @@ void CDICImage::MakeSubsets()
 				c++;
 				break;
 			}
-			y1 = y + N;
-			x1 = x + M;
-
+			//y1 = y + N;
+			//x1 = x + M;
             CDICSubset subset(this, x, y, x + N, y + M);
 
 			if (subset.Height() * subset.Width() < sub_size) { continue; }
 
-			m_subsets.push_back(subset);
-
+			//m_subsets.push_back(subset);
 			i++;
 		}
 	}
@@ -103,6 +102,8 @@ void CDICImage::MakeSubsets()
 	m_num_subs = i;
 	m_sub_cols = c - 1;
 	m_sub_rows = r + 1;
+
+
 }
 
 int CDICImage::GetWidth()
