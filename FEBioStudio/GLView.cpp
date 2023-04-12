@@ -2193,10 +2193,11 @@ void CGLView::RenderImageData()
             BOX box = img->GetBoundingBox();
             GLColor c(255, 128, 128);
             glColor3ub(c.r, c.g, c.b);
+            
+            sliceView->RenderSlicers(m_rc);
+
             if (img->ShowBox()) glx::renderBox(box, false);
             img->Render(m_rc);
-
-            sliceView->RenderSlicers(m_rc);
         }
     }
 
