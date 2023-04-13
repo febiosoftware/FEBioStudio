@@ -135,11 +135,6 @@ using std::stringstream;
 #include "ZipFiles.h"
 #endif
 
-#ifdef HAS_TEEM
-#include <QFileInfo>
-#endif
-
-
 void CMainWindow::on_actionOpenProject_triggered()
 {
 	QString projectFile = QFileDialog::getOpenFileName(this, "Open Project", "", QString("FEBioStudio Projects (*.fsp)"));
@@ -283,17 +278,22 @@ void CMainWindow::on_actionSave_triggered()
 	if (fileName.empty()) on_actionSaveAs_triggered();
 	else
 	{
-		// if the extension is fsm, we are going to change it to fs2
-		size_t n = fileName.rfind('.');
-		if (n != string::npos)
-		{
-			string ext = fileName.substr(n);
-			if (ext == ".fsm")
-			{
-				on_actionSaveAs_triggered();
-				return;
-			}
-		}
+        auto modelDoc = dynamic_cast<CModelDocument*>(doc);
+
+        if(modelDoc)
+        {
+            // if the extension is fsm or feb, we are going to change it to fs2
+            size_t n = fileName.rfind('.');
+            if (n != string::npos)
+            {
+                string ext = fileName.substr(n);
+                if (ext == ".fsm" || ext == ".feb")
+                {
+                    on_actionSaveAs_triggered();
+                    return;
+                }
+            }
+        }
 		
 		SaveDocument(QString::fromStdString(fileName));
 	}
@@ -1167,6 +1167,7 @@ void CMainWindow::on_actionSaveAs_triggered()
             dlg.setDirectory(ui->currentPath);
             dlg.setFileMode(QFileDialog::AnyFile);
             dlg.setNameFilter("FEBio Input files (*.feb)");
+            dlg.setDefaultSuffix("feb");
             dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
             dlg.setAcceptMode(QFileDialog::AcceptSave);
             if (dlg.exec())
@@ -1209,6 +1210,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 	dlg.setDirectory(currentPath);
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
+    dlg.setDefaultSuffix("fs2");
 	dlg.selectFile(QString::fromStdString(fileName));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec())
@@ -1668,46 +1670,69 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 	if (filedlg.exec())
 	{
-//		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
-
-		std::string fileName = filedlg.selectedFiles()[0].toStdString();
-
-		// we pass the relative path to the image model
-		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
-		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
-
-		if (!ImportImage(imageModel))
-		{
-			delete imageModel;
-			imageModel = nullptr;
-			return;
-		}
-
-		// take the name from the source
-		imageModel->SetName(FSDir::fileName(fileName));
-
-		Update(0, true);
-		ZoomTo(imageModel->GetBoundingBox());
-
-		// only for model docs
-		if (dynamic_cast<CModelDocument*>(doc))
-		{
-			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-			vr->Create();
-			imageModel->AddImageRenderer(vr);
-
-			Update(0, true);
-			ShowInModelViewer(imageModel);
-		}
-		else
-		{
-			Update(0, true);
-		}
-		ZoomTo(imageModel->GetBoundingBox());
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
 	}
 }
+
+// void CMainWindow::on_actionImportTiffImage_triggered()
+// {
+//     CGLDocument* doc = GetGLDocument();
+//     if(!doc)
+//     {
+//         QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+//         return;
+//     }
+
+// 	QFileDialog filedlg(this);
+// 	filedlg.setFileMode(QFileDialog::ExistingFile);
+// 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+// 	QStringList filters;
+// 	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
+// 	filedlg.setNameFilters(filters);
+
+// 	if (filedlg.exec())
+// 	{
+// //		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
+
+// 		std::string fileName = filedlg.selectedFiles()[0].toStdString();
+
+// 		// we pass the relative path to the image model
+// 		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
+
+// 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+// 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
+
+// 		if (!ImportImage(imageModel))
+// 		{
+// 			delete imageModel;
+// 			imageModel = nullptr;
+// 			return;
+// 		}
+
+// 		// take the name from the source
+// 		imageModel->SetName(FSDir::fileName(fileName));
+
+// 		Update(0, true);
+// 		ZoomTo(imageModel->GetBoundingBox());
+
+// 		// only for model docs
+// 		if (dynamic_cast<CModelDocument*>(doc))
+// 		{
+// 			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
+// 			vr->Create();
+// 			imageModel->AddImageRenderer(vr);
+
+// 			Update(0, true);
+// 			ShowInModelViewer(imageModel);
+// 		}
+// 		else
+// 		{
+// 			Update(0, true);
+// 		}
+// 		ZoomTo(imageModel->GetBoundingBox());
+// 	}
+// }
 
 void CMainWindow::on_actionImportOMETiffImage_triggered()
 {

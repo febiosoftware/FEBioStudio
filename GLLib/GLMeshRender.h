@@ -110,6 +110,7 @@ private:
 public:
 	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, bool bsel = false);
 	void RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el)> f);
+	void RenderFEElements(FSMesh& mesh, std::function<bool(const FEElement_& el, GLColor* c)> f);
 	void RenderFEElements(FSMesh& mesh, const std::vector<int>& elemList, std::function<bool(const FEElement_& el)> f);
 
 	void RenderNormals(FSMeshBase* pm, float scale, int tag);

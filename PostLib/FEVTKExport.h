@@ -44,7 +44,7 @@ private:
 	bool WriteState(const char* szname, FEState* ps);
 	bool FillNodeDataArray(std::vector<float>& val, FEMeshData& data);
 	bool FillElementNodeDataArray(std::vector<float>& val, FEMeshData& meshData);
-	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data, FSElemSet& part);
+	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data);
     
 private:
 	void WriteHeader(FEState* ps);

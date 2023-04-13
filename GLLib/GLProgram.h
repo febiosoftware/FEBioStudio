@@ -23,57 +23,28 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "FEFileReader.h"
-#include <vector>
 
-namespace Post {
-
-class FEState;
-
-class VTKimport :	public FEFileReader
+//=========================================================================
+// Class describing an OpenGL program.
+class GLProgram
 {
-	class VTKModel;
+public:
+	// constructor
+	GLProgram();
+
+	// create the shaders, compile and link
+	bool Create(const char* szvert, const char* szfrag);
+
+	// use the GL program
+	void Use();
 
 public:
-	VTKimport(FEPostModel* fem);
-	~VTKimport(void);
+	// functions for setting uniforms
+	void SetInt(const char* szparam, int val);
+	void SetFloat(const char* szparam, float val);
+	void SetFloat3(const char* szparam, float v[3]);
 
-	bool Load(const char* szfile) override;
-
-protected:
-	bool readFile(const char* szfile);
-
-	char* readLine(char* szline);
-	bool readHeader();
-	bool readDataSet  (char* szline);
-	bool readPoints   (char* szline);
-	bool readPolygons (char* szline);
-	bool readCells    (char* szline);
-	bool readCellTypes(char* szline);
-	bool readPointData(char* szline);
-	bool readCellData (char* szline);
-	bool readScalars(char* szline);
-	bool readVectors(char* szline);
-	bool readTensors(char* szline);
-	
-protected:
-	bool BuildMesh();
-	bool UpdateModel();
-	bool BuildState(double time);
-	bool ProcessSeries(const char* szfile);
-
-	FEState*		m_ps;
-
-	bool	m_isPolyData;
-	bool	m_isUnstructuredGrid;
-	bool	m_readingPointData;
-	bool	m_readingCellData;
-
-	double	m_currentTime;
-	int		m_fileCount;
-
-	VTKModel* m_vtk;
+private:
+	unsigned m_progId;
 };
-}
