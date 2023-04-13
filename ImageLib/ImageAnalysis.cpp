@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "ImageAnalysis.h"
 
-CImageAnalysis::CImageAnalysis(Post::CImageModel* img)
-    : m_img(img)
+CImageAnalysis::CImageAnalysis(int type, Post::CImageModel* img)
+    : m_img(img), m_type(type)
 {
 
 }

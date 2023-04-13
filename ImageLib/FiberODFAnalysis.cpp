@@ -75,7 +75,7 @@ CODF::CODF() : m_odf(NPTS, 0.0)
 
 //==================================================================
 CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
-    : CImageAnalysis(img), m_lengthScale(10), m_hausd(0.05), 
+    : CImageAnalysis(CImageAnalysis::FIBERODF, img), m_lengthScale(10), m_hausd(0.05), 
         m_grad(1.3)
 {
     static int n = 1;

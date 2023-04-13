@@ -39,12 +39,22 @@ class CGLCamera;
 class CImageAnalysis : public FSThreadedTask
 {
 public:
-    CImageAnalysis(Post::CImageModel* img);
+    enum TYPES
+    {
+        FIBERODF = 0
+    };
+
+public:
+    CImageAnalysis(int type, Post::CImageModel* img);
+
+    int Type() { return m_type; }
 
     virtual void run() = 0;
     virtual void render(CGLCamera* cam = nullptr) {}
 	virtual bool display() { return false; }
 protected:
     Post::CImageModel* m_img;
+private:
+    int m_type;
 
 };

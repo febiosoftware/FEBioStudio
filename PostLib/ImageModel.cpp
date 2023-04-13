@@ -210,6 +210,22 @@ void CImageModel::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+    if (m_analyses.IsEmpty() == false)
+	{
+		ar.BeginChunk(3);
+		{
+			for (int index = 0; index < m_analyses.Size(); index++)
+			{
+				ar.BeginChunk(m_analyses[index]->Type());
+				{
+					m_analyses[index]->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
 }
 
 CImageSource* CImageModel::GetImageSource()

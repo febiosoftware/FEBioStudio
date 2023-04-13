@@ -55,15 +55,18 @@ void FSThreadedTask::Log(const char* sz, ...)
 	if ((sz == 0) || (*sz == 0)) return;
 
 	// get a pointer to the argument list
-	va_list	args;
+	va_list	args, copy;
 
 	// copy to string
 	char* szlog = NULL;
 
 	va_start(args, sz);
-
+    
+    va_copy(copy, args);
 	// count how many chars we need to allocate
-	int l = vsnprintf(nullptr, 0, sz, args) + 1;
+	int l = vsnprintf(nullptr, 0, sz, copy) + 1;
+    va_end(copy);
+
 	if (l > 1)
 	{
 		szlog = new char[l]; assert(szlog);
@@ -104,7 +107,9 @@ void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 {
 	setProgress(progress);
 	m_progress.task = sz;
-	Log("%s\n", sz);
+    Log("%s\n", sz);
+	// Log(sz);
+    // Log("\n");
 }
 
 void FSThreadedTask::setErrorString(const std::string& s)
