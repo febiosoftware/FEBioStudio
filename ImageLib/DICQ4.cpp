@@ -1,21 +1,16 @@
 /*This file is part of the FEBio Studio source code and is licensed under the MIT license
 listed below.
-
 See Copyright-FEBio-Studio.txt for details.
-
 Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -33,7 +28,7 @@ namespace sitk = itk::simple;
 
 CDICQ4::CDICQ4(CDICMatching& match)
 	: m_match(match), m_subs_per_row(match.GetRefImage().GetSubsPerRow()), m_subs_per_col(match.GetRefImage().GetSubsPerCol()),
-        m_subSize(match.GetRefImage().GetSubSize()),m_match_centers(match.GetMatchResults()),m_ref_centers(match.GetRefCenterPoints())
+	m_subSize(match.GetRefImage().GetSubSize()), m_match_centers(match.GetMatchResults()), m_ref_centers(match.GetRefCenterPoints())
 {
 	int temp = m_subs_per_row + 1;
 	m_stop = m_match_centers.size() - temp; //cannot do interp with bottom row 
@@ -81,12 +76,12 @@ void CDICQ4::ApplyQ4()
 
 		}
 
-		
+
 
 	}
 
 
-    m_U = m_U_i;
+	m_U = m_U_i;
 	m_V = m_V_i;
 
 	GetNodeIndices();
@@ -97,10 +92,10 @@ std::vector<vec2i> CDICQ4::GetNodesQ4(double ind)
 {
 	std::vector<vec2i> nodes;
 
-    nodes.push_back(m_ref_centers[ind]);
-    nodes.push_back(m_ref_centers[ind + 1]);
-    nodes.push_back(m_ref_centers[ind + m_subs_per_row]);
-    nodes.push_back(m_ref_centers[ind + m_subs_per_row + 1]);
+	nodes.push_back(m_ref_centers[ind]);
+	nodes.push_back(m_ref_centers[ind + 1]);
+	nodes.push_back(m_ref_centers[ind + m_subs_per_row]);
+	nodes.push_back(m_ref_centers[ind + m_subs_per_row + 1]);
 
 	return nodes;
 }
@@ -110,10 +105,10 @@ std::vector<vec2i> CDICQ4::GetDispNodesQ4(double ind)
 {
 	std::vector<vec2i> dispNodes;
 
-    dispNodes.push_back(m_match_centers[ind]);
-    dispNodes.push_back(m_match_centers[ind+1]);
-    dispNodes.push_back(m_match_centers[ind + m_subs_per_row]);
-    dispNodes.push_back(m_match_centers[ind + m_subs_per_row + 1]);
+	dispNodes.push_back(m_match_centers[ind]);
+	dispNodes.push_back(m_match_centers[ind + 1]);
+	dispNodes.push_back(m_match_centers[ind + m_subs_per_row]);
+	dispNodes.push_back(m_match_centers[ind + m_subs_per_row + 1]);
 
 	return dispNodes;
 }
@@ -470,12 +465,12 @@ void CDICQ4::Local2Global()
 				vec2d u_i = m_NormCoordPairs[p].second;
 
 				//cv::Point2d p_global(R_i.x + u_i.x - (m_subSize / 2.0), R_i.y + u_i.y - (m_subSize / 2.0));
-				auto xp = R_i.x + u_i[0]; 
+				auto xp = R_i.x + u_i[0];
 				auto yp = R_i.y + u_i[1];
 
 				vec2i p_global(xp - (m_subSize / 2.0) + 1, yp - (m_subSize / 2.0) + 1);
 
-				debug << p_global.x  << ", " << p_global.y << std::endl;
+				debug << p_global.x << ", " << p_global.y << std::endl;
 
 				//L2G << p_global << "\n";
 
@@ -499,7 +494,7 @@ void CDICQ4::SavePointPairs()
 		for (double eta = -1.0; eta <= 1.0; eta += sampInt)
 		{
 			vec2d local(xi, eta);
-            
+
 			std::pair<vec2d, vec2d> coordPair;
 
 			vec2d normed = ScalePoint(vec2d(xi, -eta));
@@ -895,8 +890,8 @@ std::vector<double> CDICQ4::SmoothData(std::vector<double> data)
 
 	// cv::Mat mat = Vec2Mat(temp, (m_subs_per_col-1)*(m_subSize+1), (m_subs_per_row-1)*(m_subSize+1)); //convert vector to matrix (aka grid)
 
-    int rows = (m_subs_per_row-1)*(m_subSize+1);
-    int cols = (m_subs_per_col-1)*(m_subSize+1);
+	int rows = (m_subs_per_row - 1) * (m_subSize + 1);
+	int cols = (m_subs_per_col - 1) * (m_subSize + 1);
 
 
 	//std::cout << mat << std::endl;
@@ -905,30 +900,30 @@ std::vector<double> CDICQ4::SmoothData(std::vector<double> data)
 	// int pad_rows = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
 	// int pad_cols = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
 
-    // sitk::Image padded(cols+2*pad_cols, rows+2*pad_rows, sitk::sitkFloat64);
-    // double* buffer = padded.GetBufferAsDouble();
+	// sitk::Image padded(cols+2*pad_cols, rows+2*pad_rows, sitk::sitkFloat64);
+	// double* buffer = padded.GetBufferAsDouble();
 
 
-    // for (int i = 0; i < cols; i++)
-    // {
-    //     for (int j = 0; j < rows; j++)
-    //     {
-    //         buffer[(i+pad_cols)*rows+j+pad_rows] = data[i*rows+j];
-    //     }
+	// for (int i = 0; i < cols; i++)
+	// {
+	//     for (int j = 0; j < rows; j++)
+	//     {
+	//         buffer[(i+pad_cols)*rows+j+pad_rows] = data[i*rows+j];
+	//     }
 
-    // }
+	// }
 
-    sitk::Image image(cols, rows, sitk::sitkFloat64);
-    double* buffer = image.GetBufferAsDouble();
+	sitk::Image image(cols, rows, sitk::sitkFloat64);
+	double* buffer = image.GetBufferAsDouble();
 
-    for (int i = 0; i < cols; i++)
-    {
-        for (int j = 0; j < rows; j++)
-        {
-            buffer[i*rows+j] = data[i*rows+j];
-        }
+	for (int i = 0; i < cols; i++)
+	{
+		for (int j = 0; j < rows; j++)
+		{
+			buffer[i * rows + j] = data[i * rows + j];
+		}
 
-    }
+	}
 
 	// cv::Mat padded(cv::Size(mat.cols + 2 * pad_cols, mat.rows + 2 * pad_rows), CV_64F, cv::Scalar(0));
 	// mat.copyTo(padded(cv::Rect(pad_cols, pad_rows, mat.cols, mat.rows)));
@@ -950,16 +945,16 @@ std::vector<double> CDICQ4::SmoothData(std::vector<double> data)
 
 	// smoothedMat.convertTo(dst, CV_8UC1);
 
-    auto output = sitk::Convolution(image, kernel);
-    buffer = output.GetBufferAsDouble();
+	auto output = sitk::Convolution(image, kernel);
+	buffer = output.GetBufferAsDouble();
 
-    int size = output.GetSize()[0]*output.GetSize()[1];
+	int size = output.GetSize()[0] * output.GetSize()[1];
 
-    std::vector<double> smoothedVec(size);
-    for(int i = 0; i < size; i++)
-    {
-        smoothedVec[i] = buffer[i];
-    }
+	std::vector<double> smoothedVec(size);
+	for (int i = 0; i < size; i++)
+	{
+		smoothedVec[i] = buffer[i];
+	}
 
 
 	// std::vector<double> smoothedVec = Mat2Vec(smoothedMat);
@@ -979,7 +974,7 @@ std::vector<double> CDICQ4::SmoothData(std::vector<double> data)
 // 	cv::Mat M(r, c,CV_64F);
 
 // 	memcpy(M.data, vec.data(), vec.size()*sizeof(double));
-	
+
 
 // 	return M;
 // }
@@ -1005,14 +1000,14 @@ itk::simple::Image CDICQ4::CreateKernel(int k_w, int k_h, int filterType)
 	{
 		int size = k_w * k_h;
 
-        sitk::Image kernel(k_w, k_h, sitk::sitkFloat64);
-        double* buffer = kernel.GetBufferAsDouble();
-        double val = 1/size;
+		sitk::Image kernel(k_w, k_h, sitk::sitkFloat64);
+		double* buffer = kernel.GetBufferAsDouble();
+		double val = 1 / size;
 
-        for(int i = 0; i < size; i++)
-        {
-            buffer[i] = val;
-        }
+		for (int i = 0; i < size; i++)
+		{
+			buffer[i] = val;
+		}
 
 		return kernel;
 	}
@@ -1022,30 +1017,30 @@ itk::simple::Image CDICQ4::CreateKernel(int k_w, int k_h, int filterType)
 		double k = 1;
 		int pad_rows = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
 		int pad_cols = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
-		
-		sitk::Image kernel(k_w, k_h, sitk::sitkFloat64);
-        double* buffer = kernel.GetBufferAsDouble();
 
-        double sum = 0;
-        int size = m_match.GetRefImage().GetWindowSize();
+		sitk::Image kernel(k_w, k_h, sitk::sitkFloat64);
+		double* buffer = kernel.GetBufferAsDouble();
+
+		double sum = 0;
+		int size = m_match.GetRefImage().GetWindowSize();
 
 		for (int i = -pad_rows; i <= pad_rows; i++)
 		{
 			for (int j = -pad_cols; j <= pad_cols; j++)
 			{
-                double val = exp(-(i * i + j * j) / 2.0);
-				buffer[(i + pad_rows)*size + j + pad_cols] = val;
+				double val = exp(-(i * i + j * j) / 2.0);
+				buffer[(i + pad_rows) * size + j + pad_cols] = val;
 
-                sum += val;
+				sum += val;
 			}
 		}
 
-        for(int i = 0; i < size; i++)
-        {
-            buffer[i] /= sum;
-        }
+		for (int i = 0; i < size; i++)
+		{
+			buffer[i] /= sum;
+		}
 
 		return kernel;
 	}
-	
+
 }

@@ -1,21 +1,16 @@
 /*This file is part of the FEBio Studio source code and is licensed under the MIT license
 listed below.
-
 See Copyright-FEBio-Studio.txt for details.
-
 Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
-
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
-
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
-
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -52,7 +47,7 @@ CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 void CDICMatching::FFTCorrelation()
 {
 	//for (int n = 0; n < m_movingImages.size(); n++)
-	for(int n=0; n < m_ref_center_points.size(); n++)
+	for (int n = 0; n < m_ref_center_points.size(); n++)
 	{
 		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
 			m_searchAreas[n].GetSItkImage(), m_moving_mask.GetSItkImage(), 1, 0);
@@ -136,7 +131,7 @@ void CDICMatching::CreateMovingImages()
 		int range_x_upper = px + m_subSize / 2;
 		int range_y_low = py - m_subSize / 2;
 		int range_y_upper = py + m_subSize / 2;
-		
+
 		bug << "iteration: " << ii << std::endl;
 
 		for (unsigned int j = 0; j < m_subSize; j++)
@@ -154,7 +149,7 @@ void CDICMatching::CreateMovingImages()
 
 		m_movingImages.push_back(SUB);
 	}
-	
+
 }
 
 void CDICMatching::CreateFixedMasks()
@@ -177,7 +172,7 @@ void CDICMatching::CreateFixedMasks()
 	//sitk::Image img(m_def_img.GetWidth(), m_def_img.GetHeight(), sitk::sitkFloat32);
 	for (int ii = 0; ii < m_ref_center_points.size(); ii++)
 	{
-	sitk::Image img(m_def_img.GetWidth(), m_def_img.GetHeight(),sitk::sitkFloat32);
+		sitk::Image img(m_def_img.GetWidth(), m_def_img.GetHeight(), sitk::sitkFloat32);
 
 		int px = m_ref_center_points[ii].x;
 		px = px + dim_dif_x / 2;
@@ -189,7 +184,7 @@ void CDICMatching::CreateFixedMasks()
 		int INF_x = (infl_x * m_subSize);
 		int INF_y = (infl_y * m_subSize);
 
-		if (px - INF_x < m_subSize / 2 | ii == 0 |ii % 10 == 0)
+		if (px - INF_x < m_subSize / 2 | ii == 0 | ii % 10 == 0)
 		{
 			range_x_low = 0.0;
 		}
