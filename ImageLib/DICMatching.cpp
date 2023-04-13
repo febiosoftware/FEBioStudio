@@ -32,7 +32,8 @@ namespace sitk = itk::simple;
 
 //Constructor
 CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
-	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize())
+	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize()), //m_subs_per_row(ref_img.GetSubsPerRow()), m_subs_per_col(ref_img.GetSubsPerCol())
+	m_subs_per_row(std::floor(m_ref_img.GetWidth()/m_subSize)), m_subs_per_col(std::floor(m_ref_img.GetHeight()/m_subSize))
 {
 	//save reference center points
 	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
@@ -365,4 +366,14 @@ std::vector<vec2i> CDICMatching::GetMatchResults()
 std::vector<vec2i> CDICMatching::GetRefCenterPoints()
 {
 	return m_ref_center_points;
+}
+
+int CDICMatching::GetSubsPerRow()
+{
+	return m_subs_per_row;
+}
+
+int CDICMatching::GetSubsPerCol()
+{
+	return m_subs_per_col;
 }

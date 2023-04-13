@@ -42,31 +42,31 @@ class CDICImage;
 
 // };
 
-class CDICSubset
-{
-public:
-    CDICSubset(CDICImage* image, int x0, int y0, int x1, int y1);
-
-    int Width() { return m_width; }
-    int Height() { return m_height; }
-
-    vec2i Center() { return m_center; }
-
-    CImageSITK* GetSubsetImage() { return &m_subset_image; }
-
-private:
-    CDICImage* m_image;
-    CImageSITK m_subset_image;
-    int m_x0, m_y0;
-    int m_x1, m_y1;
-    int m_width, m_height;
-    vec2i m_center;
-};
+//class CDICSubset
+//{
+//public:
+//    CDICSubset(CDICImage* image, int x0, int y0, int x1, int y1);
+//
+//    int Width() { return m_width; }
+//    int Height() { return m_height; }
+//
+//    vec2i Center() { return m_center; }
+//
+//    CImageSITK* GetSubsetImage() { return &m_subset_image; }
+//
+//private:
+//    CDICImage* m_image;
+//    CImageSITK m_subset_image;
+//    int m_x0, m_y0;
+//    int m_x1, m_y1;
+//    int m_width, m_height;
+//    vec2i m_center;
+//};
 
 class CDICImage
 {
 public:
-    CDICImage(CImageSITK* image, double window = 1.0, double sigma = 0.4, int subSize = 55, int subSpacing = 55, double searchAreaRatio = 7.0);
+    CDICImage(CImageSITK* image, double window = 1.0, double sigma = 0.4, int subSize = 45, int subSpacing = 45, double searchAreaRatio = 7.0);
 
     CImageSITK* GetSITKImage() { return m_image; }
 
@@ -80,16 +80,16 @@ public:
     int GetSubsPerCol() { return m_sub_cols; }
     int GetNumSubs() { return m_num_subs; }
 
-    CDICSubset& GetSubset(int i) { return m_subsets[i]; }
-    std::vector<CDICSubset>& GetSubsets() { return m_subsets; }
+    //CDICSubset& GetSubset(int i) { return m_subsets[i]; }
+    //std::vector<CDICSubset>& GetSubsets() { return m_subsets; }
 
-    CImageSITK* GetSubsetImage(int i) { return m_subsets[i].GetSubsetImage(); }
+   // CImageSITK* GetSubsetImage(int i) { return m_subsets[i].GetSubsetImage(); }
 
     int GetWidth();
     int GetHeight();
 
 private:
-    void MakeSubsets();
+    //void MakeSubsets();
 
 private:
     CImageSITK* m_image;
@@ -106,7 +106,7 @@ private:
     int m_sub_cols;
     int m_num_subs;
 
-    std::vector<CDICSubset> m_subsets;
+    //std::vector<CDICSubset> m_subsets;
 };
 
 // #endif

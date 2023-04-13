@@ -41,6 +41,8 @@ public:
 	void FFTCorrelation();
 	std::vector<vec2i> GetMatchResults();
 	std::vector<vec2i> GetRefCenterPoints();
+	int GetSubsPerRow();
+	int GetSubsPerCol();
 
 private:
 	CDICImage& m_ref_img;
@@ -53,4 +55,7 @@ private:
 	std::vector<CImageSITK> m_movingImages;
 	CImageSITK m_fixed_SITK_img;
 	CImageSITK m_moving_mask;
+	int m_subs_per_row;
+	int m_subs_per_col;
+
 };

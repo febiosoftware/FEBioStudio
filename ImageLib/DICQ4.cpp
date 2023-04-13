@@ -27,7 +27,7 @@ SOFTWARE.*/
 namespace sitk = itk::simple;
 
 CDICQ4::CDICQ4(CDICMatching& match)
-	: m_match(match), m_subs_per_row(match.GetRefImage().GetSubsPerRow()), m_subs_per_col(match.GetRefImage().GetSubsPerCol()),
+	: m_match(match), m_subs_per_row(match.GetSubsPerRow()), m_subs_per_col(match.GetSubsPerCol()),
 	m_subSize(match.GetRefImage().GetSubSize()), m_match_centers(match.GetMatchResults()), m_ref_centers(match.GetRefCenterPoints())
 {
 	int temp = m_subs_per_row + 1;
@@ -572,6 +572,13 @@ void CDICQ4::GetNodeIndices()
 					std::vector<int> indices = findPoints(v, N);
 
 					double U = 0, V = 0;
+
+					//if (indices.size() == 0)
+					//{
+					//	//m_n_U.push_back(0);
+					//	//m_n_V.push_back(0);
+					//	continue;
+					//}
 
 					for (int in = 0; in < indices.size(); in++)
 					{
