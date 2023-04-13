@@ -450,13 +450,6 @@ bool CTiffImageSource::Load()
 	im = itkimg;
 #endif
 
-#ifdef HAS_ITK
-	CImageSITK* itkimg = new CImageSITK();
-	itkimg->CreateFrom3DImage(im);
-	delete im;
-	im = itkimg;
-#endif
-
 	float fx = (float) nx / m->m_img[0].xres;
 	float fy = (float) ny / m->m_img[0].yres;
 	float fz = (zspacing != 0 ? nz * zspacing : nz);
