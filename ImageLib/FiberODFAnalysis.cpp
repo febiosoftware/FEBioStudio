@@ -334,6 +334,196 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 	return false;
 }
 
+enum IDs { ODF_ODF = 0, ODF_SPH_HARM, ODF_POS, ODF_RAD, ODF_NEW_ODF, ODF_REMESH_COORD,
+    ODF_BOX_X0, ODF_BOX_Y0, ODF_BOX_Z0, ODF_BOX_X1, ODF_BOX_Y1, ODF_BOX_Z1, ODF_EL0, ODF_EL1, ODF_EL2, ODF_EV0, ODF_EV1, ODF_EV2, ODF_MEAN_DIR, ODF_FA,
+    ODF_EDF, ODF_EDF_ALPHA, ODF_EDF_GFA, ODF_EDF_FRD, ODF_VM3, ODF_VM3_BETA, ODF_VM3_GFA, 
+    ODF_VM3_FRD};
+
+void CFiberODFAnalysis::Save(OArchive& ar)
+{
+    ar.BeginChunk(0);
+    {
+        FSObject::Save(ar);
+    }
+    ar.EndChunk();
+
+    if (m_ODFs.size() != 0)
+	{
+        for (auto& odf : m_ODFs)
+        {
+            ar.BeginChunk(1);
+            {
+                ar.WriteChunk(ODF_ODF, odf->m_odf);
+                ar.WriteChunk(ODF_SPH_HARM, odf->m_sphHarmonics);
+                ar.WriteChunk(ODF_POS, odf->m_position);
+                ar.WriteChunk(ODF_RAD, odf->m_radius);
+                ar.WriteChunk(ODF_NEW_ODF, odf->newODF);
+                ar.WriteChunk(ODF_REMESH_COORD, odf->remeshCoord);
+                ar.WriteChunk(ODF_BOX_X0, odf->m_box.x0);
+                ar.WriteChunk(ODF_BOX_Y0, odf->m_box.y0);
+                ar.WriteChunk(ODF_BOX_Z0, odf->m_box.z0);
+                ar.WriteChunk(ODF_BOX_X1, odf->m_box.x1);
+                ar.WriteChunk(ODF_BOX_Y1, odf->m_box.y1);
+                ar.WriteChunk(ODF_BOX_Z1, odf->m_box.z1);
+                ar.WriteChunk(ODF_EL0, odf->m_el[0]);
+                ar.WriteChunk(ODF_EL1, odf->m_el[1]);
+                ar.WriteChunk(ODF_EL2, odf->m_el[2]);
+                ar.WriteChunk(ODF_EV0, odf->m_ev[0]);
+                ar.WriteChunk(ODF_EV1, odf->m_ev[1]);
+                ar.WriteChunk(ODF_EV2, odf->m_ev[2]);
+                ar.WriteChunk(ODF_MEAN_DIR, odf->m_meanDir);
+                ar.WriteChunk(ODF_FA, odf->m_FA);
+                ar.WriteChunk(ODF_EDF, odf->m_EFD_ODF);
+                ar.WriteChunk(ODF_EDF_ALPHA, odf->m_EFD_alpha);
+                ar.WriteChunk(ODF_EDF_GFA, odf->m_EFD_GFA);
+                ar.WriteChunk(ODF_EDF_FRD, odf->m_EFD_FRD);
+                ar.WriteChunk(ODF_VM3, odf->m_VM3_ODF);
+                ar.WriteChunk(ODF_VM3_BETA, odf->m_VM3_beta);
+                ar.WriteChunk(ODF_VM3_GFA, odf->m_VM3_GFA);
+                ar.WriteChunk(ODF_VM3_FRD, odf->m_VM3_FRD);
+            }
+            ar.EndChunk();
+        }
+    }
+
+}
+
+void CFiberODFAnalysis::Load(IArchive& ar)
+{
+    while (ar.OpenChunk() == IArchive::IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case 0:
+			FSObject::Load(ar);
+			break;
+		case 1:
+			{
+                auto odf = new CODF;
+
+                while (ar.OpenChunk() == IArchive::IO_OK)
+                {
+                    int nid2 = ar.GetChunkID();
+
+                    switch (nid2)
+                    {
+                    case ODF_ODF:
+                        ar.read(odf->m_odf);
+                        break;
+                    case ODF_SPH_HARM:
+                        ar.read(odf->m_sphHarmonics);
+                        break;
+                    case ODF_POS:
+                        ar.read(odf->m_position);
+                        break;
+                    case ODF_RAD:
+                        ar.read(odf->m_radius);
+                        break;
+                    case ODF_NEW_ODF:
+                        ar.read(odf->newODF);
+                        break;
+                    case ODF_REMESH_COORD:
+                        ar.read(odf->remeshCoord);
+                        break;
+                    case ODF_BOX_X0:
+                        ar.read(odf->m_box.x0);
+                        break;
+                    case ODF_BOX_Y0:
+                        ar.read(odf->m_box.y0);
+                        break;
+                    case ODF_BOX_Z0:
+                        ar.read(odf->m_box.z0);
+                        break;
+                    case ODF_BOX_X1:
+                        ar.read(odf->m_box.x1);
+                        break;
+                    case ODF_BOX_Y1:
+                        ar.read(odf->m_box.y1);
+                        break;
+                    case ODF_BOX_Z1:
+                        ar.read(odf->m_box.z1);
+                        break;
+                    case ODF_EL0:
+                        ar.read(odf->m_el[0]);
+                        break;
+                    case ODF_EL1:
+                        ar.read(odf->m_el[1]);
+                        break;
+                    case ODF_EL2:
+                        ar.read(odf->m_el[2]);
+                        break;
+                    case ODF_EV0:
+                        ar.read(odf->m_ev[0]);
+                        break;
+                    case ODF_EV1:
+                        ar.read(odf->m_ev[1]);
+                        break;
+                    case ODF_EV2:
+                        ar.read(odf->m_ev[2]);
+                        break;
+                    case ODF_MEAN_DIR:
+                        ar.read(odf->m_meanDir);
+                        break;
+                    case ODF_FA:
+                        ar.read(odf->m_FA);
+                        break;
+                    case ODF_EDF:
+                        ar.read(odf->m_EFD_ODF);
+                        break;
+                    case ODF_EDF_ALPHA:
+                        ar.read(odf->m_EFD_alpha);
+                        break;
+                    case ODF_EDF_GFA:
+                        ar.read(odf->m_EFD_GFA);
+                        break;
+                    case ODF_EDF_FRD:
+                        ar.read(odf->m_EFD_FRD);
+                        break;
+                    case ODF_VM3:
+                        ar.read(odf->m_VM3_ODF);
+                        break;
+                    case ODF_VM3_BETA:
+                        ar.read(odf->m_VM3_beta);
+                        break;
+                    case ODF_VM3_GFA:
+                        ar.read(odf->m_VM3_GFA);
+                        break;
+                    case ODF_VM3_FRD:
+                        ar.read(odf->m_VM3_FRD);
+                        break;
+                    default:
+                        break;
+                    }
+
+                    ar.CloseChunk();
+                }
+
+                odf->m_box.m_valid = true;
+
+                // build the meshes
+                buildMesh(odf);
+                buildRemesh(odf);
+
+                m_ODFs.push_back(odf);
+
+            }
+        }
+
+        ar.CloseChunk();
+    }
+
+    if(m_ODFs.size() != 0)
+    {
+        setProgress(100);
+        SelectODF(0);
+        UpdateStats();
+        UpdateAllMeshes();
+        UpdateColorBar();
+    }
+}
+
 void CFiberODFAnalysis::UpdateAllMeshes()
 {
 	bool bradial = GetBoolValue(RADIAL);

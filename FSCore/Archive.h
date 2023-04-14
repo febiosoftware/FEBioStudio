@@ -253,6 +253,11 @@ public:
 		m_pChunk->AddChild(new OLeaf<T>(nid, o));
 	}
 
+    template <typename T> void WriteChunk(unsigned int nid, std::vector<T>& a)
+	{
+		m_pChunk->AddChild(new OLeaf<std::vector<T> >(nid, a));
+	}
+
 protected:
 	FileStream	m_fp;		// the file pointer
 

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageSITK.h>
 #include <ImageLib/ImageFilter.h>
+#include <ImageLib/FiberODFAnalysis.h>
 #include "GLImageRenderer.h"
 #include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
@@ -335,6 +336,28 @@ void CImageModel::Load(IArchive& ar)
                         auto temp = new AdaptiveHistogramEqualizationFilter(this);
                         temp->Load(ar);
                         m_filters.Add(temp);
+                    }
+                    default:
+                        break;
+                    }
+					ar.CloseChunk();
+				}
+			}
+			break;
+        case 3:
+			{
+				while (ar.OpenChunk() == IArchive::IO_OK)
+                {
+                    int nid2 = ar.GetChunkID();
+
+                    switch (nid2)
+                    {
+                    case CImageAnalysis::FIBERODF:
+                    {
+                        auto temp = new CFiberODFAnalysis(this);
+                        temp->Load(ar);
+                        m_analyses.Add(temp);
+                        break;
                     }
                     default:
                         break;

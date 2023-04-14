@@ -95,6 +95,10 @@ public:
 
 	bool UpdateData(bool bsave) override;
 
+    // serialization
+	void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
+
 public:
 	void renderODFMesh(CODF* odf, CGLCamera* cam);
 
