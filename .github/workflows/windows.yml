@@ -69,6 +69,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          submodules: 'true'
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -77,7 +79,7 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
       - name: Fetch latest febio-sdk
         run: |
-          ci/windows/febio-sdk.bat
+          ci/common/windows/get-febio-sdk.bat
         env:
           OS: ${{runner.os}}
           FEBIO_SDK_BRANCH: ${{ github.ref_name}}
@@ -103,6 +105,8 @@ jobs:
    steps:
      - name: Checkout
        uses: actions/checkout@v3
+       with:
+         submodules: 'true'
      - uses: actions/download-artifact@v3
        with:
          name: febiostudio2-Windows-${{runner.arch}}
@@ -110,7 +114,7 @@ jobs:
            cmbuild
      - name: Configure SSH
        run: |
-         ci/linux/configure-ssh.sh
+         ci/common/linux/configure-ssh.sh
        env:
          SSH_USER: ${{ secrets.REPO_USER }}
          SSH_KEY: ${{ secrets.REPO_KEY }}
@@ -131,6 +135,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          submodules: 'true'
       - name: Download febio-studio
         uses: actions/download-artifact@v3
         with:
@@ -151,7 +157,7 @@ jobs:
           PACKAGE_NAME: febio-studio
           GIT_TAG: ${{ needs.start-runner.outputs.git_describe }}
         run: |
-          ci/linux/publish-to-s3.sh artifacts/febio-studio
+          ci/common/linux/publish-to-s3.sh artifacts/febio-studio
   stop-runner:
     name: Stop self-hosted EC2 runner
     needs:
