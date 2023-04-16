@@ -109,10 +109,8 @@ XMLTreeItem* CXMLDocument::getChild(XMLTag& tag, int depth)
         child->SetComment(tag.comment().c_str());
     }
 
-    char szval[256];
-    tag.value(szval);
     child->SetTag(tag.Name());
-    child->SetValue(szval);
+    child->SetValue(tag.m_szval.c_str());
 
     for(XMLAtt& att : tag.m_att)
     {
