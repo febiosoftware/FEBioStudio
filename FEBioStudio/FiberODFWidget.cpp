@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QOpenGLFunctions>
 #include <QSizePolicy>
-#include <QStackedWidget>
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QHeaderView>
@@ -47,6 +46,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <fstream>
 #include <vector>
+#include "DynamicStackedWidget.h"
 #include <PostLib/ColorMap.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
@@ -241,7 +241,7 @@ int CFiberGLWidget::heightForWidth(int w) const
 class Ui::CFiberODFWidget
 {
 public:
-    QStackedWidget* stack;
+    DynamicStackedWidget* stack;
     
     QPushButton* runButton;
 
@@ -273,7 +273,7 @@ public:
         QVBoxLayout* layout = new QVBoxLayout;
         layout->setContentsMargins(0,0,0,0);
         
-        stack = new QStackedWidget;
+        stack = new DynamicStackedWidget;
 
         firstPage = new QWidget;
         QVBoxLayout* firstPageLayout = new QVBoxLayout;
