@@ -106,11 +106,11 @@ CImageSITK CDICMatching::CreateSubsetMask()
 
 void CDICMatching::CreateMovingImages()
 {
-	std::ofstream bug;
-	bug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\match.txt");
+	//std::ofstream bug;
+	//bug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\match.txt");
 
-	bug << "ref center sizE: " << m_ref_center_points.size() << std::endl;
-	bug << "subSize : " << m_subSize << std::endl;
+	//bug << "ref center sizE: " << m_ref_center_points.size() << std::endl;
+	//bug << "subSize : " << m_subSize << std::endl;
 
 
 	sitk::Image ref = m_ref_img.GetSITKImage()->GetSItkImage();
@@ -121,9 +121,9 @@ void CDICMatching::CreateMovingImages()
 		ref = caster.Execute(ref);
 	}
 
-	std::ofstream deb;
-	deb.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\create.txt");
-	deb << m_ref_center_points.size();
+	//std::ofstream deb;
+	//deb.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\create.txt");
+	//deb << m_ref_center_points.size();
 
 	for (int ii = 0; ii < m_ref_center_points.size(); ii++)
 	{
@@ -145,10 +145,10 @@ void CDICMatching::CreateMovingImages()
 		{
 			for (unsigned int i = 0; i < m_subSize; i++)
 			{
-				bug << "second loop" << std::endl;
+				//bug << "second loop" << std::endl;
 				auto val = ref.GetPixelAsFloat({ range_x_low + i,range_y_low + j });
 				sub.SetPixelAsFloat({ i,j }, val);
-				deb << i << ", " << j << std::endl;
+				//deb << i << ", " << j << std::endl;
 			}
 		}
 
@@ -243,15 +243,15 @@ void CDICMatching::CreateFixedMasks()
 
 
 
-		if (ii < 10)
-		{
-			sitk::WriteImage(IMG.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\searchAreas_febioDIC\\s0" + std::to_string(ii) + ".tif");
-		}
-		else
-		{
-			sitk::WriteImage(IMG.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\searchAreas_febioDIC\\s" + std::to_string(ii) + ".tif");
+		//if (ii < 10)
+		//{
+		//	sitk::WriteImage(IMG.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\searchAreas_febioDIC\\s0" + std::to_string(ii) + ".tif");
+		//}
+		//else
+		//{
+		//	sitk::WriteImage(IMG.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\searchAreas_febioDIC\\s" + std::to_string(ii) + ".tif");
 
-		}
+		//}
 
 
 	}

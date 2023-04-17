@@ -580,18 +580,18 @@ void CDICQ4::GetNodeIndices()
 	SortNodalPoints();
 
 	//Print Nodal Grid Data
-	std::ofstream NodalPointFile;
-	NodalPointFile.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\Disp_debug.csv");
-	NodalPointFile << "Grid Size:," << m_subs_per_row << " rows," << 10 << " columns," << "\n"; ///NEED TO REPLACE 10 with "subs per col"
-	NodalPointFile << "X-Position," << "Y-Position," << "U [pix]," << "V [pix]," << "\n";
+	//std::ofstream NodalPointFile;
+	//NodalPointFile.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\Disp_debug.csv");
+	//NodalPointFile << "Grid Size:," << m_subs_per_row << " rows," << 10 << " columns," << "\n"; ///NEED TO REPLACE 10 with "subs per col"
+	//NodalPointFile << "X-Position," << "Y-Position," << "U [pix]," << "V [pix]," << "\n";
 
-	for (int i = 0; i < m_n_U.size(); i++)
-	{
-		NodalPointFile << m_NodalPositions[i].x << "," << m_NodalPositions[i].y << "," << m_n_U[i]
-			<< "," << m_n_V[i] << "\n";
-	}
+	//for (int i = 0; i < m_n_U.size(); i++)
+	//{
+	//	NodalPointFile << m_NodalPositions[i].x << "," << m_NodalPositions[i].y << "," << m_n_U[i]
+	//		<< "," << m_n_V[i] << "\n";
+	//}
 
-	NodalPointFile.close();
+	//NodalPointFile.close();
 }
 
 
@@ -689,7 +689,9 @@ void CDICQ4::WriteVTKFile()
 
 	int imgNum = 0;
 
-	std::string str = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\" + dataName + "_0" + std::to_string(imgNum) + ".vtk";
+	//std::string str = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\" + dataName + "_0" + std::to_string(imgNum) + ".vtk";
+	std::string str = dataName + "_0" + std::to_string(imgNum) + ".vtk";
+
 	const char* c = const_cast<char*>(str.c_str());
 
 	VTKFile.open(c);
