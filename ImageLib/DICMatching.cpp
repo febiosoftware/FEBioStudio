@@ -47,11 +47,28 @@ CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 
 void CDICMatching::FFTCorrelation()
 {
+	std::ofstream de;
+	de.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\mask.txt");
+
 	//for (int n = 0; n < m_movingImages.size(); n++)
 	for (int n = 0; n < m_ref_center_points.size(); n++)
 	{
+		sitk::Image extraMask = sitk::ReadImage("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\binary.tif",sitk::sitkFloat32);
+		sitk::Image temp = m_searchAreas[n].GetSItkImage();
+		sitk::Image cas = sitk::Cast(temp, sitk::sitkFloat32);
+		
+
+		de << extraMask.GetWidth() << " " << extraMask.GetHeight() << " " << extraMask.GetDepth() << std::endl;
+		de << temp.GetWidth() << " " <<temp.GetHeight() << " " << temp.GetDepth() << std::endl;
+		de << extraMask.GetPixelIDTypeAsString() << " " << cas.GetPixelIDTypeAsString() << std::endl;
+		sitk::Image searchArea = sitk::Subtract(extraMask,sitk::InvertIntensity(cas));
+		//sitk::WriteImage(searchArea, "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\BIN.tif");
+
+		//std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
+		//	m_searchAreas[n].GetSItkImage(), m_moving_mask.GetSItkImage(), 1, 0);
+
 		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
-			m_searchAreas[n].GetSItkImage(), m_moving_mask.GetSItkImage(), 1, 0);
+			searchArea, m_moving_mask.GetSItkImage(), 0.7, n);
 
 		vec2i match;
 		match.x = results[0];
@@ -106,11 +123,11 @@ CImageSITK CDICMatching::CreateSubsetMask()
 
 void CDICMatching::CreateMovingImages()
 {
-	//std::ofstream bug;
-	//bug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\match.txt");
+	std::ofstream bug;
+	bug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\match.txt");
 
-	//bug << "ref center sizE: " << m_ref_center_points.size() << std::endl;
-	//bug << "subSize : " << m_subSize << std::endl;
+	bug << "ref center sizE: " << m_ref_center_points.size() << std::endl;
+	bug << "subSize : " << m_subSize << std::endl;
 
 
 	sitk::Image ref = m_ref_img.GetSITKImage()->GetSItkImage();
@@ -121,9 +138,9 @@ void CDICMatching::CreateMovingImages()
 		ref = caster.Execute(ref);
 	}
 
-	//std::ofstream deb;
-	//deb.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\create.txt");
-	//deb << m_ref_center_points.size();
+	std::ofstream deb;
+	deb.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\create.txt");
+	deb << m_ref_center_points.size();
 
 	for (int ii = 0; ii < m_ref_center_points.size(); ii++)
 	{
@@ -145,10 +162,10 @@ void CDICMatching::CreateMovingImages()
 		{
 			for (unsigned int i = 0; i < m_subSize; i++)
 			{
-				//bug << "second loop" << std::endl;
+				bug << "second loop" << std::endl;
 				auto val = ref.GetPixelAsFloat({ range_x_low + i,range_y_low + j });
 				sub.SetPixelAsFloat({ i,j }, val);
-				//deb << i << ", " << j << std::endl;
+				deb << i << ", " << j << std::endl;
 			}
 		}
 
@@ -169,8 +186,8 @@ void CDICMatching::CreateFixedMasks()
 	double dimY_scale = 1 + std::abs((double)dim_dif_y) / m_ref_img.GetHeight();
 
 	//Subset size and inflation size (USER INPUTS)
-	double user_inf_x = 1.1;
-	double user_inf_y = 1.1;
+	double user_inf_x = 0.5;
+	double user_inf_y = 0.5;
 	double infl_x = dimX_scale + user_inf_x;
 	double infl_y = dimY_scale + user_inf_y;
 
@@ -236,11 +253,13 @@ void CDICMatching::CreateFixedMasks()
 			}
 		}
 
+
+
+
 		CImageSITK IMG(img.GetWidth(), img.GetHeight(), 1);
 		IMG.SetItkImage(img);
 
 		m_searchAreas.push_back(IMG);
-
 
 
 		//if (ii < 10)

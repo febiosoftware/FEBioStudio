@@ -689,9 +689,7 @@ void CDICQ4::WriteVTKFile()
 
 	int imgNum = 0;
 
-	//std::string str = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\" + dataName + "_0" + std::to_string(imgNum) + ".vtk";
-	std::string str = dataName + "_0" + std::to_string(imgNum) + ".vtk";
-
+	std::string str = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\" + dataName + "_0" + std::to_string(imgNum) + ".vtk";
 	const char* c = const_cast<char*>(str.c_str());
 
 	VTKFile.open(c);
