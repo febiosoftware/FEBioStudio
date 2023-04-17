@@ -30,10 +30,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESelection.h"
-#include "GGroup.h"
-#include "GLMesh.h"
+#include <GeomLib/GGroup.h>
+#include <MeshLib/GMesh.h>
+#include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
-#include "GModel.h"
+#include <GeomLib/GModel.h>
 
 //////////////////////////////////////////////////////////////////////
 // FESelection
@@ -49,6 +50,32 @@ FESelection::~FESelection()
 
 }
 
+bool FESelection::Supports(unsigned int itemFlag) const
+{
+	if (itemFlag == 0) return false;
+
+	bool b = false;
+	switch (Type())
+	{
+	case SELECT_NODES:
+	case SELECT_FE_NODES:
+		b = (itemFlag & FE_NODE_FLAG);
+		break;
+	case SELECT_SURFACES:
+	case SELECT_FE_FACES:
+		b = (itemFlag & (FE_FACE_FLAG | FE_NODE_FLAG));
+		break;
+	case SELECT_CURVES:
+	case SELECT_FE_EDGES:
+		b = (itemFlag & (FE_EDGE_FLAG | FE_NODE_FLAG));
+		break;
+	case SELECT_PARTS:
+		b = (itemFlag & (FE_PART_FLAG | FE_FACE_FLAG | FE_NODE_FLAG));
+		break;
+	}
+	return b;
+}
+
 //////////////////////////////////////////////////////////////////////
 // GObjectSelection
 //////////////////////////////////////////////////////////////////////
@@ -61,7 +88,7 @@ int GObjectSelection::Count()
 int GObjectSelection::Next()
 {
 	int n = -1;
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int N = m.Objects();
 	for (int i=0; i<N; ++i) if (m.Object(i)->IsSelected()) { n = (i+1)%N; break; }
 	return n;
@@ -70,7 +97,7 @@ int GObjectSelection::Next()
 int GObjectSelection::Prev()
 {
 	int n = -1;
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int N = m.Objects();
 	for (int i=0; i<N; ++i) if (m.Object(i)->IsSelected()) { n = (i==0?N-1:i-1); break; }
 	return n;
@@ -78,8 +105,8 @@ int GObjectSelection::Prev()
 
 FEItemListBuilder* GObjectSelection::CreateItemList()
 {
-	GPartList* partList = new GPartList(m_pfem);
-	GModel& m = m_pfem->GetModel();
+	GPartList* partList = new GPartList(m_mdl);
+	GModel& m = *m_mdl;
 	int N = m.Objects();
 	for (int i = 0; i < N; ++i)
 	{
@@ -95,7 +122,7 @@ FEItemListBuilder* GObjectSelection::CreateItemList()
 
 void GObjectSelection::Invert()
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int n = m.Objects();
 	for (int i=0; i<n; ++i) 
 	{
@@ -116,7 +143,7 @@ void GObjectSelection::Invert()
 
 void GObjectSelection::Update()
 {
-	GModel& mdl = m_pfem->GetModel();
+	GModel& mdl = *m_mdl;
 	int N = mdl.Objects();
 
 	int m = 0;
@@ -140,7 +167,7 @@ void GObjectSelection::Update()
 
 void GObjectSelection::Translate(vec3d dr)
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int N = (int)m_item.size();
 	for (int i=0; i<N; ++i)
 	{
@@ -153,7 +180,7 @@ void GObjectSelection::Translate(vec3d dr)
 
 void GObjectSelection::Rotate(quatd q, vec3d rc)
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int N = (int)m_item.size();
 	for (int i=0; i<N; ++i)
 	{
@@ -166,7 +193,7 @@ void GObjectSelection::Rotate(quatd q, vec3d rc)
 
 void GObjectSelection::Scale(double s, vec3d dr, vec3d c)
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int N = (int)m_item.size();
 	for (int i=0; i<N; ++i)
 	{
@@ -179,7 +206,7 @@ void GObjectSelection::Scale(double s, vec3d dr, vec3d c)
 
 quatd GObjectSelection::GetOrientation()
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int N = (int)m_item.size();
 	for (int i=0; i<N; ++i)
 	{
@@ -193,7 +220,7 @@ quatd GObjectSelection::GetOrientation()
 
 vec3d GObjectSelection::GetPivot()
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 
 	vec3d v;
 	int N = (int)m_item.size();
@@ -209,7 +236,7 @@ vec3d GObjectSelection::GetPivot()
 
 vec3d GObjectSelection::GetScale()
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	int N = (int) m_item.size();
 	if (N == 1) return m.Object(m_item[0])->GetTransform().GetScale();
 	return vec3d(1,1,1);
@@ -217,7 +244,7 @@ vec3d GObjectSelection::GetScale()
 
 GObject* GObjectSelection::Object(int i)
 {
-	GModel& m = m_pfem->GetModel();
+	GModel& m = *m_mdl;
 	if ((i<0) || (i>=(int) m_item.size())) return 0;
 	return m.Object(m_item[i]);
 }
@@ -240,8 +267,8 @@ GPartSelection::Iterator::Iterator(GPartSelection* ps)
 {
 	m_npart = -1;
 	m_pg = 0;
-	m_ps = ps->GetFSModel();
-	GModel& m = m_ps->GetModel();
+	m_ps = ps->GetGModel();
+	GModel& m = *m_ps;
 	int N = m.Parts();
 	for (int i=0; i<N; ++i)
 	{
@@ -258,7 +285,7 @@ GPartSelection::Iterator::Iterator(GPartSelection* ps)
 GPartSelection::Iterator& GPartSelection::Iterator::operator ++()
 {
 	assert(m_pg);
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Parts();
 	for (int i=m_npart+1; i<N; ++i)
 	{
@@ -276,8 +303,8 @@ GPartSelection::Iterator& GPartSelection::Iterator::operator ++()
 
 int GPartSelection::Count()
 {
-	if (m_ps == 0) return 0;
-	GModel& m = m_ps->GetModel();
+	if (m_mdl == 0) return 0;
+	GModel& m = *m_mdl;
 	int n = 0;
 	int N = m.Parts();
 	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) ++n;
@@ -286,7 +313,7 @@ int GPartSelection::Count()
 
 int GPartSelection::Next()
 {
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_mdl;
 	int n = -1;
 	int N = m.Parts();
 	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) { n = m.Part((i+1)%N)->GetID(); break; }
@@ -295,7 +322,7 @@ int GPartSelection::Next()
 
 int GPartSelection::Prev()
 {
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_mdl;
 	int n = -1;
 	int N = m.Parts();
 	for (int i=0; i<N; ++i) if (m.Part(i)->IsVisible() && m.Part(i)->IsSelected()) { n = m.Part((i==0?N-1:i-1))->GetID(); break; }
@@ -304,8 +331,8 @@ int GPartSelection::Prev()
 
 void GPartSelection::Invert()
 {
-	if (m_ps == 0) return;
-	GModel& m = m_ps->GetModel();
+	if (m_mdl == 0) return;
+	GModel& m = *m_mdl;
 	int N = m.Parts();
 	for (int i=0; i<N; ++i)
 	{
@@ -316,8 +343,8 @@ void GPartSelection::Invert()
 
 void GPartSelection::Update()
 {
-	if (m_ps == 0) return;
-	GModel& model = m_ps->GetModel();
+	if (m_mdl == 0) return;
+	GModel& model = *m_mdl;
 
 	int m = 0;
 
@@ -366,7 +393,7 @@ quatd GPartSelection::GetOrientation()
 
 FEItemListBuilder* GPartSelection::CreateItemList()
 {
-	return new GPartList(m_ps, this);
+	return new GPartList(m_mdl, this);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -375,8 +402,8 @@ FEItemListBuilder* GPartSelection::CreateItemList()
 
 GFaceSelection::Iterator::Iterator(GFaceSelection* ps)
 {
-	m_ps = ps->GetFSModel();
-	GModel& m = m_ps->GetModel();
+	m_ps = ps->GetGModel();
+	GModel& m = *m_ps;
 	m_nsurf = -1;
 	m_pf = 0;
 	int N = m.Surfaces();
@@ -395,7 +422,7 @@ GFaceSelection::Iterator::Iterator(GFaceSelection* ps)
 GFaceSelection::Iterator& GFaceSelection::Iterator::operator ++()
 {
 	assert(m_pf);
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Surfaces();
 	for (int i=m_nsurf+1; i<N; ++i)
 	{
@@ -414,7 +441,7 @@ GFaceSelection::Iterator& GFaceSelection::Iterator::operator ++()
 int GFaceSelection::Count()
 {
 	if (m_ps == 0) return 0;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int n = 0;
 	int N = m.Surfaces();
 	for (int i=0; i<N; ++i) if (m.Surface(i)->IsVisible() && m.Surface(i)->IsSelected()) ++n;
@@ -424,7 +451,7 @@ int GFaceSelection::Count()
 int GFaceSelection::Next()
 {
 	int n = -1;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Surfaces();
 	for (int i=0; i<N; ++i) 
 	{
@@ -446,7 +473,7 @@ int GFaceSelection::Next()
 int GFaceSelection::Prev()
 {
 	int n = -1, m;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 
 	int N = model.Surfaces();
 	for (int i=0; i<N; ++i) 
@@ -470,7 +497,7 @@ int GFaceSelection::Prev()
 void GFaceSelection::Invert()
 {
 	if (m_ps == 0) return;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Surfaces();
 	for (int i=0; i<N; ++i)
 	{
@@ -482,7 +509,7 @@ void GFaceSelection::Invert()
 void GFaceSelection::Update()
 {
 	if (m_ps == 0) return;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 
 	int m = 0;
 
@@ -536,8 +563,8 @@ FEItemListBuilder* GFaceSelection::CreateItemList()
 
 GEdgeSelection::Iterator::Iterator(GEdgeSelection* pg)
 {
-	m_ps = pg->GetFSModel();
-	GModel& m = m_ps->GetModel();
+	m_ps = pg->GetGModel();
+	GModel& m = *m_ps;
 	m_nedge = -1;
 	m_pe = 0;
 	int N = m.Edges();
@@ -556,7 +583,7 @@ GEdgeSelection::Iterator::Iterator(GEdgeSelection* pg)
 GEdgeSelection::Iterator& GEdgeSelection::Iterator::operator ++()
 {
 	assert(m_pe);
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Edges();
 	for (int i=m_nedge+1; i<N; ++i)
 	{
@@ -575,7 +602,7 @@ GEdgeSelection::Iterator& GEdgeSelection::Iterator::operator ++()
 int GEdgeSelection::Count()
 {
 	if (m_ps == 0) return 0;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int n = 0;
 	int N = m.Edges();
 	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) ++n;
@@ -585,7 +612,7 @@ int GEdgeSelection::Count()
 int GEdgeSelection::Next()
 {
 	int n = -1;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Edges();
 	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) { n = m.Edge((i+1)%N)->GetID(); break; }
 	return n;
@@ -594,7 +621,7 @@ int GEdgeSelection::Next()
 int GEdgeSelection::Prev()
 {
 	int n = -1;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Edges();
 	for (int i=0; i<N; ++i) if (m.Edge(i)->IsSelected()) { n = m.Edge((i==0?N-1:i-1))->GetID(); break; }
 	return n;
@@ -603,7 +630,7 @@ int GEdgeSelection::Prev()
 void GEdgeSelection::Invert()
 {
 	if (m_ps == 0) return;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Edges();
 	for (int i=0; i<N; ++i)
 	{
@@ -615,7 +642,7 @@ void GEdgeSelection::Invert()
 void GEdgeSelection::Update()
 {
 	if (m_ps == 0) return;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 
 	int m = 0;
 
@@ -669,8 +696,8 @@ FEItemListBuilder* GEdgeSelection::CreateItemList()
 
 GNodeSelection::Iterator::Iterator(GNodeSelection* pg)
 {
-	m_ps = pg->GetFSModel();
-	GModel& m = m_ps->GetModel();
+	m_ps = pg->GetGModel();
+	GModel& m = *m_ps;
 	m_node = -1;
 	m_pn = 0;
 	int N = m.Nodes();
@@ -689,7 +716,7 @@ GNodeSelection::Iterator::Iterator(GNodeSelection* pg)
 GNodeSelection::Iterator& GNodeSelection::Iterator::operator ++()
 {
 	assert(m_pn);
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Nodes();
 	for (int i=m_node+1; i<N; ++i)
 	{
@@ -708,7 +735,7 @@ GNodeSelection::Iterator& GNodeSelection::Iterator::operator ++()
 int GNodeSelection::Count()
 {
 	if (m_ps == 0) return 0;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int n = 0;
 	int N = m.Nodes();
 	for (int i=0; i<N; ++i) 
@@ -723,7 +750,7 @@ int GNodeSelection::Count()
 int GNodeSelection::Next()
 {
 	int n = -1;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Nodes();
 	for (int i=0; i<N; ++i) if (m.Node(i)->IsSelected()) 
 	{ 
@@ -736,7 +763,7 @@ int GNodeSelection::Next()
 int GNodeSelection::Prev()
 {
 	int n = -1;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Nodes();
 	for (int i=0; i<N; ++i) if (m.Node(i)->IsSelected())
 	{ 
@@ -753,7 +780,7 @@ int GNodeSelection::Prev()
 void GNodeSelection::Invert()
 {
 	if (m_ps == 0) return;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.Nodes();
 	for (int i=0; i<N; ++i)
 	{
@@ -770,7 +797,7 @@ void GNodeSelection::Translate(vec3d dr)
 void GNodeSelection::Update()
 {
 	if (m_ps == 0) return;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 
 	int m = 0;
 
@@ -818,8 +845,8 @@ FEItemListBuilder* GNodeSelection::CreateItemList()
 
 GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 {
-	m_ps = pg->GetFSModel();
-	GModel& m = m_ps->GetModel();
+	m_ps = pg->GetGModel();
+	GModel& m = *m_ps;
 	m_item = -1;
 	m_pn = 0;
 	int N = m.DiscreteObjects();
@@ -838,7 +865,7 @@ GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 GDiscreteSelection::Iterator& GDiscreteSelection::Iterator::operator ++()
 {
 	assert(m_pn);
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.DiscreteObjects();
 	for (int i = m_item + 1; i<N; ++i)
 	{
@@ -857,7 +884,7 @@ GDiscreteSelection::Iterator& GDiscreteSelection::Iterator::operator ++()
 int GDiscreteSelection::Count()
 {
 	if (m_ps == 0) return 0;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int n = 0;
 	int N = m.DiscreteObjects();
 	for (int i = 0; i<N; ++i)
@@ -872,7 +899,7 @@ int GDiscreteSelection::Count()
 int GDiscreteSelection::Next()
 {
 	int n = -1;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.DiscreteObjects();
 	for (int i = 0; i<N; ++i) if (m.DiscreteObject(i)->IsSelected())
 	{
@@ -885,7 +912,7 @@ int GDiscreteSelection::Next()
 int GDiscreteSelection::Prev()
 {
 	int n = -1;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.DiscreteObjects();
 	for (int i = 0; i<N; ++i) if (m.DiscreteObject(i)->IsSelected())
 	{
@@ -899,7 +926,7 @@ int GDiscreteSelection::Prev()
 void GDiscreteSelection::Invert()
 {
 	if (m_ps == 0) return;
-	GModel& m = m_ps->GetModel();
+	GModel& m = *m_ps;
 	int N = m.DiscreteObjects();
 	for (int i = 0; i<N; ++i)
 	{
@@ -911,7 +938,7 @@ void GDiscreteSelection::Invert()
 void GDiscreteSelection::Update()
 {
 	if (m_ps == 0) return;
-	GModel& model = m_ps->GetModel();
+	GModel& model = *m_ps;
 
 	int m = 0;
 
@@ -1210,7 +1237,7 @@ FEItemListBuilder* FEElementSelection::CreateItemList()
 	vector<int> elset;
 	for (int i=0; i<pm->Elements(); ++i) 
 		if (pm->Element(i).IsSelected()) elset.push_back(i);
-	return new FSPart(po, elset);
+	return new FSElemSet(po, elset);
 }
 
 FEElement_* FEElementSelection::Element(int i)

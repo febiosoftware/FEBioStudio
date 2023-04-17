@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <MeshTools/FESelection.h>
 #include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
@@ -36,9 +36,11 @@ SOFTWARE.*/
 #include <FSCore/FSObjectList.h>
 #include "modelcheck.h"
 #include <QtCore/QString>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 #include "GLScene.h"
 #include <GLLib/GView.h>
+#include <QObject>
+#include "Command.h"
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -89,7 +91,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class CMainWindow;
-class FEFileExport;
+class FSFileExport;
 class CDocument;
 class FEModifier;
 class FESurfaceModifier;
@@ -126,8 +128,10 @@ private:
 //-----------------------------------------------------------------------------
 // Document class stores data and implements serialization of data to and from file.
 //
-class CDocument : public CSerializable
+class CDocument : public QObject, public CSerializable
 {
+	Q_OBJECT
+
 public:
 	// --- constructor/destructor ---
 	CDocument(CMainWindow* wnd);
@@ -234,6 +238,8 @@ protected:
 // Base class for documents that use the undo stack
 class CUndoDocument : public CDocument
 {
+	Q_OBJECT
+
 public:
     CUndoDocument(CMainWindow* wnd);
     ~CUndoDocument();
@@ -256,6 +262,9 @@ public:
 
     virtual void UpdateSelection(bool breport = true);
 
+signals:
+	void doCommand(QString s);
+
 protected:
 	// The command manager
 	CCommandManager*	m_pCmd;		// the command manager
@@ -273,6 +282,8 @@ public:
 
 	bool AutoSaveDocument() override;
 
+	void Activate() override;
+
 	// set/get the file reader
 	void SetFileReader(FileReader* fileReader);
 	FileReader* GetFileReader();
@@ -280,11 +291,6 @@ public:
 	// set/get the file writer
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
-
-	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
-
-    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
-    Post::CImageModel* ImportITKStack(QStringList& filenames);
 
 	// --- view state ---
 	VIEW_STATE GetViewState() { return m_vs; }
@@ -339,7 +345,7 @@ protected:
 	void LoadResources(IArchive& ar);
 
 public:
-	void SetUnitSystem(int unitSystem);
+	virtual void SetUnitSystem(int unitSystem);
 	int GetUnitSystem() const;
 
 protected:

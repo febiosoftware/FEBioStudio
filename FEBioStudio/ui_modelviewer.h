@@ -60,6 +60,7 @@ public:
 		m_warnings = n;
 		m_l->setText(QString("(%1)").arg(n));
 		setToolTip(QString("%1 warnings").arg(n));
+		if (n == 0) hide(); else show();
 	}
 
 	void increase()
@@ -118,6 +119,12 @@ public:
 		syncButton->setAutoRaise(true);
 		syncButton->setToolTip("<font color=\"black\">Sync selection");
 
+		QToolButton* refreshButton = new QToolButton;
+		refreshButton->setIcon(QIcon(":/icons/refresh.png"));
+		refreshButton->setObjectName("refreshButton");
+		refreshButton->setAutoRaise(true);
+		refreshButton->setToolTip("<font color=\"black\">Refresh");
+
 		// filter box
 		m_filter = new QComboBox;
 		m_filter->addItems(QStringList() << "All items" << "Geometry" << "Materials" << "Physics" << "Steps" << "Jobs" << "Images");
@@ -133,6 +140,7 @@ public:
 		hf->addWidget(l);
 		hf->addWidget(m_filter);
 		hf->addWidget(m_errs);
+		m_errs->hide();
 
 		// model tree
 		tree = new CModelTree(wnd);
@@ -169,6 +177,7 @@ public:
 		buttonLayout->addWidget(deleteButton);
 		buttonLayout->addWidget(srcButton);
 		buttonLayout->addWidget(syncButton);
+		buttonLayout->addWidget(refreshButton);
 		buttonLayout->addStretch();
 		buttonLayout->setContentsMargins(0,0,0,0);
 

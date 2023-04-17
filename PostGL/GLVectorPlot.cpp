@@ -48,21 +48,21 @@ CGLVectorPlot::CGLVectorPlot()
 	sprintf(szname, "VectorPlot.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddBoolParam(true, "Allow clipping");
-	AddBoolParam(true, "Show hidden"   );
-	AddDoubleParam(0., "Density")->SetFloatRange(0.0, 1.0, 0.0001);
-	AddIntParam(0, "Glyph"         )->SetEnumNames("Arrow\0Cone\0Cylinder\0Sphere\0Box\0Line\0");
-	AddIntParam(0, "Glyph Color"   )->SetEnumNames("Solid\0Length\0Orientation\0");
-	AddColorParam(GLColor::White(), "Solid Color");
-	AddBoolParam(true, "Normalize" );
-	AddBoolParam(true, "Auto-scale");
-	AddDoubleParam(0., "Scale"     );
-	AddDoubleParam(1., "Glyph aspect ratio");
-	AddIntParam(0, "Range type")->SetEnumNames("Dynamic\0Static\0User\0");
-	AddDoubleParam(1., "User Max"  );
-	AddDoubleParam(0., "User Min"  );
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "allow_clipping");
+	AddBoolParam(true, "show_hidden"   );
+	AddDoubleParam(0., "density")->SetFloatRange(0.0, 1.0, 0.0001);
+	AddIntParam(0, "glyph"         )->SetEnumNames("arrow\0cone\0cylinder\0sphere\0box\0line\0");
+	AddIntParam(0, "glyph_color"   )->SetEnumNames("solid\0length\0orientation\0");
+	AddColorParam(GLColor::White(), "solid_color");
+	AddBoolParam(true, "normalize" );
+	AddBoolParam(true, "auto-scale");
+	AddDoubleParam(0., "scale"     );
+	AddDoubleParam(1., "glyph_aspect_ratio");
+	AddIntParam(0, "range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(1., "user_max"  );
+	AddDoubleParam(0., "user_min"  );
 
 	m_scale = 1;
 	m_dens = 1;

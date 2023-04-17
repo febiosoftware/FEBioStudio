@@ -28,7 +28,6 @@ SOFTWARE.*/
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
-#include <MeshTools/FETetGenMesher.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/triangulate.h>
 #include <GLLib/glx.h>
@@ -228,19 +227,6 @@ void GLMusclePath::Render(CGLContext& rc)
 		glColor3ub(255, 255, 0);
 		glx::drawSphere(r1, 1.5 * R);
 
-/*		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glBegin(GL_LINES);
-		for (int i = 0; i < N - 1; ++i)
-		{
-			vec3d r0 = path->m_points[i].r;
-			vec3d r1 = path->m_points[i + 1].r;
-			glx::vertex3d(r0);
-			glx::vertex3d(r1);
-		}
-		glEnd();
-		glPopAttrib();
-*/
 		if (renderMode == 0)
 		{
 			for (int i = 0; i < N; ++i)

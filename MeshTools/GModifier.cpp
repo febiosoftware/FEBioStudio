@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GModifier.h"
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 //-----------------------------------------------------------------------------
 GModifier::GModifier(void)

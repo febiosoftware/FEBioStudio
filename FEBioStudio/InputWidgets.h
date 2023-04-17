@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <QSlider>
 #include <QLineEdit>
 #include <QValidator>
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 class CIntInput : public QLineEdit
@@ -170,8 +170,6 @@ public:
 		layout->addWidget(slider);
 
 		setLayout(layout);
-
-		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Ignored);
 
 		connect(box, &QDoubleSpinBox::valueChanged, this, &CDoubleSlider::boxValueChanged);
 		connect(slider, &QSlider::valueChanged, this, &CDoubleSlider::sliderValueChanged);

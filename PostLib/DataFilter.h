@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <string>
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 namespace Post {
 

@@ -51,17 +51,17 @@ CGLIsoSurfacePlot::CGLIsoSurfacePlot()
 	sprintf(szname, "Isosurface.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_scalar");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddDoubleParam(1.0, "Transparency")->SetFloatRange(0.0, 1.0, 0.01);
-	AddBoolParam(true, "Allow clipping");
-	AddBoolParam(true, "Slice hidden");
-	AddIntParam(1, "Slices");
-	AddBoolParam(true, "Show Legend");
-	AddBoolParam(true, "Smooth");
-	AddIntParam(0, "Range Type")->SetEnumNames("Dynamic\0Static\0User\0");
-	AddDoubleParam(1.0, "User Range Max");
-	AddDoubleParam(0.0, "User Range Min");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_scalar");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
+	AddDoubleParam(1.0, "transparency")->SetFloatRange(0.0, 1.0, 0.01);
+	AddBoolParam(true, "allow_clipping");
+	AddBoolParam(true, "slice_hidden");
+	AddIntParam(1, "slices");
+	AddBoolParam(true, "show_Legend");
+	AddBoolParam(true, "smooth");
+	AddIntParam(0, "range_Type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(1.0, "user_range_max");
+	AddDoubleParam(0.0, "user_range_min");
 
 	m_nslices = 5;
 	m_bsmooth = true;
@@ -107,7 +107,6 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 	{
 		int oldField = m_nfield;
 		m_nfield = GetIntValue(DATA_FIELD);
-		m_transparency = GetFloatValue(TRANSPARENCY);
 		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
 		AllowClipping(GetBoolValue(CLIP));
 		m_bcut_hidden = GetBoolValue(HIDDEN);
@@ -121,6 +120,13 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 		m_Col.SetDivisions(m_nslices);
 
 		if (oldField != m_nfield) Update();
+
+		if (m_transparency != GetFloatValue(TRANSPARENCY))
+		{
+			// set the mesh transparency
+			m_transparency = GetFloatValue(TRANSPARENCY);
+			m_glmesh.SetTransparency((ubyte)(255.0 * m_transparency));
+		}
 	}
 	else
 	{
@@ -157,98 +163,46 @@ void CGLIsoSurfacePlot::Render(CGLContext& rc)
 	//	glLightfv(GL_LIGHT0, GL_AMBIENT, one);
 	//	glLightfv(GL_LIGHT0, GL_DIFFUSE, one);
 
-		double a = 255 * m_transparency;
+		// z-sorting if necessary
+		if (m_transparency < 0.99) m_glmesh.ZSortFaces(*rc.m_cam);
 
-		int NF = m_mesh.Faces();
-		vector< pair<int, double> > zlist; zlist.reserve(NF);
-		if (m_transparency < 0.99)
-		{
-			vec3d r[3];
-			// first, build a list of faces
-			for (int i = 0; i < NF; ++i)
-			{
-				GMesh::FACE& face = m_mesh.Face(i);
-
-				r[0] = m_mesh.Node(face.n[0]).r;
-				r[1] = m_mesh.Node(face.n[1]).r;
-				r[2] = m_mesh.Node(face.n[2]).r;
-
-				// get the face center
-				vec3d o = (r[0] + r[1] + r[2]) / 3.0;
-
-				// convert to eye coordinates
-				vec3d q = rc.m_cam->WorldToCam(o);
-
-				// add it to the z-list
-				zlist.push_back(pair<int, double>(i, q.z));
-			}
-
-			// sort the zlist
-			std::sort(zlist.begin(), zlist.end(), [](pair<int, double>& a, pair<int, double>& b) {
-				return a.second < b.second;
-				});
-		}
-		else for (int i = 0; i < NF; ++i) zlist.push_back(pair<int, double>(i, 0.0));
-
-		glBegin(GL_TRIANGLES);
-		{
-			vec3d r[3];
-			for (int i = 0; i < m_mesh.Faces(); ++i)
-			{
-				GMesh::FACE& face = m_mesh.Face(zlist[i].first);
-				r[0] = m_mesh.Node(face.n[0]).r;
-				r[1] = m_mesh.Node(face.n[1]).r;
-				r[2] = m_mesh.Node(face.n[2]).r;
-
-				vec3d* vn = face.nn;
-				GLColor* cn = face.c;
-
-				glColor4ub(cn[0].r, cn[0].g, cn[0].b, a);
-				glNormal3d(vn[0].x, vn[0].y, vn[0].z); 
-				glVertex3d(r[0].x, r[0].y, r[0].z);
-
-				glColor4ub(cn[1].r, cn[1].g, cn[1].b, a);
-				glNormal3d(vn[1].x, vn[1].y, vn[1].z); 
-				glVertex3d(r[1].x, r[1].y, r[1].z);
-
-				glColor4ub(cn[2].r, cn[2].g, cn[2].b, a);
-				glNormal3d(vn[2].x, vn[2].y, vn[2].z); 
-				glVertex3d(r[2].x, r[2].y, r[2].z);
-			}
-		}
-		glEnd();
+		// render the mesh
+		m_glmesh.Render();
 	}
 	glPopAttrib();
 }
 
 void CGLIsoSurfacePlot::UpdateMesh()
 {
-	m_mesh.Clear();
+	if (m_nslices <= 0) return;
 
-	vec2f r = m_crng;
-	float crng = (r.y - r.x);
-	if (crng == 0.f) crng = 1.f;
+	float vmin = m_crng.x;
+	float vmax = m_crng.y;
+	float D = vmax - vmin;
 
-	// scale a little to make sure the range extrema will be shown
-	r.x *= .99f;
-	r.y *= .99f;
-
-	float denom = (m_nslices <= 1 ? 1.f : m_nslices - 1.f);
+	// build a GMesh
+	GMesh mesh;
 	for (int i = 0; i < m_nslices; ++i)
 	{
-		float ref = r.x + (float)i / denom * (r.y - r.x);
+		float ref = vmin + ((float)i + 0.5f)* D / (m_nslices);
 
-		float w = (ref - m_crng.x) / crng;
+		float w = (ref - vmin) / D;
 
 		CColorMap& map = m_Col.ColorMap();
 		GLColor col = map.map(w);
-		UpdateSlice(ref, col);
+		UpdateSlice(mesh, ref, col);
 	}
+
+	// create a GLVAMesh
+	m_glmesh.CreateFromGMesh(mesh);
+
+	// set the mesh transparency
+	m_glmesh.SetTransparency((ubyte)(255.0 * m_transparency));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
-void CGLIsoSurfacePlot::UpdateSlice(float ref, GLColor col)
+void CGLIsoSurfacePlot::UpdateSlice(GMesh& mesh, float ref, GLColor col)
 {
 	float ev[8];	// element nodal values
 	vec3f ex[8];	// element nodal positions
@@ -282,11 +236,15 @@ void CGLIsoSurfacePlot::UpdateSlice(float ref, GLColor col)
 			case FE_HEX20  : nt = HEX_NT; break;
 			case FE_HEX27  : nt = HEX_NT; break;
 			case FE_PENTA6 : nt = PEN_NT; break;
-            case FE_PENTA15: nt = PEN_NT; break;
-            case FE_TET4   : nt = TET_NT; break;
+			case FE_PENTA15: nt = PEN_NT; break;
+			case FE_TET4   : nt = TET_NT; break;
 			case FE_TET5   : nt = TET_NT; break;
-            case FE_PYRA5  : nt = PYR_NT; break;
-            case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_PYRA5  : nt = PYR_NT; break;
+			case FE_PYRA13 : nt = PYR_NT; break;
+			case FE_TET10  : nt = TET_NT; break;
+			case FE_TET15  : nt = TET_NT; break;
+			default:
+				assert(false);
 			}
 
 			// get the nodal values
@@ -348,7 +306,7 @@ void CGLIsoSurfacePlot::UpdateSlice(float ref, GLColor col)
 				}
 
 				// Add the face
-				m_mesh.AddFace(r, vn, col);
+				mesh.AddFace(r, vn, col);
 				pf+=3;
 			}
 		}
@@ -400,21 +358,38 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 		m_map.SetTag(ntime, m_nfield);
 		vector<float>& val = m_map.State(ntime);
 
-		// evaluate nodal values
-		NODEDATA nd;
-		for (int i=0; i<NN; ++i) 
+		// only count enabled parts
+		pm->TagAllNodes(0);
+		for (int i = 0; i < pm->Elements(); ++i)
 		{
-			pfem->EvaluateNode(i, ntime, m_nfield, nd);
-			val[i] = nd.m_val;
+			FEElement_& el = pm->ElementRef(i);
+			Material* pmat = pfem->GetMaterial(el.m_MatID);
+			if (pmat->benable && el.IsVisible())
+			{
+				int ne = el.Nodes();
+				for (int k = 0; k < ne; ++k)
+				{
+					FSNode& node = pm->Node(el.m_node[k]);
+					node.m_ntag = 1;
+				}
+			}
 		}
 
-		// evaluate the range
-		float fmin, fmax;
-		fmin = fmax = val[0];
-		for (int i=0;i<NN; ++i)
+		// evaluate nodal values
+		float fmin = 1e34, fmax = -1e34;
+		for (int i=0; i<NN; ++i) 
 		{
-			if (val[i] < fmin) fmin = val[i];
-			if (val[i] > fmax) fmax = val[i];
+			FSNode& node = pm->Node(i);
+			if (node.m_ntag == 1)
+			{
+				NODEDATA nd;
+				pfem->EvaluateNode(i, ntime, m_nfield, nd);
+				val[i] = nd.m_val;
+
+				if (val[i] < fmin) fmin = val[i];
+				if (val[i] > fmax) fmax = val[i];
+			}
+			else val[i] = 0.0f;
 		}
 
 		m_rng[ntime] = vec2f(fmin, fmax);
@@ -459,7 +434,16 @@ void CGLIsoSurfacePlot::Update(int ntime, float dt, bool breset)
 	}
 	if (m_crng.x == m_crng.y) m_crng.y++;
 
-	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
+	float vmin = m_crng.x;
+	float vmax = m_crng.y;
+	if (m_nslices > 0)
+	{
+		double D = vmax - vmin;
+		double d = 0.5 * D / m_nslices;
+		vmin += d;
+		vmax -= d;
+	}
+	GetLegendBar()->SetRange(vmin, vmax);
 
 	// Update the mesh
 	UpdateMesh();

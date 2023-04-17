@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <MeshLib/FEElement.h>
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <vector>
 //using namespace std;
 
@@ -79,6 +79,8 @@ public:
 	void AddElement(int n) { m_Elem.push_back(n); }
 	void AddFace   (int n) { m_Face.push_back(n); }
 
+	const std::vector<int>& FaceList() { return m_Face; }
+
 protected:
 	FEPostMesh*	m_pm;
 	int			m_nmat;	// material index
@@ -89,10 +91,10 @@ protected:
 
 //-----------------------------------------------------------------------------
 // Class that describes a group of elements
-class FSPart : public Post::MeshItemList
+class FSElemSet : public Post::MeshItemList
 {
 public:
-	FSPart(FSCoreMesh* pm) : MeshItemList(pm, FE_PART) {}
+	FSElemSet(FSCoreMesh* pm) : MeshItemList(pm, FE_ELEMSET) {}
 
 	int Size() const { return (int) m_Elem.size(); }
 

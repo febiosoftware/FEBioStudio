@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <QWidget>
+#include <QDialog>
 #include <vector>
 //using namespace std;
 
@@ -43,6 +44,7 @@ class CColorButton;
 class QComboBox;
 class QCheckBox;
 class GDiscreteElementSet;
+class QListWidget;
 
 namespace Ui {
 	class CModelPropsPanel;
@@ -150,6 +152,48 @@ private:
 	QLabel*			m_id;
 };
 
+class CMeshDataInfoPanel : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CMeshDataInfoPanel(QWidget* parent = 0);
+
+	void setName(const QString& name);
+
+	void setType(int ntype);
+
+	void setDataType(int ndatatype);
+
+	void setDataFormat(int ndataformat);
+
+protected slots:
+	void on_name_textEdited(const QString&);
+
+signals:
+	void nameChanged(const QString& newName);
+
+private:
+	QLineEdit* m_name;
+	QLabel* m_type;
+	QLabel* m_dataType;
+	QLabel* m_dataFmt;
+};
+
+class CDlgPickNamedSelection : public QDialog
+{
+public:
+	CDlgPickNamedSelection(QWidget* parent);
+
+	void setNameList(const QStringList& names);
+	void setSelection(const QString& name);
+
+	QString getSelection();
+
+private:
+	QListWidget* m_list;
+};
+
 
 class CModelPropsPanel : public QWidget
 {
@@ -179,9 +223,12 @@ private slots:
 	void on_select2_clearButtonClicked();
 	void on_select1_nameChanged(const QString& t);
 	void on_select2_nameChanged(const QString& t);
+	void on_select1_pickClicked();
+	void on_select2_pickClicked();
 	void on_object_nameChanged(const QString&);
 	void on_bcobject_nameChanged(const QString&);
 	void on_gitem_nameChanged(const QString&);
+	void on_data_nameChanged(const QString&);
 	void on_object_colorChanged(const QColor& col);
 	void on_props_dataChanged(int n);
 	void on_form_dataChanged(bool itemModified);
@@ -199,6 +246,7 @@ private slots:
 
 private:
 	void SetSelection(int n, FEItemListBuilder* it);
+	void SetSelection(int n, FEItemListBuilder* it, bool showNameType);
 	void SetSelection(GDiscreteElementSet* set);
 
 	void addSelection(int n);
@@ -206,11 +254,13 @@ private:
 	void delSelection(int n);
 	void selSelection(int n);
 	void clearSelection(int n);
+	void PickSelection(int n);
 
 signals:
 	void nameChanged(const QString& txt);
 	void selectionChanged();
 	void dataChanged(bool b);
+	void modelChanged();
 
 private:
 	Ui::CModelPropsPanel* ui;

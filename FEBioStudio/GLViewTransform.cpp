@@ -38,12 +38,6 @@ GLViewTransform::GLViewTransform(CGLView* view) : m_view(view), m_PM(4, 4), m_PM
 	glGetDoublev(GL_PROJECTION_MATRIX, p);
 	glGetDoublev(GL_MODELVIEW_MATRIX, m);
 
-	int vp[4];
-	glGetIntegerv(GL_VIEWPORT, vp);
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
 	// calculate projection matrix
 	matrix P(4, 4);
 	for (int i = 0; i<4; ++i)

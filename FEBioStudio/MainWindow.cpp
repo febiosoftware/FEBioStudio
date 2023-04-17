@@ -71,7 +71,7 @@ SOFTWARE.*/
 #include "DlgImportXPLT.h"
 #include "Commands.h"
 #include <XPLTLib/xpltFileReader.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "DocManager.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
@@ -83,18 +83,25 @@ SOFTWARE.*/
 #include "version.h"
 #include "LocalJobProcess.h"
 #include "FEBioThread.h"
+#include "DlgStartThread.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
+#include <PostLib/FELSDYNAimport.h>
+#include <PostLib/FESTLimport.h>
+#include "ImageThread.h"
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
+#include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
+#include <FSCore/FSLogger.h>
+#include <FEBioLink/FEBioClass.h>
 
 extern GLColor col[];
 
@@ -133,6 +140,28 @@ void darkStyle()
 	qApp->setStyleSheet("QMenu {margin: 2px} QMenu::separator {height: 1px; background: gray; margin-left: 10px; margin-right: 5px;}");
 }
 
+//-----------------------------------------------------------------------------
+class FSMainWindowLogOutput : public FSLogOutput
+{
+public:
+	FSMainWindowLogOutput(CMainWindow* wnd) : m_wnd(wnd)
+	{
+		FSLogger::SetWatcher(this);
+	}
+
+	void Write(const std::string& msg)
+	{
+		QString s = QString::fromStdString(msg);
+		m_wnd->AddLogEntry(s);
+	}
+
+private:
+	CMainWindow* m_wnd;
+};
+
+FSMainWindowLogOutput* mainWindogLogger = nullptr;
+
+//-----------------------------------------------------------------------------
 CMainWindow* CMainWindow::m_mainWnd = nullptr;
 
 //-----------------------------------------------------------------------------
@@ -145,6 +174,8 @@ CMainWindow* CMainWindow::GetInstance()
 CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(new Ui::CMainWindow)
 {
 	m_mainWnd = this;
+
+	mainWindogLogger = new FSMainWindowLogOutput(this);
 
 #ifdef LINUX
 	// Set locale to avoid issues with reading and writing feb files in other languages.
@@ -176,7 +207,8 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	PM.SetCurrentIndex(PM.Palettes() - 1);
 
 	// read the theme option, before we build the UI
-	readThemeSetting();
+	if (reset == false)
+		readThemeSetting();
 
 	// activate dark style
 	if (ui->m_theme == 1)
@@ -186,7 +218,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		// NOTE: I'm not sure if I can set the dark theme before I can create the document.
 		//       Since the bg colors are already set, I need to do this here. Make sure
 		//       the values set here coincide with the values from CDocument::NewDocument
-/*		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+/*		GLViewSettings& v = m_doc->GetViewSettings();
 		v.m_col1 = GLColor(83, 83, 83);
 		v.m_col2 = GLColor(128, 128, 128);
 		v.m_nbgstyle = BG_HORIZONTAL;
@@ -202,7 +234,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	{
 		qApp->setStyle(QStyleFactory::create("adwaita-dark"));
 
-//		VIEW_SETTINGS& v = m_doc->GetViewSettings();
+//		GLViewSettings& v = m_doc->GetViewSettings();
 //		v.m_col1 = GLColor(83, 83, 83);
 //		v.m_col2 = GLColor(128, 128, 128);
 //		v.m_nbgstyle = BG_HORIZONTAL;
@@ -249,7 +281,10 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
 	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
-	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
+	if (ui->m_autoSaveInterval > 0)
+	{
+		ui->m_autoSaveTimer->start(ui->m_autoSaveInterval * 1000);
+	}
 
 	// Auto Update Check
 	if(ui->m_updaterPresent)
@@ -332,6 +367,22 @@ void CMainWindow::UpdateTitle()
 		case VIDEO_MODE::VIDEO_PAUSED   : title += " (RECORDING PAUSED)"; break;
 		case VIDEO_MODE::VIDEO_RECORDING: title += " (RECORDING)"; break;
 		case VIDEO_MODE::VIDEO_STOPPED  : title += " (RECORDING STOPPED)"; break;
+		}
+	}
+
+	if (ui->m_jobManager->IsJobRunning())
+	{
+		CFEBioJob* job = CFEBioJob::GetActiveJob(); assert(job);
+		if (job)
+		{
+			string name = job->GetName();
+			title += " [ RUNNING: " + QString::fromStdString(name);
+			if (job->HasProgress())
+			{
+				int pct = (int) job->GetProgress();
+				title += " (" + QString::number(pct) + "%)";
+			}
+			title += "]";
 		}
 	}
 	
@@ -453,6 +504,12 @@ void CMainWindow::on_htmlview_anchorClicked(const QUrl& link)
 	else if (ref == "#help") on_actionFEBioResources_triggered();
 	else if (ref == "#forum") on_actionFEBioForum_triggered();
 	else if (ref == "#update") on_actionUpdate_triggered();
+    else if (ref.contains("#http"))
+    {
+        QString temp = link.toString().replace("#http", "https://");
+
+        QDesktopServices::openUrl(QUrl(temp));
+    }
     else if (ref == "#bugreport") on_actionBugReport_triggered();
 	else
 	{
@@ -513,6 +570,8 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 	}
 	else if ((ext.compare("xplt", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("vtk" , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("k"   , Qt::CaseInsensitive) == 0) ||
+		     (ext.compare("stl" , Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("fsps", Qt::CaseInsensitive) == 0))
 	{
 		// load the post file
@@ -984,6 +1043,16 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
 			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
 		}
+		else if (ext.compare("k", Qt::CaseInsensitive) == 0)
+		{
+			Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(doc->GetFSModel());
+			ReadFile(doc, fileName, reader, QueuedFile::NEW_DOCUMENT);
+		}
+		else if (ext.compare("stl", Qt::CaseInsensitive) == 0)
+		{
+			Post::FESTLimport* reader = new Post::FESTLimport(doc->GetFSModel());
+			ReadFile(doc, fileName, reader, QueuedFile::NEW_DOCUMENT);
+		}
 		else if (ext.isEmpty())
 		{
 			// Assume this is an LSDYNA database
@@ -1357,6 +1426,7 @@ void CMainWindow::autosave()
 void CMainWindow::autoUpdateCheck(bool update)
 {
 	ui->m_updateAvailable = update;
+    ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
 
 	int n = ui->tab->findView("Welcome");
 	if (n != -1)
@@ -1368,190 +1438,262 @@ void CMainWindow::autoUpdateCheck(bool update)
 void CMainWindow::ReportSelection()
 {
 	CModelDocument* doc = GetModelDocument();
-	if (doc == nullptr) return;
+	if (doc)
+	{
+		FESelection* sel = doc->GetCurrentSelection();
+		if ((sel == 0) || (sel->Size() == 0))
+		{
+			ClearStatusMessage();
+			return;
+		}
 
-	FESelection* sel = doc->GetCurrentSelection();
-	if ((sel == 0) || (sel->Size() == 0)) 
-	{
-		ClearStatusMessage();
-		return;
-	}
-
-	GetCreatePanel()->setInput(sel);
-	int N = sel->Size();
-	QString msg;
-	switch (sel->Type())
-	{
-	case SELECT_OBJECTS:
-	{
-		GObjectSelection& s = dynamic_cast<GObjectSelection&>(*sel);
-		if (N == 1)
+		GetCreatePanel()->setInput(sel);
+		int N = sel->Size();
+		QString msg;
+		switch (sel->Type())
 		{
-			GObject* po = s.Object(0);
-			msg = QString("Object \"%1\" selected (Id = %2)").arg(QString::fromStdString(po->GetName())).arg(po->GetID());
-		}
-		else msg = QString("%1 Objects selected").arg(N);
-	}
-	break;
-	case SELECT_PARTS:
-	{
-		if (N == 1)
+		case SELECT_OBJECTS:
 		{
-			GPartSelection& ps = dynamic_cast<GPartSelection&>(*sel);
-			GPartSelection::Iterator it(&ps);
-			msg = QString("Part \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Parts selected").arg(N);
-	}
-	break;
-	case SELECT_SURFACES:
-	{
-		if (N == 1)
-		{
-			GFaceSelection& fs = dynamic_cast<GFaceSelection&>(*sel);
-			GFaceSelection::Iterator it(&fs);
-			msg = QString("Surface \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Surfaces selected").arg(N);
-	}
-	break;
-	case SELECT_CURVES:
-	{
-		GEdgeSelection& es = dynamic_cast<GEdgeSelection&>(*sel);
-		if (N == 1)
-		{
-			GEdgeSelection::Iterator it(&es);
-			msg = QString("Curve \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Curves selected").arg(N);
-	}
-	break;
-	case SELECT_NODES:
-	{
-		if (N == 1)
-		{
-			GNodeSelection& ns = dynamic_cast<GNodeSelection&>(*sel);
-			GNodeSelection::Iterator it(&ns);
-			msg = QString("Node \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
-		}
-		else msg = QString("%1 Nodes selected").arg(N);
-	}
-	break;
-	case SELECT_DISCRETE_OBJECT:
-	{
-		if (N == 1)
-		{
-			msg = QString("1 discrete object selected");
-		}
-		else msg = QString("%1 discrete objects selected").arg(N);
-	}
-	break;
-	case SELECT_FE_ELEMENTS:
-	{
-		msg = QString("%1 elements selected").arg(N);
-	}
-	break;
-	case SELECT_FE_FACES:
-	{
-		msg = QString("%1 faces selected").arg(N);
-	}
-	break;
-	case SELECT_FE_EDGES:
-	{
-		msg = QString("%1 edges selected").arg(N);
-	}
-	break;
-	case SELECT_FE_NODES:
-	{
-		msg = QString("%1 nodes selected").arg(N);
-	}
-	break;
-	}
-	SetStatusMessage(msg);
-	AddLogEntry(msg + "\n");
-
-	FEElementSelection* es = dynamic_cast<FEElementSelection*>(sel);
-	if (es)
-	{
-		if (es->Size() == 1)
-		{
-			FEElement_* el = es->Element(0);
-			switch (el->Type())
+			GObjectSelection& s = dynamic_cast<GObjectSelection&>(*sel);
+			if (N == 1)
 			{
-			case FE_HEX8   : AddLogEntry("  Type = HEX8"   ); break;
-			case FE_TET4   : AddLogEntry("  Type = TET4"   ); break;
-			case FE_TET5   : AddLogEntry("  Type = TET5"   ); break;
-			case FE_PENTA6 : AddLogEntry("  Type = PENTA6" ); break;
-			case FE_QUAD4  : AddLogEntry("  Type = QUAD4"  ); break;
-			case FE_TRI3   : AddLogEntry("  Type = TRI3"   ); break;
-			case FE_BEAM2  : AddLogEntry("  Type = BEAM2"  ); break;
-			case FE_HEX20  : AddLogEntry("  Type = HEX20"  ); break;
-			case FE_QUAD8  : AddLogEntry("  Type = QUAD8"  ); break;
-			case FE_BEAM3  : AddLogEntry("  Type = BEAM3"  ); break;
-			case FE_TET10  : AddLogEntry("  Type = TET10"  ); break;
-			case FE_TRI6   : AddLogEntry("  Type = TRI6"   ); break;
-			case FE_TET15  : AddLogEntry("  Type = TET15"  ); break;
-			case FE_HEX27  : AddLogEntry("  Type = HEX27"  ); break;
-			case FE_TRI7   : AddLogEntry("  Type = TRI7"   ); break;
-			case FE_QUAD9  : AddLogEntry("  Type = QUAD9"  ); break;
-			case FE_PENTA15: AddLogEntry("  Type = PENTA15"); break;
-			case FE_PYRA5  : AddLogEntry("  Type = PYRA5"  ); break;
-			case FE_TET20  : AddLogEntry("  Type = TET20"  ); break;
-			case FE_TRI10  : AddLogEntry("  Type = TRI10"  ); break;
-            case FE_PYRA13 : AddLogEntry("  Type = PYRA13" ); break;
+				GObject* po = s.Object(0);
+				msg = QString("Object \"%1\" selected (Id = %2)").arg(QString::fromStdString(po->GetName())).arg(po->GetID());
 			}
-			AddLogEntry("\n");
-
-			AddLogEntry("  nodes: ");
-			int n = el->Nodes();
-			for (int i=0; i<n; ++i)
+			else msg = QString("%1 Objects selected").arg(N);
+		}
+		break;
+		case SELECT_PARTS:
+		{
+			if (N == 1)
 			{
-				AddLogEntry(QString::number(el->m_node[i]));
-				if (i < n - 1) AddLogEntry(", ");
-				else AddLogEntry("\n");
+				GPartSelection& ps = dynamic_cast<GPartSelection&>(*sel);
+				GPartSelection::Iterator it(&ps);
+				msg = QString("Part \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
 			}
-
-			AddLogEntry("  neighbors: ");
-			n = 0;
-			if (el->IsSolid()) n = el->Faces();
-			else if (el->IsShell()) n = el->Edges();
-
-			for (int i=0; i<n; ++i)
+			else msg = QString("%1 Parts selected").arg(N);
+		}
+		break;
+		case SELECT_SURFACES:
+		{
+			if (N == 1)
 			{
-				AddLogEntry(QString::number(el->m_nbr[i]));
-				if (i < n - 1) AddLogEntry(", ");
-				else AddLogEntry("\n");
+				GFaceSelection& fs = dynamic_cast<GFaceSelection&>(*sel);
+				GFaceSelection::Iterator it(&fs);
+				msg = QString("Surface \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+			}
+			else msg = QString("%1 Surfaces selected").arg(N);
+		}
+		break;
+		case SELECT_CURVES:
+		{
+			GEdgeSelection& es = dynamic_cast<GEdgeSelection&>(*sel);
+			if (N == 1)
+			{
+				GEdgeSelection::Iterator it(&es);
+				msg = QString("Curve \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+			}
+			else msg = QString("%1 Curves selected").arg(N);
+		}
+		break;
+		case SELECT_NODES:
+		{
+			if (N == 1)
+			{
+				GNodeSelection& ns = dynamic_cast<GNodeSelection&>(*sel);
+				GNodeSelection::Iterator it(&ns);
+				msg = QString("Node \"%1\" selected (Id = %2)").arg(QString::fromStdString(it->GetName())).arg(it->GetID());
+			}
+			else msg = QString("%1 Nodes selected").arg(N);
+		}
+		break;
+		case SELECT_DISCRETE_OBJECT:
+		{
+			if (N == 1)
+			{
+				msg = QString("1 discrete object selected");
+			}
+			else msg = QString("%1 discrete objects selected").arg(N);
+		}
+		break;
+		case SELECT_FE_ELEMENTS:
+		{
+			msg = QString("%1 elements selected").arg(N);
+		}
+		break;
+		case SELECT_FE_FACES:
+		{
+			msg = QString("%1 faces selected").arg(N);
+		}
+		break;
+		case SELECT_FE_EDGES:
+		{
+			msg = QString("%1 edges selected").arg(N);
+		}
+		break;
+		case SELECT_FE_NODES:
+		{
+			msg = QString("%1 nodes selected").arg(N);
+		}
+		break;
+		}
+		SetStatusMessage(msg);
+		AddLogEntry(msg + "\n");
+
+		FEElementSelection* es = dynamic_cast<FEElementSelection*>(sel);
+		if (es)
+		{
+			if (es->Size() == 1)
+			{
+				FEElement_* el = es->Element(0);
+				switch (el->Type())
+				{
+				case FE_HEX8: AddLogEntry("  Type = HEX8"); break;
+				case FE_TET4: AddLogEntry("  Type = TET4"); break;
+				case FE_TET5: AddLogEntry("  Type = TET5"); break;
+				case FE_PENTA6: AddLogEntry("  Type = PENTA6"); break;
+				case FE_QUAD4: AddLogEntry("  Type = QUAD4"); break;
+				case FE_TRI3: AddLogEntry("  Type = TRI3"); break;
+				case FE_BEAM2: AddLogEntry("  Type = BEAM2"); break;
+				case FE_HEX20: AddLogEntry("  Type = HEX20"); break;
+				case FE_QUAD8: AddLogEntry("  Type = QUAD8"); break;
+				case FE_BEAM3: AddLogEntry("  Type = BEAM3"); break;
+				case FE_TET10: AddLogEntry("  Type = TET10"); break;
+				case FE_TRI6: AddLogEntry("  Type = TRI6"); break;
+				case FE_TET15: AddLogEntry("  Type = TET15"); break;
+				case FE_HEX27: AddLogEntry("  Type = HEX27"); break;
+				case FE_TRI7: AddLogEntry("  Type = TRI7"); break;
+				case FE_QUAD9: AddLogEntry("  Type = QUAD9"); break;
+				case FE_PENTA15: AddLogEntry("  Type = PENTA15"); break;
+				case FE_PYRA5: AddLogEntry("  Type = PYRA5"); break;
+				case FE_TET20: AddLogEntry("  Type = TET20"); break;
+				case FE_TRI10: AddLogEntry("  Type = TRI10"); break;
+				case FE_PYRA13: AddLogEntry("  Type = PYRA13"); break;
+				}
+				AddLogEntry("\n");
+
+				AddLogEntry("  nodes: ");
+				int n = el->Nodes();
+				for (int i = 0; i < n; ++i)
+				{
+					AddLogEntry(QString::number(el->m_node[i]));
+					if (i < n - 1) AddLogEntry(", ");
+					else AddLogEntry("\n");
+				}
+
+				AddLogEntry("  neighbors: ");
+				n = 0;
+				if (el->IsSolid()) n = el->Faces();
+				else if (el->IsShell()) n = el->Edges();
+
+				for (int i = 0; i < n; ++i)
+				{
+					AddLogEntry(QString::number(el->m_nbr[i]));
+					if (i < n - 1) AddLogEntry(", ");
+					else AddLogEntry("\n");
+				}
+			}
+		}
+
+		FEFaceSelection* fs = dynamic_cast<FEFaceSelection*>(sel);
+		if (fs)
+		{
+			if (fs->Size() == 1)
+			{
+				FEFaceSelection::Iterator it = fs->begin();
+				FSFace* pf = it;
+				switch (pf->Type())
+				{
+				case FE_FACE_TRI3: AddLogEntry("  Type = TRI3"); break;
+				case FE_FACE_QUAD4: AddLogEntry("  Type = QUAD4"); break;
+				case FE_FACE_TRI6: AddLogEntry("  Type = TRI6"); break;
+				case FE_FACE_TRI7: AddLogEntry("  Type = TRI7"); break;
+				case FE_FACE_QUAD8: AddLogEntry("  Type = QUAD8"); break;
+				case FE_FACE_QUAD9: AddLogEntry("  Type = QUAD9"); break;
+				case FE_FACE_TRI10: AddLogEntry("  Type = TRI10"); break;
+				}
+				AddLogEntry("\n");
+
+				AddLogEntry("  neighbors: ");
+				int n = pf->Edges();
+				for (int i = 0; i < n; ++i)
+				{
+					AddLogEntry(QString::number(pf->m_nbr[i]));
+					if (i < n - 1) AddLogEntry(", ");
+					else AddLogEntry("\n");
+				}
 			}
 		}
 	}
 
-	FEFaceSelection* fs = dynamic_cast<FEFaceSelection*>(sel);
-	if (fs)
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc && postDoc->IsValid())
 	{
-		if (fs->Size() == 1)
+		Post::CGLModel* mdl = postDoc->GetGLModel();
+		int mode = mdl->GetSelectionMode();
+		switch (mode)
 		{
-			FEFaceSelection::Iterator it = fs->begin();
-			FSFace* pf = it;
-			switch (pf->Type())
+		case Post::SELECT_NODES:
+		{
+			std::vector<FSNode*> sel = mdl->GetNodeSelection();
+			AddLogEntry(QString("%1 node(s) selected\n").arg(sel.size()));
+		}
+		break;
+		case Post::SELECT_EDGES:
+		{
+			std::vector<FSEdge*> sel = mdl->GetEdgeSelection();
+			AddLogEntry(QString("%1 edge(s) selected\n").arg(sel.size()));
+		}
+		break;
+		case Post::SELECT_FACES:
+		{
+			std::vector<FSFace*> sel = mdl->GetFaceSelection();
+			if (sel.size() == 1)
 			{
-			case FE_FACE_TRI3 : AddLogEntry("  Type = TRI3"); break;
-			case FE_FACE_QUAD4: AddLogEntry("  Type = QUAD4"); break;
-			case FE_FACE_TRI6 : AddLogEntry("  Type = TRI6"); break;
-			case FE_FACE_TRI7 : AddLogEntry("  Type = TRI7"); break;
-			case FE_FACE_QUAD8: AddLogEntry("  Type = QUAD8"); break;
-			case FE_FACE_QUAD9: AddLogEntry("  Type = QUAD9"); break;
-			case FE_FACE_TRI10: AddLogEntry("  Type = TRI10"); break;
+				FSFace* f = sel[0];
+				if (f)
+				{
+					vec3f n = f->m_fn;
+					QString stype;
+					switch (f->Type())
+					{
+					case FE_FACE_TRI3 : stype = "TRI3" ; break;
+					case FE_FACE_QUAD4: stype = "QUAD4"; break;
+					case FE_FACE_TRI6 : stype = "TRI6" ; break;
+					case FE_FACE_TRI7 : stype = "TRI7" ; break;
+					case FE_FACE_QUAD8: stype = "QUAD8"; break;
+					case FE_FACE_QUAD9: stype = "QUAD9"; break;
+					case FE_FACE_TRI10: stype = "TRI10"; break;
+					default:
+						assert(false);
+						stype = "(unknown)";
+					}
+					QString nodeList;
+					int nn = f->Nodes();
+					for (int i = 0; i < nn; ++i)
+					{
+						nodeList.append(QString::number(f->n[i] + 1));
+						if (i < nn - 1) nodeList.append(", ");
+					}
+					AddLogEntry("1 face selected:\n");
+					AddLogEntry(QString("  ID    : %1\n").arg(f->GetID()));
+					AddLogEntry(QString("  type  : %1\n").arg(stype));
+					AddLogEntry(QString("  nodes : %1\n").arg(nodeList));
+					AddLogEntry(QString("  normal: %1, %2, %3\n").arg(n.x).arg(n.y).arg(n.z));
+				}
 			}
-			AddLogEntry("\n");
-
-			AddLogEntry("  neighbors: ");
-			int n = pf->Edges();
-			for (int i = 0; i<n; ++i)
+			else
 			{
-				AddLogEntry(QString::number(pf->m_nbr[i]));
-				if (i < n - 1) AddLogEntry(", ");
-				else AddLogEntry("\n");
+				AddLogEntry(QString("%1 faces selected\n").arg(sel.size()));
 			}
+		}
+		break;
+		case Post::SELECT_ELEMS:
+		{
+			std::vector<FEElement_*> sel = mdl->GetElementSelection();
+			AddLogEntry(QString("%1 element(s) selected\n").arg(sel.size()));
+		}
+		break;
 		}
 	}
 }
@@ -1681,12 +1823,20 @@ void CMainWindow::setAutoSaveInterval(int interval)
 	ui->m_autoSaveInterval = interval;
 
 	ui->m_autoSaveTimer->stop();
-	ui->m_autoSaveTimer->start(ui->m_autoSaveInterval*1000);
+	if (ui->m_autoSaveInterval > 0)
+	{
+		ui->m_autoSaveTimer->start(ui->m_autoSaveInterval * 1000);
+	}
 }
 
 int CMainWindow::autoSaveInterval()
 {
 	return ui->m_autoSaveInterval;
+}
+
+QString CMainWindow::GetServerMessage()
+{
+    return ui->m_serverMessage;
 }
 
 bool CMainWindow::updaterPresent()
@@ -1712,7 +1862,7 @@ int CMainWindow::GetDefaultUnitSystem() const
 
 void CMainWindow::writeSettings()
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 
@@ -1724,10 +1874,10 @@ void CMainWindow::writeSettings()
 	settings.setValue("theme", ui->m_theme);
 	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
 	settings.setValue("defaultUnits", ui->m_defaultUnits);
-	settings.setValue("bgColor1", (int)vs.m_col1);
-	settings.setValue("bgColor2", (int)vs.m_col2);
-	settings.setValue("fgColor", (int)vs.m_fgcol);
-	settings.setValue("meshColor", (int)vs.m_mcol);
+	settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
+	settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
+	settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
+	settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
 	settings.setValue("bgStyle", vs.m_nbgstyle);
 	settings.setValue("lighting", vs.m_bLighting);
 	settings.setValue("shadows", vs.m_bShadows);
@@ -1737,7 +1887,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
-	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor);
+	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
@@ -1838,7 +1988,7 @@ void CMainWindow::readThemeSetting()
 
 void CMainWindow::readSettings()
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
@@ -1847,10 +1997,10 @@ void CMainWindow::readSettings()
 	ui->m_theme = settings.value("theme", 0).toInt();
 	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
 	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
-	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1).toInt());
-	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2).toInt());
-	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol).toInt());
-	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol).toInt());
+	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
+	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
+	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
+	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
 	vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
 	vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
 	vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
@@ -1860,7 +2010,7 @@ void CMainWindow::readSettings()
 	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
-	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor).toInt());
+	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
 
 	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 	GLWidget::set_default_font(font);
@@ -1907,13 +2057,12 @@ void CMainWindow::readSettings()
 	QStringList launch_config_names;
 	launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
 
-	// Overwrite the default if they have launch configurations saved.
-	if(launch_config_names.count() > 0)
-	{
-		ui->m_launch_configs.clear();
-		// create the default launch configuration
-		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
-	}
+	// clear launch configurations
+	ui->m_launch_configs.clear();
+
+	// create the default launch configuration
+	ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
+
 
 	for(QString conf : launch_config_names)
 	{
@@ -1988,7 +2137,7 @@ void CMainWindow::UpdateToolbar()
 
 	if (doc->IsValid() == false) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	if (view.m_blma   != ui->actionShowMatAxes->isChecked()) ui->actionShowMatAxes->trigger();
 	if (view.m_bmesh  != ui->actionShowMeshLines->isChecked()) ui->actionShowMeshLines->trigger();
 	if (view.m_bgrid  != ui->actionShowGrid->isChecked()) ui->actionShowGrid->trigger();
@@ -2533,8 +2682,8 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 
 	menu.addAction(ui->actionRenderMode);
 
-	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc == nullptr)
+	CModelDocument* doc = GetModelDocument();
+	if (doc)
 	{
 		menu.addAction(ui->actionShowNormals);
 		menu.addAction(ui->actionShowFibers);
@@ -2543,7 +2692,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		menu.addSeparator();
 
 		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
-		VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+		GLViewSettings& vs = GetGLView()->GetViewSettings();
 		QMenu* display = new QMenu("Object transparency mode");
 		QAction* a;
 		a = display->addAction("None"); a->setCheckable(true); if (vs.m_transparencyMode == 0) a->setChecked(true);
@@ -2551,28 +2700,32 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		a = display->addAction("Unselected only"); a->setCheckable(true); if (vs.m_transparencyMode == 2) a->setChecked(true);
 		QObject::connect(display, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectTransparencyMode(QAction*)));
 		menu.addAction(display->menuAction());
+
+		QMenu* colorMode = new QMenu("Color mode");
+		a = colorMode->addAction("Default"); a->setCheckable(true); if (vs.m_objectColor == 0) a->setChecked(true);
+		a = colorMode->addAction("By object"); a->setCheckable(true); if (vs.m_objectColor == 1) a->setChecked(true);
+		a = colorMode->addAction("By material type"); a->setCheckable(true); if (vs.m_objectColor == 2) a->setChecked(true);
+		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
+		menu.addAction(colorMode->menuAction());
+
 		menu.addSeparator();
 
-		CModelDocument* doc = GetModelDocument();
-		if (doc)
+		GModel* gm = doc->GetGModel();
+		int layers = gm->MeshLayers();
+		if (layers > 1)
 		{
-			GModel* gm = doc->GetGModel();
-			int layers = gm->MeshLayers();
-			if (layers > 1)
+			QMenu* sub = new QMenu("Set Active Mesh Layer");
+			int activeLayer = gm->GetActiveMeshLayer();
+			for (int i = 0; i < layers; ++i)
 			{
-				QMenu* sub = new QMenu("Set Active Mesh Layer");
-				int activeLayer = gm->GetActiveMeshLayer();
-				for (int i = 0; i < layers; ++i)
-				{
-					string s = gm->GetMeshLayerName(i);
-					QAction* a = sub->addAction(QString::fromStdString(s));
-					a->setCheckable(true);
-					if (i == activeLayer) a->setChecked(true);
-				}
-				QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
-				menu.addAction(sub->menuAction());
-				menu.addSeparator();
+				string s = gm->GetMeshLayerName(i);
+				QAction* a = sub->addAction(QString::fromStdString(s));
+				a->setCheckable(true);
+				if (i == activeLayer) a->setChecked(true);
 			}
+			QObject::connect(sub, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectMeshLayer(QAction*)));
+			menu.addAction(sub->menuAction());
+			menu.addSeparator();
 		}
 	}
 	menu.addAction(ui->actionOptions);
@@ -2610,11 +2763,23 @@ void CMainWindow::OnSelectMeshLayer(QAction* ac)
 //-----------------------------------------------------------------------------
 void CMainWindow::OnSelectObjectTransparencyMode(QAction* ac)
 {
-	VIEW_SETTINGS& vs = GetGLView()->GetViewSettings();
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
 
 	if      (ac->text() == "None"           ) vs.m_transparencyMode = 0;
 	else if (ac->text() == "Selected only"  ) vs.m_transparencyMode = 1;
 	else if (ac->text() == "Unselected only") vs.m_transparencyMode = 2;
+
+	RedrawGL();
+}
+
+//-----------------------------------------------------------------------------
+void CMainWindow::OnSelectObjectColorMode(QAction* ac)
+{
+	GLViewSettings& vs = GetGLView()->GetViewSettings();
+
+	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
+	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
+	else if (ac->text() == "By material type") vs.m_objectColor = OBJECT_COLOR_MODE::MATERIAL_TYPE;
 
 	RedrawGL();
 }
@@ -2704,19 +2869,21 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if ((doc == nullptr) || (doc == srcDoc) || (srcDoc == nullptr)) return;
 
-	FSModel* fem = srcDoc->GetFSModel();
-	if (fem->Materials() == 0)
+	FSModel* srcfem = srcDoc->GetFSModel();
+	if (srcfem->Materials() == 0)
 	{
 		QMessageBox::information(this, "Import Materials", "The selected source file does not contain any materials.");
 		return;
 	}
 
 	QStringList items;
-	for (int i = 0; i < fem->Materials(); ++i)
+	for (int i = 0; i < srcfem->Materials(); ++i)
 	{
-		GMaterial* gm = fem->GetMaterial(i);
+		GMaterial* gm = srcfem->GetMaterial(i);
 		items.push_back(gm->GetFullName());
 	}
+
+	FSModel* dstfem = doc->GetFSModel();
 
 	QInputDialog input;
 	input.setOption(QInputDialog::UseListViewForComboBoxItems);
@@ -2726,14 +2893,16 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 	{
 		QString item = input.textValue();
 
-		for (int i = 0; i < fem->Materials(); ++i)
+		for (int i = 0; i < srcfem->Materials(); ++i)
 		{
-			GMaterial* gm = fem->GetMaterial(i);
+			GMaterial* gm = srcfem->GetMaterial(i);
 			QString name = gm->GetFullName();
 			if (name == item)
 			{
-				GMaterial* newMat = gm->Clone();
-				doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), newMat));
+				FSMaterial* pmsrc = gm->GetMaterialProperties();
+				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
+				GMaterial* newMat = new GMaterial(pmnew);
+				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat));
 				UpdateModel(newMat);
 				return;
 			}
@@ -3164,6 +3333,19 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 	}
 
 	UpdateModel(job, false);
+
+	// start a time to measure progress
+	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
+}
+
+void CMainWindow::checkJobProgress()
+{
+	UpdateTitle();
+
+	if (ui->m_jobManager->IsJobRunning())
+	{
+		QTimer::singleShot(100, this, SLOT(checkJobProgress()));
+	}
 }
 
 void CMainWindow::NextSSHFunction(CSSHHandler* sshHandler)
@@ -3323,19 +3505,51 @@ void CMainWindow::CloseWelcomePage()
 	}
 }
 
+bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
+{
+	static int n = 1;
+	CGLDocument* doc = GetGLDocument();
+	if (doc == nullptr) return false;
+
+	CDlgStartThread dlg(this, new CImageReadThread(imgModel));
+
+	if (dlg.exec())
+	{
+		if (imgModel->GetImageSource()->GetName().empty())
+		{
+			std::stringstream ss;
+			ss << "ImageModel" << n++;
+			imgModel->SetName(ss.str());
+		}
+		else
+		{
+			imgModel->SetName(imgModel->GetImageSource()->GetName());
+		}
+
+		// add it to the project
+		doc->AddImageModel(imgModel);
+
+		return true;
+	}
+	return false;
+}
+
 #ifdef HAS_ITK
 	void CMainWindow::ProcessITKImage(const QString& fileName, ImageFileType type)
 	{
 		CGLDocument* doc = GetGLDocument();
 
-		Post::CImageModel* imageModel = nullptr;
+        // we pass the relative path to the image model
+	    string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
 
-		imageModel = doc->ImportITK(fileName.toStdString(), type);
-		if (imageModel == nullptr)
-		{
-			QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-			return;
-		}
+		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+        imageModel->SetImageSource(new Post::CITKImageSource(imageModel, relFile, type));
+
+        if(!ImportImage(imageModel))
+        {
+            delete imageModel;
+            imageModel = nullptr;
+        }
 
 		if(imageModel)
 		{
@@ -3345,8 +3559,7 @@ void CMainWindow::CloseWelcomePage()
 			// only for model docs
 			if (dynamic_cast<CModelDocument*>(doc))
 			{
-                // Post::CVolRender* vr = new Post::CVolRender(imageModel);
-				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 				vr->Create();
 				imageModel->AddImageRenderer(vr);
 
@@ -3404,4 +3617,14 @@ void CMainWindow::OnDeleteAllMeshData()
 QSize CMainWindow::GetEditorSize()
 {
     return ui->stack->size();
+}
+
+void CMainWindow::on_doCommand(QString msg)
+{
+	AddLogEntry(msg);
+}
+
+void CMainWindow::on_selectionChanged()
+{
+	ReportSelection();
 }

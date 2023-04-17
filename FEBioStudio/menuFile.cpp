@@ -80,6 +80,7 @@ SOFTWARE.*/
 #include <MeshIO/BREPImport.h>
 #include <MeshIO/STEPImport.h>
 #include <Abaqus/AbaqusExport.h>
+#include <FSCore/FSDir.h>
 #include "DlgImportAbaqus.h"
 #include "DlgRAWImport.h"
 #include "DlgImportCOMSOL.h"
@@ -100,9 +101,11 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
 #include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
+#include <PostLib/DICOMImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/AbaqusExport.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
@@ -119,8 +122,8 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
+#include <PostLib/TiffReader.h>
 #include <sstream>
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
@@ -131,11 +134,6 @@ using std::stringstream;
 #ifdef HAS_QUAZIP
 #include "ZipFiles.h"
 #endif
-
-#ifdef HAS_TEEM
-#include <QFileInfo>
-#endif
-
 
 void CMainWindow::on_actionOpenProject_triggered()
 {
@@ -215,7 +213,7 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.stl)";
 	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
@@ -224,6 +222,8 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
 	filters << "VTK files (*.vtk)";
+	filters << "LSDYNA keyword (*.k)";
+	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
 
 	QFileDialog dlg(this, "Open");
@@ -278,17 +278,22 @@ void CMainWindow::on_actionSave_triggered()
 	if (fileName.empty()) on_actionSaveAs_triggered();
 	else
 	{
-		// if the extension is fsm, we are going to change it to fs2
-		size_t n = fileName.rfind('.');
-		if (n != string::npos)
-		{
-			string ext = fileName.substr(n);
-			if (ext == ".fsm")
-			{
-				on_actionSaveAs_triggered();
-				return;
-			}
-		}
+        auto modelDoc = dynamic_cast<CModelDocument*>(doc);
+
+        if(modelDoc)
+        {
+            // if the extension is fsm or feb, we are going to change it to fs2
+            size_t n = fileName.rfind('.');
+            if (n != string::npos)
+            {
+                string ext = fileName.substr(n);
+                if (ext == ".fsm" || ext == ".feb")
+                {
+                    on_actionSaveAs_triggered();
+                    return;
+                }
+            }
+        }
 		
 		SaveDocument(QString::fromStdString(fileName));
 	}
@@ -372,6 +377,13 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 {
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return false;
+
+	CGLDocument* glDoc = dynamic_cast<CGLDocument*>(doc);
+	if (glDoc && (glDoc->GetFileWriter() == nullptr))
+	{
+		on_actionSaveAs_triggered();
+		return true;
+	}
 
 	// start log message
 	ui->logPanel->AddText(QString("Saving file: %1 ...").arg(fileName));
@@ -958,6 +970,13 @@ void CMainWindow::on_recentGeomFiles_triggered(QAction* action)
 //-----------------------------------------------------------------------------
 void CMainWindow::SavePostDoc()
 {
+	CPostDocument* doc = GetPostDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
+
+	string fileName = doc->GetDocTitle();
+	size_t n = fileName.rfind('.');
+	if (n != string::npos) fileName.erase(n);
+
 	QStringList filters;
 	filters << "FEBio Studio Post Session (*.fsps)"
 		<< "FEBio xplt files (*.xplt)"
@@ -975,6 +994,7 @@ void CMainWindow::SavePostDoc()
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilters(filters);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	dlg.selectFile(QString::fromStdString(fileName));
 	if (dlg.exec())
 	{
 		QStringList files = dlg.selectedFiles();
@@ -986,9 +1006,6 @@ void CMainWindow::SavePostDoc()
 		if (fileName.isEmpty()) return;
 		string sfilename = fileName.toStdString();
 		const char* szfilename = sfilename.c_str();
-
-		CPostDocument* doc = GetPostDocument();
-		if ((doc == nullptr) || (doc->IsValid() == false)) return;
 
 		Post::FEPostModel& fem = *doc->GetFSModel();
 
@@ -1150,6 +1167,7 @@ void CMainWindow::on_actionSaveAs_triggered()
             dlg.setDirectory(ui->currentPath);
             dlg.setFileMode(QFileDialog::AnyFile);
             dlg.setNameFilter("FEBio Input files (*.feb)");
+            dlg.setDefaultSuffix("feb");
             dlg.selectFile(QString::fromStdString(xmlDoc->GetDocTitle()));
             dlg.setAcceptMode(QFileDialog::AcceptSave);
             if (dlg.exec())
@@ -1180,7 +1198,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 			if (n != string::npos)
 			{
 				string ext = fileName.substr(n);
-				if (ext == ".fsm")
+				if ((ext == ".fsm") || (ext == ".feb"))
 				{
 					fileName.replace(n, 4, ".fs2");
 				}
@@ -1192,6 +1210,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 	dlg.setDirectory(currentPath);
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilter("FEBio Studio Model (*.fs2)");
+    dlg.setDefaultSuffix("fs2");
 	dlg.selectFile(QString::fromStdString(fileName));
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec())
@@ -1538,11 +1557,20 @@ void CMainWindow::on_actionImportGeometry_triggered()
 			RedrawGL();
 		}
 	}
+	else
+	{
+		QMessageBox::critical(this, "Import Geometry", "Importing geometry requires an active model.\nPlease create a new model or open an existing model first.");
+	}
 }
 
 void CMainWindow::on_actionImportRawImage_triggered()
 {
 	CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
@@ -1562,12 +1590,18 @@ void CMainWindow::on_actionImportRawImage_triggered()
 		{
 			BOX box(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_x0 + dlg.m_w, dlg.m_y0 + dlg.m_h, dlg.m_z0 + dlg.m_d);
 
-			imageModel = doc->ImportImage(filedlg.selectedFiles()[0].toStdString(), dlg.m_nx, dlg.m_ny, dlg.m_nz, box);
-			if (imageModel == nullptr)
-			{
-				QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-				return;
-			}
+            // we pass the relative path to the image model
+	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
+
+            imageModel = new Post::CImageModel(nullptr);
+            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
+
+            if(!ImportImage(imageModel))
+            {
+                delete imageModel;
+                imageModel = nullptr;
+            }
+
 		}
 
 		if(imageModel)
@@ -1578,8 +1612,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 			// only for model docs
 			if (dynamic_cast<CModelDocument*>(doc))
 			{
-//				Post::CVolRender* vr = new Post::CVolRender(imageModel);
-				Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+				Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
 				vr->Create();
 				imageModel->AddImageRenderer(vr);
 
@@ -1594,8 +1627,16 @@ void CMainWindow::on_actionImportRawImage_triggered()
 		}
 	}
 }
+
 void CMainWindow::on_actionImportDICOMImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1612,6 +1653,13 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 
 void CMainWindow::on_actionImportTiffImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1624,11 +1672,77 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 	{
 		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
 	}
-
 }
+
+// void CMainWindow::on_actionImportTiffImage_triggered()
+// {
+//     CGLDocument* doc = GetGLDocument();
+//     if(!doc)
+//     {
+//         QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+//         return;
+//     }
+
+// 	QFileDialog filedlg(this);
+// 	filedlg.setFileMode(QFileDialog::ExistingFile);
+// 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+// 	QStringList filters;
+// 	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
+// 	filedlg.setNameFilters(filters);
+
+// 	if (filedlg.exec())
+// 	{
+// //		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
+
+// 		std::string fileName = filedlg.selectedFiles()[0].toStdString();
+
+// 		// we pass the relative path to the image model
+// 		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
+
+// 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+// 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
+
+// 		if (!ImportImage(imageModel))
+// 		{
+// 			delete imageModel;
+// 			imageModel = nullptr;
+// 			return;
+// 		}
+
+// 		// take the name from the source
+// 		imageModel->SetName(FSDir::fileName(fileName));
+
+// 		Update(0, true);
+// 		ZoomTo(imageModel->GetBoundingBox());
+
+// 		// only for model docs
+// 		if (dynamic_cast<CModelDocument*>(doc))
+// 		{
+// 			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
+// 			vr->Create();
+// 			imageModel->AddImageRenderer(vr);
+
+// 			Update(0, true);
+// 			ShowInModelViewer(imageModel);
+// 		}
+// 		else
+// 		{
+// 			Update(0, true);
+// 		}
+// 		ZoomTo(imageModel->GetBoundingBox());
+// 	}
+// }
 
 void CMainWindow::on_actionImportOMETiffImage_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1643,8 +1757,34 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
 	}
 }
 
+void CMainWindow::on_actionImportImageOther_triggered()
+{
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
+	}
+}
+
 void CMainWindow::on_actionImportImageSequence_triggered()
 {
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
 	QFileDialog filedlg(this);
 	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
@@ -1655,15 +1795,22 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         if(files.length() == 0) return;
 
+        std::vector<std::string> stdFiles;
+        for(auto filename : files)
+        {
+            // we pass the relative path to the image model
+            stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
+        }
+
         CGLDocument* doc = GetGLDocument();
 
-        Post::CImageModel* imageModel = nullptr;
+        Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+        imageModel->SetImageSource(new Post::CITKSeriesImageSource(imageModel, stdFiles));
 
-        imageModel = doc->ImportITKStack(files);
-        if (imageModel == nullptr)
+        if(!ImportImage(imageModel))
         {
-            QMessageBox::critical(this, "FEBio Studio", "Failed importing image data.");
-            return;
+            delete imageModel;
+            imageModel = nullptr;
         }
 
         if(imageModel)
@@ -1674,7 +1821,7 @@ void CMainWindow::on_actionImportImageSequence_triggered()
             // only for model docs
             if (dynamic_cast<CModelDocument*>(doc))
             {
-                Post::CVolumeRender2* vr = new Post::CVolumeRender2(imageModel);
+                Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
                 vr->Create();
                 imageModel->AddImageRenderer(vr);
 
@@ -1730,7 +1877,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 			FSProject prj;
 			FEBioFileImport reader(prj);
 
-			FEFileExport* exporter = 0;
+			FSFileExport* exporter = 0;
 			if (nformat == 0x0400)
 			{
 				// write version 4
@@ -1895,7 +2042,7 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 			{
 				FSProject& prj = doc.GetProject();
 
-				FEFileExport* exporter = 0;
+				FSFileExport* exporter = 0;
 				if (nformat == 0x0400)
 				{
 					// write version 4
@@ -2035,7 +2182,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 					{
 						FSProject& prj = importer->GetProject();
 
-						FEFileExport* exporter = nullptr;
+						FSFileExport* exporter = nullptr;
 						switch (format)
 						{
 						case 0: exporter = new FEVTKExport(prj); ext = "vtk"; break;

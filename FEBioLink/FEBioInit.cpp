@@ -26,7 +26,7 @@ SOFTWARE.*/
 #include "FEBioInit.h"
 #include <FEBioLib/febio.h>
 #include <FECore/FEModelUpdate.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include "FEBioModule.h"
 
 class FBSModelUpdate : public FEModelUpdate

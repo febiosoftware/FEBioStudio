@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "GObject.h"
 #include "geom.h"
 #include "GPartSection.h"
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <MeshLib/FEMesh.h>
 
 //-----------------------------------------------------------------------------
@@ -47,11 +47,13 @@ template <> int GItem_T<GNode  >::m_ncount = 0;
 GNode::GNode() : GItem_T<GNode>(0) 
 { 
 	m_ntype = NODE_UNKNOWN; 
+	m_node = -1;
 }
 
 GNode::GNode(GBaseObject* po) : GItem_T<GNode>(po) 
 { 
 	m_ntype = NODE_UNKNOWN; 
+	m_node = -1;
 }
 
 GNode::GNode(const GNode &n)
@@ -63,6 +65,7 @@ GNode::GNode(const GNode &n)
 	m_ntype = n.m_ntype;
 	m_ntag = n.m_ntag;
 	m_po = n.m_po;
+	m_node = n.m_node;
 	SetName(n.GetName());
 }
 
@@ -75,6 +78,7 @@ void GNode::operator =(const GNode &n)
 	m_lid = n.m_lid;
 	m_ntype = n.m_ntype;
 	m_ntag = n.m_ntag;
+	m_node = n.m_node;
 //	m_po = n.m_po;
 	SetName(n.GetName());
 }
@@ -99,9 +103,9 @@ void GNode::MakeRequired()
 	if (po)
 	{
 		FSMesh* pm = po->GetFEMesh();
-		if (pm)
+		if (pm && (m_node >= 0) && (m_node < pm->Nodes()))
 		{
-			FSNode* pn = pm->FindNodeFromID(GetLocalID()); assert(pn);
+			FSNode* pn = pm->NodePtr(m_node); assert(pn);
 			if (pn) pn->SetRequired(true);
 		}
 	}
@@ -513,4 +517,66 @@ void GPart::operator =(const GPart &p)
 	m_lid = p.m_lid;
 	SetName(p.GetName());
 //	m_po = p.m_po;
+}
+
+//-----------------------------------------------------------------------------
+bool GPart::Update(bool b)
+{
+	int id = GetLocalID();
+	if (m_node.empty())
+	{
+		GBaseObject* po = Object();
+		for (int i = 0; i < po->Nodes(); ++i) po->Node(i)->m_ntag = 0;
+		for (int i = 0; i < po->Faces(); ++i)
+		{
+			GFace* pf = po->Face(i);
+			if ((pf->m_nPID[0] == id) || (pf->m_nPID[1] == id))
+			{
+				for (int k : pf->m_node)
+				{
+					GNode* pn = po->Node(k);
+					if (pn) po->Node(k)->m_ntag = 1;
+				}
+			}
+		}
+
+		for (int i = 0; i < po->Nodes(); ++i)
+			if (po->Node(i)->m_ntag == 1) m_node.push_back(i);
+	}
+	UpdateBoundingBox();
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+void GPart::UpdateBoundingBox()
+{
+	GBaseObject* po = Object();
+	if (po == nullptr) return;
+
+	BOX box;
+	for (int i = 0; i < m_node.size(); ++i)
+	{
+		GNode* pn = po->Node(m_node[i]); assert(pn);
+		if (pn) box += pn->LocalPosition();
+	}
+	m_box = box;
+}
+
+//-----------------------------------------------------------------------------
+BOX GPart::GetLocalBox() const
+{
+	return m_box;
+}
+
+BOX GPart::GetGlobalBox() const
+{
+	BOX box = GetLocalBox();
+	const GBaseObject* po = Object();
+	if (po == nullptr) return box;
+
+	vec3d r0 = vec3d(box.x0, box.y0, box.z0);
+	vec3d r1 = vec3d(box.x1, box.y1, box.z1);
+	r0 = po->GetTransform().LocalToGlobal(r0);
+	r1 = po->GetTransform().LocalToGlobal(r1);
+	return BOX(r0.x, r0.y, r0.z, r1.x, r1.y, r1.z);
 }

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEMultiMaterial.h"
 #include "FEMaterialFactory.h"
-#include <MeshTools/FEProject.h>
+#include "FSProject.h"
 #include <sstream>
 #include <FECore/units.h>
 #include <FEBioLink/FEBioClass.h>
@@ -641,14 +641,22 @@ FSMaterialProperty* FEBioReactionMaterial::GetReverseRate()
 
 bool FEBioReactionMaterial::GetOvrd() const
 {
-    // TODO:
-    return false;
+	bool b = false;
+	if (m_reaction)
+	{
+		Param* p = m_reaction->GetParam("override_vbar"); assert(p);
+		if (p) b = p->GetBoolValue();
+	}
+	return b;
 }
 
 void FEBioReactionMaterial::SetOvrd(bool b)
 {
-    // TODO:
-    assert(false);
+	if (m_reaction)
+	{
+		Param* p = m_reaction->GetParam("override_vbar"); assert(p);
+		if (p) p->SetBoolValue(b);
+	}
 }
 
 int FEBioReactionMaterial::Reactants() const
@@ -1606,6 +1614,18 @@ REGISTER_MATERIAL(FSExternalProductMaterial, MODULE_REACTIONS, FE_EXT_PRODUCT_MA
 
 FSExternalProductMaterial::FSExternalProductMaterial(FSModel* fem) : FSReactionSpecies(FE_EXT_PRODUCT_MATERIAL, fem)
 {
+}
+
+//=============================================================================
+//								MASS ACTION REACTION
+//=============================================================================
+
+REGISTER_MATERIAL(FSMassActionReaction, MODULE_REACTIONS, FE_MASS_ACTION_REACTION, FE_MAT_REACTION, "mass action", 0);
+
+FSMassActionReaction::FSMassActionReaction(FSModel* fem) : FSReactionMaterial(FE_MASS_ACTION_REACTION, fem)
+{
+	AddStringParam("", "equation");
+	AddDoubleParam(0, "rate_constant");
 }
 
 //=============================================================================

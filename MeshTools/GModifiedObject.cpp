@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GModifiedObject.h"
-#include "FEModel.h"
-#include <MeshTools/GLMesh.h>
+#include <FEMLib/FSModel.h>
+#include <MeshLib/GMesh.h>
 
 //-----------------------------------------------------------------------------
 GModifiedObject::GModifiedObject(GObject* po) : GObject(GMODIFIED_OBJECT)
@@ -153,8 +153,8 @@ void GModifiedObject::BuildGMesh()
 {
 	delete GetRenderMesh();
 	m_po->BuildGMesh();
-	GLMesh* pm = m_po->GetRenderMesh();
-	GLMesh* gmesh = new GLMesh(*pm);
+	GMesh* pm = m_po->GetRenderMesh();
+	GMesh* gmesh = new GMesh(*pm);
 	int N = m_pStack->Size();
 	for (int i=0; i<N; ++i)
 	{

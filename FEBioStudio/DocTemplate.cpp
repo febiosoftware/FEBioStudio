@@ -29,11 +29,11 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <QtCore/QDir>
 #include <XML/XMLReader.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioModule.h>
 #include <FEBioLink/FEBioClass.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include <MeshTools/FEBox.h>
 #include <MeshTools/FEMesher.h>
 #include <GeomLib/GPrimitive.h>
@@ -114,26 +114,26 @@ bool DocTemplateUniAxialStrain::Load(CModelDocument* doc)
 	FSBoundaryCondition* bcx = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
 	bcx->SetName("fix-x");
 	bcx->SetParamBool("x_dof", true);
-	bcx->SetItemList(new GFaceList(&fsm, xn));
+	bcx->SetItemList(new GFaceList(&gm, xn));
 	step->AddBC(bcx);
 
 	FSBoundaryCondition* bcy = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
 	bcy->SetName("fix-y");
 	bcy->SetParamBool("y_dof", true);
-	bcy->SetItemList(new GFaceList(&fsm, yn));
+	bcy->SetItemList(new GFaceList(&gm, yn));
 	step->AddBC(bcy);
 
 	FSBoundaryCondition* bcz = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
 	bcz->SetName("fix-z");
 	bcz->SetParamBool("z_dof", true);
-	bcz->SetItemList(new GFaceList(&fsm, zn));
+	bcz->SetItemList(new GFaceList(&gm, zn));
 	step->AddBC(bcz);
 
 	FSBoundaryCondition* dcx = FEBio::CreateBoundaryCondition("prescribed displacement", &fsm);
 	dcx->SetName("displace");
 	dcx->SetParamInt("dof", 0);
 	dcx->SetParamFloat("value", 1.0);
-	dcx->SetItemList(new GFaceList(&fsm, xp));
+	dcx->SetItemList(new GFaceList(&gm, xp));
 	step->AddBC(dcx);
 
 	// create load controller and assign to parameter

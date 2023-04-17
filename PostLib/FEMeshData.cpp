@@ -570,6 +570,48 @@ void LagrangeStrain2D::eval(int n, mat3fs* pv)
 	*pv = E;
 }
 
+
+//-----------------------------------------------------------------------------
+// infinitesimal strain for 2D elements, evaluated at element center
+void InfStrain2D::eval(int n, mat3fs* pv)
+{
+	// get the element
+	FEElement_& e = GetFEState()->GetFEMesh()->ElementRef(n);
+
+	// get the state
+	int nstate = m_state->GetID();
+
+	if (e.IsShell() == false)
+	{
+		*pv = mat3fs();
+		return;
+	}
+
+	// get the iso-parameteric coordinates of the element center
+	double q[2];
+	e.iso_coord_2d(-1, q);
+
+	// get the deformation gradient
+	mat2d F = deform_grad_2d(*GetFSModel(), n, q[0], q[1], nstate, -1);
+
+	// evaluate strain tensor U = F-I
+	double U[2][2];
+	U[0][0] = F[0][0] - 1; U[0][1] = F[0][1];
+	U[1][0] = F[1][0]; U[1][1] = F[1][1] - 1;
+
+	// evaluate small strain tensor eij = 0.5*(Uij + Uji)
+	mat3fs E;
+	E.x = (float)(U[0][0]);
+	E.y = (float)(U[1][1]);
+	E.z = 0.0f;
+	E.xy = (float)(0.5 * (U[0][1] + U[1][0]));
+	E.yz = 0.0f;
+	E.xz = 0.0f;
+
+	// a-ok
+	(*pv) = E;
+}
+
 //-----------------------------------------------------------------------------
 // Biot strain
 //
@@ -2041,3 +2083,19 @@ void SolidStress::eval(int n, mat3fs* pv)
 	}
 	else *pv = mat3fs(0.f,0.f,0.f,0.f,0.f,0.f);
 }
+
+FEElementMaterial::FEElementMaterial(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_ITEM>(state, pdf)
+{
+
+}
+
+void FEElementMaterial::eval(int n, float* pv)
+{
+	// get the state
+	FEState& state = *GetFEState();
+
+	FEPostMesh* mesh = state.GetFEMesh();
+	FSElement& el = mesh->Element(n);
+	pv[0] = (float) el.m_MatID;
+}
+

@@ -81,9 +81,7 @@ bool GTorus::Update(bool b)
 	m_Node[18]->LocalPosition() = vec3d( 0   ,  R0,  0);
 	m_Node[19]->LocalPosition() = vec3d(-R0  ,   0,  0);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //----------------------------------------------------------------------------

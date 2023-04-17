@@ -64,14 +64,14 @@ CGLPlaneCutPlot::CGLPlaneCutPlot()
 	sprintf(szname, "Planecut.%02d", n++);
 	SetName(szname);
 
-	AddBoolParam(true, "Show plane");
-	AddBoolParam(true, "Cut hidden");
-	AddBoolParam(true, "Show mesh" );
-	AddColorParam(GLColor(0, 0, 0), "Mesh color");
-	AddDoubleParam(0, "Transparency")->SetFloatRange(0.0, 1.0);
-	AddDoubleParam(0, "X-normal")->SetFloatRange(-1.0, 1.0);
-	AddDoubleParam(0, "Y-normal")->SetFloatRange(-1.0, 1.0);
-	AddDoubleParam(0, "Z-normal")->SetFloatRange(-1.0, 1.0);
+	AddBoolParam(true, "show_plane");
+	AddBoolParam(true, "cut_hidden");
+	AddBoolParam(true, "show_mesh" );
+	AddColorParam(GLColor(0, 0, 0), "mesh_color");
+	AddDoubleParam(0, "transparency")->SetFloatRange(0.0, 1.0);
+	AddDoubleParam(0, "x-normal")->SetFloatRange(-1.0, 1.0);
+	AddDoubleParam(0, "y-normal")->SetFloatRange(-1.0, 1.0);
+	AddDoubleParam(0, "z-normal")->SetFloatRange(-1.0, 1.0);
 	AddDoubleParam(0, "offset")->SetFloatRange(-1.0, 1.0, 0.01);
 
 	m_normal = vec3d(1, 0, 0);
@@ -88,6 +88,8 @@ CGLPlaneCutPlot::CGLPlaneCutPlot()
 
 	m_nclip = GetFreePlane();
 	if (m_nclip >= 0) m_pcp[m_nclip] = this;
+
+	m_bupdateSlice = false;
 
 	UpdateData(false);
 }
@@ -111,7 +113,7 @@ bool CGLPlaneCutPlot::UpdateData(bool bsave)
 		m_normal.z = GetFloatValue(NORMAL_Z);
 		m_offset = GetFloatValue(OFFSET);
 
-		UpdateSlice();
+		m_bupdateSlice = true;
 	}
 	else
 	{
@@ -185,7 +187,7 @@ void CGLPlaneCutPlot::InitClipPlanes()
 
 void CGLPlaneCutPlot::Update(int ntime, float dt, bool breset)
 {
-	UpdateSlice();
+	m_bupdateSlice = true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -237,9 +239,10 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 		m_T.SetRotation(quatd(0.0, vec3d(1, 0, 0)));
 	}
 
-	if ((r == m_T.GetPosition()) == false)
+	if (m_bupdateSlice || ((r == m_T.GetPosition()) == false))
 	{
-		UpdateSlice();
+		UpdatePlaneCut();
+		m_bupdateSlice = false;
 	}
 
 	// get the plane equations
@@ -248,8 +251,6 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 
 	// set the clip plane coefficients
 	glClipPlane(GL_CLIP_PLANE0 + m_nclip, a);
-
-	if (GetModel()->IsActive() == false) return;
 
 	// make sure the current clip plane is not active
 	glDisable(GL_CLIP_PLANE0 + m_nclip);
@@ -266,7 +267,7 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 		rc.m_cam->LineDrawMode(false);
 	}
 
-	if (rc.m_showOutline)
+	if (rc.m_settings.m_bfeat)
 	{
 		RenderOutline();
 	}
@@ -289,54 +290,33 @@ void CGLPlaneCutPlot::Render(CGLContext& rc)
 }
 
 //-----------------------------------------------------------------------------
-// Render the plane cut slice 
-void CGLPlaneCutPlot::RenderSlice()
+void CGLPlaneCutPlot::UpdateTriMesh()
 {
 	CGLModel* mdl = GetModel();
-
 	FEPostModel* ps = mdl->GetFSModel();
 	FSMeshBase* pm = mdl->GetActiveMesh();
-
-	CGLColorMap* pcol = mdl->GetColorMap();
-
-	GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
-	glDisable(GL_CULL_FACE);
 
 	float rng[2];
 	CGLColorMap& colorMap = *mdl->GetColorMap();
 	colorMap.GetRange(rng);
 	if (rng[1] == rng[0]) ++rng[1];
 
+	vector<pair<vec3d, double> > activePoints; activePoints.reserve(1024);
+	vector<pair<vec3d, GLColor> > inactivePoints; inactivePoints.reserve(1024);
+
 	// loop over all enabled materials
-	for (int n=0; n<ps->Materials(); ++n)
+	for (int n = 0; n < ps->Materials(); ++n)
 	{
 		Material* pmat = ps->GetMaterial(n);
 		if ((pmat->bvisible || m_bcut_hidden) && pmat->bclip)
 		{
-			if (pcol->IsActive() && pmat->benable)
-			{
-				glEnable(GL_TEXTURE_1D);
-				tex.MakeCurrent();
-				GLubyte a = (GLubyte) (255.f*pmat->transparency);
-				glColor4ub(255,255,255,a);
-			}
-			else
-			{
-				glDisable(GL_TEXTURE_1D);
-				mdl->SetMaterialParams(pmat);
-			}
-
 			// repeat over all active faces
 			int NF = m_slice.Faces();
-			for (int i=0; i<NF; ++i)
+			for (int i = 0; i < NF; ++i)
 			{
 				GLSlice::FACE& face = m_slice.Face(i);
 				if ((face.mat == n) && (face.bactive))
 				{
-					vec3d& norm = face.norm;
-					glNormal3f(norm.x,norm.y,norm.z);
-
-					// render the face
 					vec3d* r = face.r;
 					float* tex = face.tex;
 
@@ -344,81 +324,107 @@ void CGLPlaneCutPlot::RenderSlice()
 					float t2 = (tex[1] - rng[0]) / (rng[1] - rng[0]);
 					float t3 = (tex[2] - rng[0]) / (rng[1] - rng[0]);
 
-					glBegin(GL_TRIANGLES);
-					{
-						glTexCoord1f(t1); glVertex3f(r[0].x, r[0].y, r[0].z);
-						glTexCoord1f(t2); glVertex3f(r[1].x, r[1].y, r[1].z);
-						glTexCoord1f(t3); glVertex3f(r[2].x, r[2].y, r[2].z);
-					}
-					glEnd();
+					activePoints.push_back(pair<vec3d, double>(r[0], t1));
+					activePoints.push_back(pair<vec3d, double>(r[1], t2));
+					activePoints.push_back(pair<vec3d, double>(r[2], t3));
 				}
 			}
 
 			// render inactive faces
-			glDisable(GL_TEXTURE_1D);
-			for (int i = 0; i<NF; ++i)
+			for (int i = 0; i < NF; ++i)
 			{
 				GLSlice::FACE& face = m_slice.Face(i);
 				if ((face.mat == n) && (!face.bactive))
 				{
-					vec3d& norm = face.norm;
-					glNormal3f(norm.x, norm.y, norm.z);
-
 					// render the face
 					vec3d* r = face.r;
 					float* tex = face.tex;
-					glBegin(GL_TRIANGLES);
-					{
-						glVertex3f(r[0].x, r[0].y, r[0].z);
-						glVertex3f(r[1].x, r[1].y, r[1].z);
-						glVertex3f(r[2].x, r[2].y, r[2].z);
-					}
-					glEnd();
+					inactivePoints.push_back(pair < vec3d, GLColor>(r[0], pmat->diffuse));
+					inactivePoints.push_back(pair < vec3d, GLColor>(r[1], pmat->diffuse));
+					inactivePoints.push_back(pair < vec3d, GLColor>(r[2], pmat->diffuse));
 				}
 			}
 		}
 	}
 
-	glDisable(GL_TEXTURE_1D);
+	if (activePoints.empty())
+	{
+		m_activeMesh.Clear();
+	}
+	else
+	{
+		m_activeMesh.Create(activePoints.size()/3, GLMesh::FLAG_TEXTURE);
+		m_activeMesh.BeginMesh();
+		{
+			for (auto& v : activePoints) m_activeMesh.AddVertex(v.first, v.second);
+		}
+		m_activeMesh.EndMesh();
+	}
+
+	if (inactivePoints.empty())
+	{
+		m_inactiveMesh.Clear();
+	}
+	else
+	{
+		m_inactiveMesh.Create(inactivePoints.size()/3, GLMesh::FLAG_COLOR);
+		m_inactiveMesh.BeginMesh();
+		{
+			for (auto& v : inactivePoints) m_inactiveMesh.AddVertex(v.first, v.second);
+		}
+		m_inactiveMesh.EndMesh();
+	}
 }
 
 //-----------------------------------------------------------------------------
-// Render the mesh of the plane cut
-void CGLPlaneCutPlot::RenderMesh()
+// Render the plane cut slice 
+void CGLPlaneCutPlot::RenderSlice()
 {
-	int i, k, l, m;
-	int ncase;
-	int *pf;
-
 	CGLModel* mdl = GetModel();
+	CGLColorMap* pcol = mdl->GetColorMap();
 
+	// get the plane equations
+	GLdouble a[4];
+	GetNormalizedEquations(a);
+
+	// set the plane normal
+	vec3d norm(a[0], a[1], a[2]); norm.Normalize();
+	glNormal3d(norm.x, norm.y, norm.z);
+
+	// render active (i.e. textured) mesh
+	GLTexture1D& tex = pcol->GetColorMap()->GetTexture();
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_COLOR_MATERIAL);
+
+	glEnable(GL_TEXTURE_1D);
+	tex.MakeCurrent();
+	glColor3ub(255, 255, 255);
+
+	m_activeMesh.Render();
+
+	// now render the inactive mesh
+	glDisable(GL_TEXTURE_1D);
+
+	m_inactiveMesh.Render();
+}
+
+//-----------------------------------------------------------------------------
+void CGLPlaneCutPlot::UpdateLineMesh()
+{
+	CGLModel* mdl = GetModel();
 	FEPostModel* ps = mdl->GetFSModel();
 	FEPostMesh* pm = mdl->GetActiveMesh();
-
-	GLColor c = m_meshColor;
-	glColor3ub(c.r, c.g, c.b);	
-
-	// store attributes
-	glPushAttrib(GL_ENABLE_BIT);
-
-	// set attributes
-	glDisable(GL_LIGHTING);
-	glDisable(GL_TEXTURE_1D);
 
 	EDGE edge[15];
 	int en[8];
 	int ne;
 
-	const int* nt = nullptr;
-
 	float ev[8];
 	vec3d ex[8];
 
 	vec3d r[3];
-	float w1, w2, w;
-	int n1, n2, m1, m2;
-	bool badd;
 
+	// get the plane equation
 	double a[4];
 	GetNormalizedEquations(a);
 
@@ -429,14 +435,24 @@ void CGLPlaneCutPlot::RenderMesh()
 
 	Post::FEState& state = *ps->CurrentState();
 
+	int matId = -1;
+	Material* pmat = nullptr;
+
 	// repeat over all elements
-	for (i=0; i<pm->Elements(); ++i)
+	vector<vec3d> points; points.reserve(1024);
+	for (int i=0; i<pm->Elements(); ++i)
 	{
 		// render only when visible
 		FEElement_& el = pm->ElementRef(i);
-		Material* pmat = ps->GetMaterial(el.m_MatID);
-		if ((el.m_ntag > 0) && el.IsSolid() && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
+		if (el.m_MatID != matId)
 		{
+			pmat = ps->GetMaterial(el.m_MatID);
+			matId = el.m_MatID;
+		}
+
+		if (pmat && (el.m_ntag > 0) && el.IsSolid() && (pmat->bmesh) && (pmat->bvisible || m_bcut_hidden) && (pmat->bclip))
+		{
+			const int* nt = nullptr;
 			switch (el.Type())
 			{
 			case FE_HEX8   : nt = HEX_NT; break;
@@ -451,13 +467,16 @@ void CGLPlaneCutPlot::RenderMesh()
 			case FE_TET20  : nt = TET_NT; break;
             case FE_PYRA5  : nt = PYR_NT; break;
             case FE_PYRA13 : nt = PYR_NT; break;
+			default:
+				assert(false);
+				continue;
 			}
 
 			// calculate the case of the element
-			ncase = el.m_ntag;
+			int ncase = el.m_ntag;
 
 			// get the nodal values
-			for (k=0; k<8; ++k)
+			for (int k=0; k<8; ++k)
 			{
 				int nk = el.m_node[nt[k]];
 				FSNode& node = pm->Node(nk);
@@ -467,40 +486,39 @@ void CGLPlaneCutPlot::RenderMesh()
 			}
 
 			// loop over faces
-			pf = LUT[ncase];
+			int* pf = LUT[ncase];
 			ne = 0;
-			for (l=0; l<5; l++)
+			for (int l=0; l<5; l++)
 			{
 				if (*pf == -1) break;
 
 				// calculate nodal positions
-				for (k=0; k<3; k++)
+				for (int k=0; k<3; k++)
 				{
-					n1 = ET_HEX[pf[k]][0];
-					n2 = ET_HEX[pf[k]][1];
+					int n1 = ET_HEX[pf[k]][0];
+					int n2 = ET_HEX[pf[k]][1];
 
-					w1 = norm*ex[n1];
-					w2 = norm*ex[n2];
+					double w1 = norm*ex[n1];
+					double w2 = norm*ex[n2];
 	
+					double w = 0.0;
 					if (w2 != w1)
 						w = (ref - w1)/(w2 - w1);
-					else 
-						w = 0.f;
 
 					r[k] = ex[n1]*(1-w) + ex[n2]*w;
 				}
 
 				// add all edges to the list
-				for (k=0; k<3; ++k)
+				for (int k=0; k<3; ++k)
 				{
-					n1 = pf[k];
-					n2 = pf[(k+1)%3];
+					int n1 = pf[k];
+					int n2 = pf[(k+1)%3];
 
-					badd = true;
-					for (m=0; m<ne; ++m)
+					bool badd = true;
+					for (int m=0; m<ne; ++m)
 					{
-						m1 = edge[m].m_n[0];
-						m2 = edge[m].m_n[1];
+						int m1 = edge[m].m_n[0];
+						int m2 = edge[m].m_n[1];
 						if (((n1 == m1) && (n2 == m2)) ||
 							((n1 == m2) && (n2 == m1)))
 						{
@@ -524,37 +542,40 @@ void CGLPlaneCutPlot::RenderMesh()
 				pf+=3;
 			}
 
-			// render the lines
-			glBegin(GL_LINES);
-			{
-				for (k=0; k<ne; ++k)
-					if (edge[k].m_ntag == 0)
-					{
-						vec3d& r0 = edge[k].m_r[0];
-						vec3d& r1 = edge[k].m_r[1];
-						glVertex3f(r0.x, r0.y, r0.z);
-						glVertex3f(r1.x, r1.y, r1.z);
-					}
-			}
-			glEnd();
+			// add the lines
+			for (int k=0; k<ne; ++k)
+				if (edge[k].m_ntag == 0)
+				{
+					vec3d& r0 = edge[k].m_r[0];
+					vec3d& r1 = edge[k].m_r[1];
+					points.push_back(r0);
+					points.push_back(r1);
+				}
 		}
 	}
 
-	// restore attributes
-	glPopAttrib();
+	if (points.empty())
+	{
+		m_lineMesh.Clear();
+		return;
+	}
+	else
+	{
+		m_lineMesh.Create(points.size() / 2);
+		m_lineMesh.BeginMesh();
+		{
+			for (auto& v : points) m_lineMesh.AddVertex(v);
+		}
+		m_lineMesh.EndMesh();
+	}
 }
 
-
 //-----------------------------------------------------------------------------
-// Render the outline of the mesh of the plane cut
-// TODO: This algorithm fails for thin structures that are one element wide.
-//		 In that case, all nodes are exterior and thus all the edges will be drawn.
-void CGLPlaneCutPlot::RenderOutline()
+// Render the mesh of the plane cut
+void CGLPlaneCutPlot::RenderMesh()
 {
-	CGLModel* mdl = GetModel();
-
-	FEPostModel* ps = mdl->GetFSModel();
-	FSMeshBase* pm = mdl->GetActiveMesh();
+	GLColor c = m_meshColor;
+	glColor3ub(c.r, c.g, c.b);	
 
 	// store attributes
 	glPushAttrib(GL_ENABLE_BIT);
@@ -563,35 +584,56 @@ void CGLPlaneCutPlot::RenderOutline()
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_1D);
 
+	m_lineMesh.Render();
+
+	// restore attributes
+	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLPlaneCutPlot::UpdateOutlineMesh()
+{
+	m_outlineMesh.Create(m_slice.Edges());
+	m_outlineMesh.BeginMesh();
+	for (int i = 0; i < m_slice.Edges(); ++i)
+	{
+		GLSlice::EDGE& edge = m_slice.Edge(i);
+		m_outlineMesh.AddLine(edge.r[0], edge.r[1]);
+	}
+	m_outlineMesh.EndMesh();
+}
+
+//-----------------------------------------------------------------------------
+// Render the outline of the mesh of the plane cut
+void CGLPlaneCutPlot::RenderOutline()
+{
+	// store attributes
+	glPushAttrib(GL_ENABLE_BIT);
+
+	// set attributes
+	glDisable(GL_LIGHTING);
+	glDisable(GL_TEXTURE_1D);
+	glEnable(GL_COLOR_MATERIAL);
+
 	// because plots are drawn before the mesh
 	// we get visual artifacts from the background seeping through.
 	// therefor we turn blending of
 	glDisable(GL_BLEND);
 
 	glColor3ub(0,0,0);
-
-	// calculate plane normal
-	vec3d norm = GetPlaneNormal();
-
-	// repeat over all elements
-	for (int i=0; i<m_slice.Edges(); ++i)
-	{
-		// render only when visible
-		GLSlice::EDGE& edge = m_slice.Edge(i);
-
-		// loop over faces
-		glBegin(GL_LINES);
-		{
-			vec3d& r0 = edge.r[0];
-			vec3d& r1 = edge.r[1];
-			glVertex3f(r0.x, r0.y, r0.z);
-			glVertex3f(r1.x, r1.y, r1.z);
-		}
-		glEnd();
-	}
+	m_outlineMesh.Render();
 
 	// restore attributes
 	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLPlaneCutPlot::UpdatePlaneCut()
+{
+	UpdateSlice();
+	UpdateTriMesh();
+	UpdateLineMesh();
+	UpdateOutlineMesh();
 }
 
 //-----------------------------------------------------------------------------
@@ -738,7 +780,6 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 
 					GLSlice::FACE face;
 					face.mat = n;
-					face.norm = norm;
 					face.r[0] = r[0];
 					face.r[1] = r[1];
 					face.r[2] = r[2];
@@ -827,7 +868,6 @@ void CGLPlaneCutPlot::AddDomain(FEPostMesh* pm, int n)
 
 								GLSlice::FACE face;
 								face.mat = n;
-								face.norm = norm;
 								face.r[0] = r[0];
 								face.r[1] = r[1];
 								face.r[2] = r[2];
@@ -964,7 +1004,6 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 
 	float ev[8];
 	vec3d ex[8];
-	int   en[8];
 
 	vec3d r[4];
 	float v[4];
@@ -977,7 +1016,7 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 	GetNormalizedEquations(a);
 	vec3d norm = GetPlaneNormal();
 
-	double ref = a[3];
+	double ref = -a[3];
 
 	// repeat over all elements
 	for (int i=0; i<pm->Elements(); ++i)
@@ -1009,10 +1048,10 @@ float CGLPlaneCutPlot::Integrate(FEState* ps)
 			// get the nodal values
 			for (k=0; k<8; ++k)
 			{
-				FSNode& node = pm->Node(el.m_node[nt[k]]);
-				en[k] = el.m_node[k];
-				ev[k] = ps->m_NODE[en[k]].m_val;
-				ex[k] = to_vec3d(ps->m_NODE[en[k]].m_rt);
+				int m = el.m_node[nt[k]];
+				FSNode& node = pm->Node(m);
+				ev[k] = ps->m_NODE[m].m_val;
+				ex[k] = to_vec3d(ps->m_NODE[m].m_rt);
 			}
 
 			// calculate the case of the element

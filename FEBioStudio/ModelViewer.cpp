@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QMenu>
 #include <QInputDialog>
 #include "DlgEditOutput.h"
+#include "DlgAddMeshData.h"
 #include "MaterialEditor.h"
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
@@ -43,7 +44,7 @@ SOFTWARE.*/
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/MeshLayer.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
 #include <PostLib/ImageModel.h>
@@ -315,6 +316,11 @@ void CModelViewer::on_syncButton_clicked()
     }
 }
 
+void CModelViewer::on_refreshButton_clicked()
+{
+	Update(false);
+}
+
 void CModelViewer::on_selectButton_clicked()
 {
 	// make sure we have an object
@@ -329,10 +335,18 @@ void CModelViewer::on_selectButton_clicked()
 		GObject* pm = dynamic_cast<GObject*>(po);
 		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
-	else if (dynamic_cast<IHasItemList*>(po))
+	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
-		IHasItemList* pil = dynamic_cast<IHasItemList*>(po);
-		FEItemListBuilder* pitem = pil->GetItemList();
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
+		FEItemListBuilder* ps1 = pci->GetPrimarySurface();
+		FEItemListBuilder* ps2 = pci->GetSecondarySurface();
+		if (ps1) SelectItemList(ps1);
+		if (ps2) SelectItemList(ps2);
+	}
+	else if (dynamic_cast<IHasItemLists*>(po))
+	{
+		IHasItemLists* pil = dynamic_cast<IHasItemLists*>(po);
+		FEItemListBuilder* pitem = pil->GetItemList(0);
 		if (pitem) SelectItemList(pitem);
 	}
 	else if (dynamic_cast<FEItemListBuilder*>(po))
@@ -367,18 +381,6 @@ void CModelViewer::on_selectButton_clicked()
 		GModel& fem = pdoc->GetFSModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
-	}
-	else if (dynamic_cast<FSPairedInterface*>(po))
-	{
-		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
-		FEItemListBuilder* pml = pci->GetSecondarySurface();
-		FEItemListBuilder* psl = pci->GetPrimarySurface();
-
-		if (pml == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(pml);
-
-		if (psl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(psl, true);
 	}
 	else if (dynamic_cast<GMaterial*>(po))
 	{
@@ -418,7 +420,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
 	case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
 	case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
-	case FE_PART:
+	case FE_ELEMSET:
 		{
 			pdoc->SetSelectionMode(SELECT_OBJECT);
 			pdoc->SetItemMode(ITEM_ELEM);
@@ -522,6 +524,11 @@ void CModelViewer::on_props_dataChanged(bool b)
 		CMainWindow* wnd = GetMainWindow();
 		wnd->RedrawGL();
 	}
+}
+
+void CModelViewer::on_props_modelChanged()
+{
+	Update();
 }
 
 void CModelViewer::on_filter_currentIndexChanged(int n)
@@ -940,11 +947,9 @@ void CModelViewer::OnShowPart()
 		if (pg) 
 		{
 			m.ShowPart(pg);
-
-			QTreeWidgetItem* item = ui->tree->FindItem(pg);
-			if (item) item->setForeground(0, Qt::black);
 		}
 	}
+	Update();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->RedrawGL();
 }
@@ -1032,8 +1037,12 @@ void CModelViewer::OnCopyMaterial()
 	GMaterial* pmat = dynamic_cast<GMaterial*>(m_currentObject); assert(pmat);
 	if (pmat == 0) return;
 
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel* fem = pdoc->GetFSModel();
+
 	// create a copy of the material
-	GMaterial* pmat2 = pmat->Clone();
+	FEBioMaterial* pm = dynamic_cast<FEBioMaterial*>(FEBio::CloneModelComponent(pmat->GetMaterialProperties(), fem));
+	GMaterial* pmat2 = new GMaterial(pm);
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1058,7 +1067,10 @@ void CModelViewer::OnChangeMaterial()
 	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, &fem, false, false, this);
 	if (dlg.exec())
 	{
-		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
+        int id = dlg.GetClassID();
+        if(id == -1) return;
+
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
 			gmat->SetMaterialProperties(pmat);
@@ -1144,16 +1156,12 @@ void CModelViewer::OnCopyInterface()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the interface
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSInterface* piCopy = dynamic_cast<FSInterface*>(fecore->Create(fem, FESURFACEINTERFACE_ID, pic->Type()));
+	FSInterface* piCopy = dynamic_cast<FSInterface*>(FEBio::CloneModelComponent(pic, fem));
 	assert(piCopy);
 
 	// create a name
 	string name = defaultInterfaceName(fem, pic);
 	piCopy->SetName(name);
-
-	// copy parameters
-	piCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the interface to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
@@ -1173,16 +1181,12 @@ void CModelViewer::OnCopyBC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the bc
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(fecore->Create(fem, FEBC_ID, pbc->Type()));
+	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(FEBio::CloneModelComponent(pbc, fem));
 	assert(pbcCopy);
 
 	// create a name
 	string name = defaultBCName(fem, pbc);
 	pbcCopy->SetName(name);
-
-	// copy parameters
-	pbcCopy->GetParamBlock() = pbc->GetParamBlock();
 
 	// add the bc to the doc
 	FSStep* step = fem->GetStep(pbc->GetStep());
@@ -1202,16 +1206,12 @@ void CModelViewer::OnCopyIC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the ic
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(fecore->Create(fem, FEIC_ID, pic->Type()));
+	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(FEBio::CloneModelComponent(pic, fem));
 	assert(picCopy);
 
 	// create a name
 	string name = defaultICName(fem, pic);
 	picCopy->SetName(name);
-
-	// copy parameters
-	picCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the ic to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
@@ -1231,16 +1231,12 @@ void CModelViewer::OnCopyRigidConnector()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
+	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidConnectorName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1259,16 +1255,13 @@ void CModelViewer::OnCopyConstraint()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
+
+	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultConstraintName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the constraint to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1288,16 +1281,12 @@ void CModelViewer::OnCopyLoad()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSLoad* plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FELOAD_ID, pl->Type()));
+	FSLoad* plCopy = dynamic_cast<FSLoad*>(FEBio::CloneModelComponent(pl, fem));
 	assert(plCopy);
 
 	// create a name
 	string name = defaultLoadName(fem, pl);
 	plCopy->SetName(name);
-
-	// copy parameters
-	plCopy->GetParamBlock() = pl->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pl->GetStep());
@@ -1317,16 +1306,12 @@ void CModelViewer::OnCopyRigidBC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidBC* pcCopy = dynamic_cast<FSRigidBC*>(fecore->Create(fem, FEBC_ID, pc->Type()));
+	FSRigidBC* pcCopy = dynamic_cast<FSRigidBC*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidBCName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1347,16 +1332,12 @@ void CModelViewer::OnCopyRigidIC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidIC* pcCopy = dynamic_cast<FSRigidIC*>(fecore->Create(fem, FEIC_ID, pc->Type()));
+	FSRigidIC* pcCopy = dynamic_cast<FSRigidIC*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidICName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1370,24 +1351,25 @@ void CModelViewer::OnCopyRigidIC()
 
 void CModelViewer::OnCopyStep()
 {
-	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
+	FSStep* ps = dynamic_cast<FSStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
+	if (dynamic_cast<FSInitialStep*>(ps)) return;
+
+	// copy the step
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FSModel* fem = pdoc->GetFSModel();
 
-	// copy the step
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSAnalysisStep* psCopy = dynamic_cast<FSAnalysisStep*>(fecore->Create(fem, FEANALYSIS_ID, ps->GetType()));
-	assert(psCopy);
+	FEBioAnalysisStep* psCopy = dynamic_cast<FEBioAnalysisStep*>(FEBio::CloneModelComponent(ps, fem)); assert(psCopy);
+	if (psCopy == nullptr)
+	{
+		QMessageBox::critical(this, "Copy Step", "Failed to copy step.");
+		return;
+	}
 
 	// create a name
 	string name = defaultStepName(fem, ps);
 	psCopy->SetName(name);
-
-	// copy parameters
-	psCopy->GetParamBlock() = ps->GetParamBlock();
-	psCopy->GetSettings() = ps->GetSettings();
 
 	// add the step to the doc
 	pdoc->DoCommand(new CCmdAddStep(fem, psCopy));
@@ -1591,7 +1573,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_MATERIAL_LIST:
 	{
 		menu.addAction("Add Material ...", wnd, SLOT(on_actionAddMaterial_triggered()));
-		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
+//		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
 
 		QMenu* sub = new QMenu("Import Materials");
 		QAction* ac = sub->addAction("From FEBio file ...");
@@ -1752,8 +1734,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(data->obj);
 		if (pci)
 		{
-			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
+			menu.addAction("Replace ...", this, SLOT(OnReplaceContactInterface()));
+			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapContactSurfaces()));
 		}
+
 		del = true;
 	}
 	break;
@@ -1805,10 +1789,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_MESH_DATA_LIST:
-		menu.addAction("Add Mesh Data ..."   , wnd, SLOT(on_actionAddMeshData_triggered()));
+		menu.addAction("Add mesh data map ..."   , wnd, SLOT(on_actionAddMeshDataMap_triggered()));
+		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(on_actionAddMeshDataGenerator_triggered()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:
+		menu.addAction("Edit ...", this, SLOT(OnEditMeshData()));
 		del = true;
 		break;
 	case MT_JOBLIST:
@@ -1884,7 +1870,7 @@ void CModelViewer::OnDeleteAllMaterials()
 	GetMainWindow()->DeleteAllMaterials();
 }
 
-void CModelViewer::OnSwapMasterSlave()
+void CModelViewer::OnSwapContactSurfaces()
 {
 	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pci)
@@ -1893,6 +1879,16 @@ void CModelViewer::OnSwapMasterSlave()
 		UpdateObject(m_currentObject);
 	}
 }
+
+void CModelViewer::OnReplaceContactInterface()
+{
+	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
+	if (pci)
+	{
+		GetMainWindow()->OnReplaceContactInterface(pci);
+	}
+}
+
 
 void CModelViewer::OnDeleteAllBC()
 {
@@ -1935,4 +1931,13 @@ void CModelViewer::OnDeleteAllSteps()
 void CModelViewer::OnDeleteAllJobs()
 {
 	GetMainWindow()->DeleteAllJobs();
+}
+
+void CModelViewer::OnEditMeshData()
+{
+	FEMeshData* data = dynamic_cast<FEMeshData*>(m_currentObject);
+	if (data == nullptr) return;
+
+	CDlgEditMeshData dlg(data, this);
+	dlg.exec();
 }

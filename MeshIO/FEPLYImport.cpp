@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEPLYImport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 FEPLYImport::FEPLYImport(FSProject& prj) : FSFileImport(prj)
 {

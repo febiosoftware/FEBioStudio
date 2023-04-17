@@ -26,14 +26,14 @@ SOFTWARE.*/
 
 #include "FELSDYNAexport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 #include <memory>
 
 using std::unique_ptr;
 
 //-----------------------------------------------------------------------------
-FELSDYNAexport::FELSDYNAexport(FSProject& prj) : FEFileExport(prj)
+FELSDYNAexport::FELSDYNAexport(FSProject& prj) : FSFileExport(prj)
 {
 	m_fp = 0;
 
@@ -271,13 +271,13 @@ bool FELSDYNAexport::write_SET_SHELL_LIST()
 			FSMesh* pm = po->GetFEMesh();
 			assert(pm);
 
-			for (int j=0; j<po->FEParts(); ++j)
+			for (int j=0; j<po->FEElemSets(); ++j)
 			{
 				// write the keyword
 				fprintf(m_fp, "*SET_SHELL_LIST\n");
 				fprintf(m_fp, "%10d%15.10lg%15.10lg%15.10lg%15.10lg\n", n++, 0., 0., 0., 0.);
 
-				FSPart* pg = po->GetFEPart(j);
+				FSElemSet* pg = po->GetFEElemSet(j);
 				unique_ptr<FEElemList> pl(pg->BuildElemList());
 				int N = pl->Size();
 				FEElemList::Iterator pi = pl->First();

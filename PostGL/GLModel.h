@@ -77,6 +77,8 @@ public:
 
 	FSFace& Face(int i) { return m_Face[i]; }
 
+	const vector<FSFace>& FaceList() const { return m_Face; }
+
 private:
 	vector<FSFace>	m_Face;
 };
@@ -102,7 +104,7 @@ protected:
 	vector<EDGE>	m_Edge;
 };
 
-class CGLModel : public CGLVisual
+class CGLModel : public FSObject
 {
 public:
 	CGLModel(FEPostModel* ps);
@@ -187,7 +189,7 @@ public:
 
 public:
 	// call this to render the model
-	void Render(CGLContext& rc) override;
+	void Render(CGLContext& rc);
 
 	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
@@ -201,6 +203,7 @@ public:
 	void RenderSurface(FEPostModel* ps, CGLContext& rc);
 
 public:
+	void RenderMeshLines(CGLContext& rc);
 	void RenderOutline(CGLContext& rc, int nmat = -1);
 	void RenderNormals(CGLContext& rc);
 	void RenderGhost  (CGLContext& rc);
@@ -219,6 +222,9 @@ public:
 
 	void AddDecoration(GDecoration* pd);
 	void RemoveDecoration(GDecoration* pd);
+
+	bool RenderInnerSurfaces();
+	void RenderInnerSurfaces(bool b);
 
 protected:
 	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
@@ -245,6 +251,8 @@ public: // Selection
 	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
 	void UpdateSelectionLists(int mode = -1);
 	void ClearSelectionLists();
+
+	vec3d GetSelectionCenter();
 
 	void SelectNodes(vector<int>& items, bool bclear);
 	void SelectEdges(vector<int>& items, bool bclear);
@@ -375,6 +383,7 @@ public:
 	GLColor		m_col_inactive;	//!< color for inactive parts
 	GLColor		m_ghost_color;	//!< color for the "ghost"
 	double		m_stol;			//!< smoothing threshold
+	bool		m_renderInnerSurface;	//!< render the inner surfaces
 
 	bool		m_bshowMesh;
 	bool		m_doZSorting;

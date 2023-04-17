@@ -355,7 +355,6 @@ public slots:
 	void on_plot_backgroundImageChanged();
 	void on_plot_doneZoomToRect();
 	void on_plot_regionSelected(QRect);
-	void on_plot_doneSelectingRect(QRect);
 	void on_xval_textEdited();
 	void on_yval_textEdited();
 	void on_deletePoint_clicked();
@@ -405,6 +404,9 @@ public:
 
 	void SetMath(const QString& txt);
 
+	void ClearVariables();
+	void SetVariable(const QString& name, double val);
+
 	void setLeftExtendMode(int n);
 	void setRightExtendMode(int n);
 
@@ -418,6 +420,8 @@ public slots:
 private:
 	MSimpleExpression	m_math;
 	std::string			m_ord;
+
+	std::vector< std::pair<QString, double> >	m_Var;
 
 	int		m_leftExtend;
 	int		m_rghtExtend;
@@ -435,6 +439,8 @@ public:
 
 	void SetOrdinate(const QString& ord);
 	void SetMath(const QString& txt);
+	void ClearVariables();
+	void SetVariable(const QString& name, double val);
 
 	void showRangeOptions(bool b);
 

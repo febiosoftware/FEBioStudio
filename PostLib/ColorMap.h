@@ -63,6 +63,7 @@ public:
 	void blue   ();
 	void rbb    ();
 	void fire   ();
+	void parula ();
 
 	GLColor map(float fval) const;
 
@@ -131,6 +132,7 @@ public:
 		GREEN,
 		HOTCOLD,
 		JET,
+		PARULA,
 		RBB,
 		RED,
 		RED_GREEN,

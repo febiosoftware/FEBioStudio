@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <FSCore/FSObject.h>
 
 namespace Post{
@@ -36,9 +36,17 @@ class CGLModel;
 class CImageFilter : public FSObject
 {
 public:
-    CImageFilter();
+    enum TYPES
+    {
+        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP, ADAPTHISTEQ
+    };
+
+public:
+    CImageFilter(int type, Post::CImageModel* model);
 
     virtual void ApplyFilter() = 0;
+
+    int Type() { return m_type; }
 
     void SetImageModel(Post::CImageModel* model);
 
@@ -46,22 +54,23 @@ public:
 
 protected:
     Post::CImageModel* m_model;
+
+private:
+    int m_type;
 };
 
 class ThresholdImageFilter : public CImageFilter
 {
 public:
-    ThresholdImageFilter();
+    ThresholdImageFilter(Post::CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
 
-#ifdef HAS_ITK
-
 class MeanImageFilter : public CImageFilter
 {
 public:
-    MeanImageFilter();
+    MeanImageFilter(Post::CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
@@ -69,12 +78,18 @@ public:
 class GaussianImageFilter : public CImageFilter
 {
 public:
-    GaussianImageFilter();
+    GaussianImageFilter(Post::CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
 
-#endif
+class AdaptiveHistogramEqualizationFilter : public CImageFilter
+{
+public:
+    AdaptiveHistogramEqualizationFilter(Post::CImageModel* model = nullptr);
+
+    void ApplyFilter() override;
+};
 
 class WarpImageFilter : public CImageFilter
 {

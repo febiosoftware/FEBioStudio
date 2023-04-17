@@ -29,9 +29,9 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FEElementData.h>
+#include <GeomLib/GGroup.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FEElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -88,7 +88,8 @@ public:
 		QHBoxLayout* h3 = new QHBoxLayout;
 		h3->addWidget(new QLabel("Data format:"));
 		m_domain = new QComboBox;
-		m_domain->addItem("Element data");
+		m_domain->addItem("Element (continuous)");
+		m_domain->addItem("Element (constant)");
 		m_domain->addItem("Node data");
 		h3->addWidget(m_domain);
 
@@ -265,7 +266,7 @@ void CScalarFieldTool::OnApply()
 	pm->TagAllElements(1);
 	int ntype = ui->m_domain->currentIndex();
 	int matId = -1;
-	if (ntype == 0)
+	if ((ntype == 0) || (ntype == 1))
 	{
 		pm->TagAllElements(-1);
 		int n = ui->m_matList->currentIndex();
@@ -320,23 +321,25 @@ void CScalarFieldTool::OnApply()
 	wnd->AddLogEntry(QString("iteration count: %1\n").arg(niters));
 	wnd->AddLogEntry(QString("Final relative norm: %1\n").arg(L.GetRelativeNorm()));
 
-	if (ntype == 0)
+	if (ntype == 0) // element (mult)
 	{
 		// create element data
 		int parts = po->Parts();
-		vector<int> partList;
+		FSPartSet* partSet = new FSPartSet(po);
+		partSet->SetName(name.toStdString());
 		for (int i = 0; i < parts; ++i)
 		{
 			GPart* pg = po->Part(i);
 			if (pg->GetMaterialID() == matId)
 			{
-				partList.push_back(i);
+				partSet->add(i);
 			}
 		}
+		po->AddFEPartSet(partSet);
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partList, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -354,11 +357,52 @@ void CScalarFieldTool::OnApply()
 		}
 		delete elemList;
 	}
+	else if (ntype == 1) // element (item)
+	{
+		// create element data
+		int parts = po->Parts();
+		FSPartSet* partSet = new FSPartSet(po);
+		partSet->SetName(name.toStdString());
+		for (int i = 0; i < parts; ++i)
+		{
+			GPart* pg = po->Part(i);
+			if (pg->GetMaterialID() == matId)
+			{
+				partSet->add(i);
+			}
+		}
+		po->AddFEPartSet(partSet);
+
+		FEPartData* pdata = new FEPartData(po->GetFEMesh());
+		pdata->SetName(name.toStdString());
+		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+		pm->AddMeshDataField(pdata);
+
+		FEElemList* elemList = pdata->BuildElemList();
+		int NE = elemList->Size();
+		auto it = elemList->First();
+		for (int i = 0; i < NE; ++i, ++it)
+		{
+			FEElement_& el = *it->m_pi;
+			int ne = el.Nodes();
+			double v = 0.0;
+			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
+
+			pdata->set(i, v);
+		}
+		delete elemList;
+	}
 	else
 	{
+		// create a node set from the mesh
+		FSNodeSet* nodeSet = new FSNodeSet(po);
+		nodeSet->CreateFromMesh();
+		nodeSet->SetName(name.toStdString());
+		po->AddFENodeSet(nodeSet);
+
 		// create node data
-		FENodeData* pdata = pm->AddNodeDataField(name.toStdString());
-		for (int i = 0; i < NN; i++) pdata->set(i, val[i]);
+		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, FEMeshData::DATA_SCALAR);
+		for (int i = 0; i < NN; i++) pdata->SetScalar(i, val[i]);
 	}
 
 	Clear();

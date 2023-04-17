@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <sstream>
 #include <QDialogButtonBox>
 #include <QComboBox>

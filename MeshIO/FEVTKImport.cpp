@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEVTKImport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 #ifdef LINUX
 #include <wctype.h>

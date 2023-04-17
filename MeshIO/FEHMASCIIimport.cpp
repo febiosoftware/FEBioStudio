@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEHMASCIIimport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 using namespace std;
 
 FEHMASCIIimport::FEHMASCIIimport(FSProject& prj) : FSFileImport(prj)
@@ -253,14 +253,14 @@ bool FEHMASCIIimport::BuildMesh(FSModel& fem)
 		list<COMPONENT>::iterator ip = m_Part.begin();
 		for (int i=0; i<parts; ++i, ++ip)
 		{
-			FSPart* pg = new FSPart(po);
+			FSElemSet* pg = new FSElemSet(po);
 
 			pg->SetName(ip->szname);
 
 			list<ELEM>::iterator ib = m_Elem.begin();
 			for (int j=0; j<elems; ++j, ++ib) if (ib->npid == i) pg->add(j);
 
-			po->AddFEPart(pg);
+			po->AddFEElemSet(pg);
 		}
 	}
 

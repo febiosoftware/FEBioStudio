@@ -58,8 +58,7 @@ public:
 		a = 255;
 	}
 
-	operator unsigned int() { return (int)(((((r << 8) | g) << 8) | b) << 8); }
-
+	unsigned int to_uint() { return (int)(((((r << 8) | g) << 8) | b) << 8); }
 
 	static GLColor White() { return GLColor(255, 255, 255); }
 	static GLColor FromRGBf(float r, float g, float b) { return GLColor((Byte)(r*255.f), (Byte)(g*255.f), (Byte)(b*255.f)); }

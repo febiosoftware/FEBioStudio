@@ -1,5 +1,5 @@
 #pragma once
-#include <FEMLib/FEStepComponent.h>
+#include "FEStepComponent.h"
 #include <FSCore/Archive.h>
 #include <FSCore/LoadCurve.h>
 

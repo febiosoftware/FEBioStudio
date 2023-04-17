@@ -34,10 +34,10 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include "InputWidgets.h"
 #include <FEMLib/FEMKernel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 class Ui::CDlgAddStep
 {

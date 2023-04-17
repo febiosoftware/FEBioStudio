@@ -35,13 +35,13 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "ModelFileWriter.h"
 #include <QMessageBox>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <PostGL/GLPlot.h>
 #include <MeshLib/FENodeFaceList.h>
-#include <MeshTools/GModel.h>
 #include <FEBio/FEBioImport.h>
 #include <FEBioLink/FEBioInit.h>
 #include "GLModelScene.h"
+#include "units.h"
 
 class CModelContext
 {
@@ -121,6 +121,8 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 	m_scene = new CGLModelScene(this);
 
 	SetFileWriter(new CModelFileWriter(this));
+
+	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
 
 void CModelDocument::Clear()
@@ -141,12 +143,11 @@ void CModelDocument::Clear()
 //-----------------------------------------------------------------------------
 void CModelDocument::Activate()
 {
+	CGLDocument::Activate();
+
 	m_context->Pull();
 
 	// reset active module
-	unsigned int m = m_Project.GetModule();
-	m_Project.SetModule(m);
-
 	FEBio::SetActiveProject(&m_Project);
 }
 
@@ -192,13 +193,24 @@ GModel* CModelDocument::GetGModel()
 GObject* CModelDocument::GetActiveObject()
 {
 	GObject* po = nullptr;
-	GObjectSelection sel(GetFSModel());
+	GObjectSelection sel(GetGModel());
 	if (sel.Count() == 1) po = sel.Object(0);
 	return po;
 }
 
 //-----------------------------------------------------------------------------
-BOX CModelDocument::GetModelBox() { return m_Project.GetFSModel().GetModel().GetBoundingBox(); }
+BOX CModelDocument::GetModelBox() 
+{ 
+	BOX box = m_Project.GetFSModel().GetModel().GetBoundingBox(); 
+
+	// add any image models
+	for (int i = 0; i < ImageModels(); ++i)
+	{
+		box += GetImageModel(i)->GetBoundingBox();
+	}
+
+	return box;
+}
 
 //-----------------------------------------------------------------------------
 void CModelDocument::AddObject(GObject* po)
@@ -258,6 +270,14 @@ void CModelDocument::DeleteObject(FSObject* po)
 	else if (dynamic_cast<GObject*>(po))
 	{
 		GObject* obj = dynamic_cast<GObject*>(po);
+
+		// check to see if there are any required nodes
+		if (obj->CanDelete() == false)
+		{
+			QMessageBox::warning(m_wnd, "FEBio Studio", "This object cannot be deleted since other model components depend on it.");
+			return;
+		}
+
 		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
 	}
 	else if (po->GetParent())
@@ -271,7 +291,11 @@ void CModelDocument::DeleteObject(FSObject* po)
 			}
 */
 		}
-		DoCommand(new CCmdDeleteFSObject(po));
+
+		if (dynamic_cast<FSModelComponent*>(po))
+			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+		else
+			DoCommand(new CCmdDeleteFSObject(po));
 	}
 	else if (dynamic_cast<FEMeshData*>(po))
 	{
@@ -641,6 +665,36 @@ bool CModelDocument::ImportFEBioMaterials(const std::string& fileName)
 }
 
 //-----------------------------------------------------------------------------
+void CModelDocument::SetUnitSystem(int unitSystem)
+{
+	CGLDocument::SetUnitSystem(unitSystem);
+
+	FSModel* fem = GetFSModel();
+	if (fem)
+	{
+		// -- update global constants
+		// universal gas constant
+		const double R = 8.314462618153; // value in SI units
+		Param* pR = fem->GetParam("R");
+		if (pR) pR->SetFloatValue(Units::Convert(R, UNIT_GAS_CONSTANT, Units::SI, unitSystem));
+
+		// faraday's constant
+		const double Fc = 9.648533212331e4;  // value in SI units
+		Param* pFc = fem->GetParam("Fc");
+		if (pFc) pFc->SetFloatValue(Units::Convert(Fc, UNIT_FARADAY_CONSTANT, Units::SI, unitSystem));
+
+        // reference temperature
+        Param* pT = fem->GetParam("T");
+        if (pT) pT->SetFloatValue(Units::Convert(pT->GetFloatValue(), UNIT_TEMPERATURE, Units::SI, unitSystem));
+
+        // reference pressure
+        Param* pP = fem->GetParam("P");
+        if (pP) pP->SetFloatValue(Units::Convert(pP->GetFloatValue(), UNIT_PRESSURE, Units::SI, unitSystem));
+
+	}
+}
+
+//-----------------------------------------------------------------------------
 // SELECTION
 //-----------------------------------------------------------------------------
 void CModelDocument::UpdateSelection(bool report)
@@ -659,17 +713,18 @@ void CModelDocument::UpdateSelection(bool report)
 
 	// get the mesh mode
 	int meshMode = m_wnd->GetMeshMode();
+	GModel* gm = &ps->GetModel();
 
 	if (m_vs.nitem == ITEM_MESH)
 	{
 		switch (m_vs.nselect)
 		{
-		case SELECT_OBJECT: m_psel = new GObjectSelection(ps); break;
-		case SELECT_PART: m_psel = new GPartSelection(ps); break;
-		case SELECT_FACE: m_psel = new GFaceSelection(ps); break;
-		case SELECT_EDGE: m_psel = new GEdgeSelection(ps); break;
-		case SELECT_NODE: m_psel = new GNodeSelection(ps); break;
-		case SELECT_DISCRETE: m_psel = new GDiscreteSelection(ps); break;
+		case SELECT_OBJECT: m_psel = new GObjectSelection(gm); break;
+		case SELECT_PART: m_psel = new GPartSelection(gm); break;
+		case SELECT_FACE: m_psel = new GFaceSelection(gm); break;
+		case SELECT_EDGE: m_psel = new GEdgeSelection(gm); break;
+		case SELECT_NODE: m_psel = new GNodeSelection(gm); break;
+		case SELECT_DISCRETE: m_psel = new GDiscreteSelection(gm); break;
 		}
 	}
 	else
@@ -678,27 +733,30 @@ void CModelDocument::UpdateSelection(bool report)
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(ps, pm); break;
-			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(ps, pm); break;
-			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(ps, pm); break;
-			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(ps, pm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
+			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(gm, pm); break;
+			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(gm, pm); break;
+			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(gm, pm); break;
 			}
 		}
 		else
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(ps, pm); break;
-			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(ps, pmb); break;
-			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(ps, plm); break;
-			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(ps, plm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
+			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(gm, pmb); break;
+			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(gm, plm); break;
+			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(gm, plm); break;
 			}
 		}
 	}
 
 	// update the window's toolbar to make sure it reflects the correct
 	// selection tool
-	if (report) m_wnd->ReportSelection();
+	if (report)
+	{
+		emit selectionChanged();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -804,11 +862,8 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 	// create the selection command
 	FEItemListBuilder* pl = 0;
 
-	IHasItemList* phs = dynamic_cast<IHasItemList*>(po);
-	if (phs) pl = phs->GetItemList();
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(po);
-	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+	IHasItemLists* phs = dynamic_cast<IHasItemLists*>(po);
+	if (phs) pl = phs->GetItemList(n);
 
 	GGroup* pg = dynamic_cast<GGroup*>(po);
 	if (pg) pl = pg;
@@ -837,7 +892,17 @@ void CModelDocument::SelectItems(FSObject* po, const std::vector<int>& l, int n)
 				case FE_NODESET: SetItemMode(ITEM_NODE); pcmd = new CCmdSelectFENodes(pm, l, false); break;
 				case FE_EDGESET: SetItemMode(ITEM_EDGE); pcmd = new CCmdSelectFEEdges(pm, l, false); break;
 				case FE_SURFACE: SetItemMode(ITEM_FACE); pcmd = new CCmdSelectFaces(pm, l, false); break;
-				case FE_PART   : SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, l, false); break;
+				case FE_ELEMSET: SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, l, false); break;
+				case FE_PARTSET: 
+				{
+					FSPartSet* pg = dynamic_cast<FSPartSet*>(pl);
+					if (pg)
+					{
+						vector<int> elemList = pg->BuildElementIndexList(l);
+						SetItemMode(ITEM_ELEM); pcmd = new CCmdSelectElements(pm, elemList, false);
+					}
+				}
+				break;
 				default:
 					assert(false);
 				}

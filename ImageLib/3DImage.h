@@ -26,19 +26,21 @@ SOFTWARE.*/
 
 #pragma once
 #include "Image.h"
+#include <FSCore/box.h>
 
 //-----------------------------------------------------------------------------
 // A class for representing 3D image stacks
 class C3DImage
 {
 public:
+	enum { UINT_8, INT_8, UINT_16, INT_16, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16 };
+
+public:
 	C3DImage();
 	virtual ~C3DImage();
 	void CleanUp();
 
-	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0);
-
-	bool LoadFromFile(const char* szfile, int nbits);
+	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0, int pixelType = UINT_8);
 
 	void BitBlt(CImage& im, int nslice);
 	void StretchBlt(CImage& im, int nslice);
@@ -47,6 +49,11 @@ public:
 	int Width () { return m_cx; }
 	int Height() { return m_cy; }
 	int Depth () { return m_cz; }
+    int PixelType() { return m_pixelType; }
+	int BPS() const { return m_bps; }
+
+    virtual BOX GetBoundingBox() { return m_box; }
+    virtual void SetBoundingBox(BOX& box) { m_box = box; }
 
 	Byte& value(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
 	Byte Value(double fx, double fy, int nz);
@@ -77,9 +84,12 @@ public:
 
 protected:
 	Byte*	m_pb;	// image data
-	int		m_cx;
-	int		m_cy;
-	int		m_cz;
+	int		m_cx, m_cy, m_cz; // pixel dimensions
+    int     m_pixelType; // pixel representation
+	int		m_bps;	// bytes per sample
+
+private:
+    BOX     m_box; // physical bounds
 };
 
 //-----------------------------------------------------------------------------

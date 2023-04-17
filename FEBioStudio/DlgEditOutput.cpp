@@ -26,11 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DlgEditOutput.h"
-#include <MeshTools/FEProject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/FSProject.h>
+#include <GeomLib/GModel.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FEGroup.h>
+#include <GeomLib/GGroup.h>
+#include <GeomLib/FSGroup.h>
 #include <GeomLib/GObject.h>
 #include <QBoxLayout>
 #include <QDialogButtonBox>
@@ -46,6 +46,8 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QCompleter>
+#include "CustomLineEdit.h"
 #include <FEBioLink/FEBioClass.h>
 
 class Ui::CDlgAddSelection
@@ -107,7 +109,7 @@ public:
 	QComboBox* logType;
 	QTableWidget* table;
 	QComboBox* logList;
-	QLineEdit* logEdit;
+	CustomLineEdit* logEdit;
 
 	vector<CPlotVariable>	m_plt;
 
@@ -165,16 +167,19 @@ public:
 
 		// --- log file tab
 		logType = new QComboBox;
-		logType->addItem("Node");
-		logType->addItem("Element");
-		logType->addItem("Rigid body");
-        logType->addItem("Rigid connector");
+		logType->addItem("Node", FSLogData::LD_NODE);
+		logType->addItem("Face", FSLogData::LD_FACE);
+		logType->addItem("Element", FSLogData::LD_ELEM);
+		logType->addItem("Rigid body", FSLogData::LD_RIGID);
+		logType->addItem("Rigid connector", FSLogData::LD_CNCTR);
 
 		logList = new QComboBox;
 
 		QLabel* info = new QLabel("Enter a semi-colon delimited list of variables:");
 
-		logEdit = new QLineEdit;
+		logEdit = new CustomLineEdit;
+		logEdit->setWrapQuotes(false);
+		logEdit->setDelimiter(";");
 
 		QPushButton* addLogItem = new QPushButton("Add");
 		QPushButton* remLogItem = new QPushButton("Remove");
@@ -505,46 +510,46 @@ void CDlgEditOutput::UpdateLogTable()
 		FSLogData& logi = log.LogData(i);
 
 		QString type;
-		switch (logi.type)
+		switch (logi.Type())
 		{
 		case FSLogData::LD_NODE : type = "Node"; break;
+		case FSLogData::LD_FACE : type = "Face"; break;
 		case FSLogData::LD_ELEM : type = "Element"; break;
 		case FSLogData::LD_RIGID: type = "Rigid body"; break;
         case FSLogData::LD_CNCTR: type = "Rigid connector"; break;
 		}
 
-		QString data = QString::fromStdString(logi.sdata);
+		QString data = QString::fromStdString(logi.GetDataString());
 
 		QString list;
-		if (logi.type == FSLogData::LD_RIGID)
+		if (logi.Type() == FSLogData::LD_RIGID)
 		{
-			if (logi.matID == -1) list = "(all rigid bodies)";
-			else list = QString::fromStdString(fem.GetMaterialFromID(logi.matID)->GetName());
+			FSLogRigidData& rd = dynamic_cast<FSLogRigidData&>(logi);
+			if (rd.GetMatID() == -1) list = "(all rigid bodies)";
+			else list = QString::fromStdString(fem.GetMaterialFromID(rd.GetMatID())->GetName());
 		}
-        else if (logi.type == FSLogData::LD_CNCTR)
+        else if (logi.Type() == FSLogData::LD_CNCTR)
         {
-            if (logi.rcID == -1) list = "(all rigid connectors)";
-            else list = QString::fromStdString(fem.GetRigidConnectorFromID(logi.rcID)->GetName());
+			FSLogConnectorData& cd = dynamic_cast<FSLogConnectorData&>(logi);
+			if (cd.GetConnectorID() == -1) list = "(all rigid connectors)";
+            else list = QString::fromStdString(fem.GetRigidConnectorFromID(cd.GetConnectorID())->GetName());
         }
 		else
 		{
-			if (logi.groupID == -1)
+			FSHasOneItemList* pil = dynamic_cast<FSHasOneItemList*>(&logi);
+			FEItemListBuilder* pl = pil->GetItemList();
+			if (pl == nullptr)
 			{
-				if (logi.type == FSLogData::LD_NODE) list = "(all nodes)";
-				else list = "(all elements)";
+				if (logi.Type() == FSLogData::LD_NODE) list = "(all nodes)";
+				else if (logi.Type() == FSLogData::LD_ELEM) list = "(all elements)";
 			}
 			else
 			{
-				GModel& mdl = fem.GetModel();
-				FEItemListBuilder* item = mdl.FindNamedSelection(logi.groupID); assert(item);
-				if (item)
-				{
-					list = QString::fromStdString(item->GetName());
-				}
+				list = QString::fromStdString(pl->GetName());
 			}
 		}
 
-		QString fileName = QString::fromStdString(logi.fileName);
+		QString fileName = QString::fromStdString(logi.GetFileName());
 
 		ui->setLogTableItem(i, type, data, list, fileName);
 	}
@@ -556,12 +561,29 @@ void CDlgEditOutput::UpdateLogItemList()
 	FSModel& fem = m_prj.GetFSModel();
 	GModel& mdl = fem.GetModel();
 
-	int ntype = ui->logType->currentIndex();
+	int ntype = ui->logType->currentData().toInt();
 
 	if (ntype == FSLogData::LD_NODE ) ui->logList->addItem("(all nodes)", -1);
 	if (ntype == FSLogData::LD_ELEM ) ui->logList->addItem("(all elements)", -1);
 	if (ntype == FSLogData::LD_RIGID) ui->logList->addItem("(all rigid bodies)", -1);
-    if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+	if (ntype == FSLogData::LD_CNCTR) ui->logList->addItem("(all rigid connectors)", -1);
+
+	std::vector<FEBio::FEBioClassInfo> info;
+	switch (ntype)
+	{
+	case FSLogData::LD_NODE : info = FEBio::FindAllActiveClasses(FELOGNODEDATA_ID); break;
+	case FSLogData::LD_FACE : info = FEBio::FindAllActiveClasses(FELOGFACEDATA_ID); break;
+	case FSLogData::LD_ELEM : info = FEBio::FindAllActiveClasses(FELOGELEMDATA_ID); break;
+	case FSLogData::LD_RIGID: info = FEBio::FindAllActiveClasses(FELOGOBJECTDATA_ID); break;
+	case FSLogData::LD_CNCTR: info = FEBio::FindAllActiveClasses(FELOGNLCONSTRAINTDATA_ID); break;
+	}
+	
+	QStringList sl;
+	for (int i = 0; i < info.size(); ++i) sl << info[i].sztype;
+
+	QCompleter* c = new QCompleter(sl);
+	c->popup()->setMinimumWidth(100);
+	ui->logEdit->setMultipleCompleter(c);
 
 	if ((ntype == FSLogData::LD_NODE) || (ntype == FSLogData::LD_ELEM))
 	{
@@ -612,12 +634,32 @@ void CDlgEditOutput::UpdateLogItemList()
 			for (int i = 0; i<mdl.Objects(); ++i)
 			{
 				GObject* po = mdl.Object(i);
-				int NES = po->FEParts();
+				int NES = po->FEElemSets();
 				for (int i = 0; i<NES; ++i)
 				{
-					FSPart* pg = po->GetFEPart(i);
+					FSElemSet* pg = po->GetFEElemSet(i);
 					ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
 				}
+			}
+		}
+	}
+	else if (ntype == FSLogData::LD_FACE)
+	{
+		// add surfaces
+		for (int i = 0; i < mdl.FaceLists(); ++i)
+		{
+			GFaceList* pg = mdl.FaceList(i);
+			ui->logList->addItem(QString::fromStdString(pg->GetName()), pg->GetID());
+		}
+
+		for (int i = 0; i < mdl.Objects(); ++i)
+		{
+			GObject* po = mdl.Object(i);
+			int NS = po->FESurfaces();
+			for (int i = 0; i < NS; ++i)
+			{
+				FSSurface* ps = po->GetFESurface(i);
+				ui->logList->addItem(QString::fromStdString(ps->GetName()), ps->GetID());
 			}
 		}
 	}
@@ -665,16 +707,28 @@ void CDlgEditOutput::onLogAdd()
 	}
 	ui->logEdit->setText("");
 
+	FSModel& fem = m_prj.GetFSModel();
+	GModel& mdl = fem.GetModel();
+
 	// create new log entry
-	FSLogData ld;
-	ld.type = ntype;
-	ld.sdata = data.toStdString();
-	if (ld.type == FSLogData::LD_RIGID) ld.matID = nlist;
-    else if (ld.type == FSLogData::LD_CNCTR) ld.rcID = nlist;
-	else ld.groupID = nlist;
+	FSLogData* ld = nullptr;
+	switch (ntype)
+	{
+	case FSLogData::LD_NODE: ld = new FSLogNodeData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_FACE: ld = new FSLogFaceData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_ELEM: ld = new FSLogElemData(mdl.FindNamedSelection(nlist)); break;
+	case FSLogData::LD_RIGID: ld = new FSLogRigidData(nlist); break;
+	case FSLogData::LD_CNCTR: ld = new FSLogConnectorData(nlist); break;
+	}
+
+	assert(ld);
+	if (ld)
+	{
+		ld->SetDataString(data.toStdString());
+		m_prj.GetLogDataSettings().AddLogData(ld);
+	}
 
 	// add it to the list
-	m_prj.GetLogDataSettings().AddLogData(ld);
 	UpdateLogTable();
 }
 
@@ -834,7 +888,7 @@ void CDlgEditOutput::onItemChanged(QTableWidgetItem* item)
 	{
 		FSLogData& ld = log.LogData(n);
 		QString t = item->text();
-		ld.fileName = t.toStdString();
+		ld.SetFileName(t.toStdString());
 	}
 }
 

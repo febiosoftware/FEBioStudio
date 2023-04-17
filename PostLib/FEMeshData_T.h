@@ -88,15 +88,17 @@ public:
 	{
 		int N = state->GetFEMesh()->Nodes();
 		m_stride = nsize;
-		m_data.resize(N*nsize, 0.f);
+		m_data.resize(N * nsize, 0.f);
 	}
 
-	float eval(int n, int comp) { return m_data[n*m_stride + comp]; }
+	float eval(int n, int comp) { return m_data[n * m_stride + comp]; }
 	void setData(std::vector<float>& data)
 	{
 		assert(data.size() == m_data.size());
 		m_data = data;
 	}
+
+	int components() const { return m_stride; }
 
 protected:
 	int				m_stride;
@@ -335,6 +337,8 @@ public:
 		}
 	}
 
+	int components() const { return m_stride; }
+
 protected:
 	int					m_stride;
 	std::vector<float>	m_data;
@@ -421,6 +425,8 @@ public:
 			m_elem[m] = m;
 		}
 	}
+
+	int components() const { return m_stride; }
 
 protected:
 	int					m_stride;
@@ -889,6 +895,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// TODO: This should be mat2fs, but that type doesn't exist yet. 
+class InfStrain2D : public FEElemData_T<mat3fs, DATA_ITEM>
+{
+public:
+	InfStrain2D(FEState* state, ModelDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf) {}
+	void eval(int n, mat3fs* pv);
+};
+
+//-----------------------------------------------------------------------------
 class BiotStrain : public ElemStrain
 {
 public:
@@ -1016,4 +1031,13 @@ private:
 	int	m_nstress;	// total stress field
 	int	m_nflp;		// fluid pressure field
 };
+
+//-----------------------------------------------------------------------------
+class FEElementMaterial : public FEElemData_T<float, DATA_ITEM>
+{
+public:
+	FEElementMaterial(FEState* state, ModelDataField* pdf);
+	void eval(int n, float* pv);
+};
+
 }

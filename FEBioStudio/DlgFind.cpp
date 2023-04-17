@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "DlgFind.h"
 #include <QBoxLayout>
 #include <QGridLayout>
+#include <QFormLayout>
 #include <QDialogButtonBox>
 #include <QRadioButton>
 #include <QLabel>
@@ -50,6 +51,8 @@ public:
 	QComboBox* method;
 	QLineEdit* pids;
 	QLineEdit* pcoord;
+	QLineEdit* pmin;
+	QLineEdit* pmax;
 	QCheckBox* pclear;
 	QStackedWidget* stack;
 
@@ -72,7 +75,7 @@ public:
 
 		QHBoxLayout* hb = new QHBoxLayout;
 		hb->addWidget(new QLabel("method:"));
-		method = new QComboBox(); method->addItems(QStringList() << "ID" << "coordinates");
+		method = new QComboBox(); method->addItems(QStringList() << "ID" << "coordinates" << "coordinates range");
 		hb->addWidget(method);
 		method->setSizePolicy(QSizePolicy::Expanding, method->sizePolicy().verticalPolicy());
 		pvb->addLayout(hb);
@@ -98,6 +101,13 @@ public:
 		pgrid->addWidget(label, 1, 1);
 		wcoord->setLayout(pgrid);
 		stack->addWidget(wcoord);
+
+		QWidget* wrange = new QWidget;
+		QFormLayout* form = new QFormLayout;
+		form->addRow("x0, y0, z0", pmin = new QLineEdit);
+		form->addRow("x1, y1, z1", pmax = new QLineEdit);
+		wrange->setLayout(form);
+		stack->addWidget(wrange);
 
 		pvb->addWidget(stack);
 
@@ -152,9 +162,14 @@ void CDlgFind::accept()
 			return;
 		}
 	}
-	else
+	else if (m_method == 1)
 	{
 		m_coord = StringToVec3d(ui->pcoord->text());
+	}
+	else
+	{
+		m_min = StringToVec3d(ui->pmin->text());
+		m_max = StringToVec3d(ui->pmax->text());
 	}
 
 	QDialog::accept();
@@ -162,7 +177,7 @@ void CDlgFind::accept()
 
 // converts a string to a list of numbers. 
 // Note: no white space allowed in the string.
-// Note: the numbers are converted to zero-base
+// Note: the numbers are assumed to be positive
 bool string_to_int_list(QString listString, std::vector<int>& list)
 {
 	// remove all spaces
@@ -178,8 +193,8 @@ bool string_to_int_list(QString listString, std::vector<int>& list)
 	int n0 = -1, n1 = -1, nn = -1;
 	do
 	{
-		if      (n0 < 0) n0 = (int) atoi(ch) - 1;
-		else if (n1 < 0) n1 = (int) atoi(ch) - 1;
+		if      (n0 < 0) n0 = (int) atoi(ch);
+		else if (n1 < 0) n1 = (int) atoi(ch);
 		else if (nn < 0) nn = (int) atoi(ch);
 
 		while (isdigit(*ch)) ++ch;

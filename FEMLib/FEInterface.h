@@ -1,7 +1,7 @@
 #pragma once
 #include "FEStepComponent.h"
-#include "MeshTools/FEItemListBuilder.h"
-#include "MeshTools/GMaterial.h"
+#include <MeshLib/FEItemListBuilder.h>
+#include "GMaterial.h"
 #include <list>
 #include "IHasItemList.h"
 //using namespace std;
@@ -29,7 +29,7 @@ protected:
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that only require one
 //! surface definition (e.g. rigid interface, rigid wall interface)
-class FSSoloInterface : public FSInterface, public IHasItemList
+class FSSoloInterface : public FSInterface, public FSHasOneItemList
 {
 public:
 	FSSoloInterface(int ntype, FSModel* ps, int nstep);
@@ -37,45 +37,27 @@ public:
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-public: // IHasItemList
-	FEItemListBuilder* GetItemList() override;
-	void SetItemList(FEItemListBuilder* pi) override;
-
-	unsigned int GetMeshItemType() const override;
-	void SetMeshItemType(unsigned int meshItem) override;
-
-protected:
-	FEItemListBuilder*	m_pItem;	// list of items that define interface
-	unsigned int		m_itemType;
 };
 
 //-----------------------------------------------------------------------------
 //! This class is the base class for interfaces that require two surfaces
 //!
-class FSPairedInterface : public FSInterface
+class FSPairedInterface : public FSInterface, public FSHasTwoItemLists
 {
 public:
 	FSPairedInterface(int ntype, FSModel* ps, int nstep);
 	~FSPairedInterface();
 
-	void SetPrimarySurface(FEItemListBuilder* pg) { m_surf1 = pg; }
-	void SetSecondarySurface(FEItemListBuilder* pg) { m_surf2 = pg; }
+	void SetPrimarySurface(FEItemListBuilder* pg);
+	void SetSecondarySurface(FEItemListBuilder* pg);
 
-	FEItemListBuilder*	GetPrimarySurface() { return m_surf1; }
-	FEItemListBuilder*	GetSecondarySurface() { return m_surf2;  }
-
-	FEItemListBuilder* GetItemList(int index) { return (index == 0 ? GetPrimarySurface() : GetSecondarySurface()); }
-	void SetItemList(int index, FEItemListBuilder* itemList) { (index == 0 ? SetPrimarySurface(itemList) : SetSecondarySurface(itemList)); }
+	FEItemListBuilder*	GetPrimarySurface();
+	FEItemListBuilder*	GetSecondarySurface();
 
 	void SwapPrimarySecondary();
 
 	void Save(OArchive& ar);
 	void Load(IArchive& ar);
-
-public:
-	FEItemListBuilder*	m_surf1;	// primary surface item list
-	FEItemListBuilder*	m_surf2;	// secondary syurface item list
 };
 
 //-----------------------------------------------------------------------------

@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QHeaderView>
 #include <unordered_map>
 #include <FEMLib/FEMKernel.h>
-#include "MeshTools/FEProject.h"
+#include <FEMLib/FSProject.h>
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>

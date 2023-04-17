@@ -26,11 +26,12 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshTools/FEFileExport.h>
+#include "FSFileExport.h"
 
 class GObject;
+class FSMesh;
 
-class FESTLExport : public FEFileExport
+class FESTLExport : public FSFileExport
 {
 public:
 	FESTLExport(FSProject& prj);
@@ -39,4 +40,6 @@ public:
 	bool Write(const char* szfile) override;
 
 	bool Write(const char* szfile, GObject* po);
+
+	bool Write(const char* szfile, FSMesh* pm);
 };

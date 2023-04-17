@@ -29,15 +29,16 @@ SOFTWARE.*/
 #include <GeomLib/GObject.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FEAnalysisStep.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FERigidConstraint.h>
-#include <MeshTools/GMaterial.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/GMaterial.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 #include "ModelViewer.h"
+#include <PostLib/ImageModel.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -49,7 +50,7 @@ FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
 QStringList FEObjectProps::GetEnumValues(const char* ch)
 {
 	QStringList ops;
-	char sz[512] = { 0 };
+	char sz[1024] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (m_fem)
@@ -539,7 +540,7 @@ void CMaterialProps::BuildPropertyList()
 	}
 	else
 	{
-		if (pm && pm->HasMaterialAxes())
+		if (pm && pm->m_axes)
 		{
 			// add the material axes selection option
 			QStringList val;
@@ -563,7 +564,7 @@ void CMaterialProps::BuildPropertyList()
             case FE_AXES_ANGLES:
                 addProperty("theta", CProperty::String);
                 addProperty("phi", CProperty::String);
-                    break;
+                break;
 			}
 		}
 	}
@@ -754,7 +755,7 @@ void CLogfileProperties::Update()
 	for (int i = 0; i<log.LogDataSize(); ++i)
 	{
 		FSLogData& ld = log.LogData(i);
-		addProperty(QString::fromStdString(ld.sdata), CProperty::Bool)->setFlags(CProperty::Visible);
+		addProperty(QString::fromStdString(ld.GetDataString()), CProperty::Bool)->setFlags(CProperty::Visible);
 	}
 
 	addProperty("", CProperty::Action, "Edit log variables ...");
@@ -985,4 +986,81 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 			m_pg->SetMaterialID(m->GetID());
 		}
 	}
+}
+
+//=======================================================================================
+CImageModelProperties::CImageModelProperties(Post::CImageModel* model)
+    : m_model(model), CObjectProps(nullptr)
+{
+    addProperty("Show Box", CProperty::Bool);
+    addProperty("x0", CProperty::Float);
+    addProperty("y0", CProperty::Float);
+    addProperty("z0", CProperty::Float);
+    addProperty("x1", CProperty::Float);
+    addProperty("y1", CProperty::Float);
+    addProperty("z1", CProperty::Float);
+
+}
+
+QVariant CImageModelProperties::GetPropertyValue(int i)
+{
+    BOX box = m_model->GetBoundingBox();
+
+    switch (i)
+    {
+    case SHOWBOX:
+        return m_model->ShowBox();
+    case X0:
+        return box.x0;
+    case Y0:
+        return box.y0;
+    case Z0:
+        return box.z0;
+    case X1:
+        return box.x1;
+    case Y1:
+        return box.y1;
+    case Z1:
+        return box.z1;
+    default:
+        return false;
+    }
+}
+
+void CImageModelProperties::SetPropertyValue(int i, const QVariant& v)
+{
+    BOX box = m_model->GetBoundingBox();
+
+    switch (i)
+    {
+    case SHOWBOX:
+        m_model->ShowBox(v.toBool());
+        break;
+    case X0:
+        box.x0 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Y0:
+        box.y0 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Z0:
+        box.z0 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case X1:
+        box.x1 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Y1:
+        box.y1 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    case Z1:
+        box.z1 = v.toDouble();
+        m_model->SetBoundingBox(box);
+        break;
+    default:
+        break;
+    }
 }

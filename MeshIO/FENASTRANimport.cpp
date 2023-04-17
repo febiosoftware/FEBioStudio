@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "FENASTRANimport.h"
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 extern GLColor col[];
 
@@ -325,7 +325,7 @@ bool FENASTRANimport::BuildMesh(FSModel& fem)
 		list<PSOLID>::iterator ip = m_Part.begin();
 		for (i=0; i<nparts; ++i, ++ip)
 		{
-			FSPart* pg = new FSPart(po);
+			FSElemSet* pg = new FSElemSet(po);
 
 			sprintf(szname, "Part%02d", i+1);
 			pg->SetName(szname);
@@ -333,7 +333,7 @@ bool FENASTRANimport::BuildMesh(FSModel& fem)
 			list<ELEM>::iterator ib = m_Elem.begin();
 			for (n=0; n<elems; ++n, ++ib) if (ib->pid == ip->pid) pg->add(n);
 
-			po->AddFEPart(pg);
+			po->AddFEElemSet(pg);
 		}
 	}
 

@@ -68,8 +68,8 @@ class TimeRangeOptions : public CPlotTool
 
 public:
 	int currentOption();
-	void setUserTimeRange(int imin, int imax);
-	void getUserTimeRange(int& imin, int& imax);
+	void setUserTimeRange(int imin, int imax, int istep);
+	void getUserTimeRange(int& imin, int& imax, int& istep);
 	bool autoRangeUpdate();
 
 public slots:
@@ -266,8 +266,8 @@ public:
 
 public:
 	int GetTimeTrackOption();
-	void GetUserTimeRange(int& userMin, int& userMax);
-	void GetTimeRange(int& minTime, int& maxTime);
+	void GetUserTimeRange(int& userMin, int& userMax, int& step);
+	void GetTimeRange(int& minTime, int& maxTime, int& step);
 
 public: // convenience functions for modifying the plot widget
 	// number of data plots
@@ -368,7 +368,7 @@ private:
 	Ui::CGraphWindow*	ui;
 
 	int		m_nTrackTime;
-	int		m_nUserMin, m_nUserMax;	//!< manual time step range
+	int		m_nUserMin, m_nUserMax, m_nUserStep;	//!< manual time step range
 
 	static QRect	m_preferredSize;
 };
@@ -429,7 +429,7 @@ private:
 
 private: // temporary variables used during update
 	int	m_xtype, m_xtypeprev;			// x-plot field option (0=time, 1=steps, 2=data field)
-	int	m_firstState, m_lastState;		// first and last time step to be evaluated
+	int	m_firstState, m_lastState, m_incState;		// first, last, and state increment for time steps to be evaluated
 	int	m_dataX, m_dataY;				// X and Y data field IDs
 	int	m_dataXPrev, m_dataYPrev;		// Previous X, Y data fields
 	int	m_pltCounter;

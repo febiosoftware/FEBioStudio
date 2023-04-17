@@ -28,9 +28,9 @@ SOFTWARE.*/
 #include "FEMeshValuator.h"
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/triangulate.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FEElementData.h>
+#include <GeomLib/GGroup.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FEElementData.h>
 #include <MeshLib/MeshTools.h>
 
 //-----------------------------------------------------------------------------
@@ -137,17 +137,20 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::NODE_DATA:
 			{
 				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
-				FSMesh* mesh = nodeData.GetMesh();
-				for (int i=0; i < mesh->Elements(); ++i)
-				{ 
-					FSElement& el = mesh->Element(i);
-					int ne = el.Nodes();
-					for (int j = 0; j < ne; ++j)
+				if (nodeData.GetDataType() == FEMeshData::DATA_SCALAR)
+				{
+					FSMesh* mesh = nodeData.GetMesh();
+					for (int i = 0; i < mesh->Elements(); ++i)
 					{
-						double val = nodeData.get(el.m_node[j]);
-						data.SetElementValue(i, j, val);
+						FSElement& el = mesh->Element(i);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							double val = nodeData.GetScalar(el.m_node[j]);
+							data.SetElementValue(i, j, val);
+						}
+						data.SetElementDataTag(i, 1);
 					}
-					data.SetElementDataTag(i, 1);
 				}
 			}
 			break;
@@ -157,7 +160,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::ELEMENT_DATA:
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
-				const FSPart* pg = elemData.GetPart();
+				const FSElemSet* pg = elemData.GetElementSet();
 				FEItemListBuilder::ConstIterator it = pg->begin();
 				for (int i = 0; i < pg->size(); ++i, ++it)
 				{
@@ -171,32 +174,34 @@ void FEMeshValuator::Evaluate(int nfield)
 			case FEMeshData::PART_DATA:
 			{
 				FEPartData& partData = dynamic_cast<FEPartData&>(*meshData);
-
-				FEElemList* pg = partData.BuildElemList();
-				auto it = pg->First();
-				int N = pg->Size();
-				for (int i = 0; i < N; ++i, ++it)
+				if (partData.GetDataType() == FEMeshData::DATA_SCALAR)
 				{
-					int elemId = it->m_lid;
-					data.SetElementDataTag(elemId, 1);
+					FEElemList* pg = partData.BuildElemList();
+					auto it = pg->First();
+					int N = pg->Size();
+					for (int i = 0; i < N; ++i, ++it)
+					{
+						int elemId = it->m_lid;
+						data.SetElementDataTag(elemId, 1);
 
-					if (partData.GetDataFormat() == FEMeshData::DATA_ITEM)
-					{
-						double val = partData.GetValue(i, 0);
-						data.SetElementValue(elemId, val);
-					}
-					else if (partData.GetDataFormat() == FEMeshData::DATA_MULT)
-					{
-						FEElement_* pe = it->m_pi;
-						int nn = pe->Nodes();
-						for (int j = 0; j < nn; ++j)
+						if (partData.GetDataFormat() == FEMeshData::DATA_ITEM)
 						{
-							double val = partData.GetValue(i, j);
-							data.SetElementValue(elemId, j, val);
+							double val = partData.GetValue(i, 0);
+							data.SetElementValue(elemId, val);
+						}
+						else if (partData.GetDataFormat() == FEMeshData::DATA_MULT)
+						{
+							FEElement_* pe = it->m_pi;
+							int nn = pe->Nodes();
+							for (int j = 0; j < nn; ++j)
+							{
+								double val = partData.GetValue(i, j);
+								data.SetElementValue(elemId, j, val);
+							}
 						}
 					}
+					delete pg;
 				}
-				delete pg;
 			}
 			break;
 			}

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FileReader.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <list>
 
 class FETetGenImport : public FSFileImport

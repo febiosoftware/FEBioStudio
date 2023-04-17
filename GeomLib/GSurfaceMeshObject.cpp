@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FEShellMesher.h>
 #include <MeshTools/FEModifier.h>
 #include <MeshLib/FECurveMesh.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <MeshLib/FENodeEdgeList.h>
 #include "GOCCObject.h"
 
@@ -393,7 +393,7 @@ void GSurfaceMeshObject::UpdateSurfaces()
 void GSurfaceMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GLMesh* gmesh = new GLMesh();
+	GMesh* gmesh = new GMesh();
 
 	// we'll extract the data from the FE mesh
 	FSSurfaceMesh* pm = m_surfmesh;
@@ -1000,7 +1000,7 @@ void GSurfaceMeshObject::Attach(const GSurfaceMeshObject* po, bool weld, double 
 	BuildGMesh();
 }
 
-FSSurfaceMesh* createSurfaceMesh(GLMesh* glmesh)
+FSSurfaceMesh* createSurfaceMesh(GMesh* glmesh)
 {
 	if (glmesh == nullptr) return nullptr;
 
@@ -1048,10 +1048,10 @@ GSurfaceMeshObject* ConvertToEditableSurface(GObject* po)
 	else if (dynamic_cast<GOCCObject*>(po))
 	{
 		// If this is an OCC, we'll use the render mesh
-		GLMesh* glmesh = po->GetRenderMesh();
+		GMesh* glmesh = po->GetRenderMesh();
 		if (glmesh == nullptr) return nullptr;
 
-		// create FSSurfaceMesh from GLMesh
+		// create FSSurfaceMesh from GMesh
 		FSSurfaceMesh* surfMesh = createSurfaceMesh(glmesh);
 
 		// create the surface mesh object

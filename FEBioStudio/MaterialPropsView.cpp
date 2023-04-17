@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "MaterialPropsView.h"
-#include <MeshTools/GMaterial.h>
+#include <FEMLib/GMaterial.h>
 #include <FEMLib/FEMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <QPainter>
@@ -34,14 +34,14 @@ SOFTWARE.*/
 #include <QComboBox>
 #include "units.h"
 #include "PropertyList.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include "EditVariableParam.h"
 
 QStringList GetEnumValues(FSModel* fem, const char* ch)
 {
 	QStringList ops;
-	char sz[512] = { 0 };
+	char sz[1024] = { 0 };
 	if (ch[0] == '$')
 	{
 		if (fem)
@@ -165,7 +165,7 @@ public:
 				FSTransverselyIsotropic* tiso = dynamic_cast<FSTransverselyIsotropic*>(pm);
 				addFiberParameters(tiso->GetFiberMaterial());
 			}
-			else if (pm->HasMaterialAxes())
+			else if (pm->m_axes)
 			{
 				addParameters(pm->m_axes);
 			}

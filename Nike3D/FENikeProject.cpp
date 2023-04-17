@@ -25,15 +25,15 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FENikeProject.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <MeshLib/MeshMetrics.h>
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
 #include <memory>
 //using namespace std;
 

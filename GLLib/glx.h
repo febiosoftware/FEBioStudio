@@ -26,9 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/color.h>
-#include <FECore/mat3d.h>
-#include <FECore/quatd.h>
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <qopengl.h>
 #ifdef __APPLE__
     #include <OpenGL/GLU.h>
@@ -36,6 +34,7 @@ SOFTWARE.*/
     #include <GL/glu.h>
 #endif
 #include <vector>
+#include <FSCore/box.h>
 
 namespace glx {
 
@@ -64,6 +63,8 @@ void drawSmoothPath(const std::vector<vec3d>& path, float R);
 void drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
 void drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
 
+vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t);
+
 void quad4(vec3d r[4], vec3d n[4]);
 void quad4(vec3d r[4], vec3d n[4], GLColor c[4]);
 void quad4(vec3d r[4], vec3f n[4], float t[4]);
@@ -72,7 +73,7 @@ void quad9(vec3d r[9], vec3f n[9], float t[9]);
 
 void tri3(vec3d r[3], vec3f n[3]);
 void tri3(vec3d r[3], vec3d n[3]);
-void tri3(vec3d r[3], vec3f n[3], GLColor c[3]);
+void tri3(vec3d r[3], vec3d n[3], GLColor c[3]);
 void tri3(vec3d r[3], vec3f n[3], float t[3]);
 
 void tri6(vec3d r[6], vec3f n[6], float t[6]);
@@ -120,4 +121,6 @@ void renderAxis(double R);
 void renderSpring(const vec3d& a, const vec3d& b, double R);
 void renderDamper(const vec3d& a, const vec3d& b, double R);
 void renderContractileForce(const vec3d& a, const vec3d& b, double R);
+
+void renderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
 }

@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEElementFormulation.h>
 
 class GMeshObject;
@@ -275,20 +275,20 @@ public:
 	public:
 		SurfacePair();
 		SurfacePair(const SurfacePair& sp);
-		SurfacePair(const std::string& name, int masterID, int slaveID);
+		SurfacePair(const std::string& name, int surf1ID, int surf2ID);
 		void operator = (const SurfacePair& sp);
 
 		const std::string& name() const { return m_name; }
 
-		int masterID() const { return m_masterID; }
-		int slaveID() const { return m_slaveID; }
+		int PrimarySurfaceID() const { return m_surf1_ID; }
+		int SecondarySurfaceID() const { return m_surf2_ID; }
 
 		void SetPart(Part* part) { m_part = part; }
 		Part* GetPart() { return m_part; }
 
 	private:
 		std::string m_name;
-		int	m_masterID, m_slaveID;
+		int	m_surf1_ID, m_surf2_ID;
 		Part*	m_part;
 	};
 
@@ -402,14 +402,12 @@ public:
 	public:
 		FSNodeSet* BuildFENodeSet(const NodeSet& nset);
 		FSEdgeSet* BuildFEEdgeSet(EdgeSet& surf);
-		FSSurface* BuildFESurface(Surface& surf);
+		FSSurface* BuildFESurface(const Surface& surf);
 
 		FSNodeSet* BuildFENodeSet(const char* szname);
 		FSEdgeSet* BuildFEEdgeSet(const char* szname);
 		FSSurface* BuildFESurface(const char* szname);
-		FSPart*    BuildFEPart   (const char* szname);
-
-		FSSurface* BuildFESurface(const Surface& surf);
+		FSElemSet* BuildFEElemSet(const char* szname);
 
 	public:
 		vec3d	m_pos;
@@ -532,14 +530,19 @@ public:
 	FSNodeSet* BuildFENodeSet(const char* szname);
 	FSEdgeSet* BuildFEEdgeSet(const char* szname);
 	FSSurface* BuildFESurface(const char* szname);
-	FSPart* BuildFEPart(const char* szname);
-	FSPart* BuildFEPart(Domain* dom);
+	FSElemSet* BuildFEElemSet(const char* szname);
+	FSElemSet* BuildFEElemSet(Domain* dom);
 	GPart* FindGPart(const char* szname);
 	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);
 	ElementSet* FindElementSet(const char* szname);
 	bool BuildDiscreteSet(GDiscreteElementSet& set, const char* szset);
+
+	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
+	FSNodeSet* FindNamedNodeSet(const std::string& name);
+	FSSurface* FindNamedSurface(const std::string& name);
+	FSElemSet* FindNamedElementSet(const std::string& name);
 
 public:
 	bool	m_shellNodalNormals;

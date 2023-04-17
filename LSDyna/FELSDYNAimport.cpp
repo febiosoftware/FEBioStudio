@@ -30,7 +30,7 @@ SOFTWARE.*/
 
 #include "FELSDYNAimport.h"
 #include "GeomLib/GMeshObject.h"
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <vector>
 //using namespace std;
 

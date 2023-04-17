@@ -25,8 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QBoxLayout>
+#include <QToolButton>
 #include <QToolBar>
 #include <QAction>
+#include <QLabel>
 #include <QTimer>
 #include <QSpinBox>
 #include "MainWindow.h"
@@ -55,21 +57,28 @@ public:
         QVBoxLayout* layout = new QVBoxLayout;
 
         QToolBar* toolbar = new QToolBar;
+        toolbar->setContentsMargins(0,0,0,0);
 
         actionPlayPause = new QAction;
         actionPlayPause->setIcon(CIconProvider::GetIcon("play"));
         actionPlayPause->setObjectName("actionPlayPause");
+
         toolbar->addAction(actionPlayPause);
+        toolbar->addSeparator();
+        
+        toolbar->addWidget(new QLabel("Inverval (ms):"));
 
         interval = new QSpinBox;
         interval->setMinimum(1);
         interval->setMaximum(9999);
-        interval->setValue(300);
+        interval->setValue(40);
         toolbar->addWidget(interval);
 
-        layout->addWidget(toolbar);
+        toolbar->addSeparator();
 
-        slice = new CImageSlice(CImageSlice::Z);
+        toolbar->addWidget(new QLabel("Slice Direction:"));
+
+        slice = new CImageSlice(CImageSlice::Z, false, toolbar);
 
         layout->addWidget(slice);
 
@@ -93,6 +102,7 @@ C2DImageTimeView::C2DImageTimeView(CMainWindow* wnd)
 
     connect(ui->actionPlayPause, &QAction::triggered, this, &C2DImageTimeView::on_actionPlayPause_triggered);
     connect(ui->timer, &QTimer::timeout, this, &C2DImageTimeView::on_timer_timeout);
+    connect(ui->interval, &QSpinBox::valueChanged, this, &C2DImageTimeView::on_interval_valueChanged);
 }
 
 void C2DImageTimeView::Update()
@@ -157,4 +167,13 @@ void C2DImageTimeView::on_timer_timeout()
 
     // stop the animation if this view isn't visible
     on_actionPlayPause_triggered();
+}
+
+void C2DImageTimeView::on_interval_valueChanged()
+{
+    if(ui->running)
+    {
+        ui->timer->stop();
+        ui->timer->start(ui->interval->value());
+    }
 }

@@ -25,11 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEBYUExport.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
-FEBYUExport::FEBYUExport(FSProject& prj) : FEFileExport(prj)
+FEBYUExport::FEBYUExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

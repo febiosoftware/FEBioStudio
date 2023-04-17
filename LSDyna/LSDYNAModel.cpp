@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "LSDYNAModel.h"
-#include "MeshTools/FEModel.h"
+#include <FEMLib/FSModel.h>
 #include "GeomLib/GMeshObject.h"
 #include "FEMLib/FEMultiMaterial.h"
 
@@ -304,7 +304,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		int ns0 = 0, ns1 = shells;
 		for (i = 0; i<nparts; ++i, ++ip)
 		{
-			FSPart* pg = new FSPart(m_po);
+			FSElemSet* pg = new FSElemSet(m_po);
 
 			pg->SetName(ip->szname);
 

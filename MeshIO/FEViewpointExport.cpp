@@ -26,10 +26,10 @@ SOFTWARE.*/
 
 #include "FEViewpointExport.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 
-FEViewpointExport::FEViewpointExport(FSProject& prj) : FEFileExport(prj)
+FEViewpointExport::FEViewpointExport(FSProject& prj) : FSFileExport(prj)
 {
 }
 

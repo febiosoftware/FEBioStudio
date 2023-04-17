@@ -91,8 +91,8 @@ bool CImageSlicer::UpdateData(bool bsave)
 
 void CImageSlicer::Create()
 {
-	CImageSource* src = GetImageModel()->GetImageSource();
-	if (src == nullptr) return;
+	C3DImage* img = GetImageModel()->Get3DImage();
+	if (img == nullptr) return;
 
 	// call update to initialize all other data
 	Update();
@@ -106,8 +106,7 @@ void CImageSlicer::Update()
 
 void CImageSlicer::UpdateSlice()
 {
-	CImageSource* src = GetImageModel()->GetImageSource();
-	C3DImage& im3d = *src->Get3DImage();
+	C3DImage& im3d = *GetImageModel()->Get3DImage();
 
 	int nop = GetOrientation();
 	double off = GetOffset();

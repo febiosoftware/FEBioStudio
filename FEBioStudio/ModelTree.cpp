@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ModelTree.h"
 #include "ModelDocument.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FERigidLoad.h>
@@ -47,8 +47,8 @@ SOFTWARE.*/
 #include <QtCore/QFileInfo>
 #include <FEMLib/FELoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include "MainWindow.h"
 #include "SSHThread.h"
 #include "SSHHandler.h"
@@ -281,6 +281,29 @@ private:
 	FSLoadController* m_plc;
 };
 
+class CGroupValidator : public CObjectValidator
+{
+public:
+	CGroupValidator(FEItemListBuilder* pl) : m_pl(pl) {}
+
+	QString GetErrorString() const override
+	{
+		if (m_pl && m_pl->GetReferenceCount() > 0) return "";
+		return "Named selection is not used.";
+	}
+
+	bool IsValid() override
+	{
+		return (m_pl && m_pl->GetReferenceCount() > 0);
+	}
+
+private:
+	FEItemListBuilder* m_pl;
+};
+
+
+
+//=============================================================================
 class CFEBioJobProps : public CPropertyList
 {
 public:
@@ -441,6 +464,7 @@ public:
 		addProperty("Shell reference surface", CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
 		addProperty("Render beams as solid", CProperty::Bool);
 		addProperty("Smoothing angle", CProperty::Float);
+		addProperty("Render internal surfaces", CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -458,6 +482,7 @@ public:
 		case 7: v = m_fem->ShellReferenceSurface(); break;
 		case 8: v = m_fem->ShowBeam2Solid(); break;
 		case 9: v = m_fem->GetSmoothingAngle(); break;
+		case 10: v = m_fem->RenderInnerSurfaces(); break;
 		}
 		return v;
 	}
@@ -476,6 +501,7 @@ public:
 		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
 		case 8: m_fem->ShowBeam2Solid(v.toBool()); break;
 		case 9: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 10: m_fem->RenderInnerSurfaces(v.toBool()); break;
 		}
 	}
 
@@ -950,8 +976,10 @@ void CModelTree::Build(CModelDocument* doc)
 
 	if (m_nfilter == ModelTreeFilter::FILTER_NONE)
 	{
+		// count mesh data fields. 
+		int n = fem.CountMeshDataFields();
 		// Mesh data
-		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA_LIST);
+		t2 = AddTreeItem(t1, "Mesh Data", MT_MESH_DATA_LIST, n);
 		UpdateMeshData(t2, fem);
 	}
 
@@ -1187,7 +1215,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
 		Post::CImageModel* img = doc->GetImageModel(i);
-		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CObjectProps(img), 0);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), 0);
 	}
 }
 
@@ -1337,28 +1365,32 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	for (int j = 0; j<gparts; ++j)
 	{
 		GPartList* pg = model.PartList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, 0, pg);
+		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, n, pg, 0, new CGroupValidator(pg));
 	}
 
 	int gsurfs = model.FaceLists();
 	for (int j = 0; j<gsurfs; ++j)
 	{
 		GFaceList* pg = model.FaceList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, 0, pg);
+		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, n, pg, 0, new CGroupValidator(pg));
 	}
 
 	int gedges = model.EdgeLists();
 	for (int j = 0; j<gedges; ++j)
 	{
 		GEdgeList* pg = model.EdgeList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, 0, pg);
+		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
 	}
 
 	int gnodes = model.NodeLists();
 	for (int j = 0; j<gnodes; ++j)
 	{
 		GNodeList* pg = model.NodeList(j);
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
+		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, n, pg, 0, new CGroupValidator(pg));
 	}
 
 	// add the mesh groups
@@ -1373,7 +1405,8 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			for (int j = 0; j<nsets; ++j)
 			{
 				FSNodeSet* pg = po->GetFENodeSet(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
+				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FENODE_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1389,7 +1422,8 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			for (int j = 0; j<surfs; ++j)
 			{
 				FSSurface* pg = po->GetFESurface(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, 0, pg);
+				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEFACE_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1405,23 +1439,42 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			for (int j = 0; j<edges; ++j)
 			{
 				FSEdgeSet* pg = po->GetFEEdgeSet(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, 0, pg);
+				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEEDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
 
-	// d - parts
+	// d - element sets
 	for (int i = 0; i<model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
 		FSMesh* pm = po->GetFEMesh();
 		if (pm)
 		{
-			int parts = po->FEParts();
+			int parts = po->FEElemSets();
 			for (int j = 0; j<parts; ++j)
 			{
-				FSPart* pg = po->GetFEPart(j);
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, 0, pg);
+				FSElemSet* pg = po->GetFEElemSet(j);
+				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEELEM_GROUP, n, pg, 0, new CGroupValidator(pg));
+			}
+		}
+	}
+
+	// d - part sets
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm)
+		{
+			int parts = po->FEPartSets();
+			for (int j = 0; j < parts; ++j)
+			{
+				FSPartSet* pg = po->GetFEPartSet(j);
+				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEPART_GROUP, n, pg, 0, new CGroupValidator(pg));
 			}
 		}
 	}
@@ -1544,7 +1597,7 @@ void CModelTree::UpdateICs(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 				CPropertyList* pl = new FEObjectProps(pic, &fem);
 
 				CObjectValidator* val = nullptr;
-				if (dynamic_cast<FSInitialNodalDOF*>(pic))
+				if (dynamic_cast<FSInitialCondition*>(pic))
 				{
 					val = new CBCValidator(pic);
 				}

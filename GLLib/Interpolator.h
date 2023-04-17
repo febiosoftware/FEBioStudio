@@ -25,8 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
-#include <FECore/quatd.h>
+#include <FSCore/math3d.h>
 
 //=============================================================================
 //! This class implements an interpolator that interpolates between two values.

@@ -35,6 +35,7 @@ SOFTWARE.*/
 
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
 {
+	setWindowTitle("Mesh Inspector");
 	m_po = 0;
 	ui->setupUi(this);
 	ui->plot->setChartStyle(ChartStyle::BARCHART_PLOT);

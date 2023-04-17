@@ -350,6 +350,7 @@ public:
 	int		m_defaultUnits;
 
 	CUpdateWidget m_updateWidget;
+    QString m_serverMessage;
 	bool m_updaterPresent;
 	bool m_updateAvailable;
 	bool m_updateOnClose;
@@ -363,6 +364,7 @@ public:
 		m_theme = 0;
 		m_defaultUnits = 0;
 		m_clearUndoOnSave = true;
+		m_autoSaveInterval = 600;
 
 		measureTool = nullptr;
 		planeCutTool = nullptr;
@@ -484,7 +486,7 @@ public:
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
 		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
-        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
+//        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
         // QAction* actionReadInfo       = addAction("Read Model Info ..."   , "actionReadInfo"  , "info");;
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
@@ -504,6 +506,7 @@ public:
 		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
 		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
 		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
+        QAction* actionImportImageOther  = addAction("Other ...", "actionImportImageOther");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
         QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
         QAction* actionConvertFsm2Feb    = addAction("FSM to FEB ...", "actionConvertFsm2Feb");
@@ -566,7 +569,6 @@ public:
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
 		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
 		actionAddSurfaceNLC      = addAction("Add Surface Constraint..."     , "actionAddSurfaceNLC");
@@ -574,7 +576,7 @@ public:
 		actionAddGenericNLC      = addAction("Add General Constraint..."     , "actionAddGenericNLC");
 		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
 		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
 		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier | Qt::Key_M);
@@ -692,10 +694,15 @@ public:
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
 		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S | Qt::AltModifier);
 
+		QAction* actionToggleFPS = addAction("Toggle FPS", "actionToggleFPS"); actionToggleFPS->setShortcut(Qt::Key_F12 | Qt::ControlModifier);
+
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
 		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
+		QAction* actionFEBioUM = addAction("FEBio User Manual", "actionFEBioUM");
+		QAction* actionFEBioTM = addAction("FEBio Theory Manual", "actionFEBioTM");
+		QAction* actionFBSManual = addAction("FEBio Studio Manual", "actionFBSManual");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionWelcome = addAction("Show Welcome Page", "actionWelcome");
@@ -781,7 +788,7 @@ public:
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addAction(actionNewProject);
-        menuFile->addAction(actionNewImageDoc);
+//        menuFile->addAction(actionNewImageDoc);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
         // menuFile->addAction(actionReadInfo);
@@ -808,8 +815,9 @@ public:
 		menuImportImage->addAction(actionImportRawImage);
 		menuImportImage->addAction(actionImportDICOMImage);
 		menuImportImage->addAction(actionImportTiffImage);
-		menuImportImage->addAction(actionImportOMETiffImage);
+//		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 		menuImportImage->addAction(actionImportImageSequence);
+        menuImportImage->addAction(actionImportImageOther);
 		
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");
@@ -989,6 +997,7 @@ public:
 		menuView->addAction(actionTrack);
 		menuView->addAction(actionToggleLight);
 		menuView->addAction(actionToggleConnected);
+		menuView->addAction(actionToggleFPS);
 		menuView->addSeparator();
 
 		menuViews = menuView->addMenu("Standard views");
@@ -1020,6 +1029,9 @@ public:
 		menuHelp->addSeparator();
 		menuHelp->addAction(actionFEBioURL);
 		menuHelp->addAction(actionFEBioResources);
+		menuHelp->addAction(actionFEBioUM);
+		menuHelp->addAction(actionFEBioTM);
+		menuHelp->addAction(actionFBSManual);
 		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioPubs);
         menuHelp->addSeparator();
@@ -1221,7 +1233,7 @@ public:
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
 
-        QDockWidget* dock9 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+		QDockWidget* dock9 = new QDockWidget("3D Image Settings", m_wnd); dock8->setObjectName("dockImageSettings");
 		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
 		dock9->setWidget(imageSettingsPanel);
 		menuWindows->addAction(dock9->toggleViewAction());

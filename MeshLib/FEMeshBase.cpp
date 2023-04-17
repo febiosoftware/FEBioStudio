@@ -546,7 +546,7 @@ void FSMeshBase::FaceNodePosition(const FSFace& f, vec3d* r) const
 }
 
 //-----------------------------------------------------------------------------
-void FSMeshBase::FaceNodeNormals(FSFace& f, vec3f* n)
+void FSMeshBase::FaceNodeNormals(const FSFace& f, vec3f* n) const
 {
 	switch (f.m_type)
 	{
@@ -574,7 +574,7 @@ void FSMeshBase::FaceNodeNormals(FSFace& f, vec3f* n)
 }
 
 //-----------------------------------------------------------------------------
-void FSMeshBase::FaceNodeTexCoords(FSFace& f, float* t)
+void FSMeshBase::FaceNodeTexCoords(const FSFace& f, float* t) const
 {
 	for (int i = 0; i<f.Nodes(); ++i) t[i] = f.m_tex[i];
 }

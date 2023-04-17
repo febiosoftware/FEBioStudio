@@ -25,8 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
+#include <GLLib/GLMeshRender.h>
 
 class CModelDocument;
+class GPart;
 
 class CGLModelScene : public CGLScene
 {
@@ -35,8 +37,11 @@ public:
 
 	void Render(CGLContext& rc) override;
 
+	GLMeshRender& GetMeshRenderer();
+
 private:
 	void RenderModel(CGLContext& rc);
+	void RenderGObject(CGLContext& rc, GObject* po);
 	void RenderSelectionBox(CGLContext& rc);
 	void RenderRigidBodies(CGLContext& rc);
 	void RenderRigidJoints(CGLContext& rc);
@@ -83,10 +88,12 @@ private:
 private:
 	// set the GL material properties based on the material
 	void SetMatProps(GMaterial* pm);
+	void SetMatProps(CGLContext& rc, GPart* pg);
 
 	// set some default GL material properties
 	void SetDefaultMatProps();
 
 private:
 	CModelDocument* m_doc;
+	GLMeshRender	m_renderer;
 };

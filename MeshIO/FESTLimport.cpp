@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FESTLimport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 //-----------------------------------------------------------------------------
 FESTLimport::FESTLimport(FSProject& prj) : FSFileImport(prj)

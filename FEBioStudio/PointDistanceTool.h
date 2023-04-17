@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "Tool.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 class CPointDistanceTool : public CBasicTool
 {

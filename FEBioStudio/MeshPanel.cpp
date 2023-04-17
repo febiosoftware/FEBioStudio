@@ -188,6 +188,7 @@ void ModifierThread::stop()
 //=============================================================================
 // NOTE: Try to keep these in alphabetical order!
 REGISTER_CLASS(FEAddNode              , CLASS_FEMODIFIER, "Add Node"       , EDIT_MESH);
+REGISTER_CLASS(FEAddTriangle          , CLASS_FEMODIFIER, "Add Triangle"   , EDIT_MESH);
 REGISTER_CLASS(FEAlignNodes           , CLASS_FEMODIFIER, "Align"          , EDIT_NODE);
 REGISTER_CLASS(FEAutoPartition        , CLASS_FEMODIFIER, "Auto Partition" , EDIT_MESH);
 REGISTER_CLASS(FEBoundaryLayerMesher  , CLASS_FEMODIFIER, "Boundary Layer" , EDIT_FACE | EDIT_SAFE);
@@ -367,6 +368,20 @@ void CMeshPanel::on_apply_clicked(bool b)
 	FEMesher* mesher = activeObject->GetFEMesher();
 	if (mesher == 0) return;
 
+	// check if the current mesh has any dependencies
+	if (activeObject->GetFEMesh())
+	{
+		GObject* o = activeObject;
+		if (o->CanDeleteMesh() == false)
+		{
+			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
+			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+	}
+
 	MeshingThread* thread = new MeshingThread(activeObject);
 	CDlgStartThread dlg(this, thread);
 	if (dlg.exec())
@@ -401,6 +416,20 @@ void CMeshPanel::on_apply2_clicked(bool b)
 
 	// make sure we have a modifier
 	if (m_mod == 0) return;
+
+	// check if the current mesh has any dependencies
+	if (activeObject->GetFEMesh())
+	{
+		GObject* o = activeObject;
+		if (o->CanDeleteMesh() == false)
+		{
+			QString msg("This mesh has dependencies in the model. Modifying it could invalidate the model and cause problems.\nDo you wish to continue?");
+			if (QMessageBox::warning(this, "FEBio Studio", msg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+	}
 
 	FESelection* sel = doc->GetCurrentSelection();
 	FEItemListBuilder* list = (sel ? sel->CreateItemList() : 0);

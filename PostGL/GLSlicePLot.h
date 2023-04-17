@@ -28,12 +28,30 @@ SOFTWARE.*/
 #include "GLPlot.h"
 #include "GLWLib/GLWidget.h"
 #include "PostLib/DataMap.h"
+#include <GLLib/GLMesh.h>
 
 namespace Post {
 
 class CGLSlicePlot : public CGLLegendPlot  
 {
-	enum { DATA_FIELD, COLOR_MAP, CLIP, SHOW_LEGEND, SLICES, SLICE_OFFSET, RANGE, RANGE_MAX, RANGE_MIN, NORMAL_X, NORMAL_Y, NORMAL_Z };
+	enum { 
+		DATA_FIELD, 
+		COLOR_MAP, 
+		RANGE_DIVS,
+		GRAD_SMOOTH,
+		TRANSPARENCY,
+		CLIP, 
+		SHOW_LEGEND, 
+		SLICES, 
+		SLICE_OFFSET, 
+		RANGE, 
+		RANGE_MAX, 
+		RANGE_MIN, 
+		NORMAL_X, 
+		NORMAL_Y, 
+		NORMAL_Z, 
+		SHOW_BOX 
+	};
 
 public:
 	CGLSlicePlot();
@@ -73,7 +91,12 @@ public:
 	void Update() override;
 
 protected:
-	void RenderSlice(float ref);
+	int UpdateSlice(float ref, std::vector<std::pair<int, float> >& activeElements);
+
+	void UpdateBoundingBox();
+
+	void UpdateMesh();
+	int CountFaces(std::vector<std::pair<int, float> >& activeElements);
 
 protected:
 	int			m_nslices;	// nr. of iso surface slices
@@ -94,5 +117,7 @@ protected:
 
 	int m_lastTime;
 	float	m_lastDt;
+
+	GLTriMesh	m_mesh;
 };
 }

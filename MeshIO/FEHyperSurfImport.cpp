@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEHyperSurfImport.h"
 #include <GeomLib/GSurfaceMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 FEHyperSurfImport::FEHyperSurfImport(FSProject& prj) : FSFileImport(prj)
 {

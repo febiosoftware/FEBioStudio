@@ -39,7 +39,7 @@ SOFTWARE.*/
 #include "PropertyList.h"
 #include "PlotWidget.h"
 #include "IconProvider.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEMLib/FEBase.h>
 #include <FEBioLink/FEBioClass.h>
@@ -161,7 +161,8 @@ public:
 						QString name;
 						if (m_index == -1)
 						{
-							string sname = FSCore::beautify_string(p.GetLongName());
+							string sname = p.GetLongName();
+//							string sname = FSCore::beautify_string(p.GetLongName());
 							name = QString::fromStdString(sname);
 						}
 						else
@@ -435,7 +436,8 @@ public:
 					}
 					else
 					{
-						string sname = FSCore::beautify_string(p.GetLongName().c_str());
+//						string sname = FSCore::beautify_string(p.GetLongName().c_str());
+                        string sname = p.GetLongName().c_str();
 						QString s = QString::fromStdString(sname);
 						if (p.maxSize() != 1)
 						{
@@ -564,6 +566,7 @@ public:
 				break;
 				case Param_MAT3DS: {
 					mat3ds m = StringToMat3ds(value.toString());
+					p.SetMat3dsValue(m);
 					p.SetModified(true);
 				}
 				break;
@@ -1622,6 +1625,13 @@ FSProperty* FEClassPropsView::getProperty(const QModelIndex& index)
 	return nullptr;
 }
 
+FSProperty* FEClassPropsView::getSelectedProperty()
+{
+	QModelIndex index = currentIndex();
+	if (index.isValid() == false) return nullptr;
+	return getProperty(index);
+}
+
 void FEClassPropsView::drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const
 {
 /*	if (index.isValid())
@@ -1709,6 +1719,11 @@ FSProperty* FEClassPropsWidget::getProperty(const QModelIndex& index)
 	return m_view->getProperty(index);
 }
 
+FSProperty* FEClassPropsWidget::getSelectedProperty()
+{
+	return m_view->getSelectedProperty();
+}
+
 //=============================================================================
 class FEClassEditUI
 {
@@ -1720,13 +1735,11 @@ public:
 	CMathEditWidget* math;
 	CMeshSelectionBox* sel;
 
-	FSFunction1D* m_pf;
 	FSMeshSelection* m_pms;
 
 public:
 	void setup(CMainWindow* wnd, QWidget* w)
 	{
-		m_pf = nullptr;
 		m_pms = nullptr;
 
 		feprops = new FEClassPropsWidget;
@@ -1752,7 +1765,6 @@ public:
 
 	void SetFunction1D(FSFunction1D* pf)
 	{
-		m_pf = pf;
 		if (pf == nullptr) stack->hide();
 		else
 		{
@@ -1766,6 +1778,37 @@ public:
 			else if (pf && pf->IsType("math"))
 			{
 				Param* p = pf->GetParam("math");
+				math->ClearVariables();
+
+				// we need to figure out what variable is used as the ordinate
+				MSimpleExpression tmp;
+				if (tmp.Create(p->GetStringValue(), true))
+				{
+					for (int i = 0; i < tmp.Variables(); ++i)
+					{
+						MVariable* vi = tmp.Variable(i);
+						if (strstr(vi->Name().c_str(), "fem.") == nullptr)
+						{
+							// let's assume this is ordinate name
+							math->SetOrdinate(QString::fromStdString(vi->Name()));
+						}
+					}
+				}
+
+				FSModel* fem = pf->GetFSModel();
+				if (fem)
+				{
+					for (int i = 0; i < fem->Parameters(); ++i)
+					{
+						Param& pi = fem->GetParam(i);
+						if (pi.GetFlags() & FS_PARAM_USER)
+						{
+							QString n = QString("fem.%1").arg(pi.GetShortName());
+							math->SetVariable(n, pi.GetFloatValue());
+						}
+					}
+				}
+
 				math->SetMath(QString::fromStdString(p->GetStringValue()));
 				stack->setCurrentIndex(1);
 				stack->show();
@@ -1794,7 +1837,7 @@ FEClassEdit::FEClassEdit(CMainWindow* wnd, QWidget* parent) : QWidget(parent), u
 
 void FEClassEdit::SetFEClass(FSCoreBase* pc, FSModel* fem)
 {
-	ui->m_pf = nullptr;
+//	ui->m_pf = nullptr;
 	ui->stack->hide();
 	ui->feprops->SetFEClass(pc, fem);
 }
@@ -1812,6 +1855,7 @@ void FEClassEdit::onItemClicked(const QModelIndex& i)
 	}
 	else if (p->GetSuperClassID() == FESURFACE_ID)
 	{
+		ui->SetFunction1D(nullptr);
 		FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(p->GetComponent());
 		ui->SetMeshSelection(pms); return;
 	}
@@ -1820,17 +1864,35 @@ void FEClassEdit::onItemClicked(const QModelIndex& i)
 
 void FEClassEdit::onMathChanged(QString s)
 {
-	if (ui->m_pf && ui->m_pf->IsType("math"))
+	FSProperty* prop = ui->feprops->getSelectedProperty();
+	if (prop && (prop->GetSuperClassID() == FEFUNCTION1D_ID))
 	{
-		Param* p = ui->m_pf->GetParam("math");
-		p->SetStringValue(s.toStdString());
+		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(prop->GetComponent(0));
+		if (pf && pf->IsType("math"))
+		{
+			Param* p = pf->GetParam("math"); assert(p);
+			if(p) p->SetStringValue(s.toStdString());
+			return;
+		}
 	}
+
+	// Whatever is selected is not a math function, so let's just hide the widget
+	ui->SetFunction1D(nullptr);
 }
 
 void FEClassEdit::onPlotChanged()
 {
-	if (ui->m_pf && ui->m_pf->IsType("point"))
+	FSProperty* prop = ui->feprops->getSelectedProperty();
+	if (prop && (prop->GetSuperClassID() == FEFUNCTION1D_ID))
 	{
-		ui->m_pf->UpdateData(true);
+		FSFunction1D* pf = dynamic_cast<FSFunction1D*>(prop->GetComponent(0));
+		if (pf && pf->IsType("point"))
+		{
+			pf->UpdateData(true);
+			return;
+		}
 	}
+
+	// Whatever is selected is not a load curve, so let's just hide the stack
+	ui->SetFunction1D(nullptr);
 }

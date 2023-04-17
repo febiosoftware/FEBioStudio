@@ -41,6 +41,7 @@ SOFTWARE.*/
 #include "ICPRegistrationTool.h"
 #include "ImageMapTool.h"
 #include "DiscreteElementNetworkTool.h"
+#include "SelectNearPlaneTool.h"
 #include "DICTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
@@ -76,6 +77,7 @@ void CToolsPanel::initTools()
     tools.push_back(new CDiscreteElementNetworkTool(wnd));
     tools.push_back(new CDICTool(wnd));
 
+    tools.push_back(new CSelectNearPlaneTool(wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

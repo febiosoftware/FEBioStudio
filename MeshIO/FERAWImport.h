@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FileReader.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
 //! This class imports an 8-bit 3D RAW image file and converts it to a FE model

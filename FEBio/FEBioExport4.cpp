@@ -30,13 +30,12 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FEElementData.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <GeomLib/GGroup.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioModule.h>
 #include <memory>
 #include <sstream>
@@ -111,7 +110,7 @@ string FEBioExport4::GetElementSetName(FEItemListBuilder* pl)
 
 	if (dynamic_cast<GPartList*>(pl) && (pl->size() == 1))
 	{
-		std::list items = pl->CopyItems();
+		std::vector<int> items = pl->CopyItems();
 		int partId = *(items.begin());
 		GPart* pg = m_pfem->GetModel().FindPart(partId); assert(pg);
 		if (pg) return pg->GetName();
@@ -327,240 +326,74 @@ bool FEBioExport4::PrepareExport(FSProject& prj)
 void FEBioExport4::BuildItemLists(FSProject& prj)
 {
 	FSModel& fem = prj.GetFSModel();
-
-	// get the nodesets (bc's)
-	for (int i = 0; i < fem.Steps(); ++i)
-	{
-		FSStep* pstep = fem.GetStep(i);
-		for (int j = 0; j < pstep->BCs(); ++j)
-		{
-			FSBoundaryCondition* pl = pstep->BC(j);
-			if (pl && pl->IsActive() && (pl->GetMeshItemType() != 0))
-			{
-				FEItemListBuilder* ps = pl->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pl);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pl->GetName();
-
-				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else if ((ps->Type() == GO_PART) || (ps->Type() == FE_PART)) AddElemSet(name, ps);
-				else if ((ps->Type() == GO_EDGE) || (ps->Type() == FE_EDGESET)) AddEdgeSet(name, ps);
-				else AddNodeSet(name, ps);
-			}
-		}
-		for (int j = 0; j < pstep->Loads(); ++j)
-		{
-			FSLoad* pload = pstep->Load(j);
-			if (pload && pload->IsActive() && (pload->GetMeshItemType() != 0))
-			{
-				int meshItemType = pload->GetMeshItemType();
-				FEItemListBuilder* ps = pload->GetItemList();
-
-				if (ps)
-				{
-					string name = ps->GetName();
-					if (name.empty()) name = pload->GetName();
-
-					if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-					else if (ps->Type() == GO_PART) AddElemSet(name, ps);
-					else AddNodeSet(name, ps);
-				}
-				else if ((meshItemType != FE_PART_FLAG) && (meshItemType != FE_ELEM_FLAG))
-				{
-					throw InvalidItemListBuilder(pload);
-				}
-			}
-		}
-		for (int j = 0; j < pstep->ICs(); ++j)
-		{
-			// this is only for nodal loads
-			FSInitialCondition* pi = pstep->IC(j);
-			if (pi && pi->IsActive() && (pi->GetMeshItemType() != 0))
-			{
-				FEItemListBuilder* ps = pi->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pi);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pi->GetName();
-
-				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else AddNodeSet(name, ps);
-			}
-		}
-		for (int j = 0; j < pstep->Interfaces(); ++j)
-		{
-			FSSoloInterface* pri = dynamic_cast<FSSoloInterface*>(pstep->Interface(j));
-			if (pri && pri->IsActive())
-			{
-				FEItemListBuilder* ps = pri->GetItemList();
-				if (ps == 0) throw InvalidItemListBuilder(pri);
-
-				string name = ps->GetName();
-				if (name.empty()) name = pri->GetName();
-
-				if ((ps->Type() == GO_FACE) || (ps->Type() == FE_SURFACE)) AddSurface(name, ps);
-				else AddNodeSet(name, ps);
-			}
-
-			FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(pstep->Interface(j));
-			if (pci && pci->IsActive())
-			{
-				FEItemListBuilder* pss = pci->GetPrimarySurface();
-				if (pss == 0) throw InvalidItemListBuilder(pci);
-
-				string name = pss->GetName();
-				if (name.empty())
-				{
-					stringstream ss; ss << pci->GetName() << "_primary";
-					name = ss.str();
-				}
-				AddSurface(name, pss);
-
-				FEItemListBuilder* pms = pci->GetSecondarySurface();
-				if (pms == 0) throw InvalidItemListBuilder(pci);
-
-				name = pms->GetName();
-				if (name.empty())
-				{
-					stringstream ss; ss << pci->GetName() << "_secondary";
-					name = ss.str();
-				}
-				AddSurface(name, pms);
-			}
-		}
-		for (int j = 0; j < pstep->Constraints(); ++j)
-		{
-			FSModelConstraint* pj = pstep->Constraint(j);
-			if (pj->IsActive())
-			{
-				FSSurfaceConstraint* psf = dynamic_cast<FSSurfaceConstraint*>(pj);
-				if (psf && psf->IsActive())
-				{
-					FEItemListBuilder* pi = psf->GetItemList();
-					if (pi == 0) throw InvalidItemListBuilder(pi);
-
-					string name = pi->GetName();
-					if (name.empty()) name = psf->GetName();
-
-					AddSurface(name, pi);
-				}
-			}
-		}
-		for (int j = 0; j < pstep->MeshAdaptors(); ++j)
-		{
-			FSMeshAdaptor* pma = pstep->MeshAdaptor(j);
-			if (pma->IsActive())
-			{
-				FEItemListBuilder* pi = pma->GetItemList();
-				if (pi)
-				{
-					// don't add part-lists with only one member.
-					// they are handled differently. 
-					string name = pi->GetName();
-					if ((dynamic_cast<GPartList*>(pi) == nullptr) || (pi->size() != 1))
-					{
-						if (name.empty()) name = pma->GetName();
-						AddElemSet(name, pi);
-					}
-				}
-			}
-		}
-	}
-
-	// extract mesh data selections
-	for (int i = 0; i < fem.MeshDataGenerators(); ++i)
-	{
-		FSMeshDataGenerator* gen = fem.GetMeshDataGenerator(i);
-		FEItemListBuilder* pi = gen->GetItemList();
-
-		if (pi)
-		{
-			string name = pi->GetName();
-			if (name.empty()) name = gen->GetName();
-
-			switch (gen->Type())
-			{
-			case FE_FEBIO_NODEDATA_GENERATOR: AddNodeSet(name, pi); break;
-//			case FE_FEBIO_EDGEDATA_GENERATOR: AddEdgeSet(name, pi); break;
-			case FE_FEBIO_FACEDATA_GENERATOR: AddSurface(name, pi); break;
-			case FE_FEBIO_ELEMDATA_GENERATOR: AddElemSet(name, pi); break;
-			default:
-				assert(false);
-			}
-		}
-	}
-
-	// Write the user-defined surfaces
-	if (m_exportSelections)
-	{
-		GModel& model = fem.GetModel();
-		int faces = model.FaceLists();
-		for (int i = 0; i < faces; ++i)
-		{
-			GFaceList* pfl = model.FaceList(i);
-			AddSurface(pfl->GetName(), pfl);
-		}
-
-		int nobj = model.Objects();
-		for (int i = 0; i < nobj; ++i)
-		{
-			GObject* po = model.Object(i);
-			FSMesh* pm = po->GetFEMesh();
-			if (pm)
-			{
-				int nsurf = po->FESurfaces();
-				for (int j = 0; j < nsurf; ++j)
-				{
-					FSSurface* ps = po->GetFESurface(j);
-					AddSurface(ps->GetName(), ps);
-				}
-
-				int neset = po->FEParts();
-				for (int j = 0; j < neset; ++j)
-				{
-					FSPart* pg = po->GetFEPart(j);
-					AddElemSet(pg->GetName(), pg);
-				}
-			}
-		}
-	}
-
-	// check all the (surface) plot variables
-	CPlotDataSettings& plt = prj.GetPlotDataSettings();
-	for (int i = 0; i < plt.PlotVariables(); ++i)
-	{
-		CPlotVariable& var = plt.PlotVariable(i);
-		if (var.domainType() == DOMAIN_SURFACE)
-		{
-			int ND = var.Domains();
-			for (int j = 0; j < ND; ++j)
-			{
-				FEItemListBuilder* pl = var.GetDomain(j);
-				AddSurface(pl->GetName(), pl);
-			}
-		}
-	}
-
 	GModel& model = fem.GetModel();
-	CLogDataSettings& log = prj.GetLogDataSettings();
-	for (int i = 0; i < log.LogDataSize(); ++i)
+
+	// add the user-defined nodesets
+	int nsets = model.NodeLists();
+	for (int i = 0; i < nsets; ++i)
 	{
-		FSLogData& di = log.LogData(i);
-		if ((di.type == FSLogData::LD_ELEM) && (di.groupID != -1))
+		GNodeList* pnl = model.NodeList(i);
+		AddNodeSet(pnl->GetName(), pnl);
+	}
+
+	// add the user-defined edges
+	int esets = model.EdgeLists();
+	for (int i = 0; i < esets; ++i)
+	{
+		GEdgeList* pel = model.EdgeList(i);
+		AddEdgeSet(pel->GetName(), pel);
+	}
+
+	// add the user-defined surfaces
+	int faces = model.FaceLists();
+	for (int i = 0; i < faces; ++i)
+	{
+		GFaceList* pfl = model.FaceList(i);
+		AddSurface(pfl->GetName(), pfl);
+	}
+
+	// add the user-defined part lists
+	int parts = model.PartLists();
+	for (int i = 0; i < parts; ++i)
+	{
+		GPartList* pl = model.PartList(i);
+		AddNodeSet(pl->GetName(), pl);
+	}
+
+	// add the user-defined mesh selections
+	int nobj = model.Objects();
+	for (int i = 0; i < nobj; ++i)
+	{
+		GObject* po = model.Object(i);
+		FSMesh* pm = po->GetFEMesh();
+		if (pm)
 		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
-			if (pg)
+			int nsets = po->FENodeSets();
+			for (int j = 0; j < nsets; ++j)
 			{
-				AddElemSet(pg->GetName(), pg);
+				FSNodeSet* ps = po->GetFENodeSet(j);
+				AddNodeSet(ps->GetName(), ps);
 			}
-		}
-		if ((di.type == FSLogData::LD_NODE) && (di.groupID != -1))
-		{
-			FEItemListBuilder* pg = model.FindNamedSelection(di.groupID);
-			if (pg)
+
+			int esets = po->FEEdgeSets();
+			for (int j = 0; j < esets; ++j)
 			{
-				AddNodeSet(pg->GetName(), pg);
+				FSEdgeSet* ps = po->GetFEEdgeSet(j);
+				AddEdgeSet(ps->GetName(), ps);
+			}
+
+			int nsurf = po->FESurfaces();
+			for (int j = 0; j < nsurf; ++j)
+			{
+				FSSurface* ps = po->GetFESurface(j);
+				AddSurface(ps->GetName(), ps);
+			}
+
+			int neset = po->FEElemSets();
+			for (int j = 0; j < neset; ++j)
+			{
+				FSElemSet* pg = po->GetFEElemSet(j);
+				AddElemSet(pg->GetName(), pg);
 			}
 		}
 	}
@@ -594,14 +427,14 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 				case FEMeshData::ELEMENT_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
-					FSPart* pg = const_cast<FSPart*>(map->GetPart());
+					FSElemSet* pg = map->GetElementSet();
 
 					if (pg)
 					{
 						string name = pg->GetName();
 						if (name.empty()) name = data->GetName();
 
-						// It is possible that a FSPart has the same name as the domain
+						// It is possible that a FSElemSet has the same name as the domain
 						// from which it was created. In that case we don't want to 
 						// write this element set.
 						for (int j = 0; j < po->Parts(); ++j)
@@ -1562,9 +1395,9 @@ void FEBioExport4::WriteGeometryElementSetsNew()
 				}
 			}
 			break;
-			case FE_PART:
+			case FE_ELEMSET:
 			{
-				FSPart* part = dynamic_cast<FSPart*>(pl); assert(part);
+				FSElemSet* part = dynamic_cast<FSElemSet*>(pl); assert(part);
 				GObject* po = part->GetGObject();
 				string name = string(po->GetName()) + "." + sname;
 				m_xml.add_leaf("elem_set", name);
@@ -2286,7 +2119,7 @@ void FEBioExport4::WriteElementDataFields()
 			if (meshData)
 			{
 				FEElementData& data = *meshData;
-				const FSPart* pg = data.GetPart();
+				const FSElemSet* pg = data.GetElementSet();
 
 				string name = pg->GetName();
 				if (name.empty()) name = data.GetName();
@@ -2328,17 +2161,26 @@ void FEBioExport4::WriteElementDataFields()
 			{
 				double v[FSElement::MAX_NODES] = { 0 };
 				FEPartData& data = *partData;
-				GPartList* partList = data.GetPartList(&fem);
-				std::vector<GPart*> partArray = partList->GetPartList();
+				FSPartSet* partList = data.GetPartSet();
 				FEElemList* elemList = data.BuildElemList();
-				for (int np = 0; np < partArray.size(); ++np)
+				for (int np = 0; np < partList->size(); ++np)
 				{
-					GPart* pg = partArray[np];
-					int pid = pg->GetLocalID();
+					int pid = (*partList)[np];
+					GPart* pg = po->Part(pid);
 
 					XMLElement tag("ElementData");
 					tag.add_attribute("name", data.GetName().c_str());
 					tag.add_attribute("elem_set", pg->GetName());
+
+					switch (partData->GetDataType())
+					{
+					case FEMeshData::DATA_SCALAR: break;
+					case FEMeshData::DATA_VEC3D: tag.add_attribute("data_type", "vec3"); break;
+					case FEMeshData::DATA_MAT3D: tag.add_attribute("data_type", "mat3"); break;
+					default:
+						assert(false);
+					}
+
 					m_xml.add_branch(tag);
 					{
 						XMLElement el("e");
@@ -2353,16 +2195,34 @@ void FEBioExport4::WriteElementDataFields()
 							{
 								el.set_attribute(nid, lid++);
 
-								if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+								if (partData->GetDataType() == FEMeshData::DATA_SCALAR)
 								{
-									el.value(data[j]);
+									if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+									{
+										el.value(data[j]);
+									}
+									else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+									{
+										int nn = pe->Nodes();
+										for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
+										el.value(v, nn);
+									}
 								}
-								else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+								else if (partData->GetDataType() == FEMeshData::DATA_VEC3D)
 								{
-									int nn = pe->Nodes();
-									for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
-									el.value(v, nn);
+									// we only support DATA_ITEM format
+									assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
+									vec3d v = data.getVec3d(j);
+									el.value(v);
 								}
+								else if (partData->GetDataType() == FEMeshData::DATA_MAT3D)
+								{
+									// we only support DATA_ITEM format
+									assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
+									mat3d v = data.getMat3d(j);
+									el.value(v);
+								}
+								else assert(false);
 
 								m_xml.add_leaf(el, false);
 							}
@@ -2399,7 +2259,7 @@ void FEBioExport4::WriteSurfaceDataSection()
 				if      (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("data_type", "scalar");
 				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("data_type", "vec3");
 
-				tag.add_attribute("surface", sd.getSurface()->GetName().c_str());
+				tag.add_attribute("surface", sd.GetSurface()->GetName().c_str());
 
 				m_xml.add_branch(tag);
 				{
@@ -2407,7 +2267,8 @@ void FEBioExport4::WriteSurfaceDataSection()
 					int n1 = el.add_attribute("lid", 0);
 
 					int nid = 1;
-					for (double d : *(sd.getData()))
+					std::vector<double> data = sd.GetData();
+					for (double d : data)
 					{
 						el.set_attribute(n1, nid++);
 						el.value(d);
@@ -2463,7 +2324,9 @@ void FEBioExport4::WriteNodeDataSection()
 					for (int i = 0; i < nd.Size(); ++i)
 					{
 						el.set_attribute(n1, nid++);
-						el.value(nd.get(i));
+
+						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.GetScalar(i));
+						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.GetVec3d (i));
 
 						m_xml.add_leaf(el, false);
 					}
@@ -2870,16 +2733,40 @@ void FEBioExport4::WriteGlobalsSection()
 
 	if (fem.Parameters())
 	{
+		int userParams = 0;
 		m_xml.add_branch("Constants");
 		{
 			int N = fem.Parameters();
 			for (int i = 0; i < N; ++i)
 			{
 				Param& p = fem.GetParam(i);
-				m_xml.add_leaf(p.GetShortName(), p.GetFloatValue());
+				if ((p.GetFlags() & FS_PARAM_USER) == 0)
+					m_xml.add_leaf(p.GetShortName(), p.GetFloatValue());
+				else
+					userParams++;
 			}
 		}
 		m_xml.close_branch();
+
+		if (userParams > 0)
+		{
+			m_xml.add_branch("Variables");
+			{
+				int N = fem.Parameters();
+				for (int i = 0; i < N; ++i)
+				{
+					Param& p = fem.GetParam(i);
+					if ((p.GetFlags() & FS_PARAM_USER) != 0)
+					{
+						XMLElement el("var");
+						el.add_attribute("name", p.GetShortName());
+						el.value(p.GetFloatValue());
+						m_xml.add_leaf(el);
+					}
+				}
+			}
+			m_xml.close_branch();
+		}
 
 		if (fem.Solutes() > 0)
 		{
@@ -3148,20 +3035,21 @@ void FEBioExport4::WriteOutputSection()
 			for (int i = 0; i < N; ++i)
 			{
 				FSLogData& d = log.LogData(i);
-				switch (d.type)
+				switch (d.Type())
 				{
 				case FSLogData::LD_NODE:
 				{
 					XMLElement e;
 					e.name("node_data");
-					e.add_attribute("data", d.sdata);
+					e.add_attribute("data", d.GetDataString());
 
-					if (d.fileName.empty() == false)
+					if (d.GetFileName().empty() == false)
 					{
-						e.add_attribute("file", d.fileName);
+						e.add_attribute("file", d.GetFileName());
 					}
 
-					FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+					FSLogNodeData& nd = dynamic_cast<FSLogNodeData&>(d);
+					FEItemListBuilder* pg = nd.GetItemList();
 					if (pg)
 					{
 						e.add_attribute("node_set", pg->GetName());
@@ -3169,18 +3057,34 @@ void FEBioExport4::WriteOutputSection()
 					m_xml.add_empty(e);
 				}
 				break;
+				case FSLogData::LD_FACE:
+				{
+					XMLElement e;
+					e.name("face_data");
+					e.add_attribute("data", d.GetDataString());
+
+					if (d.GetFileName().empty() == false) e.add_attribute("file", d.GetFileName());
+
+					FSLogFaceData& fd = dynamic_cast<FSLogFaceData&>(d);
+					FEItemListBuilder* pg = fd.GetItemList();
+					if (pg) e.add_attribute("surface", pg->GetName());
+
+					m_xml.add_empty(e);
+				}
+				break;
 				case FSLogData::LD_ELEM:
 				{
 					XMLElement e;
 					e.name("element_data");
-					e.add_attribute("data", d.sdata);
+					e.add_attribute("data", d.GetDataString());
 
-					if (d.fileName.empty() == false)
+					if (d.GetFileName().empty() == false)
 					{
-						e.add_attribute("file", d.fileName);
+						e.add_attribute("file", d.GetFileName());
 					}
 
-					FEItemListBuilder* pg = mdl.FindNamedSelection(d.groupID);
+					FSLogElemData& ed = dynamic_cast<FSLogElemData&>(d);
+					FEItemListBuilder* pg = ed.GetItemList();
 					if (pg)
 					{
 						e.add_attribute("elem_set", pg->GetName());
@@ -3192,14 +3096,15 @@ void FEBioExport4::WriteOutputSection()
 				{
 					XMLElement e;
 					e.name("rigid_body_data");
-					e.add_attribute("data", d.sdata);
+					e.add_attribute("data", d.GetDataString());
 
-					if (d.fileName.empty() == false)
+					if (d.GetFileName().empty() == false)
 					{
-						e.add_attribute("file", d.fileName);
+						e.add_attribute("file", d.GetFileName());
 					}
 
-					GMaterial* pm = fem.GetMaterialFromID(d.matID);
+					FSLogRigidData& rd = dynamic_cast<FSLogRigidData&>(d);
+					GMaterial* pm = fem.GetMaterialFromID(rd.GetMatID());
 					if (pm)
 					{
 						e.value(pm->m_ntag);
@@ -3212,17 +3117,18 @@ void FEBioExport4::WriteOutputSection()
 				{
 					XMLElement e;
 					e.name("rigid_connector_data");
-					e.add_attribute("data", d.sdata);
+					e.add_attribute("data", d.GetDataString());
 
-					if (d.fileName.empty() == false)
+					if (d.GetFileName().empty() == false)
 					{
-						e.add_attribute("file", d.fileName);
+						e.add_attribute("file", d.GetFileName());
 					}
 
-					FSRigidConnector* rc = fem.GetRigidConnectorFromID(d.rcID);
+					FSLogConnectorData& rd = dynamic_cast<FSLogConnectorData&>(d);
+					FSRigidConnector* rc = fem.GetRigidConnectorFromID(rd.GetConnectorID());
 					if (rc)
 					{
-						e.value(d.rcID);
+						e.value(rd.GetConnectorID());
 						m_xml.add_leaf(e);
 					}
 					else m_xml.add_empty(e);

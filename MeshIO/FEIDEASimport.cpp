@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FEIDEASimport.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <vector>
 //using namespace std;
 

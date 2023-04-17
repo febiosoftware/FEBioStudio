@@ -48,17 +48,18 @@ SOFTWARE.*/
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPointPlot.h>
 #include <PostGL/GLStreamLinePlot.h>
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <ImageLib/3DImage.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
+#include <MeshIO/FESTLExport.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLProbe.h>
@@ -87,8 +88,9 @@ public:
 		addProperty("Render shells as solids"  , CProperty::Bool);
 		addProperty("Shell reference surface"  , CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
 		addProperty("Render beams as solids"   , CProperty::Bool);
-		addProperty("Solid beam radius"       , CProperty::Float);
+		addProperty("Solid beam radius"        , CProperty::Float);
 		addProperty("Smoothing angle"          , CProperty::Float);
+		addProperty("Render internal surfaces" , CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -107,6 +109,7 @@ public:
 		case 8: v = m_fem->ShowBeam2Solid(); break;
 		case 9: v = m_fem->SolidBeamRadius(); break;
 		case 10: v = m_fem->GetSmoothingAngle(); break;
+		case 11: v = m_fem->RenderInnerSurfaces(); break;
 		}
 		return v;
 	}
@@ -126,6 +129,7 @@ public:
 		case 8: m_fem->ShowBeam2Solid(v.toBool()); break;
 		case 9: m_fem->SolidBeamRadius(v.toFloat()); break;
 		case 10: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 11: m_fem->RenderInnerSurfaces(v.toBool()); break;
 		}
 	}
 
@@ -794,18 +798,18 @@ void CPostModelPanel::BuildModelTree()
 				}
 
 				// add element sets
-				int eset = mesh.Parts() + (po ? po->FEParts() : 0);
+				int eset = mesh.ElemSets() + (po ? po->FEElemSets() : 0);
 				pi3 = ui->AddItem(pi2, nullptr, QString("Element Sets (%1)").arg(eset), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.Parts(); ++i)
+				for (int i = 0; i < mesh.ElemSets(); ++i)
 				{
-					Post::FSPart& part = mesh.Part(i);
+					Post::FSElemSet& part = mesh.ElemSet(i);
 					ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
 				}
 				if (po)
 				{
-					for (int i = 0; i < po->FEParts(); ++i)
+					for (int i = 0; i < po->FEElemSets(); ++i)
 					{
-						FSPart* pg = po->GetFEPart(i);
+						FSElemSet* pg = po->GetFEElemSet(i);
 						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
 					}
 				}
@@ -864,13 +868,7 @@ void CPostModelPanel::BuildModelTree()
 			{
 				Post::CGLImageRenderer* render = img->GetImageRenderer(j);
 
-				Post::CVolRender* volRender = dynamic_cast<Post::CVolRender*>(render);
-				if (volRender)
-				{
-					ui->AddItem(pi1, volRender, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender));
-				}
-
-				Post::CVolumeRender2* volRender2 = dynamic_cast<Post::CVolumeRender2*>(render);
+				Post::CVolumeRenderer* volRender2 = dynamic_cast<Post::CVolumeRenderer*>(render);
 				if (volRender2)
 				{
 					ui->AddItem(pi1, volRender2, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender2));
@@ -1003,7 +1001,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSNodeSet* pn = dynamic_cast<FSNodeSet*>(po);
 	if (pn)
 	{
-		std::list<int> items = pn->CopyItems();
+		std::vector<int> items = pn->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_NODE);
 		doc->DoCommand(new CCmdSelectFENodes(pn->GetMesh(), vitems, false));
@@ -1020,7 +1018,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSEdgeSet* pe = dynamic_cast<FSEdgeSet*>(po);
 	if (pe)
 	{
-		std::list<int> items = pe->CopyItems();
+		std::vector<int> items = pe->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_EDGE);
 		doc->DoCommand(new CCmdSelectFEEdges(pe->GetMesh(), vitems, false));
@@ -1029,7 +1027,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSSurface* ps = dynamic_cast<FSSurface*>(po);
 	if (ps)
 	{
-		std::list<int> items = ps->CopyItems();
+		std::vector<int> items = ps->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_FACE);
 		doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), vitems, false));
@@ -1042,15 +1040,15 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		doc->DoCommand(new CCmdSelectFaces(ps2->GetMesh(), items, false));
 	}
 
-	FSPart* pg = dynamic_cast<FSPart*>(po);
+	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
 	{
-		std::list<int> items = pg->CopyItems();
+		std::vector<int> items = pg->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_ELEM);
 		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
 	}
-	Post::FSPart* pg2 = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg2 = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg2)
 	{
 		std::vector<int> items = pg2->GetElementList();
@@ -1138,12 +1136,12 @@ void CPostModelPanel::on_deleteButton_clicked()
 			Update(true);
 		}
 	}
-	else if (dynamic_cast<FSPart*>(po))
+	else if (dynamic_cast<FSElemSet*>(po))
 	{
 		GObject* poa = doc->GetActiveObject();
 		if (poa)
 		{
-			poa->RemoveFEPart(dynamic_cast<FSPart*>(po));
+			poa->RemoveFEElemSet(dynamic_cast<FSElemSet*>(po));
 			Update(true);
 		}
 	}
@@ -1236,7 +1234,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		return;
 	}
 
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		QMenu menu(this);
@@ -1245,7 +1243,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
 		QMenu menu(this);
@@ -1261,6 +1259,12 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		QMenu menu(this);
 		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
 		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
+
+		if (dynamic_cast<Post::GLProbe*>(po))
+		{
+			menu.addAction("Export probe data ...", this, SLOT(OnExportProbeData()));
+		}
+
 		menu.exec(ev->globalPos());
 		return;
 	}
@@ -1271,6 +1275,16 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		QMenu menu(this);
 		menu.addAction("Export image ...", this, SLOT(OnExportImage()));
 		menu.exec(ev->globalPos());
+		return;
+	}
+
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QMenu menu(this);
+		menu.addAction("Export surface ...", this, SLOT(OnExportMCSurface()));
+		menu.exec(ev->globalPos());
+		return;
 	}
 }
 
@@ -1295,7 +1309,7 @@ void CPostModelPanel::OnSelectNodes()
 		CPostDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_NODE);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
@@ -1325,7 +1339,7 @@ void CPostModelPanel::OnSelectFaces()
 		CPostDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_FACE);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
@@ -1342,18 +1356,18 @@ void CPostModelPanel::OnSelectElements()
 
 	CPostDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
         vector<int>pgl = pg->GetElementList();
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
@@ -1370,15 +1384,15 @@ void CPostModelPanel::OnHideElements()
 	CPostDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));
@@ -1467,4 +1481,70 @@ void CPostModelPanel::OnExportImage()
 			QMessageBox::information(GetMainWindow(), "Export image", msg);
 		}
 	}	
+}
+
+void CPostModelPanel::OnExportMCSurface()
+{
+	FSObject* po = ui->currentObject();
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QFileDialog dlg;
+		QString fileName = dlg.getSaveFileName(this, "Export surface", "", "STL mesh (*.stl)");
+		if (fileName.isEmpty() == false)
+		{
+			string filename = fileName.toStdString();
+			FSMesh mesh;
+			mc->GetMesh(mesh);
+			FSProject dummy;
+			FESTLExport stl(dummy);
+
+			bool b = stl.Write(filename.c_str(), &mesh);
+			if (b) QMessageBox::information(this, "Export surface", "File written successfully.");
+			else QMessageBox::critical(this, "Export surface", "Failed exporting surface.");
+		}
+	}
+}
+
+void CPostModelPanel::OnExportProbeData()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	int nfield = glm->GetColorMap()->GetEvalField();
+	if (nfield <= 0)
+	{
+		QMessageBox::critical(this, "Export", "No datafield selected.");
+		return;
+	}
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "Text file (*.txt)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		const char* szfile = sfile.c_str();
+		FILE* fp = fopen(szfile, "wt");
+		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+		{
+			for (int i = 0; i < glm->Plots(); ++i)
+			{
+				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				if (probe)
+				{
+					double val = 0.0;
+					if (probe->TrackModelData())
+						val = probe->DataValue(nfield, nstep);
+
+					fprintf(fp, "%lg,", val);
+				}
+			}
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
+	}
 }

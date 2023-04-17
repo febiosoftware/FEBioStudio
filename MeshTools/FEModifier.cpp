@@ -33,13 +33,14 @@ SOFTWARE.*/
 #include "FENNQuery.h"
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/FENodeElementList.h>
+#include <MeshLib/FEFaceEdgeList.h>
 #include "FELinearToQuadratic.h"
 #include "FESplitModifier.h"
 #include <GeomLib/GObject.h>
 #include <stdarg.h>
 #include <FECore/units.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include "GGroup.h"
+#include <GeomLib/GGroup.h>
 
 std::string FEModifier::m_error;
 
@@ -113,11 +114,18 @@ bool FEPartitionSelection::UpdateData(bool bsave)
 
 FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 {
+	int gid = -1;
 	bool newPartition = GetBoolValue(0);
-	int gid = GetIntValue(1) - 1;
-	if (newPartition) gid = -1;
-	FSMesh* newMesh = new FSMesh(*pm);
+	if (newPartition == false)
+	{
+		GObject* po = pm->GetGObject();
+		int pid = GetIntValue(1);
+		GPart* pg = po->FindPart(pid);
+		if (pg == nullptr) return nullptr;
+		gid = pg->GetLocalID();
+	}
 
+	FSMesh* newMesh = new FSMesh(*pm);
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.PartitionElementSelection(gid);
 
@@ -126,12 +134,19 @@ FSMesh* FEPartitionSelection::Apply(FSMesh* pm)
 
 FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 {
-	bool newPartition = GetBoolValue(0);
-	int gid = GetIntValue(1) - 1;
-	if (newPartition) gid = -1;
-
 	FSMesh* oldMesh = pg->GetMesh();
 	if (oldMesh == 0) return 0;
+
+	int gid = -1;
+	bool newPartition = GetBoolValue(0);
+	if (newPartition == false)
+	{
+		GObject* po = oldMesh->GetGObject();
+		int pid = GetIntValue(1);
+		GPart* pg = po->FindPart(pid);
+		if (pg == nullptr) return nullptr;
+		gid = pg->GetLocalID();
+	}
 
 	FSMesh* newMesh = new FSMesh(*oldMesh);
 	FEMeshBuilder meshBuilder(*newMesh);
@@ -142,7 +157,7 @@ FSMesh* FEPartitionSelection::Apply(FSGroup* pg)
 		meshBuilder.PartitionFaceSelection(gid);
 	}
 
-	FSPart* p = dynamic_cast<FSPart*>(pg);
+	FSElemSet* p = dynamic_cast<FSElemSet*>(pg);
 	if (p)
 	{
 		meshBuilder.PartitionElementSelection(gid);
@@ -980,6 +995,108 @@ FSMesh* FEQuad2Tri::Apply(FSMesh *pm)
 }
 
 //=============================================================================
+// FETri2Quad
+//-----------------------------------------------------------------------------
+
+FSMesh* FETri2Quad::Apply(FSMesh* pm)
+{
+	assert(pm);
+	if (pm == nullptr) return nullptr;
+
+	// before we get started, let's make sure this is a tet4 mesh
+	if (pm->IsType(FE_TRI3) == false) return nullptr;
+
+	// build the edge tables
+	FSEdgeList ET(*pm);
+	FSElementEdgeList EET(*pm, ET);
+
+	// create a new mesh
+	int N0 = pm->Nodes();
+	int F0 = pm->Elements();
+	int E0 = ET.size();
+
+	FSMesh* pnew = new FSMesh;
+	int N1 = N0 + E0 + F0;
+	int F1 = 3*F0;
+
+	pnew->Create(N1, F1, 0, 0);
+
+	// 1. BUILD NODES
+	// copy the nodes from the mesh
+	for (int i = 0; i < N0; ++i)
+	{
+		FSNode& n0 = pm->Node(i);
+		FSNode& n1 = pnew->Node(i);
+		n1.r = n0.r;
+		n1.m_gid = n0.m_gid;
+	}
+
+	// add the edge nodes
+	int n = N0;
+	for (int i = 0; i < E0; ++i)
+	{
+		std::pair<int, int>& e0 = ET[i];
+		FSNode& n1 = pnew->Node(n++);
+
+		vec3d a = pm->Node(e0.first).r;
+		vec3d b = pm->Node(e0.second).r;
+
+		n1.r = (a + b) * 0.5;
+	}
+
+	// add the face nodes
+	for (int i = 0; i < F0; ++i)
+	{
+		FSFace& f0 = pm->Face(i);
+		FSNode& n1 = pnew->Node(n++);
+
+		vec3d a = pm->Node(f0.n[0]).r;
+		vec3d b = pm->Node(f0.n[1]).r;
+		vec3d c = pm->Node(f0.n[2]).r;
+
+		n1.r = (a + b + c) / 3.0;
+	}
+
+	// node lookup table
+	const int NLT[3][4] = {
+		{ 0, 3, 6, 5 },
+		{ 1, 4, 6, 3 },
+		{ 2, 5, 6, 4}
+	};
+
+	// create the new elements
+	int ne = 0;
+	for (int i = 0; i < F0; ++i)
+	{
+		FSElement& e0 = pm->Element(i);
+
+		int n[7];
+		int* en = e0.m_node;
+		n[0] = en[0];
+		n[1] = en[1];
+		n[2] = en[2];
+		n[3] = N0 + EET.EdgeIndex(i, 0);
+		n[4] = N0 + EET.EdgeIndex(i, 1);
+		n[5] = N0 + EET.EdgeIndex(i, 2);
+		n[6] = N0 + E0 + i;
+
+		for (int j = 0; j < 3; ++j)
+		{
+			FSElement& e1 = pnew->Element(ne++);
+
+			e1.SetType(FE_QUAD4);
+			e1.m_gid = e0.m_gid;
+			for (int k = 0; k < 4; ++k) e1.m_node[k] = n[NLT[j][k]];
+		}
+	}
+
+	// build the other mesh structures
+	pnew->RebuildMesh();
+
+	return pnew;
+}
+
+//=============================================================================
 // RefineMesh
 //-----------------------------------------------------------------------------
 
@@ -1069,10 +1186,12 @@ enum ConvertMeshOptions {
 	TET15_TO_TET4,
 	HEX8_TO_HEX20,
 	HEX20_TO_HEX8,
+    PENTA6_TO_TET4,
 	QUAD4_TO_QUAD8,
 	QUAD8_TO_QUAD4,
 	TRI3_TO_TRI6,
 	TRI6_TO_TRI3,
+	TRI3_TO_QUAD4,
 	LINEAR_TO_QUADRATIC,
 	QUADRATIC_TO_LINEAR,
 	END_OF_LIST // this has to be the last item!
@@ -1091,10 +1210,12 @@ const char* FEConvertMeshOptions[] = {
 		"Tet15 to Tet4",
 		"Hex8 to Hex20",
 		"Hex20 to Hex8",
+        "Penta6 to Tet4",
 		"Quad4 to Quad8",
 		"Quad8 to Quad4",
 		"Tri3 to Tri6",
 		"Tri6 to Tri3",
+		"Tri3 to Quad4",
 		"Linear to Quadratic",
 		"Quadratic to Linear" };
 
@@ -1175,8 +1296,9 @@ bool FEConvertMesh::UpdateData(bool bsave)
 	case FE_TET10: buildMeshConvertOptions(sz, TET10_TO_TET4, END_OF_LIST); break;
 	case FE_TET15: buildMeshConvertOptions(sz, TET15_TO_TET4, END_OF_LIST); break;
 	case FE_HEX20: buildMeshConvertOptions(sz, HEX20_TO_HEX8, END_OF_LIST); break;
+    case FE_PENTA6: buildMeshConvertOptions(sz, PENTA6_TO_TET4, END_OF_LIST); break;
 	case FE_QUAD8: buildMeshConvertOptions(sz, QUAD8_TO_QUAD4, END_OF_LIST); break;
-	case FE_TRI3 : buildMeshConvertOptions(sz, TRI3_TO_TRI6, END_OF_LIST); break;
+	case FE_TRI3 : buildMeshConvertOptions(sz, TRI3_TO_TRI6, TRI3_TO_QUAD4, END_OF_LIST); break;
 	case FE_TRI6 : buildMeshConvertOptions(sz, TRI6_TO_TRI3, END_OF_LIST); break;
 	default:
 		// add them all
@@ -1211,6 +1333,7 @@ FSMesh* FEConvertMesh::Apply(FSMesh* pm)
 	switch (nmod)
 	{
 	case QUAD4_TO_TRI3 : m_mod = new FEQuad2Tri; break;
+	case TRI3_TO_QUAD4 : m_mod = new FETri2Quad; break;
 	case HEX8_TO_TET4  : m_mod = new FEHex2Tet; break;
 	case TET4_TO_TET5  : m_mod = new FETet4ToTet5; break;
 	case TET4_TO_TET10 : m_mod = new FETet4ToTet10(bsmooth); break;
@@ -1222,6 +1345,7 @@ FSMesh* FEConvertMesh::Apply(FSMesh* pm)
 	case TET15_TO_TET4 : m_mod = new FETet15ToTet4; break;
 	case HEX8_TO_HEX20 : m_mod = new FEHex8ToHex20(bsmooth); break;
 	case HEX20_TO_HEX8 : m_mod = new FEHex20ToHex8; break;
+    case PENTA6_TO_TET4: m_mod = new FEPenta6ToTet4; break;
 	case QUAD4_TO_QUAD8: m_mod = new FEQuad4ToQuad8(bsmooth); break;
 	case QUAD8_TO_QUAD4: m_mod = new FEQuad8ToQuad4; break;
 	case TRI3_TO_TRI6  : m_mod = new FETri3ToTri6(bsmooth); break;
@@ -1272,6 +1396,35 @@ FSMesh* FEAddNode::Apply(FSMesh* pm)
 
 	FEMeshBuilder meshBuilder(*newMesh);
 	meshBuilder.AddNode(r);
+
+	return newMesh;
+}
+
+//=============================================================================
+// FEAddTriangle
+//-----------------------------------------------------------------------------
+FEAddTriangle::FEAddTriangle() : FEModifier("Add Triangle")
+{
+	AddIntParam(0, "node0", "Node 1");
+	AddIntParam(0, "node1", "Node 2");
+	AddIntParam(0, "node2", "Node 3");
+}
+
+FSMesh* FEAddTriangle::Apply(FSMesh* pm)
+{
+	int n0 = GetIntValue(0) - 1;
+	int n1 = GetIntValue(1) - 1;
+	int n2 = GetIntValue(2) - 1;
+
+	int NN = pm->Nodes();
+	if ((n0 < 0) || (n0 >= NN)) return nullptr;
+	if ((n1 < 0) || (n1 >= NN)) return nullptr;
+	if ((n2 < 0) || (n2 >= NN)) return nullptr;
+
+	FSMesh* newMesh = new FSMesh(*pm);
+
+	FEMeshBuilder meshBuilder(*newMesh);
+	meshBuilder.AddTriangle(n0, n1, n2);
 
 	return newMesh;
 }

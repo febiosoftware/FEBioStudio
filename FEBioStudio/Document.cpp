@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiPatch.h>
-#include <MeshTools/FEFileExport.h>
+#include <MeshIO/FSFileExport.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <MeshIO/PRVObjectFormat.h>
@@ -49,11 +49,13 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/ImageModel.h>
+#include <PostLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FEElementData.h>
+#include "ImageThread.h"
+#include <GeomLib/GModel.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include <QFileInfo>
@@ -63,13 +65,14 @@ SOFTWARE.*/
 #include "Logger.h"
 #include <sstream>
 #include <QTextStream>
+#include "units.h"
 
 using std::stringstream;
 
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
 
-void VIEW_SETTINGS::Defaults(int ntheme)
+void GLViewSettings::Defaults(int ntheme)
 {
 	m_bgrid = true;
 	m_bmesh = true;
@@ -459,6 +462,8 @@ CUndoDocument::CUndoDocument(CMainWindow* wnd) : CDocument(wnd)
 
 	// Clear the command history
 	m_pCmd->Clear();
+
+	QObject::connect(this, SIGNAL(doCommand(QString)), wnd, SLOT(on_doCommand(QString)));
 }
 
 //-----------------------------------------------------------------------------
@@ -519,8 +524,7 @@ const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 //-----------------------------------------------------------------------------
 bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
 {
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	emit doCommand(QString("Executing command: %1\n").arg(pcmd->GetName()));
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
 	if (b) UpdateSelection();
@@ -694,7 +698,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";
-	else if (dynamic_cast<FSPart*>(po)) return "element selection";
+	else if (dynamic_cast<FSElemSet*>(po)) return "element selection";
 	else if (dynamic_cast<FSSurface*>(po)) return "face selection";
 	else if (dynamic_cast<FSEdgeSet*>(po)) return "edge selection";
 	else if (dynamic_cast<FSNodeSet*>(po)) return "node selection";
@@ -757,7 +761,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		if (elemData) return "Element data";
 
 		FEPartData* partData = dynamic_cast<FEPartData*>(po);
-		if (partData) return "Element data";
+		if (partData) return "Part data";
 
 		assert(false);
 		return "Mesh data";
@@ -831,86 +835,6 @@ void CGLDocument::LoadResources(IArchive& ar)
 
 		ar.CloseChunk();
 	}
-}
-
-//-----------------------------------------------------------------------------
-// import image data
-Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
-{
-	static int n = 1;
-
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFileType type)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-	if (po->LoadITKData(relFile, type) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
-{
-    static int n = 1;
-	
-
-    std::vector<std::string> stdFiles;
-    for(auto filename : filenames)
-    {
-        // we pass the relative path to the image model
-	    stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
-    }
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-	if (po->LoadITKSeries(stdFiles) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
 }
 
 int CGLDocument::ImageModels() const
@@ -991,11 +915,20 @@ bool CGLDocument::AutoSaveDocument()
 		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
 
 		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
-
+		SetModifiedFlag(false);
 		return success;
 	}
 	else
 		return false;
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::Activate()
+{
+	CDocument::Activate();
+
+	// make sure the correct unit system is active
+	Units::SetUnitSystem(m_units);
 }
 
 //-----------------------------------------------------------------------------

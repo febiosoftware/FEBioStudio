@@ -152,7 +152,7 @@ void CEditPanel::Update(bool breset)
 	GObject* activeObject = doc->GetActiveObject();
 	if (breset) ui->m_currenObject = nullptr;
 
-	if (activeObject == ui->m_currenObject)
+	if (activeObject && (activeObject == ui->m_currenObject))
 	{
 		// only update position
 		vec3d r = activeObject->GetTransform().GetPosition();

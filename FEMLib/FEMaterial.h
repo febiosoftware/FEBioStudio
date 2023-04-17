@@ -18,6 +18,8 @@
 #define FE_MAT_DISCRETE				0x0100
 #define FE_MAT_1DFUNC				0x0200
 #define FE_MAT_POLAR_FLUID          0x0300
+#define FE_MAT_FLUID_SOLUTES        0x0400
+#define FE_MAT_THERMO_FLUID         0x0500
 
 // component classes
 // These values must not contain the top level class values in the lower bits!
@@ -158,8 +160,9 @@
 #define FE_FORCE_VELOCITY_ESTRADA       91
 #define FE_FIBER_EXP_POW_LIN            92
 #define FE_HGO_CORONARY                 93
-#define FE_ACTIVE_CONTRACT_FIBER        94   
-#define FE_ACTIVE_CONTRACT_FIBER_UC     95   
+#define FE_ACTIVE_CONTRACT_FIBER        94
+#define FE_ACTIVE_CONTRACT_FIBER_UC     95
+#define FE_ARRUDA_BOYCE_UC              96
 #define FE_USER_MATERIAL				1000
 
 // multi-materials (new from 1.5)
@@ -225,6 +228,7 @@
 #define FE_REACTION_RATE_CONST      605
 #define FE_REACTION_RATE_HUISKES    606
 #define FE_REACTION_RATE_FEBIO		607
+#define FE_MASS_ACTION_REACTION		608
 
 // membrane reactions
 #define FE_INT_REACTANT_MATERIAL    650
@@ -245,6 +249,7 @@
 #define FE_FIBER_USER			4
 #define FE_FIBER_ANGLES			5
 #define FE_FIBER_POLAR			6
+#define FE_FIBER_MAP			7
 
 // continuous fiber distributions
 #define FE_CFD_MATERIAL             700
@@ -620,6 +625,21 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Arruda-Boyce unconstrained
+//
+class FSArrudaBoyceUC : public FSMaterial
+{
+public:
+	enum { MP_DENS, MP_MU, MP_N, MP_K };
+
+public:
+	FSArrudaBoyceUC(FSModel* fem);
+
+	DECLARE_REGISTERED(FSArrudaBoyceUC);
+};
+
+
+//-----------------------------------------------------------------------------
 // Carter-Hayes
 //
 class FSCarterHayes : public FSMaterial
@@ -680,6 +700,9 @@ public:
 	// used by POLAR method
 	vec3d	m_d0, m_d1;
 	double	m_R0, m_R1;
+
+	// used by map
+	string	m_map;
 
 public:
 	void Save(OArchive& ar) override;
@@ -2662,6 +2685,12 @@ public:
 	bool HasFibers() override;
 
 	vec3d GetFiber(FEElementRef& el) override;
+
+	FSMaterial* Clone() override;
+
+	// local material axes
+	bool HasMaterialAxes() const override;
+	mat3d GetMatAxes(FEElementRef& el) const override;
 
 	bool UpdateData(bool bsave) override;
 

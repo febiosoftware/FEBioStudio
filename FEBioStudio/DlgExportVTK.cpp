@@ -47,7 +47,7 @@ public:
 		l->addWidget(allStates);
 		l->addWidget(currState);
 
-		allStates->setChecked(true);
+		currState->setChecked(true);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		l->addWidget(bb);

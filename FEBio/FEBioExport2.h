@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FEMLib/FEMultiMaterial.h>
 #include "FEBioExport.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
 class GPart;
