@@ -33,8 +33,8 @@ CDICQ4::CDICQ4(CDICMatching& match)
 	int temp = m_subs_per_row + 1;
 	m_stop = m_match_centers.size() - temp; //cannot do interp with bottom row 
 
-	ApplyQ4();
-	WriteVTKFile();
+	ApplyQ4(); //apply bilinear quadratic (Q4) shape functions to matching results
+	WriteVTKFile(); //write results to vtk file for vis.
 
 }
 
@@ -435,19 +435,12 @@ void CDICQ4::Local2Global()
 {
 	SavePointPairs();
 
-	std::ofstream debug;
-	debug.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\debug.txt");
-	debug << "match points size: " << m_match_centers.size() << std::endl;
-	debug << "m stop: " << m_stop << "subs per row = " << m_subs_per_row << " " << m_subs_per_col << std::endl;
 	for (int i = 0; i < m_stop; i++)
 	{
 		int temp = i + 1;
 
-		//L2G << "Subset #" << i << "\n";
-
 		if (temp % (int)m_subs_per_row == 0)
 		{
-			debug << "cont'd" << std::endl;
 			continue;
 		}
 		else
@@ -456,23 +449,16 @@ void CDICQ4::Local2Global()
 
 			std::vector<vec2i> NODES = GetNodesQ4(i); //check ref sub centers
 
-			//cv::Point2d R_i(NODES[0].x + (m_subSize / 2.0), NODES[0].y + (m_subSize / 2.0));
 			vec2i R_i(NODES[0].x + (m_subSize / 2.0), NODES[0].y + (m_subSize / 2.0));
 
 			for (int p = 0; p < m_NormCoordPairs.size(); p++)
 			{
-				//cv::Point2d u_i = m_NormCoordPairs[p].second;
 				vec2d u_i = m_NormCoordPairs[p].second;
 
-				//cv::Point2d p_global(R_i.x + u_i.x - (m_subSize / 2.0), R_i.y + u_i.y - (m_subSize / 2.0));
 				auto xp = R_i.x + u_i[0];
 				auto yp = R_i.y + u_i[1];
 
 				vec2i p_global(xp - (m_subSize / 2.0) + 1, yp - (m_subSize / 2.0) + 1);
-
-				debug << p_global.x << ", " << p_global.y << std::endl;
-
-				//L2G << p_global << "\n";
 
 				m_globalCoords.push_back(p_global);
 
@@ -481,8 +467,6 @@ void CDICQ4::Local2Global()
 			}
 		}
 	}
-
-	debug.close();
 }
 
 void CDICQ4::SavePointPairs()
@@ -567,25 +551,14 @@ void CDICQ4::GetNodeIndices()
 
 					std::vector<vec2i> const& v = m_globalCoords;
 
-					//std::cout << "----- NODE: " << N << " -----" << std::endl;
-
 					std::vector<int> indices = findPoints(v, N);
 
 					double U = 0, V = 0;
 
-					//if (indices.size() == 0)
-					//{
-					//	//m_n_U.push_back(0);
-					//	//m_n_V.push_back(0);
-					//	continue;
-					//}
-
 					for (int in = 0; in < indices.size(); in++)
 					{
-						//std::cout << "index: " << indices[in] << std::endl;
 						U += m_U[indices[in]];
 						V += m_V[indices[in]];
-						//std::cout << "exx [" << in << "] = " << m_EXX[indices[in]] << std::endl;
 					}
 
 					//average data for each nodal point
@@ -616,12 +589,9 @@ void CDICQ4::GetNodeIndices()
 	{
 		NodalPointFile << m_NodalPositions[i].x << "," << m_NodalPositions[i].y << "," << m_n_U[i]
 			<< "," << m_n_V[i] << "\n";
-		//std::cout << "EXX: " << mI_n_EXX[i].second << std::endl;
 	}
 
 	NodalPointFile.close();
-
-	//PrintNodalGridData();
 }
 
 
@@ -676,7 +646,6 @@ void CDICQ4::SortNodalPoints()
 	m_NodalPositions = SORTED_PTs;
 	m_n_U = S_U;
 	m_n_V = S_V;
-
 
 }
 
@@ -767,302 +736,4 @@ void CDICQ4::WriteVTKFile()
 	}
 
 	VTKFile.close();
-}
-
-
-//////////// PRINT /////////////////////////////
-// void CDICQ4::PrintNodalGridData()
-// {
-// 	std::ofstream NodalPointFile;
-// 	NodalPointFile.open("NodalGridData.csv");
-
-// 	NodalPointFile << "Grid Size:," << m_subs_per_row << " rows," << m_subs_per_col << " columns," << "\n";
-// 	NodalPointFile << "X-Position," << "Y-Position," << "Exx," << "Exy," << "Eyy," << "U [pix]," << "V [pix]," << "\n";
-
-// 	for (int i = 0; i < m_n_EXX.size(); i++)
-// 	{
-// 		NodalPointFile << m_NodalPositions[i].x << "," << m_NodalPositions[i].y << "," << m_n_EXX[i]
-// 			<< "," << m_n_EXY[i] << "," << m_n_EYY[i] << "," << m_n_U[i]
-// 			<< "," << m_n_V[i] << "\n";
-// 		//std::cout << "EXX: " << mI_n_EXX[i].second << std::endl;
-// 	}
-
-// 	NodalPointFile.close();
-
-// }
-
-//////////// WRITING VTK FILES FOR VIS IN FEBIO STUDIO /////////////////////////
-//void CDICQ4::WriteVTK(int DOI, int imgNum)
-//{
-//	std::vector<double> DATA;
-//	std::string dataName;
-//
-//	switch (DOI)
-//	{
-//	case 0:
-//		dataName = "V_EXX";
-//		DATA = m_n_EXX;
-//		break;
-//	case 1:
-//		dataName = "V_EYY";
-//		DATA = m_n_EYY;
-//		break;
-//	case 2:
-//		dataName = "V_EXY";
-//		DATA = m_n_EXY;
-//		break;
-//	case 3:
-//		dataName = "V_U";
-//		DATA = m_n_U;
-//		break;
-//	case 4:
-//		dataName = "V_V";
-//		DATA = m_n_V;
-//		break;
-//	}
-//
-//	std::ofstream VTKFile;
-//	// std::string img_name = m_match.GetDefImage().GetFileName();
-//    std::string img_name = "def image";
-//
-//	std::string str = dataName + "_0" + std::to_string(imgNum) + ".vtk";
-//	const char* c = const_cast<char*>(str.c_str());
-//
-//	VTKFile.open(c);
-//
-//	VTKFile << "# vtk DataFile Version 2.0 \n";
-//	VTKFile << img_name << ", subset size = " << m_subSize << "\n";
-//	VTKFile << "ASCII\n";
-//	VTKFile << "DATASET POLYDATA\n";
-//
-//	VTKFile << "POINTS " << m_NodalPositions.size() << " float\n";
-//
-//	for (int i = 0; i < m_NodalPositions.size(); i++)
-//	{
-//		VTKFile << m_NodalPositions[i].x << " " << m_NodalPositions[i].y << " " << 0 << " \n";
-//	}
-//
-//	//double R = trunc(GetRefDim()[0]/ m_subSpacing); //find # of full size subsets per row, round down to whole number
-//	//double C = trunc(GetRefDim()[1] / m_subSpacing); //find # of full size subsets per col, round down to whole number
-//
-//	double R = m_subs_per_row;
-//	double C = m_subs_per_col;
-//
-//	double n = (R-1) * (C-1);
-//	//double n = m_ref_img.GetNumSubs();
-//
-//	//std::cout << "number subs total (n): " << n << std::endl;
-//
-//	VTKFile << "POLYGONS " << n << " " << n * 5 << "\n";
-//
-//	for (int row = 0; row < R-1 ; row++)
-//	{
-//		for (int col = 0; col < C-1 ; col++)
-//		{
-//			int n0 = col * (R)+row;
-//			int n1 = col * (R)+row + 1;
-//			int n2 = (col + 1) * (R)+row + 1;
-//			int n3 = (col + 1) * (R)+row;
-//
-//			VTKFile << 4 << " " << n0 << " " << n1 << " " << n2 << " " << n3 << " \n";
-//		}
-//
-//	}
-//
-//	VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
-//	//VTKFile << "VECTORS displacement float\n";
-//	VTKFile << "SCALARS data float 1\n";
-//	VTKFile << "LOOKUP_TABLE default\n";
-//
-//
-//	for (int d = 0; d < DATA.size(); d++)
-//	{
-//		//VTKFile << DATA[d] << " " << DATA[d] << " " << 0 << "\n";
-//		VTKFile <<  DATA[d] << "\n";
-//	}
-//
-//	VTKFile.close();
-//
-//}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-////// DATA SMOOTHING /////////
-
-std::vector<double> CDICQ4::SmoothData(std::vector<double> data)
-{
-	// std::vector<double> temp = data; //data
-
-	// cv::Mat mat = Vec2Mat(temp, (m_subs_per_col-1)*(m_subSize+1), (m_subs_per_row-1)*(m_subSize+1)); //convert vector to matrix (aka grid)
-
-	int rows = (m_subs_per_row - 1) * (m_subSize + 1);
-	int cols = (m_subs_per_col - 1) * (m_subSize + 1);
-
-
-	//std::cout << mat << std::endl;
-
-	//add padding
-	// int pad_rows = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
-	// int pad_cols = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
-
-	// sitk::Image padded(cols+2*pad_cols, rows+2*pad_rows, sitk::sitkFloat64);
-	// double* buffer = padded.GetBufferAsDouble();
-
-
-	// for (int i = 0; i < cols; i++)
-	// {
-	//     for (int j = 0; j < rows; j++)
-	//     {
-	//         buffer[(i+pad_cols)*rows+j+pad_rows] = data[i*rows+j];
-	//     }
-
-	// }
-
-	sitk::Image image(cols, rows, sitk::sitkFloat64);
-	double* buffer = image.GetBufferAsDouble();
-
-	for (int i = 0; i < cols; i++)
-	{
-		for (int j = 0; j < rows; j++)
-		{
-			buffer[i * rows + j] = data[i * rows + j];
-		}
-
-	}
-
-	// cv::Mat padded(cv::Size(mat.cols + 2 * pad_cols, mat.rows + 2 * pad_rows), CV_64F, cv::Scalar(0));
-	// mat.copyTo(padded(cv::Rect(pad_cols, pad_rows, mat.cols, mat.rows)));
-
-	//create kernel
-	sitk::Image kernel = CreateKernel(m_match.GetRefImage().GetWindowSize(), m_match.GetRefImage().GetWindowSize(), BOXFILTER);
-
-	// cv::Mat smoothedMat = cv::Mat::zeros(mat.size(), CV_64F);
-	// cv::Mat dst;
-
-	// //convolve kernel to smooth
-	// for (int i = 0; i < mat.rows; i++)
-	// {
-	// 	for (int j = 0; j < mat.cols; j++)
-	// 	{
-	// 		smoothedMat.at<double>(i, j) = sum(kernel.mul(padded(cv::Rect(j, i, m_ref_img.GetWindowSize(), m_ref_img.GetWindowSize())))).val[0];
-	// 	}
-	// }
-
-	// smoothedMat.convertTo(dst, CV_8UC1);
-
-	auto output = sitk::Convolution(image, kernel);
-	buffer = output.GetBufferAsDouble();
-
-	int size = output.GetSize()[0] * output.GetSize()[1];
-
-	std::vector<double> smoothedVec(size);
-	for (int i = 0; i < size; i++)
-	{
-		smoothedVec[i] = buffer[i];
-	}
-
-
-	// std::vector<double> smoothedVec = Mat2Vec(smoothedMat);
-
-	//std::cout << "SMOOTHED DATA:" << std::endl;
-
-	//for (int ii = 0; ii < smoothedVec.size(); ii++)
-	//{
-	//	std::cout << smoothedVec[ii] << std::endl;
-	//}
-
-	return smoothedVec;
-}
-
-// cv::Mat CDICQ4::Vec2Mat(std::vector<double> vec,int r, int c)
-// {
-// 	cv::Mat M(r, c,CV_64F);
-
-// 	memcpy(M.data, vec.data(), vec.size()*sizeof(double));
-
-
-// 	return M;
-// }
-
-// std::vector<double> CDICQ4::Mat2Vec(cv::Mat mat)
-// {
-// 	std::vector<double> vec;
-
-// 	for (int i = 0; i < mat.rows; i++)
-// 	{
-// 		for (int j = 0; j < mat.cols; j++)
-// 		{
-// 			vec.push_back(mat.at<double>(i, j));
-// 		}
-// 	}
-
-// 	return vec;
-// }
-
-itk::simple::Image CDICQ4::CreateKernel(int k_w, int k_h, int filterType)
-{
-	if (filterType == BOXFILTER)
-	{
-		int size = k_w * k_h;
-
-		sitk::Image kernel(k_w, k_h, sitk::sitkFloat64);
-		double* buffer = kernel.GetBufferAsDouble();
-		double val = 1 / size;
-
-		for (int i = 0; i < size; i++)
-		{
-			buffer[i] = val;
-		}
-
-		return kernel;
-	}
-	else if (filterType == GAUSSFILTER)
-	{
-		double s = m_match.GetRefImage().GetSigma();
-		double k = 1;
-		int pad_rows = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
-		int pad_cols = (m_match.GetRefImage().GetWindowSize() - 1.0) / 2.0;
-
-		sitk::Image kernel(k_w, k_h, sitk::sitkFloat64);
-		double* buffer = kernel.GetBufferAsDouble();
-
-		double sum = 0;
-		int size = m_match.GetRefImage().GetWindowSize();
-
-		for (int i = -pad_rows; i <= pad_rows; i++)
-		{
-			for (int j = -pad_cols; j <= pad_cols; j++)
-			{
-				double val = exp(-(i * i + j * j) / 2.0);
-				buffer[(i + pad_rows) * size + j + pad_cols] = val;
-
-				sum += val;
-			}
-		}
-
-		for (int i = 0; i < size; i++)
-		{
-			buffer[i] /= sum;
-		}
-
-		return kernel;
-	}
-
 }

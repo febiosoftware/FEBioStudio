@@ -42,7 +42,7 @@ CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 	CreateFixedMasks(); //create search areas in deformed image
 	m_fixed_SITK_img = *m_def_img.GetSITKImage(); //fixed image
 
-	FFTCorrelation();
+	FFTCorrelation(); //perform "template matching"
 }
 
 void CDICMatching::FFTCorrelation()
@@ -121,6 +121,10 @@ void CDICMatching::CreateMovingImages()
 		ref = caster.Execute(ref);
 	}
 
+	std::ofstream deb;
+	deb.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\create.txt");
+	deb << m_ref_center_points.size();
+
 	for (int ii = 0; ii < m_ref_center_points.size(); ii++)
 	{
 		int px = m_ref_center_points[ii].x;
@@ -133,8 +137,10 @@ void CDICMatching::CreateMovingImages()
 		int range_y_low = py - m_subSize / 2;
 		int range_y_upper = py + m_subSize / 2;
 
-		bug << "iteration: " << ii << std::endl;
+		//bug << "iteration: " << ii << std::endl;
 
+
+		//This is where the problem is happening (NaN issues,etc.)
 		for (unsigned int j = 0; j < m_subSize; j++)
 		{
 			for (unsigned int i = 0; i < m_subSize; i++)
@@ -142,6 +148,7 @@ void CDICMatching::CreateMovingImages()
 				bug << "second loop" << std::endl;
 				auto val = ref.GetPixelAsFloat({ range_x_low + i,range_y_low + j });
 				sub.SetPixelAsFloat({ i,j }, val);
+				deb << i << ", " << j << std::endl;
 			}
 		}
 
@@ -168,9 +175,6 @@ void CDICMatching::CreateFixedMasks()
 	double infl_y = dimY_scale + user_inf_y;
 
 	//Create range of search area for each subset
-
-	//Create empty image
-	//sitk::Image img(m_def_img.GetWidth(), m_def_img.GetHeight(), sitk::sitkFloat32);
 	for (int ii = 0; ii < m_ref_center_points.size(); ii++)
 	{
 		sitk::Image img(m_def_img.GetWidth(), m_def_img.GetHeight(), sitk::sitkFloat32);
