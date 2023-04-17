@@ -162,8 +162,8 @@ void CDICMatching::CreateFixedMasks()
 	double dimY_scale = 1 + std::abs((double)dim_dif_y) / m_ref_img.GetHeight();
 
 	//Subset size and inflation size (USER INPUTS)
-	double user_inf_x = 0.7;
-	double user_inf_y = 0.7;
+	double user_inf_x = 1.1;
+	double user_inf_y = 1.1;
 	double infl_x = dimX_scale + user_inf_x;
 	double infl_y = dimY_scale + user_inf_y;
 
@@ -185,7 +185,7 @@ void CDICMatching::CreateFixedMasks()
 		int INF_x = (infl_x * m_subSize);
 		int INF_y = (infl_y * m_subSize);
 
-		if (px - INF_x < m_subSize / 2 | ii == 0 | ii % 10 == 0)
+		if (px - INF_x < m_subSize / 2 | ii == 0 | ii % m_subs_per_row == 0)
 		{
 			range_x_low = 0.0;
 		}
@@ -204,7 +204,7 @@ void CDICMatching::CreateFixedMasks()
 		}
 
 
-		if (px + INF_x > img.GetWidth() - m_subSize / 2 | (ii + 1) % 10 == 0)
+		if (px + INF_x > img.GetWidth() - m_subSize / 2 | (ii + 1) % m_subs_per_row == 0)
 		{
 			range_x_upper = img.GetWidth();
 		}
@@ -236,6 +236,20 @@ void CDICMatching::CreateFixedMasks()
 		IMG.SetItkImage(img);
 
 		m_searchAreas.push_back(IMG);
+
+
+
+		if (ii < 10)
+		{
+			sitk::WriteImage(IMG.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\searchAreas_febioDIC\\s0" + std::to_string(ii) + ".tif");
+		}
+		else
+		{
+			sitk::WriteImage(IMG.GetSItkImage(), "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\searchAreas_febioDIC\\s" + std::to_string(ii) + ".tif");
+
+		}
+
+
 	}
 
 }
