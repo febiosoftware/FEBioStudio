@@ -68,7 +68,7 @@ void CDICMatching::FFTCorrelation()
 		//	m_searchAreas[n].GetSItkImage(), m_moving_mask.GetSItkImage(), 1, 0);
 
 		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
-			searchArea, m_moving_mask.GetSItkImage(), 0.7, n);
+			searchArea, m_moving_mask.GetSItkImage(), 0.8, n);
 
 		vec2i match;
 		match.x = results[0];
@@ -186,8 +186,8 @@ void CDICMatching::CreateFixedMasks()
 	double dimY_scale = 1 + std::abs((double)dim_dif_y) / m_ref_img.GetHeight();
 
 	//Subset size and inflation size (USER INPUTS)
-	double user_inf_x = 0.5;
-	double user_inf_y = 0.5;
+	double user_inf_x = 1;
+	double user_inf_y = 1;
 	double infl_x = dimX_scale + user_inf_x;
 	double infl_y = dimY_scale + user_inf_y;
 

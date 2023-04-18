@@ -575,9 +575,11 @@ void CDICQ4::GetNodeIndices()
 
 	}
 
+
 	m_NodalPositions = trackNodes;
 
 	SortNodalPoints();
+
 
 	//Print Nodal Grid Data
 	//std::ofstream NodalPointFile;
