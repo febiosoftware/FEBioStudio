@@ -579,21 +579,6 @@ void CDICQ4::GetNodeIndices()
 	m_NodalPositions = trackNodes;
 
 	SortNodalPoints();
-
-
-	//Print Nodal Grid Data
-	//std::ofstream NodalPointFile;
-	//NodalPointFile.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\Disp_debug.csv");
-	//NodalPointFile << "Grid Size:," << m_subs_per_row << " rows," << 10 << " columns," << "\n"; ///NEED TO REPLACE 10 with "subs per col"
-	//NodalPointFile << "X-Position," << "Y-Position," << "U [pix]," << "V [pix]," << "\n";
-
-	//for (int i = 0; i < m_n_U.size(); i++)
-	//{
-	//	NodalPointFile << m_NodalPositions[i].x << "," << m_NodalPositions[i].y << "," << m_n_U[i]
-	//		<< "," << m_n_V[i] << "\n";
-	//}
-
-	//NodalPointFile.close();
 }
 
 

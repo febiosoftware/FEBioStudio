@@ -186,8 +186,8 @@ void CDICMatching::CreateFixedMasks()
 	double dimY_scale = 1 + std::abs((double)dim_dif_y) / m_ref_img.GetHeight();
 
 	//Subset size and inflation size (USER INPUTS)
-	double user_inf_x = 1;
-	double user_inf_y = 1;
+	double user_inf_x = 0.7;
+	double user_inf_y = 0.7;
 	double infl_x = dimX_scale + user_inf_x;
 	double infl_y = dimY_scale + user_inf_y;
 
