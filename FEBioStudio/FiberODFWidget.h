@@ -92,7 +92,8 @@ private slots:
     void on_odfSelector_currentIndexChanged(int index);
     void on_odfCheck_stateChanged(int state);
     void on_copyToMatButton_pressed();
-    void on_saveToCSVButton_pressed();
+    void on_saveSphHarm_triggered();
+    void on_saveODFs_triggered();
 
 private:
     void findMaterials(FSMaterial* mat, std::string name, std::vector<std::pair<std::string,FSMaterial*>>& materials);

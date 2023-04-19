@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QTableWidget>
 #include <QHeaderView>
 #include <QFileDialog>
+#include <QMenu>
 #include <QLabel>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -257,6 +258,9 @@ public:
     QTableWidget* sphHarmTable;
     QPushButton* copyToMatButton;
     QPushButton* saveToCSVButton;
+    QMenu* saveMenu;
+    QAction* saveSphHarm;
+    QAction* saveODFs;
 
 	// analysis tab widgets
 	QLineEdit* pos;
@@ -317,7 +321,13 @@ public:
         buttonLayout->setContentsMargins(0,0,0,0);
 
         buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material"));
-        buttonLayout->addWidget(saveToCSVButton = new QPushButton("Save to CSV"));
+        buttonLayout->addWidget(saveToCSVButton = new QPushButton("Save to CSV..."));
+        
+        saveMenu = new QMenu;
+        saveMenu->addAction(saveODFs = new QAction("ODFs"));
+        saveMenu->addAction(saveSphHarm = new QAction("Spherical Harmonics"));
+
+        saveToCSVButton->setMenu(saveMenu);
 
         sphHarmTabLayout->addLayout(buttonLayout);
 
@@ -445,8 +455,9 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
     connect(ui->runButton, &QPushButton::pressed, this, &CFiberODFWidget::on_runButton_pressed);
     connect(ui->odfSelector, &QComboBox::currentIndexChanged, this, &CFiberODFWidget::on_odfSelector_currentIndexChanged);
     connect(ui->odfCheck, &QCheckBox::stateChanged, this, &CFiberODFWidget::on_odfCheck_stateChanged);
-    connect(ui->saveToCSVButton, &QPushButton::pressed, this, &CFiberODFWidget::on_saveToCSVButton_pressed);
     connect(ui->copyToMatButton, &QPushButton::pressed, this, &CFiberODFWidget::on_copyToMatButton_pressed);
+    connect(ui->saveODFs, &QAction::triggered, this, &CFiberODFWidget::on_saveODFs_triggered);
+    connect(ui->saveSphHarm, &QAction::triggered, this, &CFiberODFWidget::on_saveSphHarm_triggered);
 }
 
 void CFiberODFWidget::setAnalysis(CFiberODFAnalysis* analysis)
@@ -658,7 +669,7 @@ void CFiberODFWidget::findMaterials(FSMaterial* mat, std::string name, std::vect
     }
 }
 
-void CFiberODFWidget::on_saveToCSVButton_pressed()
+void CFiberODFWidget::on_saveSphHarm_triggered()
 {
     if(!m_analysis || m_analysis->ODFs() == 0) return;
 
@@ -671,567 +682,39 @@ void CFiberODFWidget::on_saveToCSVButton_pressed()
     {
         CODF* current = m_analysis->GetODF(i);
 
+        stream << current->m_position.x << ", " << current->m_position.y << ", " << current->m_position.z << "\n";
+
         for(int j = 0; j < current->m_sphHarmonics.size() - 1; j++)
         {
             stream << current->m_sphHarmonics[j] << ", ";
         }
         stream << current->m_sphHarmonics.back() << "\n";
-
-        stream << current->m_position.x << ", " << current->m_position.y << ", " << current->m_position.z << "\n";
     }
 
     stream.close();
 }
 
-    // sitk::Image img = sitk::ReadImage(ui->imagePath->text().toStdString());
-    // img = sitk::Cast(img, sitk::sitkUInt32);
+void CFiberODFWidget::on_saveODFs_triggered()
+{
+    if(!m_analysis || m_analysis->ODFs() == 0) return;
 
-    // int xDiv = ui->xDivisions->value();
-    // int yDiv = ui->yDivisions->value();
-    // int zDiv = ui->zDivisions->value();
+    QString filename = QFileDialog::getSaveFileName(m_wnd, "Save CSV", QString(), "CSV (*.csv)");
 
-    // auto size = img.GetSize();
+    std::ofstream stream;
+    stream.open(filename.toStdString());
 
-    // unsigned int xDivSize = size[0]/xDiv;
-    // unsigned int yDivSize = size[1]/yDiv;
-    // unsigned int zDivSize = size[2]/zDiv;
+    for(int i = 0; i < m_analysis->ODFs(); i++)
+    {
+        CODF* current = m_analysis->GetODF(i);
 
-    // auto spacing = img.GetSpacing();
-    // auto origin = img.GetOrigin();
-
-    // std::cout << "Origin: " << origin[0] << ", " << origin[1] << ", " << origin[2] << std::endl;
-    // std::cout << "Size: " << size[0]*spacing[0] << ", " << size[1]*spacing[1] << ", " << size[2]*spacing[2] << std::endl;
-
-    // int xDivSizePhys = size[0]*spacing[0]/(xDiv+1);
-    // int yDivSizePhys = size[1]*spacing[1]/(yDiv+1);
-    // int zDivSizePhys = size[2]*spacing[2]/(zDiv+1);
-
-    // sitk::ExtractImageFilter extractFilter;
-    // extractFilter.SetSize(std::vector<unsigned int> {xDivSize, yDivSize, zDivSize});
-
-    // // preprocessing for qBall algorithm
-
-    // auto C = complLapBel_Coef();
-
-    // double* theta = new double[NPTS] {};
-    // double* phi = new double[NPTS] {};
-
-    // getSphereCoords(NPTS, XCOORDS, YCOORDS, ZCOORDS, theta, phi);
-
-    // auto T = compSH(m_order, NPTS, theta, phi);
-
-    // delete[] theta;
-    // delete[] phi;
-
-    // matrix transposeT = T->transpose();
-
-    // matrix A = (*T)*(*C);
-    // matrix B = (transposeT*(*T)).inverse()*transposeT;
-
-    // int currentX = 1;
-    // int currentY = 1;
-    // int currentZ = 1;
-    // int currentLoop = 0;
-    // while(true)
-    // {
-    //     extractFilter.SetIndex(std::vector<int> {(int)xDivSize*(currentX - 1), (int)yDivSize*(currentY - 1), (int)zDivSize*(currentZ - 1)});
-    //     sitk::Image current = extractFilter.Execute(img);
+        stream << current->m_position.x << ", " << current->m_position.y << ", " << current->m_position.z << "\n";
         
-    //     // sitk::ImageFileWriter writer;
-    //     // QString name = QString("/home/mherron/Desktop/test%1.tif").arg(currentLoop++);
-    //     // writer.SetFileName(name.toStdString());
-    //     // writer.Execute(current);
-
-    //     // Apply Butterworth filter
-    //     butterworthFilter(current);
-        
-    //     current = sitk::Cast(current, sitk::sitkFloat32);
-        
-    //     // Apply FFT and FFT shift
-    //     current = sitk::FFTPad(current);
-    //     current = sitk::ForwardFFT(current);
-    //     current = sitk::FFTShift(current);
-
-    //     // Obtain Power Spectrum
-    //     current = powerSpectrum(current);
-
-    //     // Remove DC component (does not have a direction and does not 
-    //     // constitute fibrillar structures)
-    //     // NOTE: For some reason, this doesn't perfectly match zeroing out the same point in MATLAB
-    //     // and results in a slightly different max value in the ODF
-    //     auto currentSize = current.GetSize();
-    //     std::vector<uint32_t> index {currentSize[0]/2 + 1, currentSize[1]/2 + 1, currentSize[2]/2 + 1};
-    //     current.SetPixelAsFloat(index, 0);
-
-    //     // Apply Radial FFT Filter
-    //     fftRadialFilter(current);
-
-    //     std::vector<double> reduced = std::vector<double>(NPTS,0);
-    //     reduceAmp(current, &reduced);
-
-    //     // delete image
-    //     current = sitk::Image();
-        
-    //     // Apply qBall algorithm
-    //     std::vector<double>* ODF = new std::vector<double>(NPTS, 0.0);
-
-    //     A.mult(B, reduced, *ODF);
-
-    //     // normalize odf
-    //     double gfa = GFA(*ODF);
-    //     double min = *std::min_element(ODF->begin(), ODF->end());
-    //     double max = *std::max_element(ODF->begin(), ODF->end());
-
-    //     double sum = 0;
-    //     for(int index = 0; index < ODF->size(); index++)
-    //     {
-    //         double val = (*ODF)[index] - (min + (max - min)*0.1*gfa);
-
-    //         if(val < 0)
-    //         {
-    //             (*ODF)[index] = 0;
-    //         }
-    //         else
-    //         {
-    //             (*ODF)[index] = val;
-    //         }
-            
-    //         sum += (*ODF)[index];
-    //     }
-
-    //     for(int index = 0; index < ODF->size(); index++)
-    //     {
-    //         (*ODF)[index] /= sum;
-    //     }
-
-    //     // Calculate spherical harmonics
-    //     vector<double> sphHarm((*C).columns());   
-    //     B.mult(*ODF, sphHarm);
-
-    //     m_ODFs.push_back(ODF);
-
-    //     vec3d position(xDivSizePhys*currentX + origin[0], yDivSizePhys*currentY + origin[1], zDivSizePhys*currentZ + origin[2]);
-
-    //     std::cout << "X: " << currentX << " Y: " << currentY << " Z: " << currentZ << std::endl;
-    //     std::cout << "Spherical Harmonics:" << std::endl;
-    //     for(int index = 0; index < sphHarm.size() - 1; index++)
-    //     {
-    //         std::cout << sphHarm[index] << ",";
-    //     }
-    //     std::cout << sphHarm[sphHarm.size() - 1] << std::endl;
-
-    //     std::cout << "Position:" << std::endl;
-    //     std::cout << position.x << "," << position.y << "," << position.z << std::endl;
-
-    //     // add spherical harmonics and position to material
-    //     int classID = FEBio::GetClassId(FECLASS_ID, "fiber-odf");
-    //     FSModelComponent* fiberODF = FEBio::CreateClass(classID,  m_mat->GetModel());
-    //     fiberODF->GetParam("shp_harmonics")->SetVectorDoubleValue(sphHarm);
-    //     fiberODF->GetParam("position")->SetVec3dValue(position);
-    //     // fiberODF->AddVectorDoubleParam(sphHarm);
-    //     // fiberODF->AddVecParam(position);
-    //     m_mat->GetMaterialProperties()->GetProperty(0).AddComponent(fiberODF);
-
-    //     // Recalc ODF based on spherical harmonics
-    //     // (*T).mult(sphHarm, *m_ODF);
-
-    //     // ui->glWidget->setMesh(buildMesh());
-
-    //     if((currentX == xDiv) && (currentY == yDiv) && (currentZ == zDiv)) break;
-
-    //     currentZ++;
-    //     if(currentZ > zDiv)
-    //     {
-    //         currentZ = 1;
-    //         currentY++;
-    //     }
-
-    //     if(currentY > yDiv)
-    //     {
-    //         currentY = 1;
-    //         currentX++;
-    //     }
-    // }
-
-    
-
-    // // Calc Gradient
-    // vector<double> gradient;
-    // altGradient(m_order, sphHarm, gradient);
-
-    // makeDataField(po, gradient, "Gradient");
-
-    // // Remesh sphere
-    // vector<vec3d> nodePos;
-    // vector<vec3i> elems;
-    // remesh(gradient, m_lengthScale, m_hausd, m_grad, nodePos, elems);
-
-    // FSMesh* newMesh = new FSMesh();
-
-	// // get the new mesh sizes
-    // int NN = nodePos.size();
-    // int NF = elems.size();
-	// newMesh->Create(NN, NF);
-
-	// // get the vertex coordinates
-	// for (int i = 0; i < NN; ++i)
-	// {
-	// 	FSNode& vi = newMesh->Node(i);
-	// 	vi.r = nodePos[i];
-	// }
-
-    // // create elements
-	// for (int i=0; i<NF; ++i)
-	// {
-    //     FSElement& el = newMesh->Element(i);
-    //     el.SetType(FE_TRI3);
-    //     int* n = el.m_node;
-	// 	el.m_node[0] = elems[i].x;
-	// 	el.m_node[1] = elems[i].y;
-	// 	el.m_node[2] = elems[i].z;
-	// }
-
-    // newMesh->RebuildMesh();
-
-	// GMeshObject* po2 = new GMeshObject(newMesh);
-    // po2->SetName("Remeshed");
-
-	// // add the object to the model
-	// fem->GetModel().AddObject(po2);
-
-    // // Create ODF mapping for new sphere
-
-    // int nodes = newMesh->Nodes();
-
-    // double* xCoords = new double[nodes] {};
-    // double* yCoords = new double[nodes] {};
-    // double* zCoords = new double[nodes] {};
-    // for(int index = 0; index < nodes; index++)
-    // {
-    //     vec3d vec = newMesh->Node(index).pos();
-
-    //     xCoords[index] = vec.x;
-    //     yCoords[index] = vec.y;
-    //     zCoords[index] = vec.z;
-    // }
-
-    // theta = new double[nodes] {};
-    // phi = new double[nodes] {};
-
-    // getSphereCoords(nodes, xCoords, yCoords, zCoords, theta, phi);
-
-    // T = compSH(m_order, nodes, theta, phi);
-
-    // delete[] xCoords;
-    // delete[] yCoords;
-    // delete[] zCoords;
-    // delete[] theta;
-    // delete[] phi;
-
-    // std::vector<double> newODF(nodes, 0);  
-    // (*T).mult(sphHarm, newODF);
-
-    // makeDataField(po2, newODF, "ODF");
-
-// }
-
-// void CFiberODFWidget::butterworthFilter(sitk::Image& img)
-// {
-//     double fraction = 0.2;
-//     double steepness = 10;
-
-//     uint32_t* data = img.GetBufferAsUInt32();
-
-//     int nx = img.GetSize()[0];
-//     int ny = img.GetSize()[1];
-//     int nz = img.GetSize()[2];
-
-//     double xStep = img.GetSpacing()[0];
-//     double yStep = img.GetSpacing()[1];
-//     double zStep = img.GetSpacing()[2];
-
-//     double height = nx*xStep;
-//     double width = ny*yStep;
-//     double depth = nz*zStep;
-//     double radMax = std::min({height, width, depth})/2;
-
-//     radMax = 1;
-
-//     double decent = radMax - radMax * fraction;
-
-//     #pragma omp parallel for
-//     for(int z = 0; z < nz; z++)
-//     {
-//         for(int y = 0; y < ny; y++)
-//         {
-//             for(int x = 0; x < nx; x++)
-//             {
-//                 int xPos = x - nx/2;
-//                 int yPos = y - ny/2;
-//                 int zPos = z - nz/2;
-
-//                 int xPercent = xPos/nx;
-//                 int yPercent = yPos/ny;
-//                 int zPercent = zPos/nz;
-
-//                 // double rad = sqrt(xPos*xStep*xPos*xStep + yPos*yStep*yPos*yStep + zPos*zStep*zPos*zStep);
-//                 double rad = sqrt(xPercent*xPercent + yPercent*yPercent + zPercent*zPercent);
-//                 // double rad = xPercent*yPercent*zPercent/3;
-
-//                 int index = x + y*nx + z*nx*ny;
-
-//                 data[index] = data[index]/(1 + pow(rad/decent, 2*steepness));
-//             }
-//         }
-//     }
-// }
-
-// sitk::Image CFiberODFWidget::powerSpectrum(sitk::Image& img)
-// {
-//     int nx = img.GetSize()[0];
-//     int ny = img.GetSize()[1];
-//     int nz = img.GetSize()[2];
-
-//     sitk::Image PS(nx, ny, nz, sitk::sitkFloat32);
-//     float* data = PS.GetBufferAsFloat();
-
-//     #pragma omp parallel for
-//     for(uint32_t x = 0; x <nx; x++)
-//     {
-//         for(uint32_t y = 0; y < ny; y++)
-//         {
-//             for(uint32_t z = 0; z < nz; z++)
-//             {
-//                 std::vector<uint32_t> index = {x,y,z};
-                
-//                 complex<float> val = img.GetPixelAsComplexFloat32(index);
-
-//                 float ps = abs(val);
-
-//                 int newIndex = x + y*nx + z*nx*ny;
-
-//                 data[newIndex] = ps*ps;
-//             }
-//         }
-//     }
-
-//     return PS;
-// }
-
-// void CFiberODFWidget::fftRadialFilter(sitk::Image& img)
-// {
-//     float fLow = 1/m_tLow;
-//     float fHigh = 1/m_tHigh;
-
-//     int nx = img.GetSize()[0];
-//     int ny = img.GetSize()[1];
-//     int nz = img.GetSize()[2];
-
-//     int minSize = std::min({nx, ny, nz})/2;
-    
-//     double xStep = img.GetSpacing()[0];
-//     double yStep = img.GetSpacing()[1];
-//     double zStep = img.GetSpacing()[2];
-
-//     float* data = img.GetBufferAsFloat();
-
-//     #pragma omp parallel for
-//     for(int z = 0; z < nz; z++)
-//     {
-//         for(int y = 0; y < ny; y++)
-//         {
-//             for(int x = 0; x < nx; x++)
-//             {
-//                 int xPos = x - nx/2;
-//                 int yPos = y - ny/2;
-//                 int zPos = z - nz/2;
-
-//                 double rad = sqrt(xPos*xStep*xPos*xStep + yPos*yStep*yPos*yStep + zPos*zStep*zPos*zStep);
-
-//                 double val = rad/minSize;
-
-//                 int index = x + y*nx + z*nx*ny;
-
-//                 if(val < fLow || val > fHigh)
-//                 {
-//                    data[index] = 0;
-//                 }
-//             }
-//         }
-//     }
-// }
-
-
-// void CFiberODFWidget::reduceAmp(sitk::Image& img, std::vector<double>* reduced)
-// {
-//     std::vector<vec3d> points;
-//     points.reserve(NPTS);
-    
-//     for (int index = 0; index < NPTS; index++)
-//     {
-//         points.emplace_back(XCOORDS[index], YCOORDS[index], ZCOORDS[index]);
-//     }
-
-//     float* data = img.GetBufferAsFloat();
-
-//     int nx = img.GetSize()[0];
-//     int ny = img.GetSize()[1];
-//     int nz = img.GetSize()[2];
-
-//     double xStep = img.GetSpacing()[0];
-//     double yStep = img.GetSpacing()[1];
-//     double zStep = img.GetSpacing()[2];
-
-//     #pragma omp parallel shared(img, points)
-//     {
-//         FSNNQuery query(&points);
-//         query.Init();
-        
-//         std::vector<double> tmp(NPTS, 0.0);
-
-//         #pragma omp for
-//         for (int z = 0; z < nz; z++)
-//         {
-//             for (int y = 0; y < ny; y++)
-//             {
-//                 for (int x = 0; x < nx; x++)
-//                 {
-//                     int xPos = (x - nx / 2);
-//                     int yPos = (y - ny / 2);
-//                     int zPos = (z - nz / 2);
-
-//                     double realX = xPos*xStep;
-//                     double realY = yPos*yStep;
-//                     double realZ = zPos*zStep;
-                    
-//                     double rad = sqrt(realX*realX + realY*realY + realZ*realZ);
-                    
-//                     if(rad == 0) continue;
-
-//                     int closestIndex = query.Find(vec3d(realX/rad, realY/rad, realZ/rad));
-                    
-//                     int index = x + y*nx + z*nx*ny;
-                    
-//                     tmp[closestIndex] += data[index];
-//                 }
-//             }
-//         }
-        
-//         for (int i = 0; i < NPTS; ++i)
-//         {
-//             #pragma omp critical
-//             (*reduced)[i] += tmp[i];
-//         }
-//     }
-// }
-
-// enum NUMTYPE { REALTYPE, IMAGTYPE, COMPLEXTYPE };
-
-// // double fact(int val)
-// // {
-// //     double ans = 1;
-    
-// //     for(int i = 1; i <= val; i++)
-// //     {
-// //         ans *= i;
-// //     } 
-    
-// //     return ans;
-// // }
-
-// std::unique_ptr<matrix> CFiberODFWidget::complLapBel_Coef()
-// {
-//     int size = (m_order+1)*(m_order+2)/2;
-//     std::unique_ptr<matrix> out = std::make_unique<matrix>(size, size);
-//     out->fill(0,0,size,size,0.0);
-
-//     for(int k = 0; k <= m_order; k+=2)
-//     {
-//         for(int m = -k; m <= k; m++)
-//         {
-//             int j = k*(k+1)/2 + m;
-
-//             double prod1 = 1;
-//             for(int index = 3; index < k; index+=2)
-//             {
-//                 prod1 *= index;
-//             }
-
-//             double prod2 = 1;
-//             for(int index = 2; index <= k; index+=2)
-//             {
-//                 prod2 *= index;
-//             }
-
-//             (*out)[j][j] = (pow(-1, k/2))*prod1/prod2*2*M_PI;
-//         }
-
-//     }
-
-//     return std::move(out);
-// }
-
-// double CFiberODFWidget::GFA(std::vector<double> vals)
-// {
-//     // Standard deviation and root mean square
-//     double mean = 0;
-//     for(auto val : vals)
-//     {
-//         mean += val;
-//     }
-//     mean /= vals.size();
-
-//     double stdDev = 0;
-//     double rms = 0;
-//     for(auto val : vals)
-//     {
-//         double diff = val - mean;
-//         stdDev += diff*diff;
-        
-//         rms += val*val;
-//     }
-//     stdDev = sqrt(stdDev/vals.size());
-//     rms = sqrt(rms/vals.size());
-
-//     return stdDev/rms;
-// }
-
-// GLMesh* CFiberODFWidget::buildMesh()
-// {
-//     // Post::CColorMap map;
-//     // map.jet();
-
-//     // double min = *std::min_element(m_ODF->begin(), m_ODF->end());
-//     // double max = *std::max_element(m_ODF->begin(), m_ODF->end());
-//     // double scale = 1/(max - min);
-
-//     // GLMesh* pm = new GLMesh();
-// 	// pm->Create(NPTS, NCON);
-
-// 	// // create nodes
-// 	// for (int i=0; i<NPTS; ++i)
-// 	// {
-// 	// 	auto& node = pm->Node(i);
-// 	// 	node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
-// 	// }
-
-// 	// // create elements
-// 	// for (int i=0; i<NCON; ++i)
-// 	// {
-//     //     auto& el = pm->Face(i);
-//     //     el.n[0] = CONN1[i]-1;
-//     //     el.n[1] = CONN2[i]-1;
-//     //     el.n[2] = CONN3[i]-1;
-
-//     //     el.c[0] = map.map((*m_ODF)[el.n[0]]*scale);
-//     //     el.c[1] = map.map((*m_ODF)[el.n[1]]*scale);
-//     //     el.c[2] = map.map((*m_ODF)[el.n[2]]*scale);
-// 	// }
-
-// 	// update the mesh
-// 	// pm->Update();
-
-// 	// return pm;
-
-//     return nullptr;
-// }
+        for(int j = 0; j < current->m_odf.size() - 1; j++)
+        {
+            stream << current->m_odf[j] << ", ";
+        }
+        stream << current->m_odf.back() << "\n";
+    }
+
+    stream.close();
+}
