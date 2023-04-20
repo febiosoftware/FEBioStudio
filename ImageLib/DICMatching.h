@@ -43,6 +43,7 @@ public:
 	std::vector<vec2i> GetRefCenterPoints();
 	int GetSubsPerRow();
 	int GetSubsPerCol();
+	std::vector<double> GetNCCVals();
 
 private:
 	CDICImage& m_ref_img;
@@ -57,5 +58,6 @@ private:
 	CImageSITK m_moving_mask;
 	int m_subs_per_row;
 	int m_subs_per_col;
+	std::vector<double> m_NCC;
 
 };

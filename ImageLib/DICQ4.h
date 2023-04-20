@@ -82,4 +82,6 @@ private:
 	std::vector<double> m_n_EXY;
 	std::vector<double> m_n_EYY;
 	std::vector<vec2i> m_NodalPositions;
+	std::vector<double> m_NCC;
+	std::vector<double> m_n_NCC;
 };
