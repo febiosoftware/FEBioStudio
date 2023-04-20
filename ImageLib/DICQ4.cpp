@@ -28,7 +28,7 @@ namespace sitk = itk::simple;
 
 CDICQ4::CDICQ4(CDICMatching& match)
 	: m_match(match), m_subs_per_row(match.GetSubsPerRow()), m_subs_per_col(match.GetSubsPerCol()),
-	m_subSize(match.GetRefImage().GetSubSize()), m_match_centers(match.GetMatchResults()), m_ref_centers(match.GetRefCenterPoints())
+	m_subSize(match.GetRefImage().GetSubSize()), m_match_centers(match.GetMatchResults()), m_ref_centers(match.GetRefCenterPoints()), m_NCC(match.GetNCCVals())
 {
 	int temp = m_subs_per_row + 1;
 	m_stop = m_match_centers.size() - temp; //cannot do interp with bottom row 
@@ -74,12 +74,27 @@ void CDICQ4::ApplyQ4()
 				m_V_i.push_back(v_disps[l]);
 			}
 
+
+			std::vector<std::vector<double>> allStrains = GetStrainField(NODES, DISP_NODES);
+			std::vector<double> exx_pix = allStrains[0];
+			std::vector<double> eyy_pix = allStrains[1];
+			std::vector<double> exy_pix = allStrains[2];
+
+
+			for (int xx = 0; xx < exx_pix.size(); xx++)
+			{
+				//FILE << exx_pix[xx] << "," << eyy_pix[xx] << "," << exy_pix[xx] << "," << "\n";
+
+				m_EXX.push_back(exx_pix[xx]);
+				m_EYY.push_back(eyy_pix[xx]);
+				m_EXY.push_back(exy_pix[xx]);
+			}
+
 		}
 
 
 
 	}
-
 
 	m_U = m_U_i;
 	m_V = m_V_i;
@@ -553,20 +568,32 @@ void CDICQ4::GetNodeIndices()
 
 					std::vector<int> indices = findPoints(v, N);
 
-					double U = 0, V = 0;
+					double U = 0, V = 0, exx = 0, exy = 0, eyy = 0, ncc = 0;
 
 					for (int in = 0; in < indices.size(); in++)
 					{
+						exx += m_EXX[indices[in]];
+						exy += m_EXY[indices[in]];
+						eyy += m_EYY[indices[in]];
 						U += m_U[indices[in]];
 						V += m_V[indices[in]];
+						//ncc += m_NCC[indices[in]];
 					}
 
 					//average data for each nodal point
 					double avg_u = U / indices.size();
 					double avg_v = V / indices.size();
+					double avg_exx = exx / indices.size();
+					double avg_exy = exy / indices.size();
+					double avg_eyy = eyy / indices.size();
+					//double avg_ncc = ncc / indices.size();
 
 					m_n_U.push_back(avg_u);
 					m_n_V.push_back(avg_v);
+					m_n_EXX.push_back(avg_exx);
+					m_n_EXY.push_back(avg_exy);
+					m_n_EYY.push_back(avg_eyy);
+					//m_n_NCC.push_back(avg_ncc);
 
 				}
 
@@ -613,26 +640,42 @@ void CDICQ4::SortNodalPoints()
 	indices_second.insert(indices_second.begin(), indices_first.begin(), indices_first.end());
 
 	std::vector<vec2i> SORTED_PTs;
-	std::vector<double> S_U, S_V;
+	std::vector<double> S_U, S_V, S_EXX, S_EYY, S_EXY, S_NCC;
 
 	for (int f = 0; f < m_subs_per_row * 2.0; f++)
 	{
 		SORTED_PTs.push_back(m_NodalPositions[indices_second[f]]);
 		S_U.push_back(m_n_U[indices_second[f]]);
 		S_V.push_back(m_n_V[indices_second[f]]);
+		S_EXX.push_back(m_n_EXX[indices_second[f]]);
+		S_EYY.push_back(m_n_EYY[indices_second[f]]);
+		S_EXY.push_back(m_n_EXY[indices_second[f]]);
+		//S_NCC.push_back(m_n_NCC[indices_second[f]]);
 	}
 
 	m_NodalPositions.erase(m_NodalPositions.begin(), m_NodalPositions.begin() + (m_subs_per_row * 2.0));
 	m_n_U.erase(m_n_U.begin(), m_n_U.begin() + (m_subs_per_row * 2.0));
 	m_n_V.erase(m_n_V.begin(), m_n_V.begin() + (m_subs_per_row * 2.0));
+	m_n_EXX.erase(m_n_EXX.begin(), m_n_EXX.begin() + (m_subs_per_row * 2.0));
+	m_n_EYY.erase(m_n_EYY.begin(), m_n_EYY.begin() + (m_subs_per_row * 2.0));
+	m_n_EXY.erase(m_n_EXY.begin(), m_n_EXY.begin() + (m_subs_per_row * 2.0));
+	//m_n_NCC.erase(m_n_NCC.begin(), m_n_NCC.begin() + (m_subs_per_row * 2.0));
 
 	SORTED_PTs.insert(SORTED_PTs.end(), m_NodalPositions.begin(), m_NodalPositions.end());
 	S_U.insert(S_U.end(), m_n_U.begin(), m_n_U.end());
 	S_V.insert(S_V.end(), m_n_V.begin(), m_n_V.end());
+	S_EXX.insert(S_EXX.end(), m_n_EXX.begin(), m_n_EXX.end());
+	S_EYY.insert(S_EYY.end(), m_n_EYY.begin(), m_n_EYY.end());
+	S_EXY.insert(S_EXY.end(), m_n_EXY.begin(), m_n_EXY.end());
+	//S_NCC.insert(S_NCC.end(), m_n_NCC.begin(), m_n_NCC.end());
 
 	m_NodalPositions = SORTED_PTs;
 	m_n_U = S_U;
 	m_n_V = S_V;
+	m_n_EXX = S_EXX;
+	m_n_EYY = S_EYY;
+	m_n_EXY = S_EXY;
+	//m_n_NCC = S_NCC;
 
 }
 
@@ -722,5 +765,25 @@ void CDICQ4::WriteVTKFile()
 		VTKFile << m_n_U[d] << " " << m_n_V[d] << " " << 0 << "\n";
 	}
 
+	//VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
+	//VTKFile << "VECTORS strain float\n";
+
+
+	//for (int d = 0; d < m_n_U.size(); d++)
+	//{
+	//	VTKFile << 0.5*m_n_EXX[d] << " " << 0.5*m_n_EYY[d] << " " << 0 << "\n";
+	//}
+
+	//VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
+	//VTKFile << "VECTORS NCC float\n";
+
+	//for (int d; d < m_n_NCC.size(); d++)
+	//{
+	//	VTKFile << m_n_NCC[d]<< " " << 0 << " " << 0 << "\n";
+	//}
+
+
 	VTKFile.close();
 }
+
+
