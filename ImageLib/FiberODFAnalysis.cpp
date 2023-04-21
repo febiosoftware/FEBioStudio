@@ -156,19 +156,44 @@ void CFiberODFAnalysis::run()
 
     auto size = img.GetSize();
 
-    unsigned int xDivSize = size[0]/xDiv;
-    unsigned int yDivSize = size[1]/yDiv;
-    unsigned int zDivSize = size[2]/zDiv;
+    double targetOverlap = 0.2;
+    double xOverlap = 0;
+    double yOverlap = 0;
+    double zOverlap = 0;
+    int minppd = 0;
+
+    if(xDiv > 1 || yDiv > 1 || zDiv > 1)
+    {
+        int xppd = size[0]/(xDiv-(xDiv-1)*targetOverlap);
+        int yppd = size[1]/(yDiv-(yDiv-1)*targetOverlap);
+        int zppd = size[2]/(zDiv-(zDiv-1)*targetOverlap);
+
+        minppd = std::min({xppd, yppd, zppd});
+
+        xOverlap = ((int)size[0] - xDiv*minppd)/(double)(-(xDiv-1)*minppd);
+        yOverlap = ((int)size[1] - yDiv*minppd)/(double)(-(yDiv-1)*minppd);
+        zOverlap = ((int)size[2] - zDiv*minppd)/(double)(-(zDiv-1)*minppd);
+
+    }
+    else
+    {
+        minppd = std::min({size[0], size[1], size[2]});
+    }
+
+    // unsigned int xDivSize = size[0]/xDiv;
+    // unsigned int yDivSize = size[1]/yDiv;
+    // unsigned int zDivSize = size[2]/zDiv;
+    unsigned int xDivSize = minppd;
+    unsigned int yDivSize = minppd;
+    unsigned int zDivSize = minppd;
+    
 
     auto spacing = img.GetSpacing();
     auto origin = img.GetOrigin();
 
-    std::cout << "Origin: " << origin[0] << ", " << origin[1] << ", " << origin[2] << std::endl;
-    std::cout << "Size: " << size[0]*spacing[0] << ", " << size[1]*spacing[1] << ", " << size[2]*spacing[2] << std::endl;
-
-    double xDivSizePhys = size[0]*spacing[0]/xDiv;
-    double yDivSizePhys = size[1]*spacing[1]/yDiv;
-    double zDivSizePhys = size[2]*spacing[2]/zDiv;
+    double xDivSizePhys = minppd*spacing[0];
+    double yDivSizePhys = minppd*spacing[1];
+    double zDivSizePhys = minppd*spacing[2];
     double radius = std::min({xDivSizePhys, yDivSizePhys, zDivSizePhys})*0.375;
 
     sitk::ExtractImageFilter extractFilter;
@@ -216,7 +241,8 @@ void CFiberODFAnalysis::run()
 		setCurrentTask(m_task.c_str(), m_progress);
 
 		// extract the sub-image
-		extractFilter.SetIndex(std::vector<int> {(int)xDivSize* currentX, (int)yDivSize* currentY, (int)zDivSize* currentZ});
+		extractFilter.SetIndex(std::vector<int> {(int)(xDivSize* currentX * (1- xOverlap)), 
+            (int)(yDivSize* currentY * (1- yOverlap)), (int)(zDivSize* currentZ * (1- zOverlap))});
 		sitk::Image current = extractFilter.Execute(img);
 
 		// process it
@@ -225,7 +251,7 @@ void CFiberODFAnalysis::run()
 		// allocated new odf
 		CODF* odf = new CODF;
 		odf->m_sphHarmonics.resize(C->columns());
-		odf->m_position = vec3d(size[0] * spacing[0] / (xDiv * 2) * (currentX * 2 + 1) + origin[0], size[1] * spacing[1] / (yDiv * 2) * (currentY * 2 + 1) + origin[1], size[2] * spacing[2] / (zDiv * 2) * (currentZ * 2 + 1) + origin[2]);
+		odf->m_position = vec3d(xDivSizePhys*(1-xOverlap)/2 * (currentX * 2 + 1) + origin[0], yDivSizePhys*(1-yOverlap)/2 * (currentY * 2 + 1) + origin[1], zDivSizePhys*(1-zOverlap)/2 * (currentZ * 2 + 1) + origin[2]);
 		odf->m_radius = radius;
 		m_ODFs.push_back(odf);
 		odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
