@@ -170,9 +170,10 @@ void CFiberODFAnalysis::run()
 
         minppd = std::min({xppd, yppd, zppd});
 
-        xOverlap = ((int)size[0] - xDiv*minppd)/(double)(-(xDiv-1)*minppd);
-        yOverlap = ((int)size[1] - yDiv*minppd)/(double)(-(yDiv-1)*minppd);
-        zOverlap = ((int)size[2] - zDiv*minppd)/(double)(-(zDiv-1)*minppd);
+
+        if(xDiv != 1) xOverlap = ((int)size[0] - xDiv*minppd)/(double)(-(xDiv-1)*minppd);
+        if(yDiv != 1) yOverlap = ((int)size[1] - yDiv*minppd)/(double)(-(yDiv-1)*minppd);
+        if(zDiv != 1) zOverlap = ((int)size[2] - zDiv*minppd)/(double)(-(zDiv-1)*minppd);
 
     }
     else
