@@ -94,20 +94,10 @@ private slots:
     void on_copyToMatButton_pressed();
     void on_saveSphHarm_triggered();
     void on_saveODFs_triggered();
+    void on_saveStats_triggered();
 
 private:
     void findMaterials(FSMaterial* mat, std::string name, std::vector<std::pair<std::string,FSMaterial*>>& materials);
-    // void butterworthFilter(sitk::Image& img);
-    // sitk::Image powerSpectrum(sitk::Image& img);
-    // void fftRadialFilter(sitk::Image& img);
-    // void reduceAmp(sitk::Image& img, std::vector<double>* reduced);
-
-    // std::unique_ptr<matrix> complLapBel_Coef();
-    // double GFA(std::vector<double> vals);
-
-    // GLMesh* buildMesh();
-
-    // void reducePoints(std::vector<double>& odf);
 
 private:
     CMainWindow* m_wnd;

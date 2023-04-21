@@ -62,6 +62,7 @@ SOFTWARE.*/
 #include <FEAMR/spherePoints.h>
 #include "DlgStartThread.h"
 #include "PropertyList.h"
+#include <XML/XMLWriter.h>
 
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
@@ -257,10 +258,11 @@ public:
     QWidget* sphHarmTab;
     QTableWidget* sphHarmTable;
     QPushButton* copyToMatButton;
-    QPushButton* saveToCSVButton;
+    QPushButton* saveToXMLButton;
     QMenu* saveMenu;
     QAction* saveSphHarm;
     QAction* saveODFs;
+    QAction* saveStats;
 
 	// analysis tab widgets
 	QLineEdit* pos;
@@ -321,13 +323,14 @@ public:
         buttonLayout->setContentsMargins(0,0,0,0);
 
         buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material"));
-        buttonLayout->addWidget(saveToCSVButton = new QPushButton("Save to CSV..."));
+        buttonLayout->addWidget(saveToXMLButton = new QPushButton("Save to CSV..."));
         
         saveMenu = new QMenu;
         saveMenu->addAction(saveODFs = new QAction("ODFs"));
         saveMenu->addAction(saveSphHarm = new QAction("Spherical Harmonics"));
+        saveMenu->addAction(saveStats = new QAction("Statistics"));
 
-        saveToCSVButton->setMenu(saveMenu);
+        saveToXMLButton->setMenu(saveMenu);
 
         sphHarmTabLayout->addLayout(buttonLayout);
 
@@ -458,6 +461,7 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
     connect(ui->copyToMatButton, &QPushButton::pressed, this, &CFiberODFWidget::on_copyToMatButton_pressed);
     connect(ui->saveODFs, &QAction::triggered, this, &CFiberODFWidget::on_saveODFs_triggered);
     connect(ui->saveSphHarm, &QAction::triggered, this, &CFiberODFWidget::on_saveSphHarm_triggered);
+    connect(ui->saveStats, &QAction::triggered, this, &CFiberODFWidget::on_saveStats_triggered);
 }
 
 void CFiberODFWidget::setAnalysis(CFiberODFAnalysis* analysis)
@@ -673,48 +677,175 @@ void CFiberODFWidget::on_saveSphHarm_triggered()
 {
     if(!m_analysis || m_analysis->ODFs() == 0) return;
 
-    QString filename = QFileDialog::getSaveFileName(m_wnd, "Save CSV", QString(), "CSV (*.csv)");
+    QString filename = QFileDialog::getSaveFileName(m_wnd, "Save XML", QString(), "XML (*.xml)");
 
-    std::ofstream stream;
-    stream.open(filename.toStdString());
+    XMLWriter writer;
+    if(!writer.open(filename.toStdString().c_str())) return;
+
+    XMLElement root("sphericalHarmonics");
+
+    writer.add_branch(root);
+
+    std::vector<double> position(3,0);
 
     for(int i = 0; i < m_analysis->ODFs(); i++)
     {
         CODF* current = m_analysis->GetODF(i);
 
-        stream << current->m_position.x << ", " << current->m_position.y << ", " << current->m_position.z << "\n";
+        XMLElement el("sphHarm");
+        writer.add_branch(el);
 
-        for(int j = 0; j < current->m_sphHarmonics.size() - 1; j++)
-        {
-            stream << current->m_sphHarmonics[j] << ", ";
-        }
-        stream << current->m_sphHarmonics.back() << "\n";
+        XMLElement pos("position");
+        position[0] = current->m_position.x;
+        position[1] = current->m_position.y;
+        position[2] = current->m_position.z;
+        pos.value(position);
+        writer.add_leaf(pos);
+
+        XMLElement sphHarm("coefficients");
+        sphHarm.value(current->m_sphHarmonics);
+        writer.add_leaf(sphHarm);
+
+        writer.close_branch();
     }
 
-    stream.close();
+    writer.close_branch();
+
+    writer.close();
 }
 
 void CFiberODFWidget::on_saveODFs_triggered()
 {
     if(!m_analysis || m_analysis->ODFs() == 0) return;
 
-    QString filename = QFileDialog::getSaveFileName(m_wnd, "Save CSV", QString(), "CSV (*.csv)");
+    QString filename = QFileDialog::getSaveFileName(m_wnd, "Save XML", QString(), "XML (*.xml)");
 
-    std::ofstream stream;
-    stream.open(filename.toStdString());
+    XMLWriter writer;
+    if(!writer.open(filename.toStdString().c_str())) return;
+
+    XMLElement root("ODFs");
+    writer.add_branch(root);
+
+    XMLElement nodes("Nodes");
+    writer.add_branch(nodes);
+
+    std::vector<double> position(3,0);
+
+    for(int i = 0; i < NPTS; i++)
+    {
+        XMLElement current("node");
+        position[0] = XCOORDS[i];
+        position[1] = YCOORDS[i];
+        position[2] = ZCOORDS[i];
+        current.value(position);
+        writer.add_leaf(current);
+    }
+
+    writer.close_branch();
 
     for(int i = 0; i < m_analysis->ODFs(); i++)
     {
         CODF* current = m_analysis->GetODF(i);
 
-        stream << current->m_position.x << ", " << current->m_position.y << ", " << current->m_position.z << "\n";
-        
-        for(int j = 0; j < current->m_odf.size() - 1; j++)
-        {
-            stream << current->m_odf[j] << ", ";
-        }
-        stream << current->m_odf.back() << "\n";
+        XMLElement el("odf");
+        writer.add_branch(el);
+
+        XMLElement pos("position");
+        position[0] = current->m_position.x;
+        position[1] = current->m_position.y;
+        position[2] = current->m_position.z;
+        pos.value(position);
+        writer.add_leaf(pos);
+
+        XMLElement vals("values");
+        vals.value(current->m_odf);
+        writer.add_leaf(vals);
+
+        writer.close_branch();
     }
 
-    stream.close();
+    writer.close_branch();
+
+    writer.close();
+}
+
+void CFiberODFWidget::on_saveStats_triggered()
+{
+    if(!m_analysis || m_analysis->ODFs() == 0) return;
+
+    QString filename = QFileDialog::getSaveFileName(m_wnd, "Save XML", QString(), "XML (*.xml)");
+
+    XMLWriter writer;
+    if(!writer.open(filename.toStdString().c_str())) return;
+
+    XMLElement root("odfStats");
+
+    writer.add_branch(root);
+
+    std::vector<double> position(3,0);
+    std::vector<double> mDir(3,0);
+    std::vector<double> alpha(3,0);
+    std::vector<double> beta(3,0);
+
+    for(int i = 0; i < m_analysis->ODFs(); i++)
+    {
+        CODF* current = m_analysis->GetODF(i);
+
+        XMLElement el("stats");
+        writer.add_branch(el);
+
+        XMLElement pos("position");
+        position[0] = current->m_position.x;
+        position[1] = current->m_position.y;
+        position[2] = current->m_position.z;
+        pos.value(position);
+        writer.add_leaf(pos);
+
+        XMLElement meanDir("meanDir");
+        mDir[0] = current->m_meanDir.x;
+        mDir[1] = current->m_meanDir.y;
+        mDir[2] = current->m_meanDir.z;
+        meanDir.value(mDir);
+        writer.add_leaf(meanDir);
+
+        XMLElement FA("fracAnisotropy");
+        FA.value(current->m_FA);
+        writer.add_leaf(FA);
+
+        XMLElement efd("EFD_GFA");
+        efd.value(current->m_EFD_GFA);
+        writer.add_leaf(efd);
+
+        XMLElement efdFrd("EFD_FRD");
+        efdFrd.value(current->m_EFD_FRD);
+        writer.add_leaf(efdFrd);
+
+        XMLElement alphaEl("EFDaplha");
+        alpha[0] = current->m_EFD_alpha.x;
+        alpha[1] = current->m_EFD_alpha.y;
+        alpha[2] = current->m_EFD_alpha.z;
+        alphaEl.value(alpha);
+        writer.add_leaf(alphaEl);
+
+        XMLElement vm3("VM3_GFA");
+        vm3.value(current->m_VM3_GFA);
+        writer.add_leaf(vm3);
+
+        XMLElement vm3Frd("VM3");
+        vm3Frd.value(current->m_VM3_FRD);
+        writer.add_leaf(vm3Frd);
+
+        XMLElement betaEl("VM3beta");
+        beta[0] = current->m_VM3_beta.x;
+        beta[1] = current->m_VM3_beta.y;
+        beta[2] = current->m_VM3_beta.z;
+        betaEl.value(beta);
+        writer.add_leaf(betaEl);
+
+        writer.close_branch();
+    }
+
+    writer.close_branch();
+
+    writer.close();
 }
