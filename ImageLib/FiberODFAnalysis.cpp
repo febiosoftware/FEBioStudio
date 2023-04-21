@@ -252,7 +252,7 @@ void CFiberODFAnalysis::run()
 		// allocated new odf
 		CODF* odf = new CODF;
 		odf->m_sphHarmonics.resize(C->columns());
-		odf->m_position = vec3d(xDivSizePhys*(1-xOverlap)/2 * (currentX * 2 + 1) + origin[0], yDivSizePhys*(1-yOverlap)/2 * (currentY * 2 + 1) + origin[1], zDivSizePhys*(1-zOverlap)/2 * (currentZ * 2 + 1) + origin[2]);
+		odf->m_position = vec3d(xDivSizePhys/2 * (currentX * 2 + 1) - xDivSizePhys*xOverlap*currentX + origin[0], yDivSizePhys/2 * (currentY * 2 + 1)  - yDivSizePhys*yOverlap*currentY + origin[1], zDivSizePhys/2 * (currentZ * 2 + 1) - zDivSizePhys*zOverlap*currentZ + origin[2]);
 		odf->m_radius = radius;
 		m_ODFs.push_back(odf);
 		odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
