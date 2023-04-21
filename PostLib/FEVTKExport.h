@@ -39,6 +39,7 @@ public:
     bool Save(FEPostModel& fem, const char* szfile) override;
 
 	void ExportAllStates(bool b);
+	void ExportSelectedElementsOnly(bool b);
 
 private:
 	bool WriteState(const char* szname, FEState* ps);
@@ -55,8 +56,11 @@ private:
 
 private:
 	bool	m_bwriteAllStates;	// write all states
+	bool	m_bselElemsOnly;	// only output selected elements
 
 private:
 	FILE*	m_fp;
+	int		m_nodes;
+	int		m_elems;
 };
 }
