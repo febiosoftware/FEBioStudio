@@ -53,6 +53,7 @@ private:
 	std::vector<vec2i> m_match_points;
 	std::vector<vec2i> m_ref_center_points;
 	int m_subSize;
+	int m_subSpacing;
 	std::vector<CImageSITK> m_movingImages;
 	CImageSITK m_fixed_SITK_img;
 	CImageSITK m_moving_mask;

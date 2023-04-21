@@ -27,8 +27,8 @@ SOFTWARE.*/
 namespace sitk = itk::simple;
 
 
-CDICImage::CDICImage(CImageSITK* image, double window, double sigma, int subSize, double searchAreaRatio)
-	: m_image(image), m_windowSize(window), m_sigma(sigma), m_subSize(subSize),
+CDICImage::CDICImage(CImageSITK* image, double window, double sigma, int subSize, int subSpacing, double searchAreaRatio)
+	: m_image(image), m_windowSize(window), m_sigma(sigma), m_subSize(subSize), m_subSpacing(subSpacing),
 	m_searchAreaRatio(searchAreaRatio)
 {
 

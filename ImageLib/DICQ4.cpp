@@ -31,8 +31,8 @@ CDICQ4::CDICQ4(CDICMatching& match)
 	m_subSize(match.GetRefImage().GetSubSize()), m_match_centers(match.GetMatchResults()), m_ref_centers(match.GetRefCenterPoints()), m_NCC(match.GetNCCVals())
 {
 	int temp = m_subs_per_row + 1;
-	m_stop = m_match_centers.size() - temp; //cannot do interp with bottom row 
-
+	//m_stop = m_match_centers.size() - temp; //cannot do interp with bottom row 
+	m_stop = m_ref_centers.size();
 	ApplyQ4(); //apply bilinear quadratic (Q4) shape functions to matching results
 	WriteVTKFile(); //write results to vtk file for vis.
 
@@ -106,12 +106,28 @@ void CDICQ4::ApplyQ4()
 std::vector<vec2i> CDICQ4::GetNodesQ4(double ind)
 {
 	std::vector<vec2i> nodes;
-
-	nodes.push_back(m_ref_centers[ind]);
-	nodes.push_back(m_ref_centers[ind + 1]);
-	nodes.push_back(m_ref_centers[ind + m_subs_per_row]);
-	nodes.push_back(m_ref_centers[ind + m_subs_per_row + 1]);
-
+	if (ind < m_ref_centers.size() - m_subs_per_row)
+	{
+		vec2i p0 = m_ref_centers[ind];
+		nodes.push_back(p0);
+		vec2i p1 = m_ref_centers[ind + 1];
+		nodes.push_back(p1);
+		vec2i p2 = m_ref_centers[m_subs_per_row + ind];
+		nodes.push_back(p2);
+		vec2i p3 = m_ref_centers[m_subs_per_row + ind + 1];
+		nodes.push_back(p3);
+	}
+	else
+	{
+		vec2i p0 = m_ref_centers[ind];
+		nodes.push_back(p0);
+		vec2i p1 = m_ref_centers[ind + 1];
+		nodes.push_back(p1);
+		vec2i p2 = m_ref_centers[ind - m_subs_per_row];
+		nodes.push_back(p2);
+		vec2i p3 = m_ref_centers[ind + 1 - m_subs_per_row];
+		nodes.push_back(p3);
+	}
 	return nodes;
 }
 
@@ -120,11 +136,28 @@ std::vector<vec2i> CDICQ4::GetDispNodesQ4(double ind)
 {
 	std::vector<vec2i> dispNodes;
 
-	dispNodes.push_back(m_match_centers[ind]);
-	dispNodes.push_back(m_match_centers[ind + 1]);
-	dispNodes.push_back(m_match_centers[ind + m_subs_per_row]);
-	dispNodes.push_back(m_match_centers[ind + m_subs_per_row + 1]);
-
+	if (ind < m_match_centers.size() - m_subs_per_row)
+	{
+		vec2i p0 = m_match_centers[ind];
+		dispNodes.push_back(p0);
+		vec2i p1 = m_match_centers[ind + 1];
+		dispNodes.push_back(p1);
+		vec2i p2 = m_match_centers[m_subs_per_row + ind];
+		dispNodes.push_back(p2);
+		vec2i p3 = m_match_centers[m_subs_per_row + ind + 1];
+		dispNodes.push_back(p3);
+	}
+	else
+	{
+		vec2i p0 = m_match_centers[ind];
+		dispNodes.push_back(p0);
+		vec2i p1 = m_match_centers[ind + 1];
+		dispNodes.push_back(p1);
+		vec2i p2 = m_match_centers[ind - m_subs_per_row];
+		dispNodes.push_back(p2);
+		vec2i p3 = m_match_centers[ind + 1 - m_subs_per_row];
+		dispNodes.push_back(p3);
+	}
 	return dispNodes;
 }
 
@@ -567,6 +600,13 @@ void CDICQ4::GetNodeIndices()
 					std::vector<vec2i> const& v = m_globalCoords;
 
 					std::vector<int> indices = findPoints(v, N);
+
+					if (indices.size() == 0)
+					{
+						m_n_U.push_back(0);
+						m_n_V.push_back(0);
+						continue;
+					}
 
 					double U = 0, V = 0, exx = 0, exy = 0, eyy = 0, ncc = 0;
 

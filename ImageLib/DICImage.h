@@ -30,11 +30,12 @@ class CDICImage;
 class CDICImage
 {
 public:
-    CDICImage(CImageSITK* image, double window = 1.0, double sigma = 0.4, int subSize = 51, double searchAreaRatio = 7.0);
+    CDICImage(CImageSITK* image, double window = 1.0, double sigma = 0.4, int subSize = 51, int subSpacing = 0, double searchAreaRatio = 7.0);
 
     CImageSITK* GetSITKImage() { return m_image; }
 
     int GetSubSize() { return m_subSize; }
+    int GetSubSpacing() { return m_subSpacing; }
     double GetSearchAreaRatio() { return m_searchAreaRatio; }
     double GetWindowSize() { return m_windowSize; }
     double GetSigma() { return m_sigma; }
@@ -47,6 +48,7 @@ private:
     double m_windowSize; // used for gaussian filter
     double m_sigma; // used for gaussian filter
     int m_subSize; // size in pixels
+    int m_subSpacing;
     double m_searchAreaRatio; // used in template matching. creates a mask around the inital location to prevent searching the whole image
 };
 
