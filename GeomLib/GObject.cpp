@@ -1025,22 +1025,6 @@ void GObject::Save(OArchive &ar)
 		ar.EndChunk();
 	}
 
-	// save the mesher object
-	if (GetFEMesher())
-	{
-		ar.BeginChunk(CID_OBJ_FEMESHER);
-		{
-			int ntype = 0;
-//			if (dynamic_cast<FETetGenMesher*>(GetFEMesher())) ntype = 1;
-			ar.BeginChunk(ntype);
-			{
-				GetFEMesher()->Save(ar);
-			}
-			ar.EndChunk();
-		}
-		ar.EndChunk();
-	}
-
 	// save the mesh
 	if (imp->m_pmesh && (imp->m_saveFlag & SAVE_MESH))
 	{
