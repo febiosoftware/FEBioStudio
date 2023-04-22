@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QGroupBox>
 #include <QFileDialog>
+#include <QSplitter>
 #include "PropertyList.h"
 #include "PropertyListForm.h"
 #include "PropertyListView.h"
@@ -945,13 +946,14 @@ public:
 		
 		list->setResizeMode(QListView::ResizeMode::Adjust);
 
-		QHBoxLayout* hl = new QHBoxLayout;
-		hl->setContentsMargins(0,0,0,0);
-		hl->addWidget(list);
-		hl->addWidget(stack);
-		
+		QSplitter* split = new QSplitter;
+		split->addWidget(list);
+		split->addWidget(stack);
+		split->setStretchFactor(0, 1);
+		split->setStretchFactor(1, 2);
+
 		QVBoxLayout* pg = new QVBoxLayout(pwnd);
-		pg->addLayout(hl);
+		pg->addWidget(split);
 
 		QHBoxLayout* bl = new QHBoxLayout;
 		bl->setContentsMargins(0,0,0,0);
