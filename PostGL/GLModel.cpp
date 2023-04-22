@@ -2287,7 +2287,7 @@ void CGLModel::RenderObjects(CGLContext& rc)
 	for (int i = 0; i < fem->LineObjects(); ++i)
 	{
 		Post::FEPostModel::LineObject & ob = *fem->GetLineObject(i);
-		if (ob.IsActive())
+		if (ob.IsActive() && renderRJ)
 		{
 			glPushMatrix();
 			glx::translate(ob.m_pos);

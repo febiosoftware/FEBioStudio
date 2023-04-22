@@ -96,7 +96,7 @@ struct GLTAG
 	char	sztag[64];	// name of tag
 	float	wx, wy;		// window coordinates for tag
 	vec3d	r;			// world coordinates of tag
-	int		ntag;		// tag value
+	GLColor	c;			// tag color
 };
 
 //-----------------------------------------------------------------------------
