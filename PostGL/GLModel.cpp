@@ -75,8 +75,6 @@ CGLModel::CGLModel(FEPostModel* ps)
 
 	m_doZSorting = true;
 
-	m_brenderPlotObjects = true;
-
 	m_renderInnerSurface = true;
 
 	m_bshowMesh = true;
@@ -567,7 +565,7 @@ void CGLModel::Render(CGLContext& rc)
 	RenderDecorations();
 
 	// render all the objects
-	if (m_brenderPlotObjects) RenderObjects(rc);
+	RenderObjects(rc);
 }
 
 //-----------------------------------------------------------------------------
@@ -2254,6 +2252,9 @@ void CGLModel::RenderObjects(CGLContext& rc)
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
 
+	bool renderRB = rc.m_settings.m_brigid;
+	bool renderRJ = rc.m_settings.m_bjoint;
+
 	for (int i = 0; i < fem->PointObjects(); ++i)
 	{
 		Post::FEPostModel::PointObject & ob = *fem->GetPointObject(i);
@@ -2269,15 +2270,15 @@ void CGLModel::RenderObjects(CGLContext& rc)
 			glColor3ub(c.r, c.g, c.b);
 			switch (ob.m_tag)
 			{
-			case 1: glx::renderRigidBody(R); break;
-			case 2: glx::renderJoint(R); break;
-			case 3: glx::renderJoint(R); break;
-			case 4: glx::renderPrismaticJoint(R); break;
-			case 5: glx::renderRevoluteJoint(R); break;
-			case 6: glx::renderCylindricalJoint(R); break;
-			case 7: glx::renderPlanarJoint(R); break;
+			case 1: if (renderRB) glx::renderRigidBody(R); break;
+			case 2: if (renderRJ) glx::renderJoint(R); break;
+			case 3: if (renderRJ) glx::renderJoint(R); break;
+			case 4: if (renderRJ) glx::renderPrismaticJoint(R); break;
+			case 5: if (renderRJ) glx::renderRevoluteJoint(R); break;
+			case 6: if (renderRJ) glx::renderCylindricalJoint(R); break;
+			case 7: if (renderRJ) glx::renderPlanarJoint(R); break;
 			default:
-				glx::renderAxis(R);
+				if (renderRB) glx::renderAxis(R);
 			}
 			glPopMatrix();
 		}
