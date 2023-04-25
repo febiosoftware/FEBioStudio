@@ -93,8 +93,30 @@ bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
         {
             throw std::runtime_error("FEBio Studio is not currently capable of reading multichannel images.");
         }
-        
-        
+    }
+
+    // We don't like 2D images
+    if(m_sitkImage.GetDepth() == 0);
+    {
+        sitk::Image temp(m_sitkImage.GetWidth(), m_sitkImage.GetHeight(), 1, sitk::sitkUInt8);
+
+        Byte* tempBytes = temp.GetBufferAsUInt8();
+        Byte* imgBytes = m_sitkImage.GetBufferAsUInt8();
+
+        for(int i = 0; i < m_sitkImage.GetWidth()*m_sitkImage.GetHeight(); i++)
+        {
+            tempBytes[i] = imgBytes[i];
+        }
+
+        auto spacing = m_sitkImage.GetSpacing();
+        spacing.push_back(1);
+        temp.SetSpacing(spacing);
+
+        auto origin = m_sitkImage.GetOrigin();
+        origin.push_back(0);
+        temp.SetOrigin(origin);
+
+        m_sitkImage = temp;
     }
 
     FinalizeImage();

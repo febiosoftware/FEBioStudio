@@ -140,6 +140,8 @@ public:
     CDlgDIC(Post::CImageModel* model);
     ~CDlgDIC();
 
+    QPixmap* GetPixmap() {return m_maskPix;}
+
 public slots:
     void inputDone();
 

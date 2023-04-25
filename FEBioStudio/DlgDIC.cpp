@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QImage>
+#include <QDialogButtonBox>
 #include <PostLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <ImageLib/Image.h>
@@ -297,11 +298,11 @@ CDrawROI::CDrawROI(Post::CImageModel* model)
     setMinimumSize(300,300);
 
     CImage imgSlice;
-    m_model->Get3DImage()->GetSliceX(imgSlice, 256);
+    m_model->Get3DImage()->GetSliceZ(imgSlice, 0);
 
     m_slice = QPixmap::fromImage(QImage(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8)).transformed(QTransform().scale(1,-1));
 
-    resize(300,300);
+    // resize(300,300);
 
 }
 
@@ -356,21 +357,23 @@ void CDrawROI::startNewCircleNeg()
 
 void CDrawROI::resizeEvent(QResizeEvent* event)
 {
+    QWidget::resizeEvent(event);
+
     QSize newSize = event->size();
     BOX box = m_model->GetBoundingBox();
 
     float xScale = box.Height()/newSize.width();
-    float yScale = box.Depth()/newSize.height();
+    float yScale = box.Width()/newSize.height();
 
     if(xScale > yScale)
     {
-        m_scale = box.Depth()/box.Height();
+        m_scale = box.Width()/box.Height();
 
         m_bounds = QRect(0,0,newSize.width(), newSize.width()*m_scale);
     }
     else
     {
-        m_scale = box.Height()/box.Depth();
+        m_scale = box.Height()/box.Width();
 
         m_bounds = QRect(0,0,newSize.height()*m_scale, newSize.height());
     }
@@ -485,10 +488,12 @@ QPointF CDrawROI::ImageToWidgetCoords(QPointF& imagePoint)
 CDlgDIC::CDlgDIC(Post::CImageModel* model)
     : m_model(model)
 {
-    QHBoxLayout* layout = new QHBoxLayout;
+    QVBoxLayout* layout = new QVBoxLayout;
+
+    QHBoxLayout* hLayout = new QHBoxLayout;
 
     drawROI = new CDrawROI(model);
-    layout->addWidget(drawROI);
+    hLayout->addWidget(drawROI);
 
     QVBoxLayout* buttonLayout = new QVBoxLayout;
 
@@ -516,13 +521,21 @@ CDlgDIC::CDlgDIC(Post::CImageModel* model)
 
     buttonLayout->addWidget(newCircleNeg);
 
-    layout->addLayout(buttonLayout);
+    hLayout->addLayout(buttonLayout);
 
-    layout->addWidget(m_mask = new QGraphicsView);
+    hLayout->addWidget(m_mask = new QGraphicsView);
+
+    layout->addLayout(hLayout);
+    
+
+    QDialogButtonBox* box = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+    layout->addWidget(box);
 
     setLayout(layout);
 
     connect(drawROI, &CDrawROI::inputDone, this, &CDlgDIC::inputDone);
+    connect(box, &QDialogButtonBox::accepted, this, &QDialog::accept);
+    connect(box, &QDialogButtonBox::rejected, this, &QDialog::reject);
 
     m_maskPix = new QPixmap(drawROI->PixmapSize());
 }

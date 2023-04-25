@@ -39,5 +39,4 @@ public:
 
 private:
     CMainWindow* m_wnd;
-    int    m_img1, m_img2;
 };

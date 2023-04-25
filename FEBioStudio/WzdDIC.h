@@ -24,36 +24,40 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "DICTool.h"
-#include "MainWindow.h"
-#include "ModelDocument.h"
-#include "WzdDIC.h"
+#include <QWizard>
 
-#include <ImageLib/ImageSITK.h>
-#include <ImageLib/DICImage.h>
-#include <ImageLib/DICMatching.h>
-#include <ImageLib/DICQ4.h>
+class CMainWindow;
 
-CDICTool::CDICTool(CMainWindow* wnd) : CBasicTool(wnd, "DIC", HAS_APPLY_BUTTON), m_wnd(wnd)
+namespace Ui
 {
-    SetApplyButtonText("Run");
+    class CWzdDIC;
 }
 
-bool CDICTool::OnApply()
+class CWzdDIC : public QWizard
 {
-    // CDICImage refImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img1)->Get3DImage()));
-    // CDICImage defImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img2)->Get3DImage()));
+    Q_OBJECT
 
-    // CDICMatching match(refImg, defImg, 1);
+public:
+    CWzdDIC(CMainWindow* wnd);
+    ~CWzdDIC();
 
-    // CDICQ4 interp(match);
+protected:
+    bool validateCurrentPage() override;
+    void initializePage(int id) override;
 
-    // return true;
+public slots:
+    void on_referenceSelection_changed(int i);
+    void on_deformedSelection_changed(int i);
 
-    CWzdDIC wzd(m_wnd);
+    void on_divisions_changed();
+    
+    void on_clearMask_clicked();
+    void on_loadMask_clicked();
+    void on_drawMask_clicked();
 
-    wzd.exec();
 
-    return true;
 
-}
+private:
+    Ui::CWzdDIC* ui;
+
+};
