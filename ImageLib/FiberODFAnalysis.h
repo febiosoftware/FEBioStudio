@@ -49,6 +49,7 @@ public:
 	GMesh m_mesh;
 	GMesh m_remesh;
 	double m_radius;
+    double m_meanIntensity;
 
 	vector<double>	newODF;
 	vector<vec3d>	remeshCoord;
@@ -63,14 +64,13 @@ public:
 
 	vec3d	m_meanDir;	// mean direction
 	double	m_FA;		// fractional anisotropy
+    double	m_GFA;		// fractional anisotropy
 	vector<double>	m_EFD_ODF;	// The EDF ODF
 	vec3d	m_EFD_alpha;	// alpha values of EFD fit
-	double	m_EFD_GFA;			// generalized fractional anisotropy
 	double	m_EFD_FRD;			// Fisher-Rao distance
 
 	vector<double>	m_VM3_ODF;	// The EDF ODF
 	vec3d	m_VM3_beta;			// beta values of EFD fit
-	double	m_VM3_GFA;			// generalized fractional anisotropy
 	double	m_VM3_FRD;			// Fisher-Rao distance
 };
 
@@ -147,6 +147,7 @@ private:
     double m_lengthScale;
     double m_hausd;
     double m_grad;
+    double m_overlapFraction;
 
 	// overall stats
 	double	m_FAmin, m_FAmax;	// min, max range of FA

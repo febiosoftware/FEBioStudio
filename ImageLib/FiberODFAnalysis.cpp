@@ -61,11 +61,11 @@ using std::complex;
 enum { 
 	ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, 
 	SHOW_MESH, SHOW_SELBOX, COLOR_MODE,
-	DIVS, RANGE, USERMIN, USERMAX
+	DIVS, RANGE, USERMIN, USERMAX, OVERLAP
 };
 
 //==================================================================
-CODF::CODF() : m_odf(NPTS, 0.0) 
+CODF::CODF() : m_odf(NPTS, 0.0), m_meanIntensity(0)
 {
 	m_el[0] = m_el[1] = m_el[2] = 1.0;
 	m_ev[0] = vec3d(1, 0, 0);
@@ -83,6 +83,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	ss << "Fiber ODF Analysis" << n++;
 	SetName(ss.str());
 
+    m_overlapFraction = 0.2;
 	m_nshowMesh = 0;
 	m_bshowRadial = false;
 	m_nshowSelectionBox = true;
@@ -111,6 +112,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	AddIntParam(m_rangeOption, "Range")->SetEnumNames("automatic\0user\0");
 	AddDoubleParam(m_userMin, "User min");
 	AddDoubleParam(m_userMax, "User max");
+    AddDoubleParam(m_overlapFraction, "Overlap Fraction");
 
 	m_tex.SetDivisions(10);
 	m_tex.SetSmooth(true);
@@ -139,6 +141,29 @@ void CFiberODFAnalysis::clear()
     m_ODFs.clear();
 }
 
+double rms(const vector<double>& x)
+{
+	if (x.empty()) return 0.0;
+	double rms = 0.0;
+	for (double xi : x) rms += xi * xi;
+	rms = sqrt(rms / (double)x.size());
+	return rms;
+}
+
+double stddev(const vector<double>& x)
+{
+	if (x.empty()) return 0.0;
+	double mu = 0.0;
+	size_t n = x.size();
+	for (size_t i = 0; i < n; ++i) mu += x[i];
+	mu /= (double)x.size();
+
+	double sum = 0.0;
+	for (size_t i = 0; i < n; ++i) sum += (x[i] - mu) * (x[i] - mu);
+	sum = sqrt(sum / ((double)n - 1.0));
+	return sum;
+}
+
 void CFiberODFAnalysis::run()
 {
     clear();
@@ -156,7 +181,6 @@ void CFiberODFAnalysis::run()
 
     auto size = img.GetSize();
 
-    double targetOverlap = 0.2;
     double xOverlap = 0;
     double yOverlap = 0;
     double zOverlap = 0;
@@ -164,11 +188,11 @@ void CFiberODFAnalysis::run()
 
     if(xDiv > 1 || yDiv > 1 || zDiv > 1)
     {
-        int xppd = size[0]/(xDiv-(xDiv-1)*targetOverlap);
-        int yppd = size[1]/(yDiv-(yDiv-1)*targetOverlap);
-        int zppd = size[2]/(zDiv-(zDiv-1)*targetOverlap);
+        int xppd = size[0]/(xDiv-(xDiv-1)*m_overlapFraction);
+        int yppd = size[1]/(yDiv-(yDiv-1)*m_overlapFraction);
+        int zppd = size[2]/(zDiv-(zDiv-1)*m_overlapFraction);
 
-        minppd = std::min({xppd, yppd, zppd});
+        minppd = std::max({xppd, yppd, zppd});
 
 
         if(xDiv != 1) xOverlap = ((int)size[0] - xDiv*minppd)/(double)(-(xDiv-1)*minppd);
@@ -226,6 +250,7 @@ void CFiberODFAnalysis::run()
     int currentZ = 0;
     int currentLoop = 0;
 	m_progress = 0;
+    double maxIntensity = -1;
 	setCurrentTask("Building ODFs ...");
 	while(true)
     {
@@ -246,6 +271,18 @@ void CFiberODFAnalysis::run()
             (int)(yDivSize* currentY * (1- yOverlap)), (int)(zDivSize* currentZ * (1- zOverlap))});
 		sitk::Image current = extractFilter.Execute(img);
 
+        // find mean intensity of subregion
+        int size = xDivSize*yDivSize*zDivSize;
+        double meanIntensity = 0;
+        auto data = current.GetBufferAsUInt32();
+        for(int index = 0; index < size; index++)
+        {
+            meanIntensity += data[index];
+        }
+        meanIntensity /= size;
+
+        if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
+
 		// process it
 		processImage(current);
 
@@ -254,6 +291,7 @@ void CFiberODFAnalysis::run()
 		odf->m_sphHarmonics.resize(C->columns());
 		odf->m_position = vec3d(xDivSizePhys/2 * (currentX * 2 + 1) - xDivSizePhys*xOverlap*currentX + origin[0], yDivSizePhys/2 * (currentY * 2 + 1)  - yDivSizePhys*yOverlap*currentY + origin[1], zDivSizePhys/2 * (currentZ * 2 + 1) - zDivSizePhys*zOverlap*currentZ + origin[2]);
 		odf->m_radius = radius;
+        odf->m_meanIntensity = meanIntensity;
 		m_ODFs.push_back(odf);
 		odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
 		
@@ -281,6 +319,9 @@ void CFiberODFAnalysis::run()
 
 		normalizeODF(odf);
 
+        // Calcualte ODF_GFA
+        odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
+
 		// build the meshes
 		buildMesh(odf);
 		buildRemesh(odf);
@@ -305,6 +346,13 @@ void CFiberODFAnalysis::run()
         }
 		updateProgressIncrement(1.0);
     }
+
+    // normalize mean intensities
+    for(auto odf : m_ODFs)
+    {
+        odf->m_meanIntensity /= maxIntensity;
+    }
+
 	setProgress(100);
 	SelectODF(0);
 	UpdateStats();
@@ -349,6 +397,12 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 		{
 			m_ndivs = GetIntValue(DIVS);
 			m_pbar->SetDivisions(m_ndivs);
+		}
+
+        if (m_overlapFraction != GetFloatValue(OVERLAP))
+		{
+			m_overlapFraction = GetFloatValue(OVERLAP);
+			updateMeshes = true;
 		}
 
 		if (updateMeshes)
@@ -464,11 +518,6 @@ void CFiberODFAnalysis::UpdateColorBar()
 
 void CFiberODFAnalysis::processImage(sitk::Image& current)
 {
-	// sitk::ImageFileWriter writer;
-	// QString name = QString("/home/mherron/Desktop/test%1.tif").arg(currentLoop++);
-	// writer.SetFileName(name.toStdString());
-	// writer.Execute(current);
-
 	// Apply Butterworth filter
 	butterworthFilter(current);
 
@@ -1169,29 +1218,6 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 	mesh.Update();
 }
 
-double rms(const vector<double>& x)
-{
-	if (x.empty()) return 0.0;
-	double rms = 0.0;
-	for (double xi : x) rms += xi * xi;
-	rms = sqrt(rms / (double)x.size());
-	return rms;
-}
-
-double stddev(const vector<double>& x)
-{
-	if (x.empty()) return 0.0;
-	double mu = 0.0;
-	size_t n = x.size();
-	for (size_t i = 0; i < n; ++i) mu += x[i];
-	mu /= (double)x.size();
-
-	double sum = 0.0;
-	for (size_t i = 0; i < n; ++i) sum += (x[i] - mu) * (x[i] - mu);
-	sum = sqrt(sum / ((double)n - 1.0));
-	return sum;
-}
-
 void EFD_ODF(
 	const vector<double>& odf,
 	const vector<vec3d>& x, 
@@ -1636,8 +1662,8 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	EFD_ODF(odf->m_odf, x, alpha, V, l, EFDODF);
 
 	// calculate generalized FA
-	odf->m_EFD_GFA = stddev(EFDODF) / rms(EFDODF);
-	Log("generalized fractional anisotropy: %lg\n", stddev(EFDODF) / rms(EFDODF));
+	// odf->m_EFD_GFA = stddev(EFDODF) / rms(EFDODF);
+	// Log("generalized fractional anisotropy: %lg\n", stddev(EFDODF) / rms(EFDODF));
 
 	// calculate Fisher-Rao distance
 	odf->m_EFD_FRD = computeFisherRao(odf->m_odf, odf->m_EFD_ODF);
@@ -1657,8 +1683,8 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 	VM3_ODF(odf->m_odf, x, beta, VM3ODF);
 
 	// calculate generalized FA
-	odf->m_VM3_GFA = stddev(VM3ODF) / rms(VM3ODF);
-	Log("generalized fractional anisotropy: %lg\n", odf->m_VM3_GFA);
+	// odf->m_VM3_GFA = stddev(VM3ODF) / rms(VM3ODF);
+	// Log("generalized fractional anisotropy: %lg\n", odf->m_VM3_GFA);
 
 	// calculate Fisher-Rao distance
 	odf->m_VM3_FRD = computeFisherRao(odf->m_odf, odf->m_VM3_ODF);
@@ -1667,7 +1693,7 @@ void CFiberODFAnalysis::calculateFits(CODF* odf)
 
 enum IDs { ODF_SPH_HARM = 0, ODF_POS, ODF_RAD, ODF_REMESH_COORD, ODF_BOX_X0, ODF_BOX_Y0, ODF_BOX_Z0, 
     ODF_BOX_X1, ODF_BOX_Y1, ODF_BOX_Z1, ODF_EL0, ODF_EL1, ODF_EL2, ODF_EV0, ODF_EV1, ODF_EV2, ODF_MEAN_DIR, 
-    ODF_FA, ODF_EDF_ALPHA, ODF_EDF_GFA, ODF_EDF_FRD, ODF_VM3_BETA, ODF_VM3_GFA, ODF_VM3_FRD};
+    ODF_FA, ODF_EDF_ALPHA, ODF_EDF_GFA, ODF_EDF_FRD, ODF_VM3_BETA, ODF_VM3_GFA, ODF_VM3_FRD, ODF_GFA, ODF_MEAN_INT};
 
 void CFiberODFAnalysis::Save(OArchive& ar)
 {
@@ -1686,6 +1712,7 @@ void CFiberODFAnalysis::Save(OArchive& ar)
                 ar.WriteChunk(ODF_SPH_HARM, odf->m_sphHarmonics);
                 ar.WriteChunk(ODF_POS, odf->m_position);
                 ar.WriteChunk(ODF_RAD, odf->m_radius);
+                ar.WriteChunk(ODF_MEAN_INT, odf->m_meanIntensity);
                 ar.WriteChunk(ODF_REMESH_COORD, odf->remeshCoord);
                 ar.WriteChunk(ODF_BOX_X0, odf->m_box.x0);
                 ar.WriteChunk(ODF_BOX_Y0, odf->m_box.y0);
@@ -1701,11 +1728,10 @@ void CFiberODFAnalysis::Save(OArchive& ar)
                 ar.WriteChunk(ODF_EV2, odf->m_ev[2]);
                 ar.WriteChunk(ODF_MEAN_DIR, odf->m_meanDir);
                 ar.WriteChunk(ODF_FA, odf->m_FA);
+                ar.WriteChunk(ODF_GFA, odf->m_GFA);
                 ar.WriteChunk(ODF_EDF_ALPHA, odf->m_EFD_alpha);
-                ar.WriteChunk(ODF_EDF_GFA, odf->m_EFD_GFA);
                 ar.WriteChunk(ODF_EDF_FRD, odf->m_EFD_FRD);
                 ar.WriteChunk(ODF_VM3_BETA, odf->m_VM3_beta);
-                ar.WriteChunk(ODF_VM3_GFA, odf->m_VM3_GFA);
                 ar.WriteChunk(ODF_VM3_FRD, odf->m_VM3_FRD);
             }
             ar.EndChunk();
@@ -1743,6 +1769,9 @@ void CFiberODFAnalysis::Load(IArchive& ar)
                         break;
                     case ODF_RAD:
                         ar.read(odf->m_radius);
+                        break;
+                    case ODF_MEAN_INT:
+                        ar.read(odf->m_meanIntensity);
                         break;
                     case ODF_REMESH_COORD:
                         ar.read(odf->remeshCoord);
@@ -1789,20 +1818,17 @@ void CFiberODFAnalysis::Load(IArchive& ar)
                     case ODF_FA:
                         ar.read(odf->m_FA);
                         break;
+                    case ODF_GFA:
+                        ar.read(odf->m_GFA);
+                        break;
                     case ODF_EDF_ALPHA:
                         ar.read(odf->m_EFD_alpha);
-                        break;
-                    case ODF_EDF_GFA:
-                        ar.read(odf->m_EFD_GFA);
                         break;
                     case ODF_EDF_FRD:
                         ar.read(odf->m_EFD_FRD);
                         break;
                     case ODF_VM3_BETA:
                         ar.read(odf->m_VM3_beta);
-                        break;
-                    case ODF_VM3_GFA:
-                        ar.read(odf->m_VM3_GFA);
                         break;
                     case ODF_VM3_FRD:
                         ar.read(odf->m_VM3_FRD);

@@ -268,10 +268,12 @@ public:
 	QLineEdit* pos;
 	QLineEdit* meanDir;
 	QLineEdit* FA;
-	QLineEdit* EFD_GFA;
+	QLineEdit* GFA;
+    QLineEdit* meanIntensity;
 	QLineEdit* EFD_alpha;
-	QLineEdit* VM3_GFA;
 	QLineEdit* VM3_beta;
+    QLineEdit* VM3_phi;
+    QLineEdit* VM3_theta;
 
 public:
     void setupUI(::CFiberODFWidget* parent)
@@ -340,13 +342,16 @@ public:
 		QWidget* fitTab = new QWidget;
 		QFormLayout* fitTabLayout = new QFormLayout;
 		fitTabLayout->setLabelAlignment(Qt::AlignRight);
-		fitTabLayout->addRow("position:", pos = new QLineEdit); pos->setReadOnly(true);
-		fitTabLayout->addRow("mean direction:", meanDir = new QLineEdit); meanDir->setReadOnly(true);
+		fitTabLayout->addRow("Position:", pos = new QLineEdit); pos->setReadOnly(true);
+		fitTabLayout->addRow("Mean Direction:", meanDir = new QLineEdit); meanDir->setReadOnly(true);
 		fitTabLayout->addRow("FA:", FA = new QLineEdit); FA->setReadOnly(true);
-		fitTabLayout->addRow("EFD GFA:", EFD_GFA = new QLineEdit); EFD_GFA->setReadOnly(true);
+		fitTabLayout->addRow("GFA:", GFA = new QLineEdit); GFA->setReadOnly(true);
+        fitTabLayout->addRow("Mean Intensity:", meanIntensity = new QLineEdit); meanIntensity->setReadOnly(true);
 		fitTabLayout->addRow("EFD alpha:", EFD_alpha = new QLineEdit); EFD_alpha->setReadOnly(true);
-		fitTabLayout->addRow("VM3 GFA:", VM3_GFA = new QLineEdit); VM3_GFA->setReadOnly(true);
 		fitTabLayout->addRow("VM3 beta:", VM3_beta = new QLineEdit); VM3_beta->setReadOnly(true);
+        fitTabLayout->addRow("VM3 phi:", VM3_phi = new QLineEdit); VM3_phi->setReadOnly(true);
+        fitTabLayout->addRow("VM3 theta:", VM3_theta = new QLineEdit); VM3_theta->setReadOnly(true);
+
 		fitTab->setLayout(fitTabLayout);
 		tabs->addTab(fitTab, "Analysis");
 
@@ -443,10 +448,12 @@ private:
 		pos->setText(Vec3dToString(odf->m_position));
 		meanDir->setText(Vec3dToString(odf->m_meanDir));
 		FA->setText(QString::number(odf->m_FA));
-		EFD_GFA->setText(QString::number(odf->m_EFD_GFA));
+		GFA->setText(QString::number(odf->m_GFA));
+        meanIntensity->setText(QString::number(odf->m_meanIntensity));
 		EFD_alpha->setText(Vec3dToString(odf->m_EFD_alpha));
-		VM3_GFA->setText(QString::number(odf->m_VM3_GFA));
-		VM3_beta->setText(Vec3dToString(odf->m_VM3_beta));
+		VM3_beta->setText(QString::number(odf->m_VM3_beta.x));
+        VM3_phi->setText(QString::number(odf->m_VM3_beta.y));
+        VM3_theta->setText(QString::number(odf->m_VM3_beta.z));
 	}
 };
 
@@ -808,12 +815,16 @@ void CFiberODFWidget::on_saveStats_triggered()
         meanDir.value(mDir);
         writer.add_leaf(meanDir);
 
+        XMLElement meanIntensity("meanIntensity");
+        meanIntensity.value(current->m_meanIntensity);
+        writer.add_leaf(meanIntensity);
+
         XMLElement FA("fracAnisotropy");
         FA.value(current->m_FA);
         writer.add_leaf(FA);
 
-        XMLElement efd("EFD_GFA");
-        efd.value(current->m_EFD_GFA);
+        XMLElement efd("GFA");
+        efd.value(current->m_GFA);
         writer.add_leaf(efd);
 
         XMLElement efdFrd("EFD_FRD");
@@ -827,20 +838,21 @@ void CFiberODFWidget::on_saveStats_triggered()
         alphaEl.value(alpha);
         writer.add_leaf(alphaEl);
 
-        XMLElement vm3("VM3_GFA");
-        vm3.value(current->m_VM3_GFA);
-        writer.add_leaf(vm3);
-
         XMLElement vm3Frd("VM3");
         vm3Frd.value(current->m_VM3_FRD);
         writer.add_leaf(vm3Frd);
 
         XMLElement betaEl("VM3beta");
-        beta[0] = current->m_VM3_beta.x;
-        beta[1] = current->m_VM3_beta.y;
-        beta[2] = current->m_VM3_beta.z;
-        betaEl.value(beta);
+        betaEl.value(current->m_VM3_beta.x);
         writer.add_leaf(betaEl);
+        
+        XMLElement phiEl("VM3beta");
+        phiEl.value(current->m_VM3_beta.y);
+        writer.add_leaf(phiEl);
+        
+        XMLElement thetaEl("VM3beta");
+        thetaEl.value(current->m_VM3_beta.z);
+        writer.add_leaf(thetaEl);
 
         writer.close_branch();
     }
