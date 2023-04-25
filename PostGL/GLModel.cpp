@@ -777,7 +777,7 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 	double Lmin = sqrt(L2min);
 
 	double f = m_render.m_bSolidBeamRadius;
-	double W = Lmin*0.25*f;
+	double W = f;// Lmin * 0.25 * f;
 
 	// render un-selected, active elements
 	if (m_pcol->IsActive())
