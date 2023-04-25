@@ -321,21 +321,6 @@ public:
 		sphHarmTable->horizontalHeader()->setStretchLastSection(true);
         sphHarmTabLayout->addWidget(sphHarmTable);
 
-        QHBoxLayout* buttonLayout = new QHBoxLayout;
-        buttonLayout->setContentsMargins(0,0,0,0);
-
-        buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material"));
-        buttonLayout->addWidget(saveToXMLButton = new QPushButton("Save to CSV..."));
-        
-        saveMenu = new QMenu;
-        saveMenu->addAction(saveODFs = new QAction("ODFs"));
-        saveMenu->addAction(saveSphHarm = new QAction("Spherical Harmonics"));
-        saveMenu->addAction(saveStats = new QAction("Statistics"));
-
-        saveToXMLButton->setMenu(saveMenu);
-
-        sphHarmTabLayout->addLayout(buttonLayout);
-
         sphHarmTab->setLayout(sphHarmTabLayout);
         tabs->addTab(sphHarmTab, "Spherical Harmonics");
 
@@ -355,7 +340,23 @@ public:
 		fitTab->setLayout(fitTabLayout);
 		tabs->addTab(fitTab, "Analysis");
 
+        QHBoxLayout* buttonLayout = new QHBoxLayout;
+        buttonLayout->setContentsMargins(0,0,0,0);
+
+        buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material"));
+        buttonLayout->addWidget(saveToXMLButton = new QPushButton("Save to CSV..."));
+        
+        saveMenu = new QMenu;
+        saveMenu->addAction(saveODFs = new QAction("ODFs"));
+        saveMenu->addAction(saveSphHarm = new QAction("Spherical Harmonics"));
+        saveMenu->addAction(saveStats = new QAction("Statistics"));
+
+        saveToXMLButton->setMenu(saveMenu);
+
+        secondPageLayout->addLayout(buttonLayout);
+
         secondPage->setLayout(secondPageLayout);
+        
         stack->addWidget(secondPage);
 
         layout->addWidget(stack);
@@ -842,15 +843,15 @@ void CFiberODFWidget::on_saveStats_triggered()
         vm3Frd.value(current->m_VM3_FRD);
         writer.add_leaf(vm3Frd);
 
-        XMLElement betaEl("VM3beta");
+        XMLElement betaEl("VM3_beta");
         betaEl.value(current->m_VM3_beta.x);
         writer.add_leaf(betaEl);
         
-        XMLElement phiEl("VM3beta");
+        XMLElement phiEl("VM3_phi");
         phiEl.value(current->m_VM3_beta.y);
         writer.add_leaf(phiEl);
         
-        XMLElement thetaEl("VM3beta");
+        XMLElement thetaEl("VM3_theta");
         thetaEl.value(current->m_VM3_beta.z);
         writer.add_leaf(thetaEl);
 
