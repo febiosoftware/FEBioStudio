@@ -67,6 +67,7 @@ void Space2_(char* szname)
 FEVTKExport::FEVTKExport(void)
 {
 	m_bwriteAllStates = false;
+	m_bselElemsOnly = false;
 }
 
 FEVTKExport::~FEVTKExport(void)
@@ -78,10 +79,54 @@ void FEVTKExport::ExportAllStates(bool b)
     m_bwriteAllStates = b;
 }
 
+void FEVTKExport::ExportSelectedElementsOnly(bool b)
+{
+	m_bselElemsOnly = b;
+}
+
 bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 {
     int ns = fem.GetStates();
     if (ns == 0) return false;
+
+	// tag all the elements and nodes that should be exported
+	// TODO: This assumes there is only one mesh
+	FEPostMesh* pm = fem.GetFEMesh(0);
+	if (pm == 0) return false;
+
+	if (m_bselElemsOnly == false)
+	{
+		for (int i = 0; i < pm->Nodes(); ++i) pm->Node(i).m_ntag = i;
+		for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
+		m_nodes = pm->Nodes();
+		m_elems = pm->Elements();
+	}
+	else
+	{
+		m_elems = 0;
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			FSElement& el = pm->Element(i);
+			if (el.IsSelected())
+			{
+				el.m_ntag = m_elems++;
+				for (int n = 0; n < el.Nodes(); ++n) pm->Node(el.m_node[n]).m_ntag = 1;
+			}
+			else el.m_ntag = -1;
+		}
+
+		m_nodes = 0;
+		for (int i = 0; i < pm->Nodes(); ++i)
+		{
+			FSNode& node = pm->Node(i);
+			if (pm->Node(i).m_ntag == 1)
+			{
+				pm->Node(i).m_ntag = m_nodes++;
+			}
+			else pm->Node(i).m_ntag = -1;
+		}
+	}
+	if ((m_nodes == 0) || (m_elems == 0)) return false;
 
 	if (m_bwriteAllStates)
 	{
@@ -135,11 +180,14 @@ bool FEVTKExport::WriteState(const char* szname, FEState* ps)
     // --- E L E M E N T S ---
 	WriteCells(ps);
         
-    // --- N O D E   D A T A ---
-	WritePointData(ps);
-        
-    // --- E L E M E N T   C E L L   D A T A ---
-	WriteCellData(ps);
+	if (m_bselElemsOnly == false)
+	{
+		// --- N O D E   D A T A ---
+		WritePointData(ps);
+
+		// --- E L E M E N T   C E L L   D A T A ---
+		WriteCellData(ps);
+	}
         
     fclose(m_fp);
 	m_fp = nullptr;
@@ -160,16 +208,17 @@ void FEVTKExport::WriteHeader(FEState* ps)
 void FEVTKExport::WritePoints(FEState* ps)
 {
 	FEPostMesh& m = *ps->GetFEMesh();
+	fprintf(m_fp, "POINTS %d float\n", m_nodes);
 	int nodes = m.Nodes();
-	fprintf(m_fp, "POINTS %d float\n", nodes);
-	for (int j=0; j<nodes; j += 3)
+	for (int j=0, k = 0; j<nodes; j++)
 	{
-	    for (int k =0; k<3 && j+k<nodes;k++)
-	    {
-	        vec3f& r = ps->m_NODE[j+k].m_rt;
-	        fprintf(m_fp, "%g %g %g ", r.x, r.y, r.z);
-	    }
-	    fprintf(m_fp, "\n");
+		if (m.Node(j).m_ntag != -1)
+		{
+			vec3f& r = ps->m_NODE[j].m_rt;
+			fprintf(m_fp, "%g %g %g ", r.x, r.y, r.z);
+			k++;
+		}
+		if (k == 3) { fprintf(m_fp, "\n"); k = 0; }
 	}
 	fprintf(m_fp, "%s\n" ,"");
 }
@@ -180,48 +229,62 @@ void FEVTKExport::WriteCells(FEState* ps)
 	FEPostMesh&m = *ps->GetFEMesh();
 	int NE = m.Elements();
     int nsize = 0;
-	for (int j = 0; j<NE; ++j)
-        nsize += m.ElementRef(j).Nodes() + 1;
+	for (int j = 0; j < NE; ++j)
+	{
+		FSElement& el = m.Element(j);
+		if (el.m_ntag != -1)
+			nsize += el.Nodes() + 1;
+	}
 
 	// Write CELLS
-    fprintf(m_fp, "CELLS %d %d\n", NE, nsize);
+    fprintf(m_fp, "CELLS %d %d\n", m_elems, nsize);
     for (int j=0; j<m.Elements(); ++j)
     {
-		FEElement_& el = m.ElementRef(j);
-        fprintf(m_fp, "%d ", el.Nodes());
-        for (int k=0; k<el.Nodes(); ++k) fprintf(m_fp, "%d ", el.m_node[k]);
-        fprintf(m_fp, "\n");
+		FSElement& el = m.Element(j);
+		if (el.m_ntag != -1)
+		{
+			fprintf(m_fp, "%d ", el.Nodes());
+			for (int k = 0; k < el.Nodes(); ++k)
+			{
+				int n = m.Node(el.m_node[k]).m_ntag;
+				fprintf(m_fp, "%d ", n);
+			}
+			fprintf(m_fp, "\n");
+		}
     }
         
 	// Write CELL_TYPES
-    fprintf(m_fp, "\nCELL_TYPES %d\n", NE);
+    fprintf(m_fp, "\nCELL_TYPES %d\n", m_elems);
 	for (int j = 0; j<m.Elements(); ++j)
     {
-		FEElement_& el = m.ElementRef(j);
-        int vtk_type;
-        switch (el.Type()) {
-            case FE_HEX8   : vtk_type = VTK_HEXAHEDRON; break;
-            case FE_TET4   : vtk_type = VTK_TETRA; break;
-            case FE_PENTA6 : vtk_type = VTK_WEDGE; break;
-            case FE_PYRA5  : vtk_type = VTK_PYRAMID; break;
-            case FE_QUAD4  : vtk_type = VTK_QUAD; break;
-            case FE_TRI3   : vtk_type = VTK_TRIANGLE; break;
-            case FE_BEAM2  : vtk_type = VTK_LINE; break;
-            case FE_HEX20  : vtk_type = VTK_QUADRATIC_HEXAHEDRON; break;
-            case FE_QUAD8  : vtk_type = VTK_QUADRATIC_QUAD; break;
-            case FE_BEAM3  : vtk_type = VTK_QUADRATIC_EDGE; break;
-            case FE_TET10  : vtk_type = VTK_QUADRATIC_TETRA; break;
-            case FE_TET15  : vtk_type = VTK_QUADRATIC_TETRA; break;
-            case FE_PENTA15: vtk_type = VTK_QUADRATIC_WEDGE; break;
-            case FE_HEX27  : vtk_type = VTK_QUADRATIC_HEXAHEDRON; break;
-            case FE_PYRA13 : vtk_type = VTK_QUADRATIC_PYRAMID; break;
-            case FE_TRI6   : vtk_type = VTK_QUADRATIC_TRIANGLE; break;
-            case FE_QUAD9  : vtk_type = VTK_QUADRATIC_QUAD; break;
-            default: vtk_type = -1; break;
-        }
-            
-        fprintf(m_fp, "%d\n", vtk_type);
-    }
+		FSElement& el = m.Element(j);
+		if (el.m_ntag != -1)
+		{
+			int vtk_type;
+			switch (el.Type()) {
+				case FE_HEX8   : vtk_type = VTK_HEXAHEDRON; break;
+				case FE_TET4   : vtk_type = VTK_TETRA; break;
+				case FE_PENTA6 : vtk_type = VTK_WEDGE; break;
+				case FE_PYRA5  : vtk_type = VTK_PYRAMID; break;
+				case FE_QUAD4  : vtk_type = VTK_QUAD; break;
+				case FE_TRI3   : vtk_type = VTK_TRIANGLE; break;
+				case FE_BEAM2  : vtk_type = VTK_LINE; break;
+				case FE_HEX20  : vtk_type = VTK_QUADRATIC_HEXAHEDRON; break;
+				case FE_QUAD8  : vtk_type = VTK_QUADRATIC_QUAD; break;
+				case FE_BEAM3  : vtk_type = VTK_QUADRATIC_EDGE; break;
+				case FE_TET10  : vtk_type = VTK_QUADRATIC_TETRA; break;
+				case FE_TET15  : vtk_type = VTK_QUADRATIC_TETRA; break;
+				case FE_PENTA15: vtk_type = VTK_QUADRATIC_WEDGE; break;
+				case FE_HEX27  : vtk_type = VTK_QUADRATIC_HEXAHEDRON; break;
+				case FE_PYRA13 : vtk_type = VTK_QUADRATIC_PYRAMID; break;
+				case FE_TRI6   : vtk_type = VTK_QUADRATIC_TRIANGLE; break;
+				case FE_QUAD9  : vtk_type = VTK_QUADRATIC_QUAD; break;
+				default: vtk_type = -1; break;
+			}
+
+			fprintf(m_fp, "%d\n", vtk_type);
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------

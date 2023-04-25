@@ -2806,7 +2806,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 		if (pm && pm->IsRigid())
 		{
 			GLTAG tag;
-			tag.ntag = 0;
+			tag.c = GLColor(255, 255, 0);
 
 			// We'll position the rigid body glyph, either in the center of rigid part,
 			// or in the center_of_mass parameter if the override_com is true.
