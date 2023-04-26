@@ -30,7 +30,7 @@ class CDICImage;
 class CDICImage
 {
 public:
-    CDICImage(CImageSITK* image, double window = 1.0, double sigma = 0.4, int subSize = 51, int subSpacing = 0, double searchAreaRatio = 7.0);
+    CDICImage(CImageSITK* image, double window = 1.0, double sigma = 0.4, int subSize = 51, int subSpacing = 11, double searchAreaRatio = 7.0);
 
     CImageSITK* GetSITKImage() { return m_image; }
 

@@ -33,14 +33,16 @@ namespace sitk = itk::simple;
 //Constructor
 CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize()), //m_subs_per_row(ref_img.GetSubsPerRow()), m_subs_per_col(ref_img.GetSubsPerCol())
-	m_subs_per_row((m_ref_img.GetWidth() / m_subSize) - 1), m_subs_per_col((m_ref_img.GetHeight() / m_subSize) - 1)
+	m_subs_per_row((m_ref_img.GetWidth()- m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1), m_subs_per_col((m_ref_img.GetHeight() - m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1)
 {
 	//save reference center points
-	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
+	//m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
 	CreateMovingImages();//create subsets
 	m_moving_mask = CreateSubsetMask();//create subset mask for fft
 	CreateFixedMasks(); //create search areas in deformed image
 	m_fixed_SITK_img = *m_def_img.GetSITKImage(); //fixed image
+
+
 
 	FFTCorrelation(); //perform "template matching"
 }
@@ -49,11 +51,7 @@ void CDICMatching::FFTCorrelation()
 {
 	for (int n = 0; n < m_ref_center_points.size(); n++)
 	{
-		sitk::Image extraMask = sitk::ReadImage("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\binary.tif", sitk::sitkFloat32);
-		sitk::Image temp = m_searchAreas[n].GetSItkImage();
-		sitk::Image cas = sitk::Cast(temp, sitk::sitkFloat32);
 
-		//sitk::Image searchArea = sitk::Subtract(extraMask, sitk::InvertIntensity(cas));
 		sitk::Image searchArea = m_searchAreas[n].GetSItkImage();
 
 		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
@@ -124,32 +122,81 @@ void CDICMatching::CreateMovingImages()
 		ref = caster.Execute(ref);
 	}
 
-	for (int ii = 0; ii < m_ref_center_points.size(); ii++)
+	int subs_x = (m_ref_img.GetWidth()- m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1;
+	int subs_y = (m_ref_img.GetHeight() - m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1;
+
+	std::cout << subs_x << " " << subs_y << std::endl;
+
+	sitk::ExtractImageFilter ext;
+	ext.SetSize({ (unsigned int)m_subSize,(unsigned int)m_subSize });
+
+	std::vector<sitk::Image> subs;
+
+	//split image
+	for (unsigned int j = 0; j < subs_y; j++)
 	{
-		int px = m_ref_center_points[ii].x;
-		int py = m_ref_center_points[ii].y;
-
-		sitk::Image sub(m_subSize, m_subSize, sitk::sitkFloat32);
-
-		int range_x_low = px - m_subSize / 2;
-		int range_x_upper = px + m_subSize / 2;
-		int range_y_low = py - m_subSize / 2;
-		int range_y_upper = py + m_subSize / 2;
-
-		for (unsigned int j = 0; j < m_subSize; j++)
+		for (unsigned int i = 0; i < subs_x; i++)
 		{
-			for (unsigned int i = 0; i < m_subSize; i++)
+			int x0 = (int)i * (m_subSize - m_ref_img.GetSubSpacing());
+			int y0 = (int)j * (m_subSize - m_ref_img.GetSubSpacing());
+
+			int size_x = m_subSize;
+			int size_y = m_subSize;
+
+
+			//conditional statements to handle the last subset in x and y directions
+			if (i == subs_x - 1)
 			{
-				auto val = ref.GetPixelAsFloat({ range_x_low + i,range_y_low + j });
-				sub.SetPixelAsFloat({ i,j }, val);
+				size_x = m_ref_img.GetWidth() - x0;
 			}
+			if (j == subs_y - 1)
+			{
+				size_y = m_ref_img.GetHeight() - y0;
+			}
+
+			std::vector<int> origin = { x0,y0 }; //top left
+
+			m_ref_center_points.push_back(vec2i(x0 + m_subSize / 2, y0 + m_subSize / 2));
+
+			ext.SetIndex(origin);
+
+			sitk::Image sub = ext.Execute(m_ref_img.GetSITKImage()->GetSItkImage());
+
+			//subs.push_back(sub);
+
+			CImageSITK s;
+			s.SetItkImage(sub);
+
+			m_movingImages.push_back(s);
 		}
-
-		CImageSITK SUB(sub.GetWidth(), sub.GetHeight(), 1);
-		SUB.SetItkImage(sub);
-
-		m_movingImages.push_back(SUB);
 	}
+
+	//for (int ii = 0; ii < m_ref_center_points.size(); ii++)
+	//{
+	//	int px = m_ref_center_points[ii].x;
+	//	int py = m_ref_center_points[ii].y;
+
+	//	sitk::Image sub(m_subSize, m_subSize, sitk::sitkFloat32);
+
+	//	int range_x_low = px - m_subSize / 2;
+	//	int range_x_upper = px + m_subSize / 2;
+	//	int range_y_low = py - m_subSize / 2;
+	//	int range_y_upper = py + m_subSize / 2;
+
+	//	for (unsigned int j = 0; j < m_subSize; j++)
+	//	{
+	//		for (unsigned int i = 0; i < m_subSize; i++)
+	//		{
+	//			auto val = ref.GetPixelAsFloat({ range_x_low + i,range_y_low + j });
+	//			sub.SetPixelAsFloat({ i,j }, val);
+	//		}
+	//	}
+
+	//	CImageSITK SUB(sub.GetWidth(), sub.GetHeight(), 1);
+	//	SUB.SetItkImage(sub);
+
+	//	m_movingImages.push_back(SUB);
+	//}
 
 }
 
@@ -240,12 +287,28 @@ void CDICMatching::CreateFixedMasks()
 
 std::vector<int> CDICMatching::FFT_TemplateMatching(sitk::Image fixed, sitk::Image moving, sitk::Image fixed_mask, sitk::Image moving_mask, double overlapFraction, int idx)
 {
+
+	std::ofstream d;
+	d.open("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\DEBUG.txt");
+
 	//Ensure Images of same type
-	if (moving.GetSpacing() != fixed.GetSpacing() | moving.GetDirection() != fixed.GetDirection() | moving.GetOrigin() != fixed.GetOrigin())
+	//if (moving.GetSpacing() != fixed.GetSpacing() | moving.GetDirection() != fixed.GetDirection() | moving.GetOrigin() != fixed.GetOrigin())
+	//{
+	//	sitk::ResampleImageFilter resampler;
+	//	resampler.SetReferenceImage(fixed);
+	//	moving = resampler.Execute(moving);
+	//}
+	
+
+if (moving.GetOrigin() != fixed.GetOrigin())
 	{
-		sitk::ResampleImageFilter resampler;
-		resampler.SetReferenceImage(fixed);
-		moving = resampler.Execute(moving);
+		moving.SetOrigin({ 0,0 });
+		fixed.SetOrigin({ 0,0 });
+	}
+
+	if (moving.GetSpacing() != fixed.GetSpacing())
+	{
+		moving.SetSpacing(fixed.GetSpacing());
 	}
 
 	if (fixed_mask.GetPixelIDValue() != sitk::sitkFloat32)
@@ -269,6 +332,17 @@ std::vector<int> CDICMatching::FFT_TemplateMatching(sitk::Image fixed, sitk::Ima
 	//FFT input images
 	sitk::Image fft_fixed = sitk::Cast(sitk::SmoothingRecursiveGaussian(fixed, sigma), pixel_type);
 	sitk::Image fft_moving = sitk::Cast(sitk::SmoothingRecursiveGaussian(moving, sigma), pixel_type);
+
+
+	d << fft_fixed.GetSize()[0] << " " << fft_fixed.GetSize()[1] << " " << fft_moving.GetSize()[0] << " " << fft_moving.GetSize()[1] << std::endl;
+	d << fft_fixed.GetSpacing()[0] << " " << fft_fixed.GetSpacing()[1] << " " << fft_moving.GetSpacing()[0] << " " << fft_moving.GetSpacing()[1] << std::endl;
+	d << fft_fixed.GetOrigin()[0] << " " << fft_fixed.GetOrigin()[1] << " " << fft_moving.GetOrigin()[0] << " " << fft_moving.GetOrigin()[1] << std::endl;
+
+	d << fixed_mask.GetSize()[0] << " " << fixed_mask.GetSize()[1] << " " << moving_mask.GetSize()[0] << " " << moving_mask.GetSize()[1] << std::endl;
+	d << fixed_mask.GetSpacing()[0] << " " << fixed_mask.GetSpacing()[1] << " " << moving_mask.GetSpacing()[0] << " " << moving_mask.GetSpacing()[1] << std::endl;
+	d << fixed_mask.GetOrigin()[0] << " " << fixed_mask.GetOrigin()[1] << " " << moving_mask.GetOrigin()[0] << " " << moving_mask.GetOrigin()[1] << std::endl;
+
+	d << fft_fixed.GetPixelIDTypeAsString() << " " << fft_moving.GetPixelIDTypeAsString() << " " << fixed_mask.GetPixelIDTypeAsString() << " " << moving_mask.GetPixelIDTypeAsString() << std::endl;
 
 	//Execute FFT NCC
 	sitk::Image out = sitk::MaskedFFTNormalizedCorrelation(fft_fixed, fft_moving, fixed_mask, moving_mask, 0, overlapFraction);
