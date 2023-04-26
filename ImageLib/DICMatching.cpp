@@ -53,7 +53,8 @@ void CDICMatching::FFTCorrelation()
 		sitk::Image temp = m_searchAreas[n].GetSItkImage();
 		sitk::Image cas = sitk::Cast(temp, sitk::sitkFloat32);
 
-		sitk::Image searchArea = sitk::Subtract(extraMask, sitk::InvertIntensity(cas));
+		//sitk::Image searchArea = sitk::Subtract(extraMask, sitk::InvertIntensity(cas));
+		sitk::Image searchArea = m_searchAreas[n].GetSItkImage();
 
 		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
 			searchArea, m_moving_mask.GetSItkImage(), 0.8, n);
