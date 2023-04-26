@@ -1652,29 +1652,6 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
 	}
 }
 
-void CMainWindow::on_actionImportTiffImage_triggered()
-{
-    CGLDocument* doc = GetGLDocument();
-    if(!doc)
-    {
-        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
-        return;
-    }
-
-	QFileDialog filedlg(this);
-	filedlg.setFileMode(QFileDialog::ExistingFile);
-	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
-
-	QStringList filters;
-	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
-	filedlg.setNameFilters(filters);
-
-	if (filedlg.exec())
-	{
-		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
-	}
-}
-
 // void CMainWindow::on_actionImportTiffImage_triggered()
 // {
 //     CGLDocument* doc = GetGLDocument();
@@ -1694,46 +1671,67 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 
 // 	if (filedlg.exec())
 // 	{
-// //		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
-
-// 		std::string fileName = filedlg.selectedFiles()[0].toStdString();
-
-// 		// we pass the relative path to the image model
-// 		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-// 		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
-// 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
-
-// 		if (!ImportImage(imageModel))
-// 		{
-// 			delete imageModel;
-// 			imageModel = nullptr;
-// 			return;
-// 		}
-
-// 		// take the name from the source
-// 		imageModel->SetName(FSDir::fileName(fileName));
-
-// 		Update(0, true);
-// 		ZoomTo(imageModel->GetBoundingBox());
-
-// 		// only for model docs
-// 		if (dynamic_cast<CModelDocument*>(doc))
-// 		{
-// 			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
-// 			vr->Create();
-// 			imageModel->AddImageRenderer(vr);
-
-// 			Update(0, true);
-// 			ShowInModelViewer(imageModel);
-// 		}
-// 		else
-// 		{
-// 			Update(0, true);
-// 		}
-// 		ZoomTo(imageModel->GetBoundingBox());
+// 		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::TIFF);
 // 	}
 // }
+
+void CMainWindow::on_actionImportTiffImage_triggered()
+{
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "Tiff Files (*.tif *.tiff)" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		std::string fileName = filedlg.selectedFiles()[0].toStdString();
+
+		// we pass the relative path to the image model
+		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
+
+		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
+
+		if (!ImportImage(imageModel))
+		{
+			delete imageModel;
+			imageModel = nullptr;
+			return;
+		}
+
+		// take the name from the source
+		imageModel->SetName(FSDir::fileName(fileName));
+
+		Update(0, true);
+		ZoomTo(imageModel->GetBoundingBox());
+
+		// only for model docs
+		if (dynamic_cast<CModelDocument*>(doc))
+		{
+			Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(imageModel);
+			vr->Create();
+			imageModel->AddImageRenderer(vr);
+
+			Update(0, true);
+			ShowInModelViewer(imageModel);
+		}
+		else
+		{
+			Update(0, true);
+		}
+		ZoomTo(imageModel->GetBoundingBox());
+	}
+}
 
 void CMainWindow::on_actionImportOMETiffImage_triggered()
 {
