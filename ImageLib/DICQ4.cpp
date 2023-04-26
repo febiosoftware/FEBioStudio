@@ -676,9 +676,14 @@ void CDICQ4::SortNodalPoints()
 	m_NodalPositions = SORTED_PTs;
 	m_n_U = DataSmoothing(S_U);
 	m_n_V = DataSmoothing(S_V);
-	m_n_EXX = DataSmoothing(S_EXX);
-	m_n_EYY = DataSmoothing(S_EYY);
-	m_n_EXY = DataSmoothing(S_EXY);
+	m_n_EXX = S_EXX;
+	m_n_EYY = S_EYY;
+	m_n_EXY = S_EXY;
+	// 
+	// 
+
+
+
 	//m_n_NCC = S_NCC;
 
 }
@@ -700,7 +705,7 @@ std::vector<double> CDICQ4::DataSmoothing(std::vector<double> data)
 		}
 	}
 
-	sitk::Image smooth = sitk::SmoothingRecursiveGaussian(im, { 2,1}); /////can add a bunch of filter options rather easily
+	sitk::Image smooth = sitk::SmoothingRecursiveGaussian(im, { 2,3}); /////can add a bunch of filter options rather easily
 
 
 
