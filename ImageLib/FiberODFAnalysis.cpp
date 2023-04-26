@@ -43,6 +43,10 @@ SOFTWARE.*/
 #ifdef min
 #undef min
 #endif
+#ifdef max
+#undef max
+#endif
+#include <algorithm>
 
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
