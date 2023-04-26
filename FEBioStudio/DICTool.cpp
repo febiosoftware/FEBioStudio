@@ -36,24 +36,30 @@ SOFTWARE.*/
 
 CDICTool::CDICTool(CMainWindow* wnd) : CBasicTool(wnd, "DIC", HAS_APPLY_BUTTON), m_wnd(wnd)
 {
+    m_img1 = 0;
+    m_img2 = 1;
+
+    addIntProperty(&m_img1, "Reference Image")->setFlags(CProperty::Visible | CProperty::Editable);
+    addIntProperty(&m_img2, "Deformed Image")->setFlags(CProperty::Visible | CProperty::Editable);
+
     SetApplyButtonText("Run");
 }
 
 bool CDICTool::OnApply()
 {
-    // CDICImage refImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img1)->Get3DImage()));
-    // CDICImage defImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img2)->Get3DImage()));
+    CDICImage refImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img1)->Get3DImage()));
+    CDICImage defImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img2)->Get3DImage()));
 
-    // CDICMatching match(refImg, defImg, 1);
+    CDICMatching match(refImg, defImg, 1);
 
-    // CDICQ4 interp(match);
-
-    // return true;
-
-    CWzdDIC wzd(m_wnd);
-
-    wzd.exec();
+    CDICQ4 interp(match);
 
     return true;
+
+    // CWzdDIC wzd(m_wnd);
+
+    // wzd.exec();
+
+    // return true;
 
 }
