@@ -33,7 +33,7 @@ namespace sitk = itk::simple;
 //Constructor
 CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
 	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize()), //m_subs_per_row(ref_img.GetSubsPerRow()), m_subs_per_col(ref_img.GetSubsPerCol())
-	m_subs_per_row((m_ref_img.GetWidth()/m_subSize)-1), m_subs_per_col((m_ref_img.GetHeight()/m_subSize)-1)
+	m_subs_per_row((m_ref_img.GetWidth() / m_subSize) - 1), m_subs_per_col((m_ref_img.GetHeight() / m_subSize) - 1)
 {
 	//save reference center points
 	m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
@@ -49,11 +49,12 @@ void CDICMatching::FFTCorrelation()
 {
 	for (int n = 0; n < m_ref_center_points.size(); n++)
 	{
-		sitk::Image extraMask = sitk::ReadImage("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\binary.tif",sitk::sitkFloat32);
+		sitk::Image extraMask = sitk::ReadImage("C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\binary.tif", sitk::sitkFloat32);
 		sitk::Image temp = m_searchAreas[n].GetSItkImage();
 		sitk::Image cas = sitk::Cast(temp, sitk::sitkFloat32);
-		
-		sitk::Image searchArea = sitk::Subtract(extraMask,sitk::InvertIntensity(cas));
+
+		//sitk::Image searchArea = sitk::Subtract(extraMask, sitk::InvertIntensity(cas));
+		sitk::Image searchArea = m_searchAreas[n].GetSItkImage();
 
 		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
 			searchArea, m_moving_mask.GetSItkImage(), 0.8, n);
@@ -81,9 +82,9 @@ std::vector<vec2i> CDICMatching::GetRefCenters(int ref_width, int ref_height, in
 	//create vector of reference subset center points
 	std::vector<vec2i> ref_sub_centers;
 
-	for (int j = subSize / 2; j < ref_height-subSize; j += subSize)
+	for (int j = subSize / 2; j < ref_height - subSize; j += subSize)
 	{
-		for (int i = subSize / 2; i < ref_width-subSize; i += subSize)
+		for (int i = subSize / 2; i < ref_width - subSize; i += subSize)
 		{
 			vec2i pt(i, j);
 			ref_sub_centers.push_back(pt);

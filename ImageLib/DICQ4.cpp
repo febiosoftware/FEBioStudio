@@ -80,6 +80,7 @@ void CDICQ4::ApplyQ4()
 			std::vector<double> eyy_pix = allStrains[1];
 			std::vector<double> exy_pix = allStrains[2];
 
+			std::vector<double> t0, t1, t2;
 
 			for (int xx = 0; xx < exx_pix.size(); xx++)
 			{
@@ -90,6 +91,7 @@ void CDICQ4::ApplyQ4()
 				m_EXY.push_back(exy_pix[xx]);
 			}
 
+			
 		}
 
 
@@ -464,7 +466,7 @@ void CDICQ4::Local2Global()
 
 			std::vector<vec2i> NODES = GetNodesQ4(i); //check ref sub centers
 
-			vec2i R_i(NODES[0].x + (m_subSize / 2.0), NODES[0].y + (m_subSize / 2.0));
+			vec2i R_i(NODES[0].x, NODES[0].y );
 
 			for (int p = 0; p < m_NormCoordPairs.size(); p++)
 			{
@@ -473,7 +475,8 @@ void CDICQ4::Local2Global()
 				auto xp = R_i.x + u_i[0];
 				auto yp = R_i.y + u_i[1];
 
-				vec2i p_global(xp - (m_subSize / 2.0) + 1, yp - (m_subSize / 2.0) + 1);
+				vec2i p_global(xp, yp);
+				//vec2i p_global(xp + 1, yp  + 1);
 
 				m_globalCoords.push_back(p_global);
 
@@ -580,6 +583,7 @@ void CDICQ4::GetNodeIndices()
 						//ncc += m_NCC[indices[in]];
 					}
 
+
 					//average data for each nodal point
 					double avg_u = U / indices.size();
 					double avg_v = V / indices.size();
@@ -590,9 +594,9 @@ void CDICQ4::GetNodeIndices()
 
 					m_n_U.push_back(avg_u);
 					m_n_V.push_back(avg_v);
-					m_n_EXX.push_back(avg_exx);
-					m_n_EXY.push_back(avg_exy);
-					m_n_EYY.push_back(avg_eyy);
+					m_n_EXX.push_back((float)avg_exx);
+					m_n_EXY.push_back((float)avg_exy);
+					m_n_EYY.push_back((float)avg_eyy);
 					//m_n_NCC.push_back(avg_ncc);
 
 				}
@@ -670,14 +674,87 @@ void CDICQ4::SortNodalPoints()
 	//S_NCC.insert(S_NCC.end(), m_n_NCC.begin(), m_n_NCC.end());
 
 	m_NodalPositions = SORTED_PTs;
-	m_n_U = S_U;
-	m_n_V = S_V;
+	m_n_U = DataSmoothing(S_U);
+	m_n_V = DataSmoothing(S_V);
 	m_n_EXX = S_EXX;
 	m_n_EYY = S_EYY;
 	m_n_EXY = S_EXY;
+	// 
+	// 
+
+
+
 	//m_n_NCC = S_NCC;
 
 }
+
+std::vector<double> CDICQ4::DataSmoothing(std::vector<double> data)
+{
+	sitk::Image im(m_subs_per_row, m_subs_per_col, sitk::sitkFloat32);
+	std::vector<double> smoothed;
+
+	for (unsigned int j = 0; j < m_subs_per_col; j++)
+	{
+		for (unsigned int i = 0; i < m_subs_per_row; i++)
+		{
+			int ind = j * im.GetWidth() + i;
+			float val = data[ind];
+
+			im.SetPixelAsFloat({ i,j }, val);
+
+		}
+	}
+
+	sitk::Image smooth = sitk::SmoothingRecursiveGaussian(im, { 2,3}); /////can add a bunch of filter options rather easily
+
+
+
+	for (unsigned int j = 0; j < m_subs_per_col; j++)
+	{
+		for (unsigned int i = 0; i < m_subs_per_row; i++)
+		{
+
+			float v = smooth.GetPixelAsFloat({ i,j });
+			smoothed.push_back((double)v);
+		}
+	}
+
+	return smoothed;
+}
+
+std::vector<double> CDICQ4::SmoothField(std::vector<double> field)
+{
+	sitk::Image im(m_subSize-1,m_subSize-1, sitk::sitkFloat32);
+	std::vector<double> smoothed;
+
+	for (unsigned int j = 0; j < m_subSize-1; j++)
+	{
+		for (unsigned int i = 0; i <m_subSize-1; i++)
+		{
+			int ind = j * im.GetWidth() + i;
+			float val = field[ind];
+
+			im.SetPixelAsFloat({ i,j }, val);
+
+		}
+	}
+
+	sitk::Image smooth = sitk::SmoothingRecursiveGaussian(im, { 1,3 }); /////can add a bunch of filter options rather easily
+
+
+
+	for (unsigned int j = 0; j <m_subSize-1; j++)
+	{
+		for (unsigned int i = 0; i < m_subSize-1; i++)
+		{
+			float v = smooth.GetPixelAsFloat({ i,j });
+			smoothed.push_back((double)v);
+		}
+	}
+
+	return smoothed;
+}
+
 
 std::vector<int> CDICQ4::findItem(std::vector<vec2i> const& v, int target, int xORy)
 {
@@ -765,14 +842,14 @@ void CDICQ4::WriteVTKFile()
 		VTKFile << m_n_U[d] << " " << m_n_V[d] << " " << 0 << "\n";
 	}
 
-	//VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
-	//VTKFile << "VECTORS strain float\n";
+	VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
+	VTKFile << "VECTORS strain float\n";
 
 
-	//for (int d = 0; d < m_n_U.size(); d++)
-	//{
-	//	VTKFile << 0.5*m_n_EXX[d] << " " << 0.5*m_n_EYY[d] << " " << 0 << "\n";
-	//}
+	for (int d = 0; d < m_n_U.size(); d++)
+	{
+		VTKFile << m_n_EXX[d] << " " << m_n_EYY[d] << " " << 0 << "\n";
+	}
 
 	//VTKFile << "POINT_DATA " << m_n_EXX.size() << " double\n";
 	//VTKFile << "VECTORS NCC float\n";
@@ -785,5 +862,3 @@ void CDICQ4::WriteVTKFile()
 
 	VTKFile.close();
 }
-
-
