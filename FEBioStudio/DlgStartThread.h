@@ -45,6 +45,8 @@ public:
 
 	void setTask(const QString& taskString);
 
+    void makeIndeterminate();
+
 private slots:
 	void threadFinished(bool b);
 	void checkProgress();

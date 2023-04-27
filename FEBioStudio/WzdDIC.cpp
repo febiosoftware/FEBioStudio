@@ -566,7 +566,7 @@ void CWzdDIC::on_drawMask_clicked()
 
 void CWzdDIC::on_fileDlgButton_clicked()
 {
-    QString filename = QFileDialog::getSaveFileName(this, "Output VTK File", "", "VTK Files(*.vkt)");
+    QString filename = QFileDialog::getSaveFileName(this, "Output VTK File", "", "VTK Files(*.vtk)");
 
     ui->fileEdit->setText(filename);
 }

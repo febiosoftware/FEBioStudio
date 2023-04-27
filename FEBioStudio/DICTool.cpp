@@ -95,11 +95,14 @@ bool CDICTool::OnApply()
         CDICAnalysis analysis(wzd.GetRefImage(), wzd.GetDefImage(), wzd.GetSubSize(), wzd.GetSubSpacing(), wzd.GetFilename());
 
         CDlgStartThread dlg(m_wnd, new ImageAnalysisThread(&analysis));
+        dlg.makeIndeterminate();
 
         if(!dlg.exec())
         {
             return false;
         }
+
+        m_wnd->OpenFile(wzd.GetFilename().c_str());
     }
 
     return true;

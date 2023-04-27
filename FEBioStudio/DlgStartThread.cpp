@@ -54,6 +54,8 @@ public:
 	QLabel*			m_time;
 	QLabel*			m_timeLeft;
 
+    QFormLayout* h1;
+
 	time_point<steady_clock>	m_start;	//!< time at start
 
 public:
@@ -72,10 +74,10 @@ public:
 		l->addWidget(m_task = new QLabel(""));
 
 		l->addWidget(m_progress = new QProgressBar);
-		m_progress->setRange(0, 0);
+		m_progress->setRange(0, 100);
 		m_progress->setValue(0);
 
-		QFormLayout* h1 = new QFormLayout;
+		h1 = new QFormLayout;
 		h1->addRow("Time elapsed: ", m_time = new QLabel); m_time->setAlignment(Qt::AlignLeft);
 		h1->addRow("Time remaining: ", m_timeLeft = new QLabel); m_timeLeft->setAlignment(Qt::AlignLeft);
 		l->addLayout(h1);
@@ -115,6 +117,12 @@ CDlgStartThread::CDlgStartThread(CMainWindow* parent, CustomThread* thread) : QD
 void CDlgStartThread::setTask(const QString& taskString)
 {
 	ui->m_task->setText(taskString);
+}
+
+void CDlgStartThread::makeIndeterminate()
+{
+    ui->m_progress->setRange(0,0);
+    ui->h1->removeRow(ui->m_timeLeft);
 }
 
 void CDlgStartThread::closeEvent(QCloseEvent* ev)
@@ -176,7 +184,6 @@ void CDlgStartThread::checkProgress()
 	{
 		if (ui->m_thread->hasProgress())
 		{
-			ui->m_progress->setRange(0.0, 100.0);
 			double p = ui->m_thread->progress();
 			ui->m_progress->setValue((int)p);
 
