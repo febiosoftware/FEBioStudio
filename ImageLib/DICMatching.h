@@ -21,18 +21,22 @@ SOFTWARE.*/
 
 #pragma once
 
-#include "DICImage.h"
 #include "ImageLib/ImageSITK.h"
 
 namespace sitk = itk::simple;
 
+class CImageSITK;
+
 class CDICMatching
 {
 public:
-	CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter);
+	CDICMatching(CImageSITK* ref_img, CImageSITK* def_img, int subSize, int subSpacing);
 	~CDICMatching();
-	CDICImage& GetRefImage();
-	CDICImage& GetDefImage();
+
+    void run();
+
+	CImageSITK* GetRefImage();
+	CImageSITK* GetDefImage();
 	std::vector<vec2i> GetRefCenters(int ref_width, int ref_height, int subSize);
 	CImageSITK CreateSubsetMask();
 	void CreateFixedMasks();
@@ -41,20 +45,22 @@ public:
 	void FFTCorrelation();
 	std::vector<vec2i> GetMatchResults();
 	std::vector<vec2i> GetRefCenterPoints();
+    int GetSubSize();
+    int GetSubSpacing();
 	int GetSubsPerRow();
 	int GetSubsPerCol();
 	std::vector<double> GetNCCVals();
 
 private:
-	CDICImage& m_ref_img;
-	CDICImage& m_def_img;
+    CImageSITK* m_ref_img;
+    CImageSITK* m_def_img;
 	std::vector<CImageSITK> m_searchAreas;
-	int m_iter;
 	std::vector<vec2i> m_match_points;
 	std::vector<vec2i> m_ref_center_points;
 	int m_subSize;
+    int m_subSpacing;
 	std::vector<CImageSITK> m_movingImages;
-	CImageSITK m_fixed_SITK_img;
+	CImageSITK* m_fixed_SITK_img;
 	CImageSITK m_moving_mask;
 	int m_subs_per_row;
 	int m_subs_per_col;

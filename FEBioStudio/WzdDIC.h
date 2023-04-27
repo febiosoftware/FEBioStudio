@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <QWizard>
 
 class CMainWindow;
+class CImageSITK;
 
 namespace Ui
 {
@@ -41,6 +42,14 @@ public:
     CWzdDIC(CMainWindow* wnd);
     ~CWzdDIC();
 
+    CImageSITK* GetRefImage();
+    CImageSITK* GetDefImage();
+
+    int GetSubSize();
+    int GetSubSpacing();
+
+    std::string GetFilename();
+
 protected:
     bool validateCurrentPage() override;
     void initializePage(int id) override;
@@ -54,6 +63,8 @@ public slots:
     void on_clearMask_clicked();
     void on_loadMask_clicked();
     void on_drawMask_clicked();
+
+    void on_fileDlgButton_clicked();
 
 
 

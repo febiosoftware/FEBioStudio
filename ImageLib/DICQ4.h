@@ -55,7 +55,7 @@ public:
 	// cv::Mat Vec2Mat(std::vector<double>, int r, int c);
 	// std::vector<double> Mat2Vec(cv::Mat);
 	itk::simple::Image CreateKernel(int k_w, int k_h, int filterType);
-	void WriteVTKFile();
+	void WriteVTKFile(std::string filename);
 	std::vector<double>DataSmoothing(std::vector<double> data);
 	std::vector<double>SmoothField(std::vector<double> field);
 

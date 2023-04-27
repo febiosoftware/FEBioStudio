@@ -31,18 +31,20 @@ SOFTWARE.*/
 namespace sitk = itk::simple;
 
 //Constructor
-CDICMatching::CDICMatching(CDICImage& ref_img, CDICImage& def_img, int iter)
-	: m_ref_img(ref_img), m_def_img(def_img), m_iter(iter), m_subSize(ref_img.GetSubSize()), //m_subs_per_row(ref_img.GetSubsPerRow()), m_subs_per_col(ref_img.GetSubsPerCol())
-	m_subs_per_row((m_ref_img.GetWidth()- m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1), m_subs_per_col((m_ref_img.GetHeight() - m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1)
+CDICMatching::CDICMatching(CImageSITK* ref_img, CImageSITK* def_img, int subSize, int subSpacing)
+	: m_ref_img(ref_img), m_def_img(def_img), m_subSize(subSize), m_subSpacing(subSpacing),
+        m_subs_per_row((m_ref_img->Width()- m_subSize) / (m_subSize - m_subSpacing) + 1),
+        m_subs_per_col((m_ref_img->Height() - m_subSize) / (m_subSize - m_subSpacing) + 1)
 {
-	//save reference center points
-	//m_ref_center_points = GetRefCenters(m_ref_img.GetWidth(), m_ref_img.GetHeight(), m_subSize);
+	
+}
+
+void CDICMatching::run()
+{
 	CreateMovingImages();//create subsets
 	m_moving_mask = CreateSubsetMask();//create subset mask for fft
 	CreateFixedMasks(); //create search areas in deformed image
-	m_fixed_SITK_img = *m_def_img.GetSITKImage(); //fixed image
-
-
+	m_fixed_SITK_img = m_def_img; //fixed image
 
 	FFTCorrelation(); //perform "template matching"
 }
@@ -54,7 +56,7 @@ void CDICMatching::FFTCorrelation()
 
 		sitk::Image searchArea = m_searchAreas[n].GetSItkImage();
 
-		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img.GetSItkImage(), m_movingImages[n].GetSItkImage(),
+		std::vector<int> results = FFT_TemplateMatching(m_fixed_SITK_img->GetSItkImage(), m_movingImages[n].GetSItkImage(),
 			searchArea, m_moving_mask.GetSItkImage(), 0.8, n);
 
 		vec2i match;
@@ -114,7 +116,7 @@ CImageSITK CDICMatching::CreateSubsetMask()
 
 void CDICMatching::CreateMovingImages()
 {
-	sitk::Image ref = m_ref_img.GetSITKImage()->GetSItkImage();
+	sitk::Image ref = m_ref_img->GetSItkImage();
 	if (ref.GetPixelIDValue() != sitk::sitkFloat32)
 	{
 		sitk::CastImageFilter caster;
@@ -122,8 +124,8 @@ void CDICMatching::CreateMovingImages()
 		ref = caster.Execute(ref);
 	}
 
-	int subs_x = (m_ref_img.GetWidth()- m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1;
-	int subs_y = (m_ref_img.GetHeight() - m_subSize) / (m_subSize - m_ref_img.GetSubSpacing()) + 1;
+	int subs_x = (m_ref_img->Width()- m_subSize) / (m_subSize - m_subSpacing) + 1;
+	int subs_y = (m_ref_img->Height() - m_subSize) / (m_subSize - m_subSpacing) + 1;
 
 	std::cout << subs_x << " " << subs_y << std::endl;
 
@@ -137,8 +139,8 @@ void CDICMatching::CreateMovingImages()
 	{
 		for (unsigned int i = 0; i < subs_x; i++)
 		{
-			int x0 = (int)i * (m_subSize - m_ref_img.GetSubSpacing());
-			int y0 = (int)j * (m_subSize - m_ref_img.GetSubSpacing());
+			int x0 = (int)i * (m_subSize - m_subSpacing);
+			int y0 = (int)j * (m_subSize - m_subSpacing);
 
 			int size_x = m_subSize;
 			int size_y = m_subSize;
@@ -147,11 +149,11 @@ void CDICMatching::CreateMovingImages()
 			//conditional statements to handle the last subset in x and y directions
 			if (i == subs_x - 1)
 			{
-				size_x = m_ref_img.GetWidth() - x0;
+				size_x = m_ref_img->Width() - x0;
 			}
 			if (j == subs_y - 1)
 			{
-				size_y = m_ref_img.GetHeight() - y0;
+				size_y = m_ref_img->Height() - y0;
 			}
 
 			std::vector<int> origin = { x0,y0 }; //top left
@@ -160,7 +162,7 @@ void CDICMatching::CreateMovingImages()
 
 			ext.SetIndex(origin);
 
-			sitk::Image sub = ext.Execute(m_ref_img.GetSITKImage()->GetSItkImage());
+			sitk::Image sub = ext.Execute(m_ref_img->GetSItkImage());
 
 			//subs.push_back(sub);
 
@@ -170,43 +172,15 @@ void CDICMatching::CreateMovingImages()
 			m_movingImages.push_back(s);
 		}
 	}
-
-	//for (int ii = 0; ii < m_ref_center_points.size(); ii++)
-	//{
-	//	int px = m_ref_center_points[ii].x;
-	//	int py = m_ref_center_points[ii].y;
-
-	//	sitk::Image sub(m_subSize, m_subSize, sitk::sitkFloat32);
-
-	//	int range_x_low = px - m_subSize / 2;
-	//	int range_x_upper = px + m_subSize / 2;
-	//	int range_y_low = py - m_subSize / 2;
-	//	int range_y_upper = py + m_subSize / 2;
-
-	//	for (unsigned int j = 0; j < m_subSize; j++)
-	//	{
-	//		for (unsigned int i = 0; i < m_subSize; i++)
-	//		{
-	//			auto val = ref.GetPixelAsFloat({ range_x_low + i,range_y_low + j });
-	//			sub.SetPixelAsFloat({ i,j }, val);
-	//		}
-	//	}
-
-	//	CImageSITK SUB(sub.GetWidth(), sub.GetHeight(), 1);
-	//	SUB.SetItkImage(sub);
-
-	//	m_movingImages.push_back(SUB);
-	//}
-
 }
 
 void CDICMatching::CreateFixedMasks()
 {
 	//difference in reference image vs deformed image dimensions
-	int dim_dif_x = m_def_img.GetWidth() - m_ref_img.GetWidth();
-	double dimX_scale = 1 + std::abs((double)dim_dif_x) / m_ref_img.GetWidth();
-	int dim_dif_y = m_def_img.GetHeight() - m_ref_img.GetHeight();
-	double dimY_scale = 1 + std::abs((double)dim_dif_y) / m_ref_img.GetHeight();
+	int dim_dif_x = m_def_img->Width() - m_ref_img->Width();
+	double dimX_scale = 1 + std::abs((double)dim_dif_x) / m_ref_img->Width();
+	int dim_dif_y = m_def_img->Height() - m_ref_img->Height();
+	double dimY_scale = 1 + std::abs((double)dim_dif_y) / m_ref_img->Height();
 
 	//Subset size and inflation size (USER INPUTS)
 	double user_inf_x = 0.7;
@@ -217,7 +191,7 @@ void CDICMatching::CreateFixedMasks()
 	//Create range of search area for each subset
 	for (int ii = 0; ii < m_ref_center_points.size(); ii++)
 	{
-		sitk::Image img(m_def_img.GetWidth(), m_def_img.GetHeight(), sitk::sitkFloat32);
+		sitk::Image img(m_def_img->Width(), m_def_img->Height(), sitk::sitkFloat32);
 
 		int px = m_ref_center_points[ii].x;
 		px = px + dim_dif_x / 2;
@@ -420,12 +394,12 @@ if (moving.GetOrigin() != fixed.GetOrigin())
 	return results;
 }
 
-CDICImage& CDICMatching::GetRefImage()
+CImageSITK* CDICMatching::GetRefImage()
 {
 	return m_ref_img;
 }
 
-CDICImage& CDICMatching::GetDefImage()
+CImageSITK* CDICMatching::GetDefImage()
 {
 	return m_def_img;
 }
@@ -438,6 +412,16 @@ std::vector<vec2i> CDICMatching::GetMatchResults()
 std::vector<vec2i> CDICMatching::GetRefCenterPoints()
 {
 	return m_ref_center_points;
+}
+
+int CDICMatching::GetSubSize()
+{
+    return m_subSize;
+}
+
+int CDICMatching::GetSubSpacing()
+{
+    return m_subSpacing;
 }
 
 int CDICMatching::GetSubsPerRow()

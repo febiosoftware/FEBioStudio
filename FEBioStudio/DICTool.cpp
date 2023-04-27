@@ -27,38 +27,80 @@ SOFTWARE.*/
 #include "DICTool.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
+#include "DlgStartThread.h"
 #include "WzdDIC.h"
 
-#include <ImageLib/ImageSITK.h>
-#include <ImageLib/DICImage.h>
-#include <ImageLib/DICMatching.h>
-#include <ImageLib/DICQ4.h>
+#include <ImageLib/DICAnalysis.h>
+
+class ImageAnalysisThread;
+
+class ImageAnalysisLogger : public TaskLogger
+{
+public:
+	ImageAnalysisLogger(ImageAnalysisThread* thread) : m_thread(thread) {}
+
+	void Log(const std::string& msg) override;
+
+private:
+	ImageAnalysisThread* m_thread;
+};
+
+class ImageAnalysisThread : public CustomThread
+{
+
+public:
+	ImageAnalysisThread(CImageAnalysis* analysis) : m_analysis(analysis), m_logger(this) {}
+
+	void run() Q_DECL_OVERRIDE
+	{
+		if (m_analysis)
+		{
+			m_analysis->SetTaskLogger(&m_logger);
+			m_analysis->run();
+		}
+		emit resultReady(true);
+	}
+
+	void WriteLog(QString msg)
+	{
+		emit writeLog(msg);
+	}
+
+public:
+	bool hasProgress() override { return (m_analysis != nullptr); }
+
+	double progress() override { return (m_analysis ? m_analysis->GetProgress().percent : 0.0); }
+
+	const char* currentTask() override { return (m_analysis ? m_analysis->GetProgress().task : ""); }
+
+	void stop() override { if (m_analysis) m_analysis->Terminate(); }
+
+private:
+	CImageAnalysis* m_analysis = nullptr;
+	ImageAnalysisLogger m_logger;
+};
 
 CDICTool::CDICTool(CMainWindow* wnd) : CBasicTool(wnd, "DIC", HAS_APPLY_BUTTON), m_wnd(wnd)
 {
-    m_img1 = 0;
-    m_img2 = 1;
-
-    addIntProperty(&m_img1, "Reference Image")->setFlags(CProperty::Visible | CProperty::Editable);
-    addIntProperty(&m_img2, "Deformed Image")->setFlags(CProperty::Visible | CProperty::Editable);
-
     SetApplyButtonText("Run");
 }
 
+
 bool CDICTool::OnApply()
 {
-    // CDICImage refImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img1)->Get3DImage()));
-    // CDICImage defImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img2)->Get3DImage()));
-
-    // CDICMatching match(refImg, defImg, 1);
-
-    // CDICQ4 interp(match);
-
-    // return true;
-
     CWzdDIC wzd(m_wnd);
 
-    wzd.exec();
+    if(wzd.exec())
+    {
+        CDICAnalysis analysis(wzd.GetRefImage(), wzd.GetDefImage(), wzd.GetSubSize(), wzd.GetSubSpacing(), wzd.GetFilename());
+
+        CDlgStartThread dlg(m_wnd, new ImageAnalysisThread(&analysis));
+
+        if(!dlg.exec())
+        {
+            return false;
+        }
+    }
 
     return true;
 

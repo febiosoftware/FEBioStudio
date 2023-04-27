@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <QLabel>
 #include <QPushButton>
+#include <QToolButton>
+#include <QLineEdit>
 #include <QSpinBox>
 #include <QPixmap>
 #include <QPainter>
@@ -45,6 +47,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageSITK.h>
 #include <PostLib/ImageModel.h>
+#include "IconProvider.h"
 #include "DlgDIC.h"
 
 #include <sitkImage.h>
@@ -134,7 +137,7 @@ private:
 
 //=================================================================================
 
-enum pageIDS {IMAGE_PAGE = 0, MASK_PAGE, SUBDIV_PAGE};
+enum pageIDS {IMAGE_PAGE = 0, MASK_PAGE, SUBDIV_PAGE, FILE_PAGE};
 
 class Ui::CWzdDIC
 {
@@ -159,6 +162,10 @@ public:
     // QSpinBox* ySpacing;
     QPushButton* updateSubs;
     CDICImageView* subdivisionImage;
+
+    QWizardPage* filePage;
+    QLineEdit* fileEdit;
+    QToolButton* fileDlgButton;
     
 public:
     CWzdDIC() : m_mask(nullptr), m_masked(nullptr), m_referenceImage(nullptr), m_deformedImage(nullptr)
@@ -271,10 +278,27 @@ public:
 
         subdivisionLayout->addWidget(subdivisionImage = new CDICImageView);
 
-
         subdivisionPage->setLayout(subdivisionLayout);
 
         parent->addPage(subdivisionPage);
+
+        filePage = new QWizardPage;
+        QVBoxLayout* filePageLayout = new QVBoxLayout;
+
+        filePageLayout->addWidget(new QLabel("Where do you want to store the data?"));
+
+        QHBoxLayout* filenameLayout = new QHBoxLayout;
+
+        filenameLayout->addWidget(fileEdit = new QLineEdit);
+        fileDlgButton = new QToolButton;
+        fileDlgButton->setIcon(CIconProvider::GetIcon("open"));
+        filenameLayout->addWidget(fileDlgButton);
+
+        filePageLayout->addLayout(filenameLayout);
+
+        filePage->setLayout(filePageLayout);
+
+        parent->addPage(filePage);
 
     }
 
@@ -324,6 +348,32 @@ CWzdDIC::CWzdDIC(CMainWindow* wnd) : ui(new Ui::CWzdDIC)
     connect(ui->clearMask, &QPushButton::clicked, this, &CWzdDIC::on_clearMask_clicked);
     connect(ui->loadMask, &QPushButton::clicked, this, &CWzdDIC::on_loadMask_clicked);
     connect(ui->drawMask, &QPushButton::clicked, this, &CWzdDIC::on_drawMask_clicked);
+    connect(ui->fileDlgButton, &QToolButton::clicked, this, &CWzdDIC::on_fileDlgButton_clicked);
+}
+
+CImageSITK* CWzdDIC::GetRefImage()
+{
+    return ui->m_masked;
+}
+
+CImageSITK* CWzdDIC::GetDefImage()
+{
+    return ui->m_deformedImage;
+}
+
+int CWzdDIC::GetSubSize()
+{
+    return ui->xSize->value();
+}
+
+int CWzdDIC::GetSubSpacing()
+{
+    return ui->xSpacing->value();
+}
+
+std::string CWzdDIC::GetFilename()
+{
+    return ui->fileEdit->text().toStdString();
 }
 
 CWzdDIC::~CWzdDIC()
@@ -512,4 +562,11 @@ void CWzdDIC::on_drawMask_clicked()
         ui->setMask(mask);
 
     }
+}
+
+void CWzdDIC::on_fileDlgButton_clicked()
+{
+    QString filename = QFileDialog::getSaveFileName(this, "Output VTK File", "", "VTK Files(*.vkt)");
+
+    ui->fileEdit->setText(filename);
 }

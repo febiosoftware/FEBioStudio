@@ -28,14 +28,12 @@ namespace sitk = itk::simple;
 
 CDICQ4::CDICQ4(CDICMatching& match)
 	: m_match(match), m_subs_per_row(match.GetSubsPerRow()), m_subs_per_col(match.GetSubsPerCol()),
-	m_subSize(match.GetRefImage().GetSubSize()), m_match_centers(match.GetMatchResults()), m_ref_centers(match.GetRefCenterPoints()), m_NCC(match.GetNCCVals())
+	m_subSize(match.GetSubSize()), m_match_centers(match.GetMatchResults()), m_ref_centers(match.GetRefCenterPoints()), m_NCC(match.GetNCCVals())
 {
 	int temp = m_subs_per_row + 1;
 	m_stop = m_match_centers.size() - temp; //cannot do interp with bottom row 
 
 	ApplyQ4(); //apply bilinear quadratic (Q4) shape functions to matching results
-	WriteVTKFile(); //write results to vtk file for vis.
-
 }
 
 void CDICQ4::ApplyQ4()
@@ -786,7 +784,7 @@ std::vector<int> CDICQ4::findItem(std::vector<vec2i> const& v, int target, int x
 	return indices;
 }
 
-void CDICQ4::WriteVTKFile()
+void CDICQ4::WriteVTKFile(std::string filename)
 {
 	std::string dataName;
 
@@ -796,10 +794,7 @@ void CDICQ4::WriteVTKFile()
 
 	int imgNum = 0;
 
-	std::string str = "C:\\Users\\elana\\Documents\\FEBio DIC\\DEBUG\\" + dataName + "_0" + std::to_string(imgNum) + ".vtk";
-	const char* c = const_cast<char*>(str.c_str());
-
-	VTKFile.open(c);
+	VTKFile.open(filename);
 
 	VTKFile << "# vtk DataFile Version 2.0 \n";
 	VTKFile << img_name << ", subset size = " << m_subSize << "\n";

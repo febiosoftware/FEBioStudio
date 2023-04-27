@@ -1,16 +1,21 @@
 /*This file is part of the FEBio Studio source code and is licensed under the MIT license
 listed below.
+
 See Copyright-FEBio-Studio.txt for details.
+
 Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
+
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
 in the Software without restriction, including without limitation the rights
 to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
+
 The above copyright notice and this permission notice shall be included in all
 copies or substantial portions of the Software.
+
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -19,37 +24,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
+#include "ImageAnalysis.h"
 
-#include <vector>
-#include <FSCore/box.h>
-#include "ImageSITK.h"
+class CImageSITK;
 
-class CDICImage;
-
-class CDICImage
+class CDICAnalysis : public CImageAnalysis
 {
 public:
-    CDICImage(CImageSITK* image, double window = 1.0, double sigma = 0.4, int subSize = 51, int subSpacing = 11, double searchAreaRatio = 7.0);
+    CDICAnalysis(CImageSITK* ref, CImageSITK* def, int subSize, int subSpacing, std::string filename);
 
-    CImageSITK* GetSITKImage() { return m_image; }
-
-    int GetSubSize() { return m_subSize; }
-    int GetSubSpacing() { return m_subSpacing; }
-    double GetSearchAreaRatio() { return m_searchAreaRatio; }
-    double GetWindowSize() { return m_windowSize; }
-    double GetSigma() { return m_sigma; }
-
-    int GetWidth();
-    int GetHeight();
+    void run() override;
 
 private:
-    CImageSITK* m_image;
-    double m_windowSize; // used for gaussian filter
-    double m_sigma; // used for gaussian filter
-    int m_subSize; // size in pixels
+    int m_subSize;
     int m_subSpacing;
-    double m_searchAreaRatio; // used in template matching. creates a mask around the inital location to prevent searching the whole image
-};
 
-// #endif
+    std::string m_filename;
+
+    CImageSITK* m_ref;
+    CImageSITK* m_def;
+
+};
