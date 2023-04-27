@@ -25,42 +25,36 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FEFileExport.h"
-#include "FEPostModel.h"
-namespace Post {
 
-//-----------------------------------------------------------------------------
-class FEVTKExport : public FEFileExport
+#include <FSCore/FSObject.h>
+#include <FSCore/FSThreadedTask.h>
+
+namespace Post
+{
+    class CImageModel;
+};
+
+class CGLCamera;
+
+class CImageAnalysis : public FSThreadedTask
 {
 public:
-    FEVTKExport(void);
-    ~FEVTKExport(void);
-    
-    bool Save(FEPostModel& fem, const char* szfile) override;
+    enum TYPES
+    {
+        FIBERODF = 0
+    };
 
-	void ExportAllStates(bool b);
-	void ExportSelectedElementsOnly(bool b);
+public:
+    CImageAnalysis(int type, Post::CImageModel* img);
 
-private:
-	bool WriteState(const char* szname, FEState* ps);
-	bool FillNodeDataArray(std::vector<float>& val, FEMeshData& data);
-	bool FillElementNodeDataArray(std::vector<float>& val, FEMeshData& meshData);
-	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data);
-    
-private:
-	void WriteHeader(FEState* ps);
-	void WritePoints(FEState* ps);
-	void WriteCells (FEState* ps);
-	void WritePointData(FEState* ps);
-	void WriteCellData(FEState* ps);
+    int Type() { return m_type; }
 
+    virtual void run() = 0;
+    virtual void render(CGLCamera* cam = nullptr) {}
+	virtual bool display() { return false; }
+protected:
+    Post::CImageModel* m_img;
 private:
-	bool	m_bwriteAllStates;	// write all states
-	bool	m_bselElemsOnly;	// only output selected elements
+    int m_type;
 
-private:
-	FILE*	m_fp;
-	int		m_nodes;
-	int		m_elems;
 };
-}

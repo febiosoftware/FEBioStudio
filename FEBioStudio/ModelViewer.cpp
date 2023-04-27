@@ -53,6 +53,8 @@ SOFTWARE.*/
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
 
+#include <ImageLib/FiberODFAnalysis.h>
+
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
 	ui->setupUi(wnd, this);
@@ -1808,8 +1810,12 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_3DIMAGE:
+        menu.addAction("Fiber ODF Analysis", this, &CModelViewer::OnAddFiberODFAnalysis);
 		del = true;
 		break;
+    case MT_IMGANALYSIS:
+        del = true;
+        break;
 	default:
 		return;
 	}
@@ -1940,4 +1946,14 @@ void CModelViewer::OnEditMeshData()
 
 	CDlgEditMeshData dlg(data, this);
 	dlg.exec();
+}
+
+void CModelViewer::OnAddFiberODFAnalysis()
+{
+    Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(m_currentObject); assert(img);
+	if (img == 0) return;
+
+    img->AddImageAnalysis(new CFiberODFAnalysis(img));
+
+    Update();
 }

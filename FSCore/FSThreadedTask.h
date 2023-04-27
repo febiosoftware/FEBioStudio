@@ -29,6 +29,7 @@ SOFTWARE.*/
 struct FSTaskProgress
 {
 	bool		valid;
+	bool		cancelled;
 	double		percent;
 	const char*	task;
 	bool		canceled;
@@ -44,9 +45,18 @@ struct FSTaskProgress
 	FSTaskProgress(double p, const char* sz)
 	{
 		valid = false;
+		cancelled = false;
 		percent = p;
 		task = sz;
 	}
+};
+
+class TaskLogger
+{
+public:
+	TaskLogger() {}
+	virtual ~TaskLogger() {}
+	virtual void Log(const std::string& msg) = 0;
 };
 
 class FSThreadedTask : public FSObject
@@ -65,7 +75,14 @@ public:
 
 	std::string getErrorString() const;
 
+	void SetTaskLogger(TaskLogger* logger);
+
+	void Log(const char* sz, ...);
+
 protected:
+	// reset progress 
+	void resetProgress();
+
 	// set progress in percent (value between 0 and 100)
 	void setProgress(double d);
 
@@ -79,4 +96,5 @@ protected:
 private:
 	FSTaskProgress m_progress;
 	std::string	m_error;
+	TaskLogger* m_log;
 };

@@ -24,43 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include "FEFileExport.h"
-#include "FEPostModel.h"
-namespace Post {
+#include "ImageAnalysis.h"
 
-//-----------------------------------------------------------------------------
-class FEVTKExport : public FEFileExport
+CImageAnalysis::CImageAnalysis(int type, Post::CImageModel* img)
+    : m_img(img), m_type(type)
 {
-public:
-    FEVTKExport(void);
-    ~FEVTKExport(void);
-    
-    bool Save(FEPostModel& fem, const char* szfile) override;
 
-	void ExportAllStates(bool b);
-	void ExportSelectedElementsOnly(bool b);
-
-private:
-	bool WriteState(const char* szname, FEState* ps);
-	bool FillNodeDataArray(std::vector<float>& val, FEMeshData& data);
-	bool FillElementNodeDataArray(std::vector<float>& val, FEMeshData& meshData);
-	bool FillElemDataArray(std::vector<float>& val, FEMeshData& data);
-    
-private:
-	void WriteHeader(FEState* ps);
-	void WritePoints(FEState* ps);
-	void WriteCells (FEState* ps);
-	void WritePointData(FEState* ps);
-	void WriteCellData(FEState* ps);
-
-private:
-	bool	m_bwriteAllStates;	// write all states
-	bool	m_bselElemsOnly;	// only output selected elements
-
-private:
-	FILE*	m_fp;
-	int		m_nodes;
-	int		m_elems;
-};
 }

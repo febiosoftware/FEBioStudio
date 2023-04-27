@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include "ImageMapTool.h"
 #include "DiscreteElementNetworkTool.h"
 #include "SelectNearPlaneTool.h"
+#include <ImageLib/FiberODF.h>
 #include "DICTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)

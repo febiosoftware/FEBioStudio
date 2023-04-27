@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageSITK.h>
 #include <ImageLib/ImageFilter.h>
+#include <ImageLib/FiberODFAnalysis.h>
 #include "GLImageRenderer.h"
 #include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
@@ -151,6 +152,11 @@ void CImageModel::AddImageFilter(CImageFilter* imageFilter)
 	m_filters.Add(imageFilter);
 }
 
+size_t CImageModel::RemoveAnalysis(CImageAnalysis* analysis)
+{
+    return m_analyses.Remove(analysis);
+}
+
 BOX CImageModel::GetBoundingBox()
 {
     if(m_img && m_img->Get3DImage())
@@ -199,6 +205,22 @@ void CImageModel::Save(OArchive& ar)
 				ar.BeginChunk(m_filters[index]->Type());
 				{
 					m_filters[index]->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+    if (m_analyses.IsEmpty() == false)
+	{
+		ar.BeginChunk(3);
+		{
+			for (int index = 0; index < m_analyses.Size(); index++)
+			{
+				ar.BeginChunk(m_analyses[index]->Type());
+				{
+					m_analyses[index]->Save(ar);
 				}
 				ar.EndChunk();
 			}
@@ -314,6 +336,28 @@ void CImageModel::Load(IArchive& ar)
                         auto temp = new AdaptiveHistogramEqualizationFilter(this);
                         temp->Load(ar);
                         m_filters.Add(temp);
+                    }
+                    default:
+                        break;
+                    }
+					ar.CloseChunk();
+				}
+			}
+			break;
+        case 3:
+			{
+				while (ar.OpenChunk() == IArchive::IO_OK)
+                {
+                    int nid2 = ar.GetChunkID();
+
+                    switch (nid2)
+                    {
+                    case CImageAnalysis::FIBERODF:
+                    {
+                        auto temp = new CFiberODFAnalysis(this);
+                        temp->Load(ar);
+                        m_analyses.Add(temp);
+                        break;
                     }
                     default:
                         break;

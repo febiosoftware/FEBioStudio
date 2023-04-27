@@ -420,8 +420,8 @@ void glx::drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, floa
 		vec3d na(x, y, 0.0); q.RotateVector(na);
 		vec3d nb(x, y, 0.0); q.RotateVector(nb);
 
-		glTexCoord1d(t0); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
-		glTexCoord1d(t1); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+		glTexCoord1d(t1); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+		glTexCoord1d(t0); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
 	}
 	glEnd();
 }

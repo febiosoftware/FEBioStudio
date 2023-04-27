@@ -1533,6 +1533,9 @@ void CGLView::paintGL()
 			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
 			m_Widget->DrawWidget(m_ptriad, &painter);
 			if (m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
+
+			// draw special widgets
+			m_Widget->DrawWidgetsInLayer(&painter, 0xFF);
 		}
 	}
 	else
@@ -2175,6 +2178,19 @@ void CGLView::RenderImageData()
         for (int i = 0; i < doc->ImageModels(); ++i)
         {
             Post::CImageModel* img = doc->GetImageModel(i);
+
+            if(img->ImageAnalyses() > 0)
+            {
+                for(int j = 0; j < img->ImageAnalyses(); j++)
+                {
+                    auto current = img->GetImageAnalysis(j);
+                    if(current->display())
+                    {
+                        current->render(&doc->GetView()->GetCamera());
+                    }
+                }
+            }
+           
             BOX box = img->GetBoundingBox();
     		// GLColor c = img->GetColor();
             GLColor c(255, 128, 128);
@@ -5407,6 +5423,9 @@ void CGLView::RenderTags()
 
 	int mode = doc->GetItemMode();
 
+	GLColor extcol(255, 255, 0);
+	GLColor intcol(255, 0, 0);
+
 	// process elements
 	if ((mode == ITEM_ELEM) && pm)
 	{
@@ -5417,7 +5436,7 @@ void CGLView::RenderTags()
 			if (el.IsSelected())
 			{
 				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
-				tag.ntag = 0;
+				tag.c = extcol;
 				int nid = el.GetID();
 				if (nid < 0) nid = i + 1;
 				sprintf(tag.sztag, "E%d", nid);
@@ -5439,7 +5458,7 @@ void CGLView::RenderTags()
 			if (f.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
-				tag.ntag = (f.IsExternal() ? 0 : 1);
+				tag.c = (f.IsExternal() ? extcol : intcol);
 				int nid = f.GetID();
 				if (nid < 0) nid = i + 1;
 				sprintf(tag.sztag, "F%d", nid);
@@ -5461,7 +5480,7 @@ void CGLView::RenderTags()
 			if (edge.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
-				tag.ntag = 0;
+				tag.c = extcol;
 				int nid = edge.GetID();
 				if (nid < 0) nid = i + 1;
 				sprintf(tag.sztag, "L%d", nid);
@@ -5482,7 +5501,7 @@ void CGLView::RenderTags()
 			if (node.IsSelected())
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
-				tag.ntag = (node.IsExterior() ? 0 : 1);
+				tag.c = (node.IsExterior() ? extcol : intcol);
 				int nid = node.GetID();
 				if (nid < 0) nid = i + 1;
 				sprintf(tag.sztag, "N%d", nid);
@@ -5500,8 +5519,47 @@ void CGLView::RenderTags()
 			if (node.m_ntag == 1)
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
-				tag.ntag = (node.IsExterior() ? 0 : 1);
+				tag.c = (node.IsExterior() ? extcol : intcol);
 				sprintf(tag.sztag, "N%d", node.GetID());
+				vtag.push_back(tag);
+			}
+		}
+	}
+
+	// render object labels
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+	if (postDoc && view.m_showRigidLabels)
+	{
+		bool renderRB = view.m_brigid;
+		bool renderRJ = view.m_bjoint;
+		Post::FEPostModel* fem = postDoc->GetFSModel();
+		for (int i = 0; i < fem->PointObjects(); ++i)
+		{
+			Post::FEPostModel::PointObject& ob = *fem->GetPointObject(i);
+			if (ob.IsActive())
+			{
+				if (((ob.m_tag == 1) && renderRB) ||
+					((ob.m_tag  > 1) && renderRJ))
+				{
+					tag.r = ob.m_pos;
+					tag.c = ob.Color();
+					sprintf(tag.sztag, ob.GetName().c_str());
+					vtag.push_back(tag);
+				}
+			}
+		}
+
+		for (int i = 0; i < fem->LineObjects(); ++i)
+		{
+			Post::FEPostModel::LineObject& ob = *fem->GetLineObject(i);
+			if (ob.IsActive() && renderRJ)
+			{
+				vec3d a = ob.m_r1;
+				vec3d b = ob.m_r2;
+
+				tag.r = (a + b) * 0.5;
+				tag.c = ob.Color();
+				sprintf(tag.sztag, ob.GetName().c_str());
 				vtag.push_back(tag);
 			}
 		}
@@ -5555,8 +5613,7 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 				int x = (int)(vtag[i].wx * dpr);
 				int y = (int)(m_viewport[3] - dpr*(m_viewport[3] - vtag[i].wy));
 				glVertex2f(x, y);
-				if (vtag[i].ntag == 0) glColor3ub(255, 255, 0);
-				else glColor3ub(255, 0, 0);
+				glColor3ub(vtag[i].c.r, vtag[i].c.g, vtag[i].c.b);
 				glVertex2f(x - 1, y + 1);
 			}
 			glEnd();
@@ -5573,8 +5630,8 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 
 			painter.drawText(x + 3, y - 2, vtag[i].sztag);
 
-			if (vtag[i].ntag == 0) painter.setPen(Qt::yellow);
-			else painter.setPen(Qt::red);
+			GLColor c = vtag[i].c;
+			painter.setPen(QColor::fromRgbF(c.r, c.g, c.b));
 
 			painter.drawText(x + 2, y - 3, vtag[i].sztag);
 		}

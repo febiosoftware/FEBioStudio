@@ -51,6 +51,7 @@ protected:
 signals:
 	void resultReady(bool);
 	void taskChanged(QString s);
+	void writeLog(QString s);
 
 private:
 	QString	m_error;

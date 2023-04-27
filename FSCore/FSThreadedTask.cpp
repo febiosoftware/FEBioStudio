@@ -25,10 +25,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "FSThreadedTask.h"
+#include <cstdarg>
 
 FSThreadedTask::FSThreadedTask()
 {
-
+	m_log = nullptr;
 }
 
 FSTaskProgress FSThreadedTask::GetProgress()
@@ -40,6 +41,45 @@ void FSThreadedTask::Terminate()
 {
 	m_progress.valid = false;
 	m_progress.canceled = true;
+}
+
+void FSThreadedTask::SetTaskLogger(TaskLogger* logger)
+{
+	m_log = logger;
+}
+
+void FSThreadedTask::Log(const char* sz, ...)
+{
+	if (m_log == nullptr) return;
+
+	if ((sz == 0) || (*sz == 0)) return;
+
+	// get a pointer to the argument list
+	va_list	args, copy;
+
+	// copy to string
+	char* szlog = NULL;
+
+	va_start(args, sz);
+    
+    va_copy(copy, args);
+	// count how many chars we need to allocate
+	int l = vsnprintf(nullptr, 0, sz, copy) + 1;
+    va_end(copy);
+
+	if (l > 1)
+	{
+		szlog = new char[l]; assert(szlog);
+		if (szlog)
+		{
+			vsnprintf(szlog, l, sz, args);
+		}
+	}
+	va_end(args);
+	if (szlog == NULL) return;
+
+	m_log->Log(szlog);
+	delete [] szlog;
 }
 
 bool FSThreadedTask::IsCanceled() const
@@ -55,10 +95,19 @@ void FSThreadedTask::setProgress(double progress)
 	m_progress.percent = progress;
 }
 
+void FSThreadedTask::resetProgress()
+{
+	m_progress.valid = false;
+	m_progress.percent = 0;
+	m_progress.cancelled = false;
+	m_progress.task = nullptr;
+}
+
 void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 {
 	setProgress(progress);
 	m_progress.task = sz;
+	Log("%s\n", sz);
 }
 
 void FSThreadedTask::setErrorString(const std::string& s)

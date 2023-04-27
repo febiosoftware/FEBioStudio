@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.1.0)
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project(FEBioStudio)
@@ -309,6 +309,15 @@ if(USE_FFMPEG)
     
 endif()
 
+if(USE_LEVMAR)
+	if(NOT EXISTS ${LEVMAR_INC}/levmar.h)
+		message(SEND_ERROR "Could not find levmar.h. Check LEVMAR_INC.")
+	endif()
+	if(NOT EXISTS ${LEVMAR_LIB})
+		message(SEND_ERROR "Could not find Levmar library. Check LEVMAR_LIB.")
+	endif()
+endif()
+
 if(USE_ZLIB)
 	if(NOT EXISTS ${ZLIB_LIBRARY_RELEASE})
 		message(SEND_ERROR "Could not find ZLIB. Check ZLIB_LIBRARY_RELEASE.")
@@ -319,11 +328,11 @@ if(USE_ZLIB)
 endif()
 
 # Find FEBio Libs
+set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot feamr febioopt)
+
 if (WIN32)
     set(FEBio_DEBUG_LIBS "")
     set(FEBio_RELEASE_LIBS "")
-
-    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
     set(FEBio_DEBUG_DIR ${FEBio_LIB_DIR}Debug)
     set(FEBio_RELEASE_DIR ${FEBio_LIB_DIR}Release)
@@ -343,8 +352,6 @@ if (WIN32)
     unset(FEBio_LIB_NAMES)
 else()
     set(FEBio_LIBS "")
-
-    set(FEBio_LIB_NAMES fecore febiolib febiomech xml febioplot)
 
     foreach(name IN LISTS FEBio_LIB_NAMES)
         findLib(FEBio_LIB_DIR FEBio_LIB ${name})
@@ -438,6 +445,10 @@ endif()
 if(USE_FFMPEG)
 	add_definitions(-DFFMPEG)
 	include_directories(${FFMPEG_INC})
+endif()
+
+if(USE_LEVMAR)
+	include_directories(${LEVMAR_INC})
 endif()
 
 if(APPLE)
@@ -704,7 +715,6 @@ endif()
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 
 if (WIN32)
-
     foreach(name IN LISTS FEBio_RELEASE_LIBS)
         target_link_libraries(${FBS_BIN_NAME} optimized ${name})
     endforeach()
@@ -714,6 +724,10 @@ if (WIN32)
     endforeach()
 else()
     target_link_libraries(${FBS_BIN_NAME} ${FEBio_LIBS})
+endif()
+
+if(USE_LEVMAR)
+    target_link_libraries(${FBS_BIN_NAME} ${LEVMAR_LIB})
 endif()
 
 if(WIN32)

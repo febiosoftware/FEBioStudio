@@ -213,9 +213,8 @@ void CImageParam2::updateSpinBox()
 	emit paramChanged();
 }
 
-
 //=======================================================================================
-class Ui::CImageSettingsPanel
+class Ui::CImageSettingsWidget
 {
 public:
 	QWidget*	w[3];
@@ -238,7 +237,7 @@ public:
 	::CImageParam* chue3;
 
 public:
-    void setup(::CImageSettingsPanel* parent)
+    void setup(::CImageSettingsWidget* parent)
     {
         m_parent = parent;
 
@@ -352,14 +351,51 @@ public:
 	void addWidget(::CImageParam* w, const QString& name, int panelIndex)
 	{
 		panel[panelIndex]->addRow(name, w);
-		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
+		QObject::connect(w, &::CImageParam::paramChanged, m_parent, &::CImageSettingsWidget::ParamChanged);
 	}
 
 	void addWidget(::CImageParam2* w, const QString& name, int panelIndex)
 	{
 		panel[panelIndex]->addRow(name, w);
-		QObject::connect(w, &::CImageParam2::paramChanged, m_parent, &::CImageSettingsPanel::ParamChanged);
+		QObject::connect(w, &::CImageParam2::paramChanged, m_parent, &::CImageSettingsWidget::ParamChanged);
 	}
+
+private:
+	::CImageSettingsWidget* m_parent;
+};
+
+CImageSettingsWidget::CImageSettingsWidget(QWidget* parent) 
+    : QWidget(parent), ui(new Ui::CImageSettingsWidget)
+{
+    ui->setup(this);
+}
+
+ void CImageSettingsWidget::ImageModelChanged(Post::CImageModel* model)
+ {
+    ui->setImageModel(model);
+ }
+
+
+//=======================================================================================
+class Ui::CImageSettingsPanel
+{
+public:
+	::CImageSettingsWidget* m_widget;
+
+public:
+    void setup(::CImageSettingsPanel* parent)
+    {
+        m_parent = parent;
+
+        QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+        layout->addWidget(m_widget = new ::CImageSettingsWidget);
+
+		parent->setLayout(layout);
+
+        QObject::connect(m_widget, &::CImageSettingsWidget::ParamChanged, m_parent, &::CImageSettingsPanel::on_ParamChanged);
+    }
 
 private:
 	::CImageSettingsPanel* m_parent;
@@ -375,7 +411,7 @@ void CImageSettingsPanel::ModelTreeSelectionChanged(FSObject* obj)
 {
     Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(obj);
 
-    ui->setImageModel(model);
+    ui->m_widget->ImageModelChanged(model);
 
     if(model)
     {
@@ -385,7 +421,7 @@ void CImageSettingsPanel::ModelTreeSelectionChanged(FSObject* obj)
 
 }
 
-void CImageSettingsPanel::ParamChanged()
+void CImageSettingsPanel::on_ParamChanged()
 {
     GetMainWindow()->UpdateUiView();
 }

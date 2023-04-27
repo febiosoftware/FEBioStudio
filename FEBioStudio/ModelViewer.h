@@ -178,6 +178,8 @@ public slots:
 	void OnDeleteAllJobs();
 	void OnEditMeshData();
 
+    void OnAddFiberODFAnalysis();
+
 signals:
 	void currentObjectChanged(FSObject* po);
 

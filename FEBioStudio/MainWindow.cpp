@@ -2604,7 +2604,7 @@ void CMainWindow::ShowLogPanel()
 
 //-----------------------------------------------------------------------------
 // add to the log 
-void CMainWindow::AddLogEntry(const QString& txt)
+void CMainWindow::AddLogEntry(QString txt)
 {
 	ui->logPanel->AddText(txt);
 }
