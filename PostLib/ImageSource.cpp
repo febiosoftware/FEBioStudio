@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageSITK.h>
 #include <FSCore/FSDir.h>
+#include <QDir>
 
 using namespace Post;
 
@@ -187,7 +188,11 @@ bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im, int nbits)
 
 void CRawImageSource::Save(OArchive& ar)
 {
-    ar.WriteChunk(0, m_filename);
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
+    std::string relName = dir.relativeFilePath(m_filename.c_str()).toStdString();
+
+    ar.WriteChunk(0, relName);
     
     ar.WriteChunk(1, m_nx);
     ar.WriteChunk(2, m_ny);
@@ -206,6 +211,9 @@ void CRawImageSource::Load(IArchive& ar)
     BOX tempBox;
     bool foundBox = false;
 
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
+
     while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
@@ -213,9 +221,15 @@ void CRawImageSource::Load(IArchive& ar)
 		switch (nid)
 		{
 		case 0:
-			ar.read(m_filename);
-			break;
+        {
+            std::string temp;
+			ar.read(temp);
 
+            QString path = QString("%1/%2").arg(dir.path()).arg(temp.c_str());
+
+            m_filename = dir.toNativeSeparators(path).toStdString();
+			break;
+        }
 		case 1:
 			ar.read(m_nx);
             break;
@@ -313,7 +327,11 @@ bool CITKImageSource::Load()
 
 void CITKImageSource::Save(OArchive& ar)
 {
-    ar.WriteChunk(0, m_filename);
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
+    std::string relName = dir.relativeFilePath(m_filename.c_str()).toStdString();
+
+    ar.WriteChunk(0, relName);
     ar.WriteChunk(1, (int)m_type);
 
     BOX box = m_originalImage->GetBoundingBox();
@@ -330,6 +348,9 @@ void CITKImageSource::Load(IArchive& ar)
     BOX tempBox;
     bool foundBox = false;
 
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
+
     while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
@@ -337,8 +358,15 @@ void CITKImageSource::Load(IArchive& ar)
 		switch (nid)
 		{
 		case 0:
-			ar.read(m_filename);
+        {
+			std::string temp;
+			ar.read(temp);
+
+            QString path = QString("%1/%2").arg(dir.path()).arg(temp.c_str());
+
+            m_filename = dir.toNativeSeparators(path).toStdString();
 			break;
+        }
 		case 1:
         {
             int type;
@@ -413,9 +441,13 @@ bool CITKSeriesImageSource::Load()
 
 void CITKSeriesImageSource::Save(OArchive& ar)
 {
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
     for(auto filename : m_filenames)
     {
-        ar.WriteChunk(0, filename);
+        std::string relName = dir.relativeFilePath(filename.c_str()).toStdString();
+
+        ar.WriteChunk(0, relName);
     }
 
     BOX box = m_originalImage->GetBoundingBox();
@@ -432,6 +464,9 @@ void CITKSeriesImageSource::Load(IArchive& ar)
     BOX tempBox;
     bool foundBox = false;
 
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
+
     while (ar.OpenChunk() == IArchive::IO_OK)
 	{
 		int nid = ar.GetChunkID();
@@ -442,7 +477,10 @@ void CITKSeriesImageSource::Load(IArchive& ar)
         {
             std::string temp;
             ar.read(temp);
-            m_filenames.push_back(temp);
+            
+            QString path = QString("%1/%2").arg(dir.path()).arg(temp.c_str());
+
+            m_filenames.push_back(dir.toNativeSeparators(path).toStdString());
             break;
         }
 
