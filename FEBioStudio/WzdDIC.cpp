@@ -257,11 +257,11 @@ public:
         QHBoxLayout* subdivisionLayout = new QHBoxLayout;
 
         QVBoxLayout* leftSDLayout = new QVBoxLayout;
-        leftSDLayout->addWidget(new QLabel("X Subdivision Size (pixels):"));
+        leftSDLayout->addWidget(new QLabel("Subdivision Size (pixels):"));
         leftSDLayout->addWidget(xSize = new QSpinBox);
         xSize->setRange(1,99999);
         xSize->setValue(50);
-        leftSDLayout->addWidget(new QLabel("X Overlap (pixels):"));
+        leftSDLayout->addWidget(new QLabel("Overlap (pixels):"));
         leftSDLayout->addWidget(xSpacing = new QSpinBox);
         xSpacing->setRange(0,99999);
         leftSDLayout->addStretch();
