@@ -49,6 +49,16 @@ CImageSITK::CImageSITK(int nx, int ny, int nz)
     FinalizeImage();
 }
 
+CImageSITK::CImageSITK(int nx, int ny)
+    : m_sitkImage(nx, ny, sitk::sitkUInt8)
+{
+    m_cx = nx;
+    m_cy = ny;
+    m_cz = 1;
+
+    FinalizeImage();
+}
+
 CImageSITK::~CImageSITK()
 {
     m_pb = nullptr;

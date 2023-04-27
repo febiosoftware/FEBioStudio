@@ -27,6 +27,9 @@ SOFTWARE.*/
 #include "WzdDIC.h"
 #include <QBoxLayout>
 #include <QComboBox>
+#include <QMessageBox>
+#include <QFileInfo>
+#include <QFileDialog>
 #include <QLabel>
 #include <QPushButton>
 #include <QSpinBox>
@@ -93,16 +96,17 @@ public:
         while(true)
         {
 
-            scene.addRect(QRect((xSize + xSpacing)*currentX, (ySize + ySpacing)*currentY, xSize, ySize), pen);
+            // scene.addRect(QRect((xSize + xSpacing)*currentX, (ySize + ySpacing)*currentY, xSize, ySize), pen);
+            scene.addRect(QRect((xSize - xSpacing)*currentX, (xSize - xSpacing)*currentY, xSize, xSize), pen);
 
             currentX++;
-            if(m_image.width() < (xSize + xSpacing)*(currentX) + xSize)
+            if(m_image.width() < (xSize - xSpacing)*(currentX) + xSize)
             {
                 currentX = 0;
                 currentY++;
             }
 
-            if(m_image.height() < (ySize + ySpacing)*(currentY) + ySize)
+            if(m_image.height() < (xSize - xSpacing)*(currentY) + xSize)
             {
                 break;
             }
@@ -151,8 +155,8 @@ public:
     QWizardPage* subdivisionPage;
     QSpinBox* xSize;
     QSpinBox* xSpacing;
-    QSpinBox* ySize;
-    QSpinBox* ySpacing;
+    // QSpinBox* ySize;
+    // QSpinBox* ySpacing;
     QPushButton* updateSubs;
     CDICImageView* subdivisionImage;
     
@@ -249,17 +253,19 @@ public:
         leftSDLayout->addWidget(new QLabel("X Subdivision Size (pixels):"));
         leftSDLayout->addWidget(xSize = new QSpinBox);
         xSize->setRange(1,99999);
-        leftSDLayout->addWidget(new QLabel("X Spacing (pixels):"));
+        xSize->setValue(50);
+        leftSDLayout->addWidget(new QLabel("X Overlap (pixels):"));
         leftSDLayout->addWidget(xSpacing = new QSpinBox);
-        xSpacing->setRange(-99999,99999);
-        leftSDLayout->addWidget(new QLabel("Y Subdivision Size (pixels):"));
-        leftSDLayout->addWidget(ySize = new QSpinBox);
-        ySize->setRange(1,99999);
-        leftSDLayout->addWidget(new QLabel("Y Spacing (pixels):"));
-        leftSDLayout->addWidget(ySpacing = new QSpinBox);
-        ySpacing->setRange(-99999,99999);
+        xSpacing->setRange(0,99999);
+        leftSDLayout->addStretch();
+        // leftSDLayout->addWidget(new QLabel("Y Subdivision Size (pixels):"));
+        // leftSDLayout->addWidget(ySize = new QSpinBox);
+        // ySize->setRange(1,99999);
+        // leftSDLayout->addWidget(new QLabel("Y Spacing (pixels):"));
+        // leftSDLayout->addWidget(ySpacing = new QSpinBox);
+        // ySpacing->setRange(-99999,99999);
 
-        leftSDLayout->addWidget(updateSubs = new QPushButton("Update Subdivisions"));
+        // leftSDLayout->addWidget(updateSubs = new QPushButton("Update Subdivisions"));
 
         subdivisionLayout->addLayout(leftSDLayout);
 
@@ -272,15 +278,15 @@ public:
 
     }
 
-    void setMask(C3DImage* mask)
+    void setMask(CImageSITK* mask)
     {
         if(m_mask) delete m_mask;
         if(m_masked) delete m_masked;
 
         m_mask = mask;
 
-        sitk::Image ref = dynamic_cast<CImageSITK*>(m_referenceImage)->GetSItkImage();
-        sitk::Image maskSITK = dynamic_cast<CImageSITK*>(m_mask)->GetSItkImage();
+        sitk::Image ref = m_referenceImage->GetSItkImage();
+        sitk::Image maskSITK = m_mask->GetSItkImage();
 
         m_masked = new CImageSITK();
 
@@ -294,11 +300,11 @@ public:
     ::CWzdDIC* m_parent;
     ::CMainWindow* m_wnd;
 
-    C3DImage* m_referenceImage;
-    C3DImage* m_deformedImage;
+    CImageSITK* m_referenceImage;
+    CImageSITK* m_deformedImage;
 
-    C3DImage* m_mask;
-    C3DImage* m_masked;
+    CImageSITK* m_mask;
+    CImageSITK* m_masked;
 
 
 };
@@ -312,7 +318,9 @@ CWzdDIC::CWzdDIC(CMainWindow* wnd) : ui(new Ui::CWzdDIC)
 
     connect(ui->referenceSelection, &QComboBox::currentIndexChanged, this, &CWzdDIC::on_referenceSelection_changed);
     connect(ui->deformedSelection, &QComboBox::currentIndexChanged, this, &CWzdDIC::on_deformedSelection_changed);
-    connect(ui->updateSubs, &QPushButton::clicked, this, &CWzdDIC::on_divisions_changed);
+    // connect(ui->updateSubs, &QPushButton::clicked, this, &CWzdDIC::on_divisions_changed);
+    connect(ui->xSize, &QSpinBox::valueChanged, this, &CWzdDIC::on_divisions_changed);
+    connect(ui->xSpacing, &QSpinBox::valueChanged, this, &CWzdDIC::on_divisions_changed);
     connect(ui->clearMask, &QPushButton::clicked, this, &CWzdDIC::on_clearMask_clicked);
     connect(ui->loadMask, &QPushButton::clicked, this, &CWzdDIC::on_loadMask_clicked);
     connect(ui->drawMask, &QPushButton::clicked, this, &CWzdDIC::on_drawMask_clicked);
@@ -335,14 +343,24 @@ bool CWzdDIC::validateCurrentPage()
 
         if(index > 0 && doc->ImageModels() > 0)
         {
-            ui->m_referenceImage = doc->GetImageModel(index-1)->Get3DImage();
+            ui->m_referenceImage = dynamic_cast<CImageSITK*>(doc->GetImageModel(index-1)->Get3DImage());
+        }
+        else
+        {
+            QMessageBox::critical(this, "Wizard Error", "Please select a valid reference Image");
+            return false;
         }
 
         index = ui->deformedSelection->currentIndex();
 
         if(index > 0 && doc->ImageModels() > 0)
         {
-            ui->m_deformedImage = doc->GetImageModel(index-1)->Get3DImage();
+            ui->m_deformedImage = dynamic_cast<CImageSITK*>(doc->GetImageModel(index-1)->Get3DImage());
+        }
+        else
+        {
+            QMessageBox::critical(this, "Wizard Error", "Please select a valid deformed Image");
+            return false;
         }
     }
 
@@ -351,13 +369,24 @@ bool CWzdDIC::validateCurrentPage()
 
 void CWzdDIC::initializePage(int id)
 {
-    if(id == MASK_PAGE)
+    switch (id)
     {
+    case MASK_PAGE:
         if(!ui->m_mask)
         {
             on_clearMask_clicked();
         }
+        break;
+    case SUBDIV_PAGE:
+    {
+        ui->xSize->setRange(0, std::min({ui->m_referenceImage->Height(), ui->m_referenceImage->Width()}));
+        on_divisions_changed();
+        break;
     }
+    default:
+        break;
+    }
+    
 }
 
 void CWzdDIC::on_referenceSelection_changed(int i)
@@ -395,29 +424,59 @@ void CWzdDIC::on_deformedSelection_changed(int i)
 
 void CWzdDIC::on_divisions_changed()
 {
-    ui->subdivisionImage->UpdatetRects(ui->xSize->value(), ui->xSpacing->value(), ui->ySize->value(), ui->ySpacing->value());
+    ui->xSpacing->setRange(0, ui->xSize->value() - 1);
+    if(ui->xSpacing->value() >= ui->xSize->value())
+    {
+        ui->xSpacing->setValue(ui->xSize->value() - 1);
+    }
+
+    // ui->subdivisionImage->UpdatetRects(ui->xSize->value(), ui->xSpacing->value(), ui->ySize->value(), ui->ySpacing->value());
+    ui->subdivisionImage->UpdatetRects(ui->xSize->value(), ui->xSpacing->value(), 0,0);
 }
 
 void CWzdDIC::on_clearMask_clicked()
 {
     auto ref = ui->m_referenceImage;
 
-    auto mask = new CImageSITK(ref->Width(), ref->Height(), ref->Depth());
+    auto mask = new CImageSITK(ref->Width(), ref->Height());
     Byte* data = mask->GetBytes();
-    for(int i = 0; i < ref->Width()*ref->Height()*ref->Depth(); i++)
+    for(int i = 0; i < ref->Width()*ref->Height(); i++)
     {
         data[i] = 255;
     }
 
-    mask->GetSItkImage().SetOrigin(dynamic_cast<CImageSITK*>(ref)->GetSItkImage().GetOrigin());
-    mask->GetSItkImage().SetSpacing(dynamic_cast<CImageSITK*>(ref)->GetSItkImage().GetSpacing());
+    mask->GetSItkImage().SetOrigin(ref->GetSItkImage().GetOrigin());
+    mask->GetSItkImage().SetSpacing(ref->GetSItkImage().GetSpacing());
 
     ui->setMask(mask);
 }
 
 void CWzdDIC::on_loadMask_clicked()
 {
+    QString filename = QFileDialog::getOpenFileName(this, "Mask Image", "", "Images (*.png *.tif *.tiff *.jpg *.jpeg)"); 
 
+    if(!QFileInfo::exists(filename))
+    {
+        QMessageBox::critical(this, "Image Error", QString("File %1 does not exist").arg(filename));
+        return;
+    }
+
+    auto ref = ui->m_referenceImage;
+    
+    auto mask = new CImageSITK;
+    mask->LoadFromFile(filename.toStdString(), false);
+
+    if(mask->Width() != ref->Width() || mask->Height() != ref->Height() || mask->Depth() != ref->Depth() 
+        || mask->GetSItkImage().GetDimension() != ref->GetSItkImage().GetDimension())
+    {
+        QMessageBox::critical(this, "Image Error", "Mask must have same size and number of dimensions as reference image");
+        return;
+    }
+
+    mask->GetSItkImage().SetOrigin(ref->GetSItkImage().GetOrigin());
+    mask->GetSItkImage().SetSpacing(ref->GetSItkImage().GetSpacing());
+
+    ui->setMask(mask);
 }
 
 void CWzdDIC::on_drawMask_clicked()
@@ -437,7 +496,7 @@ void CWzdDIC::on_drawMask_clicked()
         QImage dlgMask = dlg.GetPixmap()->toImage().transformed(QTransform().scale(1,-1));
 
         auto ref = ui->m_referenceImage;
-        auto mask = new CImageSITK(ref->Width(), ref->Height(), ref->Depth());
+        auto mask = new CImageSITK(ref->Width(), ref->Height());
         Byte* data = mask->GetBytes();
         for(int j = 0; j < ref->Height(); j++)
         {
@@ -447,8 +506,8 @@ void CWzdDIC::on_drawMask_clicked()
             }
         }
 
-        mask->GetSItkImage().SetOrigin(dynamic_cast<CImageSITK*>(ref)->GetSItkImage().GetOrigin());
-        mask->GetSItkImage().SetSpacing(dynamic_cast<CImageSITK*>(ref)->GetSItkImage().GetSpacing());
+        mask->GetSItkImage().SetOrigin(ref->GetSItkImage().GetOrigin());
+        mask->GetSItkImage().SetSpacing(ref->GetSItkImage().GetSpacing());
 
         ui->setMask(mask);
 

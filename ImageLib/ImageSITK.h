@@ -39,6 +39,7 @@ class CImageSITK : public C3DImage
 public:
     CImageSITK();
     CImageSITK(int nx, int ny, int nz);
+    CImageSITK(int nx, int ny);
     ~CImageSITK();
 
     bool LoadFromFile(std::string, bool isDicom);

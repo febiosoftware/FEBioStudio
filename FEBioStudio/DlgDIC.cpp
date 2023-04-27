@@ -521,6 +521,8 @@ CDlgDIC::CDlgDIC(Post::CImageModel* model)
 
     buttonLayout->addWidget(newCircleNeg);
 
+    buttonLayout->addStretch();
+
     hLayout->addLayout(buttonLayout);
 
     hLayout->addWidget(m_mask = new QGraphicsView);

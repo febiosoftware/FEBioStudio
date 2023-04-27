@@ -47,19 +47,19 @@ CDICTool::CDICTool(CMainWindow* wnd) : CBasicTool(wnd, "DIC", HAS_APPLY_BUTTON),
 
 bool CDICTool::OnApply()
 {
-    CDICImage refImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img1)->Get3DImage()));
-    CDICImage defImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img2)->Get3DImage()));
+    // CDICImage refImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img1)->Get3DImage()));
+    // CDICImage defImg(dynamic_cast<CImageSITK*>(m_wnd->GetModelDocument()->GetImageModel(m_img2)->Get3DImage()));
 
-    CDICMatching match(refImg, defImg, 1);
+    // CDICMatching match(refImg, defImg, 1);
 
-    CDICQ4 interp(match);
-
-    return true;
-
-    // CWzdDIC wzd(m_wnd);
-
-    // wzd.exec();
+    // CDICQ4 interp(match);
 
     // return true;
+
+    CWzdDIC wzd(m_wnd);
+
+    wzd.exec();
+
+    return true;
 
 }
