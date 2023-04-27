@@ -38,7 +38,7 @@ bool PRVArchive::Load(const char* szfile)
 	if (Open(szfile, "rb") == false) return false;
 
 	// open the archive        P R V
-	return m_ar.Open(m_fp, 0x00505256);
+	return m_ar.Open(m_fp, 0x00505256, szfile);
 }
 
 void PRVArchive::Close()

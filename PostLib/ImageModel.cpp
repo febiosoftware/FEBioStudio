@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <ImageLib/FiberODFAnalysis.h>
 #include "GLImageRenderer.h"
 #include <PostLib/VolumeRenderer.h>
+#include <PostLib/TiffReader.h>
 #include <FSCore/FSDir.h>
 #include <assert.h>
 
@@ -295,6 +296,10 @@ void CImageModel::Load(IArchive& ar)
                         break;
                     case CImageSource::SERIES:
                         m_img = new CITKSeriesImageSource(this);
+                        m_img->Load(ar);
+                        break;
+                    case CImageSource::TIFF:
+                        m_img = new CTiffImageSource(this);
                         m_img->Load(ar);
                         break;
                     default:

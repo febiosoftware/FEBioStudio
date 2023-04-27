@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <sstream>
 #include <iostream>
 #include <ImageLib/ImageSITK.h>
+#include <QFileInfo>
+#include <QDir>
 
 #ifndef  WORD
 #define WORD	uint16_t
@@ -178,7 +180,7 @@ CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::strin
 	m->filename = filename;
 }
 
-CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel) : CImageSource(RAW, imgModel), m(new CTiffImageSource::Impl)
+CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel) : CImageSource(TIFF, imgModel), m(new CTiffImageSource::Impl)
 {
 }
 
@@ -718,12 +720,77 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 
 void CTiffImageSource::Save(OArchive& ar)
 {
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
+    std::string relName = dir.relativeFilePath(m->filename.c_str()).toStdString();
+
+    ar.WriteChunk(0, relName);
+
+    BOX box = m_originalImage->GetBoundingBox();
+    ar.WriteChunk(100, box.x0);
+    ar.WriteChunk(101, box.y0);
+    ar.WriteChunk(102, box.z0);
+    ar.WriteChunk(103, box.x1);
+    ar.WriteChunk(104, box.y1);
+    ar.WriteChunk(105, box.z1);
 
 }
 
 void CTiffImageSource::Load(IArchive& ar)
 {
+    BOX tempBox;
+    bool foundBox = false;
 
+    QFileInfo info(ar.GetFilename().c_str());
+    QDir dir = info.dir();
+    while (ar.OpenChunk() == IArchive::IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case 0:
+        {
+			std::string temp;
+			ar.read(temp);
+
+            QString path = QString("%1/%2").arg(dir.path()).arg(temp.c_str());
+
+            m->filename = dir.toNativeSeparators(path).toStdString();
+			break;
+        }
+
+        case 100:
+			ar.read(tempBox.x0);
+            foundBox = true;
+            break;
+        case 101:
+			ar.read(tempBox.y0);
+            break;
+        case 102:
+			ar.read(tempBox.z0);
+            break;
+        case 103:
+			ar.read(tempBox.x1);
+            break;
+        case 104:
+			ar.read(tempBox.y1);
+            break;
+        case 105:
+			ar.read(tempBox.z1);
+            break;
+		}
+		ar.CloseChunk();
+	}
+
+    // Read in image data
+    Load();
+
+    // Set location of image if it was saved
+    if(foundBox)
+    {
+        m_img->SetBoundingBox(tempBox);
+    }
 }
 
 class LZWDecompress

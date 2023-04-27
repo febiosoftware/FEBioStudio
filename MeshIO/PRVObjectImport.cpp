@@ -44,7 +44,7 @@ bool PRVObjectImport::Load(const char* szfile)
 	if (Open(szfile, "rb") == false) return false;
 
 	// open archive         P V O
-	if (m_ar.Open(m_fp, 0x0050564F) == false) return false;
+	if (m_ar.Open(m_fp, 0x0050564F, szfile) == false) return false;
 
 	bool ret = LoadObjects(m_ar, m_prj);
 
