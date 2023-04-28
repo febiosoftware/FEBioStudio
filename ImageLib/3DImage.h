@@ -40,7 +40,7 @@ public:
 	virtual ~C3DImage();
 	void CleanUp();
 
-	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0, int pixelType = UINT_8);
+	virtual bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0, int pixelType = UINT_8);
 
 	void BitBlt(CImage& im, int nslice);
 	void StretchBlt(CImage& im, int nslice);

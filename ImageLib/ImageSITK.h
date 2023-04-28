@@ -42,6 +42,8 @@ public:
 
 	bool CreateFrom3DImage(C3DImage* im);
 
+	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0, int pixelType = UINT_8) override;
+
     bool LoadFromFile(std::string, bool isDicom);
     bool LoadFromStack(std::vector<std::string> filenames);
 
