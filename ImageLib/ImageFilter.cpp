@@ -306,7 +306,7 @@ void WarpImageFilter::ApplyFilter()
 	// calculate scale factors
 	double sx = box.Width() / box0.Width();
 	double sy = box.Height() / box0.Height();
-	double sz = (im->Depth() == 1 ? 1.0 : box.Depth() / box0.Depth());
+	double sz = (im->Depth() <= 1 ? 1.0 : box.Depth() / box0.Depth());
 
 	double w = box.Width();
 	double h = box.Height();
@@ -317,6 +317,7 @@ void WarpImageFilter::ApplyFilter()
 	int nx = (dimScale ? (int)(sx*im->Width ()) : im->Width ());
 	int ny = (dimScale ? (int)(sy*im->Height()) : im->Height());
 	int nz = (dimScale ? (int)(sz*im->Depth ()) : im->Depth ());
+	if (nz == 0) nz = 1;
 
 	int voxels = nx * ny * nz;
 	Byte* dst_buf = new Byte[voxels];
@@ -329,7 +330,7 @@ void WarpImageFilter::ApplyFilter()
 	vec3d r0 = box.r0();
 	vec3d r1 = box.r1();
 
-	if (im->Depth() == 1)
+	if (im->Depth() <= 1)
 	{
 		for (int j = 0; j < ny; ++j)
 		{

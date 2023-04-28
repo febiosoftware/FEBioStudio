@@ -246,7 +246,7 @@ Byte CImageModel::ValueAtGlobalPos(vec3d pos)
         return 0;
     }
 
-	if (Get3DImage()->Depth() == 1)
+	if (Get3DImage()->Depth() <= 1)
 	{
 		double x = (pos.x - box.x0) / (box.x1 - box.x0);
 		double y = (pos.y - box.y0) / (box.y1 - box.y0);
