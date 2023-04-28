@@ -55,7 +55,7 @@ void CDICMatching::FFTCorrelation()
     m_match_points.resize(m_ref_center_points.size());
     m_NCC.resize(m_ref_center_points.size());
 
-    #pragma omp parallel for
+    // #pragma omp parallel for
 	for (int n = 0; n < m_ref_center_points.size(); n++)
 	{
 
