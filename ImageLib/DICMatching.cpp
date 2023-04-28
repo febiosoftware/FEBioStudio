@@ -51,6 +51,11 @@ void CDICMatching::run()
 
 void CDICMatching::FFTCorrelation()
 {
+    
+    m_match_points.resize(m_ref_center_points.size());
+    m_NCC.resize(m_ref_center_points.size());
+
+    #pragma omp parallel for
 	for (int n = 0; n < m_ref_center_points.size(); n++)
 	{
 
@@ -63,10 +68,10 @@ void CDICMatching::FFTCorrelation()
 		match.x = results[0];
 		match.y = results[1];
 
-		m_match_points.push_back(match);
+		m_match_points[n] = match;
 
 		//save metric (NCC) values
-		m_NCC.push_back(results[5]);
+		m_NCC[n] = results[5];
 
 
 	}
@@ -274,7 +279,7 @@ std::vector<int> CDICMatching::FFT_TemplateMatching(sitk::Image fixed, sitk::Ima
 	//}
 	
 
-if (moving.GetOrigin() != fixed.GetOrigin())
+    if (moving.GetOrigin() != fixed.GetOrigin())
 	{
 		moving.SetOrigin({ 0,0 });
 		fixed.SetOrigin({ 0,0 });
