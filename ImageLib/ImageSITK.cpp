@@ -268,7 +268,7 @@ void CImageSITK::SetBoundingBox(BOX& box)
 			m_sitkImage.SetSpacing({ (box.x1 - box.x0) / size[0], (box.y1 - box.y0) / size[1] });
 		else
 		{
-			double dz = ((box.Depth() == 0)||(size[2]==0) ? 1 : box.Depth());
+			double dz = ((box.Depth() == 0)||(size[2]==0) ? 1 : (box.z1 - box.z0) / size[2]);
 			m_sitkImage.SetSpacing({ (box.x1 - box.x0) / size[0], (box.y1 - box.y0) / size[1], dz });
 		}
 	}
