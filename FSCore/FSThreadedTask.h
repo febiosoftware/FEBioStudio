@@ -29,7 +29,6 @@ SOFTWARE.*/
 struct FSTaskProgress
 {
 	bool		valid;
-	bool		cancelled;
 	double		percent;
 	const char*	task;
 	bool		canceled;
@@ -45,7 +44,7 @@ struct FSTaskProgress
 	FSTaskProgress(double p, const char* sz)
 	{
 		valid = false;
-		cancelled = false;
+		canceled = false;
 		percent = p;
 		task = sz;
 	}

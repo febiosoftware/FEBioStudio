@@ -29,5 +29,5 @@ SOFTWARE.*/
 CImageAnalysis::CImageAnalysis(int type, Post::CImageModel* img)
     : m_img(img), m_type(type)
 {
-
+	m_active = true;
 }
