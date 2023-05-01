@@ -39,6 +39,8 @@ SOFTWARE.*/
 
 using namespace Post;
 
+enum SaveIDs { BASE = 0, IMAGESOURCE, FILTERS, ANALYSES, VIEWSETTINGS};
+
 CImageModel::CImageModel(CGLModel* mdl) : CGLObject(mdl)
 {
 	m_showBox = true;
@@ -178,7 +180,7 @@ void CImageModel::SetBoundingBox(BOX b)
 
 void CImageModel::Save(OArchive& ar)
 {
-	ar.BeginChunk(0);
+	ar.BeginChunk(BASE);
 	{
 		FSObject::Save(ar);
 	}
@@ -186,7 +188,7 @@ void CImageModel::Save(OArchive& ar)
 
 	if (m_img)
 	{
-		ar.BeginChunk(1);
+		ar.BeginChunk(IMAGESOURCE);
 		{
             ar.BeginChunk((int)m_img->Type());
             {
@@ -199,7 +201,7 @@ void CImageModel::Save(OArchive& ar)
 
 	if (m_filters.IsEmpty() == false)
 	{
-		ar.BeginChunk(2);
+		ar.BeginChunk(FILTERS);
 		{
 			for (int index = 0; index < m_filters.Size(); index++)
 			{
@@ -215,7 +217,7 @@ void CImageModel::Save(OArchive& ar)
 
     if (m_analyses.IsEmpty() == false)
 	{
-		ar.BeginChunk(3);
+		ar.BeginChunk(ANALYSES);
 		{
 			for (int index = 0; index < m_analyses.Size(); index++)
 			{
@@ -228,6 +230,12 @@ void CImageModel::Save(OArchive& ar)
 		}
 		ar.EndChunk();
 	}
+
+    ar.BeginChunk(VIEWSETTINGS);
+    {
+        viewSettings.Save(ar);
+    }
+    ar.EndChunk();
 }
 
 CImageSource* CImageModel::GetImageSource()
@@ -275,10 +283,10 @@ void CImageModel::Load(IArchive& ar)
 
 		switch (nid)
 		{
-		case 0:
+		case BASE:
 			FSObject::Load(ar);
 			break;
-		case 1:
+		case IMAGESOURCE:
 			{
 				while (ar.OpenChunk() == IArchive::IO_OK)
                 {
@@ -309,7 +317,7 @@ void CImageModel::Load(IArchive& ar)
 				}
 			}
 			break;
-        case 2:
+        case FILTERS:
 			{
 				while (ar.OpenChunk() == IArchive::IO_OK)
                 {
@@ -349,7 +357,7 @@ void CImageModel::Load(IArchive& ar)
 				}
 			}
 			break;
-        case 3:
+        case ANALYSES:
 			{
 				while (ar.OpenChunk() == IArchive::IO_OK)
                 {
@@ -371,6 +379,11 @@ void CImageModel::Load(IArchive& ar)
 				}
 			}
 			break;
+        case VIEWSETTINGS:
+            viewSettings.Load(ar);
+            break;
+        default:
+            break;
 		}
 		ar.CloseChunk();
 	}
