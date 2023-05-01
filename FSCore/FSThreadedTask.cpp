@@ -99,7 +99,7 @@ void FSThreadedTask::resetProgress()
 {
 	m_progress.valid = false;
 	m_progress.percent = 0;
-	m_progress.cancelled = false;
+	m_progress.canceled = false;
 	m_progress.task = nullptr;
 }
 

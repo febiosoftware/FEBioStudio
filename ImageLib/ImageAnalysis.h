@@ -52,9 +52,14 @@ public:
     virtual void run() = 0;
     virtual void render(CGLCamera* cam = nullptr) {}
 	virtual bool display() { return false; }
+
+	bool IsActive() const { return m_active; }
+	void Activate(bool b) { m_active = b; }
+
 protected:
     Post::CImageModel* m_img;
 private:
     int m_type;
 
+	bool	m_active;
 };
