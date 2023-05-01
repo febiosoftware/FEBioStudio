@@ -948,6 +948,8 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
         #pragma omp for schedule(dynamic)
         for (int z = 0; z < nz; z++)
         {
+            if (IsCanceled()) continue;
+
             for (int y = 0; y < ny; y++)
             {
                 for (int x = 0; x < nx; x++)
