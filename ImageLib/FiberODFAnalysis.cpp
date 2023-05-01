@@ -987,8 +987,6 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
                 }
             }
 
-			if (IsCanceled()) break;
-
 			#pragma omp critical
 			{
 				zcount++;
