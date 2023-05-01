@@ -63,9 +63,10 @@ using std::vector;
 using std::complex;
 
 enum { 
-	ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, DISP, MESHLINES, RADIAL, FITTING, 
+	ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, OVERLAP, FITTING,
+    DISP, RENDERSCALE, MESHLINES, RADIAL, 
 	SHOW_MESH, SHOW_SELBOX, COLOR_MODE,
-	DIVS, RANGE, USERMIN, USERMAX, OVERLAP
+	DIVS, RANGE, USERMIN, USERMAX
 };
 
 //==================================================================
@@ -88,6 +89,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	SetName(ss.str());
 
     m_overlapFraction = 0.2;
+    m_renderScale = 1;
 	m_nshowMesh = 0;
 	m_bshowRadial = false;
 	m_nshowSelectionBox = true;
@@ -105,10 +107,12 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
     AddIntParam(1, "X Divisions");
     AddIntParam(1, "Y Divisions");
     AddIntParam(1, "Z Divisions");
+    AddDoubleParam(m_overlapFraction, "Overlap Fraction");
+    AddBoolParam(true, "Do fitting analysis");
     AddBoolParam(true, "Display in graphics view");
+    AddDoubleParam(m_renderScale, "renderScale", "Render Scale")->SetFloatRange(0,1);
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
-    AddBoolParam(true, "Do fitting analysis");
 	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
 	AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
@@ -116,7 +120,6 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	AddIntParam(m_rangeOption, "Range")->SetEnumNames("automatic\0user\0");
 	AddDoubleParam(m_userMin, "User min");
 	AddDoubleParam(m_userMax, "User max");
-    AddDoubleParam(m_overlapFraction, "Overlap Fraction");
 
 	m_tex.SetDivisions(10);
 	m_tex.SetSmooth(true);
@@ -379,6 +382,11 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 			m_nshowMesh   = GetIntValue(SHOW_MESH); 
 			updateMeshes = true;
 		}
+
+        if(m_renderScale != GetFloatValue(RENDERSCALE))
+        {
+            m_renderScale = GetFloatValue(RENDERSCALE);
+        }
 
 		if (m_ncolormode != GetIntValue(COLOR_MODE))
 		{
@@ -669,7 +677,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 					l[0] /= lmax;
 					l[1] /= lmax;
 					l[2] /= lmax;
-					RenderEllipsoid(pglyph, odf->m_radius, l, e);
+					RenderEllipsoid(pglyph, odf->m_radius*m_renderScale, l, e);
 				}
 			}
 			glPopMatrix();
@@ -690,7 +698,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 				glx::renderBox(odf->m_box, false, 0.99);
 			}
 
-			glScaled(odf->m_radius, odf->m_radius, odf->m_radius);
+			glScaled(odf->m_radius*m_renderScale, odf->m_radius*m_renderScale, odf->m_radius*m_renderScale);
 			if (odf->m_active) renderODFMesh(odf, cam);
 
 			glPopMatrix();
