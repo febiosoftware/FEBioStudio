@@ -925,6 +925,11 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					ui->showMeshDataInfo(true, pd);
 					ui->showObjectInfo(false);
 				}
+				else if (dynamic_cast<CImageAnalysis*>(po))
+				{
+					CImageAnalysis* ima = dynamic_cast<CImageAnalysis*>(po);
+					ui->showObjectInfo(true, false, nameEditable, QColor(), true, ima->IsActive());
+				}
 				else ui->showObjectInfo(true, false, nameEditable);
 			}
 			else ui->showObjectInfo(false);
@@ -1581,11 +1586,18 @@ void CModelPropsPanel::on_object_statusChanged(bool b)
 	if (m_isUpdating) return;
 
 	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(m_currentObject);
-	if (po == 0) return;
+	if (po)
+	{
+		po->Activate(b);
+		emit dataChanged(false);
+	}
 
-	po->Activate(b);
-
-	emit dataChanged(false);
+	CImageAnalysis* ima = dynamic_cast<CImageAnalysis*>(m_currentObject);
+	if (ima)
+	{
+		ima->Activate(b);
+		emit dataChanged(false);
+	}
 }
 
 void CModelPropsPanel::on_math_mathChanged(QString m)

@@ -126,6 +126,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	m_pbar->SetType(GLLegendBar::GRADIENT);
 	m_pbar->copy_label("ODF");
 	m_pbar->ShowTitle(true);
+	m_pbar->hide();
 
 	CGLWidgetManager::GetInstance()->AddWidget(m_pbar, 0xFF);
 }
@@ -143,6 +144,7 @@ void CFiberODFAnalysis::clear()
         delete odf;
     }
     m_ODFs.clear();
+	if (m_pbar) m_pbar->hide();
 }
 
 double rms(const vector<double>& x)
@@ -362,6 +364,7 @@ void CFiberODFAnalysis::run()
 	UpdateStats();
 	UpdateAllMeshes();
 	UpdateColorBar();
+	m_pbar->show();
 }
 
 bool CFiberODFAnalysis::UpdateData(bool bsave)
@@ -609,6 +612,16 @@ void RenderEllipsoid(GLUquadricObj* po, float scale, float* l, vec3f* e)
 
 void CFiberODFAnalysis::render(CGLCamera* cam)
 {
+	if (IsActive() == false)
+	{
+		m_pbar->hide();
+		return;
+	}
+	else if (m_ODFs.empty() == false)
+	{
+		m_pbar->show();
+	}
+
     glPushAttrib(GL_ENABLE_BIT);
     glEnable(GL_COLOR_MATERIAL);
     GLfloat spc[4] = { 0, 0, 0, 1.f };
@@ -963,6 +976,8 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
                     tmp[closestIndex] += data[index];
                 }
             }
+
+			if (IsCanceled()) break;
 
 			#pragma omp critical
 			{
