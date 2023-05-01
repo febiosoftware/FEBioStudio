@@ -159,6 +159,7 @@ private:
 	int		m_nshowMesh;
 	bool	m_bshowRadial;
 	bool	m_nshowSelectionBox;
+    double  m_renderScale;
 	int		m_ncolormode;
 	int		m_ndivs;
 	int		m_rangeOption;
