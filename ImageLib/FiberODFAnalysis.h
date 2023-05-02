@@ -173,4 +173,5 @@ private:
 
 	Post::CColorTexture	m_tex;
 	GLLegendBar* m_pbar;
+    Post::CColorMap m_map;
 };

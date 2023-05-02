@@ -124,6 +124,7 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	m_tex.SetDivisions(10);
 	m_tex.SetSmooth(true);
 
+    m_map.jet();
 	m_pbar = new GLLegendBar(&m_tex, 0, 0, 120, 600, GLLegendBar::ORIENT_VERTICAL);
 	m_pbar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
 	m_pbar->SetType(GLLegendBar::GRADIENT);
@@ -365,8 +366,8 @@ void CFiberODFAnalysis::run()
 	setProgress(100);
 	SelectODF(0);
 	UpdateStats();
+    UpdateColorBar();
 	UpdateAllMeshes();
-	UpdateColorBar();
 	m_pbar->show();
 }
 
@@ -391,7 +392,7 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 		if (m_ncolormode != GetIntValue(COLOR_MODE))
 		{
 			m_ncolormode = GetIntValue(COLOR_MODE);
-			UpdateColorBar();
+			updateMeshes = true;
 		}
 
 		if (m_rangeOption != GetIntValue(RANGE))
@@ -422,8 +423,8 @@ bool CFiberODFAnalysis::UpdateData(bool bsave)
 
 		if (updateMeshes)
 		{
-			UpdateAllMeshes();
 			UpdateColorBar();
+            UpdateAllMeshes();
 		}
 	}
 
@@ -523,11 +524,24 @@ void CFiberODFAnalysis::UpdateColorBar()
 
 		m_pbar->SetRange(vmin, vmax);
 		m_pbar->copy_label(szlabel);
+
+        m_map.SetRange(vmin, vmax);
 	}
 	else
 	{
-		m_pbar->SetRange(m_FAmin, m_FAmax);
+        double vmin = m_FAmin;
+        double vmax = m_FAmax;
+
+        if (m_rangeOption != 0)
+		{
+			vmin = m_userMin;
+			vmax = m_userMax;
+		}
+
+		m_pbar->SetRange(vmin, vmax);
 		m_pbar->copy_label("FA");
+
+        m_map.SetRange(vmin, vmax);
 	}
 }
 
@@ -640,9 +654,6 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 	int showMesh = GetIntValue(SHOW_MESH);
 	if (showMesh == 3)
 	{
-		Post::CColorMap map;
-		map.jet();
-		map.SetRange(m_FAmin, m_FAmax);
 		glEnable(GL_COLOR_MATERIAL);
 
 		GLUquadricObj* pglyph = gluNewQuadric();
@@ -661,7 +672,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 
 			if (odf->m_active)
 			{
-				GLColor c = map.map(odf->m_FA);
+				GLColor c = m_map.map(odf->m_FA);
 				glColor3ub(c.r, c.g, c.b);
 
 				float l[3], lmax = -1e34;
@@ -722,10 +733,7 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 	if (ncolor == 0) glEnable(GL_COLOR_MATERIAL);
 	else
 	{
-		Post::CColorMap map;
-		map.jet();
-		map.SetRange(m_FAmin, m_FAmax);
-		GLColor c = map.map(odf->m_FA);
+		GLColor c = m_map.map(odf->m_FA);
 
 		glEnable(GL_COLOR_MATERIAL);
 		glColor3ub(c.r, c.g, c.b);
@@ -1102,9 +1110,6 @@ void CFiberODFAnalysis::buildMesh(CODF* odf)
 
 void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double vmin, double vmax, bool bradial)
 {
-	Post::CColorMap map;
-	map.jet();
-
 	if (m_rangeOption != 0)
 	{
 		vmin = m_userMin;
@@ -1112,12 +1117,11 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 	}
 
 	if (vmin == vmax) vmax++;
-	double scale = 1.0 / (vmax - vmin);
 
 	double rmax = *std::max_element(val.begin(), val.end());
 	if (rmax == 0.0) rmax = 1.0;
 
-	// create nodes
+	// udpate nodes
 	GMesh& mesh = odf->m_mesh;
 	for (int i = 0; i < NPTS; ++i)
 	{
@@ -1131,13 +1135,13 @@ void CFiberODFAnalysis::UpdateMesh(CODF* odf, const vector<double>& val, double 
 		else node.r = vec3d(XCOORDS[i], YCOORDS[i], ZCOORDS[i]);
 	}
 
-	// create elements
+	// update colors
 	for (int i = 0; i < NCON; ++i)
 	{
 		auto& el = mesh.Face(i);
-		el.c[0] = map.map((val[el.n[0]] - vmin) * scale);
-		el.c[1] = map.map((val[el.n[1]] - vmin) * scale);
-		el.c[2] = map.map((val[el.n[2]] - vmin) * scale);
+		el.c[0] = m_map.map((val[el.n[0]]));
+		el.c[1] = m_map.map((val[el.n[1]]));
+		el.c[2] = m_map.map((val[el.n[2]]));
 	}
 
 	mesh.Update();
@@ -1203,10 +1207,6 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
 
     double min = *std::min_element(newODF.begin(), newODF.end());
     double max = *std::max_element(newODF.begin(), newODF.end());
-    double scale = 1/(max - min);
-
-    Post::CColorMap map;
-    map.jet();
 
     // create elements
 	for (int i=0; i<NF; ++i)
@@ -1216,9 +1216,9 @@ void CFiberODFAnalysis::buildRemesh(CODF* odf)
         el.n[1] = elems[i].y;
         el.n[2] = elems[i].z;
 
-        el.c[0] = map.map(newODF[el.n[0]]*scale);
-        el.c[1] = map.map(newODF[el.n[1]]*scale);
-        el.c[2] = map.map(newODF[el.n[2]]*scale);
+        el.c[0] = m_map.map(newODF[el.n[0]]);
+        el.c[1] = m_map.map(newODF[el.n[1]]);
+        el.c[2] = m_map.map(newODF[el.n[2]]);
 	}
     mesh.Update();
 }
@@ -1242,6 +1242,16 @@ void CFiberODFAnalysis::UpdateRemesh(CODF* odf, bool bradial)
 			node.r *= val_i;
 		}
 	}
+
+    // update colors
+	for (int i = 0; i < mesh.Faces(); ++i)
+	{
+		auto& el = mesh.Face(i);
+		el.c[0] = m_map.map((val[el.n[0]]));
+		el.c[1] = m_map.map((val[el.n[1]]));
+		el.c[2] = m_map.map((val[el.n[2]]));
+	}
+
 	mesh.Update();
 }
 
@@ -1935,7 +1945,7 @@ void CFiberODFAnalysis::Load(IArchive& ar)
         setProgress(100);
         SelectODF(0);
         UpdateStats();
-        UpdateAllMeshes();
         UpdateColorBar();
+        UpdateAllMeshes();
     }
 }
