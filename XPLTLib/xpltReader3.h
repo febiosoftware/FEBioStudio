@@ -186,7 +186,8 @@ public:
 		PLT_ELEM_TRI10,
 		PLT_ELEM_PYRA5,
 		PLT_ELEM_TET5,
-        PLT_ELEM_PYRA13
+        PLT_ELEM_PYRA13,
+		PLT_ELEM_LINE3			// new in 3.3
 	};
 
 	// size of name variables
