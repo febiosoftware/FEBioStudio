@@ -363,7 +363,7 @@ void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d&
 	}
 }
 
-void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
+void glx::drawSmoothPath(const std::vector<vec3d>& path, float R, float t0, float t1)
 {
 	int NP = (int)path.size();
 	if (NP < 2) return;
@@ -386,12 +386,15 @@ void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
 			e2 = r1 - r0; e2.Normalize();
 		}
 
+		float tex0 = t0 + (i / (NP - 1.0) * (t1 - t0));
+		float tex1 = t0 + ((i + 1) / (NP - 1.0) * (t1 - t0));
+
 		// render cylinder
-		glx::drawSmoothPath(r0, r1, R, e1, e2, 0.f, 0.f, 32);
+		glx::drawSmoothPath(r0, r1, R, e1, e2, tex0, tex1, 32);
 		
 		// render caps
-		if (i ==    0) glx::drawHalfSphere(r0, R, -e1);
-		if (i == NP-2) glx::drawHalfSphere(r1, R,  e2);
+		if (i ==    0) glx::drawHalfSphere(r0, R, -e1, tex0);
+		if (i == NP-2) glx::drawHalfSphere(r1, R,  e2, tex1);
 
 		// prep for next segment
 		r0 = r1;

@@ -530,6 +530,9 @@ bool FEElement_::is_equal(FEElement_& e)
 	switch (Type())
 	{
 	case FE_BEAM2:
+		if ((n[0] != m[0]) && (n[0] != m[1]) && (n[0] != m[2])) return false;
+		if ((n[1] != m[0]) && (n[1] != m[1]) && (n[1] != m[2])) return false;
+		break;
 	case FE_TRI3:
     case FE_TRI6:
 		if ((n[0]!=m[0])&&(n[0]!=m[1])&&(n[0]!=m[2])) return false;

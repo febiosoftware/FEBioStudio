@@ -2559,7 +2559,7 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}
@@ -2592,7 +2592,7 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}
@@ -2626,7 +2626,7 @@ void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}

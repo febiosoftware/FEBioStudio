@@ -59,7 +59,7 @@ void drawHelix(const vec3d& a, const vec3d& b, double R, double p, int N);
 void drawSphere(const vec3d& r, float R);
 void drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex = 0.f);
 void drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0 = 0.f, float t1 = 1.f, int nsegs = 16);
-void drawSmoothPath(const std::vector<vec3d>& path, float R);
+void drawSmoothPath(const std::vector<vec3d>& path, float R, float t0 = 0.f, float t1 = 1.f);
 void drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
 void drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0 = 0.f, float t1 = 1.f, int N = 16);
 

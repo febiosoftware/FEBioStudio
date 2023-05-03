@@ -908,7 +908,7 @@ void FSMesh::UpdateElementNeighbors()
 		}
 
 		// do the beam elements
-		if (pe->IsType(FE_BEAM2))
+		if (pe->IsBeam())
 		{
 			for (int j = 0; j < 2; ++j)
 			{
@@ -921,7 +921,7 @@ void FSMesh::UpdateElementNeighbors()
 					FEElement_* pne = NET.Element(inode, k);
 					if (pne != pe)
 					{
-						if ((pne->IsType(FE_BEAM2)) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
+						if ((pne->IsBeam()) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
 						{
 							pe->m_nbr[j] = NET.ElementIndex(inode, k);
 							break;
