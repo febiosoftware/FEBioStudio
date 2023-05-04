@@ -91,13 +91,16 @@ private slots:
     void on_runButton_pressed();
     void on_odfSelector_currentIndexChanged(int index);
     void on_odfCheck_stateChanged(int state);
-    void on_copyToMatButton_pressed();
+    void on_copyODF_triggered();
+    void on_copyEFD_triggered();
     void on_saveSphHarm_triggered();
     void on_saveODFs_triggered();
     void on_saveStats_triggered();
 
 private:
-    void findMaterials(FSMaterial* mat, std::string name, std::vector<std::pair<std::string,FSMaterial*>>& materials);
+    FSMaterial* getMaterial(std::string type);
+    void findMaterials(FSMaterial* mat, std::string type, std::string name, std::vector<std::pair<std::string,FSMaterial*>>& materials);
+    void interpolateEFDParams();
 
 private:
     CMainWindow* m_wnd;
