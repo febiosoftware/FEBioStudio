@@ -58,8 +58,13 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEMLib/FECoreMaterial.h>
 #include <FECore/fecore_enum.h>
+#include <FECore/mat3d.h>
+#include <FECore/mathalg.h>
 #include <ImageLib/FiberODFAnalysis.h>
 #include <FEAMR/spherePoints.h>
+#include <GeomLib/GObject.h>
+#include <MeshLib/FEMesh.h>
+#include <MeshLib/FEElementData.h>
 #include "DlgStartThread.h"
 #include "PropertyList.h"
 #include <XML/XMLWriter.h>
@@ -258,6 +263,9 @@ public:
     QWidget* sphHarmTab;
     QTableWidget* sphHarmTable;
     QPushButton* copyToMatButton;
+    QMenu* copyMenu;
+    QAction* copyODF;
+    QAction* copyEFD;
     QPushButton* saveToXMLButton;
     QMenu* saveMenu;
     QAction* saveSphHarm;
@@ -344,13 +352,16 @@ public:
         buttonLayout->setContentsMargins(0,0,0,0);
 
         buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material"));
+        copyMenu = new QMenu;
+        copyMenu->addAction(copyODF = new QAction("FiberODF Material"));
+        copyMenu->addAction(copyEFD = new QAction("EFD Material"));
+        copyToMatButton->setMenu(copyMenu);
+
         buttonLayout->addWidget(saveToXMLButton = new QPushButton("Save to CSV..."));
-        
         saveMenu = new QMenu;
         saveMenu->addAction(saveODFs = new QAction("ODFs"));
         saveMenu->addAction(saveSphHarm = new QAction("Spherical Harmonics"));
         saveMenu->addAction(saveStats = new QAction("Statistics"));
-
         saveToXMLButton->setMenu(saveMenu);
 
         secondPageLayout->addLayout(buttonLayout);
@@ -466,7 +477,8 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
     connect(ui->runButton, &QPushButton::pressed, this, &CFiberODFWidget::on_runButton_pressed);
     connect(ui->odfSelector, &QComboBox::currentIndexChanged, this, &CFiberODFWidget::on_odfSelector_currentIndexChanged);
     connect(ui->odfCheck, &QCheckBox::stateChanged, this, &CFiberODFWidget::on_odfCheck_stateChanged);
-    connect(ui->copyToMatButton, &QPushButton::pressed, this, &CFiberODFWidget::on_copyToMatButton_pressed);
+    connect(ui->copyODF, &QAction::triggered, this, &CFiberODFWidget::on_copyODF_triggered);
+    connect(ui->copyEFD, &QAction::triggered, this, &CFiberODFWidget::on_copyEFD_triggered);
     connect(ui->saveODFs, &QAction::triggered, this, &CFiberODFWidget::on_saveODFs_triggered);
     connect(ui->saveSphHarm, &QAction::triggered, this, &CFiberODFWidget::on_saveSphHarm_triggered);
     connect(ui->saveStats, &QAction::triggered, this, &CFiberODFWidget::on_saveStats_triggered);
@@ -580,11 +592,209 @@ void CFiberODFWidget::on_odfCheck_stateChanged(int state)
 	m_wnd->RedrawGL();
 }
 
-void CFiberODFWidget::on_copyToMatButton_pressed()
+void CFiberODFWidget::on_copyODF_triggered()
 {
     CModelDocument* doc = m_wnd->GetModelDocument();
 
     if(!m_analysis || m_analysis->ODFs() == 0 || !doc) return;
+
+    FSModel* model = doc->GetFSModel();
+    
+    FSMaterial* mat = getMaterial("fiberODF");
+    if(!mat) return;
+
+    mat->GetProperty(1).Clear();
+
+    int classID = FEBio::GetClassId(FECLASS_ID, "fiber-odf");
+
+    for(int index = 0; index < m_analysis->ODFs(); index++)
+    {
+        CODF* current = m_analysis->GetODF(index);
+
+        FSModelComponent* fiberODF = FEBio::CreateClass(classID, model);  
+        fiberODF->GetParam("shp_harmonics")->SetVectorDoubleValue(current->m_sphHarmonics);
+        fiberODF->GetParam("position")->SetVec3dValue(current->m_position);  
+        mat->GetProperty(1).AddComponent(fiberODF);
+    }  
+}
+
+void CFiberODFWidget::on_copyEFD_triggered()
+{
+    CModelDocument* doc = m_wnd->GetModelDocument();
+
+    if(!m_analysis || m_analysis->ODFs() == 0 || !doc) return;
+
+    // get the currently selected object
+	GObject* po = doc->GetActiveObject();
+	if (po == 0)
+	{
+		QMessageBox::critical(m_wnd, "Tool", "You must first select an object.");
+		return;
+	}
+
+	// make sure there is a mesh
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == 0)
+	{
+		QMessageBox::critical(m_wnd, "Tool", "The object needs to be meshed before you can copy the EFD parameters.");
+		return;
+	}
+
+    FSMaterial* mat = getMaterial("continuous fiber distribution");
+    if(!mat) return;
+
+    std::vector<mat3ds> efdTensors;
+    for(int index = 0; index < m_analysis->ODFs(); index++)
+    {
+        auto odf = m_analysis->GetODF(index);
+
+        if(isnan(odf->m_el[0]) || isnan(odf->m_el[1]) || isnan(odf->m_el[2]))
+        {
+            continue;
+        }
+
+        mat3ds current = (odf->m_ev[0]&odf->m_ev[0]*odf->m_el[0]).sym();
+        current += (odf->m_ev[1]&odf->m_ev[1]*odf->m_el[1]).sym();
+        current += (odf->m_ev[2]&odf->m_ev[2]*odf->m_el[2]).sym();
+
+        efdTensors.push_back(current);
+    }
+
+    //get the model and nodeset
+	FSModel* ps = doc->GetFSModel();
+	GModel& model = ps->GetModel();
+    FSMesh* mesh = po->GetFEMesh();
+
+    // ensure unique datamap name
+    int num = 1;
+    std::string datamapName;
+    bool duplicate = false;
+    do
+    {
+        datamapName = "EFD Datamap " + std::to_string(num++);
+        duplicate = false;
+
+        for(int index = 0; index < mesh->MeshDataFields(); index++)
+        {
+            if(mesh->GetMeshDataField(index)->GetName().compare(datamapName) == 0)
+            {
+                duplicate = true;
+                break;
+            }
+        }
+    } while (duplicate);
+
+    // create element data
+    int parts = po->Parts();
+	FSPartSet* partSet = new FSPartSet(po);
+    for (int i = 0; i < parts; ++i) partSet->add(i);
+
+    FEPartData* pdata = new FEPartData(mesh);
+    pdata->SetName(datamapName);
+    pdata->Create(partSet, FEMeshData::DATA_VEC3D, FEMeshData::DATA_ITEM);
+    pm->AddMeshDataField(pdata);
+
+    FEElemList* elemList = pdata->BuildElemList();
+    int NE = elemList->Size();
+    auto it = elemList->First();
+
+    std::vector<FEElement_*> elems;
+    for(int i = 0; i < NE; ++i, ++it)
+    {
+        elems.push_back(it->m_pi);
+    }
+
+    #pragma omp parallel for
+    for (int i = 0; i < NE; ++i)
+    {
+        FEElement_* el = elems[i];
+        
+        // Calculate the centroid of the element
+        vec3d pos(0);
+        for(int node = 0; node < el->Nodes(); node++)
+        {
+            pos += mesh->LocalToGlobal(mesh->Node(el->m_node[node]).pos());
+        }
+        pos /= (double)el->Nodes();
+
+        // Find the distances between this element and all of the ODFs
+        std::vector<std::pair<int, double>> distPairs;
+        int skipped = 0;
+        for(int index = 0; index < m_analysis->ODFs(); index++)
+        {
+            auto odf = m_analysis->GetODF(index);
+
+            if(isnan(odf->m_el[0]) || isnan(odf->m_el[1]) || isnan(odf->m_el[2]))
+            {
+                skipped++;
+                continue;
+            }
+
+            distPairs.emplace_back(index - skipped,(m_analysis->GetODF(index)->m_position - pos).Length());
+        }
+
+        std::sort(distPairs.begin(), distPairs.end(), 
+            [](std::pair<int, double> a, std::pair<int, double> b){ return a.second < b.second; });
+
+        std::vector<double> distances;
+        std::vector<mat3ds> currentTensors;
+        int numClosest = 8 > efdTensors.size() ? efdTensors.size() : 8;
+        for(int index = 0; index < numClosest; index++)
+        {
+            distances.push_back(distPairs[index].second);
+            currentTensors.push_back(efdTensors[distPairs[index].first]);
+        }
+
+
+        double max = *std::max_element(distances.begin(), distances.end());
+        double min = *std::min_element(distances.begin(), distances.end());
+
+        double sum = 0;
+        for(int index = 0; index < distances.size(); index++)
+        {
+            distances[index] = 1.0 - (distances[index] - min)/(max - min);
+            sum += distances[index];
+        }
+
+        for(int index = 0; index < distances.size(); index++)
+        {
+            distances[index] /= sum;
+        }
+
+        // Get interpolated tensor
+        mat3ds currentTensor = weightedAverageStructureTensor(currentTensors.data(), distances.data(), currentTensors.size());
+
+        // Eigen decomposition
+        double eVal[3];
+        vec3d eVec[3];
+        currentTensor.eigen(eVal, eVec);
+
+        // Set values in data map
+        pdata->set(i*3, eVal[0]);
+        pdata->set(i*3+1, eVal[1]);
+        pdata->set(i*3+2, eVal[2]);
+
+        // Set mat axis
+        el->m_Q = mat3d(eVec[0], eVec[1], eVec[2]);
+        el->m_Qactive = true;
+    }
+    delete elemList;
+
+    int classID = FEBio::GetClassId(FEMATERIALPROP_ID, "ellipsoidal");
+    FSModelComponent* edf = FEBio::CreateClass(classID, ps);
+    edf->GetParam("spa")->SetParamType(Param_Type::Param_STRING);
+    edf->GetParam("spa")->SetStringValue(datamapName);
+
+    mat->GetProperty(1).SetComponent(edf);
+
+    m_wnd->UpdateModel();
+}
+
+FSMaterial* CFiberODFWidget::getMaterial(std::string type)
+{
+    CModelDocument* doc = m_wnd->GetModelDocument();
+
+    if(!m_analysis || m_analysis->ODFs() == 0 || !doc) return nullptr;
 
     FSModel* model = doc->GetFSModel();
 
@@ -595,28 +805,33 @@ void CFiberODFWidget::on_copyToMatButton_pressed()
 
         auto current = model->GetMaterial(index)->GetMaterialProperties();
 
-        if(std::string("fiberODF").compare(current->GetTypeString()) == 0)
+        if(std::string(current->GetTypeString()).find(type) != std::string::npos)
         {
             materials.push_back(std::pair<std::string, FSMaterial*>(name, current));
             continue;
         }
 
-        findMaterials(model->GetMaterial(index)->GetMaterialProperties(), name, materials);
+        findMaterials(model->GetMaterial(index)->GetMaterialProperties(), type, name, materials);
     }
 
     QDialog dlg(m_wnd);
     QVBoxLayout* layout = new QVBoxLayout;
+    dlg.setLayout(layout);
 
     if(materials.size() == 0)
     {
-        layout->addWidget(new QLabel("There are no fiberODF materials in the current model."));
+        layout->addWidget(new QLabel(("There are no " + type + " materials in the current model.").c_str()));
 
-        layout->addWidget(new QDialogButtonBox(QDialogButtonBox::Ok));
+        QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
+        layout->addWidget(buttonBox);
+        connect(buttonBox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+        
         dlg.exec();
-        return;
+        
+        return nullptr;
     }
     
-    layout->addWidget(new QLabel("Choose which material to copy the ODF(s) to"));
+    layout->addWidget(new QLabel("Choose which material to copy the parameters to"));
 
     QComboBox* box = new QComboBox;
     for(auto val : materials)
@@ -628,32 +843,18 @@ void CFiberODFWidget::on_copyToMatButton_pressed()
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
     layout->addWidget(buttonBox);
 
-    dlg.setLayout(layout);
-
     connect(buttonBox, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
     connect(buttonBox, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
 
     if(dlg.exec())
     {
-        FSMaterial* mat = materials[box->currentIndex()].second;
-        mat->GetProperty(1).Clear();
-
-        int classID = FEBio::GetClassId(FECLASS_ID, "fiber-odf");
-
-
-        for(int index = 0; index < m_analysis->ODFs(); index++)
-        {
-            CODF* current = m_analysis->GetODF(index);
-
-            FSModelComponent* fiberODF = FEBio::CreateClass(classID, model);  
-            fiberODF->GetParam("shp_harmonics")->SetVectorDoubleValue(current->m_sphHarmonics);
-            fiberODF->GetParam("position")->SetVec3dValue(current->m_position);  
-            mat->GetProperty(1).AddComponent(fiberODF);
-        }  
+        return materials[box->currentIndex()].second;
     }
+
+    return nullptr;
 }
 
-void CFiberODFWidget::findMaterials(FSMaterial* mat, std::string name, std::vector<std::pair<std::string,FSMaterial*>>& materials)
+void CFiberODFWidget::findMaterials(FSMaterial* mat, std::string type, std::string name, std::vector<std::pair<std::string,FSMaterial*>>& materials)
 {
     if(mat->Properties() == 0) return;
 
@@ -670,15 +871,21 @@ void CFiberODFWidget::findMaterials(FSMaterial* mat, std::string name, std::vect
 
             if(current)
             {
-                if(std::string("fiberODF").compare(current->GetTypeString()) == 0)
+                if(std::string(current->GetTypeString()).find(type) != std::string::npos)
                 {
                     materials.push_back(std::pair<std::string, FSMaterial*>(name, current));
                 }
 
-                findMaterials(current, name, materials);
+                findMaterials(current, type, name, materials);
             }
         }
     }
+}
+
+void CFiberODFWidget::interpolateEFDParams()
+{
+    
+
 }
 
 void CFiberODFWidget::on_saveSphHarm_triggered()
@@ -792,7 +999,10 @@ void CFiberODFWidget::on_saveStats_triggered()
 
     std::vector<double> position(3,0);
     std::vector<double> mDir(3,0);
-    std::vector<double> alpha(3,0);
+    std::vector<double> eigenVals(3,0);
+    std::vector<double> eigenVec1(3,0);
+    std::vector<double> eigenVec2(3,0);
+    std::vector<double> eigenVec3(3,0);
     std::vector<double> beta(3,0);
 
     for(int i = 0; i < m_analysis->ODFs(); i++)
@@ -832,12 +1042,33 @@ void CFiberODFWidget::on_saveStats_triggered()
         efdFrd.value(current->m_EFD_FRD);
         writer.add_leaf(efdFrd);
 
-        XMLElement alphaEl("EFDaplha");
-        alpha[0] = current->m_EFD_alpha.x;
-        alpha[1] = current->m_EFD_alpha.y;
-        alpha[2] = current->m_EFD_alpha.z;
-        alphaEl.value(alpha);
-        writer.add_leaf(alphaEl);
+        XMLElement eigenValsEl("EFDEigenVals");
+        eigenVals[0] = current->m_el[0];
+        eigenVals[1] = current->m_el[1];
+        eigenVals[2] = current->m_el[2];
+        eigenValsEl.value(eigenVals);
+        writer.add_leaf(eigenValsEl);
+
+        XMLElement EFDVec1("EFDVec1");
+        eigenVec1[0] = current->m_ev[0].x;
+        eigenVec1[1] = current->m_ev[0].y;
+        eigenVec1[2] = current->m_ev[0].z;
+        EFDVec1.value(eigenVec1);
+        writer.add_leaf(EFDVec1);
+
+        XMLElement EFDVec2("EFDVec2");
+        eigenVec2[0] = current->m_ev[1].x;
+        eigenVec2[1] = current->m_ev[1].y;
+        eigenVec2[2] = current->m_ev[1].z;
+        EFDVec2.value(eigenVec2);
+        writer.add_leaf(EFDVec2);
+
+        XMLElement EFDVec3("EFDVec3");
+        eigenVec3[0] = current->m_ev[2].x;
+        eigenVec3[1] = current->m_ev[2].y;
+        eigenVec3[2] = current->m_ev[2].z;
+        EFDVec3.value(eigenVec3);
+        writer.add_leaf(EFDVec3);
 
         XMLElement vm3Frd("VM3");
         vm3Frd.value(current->m_VM3_FRD);
