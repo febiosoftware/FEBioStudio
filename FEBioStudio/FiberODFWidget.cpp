@@ -351,13 +351,13 @@ public:
         QHBoxLayout* buttonLayout = new QHBoxLayout;
         buttonLayout->setContentsMargins(0,0,0,0);
 
-        buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material"));
+        buttonLayout->addWidget(copyToMatButton = new QPushButton("Copy to Material..."));
         copyMenu = new QMenu;
         copyMenu->addAction(copyODF = new QAction("FiberODF Material"));
         copyMenu->addAction(copyEFD = new QAction("EFD Material"));
         copyToMatButton->setMenu(copyMenu);
 
-        buttonLayout->addWidget(saveToXMLButton = new QPushButton("Save to CSV..."));
+        buttonLayout->addWidget(saveToXMLButton = new QPushButton("Save to XML..."));
         saveMenu = new QMenu;
         saveMenu->addAction(saveODFs = new QAction("ODFs"));
         saveMenu->addAction(saveSphHarm = new QAction("Spherical Harmonics"));
