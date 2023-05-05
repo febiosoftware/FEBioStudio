@@ -291,53 +291,57 @@ void CFiberODFAnalysis::run()
         }
         meanIntensity /= size;
 
-        if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
+        // with no image data, the later analysis will just produce nans
+        if(meanIntensity != 0)
+        {
+            if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
 
-		// process it
-		processImage(current);
+            // process it
+            processImage(current);
 
-		// allocated new odf
-		CODF* odf = new CODF;
-		odf->m_sphHarmonics.resize(C->columns());
-		odf->m_position = vec3d(xDivSizePhys/2 * (currentX * 2 + 1) - xDivSizePhys*xOverlap*currentX + origin[0], yDivSizePhys/2 * (currentY * 2 + 1)  - yDivSizePhys*yOverlap*currentY + origin[1], zDivSizePhys/2 * (currentZ * 2 + 1) - zDivSizePhys*zOverlap*currentZ + origin[2]);
-		odf->m_radius = radius;
-        odf->m_meanIntensity = meanIntensity;
-		m_ODFs.push_back(odf);
-		odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
-		
-		std::vector<double> reduced = std::vector<double>(NPTS, 0);
-		reduceAmp(current, &reduced);
+            // allocated new odf
+            CODF* odf = new CODF;
+            odf->m_sphHarmonics.resize(C->columns());
+            odf->m_position = vec3d(xDivSizePhys/2 * (currentX * 2 + 1) - xDivSizePhys*xOverlap*currentX + origin[0], yDivSizePhys/2 * (currentY * 2 + 1)  - yDivSizePhys*yOverlap*currentY + origin[1], zDivSizePhys/2 * (currentZ * 2 + 1) - zDivSizePhys*zOverlap*currentZ + origin[2]);
+            odf->m_radius = radius;
+            odf->m_meanIntensity = meanIntensity;
+            m_ODFs.push_back(odf);
+            odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
+            
+            std::vector<double> reduced = std::vector<double>(NPTS, 0);
+            reduceAmp(current, &reduced);
 
-		// delete image
-		current = sitk::Image();
+            // delete image
+            current = sitk::Image();
 
-		// see if user cancelled
-		if (IsCanceled()) { clear(); return; }
+            // see if user cancelled
+            if (IsCanceled()) { clear(); return; }
 
-		// odf = A*B*reduced
-		A.mult(B, reduced, odf->m_odf);
-		updateProgressIncrement(0.75);
+            // odf = A*B*reduced
+            A.mult(B, reduced, odf->m_odf);
+            updateProgressIncrement(0.75);
 
-		// normalize odf
-		normalizeODF(odf);
+            // normalize odf
+            normalizeODF(odf);
 
-		// Calculate spherical harmonics
-		B.mult(odf->m_odf, odf->m_sphHarmonics);
+            // Calculate spherical harmonics
+            B.mult(odf->m_odf, odf->m_sphHarmonics);
 
-		// Recalc ODF based on spherical harmonics
-		(*T).mult(odf->m_sphHarmonics, odf->m_odf);
+            // Recalc ODF based on spherical harmonics
+            (*T).mult(odf->m_sphHarmonics, odf->m_odf);
 
-		normalizeODF(odf);
+            normalizeODF(odf);
 
-        // Calcualte ODF_GFA
-        odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
+            // Calcualte ODF_GFA
+            odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
 
-		// build the meshes
-		buildMesh(odf);
-		buildRemesh(odf);
+            // build the meshes
+            buildMesh(odf);
+            buildRemesh(odf);
 
-		// do the fitting stats
-		if (GetBoolValue(FITTING)) calculateFits(odf);
+            // do the fitting stats
+            if (GetBoolValue(FITTING)) calculateFits(odf);
+        }
 
 		// update iterators
         if((currentX + 1 == xDiv) && (currentY + 1 == yDiv) && (currentZ + 1 == zDiv)) break;

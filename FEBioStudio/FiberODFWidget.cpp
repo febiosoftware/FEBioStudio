@@ -648,11 +648,6 @@ void CFiberODFWidget::on_copyEFD_triggered()
     {
         auto odf = m_analysis->GetODF(index);
 
-        if(isnan(odf->m_el[0]) || isnan(odf->m_el[1]) || isnan(odf->m_el[2]))
-        {
-            continue;
-        }
-
         mat3ds current = (odf->m_ev[0]&odf->m_ev[0]*odf->m_el[0]).sym();
         current += (odf->m_ev[1]&odf->m_ev[1]*odf->m_el[1]).sym();
         current += (odf->m_ev[2]&odf->m_ev[2]*odf->m_el[2]).sym();
@@ -719,18 +714,11 @@ void CFiberODFWidget::on_copyEFD_triggered()
 
         // Find the distances between this element and all of the ODFs
         std::vector<std::pair<int, double>> distPairs;
-        int skipped = 0;
         for(int index = 0; index < m_analysis->ODFs(); index++)
         {
             auto odf = m_analysis->GetODF(index);
 
-            if(isnan(odf->m_el[0]) || isnan(odf->m_el[1]) || isnan(odf->m_el[2]))
-            {
-                skipped++;
-                continue;
-            }
-
-            distPairs.emplace_back(index - skipped,(m_analysis->GetODF(index)->m_position - pos).Length());
+            distPairs.emplace_back(index,(m_analysis->GetODF(index)->m_position - pos).Length());
         }
 
         std::sort(distPairs.begin(), distPairs.end(), 
@@ -880,12 +868,6 @@ void CFiberODFWidget::findMaterials(FSMaterial* mat, std::string type, std::stri
             }
         }
     }
-}
-
-void CFiberODFWidget::interpolateEFDParams()
-{
-    
-
 }
 
 void CFiberODFWidget::on_saveSphHarm_triggered()
