@@ -194,7 +194,7 @@ void CFiberODFAnalysis::run()
     double xOverlap = 0;
     double yOverlap = 0;
     double zOverlap = 0;
-    int minppd = 0;
+    int ppd = 0;
 
     if(xDiv > 1 || yDiv > 1 || zDiv > 1)
     {
@@ -202,34 +202,35 @@ void CFiberODFAnalysis::run()
         int yppd = size[1]/(yDiv-(yDiv-1)*m_overlapFraction);
         int zppd = size[2]/(zDiv-(zDiv-1)*m_overlapFraction);
 
-        minppd = std::max({xppd, yppd, zppd});
+        ppd = std::max({xppd, yppd, zppd});
 
 
-        if(xDiv != 1) xOverlap = ((int)size[0] - xDiv*minppd)/(double)(-(xDiv-1)*minppd);
-        if(yDiv != 1) yOverlap = ((int)size[1] - yDiv*minppd)/(double)(-(yDiv-1)*minppd);
-        if(zDiv != 1) zOverlap = ((int)size[2] - zDiv*minppd)/(double)(-(zDiv-1)*minppd);
+        if(xDiv != 1) xOverlap = ((int)size[0] - xDiv*ppd)/(double)(-(xDiv-1)*ppd);
+        if(yDiv != 1) yOverlap = ((int)size[1] - yDiv*ppd)/(double)(-(yDiv-1)*ppd);
+        if(zDiv != 1) zOverlap = ((int)size[2] - zDiv*ppd)/(double)(-(zDiv-1)*ppd);
 
     }
     else
     {
-        minppd = std::min({size[0], size[1], size[2]});
+        ppd = std::min({size[0], size[1], size[2]});
     }
 
-    // unsigned int xDivSize = size[0]/xDiv;
-    // unsigned int yDivSize = size[1]/yDiv;
-    // unsigned int zDivSize = size[2]/zDiv;
-    unsigned int xDivSize = minppd;
-    unsigned int yDivSize = minppd;
-    unsigned int zDivSize = minppd;
-    
+    unsigned int xDivSize = ppd;
+    unsigned int yDivSize = ppd;
+    unsigned int zDivSize = ppd;
 
     auto spacing = img.GetSpacing();
     auto origin = img.GetOrigin();
 
-    double xDivSizePhys = minppd*spacing[0];
-    double yDivSizePhys = minppd*spacing[1];
-    double zDivSizePhys = minppd*spacing[2];
+    double xDivSizePhys = ppd*spacing[0];
+    double yDivSizePhys = ppd*spacing[1];
+    double zDivSizePhys = ppd*spacing[2];
     double radius = std::min({xDivSizePhys, yDivSizePhys, zDivSizePhys})*0.375;
+
+    Log("\nPixels Per Division: %i\n", ppd);
+    Log("X Overlap: %g\n", xOverlap);
+    Log("Y Overlap: %g\n", yOverlap);
+    Log("Z Overlap: %g\n\n", zOverlap);
 
     sitk::ExtractImageFilter extractFilter;
     extractFilter.SetSize(std::vector<unsigned int> {xDivSize, yDivSize, zDivSize});
@@ -291,53 +292,57 @@ void CFiberODFAnalysis::run()
         }
         meanIntensity /= size;
 
-        if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
+        // with no image data, the later analysis will just produce nans
+        if(meanIntensity != 0)
+        {
+            if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
 
-		// process it
-		processImage(current);
+            // process it
+            processImage(current);
 
-		// allocated new odf
-		CODF* odf = new CODF;
-		odf->m_sphHarmonics.resize(C->columns());
-		odf->m_position = vec3d(xDivSizePhys/2 * (currentX * 2 + 1) - xDivSizePhys*xOverlap*currentX + origin[0], yDivSizePhys/2 * (currentY * 2 + 1)  - yDivSizePhys*yOverlap*currentY + origin[1], zDivSizePhys/2 * (currentZ * 2 + 1) - zDivSizePhys*zOverlap*currentZ + origin[2]);
-		odf->m_radius = radius;
-        odf->m_meanIntensity = meanIntensity;
-		m_ODFs.push_back(odf);
-		odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
-		
-		std::vector<double> reduced = std::vector<double>(NPTS, 0);
-		reduceAmp(current, &reduced);
+            // allocated new odf
+            CODF* odf = new CODF;
+            odf->m_sphHarmonics.resize(C->columns());
+            odf->m_position = vec3d(xDivSizePhys/2 * (currentX * 2 + 1) - xDivSizePhys*xOverlap*currentX + origin[0], yDivSizePhys/2 * (currentY * 2 + 1)  - yDivSizePhys*yOverlap*currentY + origin[1], zDivSizePhys/2 * (currentZ * 2 + 1) - zDivSizePhys*zOverlap*currentZ + origin[2]);
+            odf->m_radius = radius;
+            odf->m_meanIntensity = meanIntensity;
+            m_ODFs.push_back(odf);
+            odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
+            
+            std::vector<double> reduced = std::vector<double>(NPTS, 0);
+            reduceAmp(current, &reduced);
 
-		// delete image
-		current = sitk::Image();
+            // delete image
+            current = sitk::Image();
 
-		// see if user cancelled
-		if (IsCanceled()) { clear(); return; }
+            // see if user cancelled
+            if (IsCanceled()) { clear(); return; }
 
-		// odf = A*B*reduced
-		A.mult(B, reduced, odf->m_odf);
-		updateProgressIncrement(0.75);
+            // odf = A*B*reduced
+            A.mult(B, reduced, odf->m_odf);
+            updateProgressIncrement(0.75);
 
-		// normalize odf
-		normalizeODF(odf);
+            // normalize odf
+            normalizeODF(odf);
 
-		// Calculate spherical harmonics
-		B.mult(odf->m_odf, odf->m_sphHarmonics);
+            // Calculate spherical harmonics
+            B.mult(odf->m_odf, odf->m_sphHarmonics);
 
-		// Recalc ODF based on spherical harmonics
-		(*T).mult(odf->m_sphHarmonics, odf->m_odf);
+            // Recalc ODF based on spherical harmonics
+            (*T).mult(odf->m_sphHarmonics, odf->m_odf);
 
-		normalizeODF(odf);
+            normalizeODF(odf);
 
-        // Calcualte ODF_GFA
-        odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
+            // Calcualte ODF_GFA
+            odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
 
-		// build the meshes
-		buildMesh(odf);
-		buildRemesh(odf);
+            // build the meshes
+            buildMesh(odf);
+            buildRemesh(odf);
 
-		// do the fitting stats
-		if (GetBoolValue(FITTING)) calculateFits(odf);
+            // do the fitting stats
+            if (GetBoolValue(FITTING)) calculateFits(odf);
+        }
 
 		// update iterators
         if((currentX + 1 == xDiv) && (currentY + 1 == yDiv) && (currentZ + 1 == zDiv)) break;

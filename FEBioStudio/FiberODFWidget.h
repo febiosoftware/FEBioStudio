@@ -100,7 +100,6 @@ private slots:
 private:
     FSMaterial* getMaterial(std::string type);
     void findMaterials(FSMaterial* mat, std::string type, std::string name, std::vector<std::pair<std::string,FSMaterial*>>& materials);
-    void interpolateEFDParams();
 
 private:
     CMainWindow* m_wnd;
