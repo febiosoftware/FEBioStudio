@@ -672,6 +672,38 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
     GLfloat spc[4] = { 0, 0, 0, 1.f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 
+
+	// render the grid
+	if (m_img)
+	{
+		glColor3ub(255, 128, 128);
+
+		BOX box = m_img->GetBoundingBox();
+		int xDiv = GetIntValue(XDIV);
+		int yDiv = GetIntValue(YDIV);
+		int zDiv = GetIntValue(ZDIV);
+		double w[3] = { 1.0 / xDiv, 1.0 / yDiv, 1.0 / zDiv };
+		for (int k = 0; k < zDiv; ++k)
+			for (int j = 0; j < yDiv; ++j)
+				for (int i = 0; i < xDiv; ++i)
+				{
+					double x0 = box.x0 + i * box.Width() * w[0];
+					double x1 = box.x0 + (i + 1) * box.Width() * w[0];
+
+					double y0 = box.y0 + j * box.Height() * w[1];
+					double y1 = box.y0 + (j + 1) * box.Height() * w[1];
+
+					double z0 = box.z0 + k * box.Depth() * w[2];
+					double z1 = box.z0 + (k + 1) * box.Depth() * w[2];
+
+					BOX bb(vec3d(x0, y0, z0), vec3d(x1, y1, z1));
+
+					glx::renderBox(bb, false, 1);
+				}
+	}
+
+
+	// render the meshes (and selection box)
 	bool showSelBox = GetBoolValue(SHOW_SELBOX);
 
 	int showMesh = GetIntValue(SHOW_MESH);
