@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <QMouseEvent>
 #include <QCheckBox>
 #include <QMessageBox>
+#include <QGroupBox>
 #include <fstream>
 #include <vector>
 #include "DynamicStackedWidget.h"
@@ -66,6 +67,8 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEElementData.h>
 #include "DlgStartThread.h"
+#include "PropertyList.h"
+#include "PropertyListForm.h"
 #include "PropertyList.h"
 #include <XML/XMLWriter.h>
 
@@ -243,23 +246,170 @@ int CFiberGLWidget::heightForWidth(int w) const
     return w;
 }
 
+//-------------------------------------------------------------------------------
+class CODFPropertyList1 : public CPropertyList
+{
+public:
+	CODFPropertyList1(CFiberODFAnalysis* odfAnalysis)
+	{
+		addProperty("X divisions", CProperty::Int);
+		addProperty("Y divisions", CProperty::Int);
+		addProperty("Z divisions", CProperty::Int);
+		addProperty("Overlap fraction", CProperty::Float);
+	}
+
+	QVariant GetPropertyValue(int i) override
+	{
+		if (m_odfAnalysis == nullptr) return QVariant();
+
+		switch (i)
+		{
+		case 0: return m_odfAnalysis->GetIntValue  (CFiberODFAnalysis::XDIV); break;
+		case 1: return m_odfAnalysis->GetIntValue  (CFiberODFAnalysis::YDIV); break;
+		case 2: return m_odfAnalysis->GetIntValue  (CFiberODFAnalysis::ZDIV); break;
+		case 3: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::OVERLAP); break;
+		}
+
+		return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		if (m_odfAnalysis == nullptr) return;
+
+		switch (i)
+		{
+		case 0: m_odfAnalysis->SetIntValue  (CFiberODFAnalysis::XDIV   , v.toInt() ); break;
+		case 1: m_odfAnalysis->SetIntValue  (CFiberODFAnalysis::YDIV   , v.toInt() ); break;
+		case 2: m_odfAnalysis->SetIntValue  (CFiberODFAnalysis::ZDIV   , v.toInt() ); break;
+		case 3: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::OVERLAP, v.toDouble() ); break;
+		}
+	}
+
+	void SetAnalysis(CFiberODFAnalysis* odfAnalysis) { m_odfAnalysis = odfAnalysis; }
+
+private:
+	CFiberODFAnalysis* m_odfAnalysis = nullptr;
+};
+
+//-------------------------------------------------------------------------------
+class CODFPropertyList2 : public CPropertyList
+{
+public:
+	CODFPropertyList2(CFiberODFAnalysis* odfAnalysis)
+	{
+		addProperty("Harmonic Order", CProperty::Int);
+		addProperty("Low Freq Cutoff (pixels)", CProperty::Float);
+		addProperty("High Freq Cutoff (pixels)", CProperty::Float);
+		addProperty("Do fitting analysis", CProperty::Bool);
+	}
+
+	QVariant GetPropertyValue(int i) override
+	{
+		if (m_odfAnalysis == nullptr) return QVariant();
+
+		switch (i)
+		{
+		case 0: return m_odfAnalysis->GetIntValue  (CFiberODFAnalysis::ORDER); break;
+		case 1: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::T_LOW); break;
+		case 2: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::T_HIGH); break;
+		case 3: return m_odfAnalysis->GetBoolValue (CFiberODFAnalysis::FITTING); break;
+		}
+
+		return QVariant();
+	}
+
+	void SetPropertyValue(int i, const QVariant& v) override
+	{
+		if (m_odfAnalysis == nullptr) return;
+
+		switch (i)
+		{
+		case 0: m_odfAnalysis->SetIntValue  (CFiberODFAnalysis::ORDER  , v.toInt() ); break;
+		case 1: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::T_LOW  , v.toDouble() ); break;
+		case 2: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::T_HIGH , v.toDouble() ); break;
+		case 3: m_odfAnalysis->SetBoolValue (CFiberODFAnalysis::FITTING, v.toBool() ); break;
+		}
+	}
+
+	void SetAnalysis(CFiberODFAnalysis* odfAnalysis) { m_odfAnalysis = odfAnalysis; }
+
+private:
+	CFiberODFAnalysis* m_odfAnalysis = nullptr;
+};
+
+//-------------------------------------------------------------------------------
+class ODFParamsWidget : public QWidget
+{
+public:
+	ODFParamsWidget(QWidget* parent = nullptr) : QWidget(parent)
+	{
+		m_stack = new QStackedWidget;
+
+		// page 1 (generate subvolumes)
+		QGroupBox* page1 = new QGroupBox("Step 1: Generate subvolumes");
+		QVBoxLayout* l1 = new QVBoxLayout;
+		m_form1 = new CPropertyListForm;
+		m_form1->setPropertyList(m_props1 = new CODFPropertyList1(nullptr));
+		l1->addWidget(m_form1);
+		l1->addStretch();
+		l1->addWidget(m_gen = new QPushButton("Generate subvolumes"));
+		setLayout(l1);
+		page1->setLayout(l1);
+		m_stack->addWidget(page1);
+
+		// page 2 (generate ODFs)
+		QGroupBox* page2 = new QGroupBox("Step 2: Generate ODFs");
+		QVBoxLayout* l2 = new QVBoxLayout;
+		m_form2 = new CPropertyListForm;
+		m_form2->setPropertyList(m_props2 = new CODFPropertyList2(nullptr));
+		l2->addWidget(m_form2);
+		l2->addStretch();
+		l2->addWidget(m_run = new QPushButton("Run"));
+		setLayout(l2);
+		page2->setLayout(l2);
+		m_stack->addWidget(page2);
+
+		//  build layout
+		QVBoxLayout* mainLayout = new QVBoxLayout;
+		mainLayout->addWidget(m_stack);
+		setLayout(mainLayout);
+	}
+
+	void setAnalysis(CFiberODFAnalysis* odfAnalysis)
+	{
+		m_props1->SetAnalysis(odfAnalysis);
+		m_props2->SetAnalysis(odfAnalysis);
+		m_form1->updateData();
+		m_form2->updateData();
+	}
+
+	void nextStep()
+	{
+		m_stack->setCurrentIndex(1);
+	}
+
+public:
+	CODFPropertyList1* m_props1 = nullptr;
+	CODFPropertyList2* m_props2 = nullptr;
+	CPropertyListForm* m_form1 = nullptr;
+	CPropertyListForm* m_form2 = nullptr;
+	QPushButton* m_gen = nullptr;
+	QPushButton* m_run = nullptr;
+	QStackedWidget* m_stack = nullptr;
+};
 
 //-------------------------------------------------------------------------------
 class Ui::CFiberODFWidget
 {
 public:
-    DynamicStackedWidget* stack;
-    
-    QPushButton* runButton;
-
-    QWidget* firstPage;
-
-    QWidget* secondPage;
     QTabWidget* tabs;
     QComboBox* odfSelector;
     QCheckBox* odfCheck;
     CFiberGLWidget* glWidget;
-    
+
+	ODFParamsWidget* odfParams;
+
     QWidget* sphHarmTab;
     QTableWidget* sphHarmTable;
     QPushButton* copyToMatButton;
@@ -289,18 +439,10 @@ public:
         QVBoxLayout* layout = new QVBoxLayout;
         layout->setContentsMargins(0,0,0,0);
         
-        stack = new DynamicStackedWidget;
 
-        firstPage = new QWidget;
-        QVBoxLayout* firstPageLayout = new QVBoxLayout;
-        firstPageLayout->addWidget(new QLabel("Click Run to\ngenerate ODF(s)."));
-
-        firstPage->setLayout(firstPageLayout);
-        stack->addWidget(firstPage);
-
-        secondPage = new QWidget;
-        QVBoxLayout* secondPageLayout = new QVBoxLayout;
-        secondPageLayout->setContentsMargins(0,0,0,0);
+        QWidget* w = new QWidget;
+        QVBoxLayout* mainLayout = new QVBoxLayout;
+		mainLayout->setContentsMargins(0,0,0,0);
 
 		QHBoxLayout* odfl = new QHBoxLayout;
 		odfl->addWidget(new QLabel("Select ODF:"));
@@ -308,9 +450,14 @@ public:
 		odfl->addWidget(odfCheck = new QCheckBox); odfCheck->setChecked(true);
 		QSizePolicy sp = odfSelector->sizePolicy();
 		odfSelector->setSizePolicy(QSizePolicy::Expanding, sp.verticalPolicy());
-		secondPageLayout->addLayout(odfl);
-        secondPageLayout->addWidget(tabs = new QTabWidget);
+		mainLayout->addLayout(odfl);
+		mainLayout->addWidget(tabs = new QTabWidget);
 
+		// parameters tab
+		odfParams = new ODFParamsWidget;
+		tabs->addTab(odfParams, "Parameters");
+
+		// odf tab
         QWidget* odfTab = new QWidget;
         QVBoxLayout* odfTabLayout = new QVBoxLayout;
         odfTabLayout->setContentsMargins(0,0,0,0);
@@ -320,6 +467,7 @@ public:
         odfTab->setLayout(odfTabLayout);
         tabs->addTab(odfTab, "ODF");
 
+		// spherical harmonics tab
         QWidget* sphHarmTab = new QWidget;
         QVBoxLayout* sphHarmTabLayout = new QVBoxLayout;
         sphHarmTabLayout->setContentsMargins(0,0,0,0);
@@ -332,6 +480,7 @@ public:
         sphHarmTab->setLayout(sphHarmTabLayout);
         tabs->addTab(sphHarmTab, "Spherical Harmonics");
 
+		// stats tab
 		QWidget* fitTab = new QWidget;
 		QFormLayout* fitTabLayout = new QFormLayout;
 		fitTabLayout->setLabelAlignment(Qt::AlignRight);
@@ -364,15 +513,11 @@ public:
         saveMenu->addAction(saveStats = new QAction("Statistics"));
         saveToXMLButton->setMenu(saveMenu);
 
-        secondPageLayout->addLayout(buttonLayout);
+		mainLayout->addLayout(buttonLayout);
 
-        secondPage->setLayout(secondPageLayout);
+        w->setLayout(mainLayout);
         
-        stack->addWidget(secondPage);
-
-        layout->addWidget(stack);
-
-        layout->addWidget(runButton = new QPushButton("Run"));
+        layout->addWidget(w);
 
         parent->setLayout(layout);
 
@@ -385,13 +530,13 @@ public:
 
         if(!analysis || analysis->ODFs() == 0)
         {
-            stack->setCurrentIndex(0);
+            odfParams->setAnalysis(analysis);
         }
         else if(analysis->ODFs() == 1)
         {
             odfSelector->hide();
             glWidget->setODF(analysis->GetODF(0));
-			stack->setCurrentIndex(1);
+			odfParams->setAnalysis(analysis);
 			updateData(analysis);
         }
         else
@@ -408,7 +553,7 @@ public:
             odfSelector->setCurrentIndex(0);
             glWidget->setODF(analysis->GetODF(0));
             odfSelector->show();
-			stack->setCurrentIndex(1);
+			odfParams->setAnalysis(analysis);
 
 			updateData(analysis);
         }
@@ -474,7 +619,8 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
 {
     ui->setupUI(this);
 
-    connect(ui->runButton, &QPushButton::pressed, this, &CFiberODFWidget::on_runButton_pressed);
+    connect(ui->odfParams->m_run, &QPushButton::clicked, this, &CFiberODFWidget::on_runButton_pressed);
+    connect(ui->odfParams->m_gen, &QPushButton::clicked, this, &CFiberODFWidget::on_genButton_pressed);
     connect(ui->odfSelector, &QComboBox::currentIndexChanged, this, &CFiberODFWidget::on_odfSelector_currentIndexChanged);
     connect(ui->odfCheck, &QCheckBox::stateChanged, this, &CFiberODFWidget::on_odfCheck_stateChanged);
     connect(ui->copyODF, &QAction::triggered, this, &CFiberODFWidget::on_copyODF_triggered);
@@ -566,6 +712,11 @@ void CFiberODFWidget::on_runButton_pressed()
     ui->update(m_analysis);
 }
 
+void CFiberODFWidget::on_genButton_pressed()
+{
+	if (!m_analysis) return;
+	ui->odfParams->nextStep();
+}
 
 void CFiberODFWidget::on_odfSelector_currentIndexChanged(int index)
 {

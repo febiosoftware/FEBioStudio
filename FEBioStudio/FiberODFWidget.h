@@ -89,6 +89,7 @@ public:
 
 private slots:
     void on_runButton_pressed();
+    void on_genButton_pressed();
     void on_odfSelector_currentIndexChanged(int index);
     void on_odfCheck_stateChanged(int state);
     void on_copyODF_triggered();

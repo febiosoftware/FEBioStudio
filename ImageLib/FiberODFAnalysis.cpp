@@ -62,13 +62,6 @@ namespace sitk = itk::simple;
 using std::vector;
 using std::complex;
 
-enum { 
-	ORDER,  T_LOW, T_HIGH, XDIV, YDIV, ZDIV, OVERLAP, FITTING,
-    DISP, RENDERSCALE, MESHLINES, RADIAL, 
-	SHOW_MESH, SHOW_SELBOX, COLOR_MODE,
-	DIVS, RANGE, USERMIN, USERMAX
-};
-
 //==================================================================
 CODF::CODF() : m_odf(NPTS, 0.0), m_meanIntensity(0)
 {
@@ -101,14 +94,16 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 
 	m_FAmin = m_FAmax = 0.0;
 
-    AddIntParam(16, "Harmonic Order");
-    AddDoubleParam(30, "Low Freq Cutoff (pixels)");
-    AddDoubleParam(2.0, "High Freq Cutoff (pixels)");
-    AddIntParam(1, "X Divisions");
-    AddIntParam(1, "Y Divisions");
-    AddIntParam(1, "Z Divisions");
-    AddDoubleParam(m_overlapFraction, "Overlap Fraction");
-    AddBoolParam(true, "Do fitting analysis");
+	// Define the parameters 
+	// (note that we are hiding the parameters that control the ODF. These are presented elsewhere.)
+    AddIntParam(16, "Harmonic Order")->SetState(Param_HIDDEN);
+    AddDoubleParam(30, "Low Freq Cutoff (pixels)")->SetState(Param_HIDDEN);
+    AddDoubleParam(2.0, "High Freq Cutoff (pixels)")->SetState(Param_HIDDEN);
+    AddIntParam(1, "X Divisions")->SetState(Param_HIDDEN);
+    AddIntParam(1, "Y Divisions")->SetState(Param_HIDDEN);
+    AddIntParam(1, "Z Divisions")->SetState(Param_HIDDEN);
+    AddDoubleParam(m_overlapFraction, "Overlap Fraction")->SetState(Param_HIDDEN);
+    AddBoolParam(true, "Do fitting analysis")->SetState(Param_HIDDEN);
     AddBoolParam(true, "Display in graphics view");
     AddDoubleParam(m_renderScale, "renderScale", "Render Scale")->SetFloatRange(0,1);
     AddBoolParam(false, "Render Mesh Lines");

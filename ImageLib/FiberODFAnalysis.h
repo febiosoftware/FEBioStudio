@@ -77,6 +77,14 @@ public:
 class CFiberODFAnalysis : public CImageAnalysis
 {
 public:
+	enum ODF_PARAMS {
+		ORDER, T_LOW, T_HIGH, XDIV, YDIV, ZDIV, OVERLAP, FITTING,
+		DISP, RENDERSCALE, MESHLINES, RADIAL,
+		SHOW_MESH, SHOW_SELBOX, COLOR_MODE,
+		DIVS, RANGE, USERMIN, USERMAX
+	};
+
+public:
     CFiberODFAnalysis(Post::CImageModel* img);
     ~CFiberODFAnalysis();
 
