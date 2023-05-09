@@ -1953,7 +1953,9 @@ void CModelViewer::OnAddFiberODFAnalysis()
     Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(m_currentObject); assert(img);
 	if (img == 0) return;
 
-    img->AddImageAnalysis(new CFiberODFAnalysis(img));
+	CFiberODFAnalysis* po = new CFiberODFAnalysis(img);
+    img->AddImageAnalysis(po);
 
     Update();
+	Select(po);
 }
