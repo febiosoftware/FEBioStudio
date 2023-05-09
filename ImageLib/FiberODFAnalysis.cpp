@@ -115,6 +115,8 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	AddIntParam(m_rangeOption, "Range")->SetEnumNames("automatic\0user\0");
 	AddDoubleParam(m_userMin, "User min");
 	AddDoubleParam(m_userMax, "User max");
+	AddDoubleParam(0.2, "Butterworth fraction")->SetState(Param_HIDDEN);
+	AddDoubleParam(10., "Butterworth steepness")->SetState(Param_HIDDEN);
 
 	m_tex.SetDivisions(10);
 	m_tex.SetSmooth(true);
@@ -854,8 +856,8 @@ bool CFiberODFAnalysis::showRadial()
 
 void CFiberODFAnalysis::butterworthFilter(sitk::Image& img)
 {
-    double fraction = 0.2;
-    double steepness = 10;
+    double fraction = GetFloatValue(BW_FRACTION);
+    double steepness = GetFloatValue(BW_STEEPNESS);
 
     uint32_t* data = img.GetBufferAsUInt32();
 

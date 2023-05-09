@@ -301,6 +301,8 @@ public:
 		addProperty("Harmonic Order", CProperty::Int);
 		addProperty("Low Freq Cutoff (pixels)", CProperty::Float);
 		addProperty("High Freq Cutoff (pixels)", CProperty::Float);
+		addProperty("Butterworth fraction", CProperty::Float);
+		addProperty("Butterworth steepness", CProperty::Float);
 		addProperty("Do fitting analysis", CProperty::Bool);
 	}
 
@@ -313,7 +315,9 @@ public:
 		case 0: return m_odfAnalysis->GetIntValue  (CFiberODFAnalysis::ORDER); break;
 		case 1: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::T_LOW); break;
 		case 2: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::T_HIGH); break;
-		case 3: return m_odfAnalysis->GetBoolValue (CFiberODFAnalysis::FITTING); break;
+		case 3: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::BW_FRACTION); break;
+		case 4: return m_odfAnalysis->GetFloatValue(CFiberODFAnalysis::BW_STEEPNESS); break;
+		case 5: return m_odfAnalysis->GetBoolValue (CFiberODFAnalysis::FITTING); break;
 		}
 
 		return QVariant();
@@ -328,7 +332,9 @@ public:
 		case 0: m_odfAnalysis->SetIntValue  (CFiberODFAnalysis::ORDER  , v.toInt() ); break;
 		case 1: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::T_LOW  , v.toDouble() ); break;
 		case 2: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::T_HIGH , v.toDouble() ); break;
-		case 3: m_odfAnalysis->SetBoolValue (CFiberODFAnalysis::FITTING, v.toBool() ); break;
+		case 3: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::BW_FRACTION, v.toDouble()); break;
+		case 4: m_odfAnalysis->SetFloatValue(CFiberODFAnalysis::BW_STEEPNESS, v.toDouble()); break;
+		case 5: m_odfAnalysis->SetBoolValue (CFiberODFAnalysis::FITTING, v.toBool() ); break;
 		}
 	}
 
