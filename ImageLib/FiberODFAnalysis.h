@@ -103,12 +103,16 @@ public:
 	void renderODFMesh(CODF* odf, CGLCamera* cam);
 
 private:
+	// clear all ODFs
     void clear();
+
+	// generate an ODF from an image
+	CODF* generateODF(sitk::Image& img, int nsh);
 
     void butterworthFilter(sitk::Image& img);
     sitk::Image powerSpectrum(sitk::Image& img);
     void fftRadialFilter(sitk::Image& img);
-    void reduceAmp(sitk::Image& img, std::vector<double>* reduced);
+    void reduceAmp(sitk::Image& img, std::vector<double>& reduced);
 
     std::unique_ptr<matrix> complLapBel_Coef();
     double GFA(std::vector<double>& vals);
@@ -174,4 +178,8 @@ private:
 	Post::CColorTexture	m_tex;
 	GLLegendBar* m_pbar;
     Post::CColorMap m_map;
+
+	// temp data for calculating ODFs
+	matrix	m_A, m_B, m_T;
+	std::vector<vec3d>	m_points;
 };

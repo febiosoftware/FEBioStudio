@@ -151,6 +151,7 @@ void CFiberODFAnalysis::clear()
 	if (m_pbar) m_pbar->hide();
 }
 
+// calculate root-mean-square of vector x
 double rms(const vector<double>& x)
 {
 	if (x.empty()) return 0.0;
@@ -160,6 +161,7 @@ double rms(const vector<double>& x)
 	return rms;
 }
 
+// calculate standard deviation of vector x
 double stddev(const vector<double>& x)
 {
 	if (x.empty()) return 0.0;
@@ -174,6 +176,22 @@ double stddev(const vector<double>& x)
 	return sum;
 }
 
+// calculate mean image intensity
+double meanImageIntensity(sitk::Image& img)
+{
+	double meanIntensity = 0;
+	auto data = img.GetBufferAsUInt32();
+	auto size = img.GetNumberOfPixels();
+	for (int index = 0; index < size; index++)
+	{
+		meanIntensity += data[index];
+	}
+	meanIntensity /= size;
+
+	return meanIntensity;
+}
+
+// run the ODF analysis
 void CFiberODFAnalysis::run()
 {
     clear();
@@ -235,132 +253,83 @@ void CFiberODFAnalysis::run()
     sitk::ExtractImageFilter extractFilter;
     extractFilter.SetSize(std::vector<unsigned int> {xDivSize, yDivSize, zDivSize});
 
-    // preprocessing for qBall algorithm
+	// copy point data to vector<vec3d> which is convenient for certain parts of the algorithm (i.e. reduceAmp)
+	m_points.resize(NPTS);
+	for (int index = 0; index < NPTS; index++)
+	{
+		m_points[index] = vec3d(XCOORDS[index], YCOORDS[index], ZCOORDS[index]);
+	}
 
-    auto C = complLapBel_Coef();
+	// calculate the spherical coordinates of the points
+    vector<double> theta(NPTS);
+	vector<double> phi(NPTS);
+    getSphereCoords(NPTS, XCOORDS, YCOORDS, ZCOORDS, theta.data(), phi.data());
 
-    double* theta = new double[NPTS] {};
-    double* phi = new double[NPTS] {};
+	// Calculate spherical harmonics coefficients
+    m_T = *compSH(GetIntValue(ORDER), NPTS, theta.data(), phi.data());
+	auto C = complLapBel_Coef();
+	m_A = m_T*(*C);
 
-    getSphereCoords(NPTS, XCOORDS, YCOORDS, ZCOORDS, theta, phi);
+	// Calculate "inverse" of T. (i.e. if a=T*b, then b = B*a)
+	// TODO: maybe make this a member of matrix
+	matrix transposeT = m_T.transpose();
+	m_B = (transposeT*(m_T)).inverse()*transposeT;
 
-    auto T = compSH(GetIntValue(ORDER), NPTS, theta, phi);
-
-    delete[] theta;
-    delete[] phi;
-
-    matrix transposeT = T->transpose();
-
-    matrix A = (*T)*(*C);
-    matrix B = (transposeT*(*T)).inverse()*transposeT;
-
+	// start the loop over the subvolumes
 	m_totalSteps = xDiv * yDiv * zDiv;
-
-    int currentX = 0;
-    int currentY = 0;
-    int currentZ = 0;
-    int currentLoop = 0;
 	m_progress = 0;
-    double maxIntensity = -1;
+	double maxIntensity = -1;
 	setCurrentTask("Building ODFs ...");
-	while(true)
-    {
-		// check progress
-		m_stepsCompleted = currentZ + currentY * zDiv + currentX * zDiv * yDiv;
+	for (int currentZ = 0; currentZ < zDiv; ++currentZ)
+		for (int currentY = 0; currentY < yDiv; ++currentY)
+			for (int currentX = 0; currentX < xDiv; ++currentX)
+			{
+				// see if user cancelled
+				if (IsCanceled()) { clear(); return; }
 
-		// see if user cancelled
-		if (IsCanceled()) { clear(); return; }
+				// check and report progress
+				m_stepsCompleted = currentX + currentY * xDiv + currentZ * xDiv * yDiv;
+				std::stringstream ss;
+				Log("\n\n");
+				ss << "Building ODFs (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
+				m_task = ss.str();
+				setCurrentTask(m_task.c_str(), m_progress);
 
-		std::stringstream ss;
-		Log("\n\n");
-		ss << "Building ODFS (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
-		m_task = ss.str();
-		setCurrentTask(m_task.c_str(), m_progress);
+				// extract the sub-image
+				extractFilter.SetIndex(std::vector<int> {
+					(int)(xDivSize* currentX * (1- xOverlap)), 
+					(int)(yDivSize* currentY * (1- yOverlap)), 
+					(int)(zDivSize* currentZ * (1- zOverlap))});
+				sitk::Image current = extractFilter.Execute(img);
 
-		// extract the sub-image
-		extractFilter.SetIndex(std::vector<int> {(int)(xDivSize* currentX * (1- xOverlap)), 
-            (int)(yDivSize* currentY * (1- yOverlap)), (int)(zDivSize* currentZ * (1- zOverlap))});
-		sitk::Image current = extractFilter.Execute(img);
+				// Let's check the mean intensity of subvolume
+				// If the mean intensity is zero, all voxel values are zero and the analysis will just produce nans.
+				double meanIntensity = meanImageIntensity(current);
+				if(meanIntensity != 0)
+				{
+					if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
 
-        // find mean intensity of subregion
-        int size = xDivSize*yDivSize*zDivSize;
-        double meanIntensity = 0;
-        auto data = current.GetBufferAsUInt32();
-        for(int index = 0; index < size; index++)
-        {
-            meanIntensity += data[index];
-        }
-        meanIntensity /= size;
+					// generate the odf from the image
+					CODF* odf = generateODF(current, C->columns());
 
-        // with no image data, the later analysis will just produce nans
-        if(meanIntensity != 0)
-        {
-            if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
+					// generateODF can return nullptr if operation was cancelled
+					if (odf)
+					{
+						odf->m_position = vec3d(xDivSizePhys / 2 * (currentX * 2 + 1) - xDivSizePhys * xOverlap * currentX + origin[0], yDivSizePhys / 2 * (currentY * 2 + 1) - yDivSizePhys * yOverlap * currentY + origin[1], zDivSizePhys / 2 * (currentZ * 2 + 1) - zDivSizePhys * zOverlap * currentZ + origin[2]);
+						odf->m_radius = radius;
+						odf->m_box = BOX(-xDivSizePhys / 2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
+						odf->m_meanIntensity = meanIntensity;
 
-            // process it
-            processImage(current);
+						// throw it on the pile
+						m_ODFs.push_back(odf);
+					}
 
-            // allocated new odf
-            CODF* odf = new CODF;
-            odf->m_sphHarmonics.resize(C->columns());
-            odf->m_position = vec3d(xDivSizePhys/2 * (currentX * 2 + 1) - xDivSizePhys*xOverlap*currentX + origin[0], yDivSizePhys/2 * (currentY * 2 + 1)  - yDivSizePhys*yOverlap*currentY + origin[1], zDivSizePhys/2 * (currentZ * 2 + 1) - zDivSizePhys*zOverlap*currentZ + origin[2]);
-            odf->m_radius = radius;
-            odf->m_meanIntensity = meanIntensity;
-            m_ODFs.push_back(odf);
-            odf->m_box = BOX(-xDivSizePhys/2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
-            
-            std::vector<double> reduced = std::vector<double>(NPTS, 0);
-            reduceAmp(current, &reduced);
+					// delete image
+					current = sitk::Image();
+				}
 
-            // delete image
-            current = sitk::Image();
-
-            // see if user cancelled
-            if (IsCanceled()) { clear(); return; }
-
-            // odf = A*B*reduced
-            A.mult(B, reduced, odf->m_odf);
-            updateProgressIncrement(0.75);
-
-            // normalize odf
-            normalizeODF(odf);
-
-            // Calculate spherical harmonics
-            B.mult(odf->m_odf, odf->m_sphHarmonics);
-
-            // Recalc ODF based on spherical harmonics
-            (*T).mult(odf->m_sphHarmonics, odf->m_odf);
-
-            normalizeODF(odf);
-
-            // Calcualte ODF_GFA
-            odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
-
-            // build the meshes
-            buildMesh(odf);
-            buildRemesh(odf);
-
-            // do the fitting stats
-            if (GetBoolValue(FITTING)) calculateFits(odf);
-        }
-
-		// update iterators
-        if((currentX + 1 == xDiv) && (currentY + 1 == yDiv) && (currentZ + 1 == zDiv)) break;
-
-        currentZ++;
-        if(currentZ + 1> zDiv)
-        {
-            currentZ = 0;
-            currentY++;
-        }
-
-        if(currentY + 1 > yDiv)
-        {
-            currentY = 0;
-            currentX++;
-        }
-		updateProgressIncrement(1.0);
-    }
+				updateProgressIncrement(1.0);
+			}
 
     // normalize mean intensities
     for(auto odf : m_ODFs)
@@ -374,6 +343,54 @@ void CFiberODFAnalysis::run()
     UpdateColorBar();
 	UpdateAllMeshes();
 	m_pbar->show();
+}
+
+// This function generates the ODF from the subvolume image
+CODF* CFiberODFAnalysis::generateODF(sitk::Image& img, int nsh)
+{
+	// process the image (apply butterworth and calculate power spectrum)
+	// Note that the image is overwritten with the filtered power spectrum
+	processImage(img);
+
+	// allocate odf
+	CODF* odf = new CODF;
+	odf->m_sphHarmonics.resize(nsh);
+
+	// project image onto unit sphere
+	std::vector<double> reduced = std::vector<double>(NPTS, 0);
+	reduceAmp(img, reduced);
+
+	// see if user cancelled
+	if (IsCanceled()) { clear(); return nullptr; }
+
+	// odf = A*B*reduced
+	vector<double> Bxr(m_B.rows(), 0.0);
+	m_B.mult(reduced, Bxr);
+	m_A.mult(Bxr, odf->m_odf);
+	updateProgressIncrement(0.75);
+
+	// normalize odf
+	normalizeODF(odf);
+
+	// Calculate spherical harmonics
+	m_B.mult(odf->m_odf, odf->m_sphHarmonics);
+
+	// Recalc ODF based on spherical harmonics
+	m_T.mult(odf->m_sphHarmonics, odf->m_odf);
+
+	normalizeODF(odf);
+
+	// Calcualte ODF_GFA
+	odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
+
+	// build the meshes
+	buildMesh(odf);
+	buildRemesh(odf);
+
+	// do the fitting stats
+	if (GetBoolValue(FITTING)) calculateFits(odf);
+
+	return odf;
 }
 
 bool CFiberODFAnalysis::UpdateData(bool bsave)
@@ -550,6 +567,7 @@ void CFiberODFAnalysis::UpdateColorBar()
 	}
 }
 
+// Note that the returned image is now a filtered power spectrum
 void CFiberODFAnalysis::processImage(sitk::Image& current)
 {
 	// Apply Butterworth filter
@@ -942,16 +960,8 @@ void CFiberODFAnalysis::updateProgressIncrement(double f)
 	setProgress(m_progress);
 }
 
-void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced)
+void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>& reduced)
 {
-    std::vector<vec3d> points;
-    points.reserve(NPTS);
-    
-    for (int index = 0; index < NPTS; index++)
-    {
-        points.emplace_back(XCOORDS[index], YCOORDS[index], ZCOORDS[index]);
-    }
-
     float* data = img.GetBufferAsFloat();
 
     int nx = img.GetSize()[0];
@@ -964,9 +974,9 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
 
 	double zcount = 0;
 
-    #pragma omp parallel shared(img, points)
+    #pragma omp parallel shared(img)
     {
-        FSNNQuery query(&points);
+        FSNNQuery query(&m_points);
         query.Init();
         
         std::vector<double> tmp(NPTS, 0.0);
@@ -1010,7 +1020,7 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>* reduced
 #pragma omp critical
 		for (int i = 0; i < NPTS; ++i)
 		{
-			(*reduced)[i] += tmp[i];
+			reduced[i] += tmp[i];
 		}
 	}
 }
