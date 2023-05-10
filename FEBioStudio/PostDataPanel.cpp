@@ -1127,7 +1127,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 					bret = DataFractionalAnsisotropy(fem, newData->GetFieldID(), nfield);
 				}
 				break;
-				case 6:
+				case 6: // convert format
 				{
 					int newformat = dlg.getNewFormat();
 					newData = DataConvert(fem, pdf, newformat, sname);
