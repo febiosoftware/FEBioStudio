@@ -178,7 +178,7 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 
 		if (m_bwriteSeriesFile)
 		{
-			sprintf(szname, "%s.vtk.series", szroot);
+			sprintf(szname, "%svtk.series", szroot);
 			WriteVTKSeriesFile(szname, series);
 		}
 
@@ -1042,7 +1042,7 @@ void FEVTKExport::WriteVTKSeriesFile(const char* szfile, std::vector<std::pair<s
 	if (fp == nullptr) return;
 
 	fprintf(fp, "{\n");
-	fprintf(fp, "\t\"file-series-version\": = \"1.0\",\n");
+	fprintf(fp, "\t\"file-series-version\": \"1.0\",\n");
 	fprintf(fp, "\t\"files\": [\n");
 
 	for (size_t i = 0; i<series.size(); ++i)
