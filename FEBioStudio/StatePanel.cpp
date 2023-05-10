@@ -384,6 +384,6 @@ void CStatePanel::on_filterButton_clicked()
 		}
 
 		GetMainWindow()->UpdatePostToolbar();
-		GetMainWindow()->Update(this);
+		GetMainWindow()->Update(this, true);
 	}
 }
