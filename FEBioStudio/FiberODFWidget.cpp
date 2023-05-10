@@ -360,6 +360,12 @@ public:
 		l1->addWidget(m_form1);
 		l1->addStretch();
 		l1->addWidget(m_gen = new QPushButton("Generate subvolumes"));
+
+		QHBoxLayout* h1 = new QHBoxLayout;
+		h1->addStretch();
+		h1->addWidget(m_next = new QPushButton("Next"));
+		l1->addLayout(h1);
+
 		setLayout(l1);
 		page1->setLayout(l1);
 		m_stack->addWidget(page1);
@@ -372,6 +378,12 @@ public:
 		l2->addWidget(m_form2);
 		l2->addStretch();
 		l2->addWidget(m_run = new QPushButton("Run"));
+
+		QHBoxLayout* h2 = new QHBoxLayout;
+		h2->addWidget(m_back = new QPushButton("Back"));
+		h2->addStretch();
+		l2->addLayout(h2);
+
 		setLayout(l2);
 		page2->setLayout(l2);
 		m_stack->addWidget(page2);
@@ -388,11 +400,21 @@ public:
 		m_props2->SetAnalysis(odfAnalysis);
 		m_form1->updateData();
 		m_form2->updateData();
+
+		if (odfAnalysis && (odfAnalysis->ODFs() == 0))
+		{
+			m_stack->setCurrentIndex(0);
+		}
 	}
 
 	void nextStep()
 	{
 		m_stack->setCurrentIndex(1);
+	}
+
+	void prevStep()
+	{
+		m_stack->setCurrentIndex(0);
 	}
 
 public:
@@ -402,6 +424,8 @@ public:
 	CPropertyListForm* m_form2 = nullptr;
 	QPushButton* m_gen = nullptr;
 	QPushButton* m_run = nullptr;
+	QPushButton* m_next = nullptr;
+	QPushButton* m_back = nullptr;
 	QStackedWidget* m_stack = nullptr;
 };
 
@@ -414,9 +438,12 @@ public:
     QCheckBox* odfCheck;
     CFiberGLWidget* glWidget;
 
+	// tabs
 	ODFParamsWidget* odfParams;
-
+	QWidget* odfTab;
     QWidget* sphHarmTab;
+	QWidget* fitTab;
+
     QTableWidget* sphHarmTable;
     QPushButton* copyToMatButton;
     QMenu* copyMenu;
@@ -451,7 +478,7 @@ public:
 		mainLayout->setContentsMargins(0,0,0,0);
 
 		QHBoxLayout* odfl = new QHBoxLayout;
-		odfl->addWidget(new QLabel("Select ODF:"));
+		odfl->addWidget(new QLabel("Select subvolume:"));
 		odfl->addWidget(odfSelector = new QComboBox);
 		odfl->addWidget(odfCheck = new QCheckBox); odfCheck->setChecked(true);
 		QSizePolicy sp = odfSelector->sizePolicy();
@@ -464,17 +491,17 @@ public:
 		tabs->addTab(odfParams, "Parameters");
 
 		// odf tab
-        QWidget* odfTab = new QWidget;
+        odfTab = new QWidget;
         QVBoxLayout* odfTabLayout = new QVBoxLayout;
         odfTabLayout->setContentsMargins(0,0,0,0);
 
         odfTabLayout->addWidget(glWidget = new CFiberGLWidget);
 
         odfTab->setLayout(odfTabLayout);
-        tabs->addTab(odfTab, "ODF");
+//        tabs->addTab(odfTab, "ODF");
 
 		// spherical harmonics tab
-        QWidget* sphHarmTab = new QWidget;
+        sphHarmTab = new QWidget;
         QVBoxLayout* sphHarmTabLayout = new QVBoxLayout;
         sphHarmTabLayout->setContentsMargins(0,0,0,0);
 
@@ -484,10 +511,10 @@ public:
         sphHarmTabLayout->addWidget(sphHarmTable);
 
         sphHarmTab->setLayout(sphHarmTabLayout);
-        tabs->addTab(sphHarmTab, "Spherical Harmonics");
+//        tabs->addTab(sphHarmTab, "Spherical Harmonics");
 
 		// stats tab
-		QWidget* fitTab = new QWidget;
+		fitTab = new QWidget;
 		QFormLayout* fitTabLayout = new QFormLayout;
 		fitTabLayout->setLabelAlignment(Qt::AlignRight);
 		fitTabLayout->addRow("Position:", pos = new QLineEdit); pos->setReadOnly(true);
@@ -501,7 +528,7 @@ public:
         fitTabLayout->addRow("VM3 theta:", VM3_theta = new QLineEdit); VM3_theta->setReadOnly(true);
 
 		fitTab->setLayout(fitTabLayout);
-		tabs->addTab(fitTab, "Analysis");
+//		tabs->addTab(fitTab, "Analysis");
 
         QHBoxLayout* buttonLayout = new QHBoxLayout;
         buttonLayout->setContentsMargins(0,0,0,0);
@@ -529,6 +556,20 @@ public:
 
     }
 
+	void hideTabs()
+	{
+		tabs->removeTab(3);
+		tabs->removeTab(2);
+		tabs->removeTab(1);
+	}
+
+	void showTabs()
+	{
+		tabs->addTab(odfTab, "ODF");
+		tabs->addTab(sphHarmTab, "Sherical Harmonics");
+		tabs->addTab(fitTab, "Analysis");
+	}
+
     void update(CFiberODFAnalysis* analysis)
     {
         glWidget->setAnalysis(analysis);
@@ -536,7 +577,9 @@ public:
 
         if(!analysis || analysis->ODFs() == 0)
         {
-            odfParams->setAnalysis(analysis);
+			odfSelector->hide();
+			odfParams->setAnalysis(analysis);
+			hideTabs();
         }
         else if(analysis->ODFs() == 1)
         {
@@ -544,6 +587,7 @@ public:
             glWidget->setODF(analysis->GetODF(0));
 			odfParams->setAnalysis(analysis);
 			updateData(analysis);
+			showTabs();
         }
         else
         {
@@ -552,7 +596,7 @@ public:
 
             for(int index = 0; index < analysis->ODFs(); index++)
             {
-                odfSelector->addItem(QString("ODF %1").arg(index));
+                odfSelector->addItem(QString("subvolume %1").arg(index));
             }
 
             odfSelector->blockSignals(false);
@@ -562,7 +606,8 @@ public:
 			odfParams->setAnalysis(analysis);
 
 			updateData(analysis);
-        }
+			showTabs();
+		}
     }
 
 	int currentODF() 
@@ -627,6 +672,8 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
 
     connect(ui->odfParams->m_run, &QPushButton::clicked, this, &CFiberODFWidget::on_runButton_pressed);
     connect(ui->odfParams->m_gen, &QPushButton::clicked, this, &CFiberODFWidget::on_genButton_pressed);
+    connect(ui->odfParams->m_next, &QPushButton::clicked, this, &CFiberODFWidget::on_nextButton_pressed);
+    connect(ui->odfParams->m_back, &QPushButton::clicked, this, &CFiberODFWidget::on_backButton_pressed);
     connect(ui->odfSelector, &QComboBox::currentIndexChanged, this, &CFiberODFWidget::on_odfSelector_currentIndexChanged);
     connect(ui->odfCheck, &QCheckBox::stateChanged, this, &CFiberODFWidget::on_odfCheck_stateChanged);
     connect(ui->copyODF, &QAction::triggered, this, &CFiberODFWidget::on_copyODF_triggered);
@@ -721,7 +768,26 @@ void CFiberODFWidget::on_runButton_pressed()
 void CFiberODFWidget::on_genButton_pressed()
 {
 	if (!m_analysis) return;
+	m_analysis->GenerateSubVolumes();
+	ui->update(m_analysis);
+	m_wnd->RedrawGL();
+}
+
+void CFiberODFWidget::on_nextButton_pressed()
+{
+	if (!m_analysis) return;
+	if (m_analysis->ODFs() == 0)
+	{
+		QMessageBox::warning(m_wnd, "ODF Analysis", "You must generate subvolumes before continuing");
+		return;
+	}
 	ui->odfParams->nextStep();
+}
+
+void CFiberODFWidget::on_backButton_pressed()
+{
+	if (!m_analysis) return;
+	ui->odfParams->prevStep();
 }
 
 void CFiberODFWidget::on_odfSelector_currentIndexChanged(int index)

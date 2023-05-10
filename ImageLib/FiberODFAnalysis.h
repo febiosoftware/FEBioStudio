@@ -88,6 +88,9 @@ public:
     CFiberODFAnalysis(Post::CImageModel* img);
     ~CFiberODFAnalysis();
 
+	// generate the subvolumes
+	void GenerateSubVolumes();
+
     void run() override;
     void render(CGLCamera* cam) override;
 
@@ -115,7 +118,7 @@ private:
     void clear();
 
 	// generate an ODF from an image
-	CODF* generateODF(sitk::Image& img, int nsh);
+	bool generateODF(CODF& odf, sitk::Image& img, int nsh);
 
     void butterworthFilter(sitk::Image& img);
     sitk::Image powerSpectrum(sitk::Image& img);

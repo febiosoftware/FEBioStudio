@@ -69,6 +69,15 @@ CODF::CODF() : m_odf(NPTS, 0.0), m_meanIntensity(0)
 	m_ev[0] = vec3d(1, 0, 0);
 	m_ev[1] = vec3d(0, 1, 0);
 	m_ev[2] = vec3d(0, 0, 1);
+
+	m_radius = 1.0;
+	m_meanIntensity = 0.0;
+
+	m_EFD_FRD = 0.0;
+	m_VM3_FRD = 0.0;
+
+	m_FA = 0.0;
+	m_GFA = 0.0;
 };
 
 //==================================================================
@@ -188,12 +197,83 @@ double meanImageIntensity(sitk::Image& img)
 	return meanIntensity;
 }
 
+void CFiberODFAnalysis::GenerateSubVolumes()
+{
+	clear();
+
+	CImageSITK* imgSITK = dynamic_cast<CImageSITK*>(m_img->Get3DImage());
+	if (!imgSITK) return;
+	sitk::Image img = sitk::Cast(imgSITK->GetSItkImage(), sitk::sitkUInt32);
+	auto size = img.GetSize();
+
+	// get the requested subdivisions
+	int xDiv = GetIntValue(XDIV);
+	int yDiv = GetIntValue(YDIV);
+	int zDiv = GetIntValue(ZDIV);
+
+	double xOverlap = 0;
+	double yOverlap = 0;
+	double zOverlap = 0;
+	int ppd = 0;
+
+	m_overlapFraction = GetFloatValue(OVERLAP);
+
+	if (xDiv > 1 || yDiv > 1 || zDiv > 1)
+	{
+		int xppd = size[0] / (xDiv - (xDiv - 1) * m_overlapFraction);
+		int yppd = size[1] / (yDiv - (yDiv - 1) * m_overlapFraction);
+		int zppd = size[2] / (zDiv - (zDiv - 1) * m_overlapFraction);
+
+		ppd = std::max({ xppd, yppd, zppd });
+
+
+		if (xDiv != 1) xOverlap = ((int)size[0] - xDiv * ppd) / (double)(-(xDiv - 1) * ppd);
+		if (yDiv != 1) yOverlap = ((int)size[1] - yDiv * ppd) / (double)(-(yDiv - 1) * ppd);
+		if (zDiv != 1) zOverlap = ((int)size[2] - zDiv * ppd) / (double)(-(zDiv - 1) * ppd);
+
+	}
+	else
+	{
+		ppd = std::min({ size[0], size[1], size[2] });
+	}
+
+	unsigned int xDivSize = ppd;
+	unsigned int yDivSize = ppd;
+	unsigned int zDivSize = ppd;
+
+	auto spacing = img.GetSpacing();
+	auto origin = img.GetOrigin();
+
+	double xDivSizePhys = ppd * spacing[0];
+	double yDivSizePhys = ppd * spacing[1];
+	double zDivSizePhys = ppd * spacing[2];
+	double radius = std::min({ xDivSizePhys, yDivSizePhys, zDivSizePhys }) * 0.375;
+
+	Log("\nPixels Per Division: %i\n", ppd);
+	Log("X Overlap: %g\n", xOverlap);
+	Log("Y Overlap: %g\n", yOverlap);
+	Log("Z Overlap: %g\n\n", zOverlap);
+
+	for (int currentZ = 0; currentZ < zDiv; ++currentZ)
+		for (int currentY = 0; currentY < yDiv; ++currentY)
+			for (int currentX = 0; currentX < xDiv; ++currentX)
+			{
+				CODF* odf = new CODF;
+				odf->m_position = vec3d(xDivSizePhys / 2 * (currentX * 2 + 1) - xDivSizePhys * xOverlap * currentX + origin[0], yDivSizePhys / 2 * (currentY * 2 + 1) - yDivSizePhys * yOverlap * currentY + origin[1], zDivSizePhys / 2 * (currentZ * 2 + 1) - zDivSizePhys * zOverlap * currentZ + origin[2]);
+				odf->m_radius = radius;
+				odf->m_box = BOX(-xDivSizePhys / 2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
+				m_ODFs.push_back(odf);
+			}
+}
+
 // run the ODF analysis
 void CFiberODFAnalysis::run()
 {
-    clear();
 	resetProgress();
 	setCurrentTask("Starting ODF Analysis ...");
+
+	// generate the subvolumes
+	if (m_ODFs.empty()) GenerateSubVolumes();
 
     CImageSITK* imgSITK = dynamic_cast<CImageSITK*>(m_img->Get3DImage());
     if(!imgSITK) return;
@@ -242,11 +322,6 @@ void CFiberODFAnalysis::run()
     double zDivSizePhys = ppd*spacing[2];
     double radius = std::min({xDivSizePhys, yDivSizePhys, zDivSizePhys})*0.375;
 
-    Log("\nPixels Per Division: %i\n", ppd);
-    Log("X Overlap: %g\n", xOverlap);
-    Log("Y Overlap: %g\n", yOverlap);
-    Log("Z Overlap: %g\n\n", zOverlap);
-
     sitk::ExtractImageFilter extractFilter;
     extractFilter.SetSize(std::vector<unsigned int> {xDivSize, yDivSize, zDivSize});
 
@@ -274,6 +349,7 @@ void CFiberODFAnalysis::run()
 
 	// start the loop over the subvolumes
 	m_totalSteps = xDiv * yDiv * zDiv;
+	assert(m_totalSteps == m_ODFs.size());
 	m_progress = 0;
 	double maxIntensity = -1;
 	setCurrentTask("Building ODFs ...");
@@ -307,19 +383,9 @@ void CFiberODFAnalysis::run()
 					if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
 
 					// generate the odf from the image
-					CODF* odf = generateODF(current, C->columns());
-
-					// generateODF can return nullptr if operation was cancelled
-					if (odf)
-					{
-						odf->m_position = vec3d(xDivSizePhys / 2 * (currentX * 2 + 1) - xDivSizePhys * xOverlap * currentX + origin[0], yDivSizePhys / 2 * (currentY * 2 + 1) - yDivSizePhys * yOverlap * currentY + origin[1], zDivSizePhys / 2 * (currentZ * 2 + 1) - zDivSizePhys * zOverlap * currentZ + origin[2]);
-						odf->m_radius = radius;
-						odf->m_box = BOX(-xDivSizePhys / 2.0, -yDivSizePhys / 2.0, -zDivSizePhys / 2.0, xDivSizePhys / 2.0, yDivSizePhys / 2.0, zDivSizePhys / 2.0);
-						odf->m_meanIntensity = meanIntensity;
-
-						// throw it on the pile
-						m_ODFs.push_back(odf);
-					}
+					CODF& odf = *(m_ODFs[m_stepsCompleted]);
+					bool b = generateODF(odf, current, C->columns());
+					odf.m_meanIntensity = meanIntensity;
 
 					// delete image
 					current = sitk::Image();
@@ -343,51 +409,50 @@ void CFiberODFAnalysis::run()
 }
 
 // This function generates the ODF from the subvolume image
-CODF* CFiberODFAnalysis::generateODF(sitk::Image& img, int nsh)
+bool CFiberODFAnalysis::generateODF(CODF& odf, sitk::Image& img, int nsh)
 {
 	// process the image (apply butterworth and calculate power spectrum)
 	// Note that the image is overwritten with the filtered power spectrum
 	processImage(img);
 
 	// allocate odf
-	CODF* odf = new CODF;
-	odf->m_sphHarmonics.resize(nsh);
+	odf.m_sphHarmonics.resize(nsh);
 
 	// project image onto unit sphere
 	std::vector<double> reduced = std::vector<double>(NPTS, 0);
 	reduceAmp(img, reduced);
 
 	// see if user cancelled
-	if (IsCanceled()) { clear(); return nullptr; }
+	if (IsCanceled()) { clear(); return false; }
 
 	// odf = A*B*reduced
 	vector<double> Bxr(m_B.rows(), 0.0);
 	m_B.mult(reduced, Bxr);
-	m_A.mult(Bxr, odf->m_odf);
+	m_A.mult(Bxr, odf.m_odf);
 	updateProgressIncrement(0.75);
 
 	// normalize odf
-	normalizeODF(odf);
+	normalizeODF(&odf);
 
 	// Calculate spherical harmonics
-	m_B.mult(odf->m_odf, odf->m_sphHarmonics);
+	m_B.mult(odf.m_odf, odf.m_sphHarmonics);
 
 	// Recalc ODF based on spherical harmonics
-	m_T.mult(odf->m_sphHarmonics, odf->m_odf);
+	m_T.mult(odf.m_sphHarmonics, odf.m_odf);
 
-	normalizeODF(odf);
+	normalizeODF(&odf);
 
 	// Calcualte ODF_GFA
-	odf->m_GFA = stddev(odf->m_odf) / rms(odf->m_odf);
+	odf.m_GFA = stddev(odf.m_odf) / rms(odf.m_odf);
 
 	// build the meshes
-	buildMesh(odf);
-	buildRemesh(odf);
+	buildMesh(&odf);
+	buildRemesh(&odf);
 
 	// do the fitting stats
-	if (GetBoolValue(FITTING)) calculateFits(odf);
+	if (GetBoolValue(FITTING)) calculateFits(&odf);
 
-	return odf;
+	return true;
 }
 
 bool CFiberODFAnalysis::UpdateData(bool bsave)
@@ -669,39 +734,9 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
     GLfloat spc[4] = { 0, 0, 0, 1.f };
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 
-
-	// render the grid
-	if (m_img)
-	{
-		glColor3ub(255, 128, 128);
-
-		BOX box = m_img->GetBoundingBox();
-		int xDiv = GetIntValue(XDIV);
-		int yDiv = GetIntValue(YDIV);
-		int zDiv = GetIntValue(ZDIV);
-		double w[3] = { 1.0 / xDiv, 1.0 / yDiv, 1.0 / zDiv };
-		for (int k = 0; k < zDiv; ++k)
-			for (int j = 0; j < yDiv; ++j)
-				for (int i = 0; i < xDiv; ++i)
-				{
-					double x0 = box.x0 + i * box.Width() * w[0];
-					double x1 = box.x0 + (i + 1) * box.Width() * w[0];
-
-					double y0 = box.y0 + j * box.Height() * w[1];
-					double y1 = box.y0 + (j + 1) * box.Height() * w[1];
-
-					double z0 = box.z0 + k * box.Depth() * w[2];
-					double z1 = box.z0 + (k + 1) * box.Depth() * w[2];
-
-					BOX bb(vec3d(x0, y0, z0), vec3d(x1, y1, z1));
-
-					glx::renderBox(bb, false, 1);
-				}
-	}
-
-
 	// render the meshes (and selection box)
 	bool showSelBox = GetBoolValue(SHOW_SELBOX);
+	CODF* sel = nullptr;
 
 	int showMesh = GetIntValue(SHOW_MESH);
 	if (showMesh == 3)
@@ -716,11 +751,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 			glPushMatrix();
 			glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
 
-			if (odf->m_selected && showSelBox)
-			{
-				glColor3ub(255, 255, 0);
-				glx::renderBox(odf->m_box, false, 0.99);
-			}
+			if (odf->m_selected) sel = odf;
 
 			if (odf->m_active)
 			{
@@ -743,6 +774,10 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 					RenderEllipsoid(pglyph, odf->m_radius*m_renderScale, l, e);
 				}
 			}
+
+			glColor3ub(255, 128, 128);
+			glx::renderBox(odf->m_box, false, 1);
+
 			glPopMatrix();
 		}
 
@@ -755,17 +790,32 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 			glPushMatrix();
 			glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
 
-			if (odf->m_selected && showSelBox)
+			if (odf->m_selected) sel = odf;
+
+			if (odf->m_active)
 			{
-				glColor3ub(255, 255, 0);
-				glx::renderBox(odf->m_box, false, 0.99);
+				glPushMatrix();
+				glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
+				renderODFMesh(odf, cam);
+				glPopMatrix();
 			}
 
-			glScaled(odf->m_radius*m_renderScale, odf->m_radius*m_renderScale, odf->m_radius*m_renderScale);
-			if (odf->m_active) renderODFMesh(odf, cam);
+			glColor3ub(255, 128, 128);
+			glx::renderBox(odf->m_box, false, 1);
 
 			glPopMatrix();
 		}
+	}
+
+	// show selected box
+	if (sel && showSelBox)
+	{
+		glColor3ub(255, 255, 0);
+		glDisable(GL_DEPTH_TEST);
+		glPushMatrix();
+		glTranslated(sel->m_position.x, sel->m_position.y, sel->m_position.z);
+		glx::renderBox(sel->m_box, false, 1);
+		glPopMatrix();
 	}
 
     glPopAttrib();
