@@ -1412,7 +1412,7 @@ bool Post::DataFractionalAnsisotropy(FEPostModel& fem, int scalarField, int tens
 
 //-----------------------------------------------------------------------------
 // convert between formats
-ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, int newFormat, const std::string& name)
+ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, int newClass, int newFormat, const std::string& name)
 {
 	if (dataField == nullptr) return nullptr;
 
@@ -1426,7 +1426,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	ModelDataField* newField = nullptr;
-	if (nclass == CLASS_ELEM)
+	if ((nclass == CLASS_ELEM) && (newClass == CLASS_ELEM))
 	{
 		if      ((nfmt == DATA_ITEM) && (newFormat == DATA_NODE))
 		{
@@ -1635,6 +1635,135 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 				// TODO: This will only work if all elements have the same nr of nodes!!
 				int ne = mesh.Element(elem[0]).Nodes();
 				pnew->add(nodeData, elem, index, ne);
+			}
+		}
+	}
+	else if ((nclass == CLASS_ELEM) && (newClass == CLASS_NODE))
+	{
+		int NN = mesh.Nodes();
+		int NE = mesh.Elements();
+
+		if (nfmt == DATA_ITEM)
+		{
+			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			fem.AddDataField(newField, name);
+
+			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+			int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+			for (int n = 0; n < fem.GetStates(); ++n)
+			{
+				FEState* state = fem.GetState(n);
+
+				vector<float> data(NN, 0.f);
+				vector<int> tag(NN, 0);
+
+				FEElemData_T<float, DATA_ITEM>* pold = dynamic_cast<FEElemData_T<float, DATA_ITEM>*>(&state->m_Data[nold]);
+				FENodeData<float>* pnew = dynamic_cast<FENodeData<float>*>(&state->m_Data[nnew]);
+
+				for (int i = 0; i < NE; ++i)
+				{
+					if (pold->active(i))
+					{
+						FSElement& el = mesh.Element(i);
+						float v = 0.f; pold->eval(i, &v);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							data[el.m_node[j]] += v;
+							tag[el.m_node[j]]++;
+						}
+					}
+				}
+
+				for (int i = 0; i < NN; ++i)
+				{
+					if (tag[i] != 0) data[i] /= (float)tag[i];
+				}
+
+				for (int i = 0; i< NN; ++i) (*pnew)[i] = data[i];
+			}
+		}
+		else if (nfmt == DATA_NODE)
+		{
+			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			fem.AddDataField(newField, name);
+
+			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+			int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+			for (int n = 0; n < fem.GetStates(); ++n)
+			{
+				FEState* state = fem.GetState(n);
+
+				vector<float> data(NN, 0.f);
+				vector<int> tag(NN, 0);
+
+				FEElemData_T<float, DATA_NODE>* pold = dynamic_cast<FEElemData_T<float, DATA_NODE>*>(&state->m_Data[nold]);
+				FENodeData<float>* pnew = dynamic_cast<FENodeData<float>*>(&state->m_Data[nnew]);
+
+				for (int i = 0; i < NE; ++i)
+				{
+					if (pold->active(i))
+					{
+						FSElement& el = mesh.Element(i);
+						float v[FSElement::MAX_NODES] = { 0.f }; pold->eval(i, v);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							data[el.m_node[j]] += v[j];
+							tag[el.m_node[j]]++;
+						}
+					}
+				}
+
+				for (int i = 0; i < NN; ++i)
+				{
+					if (tag[i] != 0) data[i] /= (float)tag[i];
+				}
+
+				for (int i = 0; i < NN; ++i) (*pnew)[i] = data[i];
+			}
+		}
+		else if (nfmt == DATA_COMP)
+		{
+			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			fem.AddDataField(newField, name);
+
+			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
+			int nnew = newField->GetFieldID(); nnew = FIELD_CODE(nnew);
+
+			for (int n = 0; n < fem.GetStates(); ++n)
+			{
+				FEState* state = fem.GetState(n);
+
+				vector<float> data(NN, 0.f);
+				vector<int> tag(NN, 0);
+
+				FEElemData_T<float, DATA_COMP>* pold = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&state->m_Data[nold]);
+				FENodeData<float>* pnew = dynamic_cast<FENodeData<float>*>(&state->m_Data[nnew]);
+
+				for (int i = 0; i < NE; ++i)
+				{
+					if (pold->active(i))
+					{
+						FSElement& el = mesh.Element(i);
+						float v[FSElement::MAX_NODES] = { 0.f }; pold->eval(i, v);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							data[el.m_node[j]] += v[j];
+							tag[el.m_node[j]]++;
+						}
+					}
+				}
+
+				for (int i = 0; i < NN; ++i)
+				{
+					if (tag[i] != 0) data[i] /= (float)tag[i];
+				}
+
+				for (int i = 0; i < NN; ++i) (*pnew)[i] = data[i];
 			}
 		}
 	}
