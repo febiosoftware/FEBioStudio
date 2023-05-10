@@ -56,8 +56,11 @@ public:
 	bool IsActive() const { return m_active; }
 	void Activate(bool b) { m_active = b; }
 
+	Post::CImageModel* GetImageModel() { return m_img; }
+
 protected:
     Post::CImageModel* m_img;
+
 private:
     int m_type;
 
