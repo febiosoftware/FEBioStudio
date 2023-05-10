@@ -37,6 +37,7 @@ public:
 	QRadioButton*	allStates;
 	QRadioButton*	currState;
 	QCheckBox*		selonly;
+	QCheckBox*		vtkseries;
 
 public:
 	void setup(QDialog* dlg)
@@ -53,6 +54,9 @@ public:
 		selonly = new QCheckBox("Selected elements only");
 		l->addWidget(selonly);
 
+		vtkseries = new QCheckBox("Write VTK series file");
+		l->addWidget(vtkseries);
+
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		l->addWidget(bb);
 
@@ -68,6 +72,7 @@ CDlgExportVTK::CDlgExportVTK(QWidget* parent) : QDialog(parent), ui(new CDlgExpo
 	m_ops[0] = true;
 	m_ops[1] = false;
 	m_bselonly = false;
+	m_bwriteSeries = false;
 
 	ui->setup(this);
 }
@@ -77,6 +82,7 @@ void CDlgExportVTK::accept()
 	m_ops[0] = ui->allStates->isChecked();
 	m_ops[1] = ui->currState->isChecked();
 	m_bselonly = ui->selonly->isChecked();
+	m_bwriteSeries = ui->vtkseries->isChecked();
 
 	QDialog::accept();
 }

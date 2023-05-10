@@ -1103,6 +1103,7 @@ void CMainWindow::SavePostDoc()
 				Post::FEVTKExport w;
 				w.ExportAllStates(dlg.m_ops[0]);
 				w.ExportSelectedElementsOnly(dlg.m_bselonly);
+				w.WriteSeriesFile(dlg.m_bwriteSeries);
 				bret = w.Save(fem, szfilename);
 				error = "Failed writing VTK file";
 			}

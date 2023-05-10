@@ -68,6 +68,7 @@ FEVTKExport::FEVTKExport(void)
 {
 	m_bwriteAllStates = false;
 	m_bselElemsOnly = false;
+	m_bwriteSeriesFile = false;
 }
 
 FEVTKExport::~FEVTKExport(void)
@@ -82,6 +83,11 @@ void FEVTKExport::ExportAllStates(bool b)
 void FEVTKExport::ExportSelectedElementsOnly(bool b)
 {
 	m_bselElemsOnly = b;
+}
+
+void FEVTKExport::WriteSeriesFile(bool b)
+{
+	m_bwriteSeriesFile = b;
 }
 
 bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
@@ -130,7 +136,7 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 
 	if (m_bwriteAllStates)
 	{
-		char szroot[256] = {0}, szname[256] = {0}, szext[16] = {0};
+		char szroot[256] = { 0 }, szname[256] = { 0 }, szext[16] = { 0 };
 		const char* sz;
 		sz = strrchr(szfile, '.');
 		if (sz == 0) {
@@ -144,14 +150,36 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 			szroot[l] = 0;
 			strcpy(szext, sz);
 		}
+
+		// strip the path of the root
+		const char* szbase = strrchr(szroot, '/');
+		if (szbase == nullptr)
+		{
+			szbase = strrchr(szroot, '\\');
+			if (szbase == nullptr) szbase = szroot; else szbase++;
+		}
+		else szbase++;
+
+		vector<pair<string, float> > series;
     
 		// save each state in a separate file
 		int l0 = (int) log10((double)ns) + 1;
 		for (int is=0; is<ns; ++is) 
 		{
-			if (sprintf(szname, "%st%0*d%s",szroot,l0,is,szext) < 0) return false;
+			if (sprintf(szname, "%st%0*d%s", szroot, l0,is,szext) < 0) return false;
 
-			if (WriteState(szname, fem.GetState(is)) == false) return false;
+			FEState* ps = fem.GetState(is);
+
+			if (WriteState(szname, ps) == false) return false;
+
+			if (sprintf(szname, "%st%0*d%s", szbase, l0, is, szext) < 0) return false;
+			series.push_back(pair<string, float>(szname, ps->m_time));
+		}
+
+		if (m_bwriteSeriesFile)
+		{
+			sprintf(szname, "%s.vtk.series", szroot);
+			WriteVTKSeriesFile(szname, series);
 		}
 
 		return true;
@@ -1006,4 +1034,27 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 */	else return false;
 
 	return true;
+}
+
+void FEVTKExport::WriteVTKSeriesFile(const char* szfile, std::vector<std::pair<std::string, float> >& series)
+{
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == nullptr) return;
+
+	fprintf(fp, "{\n");
+	fprintf(fp, "\t\"file-series-version\": = \"1.0\",\n");
+	fprintf(fp, "\t\"files\": [\n");
+
+	for (size_t i = 0; i<series.size(); ++i)
+	{
+		auto& it = series[i];
+		fprintf(fp, "\t{ \"name\": \"%s\", \"time\": %g }", it.first.c_str(), it.second);
+		if (i != series.size() - 1) fprintf(fp, ",\n");
+		else fprintf(fp, "\n");
+	}
+
+	fprintf(fp, "\t]\n");
+	fprintf(fp, "}\n");
+
+	fclose(fp);
 }

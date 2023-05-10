@@ -40,6 +40,7 @@ public:
 
 	void ExportAllStates(bool b);
 	void ExportSelectedElementsOnly(bool b);
+	void WriteSeriesFile(bool b);
 
 private:
 	bool WriteState(const char* szname, FEState* ps);
@@ -55,8 +56,12 @@ private:
 	void WriteCellData(FEState* ps);
 
 private:
+	void WriteVTKSeriesFile(const char* szfile, std::vector<std::pair<std::string, float> >& series);
+
+private:
 	bool	m_bwriteAllStates;	// write all states
 	bool	m_bselElemsOnly;	// only output selected elements
+	bool	m_bwriteSeriesFile;	// write the vtk.series file (only for writeAllStates)
 
 private:
 	FILE*	m_fp;
