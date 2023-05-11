@@ -1119,7 +1119,7 @@ void CModelPropsPanel::addSelection(int n)
 			{
 				// make sure it's a part list
 				GPartList* partList = dynamic_cast<GPartList*>(pg);
-				if (pg == nullptr)
+				if (partList == nullptr)
 				{
 					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
 					delete pg;
@@ -1142,6 +1142,10 @@ void CModelPropsPanel::addSelection(int n)
 					delete pg;
 					return;
 				}
+
+				// don't forget to add it to the object
+				GObject* po = pd->GetMesh()->GetGObject();
+				po->AddFEPartSet(partSet);
 
 				// ok, we're good
 				delete pg;

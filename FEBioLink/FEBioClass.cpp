@@ -1224,6 +1224,17 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr, fem);
 }
 
+FSGenericClass* FEBio::CreateLinearSolver(const std::string& typeStr, FSModel* fem)
+{
+	if (typeStr.empty())
+	{
+		FSGenericClass* pc = new FSGenericClass(fem);
+		pc->SetSuperClassID(FELINEARSOLVER_ID);
+		return pc;
+	}
+	else return CreateModelComponent<FSGenericClass>(FELINEARSOLVER_ID, typeStr, fem);
+}
+
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem);
@@ -1271,6 +1282,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 		return pms;
 	}
 	break;
+	case FELINEARSOLVER_ID: return CreateLinearSolver(typeStr, fem); break;
 	default:
 		assert(false);
 	}

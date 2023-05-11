@@ -29,17 +29,30 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QLabel>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QMessageBox>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QCheckBox>
 #include <QMessageBox>
 #include "ImageMapTool.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
+#include "IconProvider.h"
+#include "PlotWidget.h"
 #include <PostLib/ImageModel.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEElementData.h>
 #include <ImageLib/3DImage.h>
+#include <FEMLib/FSModel.h>
+#include <FEMLib/FELoadController.h>
+#include <FSCore/LoadCurve.h>
+
+
 
 class UIImageMapTool : public QWidget
 {
@@ -47,53 +60,41 @@ public:
     QLineEdit* name;
     QComboBox* imageBox;
     QCheckBox* normalize;
-    QComboBox* filter;
-    QLabel* formulaLabel;
-    QLineEdit* formula;
-    QLabel* variableLabel;
+    QCheckBox* useFilter;
+    CCurveEditWidget* curveEdit;
     QPushButton* create;
-
-    bool showingFormula;
 
 public:
     UIImageMapTool(CImageMapTool* tool)
     {
         QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+        QScrollArea* scrollArea = new QScrollArea;
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+
+        QWidget* innerWidget = new QWidget;
+        innerWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+        QVBoxLayout* innerLayout = new QVBoxLayout;
 
         QFormLayout* formLayout = new QFormLayout;
         formLayout->setContentsMargins(0,0,0,0);
         
-        formLayout->addRow("Name", name = new QLineEdit);
+        formLayout->addRow("Name:", name = new QLineEdit);
 
-        formLayout->addRow("Image Model", imageBox = new QComboBox);
-        formLayout->addRow("Normalize", normalize = new QCheckBox);
-        formLayout->addRow("Filter", filter = new QComboBox);
-        filter->addItems(QStringList() << "None" << "Custom");
+        formLayout->addRow("Image Model:", imageBox = new QComboBox);
+        formLayout->addRow("Normalize:", normalize = new QCheckBox);
         normalize->setChecked(true);
-    
-        layout->addLayout(formLayout);
+        formLayout->addRow("Filter:", useFilter = new QCheckBox);
+        useFilter->setChecked(false);
+        innerLayout->addLayout(formLayout);
 
-        QHBoxLayout* formulaLayout = new QHBoxLayout;
-        formulaLayout->setContentsMargins(0,0,0,0);
-
-        formulaLayout->addWidget(formulaLabel = new QLabel("Formula"));
-        formulaLabel->hide();
-        formulaLayout->addWidget(formula = new QLineEdit("I"));
-        formula->hide();
-
-        layout->addLayout(formulaLayout);
-
-        QHBoxLayout* variableLayout = new QHBoxLayout;
-        variableLayout->setContentsMargins(0,0,0,0);
-
-        variableLayout->addStretch();
-        variableLayout->addWidget(variableLabel = new QLabel("vars: Image Intensity (I)"));
-        variableLabel->hide();
-        variableLayout->addStretch();
-
-        layout->addLayout(variableLayout);
-
-        showingFormula = false;
+        innerLayout->addWidget(curveEdit = new CCurveEditWidget);
+        loadCurve.SetExtendMode(PointCurve::EXTRAPOLATE);
+        curveEdit->SetLoadCurve(&loadCurve);
+        curveEdit->hide();
 
         QHBoxLayout* buttonLayout = new QHBoxLayout;
         buttonLayout->setContentsMargins(0,0,0,0);
@@ -101,30 +102,29 @@ public:
         buttonLayout->addWidget(create = new QPushButton("Create"));
         create->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
-        layout->addLayout(buttonLayout);
+        innerLayout->addLayout(buttonLayout);
 
-        layout->addStretch();
+        innerLayout->addStretch();
+
+        innerWidget->setLayout(innerLayout);
+
+        scrollArea->setWidget(innerWidget);
+
+        layout->addWidget(scrollArea);
 
         setLayout(layout);
 
         connect(create, &QPushButton::clicked, tool, &CImageMapTool::OnCreate);
-        connect(filter, &QComboBox::currentIndexChanged, tool, &CImageMapTool::on_filter_currentIndexchanged);
+        connect(useFilter, &QCheckBox::stateChanged, tool, &CImageMapTool::on_useFilter_stateChanged);
     }
 
-    void showFormula(bool show)
-    {
-        showingFormula = show;
-        formulaLabel->setVisible(show);
-        formula->setVisible(show);
-        variableLabel->setVisible(show);
-    }
-
+public:
+    LoadCurve loadCurve;
 };
 
 CImageMapTool::CImageMapTool(CMainWindow* wnd)
     : CAbstractTool(wnd, "Image Map"), m_po(nullptr), ui(nullptr)
 {
-    m_math.AddVariable("I");
 }
 
 QWidget* CImageMapTool::createUi()
@@ -155,18 +155,6 @@ void CImageMapTool::Clear()
 {
 	m_po = nullptr;
 	ui->name->clear();
-}
-
-void CImageMapTool::on_filter_currentIndexchanged(int index)
-{
-    if(index == ui->filter->count() - 1)
-    {
-        ui->showFormula(true);
-    }
-    else
-    {
-        ui->showFormula(false);
-    }
 }
 
 void CImageMapTool::OnCreate()
@@ -201,23 +189,25 @@ void CImageMapTool::OnCreate()
         imageModel = pdoc->GetImageModel(ui->imageBox->currentIndex());
     }
 
-    // If we're doing a custom filter, ensure that it's a valid formula
-    if(ui->showingFormula)
-    {
-        // m_math.Clear();
-        if(!m_math.Create(ui->formula->text().toStdString()))
-        {
-            QMessageBox::critical(GetMainWindow(), "Tool", "Your specified filter formula is invalid.");
-		    return;
-        }
-    }
-
 	QString name = ui->name->text();
 	if (name.isEmpty())
 	{
 		QMessageBox::critical(GetMainWindow(), "Tool", "You must enter a valid name.");
 		return;
 	}
+
+    // find the min and max intensities
+    Byte min = 255;
+    Byte max = 0;
+    Byte* data = imageModel->Get3DImage()->GetBytes();
+    int size = imageModel->Get3DImage()->Width()*imageModel->Get3DImage()->Height()*imageModel->Get3DImage()->Depth();
+
+    for(int index = 0; index < size; index++)
+    {
+        Byte val = data[index];
+        if(val > max) max = val;
+        if(val < min) min = val;
+    }
 
 	//get the model and nodeset
 	FSModel* ps = pdoc->GetFSModel();
@@ -237,6 +227,7 @@ void CImageMapTool::OnCreate()
     pm->AddMeshDataField(pdata);
 
     bool normalize = ui->normalize->isChecked();
+    bool useFilter = ui->useFilter->isChecked();
     std::vector<double> mathArguments = { 0 };
 
     FEElemList* elemList = pdata->BuildElemList();
@@ -253,13 +244,12 @@ void CImageMapTool::OnCreate()
 
             if(normalize)
             {
-                data /= 255.0;
+                data = (data - min)/(max-min);
             }
 
-            if(ui->showingFormula)
+            if(useFilter)
             {
-                mathArguments[0] = data;
-                data = m_math.value_s(mathArguments);
+                data = ui->loadCurve.value(data);
             }
 
             pdata->SetValue(i, j, data);
@@ -270,4 +260,9 @@ void CImageMapTool::OnCreate()
     Clear();
 	GetMainWindow()->UpdateModel();
 	QMessageBox::information(GetMainWindow(), "Tool", "Datafield successfully added.");
+}
+
+void CImageMapTool::on_useFilter_stateChanged(int state)
+{
+    ui->curveEdit->setHidden(state == 0);
 }
