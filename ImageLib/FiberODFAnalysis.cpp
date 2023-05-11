@@ -758,7 +758,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 				GLColor c = m_map.map(odf->m_FA);
 				glColor3ub(c.r, c.g, c.b);
 
-				float l[3], lmax = -1e34;
+				float l[3] = { 0.f }, lmax = -1e34;
 				vec3f e[3];
 				for (int i = 0; i < 3; ++i)
 				{
@@ -961,9 +961,12 @@ sitk::Image CFiberODFAnalysis::powerSpectrum(sitk::Image& img)
     int ny = img.GetSize()[1];
     int nz = img.GetSize()[2];
 
+	// create a new image that will store the power spectrum
     sitk::Image PS(nx, ny, nz, sitk::sitkFloat32);
-    float* data = PS.GetBufferAsFloat();
+	PS.SetSpacing(img.GetSpacing());
+	PS.SetOrigin(img.GetOrigin());
 
+    float* data = PS.GetBufferAsFloat();
 	float* cd = (float*) (img.GetBufferAsVoid());
 
     #pragma omp parallel for
@@ -990,6 +993,7 @@ sitk::Image CFiberODFAnalysis::powerSpectrum(sitk::Image& img)
     return PS;
 }
 
+// This function filters the power spectrum. 
 void CFiberODFAnalysis::fftRadialFilter(sitk::Image& img)
 {
     float fLow = 1/GetFloatValue(T_LOW);
@@ -1001,10 +1005,6 @@ void CFiberODFAnalysis::fftRadialFilter(sitk::Image& img)
 
     int minSize = std::min({nx, ny, nz})/2;
     
-    double xStep = img.GetSpacing()[0];
-    double yStep = img.GetSpacing()[1];
-    double zStep = img.GetSpacing()[2];
-
     float* data = img.GetBufferAsFloat();
 
     #pragma omp parallel for
@@ -1018,15 +1018,14 @@ void CFiberODFAnalysis::fftRadialFilter(sitk::Image& img)
                 int yPos = y - ny/2;
                 int zPos = z - nz/2;
 
-                double rad = sqrt(xPos*xStep*xPos*xStep + yPos*yStep*yPos*yStep + zPos*zStep*zPos*zStep);
+                double rad = sqrt(xPos*xPos + yPos*yPos + zPos*zPos);
 
                 double val = rad/minSize;
 
-                int index = x + y*nx + z*nx*ny;
-
-                if(val < fLow || val > fHigh)
+                if ((val < fLow) || (val > fHigh))
                 {
-                   data[index] = 0;
+					size_t index = x + y*nx + z*nx*ny;
+					data[index] = 0;
                 }
             }
         }
