@@ -683,6 +683,9 @@ void CFiberODFWidget::on_copyEFD_triggered()
     int parts = po->Parts();
 	FSPartSet* partSet = new FSPartSet(po);
     for (int i = 0; i < parts; ++i) partSet->add(i);
+    partSet->SetName(datamapName);
+    po->AddFEPartSet(partSet);
+    
 
     FEPartData* pdata = new FEPartData(mesh);
     pdata->SetName(datamapName);
