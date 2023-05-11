@@ -43,6 +43,8 @@ struct CODF
 public:
 	CODF();
 
+	bool IsValid() const { return (m_sphHarmonics.empty() == false); }
+
 	std::vector<double> m_odf;
 	std::vector<double> m_sphHarmonics;
 	vec3d m_position;
@@ -110,6 +112,8 @@ public:
 	void Save(OArchive& ar) override;
 	void Load(IArchive& ar) override;
 
+	void ProcessSelectedOnly(bool b) { m_processSelectedOnly = b; }
+
 public:
 	void renderODFMesh(CODF* odf, CGLCamera* cam);
 
@@ -163,6 +167,8 @@ private:
     double m_hausd;
     double m_grad;
     double m_overlapFraction;
+
+	bool m_processSelectedOnly;
 
 	// overall stats
 	double	m_FAmin, m_FAmax;	// min, max range of FA

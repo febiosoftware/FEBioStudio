@@ -90,6 +90,8 @@ CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
 	ss << "Fiber ODF Analysis" << n++;
 	SetName(ss.str());
 
+	m_processSelectedOnly = false;
+
     m_overlapFraction = 0.2;
     m_renderScale = 1;
 	m_nshowMesh = 0;
@@ -360,35 +362,42 @@ void CFiberODFAnalysis::run()
 				// see if user cancelled
 				if (IsCanceled()) { clear(); return; }
 
-				// check and report progress
+				// calculate sub-volume index
 				m_stepsCompleted = currentX + currentY * xDiv + currentZ * xDiv * yDiv;
-				std::stringstream ss;
-				Log("\n\n");
-				ss << "Building ODFs (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
-				m_task = ss.str();
-				setCurrentTask(m_task.c_str(), m_progress);
 
-				// extract the sub-image
-				extractFilter.SetIndex(std::vector<int> {
-					(int)(xDivSize* currentX * (1- xOverlap)), 
-					(int)(yDivSize* currentY * (1- yOverlap)), 
-					(int)(zDivSize* currentZ * (1- zOverlap))});
-				sitk::Image current = extractFilter.Execute(img);
-
-				// Let's check the mean intensity of subvolume
-				// If the mean intensity is zero, all voxel values are zero and the analysis will just produce nans.
-				double meanIntensity = meanImageIntensity(current);
-				if(meanIntensity != 0)
+				// process the next subvolume
+				CODF& odf = *(m_ODFs[m_stepsCompleted]);
+				if ((m_processSelectedOnly == false) || (odf.m_selected))
 				{
-					if(meanIntensity > maxIntensity) maxIntensity = meanIntensity;
+					// check and report progress
+					std::stringstream ss;
+					Log("\n\n");
+					ss << "Building ODFs (" << m_stepsCompleted + 1 << "/" << m_totalSteps << ")...";
+					m_task = ss.str();
+					setCurrentTask(m_task.c_str(), m_progress);
 
-					// generate the odf from the image
-					CODF& odf = *(m_ODFs[m_stepsCompleted]);
-					bool b = generateODF(odf, current, C->columns());
-					odf.m_meanIntensity = meanIntensity;
+					// extract the sub-image
+					extractFilter.SetIndex(std::vector<int> {
+						(int)(xDivSize* currentX* (1 - xOverlap)),
+							(int)(yDivSize* currentY* (1 - yOverlap)),
+							(int)(zDivSize* currentZ* (1 - zOverlap))});
+					sitk::Image current = extractFilter.Execute(img);
 
-					// delete image
-					current = sitk::Image();
+					// Let's check the mean intensity of subvolume
+					// If the mean intensity is zero, all voxel values are zero and the analysis will just produce nans.
+					double meanIntensity = meanImageIntensity(current);
+					if (meanIntensity != 0)
+					{
+						if (meanIntensity > maxIntensity) maxIntensity = meanIntensity;
+
+						// generate the odf from the image
+						bool b = generateODF(odf, current, C->columns());
+						odf.m_meanIntensity = meanIntensity;
+
+						// delete image
+						current = sitk::Image();
+					}
+					else Log("subvolume %d skipped due to zero mean intensity\n", m_stepsCompleted);
 				}
 
 				updateProgressIncrement(1.0);
@@ -521,13 +530,16 @@ void CFiberODFAnalysis::UpdateAllMeshes()
 	int nshow = GetIntValue(SHOW_MESH);
 	for (auto odf : m_ODFs)
 	{
-		switch (nshow)
+		if (odf->IsValid())
 		{
-		case 0: UpdateMesh(odf, odf->m_odf, m_ODFmin, m_ODFmax, bradial); break;
-		case 1: UpdateRemesh(odf, bradial); break;
-		case 2: UpdateMesh(odf, odf->m_EFD_ODF, m_EFDmin, m_EFDmax, bradial); break;
-		case 3: break; // no mesh will be used for this
-		case 4: UpdateMesh(odf, odf->m_VM3_ODF, m_VM3min, m_VM3max, bradial); break;
+			switch (nshow)
+			{
+			case 0: UpdateMesh(odf, odf->m_odf, m_ODFmin, m_ODFmax, bradial); break;
+			case 1: UpdateRemesh(odf, bradial); break;
+			case 2: UpdateMesh(odf, odf->m_EFD_ODF, m_EFDmin, m_EFDmax, bradial); break;
+			case 3: break; // no mesh will be used for this
+			case 4: UpdateMesh(odf, odf->m_VM3_ODF, m_VM3min, m_VM3max, bradial); break;
+			}
 		}
 	}
 }
@@ -543,10 +555,13 @@ void CFiberODFAnalysis::UpdateStats()
 	for (auto odf : m_ODFs)
 	{
 		vector<double>& val = odf->m_odf;
-		double min = *std::min_element(val.begin(), val.end());
-		double max = *std::max_element(val.begin(), val.end());
-		if (min < m_ODFmin) m_ODFmin = min;
-		if (max > m_ODFmax) m_ODFmax = max;
+		if (val.empty() == false)
+		{
+			double min = *std::min_element(val.begin(), val.end());
+			double max = *std::max_element(val.begin(), val.end());
+			if (min < m_ODFmin) m_ODFmin = min;
+			if (max > m_ODFmax) m_ODFmax = max;
+		}
 	}
 
 	// global EFD ranges
@@ -555,10 +570,13 @@ void CFiberODFAnalysis::UpdateStats()
 	for (auto odf : m_ODFs)
 	{
 		vector<double>& val = odf->m_EFD_ODF;
-		double min = *std::min_element(val.begin(), val.end());
-		double max = *std::max_element(val.begin(), val.end());
-		if (min < m_EFDmin) m_EFDmin = min;
-		if (max > m_EFDmax) m_EFDmax = max;
+		if (val.empty() == false)
+		{
+			double min = *std::min_element(val.begin(), val.end());
+			double max = *std::max_element(val.begin(), val.end());
+			if (min < m_EFDmin) m_EFDmin = min;
+			if (max > m_EFDmax) m_EFDmax = max;
+		}
 	}
 
 	// global VM3 ranges
@@ -567,10 +585,13 @@ void CFiberODFAnalysis::UpdateStats()
 	for (auto odf : m_ODFs)
 	{
 		vector<double>& val = odf->m_VM3_ODF;
-		double min = *std::min_element(val.begin(), val.end());
-		double max = *std::max_element(val.begin(), val.end());
-		if (min < m_VM3min) m_VM3min = min;
-		if (max > m_VM3max) m_VM3max = max;
+		if (val.empty() == false)
+		{
+			double min = *std::min_element(val.begin(), val.end());
+			double max = *std::max_element(val.begin(), val.end());
+			if (min < m_VM3min) m_VM3min = min;
+			if (max > m_VM3max) m_VM3max = max;
+		}
 	}
 
 	// global FA
@@ -753,7 +774,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 
 			if (odf->m_selected) sel = odf;
 
-			if (odf->m_active)
+			if (odf->m_active && odf->IsValid())
 			{
 				GLColor c = m_map.map(odf->m_FA);
 				glColor3ub(c.r, c.g, c.b);
@@ -771,7 +792,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 					l[0] /= lmax;
 					l[1] /= lmax;
 					l[2] /= lmax;
-					RenderEllipsoid(pglyph, odf->m_radius*m_renderScale, l, e);
+					RenderEllipsoid(pglyph, odf->m_radius * m_renderScale, l, e);
 				}
 			}
 
@@ -792,7 +813,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 
 			if (odf->m_selected) sel = odf;
 
-			if (odf->m_active)
+			if (odf->m_active && odf->IsValid())
 			{
 				glPushMatrix();
 				glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);

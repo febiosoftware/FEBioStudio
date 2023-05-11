@@ -88,7 +88,8 @@ public:
     void setAnalysis(CFiberODFAnalysis* analysis);
 
 private slots:
-    void on_runButton_pressed();
+    void on_runAll_triggered(bool b);
+	void on_runSel_triggered(bool b);
     void on_genButton_pressed();
     void on_nextButton_pressed();
     void on_backButton_pressed();

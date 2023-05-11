@@ -379,6 +379,11 @@ public:
 		l2->addStretch();
 		l2->addWidget(m_run = new QPushButton("Run"));
 
+		QMenu* runMenu = new QMenu;
+		m_runAll = runMenu->addAction("Process all subvolumes");
+		m_runSel = runMenu->addAction("Process selected only");
+		m_run->setMenu(runMenu);
+
 		QHBoxLayout* h2 = new QHBoxLayout;
 		h2->addWidget(m_back = new QPushButton("Back"));
 		h2->addStretch();
@@ -427,6 +432,8 @@ public:
 	QPushButton* m_next = nullptr;
 	QPushButton* m_back = nullptr;
 	QStackedWidget* m_stack = nullptr;
+	QAction* m_runAll = nullptr;
+	QAction* m_runSel = nullptr;
 };
 
 //-------------------------------------------------------------------------------
@@ -670,7 +677,8 @@ CFiberODFWidget::CFiberODFWidget(CMainWindow* wnd)
 {
     ui->setupUI(this);
 
-    connect(ui->odfParams->m_run, &QPushButton::clicked, this, &CFiberODFWidget::on_runButton_pressed);
+    connect(ui->odfParams->m_runAll, &QAction::triggered, this, &CFiberODFWidget::on_runAll_triggered);
+    connect(ui->odfParams->m_runSel, &QAction::triggered, this, &CFiberODFWidget::on_runSel_triggered);
     connect(ui->odfParams->m_gen, &QPushButton::clicked, this, &CFiberODFWidget::on_genButton_pressed);
     connect(ui->odfParams->m_next, &QPushButton::clicked, this, &CFiberODFWidget::on_nextButton_pressed);
     connect(ui->odfParams->m_back, &QPushButton::clicked, this, &CFiberODFWidget::on_backButton_pressed);
@@ -736,6 +744,7 @@ public:
 private:
 	CImageAnalysis* m_analysis = nullptr;
 	ImageAnalysisLogger m_logger;
+	bool	m_processSelectedOnly;
 };
 
 void ImageAnalysisLogger::Log(const std::string& msg)
@@ -744,10 +753,11 @@ void ImageAnalysisLogger::Log(const std::string& msg)
 	if (m_thread) m_thread->WriteLog(QString::fromStdString(msg));
 }
 
-void CFiberODFWidget::on_runButton_pressed()
+void CFiberODFWidget::on_runAll_triggered(bool b)
 {
     if(!m_analysis) return;
 
+	m_analysis->ProcessSelectedOnly(false);
 	CDlgStartThread dlg(m_wnd, new ImageAnalysisThread(m_analysis));
 	if (dlg.exec())
 	{
@@ -763,6 +773,28 @@ void CFiberODFWidget::on_runButton_pressed()
 	}
 
     ui->update(m_analysis);
+}
+
+void CFiberODFWidget::on_runSel_triggered(bool b)
+{
+	if (!m_analysis) return;
+
+	m_analysis->ProcessSelectedOnly(true);
+	CDlgStartThread dlg(m_wnd, new ImageAnalysisThread(m_analysis));
+	if (dlg.exec())
+	{
+		bool bsuccess = dlg.GetReturnCode();
+		if (bsuccess == false)
+		{
+			QMessageBox::critical(this, "Apply Image Analysis", "Image analysis failed");
+		}
+		else
+		{
+		}
+		m_wnd->RedrawGL();
+	}
+
+	ui->update(m_analysis);
 }
 
 void CFiberODFWidget::on_genButton_pressed()
