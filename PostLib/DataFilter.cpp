@@ -1293,7 +1293,7 @@ ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int n
 	ModelDataField* newField = 0;
 	if (nclass == CLASS_NODE)
 	{
-		newField = new FEDataField_T<FENodeData<float> >(&fem);
+		newField = new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA);
 		fem.AddDataField(newField, sname);
 
 		int nvec = pdf->GetFieldID(); nvec = FIELD_CODE(nvec);
@@ -1313,7 +1313,7 @@ ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int n
 	{
 		if (nfmt == DATA_ITEM)
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem);
+			newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, sname);
 
 			int nvec = pdf->GetFieldID(); nvec = FIELD_CODE(nvec);
@@ -1327,7 +1327,7 @@ ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int n
 		}
 		else if (nfmt == DATA_NODE)
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(&fem);
+			newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, sname);
 
 			int nvec = pdf->GetFieldID(); nvec = FIELD_CODE(nvec);
@@ -1341,7 +1341,7 @@ ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int n
 		}
 		else if (nfmt == DATA_COMP)
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_COMP> >(&fem);
+			newField = new FEDataField_T<FEElementData<float, DATA_COMP> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, sname);
 
 			int nvec = pdf->GetFieldID(); nvec = FIELD_CODE(nvec);
@@ -1430,7 +1430,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 	{
 		if      ((nfmt == DATA_ITEM) && (newFormat == DATA_NODE))
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(&fem);
+			newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1488,7 +1488,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 		}
 		else if ((nfmt == DATA_NODE) && (newFormat == DATA_ITEM))
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem);
+			newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1525,7 +1525,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 		}
 		else if ((nfmt == DATA_COMP) && (newFormat == DATA_ITEM))
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem);
+			newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1564,7 +1564,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 		}
 		else if ((nfmt == DATA_COMP) && (newFormat == DATA_NODE))
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(&fem);
+			newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1645,7 +1645,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 
 		if (nfmt == DATA_ITEM)
 		{
-			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			newField = new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1686,7 +1686,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 		}
 		else if (nfmt == DATA_NODE)
 		{
-			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			newField = new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1727,7 +1727,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 		}
 		else if (nfmt == DATA_COMP)
 		{
-			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			newField = new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1781,7 +1781,7 @@ ModelDataField* Post::DataEigenTensor(FEPostModel& fem, ModelDataField* dataFiel
 	if (nclass != CLASS_ELEM) return nullptr;
 	if (nfmt != DATA_ITEM) return nullptr;
 
-	ModelDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem);
+	ModelDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem, EXPORT_DATA);
 	fem.AddDataField(newField, name);
 
 	int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1835,7 +1835,7 @@ ModelDataField* Post::DataTimeRate(FEPostModel& fem, ModelDataField* dataField, 
 	{
 		if (ntype == DATA_SCALAR)
 		{
-			newField = new FEDataField_T<FENodeData<float> >(&fem);
+			newField = new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
@@ -1877,7 +1877,7 @@ ModelDataField* Post::DataTimeRate(FEPostModel& fem, ModelDataField* dataField, 
 		}
 		else if (ntype == DATA_VEC3F)
 		{
-			newField = new FEDataField_T<FENodeData<vec3f> >(&fem);
+			newField = new FEDataField_T<FENodeData<vec3f> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, name);
 
 			int nold = dataField->GetFieldID(); nold = FIELD_CODE(nold);
