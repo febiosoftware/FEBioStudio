@@ -1103,6 +1103,7 @@ void CMainWindow::SavePostDoc()
 				Post::FEVTKExport w;
 				w.ExportAllStates(dlg.m_ops[0]);
 				w.ExportSelectedElementsOnly(dlg.m_bselonly);
+				w.WriteSeriesFile(dlg.m_bwriteSeries);
 				bret = w.Save(fem, szfilename);
 				error = "Failed writing VTK file";
 			}
@@ -1595,7 +1596,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
 
             imageModel = new Post::CImageModel(nullptr);
-            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
+            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
 
             if(!ImportImage(imageModel))
             {

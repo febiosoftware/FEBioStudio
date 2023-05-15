@@ -53,6 +53,7 @@ private slots:
 	void on_addButton_clicked();
 	void on_editButton_clicked();
 	void on_deleteButton_clicked();
+	void on_filterButton_clicked();
 
 private:
 	Ui::CStatePanel* ui;

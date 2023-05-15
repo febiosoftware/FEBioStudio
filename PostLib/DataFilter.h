@@ -63,7 +63,7 @@ ModelDataField* DataComponent(FEPostModel& fem, ModelDataField* dataField, int n
 
 //-----------------------------------------------------------------------------
 // convert between formats
-ModelDataField* DataConvert(FEPostModel& fem, ModelDataField* dataField, int newFormat, const std::string& name);
+ModelDataField* DataConvert(FEPostModel& fem, ModelDataField* dataField, int newClass, int newFormat, const std::string& name);
 
 //-----------------------------------------------------------------------------
 ModelDataField* DataEigenTensor(FEPostModel& fem, ModelDataField* dataField, const std::string& name);

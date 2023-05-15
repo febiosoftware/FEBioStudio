@@ -171,6 +171,40 @@ void CDlgAddState::accept()
 	QDialog::accept();
 }
 
+class QFilterDialog : public QDialog
+{
+public:
+	QFilterDialog(QWidget* parent = nullptr) : QDialog(parent)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+
+		l->addWidget(new QLabel("Enter a scale and offset to adjust the time values of all states."));
+
+		QFormLayout* f = new QFormLayout;
+		f->addRow("scale" , m_scale  = new QLineEdit); m_scale ->setValidator(new QDoubleValidator);
+		f->addRow("offset", m_offset = new QLineEdit); m_offset->setValidator(new QDoubleValidator);
+		l->addLayout(f);
+
+		m_scale ->setText(QString::number(1.0));
+		m_offset->setText(QString::number(0.0));
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	double GetScaleFactor() { return m_scale->text().toDouble(); }
+	double GetOffset() { return m_offset->text().toDouble(); }
+
+private:
+	QLineEdit* m_scale;
+	QLineEdit* m_offset;
+};
+
 class Ui::CStatePanel
 {
 public:
@@ -183,14 +217,16 @@ public:
 		QVBoxLayout* pg = new QVBoxLayout(parent);
 		pg->setContentsMargins(0,0,0,0);
 
-		QPushButton* pAdd  = new QPushButton("Add..." ); pAdd ->setObjectName("addButton"   );// pAdd ->setFixedWidth(60);
-		QPushButton* pEdit = new QPushButton("Edit..."); pEdit->setObjectName("editButton"  ); //pEdit->setFixedWidth(60);
-		QPushButton* pDel  = new QPushButton("Delete" ); pDel ->setObjectName("deleteButton"); //pDel ->setFixedWidth(60);
+		QPushButton* pAdd  = new QPushButton("Add..." ); pAdd ->setObjectName("addButton"   );
+		QPushButton* pEdit = new QPushButton("Edit..."); pEdit->setObjectName("editButton"  );
+		QPushButton* pDel  = new QPushButton("Delete" ); pDel ->setObjectName("deleteButton");
+		QPushButton* pFlt  = new QPushButton("Filter..." ); pFlt->setObjectName("filterButton");
 		QHBoxLayout* ph = new QHBoxLayout;
 		ph->setSpacing(0);
 		ph->addWidget(pAdd);
 		ph->addWidget(pEdit);
 		ph->addWidget(pDel);
+		ph->addWidget(pFlt);
 		ph->addStretch();
 
 		pg->addLayout(ph);
@@ -321,5 +357,33 @@ void CStatePanel::on_deleteButton_clicked()
 		doc->SetActiveState(n);
 		GetMainWindow()->UpdatePostToolbar();
 		GetMainWindow()->Update(this);
+	}
+}
+
+void CStatePanel::on_filterButton_clicked()
+{
+	CPostDocument* doc = GetActiveDocument();
+	if ((doc == nullptr) || (doc->IsValid() == false)) return;
+
+	Post::FEPostModel& fem = *doc->GetFSModel();
+	QFilterDialog dlg;
+	if (dlg.exec())
+	{
+		float scale = dlg.GetScaleFactor();
+		float offset = dlg.GetOffset();
+
+		if (scale <= 0) { QMessageBox::critical(this, "Filter", "Scale factor must be positive number."); return; }
+		if (offset < 0) { QMessageBox::critical(this, "Filter", "Offset must be non-negative number."); return; }
+
+		int states = fem.GetStates();
+		for (int i = 0; i < states; ++i)
+		{
+			Post::FEState* ps = fem.GetState(i);
+			float t = ps->m_time;
+			ps->m_time = scale * t + offset;
+		}
+
+		GetMainWindow()->UpdatePostToolbar();
+		GetMainWindow()->Update(this, true);
 	}
 }

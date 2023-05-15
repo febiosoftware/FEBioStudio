@@ -84,7 +84,7 @@ protected:
 class CRawImageSource : public CImageSource
 {
 public:
-    CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz, BOX box);
+    CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BOX box);
     CRawImageSource(CImageModel* imgModel);
 
     bool Load() override;
@@ -93,10 +93,11 @@ public:
 	void Load(IArchive& ar) override;
 
 private:
-	bool LoadFromFile(const char* szfile, C3DImage* im, int nbits);
+	bool LoadFromFile(const char* szfile, C3DImage* im);
 
 private:
     std::string m_filename;
+	int m_type;
     int m_nx, m_ny, m_nz;
     BOX m_box;
 };
