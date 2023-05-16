@@ -365,7 +365,7 @@ void CITKImageSource::Load(IArchive& ar)
     Load();
 
     // Set location of image if it was saved
-    if(foundBox)
+    if(m_img && foundBox)
     {
         m_img->SetBoundingBox(tempBox);
     }

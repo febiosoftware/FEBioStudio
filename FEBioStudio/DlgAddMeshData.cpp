@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <QApplication>
 #include <QClipboard>
 #include <QtCore/QMimeData>
+#include <GeomLib/FSGroup.h>
 
 class CDlgAddMeshDataUI
 {
@@ -178,6 +179,24 @@ public:
 		m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
 		m_table->setSelectionMode(QAbstractItemView::SingleSelection);
 		m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+		if (ncols == 1) m_table->setHorizontalHeaderLabels(QStringList() << "value");
+		if (ncols == 3) m_table->setHorizontalHeaderLabels(QStringList() << "x" << "y" << "z");
+		if (ncols == 9) m_table->setHorizontalHeaderLabels(QStringList() << "xx" << "xy" << "xz" << "yx" << "yy" << "yz" << "zx" << "zy" << "zz");
+
+		FEMeshData::DATA_CLASS dataClass = m_data->GetDataClass();
+		if (dataClass == FEMeshData::NODE_DATA)
+		{
+			FSNodeSet* pg = dynamic_cast<FSNodeSet*>(m_data->GetItemList());
+			if (pg)
+			{
+				std::vector<int> items = pg->CopyItems();
+				QStringList Items;
+				for (int i : items) Items.push_back(QString::number(i));
+				assert(nrows == items.size());
+				m_table->setVerticalHeaderLabels(Items);
+			}
+		}
 
 		for (int i = 0; i < data.size(); ++i)
 		{
