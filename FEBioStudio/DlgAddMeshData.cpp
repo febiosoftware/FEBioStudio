@@ -259,6 +259,8 @@ void CDlgEditMeshData::OnCopyToClipboard()
 
 	for (int i = 0; i < rows; ++i)
 	{
+		QString label = ui->m_table->verticalHeaderItem(i)->text();
+		txt += label + "\t";
 		for (int j = 0; j < cols; ++j)
 		{
 			double aij = ui->m_table->item(i, j)->text().toDouble();
