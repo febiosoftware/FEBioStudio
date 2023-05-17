@@ -216,45 +216,38 @@ void CFiberODFAnalysis::GenerateSubVolumes()
 	double xOverlap = 0;
 	double yOverlap = 0;
 	double zOverlap = 0;
-	int ppd = 0;
 
 	m_overlapFraction = GetFloatValue(OVERLAP);
 
+	int xppd = 0, yppd = 0, zppd = 0;
 	if (xDiv > 1 || yDiv > 1 || zDiv > 1)
 	{
 		int xppd = size[0] / (xDiv - (xDiv - 1) * m_overlapFraction);
 		int yppd = size[1] / (yDiv - (yDiv - 1) * m_overlapFraction);
 		int zppd = size[2] / (zDiv - (zDiv - 1) * m_overlapFraction);
 
-		ppd = std::max({ xppd, yppd, zppd });
-
-
-		if (xDiv != 1) xOverlap = ((int)size[0] - xDiv * ppd) / (double)(-(xDiv - 1) * ppd);
-		if (yDiv != 1) yOverlap = ((int)size[1] - yDiv * ppd) / (double)(-(yDiv - 1) * ppd);
-		if (zDiv != 1) zOverlap = ((int)size[2] - zDiv * ppd) / (double)(-(zDiv - 1) * ppd);
-
+		if (xDiv != 1) xOverlap = ((int)size[0] - xDiv * xppd) / (double)(-(xDiv - 1) * xppd);
+		if (yDiv != 1) yOverlap = ((int)size[1] - yDiv * yppd) / (double)(-(yDiv - 1) * yppd);
+		if (zDiv != 1) zOverlap = ((int)size[2] - zDiv * zppd) / (double)(-(zDiv - 1) * zppd);
 	}
 	else
 	{
-		ppd = std::min({ size[0], size[1], size[2] });
+		xppd = size[0];
+		yppd = size[1];
+		zppd = size[2];
 	}
 
-	unsigned int xDivSize = ppd;
-	unsigned int yDivSize = ppd;
-	unsigned int zDivSize = ppd;
+	unsigned int xDivSize = xppd;
+	unsigned int yDivSize = yppd;
+	unsigned int zDivSize = zppd;
 
 	auto spacing = img.GetSpacing();
 	auto origin = img.GetOrigin();
 
-	double xDivSizePhys = ppd * spacing[0];
-	double yDivSizePhys = ppd * spacing[1];
-	double zDivSizePhys = ppd * spacing[2];
+	double xDivSizePhys = xppd * spacing[0];
+	double yDivSizePhys = yppd * spacing[1];
+	double zDivSizePhys = zppd * spacing[2];
 	double radius = std::min({ xDivSizePhys, yDivSizePhys, zDivSizePhys }) * 0.375;
-
-	Log("\nPixels Per Division: %i\n", ppd);
-	Log("X Overlap: %g\n", xOverlap);
-	Log("Y Overlap: %g\n", yOverlap);
-	Log("Z Overlap: %g\n\n", zOverlap);
 
 	for (int currentZ = 0; currentZ < zDiv; ++currentZ)
 		for (int currentY = 0; currentY < yDiv; ++currentY)
@@ -291,37 +284,36 @@ void CFiberODFAnalysis::run()
     double xOverlap = 0;
     double yOverlap = 0;
     double zOverlap = 0;
-    int ppd = 0;
 
-    if(xDiv > 1 || yDiv > 1 || zDiv > 1)
+	int xppd = 0, yppd = 0, zppd = 0;
+	if(xDiv > 1 || yDiv > 1 || zDiv > 1)
     {
         int xppd = size[0]/(xDiv-(xDiv-1)*m_overlapFraction);
         int yppd = size[1]/(yDiv-(yDiv-1)*m_overlapFraction);
         int zppd = size[2]/(zDiv-(zDiv-1)*m_overlapFraction);
 
-        ppd = std::max({xppd, yppd, zppd});
-
-
-        if(xDiv != 1) xOverlap = ((int)size[0] - xDiv*ppd)/(double)(-(xDiv-1)*ppd);
-        if(yDiv != 1) yOverlap = ((int)size[1] - yDiv*ppd)/(double)(-(yDiv-1)*ppd);
-        if(zDiv != 1) zOverlap = ((int)size[2] - zDiv*ppd)/(double)(-(zDiv-1)*ppd);
+        if(xDiv != 1) xOverlap = ((int)size[0] - xDiv*xppd)/(double)(-(xDiv-1)*xppd);
+        if(yDiv != 1) yOverlap = ((int)size[1] - yDiv*yppd)/(double)(-(yDiv-1)*yppd);
+        if(zDiv != 1) zOverlap = ((int)size[2] - zDiv*zppd)/(double)(-(zDiv-1)*zppd);
 
     }
     else
     {
-        ppd = std::min({size[0], size[1], size[2]});
-    }
+		xppd = size[0];
+		yppd = size[1];
+		zppd = size[2];
+	}
 
-    unsigned int xDivSize = ppd;
-    unsigned int yDivSize = ppd;
-    unsigned int zDivSize = ppd;
+    unsigned int xDivSize = xppd;
+    unsigned int yDivSize = yppd;
+    unsigned int zDivSize = zppd;
 
     auto spacing = img.GetSpacing();
     auto origin = img.GetOrigin();
 
-    double xDivSizePhys = ppd*spacing[0];
-    double yDivSizePhys = ppd*spacing[1];
-    double zDivSizePhys = ppd*spacing[2];
+    double xDivSizePhys = xppd*spacing[0];
+    double yDivSizePhys = yppd*spacing[1];
+    double zDivSizePhys = zppd*spacing[2];
     double radius = std::min({xDivSizePhys, yDivSizePhys, zDivSizePhys})*0.375;
 
     sitk::ExtractImageFilter extractFilter;
@@ -1067,9 +1059,9 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>& reduced
     int ny = img.GetSize()[1];
     int nz = img.GetSize()[2];
 
-    double xStep = img.GetSpacing()[0];
-    double yStep = img.GetSpacing()[1];
-    double zStep = img.GetSpacing()[2];
+    double xSize = img.GetSpacing()[0];
+    double ySize = img.GetSpacing()[1];
+    double zSize = img.GetSpacing()[2];
 
 	double zcount = 0;
 
@@ -1085,17 +1077,19 @@ void CFiberODFAnalysis::reduceAmp(sitk::Image& img, std::vector<double>& reduced
         {
             if (IsCanceled()) continue;
 
+			double wz = (z - nz / 2) / (nz*0.5);
+
             for (int y = 0; y < ny; y++)
             {
+				double wy = (y - ny / 2) / (ny * 0.5);
+
                 for (int x = 0; x < nx; x++)
                 {
-                    int xPos = (x - nx / 2);
-                    int yPos = (y - ny / 2);
-                    int zPos = (z - nz / 2);
+					double wx = (x - nx / 2) / (nx * 0.5);
 
-                    double realX = xPos*xStep;
-                    double realY = yPos*yStep;
-                    double realZ = zPos*zStep;
+                    double realX = wx/xSize;
+                    double realY = wy/ySize;
+                    double realZ = wz/zSize;
                     
                     double rad = sqrt(realX*realX + realY*realY + realZ*realZ);
                     
