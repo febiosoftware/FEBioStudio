@@ -723,6 +723,7 @@ public:
 		{
 			m_analysis->SetTaskLogger(&m_logger);
 			m_analysis->run();
+			m_analysis->SetTaskLogger(nullptr);
 		}
 		emit resultReady(true);
 	}
