@@ -114,8 +114,8 @@ void CImageSource::AssignImage(C3DImage* im)
 
 //========================================================================
 
-CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int nx, int ny, int nz, BOX box)
-    : CImageSource(CImageSource::RAW, imgModel), m_filename(filename), m_nx(nx), m_ny(ny), m_nz(nz), m_box(box)
+CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BOX box)
+    : CImageSource(CImageSource::RAW, imgModel), m_filename(filename), m_type(imgType), m_nx(nx), m_ny(ny), m_nz(nz), m_box(box)
 {
     SetName(FSDir::fileName(filename));
 }
@@ -123,19 +123,20 @@ CRawImageSource::CRawImageSource(CImageModel* imgModel, const std::string& filen
 CRawImageSource::CRawImageSource(CImageModel* imgModel)
     : CImageSource(CImageSource::RAW, imgModel)
 {
-
+	m_nx = m_ny = m_nz = 0;
+	m_type = -1;
 }
 
 bool CRawImageSource::Load()
 {
     C3DImage* im = new C3DImage;
-    if (im->Create(m_nx, m_ny, m_nz) == false)
+    if (im->Create(m_nx, m_ny, m_nz, nullptr, 0, m_type) == false)
     {
         delete im;
         return false;
     }
 
-    if (LoadFromFile(m_filename.c_str(), im, 8) == false)
+    if (LoadFromFile(m_filename.c_str(), im) == false)
     {
         delete im;
         return false;
@@ -155,7 +156,7 @@ bool CRawImageSource::Load()
     return true;
 }
 
-bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im, int nbits)
+bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im)
 {
 	FILE* fp = fopen(szfile, "rb");
 	if (fp == 0) return false;
@@ -163,27 +164,23 @@ bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im, int nbits)
 	size_t nsize = m_nx * m_ny * m_nz;
 	if (nsize == 0) return false;
 
+	int bps = 0;
+	switch (im->PixelType())
+	{
+	case C3DImage::UINT_8 : bps = 1; break;
+	case C3DImage::UINT_16: bps = 2; break;
+	case C3DImage::REAL_32: bps = 4; break;
+	case C3DImage::REAL_64: bps = 8; break;
+	}
+
 	Byte* buf = im->GetBytes();
-
-	if (nbits == 16)
-	{
-		word* m_ptmp = new word[nsize];
-		size_t nread = fread(m_ptmp, sizeof(word), nsize, fp);
-		for (size_t i = 0; i < nsize; i++)
-			buf[i] = m_ptmp[i] >> 8;
-		delete[] m_ptmp;
-		if (nsize != nread) return false;
-	}
-	else
-	{
-		size_t nread = fread(buf, 1, nsize, fp);
-		if (nsize != nread) return false;
-	}
-
+	size_t dataSize = bps * nsize;
+	size_t nread = fread(buf, 1, dataSize, fp);
+	
 	// cleanup
 	fclose(fp);
 
-	return true;
+	return (dataSize == nread);
 }
 
 void CRawImageSource::Save(OArchive& ar)
@@ -403,7 +400,7 @@ void CITKImageSource::Load(IArchive& ar)
     Load();
 
     // Set location of image if it was saved
-    if(foundBox)
+    if(m_img && foundBox)
     {
         m_img->SetBoundingBox(tempBox);
     }

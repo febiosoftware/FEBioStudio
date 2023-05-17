@@ -82,26 +82,21 @@ bool C3DImage::Create(int nx, int ny, int nz, Byte* data, int dataSize, int pixe
 
         m_pixelType = pixelType;
 
-        if(pixelType == INT_8 || pixelType == UINT_8)
-        {
-            m_bps = 1;
-        }
-        else if(pixelType == INT_16 || pixelType == UINT_16)
-        {
-            m_bps = 2;
-        }
-        else if(pixelType == INT_RGB8 || pixelType == UINT_RGB8)
-        {
-            m_bps = 3;
-        }
-        else if(pixelType == INT_RGB16 || pixelType == UINT_RGB16)
-        {
-            m_bps = 6;
-        }
-        else
-        {
-            assert(false);
-        }
+		switch (pixelType)
+		{
+		case INT_8     : m_bps = 1; break;
+		case UINT_8    : m_bps = 1; break;
+		case INT_16    :
+		case UINT_16   : m_bps = 2; break;
+		case INT_RGB8  :
+		case UINT_RGB8 : m_bps = 3; break;
+		case INT_RGB16 :
+		case UINT_RGB16: m_bps = 6; break;
+		case REAL_32   : m_bps = 4; break;
+		case REAL_64   : m_bps = 8; break;
+		default:
+			assert(false);
+		}
 
         if(data == nullptr)
         {

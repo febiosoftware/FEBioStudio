@@ -692,13 +692,15 @@ void CDlgEditOutput::UpdateLogItemList()
 
 void CDlgEditOutput::onLogAdd()
 {
-	// extract the data
-	int ntype = ui->logType->currentIndex();
+	// extract the data class
+	int ntype = ui->logType->currentData().toInt();
 
+	// extract the list index
 	int nlist = -1;
 	if (ui->logList->currentIndex() != -1)
 		nlist = ui->logList->currentData().toInt();
 
+	// get the data name
 	QString data = ui->logEdit->text();
 	if (data.isEmpty())
 	{
