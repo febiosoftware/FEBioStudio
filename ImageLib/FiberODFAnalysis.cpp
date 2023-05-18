@@ -1409,7 +1409,7 @@ vec3d cart2sph(const vec3d& p)
 {
 	double r = p.norm();
 	double elv = asin(p.z / r);
-	double az = acos(p.x / r) - PI;
+	double az = atan2(p.y, p.x);
 	return vec3d(az, elv, r);
 }
 
