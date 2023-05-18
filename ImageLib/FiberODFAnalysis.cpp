@@ -222,9 +222,9 @@ void CFiberODFAnalysis::GenerateSubVolumes()
 	int xppd = 0, yppd = 0, zppd = 0;
 	if (xDiv > 1 || yDiv > 1 || zDiv > 1)
 	{
-		int xppd = size[0] / (xDiv - (xDiv - 1) * m_overlapFraction);
-		int yppd = size[1] / (yDiv - (yDiv - 1) * m_overlapFraction);
-		int zppd = size[2] / (zDiv - (zDiv - 1) * m_overlapFraction);
+		xppd = size[0] / (xDiv - (xDiv - 1) * m_overlapFraction);
+		yppd = size[1] / (yDiv - (yDiv - 1) * m_overlapFraction);
+		zppd = size[2] / (zDiv - (zDiv - 1) * m_overlapFraction);
 
 		if (xDiv != 1) xOverlap = ((int)size[0] - xDiv * xppd) / (double)(-(xDiv - 1) * xppd);
 		if (yDiv != 1) yOverlap = ((int)size[1] - yDiv * yppd) / (double)(-(yDiv - 1) * yppd);
@@ -288,9 +288,9 @@ void CFiberODFAnalysis::run()
 	int xppd = 0, yppd = 0, zppd = 0;
 	if(xDiv > 1 || yDiv > 1 || zDiv > 1)
     {
-        int xppd = size[0]/(xDiv-(xDiv-1)*m_overlapFraction);
-        int yppd = size[1]/(yDiv-(yDiv-1)*m_overlapFraction);
-        int zppd = size[2]/(zDiv-(zDiv-1)*m_overlapFraction);
+        xppd = size[0]/(xDiv-(xDiv-1)*m_overlapFraction);
+        yppd = size[1]/(yDiv-(yDiv-1)*m_overlapFraction);
+        zppd = size[2]/(zDiv-(zDiv-1)*m_overlapFraction);
 
         if(xDiv != 1) xOverlap = ((int)size[0] - xDiv*xppd)/(double)(-(xDiv-1)*xppd);
         if(yDiv != 1) yOverlap = ((int)size[1] - yDiv*yppd)/(double)(-(yDiv-1)*yppd);
