@@ -52,6 +52,7 @@ SOFTWARE.*/
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FELoadController.h>
 #include <FSCore/LoadCurve.h>
+#include <limits>
 
 
 
@@ -202,18 +203,18 @@ void CImageMapTool::OnCreate()
 
     bool calcNodalValues = ui->methodBox->currentIndex() == 0;
 
-    // find the min and max intensities
-    Byte min = 255;
-    Byte max = 0;
-    Byte* data = imageModel->Get3DImage()->GetBytes();
-    int size = imageModel->Get3DImage()->Width()*imageModel->Get3DImage()->Height()*imageModel->Get3DImage()->Depth();
+    // // find the min and max intensities
+    // Byte min = 255;
+    // Byte max = 0;
+    // Byte* data = imageModel->Get3DImage()->GetBytes();
+    // int size = imageModel->Get3DImage()->Width()*imageModel->Get3DImage()->Height()*imageModel->Get3DImage()->Depth();
 
-    for(int index = 0; index < size; index++)
-    {
-        Byte val = data[index];
-        if(val > max) max = val;
-        if(val < min) min = val;
-    }
+    // for(int index = 0; index < size; index++)
+    // {
+    //     Byte val = data[index];
+    //     if(val > max) max = val;
+    //     if(val < min) min = val;
+    // }
 
 	//get the model and nodeset
 	FSModel* ps = pdoc->GetFSModel();
@@ -256,6 +257,9 @@ void CImageMapTool::OnCreate()
 
     if(calcNodalValues)
     {
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+
         #pragma omp parallel for
         for (int i = 0; i < NE; ++i)
         {
@@ -264,20 +268,43 @@ void CImageMapTool::OnCreate()
             for (int j = 0; j < ne; ++j)
             {
                 vec3d pos = mesh->LocalToGlobal(mesh->Node(el->m_node[j]).pos());
-                double data = imageModel->ValueAtGlobalPos(pos);
+                double val = imageModel->ValueAtGlobalPos(pos);
+
+                if(val < min)
+                {
+                    min = val;
+                }
+                else if(val > max)
+                {
+                    max = val;
+                }
+
+                pdata->SetValue(i, j, val);
+            }
+        }
+
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
+        {
+            FEElement_* el = elems[i];
+            int ne = el->Nodes();
+            for (int j = 0; j < ne; ++j)
+            {
+                double val = pdata->GetValue(i,j);
 
                 if(normalize)
                 {
-                    data = (data - min)/(max-min);
+                    val = (val - min)/(max-min);
                 }
 
                 if(useFilter)
                 {
-                    data = ui->loadCurve.value(data);
+                    val = ui->loadCurve.value(val);
                 }
 
-                pdata->SetValue(i, j, data);
+                pdata->SetValue(i, j, val);
             }
+
         }
     }
     else
@@ -293,11 +320,15 @@ void CImageMapTool::OnCreate()
         double yScale = imgHeight/(box.y1 - box.y0);
         double zScale = imgDepth/(box.z1 - box.z0);
 
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+
+        Byte* data = imageModel->Get3DImage()->GetBytes();
+
         #pragma omp parallel for
         for (int elID = 0; elID < NE; ++elID)
         {
             FEElement_* el = elems[elID];
-
 
             // find bounding box of element
             double minX, maxX, minY, maxY, minZ, maxZ;
@@ -381,7 +412,24 @@ void CImageMapTool::OnCreate()
             }
 
             if(numPixels > 0) val /= numPixels;
+
+            if(val < min)
+            {
+                min = val;
+            }
+            else if(val > max)
+            {
+                max = val;
+            }
             
+            pdata->SetValue(elID, 0, val);
+        }
+
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
+        {
+            double val = pdata->GetValue(i, 0);
+
             if(normalize)
             {
                 val = (val - min)/(max-min);
@@ -392,7 +440,7 @@ void CImageMapTool::OnCreate()
                 val = ui->loadCurve.value(val);
             }
 
-            pdata->SetValue(elID, 0, val);
+            pdata->SetValue(i, 0, val);
         }
     }
     delete elemList;
