@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEElementData.h>
+#include <MeshLib/MeshTools.h>
 #include <ImageLib/3DImage.h>
 #include <FEMLib/FSModel.h>
 #include <FEMLib/FELoadController.h>
@@ -59,6 +60,7 @@ class UIImageMapTool : public QWidget
 public:
     QLineEdit* name;
     QComboBox* imageBox;
+    QComboBox* methodBox;
     QCheckBox* normalize;
     QCheckBox* useFilter;
     CCurveEditWidget* curveEdit;
@@ -85,6 +87,8 @@ public:
         formLayout->addRow("Name:", name = new QLineEdit);
 
         formLayout->addRow("Image Model:", imageBox = new QComboBox);
+        formLayout->addRow("Method:", methodBox = new QComboBox);
+        methodBox->addItems(QStringList() << "Sample Image at Nodes" << "Average Intensity Over Elements");
         formLayout->addRow("Normalize:", normalize = new QCheckBox);
         normalize->setChecked(true);
         formLayout->addRow("Filter:", useFilter = new QCheckBox);
@@ -196,6 +200,8 @@ void CImageMapTool::OnCreate()
 		return;
 	}
 
+    bool calcNodalValues = ui->methodBox->currentIndex() == 0;
+
     // find the min and max intensities
     Byte min = 255;
     Byte max = 0;
@@ -223,7 +229,15 @@ void CImageMapTool::OnCreate()
     FSMesh* mesh = po->GetFEMesh();
     FEPartData* pdata = new FEPartData(mesh);
     pdata->SetName(name.toStdString());
-    pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+    
+    if(calcNodalValues)
+    {
+        pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+    }
+    else
+    {
+        pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+    }
     pm->AddMeshDataField(pdata);
 
     bool normalize = ui->normalize->isChecked();
@@ -233,26 +247,152 @@ void CImageMapTool::OnCreate()
     FEElemList* elemList = pdata->BuildElemList();
     int NE = elemList->Size();
     auto it = elemList->First();
-    for (int i = 0; i < NE; ++i, ++it)
-    {
-        FEElement_& el = *it->m_pi;
-        int ne = el.Nodes();
-        for (int j = 0; j < ne; ++j)
-        {
-            vec3d pos = mesh->LocalToGlobal(mesh->Node(el.m_node[j]).pos());
-            double data = imageModel->ValueAtGlobalPos(pos);
 
+    std::vector<FEElement_*> elems;
+    for(int i = 0; i < NE; ++i, ++it)
+    {
+        elems.push_back(it->m_pi);
+    }
+
+    if(calcNodalValues)
+    {
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
+        {
+            FEElement_* el = elems[i];
+            int ne = el->Nodes();
+            for (int j = 0; j < ne; ++j)
+            {
+                vec3d pos = mesh->LocalToGlobal(mesh->Node(el->m_node[j]).pos());
+                double data = imageModel->ValueAtGlobalPos(pos);
+
+                if(normalize)
+                {
+                    data = (data - min)/(max-min);
+                }
+
+                if(useFilter)
+                {
+                    data = ui->loadCurve.value(data);
+                }
+
+                pdata->SetValue(i, j, data);
+            }
+        }
+    }
+    else
+    {
+        BOX box = imageModel->GetBoundingBox();
+        vec3d origin(box.x0, box.y0, box.z0);
+
+        int imgWidth = imageModel->Get3DImage()->Width();
+        int imgHeight = imageModel->Get3DImage()->Height();
+        int imgDepth = imageModel->Get3DImage()->Depth();
+
+        double xScale = imgWidth/(box.x1 - box.x0);
+        double yScale = imgHeight/(box.y1 - box.y0);
+        double zScale = imgDepth/(box.z1 - box.z0);
+
+        #pragma omp parallel for
+        for (int elID = 0; elID < NE; ++elID)
+        {
+            FEElement_* el = elems[elID];
+
+
+            // find bounding box of element
+            double minX, maxX, minY, maxY, minZ, maxZ;
+            vec3d firstPos = mesh->LocalToGlobal(mesh->Node(el->m_node[0]).pos());
+            minX = maxX = firstPos.x;
+            minY = maxY = firstPos.y;
+            minZ = maxZ = firstPos.z;
+
+            int ne = el->Nodes();
+            for(int nodeID = 1; nodeID < ne; nodeID++)
+            {
+                vec3d pos = mesh->LocalToGlobal(mesh->Node(el->m_node[nodeID]).pos());
+
+                if(pos.x < minX)
+                {
+                    minX = pos.x;
+                }
+                else if(pos.x > maxX)
+                {
+                    maxX = pos.x;
+                }
+
+                if(pos.y < minY)
+                {
+                    minY = pos.y;
+                }
+                else if(pos.y > maxY)
+                {
+                    maxY = pos.y;
+                }
+
+                if(pos.z < minZ)
+                {
+                    minZ = pos.z;
+                }
+                else if(pos.z > maxZ)
+                {
+                    maxZ = pos.z;
+                }
+            }
+
+            // find section of image that corresponds to bounding box
+            int minXPixel = (minX - origin.x)*xScale - 1;
+            int maxXPixel = (maxX - origin.x)*xScale + 1;
+            int minYPixel = (minY - origin.y)*yScale - 1;
+            int maxYPixel = (maxY - origin.y)*yScale + 1;
+            int minZPixel = (minZ - origin.z)*zScale - 1;
+            int maxZPixel = (maxZ - origin.z)*zScale + 1;
+
+            if(minXPixel < 0) minXPixel = 0;
+            if(maxXPixel > imgWidth) maxXPixel = imgWidth;
+            if(minYPixel < 0) minYPixel = 0;
+            if(maxYPixel > imgHeight) maxYPixel = imgHeight;
+            if(minZPixel < 0) minZPixel = 0;
+            if(maxZPixel > imgDepth) maxZPixel = imgDepth;
+
+            // Sum pixel contribution
+            double r[3];
+            double val = 0;
+            int numPixels = 0;
+            for(int k = minZPixel; k < maxZPixel; k++)
+            {
+                vec3d pixelPos(0,0,k/zScale+origin.z);
+
+                for(int j = minYPixel; j < maxYPixel; j++)
+                {
+                    pixelPos.y = j/yScale+origin.y;
+                    for(int i = minXPixel; i < maxXPixel; i++)
+                    {
+                        pixelPos.x = i/xScale+origin.x;
+
+                        vec3d localPixelPos = mesh->GlobalToLocal(pixelPos);
+
+                        if(ProjectInsideElement(*mesh, *el, to_vec3f(localPixelPos), r))
+                        {
+                            val += data[k*imgWidth*imgHeight + j*imgWidth + i];
+                            numPixels++;
+                        }
+                    }   
+                }
+            }
+
+            if(numPixels > 0) val /= numPixels;
+            
             if(normalize)
             {
-                data = (data - min)/(max-min);
+                val = (val - min)/(max-min);
             }
 
             if(useFilter)
             {
-                data = ui->loadCurve.value(data);
+                val = ui->loadCurve.value(val);
             }
 
-            pdata->SetValue(i, j, data);
+            pdata->SetValue(elID, 0, val);
         }
     }
     delete elemList;
