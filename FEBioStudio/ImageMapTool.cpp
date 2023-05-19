@@ -203,19 +203,6 @@ void CImageMapTool::OnCreate()
 
     bool calcNodalValues = ui->methodBox->currentIndex() == 0;
 
-    // // find the min and max intensities
-    // Byte min = 255;
-    // Byte max = 0;
-    // Byte* data = imageModel->Get3DImage()->GetBytes();
-    // int size = imageModel->Get3DImage()->Width()*imageModel->Get3DImage()->Height()*imageModel->Get3DImage()->Depth();
-
-    // for(int index = 0; index < size; index++)
-    // {
-    //     Byte val = data[index];
-    //     if(val > max) max = val;
-    //     if(val < min) min = val;
-    // }
-
 	//get the model and nodeset
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
@@ -400,9 +387,9 @@ void CImageMapTool::OnCreate()
                     {
                         pixelPos.x = i/xScale+origin.x;
 
-                        vec3d localPixelPos = mesh->GlobalToLocal(pixelPos);
+                        vec3f localPixelPos = to_vec3f(mesh->GlobalToLocal(pixelPos));
 
-                        if(ProjectInsideElement(*mesh, *el, to_vec3f(localPixelPos), r))
+                        if(ProjectInsideElement(*mesh, *el, localPixelPos, r))
                         {
                             val += data[k*imgWidth*imgHeight + j*imgWidth + i];
                             numPixels++;
