@@ -1325,13 +1325,8 @@ void CModelPropsPanel::on_select2_pickClicked() { PickSelection(1); }
 
 void CModelPropsPanel::PickSelection(int n)
 {
-	FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
-	if (pmc == nullptr) return;
-
-	FSModel* fem = pmc->GetFSModel();
-	if (fem == nullptr) return;
-
-	GModel& gm = fem->GetModel();
+	CModelDocument* pdoc = m_wnd->GetModelDocument();
+	if (pdoc == nullptr) return;
 
 	IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
 
@@ -1339,6 +1334,8 @@ void CModelPropsPanel::PickSelection(int n)
 	int meshType = -1;
 	if (hil) meshType = hil->GetMeshItemType();
 	else return;
+
+	GModel& gm = *pdoc->GetGModel();
 
 	// build the candidate list
 	QStringList names;

@@ -97,6 +97,7 @@ void CVolumeRenderer::ReloadTexture()
 	CImageSource* src = img.GetImageSource();
 	if (src == nullptr) return;
 
+	if (src->Get3DImage() == nullptr) return;
 	C3DImage& im3d = *src->Get3DImage();
 
 	// get the original image dimensions
@@ -329,6 +330,7 @@ void CVolumeRenderer::InitShaders()
 	CImageSource* src = img.GetImageSource();
 	if (src == nullptr) return;
 
+	if (src->Get3DImage() == nullptr) return;
 	C3DImage& im3d = *src->Get3DImage();
 
 	const char* shadertxt = nullptr;
@@ -409,6 +411,7 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	CImageSource* src = img.GetImageSource();
 	if (src == nullptr) return;
 
+	if (src->Get3DImage() == nullptr) return;
 	C3DImage& im3d = *src->Get3DImage();
 
 	// get the original image dimensions

@@ -73,6 +73,7 @@ void CHistogramViewer::Update()
 	if (m_img == nullptr) return;
 
 	C3DImage* im = m_img->Get3DImage();
+	if (im == nullptr) return;
 
 	std::vector<double> h(256, 0.0);
 #pragma omp parallel 

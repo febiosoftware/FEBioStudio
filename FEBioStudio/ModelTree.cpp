@@ -301,7 +301,26 @@ private:
 	FEItemListBuilder* m_pl;
 };
 
+class CImageModelValidator : public CObjectValidator
+{
+public:
+	CImageModelValidator(Post::CImageModel* img) : m_img(img) {}
 
+	QString GetErrorString() const override
+	{
+		if ((m_img == nullptr) || (m_img->Get3DImage() == nullptr))
+			return "Failed to load image data.";
+		return "";
+	}
+
+	bool IsValid() override
+	{
+		return ((m_img != nullptr) && (m_img->Get3DImage() != nullptr));
+	}
+
+private:
+	Post::CImageModel* m_img;
+};
 
 //=============================================================================
 class CFEBioJobProps : public CPropertyList
@@ -1215,7 +1234,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
 		Post::CImageModel* img = doc->GetImageModel(i);
-		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), 0);
+		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), new CImageModelValidator(img));
 	}
 }
 
