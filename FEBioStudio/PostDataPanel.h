@@ -127,7 +127,8 @@ public:
 
 	QString getNewName();
 
-	int getNewFormat();
+	int getNewDataFormat();
+	int getNewDataClass();
 
 	double GetScaleFactor();
 	vec3d  GetVecScaleFactor();

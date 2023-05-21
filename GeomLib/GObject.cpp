@@ -137,12 +137,24 @@ bool GObject::CanDeleteMesh() const
 
 	// Check if there are any mesh dependencies.
 	// Note that part-sets aren't checked since they don't reference the mesh directly.
-	if ((FENodeSets() == 0) &&
-		(FESurfaces() == 0) &&
-		(FEEdgeSets() == 0) &&
-		(FEElemSets() == 0)) return true;
+	for (int i = 0; i < FENodeSets(); ++i) 	{
+		const FSNodeSet* pg = imp->m_pFENodeSet[i];
+		if (pg->GetReferenceCount() > 0) return false;
+	}
+	for (int i = 0; i < FESurfaces(); ++i) 	{
+		const FSSurface* pg = imp->m_pFESurface[i];
+		if (pg->GetReferenceCount() > 0) return false;
+	}
+	for (int i = 0; i < FEEdgeSets(); ++i) {
+		const FSEdgeSet* pg = imp->m_pFEEdgeSet[i];
+		if (pg->GetReferenceCount() > 0) return false;
+	}
+	for (int i = 0; i < FEElemSets(); ++i) {
+		const FSElemSet* pg = imp->m_pFEElemSet[i];
+		if (pg->GetReferenceCount() > 0) return false;
+	}
 
-	return false;
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1016,22 +1028,6 @@ void GObject::Save(OArchive &ar)
 		ar.BeginChunk(CID_OBJ_FEMESHER);
 		{
 			int ntype = mesher->Type();
-			ar.BeginChunk(ntype);
-			{
-				GetFEMesher()->Save(ar);
-			}
-			ar.EndChunk();
-		}
-		ar.EndChunk();
-	}
-
-	// save the mesher object
-	if (GetFEMesher())
-	{
-		ar.BeginChunk(CID_OBJ_FEMESHER);
-		{
-			int ntype = 0;
-//			if (dynamic_cast<FETetGenMesher*>(GetFEMesher())) ntype = 1;
 			ar.BeginChunk(ntype);
 			{
 				GetFEMesher()->Save(ar);

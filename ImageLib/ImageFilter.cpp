@@ -331,8 +331,10 @@ void WarpImageFilter::ApplyFilter()
 
 	if (im->Depth() == 1)
 	{
+        #pragma omp parallel for
 		for (int j = 0; j < ny; ++j)
 		{
+            int index = j*nx;
 			for (int i = 0; i < nx; ++i)
 			{
 				// get the spatial coordinates of the voxel
@@ -357,11 +359,11 @@ void WarpImageFilter::ApplyFilter()
 					// sample 
 					vec3f s = el.eval(r, q[0], q[1]);
 					Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
-					*dst++ = b;
+					dst[index+i] = b;
 				}
 				else
 				{
-					*dst++ = 0;
+					dst[index+i] = 0;
 				}
 			}
 		}
@@ -374,8 +376,11 @@ void WarpImageFilter::ApplyFilter()
 		// 3D case
 		for (int k = 0; k < nz; ++k)
 		{
+            #pragma omp parallel for
 			for (int j = 0; j < ny; ++j)
 			{
+                int index = k*ny*nx+j*nx;
+
 				for (int i = 0; i < nx; ++i)
 				{
 					// get the spatial coordinates of the voxel
@@ -400,11 +405,11 @@ void WarpImageFilter::ApplyFilter()
 						// sample 
 						vec3f s = el.eval(p, q[0], q[1], q[2]);
 						Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
-						*dst++ = b;
+						dst[index+i] = b;
 					}
 					else
 					{
-						*dst++ = 0;
+						dst[index+i] = 0;
 					}
 				}
 			}

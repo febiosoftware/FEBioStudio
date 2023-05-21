@@ -657,7 +657,8 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 					fd.value(i, 5) = elemData.value(eid, fn[5]);
 					fd.value(i, 6) = elemData.value(eid, fn[6]);
 					fd.value(i, 7) = elemData.value(eid, fn[7]);
-					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7))*0.125f;
+					fd.value(i, 8) = elemData.value(eid, fn[8]);
+					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7) + fd.value(i, 8))/9.f;
 				}
 				break;
 			case FE_TRI3:

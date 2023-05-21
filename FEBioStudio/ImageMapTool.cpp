@@ -29,71 +29,77 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QLabel>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QMessageBox>
 #include <QComboBox>
 #include <QCheckBox>
 #include <QPushButton>
+#include <QScrollArea>
+#include <QScrollBar>
+#include <QCheckBox>
 #include <QMessageBox>
 #include "ImageMapTool.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
+#include "IconProvider.h"
+#include "PlotWidget.h"
 #include <PostLib/ImageModel.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEElementData.h>
+#include <MeshLib/MeshTools.h>
 #include <ImageLib/3DImage.h>
+#include <FEMLib/FSModel.h>
+#include <FEMLib/FELoadController.h>
+#include <FSCore/LoadCurve.h>
+#include <limits>
+
+
 
 class UIImageMapTool : public QWidget
 {
 public:
     QLineEdit* name;
     QComboBox* imageBox;
+    QComboBox* methodBox;
     QCheckBox* normalize;
-    QComboBox* filter;
-    QLabel* formulaLabel;
-    QLineEdit* formula;
-    QLabel* variableLabel;
+    QCheckBox* useFilter;
+    CCurveEditWidget* curveEdit;
     QPushButton* create;
-
-    bool showingFormula;
 
 public:
     UIImageMapTool(CImageMapTool* tool)
     {
         QVBoxLayout* layout = new QVBoxLayout;
+        layout->setContentsMargins(0,0,0,0);
+
+        QScrollArea* scrollArea = new QScrollArea;
+        scrollArea->setWidgetResizable(true);
+        scrollArea->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
+
+        QWidget* innerWidget = new QWidget;
+        innerWidget->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Fixed);
+
+        QVBoxLayout* innerLayout = new QVBoxLayout;
 
         QFormLayout* formLayout = new QFormLayout;
         formLayout->setContentsMargins(0,0,0,0);
         
-        formLayout->addRow("Name", name = new QLineEdit);
+        formLayout->addRow("Name:", name = new QLineEdit);
 
-        formLayout->addRow("Image Model", imageBox = new QComboBox);
-        formLayout->addRow("Normalize", normalize = new QCheckBox);
-        formLayout->addRow("Filter", filter = new QComboBox);
-        filter->addItems(QStringList() << "None" << "Custom");
+        formLayout->addRow("Image Model:", imageBox = new QComboBox);
+        formLayout->addRow("Method:", methodBox = new QComboBox);
+        methodBox->addItems(QStringList() << "Sample Image at Nodes" << "Average Intensity Over Elements");
+        formLayout->addRow("Normalize:", normalize = new QCheckBox);
         normalize->setChecked(true);
-    
-        layout->addLayout(formLayout);
+        formLayout->addRow("Filter:", useFilter = new QCheckBox);
+        useFilter->setChecked(false);
+        innerLayout->addLayout(formLayout);
 
-        QHBoxLayout* formulaLayout = new QHBoxLayout;
-        formulaLayout->setContentsMargins(0,0,0,0);
-
-        formulaLayout->addWidget(formulaLabel = new QLabel("Formula"));
-        formulaLabel->hide();
-        formulaLayout->addWidget(formula = new QLineEdit("I"));
-        formula->hide();
-
-        layout->addLayout(formulaLayout);
-
-        QHBoxLayout* variableLayout = new QHBoxLayout;
-        variableLayout->setContentsMargins(0,0,0,0);
-
-        variableLayout->addStretch();
-        variableLayout->addWidget(variableLabel = new QLabel("vars: Image Intensity (I)"));
-        variableLabel->hide();
-        variableLayout->addStretch();
-
-        layout->addLayout(variableLayout);
-
-        showingFormula = false;
+        innerLayout->addWidget(curveEdit = new CCurveEditWidget);
+        loadCurve.SetExtendMode(PointCurve::EXTRAPOLATE);
+        curveEdit->SetLoadCurve(&loadCurve);
+        curveEdit->hide();
 
         QHBoxLayout* buttonLayout = new QHBoxLayout;
         buttonLayout->setContentsMargins(0,0,0,0);
@@ -101,30 +107,29 @@ public:
         buttonLayout->addWidget(create = new QPushButton("Create"));
         create->setSizePolicy(QSizePolicy::Maximum, QSizePolicy::Maximum);
 
-        layout->addLayout(buttonLayout);
+        innerLayout->addLayout(buttonLayout);
 
-        layout->addStretch();
+        innerLayout->addStretch();
+
+        innerWidget->setLayout(innerLayout);
+
+        scrollArea->setWidget(innerWidget);
+
+        layout->addWidget(scrollArea);
 
         setLayout(layout);
 
         connect(create, &QPushButton::clicked, tool, &CImageMapTool::OnCreate);
-        connect(filter, &QComboBox::currentIndexChanged, tool, &CImageMapTool::on_filter_currentIndexchanged);
+        connect(useFilter, &QCheckBox::stateChanged, tool, &CImageMapTool::on_useFilter_stateChanged);
     }
 
-    void showFormula(bool show)
-    {
-        showingFormula = show;
-        formulaLabel->setVisible(show);
-        formula->setVisible(show);
-        variableLabel->setVisible(show);
-    }
-
+public:
+    LoadCurve loadCurve;
 };
 
 CImageMapTool::CImageMapTool(CMainWindow* wnd)
     : CAbstractTool(wnd, "Image Map"), m_po(nullptr), ui(nullptr)
 {
-    m_math.AddVariable("I");
 }
 
 QWidget* CImageMapTool::createUi()
@@ -155,18 +160,6 @@ void CImageMapTool::Clear()
 {
 	m_po = nullptr;
 	ui->name->clear();
-}
-
-void CImageMapTool::on_filter_currentIndexchanged(int index)
-{
-    if(index == ui->filter->count() - 1)
-    {
-        ui->showFormula(true);
-    }
-    else
-    {
-        ui->showFormula(false);
-    }
 }
 
 void CImageMapTool::OnCreate()
@@ -201,23 +194,14 @@ void CImageMapTool::OnCreate()
         imageModel = pdoc->GetImageModel(ui->imageBox->currentIndex());
     }
 
-    // If we're doing a custom filter, ensure that it's a valid formula
-    if(ui->showingFormula)
-    {
-        // m_math.Clear();
-        if(!m_math.Create(ui->formula->text().toStdString()))
-        {
-            QMessageBox::critical(GetMainWindow(), "Tool", "Your specified filter formula is invalid.");
-		    return;
-        }
-    }
-
 	QString name = ui->name->text();
 	if (name.isEmpty())
 	{
 		QMessageBox::critical(GetMainWindow(), "Tool", "You must enter a valid name.");
 		return;
 	}
+
+    bool calcNodalValues = ui->methodBox->currentIndex() == 0;
 
 	//get the model and nodeset
 	FSModel* ps = pdoc->GetFSModel();
@@ -233,36 +217,217 @@ void CImageMapTool::OnCreate()
     FSMesh* mesh = po->GetFEMesh();
     FEPartData* pdata = new FEPartData(mesh);
     pdata->SetName(name.toStdString());
-    pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+    
+    if(calcNodalValues)
+    {
+        pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+    }
+    else
+    {
+        pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+    }
     pm->AddMeshDataField(pdata);
 
     bool normalize = ui->normalize->isChecked();
+    bool useFilter = ui->useFilter->isChecked();
     std::vector<double> mathArguments = { 0 };
 
     FEElemList* elemList = pdata->BuildElemList();
     int NE = elemList->Size();
     auto it = elemList->First();
-    for (int i = 0; i < NE; ++i, ++it)
+
+    std::vector<FEElement_*> elems;
+    for(int i = 0; i < NE; ++i, ++it)
     {
-        FEElement_& el = *it->m_pi;
-        int ne = el.Nodes();
-        for (int j = 0; j < ne; ++j)
+        elems.push_back(it->m_pi);
+    }
+
+    if(calcNodalValues)
+    {
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
         {
-            vec3d pos = mesh->LocalToGlobal(mesh->Node(el.m_node[j]).pos());
-            double data = imageModel->ValueAtGlobalPos(pos);
+            FEElement_* el = elems[i];
+            int ne = el->Nodes();
+            for (int j = 0; j < ne; ++j)
+            {
+                vec3d pos = mesh->LocalToGlobal(mesh->Node(el->m_node[j]).pos());
+                double val = imageModel->ValueAtGlobalPos(pos);
+
+                if(val < min)
+                {
+                    min = val;
+                }
+                else if(val > max)
+                {
+                    max = val;
+                }
+
+                pdata->SetValue(i, j, val);
+            }
+        }
+
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
+        {
+            FEElement_* el = elems[i];
+            int ne = el->Nodes();
+            for (int j = 0; j < ne; ++j)
+            {
+                double val = pdata->GetValue(i,j);
+
+                if(normalize)
+                {
+                    val = (val - min)/(max-min);
+                }
+
+                if(useFilter)
+                {
+                    val = ui->loadCurve.value(val);
+                }
+
+                pdata->SetValue(i, j, val);
+            }
+
+        }
+    }
+    else
+    {
+        BOX box = imageModel->GetBoundingBox();
+        vec3d origin(box.x0, box.y0, box.z0);
+
+        int imgWidth = imageModel->Get3DImage()->Width();
+        int imgHeight = imageModel->Get3DImage()->Height();
+        int imgDepth = imageModel->Get3DImage()->Depth();
+
+        double xScale = imgWidth/(box.x1 - box.x0);
+        double yScale = imgHeight/(box.y1 - box.y0);
+        double zScale = imgDepth/(box.z1 - box.z0);
+
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+
+        Byte* data = imageModel->Get3DImage()->GetBytes();
+
+        #pragma omp parallel for
+        for (int elID = 0; elID < NE; ++elID)
+        {
+            FEElement_* el = elems[elID];
+
+            // find bounding box of element
+            double minX, maxX, minY, maxY, minZ, maxZ;
+            vec3d firstPos = mesh->LocalToGlobal(mesh->Node(el->m_node[0]).pos());
+            minX = maxX = firstPos.x;
+            minY = maxY = firstPos.y;
+            minZ = maxZ = firstPos.z;
+
+            int ne = el->Nodes();
+            for(int nodeID = 1; nodeID < ne; nodeID++)
+            {
+                vec3d pos = mesh->LocalToGlobal(mesh->Node(el->m_node[nodeID]).pos());
+
+                if(pos.x < minX)
+                {
+                    minX = pos.x;
+                }
+                else if(pos.x > maxX)
+                {
+                    maxX = pos.x;
+                }
+
+                if(pos.y < minY)
+                {
+                    minY = pos.y;
+                }
+                else if(pos.y > maxY)
+                {
+                    maxY = pos.y;
+                }
+
+                if(pos.z < minZ)
+                {
+                    minZ = pos.z;
+                }
+                else if(pos.z > maxZ)
+                {
+                    maxZ = pos.z;
+                }
+            }
+
+            // find section of image that corresponds to bounding box
+            int minXPixel = (minX - origin.x)*xScale - 1;
+            int maxXPixel = (maxX - origin.x)*xScale + 1;
+            int minYPixel = (minY - origin.y)*yScale - 1;
+            int maxYPixel = (maxY - origin.y)*yScale + 1;
+            int minZPixel = (minZ - origin.z)*zScale - 1;
+            int maxZPixel = (maxZ - origin.z)*zScale + 1;
+
+            if(minXPixel < 0) minXPixel = 0;
+            if(maxXPixel > imgWidth) maxXPixel = imgWidth;
+            if(minYPixel < 0) minYPixel = 0;
+            if(maxYPixel > imgHeight) maxYPixel = imgHeight;
+            if(minZPixel < 0) minZPixel = 0;
+            if(maxZPixel > imgDepth) maxZPixel = imgDepth;
+
+            // Sum pixel contribution
+            double r[3];
+            double val = 0;
+            int numPixels = 0;
+            for(int k = minZPixel; k < maxZPixel; k++)
+            {
+                vec3d pixelPos(0,0,k/zScale+origin.z);
+
+                for(int j = minYPixel; j < maxYPixel; j++)
+                {
+                    pixelPos.y = j/yScale+origin.y;
+                    for(int i = minXPixel; i < maxXPixel; i++)
+                    {
+                        pixelPos.x = i/xScale+origin.x;
+
+                        vec3f localPixelPos = to_vec3f(mesh->GlobalToLocal(pixelPos));
+
+                        if(ProjectInsideElement(*mesh, *el, localPixelPos, r))
+                        {
+                            val += data[k*imgWidth*imgHeight + j*imgWidth + i];
+                            numPixels++;
+                        }
+                    }   
+                }
+            }
+
+            if(numPixels > 0) val /= numPixels;
+
+            if(val < min)
+            {
+                min = val;
+            }
+            else if(val > max)
+            {
+                max = val;
+            }
+            
+            pdata->SetValue(elID, 0, val);
+        }
+
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
+        {
+            double val = pdata->GetValue(i, 0);
 
             if(normalize)
             {
-                data /= 255.0;
+                val = (val - min)/(max-min);
             }
 
-            if(ui->showingFormula)
+            if(useFilter)
             {
-                mathArguments[0] = data;
-                data = m_math.value_s(mathArguments);
+                val = ui->loadCurve.value(val);
             }
 
-            pdata->SetValue(i, j, data);
+            pdata->SetValue(i, 0, val);
         }
     }
     delete elemList;
@@ -270,4 +435,9 @@ void CImageMapTool::OnCreate()
     Clear();
 	GetMainWindow()->UpdateModel();
 	QMessageBox::information(GetMainWindow(), "Tool", "Datafield successfully added.");
+}
+
+void CImageMapTool::on_useFilter_stateChanged(int state)
+{
+    ui->curveEdit->setHidden(state == 0);
 }

@@ -1649,8 +1649,8 @@ void FSMesh::Save(OArchive &ar)
 				ar.WriteChunk(CID_MESH_EDGE_GID, gid);
 				ar.WriteChunk(CID_MESH_EDGE_NODES, enode);
 			}
+			ar.EndChunk();
 		}
-		ar.EndChunk();
 	}
 
 	// TODO: Move this stuff to the GObject serialization

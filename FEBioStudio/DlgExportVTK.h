@@ -38,6 +38,8 @@ public:
 
 public:
 	bool	m_ops[2];
+	bool	m_bselonly;
+	bool	m_bwriteSeries;
 
 private:
 	CDlgExportVTK_UI*	ui;

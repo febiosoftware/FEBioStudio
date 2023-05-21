@@ -6,6 +6,31 @@
 
 ===========================================================================
 
+ R E L E A S E   2.1.2   4/20/2023
+
+===========================================================================
+
+* Fixed issues with saving meshing data to fs2 file.
+* Temporarily removed ability to assign parts to surface selections.
+* An issue was fixed issue with updating parts.
+* Tiff files are now read in by DICOM again. Fixed issues relating to file extentions in SaveAs dialog.
+* Fixed graphical bug in image slice view. Slices now render before volume.
+* Fixed bug in XMLDocument that caused crash while reading some feb files
+* Fixed issue with loading load curves from files.
+* Added support for ImageJ tiff images. Added support for xresolution and yresolution tags.
+* Fixed bug in rendering contours for Mesh Inspector.
+* Fixed minor issues with incorrect warnings in model tree.
+* Fixed bug in bounding box calculation for sitk images
+* Added support for exporting arrays to vtk as field data.
+* Added check for "time" header in vtk. (This is used by febio vtk output for communicating time step.)
+* Fixed issue with rendering colormap on beams.
+* Fixed issue with rendering fibers.
+* Added some checks before deleting objects.
+* Setting correct unit system when activating model.
+* Fixed issue with exporting part data.
+
+===========================================================================
+
  R E L E A S E   2.1.1   3/30/2023
 
 ===========================================================================

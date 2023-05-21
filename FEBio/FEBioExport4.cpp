@@ -2230,7 +2230,6 @@ void FEBioExport4::WriteElementDataFields()
 					}
 					m_xml.close_branch();
 				}
-				delete partList;
 			}
 		}
 	}
