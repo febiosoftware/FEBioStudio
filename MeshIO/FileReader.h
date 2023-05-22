@@ -85,6 +85,9 @@ public:
 	// get the file name
 	std::string GetFileName() const;
 
+	// helper function that sets the error string
+	bool errf(const char* szerr, ...);
+
 protected:
 	// open the file
 	bool Open(const char* szfile, const char* szmode);
@@ -94,9 +97,6 @@ protected:
 
 	// close the file
 	virtual void Close();
-
-	// helper function that sets the error string
-	bool errf(const char* szerr, ...);
 
 	// clear error
 	void ClearErrors();

@@ -28,28 +28,23 @@ SOFTWARE.*/
 #include "FileReader.h"
 #include <FEMLib/FSProject.h>
 
+class GMeshFormat;
+
 class FEGMshImport : public FSFileImport
 {
-protected:
-	struct ELEMENT
-	{
-		int ntype;
-		int	gid;
-		int node[20];
-	};
-
 public:
 	FEGMshImport(FSProject& prj);
 	bool Load(const char* szfile);
 
 protected:
 	bool ReadMeshFormat();
-	bool ReadPhysicalNames();
-	bool ReadNodes();
-	bool ReadElements();
+
+	const char* nextLine();
 
 protected:
 	char	m_szline[256];
 	FSModel*	m_pfem;
-	FSMesh*		m_pm;
+	bool		m_bnewFormat;
+
+	friend class GMeshFormat;
 };

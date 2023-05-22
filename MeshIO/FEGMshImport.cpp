@@ -30,381 +30,98 @@ SOFTWARE.*/
 #include <vector>
 //using namespace std;
 
-//! \todo PreView has trouble with reading surface elements and volume elements since
-//! the surface elements are not shell elements.
-FEGMshImport::FEGMshImport(FSProject& prj) : FSFileImport(prj)
+static bool isKey(const char* sz1, const char* sz2)
 {
-	m_szline[0] = 0;
-	m_pm = 0;
-	m_pfem = 0;
+	return (strncmp(sz1, sz2, strlen(sz2)) == 0);
 }
 
-bool FEGMshImport::Load(const char* szfile)
+class GMeshFormat
 {
-	FSModel& fem = m_prj.GetFSModel();
-	m_pfem = &fem;
-
-	// open the file
-	if (!Open(szfile, "rt")) return false;
-
-	// create a new mesh
-	m_pm = new FSMesh();
-
-	bool ret = true;
-	while (fgets(m_szline, 255, m_fp))
+protected:
+	struct ELEMENT
 	{
-		if      (strncmp(m_szline, "$MeshFormat"   , 11) == 0) ret = ReadMeshFormat();
-		else if (strncmp(m_szline, "$PhysicalNames", 14) == 0) ret = ReadPhysicalNames();
-		else if (strncmp(m_szline, "$Nodes"        ,  6) == 0) ret = ReadNodes();
-		else if (strncmp(m_szline, "$Elements"     ,  9) == 0) ret = ReadElements();
-		else
-		{
-			// we didn't recognize the section
-			return errf("Unknown section: %s", m_szline);
-		}
+		int ntype;
+		int	gid;
+		int node[20];
+	};
 
-		if (ret == false) return false;
+	struct NODE
+	{
+		int id;
+		vec3d	pos;
+	};
+
+public:
+	GMeshFormat(FEGMshImport* _gmsh) : gmsh(_gmsh) {}
+	virtual ~GMeshFormat() {}
+
+	virtual bool Load() = 0;
+
+	const char* nextLine() { return gmsh->nextLine(); }
+
+	bool readLine(const char* szkey) 
+	{ 
+		const char* szline = nextLine();
+		return isKey(szline, szkey);
 	}
 
-	// close the file
-	Close();
+	FSMesh* BuildMesh();
 
-	m_pm->RebuildMesh();
+protected:
+	FEGMshImport* gmsh = nullptr;
 
-	// create a new object from this mesh
-	GMeshObject* po = new GMeshObject(m_pm);
+	std::vector<NODE>		m_Node;	// nodal coordinates
+	std::vector<ELEMENT>	m_Face;	// surface elements
+	std::vector<ELEMENT>	m_Elem;	// volume elements
+};
 
-	char szname[256];
-	FileTitle(szname);
-	po->SetName(szname);
-	fem.GetModel().AddObject(po);
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-
-bool FEGMshImport::ReadMeshFormat()
+class GMeshLegacyFormat : public GMeshFormat
 {
-	// read the format line
-	fgets(m_szline, 255, m_fp);
-	float fversion;
-	int ntype;
-	int ngsize;
-	int nread = sscanf(m_szline, "%g %d %d", &fversion, &ntype, &ngsize);
-	if (nread != 3) return errf("Syntax error on line 2");
-//	if (fversion != 2.f) return errf("Invalid file version");
-	if (ntype != 0) return errf("Invalid file type");
-	if (ngsize != 8) return errf("data format must be 8");
+public:
+	GMeshLegacyFormat(FEGMshImport* _gmsh) : GMeshFormat(_gmsh) {}
+	bool Load() override;
 
-	// read the end of the mesh format
-	fgets(m_szline, 255, m_fp);
-	if (strncmp(m_szline, "$EndMeshFormat", 14) != 0) return errf("Failed finding EndMeshFormat");
+private:
+	bool ReadPhysicalNames();
+	bool ReadNodes();
+	bool ReadElements();
+};
 
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-
-bool FEGMshImport::ReadPhysicalNames()
+class GMeshNewFormat : public GMeshFormat
 {
-	// read the number of physical names
-	if (fgets(m_szline, 255, m_fp) == 0) return errf("Unexpected end of file");
-	int names = 0;
-	int nread = sscanf(m_szline, "%d", &names);
-	if (nread != 1) return errf("Error while reading physical names");
+public:
+	GMeshNewFormat(FEGMshImport* _gmsh) : GMeshFormat(_gmsh) {}
+	bool Load() override;
 
-	// read the names
-	for (int i=0; i<names; ++i)
-	{
-		if (fgets(m_szline, 255, m_fp) == 0) return errf("Unexpected end of file");
-		char szname[128] = {0};
-		int n, nread;
-		nread = sscanf(m_szline, "%*d%d%s", &n, szname);
-		if (nread != 2) return false;
-	}
+private:
+	bool ReadNodes();
+	bool ReadElements();
+};
 
-	// read the end tag
-	fgets(m_szline, 255, m_fp);
-	if (strncmp(m_szline, "$EndPhysicalNames", 17) != 0) return errf("Failed reading $EndPhysicalNames");
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-
-bool FEGMshImport::ReadNodes()
+//===========================================================================================
+FSMesh* GMeshFormat::BuildMesh()
 {
-	fgets(m_szline, 255, m_fp);
-	int nodes = 0;
-	int nread = sscanf(m_szline, "%d", &nodes);
-	if (nread != 1) return errf("Error while reading Nodes section");
+	size_t nodes = m_Node.size();
+	size_t faces = m_Face.size();
+	size_t elems = m_Elem.size();
 
-	m_pm->Create(nodes, 0);
+	FSMesh* pm = new FSMesh;
+	pm->Create(nodes, 0);
 
 	// read the nodes
-	for (int i=0; i<nodes; ++i)
+	for (int i = 0; i < nodes; ++i)
 	{
-		FSNode& node = m_pm->Node(i);
-		vec3d& r = node.r;
-
-		fgets(m_szline, 255, m_fp);
-		int nread = sscanf(m_szline, "%*d %lg %lg %lg", &r.x, &r.y, &r.z);
-		if (nread != 3) return errf("Error while reading Nodes section");
+		FSNode& node = pm->Node(i);
+		node.r = m_Node[i].pos;
 	}
 
-	// read the end of the mesh format
-	fgets(m_szline, 255, m_fp);
-	if (strncmp(m_szline, "$EndNodes", 9) != 0) return errf("Failed finding EndNodes");
-
-	return true;
-}
-
-//-----------------------------------------------------------------------------
-
-int scan_line(const char* sz, int* data, int nmax)
-{
-	if ((sz == 0) || sz[0] == 0) return 0;
-	if (nmax == 0) return 0;
-	int n = 0;
-	while (*sz)
+	if (elems > 0)
 	{
-		while (*sz && isspace(*sz)) sz++;
-		if (*sz)
+		pm->Create(0, elems, faces);
+		for (int i = 0; i < elems; ++i)
 		{
-			data[n++] = atoi(sz);
-			while (*sz && (isspace(*sz) == 0)) sz++;
-		}
-	}
-	return n;
-}
-
-//-----------------------------------------------------------------------------
-bool FEGMshImport::ReadElements()
-{
-	fgets(m_szline, 255, m_fp);
-	int elems = 0;
-	int nread = sscanf(m_szline, "%d", &elems);
-	if (nread != 1) return errf("Error while reading Element section");
-
-	std::vector<ELEMENT> Face;
-	std::vector<ELEMENT> Elem;
-	Face.reserve(elems);
-	Elem.reserve(elems);
-
-	// read the elements
-	ELEMENT el;
-	const int NMAX = 30;
-	int n[NMAX];
-
-	for (int i=0; i<elems; ++i)
-	{
-		fgets(m_szline, 255, m_fp);
-		int nread = scan_line(m_szline, n, NMAX);
-
-		// element type
-		int etype = n[1];
-
-		// number of tags
-		int ntags = n[2];
-		if (ntags == 0) ntags = 2;	// According to the documentation GMesh files should have at least two tags
-
-		// store the entity number (last tag)
-		el.gid = (ntags > 0? n[2 + ntags] : 0);
-
-		// store pointer to node numbers (depends on tags)
-		int* m = n + ntags + 3;
-
-		// surface elements
-		switch (etype)
-		{
-		case 2: // triangle
-			if (nread != 3 + ntags + 3) return errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_TRI3;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			Face.push_back(el);
-			break;
-		case 3: // quad
-			if (nread != 3 + ntags + 4) return errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_QUAD4;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			Face.push_back(el);
-			break;
-		}
-
-		// volume elements
-		switch (etype)
-		{
-		case 4: // tetrahedron
-			if (nread != 3 + ntags + 4) return errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_TET4;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			Elem.push_back(el);
-			break;
-		case 5: // hexahedrons
-			if (nread != 3 + ntags + 8) return errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_HEX8;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			el.node[6] = m[6] - 1;
-			el.node[7] = m[7] - 1;
-			Elem.push_back(el);
-			break;
-		case 6: // pentahedron
-			if (nread != 3 + ntags + 6) return errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_PENTA6;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			Elem.push_back(el);
-			break;
-		case 7: // 5-node pyramid
-			if (nread != 3 + ntags + 5) return errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_PYRA5;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			Elem.push_back(el);
-			break;
-        case 11: // 10-node tetrahedron
-            if (nread != 3 + ntags + 10) return errf("Invalid number of entries when reading element %d", n[0]);
-            el.ntype = FE_TET10;
-            el.node[0] = m[0] - 1;
-            el.node[1] = m[1] - 1;
-            el.node[2] = m[2] - 1;
-            el.node[3] = m[3] - 1;
-            el.node[4] = m[4] - 1;
-            el.node[5] = m[5] - 1;
-            el.node[6] = m[6] - 1;
-            el.node[7] = m[7] - 1;
-            el.node[8] = m[9] - 1;
-            el.node[9] = m[8] - 1;
-            Elem.push_back(el);
-            break;
-        case 14: // 14-node pyramid
-            {
-                if (nread != 3 + ntags + 14) return errf("Invalid number of entries when reading element %d", n[0]);
-                el.ntype = FE_PYRA13;
-                el.node[0] = m[0] - 1;
-                el.node[1] = m[1] - 1;
-                el.node[2] = m[2] - 1;
-                el.node[3] = m[3] - 1;
-                el.node[4] = m[4] - 1;
-                el.node[ 5] = m[ 5] - 1;
-                el.node[ 6] = m[ 8] - 1;
-                el.node[ 7] = m[10] - 1;
-                el.node[ 8] = m[ 6] - 1;
-                el.node[ 9] = m[ 7] - 1;
-                el.node[10] = m[ 9] - 1;
-                el.node[11] = m[11] - 1;
-                el.node[12] = m[12] - 1;
-                Elem.push_back(el);
-            }
-                break;
-        case 19: // 13-node pyramid
-            {
-                if (nread != 3 + ntags + 13) return errf("Invalid number of entries when reading element %d", n[0]);
-                el.ntype = FE_PYRA13;
-                el.node[0] = m[0] - 1;
-                el.node[1] = m[1] - 1;
-                el.node[2] = m[2] - 1;
-                el.node[3] = m[3] - 1;
-                el.node[4] = m[4] - 1;
-                el.node[ 5] = m[ 5] - 1;
-                el.node[ 6] = m[ 8] - 1;
-                el.node[ 7] = m[10] - 1;
-                el.node[ 8] = m[ 6] - 1;
-                el.node[ 9] = m[ 7] - 1;
-                el.node[10] = m[ 9] - 1;
-                el.node[11] = m[11] - 1;
-                el.node[12] = m[12] - 1;
-                Elem.push_back(el);
-            }
-            break;
-		case 29: // 20-tet tehrahedron
-			{
-				if (nread != 3 + ntags + 20) return errf("Invalid number of entries when reading element %d", n[0]);
-				el.ntype = FE_TET20;
-				el.node[ 0] = m[ 0] - 1;
-				el.node[ 1] = m[ 1] - 1;
-				el.node[ 2] = m[ 2] - 1;
-				el.node[ 3] = m[ 3] - 1;
-				el.node[ 4] = m[ 4] - 1;
-				el.node[ 5] = m[ 5] - 1;
-				el.node[ 6] = m[ 6] - 1;
-				el.node[ 7] = m[ 7] - 1;
-				el.node[ 8] = m[ 9] - 1;
-				el.node[ 9] = m[ 8] - 1;
-				el.node[10] = m[11] - 1;
-				el.node[11] = m[10] - 1;
-				el.node[12] = m[15] - 1;
-				el.node[13] = m[14] - 1;
-				el.node[14] = m[13] - 1;
-				el.node[15] = m[12] - 1;
-				el.node[16] = m[17] - 1;
-				el.node[17] = m[19] - 1;
-				el.node[18] = m[18] - 1;
-				el.node[19] = m[16] - 1;
-
-				Elem.push_back(el);
-			}
-			break;
-		}
-	}
-
-	int nfaces = (int) Face.size();
-	int nelems = (int) Elem.size();
-
-	// make sure all gids start from 0
-	if (nelems > 0)
-	{
-		int minid = Elem[0].gid;
-		for (int i=0; i<nelems; ++i)
-			if (Elem[i].gid < minid) minid = Elem[i].gid;
-
-		if (minid != 0)
-		{
-			for (int i=0; i<nelems; ++i) Elem[i].gid -= minid;
-		}
-	}
-
-	// make sure all gids start from 0
-	if (nfaces > 0)
-	{
-		int minid = Face[0].gid;
-		for (int i=0; i<nfaces; ++i)
-			if (Face[i].gid < minid) minid = Face[i].gid;
-
-		if (minid != 0)
-		{
-			for (int i=0; i<nfaces; ++i) Face[i].gid -= minid;
-		}
-	}
-	
-	if (nelems > 0)
-	{
-		m_pm->Create(0, nelems, nfaces);
-		for (int i=0; i<nelems; ++i)
-		{
-			FSElement& el = m_pm->Element(i);
-			ELEMENT& e = Elem[i];
+			FSElement& el = pm->Element(i);
+			ELEMENT& e = m_Elem[i];
 
 			el.m_gid = e.gid;
 			el.SetType(e.ntype);
@@ -441,47 +158,48 @@ bool FEGMshImport::ReadElements()
 				el.m_node[4] = e.node[4];
 				el.m_node[5] = e.node[5];
 				break;
-            case FE_TET10:
-                el.m_node[0] = e.node[0];
-                el.m_node[1] = e.node[1];
-                el.m_node[2] = e.node[2];
-                el.m_node[3] = e.node[3];
-                el.m_node[4] = e.node[4];
-                el.m_node[5] = e.node[5];
-                el.m_node[6] = e.node[6];
-                el.m_node[7] = e.node[7];
-                el.m_node[8] = e.node[8];
-                el.m_node[9] = e.node[9];
-                break;
-			case FE_TET20:
-				{
-					for (int i = 0; i < 20; ++i) el.m_node[i] = e.node[i];
-				}
+			case FE_TET10:
+				el.m_node[0] = e.node[0];
+				el.m_node[1] = e.node[1];
+				el.m_node[2] = e.node[2];
+				el.m_node[3] = e.node[3];
+				el.m_node[4] = e.node[4];
+				el.m_node[5] = e.node[5];
+				el.m_node[6] = e.node[6];
+				el.m_node[7] = e.node[7];
+				el.m_node[8] = e.node[8];
+				el.m_node[9] = e.node[9];
 				break;
-            case FE_PYRA13:
-                el.m_node[0] = e.node[0];
-                el.m_node[1] = e.node[1];
-                el.m_node[2] = e.node[2];
-                el.m_node[3] = e.node[3];
-                el.m_node[4] = e.node[4];
-                el.m_node[5] = e.node[5];
-                el.m_node[6] = e.node[6];
-                el.m_node[7] = e.node[7];
-                el.m_node[8] = e.node[8];
-                el.m_node[9] = e.node[9];
-                el.m_node[10] = e.node[10];
-                el.m_node[11] = e.node[11];
-                el.m_node[12] = e.node[12];
-                break;
+			case FE_TET20:
+			{
+				for (int i = 0; i < 20; ++i) el.m_node[i] = e.node[i];
+			}
+			break;
+			case FE_PYRA13:
+				el.m_node[0] = e.node[0];
+				el.m_node[1] = e.node[1];
+				el.m_node[2] = e.node[2];
+				el.m_node[3] = e.node[3];
+				el.m_node[4] = e.node[4];
+				el.m_node[5] = e.node[5];
+				el.m_node[6] = e.node[6];
+				el.m_node[7] = e.node[7];
+				el.m_node[8] = e.node[8];
+				el.m_node[9] = e.node[9];
+				el.m_node[10] = e.node[10];
+				el.m_node[11] = e.node[11];
+				el.m_node[12] = e.node[12];
+				break;
 			default:
-				return false;
+				delete pm;
+				return nullptr;
 			}
 		}
 
-		for (int i=0; i<nfaces; ++i)
+		for (int i = 0; i < faces; ++i)
 		{
-			FSFace& face = m_pm->Face(i);
-			ELEMENT& e = Face[i];
+			FSFace& face = pm->Face(i);
+			ELEMENT& e = m_Face[i];
 
 			face.m_gid = e.gid;
 			switch (e.ntype)
@@ -499,26 +217,26 @@ bool FEGMshImport::ReadElements()
 				face.n[2] = e.node[2];
 				face.n[3] = e.node[3];
 				break;
-            case FE_TRI6:
-                face.SetType(FE_FACE_TRI6);
-                face.n[0] = e.node[0];
-                face.n[1] = e.node[1];
-                face.n[2] = e.node[2];
-                face.n[3] = e.node[3];
-                face.n[4] = e.node[4];
-                face.n[5] = e.node[5];
-                break;
+			case FE_TRI6:
+				face.SetType(FE_FACE_TRI6);
+				face.n[0] = e.node[0];
+				face.n[1] = e.node[1];
+				face.n[2] = e.node[2];
+				face.n[3] = e.node[3];
+				face.n[4] = e.node[4];
+				face.n[5] = e.node[5];
+				break;
 			}
 		}
 	}
-	else if (nfaces > 0)
+	else if (faces > 0)
 	{
 		// If no volume elements are defined, we create a shell mesh
-		m_pm->Create(0, nfaces);
-		for (int i=0; i<nfaces; ++i)
+		pm->Create(0, faces);
+		for (int i = 0; i < faces; ++i)
 		{
-			FSElement& el = m_pm->Element(i);
-			ELEMENT& e = Face[i];
+			FSElement& el = pm->Element(i);
+			ELEMENT& e = m_Face[i];
 
 			el.m_gid = e.gid;
 			el.SetType(e.ntype);
@@ -535,21 +253,706 @@ bool FEGMshImport::ReadElements()
 				el.m_node[2] = e.node[2];
 				el.m_node[3] = e.node[3];
 				break;
-            case FE_TRI6:
-                el.m_node[0] = e.node[0];
-                el.m_node[1] = e.node[1];
-                el.m_node[2] = e.node[2];
-                el.m_node[3] = e.node[3];
-                el.m_node[4] = e.node[4];
-                el.m_node[5] = e.node[5];
-                break;
+			case FE_TRI6:
+				el.m_node[0] = e.node[0];
+				el.m_node[1] = e.node[1];
+				el.m_node[2] = e.node[2];
+				el.m_node[3] = e.node[3];
+				el.m_node[4] = e.node[4];
+				el.m_node[5] = e.node[5];
+				break;
 			}
 		}
 	}
 
+	return pm;
+}
+
+//! \todo PreView has trouble with reading surface elements and volume elements since
+//! the surface elements are not shell elements.
+FEGMshImport::FEGMshImport(FSProject& prj) : FSFileImport(prj)
+{
+	m_szline[0] = 0;
+	m_pfem = 0;
+	m_bnewFormat = false;
+}
+
+bool FEGMshImport::Load(const char* szfile)
+{
+	FSModel& fem = m_prj.GetFSModel();
+	m_pfem = &fem;
+
+	// open the file
+	if (!Open(szfile, "rt")) return false;
+
+	// get the first line (should be $MeshFormat)
+	fgets(m_szline, 255, m_fp);
+	if (isKey(m_szline, "$MeshFormat"))
+	{
+		bool ret = ReadMeshFormat();
+		if (ret == false) return false;
+	}
+	else return errf("This is not a valid GMsh file.");
+
+	// allocate correct format parse
+	GMeshFormat* fmt = nullptr;
+	if (m_bnewFormat)
+	{
+		fmt = new GMeshNewFormat(this);
+	}
+	else
+	{
+		fmt = new GMeshLegacyFormat(this);
+	}
+	assert(fmt);
+
+	// load the rest of the file
+	if (fmt->Load() == false) return false;
+
+	// close the file
+	Close();
+
+	// create a new mesh
+	FSMesh* pm = fmt->BuildMesh();
+	if (pm == nullptr) return errf("Failed building mesh.");
+
+	// create a new object from this mesh
+	pm->RebuildMesh();
+	GMeshObject* po = new GMeshObject(pm);
+
+	// give the object the name of the file
+	char szname[256];
+	FileTitle(szname);
+	po->SetName(szname);
+	fem.GetModel().AddObject(po);
+
+	// all done!
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+const char* FEGMshImport::nextLine()
+{
+	return fgets(m_szline, 255, m_fp);
+}
+
+//-----------------------------------------------------------------------------
+bool FEGMshImport::ReadMeshFormat()
+{
+	// read the format line
+	fgets(m_szline, 255, m_fp);
+	float fversion;
+	int ntype;
+	int ngsize;
+	int nread = sscanf(m_szline, "%g %d %d", &fversion, &ntype, &ngsize);
+	if (nread != 3) return errf("Syntax error on line 2");
+	if (ntype != 0) return errf("Invalid file type");
+	if (ngsize != 8) return errf("data format must be 8");
+
 	// read the end of the mesh format
 	fgets(m_szline, 255, m_fp);
-	if (strncmp(m_szline, "$EndElements", 12) != 0) return errf("Failed finding EndElements");
+	if (isKey(m_szline, "$EndMeshFormat")==false) return errf("Failed finding EndMeshFormat");
+
+	// chech the file version
+	if (fversion >= 4.f) m_bnewFormat = true;
+	else m_bnewFormat = false;
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool GMeshLegacyFormat::Load()
+{
+	bool ret = true;
+	const char* szline = nullptr;
+	while (szline = nextLine())
+	{
+		if      (isKey(szline, "$PhysicalNames")) ret = ReadPhysicalNames();
+		else if (isKey(szline, "$Nodes"        )) ret = ReadNodes();
+		else if (isKey(szline, "$Elements"     )) ret = ReadElements();
+		else
+		{
+			// we didn't recognize the section
+			return gmsh->errf("Unknown section: %s", szline);
+		}
+
+		if (ret == false) return false;
+	}
+
+	return true;
+}
+ 
+//-----------------------------------------------------------------------------
+bool GMeshLegacyFormat::ReadPhysicalNames()
+{
+	// read the number of physical names
+	const char* szline = nullptr;
+	if ((szline = nextLine()) == 0) return gmsh->errf("Unexpected end of file");
+	int names = 0;
+	int nread = sscanf(szline, "%d", &names);
+	if (nread != 1) return gmsh->errf("Error while reading physical names");
+
+	// read the names
+	for (int i=0; i<names; ++i)
+	{
+		szline = nextLine();
+		if (szline == 0) return gmsh->errf("Unexpected end of file");
+		char szname[128] = {0};
+		int n, nread;
+		nread = sscanf(szline, "%*d%d%s", &n, szname);
+		if (nread != 2) return false;
+	}
+
+	// read the end tag
+	if (readLine("$EndPhysicalNames") == false) return gmsh->errf("Failed reading $EndPhysicalNames");
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+
+bool GMeshLegacyFormat::ReadNodes()
+{
+	const char* szline = nextLine();
+	int nodes = 0;
+	int nread = sscanf(szline, "%d", &nodes);
+	if (nread != 1) return gmsh->errf("Error while reading Nodes section");
+
+	// allocate nodes
+	m_Node.resize(nodes);
+
+	// read the nodes
+	for (int i=0; i<nodes; ++i)
+	{
+		NODE& n = m_Node[i];
+		vec3d& r = n.pos;
+
+		szline = nextLine();
+		int nread = sscanf(szline, "%d %lg %lg %lg", &n.id, &r.x, &r.y, &r.z);
+		if (nread != 4) return gmsh->errf("Error while reading Nodes section");
+	}
+
+	// read the end of the mesh format
+	if (readLine("$EndNodes") == false) return gmsh->errf("Failed finding EndNodes");
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+
+int scan_line(const char* sz, int* data, int nmax)
+{
+	if ((sz == 0) || sz[0] == 0) return 0;
+	if (nmax == 0) return 0;
+	int n = 0;
+	while (*sz)
+	{
+		while (*sz && isspace(*sz)) sz++;
+		if (*sz)
+		{
+			data[n++] = atoi(sz);
+			while (*sz && (isspace(*sz) == 0)) sz++;
+		}
+	}
+	return n;
+}
+
+//-----------------------------------------------------------------------------
+bool GMeshLegacyFormat::ReadElements()
+{
+	const char* szline = nextLine();
+	int elems = 0;
+	int nread = sscanf(szline, "%d", &elems);
+	if (nread != 1) return gmsh->errf("Error while reading Element section");
+
+	m_Face.reserve(elems);
+	m_Elem.reserve(elems);
+
+	// read the elements
+	ELEMENT el;
+	const int NMAX = 30;
+	int n[NMAX];
+
+	for (int i=0; i<elems; ++i)
+	{
+		szline = nextLine();
+		int nread = scan_line(szline, n, NMAX);
+
+		// element type
+		int etype = n[1];
+
+		// number of tags
+		int ntags = n[2];
+		if (ntags == 0) ntags = 2;	// According to the documentation GMesh files should have at least two tags
+
+		// store the entity number (first tag)
+		el.gid = (ntags > 0? n[3] : 0);
+
+		// store pointer to node numbers (depends on tags)
+		int* m = n + ntags + 3;
+
+		// surface elements
+		switch (etype)
+		{
+		case 2: // triangle
+			if (nread != 3 + ntags + 3) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_TRI3;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			m_Face.push_back(el);
+			break;
+		case 3: // quad
+			if (nread != 3 + ntags + 4) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_QUAD4;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			m_Face.push_back(el);
+			break;
+		}
+
+		// volume elements
+		switch (etype)
+		{
+		case 4: // tetrahedron
+			if (nread != 3 + ntags + 4) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_TET4;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 5: // hexahedrons
+			if (nread != 3 + ntags + 8) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_HEX8;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			el.node[6] = m[6] - 1;
+			el.node[7] = m[7] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 6: // pentahedron
+			if (nread != 3 + ntags + 6) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_PENTA6;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 7: // 5-node pyramid
+			if (nread != 3 + ntags + 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_PYRA5;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			m_Elem.push_back(el);
+			break;
+        case 11: // 10-node tetrahedron
+            if (nread != 3 + ntags + 10) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+            el.ntype = FE_TET10;
+            el.node[0] = m[0] - 1;
+            el.node[1] = m[1] - 1;
+            el.node[2] = m[2] - 1;
+            el.node[3] = m[3] - 1;
+            el.node[4] = m[4] - 1;
+            el.node[5] = m[5] - 1;
+            el.node[6] = m[6] - 1;
+            el.node[7] = m[7] - 1;
+            el.node[8] = m[9] - 1;
+            el.node[9] = m[8] - 1;
+			m_Elem.push_back(el);
+            break;
+        case 14: // 14-node pyramid
+            {
+                if (nread != 3 + ntags + 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+                el.ntype = FE_PYRA13;
+                el.node[0] = m[0] - 1;
+                el.node[1] = m[1] - 1;
+                el.node[2] = m[2] - 1;
+                el.node[3] = m[3] - 1;
+                el.node[4] = m[4] - 1;
+                el.node[ 5] = m[ 5] - 1;
+                el.node[ 6] = m[ 8] - 1;
+                el.node[ 7] = m[10] - 1;
+                el.node[ 8] = m[ 6] - 1;
+                el.node[ 9] = m[ 7] - 1;
+                el.node[10] = m[ 9] - 1;
+                el.node[11] = m[11] - 1;
+                el.node[12] = m[12] - 1;
+				m_Elem.push_back(el);
+            }
+                break;
+        case 19: // 13-node pyramid
+            {
+                if (nread != 3 + ntags + 13) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+                el.ntype = FE_PYRA13;
+                el.node[0] = m[0] - 1;
+                el.node[1] = m[1] - 1;
+                el.node[2] = m[2] - 1;
+                el.node[3] = m[3] - 1;
+                el.node[4] = m[4] - 1;
+                el.node[ 5] = m[ 5] - 1;
+                el.node[ 6] = m[ 8] - 1;
+                el.node[ 7] = m[10] - 1;
+                el.node[ 8] = m[ 6] - 1;
+                el.node[ 9] = m[ 7] - 1;
+                el.node[10] = m[ 9] - 1;
+                el.node[11] = m[11] - 1;
+                el.node[12] = m[12] - 1;
+				m_Elem.push_back(el);
+            }
+            break;
+		case 29: // 20-tet tehrahedron
+			{
+				if (nread != 3 + ntags + 20) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_TET20;
+				el.node[ 0] = m[ 0] - 1;
+				el.node[ 1] = m[ 1] - 1;
+				el.node[ 2] = m[ 2] - 1;
+				el.node[ 3] = m[ 3] - 1;
+				el.node[ 4] = m[ 4] - 1;
+				el.node[ 5] = m[ 5] - 1;
+				el.node[ 6] = m[ 6] - 1;
+				el.node[ 7] = m[ 7] - 1;
+				el.node[ 8] = m[ 9] - 1;
+				el.node[ 9] = m[ 8] - 1;
+				el.node[10] = m[11] - 1;
+				el.node[11] = m[10] - 1;
+				el.node[12] = m[15] - 1;
+				el.node[13] = m[14] - 1;
+				el.node[14] = m[13] - 1;
+				el.node[15] = m[12] - 1;
+				el.node[16] = m[17] - 1;
+				el.node[17] = m[19] - 1;
+				el.node[18] = m[18] - 1;
+				el.node[19] = m[16] - 1;
+
+				m_Elem.push_back(el);
+			}
+			break;
+		}
+	}
+
+	int nfaces = (int) m_Face.size();
+	int nelems = (int) m_Elem.size();
+
+	// make sure all gids start from 0
+	if (nelems > 0)
+	{
+		int minid = m_Elem[0].gid;
+		for (int i=0; i<nelems; ++i)
+			if (m_Elem[i].gid < minid) minid = m_Elem[i].gid;
+
+		if (minid != 0)
+		{
+			for (int i=0; i<nelems; ++i) m_Elem[i].gid -= minid;
+		}
+	}
+
+	// make sure all gids start from 0
+	if (nfaces > 0)
+	{
+		int minid = m_Face[0].gid;
+		for (int i=0; i<nfaces; ++i)
+			if (m_Face[i].gid < minid) minid = m_Face[i].gid;
+
+		if (minid != 0)
+		{
+			for (int i=0; i<nfaces; ++i) m_Face[i].gid -= minid;
+		}
+	}
+	
+	// read the end of the mesh format
+	if (readLine("$EndElements") == false) return gmsh->errf("Failed finding EndElements");
+
+	return true;
+}
+
+//===========================================================================================
+bool GMeshNewFormat::Load()
+{
+	bool ret = true;
+	const char* szline = nullptr;
+	while (szline = nextLine())
+	{
+		if      (isKey(szline, "$Nodes"   )) ret = ReadNodes();
+		else if (isKey(szline, "$Elements")) ret = ReadElements();
+		else
+		{
+			// we didn't recognize the section
+			return gmsh->errf("Unknown section: %s", szline);
+		}
+
+		if (ret == false) return false;
+	}
+
+	return true;
+}
+
+bool GMeshNewFormat::ReadNodes()
+{
+	// get the next line
+	const char* szline = nextLine();
+
+	// scan it for #entities, #nodes, minNodeTag, maxNodeTag
+	int entities, nodes, minNodeTag, maxNodeTag;
+	int nread = sscanf(szline, "%d%d%d%d", &entities, &nodes, &minNodeTag, &maxNodeTag);
+	if (nread != 4) return false;
+
+	// read the next line (not sure what it represents)
+	nextLine();
+
+	// read the node IDs
+	m_Node.resize(nodes);
+	for (int i = 0; i < nodes; ++i)
+	{
+		NODE& n = m_Node[i];
+		szline = nextLine();
+		sscanf(szline, "%d", &n.id);
+	}
+
+	// read the nodal coordinates
+	for (int i = 0; i < nodes; ++i)
+	{
+		vec3d& r = m_Node[i].pos;
+		szline = nextLine();
+		sscanf(szline, "%lg%lg%lg", &r.x, &r.y, &r.z);
+	}
+
+	// read the end of the nodes section
+	if (readLine("$EndNodes") == false) return gmsh->errf("Failed finding $EndNodes");
+
+	return true;
+}
+
+bool GMeshNewFormat::ReadElements()
+{
+	// scan it for #entities, #elements, minElemTag, maxElemTag
+	const char* szline = nextLine();
+	int entities, elems, minElemTag, maxElemTag;
+	int nread = sscanf(szline, "%d%d%d%d", &entities, &elems, &minElemTag, &maxElemTag);
+	if (nread != 4) return gmsh->errf("Error while reading Element section");;
+
+	// read the next line
+	nextLine();
+	int entityDim, entityTag, elemType, numElemsInBlock;
+	nread = sscanf(szline, "%d%d%d%d", &entityDim, &entityTag, &elemType, &numElemsInBlock);
+	if (nread != 4) return gmsh->errf("Error while reading Element section");;
+
+	m_Face.reserve(elems);
+	m_Elem.reserve(elems);
+
+	// read the elements
+	ELEMENT el;
+	const int NMAX = 30;
+	int n[NMAX];
+
+	for (int i = 0; i < elems; ++i)
+	{
+		szline = nextLine();
+		int nread = scan_line(szline, n, NMAX);
+
+		// store the entity number
+		el.gid = entityTag;
+
+		// surface elements
+		int* m = n + 1;
+		switch (elemType)
+		{
+		case 2: // triangle
+			if (nread != 4) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_TRI3;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			m_Face.push_back(el);
+			break;
+		case 3: // quad
+			if (nread != 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_QUAD4;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			m_Face.push_back(el);
+			break;
+		}
+
+		// volume elements
+		switch (elemType)
+		{
+		case 4: // tetrahedron
+			if (nread != 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_TET4;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 5: // hexahedrons
+			if (nread != 9) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_HEX8;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			el.node[6] = m[6] - 1;
+			el.node[7] = m[7] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 6: // pentahedron
+			if (nread != 7) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_PENTA6;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 7: // 5-node pyramid
+			if (nread != 6) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_PYRA5;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 11: // 10-node tetrahedron
+			if (nread != 11) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_TET10;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			el.node[6] = m[6] - 1;
+			el.node[7] = m[7] - 1;
+			el.node[8] = m[9] - 1;
+			el.node[9] = m[8] - 1;
+			m_Elem.push_back(el);
+			break;
+		case 14: // 14-node pyramid
+		{
+			if (nread != 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_PYRA13;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			el.node[6] = m[8] - 1;
+			el.node[7] = m[10] - 1;
+			el.node[8] = m[6] - 1;
+			el.node[9] = m[7] - 1;
+			el.node[10] = m[9] - 1;
+			el.node[11] = m[11] - 1;
+			el.node[12] = m[12] - 1;
+			m_Elem.push_back(el);
+		}
+		break;
+		case 19: // 13-node pyramid
+		{
+			if (nread != 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_PYRA13;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			el.node[6] = m[8] - 1;
+			el.node[7] = m[10] - 1;
+			el.node[8] = m[6] - 1;
+			el.node[9] = m[7] - 1;
+			el.node[10] = m[9] - 1;
+			el.node[11] = m[11] - 1;
+			el.node[12] = m[12] - 1;
+			m_Elem.push_back(el);
+		}
+		break;
+		case 29: // 20-tet tehrahedron
+		{
+			if (nread != 21) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+			el.ntype = FE_TET20;
+			el.node[0] = m[0] - 1;
+			el.node[1] = m[1] - 1;
+			el.node[2] = m[2] - 1;
+			el.node[3] = m[3] - 1;
+			el.node[4] = m[4] - 1;
+			el.node[5] = m[5] - 1;
+			el.node[6] = m[6] - 1;
+			el.node[7] = m[7] - 1;
+			el.node[8] = m[9] - 1;
+			el.node[9] = m[8] - 1;
+			el.node[10] = m[11] - 1;
+			el.node[11] = m[10] - 1;
+			el.node[12] = m[15] - 1;
+			el.node[13] = m[14] - 1;
+			el.node[14] = m[13] - 1;
+			el.node[15] = m[12] - 1;
+			el.node[16] = m[17] - 1;
+			el.node[17] = m[19] - 1;
+			el.node[18] = m[18] - 1;
+			el.node[19] = m[16] - 1;
+
+			m_Elem.push_back(el);
+		}
+		break;
+		}
+	}
+
+	int nfaces = (int)m_Face.size();
+	int nelems = (int)m_Elem.size();
+
+	// make sure all gids start from 0
+	if (nelems > 0)
+	{
+		int minid = m_Elem[0].gid;
+		for (int i = 0; i < nelems; ++i)
+			if (m_Elem[i].gid < minid) minid = m_Elem[i].gid;
+
+		if (minid != 0)
+		{
+			for (int i = 0; i < nelems; ++i) m_Elem[i].gid -= minid;
+		}
+	}
+
+	// make sure all gids start from 0
+	if (nfaces > 0)
+	{
+		int minid = m_Face[0].gid;
+		for (int i = 0; i < nfaces; ++i)
+			if (m_Face[i].gid < minid) minid = m_Face[i].gid;
+
+		if (minid != 0)
+		{
+			for (int i = 0; i < nfaces; ++i) m_Face[i].gid -= minid;
+		}
+	}
+
+	// read the end of the mesh format
+	if (readLine("$EndElements") == false) return gmsh->errf("Failed finding EndElements");
 
 	return true;
 }
