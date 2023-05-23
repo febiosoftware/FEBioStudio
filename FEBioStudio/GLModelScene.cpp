@@ -1236,9 +1236,12 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 		{
 			GNode* nj = po->Node(j);
 			int nid = nj->GetID();
-			if ((minId == -1) || (nid < minId)) minId = nid;
-			if ((maxId == -1) || (nid > maxId)) maxId = nid;
-			nodes.push_back(nj);
+			if (nid != -1)
+			{
+				if ((minId == -1) || (nid < minId)) minId = nid;
+				if ((maxId == -1) || (nid > maxId)) maxId = nid;
+				nodes.push_back(nj);
+			}
 		}
 	}
 
