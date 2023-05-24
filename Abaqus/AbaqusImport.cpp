@@ -403,6 +403,7 @@ int AbaqusImport::parse_line(const char* szline, ATTRIBUTE* pa)
 			k = 0;
 			sz = pa[n].szval;
 			break;
+		case '\r':
 		case ' ': // skip spaces
 			break;
 		default:	// copy text
