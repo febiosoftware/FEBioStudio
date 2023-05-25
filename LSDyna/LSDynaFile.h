@@ -23,47 +23,62 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "FELSDYNAimport.h"
-#include "LSDynaFile.h"
-#include "LSDynaFileParser.h"
-#include "GeomLib/GMeshObject.h"
-#include <GeomLib/GModel.h>
-#include <vector>
+#pragma once
+#include <stdio.h>
+#include <string>
 
-FELSDYNAimport::FELSDYNAimport(FSProject& prj) : FSFileImport(prj) { m_pprj = nullptr; }
-
-FELSDYNAimport::~FELSDYNAimport() {}
-
-bool FELSDYNAimport::Load(const char* szfile)
+// Helper class for processing LSDyna keyword files
+class LSDynaFile
 {
-	// clear all data
-	m_dyna.clear();
-
-	// try to open the file
-	LSDynaFile lsfile;
-	if (lsfile.Open(szfile) == false) return errf("Failed to open file or file is not valid .k file.");
-
-	// read the file
-	LSDynaFileParser lsparser(lsfile, m_dyna);
-	if (lsparser.ParseFile() == false) {
-		return errf(lsparser.GetErrorString());
-	}
-
-	// build the model
-	FSModel& fem = m_prj.GetFSModel();
-	bool b = m_dyna.BuildModel(fem);
-	if (b)
+public:
+	class CARD
 	{
-		// if we get here we are good to go!
-		GMeshObject* po = m_dyna.TakeObject();
-		char szname[256];
-		FileTitle(szname);
-		po->SetName(szname);
-		fem.GetModel().AddObject(po);
-	}
+	public:
+		CARD(int field = 10);
 
-	// clean up
-	m_dyna.clear();
+		bool nexti(int& n, int nwidth = -1);		// return the next integer parameter
+		bool nextd(double& d, int nwidth = -1);		// return the next double parameter
 
-	return (b ? true : errf("Failed building model"));
-}
+		const char* szvalue() { return m_szline; }
+
+		bool IsKeyword() { return m_szline[0] == '*'; }
+
+		bool operator == (const char* sz);
+
+		bool contains(const char* sz);
+
+	public:
+		enum { MAX_LINE = 256 };		// max characters per line
+		char	m_szline[MAX_LINE];		// line read in from file
+		bool	m_bfree;				// free format flag
+		char* m_ch;					// current position in line
+		int		m_nfield;				// field width
+		int		m_l;					// length of line
+	};
+
+public:
+	LSDynaFile();
+
+	bool Open(const char* szfile);
+
+	void Close();
+
+	size_t CurrentLineNumber() const { return m_lineno; }
+
+	// get the card at the current line
+	void GetCard(LSDynaFile::CARD& c);
+
+	// move to next line, and read card
+	bool NextCard(LSDynaFile::CARD& c);
+
+	std::string FileName() const { return m_fileName; }
+
+private:
+	char* get_line(char* szline);
+
+private:
+	std::string	m_fileName;
+	FILE* m_fp;
+	char   m_szline[256];
+	size_t m_lineno;
+};

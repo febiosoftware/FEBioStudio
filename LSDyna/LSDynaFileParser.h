@@ -23,47 +23,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#include "FELSDYNAimport.h"
+#pragma once
 #include "LSDynaFile.h"
-#include "LSDynaFileParser.h"
-#include "GeomLib/GMeshObject.h"
-#include <GeomLib/GModel.h>
-#include <vector>
+#include "LSDYNAModel.h"
+#include <string>
 
-FELSDYNAimport::FELSDYNAimport(FSProject& prj) : FSFileImport(prj) { m_pprj = nullptr; }
-
-FELSDYNAimport::~FELSDYNAimport() {}
-
-bool FELSDYNAimport::Load(const char* szfile)
+class LSDynaFileParser
 {
-	// clear all data
-	m_dyna.clear();
+public:
+	LSDynaFileParser(LSDynaFile& lsfile, LSDYNAModel& lsm) : m_ls(lsfile), m_dyn(lsm), m_err("") {}
 
-	// try to open the file
-	LSDynaFile lsfile;
-	if (lsfile.Open(szfile) == false) return errf("Failed to open file or file is not valid .k file.");
+	bool ParseFile();
 
-	// read the file
-	LSDynaFileParser lsparser(lsfile, m_dyna);
-	if (lsparser.ParseFile() == false) {
-		return errf(lsparser.GetErrorString());
-	}
+	const char* GetErrorString() const { return m_err.c_str(); }
 
-	// build the model
-	FSModel& fem = m_prj.GetFSModel();
-	bool b = m_dyna.BuildModel(fem);
-	if (b)
-	{
-		// if we get here we are good to go!
-		GMeshObject* po = m_dyna.TakeObject();
-		char szname[256];
-		FileTitle(szname);
-		po->SetName(szname);
-		fem.GetModel().AddObject(po);
-	}
+private:
+	bool Error(const std::string& err);
 
-	// clean up
-	m_dyna.clear();
+private:
 
-	return (b ? true : errf("Failed building model"));
-}
+protected:
+	bool Read_Element_Solid();
+	bool Read_Element_Solid2();
+	bool Read_Element_Shell();
+	bool Read_Element_Shell_Thickness();
+	bool Read_Domain_Shell_Thickness();
+	bool Read_Node();
+	bool Read_Nodal_Results();
+	bool Read_Part();
+	bool Read_Part_Contact();
+	bool Read_Material();
+	bool Read_Mat_Elastic();
+	bool Read_Mat_Rigid();
+	bool Read_Mat_Viscoelastic();
+	bool Read_Mat_Kelvin_Maxwell_Viscoelastic();
+	bool Read_Mat_Elastic_Spring_Discrete_Beam();
+	bool Read_Mat_Other();
+	bool Read_Set_Segment_Title();
+	bool Read_Include();
+
+private:
+	LSDynaFile& m_ls;
+	LSDYNAModel& m_dyn;
+	std::string	m_err;
+};
