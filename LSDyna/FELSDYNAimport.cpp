@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GeomLib/GMeshObject.h"
 #include <GeomLib/GModel.h>
 #include <vector>
+#include <sstream>
 
 FELSDYNAimport::FELSDYNAimport(FSProject& prj) : FSFileImport(prj) { m_pprj = nullptr; }
 
@@ -42,6 +43,7 @@ bool FELSDYNAimport::Load(const char* szfile)
 	// try to open the file
 	LSDynaFile lsfile;
 	if (lsfile.Open(szfile) == false) return errf("Failed to open file or file is not valid .k file.");
+	SetFileName(szfile);
 
 	// read the file
 	LSDynaFileParser lsparser(lsfile, m_dyna);
@@ -60,6 +62,12 @@ bool FELSDYNAimport::Load(const char* szfile)
 		FileTitle(szname);
 		po->SetName(szname);
 		fem.GetModel().AddObject(po);
+
+		// we need to convert to the new format
+		std::ostringstream log;
+		m_prj.ConvertToNewFormat(log);
+		std::string s = log.str();
+		if (s.empty()) errf(s.c_str());
 	}
 
 	// clean up
