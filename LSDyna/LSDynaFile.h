@@ -60,6 +60,7 @@ public:
 	LSDynaFile();
 
 	bool Open(const char* szfile);
+	bool Open(FILE* fp);
 
 	void Close();
 
@@ -73,12 +74,15 @@ public:
 
 	std::string FileName() const { return m_fileName; }
 
+	void SetFileName(const std::string& fileName) { m_fileName = fileName; }
+
 private:
 	char* get_line(char* szline);
 
 private:
 	std::string	m_fileName;
 	FILE* m_fp;
+	bool	m_bmyfp;
 	char   m_szline[256];
 	size_t m_lineno;
 };

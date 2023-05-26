@@ -102,6 +102,7 @@ LSDynaFile::LSDynaFile() : m_fp(nullptr)
 {
 	m_szline[0] = 0;
 	m_lineno = 0;
+	m_bmyfp = false;
 }
 
 bool LSDynaFile::Open(const char* szfile)
@@ -109,6 +110,7 @@ bool LSDynaFile::Open(const char* szfile)
 	if (m_fp) return false;
 	m_fp = fopen(szfile, "rt");
 	m_lineno = 0;
+	m_bmyfp = true;
 
 	m_fileName = szfile;
 
@@ -122,9 +124,27 @@ bool LSDynaFile::Open(const char* szfile)
 	return (m_fp != nullptr);
 }
 
+bool LSDynaFile::Open(FILE* fp)
+{
+	if (m_fp) return false;
+	m_lineno = 0;
+
+	m_bmyfp = false;
+	m_fp = fp;
+
+	// make sure the first line is *KEYWORD
+	if (m_fp)
+	{
+		if (get_line(m_szline) == 0) return false;
+		if (szcmp(m_szline, "*KEYWORD") != 0) return false;
+	}
+
+	return (m_fp != nullptr);
+}
+
 void LSDynaFile::Close()
 {
-	fclose(m_fp);
+	if (m_bmyfp) fclose(m_fp);
 	m_fp = nullptr;
 }
 

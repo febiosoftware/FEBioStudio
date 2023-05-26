@@ -41,9 +41,11 @@ bool FELSDYNAimport::Load(const char* szfile)
 	m_dyna.clear();
 
 	// try to open the file
+	if (Open(szfile, "rt") == false) return errf("Failed to open file or file is not valid .k file.");
+
 	LSDynaFile lsfile;
-	if (lsfile.Open(szfile) == false) return errf("Failed to open file or file is not valid .k file.");
-	SetFileName(szfile);
+	if (lsfile.Open(FilePtr()) == false) return errf("Failed to open file or file is not valid .k file.");
+	lsfile.SetFileName(szfile);
 
 	// read the file
 	LSDynaFileParser lsparser(lsfile, m_dyna);
