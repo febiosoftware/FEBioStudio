@@ -796,6 +796,7 @@ void FSMesh::UpdateElementNeighbors()
 	int elems = Elements();
 
 	// reset all element neighbor and face ptrs
+#pragma omp parallel for
 	for (int i = 0; i < elems; i++)
 	{
 		FEElement_& el = ElementRef(i);
@@ -811,16 +812,14 @@ void FSMesh::UpdateElementNeighbors()
 	FSNodeElementList NET;
 	NET.Build(this);
 
-	// set up the element's neighbour pointers
-	FSEdge edge;
-	FSFace f1, f2, f3;
-
 	// loop over all elements
+#pragma omp parallel for shared(NET)
 	for (int i = 0; i < elems; i++)
 	{
 		FEElement_* pe = ElementPtr(i);
 		// do the solid elements first
 		int n = pe->Faces();
+		FSFace f1, f2;
 		for (int j = 0; j < n; j++)
 		{
 			// check if we already have a neighbor assigned
@@ -883,7 +882,7 @@ void FSMesh::UpdateElementNeighbors()
 		{
 			if (pe->m_nbr[j] == -1)
 			{
-				edge = pe->GetEdge(j);
+				FSEdge edge = pe->GetEdge(j);
 
 				// find the neighbour element
 				int inode = edge.n[0];
