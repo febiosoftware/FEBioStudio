@@ -1309,7 +1309,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nydiv != 0)
 		{
 			gy = pow(10.0, nydiv);
-			sprintf(sz, "x 1e%03d", nydiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nydiv);
 			p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), QString(sz));
 		}
 	}
@@ -1322,7 +1322,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nxdiv != 0)
 		{
 			gx = pow(10.0, nxdiv);
-			sprintf(sz, "x 1e%03d", nxdiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nxdiv);
 			p.drawText(x1 + 5, y1, QString(sz));
 		}
 	}
@@ -1350,7 +1350,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fy / gy;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 
 				if (m_data.m_yAxis.labelAlignment == ALIGN_LABEL_LEFT)
@@ -1388,7 +1388,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fx / gx;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 				int w = p.fontMetrics().horizontalAdvance(s);
 				if (m_data.m_xAxis.labelAlignment == ALIGN_LABEL_BOTTOM)

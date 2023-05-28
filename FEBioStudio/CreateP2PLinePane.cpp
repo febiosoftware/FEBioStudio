@@ -288,7 +288,7 @@ FSObject* CCreateP2PLinePane::Create()
 	if (newObject)
 	{
 		char sz[256] = { 0 };
-		sprintf(sz, "PointCurve%d", n++);
+		snprintf(sz, 256, "PointCurve%d", n++);
 		newObject->SetName(sz);
 	}
 

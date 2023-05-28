@@ -2824,7 +2824,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 				strncpy(tag.sztag, name.c_str(), l);
 				tag.sztag[l] = 0;
 			}
-			else sprintf(tag.sztag, "_no_name");
+			else snprintf(tag.sztag, sizeof tag.sztag, "_no_name");
 			vtag.push_back(tag);
 		}
 	}

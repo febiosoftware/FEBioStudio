@@ -675,19 +675,19 @@ void CMainWindow::on_actionNameSelection_triggered()
 	int item = doc->GetItemMode();
 	switch (item)
 	{
-	case ITEM_ELEM: sprintf(szname, "Part%02d", nparts); break;
-	case ITEM_FACE: sprintf(szname, "Surface%02d", nsurfs); break;
-	case ITEM_EDGE: sprintf(szname, "EdgeSet%02d", nedges); break;
-	case ITEM_NODE: sprintf(szname, "Nodeset%02d", nnodes); break;
+	case ITEM_ELEM: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
+	case ITEM_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+	case ITEM_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
+	case ITEM_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 	case ITEM_MESH:
 	{
 		int nsel = doc->GetSelectionMode();
 		switch (nsel)
 		{
-		case SELECT_PART: sprintf(szname, "Part%02d", nparts); break;
-		case SELECT_FACE: sprintf(szname, "Surface%02d", nsurfs); break;
-		case SELECT_EDGE: sprintf(szname, "EdgeSet%02d", nedges); break;
-		case SELECT_NODE: sprintf(szname, "Nodeset%02d", nnodes); break;
+		case SELECT_PART: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
+		case SELECT_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+		case SELECT_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
+		case SELECT_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 		default:
 			return;
 		}

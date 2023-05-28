@@ -5423,7 +5423,7 @@ void CGLView::RenderTags()
 				tag.c = extcol;
 				int nid = el.GetID();
 				if (nid < 0) nid = i + 1;
-				sprintf(tag.sztag, "E%d", nid);
+				snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
 				vtag.push_back(tag);
 
 				int ne = el.Nodes();
@@ -5445,7 +5445,7 @@ void CGLView::RenderTags()
 				tag.c = (f.IsExternal() ? extcol : intcol);
 				int nid = f.GetID();
 				if (nid < 0) nid = i + 1;
-				sprintf(tag.sztag, "F%d", nid);
+				snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
 				vtag.push_back(tag);
 
 				int nf = f.Nodes();
@@ -5467,7 +5467,7 @@ void CGLView::RenderTags()
 				tag.c = extcol;
 				int nid = edge.GetID();
 				if (nid < 0) nid = i + 1;
-				sprintf(tag.sztag, "L%d", nid);
+				snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
 				vtag.push_back(tag);
 
 				int ne = edge.Nodes();
@@ -5488,7 +5488,7 @@ void CGLView::RenderTags()
 				tag.c = (node.IsExterior() ? extcol : intcol);
 				int nid = node.GetID();
 				if (nid < 0) nid = i + 1;
-				sprintf(tag.sztag, "N%d", nid);
+				snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
 				vtag.push_back(tag);
 			}
 		}
@@ -5504,7 +5504,7 @@ void CGLView::RenderTags()
 			{
 				tag.r = pmb->LocalToGlobal(node.r);
 				tag.c = (node.IsExterior() ? extcol : intcol);
-				sprintf(tag.sztag, "N%d", node.GetID());
+				snprintf(tag.sztag, sizeof tag.sztag, "N%d", node.GetID());
 				vtag.push_back(tag);
 			}
 		}
@@ -5527,7 +5527,7 @@ void CGLView::RenderTags()
 				{
 					tag.r = ob.m_pos;
 					tag.c = ob.Color();
-					sprintf(tag.sztag, ob.GetName().c_str());
+					snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
 					vtag.push_back(tag);
 				}
 			}
@@ -5543,7 +5543,7 @@ void CGLView::RenderTags()
 
 				tag.r = (a + b) * 0.5;
 				tag.c = ob.Color();
-				sprintf(tag.sztag, ob.GetName().c_str());
+				snprintf(tag.sztag, sizeof tag.sztag, ob.GetName().c_str());
 				vtag.push_back(tag);
 			}
 		}

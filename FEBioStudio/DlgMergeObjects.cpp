@@ -68,7 +68,7 @@ CDlgMergeObjects::CDlgMergeObjects(QWidget* parent) : QDialog(parent), ui(new Ui
 
 	static int ncount = 1;
 	char sz[256] = {0};
-	sprintf(sz, "MergedObject%d", ncount++);
+	snprintf(sz, 256, "MergedObject%d", ncount++);
 	ui->name->setText(sz);
 	ui->check->setChecked(true);
 	ui->tol->setText(QString::number(1e-6));
