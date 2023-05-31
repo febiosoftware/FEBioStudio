@@ -40,7 +40,7 @@ public:
 	FEMeshBuilder(FSMesh& mesh);
 
 	// Rebuild all mesh data
-	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
+	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false, bool creaseInternal = true);
 
 	// Partition a node (may split an edge)
 	void PartitionNode(int node);

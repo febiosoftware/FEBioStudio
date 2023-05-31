@@ -54,7 +54,7 @@ public:
 
 public:
 	// calculate smoothing IDs based on face normals.
-	void AutoSmooth(double angleDegrees);
+	void AutoSmooth(double angleDegrees, bool creaseInternal = true);
 
 	// assign smoothing IDs based on surface partition
 	void SmoothByPartition();

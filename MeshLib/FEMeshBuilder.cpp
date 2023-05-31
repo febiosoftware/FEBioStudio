@@ -1700,7 +1700,7 @@ void FEMeshBuilder::AutoPartitionSurface()
 
 //-----------------------------------------------------------------------------
 // This function builds the surface, edges and node of the mesh
-void FEMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh)
+void FEMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh, bool creaseInternal)
 {
 	// update the element neighbours
 	m_mesh.UpdateElementNeighbors();
@@ -1720,7 +1720,7 @@ void FEMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh)
 	BuildFaces();
 
 	// calculate auto GID's
-	m_mesh.AutoSmooth(smoothingAngle);
+	m_mesh.AutoSmooth(smoothingAngle, creaseInternal);
 
 	// partition the surface based on the smoothing
 	AutoPartitionSurface();
