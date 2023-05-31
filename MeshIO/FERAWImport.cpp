@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FERAWImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GModel.h>
+#include <MeshLib/FEMeshBuilder.h>
 
 //-----------------------------------------------------------------------------
 FERAWImport::FERAWImport(FSProject& prj) : FSFileImport(prj)
@@ -126,6 +127,11 @@ bool FERAWImport::Load(const char* szfile)
 				elem.m_node[7] = (k+1)*(m_nx+1)*(m_ny+1) + (j+1)*(m_nx+1) + i;
 			}
 	delete [] pb;
+
+	// NOTE: we don't crease the internal surfaces. 
+	// For raw images this could otherwise result in a very large number of surfaces!
+	FEMeshBuilder meshBuilder(*pm);
+	meshBuilder.RebuildMesh(60.0, false, false);
 
 	GMeshObject* po = new GMeshObject(pm);
 
