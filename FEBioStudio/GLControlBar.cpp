@@ -59,6 +59,7 @@ public:
 	QToolButton*	cull;
 	QToolButton*	noint;
 	QToolButton*	showMesh;
+	QToolButton*	toggleLight;
 
 public:
 	void setup(CGLControlBar* bar)
@@ -75,6 +76,7 @@ public:
 		QToolButton* b6 = addButton(QIcon(":/icons/zoom_select.png"), "Zoom to selection", false); 
 		QToolButton* b7 = addButton(QIcon(":/icons/zoom_all.png"), "Zoom to extents", false);
 		showMesh = addButton(QIcon(":/icons/show_mesh.png"), "Toggle mesh lines", true);
+		toggleLight = addButton(QIcon(":/icons/light.png"), "Toggle light", true);
 
 		// mesh editing tool buttons
 		edit = new QWidget;
@@ -136,6 +138,7 @@ public:
 		h->addWidget(b6);
 		h->addWidget(b7);
 		h->addWidget(showMesh);
+		h->addWidget(toggleLight);
 		h->addWidget(edit);
 		h->addStretch();
 
@@ -153,6 +156,7 @@ public:
 		QObject::connect(b6, SIGNAL(clicked(bool)), bar, SLOT(onZoomSelectClicked(bool)));
 		QObject::connect(b7, SIGNAL(clicked(bool)), bar, SLOT(onZoomAllClicked(bool)));
 		QObject::connect(showMesh, SIGNAL(clicked(bool)), bar, SLOT(onToggleMesh(bool)));
+		QObject::connect(toggleLight, SIGNAL(clicked(bool)), bar, SLOT(onToggleLight(bool)));
 		QObject::connect(bg, SIGNAL(idClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
 		QObject::connect(selConnect, SIGNAL(toggled(bool)), bar, SLOT(onSelectConnected(bool)));
 		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
@@ -389,6 +393,11 @@ void CGLControlBar::onZoomAllClicked(bool b)
 void CGLControlBar::onToggleMesh(bool b)
 {
 	ui->m_wnd->on_actionShowMeshLines_toggled(b);
+}
+
+void CGLControlBar::onToggleLight(bool b)
+{
+	ui->m_wnd->on_actionToggleLight_triggered();
 }
 
 void CGLControlBar::onMeshButtonClicked(int id)

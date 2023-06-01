@@ -681,7 +681,7 @@ public:
 		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
 		QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
-		actionToggleLight     = addAction("Toggle Lighting", "actionToggleLight");
+		actionToggleLight     = addAction("Toggle Lighting", "actionToggleLight", "light");
 		actionFront           = addAction("Front", "actionFront"  ); actionFront ->setShortcut(Qt::Key_8 | Qt::KeypadModifier);
 		actionBack            = addAction("Back" , "actionBack"   ); actionBack  ->setShortcut(Qt::Key_2 | Qt::KeypadModifier);
 		actionRight           = addAction("Right", "actionRight"  ); actionRight ->setShortcut(Qt::Key_6 | Qt::KeypadModifier);
