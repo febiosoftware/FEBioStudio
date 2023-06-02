@@ -69,6 +69,7 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include "DynamicStackedWidget.h"
 #include "ImageFilterWidget.h"
+#include "DlgPickNamedSelection.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -334,43 +335,6 @@ void CMeshDataInfoPanel::setDataFormat(int ndataformat)
 void CMeshDataInfoPanel::on_name_textEdited(const QString& t)
 {
 	emit nameChanged(t);
-}
-
-//=============================================================================
-CDlgPickNamedSelection::CDlgPickNamedSelection(QWidget* parent) : QDialog(parent)
-{
-	setWindowTitle("Choose Selection");
-
-	QVBoxLayout* l = new QVBoxLayout;
-
-	l->addWidget(m_list = new QListWidget);
-
-	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-	l->addWidget(bb);
-
-	setLayout(l);
-
-	QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
-	QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
-}
-
-void CDlgPickNamedSelection::setNameList(const QStringList& names)
-{
-	m_list->clear();
-	m_list->addItems(names);
-}
-
-void CDlgPickNamedSelection::setSelection(const QString& name)
-{
-	auto l = m_list->findItems(name, Qt::MatchExactly);
-	if (l.empty() == false) m_list->setCurrentItem(l.at(0));
-}
-
-QString CDlgPickNamedSelection::getSelection()
-{
-	QListWidgetItem* it = m_list->currentItem();
-	if (it == nullptr) return QString();
-	else return it->text();
 }
 
 //=============================================================================
