@@ -33,6 +33,11 @@ protected:
 // This class is used to select mesh selections properties
 class FSMeshSelection : public FSModelComponent, public FSHasOneItemList
 {
+	enum {LIST_ID};
+
 public:
 	FSMeshSelection(FSModel* fem);
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

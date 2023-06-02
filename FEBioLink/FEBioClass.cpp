@@ -383,6 +383,14 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FEBEAMDOMAIN_ID      : pc = new FEBeamFormulation(fem); break;
 	case FEDISCRETEMATERIAL_ID: pc = new FEBioDiscreteMaterial(fem); break;
 	case FELINEARSOLVER_ID    : pc = new FSGenericClass(fem); break;
+	case FESURFACE_ID         : 
+	{
+		FSMeshSelection* pms = new FSMeshSelection(fem);
+		pms->SetMeshItemType(FE_FACE_FLAG);
+		pms->SetSuperClassID(FESURFACE_ID);
+		pc = pms;
+	}
+	break;
 	default:
 		assert(false);
 	}
