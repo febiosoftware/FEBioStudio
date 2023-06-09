@@ -41,7 +41,7 @@ unsigned int Units::GetUnitSystem() { return unit_system; }
 QStringList Units::SupportedUnitSystems()
 {
 	QStringList s;
-	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "µm-nN-s" << "CGS";
+	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "um-nN-s" << "CGS";
 
 	return s;
 }
