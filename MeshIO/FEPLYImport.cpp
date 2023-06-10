@@ -96,6 +96,7 @@ bool FEPLYImport::read_file(const char* szfile)
 
 	// find vertices and faces
 	int verts = 0;
+	int vertData = 0;
 	int faces = 0;
 	do
 	{
@@ -103,6 +104,20 @@ bool FEPLYImport::read_file(const char* szfile)
 		if (ch == 0) return errf("An unexpected error occured while reading the file data.");
 		if (strstr(ch, "element vertex") != 0) verts = atoi(ch+14);
 		if (strstr(ch, "element face"  ) != 0) faces = atoi(ch+12);
+		if ((strstr(ch, "property") != 0) && (verts > 0) && (faces == 0))
+		{
+			// read the vertex properties
+			// (we just need to know the total data size for each vertex)
+			if      (strstr(ch + 8, "char"  ) != 0) vertData += 1;
+			else if (strstr(ch + 8, "uchar" ) != 0) vertData += 1;
+			else if (strstr(ch + 8, "short" ) != 0) vertData += 2;
+			else if (strstr(ch + 8, "ushort") != 0) vertData += 2;
+			else if (strstr(ch + 8, "int"   ) != 0) vertData += 4;
+			else if (strstr(ch + 8, "uint"  ) != 0) vertData += 4;
+			else if (strstr(ch + 8, "float" ) != 0) vertData += 4;
+			else if (strstr(ch + 8, "double") != 0) vertData += 8;
+			else { assert(false); return false; }
+		}
 	}
 	while (strstr(ch, "end_header") == 0);
 
@@ -160,19 +175,21 @@ bool FEPLYImport::read_file(const char* szfile)
 	}
 	else
 	{
+		char* buf = new char[vertData];
 		for (int i = 0; i < verts; ++i)
 		{
-			float r[3];
-			size_t nread = fread(r, sizeof(float), 3, m_fp);
-			if (nread != 3) return errf("An unexpected error occured while reading vertex data.");
+			size_t nread = fread(buf, sizeof(char), vertData, m_fp);
+			if (nread != vertData) return errf("An unexpected error occured while reading vertex data.");
+			float* r = (float*) buf;
 
 			FSNode& n = mesh.Node(i);
 			n.r = vec3d(r[0], r[1], r[2]);
 		}
+		delete[] buf;
 
 		for (int i = 0; i < faces; ++i)
 		{
-			// read the number of vertices
+			// read the number of vertices 
 			unsigned char vertices;
 			fread(&vertices, sizeof(unsigned char), 1, m_fp);
 
@@ -189,7 +206,7 @@ bool FEPLYImport::read_file(const char* szfile)
 				el.n[1] = n[1];
 				el.n[2] = n[2];
 			}
-			else if (n[0] == 4)
+			else if (vertices == 4)
 			{
 				el.SetType(FE_FACE_QUAD4);
 				el.n[0] = n[0];
