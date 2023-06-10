@@ -104,6 +104,7 @@ SOFTWARE.*/
 #include <PostLib/ImageSource.h>
 #include <PostLib/DICOMImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
+#include <PostLib/PLYExport.h>
 #include <PostLib/AbaqusExport.h>
 #include <GeomLib/GModel.h>
 #include "DlgExportXPLT.h"
@@ -609,7 +610,8 @@ void CMainWindow::ExportPostGeometry()
 		//		<< "ASCII files (*.*)"
 		//		<< "VRML files (*.wrl)"
 		<< "LSDYNA Keyword (*.k)"
-		<< "STL file (*.stl)";
+		<< "STL file (*.stl)"
+		<< "PLY file (*.ply)";
 	//		<< "BYU files(*.byu)"
 	//		<< "NIKE3D files (*.n)"
 	//		<< "VTK files (*.vtk)"
@@ -709,6 +711,16 @@ void CMainWindow::ExportPostGeometry()
 		FSProject prj;
 		FESTLExport stl(prj);
 		bret = stl.Write(szfilename, doc->GetPostObject());
+	}
+	break;
+	case 3:
+	{
+		Post::PLYExport ply;
+		// we need to get the current colormap
+		Post::CGLModel* gm = doc->GetGLModel();
+		Post::CGLColorMap* cmap = (gm ? gm->GetColorMap() : nullptr);
+		if (cmap && cmap->IsActive()) ply.SetColorMap(cmap->GetColorMap()->ColorMap());
+		bret = ply.Save(fem, szfilename);
 	}
 	break;
 	/*	case 5:
