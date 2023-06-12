@@ -1066,6 +1066,17 @@ void FEBioInputModel::CopyMeshSelections()
 			po->AddFENodeSet(pns);
 		}
 
+		// create the edges
+		for (int j = 0; j < part->EdgeSets(); ++j)
+		{
+			EdgeSet& s = part->GetEdgeSet(j);
+
+			// create the edge
+			FSEdgeSet* ps = instance.BuildFEEdgeSet(s);
+
+			po->AddFEEdgeSet(ps);
+		}
+
 		// create the surfaces
 		for (int j = 0; j < part->Surfaces(); ++j)
 		{
