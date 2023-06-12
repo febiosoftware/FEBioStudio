@@ -52,6 +52,52 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
+#include <QPlainTextEdit>
+#include <QDialogButtonBox>
+
+class CDlgWarnings : public QDialog
+{
+public:
+	CDlgWarnings(QWidget* parent) : QDialog(parent)
+	{
+		setMinimumSize(800, 600);
+		setWindowTitle("Model Warnings");
+
+		m_out = new QPlainTextEdit;
+		m_out->setReadOnly(true);
+		m_out->setFont(QFont("Courier", 11));
+		m_out->setWordWrapMode(QTextOption::NoWrap);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(m_out);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	void SetWarnings(QStringList errs)
+	{
+		QString txt;
+		for (int i = 0; i < errs.size(); ++i)
+		{
+			txt += errs[i];
+			txt += QString("\n");
+		}
+
+		txt += "\n====================================\n";
+		txt += QString("Summary : %1 warnings").arg(errs.size());
+
+		m_out->clear();
+		m_out->setPlainText(txt);
+	}
+
+private:
+	QPlainTextEdit* m_out = nullptr;
+};
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -495,6 +541,14 @@ bool CModelViewer::OnDeleteEvent()
 void CModelViewer::on_deleteButton_clicked()
 {
 	OnDeleteItem();
+}
+
+void CModelViewer::on_warnings_clicked()
+{
+	QStringList warnings = ui->tree->GetAllWarnings();
+	CDlgWarnings dlg(GetMainWindow());
+	dlg.SetWarnings(warnings);
+	dlg.exec();
 }
 
 void CModelViewer::on_props_nameChanged(const QString& txt)

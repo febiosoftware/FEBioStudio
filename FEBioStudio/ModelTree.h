@@ -168,6 +168,8 @@ public:
 
 	bool GetSelection(std::vector<FSObject*>& sel);
 
+	QStringList GetAllWarnings();
+
 protected:
 	void ClearData();
 

@@ -111,6 +111,7 @@ public slots:
 	void on_props_dataChanged(bool b);
 	void on_props_modelChanged();
 	void on_filter_currentIndexChanged(int n);
+	void on_warnings_clicked();
 
 public slots:
 	// slots for model tree context menu actions

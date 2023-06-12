@@ -55,15 +55,35 @@ SOFTWARE.*/
 #include "Logger.h"
 #include "IconProvider.h"
 
+// list of warnings generated
+#define WARNING_NONE				0
+#define WARNING_OBJECT_NOT_MESHED	1
+#define WARNING_BC_NO_SELECTION		2
+#define WARNING_BC_INVALID_REF		3
+#define WARNING_NO_STEPS			4
+#define WARNING_MAT_NOT_ASSIGNED	5	
+#define WARNING_MAT_NO_PROPS		6
+#define WARNING_CONTACT_INCOMPLETE	7
+#define WARNING_JOB_NO_FEB			8
+#define WARNING_LC_NOT_USED			9
+#define WARNING_SEL_NOT_USED		10
+#define WARNING_IMAGE_NO_LOAD		11
+
+// base class for object validators
+// - define warning IDs (see list above)
+// - override the IsValid and GetErrorString functions
+// - override the GetWarningID function
 class CObjectValidator
 {
 public:
-	CObjectValidator(){}
+	CObjectValidator() {}
 	virtual ~CObjectValidator(){}
 
 	virtual QString GetErrorString() const = 0;
 
 	virtual bool IsValid() = 0;
+
+	virtual unsigned int GetWarningID() const = 0;
 };
 
 class CGObjectValidator : public CObjectValidator
@@ -71,13 +91,18 @@ class CGObjectValidator : public CObjectValidator
 public:
 	CGObjectValidator(GObject* po) : m_po(po){}
 
-	QString GetErrorString() const { return "Object is not meshed"; }
+	QString GetErrorString() const { 
+		QString name = QString::fromStdString(m_po->GetName());
+		return QString("\"%1\" is not meshed").arg(name);
+	}
 
 	bool IsValid()
 	{
 		if ((m_po == 0) || (m_po->GetFEMesh() == 0)) return false;
 		return true;
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_OBJECT_NOT_MESHED; };
 
 private:
 	GObject* m_po;
@@ -90,9 +115,9 @@ public:
 
 	QString GetErrorString() const 
 	{ 
-		if      (m_err == 1) return "No selection assigned"; 
-		else if (m_err == 2) return "Contains invalid references";
-		else if (m_err == 3) return "no degree of freedom selected";
+		QString name = QString::fromStdString(m_pbc->GetName());
+		if      (m_err == 1) return QString("No selection assigned to bc \"%1\"").arg(name);
+		else if (m_err == 2) return QString("Bc \"%1\" contains invalid references").arg(name);
 		return "No problems";
 	}
 
@@ -104,18 +129,15 @@ public:
 		if ((m_pbc->GetMeshItemType() != 0) && 
 			((item==0) || (item->size() == 0))) { m_err = 1; return false; }
 		else if (item && (item->IsValid() == false)) { m_err = 2; return false; }
-
-		FSFixedDOF* fix = dynamic_cast<FSFixedDOF*>(m_pbc);
-		if (fix)
-		{
-			if (fix->GetBC() == 0)
-			{
-				m_err = 3;
-				return false;
-			}
-		}
 		return true;
 	}
+
+	unsigned int GetWarningID() const override { 
+		if (m_err == 1) return WARNING_BC_NO_SELECTION;
+		if (m_err == 2) return WARNING_BC_INVALID_REF;
+		return WARNING_NONE;
+	};
+
 
 private:
 	FSDomainComponent* m_pbc;
@@ -136,6 +158,8 @@ public:
 		return (nsteps > 0);
 	}
 
+	unsigned int GetWarningID() const override { return WARNING_NO_STEPS; };
+
 private:
 	FSModel*	m_fem;
 };
@@ -147,11 +171,18 @@ public:
 
 	QString GetErrorString() const 
 	{ 
+		QString name = QString::fromStdString(m_mat->GetName());
 		if (m_err == 0) return "";
-		if (m_err == 1) return "Material not assigned yet"; 
-		if (m_err == 2) return "No material properties";
+		if (m_err == 1) return QString("Material \"%1\" not assigned yet").arg(name); 
+		if (m_err == 2) return QString("Material \"%1\" has no properties").arg(name);
 		return "unknown error";
 	}
+
+	unsigned int GetWarningID() const override {
+		if (m_err == 1) return WARNING_MAT_NOT_ASSIGNED;
+		if (m_err == 2) return WARNING_MAT_NO_PROPS;
+		return WARNING_NONE;
+	};
 
 	bool IsValid()
 	{
@@ -194,7 +225,10 @@ class CContactValidator : public CObjectValidator
 public:
 	CContactValidator(FSPairedInterface* pci) : m_pci(pci) {}
 
-	QString GetErrorString() const { return "primary/secondary not specified"; }
+	QString GetErrorString() const { 
+		QString name = QString::fromStdString(m_pci->GetName());
+		return QString("primary/secondary not specified for \"%1\"").arg(name);
+	}
 
 	bool IsValid()
 	{
@@ -206,29 +240,10 @@ public:
 		return true;
 	}
 
+	unsigned int GetWarningID() const override { return WARNING_CONTACT_INCOMPLETE; };
+
 private:
 	FSPairedInterface*	m_pci;
-};
-
-class CRigidInterfaceValidator : public CObjectValidator
-{
-public:
-	CRigidInterfaceValidator(FSRigidInterface* ri) : m_ri(ri) {}
-
-	QString GetErrorString() const 
-	{ 
-		if (m_ri->GetRigidBody() == nullptr) return "No rigid body assigned"; 
-		else if (m_ri->GetItemList() == nullptr) return "No selection assigned";
-		else return "";
-	}
-
-	bool IsValid() 
-	{ 
-		return ((m_ri->GetRigidBody() != nullptr) && (m_ri->GetItemList() != nullptr)); 
-	}
-
-private:
-	FSRigidInterface*	m_ri;
 };
 
 class CJobValidator : public CObjectValidator
@@ -244,10 +259,13 @@ public:
 		QFileInfo fi(QString::fromStdString(febFile));
 		if (fi.exists() == false)
 		{
-			return QString("feb file does not exist.");
+			QString name = QString::fromStdString(m_job->GetName());
+			return QString("Job \"%1\" : feb file does not exist.").arg(name);
 		}
 		else return "";
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_JOB_NO_FEB; };
 
 	bool IsValid()
 	{
@@ -270,8 +288,11 @@ public:
 	QString GetErrorString() const override
 	{
 		if (m_plc && m_plc->GetReferenceCount() > 0) return "";
-		return "Load controller is not used.";
+		QString name = QString::fromStdString(m_plc->GetName());
+		return QString("Load controller \"%1\" is not used.").arg(name);
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_LC_NOT_USED; };
 
 	bool IsValid() override
 	{
@@ -290,8 +311,11 @@ public:
 	QString GetErrorString() const override
 	{
 		if (m_pl && m_pl->GetReferenceCount() > 0) return "";
-		return "Named selection is not used.";
+		QString name = QString::fromStdString(m_pl->GetName());
+		return QString("Named selection \"%1\" is not used.").arg(name);
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_SEL_NOT_USED; };
 
 	bool IsValid() override
 	{
@@ -313,6 +337,8 @@ public:
 			return "Failed to load image data.";
 		return "";
 	}
+
+	unsigned int GetWarningID() const override { return WARNING_IMAGE_NO_LOAD; };
 
 	bool IsValid() override
 	{
@@ -755,6 +781,25 @@ void CModelTree::ClearData()
 		if (m_data[i].val  ) delete m_data[i].val;
 	}
 	m_data.clear();
+}
+
+QStringList CModelTree::GetAllWarnings()
+{
+	QStringList errs;
+	for (int i = 0; i < m_data.size(); ++i)
+	{
+		CObjectValidator* val = m_data[i].val;
+		if (val)
+		{
+			if (val->IsValid() == false)
+			{
+				uint id = val->GetWarningID();
+				QString msg = QString("W%1 : %2").arg(id, 3, 10, QChar('0')).arg(val->GetErrorString());
+				errs.push_back(msg);
+			}
+		}
+	}
+	return errs;
 }
 
 void CModelTree::UpdateItem(QTreeWidgetItem* item)
@@ -1670,7 +1715,7 @@ void CModelTree::UpdateContact(QTreeWidgetItem* t1, FSModel& fem, FSStep* pstep)
 				if (pi)
 				{
 					QString name = QString("%1 [%2]").arg(QString::fromStdString(pi->GetName())).arg(pi->GetTypeString());
-					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), new CRigidInterfaceValidator(pi), flags);
+					t2 = AddTreeItem(t1, name, MT_CONTACT, 0, pi, new CRigidInterfaceSettings(fem, pi), nullptr, flags);
 					if (pi->IsActive() == false) setInactive(t2);
 				}
 			}
@@ -1904,7 +1949,7 @@ void CModelTree::AddMaterial(QTreeWidgetItem* item, const QString& name, GMateri
 	if (topLevel)
 	{
 		t2 = AddTreeItem(item, name, MT_MATERIAL, 0, gmat, new CMaterialProps(fem, gmat->GetMaterialProperties()), new CMaterialValidator(&fem, gmat));
-		t2->setIcon(0, createIcon(gmat->Diffuse()));
+		UpdateItem(t2);
 	}
 	else
 		t2 = AddTreeItem(item, name, 0, 0, pmat, new CMaterialProps(fem, pmat));
