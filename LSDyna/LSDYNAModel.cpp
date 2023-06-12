@@ -98,6 +98,9 @@ int LSDYNAModel::FindShellDomain(int pid)
 
 bool LSDYNAModel::BuildModel(FSModel& fem)
 {
+	// add the parameters
+	if (BuildParameters(fem) == false) return false;
+
 	// build the mesh and object
 	if (BuildFEMesh(fem) == false) return false;
 
@@ -540,6 +543,17 @@ bool LSDYNAModel::BuildLoadCurves(FSModel& fem)
 		}
 
 		fem.AddLoadCurve(lc);
+	}
+
+	return true;
+}
+
+bool LSDYNAModel::BuildParameters(FSModel& fem)
+{
+	for (PARAMETER& p : m_param)
+	{
+		// TODO: we have to duplicate the param name, but the param name is never deallocated!
+		fem.AddDoubleParam(p.m_val, strdup(p.m_name.c_str()));
 	}
 
 	return true;

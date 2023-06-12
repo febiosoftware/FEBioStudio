@@ -223,6 +223,14 @@ public:
 		std::vector< std::pair<float, float> >	m_pt;
 	};
 
+	class PARAMETER
+	{
+	public:
+		PARAMETER(const std::string& name, double v) : m_name(name), m_val(v) {}
+		std::string	m_name;
+		double		m_val;
+	};
+
 public:
 	LSDYNAModel();
 
@@ -246,6 +254,8 @@ public:
 
 	void addLoadCurve(const LOAD_CURVE& lc) { m_lc.push_back(lc); }
 
+	void addParameter(const std::string& name, double v) { m_param.emplace_back(PARAMETER(name, v)); }
+
 public:
 	bool BuildModel(FSModel& fem);
 
@@ -266,6 +276,7 @@ protected:
 	bool BuildFEMesh(FSModel& fem);
 	bool BuildMaterials(FSModel& fem);
 	bool BuildLoadCurves(FSModel& fem);
+	bool BuildParameters(FSModel& fem);
 
 public:
 	vector<ELEMENT_SOLID>		m_solid;
@@ -276,6 +287,7 @@ public:
 	list<MATERIAL*>       		m_Mat;
 	list<SET_SEGMENT_TITLE>	m_set;
 	vector<LOAD_CURVE>	m_lc;
+	vector<PARAMETER>	m_param;
 	GMeshObject*	m_po; 
 	vector<int>		m_iFace;
 	vector<int*>	m_pFace;

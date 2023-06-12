@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "LSDynaFile.h"
 #include <MeshIO/FileReader.h>
+#include <assert.h>
 
 //-----------------------------------------------------------------------------
 LSDynaFile::CARD::CARD(int field)
@@ -83,6 +84,21 @@ bool LSDynaFile::CARD::nextf(float& d, int nwidth)
 		m_ch += nwidth;
 		if ((*m_ch == 0) || (m_ch - m_szline >= m_l)) m_ch = 0;
 	}
+
+	return true;
+}
+
+
+bool LSDynaFile::CARD::nexts(char* sz, int maxLength)
+{
+	assert(m_bfree == false);
+	if (m_ch == 0) return false;
+
+	int nwidth = (m_nfield > maxLength ? maxLength : m_nfield);
+	strncpy(sz, m_ch, nwidth);
+	sz[nwidth] = 0;
+	m_ch += m_nfield;
+	if ((*m_ch == 0) || (m_ch - m_szline >= m_l)) m_ch = 0;
 
 	return true;
 }

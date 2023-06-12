@@ -39,6 +39,7 @@ public:
 		bool nexti(int& n, int nwidth = -1);		// return the next integer parameter
 		bool nextd(double& d, int nwidth = -1);		// return the next double parameter
 		bool nextf(float& d, int nwidth = -1);		// return the next float parameter
+		bool nexts(char* s, int maxLength);
 
 		const char* szvalue() { return m_szline; }
 

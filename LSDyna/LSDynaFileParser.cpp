@@ -58,6 +58,15 @@ bool LSDynaFileParser::ParseFile()
 				m_ls.NextCard(card);
 				m_ls.NextCard(card);
 			}
+			else if (card == "*PARAMETER_EXPRESSION")
+			{
+				// NOTE: This must be processed before *PARAMETER
+				if (Read_Parameter_Expression() == false) return Error("error while reading PARAMETER_EXPRESSION section.");
+			}
+			else if (card == "*PARAMETER")
+			{
+				if (Read_Parameter() == false) return Error("error while reading PARAMETER section.");
+			}
 			else if (card == "*DEFINE_CURVE_TITLE")
 			{
 				if (Read_Define_Curve_Title() == false) return Error("error while reading DEFINE_CURVE_TITLE section.");
@@ -652,4 +661,36 @@ bool LSDynaFileParser::Read_Include()
 	if (b == false) Error(lsparse.GetErrorString());
 
 	return b;
+}
+
+bool LSDynaFileParser::Read_Parameter()
+{
+	LSDynaFile::CARD card;
+	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+	while (card.IsKeyword() == false)
+	{
+		char ch[12] = { 0 };
+		card.nexts(ch, 12);
+		double f = 0.0;
+		card.nextd(f);
+
+		m_dyn.addParameter(ch+1, f);
+
+		if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+	};
+
+	return true;
+}
+
+bool LSDynaFileParser::Read_Parameter_Expression()
+{
+	LSDynaFile::CARD card;
+	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+	while (card.IsKeyword() == false)
+	{
+		// TODO: process card!
+		if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+	};
+
+	return true;
 }
