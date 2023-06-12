@@ -53,6 +53,7 @@ SOFTWARE.*/
 #include "SSHThread.h"
 #include "SSHHandler.h"
 #include "Logger.h"
+#include "IconProvider.h"
 
 class CObjectValidator
 {
@@ -702,7 +703,7 @@ void CModelTree::contextMenuEvent(QContextMenuEvent* ev)
 	}
 }
 
-QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype, int ncount, FSObject* po, CPropertyList* props, CObjectValidator* val, int flags)
+QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype, int ncount, FSObject* po, CPropertyList* props, CObjectValidator* val, int flags, const char* szicon)
 {
 	QTreeWidgetItem* t2 = (parent ? new QTreeWidgetItem(parent) : new QTreeWidgetItem(this));
 
@@ -728,14 +729,19 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 				s.erase(s.begin() + 37, s.end());
 				s.append("...");
 			}
-			t2->setIcon(0, QIcon(":/icons/info.png"));
+			if (szicon) t2->setIcon(0, CIconProvider::GetIcon(szicon, "info"));
+			else t2->setIcon(0, QIcon(":/icons/info.png"));
 			t2->setToolTip(0, QString::fromStdString(s));
+		}
+		else if (szicon)
+		{
+			t2->setIcon(0, CIconProvider::GetIcon(szicon));
 		}
 	}
 
 	t2->setData(0, Qt::UserRole, (int)m_data.size());
 
-	CModelTreeItem it = { po, props, val, flags, ntype };
+	CModelTreeItem it = { po, props, val, flags, ntype, szicon };
 	m_data.push_back(it);
 
 	return t2;
@@ -798,7 +804,8 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 			s.erase(s.begin() + 37, s.end());
 			s.append("...");
 		}
-		item->setIcon(0, QIcon(":/icons/info.png"));
+		if (m_data[n].szicon) item->setIcon(0, CIconProvider::GetIcon(m_data[n].szicon, "info"));
+		else item->setIcon(0, QIcon(":/icons/info.png"));
 		item->setToolTip(0, QString::fromStdString(s));
 	}
 	else
@@ -807,6 +814,11 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 		{
 			GMaterial* m = dynamic_cast<GMaterial*>(po);
 			item->setIcon(0, createIcon(m->Diffuse()));
+		}
+		else if (m_data[n].szicon)
+		{
+			item->setIcon(0, CIconProvider::GetIcon(m_data[n].szicon));
+			item->setToolTip(0, QString());
 		}
 		else
 		{
@@ -1385,7 +1397,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GPartList* pg = model.PartList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_PART_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectPart");
 	}
 
 	int gsurfs = model.FaceLists();
@@ -1393,7 +1405,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GFaceList* pg = model.FaceList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FACE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectSurface");
 	}
 
 	int gedges = model.EdgeLists();
@@ -1401,7 +1413,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GEdgeList* pg = model.EdgeList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_EDGE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectCurves");
 	}
 
 	int gnodes = model.NodeLists();
@@ -1409,7 +1421,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 	{
 		GNodeList* pg = model.NodeList(j);
 		int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, n, pg, 0, new CGroupValidator(pg));
+		AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_NODE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selectNodes");
 	}
 
 	// add the mesh groups
@@ -1425,7 +1437,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSNodeSet* pg = po->GetFENodeSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FENODE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FENODE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selNode");
 			}
 		}
 	}
@@ -1442,7 +1454,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSSurface* pg = po->GetFESurface(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEFACE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEFACE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selFace");
 			}
 		}
 	}
@@ -1459,7 +1471,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSEdgeSet* pg = po->GetFEEdgeSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEEDGE_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEEDGE_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selEdge");
 			}
 		}
 	}
@@ -1476,7 +1488,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSElemSet* pg = po->GetFEElemSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEELEM_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEELEM_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selElem");
 			}
 		}
 	}
@@ -1493,7 +1505,7 @@ void CModelTree::UpdateGroups(QTreeWidgetItem* t1, FSModel& fem)
 			{
 				FSPartSet* pg = po->GetFEPartSet(j);
 				int n = pg->GetReferenceCount(); if (n < 2) n = 0;
-				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEPART_GROUP, n, pg, 0, new CGroupValidator(pg));
+				AddTreeItem(t1, QString::fromStdString(pg->GetName()), MT_FEPART_GROUP, n, pg, 0, new CGroupValidator(pg), 0, "selElem");
 			}
 		}
 	}
