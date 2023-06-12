@@ -61,6 +61,32 @@ bool LSDynaFile::CARD::nextd(double& d, int nwidth)
 	return true;
 }
 
+bool LSDynaFile::CARD::nextf(float& d, int nwidth)
+{
+	d = 0.f;
+	if (m_ch == 0) return false;
+
+	if (nwidth == -1) nwidth = m_nfield;
+
+	if (m_bfree)
+	{
+		char* ch = strchr(m_ch, ',');
+		if (ch) *ch = 0;
+		d = (float)atof(m_ch);
+		if (ch) m_ch = ch + 1; else m_ch = 0;
+	}
+	else
+	{
+		char sz[256] = { 0 };
+		strncpy(sz, m_ch, nwidth);
+		d = (float) atof(sz);
+		m_ch += nwidth;
+		if ((*m_ch == 0) || (m_ch - m_szline >= m_l)) m_ch = 0;
+	}
+
+	return true;
+}
+
 bool LSDynaFile::CARD::nexti(int& n, int nwidth)
 {
 	n = 0;

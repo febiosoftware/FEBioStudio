@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <vector>
 #include <list>
-#include <string.h>
+#include <string>
 
 //using namespace std;
 
@@ -206,6 +206,23 @@ public:
 		char			m_szname[256];
 	};
 
+	class LOAD_CURVE
+	{
+	public:
+		LOAD_CURVE() {}
+
+	public:
+		int		m_lcid = 0;
+		int		m_sidr = 0;
+		float	m_sfa = 1.f;
+		float	m_sfo = 1.f;
+		float	m_offa = 0.f;
+		float	m_offo = 0.f;
+		int		m_dattyp = 0;
+		std::string	m_name;
+		std::vector< std::pair<float, float> >	m_pt;
+	};
+
 public:
 	LSDYNAModel();
 
@@ -227,6 +244,8 @@ public:
 
 	void addSetSegmentTitle(const SET_SEGMENT_TITLE& s) { m_set.push_back(s); }
 
+	void addLoadCurve(const LOAD_CURVE& lc) { m_lc.push_back(lc); }
+
 public:
 	bool BuildModel(FSModel& fem);
 
@@ -246,6 +265,7 @@ public:
 protected:
 	bool BuildFEMesh(FSModel& fem);
 	bool BuildMaterials(FSModel& fem);
+	bool BuildLoadCurves(FSModel& fem);
 
 public:
 	vector<ELEMENT_SOLID>		m_solid;
@@ -255,6 +275,7 @@ public:
 	vector<PART>				m_part;
 	list<MATERIAL*>       		m_Mat;
 	list<SET_SEGMENT_TITLE>	m_set;
+	vector<LOAD_CURVE>	m_lc;
 	GMeshObject*	m_po; 
 	vector<int>		m_iFace;
 	vector<int*>	m_pFace;

@@ -26,12 +26,17 @@ SOFTWARE.*/
 #include "LSDynaFileParser.h"
 #include <sstream>
 
+void LSDynaFileParser::ClearError()
+{
+	m_err.clear();
+}
+
 bool LSDynaFileParser::Error(const std::string& err)
 {
 	int line = m_ls.CurrentLineNumber();
 	std::stringstream ss;
 	ss << err << " (line " << line << ")";
-	m_err = ss.str();
+	m_err += ss.str() + "\n";
 	return false;
 }
 
@@ -47,7 +52,17 @@ bool LSDynaFileParser::ParseFile()
 		// process card
 		if (card.IsKeyword())
 		{
-			if (card == "*ELEMENT_SOLID")
+			if (card == "*KEYWORD") { m_ls.NextCard(card); }
+			else if (card == "*TITLE")
+			{
+				m_ls.NextCard(card);
+				m_ls.NextCard(card);
+			}
+			else if (card == "*DEFINE_CURVE_TITLE")
+			{
+				if (Read_Define_Curve_Title() == false) return Error("error while reading DEFINE_CURVE_TITLE section.");
+			}
+			else if (card == "*ELEMENT_SOLID")
 			{
 				if (card.contains("(ten nodes format)"))
 				{
@@ -107,6 +122,7 @@ bool LSDynaFileParser::ParseFile()
 			else
 			{
 				// unrecognized keyword. let's skip
+				Error(std::string("Unrecognized keyword ") + std::string(card.m_szline));
 				if (m_ls.NextCard(card) == false)
 				{
 					// oh oh, looks like we ran out of file
@@ -564,6 +580,41 @@ bool LSDynaFileParser::Read_Set_Segment_Title()
 	}
 
 	m_dyn.addSetSegmentTitle(s);
+
+	return true;
+}
+
+bool LSDynaFileParser::Read_Define_Curve_Title()
+{
+	LSDynaFile::CARD card;
+	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+
+	LSDYNAModel::LOAD_CURVE lc;
+	lc.m_name = card.m_szline;
+
+	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+	card.nexti(lc.m_lcid);
+	card.nexti(lc.m_sidr);
+	card.nextf(lc.m_sfa);
+	card.nextf(lc.m_sfo);
+	card.nextf(lc.m_offa);
+	card.nextf(lc.m_offo);
+	card.nexti(lc.m_dattyp);
+
+	do
+	{
+		if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+		if (card.IsKeyword() == false)
+		{
+			float a, o;
+			card.nextf(a, 20);
+			card.nextf(o, 20);
+			lc.m_pt.push_back(std::pair<float, float>(a, o));
+		}
+
+	} while (card.IsKeyword() == false);
+
+	m_dyn.addLoadCurve(lc);
 
 	return true;
 }

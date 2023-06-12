@@ -52,6 +52,7 @@ bool FELSDYNAimport::Load(const char* szfile)
 	if (lsparser.ParseFile() == false) {
 		return errf(lsparser.GetErrorString());
 	}
+	else if (lsparser.GetErrorString()) errf(lsparser.GetErrorString());
 
 	// build the model
 	FSModel& fem = m_prj.GetFSModel();

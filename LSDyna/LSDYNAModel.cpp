@@ -104,6 +104,9 @@ bool LSDYNAModel::BuildModel(FSModel& fem)
 	// build and assign materials
 	if (BuildMaterials(fem) == false) return false;
 
+	// build load curves
+	if (BuildLoadCurves(fem) == false) return false;
+
 	// all good
 	return true;
 }
@@ -509,6 +512,34 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 				}
 			}
 		}
+	}
+
+	return true;
+}
+
+bool LSDYNAModel::BuildLoadCurves(FSModel& fem)
+{
+	for (int i = 0; i < m_lc.size(); ++i)
+	{
+		LOAD_CURVE& lsc = m_lc[i];
+
+		float sa = lsc.m_sfa;
+		float oa = lsc.m_offa;
+		float so = lsc.m_sfo;
+		float oo = lsc.m_offo;
+
+		LoadCurve lc;
+		lc.SetName(lsc.m_name.c_str());
+		for (int j = 0; j < lsc.m_pt.size(); ++j)
+		{
+			float a = lsc.m_pt[j].first;
+			float o = lsc.m_pt[j].second;
+			double x = sa * (a + oa);
+			double y = so * (o + oo);
+			lc.Add(x, y);
+		}
+
+		fem.AddLoadCurve(lc);
 	}
 
 	return true;

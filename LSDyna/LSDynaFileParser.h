@@ -37,6 +37,8 @@ public:
 
 	const char* GetErrorString() const { return m_err.c_str(); }
 
+	void ClearError();
+
 private:
 	bool Error(const std::string& err);
 
@@ -61,6 +63,7 @@ protected:
 	bool Read_Mat_Other();
 	bool Read_Set_Segment_Title();
 	bool Read_Include();
+	bool Read_Define_Curve_Title();
 
 private:
 	LSDynaFile& m_ls;
