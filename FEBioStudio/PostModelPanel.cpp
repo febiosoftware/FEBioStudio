@@ -63,6 +63,7 @@ SOFTWARE.*/
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLProbe.h>
+#include <PostGL/GLMusclePath.h>
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
@@ -856,6 +857,7 @@ void CPostModelPanel::BuildModelTree()
 				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
 				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
 				else if (dynamic_cast<Post::CGLPointPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
+				else if (dynamic_cast<Post::GLMusclePath       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
 			}
 		}
 

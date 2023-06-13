@@ -179,5 +179,6 @@
         <file>icons/replaceAll.png</file>
         <file>icons/replaceAll_neg.png</file>
         <file>icons/light.png</file>
+        <file>icons/musclepath.png</file>
 	</qresource>
 </RCC>

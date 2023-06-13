@@ -626,7 +626,7 @@ public:
 
 		QAction* actionAddProbe = addAction("Probe", "actionAddProbe", "probe");
 		QAction* actionAddRuler = addAction("Ruler", "actionAddRuler", "ruler");
-		QAction* actionMusclePath = addAction("Muscle Path ...", "actionMusclePath");
+		QAction* actionMusclePath = addAction("Muscle Path ...", "actionMusclePath", "musclepath");
 		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
