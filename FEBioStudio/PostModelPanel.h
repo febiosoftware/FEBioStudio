@@ -75,6 +75,7 @@ private slots:
 	void OnExportImage();
 	void OnExportMCSurface();
 	void OnExportProbeData();
+	void OnExportMusclePathData();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 
