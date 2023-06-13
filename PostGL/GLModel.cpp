@@ -1749,7 +1749,18 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	for (int i = 0; i < faceList.size(); ++i)
 	{
 		FSFace& f = pm->Face(faceList[i]);
-		if (f.IsVisible())
+
+		// NOTE: we don't want to draw outline of eroded elements.
+		//       What I should do is flag eroded elements and faces as hidden
+		//       so we don't need to do this elaborate check.
+		bool faceVisible = f.IsVisible();
+		if (faceVisible)
+		{
+			int eid = f.m_elem[0].eid;
+			if (eid >= 0) faceVisible = (pm->Element(eid).IsEroded() == false);
+		}
+		
+		if (faceVisible)
 		{
 			int n = f.Edges();
 			for (int j = 0; j < n; ++j)
@@ -1956,8 +1967,12 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 			FSFace& face = dom.Face(i);
 			if (face.IsVisible())
 			{
-				// okay, we got one, so let's render it
-				m_render.RenderFaceOutline(face, pm);
+				// don't render lines on eroded elements
+				if ((face.m_elem[0].eid >= 0) && (pm->Element(face.m_elem[0].eid).IsEroded() == false))
+				{
+					// okay, we got one, so let's render it
+					m_render.RenderFaceOutline(face, pm);
+				}
 			}
 		}
 	}
