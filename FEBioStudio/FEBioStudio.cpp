@@ -120,7 +120,7 @@ public:
 		QString t2 = QString("version %1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);
 		painter.drawText(rt, Qt::AlignRight, t2);
 
-		QString t3 = QString("Weiss Lab, University of Utah\nAteshian Lab, Columbia University\n\nCopyright (c) 2022, All rights reserved");
+		QString t3 = QString("Weiss Lab, University of Utah\nAteshian Lab, Columbia University\n\nCopyright (c) 2023, All rights reserved");
 		painter.drawText(rt, Qt::AlignLeft | Qt::AlignBottom, t3);
 
 		setPixmap(pixmap);
