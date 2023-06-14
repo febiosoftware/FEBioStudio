@@ -119,7 +119,7 @@ GLMusclePath::GLMusclePath()
 
 	AddIntParam(m_node0, "point0", "start point");
 	AddIntParam(m_node1, "point1", "end point");
-	AddChoiceParam(m_method, "method", "Shortest path method")->SetEnumNames("Straight line\0Spring\0");
+	AddChoiceParam(m_method, "method", "Shortest path method")->SetEnumNames("Straight line\0Wrapping path\0");
 	AddBoolParam(m_persist, "persist");
 	AddIntParam(m_ndiv, "divisions", "Subdivisions");
 	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(1, 100);
@@ -128,6 +128,8 @@ GLMusclePath::GLMusclePath()
 	AddDoubleParam(m_normalTol, "normal_tol", "Normal tolerance");
 	AddDoubleParam(5.0, "size", "Path radius");
 	AddColorParam(GLColor(255, 0, 0), "color");
+	AddColorParam(GLColor(164, 0, 164), "color0", "start point color");
+	AddColorParam(GLColor(164, 164, 0), "color1", "end point color");
 	AddChoiceParam(0, "render_mode", "Render mode")->SetEnumNames("detailed\0path-only\0");
 
 	std::stringstream ss;
@@ -162,6 +164,8 @@ void GLMusclePath::Render(CGLContext& rc)
 
 	double R = GetFloatValue(PATH_RADIUS);
 	GLColor c = GetColorValue(COLOR);
+	GLColor col0 = GetColorValue(COLOR0);
+	GLColor col1 = GetColorValue(COLOR1);
 
 	PathData* path = m_path[nstate];
 	if (path == nullptr)
@@ -196,10 +200,10 @@ void GLMusclePath::Render(CGLContext& rc)
 		glx::drawSmoothPath(points, R);
 
 		// draw the end points
-		glColor3ub(164, 128, 164);
+		glx::glcolor(col0);
 		glx::drawSphere(r0, 1.5 * R);
 
-		glColor3ub(164, 164, 128);
+		glx::glcolor(col1);
 		glx::drawSphere(r1, 1.5 * R);
 
 		return;
@@ -221,10 +225,10 @@ void GLMusclePath::Render(CGLContext& rc)
 		glx::drawSmoothPath(points, R);
 
 		// draw the end points
-		glColor3ub(255, 0, 255);
+		glx::glcolor(col0);
 		glx::drawSphere(r0, 1.5 * R);
 
-		glColor3ub(255, 255, 0);
+		glx::glcolor(col1);
 		glx::drawSphere(r1, 1.5 * R);
 
 		if (renderMode == 0)
@@ -252,10 +256,36 @@ void GLMusclePath::Update()
 	Update(GetModel()->CurrentTimeIndex(), 0.f, false);
 }
 
+// helper function for finding the material ID from a surface node
+int GetMaterialFromNode(FSMesh& mesh, int node)
+{
+	int matId = -1;
+	int NF = mesh.Faces();
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = mesh.Face(i);
+		if (face.HasNode(node))
+		{
+			if (face.m_elem[0].eid >= 0)
+			{
+				FSElement& el = mesh.Element(face.m_elem[0].eid);
+				matId = el.m_MatID;
+				break;
+			}
+		}
+	}
+	return matId;
+}
+
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
+
+	// make sure we have valid start and end points
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+	if ((n0 < 0) || (n1 < 0)) return;
 
 	if (breset)
 	{
@@ -265,33 +295,11 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 		ClearPaths();
 
 		// find the materials of start and end point
-		m_part[0] = m_part[1] = -1;
-		int n0 = GetIntValue(START_POINT) - 1;
-		int n1 = GetIntValue(END_POINT) - 1;
+		// (we use this to decide which point is the departure point)
 		FSMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
-		int NF = mesh.Faces();
-		for (int i = 0; i < NF; ++i)
-		{
-			FSFace& face = mesh.Face(i);
-			if (face.HasNode(n0))
-			{
-				if (face.m_elem[0].eid >= 0)
-				{
-					FSElement& el = mesh.Element(face.m_elem[0].eid);
-					m_part[0] = el.m_MatID;
-				}
-			}
-			else if (face.HasNode(n1))
-			{
-				if (face.m_elem[0].eid >= 0)
-				{
-					FSElement& el = mesh.Element(face.m_elem[0].eid);
-					m_part[1] = el.m_MatID;
-				}
-			}
-
-			if ((m_part[0] != -1) && (m_part[1] != -1)) break;
-		}
+		m_part[0] = GetMaterialFromNode(mesh, n0);
+		m_part[1] = GetMaterialFromNode(mesh, n1);
+		assert((m_part[0] >= 0) && (m_part[1] >= 0));
 
 		// allocate new path data
 		m_path.assign(fem.GetStates(), nullptr);
@@ -328,8 +336,8 @@ void GLMusclePath::UpdatePath(int ntime)
 	bool b = false;
 	switch (method)
 	{
-	case 0: b = UpdateStraighLine   (path, ntime); break;
-	case 1: b = UpdateSpringPath    (path, ntime); break;
+	case 0: b = UpdateStraightPath(path, ntime); break;
+	case 1: b = UpdateWrappingPath(path, ntime); break;
 	}
 	if (b == false) { delete path; path = nullptr; }
 
@@ -340,7 +348,7 @@ void GLMusclePath::UpdatePath(int ntime)
 	UpdatePathData(ntime);
 }
 
-bool GLMusclePath::UpdateStraighLine(GLMusclePath::PathData* path, int ntime)
+bool GLMusclePath::UpdateStraightPath(GLMusclePath::PathData* path, int ntime)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
@@ -493,7 +501,19 @@ public:
 
 	size_t Faces() const { return m_Face.size(); }
 
-	FACE& Face(int n) { return m_Face[n]; }
+	FACE& Face(size_t n) { return m_Face[n]; }
+
+	size_t FindFace(const vec3d r)
+	{
+		for (size_t i = 0; i < m_Face.size(); ++i)
+		{
+			FACE& f = m_Face[i];
+			if ((f.r[0] - r).SqrLength() < 1e-12) return i;
+			if ((f.r[1] - r).SqrLength() < 1e-12) return i;
+			if ((f.r[2] - r).SqrLength() < 1e-12) return i;
+		}
+		return -1;
+	}
 
 public:
 	vector<FACE>	m_Face;
@@ -507,6 +527,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 	for (int i = 0; i < NF; ++i)
 	{
 		// figure out the case for this face
+		// (i.e. decide if the plane (rc, t) intersects this triangle
 		FaceMesh::FACE& face = mesh.Face(i);
 		int ne = 3; // edges!
 		double s[FSFace::MAX_NODES] = { 0 };
@@ -553,6 +574,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 			double D = dr.SqrLength();
 			if (D != 0.0)
 			{
+				// project point c onto the line {er[0], er[1]}
 				vec3d c = (a + b) * 0.5;
 				double l = (c * dr - er[0] * dr) / D;
 
@@ -568,7 +590,8 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 					vec3d fn = face.fn;
 
 					// make sure the normal is not on the wrong side
-					if (fn * na > normalTolerance)
+					double dot = fn * na;
+					if (dot > normalTolerance)
 					{
 						imin = i;
 						Dmin = D2;
@@ -675,6 +698,8 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double to
 
 			vec3d ri = (a + b) * 0.5;
 
+			// find the closest point to ri on the ring, defined by the intersection
+			// of the mesh with the plane (ri; t)
 			if (ClosestPointOnRing(mesh, ri, t, a, b, pt[i-1].n, pi, normalTolerance))
 			{
 				if ((ri - pi.p) * pi.n > 0.0)
@@ -706,7 +731,7 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double to
 	return done;
 }
 
-bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
+bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
@@ -722,12 +747,15 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 
 	vec3d t = r1 - r0; t.Normalize();
 
+	// let's tag the nodes and faces that are within the search radius
+	// (if search radius == 0, all faces will be tagged)
 	double R = GetFloatValue(SEARCH_RADIUS);
 	double R2 = R * R;
 	int NF = mesh.Faces();
 	int faces = 0;
 	if (R > 0)
 	{
+		// first identify the nodes that are within the search radius
 		for (int i = 0; i < mesh.Nodes(); ++i)
 		{
 			FSNode& node = mesh.Node(i);
@@ -744,6 +772,7 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 			}
 		}
 
+		// now tag faces that contain tagged nodes
 		faces = 0;
 		for (int i = 0; i < NF; ++i)
 		{
@@ -802,11 +831,22 @@ bool GLMusclePath::UpdateSpringPath(PathData* path, int ntime)
 	if ((ntime == 0) || (persist == false))
 	{
 		// create initial (straight) path
-		RINGPOINT rp(r0);
-		pt.push_back(rp);
+		RINGPOINT startPoint(r0);
+
+		// we need to find the face (and normal) of the initial point
+		int nface = faceMesh.FindFace(r0); assert(nface >= 0);
+		if (nface >= 0)
+		{
+			startPoint.nface = nface;
+			startPoint.n = faceMesh.Face(nface).fn;
+		}
+		pt.push_back(startPoint);
+
+		// do the rest of the points
 		const int STEPS = GetIntValue(SUBDIVISIONS);
 		for (int i = 1; i < STEPS; ++i, ++n)
 		{
+			RINGPOINT rp;
 			double w = (double)i / (double)STEPS;
 			rp.p = r0 + (r1 - r0) * w;
 			pt.push_back(rp);

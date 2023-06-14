@@ -32,7 +32,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, RENDER_MODE };
+	enum { START_POINT, END_POINT, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
 	class PathData;
 
@@ -54,8 +54,8 @@ protected:
 	void UpdatePathData(int ntime);
 	void ClearPaths();
 
-	bool UpdateStraighLine   (PathData* path, int ntime);
-	bool UpdateSpringPath    (PathData* path, int ntime);
+	bool UpdateStraightPath(PathData* path, int ntime);
+	bool UpdateWrappingPath(PathData* path, int ntime);
 
 private:
 	std::vector<PathData*>	m_path;	// points defining the path
