@@ -277,6 +277,41 @@ int GetMaterialFromNode(FSMesh& mesh, int node)
 	return matId;
 }
 
+void GLMusclePath::Reset()
+{
+	CGLModel* glm = GetModel();
+	Post::FEPostModel& fem = *glm->GetFSModel();
+
+	m_closestFace = -1;
+
+	// clear current path data
+	ClearPaths();
+
+	// allocate new path data
+	m_path.assign(fem.GetStates(), nullptr);
+
+	int n0 = GetIntValue(START_POINT) - 1;
+	int n1 = GetIntValue(END_POINT) - 1;
+	if ((n0 < 0) || (n1 < 0)) return;
+
+	// find the materials of start and end point
+	// (we use this to decide which point is the departure point)
+	FSMesh& mesh = *fem.GetState(0)->GetFEMesh();
+	m_part[0] = GetMaterialFromNode(mesh, n0);
+	m_part[1] = GetMaterialFromNode(mesh, n1);
+	assert((m_part[0] >= 0) && (m_part[1] >= 0));
+}
+
+void GLMusclePath::SwapEndPoints()
+{
+	int n0 = GetIntValue(START_POINT);
+	int n1 = GetIntValue(END_POINT);
+	SetIntValue(START_POINT, n1);
+	SetIntValue(END_POINT, n0);
+	Reset();
+	Update();
+}
+
 void GLMusclePath::Update(int ntime, float dt, bool breset)
 {
 	CGLModel* glm = GetModel();
@@ -287,23 +322,7 @@ void GLMusclePath::Update(int ntime, float dt, bool breset)
 	int n1 = GetIntValue(END_POINT) - 1;
 	if ((n0 < 0) || (n1 < 0)) return;
 
-	if (breset)
-	{
-		m_closestFace = -1;
-
-		// clear current path data
-		ClearPaths();
-
-		// find the materials of start and end point
-		// (we use this to decide which point is the departure point)
-		FSMesh& mesh = *fem.GetState(ntime)->GetFEMesh();
-		m_part[0] = GetMaterialFromNode(mesh, n0);
-		m_part[1] = GetMaterialFromNode(mesh, n1);
-		assert((m_part[0] >= 0) && (m_part[1] >= 0));
-
-		// allocate new path data
-		m_path.assign(fem.GetStates(), nullptr);
-	}
+	if (breset) Reset();
 
 	if ((ntime < 0) || (ntime >= m_path.size())) return;
 

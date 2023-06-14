@@ -1272,6 +1272,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		{
 			menu.addSeparator();
 			menu.addAction("Export data ...", this, SLOT(OnExportMusclePathData()));
+			menu.addAction("Swap end points", this, SLOT(OnSwapMusclePathEndPoints()));
 		}
 
 		menu.exec(ev->globalPos());
@@ -1600,4 +1601,15 @@ void CPostModelPanel::OnExportMusclePathData()
 	}
 
 	QMessageBox::information(GetMainWindow(), "Export", "Data export successful!");
+}
+
+void CPostModelPanel::OnSwapMusclePathEndPoints()
+{
+	Post::GLMusclePath* po = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
+	if (po == nullptr) return;
+
+	po->SwapEndPoints();
+	Update(true);
+	selectObject(po);
+	GetMainWindow()->RedrawGL();
 }

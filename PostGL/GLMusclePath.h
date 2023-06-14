@@ -49,10 +49,13 @@ public:
 
 	double DataValue(int field, int step);
 
+	void SwapEndPoints();
+
 protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
 	void ClearPaths();
+	void Reset();
 
 	bool UpdateStraightPath(PathData* path, int ntime);
 	bool UpdateWrappingPath(PathData* path, int ntime);
