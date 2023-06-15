@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <vector>
 #include <list>
 #include <string>
+#include <cstring>
 
 //using namespace std;
 
