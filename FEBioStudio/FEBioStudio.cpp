@@ -65,6 +65,8 @@ public:
 				fileName = openEvent->file();
 			}
 
+			fileName.replace("file://", "");
+
 			m_pWnd->OpenFile(fileName);
 		}
 
@@ -179,9 +181,16 @@ int main(int argc, char* argv[])
 	// create the main window
 	CMainWindow wnd(breset);
 
+	app.SetMainWindow(&wnd);
+
 	wnd.show();
 
+#ifdef __APPLE__
+	splash.close();
+#else
 	splash.finish(&wnd);
+#endif
+
 
 	if ((argc == 2) && (breset == false))
 	{
