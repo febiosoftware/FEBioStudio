@@ -197,6 +197,7 @@ public:
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
+	QMenu* menuEditPost;
 	QMenu* menuEditTxt;
     QMenu* menuEditXml;
 	QMenu* menuPhysics;
@@ -761,8 +762,9 @@ public:
 		QMenuBar* menuBar = m_wnd->menuBar();
 		menuFile   = new QMenu("File", menuBar);
 		menuEdit   = new QMenu("Edit", menuBar);
+		menuEditPost = new QMenu("Edit", menuBar);
 		menuEditTxt = new QMenu("Edit", menuBar);
-        menuEditXml = new QMenu("Edit", menuBar);
+		menuEditXml = new QMenu("Edit", menuBar);
 		menuPhysics= new QMenu("Physics", menuBar);
 		menuFEBio  = new QMenu("FEBio", menuBar);
 		menuPost   = new QMenu("Post", menuBar);
@@ -862,7 +864,6 @@ public:
 		menuEdit->addAction(moreSelection->menuAction());
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionFind);
-		menuEdit->addAction(actionSelectRange);
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionTransform);
 		menuEdit->addAction(actionCollapseTransform);
@@ -873,6 +874,24 @@ public:
 		menuEdit->addAction(actionPasteObject);
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionPurge);
+
+		// Edit Post menu
+		menuBar->addAction(menuEditPost->menuAction());
+		menuEditPost->addAction(actionUndo);
+		menuEditPost->addAction(actionRedo);
+		menuEditPost->addSeparator();
+		menuEditPost->addAction(actionInvertSelection);
+		menuEditPost->addAction(actionClearSelection);
+		menuEditPost->addAction(actionNameSelection);
+		menuEditPost->addSeparator();
+		menuEditPost->addAction(actionHideSelection);
+		menuEditPost->addAction(actionHideUnselected);
+		menuEditPost->addAction(actionUnhideAll);
+		menuEditPost->addAction(actionToggleVisible);
+		menuEditPost->addAction(moreSelection->menuAction());
+		menuEditPost->addSeparator();
+		menuEditPost->addAction(actionFind);
+		menuEditPost->addAction(actionSelectRange);
 
 		// Edit (txt) menu
 		menuBar->addAction(menuEditTxt->menuAction());
@@ -1492,17 +1511,18 @@ public:
 
 			// no open documents
 			menuEdit->menuAction()->setVisible(false);
+			menuEditPost->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(false);
-            menuEditXml->menuAction()->setVisible(false);
+			menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
 
 			buildToolBar->hide();
 			postToolBar->hide();
-            imageToolBar->hide();
+			imageToolBar->hide();
 			pFontToolBar->hide();
-            xmlToolbar->hide();
+			xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1535,6 +1555,7 @@ public:
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
+			menuEditPost->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(false);
             menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(true);
@@ -1561,7 +1582,8 @@ public:
 			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
 
 			// post mode
-			menuEdit->menuAction()->setVisible(true);
+			menuEdit->menuAction()->setVisible(false);
+			menuEditPost->menuAction()->setVisible(true);
 			menuEditTxt->menuAction()->setVisible(false);
             menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
@@ -1591,17 +1613,18 @@ public:
 			stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
 
 			menuEdit->menuAction()->setVisible(false);
+			menuEditPost->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(true);
-            menuEditXml->menuAction()->setVisible(false);
+			menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
 
 			buildToolBar->hide();
 			postToolBar->hide();
-            imageToolBar->hide();
+			imageToolBar->hide();
 			pFontToolBar->hide();
-            xmlToolbar->hide();
+			xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1627,6 +1650,7 @@ public:
                     stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
 
                     menuEdit->menuAction()->setVisible(false);
+                    menuEditPost->menuAction()->setVisible(false);
                     menuEditTxt->menuAction()->setVisible(true);
                     menuEditXml->menuAction()->setVisible(false);
                     menuPhysics->menuAction()->setVisible(false);
@@ -1658,6 +1682,7 @@ public:
                     stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
 
                     menuEdit->menuAction()->setVisible(false);
+                    menuEditPost->menuAction()->setVisible(false);
                     menuEditTxt->menuAction()->setVisible(false);
                     menuEditXml->menuAction()->setVisible(true);
                     menuPhysics->menuAction()->setVisible(false);
