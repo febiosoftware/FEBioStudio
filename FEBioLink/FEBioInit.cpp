@@ -63,3 +63,9 @@ void FEBio::SetActiveProject(FSProject* prj)
 {
 	fbsUpdater.SetActiveProject(prj);
 }
+
+bool FEBio::ConfigureFEBio(const char* szfilename)
+{
+	FEBioConfig config;
+	return febio::Configure(szfilename, config);
+}

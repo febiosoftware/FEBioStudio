@@ -102,6 +102,7 @@ SOFTWARE.*/
 #include <GLWLib/convert.h>
 #include <FSCore/FSLogger.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioInit.h>
 
 extern GLColor col[];
 
@@ -277,6 +278,15 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// Instantiate Logger singleton
 	CLogger::Instantiate(this);
+
+	// configure FEBio library
+	if (ui->m_loadFEBioConfigFile)
+	{
+		std::string fileName = ui->m_febioConfigFileName.toStdString();
+		FSDir dir(fileName);
+		std::string filepath = dir.expandMacros();
+		FEBio::ConfigureFEBio(filepath.c_str());
+	}
 
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
@@ -1860,6 +1870,12 @@ int CMainWindow::GetDefaultUnitSystem() const
 	return ui->m_defaultUnits;
 }
 
+bool CMainWindow::GetLoadConfigFlag() { return ui->m_loadFEBioConfigFile; }
+QString CMainWindow::GetConfigFileName() { return ui->m_febioConfigFileName; }
+
+void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_loadFEBioConfigFile = b; }
+void CMainWindow::SetConfigFileName(QString s) { ui->m_febioConfigFileName = s; }
+
 void CMainWindow::writeSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
@@ -1889,6 +1905,8 @@ void CMainWindow::writeSettings()
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
+	settings.setValue("loadFEBioConfigFile", ui->m_loadFEBioConfigFile);
+	settings.setValue("febioConfigFileName", ui->m_febioConfigFileName);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -2014,6 +2032,9 @@ void CMainWindow::readSettings()
 
 	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 	GLWidget::set_default_font(font);
+
+	ui->m_loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
+	ui->m_febioConfigFileName = settings.value("febioConfigFileName", ui->m_febioConfigFileName).toString();
 
 	if (vs.m_defaultFGColorOption != 0)
 	{

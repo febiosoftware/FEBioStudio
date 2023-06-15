@@ -338,6 +338,9 @@ public:
 	int			m_theme;	// 0 = default, 1 = dark
 	bool		m_clearUndoOnSave;
 
+	bool		m_loadFEBioConfigFile;
+	QString		m_febioConfigFileName;
+
 	bool	m_isAnimating;
 
 	QList<::CGraphWindow*>	graphList;
@@ -369,6 +372,9 @@ public:
 		measureTool = nullptr;
 		planeCutTool = nullptr;
 		fiberViz = nullptr;
+
+		m_loadFEBioConfigFile = true;
+		m_febioConfigFileName = "$(FEBioStudioDir)/febio.xml";
 	}
 
 	void setupUi(::CMainWindow* wnd)
