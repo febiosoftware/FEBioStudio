@@ -180,6 +180,7 @@ public:
 	void HighlightEdge(int x, int y);
 
 	void SelectObjects   (int x, int y);
+	void SelectPostObject(int x, int y);
 	bool SelectPivot(int x, int y);
 
 	// select items of an FE mesh

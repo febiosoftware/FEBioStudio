@@ -114,8 +114,6 @@ CModelDocument::CModelDocument(CMainWindow* wnd) : CGLDocument(wnd)
 {
 	SetIcon(":/icons/FEBioStudio.png");
 
-	m_psel = nullptr;
-
 	m_context = new CModelContext(this);
 
 	m_scene = new CGLModelScene(this);
@@ -760,8 +758,6 @@ void CModelDocument::UpdateSelection(bool report)
 }
 
 //-----------------------------------------------------------------------------
-FESelection* CModelDocument::GetCurrentSelection() { return m_psel; }
-
 void CModelDocument::HideCurrentSelection()
 {
 	if (GetItemMode() == ITEM_MESH)

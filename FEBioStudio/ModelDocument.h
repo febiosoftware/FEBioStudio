@@ -87,7 +87,6 @@ public:
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
 
 public: // selection
-	FESelection* GetCurrentSelection() override;
 	void UpdateSelection(bool report = true) override;
 
 	void HideCurrentSelection();
@@ -129,9 +128,6 @@ private:
 
 	// the job list
 	CFEBioJobList	m_JobList;
-
-	// current selection
-	FESelection*	m_psel;
 
 	CModelContext*	m_context;
 };

@@ -608,6 +608,8 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	// set default unit system (0 == no unit system)
 	m_units = 0;
 
+	m_psel = nullptr;
+
 	m_scene = nullptr;
 }
 
@@ -629,6 +631,14 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
+}
+
+FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }
+
+void CGLDocument::SetCurrentSelection(FESelection* psel)
+{
+	if (m_psel) delete m_psel;
+	m_psel = psel;
 }
 
 void CGLDocument::UpdateSelection(bool breport)

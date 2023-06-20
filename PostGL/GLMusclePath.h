@@ -34,6 +34,7 @@ class GLMusclePath : public CGLPlot
 {
 	enum { START_POINT, END_POINT, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
+public:
 	class PathData;
 
 public:
@@ -51,6 +52,11 @@ public:
 
 	void SwapEndPoints();
 
+public:
+	bool Intersects(Ray& ray, Intersection& q);
+	FESelection* SelectComponent(int index);
+	void ClearSelection();
+
 protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
@@ -58,7 +64,7 @@ protected:
 	void Reset();
 
 	bool UpdateStraightPath(PathData* path, int ntime);
-	bool UpdateWrappingPath(PathData* path, int ntime);
+	bool UpdateWrappingPath(PathData* path, int ntime, bool reset = true);
 
 private:
 	std::vector<PathData*>	m_path;	// points defining the path
@@ -80,6 +86,9 @@ private:
 	bool	m_persist;
 	double	m_searchRadius;
 	double	m_normalTol;
+
+	// the currently selected point
+	int	m_selectedPoint;
 };
 
 }

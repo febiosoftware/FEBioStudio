@@ -33,6 +33,12 @@ SOFTWARE.*/
 
 class GLLegendBar;
 
+// used for intersection testing
+// defined in MeshLib/Intersect.h
+struct Ray;
+struct Intersection;
+class FESelection;
+
 namespace Post {
 
 class CGLModel;
@@ -56,6 +62,13 @@ public:
 	int GetRenderOrder() const;
 
 	virtual void Reload();
+
+public:
+	virtual bool Intersects(Ray& ray, Intersection& q);
+
+	virtual FESelection* SelectComponent(int index);
+
+	virtual void ClearSelection();
 
 private:
 	int	m_renderOrder;

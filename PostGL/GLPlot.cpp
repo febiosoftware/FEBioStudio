@@ -43,6 +43,12 @@ void CGLPlot::Reload()
 
 }
 
+bool CGLPlot::Intersects(Ray& ray, Intersection& q) { return false; }
+
+FESelection* CGLPlot::SelectComponent(int index) { return nullptr; }
+
+void CGLPlot::ClearSelection() {}
+
 void CGLPlot::UpdateTexture() 
 {
 

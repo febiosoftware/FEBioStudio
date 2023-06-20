@@ -619,8 +619,8 @@ BOX CPostDocument::GetSelectionBox()
 
 	return box;
 }
-
-FESelection* CPostDocument::GetCurrentSelection()
+/*
+void CPostDocument::UpdateSelection(bool breport)
 {
 	if (m_sel) { delete m_sel; m_sel = nullptr; }
 
@@ -634,9 +634,8 @@ FESelection* CPostDocument::GetCurrentSelection()
 	case ITEM_FACE: m_sel = new FEFaceSelection(nullptr, pm); break;
 	case ITEM_ELEM: m_sel = new FEElementSelection(nullptr, pm); break;
 	}
-
-	return m_sel;
 }
+*/
 
 std::string CPostDocument::GetFileName()
 {

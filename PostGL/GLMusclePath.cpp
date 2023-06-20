@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <PostLib/constants.h>
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/triangulate.h>
+#include <MeshTools/FESelection.h>
 #include <GLLib/glx.h>
 #include <sstream>
 using namespace Post;
@@ -114,6 +115,8 @@ GLMusclePath::GLMusclePath()
 	m_persist = false;
 	m_searchRadius = 0.0;
 	m_normalTol = -0.1;
+
+	m_selectedPoint = -1;
 
 	m_part[0] = m_part[1] = -1;
 
@@ -236,18 +239,116 @@ void GLMusclePath::Render(CGLContext& rc)
 			for (int i = 0; i < N; ++i)
 			{
 				int ntag = path->m_points[i].tag;
+				float sphereRadius = 1.5f * R;
 				switch (ntag)
 				{
 				case 0: glColor3ub(0, 128, 0); break;
 				case 1: glColor3ub(0, 255, 0); break;
-				case 2: glColor3ub(255, 255, 255); break;
+				case 2: glColor3ub(255, 255, 0); break;
 				default:
 					glColor3ub(0, 0, 0);
 				}
 				vec3d r0 = path->m_points[i].r;
-				glx::drawSphere(r0, 1.5 * R);
+
+				if (i == m_selectedPoint)
+				{
+					sphereRadius = 2.0 * R;
+					glColor3ub(255, 255, 255);
+				}
+
+				glx::drawSphere(r0, sphereRadius);
 			}
 		}
+	}
+}
+
+bool GLMusclePath::Intersects(Ray& ray, Intersection& q)
+{
+	int ntime = GetModel()->CurrentTimeIndex();
+	if (ntime != 0) return false;
+
+	// see if any of the spheres are close to the ray
+	PathData& p = *m_path[ntime];
+
+	double R = GetFloatValue(PATH_RADIUS);
+
+	for (int i = 0; i < p.Points(); ++i)
+	{
+		PathData::Point& pt = p.m_points[i];
+
+		double l = ((pt.r - ray.origin) * ray.direction) / ray.direction.norm2();
+		if (l > 0)
+		{
+			vec3d r = ray.origin + ray.direction * l;
+			double R2 = (pt.r - r).norm2();
+			if (R2 < R * R)
+			{
+				q.point = r;
+				q.m_index = i;
+				return true;
+			}
+		}
+	}
+
+	return false;
+}
+
+class GLMusclePointSelection : public FESelection
+{
+public:
+	GLMusclePointSelection(GLMusclePath::PathData* path, int pointIndex, double R) : FESelection(SELECT_OBJECTS), m_path(path), m_index(pointIndex), m_R(R) 
+	{
+		Update();
+	}
+
+public:
+	void Invert() {}
+	void Translate(vec3d dr) 
+	{
+		vec3d& r = m_path->m_points[m_index].r;
+		r += dr;
+		Update();
+	}
+
+	void Rotate(quatd q, vec3d c) {}
+	void Scale(double s, vec3d dr, vec3d c) {}
+
+	quatd GetOrientation() { return quatd(0, vec3d(0, 0, 1)); }
+	
+	FEItemListBuilder* CreateItemList() { return nullptr; }
+
+protected:
+	void Update()
+	{
+		vec3d r = m_path->m_points[m_index].r;
+		m_box = BOX(r, r); m_box.Inflate(m_R);
+	}
+
+	int Count() { return 1; }
+
+private:
+	GLMusclePath::PathData* m_path = nullptr;
+	int		m_index = -1;
+	double	m_R;
+};
+
+FESelection* GLMusclePath::SelectComponent(int index)
+{
+	int ntime = GetModel()->CurrentTimeIndex();
+	if (ntime != 0) return nullptr;
+
+	// see if any of the spheres are close to the ray
+	PathData& p = *m_path[ntime];
+	m_selectedPoint = index;
+	return new GLMusclePointSelection(&p, index, GetFloatValue(PATH_RADIUS));
+}
+
+void GLMusclePath::ClearSelection()
+{
+	if (m_selectedPoint >= 0)
+	{ 
+		m_selectedPoint = -1;
+		UpdateWrappingPath(m_path[0], 0, false);
 	}
 }
 
@@ -750,7 +851,7 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double to
 	return done;
 }
 
-bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime)
+bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 {
 	CGLModel* glm = GetModel();
 	Post::FEPostModel& fem = *glm->GetFSModel();
@@ -846,37 +947,54 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime)
 	// the path
 	vector<RINGPOINT> pt;
 
-	bool persist = GetBoolValue(PERSIST_PATH);
-	if ((ntime == 0) || (persist == false))
+	if (reset)
 	{
-		// create initial (straight) path
-		RINGPOINT startPoint(r0);
-
-		// we need to find the face (and normal) of the initial point
-		int nface = faceMesh.FindFace(r0); assert(nface >= 0);
-		if (nface >= 0)
+		bool persist = GetBoolValue(PERSIST_PATH);
+		if ((ntime == 0) || (persist == false))
 		{
-			startPoint.nface = nface;
-			startPoint.n = faceMesh.Face(nface).fn;
-		}
-		pt.push_back(startPoint);
+			// create initial (straight) path
+			RINGPOINT startPoint(r0);
 
-		// do the rest of the points
-		const int STEPS = GetIntValue(SUBDIVISIONS);
-		for (int i = 1; i < STEPS; ++i, ++n)
-		{
-			RINGPOINT rp;
-			double w = (double)i / (double)STEPS;
-			rp.p = r0 + (r1 - r0) * w;
-			pt.push_back(rp);
+			// we need to find the face (and normal) of the initial point
+			int nface = faceMesh.FindFace(r0); assert(nface >= 0);
+			if (nface >= 0)
+			{
+				startPoint.nface = nface;
+				startPoint.n = faceMesh.Face(nface).fn;
+			}
+			pt.push_back(startPoint);
+
+			// do the rest of the points
+			const int STEPS = GetIntValue(SUBDIVISIONS);
+			for (int i = 1; i < STEPS; ++i, ++n)
+			{
+				RINGPOINT rp;
+				double w = (double)i / (double)STEPS;
+				rp.p = r0 + (r1 - r0) * w;
+				pt.push_back(rp);
+			}
+			RINGPOINT endPoint(r1);
+			pt.push_back(endPoint);
 		}
-		RINGPOINT endPoint(r1);
-		pt.push_back(endPoint);
+		else
+		{
+			// get the previous path
+			PathData* prevPath = m_path[ntime - 1];
+			if (prevPath == nullptr) return false;
+
+			// we'll use this path as an initial guess
+			vector<vec3d> prevPt = prevPath->GetPoints();
+			for (int i = 0; i < prevPt.size(); ++i) pt.push_back(RINGPOINT(prevPt[i]));
+
+			// we do update the first and last point
+			pt[0].p = r0;
+			pt[pt.size() - 1].p = r1;
+		}
 	}
 	else
 	{
-		// get the previous path
-		PathData* prevPath = m_path[ntime - 1];
+		// get the current path
+		PathData* prevPath = m_path[ntime];
 		if (prevPath == nullptr) return false;
 
 		// we'll use this path as an initial guess
@@ -884,7 +1002,14 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime)
 		for (int i = 0; i < prevPt.size(); ++i) pt.push_back(RINGPOINT(prevPt[i]));
 
 		// we do update the first and last point
+		// we need to find the face (and normal) of the initial point
+		int nface = faceMesh.FindFace(r0); assert(nface >= 0);
 		pt[0].p = r0;
+		if (nface >= 0)
+		{
+			pt[0].nface = nface;
+			pt[0].n = faceMesh.Face(nface).fn;
+		}
 		pt[pt.size() - 1].p = r1;
 	}
 

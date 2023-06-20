@@ -310,6 +310,10 @@ public:
 
 	static std::string GetTypeString(FSObject* po);
 
+	// return the current selection
+	FESelection* GetCurrentSelection();
+	void SetCurrentSelection(FESelection* psel);
+
 	virtual void UpdateSelection(bool breport = true);
 
 	virtual GObject* GetActiveObject();
@@ -317,8 +321,6 @@ public:
 	CGView* GetView();
 
 	CGLScene* GetScene();
-
-	virtual FESelection* GetCurrentSelection() { return nullptr; }
 
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
@@ -356,6 +358,9 @@ protected:
 
 	std::string		m_info;
 	int				m_units;
+
+	// current selection
+	FESelection* m_psel;
 
 	FSObjectList<Post::CImageModel>	m_img;
 

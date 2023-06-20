@@ -685,33 +685,38 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			quatd q = cam.GetOrientation();
 
 			q.Inverse().RotateVector(dr);
-			FESelection* ps = mdoc->GetCurrentSelection();
-			if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
-
-			if (m_pivot == PIVOT_X) dr.y = dr.z = 0;
-			if (m_pivot == PIVOT_Y) dr.x = dr.z = 0;
-			if (m_pivot == PIVOT_Z) dr.x = dr.y = 0;
-			if (m_pivot == PIVOT_XY) dr.z = 0;
-			if (m_pivot == PIVOT_YZ) dr.x = 0;
-			if (m_pivot == PIVOT_XZ) dr.y = 0;
-
-			if (m_coord == COORD_LOCAL) dr = ps->GetOrientation()*dr;
-
-			m_rg += dr;
-			if (bctrl)
+			FESelection* ps = nullptr;
+			if (mdoc) ps = mdoc->GetCurrentSelection();
+			else if (postDoc) ps = postDoc->GetCurrentSelection();
+			if (ps)
 			{
-				double g = GetGridScale();
-				vec3d rt;
-				rt.x = g*((int)(m_rg.x / g));
-				rt.y = g*((int)(m_rg.y / g));
-				rt.z = g*((int)(m_rg.z / g));
-				dr = rt - m_rt;
+				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
+
+				if (m_pivot == PIVOT_X) dr.y = dr.z = 0;
+				if (m_pivot == PIVOT_Y) dr.x = dr.z = 0;
+				if (m_pivot == PIVOT_Z) dr.x = dr.y = 0;
+				if (m_pivot == PIVOT_XY) dr.z = 0;
+				if (m_pivot == PIVOT_YZ) dr.x = 0;
+				if (m_pivot == PIVOT_XZ) dr.y = 0;
+
+				if (m_coord == COORD_LOCAL) dr = ps->GetOrientation() * dr;
+
+				m_rg += dr;
+				if (bctrl)
+				{
+					double g = GetGridScale();
+					vec3d rt;
+					rt.x = g * ((int)(m_rg.x / g));
+					rt.y = g * ((int)(m_rg.y / g));
+					rt.z = g * ((int)(m_rg.z / g));
+					dr = rt - m_rt;
+				}
+
+				m_rt += dr;
+				ps->Translate(dr);
+
+				m_pWnd->OnSelectionTransformed();
 			}
-
-			m_rt += dr;
-			ps->Translate(dr);
-
-			m_pWnd->OnSelectionTransformed();
 		}
 	}
 	else if (ntrans == TRANSFORM_ROTATE)
@@ -1476,10 +1481,10 @@ void CGLView::paintGL()
 		{
 			Render3DCursor(Get3DCursor(), 10.0);
 		}
-
-		// render the pivot
-		RenderPivot();
 	}
+
+	// render the pivot
+	RenderPivot();
 
 	// render the tooltip
 	if (m_btooltip) RenderTooltip(m_xp, m_yp);
@@ -2210,7 +2215,7 @@ void CGLView::RenderImageData()
 //
 void CGLView::RenderPivot(bool bpick)
 {
-	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
 	// get the current selection
@@ -2668,9 +2673,45 @@ bool IntersectObject(GObject* po, const Ray& ray, Intersection& q)
 }
 
 //-----------------------------------------------------------------------------
+void CGLView::SelectPostObject(int x, int y)
+{
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (postDoc == nullptr) return;
+
+	// convert the point to a ray
+	GLViewTransform transform(this);
+	Ray ray = transform.PointToRay(x, y);
+
+	// pass selection to plots
+	postDoc->SetTransformMode(TRANSFORM_NONE);
+	postDoc->SetCurrentSelection(nullptr);
+	Intersection q;
+	Post::CGLModel* glm = postDoc->GetGLModel();
+	int plots = glm->Plots();
+	for (int i = 0; i < plots; ++i)
+	{
+		Post::CGLPlot* plt = glm->Plot(i);
+		if (plt->Intersects(ray, q))
+		{
+			FESelection* sel = plt->SelectComponent(q.m_index);
+			postDoc->SetTransformMode(TRANSFORM_MOVE);
+			postDoc->SetCurrentSelection(sel);
+		}
+		else plt->ClearSelection();
+	}
+}
+
+//-----------------------------------------------------------------------------
 // Select Objects
 void CGLView::SelectObjects(int x, int y)
 {
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (postDoc) 
+	{
+		SelectPostObject(x, y);
+		return;
+	}
+	
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
 
@@ -5198,14 +5239,14 @@ vec3d CGLView::GetPivotPosition()
 	if (m_bpivot) return m_pv;
 	else
 	{
-		CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+		CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 		if (pdoc == nullptr) return vec3d(0,0,0);
 
 		FESelection* ps = pdoc->GetCurrentSelection();
 		vec3d r(0, 0, 0);
 		if (ps && ps->Size())
 		{
-			r = pdoc->GetCurrentSelection()->GetPivot();
+			r = ps->GetPivot();
 			if (fabs(r.x)<1e-7) r.x = 0;
 			if (fabs(r.y)<1e-7) r.y = 0;
 			if (fabs(r.z)<1e-7) r.z = 0;
