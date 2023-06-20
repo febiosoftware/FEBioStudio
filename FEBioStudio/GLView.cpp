@@ -530,7 +530,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		if (mdoc)
 		{
 			FESelection* ps = mdoc->GetCurrentSelection();
-			if (ps && (m_coord == COORD_LOCAL))
+			if (ps && ((m_coord == COORD_LOCAL)|| postDoc))
 			{
 				quatd q = ps->GetOrientation();
 				q.RotateVector(m_ds);
@@ -690,7 +690,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			else if (postDoc) ps = postDoc->GetCurrentSelection();
 			if (ps)
 			{
-				if (m_coord == COORD_LOCAL) ps->GetOrientation().Inverse().RotateVector(dr);
+				if ((m_coord == COORD_LOCAL) || postDoc) ps->GetOrientation().Inverse().RotateVector(dr);
 
 				if (m_pivot == PIVOT_X) dr.y = dr.z = 0;
 				if (m_pivot == PIVOT_Y) dr.x = dr.z = 0;
@@ -699,7 +699,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (m_pivot == PIVOT_YZ) dr.x = 0;
 				if (m_pivot == PIVOT_XZ) dr.y = 0;
 
-				if (m_coord == COORD_LOCAL) dr = ps->GetOrientation() * dr;
+				if ((m_coord == COORD_LOCAL) || postDoc) dr = ps->GetOrientation() * dr;
 
 				m_rg += dr;
 				if (bctrl)
@@ -749,7 +749,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				FESelection* ps = mdoc->GetCurrentSelection();
 				assert(ps);
 
-				if (m_coord == COORD_LOCAL)
+				if ((m_coord == COORD_LOCAL) || postDoc)
 				{
 					quatd qs = ps->GetOrientation();
 					q = qs*q*qs.Inverse();
@@ -1018,7 +1018,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 				if (m_pivot == PIVOT_Y) q = quatd(m_wt, vec3d(0,1,0));
 				if (m_pivot == PIVOT_Z) q = quatd(m_wt, vec3d(0,0,1));
 
-				if (m_coord == COORD_LOCAL)
+				if ((m_coord == COORD_LOCAL) || postDoc)
 				{
 					quatd qs = ps->GetOrientation();
 					q = qs*q*qs.Inverse();
@@ -2242,7 +2242,10 @@ void CGLView::RenderPivot(bool bpick)
 	glTranslatef((float)rp.x, (float)rp.y, (float)rp.z);
 
 	// orient the manipulator
-	if (m_coord == COORD_LOCAL)
+	// (we always use local for post docs)
+	int orient = m_coord;
+	if (dynamic_cast<CPostDocument*>(pdoc)) orient = COORD_LOCAL;
+	if (orient == COORD_LOCAL)
 	{
 		quatd q = ps->GetOrientation();
 		double w = 180.0*q.GetAngle() / PI;
@@ -5266,8 +5269,8 @@ void CGLView::SetPivot(const vec3d& r)
 //-----------------------------------------------------------------------------
 quatd CGLView::GetPivotRotation()
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc && (m_coord == COORD_LOCAL))
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
+	if ((doc && (m_coord == COORD_LOCAL)) || dynamic_cast<CPostDocument*>(GetDocument()))
 	{
 		FESelection* ps = doc->GetCurrentSelection();
 		if (ps) return ps->GetOrientation();

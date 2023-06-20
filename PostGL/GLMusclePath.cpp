@@ -128,6 +128,7 @@ GLMusclePath::GLMusclePath()
 	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(1, 100);
 	AddDoubleParam(m_tol, "tol", "Smoothness tol.");
 	AddDoubleParam(m_searchRadius, "search_radius", "Search radius");
+	AddDoubleParam(0.1, "selection_radius", "Selection radius");
 	AddDoubleParam(m_normalTol, "normal_tol", "Normal tolerance");
 	AddDoubleParam(5.0, "size", "Path radius");
 	AddColorParam(GLColor(255, 0, 0), "color");
@@ -296,24 +297,32 @@ bool GLMusclePath::Intersects(Ray& ray, Intersection& q)
 class GLMusclePointSelection : public FESelection
 {
 public:
-	GLMusclePointSelection(GLMusclePath::PathData* path, int pointIndex, double R) : FESelection(SELECT_OBJECTS), m_path(path), m_index(pointIndex), m_R(R) 
+	GLMusclePointSelection(GLMusclePath::PathData* path, int pointIndex, double R, double softRadius) : FESelection(SELECT_OBJECTS), m_path(path), m_index(pointIndex), m_R(R), m_softRadius(softRadius)
 	{
 		Update();
+		m_L = path->m_data.pathLength;
+		if (m_softRadius <= 0.0) m_softRadius = 1.0;
 	}
 
 public:
 	void Invert() {}
 	void Translate(vec3d dr) 
 	{
-		vec3d& r = m_path->m_points[m_index].r;
-		r += dr;
+		vec3d p = m_path->m_points[m_index].r;
+		for (int i = 1; i < m_path->Points() - 1; ++i)
+		{
+			vec3d& r = m_path->m_points[i].r;
+			double l2 = (p - r).norm2() / (m_L*m_L);
+			double s = exp(-l2 / (m_softRadius* m_softRadius));
+			r += dr * s;
+		}
 		Update();
 	}
 
 	void Rotate(quatd q, vec3d c) {}
 	void Scale(double s, vec3d dr, vec3d c) {}
 
-	quatd GetOrientation() { return quatd(0, vec3d(0, 0, 1)); }
+	quatd GetOrientation() { return m_rot; }
 	
 	FEItemListBuilder* CreateItemList() { return nullptr; }
 
@@ -321,6 +330,12 @@ protected:
 	void Update()
 	{
 		vec3d r = m_path->m_points[m_index].r;
+		vec3d a = m_path->m_points[m_index - 1].r;
+		vec3d b = m_path->m_points[m_index + 1].r;
+		vec3d t = b - a; t.Normalize();
+
+		m_rot = quatd(vec3d(1, 0, 0), t);
+
 		m_box = BOX(r, r); m_box.Inflate(m_R);
 	}
 
@@ -329,7 +344,10 @@ protected:
 private:
 	GLMusclePath::PathData* m_path = nullptr;
 	int		m_index = -1;
+	quatd	m_rot;
 	double	m_R;
+	double	m_L;
+	double	m_softRadius = 1;
 };
 
 FESelection* GLMusclePath::SelectComponent(int index)
@@ -339,8 +357,10 @@ FESelection* GLMusclePath::SelectComponent(int index)
 
 	// see if any of the spheres are close to the ray
 	PathData& p = *m_path[ntime];
+	if ((index == 0) || (index == (p.Points() - 1))) return nullptr;
+
 	m_selectedPoint = index;
-	return new GLMusclePointSelection(&p, index, GetFloatValue(PATH_RADIUS));
+	return new GLMusclePointSelection(&p, index, GetFloatValue(PATH_RADIUS), GetFloatValue(SELECTION_RADIUS));
 }
 
 void GLMusclePath::ClearSelection()
