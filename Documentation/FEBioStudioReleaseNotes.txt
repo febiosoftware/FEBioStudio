@@ -6,61 +6,66 @@
 
 ===========================================================================
 
- R E L E A S E   2.2   6/19/2023
+ R E L E A S E   2.2   6/20/2023
 
 ===========================================================================
 
+New Features:
+* The febio config file is now read (optionally) when febio studio starts. As a consequene, standard plugins distributed by febio studio will be loaded automatically (FEBioHeat, FEBioChem).
+* Added a ply export to the post side.
+* Added some initial support for reading GMesh4 files.
+* Added dialog box that shows all the warnings in the model tree.
+
+Improvements:
 * Separated edit menu for build and post side so that only meaningfull menu options are shown (fixes issue #68)
-* The febio config file is now read (optionally) when fbs starts. As a consequene, standard plugins distributed by febio studio will be loaded automatically (FEBioHeat, FEBioChem, and FEBioWarp).
-* Fixed crash when opening file with FBS from Finder on macOS.
 * Changed 2022 to 2023 in splash and about message.
 * Added context menu option to swap end-points of muscle path.
 * In muscle path plot, added color parameters for customizing colors of end points.
-* Added export data context menu to muscle path plot.
 * Added icon for muscle path plot.
-* Fixed issues with rendering or mesh and edge lines of eroded elements. 
+* Added export data context menu to muscle path plot.
 * Added support for processing additional ls-dyna keywords PARAMETER, DEFINE_CURVE_TITLE, and INCLUDE.
-* Lsdyna reader reports progress again.
 * Modified LSDyna importer so that unrecognized keywords now produce warning.
-* Added dialog box that shows all the warnings in the model tree. Updated some of the warning messages.
-* Added icons to named selections in model tree.
-* Fixed issue with importing edges from feb4 files.
-* Added warning when material properties read from the fs2 cannot be found.
-* Added a ply export to the post side.
-* Fixed ply import for ply files that define additional vertex properties.
-* Fixed issue with unicode symbol in unit definition.
-* Added support for serializing mesh data generators and surface selections.
-* Fixed issue with pick dialog box not displaying for certain mesh selections.
-* Added icon to Graphics View toolbar for toggling light.
+* Added warning when material properties read from the fs2 file cannot be found.
+* Added toolbar button to Graphics View toolbar for toggling light.
 * For RAW image geometry import, internal surfaces are not partitioned anymore.
 * Added some parallelization of some costly mesh processing functions.
-* Fixed issue with reading \r characters in abaqus file.
-* Fixed crash in CGLModelScene::RenderDiscrete when nodes don't have a id.
-* Added some initial support for reading GMesh4 files.
-* Fixed issue with picking selection of mesh data.
 * Added checks that valid 3D image exists in image model.
 * ImageMap normalization now normalizes over max and min values in the map. Ensures that every map goes from 0 to 1
 * ImageMap tool now has option to average intensity over element.
-* Fixed bug in adding log data in Edit Output dialog box.
+* ImageMapTool now uses a curve edit widget to define filter. Also now normalizes based on image min and max intensity values
 * Added support for float and double 3D images. Some UI improvements to RAW image import dialog.
-* Fixed bug in check whether an object's mesh can be deleted.
 * Made all new data fields generated via the Filter tool exportable.
 * Added option to write vtk series file when saving to vtk files.
 * Added support to convert filter to change the data class. (Only support for CLASS_ELEM to CLASS_NODE implemented.)
 * Added filter to state panel that allows users to change the time values of all states.
 * Added additional support for converting formats in Filter tool on Post/Data panel.
 * Added support for extracting components from DATA_COMP element variables.
-* Fixed issue with loading linear solvers from feb files.
 * Parallelized the Warp Image filter.
-* ImageMapTool now uses a curve edit widget to define filter. Also now normalizes based on image min and max intensity values
-* Fixed issue with re-evaluating the colormap after a reload.
+* Added support for serializing mesh data generators and surface selections.
 * Merge pull request #67 from modenaxe/master: fix misspell "contoller"
-* Import Image\Tiff menu works again. 
 * Rigid labels are now also shown on post side.
 * Show rigid body and show rigid joint settings now also work on post side.
 * Added splitter to options dialog box, which allows resizing of panels.
-* Fixed issues with evaluating data on hex20 and hex27 elements.
 * Added option to export only selected elements to VTK.
+* Added icons to named selections in model tree.
+
+Bug Fixes:
+* Fixed crash when opening file with FBS from Finder on macOS.
+* Fixed issues with rendering of mesh and edge lines of eroded elements. 
+* Lsdyna reader reports progress again.
+* Fixed issue with importing edges from feb4 files.
+* Fixed ply import for ply files that define additional vertex properties.
+* Fixed issue with unicode symbol in unit definition.
+* Fixed issue with pick dialog box not displaying for certain mesh selections.
+* Fixed issue with reading \r characters in abaqus file.
+* Fixed crash in CGLModelScene::RenderDiscrete when nodes don't have a id.
+* Fixed issue with picking selection of mesh data.
+* Fixed bug in adding log data in Edit Output dialog box.
+* Fixed bug in check whether an object's mesh can be deleted.
+* Fixed issue with loading linear solvers from feb files.
+* Fixed issue with re-evaluating the colormap after a reload.
+* Fixed issues with evaluating data on hex20 and hex27 elements.
+* Import Image\Tiff menu works again. 
 
 
 ===========================================================================
