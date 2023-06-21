@@ -717,7 +717,8 @@ bool LSDynaFileParser::Read_Include()
 	lsfile.Close();
 
 	// if the parsing failed, make sure to copy the error string
-	if (b == false) Error(lsparse.GetErrorString());
+	if (lsparse.GetErrorString())
+		Error(lsparse.GetErrorString());
 
 	return b;
 }
