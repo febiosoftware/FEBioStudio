@@ -207,6 +207,17 @@ public:
 		char			m_szname[256];
 	};
 
+	class SET_NODE_LIST_TITLE
+	{
+	public:
+		SET_NODE_LIST_TITLE() {}
+
+	public:
+		int				m_nid = -1;
+		vector<int>		m_nodelist;
+		std::string		m_name;
+	};
+
 	class LOAD_CURVE
 	{
 	public:
@@ -253,6 +264,8 @@ public:
 
 	void addSetSegmentTitle(const SET_SEGMENT_TITLE& s) { m_set.push_back(s); }
 
+	void addNodeList(const SET_NODE_LIST_TITLE& nl) { m_nodelist.push_back(nl); }
+
 	void addLoadCurve(const LOAD_CURVE& lc) { m_lc.push_back(lc); }
 
 	void addParameter(const std::string& name, double v) { m_param.emplace_back(PARAMETER(name, v)); }
@@ -286,7 +299,8 @@ public:
 	vector<NODE>				m_node;
 	vector<PART>				m_part;
 	list<MATERIAL*>       		m_Mat;
-	list<SET_SEGMENT_TITLE>	m_set;
+	list<SET_SEGMENT_TITLE>		m_set;
+	list<SET_NODE_LIST_TITLE>	m_nodelist;
 	vector<LOAD_CURVE>	m_lc;
 	vector<PARAMETER>	m_param;
 	GMeshObject*	m_po; 

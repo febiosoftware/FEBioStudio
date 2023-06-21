@@ -63,9 +63,11 @@ protected:
 	bool Read_Mat_Other();
 	bool Read_Set_Segment_Title();
 	bool Read_Include();
+	bool Read_Define_Curve();
 	bool Read_Define_Curve_Title();
 	bool Read_Parameter();
 	bool Read_Parameter_Expression();
+	bool Read_Set_Node_List_Title();
 
 private:
 	LSDynaFile& m_ls;
