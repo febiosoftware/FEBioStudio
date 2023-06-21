@@ -32,7 +32,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, SELECTION_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
+	enum { START_POINT, END_POINT, METHOD, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SMOOTH_FACTOR, SNAP_TOL, SEARCH_RADIUS, SELECTION_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
 public:
 	class PathData;
@@ -57,16 +57,20 @@ public:
 	FESelection* SelectComponent(int index);
 	void ClearSelection();
 
+	PathData* GetPath(int n) { return m_path[n]; }
+
 protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
 	void ClearPaths();
+	void ClearInitPath();
 	void Reset();
 
 	bool UpdateStraightPath(PathData* path, int ntime);
 	bool UpdateWrappingPath(PathData* path, int ntime, bool reset = true);
 
 private:
+	PathData* m_initPath; // used as initial path
 	std::vector<PathData*>	m_path;	// points defining the path
 
 	// information to track motion of origin
@@ -83,9 +87,9 @@ private:
 	int		m_ndiv;
 	int		m_maxIter;
 	double	m_tol;
-	bool	m_persist;
 	double	m_searchRadius;
 	double	m_normalTol;
+	double	m_snaptol;
 
 	// the currently selected point
 	int	m_selectedPoint;

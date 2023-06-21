@@ -94,9 +94,6 @@ public:
 	std::vector<Point>	m_points;		// points defining the path
 
 	Data m_data;
-
-private:
-	PathData(const PathData& path) {}
 };
 
 REGISTER_CLASS(GLMusclePath, CLASS_PLOT, "muscle-path", 0);
@@ -112,9 +109,9 @@ GLMusclePath::GLMusclePath()
 	m_ndiv = 20;
 	m_maxIter = 30;
 	m_tol = 1e-6;
-	m_persist = false;
 	m_searchRadius = 0.0;
 	m_normalTol = -0.1;
+	m_snaptol = 1.5;
 
 	m_selectedPoint = -1;
 
@@ -123,12 +120,13 @@ GLMusclePath::GLMusclePath()
 	AddIntParam(m_node0, "point0", "start point");
 	AddIntParam(m_node1, "point1", "end point");
 	AddChoiceParam(m_method, "method", "Shortest path method")->SetEnumNames("Straight line\0Wrapping path\0");
-	AddBoolParam(m_persist, "persist");
 	AddIntParam(m_ndiv, "divisions", "Subdivisions");
-	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(1, 100);
+	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(0, 100);
 	AddDoubleParam(m_tol, "tol", "Smoothness tol.");
+	AddDoubleParam(0.1, "smooth_factor", "Smoothing factor")->SetFloatRange(0, 1);
+	AddDoubleParam(m_snaptol, "snap_tol", "Snap tolerance");
 	AddDoubleParam(m_searchRadius, "search_radius", "Search radius");
-	AddDoubleParam(0.1, "selection_radius", "Selection radius");
+	AddDoubleParam(0.2, "selection_radius", "Selection radius");
 	AddDoubleParam(m_normalTol, "normal_tol", "Normal tolerance");
 	AddDoubleParam(5.0, "size", "Path radius");
 	AddColorParam(GLColor(255, 0, 0), "color");
@@ -141,11 +139,21 @@ GLMusclePath::GLMusclePath()
 	SetName(ss.str());
 
 	m_closestFace = -1;
+
+	m_initPath = nullptr;
 }
 
 GLMusclePath::~GLMusclePath()
 {
 	ClearPaths();
+	ClearInitPath();
+
+}
+
+void GLMusclePath::ClearInitPath()
+{
+	if (m_initPath) delete m_initPath;
+	m_initPath = nullptr;
 }
 
 void GLMusclePath::ClearPaths()
@@ -297,10 +305,10 @@ bool GLMusclePath::Intersects(Ray& ray, Intersection& q)
 class GLMusclePointSelection : public FESelection
 {
 public:
-	GLMusclePointSelection(GLMusclePath::PathData* path, int pointIndex, double R, double softRadius) : FESelection(SELECT_OBJECTS), m_path(path), m_index(pointIndex), m_R(R), m_softRadius(softRadius)
+	GLMusclePointSelection(GLMusclePath* path, int pointIndex, double R, double softRadius) : FESelection(SELECT_OBJECTS), m_path(path), m_index(pointIndex), m_R(R), m_softRadius(softRadius)
 	{
 		Update();
-		m_L = path->m_data.pathLength;
+		m_L = path->GetPath(0)->m_data.pathLength;
 		if (m_softRadius <= 0.0) m_softRadius = 1.0;
 	}
 
@@ -308,10 +316,11 @@ public:
 	void Invert() {}
 	void Translate(vec3d dr) 
 	{
-		vec3d p = m_path->m_points[m_index].r;
-		for (int i = 1; i < m_path->Points() - 1; ++i)
+		GLMusclePath::PathData* path = m_path->GetPath(0);
+		vec3d p = path->m_points[m_index].r;
+		for (int i = 1; i < path->Points() - 1; ++i)
 		{
-			vec3d& r = m_path->m_points[i].r;
+			vec3d& r = path->m_points[i].r;
 			double l2 = (p - r).norm2() / (m_L*m_L);
 			double s = exp(-l2 / (m_softRadius* m_softRadius));
 			r += dr * s;
@@ -329,9 +338,10 @@ public:
 protected:
 	void Update()
 	{
-		vec3d r = m_path->m_points[m_index].r;
-		vec3d a = m_path->m_points[m_index - 1].r;
-		vec3d b = m_path->m_points[m_index + 1].r;
+		GLMusclePath::PathData* path = m_path->GetPath(0);
+		vec3d r = path->m_points[m_index].r;
+		vec3d a = path->m_points[m_index - 1].r;
+		vec3d b = path->m_points[m_index + 1].r;
 		vec3d t = b - a; t.Normalize();
 
 		m_rot = quatd(vec3d(1, 0, 0), t);
@@ -342,7 +352,7 @@ protected:
 	int Count() { return 1; }
 
 private:
-	GLMusclePath::PathData* m_path = nullptr;
+	GLMusclePath* m_path = nullptr;
 	int		m_index = -1;
 	quatd	m_rot;
 	double	m_R;
@@ -360,7 +370,7 @@ FESelection* GLMusclePath::SelectComponent(int index)
 	if ((index == 0) || (index == (p.Points() - 1))) return nullptr;
 
 	m_selectedPoint = index;
-	return new GLMusclePointSelection(&p, index, GetFloatValue(PATH_RADIUS), GetFloatValue(SELECTION_RADIUS));
+	return new GLMusclePointSelection(this, index, GetFloatValue(PATH_RADIUS), GetFloatValue(SELECTION_RADIUS));
 }
 
 void GLMusclePath::ClearSelection()
@@ -368,7 +378,9 @@ void GLMusclePath::ClearSelection()
 	if (m_selectedPoint >= 0)
 	{ 
 		m_selectedPoint = -1;
-		UpdateWrappingPath(m_path[0], 0, false);
+		ClearInitPath();
+		m_initPath = new PathData(*m_path[0]);
+		UpdateWrappingPath(m_path[0], 0, true);
 	}
 }
 
@@ -568,14 +580,16 @@ bool GLMusclePath::UpdateData(bool bsave)
 		int node0     = GetIntValue(START_POINT     ); if (node0  != m_node0        ) { m_node0        =   node0; reset = true; }
 		int node1     = GetIntValue(END_POINT       ); if (node1  != m_node1        ) { m_node1        =   node1; reset = true; }
 		int method    = GetIntValue(METHOD          ); if (method  != m_method      ) { m_method       =  method; reset = true; }
-		bool persist  = GetBoolValue(PERSIST_PATH   ); if (persist != m_persist     ) { m_persist      = persist; reset = true; }
 		int ndiv      = GetIntValue(SUBDIVISIONS    ); if (ndiv    != m_ndiv        ) { m_ndiv         =    ndiv; reset = true; }
-		int maxIter   = GetIntValue(MAX_SMOOTH_ITERS); if (maxIter != m_maxIter     ) { m_maxIter      = maxIter; reset = true; }
-		double tol    = GetFloatValue(SMOOTH_TOL    ); if (tol     != m_tol         ) { m_tol          =     tol; reset = true; }
-		double radius = GetFloatValue(SEARCH_RADIUS ); if (radius  != m_searchRadius) { m_searchRadius =  radius; reset = true; }
-		double nrmtol = GetFloatValue(NORMAL_TOL    ); if (nrmtol  != m_normalTol   ) { m_normalTol    =  nrmtol; reset = true; }
+		int maxIter   = GetIntValue(MAX_SMOOTH_ITERS); if (maxIter != m_maxIter     ) { m_maxIter      = maxIter; reset = false; }
+		double tol    = GetFloatValue(SMOOTH_TOL    ); if (tol     != m_tol         ) { m_tol          =     tol; reset = false; }
+		double radius = GetFloatValue(SEARCH_RADIUS ); if (radius  != m_searchRadius) { m_searchRadius =  radius; reset = false; }
+		double snaptol= GetFloatValue(SNAP_TOL      ); if (snaptol != m_snaptol     ) { m_snaptol      =  snaptol; reset = true; }
+		double nrmtol = GetFloatValue(NORMAL_TOL    ); if (nrmtol  != m_normalTol   ) { m_normalTol    =  nrmtol; reset = false; }
+
+		if (reset) ClearInitPath();
 		
-		Update(GetModel()->CurrentTimeIndex(), 0.f, reset);
+		Update(GetModel()->CurrentTimeIndex(), 0.f, true);
 	}
 	return false;
 }
@@ -715,7 +729,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 			if (D != 0.0)
 			{
 				// project point c onto the line {er[0], er[1]}
-				vec3d c = (a + b) * 0.5;
+				vec3d c = rc;// (a + b) * 0.5;
 				double l = (c * dr - er[0] * dr) / D;
 
 				vec3d p;
@@ -723,7 +737,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 				else if (l >= 1.0) p = er[1];
 				else p = er[0] + (er[1] - er[0]) * l;
 
-				double D2 = (p - a).SqrLength() + (p - b).SqrLength();
+				double D2 = (p - c).norm2(); //(p - a).SqrLength() + (p - b).SqrLength();
 				if ((imin == -1) || (D2 < Dmin))
 				{
 					// calculate face normal
@@ -731,7 +745,7 @@ bool ClosestPointOnRing(FaceMesh& mesh, const vec3d& rc, const vec3d& t, const v
 
 					// make sure the normal is not on the wrong side
 					double dot = fn * na;
-					if (dot > normalTolerance)
+	//				if (dot > normalTolerance)
 					{
 						imin = i;
 						Dmin = D2;
@@ -808,7 +822,7 @@ void StraightenPath(vector<RINGPOINT>& pt)
 	}
 }
 
-bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double tol, double normalTolerance)
+bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double tol, double normalTolerance, double smoothFactor, double snaptol)
 {
 	// evaluate the initial length
 	int NP = pt.size();
@@ -836,21 +850,23 @@ bool SmoothenPath(FaceMesh& mesh, vector<RINGPOINT>& pt, int maxIters, double to
 			vec3d b = pt[i + 1].p;
 			vec3d t = b - a; t.Normalize();
 
-			vec3d ri = (a + b) * 0.5;
+			double L0 = (b - pi.p).norm() + (pi.p - a).norm();
+
+			vec3d ri = pi.p* smoothFactor + (a + b) * 0.5*(1.0 - smoothFactor);
 
 			// find the closest point to ri on the ring, defined by the intersection
 			// of the mesh with the plane (ri; t)
 			if (ClosestPointOnRing(mesh, ri, t, a, b, pt[i-1].n, pi, normalTolerance))
 			{
-				if ((ri - pi.p) * pi.n > 0.0)
+				double L1 = (b - pi.p).norm() + (pi.p - a).norm();
+
+				if (((ri - pi.p) * pi.n > 0.0) || ( L1 > L0*snaptol))
 				{
 					pi.p = ri;
 					pi.nface = -1;
 				}
 			}
 		}
-
-		StraightenPath(pt);
 
 		// calculate new length
 		double L1 = 0;
@@ -969,8 +985,7 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 
 	if (reset)
 	{
-		bool persist = GetBoolValue(PERSIST_PATH);
-		if ((ntime == 0) || (persist == false))
+		if ((ntime == 0) && (m_initPath == nullptr))
 		{
 			// create initial (straight) path
 			RINGPOINT startPoint(r0);
@@ -995,6 +1010,16 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 			}
 			RINGPOINT endPoint(r1);
 			pt.push_back(endPoint);
+		}
+		else if ((ntime == 0) && m_initPath)
+		{
+			// we'll use this path as an initial guess
+			vector<vec3d> prevPt = m_initPath->GetPoints();
+			for (int i = 0; i < prevPt.size(); ++i) pt.push_back(RINGPOINT(prevPt[i]));
+
+			// we do update the first and last point
+			pt[0].p = r0;
+			pt[pt.size() - 1].p = r1;
 		}
 		else
 		{
@@ -1033,6 +1058,12 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 		pt[pt.size() - 1].p = r1;
 	}
 
+	double smoothFactor = GetFloatValue(SMOOTH_FACTOR);
+	double snaptol = GetFloatValue(SNAP_TOL);
+
+	// we don't use the snap tolerance for the initial time
+	if (ntime == 0) snaptol = 100;
+
 	// process the initial path
 	for (int i = 1; i < pt.size()-1; ++i)
 	{
@@ -1044,11 +1075,15 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 		vec3d b = pt[i + 1].p;
 		vec3d t = b - a; t.Normalize();
 
-		vec3d ri = (a + b) * 0.5;
+		double L0 = (b - pi.p).norm() + (pi.p - a).norm();
+
+		vec3d ri = pi.p * smoothFactor + (a + b) * 0.5 * (1.0 - smoothFactor);
 
 		if (ClosestPointOnRing(faceMesh, ri, t, a, b, pt[i-1].n, pi, normalTol))
 		{
-			if ((ri - pi.p) * pi.n > 0.0)
+			double L1 = (b - pi.p).norm() + (pi.p - a).norm();
+
+			if (((ri - pi.p) * pi.n > 0.0) || (L1 > L0*snaptol))
 			{
 				pi.p = ri;
 				pi.nface = -1;
@@ -1061,7 +1096,9 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 	if (maxIters > 0)
 	{
 		double tol = GetFloatValue(SMOOTH_TOL);
-		SmoothenPath(faceMesh, pt, maxIters, tol, normalTol);
+		SmoothenPath(faceMesh, pt, maxIters, tol, normalTol, smoothFactor, snaptol);
+
+		if (ntime != 0) StraightenPath(pt);
 	}
 
 	// copy the points to the PathData
