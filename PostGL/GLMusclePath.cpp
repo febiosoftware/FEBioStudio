@@ -127,7 +127,7 @@ GLMusclePath::GLMusclePath()
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddColorParam(GLColor(164, 0, 164), "color0", "start point color");
 	AddColorParam(GLColor(164, 164, 0), "color1", "end point color");
-	AddChoiceParam(0, "render_mode", "Render mode")->SetEnumNames("detailed\0path-only\0");
+	AddChoiceParam(0, "render_mode", "Render mode")->SetEnumNames("detailed\0less detailed\0path-only\0");
 
 	std::stringstream ss;
 	ss << "MusclePath" << n++;
@@ -231,36 +231,39 @@ void GLMusclePath::Render(CGLContext& rc)
 		glColor3ub(c.r, c.g, c.b);
 		glx::drawSmoothPath(points, R);
 
-		// draw the end points
-		glx::glcolor(col0);
-		glx::drawSphere(r0, 1.5 * R);
-
-		glx::glcolor(col1);
-		glx::drawSphere(r1, 1.5 * R);
-
-		if (renderMode == 0)
+		if ((renderMode == 0) || (renderMode == 1))
 		{
+			// draw the end points
+			glx::glcolor(col0);
+			glx::drawSphere(r0, 1.5 * R);
+
+			glx::glcolor(col1);
+			glx::drawSphere(r1, 1.5 * R);
+
 			for (int i = 0; i < N; ++i)
 			{
 				int ntag = path->m_points[i].tag;
-				float sphereRadius = 1.5f * R;
-				switch (ntag)
+				if ((ntag == 2) || (renderMode == 0))
 				{
-				case 0: glColor3ub(0, 128, 0); break;
-				case 1: glColor3ub(0, 255, 0); break;
-				case 2: glColor3ub(255, 255, 0); break;
-				default:
-					glColor3ub(0, 0, 0);
-				}
-				vec3d r0 = path->m_points[i].r;
+					float sphereRadius = 1.5f * R;
+					switch (ntag)
+					{
+					case 0: glColor3ub(0, 128, 0); break;
+					case 1: glColor3ub(0, 255, 0); break;
+					case 2: glColor3ub(255, 255, 0); break;
+					default:
+						glColor3ub(0, 0, 0);
+					}
+					vec3d r0 = path->m_points[i].r;
 
-				if (i == m_selectedPoint)
-				{
-					sphereRadius = 2.0 * R;
-					glColor3ub(255, 255, 255);
-				}
+					if (i == m_selectedPoint)
+					{
+						sphereRadius = 2.0 * R;
+						glColor3ub(255, 255, 255);
+					}
 
-				glx::drawSphere(r0, sphereRadius);
+					glx::drawSphere(r0, sphereRadius);
+				}
 			}
 		}
 	}
