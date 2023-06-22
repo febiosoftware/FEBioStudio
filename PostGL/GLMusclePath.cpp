@@ -1115,15 +1115,15 @@ GLMusclePathGroup::GLMusclePathGroup()
 
 void GLMusclePathGroup::Render(CGLContext& rc)
 {
-	for (GLMusclePath* path : m_paths)
+	for (int i = 0; i < m_paths.Size(); ++i)
 	{
-		if (path->IsActive()) path->Render(rc);
+		if (m_paths[i]->IsActive()) m_paths[i]->Render(rc);
 	}
 }
 
 void GLMusclePathGroup::Update()
 {
-	int n = (int)m_paths.size();
+	int n = (int)m_paths.Size();
 	if (n == 0) return;
 
 #pragma omp parallel for
@@ -1135,7 +1135,7 @@ void GLMusclePathGroup::Update()
 
 void GLMusclePathGroup::Update(int ntime, float dt, bool breset)
 {
-	int n = (int)m_paths.size();
+	int n = (int)m_paths.Size();
 	if (n == 0) return;
 
 #pragma omp parallel for
@@ -1147,7 +1147,7 @@ void GLMusclePathGroup::Update(int ntime, float dt, bool breset)
 
 bool GLMusclePathGroup::UpdateData(bool bsave)
 {
-	int n = (int)m_paths.size();
+	int n = (int)m_paths.Size();
 	if (n == 0) return false;
 
 #pragma omp parallel for
@@ -1164,13 +1164,13 @@ GLMusclePath* GLMusclePathGroup::AddMusclePath()
 	GLMusclePath* mp = new GLMusclePath();
 	mp->SetModel(GetModel());
 	mp->Update(GetModel()->CurrentTimeIndex(), 0.f, true);
-	m_paths.push_back(mp);
+	m_paths.Add(mp);
 	return mp;
 }
 
 bool GLMusclePathGroup::Intersects(Ray& ray, Intersection& q)
 {
-	for (int i = 0; i < m_paths.size(); ++i)
+	for (int i = 0; i < m_paths.Size(); ++i)
 	{
 		if (m_paths[i]->Intersects(ray, q))
 		{
@@ -1184,7 +1184,7 @@ bool GLMusclePathGroup::Intersects(Ray& ray, Intersection& q)
 FESelection* GLMusclePathGroup::SelectComponent(int index)
 {
 	int path = (index >> 16) & 0xFFFF;
-	if ((path >= 0) && (path < m_paths.size()))
+	if ((path >= 0) && (path < m_paths.Size()))
 	{
 		int point = (index & 0xFFFF);
 		return m_paths[path]->SelectComponent(point);
@@ -1194,5 +1194,5 @@ FESelection* GLMusclePathGroup::SelectComponent(int index)
 
 void GLMusclePathGroup::ClearSelection()
 {
-	for (GLMusclePath* p : m_paths) p->ClearSelection();
+	for (int i = 0; i < m_paths.Size(); ++i) m_paths[i]->ClearSelection();
 }

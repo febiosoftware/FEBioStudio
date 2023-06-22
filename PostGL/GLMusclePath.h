@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
+#include <FSCore/FSObjectList.h>
 
 class FSMesh;
 
@@ -105,7 +106,7 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 public:
-	size_t MusclePaths() const { return m_paths.size(); }
+	size_t MusclePaths() const { return m_paths.Size(); }
 	GLMusclePath* GetMusclePath(size_t i) { return m_paths[i]; }
 
 	GLMusclePath* AddMusclePath();
@@ -116,7 +117,7 @@ public:
 	void ClearSelection() override;
 
 private:
-	std::vector<GLMusclePath*>	m_paths;
+	FSObjectList<Post::GLMusclePath>	m_paths;
 };
 
 }
