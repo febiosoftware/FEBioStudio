@@ -32,7 +32,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, METHOD, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
+	enum { START_POINT, END_POINT, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
 public:
 	class PathData;
@@ -62,12 +62,10 @@ public:
 protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
+	bool UpdateWrappingPath(PathData* path, int ntime, bool reset = true);
 	void ClearPaths();
 	void ClearInitPath();
 	void Reset();
-
-	bool UpdateStraightPath(PathData* path, int ntime);
-	bool UpdateWrappingPath(PathData* path, int ntime, bool reset = true);
 
 private:
 	PathData* m_initPath; // used as initial path
@@ -83,7 +81,6 @@ private:
 	// values that require re-evaluation upon change
 	int		m_node0;
 	int		m_node1;
-	int		m_method;
 	int		m_ndiv;
 	int		m_maxIter;
 	double	m_tol;

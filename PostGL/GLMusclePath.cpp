@@ -105,7 +105,6 @@ GLMusclePath::GLMusclePath()
 
 	m_node0 = 0;
 	m_node1 = 0;
-	m_method = 0;
 	m_ndiv = 20;
 	m_maxIter = 30;
 	m_tol = 1e-6;
@@ -119,7 +118,6 @@ GLMusclePath::GLMusclePath()
 
 	AddIntParam(m_node0, "point0", "start point");
 	AddIntParam(m_node1, "point1", "end point");
-	AddChoiceParam(m_method, "method", "Shortest path method")->SetEnumNames("Straight line\0Wrapping path\0");
 	AddIntParam(m_ndiv, "divisions", "Subdivisions");
 	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(0, 100);
 	AddDoubleParam(m_tol, "tol", "Smoothness tol.");
@@ -480,14 +478,8 @@ void GLMusclePath::UpdatePath(int ntime)
 
 	PathData* path = new PathData;
 
-	// see which method we're going to use
-	int method = GetIntValue(METHOD);
-	bool b = false;
-	switch (method)
-	{
-	case 0: b = UpdateStraightPath(path, ntime); break;
-	case 1: b = UpdateWrappingPath(path, ntime); break;
-	}
+	// update the path
+	bool b = UpdateWrappingPath(path, ntime);
 	if (b == false) { delete path; path = nullptr; }
 
 	// All is well, so assign the new path
@@ -495,24 +487,6 @@ void GLMusclePath::UpdatePath(int ntime)
 
 	// also update the path data
 	UpdatePathData(ntime);
-}
-
-bool GLMusclePath::UpdateStraightPath(GLMusclePath::PathData* path, int ntime)
-{
-	CGLModel* glm = GetModel();
-	Post::FEPostModel& fem = *glm->GetFSModel();
-
-	int n0 = GetIntValue(START_POINT) - 1;
-	int n1 = GetIntValue(END_POINT) - 1;
-
-	vec3d r0 = to_vec3d(fem.NodePosition(n0, ntime));
-	vec3d r1 = to_vec3d(fem.NodePosition(n1, ntime));
-
-	path->m_points.clear();
-	path->push_back(r0, 0, m_part[0]);
-	path->push_back(r1, 0, m_part[1]);
-
-	return true;
 }
 
 void GLMusclePath::UpdatePathData(int ntime)
@@ -576,7 +550,6 @@ bool GLMusclePath::UpdateData(bool bsave)
 
 		int node0     = GetIntValue(START_POINT     ); if (node0  != m_node0        ) { m_node0        =   node0; reset = true; }
 		int node1     = GetIntValue(END_POINT       ); if (node1  != m_node1        ) { m_node1        =   node1; reset = true; }
-		int method    = GetIntValue(METHOD          ); if (method  != m_method      ) { m_method       =  method; reset = true; }
 		int ndiv      = GetIntValue(SUBDIVISIONS    ); if (ndiv    != m_ndiv        ) { m_ndiv         =    ndiv; reset = true; }
 		int maxIter   = GetIntValue(MAX_SMOOTH_ITERS); if (maxIter != m_maxIter     ) { m_maxIter      = maxIter; reset = false; }
 		double tol    = GetFloatValue(SMOOTH_TOL    ); if (tol     != m_tol         ) { m_tol          =     tol; reset = false; }
