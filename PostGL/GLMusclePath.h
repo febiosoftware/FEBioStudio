@@ -32,7 +32,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, METHOD, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SMOOTH_FACTOR, SNAP_TOL, SEARCH_RADIUS, SELECTION_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
+	enum { START_POINT, END_POINT, METHOD, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
 public:
 	class PathData;
@@ -88,11 +88,11 @@ private:
 	int		m_maxIter;
 	double	m_tol;
 	double	m_searchRadius;
-	double	m_normalTol;
 	double	m_snaptol;
 
 	// the currently selected point
 	int	m_selectedPoint;
+	double m_selectionRadius;
 };
 
 }
