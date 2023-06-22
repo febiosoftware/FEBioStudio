@@ -4,6 +4,7 @@
 #include <XML/XMLWriter.h>
 #include <XML/XMLReader.h>
 #include <PostGL/GLModel.h>
+#include <PostGL/GLMusclePath.h>
 #include "PostDocument.h"
 #include <PostLib/FEPostMesh.h>
 #include <XPLTLib/xpltFileReader.h>
@@ -492,6 +493,27 @@ bool PostSessionFileReader::parse_plot(XMLTag& tag)
 			}
 			else tag.skip();
 		}
+		else if (tag == "muscle_path")
+		{
+			Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(plot);
+			if (mpg)
+			{
+				const char* szname = tag.AttributeValue("name");
+				Post::GLMusclePath* mp = mpg->AddMusclePath();
+				mp->SetName(szname);
+				++tag;
+				do
+				{
+					Param* p = mp->GetParam(tag.Name());
+					if (p)
+					{
+						fsps_read_param(p, tag);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+			else tag.skip();
+		}
 		++tag;
 	} while (!tag.isend());
 
@@ -882,6 +904,22 @@ void PostSessionFileWriter::WritePlots()
 						}
 						xml.close_branch();
 					}
+				}
+			}
+			if (dynamic_cast<Post::GLMusclePathGroup*>(plot))
+			{
+				Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(plot);
+				for (int n = 0; n < mpg->MusclePaths(); ++n)
+				{
+					Post::GLMusclePath* mp = mpg->GetMusclePath(n);
+
+					XMLElement el("muscle_path");
+					el.add_attribute("name", mp->GetName());
+					xml.add_branch(el);
+					{
+						fsps_write_parameters(mp, xml);
+					}
+					xml.close_branch();
 				}
 			}
 		}

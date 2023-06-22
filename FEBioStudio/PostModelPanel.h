@@ -77,6 +77,7 @@ private slots:
 	void OnExportProbeData();
 	void OnExportMusclePathData();
 	void OnSwapMusclePathEndPoints();
+	void OnAddNewMusclePath();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 

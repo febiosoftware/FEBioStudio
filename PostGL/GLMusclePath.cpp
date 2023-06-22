@@ -902,22 +902,24 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 	double R2 = R * R;
 	int NF = mesh.Faces();
 	int faces = 0;
+	vector<int> Ntag(mesh.Nodes(), 0);
+	vector<int> Ftag(mesh.Faces(), 1);
 	if (R > 0)
 	{
 		// first identify the nodes that are within the search radius
 		for (int i = 0; i < mesh.Nodes(); ++i)
 		{
 			FSNode& node = mesh.Node(i);
-			node.m_ntag = 0;
+			Ntag[i] = 0;
 			vec3d ri = to_vec3d(fem.NodePosition(i, ntime));
 			double L0 = (ri - r0).SqrLength();
 			double L1 = (ri - r1).SqrLength();
-			if ((L0 < R2) || (L1 < R2)) node.m_ntag = 1;
+			if ((L0 < R2) || (L1 < R2)) Ntag[i] = 1;
 			else
 			{
 				vec3d p = r0 + t * ((ri - r0) * t);
 				double L2 = (p - ri).SqrLength();
-				if (L2 < R2) node.m_ntag = 1;
+				if (L2 < R2) Ntag[i] = 1;
 			}
 		}
 
@@ -927,12 +929,12 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 		{
 			FSFace& face = mesh.Face(i);
 			int nn = face.Edges();
-			face.m_ntag = 0;
+			Ftag[i] = 0;
 			for (int j = 0; j < nn; ++j)
 			{
-				if (mesh.Node(face.n[j]).m_ntag != 0)
+				if (Ntag[face.n[j]] != 0)
 				{
-					face.m_ntag = 1;
+					Ftag[i] = 1;
 					faces++;
 					break;
 				}
@@ -941,7 +943,7 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 	}
 	else 
 	{
-		mesh.TagAllFaces(1); faces = NF;
+		faces = NF;
 	}
 
 	// build the face mesh
@@ -951,7 +953,7 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& fs = mesh.Face(i);
-		if (fs.m_ntag == 1)
+		if (Ftag[i] == 1)
 		{
 			FaceMesh::FACE& fd = faceMesh.Face(n++);
 			int ne = 3; // edges!
@@ -1125,4 +1127,99 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 
 	// all done
 	return true;
+}
+
+//=============================================================================
+REGISTER_CLASS(GLMusclePathGroup, CLASS_PLOT, "muscle-path-group", 0);
+
+GLMusclePathGroup::GLMusclePathGroup()
+{
+	SetTypeString("muscle-path-group");
+	std::stringstream ss;
+	ss << "Muscle" << n++;
+	SetName(ss.str());
+}
+
+void GLMusclePathGroup::Render(CGLContext& rc)
+{
+	for (GLMusclePath* path : m_paths)
+	{
+		if (path->IsActive()) path->Render(rc);
+	}
+}
+
+void GLMusclePathGroup::Update()
+{
+	int n = (int)m_paths.size();
+	if (n == 0) return;
+
+#pragma omp parallel for
+	for (int i = 0; i < n; ++i)
+	{
+		m_paths[i]->Update();
+	}
+}
+
+void GLMusclePathGroup::Update(int ntime, float dt, bool breset)
+{
+	int n = (int)m_paths.size();
+	if (n == 0) return;
+
+#pragma omp parallel for
+	for (int i = 0; i < n; ++i)
+	{
+		m_paths[i]->Update(ntime, dt, breset);
+	}
+}
+
+bool GLMusclePathGroup::UpdateData(bool bsave)
+{
+	int n = (int)m_paths.size();
+	if (n == 0) return false;
+
+#pragma omp parallel for
+	for (int i = 0; i < n; ++i)
+	{
+		m_paths[i]->UpdateData(bsave);
+	}
+
+	return false;
+}
+
+GLMusclePath* GLMusclePathGroup::AddMusclePath()
+{
+	GLMusclePath* mp = new GLMusclePath();
+	mp->SetModel(GetModel());
+	mp->Update(GetModel()->CurrentTimeIndex(), 0.f, true);
+	m_paths.push_back(mp);
+	return mp;
+}
+
+bool GLMusclePathGroup::Intersects(Ray& ray, Intersection& q)
+{
+	for (int i = 0; i < m_paths.size(); ++i)
+	{
+		if (m_paths[i]->Intersects(ray, q))
+		{
+			q.m_index |= (i << 16);
+			return true;
+		}
+	}
+	return false;
+}
+
+FESelection* GLMusclePathGroup::SelectComponent(int index)
+{
+	int path = (index >> 16) & 0xFFFF;
+	if ((path >= 0) && (path < m_paths.size()))
+	{
+		int point = (index & 0xFFFF);
+		return m_paths[path]->SelectComponent(point);
+	}
+	else return nullptr;
+}
+
+void GLMusclePathGroup::ClearSelection()
+{
+	for (GLMusclePath* p : m_paths) p->ClearSelection();
 }

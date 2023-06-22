@@ -53,9 +53,9 @@ public:
 	void SwapEndPoints();
 
 public:
-	bool Intersects(Ray& ray, Intersection& q);
-	FESelection* SelectComponent(int index);
-	void ClearSelection();
+	bool Intersects(Ray& ray, Intersection& q) override;
+	FESelection* SelectComponent(int index) override;
+	void ClearSelection() override;
 
 	PathData* GetPath(int n) { return m_path[n]; }
 
@@ -93,6 +93,33 @@ private:
 	// the currently selected point
 	int	m_selectedPoint;
 	double m_selectionRadius;
+};
+
+class GLMusclePathGroup : public CGLPlot
+{
+public:
+	GLMusclePathGroup();
+
+	void Render(CGLContext& rc) override;
+
+	void Update() override;
+	void Update(int ntime, float dt, bool breset) override;
+
+	bool UpdateData(bool bsave = true) override;
+
+public:
+	size_t MusclePaths() const { return m_paths.size(); }
+	GLMusclePath* GetMusclePath(size_t i) { return m_paths[i]; }
+
+	GLMusclePath* AddMusclePath();
+
+public:
+	bool Intersects(Ray& ray, Intersection& q) override;
+	FESelection* SelectComponent(int index) override;
+	void ClearSelection() override;
+
+private:
+	std::vector<GLMusclePath*>	m_paths;
 };
 
 }

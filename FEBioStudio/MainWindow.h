@@ -460,6 +460,7 @@ public slots:
 	void on_actionAddProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionMusclePath_triggered();
+	void on_actionMusclePathGroup_triggered();
 	void on_actionGraph_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();

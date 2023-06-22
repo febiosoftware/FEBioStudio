@@ -377,6 +377,22 @@ void CMainWindow::on_actionMusclePath_triggered()
 	RedrawGL();
 }
 
+void CMainWindow::on_actionMusclePathGroup_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLMusclePathGroup* mpg = new Post::GLMusclePathGroup();
+	glm->AddPlot(mpg);
+
+	UpdatePostPanel(true, mpg);
+	RedrawGL();
+}
+
 void CMainWindow::on_actionIsosurfacePlot_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();

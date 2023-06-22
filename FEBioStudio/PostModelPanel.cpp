@@ -858,6 +858,17 @@ void CPostModelPanel::BuildModelTree()
 				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
 				else if (dynamic_cast<Post::CGLPointPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
 				else if (dynamic_cast<Post::GLMusclePath       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
+
+				Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(&plot);
+				if (mpg)
+				{
+					for (int i = 0; i < mpg->MusclePaths(); ++i)
+					{
+						Post::GLMusclePath* mp = mpg->GetMusclePath(i);
+						CModelTreeItem* pi2 = ui->AddItem(pi1, mp, QString::fromStdString(mp->GetName()), "", new CObjectProps(mp));
+						pi2->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
+					}
+				}
 			}
 		}
 
@@ -1275,6 +1286,12 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 			menu.addAction("Swap end points", this, SLOT(OnSwapMusclePathEndPoints()));
 		}
 
+		if (dynamic_cast<Post::GLMusclePathGroup*>(po))
+		{
+			menu.addSeparator();
+			menu.addAction("Add new path", this, SLOT(OnAddNewMusclePath()));
+		}
+
 		menu.exec(ev->globalPos());
 		return;
 	}
@@ -1611,5 +1628,15 @@ void CPostModelPanel::OnSwapMusclePathEndPoints()
 	po->SwapEndPoints();
 	Update(true);
 	selectObject(po);
+	GetMainWindow()->RedrawGL();
+}
+
+void CPostModelPanel::OnAddNewMusclePath()
+{
+	Post::GLMusclePathGroup* po = dynamic_cast<Post::GLMusclePathGroup*>(ui->currentObject());
+	if (po == nullptr) return;
+	Post::GLMusclePath* mp = po->AddMusclePath();
+	Update(true);
+	selectObject(mp);
 	GetMainWindow()->RedrawGL();
 }
