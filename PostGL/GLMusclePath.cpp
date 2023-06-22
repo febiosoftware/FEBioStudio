@@ -106,7 +106,7 @@ GLMusclePath::GLMusclePath()
 	m_node0 = 0;
 	m_node1 = 0;
 	m_ndiv = 20;
-	m_maxIter = 30;
+	m_maxIter = 100;
 	m_tol = 1e-6;
 	m_searchRadius = 0.0;
 	m_snaptol = 1.5;
@@ -119,7 +119,7 @@ GLMusclePath::GLMusclePath()
 	AddIntParam(m_node0, "point0", "start point");
 	AddIntParam(m_node1, "point1", "end point");
 	AddIntParam(m_ndiv, "divisions", "Subdivisions");
-	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(0, 100);
+	AddIntParam(m_maxIter, "max_iters", "Max smoothness iters.")->SetIntRange(0, 200);
 	AddDoubleParam(m_tol, "tol", "Smoothness tol.");
 	AddDoubleParam(m_snaptol, "snap_tol", "Snap tolerance");
 	AddDoubleParam(m_searchRadius, "search_radius", "Search radius");
