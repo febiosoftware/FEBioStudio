@@ -370,8 +370,20 @@ void CMainWindow::on_actionMusclePath_triggered()
 		return;
 	}
 
-	Post::GLMusclePath* musclePath = new Post::GLMusclePath();
-	glm->AddPlot(musclePath);
+	// if the current selection is a muscle-path-group, we'll add it there
+	Post::GLMusclePath* musclePath = nullptr;
+	Post::GLMusclePathGroup* pmg = dynamic_cast<Post::GLMusclePathGroup*>(ui->postPanel->GetSelectedObject());
+	if (pmg)
+	{
+		// add it to the path
+		musclePath = pmg->AddMusclePath();
+	}
+	else
+	{
+		// just add it to the model
+		musclePath = new Post::GLMusclePath();
+		glm->AddPlot(musclePath);
+	}
 
 	UpdatePostPanel(true, musclePath);
 	RedrawGL();
