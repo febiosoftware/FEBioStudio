@@ -58,14 +58,17 @@ bool LSDynaFileParser::ParseFile()
 				m_ls.NextCard(card);
 				m_ls.NextCard(card);
 			}
-			else if (card == "*PARAMETER_EXPRESSION")
-			{
-				// NOTE: This must be processed before *PARAMETER
-				if (Read_Parameter_Expression() == false) return Error("error while reading PARAMETER_EXPRESSION section.");
-			}
 			else if (card == "*PARAMETER")
 			{
 				if (Read_Parameter() == false) return Error("error while reading PARAMETER section.");
+			}
+			else if (card == "*PARAMETER_EXPRESSION")
+			{
+				if (Read_Parameter_Expression() == false) return Error("error while reading PARAMETER_EXPRESSION section.");
+			}
+			else if (card == "*DEFINE_CURVE")
+			{
+				if (Read_Define_Curve() == false) return Error("error while reading DEFINE_CURVE section.");
 			}
 			else if (card == "*DEFINE_CURVE_TITLE")
 			{
@@ -111,9 +114,13 @@ bool LSDynaFileParser::ParseFile()
 			{
 				if (Read_Part() == false) return Error("error while reading PART section.");
 			}
-			else if (card == "*MAT_")
+			else if (card.contains("*MAT_"))
 			{
 				if (Read_Material() == false) return Error("error while reading MATERIAL section.");
+			}
+			else if (card == "*SET_NODE_LIST_TITLE")
+			{
+				if (Read_Set_Node_List_Title() == false) return Error("error while reading SET_NODE_LIST_TITLE section.");
 			}
 			else if (card == "*SET_SEGMENT_TITLE")
 			{
@@ -384,15 +391,15 @@ bool LSDynaFileParser::Read_Material()
 {
 	LSDynaFile::CARD c;
 	m_ls.GetCard(c);
-	if (c == "*MAT_ELASTIC_")
+	if (c.contains("*MAT_ELASTIC_"))
 		return Read_Mat_Other();
-	else if (c == "*MAT_ELASTIC")
+	else if (c.contains("*MAT_ELASTIC"))
 		return Read_Mat_Elastic();
-	else if (c == "*MAT_RIGID")
+	else if (c.contains("*MAT_RIGID"))
 		return Read_Mat_Rigid();
-	else if (c == "*MAT_VISCOELASTIC")
+	else if (c.contains("*MAT_VISCOELASTIC"))
 		return Read_Mat_Viscoelastic();
-	else if (c == "*MAT_KELVIN-MAXWELL_VISCOELASTIC")
+	else if (c.contains("*MAT_KELVIN-MAXWELL_VISCOELASTIC"))
 		return Read_Mat_Kelvin_Maxwell_Viscoelastic();
 	else
 		return Read_Mat_Other();
@@ -593,6 +600,26 @@ bool LSDynaFileParser::Read_Set_Segment_Title()
 	return true;
 }
 
+bool LSDynaFileParser::Read_Set_Node_List_Title()
+{
+	LSDynaFile::CARD card;
+	if (m_ls.NextCard(card) == false) return false;
+	LSDYNAModel::SET_NODE_LIST_TITLE nl;
+	nl.m_name = card.szvalue();
+	if (m_ls.NextCard(card) == false) return false;
+	card.nexti(nl.m_nid);
+
+	if (m_ls.NextCard(card) == false) return false;
+	while (!card.IsKeyword())
+	{
+		int nid;
+		while (card.nexti(nid)) nl.m_nodelist.push_back(nid);
+		if (m_ls.NextCard(card) == false) return false;
+	}
+
+	m_dyn.addNodeList(nl);
+}
+
 bool LSDynaFileParser::Read_Define_Curve_Title()
 {
 	LSDynaFile::CARD card;
@@ -602,6 +629,38 @@ bool LSDynaFileParser::Read_Define_Curve_Title()
 	lc.m_name = card.m_szline;
 
 	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+	card.nexti(lc.m_lcid);
+	card.nexti(lc.m_sidr);
+	card.nextf(lc.m_sfa);
+	card.nextf(lc.m_sfo);
+	card.nextf(lc.m_offa);
+	card.nextf(lc.m_offo);
+	card.nexti(lc.m_dattyp);
+
+	do
+	{
+		if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+		if (card.IsKeyword() == false)
+		{
+			float a, o;
+			card.nextf(a, 20);
+			card.nextf(o, 20);
+			lc.m_pt.push_back(std::pair<float, float>(a, o));
+		}
+
+	} while (card.IsKeyword() == false);
+
+	m_dyn.addLoadCurve(lc);
+
+	return true;
+}
+
+bool LSDynaFileParser::Read_Define_Curve()
+{
+	LSDynaFile::CARD card;
+	if (m_ls.NextCard(card) == false) return Error("Unexpected end of file.");
+
+	LSDYNAModel::LOAD_CURVE lc;
 	card.nexti(lc.m_lcid);
 	card.nexti(lc.m_sidr);
 	card.nextf(lc.m_sfa);
@@ -658,7 +717,8 @@ bool LSDynaFileParser::Read_Include()
 	lsfile.Close();
 
 	// if the parsing failed, make sure to copy the error string
-	if (b == false) Error(lsparse.GetErrorString());
+	if (lsparse.GetErrorString())
+		Error(lsparse.GetErrorString());
 
 	return b;
 }

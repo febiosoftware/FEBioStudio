@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FEMLib/FSModel.h>
 #include "GeomLib/GMeshObject.h"
 #include "FEMLib/FEMultiMaterial.h"
+#include <sstream>
 
 LSDYNAModel::LSDYNAModel()
 {
@@ -380,6 +381,17 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	}
 	}
 	*/
+
+	// create node lists
+	for (SET_NODE_LIST_TITLE& nl : m_nodelist)
+	{
+		std::vector<int> nodelist(nl.m_nodelist);
+		for (int i = 0; i < nodelist.size(); ++i) nodelist[i] = NLT[nodelist[i] - imin];
+		FSNodeSet* pg = new FSNodeSet(m_po, nodelist);
+		pg->SetName(nl.m_name);
+		m_po->AddFENodeSet(pg);
+	}
+
 	// clean up
 	m_node.clear();
 	m_shell.clear();
@@ -451,7 +463,6 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			pmat->SetFloatValue(FSIsotropicElastic::MP_DENSITY, lmat.ro);
 			pmat->SetFloatValue(FSIsotropicElastic::MP_E, lmat.e);
 			pmat->SetFloatValue(FSIsotropicElastic::MP_v, lmat.pr);
-			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_RIGID*>(glmat)) {
 			MAT_RIGID& lmat = *dynamic_cast<MAT_RIGID*>(glmat);
@@ -460,7 +471,6 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			pmat->SetFloatValue(FSRigidMaterial::MP_DENSITY, lmat.ro);
 			pmat->SetFloatValue(FSRigidMaterial::MP_E, lmat.e);
 			pmat->SetFloatValue(FSRigidMaterial::MP_V, lmat.pr);
-			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_VISCOELASTIC*>(glmat)) {
 			MAT_VISCOELASTIC& lmat = *dynamic_cast<MAT_VISCOELASTIC*>(glmat);
@@ -474,7 +484,6 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			pmat->SetElasticMaterial(emat);
 			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
 			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_T1, 1.0 / lmat.beta);
-			pmat->SetName(lmat.szname);
 		}
 		else if (dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat)) {
 			MAT_KELVIN_MAXWELL_VISCOELASTIC& lmat = *dynamic_cast<MAT_KELVIN_MAXWELL_VISCOELASTIC*>(glmat);
@@ -488,17 +497,16 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			pmat->SetElasticMaterial(emat);
 			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
 			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_T1, 1.0 / lmat.dc);
-			pmat->SetName(lmat.szname);
 		}
 		// For unknown materials, use MAT_ELASTIC
 		else {
 			FSIsotropicElastic* pmat = new FSIsotropicElastic(&fem);
 			gpmat = pmat;
-			pmat->SetName(glmat->szname);
 		}
 
 		GMaterial* pgm = new GMaterial(gpmat);
 		fem.AddMaterial(pgm);
+		pgm->SetName(glmat->szname);
 
 		// see if there is a part that has this material
 		int nparts = (int)m_part.size();
@@ -532,7 +540,15 @@ bool LSDYNAModel::BuildLoadCurves(FSModel& fem)
 		float oo = lsc.m_offo;
 
 		LoadCurve lc;
-		lc.SetName(lsc.m_name.c_str());
+		if (lsc.m_name.empty() == false)
+			lc.SetName(lsc.m_name.c_str());
+		else
+		{
+			std::stringstream ss;
+			ss << "LC" << i + 1;
+			std::string name = ss.str();
+			lc.SetName(name.c_str());
+		}
 		for (int j = 0; j < lsc.m_pt.size(); ++j)
 		{
 			float a = lsc.m_pt[j].first;
