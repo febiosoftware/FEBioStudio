@@ -138,21 +138,6 @@ void CRepositoryPanel::SetModelList()
 
 	dbHandler->GetProjects();
 
-	// // Delete empty categories.
-	// vector<QTreeWidgetItem*> empty;
-	// for(int item = 0; item < ui->projectTree->topLevelItemCount(); item++)
-	// {
-	// 	if(ui->projectTree->topLevelItem(item)->childCount() == 0)
-	// 	{
-	// 		empty.push_back(ui->projectTree->topLevelItem(item));
-	// 	}
-	// }
-
-	// for(auto item : empty)
-	// {
-	// 	delete item;
-	// }
-
 	// Select the first category
 	if(ui->projectTree->topLevelItemCount() > 0)
 	{
