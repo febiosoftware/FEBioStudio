@@ -53,7 +53,7 @@ bool FEBioFormat2::ParseSection(XMLTag& tag)
 	if      (tag == "Module"     ) ParseModuleSection    (tag);
 	else if (tag == "Control"    ) ParseControlSection   (tag);
 	else if (tag == "Material"   ) ParseMaterialSection  (tag);
-	else if (tag == "Geometry"   ) if(m_skipGeom) ParseGeometrySection(tag); else tag.m_preader->SkipTag(tag);
+	else if (tag == "Geometry"   ) if (m_skipGeom == false) ParseGeometrySection(tag); else tag.m_preader->SkipTag(tag);
 	else if (tag == "Boundary"   ) ParseBoundarySection  (tag);
 	else if (tag == "Constraints") ParseConstraintSection(tag);
 	else if (tag == "Loads"      ) ParseLoadsSection     (tag);
@@ -88,6 +88,13 @@ bool FEBioFormat2::ParseModuleSection(XMLTag &tag)
 		m_nAnalysis = FE_STEP_MECHANICS;
 		FileReader()->AddLogEntry("unknown module type. Assuming solid module (line %d)", tag.currentLine());
 	}
+
+	const char* sztype = atype.cvalue();
+	if (strcmp(sztype, "explicit-solid") == 0) sztype = "solid";
+
+	int moduleId = FEBio::GetModuleId(sztype);
+	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
+	FileReader()->GetProject().SetModule(moduleId, false);
 
 	// set the project's active modules
 /*
@@ -151,6 +158,9 @@ bool FEBioFormat2::ParseGeometrySection(XMLTag& tag)
 
 	// don't forget to update the geometry
 	febio.UpdateGeometry();
+
+	// copy all mesh selections to named selections
+	GetFEBioModel().CopyMeshSelections();
 
 	return true;
 }
