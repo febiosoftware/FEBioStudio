@@ -311,7 +311,7 @@ public:
 		{
 			iconName = "FEBioStudio";
 		}
-		else if(name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
+		else if(name.endsWith(".fs2") || name.endsWith(".fsm") || name.endsWith(".fsprj") || name.endsWith(".prv"))
 		{
 			iconName = "PreView";
 		}
