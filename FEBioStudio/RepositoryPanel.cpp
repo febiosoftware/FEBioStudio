@@ -138,21 +138,6 @@ void CRepositoryPanel::SetModelList()
 
 	dbHandler->GetProjects();
 
-	// Delete empty categories.
-	vector<int> empty;
-	for(int item = 0; item < ui->projectTree->topLevelItemCount(); item++)
-	{
-		if(ui->projectTree->topLevelItem(item)->childCount() == 0)
-		{
-			empty.push_back(item);
-		}
-	}
-
-	for(int item : empty)
-	{
-		delete ui->projectTree->topLevelItem(item);
-	}
-
 	// Select the first category
 	if(ui->projectTree->topLevelItemCount() > 0)
 	{
