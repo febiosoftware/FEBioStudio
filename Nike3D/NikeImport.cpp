@@ -35,7 +35,9 @@ SOFTWARE.*/
 #include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
 #include <FEMLib/FESurfaceLoad.h>
+#include <FEBioLink/FEBioModule.h>
 #include <string.h>
+#include <sstream>
 
 #define ABS(x) ((x)>=0?(x):(-(x)))
 
@@ -128,6 +130,9 @@ bool FENIKEImport::Load(const char* szfile)
 	// get the model
 	FSModel& fem = *m_fem;
 
+	// set the project's module
+	m_prj.SetModule(FEBio::GetModuleId("solid"));
+
 	// create a nike project
 	FENikeProject nike;
 
@@ -158,6 +163,10 @@ bool FENIKEImport::Load(const char* szfile)
 
 	// if we get here we are good to go!
 	UpdateFEModel(fem);
+
+	// convert to new structure
+	std::stringstream log;
+	m_prj.ConvertToNewFormat(log);
 
 	// all done!
 	return true;
@@ -924,6 +933,8 @@ bool FENIKEImport::ReadControlDeck(FENikeProject& prj)
 	return true;
 }
 
+
+
 //-----------------------------------------------------------------------------
 // Reads the material deck from a nike input file
 //
@@ -952,8 +963,24 @@ bool FENIKEImport::ReadMaterialDeck(FENikeProject& prj)
 		// -------- material card 1 --------
 		if (read_line(m_fp, szline, MAX_LINE) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
 
-		nread = sscanf(szline, "%*5d%5d%10lg%5d%10lg%10lg%10lg%10lg%10lg", &m.ntype, &m.dens, &m.nelem, &m.Tref, &m.rda, &m.rdb, &m.hrgl, &m.flag);
+		char stype[6] = { 0 };
+		char sdens[11] = { 0 };
+		char selem[6] = { 0 };
+		char sTref[11] = { 0 };
+		char srda[11] = { 0 };
+		char srdb[11] = { 0 };
+		char shrgl[11] = { 0 };
+		char sflag[11] = { 0 };
+		nread = sscanf(szline, "%*5c%5c%10c%5c%10c%10c%10c%10c%10c", stype, sdens, selem, sTref, srda, srdb, shrgl, sflag);
 		if (nread < 3) return errf(szerr[ERR_MAT], 1, i);
+		m.ntype = atoi(stype);
+		m.dens  = atof(sdens);
+		m.nelem = atoi(selem);
+		m.Tref  = atof(sTref);
+		m.rda   = atof(srda);
+		m.rdb   = atof(srdb);
+		m.hrgl  = atof(shrgl);
+		m.flag  = atof(sflag);
 
 		// -------- material card 2 --------
 		if (read_line(m_fp, szline, MAX_LINE, false) == NULL) return errf(szerr[ERR_EOF], fileName.c_str());
