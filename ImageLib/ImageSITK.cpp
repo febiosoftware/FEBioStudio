@@ -66,7 +66,16 @@ bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
         const std::vector<std::string> dicom_names = sitk::ImageSeriesReader::GetGDCMSeriesFileNames(absolutePath);
         reader.SetFileNames( dicom_names );
 
-        m_sitkImage = reader.Execute();
+        try {
+			// this can throw exceptions. 
+			// If this is called while loading the fs2 file, this could cause problems.
+			// Therefore, we catch the exception and just retrn false.
+			m_sitkImage = reader.Execute();
+		}
+		catch (...)
+		{
+			return false;
+		}
     }
     else
     {
