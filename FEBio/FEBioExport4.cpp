@@ -643,7 +643,7 @@ bool FEBioExport4::Write(const char* szfile)
 			{
 				m_xml.add_branch("Initial");
 				{
-					WriteInitialSection();
+					WriteInitialSection(*pstep);
 				}
 				m_xml.close_branch(); // Initial
 			}
@@ -2679,11 +2679,8 @@ void FEBioExport4::WriteSurfaceLoads(FSStep& s)
 //-----------------------------------------------------------------------------
 // Export initial conditions
 //
-void FEBioExport4::WriteInitialSection()
+void FEBioExport4::WriteInitialSection(FSStep& s)
 {
-	FSModel& fem = m_prj.GetFSModel();
-	FSStep& s = *fem.GetStep(0);
-
 	// initial velocities
 	for (int j = 0; j < s.ICs(); ++j)
 	{
@@ -3165,6 +3162,17 @@ void FEBioExport4::WriteStepSection()
 				WriteControlSection(step);
 			}
 			m_xml.close_branch();
+
+			// output initial section
+			int nic = step.ICs();
+			if (nic > 0)
+			{
+				m_xml.add_branch("Initial");
+				{
+					WriteInitialSection(step);
+				}
+				m_xml.close_branch();
+			}
 
 			// output boundary section
 			int nbc = step.BCs();
