@@ -232,7 +232,7 @@ protected:
 	void WriteLoadsSection(FSStep& s);
 	void WriteContactSection(FSStep& s);
 	void WriteDiscreteSection(FSStep& s);
-	void WriteInitialSection();
+	void WriteInitialSection(FSStep& s);
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
