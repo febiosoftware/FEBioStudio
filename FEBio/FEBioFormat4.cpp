@@ -394,6 +394,7 @@ bool FEBioFormat4::ParseMeshSection(XMLTag& tag)
 		else if (tag == "Edge"       ) ParseGeometryEdgeSet    (DefaultPart(), tag);
 		else if (tag == "Surface"    ) ParseGeometrySurface    (DefaultPart(), tag);
 		else if (tag == "ElementSet" ) ParseGeometryElementSet (DefaultPart(), tag);
+		else if (tag == "PartList"   ) ParseGeometryPartList   (DefaultPart(), tag);
 		else if (tag == "DiscreteSet") ParseGeometryDiscreteSet(DefaultPart(), tag);
 		else if (tag == "SurfacePair") ParseGeometrySurfacePair(DefaultPart(), tag);
 		else ParseUnknownTag(tag);
@@ -945,6 +946,36 @@ void FEBioFormat4::ParseGeometryElementSet(FEBioInputModel::Part* part, XMLTag& 
 	}
 
 	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem));
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseGeometryPartList(FEBioInputModel::Part* part, XMLTag& tag)
+{
+	if (part == 0) throw XMLReader::InvalidTag(tag);
+
+	// get the name
+	const char* szname = tag.AttributeValue("name");
+	if (szname == 0) FileReader()->AddLogEntry("Part list defined without a name.");
+	string sname = (szname ? szname : "");
+
+	// see if a part list with this name is already defined
+	// if found, we'll continue, but we'll generate a warning.
+	FEBioInputModel::DomainList* ps = part->FindDomainList(szname);
+	if (ps) FileReader()->AddLogEntry("A part list set named %s is already defined.", szname);
+
+	// read the part names
+	vector<string> partNames;
+	tag.value(partNames);
+
+	// add the parts to the part list
+	std::vector<FEBioInputModel::Domain*> domList;
+	for (string s : partNames)
+	{
+		FEBioInputModel::Domain* pg = part->FindDomain(s);
+		if (pg) domList.push_back(pg);
+	}
+
+	part->AddDomainList(FEBioInputModel::DomainList(sname, domList));
 }
 
 //-----------------------------------------------------------------------------
@@ -1844,22 +1875,43 @@ void FEBioFormat4::ParseContact(FSStep *pstep, XMLTag &tag)
 	ParseModelComponent(pci, tag);
 
 	// assign surfaces
+	GModel& m = GetFSModel().GetModel();
 	FEBioInputModel::Part* part = surfPair->GetPart();
 	assert(part);
 	if (part)
 	{
-		if (surfPair->PrimarySurfaceID() >= 0)
+		int id1 = surfPair->PrimarySurfaceID();
+		if (id1 >= 0)
 		{
-			string name1 = part->GetSurface(surfPair->PrimarySurfaceID()).name();
-			FSSurface* surf1 = febio.FindNamedSurface(name1.c_str());
-			pci->SetPrimarySurface(surf1);
+			if (id1 >= part->Surfaces())
+			{
+				FEBioInputModel::DomainList& dl = part->GetDomainList(id1 - part->Surfaces());
+				GPartList* pg = m.FindPartList(dl.m_name);
+				pci->SetPrimarySurface(pg);
+			}
+			else
+			{
+				string name1 = part->GetSurface(surfPair->PrimarySurfaceID()).name();
+				FSSurface* surf1 = febio.FindNamedSurface(name1.c_str());
+				pci->SetPrimarySurface(surf1);
+			}
 		}
 
-		if (surfPair->SecondarySurfaceID() >= 0)
+		int id2 = surfPair->SecondarySurfaceID();
+		if (id2 >= 0)
 		{
-			string name2 = part->GetSurface(surfPair->SecondarySurfaceID()).name();
-			FSSurface* surf2 = febio.FindNamedSurface(name2.c_str());
-			pci->SetSecondarySurface(surf2);
+			if (id2 >= part->Surfaces())
+			{
+				FEBioInputModel::DomainList& dl = part->GetDomainList(id2 - part->Surfaces());
+				GPartList* pg = m.FindPartList(dl.m_name);
+				pci->SetSecondarySurface(pg);
+			}
+			else
+			{
+				string name2 = part->GetSurface(surfPair->SecondarySurfaceID()).name();
+				FSSurface* surf2 = febio.FindNamedSurface(name2.c_str());
+				pci->SetSecondarySurface(surf2);
+			}
 		}
 	}
 

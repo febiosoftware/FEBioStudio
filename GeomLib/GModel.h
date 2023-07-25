@@ -124,6 +124,9 @@ public:
 	// find a part based on its ID
 	GPart* FindPart(int nid);
 
+	// find a part based on its name
+	GPart* FindPart(const std::string& partName);
+
 	// --- surface functions ---
 
 	// return the total nr of surfaces
@@ -183,6 +186,7 @@ public:
 	int RemovePartList(GPartList* pg);
 	int PartLists() const;
 	GPartList* PartList(int n);
+	GPartList* FindPartList(const std::string& name);
 
 	// --- GFaceList ---
 	void AddFaceList(GFaceList* pg);
