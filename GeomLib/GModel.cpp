@@ -569,7 +569,6 @@ GPart* GModel::Part(int n)
 }
 
 //-----------------------------------------------------------------------------
-
 GPart* GModel::FindPart(int nid)
 {
 	for (int i=0; i<Objects(); ++i)
@@ -581,6 +580,18 @@ GPart* GModel::FindPart(int nid)
 	return 0;
 }
 
+//-----------------------------------------------------------------------------
+GPart* GModel::FindPart(const std::string& name)
+{
+	const char* szname = name.c_str();
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		GPart* pg = po->FindPartFromName(szname);
+		if (pg) return pg;
+	}
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 
@@ -1452,6 +1463,16 @@ int GModel::PartLists() const { return (int)imp->m_GPart.Size(); }
 
 //-----------------------------------------------------------------------------
 GPartList* GModel::PartList(int n) { return imp->m_GPart[n]; }
+
+//-----------------------------------------------------------------------------
+GPartList* GModel::FindPartList(const std::string& name)
+{
+	for (int i = 0; i < imp->m_GPart.Size(); ++i)
+	{
+		if (imp->m_GPart[i]->GetName() == name) return imp->m_GPart[i];
+	}
+	return nullptr;
+}
 
 //-----------------------------------------------------------------------------
 

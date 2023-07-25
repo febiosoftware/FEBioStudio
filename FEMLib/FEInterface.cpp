@@ -1054,7 +1054,7 @@ FSLinearConstraintSet& FSLinearConstraintSet::operator = (const FSLinearConstrai
 //=============================================================================
 FEBioInterface::FEBioInterface(FSModel* ps, int nstep) : FSPairedInterface(FE_FEBIO_INTERFACE, ps, nstep)
 {
-
+	SetMeshItemType(FE_FACE_FLAG | FE_PART_FLAG);
 }
 
 void FEBioInterface::Save(OArchive& ar)

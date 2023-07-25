@@ -47,6 +47,7 @@ namespace Units {
         MMKS,
         UMNNS,
         CGS,
+        MMGS,
 	};
 
 	enum Unit_Symbol
