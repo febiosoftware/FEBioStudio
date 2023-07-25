@@ -1319,6 +1319,11 @@ void CModelPropsPanel::PickSelection(int n)
 		l = gm.AllNamedSelections(FE_SURFACE);
 		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
 	}
+	if (meshType & FE_PART_FLAG)
+	{
+		auto l = gm.AllNamedSelections(DOMAIN_PART);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
 
 	// get the current selection
 	FEItemListBuilder* pl = nullptr;
