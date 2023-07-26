@@ -30,9 +30,21 @@ SOFTWARE.*/
 #include <string>
 
 //-----------------------------------------------------------------------------
+class FSBase : public ParamContainer
+{
+public:
+	FSBase();
+	virtual ~FSBase();
+
+	// update parameters
+	// return true if parameter list was modified
+	virtual bool UpdateData(bool bsave = true);
+};
+
+//-----------------------------------------------------------------------------
 // Base class for most classes used by FEBio Studio
 // 
-class FSObject : public ParamContainer
+class FSObject : public FSBase
 {
 public:
 	FSObject(FSObject* parent = nullptr);
@@ -49,10 +61,6 @@ public:
 
 	// update the object's data
 	virtual bool Update(bool b = true);
-
-	// update parameters
-	// return true if parameter list was modified
-	virtual bool UpdateData(bool bsave = true);
 
 	virtual void SetTypeString(const std::string& s) { m_typeStr = s; }
 	virtual const char* GetTypeString() const { return m_typeStr.c_str(); }

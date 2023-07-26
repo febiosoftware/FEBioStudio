@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <string.h>
 #include <string>
 #include <fstream>
+#include "FSObject.h"
 
 using std::string;
 using std::ifstream;
@@ -46,7 +47,7 @@ typedef off_t off_type;
 #endif
 
 //-----------------------------------------------------------------------------
-class FileReader
+class FileReader : public FSBase
 {
 public:
 	FileReader();
