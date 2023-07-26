@@ -64,6 +64,8 @@ public:
 
 	bool Load(const char* szfile);
 
+	bool UpdateData(bool bsave) override;
+
 protected:
 	// read a line and increment line counter
 	bool read_line(char* szline, FILE* fp);

@@ -26,20 +26,20 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
-#include <Abaqus/AbaqusImport.h>
+#include <FSCore/FSObject.h>
 
 namespace Ui {
-	class CDlgImportAbaqus;
+	class CDlgEditObject;
 }
 
-class CDlgImportAbaqus : public QDialog
+class CDlgEditObject : public QDialog
 {
 public:
-	CDlgImportAbaqus(AbaqusImport* fileReader, QWidget* parent);
+	CDlgEditObject(FSBase* po, QString dlgTitle, QWidget* parent);
 
 	void accept();
 
 private:
-	AbaqusImport*	m_fileReader;
-	Ui::CDlgImportAbaqus*	ui;
+	FSBase* m_po;
+	Ui::CDlgEditObject*	ui;
 };

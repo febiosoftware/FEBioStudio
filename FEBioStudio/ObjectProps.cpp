@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include <FSCore/FSCore.h>
 
 //=======================================================================================
-CObjectProps::CObjectProps(FSObject* po)
+CObjectProps::CObjectProps(FSBase* po)
 {
 	m_po = 0;
 	if (po) BuildParamList(po);
@@ -180,7 +180,7 @@ QStringList CObjectProps::GetEnumValues(const char* ch)
 	return ops;
 }
 
-void CObjectProps::BuildParamList(FSObject* po, bool showNonPersistent)
+void CObjectProps::BuildParamList(FSBase* po, bool showNonPersistent)
 {
 	m_po = po;
 	m_params.clear();
@@ -195,7 +195,7 @@ void CObjectProps::BuildParamList(FSObject* po, bool showNonPersistent)
 	}
 }
 
-void CObjectProps::AddParameterList(FSObject* po)
+void CObjectProps::AddParameterList(FSBase* po)
 {
 	int NP = po->Parameters();
 	for (int i = 0; i < NP; ++i)

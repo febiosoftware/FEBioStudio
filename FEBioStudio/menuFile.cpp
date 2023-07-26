@@ -81,7 +81,7 @@ SOFTWARE.*/
 #include <MeshIO/STEPImport.h>
 #include <Abaqus/AbaqusExport.h>
 #include <FSCore/FSDir.h>
-#include "DlgImportAbaqus.h"
+#include "DlgEditObject.h"
 #include "DlgRAWImport.h"
 #include "DlgImportCOMSOL.h"
 #include "DlgLSDYNAExport.h"
@@ -461,12 +461,12 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* reader = new AbaqusImport(prj);
-		CDlgImportAbaqus dlg(reader, this);
+		CDlgEditObject dlg(reader, "Import Abaqus", this);
 		if (dlg.exec())
 		{
 			return reader;
 		}
-		else return 0;
+		else return nullptr;
 	}
 	if (ext.compare("cdb", Qt::CaseInsensitive) == 0) return new AnsysImport(prj);
 	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new FELSDYNAimport(prj);
@@ -547,7 +547,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
 
-		CDlgImportAbaqus dlg(abaqusReader, this);
+		CDlgEditObject dlg(abaqusReader, "Import Abaqus", this);
 		if (dlg.exec() == 0)
 		{
 			return;

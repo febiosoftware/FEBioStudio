@@ -268,7 +268,16 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 			else if (pi.param && pw)
 			{
 				if (pi.param->IsEditable())
+				{
+					QCheckBox* pc = dynamic_cast<QCheckBox*>(pw);
+					if (pc)
+					{
+						pc->setText(label);
+						label = "";
+					}
+
 					form->addRow(label, pw);
+				}
 				else
 				{
 					QLabel* l = new QLabel(label);
