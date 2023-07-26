@@ -83,7 +83,6 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include "DlgEditObject.h"
 #include "DlgRAWImport.h"
-#include "DlgImportCOMSOL.h"
 #include "DlgLSDYNAExport.h"
 #include "DlgVTKExport.h"
 #include "DlgExportFEBio.h"
@@ -498,7 +497,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("mphtxt", Qt::CaseInsensitive) == 0)
 	{
 		COMSOLimport* reader = new COMSOLimport(prj);
-		CDlgImportCOMSOL dlg(reader, this);
+		CDlgEditObject dlg(reader, "Import COMSOL", this);
 		if (dlg.exec())
 		{
 			return reader;
