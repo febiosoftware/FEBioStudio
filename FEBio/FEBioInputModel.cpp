@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include "FEBioImport.h"
 #include <string.h>
 #include <stdarg.h>
@@ -407,10 +408,22 @@ FEBioInputModel::Surface* FEBioInputModel::Part::FindSurface(const std::string& 
 
 int FEBioInputModel::Part::FindSurfaceIndex(const std::string& name)
 {
-	for (int i = 0; i<(int)m_surf.size(); ++i)
+	int nsurf = (int)m_surf.size();
+	if (name.compare(0, 11, "@part_list:") == 0)
 	{
-		Surface* ps = &m_surf[i];
-		if (ps->name() == name) return i;
+		string s = name.substr(11);
+		for (int i = 0; i < m_domlist.size(); ++i)
+		{
+			if (m_domlist[i].m_name == s) return nsurf + i;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < nsurf; ++i)
+		{
+			Surface* ps = &m_surf[i];
+			if (ps->name() == name) return i;
+		}
 	}
 	return -1;
 }
@@ -454,6 +467,16 @@ FEBioInputModel::SurfacePair* FEBioInputModel::Part::FindSurfacePair(const std::
 		if (ps->name() == name) return ps;
 	}
 	return 0;
+}
+
+FEBioInputModel::DomainList* FEBioInputModel::Part::FindDomainList(const std::string& name)
+{
+	for (size_t i = 0; i < m_domlist.size(); ++i)
+	{
+		DomainList* ps = &m_domlist[i];
+		if (ps->m_name == name) return ps;
+	}
+	return nullptr;
 }
 
 FEBioInputModel::Domain* FEBioInputModel::Part::FindDomain(const std::string& name)
@@ -1107,6 +1130,24 @@ void FEBioInputModel::CopyMeshSelections()
 			pg->SetName(es.name());
 
 			po->AddFEElemSet(pg);
+		}
+
+		// create the part lists
+		GModel& gm = GetFSModel().GetModel();
+		for (int j = 0; j < part->DomainLists(); ++j)
+		{
+			DomainList& dl = part->GetDomainList(j);
+			GPartList* partList = new GPartList(&gm);
+			partList->SetName(dl.m_name);
+
+			for (int k = 0; k < dl.m_domList.size(); ++k)
+			{
+				const std::string& s = dl.m_domList[k]->name();
+				GPart* pg = po->FindPartFromName(s.c_str());
+				if (pg) partList->add(pg->GetID());
+			}
+
+			gm.AddPartList(partList);
 		}
 	}
 }

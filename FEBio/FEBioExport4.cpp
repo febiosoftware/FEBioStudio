@@ -92,11 +92,28 @@ FEBioExport4::Part* FEBioExport4::FindPart(GObject* po)
 }
 
 //----------------------------------------------------------------------------
-const char* FEBioExport4::GetSurfaceName(FEItemListBuilder* pl)
+const char* FEBioExport4::GetSurfaceName(FEItemListBuilder* pl, bool allowPartLists)
 {
+	// find the surface
 	int N = (int)m_pSurf.size();
 	for (int i = 0; i < N; ++i)
 		if (m_pSurf[i].m_list == pl) return m_pSurf[i].m_name.c_str();
+
+	// see if it's a part list
+	if (allowPartLists)
+	{
+		N = (int)m_pPSet.size();
+		for (int i = 0; i < N; ++i)
+		{
+			NamedItemList& it = m_pPSet[i];
+			if (it.m_list == pl)
+			{
+				it.m_extName = "@part_list:" + it.m_name;
+				return it.m_extName.c_str();
+			}
+		}
+	}
+
 	assert(false);
 	return 0;
 }
@@ -221,6 +238,18 @@ void FEBioExport4::AddElemSet(const std::string& name, FEItemListBuilder* pl)
 	}
 	
 	m_pESet.push_back(NamedItemList(string(name), pl));
+}
+
+//-----------------------------------------------------------------------------
+void FEBioExport4::AddPartList(const std::string& name, FEItemListBuilder* pl)
+{
+	// make sure this has not been added 
+	for (int i = 0; i < m_pPSet.size(); ++i)
+	{
+		NamedItemList& partList = m_pPSet[i];
+		if ((partList.m_list == pl) && (partList.m_name == name)) return;
+	}
+	m_pPSet.push_back(NamedItemList(string(name), pl));
 }
 
 //-----------------------------------------------------------------------------
@@ -357,7 +386,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 	for (int i = 0; i < parts; ++i)
 	{
 		GPartList* pl = model.PartList(i);
-		AddNodeSet(pl->GetName(), pl);
+		AddPartList(pl->GetName(), pl);
 	}
 
 	// add the user-defined mesh selections
@@ -643,7 +672,7 @@ bool FEBioExport4::Write(const char* szfile)
 			{
 				m_xml.add_branch("Initial");
 				{
-					WriteInitialSection();
+					WriteInitialSection(*pstep);
 				}
 				m_xml.close_branch(); // Initial
 			}
@@ -745,6 +774,7 @@ void FEBioExport4::WriteModuleSection(FSProject& prj)
 		case 4: m_xml.add_leaf("units", "mm-kg-s"); break;
 		case 5: m_xml.add_leaf("units", "um-nN-s"); break;
 		case 6: m_xml.add_leaf("units", "CGS"    ); break;
+        case 7: m_xml.add_leaf("units", "mm-g-s" ); break;
 		}
 		m_xml.close_branch();
 	}
@@ -962,6 +992,9 @@ void FEBioExport4::WriteMeshSection()
 
 	// write named element sets
 	WriteGeometryElementSets();
+
+	// write named part lists
+	WriteGeometryPartLists();
 
 	// write named surfaces pairs
 	WriteGeometrySurfacePairs();
@@ -1326,6 +1359,35 @@ void FEBioExport4::WriteGeometryElementSets()
 }
 
 //-----------------------------------------------------------------------------
+void FEBioExport4::WriteGeometryPartLists()
+{
+	GModel& mdl = m_pfem->GetModel();
+	int NP = (int)m_pPSet.size();
+	for (int i = 0; i < NP; ++i)
+	{
+		NamedItemList& it = m_pPSet[i];
+		XMLElement el("PartList");
+		el.add_attribute("name", it.m_name.c_str());
+		std::stringstream ss;
+		GPartList* pl = dynamic_cast<GPartList*>(it.m_list); assert(pl);
+		if (pl)
+		{
+			std::vector<int> partIDs = pl->CopyItems();
+			bool bfirst = true;
+			for (int id : partIDs)
+			{
+				if (bfirst == false) ss << ","; else bfirst = false;
+				GPart* pg = mdl.FindPart(id); assert(pg);
+				if (pg) ss << pg->GetName();
+			}
+		}
+		string s = ss.str();
+		el.value(s);
+		m_xml.add_leaf(el);
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FEBioExport4::WriteGeometrySurfacesNew()
 {
 	int NS = (int)m_pSurf.size();
@@ -1439,8 +1501,8 @@ void FEBioExport4::WriteGeometrySurfacePairs()
 				el.add_attribute("name", pi->GetName().c_str());
 				m_xml.add_branch(el);
 				{
-					m_xml.add_leaf("primary", GetSurfaceName(pss));
-					m_xml.add_leaf("secondary", GetSurfaceName(pms));
+					m_xml.add_leaf("primary", GetSurfaceName(pss, true));
+					m_xml.add_leaf("secondary", GetSurfaceName(pms, true));
 				}
 				m_xml.close_branch();
 			}
@@ -2679,11 +2741,8 @@ void FEBioExport4::WriteSurfaceLoads(FSStep& s)
 //-----------------------------------------------------------------------------
 // Export initial conditions
 //
-void FEBioExport4::WriteInitialSection()
+void FEBioExport4::WriteInitialSection(FSStep& s)
 {
-	FSModel& fem = m_prj.GetFSModel();
-	FSStep& s = *fem.GetStep(0);
-
 	// initial velocities
 	for (int j = 0; j < s.ICs(); ++j)
 	{
@@ -3165,6 +3224,17 @@ void FEBioExport4::WriteStepSection()
 				WriteControlSection(step);
 			}
 			m_xml.close_branch();
+
+			// output initial section
+			int nic = step.ICs();
+			if (nic > 0)
+			{
+				m_xml.add_branch("Initial");
+				{
+					WriteInitialSection(step);
+				}
+				m_xml.close_branch();
+			}
 
 			// output boundary section
 			int nbc = step.BCs();
