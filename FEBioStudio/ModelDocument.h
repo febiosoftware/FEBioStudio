@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "FEBioJob.h"
+#include <MeshIO/FSFileImport.h>
 #include <vector>
 
 //-----------------------------------------------------------------------------

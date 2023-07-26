@@ -46,11 +46,6 @@ typedef off_t off_type;
 #endif
 
 //-----------------------------------------------------------------------------
-// forward declaration of model class
-class FSModel;
-class FSProject;
-
-//-----------------------------------------------------------------------------
 class FileReader
 {
 public:
@@ -114,19 +109,6 @@ private:
 	int				m_nerrors;	//!< number of errors
 	off_type		m_nfilesize;	// size of file
 	bool			m_cancelled;	//!< file read was cancelled
-};
-
-//-----------------------------------------------------------------------------
-// class for reading FE file formats
-class FSFileImport : public FileReader
-{
-public:
-	FSFileImport(FSProject& prj) : m_prj(prj) {}
-
-	FSProject& GetProject() { return m_prj; }
-
-protected:
-	FSProject& m_prj;
 };
 
 // helper function to compare strings

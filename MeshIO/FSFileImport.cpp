@@ -24,69 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
+#include "stdafx.h"
+#include "FSFileImport.h"
+#include <stdarg.h>
 
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+FSFileImport::FSFileImport(FSProject& prj) : m_prj(prj) {}
 
-#include <list>
-//using namespace std;
-
-class FENASTRANimport : public FSFileImport
-{
-protected:
-	enum {MAX_ITEMS = 32};
-	struct CARD
-	{
-		char	szitem[MAX_ITEMS][17];
-		int		nitems;
-	};
-
-	struct GRID
-	{
-		double	x, y, z;
-	};
-
-	struct ELEM
-	{
-		int	pid;
-		int	nn;
-		int	n[20];
-	};
-
-	struct PSOLID
-	{
-		int	pid;
-		int	mid;
-	};
-
-	struct MAT1
-	{
-		int	mid;
-		double	E, v, d;
-	};
-
-public:
-	FENASTRANimport(FSProject& prj) : FSFileImport(prj) {}
-	bool Load(const char* szfile);
-
-protected:
-	bool ParseFile();
-
-	char* get_line(char* szline);
-	bool read_card(CARD& c, char* szline);
-
-	bool read_GRID  (CARD& c);
-	bool read_CTETRA(CARD& c);
-	bool read_PSOLID(CARD& c);
-	bool read_MAT1  (CARD& c);
-	bool read_CHEXA (CARD& c);
-
-	bool BuildMesh(FSModel& fem);
-
-protected:
-	list<GRID>		m_Node;
-	list<ELEM>		m_Elem;
-	list<PSOLID>	m_Part;
-	list<MAT1>		m_Mat;
-};
+FSProject& FSFileImport::GetProject() { return m_prj; }

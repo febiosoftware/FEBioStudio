@@ -25,68 +25,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+#include <FSCore/FileReader.h>
+#include <string>
 
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+//-----------------------------------------------------------------------------
+// forward declaration of model class
+class FSModel;
+class FSProject;
 
-#include <list>
-//using namespace std;
-
-class FENASTRANimport : public FSFileImport
+//-----------------------------------------------------------------------------
+// class for reading FE file formats
+class FSFileImport : public FileReader
 {
-protected:
-	enum {MAX_ITEMS = 32};
-	struct CARD
-	{
-		char	szitem[MAX_ITEMS][17];
-		int		nitems;
-	};
-
-	struct GRID
-	{
-		double	x, y, z;
-	};
-
-	struct ELEM
-	{
-		int	pid;
-		int	nn;
-		int	n[20];
-	};
-
-	struct PSOLID
-	{
-		int	pid;
-		int	mid;
-	};
-
-	struct MAT1
-	{
-		int	mid;
-		double	E, v, d;
-	};
-
 public:
-	FENASTRANimport(FSProject& prj) : FSFileImport(prj) {}
-	bool Load(const char* szfile);
+	FSFileImport(FSProject& prj);
+
+	FSProject& GetProject();
 
 protected:
-	bool ParseFile();
-
-	char* get_line(char* szline);
-	bool read_card(CARD& c, char* szline);
-
-	bool read_GRID  (CARD& c);
-	bool read_CTETRA(CARD& c);
-	bool read_PSOLID(CARD& c);
-	bool read_MAT1  (CARD& c);
-	bool read_CHEXA (CARD& c);
-
-	bool BuildMesh(FSModel& fem);
-
-protected:
-	list<GRID>		m_Node;
-	list<ELEM>		m_Elem;
-	list<PSOLID>	m_Part;
-	list<MAT1>		m_Mat;
+	FSProject& m_prj;
 };
