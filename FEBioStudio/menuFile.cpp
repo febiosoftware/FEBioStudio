@@ -484,15 +484,15 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
-		CDlgRAWImport dlg(this);
-		if (dlg.exec())
-		{
-			FERAWImport* reader = new FERAWImport(prj);
-			reader->SetImageDimensions(dlg.m_nx, dlg.m_ny, dlg.m_nz);
-			reader->SetBoxSize(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_w, dlg.m_h, dlg.m_d);
+		FERAWImport* reader = new FERAWImport(prj);
+		CDlgEditObject dlg(reader, "Import RAW", this);
+		if (dlg.exec()) {
 			return reader;
 		}
-		else return 0;
+		else {
+			delete reader;
+			return nullptr;
+		}
 	}
 	if (ext.compare("mphtxt", Qt::CaseInsensitive) == 0)
 	{
