@@ -76,6 +76,15 @@ bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
 		{
 			return false;
 		}
+
+        // for(int index = 0; index < dicom_names.size(); index++)
+        // {
+        //     std::vector<std::string> keys = reader.GetMetaDataKeys(index);
+        //     for(auto key : keys)
+        //     {
+        //         std::cout << "Slice " << index << " :" << key << ": " << reader.GetMetaData(index, key) << std::endl;
+        //     }
+        // }
     }
     else
     {
@@ -92,7 +101,15 @@ bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
 		{
 			return false;
 		}
+
+        auto keys = reader.GetMetaDataKeys();
+            for(auto key : keys)
+            {
+                std::cout << key << ": " << reader.GetMetaData(key) << std::endl;
+            }
     }
+
+    
 
     if(m_sitkImage.GetPixelID() != sitk::sitkUInt8)
     {
