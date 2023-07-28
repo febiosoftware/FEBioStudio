@@ -37,6 +37,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QScrollArea>
 #include <QScrollBar>
+#include <QDoubleSpinBox>
 #include <QCheckBox>
 #include <QMessageBox>
 #include "ImageMapTool.h"
@@ -53,15 +54,21 @@ SOFTWARE.*/
 #include <FEMLib/FELoadController.h>
 #include <FSCore/LoadCurve.h>
 #include <limits>
+#include <unordered_map>
 
+using std::unordered_map;
 
+enum {SAMPLE_NODES=0, SAMPLE_CENTROIDS, AVERAGE_ELEMS};
 
 class UIImageMapTool : public QWidget
 {
 public:
+    QFormLayout* formLayout;
+
     QLineEdit* name;
     QComboBox* imageBox;
     QComboBox* methodBox;
+    QDoubleSpinBox*  thresholdBox;
     QCheckBox* normalize;
     QCheckBox* useFilter;
     CCurveEditWidget* curveEdit;
@@ -82,14 +89,19 @@ public:
 
         QVBoxLayout* innerLayout = new QVBoxLayout;
 
-        QFormLayout* formLayout = new QFormLayout;
+        formLayout = new QFormLayout;
         formLayout->setContentsMargins(0,0,0,0);
         
         formLayout->addRow("Name:", name = new QLineEdit);
 
         formLayout->addRow("Image Model:", imageBox = new QComboBox);
         formLayout->addRow("Method:", methodBox = new QComboBox);
-        methodBox->addItems(QStringList() << "Sample Image at Nodes" << "Average Intensity Over Elements");
+        methodBox->addItems(QStringList() << "Sample Image at Nodes" << "Sample at Element Centroids" << "Average Intensity Over Elements");
+        formLayout->addRow("Surface Node Threshold:", thresholdBox = new QDoubleSpinBox);
+        thresholdBox->setValue(0);
+        thresholdBox->setMaximum(std::numeric_limits<double>::max());
+        thresholdBox->setMinimum(std::numeric_limits<double>::min());
+        thresholdVisible = true;
         formLayout->addRow("Normalize:", normalize = new QCheckBox);
         normalize->setChecked(true);
         formLayout->addRow("Filter:", useFilter = new QCheckBox);
@@ -120,11 +132,13 @@ public:
         setLayout(layout);
 
         connect(create, &QPushButton::clicked, tool, &CImageMapTool::OnCreate);
+        connect(methodBox, &QComboBox::currentIndexChanged, tool, &CImageMapTool::on_methodBox_currentIndexChanged);
         connect(useFilter, &QCheckBox::stateChanged, tool, &CImageMapTool::on_useFilter_stateChanged);
     }
 
 public:
     LoadCurve loadCurve;
+    bool thresholdVisible;
 };
 
 CImageMapTool::CImageMapTool(CMainWindow* wnd)
@@ -201,8 +215,6 @@ void CImageMapTool::OnCreate()
 		return;
 	}
 
-    bool calcNodalValues = ui->methodBox->currentIndex() == 0;
-
 	//get the model and nodeset
 	FSModel* ps = pdoc->GetFSModel();
 	GModel& model = ps->GetModel();
@@ -218,7 +230,7 @@ void CImageMapTool::OnCreate()
     FEPartData* pdata = new FEPartData(mesh);
     pdata->SetName(name.toStdString());
     
-    if(calcNodalValues)
+    if(ui->methodBox->currentIndex() == SAMPLE_NODES)
     {
         pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
     }
@@ -242,10 +254,48 @@ void CImageMapTool::OnCreate()
         elems.push_back(it->m_pi);
     }
 
-    if(calcNodalValues)
+    BOX box = imageModel->GetBoundingBox();
+    vec3d origin(box.x0, box.y0, box.z0);
+    vec3d spacing((box.x1-box.x0)/imageModel->Get3DImage()->Width(), 
+        (box.y1-box.y0)/imageModel->Get3DImage()->Height(),
+        (box.z1-box.z0)/imageModel->Get3DImage()->Depth());
+
+    switch(ui->methodBox->currentIndex())
     {
+    case SAMPLE_NODES:
+    {
+        double threshold = ui->thresholdBox->value();
+
         double min = std::numeric_limits<double>::max();
         double max = std::numeric_limits<double>::min();
+
+        // find all nodal normals
+        unordered_map<int, vec3f> normals;
+        for(int i = 0; i < mesh->Faces(); i++)
+        {
+            FSFace& currentFace = mesh->Face(i);
+
+            if(!currentFace.IsExterior()) continue;
+
+            for(int j = 0; j < currentFace.Nodes(); j++)
+            {
+                int nodeID = currentFace.n[j];
+
+                try
+                {
+                    normals.at(nodeID) += currentFace.m_nn[j];
+                }
+                catch(...)
+                {
+                    normals[nodeID] = currentFace.m_nn[j];
+                }
+            }
+        }
+
+        for(auto& normal : normals)
+        {
+            normal.second = normal.second.Normalize()*-1;
+        }
 
         #pragma omp parallel for
         for (int i = 0; i < NE; ++i)
@@ -254,8 +304,120 @@ void CImageMapTool::OnCreate()
             int ne = el->Nodes();
             for (int j = 0; j < ne; ++j)
             {
-                vec3d pos = mesh->LocalToGlobal(mesh->Node(el->m_node[j]).pos());
+                int nodeID = el->m_node[j];
+                FSNode& current = mesh->Node(el->m_node[j]);
+
+                vec3d pos = mesh->LocalToGlobal(current.pos());
                 double val = imageModel->ValueAtGlobalPos(pos);
+
+                if(current.IsExterior())
+                {
+                    int voxelIndexX = (pos.x - origin.x)/spacing.x;
+                    int voxelIndexY = (pos.y - origin.y)/spacing.y;
+                    int voxelIndexZ = (pos.z - origin.z)/spacing.z;
+
+                    double discreteVal = imageModel->Get3DImage()->value(voxelIndexX, voxelIndexY, voxelIndexZ);
+                    if(discreteVal >= threshold)
+                    {
+                        val = discreteVal;
+                    }
+                    else
+                    {
+                        vec3f normal = normals[nodeID];
+                        
+                        int xSign = normal.x > 0 ? 1 : -1;
+                        int ySign = normal.y > 0 ? 1 : -1;
+                        int zSign = normal.z > 0 ? 1 : -1;
+
+                        int iter = 0;
+                        vec3d currentPos = pos;
+                        while(iter < 5)
+                        {
+                            vec3d voxelCenter(origin.x + voxelIndexX*spacing.x + spacing.x/2,
+                            origin.y + voxelIndexY*spacing.y + spacing.y/2,
+                            origin.z + voxelIndexZ*spacing.z + spacing.z/2);
+
+                            double vFarthestX = voxelCenter.x + spacing.x/2*xSign;
+                            double vFarthestY = voxelCenter.y + spacing.y/2*ySign;
+                            double vFarthestZ = voxelCenter.z + spacing.z/2*zSign;
+
+                            double xSteps, ySteps, zSteps;
+                            if(normal.x == 0)
+                            {
+                                xSteps = INFINITY;
+                            }
+                            else
+                            {
+                                xSteps = abs((vFarthestX - currentPos.x)/normal.x);
+                            }
+                            
+                            if(normal.y == 0)
+                            {
+                                ySteps = INFINITY;
+                            }
+                            else
+                            {
+                                ySteps = abs((vFarthestY - currentPos.y)/normal.y);
+                            }
+                            
+                            if(normal.z == 0)
+                            {
+                                zSteps = INFINITY;
+                            }
+                            else
+                            {
+                                zSteps = abs((vFarthestZ - currentPos.z)/normal.z);
+                            }
+
+                            double min = std::min({xSteps, ySteps, zSteps});
+
+                            if(min == xSteps)
+                            {
+                                currentPos.y += normal.y/normal.x*(vFarthestX - currentPos.x);
+                                currentPos.z += normal.z/normal.x*(vFarthestX - currentPos.x);
+
+                                currentPos.x = vFarthestX;
+
+                                voxelIndexX += xSign;
+                            }
+                            else if(min == ySteps)
+                            {
+                                currentPos.x += normal.x/normal.y*(vFarthestY - currentPos.y);
+                                currentPos.z += normal.z/normal.y*(vFarthestY - currentPos.y);
+
+                                currentPos.y = vFarthestY;
+
+                                voxelIndexY += ySign;
+                            }
+                            else
+                            {
+                                currentPos.x += normal.x/normal.z*(vFarthestZ - currentPos.z);
+                                currentPos.y += normal.y/normal.z*(vFarthestZ - currentPos.z);
+                                
+                                currentPos.z = vFarthestZ;
+
+                                voxelIndexZ += zSign;
+                            }
+
+                            if(voxelIndexX >= imageModel->Get3DImage()->Width() || 
+                                voxelIndexY >= imageModel->Get3DImage()->Height() ||
+                                voxelIndexZ >= imageModel->Get3DImage()->Depth())
+                            {
+                                break;
+                            }
+
+                            double tempVal = imageModel->Get3DImage()->value(voxelIndexX, voxelIndexY, voxelIndexZ);
+
+                            if(tempVal >= threshold)
+                            {
+                                val = tempVal;
+                                break;
+                            }
+
+                            iter++;
+                        }
+                    }
+                }
 
                 if(val < min)
                 {
@@ -293,8 +455,61 @@ void CImageMapTool::OnCreate()
             }
 
         }
+        break;
     }
-    else
+    case SAMPLE_CENTROIDS:
+    {
+        double min = std::numeric_limits<double>::max();
+        double max = std::numeric_limits<double>::min();
+
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
+        {
+            FEElement_* el = elems[i];
+            int ne = el->Nodes();
+            
+            // Find element centroid
+            vec3d pos(0);
+            for (int j = 0; j < ne; ++j)
+            {
+                pos += mesh->LocalToGlobal(mesh->Node(el->m_node[j]).pos());
+            }
+            pos /= ne;
+
+            double val = imageModel->ValueAtGlobalPos(pos);
+
+            if(val < min)
+            {
+                min = val;
+            }
+            else if(val > max)
+            {
+                max = val;
+            }
+
+            pdata->SetValue(i, 0, val);
+        }
+
+        #pragma omp parallel for
+        for (int i = 0; i < NE; ++i)
+        {
+            double val = pdata->GetValue(i, 0);
+
+            if(normalize)
+            {
+                val = (val - min)/(max-min);
+            }
+
+            if(useFilter)
+            {
+                val = ui->loadCurve.value(val);
+            }
+
+            pdata->SetValue(i, 0, val);
+        }
+        break;
+    }
+    case AVERAGE_ELEMS:
     {
         BOX box = imageModel->GetBoundingBox();
         vec3d origin(box.x0, box.y0, box.z0);
@@ -429,6 +644,8 @@ void CImageMapTool::OnCreate()
 
             pdata->SetValue(i, 0, val);
         }
+        break;
+    }
     }
     delete elemList;
 
@@ -440,4 +657,28 @@ void CImageMapTool::OnCreate()
 void CImageMapTool::on_useFilter_stateChanged(int state)
 {
     ui->curveEdit->setHidden(state == 0);
+}
+
+void CImageMapTool::on_methodBox_currentIndexChanged(int index)
+{
+    if(index == 0)
+    {
+        if(!ui->thresholdVisible)
+        {
+            ui->formLayout->insertRow(3, "Surface Node Threshold", ui->thresholdBox = new QDoubleSpinBox);
+            ui->thresholdBox->setValue(0);
+            ui->thresholdBox->setMaximum(std::numeric_limits<double>::max());
+            ui->thresholdBox->setMinimum(std::numeric_limits<double>::min());
+            ui->thresholdVisible = true;
+        }
+    }
+    else
+    {
+        if(ui->thresholdVisible)
+        {
+            ui->formLayout->removeRow(3);
+            ui->thresholdVisible = false;
+        }
+        
+    }
 }

@@ -44,9 +44,11 @@ public:
 private slots:
 	void OnCreate();
     void on_useFilter_stateChanged(int state);
+    void on_methodBox_currentIndexChanged(int index);
 
 private:
 	void Clear();
+    
 
 private:
     friend class UIImageMapTool;
