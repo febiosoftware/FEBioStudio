@@ -25,24 +25,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QDialog>
+#include <FSCore/FileReader.h>
+#include <string>
 
-namespace Ui {
-	class CDlgVTKExport;
-}
+//-----------------------------------------------------------------------------
+// forward declaration of model class
+class FSModel;
+class FSProject;
 
-class CDlgVTKExport : public QDialog
+//-----------------------------------------------------------------------------
+// class for reading FE file formats
+class FSFileImport : public FileReader
 {
 public:
-	CDlgVTKExport(QWidget* parent);
+	FSFileImport(FSProject& prj);
 
-	void accept();
+	FSProject& GetProject();
 
-public:
-	bool	m_bpart_ids;
-	bool	m_bshell_thick;
-	bool	m_bscalar_data;
-
-private:
-	Ui::CDlgVTKExport*	ui;
+protected:
+	FSProject& m_prj;
 };

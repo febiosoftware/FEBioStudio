@@ -1,6 +1,6 @@
 #pragma once
-#include <MeshIO/FileReader.h>
-#include <MeshIO/FileWriter.h>
+#include <FSCore/FileReader.h>
+#include <FSCore/FileWriter.h>
 
 class CPostDocument;
 class XMLTag;

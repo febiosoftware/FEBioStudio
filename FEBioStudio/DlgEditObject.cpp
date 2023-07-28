@@ -24,21 +24,47 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include <QDialog>
+#include "stdafx.h"
+#include "DlgEditObject.h"
+#include <QCheckBox>
+#include <QDialogButtonBox>
+#include <QBoxLayout>
+#include "PropertyListForm.h"
+#include "ObjectProps.h"
 
-class QRadioButton;
-
-class CDlgImportSTL : public QDialog
+class Ui::CDlgEditObject
 {
 public:
-	CDlgImportSTL(QWidget* parent);
-
-	void accept();
+	CPropertyListForm* m_form;
 
 public:
-	int	m_nselect;
+	void setupUi(QWidget* parent)
+	{
+		QVBoxLayout* layout = new QVBoxLayout;
 
-private:
-	QRadioButton*	m_sel[2];
+		m_form = new CPropertyListForm;
+		layout->addWidget(m_form);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		layout->addWidget(bb);
+
+		parent->setLayout(layout);
+
+		QObject::connect(bb, SIGNAL(accepted()), parent, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), parent, SLOT(reject()));
+	}
 };
+
+CDlgEditObject::CDlgEditObject(FSBase* po, QString dlgTitle, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgEditObject)
+{
+	if (dlgTitle.isEmpty() == false) setWindowTitle(dlgTitle);
+
+	m_po = po;
+	ui->setupUi(this);
+	ui->m_form->setPropertyList(new CObjectProps(m_po));
+}
+
+void CDlgEditObject::accept()
+{
+	QDialog::accept();
+}

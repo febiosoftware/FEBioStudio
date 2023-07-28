@@ -1,7 +1,7 @@
-/*This file is part of the PostView source code and is licensed under the MIT license
+/*This file is part of the FEBio Studio source code and is licensed under the MIT license
 listed below.
 
-See Copyright-PostView.txt for details.
+See Copyright-FEBio-Studio.txt for details.
 
 Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
@@ -26,31 +26,20 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
+#include <FSCore/FSObject.h>
 
 namespace Ui {
-	class CDlgExportAscii;
-};
+	class CDlgEditObject;
+}
 
-class CDlgExportAscii : public QDialog
+class CDlgEditObject : public QDialog
 {
 public:
-	CDlgExportAscii(QWidget* parent);
-	
+	CDlgEditObject(FSBase* po, QString dlgTitle, QWidget* parent);
+
 	void accept();
 
-public:
-	bool	m_bcoords;
-	bool	m_belem;
-	bool	m_bndata;
-	bool	m_bedata;
-	bool	m_bface;
-	bool	m_bsel;
-	bool	m_bfnormals;
-
-	int		m_nstep;	 // 0 = current, 1 = all
-
-	char	m_szfmt[256];	// format string for data values
-
 private:
-	Ui::CDlgExportAscii* ui;
+	FSBase* m_po;
+	Ui::CDlgEditObject*	ui;
 };

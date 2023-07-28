@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshTools/FESelection.h>
 #include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
-#include <MeshIO/FileReader.h>
+#include <FSCore/FileReader.h>
 #include "CommandManager.h"
 #include "FEBioOpt.h"
 #include <PostLib/ImageModel.h>

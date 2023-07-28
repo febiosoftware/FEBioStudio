@@ -1,5 +1,5 @@
 #pragma once
-#include <MeshIO/FileReader.h>
+#include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 
 #include <list>
@@ -16,22 +16,12 @@ using std::map;
 
 class COMSOLimport : public FSFileImport
 {
-
 public:
 	COMSOLimport(FSProject& prj);
 	virtual ~COMSOLimport();
 	bool	Load(const char* szfile);
-	bool	m_domainstosets;	// create element sets by comsol domain
-	bool	m_bautopart;	// create parts out of sets	
-	bool	m_addtris;	    // add triangle planar elements
-	bool	m_addquads;	    // add quad planar elements
-	bool	m_addtets;	    // add tet elements
-	bool	m_addhexes;	    // add hex elements
-	bool	m_addprisms;	// add prism elements (5 sided/pentahedral)
-	bool	m_pyrstotets;	// convert pyramid elements to two tets by splitting
-    bool    m_addpyrs;      // add pyramid elements
-	bool	m_eltypeseg;	// segregate element types in partitioning and set generation
-	
+
+	bool UpdateData(bool bsave) override;
 
 protected:
 	
@@ -78,4 +68,16 @@ protected:
 	FSModel*	m_pfem;
     int m_totalelems;
     int m_node0;
+
+private:
+	bool	m_domainstosets;	// create element sets by comsol domain
+	bool	m_bautopart;	// create parts out of sets	
+	bool	m_addtris;	    // add triangle planar elements
+	bool	m_addquads;	    // add quad planar elements
+	bool	m_addtets;	    // add tet elements
+	bool	m_addhexes;	    // add hex elements
+	bool	m_addprisms;	// add prism elements (5 sided/pentahedral)
+	bool	m_pyrstotets;	// convert pyramid elements to two tets by splitting
+	bool    m_addpyrs;      // add pyramid elements
+	bool	m_eltypeseg;	// segregate element types in partitioning and set generation
 };

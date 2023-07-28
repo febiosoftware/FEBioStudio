@@ -24,22 +24,10 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include <QDialog>
-#include <Abaqus/AbaqusImport.h>
+#include "stdafx.h"
+#include "FSFileImport.h"
+#include <stdarg.h>
 
-namespace Ui {
-	class CDlgImportAbaqus;
-}
+FSFileImport::FSFileImport(FSProject& prj) : m_prj(prj) {}
 
-class CDlgImportAbaqus : public QDialog
-{
-public:
-	CDlgImportAbaqus(AbaqusImport* fileReader, QWidget* parent);
-
-	void accept();
-
-private:
-	AbaqusImport*	m_fileReader;
-	Ui::CDlgImportAbaqus*	ui;
-};
+FSProject& FSFileImport::GetProject() { return m_prj; }

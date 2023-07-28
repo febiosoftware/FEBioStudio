@@ -31,11 +31,37 @@ SOFTWARE.*/
 
 FEVTKExport::FEVTKExport(FSProject& prj) : FSFileExport(prj)
 {
+	m_ops.bpartIds = true;
+	m_ops.bshellthick = false;
+	m_ops.bscalardata = false;
+
+	AddBoolParam(m_ops.bpartIds, "parts_as_cells", "Write part numbers as CELL_DATA");
+	AddBoolParam(m_ops.bshellthick, "shell_thick", "Write shell thickness");
+	AddBoolParam(m_ops.bscalardata, "scalar_data", "Write scalar data");
 }
 
 FEVTKExport::~FEVTKExport(void)
 {
 }
+
+bool FEVTKExport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_ops.bpartIds    = GetBoolValue(0);
+		m_ops.bshellthick = GetBoolValue(1);
+		m_ops.bscalardata = GetBoolValue(2);
+	}
+	else
+	{
+		SetBoolValue(0, m_ops.bpartIds);
+		SetBoolValue(1, m_ops.bshellthick);
+		SetBoolValue(2, m_ops.bscalardata);
+	}
+
+	return false;
+}
+
 
 bool FEVTKExport::Write(const char* szfile)
 {

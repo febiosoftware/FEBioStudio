@@ -50,6 +50,7 @@ protected:
 	bool Read_Element_Shell();
 	bool Read_Element_Shell_Thickness();
 	bool Read_Domain_Shell_Thickness();
+	bool Read_Element_Discrete();
 	bool Read_Node();
 	bool Read_Nodal_Results();
 	bool Read_Part();
@@ -60,6 +61,7 @@ protected:
 	bool Read_Mat_Viscoelastic();
 	bool Read_Mat_Kelvin_Maxwell_Viscoelastic();
 	bool Read_Mat_Elastic_Spring_Discrete_Beam();
+	bool Read_Mat_Spring();
 	bool Read_Mat_Other();
 	bool Read_Set_Segment_Title();
 	bool Read_Include();

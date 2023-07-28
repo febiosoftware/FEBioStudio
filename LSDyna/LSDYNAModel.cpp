@@ -26,8 +26,10 @@ SOFTWARE.*/
 
 #include "LSDYNAModel.h"
 #include <FEMLib/FSModel.h>
-#include "GeomLib/GMeshObject.h"
-#include "FEMLib/FEMultiMaterial.h"
+#include <GeomLib/GMeshObject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FEMultiMaterial.h>
+#include <FEMLib/GDiscreteObject.h>
 #include <sstream>
 
 LSDYNAModel::LSDYNAModel()
@@ -111,8 +113,32 @@ bool LSDYNAModel::BuildModel(FSModel& fem)
 	// build load curves
 	if (BuildLoadCurves(fem) == false) return false;
 
+	// build the discrete elements
+	if (BuildDiscrete(fem) == false) return false;
+
 	// all good
 	return true;
+}
+
+void LSDYNAModel::BuildNLT()
+{
+	// create nodes
+	int nodes = m_node.size();
+	vector<NODE>::iterator in = m_node.begin();
+	int imin = 0, imax = 0;
+	for (int i = 0; i < nodes; ++i, ++in)
+	{
+		if (i == 0 || (in->id < imin)) imin = in->id;
+		if (i == 0 || (in->id > imax)) imax = in->id;
+	}
+
+	// build the node lookup table
+	// this is used to convert node IDs into zero-based IDs
+	m_off = imin;
+	int nsize = imax - imin + 1;
+	m_NLT.assign(nsize, -1);
+	in = m_node.begin();
+	for (int i = 0; i < nodes; ++i, ++in) m_NLT[in->id - imin] = i;
 }
 
 bool LSDYNAModel::BuildFEMesh(FSModel& fem)
@@ -130,27 +156,19 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	FSMesh* pm = new FSMesh();
 	pm->Create(nodes, elems);
 
+	// build the node table
+	BuildNLT();
+
 	// create nodes
 	vector<NODE>::iterator in = m_node.begin();
 	FSNode* pn = pm->NodePtr();
-	int imin = 0, imax = 0;
 	for (int i = 0; i<nodes; ++i, ++pn, ++in)
 	{
 		in->n = i;
 		pn->r.x = in->x;
 		pn->r.y = in->y;
 		pn->r.z = in->z;
-
-		if (i == 0 || (in->id < imin)) imin = in->id;
-		if (i == 0 || (in->id > imax)) imax = in->id;
 	}
-
-	// build the node lookup table
-	// this is used to convert node IDs into zero-based IDs
-	int nsize = imax - imin + 1;
-	vector<int> NLT(nsize, -1);
-	in = m_node.begin();
-	for (int i = 0; i<nodes; ++i, ++in) NLT[in->id - imin] = i;
 
 	// get pointer to elements
 	int eid = 0;
@@ -184,14 +202,14 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 			}
 			else pe->SetType(FE_HEX8);
 
-			pe->m_node[0] = NLT[ih.n[0] - imin]; if (pe->m_node[0] < 0) return false;
-			pe->m_node[1] = NLT[ih.n[1] - imin]; if (pe->m_node[1] < 0) return false;
-			pe->m_node[2] = NLT[ih.n[2] - imin]; if (pe->m_node[2] < 0) return false;
-			pe->m_node[3] = NLT[ih.n[3] - imin]; if (pe->m_node[3] < 0) return false;
-			pe->m_node[4] = NLT[ih.n[4] - imin]; if (pe->m_node[4] < 0) return false;
-			pe->m_node[5] = NLT[ih.n[5] - imin]; if (pe->m_node[5] < 0) return false;
-			pe->m_node[6] = NLT[ih.n[6] - imin]; if (pe->m_node[6] < 0) return false;
-			pe->m_node[7] = NLT[ih.n[7] - imin]; if (pe->m_node[7] < 0) return false;
+			pe->m_node[0] = NodeIndex(ih.n[0]); if (pe->m_node[0] < 0) return false;
+			pe->m_node[1] = NodeIndex(ih.n[1]); if (pe->m_node[1] < 0) return false;
+			pe->m_node[2] = NodeIndex(ih.n[2]); if (pe->m_node[2] < 0) return false;
+			pe->m_node[3] = NodeIndex(ih.n[3]); if (pe->m_node[3] < 0) return false;
+			pe->m_node[4] = NodeIndex(ih.n[4]); if (pe->m_node[4] < 0) return false;
+			pe->m_node[5] = NodeIndex(ih.n[5]); if (pe->m_node[5] < 0) return false;
+			pe->m_node[6] = NodeIndex(ih.n[6]); if (pe->m_node[6] < 0) return false;
+			pe->m_node[7] = NodeIndex(ih.n[7]); if (pe->m_node[7] < 0) return false;
 		}
 	}
 
@@ -208,10 +226,10 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 			pe->SetType(is.n[3] == is.n[2] ? FE_TRI3 : FE_QUAD4);
 			pe->m_gid = is.pid;
 
-			pe->m_node[0] = NLT[is.n[0] - imin]; if (pe->m_node[0] < 0) return false;
-			pe->m_node[1] = NLT[is.n[1] - imin]; if (pe->m_node[1] < 0) return false;
-			pe->m_node[2] = NLT[is.n[2] - imin]; if (pe->m_node[2] < 0) return false;
-			pe->m_node[3] = NLT[is.n[3] - imin]; if (pe->m_node[3] < 0) return false;
+			pe->m_node[0] = NodeIndex(is.n[0]); if (pe->m_node[0] < 0) return false;
+			pe->m_node[1] = NodeIndex(is.n[1]); if (pe->m_node[1] < 0) return false;
+			pe->m_node[2] = NodeIndex(is.n[2]); if (pe->m_node[2] < 0) return false;
+			pe->m_node[3] = NodeIndex(is.n[3]); if (pe->m_node[3] < 0) return false;
 
             int n = FindShellDomain(is.pid);
             if (n != -1) {
@@ -386,7 +404,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 	for (SET_NODE_LIST_TITLE& nl : m_nodelist)
 	{
 		std::vector<int> nodelist(nl.m_nodelist);
-		for (int i = 0; i < nodelist.size(); ++i) nodelist[i] = NLT[nodelist[i] - imin];
+		for (int i = 0; i < nodelist.size(); ++i) nodelist[i] = NodeIndex(nodelist[i]);
 		FSNodeSet* pg = new FSNodeSet(m_po, nodelist);
 		pg->SetName(nl.m_name);
 		m_po->AddFENodeSet(pg);
@@ -409,21 +427,21 @@ void LSDYNAModel::UpdateMesh(FSMesh& mesh)
 	int faces = mesh.Faces();
 
 	m_nFace.resize(nodes);
-	for (i = 0; i<nodes; ++i) m_nFace[i] = 0;
+	for (i = 0; i < nodes; ++i) m_nFace[i] = 0;
 
-	for (i = 0; i<faces; ++i)
+	for (i = 0; i < faces; ++i)
 	{
 		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
-		for (j = 0; j<n; ++j) m_nFace[face.n[j]]++;
+		for (j = 0; j < n; ++j) m_nFace[face.n[j]]++;
 		nsize += n;
 	}
 
 	m_iFace.resize(nsize);
 	m_pFace.resize(nodes);
-	int *pi = &m_iFace[0];
+	int* pi = &m_iFace[0];
 
-	for (i = 0; i<nodes; ++i)
+	for (i = 0; i < nodes; ++i)
 	{
 		m_pFace[i] = pi;
 		n = m_nFace[i];
@@ -431,11 +449,11 @@ void LSDYNAModel::UpdateMesh(FSMesh& mesh)
 		m_nFace[i] = 0;
 	}
 
-	for (i = 0; i<faces; ++i)
+	for (i = 0; i < faces; ++i)
 	{
 		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
-		for (j = 0; j<n; ++j)
+		for (j = 0; j < n; ++j)
 		{
 			m = face.n[j];
 
@@ -478,7 +496,7 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			FSMooneyRivlin* emat = new FSMooneyRivlin(&fem);
 			gpmat = pmat;
 			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
-			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
+			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi / 2.);
 			emat->SetFloatValue(FSMooneyRivlin::MP_B, 0);
 			emat->SetFloatValue(FSMooneyRivlin::MP_K, lmat.bulk);
 			pmat->SetElasticMaterial(emat);
@@ -491,12 +509,16 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			FSMooneyRivlin* emat = new FSMooneyRivlin(&fem);
 			gpmat = pmat;
 			emat->SetFloatValue(FSMooneyRivlin::MP_DENSITY, lmat.ro);
-			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi/2.);
+			emat->SetFloatValue(FSMooneyRivlin::MP_A, lmat.gi / 2.);
 			emat->SetFloatValue(FSMooneyRivlin::MP_B, 0);
 			emat->SetFloatValue(FSMooneyRivlin::MP_K, lmat.bulk);
 			pmat->SetElasticMaterial(emat);
 			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_G1, lmat.g0 / lmat.gi - 1);
 			pmat->SetFloatValue(FSUncoupledViscoElastic::MP_T1, 1.0 / lmat.dc);
+		}
+		else if (dynamic_cast<MAT_SPRING_NONLINEAR_ELASTIC*>(glmat))
+		{
+			// skip this because this will be handled when we create the discrete springs
 		}
 		// For unknown materials, use MAT_ELASTIC
 		else {
@@ -504,22 +526,25 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 			gpmat = pmat;
 		}
 
-		GMaterial* pgm = new GMaterial(gpmat);
-		fem.AddMaterial(pgm);
-		pgm->SetName(glmat->szname);
-
-		// see if there is a part that has this material
-		int nparts = (int)m_part.size();
-		for (int j = 0; j<nparts; ++j)
+		if (gpmat)
 		{
-			PART& p = m_part[j];
-			if (p.mid == glmat->mid)
+			GMaterial* pgm = new GMaterial(gpmat);
+			fem.AddMaterial(pgm);
+			pgm->SetName(glmat->szname);
+
+			// see if there is a part that has this material
+			int nparts = (int)m_part.size();
+			for (int j = 0; j < nparts; ++j)
 			{
-				int n = p.lid;
-				if ((n>=0) && (m_po->Parts()))
+				PART& p = m_part[j];
+				if (p.mid == glmat->mid)
 				{
-					GPart* pg = m_po->Part(n);
-					pg->SetMaterialID(pgm->GetID());
+					int n = p.lid;
+					if ((n >= 0) && (m_po->Parts()))
+					{
+						GPart* pg = m_po->Part(n);
+						pg->SetMaterialID(pgm->GetID());
+					}
 				}
 			}
 		}
@@ -530,6 +555,26 @@ bool LSDYNAModel::BuildMaterials(FSModel& fem)
 
 bool LSDYNAModel::BuildLoadCurves(FSModel& fem)
 {
+	if (m_lc.size() == 0) return true;
+
+	// build the load curve lookup table
+	int minid = -1, maxid = -1;
+	for (int i = 0; i < m_lc.size(); ++i)
+	{
+		LOAD_CURVE& lc = m_lc[i];
+		int id = lc.m_lcid;
+		if ((minid == -1) || (id < minid)) minid = id;
+		if ((maxid == -1) || (id > maxid)) maxid = id;
+	}
+	m_lct_off = minid;
+	m_LCT.assign(maxid - minid + 1, -1);
+	for (int i = 0; i < m_lc.size(); ++i)
+	{
+		LOAD_CURVE& lc = m_lc[i];
+		int id = lc.m_lcid;
+		m_LCT[id - m_lct_off] = i;
+	}
+
 	for (int i = 0; i < m_lc.size(); ++i)
 	{
 		LOAD_CURVE& lsc = m_lc[i];
@@ -572,5 +617,53 @@ bool LSDYNAModel::BuildParameters(FSModel& fem)
 		fem.AddDoubleParam(p.m_val, strdup(p.m_name.c_str()));
 	}
 
+	return true;
+}
+
+// in GMaterial.cpp
+extern GLColor col[GMaterial::MAX_COLORS];
+
+bool LSDYNAModel::BuildDiscrete(FSModel& fem)
+{
+	GModel& m = fem.GetModel();
+
+	// first, for each spring material, create a discrete spring set
+	auto it = m_Mat.begin();
+	std::unordered_map<int, GDiscreteSpringSet*> map;
+	int nc = 0;
+	for (int i = 0; i < m_Mat.size(); ++i, ++it)
+	{
+		LSDYNAModel::MAT_SPRING_NONLINEAR_ELASTIC* mat = dynamic_cast<LSDYNAModel::MAT_SPRING_NONLINEAR_ELASTIC*>(*it);
+		if (mat)
+		{
+			GDiscreteSpringSet* ps = new GDiscreteSpringSet(&m);
+			ps->SetColor(col[(nc++) % GMaterial::MAX_COLORS]);
+			
+			FSNonLinearSpringMaterial* sm = new FSNonLinearSpringMaterial(&fem);
+			Param* pF = sm->GetParam("force");
+			pF->SetFloatValue(1.0);
+			int lc = m_LCT[mat->lcd - m_lct_off];
+			int lcid = fem.GetLoadController(lc)->GetID();
+			pF->SetLoadCurveID(lcid);
+			ps->SetMaterial(sm);
+			ps->SetName(mat->szname);
+			m.AddDiscreteObject(ps);
+			map[mat->mid] = ps;
+		}
+	}
+
+	GMeshObject* po = m_po;
+	for (int i = 0; i < m_discrete.size(); ++i)
+	{
+		ELEMENT_DISCRETE& el = m_discrete[i];
+		int n1 = NodeIndex(el.n1);
+		int n2 = NodeIndex(el.n2);
+		int m1 = po->MakeGNode(n1);
+		int m2 = po->MakeGNode(n2);
+
+		GDiscreteSpringSet* ps = map[el.pid];
+		ps->AddElement(m1, m2);
+	}
+	
 	return true;
 }
