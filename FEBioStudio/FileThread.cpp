@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FileThread.h"
 #include "MainWindow.h"
-#include <MeshIO/FileReader.h>
+#include <FSCore/FileReader.h>
 
 CFileThread::CFileThread(CMainWindow* wnd, const QueuedFile& file) : m_wnd(wnd), m_file(file)
 {

@@ -25,34 +25,25 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "DlgImportAbaqus.h"
+#include "DlgEditObject.h"
 #include <QCheckBox>
 #include <QDialogButtonBox>
 #include <QBoxLayout>
+#include "PropertyListForm.h"
+#include "ObjectProps.h"
 
-class Ui::CDlgImportAbaqus
+class Ui::CDlgEditObject
 {
 public:
-	QCheckBox* pc[6];
+	CPropertyListForm* m_form;
 
 public:
 	void setupUi(QWidget* parent)
 	{
 		QVBoxLayout* layout = new QVBoxLayout;
 
-		pc[0] = new QCheckBox("Import node sets");
-		pc[1] = new QCheckBox("Import element sets");
-		pc[2] = new QCheckBox("Import surface");
-		pc[3] = new QCheckBox("Auto-partition from element sets");
-		pc[4] = new QCheckBox("Auto-partition surface");
-		pc[5] = new QCheckBox("Process solid sections");
-
-		layout->addWidget(pc[0]);
-		layout->addWidget(pc[1]);
-		layout->addWidget(pc[2]);
-		layout->addWidget(pc[3]);
-		layout->addWidget(pc[4]);
-		layout->addWidget(pc[5]);
+		m_form = new CPropertyListForm;
+		layout->addWidget(m_form);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
@@ -64,26 +55,16 @@ public:
 	}
 };
 
-CDlgImportAbaqus::CDlgImportAbaqus(AbaqusImport* fileReader, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgImportAbaqus)
+CDlgEditObject::CDlgEditObject(FSBase* po, QString dlgTitle, QWidget* parent) : QDialog(parent), ui(new Ui::CDlgEditObject)
 {
-	m_fileReader = fileReader;
-	ui->setupUi(this);
+	if (dlgTitle.isEmpty() == false) setWindowTitle(dlgTitle);
 
-	ui->pc[0]->setChecked(m_fileReader->m_bnodesets   );
-	ui->pc[1]->setChecked(m_fileReader->m_belemsets   );
-	ui->pc[2]->setChecked(m_fileReader->m_bfacesets   );
-	ui->pc[3]->setChecked(m_fileReader->m_bautopart   );
-	ui->pc[4]->setChecked(m_fileReader->m_bautosurf   );
-	ui->pc[5]->setChecked(m_fileReader->m_bssection   );
+	m_po = po;
+	ui->setupUi(this);
+	ui->m_form->setPropertyList(new CObjectProps(m_po));
 }
 
-void CDlgImportAbaqus::accept()
+void CDlgEditObject::accept()
 {
-	m_fileReader->m_bnodesets    = ui->pc[0]->isChecked();
-	m_fileReader->m_belemsets    = ui->pc[1]->isChecked();
-	m_fileReader->m_bfacesets    = ui->pc[2]->isChecked();
-	m_fileReader->m_bautopart    = ui->pc[3]->isChecked();
-	m_fileReader->m_bautosurf    = ui->pc[4]->isChecked();
-	m_fileReader->m_bssection    = ui->pc[5]->isChecked();
 	QDialog::accept();
 }

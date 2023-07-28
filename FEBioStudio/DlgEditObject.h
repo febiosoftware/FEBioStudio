@@ -26,20 +26,20 @@ SOFTWARE.*/
 
 #pragma once
 #include <QDialog>
-#include <Comsol/COMSOLImport.h>
+#include <FSCore/FSObject.h>
 
 namespace Ui {
-	class CDlgImportCOMSOL;
+	class CDlgEditObject;
 }
 
-class CDlgImportCOMSOL : public QDialog
+class CDlgEditObject : public QDialog
 {
 public:
-	CDlgImportCOMSOL(COMSOLimport* fileReader, QWidget* parent);
+	CDlgEditObject(FSBase* po, QString dlgTitle, QWidget* parent);
 
 	void accept();
 
 private:
-	COMSOLimport*	m_fileReader;
-	Ui::CDlgImportCOMSOL*	ui;
+	FSBase* m_po;
+	Ui::CDlgEditObject*	ui;
 };

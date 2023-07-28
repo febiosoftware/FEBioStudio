@@ -25,21 +25,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QDialog>
-#include <Abaqus/AbaqusImport.h>
+#include <FSCore/FileReader.h>
+#include <string>
 
-namespace Ui {
-	class CDlgImportAbaqus;
-}
+//-----------------------------------------------------------------------------
+// forward declaration of model class
+class FSModel;
+class FSProject;
 
-class CDlgImportAbaqus : public QDialog
+//-----------------------------------------------------------------------------
+// class for reading FE file formats
+class FSFileImport : public FileReader
 {
 public:
-	CDlgImportAbaqus(AbaqusImport* fileReader, QWidget* parent);
+	FSFileImport(FSProject& prj);
 
-	void accept();
+	FSProject& GetProject();
 
-private:
-	AbaqusImport*	m_fileReader;
-	Ui::CDlgImportAbaqus*	ui;
+protected:
+	FSProject& m_prj;
 };

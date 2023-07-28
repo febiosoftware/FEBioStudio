@@ -681,6 +681,9 @@ public:
 	std::vector<double> GetParamArrayDouble(const char* szparam) { return GetParam(szparam)->GetArrayDoubleValue(); }
 
 public:
+	int SetActiveGroup(const char* szgroup) { return m_Param.SetActiveGroup(szgroup); }
+
+public:
 	ParamBlock& GetParamBlock() { return m_Param; }
 	const ParamBlock& GetParamBlock() const { return m_Param; }
 

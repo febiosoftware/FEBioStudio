@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FileReader.h"
+#include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 
 //-----------------------------------------------------------------------------
@@ -47,7 +47,10 @@ public:
 	//! Load the image data
 	bool Load(const char* szfile);
 
+	bool UpdateData(bool bsave) override;
+
 protected:
+	int	m_ntype;
 	int	m_nx, m_ny, m_nz;		//!< image dimensions
 	double	m_x0, m_y0, m_z0;	//!< position of box
 	double	m_w, m_h, m_d;		//!< size of box

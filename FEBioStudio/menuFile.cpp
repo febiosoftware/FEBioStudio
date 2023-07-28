@@ -81,9 +81,8 @@ SOFTWARE.*/
 #include <MeshIO/STEPImport.h>
 #include <Abaqus/AbaqusExport.h>
 #include <FSCore/FSDir.h>
-#include "DlgImportAbaqus.h"
+#include "DlgEditObject.h"
 #include "DlgRAWImport.h"
-#include "DlgImportCOMSOL.h"
 #include "DlgLSDYNAExport.h"
 #include "DlgVTKExport.h"
 #include "DlgExportFEBio.h"
@@ -461,12 +460,12 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* reader = new AbaqusImport(prj);
-		CDlgImportAbaqus dlg(reader, this);
+		CDlgEditObject dlg(reader, "Import Abaqus", this);
 		if (dlg.exec())
 		{
 			return reader;
 		}
-		else return 0;
+		else return nullptr;
 	}
 	if (ext.compare("cdb", Qt::CaseInsensitive) == 0) return new AnsysImport(prj);
 	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new FELSDYNAimport(prj);
@@ -485,20 +484,20 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
-		CDlgRAWImport dlg(this);
-		if (dlg.exec())
-		{
-			FERAWImport* reader = new FERAWImport(prj);
-			reader->SetImageDimensions(dlg.m_nx, dlg.m_ny, dlg.m_nz);
-			reader->SetBoxSize(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_w, dlg.m_h, dlg.m_d);
+		FERAWImport* reader = new FERAWImport(prj);
+		CDlgEditObject dlg(reader, "Import RAW", this);
+		if (dlg.exec()) {
 			return reader;
 		}
-		else return 0;
+		else {
+			delete reader;
+			return nullptr;
+		}
 	}
 	if (ext.compare("mphtxt", Qt::CaseInsensitive) == 0)
 	{
 		COMSOLimport* reader = new COMSOLimport(prj);
-		CDlgImportCOMSOL dlg(reader, this);
+		CDlgEditObject dlg(reader, "Import COMSOL", this);
 		if (dlg.exec())
 		{
 			return reader;
@@ -547,7 +546,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
 
-		CDlgImportAbaqus dlg(abaqusReader, this);
+		CDlgEditObject dlg(abaqusReader, "Import Abaqus", this);
 		if (dlg.exec() == 0)
 		{
 			return;

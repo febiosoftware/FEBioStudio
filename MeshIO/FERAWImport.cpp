@@ -32,18 +32,67 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 FERAWImport::FERAWImport(FSProject& prj) : FSFileImport(prj)
 {
+	m_ntype = 0;
 	m_nx = 0;
 	m_ny = 0;
 	m_nz = 0;
 
 	m_x0 = m_y0 = m_z0 = 0.0;
 	m_w = m_h = m_d = 1.0;
+
+	AddChoiceParam(0, "image_type", "Image type")->SetEnumNames(" 8-bit\0 16-bit unsigned\0 64-bit real\0");
+
+	SetActiveGroup("Image dimensions");
+	AddIntParam(0, "nx", "width");
+	AddIntParam(0, "ny", "height");
+	AddIntParam(0, "nz", "depth");
+
+	SetActiveGroup("Physical dimensions");
+	AddDoubleParam(0, "x0", "x0");
+	AddDoubleParam(0, "y0", "y0");
+	AddDoubleParam(0, "z0", "z0");
+	AddDoubleParam(0, "w", "width");
+	AddDoubleParam(0, "h", "height");
+	AddDoubleParam(0, "d", "depth");
 }
 
 //-----------------------------------------------------------------------------
 FERAWImport::~FERAWImport()
 {
 	m_nx = m_ny = m_nz = 0;
+}
+
+//-----------------------------------------------------------------------------
+bool FERAWImport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_ntype = GetIntValue(0);
+		m_nx = GetIntValue(1);
+		m_ny = GetIntValue(2);
+		m_nz = GetIntValue(3);
+		m_x0 = GetFloatValue(4);
+		m_y0 = GetFloatValue(5);
+		m_z0 = GetFloatValue(6);
+		m_w = GetFloatValue(7);
+		m_h = GetFloatValue(8);
+		m_d = GetFloatValue(9);
+	}
+	else
+	{
+		SetIntValue(0, m_ntype);
+		SetIntValue(1, m_nx);
+		SetIntValue(2, m_ny);
+		SetIntValue(3, m_nz);
+		SetFloatValue(4, m_x0);
+		SetFloatValue(5, m_y0);
+		SetFloatValue(6, m_z0);
+		SetFloatValue(7, m_w);
+		SetFloatValue(8, m_h);
+		SetFloatValue(9, m_d);
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
