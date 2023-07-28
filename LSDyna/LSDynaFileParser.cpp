@@ -97,6 +97,10 @@ bool LSDynaFileParser::ParseFile()
 			{
 				if (Read_Domain_Shell_Thickness() == false) return Error("error while reading SECTION_SHELL section.");
 			}
+			else if (card == "*ELEMENT_DISCRETE")
+			{
+				if (Read_Element_Discrete() == false) return Error("error while reading ELEMENT_DISCRETE section.");
+			}
 			else if (card == "*NODE")
 			{
 				if (Read_Node() == false) return Error("error while reading NODE section.");
@@ -293,6 +297,25 @@ bool LSDynaFileParser::Read_Domain_Shell_Thickness()
 	return true;
 }
 
+bool LSDynaFileParser::Read_Element_Discrete()
+{
+	LSDynaFile::CARD card(8);
+	if (m_ls.NextCard(card) == false) return false;
+	LSDYNAModel::ELEMENT_DISCRETE e;
+	while (!card.IsKeyword())
+	{
+		card.nexti(e.eid);
+		card.nexti(e.pid);
+		card.nexti(e.n1);
+		card.nexti(e.n2);
+
+		m_dyn.addDiscrete(e);
+
+		if (m_ls.NextCard(card) == false) return false;
+	}
+
+	return true;
+}
 
 bool LSDynaFileParser::Read_Node()
 {
@@ -401,6 +424,8 @@ bool LSDynaFileParser::Read_Material()
 		return Read_Mat_Viscoelastic();
 	else if (c.contains("*MAT_KELVIN-MAXWELL_VISCOELASTIC"))
 		return Read_Mat_Kelvin_Maxwell_Viscoelastic();
+	else if (c.contains("*MAT_SPRING"))
+		return Read_Mat_Spring();
 	else
 		return Read_Mat_Other();
 }
@@ -574,6 +599,29 @@ bool LSDynaFileParser::Read_Mat_Elastic_Spring_Discrete_Beam()
 	return true;
 }
 
+bool LSDynaFileParser::Read_Mat_Spring()
+{
+	LSDynaFile::CARD card;
+	m_ls.GetCard(card);
+	LSDYNAModel::MAT_SPRING_NONLINEAR_ELASTIC* mat = new LSDYNAModel::MAT_SPRING_NONLINEAR_ELASTIC;
+	if (strstr(card.m_szline, "_TITLE") != 0) {
+		if (m_ls.NextCard(card) == false) return false;
+		strcpy(mat->szname, card.m_szline);
+	}
+
+	if (m_ls.NextCard(card) == false) return false;
+	card.nexti(mat->mid);
+	card.nexti(mat->lcd);
+
+	m_dyn.addMaterial(mat);
+
+	while (!card.IsKeyword()) {
+		if (m_ls.NextCard(card) == false) return false;
+	}
+
+	return true;
+}
+
 bool LSDynaFileParser::Read_Set_Segment_Title()
 {
 	LSDynaFile::CARD card;
@@ -618,6 +666,8 @@ bool LSDynaFileParser::Read_Set_Node_List_Title()
 	}
 
 	m_dyn.addNodeList(nl);
+
+	return true;
 }
 
 bool LSDynaFileParser::Read_Define_Curve_Title()

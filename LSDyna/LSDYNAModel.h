@@ -70,7 +70,14 @@ public:
         
         DOMAIN_SHELL() { h[0] = h[1] = h[2] = h[3] = 0; }
     };
-    
+
+	struct ELEMENT_DISCRETE
+	{
+		int eid;
+		int pid;
+		int n1, n2;
+	};
+
 	struct NODE
 	{
 		NODE() { id = n = 0; x = y = z = 0; }
@@ -188,6 +195,15 @@ public:
 		double    v3;
 	};
 
+	class MAT_SPRING_NONLINEAR_ELASTIC : public MATERIAL
+	{
+	public:
+		MAT_SPRING_NONLINEAR_ELASTIC() { lcd = -1; }
+
+	public:
+		int	lcd;
+	};
+
 	class SET_SEGMENT_TITLE
 	{
 	public:
@@ -256,6 +272,8 @@ public:
 	void addShellElement(const ELEMENT_SHELL& el) { m_shell.push_back(el); }
 
     void addShellDomain(const DOMAIN_SHELL& ds) { m_dshell.push_back(ds); }
+
+	void addDiscrete(const ELEMENT_DISCRETE& el) { m_discrete.push_back(el); }
     
 	int parts() const { return (int) m_part.size(); }
 	void addPart(const PART& p) { m_part.push_back(p); }
@@ -291,11 +309,16 @@ protected:
 	bool BuildMaterials(FSModel& fem);
 	bool BuildLoadCurves(FSModel& fem);
 	bool BuildParameters(FSModel& fem);
+	bool BuildDiscrete(FSModel& fem);
+	void BuildNLT();
+
+	int NodeIndex(int nodeId) { return m_NLT[nodeId - m_off]; }
 
 public:
 	vector<ELEMENT_SOLID>		m_solid;
 	vector<ELEMENT_SHELL>		m_shell;
     vector<DOMAIN_SHELL>        m_dshell;
+    vector<ELEMENT_DISCRETE>	m_discrete;
 	vector<NODE>				m_node;
 	vector<PART>				m_part;
 	list<MATERIAL*>       		m_Mat;
@@ -308,4 +331,12 @@ public:
 	vector<int*>	m_pFace;
 	vector<int>		m_nFace;
 	vector< vector<double> >	m_Data;	// nodal data
+
+	// node lookup table
+	vector<int> m_NLT;
+	int m_off;
+
+	// load curve lookup table
+	vector<int> m_LCT;
+	int m_lct_off;
 };
