@@ -88,14 +88,54 @@ void print_format(char* szfmt, int id, float val, FILE* fp)
 
 FEASCIIExport::FEASCIIExport()
 {
-	m_bselonly = false;
 	m_bcoords = false;
 	m_belem = false;
 	m_bface = false;
 	m_bfnormals = false;
 	m_bndata = false;
 	m_bedata = false;
-	m_szfmt[0] = 0;
+	m_bselonly = false;
+	m_alltimes = 0;
+
+	AddBoolParam(m_bcoords  , "coords"      , "Nodal coordinates");
+	AddBoolParam(m_bface    , "faces"       , "Facet connectivity");
+	AddBoolParam(m_bfnormals, "face_normals", "Facet normals");
+	AddBoolParam(m_belem    , "elements"    , "Element connectivity");
+	AddBoolParam(m_bndata   , "node_data"   , "Nodal data values");
+	AddBoolParam(m_bedata   , "elem_data"   , "Element data values");
+	AddBoolParam(m_bselonly , "sel_only"    , "Selection only");
+	AddChoiceParam(m_alltimes, "all_steps", "Time steps")->SetEnumNames("Current time step\0All time steps\0");
+	AddStringParam("", "format", "Format");
+}
+
+bool FEASCIIExport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_bcoords   = GetBoolValue(0);
+		m_bface     = GetBoolValue(1);
+		m_bfnormals = GetBoolValue(2);
+		m_belem     = GetBoolValue(3);
+		m_bndata    = GetBoolValue(4);
+		m_bedata    = GetBoolValue(5);
+		m_bselonly  = GetBoolValue(6);
+		m_alltimes  = GetIntValue(7);
+		m_fmt       = GetStringValue(8);
+	}
+	else
+	{
+		SetBoolValue(0, m_bcoords);
+		SetBoolValue(1, m_bface);
+		SetBoolValue(2, m_bfnormals);
+		SetBoolValue(3, m_belem);
+		SetBoolValue(4, m_bndata);
+		SetBoolValue(5, m_bedata);
+		SetBoolValue(6, m_bselonly);
+		SetIntValue (7, m_alltimes);
+		SetStringValue(8, m_fmt);
+	}
+
+	return false;
 }
 
 bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
@@ -261,6 +301,10 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 			// export element values
 			if (m_bedata)
 			{
+				size_t n = m_fmt.size();
+				char* szfmt = new char[n + 1];
+				strcpy(szfmt, m_fmt.c_str());
+				szfmt[n] = 0;
 				fprintf(fp, "*ELEMENT_DATA\n");
 				for (int i = 0; i<NE; ++i)
 				{
@@ -269,9 +313,10 @@ bool FEASCIIExport::Save(FEPostModel* pfem, int n0, int n1, const char* szfile)
 					{
 						float& d = ps->m_ELEM[i].m_val;
 						int id = m.ElementRef(i).m_nid;
-						print_format(m_szfmt, id, d, fp);
+						print_format(szfmt, id, d, fp);
 					}
 				}
+				delete[] szfmt;
 			}
 		}
 	}

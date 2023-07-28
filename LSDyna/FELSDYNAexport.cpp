@@ -40,11 +40,31 @@ FELSDYNAexport::FELSDYNAexport(FSProject& prj) : FSFileExport(prj)
 	// set default options
 	m_ops.bselonly = false;
 	m_ops.bshellthick = false;
+
+	AddBoolParam(m_ops.bselonly, "selection_only", "Selection only");
+	AddBoolParam(m_ops.bshellthick, "shell_thickness", "Shell thickness");
 }
 
 //-----------------------------------------------------------------------------
 FELSDYNAexport::~FELSDYNAexport(void)
 {
+}
+
+//-----------------------------------------------------------------------------
+bool FELSDYNAexport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_ops.bselonly = GetBoolValue(0);
+		m_ops.bshellthick = GetBoolValue(1);
+	}
+	else
+	{
+		SetBoolValue(0, m_ops.bselonly);
+		SetBoolValue(1, m_ops.bshellthick);
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------

@@ -186,7 +186,7 @@ void CPropertyListForm::setPropertyList(CPropertyList* pl)
 
 		label += unitString(pi);
 
-		if (label.isEmpty() == false) label += ":";
+//		if (label.isEmpty() == false) label += ":";
 
 		// see if we need to create a group
 		if (pi.type == CProperty::Group)

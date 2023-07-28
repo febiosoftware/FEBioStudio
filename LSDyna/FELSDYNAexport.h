@@ -46,6 +46,8 @@ public:
 
 	bool Write(const char* szfile);
 
+	bool UpdateData(bool bsave) override;
+
 protected:
 	bool write_NODE();
 	bool write_ELEMENT_SOLID();
