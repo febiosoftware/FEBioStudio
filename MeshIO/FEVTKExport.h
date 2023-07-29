@@ -44,6 +44,9 @@ public:
 
 	bool Write(const char* szfile) override;
 	void SetOptions(VTKEXPORT o) { m_ops = o; }
+
+	bool UpdateData(bool bsave) override;
+
 protected:
 	VTKEXPORT m_ops;
 };

@@ -83,12 +83,9 @@ SOFTWARE.*/
 #include <FSCore/FSDir.h>
 #include "DlgEditObject.h"
 #include "DlgRAWImport.h"
-#include "DlgLSDYNAExport.h"
-#include "DlgVTKExport.h"
 #include "DlgExportFEBio.h"
 #include "DlgNew.h"
 #include "DlgNewProject.h"
-#include "DlgImportSTL.h"
 #include "DlgModelInfo.h"
 #include "DlgExportLSDYNA.h"
 #include <GeomLib/GSurfaceMeshObject.h>
@@ -112,7 +109,6 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "XMLDocument.h"
 #include "FileThread.h"
-#include "DlgExportAscii.h"
 #include "DlgExportVTK.h"
 #include <PostLib/FEFEBioExport.h>
 #include <PostLib/FEAsciiExport.h>
@@ -693,13 +689,10 @@ void CMainWindow::ExportPostGeometry()
 	break;
 	*/	case 1:
 	{
-		CDlgExportLSDYNA dlg(this);
+		Post::FELSDYNAExport w;
+		CDlgEditObject dlg(&w, "Export LSDyna", this);
 		if (dlg.exec())
 		{
-			Post::FELSDYNAExport w;
-			w.m_bsel = dlg.m_bsel;
-			w.m_bsurf = dlg.m_bsurf;
-			w.m_bnode = dlg.m_bnode;
 			bret = w.Save(fem, doc->GetActiveState(), szfilename);
 		}
 	}
@@ -861,15 +854,10 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 1: // LSDYNA keyword
 		{
-			CDlgLSDYNAExport dlg(this);
+			FELSDYNAexport writer(fem);
+			CDlgEditObject dlg(&writer, "Export LSDYNA", this);
 			if (dlg.exec())
 			{
-				LSDYNAEXPORT ops;
-				ops.bselonly = dlg.m_bselonly;
-				ops.bshellthick = dlg.m_bshell_thick;
-
-				FELSDYNAexport writer(fem);
-				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
 					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to LSDYNA keyword file."));
 			}
@@ -929,15 +917,10 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 9: // VTK files
 		{
-			CDlgVTKExport dlg(this);
+			FEVTKExport writer(fem);
+			CDlgEditObject dlg(&writer, "Export VTK", this);
 			if (dlg.exec())
 			{
-				VTKEXPORT ops;
-				ops.bpartIds    = dlg.m_bpart_ids;
-				ops.bshellthick = dlg.m_bshell_thick;
-				ops.bscalardata = dlg.m_bscalar_data;
-				FEVTKExport writer(fem);
-				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
 					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to vtk file."));
 			}
@@ -1049,27 +1032,18 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 3:
 		{
-			CDlgExportAscii dlg(this);
+			Post::FEASCIIExport out;
+			CDlgEditObject dlg(&out, "Export ASCII", this);
 			if (dlg.exec() == QDialog::Accepted)
 			{
 				// decide which time steps to export
 				int n0, n1;
-				if (dlg.m_nstep == 0) n0 = n1 = doc->GetActiveState();
+				if (out.m_alltimes == 0) n0 = n1 = doc->GetActiveState();
 				else
 				{
 					n0 = 0;
 					n1 = fem.GetStates() - 1;
 				}
-
-				// export the data
-				Post::FEASCIIExport out;
-				out.m_bcoords = dlg.m_bcoords;
-				out.m_bedata = dlg.m_bedata;
-				out.m_belem = dlg.m_belem;
-				out.m_bface = dlg.m_bface;
-				out.m_bfnormals = dlg.m_bfnormals;
-				out.m_bndata = dlg.m_bndata;
-				out.m_bselonly = dlg.m_bsel;
 
 				bret = out.Save(&fem, n0, n1, szfilename);
 			}
@@ -1083,13 +1057,10 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 5:
 		{
-			CDlgExportLSDYNA dlg(this);
+			Post::FELSDYNAExport w;
+			CDlgEditObject dlg(&w, "Export LSDyna", this);
 			if (dlg.exec())
 			{
-				Post::FELSDYNAExport w;
-				w.m_bsel = dlg.m_bsel;
-				w.m_bsurf = dlg.m_bsurf;
-				w.m_bnode = dlg.m_bnode;
 				bret = w.Save(fem, doc->GetActiveState(), szfilename);
 			}
 		}
