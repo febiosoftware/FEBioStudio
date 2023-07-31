@@ -42,7 +42,7 @@ SOFTWARE.*/
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
-#include <PostGL/GLProbe.h>
+#include <PostGL/GLPointProbe.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLLinePlot.h>
@@ -337,7 +337,7 @@ void CMainWindow::on_actionAddProbe_triggered()
 	vec3d c = glm->GetSelectionCenter();
 
 	// create the probe and set its initial position
-	Post::GLProbe* probe = new Post::GLProbe();
+	Post::GLPointProbe* probe = new Post::GLPointProbe();
 	probe->SetInitialPosition(c);
 	glm->AddPlot(probe);
 

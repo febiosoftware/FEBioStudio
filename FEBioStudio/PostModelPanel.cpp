@@ -62,7 +62,7 @@ SOFTWARE.*/
 #include <MeshIO/FESTLExport.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
-#include <PostGL/GLProbe.h>
+#include <PostGL/GLPointProbe.h>
 #include <PostGL/GLMusclePath.h>
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
@@ -853,7 +853,7 @@ void CPostModelPanel::BuildModelTree()
 				else if (dynamic_cast<Post::GLVolumeFlowPlot   *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/flow.png")));
 				else if (dynamic_cast<Post::GLTensorPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
 				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
-				else if (dynamic_cast<Post::GLProbe            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
+				else if (dynamic_cast<Post::GLPointProbe       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
 				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
 				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
 				else if (dynamic_cast<Post::CGLPointPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
@@ -1273,7 +1273,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
 		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
 
-		if (dynamic_cast<Post::GLProbe*>(po))
+		if (dynamic_cast<Post::GLPointProbe*>(po))
 		{
 			menu.addSeparator();
 			menu.addAction("Export data ...", this, SLOT(OnExportProbeData()));
@@ -1560,7 +1560,7 @@ void CPostModelPanel::OnExportProbeData()
 		{
 			for (int i = 0; i < glm->Plots(); ++i)
 			{
-				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 				if (probe)
 				{
 					double val = 0.0;

@@ -30,12 +30,12 @@ class FSMesh;
 
 namespace Post {
 
-class GLProbe : public CGLPlot
+class GLPointProbe : public CGLPlot
 {
 	enum { TRACK_DATA, INIT_POS, SIZE, COLOR, FOLLOW, SHOW_PATH, PATH_COLOR };
 
 public:
-	GLProbe();
+	GLPointProbe();
 
 	void Render(CGLContext& rc) override;
 

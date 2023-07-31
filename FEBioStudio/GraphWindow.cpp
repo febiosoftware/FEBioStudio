@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostLib/constants.h>
 #include <PostLib/evaluate.h>
-#include <PostGL/GLProbe.h>
+#include <PostGL/GLPointProbe.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <FECore/MathObject.h>
@@ -1546,7 +1546,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		}
 		for (int i = 0; i < glm->Plots(); ++i)
 		{
-			Post::GLProbe* p = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+			Post::GLPointProbe* p = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 			if (p)
 			{
 				sourceNames << QString::fromStdString(p->GetName());
@@ -1719,7 +1719,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 			int m = 0;
 			for (int i = 0; i < glm->Plots(); ++i)
 			{
-				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 				if (probe)
 				{
 					if (m == n)
@@ -1820,7 +1820,7 @@ void CModelGraphWindow::setDataSource(int n)
 			int m = 0;
 			for (int i = 0; i < glm->Plots(); ++i)
 			{
-				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 				if (probe)
 				{
 					if (m == n)
@@ -1996,7 +1996,7 @@ void CModelGraphWindow::addObjectData(int n)
 }
 
 //-----------------------------------------------------------------------------
-void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
+void CModelGraphWindow::addProbeData(Post::GLPointProbe* probe)
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFSModel();

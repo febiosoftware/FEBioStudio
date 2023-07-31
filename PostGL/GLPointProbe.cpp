@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
-#include "GLProbe.h"
+#include "GLPointProbe.h"
 #include "GLModel.h"
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
@@ -33,9 +33,9 @@ SOFTWARE.*/
 #include <sstream>
 using namespace Post;
 
-REGISTER_CLASS(GLProbe, CLASS_PLOT, "probe", 0);
+REGISTER_CLASS(GLPointProbe, CLASS_PLOT, "probe", 0);
 
-GLProbe::GLProbe()
+GLPointProbe::GLPointProbe()
 {
 	SetTypeString("probe");
 
@@ -64,7 +64,7 @@ GLProbe::GLProbe()
 	m_elem = -1;
 }
 
-bool GLProbe::UpdateData(bool bsave)
+bool GLPointProbe::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
@@ -90,7 +90,7 @@ bool GLProbe::UpdateData(bool bsave)
 	return false;
 }
 
-void GLProbe::Render(CGLContext& rc)
+void GLPointProbe::Render(CGLContext& rc)
 {
 	double R = m_R * m_size;
 	GLUquadricObj* pobj = gluNewQuadric();
@@ -123,7 +123,7 @@ void GLProbe::Render(CGLContext& rc)
 	}
 }
 
-void GLProbe::Update()
+void GLPointProbe::Update()
 {
 	Update(m_lastTime, m_lastdt, true);
 }
@@ -145,7 +145,7 @@ bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f
 	return false;
 }
 
-void GLProbe::Update(int ntime, float dt, bool breset)
+void GLPointProbe::Update(int ntime, float dt, bool breset)
 {
 	if ((breset == false) && (ntime == m_lastTime) && (dt == m_lastdt)) return;
 
@@ -184,7 +184,7 @@ void GLProbe::Update(int ntime, float dt, bool breset)
 	m_path[ntime] = m_pos;
 }
 
-int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
+int GLPointProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 {
 	CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return -1;
@@ -315,28 +315,28 @@ int GLProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
 	return nelem;
 }
 
-void GLProbe::SetInitialPosition(const vec3d& r)
+void GLPointProbe::SetInitialPosition(const vec3d& r)
 {
 	m_initPos = r;
 	SetVecValue(INIT_POS, r);
 }
 
-bool GLProbe::TrackModelData() const
+bool GLPointProbe::TrackModelData() const
 {
 	return GetBoolValue(TRACK_DATA);
 }
 
-GLColor GLProbe::GetColor() const
+GLColor GLPointProbe::GetColor() const
 {
 	return m_col;
 }
 
-void GLProbe::SetColor(const GLColor& c)
+void GLPointProbe::SetColor(const GLColor& c)
 {
 	m_col = c;
 }
 
-double GLProbe::DataValue(int nfield, int nstep)
+double GLPointProbe::DataValue(int nfield, int nstep)
 {
 	if (TrackModelData())
 	{
