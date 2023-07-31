@@ -419,13 +419,16 @@ void CImageMapTool::OnCreate()
                     }
                 }
 
-                if(val < min)
+                #pragma omp critical
                 {
-                    min = val;
-                }
-                else if(val > max)
-                {
-                    max = val;
+                    if(val < min)
+                    {
+                        min = val;
+                    }
+                    else if(val > max)
+                    {
+                        max = val;
+                    }
                 }
 
                 pdata->SetValue(i, j, val);
@@ -478,13 +481,16 @@ void CImageMapTool::OnCreate()
 
             double val = imageModel->ValueAtGlobalPos(pos);
 
-            if(val < min)
+            #pragma omp critical
             {
-                min = val;
-            }
-            else if(val > max)
-            {
-                max = val;
+                if(val < min)
+                {
+                    min = val;
+                }
+                else if(val > max)
+                {
+                    max = val;
+                }
             }
 
             pdata->SetValue(i, 0, val);
@@ -615,13 +621,16 @@ void CImageMapTool::OnCreate()
 
             if(numPixels > 0) val /= numPixels;
 
-            if(val < min)
+            #pragma omp critical
             {
-                min = val;
-            }
-            else if(val > max)
-            {
-                max = val;
+                if(val < min)
+                {
+                    min = val;
+                }
+                else if(val > max)
+                {
+                    max = val;
+                }
             }
             
             pdata->SetValue(elID, 0, val);

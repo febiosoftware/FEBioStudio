@@ -366,8 +366,8 @@ double C3DImage::Value(double fx, double fy, int nz, int channel)
 
 double C3DImage::Peek(double r, double s, double t, int channel)
 {
-	static int n1,n2,n3,n4,n5,n6,n7,n8;
-	static double h1,h2,h3,h4,h5,h6,h7,h8;
+	int n1,n2,n3,n4,n5,n6,n7,n8;
+	double h1,h2,h3,h4,h5,h6,h7,h8;
 
 	if (r < 0) r = 0; if (r > 1) r = 1;
 	if (s < 0) s = 0; if (s > 1) s = 1;
