@@ -30,12 +30,10 @@ class FSMesh;
 
 namespace Post {
 
-class GLPointProbe : public CGLPlot
+class GLCurveProbe : public CGLPlot
 {
-	enum { TRACK_DATA, INIT_POS, SIZE, COLOR, FOLLOW, SHOW_PATH, PATH_COLOR };
-
 public:
-	GLPointProbe();
+	GLCurveProbe();
 
 	void Render(CGLContext& rc) override;
 
@@ -44,29 +42,19 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
-	double DataValue(int nfield, int nstep);
+	bool ImportPoints(const std::string& fileName);
 
-	bool TrackModelData() const;
+	size_t Points() const { return m_path.size(); }
 
-	void SetInitialPosition(const vec3d& r);
+	vec2d GetPointValue(int i);
 
 public:
 	GLColor GetColor() const;
 	void SetColor(const GLColor& c);
 
 private:
-	vec3d	m_initPos;
 	GLColor	m_col;
-	double	m_size;
-	bool	m_bfollow;
-	bool	m_bshowPath;
-
-	vec3d		m_pos;
-	double		m_R;
-	int			m_lastTime;
-	double		m_lastdt;
-	int			m_elem;
-
 	std::vector<vec3d>	m_path;
+	std::vector<double>	m_curve;
 };
 }

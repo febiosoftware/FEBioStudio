@@ -128,23 +128,6 @@ void GLPointProbe::Update()
 	Update(m_lastTime, m_lastdt, true);
 }
 
-bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
-{
-	int ne = el.Nodes();
-	BOX box;
-	for (int i = 0; i < ne; ++i) box += to_vec3d(x0[i]);
-	if (box.IsInside(to_vec3d(p)) == false) return false;
-
-	double r[3] = { 0,0,0 };
-	project_inside_element(el, p, r, x0);
-	if (IsInsideElement(el, r, 0.001))
-	{
-		q = el.eval(xt, r[0], r[1], r[2]);
-		return true;
-	}
-	return false;
-}
-
 void GLPointProbe::Update(int ntime, float dt, bool breset)
 {
 	if ((breset == false) && (ntime == m_lastTime) && (dt == m_lastdt)) return;
@@ -161,10 +144,11 @@ void GLPointProbe::Update(int ntime, float dt, bool breset)
 	FEPostMesh* mesh = mdl->GetActiveMesh();
 	if (mesh == nullptr) return;
 
+	FEPostModel* fem = mdl->GetFSModel();
+
 	if (breset)
 	{
 		m_path.clear();
-		FEPostModel* fem = mdl->GetFSModel();
 		int nstates = fem->GetStates();
 		m_path.resize(nstates);
 	}
@@ -179,140 +163,9 @@ void GLPointProbe::Update(int ntime, float dt, bool breset)
 	if (bdisp == false) return;
 
 	vec3f p0 = to_vec3f(m_initPos);
-	m_elem = ProjectToMesh(ntime, p0, m_pos);
+	m_elem = fem->ProjectToMesh(ntime, p0, m_pos, m_bfollow);
 
 	m_path[ntime] = m_pos;
-}
-
-int GLPointProbe::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt)
-{
-	CGLModel* mdl = GetModel();
-	if (mdl == nullptr) return -1;
-
-	Post::FEState* state = mdl->GetFSModel()->GetState(nstate);
-	Post::FERefState* ps = state->m_ref;
-	Post::FEPostMesh& mesh = *state->GetFEMesh();
-	Post::FEPostModel& fem = *mdl->GetFSModel();
-
-	rt = to_vec3d(r0);
-
-	int nelem = -1;
-	vec3f x0[FSElement::MAX_NODES];
-	vec3f xt[FSElement::MAX_NODES];
-	int nmin = -1;
-	double L2min = 0.0;
-	vec3f rmin;
-	int NE = mesh.Elements();
-	for (int i = 0; i < NE; ++i)
-	{
-		FSElement& el = mesh.Element(i);
-		if (el.IsSolid())
-		{
-			int ne = el.Nodes();
-			for (int j = 0; j < el.Nodes(); ++j)
-			{
-				x0[j] = ps->m_Node[el.m_node[j]].m_rt;
-				xt[j] = to_vec3f(mesh.Node(el.m_node[j]).r);
-			}
-
-			if (m_bfollow)
-			{
-				vec3f q;
-				if (ProjectToElement(el, r0, x0, xt, q))
-				{
-					rt = to_vec3d(q);
-					nelem = i;
-					break;
-				}
-			}
-			else
-			{
-				vec3f q;
-				if (ProjectToElement(el, r0, x0, x0, q))
-				{
-					rt = to_vec3d(q);
-					nelem = i;
-					break;
-				}
-			}
-		}
-		else if (el.IsShell() && m_bfollow)
-		{
-			int ne = el.Nodes();
-			vec3f ri(0, 0, 0);
-			for (int j = 0; j < ne; ++j)
-			{
-				vec3f rj = fem.NodePosition(el.m_node[j], 0);
-				ri += rj;
-			}
-			ri /= ne;
-
-			// get the distance
-			double L2 = (ri - r0).SqrLength();
-
-			if ((nmin == -1) || (L2 < L2min))
-			{
-				nmin = i;
-				L2min = L2;
-				rmin = ri;
-			}
-		}
-	}
-
-	if ((nelem == -1) && (nmin != -1))
-	{
-		nelem = nmin;
-		vec3d dr = to_vec3d(r0 - rmin);
-
-		FSElement& e = mesh.Element(nmin);
-		vec3d a0 = to_vec3d(fem.NodePosition(e.m_node[0], 0));
-		vec3d a1 = to_vec3d(fem.NodePosition(e.m_node[1], 0));
-		vec3d a2 = to_vec3d(fem.NodePosition(e.m_node[2], 0));
-
-		vec3d e1 = a1 - a0; e1.Normalize();
-		vec3d e2 = a2 - a0; e2.Normalize();
-		vec3d e3 = e1 ^ e2; e3.Normalize();
-		e2 = e3 ^ e1; e2.Normalize();
-
-		mat3d QT(\
-			e1.x, e1.y, e1.z, \
-			e2.x, e2.y, e2.z, \
-			e3.x, e3.y, e3.z	\
-		);
-
-		vec3d qr = QT * dr;
-
-		// calculate current position of origin
-		vec3d ri(0, 0, 0);
-		for (int j = 0; j < e.Nodes(); ++j)
-		{
-			FSNode& nj = mesh.Node(e.m_node[j]);
-			vec3d rj = to_vec3d(fem.NodePosition(e.m_node[j], nstate));
-			ri += rj;
-		}
-		ri /= e.Nodes();
-
-		a0 = to_vec3d(fem.NodePosition(e.m_node[0], nstate));
-		a1 = to_vec3d(fem.NodePosition(e.m_node[1], nstate));
-		a2 = to_vec3d(fem.NodePosition(e.m_node[2], nstate));
-
-		e1 = a1 - a0; e1.Normalize();
-		e2 = a2 - a0; e2.Normalize();
-		e3 = e1 ^ e2; e3.Normalize();
-		e2 = e3 ^ e1; e2.Normalize();
-
-		mat3d Q(\
-			e1.x, e2.x, e3.x, \
-			e1.y, e2.y, e3.y, \
-			e1.z, e2.z, e3.z	\
-		);
-
-		dr = Q * qr;
-
-		rt = ri + dr;
-	}
-
-	return nelem;
 }
 
 void GLPointProbe::SetInitialPosition(const vec3d& r)
@@ -343,7 +196,7 @@ double GLPointProbe::DataValue(int nfield, int nstep)
 		FEPostModel& fem = *GetModel()->GetFSModel();
 		float val = 0.f;
 		vec3f p0 = to_vec3f(m_initPos);
-		int nelem = ProjectToMesh(nstep, p0, m_pos);
+		int nelem = fem.ProjectToMesh(nstep, p0, m_pos, m_bfollow);
 		if (nelem >= 0)
 		{
 			float data[FSElement::MAX_NODES];

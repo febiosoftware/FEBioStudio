@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPointProbe.h>
+#include <PostGL/GLCurveProbe.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLLinePlot.h>
@@ -339,6 +340,22 @@ void CMainWindow::on_actionAddProbe_triggered()
 	// create the probe and set its initial position
 	Post::GLPointProbe* probe = new Post::GLPointProbe();
 	probe->SetInitialPosition(c);
+	glm->AddPlot(probe);
+
+	UpdatePostPanel(true, probe);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionAddCurveProbe_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLCurveProbe* probe = new Post::GLCurveProbe();
 	glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);

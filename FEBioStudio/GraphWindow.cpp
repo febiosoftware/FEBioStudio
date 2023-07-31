@@ -725,7 +725,7 @@ public:
 		m_stack->addWidget(dummy);
 
 		QStringList markersTypes;
-		markersTypes << "None" << "Square" << "Circle" << "Diamond" << "Triangle" << "Cross" << "Plus";
+		markersTypes << "(None)" << "Square" << "Circle" << "Diamond" << "Triangle" << "Cross" << "Plus";
 
 		QFormLayout* l = new QFormLayout;
 		l->addRow("label", m_label = new QLineEdit);

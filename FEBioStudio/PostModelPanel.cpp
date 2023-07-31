@@ -63,6 +63,7 @@ SOFTWARE.*/
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLPointProbe.h>
+#include <PostGL/GLCurveProbe.h>
 #include <PostGL/GLMusclePath.h>
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
@@ -1279,6 +1280,17 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 			menu.addAction("Export data ...", this, SLOT(OnExportProbeData()));
 		}
 
+		if (dynamic_cast<Post::GLCurveProbe*>(po))
+		{
+			Post::GLCurveProbe* pc = dynamic_cast<Post::GLCurveProbe*>(po);
+			menu.addSeparator();
+			menu.addAction("Import points ...", this, SLOT(OnImportCurveProbePoints()));
+			if (pc->Points() > 0)
+			{
+				menu.addAction("Plot data ...", this, SLOT(OnCurveProbePlotData()));
+			}
+		}
+
 		if (dynamic_cast<Post::GLMusclePath*>(po))
 		{
 			menu.addSeparator();
@@ -1576,6 +1588,34 @@ void CPostModelPanel::OnExportProbeData()
 	}
 }
 
+void CPostModelPanel::OnImportCurveProbePoints()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po == nullptr) return;
+
+	QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Import data", "", "All files (*)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		if (po->ImportPoints(sfile) == false)
+		{
+			QMessageBox::critical(this, "Import Data", "Failed importing points");
+		}
+
+		Update(true);
+		selectObject(po);
+		GetMainWindow()->RedrawGL();
+	}
+}
+
 void CPostModelPanel::OnExportMusclePathData()
 {
 	Post::GLMusclePath* po = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
@@ -1639,4 +1679,30 @@ void CPostModelPanel::OnAddNewMusclePath()
 	Update(true);
 	selectObject(mp);
 	GetMainWindow()->RedrawGL();
+}
+
+void CPostModelPanel::OnCurveProbePlotData()
+{
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po)
+	{
+		CPlotData* data = new CPlotData;
+		for (int i = 0; i < po->Points(); ++i)
+		{
+			vec2d p = po->GetPointValue(i);
+			data->addPoint(p.x(), p.y());
+		}
+		data->setLabel(QString::fromStdString(po->GetName()));
+		data->setLineColor(toQColor(po->GetColor()));
+		data->setFillColor(toQColor(po->GetColor()));
+
+		CGraphData* graph = new CGraphData;
+		graph->m_data.push_back(data);
+
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		w->SetData(graph);
+		GetMainWindow()->AddGraph(w);
+		w->setWindowTitle(QString::fromStdString(po->GetName()));
+		w->show();
+	}
 }
