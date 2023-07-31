@@ -181,11 +181,37 @@ void CImageMapTool::OnCreate()
     // get the document
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 
-	// get the currently selected object
-	GObject* po = pdoc->GetActiveObject();
-	if (po == 0)
+    GObject* po;
+    FESelection* sel = pdoc->GetCurrentSelection();
+
+    bool wholeObject = true;
+    if(dynamic_cast<GObjectSelection*>(sel))
+    {
+        GObjectSelection* gSel = dynamic_cast<GObjectSelection*>(sel);
+        po = gSel->Object(0);
+    }
+    else if(dynamic_cast<GPartSelection*>(sel))
+    {
+        GPartSelection* gSel = dynamic_cast<GPartSelection*>(sel);
+        GPartSelection::Iterator it(gSel);
+
+        po = dynamic_cast<GObject*>(it->Object());
+
+        for(int i = 0; i < gSel->Count(); i++, ++it)
+        {
+            if(po != it->Object())
+            {
+                QMessageBox::critical(GetMainWindow(), "Tool", "All selected parts must be from the same object.");
+		        return;
+            }
+        }
+
+        wholeObject = false;
+    }
+	
+    if (po == 0)
 	{
-		QMessageBox::critical(GetMainWindow(), "Tool", "You must first select an object.");
+		QMessageBox::critical(GetMainWindow(), "Tool", "You must first select an object or part.");
 		return;
 	}
 
@@ -222,7 +248,21 @@ void CImageMapTool::OnCreate()
     // create element data
     int parts = po->Parts();
 	FSPartSet* partSet = new FSPartSet(po);
-    for (int i = 0; i < parts; ++i) partSet->add(i);
+
+    // if an object is selected, we work with the whole object. 
+    // otherwise we only do the selected parts.
+    if(wholeObject)
+    {
+        for (int i = 0; i < parts; ++i) partSet->add(i);
+    }
+    else
+    {
+        for (int i = 0; i < parts; ++i)
+        {
+            if(po->Part(i)->IsSelected()) partSet->add(i);
+        }
+    }
+
 	partSet->SetName(name.toStdString());
 	po->AddFEPartSet(partSet);
 
@@ -275,7 +315,8 @@ void CImageMapTool::OnCreate()
         {
             FSFace& currentFace = mesh->Face(i);
 
-            if(!currentFace.IsExterior()) continue;
+            // If we're doing the whole object, don't include the inside surfaces.
+            if(wholeObject && !currentFace.IsExterior()) continue;
 
             for(int j = 0; j < currentFace.Nodes(); j++)
             {
@@ -310,7 +351,8 @@ void CImageMapTool::OnCreate()
                 vec3d pos = mesh->LocalToGlobal(current.pos());
                 double val = imageModel->ValueAtGlobalPos(pos);
 
-                if(current.IsExterior())
+                // see if the node belongs to one of the external faces
+                if(normals.count(nodeID) > 0)
                 {
                     int voxelIndexX = (pos.x - origin.x)/spacing.x;
                     int voxelIndexY = (pos.y - origin.y)/spacing.y;
