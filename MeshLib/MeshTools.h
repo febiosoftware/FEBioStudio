@@ -109,6 +109,8 @@ bool FindElementRef(FSCoreMesh& m, const vec3f& x, int& nelem, double r[3]);
 // The return value is true or false depending if the point is actually inside the element
 bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3]);
 
+bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q);
+
 bool IsInsideElement(FEElement_& el, double r[3], const double tol);
 
 void project_inside_element(FEElement_& el, const vec3f& p, double r[3], vec3f* x);

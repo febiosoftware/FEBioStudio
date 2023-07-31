@@ -212,7 +212,7 @@ CImageSource* CImageModel::GetImageSource()
 	return m_img; 
 }
 
-Byte CImageModel::ValueAtGlobalPos(vec3d pos)
+double CImageModel::ValueAtGlobalPos(vec3d pos, int channel)
 {
     BOX box = m_img->Get3DImage()->GetBoundingBox();
 
@@ -227,7 +227,7 @@ Byte CImageModel::ValueAtGlobalPos(vec3d pos)
 	{
 		double x = (pos.x - box.x0) / (box.x1 - box.x0);
 		double y = (pos.y - box.y0) / (box.y1 - box.y0);
-		return m_img->Get3DImage()->Value(x, y, 0);
+		return m_img->Get3DImage()->Value(x, y, 0, channel);
 	}
 	else
 	{
@@ -235,7 +235,7 @@ Byte CImageModel::ValueAtGlobalPos(vec3d pos)
 		double y = (pos.y - box.y0) / (box.y1 - box.y0);
 		double z = (pos.z - box.z0) / (box.z1 - box.z0);
 
-		return m_img->Get3DImage()->Peek(x, y, z);
+		return m_img->Get3DImage()->Peek(x, y, z, channel);
 	}
 }
 

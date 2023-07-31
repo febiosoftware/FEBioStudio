@@ -631,7 +631,8 @@ public:
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
 		QAction* actionImageWarp     = addAction("Image Warp", "actionImageWarp");
 
-		QAction* actionAddProbe = addAction("Probe", "actionAddProbe", "probe");
+		QAction* actionAddProbe = addAction("Point Probe", "actionAddProbe", "probe");
+		QAction* actionAddCurveProbe = addAction("Curve Probe", "actionAddCurveProbe");
 		QAction* actionAddRuler = addAction("Ruler", "actionAddRuler", "ruler");
 		QAction* actionMusclePath = addAction("Muscle Path", "actionMusclePath", "musclepath");
 		QAction* actionMPGroup    = addAction("Muscle Path Group", "actionMusclePathGroup", "musclepathgroup");
@@ -960,6 +961,7 @@ public:
 		menuPost->addAction(actionParticleFlowPlot);
 		menuPost->addAction(actionVolumeFlowPlot);
 		menuPost->addAction(actionAddProbe);
+		menuPost->addAction(actionAddCurveProbe);
 		menuPost->addAction(actionAddRuler);
 		menuPost->addAction(actionMusclePath);
 		menuPost->addAction(actionMPGroup);

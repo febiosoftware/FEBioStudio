@@ -55,9 +55,10 @@ public:
     virtual BOX GetBoundingBox() { return m_box; }
     virtual void SetBoundingBox(BOX& box) { m_box = box; }
 
-	Byte& value(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
-	Byte Value(double fx, double fy, int nz);
-	Byte Peek(double fx, double fy, double fz);
+	Byte& GetByte(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
+    double Value(int i, int j, int k, int channel = 0);
+	double Value(double fx, double fy, int nz, int channel = 0);
+	double Peek(double fx, double fy, double fz, int channel = 0);
 
 	void Histogram(int* pdf);
 

@@ -230,16 +230,16 @@ void CMarchingCubes::CreateSurface()
 					// get the voxel's values
 					if (i == 0)
 					{
-						val[0] = im3d.value(i, j, k);
-						val[3] = im3d.value(i, j + 1, k);
-						val[4] = im3d.value(i, j, k + 1);
-						val[7] = im3d.value(i, j + 1, k + 1);
+						val[0] = im3d.GetByte(i, j, k);
+						val[3] = im3d.GetByte(i, j + 1, k);
+						val[4] = im3d.GetByte(i, j, k + 1);
+						val[7] = im3d.GetByte(i, j + 1, k + 1);
 					}
 
-					val[1] = im3d.value(i + 1, j, k);
-					val[2] = im3d.value(i + 1, j + 1, k);
-					val[5] = im3d.value(i + 1, j, k + 1);
-					val[6] = im3d.value(i + 1, j + 1, k + 1);
+					val[1] = im3d.GetByte(i + 1, j, k);
+					val[2] = im3d.GetByte(i + 1, j + 1, k);
+					val[5] = im3d.GetByte(i + 1, j, k + 1);
+					val[6] = im3d.GetByte(i + 1, j + 1, k + 1);
 
 					// calculate the case of the voxel
 					int ncase = 0;
@@ -369,10 +369,10 @@ void CMarchingCubes::CreateSurface()
 				for (int j = 0; j < NY - 1; ++j)
 				{
 					// get the pixel's values
-					val[0] = im3d.value(i, j, k);
-					val[1] = im3d.value(i, j + 1, k);
-					val[2] = im3d.value(i, j + 1, k + 1);
-					val[3] = im3d.value(i, j, k + 1);
+					val[0] = im3d.GetByte(i, j, k);
+					val[1] = im3d.GetByte(i, j + 1, k);
+					val[2] = im3d.GetByte(i, j + 1, k + 1);
+					val[3] = im3d.GetByte(i, j, k + 1);
 
 					// get the corners
 					r[0].x = x; r[0].y = b.y0 + j      *dyi; r[0].z = b.z0 + k*dzi;
@@ -398,10 +398,10 @@ void CMarchingCubes::CreateSurface()
 				for (int i = 0; i < NX - 1; ++i)
 				{
 					// get the pixel's values
-					val[0] = im3d.value(i  , j, k);
-					val[1] = im3d.value(i+1, j, k);
-					val[2] = im3d.value(i+1, j, k + 1);
-					val[3] = im3d.value(i  , j, k + 1);
+					val[0] = im3d.GetByte(i  , j, k);
+					val[1] = im3d.GetByte(i+1, j, k);
+					val[2] = im3d.GetByte(i+1, j, k + 1);
+					val[3] = im3d.GetByte(i  , j, k + 1);
 
 					// get the corners
 					r[0].x = b.x0 + i    *dxi; r[0].y = y; r[0].z = b.z0 + k*dzi;
@@ -427,10 +427,10 @@ void CMarchingCubes::CreateSurface()
 				for (int i = 0; i < NX - 1; ++i)
 				{
 					// get the pixel's values
-					val[0] = im3d.value(i    , j    , k);
-					val[1] = im3d.value(i + 1, j    , k);
-					val[2] = im3d.value(i + 1, j + 1, k);
-					val[3] = im3d.value(i    , j + 1, k);
+					val[0] = im3d.GetByte(i    , j    , k);
+					val[1] = im3d.GetByte(i + 1, j    , k);
+					val[2] = im3d.GetByte(i + 1, j + 1, k);
+					val[3] = im3d.GetByte(i    , j + 1, k);
 
 					// get the corners
 					r[0].x = b.x0 + i      *dxi; r[0].y = b.y0 + j      *dyi; r[0].z = z;
@@ -581,16 +581,16 @@ void CMarchingCubes::ProcessImage()
 				// get the voxel's values
 				if (i == 0)
 				{
-					val[0] = im3d.value(i, j, k);
-					val[3] = im3d.value(i, j + 1, k);
-					val[4] = im3d.value(i, j, k + 1);
-					val[7] = im3d.value(i, j + 1, k + 1);
+					val[0] = im3d.GetByte(i, j, k);
+					val[3] = im3d.GetByte(i, j + 1, k);
+					val[4] = im3d.GetByte(i, j, k + 1);
+					val[7] = im3d.GetByte(i, j + 1, k + 1);
 				}
 
-				val[1] = im3d.value(i + 1, j, k);
-				val[2] = im3d.value(i + 1, j + 1, k);
-				val[5] = im3d.value(i + 1, j, k + 1);
-				val[6] = im3d.value(i + 1, j + 1, k + 1);
+				val[1] = im3d.GetByte(i + 1, j, k);
+				val[2] = im3d.GetByte(i + 1, j + 1, k);
+				val[5] = im3d.GetByte(i + 1, j, k + 1);
+				val[6] = im3d.GetByte(i + 1, j + 1, k + 1);
 
 				// find the min/max
 				Byte min = val[0], max = val[0];

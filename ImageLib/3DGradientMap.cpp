@@ -55,19 +55,19 @@ vec3f C3DGradientMap::Value(int i, int j, int k)
 	vec3f r;
 
 	// x-component
-	if (i == 0) r.x = ((float)m_im.value(i + 1, j, k) - (float)m_im.value(i, j, k)) * dxi;
-	else if (i == nx - 1) r.x = ((float)m_im.value(i, j, k) - (float)m_im.value(i - 1, j, k)) * dxi;
-	else r.x = ((float)m_im.value(i + 1, j, k) - (float)m_im.value(i - 1, j, k)) * (0.5f*dxi);
+	if (i == 0) r.x = ((float)m_im.GetByte(i + 1, j, k) - (float)m_im.GetByte(i, j, k)) * dxi;
+	else if (i == nx - 1) r.x = ((float)m_im.GetByte(i, j, k) - (float)m_im.GetByte(i - 1, j, k)) * dxi;
+	else r.x = ((float)m_im.GetByte(i + 1, j, k) - (float)m_im.GetByte(i - 1, j, k)) * (0.5f*dxi);
 
 	// y-component
-	if (j == 0) r.y = ((float)m_im.value(i, j + 1, k) - (float)m_im.value(i, j, k)) * dyi;
-	else if (j == ny - 1) r.y = ((float)m_im.value(i, j, k) - (float)m_im.value(i, j - 1, k)) * dyi;
-	else r.y = ((float)m_im.value(i, j + 1, k) - (float)m_im.value(i, j - 1, k)) * (0.5f*dyi);
+	if (j == 0) r.y = ((float)m_im.GetByte(i, j + 1, k) - (float)m_im.GetByte(i, j, k)) * dyi;
+	else if (j == ny - 1) r.y = ((float)m_im.GetByte(i, j, k) - (float)m_im.GetByte(i, j - 1, k)) * dyi;
+	else r.y = ((float)m_im.GetByte(i, j + 1, k) - (float)m_im.GetByte(i, j - 1, k)) * (0.5f*dyi);
 
 	// z-component
-	if (k == 0) r.z = ((float)m_im.value(i, j, k + 1) - (float)m_im.value(i, j, k)) * dzi;
-	else if (k == nz - 1) r.z = ((float)m_im.value(i, j, k) - (float)m_im.value(i, j, k - 1)) * dzi;
-	else r.z = ((float)m_im.value(i, j, k + 1) - (float)m_im.value(i, j, k - 1)) * (0.5f*dzi);
+	if (k == 0) r.z = ((float)m_im.GetByte(i, j, k + 1) - (float)m_im.GetByte(i, j, k)) * dzi;
+	else if (k == nz - 1) r.z = ((float)m_im.GetByte(i, j, k) - (float)m_im.GetByte(i, j, k - 1)) * dzi;
+	else r.z = ((float)m_im.GetByte(i, j, k + 1) - (float)m_im.GetByte(i, j, k - 1)) * (0.5f*dzi);
 
 	return r;
 }

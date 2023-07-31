@@ -206,6 +206,9 @@ public:
 	// get the nodal coordinates of an element at time
 	void GetElementCoords(int iel, int ntime, vec3f* r);
 
+	// project a point onto the mesh
+	int ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt, bool bfollow);
+
 	// evaluate scalar functions
 	void EvaluateNode   (int n, int ntime, int nfield, NODEDATA& d);
 	void EvaluateEdge   (int n, int ntime, int nfield, EDGEDATA& d);

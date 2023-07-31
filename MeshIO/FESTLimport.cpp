@@ -111,7 +111,7 @@ bool FESTLimport::read_ascii(const char* szfile)
 
 	// read the first line
 	char szline[256] = { 0 };
-	if (read_line(szline, "solid ") == false) return errf("First line must be solid definition.");
+	if (read_line(szline, "solid") == false) return errf("First line must be solid definition.");
 
 	// clear the list
 	m_Face.clear();
