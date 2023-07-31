@@ -316,7 +316,7 @@ void CImageMapTool::OnCreate()
                     int voxelIndexY = (pos.y - origin.y)/spacing.y;
                     int voxelIndexZ = (pos.z - origin.z)/spacing.z;
 
-                    double discreteVal = imageModel->Get3DImage()->value(voxelIndexX, voxelIndexY, voxelIndexZ);
+                    double discreteVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
                     if(discreteVal >= threshold)
                     {
                         val = discreteVal;
@@ -406,7 +406,7 @@ void CImageMapTool::OnCreate()
                                 break;
                             }
 
-                            double tempVal = imageModel->Get3DImage()->value(voxelIndexX, voxelIndexY, voxelIndexZ);
+                            double tempVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
 
                             if(tempVal >= threshold)
                             {

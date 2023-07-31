@@ -195,12 +195,70 @@ void C3DImage::StretchBlt(C3DImage& im)
 			}
 }
 
+double C3DImage::Value(int i, int j, int k, int channel)
+{
+    double h;
+    switch (m_pixelType)
+    {
+    case UINT_8:
+    {
+        h = m_pb[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case INT_8:
+    {
+        h = ((char*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case UINT_16:
+    {
+        h = ((uint16_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case INT_16:
+    {
+        h = ((int16_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case UINT_RGB8:
+    {
+        h = m_pb[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case INT_RGB8:
+    {
+        h = ((char*)m_pb)[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case UINT_RGB16:
+    {
+        h = ((uint16_t*)m_pb)[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case INT_RGB16:
+    {
+        h = ((int16_t*)m_pb)[(m_cx*(k*m_cy + j) + i)*3 + channel];
+        break;
+    }
+    case REAL_32:
+    {
+        h = ((float*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case REAL_64:
+    {
+        h = ((double*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    }
 
-Byte C3DImage::Value(double fx, double fy, int nz)
+    return h;
+}
+
+
+double C3DImage::Value(double fx, double fy, int nz, int channel)
 {
 	double r, s;
-
-	Byte* pb = m_pb + nz*m_cx*m_cy;
 
 	int ix = (int) ((m_cx-1)*fx);
 	int iy = (int) ((m_cy-1)*fy);
@@ -209,15 +267,104 @@ Byte C3DImage::Value(double fx, double fy, int nz)
 	if (iy == (m_cy - 1)) { iy--; s = 1; } else s = 2*(((m_cy-1)*fy) - iy)-1;
 
 	double h;
-	h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
-	h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
-	h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
-	h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+    switch (m_pixelType)
+    {
+    case UINT_8:
+    {
+        Byte* pb = m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case INT_8:
+    {
+        char* pb = (char*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case UINT_16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case INT_16:
+    {
+        int16_t* pb = (int16_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case UINT_RGB8:
+    {
+        Byte* pb = (Byte*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case INT_RGB8:
+    {
+        int8_t* pb = (int8_t*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case UINT_RGB16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case INT_RGB16:
+    {
+        int16_t* pb = (int16_t*)m_pb + nz*m_cx*m_cy*3 + channel;
+        h  = (1-r)*(1-s)*pb[ix*3   +  iy*3*m_cx];
+        h += (1+r)*(1-s)*pb[ix*3+3 +  iy*3*m_cx];
+        h += (1+r)*(1+s)*pb[ix*3+3 + (iy*3+3)*m_cx*3];
+        h += (1-r)*(1+s)*pb[ix*3   + (iy*3+3)*m_cx*3];
+        break;
+    }
+    case REAL_32:
+    {
+        float* pb = (float*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case REAL_64:
+    {
+        double* pb = (double*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    }
 
-	return (Byte)(0.25*h);
+	return 0.25*h;
 }
 
-Byte C3DImage::Peek(double r, double s, double t)
+double C3DImage::Peek(double r, double s, double t, int channel)
 {
 	static int n1,n2,n3,n4,n5,n6,n7,n8;
 	static double h1,h2,h3,h4,h5,h6,h7,h8;
@@ -234,14 +381,29 @@ Byte C3DImage::Peek(double r, double s, double t)
 	s = 2.0*(s*(m_cy-1) - j) - 1.0;
 	t = 2.0*(t*(m_cz-1) - k) - 1.0;
 
-	n1 = i + j*m_cx + k*m_cx*m_cy;
-	n2 = n1 + 1;
-	n3 = n2 + m_cx;
-	n4 = n3 - 1;
-	n5 = n1 + (m_cz > 1 ? m_cx*m_cy : 0);
-	n6 = n5 + 1;
-	n7 = n6 + m_cx;
-	n8 = n7 - 1;
+    if(m_pixelType == UINT_RGB8 || m_pixelType == INT_RGB8 || m_pixelType == UINT_RGB16 || m_pixelType == INT_RGB16)
+    {
+        n1 = (i + j*m_cx + k*m_cx*m_cy) + channel;
+        n2 = n1 + 3;
+        n3 = n2 + m_cx*3;
+        n4 = n3 - 3;
+        n5 = n1 + (m_cz > 1 ? m_cx*m_cy*3 : 0);
+        n6 = n5 + 3;
+        n7 = n6 + m_cx*3;
+        n8 = n7 - 3;
+    }
+    else
+    {
+        n1 = i + j*m_cx + k*m_cx*m_cy;
+        n2 = n1 + 1;
+        n3 = n2 + m_cx;
+        n4 = n3 - 1;
+        n5 = n1 + (m_cz > 1 ? m_cx*m_cy : 0);
+        n6 = n5 + 1;
+        n7 = n6 + m_cx;
+        n8 = n7 - 1;
+    }
+	
 
 	h1 = (1-r)*(1-s)*(1-t);
 	h2 = (1+r)*(1-s)*(1-t);
@@ -251,10 +413,74 @@ Byte C3DImage::Peek(double r, double s, double t)
 	h6 = (1+r)*(1-s)*(1+t);
 	h7 = (1+r)*(1+s)*(1+t);
 	h8 = (1-r)*(1+s)*(1+t);
-	
-	Byte* pb = m_pb;
+    
+    double val;
 
-	return (Byte)((h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125);
+    switch (m_pixelType)
+    {
+    case UINT_8:
+    {
+        Byte* pb = m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case INT_8:
+    {
+        char* pb = (char*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case UINT_16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case INT_16:
+    {
+        int16_t* pb = (int16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case UINT_RGB8:
+    {
+        Byte* pb = m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case INT_RGB8:
+    {
+        char* pb = (char*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case UINT_RGB16:
+    {
+        uint16_t* pb = (uint16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case INT_RGB16:
+    {
+        int16_t* pb = (int16_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case REAL_32:
+    {
+        float* pb = (float*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case REAL_64:
+    {
+        double* pb = (double*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    }
+
+    return val;
 }
 
 

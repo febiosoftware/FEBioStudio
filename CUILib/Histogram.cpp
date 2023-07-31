@@ -85,7 +85,7 @@ void CHistogramViewer::Update()
 			for (int j = 0; j < im->Height(); ++j)
 				for (int i = 0; i < im->Width(); ++i)
 				{
-					int n = im->value(i, j, k);
+					int n = im->GetByte(i, j, k);
 					ht[n]++;
 				}
 		}
