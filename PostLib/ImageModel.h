@@ -89,7 +89,7 @@ public:
 
     CImageViewSettings* GetViewSettings() { return &viewSettings; }
 
-    Byte ValueAtGlobalPos(vec3d pos);
+    double ValueAtGlobalPos(vec3d pos, int channel = 0);
 
 	C3DImage* Get3DImage();
 
