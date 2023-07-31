@@ -62,7 +62,8 @@ SOFTWARE.*/
 #include <MeshIO/FESTLExport.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
-#include <PostGL/GLProbe.h>
+#include <PostGL/GLPointProbe.h>
+#include <PostGL/GLCurveProbe.h>
 #include <PostGL/GLMusclePath.h>
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
@@ -853,7 +854,7 @@ void CPostModelPanel::BuildModelTree()
 				else if (dynamic_cast<Post::GLVolumeFlowPlot   *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/flow.png")));
 				else if (dynamic_cast<Post::GLTensorPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
 				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
-				else if (dynamic_cast<Post::GLProbe            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
+				else if (dynamic_cast<Post::GLPointProbe       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
 				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
 				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
 				else if (dynamic_cast<Post::CGLPointPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
@@ -1273,10 +1274,21 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
 		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
 
-		if (dynamic_cast<Post::GLProbe*>(po))
+		if (dynamic_cast<Post::GLPointProbe*>(po))
 		{
 			menu.addSeparator();
 			menu.addAction("Export data ...", this, SLOT(OnExportProbeData()));
+		}
+
+		if (dynamic_cast<Post::GLCurveProbe*>(po))
+		{
+			Post::GLCurveProbe* pc = dynamic_cast<Post::GLCurveProbe*>(po);
+			menu.addSeparator();
+			menu.addAction("Import points ...", this, SLOT(OnImportCurveProbePoints()));
+			if (pc->Points() > 0)
+			{
+				menu.addAction("Plot data ...", this, SLOT(OnCurveProbePlotData()));
+			}
 		}
 
 		if (dynamic_cast<Post::GLMusclePath*>(po))
@@ -1560,7 +1572,7 @@ void CPostModelPanel::OnExportProbeData()
 		{
 			for (int i = 0; i < glm->Plots(); ++i)
 			{
-				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 				if (probe)
 				{
 					double val = 0.0;
@@ -1573,6 +1585,34 @@ void CPostModelPanel::OnExportProbeData()
 			fprintf(fp, "\n");
 		}
 		fclose(fp);
+	}
+}
+
+void CPostModelPanel::OnImportCurveProbePoints()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po == nullptr) return;
+
+	QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Import data", "", "All files (*)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		if (po->ImportPoints(sfile) == false)
+		{
+			QMessageBox::critical(this, "Import Data", "Failed importing points");
+		}
+
+		Update(true);
+		selectObject(po);
+		GetMainWindow()->RedrawGL();
 	}
 }
 
@@ -1639,4 +1679,30 @@ void CPostModelPanel::OnAddNewMusclePath()
 	Update(true);
 	selectObject(mp);
 	GetMainWindow()->RedrawGL();
+}
+
+void CPostModelPanel::OnCurveProbePlotData()
+{
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po)
+	{
+		CPlotData* data = new CPlotData;
+		for (int i = 0; i < po->Points(); ++i)
+		{
+			vec2d p = po->GetPointValue(i);
+			data->addPoint(p.x(), p.y());
+		}
+		data->setLabel(QString::fromStdString(po->GetName()));
+		data->setLineColor(toQColor(po->GetColor()));
+		data->setFillColor(toQColor(po->GetColor()));
+
+		CGraphData* graph = new CGraphData;
+		graph->m_data.push_back(data);
+
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		w->SetData(graph);
+		GetMainWindow()->AddGraph(w);
+		w->setWindowTitle(QString::fromStdString(po->GetName()));
+		w->show();
+	}
 }

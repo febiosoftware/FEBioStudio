@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include "FEDataManager.h"
 #include "constants.h"
 #include "FEMeshData_T.h"
+#include <MeshLib/MeshTools.h>
 #include <stdio.h>
 using namespace std;
 
@@ -1195,5 +1196,133 @@ bool FEPostModel::Merge(FEPostModel* fem)
 
 	return true;
 }
+
+int FEPostModel::ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt, bool bfollow)
+{
+	Post::FEState* state = GetState(nstate);
+	Post::FERefState* ps = state->m_ref;
+	Post::FEPostMesh& mesh = *state->GetFEMesh();
+
+	rt = to_vec3d(r0);
+
+	int nelem = -1;
+	vec3f x0[FSElement::MAX_NODES];
+	vec3f xt[FSElement::MAX_NODES];
+	int nmin = -1;
+	double L2min = 0.0;
+	vec3f rmin;
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = mesh.Element(i);
+		if (el.IsSolid())
+		{
+			int ne = el.Nodes();
+			for (int j = 0; j < el.Nodes(); ++j)
+			{
+				x0[j] = ps->m_Node[el.m_node[j]].m_rt;
+				xt[j] = to_vec3f(mesh.Node(el.m_node[j]).r);
+			}
+
+			if (bfollow)
+			{
+				vec3f q;
+				if (ProjectToElement(el, r0, x0, xt, q))
+				{
+					rt = to_vec3d(q);
+					nelem = i;
+					break;
+				}
+			}
+			else
+			{
+				vec3f q;
+				if (ProjectToElement(el, r0, x0, x0, q))
+				{
+					rt = to_vec3d(q);
+					nelem = i;
+					break;
+				}
+			}
+		}
+		else if (el.IsShell() && bfollow)
+		{
+			int ne = el.Nodes();
+			vec3f ri(0, 0, 0);
+			for (int j = 0; j < ne; ++j)
+			{
+				vec3f rj = NodePosition(el.m_node[j], 0);
+				ri += rj;
+			}
+			ri /= ne;
+
+			// get the distance
+			double L2 = (ri - r0).SqrLength();
+
+			if ((nmin == -1) || (L2 < L2min))
+			{
+				nmin = i;
+				L2min = L2;
+				rmin = ri;
+			}
+		}
+	}
+
+	if ((nelem == -1) && (nmin != -1))
+	{
+		nelem = nmin;
+		vec3d dr = to_vec3d(r0 - rmin);
+
+		FSElement& e = mesh.Element(nmin);
+		vec3d a0 = to_vec3d(NodePosition(e.m_node[0], 0));
+		vec3d a1 = to_vec3d(NodePosition(e.m_node[1], 0));
+		vec3d a2 = to_vec3d(NodePosition(e.m_node[2], 0));
+
+		vec3d e1 = a1 - a0; e1.Normalize();
+		vec3d e2 = a2 - a0; e2.Normalize();
+		vec3d e3 = e1 ^ e2; e3.Normalize();
+		e2 = e3 ^ e1; e2.Normalize();
+
+		mat3d QT(\
+			e1.x, e1.y, e1.z, \
+			e2.x, e2.y, e2.z, \
+			e3.x, e3.y, e3.z	\
+		);
+
+		vec3d qr = QT * dr;
+
+		// calculate current position of origin
+		vec3d ri(0, 0, 0);
+		for (int j = 0; j < e.Nodes(); ++j)
+		{
+			FSNode& nj = mesh.Node(e.m_node[j]);
+			vec3d rj = to_vec3d(NodePosition(e.m_node[j], nstate));
+			ri += rj;
+		}
+		ri /= e.Nodes();
+
+		a0 = to_vec3d(NodePosition(e.m_node[0], nstate));
+		a1 = to_vec3d(NodePosition(e.m_node[1], nstate));
+		a2 = to_vec3d(NodePosition(e.m_node[2], nstate));
+
+		e1 = a1 - a0; e1.Normalize();
+		e2 = a2 - a0; e2.Normalize();
+		e3 = e1 ^ e2; e3.Normalize();
+		e2 = e3 ^ e1; e2.Normalize();
+
+		mat3d Q(\
+			e1.x, e2.x, e3.x, \
+			e1.y, e2.y, e3.y, \
+			e1.z, e2.z, e3.z	\
+		);
+
+		dr = Q * qr;
+
+		rt = ri + dr;
+	}
+
+	return nelem;
+}
+
 
 } // namespace Post
