@@ -1122,6 +1122,10 @@ void CGLPlaneCutPlot::RenderPlane()
 		vec3d v = q.GetVector();
 		glRotatef(w*180/PI, v.x, v.y, v.z);
 	}
+	else if (vec3d(0, 0, 1) * norm <= -0.99999)
+	{
+		glRotatef(180, 1, 0, 0);
+	}
 
 	glRotatef(m_rot, 0, 0, 1);
 
