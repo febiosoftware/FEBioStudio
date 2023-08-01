@@ -393,6 +393,7 @@ MigrationBackup/
 # Documentation
 Documentation/Doxygen
 Documentation/htmlManual
+Documentation/doc
 
 # Python stuff
 PyLib
