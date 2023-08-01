@@ -149,6 +149,19 @@ vec2d GLCurveProbe::GetPointValue(int i)
 	if ((i < 0) || (i >= Points())) return val;
 
 	int nstep = fem.CurrentTimeIndex();
+
+	return GetPointValue(i, nstep);
+}
+
+vec2d GLCurveProbe::GetPointValue(int i, int nstep)
+{
+	vec2d val(0, 0);
+
+	Post::CGLModel* mdl = GetModel();
+	if (mdl == nullptr) return val;
+	FEPostModel& fem = *mdl->GetFSModel();
+	if ((i < 0) || (i >= Points())) return val;
+
 	Post::CGLColorMap* cmap = mdl->GetColorMap();
 	if (cmap == nullptr) return val;
 	int nfield = cmap->GetEvalField();
