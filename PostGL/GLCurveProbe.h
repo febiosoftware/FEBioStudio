@@ -47,6 +47,7 @@ public:
 	size_t Points() const { return m_path.size(); }
 
 	vec2d GetPointValue(int i);
+	vec2d GetPointValue(int i, int nstep);
 
 public:
 	GLColor GetColor() const;
