@@ -251,6 +251,7 @@ void CImageMapTool::OnCreate()
 
     // if an object is selected, we work with the whole object. 
     // otherwise we only do the selected parts.
+    std::vector<bool> partIncluded(parts, true);
     if(wholeObject)
     {
         for (int i = 0; i < parts; ++i) partSet->add(i);
@@ -260,6 +261,7 @@ void CImageMapTool::OnCreate()
         for (int i = 0; i < parts; ++i)
         {
             if(po->Part(i)->IsSelected()) partSet->add(i);
+            else partIncluded[i] = false;
         }
     }
 
@@ -318,24 +320,63 @@ void CImageMapTool::OnCreate()
             // If we're doing the whole object, don't include the inside surfaces.
             if(wholeObject && !currentFace.IsExterior()) continue;
 
+            // Find which part(s) the face belongs to, and check if they were
+            // selected by the user
+            int elID1 = currentFace.m_elem[0].eid;
+            int elID2 = currentFace.m_elem[1].eid;
+
+            int partID1 = -1;
+            int partID2 = -1;
+
+            if(elID1 != -1)
+            {
+                partID1 = mesh->Element(elID1).m_gid;
+            }
+
+            if(elID2 != -1)
+            {
+                partID2 = mesh->Element(elID2).m_gid;
+            }
+
+            bool inPart1 = false;
+            bool inPart2 = false;
+
+            if(partID1 != -1)
+            {
+                inPart1 = partIncluded[partID1];
+            }
+
+            if(partID2 != -1)
+            {
+                inPart2 = partIncluded[partID2];
+            }
+
+            // If it belongs to 2 parts, and both parts have been selected, 
+            // treat it as an interior surface.
+            if(inPart1 && inPart2) continue;
+
+            // The normal will point toward the first of the two parts.
+            // We want the normal to point inward.
+            int negate = inPart1 ? -1 : 1;
+
             for(int j = 0; j < currentFace.Nodes(); j++)
             {
                 int nodeID = currentFace.n[j];
 
                 try
                 {
-                    normals.at(nodeID) += currentFace.m_nn[j];
+                    normals.at(nodeID) += currentFace.m_nn[j]*negate;
                 }
                 catch(...)
                 {
-                    normals[nodeID] = currentFace.m_nn[j];
+                    normals[nodeID] = currentFace.m_nn[j]*negate;
                 }
             }
         }
 
         for(auto& normal : normals)
         {
-            normal.second = normal.second.Normalize()*-1;
+            normal.second = normal.second.Normalize();
         }
 
         #pragma omp parallel for
