@@ -28,21 +28,23 @@ SOFTWARE.*/
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 
-class BREPImport : public FSFileImport
+class GMeshFormat;
+
+class GMshImport : public FSFileImport
 {
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
-
+	GMshImport(FSProject& prj);
 	bool Load(const char* szfile);
-};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+protected:
+	bool ReadMeshFormat();
 
-	bool Load(const char* szfile);
+	const char* nextLine();
+
+protected:
+	char	m_szline[256];
+	FSModel*	m_pfem;
+	bool		m_bnewFormat;
+
+	friend class GMeshFormat;
 };

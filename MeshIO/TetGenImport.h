@@ -27,22 +27,33 @@ SOFTWARE.*/
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
+#include <list>
 
-class BREPImport : public FSFileImport
+class TetGenImport : public FSFileImport
 {
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	struct NODE
+	{
+		double x, y, z;
+	};
 
-	bool Load(const char* szfile);
-};
+	struct ELEM
+	{
+		int	node[4];
+		int	att;
+	};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
 public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+	TetGenImport(FSProject& prj);
+	~TetGenImport(void);
 
 	bool Load(const char* szfile);
+
+protected:
+	bool BuildMesh(FSModel& fem);
+
+private:
+	std::vector<NODE>	m_Node;
+	std::vector<ELEM>	m_Elem;
+	int				m_offset;
 };

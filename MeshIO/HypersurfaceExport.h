@@ -25,24 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+#include "FSFileExport.h"
 
-class BREPImport : public FSFileImport
+//! Class for exporting Hypersurface meshes
+class HypersurfaceExport : public FSFileExport
 {
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	HypersurfaceExport(FSProject& prj);
+	~HypersurfaceExport(void);
 
-	bool Load(const char* szfile);
-};
-
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
-
-	bool Load(const char* szfile);
+	bool Write(const char* szfile) override;
 };

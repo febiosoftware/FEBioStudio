@@ -25,24 +25,28 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
 
-class BREPImport : public FSFileImport
+#include "FSFileExport.h"
+
+//-----------------------------------------------------------------------------
+struct VTKEXPORT_OPTIONS
 {
-public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
-
-	bool Load(const char* szfile);
+	bool	bpartIds;		// write element's part IDs
+	bool	bshellthick;	// shell thickness
+	bool	bscalardata;	// user scalar data
 };
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
+class VTKExport : public FSFileExport
 {
 public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+	VTKExport(FSProject& prj);
+	~VTKExport(void);
 
-	bool Load(const char* szfile);
+	bool Write(const char* szfile) override;
+	void SetOptions(VTKEXPORT_OPTIONS o) { m_ops = o; }
+
+	bool UpdateData(bool bsave) override;
+
+protected:
+	VTKEXPORT_OPTIONS m_ops;
 };

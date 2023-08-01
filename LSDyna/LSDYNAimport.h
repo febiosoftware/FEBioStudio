@@ -27,22 +27,21 @@ SOFTWARE.*/
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
+#include "LSDYNAModel.h"
 
-class BREPImport : public FSFileImport
+// Class for reading LSDYNA Keyword files.
+class LSDYNAimport : public FSFileImport
 {
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	LSDYNAimport(FSProject& prj);
+	virtual ~LSDYNAimport();
 
 	bool Load(const char* szfile);
-};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
 public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+	double NodeData(int i, int j) { return m_dyna.NodeData(i, j); }
 
-	bool Load(const char* szfile);
+protected:
+	LSDYNAModel	m_dyna;
+	FSProject*	m_pprj = nullptr;
 };

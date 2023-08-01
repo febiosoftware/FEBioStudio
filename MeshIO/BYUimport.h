@@ -27,22 +27,23 @@ SOFTWARE.*/
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
+#include <vector>
 
-class BREPImport : public FSFileImport
+class BYUimport :	public FSFileImport
 {
+protected:
+	struct PART
+	{
+		int n0;	// first polygon number
+		int n1; // last polygon number
+	};
+
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	BYUimport(FSProject& prj);
+	~BYUimport(void);
 
 	bool Load(const char* szfile);
-};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
-
-	bool Load(const char* szfile);
+protected:
+	std::vector<PART>	m_Part;
 };

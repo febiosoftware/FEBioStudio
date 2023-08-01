@@ -28,21 +28,59 @@ SOFTWARE.*/
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 
-class BREPImport : public FSFileImport
+class IGESFileImport : public FSFileImport
 {
+protected:
+	enum SECTION_CODE
+	{
+		IGS_FLAG,
+		IGS_START,
+		IGS_GLOBAL,
+		IGS_DIRECTORY,
+		IGS_PARAMETER,
+		IGS_TERMINATE
+	};
+
+	struct RECORD
+	{
+		char	szdata[73];	// data field
+		int		nsec;		// section identifier
+		int		nnum;		// sequence number
+	};
+
+	struct DIRECTORY_ENTRY
+	{
+		int		ntype;		// entity type number
+		int		pdata;		// pointer to parameter data
+		int		pstruct;	// pointer to defining structure
+		int		nfont;		// line font pattern
+		int		nlevel;		// number of level
+		int		pview;		// pointer to view
+		int		ptrans;		// pointer to transformation matrix
+		int		pdisplay;	// pointer to label display entitiy
+		int		nstatus;	// status number
+		int		nweight;	// line thickness
+		int		ncolor;		// color number
+		int		ncount;		// line count in parameter section
+		int		nform;		// form number
+		int		nlabel;		// label number		
+	};
+
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	IGESFileImport(FSProject& prj);
+	~IGESFileImport(void);
 
 	bool Load(const char* szfile);
-};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+protected:
+	bool read_record(RECORD& rec);
 
-	bool Load(const char* szfile);
+	bool ReadStartSection    (RECORD& rec);
+	bool ReadGlobalSection   (RECORD& rec);
+	bool ReadDirectorySection(RECORD& rec);
+	bool ReadParameterSection(RECORD& rec);
+	bool ReadTerminateSection(RECORD& rec);
+
+protected:
+	FSModel*	m_pfem;
 };

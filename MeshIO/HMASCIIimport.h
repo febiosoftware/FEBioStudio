@@ -27,22 +27,46 @@ SOFTWARE.*/
 #pragma once
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
+#include <list>
+//using namespace std;
 
-class BREPImport : public FSFileImport
+//-----------------------------------------------------------------------------
+// Reads in an Amira Hypermesh
+
+class HMASCIIimport : public FSFileImport
 {
+protected:
+	struct NODE
+	{
+		vec3d	r;		// nodal position
+		int		nid;	// node ID
+	};
+
+	struct ELEM
+	{
+		int		ntype;		// type is the number of nodes
+		int		nid;		// element ID
+		int		npid;
+		int		node[8];
+	};
+
+	struct COMPONENT
+	{
+		char	szname[64];
+	};
+
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	HMASCIIimport(FSProject& prj);
+	~HMASCIIimport(void);
 
 	bool Load(const char* szfile);
-};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+	void Clear();
 
-	bool Load(const char* szfile);
+	bool BuildMesh(FSModel& fem);
+
+protected:
+	list<NODE>			m_Node;
+	list<ELEM>			m_Elem;
+	list<COMPONENT>		m_Part;
 };

@@ -43,38 +43,38 @@ SOFTWARE.*/
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
 #include <FEBio/FEBioExport4.h>
-#include <Nike3D/FENIKEExport.h>
-#include <MeshIO/FEBYUExport.h>
-#include <MeshIO/FEHypersurfaceExport.h>
-#include <LSDyna/FELSDYNAexport.h>
-#include <MeshIO/FEMeshExport.h>
-#include <MeshIO/FESTLExport.h>
-#include <MeshIO/FEViewpointExport.h>
-#include <MeshIO/FETetGenExport.h>
-#include <MeshIO/FEVTKExport.h>
+#include <Nike3D/NIKE3DExport.h>
+#include <MeshIO/BYUExport.h>
+#include <MeshIO/HypersurfaceExport.h>
+#include <LSDyna/LSDYNAexport.h>
+#include <MeshIO/MeshExport.h>
+#include <MeshIO/STLExport.h>
+#include <MeshIO/ViewpointExport.h>
+#include <MeshIO/TetGenExport.h>
+#include <MeshIO/VTKExport.h>
 #include <MeshIO/VTUImport.h>
-#include <MeshIO/FEPLYExport.h>
+#include <MeshIO/PLYExport.h>
 #include <GeomLib/GPrimitive.h>
 #include <FEBio/FEBioImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
-#include <MeshIO/FEBYUimport.h>
+#include <MeshIO/BYUimport.h>
 #include <Comsol/COMSOLImport.h>
-#include <MeshIO/FEDXFimport.h>
-#include <MeshIO/FEGMshImport.h>
-#include <MeshIO/FEHMASCIIimport.h>
-#include <MeshIO/FEHyperSurfImport.h>
-#include <MeshIO/FEIDEASimport.h>
-#include <MeshIO/FEIGESFileImport.h>
-#include <LSDyna/FELSDYNAimport.h>
-#include <MeshIO/FEMeshImport.h>
-#include <MeshIO/FENASTRANimport.h>
-#include <MeshIO/FEPLYImport.h>
-#include <MeshIO/FERAWImport.h>
-#include <MeshIO/FESTLimport.h>
-#include <MeshIO/FETetGenImport.h>
-#include <MeshIO/FEVTKImport.h>
-#include <Nike3D/NikeImport.h>
+#include <MeshIO/DXFimport.h>
+#include <MeshIO/GMshImport.h>
+#include <MeshIO/HMASCIIimport.h>
+#include <MeshIO/HyperSurfaceImport.h>
+#include <MeshIO/IDEASimport.h>
+#include <MeshIO/IGESFileImport.h>
+#include <LSDyna/LSDYNAimport.h>
+#include <MeshIO/MeshImport.h>
+#include <MeshIO/NASTRANimport.h>
+#include <MeshIO/PLYImport.h>
+#include <MeshIO/RAWToMeshImport.h>
+#include <MeshIO/STLimport.h>
+#include <MeshIO/TetGenImport.h>
+#include <MeshIO/VTKImport.h>
+#include <Nike3D/NIKE3DImport.h>
 #include <MeshIO/PRVObjectImport.h>
 #include <MeshIO/PRVObjectExport.h>
 #include <MeshIO/BREPImport.h>
@@ -464,23 +464,23 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 		else return nullptr;
 	}
 	if (ext.compare("cdb", Qt::CaseInsensitive) == 0) return new AnsysImport(prj);
-	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new FELSDYNAimport(prj);
-	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new FEIDEASimport(prj);
-	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new FENASTRANimport(prj);
-	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new FEDXFimport(prj);
-	if (ext.compare("stl", Qt::CaseInsensitive) == 0) return new FESTLimport(prj);
-	if (ext.compare("hmascii", Qt::CaseInsensitive) == 0) return new FEHMASCIIimport(prj);
-	if (ext.compare("surf", Qt::CaseInsensitive) == 0) return new FEHyperSurfImport(prj);
-	if (ext.compare("msh", Qt::CaseInsensitive) == 0) return new FEGMshImport(prj);
-	if (ext.compare("byu", Qt::CaseInsensitive) == 0) return new FEBYUimport(prj);
-	if (ext.compare("mesh", Qt::CaseInsensitive) == 0) return new FEMeshImport(prj);
-	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new FETetGenImport(prj);
-	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new FEIGESFileImport(prj);
-	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new FEVTKimport(prj);
+	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
+	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new IDEASimport(prj);
+	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new NASTRANimport(prj);
+	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new DXFimport(prj);
+	if (ext.compare("stl", Qt::CaseInsensitive) == 0) return new STLimport(prj);
+	if (ext.compare("hmascii", Qt::CaseInsensitive) == 0) return new HMASCIIimport(prj);
+	if (ext.compare("surf", Qt::CaseInsensitive) == 0) return new HyperSurfaceImport(prj);
+	if (ext.compare("msh", Qt::CaseInsensitive) == 0) return new GMshImport(prj);
+	if (ext.compare("byu", Qt::CaseInsensitive) == 0) return new BYUimport(prj);
+	if (ext.compare("mesh", Qt::CaseInsensitive) == 0) return new MeshImport(prj);
+	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new TetGenImport(prj);
+	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new IGESFileImport(prj);
+	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new VTKimport(prj);
 	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
-		FERAWImport* reader = new FERAWImport(prj);
+		RAWToMeshImport* reader = new RAWToMeshImport(prj);
 		CDlgEditObject dlg(reader, "Import RAW", this);
 		if (dlg.exec()) {
 			return reader;
@@ -500,7 +500,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 		}
 		else return 0;
 	}
-	if (ext.compare("ply", Qt::CaseInsensitive) == 0) return new FEPLYImport(prj);
+	if (ext.compare("ply", Qt::CaseInsensitive) == 0) return new PLYImport(prj);
 	if ((ext.compare("brep", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("brp", Qt::CaseInsensitive) == 0)) return new BREPImport(prj);
 	if ((ext.compare("step", Qt::CaseInsensitive) == 0) ||
@@ -537,7 +537,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	FileReader* reader = 0;
 	QString ext = QFileInfo(fileName).suffix();
 	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
-	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new FENIKEImport(prj);
+	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
@@ -701,7 +701,7 @@ void CMainWindow::ExportPostGeometry()
 	{
 		// We need a dummy project
 		FSProject prj;
-		FESTLExport stl(prj);
+		STLExport stl(prj);
 		bret = stl.Write(szfilename, doc->GetPostObject());
 	}
 	break;
@@ -854,7 +854,7 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 1: // LSDYNA keyword
 		{
-			FELSDYNAexport writer(fem);
+			LSDYNAexport writer(fem);
 			CDlgEditObject dlg(&writer, "Export LSDYNA", this);
 			if (dlg.exec())
 			{
@@ -865,7 +865,7 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 2:
 		{
-			FEAbaqusExport writer(fem);
+			AbaqusExport writer(fem);
 			stringstream ss;
 			ss << "Written by FEBio Studio " << FBS_VERSION << "." << FBS_SUBVERSION << "." << FBS_SUBSUBVERSION;
 			writer.SetHeading(ss.str());
@@ -875,49 +875,49 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 3:
 		{
-			FEHypersurfaceExport writer(fem);
+			HypersurfaceExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to surf file."));
 		}
 		break;
 		case 4: // BYU files
 		{
-			FEBYUExport writer(fem);
+			BYUExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to byu file."));
 		}
 		break;
 		case 5: // STL files
 		{
-			FESTLExport writer(fem);
+			STLExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to STL file:\n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
 		}
 		break;
 		case 6: // ViewPoint files
 		{
-			FEViewpointExport writer(fem);
+			ViewpointExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to viewpoint file."));
 		}
 		break;
 		case 7:
 		{
-			FEMeshExport writer(fem);
+			MeshExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to Mesh file."));
 		}
 		break;
 		case 8:
 		{
-			FETetGenExport writer(fem);
+			TetGenExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to TetGen file."));
 		}
 		break;
 		case 9: // VTK files
 		{
-			FEVTKExport writer(fem);
+			VTKExport writer(fem);
 			CDlgEditObject dlg(&writer, "Export VTK", this);
 			if (dlg.exec())
 			{
@@ -1425,7 +1425,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		break;
 		case 1: // NIKE3D files
 		{
-			FENIKEExport writer(fem);
+			NIKE3DExport writer(fem);
 			bsuccess = writer.Write(szfile);
 			if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 		}
@@ -2167,15 +2167,15 @@ void CMainWindow::on_actionConvertGeo_triggered()
 						FSFileExport* exporter = nullptr;
 						switch (format)
 						{
-						case 0: exporter = new FEVTKExport(prj); ext = "vtk"; break;
-						case 1: exporter = new FEPLYExport(prj); ext = "ply"; break;
-						case 2: exporter = new FELSDYNAexport(prj); ext = "k"; break;
-						case 3: exporter = new FEHypersurfaceExport(prj); ext = "surf"; break;
-						case 4: exporter = new FEBYUExport(prj); ext = "byu"; break;
-						case 5: exporter = new FESTLExport(prj); ext = "stl"; break;
-						case 6: exporter = new FEViewpointExport(prj); ext = "vp"; break;
-						case 7: exporter = new FEMeshExport(prj); ext = "mesh"; break;
-						case 8: exporter = new FETetGenExport(prj); ext = "ele"; break;
+						case 0: exporter = new VTKExport(prj); ext = "vtk"; break;
+						case 1: exporter = new PLYExport(prj); ext = "ply"; break;
+						case 2: exporter = new LSDYNAexport(prj); ext = "k"; break;
+						case 3: exporter = new HypersurfaceExport(prj); ext = "surf"; break;
+						case 4: exporter = new BYUExport(prj); ext = "byu"; break;
+						case 5: exporter = new STLExport(prj); ext = "stl"; break;
+						case 6: exporter = new ViewpointExport(prj); ext = "vp"; break;
+						case 7: exporter = new MeshExport(prj); ext = "mesh"; break;
+						case 8: exporter = new TetGenExport(prj); ext = "ele"; break;
 						}
 
 						if (exporter == nullptr)

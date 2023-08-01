@@ -25,24 +25,76 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 
-class BREPImport : public FSFileImport
+#include <vector>
+#include <list>
+
+class STLimport : public FSFileImport
 {
+	struct FACET
+	{
+		float	norm[3];
+		float	v1[3];
+		float	v2[3];
+		float	v3[3];
+		int		n[3];
+		int		nid;
+	};
+
+	struct NODE
+	{
+		vec3d	r;
+		int		n;
+	};
+
+	class OBOX
+	{
+	public:
+		vec3d		r0, r1;		// points defining box
+		std::vector<int>	NL;			// list of nodes inside this box
+
+	public:
+		OBOX(){}
+		OBOX(const OBOX& b) 
+		{
+			r0 = b.r0; r1 = b.r1;
+			NL = b.NL; 
+		}
+	};
+
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	STLimport(FSProject& prj);
+	virtual ~STLimport(void);
 
 	bool Load(const char* szfile);
-};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+protected:
+	bool read_line(char* szline, const char* sz);
 
-	bool Load(const char* szfile);
+	GObject* build_mesh();
+	int find_node(const vec3d& r, const double eps = 1e-14);
+	int FindBox(const vec3d& r);
+
+	::BOX BoundingBox();
+
+private:
+	bool read_ascii(const char* szfile);
+	bool read_binary(const char* szfile);
+
+private:
+	bool read_facet(FACET& f);
+
+protected:
+	FSModel*			m_pfem;
+	std::list<FACET>	m_Face;
+	std::vector<NODE>	m_Node;
+	int					m_nline;	// line counter
+
+	int					m_NB;
+	std::vector<OBOX>	m_BL;		// box lists
+
+	BOX				m_box;		// bounding box
 };

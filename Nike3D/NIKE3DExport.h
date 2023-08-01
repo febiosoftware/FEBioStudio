@@ -25,24 +25,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
+#include <MeshIO/FSFileExport.h>
+#include "NIKE3DProject.h"
 
-class BREPImport : public FSFileImport
+//-----------------------------------------------------------------------------
+// This class takes an FSProject, converts it to a Nike3d project and
+// stores it to a file.
+//
+class NIKE3DExport : public FSFileExport
 {
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	NIKE3DExport(FSProject& prj);
+	virtual ~NIKE3DExport();
 
-	bool Load(const char* szfile);
-};
+	bool Write(const char* szfile);
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+protected:
+	bool ExportControl      (NIKE3DProject& prj);
+	bool ExportMaterials    (NIKE3DProject& prj);
+	bool ExportNodes        (NIKE3DProject& prj);
+	bool ExportHexElements  (NIKE3DProject& prj);
+	bool ExportShellElements(NIKE3DProject& prj);
+	bool ExportRigid        (NIKE3DProject& prj);
+	bool ExportDiscrete		(NIKE3DProject& prj);
+	bool ExportSliding      (NIKE3DProject& prj);
+	bool ExportLoadCurve    (NIKE3DProject& prj);
+	bool ExportNodalLoads   (NIKE3DProject& prj);
+	bool ExportPressure     (NIKE3DProject& prj);
+	bool ExportDisplacement (NIKE3DProject& prj);
+	bool ExportBodyForce    (NIKE3DProject& prj);
+	bool ExportVelocities   (NIKE3DProject& prj);
 
-	bool Load(const char* szfile);
+private:
+	FILE*	m_fp;		//!< the file pointer
+	bool	m_bcomm;	//!< add comments or not?
 };

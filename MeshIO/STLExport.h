@@ -25,24 +25,21 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
 
-class BREPImport : public FSFileImport
+#include "FSFileExport.h"
+
+class GObject;
+class FSMesh;
+
+class STLExport : public FSFileExport
 {
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	STLExport(FSProject& prj);
+	~STLExport(void);
 
-	bool Load(const char* szfile);
-};
+	bool Write(const char* szfile) override;
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+	bool Write(const char* szfile, GObject* po);
 
-	bool Load(const char* szfile);
+	bool Write(const char* szfile, FSMesh* pm);
 };

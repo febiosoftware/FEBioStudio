@@ -25,24 +25,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshIO/FSFileImport.h>
-#include <FEMLib/FSProject.h>
 
-class BREPImport : public FSFileImport
+#include <MeshIO/FSFileExport.h>
+
+//-----------------------------------------------------------------------------
+struct LSDYNAEXPORT_OPTIONS
 {
-public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
-
-	bool Load(const char* szfile);
+	bool	bselonly;		// selection only
+	bool	bshellthick;	// shell thickness
 };
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
+//-----------------------------------------------------------------------------
+class LSDYNAexport : public FSFileExport
 {
 public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+	LSDYNAexport(FSProject& prj);
+	~LSDYNAexport(void);
 
-	bool Load(const char* szfile);
+	void SetOptions(LSDYNAEXPORT_OPTIONS o) { m_ops = o; }
+
+	bool Write(const char* szfile);
+
+	bool UpdateData(bool bsave) override;
+
+protected:
+	bool write_NODE();
+	bool write_ELEMENT_SOLID();
+	bool write_ELEMENT_SHELL();
+	bool write_ELEMENT_SHELL_THICKNESS();
+	bool write_SET_SHELL_LIST();
+
+protected:
+	int		m_npart;	// counter for part number
+
+protected:
+	FILE*			m_fp;
+	LSDYNAEXPORT_OPTIONS	m_ops;
 };

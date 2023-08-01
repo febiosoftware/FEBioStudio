@@ -28,21 +28,42 @@ SOFTWARE.*/
 #include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 
-class BREPImport : public FSFileImport
+class MeshImport : public FSFileImport
 {
+protected:
+	struct NODE
+	{
+		float x, y, z;
+	};
+
+	struct ELEM
+	{
+		int		ntype;	// 0 = hex, 1 = tet, 2 = tri
+		int		n[8];
+		int		npid;
+	};
+
 public:
-	BREPImport(FSProject& prj);
-	~BREPImport();
+	MeshImport(FSProject& prj);
+	~MeshImport();
 
 	bool Load(const char* szfile);
-};
 
-// NOTE: There is already an IGES file reader in IGESFileImport.h
-class IGESImport : public FSFileImport
-{
-public:
-	IGESImport(FSProject& prj);
-	~IGESImport();
+	//! Set the read surface flag
+	void ReadSurface(bool b);
 
-	bool Load(const char* szfile);
+protected:
+	void ReadNodes(FILE* fp);
+	void ReadHex  (FILE* fp);
+	void ReadTet  (FILE* fp);
+	void ReadTri  (FILE* fp);
+
+	void BuildMesh(FSProject& prj);
+
+protected:
+	std::vector<NODE>	m_Node;
+	std::vector<ELEM>	m_Elem;
+
+private:
+	bool	m_bread_surface;
 };

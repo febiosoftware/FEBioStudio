@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include <PostLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
-#include <MeshIO/FESTLExport.h>
+#include <MeshIO/STLExport.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLPointProbe.h>
@@ -1537,7 +1537,7 @@ void CPostModelPanel::OnExportMCSurface()
 			FSMesh mesh;
 			mc->GetMesh(mesh);
 			FSProject dummy;
-			FESTLExport stl(dummy);
+			STLExport stl(dummy);
 
 			bool b = stl.Write(filename.c_str(), &mesh);
 			if (b) QMessageBox::information(this, "Export surface", "File written successfully.");
