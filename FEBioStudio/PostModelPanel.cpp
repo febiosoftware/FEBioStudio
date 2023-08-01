@@ -1288,6 +1288,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 			if (pc->Points() > 0)
 			{
 				menu.addAction("Plot data ...", this, SLOT(OnCurveProbePlotData()));
+				menu.addAction("Plot time averaged data ...", this, SLOT(OnCurveProbePlotTimeAveragedData()));
 			}
 		}
 
@@ -1686,12 +1687,75 @@ void CPostModelPanel::OnCurveProbePlotData()
 	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
 	if (po)
 	{
+		int N = po->Points();
+		vector<double> xpoints(N, 0.0);
+		vector<double> ypoints(N, 0.0);
+#pragma omp parallel for
+		for (int i = 0; i < N; ++i)
+		{
+			vec2d p = po->GetPointValue(i);
+			xpoints[i] = p.x();
+			ypoints[i] = p.y();
+		}
+
 		CPlotData* data = new CPlotData;
 		for (int i = 0; i < po->Points(); ++i)
 		{
-			vec2d p = po->GetPointValue(i);
-			data->addPoint(p.x(), p.y());
+			data->addPoint(xpoints[i], ypoints[i]);
 		}
+		data->setLabel(QString::fromStdString(po->GetName()));
+		data->setLineColor(toQColor(po->GetColor()));
+		data->setFillColor(toQColor(po->GetColor()));
+
+		CGraphData* graph = new CGraphData;
+		graph->m_data.push_back(data);
+
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		w->SetData(graph);
+		GetMainWindow()->AddGraph(w);
+		w->setWindowTitle(QString::fromStdString(po->GetName()));
+		w->show();
+	}
+}
+
+void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
+{
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po)
+	{
+		Post::CGLModel* mdl = po->GetModel();
+		if (mdl == nullptr) return;
+
+		TIMESETTINGS& time = doc->GetTimeSettings();
+
+		int N = po->Points();
+		vector<double> xpoints(N, 0.0);
+		vector<double> ypoints(N, 0.0);
+#pragma omp parallel for
+		for (int i = 0; i < N; ++i)
+		{
+			double x = 0.0, y = 0.0;
+			for (int n = time.m_start; n <= time.m_end; n++)
+			{
+				vec2d p = po->GetPointValue(i);
+				x += p.x();
+				y += p.y();
+			}
+			x /= (time.m_end - time.m_start + 1);
+			y /= (time.m_end - time.m_start + 1);
+			xpoints[i] = x;
+			ypoints[i] = y;
+		}
+
+		CPlotData* data = new CPlotData;
+		for (int i = 0; i < N; ++i)
+		{
+			data->addPoint(xpoints[i], ypoints[i]);
+		}
+
 		data->setLabel(QString::fromStdString(po->GetName()));
 		data->setLineColor(toQColor(po->GetColor()));
 		data->setFillColor(toQColor(po->GetColor()));
