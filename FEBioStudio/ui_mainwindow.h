@@ -262,6 +262,9 @@ public:
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
 
+	QAction* actionRotate;
+	QAction* actionTranslate;
+
 	QAction* actionAddNodalBC;
 	QAction* actionAddSurfaceBC;
 	QAction* actionAddGeneralBC;
@@ -727,8 +730,8 @@ public:
 		actionSelectDiscrete = addAction("Select Discrete", "actionSelectDiscrete", "discrete", true);
 
 		QAction* actionSelect    = addAction("Select"   , "actionSelect"   , "select"   , true); actionSelect->setShortcut(Qt::Key_Q);
-		QAction* actionTranslate = addAction("Translate", "actionTranslate", "translate", true); actionTranslate->setShortcut(Qt::Key_T);
-		QAction* actionRotate    = addAction("Rotate"   , "actionRotate"   , "rotate"   , true); actionRotate->setShortcut(Qt::Key_R);
+		actionTranslate = addAction("Translate", "actionTranslate", "translate", true); actionTranslate->setShortcut(Qt::Key_T);
+		actionRotate    = addAction("Rotate"   , "actionRotate"   , "rotate"   , true); actionRotate->setShortcut(Qt::Key_R);
 		QAction* actionScale     = addAction("Scale"    , "actionScale"    , "scale"    , true); actionScale->setShortcut(Qt::Key_S);
 
 		selectRect   = addAction("Rectangle", "selectRect"  , "selectRect"  , true);

@@ -746,17 +746,20 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				if (m_pivot == PIVOT_Y) q = quatd(f, vec3d(0, 1, 0));
 				if (m_pivot == PIVOT_Z) q = quatd(f, vec3d(0, 0, 1));
 
-				FESelection* ps = mdoc->GetCurrentSelection();
-				assert(ps);
-
-				if ((m_coord == COORD_LOCAL) || postDoc)
+				FESelection* ps = nullptr;
+				if (mdoc) ps = mdoc->GetCurrentSelection();
+				else if (postDoc) ps = postDoc->GetCurrentSelection();
+				if (ps)
 				{
-					quatd qs = ps->GetOrientation();
-					q = qs*q*qs.Inverse();
-				}
+					if ((m_coord == COORD_LOCAL) || postDoc)
+					{
+						quatd qs = ps->GetOrientation();
+						q = qs * q * qs.Inverse();
+					}
 
-				q.MakeUnit();
-				ps->Rotate(q, GetPivotPosition());
+					q.MakeUnit();
+					ps->Rotate(q, GetPivotPosition());
+				}
 			}
 
 			m_pWnd->UpdateGLControlBar();

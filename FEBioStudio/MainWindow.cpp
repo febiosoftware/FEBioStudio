@@ -1815,6 +1815,14 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 		ui->showPostPanel();
 		ev->accept();
 	}
+	else if ((ev->key() == Qt::Key_R))
+	{
+		if (GetPostDocument()) ui->actionRotate->toggle();
+	}
+	else if ((ev->key() == Qt::Key_T))
+	{
+		if (GetPostDocument()) ui->actionTranslate->toggle();
+	}
 }
 
 void CMainWindow::SetCurrentFolder(const QString& folder)

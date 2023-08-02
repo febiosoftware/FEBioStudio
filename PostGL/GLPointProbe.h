@@ -54,6 +54,14 @@ public:
 	GLColor GetColor() const;
 	void SetColor(const GLColor& c);
 
+	vec3d GetInitialPosition() const;
+	void GetInitialPosition(const vec3d& p);
+
+public:
+	bool Intersects(Ray& ray, Intersection& q) override;
+	FESelection* SelectComponent(int index) override;
+	void ClearSelection() override;
+
 private:
 	vec3d	m_initPos;
 	GLColor	m_col;

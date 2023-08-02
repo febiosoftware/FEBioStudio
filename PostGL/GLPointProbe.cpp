@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/MeshTools.h>
 #include <PostLib/constants.h>
 #include <MeshLib/FENodeNodeList.h>
+#include <MeshTools/FESelection.h>
 #include <GLLib/glx.h>
 #include <sstream>
 using namespace Post;
@@ -189,6 +190,17 @@ void GLPointProbe::SetColor(const GLColor& c)
 	m_col = c;
 }
 
+vec3d GLPointProbe::GetInitialPosition() const
+{
+	return m_initPos;
+}
+
+void GLPointProbe::GetInitialPosition(const vec3d& p)
+{
+	m_initPos = p;
+	SetVecValue(INIT_POS, p);
+}
+
 double GLPointProbe::DataValue(int nfield, int nstep)
 {
 	if (TrackModelData())
@@ -219,4 +231,72 @@ double GLPointProbe::DataValue(int nfield, int nstep)
 		}
 		return val;
 	}
+}
+
+class GLPointProbeSelection : public FESelection
+{
+public:
+	GLPointProbeSelection(GLPointProbe* pc) : FESelection(SELECT_OBJECTS), m_pc(pc) { Update(); }
+
+public:
+	void Invert() {}
+	void Translate(vec3d dr)
+	{
+		vec3d r = m_pc->GetInitialPosition() + dr;
+		m_pc->SetInitialPosition(r);
+		Update();
+	}
+
+	void Rotate(quatd q, vec3d c) {}
+	void Scale(double s, vec3d dr, vec3d c) {}
+
+	quatd GetOrientation() { return quatd(); }
+
+	FEItemListBuilder* CreateItemList() { return nullptr; }
+
+	void Update()
+	{
+		vec3d r = m_pc->GetInitialPosition();
+		m_box = BOX(r, r);
+		m_pc->Update();
+	}
+
+	int Count() { return 1; }
+
+private:
+	GLPointProbe* m_pc;
+};
+
+bool GLPointProbe::Intersects(Ray& ray, Intersection& q)
+{
+	int ntime = GetModel()->CurrentTimeIndex();
+	if (ntime != 0) return false;
+
+	double R = GetFloatValue(SIZE);
+
+	vec3d p = GetInitialPosition();
+	double l = ((p - ray.origin) * ray.direction) / ray.direction.norm2();
+	if (l > 0)
+	{
+		vec3d r = ray.origin + ray.direction * l;
+		double R2 = (p - r).norm2();
+		if (R2 < R * R)
+		{
+			q.point = r;
+			q.m_index = 0;
+			return true;
+		}
+	}
+
+	return false;
+}
+
+FESelection* GLPointProbe::SelectComponent(int index)
+{
+	return new GLPointProbeSelection(this);
+}
+
+void GLPointProbe::ClearSelection()
+{
+
 }
