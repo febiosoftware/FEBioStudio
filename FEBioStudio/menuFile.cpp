@@ -109,7 +109,6 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "XMLDocument.h"
 #include "FileThread.h"
-#include "DlgExportVTK.h"
 #include <PostLib/FEFEBioExport.h>
 #include <PostLib/FEAsciiExport.h>
 #include <PostLib/VRMLExporter.h>
@@ -728,11 +727,10 @@ void CMainWindow::ExportPostGeometry()
 	break;
 	case 7:
 	{
-	CDlgExportVTK dlg(this);
+	Post::FEVTKExport w;
+	CDlgEditObject dlg(&w, "Export VTK", this);
 	if (dlg.exec())
 	{
-	Post::FEVTKExport w;
-	w.ExportAllStates(dlg.m_ops[0]);
 	bret = w.Save(fem, szfilename);
 	error = "Failed writing VTK file";
 	}
@@ -1079,13 +1077,10 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 8:
 		{
-			CDlgExportVTK dlg(this);
+			Post::FEVTKExport w;
+			CDlgEditObject dlg(&w, "Export VTK", this);
 			if (dlg.exec())
 			{
-				Post::FEVTKExport w;
-				w.ExportAllStates(dlg.m_ops[0]);
-				w.ExportSelectedElementsOnly(dlg.m_bselonly);
-				w.WriteSeriesFile(dlg.m_bwriteSeries);
 				bret = w.Save(fem, szfilename);
 				error = "Failed writing VTK file";
 			}
