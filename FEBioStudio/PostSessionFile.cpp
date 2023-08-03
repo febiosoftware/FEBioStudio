@@ -493,6 +493,23 @@ bool PostSessionFileReader::parse_plot(XMLTag& tag)
 			}
 			else tag.skip();
 		}
+		else if (tag == "init_path")
+		{
+			Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(plot);
+			if (mp)
+			{
+				vector<vec3d> path;
+				++tag;
+				do
+				{
+					vec3d v;
+					tag.value(v);
+					path.push_back(v);
+					++tag;
+				} while (!tag.isend());
+				mp->SetInitPath(path);
+			}
+		}
 		else if (tag == "muscle_path")
 		{
 			Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(plot);
@@ -906,6 +923,21 @@ void PostSessionFileWriter::WritePlots()
 					}
 				}
 			}
+			if (dynamic_cast<Post::GLMusclePath*>(plot))
+			{
+				Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(plot);
+				if (mp->OverrideInitPath())
+				{
+					std::vector<vec3d> path = mp->GetInitPath();
+					if (path.empty() == false)
+						xml.add_branch("init_path");
+					for (vec3d p : path)
+					{
+						xml.add_leaf("point", p);
+					}
+					xml.close_branch();
+				}
+			}
 			if (dynamic_cast<Post::GLMusclePathGroup*>(plot))
 			{
 				Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(plot);
@@ -918,6 +950,18 @@ void PostSessionFileWriter::WritePlots()
 					xml.add_branch(el);
 					{
 						fsps_write_parameters(mp, xml);
+
+						if (mp->OverrideInitPath())
+						{
+							std::vector<vec3d> path = mp->GetInitPath();
+							if (path.empty() == false)
+							xml.add_branch("init_path");
+							for (vec3d p : path)
+							{
+								xml.add_leaf("point", p);
+							}
+							xml.close_branch();
+						}
 					}
 					xml.close_branch();
 				}

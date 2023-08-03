@@ -145,6 +145,27 @@ GLMusclePath::~GLMusclePath()
 
 }
 
+bool GLMusclePath::OverrideInitPath() const
+{
+	return (m_initPath && m_initPath->Points());
+}
+
+std::vector<vec3d> GLMusclePath::GetInitPath() const
+{
+	std::vector<vec3d> p;
+	if (m_initPath) p = m_initPath->GetPoints();
+	return p;
+}
+
+void GLMusclePath::SetInitPath(const std::vector<vec3d>& path)
+{
+	UpdateData(true);
+	Reset();
+	m_initPath = new PathData();
+	m_initPath->SetPoints(path);
+	Update();
+}
+
 void GLMusclePath::ClearInitPath()
 {
 	if (m_initPath) delete m_initPath;

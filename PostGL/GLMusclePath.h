@@ -60,6 +60,11 @@ public:
 
 	PathData* GetPath(int n) { return m_path[n]; }
 
+	bool OverrideInitPath() const;
+
+	std::vector<vec3d> GetInitPath() const;
+	void SetInitPath(const std::vector<vec3d>& path);
+
 protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
