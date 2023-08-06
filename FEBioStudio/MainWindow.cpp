@@ -663,7 +663,7 @@ void CMainWindow::ReadFile(QueuedFile& qfile)
 		{
 			string sfile = qfile.m_fileName.toStdString();
 			bret = qfile.m_fileReader->Load(sfile.c_str());
-			std::string err = qfile.m_fileReader->GetErrorMessage();
+			std::string err = qfile.m_fileReader->GetErrorString();
 			errorString = QString::fromStdString(err);
 		}
 		finishedReadingFile(bret, qfile, errorString);

@@ -117,7 +117,7 @@ bool XpltReader::Load(FEPostModel& fem)
 	// read the root section
 	// (This section was already opened by xpltFileReader)
 	if (ReadRootSection(fem) == false) return false;
-	if (m_xplt->IsCancelled()) return false;
+	if (m_xplt->IsCanceled()) return false;
 
 	// Clear the end-flag of the root section
 	m_ar.CloseChunk();
@@ -125,7 +125,7 @@ bool XpltReader::Load(FEPostModel& fem)
 
 	// Build the mesh
 	if (BuildMesh(fem) == false) return false;
-	if (m_xplt->IsCancelled()) return false;
+	if (m_xplt->IsCanceled()) return false;
 
 	// read the state sections (these could be compressed)
 	const xpltFileReader::HEADER& hdr = m_xplt->GetHeader();
@@ -176,7 +176,7 @@ bool XpltReader::Load(FEPostModel& fem)
 
 			++nstate;
 
-			if (m_xplt->IsCancelled())
+			if (m_xplt->IsCanceled())
 			{
 				break;
 			}

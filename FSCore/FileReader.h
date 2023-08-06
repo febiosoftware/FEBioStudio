@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <string.h>
 #include <string>
 #include <fstream>
-#include "FSObject.h"
+#include "FSThreadedTask.h"
 
 using std::string;
 using std::ifstream;
@@ -47,7 +47,7 @@ typedef off_t off_type;
 #endif
 
 //-----------------------------------------------------------------------------
-class FileReader : public FSBase
+class FileReader : public FSThreadedTask
 {
 public:
 	FileReader();
@@ -58,15 +58,6 @@ public:
 
 	// Cancel the file read
 	void Cancel();
-
-	// See if the file read was cancelled
-	bool IsCancelled() const;
-
-	// get the error string
-	const std::string& GetErrorMessage();
-
-	// get the number of errors
-	int Errors();
 
 	// get the amount of the file read so far
 	// expressed in percentage of total file size
@@ -81,9 +72,6 @@ public:
 	// get the file name
 	std::string GetFileName() const;
 
-	// helper function that sets the error string
-	bool errf(const char* szerr, ...);
-
 protected:
 	// open the file
 	bool Open(const char* szfile, const char* szmode);
@@ -94,9 +82,6 @@ protected:
 	// close the file
 	virtual void Close();
 
-	// clear error
-	void ClearErrors();
-
 	// get the file pointer
 	FILE* FilePtr();
 
@@ -106,10 +91,7 @@ protected:
 
 private:
 	std::string		m_fileName;	//!< file name
-	std::string		m_err;		//!< error messages (separated by \n)
-	int				m_nerrors;	//!< number of errors
 	off_type		m_nfilesize;	// size of file
-	bool			m_cancelled;	//!< file read was cancelled
 };
 
 // helper function to compare strings

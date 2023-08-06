@@ -52,7 +52,7 @@ void CImageReadThread::run()
 		if (src)
 		{
 			success = src->Load();
-			if (success == false) SetErrorString(QString::fromStdString(src->getErrorString()));
+			if (success == false) SetErrorString(QString::fromStdString(src->GetErrorString()));
 		}
 		else 
 		{

@@ -48,8 +48,6 @@ FileReader::FileReader()
 	m_fp = 0;
 	m_stream = nullptr;
 	m_nfilesize = 0;
-	m_cancelled = false;
-	m_nerrors = 0;
 }
 
 FileReader::~FileReader()
@@ -59,19 +57,13 @@ FileReader::~FileReader()
 
 void FileReader::Cancel()
 {
-	m_cancelled = true;
-}
-
-bool FileReader::IsCancelled() const
-{
-	return m_cancelled;
+	Terminate();
 }
 
 bool FileReader::Open(const char* szfile, const char* szmode)
 {
-	m_cancelled = false;
+	Reset();
 
-	m_err.clear();
 	if (m_fp) Close();
 
 	if ((szfile == 0) || (szfile[0] == 0)) return false;
@@ -120,56 +112,6 @@ void FileReader::Close()
 FILE* FileReader::FilePtr()
 {
 	return m_fp;
-}
-
-const std::string& FileReader::GetErrorMessage()
-{
-	return m_err;
-}
-
-int FileReader::Errors()
-{
-	return m_nerrors;
-}
-
-bool FileReader::errf(const char* szerr, ...)
-{
-	if (szerr == 0) return false;
-
-	// get a pointer to the argument list
-	va_list	args;
-
-	// copy to string
-	va_start(args, szerr);
-
-	int l = strlen(szerr) + 1024;
-	char* sz = new char[l + 1];
-#ifdef WIN32
-	vsprintf_s(sz, l, szerr, args);
-#else
-	vsnprintf(sz, l, szerr, args);
-#endif
-	sz[l] = 0;
-	va_end(args);
-
-	// append to the error string
-	if (m_err.empty())
-	{
-		m_err = string(sz);
-	}
-	else m_err.append("\n").append(sz);
-
-	delete [] sz;
-
-	m_nerrors++;
-
-	return false;
-}
-
-void FileReader::ClearErrors()
-{
-	m_err.clear();
-	m_nerrors = 0;
 }
 
 float FileReader::GetFileProgress() const

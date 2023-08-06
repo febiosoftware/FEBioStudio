@@ -1907,7 +1907,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 			bret = (bret ? exporter->Write(outFile.c_str()) : false);
 
 			AddLogEntry(bret ? "success\n" : "FAILED\n");
-			string err = reader.GetErrorMessage();
+			string err = reader.GetErrorString();
 			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 			err = exporter->GetErrorMessage();
 			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
@@ -1968,7 +1968,7 @@ void CMainWindow::on_actionConvertFeb2Fsm_triggered()
                 bret = (bret ? doc.SaveDocument() : false);
 
                 AddLogEntry(bret ? "success\n" : "FAILED\n");
-                string err = reader.GetErrorMessage();
+                string err = reader.GetErrorString();
                 if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
                 if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 
@@ -2065,7 +2065,7 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 				bret = (bret ? exporter->Write(outFile.c_str()) : false);
 
 				AddLogEntry(bret ? "success\n" : "FAILED\n");
-				string err = reader.GetErrorMessage();
+				string err = reader.GetErrorString();
 				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 				err = exporter->GetErrorMessage();
 				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
@@ -2077,7 +2077,7 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 			else
 			{
 				AddLogEntry("FAILED\n");
-				string err = reader.GetErrorMessage();
+				string err = reader.GetErrorString();
 				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 				nfails++;
 			}
@@ -2191,7 +2191,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 						bret = (bret ? exporter->Write(outFile.c_str()) : false);
 
 						AddLogEntry(bret ? "success\n" : "FAILED\n");
-						string err = reader->GetErrorMessage();
+						string err = reader->GetErrorString();
 						if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 						err = exporter->GetErrorMessage();
 						if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
