@@ -526,6 +526,19 @@ bool PostSessionFileReader::parse_plot(XMLTag& tag)
 					{
 						fsps_read_param(p, tag);
 					}
+					else if (tag == "init_path")
+					{
+						vector<vec3d> path;
+						++tag;
+						do
+						{
+							vec3d v;
+							tag.value(v);
+							path.push_back(v);
+							++tag;
+						} while (!tag.isend());
+						mp->SetInitPath(path);
+					}
 					++tag;
 				} while (!tag.isend());
 			}
