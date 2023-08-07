@@ -558,7 +558,8 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	// add additional displacement fields
 	if (m_bHasDispl) 
 	{
-		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
+		if (pdm->FindDataField("Lagrange strain") == -1)
+			pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
 		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         , "L");
 		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" , "L");
 	}
@@ -569,7 +570,9 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure", "P");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
+			// make sure the "solid stress" field was not added to the plot file
+			if (pdm->FindDataField("solid stress") == -1)
+				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
 		}
 	}
 
