@@ -522,11 +522,11 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 				}
 				else if (ndim == 3)
 				{
-					vec3d v(0, 0, 0);
-					v.x = param.value<FEParamDouble>(0).constValue();
-					v.y = param.value<FEParamDouble>(1).constValue();
-					v.z = param.value<FEParamDouble>(2).constValue();
-					p = po->AddVecParam(v, szname, szlongname);
+					double v[3] = { 0 };
+					v[0] = param.value<FEParamDouble>(0).constValue();
+					v[1] = param.value<FEParamDouble>(1).constValue();
+					v[2] = param.value<FEParamDouble>(2).constValue();
+					p = po->AddArrayDoubleParam(v, 3, szname, szlongname)->MakeVariable(true);;
 				}
 				else assert(false);
 			}
