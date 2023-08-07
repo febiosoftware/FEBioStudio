@@ -927,9 +927,8 @@ mat3d FEBio::GetMaterialAxis(void* mat3dvaluator, const vec3d& p)
 	if (val == nullptr) return mat3d::identity();
 	FEMaterialPoint mp;
 	mp.m_r0 = mp.m_rt = p;
-	mat3d v = (*val)(mp);
-	v.unit();
-	return v;
+	mat3d Q = (*val)(mp);
+	return Q;
 }
 
 void FEBio::DeleteClass(void* p)
