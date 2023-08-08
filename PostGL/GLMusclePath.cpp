@@ -295,6 +295,9 @@ bool GLMusclePath::Intersects(Ray& ray, Intersection& q)
 	int ntime = GetModel()->CurrentTimeIndex();
 	if (ntime != 0) return false;
 
+	// make sure we have paths
+	if (m_path.empty()) return false;
+
 	// see if any of the spheres are close to the ray
 	PathData& p = *m_path[ntime];
 
@@ -383,6 +386,7 @@ FESelection* GLMusclePath::SelectComponent(int index)
 {
 	int ntime = GetModel()->CurrentTimeIndex();
 	if (ntime != 0) return nullptr;
+	if (m_path.empty()) return nullptr;
 
 	// see if any of the spheres are close to the ray
 	PathData& p = *m_path[ntime];
@@ -398,8 +402,11 @@ void GLMusclePath::ClearSelection()
 	{ 
 		m_selectedPoint = -1;
 		ClearInitPath();
-		m_initPath = new PathData(*m_path[0]);
-		UpdateWrappingPath(m_path[0], 0, true);
+		if (m_path.empty() == false)
+		{
+			m_initPath = new PathData(*m_path[0]);
+			UpdateWrappingPath(m_path[0], 0, true);
+		}
 	}
 }
 
@@ -516,6 +523,7 @@ void GLMusclePath::UpdatePath(int ntime)
 void GLMusclePath::UpdatePathData(int ntime)
 {
 	if ((ntime < 0) || (ntime >= m_path.size())) return;
+	if (m_path.empty()) return;
 
 	PathData* path = m_path[ntime];
 	if (path == nullptr) return;
