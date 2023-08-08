@@ -1715,6 +1715,7 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 				part->m_Dom.push_back(dom);
 
 				dom->m_elemClass = el.Class();
+				dom->m_elemType = ntype;
 			}
 
 			xe.add_attribute("name", szname);
@@ -2230,67 +2231,79 @@ void FEBioExport4::WriteElementDataFields()
 					int pid = (*partList)[np];
 					GPart* pg = po->Part(pid);
 
-					XMLElement tag("ElementData");
-					tag.add_attribute("name", data.GetName().c_str());
-					tag.add_attribute("elem_set", pg->GetName());
-
-					switch (partData->GetDataType())
+					// It is possible that the part was split on export (if it had a mixed mesh)
+					// If that is the case, we'll need to split the mesh data accordingly. 
+					// we check for this by looping over all the exported domains that map to pg
+					vector<FEBioExport4::Domain*>& domList = m_Part[0]->m_Dom;
+					for (int l=0; l<domList.size(); ++l)
 					{
-					case FEMeshData::DATA_SCALAR: break;
-					case FEMeshData::DATA_VEC3D: tag.add_attribute("data_type", "vec3"); break;
-					case FEMeshData::DATA_MAT3D: tag.add_attribute("data_type", "mat3"); break;
-					default:
-						assert(false);
-					}
-
-					m_xml.add_branch(tag);
-					{
-						XMLElement el("e");
-						int nid = el.add_attribute("lid", 0);
-						int N = elemList->Size();
-						FEElemList::Iterator it = elemList->First();
-						int lid = 1;
-						for (int j = 0; j < N; ++j, ++it)
+						// see if the domain is a slice of pg
+						FEBioExport4::Domain* dom = domList[l];
+						if (dom->m_pg == pg)
 						{
-							FEElement_* pe = it->m_pi;
-							if (pe->m_gid == pid)
+							XMLElement tag("ElementData");
+							tag.add_attribute("name", data.GetName().c_str());
+							tag.add_attribute("elem_set", dom->m_name);
+
+							switch (partData->GetDataType())
 							{
-								el.set_attribute(nid, lid++);
-
-								if (partData->GetDataType() == FEMeshData::DATA_SCALAR)
-								{
-									if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
-									{
-										el.value(data[j]);
-									}
-									else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
-									{
-										int nn = pe->Nodes();
-										for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
-										el.value(v, nn);
-									}
-								}
-								else if (partData->GetDataType() == FEMeshData::DATA_VEC3D)
-								{
-									// we only support DATA_ITEM format
-									assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
-									vec3d v = data.getVec3d(j);
-									el.value(v);
-								}
-								else if (partData->GetDataType() == FEMeshData::DATA_MAT3D)
-								{
-									// we only support DATA_ITEM format
-									assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
-									mat3d v = data.getMat3d(j);
-									el.value(v);
-								}
-								else assert(false);
-
-								m_xml.add_leaf(el, false);
+							case FEMeshData::DATA_SCALAR: break;
+							case FEMeshData::DATA_VEC3D: tag.add_attribute("data_type", "vec3"); break;
+							case FEMeshData::DATA_MAT3D: tag.add_attribute("data_type", "mat3"); break;
+							default:
+								assert(false);
 							}
+
+							m_xml.add_branch(tag);
+							{
+								XMLElement el("e");
+								int nid = el.add_attribute("lid", 0);
+								int N = elemList->Size();
+								FEElemList::Iterator it = elemList->First();
+								int lid = 1;
+								for (int j = 0; j < N; ++j, ++it)
+								{
+									FEElement_* pe = it->m_pi;
+									if ((pe->m_gid == pid) && (pe->Type() == dom->m_elemType))
+									{
+										el.set_attribute(nid, lid++);
+
+										if (partData->GetDataType() == FEMeshData::DATA_SCALAR)
+										{
+											if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+											{
+												el.value(data[j]);
+											}
+											else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+											{
+												int nn = pe->Nodes();
+												for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
+												el.value(v, nn);
+											}
+										}
+										else if (partData->GetDataType() == FEMeshData::DATA_VEC3D)
+										{
+											// we only support DATA_ITEM format
+											assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
+											vec3d v = data.getVec3d(j);
+											el.value(v);
+										}
+										else if (partData->GetDataType() == FEMeshData::DATA_MAT3D)
+										{
+											// we only support DATA_ITEM format
+											assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
+											mat3d v = data.getMat3d(j);
+											el.value(v);
+										}
+										else assert(false);
+
+										m_xml.add_leaf(el, false);
+									}
+								}
+							}
+							m_xml.close_branch();
 						}
 					}
-					m_xml.close_branch();
 				}
 			}
 		}

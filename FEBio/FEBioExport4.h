@@ -121,13 +121,14 @@ private:
 	class Domain
 	{
 	public:
-		Domain() { m_pg = nullptr; }
+		Domain() {}
 
 	public:
 		string	m_name;
 		string	m_matName;
-		int		m_elemClass;
-		GPart* m_pg;
+		int		m_elemClass = 0;
+		int		m_elemType = 0;
+		GPart* m_pg = nullptr;
 	};
 
 	class Part
