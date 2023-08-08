@@ -1137,17 +1137,17 @@ void FEBioInputModel::CopyMeshSelections()
 		for (int j = 0; j < part->DomainLists(); ++j)
 		{
 			DomainList& dl = part->GetDomainList(j);
-			GPartList* partList = new GPartList(&gm);
+			FSPartSet* partList = new FSPartSet(po);
 			partList->SetName(dl.m_name);
 
 			for (int k = 0; k < dl.m_domList.size(); ++k)
 			{
 				const std::string& s = dl.m_domList[k]->name();
 				GPart* pg = po->FindPartFromName(s.c_str());
-				if (pg) partList->add(pg->GetID());
+				if (pg) partList->add(pg->GetLocalID());
 			}
 
-			gm.AddPartList(partList);
+			po->AddFEPartSet(partList);
 		}
 	}
 }
@@ -1585,6 +1585,11 @@ FSElemSet* FEBioInputModel::FindNamedElementSet(const std::string& name)
 	return dynamic_cast<FSElemSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_ELEM_FLAG));
 }
 
+FSPartSet* FEBioInputModel::FindNamedPartSet(const std::string& name)
+{
+	return dynamic_cast<FSPartSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_PART_FLAG));
+}
+
 //-----------------------------------------------------------------------------
 FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, unsigned int filter)
 {
@@ -1680,6 +1685,16 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 			for (int i = 0; i < N; ++i)
 			{
 				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
+		{
+			int N = po->FEPartSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEPartSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
 		}

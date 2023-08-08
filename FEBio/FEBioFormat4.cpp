@@ -1373,6 +1373,29 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 		}
 		else ParseUnknownTag(tag);
 	}
+	else if (type)
+	{
+		FEBioInputModel& feb = GetFEBioModel();
+		FSModel* fem = &feb.GetFSModel();
+		// allocate mesh data generator
+		const char* sztype = type->cvalue();
+		FSMeshDataGenerator* gen = FEBio::CreateElemDataGenerator(sztype, fem);
+		if (gen)
+		{
+			XMLAtt* name = tag.AttributePtr("name");
+			XMLAtt* elset = tag.AttributePtr("elem_set");
+
+			FSPartSet* pg = feb.FindNamedPartSet(elset->cvalue());
+			if (pg == nullptr) AddLogEntry("Cannot find part list %s", elset->cvalue());
+			else gen->SetItemList(pg);
+
+			gen->SetName(name->cvalue());
+
+			ParseModelComponent(gen, tag);
+			fem->AddMeshDataGenerator(gen);
+		}
+		else ParseUnknownAttribute(tag, "type");
+	}
 	else if (type == nullptr)
 	{
 		FEBioInputModel& feb = GetFEBioModel();
