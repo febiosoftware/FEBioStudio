@@ -306,13 +306,16 @@ void CITKImageSource::Save(OArchive& ar)
     ar.WriteChunk(0, m_filename);
     ar.WriteChunk(1, (int)m_type);
 
-    BOX box = m_originalImage->GetBoundingBox();
-    ar.WriteChunk(100, box.x0);
-    ar.WriteChunk(101, box.y0);
-    ar.WriteChunk(102, box.z0);
-    ar.WriteChunk(103, box.x1);
-    ar.WriteChunk(104, box.y1);
-    ar.WriteChunk(105, box.z1);
+	if (m_originalImage)
+	{
+		BOX box = m_originalImage->GetBoundingBox();
+		ar.WriteChunk(100, box.x0);
+		ar.WriteChunk(101, box.y0);
+		ar.WriteChunk(102, box.z0);
+		ar.WriteChunk(103, box.x1);
+		ar.WriteChunk(104, box.y1);
+		ar.WriteChunk(105, box.z1);
+	}
 }
 
 void CITKImageSource::Load(IArchive& ar)
@@ -408,13 +411,16 @@ void CITKSeriesImageSource::Save(OArchive& ar)
         ar.WriteChunk(0, filename);
     }
 
-    BOX box = m_originalImage->GetBoundingBox();
-    ar.WriteChunk(100, box.x0);
-    ar.WriteChunk(101, box.y0);
-    ar.WriteChunk(102, box.z0);
-    ar.WriteChunk(103, box.x1);
-    ar.WriteChunk(104, box.y1);
-    ar.WriteChunk(105, box.z1);
+	if (m_originalImage)
+	{
+		BOX box = m_originalImage->GetBoundingBox();
+		ar.WriteChunk(100, box.x0);
+		ar.WriteChunk(101, box.y0);
+		ar.WriteChunk(102, box.z0);
+		ar.WriteChunk(103, box.x1);
+		ar.WriteChunk(104, box.y1);
+		ar.WriteChunk(105, box.z1);
+	}
 }
 
 void CITKSeriesImageSource::Load(IArchive& ar)
