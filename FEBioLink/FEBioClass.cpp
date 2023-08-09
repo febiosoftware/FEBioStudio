@@ -726,12 +726,17 @@ int FEBio::GetModuleId(const std::string& moduleName)
 void FEBio::SetActiveModule(int moduleID)
 {
 	// create a new model
-	delete febioModel; febioModel = new FEBioModel;
+	delete febioModel; febioModel = nullptr;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.SetActiveModule(moduleID);
 
-	fecore.GetActiveModule()->InitModel(febioModel);
+	FEModule* activeMod = fecore.GetActiveModule();
+	if (activeMod)
+	{
+		febioModel = new FEBioModel;
+		activeMod->InitModel(febioModel);
+	}
 }
 
 int FEBio::GetActiveModule()
