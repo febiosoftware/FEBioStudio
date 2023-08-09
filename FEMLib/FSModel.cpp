@@ -1972,6 +1972,9 @@ void FSModel::Purge(int ops)
 		// remove all materials
 		DeleteAllMaterials();
 
+		// remove all load controllers
+		m_LC.Clear();
+
 		// add an initial step
 		m_pStep.Add(new FSInitialStep(this));
 	}
