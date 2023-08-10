@@ -423,7 +423,7 @@ double FSCoreMesh::HexVolume(const FEElement_& el)
 double penta6_volume(vec3d* r, bool bJ)
 {
     const int NELN = 6;
-    const int NINT = 8;
+    const int NINT = 6;
     
     static double gr[NINT] = { 0 };
     static double gs[NINT] = { 0 };
