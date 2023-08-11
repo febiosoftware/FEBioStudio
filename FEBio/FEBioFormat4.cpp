@@ -1385,9 +1385,38 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 			XMLAtt* name = tag.AttributePtr("name");
 			XMLAtt* elset = tag.AttributePtr("elem_set");
 
-			FSPartSet* pg = feb.FindNamedPartSet(elset->cvalue());
-			if (pg == nullptr) AddLogEntry("Cannot find part list %s", elset->cvalue());
-			else gen->SetItemList(pg);
+			const char* szset = elset->cvalue();
+			if (strncmp(szset, "@part_list:", 11) == 0)
+			{
+				FSPartSet* pg = feb.FindNamedPartSet(szset+11);
+				if (pg == nullptr) AddLogEntry("Cannot find part list %s", elset->cvalue());
+				else gen->SetItemList(pg);
+			}
+			else
+			{
+				GMeshObject* po = feb.GetInstance(0)->GetGObject();
+				FSPartSet* ps = new FSPartSet(po);
+				ps->SetName(name->cvalue());
+				for (int i = 0; i < po->Parts(); ++i)
+				{
+					GPart* pg = po->Part(i);
+					if (pg->GetName() == string(szset))
+					{
+						ps->add(i);
+					}
+				}
+
+				if (ps->size() > 0)
+				{
+					po->AddFEPartSet(ps);
+					gen->SetItemList(ps);
+				}
+				else
+				{
+					delete ps;
+					AddLogEntry("Cannot find part %s", elset->cvalue());
+				}
+			}
 
 			gen->SetName(name->cvalue());
 

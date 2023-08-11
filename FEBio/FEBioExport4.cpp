@@ -125,12 +125,35 @@ string FEBioExport4::GetElementSetName(FEItemListBuilder* pl)
 	for (int i = 0; i < N; ++i)
 		if (m_pESet[i].m_list == pl) return m_pESet[i].m_name.c_str();
 
-	if (dynamic_cast<GPartList*>(pl) && (pl->size() == 1))
+	if (dynamic_cast<GPartList*>(pl))
 	{
-		std::vector<int> items = pl->CopyItems();
-		int partId = *(items.begin());
-		GPart* pg = m_pfem->GetModel().FindPart(partId); assert(pg);
-		if (pg) return pg->GetName();
+		if (pl->size() == 1)
+		{
+			std::vector<int> items = pl->CopyItems();
+			int partId = *(items.begin());
+			GPart* pg = m_pfem->GetModel().FindPart(partId); assert(pg);
+			if (pg) return pg->GetName();
+		}
+		else
+		{
+			string name = "@part_list:" + pl->GetName();
+			return name;
+		}
+	}
+	else if (dynamic_cast<FSPartSet*>(pl))
+	{
+		FSPartSet* ps = dynamic_cast<FSPartSet*>(pl);
+		if (pl->size() == 1)
+		{
+			std::vector<int> items = pl->CopyItems();
+			GPart* pg = ps->GetPart(0); assert(pg);
+			if (pg) return pg->GetName();
+		}
+		else
+		{
+			string name = "@part_list:" + pl->GetName();
+			return name;
+		}
 	}
 
 	assert(false);
@@ -423,6 +446,13 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 			{
 				FSElemSet* pg = po->GetFEElemSet(j);
 				AddElemSet(pg->GetName(), pg);
+			}
+
+			int npset = po->FEPartSets();
+			for (int j = 0; j < npset; ++j)
+			{
+				FSPartSet* pg = po->GetFEPartSet(j);
+				AddPartList(pg->GetName(), pg);
 			}
 		}
 	}
@@ -1369,21 +1399,39 @@ void FEBioExport4::WriteGeometryPartLists()
 		XMLElement el("PartList");
 		el.add_attribute("name", it.m_name.c_str());
 		std::stringstream ss;
-		GPartList* pl = dynamic_cast<GPartList*>(it.m_list); assert(pl);
-		if (pl)
+		FEItemListBuilder* pl = it.m_list;
+
+		// we don't write part lists that have only one part
+		if (pl && (pl->size() > 1))
 		{
-			std::vector<int> partIDs = pl->CopyItems();
-			bool bfirst = true;
-			for (int id : partIDs)
+			if (dynamic_cast<GPartList*>(pl))
 			{
-				if (bfirst == false) ss << ","; else bfirst = false;
-				GPart* pg = mdl.FindPart(id); assert(pg);
-				if (pg) ss << pg->GetName();
+				std::vector<int> partIDs = pl->CopyItems();
+				bool bfirst = true;
+				for (int id : partIDs)
+				{
+					if (bfirst == false) ss << ","; else bfirst = false;
+					GPart* pg = mdl.FindPart(id); assert(pg);
+					if (pg) ss << pg->GetName();
+				}
 			}
+			else if (dynamic_cast<FSPartSet*>(pl))
+			{
+				FSPartSet* ps = dynamic_cast<FSPartSet*>(pl);
+				std::vector<int> partIDs = pl->CopyItems();
+				bool bfirst = true;
+				for (int id : partIDs)
+				{
+					if (bfirst == false) ss << ","; else bfirst = false;
+					GPart* pg = ps->GetPart(id); assert(pg);
+					if (pg) ss << pg->GetName();
+				}
+			}
+			else { assert(false); }
+			string s = ss.str();
+			el.value(s);
+			m_xml.add_leaf(el);
 		}
-		string s = ss.str();
-		el.value(s);
-		m_xml.add_leaf(el);
 	}
 }
 
