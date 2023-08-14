@@ -206,6 +206,8 @@ public:
 	void RegionSelectFEEdges(const SelectRegion& region);
 	void RegionSelectFEElems(const SelectRegion& region);
 
+	void BrushSelect(int x, int y, bool badd, bool binit);
+
 	void SetCoordinateSystem(int nmode);
 	
 	void UndoViewChange();
@@ -294,6 +296,7 @@ public:
 	void RenderBackground();
 
 	void RenderRubberBand();
+	void RenderBrush();
 	void RenderPivot(bool bpick = false);
 
 	void Render3DCursor(const vec3d& r, double R);
@@ -420,6 +423,8 @@ protected:
 	int			m_dxp, m_dyp;
 	View_Mode	m_nview;
 	Snap_Mode	m_nsnap;
+
+	vector<int>	m_selFaces0;	// selected faces (before brush selection)
 
 	bool	m_showFPS;
 

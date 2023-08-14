@@ -485,6 +485,14 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	if (but == Qt::LeftButton)
 	{
+		GLViewSettings& vs = GetViewSettings();
+		if (vs.m_bselbrush && (m_bshift || m_bctrl))
+		{
+			BrushSelect(m_x0, m_y0, (m_bctrl == false), true);
+			ev->accept();
+			repaint();
+			return;
+		}
 		if ((m_bshift || m_bctrl) && (m_pivot == PIVOT_NONE)) m_bsel = true;
 		if ((m_pivot != PIVOT_NONE) && m_bshift && (ntrans == TRANSFORM_MOVE))
 		{
@@ -594,6 +602,15 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			}
 		}
 		ev->accept();
+
+		// we need to repaint if brush selection is on so the brush can be redrawn
+		if (GetViewSettings().m_bselbrush)
+		{
+			m_x1 = x;
+			m_y1 = y;
+			repaint();
+		}
+
 		return;
 	}
 
@@ -606,7 +623,12 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	{
 		if (but1 && !m_bsel)
 		{
-			if (m_nview == VIEW_USER)
+			if (GetViewSettings().m_bselbrush && (bshift || bctrl))
+			{
+				BrushSelect(x, y, (bctrl == false), false);
+				repaint();
+			}
+			else if (m_nview == VIEW_USER)
 			{
 				if (balt)
 				{
@@ -828,6 +850,43 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	if (pdoc == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
+	if (view.m_bselbrush)
+	{
+		// If the brush is active, we commit the current selection
+		GObject* po = pdoc->GetActiveObject();
+		if (po)
+		{
+			FSMeshBase* pm = po->GetEditableMesh();
+			if (pm && (m_selFaces0.empty() == false))
+			{
+				int faces = pm->Faces();
+				assert(m_selFaces0.size() == faces);
+				vector<int> faceList; faceList.reserve(100);
+				int changes = 0;
+				for (int i = 0; i < faces; ++i)
+				{
+					FSFace& f = pm->Face(i);
+					int m = (f.IsSelected() ? 1 : 0);
+					if (m != m_selFaces0[i]) changes++;
+					if (f.IsSelected()) faceList.push_back(i);
+				}
+
+				// restore selection
+				for (int i=0; i<faces; ++i)
+				{
+					if (m_selFaces0[i]) pm->Face(i).Select(); else pm->Face(i).Unselect();
+				}
+				m_selFaces0.clear();
+
+				if (changes > 0)
+				{
+					pdoc->DoCommand(new CCmdSelectFaces(pm, faceList, false));
+				}
+			}
+		}
+		ev->accept();
+		return;
+	}
 
 	int ntrans = pdoc->GetTransformMode();
 	int item = pdoc->GetItemMode();
@@ -1068,8 +1127,20 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 	if (eventSource == Qt::MouseEventSource::MouseEventNotSynthesized)
 	{
 		int y = ev->angleDelta().y();
-		if (y > 0) cam.Zoom(0.95f);
-		if (y < 0) cam.Zoom(1.0f / 0.95f);
+		if (y == 0) y = ev->angleDelta().x();
+		if (balt && GetViewSettings().m_bselbrush)
+		{
+			float& R = GetViewSettings().m_brushSize;
+			if (y < 0) R -= 2.f;
+			if (y > 0) R += 2.f;
+			if (R < 2.f) R = 1.f;
+			if (R > 500.f) R = 500.f;
+		}
+		else
+		{
+			if (y > 0) cam.Zoom(0.95f);
+			if (y < 0) cam.Zoom(1.0f / 0.95f);
+		}
 		repaint();
 		m_pWnd->UpdateGLControlBar();
 	}
@@ -1494,6 +1565,8 @@ void CGLView::paintGL()
 
 	// render selection
 	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
+
+	if (view.m_bselbrush) RenderBrush();
 
 	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
 	glMatrixMode(GL_PROJECTION);
@@ -2324,6 +2397,38 @@ void CGLView::RenderRubberBand()
 		}
 		break;
 	}
+
+	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	glPopAttrib();
+}
+
+void CGLView::RenderBrush()
+{
+	// Get the document
+	CGLDocument* pdoc = GetDocument();
+	if (pdoc == nullptr) return;
+
+	// set the ortho
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, width(), height(), 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	glPushAttrib(GL_ENABLE_BIT);
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+	glColor3ub(255, 255, 255);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glLineStipple(1, (GLushort)0xF0F0);
+	glDisable(GL_CULL_FACE);
+	glEnable(GL_LINE_STIPPLE);
+
+	double R = GetViewSettings().m_brushSize;
+	int n = (int)(R / 2);
+	if (n < 12) n = 12;
+	glx::drawCircle(vec3d(m_x1, m_y1, 0), R, n);
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glPopAttrib();
@@ -5229,6 +5334,160 @@ void CGLView::SelectFENodes(int x, int y)
 	}
 
 	if (pcmd) pdoc->DoCommand(pcmd);
+}
+
+//-----------------------------------------------------------------------------
+void CGLView::BrushSelect(int x, int y, bool badd, bool binit)
+{
+	CGLDocument* pdoc = GetDocument();
+	int item = pdoc->GetItemMode();
+	if (item != ITEM_FACE) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// Get the active object
+	GObject* po = GetActiveObject();
+	if (po == 0) return;
+
+	// get the FE mesh
+	FSMeshBase* pm = po->GetEditableMesh();
+	if (pm == 0) return;
+	FSMeshBase& mesh = *pm;
+
+	// convert the point to a ray
+	makeCurrent();
+	GLViewTransform transform(this);
+
+	Ray ray = transform.PointToRay(x, y);
+
+	// convert ray to local coordinates
+	ray.origin = po->GetTransform().GlobalToLocal(ray.origin);
+	ray.direction = po->GetTransform().GlobalToLocalNormal(ray.direction);
+
+	double R = GetViewSettings().m_brushSize;
+
+	// First, store the current face selection state
+	int faces = mesh.Faces();
+	if (binit)
+	{
+		m_selFaces0.assign(faces, 0);
+		for (int i = 0; i < faces; ++i)
+		{
+			const FSFace& face = mesh.Face(i);
+			m_selFaces0[i] = (face.IsSelected() ? 1 : 0);
+		}
+	}
+
+	// find all nodes that fall within the selection region
+	int nodes = mesh.Nodes();
+	std::vector<int> tag(nodes, 0);
+	for (int i = 0; i < nodes; ++i)
+	{
+		vec3d r0 = mesh.Node(i).pos();
+		vec3d rt = mesh.NodePosition(i);
+		vec3d p = transform.WorldToScreen(rt);
+
+		double z = ray.direction * (r0 - ray.origin);
+
+		double L2 = (p.x - x) * (p.x - x) + (p.y - y) * (p.y - y);
+		if ((L2 <= R * R) && (z >= 0))
+			tag[i] = 1;
+	}
+
+	// collect all faces that should be selected
+	vector<int> faceList; faceList.reserve(100);
+	if (badd)
+	{
+		Intersection q;
+		if (FindFaceIntersection(ray, mesh, q))
+		{
+			assert((q.m_index >= 0) && (q.m_index < faces));
+			mesh.TagAllFaces(0);
+			stack<int> S;
+			S.push(q.m_index);
+			while (S.empty() == false)
+			{
+				int n = S.top(); S.pop();
+				FSFace& f = mesh.Face(n);
+				assert((f.m_ntag == 0) || (f.m_ntag == 2));
+				f.m_ntag = 1;
+				faceList.push_back(n);
+				for (int j = 0; j < f.Edges(); ++j)
+				{
+					if (f.m_nbr[j] >= 0)
+					{
+						FSFace& fj = pm->Face(f.m_nbr[j]);
+						vec3d fnj = to_vec3d(fj.m_fn);
+						if ((fj.m_ntag == 0))
+						{
+							bool baddFace = false;
+							if ((fj.IsVisible()) && (fnj * ray.direction < 0))
+							{
+								for (int k = 0; k < fj.Nodes(); ++k)
+								{
+									if (tag[fj.n[k]] > 0)
+									{
+										baddFace = true;
+										break;
+									}
+								}
+							}
+
+							if (baddFace)
+							{
+								fj.m_ntag = 2;
+								S.push(f.m_nbr[j]);
+							}
+							else fj.m_ntag = -1;
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < faces; ++i)
+		{
+			const FSFace& face = mesh.Face(i);
+			vec3d fn = to_vec3d(face.m_fn);
+			if (face.IsVisible() && (fn * ray.direction < 0))
+			{
+				bool baddFace = false;
+				for (int j = 0; j < face.Nodes(); ++j)
+				{
+					if (tag[face.n[j]])
+					{
+						baddFace = true;
+						break;
+					}
+				}
+				if (baddFace == false)
+				{
+					vec3d rn[FSFace::MAX_NODES];
+					mesh.FaceNodeLocalPositions(face, rn);
+					Intersection q;
+					baddFace = RayIntersectFace(ray, face.Type(), rn, q);
+				}
+
+				if (baddFace) faceList.push_back(i);
+			}
+		}
+	}
+	if (faceList.empty()) return;
+
+	if (m_planeCut)
+	{
+		// TODO: eliminate faces that cannot be seen because of the plane cut
+	}
+
+	// select the faces
+	for (int i : faceList)
+	{
+		FSFace& face = mesh.Face(i);
+		if (badd) face.Select(); else face.Unselect();
+	}
+	mesh.UpdateSelection();
 }
 
 //-----------------------------------------------------------------------------

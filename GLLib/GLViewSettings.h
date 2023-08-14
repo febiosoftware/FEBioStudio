@@ -63,6 +63,9 @@ struct GLViewSettings
 	bool	m_bext;		//!< ignore interior nodes
 	bool	m_bsoft;	//!< soft selection mode
 	bool	m_bcullSel;	//!< ignore backfacing when selecting
+	
+	bool	m_bselbrush;//!< brush selection mode
+	float	m_brushSize;//!< size of brush
 
 	bool	m_bselpath;	//!< select by shortest path
 

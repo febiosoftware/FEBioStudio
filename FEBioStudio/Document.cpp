@@ -109,6 +109,8 @@ void GLViewSettings::Defaults(int ntheme)
 	m_fconn = 30.f;
 	m_bcullSel = true;
 	m_bselpath = false;
+	m_bselbrush = false;
+	m_brushSize = 50.f;
 
 	m_apply = 0;
 
