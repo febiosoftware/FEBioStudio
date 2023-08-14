@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/GDiscreteObject.h>
 #include <sstream>
+#include <unordered_map>
 
 LSDYNAModel::LSDYNAModel()
 {
