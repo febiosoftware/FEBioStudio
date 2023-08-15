@@ -358,9 +358,6 @@ void CMeshInspector::on_select_clicked()
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) return;
 
-	FSMesh* pm = po->GetFEMesh();
-	if (pm == 0) return;
-
 	double smin, smax;
 	ui->sel->getRange(smin, smax);
 
@@ -375,27 +372,58 @@ void CMeshInspector::on_select_clicked()
 		etype = ui->table->item(index.row(), 0)->data(Qt::UserRole).toInt();
 	}
 
-	int NE = pm->Elements();
-	vector<int> elem; elem.reserve(NE);
-	Mesh_Data& data = pm->GetMeshData();
-	for (int i = 0; i<NE; ++i)
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == 0)
 	{
-		FSElement& e = pm->Element(i);
-		if ((etype == -1) || (e.Type() == etype))
+		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+		if (pso && pso->GetSurfaceMesh())
 		{
-			if (data.GetElementDataTag(i) > 0)
+			FSSurfaceMesh* psm = pso->GetSurfaceMesh();
+			int NF = psm->Faces();
+			vector<int> faceList; faceList.reserve(NF);
+			Mesh_Data& data = psm->GetMeshData();
+			for (int i = 0; i < NF; ++i)
 			{
-				double v = data.GetElementAverageValue(i);
-				if ((v + eps >= smin) && (v - eps <= smax)) elem.push_back(i);
+				FSFace& f = psm->Face(i);
+				if (data.GetElementDataTag(i) > 0)
+				{
+					double v = data.GetElementAverageValue(i);
+					if ((v + eps >= smin) && (v - eps <= smax)) faceList.push_back(i);
+				}
+			}
+
+			if (faceList.empty() == false)
+			{
+				CCommand* pcmd = new CCmdSelectFaces(psm, faceList, false);
+				pdoc->DoCommand(pcmd);
+				m_wnd->RedrawGL();
 			}
 		}
 	}
-
-	if (elem.empty() == false)
+	else
 	{
-		CCommand* pcmd = new CCmdSelectElements(pm, elem, false);
-		pdoc->DoCommand(pcmd);
-		m_wnd->RedrawGL();
+		int NE = pm->Elements();
+		vector<int> elem; elem.reserve(NE);
+		Mesh_Data& data = pm->GetMeshData();
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& e = pm->Element(i);
+			if ((etype == -1) || (e.Type() == etype))
+			{
+				if (data.GetElementDataTag(i) > 0)
+				{
+					double v = data.GetElementAverageValue(i);
+					if ((v + eps >= smin) && (v - eps <= smax)) elem.push_back(i);
+				}
+			}
+		}
+
+		if (elem.empty() == false)
+		{
+			CCommand* pcmd = new CCmdSelectElements(pm, elem, false);
+			pdoc->DoCommand(pcmd);
+			m_wnd->RedrawGL();
+		}
 	}
 }
 
