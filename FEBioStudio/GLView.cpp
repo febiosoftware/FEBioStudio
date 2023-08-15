@@ -596,9 +596,12 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		else
 		{
 			if (pdoc->GetSelectionMode() == SELECT_EDGE)
-//			if (GLHighlighter::IsTracking())
 			{
 				HighlightEdge(x, y);
+			}
+			else if (pdoc->GetSelectionMode() == SELECT_NODE)
+			{
+				HighlightNode(x, y);
 			}
 		}
 		ev->accept();
@@ -2781,6 +2784,62 @@ void CGLView::HighlightEdge(int x, int y)
 	else GLHighlighter::SetActiveItem(0);
 }
 
+//-----------------------------------------------------------------------------
+// highlight nodes
+void CGLView::HighlightNode(int x, int y)
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	if (pdoc == nullptr) return;
+
+	GLViewSettings& view = GetViewSettings();
+
+	// get the fe model
+	FSModel* ps = pdoc->GetFSModel();
+	GModel& model = ps->GetModel();
+
+	// set up selection buffer
+	int nsize = 5 * model.Nodes();
+	if (nsize == 0) return;
+
+	makeCurrent();
+	GLViewTransform transform(this);
+
+	int X = x;
+	int Y = y;
+	int S = 4;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	int Objects = model.Objects();
+	GNode* closestNode = nullptr;
+	double zmin = 0.0;
+	for (int i = 0; i < Objects; ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible())
+		{
+			int nodes = po->Nodes();
+			for (int j = 0; j < nodes; ++j)
+			{
+				GNode* pn = po->Node(j);
+
+				vec3d r = pn->Position();
+
+				vec3d p = transform.WorldToScreen(r);
+
+				if (rt.contains(QPoint((int)p.x, (int)p.y)))
+				{
+					if ((closestNode == nullptr) || (p.z < zmin))
+					{
+						closestNode = pn;
+						zmin = p.z;
+					}
+				}
+			}
+		}
+	}
+	if (closestNode != nullptr) GLHighlighter::SetActiveItem(closestNode);
+	else GLHighlighter::SetActiveItem(nullptr);
+}
 
 //-----------------------------------------------------------------------------
 GObject* CGLView::GetActiveObject()

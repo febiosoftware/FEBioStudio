@@ -122,6 +122,7 @@ public:
 
 	void UpdateCamera(bool hitCameraTarget);
 
+	void HighlightNode(int x, int y);
 	void HighlightEdge(int x, int y);
 
 	bool SelectPivot(int x, int y);
