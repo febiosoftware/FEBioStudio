@@ -37,12 +37,14 @@ SOFTWARE.*/
 #include <PostLib/Animation.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
+#include "GLViewSelector.h"
 
 class CMainWindow;
 class CGLDocument;
 class GDecoration;
 class CGView;
 class FSModel;
+class CGLView;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -99,58 +101,7 @@ struct GLTAG
 	GLColor	c;			// tag color
 };
 
-//-----------------------------------------------------------------------------
-class SelectRegion
-{
-public:
-	SelectRegion(){}
-	virtual ~SelectRegion(){}
-
-	virtual bool IsInside(int x, int y) const = 0;
-
-	// see if a line intersects this region
-	// default implementation only checks if one of the end points is inside.
-	// derived classes should provide a better implementation.
-	virtual bool LineIntersects(int x0, int y0, int x1, int y1) const;
-
-	// see if a triangle intersects this region
-	// default implementation checks for line intersections
-	virtual bool TriangleIntersect(int x0, int y0, int x1, int y1, int x2, int y2) const;
-};
-
-class BoxRegion : public SelectRegion
-{
-public:
-	BoxRegion(int x0, int x1, int y0, int y1);
-	bool IsInside(int x, int y) const;
-	bool LineIntersects(int x0, int y0, int x1, int y1) const;
-private:
-	int	m_x0, m_x1;
-	int	m_y0, m_y1;
-};
-
-class CircleRegion : public SelectRegion
-{
-public:
-	CircleRegion(int x0, int x1, int y0, int y1);
-	bool IsInside(int x, int y) const;
-	bool LineIntersects(int x0, int y0, int x1, int y1) const;
-private:
-	int	m_xc, m_yc;
-	int	m_R;
-};
-
-class FreeRegion : public SelectRegion
-{
-public:
-	FreeRegion(vector<pair<int, int> >& pl);
-	bool IsInside(int x, int y) const;
-private:
-	vector<pair<int, int> >& m_pl;
-	int m_x0, m_x1;
-	int m_y0, m_y1;
-};
-
+//===================================================================
 class CGLView : public QOpenGLWidget
 {
 	Q_OBJECT
@@ -171,42 +122,9 @@ public:
 
 	void UpdateCamera(bool hitCameraTarget);
 
-	void SelectParts   (int x, int y);
-	void SelectSurfaces(int x, int y);
-	void SelectEdges   (int x, int y);
-	void SelectNodes   (int x, int y);
-	void SelectDiscrete(int x, int y);
-
 	void HighlightEdge(int x, int y);
 
-	void SelectObjects   (int x, int y);
-	void SelectPostObject(int x, int y);
 	bool SelectPivot(int x, int y);
-
-	// select items of an FE mesh
-	void SelectFEElements(int x, int y);
-	void SelectFEFaces   (int x, int y);
-	void SelectFEEdges   (int x, int y);
-	void SelectFENodes   (int x, int y);
-
-	// select items of a surface mesh
-	void SelectSurfaceFaces(int x, int y);
-	void SelectSurfaceEdges(int x, int y);
-	void SelectSurfaceNodes(int x, int y);
-
-	void RegionSelectObjects (const SelectRegion& region);
-	void RegionSelectParts   (const SelectRegion& region);
-	void RegionSelectSurfaces(const SelectRegion& region);
-	void RegionSelectEdges   (const SelectRegion& region);
-	void RegionSelectNodes   (const SelectRegion& region);
-	void RegionSelectDiscrete(const SelectRegion& region);
-
-	void RegionSelectFENodes(const SelectRegion& region);
-	void RegionSelectFEFaces(const SelectRegion& region);
-	void RegionSelectFEEdges(const SelectRegion& region);
-	void RegionSelectFEElems(const SelectRegion& region);
-
-	void BrushSelect(int x, int y, bool badd, bool binit);
 
 	void SetCoordinateSystem(int nmode);
 	
@@ -342,11 +260,6 @@ private:
 	// convert from device pixel to physical pixel
 	QPoint DeviceToPhysical(int x, int y);
 
-	void TagBackfacingFaces(FSMeshBase& mesh);
-	void TagBackfacingNodes(FSMeshBase& mesh);
-	void TagBackfacingEdges(FSMeshBase& mesh);
-	void TagBackfacingElements(FSMesh& mesh);
-
 public:
 	QImage CaptureScreen();
 
@@ -400,6 +313,8 @@ public:
 
 	GMesh* PlaneCutMesh();
 
+	void DeletePlaneCutMesh();
+
 	int PlaneCutMode();
 
 	double* PlaneCoordinates();
@@ -423,8 +338,6 @@ protected:
 	int			m_dxp, m_dyp;
 	View_Mode	m_nview;
 	Snap_Mode	m_nsnap;
-
-	vector<int>	m_selFaces0;	// selected faces (before brush selection)
 
 	bool	m_showFPS;
 
@@ -495,6 +408,8 @@ public:
 private:
 	GLViewSettings	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
+
+	GLViewSelector	m_select;
 
 	CGLCamera	m_oldCam;
 
