@@ -175,6 +175,7 @@ public:
 	QSpinBox* curvatureMaxIters;
 	QCheckBox* curvatureExtQuad;
 
+	GObject*		m_po;
 	FSMeshBase*		m_pm;
 
 	int		m_map;
@@ -182,6 +183,7 @@ public:
 public:
 	void setupUi(QMainWindow* wnd)
 	{
+		m_po = nullptr;
 		m_pm = nullptr;
 
 		m_map = -1;

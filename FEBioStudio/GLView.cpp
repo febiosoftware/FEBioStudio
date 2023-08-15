@@ -684,7 +684,10 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 			m_pWnd->UpdateGLControlBar();
 		}
-		if (but1 && m_bsel) m_pWnd->Update();
+		// NOTE: Not sure why we would want to do an expensive update when we move the mouse.
+		//       I think we only need to do a repaint
+//		if (but1 && m_bsel) m_pWnd->Update();
+		repaint();
 	}
 	else if (ntrans == TRANSFORM_MOVE)
 	{

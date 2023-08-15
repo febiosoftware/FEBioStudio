@@ -36,19 +36,39 @@ SOFTWARE.*/
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
 {
 	setWindowTitle("Mesh Inspector");
-	m_po = 0;
 	ui->setupUi(this);
 	ui->plot->setChartStyle(ChartStyle::BARCHART_PLOT);
 
 	ui->m_map = Post::ColorMapManager::GetDefaultMap();
 }
 
-void CMeshInspector::Update()
+void CMeshInspector::Update(bool reset)
 {
-	m_po = m_wnd->GetActiveObject();
-	ui->setMesh(m_po);
+	GObject* pa = m_wnd->GetActiveObject();
+	if (reset == false)
+	{
+		if (ui->m_po != pa) reset = true;
+		else
+		{
+			FSMeshBase* pm = ui->m_po->GetFEMesh();
+			if (pm == nullptr)
+			{
+				GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(pa);
+				pm = pso->GetSurfaceMesh();
+			}
+			if (ui->m_pm != pm) reset = true;
+		}
+	}
 
-	UpdateData(ui->var->currentIndex());
+	if (reset)
+	{
+		// if the object hasn't changed, we want to restore the current datafield
+		int n = (ui->m_po == pa ? ui->var->currentIndex() : -1);
+		if ((ui->m_po == nullptr) && pa) n = 0;
+		ui->m_po = pa;
+		ui->setMesh(ui->m_po);
+		if (n != -1) UpdateData(n);
+	}
 }
 
 void CMeshInspector::showEvent(QShowEvent* ev)
@@ -99,12 +119,13 @@ void CMeshInspector::UpdateData(int ndata)
 	// so we need to subtract one if ndata is larger than the number of eval fields
 	if (ndata > FEMeshValuator::MAX_DEFAULT_FIELDS) ndata--;
 
-	FSMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
+	GObject* po = ui->m_po;
+	FSMesh* pm = (po ? po->GetFEMesh() : 0);
 	if (pm == 0)
 	{
-		if (dynamic_cast<GSurfaceMeshObject*>(m_po))
+		if (dynamic_cast<GSurfaceMeshObject*>(po))
 		{
-			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(m_po);
+			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
 			FSSurfaceMesh* psm = pso->GetSurfaceMesh();
 			if (psm == nullptr) return;
 
@@ -374,7 +395,6 @@ void CMeshInspector::on_select_clicked()
 	{
 		CCommand* pcmd = new CCmdSelectElements(pm, elem, false);
 		pdoc->DoCommand(pcmd);
-		m_wnd->Update(this);
 		m_wnd->RedrawGL();
 	}
 }
@@ -415,10 +435,10 @@ void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
 
 void CMeshInspector::on_table_cellChanged(int r, int c)
 {
-	if (c == 0) Update();
+	if (c == 0) Update(true);
 }
 
 void CMeshInspector::on_logScale_clicked()
 {
-	Update();
+	Update(true);
 }

@@ -1273,7 +1273,7 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->buildPanel->isVisible() && (psend != ui->buildPanel)) ui->buildPanel->Update(breset);
 
 	//	if (m_pCurveEdit->visible() && (m_pCurveEdit != psend)) m_pCurveEdit->Update();
-	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update();
+	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
 
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
 
