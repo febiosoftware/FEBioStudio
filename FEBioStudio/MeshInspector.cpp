@@ -76,7 +76,7 @@ void CMeshInspector::hideEvent(QHideEvent* ev)
 
 void CMeshInspector::on_var_currentIndexChanged(int n)
 {
-	if ((n == Ui::CMeshInspector::PRINC_CURVE_1) || (n == Ui::CMeshInspector::PRINC_CURVE_2)) ui->propsWidget->show();
+	if ((n == FEMeshValuator::PRINC_CURVE_1) || (n == FEMeshValuator::PRINC_CURVE_2)) ui->propsWidget->show();
 	else ui->propsWidget->hide();
 
 	UpdateData(n);
@@ -97,7 +97,7 @@ void CMeshInspector::UpdateData(int ndata)
 
 	// We added a separator between eval fields and data fields
 	// so we need to subtract one if ndata is larger than the number of eval fields
-	if (ndata > ui->MAX_EVAL_FIELDS) ndata--;
+	if (ndata > FEMeshValuator::MAX_DEFAULT_FIELDS) ndata--;
 
 	FSMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
 	if (pm == 0)
@@ -382,7 +382,7 @@ void CMeshInspector::on_select_clicked()
 void CMeshInspector::on_curvatureLevels_valueChanged(int n)
 {
 	int nvar = ui->var->currentIndex();
-	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
@@ -393,7 +393,7 @@ void CMeshInspector::on_curvatureLevels_valueChanged(int n)
 void CMeshInspector::on_curvatureMaxIters_valueChanged(int n)
 {
 	int nvar = ui->var->currentIndex();
-	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
@@ -405,7 +405,7 @@ void CMeshInspector::on_curvatureMaxIters_valueChanged(int n)
 void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
 {
 	int nvar = ui->var->currentIndex();
-	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
