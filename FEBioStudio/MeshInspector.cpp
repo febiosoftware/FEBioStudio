@@ -270,7 +270,7 @@ void CMeshInspector::UpdateSurfaceMeshData(FSSurfaceMesh* pm, int ndata)
 	int NF = pm->Faces();
 	vector<double> v; v.reserve(NF * FSElement::MAX_NODES);
 	double vmax = -1e99, vmin = 1e99, vavg = 0;
-	Mesh_Data data;
+	Mesh_Data& data = pm->GetMeshData();
 	data.Init(pm, 0, 0);
 	eval.Evaluate(ndata, data);
 	if (data.IsValid())

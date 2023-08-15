@@ -1120,6 +1120,12 @@ void FSSurfaceMesh::AutoPartitionNodes()
 }
 
 //-----------------------------------------------------------------------------
+Mesh_Data& FSSurfaceMesh::GetMeshData()
+{
+	return m_data;
+}
+
+//-----------------------------------------------------------------------------
 void FSSurfaceMesh::ResizeNodes(int newSize)
 {
 	m_Node.resize(newSize);
