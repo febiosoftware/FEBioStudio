@@ -2297,22 +2297,22 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 		renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
 			return (!face.IsSelected() && face.IsVisible());
 			});
-
-		// render the selected faces
-		// override some settings
-		glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
-		renderer.SetRenderMode(GLMeshRender::SelectionMode);
-		glColor3ub(255, 64, 0);
-		renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
-
-		// render the selected face outline
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		glColor3ub(255, 255, 0);
-		renderer.RenderFEFacesOutline(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
-
-		glPopAttrib();
 	}
+
+	// render the selected faces
+	// override some settings
+	glPushAttrib(GL_POLYGON_BIT | GL_ENABLE_BIT);
+	renderer.SetRenderMode(GLMeshRender::SelectionMode);
+	glColor3ub(255, 64, 0);
+	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
+
+	// render the selected face outline
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_LIGHTING);
+	glColor3ub(255, 255, 0);
+	renderer.RenderFEFacesOutline(surfaceMesh, [](const FSFace& face) { return face.IsSelected(); });
+
+	glPopAttrib();
 }
 
 //-----------------------------------------------------------------------------
