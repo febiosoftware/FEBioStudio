@@ -56,6 +56,7 @@ std::vector< std::string > FEMeshValuator::GetDataFieldNames()
 	names.push_back("Tet minimal dihedral angle");
 	names.push_back("Tet maximal dihedral angle");
 	names.push_back("Triangle quality");
+	names.push_back("Triangle max dihedral angle");
 	names.push_back("Tet10 midside node offset");
 	names.push_back("Minimum element edge length");
 	names.push_back("Maximum element edge length");
@@ -272,6 +273,9 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 		break;
 	case TRIANGLE_QUALITY:
 		val = FEMeshMetrics::TriQuality(m_mesh, el);
+		break;
+	case TRIANGLE_MAX_DIHEDRAL_ANGLE:
+		val = FEMeshMetrics::TriMaxDihedralAngle(m_mesh, el);
 		break;
 	case TET10_MID_NODE_OFFSET:
 		val = FEMeshMetrics::Tet10MidsideNodeOffset(m_mesh, el, true);
