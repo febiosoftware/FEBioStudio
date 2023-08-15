@@ -86,6 +86,7 @@ class FESurfaceMeshValuator
 	enum DataFields {
 		FACE_AREA,
 		TRIANGLE_QUALITY,
+		TRIANGLE_MAX_DIHEDRAL_ANGLE,
 		MIN_EDGE_LENGTH,
 		MAX_EDGE_LENGTH,
 		// This last value is equal to the number of fields above.

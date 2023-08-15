@@ -342,6 +342,7 @@ std::vector< std::string > FESurfaceMeshValuator::GetDataFieldNames()
 	std::vector< std::string > names;
 	names.push_back("Face area");
 	names.push_back("Triangle quality");
+	names.push_back("Triangle max dihedral angle");
 	names.push_back("Minimum element edge length");
 	names.push_back("Maximum element edge length");
 	return names;
@@ -419,6 +420,9 @@ double FESurfaceMeshValuator::EvaluateFace(int n, int nfield, int* err)
 		break;
 	case TRIANGLE_QUALITY:
 		if (face.Type() == FE_FACE_TRI3) val = TriangleQuality(r);
+		break;
+	case TRIANGLE_MAX_DIHEDRAL_ANGLE:
+		if (face.Type() == FE_FACE_TRI3) val = TriMaxDihedralAngle(m_mesh, face);
 		break;
 	case MIN_EDGE_LENGTH:
 		val = FEMeshMetrics::MinEdgeLength(m_mesh, face);

@@ -87,6 +87,9 @@ int edgeIntersect(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d
 // this calculates the ratio of the shortest diagonal to the longest edge
 double TriangleQuality(vec3d r[3]);
 
+// calculates the max dihedral angle of a face
+double TriMaxDihedralAngle(const FSMeshBase& mesh, const FSFace& face);
+
 // normal to face
 inline vec3d faceNormal(const vec3d& a, const vec3d& b, const vec3d& c)
 {
