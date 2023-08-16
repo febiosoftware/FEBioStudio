@@ -37,6 +37,36 @@ namespace Post {
 
 //=============================================================================
 // 
+//    G L O B A L   D A T A
+// 
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// base class for global data
+class FEGlobalData : public FEMeshData
+{
+public:
+	FEGlobalData(FEState* state, Data_Type ntype) : FEMeshData(state, ntype, DATA_REGION){}
+};
+
+template <typename T> class FEGlobalData_T : public FEGlobalData
+{
+public:
+	FEGlobalData_T(FEState* state, ModelDataField* pdf) : FEGlobalData(state, FEMeshDataTraits<T>::Type()) {}
+	T value() { return m_data; };
+	void setValue(T a) { m_data = a; }
+	bool active(int n) { return true; }
+
+	static Data_Type Type() { return FEMeshDataTraits<T>::Type(); }
+	static Data_Format Format() { return DATA_REGION; }
+	static Data_Class Class() { return CLASS_OBJECT; }
+
+private:
+	T	m_data;
+};
+
+//=============================================================================
+// 
 //    N O D E   D A T A
 // 
 //=============================================================================

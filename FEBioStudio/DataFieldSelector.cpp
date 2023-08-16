@@ -160,7 +160,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 		ModelDataField& d = *(*pd);
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(m_class);
-		if (dataComponents > 0)
+		if ((dataClass != Post::CLASS_OBJECT) && (dataComponents > 0))
 		{
 			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
 			{
@@ -241,6 +241,18 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 			}
 		}
 	}
+}
+
+CPlotGlobalDataSelector::CPlotGlobalDataSelector(Post::Data_Type dataType) : m_dataType(dataType)
+{
+
+}
+
+void CPlotGlobalDataSelector::BuildMenu(QMenu* menu)
+{
+	assert(m_dataType == Data_Type::DATA_FLOAT);
+	QAction* pa = menu->addAction("value");
+	pa->setData(1);
 }
 
 CDataSelectorButton::CDataSelectorButton(QWidget* parent) : QPushButton(parent)
