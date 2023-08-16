@@ -391,7 +391,7 @@ MigrationBackup/
 .vscode/
 
 # Documentation
-Documentation/Doxygen
+Documentation/Doxygen/doc
 Documentation/htmlManual
 Documentation/doc
 

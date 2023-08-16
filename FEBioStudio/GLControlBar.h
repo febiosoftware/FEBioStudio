@@ -42,6 +42,7 @@ public:
 	void SetMeshItem(int n);
 
 	void toggleSelectConnected();
+	void toggleBrushSelect();
 
 private slots:
 	void onPivotChanged();
@@ -51,6 +52,7 @@ private slots:
 	void onToggleVisibleClicked(bool b);
 	void onMeshButtonClicked(int n);
 	void onSelectConnected(bool b);
+	void onBrushSelect(bool b);
 	void onSelectClosestPath(bool b);
 	void onMaxAngleChanged(double v);
 	void onSelectBackfacing(bool b);

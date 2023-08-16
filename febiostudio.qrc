@@ -180,5 +180,6 @@
         <file>icons/replaceAll_neg.png</file>
         <file>icons/light.png</file>
         <file>icons/musclepath.png</file>
+        <file>icons/brush.png</file>
 	</qresource>
 </RCC>

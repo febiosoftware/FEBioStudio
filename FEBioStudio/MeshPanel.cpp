@@ -397,8 +397,8 @@ void CMeshPanel::on_apply_clicked(bool b)
 
 		Update();
 		CMainWindow* w = GetMainWindow();
-		w->UpdateGLControlBar();
 		w->UpdateModel(activeObject, false);
+		w->Update();
 		w->RedrawGL();
 
 		// clear any highlights

@@ -230,7 +230,12 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 		case SELECT_OBJECT:
 		{
-			if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(rc, po);
+			if (view.m_bcontour && (poa == po))
+			{
+				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc, po);
+				else RenderObject(rc, po);
+			}
 			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
 			{
 				RenderFEElements(rc, po);
@@ -2245,15 +2250,54 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 	GLViewSettings& view = rc.m_settings;
 	FSModel& fem = *doc->GetFSModel();
 
-	GLColor col = po->GetColor();
-	SetMatProps(0);
-	glColor3ub(col.r, col.g, col.b);
+	Mesh_Data& data = surfaceMesh->GetMeshData();
+	bool showContour = (view.m_bcontour && data.IsValid());
 
 	// render the unselected faces
-	// Note that we do not render internal faces
-	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
-		return (!face.IsSelected() && face.IsVisible());
-		});
+	if (showContour)
+	{
+		// Color is determined by data and colormap
+		double vmin, vmax;
+		data.GetValueRange(vmin, vmax);
+
+		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		colorMap.SetRange((float)vmin, (float)vmax);
+
+		SetMatProps(0);
+		glEnable(GL_COLOR_MATERIAL);
+
+		renderer.RenderFESurfaceMeshFaces(surfaceMesh, [&](const FSFace& face, GLColor* c) {
+			int i = face.m_ntag;
+
+			if (face.IsVisible() && !face.IsSelected())
+			{
+				int ne = face.Nodes();
+				for (int j = 0; j < ne; ++j)
+				{
+					if (data.GetElementDataTag(i) > 0)
+						c[j] = colorMap.map(data.GetElementValue(i, j));
+					else
+						c[j] = GLColor(212, 212, 212);
+				}
+
+				// render the face
+				return true;
+			}
+			return false;
+			});
+	}
+	else
+	{
+		GLColor col = po->GetColor();
+		SetMatProps(0);
+		glColor3ub(col.r, col.g, col.b);
+
+		// render the unselected faces
+		// Note that we do not render internal faces
+		renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
+			return (!face.IsSelected() && face.IsVisible());
+			});
+	}
 
 	// render the selected faces
 	// override some settings

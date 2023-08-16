@@ -96,6 +96,8 @@ public:
 
 	void RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
 
+	void RenderFESurfaceMeshFaces(FSMeshBase* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
+
 	void RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList);
 	void RenderFEFacesOutline(FSCoreMesh* pm, const std::vector<FSFace*>& faceList);
 	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
@@ -122,6 +124,8 @@ private:
 	void RenderFEFace(const FSFace& face, FSMeshBase* pm);
 	void RenderFace(FSFace& face, FSCoreMesh* pm);
 	void RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4]);
+
+	void RenderFESurfaceMeshFace(FSFace& face, FSMeshBase* pm, GLColor c[4]);
 
 public:
 	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm);

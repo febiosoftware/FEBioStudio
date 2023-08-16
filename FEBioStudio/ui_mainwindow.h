@@ -1290,7 +1290,7 @@ public:
 	{
 		if (meshWnd == 0) meshWnd = new ::CMeshInspector(m_wnd);
 
-		meshWnd->Update();
+		meshWnd->Update(true);
 
 		meshWnd->show();
 		meshWnd->raise();
@@ -1301,7 +1301,7 @@ public:
 	{
 		if (meshWnd && meshWnd->isVisible())
 		{
-			meshWnd->Update();
+			meshWnd->Update(true);
 		}
 	}
 

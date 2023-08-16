@@ -146,6 +146,30 @@ void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
 	glPopMatrix();
 }
 
+void drawNode(GLMeshRender& renderer, GNode* node, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(node->Object());
+	if (po == 0) return;
+
+	glColor3ub(c.r, c.g, c.b);
+
+	glPushMatrix();
+	SetModelView(po);
+
+	GMesh& m = *po->GetRenderMesh();
+
+	if (node)
+	{
+		glBegin(GL_POINTS);
+		{
+			vec3d r0 = node->LocalPosition();
+			glVertex3d(r0.x, r0.y, r0.z);
+		}
+		glEnd();
+	}
+	glPopMatrix();
+}
+
 void GLHighlighter::draw()
 {
 	if (m_This.m_item.empty() && (m_This.m_activeItem == 0)) return;
@@ -168,12 +192,18 @@ void GLHighlighter::draw()
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(item);
 		if (edge) drawEdge(renderer, edge, m_This.m_pickColor);
+
+		GNode* node = dynamic_cast<GNode*>(item);
+		if (node) drawNode(renderer, node, m_This.m_pickColor);
 	}
 
 	if (m_This.m_activeItem)
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(m_This.m_activeItem);
 		if (edge) drawEdge(renderer, edge, m_This.m_activeColor);
+
+		GNode* node = dynamic_cast<GNode*>(m_This.m_activeItem);
+		if (node) drawNode(renderer, node, m_This.m_activeColor);
 	}
 	glLineWidth(line_old);
 

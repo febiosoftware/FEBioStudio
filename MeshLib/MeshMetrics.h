@@ -65,6 +65,9 @@ double TetMaxDihedralAngle(const FSMesh& mesh, const FSElement& e);
 // quality if triangle element
 double TriQuality(const FSMesh& mesh, const FSElement& e);
 
+// max dihedral angle of a triangle
+double TriMaxDihedralAngle(const FSMesh& mesh, const FSElement& e);
+
 // max distance from tet10 mid edges nodes to edge line
 double Tet10MidsideNodeOffset(const FSMesh& mesh, const FSElement& e, bool brel = false);
 

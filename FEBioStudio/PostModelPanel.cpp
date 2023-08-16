@@ -1303,6 +1303,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		{
 			menu.addSeparator();
 			menu.addAction("Add new path", this, SLOT(OnAddNewMusclePath()));
+			menu.addAction("Export data ...", this, SLOT(OnExportMusclePathGroupData()));
 		}
 
 		menu.exec(ev->globalPos());
@@ -1680,6 +1681,55 @@ void CPostModelPanel::OnAddNewMusclePath()
 	Update(true);
 	selectObject(mp);
 	GetMainWindow()->RedrawGL();
+}
+
+void CPostModelPanel::OnExportMusclePathGroupData()
+{
+	Post::GLMusclePathGroup* po = dynamic_cast<Post::GLMusclePathGroup*>(ui->currentObject());
+	if (po == nullptr) return;
+
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+	if (fem == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "CSV file (*.csv)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		const char* szfile = sfile.c_str();
+		FILE* fp = fopen(szfile, "wt");
+		if (fp == nullptr)
+		{
+			QMessageBox::critical(GetMainWindow(), "Export", "Failed to export data!");
+			return;
+		}
+		for (int i = 0; i < po->MusclePaths(); ++i)
+		{
+			Post::GLMusclePath* pm = po->GetMusclePath(i);
+			fprintf(fp, "%s\n", pm->GetName().c_str());
+			fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
+			for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+			{
+				// see double GLMusclePath::DataValue(int field, int step)
+				const int MAX_DATA = 13;
+				for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+				{
+					double v = pm->DataValue(ndata, nstep);
+					fprintf(fp, "%lg", v);
+					if (ndata != MAX_DATA) fprintf(fp, ", ");
+				}
+				fprintf(fp, "\n");
+			}
+		}
+		fclose(fp);
+	}
+
+	QMessageBox::information(GetMainWindow(), "Export", "Data export successful!");
 }
 
 void CPostModelPanel::OnCurveProbePlotData()
