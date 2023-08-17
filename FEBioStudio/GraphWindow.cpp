@@ -62,6 +62,7 @@ SOFTWARE.*/
 #include <PostGL/GLPointProbe.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
+#include <PostLib/FEMeshData_T.h>
 #include <FECore/MathObject.h>
 #include "units.h"
 
@@ -1540,10 +1541,24 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		// update the data sources
 		QStringList sourceNames;
 		sourceNames << "selection";
+
+		// global data 
+		Post::FEDataManager* DM = fem->GetDataManager();
+		for (int i = 0; i < DM->DataFields(); ++i)
+		{
+			Post::FEDataFieldPtr pdf = DM->DataField(i);
+			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			{
+				sourceNames << QString::fromStdString((*pdf)->GetName());
+			}
+		}
+
 		for (int i = 0; i < fem->PlotObjects(); ++i)
 		{
 			sourceNames << QString::fromStdString(fem->GetPlotObject(i)->GetName());
 		}
+
+		// plots
 		for (int i = 0; i < glm->Plots(); ++i)
 		{
 			Post::GLPointProbe* p = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
@@ -1707,7 +1722,25 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	}
 	else
 	{
+		// check global data
 		int n = currentSource - 1;
+
+		Post::FEDataManager* DM = fem.GetDataManager();
+		for (int i = 0; i < DM->DataFields(); ++i)
+		{
+			Post::FEDataFieldPtr pdf = DM->DataField(i);
+			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			{
+				if (n == 0)
+				{
+					addGlobalData(*pdf, i);
+					n = -1;
+					break;
+				}
+				else n--;
+			}
+		}
+
 		if ((n >= 0) && (n < fem.PlotObjects()))
 		{
 			addObjectData(n);
@@ -1801,6 +1834,23 @@ void CModelGraphWindow::setDataSource(int n)
 	else
 	{
 		n--;
+
+		Post::FEDataManager* DM = fem.GetDataManager();
+		for (int i = 0; i < DM->DataFields(); ++i)
+		{
+			Post::FEDataFieldPtr pdf = DM->DataField(i);
+			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			{
+				if (n == 0)
+				{
+					SetYDataSelector(new CPlotGlobalDataSelector((*pdf)->Type()));
+					n = -1;
+					break;
+				}
+				else n--;
+			}
+		}
+
 		if ((n >= 0) && (n < fem.PlotObjects()))
 		{
 			SetYDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
@@ -1948,6 +1998,35 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 
 		pval[j] = val;
 	}
+}
+
+//-----------------------------------------------------------------------------
+void CModelGraphWindow::addGlobalData(Post::ModelDataField* pdf, int n)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFSModel();
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps, 0.f);
+
+	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+	for (int j = 0; j < nsteps; ++j)
+	{
+		Post::FEState* ps = fem.GetState(j);
+		Post::FEMeshData& data = ps->m_Data[n];
+		if (dynamic_cast<Post::FEGlobalData_T<float>*>(&data))
+		{
+			Post::FEGlobalData_T<float>& df = dynamic_cast<Post::FEGlobalData_T<float>&>(data);
+			float val = df.value();
+			ydata[j] = val;
+		}
+	}
+
+	CPlotData* plot = nextData();
+	plot->setLabel(QString::fromStdString(pdf->GetName()));
+	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
 }
 
 //-----------------------------------------------------------------------------
