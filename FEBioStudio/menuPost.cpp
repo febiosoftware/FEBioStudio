@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/MarchingCubes.h>
@@ -189,14 +189,14 @@ void CMainWindow::on_actionImageSlicer_triggered()
 	CDocument* modelDoc = GetModelDocument();
 	CDocument* postDoc = GetPostDocument();
 
-	Post::CImageModel* img = nullptr;
+	CImageModel* img = nullptr;
 	if (modelDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+		img = dynamic_cast<CImageModel*>(ui->modelViewer->GetCurrentObject());
 	}
 	else if (postDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+		img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
 	}
 
 	if (img == nullptr)
@@ -228,14 +228,14 @@ void CMainWindow::on_actionVolumeRender_triggered()
 	CDocument* modelDoc = GetModelDocument();
 	CDocument* postDoc = GetPostDocument();
 
-	Post::CImageModel* img = nullptr;
+	CImageModel* img = nullptr;
 	if (modelDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+		img = dynamic_cast<CImageModel*>(ui->modelViewer->GetCurrentObject());
 	}
 	else if (postDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+		img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
 	}
 
 	if (img == nullptr)
@@ -267,14 +267,14 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	CDocument* modelDoc = GetModelDocument();
 	CDocument* postDoc = GetPostDocument();
 
-	Post::CImageModel* img = nullptr;
+	CImageModel* img = nullptr;
 	if (modelDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+		img = dynamic_cast<CImageModel*>(ui->modelViewer->GetCurrentObject());
 	}
 	else if (postDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+		img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
 	}
 
 	if (img == nullptr)
@@ -306,8 +306,8 @@ void CMainWindow::on_actionImageWarp_triggered()
 	if (postDoc == nullptr) return;
 
 	// get the selected image model
-	Post::CImageModel* img = nullptr;
-	img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+	CImageModel* img = nullptr;
+	img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
 	if (img == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");

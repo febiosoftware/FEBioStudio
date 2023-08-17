@@ -55,6 +55,7 @@ class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
+class CImageModel;
 class CImageSliceView;
 class GObject;
 class FSPairedInterface;
@@ -68,7 +69,6 @@ namespace Ui {
 namespace Post {
 	class CGLModel;
 	class CGLObject;
-	class CImageModel;
 }
 
 class CMainWindow : public QMainWindow
@@ -324,7 +324,7 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
-	bool ImportImage(Post::CImageModel* imgModel);
+	bool ImportImage(CImageModel* imgModel);
 
 public slots:
 	void on_actionNewModel_triggered();

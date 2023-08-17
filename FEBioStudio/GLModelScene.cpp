@@ -900,9 +900,9 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 		GLColor col = m_defaultCol;
 		if (m_colorOption == 0)
 		{
-			Byte r = (Byte)(255 * fabs(q.x));
-			Byte g = (Byte)(255 * fabs(q.y));
-			Byte b = (Byte)(255 * fabs(q.z));
+			uint8_t r = (uint8_t)(255 * fabs(q.x));
+			uint8_t g = (uint8_t)(255 * fabs(q.y));
+			uint8_t b = (uint8_t)(255 * fabs(q.z));
 			col = GLColor(r, g, b);
 		}
 
@@ -978,9 +978,9 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 		GLColor col = m_defaultCol;
 		if (m_colorOption == 0)
 		{
-			Byte r = (Byte)(255 * fabs(q.x));
-			Byte g = (Byte)(255 * fabs(q.y));
-			Byte b = (Byte)(255 * fabs(q.z));
+			uint8_t r = (uint8_t)(255 * fabs(q.x));
+			uint8_t g = (uint8_t)(255 * fabs(q.y));
+			uint8_t b = (uint8_t)(255 * fabs(q.z));
 			col = GLColor(r, g, b);
 		}
 

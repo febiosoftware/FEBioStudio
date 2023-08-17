@@ -27,11 +27,9 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 
-namespace Post {
-	class CImageModel;
-}
-
+class CImageModel;
 class CPlotWidget;
+class QSpinBox;
 
 class CHistogramViewer : public QWidget
 {
@@ -40,18 +38,22 @@ class CHistogramViewer : public QWidget
 public:
 	CHistogramViewer(QWidget* parent = nullptr);
 
-	void SetImageModel(Post::CImageModel* img);
+	void SetImageModel(CImageModel* img);
 
 public slots:
 	void SetLogMode(bool b);
-
-protected:
-	void Update();
+    
+    void Update();
 
 private:
-	Post::CImageModel*	m_img;
+    template<class pType>
+    void GetValues(int bins, std::vector<double>& xVals, std::vector<uint64_t>& yVals);
+
+private:
+	CImageModel*	m_img;
 	bool	m_logMode;
 
 private:
 	CPlotWidget*		m_chart;
+    QSpinBox* m_bins;
 };

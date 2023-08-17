@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include "Image.h"
 #include <stdio.h>
 #include <string.h>
+#include <assert.h>
 
 //////////////////////////////////////////////////////////////////////
 // CImage
@@ -40,14 +41,33 @@ SOFTWARE.*/
 CImage::CImage()
 {
 	m_pb = 0;
+    m_pixelType = UINT_8;
+    m_bps = 1;
 	m_cx = m_cy = 0;
 	m_bdel = true;
 }
 
-CImage::CImage(int nx, int ny)
+CImage::CImage(int nx, int ny, int pixelType)
 {
-	m_pb = new Byte[nx*ny];
-	for (int i=0; i<nx*ny; i++) m_pb[i] = 0;
+    m_pixelType = pixelType;
+
+    switch (pixelType)
+    {
+    case CImage::INT_8     : m_bps = 1; break;
+    case CImage::UINT_8    : m_bps = 1; break;
+    case CImage::INT_16    :
+    case CImage::UINT_16   : m_bps = 2; break;
+    case CImage::INT_RGB8  :
+    case CImage::UINT_RGB8 : m_bps = 3; break;
+    case CImage::INT_RGB16 :
+    case CImage::UINT_RGB16: m_bps = 6; break;
+    case CImage::REAL_32   : m_bps = 4; break;
+    case CImage::REAL_64   : m_bps = 8; break;
+    default:
+        assert(false);
+    }
+
+	m_pb = new uint8_t[nx*ny*m_bps] {0};
 
 	m_cx = nx;
 	m_cy = ny;
@@ -59,11 +79,19 @@ CImage::CImage(const CImage& im)
 {
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
+    m_pixelType = im.m_pixelType;
+    m_bps = im.m_bps;
 
-	m_pb = new Byte[m_cx*m_cy];
-	memcpy(m_pb, im.m_pb, m_cx*m_cy);
+	m_pb = new uint8_t[m_cx*m_cy*m_bps];
+	memcpy(m_pb, im.m_pb, m_cx*m_cy*m_bps);
 
 	m_bdel = true;
+}
+
+bool CImage::IsRGB()
+{
+    return m_pixelType == INT_RGB8 || m_pixelType == UINT_RGB8 
+        || m_pixelType == INT_RGB16 || m_pixelType == UINT_RGB16;
 }
 
 CImage& CImage::operator = (const CImage& im)
@@ -72,9 +100,11 @@ CImage& CImage::operator = (const CImage& im)
 
 	m_cx = im.m_cx;
 	m_cy = im.m_cy;
+    m_pixelType = im.m_pixelType;
+    m_bps = im.m_bps;
 
-	m_pb = new Byte[m_cx*m_cy];
-	memcpy(m_pb, im.m_pb, m_cx*m_cy);
+	m_pb = new uint8_t[m_cx*m_cy*m_bps];
+	memcpy(m_pb, im.m_pb, m_cx*m_cy*m_bps);
 
 	m_bdel = true;
 
@@ -83,13 +113,13 @@ CImage& CImage::operator = (const CImage& im)
 
 CImage& CImage::operator -= (const CImage& im)
 {
-	Byte* pbS = im.m_pb;
-	Byte* pbD = m_pb;
+	uint8_t* pbS = im.m_pb;
+	uint8_t* pbD = m_pb;
 
-	int nsize = m_cx*m_cy;
+	int nsize = m_cx*m_cy*m_bps;
 
 	for (int i=0; i<nsize; i++, pbS++, pbD++)
-		*pbD = Byte((((int) *pbD - (int) *pbS) + 255) >> 1);
+		*pbD = uint8_t((((int) *pbD - (int) *pbS) + 255) >> 1);
 
 	return (*this);
 }
@@ -99,8 +129,29 @@ CImage::~CImage()
 	if (m_bdel) delete [] m_pb;
 }
 
-void CImage::Create(int nx, int ny, Byte* pb)
+void CImage::Create(int nx, int ny, uint8_t* pb, int pixelType)
 {
+    m_cx = nx;
+	m_cy = ny;
+    
+    m_pixelType = pixelType;
+
+    switch (pixelType)
+    {
+    case CImage::INT_8     : m_bps = 1; break;
+    case CImage::UINT_8    : m_bps = 1; break;
+    case CImage::INT_16    :
+    case CImage::UINT_16   : m_bps = 2; break;
+    case CImage::INT_RGB8  :
+    case CImage::UINT_RGB8 : m_bps = 3; break;
+    case CImage::INT_RGB16 :
+    case CImage::UINT_RGB16: m_bps = 6; break;
+    case CImage::REAL_32   : m_bps = 4; break;
+    case CImage::REAL_64   : m_bps = 8; break;
+    default:
+        assert(false);
+    }
+
 	if (pb)
 	{
 		m_pb = pb;
@@ -110,59 +161,7 @@ void CImage::Create(int nx, int ny, Byte* pb)
 	{
 		if (m_bdel) delete [] m_pb;
 
-		m_pb = new Byte[nx*ny];
-		for (int i=0; i<nx*ny; i++) m_pb[i] = 0;
+		m_pb = new uint8_t[nx*ny*m_bps] {0};
 		m_bdel = true;
-	}
-
-	m_cx = nx;
-	m_cy = ny;
-}
-
-void CImage::StretchBlt(CImage& im)
-{
-	Byte* pd = im.m_pb;
-
-	int nx = im.Width();
-	int ny = im.Height();
-
-	int i0 = 0;
-	int j0 = 0;
-
-	Byte* p0, *p1, *p2, *p3;
-	int h0, h1, h2, h3;
-	int w = 0, h = 0;
-
-	int Hx = nx - 1;
-	int Hy = ny - 1;
-	int H = Hx*Hy;
-
-	for (int y=0; y<ny; y++)
-	{
-		i0 = 0;
-		w = 0;
-
-		while (y*(m_cy-1)>(j0+1)*(ny-1)) { j0++; h -= (ny-1); }
-
-		p0 = m_pb + (j0*m_cx);
-		p1 = p0 + 1;
-		p2 = p0 + (m_cy != 1 ? m_cx : 0);
-		p3 = p2 + 1;
-
-		for (int x=0; x<nx; x++)
-		{
-			while (x*(m_cx-1)>(i0+1)*(nx-1)) { i0++; w -= (nx-1); p0++; p1++; p2++; p3++; }
-
-			h0 = (Hx - w)*(Hy - h);
-			h1 = w*(Hy - h);
-			h2 = (Hx - w)*h;
-			h3 = w*h;
-
-			*pd++ = (h0*p0[0] + h1*p1[0] + h2*p2[0] + h3*p3[0])/H;
-
-			w += (m_cx-1);
-		}
-
-		h += (m_cy-1);
 	}
 }

@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <GeomLib/GObject.h>
 #include <PostGL/GLModel.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
 #include <QtCore/QFileInfo>
@@ -329,7 +329,7 @@ private:
 class CImageModelValidator : public CObjectValidator
 {
 public:
-	CImageModelValidator(Post::CImageModel* img) : m_img(img) {}
+	CImageModelValidator(CImageModel* img) : m_img(img) {}
 
 	QString GetErrorString() const override
 	{
@@ -346,7 +346,7 @@ public:
 	}
 
 private:
-	Post::CImageModel* m_img;
+	CImageModel* m_img;
 };
 
 //=============================================================================
@@ -1290,7 +1290,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 {
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
-		Post::CImageModel* img = doc->GetImageModel(i);
+		CImageModel* img = doc->GetImageModel(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), new CImageModelValidator(img));
 	}
 }

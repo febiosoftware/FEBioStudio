@@ -221,7 +221,7 @@ void GLMusclePath::Render(CGLContext& rc)
 		g = g * (1.f - w) + w * a;
 		b = b * (1.f - w) + w * a;
 
-		GLColor gray((Byte)r, (Byte)g, (Byte)b);
+		GLColor gray((uint8_t)r, (uint8_t)g, (uint8_t)b);
 
 		// draw the muscle path
 		glColor3ub(gray.r, gray.g, gray.b);

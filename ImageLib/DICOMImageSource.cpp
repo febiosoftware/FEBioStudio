@@ -25,20 +25,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "DICOMImageSource.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 
 #ifdef HAS_DCMTK
 #include <dcmtk/dcmimgle/dcmimage.h>
 
-CDICOMImageSource::CDICOMImageSource(Post::CImageModel* imgModel, const std::vector<std::string>& filenames)
-    : Post::CImageSource(DICOM, imgModel), m_filenames(filenames)
+CDICOMImageSource::CDICOMImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames)
+    : CImageSource(DICOM, imgModel), m_filenames(filenames)
 {
 
 }
 
-CDICOMImageSource::CDICOMImageSource(Post::CImageModel* imgModel)
-    : Post::CImageSource(DICOM, imgModel)
+CDICOMImageSource::CDICOMImageSource(CImageModel* imgModel)
+    : CImageSource(DICOM, imgModel)
 {
     
 }
@@ -68,22 +68,22 @@ bool CDICOMImageSource::Load()
 
     if(type == EPR_Uint8)
     {
-        pixelType = C3DImage::UINT_8;
+        pixelType = CImage::UINT_8;
         bps = 1;
     }
     else if(type == EPR_Sint8)
     {
-        pixelType = C3DImage::INT_8;
+        pixelType = CImage::INT_8;
         bps = 1;
     }
     else if(type == EPR_Uint16 )
     {
-        pixelType = C3DImage::UINT_16;
+        pixelType = CImage::UINT_16;
         bps = 2;
     }
     else if(type == EPR_Sint16)
     {
-        pixelType = C3DImage::INT_16;
+        pixelType = CImage::INT_16;
         bps = 2;
     }
     else
@@ -97,16 +97,16 @@ bool CDICOMImageSource::Load()
     size_t size = nx*ny*nz*bps;
     size_t sliceSize = nx*ny*bps;
 
-    Byte* data = new Byte[size];
+    uint8_t* data = new uint8_t[size];
 
-    const Byte* temp;
+    const uint8_t* temp;
 
     for(int file = 0; file < m_filenames.size(); file++)
     {
         auto dicomImage = std::make_unique<DicomImage>(m_filenames[file].c_str());
         rawData = dicomImage->getInterData();
 
-        temp = static_cast<const Byte*>(rawData->getData());
+        temp = static_cast<const uint8_t*>(rawData->getData());
 
         for(size_t index = 0; index < sliceSize; index++)
         {
@@ -114,7 +114,7 @@ bool CDICOMImageSource::Load()
         }
 
     }
-    // memcpy(data, static_cast<const Byte*>(rawData->getData()), size);
+    // memcpy(data, static_cast<const uint8_t*>(rawData->getData()), size);
 
     C3DImage* im = new C3DImage();
     if (im->Create(nx, ny, nz, data, 0, pixelType) == false)
@@ -138,10 +138,10 @@ void CDICOMImageSource::Load(IArchive& ar)
 
 }
 #else
-CDICOMImageSource::CDICOMImageSource(Post::CImageModel* imgModel, const std::vector<std::string>& filenames)
-    : Post::CImageSource(DICOM, imgModel) {}
-CDICOMImageSource::CDICOMImageSource(Post::CImageModel* imgModel)
-    : Post::CImageSource(DICOM, imgModel) {}
+CDICOMImageSource::CDICOMImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames)
+    : CImageSource(DICOM, imgModel) {}
+CDICOMImageSource::CDICOMImageSource(CImageModel* imgModel)
+    : CImageSource(DICOM, imgModel) {}
 
 bool CDICOMImageSource::Load() { return false; }
 void CDICOMImageSource::Save(OArchive& ar) {}

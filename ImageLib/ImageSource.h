@@ -25,81 +25,82 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FSCore/math3d.h>
-#include <FSCore/FSObject.h>
 
-namespace Post{
-class CGLModel;
-};
+enum class ImageFileType;
+
+#include <vector>
+#include <string>
+#include <FSCore/FSObjectList.h>
+#include <FSCore/box.h>
+#include <FSCore/FSThreadedTask.h>
+
+class C3DImage;
+
+namespace Post 
+{
+    class CGLImageRenderer;
+}
 
 class CImageModel;
 
-class CImageFilter : public FSObject
+class CImageSource : public FSThreadedTask
 {
 public:
-    enum TYPES
-    {
-        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP, ADAPTHISTEQ
+    enum Types 
+    { 
+        RAW = 0, ITK, SERIES, TIFF, DICOM
     };
 
 public:
-    CImageFilter(int type, CImageModel* model);
+	CImageSource(int type, CImageModel* imgModel = nullptr);
+	~CImageSource();
 
-    virtual void ApplyFilter() = 0;
+    virtual bool Load() = 0;
 
     int Type() { return m_type; }
 
-    void SetImageModel(CImageModel* model);
+    virtual void Save(OArchive& ar) = 0;
+	virtual void Load(IArchive& ar) = 0;
 
+	C3DImage* Get3DImage() { return m_img; }
+
+    void ClearFilters();
+    C3DImage* GetImageToFilter(bool allocate = false);
+
+public:
 	CImageModel* GetImageModel();
+	void SetImageModel(CImageModel* imgModel);
 
 protected:
-    CImageModel* m_model;
+    void AssignImage(C3DImage* im);
 
-private:
+protected:
     int m_type;
+
+	C3DImage*	m_img;
+    C3DImage*   m_originalImage;
+	CImageModel*	m_imgModel;
+    unsigned char* data = nullptr;
 };
 
-class ThresholdImageFilter : public CImageFilter
+class CRawImageSource : public CImageSource
 {
 public:
-    ThresholdImageFilter(CImageModel* model = nullptr);
+    CRawImageSource(CImageModel* imgModel, const std::string& filename, int imgType, int nx, int ny, int nz, BOX box, bool byteSwap);
+    CRawImageSource(CImageModel* imgModel);
 
-    void ApplyFilter() override;
-};
+    bool Load() override;
 
-class MeanImageFilter : public CImageFilter
-{
-public:
-    MeanImageFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class GaussianImageFilter : public CImageFilter
-{
-public:
-    GaussianImageFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class AdaptiveHistogramEqualizationFilter : public CImageFilter
-{
-public:
-    AdaptiveHistogramEqualizationFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class WarpImageFilter : public CImageFilter
-{
-	enum { SCALE_DIM };
-
-public:
-	WarpImageFilter(Post::CGLModel* glm);
-	void ApplyFilter() override;
+    void Save(OArchive& ar) override;
+	void Load(IArchive& ar) override;
 
 private:
-	Post::CGLModel* m_glm;
+	bool LoadFromFile(const char* szfile, C3DImage* im);
+
+private:
+    std::string m_filename;
+	int m_type;
+    int m_nx, m_ny, m_nz;
+    BOX m_box;
+    bool m_byteSwap;
 };

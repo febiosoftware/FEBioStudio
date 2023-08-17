@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include "IconProvider.h"
 #include "ImageFilterWidget.h"
 #include "ImageThread.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DlgImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
@@ -104,7 +104,7 @@ CImageFilterWidget::~CImageFilterWidget()
     Clear();
 }
 
-void CImageFilterWidget::SetImageModel(Post::CImageModel* img)
+void CImageFilterWidget::SetImageModel(CImageModel* img)
 {
     m_imgModel = img;
 

@@ -31,24 +31,25 @@ SOFTWARE.*/
 #include <memory>
 #include <FSCore/box.h>
 #include <FSCore/FSObjectList.h>
-#include "GLImageRenderer.h"
+#include <PostLib/GLImageRenderer.h>
 #include <ImageLib/ImageFilter.h>
-#include "GLObject.h"
+#include <PostLib/GLObject.h>
 #include <FEBioStudio/ImageViewSettings.h>
 
 enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
 
-class C3DImage;
-
-namespace Post {
+namespace Post
+{
+    class CGLImageRenderer;
+}
 
 class CImageSource;
-class CGLImageRenderer;
+class C3DImage;
 
-class CImageModel : public CGLObject
+class CImageModel : public Post::CGLObject
 {
 public:
-	CImageModel(CGLModel* mdl);
+	CImageModel(Post::CGLModel* mdl);
 	~CImageModel();
 
     void SetImageSource(CImageSource* imgSource);
@@ -56,11 +57,11 @@ public:
 
 
 	int ImageRenderers() const { return (int)m_render.Size(); }
-	CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
-	size_t RemoveRenderer(CGLImageRenderer* render);
+	Post::CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
+	size_t RemoveRenderer(Post::CGLImageRenderer* render);
     void UpdateRenderers();
 
-	void AddImageRenderer(CGLImageRenderer* render);
+	void AddImageRenderer(Post::CGLImageRenderer* render);
 
     // Applies filters using GUI thread!
     void ApplyFilters();
@@ -99,11 +100,10 @@ public:
 private:
 	// BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
-	FSObjectList<CGLImageRenderer>	m_render;	//!< image renderers
+	FSObjectList<Post::CGLImageRenderer>	m_render;	//!< image renderers
 	FSObjectList<CImageFilter> m_filters;
 
 	CImageSource*	m_img;
 
     CImageViewSettings viewSettings;
 };
-}

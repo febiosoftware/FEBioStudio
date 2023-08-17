@@ -444,16 +444,16 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 		CGView* pview = GetView();
 		pview->DeleteKey(pt);
 	}
-	else if (dynamic_cast<Post::CImageModel*>(po))
+	else if (dynamic_cast<CImageModel*>(po))
 	{
-		Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+		CImageModel* img = dynamic_cast<CImageModel*>(po);
 		m_img.Remove(img);
 		delete img;
 	}
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po))
 	{
 		Post::CGLImageRenderer* ir = dynamic_cast<Post::CGLImageRenderer*>(po);
-		Post::CImageModel* img = ir->GetImageModel();
+		CImageModel* img = ir->GetImageModel();
 		img->RemoveRenderer(ir);
 	}
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po))

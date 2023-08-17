@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/FEElementData.h>
@@ -633,7 +633,7 @@ public:
 	}
 
 
-	void showImagePanel(bool b, Post::CImageModel* img = nullptr, CPropertyList* props = nullptr)
+	void showImagePanel(bool b, CImageModel* img = nullptr, CPropertyList* props = nullptr)
 	{
 		if (b && (m_showImageTools==false))
 		{
@@ -757,10 +757,10 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	{
 		ui->showProperties(true);
 		ui->showImagePanel(false);
-		// Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
+		// CImageSource* imgSrc = dynamic_cast<CImageSource*>(po);
 		// if (imgSrc)
 		// {
-		// 	Post::CImageModel* img = imgSrc->GetImageModel();
+		// 	CImageModel* img = imgSrc->GetImageModel();
 		// 	if (img)
 		// 	{
 		// 		ui->showPropsPanel(false);
@@ -769,7 +769,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		// 	}
 		// }
 
-        Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+        CImageModel* img = dynamic_cast<CImageModel*>(po);
         if(img)
         {
             ui->showPropsPanel(false);

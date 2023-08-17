@@ -40,11 +40,10 @@ SOFTWARE.*/
 #include "GLView.h"
 #include <ImageLib/3DImage.h>
 #include <PostLib/ImageSlicer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include "ImageViewSettings.h"
 #include "InputWidgets.h"
-
 
 #include "ImageSliceView.h"
 
@@ -115,7 +114,7 @@ CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget
     connect(m_slider, &CIntSlider::valueChanged, this, &CImageSlice::on_slider_changed);
 }
 
-void CImageSlice::SetImage(Post::CImageModel* imgModel)
+void CImageSlice::SetImage(CImageModel* imgModel)
 {
     if(m_imgModel == imgModel) return;
 
@@ -124,6 +123,45 @@ void CImageSlice::SetImage(Post::CImageModel* imgModel)
     if(!m_imgModel) return;
 
     UpdateSliceCount();
+}
+
+template<class pType> void CImageSlice::ThresholdAndConvert()
+{
+    size_t N  = m_orignalSlice.Width() * m_orignalSlice.Height();
+    if(m_orignalSlice.IsRGB())
+    {
+        N *= 3;
+    }
+
+    pType* imgData = (pType*)m_imgModel->Get3DImage()->GetBytes();
+
+    double min = m_imgModel->Get3DImage()->GetMinValue();
+    double max = m_imgModel->Get3DImage()->GetMaxValue();
+    
+    double minThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
+    double maxThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
+
+    m_displaySlice.Create(m_orignalSlice.Width(), m_orignalSlice.Height());
+    pType* data = (pType*)m_orignalSlice.GetBytes();
+    uint8_t* outData = m_displaySlice.GetBytes();
+
+    for(int i = 0; i < N; i++)
+    {
+        double val = (((double)data[i])-min)/(max-min);
+
+        if(val < minThresh)
+        {
+            outData[i] = 0;
+        }
+        else if (val > maxThresh)
+        {
+            outData[i] = 255;
+        }
+        else
+        {
+            outData[i] = 255*(val - minThresh)/(maxThresh-minThresh);
+        }
+    }
 }
 
 void CImageSlice::UpdateSliceCount()
@@ -159,31 +197,64 @@ void CImageSlice::Update()
 
     int slice = m_slider->getValue();
 
+    m_slider->setToolTip(QString::number(slice));
+
     C3DImage* img = m_imgModel->Get3DImage();
 	if (img == nullptr) return;
 
-    int min = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
-    int max = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
-
-    CImage imgSlice;
     switch (m_sliceDir)
     {
     case X:
-        img->GetThresholdedSliceX(imgSlice, slice, min, max);
+        img->GetSliceX(m_orignalSlice, slice);
         break;
     case Y:
-        img->GetThresholdedSliceY(imgSlice, slice, min, max);
+        img->GetSliceY(m_orignalSlice, slice);
         break;
     case Z:
-        img->GetThresholdedSliceZ(imgSlice, slice, min, max);
+        img->GetSliceZ(m_orignalSlice, slice);
         break;
     default:
         break;
     }
 
-    m_slider->setToolTip(QString::number(slice));
+    switch (img->PixelType())
+    {
+    case CImage::UINT_8:
+        ThresholdAndConvert<uint8_t>();
+        break;
+    case CImage::INT_8:
+        ThresholdAndConvert<int8_t>();
+        break;
+    case CImage::UINT_16:
+        ThresholdAndConvert<uint16_t>();
+        break;
+    case CImage::INT_16:
+        ThresholdAndConvert<int16_t>();
+        break;
+    case CImage::UINT_RGB8:
+        ThresholdAndConvert<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        ThresholdAndConvert<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        ThresholdAndConvert<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        ThresholdAndConvert<int16_t>();
+        break;
+    case CImage::REAL_32:
+        ThresholdAndConvert<float>();
+        break;
+    case CImage::REAL_64:
+        ThresholdAndConvert<double>();
+        break;
+    default:
+        assert(false);
+    }
 
-    QImage qImg(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8);
+    QImage qImg(m_displaySlice.GetBytes(), m_displaySlice.Width(), m_displaySlice.Height(), 
+        m_displaySlice.Width(), QImage::Format::Format_Grayscale8);
 
     BOX box = m_imgModel->GetBoundingBox();
     double xScale, yScale;
@@ -272,6 +343,10 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     m_ySlice = new CImageSlice(CImageSlice::Y);
     m_zSlice = new CImageSlice(CImageSlice::Z);
 
+    m_xSlicer.SetOrientation(0);
+    m_ySlicer.SetOrientation(1);
+    m_zSlicer.SetOrientation(2);
+
     m_layout->addWidget(m_xSlice, 0, 0);
     m_layout->addWidget(m_ySlice, 0, 1);
     m_layout->addWidget(m_zSlice, 1, 0);
@@ -284,34 +359,6 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     connect(m_xSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
     connect(m_ySlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
     connect(m_zSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
-}
-
-CImageSliceView::~CImageSliceView()
-{
-    CleanSlicers();
-
-    delete m_xSlice;
-    delete m_ySlice;
-    delete m_zSlice;
-}
-
-void CImageSliceView::CleanSlicers()
-{
-    if(m_xSlicer)
-    {
-        delete m_xSlicer;
-        m_xSlicer = nullptr;
-    }
-    if(m_ySlicer)
-    {
-        delete m_ySlicer;
-        m_ySlicer = nullptr;
-    }
-    if(m_zSlicer)
-    {
-        delete m_zSlicer;
-        m_zSlicer = nullptr;
-    }
 }
 
 void CImageSliceView::Update()
@@ -331,37 +378,31 @@ void CImageSliceView::Update()
 
 void CImageSliceView::RenderSlicers(CGLContext& rc)
 {
-    if(!m_xSlicer || !m_ySlicer || !m_zSlicer) return;
+    if(!m_xSlicer.GetImageModel() || !m_ySlicer.GetImageModel() || !m_zSlicer.GetImageModel()) return;
  
-    m_xSlicer->Render(rc);
-    m_ySlicer->Render(rc);
-    m_zSlicer->Render(rc);
+    m_xSlicer.Render(rc);
+    m_ySlicer.Render(rc);
+    m_zSlicer.Render(rc);
 }
 
 void CImageSliceView::ModelTreeSelectionChanged(FSObject* obj)
 {
-    m_imgModel = dynamic_cast<Post::CImageModel*>(obj);
+    m_imgModel = dynamic_cast<CImageModel*>(obj);
+
+    // Forces recalc of min and max values on the image
+    if(m_imgModel)
+    {
+        m_imgModel->Get3DImage()->GetMinValue(true);
+        m_imgModel->Get3DImage()->GetMaxValue(true);
+    }
+
+    m_xSlicer.SetImageModel(m_imgModel);
+    m_ySlicer.SetImageModel(m_imgModel);
+    m_zSlicer.SetImageModel(m_imgModel);
 
     m_xSlice->SetImage(m_imgModel);
     m_ySlice->SetImage(m_imgModel);
     m_zSlice->SetImage(m_imgModel);
-
-    CleanSlicers();
-
-    if(m_imgModel)
-    {
-        m_xSlicer = new Post::CImageSlicer(m_imgModel);
-        m_ySlicer = new Post::CImageSlicer(m_imgModel);
-        m_zSlicer = new Post::CImageSlicer(m_imgModel);
-        
-        m_xSlicer->SetOrientation(0);
-        m_ySlicer->SetOrientation(1);
-        m_zSlicer->SetOrientation(2);
-
-        m_xSlicer->Create();
-        m_ySlicer->Create();
-        m_zSlicer->Create();
-    }
 
     Update();
 }
@@ -382,25 +423,16 @@ void CImageSliceView::SliceUpdated(int direction, float offset)
     switch (direction)
     {
     case CImageSlice::X:
-        if(m_xSlicer)
-        {
-            m_xSlicer->SetOffset(offset);
-            m_xSlicer->Update();
-        }
+        m_xSlicer.SetOffset(offset);
+        m_xSlicer.SetImageSlice(m_xSlice->GetDisplaySlice());
         break;
     case CImageSlice::Y:
-        if(m_ySlicer)
-        {
-            m_ySlicer->SetOffset(offset);
-            m_ySlicer->Update();
-        }
+        m_ySlicer.SetOffset(offset);
+        m_ySlicer.SetImageSlice(m_ySlice->GetDisplaySlice());
         break;
     case CImageSlice::Z:
-        if(m_zSlicer)
-        {
-            m_zSlicer->SetOffset(offset);
-            m_zSlicer->Update();
-        }
+        m_zSlicer.SetOffset(offset);
+        m_zSlicer.SetImageSlice(m_zSlice->GetDisplaySlice());
         break;
     default:
         break;

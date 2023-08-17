@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include <QWidget>
+#include <PostLib/ImageSlicer.h>
 
 class QVBoxLayout;
 class QGraphicsScene;
@@ -41,12 +42,8 @@ class CGLView;
 class CMainWindow;
 class CGLContext;
 class FSObject;
-
-namespace Post
-{
-    class CImageModel;
-    class CImageSlicer;
-}
+class CImage;
+class CImageModel;
 
 class CImageSlice : public QWidget
 {
@@ -61,13 +58,16 @@ public:
 public:
     CImageSlice(SliceDir sliceDir, bool constAxis = true, QWidget* extraWidget = nullptr);
 
-    void SetImage(Post::CImageModel* imgModel);
+    void SetImage(CImageModel* imgModel);
 
     void Update();
 
     int GetIndex();
     void SetIndex(int index);
     int GetSliceCount();
+
+    CImage* GetOriginalSlice() { return &m_orignalSlice; }
+    CImage* GetDisplaySlice() { return &m_displaySlice; }
 
 signals:
     void updated(int direction, float offset);
@@ -82,8 +82,13 @@ protected:
 private:
     void UpdateSliceCount();
 
+    template<class pType>
+    void ThresholdAndConvert();;
+
 private:
-    Post::CImageModel* m_imgModel;
+    CImageModel* m_imgModel;
+    CImage m_orignalSlice;
+    CImage m_displaySlice;
     
     QVBoxLayout* m_layout;
     QGraphicsScene* m_scene;
@@ -102,16 +107,12 @@ class CImageSliceView : public QWidget
 
 public:
     CImageSliceView(CMainWindow* wnd, QWidget* parent = 0);
-    ~CImageSliceView();
 
     void Update();
 
-    Post::CImageModel* GetImageModel() { return m_imgModel; }
+    CImageModel* GetImageModel() { return m_imgModel; }
 
     void RenderSlicers(CGLContext& rc);
-
-private:
-    void CleanSlicers();
 
 public slots:
     void ModelTreeSelectionChanged(FSObject* obj);
@@ -126,15 +127,15 @@ private:
 public:
     QGridLayout* m_layout;
 
-    Post::CImageModel* m_imgModel;
+    CImageModel* m_imgModel;
 
     CImageSlice* m_xSlice;
     CImageSlice* m_ySlice;
     CImageSlice* m_zSlice;
 
-    Post::CImageSlicer* m_xSlicer;
-    Post::CImageSlicer* m_ySlicer;
-    Post::CImageSlicer* m_zSlicer;
+    Post::CImageSlicer m_xSlicer;
+    Post::CImageSlicer m_ySlicer;
+    Post::CImageSlicer m_zSlicer;
 
     CGLView* m_glView;
 };
