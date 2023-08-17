@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QValidator>
 #include <QComboBox>
+#include <QCheckBox>
 #include <QLabel>
 #include <ImageLib/3DImage.h>
 
@@ -51,13 +52,17 @@ public:
 	QLineEdit*	w;
 	QLineEdit*	h;
 	QLineEdit*	d;
+    QCheckBox*  swap;
 
 public:
 	void setupUi(QWidget* parent)
 	{
 		QVBoxLayout* lo = new QVBoxLayout;
+        // enum { UINT_8, INT_8, UINT_16, INT_16, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16, REAL_32, REAL_64 };
 
-		im = new QComboBox; im->addItems(QStringList() << "8-bit" << "16-bit unsigned" << "64-bit real");
+		im = new QComboBox; im->addItems(QStringList() << "8-bit unsigned" << "8-bit signed" << "16-bit unsigned" 
+            << "16-bit signed" << "8-bit unsigned RGB" << "8-bit signed RGB" << "16-bit unsigned RGB" 
+            << "16-bit signed RGB" << "32-bit real" << "64-bit real");
 
 		nx = new QLineEdit; nx->setValidator(new QIntValidator(1, 4096));
 		ny = new QLineEdit; ny->setValidator(new QIntValidator(1, 4096));
@@ -70,6 +75,9 @@ public:
 		w = new QLineEdit; w->setValidator(new QDoubleValidator); w->setText(QString::number(1.0));
 		h = new QLineEdit; h->setValidator(new QDoubleValidator); h->setText(QString::number(1.0));
 		d = new QLineEdit; d->setValidator(new QDoubleValidator); d->setText(QString::number(1.0));
+
+        swap = new QCheckBox;
+        swap->setChecked(false);
 
 		int row = 0;
 		QGridLayout* grid = new QGridLayout;
@@ -85,6 +93,8 @@ public:
 		grid->addWidget(new QLabel("width:" ), row, 0, Qt::AlignRight); grid->addWidget(w, row, 1); row++;
 		grid->addWidget(new QLabel("height:"), row, 0, Qt::AlignRight); grid->addWidget(h, row, 1); row++;
 		grid->addWidget(new QLabel("depth:" ), row, 0, Qt::AlignRight); grid->addWidget(d, row, 1); row++;
+        grid->addWidget(new QLabel("<b>Misc:</b>"), row, 0); row++;
+        grid->addWidget(new QLabel("Swap endianness:" ), row, 0, Qt::AlignRight); grid->addWidget(swap, row, 1); row++;
 
 		lo->addLayout(grid);
 
@@ -117,13 +127,9 @@ void CDlgRAWImport::accept()
 	m_h = ui->h->text().toDouble();
 	m_d = ui->d->text().toDouble();
 
-	int n = ui->im->currentIndex();
-	switch (n)
-	{
-	case 0: m_type = C3DImage::UINT_8; break;
-	case 1: m_type = C3DImage::UINT_16; break;
-	case 2: m_type = C3DImage::REAL_64; break;
-	}
+    m_type = ui->im->currentIndex();
+
+    m_swapEndianness = ui->swap->isChecked();
 
 	QDialog::accept();
 }

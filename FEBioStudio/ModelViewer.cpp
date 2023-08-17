@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"

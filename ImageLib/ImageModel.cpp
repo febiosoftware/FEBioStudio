@@ -27,10 +27,11 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ImageModel.h"
 #include "ImageSource.h"
+#include "SITKImageSource.h"
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageSITK.h>
 #include <ImageLib/ImageFilter.h>
-#include "GLImageRenderer.h"
+#include <PostLib/GLImageRenderer.h>
 #include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
 #include <assert.h>
@@ -339,7 +340,7 @@ bool CImageModel::ExportRAWImage(const std::string& filename)
 	C3DImage* im = Get3DImage();
 	if (im == nullptr) return false;
 
-	Byte* pb = im->GetBytes();
+	uint8_t* pb = im->GetBytes();
 	if (pb == nullptr) return false;
 
 	int nx = im->Width();

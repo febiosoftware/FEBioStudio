@@ -120,7 +120,14 @@ void C2DImageTimeView::Update()
 
 void C2DImageTimeView::ModelTreeSelectionChanged(FSObject* obj)
 {
-    Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(obj);
+    CImageModel* img = dynamic_cast<CImageModel*>(obj);
+
+    // Forces recalc of min and max values on the image
+    if(img)
+    {
+        img->Get3DImage()->GetMinValue(true);
+        img->Get3DImage()->GetMaxValue(true);
+    }
 
     ui->slice->SetImage(img);
 

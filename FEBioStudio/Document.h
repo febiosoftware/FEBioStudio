@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <FSCore/FileReader.h>
 #include "CommandManager.h"
 #include "FEBioOpt.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <FSCore/FSObjectList.h>
 #include "modelcheck.h"
 #include <QtCore/QString>
@@ -99,10 +99,7 @@ class GSurfaceMeshObject;
 class FileReader;
 class FileWriter;
 enum class ImageFileType;
-
-namespace Post {
-	class CImageModel;
-}
+class CImageModel;
 
 //-----------------------------------------------------------------------------
 // Class that can be used to monitor changes to the document
@@ -328,8 +325,8 @@ public:
 
 public:
 	int ImageModels() const;
-	virtual void AddImageModel(Post::CImageModel* img);
-	Post::CImageModel* GetImageModel(int i);
+	virtual void AddImageModel(CImageModel* img);
+	CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 
 public:
@@ -362,7 +359,7 @@ protected:
 	// current selection
 	FESelection* m_psel;
 
-	FSObjectList<Post::CImageModel>	m_img;
+	FSObjectList<CImageModel>	m_img;
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;

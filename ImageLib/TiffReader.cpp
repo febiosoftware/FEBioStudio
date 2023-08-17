@@ -88,7 +88,7 @@ namespace ome {
 
 typedef struct _TiffHeader
 {
-	WORD  Identifier;  /* Byte-order Identifier */
+	WORD  Identifier;  /* byte-order Identifier */
 	WORD  Version;     /* TIFF version number (always 2Ah) */
 	DWORD IFDOffset;   /* Offset of the first Image File Directory*/
 } TIFHEAD;
@@ -114,7 +114,7 @@ typedef struct _TifStrip
 	DWORD	byteCount;
 } TIFSTRIP;
 
-size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size);
+size_t lzw_decompress(uint8_t* dst, uint8_t* src, size_t max_dst_size);
 
 typedef struct _TiffImage
 {
@@ -124,8 +124,8 @@ typedef struct _TiffImage
 	WORD	bps;
 	float	xres;
 	float	yres;
-	Byte* description;
-	Byte* pd;
+	uint8_t* description;
+	uint8_t* pd;
 } TIFIMAGE;
 
 class CTiffImageSource::Impl
@@ -172,12 +172,12 @@ public:
 	std::vector<_TifIfd>	m_ifd;
 };
 
-CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename) : CImageSource(TIFF, imgModel), m(new CTiffImageSource::Impl)
+CTiffImageSource::CTiffImageSource(CImageModel* imgModel, const std::string& filename) : CImageSource(TIFF, imgModel), m(new CTiffImageSource::Impl)
 {
 	m->filename = filename;
 }
 
-CTiffImageSource::CTiffImageSource(Post::CImageModel* imgModel) : CImageSource(RAW, imgModel), m(new CTiffImageSource::Impl)
+CTiffImageSource::CTiffImageSource(CImageModel* imgModel) : CImageSource(RAW, imgModel), m(new CTiffImageSource::Impl)
 {
 }
 
@@ -249,7 +249,7 @@ bool CTiffImageSource::Load()
 	char* szdescription = (char*)m->m_img[0].description;
 	if (szdescription && GetImageModel())
 	{
-		Post::CImageModel* mdl = GetImageModel();
+		CImageModel* mdl = GetImageModel();
 		mdl->SetInfo(szdescription);
 
 		// see if this is an xml formatted text
@@ -330,7 +330,7 @@ bool CTiffImageSource::Load()
 		if (nbps == 8)
 		{
 			im->Create(nx, ny, nz);
-			Byte* buf = im->GetBytes();
+			uint8_t* buf = im->GetBytes();
 			DWORD imSize = nx * ny;
 			for (int i = 0; i < nz; ++i)
 			{
@@ -341,7 +341,7 @@ bool CTiffImageSource::Load()
 				{
 					for (int n = 0; n < imSize; ++n)
 					{
-						Byte b = buf[n];
+						uint8_t b = buf[n];
 						buf[n] = 255 - b;
 					}
 				}
@@ -350,7 +350,7 @@ bool CTiffImageSource::Load()
 		}
 		else if (nbps == 16)
 		{
-			im->Create(nx, ny, nz, nullptr, 0, C3DImage::UINT_16);
+			im->Create(nx, ny, nz, nullptr, 0, CImage::UINT_16);
 			WORD* buf = (WORD*)im->GetBytes();
 			DWORD imSize = nx * ny;
 			for (int i = 0; i < nz; ++i)
@@ -378,14 +378,14 @@ bool CTiffImageSource::Load()
 		if (nbps == 8)
 		{
 			// This will be mapped to a RGB image
-			im->Create(nx, ny, nz, nullptr, 0, C3DImage::UINT_RGB8);
+			im->Create(nx, ny, nz, nullptr, 0, CImage::UINT_RGB8);
 			DWORD imSize = nx * ny;
 			for (int k = 0; k < images; ++k)
 			{
 				_TiffImage& tif = m->m_img[k];
 				int slice = k / 3;
 				int channel = k % 3;
-				Byte* buf = im->GetBytes() + slice * imSize * 3;
+				uint8_t* buf = im->GetBytes() + slice * imSize * 3;
 				if (tif.bps == 8)
 				{
 					for (int i = 0; i < imSize; ++i)
@@ -398,7 +398,7 @@ bool CTiffImageSource::Load()
 		else if (nbps == 16)
 		{
 			// This will be mapped to a RGB image
-			im->Create(nx, ny, nz, nullptr, 0, C3DImage::UINT_RGB16);
+			im->Create(nx, ny, nz, nullptr, 0, CImage::UINT_RGB16);
 			DWORD imSize = nx * ny;
 			assert(dimOrder != ome::DimensionOrder::Unknown);
 			if (dimOrder == ome::DimensionOrder::XYCZT)
@@ -625,10 +625,10 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 	}
 
 	// read the description if present
-	Byte* description = nullptr;
+	uint8_t* description = nullptr;
 	if ((descrCount > 0) && (descrOffset > 0))
 	{
-		description = new Byte[descrCount + 1];
+		description = new uint8_t[descrCount + 1];
 		fseek(m_fp, descrOffset, SEEK_SET);
 		int nread = fread(description, 1, descrCount, m_fp); assert(nread == descrCount);
 		description[nread] = 0; // don't think this is necessary, but let's just to be safe
@@ -665,8 +665,8 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 
 	// allocate buffer for image
 	DWORD imSize = imWidth * imLength * (bitsPerSample == 16 ? 2 : 1);
-	Byte* buf = new Byte[imSize];
-	Byte* tmp = buf;
+	uint8_t* buf = new uint8_t[imSize];
+	uint8_t* tmp = buf;
 	_TiffImage im;
 	im.nx = imWidth;
 	im.ny = imLength;
@@ -695,7 +695,7 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 		else if (compression == TIF_COMPRESSION_LZW)
 		{
 			// read the compressed stream
-			Byte* stream = new Byte[strip.byteCount];
+			uint8_t* stream = new uint8_t[strip.byteCount];
 			fread(stream, strip.byteCount, 1, m_fp);
 
 			// decompress the zream
@@ -725,10 +725,10 @@ class LZWDecompress
 		EOI_CODE = 257
 	};
 
-	typedef std::pair<Byte*, int>	Entry;
+	typedef std::pair<uint8_t*, int>	Entry;
 
 public:
-	LZWDecompress(Byte* src) : m_src(src) 
+	LZWDecompress(uint8_t* src) : m_src(src) 
 	{
 		m_max_size = 0;
 		m_s = m_src; m_startBit = 0; m_bps = 9; 
@@ -743,13 +743,13 @@ public:
 
 	void writeString(const Entry& entry)
 	{
-		Byte* b = entry.first;
+		uint8_t* b = entry.first;
 		int size = entry.second;
 		for (int i = 0; i < size; ++i) { (*m_d++) = *b++; m_dsize++; }
 		int a = 0;
 	}
 
-	size_t decompress(Byte* dst, size_t max_buf_size)
+	size_t decompress(uint8_t* dst, size_t max_buf_size)
 	{
 		m_d = dst;
 		m_dsize = 0;
@@ -814,7 +814,7 @@ public:
 		return code;
 	}
 
-	Entry appendEntry(const Entry& entry, Byte b)
+	Entry appendEntry(const Entry& entry, uint8_t b)
 	{
 		int newSize = entry.second + 1;
 		Entry tmp = newEntry(newSize);
@@ -854,7 +854,7 @@ public:
 		m_pageSize = 0;
 	}
 
-	void addDictionary(Byte b)
+	void addDictionary(uint8_t b)
 	{
 		Entry entry = newEntry(1);
 		entry.first[0] = b;
@@ -878,7 +878,7 @@ public:
 			m_pageSize = DEFAULT_PAGE_SIZE;
 			if (nsize > m_pageSize) m_pageSize = nsize;
 
-			m_currentPage = new Byte[m_pageSize];
+			m_currentPage = new uint8_t[m_pageSize];
 			m_pages.push_back(m_currentPage);
 		}
 
@@ -895,9 +895,9 @@ private:
 	enum { DEFAULT_PAGE_SIZE = 16384 }; // 16K
 
 private:
-	Byte* m_src;
-	Byte* m_s;
-	Byte* m_d;
+	uint8_t* m_src;
+	uint8_t* m_s;
+	uint8_t* m_d;
 	size_t	m_dsize;
 	DWORD m_max_size;
 	int	  m_startBit;
@@ -906,14 +906,14 @@ private:
 
 	std::vector<Entry>	m_dic;
 
-	std::vector<Byte*>	m_pages;
-	Byte* m_currentPage;
+	std::vector<uint8_t*>	m_pages;
+	uint8_t* m_currentPage;
 	size_t m_pageSize;
 };
 
 // this function decompresses a LZW compressed strip
 // the src is the compressed data, and dst is used to store the decoded strip
-size_t lzw_decompress(Byte* dst, Byte* src, size_t max_dst_size)
+size_t lzw_decompress(uint8_t* dst, uint8_t* src, size_t max_dst_size)
 {
 	LZWDecompress lzw(src);
 	size_t n = lzw.decompress(dst, max_dst_size);

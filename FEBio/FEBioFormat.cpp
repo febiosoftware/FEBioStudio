@@ -72,9 +72,9 @@ template <> void string_to_type<GLColor>(const std::string& s, GLColor& v)
 {
 	int c[3];
 	sscanf(s.c_str(), "%d,%d,%d", &c[0], &c[1], &c[2]);
-	v.r = (Byte)c[0];
-	v.g = (Byte)c[1];
-	v.b = (Byte)c[2];
+	v.r = (uint8_t)c[0];
+	v.g = (uint8_t)c[1];
+	v.b = (uint8_t)c[2];
 }
 
 //=============================================================================

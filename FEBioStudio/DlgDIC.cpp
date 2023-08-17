@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QGraphicsScene>
 #include <QGraphicsPixmapItem>
 #include <QImage>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <ImageLib/Image.h>
 #include "DlgDIC.h"
@@ -291,7 +291,7 @@ void CROICircle::DrawMask(QPainter& painter, CDrawROI* parent)
     painter.setPen(penBackup);
 }
 
-CDrawROI::CDrawROI(Post::CImageModel* model)
+CDrawROI::CDrawROI(CImageModel* model)
     : m_model(model), m_newRect(false), m_newCircle(false), m_active(nullptr), m_makeNeg(false)
 {
     setMinimumSize(300,300);
@@ -482,7 +482,7 @@ QPointF CDrawROI::ImageToWidgetCoords(QPointF& imagePoint)
     return widgetPoint;
 }
 
-CDlgDIC::CDlgDIC(Post::CImageModel* model)
+CDlgDIC::CDlgDIC(CImageModel* model)
     : m_model(model)
 {
     QHBoxLayout* layout = new QHBoxLayout;

@@ -96,9 +96,10 @@ SOFTWARE.*/
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
-#include <PostLib/ImageModel.h>
-#include <PostLib/ImageSource.h>
-#include <PostLib/DICOMImageSource.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
+#include <ImageLib/SITKImageSource.h>
+#include <ImageLib/DICOMImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
 #include <PostLib/PLYExport.h>
 #include <PostLib/AbaqusExport.h>
@@ -118,7 +119,7 @@ SOFTWARE.*/
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
 #include <PostLib/VolumeRenderer.h>
-#include <PostLib/TiffReader.h>
+#include <ImageLib/TiffReader.h>
 #include <sstream>
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
@@ -1562,7 +1563,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 
 	if (filedlg.exec())
 	{
-		Post::CImageModel* imageModel = nullptr;
+		CImageModel* imageModel = nullptr;
 		
 		CDlgRAWImport dlg(this);
 		if (dlg.exec())
@@ -1572,8 +1573,8 @@ void CMainWindow::on_actionImportRawImage_triggered()
             // we pass the relative path to the image model
 	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
 
-            imageModel = new Post::CImageModel(nullptr);
-            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
+            imageModel = new CImageModel(nullptr);
+            imageModel->SetImageSource(new CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
 
             if(!ImportImage(imageModel))
             {
@@ -1677,7 +1678,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 		// we pass the relative path to the image model
 		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
 
-		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+		CImageModel* imageModel = new CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
 
 		if (!ImportImage(imageModel))
@@ -1781,8 +1782,8 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         CGLDocument* doc = GetGLDocument();
 
-        Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
-        imageModel->SetImageSource(new Post::CITKSeriesImageSource(imageModel, stdFiles));
+        CImageModel* imageModel = new CImageModel(nullptr);
+        imageModel->SetImageSource(new CITKSeriesImageSource(imageModel, stdFiles));
 
         if(!ImportImage(imageModel))
         {

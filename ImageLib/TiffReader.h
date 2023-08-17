@@ -28,13 +28,13 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <string>
 
-class CTiffImageSource : public Post::CImageSource
+class CTiffImageSource : public CImageSource
 {
 	class Impl;
 
 public:
-	CTiffImageSource(Post::CImageModel* imgModel, const std::string& filename);
-	CTiffImageSource(Post::CImageModel* imgModel);
+	CTiffImageSource(CImageModel* imgModel, const std::string& filename);
+	CTiffImageSource(CImageModel* imgModel);
 	~CTiffImageSource();
 
 	bool Load() override;

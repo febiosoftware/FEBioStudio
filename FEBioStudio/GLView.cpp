@@ -53,7 +53,7 @@ SOFTWARE.*/
 #include <QAction>
 #include <QMenu>
 #include <QMessageBox>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include "PostDocument.h"
 #include <PostGL/GLPlaneCutPlot.h>
 #include <PostGL/GLModel.h>
@@ -2230,7 +2230,7 @@ void CGLView::RenderImageData()
     {
         for (int i = 0; i < doc->ImageModels(); ++i)
         {
-            Post::CImageModel* img = doc->GetImageModel(i);
+            CImageModel* img = doc->GetImageModel(i);
             BOX box = img->GetBoundingBox();
     		// GLColor c = img->GetColor();
             GLColor c(255, 128, 128);
@@ -2243,7 +2243,7 @@ void CGLView::RenderImageData()
     {
         CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
 
-        Post::CImageModel* img =  sliceView->GetImageModel();
+        CImageModel* img =  sliceView->GetImageModel();
         if(img)
         {
             BOX box = img->GetBoundingBox();
@@ -3527,9 +3527,9 @@ GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 								else
 									w = 0.f;
 
-								c.r = (Byte)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
-								c.g = (Byte)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
-								c.b = (Byte)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
+								c.r = (uint8_t)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
+								c.g = (uint8_t)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
+								c.b = (uint8_t)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
 
 								face.c[k] = c;
 							}

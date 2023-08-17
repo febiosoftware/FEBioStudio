@@ -95,8 +95,9 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
 #include <PostLib/VolumeRenderer.h>
-#include <PostLib/ImageModel.h>
-#include <PostLib/ImageSource.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
+#include <ImageLib/SITKImageSource.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
@@ -3534,7 +3535,7 @@ void CMainWindow::CloseWelcomePage()
 	}
 }
 
-bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
+bool CMainWindow::ImportImage(CImageModel* imgModel)
 {
 	static int n = 1;
 	CGLDocument* doc = GetGLDocument();
@@ -3571,8 +3572,8 @@ bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
         // we pass the relative path to the image model
 	    string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
 
-		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
-        imageModel->SetImageSource(new Post::CITKImageSource(imageModel, relFile, type));
+		CImageModel* imageModel = new CImageModel(nullptr);
+        imageModel->SetImageSource(new CITKImageSource(imageModel, relFile, type));
 
         if(!ImportImage(imageModel))
         {
