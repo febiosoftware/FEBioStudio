@@ -840,7 +840,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 			Post::FEPostModel::LineObject*  ob = new Post::FEPostModel::LineObject;
 
 			char sz[DI_NAME_SIZE] = { 0 };
-			float r[6];
+			float r[6] = { 0.f };
 			int ntag = 0;
 			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
@@ -881,8 +881,8 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 
 			ob->SetName(sz);
 			ob->m_tag = ntag;
-			ob->m_r1 = vec3d(r[0], r[1], r[2]);
-			ob->m_r2 = vec3d(r[3], r[4], r[5]);
+			ob->m_r1 = ob->m_r01 = vec3d(r[0], r[1], r[2]);
+			ob->m_r2 = ob->m_r02 = vec3d(r[3], r[4], r[5]);
 			ob->SetColor(GLColor(255, 0, 0));
 			fem.AddLineObject(ob);
 		}

@@ -2310,12 +2310,16 @@ void CGLModel::RenderObjects(CGLContext& rc)
 
 			vec3d a = ob.m_r1;
 			vec3d b = ob.m_r2;
+			double Lt = sqrt((a - b) * (a - b));
+
+			double L0 = sqrt((ob.m_r01 - ob.m_r02) * (ob.m_r01 - ob.m_r02));
+			if (L0 == 0) L0 = Lt;
 
 			GLColor c = ob.Color();
 			glColor3ub(c.r, c.g, c.b);
 			switch (ob.m_tag)
 			{
-			case 1: glx::renderSpring(a, b, R); break;
+			case 1: glx::renderSpring(a, b, R, (R == 0 ? 25 : L0 / R)); break;
 			case 2: glx::renderDamper(a, b, R); break;
 			case 4: glx::renderContractileForce(a, b, R); break;
 			default:

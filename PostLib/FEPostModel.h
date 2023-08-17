@@ -100,6 +100,9 @@ public:
 	public:
 		vec3d	m_r1;
 		vec3d	m_r2;
+
+		vec3d	m_r01;
+		vec3d	m_r02;
 	};
 
 public:
