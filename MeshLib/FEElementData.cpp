@@ -352,9 +352,11 @@ FEElemList* FEPartData::BuildElemList()
 	FSMesh* mesh = GetMesh();
 	assert(mesh);
 
+	FSPartSet* partList = GetPartSet();
+	if (partList == nullptr) return nullptr;
+
 	FEElemList* elemList = new FEElemList;
 	int NE = mesh->Elements();
-	FSPartSet* partList = GetPartSet();
 	for (int i = 0; i < partList->size(); ++i)
 	{
 		int pid = (*partList)[i];
