@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2023 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -26,58 +26,47 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <QWidget>
-#include <PostLib/ImageSlicer.h>
-#include "PixelInfoSource.h"
+#include <vector>
+#include <QString>
+#include <QColor>
+#include <QPoint>
 
-class QGridLayout;
-class QResizeEvent;
-
-class CGLView;
-class CMainWindow;
-class CGLContext;
-class FSObject;
-class CImageModel;
 class CImageSlice;
+class CDlgPixelInspector;
 
-class CImageSliceView : public QWidget, public CSliceInfoSource
+class CPixelInfoSource 
 {
-    Q_OBJECT
 
 public:
-    CImageSliceView(CMainWindow* wnd, QWidget* parent = 0);
+    CPixelInfoSource();
 
-    void Update();
+    virtual void SetInspector(CDlgPixelInspector* inspector);
 
-    CImageModel* GetImageModel() { return m_imgModel; }
+    QPoint GetStartIndices();
+    std::vector<QString>& GetPixelVals();
+    std::vector<QColor>& GetPixelColors();
 
-    void RenderSlicers(CGLContext& rc);
-
-    void SetInspector(CDlgPixelInspector* inspector) override;
-
-public slots:
-    void ModelTreeSelectionChanged(FSObject* obj);
-    void SliceUpdated(int direction, float offset);
-    void SliceClicked(int direction, QPoint point);
+    virtual void UpdatePixelInfo() = 0;
 
 protected:
-    void resizeEvent(QResizeEvent* event) override;
+    CDlgPixelInspector* m_inspector;
 
-private:
-    CMainWindow* m_wnd;
+    std::vector<QString> m_pixelVals;
+    std::vector<QColor> m_pixelColors;
 
+    QPoint m_startIndices;
+    QPoint m_infoPoint;
+};
+
+class CSliceInfoSource : public CPixelInfoSource
+{
 public:
-    QGridLayout* m_layout;
+    CSliceInfoSource() {}
 
-    CImageModel* m_imgModel;
+    void UpdatePixelInfo() override;
 
-    CImageSlice* m_xSlice;
-    CImageSlice* m_ySlice;
-    CImageSlice* m_zSlice;
+    virtual void SetInspector(CDlgPixelInspector* inspector) override;
 
-    Post::CImageSlicer m_xSlicer;
-    Post::CImageSlicer m_ySlicer;
-    Post::CImageSlicer m_zSlicer;
-
-    CGLView* m_glView;
+protected:
+    CImageSlice* m_infoSlice;
 };

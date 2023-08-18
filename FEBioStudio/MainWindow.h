@@ -57,6 +57,7 @@ class FEBioStudioProject;
 class CGLView;
 class CImageModel;
 class CImageSliceView;
+class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
 
@@ -642,6 +643,7 @@ public slots:
 
 	CGLView* GetGLView();
     CImageSliceView* GetImageSliceView();
+    C2DImageTimeView* GetC2DImageTimeView();
 
 	void UpdateGraphs(bool breset);
 

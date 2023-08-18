@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2023 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -24,60 +24,33 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
+#include <QDialog>
 
-#include <QWidget>
-#include <PostLib/ImageSlicer.h>
-#include "PixelInfoSource.h"
+class CImageToolBar;
+class CPixelInfoSource;
 
-class QGridLayout;
-class QResizeEvent;
+namespace Ui {
+    class CDlgPixelInspector;
+}
 
-class CGLView;
-class CMainWindow;
-class CGLContext;
-class FSObject;
-class CImageModel;
-class CImageSlice;
-
-class CImageSliceView : public QWidget, public CSliceInfoSource
+class CDlgPixelInspector : public QDialog
 {
-    Q_OBJECT
-
 public:
-    CImageSliceView(CMainWindow* wnd, QWidget* parent = 0);
+    CDlgPixelInspector(CImageToolBar* toolbar, CPixelInfoSource* source);
 
-    void Update();
+    void SetInfoSource(CPixelInfoSource* source);
 
-    CImageModel* GetImageModel() { return m_imgModel; }
+    void done(int r) override;
 
-    void RenderSlicers(CGLContext& rc);
+    int GetRadius() { return m_radius; }
 
-    void SetInspector(CDlgPixelInspector* inspector) override;
-
-public slots:
-    void ModelTreeSelectionChanged(FSObject* obj);
-    void SliceUpdated(int direction, float offset);
-    void SliceClicked(int direction, QPoint point);
-
-protected:
-    void resizeEvent(QResizeEvent* event) override;
+    void UpdateData();
 
 private:
-    CMainWindow* m_wnd;
+    int m_radius;
+    
+    CImageToolBar* m_toolbar;
+    CPixelInfoSource* m_source;
 
-public:
-    QGridLayout* m_layout;
-
-    CImageModel* m_imgModel;
-
-    CImageSlice* m_xSlice;
-    CImageSlice* m_ySlice;
-    CImageSlice* m_zSlice;
-
-    Post::CImageSlicer m_xSlicer;
-    Post::CImageSlicer m_ySlicer;
-    Post::CImageSlicer m_zSlicer;
-
-    CGLView* m_glView;
+    Ui::CDlgPixelInspector* ui;
 };
