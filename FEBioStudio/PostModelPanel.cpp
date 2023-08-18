@@ -56,7 +56,7 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
 #include <MeshIO/STLExport.h>
@@ -72,7 +72,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <QFileDialog>
 
 //-----------------------------------------------------------------------------
@@ -335,7 +335,7 @@ private:
 class CImageModelProps : public CPropertyList
 {
 public:
-	CImageModelProps(Post::CImageModel* img)
+	CImageModelProps(CImageModel* img)
 	{
 		m_img = img;
 
@@ -394,7 +394,7 @@ public:
 	}
 
 private:
-	Post::CImageModel*	m_img;
+	CImageModel*	m_img;
 };
 
 //-----------------------------------------------------------------------------
@@ -584,7 +584,7 @@ public:
 		return po;
 	}
 
-	void ShowImageViewer(Post::CImageModel* img)
+	void ShowImageViewer(CImageModel* img)
 	{
 		if (m_tab->count() == 1)
 		{
@@ -875,7 +875,7 @@ void CPostModelPanel::BuildModelTree()
 
 		for (int i = 0; i < pdoc->ImageModels(); ++i)
 		{
-			Post::CImageModel* img = pdoc->GetImageModel(i);
+			CImageModel* img = pdoc->GetImageModel(i);
 			pi1 = ui->AddItem(nullptr, img, QString::fromStdString(img->GetName()), "image", new CImageModelProps(img));
 
 			for (int j = 0; j < img->ImageRenderers(); ++j)
@@ -956,9 +956,9 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 				ui->enabled->setChecked(glo->IsActive());
 			}
 
-			if (dynamic_cast<Post::CImageModel*>(po))
+			if (dynamic_cast<CImageModel*>(po))
 			{
-				Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+				CImageModel* img = dynamic_cast<CImageModel*>(po);
 				ui->ShowImageViewer(img);
 			}
 			else ui->HideImageViewer();
@@ -1162,7 +1162,7 @@ void CPostModelPanel::on_deleteButton_clicked()
 	else if (dynamic_cast<CImageFilter*>(pobj))
 	{
 		CImageFilter* imf = dynamic_cast<CImageFilter*>(pobj);
-		Post::CImageModel* mdl = imf->GetImageModel();
+		CImageModel* mdl = imf->GetImageModel();
 		mdl->RemoveFilter(imf);
 		delete imf;
 		Update(true);
@@ -1310,7 +1310,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		return;
 	}
 
-	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+	CImageModel* img = dynamic_cast<CImageModel*>(po);
 	if (img)
 	{
 		QMenu menu(this);
@@ -1505,7 +1505,7 @@ void CPostModelPanel::OnExportImage()
 	FSObject* po = ui->currentObject();
 	if (po == nullptr) return;
 
-	Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+	CImageModel* img = dynamic_cast<CImageModel*>(po);
 	if (img == nullptr) return;
 
 	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export image", "", "Raw image (*.raw)");

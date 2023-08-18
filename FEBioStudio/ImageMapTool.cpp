@@ -45,7 +45,7 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "IconProvider.h"
 #include "PlotWidget.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEElementData.h>
 #include <MeshLib/MeshTools.h>
@@ -223,7 +223,7 @@ void CImageMapTool::OnCreate()
 		return;
 	}
 
-    Post::CImageModel* imageModel;
+    CImageModel* imageModel;
     if(pdoc->ImageModels() < ui->imageBox->currentIndex())
     {
         QMessageBox::critical(GetMainWindow(), "Tool", QString("The chosen image model, %1, does not exist.").arg(ui->imageBox->currentText()));
@@ -379,142 +379,148 @@ void CImageMapTool::OnCreate()
             normal.second = normal.second.Normalize();
         }
 
-        #pragma omp parallel for
+        int numNodes = mesh->Nodes();
+
+        std::vector<double> vals(numNodes);
+
+        // #pragma omp parallel for
+        for(int i = 0; i < numNodes; i++)
+        {
+            vec3d pos = mesh->LocalToGlobal(mesh->Node(i).pos());
+            double val = imageModel->ValueAtGlobalPos(pos);
+
+            // see if the node belongs to one of the external faces
+            if(normals.count(i) > 0)
+            {
+                int voxelIndexX = (pos.x - origin.x)/spacing.x;
+                int voxelIndexY = (pos.y - origin.y)/spacing.y;
+                int voxelIndexZ = (pos.z - origin.z)/spacing.z;
+
+                double discreteVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
+                if(discreteVal >= threshold)
+                {
+                    val = discreteVal;
+                }
+                else
+                {
+                    vec3f normal = normals[i];
+                    
+                    int xSign = normal.x > 0 ? 1 : -1;
+                    int ySign = normal.y > 0 ? 1 : -1;
+                    int zSign = normal.z > 0 ? 1 : -1;
+
+                    int iter = 0;
+                    vec3d currentPos = pos;
+                    while(iter < 5)
+                    {
+                        vec3d voxelCenter(origin.x + voxelIndexX*spacing.x + spacing.x/2,
+                        origin.y + voxelIndexY*spacing.y + spacing.y/2,
+                        origin.z + voxelIndexZ*spacing.z + spacing.z/2);
+
+                        double vFarthestX = voxelCenter.x + spacing.x/2*xSign;
+                        double vFarthestY = voxelCenter.y + spacing.y/2*ySign;
+                        double vFarthestZ = voxelCenter.z + spacing.z/2*zSign;
+
+                        double xSteps, ySteps, zSteps;
+                        if(normal.x == 0)
+                        {
+                            xSteps = INFINITY;
+                        }
+                        else
+                        {
+                            xSteps = abs((vFarthestX - currentPos.x)/normal.x);
+                        }
+                        
+                        if(normal.y == 0)
+                        {
+                            ySteps = INFINITY;
+                        }
+                        else
+                        {
+                            ySteps = abs((vFarthestY - currentPos.y)/normal.y);
+                        }
+                        
+                        if(normal.z == 0)
+                        {
+                            zSteps = INFINITY;
+                        }
+                        else
+                        {
+                            zSteps = abs((vFarthestZ - currentPos.z)/normal.z);
+                        }
+
+                        double min = std::min({xSteps, ySteps, zSteps});
+
+                        if(min == xSteps)
+                        {
+                            currentPos.y += normal.y/normal.x*(vFarthestX - currentPos.x);
+                            currentPos.z += normal.z/normal.x*(vFarthestX - currentPos.x);
+
+                            currentPos.x = vFarthestX;
+
+                            voxelIndexX += xSign;
+                        }
+                        else if(min == ySteps)
+                        {
+                            currentPos.x += normal.x/normal.y*(vFarthestY - currentPos.y);
+                            currentPos.z += normal.z/normal.y*(vFarthestY - currentPos.y);
+
+                            currentPos.y = vFarthestY;
+
+                            voxelIndexY += ySign;
+                        }
+                        else
+                        {
+                            currentPos.x += normal.x/normal.z*(vFarthestZ - currentPos.z);
+                            currentPos.y += normal.y/normal.z*(vFarthestZ - currentPos.z);
+                            
+                            currentPos.z = vFarthestZ;
+
+                            voxelIndexZ += zSign;
+                        }
+
+                        if(voxelIndexX >= imageModel->Get3DImage()->Width() || 
+                            voxelIndexY >= imageModel->Get3DImage()->Height() ||
+                            voxelIndexZ >= imageModel->Get3DImage()->Depth())
+                        {
+                            break;
+                        }
+
+                        double tempVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
+
+                        if(tempVal >= threshold)
+                        {
+                            val = tempVal;
+                            break;
+                        }
+
+                        iter++;
+                    }
+                }
+            }
+
+            #pragma omp critical
+            {
+                if(val < min)
+                {
+                    min = val;
+                }
+                else if(val > max)
+                {
+                    max = val;
+                }
+            }
+
+            vals[i] = val;
+        }
+
         for (int i = 0; i < NE; ++i)
         {
             FEElement_* el = elems[i];
             int ne = el->Nodes();
             for (int j = 0; j < ne; ++j)
             {
-                int nodeID = el->m_node[j];
-                FSNode& current = mesh->Node(el->m_node[j]);
-
-                vec3d pos = mesh->LocalToGlobal(current.pos());
-                double val = imageModel->ValueAtGlobalPos(pos);
-
-                // see if the node belongs to one of the external faces
-                if(normals.count(nodeID) > 0)
-                {
-                    int voxelIndexX = (pos.x - origin.x)/spacing.x;
-                    int voxelIndexY = (pos.y - origin.y)/spacing.y;
-                    int voxelIndexZ = (pos.z - origin.z)/spacing.z;
-
-                    double discreteVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
-                    if(discreteVal >= threshold)
-                    {
-                        val = discreteVal;
-                    }
-                    else
-                    {
-                        vec3f normal = normals[nodeID];
-                        
-                        int xSign = normal.x > 0 ? 1 : -1;
-                        int ySign = normal.y > 0 ? 1 : -1;
-                        int zSign = normal.z > 0 ? 1 : -1;
-
-                        int iter = 0;
-                        vec3d currentPos = pos;
-                        while(iter < 5)
-                        {
-                            vec3d voxelCenter(origin.x + voxelIndexX*spacing.x + spacing.x/2,
-                            origin.y + voxelIndexY*spacing.y + spacing.y/2,
-                            origin.z + voxelIndexZ*spacing.z + spacing.z/2);
-
-                            double vFarthestX = voxelCenter.x + spacing.x/2*xSign;
-                            double vFarthestY = voxelCenter.y + spacing.y/2*ySign;
-                            double vFarthestZ = voxelCenter.z + spacing.z/2*zSign;
-
-                            double xSteps, ySteps, zSteps;
-                            if(normal.x == 0)
-                            {
-                                xSteps = INFINITY;
-                            }
-                            else
-                            {
-                                xSteps = abs((vFarthestX - currentPos.x)/normal.x);
-                            }
-                            
-                            if(normal.y == 0)
-                            {
-                                ySteps = INFINITY;
-                            }
-                            else
-                            {
-                                ySteps = abs((vFarthestY - currentPos.y)/normal.y);
-                            }
-                            
-                            if(normal.z == 0)
-                            {
-                                zSteps = INFINITY;
-                            }
-                            else
-                            {
-                                zSteps = abs((vFarthestZ - currentPos.z)/normal.z);
-                            }
-
-                            double min = std::min({xSteps, ySteps, zSteps});
-
-                            if(min == xSteps)
-                            {
-                                currentPos.y += normal.y/normal.x*(vFarthestX - currentPos.x);
-                                currentPos.z += normal.z/normal.x*(vFarthestX - currentPos.x);
-
-                                currentPos.x = vFarthestX;
-
-                                voxelIndexX += xSign;
-                            }
-                            else if(min == ySteps)
-                            {
-                                currentPos.x += normal.x/normal.y*(vFarthestY - currentPos.y);
-                                currentPos.z += normal.z/normal.y*(vFarthestY - currentPos.y);
-
-                                currentPos.y = vFarthestY;
-
-                                voxelIndexY += ySign;
-                            }
-                            else
-                            {
-                                currentPos.x += normal.x/normal.z*(vFarthestZ - currentPos.z);
-                                currentPos.y += normal.y/normal.z*(vFarthestZ - currentPos.z);
-                                
-                                currentPos.z = vFarthestZ;
-
-                                voxelIndexZ += zSign;
-                            }
-
-                            if(voxelIndexX >= imageModel->Get3DImage()->Width() || 
-                                voxelIndexY >= imageModel->Get3DImage()->Height() ||
-                                voxelIndexZ >= imageModel->Get3DImage()->Depth())
-                            {
-                                break;
-                            }
-
-                            double tempVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
-
-                            if(tempVal >= threshold)
-                            {
-                                val = tempVal;
-                                break;
-                            }
-
-                            iter++;
-                        }
-                    }
-                }
-
-                #pragma omp critical
-                {
-                    if(val < min)
-                    {
-                        min = val;
-                    }
-                    else if(val > max)
-                    {
-                        max = val;
-                    }
-                }
-
-                pdata->SetValue(i, j, val);
+                pdata->SetValue(i, j, vals[el->m_node[j]]);
             }
         }
 
@@ -614,7 +620,7 @@ void CImageMapTool::OnCreate()
         double min = std::numeric_limits<double>::max();
         double max = std::numeric_limits<double>::min();
 
-        Byte* data = imageModel->Get3DImage()->GetBytes();
+        uint8_t* data = imageModel->Get3DImage()->GetBytes();
 
         #pragma omp parallel for
         for (int elID = 0; elID < NE; ++elID)

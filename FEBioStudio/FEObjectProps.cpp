@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 #include "ModelViewer.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -989,7 +989,7 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CImageModelProperties::CImageModelProperties(Post::CImageModel* model)
+CImageModelProperties::CImageModelProperties(CImageModel* model)
     : m_model(model), CObjectProps(nullptr)
 {
     addProperty("Show Box", CProperty::Bool);

@@ -39,8 +39,8 @@ public:
     CImageSITK(int nx, int ny, int nz);
     ~CImageSITK();
 
-    bool LoadFromFile(std::string, bool isDicom);
-    bool LoadFromStack(std::vector<std::string> filenames);
+    // bool LoadFromFile(std::string, bool isDicom);
+    // bool LoadFromStack(std::vector<std::string> filenames);
 
     BOX GetBoundingBox() override;
     void SetBoundingBox(BOX& box) override;

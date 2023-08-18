@@ -92,7 +92,7 @@ void CImageToolBar::on_viewAction_triggered(QAction* action)
 
 //     if(!doc) return;
 
-//     Post::CImageModel* model = doc->GetActiveModel();
+//     CImageModel* model = doc->GetActiveModel();
 
 //     if(!model) return;
 

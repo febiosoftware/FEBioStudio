@@ -26,11 +26,11 @@ SOFTWARE.*/
 
 #include "ImageSource.h"
 
-class CDICOMImageSource : public Post::CImageSource
+class CDICOMImageSource : public CImageSource
 {
 public:
-    CDICOMImageSource(Post::CImageModel* imgModel, const std::vector<std::string>& filenames);
-    CDICOMImageSource(Post::CImageModel* imgModel);
+    CDICOMImageSource(CImageModel* imgModel, const std::vector<std::string>& filenames);
+    CDICOMImageSource(CImageModel* imgModel);
 
     bool Load() override;
 
