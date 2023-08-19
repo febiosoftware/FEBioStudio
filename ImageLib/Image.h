@@ -50,6 +50,7 @@ public:
 	CImage& operator -= (const CImage& im);
 
 	void Create(int nx, int ny, uint8_t* pb = 0, int pixelType = UINT_8);
+    void Clear();
 
 	int Width () const { return m_cx; }
 	int Height() const { return m_cy; }
@@ -57,6 +58,8 @@ public:
 	uint8_t* GetBytes() const { return m_pb; }
 
 	uint8_t* GetPixel(int i, int j) { return m_pb + (j*m_cx + i); }
+
+    double Value(int i, int j, int channel = 0);
 
 	uint8_t value(int i, int j) { return m_pb[j*m_cx + i]; }
 

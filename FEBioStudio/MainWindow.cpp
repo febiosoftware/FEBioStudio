@@ -1325,6 +1325,11 @@ CImageSliceView* CMainWindow::GetImageSliceView()
     return ui->sliceView;
 }
 
+C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
+{
+    return ui->timeView2D;
+}
+
 //-----------------------------------------------------------------------------
 CBuildPanel* CMainWindow::GetBuildPanel()
 {

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QWidget>
+#include "PixelInfoSource.h"
 
 class CMainWindow;
 
@@ -33,7 +34,7 @@ namespace Ui
     class C2DImageTimeView;
 }
 
-class C2DImageTimeView : public QWidget
+class C2DImageTimeView : public QWidget, public CSliceInfoSource
 {
     
 public:
@@ -48,6 +49,7 @@ private slots:
     void on_actionPlayPause_triggered();
     void on_timer_timeout();
     void on_interval_valueChanged();
+    void on_slice_clicked(int direction, QPoint pos);
 
 private:
     Ui::C2DImageTimeView* ui;

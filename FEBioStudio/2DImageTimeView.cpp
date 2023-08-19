@@ -34,8 +34,10 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "Document.h"
 #include "IconProvider.h"
-#include "ImageSliceView.h"
+#include "ImageSlice.h"
+#include <ImageLib/3DImage.h>
 #include "2DImageTimeView.h"
+#include "DlgPixelInspector.h"
 
 class Ui::C2DImageTimeView
 {
@@ -100,9 +102,12 @@ C2DImageTimeView::C2DImageTimeView(CMainWindow* wnd)
 {
     ui->setup(this);
 
+    m_infoSlice = ui->slice;
+
     connect(ui->actionPlayPause, &QAction::triggered, this, &C2DImageTimeView::on_actionPlayPause_triggered);
     connect(ui->timer, &QTimer::timeout, this, &C2DImageTimeView::on_timer_timeout);
     connect(ui->interval, &QSpinBox::valueChanged, this, &C2DImageTimeView::on_interval_valueChanged);
+    connect(ui->slice, &CImageSlice::focusChanged, this, &C2DImageTimeView::on_slice_clicked);
 }
 
 void C2DImageTimeView::Update()
@@ -167,6 +172,12 @@ void C2DImageTimeView::on_timer_timeout()
             }
 
             ui->slice->SetIndex(index);
+            
+            if(m_inspector)
+            {
+                UpdatePixelInfo();
+                m_inspector->UpdateData();
+            }
 
             return;
         }
@@ -182,5 +193,16 @@ void C2DImageTimeView::on_interval_valueChanged()
     {
         ui->timer->stop();
         ui->timer->start(ui->interval->value());
+    }
+}
+
+void C2DImageTimeView::on_slice_clicked(int direction, QPoint pos)
+{
+    m_infoPoint = pos;
+
+    if(m_inspector)
+    {
+        UpdatePixelInfo();
+        m_inspector->UpdateData();
     }
 }

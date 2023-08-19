@@ -165,3 +165,77 @@ void CImage::Create(int nx, int ny, uint8_t* pb, int pixelType)
 		m_bdel = true;
 	}
 }
+
+void CImage::Clear()
+{
+    m_cx = 0;
+	m_cy = 0;
+
+    if(m_pb)
+    {
+        if (m_bdel) delete [] m_pb;
+
+        m_pb = nullptr;
+    }
+}
+
+double CImage::Value(int i, int j, int channel)
+{
+    double h;
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+    {
+        h = m_pb[m_cx*j + i];
+        break;
+    }
+    case CImage::INT_8:
+    {
+        h = ((char*)m_pb)[m_cx*j + i];
+        break;
+    }
+    case CImage::UINT_16:
+    {
+        h = ((uint16_t*)m_pb)[m_cx*j + i];
+        break;
+    }
+    case CImage::INT_16:
+    {
+        h = ((int16_t*)m_pb)[m_cx*j + i];
+        break;
+    }
+    case CImage::UINT_RGB8:
+    {
+        h = m_pb[(m_cx*j + i)*3 + channel];
+        break;
+    }
+    case CImage::INT_RGB8:
+    {
+        h = ((char*)m_pb)[(m_cx*j + i)*3 + channel];
+        break;
+    }
+    case CImage::UINT_RGB16:
+    {
+        h = ((uint16_t*)m_pb)[(m_cx*j + i)*3 + channel];
+        break;
+    }
+    case CImage::INT_RGB16:
+    {
+        h = ((int16_t*)m_pb)[(m_cx*j + i)*3 + channel];
+        break;
+    }
+    case CImage::REAL_32:
+    {
+        h = ((float*)m_pb)[m_cx*j + i];
+        break;
+    }
+    case CImage::REAL_64:
+    {
+        h = ((double*)m_pb)[m_cx*j + i];
+        break;
+    }
+    }
+
+    return h;
+
+}

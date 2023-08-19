@@ -2274,6 +2274,7 @@ void FEBioExport4::WriteElementDataFields()
 				FEPartData& data = *partData;
 				FSPartSet* partList = data.GetPartSet();
 				FEElemList* elemList = data.BuildElemList();
+				if (elemList == nullptr) throw InvalidItemListBuilder(partData);
 				for (int np = 0; np < partList->size(); ++np)
 				{
 					int pid = (*partList)[np];
