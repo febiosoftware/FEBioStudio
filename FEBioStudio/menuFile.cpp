@@ -1123,7 +1123,7 @@ void CMainWindow::SavePostDoc()
 		}
 		else
 		{
-			QMessageBox::information(this, "PostView2", "Success saving file!");
+			QMessageBox::information(this, "Save", "Success saving file!");
 		}
 	}
 }

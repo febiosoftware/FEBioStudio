@@ -941,7 +941,7 @@ void CPostModelPanel::BuildModelTree()
 		}
 	}
 
-	// This can crash PostView if po no longer exists (e.g. after new file is read)
+	// This can crash if po no longer exists (e.g. after new file is read)
 //		if (po) selectObject(po);
 }
 
