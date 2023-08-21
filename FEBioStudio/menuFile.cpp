@@ -1009,6 +1009,13 @@ void CMainWindow::SavePostDoc()
 		case 0:
 		{
 			bret = doc->SavePostSession(fileName.toStdString());
+
+			if (bret)
+			{
+				ui->addToRecentFiles(fileName);
+				ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+				ui->fileViewer->Update();
+			}
 		}
 		break;
 		case 1:
