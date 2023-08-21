@@ -114,4 +114,6 @@ private:
 
     QGraphicsRectItem* m_rect;
     QGraphicsPixmapItem* m_imagePixmapItem;
+
+    double m_xScale, m_yScale;
 };
