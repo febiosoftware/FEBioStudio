@@ -3726,11 +3726,16 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 	UpdateSelectionLists();
 }
 
-void CGLModel::AddPlot(CGLPlot* pplot)
+void CGLModel::AddPlot(CGLPlot* pplot, bool update)
 {
 	pplot->SetModel(this);
 	m_pPlot.Add(pplot);
-	pplot->Update(CurrentTimeIndex(), 0.f, true);
+	if (update) pplot->Update(CurrentTimeIndex(), 0.f, true);
+}
+
+void CGLModel::RemovePlot(Post::CGLPlot* pplot)
+{
+	m_pPlot.Remove(pplot);
 }
 
 void CGLModel::ClearPlots()
@@ -3747,6 +3752,7 @@ void CGLModel::MovePlotUp(Post::CGLPlot* plot)
 			CGLPlot* prv = m_pPlot[i - 1];
 			m_pPlot.Set(i - 1, plot);
 			m_pPlot.Set(i, prv);
+			return;
 		}
 	}
 }
@@ -3760,6 +3766,7 @@ void CGLModel::MovePlotDown(Post::CGLPlot* plot)
 			CGLPlot* nxt = m_pPlot[i + 1];
 			m_pPlot.Set(i, nxt);
 			m_pPlot.Set(i + 1, plot);
+			return;
 		}
 	}
 }

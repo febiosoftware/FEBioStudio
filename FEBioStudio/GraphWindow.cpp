@@ -62,6 +62,7 @@ SOFTWARE.*/
 #include <PostGL/GLPointProbe.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
+#include <PostGL/GLPlotGroup.h>
 #include <PostLib/FEMeshData_T.h>
 #include <FECore/MathObject.h>
 #include "units.h"
@@ -1579,15 +1580,18 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 				sourceNames << QString::fromStdString(mp->GetName());
 			}
 
-			Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(glm->Plot(i));
-			if (mpg)
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(glm->Plot(i));
+			if (pg)
 			{
-				QString s = QString::fromStdString(mpg->GetName());
-				for (int j = 0; j < mpg->MusclePaths(); ++j)
+				QString s = QString::fromStdString(pg->GetName());
+				for (int j = 0; j < pg->Plots(); ++j)
 				{
-					Post::GLMusclePath* mp = mpg->GetMusclePath(j);
-					QString si = QString("%1.%2").arg(s).arg(QString::fromStdString(mp->GetName()));
-					sourceNames << si;
+					Post::GLMusclePath* pj = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(j));
+					if (pj)
+					{
+						QString si = QString("%1.%2").arg(s).arg(QString::fromStdString(pj->GetName()));
+						sourceNames << si;
+					}
 				}
 			}
 		}
@@ -1785,20 +1789,23 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 					m++;
 				}
 
-				Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(glm->Plot(i));
-				if (mpg)
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(glm->Plot(i));
+				if (pg)
 				{
 					bool found = false;
-					for (int j = 0; j < mpg->MusclePaths(); ++j)
+					for (int j = 0; j < pg->Plots(); ++j)
 					{
-						Post::GLMusclePath* mp = mpg->GetMusclePath(j);
-						if (m == n)
+						Post::GLMusclePath* mpj = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(j));
+						if (mpj)
 						{
-							addMusclePathData(mp);
-							found = true;
-							break;
+							if (m == n)
+							{
+								addMusclePathData(mpj);
+								found = true;
+								break;
+							}
+							m++;
 						}
-						m++;
 					}
 					if (found) break;
 				}
@@ -1915,21 +1922,24 @@ void CModelGraphWindow::setDataSource(int n)
 					m++;
 				}
 
-				Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(glm->Plot(i));
-				if (mpg)
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(glm->Plot(i));
+				if (pg)
 				{
 					bool found = false;
-					for (int j = 0; j < mpg->MusclePaths(); ++j)
+					for (int j = 0; j < pg->Plots(); ++j)
 					{
-						Post::GLMusclePath* mp = mpg->GetMusclePath(j);
-						if (m == n)
+						Post::GLMusclePath* mpj = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(j));
+						if (mpj)
 						{
-							SetYDataSelector(new CMusclePathDataSelector());
-							Update(false, true);
-							found = true;
-							break;
+							if (m == n)
+							{
+								SetYDataSelector(new CMusclePathDataSelector());
+								Update(false, true);
+								found = true;
+								break;
+							}
+							m++;
 						}
-						m++;
 					}
 					if (found) break;
 				}

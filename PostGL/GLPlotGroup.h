@@ -23,80 +23,41 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <GLLib/GLTexture1D.h>
-#include <PostLib/GLObject.h>
-#include <PostLib/DataMap.h>
-#include <PostLib/ColorMap.h>
-#include <FSCore/box.h>
-
-class GLLegendBar;
-
-// used for intersection testing
-// defined in MeshLib/Intersect.h
-struct Ray;
-struct Intersection;
-class FESelection;
+#include "GLPlot.h"
+#include <FSCore/FSObjectList.h>
 
 namespace Post {
 
-class CGLModel;
-class GLPlotGroup;
-
-class CGLPlot : public CGLVisual
-{
-protected:
-	struct SUBELEMENT
-	{
-		float   vf[8];		// vector values
-		float    h[8][8];	// shapefunctions
-	};
-
-public:
-	CGLPlot(CGLModel* po = 0);
-	virtual ~CGLPlot();
-
-	virtual void UpdateTexture();
-
-	void SetRenderOrder(int renderOrder);
-	int GetRenderOrder() const;
-
-	virtual void Reload();
-
-	void SetGroup(GLPlotGroup* pg);
-	GLPlotGroup* GetGroup();
-
-public:
-	virtual bool Intersects(Ray& ray, Intersection& q);
-
-	virtual FESelection* SelectComponent(int index);
-
-	virtual void ClearSelection();
-
-private:
-	int	m_renderOrder;
-	GLPlotGroup* m_pgroup;	// parent group the plot belongs to
-};
-
-class CGLLegendPlot : public CGLPlot
+class GLPlotGroup : public CGLPlot
 {
 public:
-	CGLLegendPlot();
-	virtual ~CGLLegendPlot();
+	GLPlotGroup();
 
-	void SetLegendBar(GLLegendBar* bar);
-	GLLegendBar* GetLegendBar();
+	void Render(CGLContext& rc) override;
 
-	void ChangeName(const std::string& name) override;
+	void Update() override;
+	void Update(int ntime, float dt, bool breset) override;
 
-	bool ShowLegend() const;
-	void ShowLegend(bool b);
+	bool UpdateData(bool bsave = true) override;
 
-	void Activate(bool b) override;
+public:
+	size_t Plots() const { return m_plot.Size(); }
+	CGLPlot* GetPlot(size_t i) { return m_plot[i]; }
+
+	void AddPlot(CGLPlot* plt, bool update = true);
+	void RemovePlot(CGLPlot* plt);
+
+	void MovePlotUp(Post::CGLPlot* plot);
+	void MovePlotDown(Post::CGLPlot* plot);
+
+public:
+	bool Intersects(Ray& ray, Intersection& q) override;
+	FESelection* SelectComponent(int index) override;
+	void ClearSelection() override;
 
 private:
-	GLLegendBar*	m_pbar;
+	FSObjectList<Post::CGLPlot>	m_plot;
 };
 
 }
