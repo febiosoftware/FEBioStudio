@@ -38,6 +38,12 @@ CPlotVariable::CPlotVariable(const string& name, bool bactive, bool bshow, DOMAI
 	m_domainType = type;
 }
 
+CPlotVariable::~CPlotVariable()
+{
+	for (auto it : m_domains) it->DecRef();
+	m_domains.clear();
+}
+
 CPlotVariable::CPlotVariable(const CPlotVariable& v)
 {
 	m_name = v.m_name;
@@ -46,6 +52,7 @@ CPlotVariable::CPlotVariable(const CPlotVariable& v)
 	m_bcustom = v.m_bcustom;
 	m_domainType = v.m_domainType;
 	m_domains = v.m_domains;
+	for (auto it : m_domains) it->IncRef();
 }
 
 void CPlotVariable::operator = (const CPlotVariable& v)
@@ -56,6 +63,7 @@ void CPlotVariable::operator = (const CPlotVariable& v)
 	m_bcustom = v.m_bcustom;
 	m_domainType = v.m_domainType;
 	m_domains = v.m_domains;
+	for (auto it : m_domains) it->IncRef();
 }
 
 int CPlotVariable::Domains() const
@@ -83,6 +91,7 @@ void CPlotVariable::addDomain(FEItemListBuilder* pi)
 
 	// okay, let's add it
 	m_domains.push_back(pi);
+	pi->IncRef();
 }
 
 void CPlotVariable::removeDomain(FEItemListBuilder* pi)
@@ -91,6 +100,7 @@ void CPlotVariable::removeDomain(FEItemListBuilder* pi)
 	{
 		if (m_domains[i] == pi)
 		{
+			pi->DecRef();
 			m_domains.erase(m_domains.begin() + i);
 		}
 	}
@@ -103,6 +113,7 @@ void CPlotVariable::removeDomain(int n)
 {
 	if ((n >= 0) && (n < m_domains.size()))
 	{
+		m_domains[n]->DecRef();
 		m_domains.erase(m_domains.begin() + n);
 	}
 	else
