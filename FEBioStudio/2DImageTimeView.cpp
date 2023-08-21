@@ -128,7 +128,7 @@ void C2DImageTimeView::ModelTreeSelectionChanged(FSObject* obj)
     CImageModel* img = dynamic_cast<CImageModel*>(obj);
 
     // Forces recalc of min and max values on the image
-    if(img)
+    if(img && img->Get3DImage())
     {
         img->Get3DImage()->GetMinValue(true);
         img->Get3DImage()->GetMaxValue(true);
