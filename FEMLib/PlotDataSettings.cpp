@@ -333,6 +333,7 @@ void CPlotDataSettings::Save(OArchive& ar)
 		{
 			CPlotVariable& v = m_plot[i];
 			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_NAME, v.name());
+			ar.WriteChunk(CID_PRJ_OUTPUT_VAR_DOMAINTYPE, v.domainType());
 			int n = (v.isActive()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_ACTIVE , n);
 			int m = (v.isShown() ? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_VISIBLE, m);
 			int c = (v.isCustom()? 1 : 0); ar.WriteChunk(CID_PRJ_OUTPUT_VAR_CUSTOM , c);
@@ -355,13 +356,14 @@ void CPlotDataSettings::Load(IArchive& ar)
 		if (ar.GetChunkID() == CID_PRJ_OUTPUT_VAR)
 		{
 			string tmp;
-			int n = 0, m = 0, c = 0, id, module = -1;
+			int n = 0, m = 0, c = 0, domainType = 0, id, module = -1;
 			std::vector<int> dom;
 			while (IArchive::IO_OK == ar.OpenChunk())
 			{
 				switch (ar.GetChunkID())
 				{
 				case CID_PRJ_OUTPUT_VAR_NAME   : ar.read(tmp); break;
+				case CID_PRJ_OUTPUT_VAR_DOMAINTYPE: ar.read(domainType); break;
 				case CID_PRJ_OUTPUT_VAR_ACTIVE : ar.read(n); break;
 				case CID_PRJ_OUTPUT_VAR_VISIBLE: ar.read(m); break;
 				case CID_PRJ_OUTPUT_VAR_CUSTOM : ar.read(c); break;
@@ -381,6 +383,7 @@ void CPlotDataSettings::Load(IArchive& ar)
 			pv->setActive(n != 0);
 			pv->setShown(m != 0);
 			pv->setCustom(c != 0);
+			pv->setDomainType((DOMAIN_TYPE)domainType);
 
 			for (int i=0; i<dom.size(); ++i)
 			{
