@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include <PostGL/GLPointProbe.h>
 #include <PostGL/GLCurveProbe.h>
 #include <PostGL/GLMusclePath.h>
+#include <PostGL/GLPlotGroup.h>
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
@@ -731,6 +732,25 @@ void CPostModelPanel::Update(bool breset)
 	}
 }
 
+void setPlotIcon(Post::CGLPlot* plot, CModelTreeItem* it)
+{
+	if      (dynamic_cast<Post::CGLPlaneCutPlot    *>(plot)) it->setIcon(0, QIcon(QString(":/icons/cut.png")));
+	else if (dynamic_cast<Post::CGLVectorPlot      *>(plot)) it->setIcon(0, QIcon(QString(":/icons/vectors.png")));
+	else if (dynamic_cast<Post::CGLSlicePlot       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/sliceplot.png")));
+	else if (dynamic_cast<Post::CGLIsoSurfacePlot  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/isosurface.png")));
+	else if (dynamic_cast<Post::CGLStreamLinePlot  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/streamlines.png")));
+	else if (dynamic_cast<Post::CGLParticleFlowPlot*>(plot)) it->setIcon(0, QIcon(QString(":/icons/particle.png")));
+	else if (dynamic_cast<Post::GLVolumeFlowPlot   *>(plot)) it->setIcon(0, QIcon(QString(":/icons/flow.png")));
+	else if (dynamic_cast<Post::GLTensorPlot       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/tensor.png")));
+	else if (dynamic_cast<Post::CGLMirrorPlane     *>(plot)) it->setIcon(0, QIcon(QString(":/icons/mirror.png")));
+	else if (dynamic_cast<Post::GLPointProbe       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/probe.png")));
+	else if (dynamic_cast<Post::GLRuler            *>(plot)) it->setIcon(0, QIcon(QString(":/icons/ruler.png")));
+	else if (dynamic_cast<Post::CGLLinePlot        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/wire.png")));
+	else if (dynamic_cast<Post::CGLPointPlot       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
+	else if (dynamic_cast<Post::GLMusclePath       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
+	else if (dynamic_cast<Post::GLPlotGroup        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/folder.png")));
+}
+
 void CPostModelPanel::BuildModelTree()
 {
 	ui->clear();
@@ -844,30 +864,16 @@ void CPostModelPanel::BuildModelTree()
 			{
 				Post::CGLPlot& plot = *pl[n];
 				CModelTreeItem* pi1 = ui->AddItem(nullptr, &plot, QString::fromStdString(plot.GetName()), "", new CObjectProps(&plot));
+				setPlotIcon(&plot, pi1);
 
-				if      (dynamic_cast<Post::CGLPlaneCutPlot    *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/cut.png")));
-				else if (dynamic_cast<Post::CGLVectorPlot      *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/vectors.png")));
-				else if (dynamic_cast<Post::CGLSlicePlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/sliceplot.png")));
-				else if (dynamic_cast<Post::CGLIsoSurfacePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/isosurface.png")));
-				else if (dynamic_cast<Post::CGLStreamLinePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/streamlines.png")));
-				else if (dynamic_cast<Post::CGLParticleFlowPlot*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/particle.png")));
-				else if (dynamic_cast<Post::GLVolumeFlowPlot   *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/flow.png")));
-				else if (dynamic_cast<Post::GLTensorPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
-				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
-				else if (dynamic_cast<Post::GLPointProbe       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
-				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
-				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
-				else if (dynamic_cast<Post::CGLPointPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
-				else if (dynamic_cast<Post::GLMusclePath       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
-
-				Post::GLMusclePathGroup* mpg = dynamic_cast<Post::GLMusclePathGroup*>(&plot);
-				if (mpg)
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(&plot);
+				if (pg)
 				{
-					for (int i = 0; i < mpg->MusclePaths(); ++i)
+					for (int i = 0; i < pg->Plots(); ++i)
 					{
-						Post::GLMusclePath* mp = mpg->GetMusclePath(i);
-						CModelTreeItem* pi2 = ui->AddItem(pi1, mp, QString::fromStdString(mp->GetName()), "", new CObjectProps(mp));
-						pi2->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
+						Post::CGLPlot* plt = pg->GetPlot(i);
+						CModelTreeItem* pi2 = ui->AddItem(pi1, plt, QString::fromStdString(plt->GetName()), "", new CObjectProps(plt));
+						setPlotIcon(plt, pi2);
 					}
 				}
 			}
@@ -935,7 +941,7 @@ void CPostModelPanel::BuildModelTree()
 		}
 	}
 
-	// This can crash PostView if po no longer exists (e.g. after new file is read)
+	// This can crash if po no longer exists (e.g. after new file is read)
 //		if (po) selectObject(po);
 }
 
@@ -1271,13 +1277,28 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 	if (plot)
 	{
 		QMenu menu(this);
-		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
-		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
+		bool addRenderOptions = true;
+
+		bool addGroups = true;
+		std::vector<Post::GLPlotGroup*> groups;
+		Post::CGLModel* mdl = plot->GetModel();
+		if (mdl)
+		{
+			for (int i = 0; i < mdl->Plots(); ++i)
+			{
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(mdl->Plot(i));
+				if (pg) groups.push_back(pg);
+			}
+		}
 
 		if (dynamic_cast<Post::GLPointProbe*>(po))
 		{
+			Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(po);
+
 			menu.addSeparator();
 			menu.addAction("Export data ...", this, SLOT(OnExportProbeData()));
+			if (probe->GetGroup())
+				menu.addAction("Export group data ...", this, SLOT(OnExportProbeGroupData()));
 		}
 
 		if (dynamic_cast<Post::GLCurveProbe*>(po))
@@ -1294,16 +1315,38 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 
 		if (dynamic_cast<Post::GLMusclePath*>(po))
 		{
+			Post::GLMusclePath* path = dynamic_cast<Post::GLMusclePath*>(po);
 			menu.addSeparator();
 			menu.addAction("Export data ...", this, SLOT(OnExportMusclePathData()));
+			if (path->GetGroup()) menu.addAction("Export group data ...", this, SLOT(OnExportMusclePathGroupData()));
 			menu.addAction("Swap end points", this, SLOT(OnSwapMusclePathEndPoints()));
 		}
 
-		if (dynamic_cast<Post::GLMusclePathGroup*>(po))
+		if (dynamic_cast<Post::GLPlotGroup*>(po))
 		{
-			menu.addSeparator();
-			menu.addAction("Add new path", this, SLOT(OnAddNewMusclePath()));
-			menu.addAction("Export data ...", this, SLOT(OnExportMusclePathGroupData()));
+			addGroups = false;
+		}
+
+		if (addGroups && (groups.empty() == false))
+		{
+			QMenu* subMenu = new QMenu("Move to group");
+			Post::GLPlotGroup* pg = plot->GetGroup();
+			if (pg != nullptr) { QAction* pa = subMenu->addAction("(none)", this, SLOT(OnMoveToGroup())); pa->setData(-1); }
+			for (int i = 0; i < groups.size(); ++i) {
+				if (pg != groups[i]) {
+					QAction* pa = subMenu->addAction(QString::fromStdString(groups[i]->GetName()),this, SLOT(OnMoveToGroup()));
+					pa->setData(i);
+				}
+			}
+			if (menu.isEmpty() == false) menu.addSeparator();
+			menu.addMenu(subMenu);
+		}
+
+		if (addRenderOptions)
+		{
+			if (menu.isEmpty() == false) menu.addSeparator();
+			menu.addAction("Move up", this, SLOT(OnMoveUpInRenderingQueue()));
+			menu.addAction("Move down", this, SLOT(OnMoveDownInRenderingQueue()));
 		}
 
 		menu.exec(ev->globalPos());
@@ -1458,6 +1501,49 @@ void CPostModelPanel::OnShowAllElements()
 	}
 }
 
+void CPostModelPanel::OnMoveToGroup()
+{
+	QAction* pa = qobject_cast<QAction*>(QObject::sender());
+	if (pa == nullptr) return;
+
+	Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(ui->currentObject());
+	if (plot == nullptr) return;
+
+	Post::CGLModel* mdl = plot->GetModel();
+	if (mdl == nullptr) return;
+
+	Post::GLPlotGroup* currentGroup = plot->GetGroup();
+
+	int n = pa->data().toInt();
+	if (n == -1)
+	{
+		if (currentGroup) {
+			currentGroup->RemovePlot(plot);
+			mdl->AddPlot(plot, false);
+		}
+	}
+	else
+	{
+		std::vector<Post::GLPlotGroup*> groups;
+		for (int i = 0; i < mdl->Plots(); ++i)
+		{
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(mdl->Plot(i));
+			if (pg) groups.push_back(pg);
+		}
+
+		if ((n >= 0) && (n < groups.size()))
+		{
+			if (currentGroup) currentGroup->RemovePlot(plot);
+			else mdl->RemovePlot(plot);
+
+			groups[n]->AddPlot(plot, false);
+		}
+	}
+
+	Update(true);
+	selectObject(plot);
+}
+
 void CPostModelPanel::OnMoveUpInRenderingQueue()
 {
 	FSObject* po = ui->currentObject();
@@ -1469,8 +1555,13 @@ void CPostModelPanel::OnMoveUpInRenderingQueue()
 		CPostDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-		Post::CGLModel* glm = pdoc->GetGLModel();
-		glm->MovePlotUp(plt);
+		Post::GLPlotGroup* pg = plt->GetGroup();
+		if (pg == nullptr)
+		{
+			Post::CGLModel* glm = pdoc->GetGLModel();
+			glm->MovePlotUp(plt);
+		}
+		else pg->MovePlotUp(plt);
 
 		Update(true);
 		selectObject(plt);
@@ -1490,8 +1581,13 @@ void CPostModelPanel::OnMoveDownInRenderingQueue()
 		CPostDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-		Post::CGLModel* glm = pdoc->GetGLModel();
-		glm->MovePlotDown(plt);
+		Post::GLPlotGroup* pg = plt->GetGroup(); 
+		if (pg == nullptr)
+		{
+			Post::CGLModel* glm = pdoc->GetGLModel();
+			glm->MovePlotDown(plt);
+		}
+		else pg->MovePlotDown(plt);
 
 		Update(true);
 		selectObject(plt);
@@ -1544,6 +1640,65 @@ void CPostModelPanel::OnExportMCSurface()
 			if (b) QMessageBox::information(this, "Export surface", "File written successfully.");
 			else QMessageBox::critical(this, "Export surface", "Failed exporting surface.");
 		}
+	}
+}
+
+void CPostModelPanel::OnExportProbeGroupData()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(ui->currentObject());
+	if (probe == nullptr) return;
+
+	Post::GLPlotGroup* pg = probe->GetGroup();
+	if (pg == nullptr) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	int nfield = glm->GetColorMap()->GetEvalField();
+	if (nfield <= 0)
+	{
+		QMessageBox::critical(this, "Export", "No datafield selected.");
+		return;
+	}
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "Text file (*.txt)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		const char* szfile = sfile.c_str();
+		FILE* fp = fopen(szfile, "wt");
+		for (int i = 0; i < pg->Plots(); ++i)
+		{
+			Post::GLPointProbe* po = dynamic_cast<Post::GLPointProbe*>(pg->GetPlot(i));
+			if (po)
+			{
+				string s = po->GetName();
+				fprintf(fp, "%s,", s.c_str());
+			}
+		}
+
+		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+		{
+			for (int i = 0; i < pg->Plots(); ++i)
+			{
+				Post::GLPointProbe* po = dynamic_cast<Post::GLPointProbe*>(pg->GetPlot(i));
+				if (po)
+				{
+					double val = 0.0;
+					if (po->TrackModelData())
+						val = po->DataValue(nfield, nstep);
+
+					fprintf(fp, "%lg,", val);
+				}
+			}
+			fprintf(fp, "\n");
+		}
+		fclose(fp);
 	}
 }
 
@@ -1673,20 +1828,13 @@ void CPostModelPanel::OnSwapMusclePathEndPoints()
 	GetMainWindow()->RedrawGL();
 }
 
-void CPostModelPanel::OnAddNewMusclePath()
-{
-	Post::GLMusclePathGroup* po = dynamic_cast<Post::GLMusclePathGroup*>(ui->currentObject());
-	if (po == nullptr) return;
-	Post::GLMusclePath* mp = po->AddMusclePath();
-	Update(true);
-	selectObject(mp);
-	GetMainWindow()->RedrawGL();
-}
-
 void CPostModelPanel::OnExportMusclePathGroupData()
 {
-	Post::GLMusclePathGroup* po = dynamic_cast<Post::GLMusclePathGroup*>(ui->currentObject());
-	if (po == nullptr) return;
+	Post::GLMusclePath* pm = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
+	if (pm == nullptr) return;
+
+	Post::GLPlotGroup* pg = pm->GetGroup();
+	if (pg == nullptr) return;
 
 	CPostDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
@@ -1708,22 +1856,25 @@ void CPostModelPanel::OnExportMusclePathGroupData()
 			QMessageBox::critical(GetMainWindow(), "Export", "Failed to export data!");
 			return;
 		}
-		for (int i = 0; i < po->MusclePaths(); ++i)
+		for (int i = 0; i < pg->Plots(); ++i)
 		{
-			Post::GLMusclePath* pm = po->GetMusclePath(i);
-			fprintf(fp, "%s\n", pm->GetName().c_str());
-			fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
-			for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+			Post::GLMusclePath* pm = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(i));
+			if (pm)
 			{
-				// see double GLMusclePath::DataValue(int field, int step)
-				const int MAX_DATA = 13;
-				for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+				fprintf(fp, "%s\n", pm->GetName().c_str());
+				fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
+				for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
 				{
-					double v = pm->DataValue(ndata, nstep);
-					fprintf(fp, "%lg", v);
-					if (ndata != MAX_DATA) fprintf(fp, ", ");
+					// see double GLMusclePath::DataValue(int field, int step)
+					const int MAX_DATA = 13;
+					for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+					{
+						double v = pm->DataValue(ndata, nstep);
+						fprintf(fp, "%lg", v);
+						if (ndata != MAX_DATA) fprintf(fp, ", ");
+					}
+					fprintf(fp, "\n");
 				}
-				fprintf(fp, "\n");
 			}
 		}
 		fclose(fp);

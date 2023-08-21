@@ -1053,6 +1053,9 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
 			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
+
+			// add file to recent list
+			ui->addToRecentFiles(fileName);
 		}
 		else if (ext.compare("k", Qt::CaseInsensitive) == 0)
 		{

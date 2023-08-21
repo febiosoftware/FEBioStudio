@@ -350,7 +350,9 @@ public:
 
 public:
 	// edits plots
-	void AddPlot(Post::CGLPlot* pplot);
+	void AddPlot(Post::CGLPlot* pplot, bool update = true);
+	void RemovePlot(Post::CGLPlot* pplot);
+
 	GPlotList& GetPlotList() { return m_pPlot; }
 	void ClearPlots();
 
