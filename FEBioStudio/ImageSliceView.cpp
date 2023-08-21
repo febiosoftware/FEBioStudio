@@ -42,8 +42,6 @@ SOFTWARE.*/
 CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     : QWidget(parent), m_wnd(wnd), m_imgModel(nullptr), m_xSlicer(nullptr), m_ySlicer(nullptr), m_zSlicer(nullptr)
 {
-	m_inspector = nullptr;
-
     m_layout = new QGridLayout;
 
     m_xSlice = new CImageSlice(CImageSlice::X);

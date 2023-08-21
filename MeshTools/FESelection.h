@@ -384,6 +384,7 @@ public:
 	FEItemListBuilder* CreateItemList();
 
 	FEElement_* Element(int i);
+    int ElementID(int i);
 
 protected:
 	FSMesh*		m_pMesh;

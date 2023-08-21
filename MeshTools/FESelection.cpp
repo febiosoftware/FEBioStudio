@@ -1246,6 +1246,12 @@ FEElement_* FEElementSelection::Element(int i)
 	return m_pMesh->ElementPtr(m_item[i]);
 }
 
+int FEElementSelection::ElementID(int i)
+{
+    if ((i<0) || (i>=(int) m_item.size())) return -1;
+    return m_item[i];
+}
+
 //////////////////////////////////////////////////////////////////////
 // FEFaceSelection
 //////////////////////////////////////////////////////////////////////
