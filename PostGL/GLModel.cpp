@@ -3790,3 +3790,36 @@ GLEdge::EDGE& CGLModel::DiscreteEdge(int i)
 {
 	return m_edge.Edge(i);
 }
+
+//=================================================================
+GLPlotIterator::GLPlotIterator(CGLModel* mdl)
+{
+	m_n = 0;
+	if (mdl && mdl->Plots())
+	{
+		for (int i = 0; i < mdl->Plots(); ++i)
+		{
+			Post::CGLPlot* plot = mdl->Plot(i);
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+			if (pg)
+			{
+				for (int j = 0; j<pg->Plots(); ++j)
+				{
+					m_plt.push_back(pg->GetPlot(j));
+				}
+			}
+			else m_plt.push_back(plot);
+		}
+	}
+}
+
+void GLPlotIterator::operator ++ ()
+{
+	if ((m_n >= 0) && (m_n <= m_plt.size())) m_n++;
+}
+
+GLPlotIterator::operator CGLPlot* ()
+{
+	if ((m_n >= 0) && (m_n < m_plt.size())) return m_plt[m_n];
+	else return nullptr;
+}

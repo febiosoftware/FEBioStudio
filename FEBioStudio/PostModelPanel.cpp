@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QToolButton>
 #include <QMenu>
+#include <QInputDialog>
 #include "MainWindow.h"
 #include "Document.h"
 #include "PropertyListView.h"
@@ -1297,8 +1298,6 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 
 			menu.addSeparator();
 			menu.addAction("Export data ...", this, SLOT(OnExportProbeData()));
-			if (probe->GetGroup())
-				menu.addAction("Export group data ...", this, SLOT(OnExportProbeGroupData()));
 		}
 
 		if (dynamic_cast<Post::GLCurveProbe*>(po))
@@ -1318,7 +1317,6 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 			Post::GLMusclePath* path = dynamic_cast<Post::GLMusclePath*>(po);
 			menu.addSeparator();
 			menu.addAction("Export data ...", this, SLOT(OnExportMusclePathData()));
-			if (path->GetGroup()) menu.addAction("Export group data ...", this, SLOT(OnExportMusclePathGroupData()));
 			menu.addAction("Swap end points", this, SLOT(OnSwapMusclePathEndPoints()));
 		}
 
@@ -1643,67 +1641,11 @@ void CPostModelPanel::OnExportMCSurface()
 	}
 }
 
-void CPostModelPanel::OnExportProbeGroupData()
+void CPostModelPanel::OnExportProbeData()
 {
-	CPostDocument* pdoc = GetActiveDocument();
-	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
 	Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(ui->currentObject());
 	if (probe == nullptr) return;
 
-	Post::GLPlotGroup* pg = probe->GetGroup();
-	if (pg == nullptr) return;
-
-	Post::CGLModel* glm = pdoc->GetGLModel();
-	if (glm == nullptr) return;
-
-	Post::FEPostModel* fem = glm->GetFSModel();
-
-	int nfield = glm->GetColorMap()->GetEvalField();
-	if (nfield <= 0)
-	{
-		QMessageBox::critical(this, "Export", "No datafield selected.");
-		return;
-	}
-
-	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "Text file (*.txt)");
-	if (filename.isEmpty() == false)
-	{
-		string sfile = filename.toStdString();
-		const char* szfile = sfile.c_str();
-		FILE* fp = fopen(szfile, "wt");
-		for (int i = 0; i < pg->Plots(); ++i)
-		{
-			Post::GLPointProbe* po = dynamic_cast<Post::GLPointProbe*>(pg->GetPlot(i));
-			if (po)
-			{
-				string s = po->GetName();
-				fprintf(fp, "%s,", s.c_str());
-			}
-		}
-
-		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
-		{
-			for (int i = 0; i < pg->Plots(); ++i)
-			{
-				Post::GLPointProbe* po = dynamic_cast<Post::GLPointProbe*>(pg->GetPlot(i));
-				if (po)
-				{
-					double val = 0.0;
-					if (po->TrackModelData())
-						val = po->DataValue(nfield, nstep);
-
-					fprintf(fp, "%lg,", val);
-				}
-			}
-			fprintf(fp, "\n");
-		}
-		fclose(fp);
-	}
-}
-
-void CPostModelPanel::OnExportProbeData()
-{
 	CPostDocument* pdoc = GetActiveDocument();
 	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
@@ -1719,30 +1661,69 @@ void CPostModelPanel::OnExportProbeData()
 		return;
 	}
 
+	bool ok = true;
+	QStringList ops = QStringList() << "selected probe" << "all probes";
+	QString op = QInputDialog::getItem(this, "Export data", "Export option", ops, 0, false, &ok);
+	if (op.isEmpty() || (ok == false)) return;
+	int nop = ops.indexOf(op);
+
 	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "Text file (*.txt)");
 	if (filename.isEmpty() == false)
 	{
 		string sfile = filename.toStdString();
 		const char* szfile = sfile.c_str();
 		FILE* fp = fopen(szfile, "wt");
+		if (nop == 0) // selected probe
+		{
+			string s = probe->GetName();
+			fprintf(fp, "%s", s.c_str());
+		}
+		else if (nop == 1) // all probes
+		{
+			for (Post::GLPlotIterator it(glm); it != nullptr; ++it)
+			{
+				Post::CGLPlot* po = it;
+				Post::GLPointProbe* probe_i = dynamic_cast<Post::GLPointProbe*>(po);
+				if (probe_i)
+				{
+					string s = probe_i->GetName();
+					fprintf(fp, "%s,", s.c_str());
+				}
+			}
+		}
+		fprintf(fp, "\n");
 		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
 		{
-			for (int i = 0; i < glm->Plots(); ++i)
+			if (nop == 0) // selected probe
 			{
-				Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
-				if (probe)
-				{
-					double val = 0.0;
-					if (probe->TrackModelData())
-						val = probe->DataValue(nfield, nstep);
+				double val = 0.0;
+				if (probe->TrackModelData())
+					val = probe->DataValue(nfield, nstep);
 
-					fprintf(fp, "%lg,", val);
+				fprintf(fp, "%lg", val);
+			}
+			else if (nop == 1) // all probes
+			{
+				for (Post::GLPlotIterator it(glm); it != nullptr; ++it)
+				{
+					Post::CGLPlot* po = it;
+					Post::GLPointProbe* probe_i = dynamic_cast<Post::GLPointProbe*>(po);
+					if (probe_i)
+					{
+						double val = 0.0;
+						if (probe_i->TrackModelData())
+							val = probe_i->DataValue(nfield, nstep);
+
+						fprintf(fp, "%lg,", val);
+					}
 				}
 			}
 			fprintf(fp, "\n");
 		}
 		fclose(fp);
 	}
+
+	QMessageBox::information(GetMainWindow(), "Export", "Data export successful!");
 }
 
 void CPostModelPanel::OnImportCurveProbePoints()
@@ -1787,6 +1768,12 @@ void CPostModelPanel::OnExportMusclePathData()
 	Post::FEPostModel* fem = glm->GetFSModel();
 	if (fem == nullptr) return;
 
+	bool ok = true;
+	QStringList ops = QStringList() << "selected path" << "all paths";
+	QString op = QInputDialog::getItem(this, "Export data", "Export option", ops, 0, false, &ok);
+	if (op.isEmpty() || (ok == false)) return;
+	int nop = ops.indexOf(op);
+
 	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "CSV file (*.csv)");
 	if (filename.isEmpty() == false)
 	{
@@ -1798,18 +1785,46 @@ void CPostModelPanel::OnExportMusclePathData()
 			QMessageBox::critical(GetMainWindow(), "Export", "Failed to export data!");
 			return;
 		}
-		fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
-		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+		if (nop == 0) // selected path
 		{
-			// see double GLMusclePath::DataValue(int field, int step)
-			const int MAX_DATA = 13;
-			for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+			fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
+			for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
 			{
-				double v = po->DataValue(ndata, nstep);
-				fprintf(fp, "%lg", v);
-				if (ndata != MAX_DATA) fprintf(fp, ", ");
+				// see double GLMusclePath::DataValue(int field, int step)
+				const int MAX_DATA = 13;
+				for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+				{
+					double v = po->DataValue(ndata, nstep);
+					fprintf(fp, "%lg", v);
+					if (ndata != MAX_DATA) fprintf(fp, ", ");
+				}
+				fprintf(fp, "\n");
 			}
-			fprintf(fp, "\n");
+		}
+		else if (nop == 1) // all paths
+		{
+			for (Post::GLPlotIterator it(glm); it != nullptr; ++it)
+			{
+				Post::CGLPlot* plt = it;
+				Post::GLMusclePath* pm = dynamic_cast<Post::GLMusclePath*>(plt);
+				if (pm)
+				{
+					fprintf(fp, "%s\n", pm->GetName().c_str());
+					fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
+					for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+					{
+						// see double GLMusclePath::DataValue(int field, int step)
+						const int MAX_DATA = 13;
+						for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+						{
+							double v = pm->DataValue(ndata, nstep);
+							fprintf(fp, "%lg", v);
+							if (ndata != MAX_DATA) fprintf(fp, ", ");
+						}
+						fprintf(fp, "\n");
+					}
+				}
+			}
 		}
 		fclose(fp);
 	}
@@ -1826,61 +1841,6 @@ void CPostModelPanel::OnSwapMusclePathEndPoints()
 	Update(true);
 	selectObject(po);
 	GetMainWindow()->RedrawGL();
-}
-
-void CPostModelPanel::OnExportMusclePathGroupData()
-{
-	Post::GLMusclePath* pm = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
-	if (pm == nullptr) return;
-
-	Post::GLPlotGroup* pg = pm->GetGroup();
-	if (pg == nullptr) return;
-
-	CPostDocument* pdoc = GetActiveDocument();
-	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
-
-	Post::CGLModel* glm = pdoc->GetGLModel();
-	if (glm == nullptr) return;
-
-	Post::FEPostModel* fem = glm->GetFSModel();
-	if (fem == nullptr) return;
-
-	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "CSV file (*.csv)");
-	if (filename.isEmpty() == false)
-	{
-		string sfile = filename.toStdString();
-		const char* szfile = sfile.c_str();
-		FILE* fp = fopen(szfile, "wt");
-		if (fp == nullptr)
-		{
-			QMessageBox::critical(GetMainWindow(), "Export", "Failed to export data!");
-			return;
-		}
-		for (int i = 0; i < pg->Plots(); ++i)
-		{
-			Post::GLMusclePath* pm = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(i));
-			if (pm)
-			{
-				fprintf(fp, "%s\n", pm->GetName().c_str());
-				fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
-				for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
-				{
-					// see double GLMusclePath::DataValue(int field, int step)
-					const int MAX_DATA = 13;
-					for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
-					{
-						double v = pm->DataValue(ndata, nstep);
-						fprintf(fp, "%lg", v);
-						if (ndata != MAX_DATA) fprintf(fp, ", ");
-					}
-					fprintf(fp, "\n");
-				}
-			}
-		}
-		fclose(fp);
-	}
-
-	QMessageBox::information(GetMainWindow(), "Export", "Data export successful!");
 }
 
 void CPostModelPanel::OnCurveProbePlotData()
