@@ -68,11 +68,15 @@ public:
     QLineEdit* name;
     QComboBox* imageBox;
     QComboBox* methodBox;
-    QDoubleSpinBox*  thresholdBox;
     QCheckBox* normalize;
     QCheckBox* useFilter;
     CCurveEditWidget* curveEdit;
     QPushButton* create;
+
+    QWidget* projectWidget;
+    QCheckBox* projectSurface;
+    QDoubleSpinBox* thresholdBox;
+    QSpinBox* maxDepth;
 
 public:
     UIImageMapTool(CImageMapTool* tool)
@@ -97,17 +101,36 @@ public:
         formLayout->addRow("Image Model:", imageBox = new QComboBox);
         formLayout->addRow("Method:", methodBox = new QComboBox);
         methodBox->addItems(QStringList() << "Sample Image at Nodes" << "Sample at Element Centroids" << "Average Intensity Over Elements");
-        formLayout->addRow("Surface Node Threshold:", thresholdBox = new QDoubleSpinBox);
+        
+        formLayout->addRow("Project Surface Nodes Inward:", projectSurface = new QCheckBox);
+        projectSurface->setChecked(false);
+        projectVisible = true;
+
+        projectWidget = new QWidget;
+        QFormLayout* projectLayout = new QFormLayout;
+        projectLayout->setContentsMargins(15,0,0,0);
+
+        projectLayout->addRow("Surface Threshold:", thresholdBox = new QDoubleSpinBox);
         thresholdBox->setValue(0);
         thresholdBox->setMaximum(std::numeric_limits<double>::max());
         thresholdBox->setMinimum(std::numeric_limits<double>::min());
-        thresholdVisible = true;
+
+        projectLayout->addRow("Max Search Depth (voxels):", maxDepth = new QSpinBox);
+        maxDepth->setMinimum(1);
+        maxDepth->setValue(5);
+
+        projectWidget->setLayout(projectLayout);
+        projectWidget->setVisible(false);
+
+        formLayout->addRow(projectWidget);
+
         formLayout->addRow("Normalize:", normalize = new QCheckBox);
         normalize->setChecked(true);
         formLayout->addRow("Filter:", useFilter = new QCheckBox);
         useFilter->setChecked(false);
+        
         innerLayout->addLayout(formLayout);
-
+                
         innerLayout->addWidget(curveEdit = new CCurveEditWidget);
         loadCurve.SetExtendMode(PointCurve::EXTRAPOLATE);
         curveEdit->SetLoadCurve(&loadCurve);
@@ -134,11 +157,12 @@ public:
         connect(create, &QPushButton::clicked, tool, &CImageMapTool::OnCreate);
         connect(methodBox, &QComboBox::currentIndexChanged, tool, &CImageMapTool::on_methodBox_currentIndexChanged);
         connect(useFilter, &QCheckBox::stateChanged, tool, &CImageMapTool::on_useFilter_stateChanged);
+        connect(projectSurface, &QCheckBox::stateChanged, tool, &CImageMapTool::on_projectSurface_stateChanged);
     }
 
 public:
     LoadCurve loadCurve;
-    bool thresholdVisible;
+    bool projectVisible;
 };
 
 CImageMapTool::CImageMapTool(CMainWindow* wnd)
@@ -306,6 +330,8 @@ void CImageMapTool::OnCreate()
     {
     case SAMPLE_NODES:
     {
+        bool projectSurface = ui->projectSurface->isChecked();
+
         double threshold = ui->thresholdBox->value();
 
         double min = std::numeric_limits<double>::max();
@@ -313,70 +339,73 @@ void CImageMapTool::OnCreate()
 
         // find all nodal normals
         unordered_map<int, vec3f> normals;
-        for(int i = 0; i < mesh->Faces(); i++)
+        if(projectSurface)
         {
-            FSFace& currentFace = mesh->Face(i);
-
-            // If we're doing the whole object, don't include the inside surfaces.
-            if(wholeObject && !currentFace.IsExterior()) continue;
-
-            // Find which part(s) the face belongs to, and check if they were
-            // selected by the user
-            int elID1 = currentFace.m_elem[0].eid;
-            int elID2 = currentFace.m_elem[1].eid;
-
-            int partID1 = -1;
-            int partID2 = -1;
-
-            if(elID1 != -1)
+            for(int i = 0; i < mesh->Faces(); i++)
             {
-                partID1 = mesh->Element(elID1).m_gid;
-            }
+                FSFace& currentFace = mesh->Face(i);
 
-            if(elID2 != -1)
-            {
-                partID2 = mesh->Element(elID2).m_gid;
-            }
+                // If we're doing the whole object, don't include the inside surfaces.
+                if(wholeObject && !currentFace.IsExterior()) continue;
 
-            bool inPart1 = false;
-            bool inPart2 = false;
+                // Find which part(s) the face belongs to, and check if they were
+                // selected by the user
+                int elID1 = currentFace.m_elem[0].eid;
+                int elID2 = currentFace.m_elem[1].eid;
 
-            if(partID1 != -1)
-            {
-                inPart1 = partIncluded[partID1];
-            }
+                int partID1 = -1;
+                int partID2 = -1;
 
-            if(partID2 != -1)
-            {
-                inPart2 = partIncluded[partID2];
-            }
-
-            // If it belongs to 2 parts, and both parts have been selected, 
-            // treat it as an interior surface.
-            if(inPart1 && inPart2) continue;
-
-            // The normal will point toward the first of the two parts.
-            // We want the normal to point inward.
-            int negate = inPart1 ? -1 : 1;
-
-            for(int j = 0; j < currentFace.Nodes(); j++)
-            {
-                int nodeID = currentFace.n[j];
-
-                try
+                if(elID1 != -1)
                 {
-                    normals.at(nodeID) += currentFace.m_nn[j]*negate;
+                    partID1 = mesh->Element(elID1).m_gid;
                 }
-                catch(...)
+
+                if(elID2 != -1)
                 {
-                    normals[nodeID] = currentFace.m_nn[j]*negate;
+                    partID2 = mesh->Element(elID2).m_gid;
+                }
+
+                bool inPart1 = false;
+                bool inPart2 = false;
+
+                if(partID1 != -1)
+                {
+                    inPart1 = partIncluded[partID1];
+                }
+
+                if(partID2 != -1)
+                {
+                    inPart2 = partIncluded[partID2];
+                }
+
+                // If it belongs to 2 parts, and both parts have been selected, 
+                // treat it as an interior surface.
+                if(inPart1 && inPart2) continue;
+
+                // The normal will point toward the first of the two parts.
+                // We want the normal to point inward.
+                int negate = inPart1 ? -1 : 1;
+
+                for(int j = 0; j < currentFace.Nodes(); j++)
+                {
+                    int nodeID = currentFace.n[j];
+
+                    try
+                    {
+                        normals.at(nodeID) += currentFace.m_nn[j]*negate;
+                    }
+                    catch(...)
+                    {
+                        normals[nodeID] = currentFace.m_nn[j]*negate;
+                    }
                 }
             }
-        }
 
-        for(auto& normal : normals)
-        {
-            normal.second = normal.second.Normalize();
+            for(auto& normal : normals)
+            {
+                normal.second = normal.second.Normalize();
+            }
         }
 
         int numNodes = mesh->Nodes();
@@ -390,7 +419,7 @@ void CImageMapTool::OnCreate()
             double val = imageModel->ValueAtGlobalPos(pos);
 
             // see if the node belongs to one of the external faces
-            if(normals.count(i) > 0)
+            if(projectSurface && normals.count(i) > 0)
             {
                 int voxelIndexX = (pos.x - origin.x)/spacing.x;
                 int voxelIndexY = (pos.y - origin.y)/spacing.y;
@@ -410,8 +439,9 @@ void CImageMapTool::OnCreate()
                     int zSign = normal.z > 0 ? 1 : -1;
 
                     int iter = 0;
+                    int maxDepth = ui->maxDepth->value();
                     vec3d currentPos = pos;
-                    while(iter < 5)
+                    while(iter < maxDepth)
                     {
                         vec3d voxelCenter(origin.x + voxelIndexX*spacing.x + spacing.x/2,
                         origin.y + voxelIndexY*spacing.y + spacing.y/2,
@@ -761,22 +791,27 @@ void CImageMapTool::on_methodBox_currentIndexChanged(int index)
 {
     if(index == 0)
     {
-        if(!ui->thresholdVisible)
+        if(!ui->projectVisible)
         {
-            ui->formLayout->insertRow(3, "Surface Node Threshold", ui->thresholdBox = new QDoubleSpinBox);
-            ui->thresholdBox->setValue(0);
-            ui->thresholdBox->setMaximum(std::numeric_limits<double>::max());
-            ui->thresholdBox->setMinimum(std::numeric_limits<double>::min());
-            ui->thresholdVisible = true;
+            ui->formLayout->insertRow(3, "Project Surface Nodes Inward:", ui->projectSurface = new QCheckBox);
+            ui->projectSurface->setChecked(false);
+            connect(ui->projectSurface, &QCheckBox::stateChanged, this, &CImageMapTool::on_projectSurface_stateChanged);
+            ui->projectVisible = true;
         }
     }
     else
     {
-        if(ui->thresholdVisible)
+        if(ui->projectVisible)
         {
             ui->formLayout->removeRow(3);
-            ui->thresholdVisible = false;
+            ui->projectWidget->setHidden(true);
+            ui->projectVisible = false;
         }
         
     }
+}
+
+void CImageMapTool::on_projectSurface_stateChanged(int state)
+{
+    ui->projectWidget->setHidden(state == 0);
 }
