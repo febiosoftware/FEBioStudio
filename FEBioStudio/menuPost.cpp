@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPlotGroup.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
@@ -340,7 +341,11 @@ void CMainWindow::on_actionAddProbe_triggered()
 	// create the probe and set its initial position
 	Post::GLPointProbe* probe = new Post::GLPointProbe();
 	probe->SetInitialPosition(c);
-	glm->AddPlot(probe);
+
+	// if the current selection is a plot-group, we'll add it there
+	Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(ui->postPanel->GetSelectedObject());
+	if (pg) pg->AddPlot(probe);
+	else glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);
 	RedrawGL();
@@ -387,18 +392,19 @@ void CMainWindow::on_actionMusclePath_triggered()
 		return;
 	}
 
-	// if the current selection is a muscle-path-group, we'll add it there
-	Post::GLMusclePath* musclePath = nullptr;
-	Post::GLMusclePathGroup* pmg = dynamic_cast<Post::GLMusclePathGroup*>(ui->postPanel->GetSelectedObject());
-	if (pmg)
+	// create new muscle path
+	Post::GLMusclePath* musclePath = new Post::GLMusclePath();
+
+	// if the current selection is a plot-group, we'll add it there
+	Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(ui->postPanel->GetSelectedObject());
+	if (pg)
 	{
-		// add it to the path
-		musclePath = pmg->AddMusclePath();
+		// add it to the group
+		pg->AddPlot(musclePath);
 	}
 	else
 	{
 		// just add it to the model
-		musclePath = new Post::GLMusclePath();
 		glm->AddPlot(musclePath);
 	}
 
@@ -406,7 +412,7 @@ void CMainWindow::on_actionMusclePath_triggered()
 	RedrawGL();
 }
 
-void CMainWindow::on_actionMusclePathGroup_triggered()
+void CMainWindow::on_actionPlotGroup_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
 	if (glm == nullptr)
@@ -415,7 +421,7 @@ void CMainWindow::on_actionMusclePathGroup_triggered()
 		return;
 	}
 
-	Post::GLMusclePathGroup* mpg = new Post::GLMusclePathGroup();
+	Post::GLPlotGroup* mpg = new Post::GLPlotGroup();
 	glm->AddPlot(mpg);
 
 	UpdatePostPanel(true, mpg);

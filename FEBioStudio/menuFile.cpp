@@ -1009,6 +1009,13 @@ void CMainWindow::SavePostDoc()
 		case 0:
 		{
 			bret = doc->SavePostSession(fileName.toStdString());
+
+			if (bret)
+			{
+				ui->addToRecentFiles(fileName);
+				ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+				ui->fileViewer->Update();
+			}
 		}
 		break;
 		case 1:
@@ -1123,7 +1130,7 @@ void CMainWindow::SavePostDoc()
 		}
 		else
 		{
-			QMessageBox::information(this, "PostView2", "Success saving file!");
+			QMessageBox::information(this, "Save", "Success saving file!");
 		}
 	}
 }

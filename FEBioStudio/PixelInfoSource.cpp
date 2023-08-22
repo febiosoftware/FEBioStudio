@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "ImageSlice.h"
 #include <ImageLib/Image.h>
 
-CPixelInfoSource::CPixelInfoSource()
+CPixelInfoSource::CPixelInfoSource() : m_inspector(nullptr)
 {
 
 }

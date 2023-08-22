@@ -138,7 +138,7 @@ bool CPaletteManager::Save(const string& file, const CPalette& pal)
 	XMLWriter xml;
 	if (xml.open(file.c_str()) == false) return false;
 
-	XMLElement el("PostViewResource");
+	XMLElement el("FBSResource");
 	el.add_attribute("version", "1.0");
 	xml.add_branch(el);
 	{
@@ -170,7 +170,7 @@ bool CPaletteManager::Load(const string& file)
 
 	// find the root tag
 	XMLTag tag;
-	if (xml.FindTag("PostViewResource", tag) == false) return false; 
+	if (xml.FindTag("FBSResource", tag) == false) return false; 
 
 	char szbuf[256] = { 0 };
 	++tag;

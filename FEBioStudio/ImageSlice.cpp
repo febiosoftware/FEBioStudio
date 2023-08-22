@@ -54,7 +54,7 @@ void CustomGraphicsView::mouseMoveEvent(QMouseEvent* event)
 }
 
 CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget)
-    : m_imgModel(nullptr)
+    : m_imgModel(nullptr), m_xScale(1), m_yScale(1)
 {
     m_sliceDir = sliceDir;
 
@@ -278,25 +278,24 @@ void CImageSlice::Update()
         m_displaySlice.Width(), QImage::Format::Format_Grayscale8);
 
     BOX box = m_imgModel->GetBoundingBox();
-    double xScale, yScale;
 
     switch (m_sliceDir)
     {
     case X:
-        xScale = box.Height()/img->Height();
-        yScale = box.Depth()/img->Depth();
+        m_xScale = box.Height()/img->Height();
+        m_yScale = box.Depth()/img->Depth();
         
         m_scene->setSceneRect(0, 0, box.Height(), box.Depth());
         break;
     case Y:
-        xScale = box.Width()/img->Width();
-        yScale = box.Depth()/img->Depth();
+        m_xScale = box.Width()/img->Width();
+        m_yScale = box.Depth()/img->Depth();
         
         m_scene->setSceneRect(0, 0, box.Width(), box.Depth());
         break;
     case Z:
-        xScale = box.Width()/img->Width();
-        yScale = box.Height()/img->Height();
+        m_xScale = box.Width()/img->Width();
+        m_yScale = box.Height()/img->Height();
 
         m_scene->setSceneRect(0, 0, box.Width(), box.Height());
         break;
@@ -308,7 +307,7 @@ void CImageSlice::Update()
     QPixmap pixmap = QPixmap::fromImage(qImg).transformed(QTransform().scale(1,-1));
     
     m_imagePixmapItem->setPixmap(pixmap);
-    m_imagePixmapItem->setTransform(QTransform().scale(xScale, yScale));
+    m_imagePixmapItem->setTransform(QTransform().scale(m_xScale, m_yScale));
     m_imagePixmapItem->setVisible(true);
 
     m_view->fitInView(m_imagePixmapItem, Qt::AspectRatioMode::KeepAspectRatio);
@@ -358,7 +357,7 @@ void CImageSlice::on_view_focusChanged(QPoint point)
 {
     m_rect->setRect(point.x() - 3, point.y() - 3, 7, 7);
 
-    emit focusChanged(m_sliceDir, point);
+    emit focusChanged(m_sliceDir, QPoint(point.x()/m_xScale, point.y()/m_yScale));
 }
 
 void CImageSlice::wheelEvent(QWheelEvent* event)

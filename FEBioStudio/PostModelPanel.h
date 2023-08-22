@@ -71,6 +71,7 @@ private slots:
 	void OnHideElements();
 	void OnShowAllElements();
 	void OnMoveUpInRenderingQueue();
+	void OnMoveToGroup();
 	void OnMoveDownInRenderingQueue();
 	void OnExportImage();
 	void OnExportMCSurface();
@@ -79,9 +80,7 @@ private slots:
 	void OnCurveProbePlotData();
 	void OnCurveProbePlotTimeAveragedData();
 	void OnExportMusclePathData();
-	void OnExportMusclePathGroupData();
 	void OnSwapMusclePathEndPoints();
-	void OnAddNewMusclePath();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 

@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "GLColorMap.h"
 #include <PostLib/FEPostModel.h>
 #include <GLLib/GDecoration.h>
-#include "GLPlot.h"
+#include "GLPlotGroup.h"
 #include <FSCore/FSObjectList.h>
 #include <GLLib/GLMeshRender.h>
 #include <MeshLib/Intersect.h>
@@ -350,7 +350,9 @@ public:
 
 public:
 	// edits plots
-	void AddPlot(Post::CGLPlot* pplot);
+	void AddPlot(Post::CGLPlot* pplot, bool update = true);
+	void RemovePlot(Post::CGLPlot* pplot);
+
 	GPlotList& GetPlotList() { return m_pPlot; }
 	void ClearPlots();
 
@@ -416,4 +418,21 @@ protected:
 	int		m_selectMode;		//!< current selection mode (node, edge, face, elem)
 	int		m_selectStyle;		//!< selection style (box, circle, rect)
 };
+
+// This class provides a convenient way to loop over all the plots in a model, traversing
+// plot-groups recursively. 
+class GLPlotIterator
+{
+public:
+	GLPlotIterator(CGLModel* mdl);
+
+	void operator ++ ();
+
+	operator CGLPlot* ();
+
+private:
+	int	m_n;	// index in plot list
+	std::vector<Post::CGLPlot*>	m_plt;
+};
+
 }

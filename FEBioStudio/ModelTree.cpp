@@ -555,30 +555,6 @@ private:
 	Post::CGLModel*	m_fem;
 };
 
-//-----------------------------------------------------------------------------
-QIcon createIcon(GLColor c)
-{
-	QColor c2 = QColor::fromRgb(c.r, c.g, c.b);
-	QColor c1 = c2.lighter();
-	QColor c3 = c2.darker();
-
-	QRadialGradient g(QPointF(8, 8), 12);
-	g.setColorAt(0.0, c1);
-	g.setColorAt(0.2, c2);
-	g.setColorAt(1.0, c3);
-
-	QPixmap pix(24, 24);
-	pix.fill(Qt::transparent);
-	QPainter p(&pix);
-	p.setRenderHint(QPainter::Antialiasing);
-	p.setPen(Qt::PenStyle::NoPen);
-	p.setBrush(QBrush(g));
-	p.drawEllipse(2, 2, 20, 20);
-	p.end();
-
-	return QIcon(pix);
-}
-
 //=============================================================================
 
 CModelTree::CModelTree(CModelViewer* view, QWidget* parent) : QTreeWidget(parent), m_view(view), m_nfilter(0)
@@ -740,7 +716,9 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 
 	if (val && (val->IsValid() == false))
 	{
-		t2->setIcon(0, QIcon(":/icons/warning.png"));
+		if (szicon) t2->setIcon(0, CIconProvider::GetIcon(szicon, Emblem::Caution));
+		else t2->setIcon(0, QIcon(":/icons/warning.png"));
+
 		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 		if (parent) parent->setExpanded(true);
 		if (m_view) m_view->IncWarningCount();
@@ -835,7 +813,18 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 	{
 		if (val->IsValid() == false)
 		{
-			item->setIcon(0, QIcon(":/icons/warning.png"));
+			if (dynamic_cast<GMaterial*>(po))
+			{
+				GMaterial* m = dynamic_cast<GMaterial*>(po);
+				QIcon icon = CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24);
+				item->setIcon(0, CIconProvider::CreateIcon(icon, Emblem::Caution));
+			}
+			else
+			{
+				if (m_data[n].szicon) item->setIcon(0, CIconProvider::GetIcon(m_data[n].szicon, Emblem::Caution));
+				else item->setIcon(0, QIcon(":/icons/warning.png"));
+			}
+
 			item->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 			return;
 		}
@@ -858,7 +847,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 		if (dynamic_cast<GMaterial*>(po))
 		{
 			GMaterial* m = dynamic_cast<GMaterial*>(po);
-			item->setIcon(0, createIcon(m->Diffuse()));
+			item->setIcon(0, CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24));
 		}
 		else if (m_data[n].szicon)
 		{

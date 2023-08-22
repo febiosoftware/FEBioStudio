@@ -112,7 +112,7 @@ void CImageSliceView::ModelTreeSelectionChanged(FSObject* obj)
     m_imgModel = dynamic_cast<CImageModel*>(obj);
 
     // Forces recalc of min and max values on the image
-    if(m_imgModel)
+    if(m_imgModel && m_imgModel->Get3DImage())
     {
         m_imgModel->Get3DImage()->GetMinValue(true);
         m_imgModel->Get3DImage()->GetMaxValue(true);

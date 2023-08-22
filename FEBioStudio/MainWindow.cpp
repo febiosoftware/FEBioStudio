@@ -1053,6 +1053,9 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
 			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
+
+			// add file to recent list
+			ui->addToRecentFiles(fileName);
 		}
 		else if (ext.compare("k", Qt::CaseInsensitive) == 0)
 		{
@@ -1562,6 +1565,8 @@ void CMainWindow::ReportSelection()
 			if (es->Size() == 1)
 			{
 				FEElement_* el = es->Element(0);
+                AddLogEntry("  ID = " + QString::number(es->ElementID(0)) + "\n");
+
 				switch (el->Type())
 				{
 				case FE_HEX8: AddLogEntry("  Type = HEX8"); break;
@@ -1608,6 +1613,25 @@ void CMainWindow::ReportSelection()
 					if (i < n - 1) AddLogEntry(", ");
 					else AddLogEntry("\n");
 				}
+
+                if(ui->meshWnd && ui->meshWnd->isVisible())
+                {
+
+
+                    auto data = es->GetMesh()->GetMeshData();
+
+                    int n = el->Nodes();
+                    AddLogEntry("  nodal values: ");
+                    for (int i = 0; i < n; ++i)
+                    {
+                        AddLogEntry(QString::number(data.GetElementValue(es->ElementID(0), i)));
+                        if (i < n - 1) AddLogEntry(", ");
+                        else AddLogEntry("\n");
+                    }
+
+                    AddLogEntry("  avg value: ");
+                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementID(0))) + "\n");
+                }
 			}
 		}
 
