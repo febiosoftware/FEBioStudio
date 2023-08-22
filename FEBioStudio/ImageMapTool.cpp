@@ -130,7 +130,7 @@ public:
         useFilter->setChecked(false);
         
         innerLayout->addLayout(formLayout);
-                
+
         innerLayout->addWidget(curveEdit = new CCurveEditWidget);
         loadCurve.SetExtendMode(PointCurve::EXTRAPOLATE);
         curveEdit->SetLoadCurve(&loadCurve);
@@ -511,7 +511,8 @@ void CImageMapTool::OnCreate()
 
                         if(voxelIndexX >= imageModel->Get3DImage()->Width() || 
                             voxelIndexY >= imageModel->Get3DImage()->Height() ||
-                            voxelIndexZ >= imageModel->Get3DImage()->Depth())
+                            voxelIndexZ >= imageModel->Get3DImage()->Depth() ||
+                            voxelIndexX < 0 || voxelIndexY < 0 || voxelIndexZ < 0)
                         {
                             break;
                         }
