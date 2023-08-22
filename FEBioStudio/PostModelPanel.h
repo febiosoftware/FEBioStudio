@@ -76,12 +76,10 @@ private slots:
 	void OnExportImage();
 	void OnExportMCSurface();
 	void OnExportProbeData();
-	void OnExportProbeGroupData();
 	void OnImportCurveProbePoints();
 	void OnCurveProbePlotData();
 	void OnCurveProbePlotTimeAveragedData();
 	void OnExportMusclePathData();
-	void OnExportMusclePathGroupData();
 	void OnSwapMusclePathEndPoints();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
