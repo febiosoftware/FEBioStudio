@@ -1578,12 +1578,12 @@ void GModel::RemoveNamedSelections()
 
 //-----------------------------------------------------------------------------
 
-template <class T> void clearList(FSObjectList<T>& l)
+template <class T> void clearList(FSObjectList<T>& l, std::function<bool(T*)> f)
 {
 	if (l.IsEmpty()) return;
 	for (int i=0; i<l.Size();)
 	{
-		if (l[i]->size() == 0)
+		if (f(l[i]))
 		{
 			l.Remove(l[i]);
 		}
@@ -1593,15 +1593,30 @@ template <class T> void clearList(FSObjectList<T>& l)
 
 void GModel::RemoveEmptySelections()
 {
-	clearList(imp->m_GPart);
-	clearList(imp->m_GFace);
-	clearList(imp->m_GEdge);
-	clearList(imp->m_GNode);
+	clearList<GPartList>(imp->m_GPart, [](GPartList* pg) { return (pg->size() == 0);} );
+	clearList<GFaceList>(imp->m_GFace, [](GFaceList* pg) { return (pg->size() == 0);} );
+	clearList<GEdgeList>(imp->m_GEdge, [](GEdgeList* pg) { return (pg->size() == 0);} );
+	clearList<GNodeList>(imp->m_GNode, [](GNodeList* pg) { return (pg->size() == 0);} );
 
 	for (int i=0; i<Objects(); ++i)
 	{
 		GObject* po = Object(i);
 		po->RemoveEmptyFEGroups();
+	}
+}
+
+//-----------------------------------------------------------------------------
+void GModel::RemoveUnusedSelections()
+{
+	clearList<GPartList>(imp->m_GPart, [](GPartList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearList<GFaceList>(imp->m_GFace, [](GFaceList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearList<GEdgeList>(imp->m_GEdge, [](GEdgeList* pg) { return (pg->GetReferenceCount() == 0); });
+	clearList<GNodeList>(imp->m_GNode, [](GNodeList* pg) { return (pg->GetReferenceCount() == 0); });
+
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		po->RemoveUnusedFEGroups();
 	}
 }
 

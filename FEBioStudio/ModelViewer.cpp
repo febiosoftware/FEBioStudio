@@ -1540,6 +1540,14 @@ void CModelViewer::OnRemoveEmptySelections()
 	Update();
 }
 
+void CModelViewer::OnRemoveUnusedSelections()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	GModel& mdl = pdoc->GetFSModel()->GetModel();
+	mdl.RemoveUnusedSelections();
+	Update();
+}
+
 void CModelViewer::OnRemoveAllSelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1703,6 +1711,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_NAMED_SELECTION:
 		menu.addAction("Remove empty", this, SLOT(OnRemoveEmptySelections()));
+		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedSelections()));
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
 		break;
 	case MT_MESH_ADAPTOR_LIST:

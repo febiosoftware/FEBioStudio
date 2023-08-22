@@ -157,6 +157,7 @@ public slots:
 	void OnEditOutput();
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();
+	void OnRemoveUnusedSelections();
 	void OnRemoveAllSelections();
 	void OnDeleteAllMeshAdaptors();
 	void OnChangeMaterial();
