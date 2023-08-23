@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEFixSurfaceMesh.h"
 #include "FEFillHole.h"
+#include "FEFillQuadHole.h"
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FENodeFaceList.h>
@@ -321,14 +322,32 @@ bool FEFixSurfaceMesh::InvertMesh(FSSurfaceMesh* pm)
 //-----------------------------------------------------------------------------
 bool FEFixSurfaceMesh::FillAllHoles(FSSurfaceMesh* pm)
 {
-	// fill all the holes
-	FEFillHole fill;
-	m_mod = &fill;
-	fill.FillAllHoles(pm);
+	if (pm->IsType(FE_FACE_TRI3))
+	{
+		// fill all the holes
+		FEFillHole fill;
+		m_mod = &fill;
+		fill.FillAllHoles(pm);
 
-	// copy the error string
-	string err = fill.GetErrorString();
-	if (err.empty() == false) SetError(err.c_str());
+		// copy the error string
+		string err = fill.GetErrorString();
+		if (err.empty() == false) SetError(err.c_str());
+	}
+	else if (pm->IsType(FE_FACE_QUAD4))
+	{
+		FEFillQuadHole fill;
+		m_mod = &fill;
+		fill.FillAllHoles(pm);
+
+		// copy the error string
+		string err = fill.GetErrorString();
+		if (err.empty() == false) SetError(err.c_str());
+	}
+	else
+	{
+		SetError("Can only fill holes of tri and quad meshes.");
+		return false;
+	}
 
 	// rebuild the mesh
 	pm->RebuildMesh();

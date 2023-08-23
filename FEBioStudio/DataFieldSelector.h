@@ -176,10 +176,10 @@ private:
 class CPlotGlobalDataSelector : public CDataSelector
 {
 public:
-	CPlotGlobalDataSelector(Post::Data_Type dataType);
+	CPlotGlobalDataSelector(Post::FEDataFieldPtr pdf);
 
 	void BuildMenu(QMenu* menu) override;
 
 private:
-	Post::Data_Type	m_dataType;
+	Post::FEDataFieldPtr	m_pdf;
 };

@@ -351,15 +351,15 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		case MAT3FD : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3fd > >(&fem, EXPORT_DATA); break;
 		case TENS4FS: pdf = new FEDataField_T<Post::FEGlobalData_T<tens4fs> >(&fem, EXPORT_DATA); break;
 		case MAT3F  : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3f  > >(&fem, EXPORT_DATA); break;
-/*		case ARRAY:
+		case ARRAY:
 		{
-			FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_NODE, DATA_ITEM, EXPORT_DATA);
+			FEArrayDataField* data = new FEArrayDataField(&fem, Post::CLASS_OBJECT, Post::DATA_REGION, Post::EXPORT_DATA);
 			data->SetArraySize(it.arraySize);
 			data->SetArrayNames(it.arrayNames);
 			pdf = data;
 		}
 		break;
-*/		default:
+		default:
 			return errf("Error while reading dictionary.");
 		}
 		if (pdf == nullptr) return false;
@@ -1865,6 +1865,14 @@ bool XpltReader3::ReadGlobalData(FEPostModel& fem, FEState* pstate)
 							m_ar.read(a);
 							Post::FEGlobalData_T<mat3f>& dv = dynamic_cast<Post::FEGlobalData_T<mat3f>&>(pstate->m_Data[nfield]);
 							dv.setValue(a);
+						}
+						else if (it.ntype == ARRAY)
+						{
+							Post::FEGlobalArrayData& dv = dynamic_cast<Post::FEGlobalArrayData&>(pstate->m_Data[nfield]);
+							int n = dv.components();
+							vector<float> a(n);
+							m_ar.read(a);
+							dv.setData(a);
 						}
 						else
 						{
