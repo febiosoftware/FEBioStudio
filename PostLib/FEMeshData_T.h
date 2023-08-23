@@ -65,6 +65,28 @@ private:
 	T	m_data;
 };
 
+//-----------------------------------------------------------------------------
+class FEGlobalArrayData : public FEGlobalData
+{
+public:
+	FEGlobalArrayData(FEState* state, int nsize) : FEGlobalData(state, Post::DATA_ARRAY)
+	{
+		m_data.resize(nsize, 0.f);
+	}
+
+	float eval(int n) { return m_data[n]; }
+	void setData(std::vector<float>& data)
+	{
+		assert(data.size() == m_data.size());
+		m_data = data;
+	}
+
+	int components() const { return (int)m_data.size(); }
+
+protected:
+	std::vector<float>	m_data;
+};
+
 //=============================================================================
 // 
 //    N O D E   D A T A

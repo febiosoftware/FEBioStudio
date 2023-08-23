@@ -1850,7 +1850,7 @@ void CModelGraphWindow::setDataSource(int n)
 			{
 				if (n == 0)
 				{
-					SetYDataSelector(new CPlotGlobalDataSelector((*pdf)->Type()));
+					SetYDataSelector(new CPlotGlobalDataSelector(pdf));
 					n = -1;
 					break;
 				}
@@ -2030,6 +2030,12 @@ void CModelGraphWindow::addGlobalData(Post::ModelDataField* pdf, int n)
 		{
 			Post::FEGlobalData_T<float>& df = dynamic_cast<Post::FEGlobalData_T<float>&>(data);
 			float val = df.value();
+			ydata[j] = val;
+		}
+		else if (dynamic_cast<Post::FEGlobalArrayData*>(&data))
+		{
+			Post::FEGlobalArrayData& dv = dynamic_cast<Post::FEGlobalArrayData&>(data);
+			float val = dv.eval(m_dataY - 1);
 			ydata[j] = val;
 		}
 	}

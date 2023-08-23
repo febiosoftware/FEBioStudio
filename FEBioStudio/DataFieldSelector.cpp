@@ -243,16 +243,47 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 	}
 }
 
-CPlotGlobalDataSelector::CPlotGlobalDataSelector(Post::Data_Type dataType) : m_dataType(dataType)
+CPlotGlobalDataSelector::CPlotGlobalDataSelector(Post::FEDataFieldPtr pdf) : m_pdf(pdf)
 {
 
 }
 
 void CPlotGlobalDataSelector::BuildMenu(QMenu* menu)
 {
-	assert(m_dataType == Data_Type::DATA_FLOAT);
-	QAction* pa = menu->addAction("value");
-	pa->setData(1);
+	switch ((*m_pdf)->Type())
+	{
+	case Post::DATA_FLOAT: {
+		QAction* pa = menu->addAction("value");
+		pa->setData(1);
+	}
+		break;
+	case Post::DATA_VEC3F:
+		break;
+	case Post::DATA_MAT3FS:
+		break;
+	case Post::DATA_MAT3FD:
+		break;
+	case Post::DATA_TENS4FS:
+		break;
+	case Post::DATA_MAT3D:
+		break;
+	case Post::DATA_MAT3F:
+		break;
+	case Post::DATA_ARRAY:
+		{
+			std::vector<std::string> names = (*m_pdf)->GetArrayNames();
+			for (int i = 0; i < names.size(); ++i)
+			{
+				QAction* pa = menu->addAction(QString::fromStdString(names[i]));
+				pa->setData(i + 1);
+			}
+		}
+		break;
+	case Post::DATA_ARRAY_VEC3F:
+		break;
+	default:
+		break;
+	}
 }
 
 CDataSelectorButton::CDataSelectorButton(QWidget* parent) : QPushButton(parent)
