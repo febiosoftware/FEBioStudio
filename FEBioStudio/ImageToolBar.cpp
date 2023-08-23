@@ -60,7 +60,7 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
 
     addSeparator();
 
-    m_showPixelInspector = new QAction(CIconProvider::GetIcon("search"), "Pixel Inspector");
+    m_showPixelInspector = new QAction(CIconProvider::GetIcon("pixelInspector"), "Pixel Inspector");
     addAction(m_showPixelInspector);
     connect(m_showPixelInspector, &QAction::triggered, this, &CImageToolBar::on_showPixelInspector_triggered);
 }
