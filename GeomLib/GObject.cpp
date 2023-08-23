@@ -254,14 +254,14 @@ void GObject::ClearFEGroups()
 //-----------------------------------------------------------------------------
 // Remove groups that are empty.
 
-template <class T> void clearVector(FSObjectList<T>& v)
+template <class T> void clearVector(FSObjectList<T>& v, std::function<bool(T*)> f)
 {
 	if (v.IsEmpty()) return;
 
 	for (size_t i=0; i<v.Size(); )
 	{
 		T* o = v[i];
-		if (o->size() == 0)
+		if (f(o))
 		{
 			v.Remove(o);
 		}
@@ -271,11 +271,20 @@ template <class T> void clearVector(FSObjectList<T>& v)
 
 void GObject::RemoveEmptyFEGroups()
 {
-	clearVector(imp->m_pFEPartSet);
-	clearVector(imp->m_pFEElemSet);
-	clearVector(imp->m_pFESurface);
-	clearVector(imp->m_pFEEdgeSet);
-	clearVector(imp->m_pFENodeSet);
+	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->size() == 0); });
+	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->size() == 0); });
+	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->size() == 0); });
+	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->size() == 0); });
+	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->size() == 0); });
+}
+
+void GObject::RemoveUnusedFEGroups()
+{
+	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->GetReferenceCount() == 0); });
 }
 
 //-----------------------------------------------------------------------------

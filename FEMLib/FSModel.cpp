@@ -1961,7 +1961,7 @@ void FSModel::Purge(int ops)
 	if (ops == 0)
 	{
 		// clear all groups
-		m_pModel->ClearGroups();
+		m_pModel->RemoveNamedSelections();
 
 		// remove discrete objects
 		m_pModel->ClearDiscrete();

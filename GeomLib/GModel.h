@@ -220,6 +220,7 @@ public:
 
 	void RemoveNamedSelections();
 	void RemoveEmptySelections();
+	void RemoveUnusedSelections();
 
 	// if match is true, the list of parts with this material is returend.
 	// if match is false, the list of parts that don't have this material is returned.

@@ -874,8 +874,10 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 	if (sztype && sztype[0])
 	{
 		// only add the type attribute if the tag name is different from the type string
-		if (strcmp(sztype, el.name()) != 0)
-		el.add_attribute("type", sztype);
+		// there is an unfortunate coincidence that the nodal_load has the same type string
+		// as tag name. We need to make an exception for this. 
+		if ((strcmp(sztype, el.name()) != 0) || (strcmp(sztype, "nodal_load") == 0))
+			el.add_attribute("type", sztype);
 	}
 
 	// see if there are any attribute parameters

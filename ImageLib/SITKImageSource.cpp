@@ -73,6 +73,70 @@ bool CITKImageSource::Load()
 			// If this is called while loading the fs2 file, this could cause problems.
 			// Therefore, we catch the exception and just retrn false.
 			sitkImage = reader.Execute();
+
+            // Sometimes the origin and spacing info is stored in the DICOM headers
+            sitk::ImageFileReader headerReader;
+            headerReader.SetFileName(dicom_names[0]);
+            headerReader.LoadPrivateTagsOn();
+            headerReader.ReadImageInformation();
+
+            ////// origin
+            // "Image Position (Patient)" tag
+            string imgPosTag = "0020|0032";
+            if(headerReader.HasMetaDataKey(imgPosTag))
+            {
+                string val = headerReader.GetMetaData(imgPosTag);
+
+                std::vector<double> origin = sitkImage.GetOrigin();
+                
+                int pos = 0;
+                for(int i = 0; i < origin.size(); i++)
+                {
+                    int oldPos = pos;
+
+                    pos = val.find('\\', pos);
+
+                    if(pos >= 0) pos++;
+
+                    origin[i] = atof(val.substr(oldPos, pos - oldPos).c_str());
+                    
+                    if(pos == -1)
+                    {
+                        break;
+                    }
+                }
+
+                sitkImage.SetOrigin(origin);
+            }
+
+            ////// spacing
+            // "Pixel Spacing" tag
+            string spacingTag = "0028|0030";
+            if(headerReader.HasMetaDataKey(spacingTag))
+            {
+                string val = headerReader.GetMetaData(spacingTag);
+
+                std::vector<double> spacing = sitkImage.GetSpacing();
+                
+                int pos = 0;
+                for(int i = 0; i < spacing.size(); i++)
+                {
+                    int oldPos = pos;
+
+                    pos = val.find('\\', pos);
+
+                    if(pos >= 0) pos++;
+
+                    spacing[i] = atof(val.substr(oldPos, pos - oldPos).c_str());
+                    
+                    if(pos == -1)
+                    {
+                        break;
+                    }
+                }
+
+                sitkImage.SetSpacing(spacing);
+            }
 		}
 		catch (...)
 		{
