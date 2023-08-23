@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "Image.h"
+#include <string>
 #include <FSCore/box.h>
 
 //-----------------------------------------------------------------------------
@@ -44,7 +45,8 @@ public:
 	int Height() { return m_cy; }
 	int Depth () { return m_cz; }
     int PixelType() { return m_pixelType; }
-	int BPS() const { return m_bps; }
+	std::string PixelTypeString();
+    int BPS() const { return m_bps; }
     bool IsRGB();
 
     virtual BOX GetBoundingBox() { return m_box; }

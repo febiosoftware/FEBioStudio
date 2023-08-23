@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include <math.h>
 #include <memory>
 #include <cstring>
+#include <string>
 #include <algorithm>
 
 //////////////////////////////////////////////////////////////////////
@@ -107,6 +108,35 @@ bool C3DImage::IsRGB()
 {
     return m_pixelType == CImage::INT_RGB8 || m_pixelType == CImage::UINT_RGB8 
         || m_pixelType == CImage::INT_RGB16 || m_pixelType == CImage::UINT_RGB16;
+}
+
+std::string C3DImage::PixelTypeString()
+{
+    switch (m_pixelType)
+    {
+    case CImage::UINT_8:
+        return "8-bit Unsigned Integer";
+    case CImage::INT_8:
+        return "8-bit Signed Integer";
+    case CImage::UINT_16:
+        return "16-bit Unsigned Integer";
+    case CImage::INT_16:
+        return "16-bit Signed Integer";
+    case CImage::UINT_RGB8:
+        return "8-bit Unsigned Integer RGB";
+    case CImage::INT_RGB8:
+        return "8-bit Signed Integer RGB";
+    case CImage::UINT_RGB16:
+        return "16-bit Unsigned Integer RGB";
+    case CImage::INT_RGB16:
+        return "16-bit Signed Integer RGB";
+    case CImage::REAL_32:
+        return "32-bit Real";
+    case CImage::REAL_64:
+        return "64-bit Real";
+    default:
+        assert(false);
+    }
 }
 
 double C3DImage::Value(int i, int j, int k, int channel)
