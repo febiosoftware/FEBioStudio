@@ -45,6 +45,7 @@ private slots:
 	void OnCreate();
     void on_useFilter_stateChanged(int state);
     void on_methodBox_currentIndexChanged(int index);
+    void on_projectSurface_stateChanged(int state);
 
 private:
 	void Clear();
