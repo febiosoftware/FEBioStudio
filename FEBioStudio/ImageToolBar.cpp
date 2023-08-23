@@ -53,15 +53,15 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
     viewGroup->addAction(m_show2dImageView);
     
     m_showModelView->setChecked(true);
-
-    connect(viewGroup, &QActionGroup::triggered, this, &CImageToolBar::on_viewAction_triggered);
-
     addActions(viewGroup->actions());
 
     addSeparator();
 
     m_showPixelInspector = new QAction(CIconProvider::GetIcon("pixelInspector"), "Pixel Inspector");
     addAction(m_showPixelInspector);
+    // widgetForAction(m_showPixelInspector)->setVisible(false);
+
+    connect(viewGroup, &QActionGroup::triggered, this, &CImageToolBar::on_viewAction_triggered);
     connect(m_showPixelInspector, &QAction::triggered, this, &CImageToolBar::on_showPixelInspector_triggered);
 }
 
@@ -80,24 +80,22 @@ void CImageToolBar::on_viewAction_triggered(QAction* action)
     {
         doc->GetView()->imgView = CGView::MODEL_VIEW;
 
-        CloseInspector();
+        UpdateToolbar(CGView::MODEL_VIEW);
     }
     else if(action == m_showSliceView)
     {
         doc->GetView()->imgView = CGView::SLICE_VIEW;
 
-        if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetImageSliceView());
+        UpdateToolbar(CGView::SLICE_VIEW);
     }
     else if(action == m_show2dImageView)
     {
         doc->GetView()->imgView = CGView::TIME_VIEW_2D;
 
-        if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetC2DImageTimeView());
+        UpdateToolbar(CGView::TIME_VIEW_2D);
     }
 
     m_wnd->UpdateUIConfig();
-
-    action->setChecked(true);
 }
 
 void CImageToolBar::on_showPixelInspector_triggered()
@@ -110,23 +108,37 @@ void CImageToolBar::on_showPixelInspector_triggered()
         }
         else if(m_showSliceView->isChecked())
         {
-            m_pixelInspector = new CDlgPixelInspector(this, m_wnd->GetImageSliceView());
+            m_pixelInspector = new CDlgPixelInspector(m_wnd, this, m_wnd->GetImageSliceView());
         }
         else if(m_show2dImageView->isChecked())
         {
-            m_pixelInspector = new CDlgPixelInspector(this, m_wnd->GetC2DImageTimeView());
+            m_pixelInspector = new CDlgPixelInspector(m_wnd, this, m_wnd->GetC2DImageTimeView());
         }
-
-        
     }
 
     m_pixelInspector->show();
 }
 
-void CImageToolBar::CloseInspector()
+void CImageToolBar::UpdateToolbar(int view)
 {
-    if(m_pixelInspector)
+    switch (view)
     {
-        m_pixelInspector->close();
+    case CGView::MODEL_VIEW:
+        // widgetForAction(m_showPixelInspector)->setVisible(false);
+        if(m_pixelInspector) m_pixelInspector->close();
+        break;
+
+    case CGView::SLICE_VIEW:
+        // widgetForAction(m_showPixelInspector)->setVisible(true);
+        if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetImageSliceView());
+        break;
+
+    case CGView::TIME_VIEW_2D:
+        // widgetForAction(m_showPixelInspector)->setVisible(true);
+        if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetC2DImageTimeView());
+        break;
+    
+    default:
+        break;
     }
 }

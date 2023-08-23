@@ -61,8 +61,8 @@ public:
 };
 
 
-CDlgPixelInspector::CDlgPixelInspector(CImageToolBar* toolbar, CPixelInfoSource* source)
-    : m_toolbar(toolbar), m_radius(3), m_source(source), ui(new Ui::CDlgPixelInspector)
+CDlgPixelInspector::CDlgPixelInspector(QWidget* parent, CImageToolBar* toolbar, CPixelInfoSource* source)
+    : m_toolbar(toolbar), m_radius(3), m_source(source), ui(new Ui::CDlgPixelInspector), QDialog(parent)
 {
     ui->setupUI(this);
 
