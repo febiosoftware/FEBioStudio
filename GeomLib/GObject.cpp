@@ -137,22 +137,10 @@ bool GObject::CanDeleteMesh() const
 
 	// Check if there are any mesh dependencies.
 	// Note that part-sets aren't checked since they don't reference the mesh directly.
-	for (int i = 0; i < FENodeSets(); ++i) 	{
-		const FSNodeSet* pg = imp->m_pFENodeSet[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
-	for (int i = 0; i < FESurfaces(); ++i) 	{
-		const FSSurface* pg = imp->m_pFESurface[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
-	for (int i = 0; i < FEEdgeSets(); ++i) {
-		const FSEdgeSet* pg = imp->m_pFEEdgeSet[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
-	for (int i = 0; i < FEElemSets(); ++i) {
-		const FSElemSet* pg = imp->m_pFEElemSet[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
+	if (FENodeSets() > 0) return false;
+	if (FESurfaces() > 0) return false;
+	if (FEEdgeSets() > 0) return false;
+	if (FEElemSets() > 0) return false;
 
 	return true;
 }
