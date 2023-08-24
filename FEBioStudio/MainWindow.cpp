@@ -2764,6 +2764,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		a = colorMode->addAction("Default"); a->setCheckable(true); if (vs.m_objectColor == 0) a->setChecked(true);
 		a = colorMode->addAction("By object"); a->setCheckable(true); if (vs.m_objectColor == 1) a->setChecked(true);
 		a = colorMode->addAction("By material type"); a->setCheckable(true); if (vs.m_objectColor == 2) a->setChecked(true);
+		a = colorMode->addAction("By element type"); a->setCheckable(true); if (vs.m_objectColor == 3) a->setChecked(true);
 		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
 		menu.addAction(colorMode->menuAction());
 
@@ -2839,6 +2840,7 @@ void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
 	else if (ac->text() == "By material type") vs.m_objectColor = OBJECT_COLOR_MODE::MATERIAL_TYPE;
+	else if (ac->text() == "By element type" ) vs.m_objectColor = OBJECT_COLOR_MODE::FSELEMENT_TYPE;
 
 	RedrawGL();
 }

@@ -32,7 +32,8 @@ SOFTWARE.*/
 enum OBJECT_COLOR_MODE {
 	DEFAULT_COLOR,
 	OBJECT_COLOR,
-	MATERIAL_TYPE
+	MATERIAL_TYPE,
+	FSELEMENT_TYPE
 };
 
 //-----------------------------------------------------------------------------
