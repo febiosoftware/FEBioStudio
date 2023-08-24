@@ -1655,11 +1655,6 @@ void CPostModelPanel::OnExportProbeData()
 	Post::FEPostModel* fem = glm->GetFSModel();
 
 	int nfield = glm->GetColorMap()->GetEvalField();
-	if (nfield <= 0)
-	{
-		QMessageBox::critical(this, "Export", "No datafield selected.");
-		return;
-	}
 
 	bool ok = true;
 	QStringList ops = QStringList() << "selected probe" << "all probes";
@@ -1675,8 +1670,17 @@ void CPostModelPanel::OnExportProbeData()
 		FILE* fp = fopen(szfile, "wt");
 		if (nop == 0) // selected probe
 		{
-			string s = probe->GetName();
-			fprintf(fp, "%s", s.c_str());
+			fprintf(fp, "x,y,z,value\n");
+
+			for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+			{
+				vec3d r = probe->Position(nstep);
+				double val = 0.0;
+				if ((nfield > 0) && probe->TrackModelData())
+						val = probe->DataValue(nfield, nstep);
+
+				fprintf(fp, "%lg,%lg,%lg,%lg\n", r.x, r.y, r.z, val);
+			}
 		}
 		else if (nop == 1) // all probes
 		{
@@ -1687,38 +1691,21 @@ void CPostModelPanel::OnExportProbeData()
 				if (probe_i)
 				{
 					string s = probe_i->GetName();
-					fprintf(fp, "%s,", s.c_str());
-				}
-			}
-		}
-		fprintf(fp, "\n");
-		for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
-		{
-			if (nop == 0) // selected probe
-			{
-				double val = 0.0;
-				if (probe->TrackModelData())
-					val = probe->DataValue(nfield, nstep);
+					fprintf(fp, "%s\n", s.c_str());
 
-				fprintf(fp, "%lg", val);
-			}
-			else if (nop == 1) // all probes
-			{
-				for (Post::GLPlotIterator it(glm); it != nullptr; ++it)
-				{
-					Post::CGLPlot* po = it;
-					Post::GLPointProbe* probe_i = dynamic_cast<Post::GLPointProbe*>(po);
-					if (probe_i)
+					fprintf(fp, "x,y,z,value\n");
+
+					for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
 					{
+						vec3d r = probe_i->Position(nstep);
 						double val = 0.0;
-						if (probe_i->TrackModelData())
+						if ((nfield > 0) && probe_i->TrackModelData())
 							val = probe_i->DataValue(nfield, nstep);
 
-						fprintf(fp, "%lg,", val);
+						fprintf(fp, "%lg,%lg,%lg,%lg\n", r.x, r.y, r.z, val);
 					}
 				}
 			}
-			fprintf(fp, "\n");
 		}
 		fclose(fp);
 	}

@@ -46,6 +46,8 @@ public:
 
 	double DataValue(int nfield, int nstep);
 
+	vec3d Position(int nstep);
+
 	bool TrackModelData() const;
 
 	void SetInitialPosition(const vec3d& r);
