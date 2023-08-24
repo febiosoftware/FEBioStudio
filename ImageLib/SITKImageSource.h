@@ -26,6 +26,8 @@ SOFTWARE.*/
 
 #include "ImageSource.h"
 
+enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
+
 class CITKImageSource : public CImageSource
 {
 public:
@@ -39,6 +41,8 @@ public:
 
 private:
     std::string m_filename;
+
+    ImageFileType m_fileType;
 };
 
 class CITKSeriesImageSource : public CImageSource
