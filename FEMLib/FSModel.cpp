@@ -1909,6 +1909,21 @@ void FSModel::DeleteAllLoadControllers()
 }
 
 //-----------------------------------------------------------------------------
+void FSModel::RemoveUnusedLoadControllers()
+{
+	int NLC = m_LC.Size();
+	int n = 0;
+	for (int i = 0; i < NLC; ++i)
+	{
+		FSLoadController* plc = m_LC[n];
+		if (plc->GetReferenceCount() == 0) {
+			m_LC.Remove(plc); delete plc;
+		}
+		else n++;
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::DeleteAllMeshDataGenerators()
 {
 	m_MD.Clear();
