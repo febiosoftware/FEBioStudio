@@ -230,7 +230,7 @@ public:
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-    enum PropOrder {SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
+    enum PropOrder {PIXELTYPE, PXLDIM, SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
 
 private:
     CImageModel* m_model;

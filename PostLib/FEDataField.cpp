@@ -403,6 +403,7 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 		case DATA_NODE: return new FEElemArrayDataNode(pstate, GetArraySize(), this); break;
 		}
 		break;
+	case CLASS_OBJECT: return new FEGlobalArrayData(pstate, GetArraySize()); break;
 	}
 	assert(false);
 	return 0;

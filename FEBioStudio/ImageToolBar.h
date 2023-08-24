@@ -46,7 +46,7 @@ private slots:
     void on_showPixelInspector_triggered();
 
 private:
-    void CloseInspector();
+    void UpdateToolbar(int view);
 
 private:
     CMainWindow* m_wnd;

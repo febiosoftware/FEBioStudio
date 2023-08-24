@@ -36,7 +36,7 @@ namespace Ui {
 class CDlgPixelInspector : public QDialog
 {
 public:
-    CDlgPixelInspector(CImageToolBar* toolbar, CPixelInfoSource* source);
+    CDlgPixelInspector(QWidget* parent, CImageToolBar* toolbar, CPixelInfoSource* source);
 
     void SetInfoSource(CPixelInfoSource* source);
 

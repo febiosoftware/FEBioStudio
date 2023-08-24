@@ -181,5 +181,6 @@
         <file>icons/light.png</file>
         <file>icons/musclepath.png</file>
         <file>icons/brush.png</file>
+        <file>icons/pixelInspector.png</file>
 	</qresource>
 </RCC>
