@@ -39,9 +39,6 @@ public:
     CImageSITK(int nx, int ny, int nz);
     ~CImageSITK();
 
-    // bool LoadFromFile(std::string, bool isDicom);
-    // bool LoadFromStack(std::vector<std::string> filenames);
-
     BOX GetBoundingBox() override;
     void SetBoundingBox(BOX& box) override;
 
@@ -52,35 +49,11 @@ public:
     itk::simple::Image GetSItkImage();
     void SetItkImage(itk::simple::Image image);
 
-    void Update();
-
 private:
-    bool ParseImageHeader();
-
-    int ReadScalarImage();
-
-    template<class TImage>
-    bool ReadImage();
-
-    void GetNamesForSequence();
-
     void FinalizeImage();
 
-
 private:
-    const char* m_filename;
-
-    bool m_delBuffer;
-    // const char* m_imageFilename;
-    // ImageFileType m_type;
-    // IOPixelType pixelType;
-    // IOComponentType componentType;
-    // itk::SmartPointer<FinalImageType> originalImage;
-    // typename FinalImageType::Pointer finalImage;
-
     itk::simple::Image m_sitkImage;
-
-    // std::vector<std::string> sequenceFiles;
 };
 
 #endif
