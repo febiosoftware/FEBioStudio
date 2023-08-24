@@ -327,6 +327,7 @@ QTreeWidgetItem* addProjectItem(QTreeWidgetItem* treeItem, const FEBioStudioProj
 
 	QIcon icon = iconProvider.icon(QFileIconProvider::File);
 	if      (ext == "fsm" ) icon = QIcon(":/icons/FEBioStudio.png");
+	else if (ext == "fs2" ) icon = QIcon(":/icons/FEBioStudio.png");
 	else if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
 	else if (ext == "feb" ) icon = QIcon(":/icons/febio.png");
 	else if (ext == "pdf" ) icon = QIcon(":/icons/pdf.png");
@@ -395,11 +396,6 @@ void addProjectGroup(const FEBioStudioProject::ProjectItem& parent, QTreeWidgetI
 			QFileInfo fi(filename_i);
 			QString fileName = fi.fileName();
 			QString ext = fi.suffix();
-
-			QIcon icon = iconProvider.icon(QFileIconProvider::File);
-			if (ext == "fsm" ) icon = QIcon(":/icons/FEBioStudio.png");
-			if (ext == "xplt") icon = QIcon(":/icons/PostView.png");
-			if (ext == "feb") icon = QIcon(":/icons/febio.png");
 
 			CDocument* doc = wnd->FindDocument(filename_i.toStdString());
 			QTreeWidgetItem* t2 = addProjectItem(treeItem, item, doc);
