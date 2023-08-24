@@ -2745,9 +2745,17 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	if (doc)
 	{
 		menu.addAction(ui->actionShowNormals);
-		menu.addAction(ui->actionShowFibers);
-		menu.addAction(ui->actionShowMatAxes);
-		menu.addAction(ui->actionShowDiscrete);
+
+		QMenu* physicsMenu = new QMenu("Physics");
+
+		physicsMenu->addAction(ui->actionShowFibers);
+		physicsMenu->addAction(ui->actionShowMatAxes);
+		physicsMenu->addAction(ui->actionShowDiscrete);
+		physicsMenu->addAction(ui->actionShowRigidBodies);
+		physicsMenu->addAction(ui->actionShowRigidJoints);
+		physicsMenu->addAction(ui->actionShowRigidLabels);
+		menu.addMenu(physicsMenu);
+
 		menu.addSeparator();
 
 		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode

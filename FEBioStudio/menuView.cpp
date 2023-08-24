@@ -162,6 +162,36 @@ void CMainWindow::on_actionShowDiscrete_toggled(bool b)
 	RedrawGL();
 }
 
+void CMainWindow::on_actionShowRigidBodies_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_brigid = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShowRigidJoints_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_bjoint = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShowRigidLabels_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_showRigidLabels = b;
+	RedrawGL();
+}
+
 void CMainWindow::on_actionToggleLight_triggered()
 {
 	CDocument* doc = GetDocument();
