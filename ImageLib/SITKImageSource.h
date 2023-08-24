@@ -39,7 +39,6 @@ public:
 
 private:
     std::string m_filename;
-    ImageFileType m_type;
 };
 
 class CITKSeriesImageSource : public CImageSource

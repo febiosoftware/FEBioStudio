@@ -42,7 +42,7 @@ static const std::unordered_set<sitk::PixelIDValueEnum> supportedTypes = {sitk::
 //========================================================================
 
 CITKImageSource::CITKImageSource(CImageModel* imgModel, const std::string& filename, ImageFileType type) 
-    : CImageSource(CImageSource::ITK, imgModel), m_filename(filename), m_type(type)
+    : CImageSource(CImageSource::ITK, imgModel), m_filename(filename)
 {
     SetName(FSDir::fileName(filename));
 }
@@ -59,7 +59,7 @@ bool CITKImageSource::Load()
 
     sitk::Image sitkImage;
 
-    if(m_type == ImageFileType::DICOM)
+    if(m_type == (int)ImageFileType::DICOM)
     {
         sitk::ImageSeriesReader reader;
 
@@ -209,7 +209,7 @@ void CITKImageSource::Load(IArchive& ar)
         {
             int type;
             ar.read(type);
-            m_type = (ImageFileType)type;
+            m_type = type;
             break;
         }
 			
