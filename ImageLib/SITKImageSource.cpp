@@ -262,16 +262,42 @@ CITKSeriesImageSource::CITKSeriesImageSource(CImageModel* imgModel)
 
 }
 
+template<class pType> void CITKSeriesImageSource::CopySliceData(pType* buffer, int pixelType, int nx, int ny)
+{
+    sitk::ImageFileReader reader;
+
+    for(auto filename : m_filenames)
+    {
+        reader.SetFileName(filename);
+        sitk::Image slice = reader.Execute();
+
+        if(slice.GetDimension() != 2)
+        {
+            throw std::runtime_error("All images in the stack must have be 2 dimensional.");
+        }
+
+        if(slice.GetPixelID() != pixelType)
+        {
+            throw std::runtime_error("All images in the stack must have the same pixel type.");
+        }
+
+        if(slice.GetWidth() != nx || slice.GetHeight() != ny)
+        {
+            throw std::runtime_error("All images in the stack must have the same pixel dimensions");
+        }
+        
+        pType* sliceBytes = (pType*)slice.GetBufferAsVoid();
+        for(int index = 0; index < nx*ny; index++)
+        {
+            *buffer = sliceBytes[index];
+            buffer++;
+        }
+    }
+}
+
 bool CITKSeriesImageSource::Load()
 {
-    C3DImage* im = new C3DImage;
-
-    sitk::RescaleIntensityImageFilter rescaleFiler;
-    rescaleFiler.SetOutputMinimum(0);
-    rescaleFiler.SetOutputMaximum(255);
-        
-    sitk::CastImageFilter castFilter;
-    castFilter.SetOutputPixelType(sitk::sitkUInt8);
+    CImageSITK* im = new CImageSITK;
 
     sitk::ImageFileReader reader;
     reader.SetFileName(m_filenames[0]);
@@ -281,40 +307,58 @@ bool CITKSeriesImageSource::Load()
     unsigned int ny = slice.GetHeight();
     unsigned int nz = m_filenames.size();
 
-    sitk::Image sitkImage(nx, ny, nz, sitk::sitkUInt8);
-    uint8_t* imgBytes = sitkImage.GetBufferAsUInt8();
-
-    if(slice.GetPixelID() != sitk::sitkUInt8)
+    if(supportedTypes.count(slice.GetPixelID()) == 0)
     {
-        slice = rescaleFiler.Execute(slice);
-        slice = castFilter.Execute(slice);
+        delete im;
+
+        throw std::runtime_error("FEBio Studio does not yet support " + slice.GetPixelIDTypeAsString() + " images.");
     }
 
-    uint8_t* sliceBytes = slice.GetBufferAsUInt8();
+    sitk::Image sitkImage(nx, ny, nz, slice.GetPixelID());
 
-    for(int index = 0; index < nx*ny; index++)
+    try
     {
-        imgBytes[index] = sliceBytes[index];
+        switch (slice.GetPixelID())
+        {
+        case sitk::sitkUInt8:
+            CopySliceData<uint8_t>(sitkImage.GetBufferAsUInt8(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkInt8:
+            CopySliceData<int8_t>(sitkImage.GetBufferAsInt8(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkUInt16:
+            CopySliceData<uint16_t>(sitkImage.GetBufferAsUInt16(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkInt16:
+            CopySliceData<int16_t>(sitkImage.GetBufferAsInt16(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkVectorUInt8:
+            CopySliceData<uint8_t>(sitkImage.GetBufferAsUInt8(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkVectorInt8:
+            CopySliceData<int8_t>(sitkImage.GetBufferAsInt8(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkVectorUInt16:
+            CopySliceData<uint16_t>(sitkImage.GetBufferAsUInt16(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkVectorInt16:
+            CopySliceData<int16_t>(sitkImage.GetBufferAsInt16(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkFloat32:
+            CopySliceData<float>(sitkImage.GetBufferAsFloat(), slice.GetPixelID(), nx, ny);
+            break;
+        case sitk::sitkFloat64:
+            CopySliceData<double>(sitkImage.GetBufferAsDouble(), slice.GetPixelID(), nx, ny);
+            break;
+        }
+    }
+    catch(const std::exception& e)
+    {
+        delete im;
+        throw e;
     }
     
-    for(int name = 1; name < m_filenames.size(); name++)
-    {
-        reader.SetFileName(m_filenames[name]);
-        slice = reader.Execute();
-
-        if(slice.GetPixelID() != sitk::sitkUInt8)
-        {
-            slice = rescaleFiler.Execute(slice);
-            slice = castFilter.Execute(slice);
-        }
-
-        sliceBytes = slice.GetBufferAsUInt8();
-
-        for(int index = nx*ny*name; index < nx*ny*(name+1); index++)
-        {
-            imgBytes[index] = sliceBytes[index];
-        }
-    }
+    im->SetItkImage(sitkImage);
 
 	AssignImage(im);
 
