@@ -61,8 +61,6 @@ public:
 
     double Value(int i, int j, int channel = 0);
 
-	uint8_t value(int i, int j) { return m_pb[j*m_cx + i]; }
-
 	void Zero() { for (int i=0; i<m_cx*m_cy; i++) m_pb[i] = 0; }
 
 protected:
