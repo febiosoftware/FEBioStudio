@@ -37,17 +37,9 @@ class CImageModel;
 class CImageFilter : public FSObject
 {
 public:
-    enum TYPES
-    {
-        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP, ADAPTHISTEQ
-    };
-
-public:
-    CImageFilter(int type, CImageModel* model);
+    CImageFilter(CImageModel* model);
 
     virtual void ApplyFilter() = 0;
-
-    int Type() { return m_type; }
 
     void SetImageModel(CImageModel* model);
 
@@ -55,9 +47,6 @@ public:
 
 protected:
     CImageModel* m_model;
-
-private:
-    int m_type;
 };
 
 class ThresholdImageFilter : public CImageFilter
@@ -68,29 +57,6 @@ public:
     void ApplyFilter() override;
 };
 
-class MeanImageFilter : public CImageFilter
-{
-public:
-    MeanImageFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class GaussianImageFilter : public CImageFilter
-{
-public:
-    GaussianImageFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class AdaptiveHistogramEqualizationFilter : public CImageFilter
-{
-public:
-    AdaptiveHistogramEqualizationFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
 
 class WarpImageFilter : public CImageFilter
 {
@@ -102,4 +68,25 @@ public:
 
 private:
 	Post::CGLModel* m_glm;
+};
+
+#include <sitkImage.h>
+
+class SITKImageFiler : public CImageFilter
+{
+public:
+    SITKImageFiler(CImageModel* model);
+
+    itk::simple::Image GetSITKImage();
+
+    virtual void ApplyFilter() = 0;
+
+};
+
+class MeanImageFilter : public SITKImageFiler
+{
+public:
+    MeanImageFilter(CImageModel* model = nullptr);
+
+    void ApplyFilter() override;
 };

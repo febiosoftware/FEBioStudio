@@ -86,7 +86,7 @@ template <class theClass> class ClassDescriptor_T : public ClassDescriptor
 {
 public:
 	ClassDescriptor_T(Class_Type ntype, int cid, const char* szname,  const char* szres, unsigned int flag) : ClassDescriptor(ntype, cid, szname, szres, flag){}
-	FSObject* Create() { m_ncount++; return new theClass(); }
+	FSObject* Create() { m_ncount++; FSObject* po = new theClass(); po->SetTypeString(m_szname); return po; }
 
 	bool IsType(FSObject* po) { return (dynamic_cast<theClass*>(po) != 0); }
 };
@@ -143,6 +143,8 @@ namespace FSCore {
 		FSObject* po = ClassKernel::CreateClass(classType, sztype);
 		if (po)
 		{
+            po->SetTypeString(sztype);
+
 			T* pt = dynamic_cast<T*>(po);
 			if (pt == nullptr)
 			{
