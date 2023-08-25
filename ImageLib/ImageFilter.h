@@ -69,24 +69,3 @@ public:
 private:
 	Post::CGLModel* m_glm;
 };
-
-#include <sitkImage.h>
-
-class SITKImageFiler : public CImageFilter
-{
-public:
-    SITKImageFiler(CImageModel* model);
-
-    itk::simple::Image GetSITKImage();
-
-    virtual void ApplyFilter() = 0;
-
-};
-
-class MeanImageFilter : public SITKImageFiler
-{
-public:
-    MeanImageFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};

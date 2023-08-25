@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>
 
+
 CImageFilter::CImageFilter(CImageModel* model) : m_model(model)
 {
 
@@ -245,100 +246,3 @@ void WarpImageFilter::ApplyFilter()
 	mdl->SetBoundingBox(box);
 }
 
-class ITKException : public std::exception
-{
-public:
-    ITKException(std::exception& e)
-    {
-        std::string str = e.what();
-        int pos = str.find("\n");
-
-        if(pos == str.npos)
-        {
-            m_what = str.c_str();
-        }
-        else
-        {
-            m_what = str.substr(pos+1, str.npos).c_str();
-        }
-    }
-
-    const char* what() const noexcept override
-    {
-        return m_what.c_str();
-    }
-
-private:
-    std::string m_what;
-};
-
-#include <sitkSmoothingRecursiveGaussianImageFilter.h>
-#include <sitkMeanImageFilter.h>
-#include <sitkAdaptiveHistogramEqualizationImageFilter.h>
-
-namespace sitk = itk::simple;
-
-
-SITKImageFiler::SITKImageFiler(CImageModel* model)
-    : CImageFilter(model)
-{
-
-}
-
-itk::simple::Image SITKImageFiler::GetSITKImage()
-{
-    C3DImage* image = m_model->GetImageSource()->Get3DImage();
-    if(!dynamic_cast<CImageSITK*>(image))
-    {
-        return CImageSITK::SITKImageFrom3DImage(image);
-    }
-    else
-    {
-        return dynamic_cast<CImageSITK*>(image)->GetSItkImage();
-    }
-} 
-
-
-REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
-MeanImageFilter::MeanImageFilter(CImageModel* model)
-    : SITKImageFiler(model)
-{
-    static int n = 1;
-
-    char sz[64];
-    sprintf(sz, "MeanImageFilter%02d", n);
-    n += 1;
-    SetName(sz);
-
-    AddIntParam(1, "x Radius")->SetIntRange(0, 9999999);
-    AddIntParam(1, "y Radius")->SetIntRange(0, 9999999);
-    AddIntParam(1, "z Radius")->SetIntRange(0, 9999999);
-}
-
-void MeanImageFilter::ApplyFilter()
-{
-    if(!m_model) return;
-
-    sitk::Image original = GetSITKImage();
-    
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
-
-    sitk::MeanImageFilter filter;
-
-    std::vector<unsigned int> indexRadius;
-
-    indexRadius.push_back(GetIntValue(0)); // radius along x
-    indexRadius.push_back(GetIntValue(1)); // radius along y
-    indexRadius.push_back(GetIntValue(2)); // radius along z
-
-    filter.SetRadius(indexRadius);
-
-    try
-    {
-        filteredImage->SetItkImage(filter.Execute(original));
-    }
-    catch(std::exception& e)
-    {
-        throw ITKException(e);
-    }
-}
