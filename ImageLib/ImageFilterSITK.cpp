@@ -85,12 +85,11 @@ itk::simple::Image SITKImageFiler::GetSITKImage()
 } 
 
 
-REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
 MeanImageFilter::MeanImageFilter(CImageModel* model)
     : SITKImageFiler(model)
 {
     static int n = 1;
-
+	 
     char sz[64];
     sprintf(sz, "MeanImageFilter%02d", n);
     n += 1;
@@ -129,7 +128,6 @@ void MeanImageFilter::ApplyFilter()
     }
 }
 
-REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
 GaussianImageFilter::GaussianImageFilter(CImageModel* model)
     : SITKImageFiler(model)
 {
