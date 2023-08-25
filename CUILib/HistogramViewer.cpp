@@ -120,7 +120,7 @@ template<class pType> void CHistogramViewer::GetValues(int bins, std::vector<dou
         {
             for (int i = 0; i < nx; ++i)
             {
-                int n = (data[nx*(k*ny + j) + i] - min)/range * bins;
+                int n = (data[nx*(k*ny + j) + i] - min)/range * (bins - 1);
                 yVals[n]++;
             }
         }
