@@ -233,6 +233,12 @@ double GLPointProbe::DataValue(int nfield, int nstep)
 	}
 }
 
+vec3d GLPointProbe::Position(int nstep)
+{
+	if ((nstep >= 0) && (nstep < m_path.size())) return m_path[nstep];
+	return vec3d(0, 0, 0);
+}
+
 class GLPointProbeSelection : public FESelection
 {
 public:

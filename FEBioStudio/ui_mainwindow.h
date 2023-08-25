@@ -322,9 +322,14 @@ public:
     QAction* actionIsometric;
 	QAction* actionOptions;
 	QAction* actionRenderMode;
+
 	QAction* actionShowFibers;
 	QAction* actionShowMatAxes;
 	QAction* actionShowDiscrete;
+	QAction* actionShowRigidBodies;
+	QAction* actionShowRigidJoints;
+	QAction* actionShowRigidLabels;
+
 	QAction* actionToggleLight;
 
 
@@ -690,6 +695,10 @@ public:
 		actionShowFibers      = addAction("Show Fibers", "actionShowFibers");
 		actionShowMatAxes     = addAction("Toggle Material Axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
 		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
+		actionShowRigidBodies = addAction("Show Rigid Bodies", "actionShowRigidBodies"); actionShowRigidBodies->setCheckable(true);  actionShowRigidBodies->setChecked(true);
+		actionShowRigidJoints = addAction("Show Rigid Joints", "actionShowRigidJoints"); actionShowRigidJoints->setCheckable(true);  actionShowRigidJoints->setChecked(true);
+		actionShowRigidLabels = addAction("Show Rigid Labels", "actionShowRigidLabels"); actionShowRigidLabels->setCheckable(true);  actionShowRigidLabels->setChecked(true);
+
 		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
 		QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);

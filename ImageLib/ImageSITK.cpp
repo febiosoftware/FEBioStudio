@@ -54,152 +54,6 @@ CImageSITK::~CImageSITK()
     m_pb = nullptr;
 }
 
-// bool CImageSITK::LoadFromFile(std::string filename, bool isDicom)
-// {
-//     m_filename = filename.c_str();
-
-//     if(isDicom)
-//     {
-//         sitk::ImageSeriesReader reader;
-
-//         string absolutePath = FSDir::fileDir(filename);
-//         const std::vector<std::string> dicom_names = sitk::ImageSeriesReader::GetGDCMSeriesFileNames(absolutePath);
-//         reader.SetFileNames( dicom_names );
-
-//         try {
-// 			// this can throw exceptions. 
-// 			// If this is called while loading the fs2 file, this could cause problems.
-// 			// Therefore, we catch the exception and just retrn false.
-// 			m_sitkImage = reader.Execute();
-// 		}
-// 		catch (...)
-// 		{
-// 			return false;
-// 		}
-
-//         // for(int index = 0; index < dicom_names.size(); index++)
-//         // {
-//         //     std::vector<std::string> keys = reader.GetMetaDataKeys(index);
-//         //     for(auto key : keys)
-//         //     {
-//         //         std::cout << "Slice " << index << " :" << key << ": " << reader.GetMetaData(index, key) << std::endl;
-//         //     }
-//         // }
-//     }
-//     else
-//     {
-//         sitk::ImageFileReader reader;
-//         reader.SetFileName(filename);
-
-// 		try {
-// 			// this can throw exceptions. 
-// 			// If this is called while loading the fs2 file, this could cause problems.
-// 			// Therefore, we catch the exception and just retrn false.
-// 			m_sitkImage = reader.Execute();
-// 		}
-// 		catch (...)
-// 		{
-// 			return false;
-// 		}
-
-//         auto keys = reader.GetMetaDataKeys();
-//             for(auto key : keys)
-//             {
-//                 std::cout << key << ": " << reader.GetMetaData(key) << std::endl;
-//             }
-//     }
-
-    
-
-//     if(m_sitkImage.GetPixelID() != sitk::sitkUInt8)
-//     {
-//         sitk::RescaleIntensityImageFilter rescaleFiler;
-//         rescaleFiler.SetOutputMinimum(0);
-//         rescaleFiler.SetOutputMaximum(255);
-//         m_sitkImage = rescaleFiler.Execute(m_sitkImage);
-
-//         try
-//         {
-//             sitk::CastImageFilter castFilter;
-//             castFilter.SetOutputPixelType(sitk::sitkUInt8);
-//             m_sitkImage = castFilter.Execute(m_sitkImage);
-//         }
-//         catch(itk::simple::GenericException& e)
-//         {
-//             throw std::runtime_error("FEBio Studio is not currently capable of reading multichannel images.");
-//         }
-        
-        
-//     }
-
-//     FinalizeImage();
-
-//     return true;
-// }
-
-// bool CImageSITK::LoadFromStack(std::vector<std::string> filenames)
-// {
-//     m_filename = filenames[0].c_str();
-
-//     sitk::RescaleIntensityImageFilter rescaleFiler;
-//     rescaleFiler.SetOutputMinimum(0);
-//     rescaleFiler.SetOutputMaximum(255);
-        
-//     sitk::CastImageFilter castFilter;
-//     castFilter.SetOutputPixelType(sitk::sitkUInt8);
-
-//     sitk::ImageFileReader reader;
-//     reader.SetFileName(filenames[0]);
-//     sitk::Image slice = reader.Execute();
-
-//     unsigned int nx = slice.GetWidth();
-//     unsigned int ny = slice.GetHeight();
-//     unsigned int nz = filenames.size();
-
-//     m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt8);
-//     uint8_t* imgBytes = m_sitkImage.GetBufferAsUInt8();
-
-//     // std::cout << slice.GetPixelID() << std::endl;
-//     // std::vector<uint32_t> index = {0,0};
-//     // std::cout << slice.GetPixelAsVectorUInt8(index).size() << std::endl;
-
-//     if(slice.GetPixelID() != sitk::sitkUInt8)
-//     {
-//         slice = rescaleFiler.Execute(slice);
-//         slice = castFilter.Execute(slice);
-//     }
-
-//     uint8_t* sliceBytes = slice.GetBufferAsUInt8();
-
-//     for(int index = 0; index < nx*ny; index++)
-//     {
-//         imgBytes[index] = sliceBytes[index];
-//     }
-    
-//     for(int name = 1; name < filenames.size(); name++)
-//     {
-//         reader.SetFileName(filenames[name]);
-//         slice = reader.Execute();
-
-//         if(slice.GetPixelID() != sitk::sitkUInt8)
-//         {
-//             slice = rescaleFiler.Execute(slice);
-//             slice = castFilter.Execute(slice);
-//         }
-
-//         sliceBytes = slice.GetBufferAsUInt8();
-
-//         for(int index = nx*ny*name; index < nx*ny*(name+1); index++)
-//         {
-//             imgBytes[index] = sliceBytes[index];
-//         }
-//     }
-
-//     FinalizeImage();
-
-//     return true;
-// }
-
 void CImageSITK::FinalizeImage()
 {
     m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
@@ -258,8 +112,9 @@ void CImageSITK::SetItkImage(itk::simple::Image image)
     m_sitkImage = image;
 
     m_cx = m_sitkImage.GetWidth();
-    m_cy = m_sitkImage.GetHeight();;
-    m_cz = m_sitkImage.GetDepth();;
+    m_cy = m_sitkImage.GetHeight();
+    m_cz = m_sitkImage.GetDepth();
+    if(m_cz == 0) m_cz = 1;
 
     m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
 

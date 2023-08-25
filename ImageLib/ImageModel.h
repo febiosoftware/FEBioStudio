@@ -36,8 +36,6 @@ SOFTWARE.*/
 #include <PostLib/GLObject.h>
 #include <FEBioStudio/ImageViewSettings.h>
 
-enum class ImageFileType {RAW, DICOM, TIFF, OMETIFF, OTHER, SEQUENCE};
-
 namespace Post
 {
     class CGLImageRenderer;

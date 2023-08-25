@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ImageModel.h"
 #include "ImageSource.h"
+#include "TiffReader.h"
 #include "SITKImageSource.h"
 #include <ImageLib/3DImage.h>
 #include <ImageLib/ImageSITK.h>
@@ -274,6 +275,10 @@ void CImageModel::Load(IArchive& ar)
                         break;
                     case CImageSource::SERIES:
                         m_img = new CITKSeriesImageSource(this);
+                        m_img->Load(ar);
+                        break;
+                    case CImageSource::TIFF:
+                        m_img = new CTiffImageSource(this);
                         m_img->Load(ar);
                         break;
                     default:

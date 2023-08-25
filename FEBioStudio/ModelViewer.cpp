@@ -1548,6 +1548,14 @@ void CModelViewer::OnRemoveUnusedSelections()
 	Update();
 }
 
+void CModelViewer::OnRemoveUnusedLoadControllers()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel& fem = *pdoc->GetFSModel();
+	fem.RemoveUnusedLoadControllers();
+	Update();
+}
+
 void CModelViewer::OnRemoveAllSelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1846,6 +1854,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_LOAD_CONTROLLERS:
 		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
+		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedLoadControllers()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
 		break;
 	case MT_LOAD_CONTROLLER:

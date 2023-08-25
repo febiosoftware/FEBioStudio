@@ -710,12 +710,75 @@ bool CTiffImageSource::Impl::readImage(_TifIfd& ifd)
 
 void CTiffImageSource::Save(OArchive& ar)
 {
+    ar.WriteChunk(0, m->filename);
+    ar.WriteChunk(1, (int)m_type);
 
+	if (m_originalImage)
+	{
+		BOX box = m_originalImage->GetBoundingBox();
+		ar.WriteChunk(100, box.x0);
+		ar.WriteChunk(101, box.y0);
+		ar.WriteChunk(102, box.z0);
+		ar.WriteChunk(103, box.x1);
+		ar.WriteChunk(104, box.y1);
+		ar.WriteChunk(105, box.z1);
+	}
 }
 
 void CTiffImageSource::Load(IArchive& ar)
 {
+    BOX tempBox;
+    bool foundBox = false;
 
+    while (ar.OpenChunk() == IArchive::IO_OK)
+	{
+		int nid = ar.GetChunkID();
+
+		switch (nid)
+		{
+		case 0:
+			ar.read(m->filename);
+			break;
+		case 1:
+        {
+            int type;
+            ar.read(type);
+            m_type = type;
+            break;
+        }
+			
+
+        case 100:
+			ar.read(tempBox.x0);
+            foundBox = true;
+            break;
+        case 101:
+			ar.read(tempBox.y0);
+            break;
+        case 102:
+			ar.read(tempBox.z0);
+            break;
+        case 103:
+			ar.read(tempBox.x1);
+            break;
+        case 104:
+			ar.read(tempBox.y1);
+            break;
+        case 105:
+			ar.read(tempBox.z1);
+            break;
+		}
+		ar.CloseChunk();
+	}
+
+    // Read in image data
+    Load();
+
+    // Set location of image if it was saved
+    if(m_img && foundBox)
+    {
+        m_img->SetBoundingBox(tempBox);
+    }
 }
 
 class LZWDecompress

@@ -493,6 +493,9 @@ public slots:
 	void on_actionShowFibers_triggered();
 	void on_actionShowMatAxes_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
+	void on_actionShowRigidBodies_toggled(bool b);
+	void on_actionShowRigidJoints_toggled(bool b);
+	void on_actionShowRigidLabels_toggled(bool b);
 	void on_actionToggleLight_triggered();
 	void on_actionFront_triggered();
 	void on_actionBack_triggered();

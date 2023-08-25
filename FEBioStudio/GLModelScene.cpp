@@ -236,6 +236,11 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc, po);
 				else RenderObject(rc, po);
 			}
+			else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+			{
+				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				else RenderObject(rc, po);
+			}
 			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
 			{
 				RenderFEElements(rc, po);
@@ -2515,6 +2520,62 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 				return false;
 			});
 	}
+	else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+	{
+		glEnable(GL_COLOR_MATERIAL);
+
+		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
+			int i = el.m_ntag;
+			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+			if (el.IsBeam()) hasBeamElements = true;
+
+			if (!el.IsSelected() && el.IsVisible())
+			{
+				GPart* pg = po->Part(el.m_gid);
+				if (pg->IsVisible())
+				{
+					GLColor col;
+					const int a = 212;
+					const int b = 106;
+					const int d =  53;
+					switch (el.Type())
+					{
+					case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
+					case FE_TRI3   : col = GLColor(0, a, a); break;
+					case FE_TRI6   : col = GLColor(0, b, b); break;
+					case FE_TRI7   : col = GLColor(0, b, d); break;
+					case FE_TRI10  : col = GLColor(0, d, d); break;
+					case FE_QUAD4  : col = GLColor(a, a, 0); break;
+					case FE_QUAD8  : col = GLColor(b, b, 0); break;
+					case FE_QUAD9  : col = GLColor(d, d, 0); break;
+					case FE_TET4   : col = GLColor(0, a, 0); break;
+					case FE_TET5   : col = GLColor(0, a, 0); break;
+					case FE_TET10  : col = GLColor(0, b, 0); break;
+					case FE_TET15  : col = GLColor(0, b, 0); break;
+					case FE_TET20  : col = GLColor(0, d, 0); break;
+					case FE_HEX8   : col = GLColor(a, 0, 0); break;
+					case FE_HEX20  : col = GLColor(b, 0, 0); break;
+					case FE_HEX27  : col = GLColor(b, 0, 0); break;
+					case FE_PENTA6 : col = GLColor(0, 0, a); break;
+					case FE_PENTA15: col = GLColor(0, 0, b); break;
+					case FE_PYRA5  : col = GLColor(0, 0, a); break;
+					case FE_PYRA13 : col = GLColor(0, 0, b); break;
+					case FE_BEAM2  : col = GLColor(a, a, a); break;
+					case FE_BEAM3  : col = GLColor(b, b, b); break;
+					default:
+						col = GLColor(255, 255, 255); break;
+					}
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) c[j] = col;
+
+					// render the element
+					return true;
+				}
+			}
+			return false;
+			});
+
+	}
 	else
 	{
 		// color is determined by material
@@ -2830,6 +2891,14 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 		col[0] = (float)c.r / 255.f;
 		col[1] = (float)c.g / 255.f;
 		col[2] = (float)c.b / 255.f;
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+	}
+	break;
+	case OBJECT_COLOR_MODE::FSELEMENT_TYPE:
+	{
+		// We should only get here if the object is not active, or it is not meshed
+		SetDefaultMatProps();
+		GLfloat col[] = { 1.f, 1.f, 1.f, 1.f };
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
 	}
 	break;
