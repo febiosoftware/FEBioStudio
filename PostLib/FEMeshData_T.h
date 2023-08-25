@@ -1092,4 +1092,11 @@ public:
 	void eval(int n, float* pv);
 };
 
+//-----------------------------------------------------------------------------
+class FESurfaceNormal : public FEFaceData_T<vec3f, DATA_ITEM>
+{
+public:
+	FESurfaceNormal(FEState* state, ModelDataField* pdf);
+	void eval(int n, vec3f* pv);
+};
 }
