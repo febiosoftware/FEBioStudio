@@ -45,6 +45,10 @@ namespace Ui {
 	class CGraphWindow;
 };
 
+namespace Post {
+	class ModelDataField;
+};
+
 //=================================================================================================
 // Base class for graph tools
 class CPlotTool : public QWidget
@@ -393,7 +397,7 @@ private:
 // Specialized graph for displaying data from a model's selection
 
 namespace Post {
-	class GLProbe;
+	class GLPointProbe;
 	class GLRuler;
 	class GLMusclePath;
 }
@@ -419,7 +423,8 @@ private:
 	void addSelectedFaces();
 	void addSelectedElems();
 	void addObjectData(int n);
-	void addProbeData(Post::GLProbe* probe);
+	void addGlobalData(Post::ModelDataField* pdf, int n);
+	void addProbeData(Post::GLPointProbe* probe);
 	void addRulerData(Post::GLRuler* ruler);
 	void addMusclePathData(Post::GLMusclePath* musclePath);
 

@@ -38,17 +38,62 @@ COMSOLimport::COMSOLimport(FSProject& prj) : FSFileImport(prj)
 	m_addtris = false;
 	m_addquads = false;
 	m_addtets = true;
-	m_addhexes = true;
 	m_addprisms = true;
+	m_addhexes = true;
 	m_pyrstotets = false;
-    m_addpyrs = true;
-    m_totalelems = 0;
-    m_node0 = 0;	
+	m_addpyrs = true;
+
+	m_totalelems = 0;
+	m_node0 = 0;	
+
+	AddBoolParam(m_domainstosets, "domains_to_sets", "Convert domains to named selections");
+	AddBoolParam(m_bautopart    , "auto_partition" , "Auto-partition domains into parts");
+	AddBoolParam(m_eltypeseg    , "seg_elem_type"  , "Segregate element type");
+	AddBoolParam(m_addtris      , "add_tris"       , "Import TRI elements");
+	AddBoolParam(m_addquads     , "add_quads"      , "Import QUAD elements");
+	AddBoolParam(m_addtets      , "add_tet"        , "Import TET elements");
+	AddBoolParam(m_addprisms    , "add_prisms"     , "Import PRISM elements");
+	AddBoolParam(m_addhexes     , "add_hex"        , "Import HEX elements");
+	AddBoolParam(m_pyrstotets   , "add_pyrtotet"   , "Import PYR elements (as 2 TETs each)");
+	AddBoolParam(m_addpyrs      , "add_pyr"        , "Import PYR elements");
 }
 
 COMSOLimport::~COMSOLimport()
 {
 }
+
+bool COMSOLimport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_domainstosets = GetBoolValue(0);
+		m_bautopart     = GetBoolValue(1);
+		m_eltypeseg     = GetBoolValue(2);
+		m_addtris       = GetBoolValue(3);
+		m_addquads      = GetBoolValue(4);
+		m_addtets       = GetBoolValue(5);
+		m_addprisms     = GetBoolValue(6);
+		m_addhexes      = GetBoolValue(7);
+		m_pyrstotets    = GetBoolValue(8);
+		m_addpyrs       = GetBoolValue(9);
+	}
+	else
+	{
+		SetBoolValue(0, m_domainstosets);
+		SetBoolValue(1, m_bautopart);
+		SetBoolValue(2, m_eltypeseg);
+		SetBoolValue(3, m_addtris);
+		SetBoolValue(4, m_addquads);
+		SetBoolValue(5, m_addtets);
+		SetBoolValue(6, m_addprisms);
+		SetBoolValue(7, m_addhexes);
+		SetBoolValue(8, m_pyrstotets);
+		SetBoolValue(9, m_addpyrs);
+	}
+
+	return false;
+}
+
 
 bool COMSOLimport::Load(const char* szfile)
 {

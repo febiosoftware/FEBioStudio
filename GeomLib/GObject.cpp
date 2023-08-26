@@ -137,22 +137,10 @@ bool GObject::CanDeleteMesh() const
 
 	// Check if there are any mesh dependencies.
 	// Note that part-sets aren't checked since they don't reference the mesh directly.
-	for (int i = 0; i < FENodeSets(); ++i) 	{
-		const FSNodeSet* pg = imp->m_pFENodeSet[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
-	for (int i = 0; i < FESurfaces(); ++i) 	{
-		const FSSurface* pg = imp->m_pFESurface[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
-	for (int i = 0; i < FEEdgeSets(); ++i) {
-		const FSEdgeSet* pg = imp->m_pFEEdgeSet[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
-	for (int i = 0; i < FEElemSets(); ++i) {
-		const FSElemSet* pg = imp->m_pFEElemSet[i];
-		if (pg->GetReferenceCount() > 0) return false;
-	}
+	if (FENodeSets() > 0) return false;
+	if (FESurfaces() > 0) return false;
+	if (FEEdgeSets() > 0) return false;
+	if (FEElemSets() > 0) return false;
 
 	return true;
 }
@@ -254,14 +242,14 @@ void GObject::ClearFEGroups()
 //-----------------------------------------------------------------------------
 // Remove groups that are empty.
 
-template <class T> void clearVector(FSObjectList<T>& v)
+template <class T> void clearVector(FSObjectList<T>& v, std::function<bool(T*)> f)
 {
 	if (v.IsEmpty()) return;
 
 	for (size_t i=0; i<v.Size(); )
 	{
 		T* o = v[i];
-		if (o->size() == 0)
+		if (f(o))
 		{
 			v.Remove(o);
 		}
@@ -271,11 +259,20 @@ template <class T> void clearVector(FSObjectList<T>& v)
 
 void GObject::RemoveEmptyFEGroups()
 {
-	clearVector(imp->m_pFEPartSet);
-	clearVector(imp->m_pFEElemSet);
-	clearVector(imp->m_pFESurface);
-	clearVector(imp->m_pFEEdgeSet);
-	clearVector(imp->m_pFENodeSet);
+	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->size() == 0); });
+	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->size() == 0); });
+	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->size() == 0); });
+	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->size() == 0); });
+	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->size() == 0); });
+}
+
+void GObject::RemoveUnusedFEGroups()
+{
+	clearVector<FSPartSet>(imp->m_pFEPartSet, [](FSPartSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSElemSet>(imp->m_pFEElemSet, [](FSElemSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSSurface>(imp->m_pFESurface, [](FSSurface* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSEdgeSet>(imp->m_pFEEdgeSet, [](FSEdgeSet* pg) { return (pg->GetReferenceCount() == 0); });
+	clearVector<FSNodeSet>(imp->m_pFENodeSet, [](FSNodeSet* pg) { return (pg->GetReferenceCount() == 0); });
 }
 
 //-----------------------------------------------------------------------------

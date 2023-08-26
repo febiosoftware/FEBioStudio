@@ -56,133 +56,6 @@ double gain(double g, double x)
 }
 
 //-----------------------------------------------------------------------------
-Mesh_Data::Mesh_Data()
-{
-	m_min = m_max = 0.0;
-}
-
-//-----------------------------------------------------------------------------
-Mesh_Data::Mesh_Data(const Mesh_Data& d)
-{
-	m_data = d.m_data;
-	m_min = d.m_min;
-	m_max = d.m_max;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::operator = (const Mesh_Data& d)
-{
-	m_data = d.m_data;
-	m_min = d.m_min;
-	m_max = d.m_max;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::Clear()
-{
-	m_data.clear();
-	m_min = m_max = 0.0;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::Init(FSMesh* mesh, double initVal, int initTag)
-{
-	int NE = mesh->Elements();
-	m_data.resize(NE);
-	for (int i = 0; i < NE; ++i)
-	{
-		FSElement& el = mesh->Element(i);
-		DATA& di = m_data[i];
-		int ne = el.Nodes();
-		di.nval = ne;
-		di.tag = initTag;
-		for (int j = 0; j < ne; ++j)
-		{
-			di.val[j] = initVal;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::Init(FSSurfaceMesh* mesh, double initVal, int initTag)
-{
-	int NF = mesh->Faces();
-	m_data.resize(NF);
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& f = mesh->Face(i);
-		DATA& di = m_data[i];
-		int ne = f.Nodes();
-		di.nval = ne;
-		di.tag = initTag;
-		for (int j = 0; j < ne; ++j)
-		{
-			di.val[j] = initVal;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// get the average element value
-double Mesh_Data::GetElementAverageValue(int elem)
-{
-	double v = 0.0;
-	if (m_data[elem].tag != 0)
-	{
-		for (int i = 0; i < m_data[elem].nval; ++i) v += m_data[elem].val[i];
-		v /= (double)m_data[elem].nval;
-	}
-	return v;
-}
-
-//-----------------------------------------------------------------------------
-// set the element (average) value
-void Mesh_Data::SetElementValue(int elem, double v)
-{
-	int ne = m_data[elem].nval;
-	for (int i = 0; i < ne; ++i) m_data[elem].val[i] = v;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::UpdateValueRange()
-{
-	m_min = m_max = 0;
-
-	// find the first active value
-	int N = (int)m_data.size();
-	int i = 0;
-	for (i = 0; i<N; ++i)
-	{
-		if (m_data[i].tag != 0)
-		{
-			m_min = m_max = m_data[i].val[0];
-			break;
-		}
-	}
-
-	// update range
-	for (i=0; i<N; ++i)
-	{
-		DATA& di = m_data[i];
-		if (di.tag != 0)
-		{
-			for (int j = 0; j < di.nval; ++j)
-			{
-				if (di.val[j] > m_max) m_max = di.val[j];
-				if (di.val[j] < m_min) m_min = di.val[j];
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::GetValueRange(double& vmin, double& vmax) const
-{
-	vmin = m_min;
-	vmax = m_max;
-}
-
-//-----------------------------------------------------------------------------
 // default constructor
 FSMesh::FSMesh()
 {
@@ -796,6 +669,7 @@ void FSMesh::UpdateElementNeighbors()
 	int elems = Elements();
 
 	// reset all element neighbor and face ptrs
+#pragma omp parallel for
 	for (int i = 0; i < elems; i++)
 	{
 		FEElement_& el = ElementRef(i);
@@ -811,16 +685,14 @@ void FSMesh::UpdateElementNeighbors()
 	FSNodeElementList NET;
 	NET.Build(this);
 
-	// set up the element's neighbour pointers
-	FSEdge edge;
-	FSFace f1, f2, f3;
-
 	// loop over all elements
+#pragma omp parallel for shared(NET)
 	for (int i = 0; i < elems; i++)
 	{
 		FEElement_* pe = ElementPtr(i);
 		// do the solid elements first
 		int n = pe->Faces();
+		FSFace f1, f2;
 		for (int j = 0; j < n; j++)
 		{
 			// check if we already have a neighbor assigned
@@ -883,7 +755,7 @@ void FSMesh::UpdateElementNeighbors()
 		{
 			if (pe->m_nbr[j] == -1)
 			{
-				edge = pe->GetEdge(j);
+				FSEdge edge = pe->GetEdge(j);
 
 				// find the neighbour element
 				int inode = edge.n[0];

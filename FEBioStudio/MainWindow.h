@@ -55,7 +55,9 @@ class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
+class CImageModel;
 class CImageSliceView;
+class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
 
@@ -68,7 +70,6 @@ namespace Ui {
 namespace Post {
 	class CGLModel;
 	class CGLObject;
-	class CImageModel;
 }
 
 class CMainWindow : public QMainWindow
@@ -195,6 +196,13 @@ public:
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
 
+	// febio config file
+	bool GetLoadConfigFlag();
+	QString GetConfigFileName();
+
+	void SetLoadConfigFlag(bool b);
+	void SetConfigFileName(QString s);
+
 	// --- WINDOW UPDATE ---
 
 	//! Update the window title.
@@ -317,7 +325,7 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
-	bool ImportImage(Post::CImageModel* imgModel);
+	bool ImportImage(CImageModel* imgModel);
 
 public slots:
 	void on_actionNewModel_triggered();
@@ -451,8 +459,10 @@ public slots:
 	void on_actionMarchingCubes_triggered();
 	void on_actionImageWarp_triggered();
 	void on_actionAddProbe_triggered();
+	void on_actionAddCurveProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionMusclePath_triggered();
+	void on_actionPlotGroup_triggered();
 	void on_actionGraph_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
@@ -483,6 +493,9 @@ public slots:
 	void on_actionShowFibers_triggered();
 	void on_actionShowMatAxes_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
+	void on_actionShowRigidBodies_toggled(bool b);
+	void on_actionShowRigidJoints_toggled(bool b);
+	void on_actionShowRigidLabels_toggled(bool b);
 	void on_actionToggleLight_triggered();
 	void on_actionFront_triggered();
 	void on_actionBack_triggered();
@@ -633,6 +646,7 @@ public slots:
 
 	CGLView* GetGLView();
     CImageSliceView* GetImageSliceView();
+    C2DImageTimeView* GetC2DImageTimeView();
 
 	void UpdateGraphs(bool breset);
 

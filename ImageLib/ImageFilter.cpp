@@ -26,8 +26,8 @@ SOFTWARE.*/
 
 #include "ImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
-#include <PostLib/ImageModel.h>
-#include <PostLib/ImageSource.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
 #include <ImageLib/ImageSITK.h>
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>
@@ -67,23 +67,23 @@ private:
     std::string m_what;
 };
 
-CImageFilter::CImageFilter(int type, Post::CImageModel* model) : m_type(type), m_model(model)
+CImageFilter::CImageFilter(int type, CImageModel* model) : m_type(type), m_model(model)
 {
 
 }
 
-void CImageFilter::SetImageModel(Post::CImageModel* model)
+void CImageFilter::SetImageModel(CImageModel* model)
 {
     m_model = model;
 }
 
-Post::CImageModel* CImageFilter::GetImageModel()
+CImageModel* CImageFilter::GetImageModel()
 {
 	return m_model;
 }
 
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
-ThresholdImageFilter::ThresholdImageFilter(Post::CImageModel* model)
+ThresholdImageFilter::ThresholdImageFilter(CImageModel* model)
     : CImageFilter(CImageFilter::THRESHOLD, model)
 {
     static int n = 1;
@@ -108,9 +108,9 @@ void ThresholdImageFilter::ApplyFilter()
 
     if(min >= max) return;
 
-    Byte* originalBytes = image->GetBytes();
+    uint8_t* originalBytes = image->GetBytes();
     auto imageToFilter = m_model->GetImageSource()->GetImageToFilter(true);
-    Byte* filteredBytes = imageToFilter->GetBytes();
+    uint8_t* filteredBytes = imageToFilter->GetBytes();
 
     for(int i = 0; i < image->Width()*image->Height()*image->Depth(); i++)
     {
@@ -132,7 +132,7 @@ void ThresholdImageFilter::ApplyFilter()
 #ifdef HAS_ITK
 
 REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
-MeanImageFilter::MeanImageFilter(Post::CImageModel* model)
+MeanImageFilter::MeanImageFilter(CImageModel* model)
     : CImageFilter(CImageFilter::MEAN, model)
 {
     static int n = 1;
@@ -178,7 +178,7 @@ void MeanImageFilter::ApplyFilter()
 }
 
 REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
-GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model)
+GaussianImageFilter::GaussianImageFilter(CImageModel* model)
     : CImageFilter(CImageFilter::GAUSSBLUR, model)
 {
     static int n = 1;
@@ -218,7 +218,7 @@ void GaussianImageFilter::ApplyFilter()
 // I've commented this registration out for now. This filter is always returning an error
 // saying, "Failed to allocate memory for image"
 // REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
-AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(Post::CImageModel* model)
+AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(CImageModel* model)
 : CImageFilter(ADAPTHISTEQ, model)
 {
 static int n = 1;
@@ -262,13 +262,13 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
 }
 
 #else
-MeanImageFilter::MeanImageFilter(Post::CImageModel* model) : CImageFilter(0, nullptr) {}
+MeanImageFilter::MeanImageFilter(CImageModel* model) : CImageFilter(0, nullptr) {}
 void MeanImageFilter::ApplyFilter() {}
 
-GaussianImageFilter::GaussianImageFilter(Post::CImageModel* model) : CImageFilter(0, nullptr) {}
+GaussianImageFilter::GaussianImageFilter(CImageModel* model) : CImageFilter(0, nullptr) {}
 void GaussianImageFilter::ApplyFilter() {}
 
-AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(Post::CImageModel* model) : CImageFilter(0, nullptr) {}
+AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(CImageModel* model) : CImageFilter(0, nullptr) {}
 void AdaptiveHistogramEqualizationFilter::ApplyFilter() {}
 
 #endif
@@ -287,10 +287,10 @@ WarpImageFilter::WarpImageFilter(Post::CGLModel* glm)
 void WarpImageFilter::ApplyFilter()
 {
 	if ((m_model == nullptr) || (m_glm == nullptr)) return;
-	Post::CImageModel* mdl = m_model;
+	CImageModel* mdl = m_model;
 
 	C3DImage* im = mdl->Get3DImage();
-	Byte* src = im->GetBytes();
+	uint8_t* src = im->GetBytes();
 
 	Post::CGLModel& gm = *m_glm;
 	Post::FEState* state = gm.GetActiveState();
@@ -319,8 +319,8 @@ void WarpImageFilter::ApplyFilter()
 	int nz = (dimScale ? (int)(sz*im->Depth ()) : im->Depth ());
 
 	int voxels = nx * ny * nz;
-	Byte* dst_buf = new Byte[voxels];
-	Byte* dst = dst_buf;
+	uint8_t* dst_buf = new uint8_t[voxels];
+	uint8_t* dst = dst_buf;
 
 	double wx = (nx < 2 ? 0 : 1.0 / (nx - 1.0));
 	double wy = (ny < 2 ? 0 : 1.0 / (ny - 1.0));
@@ -358,7 +358,7 @@ void WarpImageFilter::ApplyFilter()
 
 					// sample 
 					vec3f s = el.eval(r, q[0], q[1]);
-					Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
+					uint8_t b = mdl->ValueAtGlobalPos(to_vec3d(s));
 					dst[index+i] = b;
 				}
 				else
@@ -404,7 +404,7 @@ void WarpImageFilter::ApplyFilter()
 
 						// sample 
 						vec3f s = el.eval(p, q[0], q[1], q[2]);
-						Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
+						uint8_t b = mdl->ValueAtGlobalPos(to_vec3d(s));
 						dst[index+i] = b;
 					}
 					else

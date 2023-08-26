@@ -57,10 +57,6 @@ void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataTyp
 {
 	FSHasOneItemList::SetItemList(nset);
 	m_dataType = dataType;
-	assert(m_po->GetFEMesh() == nset->GetMesh());
-	SetMesh(nset->GetMesh());
-
-	int nodes = nset->size();
 	m_dataSize = 0;
 	switch (dataType)
 	{
@@ -71,8 +67,21 @@ void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataTyp
 		assert(false);
 	}
 
-	int bufsize = nodes * m_dataSize;
-	m_data.assign(bufsize, v);
+	if (nset == nullptr)
+	{
+		SetMesh(nullptr);
+		m_data.clear();
+	}
+	else
+	{
+		assert(m_po->GetFEMesh() == nset->GetMesh());
+		SetMesh(nset->GetMesh());
+
+		int nodes = nset->size();
+
+		int bufsize = nodes * m_dataSize;
+		m_data.assign(bufsize, v);
+	}
 }
 
 void FENodeData::SetItemList(FEItemListBuilder* pl, int n)

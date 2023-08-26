@@ -46,10 +46,7 @@ class GPart;
 class FSStep;
 class CModelViewer;
 
-namespace Post
-{
-    class CImageModel;
-}
+class CImageModel;
 
 class FEObjectProps : public CObjectProps
 {
@@ -227,15 +224,15 @@ private:
 class CImageModelProperties : public CObjectProps
 {
 public:
-    CImageModelProperties(Post::CImageModel* model);
+    CImageModelProperties(CImageModel* model);
 
     QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
 
 private:
-    enum PropOrder {SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
+    enum PropOrder {PIXELTYPE, PXLDIM, SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
 
 private:
-    Post::CImageModel* m_model;
+    CImageModel* m_model;
 
 };

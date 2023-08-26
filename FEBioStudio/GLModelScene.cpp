@@ -230,7 +230,17 @@ void CGLModelScene::RenderGObject(CGLContext& rc, GObject* po)
 		{
 		case SELECT_OBJECT:
 		{
-			if (view.m_bcontour && (poa == po) && po->GetFEMesh()) RenderFEElements(rc, po);
+			if (view.m_bcontour && (poa == po))
+			{
+				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				else if (po->GetEditableMesh()) RenderSurfaceMeshFaces(rc, po);
+				else RenderObject(rc, po);
+			}
+			else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+			{
+				if (po->GetFEMesh()) RenderFEElements(rc, po);
+				else RenderObject(rc, po);
+			}
 			else if (glview->ShowPlaneCut() && (glview->PlaneCutMode() == Planecut_Mode::HIDE_ELEMENTS))
 			{
 				RenderFEElements(rc, po);
@@ -895,9 +905,9 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterial* pmat, FEElementRef& r
 		GLColor col = m_defaultCol;
 		if (m_colorOption == 0)
 		{
-			Byte r = (Byte)(255 * fabs(q.x));
-			Byte g = (Byte)(255 * fabs(q.y));
-			Byte b = (Byte)(255 * fabs(q.z));
+			uint8_t r = (uint8_t)(255 * fabs(q.x));
+			uint8_t g = (uint8_t)(255 * fabs(q.y));
+			uint8_t b = (uint8_t)(255 * fabs(q.z));
 			col = GLColor(r, g, b);
 		}
 
@@ -973,9 +983,9 @@ void GLFiberRenderer::RenderFiber(GObject* po, FSMaterialProperty* pmat, FEEleme
 		GLColor col = m_defaultCol;
 		if (m_colorOption == 0)
 		{
-			Byte r = (Byte)(255 * fabs(q.x));
-			Byte g = (Byte)(255 * fabs(q.y));
-			Byte b = (Byte)(255 * fabs(q.z));
+			uint8_t r = (uint8_t)(255 * fabs(q.x));
+			uint8_t g = (uint8_t)(255 * fabs(q.y));
+			uint8_t b = (uint8_t)(255 * fabs(q.z));
 			col = GLColor(r, g, b);
 		}
 
@@ -1236,9 +1246,12 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 		{
 			GNode* nj = po->Node(j);
 			int nid = nj->GetID();
-			if ((minId == -1) || (nid < minId)) minId = nid;
-			if ((maxId == -1) || (nid > maxId)) maxId = nid;
-			nodes.push_back(nj);
+			if (nid != -1)
+			{
+				if ((minId == -1) || (nid < minId)) minId = nid;
+				if ((maxId == -1) || (nid > maxId)) maxId = nid;
+				nodes.push_back(nj);
+			}
 		}
 	}
 
@@ -2242,15 +2255,54 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 	GLViewSettings& view = rc.m_settings;
 	FSModel& fem = *doc->GetFSModel();
 
-	GLColor col = po->GetColor();
-	SetMatProps(0);
-	glColor3ub(col.r, col.g, col.b);
+	Mesh_Data& data = surfaceMesh->GetMeshData();
+	bool showContour = (view.m_bcontour && data.IsValid());
 
 	// render the unselected faces
-	// Note that we do not render internal faces
-	renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
-		return (!face.IsSelected() && face.IsVisible());
-		});
+	if (showContour)
+	{
+		// Color is determined by data and colormap
+		double vmin, vmax;
+		data.GetValueRange(vmin, vmax);
+
+		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		colorMap.SetRange((float)vmin, (float)vmax);
+
+		SetMatProps(0);
+		glEnable(GL_COLOR_MATERIAL);
+
+		renderer.RenderFESurfaceMeshFaces(surfaceMesh, [&](const FSFace& face, GLColor* c) {
+			int i = face.m_ntag;
+
+			if (face.IsVisible() && !face.IsSelected())
+			{
+				int ne = face.Nodes();
+				for (int j = 0; j < ne; ++j)
+				{
+					if (data.GetElementDataTag(i) > 0)
+						c[j] = colorMap.map(data.GetElementValue(i, j));
+					else
+						c[j] = GLColor(212, 212, 212);
+				}
+
+				// render the face
+				return true;
+			}
+			return false;
+			});
+	}
+	else
+	{
+		GLColor col = po->GetColor();
+		SetMatProps(0);
+		glColor3ub(col.r, col.g, col.b);
+
+		// render the unselected faces
+		// Note that we do not render internal faces
+		renderer.RenderFEFaces(surfaceMesh, [](const FSFace& face) {
+			return (!face.IsSelected() && face.IsVisible());
+			});
+	}
 
 	// render the selected faces
 	// override some settings
@@ -2467,6 +2519,62 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 				}
 				return false;
 			});
+	}
+	else if (view.m_objectColor == OBJECT_COLOR_MODE::FSELEMENT_TYPE)
+	{
+		glEnable(GL_COLOR_MATERIAL);
+
+		renderer.RenderFEElements(*pm, [&](const FEElement_& el, GLColor* c) {
+			int i = el.m_ntag;
+			if (el.IsVisible() && el.IsSelected()) selectedElements.push_back(i);
+			if (el.IsBeam()) hasBeamElements = true;
+
+			if (!el.IsSelected() && el.IsVisible())
+			{
+				GPart* pg = po->Part(el.m_gid);
+				if (pg->IsVisible())
+				{
+					GLColor col;
+					const int a = 212;
+					const int b = 106;
+					const int d =  53;
+					switch (el.Type())
+					{
+					case FE_INVALID_ELEMENT_TYPE: col = GLColor(0, 0, 0); break;
+					case FE_TRI3   : col = GLColor(0, a, a); break;
+					case FE_TRI6   : col = GLColor(0, b, b); break;
+					case FE_TRI7   : col = GLColor(0, b, d); break;
+					case FE_TRI10  : col = GLColor(0, d, d); break;
+					case FE_QUAD4  : col = GLColor(a, a, 0); break;
+					case FE_QUAD8  : col = GLColor(b, b, 0); break;
+					case FE_QUAD9  : col = GLColor(d, d, 0); break;
+					case FE_TET4   : col = GLColor(0, a, 0); break;
+					case FE_TET5   : col = GLColor(0, a, 0); break;
+					case FE_TET10  : col = GLColor(0, b, 0); break;
+					case FE_TET15  : col = GLColor(0, b, 0); break;
+					case FE_TET20  : col = GLColor(0, d, 0); break;
+					case FE_HEX8   : col = GLColor(a, 0, 0); break;
+					case FE_HEX20  : col = GLColor(b, 0, 0); break;
+					case FE_HEX27  : col = GLColor(b, 0, 0); break;
+					case FE_PENTA6 : col = GLColor(0, 0, a); break;
+					case FE_PENTA15: col = GLColor(0, 0, b); break;
+					case FE_PYRA5  : col = GLColor(0, 0, a); break;
+					case FE_PYRA13 : col = GLColor(0, 0, b); break;
+					case FE_BEAM2  : col = GLColor(a, a, a); break;
+					case FE_BEAM3  : col = GLColor(b, b, b); break;
+					default:
+						col = GLColor(255, 255, 255); break;
+					}
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) c[j] = col;
+
+					// render the element
+					return true;
+				}
+			}
+			return false;
+			});
+
 	}
 	else
 	{
@@ -2786,6 +2894,14 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
 	}
 	break;
+	case OBJECT_COLOR_MODE::FSELEMENT_TYPE:
+	{
+		// We should only get here if the object is not active, or it is not meshed
+		SetDefaultMatProps();
+		GLfloat col[] = { 1.f, 1.f, 1.f, 1.f };
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+	}
+	break;
 	}
 }
 
@@ -2821,7 +2937,7 @@ void CGLModelScene::RenderRigidLabels(CGLContext& rc)
 				strncpy(tag.sztag, name.c_str(), l);
 				tag.sztag[l] = 0;
 			}
-			else sprintf(tag.sztag, "_no_name");
+			else snprintf(tag.sztag, sizeof tag.sztag, "_no_name");
 			vtag.push_back(tag);
 		}
 	}

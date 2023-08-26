@@ -2099,3 +2099,21 @@ void FEElementMaterial::eval(int n, float* pv)
 	pv[0] = (float) el.m_MatID;
 }
 
+//=============================================================================
+FESurfaceNormal::FESurfaceNormal(FEState* state, ModelDataField* pdf) : FEFaceData_T<vec3f, DATA_ITEM>(state, pdf)
+{
+
+}
+
+void FESurfaceNormal::eval(int n, vec3f* pv)
+{
+	FEPostMesh* mesh = GetFEState()->GetFEMesh();
+	if (mesh)
+	{
+		if ((n >= 0) && (n < mesh->Faces()))
+		{
+			FSFace& face = mesh->Face(n);
+			*pv = face.m_fn;
+		}
+	}
+}

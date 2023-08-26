@@ -1909,6 +1909,21 @@ void FSModel::DeleteAllLoadControllers()
 }
 
 //-----------------------------------------------------------------------------
+void FSModel::RemoveUnusedLoadControllers()
+{
+	int NLC = m_LC.Size();
+	int n = 0;
+	for (int i = 0; i < NLC; ++i)
+	{
+		FSLoadController* plc = m_LC[n];
+		if (plc->GetReferenceCount() == 0) {
+			m_LC.Remove(plc); delete plc;
+		}
+		else n++;
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::DeleteAllMeshDataGenerators()
 {
 	m_MD.Clear();
@@ -1961,7 +1976,7 @@ void FSModel::Purge(int ops)
 	if (ops == 0)
 	{
 		// clear all groups
-		m_pModel->ClearGroups();
+		m_pModel->RemoveNamedSelections();
 
 		// remove discrete objects
 		m_pModel->ClearDiscrete();
@@ -1971,6 +1986,9 @@ void FSModel::Purge(int ops)
 
 		// remove all materials
 		DeleteAllMaterials();
+
+		// remove all load controllers
+		m_LC.Clear();
 
 		// add an initial step
 		m_pStep.Add(new FSInitialStep(this));

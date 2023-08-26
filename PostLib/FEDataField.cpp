@@ -403,6 +403,7 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 		case DATA_NODE: return new FEElemArrayDataNode(pstate, GetArraySize(), this); break;
 		}
 		break;
+	case CLASS_OBJECT: return new FEGlobalArrayData(pstate, GetArraySize()); break;
 	}
 	assert(false);
 	return 0;
@@ -937,6 +938,7 @@ void StandardDataFieldManager::Init()
 	Add<FEAreaCoverage>("Area coverage");
 	Add<FEDataField_T<FEFacetArea> >("Facet area");
 	Add<FEDataField_T<FEElementMaterial> >("Material ID");
+	Add<FEDataField_T<FESurfaceNormal> >("Surface normal");
 }
 
 void Post::InitStandardDataFields()

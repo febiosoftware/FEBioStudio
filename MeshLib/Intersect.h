@@ -79,5 +79,7 @@ bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& 
 bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q);
 bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FSFace& face, Intersection& q);
 
+bool RayIntersectFace(const Ray& ray, int faceType, vec3d* rn, Intersection& q);
+
 //-----------------------------------------------------------------------------
 bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q, bool selectionState = false);

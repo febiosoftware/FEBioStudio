@@ -87,6 +87,9 @@ int edgeIntersect(const vec3d& r0, const vec3d& r1, const vec3d& r2, const vec3d
 // this calculates the ratio of the shortest diagonal to the longest edge
 double TriangleQuality(vec3d r[3]);
 
+// calculates the max dihedral angle of a face
+double TriMaxDihedralAngle(const FSMeshBase& mesh, const FSFace& face);
+
 // normal to face
 inline vec3d faceNormal(const vec3d& a, const vec3d& b, const vec3d& c)
 {
@@ -108,6 +111,8 @@ bool FindElementRef(FSCoreMesh& m, const vec3f& x, int& nelem, double r[3]);
 // project the point p in the current frame of element el. This returns the iso-parametric coordinates in r.
 // The return value is true or false depending if the point is actually inside the element
 bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double r[3]);
+
+bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q);
 
 bool IsInsideElement(FEElement_& el, double r[3], const double tol);
 

@@ -1749,7 +1749,18 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 	for (int i = 0; i < faceList.size(); ++i)
 	{
 		FSFace& f = pm->Face(faceList[i]);
-		if (f.IsVisible())
+
+		// NOTE: we don't want to draw outline of eroded elements.
+		//       What I should do is flag eroded elements and faces as hidden
+		//       so we don't need to do this elaborate check.
+		bool faceVisible = f.IsVisible();
+		if (faceVisible)
+		{
+			int eid = f.m_elem[0].eid;
+			if (eid >= 0) faceVisible = (pm->Element(eid).IsEroded() == false);
+		}
+		
+		if (faceVisible)
 		{
 			int n = f.Edges();
 			for (int j = 0; j < n; ++j)
@@ -1956,8 +1967,12 @@ void CGLModel::RenderMeshLines(FEPostModel* ps, int nmat)
 			FSFace& face = dom.Face(i);
 			if (face.IsVisible())
 			{
-				// okay, we got one, so let's render it
-				m_render.RenderFaceOutline(face, pm);
+				// don't render lines on eroded elements
+				if ((face.m_elem[0].eid >= 0) && (pm->Element(face.m_elem[0].eid).IsEroded() == false))
+				{
+					// okay, we got one, so let's render it
+					m_render.RenderFaceOutline(face, pm);
+				}
 			}
 		}
 	}
@@ -2295,12 +2310,16 @@ void CGLModel::RenderObjects(CGLContext& rc)
 
 			vec3d a = ob.m_r1;
 			vec3d b = ob.m_r2;
+			double Lt = sqrt((a - b) * (a - b));
+
+			double L0 = sqrt((ob.m_r01 - ob.m_r02) * (ob.m_r01 - ob.m_r02));
+			if (L0 == 0) L0 = Lt;
 
 			GLColor c = ob.Color();
 			glColor3ub(c.r, c.g, c.b);
 			switch (ob.m_tag)
 			{
-			case 1: glx::renderSpring(a, b, R); break;
+			case 1: glx::renderSpring(a, b, R, (R == 0 ? 25 : L0 / R)); break;
 			case 2: glx::renderDamper(a, b, R); break;
 			case 4: glx::renderContractileForce(a, b, R); break;
 			default:
@@ -3707,11 +3726,16 @@ void CGLModel::ConvertSelection(int oldMode, int newMode)
 	UpdateSelectionLists();
 }
 
-void CGLModel::AddPlot(CGLPlot* pplot)
+void CGLModel::AddPlot(CGLPlot* pplot, bool update)
 {
 	pplot->SetModel(this);
 	m_pPlot.Add(pplot);
-	pplot->Update(CurrentTimeIndex(), 0.f, true);
+	if (update) pplot->Update(CurrentTimeIndex(), 0.f, true);
+}
+
+void CGLModel::RemovePlot(Post::CGLPlot* pplot)
+{
+	m_pPlot.Remove(pplot);
 }
 
 void CGLModel::ClearPlots()
@@ -3728,6 +3752,7 @@ void CGLModel::MovePlotUp(Post::CGLPlot* plot)
 			CGLPlot* prv = m_pPlot[i - 1];
 			m_pPlot.Set(i - 1, plot);
 			m_pPlot.Set(i, prv);
+			return;
 		}
 	}
 }
@@ -3741,6 +3766,7 @@ void CGLModel::MovePlotDown(Post::CGLPlot* plot)
 			CGLPlot* nxt = m_pPlot[i + 1];
 			m_pPlot.Set(i, nxt);
 			m_pPlot.Set(i + 1, plot);
+			return;
 		}
 	}
 }
@@ -3763,4 +3789,37 @@ int CGLModel::DiscreteEdges()
 GLEdge::EDGE& CGLModel::DiscreteEdge(int i)
 {
 	return m_edge.Edge(i);
+}
+
+//=================================================================
+GLPlotIterator::GLPlotIterator(CGLModel* mdl)
+{
+	m_n = 0;
+	if (mdl && mdl->Plots())
+	{
+		for (int i = 0; i < mdl->Plots(); ++i)
+		{
+			Post::CGLPlot* plot = mdl->Plot(i);
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+			if (pg)
+			{
+				for (int j = 0; j<pg->Plots(); ++j)
+				{
+					m_plt.push_back(pg->GetPlot(j));
+				}
+			}
+			else m_plt.push_back(plot);
+		}
+	}
+}
+
+void GLPlotIterator::operator ++ ()
+{
+	if ((m_n >= 0) && (m_n <= m_plt.size())) m_n++;
+}
+
+GLPlotIterator::operator CGLPlot* ()
+{
+	if ((m_n >= 0) && (m_n < m_plt.size())) return m_plt[m_n];
+	else return nullptr;
 }

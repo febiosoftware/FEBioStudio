@@ -859,35 +859,38 @@ void FSMaterialProperty::Load(IArchive& ar)
 				{
 					string name; 
 					ar.read(name);
-					prop = FindProperty(name); assert(prop);
-					prop->Clear();
+					prop = FindProperty(name);
+					if (prop == nullptr) ar.log("WARNING: Property %s could not be found\n", name.c_str());
+					if (prop) prop->Clear();
 				}
 				break;
 				case CID_MATERIAL_COMPONENT:
 				{
-					assert(prop);
-					FSModelComponent* pmc = nullptr;
-					while (IArchive::IO_OK == ar.OpenChunk())
+					if (prop)
 					{
-						switch (ar.GetChunkID())
+						FSModelComponent* pmc = nullptr;
+						while (IArchive::IO_OK == ar.OpenChunk())
 						{
-						case CID_MATERIAL_COMPONENT_TYPE:
-						{
-							string type; ar.read(type);
-							pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, GetFSModel()); assert(pmc);
-						}
-						break;
-						case CID_MATERIAL_COMPONENT_DATA:
-						{
-							if (pmc)
+							switch (ar.GetChunkID())
 							{
-								pmc->Load(ar);
-								if (prop) prop->AddComponent(pmc);
+							case CID_MATERIAL_COMPONENT_TYPE:
+							{
+								string type; ar.read(type);
+								pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, GetFSModel()); assert(pmc);
 							}
+							break;
+							case CID_MATERIAL_COMPONENT_DATA:
+							{
+								if (pmc)
+								{
+									pmc->Load(ar);
+									if (prop) prop->AddComponent(pmc);
+								}
+							}
+							break;
+							}
+							ar.CloseChunk();
 						}
-						break;
-						}
-						ar.CloseChunk();
 					}
 				}
 				break;

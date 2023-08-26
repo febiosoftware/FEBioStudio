@@ -43,6 +43,7 @@ public:
 	int	m_nx, m_ny, m_nz;
 	double	m_x0, m_y0, m_z0;
 	double	m_w, m_h, m_d;
+    bool m_swapEndianness;
 
 private:
 	Ui::CDlgRAWImport*	ui;

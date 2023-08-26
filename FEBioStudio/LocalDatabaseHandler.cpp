@@ -658,7 +658,9 @@ void CLocalDatabaseHandler::update(QJsonDocument& jsonDoc)
 
 void CLocalDatabaseHandler::GetCategories()
 {
-	std::string query("SELECT category FROM categories");
+    // This will grab the category names, but only categories that actually have projects. 
+    // This way we no longer need to delete empty categories after adding them
+	std::string query("SELECT categories.category FROM projects JOIN categories ON projects.category=categories.ID GROUP BY projects.category");
 
 	imp->execute(query, addCategoryCallback, imp->dbPanel);
 }

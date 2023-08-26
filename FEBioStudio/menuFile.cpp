@@ -43,53 +43,49 @@ SOFTWARE.*/
 #include <FEBio/FEBioExport25.h>
 #include <FEBio/FEBioExport3.h>
 #include <FEBio/FEBioExport4.h>
-#include <Nike3D/FENIKEExport.h>
-#include <MeshIO/FEBYUExport.h>
-#include <MeshIO/FEHypersurfaceExport.h>
-#include <LSDyna/FELSDYNAexport.h>
-#include <MeshIO/FEMeshExport.h>
-#include <MeshIO/FESTLExport.h>
-#include <MeshIO/FEViewpointExport.h>
-#include <MeshIO/FETetGenExport.h>
-#include <MeshIO/FEVTKExport.h>
+#include <Nike3D/NIKE3DExport.h>
+#include <MeshIO/BYUExport.h>
+#include <MeshIO/HypersurfaceExport.h>
+#include <LSDyna/LSDYNAexport.h>
+#include <MeshIO/MeshExport.h>
+#include <MeshIO/STLExport.h>
+#include <MeshIO/ViewpointExport.h>
+#include <MeshIO/TetGenExport.h>
+#include <MeshIO/VTKExport.h>
 #include <MeshIO/VTUImport.h>
-#include <MeshIO/FEPLYExport.h>
+#include <MeshIO/PLYExport.h>
 #include <GeomLib/GPrimitive.h>
 #include <FEBio/FEBioImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
-#include <MeshIO/FEBYUimport.h>
+#include <MeshIO/BYUimport.h>
 #include <Comsol/COMSOLImport.h>
-#include <MeshIO/FEDXFimport.h>
-#include <MeshIO/FEGMshImport.h>
-#include <MeshIO/FEHMASCIIimport.h>
-#include <MeshIO/FEHyperSurfImport.h>
-#include <MeshIO/FEIDEASimport.h>
-#include <MeshIO/FEIGESFileImport.h>
-#include <LSDyna/FELSDYNAimport.h>
-#include <MeshIO/FEMeshImport.h>
-#include <MeshIO/FENASTRANimport.h>
-#include <MeshIO/FEPLYImport.h>
-#include <MeshIO/FERAWImport.h>
-#include <MeshIO/FESTLimport.h>
-#include <MeshIO/FETetGenImport.h>
-#include <MeshIO/FEVTKImport.h>
-#include <Nike3D/NikeImport.h>
+#include <MeshIO/DXFimport.h>
+#include <MeshIO/GMshImport.h>
+#include <MeshIO/HMASCIIimport.h>
+#include <MeshIO/HyperSurfaceImport.h>
+#include <MeshIO/IDEASimport.h>
+#include <MeshIO/IGESFileImport.h>
+#include <LSDyna/LSDYNAimport.h>
+#include <MeshIO/MeshImport.h>
+#include <MeshIO/NASTRANimport.h>
+#include <MeshIO/PLYImport.h>
+#include <MeshIO/RAWToMeshImport.h>
+#include <MeshIO/STLimport.h>
+#include <MeshIO/TetGenImport.h>
+#include <MeshIO/VTKImport.h>
+#include <Nike3D/NIKE3DImport.h>
 #include <MeshIO/PRVObjectImport.h>
 #include <MeshIO/PRVObjectExport.h>
 #include <MeshIO/BREPImport.h>
 #include <MeshIO/STEPImport.h>
 #include <Abaqus/AbaqusExport.h>
 #include <FSCore/FSDir.h>
-#include "DlgImportAbaqus.h"
+#include "DlgEditObject.h"
 #include "DlgRAWImport.h"
-#include "DlgImportCOMSOL.h"
-#include "DlgLSDYNAExport.h"
-#include "DlgVTKExport.h"
 #include "DlgExportFEBio.h"
 #include "DlgNew.h"
 #include "DlgNewProject.h"
-#include "DlgImportSTL.h"
 #include "DlgModelInfo.h"
 #include "DlgExportLSDYNA.h"
 #include <GeomLib/GSurfaceMeshObject.h>
@@ -100,10 +96,12 @@ SOFTWARE.*/
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <QtCore/QTextStream>
-#include <PostLib/ImageModel.h>
-#include <PostLib/ImageSource.h>
-#include <PostLib/DICOMImageSource.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
+#include <ImageLib/SITKImageSource.h>
+#include <ImageLib/DICOMImageSource.h>
 #include <PostLib/FELSDYNAExport.h>
+#include <PostLib/PLYExport.h>
 #include <PostLib/AbaqusExport.h>
 #include <GeomLib/GModel.h>
 #include "DlgExportXPLT.h"
@@ -112,8 +110,6 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include "XMLDocument.h"
 #include "FileThread.h"
-#include "DlgExportAscii.h"
-#include "DlgExportVTK.h"
 #include <PostLib/FEFEBioExport.h>
 #include <PostLib/FEAsciiExport.h>
 #include <PostLib/VRMLExporter.h>
@@ -123,7 +119,7 @@ SOFTWARE.*/
 #include <PostLib/BYUExport.h>
 #include <PostLib/VTKImport.h>
 #include <PostLib/VolumeRenderer.h>
-#include <PostLib/TiffReader.h>
+#include <ImageLib/TiffReader.h>
 #include <sstream>
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
@@ -460,51 +456,51 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* reader = new AbaqusImport(prj);
-		CDlgImportAbaqus dlg(reader, this);
+		CDlgEditObject dlg(reader, "Import Abaqus", this);
 		if (dlg.exec())
 		{
 			return reader;
 		}
-		else return 0;
+		else return nullptr;
 	}
 	if (ext.compare("cdb", Qt::CaseInsensitive) == 0) return new AnsysImport(prj);
-	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new FELSDYNAimport(prj);
-	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new FEIDEASimport(prj);
-	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new FENASTRANimport(prj);
-	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new FEDXFimport(prj);
-	if (ext.compare("stl", Qt::CaseInsensitive) == 0) return new FESTLimport(prj);
-	if (ext.compare("hmascii", Qt::CaseInsensitive) == 0) return new FEHMASCIIimport(prj);
-	if (ext.compare("surf", Qt::CaseInsensitive) == 0) return new FEHyperSurfImport(prj);
-	if (ext.compare("msh", Qt::CaseInsensitive) == 0) return new FEGMshImport(prj);
-	if (ext.compare("byu", Qt::CaseInsensitive) == 0) return new FEBYUimport(prj);
-	if (ext.compare("mesh", Qt::CaseInsensitive) == 0) return new FEMeshImport(prj);
-	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new FETetGenImport(prj);
-	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new FEIGESFileImport(prj);
-	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new FEVTKimport(prj);
+	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
+	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new IDEASimport(prj);
+	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new NASTRANimport(prj);
+	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new DXFimport(prj);
+	if (ext.compare("stl", Qt::CaseInsensitive) == 0) return new STLimport(prj);
+	if (ext.compare("hmascii", Qt::CaseInsensitive) == 0) return new HMASCIIimport(prj);
+	if (ext.compare("surf", Qt::CaseInsensitive) == 0) return new HyperSurfaceImport(prj);
+	if (ext.compare("msh", Qt::CaseInsensitive) == 0) return new GMshImport(prj);
+	if (ext.compare("byu", Qt::CaseInsensitive) == 0) return new BYUimport(prj);
+	if (ext.compare("mesh", Qt::CaseInsensitive) == 0) return new MeshImport(prj);
+	if (ext.compare("ele", Qt::CaseInsensitive) == 0) return new TetGenImport(prj);
+	//	if (ext.compare("iges"   , Qt::CaseInsensitive) == 0) return new IGESFileImport(prj);
+	if (ext.compare("vtk", Qt::CaseInsensitive) == 0) return new VTKimport(prj);
 	if (ext.compare("vtu", Qt::CaseInsensitive) == 0) return new VTUimport(prj);
 	if (ext.compare("raw", Qt::CaseInsensitive) == 0)
 	{
-		CDlgRAWImport dlg(this);
-		if (dlg.exec())
-		{
-			FERAWImport* reader = new FERAWImport(prj);
-			reader->SetImageDimensions(dlg.m_nx, dlg.m_ny, dlg.m_nz);
-			reader->SetBoxSize(dlg.m_x0, dlg.m_y0, dlg.m_z0, dlg.m_w, dlg.m_h, dlg.m_d);
+		RAWToMeshImport* reader = new RAWToMeshImport(prj);
+		CDlgEditObject dlg(reader, "Import RAW", this);
+		if (dlg.exec()) {
 			return reader;
 		}
-		else return 0;
+		else {
+			delete reader;
+			return nullptr;
+		}
 	}
 	if (ext.compare("mphtxt", Qt::CaseInsensitive) == 0)
 	{
 		COMSOLimport* reader = new COMSOLimport(prj);
-		CDlgImportCOMSOL dlg(reader, this);
+		CDlgEditObject dlg(reader, "Import COMSOL", this);
 		if (dlg.exec())
 		{
 			return reader;
 		}
 		else return 0;
 	}
-	if (ext.compare("ply", Qt::CaseInsensitive) == 0) return new FEPLYImport(prj);
+	if (ext.compare("ply", Qt::CaseInsensitive) == 0) return new PLYImport(prj);
 	if ((ext.compare("brep", Qt::CaseInsensitive) == 0) ||
 		(ext.compare("brp", Qt::CaseInsensitive) == 0)) return new BREPImport(prj);
 	if ((ext.compare("step", Qt::CaseInsensitive) == 0) ||
@@ -541,12 +537,12 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	FileReader* reader = 0;
 	QString ext = QFileInfo(fileName).suffix();
 	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
-	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new FENIKEImport(prj);
+	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
 
-		CDlgImportAbaqus dlg(abaqusReader, this);
+		CDlgEditObject dlg(abaqusReader, "Import Abaqus", this);
 		if (dlg.exec() == 0)
 		{
 			return;
@@ -609,7 +605,8 @@ void CMainWindow::ExportPostGeometry()
 		//		<< "ASCII files (*.*)"
 		//		<< "VRML files (*.wrl)"
 		<< "LSDYNA Keyword (*.k)"
-		<< "STL file (*.stl)";
+		<< "STL file (*.stl)"
+		<< "PLY file (*.ply)";
 	//		<< "BYU files(*.byu)"
 	//		<< "NIKE3D files (*.n)"
 	//		<< "VTK files (*.vtk)"
@@ -692,13 +689,10 @@ void CMainWindow::ExportPostGeometry()
 	break;
 	*/	case 1:
 	{
-		CDlgExportLSDYNA dlg(this);
+		Post::FELSDYNAExport w;
+		CDlgEditObject dlg(&w, "Export LSDyna", this);
 		if (dlg.exec())
 		{
-			Post::FELSDYNAExport w;
-			w.m_bsel = dlg.m_bsel;
-			w.m_bsurf = dlg.m_bsurf;
-			w.m_bnode = dlg.m_bnode;
 			bret = w.Save(fem, doc->GetActiveState(), szfilename);
 		}
 	}
@@ -707,8 +701,18 @@ void CMainWindow::ExportPostGeometry()
 	{
 		// We need a dummy project
 		FSProject prj;
-		FESTLExport stl(prj);
+		STLExport stl(prj);
 		bret = stl.Write(szfilename, doc->GetPostObject());
+	}
+	break;
+	case 3:
+	{
+		Post::PLYExport ply;
+		// we need to get the current colormap
+		Post::CGLModel* gm = doc->GetGLModel();
+		Post::CGLColorMap* cmap = (gm ? gm->GetColorMap() : nullptr);
+		if (cmap && cmap->IsActive()) ply.SetColorMap(cmap->GetColorMap()->ColorMap());
+		bret = ply.Save(fem, szfilename);
 	}
 	break;
 	/*	case 5:
@@ -724,11 +728,10 @@ void CMainWindow::ExportPostGeometry()
 	break;
 	case 7:
 	{
-	CDlgExportVTK dlg(this);
+	Post::FEVTKExport w;
+	CDlgEditObject dlg(&w, "Export VTK", this);
 	if (dlg.exec())
 	{
-	Post::FEVTKExport w;
-	w.ExportAllStates(dlg.m_ops[0]);
 	bret = w.Save(fem, szfilename);
 	error = "Failed writing VTK file";
 	}
@@ -850,15 +853,10 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 1: // LSDYNA keyword
 		{
-			CDlgLSDYNAExport dlg(this);
+			LSDYNAexport writer(fem);
+			CDlgEditObject dlg(&writer, "Export LSDYNA", this);
 			if (dlg.exec())
 			{
-				LSDYNAEXPORT ops;
-				ops.bselonly = dlg.m_bselonly;
-				ops.bshellthick = dlg.m_bshell_thick;
-
-				FELSDYNAexport writer(fem);
-				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
 					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to LSDYNA keyword file."));
 			}
@@ -866,7 +864,7 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 2:
 		{
-			FEAbaqusExport writer(fem);
+			AbaqusExport writer(fem);
 			stringstream ss;
 			ss << "Written by FEBio Studio " << FBS_VERSION << "." << FBS_SUBVERSION << "." << FBS_SUBSUBVERSION;
 			writer.SetHeading(ss.str());
@@ -876,57 +874,52 @@ void CMainWindow::ExportGeometry()
 		break;
 		case 3:
 		{
-			FEHypersurfaceExport writer(fem);
+			HypersurfaceExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to surf file."));
 		}
 		break;
 		case 4: // BYU files
 		{
-			FEBYUExport writer(fem);
+			BYUExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to byu file."));
 		}
 		break;
 		case 5: // STL files
 		{
-			FESTLExport writer(fem);
+			STLExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to STL file:\n%1").arg(QString::fromStdString(writer.GetErrorMessage())));
 		}
 		break;
 		case 6: // ViewPoint files
 		{
-			FEViewpointExport writer(fem);
+			ViewpointExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to viewpoint file."));
 		}
 		break;
 		case 7:
 		{
-			FEMeshExport writer(fem);
+			MeshExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to Mesh file."));
 		}
 		break;
 		case 8:
 		{
-			FETetGenExport writer(fem);
+			TetGenExport writer(fem);
 			if (!writer.Write(szfile))
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to TetGen file."));
 		}
 		break;
 		case 9: // VTK files
 		{
-			CDlgVTKExport dlg(this);
+			VTKExport writer(fem);
+			CDlgEditObject dlg(&writer, "Export VTK", this);
 			if (dlg.exec())
 			{
-				VTKEXPORT ops;
-				ops.bpartIds    = dlg.m_bpart_ids;
-				ops.bshellthick = dlg.m_bshell_thick;
-				ops.bscalardata = dlg.m_bscalar_data;
-				FEVTKExport writer(fem);
-				writer.SetOptions(ops);
 				if (!writer.Write(szfile))
 					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to vtk file."));
 			}
@@ -1016,6 +1009,13 @@ void CMainWindow::SavePostDoc()
 		case 0:
 		{
 			bret = doc->SavePostSession(fileName.toStdString());
+
+			if (bret)
+			{
+				ui->addToRecentFiles(fileName);
+				ui->m_project.AddFile(QDir::toNativeSeparators(fileName));
+				ui->fileViewer->Update();
+			}
 		}
 		break;
 		case 1:
@@ -1038,27 +1038,18 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 3:
 		{
-			CDlgExportAscii dlg(this);
+			Post::FEASCIIExport out;
+			CDlgEditObject dlg(&out, "Export ASCII", this);
 			if (dlg.exec() == QDialog::Accepted)
 			{
 				// decide which time steps to export
 				int n0, n1;
-				if (dlg.m_nstep == 0) n0 = n1 = doc->GetActiveState();
+				if (out.m_alltimes == 0) n0 = n1 = doc->GetActiveState();
 				else
 				{
 					n0 = 0;
 					n1 = fem.GetStates() - 1;
 				}
-
-				// export the data
-				Post::FEASCIIExport out;
-				out.m_bcoords = dlg.m_bcoords;
-				out.m_bedata = dlg.m_bedata;
-				out.m_belem = dlg.m_belem;
-				out.m_bface = dlg.m_bface;
-				out.m_bfnormals = dlg.m_bfnormals;
-				out.m_bndata = dlg.m_bndata;
-				out.m_bselonly = dlg.m_bsel;
 
 				bret = out.Save(&fem, n0, n1, szfilename);
 			}
@@ -1072,13 +1063,10 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 5:
 		{
-			CDlgExportLSDYNA dlg(this);
+			Post::FELSDYNAExport w;
+			CDlgEditObject dlg(&w, "Export LSDyna", this);
 			if (dlg.exec())
 			{
-				Post::FELSDYNAExport w;
-				w.m_bsel = dlg.m_bsel;
-				w.m_bsurf = dlg.m_bsurf;
-				w.m_bnode = dlg.m_bnode;
 				bret = w.Save(fem, doc->GetActiveState(), szfilename);
 			}
 		}
@@ -1097,13 +1085,10 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 8:
 		{
-			CDlgExportVTK dlg(this);
+			Post::FEVTKExport w;
+			CDlgEditObject dlg(&w, "Export VTK", this);
 			if (dlg.exec())
 			{
-				Post::FEVTKExport w;
-				w.ExportAllStates(dlg.m_ops[0]);
-				w.ExportSelectedElementsOnly(dlg.m_bselonly);
-				w.WriteSeriesFile(dlg.m_bwriteSeries);
 				bret = w.Save(fem, szfilename);
 				error = "Failed writing VTK file";
 			}
@@ -1145,7 +1130,7 @@ void CMainWindow::SavePostDoc()
 		}
 		else
 		{
-			QMessageBox::information(this, "PostView2", "Success saving file!");
+			QMessageBox::information(this, "Save", "Success saving file!");
 		}
 	}
 }
@@ -1443,7 +1428,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		break;
 		case 1: // NIKE3D files
 		{
-			FENIKEExport writer(fem);
+			NIKE3DExport writer(fem);
 			bsuccess = writer.Write(szfile);
 			if (bsuccess == false) errMsg = QString::fromStdString(writer.GetErrorMessage());
 		}
@@ -1585,7 +1570,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 
 	if (filedlg.exec())
 	{
-		Post::CImageModel* imageModel = nullptr;
+		CImageModel* imageModel = nullptr;
 		
 		CDlgRAWImport dlg(this);
 		if (dlg.exec())
@@ -1595,8 +1580,8 @@ void CMainWindow::on_actionImportRawImage_triggered()
             // we pass the relative path to the image model
 	        string relFile = FSDir::makeRelative(filedlg.selectedFiles()[0].toStdString(), "$(ProjectDir)");
 
-            imageModel = new Post::CImageModel(nullptr);
-            imageModel->SetImageSource(new Post::CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box));
+            imageModel = new CImageModel(nullptr);
+            imageModel->SetImageSource(new CRawImageSource(imageModel, relFile, dlg.m_type, dlg.m_nx, dlg.m_ny, dlg.m_nz, box, dlg.m_swapEndianness));
 
             if(!ImportImage(imageModel))
             {
@@ -1700,7 +1685,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
 		// we pass the relative path to the image model
 		string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
 
-		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
+		CImageModel* imageModel = new CImageModel(nullptr);
 		imageModel->SetImageSource(new CTiffImageSource(imageModel, relFile));
 
 		if (!ImportImage(imageModel))
@@ -1804,8 +1789,8 @@ void CMainWindow::on_actionImportImageSequence_triggered()
 
         CGLDocument* doc = GetGLDocument();
 
-        Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
-        imageModel->SetImageSource(new Post::CITKSeriesImageSource(imageModel, stdFiles));
+        CImageModel* imageModel = new CImageModel(nullptr);
+        imageModel->SetImageSource(new CITKSeriesImageSource(imageModel, stdFiles));
 
         if(!ImportImage(imageModel))
         {
@@ -1930,7 +1915,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 			bret = (bret ? exporter->Write(outFile.c_str()) : false);
 
 			AddLogEntry(bret ? "success\n" : "FAILED\n");
-			string err = reader.GetErrorMessage();
+			string err = reader.GetErrorString();
 			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 			err = exporter->GetErrorMessage();
 			if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
@@ -1991,7 +1976,7 @@ void CMainWindow::on_actionConvertFeb2Fsm_triggered()
                 bret = (bret ? doc.SaveDocument() : false);
 
                 AddLogEntry(bret ? "success\n" : "FAILED\n");
-                string err = reader.GetErrorMessage();
+                string err = reader.GetErrorString();
                 if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
                 if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 
@@ -2088,7 +2073,7 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 				bret = (bret ? exporter->Write(outFile.c_str()) : false);
 
 				AddLogEntry(bret ? "success\n" : "FAILED\n");
-				string err = reader.GetErrorMessage();
+				string err = reader.GetErrorString();
 				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 				err = exporter->GetErrorMessage();
 				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
@@ -2100,7 +2085,7 @@ void CMainWindow::on_actionConvertFsm2Feb_triggered()
 			else
 			{
 				AddLogEntry("FAILED\n");
-				string err = reader.GetErrorMessage();
+				string err = reader.GetErrorString();
 				if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 				nfails++;
 			}
@@ -2185,15 +2170,15 @@ void CMainWindow::on_actionConvertGeo_triggered()
 						FSFileExport* exporter = nullptr;
 						switch (format)
 						{
-						case 0: exporter = new FEVTKExport(prj); ext = "vtk"; break;
-						case 1: exporter = new FEPLYExport(prj); ext = "ply"; break;
-						case 2: exporter = new FELSDYNAexport(prj); ext = "k"; break;
-						case 3: exporter = new FEHypersurfaceExport(prj); ext = "surf"; break;
-						case 4: exporter = new FEBYUExport(prj); ext = "byu"; break;
-						case 5: exporter = new FESTLExport(prj); ext = "stl"; break;
-						case 6: exporter = new FEViewpointExport(prj); ext = "vp"; break;
-						case 7: exporter = new FEMeshExport(prj); ext = "mesh"; break;
-						case 8: exporter = new FETetGenExport(prj); ext = "ele"; break;
+						case 0: exporter = new VTKExport(prj); ext = "vtk"; break;
+						case 1: exporter = new PLYExport(prj); ext = "ply"; break;
+						case 2: exporter = new LSDYNAexport(prj); ext = "k"; break;
+						case 3: exporter = new HypersurfaceExport(prj); ext = "surf"; break;
+						case 4: exporter = new BYUExport(prj); ext = "byu"; break;
+						case 5: exporter = new STLExport(prj); ext = "stl"; break;
+						case 6: exporter = new ViewpointExport(prj); ext = "vp"; break;
+						case 7: exporter = new MeshExport(prj); ext = "mesh"; break;
+						case 8: exporter = new TetGenExport(prj); ext = "ele"; break;
 						}
 
 						if (exporter == nullptr)
@@ -2214,7 +2199,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 						bret = (bret ? exporter->Write(outFile.c_str()) : false);
 
 						AddLogEntry(bret ? "success\n" : "FAILED\n");
-						string err = reader->GetErrorMessage();
+						string err = reader->GetErrorString();
 						if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }
 						err = exporter->GetErrorMessage();
 						if (err.empty() == false) { AddLogEntry(QString::fromStdString(err) + "\n"); nwarnings++; }

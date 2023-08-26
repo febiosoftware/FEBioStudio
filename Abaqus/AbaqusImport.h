@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshIO/FileReader.h>
+#include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include "AbaqusModel.h"
 
@@ -63,6 +63,8 @@ public:
 	virtual ~AbaqusImport();
 
 	bool Load(const char* szfile);
+
+	bool UpdateData(bool bsave) override;
 
 protected:
 	// read a line and increment line counter

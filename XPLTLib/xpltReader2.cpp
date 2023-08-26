@@ -538,7 +538,9 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
+			// make sure the "solid stress" field was not added to the plot file
+			if (pdm->FindDataField("solid stress") == -1)
+				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
 		}
 	}
 

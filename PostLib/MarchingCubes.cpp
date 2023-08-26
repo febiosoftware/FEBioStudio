@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <GL/gl.h>
 #endif
 #include "MarchingCubes.h"
-#include "ImageModel.h"
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include <ImageLib/3DGradientMap.h>
 #include <MeshLib/FEMesh.h>
@@ -107,6 +107,44 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 	m_spc = GLColor(85, 85, 85);
 	m_shininess = 0.25;
 
+    m_del8BitImage = true;
+    switch (GetImageModel()->Get3DImage()->PixelType())
+    {
+    case CImage::UINT_8:
+        m_8bitImage = GetImageModel()->Get3DImage();
+        m_del8BitImage = false;
+        break;
+    case CImage::INT_8:
+        Create8BitImage<int8_t>();
+        break;
+    case CImage::UINT_16:
+        Create8BitImage<uint16_t>();
+        break;
+    case CImage::INT_16:
+        Create8BitImage<int16_t>();
+        break;
+    // case CImage::UINT_RGB8:
+    //     Create8BitImage<uint8_t>();
+    //     break;
+    // case CImage::INT_RGB8:
+    //     Create8BitImage<int8_t>();
+    //     break;
+    // case CImage::UINT_RGB16:
+    //     Create8BitImage<uint16_t>();
+    //     break;
+    // case CImage::INT_RGB16:
+    //     Create8BitImage<int16_t>();
+    //     break;
+    case CImage::REAL_32:
+        Create8BitImage<float>();
+        break;
+    case CImage::REAL_64:
+        Create8BitImage<double>();
+        break;
+    default:
+        assert(false);
+    }
+
 	ProcessImage();
 
 	UpdateData(false);
@@ -117,7 +155,10 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
 
 CMarchingCubes::~CMarchingCubes()
 {
-
+    if(m_del8BitImage)
+    {
+        delete m_8bitImage;
+    }
 }
 
 bool CMarchingCubes::UpdateData(bool bsave)
@@ -189,7 +230,7 @@ void CMarchingCubes::CreateSurface()
 
 	CImageModel& im = *GetImageModel();
 	if (im.Get3DImage() == nullptr) return;
-	C3DImage& im3d = *im.Get3DImage();
+	C3DImage& im3d = *m_8bitImage;
 
 	BOX b = im.GetBoundingBox();
 
@@ -202,7 +243,7 @@ void CMarchingCubes::CreateSurface()
 	float dyi = (b.y1 - b.y0) / (NY - 1);
 	float dzi = (b.z1 - b.z0) / (NZ - 1);
 
-	Byte ref = (Byte)(m_val * 255.0);
+	uint8_t ref = (uint8_t)(m_val * 255.0);
 	float fref = (float)ref;
 	m_ref = ref;
 
@@ -217,7 +258,7 @@ void CMarchingCubes::CreateSurface()
 		TriMesh temp;
 		temp.Resize(MAX_FACES);
 		int nfaces = 0;
-		Byte val[8];
+		uint8_t val[8];
 		vec3f r[8], g[8];
 
 		#pragma omp for schedule(dynamic, 5)
@@ -230,16 +271,16 @@ void CMarchingCubes::CreateSurface()
 					// get the voxel's values
 					if (i == 0)
 					{
-						val[0] = im3d.value(i, j, k);
-						val[3] = im3d.value(i, j + 1, k);
-						val[4] = im3d.value(i, j, k + 1);
-						val[7] = im3d.value(i, j + 1, k + 1);
+						val[0] = im3d.GetByte(i, j, k);
+						val[3] = im3d.GetByte(i, j + 1, k);
+						val[4] = im3d.GetByte(i, j, k + 1);
+						val[7] = im3d.GetByte(i, j + 1, k + 1);
 					}
 
-					val[1] = im3d.value(i + 1, j, k);
-					val[2] = im3d.value(i + 1, j + 1, k);
-					val[5] = im3d.value(i + 1, j, k + 1);
-					val[6] = im3d.value(i + 1, j + 1, k + 1);
+					val[1] = im3d.GetByte(i + 1, j, k);
+					val[2] = im3d.GetByte(i + 1, j + 1, k);
+					val[5] = im3d.GetByte(i + 1, j, k + 1);
+					val[6] = im3d.GetByte(i + 1, j + 1, k + 1);
 
 					// calculate the case of the voxel
 					int ncase = 0;
@@ -354,7 +395,7 @@ void CMarchingCubes::CreateSurface()
 	// create surface meshes
 	if (m_bcloseSurface)
 	{
-		Byte val[4];
+		uint8_t val[4];
 		vec3f r[4];
 
 		// X-planes
@@ -369,10 +410,10 @@ void CMarchingCubes::CreateSurface()
 				for (int j = 0; j < NY - 1; ++j)
 				{
 					// get the pixel's values
-					val[0] = im3d.value(i, j, k);
-					val[1] = im3d.value(i, j + 1, k);
-					val[2] = im3d.value(i, j + 1, k + 1);
-					val[3] = im3d.value(i, j, k + 1);
+					val[0] = im3d.GetByte(i, j, k);
+					val[1] = im3d.GetByte(i, j + 1, k);
+					val[2] = im3d.GetByte(i, j + 1, k + 1);
+					val[3] = im3d.GetByte(i, j, k + 1);
 
 					// get the corners
 					r[0].x = x; r[0].y = b.y0 + j      *dyi; r[0].z = b.z0 + k*dzi;
@@ -398,10 +439,10 @@ void CMarchingCubes::CreateSurface()
 				for (int i = 0; i < NX - 1; ++i)
 				{
 					// get the pixel's values
-					val[0] = im3d.value(i  , j, k);
-					val[1] = im3d.value(i+1, j, k);
-					val[2] = im3d.value(i+1, j, k + 1);
-					val[3] = im3d.value(i  , j, k + 1);
+					val[0] = im3d.GetByte(i  , j, k);
+					val[1] = im3d.GetByte(i+1, j, k);
+					val[2] = im3d.GetByte(i+1, j, k + 1);
+					val[3] = im3d.GetByte(i  , j, k + 1);
 
 					// get the corners
 					r[0].x = b.x0 + i    *dxi; r[0].y = y; r[0].z = b.z0 + k*dzi;
@@ -427,10 +468,10 @@ void CMarchingCubes::CreateSurface()
 				for (int i = 0; i < NX - 1; ++i)
 				{
 					// get the pixel's values
-					val[0] = im3d.value(i    , j    , k);
-					val[1] = im3d.value(i + 1, j    , k);
-					val[2] = im3d.value(i + 1, j + 1, k);
-					val[3] = im3d.value(i    , j + 1, k);
+					val[0] = im3d.GetByte(i    , j    , k);
+					val[1] = im3d.GetByte(i + 1, j    , k);
+					val[2] = im3d.GetByte(i + 1, j + 1, k);
+					val[3] = im3d.GetByte(i    , j + 1, k);
 
 					// get the corners
 					r[0].x = b.x0 + i      *dxi; r[0].y = b.y0 + j      *dyi; r[0].z = z;
@@ -457,7 +498,7 @@ void CMarchingCubes::CreateSurface()
 	m_mesh.EndMesh();
 }
 
-void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, Byte val[4], vec3f r[4], const vec3f& faceNormal)
+void CMarchingCubes::AddSurfaceTris(TriMesh& mesh, uint8_t val[4], vec3f r[4], const vec3f& faceNormal)
 {
 	// calculate the case of the voxel
 	int ncase = 0;
@@ -557,14 +598,14 @@ void CMarchingCubes::ProcessImage()
 {
 	CImageModel& im = *GetImageModel();
 	if (im.Get3DImage() == nullptr) return;
-	C3DImage& im3d = *im.Get3DImage();
+	C3DImage& im3d = *m_8bitImage;
 
 	int NX = im3d.Width();
 	int NY = im3d.Height();
 	int NZ = im3d.Depth();
 	if ((NX == 1) || (NY == 1) || (NZ == 1)) return;
 
-	Byte val[8];
+	uint8_t val[8];
 
 	std::vector<std::pair<unsigned int, unsigned int> > bin;
 	bin.resize(256);
@@ -581,19 +622,19 @@ void CMarchingCubes::ProcessImage()
 				// get the voxel's values
 				if (i == 0)
 				{
-					val[0] = im3d.value(i, j, k);
-					val[3] = im3d.value(i, j + 1, k);
-					val[4] = im3d.value(i, j, k + 1);
-					val[7] = im3d.value(i, j + 1, k + 1);
+					val[0] = im3d.GetByte(i, j, k);
+					val[3] = im3d.GetByte(i, j + 1, k);
+					val[4] = im3d.GetByte(i, j, k + 1);
+					val[7] = im3d.GetByte(i, j + 1, k + 1);
 				}
 
-				val[1] = im3d.value(i + 1, j, k);
-				val[2] = im3d.value(i + 1, j + 1, k);
-				val[5] = im3d.value(i + 1, j, k + 1);
-				val[6] = im3d.value(i + 1, j + 1, k + 1);
+				val[1] = im3d.GetByte(i + 1, j, k);
+				val[2] = im3d.GetByte(i + 1, j + 1, k);
+				val[5] = im3d.GetByte(i + 1, j, k + 1);
+				val[6] = im3d.GetByte(i + 1, j + 1, k + 1);
 
 				// find the min/max
-				Byte min = val[0], max = val[0];
+				uint8_t min = val[0], max = val[0];
 				for (int l = 1; l < 8; ++l)
 				{
 					if (val[l] < min) min = val[l];
@@ -621,4 +662,29 @@ void CMarchingCubes::ProcessImage()
 
 	// set the initial value
 	m_val = ival / 255.0;
+}
+
+template<class pType> void CMarchingCubes::Create8BitImage()
+{
+    C3DImage* oldImg = GetImageModel()->Get3DImage();
+
+    int nx = oldImg->Width();
+    int ny = oldImg->Height();
+    int nz = oldImg->Depth();
+    int N = nx*ny*nz;
+
+    m_8bitImage = new C3DImage;
+    m_8bitImage->Create(nx, ny, nz);
+
+    double min = oldImg->GetMinValue(true);
+    double max = oldImg->GetMaxValue(true);
+    double range = max - min;
+
+    pType* oldData = (pType*)oldImg->GetBytes();
+    uint8_t* newData = m_8bitImage->GetBytes();
+
+    for(int i = 0; i < N; i++)
+    {
+        newData[i] = 255 * (oldData[i] - min)/range;
+    }
 }

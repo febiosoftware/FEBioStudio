@@ -88,7 +88,7 @@ bool CReadCurveTool::OnApply()
 		{
 			static int n = 1;
 			char sz[256] = {0};
-			sprintf(sz, "CurveObject%d", n++);
+			snprintf(sz, sizeof sz, "CurveObject%d", n++);
 
 			FECurveMesh* pm = new FECurveMesh;
 			int nodes = (int) pt.size();

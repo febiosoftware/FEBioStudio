@@ -29,9 +29,10 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 
 namespace Post{
-class CImageModel;
 class CGLModel;
 };
+
+class CImageModel;
 
 class CImageFilter : public FSObject
 {
@@ -42,18 +43,18 @@ public:
     };
 
 public:
-    CImageFilter(int type, Post::CImageModel* model);
+    CImageFilter(int type, CImageModel* model);
 
     virtual void ApplyFilter() = 0;
 
     int Type() { return m_type; }
 
-    void SetImageModel(Post::CImageModel* model);
+    void SetImageModel(CImageModel* model);
 
-	Post::CImageModel* GetImageModel();
+	CImageModel* GetImageModel();
 
 protected:
-    Post::CImageModel* m_model;
+    CImageModel* m_model;
 
 private:
     int m_type;
@@ -62,7 +63,7 @@ private:
 class ThresholdImageFilter : public CImageFilter
 {
 public:
-    ThresholdImageFilter(Post::CImageModel* model = nullptr);
+    ThresholdImageFilter(CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
@@ -70,7 +71,7 @@ public:
 class MeanImageFilter : public CImageFilter
 {
 public:
-    MeanImageFilter(Post::CImageModel* model = nullptr);
+    MeanImageFilter(CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
@@ -78,7 +79,7 @@ public:
 class GaussianImageFilter : public CImageFilter
 {
 public:
-    GaussianImageFilter(Post::CImageModel* model = nullptr);
+    GaussianImageFilter(CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };
@@ -86,7 +87,7 @@ public:
 class AdaptiveHistogramEqualizationFilter : public CImageFilter
 {
 public:
-    AdaptiveHistogramEqualizationFilter(Post::CImageModel* model = nullptr);
+    AdaptiveHistogramEqualizationFilter(CImageModel* model = nullptr);
 
     void ApplyFilter() override;
 };

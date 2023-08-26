@@ -191,7 +191,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 	XMLAtt& atype = tag.Attribute("type");
 	int moduleId = FEBio::GetModuleId(atype.cvalue()); assert(moduleId >= 0);
 	if (moduleId < -1) throw XMLReader::InvalidAttributeValue(tag, "type", atype.m_val.c_str());
-	FEBio::SetActiveModule(moduleId);
+	
 	FSProject& prj = FileReader()->GetProject();
 	prj.SetModule(moduleId, false);
 	m_nAnalysis = moduleId;
@@ -209,6 +209,7 @@ bool FEBioFormat4::ParseModuleSection(XMLTag &tag)
 				else if (strcmp(sz, "mm-kg-s") == 0) prj.SetUnits(4);
 				else if (strcmp(sz, "um-nN-s") == 0) prj.SetUnits(5);
 				else if (strcmp(sz, "CGS"    ) == 0) prj.SetUnits(6);
+                else if (strcmp(sz, "mm-g-s" ) == 0) prj.SetUnits(7);
 				else AddLogEntry("Unrecognized unit system.");
 			}
 			++tag;
@@ -393,6 +394,7 @@ bool FEBioFormat4::ParseMeshSection(XMLTag& tag)
 		else if (tag == "Edge"       ) ParseGeometryEdgeSet    (DefaultPart(), tag);
 		else if (tag == "Surface"    ) ParseGeometrySurface    (DefaultPart(), tag);
 		else if (tag == "ElementSet" ) ParseGeometryElementSet (DefaultPart(), tag);
+		else if (tag == "PartList"   ) ParseGeometryPartList   (DefaultPart(), tag);
 		else if (tag == "DiscreteSet") ParseGeometryDiscreteSet(DefaultPart(), tag);
 		else if (tag == "SurfacePair") ParseGeometrySurfacePair(DefaultPart(), tag);
 		else ParseUnknownTag(tag);
@@ -591,6 +593,7 @@ void FEBioFormat4::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 		FEBioInputModel::NODE& nd = nodes[i];
 		FSNode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
+		node.m_nid = nd.id;
 		node.r = nd.r;
 	}
 
@@ -944,6 +947,36 @@ void FEBioFormat4::ParseGeometryElementSet(FEBioInputModel::Part* part, XMLTag& 
 	}
 
 	part->AddElementSet(FEBioInputModel::ElementSet(sname, elem));
+}
+
+//-----------------------------------------------------------------------------
+void FEBioFormat4::ParseGeometryPartList(FEBioInputModel::Part* part, XMLTag& tag)
+{
+	if (part == 0) throw XMLReader::InvalidTag(tag);
+
+	// get the name
+	const char* szname = tag.AttributeValue("name");
+	if (szname == 0) FileReader()->AddLogEntry("Part list defined without a name.");
+	string sname = (szname ? szname : "");
+
+	// see if a part list with this name is already defined
+	// if found, we'll continue, but we'll generate a warning.
+	FEBioInputModel::DomainList* ps = part->FindDomainList(szname);
+	if (ps) FileReader()->AddLogEntry("A part list set named %s is already defined.", szname);
+
+	// read the part names
+	vector<string> partNames;
+	tag.value(partNames);
+
+	// add the parts to the part list
+	std::vector<FEBioInputModel::Domain*> domList;
+	for (string s : partNames)
+	{
+		FEBioInputModel::Domain* pg = part->FindDomain(s);
+		if (pg) domList.push_back(pg);
+	}
+
+	part->AddDomainList(FEBioInputModel::DomainList(sname, domList));
 }
 
 //-----------------------------------------------------------------------------
@@ -1340,6 +1373,58 @@ bool FEBioFormat4::ParseElementDataSection(XMLTag& tag)
 			} while (!tag.isend());
 		}
 		else ParseUnknownTag(tag);
+	}
+	else if (type)
+	{
+		FEBioInputModel& feb = GetFEBioModel();
+		FSModel* fem = &feb.GetFSModel();
+		// allocate mesh data generator
+		const char* sztype = type->cvalue();
+		FSMeshDataGenerator* gen = FEBio::CreateElemDataGenerator(sztype, fem);
+		if (gen)
+		{
+			XMLAtt* name = tag.AttributePtr("name");
+			XMLAtt* elset = tag.AttributePtr("elem_set");
+
+			const char* szset = elset->cvalue();
+			if (strncmp(szset, "@part_list:", 11) == 0)
+			{
+				FSPartSet* pg = feb.FindNamedPartSet(szset+11);
+				if (pg == nullptr) AddLogEntry("Cannot find part list %s", elset->cvalue());
+				else gen->SetItemList(pg);
+			}
+			else
+			{
+				GMeshObject* po = feb.GetInstance(0)->GetGObject();
+				FSPartSet* ps = new FSPartSet(po);
+				ps->SetName(name->cvalue());
+				for (int i = 0; i < po->Parts(); ++i)
+				{
+					GPart* pg = po->Part(i);
+					if (pg->GetName() == string(szset))
+					{
+						ps->add(i);
+					}
+				}
+
+				if (ps->size() > 0)
+				{
+					po->AddFEPartSet(ps);
+					gen->SetItemList(ps);
+				}
+				else
+				{
+					delete ps;
+					AddLogEntry("Cannot find part %s", elset->cvalue());
+				}
+			}
+
+			gen->SetName(name->cvalue());
+
+			ParseModelComponent(gen, tag);
+			fem->AddMeshDataGenerator(gen);
+		}
+		else ParseUnknownAttribute(tag, "type");
 	}
 	else if (type == nullptr)
 	{
@@ -1843,22 +1928,43 @@ void FEBioFormat4::ParseContact(FSStep *pstep, XMLTag &tag)
 	ParseModelComponent(pci, tag);
 
 	// assign surfaces
+	GModel& m = GetFSModel().GetModel();
 	FEBioInputModel::Part* part = surfPair->GetPart();
 	assert(part);
 	if (part)
 	{
-		if (surfPair->PrimarySurfaceID() >= 0)
+		int id1 = surfPair->PrimarySurfaceID();
+		if (id1 >= 0)
 		{
-			string name1 = part->GetSurface(surfPair->PrimarySurfaceID()).name();
-			FSSurface* surf1 = febio.FindNamedSurface(name1.c_str());
-			pci->SetPrimarySurface(surf1);
+			if (id1 >= part->Surfaces())
+			{
+				FEBioInputModel::DomainList& dl = part->GetDomainList(id1 - part->Surfaces());
+				GPartList* pg = m.FindPartList(dl.m_name);
+				pci->SetPrimarySurface(pg);
+			}
+			else
+			{
+				string name1 = part->GetSurface(surfPair->PrimarySurfaceID()).name();
+				FSSurface* surf1 = febio.FindNamedSurface(name1.c_str());
+				pci->SetPrimarySurface(surf1);
+			}
 		}
 
-		if (surfPair->SecondarySurfaceID() >= 0)
+		int id2 = surfPair->SecondarySurfaceID();
+		if (id2 >= 0)
 		{
-			string name2 = part->GetSurface(surfPair->SecondarySurfaceID()).name();
-			FSSurface* surf2 = febio.FindNamedSurface(name2.c_str());
-			pci->SetSecondarySurface(surf2);
+			if (id2 >= part->Surfaces())
+			{
+				FEBioInputModel::DomainList& dl = part->GetDomainList(id2 - part->Surfaces());
+				GPartList* pg = m.FindPartList(dl.m_name);
+				pci->SetSecondarySurface(pg);
+			}
+			else
+			{
+				string name2 = part->GetSurface(surfPair->SecondarySurfaceID()).name();
+				FSSurface* surf2 = febio.FindNamedSurface(name2.c_str());
+				pci->SetSecondarySurface(surf2);
+			}
 		}
 	}
 

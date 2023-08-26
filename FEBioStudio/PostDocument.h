@@ -185,9 +185,6 @@ public:
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
-	// Get current selection
-	FESelection* GetCurrentSelection() override;
-
 	void SetGLModel(Post::CGLModel* glm);
 
 public:

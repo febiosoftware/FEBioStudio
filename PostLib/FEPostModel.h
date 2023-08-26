@@ -100,6 +100,9 @@ public:
 	public:
 		vec3d	m_r1;
 		vec3d	m_r2;
+
+		vec3d	m_r01;
+		vec3d	m_r02;
 	};
 
 public:
@@ -205,6 +208,9 @@ public:
 
 	// get the nodal coordinates of an element at time
 	void GetElementCoords(int iel, int ntime, vec3f* r);
+
+	// project a point onto the mesh
+	int ProjectToMesh(int nstate, const vec3f& r0, vec3d& rt, bool bfollow);
 
 	// evaluate scalar functions
 	void EvaluateNode   (int n, int ntime, int nfield, NODEDATA& d);

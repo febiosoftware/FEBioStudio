@@ -963,6 +963,24 @@ double TriangleQuality(vec3d r[3])
 	return sqrt(Q2);
 }
 
+//-----------------------------------------------------------------------------
+double TriMaxDihedralAngle(const FSMeshBase& mesh, const FSFace& face)
+{
+	if (face.Type() != FE_FACE_TRI3) return 0.;
+
+	double maxAngle = 0;
+	for (int i = 0; i < 3; ++i)
+	{
+		if (face.m_nbr[i] >= 0)
+		{
+			const FSFace& fi = mesh.Face(face.m_nbr[i]);
+			double a = acos(face.m_fn * fi.m_fn);
+			if (a > maxAngle) maxAngle = a;
+		}
+	}
+	return maxAngle * 180.0 / PI;
+}
+
 
 //-----------------------------------------------------------------------------
 bool FindElementRef(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
@@ -1030,6 +1048,23 @@ bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double 
 	return IsInsideElement(el, r, 0.001);
 }
 
+//-----------------------------------------------------------------------------
+bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
+{
+	int ne = el.Nodes();
+	BOX box;
+	for (int i = 0; i < ne; ++i) box += to_vec3d(x0[i]);
+	if (box.IsInside(to_vec3d(p)) == false) return false;
+
+	double r[3] = { 0,0,0 };
+	project_inside_element(el, p, r, x0);
+	if (IsInsideElement(el, r, 0.001))
+	{
+		q = el.eval(xt, r[0], r[1], r[2]);
+		return true;
+	}
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 bool IsInsideElement(FEElement_& el, double r[3], const double tol)

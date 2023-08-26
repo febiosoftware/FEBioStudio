@@ -236,7 +236,10 @@ void CDlgFEBioPlugins::LoadPlugin(const QString& fileName)
 	// get the currently active module
 	// We need this, since importing the plugin might change this.
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
-	int modId = fecore.GetActiveModule()->GetModuleID();
+
+	FEModule* activeMod = fecore.GetActiveModule();
+	int modId = -1;
+	if (activeMod) modId = activeMod->GetModuleID();
 
 	// try to import the plugin
 	bool bsuccess = febio::ImportPlugin(sfile.c_str());

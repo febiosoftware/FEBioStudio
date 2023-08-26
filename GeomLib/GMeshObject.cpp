@@ -171,6 +171,7 @@ void GMeshObject::UpdateSections()
 {
 	FSMesh* pm = GetFEMesh();
 
+#pragma omp parallel for
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);

@@ -332,10 +332,45 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	FEDataManager* pdm = fem.GetDataManager();
 	pdm->Clear();
 
-	// read nodal variables
+	// read global variables
 	int nfields = 0;
 	int i;
-	int nv = (int)m_dic.m_Node.size();
+	int nv = (int)m_dic.m_Glb.size();
+	for (i = 0; i < nv; ++i)
+	{
+		DICT_ITEM& it = m_dic.m_Glb[i];
+		it.index = nfields++;
+
+		// add global field
+		Post::ModelDataField* pdf = nullptr;
+		switch (it.ntype)
+		{
+		case FLOAT  : pdf = new FEDataField_T<Post::FEGlobalData_T<float  > >(&fem, EXPORT_DATA); break;
+		case VEC3F  : pdf = new FEDataField_T<Post::FEGlobalData_T<vec3f  > >(&fem, EXPORT_DATA); break;
+		case MAT3FS : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3fs > >(&fem, EXPORT_DATA); break;
+		case MAT3FD : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3fd > >(&fem, EXPORT_DATA); break;
+		case TENS4FS: pdf = new FEDataField_T<Post::FEGlobalData_T<tens4fs> >(&fem, EXPORT_DATA); break;
+		case MAT3F  : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3f  > >(&fem, EXPORT_DATA); break;
+		case ARRAY:
+		{
+			FEArrayDataField* data = new FEArrayDataField(&fem, Post::CLASS_OBJECT, Post::DATA_REGION, Post::EXPORT_DATA);
+			data->SetArraySize(it.arraySize);
+			data->SetArrayNames(it.arrayNames);
+			pdf = data;
+		}
+		break;
+		default:
+			return errf("Error while reading dictionary.");
+		}
+		if (pdf == nullptr) return false;
+
+		if (it.szunit[0]) pdf->SetUnits(it.szunit);
+
+		pdm->AddDataField(pdf, it.szname);
+	}
+
+	// read nodal variables
+	nv = (int)m_dic.m_Node.size();
 	for (i=0; i<nv; ++i)
 	{
 		DICT_ITEM& it = m_dic.m_Node[i];
@@ -558,7 +593,8 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	// add additional displacement fields
 	if (m_bHasDispl) 
 	{
-		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
+		if (pdm->FindDataField("Lagrange strain") == -1)
+			pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
 		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         , "L");
 		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" , "L");
 	}
@@ -569,7 +605,9 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure", "P");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
+			// make sure the "solid stress" field was not added to the plot file
+			if (pdm->FindDataField("solid stress") == -1)
+				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
 		}
 	}
 
@@ -802,7 +840,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 			Post::FEPostModel::LineObject*  ob = new Post::FEPostModel::LineObject;
 
 			char sz[DI_NAME_SIZE] = { 0 };
-			float r[6];
+			float r[6] = { 0.f };
 			int ntag = 0;
 			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
@@ -843,8 +881,8 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 
 			ob->SetName(sz);
 			ob->m_tag = ntag;
-			ob->m_r1 = vec3d(r[0], r[1], r[2]);
-			ob->m_r2 = vec3d(r[3], r[4], r[5]);
+			ob->m_r1 = ob->m_r01 = vec3d(r[0], r[1], r[2]);
+			ob->m_r2 = ob->m_r02 = vec3d(r[3], r[4], r[5]);
 			ob->SetColor(GLColor(255, 0, 0));
 			fem.AddLineObject(ob);
 		}
@@ -1766,7 +1804,100 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 //-----------------------------------------------------------------------------
 bool XpltReader3::ReadGlobalData(FEPostModel& fem, FEState* pstate)
 {
-	return false;
+	FEDataManager& dm = *fem.GetDataManager();
+	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
+		{
+			int nv = -1;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_STATE_VAR_ID) m_ar.read(nv);
+				else if (nid == PLT_STATE_VAR_DATA)
+				{
+					nv--;
+					assert((nv >= 0) && (nv < (int)m_dic.m_Glb.size()));
+					if ((nv < 0) || (nv >= (int)m_dic.m_Glb.size())) return errf("Failed reading global data");
+
+					DICT_ITEM it = m_dic.m_Glb[nv];
+					int nfield = dm.FindDataField(it.szname);
+					int ndata = 0;
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						int ns = m_ar.GetChunkID();
+						assert(ns == 0);
+
+						if (it.ntype == FLOAT)
+						{
+							float a;
+							m_ar.read(a);
+
+							Post::FEGlobalData_T<float>& df = dynamic_cast<Post::FEGlobalData_T<float>&>(pstate->m_Data[nfield]);
+							df.setValue(a);
+						}
+						else if (it.ntype == VEC3F)
+						{
+							vec3f a;
+							m_ar.read(a);
+
+							Post::FEGlobalData_T<vec3f>& dv = dynamic_cast<Post::FEGlobalData_T<vec3f>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == MAT3FS)
+						{
+							mat3fs a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<mat3fs>& dv = dynamic_cast<Post::FEGlobalData_T<mat3fs>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == TENS4FS)
+						{
+							tens4fs a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<tens4fs>& dv = dynamic_cast<Post::FEGlobalData_T<tens4fs>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == MAT3F)
+						{
+							mat3f a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<mat3f>& dv = dynamic_cast<Post::FEGlobalData_T<mat3f>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == ARRAY)
+						{
+							Post::FEGlobalArrayData& dv = dynamic_cast<Post::FEGlobalArrayData&>(pstate->m_Data[nfield]);
+							int n = dv.components();
+							vector<float> a(n);
+							m_ar.read(a);
+							dv.setData(a);
+						}
+						else
+						{
+							assert(false);
+							return errf("Error while reading node data");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				else
+				{
+					assert(false);
+					return errf("Error while reading node data");
+				}
+				m_ar.CloseChunk();
+			}
+		}
+		else
+		{
+			assert(false);
+			return errf("Error while reading node data");
+		}
+		m_ar.CloseChunk();
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------

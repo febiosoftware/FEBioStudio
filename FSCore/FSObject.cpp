@@ -27,6 +27,18 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FSObject.h"
 
+//=============================================================================
+FSBase::FSBase() {}
+
+FSBase::~FSBase() {}
+
+// update parameters
+bool FSBase::UpdateData(bool bsave)
+{
+	return false;
+}
+
+//=============================================================================
 FSObject::FSObject(FSObject* parent) : m_parent(parent), m_typeStr("")
 {
 
@@ -121,12 +133,6 @@ void FSObject::Load(IArchive& ar)
 bool FSObject::Update(bool b)
 {
 	return true;
-}
-
-// update parameters
-bool FSObject::UpdateData(bool bsave)
-{
-	return false;
 }
 
 bool FSObject::IsType(const char* sztype) const

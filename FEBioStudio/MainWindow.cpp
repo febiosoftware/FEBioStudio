@@ -95,13 +95,15 @@ SOFTWARE.*/
 #include "welcomePage.h"
 #include <PostLib/Palette.h>
 #include <PostLib/VolumeRenderer.h>
-#include <PostLib/ImageModel.h>
-#include <PostLib/ImageSource.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
+#include <ImageLib/SITKImageSource.h>
 #include <PostGL/GLColorMap.h>
 #include <PostLib/ColorMap.h>
 #include <GLWLib/convert.h>
 #include <FSCore/FSLogger.h>
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioInit.h>
 
 extern GLColor col[];
 
@@ -277,6 +279,15 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 
 	// Instantiate Logger singleton
 	CLogger::Instantiate(this);
+
+	// configure FEBio library
+	if (ui->m_loadFEBioConfigFile)
+	{
+		std::string fileName = ui->m_febioConfigFileName.toStdString();
+		FSDir dir(fileName);
+		std::string filepath = dir.expandMacros();
+		FEBio::ConfigureFEBio(filepath.c_str());
+	}
 
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
@@ -653,7 +664,7 @@ void CMainWindow::ReadFile(QueuedFile& qfile)
 		{
 			string sfile = qfile.m_fileName.toStdString();
 			bret = qfile.m_fileReader->Load(sfile.c_str());
-			std::string err = qfile.m_fileReader->GetErrorMessage();
+			std::string err = qfile.m_fileReader->GetErrorString();
 			errorString = QString::fromStdString(err);
 		}
 		finishedReadingFile(bret, qfile, errorString);
@@ -1042,6 +1053,9 @@ void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc
 		{
 			PostSessionFileReader* fsps = new PostSessionFileReader(doc);
 			ReadFile(doc, fileName, fsps, QueuedFile::NEW_DOCUMENT);
+
+			// add file to recent list
+			ui->addToRecentFiles(fileName);
 		}
 		else if (ext.compare("k", Qt::CaseInsensitive) == 0)
 		{
@@ -1263,7 +1277,7 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->buildPanel->isVisible() && (psend != ui->buildPanel)) ui->buildPanel->Update(breset);
 
 	//	if (m_pCurveEdit->visible() && (m_pCurveEdit != psend)) m_pCurveEdit->Update();
-	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update();
+	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
 
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
 
@@ -1312,6 +1326,11 @@ CGLView* CMainWindow::GetGLView()
 CImageSliceView* CMainWindow::GetImageSliceView()
 {
     return ui->sliceView;
+}
+
+C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
+{
+    return ui->timeView2D;
 }
 
 //-----------------------------------------------------------------------------
@@ -1546,6 +1565,8 @@ void CMainWindow::ReportSelection()
 			if (es->Size() == 1)
 			{
 				FEElement_* el = es->Element(0);
+                AddLogEntry("  ID = " + QString::number(es->ElementID(0)) + "\n");
+
 				switch (el->Type())
 				{
 				case FE_HEX8: AddLogEntry("  Type = HEX8"); break;
@@ -1592,6 +1613,25 @@ void CMainWindow::ReportSelection()
 					if (i < n - 1) AddLogEntry(", ");
 					else AddLogEntry("\n");
 				}
+
+                if(ui->meshWnd && ui->meshWnd->isVisible())
+                {
+
+
+                    auto data = es->GetMesh()->GetMeshData();
+
+                    int n = el->Nodes();
+                    AddLogEntry("  nodal values: ");
+                    for (int i = 0; i < n; ++i)
+                    {
+                        AddLogEntry(QString::number(data.GetElementValue(es->ElementID(0), i)));
+                        if (i < n - 1) AddLogEntry(", ");
+                        else AddLogEntry("\n");
+                    }
+
+                    AddLogEntry("  avg value: ");
+                    AddLogEntry(QString::number(data.GetElementAverageValue(es->ElementID(0))) + "\n");
+                }
 			}
 		}
 
@@ -1805,6 +1845,14 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 		ui->showPostPanel();
 		ev->accept();
 	}
+	else if ((ev->key() == Qt::Key_R))
+	{
+		if (GetPostDocument()) ui->actionRotate->toggle();
+	}
+	else if ((ev->key() == Qt::Key_T))
+	{
+		if (GetPostDocument()) ui->actionTranslate->toggle();
+	}
 }
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
@@ -1860,6 +1908,12 @@ int CMainWindow::GetDefaultUnitSystem() const
 	return ui->m_defaultUnits;
 }
 
+bool CMainWindow::GetLoadConfigFlag() { return ui->m_loadFEBioConfigFile; }
+QString CMainWindow::GetConfigFileName() { return ui->m_febioConfigFileName; }
+
+void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_loadFEBioConfigFile = b; }
+void CMainWindow::SetConfigFileName(QString s) { ui->m_febioConfigFileName = s; }
+
 void CMainWindow::writeSettings()
 {
 	GLViewSettings& vs = GetGLView()->GetViewSettings();
@@ -1889,6 +1943,8 @@ void CMainWindow::writeSettings()
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
+	settings.setValue("loadFEBioConfigFile", ui->m_loadFEBioConfigFile);
+	settings.setValue("febioConfigFileName", ui->m_febioConfigFileName);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -2014,6 +2070,9 @@ void CMainWindow::readSettings()
 
 	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
 	GLWidget::set_default_font(font);
+
+	ui->m_loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
+	ui->m_febioConfigFileName = settings.value("febioConfigFileName", ui->m_febioConfigFileName).toString();
 
 	if (vs.m_defaultFGColorOption != 0)
 	{
@@ -2686,9 +2745,17 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 	if (doc)
 	{
 		menu.addAction(ui->actionShowNormals);
-		menu.addAction(ui->actionShowFibers);
-		menu.addAction(ui->actionShowMatAxes);
-		menu.addAction(ui->actionShowDiscrete);
+
+		QMenu* physicsMenu = new QMenu("Physics");
+
+		physicsMenu->addAction(ui->actionShowFibers);
+		physicsMenu->addAction(ui->actionShowMatAxes);
+		physicsMenu->addAction(ui->actionShowDiscrete);
+		physicsMenu->addAction(ui->actionShowRigidBodies);
+		physicsMenu->addAction(ui->actionShowRigidJoints);
+		physicsMenu->addAction(ui->actionShowRigidLabels);
+		menu.addMenu(physicsMenu);
+
 		menu.addSeparator();
 
 		// NOTE: Make sure the texts match the texts in OnSelectObjectTransparencyMode
@@ -2705,6 +2772,7 @@ void CMainWindow::BuildContextMenu(QMenu& menu)
 		a = colorMode->addAction("Default"); a->setCheckable(true); if (vs.m_objectColor == 0) a->setChecked(true);
 		a = colorMode->addAction("By object"); a->setCheckable(true); if (vs.m_objectColor == 1) a->setChecked(true);
 		a = colorMode->addAction("By material type"); a->setCheckable(true); if (vs.m_objectColor == 2) a->setChecked(true);
+		a = colorMode->addAction("By element type"); a->setCheckable(true); if (vs.m_objectColor == 3) a->setChecked(true);
 		QObject::connect(colorMode, SIGNAL(triggered(QAction*)), this, SLOT(OnSelectObjectColorMode(QAction*)));
 		menu.addAction(colorMode->menuAction());
 
@@ -2780,6 +2848,7 @@ void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 	if      (ac->text() == "Default"         ) vs.m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 	else if (ac->text() == "By object"       ) vs.m_objectColor = OBJECT_COLOR_MODE::OBJECT_COLOR;
 	else if (ac->text() == "By material type") vs.m_objectColor = OBJECT_COLOR_MODE::MATERIAL_TYPE;
+	else if (ac->text() == "By element type" ) vs.m_objectColor = OBJECT_COLOR_MODE::FSELEMENT_TYPE;
 
 	RedrawGL();
 }
@@ -3505,7 +3574,7 @@ void CMainWindow::CloseWelcomePage()
 	}
 }
 
-bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
+bool CMainWindow::ImportImage(CImageModel* imgModel)
 {
 	static int n = 1;
 	CGLDocument* doc = GetGLDocument();
@@ -3542,8 +3611,8 @@ bool CMainWindow::ImportImage(Post::CImageModel* imgModel)
         // we pass the relative path to the image model
 	    string relFile = FSDir::makeRelative(fileName.toStdString(), "$(ProjectDir)");
 
-		Post::CImageModel* imageModel = new Post::CImageModel(nullptr);
-        imageModel->SetImageSource(new Post::CITKImageSource(imageModel, relFile, type));
+		CImageModel* imageModel = new CImageModel(nullptr);
+        imageModel->SetImageSource(new CITKImageSource(imageModel, relFile, type));
 
         if(!ImportImage(imageModel))
         {

@@ -48,8 +48,8 @@ SOFTWARE.*/
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
-#include <PostLib/ImageModel.h>
-#include <PostLib/ImageSource.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
 #include "ImageThread.h"
 #include <GeomLib/GModel.h>
@@ -109,6 +109,8 @@ void GLViewSettings::Defaults(int ntheme)
 	m_fconn = 30.f;
 	m_bcullSel = true;
 	m_bselpath = false;
+	m_bselbrush = false;
+	m_brushSize = 50.f;
 
 	m_apply = 0;
 
@@ -608,6 +610,8 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	// set default unit system (0 == no unit system)
 	m_units = 0;
 
+	m_psel = nullptr;
+
 	m_scene = nullptr;
 }
 
@@ -629,6 +633,14 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
+}
+
+FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }
+
+void CGLDocument::SetCurrentSelection(FESelection* psel)
+{
+	if (m_psel) delete m_psel;
+	m_psel = psel;
 }
 
 void CGLDocument::UpdateSelection(bool breport)
@@ -710,14 +722,14 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<FSGroup*>(po)) return "Named selection";
 	else if (dynamic_cast<GObject*>(po)) return "Object";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
-	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image volume";
+	else if (dynamic_cast<CImageModel*>(po)) return "3D Image volume";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
 	else if (dynamic_cast<Post::CGLModel*>(po)) return "post model";
 	else if (dynamic_cast<GModel*>(po)) return "model";
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
-	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
+	else if (dynamic_cast<CImageSource*>(po)) return "3D Image source";
     else if (dynamic_cast<CImageFilter*>(po)) return "Image filter";
 	else if (dynamic_cast<FSMaterial*>(po))
 	{
@@ -807,7 +819,7 @@ void CGLDocument::SaveResources(OArchive& ar)
 {
 	for (int i = 0; i < ImageModels(); ++i)
 	{
-		Post::CImageModel& img = *GetImageModel(i);
+		CImageModel& img = *GetImageModel(i);
 		ar.BeginChunk(CID_RESOURCE_IMAGEMODEL);
 		{
 			img.Save(ar);
@@ -826,7 +838,7 @@ void CGLDocument::LoadResources(IArchive& ar)
 		{
 		case CID_RESOURCE_IMAGEMODEL:
 		{
-			Post::CImageModel* img = new Post::CImageModel(nullptr);
+			CImageModel* img = new CImageModel(nullptr);
 			m_img.Add(img);
 			img->Load(ar);
 		}
@@ -842,13 +854,13 @@ int CGLDocument::ImageModels() const
 	return (int)m_img.Size();
 }
 
-void CGLDocument::AddImageModel(Post::CImageModel* img)
+void CGLDocument::AddImageModel(CImageModel* img)
 {
 	assert(img);
 	m_img.Add(img);
 }
 
-Post::CImageModel* CGLDocument::GetImageModel(int i)
+CImageModel* CGLDocument::GetImageModel(int i)
 {
 	return m_img[i];
 }

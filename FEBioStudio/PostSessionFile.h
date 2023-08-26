@@ -1,6 +1,6 @@
 #pragma once
-#include <MeshIO/FileReader.h>
-#include <MeshIO/FileWriter.h>
+#include <FSCore/FileReader.h>
+#include <FSCore/FileWriter.h>
 
 class CPostDocument;
 class XMLTag;
@@ -8,6 +8,7 @@ class XMLWriter;
 
 namespace Post {
 	class FEPostModel;
+	class GLPlotGroup;
 }
 
 class PostSessionFileReader : public FileReader
@@ -40,6 +41,7 @@ protected:
 	const char*			m_szfile;
 	CPostDocument*		m_doc;
 	Post::FEPostModel*	m_fem;
+	Post::GLPlotGroup*	m_pg; // group to add plot to
 	FileReader*			m_openFile;	// the reader for opening the file
 };
 
