@@ -938,6 +938,7 @@ void StandardDataFieldManager::Init()
 	Add<FEAreaCoverage>("Area coverage");
 	Add<FEDataField_T<FEFacetArea> >("Facet area");
 	Add<FEDataField_T<FEElementMaterial> >("Material ID");
+	Add<FEDataField_T<FESurfaceNormal> >("Surface normal");
 }
 
 void Post::InitStandardDataFields()

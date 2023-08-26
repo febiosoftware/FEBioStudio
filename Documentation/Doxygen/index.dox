@@ -5,6 +5,7 @@ The FEBio Studio Developer's Manual contains articles on how to extend the capab
 The following links can be used to learn more about specific topics. 
 
 \li \subpage mesh_inspector
+\li \subpage post_add_datafield
 
 The FEBio software is developed at the Musculoskeletal Research Laboratories at the University of Utah and at the Musculoskeletal Biomechanics Laboratory at Columbia University.
 
