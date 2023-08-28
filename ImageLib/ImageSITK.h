@@ -35,8 +35,11 @@ DEALINGS IN THE SOFTWARE.
 class CImageSITK : public C3DImage
 {
 public:
+    static itk::simple::Image SITKImageFrom3DImage(C3DImage* img);
+
+public:
     CImageSITK();
-    CImageSITK(int nx, int ny, int nz);
+    CImageSITK(int nx, int ny, int nz, int pixelType = CImage::UINT_8);
     ~CImageSITK();
 
     BOX GetBoundingBox() override;
