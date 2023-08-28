@@ -103,6 +103,7 @@ template<class pType> void CHistogramViewer::GetValues(int bins, std::vector<dou
     double max = (double)*std::max_element(data, data+N);
     double min = (double)*std::min_element(data, data+N);
     double range = max - min;
+    if(range == 0) return;
 
     for(int i = 0; i < bins; i++)
     {

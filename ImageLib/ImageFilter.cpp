@@ -35,6 +35,7 @@ SOFTWARE.*/
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
 REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
 REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
+REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
 
 
 CImageFilter::CImageFilter(CImageModel* model) : m_model(model)
@@ -62,24 +63,31 @@ ThresholdImageFilter::ThresholdImageFilter(CImageModel* model)
     n += 1;
     SetName(sz);
 
-    AddIntParam(255, "max");
-    AddIntParam(0, "min");
+    double min = 0;
+    double max = 255;
+
+    if(model && model->Get3DImage())
+    {
+        min = model->Get3DImage()->GetMinValue(true);
+        max = model->Get3DImage()->GetMaxValue(true);
+    }
+
+    AddDoubleParam(max, "max");
+    AddDoubleParam(min, "min");
 }
 
-void ThresholdImageFilter::ApplyFilter()
+template<class pType> void ThresholdImageFilter::FitlerTemplate()
 {
-    if(!m_model) return;
-
     C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
-    int max = GetIntValue(0);
-    int min = GetIntValue(1);
+    double max = GetFloatValue(0);
+    double min = GetFloatValue(1);
 
     if(min >= max) return;
 
-    uint8_t* originalBytes = image->GetBytes();
+    pType* originalBytes = (pType*)image->GetBytes();
     auto imageToFilter = m_model->GetImageSource()->GetImageToFilter(true);
-    uint8_t* filteredBytes = imageToFilter->GetBytes();
+    pType* filteredBytes = (pType*)imageToFilter->GetBytes();
 
     for(int i = 0; i < image->Width()*image->Height()*image->Depth(); i++)
     {
@@ -98,6 +106,51 @@ void ThresholdImageFilter::ApplyFilter()
     imageToFilter->SetBoundingBox(temp);
 }
 
+void ThresholdImageFilter::ApplyFilter()
+{
+    if(!m_model) return;
+
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
+
+    if(!image) return;
+
+    switch (image->PixelType())
+    {
+    case CImage::UINT_8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_RGB8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::REAL_32:
+        FitlerTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        FitlerTemplate<double>();
+        break;
+    default:
+        assert(false);
+    }
+}
+
 
 WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) 
     : m_glm(glm), CImageFilter(nullptr)
@@ -110,13 +163,13 @@ WarpImageFilter::WarpImageFilter(Post::CGLModel* glm)
 	AddBoolParam(true, "scale_dim", "Scale dimensions");
 }
 
-void WarpImageFilter::ApplyFilter()
+template<class pType> void WarpImageFilter::FitlerTemplate()
 {
-	if ((m_model == nullptr) || (m_glm == nullptr)) return;
+    if ((m_model == nullptr) || (m_glm == nullptr)) return;
 	CImageModel* mdl = m_model;
 
 	C3DImage* im = mdl->Get3DImage();
-	uint8_t* src = im->GetBytes();
+	pType* src = (pType*)im->GetBytes();
 
 	Post::CGLModel& gm = *m_glm;
 	Post::FEState* state = gm.GetActiveState();
@@ -145,8 +198,8 @@ void WarpImageFilter::ApplyFilter()
 	int nz = (dimScale ? (int)(sz*im->Depth ()) : im->Depth ());
 
 	int voxels = nx * ny * nz;
-	uint8_t* dst_buf = new uint8_t[voxels];
-	uint8_t* dst = dst_buf;
+	pType* dst_buf = new pType[voxels];
+	pType* dst = dst_buf;
 
 	double wx = (nx < 2 ? 0 : 1.0 / (nx - 1.0));
 	double wy = (ny < 2 ? 0 : 1.0 / (ny - 1.0));
@@ -184,7 +237,7 @@ void WarpImageFilter::ApplyFilter()
 
 					// sample 
 					vec3f s = el.eval(r, q[0], q[1]);
-					uint8_t b = mdl->ValueAtGlobalPos(to_vec3d(s));
+					pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
 					dst[index+i] = b;
 				}
 				else
@@ -230,7 +283,7 @@ void WarpImageFilter::ApplyFilter()
 
 						// sample 
 						vec3f s = el.eval(p, q[0], q[1], q[2]);
-						uint8_t b = mdl->ValueAtGlobalPos(to_vec3d(s));
+						pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
 						dst[index+i] = b;
 					}
 					else
@@ -243,9 +296,54 @@ void WarpImageFilter::ApplyFilter()
 	}
 
 	C3DImage* im2 = mdl->GetImageSource()->GetImageToFilter(false);
-	im2->Create(nx, ny, nz, dst_buf);
+	im2->Create(nx, ny, nz, (uint8_t*)dst_buf, 0, im->PixelType());
 
 	// update the model's box
 	mdl->SetBoundingBox(box);
+}
+
+void WarpImageFilter::ApplyFilter()
+{
+	if(!m_model) return;
+
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
+
+    if(!image) return;
+
+    switch (image->PixelType())
+    {
+    case CImage::UINT_8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_RGB8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::REAL_32:
+        FitlerTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        FitlerTemplate<double>();
+        break;
+    default:
+        assert(false);
+    }
 }
 

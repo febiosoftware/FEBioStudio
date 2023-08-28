@@ -39,7 +39,7 @@ public:
 
 public:
     CImageSITK();
-    CImageSITK(int nx, int ny, int nz);
+    CImageSITK(int nx, int ny, int nz, int pixelType = CImage::UINT_8);
     ~CImageSITK();
 
     BOX GetBoundingBox() override;

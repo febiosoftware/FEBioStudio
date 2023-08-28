@@ -145,9 +145,7 @@ void GaussianImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
-
-    if(!image) return;
+    sitk::Image original = GetSITKImage();
 
     CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
 
@@ -157,7 +155,7 @@ void GaussianImageFilter::ApplyFilter()
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
+        filteredImage->SetItkImage(filter.Execute(original));
     }
     catch(std::exception& e)
     {
@@ -167,7 +165,7 @@ void GaussianImageFilter::ApplyFilter()
 
 // I've commented this registration out for now. This filter is always returning an error
 // saying, "Failed to allocate memory for image"
-// REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
+
 AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(CImageModel* model)
 : SITKImageFiler(model)
 {
@@ -190,20 +188,18 @@ void AdaptiveHistogramEqualizationFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
-
-    if(!image) return;
+    sitk::Image original = GetSITKImage();
 
     CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
 
     sitk::AdaptiveHistogramEqualizationImageFilter filter;
     filter.SetAlpha(GetFloatValue(0));
     filter.SetBeta(GetFloatValue(1));
-    filter.SetRadius({(unsigned int)GetIntValue(0), (unsigned int)GetIntValue(1), (unsigned int)GetIntValue(2)});
+    filter.SetRadius({(unsigned int)GetIntValue(2), (unsigned int)GetIntValue(3), (unsigned int)GetIntValue(4)});
 
     try
     {
-        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
+        filteredImage->SetItkImage(filter.Execute(original));
     }
     catch(std::exception& e)
     {

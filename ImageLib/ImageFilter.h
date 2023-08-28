@@ -55,6 +55,10 @@ public:
     ThresholdImageFilter(CImageModel* model = nullptr);
 
     void ApplyFilter() override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
 };
 
 
@@ -65,6 +69,10 @@ class WarpImageFilter : public CImageFilter
 public:
 	WarpImageFilter(Post::CGLModel* glm);
 	void ApplyFilter() override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
 
 private:
 	Post::CGLModel* m_glm;
