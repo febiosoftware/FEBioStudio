@@ -65,8 +65,7 @@ private:
 };
 
 
-SITKImageFiler::SITKImageFiler(CImageModel* model)
-    : CImageFilter(model)
+SITKImageFiler::SITKImageFiler()
 {
 
 }
@@ -85,8 +84,7 @@ itk::simple::Image SITKImageFiler::GetSITKImage()
 } 
 
 
-MeanImageFilter::MeanImageFilter(CImageModel* model)
-    : SITKImageFiler(model)
+MeanImageFilter::MeanImageFilter()
 {
     static int n = 1;
 	 
@@ -128,8 +126,7 @@ void MeanImageFilter::ApplyFilter()
     }
 }
 
-GaussianImageFilter::GaussianImageFilter(CImageModel* model)
-    : SITKImageFiler(model)
+GaussianImageFilter::GaussianImageFilter()
 {
     static int n = 1;
 
@@ -163,8 +160,7 @@ void GaussianImageFilter::ApplyFilter()
     }
 }
 
-AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(CImageModel* model)
-: SITKImageFiler(model)
+AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter()
 {
     static int n = 1;
 

@@ -37,11 +37,11 @@ class CImageModel;
 class CImageFilter : public FSObject
 {
 public:
-    CImageFilter(CImageModel* model);
+    CImageFilter();
 
     virtual void ApplyFilter() = 0;
 
-    void SetImageModel(CImageModel* model);
+    virtual void SetImageModel(CImageModel* model);
 
 	CImageModel* GetImageModel();
 
@@ -52,9 +52,11 @@ protected:
 class ThresholdImageFilter : public CImageFilter
 {
 public:
-    ThresholdImageFilter(CImageModel* model = nullptr);
+    ThresholdImageFilter();
 
     void ApplyFilter() override;
+
+    void SetImageModel(CImageModel* model) override;
 
 private:
     template<class pType>

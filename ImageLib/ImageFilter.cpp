@@ -38,7 +38,7 @@ REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
 REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
 
 
-CImageFilter::CImageFilter(CImageModel* model) : m_model(model)
+CImageFilter::CImageFilter() : m_model(nullptr)
 {
 
 }
@@ -53,8 +53,7 @@ CImageModel* CImageFilter::GetImageModel()
 	return m_model;
 }
 
-ThresholdImageFilter::ThresholdImageFilter(CImageModel* model)
-    : CImageFilter(model)
+ThresholdImageFilter::ThresholdImageFilter()
 {
     static int n = 1;
 
@@ -63,17 +62,8 @@ ThresholdImageFilter::ThresholdImageFilter(CImageModel* model)
     n += 1;
     SetName(sz);
 
-    double min = 0;
-    double max = 255;
-
-    if(model && model->Get3DImage())
-    {
-        min = model->Get3DImage()->GetMinValue(true);
-        max = model->Get3DImage()->GetMaxValue(true);
-    }
-
-    AddDoubleParam(max, "max");
-    AddDoubleParam(min, "min");
+    AddDoubleParam(255, "max");
+    AddDoubleParam(0, "min");
 }
 
 template<class pType> void ThresholdImageFilter::FitlerTemplate()
@@ -151,9 +141,20 @@ void ThresholdImageFilter::ApplyFilter()
     }
 }
 
+void ThresholdImageFilter::SetImageModel(CImageModel* model)
+{
+    if(model && model->Get3DImage())
+    {
+        SetFloatValue(0, model->Get3DImage()->GetMaxValue(true));
+        SetFloatValue(1, model->Get3DImage()->GetMinValue(true));
+    }
+
+    CImageFilter::SetImageModel(model);
+}
+
 
 WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) 
-    : m_glm(glm), CImageFilter(nullptr)
+    : m_glm(glm)
 {
 	static int n = 1;
 	char sz[64] = { 0 };

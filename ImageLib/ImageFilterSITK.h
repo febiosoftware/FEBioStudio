@@ -33,7 +33,7 @@ SOFTWARE.*/
 class SITKImageFiler : public CImageFilter
 {
 public:
-    SITKImageFiler(CImageModel* model);
+    SITKImageFiler();
 
     itk::simple::Image GetSITKImage();
 
@@ -44,7 +44,7 @@ public:
 class MeanImageFilter : public SITKImageFiler
 {
 public:
-    MeanImageFilter(CImageModel* model = nullptr);
+    MeanImageFilter();
 
     void ApplyFilter() override;
 };
@@ -52,7 +52,7 @@ public:
 class GaussianImageFilter : public SITKImageFiler
 {
 public:
-    GaussianImageFilter(CImageModel* model = nullptr);
+    GaussianImageFilter();
 
     void ApplyFilter() override;
 };
@@ -60,7 +60,7 @@ public:
 class AdaptiveHistogramEqualizationFilter : public SITKImageFiler
 {
 public:
-    AdaptiveHistogramEqualizationFilter(CImageModel* model = nullptr);
+    AdaptiveHistogramEqualizationFilter();
 
     void ApplyFilter() override;
 };
