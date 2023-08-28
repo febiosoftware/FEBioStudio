@@ -131,6 +131,8 @@ CImageSITK::CImageSITK(int nx, int ny, int nz, int pixelType)
         assert(false);
     }
 
+    m_pixelType = pixelType;
+
     FinalizeImage();
 }
 
