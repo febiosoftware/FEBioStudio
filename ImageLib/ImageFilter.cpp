@@ -23,7 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "ImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
 #include <ImageLib/ImageModel.h>
@@ -31,43 +30,15 @@ SOFTWARE.*/
 #include <ImageLib/ImageSITK.h>
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>
+#include "ImageFilterSITK.h"
 
-#ifdef HAS_ITK
-#include <sitkSmoothingRecursiveGaussianImageFilter.h>
-#include <sitkMeanImageFilter.h>
-#include <sitkAdaptiveHistogramEqualizationImageFilter.h>
+REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
+REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
+REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
+REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
 
-namespace sitk = itk::simple;
-#endif
 
-class ITKException : public std::exception
-{
-public:
-    ITKException(std::exception& e)
-    {
-        std::string str = e.what();
-        int pos = str.find("\n");
-
-        if(pos == str.npos)
-        {
-            m_what = str.c_str();
-        }
-        else
-        {
-            m_what = str.substr(pos+1, str.npos).c_str();
-        }
-    }
-
-    const char* what() const noexcept override
-    {
-        return m_what.c_str();
-    }
-
-private:
-    std::string m_what;
-};
-
-CImageFilter::CImageFilter(int type, CImageModel* model) : m_type(type), m_model(model)
+CImageFilter::CImageFilter(CImageModel* model) : m_model(model)
 {
 
 }
@@ -82,9 +53,8 @@ CImageModel* CImageFilter::GetImageModel()
 	return m_model;
 }
 
-REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
 ThresholdImageFilter::ThresholdImageFilter(CImageModel* model)
-    : CImageFilter(CImageFilter::THRESHOLD, model)
+    : CImageFilter(model)
 {
     static int n = 1;
 
@@ -93,24 +63,31 @@ ThresholdImageFilter::ThresholdImageFilter(CImageModel* model)
     n += 1;
     SetName(sz);
 
-    AddIntParam(255, "max");
-    AddIntParam(0, "min");
+    double min = 0;
+    double max = 255;
+
+    if(model && model->Get3DImage())
+    {
+        min = model->Get3DImage()->GetMinValue(true);
+        max = model->Get3DImage()->GetMaxValue(true);
+    }
+
+    AddDoubleParam(max, "max");
+    AddDoubleParam(min, "min");
 }
 
-void ThresholdImageFilter::ApplyFilter()
+template<class pType> void ThresholdImageFilter::FitlerTemplate()
 {
-    if(!m_model) return;
-
     C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
-    int max = GetIntValue(0);
-    int min = GetIntValue(1);
+    double max = GetFloatValue(0);
+    double min = GetFloatValue(1);
 
     if(min >= max) return;
 
-    uint8_t* originalBytes = image->GetBytes();
+    pType* originalBytes = (pType*)image->GetBytes();
     auto imageToFilter = m_model->GetImageSource()->GetImageToFilter(true);
-    uint8_t* filteredBytes = imageToFilter->GetBytes();
+    pType* filteredBytes = (pType*)imageToFilter->GetBytes();
 
     for(int i = 0; i < image->Width()*image->Height()*image->Depth(); i++)
     {
@@ -129,152 +106,54 @@ void ThresholdImageFilter::ApplyFilter()
     imageToFilter->SetBoundingBox(temp);
 }
 
-#ifdef HAS_ITK
-
-REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
-MeanImageFilter::MeanImageFilter(CImageModel* model)
-    : CImageFilter(CImageFilter::MEAN, model)
-{
-    static int n = 1;
-
-    char sz[64];
-    sprintf(sz, "MeanImageFilter%02d", n);
-    n += 1;
-    SetName(sz);
-
-    AddIntParam(1, "x Radius")->SetIntRange(0, 9999999);
-    AddIntParam(1, "y Radius")->SetIntRange(0, 9999999);
-    AddIntParam(1, "z Radius")->SetIntRange(0, 9999999);
-}
-
-void MeanImageFilter::ApplyFilter()
+void ThresholdImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
     if(!image) return;
 
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
-
-    sitk::MeanImageFilter filter;
-
-    std::vector<unsigned int> indexRadius;
-
-    indexRadius.push_back(GetIntValue(0)); // radius along x
-    indexRadius.push_back(GetIntValue(1)); // radius along y
-    indexRadius.push_back(GetIntValue(2)); // radius along z
-
-    filter.SetRadius(indexRadius);
-
-    try
+    switch (image->PixelType())
     {
-        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
-    }
-    catch(std::exception& e)
-    {
-        throw ITKException(e);
-    }
-}
-
-REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
-GaussianImageFilter::GaussianImageFilter(CImageModel* model)
-    : CImageFilter(CImageFilter::GAUSSBLUR, model)
-{
-    static int n = 1;
-
-    char sz[64];
-    sprintf(sz, "GaussianImageFilter%02d", n);
-    n += 1;
-    SetName(sz);
-
-    AddDoubleParam(2.0, "sigma");
-}
-
-void GaussianImageFilter::ApplyFilter()
-{
-    if(!m_model) return;
-
-    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
-
-    if(!image) return;
-
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
-
-    sitk::SmoothingRecursiveGaussianImageFilter filter;
-
-    filter.SetSigma(GetFloatValue(0));
-
-    try
-    {
-        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
-    }
-    catch(std::exception& e)
-    {
-        throw ITKException(e);
+    case CImage::UINT_8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_RGB8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::REAL_32:
+        FitlerTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        FitlerTemplate<double>();
+        break;
+    default:
+        assert(false);
     }
 }
 
-// I've commented this registration out for now. This filter is always returning an error
-// saying, "Failed to allocate memory for image"
-// REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
-AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(CImageModel* model)
-: CImageFilter(ADAPTHISTEQ, model)
-{
-static int n = 1;
-
-char sz[64];
-sprintf(sz, "AdaptiveHistogramEqualization%02d", n);
-n += 1;
-SetName(sz);
-
-AddDoubleParam(0.3, "Aplha")->SetFloatRange(0, 1);
-AddDoubleParam(0.3, "Beta")->SetFloatRange(0, 1);
-
-AddIntParam(5, "x Radius")->SetIntRange(0, 9999999);
-AddIntParam(5, "y Radius")->SetIntRange(0, 9999999);
-AddIntParam(5, "z Radius")->SetIntRange(0, 9999999);
-}
-
-void AdaptiveHistogramEqualizationFilter::ApplyFilter()
-{
-    if(!m_model) return;
-
-    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
-
-    if(!image) return;
-
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
-
-    sitk::AdaptiveHistogramEqualizationImageFilter filter;
-    filter.SetAlpha(GetFloatValue(0));
-    filter.SetBeta(GetFloatValue(1));
-    filter.SetRadius({(unsigned int)GetIntValue(0), (unsigned int)GetIntValue(1), (unsigned int)GetIntValue(2)});
-
-    try
-    {
-        filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
-    }
-    catch(std::exception& e)
-    {
-        throw ITKException(e);
-    }
-}
-
-#else
-MeanImageFilter::MeanImageFilter(CImageModel* model) : CImageFilter(0, nullptr) {}
-void MeanImageFilter::ApplyFilter() {}
-
-GaussianImageFilter::GaussianImageFilter(CImageModel* model) : CImageFilter(0, nullptr) {}
-void GaussianImageFilter::ApplyFilter() {}
-
-AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(CImageModel* model) : CImageFilter(0, nullptr) {}
-void AdaptiveHistogramEqualizationFilter::ApplyFilter() {}
-
-#endif
 
 WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) 
-    : m_glm(glm), CImageFilter(CImageFilter::WARP, nullptr)
+    : m_glm(glm), CImageFilter(nullptr)
 {
 	static int n = 1;
 	char sz[64] = { 0 };
@@ -284,13 +163,13 @@ WarpImageFilter::WarpImageFilter(Post::CGLModel* glm)
 	AddBoolParam(true, "scale_dim", "Scale dimensions");
 }
 
-void WarpImageFilter::ApplyFilter()
+template<class pType> void WarpImageFilter::FitlerTemplate()
 {
-	if ((m_model == nullptr) || (m_glm == nullptr)) return;
+    if ((m_model == nullptr) || (m_glm == nullptr)) return;
 	CImageModel* mdl = m_model;
 
 	C3DImage* im = mdl->Get3DImage();
-	uint8_t* src = im->GetBytes();
+	pType* src = (pType*)im->GetBytes();
 
 	Post::CGLModel& gm = *m_glm;
 	Post::FEState* state = gm.GetActiveState();
@@ -319,8 +198,8 @@ void WarpImageFilter::ApplyFilter()
 	int nz = (dimScale ? (int)(sz*im->Depth ()) : im->Depth ());
 
 	int voxels = nx * ny * nz;
-	uint8_t* dst_buf = new uint8_t[voxels];
-	uint8_t* dst = dst_buf;
+	pType* dst_buf = new pType[voxels];
+	pType* dst = dst_buf;
 
 	double wx = (nx < 2 ? 0 : 1.0 / (nx - 1.0));
 	double wy = (ny < 2 ? 0 : 1.0 / (ny - 1.0));
@@ -358,7 +237,7 @@ void WarpImageFilter::ApplyFilter()
 
 					// sample 
 					vec3f s = el.eval(r, q[0], q[1]);
-					uint8_t b = mdl->ValueAtGlobalPos(to_vec3d(s));
+					pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
 					dst[index+i] = b;
 				}
 				else
@@ -404,7 +283,7 @@ void WarpImageFilter::ApplyFilter()
 
 						// sample 
 						vec3f s = el.eval(p, q[0], q[1], q[2]);
-						uint8_t b = mdl->ValueAtGlobalPos(to_vec3d(s));
+						pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
 						dst[index+i] = b;
 					}
 					else
@@ -417,8 +296,54 @@ void WarpImageFilter::ApplyFilter()
 	}
 
 	C3DImage* im2 = mdl->GetImageSource()->GetImageToFilter(false);
-	im2->Create(nx, ny, nz, dst_buf);
+	im2->Create(nx, ny, nz, (uint8_t*)dst_buf, 0, im->PixelType());
 
 	// update the model's box
 	mdl->SetBoundingBox(box);
 }
+
+void WarpImageFilter::ApplyFilter()
+{
+	if(!m_model) return;
+
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
+
+    if(!image) return;
+
+    switch (image->PixelType())
+    {
+    case CImage::UINT_8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_RGB8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::REAL_32:
+        FitlerTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        FitlerTemplate<double>();
+        break;
+    default:
+        assert(false);
+    }
+}
+
