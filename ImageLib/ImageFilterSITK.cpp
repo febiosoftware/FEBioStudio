@@ -163,9 +163,6 @@ void GaussianImageFilter::ApplyFilter()
     }
 }
 
-// I've commented this registration out for now. This filter is always returning an error
-// saying, "Failed to allocate memory for image"
-
 AdaptiveHistogramEqualizationFilter::AdaptiveHistogramEqualizationFilter(CImageModel* model)
 : SITKImageFiler(model)
 {
