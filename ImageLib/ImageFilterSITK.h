@@ -23,59 +23,46 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <FSCore/math3d.h>
-#include <FSCore/FSObject.h>
 
-namespace Post{
-class CGLModel;
-};
+#include "ImageFilter.h"
 
-class CImageModel;
+#ifdef HAS_ITK
+#include <sitkImage.h>
 
-class CImageFilter : public FSObject
+class SITKImageFiler : public CImageFilter
 {
 public:
-    CImageFilter();
+    SITKImageFiler();
+
+    itk::simple::Image GetSITKImage();
 
     virtual void ApplyFilter() = 0;
 
-    virtual void SetImageModel(CImageModel* model);
-
-	CImageModel* GetImageModel();
-
-protected:
-    CImageModel* m_model;
 };
 
-class ThresholdImageFilter : public CImageFilter
+class MeanImageFilter : public SITKImageFiler
 {
 public:
-    ThresholdImageFilter();
+    MeanImageFilter();
 
     void ApplyFilter() override;
-
-    void SetImageModel(CImageModel* model) override;
-
-private:
-    template<class pType>
-    void FitlerTemplate();
 };
 
-
-class WarpImageFilter : public CImageFilter
+class GaussianImageFilter : public SITKImageFiler
 {
-	enum { SCALE_DIM };
-
 public:
-	WarpImageFilter(Post::CGLModel* glm);
-	void ApplyFilter() override;
+    GaussianImageFilter();
 
-private:
-    template<class pType>
-    void FitlerTemplate();
-
-private:
-	Post::CGLModel* m_glm;
+    void ApplyFilter() override;
 };
+
+class AdaptiveHistogramEqualizationFilter : public SITKImageFiler
+{
+public:
+    AdaptiveHistogramEqualizationFilter();
+
+    void ApplyFilter() override;
+};
+
+#endif

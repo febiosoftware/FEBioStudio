@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
+#include <FSCore/ClassDescriptor.h>
 #include <assert.h>
 
 using namespace Post;
@@ -198,7 +199,8 @@ void CImageModel::Save(OArchive& ar)
 		{
 			for (int index = 0; index < m_filters.Size(); index++)
 			{
-				ar.BeginChunk(m_filters[index]->Type());
+                ar.WriteChunk(0, m_filters[index]->GetTypeString());
+				ar.BeginChunk(1);
 				{
 					m_filters[index]->Save(ar);
 				}
@@ -258,76 +260,65 @@ void CImageModel::Load(IArchive& ar)
 			FSObject::Load(ar);
 			break;
 		case 1:
-			{
-				while (ar.OpenChunk() == IArchive::IO_OK)
-                {
-                    int nid2 = ar.GetChunkID();
+        {
+            while (ar.OpenChunk() == IArchive::IO_OK)
+            {
+                int nid2 = ar.GetChunkID();
 
-                    switch (nid2)
-                    {
-                    case CImageSource::RAW:
-                        m_img = new CRawImageSource(this);
-                        m_img->Load(ar);
-                        break;
-                    case CImageSource::ITK:
-                        m_img = new CITKImageSource(this);
-                        m_img->Load(ar);
-                        break;
-                    case CImageSource::SERIES:
-                        m_img = new CITKSeriesImageSource(this);
-                        m_img->Load(ar);
-                        break;
-                    case CImageSource::TIFF:
-                        m_img = new CTiffImageSource(this);
-                        m_img->Load(ar);
-                        break;
-                    default:
-                        break;
-                    }
-					ar.CloseChunk();
-				}
-			}
-			break;
+                switch (nid2)
+                {
+                case CImageSource::RAW:
+                    m_img = new CRawImageSource(this);
+                    m_img->Load(ar);
+                    break;
+                case CImageSource::ITK:
+                    m_img = new CITKImageSource(this);
+                    m_img->Load(ar);
+                    break;
+                case CImageSource::SERIES:
+                    m_img = new CITKSeriesImageSource(this);
+                    m_img->Load(ar);
+                    break;
+                case CImageSource::TIFF:
+                    m_img = new CTiffImageSource(this);
+                    m_img->Load(ar);
+                    break;
+                default:
+                    break;
+                }
+                ar.CloseChunk();
+            }
+            break;
+        }
         case 2:
-			{
-				while (ar.OpenChunk() == IArchive::IO_OK)
-                {
-                    int nid2 = ar.GetChunkID();
+        {
+            std::string typeString;
+            while (ar.OpenChunk() == IArchive::IO_OK)
+            {
+                int nid2 = ar.GetChunkID();
 
-                    switch (nid2)
-                    {
-                    case CImageFilter::THRESHOLD:
-                    {
-                        auto temp = new ThresholdImageFilter(this);
-                        temp->Load(ar);
-                        m_filters.Add(temp);
-                        break;
-                    }
-                    case CImageFilter::MEAN:
-                    {
-                        auto temp = new MeanImageFilter(this);
-                        temp->Load(ar);
-                        m_filters.Add(temp);
-                    }
-                    case CImageFilter::GAUSSBLUR:
-                    {
-                        auto temp = new GaussianImageFilter(this);
-                        temp->Load(ar);
-                        m_filters.Add(temp);
-                    }
-                    case CImageFilter::ADAPTHISTEQ:
-                    {
-                        auto temp = new AdaptiveHistogramEqualizationFilter(this);
-                        temp->Load(ar);
-                        m_filters.Add(temp);
-                    }
-                    default:
-                        break;
-                    }
-					ar.CloseChunk();
-				}
-			}
-			break;
+                switch (nid2)
+                {
+                case 0:
+                {
+                    ar.read(typeString);
+                    break;
+                }
+                case 1:
+                {
+                    CImageFilter* filter = FSCore::CreateClass<CImageFilter>(CLASS_IMAGE_FILTER, typeString.c_str());
+                    filter->SetImageModel(this);
+                    filter->Load(ar);
+                    m_filters.Add(filter);
+                    break;
+                }
+                default:
+                    break;
+                }
+                ar.CloseChunk();
+            }
+            break;
+        }
 		}
 		ar.CloseChunk();
 	}

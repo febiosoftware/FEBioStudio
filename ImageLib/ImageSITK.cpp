@@ -28,23 +28,110 @@ DEALINGS IN THE SOFTWARE.
 
 
 #include "ImageSITK.h"
-
-#ifdef HAS_ITK
 #include <FSCore/FSDir.h>
 
+#ifdef HAS_ITK
+#include <sitkImportImageFilter.h>
+
+
+
 namespace sitk = itk::simple;
+
+itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
+{
+    BOX box = img->GetBoundingBox();
+    unsigned int nx = img->Width();
+    unsigned int ny = img->Height();
+    unsigned int nz = img->Depth();
+
+    sitk::ImportImageFilter filter;    
+    filter.SetSize({nx, ny, nz});
+    filter.SetOrigin({box.x0, box.y0, box.z0});
+    filter.SetSpacing({(box.x1 - box.x0)/nx, (box.y1 - box.y0)/ny, (box.z1 - box.z0)/nz});
+
+    switch (img->PixelType())
+    {
+    case CImage::UINT_8:
+        filter.SetBufferAsUInt8((uint8_t*)img->GetBytes());
+        break;
+    case CImage::INT_8:
+        filter.SetBufferAsInt8((int8_t*)img->GetBytes());
+        break;
+    case CImage::UINT_16:
+        filter.SetBufferAsUInt16((uint16_t*)img->GetBytes());
+        break;
+    case CImage::INT_16:
+        filter.SetBufferAsInt16((int16_t*)img->GetBytes());
+        break;
+    case CImage::UINT_RGB8:
+        filter.SetBufferAsUInt8((uint8_t*)img->GetBytes(), 3);
+        break;
+    case CImage::INT_RGB8:
+        filter.SetBufferAsInt8((int8_t*)img->GetBytes(), 3);
+        break;
+    case CImage::UINT_RGB16:
+        filter.SetBufferAsUInt16((uint16_t*)img->GetBytes(), 3);
+        break;
+    case CImage::INT_RGB16:
+        filter.SetBufferAsInt16((int16_t*)img->GetBytes(), 3);
+        break;
+    case CImage::REAL_32:
+        filter.SetBufferAsFloat((float*)img->GetBytes());
+        break;
+    case CImage::REAL_64:
+        filter.SetBufferAsDouble((double*)img->GetBytes());
+        break;
+    default:
+        assert(false);
+    }
+
+    return filter.Execute();
+}
 
 CImageSITK::CImageSITK()
 {
 
 }
 
-CImageSITK::CImageSITK(int nx, int ny, int nz)
-    : m_sitkImage(nx, ny, nz, sitk::sitkUInt8)
+CImageSITK::CImageSITK(int nx, int ny, int nz, int pixelType)
 {
-    m_cx = nx;
-    m_cy = ny;
-    m_cz = nz;
+    switch (pixelType)
+    {
+    case CImage::UINT_8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt8);
+        break;
+    case CImage::INT_8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt8);
+        break;
+    case CImage::UINT_16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt16);
+        break;
+    case CImage::INT_16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt16);
+        break;
+    case CImage::UINT_RGB8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorUInt8);
+        break;
+    case CImage::INT_RGB8:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorInt8);
+        break;
+    case CImage::UINT_RGB16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorUInt16);
+        break;
+    case CImage::INT_RGB16:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorInt16);
+        break;
+    case CImage::REAL_32:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkFloat32);
+        break;
+    case CImage::REAL_64:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkFloat64);
+        break;
+    default:
+        assert(false);
+    }
+
+    m_pixelType = pixelType;
 
     FinalizeImage();
 }

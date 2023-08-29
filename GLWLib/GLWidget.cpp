@@ -418,6 +418,7 @@ void GLLegendBar::draw_gradient_vert(QPainter* painter)
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
+	if (nsteps < 1) nsteps = 1;
 
 	glDisable(GL_CULL_FACE);
 
@@ -573,6 +574,7 @@ void GLLegendBar::draw_gradient_horz(QPainter* painter)
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
+	if (nsteps < 1) nsteps = 1;
 
 	glDisable(GL_CULL_FACE);
 
@@ -728,6 +730,7 @@ void GLLegendBar::draw_discrete_horz(QPainter* painter)
 
 	// draw the legend
 	int nsteps = m_pMap->GetDivisions();
+	if (nsteps < 1) nsteps = 1;
 
 	glDisable(GL_CULL_FACE);
 	glDisable(GL_BLEND);
