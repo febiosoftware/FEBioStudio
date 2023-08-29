@@ -1940,6 +1940,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("showMaterialAxes", vs.m_blma);
 	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
+    settings.setValue("showGrid", vs.m_bgrid);
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
@@ -2065,6 +2066,7 @@ void CMainWindow::readSettings()
 //	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
 	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
+    vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
 
