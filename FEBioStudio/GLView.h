@@ -245,7 +245,10 @@ public:
 
 	void changeViewMode(View_Mode vm);
 
+	void ShowContextMenu(bool b);
+
 	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
+	void AllocateDefaultWidgets(bool b);
 
 	int GetMeshMode();
 
@@ -389,6 +392,9 @@ protected:
 	GLSafeFrame*	m_pframe;
 
 	CGLWidgetManager*	m_Widget;
+	bool	m_ballocDefaultWidgets;
+
+	bool	m_showContextMenu;
 
 private:
 	GLenum	m_videoFormat;
