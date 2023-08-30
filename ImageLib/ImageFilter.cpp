@@ -33,9 +33,12 @@ SOFTWARE.*/
 #include "ImageFilterSITK.h"
 
 REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
+
+#ifdef HAS_ITK
 REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
 REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
 REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
+#endif
 
 
 CImageFilter::CImageFilter() : m_model(nullptr)
