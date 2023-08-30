@@ -202,15 +202,6 @@ bool AbaqusImport::Load(const char* szfile)
 	// build the model
 	if (build_model() == false) return false;
 
-	// The abaqus reader currently still uses the old FE classes, so we need to convert. 
-	std::ostringstream log;
-	m_prj.ConvertToNewFormat(log);
-	std::string s = log.str();
-	if (s.empty() == false)
-	{
-		errf(s.c_str());
-	}
-
 	return true;
 }
 
@@ -1873,6 +1864,15 @@ bool AbaqusImport::build_physics()
 
 	// clean up
 	Mat.clear();
+
+	// The abaqus reader currently still uses the old FE classes, so we need to convert. 
+	std::ostringstream log;
+	m_prj.ConvertToNewFormat(log);
+	std::string s = log.str();
+	if (s.empty() == false)
+	{
+		errf(s.c_str());
+	}
 
 	return true;
 }
