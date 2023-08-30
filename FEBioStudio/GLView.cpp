@@ -374,8 +374,15 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	// attach the 3D cursor to this view
 	GLCursor::AttachToView(this);
 
-	m_Widget = CGLWidgetManager::GetInstance();
-	m_Widget->AttachToView(this);
+	m_showContextMenu = true;
+
+	m_ballocDefaultWidgets = true;
+	m_Widget = nullptr;
+
+	m_ptitle = nullptr;
+	m_psubtitle = nullptr;
+	m_ptriad = nullptr;
+	m_pframe = nullptr;
 
 	m_video       = nullptr;
 	m_videoMode   = VIDEO_STOPPED;
@@ -384,6 +391,16 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 CGLView::~CGLView()
 {
+}
+
+void CGLView::ShowContextMenu(bool b)
+{
+	m_showContextMenu = b;
+}
+
+void CGLView::AllocateDefaultWidgets(bool b)
+{
+	m_ballocDefaultWidgets = b;
 }
 
 std::string CGLView::GetOGLVersionString()
@@ -409,7 +426,7 @@ void CGLView::UpdateCamera(bool hitCameraTarget)
 void CGLView::resizeGL(int w, int h)
 {
 	QOpenGLWidget::resizeGL(w, h);
-	m_Widget->CheckWidgetBounds();
+	if (m_Widget) m_Widget->CheckWidgetBounds();
 }
 
 void CGLView::changeViewMode(View_Mode vm)
@@ -452,7 +469,7 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	// let the widget manager handle it first
 	GLWidget* pw = GLWidget::get_focus();
-	if (m_Widget->handle(x, y, CGLWidgetManager::PUSH) == 1)
+	if (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::PUSH) == 1))
 	{
 		m_pWnd->UpdateFontToolbar();
 		repaint();
@@ -577,7 +594,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
 	// let the widget manager handle it first
-	if (but1 && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1))
+	if (but1 && (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::DRAG) == 1)))
 	{
 		repaint();
 		m_pWnd->UpdateFontToolbar();
@@ -845,7 +862,7 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	int y = ev->y();
 
 	// let the widget manager handle it first
-	if (m_Widget->handle(x, y, CGLWidgetManager::RELEASE) == 1)
+	if (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::RELEASE) == 1))
 	{
 		ev->accept();
 		m_pWnd->UpdateFontToolbar();
@@ -1022,9 +1039,12 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 		{
 			if ((m_x0 == m_x1) && (m_y0 == m_y1))
 			{
-				QMenu menu(this);
-				m_pWnd->BuildContextMenu(menu);
-				menu.exec(ev->globalPos());
+				if (m_showContextMenu)
+				{
+					QMenu menu(this);
+					m_pWnd->BuildContextMenu(menu);
+					menu.exec(ev->globalPos());
+				}
 			}
 			else
 			{
@@ -1252,24 +1272,30 @@ void CGLView::initializeGL()
 	glEnable(GL_POINT_SMOOTH);
 	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
-	int Y = 0;
-	m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""), 0);
-	m_ptitle->set_font_size(30);
-	m_ptitle->fit_to_size();
-	m_ptitle->set_label("$(filename)");
-	Y += m_ptitle->h();
+	if (m_ballocDefaultWidgets)
+	{
+		m_Widget = CGLWidgetManager::GetInstance(); assert(m_Widget);
+		m_Widget->AttachToView(this);
 
-	m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
-	m_psubtitle->set_font_size(15);
-	m_psubtitle->fit_to_size();
-	m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
+		int Y = 0;
+		m_Widget->AddWidget(m_ptitle = new GLBox(20, 20, 300, 50, ""), 0);
+		m_ptitle->set_font_size(30);
+		m_ptitle->fit_to_size();
+		m_ptitle->set_label("$(filename)");
+		Y += m_ptitle->h();
 
-	m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
-	m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
-	m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
-	m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
-	m_pframe->hide();
-	m_pframe->set_layer(0); // permanent widget
+		m_Widget->AddWidget(m_psubtitle = new GLBox(Y, 70, 300, 60, ""), 0);
+		m_psubtitle->set_font_size(15);
+		m_psubtitle->fit_to_size();
+		m_psubtitle->set_label("$(datafield) $(units)\\nTime = $(time)");
+
+		m_Widget->AddWidget(m_ptriad = new GLTriad(0, 0, 150, 150), 0);
+		m_ptriad->align(GLW_ALIGN_LEFT | GLW_ALIGN_BOTTOM);
+		m_Widget->AddWidget(m_pframe = new GLSafeFrame(0, 0, 800, 600));
+		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
+		m_pframe->hide();
+		m_pframe->set_layer(0); // permanent widget
+	}
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
 	m_oglVersionString = szv;
@@ -1295,23 +1321,29 @@ void CGLView::UpdateWidgets(bool bposition)
 
 	if (postDoc && postDoc->IsValid())
 	{
-		m_ptitle->fit_to_size();
-
 		int Y = 0;
-		if (bposition)
-			m_ptitle->resize(0, 0, m_ptitle->w(), m_ptitle->h());
+		if (m_ptitle)
+		{
+			m_ptitle->fit_to_size();
 
-		m_ptitle->fit_to_size();
-		Y = m_ptitle->y() + m_ptitle->h();
+			if (bposition)
+				m_ptitle->resize(0, 0, m_ptitle->w(), m_ptitle->h());
 
-		if (bposition)
-			m_psubtitle->resize(0, Y, m_psubtitle->w(), m_psubtitle->h());
+			m_ptitle->fit_to_size();
+			Y = m_ptitle->y() + m_ptitle->h();
+		}
 
-		m_psubtitle->fit_to_size();
+		if (m_psubtitle)
+		{
+			if (bposition)
+				m_psubtitle->resize(0, Y, m_psubtitle->w(), m_psubtitle->h());
 
-		// set a min width for the subtitle otherwise the time values may get cropped
-		if (m_psubtitle->w() < 150)
-			m_psubtitle->resize(m_psubtitle->x(), m_psubtitle->y(), 150, m_psubtitle->h());
+			m_psubtitle->fit_to_size();
+
+			// set a min width for the subtitle otherwise the time values may get cropped
+			if (m_psubtitle->w() < 150)
+				m_psubtitle->resize(m_psubtitle->x(), m_psubtitle->y(), 150, m_psubtitle->h());
+		}
 
 		repaint();
 	}
@@ -1320,24 +1352,30 @@ void CGLView::UpdateWidgets(bool bposition)
 //-----------------------------------------------------------------------------
 bool CGLView::isTitleVisible() const
 {
-	return m_ptitle->visible();
+	return (m_ptitle ? m_ptitle->visible() : false);
 }
 
 void CGLView::showTitle(bool b)
 {
-	if (b) m_ptitle->show(); else m_ptitle->hide();
-	repaint();
+	if (m_ptitle)
+	{
+		if (b) m_ptitle->show(); else m_ptitle->hide();
+		repaint();
+	}
 }
 
 bool CGLView::isSubtitleVisible() const
 {
-	return m_psubtitle->visible();
+	return (m_psubtitle ? m_psubtitle->visible() : false);
 }
 
 void CGLView::showSubtitle(bool b)
 {
-	if (b) m_psubtitle->show(); else m_psubtitle->hide();
-	repaint();
+	if (m_psubtitle)
+	{
+		if (b) m_psubtitle->show(); else m_psubtitle->hide();
+		repaint();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -1385,7 +1423,7 @@ bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
 	else
 	{
 		// lock the frame
-		m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
+		if (m_pframe) m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
 
 		// set the animation mode to paused
 		m_videoMode = VIDEO_STOPPED;
@@ -1412,7 +1450,7 @@ void CGLView::StartAnimation()
 		m_videoMode = VIDEO_RECORDING;
 
 		// lock the frame
-		m_pframe->SetState(GLSafeFrame::LOCKED);
+		if (m_pframe) m_pframe->SetState(GLSafeFrame::LOCKED);
 		repaint();
 	}
 }
@@ -1441,7 +1479,7 @@ void CGLView::StopAnimation()
 		}
 
 		// unlock the frame
-		m_pframe->SetState(GLSafeFrame::FREE);
+		if (m_pframe) m_pframe->SetState(GLSafeFrame::FREE);
 
 		repaint();
 	}
@@ -1453,7 +1491,7 @@ void CGLView::PauseAnimation()
 	{
 		// pause the recording
 		m_videoMode = VIDEO_PAUSED;
-		m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
+		if (m_pframe) m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
 		repaint();
 	}
 }
@@ -1565,7 +1603,7 @@ void CGLView::paintGL()
 	}
 
 	// update the triad
-	m_ptriad->setOrientation(cam.GetOrientation());
+	if (m_ptriad) m_ptriad->setOrientation(cam.GetOrientation());
 
 	// We must turn off culling before we use the QPainter, otherwise
 	// drawing using QPainter doesn't work correctly.
@@ -1578,7 +1616,7 @@ void CGLView::paintGL()
 	if (postDoc == nullptr)
 	{
 		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
-		if (mdoc)
+		if (mdoc && m_Widget)
 		{
 			FSModel* ps = mdoc->GetFSModel();
 			GModel& model = ps->GetModel();
@@ -1587,13 +1625,13 @@ void CGLView::paintGL()
 			int activeLayer = model.GetActiveMeshLayer();
 			const std::string& s = model.GetMeshLayerName(activeLayer);
 			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
-			m_Widget->DrawWidget(m_ptriad, &painter);
-			if (m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
+			if (m_ptriad) m_Widget->DrawWidget(m_ptriad, &painter);
+			if (m_pframe && m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
 		}
 	}
 	else
 	{
-		if (postDoc->IsValid())
+		if (postDoc->IsValid() && m_Widget)
 		{
 			int layer = postDoc->GetGLModel()->m_layer;
 			m_Widget->SetActiveLayer(layer);
@@ -2437,8 +2475,11 @@ vec3d CGLView::WorldToPlane(vec3d r)
 
 void CGLView::showSafeFrame(bool b)
 {
-	if (b) m_pframe->show();
-	else m_pframe->hide();
+	if (m_pframe)
+	{
+		if (b) m_pframe->show();
+		else m_pframe->hide();
+	}
 }
 
 void CGLView::SetViewMode(View_Mode n)

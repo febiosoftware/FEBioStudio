@@ -162,7 +162,16 @@ template<class pType> void CImageSlice::ThresholdAndConvert()
     double minThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
     double maxThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
 
-    m_displaySlice.Create(m_orignalSlice.Width(), m_orignalSlice.Height());
+    if(m_orignalSlice.IsRGB())
+    {
+        m_displaySlice.Create(m_orignalSlice.Width(), m_orignalSlice.Height(), nullptr, CImage::UINT_RGB8);
+    }
+    else
+    {
+        m_displaySlice.Create(m_orignalSlice.Width(), m_orignalSlice.Height());
+    }
+    
+    
     pType* data = (pType*)m_orignalSlice.GetBytes();
     uint8_t* outData = m_displaySlice.GetBytes();
 
@@ -274,8 +283,18 @@ void CImageSlice::Update()
         assert(false);
     }
 
-    QImage qImg(m_displaySlice.GetBytes(), m_displaySlice.Width(), m_displaySlice.Height(), 
-        m_displaySlice.Width(), QImage::Format::Format_Grayscale8);
+    std::unique_ptr<QImage> qImg;
+    
+    if(m_orignalSlice.IsRGB())
+    {
+        qImg = std::make_unique<QImage>(m_displaySlice.GetBytes(), m_displaySlice.Width(), m_displaySlice.Height(), 
+            m_displaySlice.Width()*3, QImage::Format::Format_RGB888);
+    }
+    else
+    {
+        qImg = std::make_unique<QImage>(m_displaySlice.GetBytes(), m_displaySlice.Width(), m_displaySlice.Height(), 
+            m_displaySlice.Width(), QImage::Format::Format_Grayscale8);
+    }
 
     BOX box = m_imgModel->GetBoundingBox();
 
@@ -304,7 +323,7 @@ void CImageSlice::Update()
     }
 
     // Flip the image using QTransform.scale(1,-1)
-    QPixmap pixmap = QPixmap::fromImage(qImg).transformed(QTransform().scale(1,-1));
+    QPixmap pixmap = QPixmap::fromImage(*qImg).transformed(QTransform().scale(1,-1));
     
     m_imagePixmapItem->setPixmap(pixmap);
     m_imagePixmapItem->setTransform(QTransform().scale(m_xScale, m_yScale));
