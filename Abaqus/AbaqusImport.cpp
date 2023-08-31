@@ -1543,6 +1543,8 @@ bool AbaqusImport::read_assembly(char* szline, FILE* fp)
 	asmbly->m_name = szname;
 
 	read_line(szline, fp);
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------

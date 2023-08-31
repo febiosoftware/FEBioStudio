@@ -870,14 +870,14 @@ void CModelViewer::OnChangeDiscreteType()
 	GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(m_currentObject); assert(set);
 	if (set == 0) return;
 
-	QStringList items; items << "Linear" << "Nonlinear" << "Hill" << "General";
+	QStringList items; items << "Linear" << "Nonlinear" << "Hill";
 	QString item = QInputDialog::getItem(this, "Discrete Set Type", "Type:", items, 0, false);
 	if (item.isEmpty() == false)
 	{
 		FSDiscreteMaterial* mat = nullptr;
-		if (item == "Linear"   ) mat = new FSLinearSpringMaterial(fem);
-		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial(fem);
-		if (item == "Hill"     ) mat = new FSHillContractileMaterial(fem);
+		if (item == "Linear"   ) mat = FEBio::CreateDiscreteMaterial("linear spring", fem);
+		if (item == "Nonlinear") mat = FEBio::CreateDiscreteMaterial("nonlinear spring", fem);
+		if (item == "Hill"     ) mat = FEBio::CreateDiscreteMaterial("Hill", fem);
 		if (mat)
 		{
 			delete set->GetMaterial();

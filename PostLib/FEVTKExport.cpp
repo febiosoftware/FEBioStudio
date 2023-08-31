@@ -69,10 +69,12 @@ FEVTKExport::FEVTKExport(void)
 	m_bwriteAllStates = false;
 	m_bselElemsOnly = false;
 	m_bwriteSeriesFile = false;
+	m_bwritePartIDs = false;
 
 	AddBoolParam(m_bwriteAllStates , "write_all_states", "Write all states");
 	AddBoolParam(m_bselElemsOnly   , "sel_elems_only"  , "Selected elements only");
 	AddBoolParam(m_bwriteSeriesFile, "write_series"    , "Write VTK series");
+	AddBoolParam(m_bwritePartIDs   , "write_part_ids"  , "Write element part IDs as cell data");
 
 	m_fp = nullptr;
 	m_nodes = m_elems = 0;
@@ -85,12 +87,14 @@ bool FEVTKExport::UpdateData(bool bsave)
 		m_bwriteAllStates  = GetBoolValue(0);
 		m_bselElemsOnly    = GetBoolValue(1);
 		m_bwriteSeriesFile = GetBoolValue(2);
+		m_bwritePartIDs    = GetBoolValue(3);
 	}
 	else
 	{
 		SetBoolValue(0, m_bwriteAllStates);
 		SetBoolValue(1, m_bselElemsOnly);
 		SetBoolValue(2, m_bwriteSeriesFile);
+		SetBoolValue(3, m_bwritePartIDs);
 	}
 
 	return false;
@@ -486,7 +490,15 @@ void FEVTKExport::WriteCellData(FEState* ps)
 	for (int i = 0; i < NE; ++i) tag[i] = (mesh.Element(i).m_ntag >= 0 ? 1 : 0);
 
     int NDATA = ps->m_Data.size();
-    if (NDATA > 0) fprintf(m_fp, "\nCELL_DATA %d\n" , m_elems);
+    if ((NDATA > 0) || m_bwritePartIDs) fprintf(m_fp, "\nCELL_DATA %d\n" , m_elems);
+
+	if (m_bwritePartIDs)
+	{
+		fprintf(m_fp, "SCALARS part_IDs int\n");
+		fprintf(m_fp, "LOOKUP_TABLE default\n");
+		for (int i = 0; i < NE; ++i)
+			if (tag[i] != 0) fprintf(m_fp, "%d\n", mesh.Element(i).m_gid);
+	}
             
     for (int n=0; n<NDATA; ++n, ++pd)
     {
