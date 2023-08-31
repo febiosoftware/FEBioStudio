@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
+#include <FEBioLink/FEBioClass.h>
 #include <QDir>
 
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
@@ -143,9 +144,9 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 	FSModel* fem = gm->GetFSModel();
 	switch (m_type)
 	{
-	case 0: dset->SetMaterial(new FSLinearSpringMaterial(fem)); break;
-	case 1: dset->SetMaterial(new FSNonLinearSpringMaterial(fem)); break;
-	case 2: dset->SetMaterial(new FSHillContractileMaterial(fem)); break;
+	case 0: dset->SetMaterial(FEBio::CreateDiscreteMaterial("linear spring", fem)); break;
+	case 1: dset->SetMaterial(FEBio::CreateDiscreteMaterial("nonlinear spring", fem)); break;
+	case 2: dset->SetMaterial(FEBio::CreateDiscreteMaterial("Hill", fem)); break;
 	default:
 		assert(false);
 		return false;
