@@ -48,6 +48,9 @@ private:
 	bool AddSprings(GModel* fem, GMeshObject* po);
 	void Intersect(GMeshObject* po, SPRING& s);
 
+	bool ReadTXTFile();
+	bool ReadVTKFile();
+
 private:
 	QString	m_fileName;
 	double	m_tol;
