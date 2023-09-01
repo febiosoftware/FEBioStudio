@@ -1191,6 +1191,7 @@ class Ui::CDlgExportData
 {
 public:
 	QCheckBox* cb;
+	QCheckBox* wc;
 	QRadioButton* pb1;
 	QRadioButton* pb2;
 	QRadioButton* pb3;
@@ -1203,6 +1204,9 @@ public:
 
 		cb = new QCheckBox("Selection only");
 		l->addWidget(cb);
+
+		wc = new QCheckBox("Write face/element connectivity");
+		l->addWidget(wc);
 
 		QVBoxLayout* pg = new QVBoxLayout;
 		pg->addWidget(pb1 = new QRadioButton("Write all states"));
@@ -1238,6 +1242,11 @@ CDlgExportData::~CDlgExportData()
 bool CDlgExportData::selectionOnly() const
 {
 	return ui->cb->isChecked();
+}
+
+bool CDlgExportData::writeConnectivity() const
+{
+	return ui->wc->isChecked();
 }
 
 int CDlgExportData::stateOutputOption() const
@@ -1278,6 +1287,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 				if (dlg.exec())
 				{
 					bool selectionOnly = dlg.selectionOnly();
+					bool writeConnect = dlg.writeConnectivity();
 
 					int op = dlg.stateOutputOption();
 					vector<int> states;
@@ -1306,7 +1316,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 					}
 
 					std::string sfile = file.toStdString();
-					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, states) == false)
+					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, writeConnect, states) == false)
 					{
 						QMessageBox::critical(this, "Export Data", "Export Failed!");
 					}
