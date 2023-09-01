@@ -54,6 +54,7 @@ public:
 
 public:
 	bool selectionOnly() const;
+	bool writeConnectivity() const;
 	int stateOutputOption() const;
 	QString stateList() const;
 
