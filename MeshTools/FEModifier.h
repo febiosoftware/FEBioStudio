@@ -510,7 +510,4 @@ class FEInflateMesh: public FEModifier
 public:
 	FEInflateMesh();
 	FSMesh* Apply(FSMesh* pm);
-
-private:
-	void ShrinkMesh(FSMesh& mesh);
 };

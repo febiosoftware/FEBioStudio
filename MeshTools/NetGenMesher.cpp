@@ -152,7 +152,7 @@ FSMesh*	NetGenMesher::BuildMesh()
     // create new occ geometry object
     shared_ptr<OCCGeometry> occgeo = make_shared<OCCGeometry>();
 
-#ifdef LINUX
+#ifndef WIN32
     // set OCC parameters
 	//
     OCCParameters par;

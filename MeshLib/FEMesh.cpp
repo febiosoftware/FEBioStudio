@@ -1281,6 +1281,99 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 }
 
 //-----------------------------------------------------------------------------
+// Extract faces as a surface mesh
+FSSurfaceMesh* FSMesh::ExtractFacesAsSurface(bool selectedOnly)
+{
+    // clear face tags
+    TagAllFaces(0);
+    
+    // count selected faces
+    int faces = 0;
+    if (selectedOnly)
+    {
+        for (int i=0; i<Faces(); ++i) if (Face(i).IsSelected()) { Face(i).m_ntag = 1; ++faces; }
+    }
+    else
+    {
+        faces = Faces();
+        for (int i=0; i<Faces(); ++i) Face(i).m_ntag = 1;
+    }
+    
+    // tag nodes that need to be copied
+    for (int i=0; i<Nodes(); ++i) Node(i).m_ntag = -1;
+    for (int i=0; i<Faces(); ++i)
+    {
+        FSFace& f = Face(i);
+        if (f.m_ntag == 1)
+        {
+            int n = f.Nodes();
+            for (int j=0; j<n; ++j) Node(f.n[j]).m_ntag = 1;
+        }
+    }
+    
+    // count nodes
+    int nodes = 0;
+    for (int i=0; i<Nodes(); ++i)
+    {
+        FSNode& node = Node(i);
+        if (node.m_ntag == 1)
+        {
+            node.m_ntag = nodes;
+            ++nodes;
+        }
+    }
+    
+    assert( (nodes>0) && (faces>0));
+    
+    // allocate new mesh
+    FSSurfaceMesh* pm = new FSSurfaceMesh();
+    pm->Create(nodes, 0, faces);
+    
+    // create the nodes
+    FSNode* pn = pm->NodePtr();
+    for (int i=0; i<Nodes(); ++i)
+    {
+        FSNode& node = Node(i);
+        if (node.m_ntag >= 0)
+        {
+            *pn = node;
+            ++pn;
+        }
+    }
+    
+    // create the faces
+    faces = 0;
+    for (int i=0; i<Faces(); ++i)
+    {
+        FSFace& face = Face(i);
+        if (face.m_ntag)
+        {
+            FSFace& f = pm->Face(faces++);
+            int n = face.Nodes();
+            switch (n)
+            {
+                case 3: f.SetType(FE_FACE_TRI3 ); break;
+                case 4: f.SetType(FE_FACE_QUAD4); break;
+                case 6: f.SetType(FE_FACE_TRI6 ); break;
+                case 7: f.SetType(FE_FACE_TRI7 ); break;
+                case 8: f.SetType(FE_FACE_QUAD8); break;
+                case 9: f.SetType(FE_FACE_QUAD9); break;
+                default:
+                    assert(false);
+                    delete pm;
+                    return 0;
+            }
+            for (int j=0; j<=n; ++j) f.n[j] = Node(face.n[j]).m_ntag;
+        }
+    }
+    
+    // rebuild the mesh
+    pm->RebuildMesh();
+    
+    return pm;
+}
+
+//-----------------------------------------------------------------------------
 // Save mesh data to archive
 //
 void FSMesh::Save(OArchive &ar)

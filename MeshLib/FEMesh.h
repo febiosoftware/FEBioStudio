@@ -134,6 +134,7 @@ public:
 
 	// extract faces and return as new mesh
 	FSMesh* ExtractFaces(bool selectedOnly);
+    FSSurfaceMesh* ExtractFacesAsSurface(bool selectedOnly);
 
 public:
 	int MeshDataFields() const;
