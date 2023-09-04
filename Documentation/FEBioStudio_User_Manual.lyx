@@ -9324,9 +9324,11 @@ Inflate
 \end_layout
 
 \begin_layout Standard
-Inflates and divides a layer of elements.
- This can be useful for inserting a row of elements to a side of the mesh.
- 
+Create a biased mesh in an existing tetrahedral mesh, by inflating (extruding)
+ the selected surface inward, producing pentahedral elements, then remeshing
+ the inner domain with TetGen.
+ This can be useful for analyzing boundary layer responses in the vicinity
+ of the selected surface.
 \end_layout
 
 \begin_layout Standard
@@ -9342,7 +9344,8 @@ distance
 \series default
 : Sets the inflation distance.
  The element size normal to the facet selection will grow to this value.
- 
+ This value also determines the mesh size for the remeshing of the inner
+ domain.
 \end_layout
 
 \begin_layout Itemize
@@ -9370,6 +9373,23 @@ symmetric mesh bias
 \series default
 : Applies a symmetric mesh bias to the inserted elements.
  
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+weld tolerance
+\series default
+: the inner domain is welded to the inflated mesh domain using this tolerance.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+crease angle
+\series default
+: the two domains are rebuilt into a single domain (as describedin Rebuild
+ Mesh), using the selected crease angle.
 \end_layout
 
 \begin_layout Subsubsection
