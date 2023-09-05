@@ -114,7 +114,7 @@ FSMesh* FEInflateMesh::Apply(FSMesh* pm)
     mytg.SetElementSize(h);
     mytg.SetSplitFaces(false);
     FSMesh* lumen = ConvertSurfaceToMesh(innerSurf);
-    lumen = mytg.Apply(lumen, true);
+    lumen = mytg.Apply(lumen);
 
     // combine the two domains together into one
     GObject obj(GMESH_OBJECT);

@@ -91,7 +91,7 @@ FETetGenModifier::FETetGenModifier() : FEModifier("TetGen Mesher")
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* FETetGenModifier::Apply(FSMesh* pm, bool skip)
+FSMesh* FETetGenModifier::Apply(FSMesh* pm)
 {
 	FSMesh* pmnew = 0;
 
@@ -99,7 +99,7 @@ FSMesh* FETetGenModifier::Apply(FSMesh* pm, bool skip)
 		if (m_bremesh)
 			pmnew = RefineMesh(pm);
 		else
-			pmnew = CreateMesh(pm, skip);
+			pmnew = CreateMesh(pm);
 	}
 	catch (...)
 	{
@@ -123,7 +123,7 @@ FSMesh* FETetGenModifier::Apply(FSGroup* pg)
 }
 
 //-----------------------------------------------------------------------------
-FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm, bool skip)
+FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 {
 #ifdef TETLIBRARY
 
@@ -279,26 +279,28 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm, bool skip)
 
 	// update faces
 	pmesh->SmoothByPartition();
-    if (skip) return pmesh;
-    
+
 	// associate the FE nodes with the GNodes
 	GObject* po = pm->GetGObject();
-	double R2 = pmesh->GetBoundingBox().GetMaxExtent();
-	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
-	for (int i=0; i<pmesh->Nodes(); ++i)
+	if (po)
 	{
-		FSNode& node = pmesh->Node(i);
-		vec3d& ri = node.r;
-		node.m_gid = -1;
-		for (int j=0; j<po->Nodes(); ++j)
+		double R2 = pmesh->GetBoundingBox().GetMaxExtent();
+		if (R2 == 0) R2 = 1.0; else R2 *= R2;
+		for (int i = 0; i < pmesh->Nodes(); ++i)
 		{
-			GNode& gn = *po->Node(j);
-			vec3d& rj = gn.LocalPosition();
-			double L2 = (ri - rj).SqrLength();
-			if (L2/R2 < 1e-6) 
+			FSNode& node = pmesh->Node(i);
+			vec3d& ri = node.r;
+			node.m_gid = -1;
+			for (int j = 0; j < po->Nodes(); ++j)
 			{
-				node.m_gid = j;
-				break;
+				GNode& gn = *po->Node(j);
+				vec3d& rj = gn.LocalPosition();
+				double L2 = (ri - rj).SqrLength();
+				if (L2 / R2 < 1e-6)
+				{
+					node.m_gid = j;
+					break;
+				}
 			}
 		}
 	}

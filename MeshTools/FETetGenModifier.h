@@ -37,18 +37,19 @@ class FETetGenModifier : public FEModifier
 public:
 	FETetGenModifier();
 
-    FSMesh* Apply(FSMesh* pm, bool skip = false);
-	FSMesh* Apply(FSGroup* pg);
+    FSMesh* Apply(FSMesh* pm) override;
+	FSMesh* Apply(FSGroup* pg) override;
 
     void SetQuality(double q)       { SetFloatValue(0, q); }
     void SetElementSize(double h)   { SetFloatValue(1, h); }
     void SetSplitFaces(bool sf)     { SetBoolValue (2, sf);}
-    
+
+
 private:
 	bool build_tetgen_plc   (FSMesh* pm, tetgenio& in);
 	bool build_tetgen_remesh(FSMesh* pm, tetgenio& in);
 
-	FSMesh* CreateMesh(FSMesh* pm, bool skip);
+	FSMesh* CreateMesh(FSMesh* pm);
 	FSMesh* RefineMesh(FSMesh* pm);
 
 public:
