@@ -162,6 +162,7 @@ ModifierThread::ModifierThread(CModelDocument* doc, FEModifier* mod, GObject* po
 void ModifierThread::run()
 {
 	bool bsuccess = m_doc->ApplyFEModifier(*m_mod, m_po, m_sel);
+	SetErrorString(QString::fromStdString(m_mod->GetErrorString()));
 	emit resultReady(bsuccess);
 }
 

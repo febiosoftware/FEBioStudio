@@ -1197,6 +1197,7 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 	if (selectedOnly)
 	{
 		for (int i=0; i<Faces(); ++i) if (Face(i).IsSelected()) { Face(i).m_ntag = 1; ++faces; }
+		if (faces == 0) return nullptr;
 	}
 	else
 	{
