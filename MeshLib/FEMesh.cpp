@@ -1363,7 +1363,7 @@ FSSurfaceMesh* FSMesh::ExtractFacesAsSurface(bool selectedOnly)
                     delete pm;
                     return 0;
             }
-            for (int j=0; j<=n; ++j) f.n[j] = Node(face.n[j]).m_ntag;
+            for (int j=0; j<n; ++j) f.n[j] = Node(face.n[j]).m_ntag;
         }
     }
     
