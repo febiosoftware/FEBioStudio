@@ -47,7 +47,7 @@ class CustomGraphicsView : public QGraphicsView
 
 public:
 signals:
-    void focusChanged(QPoint point);
+    void focusChanged(QPointF point);
 
 
 protected:
@@ -88,7 +88,7 @@ signals:
 private slots:
     void on_slider_changed(int val);
     void on_currentIndexChanged(int index);
-    void on_view_focusChanged(QPoint point);
+    void on_view_focusChanged(QPointF point);
 
 protected:
     void wheelEvent(QWheelEvent* event) override;

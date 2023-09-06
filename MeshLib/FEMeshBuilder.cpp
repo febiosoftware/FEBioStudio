@@ -246,6 +246,10 @@ void FEMeshBuilder::DeleteSelectedFaces()
 
 	// delete tagged faces
 	DeleteTaggedFaces(1);
+
+	// make sure none of the faces are selected
+	for (int i = 0; i < m_mesh.Faces(); ++i)
+		m_mesh.Face(i).Unselect();
 }
 
 //-----------------------------------------------------------------------------

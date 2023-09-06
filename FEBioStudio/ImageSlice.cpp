@@ -45,12 +45,12 @@ SOFTWARE.*/
 
 void CustomGraphicsView::mousePressEvent(QMouseEvent* event)
 {
-    emit focusChanged(mapToScene(event->pos()).toPoint());
+    emit focusChanged(mapToScene(event->pos()));
 }
 
 void CustomGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
-    emit focusChanged(mapToScene(event->pos()).toPoint());
+    emit focusChanged(mapToScene(event->pos()));
 }
 
 CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget)
@@ -70,7 +70,9 @@ CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget
     m_scene->addItem(m_imagePixmapItem);
 
     m_rect = new QGraphicsRectItem;
-    m_rect->setPen(QPen(QColorConstants::Red));
+    QPen pen(QColorConstants::Red);
+    pen.setCosmetic(true);
+    m_rect->setPen(pen);
     m_rect->setVisible(false);
     m_scene->addItem(m_rect);
 
@@ -329,6 +331,8 @@ void CImageSlice::Update()
     m_imagePixmapItem->setTransform(QTransform().scale(m_xScale, m_yScale));
     m_imagePixmapItem->setVisible(true);
 
+    m_rect->setTransform(QTransform().scale(m_xScale, m_yScale));
+
     m_view->fitInView(m_imagePixmapItem, Qt::AspectRatioMode::KeepAspectRatio);
 
     float sliceOffset = float(slice)/float(m_slider->maximum());
@@ -372,11 +376,13 @@ void CImageSlice::on_currentIndexChanged(int index)
     }
 }
 
-void CImageSlice::on_view_focusChanged(QPoint point)
+void CImageSlice::on_view_focusChanged(QPointF point)
 {
-    m_rect->setRect(point.x() - 3, point.y() - 3, 7, 7);
+    m_rect->setRect((int)(point.x()/m_xScale) - 3, (int)(point.y()/m_yScale) - 3, 7, 7);
 
-    emit focusChanged(m_sliceDir, QPoint(point.x()/m_xScale, point.y()/m_yScale));
+    // I'm honestly not sure why, but we need to add one to the y-coordinate in order to get
+    // the box lined up correctly.
+    emit focusChanged(m_sliceDir, QPoint(point.x()/m_xScale, point.y()/m_yScale+1));
 }
 
 void CImageSlice::wheelEvent(QWheelEvent* event)
