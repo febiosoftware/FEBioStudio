@@ -330,7 +330,7 @@ public:
 	int Prev();
 
 public:
-	GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE_OBJECT) { m_ps = ps; Update(); }
+	GDiscreteSelection(GModel* ps);
 	int Count();
 	void Invert();
 	void Update();
@@ -346,6 +346,7 @@ public:
 
 protected:
 	GModel*	m_ps;
+	int		m_count;
 };
 
 //-----------------------------------------------------------------------------
