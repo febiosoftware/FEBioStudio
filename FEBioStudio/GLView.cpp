@@ -3772,6 +3772,11 @@ void CGLView::RenderPlaneCut()
 
 	GLMeshRender mr;
 
+	// turn off specular lighting
+	GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
+	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
+	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
+
 	// render the unselected faces
 	glColor3ub(255, 255, 255);
 	glPushAttrib(GL_ENABLE_BIT);
