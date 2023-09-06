@@ -324,6 +324,7 @@ public:
 		GModel*				m_ps;
 		GDiscreteObject*	m_pn;
 		int					m_item;
+		int					m_comp;
 	};
 
 	int Next();

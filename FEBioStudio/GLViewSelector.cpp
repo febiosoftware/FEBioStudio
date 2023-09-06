@@ -1912,8 +1912,8 @@ void GLViewSelector::SelectDiscrete(int x, int y)
 			if (m_bctrl) pds->UnselectComponent(comp);
 			else
 			{
-				if (m_bshift == false) pds->UnSelect();
-				pds->SelectComponent(comp);
+				vector<int> elemList{ comp };
+				pcmd = new CCmdSelectDiscreteElements(pds, elemList, m_bshift);
 			}
 		}
 		else

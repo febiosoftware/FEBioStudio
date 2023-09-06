@@ -848,6 +848,7 @@ GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 	m_ps = pg->GetGModel();
 	GModel& m = *m_ps;
 	m_item = -1;
+	m_comp = 0;
 	m_pn = 0;
 	int N = m.DiscreteObjects();
 	for (int i = 0; i<N; ++i)
@@ -858,6 +859,20 @@ GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 			m_pn = pi;
 			m_item = i;
 			break;
+		}
+		GDiscreteElementSet* pds = dynamic_cast<GDiscreteElementSet*>(pi);
+		if (pds)
+		{
+			for (int j = 0; j < pds->size(); ++j)
+			{
+				if (pds->element(j).IsSelected())
+				{
+					m_pn = pds;
+					m_item = i;
+					m_comp = j;
+					break;
+				}
+			}
 		}
 	}
 }
