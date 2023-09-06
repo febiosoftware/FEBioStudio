@@ -646,10 +646,6 @@ public:
 		else if ((b == false) && m_showImageTools)
 		{
 			m_showImageTools = false;
-
-            imageProps->Update(nullptr);
-            imageFilters->SetImageModel(nullptr);
-			histoView->SetImageModel(nullptr);
 		}
 		tool->getToolItem(IMAGE_PANEL)->setVisible(b);
 	}

@@ -130,8 +130,8 @@ void C2DImageTimeView::ModelTreeSelectionChanged(FSObject* obj)
     // Forces recalc of min and max values on the image
     if(img && img->Get3DImage())
     {
-        img->Get3DImage()->GetMinValue(true);
-        img->Get3DImage()->GetMaxValue(true);
+        double min, max;
+        img->Get3DImage()->GetMinMax(min, max);
     }
 
     ui->slice->SetImage(img);

@@ -125,8 +125,8 @@ template<class pType> void CImageSlicer::CreateCRGBAImage(CImage& slice)
 
     pType* imgData = (pType*)imgModel->Get3DImage()->GetBytes();
 
-    double min = imgModel->Get3DImage()->GetMinValue(true);
-    double max = imgModel->Get3DImage()->GetMaxValue(true);
+    double min, max;
+    imgModel->Get3DImage()->GetMinMax(min, max);
 
     // The Image settings panel isn't available in the post view
     // double minThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
