@@ -158,8 +158,8 @@ template<class pType> void CImageSlice::ThresholdAndConvert()
 
     pType* imgData = (pType*)m_imgModel->Get3DImage()->GetBytes();
 
-    double min = m_imgModel->Get3DImage()->GetMinValue();
-    double max = m_imgModel->Get3DImage()->GetMaxValue();
+    double min, max;
+    m_imgModel->Get3DImage()->GetMinMax(min, max, false);
     
     double minThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
     double maxThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);

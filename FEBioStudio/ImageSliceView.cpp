@@ -117,8 +117,8 @@ void CImageSliceView::ModelTreeSelectionChanged(FSObject* obj)
     // Forces recalc of min and max values on the image
     if(m_imgModel && m_imgModel->Get3DImage())
     {
-        m_imgModel->Get3DImage()->GetMinValue(true);
-        m_imgModel->Get3DImage()->GetMaxValue(true);
+        double min, max;
+        m_imgModel->Get3DImage()->GetMinMax(min, max);
     }
 
     m_xSlicer.SetImageModel(m_imgModel);

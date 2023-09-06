@@ -148,8 +148,10 @@ void ThresholdImageFilter::SetImageModel(CImageModel* model)
 {
     if(model && model->Get3DImage())
     {
-        SetFloatValue(0, model->Get3DImage()->GetMaxValue(true));
-        SetFloatValue(1, model->Get3DImage()->GetMinValue(true));
+        double min, max;
+        model->Get3DImage()->GetMinMax(min, max);
+        SetFloatValue(0, max);
+        SetFloatValue(1, min);
     }
 
     CImageFilter::SetImageModel(model);

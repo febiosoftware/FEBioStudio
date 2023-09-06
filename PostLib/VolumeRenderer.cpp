@@ -117,35 +117,27 @@ void CVolumeRenderer::ReloadTexture()
     int max8 = 255;
     int max16 = 65535;
 
-    float max = 1.f;
-    float min = 0.f;
+    double min, max;
+    im3d.GetMinMax(min, max);
 	if (pType == CImage::INT_8 || pType == CImage::INT_RGB8)
 	{
-        int8_t* data = (int8_t*)im3d.GetBytes();
-
-		max = (float)*std::max_element(data, data+N)/(max8/2);
-        min = (float)*std::min_element(data, data+N)/(max8/2);
+		max /= max8/2;
+        min /= max8/2;
     }
     else if(pType == CImage::UINT_8 || pType == CImage::UINT_RGB8)
     {
-        uint8_t* data = (uint8_t*)im3d.GetBytes();
-
-        max = (float)*std::max_element(data, data+N)/max8;
-        min = (float)*std::min_element(data, data+N)/max8;
+        max /= max8;
+        min /= max8;
     }
     else if( pType == CImage::INT_16 || pType == CImage::INT_RGB16)
     {
-		int16_t* data = (int16_t*)im3d.GetBytes();
-
-		max = (float)*std::max_element(data, data+N)/(max16/2);
-        min = (float)*std::min_element(data, data+N)/(max16/2);
+		max /= max16/2;
+        min /= max16/2;
 	}
     else if(pType == CImage::UINT_16 || pType == CImage::UINT_RGB16)
     {
-        uint16_t* data = (uint16_t*)im3d.GetBytes();
-
-		max = (float)*std::max_element(data, data+N)/max16;
-        min = (float)*std::min_element(data, data+N)/max16;
+        max /= max16;
+        min /= max16;
     }
 	else if ((pType == CImage::REAL_32) || (pType == CImage::REAL_64))
 	{
@@ -158,7 +150,6 @@ void CVolumeRenderer::ReloadTexture()
 
     m_Iscale = 1.f /(max - min);
     m_IscaleMin = min;
-
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
 
