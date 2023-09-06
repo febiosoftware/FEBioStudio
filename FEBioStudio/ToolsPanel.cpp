@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "FoamGeneratorTool.h"
 #include "MaterialMapTool.h"
 #include "ScalarFieldTool.h"
+#include "EditDataFieldTool.h"
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
 #include "AreaCalculatorTool.h"
@@ -66,6 +67,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CFoamGeneratorTool (wnd));
 	tools.push_back(new CMaterialMapTool   (wnd));
 	tools.push_back(new CScalarFieldTool   (wnd));
+	tools.push_back(new CEditDataFieldTool (wnd));
 	tools.push_back(new CPlaneCutTool      (wnd));
 	tools.push_back(new CFiberGeneratorTool(wnd));
     tools.push_back(new CAreaCalculatorTool(wnd));

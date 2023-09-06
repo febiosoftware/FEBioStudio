@@ -1137,17 +1137,17 @@ void FEBioInputModel::CopyMeshSelections()
 		for (int j = 0; j < part->DomainLists(); ++j)
 		{
 			DomainList& dl = part->GetDomainList(j);
-			FSPartSet* partList = new FSPartSet(po);
+			GPartList* partList = new GPartList(&gm);
 			partList->SetName(dl.m_name);
 
 			for (int k = 0; k < dl.m_domList.size(); ++k)
 			{
 				const std::string& s = dl.m_domList[k]->name();
 				GPart* pg = po->FindPartFromName(s.c_str());
-				if (pg) partList->add(pg->GetLocalID());
+				if (pg) partList->add(pg->GetID());
 			}
 
-			po->AddFEPartSet(partList);
+			gm.AddPartList(partList);
 		}
 	}
 }

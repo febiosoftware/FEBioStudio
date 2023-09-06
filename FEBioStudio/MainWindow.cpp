@@ -1290,6 +1290,12 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::UpdateMeshInspector(bool breset)
+{
+	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::UpdateGraphs(bool breset)
 {
 	// update graph windows
