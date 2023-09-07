@@ -1290,6 +1290,12 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::UpdateMeshInspector(bool breset)
+{
+	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::UpdateGraphs(bool breset)
 {
 	// update graph windows
@@ -1530,7 +1536,22 @@ void CMainWindow::ReportSelection()
 		{
 			if (N == 1)
 			{
-				msg = QString("1 discrete object selected");
+				GDiscreteSelection& ds = dynamic_cast<GDiscreteSelection&>(*sel);
+				GDiscreteSelection::Iterator it(&ds);
+				GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(&(*it));
+				if (dss)
+				{
+					for (int i = 0; i < dss->size(); ++i)
+					{
+						GDiscreteElement& de = dss->element(i);
+						if (de.IsSelected())
+						{
+							msg = QString("discrete element [%1, %2] selected.").arg(de.Node(0)).arg(de.Node(1));
+						}
+					}
+				}
+				else msg = QString("1 discrete object selected");
+
 			}
 			else msg = QString("%1 discrete objects selected").arg(N);
 		}

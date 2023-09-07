@@ -137,6 +137,7 @@ std::string C3DImage::PixelTypeString()
     default:
         assert(false);
     }
+	return "(unknown)";
 }
 
 double C3DImage::Value(int i, int j, int k, int channel)
@@ -610,7 +611,7 @@ template <class pType> void C3DImage::CopySampledSliceX(pType* dest, double f, i
         {
             double fy = y / (double) (m_cy - 1.0);
 
-            for(int ch = 0; ch < channels; ch++) *dest++ = Peek(f, fy, fz, ch);
+            for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(f, fy, fz, ch);
         }
     }
 }
@@ -668,9 +669,9 @@ template <class pType> void C3DImage::CopySampledSliceY(pType* dest, double f, i
         for (int x = 0; x<m_cx; x++)
         {
             double fx = x / (double)(m_cx - 1.0);
-            for(int ch = 0; ch < channels; ch++) *dest++ = Peek(fx, f, fz, ch);
-            *dest++ = Peek(fx, f, fz, 1);
-            *dest++ = Peek(fx, f, fz, 2);
+            for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(fx, f, fz, ch);
+            *dest++ = (pType)Peek(fx, f, fz, 1);
+            *dest++ = (pType)Peek(fx, f, fz, 2);
         }
     }
 }
@@ -730,7 +731,7 @@ template <class pType> void C3DImage::CopySampledSliceZ(pType* dest, double f, i
             for (int x = 0; x < m_cx; x++)
             {
                 double fx = x / (double)(m_cx - 1.0);
-                for(int ch = 0; ch < channels; ch++) *dest++ = Value(fx, fy, 0, ch);
+                for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Value(fx, fy, 0, ch);
             }
         }
     }
@@ -742,7 +743,7 @@ template <class pType> void C3DImage::CopySampledSliceZ(pType* dest, double f, i
             for (int x = 0; x < m_cx; x++)
             {
                 double fx = x / (double)(m_cx - 1.0);
-                for(int ch = 0; ch < channels; ch++) *dest++ = Peek(fx, fy, f, ch);
+                for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(fx, fy, f, ch);
             }
         }
     }
@@ -793,7 +794,7 @@ void C3DImage::GetSampledSliceZ(CImage& im, double f)
     }
 }
 
-template <class pType> double C3DImage::CalcMinValue()
+template <class pType> void C3DImage::CalcMinMaxValue()
 {
     size_t N  = m_cx*m_cy*m_cz;
     if(IsRGB())
@@ -803,108 +804,71 @@ template <class pType> double C3DImage::CalcMinValue()
 
     pType* data = (pType*)m_pb;
 
-    return (double)*std::min_element(data, data+N);
+    double maxValue = data[0], minValue = data[0];
+    #pragma omp parallel shared(maxValue, minValue) firstprivate(data)
+	{
+		double threadMax = data[0], threadMin = data[0];
+        #pragma omp for
+		for (int i = 0; i < N; ++i)
+		{
+			if (data[i] > threadMax) threadMax = data[i];
+			if (data[i] < threadMin) threadMin = data[i];
+		}
+        
+        #pragma omp critical
+		{
+			if (threadMax > maxValue) maxValue = threadMax;
+			if (threadMin < minValue) minValue = threadMin;
+		}
+	}
+
+	m_maxValue = maxValue;
+	m_minValue = minValue;
 }
 
-double C3DImage::GetMinValue(bool recalc)
+void C3DImage::GetMinMax(double& min, double& max, bool recalc)
 {
     if(recalc)
     {
         switch (m_pixelType)
         {
         case CImage::UINT_8:
-            m_minValue = CalcMinValue<uint8_t>();
+            CalcMinMaxValue<uint8_t>();
             break;
         case CImage::INT_8:
-            m_minValue =  CalcMinValue<int8_t>();
+            CalcMinMaxValue<int8_t>();
             break;
         case CImage::UINT_16:
-            m_minValue =  CalcMinValue<uint16_t>();
+            CalcMinMaxValue<uint16_t>();
             break;
         case CImage::INT_16:
-            m_minValue =  CalcMinValue<int16_t>();
+            CalcMinMaxValue<int16_t>();
             break;
         case CImage::UINT_RGB8:
-            m_minValue =  CalcMinValue<uint8_t>();
+            CalcMinMaxValue<uint8_t>();
             break;
         case CImage::INT_RGB8:
-            m_minValue =  CalcMinValue<int8_t>();
+            CalcMinMaxValue<int8_t>();
             break;
         case CImage::UINT_RGB16:
-            m_minValue =  CalcMinValue<uint16_t>();
+            CalcMinMaxValue<uint16_t>();
             break;
         case CImage::INT_RGB16:
-            m_minValue =  CalcMinValue<int16_t>();
+            CalcMinMaxValue<int16_t>();
             break;
         case CImage::REAL_32:
-            m_minValue =  CalcMinValue<float>();
+            CalcMinMaxValue<float>();
             break;
         case CImage::REAL_64:
-            m_minValue =  CalcMinValue<double>();
+            CalcMinMaxValue<double>();
             break;
         default:
             assert(false);
         }
     }
 
-    return m_minValue;
-}
-
-template <class pType> double C3DImage::CalcMaxValue()
-{
-    size_t N  = m_cx*m_cy*m_cz;
-    if(IsRGB())
-    {
-        N *= 3;
-    }
-
-    pType* data = (pType*)m_pb;
-
-    return (double)*std::max_element(data, data+N);
-}
-
-double C3DImage::GetMaxValue(bool recalc)
-{
-    if(recalc)
-    {
-        switch (m_pixelType)
-        {
-        case CImage::UINT_8:
-            m_maxValue = CalcMaxValue<uint8_t>();
-            break;
-        case CImage::INT_8:
-            m_maxValue =  CalcMaxValue<int8_t>();
-            break;
-        case CImage::UINT_16:
-            m_maxValue =  CalcMaxValue<uint16_t>();
-            break;
-        case CImage::INT_16:
-            m_maxValue =  CalcMaxValue<int16_t>();
-            break;
-        case CImage::UINT_RGB8:
-            m_maxValue =  CalcMaxValue<uint8_t>();
-            break;
-        case CImage::INT_RGB8:
-            m_maxValue =  CalcMaxValue<int8_t>();
-            break;
-        case CImage::UINT_RGB16:
-            m_maxValue =  CalcMaxValue<uint16_t>();
-            break;
-        case CImage::INT_RGB16:
-            m_maxValue =  CalcMaxValue<int16_t>();
-            break;
-        case CImage::REAL_32:
-            m_maxValue =  CalcMaxValue<float>();
-            break;
-        case CImage::REAL_64:
-            m_maxValue =  CalcMaxValue<double>();
-            break;
-        default:
-            assert(false);
-        }
-    }
-
-    return m_maxValue;
+    min = m_minValue;
+    max = m_maxValue;
 }
 
 template <class pType> void C3DImage::ZeroTemplate(int channels)

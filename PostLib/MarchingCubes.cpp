@@ -676,8 +676,8 @@ template<class pType> void CMarchingCubes::Create8BitImage()
     m_8bitImage = new C3DImage;
     m_8bitImage->Create(nx, ny, nz);
 
-    double min = oldImg->GetMinValue(true);
-    double max = oldImg->GetMaxValue(true);
+    double min, max;
+    oldImg->GetMinMax(min, max);
     double range = max - min;
 
     pType* oldData = (pType*)oldImg->GetBytes();

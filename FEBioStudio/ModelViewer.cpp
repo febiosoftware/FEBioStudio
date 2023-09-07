@@ -344,7 +344,10 @@ void CModelViewer::on_syncButton_clicked()
 						GDiscreteElement& de = pds->element(j);
 						if (de.IsSelected())
 						{
-							objList.push_back(&de);
+							// we can't actually show the individual springs,
+							// so we just select the parent.
+							objList.push_back(po);
+							break;
 						}
 					}
 				}

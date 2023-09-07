@@ -83,8 +83,11 @@ void CHistogramViewer::SetLogMode(bool b)
 
 void CHistogramViewer::SetImageModel(CImageModel* img)
 {
-	m_img = img;
-	Update();
+    if(m_img != img)
+    {
+        m_img = img;
+        Update();
+    }
 }
 
 template<class pType> void CHistogramViewer::GetValues(int bins, std::vector<double>& xVals, std::vector<uint64_t>& yVals)
@@ -100,8 +103,8 @@ template<class pType> void CHistogramViewer::GetValues(int bins, std::vector<dou
         N *= 3;
     }
 
-    double max = (double)*std::max_element(data, data+N);
-    double min = (double)*std::min_element(data, data+N);
+    double min, max;
+    im->GetMinMax(min, max);
     double range = max - min;
     if(range == 0) return;
 
@@ -114,18 +117,23 @@ template<class pType> void CHistogramViewer::GetValues(int bins, std::vector<dou
     int ny = im->Height();
     int nz = im->Depth();
 
-    
-    for (int k = 0; k < nz; ++k)
-    {
-        for (int j = 0; j < ny; ++j)
-        {
-            for (int i = 0; i < nx; ++i)
-            {
-                int n = (data[nx*(k*ny + j) + i] - min)/range * (bins - 1);
-                yVals[n]++;
-            }
-        }
-    }
+    #pragma omp parallel shared(yVals) firstprivate(data)
+	{
+		std::vector<uint64_t> ytmp(yVals.size(), 0);
+        
+        #pragma omp for
+		for (int i=0; i<N; ++i)
+		{
+			int n = (data[i] - min) / range * (bins - 1);
+			ytmp[n]++;
+		}
+        
+        #pragma omp critical
+		{
+			for (size_t n = 0; n < ytmp.size(); ++n)
+				yVals[n] += ytmp[n];
+		}
+	}
 }
 
 

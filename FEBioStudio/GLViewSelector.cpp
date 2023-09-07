@@ -387,7 +387,22 @@ void GLViewSelector::RegionSelectFEElems(const SelectRegion& region)
 
 		if ((el.m_ntag == 0) && el.IsVisible() && po->Part(el.m_gid)->IsVisible())
 		{
-			if ((view.m_bext == false) || el.IsExterior())
+			bool process = false;
+			process = ((view.m_bext == false) || el.IsExterior());
+			if ((process == false) && view.m_bext && el.IsSolid())
+			{
+				// we'll also allow elements to be region-selected if they are visible
+				for (int j = 0; j < el.Faces(); ++j)
+				{
+					int nbr = el.m_nbr[j];
+					FEElement_* pej = (nbr >= 0 ? pm->ElementPtr(nbr) : nullptr);
+					if ((pej == nullptr) || (pej->IsVisible() == false)) {
+						process = true; break;
+					}
+				}
+			}
+
+			if (process)
 			{
 				int ne = el.Nodes();
 				bool binside = false;
@@ -1894,11 +1909,15 @@ void GLViewSelector::SelectDiscrete(int x, int y)
 		if (pds)
 		{
 			// TODO: Turn this into a command
-			if (m_bctrl) pds->UnselectComponent(comp);
+			if (m_bctrl)
+			{
+				vector<int> elemList{ comp };
+				pcmd = new CCmdUnSelectDiscreteElements(pds, elemList);
+			}
 			else
 			{
-				if (m_bshift == false) pds->UnSelect();
-				pds->SelectComponent(comp);
+				vector<int> elemList{ comp };
+				pcmd = new CCmdSelectDiscreteElements(pds, elemList, m_bshift);
 			}
 		}
 		else
