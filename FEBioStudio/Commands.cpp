@@ -1388,6 +1388,40 @@ void CCmdSelectDiscreteElements::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
+// CCmdUnSelectDiscreteElements
+//////////////////////////////////////////////////////////////////////
+
+CCmdUnSelectDiscreteElements::CCmdUnSelectDiscreteElements(GDiscreteElementSet* set, const vector<int>& elemList) : CCommand("Unselect Discrete")
+{
+	m_ps = set;
+	m_elemList = elemList;
+
+	int N = set->size();
+	m_bold.resize(N);
+	for (int i = 0; i < N; ++i) m_bold[i] = m_ps->element(i).IsSelected();
+}
+
+void CCmdUnSelectDiscreteElements::Execute()
+{
+	int N = m_elemList.size();
+	for (int i = 0; i < N; ++i)
+	{
+		GDiscreteElement& de = m_ps->element(m_elemList[i]);
+		de.UnSelect();
+	}
+}
+
+void CCmdUnSelectDiscreteElements::UnExecute()
+{
+	int N = m_bold.size();
+	for (int i = 0; i < N; ++i)
+	{
+		GDiscreteElement& de = m_ps->element(i);
+		if (m_bold[i]) de.Select(); else de.UnSelect();
+	}
+}
+
+//////////////////////////////////////////////////////////////////////
 // CCmdUnSelectNode
 //////////////////////////////////////////////////////////////////////
 

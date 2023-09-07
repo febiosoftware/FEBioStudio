@@ -1909,7 +1909,11 @@ void GLViewSelector::SelectDiscrete(int x, int y)
 		if (pds)
 		{
 			// TODO: Turn this into a command
-			if (m_bctrl) pds->UnselectComponent(comp);
+			if (m_bctrl)
+			{
+				vector<int> elemList{ comp };
+				pcmd = new CCmdUnSelectDiscreteElements(pds, elemList);
+			}
 			else
 			{
 				vector<int> elemList{ comp };
