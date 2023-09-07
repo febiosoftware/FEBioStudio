@@ -86,8 +86,11 @@ bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int dataSize, int p
 
         if(data == nullptr)
         {
-            if(dataSize == 0)
-                m_pb = new uint8_t[nx*ny*nz*m_bps];
+			if (dataSize == 0)
+			{
+				uint64_t newSize = (uint64_t)nx * (uint64_t)ny * (uint64_t)nz * (uint64_t)m_bps;
+				m_pb = new uint8_t[newSize];
+			}
             else
                 m_pb = new uint8_t[dataSize];
 

@@ -36,6 +36,11 @@ SOFTWARE.*/
 #define DWORD	uint32_t
 #endif // ! WORD
 
+#ifdef WIN32
+	int __declspec(dllimport) _fseeki64(FILE*, __int64, int);
+	#define fseek _fseeki64
+#endif
+
 enum TifCompression {
 	TIF_COMPRESSION_NONE = 1,
 	TIF_COMPRESSION_CCITTRLE = 2,
@@ -212,7 +217,7 @@ bool CTiffImageSource::Load()
 	// read the images
 	try {
 		char buf[256] = { 0 };
-		int n = m->m_ifd.size();
+		int n = (int)m->m_ifd.size();
 		for (int i = 0; i < n; ++i)
 		{
 			sprintf(buf, "reading image [%d/%d]", i + 1, n);
@@ -548,7 +553,16 @@ bool CTiffImageSource::Impl::readIFD()
 	if (m_bigE) byteswap(nextIFD);
 
 	// jump to the next IFD
-	if (nextIFD != 0) fseek(m_fp, nextIFD, SEEK_SET);
+	if (nextIFD != 0)
+	{
+		if (nextIFD > 0x7FFFFFFF)
+		{
+			fseek(m_fp, 0x7FFFFFFF, SEEK_SET);
+			DWORD offset = nextIFD - 0x7FFFFFFF;
+			fseek(m_fp, offset, SEEK_CUR);
+		}
+		else fseek(m_fp, nextIFD, SEEK_SET);
+	}
 	else return true;
 
 	return false;

@@ -123,6 +123,21 @@ void CEditDataFieldTool::OnApply()
 				}
 			}
 		}
+		else if (pd && (pd->GetDataFormat() == FEMeshData::DATA_MULT) && (pd->GetDataType() == FEMeshData::DATA_SCALAR))
+		{
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				FSElement& el = pm->Element(i);
+				if (el.IsSelected())
+				{
+					int m = pd->GetElementIndex(i);
+					if (m >= 0) {
+						for (int j = 0; j < el.Nodes(); ++j)
+							pd->SetValue(m, j, v);
+					}
+				}
+			}
+		}
 		else QMessageBox::critical(GetMainWindow(), "Edit Data", "Failed updating mesh data.");
 	}
 	else QMessageBox::critical(GetMainWindow(), "Edit Data", "No valid data field selected.");
