@@ -137,6 +137,7 @@ std::string C3DImage::PixelTypeString()
     default:
         assert(false);
     }
+	return "(unknown)";
 }
 
 double C3DImage::Value(int i, int j, int k, int channel)
@@ -610,7 +611,7 @@ template <class pType> void C3DImage::CopySampledSliceX(pType* dest, double f, i
         {
             double fy = y / (double) (m_cy - 1.0);
 
-            for(int ch = 0; ch < channels; ch++) *dest++ = Peek(f, fy, fz, ch);
+            for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(f, fy, fz, ch);
         }
     }
 }
@@ -668,9 +669,9 @@ template <class pType> void C3DImage::CopySampledSliceY(pType* dest, double f, i
         for (int x = 0; x<m_cx; x++)
         {
             double fx = x / (double)(m_cx - 1.0);
-            for(int ch = 0; ch < channels; ch++) *dest++ = Peek(fx, f, fz, ch);
-            *dest++ = Peek(fx, f, fz, 1);
-            *dest++ = Peek(fx, f, fz, 2);
+            for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(fx, f, fz, ch);
+            *dest++ = (pType)Peek(fx, f, fz, 1);
+            *dest++ = (pType)Peek(fx, f, fz, 2);
         }
     }
 }
@@ -730,7 +731,7 @@ template <class pType> void C3DImage::CopySampledSliceZ(pType* dest, double f, i
             for (int x = 0; x < m_cx; x++)
             {
                 double fx = x / (double)(m_cx - 1.0);
-                for(int ch = 0; ch < channels; ch++) *dest++ = Value(fx, fy, 0, ch);
+                for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Value(fx, fy, 0, ch);
             }
         }
     }
@@ -742,7 +743,7 @@ template <class pType> void C3DImage::CopySampledSliceZ(pType* dest, double f, i
             for (int x = 0; x < m_cx; x++)
             {
                 double fx = x / (double)(m_cx - 1.0);
-                for(int ch = 0; ch < channels; ch++) *dest++ = Peek(fx, fy, f, ch);
+                for(int ch = 0; ch < channels; ch++) *dest++ = (pType)Peek(fx, fy, f, ch);
             }
         }
     }
@@ -803,8 +804,8 @@ template <class pType> void C3DImage::CalcMinMaxValue()
 
     pType* data = (pType*)m_pb;
 
-    m_maxValue = data[0], m_minValue = data[0];
-    #pragma omp parallel shared(m_maxValue, m_minValue) firstprivate(data)
+    double maxValue = data[0], minValue = data[0];
+    #pragma omp parallel shared(maxValue, minValue) firstprivate(data)
 	{
 		double threadMax = data[0], threadMin = data[0];
         #pragma omp for
@@ -816,10 +817,13 @@ template <class pType> void C3DImage::CalcMinMaxValue()
         
         #pragma omp critical
 		{
-			if (threadMax > m_maxValue) m_maxValue = threadMax;
-			if (threadMin < m_minValue) m_minValue = threadMin;
+			if (threadMax > maxValue) maxValue = threadMax;
+			if (threadMin < minValue) minValue = threadMin;
 		}
 	}
+
+	m_maxValue = maxValue;
+	m_minValue = minValue;
 }
 
 void C3DImage::GetMinMax(double& min, double& max, bool recalc)
