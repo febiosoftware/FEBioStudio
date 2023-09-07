@@ -2112,21 +2112,24 @@ void FEBioExport4::WriteMeshDataMaterialFibers()
 		GObject* po = pm->GetGObject();
 		const Transform& T = po->GetTransform();
 
-		// get the material properties
-		GMaterial* gmat = fem.GetMaterialFromID(elSet.m_matID);
-		FSMaterial* pmat = gmat->GetMaterialProperties();
-
 		// see if we should write fibers
 		// This is only done if the material specifies the "user" fiber property
 		bool writeFibers = false;
 
-		FSProperty* fiberProp = pmat->FindProperty("fiber");
-		if (fiberProp && fiberProp->Size() == 1)
+		// get the material properties
+		GMaterial* gmat = fem.GetMaterialFromID(elSet.m_matID);
+		if (gmat)
 		{
-			FSCoreBase* fib = fiberProp->GetComponent(0);
-			if (fib && (strcmp(fib->GetTypeString(), "user") == 0))
+			FSMaterial* pmat = gmat->GetMaterialProperties();
+
+			FSProperty* fiberProp = pmat->FindProperty("fiber");
+			if (fiberProp && fiberProp->Size() == 1)
 			{
-				writeFibers = true;
+				FSCoreBase* fib = fiberProp->GetComponent(0);
+				if (fib && (strcmp(fib->GetTypeString(), "user") == 0))
+				{
+					writeFibers = true;
+				}
 			}
 		}
 
