@@ -837,6 +837,143 @@ void GLViewSelector::Finish()
 }
 
 //-----------------------------------------------------------------------------
+vector<int> FindConnectedElements(FSMesh* pm, int startIndex, double fconn, bool bpart, bool exteriorOnly, bool bmax)
+{
+	FEElement_* pe, * pe2;
+	int elems = pm->Elements();
+	vector<int> elemList; elemList.reserve(elems);
+
+	for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
+	std::stack<FEElement_*> stack;
+
+	// push the first element to the stack
+	pe = pm->ElementPtr(startIndex);
+	pe->m_ntag = -1;
+	elemList.push_back(startIndex);
+	stack.push(pe);
+
+	double tr = -2;
+	vec3d t(0, 0, 0);
+	if (pe->IsShell())
+	{
+		assert(pe->m_face[0] >= 0);
+		t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI * fconn / 180.0);
+	}
+
+	// get the respect partition boundary flag
+	int gid = pe->m_gid;
+
+	// now push the rest
+	int n;
+	while (!stack.empty())
+	{
+		pe = stack.top(); stack.pop();
+
+		// solid elements
+		n = pe->Faces();
+		for (int i = 0; i < n; ++i)
+			if (pe->m_nbr[i] >= 0)
+			{
+				pe2 = pm->ElementPtr(pe->m_nbr[i]);
+				if (pe2->m_ntag >= 0 && pe2->IsVisible())
+				{
+					if ((exteriorOnly == false) || pe2->IsExterior())
+					{
+						int fid2 = -1;
+						if (pe->m_face[i] >= 0)
+						{
+							FSFace& f2 = pm->Face(pe->m_face[i]);
+							fid2 = f2.m_gid;
+						}
+
+						if ((bpart == false) || ((pe2->m_gid == gid) && (fid2 == -1)))
+						{
+							elemList.push_back(pe2->m_ntag);
+							pe2->m_ntag = -1;
+							stack.push(pe2);
+						}
+					}
+				}
+			}
+
+		// shell elements
+		n = pe->Edges();
+		for (int i = 0; i < n; ++i)
+			if (pe->m_nbr[i] >= 0)
+			{
+				pe2 = pm->ElementPtr(pe->m_nbr[i]);
+				if (pe2->m_ntag >= 0 && pe2->IsVisible())
+				{
+					int eface = pe2->m_face[0]; assert(eface >= 0);
+					if (eface >= 0)
+					{
+						if ((bmax == false) || (pm->Face(eface).m_fn * to_vec3f(t) >= tr))
+						{
+							if ((bpart == false) || (pe2->m_gid == gid))
+							{
+								elemList.push_back(pe2->m_ntag);
+								pe2->m_ntag = -1;
+								stack.push(pe2);
+							}
+						}
+					}
+				}
+			}
+	}
+
+	return elemList;
+}
+
+//-----------------------------------------------------------------------------
+int FindBeamIntersection(int x, int y, GObject* po, GLViewTransform& transform, Intersection& q)
+{
+	FSMesh* pm = po->GetFEMesh();
+
+	int X = x;
+	int Y = y;
+	int S = 6;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
+	// try to select discrete elements
+	vec3d o(0, 0, 0);
+	vec3d O = transform.WorldToScreen(o);
+
+	int index = -1;
+	float zmin = 0.f;
+	int NE = pm->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& del = pm->Element(i);
+		if (del.IsBeam() && del.IsVisible())
+		{
+			vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
+			vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[1]).r);
+
+			vec3d p0 = transform.WorldToScreen(r0);
+			vec3d p1 = transform.WorldToScreen(r1);
+
+			// make sure p0, p1 are in front of the camera
+			if (((p0.x >= 0) || (p1.x >= 0)) && ((p0.y >= 0) || (p1.y >= 0)) &&
+				(p0.z > -1) && (p0.z < 1) && (p1.z > -1) && (p1.z < 1))
+			{
+				// see if the edge intersects
+				if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+				{
+					if ((index == -1) || (p0.z < zmin))
+					{
+						index = i;
+						zmin = p0.z;
+						q.point = p0;
+					}
+				}
+			}
+		}
+	}
+
+	return index;
+}
+
+//-----------------------------------------------------------------------------
 void GLViewSelector::SelectFEElements(int x, int y)
 {
 	// get the document
@@ -848,6 +985,7 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	if (po == 0) return;
 
 	FSMesh* pm = po->GetFEMesh();
+	if (pm == nullptr) return;
 
 	// convert the point to a ray
 	m_glv->makeCurrent();
@@ -861,7 +999,6 @@ void GLViewSelector::SelectFEElements(int x, int y)
 
 	// find the intersection
 	Intersection q;
-	CCommand* pcmd = 0;
 	bool bfound = FindElementIntersection(localRay, *pm, q, m_bctrl);
 
 	if (bfound && m_glv->ShowPlaneCut())
@@ -891,97 +1028,33 @@ void GLViewSelector::SelectFEElements(int x, int y)
 		}
 	}
 
+	// the selection command that will be executed
+	CCommand* pcmd = nullptr;
+
+	// see if there is a beam element that is closer
+	vec3d p = transform.WorldToScreen(q.point);
+	Intersection q2;
+	int index = FindBeamIntersection(x, y, po, transform, q2);
+	if ((index >= 0) && ((bfound == false) || (q2.point.z < p.z)))
+	{
+		if (index >= 0)
+		{
+			if (m_bctrl) pcmd = new CCmdUnselectElements(pm, &index, 1);
+			else pcmd = new CCmdSelectElements(pm, &index, 1, m_bshift);
+			bfound = false;
+		}
+	}
+
 	if (bfound)
 	{
 		int index = q.m_index;
 		if (view.m_bconn)
 		{
-			FEElement_* pe, * pe2;
-			int elems = pm->Elements();
-			vector<int> pint(elems);
-			int m = 0;
+			vector<int> pint = FindConnectedElements(pm, index, view.m_fconn, view.m_bpart, view.m_bext, view.m_bmax);
+			int N = (int)pint.size();
 
-			for (int i = 0; i < pm->Elements(); ++i) pm->Element(i).m_ntag = i;
-			std::stack<FEElement_*> stack;
-
-			// push the first element to the stack
-			pe = pm->ElementPtr(index);
-			pe->m_ntag = -1;
-			pint[m++] = index;
-			stack.push(pe);
-
-			double tr = -2;
-			vec3d t(0, 0, 0);
-			if (pe->IsShell())
-			{
-				assert(pe->m_face[0] >= 0);
-				t = to_vec3d(pm->Face(pe->m_face[0]).m_fn); tr = cos(PI * view.m_fconn / 180.0);
-			}
-
-			// get the respect partition boundary flag
-			bool bpart = view.m_bpart;
-			int gid = pe->m_gid;
-
-			// now push the rest
-			int n;
-			while (!stack.empty())
-			{
-				pe = stack.top(); stack.pop();
-
-				// solid elements
-				n = pe->Faces();
-				for (int i = 0; i < n; ++i)
-					if (pe->m_nbr[i] >= 0)
-					{
-						pe2 = pm->ElementPtr(pe->m_nbr[i]);
-						if (pe2->m_ntag >= 0 && pe2->IsVisible())
-						{
-							if ((view.m_bext == false) || pe2->IsExterior())
-							{
-								int fid2 = -1;
-								if (pe->m_face[i] >= 0)
-								{
-									FSFace& f2 = pm->Face(pe->m_face[i]);
-									fid2 = f2.m_gid;
-								}
-
-								if ((bpart == false) || ((pe2->m_gid == gid) && (fid2 == -1)))
-								{
-									pint[m++] = pe2->m_ntag;
-									pe2->m_ntag = -1;
-									stack.push(pe2);
-								}
-							}
-						}
-					}
-
-				// shell elements
-				n = pe->Edges();
-				for (int i = 0; i < n; ++i)
-					if (pe->m_nbr[i] >= 0)
-					{
-						pe2 = pm->ElementPtr(pe->m_nbr[i]);
-						if (pe2->m_ntag >= 0 && pe2->IsVisible())
-						{
-							int eface = pe2->m_face[0]; assert(eface >= 0);
-							if (eface >= 0)
-							{
-								if ((view.m_bmax == false) || (pm->Face(eface).m_fn * to_vec3f(t) >= tr))
-								{
-									if ((bpart == false) || (pe2->m_gid == gid))
-									{
-										pint[m++] = pe2->m_ntag;
-										pe2->m_ntag = -1;
-										stack.push(pe2);
-									}
-								}
-							}
-						}
-					}
-			}
-
-			if (m_bctrl) pcmd = new CCmdUnselectElements(pm, &pint[0], m);
-			else pcmd = new CCmdSelectElements(pm, &pint[0], m, m_bshift);
+			if (m_bctrl) pcmd = new CCmdUnselectElements(pm, &pint[0], N);
+			else pcmd = new CCmdSelectElements(pm, &pint[0], N, m_bshift);
 		}
 		else
 		{
@@ -1010,59 +1083,14 @@ void GLViewSelector::SelectFEElements(int x, int y)
 			}
 		}
 	}
-	else
+
+	if ((pcmd == nullptr) && (!m_bshift) && (!m_bctrl))
 	{
-		int X = x;
-		int Y = y;
-		int S = 6;
-		QRect rt(X - S, Y - S, 2 * S, 2 * S);
-
-		// try to select discrete elements
-		vec3d o(0, 0, 0);
-		vec3d O = transform.WorldToScreen(o);
-
-		int index = -1;
-		float zmin = 0.f;
-		int NE = pm->Elements();
-		for (int i = 0; i < NE; ++i)
+		// clear selection
+		int nsel = pm->CountSelectedElements();
+		if (nsel > 0)
 		{
-			FSElement& del = pm->Element(i);
-			if (del.IsBeam() && del.IsVisible())
-			{
-				vec3d r0 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[0]).r);
-				vec3d r1 = po->GetTransform().LocalToGlobal(pm->Node(del.m_node[1]).r);
-
-				vec3d p0 = transform.WorldToScreen(r0);
-				vec3d p1 = transform.WorldToScreen(r1);
-
-				// make sure p0, p1 are in front of the camera
-				if (((p0.x >= 0) || (p1.x >= 0)) && ((p0.y >= 0) || (p1.y >= 0)) &&
-					(p0.z > -1) && (p0.z < 1) && (p1.z > -1) && (p1.z < 1))
-				{
-					// see if the edge intersects
-					if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
-					{
-						if ((index == -1) || (p0.z < zmin))
-						{
-							index = i;
-							zmin = p0.z;
-						}
-					}
-				}
-			}
-		}
-
-		if (index >= 0)
-		{
-			pcmd = new CCmdSelectElements(pm, &index, 1, m_bshift);
-		}
-		else if (!m_bshift)
-		{
-			int nsel = pm->CountSelectedElements();
-			if (nsel > 0)
-			{
-				pcmd = new CCmdSelectElements(pm, 0, 0, false);
-			}
+			pcmd = new CCmdSelectElements(pm, 0, 0, false);
 		}
 	}
 
