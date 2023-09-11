@@ -71,15 +71,17 @@ bool C3DImage::Create(int nx, int ny, int nz, uint8_t* data, int dataSize, int p
 		switch (pixelType)
 		{
 		case CImage::INT_8     : m_bps = 1; break;
-		case CImage::UINT_8    : m_bps = 1; break;
-		case CImage::INT_16    :
-		case CImage::UINT_16   : m_bps = 2; break;
-		case CImage::INT_RGB8  :
-		case CImage::UINT_RGB8 : m_bps = 3; break;
-		case CImage::INT_RGB16 :
-		case CImage::UINT_RGB16: m_bps = 6; break;
-		case CImage::REAL_32   : m_bps = 4; break;
-		case CImage::REAL_64   : m_bps = 8; break;
+        case CImage::UINT_8    : m_bps = 1; break;
+        case CImage::INT_16    :
+        case CImage::UINT_16   : m_bps = 2; break;
+        case CImage::INT_32    :
+        case CImage::UINT_32   : m_bps = 4; break;
+        case CImage::INT_RGB8  :
+        case CImage::UINT_RGB8 : m_bps = 3; break;
+        case CImage::INT_RGB16 :
+        case CImage::UINT_RGB16: m_bps = 6; break;
+        case CImage::REAL_32   : m_bps = 4; break;
+        case CImage::REAL_64   : m_bps = 8; break;
 		default:
 			assert(false);
 		}
@@ -125,6 +127,10 @@ std::string C3DImage::PixelTypeString()
         return "16-bit Unsigned Integer";
     case CImage::INT_16:
         return "16-bit Signed Integer";
+    case CImage::UINT_32:
+        return "32-bit Unsigned Integer";
+    case CImage::INT_32:
+        return "32-bit Signed Integer";
     case CImage::UINT_RGB8:
         return "8-bit Unsigned Integer RGB";
     case CImage::INT_RGB8:
@@ -246,6 +252,24 @@ double C3DImage::Value(double fx, double fy, int nz, int channel)
     case CImage::INT_16:
     {
         int16_t* pb = (int16_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::UINT_32:
+    {
+        uint32_t* pb = (uint32_t*)m_pb + nz*m_cx*m_cy;
+        h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
+        h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
+        h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
+        h += (1-r)*(1+s)*pb[ix   + (iy+1)*m_cx];
+        break;
+    }
+    case CImage::INT_32:
+    {
+        int32_t* pb = (int32_t*)m_pb + nz*m_cx*m_cy;
         h  = (1-r)*(1-s)*pb[ix   +  iy   *m_cx];
         h += (1+r)*(1-s)*pb[ix+1 +  iy   *m_cx];
         h += (1+r)*(1+s)*pb[ix+1 + (iy+1)*m_cx];
@@ -389,6 +413,18 @@ double C3DImage::Peek(double r, double s, double t, int channel)
         val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
         break;
     }
+    case CImage::UINT_32:
+    {
+        uint32_t* pb = (uint32_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
+    case CImage::INT_32:
+    {
+        int32_t* pb = (int32_t*)m_pb;
+        val = (h1*pb[n1]+h2*pb[n2]+h3*pb[n3]+h4*pb[n4]+h5*pb[n5]+h6*pb[n6]+h7*pb[n7]+h8*pb[n8])*0.125;
+        break;
+    }
     case CImage::UINT_RGB8:
     {
         uint8_t* pb = m_pb;
@@ -468,6 +504,12 @@ void C3DImage::GetSliceX(CImage& im, int n)
     case CImage::INT_16:
         CopySliceX<int16_t>((int16_t*)im.GetBytes(), n);
         break;
+    case CImage::UINT_32:
+        CopySliceX<uint32_t>((uint32_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_32:
+        CopySliceX<int32_t>((int32_t*)im.GetBytes(), n);
+        break;
     case CImage::UINT_RGB8:
         CopySliceX<uint8_t>((uint8_t*)im.GetBytes(), n, 3);
         break;
@@ -528,6 +570,12 @@ void C3DImage::GetSliceY(CImage& im, int n)
     case CImage::INT_16:
         CopySliceY<int16_t>((int16_t*)im.GetBytes(), n);
         break;
+    case CImage::UINT_32:
+        CopySliceY<uint32_t>((uint32_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_32:
+        CopySliceY<int32_t>((int32_t*)im.GetBytes(), n);
+        break;
     case CImage::UINT_RGB8:
         CopySliceY<uint8_t>((uint8_t*)im.GetBytes(), n, 3);
         break;
@@ -581,6 +629,12 @@ void C3DImage::GetSliceZ(CImage& im, int n)
         break;
     case CImage::INT_16:
         CopySliceZ<int16_t>((int16_t*)im.GetBytes(), n);
+        break;
+    case CImage::UINT_32:
+        CopySliceZ<uint32_t>((uint32_t*)im.GetBytes(), n);
+        break;
+    case CImage::INT_32:
+        CopySliceZ<int32_t>((int32_t*)im.GetBytes(), n);
         break;
     case CImage::UINT_RGB8:
         CopySliceZ<uint8_t>((uint8_t*)im.GetBytes(), n, 3);
@@ -641,6 +695,12 @@ void C3DImage::GetSampledSliceX(CImage& im, double f)
     case CImage::INT_16:
         CopySampledSliceX<int16_t>((int16_t*)im.GetBytes(), f);
         break;
+    case CImage::UINT_32:
+        CopySampledSliceX<uint32_t>((uint32_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_32:
+        CopySampledSliceX<int32_t>((int32_t*)im.GetBytes(), f);
+        break;
     case CImage::UINT_RGB8:
         CopySampledSliceX<uint8_t>((uint8_t*)im.GetBytes(), f, 3);
         break;
@@ -700,6 +760,12 @@ void C3DImage::GetSampledSliceY(CImage& im, double f)
         break;
     case CImage::INT_16:
         CopySampledSliceY<int16_t>((int16_t*)im.GetBytes(), f);
+        break;
+    case CImage::UINT_32:
+        CopySampledSliceY<uint32_t>((uint32_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_32:
+        CopySampledSliceY<int32_t>((int32_t*)im.GetBytes(), f);
         break;
     case CImage::UINT_RGB8:
         CopySampledSliceY<uint8_t>((uint8_t*)im.GetBytes(), f, 3);
@@ -774,6 +840,12 @@ void C3DImage::GetSampledSliceZ(CImage& im, double f)
     case CImage::INT_16:
         CopySampledSliceZ<int16_t>((int16_t*)im.GetBytes(), f);
         break;
+    case CImage::UINT_32:
+        CopySampledSliceZ<uint32_t>((uint32_t*)im.GetBytes(), f);
+        break;
+    case CImage::INT_32:
+        CopySampledSliceZ<int32_t>((int32_t*)im.GetBytes(), f);
+        break;
     case CImage::UINT_RGB8:
         CopySampledSliceZ<uint8_t>((uint8_t*)im.GetBytes(), f, 3);
         break;
@@ -847,6 +919,12 @@ void C3DImage::GetMinMax(double& min, double& max, bool recalc)
         case CImage::INT_16:
             CalcMinMaxValue<int16_t>();
             break;
+        case CImage::UINT_32:
+            CalcMinMaxValue<uint32_t>();
+            break;
+        case CImage::INT_32:
+            CalcMinMaxValue<int32_t>();
+            break;
         case CImage::UINT_RGB8:
             CalcMinMaxValue<uint8_t>();
             break;
@@ -897,6 +975,12 @@ void C3DImage::Zero()
         break;
     case CImage::INT_16:
         ZeroTemplate<int16_t>();
+        break;
+    case CImage::UINT_32:
+        ZeroTemplate<uint32_t>();
+        break;
+    case CImage::INT_32:
+        ZeroTemplate<int32_t>();
         break;
     case CImage::UINT_RGB8:
         ZeroTemplate<uint8_t>(3);

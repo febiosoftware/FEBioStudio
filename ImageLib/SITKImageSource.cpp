@@ -36,8 +36,9 @@ using namespace Post;
 
 namespace sitk = itk::simple;
 
-static const std::unordered_set<sitk::PixelIDValueEnum> supportedTypes = {sitk::sitkInt8, sitk::sitkUInt8, sitk::sitkInt16, sitk::sitkUInt16,
-    sitk::sitkVectorInt8, sitk::sitkVectorUInt8, sitk::sitkVectorInt16, sitk::sitkVectorUInt16, sitk::sitkFloat32, sitk::sitkFloat64};
+static const std::unordered_set<sitk::PixelIDValueEnum> supportedTypes = {sitk::sitkInt8, sitk::sitkUInt8, sitk::sitkInt16, 
+    sitk::sitkUInt16, sitk::sitkInt32, sitk::sitkUInt32, sitk::sitkVectorInt8, sitk::sitkVectorUInt8, sitk::sitkVectorInt16, 
+    sitk::sitkVectorUInt16, sitk::sitkFloat32, sitk::sitkFloat64};
 
 //========================================================================
 

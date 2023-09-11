@@ -123,6 +123,12 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
     case CImage::INT_16:
         Create8BitImage<int16_t>();
         break;
+    case CImage::UINT_32:
+        Create8BitImage<uint32_t>();
+        break;
+    case CImage::INT_32:
+        Create8BitImage<int32_t>();
+        break;
     // case CImage::UINT_RGB8:
     //     Create8BitImage<uint8_t>();
     //     break;

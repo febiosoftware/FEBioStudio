@@ -259,6 +259,12 @@ void CImageSlicer::UpdateSlice()
         case CImage::INT_16:
             CreateCRGBAImage<int16_t>(slice);
             break;
+        case CImage::UINT_32:
+            CreateCRGBAImage<uint32_t>(slice);
+            break;
+        case CImage::INT_32:
+            CreateCRGBAImage<int32_t>(slice);
+            break;
         case CImage::UINT_RGB8:
             CreateCRGBAImage<uint8_t>(slice);
             break;

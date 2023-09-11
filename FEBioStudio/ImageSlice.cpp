@@ -263,6 +263,12 @@ void CImageSlice::Update()
     case CImage::INT_16:
         ThresholdAndConvert<int16_t>();
         break;
+    case CImage::UINT_32:
+        ThresholdAndConvert<uint32_t>();
+        break;
+    case CImage::INT_32:
+        ThresholdAndConvert<int32_t>();
+        break;
     case CImage::UINT_RGB8:
         ThresholdAndConvert<uint8_t>();
         break;

@@ -169,6 +169,12 @@ void CHistogramViewer::Update()
     case CImage::INT_16:
         GetValues<int16_t>(bins, xVals, yVals);
         break;
+    case CImage::UINT_32:
+        GetValues<uint32_t>(bins, xVals, yVals);
+        break;
+    case CImage::INT_32:
+        GetValues<int32_t>(bins, xVals, yVals);
+        break;
     case CImage::UINT_RGB8:
         GetValues<uint8_t>(bins, xVals, yVals);
         break;

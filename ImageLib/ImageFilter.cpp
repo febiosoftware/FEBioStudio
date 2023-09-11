@@ -121,6 +121,12 @@ void ThresholdImageFilter::ApplyFilter()
     case CImage::INT_16:
         FitlerTemplate<int16_t>();
         break;
+    case CImage::UINT_32:
+        FitlerTemplate<uint32_t>();
+        break;
+    case CImage::INT_32:
+        FitlerTemplate<int32_t>();
+        break;
     case CImage::UINT_RGB8:
         FitlerTemplate<uint8_t>();
         break;
@@ -329,6 +335,12 @@ void WarpImageFilter::ApplyFilter()
         break;
     case CImage::INT_16:
         FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_32:
+        FitlerTemplate<uint32_t>();
+        break;
+    case CImage::INT_32:
+        FitlerTemplate<int32_t>();
         break;
     case CImage::UINT_RGB8:
         FitlerTemplate<uint8_t>();

@@ -86,6 +86,10 @@ vec3f C3DGradientMap::Value(int i, int j, int k)
         return ValueTemplate<uint16_t>(i, j, k);
     case CImage::INT_16:
         return ValueTemplate<int16_t>(i, j, k);
+    case CImage::UINT_32:
+        return ValueTemplate<uint16_t>(i, j, k);
+    case CImage::INT_32:
+        return ValueTemplate<int16_t>(i, j, k);
     case CImage::UINT_RGB8:
         return ValueTemplate<uint8_t>(i, j, k);
     case CImage::INT_RGB8:

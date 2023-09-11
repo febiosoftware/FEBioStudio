@@ -228,6 +228,8 @@ bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im)
             for(int i = 0; i < nsize; i++) byteswap16(data[i]);
             break;
         }
+        case CImage::UINT_32:
+        case CImage::INT_32:
         case CImage::REAL_32:
         {
             uint32_t* data = (uint32_t*)buf;

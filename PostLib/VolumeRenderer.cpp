@@ -116,6 +116,7 @@ void CVolumeRenderer::ReloadTexture()
 
     int max8 = 255;
     int max16 = 65535;
+    uint32_t max32 = 4294967295;
 
     double min, max;
     im3d.GetMinMax(min, max);
@@ -138,6 +139,16 @@ void CVolumeRenderer::ReloadTexture()
     {
         max /= max16;
         min /= max16;
+    }
+    else if( pType == CImage::INT_32)
+    {
+		max /= max32/2;
+        min /= max32/2;
+	}
+    else if(pType == CImage::UINT_32)
+    {
+        max /= max32;
+        min /= max32;
     }
 	else if ((pType == CImage::REAL_32) || (pType == CImage::REAL_64))
 	{
@@ -170,10 +181,12 @@ void CVolumeRenderer::ReloadTexture()
 	{
 	case CImage::INT_8     : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_BYTE , im3d.GetBytes()); break;
 	case CImage::INT_16    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_SHORT, im3d.GetBytes()); break;
+    case CImage::INT_32    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_INT, im3d.GetBytes()); break;
 	case CImage::INT_RGB8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_BYTE , im3d.GetBytes()); break;
 	case CImage::INT_RGB16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_SHORT, im3d.GetBytes()); break;
 	case CImage::UINT_8    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
 	case CImage::UINT_16   : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
+    case CImage::UINT_32   : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_INT, im3d.GetBytes()); break;
 	case CImage::UINT_RGB8 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
 	case CImage::UINT_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
 	case CImage::REAL_32: 
@@ -331,6 +344,8 @@ void CVolumeRenderer::InitShaders()
 	case CImage::INT_8  : shadertxt = shadertxt_8bit; break;
 	case CImage::UINT_16  : shadertxt = shadertxt_8bit; break;
     case CImage::INT_16 : shadertxt = shadertxt_8bit; break;
+    case CImage::UINT_32  : shadertxt = shadertxt_8bit; break;
+    case CImage::INT_32 : shadertxt = shadertxt_8bit; break;
 	case CImage::UINT_RGB8  : shadertxt = shadertxt_rgb; break;
     case CImage::INT_RGB8: shadertxt = shadertxt_rgb; break;
 	case CImage::UINT_RGB16  : shadertxt = shadertxt_rgb; break;

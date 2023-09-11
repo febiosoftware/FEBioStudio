@@ -63,6 +63,12 @@ itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
     case CImage::INT_16:
         filter.SetBufferAsInt16((int16_t*)img->GetBytes());
         break;
+    case CImage::UINT_32:
+        filter.SetBufferAsUInt32((uint32_t*)img->GetBytes());
+        break;
+    case CImage::INT_32:
+        filter.SetBufferAsInt32((int32_t*)img->GetBytes());
+        break;
     case CImage::UINT_RGB8:
         filter.SetBufferAsUInt8((uint8_t*)img->GetBytes(), 3);
         break;
@@ -108,6 +114,12 @@ CImageSITK::CImageSITK(int nx, int ny, int nz, int pixelType)
         break;
     case CImage::INT_16:
         m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt16);
+        break;
+    case CImage::UINT_32:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkUInt32);
+        break;
+    case CImage::INT_32:
+        m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkInt32);
         break;
     case CImage::UINT_RGB8:
         m_sitkImage = sitk::Image(nx, ny, nz, sitk::sitkVectorUInt8);
@@ -222,6 +234,14 @@ void CImageSITK::SetItkImage(itk::simple::Image image)
     case sitk::sitkUInt16:
         m_pixelType = CImage::UINT_16;
         m_bps = 2;
+        break;
+    case sitk::sitkInt32:
+        m_pixelType = CImage::INT_32;
+        m_bps = 4;
+        break;
+    case sitk::sitkUInt32:
+        m_pixelType = CImage::UINT_32;
+        m_bps = 4;
         break;
     case sitk::sitkVectorInt8:
         m_pixelType = CImage::INT_RGB8;
