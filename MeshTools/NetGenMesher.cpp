@@ -152,7 +152,15 @@ FSMesh*	NetGenMesher::BuildMesh()
     // create new occ geometry object
     shared_ptr<OCCGeometry> occgeo = make_shared<OCCGeometry>();
 
-#ifndef WIN32
+#if defined(WIN32) || defined(__APPLE__)
+    // set OCC parameters
+	//
+
+	occparam.resthcloseedgefac = resthcloseedgefac_list[gran];
+	occparam.resthcloseedgeenable = 1;
+	occparam.resthminedgelen = resthminedgelen_list[gran];
+	occparam.resthminedgelenenable = 1;
+#else
     // set OCC parameters
 	//
     OCCParameters par;
@@ -161,14 +169,6 @@ FSMesh*	NetGenMesher::BuildMesh()
     par.resthminedgelenenable = 1;
 
     occgeo->SetOCCParameters(par);
-#else
-    // set OCC parameters
-	//
-
-	occparam.resthcloseedgefac = resthcloseedgefac_list[gran];
-	occparam.resthcloseedgeenable = 1;
-	occparam.resthminedgelen = resthminedgelen_list[gran];
-	occparam.resthminedgelenenable = 1;
 #endif
 
 	occgeo->shape = m_occ->GetShape();
