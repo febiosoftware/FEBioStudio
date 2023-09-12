@@ -195,6 +195,37 @@ string FEBioExport4::GetNodeSetName(FEItemListBuilder* pl)
 			return string("@elem_set:") + setName;
 		}
 
+	// search the part lists
+	N = (int)m_pPSet.size();
+	for (int i = 0; i < N; ++i)
+	{
+		FEItemListBuilder* pli = m_pPSet[i].m_list;
+		if (pli == pl)
+		{
+			int n = pli->size();
+			if (n == 1)
+			{
+				// part lists with only one item are currently not written.
+				// Instead, the part name has to be used
+				GPartList* pgl = dynamic_cast<GPartList*>(pli);
+				if (pgl)
+				{
+					std::vector<GPart*> partList = pgl->GetPartList();
+					if (partList.size() == 1)
+					{
+						string partName = partList[0]->GetName();
+						return string("@elem_set:") + partName;
+					}
+				}
+			}
+			else
+			{
+				string setName = m_pPSet[i].m_name;
+				return string("@part_list:") + setName;
+			}
+		}
+	}
+
 	assert(false);
 	return "";
 }
