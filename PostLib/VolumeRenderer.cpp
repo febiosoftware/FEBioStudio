@@ -120,47 +120,59 @@ void CVolumeRenderer::ReloadTexture()
 
     double min, max;
     im3d.GetMinMax(min, max);
-	if (pType == CImage::INT_8 || pType == CImage::INT_RGB8)
+	switch (pType)
 	{
-		max /= max8/2;
-        min /= max8/2;
-    }
-    else if(pType == CImage::UINT_8 || pType == CImage::UINT_RGB8)
-    {
-        max /= max8;
-        min /= max8;
-    }
-    else if( pType == CImage::INT_16 || pType == CImage::INT_RGB16)
-    {
-		max /= max16/2;
-        min /= max16/2;
+	case CImage::INT_8:
+	case CImage::INT_RGB8:
+	{
+		max /= max8 / 2;
+		min /= max8 / 2;
 	}
-    else if(pType == CImage::UINT_16 || pType == CImage::UINT_RGB16)
-    {
-        max /= max16;
-        min /= max16;
-    }
-    else if( pType == CImage::INT_32)
-    {
-		max /= max32/2;
-        min /= max32/2;
+	break;
+	case CImage::UINT_8:
+	case CImage::UINT_RGB8:
+	{
+		max /= max8;
+		min /= max8;
 	}
-    else if(pType == CImage::UINT_32)
-    {
-        max /= max32;
-        min /= max32;
-    }
-	else if ((pType == CImage::REAL_32) || (pType == CImage::REAL_64))
+	break;
+	case CImage::INT_16:
+	case CImage::INT_RGB16:
+	{
+		max /= max16 / 2;
+		min /= max16 / 2;
+	}
+	break;
+	case CImage::UINT_16:
+	case CImage::UINT_RGB16:
+	{
+		max /= max16;
+		min /= max16;
+	}
+	break;
+	case CImage::INT_32:
+	case CImage::UINT_32:
+	{
+		// Don't do anything for these cases since we scale the data
+		// before we send it to OpenGL
+	}
+	break;
+	case CImage::REAL_32:
+	case CImage::REAL_64:
 	{
 		// floating point images are copied and scaled when calling glTexImage3D, so we can just 
 		// set the range to [0,1]
 		max = 1.f;
 		min = 0.f;
 	}
-	if (max == min) max++;
+	break;
+	default:
+		assert(false);
+	}
 
-    m_Iscale = 1.f /(max - min);
-    m_IscaleMin = min;
+	if (max == min) max++;
+	m_Iscale = 1.f /(max - min);
+	m_IscaleMin = min;
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
 
@@ -181,12 +193,26 @@ void CVolumeRenderer::ReloadTexture()
 	{
 	case CImage::INT_8     : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_BYTE , im3d.GetBytes()); break;
 	case CImage::INT_16    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_SHORT, im3d.GetBytes()); break;
-    case CImage::INT_32    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_INT, im3d.GetBytes()); break;
+    case CImage::INT_32    : 
+    case CImage::UINT_32   :
+	{
+		// We're doing the scaling here, because it appears
+		// that OpenGL only maps the upper 16 bits to the range [0,1].
+		// If the image only fills the lower 16 bits, we won't see anything 
+		GLbyte* d = new GLbyte[N];
+		int* s = (int*)im3d.GetBytes();
+		for (size_t i = 0; i < N; ++i) d[i] = (GLbyte)(255*(s[i] - m_IscaleMin) * m_Iscale);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, d);
+		delete[] d;
+
+		m_Iscale = 1.f;
+		m_IscaleMin = 0.f;
+	}
+	break;
 	case CImage::INT_RGB8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_BYTE , im3d.GetBytes()); break;
 	case CImage::INT_RGB16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_SHORT, im3d.GetBytes()); break;
 	case CImage::UINT_8    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
 	case CImage::UINT_16   : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-    case CImage::UINT_32   : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_INT, im3d.GetBytes()); break;
 	case CImage::UINT_RGB8 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
 	case CImage::UINT_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
 	case CImage::REAL_32: 
