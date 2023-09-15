@@ -857,6 +857,8 @@ public:
 	CDataSelectorButton*	selectY;		// select the Y data field
 	QToolBox*				tools;			// the tools panel
 
+	QVBoxLayout* layout;
+
 	QAction* actionSave;
 	QAction* actionAddToModel;
 	QAction* actionClipboard;
@@ -983,7 +985,7 @@ public:
 		actionProps = zoomBar->addAction(QIcon(QString(":/icons/properties.png")), "Properties"); actionProps->setObjectName("actionProps");
 
 		QWidget* mainWidget = new QWidget;
-		QVBoxLayout* layout = new QVBoxLayout;
+		layout = new QVBoxLayout;
 
 		layout->addWidget(toolBar);
 		layout->addWidget(centralWidget);
@@ -1285,6 +1287,12 @@ void CGraphWindow::SetDataSource(const QStringList& names)
 void CGraphWindow::AddToolBarWidget(QWidget* w)
 {
 	ui->toolBar->insertWidget(ui->actionShowTools, w);
+}
+
+//-----------------------------------------------------------------------------
+void CGraphWindow::AddPanel(QWidget* w)
+{
+	if (w) ui->layout->addWidget(w);
 }
 
 //-----------------------------------------------------------------------------

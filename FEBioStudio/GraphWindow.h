@@ -342,6 +342,8 @@ public:
 protected:
 	void AddToolBarWidget(QWidget* w);
 
+	void AddPanel(QWidget* w);
+
 	virtual void setDataSource(int n) {}
 
 	int currentDataSource();
