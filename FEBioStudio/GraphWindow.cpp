@@ -924,9 +924,14 @@ public:
 		selectPlot->addItem("Time-Scatter");
 
 		// data source
+		QWidget* sourceWidget = new QWidget;
+		QHBoxLayout* sourceWidgetLayout = new QHBoxLayout;
 		dataSource = new QComboBox;
 		dataSource->setObjectName("dataSource");
 		dataSource->addItem("selection");
+		sourceWidgetLayout->addWidget(new QLabel("Source:"));
+		sourceWidgetLayout->addWidget(dataSource);
+		sourceWidget->setLayout(sourceWidgetLayout);
 
 		// create X data selection box
 		selectX = new CDataFieldSelector;
@@ -958,8 +963,7 @@ public:
 		actionSnapshot = toolBar->addAction(QIcon(QString(":/icons/bgimage.png")), "Save picture"); actionSnapshot->setObjectName("actionSnapshot");
 		actionAddToModel = toolBar->addAction(QIcon(":/icons/addtomodel.png"), "Add to model tree"); actionAddToModel->setObjectName("actionAddToModel");
 
-		toolBar->addWidget(new QLabel("Source:"));
-		actionSource = toolBar->addWidget(dataSource);
+		actionSource = toolBar->addWidget(sourceWidget);
 		actionType = toolBar->addWidget(new QLabel("Type: "));
 		actionPlot = toolBar->addWidget(selectPlot);
 		actionSelectX = toolBar->addWidget(x);
