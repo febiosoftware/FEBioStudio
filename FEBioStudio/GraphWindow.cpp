@@ -65,6 +65,7 @@ SOFTWARE.*/
 #include <PostGL/GLPlotGroup.h>
 #include <PostLib/FEMeshData_T.h>
 #include <FECore/MathObject.h>
+#include <FECore/MObjBuilder.h>
 #include "units.h"
 
 class TimeRangeOptionsUI
@@ -655,11 +656,38 @@ void MathPlot::onCalculate()
 	}
 }
 
+MathPlot* MathPlot::m_pThis = nullptr;
+
+double MathPlot::graphdata(double x)
+{ 
+	if (m_pThis == nullptr) return 0.0;
+	LoadCurve& lc = m_pThis->m_data;
+
+	if (lc.Points() == 0) return 0.0;
+
+	return lc.value(x); 
+}
+
 void MathPlot::draw(QPainter& p)
 {
 	if (m_bvalid == false) return;
+	m_pThis = this;
 
 	p.setPen(QPen(m_col, 2));
+
+	MObjBuilder::Add1DFunction("_data", graphdata);
+	m_data.Clear();
+	if (m_graph->plots() == 1)
+	{
+		m_data.SetInterpolator(PointCurve::SMOOTH);
+		m_data.SetExtendMode(PointCurve::CONSTANT);
+		CPlotData& plt = m_pThis->m_graph->getPlotData(0);
+		for (int i = 0; i < plt.size(); ++i)
+		{
+			QPointF& pi = plt.Point(i);
+			m_data.Add(pi.x(), pi.y());
+		}
+	}
 
 	MSimpleExpression m;
 	MVariable* xvar = m.AddVariable("x");

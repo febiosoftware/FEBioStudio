@@ -198,12 +198,18 @@ public slots:
 	void onColorChanged(QColor c);
 
 private:
+	static double graphdata(double x);
+
+private:
 	CGraphWidget*	m_graph;
 	QLineEdit*		m_edit;
 
 	bool			m_bvalid;
 	std::string		m_math;
 	QColor			m_col;
+
+	static MathPlot* m_pThis;
+	LoadCurve	m_data;
 };
 
 //=================================================================================================
