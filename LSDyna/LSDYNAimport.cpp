@@ -70,7 +70,7 @@ bool LSDYNAimport::Load(const char* szfile)
 		std::ostringstream log;
 		m_prj.ConvertToNewFormat(log);
 		std::string s = log.str();
-		if (s.empty()) errf(s.c_str());
+		if (s.empty() == false) errf(s.c_str());
 	}
 
 	// clean up
