@@ -36,4 +36,5 @@ public:
 private:
 	QString	m_modelFile;
 	QString	m_kineFile;
+	bool	m_btransformFirstState;
 };

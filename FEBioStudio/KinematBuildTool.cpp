@@ -36,8 +36,11 @@ SOFTWARE.*/
 
 CKinematBuildTool::CKinematBuildTool(CMainWindow* w) : CBasicTool(w, "Kinemat", 1)
 {
+	m_btransformFirstState = true;
+
 	addResourceProperty(&m_modelFile, "Model file:");
 	addResourceProperty(&m_kineFile, "Kine file:");
+	addBoolProperty(&m_btransformFirstState, "Transform initial state");
 }
 
 bool CKinematBuildTool::OnApply()
@@ -80,6 +83,34 @@ bool CKinematBuildTool::OnApply()
 	// get the initial step. We'll apply the rigid constraints to it
 	FSStep* step = fem.GetStep(0);
 
+	// get the initial transform
+	if (m_btransformFirstState)
+	{
+		FEKinemat::STATE& s0 = kine.GetState(0);
+
+		FSMesh* pm = po->GetFEMesh();
+		pm->TagAllNodes(-1);
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			FSElement& el = pm->Element(i);
+			int ne = el.Nodes();
+			for (int j = 0; j < ne; ++j)
+			{
+				FSNode& nj = pm->Node(el.m_node[j]);
+				assert((nj.m_ntag == -1) || (nj.m_ntag == el.m_gid));
+				nj.m_ntag = el.m_gid;
+			}
+		}
+		
+		for (int i = 0; i < pm->Nodes(); ++i)
+		{
+			FSNode& nd = pm->Node(i); assert(nd.m_ntag != -1);
+			vec3d r = s0.D[nd.m_ntag].apply(nd.r);
+			nd.r = r;
+		}
+		po->Update();
+	}
+
 	// Add an analysis step (remember the type of the analysis is the same as the module)
 	FSStep* step1 = FEBio::CreateStep("solid", &fem);
 	step1->SetName("Step1");
@@ -102,10 +133,32 @@ bool CKinematBuildTool::OnApply()
 		{
 			FEKinemat::KINE& D = s.D[j];
 
-			vec3d t = D.translate();
-			mat3d Q = D.rotate();
-			quatd q(Q.transpose());	// TODO: Why do I need to transpose? 
-			vec3d R = q.GetRotationVector();
+			vec3d t, R;
+
+			if (m_btransformFirstState)
+			{
+				FEKinemat::KINE& D0 = kine.GetState(0).D[j];
+
+				vec3d t0 = D0.translate();
+				mat3d Q0 = D0.rotate();
+				mat3d Q0i = Q0.transpose();
+
+				vec3d t1 = D.translate();
+				mat3d Q1 = D.rotate();
+
+				mat3d Q = Q1 * Q0i;
+				quatd q(Q.transpose());	// TODO: Why do I need to transpose? 
+				R = q.GetRotationVector();
+
+				t = t1 - Q * t0;
+			}
+			else
+			{
+				t = D.translate();
+				mat3d Q = D.rotate();
+				quatd q(Q.transpose());	// TODO: Why do I need to transpose? 
+				R = q.GetRotationVector();
+			}
 
 			LC[j * 6    ].Add((double)i, t.x);
 			LC[j * 6 + 1].Add((double)i, t.y);
