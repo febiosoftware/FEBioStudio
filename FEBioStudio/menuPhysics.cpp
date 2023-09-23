@@ -57,6 +57,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <sstream>
 
 void CMainWindow::on_actionAddNodalBC_triggered()
@@ -77,10 +78,6 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 		if (pbc)
 		{
 			FEBio::InitDefaultProps(pbc);
-
-			FSStep* step = fem.GetStep(dlg.GetStep());
-
-			pbc->SetStep(step->GetID());
 
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultBCName(&fem, pbc);
@@ -112,7 +109,8 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 				}
 			}
 
-			step->AddBC(pbc);
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetName());
 			UpdateModel(pbc);
 		}
 	}
@@ -136,10 +134,6 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 		if (pbc)
 		{
 			FEBio::InitDefaultProps(pbc);
-
-			FSStep* step = fem.GetStep(dlg.GetStep());
-
-			pbc->SetStep(step->GetID());
 
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultBCName(&fem, pbc);
@@ -167,7 +161,8 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 				}
 			}
 
-			step->AddBC(pbc);
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetName());
 			UpdateModel(pbc);
 		}
 	}
@@ -191,14 +186,12 @@ void CMainWindow::on_actionAddGeneralBC_triggered()
 		{
 			FEBio::InitDefaultProps(pbc);
 
-			FSStep* step = fem.GetStep(dlg.GetStep());
-
-			pbc->SetStep(step->GetID());
-
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultBCName(&fem, pbc);
 			pbc->SetName(name);
-			step->AddBC(pbc);
+
+			FSStep* step = fem.GetStep(dlg.GetStep());
+			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetName());
 			UpdateModel(pbc);
 		}
 	}
@@ -255,7 +248,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			step->AddLoad(pnl);
+			doc->DoCommand(new CCmdAddLoad(step, pnl), pnl->GetName());
 			UpdateModel(pnl);
 		}
 	}
@@ -307,8 +300,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			psl->SetStep(step->GetID());
-			step->AddLoad(psl);
+			doc->DoCommand(new CCmdAddLoad(step, psl), psl->GetName());
 			UpdateModel(psl);
 		}
 	}
@@ -337,8 +329,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 			pbl->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			pbl->SetStep(step->GetID());
-			step->AddLoad(pbl);
+			doc->DoCommand(new CCmdAddLoad(step, pbl), pbl->GetName());
 			UpdateModel(pbl);
 		}
 	}
@@ -353,9 +344,9 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 	FSModel& fem = *doc->GetFSModel();
 	CDlgAddPhysicsItem dlg("Add Rigid Load", FELOAD_ID, FEBio::GetBaseClassIndex("FERigidLoad"), &fem, true, true, this);
 	if (dlg.exec())
-	{ 
-        int id = dlg.GetClassID();
-        if(id == -1) return;
+	{
+		int id = dlg.GetClassID();
+		if(id == -1) return;
 
 		FSRigidLoad* prl = FEBio::CreateFEBioClass<FSRigidLoad>(id, &fem); assert(prl);
 		if (prl)
@@ -367,8 +358,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 			prl->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			prl->SetStep(step->GetID());
-			step->AddRigidLoad(prl);
+			doc->DoCommand(new CCmdAddRigidLoad(step, prl), prl->GetName());
 			UpdateModel(prl);
 		}
 	}
@@ -415,8 +405,7 @@ void CMainWindow::on_actionAddIC_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			pic->SetStep(step->GetID());
-			step->AddIC(pic);
+			doc->DoCommand(new CCmdAddIC(step, pic), pic->GetName());
 			UpdateModel(pic);
 		}
 	}
@@ -471,10 +460,8 @@ void CMainWindow::on_actionAddContact_triggered()
 				}
 			}
 
-			// assign it to the correct step
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			pi->SetStep(step->GetID());
-			step->AddInterface(pi);
+			doc->DoCommand(new CCmdAddInterface(step, pi), pi->GetName());
 			UpdateModel(pi);
 		}
 	}
@@ -503,10 +490,8 @@ void CMainWindow::on_actionAddGenericNLC_triggered()
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
 			pi->SetName(name);
 
-			// assign it to the correct step
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			pi->SetStep(step->GetID());
-			step->AddConstraint(pi);
+			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetName());
 			UpdateModel(pi);
 		}
 	}
@@ -555,10 +540,8 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 				}
 			}
 
-			// assign it to the correct step
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			pi->SetStep(step->GetID());
-			step->AddConstraint(pi);
+			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetName());
 			UpdateModel(pi);
 		}
 	}
@@ -587,10 +570,8 @@ void CMainWindow::on_actionAddBodyNLC_triggered()
 			if (name.empty()) name = defaultConstraintName(&fem, pi);
 			pi->SetName(name);
 
-			// assign it to the correct step
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			pi->SetStep(step->GetID());
-			step->AddConstraint(pi);
+			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetName());
 			UpdateModel(pi);
 		}
 	}
@@ -615,14 +596,12 @@ void CMainWindow::on_actionAddRigidBC_triggered()
 		{
 			FEBio::InitDefaultProps(prc);
 
-			FSStep* step = fem->GetStep(dlg.GetStep());
-			prc->SetStep(step->GetID());
-
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultRigidBCName(fem, prc);
-
 			prc->SetName(name);
-			step->AddRigidBC(prc);
+
+			FSStep* step = fem->GetStep(dlg.GetStep());
+			doc->DoCommand(new CCmdAddRigidBC(step, prc), prc->GetName());
 			UpdateModel(prc);
 		}
 	}
@@ -647,14 +626,12 @@ void CMainWindow::on_actionAddRigidIC_triggered()
 		{
 			FEBio::InitDefaultProps(prc);
 
-			FSStep* step = fem->GetStep(dlg.GetStep());
-			prc->SetStep(step->GetID());
-
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultRigidICName(fem, prc);
-
 			prc->SetName(name);
-			step->AddRigidIC(prc);
+
+			FSStep* step = fem->GetStep(dlg.GetStep());
+			doc->DoCommand(new CCmdAddRigidIC(step, prc), prc->GetName());
 			UpdateModel(prc);
 		}
 	}
@@ -684,15 +661,12 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 //			pc->SetRigidBody1(dlg.GetMaterialA());
 //			pc->SetRigidBody2(dlg.GetMaterialB());
 
-			FSStep* step = fem->GetStep(dlg.GetStep());
-			int stepID = step->GetID();
-			pc->SetStep(stepID);
-
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultRigidConnectorName(fem, pc);
-
 			pc->SetName(name);
-			step->AddRigidConnector(pc);
+
+			FSStep* step = fem->GetStep(dlg.GetStep());
+			doc->DoCommand(new CCmdAddRigidConnector(step, pc), pc->GetName());
 			UpdateModel(pc);
 		}
 	}
@@ -727,8 +701,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 			if (sz && (strlen(sz) > 0)) gmat->SetName(sz);
 
 			// add the material
-			doc->DoCommand(new CCmdAddMaterial(&fem, gmat));
-
+			doc->DoCommand(new CCmdAddMaterial(&fem, gmat), gmat->GetName());
 			UpdateModel(gmat);
 		}
 	}
@@ -750,14 +723,12 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 		FSMeshAdaptor* pma = FEBio::CreateFEBioClass<FSMeshAdaptor>(id, fem); assert(pma);
 		if (pma)
 		{
-			FSStep* step = fem->GetStep(dlg.GetStep());
-			pma->SetStep(step->GetID());
-
 			std::string name = dlg.GetName();
 			if (name.empty()) name = defaultMeshAdaptorName(fem, pma);
-
 			pma->SetName(name);
-			step->AddMeshAdaptor(pma);
+
+			FSStep* step = fem->GetStep(dlg.GetStep());
+			doc->DoCommand(new CCmdAddMeshAdaptor(step, pma), pma->GetName());
 			UpdateModel(pma);
 		}
 	}
@@ -788,7 +759,7 @@ void CMainWindow::on_actionAddLoadController_triggered()
 			}
 
 			plc->SetName(name);
-			fem->AddLoadController(plc);
+			doc->DoCommand(new CCmdAddLoadController(fem, plc), plc->GetName());
 			UpdateModel(plc);
 		}
 	}
@@ -833,10 +804,9 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		if (data)
 		{
 			data->SetName(name.toStdString());
-			pm->AddMeshDataField(data);
+			doc->DoCommand(new CCmdAddMeshDataField(pm, data), data->GetName());
+			UpdateModel(data);
 		}
-
-		UpdateModel(data);
 	}
 }
 
@@ -866,7 +836,7 @@ void CMainWindow::on_actionAddMeshDataGenerator_triggered()
 			}
 
 			pmd->SetName(name);
-			fem->AddMeshDataGenerator(pmd);
+			doc->DoCommand(new CCmdAddMeshDataGenerator(fem, pmd), name);
 			UpdateModel(pmd);
 		}
 	}
@@ -879,23 +849,22 @@ void CMainWindow::on_actionAddStep_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel* fem = doc->GetFSModel();
-//	CDlgAddStep dlg(prj, this);
-//	if (dlg.exec())
-	{
-//		FSAnalysisStep* ps = fscore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
 
+	QString stepName = QString("Step%1").arg(fem->Steps());
+	bool ok = false;
+	stepName = QInputDialog::getText(this, "Add Step", "Name:", QLineEdit::Normal, stepName, &ok);
+
+	if (ok && (stepName.isEmpty()==false))
+	{
 		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
 		assert(ps);
 		if (ps)
 		{
-//			std::string name = dlg.m_name;
-//			if (name.empty()) name = defaultStepName(fem, ps);
-			std::string name = defaultStepName(fem, ps);
-
 			FEBio::InitDefaultProps(ps);
 
+			string name = stepName.toStdString();
 			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps, -1));
+			doc->DoCommand(new CCmdAddStep(fem, ps, -1), name);
 			UpdateModel(ps);
 		}
 	}

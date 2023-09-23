@@ -1103,7 +1103,7 @@ void CModelViewer::OnCopyMaterial()
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2));
+	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2), pmat2->GetName());
 
 	// update the model viewer
 	Update();
@@ -1222,7 +1222,7 @@ void CModelViewer::OnCopyInterface()
 
 	// add the interface to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddInterface(step, piCopy));
+	pdoc->DoCommand(new CCmdAddInterface(step, piCopy), piCopy->GetName());
 
 	// update the model viewer
 	Update();
@@ -1247,7 +1247,7 @@ void CModelViewer::OnCopyBC()
 
 	// add the bc to the doc
 	FSStep* step = fem->GetStep(pbc->GetStep());
-	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy));
+	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy), pbcCopy->GetName());
 
 	// update the model viewer
 	Update();
@@ -1272,7 +1272,7 @@ void CModelViewer::OnCopyIC()
 
 	// add the ic to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddIC(step, picCopy));
+	pdoc->DoCommand(new CCmdAddIC(step, picCopy), picCopy->GetName());
 
 	// update the model viewer
 	Update();
@@ -1297,7 +1297,7 @@ void CModelViewer::OnCopyRigidConnector()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy));
+	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy), pcCopy->GetName());
 
 	// update the model viewer
 	Update();
@@ -1322,7 +1322,7 @@ void CModelViewer::OnCopyConstraint()
 
 	// add the constraint to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy));
+	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy), pcCopy->GetName());
 
 	// update the model viewer
 	Update();
