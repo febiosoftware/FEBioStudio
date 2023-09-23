@@ -220,6 +220,8 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// do a model check
 		if (modelDoc && (DoModelCheck(modelDoc) == false)) return;
 
+		if (modelDoc) modelDoc->AppendChangeLog(QString("Started job %1").arg(QString::fromStdString(job->GetName())));
+
 		if (doc)
 		{
 			// auto-save the document

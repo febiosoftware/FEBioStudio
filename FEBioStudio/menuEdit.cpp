@@ -43,6 +43,9 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <QMessageBox>
 #include <QInputDialog>
+#include <QPlainTextEdit>
+#include <QDialogButtonBox>
+#include <QFileDialog>
 #include <GeomLib/GPrimitive.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
@@ -74,6 +77,83 @@ void CMainWindow::on_actionRedo_triggered()
 		doc->RedoCommand();
 		UpdateModel();
 		Update();
+	}
+}
+
+class CDlgChangeLog : public QDialog
+{
+private:
+	QPlainTextEdit* m_txt;
+public:
+	CDlgChangeLog(QWidget* w) : QDialog(w)
+	{
+		setWindowTitle("Changelog");
+
+		setMinimumWidth(600);
+
+		m_txt = new QPlainTextEdit;
+		m_txt->setReadOnly(true);
+		m_txt->setFont(QFont("Courier", 11));
+		m_txt->setWordWrapMode(QTextOption::NoWrap);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(m_txt);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close | QDialogButtonBox::Save);
+		bb->button(QDialogButtonBox::Close)->setDefault(true);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	void SetText(const QString& txt)
+	{
+		m_txt->setPlainText(txt);
+	}
+};
+
+void CMainWindow::on_actionChangeLog_triggered()
+{
+	CUndoDocument* doc = dynamic_cast<CUndoDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	QString txt;
+	const ChangeLog& log = doc->GetChangeLog();
+	int n = log.size();
+	for (int i = 0; i < n; ++i)
+	{
+		const ChangeLog::Entry& v = log.entry(i);
+		txt += QString::number(i + 1) + " : (";
+		txt += v.time.toString() + ") ";
+		txt += v.txt;
+		txt += "\n";
+	}
+
+	CDlgChangeLog dlg(this);
+	dlg.SetText(txt);
+	if (dlg.exec())
+	{
+		// this assumes the "Save" button was pressed
+		QString fileName = QFileDialog::getSaveFileName(this, "Save changelog");
+		if (fileName.isEmpty() == false)
+		{
+			QFile file(fileName);
+			if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+			{
+				QMessageBox::critical(this, "Save changelog", "Failed to save changelog.");
+			}
+			else
+			{
+				QTextStream out(&file);
+				out << txt;
+				file.close();
+
+				QMessageBox::information(this, "Save changelog", QString("Changelog saved successfully to:\n%1").arg(fileName));
+			}
+		}
 	}
 }
 
