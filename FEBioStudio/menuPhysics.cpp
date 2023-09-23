@@ -110,7 +110,7 @@ void CMainWindow::on_actionAddNodalBC_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetName());
+			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 			UpdateModel(pbc);
 		}
 	}
@@ -162,7 +162,7 @@ void CMainWindow::on_actionAddSurfaceBC_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetName());
+			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 			UpdateModel(pbc);
 		}
 	}
@@ -191,7 +191,7 @@ void CMainWindow::on_actionAddGeneralBC_triggered()
 			pbc->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetName());
+			doc->DoCommand(new CCmdAddBC(step, pbc), pbc->GetNameAndType());
 			UpdateModel(pbc);
 		}
 	}
@@ -248,7 +248,7 @@ void CMainWindow::on_actionAddNodalLoad_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddLoad(step, pnl), pnl->GetName());
+			doc->DoCommand(new CCmdAddLoad(step, pnl), pnl->GetNameAndType());
 			UpdateModel(pnl);
 		}
 	}
@@ -300,7 +300,7 @@ void CMainWindow::on_actionAddSurfLoad_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddLoad(step, psl), psl->GetName());
+			doc->DoCommand(new CCmdAddLoad(step, psl), psl->GetNameAndType());
 			UpdateModel(psl);
 		}
 	}
@@ -329,7 +329,7 @@ void CMainWindow::on_actionAddBodyLoad_triggered()
 			pbl->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddLoad(step, pbl), pbl->GetName());
+			doc->DoCommand(new CCmdAddLoad(step, pbl), pbl->GetNameAndType());
 			UpdateModel(pbl);
 		}
 	}
@@ -358,7 +358,7 @@ void CMainWindow::on_actionAddRigidLoad_triggered()
 			prl->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddRigidLoad(step, prl), prl->GetName());
+			doc->DoCommand(new CCmdAddRigidLoad(step, prl), prl->GetNameAndType());
 			UpdateModel(prl);
 		}
 	}
@@ -405,7 +405,7 @@ void CMainWindow::on_actionAddIC_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddIC(step, pic), pic->GetName());
+			doc->DoCommand(new CCmdAddIC(step, pic), pic->GetNameAndType());
 			UpdateModel(pic);
 		}
 	}
@@ -461,7 +461,7 @@ void CMainWindow::on_actionAddContact_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddInterface(step, pi), pi->GetName());
+			doc->DoCommand(new CCmdAddInterface(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
 		}
 	}
@@ -491,7 +491,7 @@ void CMainWindow::on_actionAddGenericNLC_triggered()
 			pi->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetName());
+			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
 		}
 	}
@@ -541,7 +541,7 @@ void CMainWindow::on_actionAddSurfaceNLC_triggered()
 			}
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetName());
+			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
 		}
 	}
@@ -571,7 +571,7 @@ void CMainWindow::on_actionAddBodyNLC_triggered()
 			pi->SetName(name);
 
 			FSStep* step = fem.GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetName());
+			doc->DoCommand(new CCmdAddConstraint(step, pi), pi->GetNameAndType());
 			UpdateModel(pi);
 		}
 	}
@@ -601,7 +601,7 @@ void CMainWindow::on_actionAddRigidBC_triggered()
 			prc->SetName(name);
 
 			FSStep* step = fem->GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddRigidBC(step, prc), prc->GetName());
+			doc->DoCommand(new CCmdAddRigidBC(step, prc), prc->GetNameAndType());
 			UpdateModel(prc);
 		}
 	}
@@ -631,7 +631,7 @@ void CMainWindow::on_actionAddRigidIC_triggered()
 			prc->SetName(name);
 
 			FSStep* step = fem->GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddRigidIC(step, prc), prc->GetName());
+			doc->DoCommand(new CCmdAddRigidIC(step, prc), prc->GetNameAndType());
 			UpdateModel(prc);
 		}
 	}
@@ -666,7 +666,7 @@ void CMainWindow::on_actionAddRigidConnector_triggered()
 			pc->SetName(name);
 
 			FSStep* step = fem->GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddRigidConnector(step, pc), pc->GetName());
+			doc->DoCommand(new CCmdAddRigidConnector(step, pc), pc->GetNameAndType());
 			UpdateModel(pc);
 		}
 	}
@@ -701,7 +701,7 @@ void CMainWindow::on_actionAddMaterial_triggered()
 			if (sz && (strlen(sz) > 0)) gmat->SetName(sz);
 
 			// add the material
-			doc->DoCommand(new CCmdAddMaterial(&fem, gmat), gmat->GetName());
+			doc->DoCommand(new CCmdAddMaterial(&fem, gmat), gmat->GetNameAndType());
 			UpdateModel(gmat);
 		}
 	}
@@ -728,7 +728,7 @@ void CMainWindow::on_actionAddMeshAdaptor_triggered()
 			pma->SetName(name);
 
 			FSStep* step = fem->GetStep(dlg.GetStep());
-			doc->DoCommand(new CCmdAddMeshAdaptor(step, pma), pma->GetName());
+			doc->DoCommand(new CCmdAddMeshAdaptor(step, pma), pma->GetNameAndType());
 			UpdateModel(pma);
 		}
 	}
@@ -759,7 +759,7 @@ void CMainWindow::on_actionAddLoadController_triggered()
 			}
 
 			plc->SetName(name);
-			doc->DoCommand(new CCmdAddLoadController(fem, plc), plc->GetName());
+			doc->DoCommand(new CCmdAddLoadController(fem, plc), plc->GetNameAndType());
 			UpdateModel(plc);
 		}
 	}
@@ -804,7 +804,7 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		if (data)
 		{
 			data->SetName(name.toStdString());
-			doc->DoCommand(new CCmdAddMeshDataField(pm, data), data->GetName());
+			doc->DoCommand(new CCmdAddMeshDataField(pm, data), data->GetNameAndType());
 			UpdateModel(data);
 		}
 	}
@@ -836,7 +836,7 @@ void CMainWindow::on_actionAddMeshDataGenerator_triggered()
 			}
 
 			pmd->SetName(name);
-			doc->DoCommand(new CCmdAddMeshDataGenerator(fem, pmd), name);
+			doc->DoCommand(new CCmdAddMeshDataGenerator(fem, pmd), pmd->GetNameAndType());
 			UpdateModel(pmd);
 		}
 	}
@@ -864,7 +864,7 @@ void CMainWindow::on_actionAddStep_triggered()
 
 			string name = stepName.toStdString();
 			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps, -1), name);
+			doc->DoCommand(new CCmdAddStep(fem, ps, -1), ps->GetNameAndType());
 			UpdateModel(ps);
 		}
 	}
