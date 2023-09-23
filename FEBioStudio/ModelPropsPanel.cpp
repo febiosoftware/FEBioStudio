@@ -1563,6 +1563,11 @@ void CModelPropsPanel::on_math2_rightExtendChanged(int n)
 	}
 }
 
+void CModelPropsPanel::on_fec_paramChanged(FSCoreBase* pc, Param* p)
+{
+	emit paramChanged(pc, p);
+}
+
 void CModelPropsPanel::on_math2_minChanged(double vmin)
 {
 	FSLoadController* plc = dynamic_cast<FSLoadController*>(m_currentObject);

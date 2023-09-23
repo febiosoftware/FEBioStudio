@@ -49,6 +49,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QCheckBox>
 #include <FSCore/FSCore.h>
+#include <FEMLib/FEMaterial.h>
 #include <GeomLib/GModel.h>
 #include "SelectionBox.h"
 #include "DlgAddPhysicsItem.h"
@@ -1689,6 +1690,13 @@ void FEClassPropsView::onModelDataChanged()
 		m_model->ResetModel();
 		expandAll();
 	}
+
+	QModelIndex index = currentIndex();
+	FEClassPropsModel::Item* item = static_cast<FEClassPropsModel::Item*>(index.internalPointer());
+	if (item && item->isParameter())
+	{
+		emit paramChanged(item->m_pc, item->parameter());
+	}
 }
 
 void FEClassPropsView::setFilter(const QString& flt)
@@ -1719,6 +1727,7 @@ FEClassPropsWidget::FEClassPropsWidget(QWidget* parent) : QWidget(parent)
 	QObject::connect(m_flt, SIGNAL(textChanged(const QString&)), m_view, SLOT(setFilter(const QString&)));
 	QObject::connect(tb, SIGNAL(clicked(bool)), m_flt, SLOT(clear()));
 	QObject::connect(m_view, SIGNAL(clicked(const QModelIndex&)), this, SLOT(on_clicked(const QModelIndex&)));
+	QObject::connect(m_view, SIGNAL(paramChanged(FSCoreBase*, Param*)), this, SLOT(on_paramChanged(FSCoreBase*, Param*)));
 }
 
 void FEClassPropsWidget::on_clicked(const QModelIndex& index)
@@ -1731,6 +1740,11 @@ void FEClassPropsWidget::SetFEClass(FSCoreBase* pc, FSModel* fem)
 	m_view->SetFEClass(nullptr, fem);
 	m_flt->setText("");
 	m_view->SetFEClass(pc, fem);
+}
+
+void FEClassPropsWidget::on_paramChanged(FSCoreBase* pc, Param* p)
+{
+	emit paramChanged(pc, p);
 }
 
 FSProperty* FEClassPropsWidget::getProperty(const QModelIndex& index)
@@ -1776,6 +1790,7 @@ public:
 		w->setLayout(l);
 
 		QObject::connect(feprops, SIGNAL(clicked(const QModelIndex&)), w, SLOT(onItemClicked(const QModelIndex&)));
+		QObject::connect(feprops, SIGNAL(paramChanged(FSCoreBase*, Param*)), w, SLOT(on_paramChanged(FSCoreBase*, Param*)));
 		QObject::connect(plt, SIGNAL(dataChanged()), w, SLOT(onPlotChanged()));
 		QObject::connect(math, SIGNAL(mathChanged(QString)), w, SLOT(onMathChanged(QString)));
 	}
@@ -1894,4 +1909,9 @@ void FEClassEdit::onPlotChanged()
 
 	// Whatever is selected is not a load curve, so let's just hide the stack
 	ui->SetFunction1D(nullptr);
+}
+
+void FEClassEdit::on_paramChanged(FSCoreBase* pc, Param* p)
+{
+	emit paramChanged(pc, p);
 }
