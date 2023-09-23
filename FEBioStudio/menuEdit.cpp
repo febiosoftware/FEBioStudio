@@ -89,7 +89,7 @@ public:
 	{
 		setWindowTitle("Changelog");
 
-		setMinimumWidth(600);
+		setMinimumSize(1024, 600);
 
 		m_txt = new QPlainTextEdit;
 		m_txt->setReadOnly(true);
@@ -109,8 +109,9 @@ public:
 		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
 	}
 
-	void SetText(const QString& txt)
+	void SetText(const QString& title, const QString& txt)
 	{
+		setWindowTitle(QString("Changelog [%1]").arg(title));
 		m_txt->setPlainText(txt);
 	}
 };
@@ -123,17 +124,18 @@ void CMainWindow::on_actionChangeLog_triggered()
 	QString txt;
 	const ChangeLog& log = doc->GetChangeLog();
 	int n = log.size();
+	int m = (int) log10(n) + 1;
 	for (int i = 0; i < n; ++i)
 	{
 		const ChangeLog::Entry& v = log.entry(i);
-		txt += QString::number(i + 1) + " : (";
+		txt += QString("%1: (").arg(i + 1, m);
 		txt += v.time.toString() + ") ";
 		txt += v.txt;
 		txt += "\n";
 	}
 
 	CDlgChangeLog dlg(this);
-	dlg.SetText(txt);
+	dlg.SetText(QString::fromStdString(doc->GetDocFileName()), txt);
 	if (dlg.exec())
 	{
 		// this assumes the "Save" button was pressed
