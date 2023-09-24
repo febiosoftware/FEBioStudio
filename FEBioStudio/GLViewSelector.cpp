@@ -1656,7 +1656,7 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 		int index = closestSurface->GetID();
 		if (m_bctrl) pcmd = new CCmdUnSelectSurface(&model, &index, 1);
 		else pcmd = new CCmdSelectSurface(&model, &index, 1, m_bshift);
-		surfName = ps->GetName();
+		surfName = closestSurface->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectSurface(&model, 0, 0, false);
 
@@ -1738,7 +1738,7 @@ void GLViewSelector::SelectEdges(int x, int y)
 		int index = closestEdge->GetID();
 		if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, &index, 1);
 		else pcmd = new CCmdSelectEdge(&model, &index, 1, m_bshift);
-		edgeName = ps->GetName();
+		edgeName = closestEdge->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectEdge(&model, 0, 0, false);
 
@@ -1812,7 +1812,7 @@ void GLViewSelector::SelectNodes(int x, int y)
 		assert(closestNode->Type() != NODE_SHAPE);
 		if (m_bctrl) pcmd = new CCmdUnSelectNode(&model, &index, 1);
 		else pcmd = new CCmdSelectNode(&model, &index, 1, m_bshift);
-		nodeName = ps->GetName();
+		nodeName = closestNode->GetName();
 	}
 	else if ((m_bctrl == false) && (m_bshift == false)) pcmd = new CCmdSelectNode(&model, 0, 0, false);
 

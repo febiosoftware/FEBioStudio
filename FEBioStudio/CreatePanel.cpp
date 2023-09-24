@@ -175,7 +175,7 @@ void CCreatePanel::on_create_clicked()
 			GObject* activeObject = doc->GetActiveObject();
 			if ((pane->createPolicy() == CCreatePane::ADD_NEW_OBJECT) || (activeObject == nullptr))
 			{
-				doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), go), go->GetName());
+				doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), go), go->GetNameAndType());
 			}
 			else if (pane->createPolicy() == CCreatePane::REPLACE_ACTIVE_OBJECT)
 			{
