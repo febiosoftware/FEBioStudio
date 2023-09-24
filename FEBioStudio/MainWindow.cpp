@@ -2994,7 +2994,7 @@ void CMainWindow::onImportMaterialsFromModel(CModelDocument* srcDoc)
 				FSMaterial* pmsrc = gm->GetMaterialProperties();
 				FSMaterial* pmnew = dynamic_cast<FSMaterial*>(FEBio::CloneModelComponent(pmsrc, dstfem));
 				GMaterial* newMat = new GMaterial(pmnew);
-				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetName());
+				doc->DoCommand(new CCmdAddMaterial(dstfem, newMat), newMat->GetNameAndType());
 				UpdateModel(newMat);
 				return;
 			}

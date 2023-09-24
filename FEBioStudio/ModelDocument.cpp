@@ -277,7 +277,7 @@ void CModelDocument::DeleteObject(FSObject* po)
 			return;
 		}
 
-		DoCommand(new CCmdDeleteGObject(GetGModel(), obj));
+		DoCommand(new CCmdDeleteGObject(GetGModel(), obj), obj->GetName());
 	}
 	else if (po->GetParent())
 	{
@@ -297,10 +297,10 @@ void CModelDocument::DeleteObject(FSObject* po)
 			if (plc->GetReferenceCount() > 0)
 				QMessageBox::warning(m_wnd, "FEBio Studio", "This load controller cannot be deleted since other model components are using it.");
 			else
-				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		}
 		else if (dynamic_cast<FSModelComponent*>(po))
-			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)), po->GetName());
 		else
 			DoCommand(new CCmdDeleteFSObject(po));
 	}
@@ -1040,5 +1040,5 @@ bool CModelDocument::ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfac
 	else cmd = new CCmdChangeFESurfaceMesh(po, newMesh);
 
 	// swap the meshes
-	return DoCommand(cmd, false);
+	return DoCommand(cmd, po->GetName(), false);
 }

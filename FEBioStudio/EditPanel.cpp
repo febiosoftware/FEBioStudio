@@ -268,10 +268,10 @@ void CEditPanel::on_apply_clicked(bool b)
 	}
 	else
 	{
-		CCmdGroup* cmd = new CCmdGroup("Change mesh");
+		CCmdGroup* cmd = new CCmdGroup("Remove mesh");
 		cmd->AddCommand(new CCmdChangeFEMesh(activeObject, nullptr));
 		cmd->AddCommand(new CCmdChangeObjectParams(activeObject));
-		GetDocument()->DoCommand(cmd);
+		GetDocument()->DoCommand(cmd, activeObject->GetName());
 	}
 
 	// clear any highlights
@@ -337,7 +337,7 @@ void CEditPanel::updateObjectPosition()
 	Transform t = po->GetTransform();
 	t.SetPosition(r);
 
-	pdoc->DoCommand(new CCmdTransformObject(po, t));
+	pdoc->DoCommand(new CCmdTransformObject(po, t), po->GetName());
 	
 	GetMainWindow()->RedrawGL();
 }

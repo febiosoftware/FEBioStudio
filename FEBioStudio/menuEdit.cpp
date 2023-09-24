@@ -193,19 +193,19 @@ void CMainWindow::on_actionClearSelection_triggered()
 		{
 			switch (nsel)
 			{
-			case SELECT_OBJECT: doc->DoCommand(new CCmdSelectObject(mdl, 0, false)); break;
-			case SELECT_PART: doc->DoCommand(new CCmdSelectPart(mdl, 0, 0, false)); break;
-			case SELECT_FACE: doc->DoCommand(new CCmdSelectSurface(mdl, 0, 0, false)); break;
-			case SELECT_EDGE: doc->DoCommand(new CCmdSelectEdge(mdl, 0, 0, false)); break;
-			case SELECT_NODE: doc->DoCommand(new CCmdSelectNode(mdl, 0, 0, false)); break;
-			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false)); break;
+			case SELECT_OBJECT  : doc->DoCommand(new CCmdSelectObject  (mdl, 0,    false), "<empty>"); break;
+			case SELECT_PART    : doc->DoCommand(new CCmdSelectPart    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_FACE    : doc->DoCommand(new CCmdSelectSurface (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_EDGE    : doc->DoCommand(new CCmdSelectEdge    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_NODE    : doc->DoCommand(new CCmdSelectNode    (mdl, 0, 0, false), "<empty>"); break;
+			case SELECT_DISCRETE: doc->DoCommand(new CCmdSelectDiscrete(mdl, 0, 0, false), "<empty>"); break;
 			}
 		}
 		break;
-		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, 0, 0, false)); break;
-		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pmb, 0, 0, false)); break;
-		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pml, 0, 0, false)); break;
-		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pml, 0, 0, false)); break;
+		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm , 0, 0, false), "<empty>"); break;
+		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces   (pmb, 0, 0, false), "<empty>"); break;
+		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges (pml, 0, 0, false), "<empty>"); break;
+		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes (pml, 0, 0, false), "<empty>"); break;
 		}
 
 		Update();
@@ -354,10 +354,10 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 			if (po == 0) return;
 
 			GMeshObject* pgo = dynamic_cast<GMeshObject*>(po);
-			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo, doc->GetItemMode()));
+			if (pgo && pgo->GetFEMesh()) doc->DoCommand(new CCmdDeleteFESelection(pgo, doc->GetItemMode()), pgo->GetName());
 
 			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
-			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()));
+			if (pso && pso->GetSurfaceMesh()) doc->DoCommand(new CCmdDeleteFESurfaceSelection(pso, doc->GetItemMode()), pso->GetName());
 
 			GPrimitive* pp = dynamic_cast<GPrimitive*>(po);
 			if (pp)
@@ -798,7 +798,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddPart(po, pg));
+				doc->DoCommand(new CCmdAddPart(po, pg), pg->GetName());
 				++nparts;
 				UpdateModel(pg);
 			}
@@ -813,7 +813,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddSurface(po, pg));
+				doc->DoCommand(new CCmdAddSurface(po, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -828,7 +828,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg));
+				doc->DoCommand(new CCmdAddFEEdgeSet(po, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -843,7 +843,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			if (pg)
 			{
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddNodeSet(po, pg));
+				doc->DoCommand(new CCmdAddNodeSet(po, pg), pg->GetName());
 				++nnodes;
 				UpdateModel(pg);
 			}
@@ -861,7 +861,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GPartList* pg = new GPartList(mdl, dynamic_cast<GPartSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGPartGroup(mdl, pg), pg->GetName());
 				++nparts;
 				UpdateModel(pg);
 			}
@@ -870,7 +870,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GFaceList* pg = new GFaceList(mdl, dynamic_cast<GFaceSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGFaceGroup(mdl, pg), pg->GetName());
 				++nsurfs;
 				UpdateModel(pg);
 			}
@@ -879,7 +879,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GEdgeList* pg = new GEdgeList(mdl, dynamic_cast<GEdgeSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGEdgeGroup(mdl, pg), pg->GetName());
 				++nedges;
 				UpdateModel(pg);
 			}
@@ -888,7 +888,7 @@ void CMainWindow::on_actionNameSelection_triggered()
 			{
 				GNodeList* pg = new GNodeList(mdl, dynamic_cast<GNodeSelection*>(psel));
 				pg->SetName(szname);
-				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg));
+				doc->DoCommand(new CCmdAddGNodeGroup(mdl, pg), pg->GetName());
 				++nnodes;
 				UpdateModel(pg);
 			}
@@ -1263,7 +1263,7 @@ void CMainWindow::on_actionDetach_triggered()
 		newObject->SetName(newName);
 
 		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject));
+		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
 		UpdateModel(newObject, true);
 	}
@@ -1296,7 +1296,7 @@ void CMainWindow::on_actionExtract_triggered()
 		newObject->SetName(newName);
 
 		// add it to the pile
-		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject));
+		doc->DoCommand(new CCmdAddObject(doc->GetGModel(), newObject), newObject->GetNameAndType());
 
 		UpdateModel(newObject, true);
 	}

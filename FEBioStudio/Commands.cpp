@@ -2257,7 +2257,7 @@ void CCmdUnselectNodes::UnExecute()
 }
 
 //////////////////////////////////////////////////////////////////////
-// CCmdAssignPartMaterial
+// CCmdAssignPartMaterial (TODO: This is not used anymore)
 //////////////////////////////////////////////////////////////////////
 
 CCmdAssignPartMaterial::CCmdAssignPartMaterial(GModel* model, vector<int> npart, int nmat) : CCommand("Assign material")
@@ -2300,7 +2300,7 @@ void CCmdAssignPartMaterial::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdAssignObjectMaterial
+// CCmdAssignObjectMaterial (TODO: This is not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdAssignObjectMaterial::CCmdAssignObjectMaterial(GObject* po, int mat) : CCommand("Assign material")
@@ -2932,7 +2932,7 @@ void CCmdUnhideAll::UnExecute()
 }
 
 //=============================================================================
-// CCmdApplyFEModifier
+// CCmdApplyFEModifier (TODO: not used anymore?)
 //-----------------------------------------------------------------------------
 
 CCmdApplyFEModifier::CCmdApplyFEModifier(FEModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
@@ -3005,7 +3005,7 @@ void CCmdApplyFEModifier::UnExecute()
 
 
 //=============================================================================
-// CCmdApplySurfaceModifier
+// CCmdApplySurfaceModifier (TODO: not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdApplySurfaceModifier::CCmdApplySurfaceModifier(FESurfaceModifier* pmod, GObject* po, FSGroup* selection) : CCommand(pmod->GetName())
@@ -3169,7 +3169,7 @@ void CCmdChangeView::UnExecute()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCmdInvertElements
+// CCmdInvertElements (TODO: not used anymore)
 ///////////////////////////////////////////////////////////////////////////////
 
 CCmdInvertElements::CCmdInvertElements(GMeshObject* po) : CCommand("Invert")
@@ -3217,7 +3217,7 @@ void CCmdChangeObjectParams::UnExecute()
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CCmdChangeMesherParams
+// CCmdChangeMesherParams (TODO: not used anymore)
 ///////////////////////////////////////////////////////////////////////////////
 
 CCmdChangeMesherParams::CCmdChangeMesherParams(GObject *po) : CCommand("Change meshing parameters")
@@ -3284,7 +3284,7 @@ void CCmdSwapObjects::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdConvertToMultiBlock
+// CCmdConvertToMultiBlock (TODO: not used?)
 //-----------------------------------------------------------------------------
 
 CCmdConvertToMultiBlock::CCmdConvertToMultiBlock(GModel* model, GObject* po) : CCommand("Convert")
@@ -3336,7 +3336,7 @@ void CCmdConvertToMultiBlock::UnExecute()
 }
 
 //-----------------------------------------------------------------------------
-// CCmdAddModifier
+// CCmdAddModifier (TODO: not used anymore)
 //-----------------------------------------------------------------------------
 
 CCmdAddModifier::CCmdAddModifier(GModifiedObject* po, GModifier* pm) : CCommand("Add modifier")

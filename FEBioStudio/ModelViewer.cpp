@@ -983,7 +983,7 @@ void CModelViewer::OnSelectPartElements()
 	doc->SetItemMode(ITEM_ELEM);
 
 	// make sure this object is selected first
-	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+	doc->DoCommand(new CCmdSelectObject(&m, po, false), po->GetName());
 
 	// now, select the elements
 	int lid = pg->GetLocalID();
@@ -1021,7 +1021,7 @@ void CModelViewer::OnSelectSurfaceFaces()
 	doc->SetItemMode(ITEM_FACE);
 
 	// make sure this object is selected first
-	doc->DoCommand(new CCmdSelectObject(&m, po, false));
+	doc->DoCommand(new CCmdSelectObject(&m, po, false), po->GetName());
 
 	// now, select the faces
 	int lid = pf->GetLocalID();
@@ -1150,7 +1150,7 @@ void CModelViewer::OnCopyMaterial()
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2), pmat2->GetName());
+	doc->DoCommand(new CCmdAddMaterial(doc->GetFSModel(), pmat2), pmat2->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1269,7 +1269,7 @@ void CModelViewer::OnCopyInterface()
 
 	// add the interface to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddInterface(step, piCopy), piCopy->GetName());
+	pdoc->DoCommand(new CCmdAddInterface(step, piCopy), piCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1294,7 +1294,7 @@ void CModelViewer::OnCopyBC()
 
 	// add the bc to the doc
 	FSStep* step = fem->GetStep(pbc->GetStep());
-	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy), pbcCopy->GetName());
+	pdoc->DoCommand(new CCmdAddBC(step, pbcCopy), pbcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1319,7 +1319,7 @@ void CModelViewer::OnCopyIC()
 
 	// add the ic to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
-	pdoc->DoCommand(new CCmdAddIC(step, picCopy), picCopy->GetName());
+	pdoc->DoCommand(new CCmdAddIC(step, picCopy), picCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1344,7 +1344,7 @@ void CModelViewer::OnCopyRigidConnector()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy), pcCopy->GetName());
+	pdoc->DoCommand(new CCmdAddRigidConnector(step, pcCopy), pcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1369,7 +1369,7 @@ void CModelViewer::OnCopyConstraint()
 
 	// add the constraint to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
-	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy), pcCopy->GetName());
+	pdoc->DoCommand(new CCmdAddConstraint(step, pcCopy), pcCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1394,7 +1394,7 @@ void CModelViewer::OnCopyLoad()
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pl->GetStep());
-	pdoc->DoCommand(new CCmdAddLoad(step, plCopy));
+	pdoc->DoCommand(new CCmdAddLoad(step, plCopy), plCopy->GetNameAndType());
 
 	// update the model viewer
 	Update();
@@ -1494,7 +1494,11 @@ void CModelViewer::OnStepMoveUp()
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n > 1)
 	{
-		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n - 1)));
+		FSStep* step0 = ps;
+		FSStep* step1 = fem->GetStep(n - 1);
+
+		string msg = step0->GetName() + string(" <--> ") + step1->GetName();
+		pdoc->DoCommand(new CCmdSwapSteps(fem, step0, step1), msg);
 		Update();
 		Select(ps);
 	}
@@ -1511,7 +1515,11 @@ void CModelViewer::OnStepMoveDown()
 	int n = fem->GetStepIndex(ps); assert(n >= 1);
 	if (n < fem->Steps() - 1)
 	{
-		pdoc->DoCommand(new CCmdSwapSteps(fem, ps, fem->GetStep(n + 1)));
+		FSStep* step0 = ps;
+		FSStep* step1 = fem->GetStep(n + 1);
+
+		string msg = step0->GetName() + string(" <--> ") + step1->GetName();
+		pdoc->DoCommand(new CCmdSwapSteps(fem, step0, step1), msg);
 		Update();
 		Select(ps);
 	}

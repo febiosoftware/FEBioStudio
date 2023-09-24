@@ -395,6 +395,7 @@ void CMeshPanel::on_apply_clicked(bool b)
 			QString error = QString("Meshing Failed:\n") + errMsg;
 			QMessageBox::critical(this, "Meshing", error);
 		}
+		else doc->AppendChangeLog(QString("Object \"%1\" meshed").arg(QString::fromStdString(activeObject->GetName())));
 
 		Update();
 		CMainWindow* w = GetMainWindow();
