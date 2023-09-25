@@ -61,6 +61,7 @@ private slots:
 	void on_apply_clicked(bool b);
 	void on_apply2_clicked(bool b);
 	void on_menu_triggered(QAction* pa);
+	void on_form_dataChanged(bool itemModified, int index);
 
 private:
 	int					m_nid;	// current button selected

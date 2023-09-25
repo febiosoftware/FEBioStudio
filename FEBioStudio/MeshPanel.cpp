@@ -551,3 +551,23 @@ void CMeshPanel::on_menu_triggered(QAction* pa)
 	Update();
 	GetMainWindow()->Update(this, true);
 }
+
+void CMeshPanel::on_form_dataChanged(bool itemModified, int index)
+{
+	CPropertyList* pl = ui->form->getPropertyList();
+	if (pl == nullptr) return;
+	if ((index >= 0) && (index < pl->Properties()))
+	{
+		CProperty& p = pl->Property(index);
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (doc)
+		{
+			GObject* poa = doc->GetActiveObject(); assert(poa);
+			if (poa == nullptr) return;
+
+			QVariant v = pl->GetPropertyValue(index);
+			QString msg = QString("Mesher parameter %1 changed to %2 (%3)").arg(p.name).arg(v.toString()).arg(QString::fromStdString(poa->GetName()));
+			doc->AppendChangeLog(msg);
+		}
+	}
+}
