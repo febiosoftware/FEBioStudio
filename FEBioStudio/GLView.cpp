@@ -383,6 +383,7 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_psubtitle = nullptr;
 	m_ptriad = nullptr;
 	m_pframe = nullptr;
+	m_legend = nullptr;
 
 	m_video       = nullptr;
 	m_videoMode   = VIDEO_STOPPED;
@@ -444,14 +445,15 @@ void CGLView::changeViewMode(View_Mode vm)
 	}
 }
 
-void CGLView::SetColorMap(Post::CColorMap& map)
+void CGLView::SetColorMap(unsigned int n)
 {
-	m_colorMap = map;
+	m_colorMap.ColorMap().SetRange(0.f, 1.f);
+	m_colorMap.SetColorMap(n);
 }
 
 Post::CColorMap& CGLView::GetColorMap()
 {
-	return m_colorMap;
+	return m_colorMap.ColorMap();
 }
 
 void CGLView::mousePressEvent(QMouseEvent* ev)
@@ -1295,6 +1297,10 @@ void CGLView::initializeGL()
 		m_pframe->align(GLW_ALIGN_HCENTER | GLW_ALIGN_VCENTER);
 		m_pframe->hide();
 		m_pframe->set_layer(0); // permanent widget
+
+		m_Widget->AddWidget(m_legend = new GLLegendBar(&m_colorMap, 0, 0, 120, 600), 0);
+		m_legend->align(GLW_ALIGN_RIGHT | GLW_ALIGN_VCENTER);
+		m_legend->hide();
 	}
 
 	const char* szv = (const char*) glGetString(GL_VERSION);
@@ -1621,18 +1627,49 @@ void CGLView::paintGL()
 			FSModel* ps = mdoc->GetFSModel();
 			GModel& model = ps->GetModel();
 
+			if (m_ptitle) m_ptitle->hide();
+			if (m_psubtitle) m_psubtitle->hide();
+
 			painter.setPen(QPen(QColor::fromRgb(164, 164, 164)));
 			int activeLayer = model.GetActiveMeshLayer();
 			const std::string& s = model.GetMeshLayerName(activeLayer);
 			painter.drawText(0, 15, QString("  Mesh Layer > ") + QString::fromStdString(s));
 			if (m_ptriad) m_Widget->DrawWidget(m_ptriad, &painter);
 			if (m_pframe && m_pframe->visible()) m_Widget->DrawWidget(m_pframe, &painter);
+
+			if (m_legend)
+			{
+				if (view.m_bcontour)
+				{
+					GObject* po = mdoc->GetActiveObject();
+					FSMesh* pm = (po ? po->GetFEMesh() : nullptr);
+					if (pm)
+					{
+						Mesh_Data& data = pm->GetMeshData();
+						double vmin, vmax;
+						data.GetValueRange(vmin, vmax);
+						if (vmin == vmax) vmax++;
+						m_legend->SetRange((float)vmin, (float)vmax);
+						m_legend->show();
+						m_Widget->DrawWidget(m_legend, &painter);
+					}
+				}
+				else m_legend->hide();
+			}
 		}
 	}
 	else
 	{
 		if (postDoc->IsValid() && m_Widget)
 		{
+			// make sure the model legend bar is hidden
+			m_legend->hide();
+
+			// make sure the titles are visible
+			if (m_ptitle) m_ptitle->show();
+			if (m_psubtitle) m_psubtitle->show();
+
+			// draw the other widgets
 			int layer = postDoc->GetGLModel()->m_layer;
 			m_Widget->SetActiveLayer(layer);
 			m_Widget->DrawWidgets(&painter);
@@ -3427,6 +3464,8 @@ GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 
 	GMesh* planeCut = new GMesh;
 
+	Post::CColorMap& colormap = GetColorMap();
+
 	for (int i = 0; i < mdl.Objects(); ++i)
 	{
 		GObject* po = mdl.Object(i);
@@ -3443,7 +3482,7 @@ GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 			if ((po == poa) && (vs.m_bcontour))
 			{
 				showContour = (vs.m_bcontour && data.IsValid());
-				if (showContour) { data.GetValueRange(vmin, vmax); m_colorMap.SetRange((float)vmin, (float)vmax); }
+				if (showContour) { data.GetValueRange(vmin, vmax); colormap.SetRange((float)vmin, (float)vmax); }
 			}
 
 			// repeat over all elements
@@ -3507,7 +3546,7 @@ GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 						for (int k = 0; k < 8; ++k)
 						{
 							if (data.GetElementDataTag(i) > 0)
-								ec[k] = m_colorMap.map(data.GetElementValue(i, nt[k]));
+								ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
 							else
 								ec[k] = GLColor(212, 212, 212);
 						}

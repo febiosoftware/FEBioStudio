@@ -48,7 +48,7 @@ void CMeshInspector::Update(bool reset)
 	if (reset == false)
 	{
 		if (ui->m_po != pa) reset = true;
-		else
+		else if (ui->m_po)
 		{
 			FSMeshBase* pm = ui->m_po->GetFEMesh();
 			if (pm == nullptr)
@@ -83,7 +83,7 @@ void CMeshInspector::showEvent(QShowEvent* ev)
 	ui->col->setCurrentIndex(ui->m_map);
 	ui->col->blockSignals(false);
 
-	m_wnd->GetGLView()->SetColorMap(Post::ColorMapManager::GetColorMap(ui->m_map));
+	m_wnd->GetGLView()->SetColorMap(ui->m_map);
 	m_wnd->GetGLView()->ShowMeshData(true);
 	m_wnd->RedrawGL();
 }
@@ -106,7 +106,7 @@ void CMeshInspector::on_var_currentIndexChanged(int n)
 
 void CMeshInspector::on_col_currentIndexChanged(int n)
 {
-	m_wnd->GetGLView()->SetColorMap(Post::ColorMapManager::GetColorMap(n));
+	m_wnd->GetGLView()->SetColorMap(n);
 	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 	m_wnd->RedrawGL();
 }
