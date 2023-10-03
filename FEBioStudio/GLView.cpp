@@ -447,7 +447,6 @@ void CGLView::changeViewMode(View_Mode vm)
 
 void CGLView::SetColorMap(unsigned int n)
 {
-	m_colorMap.ColorMap().SetRange(0.f, 1.f);
 	m_colorMap.SetColorMap(n);
 }
 

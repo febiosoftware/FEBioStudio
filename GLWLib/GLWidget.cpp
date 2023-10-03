@@ -365,6 +365,16 @@ void GLLegendBar::SetDivisions(int n)
 	m_pMap->SetDivisions(n);
 }
 
+bool GLLegendBar::SmoothTexture() const
+{
+	return m_pMap->GetSmooth();
+}
+
+void GLLegendBar::SetSmoothTexture(bool b)
+{
+	m_pMap->SetSmooth(b);
+}
+
 void GLLegendBar::draw_bg(int x0, int y0, int x1, int y1, QPainter* painter)
 {
 	QColor c1 = toQColor(m_bgFillColor[0]);

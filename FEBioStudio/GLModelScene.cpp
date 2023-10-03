@@ -2265,7 +2265,8 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 		double vmin, vmax;
 		data.GetValueRange(vmin, vmax);
 
-		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		// Create a copy so we can change the range
+		Post::CColorMap colorMap = rc.m_view->GetColorMap();
 		colorMap.SetRange((float)vmin, (float)vmax);
 
 		SetMatProps(0);
@@ -2489,7 +2490,8 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		double vmin, vmax;
 		data.GetValueRange(vmin, vmax);
 
-		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		// Create a copy so we can change the range
+		Post::CColorMap colorMap = rc.m_view->GetColorMap();
 		colorMap.SetRange((float)vmin, (float)vmax);
 		
 		glEnable(GL_COLOR_MATERIAL);
