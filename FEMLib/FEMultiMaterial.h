@@ -1,5 +1,5 @@
 #pragma once
-#include <FEMLib/FEMaterial.h>
+#include "FEMaterial.h"
 #include <vector>
 //using namespace std;
 
@@ -827,6 +827,18 @@ public:
     
 	DECLARE_REGISTERED(FSMultiphasicMaterial);
 };
+
+//-----------------------------------------------------------------------------
+// mass action chemical reaction
+class FSMassActionReaction : public FSReactionMaterial
+{
+public:
+	FSMassActionReaction(FSModel* fem);
+
+protected:
+	DECLARE_REGISTERED(FSMassActionReaction);
+};
+
 
 //-----------------------------------------------------------------------------
 // mass action forward chemical reaction

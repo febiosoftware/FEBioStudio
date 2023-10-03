@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEAnalysisStep.h"
-#include <MeshTools/FEModel.h>
-#include <FEMLib/FERigidConstraint.h>
-#include <FEMLib/FERigidLoad.h>
-#include <MeshTools/FEProject.h>
+#include "FSModel.h"
+#include "FERigidConstraint.h"
+#include "FERigidLoad.h"
+#include "FSProject.h"
 #include "FEInitialCondition.h"
 #include "FESurfaceLoad.h"
 #include "FEMKernel.h"
@@ -276,6 +276,12 @@ int FSStep::RemoveInterface(FSInterface* pi)
 void FSStep::RemoveAllInterfaces()
 {
 	imp->m_Int.Clear();
+}
+
+//-----------------------------------------------------------------------------
+void FSStep::ReplaceInterface(FSInterface* pold, FSInterface* pnew)
+{
+	imp->m_Int.Replace(pold, pnew);
 }
 
 //-----------------------------------------------------------------------------
@@ -582,13 +588,18 @@ void FSStep::AddComponent(FSStepComponent* pc)
 {
 	// remove it from the old step
 	pc->SetStep(GetID());
-	if      MoveComponent(FSBoundaryCondition, AddBC);
-	else if MoveComponent(FSLoad             , AddLoad);
-	else if MoveComponent(FSInterface        , AddInterface);
-	else if MoveComponent(FSInitialCondition , AddIC);
-	else if MoveComponent(FSRigidConstraint  , AddRC);
-	else if MoveComponent(FSRigidConnector   , AddRigidConnector);
-	else if MoveComponent(FSModelConstraint  , AddConstraint);
+	if      MoveComponent(FSBoundaryCondition  , AddBC);
+	else if MoveComponent(FSLoad               , AddLoad);
+	else if MoveComponent(FSInitialCondition   , AddIC);
+	else if MoveComponent(FSInterface          , AddInterface);
+	else if MoveComponent(FSModelConstraint    , AddConstraint);
+	else if MoveComponent(FSRigidConstraint    , AddRC);
+	else if MoveComponent(FSRigidLoad          , AddRigidLoad);
+	else if MoveComponent(FSRigidBC            , AddRigidBC);
+	else if MoveComponent(FSRigidIC            , AddRigidIC);
+	else if MoveComponent(FSLinearConstraintSet, AddLinearConstraint);
+	else if MoveComponent(FSRigidConnector     , AddRigidConnector);
+	else if MoveComponent(FSMeshAdaptor        , AddMeshAdaptor);
 	else assert(false);
 }
 
@@ -598,13 +609,18 @@ void FSStep::AddComponent(FSStepComponent* pc)
 void FSStep::RemoveComponent(FSStepComponent* pc)
 {
 	assert(pc->GetStep() == GetID());
-	if      TryRemoveComponent(FSBoundaryCondition, m_BC);
-	else if TryRemoveComponent(FSLoad             , m_FC);
-	else if TryRemoveComponent(FSInitialCondition , m_IC);
-	else if TryRemoveComponent(FSInterface        , m_Int);
-	else if TryRemoveComponent(FSModelConstraint  , m_NLC);
-	else if TryRemoveComponent(FSRigidConstraint  , m_RC);
-	else if TryRemoveComponent(FSRigidConnector   , m_CN);
+	if      TryRemoveComponent(FSBoundaryCondition  , m_BC);
+	else if TryRemoveComponent(FSLoad               , m_FC);
+	else if TryRemoveComponent(FSInitialCondition   , m_IC);
+	else if TryRemoveComponent(FSInterface          , m_Int);
+	else if TryRemoveComponent(FSModelConstraint    , m_NLC);
+	else if TryRemoveComponent(FSRigidConstraint    , m_RC);
+	else if TryRemoveComponent(FSRigidLoad          , m_RL);
+	else if TryRemoveComponent(FSRigidBC            , m_RBC);
+	else if TryRemoveComponent(FSRigidIC            , m_RIC);
+	else if TryRemoveComponent(FSLinearConstraintSet, m_LC);
+	else if TryRemoveComponent(FSRigidConnector     , m_CN);
+	else if TryRemoveComponent(FSMeshAdaptor        , m_MA);
 	else assert(false);
 }
 
@@ -994,6 +1010,7 @@ void FSStep::Load(IArchive &ar)
 					}
 
 					pb->Load(ar);
+					pb->SetStep(GetID());
 
 					if (ar.Version() < 0x0001000F)
 					{
@@ -1069,6 +1086,7 @@ void FSStep::Load(IArchive &ar)
 					pl->Load(ar);
 
 					// add BC
+					pl->SetStep(GetID());
 					AddLoad(pl);
 
 					ar.CloseChunk();
@@ -1088,6 +1106,7 @@ void FSStep::Load(IArchive &ar)
 					if (pi)
 					{
 						pi->Load(ar);
+						pi->SetStep(GetID());
 						AddIC(pi);
 					}
 
@@ -1116,6 +1135,7 @@ void FSStep::Load(IArchive &ar)
 						if (pc)
 						{
 							pc->Load(ar);
+							pc->SetStep(GetID());
 							AddConstraint(pc);
 						}
 						else throw ReadError("error parsing unknown CID_INTERFACE_SECTION FSStep::Load");
@@ -1126,6 +1146,7 @@ void FSStep::Load(IArchive &ar)
 						pi->Load(ar);
 
 						// add interface to step
+						pi->SetStep(GetID());
 						AddInterface(pi);
 					}
 
@@ -1152,6 +1173,7 @@ void FSStep::Load(IArchive &ar)
 					pmc->Load(ar);
 
 					// add constraint to step
+					pmc->SetStep(GetID());
 					AddConstraint(pmc);
 				}
 
@@ -1175,7 +1197,11 @@ void FSStep::Load(IArchive &ar)
 						vector<FSRigidConstraint*> rc = convertOldToNewRigidConstraint(fem, rc_old);
 
 						// add rigid constraints
-						for (int i=0; i<(int) rc.size(); ++i) AddRC(rc[i]);
+						for (int i = 0; i < (int)rc.size(); ++i)
+						{
+							rc[i]->SetStep(GetID());
+							AddRC(rc[i]);
+						}
 					}
 					else
 					{
@@ -1185,6 +1211,7 @@ void FSStep::Load(IArchive &ar)
 						if (rc)
 						{
 							rc->Load(ar);
+							rc->SetStep(GetID());
 							AddRC(rc);
 						}
 					}
@@ -1206,6 +1233,7 @@ void FSStep::Load(IArchive &ar)
 					if (pi)
 					{
 						pi->Load(ar);
+						pi->SetStep(GetID());
 						AddRigidConnector(pi);
 					}
                     
@@ -1225,6 +1253,7 @@ void FSStep::Load(IArchive &ar)
 					if (pl)
 					{
 						pl->Load(ar);
+						pl->SetStep(GetID());
 						AddRigidLoad(pl);
 					}
                     
@@ -1244,6 +1273,7 @@ void FSStep::Load(IArchive &ar)
 				if (pc)
 				{
 					pc->Load(ar);
+					pc->SetStep(GetID());
 					AddRigidBC(pc);
 				}
 
@@ -1263,6 +1293,7 @@ void FSStep::Load(IArchive &ar)
 				if (ic)
 				{
 					ic->Load(ar);
+					ic->SetStep(GetID());
 					AddRigidIC(ic);
 				}
 
@@ -1281,6 +1312,7 @@ void FSStep::Load(IArchive &ar)
 				if (pma)
 				{
 					pma->Load(ar);
+					pma->SetStep(GetID());
 					AddMeshAdaptor(pma);
 				}
 
@@ -1375,6 +1407,12 @@ void STEP_SETTINGS::Defaults()
 	// output optios
 	plot_level = 1; // Major iterations
 	plot_stride = 1;
+	plot_zero = false;
+	plot_range[0] = 0;
+	plot_range[1] = -1;
+	output_level = 1; // = FE_Output_Level::FE_OUTPUT_MAJOR_ITRS
+
+	adapter_re_solve = true;
 
 	// constants
 //	Rc = 0; //8.314e-6;
@@ -1736,7 +1774,49 @@ FSPolarFluidAnalysis::FSPolarFluidAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_
     AddDoubleParam(0.001, "ftol", "Fluid dilatation tolerance");
     AddDoubleParam(0.001, "gtol", "Angular fluid velocity tolerance");
     AddDoubleParam(0.01 , "etol", "Energy tolerance");
-    AddDoubleParam(0    , "rtol", "Residual tolerance");
+    AddDoubleParam(0.001, "rtol", "Residual tolerance");
+    AddDoubleParam(0.9  , "lstol", "Line search tolerance");
+    AddDoubleParam(1e-20, "min_residual", "Minumum residual");
+    AddDoubleParam(1e+20, "max_residual", "Maximum residual");
+    AddDoubleParam(0    , "rhoi", "Spectral radius");
+    AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
+    AddChoiceParam(1    , "equation_scheme", "Equation Scheme");
+    
+    m_ops.nanalysis = 1; // set dynamic analysis
+    m_ops.nmatfmt = 0;   // set non-symmetric flag
+}
+
+//-----------------------------------------------------------------------------
+FSFluidSolutesAnalysis::FSFluidSolutesAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_FLUID_SOLUTES)
+{
+    SetTypeString("Fluid-Solutes");
+    
+    AddDoubleParam(0.001, "vtol", "Fluid velocity tolerance");
+    AddDoubleParam(0.001, "ftol", "Fluid dilatation tolerance");
+    AddDoubleParam(0.01 , "ctol", "Solute concentration tolerance");
+    AddDoubleParam(0.01 , "etol", "Energy tolerance");
+    AddDoubleParam(0.001, "rtol", "Residual tolerance");
+    AddDoubleParam(0.9  , "lstol", "Line search tolerance");
+    AddDoubleParam(1e-20, "min_residual", "Minumum residual");
+    AddDoubleParam(1e+20, "max_residual", "Maximum residual");
+    AddDoubleParam(0    , "rhoi", "Spectral radius");
+    AddChoiceParam(1    , "qnmethod", "Quasi-Newton method")->SetEnumNames("BFGS\0BROYDEN\0");
+    AddChoiceParam(1    , "equation_scheme", "Equation Scheme");
+    
+    m_ops.nanalysis = 1; // set dynamic analysis
+    m_ops.nmatfmt = 0;   // set non-symmetric flag
+}
+
+//-----------------------------------------------------------------------------
+FSThermoFluidAnalysis::FSThermoFluidAnalysis(FSModel* ps) : FSAnalysisStep(ps, FE_STEP_THERMO_FLUID)
+{
+    SetTypeString("Thermofluid");
+    
+    AddDoubleParam(0.001, "vtol", "Fluid velocity tolerance");
+    AddDoubleParam(0.001, "ftol", "Fluid dilatation tolerance");
+    AddDoubleParam(0.01 , "ttol", "Temperature tolerance");
+    AddDoubleParam(0.01 , "etol", "Energy tolerance");
+    AddDoubleParam(0.001, "rtol", "Residual tolerance");
     AddDoubleParam(0.9  , "lstol", "Line search tolerance");
     AddDoubleParam(1e-20, "min_residual", "Minumum residual");
     AddDoubleParam(1e+20, "max_residual", "Maximum residual");

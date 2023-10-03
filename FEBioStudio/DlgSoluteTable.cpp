@@ -143,7 +143,8 @@ void CDlgSoluteTable::on_addButton_clicked()
 		{
 			int NS = fem->Solutes();
 			char szname[64] = {0};
-			sprintf(szname, "solute%d", NS+1);
+            int max_len = sizeof szname;
+			snprintf(szname, max_len, "solute%d", NS+1);
 			fem->AddSolute(szname, 0, 1.0, 1.0);
 		}
 		break;
@@ -151,7 +152,8 @@ void CDlgSoluteTable::on_addButton_clicked()
 		{
 			int NS = fem->SBMs();
 			char szname[64] = {0};
-			sprintf(szname, "sbm%d", NS+1);
+            int max_len = sizeof szname;
+			snprintf(szname, max_len, "sbm%d", NS+1);
 			fem->AddSBM(szname, 0, 1.0, 1.0);
 		}
 		break;

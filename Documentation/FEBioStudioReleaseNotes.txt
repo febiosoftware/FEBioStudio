@@ -6,6 +6,370 @@
 
 ===========================================================================
 
+ R E L E A S E   2.3   8/30/2023
+
+===========================================================================
+
+New Features:
+* Added the "Surface normal" post datafield to the Standard datafields availabe on the Post\Data panel.
+* Added tool for removing isolated vertices. The tool can be accessed using the Fix Mesh tool on the Mesh panel. 
+* Added options to toggle rigid settings from the graphics view popup menu.
+* Added context menu option to model tree to remove all unused load controllers in the model.
+* Added context menu option to model tree to remove all unused named selections.
+* Implemented quad fill-hole algorithm for editable surfaces. This tool is available via the Fix Mesh tool on the Build\Edit panel. 
+* Added fsps files to recent file list on the Welcome page.
+* Added plot groups, which can be used to group plots together. A new plot group can be created from the menu Post\Add Group.
+* Added new Pixel Inspector tool, which allows users to see the actual image values when hovering over an image.
+* Added "triangle max dihedral angle" datafield to the Mesh Inspector for both editable surfaces and editable meshes.
+* Added highlighting for geometry nodes. Hovering over a node will make the node render in a different color. 
+* Added interactivity to planecut and point probe plots.
+* Added converter from penta6 to penta15. Use the convert tool on the Mesh panel to convert a mesh to a different element type. 
+* Implemented a brush selection tool (for selecting faces). Use Alt+scroll-wheel for adjusting the selection radius. 
+
+
+Improvements:
+* Added a less-detailed rendering mode and made some minor changes to the rendering of muscle paths.
+* Finished updating filters to work with all supported pixel types.
+* Modified vector plot so that face data is rendered at the face centers.
+* Changed some of the criteria for checking if a mesh can be deleted. A warning is shown when modifying a mesh could potentially invalidate named selections. 
+* Added warning message when re-running a job might overwrite existing results.
+* Tiff files can now be stored and read from the fs2 file. 
+* Added coloring mode based on element type. Right-click in the Graphics View, and select "Element Type" from the "Object color" option.
+* Added fs2 extension to list of recognized extensions in project file list.
+* Purging now also deletes all named selections.
+* Image model properties box now shows more information.
+* Added more options to project surface nodes in the ImageMap tool.
+* DICOM headers are now read for origin and spacing information.
+* Mesh data values will now ouput to the log when elements are selected.
+* Warning icons now appear as emblems on the base icon, instead of replace the base icon.
+* Updated all image and image visualization features to support 8 and 16 bit, signed and unsigned, single channel and RGB (3-channel) pixel types, and real 32 and 64 bit pixel types.
+* Node IDs are now stored when reading feb file.
+* Changed rendering of springs in the Post view so it behaves more like an actual spring.
+* Added support for reading global data from the xplt plot file. Global data can be visualized in a graph window.
+* Mesh inspector select option now also works for editable surfaces.
+* Editable surfaces now also show color maps when the mesh inspector is active.
+* Surfaces for surface properties are now selected using a dropdown, instead of a selection box.
+* Added option to specify the initial path of a musclepath in the post session file.
+* Added support to VTK export to output data for element selections.
+* ImageMap tool now works with parts as well as objects.
+* Added "Curve Probe" plot, which can track model data along a user-defined curve. Can calculate both instanteneous, as well as time-averaged data. 
+* Added support for reading discrete elements from lsdyna file.
+* Added support for writing and reading part lists from feb4 file.
+* Added support lsdyna keywors DEFINE_CURVE and SET_NODE_LIST_TITLE. Some minor changes to how keywords are processed.
+* Removed the "My Projects" category of the repository panel.
+* Added mm-g-s units to the list of supported unit systems.
+* Removed load controllers and named selections when purging a model. 
+
+
+Bug Fixes:
+* Fixed issue in lsdyna reader so that warnings from included files are also captured.
+* Fixed bug in rendering the plane of a planecut.
+* Fixed some issues with export and import of part lists to and from febio files.
+* Fixed potential crash in several plots related to z-sorting the faces before rendering.
+* Fixed potential division by zero issue when drawing legend bars.
+* Fixed bug in the internal algorithm RemoveIsolatedEdges() that is used by several other tools.
+* Fixed issue with export of nodal_loads where type attribute was not written.
+* Fixed crash caused by unintialized 3DImage when loading an FS2 without the image file.
+* Fixed issue with rendering selected faces when showing colormap data on surface meshes.
+* Fixed some issues that caused unnecessary updates of the mesh inspector.
+* Fixed incorrect gauss point coordinates for penta6 and penta15, which was the cause for incorrect element volume calculations for these elements.
+* Fixed crash when saving image data when original image was not available.
+* Fixed sporadic crash in creating springs.
+* Fixed issue with setting the active febio module when switching tabs.
+* Fixed issue with loading plugins without an active module.
+* Fixed some issues related to import of surface-to-surface map data generator from the feb4 input file.
+* Fixed issue with export of element data for parts that were split on export to the feb4 file.
+* Fixed issue with evaluating material axes for visualization.
+* Fixed some issues with the chemical reaction editor.
+* Fixed bug in STL ascii importer.
+* Fixed export of initial conditions for analysis steps.
+* Fixed issue with import of nike3d files.
+* Fixed crash caused by loading an fs2 with a loaded DICOM image that could not be found.
+* Fixed bug that prevented the My Projects category in the repository panel from appearing in the repo.
+* Repo panel now shows proper icon for fs2 files.
+* Fixed issues with importing older feb2 files.
+
+
+===========================================================================
+
+ R E L E A S E   2.2   6/20/2023
+
+===========================================================================
+
+New Features:
+* The febio config file is now read (optionally) when febio studio starts. As a consequene, standard plugins distributed by febio studio will be loaded automatically (FEBioHeat, FEBioChem).
+* Added a ply export to the post side.
+* Added some initial support for reading GMesh4 files.
+* Added dialog box that shows all the warnings in the model tree.
+
+Improvements:
+* Separated edit menu for build and post side so that only meaningfull menu options are shown (fixes issue #68)
+* Changed 2022 to 2023 in splash and about message.
+* Added context menu option to swap end-points of muscle path.
+* In muscle path plot, added color parameters for customizing colors of end points.
+* Added icon for muscle path plot.
+* Added export data context menu to muscle path plot.
+* Added support for processing additional ls-dyna keywords PARAMETER, DEFINE_CURVE_TITLE, and INCLUDE.
+* Modified LSDyna importer so that unrecognized keywords now produce warning.
+* Added warning when material properties read from the fs2 file cannot be found.
+* Added toolbar button to Graphics View toolbar for toggling light.
+* For RAW image geometry import, internal surfaces are not partitioned anymore.
+* Added some parallelization of some costly mesh processing functions.
+* Added checks that valid 3D image exists in image model.
+* ImageMap normalization now normalizes over max and min values in the map. Ensures that every map goes from 0 to 1
+* ImageMap tool now has option to average intensity over element.
+* ImageMapTool now uses a curve edit widget to define filter. Also now normalizes based on image min and max intensity values
+* Added support for float and double 3D images. Some UI improvements to RAW image import dialog.
+* Made all new data fields generated via the Filter tool exportable.
+* Added option to write vtk series file when saving to vtk files.
+* Added support to convert filter to change the data class. (Only support for CLASS_ELEM to CLASS_NODE implemented.)
+* Added filter to state panel that allows users to change the time values of all states.
+* Added additional support for converting formats in Filter tool on Post/Data panel.
+* Added support for extracting components from DATA_COMP element variables.
+* Parallelized the Warp Image filter.
+* Added support for serializing mesh data generators and surface selections.
+* Merge pull request #67 from modenaxe/master: fix misspell "contoller"
+* Rigid labels are now also shown on post side.
+* Show rigid body and show rigid joint settings now also work on post side.
+* Added splitter to options dialog box, which allows resizing of panels.
+* Added option to export only selected elements to VTK.
+* Added icons to named selections in model tree.
+
+Bug Fixes:
+* Fixed crash when opening file with FBS from Finder on macOS.
+* Fixed issues with rendering of mesh and edge lines of eroded elements. 
+* Lsdyna reader reports progress again.
+* Fixed issue with importing edges from feb4 files.
+* Fixed ply import for ply files that define additional vertex properties.
+* Fixed issue with unicode symbol in unit definition.
+* Fixed issue with pick dialog box not displaying for certain mesh selections.
+* Fixed issue with reading \r characters in abaqus file.
+* Fixed crash in CGLModelScene::RenderDiscrete when nodes don't have a id.
+* Fixed issue with picking selection of mesh data.
+* Fixed bug in adding log data in Edit Output dialog box.
+* Fixed bug in check whether an object's mesh can be deleted.
+* Fixed issue with loading linear solvers from feb files.
+* Fixed issue with re-evaluating the colormap after a reload.
+* Fixed issues with evaluating data on hex20 and hex27 elements.
+* Import Image\Tiff menu works again. 
+
+
+===========================================================================
+
+ R E L E A S E   2.1.2   4/20/2023
+
+===========================================================================
+
+* Fixed issues with saving meshing data to fs2 file.
+* Temporarily removed ability to assign parts to surface selections.
+* An issue was fixed issue with updating parts.
+* Tiff files are now read in by DICOM again. Fixed issues relating to file extentions in SaveAs dialog.
+* Fixed graphical bug in image slice view. Slices now render before volume.
+* Fixed bug in XMLDocument that caused crash while reading some feb files
+* Fixed issue with loading load curves from files.
+* Added support for ImageJ tiff images. Added support for xresolution and yresolution tags.
+* Fixed bug in rendering contours for Mesh Inspector.
+* Fixed minor issues with incorrect warnings in model tree.
+* Fixed bug in bounding box calculation for sitk images
+* Added support for exporting arrays to vtk as field data.
+* Added check for "time" header in vtk. (This is used by febio vtk output for communicating time step.)
+* Fixed issue with rendering colormap on beams.
+* Fixed issue with rendering fibers.
+* Added some checks before deleting objects.
+* Setting correct unit system when activating model.
+* Fixed issue with exporting part data.
+
+===========================================================================
+
+ R E L E A S E   2.1.1   3/30/2023
+
+===========================================================================
+
+* Fixed naming issue when assigning selections to contact.
+* Fixed bug in assigning selections to contact interfaces.
+* Fixed bug in void change material feature.
+* Added SelectNearPlane tool
+* Improved support for reading Abaqus assembly, part instances, node sets, element sets, and surfaces.
+
+===========================================================================
+
+ R E L E A S E   2.1   3/27/2023
+
+===========================================================================
+
+BUILD:
+* A big change in this version is that all model components that use selections (e.g. boundary conditions, loads, contacts, etc.) now use "named selections". When creating a boundary condition (or load, etc.) the current selection is converted to a named selection and added to the "Named selections" list in the model tree. In addition, users can now assign the same named selection to several model components. This can avoid duplicated named selections in the feb file format. 
+* The fs2 file structure has been modified in order to generate smaller file sizes and load models quicker. 
+* Mesh data maps can now be created and edited from within the UI. To add a new mesh data map, right-click on the MeshData item in the model tree and click Add. After adding a map, right-click on the map in the model tree and click Edit to edit the map. The map values can be edited directly or copy/pasted via the clipboard. 
+* The 3D image readers have been fixed. Some limited support for (embedded) ome tiffs is available via the File\Import image\Tiff menu. 
+* Fixed issue with assigning step components to the correct step when reading feb4 files.
+* Added support for new plot file features of febio 4.1.
+* Some improvements were made to rendering of lines and discrete elements.
+* Fixed issues with reading and rendering fibers defined via a map.
+* Fixed issues with import of element data assigned to domains, instead of user element sets.
+* Fixed bug in reading shell sections of fs2 files.
+* Fixed bugs with copying materials from other open models.
+* Fixed import materials from feb files.
+* Volume renderer now reports shader compilation errors to log.
+* Objects are now checked for dependencies before meshing. A warning message will appear if a meshed object has dependencies. 
+* Named selections show number of model components that use it. Added refresh button to model tree. Warning label only shown when there are warnings.
+* Added warning messages when users modified shared selections.
+* Fixed issue with loading (older) contact interface definitions.
+* Fixed crash when element data set has no name attribute.
+* Added some more coloring options for marching cubes (i.e. image isosurface). Implemented algorithm for picking an initial reference value.
+* Improved z-sorting for rendering transparent materials on post side.
+* Implemented change of units for global constants of reference temperature and pressure.
+* Added units to graph windows.
+* Added option to export marching cubes mesh to stl. Fixed winding issue of mesh generated by MC.
+* Fixed issues with reading and rendering multi-channel tiffs.
+* Fixed issue with showing math and plot edit when the property type has changed.
+* Wireframe rendering now shows object outline.
+* Fixed serialization of 1D-function properties.
+* Added check for ordinate name in math expression.
+* Implemented improved outline rendering in perspective projection.
+* Fixed some compatibility issues with volume renderer.
+* Added support for reading 16bit-3channel tiff files. Added some initial support for the ome DimensionOrder property.
+* Added some simple controls on the View settings panel for multichannel images.
+* Added better support for reading and visualizing 16bit tif.
+* Added mesh conversion from penta6 to tet4 elements.
+* Fixed bug in parsing name attribute of Solutes and SolidBoundMolecules in feb reader.
+* Fixed bug with reading name attribute of initial conditions in feb3 format.
+* Added error message when parameter cannot be found during copying.
+* Added check for invalid module when parsing Module section in feb files.
+* Some support for extracting ome-tiff meta-data, in particular the number of channels.
+* Fixed issue with reading fsm file that requires febioheat plugin.
+* Now extracting descriptions from tiff files. (Is added as a note to the image model.)
+* Image model is now named after image source.
+* Added clipping planes to volume renderer.
+* Now including image models in evaluating global bounding box.
+* Added option to replace a contact interface (will preserve selections and parameter values if possible.)
+* Added tet4 and tet10 option to Tube primitive.
+* Fixed issue with curve disappearing when point is deleted on curve editor.
+* Fixed issue with selections not automatically assigned to initial conditions.
+* Parallellized histogram update.
+* Added gamma correction parameter to view settings.
+* Added option to either create element continuous or element constant scalar data field.
+* Added support for exporting surface_data log variable to feb4 file.
+* Fixed bug and naming conventions when reading contact interfaces.
+* Rigid body glyphs are now rendered on part centers.
+* Fixed issue with region FE face selection.
+* Added direct links in help menu to febio user and theory manuals and febio studio manual.
+* Removed quotes around $(Filename) on default command line, which causes issues when running from local configurations.
+* Fixed bug with setting reactants in chemical reaction editor.
+* Fixed issue with initializing launch configurations.
+* Added support for reading FEBio discrete material.
+* Save now triggers Save As for feb and xplt files.
+* Changed welcome page background for default theme.
+* Implemented scale factors for units and a method to convert values between unit systems.
+* Now serializing properties for FEBio boundary conditions.
+* Fixed bug in edge flip. Handling special case of one selected edge separately in edge flipping.
+* Fixed crash when name attribute is missing from Elements section. Added warning when element set of log variable cannot be found.
+* Fixed some issues with creating chemical reactions.
+* Turned off beautification of parameter names.
+* Fixed issue that was clearing the DOFs when document becomes active.
+* Added error message when trying to import geometry without an active model.
+* Added support for reading load controllers from feb3 format.
+* Fixed crash when reading fl08 repo model, which still uses the old "const" body force.
+* Fixed buffer overrun in FSModel::GetVariableNames
+* Minor extension of AbaqusImport to allow space after last comma on a line.
+* Model variables are now recognized in math expressions of 1D functions.
+* Fixed issue with importing feb3 nonlinear springs defined via math expression.
+* Added support for import and export of user model variables.
+* Fixed import of "optimize_bw" flag.
+
+POST:
+* Added filter to post material panel.
+* Probes are now initially positioned at the center of the current selection.
+* Fixed issue with 2e order tets in volume flow plots. Added opacity strength parameter.
+* Fixed issue when user cannot select elements on post side if Edit panel is active on build side.
+* Fixed issue with "Show Legend" property of slice plot not working.
+* Reorganized postsession file writer and added support for custom viewpoints.
+* Added option to set time increments for graph window (only works for time-scatter plots).
+
+
+===========================================================================
+
+ R E L E A S E   2.0   1/5/2023
+
+===========================================================================
+
+* This release is a major overhaul of the code. One of the main goals was a better integration with FEBio. The results of this integration are: 
+ - New features in FEBio will be automatically available in FEBio Studio and FEBio Studio now supports FEBio features that previously were not available (e.g. advanced load controllers, mesh adaptors, mesh data, linear constraints, and more). 
+ - FEBio Studio can read FEBio plugins, so plugin developers can now setup their models directly within the UI. 
+ - Improved consistency between febio input file structure and febio studio model tree. 
+
+* Note that FEBio Studio 2 uses a different extension (*.fs2). Since FEBio Studio 2 can be installed alongside FEBio Studio 1, we opted to change the extension so that it is easier to distinguish new files from older files. FEBio Studio 2 continues to read the older fsm files. 
+
+* This version also has several new 3D image processing capabilities.
+ - Support for reading 3d images in several formats, including DICOM, TIFF, OME TIFF, RAW. 
+ - A basic image filtering pipeline was implemented. 
+ - A tool was added that can interpolate an image onto a mesh and generate mesh data. The mesh data can then be assigned to material parameters. 
+ - Improved volume rendering capabilities. 
+
+* Added new dialog for reporting bugs. (menu Help\Submit a bug report)
+
+
+BUILD: 
+* FEBio plugins can now be loaded using the menu FEBio\Manage FEBio plugins. 
+* Load controllers are now available and editable directly from the model tree. (Curve Editor window is still available)
+* Support was added for truss elements. 
+* Parameters in Properties pane on Model panel indicate whether they have load controller assigned. 
+* Added support for reading and writing edges to feb4 format.
+* Improved Abaqus file reader (Support was added or improved for keywords SURFACE, DSLOAD, AMPLITUDE, BOUNDARY, MATERIAL). 
+* A warning indicator was added to the model tree to indicate whether there are issues with the model. 
+* Added support for "smooth step" interpolation for point curves. 
+* Added button to logfile properties to edit the log variables.
+* Edge flipping can now also be applied to selection.
+* Added a Material Test tool, which allows users to generate stress-strain curves for the materials in their model. 
+* Mesh inspector was improved. 
+* Element formulations can now be chosen on the part properties. 
+* A tool was added that converts a sketch into a discrete element network. 
+* Files from repository panel can now be dragged and dropped on the main window to open them.
+* Added support for importing mesh selections from feb file.
+* When visualizing fibers, a new toolbox appears that allows users to customize the fiber rendering options. 
+* Added option to take cross product of generated vector field in fiber generator tool.
+* When running an FEBio model with the default configuration, the progress will be indicated in the main window title bar. 
+
+POST:
+* Line (beam, truss) elements can now be rendered as solid. 
+* Fixed issue with selecting plot type in graph window.
+* Added option to xplt reader to read only converged states.
+* Added state's status flag to Post State panel.
+* Implemented warp image filter that can apply an FE deformation to a 3D image. 
+* 3D images can now be saved to RAW format (right-click on image model and select save from context menu)
+* Fixed the Post\Add Displacement map menu. 
+* Improvements were made to post session file. 
+* Fixed issue with rendering data for penta elements.
+* Fixed issue where capture frame was only shown on first plot file loaded.
+* When units were used to build the model, the units will be displayed on the post side as well (Requires using feb4 format for the febio input file).
+
+
+===========================================================================
+
+ R E L E A S E   1.9   12/12/2022
+
+===========================================================================
+
+* Fixed zoning in hollow sphere.
+* Added support for editable surfaces in mesh inspector.
+* Added support for new gap_offset flag in FEF2FTiedInterface class.
+* Fixed issue with scatter plots for object sources.
+* Fixed bug causing graph window and curve editor size to not save properly. Graph editor save dialog now remembers previous location
+* The "angles" fiber material now supports maps.
+* Fixed issue with rendering data for penta elements.
+* Fixed issued with exporting element data maps when the corresponding part was split on export.
+* Added support for inverting selections in post document.
+* Added support for new prescribed fiber active contraction material.
+* Added support for importing mesh selections from feb file.
+* Set home location in StartSSHSession.
+* Added missing parameter in FERigidForce.
+* Fixed Fluid RCR load in Fluid and Fluid-FSI module to properly output in febio3 format.  
+* Changed Fluid Flow Resistance load to match Fluid RCR and only display/save loadcurves for the pressure offset. Added units to the parameters associated with these surface loads.
+* Added "facet area" standard data field.
+
+
+===========================================================================
+
  R E L E A S E   1.8   6/15/2022
 
 ===========================================================================

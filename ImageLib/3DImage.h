@@ -26,33 +26,37 @@ SOFTWARE.*/
 
 #pragma once
 #include "Image.h"
+#include <string>
+#include <FSCore/box.h>
 
 //-----------------------------------------------------------------------------
 // A class for representing 3D image stacks
 class C3DImage
 {
+
 public:
 	C3DImage();
 	virtual ~C3DImage();
 	void CleanUp();
 
-	bool Create(int nx, int ny, int nz, Byte* data = nullptr, int dataSize = 0);
-
-	bool LoadFromFile(const char* szfile, int nbits);
-
-	void BitBlt(CImage& im, int nslice);
-	void StretchBlt(CImage& im, int nslice);
-	void StretchBlt(C3DImage& im);
+	bool Create(int nx, int ny, int nz, uint8_t* data = nullptr, int dataSize = 0, int pixelType = CImage::UINT_8);
 
 	int Width () { return m_cx; }
 	int Height() { return m_cy; }
 	int Depth () { return m_cz; }
+    int PixelType() { return m_pixelType; }
+	std::string PixelTypeString();
+    int BPS() const { return m_bps; }
+    bool IsRGB();
 
-	Byte& value(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
-	Byte Value(double fx, double fy, int nz);
-	Byte Peek(double fx, double fy, double fz);
+    virtual BOX GetBoundingBox() { return m_box; }
+    virtual void SetBoundingBox(BOX& box) { m_box = box; }
 
-	void Histogram(int* pdf);
+	uint8_t& GetByte(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
+    
+    double Value(int i, int j, int k, int channel = 0);
+	double Value(double fx, double fy, int nz, int channel = 0);
+	double Peek(double fx, double fy, double fz, int channel = 0);
 
 	void GetSliceX(CImage& im, int n);
 	void GetSliceY(CImage& im, int n);
@@ -62,26 +66,47 @@ public:
 	void GetSampledSliceY(CImage& im, double f);
 	void GetSampledSliceZ(CImage& im, double f);
 
-    void GetThresholdedSliceX(CImage& im, int n, int min, int max);
-    void GetThresholdedSliceY(CImage& im, int n, int min, int max);
-    void GetThresholdedSliceZ(CImage& im, int n, int min, int max);
+	uint8_t* GetBytes() { return m_pb; }
+	void SetBytes(uint8_t* bytes) {m_pb = bytes; }
 
-	void Invert();
-
-	Byte* GetBytes() { return m_pb; }
-	void SetBytes(Byte* bytes) {m_pb = bytes; }
+    void GetMinMax(double& min, double& max, bool recalc = true);
 
 	void Zero();
 
-	void FlipZ();
+private:
+    template <class pType> 
+    void CopySliceX(pType* dest, int n, int channels = 1);
+
+    template <class pType> 
+    void CopySliceY(pType* dest, int n, int channels = 1);
+
+    template <class pType> 
+    void CopySliceZ(pType* dest, int n, int channels = 1);
+
+    template <class pType> 
+    void CopySampledSliceX(pType* dest, double f, int channels = 1);
+
+    template <class pType> 
+    void CopySampledSliceY(pType* dest, double f, int channels = 1);
+
+    template <class pType> 
+    void CopySampledSliceZ(pType* dest, double f, int channels = 1);
+
+    template <class pType>
+    void CalcMinMaxValue();
+
+    template <class pType>
+    void ZeroTemplate(int channels = 1);
 
 protected:
-	Byte*	m_pb;	// image data
-	int		m_cx;
-	int		m_cy;
-	int		m_cz;
+	uint8_t*	m_pb;	// image data
+	int		m_cx, m_cy, m_cz; // pixel dimensions
+    int     m_pixelType; // pixel representation
+	int		m_bps;	// bytes per sample
+
+    double m_minValue, m_maxValue; 
+
+private:
+    BOX     m_box; // physical bounds
 };
 
-//-----------------------------------------------------------------------------
-// helper functions
-int closest_pow2(int n);

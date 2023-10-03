@@ -57,12 +57,16 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 {
 	// make sure no model is running
 	if (CFEBioJob::GetActiveJob() != nullptr) return false;
-	
+
 	// set this as the active job
 	CFEBioJob::SetActiveJob(job);
 
+	if (job == nullptr) return true;
+
 	// don't forget to reset the kill flag
 	im->bkillJob = false;
+
+	job->ClearProgress();
 
 	// launch the job
 	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)

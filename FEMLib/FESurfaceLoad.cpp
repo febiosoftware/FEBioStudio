@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FESurfaceLoad.h"
 #include <FECore/units.h>
-#include <MeshTools/FEItemListBuilder.h>
+#include <MeshLib/FEItemListBuilder.h>
 #include <FECore/fecore_enum.h>
 
 FSSurfaceLoad::FSSurfaceLoad(int ntype, FSModel* ps) : FSLoad(ntype, ps)
@@ -442,6 +442,13 @@ int FSConcentrationFlux::GetSoluteID()
 void FSConcentrationFlux::SetSoluteID(int n)
 {
 	SetIntValue(SOL_ID, n);
+}
+
+//-----------------------------------------------------------------------------
+FSFluidSolutesNaturalFlux::FSFluidSolutesNaturalFlux(FSModel* ps, FEItemListBuilder* pi, int nstep) : FSSurfaceLoad(FE_FLUID_SOLUTES_NATURAL_FLUX, ps, pi, nstep)
+{
+    SetTypeString("solute natural flux");
+    AddChoiceParam(0, "solute_id", "Solute")->SetEnumNames("$(solutes)");
 }
 
 //=======================================================================================

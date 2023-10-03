@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "FEBioJob.h"
+#include <MeshIO/FSFileImport.h>
 #include <vector>
 
 //-----------------------------------------------------------------------------
@@ -39,6 +40,8 @@ class FSObject;
 //-----------------------------------------------------------------------------
 class CModelDocument : public CGLDocument
 {
+	Q_OBJECT
+
 public:
 	CModelDocument(CMainWindow* wnd);
 	~CModelDocument();
@@ -85,7 +88,6 @@ public:
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
 
 public: // selection
-	FESelection* GetCurrentSelection() override;
 	void UpdateSelection(bool report = true) override;
 
 	void HideCurrentSelection();
@@ -116,15 +118,17 @@ public:
 	bool ImportMaterials(const std::string& fileName);
 	bool ImportFEBioMaterials(const std::string& fileName);
 
+	void SetUnitSystem(int unitSystem) override;
+
+signals:
+	void selectionChanged();
+
 private:
 	// the FE Project
 	FSProject	m_Project;
 
 	// the job list
 	CFEBioJobList	m_JobList;
-
-	// current selection
-	FESelection*	m_psel;
 
 	CModelContext*	m_context;
 };

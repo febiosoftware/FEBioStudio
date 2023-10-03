@@ -56,6 +56,21 @@ void CMainWindow::on_actionFEBioURL_triggered()
 	QDesktopServices::openUrl(QUrl("https://febio.org/"));
 }
 
+void CMainWindow::on_actionFEBioUM_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioUser-4-0/UM40.html"));
+}
+
+void CMainWindow::on_actionFEBioTM_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioTheory-4-0/TM40.html"));
+}
+
+void CMainWindow::on_actionFBSManual_triggered()
+{
+	QDesktopServices::openUrl(QUrl("https://help.febio.org/docs/FEBioStudio-2-0/FSM20.html"));
+}
+
 void CMainWindow::on_actionFEBioForum_triggered()
 {
 	QDesktopServices::openUrl(QUrl("https://forums.febio.org/"));
@@ -95,7 +110,7 @@ void CMainWindow::on_actionAbout_triggered()
 		<p><b>%1</b></p>\
 		<p>Weiss Lab, University of Utah</p>\
 		<p>Ateshian Lab, Columbia University</p>\
-		<p>Copyright (c) 2019 - 2021, All rights reserved</p>\
+		<p>Copyright (c) 2019 - 2023, All rights reserved</p>\
 		<hr>\
 		<p>When using FEBio or FEBioStudio in your publications, please cite:</p>\
 		<p><b>Maas SA, Ellis BJ, Ateshian GA, Weiss JA: FEBio: Finite Elements for Biomechanics. Journal of Biomechanical Engineering, 134(1):011005, 2012</b></p>\

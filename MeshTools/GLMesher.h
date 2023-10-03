@@ -27,26 +27,26 @@ SOFTWARE.*/
 class GObject;
 class GFace;
 class GEdge;
-class GLMesh;
-#include <FECore/vec3d.h>
+class GMesh;
+#include <FSCore/math3d.h>
 
-// class to build GLMesh for a GObject
+// class to build GMesh for a GObject
 class GLMesher
 {
 public:
 	GLMesher(GObject* po);
 
-	GLMesh* CreateMesh();
+	GMesh* CreateMesh();
 
 private:
 	// helper functions for building the GMesh
-	void BuildFacePolygon(GLMesh* glmesh, GFace& f);
-	void BuildFaceExtrude(GLMesh* glmesh, GFace& f);
-	void BuildFaceQuad(GLMesh* glmesh, GFace& f);
-	void BuildFaceRevolve(GLMesh* glmesh, GFace& f);
-	void BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f);
-	void BuildEdgeMesh(GLMesh* glmesh, GEdge& e);
-	void BuildEdgeLine(GLMesh* glmesh, GEdge& e);
+	void BuildFacePolygon(GMesh* glmesh, GFace& f);
+	void BuildFaceExtrude(GMesh* glmesh, GFace& f);
+	void BuildFaceQuad(GMesh* glmesh, GFace& f);
+	void BuildFaceRevolve(GMesh* glmesh, GFace& f);
+	void BuildFaceRevolveWedge(GMesh* glmesh, GFace& f);
+	void BuildEdgeMesh(GMesh* glmesh, GEdge& e);
+	void BuildEdgeLine(GMesh* glmesh, GEdge& e);
 
 	vec3d EdgePoint(GEdge& edge, double r);
 

@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <QTextBrowser>
 #include <QDesktopServices>
 #include <QMessageBox>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include "HelpDialog.h"
 #include "WebDefines.h"
 #include "FEBioStudio.h"

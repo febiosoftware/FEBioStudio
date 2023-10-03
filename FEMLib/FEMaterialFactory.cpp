@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEMaterialFactory.h"
-#include <FEMLib/FECoreMaterial.h>
+#include "FECoreMaterial.h"
 #include "FEUserMaterial.h"
 
 FEMatDescriptor::FEMatDescriptor(

@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <list>
 #include <stack>
 #include <sstream>
@@ -163,9 +163,7 @@ bool GMeshObject::Update(bool b)
 	UpdateNodes();
 	UpdateEdges();
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update(b);
 }
 
 //-----------------------------------------------------------------------------
@@ -173,43 +171,53 @@ void GMeshObject::UpdateSections()
 {
 	FSMesh* pm = GetFEMesh();
 
+#pragma omp parallel for
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);
-		if (pg->GetSection() == nullptr)
+
+		// see if this is a solid part, or shell part
+		bool isSolid = false;
+		bool isShell = false;
+		bool isBeam  = false;
+		bool isOther = false;
+
+		for (int j = 0; j < pm->Elements(); ++j)
 		{
-			// see if this is a solid part, or shell part
-			bool isSolid = false;
-			bool isShell = false;
-			bool isBeam  = false;
-			bool isOther = false;
-
-			for (int j = 0; j < pm->Elements(); ++j)
+			FSElement& el = pm->Element(j);
+			if (el.m_gid == i)
 			{
-				FSElement& el = pm->Element(j);
-				if (el.m_gid == i)
-				{
-					if      (el.IsSolid()) isSolid = true;
-					else if (el.IsShell()) isShell = true;
-					else if (el.IsBeam ()) isBeam  = true;
-					else isOther = true;
-				}
+				if      (el.IsSolid()) isSolid = true;
+				else if (el.IsShell()) isShell = true;
+				else if (el.IsBeam ()) isBeam  = true;
+				else isOther = true;
 			}
-			assert(isOther == false);
+		}
+		assert(isOther == false);
 
-			if (isSolid && (isShell == false) && (isOther == false))
+		GPartSection* currentSection = pg->GetSection();
+
+		if (isSolid && (isShell == false) && (isOther == false))
+		{
+			if (dynamic_cast<GSolidSection*>(currentSection) == nullptr)
 			{
 				GSolidSection* ps = new GSolidSection(pg);
 				pg->SetSection(ps);
 			}
+		}
 
-			if (isShell && (isSolid == false) && (isOther == false))
+		if (isShell && (isSolid == false) && (isOther == false))
+		{
+			if (dynamic_cast<GShellSection*>(currentSection) == nullptr)
 			{
 				GShellSection* ps = new GShellSection(pg);
 				pg->SetSection(ps);
 			}
+		}
 
-			if (isBeam && (isSolid == false) && (isOther == false))
+		if (isBeam && (isSolid == false) && (isOther == false))
+		{
+			if (dynamic_cast<GBeamSection*>(currentSection) == nullptr)
 			{
 				GBeamSection* ps = new GBeamSection(pg);
 				pg->SetSection(ps);
@@ -588,6 +596,7 @@ void GMeshObject::UpdateNodes()
 		{
 			node.m_gid = tag[node.m_gid];
 			GNode* pn = m_Node[node.m_gid];
+			pn->SetNodeIndex(i);
 			pn->LocalPosition() = node.r;
 			node.SetRequired(pn->IsRequired());
 		}
@@ -674,7 +683,7 @@ FSMesh* GMeshObject::BuildMesh()
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GLMesh* gmesh = new GLMesh();
+	GMesh* gmesh = new GMesh();
 
 	// we'll extract the data from the FE mesh
 	FSMesh* pm = GetFEMesh();
@@ -1207,7 +1216,7 @@ void GMeshObject::Load(IArchive& ar)
 	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
 	UpdateEdges(); // we need to call this since the edge nodes are not stored
 	UpdateNodes(); // we need to call this because the GNode::m_fenode is not stored
-	BuildGMesh();
+	GObject::Update(false);
 }
 
 //-----------------------------------------------------------------------------

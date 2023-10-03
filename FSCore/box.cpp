@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "box.h"
-#include <FECore/mat3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 // Default constructor

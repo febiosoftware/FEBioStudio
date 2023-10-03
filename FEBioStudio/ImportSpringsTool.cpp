@@ -29,8 +29,9 @@ SOFTWARE.*/
 #include "ModelDocument.h"
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
+#include <FEBioLink/FEBioClass.h>
 #include <QDir>
 
 #include <iostream>
@@ -74,13 +75,79 @@ bool CImportSpringsTool::OnApply()
 
 bool CImportSpringsTool::ReadFile()
 {
+	// clear the spring list
+	m_springs.clear();
+
+	std::string file = m_fileName.toStdString();
+
+	// if the extension is vtk, we read the vtk file
+	const char* szext = strrchr(file.c_str(), '.');
+	if (strcmp(szext, ".vtk") == 0) return ReadVTKFile();
+	else return ReadTXTFile();
+}
+
+bool CImportSpringsTool::ReadVTKFile()
+{
+	std::string file = m_fileName.toStdString();
+	FILE* fp = fopen(file.c_str(), "rt");
+	if (fp == nullptr) return false;
+
+	char szline[512] = { 0 };
+	int nid;
+	double r0[3], r1[3];
+	vector<vec3d> points;
+	int readMode = -1; // 0 = read nodes, 1 = read lines
+	while (!feof(fp))
+	{
+		if (fgets(szline, 511, fp))
+		{
+			if (strstr(szline, "POINTS"))
+			{
+				int n = atoi(szline + 6);
+				points.reserve(n);
+				readMode = 0;
+			}
+			else if (strstr(szline, "LINES"))
+			{
+				int n = atoi(szline + 5);
+				readMode = 1;
+			}
+			else if (readMode == 0)
+			{
+				float r[9];
+				int nread = sscanf(szline, "%g%g%g%g%g%g%g%g%g", r, r+1, r+2, r+3, r+4, r+5, r+6, r+7, r+8);
+				for (int i = 0; i < nread; i += 3)
+				{
+					vec3d ri(r[i], r[i + 1], r[i + 2]);
+					points.push_back(ri);
+				}
+			}
+			else if (readMode == 1)
+			{
+				int n[3];
+				int nread = sscanf(szline, "%d%d%d", n, n + 1, n + 2);
+				if (nread == 3)
+				{
+					SPRING s;
+					s.r0 = points[n[1]];
+					s.r1 = points[n[2]];
+
+					m_springs.push_back(s);
+				}
+			}
+		}
+	}
+	fclose(fp);
+
+	return true;
+}
+
+bool CImportSpringsTool::ReadTXTFile()
+{
 	std::string file = m_fileName.toStdString();
 
 	FILE* fp = fopen(file.c_str(), "rt");
 	if (fp == nullptr) return false;
-
-	// clear the spring list
-	m_springs.clear();
 
 	char szline[512] = { 0 };
 	int nid;
@@ -147,9 +214,9 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 	FSModel* fem = gm->GetFSModel();
 	switch (m_type)
 	{
-	case 0: dset->SetMaterial(new FSLinearSpringMaterial(fem)); break;
-	case 1: dset->SetMaterial(new FSNonLinearSpringMaterial(fem)); break;
-	case 2: dset->SetMaterial(new FSHillContractileMaterial(fem)); break;
+	case 0: dset->SetMaterial(FEBio::CreateDiscreteMaterial("linear spring", fem)); break;
+	case 1: dset->SetMaterial(FEBio::CreateDiscreteMaterial("nonlinear spring", fem)); break;
+	case 2: dset->SetMaterial(FEBio::CreateDiscreteMaterial("Hill", fem)); break;
 	default:
 		assert(false);
 		return false;

@@ -81,6 +81,12 @@ public:
 
 	CDocument* GetDocument();
 
+public:
+	void SetProgress(double pct);
+	double GetProgress() const;
+	bool HasProgress() const;
+	void ClearProgress();
+
 private:
 	std::string		m_febFile;	// the .feb file name
 	std::string		m_plotFile;	// the .xplt file name
@@ -99,6 +105,10 @@ public:
 	int			m_febVersion;	// the .feb file version
 	bool		m_writeNotes;	// write notes to .feb file
 	std::string	m_cmd;			// command line options
+
+	// progress management
+	bool	m_bhasProgress;
+	double	m_pct;
 
 public:
 	CDocument*	m_doc;

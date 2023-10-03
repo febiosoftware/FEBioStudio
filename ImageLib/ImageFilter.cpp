@@ -23,24 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #include "ImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
 #include <ImageLib/ImageSITK.h>
 #include <PostGL/GLModel.h>
 #include <MeshLib/FEFindElement.h>
-#include <chrono>
-#include <ctime>
-#include <iostream>
+#include "ImageFilterSITK.h"
+
+REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
 
 #ifdef HAS_ITK
-#include <sitkSmoothingRecursiveGaussianImageFilter.h>
-#include <sitkMeanImageFilter.h>
-
-namespace sitk = itk::simple;
+REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
+REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
+REGISTER_CLASS(AdaptiveHistogramEqualizationFilter, CLASS_IMAGE_FILTER, "Adaptive Histogram Equalization", 0);
 #endif
-
 
 
 CImageFilter::CImageFilter() : m_model(nullptr)
@@ -48,17 +46,16 @@ CImageFilter::CImageFilter() : m_model(nullptr)
 
 }
 
-void CImageFilter::SetImageModel(Post::CImageModel* model)
+void CImageFilter::SetImageModel(CImageModel* model)
 {
     m_model = model;
 }
 
-Post::CImageModel* CImageFilter::GetImageModel()
+CImageModel* CImageFilter::GetImageModel()
 {
 	return m_model;
 }
 
-REGISTER_CLASS(ThresholdImageFilter, CLASS_IMAGE_FILTER, "Threshold Filter", 0);
 ThresholdImageFilter::ThresholdImageFilter()
 {
     static int n = 1;
@@ -68,27 +65,22 @@ ThresholdImageFilter::ThresholdImageFilter()
     n += 1;
     SetName(sz);
 
-    AddIntParam(255, "max");
-    AddIntParam(0, "min");
+    AddDoubleParam(255, "max");
+    AddDoubleParam(0, "min");
 }
 
-void ThresholdImageFilter::ApplyFilter()
+template<class pType> void ThresholdImageFilter::FitlerTemplate()
 {
-    if(!m_model) return;
-
     C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
-    int max = GetIntValue(0);
-    int min = GetIntValue(1);
+    double max = GetFloatValue(0);
+    double min = GetFloatValue(1);
 
     if(min >= max) return;
 
-    auto start = std::chrono::system_clock::now();
-
-    Byte* originalBytes = image->GetBytes();
-    Byte* filteredBytes = m_model->GetImageSource()->GetImageToFilter(true)->GetBytes();
-
-    int factor = 255;
+    pType* originalBytes = (pType*)image->GetBytes();
+    auto imageToFilter = m_model->GetImageSource()->GetImageToFilter(true);
+    pType* filteredBytes = (pType*)imageToFilter->GetBytes();
 
     for(int i = 0; i < image->Width()*image->Height()*image->Depth(); i++)
     {
@@ -103,137 +95,123 @@ void ThresholdImageFilter::ApplyFilter()
 
     }
 
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+    BOX temp = image->GetBoundingBox();
+    imageToFilter->SetBoundingBox(temp);
 }
 
-#ifdef HAS_ITK
-
-REGISTER_CLASS(MeanImageFilter, CLASS_IMAGE_FILTER, "Mean Filter", 0);
-MeanImageFilter::MeanImageFilter()
-{
-    static int n = 1;
-
-    char sz[64];
-    sprintf(sz, "MeanImageFilter%02d", n);
-    n += 1;
-    SetName(sz);
-
-    AddIntParam(1, "x Radius");
-    AddIntParam(1, "y Radius");
-    AddIntParam(1, "z Radius");
-}
-
-void MeanImageFilter::ApplyFilter()
+void ThresholdImageFilter::ApplyFilter()
 {
     if(!m_model) return;
 
-    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
 
     if(!image) return;
 
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
-
-    auto start = std::chrono::system_clock::now();
-
-    sitk::MeanImageFilter filter;
-
-    std::vector<unsigned int> indexRadius;
-
-    indexRadius.push_back(GetIntValue(0)); // radius along x
-    indexRadius.push_back(GetIntValue(1)); // radius along y
-    indexRadius.push_back(GetIntValue(2)); // radius along z
-
-    filter.SetRadius(indexRadius);
-
-    filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
-
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
+    switch (image->PixelType())
+    {
+    case CImage::UINT_8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_32:
+        FitlerTemplate<uint32_t>();
+        break;
+    case CImage::INT_32:
+        FitlerTemplate<int32_t>();
+        break;
+    case CImage::UINT_RGB8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::REAL_32:
+        FitlerTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        FitlerTemplate<double>();
+        break;
+    default:
+        assert(false);
+    }
 }
 
-REGISTER_CLASS(GaussianImageFilter, CLASS_IMAGE_FILTER, "Gaussian Filter", 0);
-GaussianImageFilter::GaussianImageFilter()
+void ThresholdImageFilter::SetImageModel(CImageModel* model)
 {
-    static int n = 1;
+    if(model && model->Get3DImage())
+    {
+        double min, max;
+        model->Get3DImage()->GetMinMax(min, max);
+        SetFloatValue(0, max);
+        SetFloatValue(1, min);
+    }
 
-    char sz[64];
-    sprintf(sz, "GaussianImageFilter%02d", n);
-    n += 1;
-    SetName(sz);
-
-    AddDoubleParam(2.0, "sigma");
+    CImageFilter::SetImageModel(model);
 }
 
-void GaussianImageFilter::ApplyFilter()
-{
-    if(!m_model) return;
 
-    CImageSITK* image = dynamic_cast<CImageSITK*>(m_model->GetImageSource()->Get3DImage());
-
-    if(!image) return;
-
-    CImageSITK* filteredImage = static_cast<CImageSITK*>(m_model->GetImageSource()->GetImageToFilter());
-
-    auto start = std::chrono::system_clock::now();
-
-    sitk::SmoothingRecursiveGaussianImageFilter filter;
-
-    const double sigma = GetFloatValue(0);
-    std::cout << sigma << std::endl;
-    filter.SetSigma(sigma);
-
-    filteredImage->SetItkImage(filter.Execute(image->GetSItkImage()));
-
-    auto end = std::chrono::system_clock::now();
-
-    std::chrono::duration<double> elapsed_seconds = end-start;
-
-    std::cout << "elapsed time: " << elapsed_seconds.count() << "s\n";
-
-}
-
-#endif
-
-WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) : m_glm(glm)
+WarpImageFilter::WarpImageFilter(Post::CGLModel* glm) 
+    : m_glm(glm)
 {
 	static int n = 1;
 	char sz[64] = { 0 };
 	sprintf(sz, "WarpImageFilter%02d", n++);
 	SetName(sz);
+
+	AddBoolParam(true, "scale_dim", "Scale dimensions");
 }
 
-void WarpImageFilter::ApplyFilter()
+template<class pType> void WarpImageFilter::FitlerTemplate()
 {
-	if ((m_model == nullptr) || (m_glm == nullptr)) return;
-	Post::CImageModel* mdl = m_model;
+    if ((m_model == nullptr) || (m_glm == nullptr)) return;
+	CImageModel* mdl = m_model;
 
 	C3DImage* im = mdl->Get3DImage();
-	Byte* src = im->GetBytes();
+	pType* src = (pType*)im->GetBytes();
 
 	Post::CGLModel& gm = *m_glm;
 	Post::FEState* state = gm.GetActiveState();
 	Post::FERefState* ps = state->m_ref;
 
+	// get the original bounding box
+	BOX box0 = mdl->GetBoundingBox();
+
+	// get the (current) bounding box of the mesh
 	FSMesh* mesh = gm.GetActiveMesh();
 	BOX box = mesh->GetBoundingBox();
+
+	// calculate scale factors
+	double sx = box.Width() / box0.Width();
+	double sy = box.Height() / box0.Height();
+	double sz = (im->Depth() == 1 ? 1.0 : box.Depth() / box0.Depth());
 
 	double w = box.Width();
 	double h = box.Height();
 	double d = box.Depth();
 
-	int nx = im->Width();
-	int ny = im->Height();
-	int nz = im->Depth();
+	bool dimScale = GetBoolValue(SCALE_DIM);
+
+	int nx = (dimScale ? (int)(sx*im->Width ()) : im->Width ());
+	int ny = (dimScale ? (int)(sy*im->Height()) : im->Height());
+	int nz = (dimScale ? (int)(sz*im->Depth ()) : im->Depth ());
+
 	int voxels = nx * ny * nz;
-	Byte* dst_buf = new Byte[voxels];
-	Byte* dst = dst_buf;
+	pType* dst_buf = new pType[voxels];
+	pType* dst = dst_buf;
 
 	double wx = (nx < 2 ? 0 : 1.0 / (nx - 1.0));
 	double wy = (ny < 2 ? 0 : 1.0 / (ny - 1.0));
@@ -244,9 +222,11 @@ void WarpImageFilter::ApplyFilter()
 
 	if (im->Depth() == 1)
 	{
-		for (int j = 0; j < im->Height(); ++j)
+        #pragma omp parallel for
+		for (int j = 0; j < ny; ++j)
 		{
-			for (int i = 0; i < im->Width(); ++i)
+            int index = j*nx;
+			for (int i = 0; i < nx; ++i)
 			{
 				// get the spatial coordinates of the voxel
 				double x = r0.x + (r1.x - r0.x) * (i * wx);
@@ -269,12 +249,12 @@ void WarpImageFilter::ApplyFilter()
 
 					// sample 
 					vec3f s = el.eval(r, q[0], q[1]);
-					Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
-					*dst++ = b;
+					pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
+					dst[index+i] = b;
 				}
 				else
 				{
-					*dst++ = 0;
+					dst[index+i] = 0;
 				}
 			}
 		}
@@ -285,11 +265,14 @@ void WarpImageFilter::ApplyFilter()
 		fe.Init();
 
 		// 3D case
-		for (int k = 0; k < im->Depth(); ++k)
+		for (int k = 0; k < nz; ++k)
 		{
-			for (int j = 0; j < im->Height(); ++j)
+            #pragma omp parallel for
+			for (int j = 0; j < ny; ++j)
 			{
-				for (int i = 0; i < im->Width(); ++i)
+                int index = k*ny*nx+j*nx;
+
+				for (int i = 0; i < nx; ++i)
 				{
 					// get the spatial coordinates of the voxel
 					double x = r0.x + (r1.x - r0.x) * (i * wx);
@@ -312,21 +295,73 @@ void WarpImageFilter::ApplyFilter()
 
 						// sample 
 						vec3f s = el.eval(p, q[0], q[1], q[2]);
-						Byte b = mdl->ValueAtGlobalPos(to_vec3d(s));
-						*dst++ = b;
+						pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
+						dst[index+i] = b;
 					}
 					else
 					{
-						*dst++ = 0;
+						dst[index+i] = 0;
 					}
 				}
 			}
 		}
 	}
 
-	Byte* b = mdl->GetImageSource()->GetImageToFilter(true)->GetBytes();
-	memcpy(b, dst_buf, voxels);
+	C3DImage* im2 = mdl->GetImageSource()->GetImageToFilter(false);
+	im2->Create(nx, ny, nz, (uint8_t*)dst_buf, 0, im->PixelType());
 
 	// update the model's box
 	mdl->SetBoundingBox(box);
 }
+
+void WarpImageFilter::ApplyFilter()
+{
+	if(!m_model) return;
+
+    C3DImage* image = m_model->GetImageSource()->Get3DImage();
+
+    if(!image) return;
+
+    switch (image->PixelType())
+    {
+    case CImage::UINT_8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::UINT_32:
+        FitlerTemplate<uint32_t>();
+        break;
+    case CImage::INT_32:
+        FitlerTemplate<int32_t>();
+        break;
+    case CImage::UINT_RGB8:
+        FitlerTemplate<uint8_t>();
+        break;
+    case CImage::INT_RGB8:
+        FitlerTemplate<int8_t>();
+        break;
+    case CImage::UINT_RGB16:
+        FitlerTemplate<uint16_t>();
+        break;
+    case CImage::INT_RGB16:
+        FitlerTemplate<int16_t>();
+        break;
+    case CImage::REAL_32:
+        FitlerTemplate<float>();
+        break;
+    case CImage::REAL_64:
+        FitlerTemplate<double>();
+        break;
+    default:
+        assert(false);
+    }
+}
+

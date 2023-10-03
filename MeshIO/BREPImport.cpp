@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "BREPImport.h"
 #include <GeomLib/GOCCObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #ifdef HAS_OCC
 #include <BRepTools.hxx>
 #include <BRep_Tool.hxx>

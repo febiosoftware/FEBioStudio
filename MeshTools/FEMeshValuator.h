@@ -26,10 +26,31 @@ SOFTWARE.*/
 
 #pragma once
 #include <MeshLib/FEMesh.h>
+#include <MeshLib/FESurfaceMesh.h>
 
 class FEMeshValuator
 {
-	enum { MAX_DEFAULT_FIELDS = 13 };
+public:
+	// When adding a new data field, do so before the MAX_DEFAULT_FIELDS value.
+	enum DataFields {
+		ELEMENT_VOLUME,
+		JACOBIAN,
+		SHELL_THICKNESS,
+		SHELL_AREA,
+		TET_QUALITY,
+		TET_MIN_DIHEDRAL_ANGLE,
+		TET_MAX_DIHEDRAL_ANGLE,
+		TRIANGLE_QUALITY,
+		TRIANGLE_MAX_DIHEDRAL_ANGLE,
+		TET10_MID_NODE_OFFSET,
+		MIN_EDGE_LENGTH,
+		MAX_EDGE_LENGTH,
+		PRINC_CURVE_1,
+		PRINC_CURVE_2,
+		// This last value is equal to the number of fields above.
+		// This must remain the last value in this enum!
+		MAX_DEFAULT_FIELDS
+	};
 
 public:
 	// constructor
@@ -42,6 +63,9 @@ public:
 	double EvaluateElement(int i, int nfield, int* err = 0);
 	double EvaluateNode(int i, int nfield, int* err = 0);
 
+	// get the list of all datafield names
+	static std::vector< std::string > GetDataFieldNames();
+
 public:
 	void SetCurvatureLevels(int levels);
 	void SetCurvatureMaxIters(int maxIters);
@@ -49,6 +73,48 @@ public:
 
 private:
 	FSMesh& m_mesh;
+
+	// properties for curvature
+	int	m_curvature_levels;
+	int	m_curvature_maxiters;
+	bool m_curvature_extquad;
+};
+
+class FESurfaceMeshValuator
+{
+	// When adding a new data field, do so before the MAX_DEFAULT_FIELDS value.
+	enum DataFields {
+		FACE_AREA,
+		TRIANGLE_QUALITY,
+		TRIANGLE_MAX_DIHEDRAL_ANGLE,
+		MIN_EDGE_LENGTH,
+		MAX_EDGE_LENGTH,
+		// This last value is equal to the number of fields above.
+		// This must remain the last value in this enum!
+		MAX_DEFAULT_FIELDS
+	};
+
+public:
+	// constructor
+	FESurfaceMeshValuator(FSSurfaceMesh& mesh);
+
+	// get the list of all datafield names
+	static std::vector< std::string > GetDataFieldNames();
+
+	// evaluate the particular data field
+	bool Evaluate(int nfield, Mesh_Data& data);
+
+	// evaluate just one item
+	double EvaluateFace(int i, int nfield, int* err = 0);
+	double EvaluateNode(int i, int nfield, int* err = 0);
+
+public:
+	void SetCurvatureLevels(int levels);
+	void SetCurvatureMaxIters(int maxIters);
+	void SetCurvatureExtQuad(bool b);
+
+private:
+	FSSurfaceMesh& m_mesh;
 
 	// properties for curvature
 	int	m_curvature_levels;

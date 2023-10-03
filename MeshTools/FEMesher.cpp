@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "FEMesher.h"
 #include <GeomLib/GObject.h>
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/FETetGenMesher.h>
+#include "FETetGenMesher.h"
 #include <stack>
 //using namespace std;
 

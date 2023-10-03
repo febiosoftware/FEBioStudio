@@ -25,10 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "stdafx.h"
 #include "FSThreadedTask.h"
+#include <stdarg.h>
 
 FSThreadedTask::FSThreadedTask()
 {
+	m_nerrors = 0;
+}
 
+void FSThreadedTask::Reset()
+{
+	setProgress(0);
+	ClearErrors();
 }
 
 FSTaskProgress FSThreadedTask::GetProgress()
@@ -39,6 +46,12 @@ FSTaskProgress FSThreadedTask::GetProgress()
 void FSThreadedTask::Terminate()
 {
 	m_progress.valid = false;
+	m_progress.canceled = true;
+}
+
+bool FSThreadedTask::IsCanceled() const
+{
+	return m_progress.canceled;
 }
 
 void FSThreadedTask::setProgress(double progress)
@@ -53,4 +66,69 @@ void FSThreadedTask::setCurrentTask(const char* sz, double progress)
 {
 	setProgress(progress);
 	m_progress.task = sz;
+}
+
+void FSThreadedTask::ClearErrors()
+{
+	m_err.clear();
+	m_nerrors = 0;
+}
+
+void FSThreadedTask::setErrorString(const std::string& s)
+{
+	m_err = s;
+}
+
+bool FSThreadedTask::errf(const char* szerr, ...)
+{
+	if (szerr == 0) return false;
+
+	// get a pointer to the argument list
+	va_list	args;
+
+	// copy to string
+	va_start(args, szerr);
+
+	int l = strlen(szerr) + 1024;
+	char* sz = new char[l + 1];
+#ifdef WIN32
+	vsprintf_s(sz, l, szerr, args);
+#else
+	vsnprintf(sz, l, szerr, args);
+#endif
+	sz[l] = 0;
+	va_end(args);
+
+	// append to the error string
+	if (m_err.empty())
+	{
+		m_err = string(sz);
+	}
+	else m_err.append("\n").append(sz);
+
+	delete[] sz;
+
+	m_nerrors++;
+
+	return false;
+}
+
+bool FSThreadedTask::error(const std::string& err)
+{
+	if (err.empty() == false)
+	{
+		if (m_err.empty()) m_err = err;
+		else m_err.append("\n").append(err);
+	}
+	return false;
+}
+
+std::string FSThreadedTask::GetErrorString() const
+{
+	return m_err;
+}
+
+int FSThreadedTask::Errors() const
+{
+	return m_nerrors;
 }

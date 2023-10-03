@@ -103,10 +103,10 @@ GLColor CColorMap::map(float fval) const
 	GLColor c2 = m_col[l-1];
 
 	GLColor col;
-	col.r = Byte(((w - m_pos[l-1])*c1.r + (m_pos[l]-w)*c2.r) * dp);
-	col.g = Byte(((w - m_pos[l-1])*c1.g + (m_pos[l]-w)*c2.g) * dp);
-	col.b = Byte(((w - m_pos[l-1])*c1.b + (m_pos[l]-w)*c2.b) * dp);
-	col.a = Byte(((w - m_pos[l-1])*c1.a + (m_pos[l]-w)*c2.a) * dp);
+	col.r = uint8_t(((w - m_pos[l-1])*c1.r + (m_pos[l]-w)*c2.r) * dp);
+	col.g = uint8_t(((w - m_pos[l-1])*c1.g + (m_pos[l]-w)*c2.g) * dp);
+	col.b = uint8_t(((w - m_pos[l-1])*c1.b + (m_pos[l]-w)*c2.b) * dp);
+	col.a = uint8_t(((w - m_pos[l-1])*c1.a + (m_pos[l]-w)*c2.a) * dp);
 
 	return col;
 }
@@ -131,6 +131,19 @@ void CColorMap::jet()
 	m_pos[2] = 0.50f; m_col[2] = GLColor(0, 255, 0);
 	m_pos[3] = 0.60f; m_col[3] = GLColor(255, 255, 0);
 	m_pos[4] = 1.00f; m_col[4] = GLColor(255, 0, 0);
+}
+
+void CColorMap::parula()
+{
+	m_ncol = 7;
+
+	m_pos[0] = 0.0000f; m_col[0] = GLColor( 0,   0, 143); // 0x00008F
+	m_pos[1] = 0.1667f; m_col[1] = GLColor(71,  87, 247); // 0x4757F7
+	m_pos[2] = 0.3333f; m_col[2] = GLColor(39, 150, 235); // 0x2796EB
+	m_pos[3] = 0.5000f; m_col[3] = GLColor(24, 191, 181); // 0x18BFB5
+	m_pos[4] = 0.6666f; m_col[4] = GLColor(128, 203, 88); // 0x80CB58
+	m_pos[5] = 0.8333f; m_col[5] = GLColor(253, 189, 60); // 0xFDBD3C
+	m_pos[6] = 1.0000f; m_col[6] = GLColor(249, 250, 20); // 0xF9FA14
 }
 
 void CColorMap::red()
@@ -433,6 +446,7 @@ void ColorMapManager::Initialize()
 	map.green  (); AddColormap("Green" , map);
 	map.hotcold(); AddColormap("Hot-Cold", map);
 	map.jet    (); AddColormap("Jet"   , map);
+	map.parula (); AddColormap("Parula", map);
 	map.rbb    (); AddColormap("RBB"   , map);
 	map.red    (); AddColormap("Red"   , map);
 	map.redgreen(); AddColormap("Red-Green", map);

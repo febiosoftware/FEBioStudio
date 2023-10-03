@@ -48,21 +48,21 @@ CGLVectorPlot::CGLVectorPlot()
 	sprintf(szname, "VectorPlot.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddBoolParam(true, "Allow clipping");
-	AddBoolParam(true, "Show hidden"   );
-	AddDoubleParam(0., "Density")->SetFloatRange(0.0, 1.0, 0.0001);
-	AddIntParam(0, "Glyph"         )->SetEnumNames("Arrow\0Cone\0Cylinder\0Sphere\0Box\0Line\0");
-	AddIntParam(0, "Glyph Color"   )->SetEnumNames("Solid\0Length\0Orientation\0");
-	AddColorParam(GLColor::White(), "Solid Color");
-	AddBoolParam(true, "Normalize" );
-	AddBoolParam(true, "Auto-scale");
-	AddDoubleParam(0., "Scale"     );
-	AddDoubleParam(1., "Glyph aspect ratio");
-	AddIntParam(0, "Range type")->SetEnumNames("Dynamic\0Static\0User\0");
-	AddDoubleParam(1., "User Max"  );
-	AddDoubleParam(0., "User Min"  );
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "allow_clipping");
+	AddBoolParam(true, "show_hidden"   );
+	AddDoubleParam(0., "density")->SetFloatRange(0.0, 1.0, 0.0001);
+	AddIntParam(0, "glyph"         )->SetEnumNames("arrow\0cone\0cylinder\0sphere\0box\0line\0");
+	AddIntParam(0, "glyph_color"   )->SetEnumNames("solid\0length\0orientation\0");
+	AddColorParam(GLColor::White(), "solid_color");
+	AddBoolParam(true, "normalize" );
+	AddBoolParam(true, "auto-scale");
+	AddDoubleParam(0., "scale"     );
+	AddDoubleParam(1., "glyph_aspect_ratio");
+	AddIntParam(0, "range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(1., "user_max"  );
+	AddDoubleParam(0., "user_min"  );
 
 	m_scale = 1;
 	m_dens = 1;
@@ -257,7 +257,46 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			}
 		}
 	}
-	else
+	else if (IS_FACE_FIELD(m_nvec))
+	{
+		pm->TagAllFaces(0);
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FSFace& f = pm->Face(i);
+			FEElement_* pe = pm->ElementPtr(f.m_elem[0].eid);
+			if (pe)
+			{
+				Material* mat = ps->GetMaterial(pe->m_MatID);
+				if (mat->benable && (m_bshowHidden || mat->visible()))
+				{
+					f.m_ntag = 1;
+				}
+			}
+		}
+
+		if (m_bshowHidden == false)
+		{
+			// make sure no vector is drawn for hidden faces
+			for (int i = 0; i < pm->Faces(); ++i)
+			{
+				FSFace& face = pm->Face(i);
+				if (face.IsVisible() == false) face.m_ntag = 0;
+			}
+		}
+
+		// render the vectors at the face's center
+		for (int i = 0; i < pm->Faces(); ++i)
+		{
+			FSFace& face = pm->Face(i);
+			if ((frand() <= m_dens) && face.m_ntag)
+			{
+				vec3f r = to_vec3f(pm->FaceCenter(face));
+				vec3f v = m_val[i];
+				RenderVector(r, v, pglyph);
+			}
+		}
+	}
+	else if (IS_NODE_FIELD(m_nvec))
 	{
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)
@@ -468,6 +507,7 @@ void CGLVectorPlot::Update(int ntime, float dt, bool breset)
 
 		int ND = 0;
 		if (IS_ELEM_FIELD(m_nvec)) ND = pm->Elements();
+		if (IS_FACE_FIELD(m_nvec)) ND = pm->Faces();
 		else ND = pm->Nodes();
 
 		vector<vec3f>& data0 = m_map.State(n0);
@@ -541,6 +581,15 @@ void CGLVectorPlot::UpdateState(int nstate)
 			for (int i = 0; i < pm->Elements(); ++i)
 			{
 				val[i] = pfem->EvaluateElemVector(i, nstate, m_nvec);
+				float L = val[i].Length();
+				if (L > rng.y) rng.y = L;
+			}
+		}
+		else if (IS_FACE_FIELD(m_nvec))
+		{
+			for (int i = 0; i < pm->Faces(); ++i)
+			{
+				bool b = pfem->EvaluateFaceVector(i, nstate, m_nvec, val[i]);
 				float L = val[i].Length();
 				if (L > rng.y) rng.y = L;
 			}

@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "FEBioImport.h"
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioModule.h>
 
@@ -72,9 +72,9 @@ template <> void string_to_type<GLColor>(const std::string& s, GLColor& v)
 {
 	int c[3];
 	sscanf(s.c_str(), "%d,%d,%d", &c[0], &c[1], &c[2]);
-	v.r = (Byte)c[0];
-	v.g = (Byte)c[1];
-	v.b = (Byte)c[2];
+	v.r = (uint8_t)c[0];
+	v.g = (uint8_t)c[1];
+	v.b = (uint8_t)c[2];
 }
 
 //=============================================================================
@@ -182,6 +182,8 @@ FSAnalysisStep* FEBioFormat::NewStep(FSModel& fem, int nanalysis, const char* sz
 	case FE_STEP_REACTION_DIFFUSION: pstep = new FSReactionDiffusionAnalysis(&fem); break;
     case FE_STEP_POLAR_FLUID       : pstep = new FSPolarFluidAnalysis (&fem); break;
 	case FE_STEP_EXPLICIT_SOLID    : pstep = new FSExplicitSolidAnalysis(&fem); break;
+    case FE_STEP_FLUID_SOLUTES     : pstep = new FSFluidSolutesAnalysis(&fem); break;
+    case FE_STEP_THERMO_FLUID      : pstep = new FSThermoFluidAnalysis(&fem); break;
 	default:
 		pstep = new FSNonLinearMechanics(&fem);
 		FileReader()->AddLogEntry("Unknown step type. Creating Structural Mechanics step");
@@ -321,10 +323,10 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
     // check if parameter is indexed by looking for tag attributes other than "lc"
     const char* szi = 0;
     int idx = 0;
-    for (int i=0; i<tag.m_natt; ++i) {
-        if (strcmp(tag.m_att[i].name(), "lc") != 0) {
-            szi = tag.m_att[i].name();
-            idx = atoi(tag.m_att[i].cvalue());
+    for (XMLAtt& att : tag.m_att) {
+        if (strcmp(att.name(), "lc") != 0) {
+            szi = att.name();
+            idx = atoi(att.cvalue());
             break;
         }
     }
@@ -438,10 +440,21 @@ bool FEBioFormat::ReadParam(ParamContainer& PC, XMLTag& tag)
 	}
 	else if (*atype == "math")
 	{
+		string smath;
+		if (tag.isleaf()) smath = tag.szvalue();
+		else
+		{
+			++tag;
+			do {
+				if (tag == "math") smath = tag.szvalue();
+				++tag;
+			} while (!tag.isend());
+		}
+
 		if (pp->IsVariable())
 		{
 			pp->SetParamType(Param_MATH);
-			pp->SetMathString(tag.szvalue());
+			pp->SetMathString(smath);
 		}
 		else FileReader()->AddLogEntry("Cannot assign math to non-variable parameter %s", pp->GetShortName());
 	}
@@ -637,7 +650,7 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	{
 		// default analysis depends on step type
 		int ntype = m_pstep->GetType();
-		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
+		if ((ntype == FE_STEP_BIPHASIC) || (ntype == FE_STEP_BIPHASIC_SOLUTE) || (ntype == FE_STEP_MULTIPHASIC) || (ntype == FE_STEP_FLUID) || (ntype == FE_STEP_FLUID_FSI) || (ntype == FE_STEP_FLUID_SOLUTES) || (ntype == FE_STEP_THERMO_FLUID) || (ntype == FE_STEP_POLAR_FLUID)) ops.nanalysis = FE_DYNAMIC;
 		else ops.nanalysis = FE_STATIC;
 	}
 
@@ -691,6 +704,26 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
+		else if (tag == "Variables")
+		{
+			++tag;
+			do
+			{
+				if (tag == "var")
+				{
+					const char* szname = tag.AttributeValue("name", true);
+					if (szname)
+					{
+						double v = 0;
+						tag.value(v);
+						Param* p = fem.AddDoubleParam(v, strdup(szname)); // TODO: memory leak!!
+						p->SetFlags(p->GetFlags() | FS_PARAM_USER);
+					}
+				}
+				else ParseUnknownTag(tag);
+				++tag;
+			} while (!tag.isend());
+		}
 		else if (tag == "Solutes")
 		{
 			// clear solutes (TODO: I don't think this is necessary)
@@ -702,7 +735,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solute")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").cvalue();
+					string name = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -718,7 +751,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							++tag;
 						} while (!tag.isend());
 					}
-					fem.AddSolute(sz, z, M, d);
+					fem.AddSolute(name, z, M, d);
 				}
 				else ParseUnknownTag(tag);
 				++tag;
@@ -735,7 +768,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 				if (tag == "solid_bound")
 				{
 					int id = tag.AttributeValue<int>("id", 0) - 1;
-					const char* sz = tag.Attribute("name").cvalue();
+					string name = tag.Attribute("name").cvalue();
 					int z = 0;
 					double M = 1;
 					double d = 1;
@@ -750,7 +783,7 @@ bool FEBioFormat::ParseGlobalsSection(XMLTag& tag)
 							else ParseUnknownTag(tag);
 							++tag;
 						} while (!tag.isend());
-						fem.AddSBM(sz, z, M, d);
+						fem.AddSBM(name, z, M, d);
 					}
 				}
 				else ParseUnknownTag(tag);
@@ -1361,6 +1394,11 @@ void FEBioFormat::ParseFiberMaterial(FSOldFiberMaterial& fibermat, XMLTag& tag)
 			++tag;
 		} while (!tag.isend());
 	}
+	else if (atype == "map")
+	{
+		fiber.m_naopt = FE_FIBER_MAP;
+		tag.value(fiber.m_map);
+	}
 	else
 	{
 		ParseUnknownAttribute(tag, "type");
@@ -1812,23 +1850,26 @@ FSReactionMaterial* FEBioFormat::ParseReaction2(XMLTag &tag)
 	FSReactionMaterial* pm = 0;
 	if (strcmp(sztype, "mass action") == 0) 
 	{
-		pm = new FSMassActionForward(fem);
+		pm = new FSMassActionReaction(fem);
 
 		++tag;
 		do
 		{
 			if (tag == "equation")
 			{
-				ProcessReactionEquation(GetFSModel(), pm, tag.m_szval.c_str());
+//				ProcessReactionEquation(GetFSModel(), pm, tag.m_szval.c_str());
+				pm->SetParamString("equation", tag.m_szval.c_str());
 			}
 			else if (tag == "rate_constant")
 			{
 				double k;
 				tag.value(k);
 
-				FSReactionRateConst* rc = new FSReactionRateConst(fem);
-				rc->SetRateConstant(k);
-				pm->SetForwardRate(rc);
+				pm->SetParamFloat("rate_constant", k);
+
+//				FSReactionRateConst* rc = new FSReactionRateConst(fem);
+//				rc->SetRateConstant(k);
+//				pm->SetForwardRate(rc);
 			}
 			++tag;
 		}
@@ -2341,7 +2382,7 @@ bool FEBioFormat::ParsePlotfileSection(XMLTag &tag)
 
 			// convert some obsolete variables
 			if (strcmp(sztype, "shell relative volume") == 0) sztype = "relative volume";
-			if (strcmp(sztype, "shell strain"         ) == 0) sztype = "Lagrange strain";
+//			if (strcmp(sztype, "shell strain"         ) == 0) sztype = "Lagrange strain";
 
 			const char* szsurf = tag.AttributeValue("surface", true);
 			if (szsurf) 
@@ -2388,11 +2429,9 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szset = tag.AttributeValue("node_set", true);
 			if (szset)
 			{
-				FSNodeSet* nset = fem.BuildFENodeSet(szset);
+				FSNodeSet* nset = fem.FindNamedNodeSet(szset);
 				if (nset)
 				{
-					GObject* po = nset->GetGObject();
-					po->AddFENodeSet(nset);
 					logVar.SetGroupID(nset->GetID());
 				}
 			}
@@ -2439,13 +2478,12 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 			const char* szset = tag.AttributeValue("elem_set", true);
 			if (szset)
 			{
-				FSPart* pg = fem.BuildFEPart(szset);
+				FSElemSet* pg = fem.FindNamedElementSet(szset);
 				if (pg)
 				{
-					GObject* po = pg->GetGObject();
-					po->AddFEPart(pg);
 					logVar.SetGroupID(pg->GetID());
 				}
+				else AddLogEntry("Could not find element set \"%s\"", szset);
 			}
 			else if (tag.isempty() == false)
 			{
@@ -2462,15 +2500,37 @@ bool FEBioFormat::ParseLogfileSection(XMLTag &tag)
 					GMeshObject* po = inst->GetGObject();
 
 					char sz[32] = { 0 };
-					sprintf(sz, "elementset%02d", po->FEParts() + 1);
-					FSPart* ps = new FSPart(po, l);
+					sprintf(sz, "elementset%02d", po->FEElemSets() + 1);
+					FSElemSet* ps = new FSElemSet(po, l);
 					ps->SetName(sz);
-					po->AddFEPart(ps);
+					po->AddFEElemSet(ps);
 
 					logVar.SetGroupID(ps->GetID());
 				}
 			}
 
+			fem.AddLogVariable(logVar);
+		}
+		else if (tag == "face_data")
+		{
+			const char* szdata = tag.AttributeValue("data", true);
+			if (szdata == 0) szdata = "";
+
+			FEBioInputModel::LogVariable logVar = FEBioInputModel::LogVariable(FSLogData::LD_FACE, szdata);
+
+			const char* szfile = tag.AttributeValue("file", true);
+			if (szfile) logVar.setFile(szfile);
+
+			const char* szset = tag.AttributeValue("surface", true);
+			if (szset)
+			{
+				FSSurface* pg = fem.FindNamedSurface(szset);
+				if (pg)
+				{
+					GObject* po = pg->GetGObject();
+					logVar.SetGroupID(pg->GetID());
+				}
+			}
 			fem.AddLogVariable(logVar);
 		}
 		else if (tag == "rigid_body_data")
@@ -2534,9 +2594,8 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 	FSModel& fem = GetFSModel();
 
 	// first, process potential attribute parameters
-	for (int i = 0; i < tag.m_natt; ++i)
+	for (XMLAtt& att : tag.m_att)
 	{
-		XMLAtt& att = tag.m_att[i];
 		Param* param = pmc->GetParam(att.name());
 		if (param)
 		{
@@ -2546,7 +2605,7 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 			case Param_CHOICE:
 			{
 				if (param->GetEnumNames())
-					ReadChoiceParam(*param, att.m_szatv);
+					ReadChoiceParam(*param, att.m_val.c_str());
 				else
 				{
 					int n;
@@ -2670,26 +2729,42 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				}
 				else
 				{
-					// see if the type attribute is defined
-					const char* sztype = tag.AttributeValue("type", true);
-					if (sztype == 0)
+					// handle special case first
+					if (prop->GetSuperClassID() == FESURFACE_ID)
 					{
-						// if not, get the default type. If none specified, we'll use the tag itself.
-						const std::string& defType = prop->GetDefaultType();
-						if (defType.empty() == false) sztype = defType.c_str();
-						else sztype = tag.Name();
+						const char* surfName = tag.szvalue();
+						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop->GetComponent());
+
+						GMeshObject* po = GetFEBioModel().GetInstance(0)->GetGObject();
+						if (po)
+						{
+							FSSurface* surf = po->FindFESurface(surfName);
+							pms->SetItemList(surf);
+						}
 					}
-
-					// some classes allow names for their properties (e.g. chemical reactions)
-					const char* szname = tag.AttributeValue("name", true);
-
-					FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
-					assert(pc->GetSuperClassID() == prop->GetSuperClassID());
-					if (pc)
+					else
 					{
-						if (szname) pc->SetName(szname);
-						prop->AddComponent(pc);
-						ParseModelComponent(pc, tag);
+						// see if the type attribute is defined
+						const char* sztype = tag.AttributeValue("type", true);
+						if (sztype == 0)
+						{
+							// if not, get the default type. If none specified, we'll use the tag itself.
+							const std::string& defType = prop->GetDefaultType();
+							if (defType.empty() == false) sztype = defType.c_str();
+							else sztype = tag.Name();
+						}
+
+						// some classes allow names for their properties (e.g. chemical reactions)
+						const char* szname = tag.AttributeValue("name", true);
+
+						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+						if (pc)
+						{
+							if (szname) pc->SetName(szname);
+							prop->AddComponent(pc);
+							ParseModelComponent(pc, tag);
+						}
 					}
 				}
 			}
@@ -2697,4 +2772,6 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 		}
 		++tag;
 	} while (!tag.isend());
+
+	pmc->UpdateData(true);
 }

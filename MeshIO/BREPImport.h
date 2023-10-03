@@ -25,9 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FileReader.h"
-#include <MeshTools/FEProject.h>
-
+#include <MeshIO/FSFileImport.h>
+#include <FEMLib/FSProject.h>
 
 class BREPImport : public FSFileImport
 {
@@ -38,7 +37,7 @@ public:
 	bool Load(const char* szfile);
 };
 
-// NOTE: There is already an IGES file reader in FEIGESFileImport.h
+// NOTE: There is already an IGES file reader in IGESFileImport.h
 class IGESImport : public FSFileImport
 {
 public:

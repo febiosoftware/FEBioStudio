@@ -120,6 +120,18 @@ void XpltReader3::XMesh::addNodeSet(XpltReader3::NodeSet& nset)
 	m_NodeSet.push_back(nset);
 }
 
+//-----------------------------------------------------------------------------
+void XpltReader3::XMesh::addElementSet(XpltReader3::ElemSet& eset)
+{
+	m_ElemSet.push_back(eset);
+}
+
+//-----------------------------------------------------------------------------
+void XpltReader3::XMesh::addFacetSet(XpltReader3::Surface& surf)
+{
+	m_FacetSet.push_back(surf);
+}
+
 //=============================================================================
 
 XpltReader3::XpltReader3(xpltFileReader* xplt) : xpltParser(xplt)
@@ -194,6 +206,14 @@ bool XpltReader3::Load(FEPostModel& fem)
 				if (m_pstate) { delete m_pstate; m_pstate = 0; }
 				if (ReadStateSection(fem) == false) break;
 				if (read_state_flag == XPLT_READ_ALL_STATES) { fem.AddState(m_pstate); m_pstate = 0; }
+				else if (read_state_flag == XPLT_READ_ALL_CONVERGED_STATES) 
+				{ 
+					if (m_pstate->m_status == 0)
+					{
+						fem.AddState(m_pstate);
+						m_pstate = 0;
+					}
+				}
 				else if (read_state_flag == XPLT_READ_STATES_FROM_LIST)
 				{
 					vector<int> state_list = m_xplt->GetReadStates();
@@ -312,10 +332,45 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	FEDataManager* pdm = fem.GetDataManager();
 	pdm->Clear();
 
-	// read nodal variables
+	// read global variables
 	int nfields = 0;
 	int i;
-	int nv = (int)m_dic.m_Node.size();
+	int nv = (int)m_dic.m_Glb.size();
+	for (i = 0; i < nv; ++i)
+	{
+		DICT_ITEM& it = m_dic.m_Glb[i];
+		it.index = nfields++;
+
+		// add global field
+		Post::ModelDataField* pdf = nullptr;
+		switch (it.ntype)
+		{
+		case FLOAT  : pdf = new FEDataField_T<Post::FEGlobalData_T<float  > >(&fem, EXPORT_DATA); break;
+		case VEC3F  : pdf = new FEDataField_T<Post::FEGlobalData_T<vec3f  > >(&fem, EXPORT_DATA); break;
+		case MAT3FS : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3fs > >(&fem, EXPORT_DATA); break;
+		case MAT3FD : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3fd > >(&fem, EXPORT_DATA); break;
+		case TENS4FS: pdf = new FEDataField_T<Post::FEGlobalData_T<tens4fs> >(&fem, EXPORT_DATA); break;
+		case MAT3F  : pdf = new FEDataField_T<Post::FEGlobalData_T<mat3f  > >(&fem, EXPORT_DATA); break;
+		case ARRAY:
+		{
+			FEArrayDataField* data = new FEArrayDataField(&fem, Post::CLASS_OBJECT, Post::DATA_REGION, Post::EXPORT_DATA);
+			data->SetArraySize(it.arraySize);
+			data->SetArrayNames(it.arrayNames);
+			pdf = data;
+		}
+		break;
+		default:
+			return errf("Error while reading dictionary.");
+		}
+		if (pdf == nullptr) return false;
+
+		if (it.szunit[0]) pdf->SetUnits(it.szunit);
+
+		pdm->AddDataField(pdf, it.szname);
+	}
+
+	// read nodal variables
+	nv = (int)m_dic.m_Node.size();
 	for (i=0; i<nv; ++i)
 	{
 		DICT_ITEM& it = m_dic.m_Node[i];
@@ -538,7 +593,8 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 	// add additional displacement fields
 	if (m_bHasDispl) 
 	{
-		pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
+		if (pdm->FindDataField("Lagrange strain") == -1)
+			pdm->AddDataField(new StrainDataField(&fem, StrainDataField::LAGRANGE), "Lagrange strain");
 		pdm->AddDataField(new FEDataField_T<NodePosition  >(&fem), "position"         , "L");
 		pdm->AddDataField(new FEDataField_T<NodeInitPos   >(&fem), "initial position" , "L");
 	}
@@ -549,7 +605,9 @@ bool XpltReader3::ReadDictionary(FEPostModel& fem)
 		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure", "P");
 		
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
+			// make sure the "solid stress" field was not added to the plot file
+			if (pdm->FindDataField("solid stress") == -1)
+				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress", "P");
 		}
 	}
 
@@ -782,7 +840,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 			Post::FEPostModel::LineObject*  ob = new Post::FEPostModel::LineObject;
 
 			char sz[DI_NAME_SIZE] = { 0 };
-			float r[6];
+			float r[6] = { 0.f };
 			int ntag = 0;
 			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 			{
@@ -823,8 +881,8 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 
 			ob->SetName(sz);
 			ob->m_tag = ntag;
-			ob->m_r1 = vec3d(r[0], r[1], r[2]);
-			ob->m_r2 = vec3d(r[3], r[4], r[5]);
+			ob->m_r1 = ob->m_r01 = vec3d(r[0], r[1], r[2]);
+			ob->m_r2 = ob->m_r02 = vec3d(r[3], r[4], r[5]);
 			ob->SetColor(GLColor(255, 0, 0));
 			fem.AddLineObject(ob);
 		}
@@ -859,15 +917,14 @@ bool XpltReader3::ReadMesh(FEPostModel &fem)
 	{
 		switch (m_ar.GetChunkID())
 		{
-		case PLT_NODE_SECTION   : if (ReadNodeSection   (fem) == false) return false; break;
-		case PLT_DOMAIN_SECTION : if (ReadDomainSection (fem) == false) return false; break;
-		case PLT_SURFACE_SECTION: if (ReadSurfaceSection(fem) == false) return false; break;
-		case PLT_NODESET_SECTION: if (ReadNodeSetSection(fem) == false) return false; break;
-		case PLT_PARTS_SECTION  : if (ReadPartsSection  (fem) == false) return false; break;
-		case PLT_OBJECTS_SECTION: if (ReadObjectsSection(fem) == false) return false; break;
-		default:
-			assert(false);
-			return errf("Error while reading mesh");
+		case PLT_NODE_SECTION      : if (ReadNodeSection      (fem) == false) return false; break;
+		case PLT_DOMAIN_SECTION    : if (ReadDomainSection    (fem) == false) return false; break;
+		case PLT_SURFACE_SECTION   : if (ReadSurfaceSection   (fem) == false) return false; break;
+		case PLT_NODESET_SECTION   : if (ReadNodeSetSection   (fem) == false) return false; break;
+		case PLT_ELEMENTSET_SECTION: if (ReadElementSetSection(fem) == false) return false; break;
+		case PLT_FACETSET_SECTION  : if (ReadFacetSetSection  (fem) == false) return false; break;
+		case PLT_PARTS_SECTION     : if (ReadPartsSection     (fem) == false) return false; break;
+		case PLT_OBJECTS_SECTION   : if (ReadObjectsSection   (fem) == false) return false; break;
 		}
 		m_ar.CloseChunk();
 	}
@@ -1152,6 +1209,127 @@ bool XpltReader3::ReadNodeSetSection(FEPostModel& fem)
 }
 
 //-----------------------------------------------------------------------------
+bool XpltReader3::ReadElementSetSection(FEPostModel& fem)
+{
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		if (m_ar.GetChunkID() == PLT_ELEMENTSET)
+		{
+			ElemSet S;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_ELEMENTSET_HDR)
+				{
+					// read the nodeset header
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						switch (m_ar.GetChunkID())
+						{
+						case PLT_ELEMENTSET_ID  : m_ar.read(S.nid); break;
+						case PLT_ELEMENTSET_SIZE: m_ar.read(S.ne); break;
+						case PLT_ELEMENTSET_NAME: m_ar.sread(S.szname, DI_NAME_SIZE); break;
+						default:
+							assert(false);
+							return errf("Error while reading ElementSet section");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				else if (nid == PLT_ELEMENTSET_LIST)
+				{
+					S.elem.assign(S.ne, 0);
+					m_ar.read(S.elem);
+				}
+				else
+				{
+					assert(false);
+					return errf("Error while reading ElementSet section");
+				}
+				m_ar.CloseChunk();
+			}
+			m_xmesh.addElementSet(S);
+		}
+		else
+		{
+			assert(false);
+			return errf("Error while reading NodeSet section");
+		}
+		m_ar.CloseChunk();
+	}
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool XpltReader3::ReadFacetSetSection(FEPostModel& fem)
+{
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		if (m_ar.GetChunkID() == PLT_FACETSET)
+		{
+			Surface S;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_FACETSET_HDR)
+				{
+					// read the header
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						switch (m_ar.GetChunkID())
+						{
+						case PLT_FACETSET_ID: m_ar.read(S.sid); break;
+						case PLT_FACETSET_SIZE: m_ar.read(S.nfaces); break;
+						case PLT_FACETSET_NAME: m_ar.sread(S.szname, DI_NAME_SIZE); break;
+						case PLT_FACETSET_MAXNODES: m_ar.read(S.maxNodes); break;
+						default:
+							assert(false);
+							return errf("Error while reading FacetSet section");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				else if (nid == PLT_FACETSET_LIST)
+				{
+					assert(S.nfaces > 0);
+					S.face.reserve(S.nfaces);
+					int n[12];
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						if (m_ar.GetChunkID() == PLT_FACET)
+						{
+							m_ar.read(n, S.maxNodes + 2);
+							FACE f;
+							f.nid = n[0];
+							f.nn = n[1];
+							for (int i = 0; i < f.nn; ++i) f.node[i] = n[2 + i];
+							S.face.push_back(f);
+						}
+						else
+						{
+							assert(false);
+							return errf("Error while reading FacetSet section");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				m_ar.CloseChunk();
+			}
+			assert(S.nfaces == S.face.size());
+			m_xmesh.addFacetSet(S);
+		}
+		else
+		{
+			assert(false);
+			return errf("Error while reading Surface section");
+		}
+		m_ar.CloseChunk();
+	}
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool XpltReader3::BuildMesh(FEPostModel &fem)
 {
 	// count all nodes
@@ -1259,11 +1437,21 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	// Next, we'll build a Node-Face lookup table
 	FSNodeFaceList NFT; NFT.Build(pmesh);
 
-	// next, we reindex the surfaces
+	// next, we reindex the surfaces and facet sets
 	for (int n=0; n< m_xmesh.surfaces(); ++n)
 	{
 		Surface& s = m_xmesh.surface(n);
 		for (int i=0; i<s.nfaces; ++i)
+		{
+			FACE& f = s.face[i];
+			f.nid = NFT.FindFace(f.node[0], f.node, f.nn);
+//			assert(f.nid >= 0);
+		}
+	}
+	for (int n = 0; n < m_xmesh.facetSets(); ++n)
+	{
+		Surface& s = m_xmesh.facetSet(n);
+		for (int i = 0; i < s.nfaces; ++i)
 		{
 			FACE& f = s.face[i];
 			f.nid = NFT.FindFace(f.node[0], f.node, f.nn);
@@ -1284,27 +1472,85 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 	}
 
 	// let's create the FE surfaces
-	for (int n=0; n< m_xmesh.surfaces(); ++n)
+	// This is no longer necessary for newer files (>= 3.2) since all
+	// facets sets are stored in the PLT_FACETSET_SECTION
+	if (m_xplt->GetHeader().nversion < 0x0032)
 	{
-		Surface& s = m_xmesh.surface(n);
-		Post::FSSurface* ps = new Post::FSSurface(pmesh);
-		if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
-		else ps->SetName(s.szname);
-		ps->m_Face.reserve(s.nfaces);
-		for (int i=0; i<s.nfaces; ++i) ps->m_Face.push_back(s.face[i].nid);
-		pmesh->AddSurface(ps);
+		for (int n=0; n< m_xmesh.surfaces(); ++n)
+		{
+			Surface& s = m_xmesh.surface(n);
+			Post::FSSurface* ps = new Post::FSSurface(pmesh);
+			if (s.szname[0]==0) { sprintf(szname, "surface%02d",n+1); ps->SetName(szname); }
+			else ps->SetName(s.szname);
+			ps->m_Face.reserve(s.nfaces);
+			for (int i=0; i<s.nfaces; ++i) ps->m_Face.push_back(s.face[i].nid);
+			pmesh->AddSurface(ps);
+		}
+	}
+	else
+	{
+		for (int n = 0; n < m_xmesh.facetSets(); ++n)
+		{
+			Surface& s = m_xmesh.facetSet(n);
+			Post::FSSurface* ps = new Post::FSSurface(pmesh);
+			if (s.szname[0] == 0) { sprintf(szname, "surface%02d", n + 1); ps->SetName(szname); }
+			else ps->SetName(s.szname);
+			ps->m_Face.reserve(s.nfaces);
+			for (int i = 0; i < s.nfaces; ++i) ps->m_Face.push_back(s.face[i].nid);
+			pmesh->AddSurface(ps);
+		}
+	}
+
+	if (m_xmesh.elementSets() > 0)
+	{
+		// let's create element sets
+		// the element IDs stored are global IDs, but we need local indices for the Post::FSElemSet.
+		// so let's build a lookup table
+		int minId = -1, maxId = -1;
+		for (int i = 0; i < pmesh->Elements(); ++i)
+		{
+			FSElement& el = pmesh->Element(i);
+			if ((minId == -1) || (el.m_nid < minId)) minId = el.m_nid;
+			if ((maxId == -1) || (el.m_nid > maxId)) maxId = el.m_nid;
+		}
+		int nsize = maxId - minId + 1;
+		vector<int> lut(nsize, -1);
+		for (int i = 0; i < pmesh->Elements(); ++i)
+		{
+			FSElement& el = pmesh->Element(i);
+			lut[el.m_nid - minId] = i;
+		}
+
+		for (int n = 0; n < m_xmesh.elementSets(); ++n)
+		{
+			ElemSet& e = m_xmesh.elementSet(n);
+			Post::FSElemSet* pg = new Post::FSElemSet(pmesh);
+			if (e.szname[0] == 0) { sprintf(szname, "ElementSet%02d", n + 1); pg->SetName(szname); }
+			else pg->SetName(e.szname);
+			pg->m_Elem.resize(e.ne);
+			for (int i = 0; i < e.elem.size(); ++i)
+			{
+				pg->m_Elem[i] = lut[e.elem[i] - minId];
+			}
+			pmesh->AddElemSet(pg);
+		}
 	}
 
 	// let's create the parts
-	for (int n=0; n< m_xmesh.domains(); ++n)
+	// This is no longer necessary for newer files (>= 3.2) since all
+	// element sets are stored in the PLT_ELEMENTSET_SECTION for all domains
+	if (m_xplt->GetHeader().nversion < 0x0032)
 	{
-		Domain& s = m_xmesh.domain(n);
-		Post::FSPart* pg = new Post::FSPart(pmesh);
-		if (s.szname[0]==0) { sprintf(szname, "part%02d",n+1); pg->SetName(szname); }
-		else pg->SetName(s.szname);
-		pg->m_Elem.resize(s.ne);
-		pg->m_Elem = s.elist;
-		pmesh->AddPart(pg);
+		for (int n = 0; n < m_xmesh.domains(); ++n)
+		{
+			Domain& s = m_xmesh.domain(n);
+			Post::FSElemSet* pg = new Post::FSElemSet(pmesh);
+			if (s.szname[0] == 0) { sprintf(szname, "part%02d", n + 1); pg->SetName(szname); }
+			else pg->SetName(s.szname);
+			pg->m_Elem.resize(s.ne);
+			pg->m_Elem = s.elist;
+			pmesh->AddElemSet(pg);
+		}
 	}
 
 	// store the current mesh
@@ -1558,7 +1804,100 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 //-----------------------------------------------------------------------------
 bool XpltReader3::ReadGlobalData(FEPostModel& fem, FEState* pstate)
 {
-	return false;
+	FEDataManager& dm = *fem.GetDataManager();
+	Post::FEPostMesh& mesh = *GetCurrentMesh();
+	while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+	{
+		if (m_ar.GetChunkID() == PLT_STATE_VARIABLE)
+		{
+			int nv = -1;
+			while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+			{
+				int nid = m_ar.GetChunkID();
+				if (nid == PLT_STATE_VAR_ID) m_ar.read(nv);
+				else if (nid == PLT_STATE_VAR_DATA)
+				{
+					nv--;
+					assert((nv >= 0) && (nv < (int)m_dic.m_Glb.size()));
+					if ((nv < 0) || (nv >= (int)m_dic.m_Glb.size())) return errf("Failed reading global data");
+
+					DICT_ITEM it = m_dic.m_Glb[nv];
+					int nfield = dm.FindDataField(it.szname);
+					int ndata = 0;
+					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
+					{
+						int ns = m_ar.GetChunkID();
+						assert(ns == 0);
+
+						if (it.ntype == FLOAT)
+						{
+							float a;
+							m_ar.read(a);
+
+							Post::FEGlobalData_T<float>& df = dynamic_cast<Post::FEGlobalData_T<float>&>(pstate->m_Data[nfield]);
+							df.setValue(a);
+						}
+						else if (it.ntype == VEC3F)
+						{
+							vec3f a;
+							m_ar.read(a);
+
+							Post::FEGlobalData_T<vec3f>& dv = dynamic_cast<Post::FEGlobalData_T<vec3f>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == MAT3FS)
+						{
+							mat3fs a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<mat3fs>& dv = dynamic_cast<Post::FEGlobalData_T<mat3fs>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == TENS4FS)
+						{
+							tens4fs a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<tens4fs>& dv = dynamic_cast<Post::FEGlobalData_T<tens4fs>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == MAT3F)
+						{
+							mat3f a;
+							m_ar.read(a);
+							Post::FEGlobalData_T<mat3f>& dv = dynamic_cast<Post::FEGlobalData_T<mat3f>&>(pstate->m_Data[nfield]);
+							dv.setValue(a);
+						}
+						else if (it.ntype == ARRAY)
+						{
+							Post::FEGlobalArrayData& dv = dynamic_cast<Post::FEGlobalArrayData&>(pstate->m_Data[nfield]);
+							int n = dv.components();
+							vector<float> a(n);
+							m_ar.read(a);
+							dv.setData(a);
+						}
+						else
+						{
+							assert(false);
+							return errf("Error while reading node data");
+						}
+						m_ar.CloseChunk();
+					}
+				}
+				else
+				{
+					assert(false);
+					return errf("Error while reading node data");
+				}
+				m_ar.CloseChunk();
+			}
+		}
+		else
+		{
+			assert(false);
+			return errf("Error while reading node data");
+		}
+		m_ar.CloseChunk();
+	}
+	return true;
 }
 
 //-----------------------------------------------------------------------------

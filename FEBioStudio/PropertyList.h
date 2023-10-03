@@ -27,8 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <QtCore/QVariant>
 #include <GLWLib/convert.h>
-#include <FECore/vec3d.h>
-#include <FECore/mat3d.h>
+#include <FSCore/math3d.h>
 
 class Param;
 

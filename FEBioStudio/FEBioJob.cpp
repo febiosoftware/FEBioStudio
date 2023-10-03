@@ -55,6 +55,9 @@ CFEBioJob::CFEBioJob(CDocument* doc) : m_doc(doc)
 	SetName(ss.str());
 
 	m_status = NONE;
+
+	m_bhasProgress = false;
+	m_pct = 0.0;
 }
 
 CFEBioJob::~CFEBioJob()
@@ -81,6 +84,9 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 	}
 
 	m_status = NONE;
+
+	m_bhasProgress = false;
+	m_pct = 0.0;
 
 	// set default plot file name
 	m_plotFile = m_febFile;
@@ -122,6 +128,28 @@ CFEBioJob::CFEBioJob(CDocument* doc, const std::string& jobName, const std::stri
 CDocument* CFEBioJob::GetDocument()
 {
 	return m_doc;
+}
+
+void CFEBioJob::SetProgress(double pct)
+{
+	m_bhasProgress = true;
+	m_pct = pct;
+}
+
+bool CFEBioJob::HasProgress() const
+{
+	return m_bhasProgress;
+}
+
+double CFEBioJob::GetProgress() const
+{
+	return m_pct;
+}
+
+void CFEBioJob::ClearProgress()
+{
+	m_bhasProgress = false;
+	m_pct = 0.0;
 }
 
 void CFEBioJob::UpdateWorkingDirectory(const std::string& dir)

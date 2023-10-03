@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <FECore/FETransform.h>
+#include <GLLib/GLMesh.h>
 #include <vector>
 
 namespace Post {
@@ -43,7 +44,6 @@ class CGLPlaneCutPlot : public CGLPlot
 		struct FACE
 		{
 			int		mat;
-			vec3d	norm;
 			vec3d	r[3];
 			float	tex[3];
 			bool	bactive;
@@ -83,8 +83,12 @@ public:
 	float GetRotation() { return m_rot; }
 
 	void GetNormalizedEquations(double a[4]);
-	vec3d GetPlaneNormal();
+	vec3d GetPlaneNormal() const;
+	void SetPlaneNormal(const vec3d& n);
 	float GetPlaneOffset();
+	void SetPlaneOffset(float a);
+	float GetOffsetScale() const;
+	vec3d GetPlanePosition() const;
 
 	void Render(CGLContext& rc) override;
 	void RenderPlane();
@@ -101,6 +105,13 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	void UpdatePlaneCut();
+
+public:
+	bool Intersects(Ray& ray, Intersection& q) override;
+	FESelection* SelectComponent(int index) override;
+	void ClearSelection() override;
+
 protected:
 	void RenderSlice();
 	void RenderMesh();
@@ -109,10 +120,14 @@ protected:
 
 	void ReleasePlane();
 	static int GetFreePlane();
-	void UpdateSlice();
 
 	void AddDomain(FEPostMesh* pm, int n);
 	void AddFaces(FEPostMesh* pm);
+
+	void UpdateTriMesh();
+	void UpdateLineMesh();
+	void UpdateOutlineMesh();
+	void UpdateSlice();
 
 public:
 	static int ClipPlanes();
@@ -147,5 +162,12 @@ protected:
 	int		m_nclip;								// clip plane number
 	static	std::vector<int>				m_clip;	// avaialabe clip planes
 	static	std::vector<CGLPlaneCutPlot*>	m_pcp;
+
+	GLTriMesh	m_activeMesh;	// for rendering active faces (i.e. that need texture)
+	GLTriMesh	m_inactiveMesh;	// for rendering inactive faces (i.e. that use material color)
+	GLLineMesh	m_lineMesh;	// for rendering mesh lines
+	GLLineMesh	m_outlineMesh;	// for rendering the outline
+
+	bool	m_bupdateSlice; // update slice before rendering
 };
 }

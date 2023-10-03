@@ -1,5 +1,5 @@
 #pragma once
-#include <FEMLib/FECoreMaterial.h>
+#include "FECoreMaterial.h"
 
 class FSUserMaterial : public FSMaterial
 {

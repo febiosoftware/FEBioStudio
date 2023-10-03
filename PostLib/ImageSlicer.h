@@ -31,13 +31,14 @@ SOFTWARE.*/
 #include <ImageLib/RGBAImage.h>
 #include "ColorMap.h"
 
-namespace Post {
-
 class CImageModel;
+class CImage;
+
+namespace Post {
 
 class CImageSlicer : public CGLImageRenderer
 {
-	enum { ORIENTATION, OFFSET, COLOR_MAP };
+	enum { ORIENTATION, OFFSET, COLOR_MAP, TRANSPARENCY };
 
 public:
 	CImageSlicer(CImageModel* img);
@@ -60,15 +61,22 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+    void SetImageSlice(CImage* img);
+
 private:
 	void BuildLUT();
 
 	void UpdateSlice();
 
+    template<class pType>
+    void CreateCRGBAImage(CImage& slice);
+
 private:
 	CRGBAImage		m_im;	// 2D image that will be displayed
 	int				m_LUTC[4][256];	// color lookup table
 	bool			m_reloadTexture;
+
+    CImage* m_imageSlice; // optional slice of image to be rendered instead of the calculated slice
 
 	Post::CColorTexture	m_Col;
 

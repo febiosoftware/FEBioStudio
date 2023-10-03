@@ -194,8 +194,8 @@ void GShellSection::Load(IArchive& ar)
 		case CID_OBJ_SHELL_DOMAIN:
 		{
 			FEShellFormulation* shell = new FEShellFormulation(nullptr);
-			SetElementFormulation(shell);
 			shell->Load(ar);
+			SetElementFormulation(shell);
 		}
 		break;
 		}

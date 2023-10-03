@@ -67,7 +67,7 @@ void CMainWindow::on_actionShowGrid_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_bgrid = b;
 	RedrawGL();
 }
@@ -77,7 +77,7 @@ void CMainWindow::on_actionShowMeshLines_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_bmesh = b;
 	Update(this);
 }
@@ -87,7 +87,7 @@ void CMainWindow::on_actionShowEdgeLines_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_bfeat = b;
 	Update(this);
 }
@@ -97,7 +97,7 @@ void CMainWindow::on_actionBackfaceCulling_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_bcull = b;
 	Update(this);
 }
@@ -124,7 +124,7 @@ void CMainWindow::on_actionShowNormals_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_bnorm = b;
 	RedrawGL();
 }
@@ -147,7 +147,7 @@ void CMainWindow::on_actionShowMatAxes_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_blma = b;
 	RedrawGL();
 }
@@ -157,8 +157,38 @@ void CMainWindow::on_actionShowDiscrete_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_showDiscrete = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShowRigidBodies_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_brigid = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShowRigidJoints_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_bjoint = b;
+	RedrawGL();
+}
+
+void CMainWindow::on_actionShowRigidLabels_toggled(bool b)
+{
+	CDocument* doc = GetDocument();
+	if (doc == nullptr) return;
+
+	GLViewSettings& view = GetGLView()->GetViewSettings();
+	view.m_showRigidLabels = b;
 	RedrawGL();
 }
 
@@ -167,7 +197,7 @@ void CMainWindow::on_actionToggleLight_triggered()
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_bLighting = !view.m_bLighting;
 	RedrawGL();
 }
@@ -212,7 +242,7 @@ void CMainWindow::on_actionRenderMode_toggled(bool b)
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	VIEW_SETTINGS& view = GetGLView()->GetViewSettings();
+	GLViewSettings& view = GetGLView()->GetViewSettings();
 	view.m_nrender = (b ? RENDER_WIREFRAME : RENDER_SOLID);
 	RedrawGL();
 }
@@ -242,7 +272,7 @@ void CMainWindow::on_actionViewVPSave_triggered()
 
 	static int n = 0; n++;
 	char szname[64] = { 0 };
-	sprintf(szname, "ViewPoint%02d", n);
+	snprintf(szname, sizeof szname, "ViewPoint%02d", n);
 	t.SetName(szname);
 	GLCameraTransform* vp = view.AddCameraKey(t);
 	ui->postPanel->Update();
@@ -310,4 +340,10 @@ void CMainWindow::on_actionSyncViews_triggered()
 void CMainWindow::on_actionToggleConnected_triggered()
 {
 	ui->glw->glc->toggleSelectConnected();
+}
+
+void CMainWindow::on_actionToggleFPS_triggered()
+{
+	GetGLView()->ToggleFPS();
+	RedrawGL();
 }

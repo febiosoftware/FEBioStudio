@@ -38,7 +38,7 @@ SOFTWARE.*/
 #include "CreateP2PlinePane.h"
 #include "CreateSpringPane.h"
 #include <GeomLib/GOCCObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 //------------------------------------------------------------------------------------------------------------
 REGISTER_CLASS2(GBox               , CLASS_OBJECT, "Box"            , ":/icons/box.png"          , 0);

@@ -59,10 +59,14 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostLib/constants.h>
 #include <PostLib/evaluate.h>
-#include <PostGL/GLProbe.h>
+#include <PostGL/GLPointProbe.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
+#include <PostGL/GLPlotGroup.h>
+#include <PostLib/FEMeshData_T.h>
 #include <FECore/MathObject.h>
+#include <FECore/MObjBuilder.h>
+#include "units.h"
 
 class TimeRangeOptionsUI
 {
@@ -118,23 +122,34 @@ bool TimeRangeOptions::autoRangeUpdate()
 	return ui->autoRange->isChecked();
 }
 
-void TimeRangeOptions::setUserTimeRange(int imin, int imax)
+void TimeRangeOptions::setUserTimeRange(int imin, int imax, int istep)
 {
-	ui->timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
+	if (istep == 1)
+		ui->timeRange->setText(QString("%1:%2").arg(imin).arg(imax));
+	else
+		ui->timeRange->setText(QString("%1:%2:%3").arg(imin).arg(imax).arg(istep));
 }
 
-void TimeRangeOptions::getUserTimeRange(int& imin, int& imax)
+void TimeRangeOptions::getUserTimeRange(int& imin, int& imax, int& istep)
 {
 	QStringList l = ui->timeRange->text().split(':');
 	imin = imax = 0;
 	if (l.size() == 1)
 	{
 		imin = imax = l.at(0).toInt();
+		istep = 1;
 	}
-	else if (l.size() > 1)
+	else if (l.size() == 2)
 	{
 		imin = l.at(0).toInt();
 		imax = l.at(1).toInt();
+		istep = 1;
+	}
+	else if (l.size() > 2)
+	{
+		imin = l.at(0).toInt();
+		imax = l.at(1).toInt();
+		istep = l.at(2).toInt();
 	}
 }
 
@@ -641,11 +656,38 @@ void MathPlot::onCalculate()
 	}
 }
 
+MathPlot* MathPlot::m_pThis = nullptr;
+
+double MathPlot::graphdata(double x)
+{ 
+	if (m_pThis == nullptr) return 0.0;
+	LoadCurve& lc = m_pThis->m_data;
+
+	if (lc.Points() == 0) return 0.0;
+
+	return lc.value(x); 
+}
+
 void MathPlot::draw(QPainter& p)
 {
 	if (m_bvalid == false) return;
+	m_pThis = this;
 
 	p.setPen(QPen(m_col, 2));
+
+	MObjBuilder::Add1DFunction("_data", graphdata);
+	m_data.Clear();
+	if (m_graph->plots() == 1)
+	{
+		m_data.SetInterpolator(PointCurve::SMOOTH);
+		m_data.SetExtendMode(PointCurve::CONSTANT);
+		CPlotData& plt = m_pThis->m_graph->getPlotData(0);
+		for (int i = 0; i < plt.size(); ++i)
+		{
+			QPointF& pi = plt.Point(i);
+			m_data.Add(pi.x(), pi.y());
+		}
+	}
 
 	MSimpleExpression m;
 	MVariable* xvar = m.AddVariable("x");
@@ -713,7 +755,7 @@ public:
 		m_stack->addWidget(dummy);
 
 		QStringList markersTypes;
-		markersTypes << "None" << "Square" << "Circle" << "Diamond" << "Triangle" << "Cross" << "Plus";
+		markersTypes << "(None)" << "Square" << "Circle" << "Diamond" << "Triangle" << "Cross" << "Plus";
 
 		QFormLayout* l = new QFormLayout;
 		l->addRow("label", m_label = new QLineEdit);
@@ -741,7 +783,7 @@ public:
 		QObject::connect(m_markerType, SIGNAL(currentIndexChanged(int)), mapper, SLOT(map())); mapper->setMapping(m_markerType, 2);
 		QObject::connect(m_markerSize, SIGNAL(valueChanged(int)), mapper, SLOT(map())); mapper->setMapping(m_markerSize, 3);
 
-		QObject::connect(mapper, SIGNAL(mapped(int)), w, SLOT(onDataChange(int)));
+		QObject::connect(mapper, SIGNAL(mappedInt(int)), w, SLOT(onDataChange(int)));
 	}
 };
 
@@ -843,6 +885,8 @@ public:
 	CDataSelectorButton*	selectY;		// select the Y data field
 	QToolBox*				tools;			// the tools panel
 
+	QVBoxLayout* layout;
+
 	QAction* actionSave;
 	QAction* actionAddToModel;
 	QAction* actionClipboard;
@@ -910,9 +954,14 @@ public:
 		selectPlot->addItem("Time-Scatter");
 
 		// data source
+		QWidget* sourceWidget = new QWidget;
+		QHBoxLayout* sourceWidgetLayout = new QHBoxLayout;
 		dataSource = new QComboBox;
 		dataSource->setObjectName("dataSource");
 		dataSource->addItem("selection");
+		sourceWidgetLayout->addWidget(new QLabel("Source:"));
+		sourceWidgetLayout->addWidget(dataSource);
+		sourceWidget->setLayout(sourceWidgetLayout);
 
 		// create X data selection box
 		selectX = new CDataFieldSelector;
@@ -944,8 +993,7 @@ public:
 		actionSnapshot = toolBar->addAction(QIcon(QString(":/icons/bgimage.png")), "Save picture"); actionSnapshot->setObjectName("actionSnapshot");
 		actionAddToModel = toolBar->addAction(QIcon(":/icons/addtomodel.png"), "Add to model tree"); actionAddToModel->setObjectName("actionAddToModel");
 
-		toolBar->addWidget(new QLabel("Source:"));
-		actionSource = toolBar->addWidget(dataSource);
+		actionSource = toolBar->addWidget(sourceWidget);
 		actionType = toolBar->addWidget(new QLabel("Type: "));
 		actionPlot = toolBar->addWidget(selectPlot);
 		actionSelectX = toolBar->addWidget(x);
@@ -965,7 +1013,7 @@ public:
 		actionProps = zoomBar->addAction(QIcon(QString(":/icons/properties.png")), "Properties"); actionProps->setObjectName("actionProps");
 
 		QWidget* mainWidget = new QWidget;
-		QVBoxLayout* layout = new QVBoxLayout;
+		layout = new QVBoxLayout;
 
 		layout->addWidget(toolBar);
 		layout->addWidget(centralWidget);
@@ -991,6 +1039,7 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 	m_nTrackTime = TRACK_TIME;
 	m_nUserMin = 1;
 	m_nUserMax = -1;
+	m_nUserStep = 1;
 
 	// delete the window when it's closed
 	setAttribute(Qt::WA_DeleteOnClose);
@@ -1015,7 +1064,7 @@ CGraphWindow::CGraphWindow(CMainWindow* pwnd, CPostDocument* postDoc, int flags)
 
 	if (ui->range)
 	{
-		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax);
+		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax, m_nUserStep);
 	}
 	setMinimumWidth(500);
 
@@ -1079,14 +1128,15 @@ int CGraphWindow::GetTimeTrackOption()
 }
 
 //-----------------------------------------------------------------------------
-void CGraphWindow::GetUserTimeRange(int& minTime, int& maxTime)
+void CGraphWindow::GetUserTimeRange(int& minTime, int& maxTime, int& step)
 {
 	minTime = m_nUserMin - 1;
 	maxTime = (m_nUserMax != -1 ? m_nUserMax - 1 : -1);
+	step = m_nUserStep;
 }
 
 //-----------------------------------------------------------------------------
-void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
+void CGraphWindow::GetTimeRange(int& minTime, int& maxTime, int& timeStep)
 {
 	CPostDocument* doc = GetPostDoc();
 	if (doc == nullptr) return;
@@ -1096,12 +1146,12 @@ void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
 	int nsteps = doc->GetStates();
 
 	// Figure out the time range
-	int nmin = 0, nmax = 0;
+	int nmin = 0, nmax = 0, nstep = 1;
 	int trackTime = GetTimeTrackOption();
 	if (trackTime == TRACK_USER_RANGE)
 	{
 		// get the user defined range
-		GetUserTimeRange(nmin, nmax);
+		GetUserTimeRange(nmin, nmax, nstep);
 	}
 	else if (trackTime == TRACK_TIME)
 	{
@@ -1123,6 +1173,7 @@ void CGraphWindow::GetTimeRange(int& minTime, int& maxTime)
 
 	minTime = nmin;
 	maxTime = nmax;
+	timeStep = nstep;
 }
 
 //-----------------------------------------------------------------------------
@@ -1267,6 +1318,12 @@ void CGraphWindow::AddToolBarWidget(QWidget* w)
 }
 
 //-----------------------------------------------------------------------------
+void CGraphWindow::AddPanel(QWidget* w)
+{
+	if (w) ui->layout->addWidget(w);
+}
+
+//-----------------------------------------------------------------------------
 void CGraphWindow::ShowAddToModelButton(bool b)
 {
 	ui->actionAddToModel->setVisible(b);
@@ -1300,7 +1357,9 @@ void CGraphWindow::on_selectY_currentValueChanged(int)
 //-----------------------------------------------------------------------------
 void CGraphWindow::on_selectPlot_currentIndexChanged(int index)
 {
-	Update(true);
+	int n = ui->dataSource->currentIndex();
+	setDataSource(n);
+	Update(false);
 }
 
 //-----------------------------------------------------------------------------
@@ -1399,7 +1458,7 @@ void CGraphWindow::on_range_optionsChanged()
 	case 1: m_nTrackTime = TRACK_CURRENT_TIME; break;
 	case 2: m_nTrackTime = TRACK_USER_RANGE;
 	{
-		ui->range->getUserTimeRange(m_nUserMin, m_nUserMax);
+		ui->range->getUserTimeRange(m_nUserMin, m_nUserMax, m_nUserStep);
 
 		CPostDocument* doc = GetPostDoc();
 		if (doc)
@@ -1423,7 +1482,7 @@ void CGraphWindow::on_range_optionsChanged()
 			}
 		}
 
-		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax);
+		ui->range->setUserTimeRange(m_nUserMin, m_nUserMax, m_nUserStep);
 	}
 	break;
 	default:
@@ -1487,6 +1546,7 @@ CModelGraphWindow::CModelGraphWindow(CMainWindow* wnd, CPostDocument* postDoc) :
 {
 	m_firstState = -1;
 	m_lastState = -1;
+	m_incState = 1;
 
 	m_dataX = -1;
 	m_dataY = -1;
@@ -1522,13 +1582,27 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		// update the data sources
 		QStringList sourceNames;
 		sourceNames << "selection";
+
+		// global data 
+		Post::FEDataManager* DM = fem->GetDataManager();
+		for (int i = 0; i < DM->DataFields(); ++i)
+		{
+			Post::FEDataFieldPtr pdf = DM->DataField(i);
+			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			{
+				sourceNames << QString::fromStdString((*pdf)->GetName());
+			}
+		}
+
 		for (int i = 0; i < fem->PlotObjects(); ++i)
 		{
 			sourceNames << QString::fromStdString(fem->GetPlotObject(i)->GetName());
 		}
+
+		// plots
 		for (int i = 0; i < glm->Plots(); ++i)
 		{
-			Post::GLProbe* p = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+			Post::GLPointProbe* p = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 			if (p)
 			{
 				sourceNames << QString::fromStdString(p->GetName());
@@ -1544,6 +1618,21 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 			if (mp)
 			{
 				sourceNames << QString::fromStdString(mp->GetName());
+			}
+
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(glm->Plot(i));
+			if (pg)
+			{
+				QString s = QString::fromStdString(pg->GetName());
+				for (int j = 0; j < pg->Plots(); ++j)
+				{
+					Post::GLMusclePath* pj = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(j));
+					if (pj)
+					{
+						QString si = QString("%1.%2").arg(s).arg(QString::fromStdString(pj->GetName()));
+						sourceNames << si;
+					}
+				}
 			}
 		}
 		SetDataSource(sourceNames);
@@ -1567,8 +1656,8 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	//	if (m_bUserRange && (breset == false)) return;
 
 	// Get the time step range
-	int nmin = 0, nmax = 0;
-	GetTimeRange(nmin, nmax);
+	int nmin = 0, nmax = 0, nstep = 1;
+	GetTimeRange(nmin, nmax, nstep);
 
 	// plot type
 	int nplotType = GetCurrentPlotType();
@@ -1608,6 +1697,8 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 //		if ((nmin == m_firstState) && (nmax == m_lastState) && (m_dataX == m_dataXPrev) && (m_dataY == m_dataYPrev) && (m_xtype == m_xtypeprev)) return;
 //	}
 
+	int currentSource = currentDataSource();
+
 	// set current time point index (TODO: Not sure if this is still used)
 	//	pview->SetCurrentTimeIndex(ntime);
 
@@ -1619,6 +1710,24 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	// get the title
 	QString xtext = GetCurrentXText();
 	QString ytext = GetCurrentYText();
+
+	// get the units (if defined)
+	if (currentSource == 0)
+	{
+		const char* szunits = fem.GetDataManager()->getDataUnits(m_dataX);
+		if (szunits)
+		{
+			QString s = Units::GetUnitString(szunits);
+			xtext += QString(" [%1]").arg(s);
+		}
+		szunits = fem.GetDataManager()->getDataUnits(m_dataY);
+		if (szunits)
+		{
+			QString s = Units::GetUnitString(szunits);
+			ytext += QString(" [%1]").arg(s);
+		}
+	}
+
 	SetXAxisLabel(xtext);
 	SetYAxisLabel(ytext);
 	if (nplotType == LINE_PLOT)
@@ -1632,6 +1741,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 
 	m_firstState = nmin;
 	m_lastState = nmax;
+	m_incState = nstep;
 
 	// we need to update the displacement map for all time steps
 	// since the strain calculations depend on it
@@ -1646,7 +1756,6 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	ClearPlotsData();
 	m_pltCounter = 0;
 
-	int currentSource = currentDataSource();
 	if (currentSource == 0)
 	{
 		// add selections
@@ -1657,7 +1766,25 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 	}
 	else
 	{
+		// check global data
 		int n = currentSource - 1;
+
+		Post::FEDataManager* DM = fem.GetDataManager();
+		for (int i = 0; i < DM->DataFields(); ++i)
+		{
+			Post::FEDataFieldPtr pdf = DM->DataField(i);
+			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			{
+				if (n == 0)
+				{
+					addGlobalData(*pdf, i);
+					n = -1;
+					break;
+				}
+				else n--;
+			}
+		}
+
 		if ((n >= 0) && (n < fem.PlotObjects()))
 		{
 			addObjectData(n);
@@ -1669,7 +1796,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 			int m = 0;
 			for (int i = 0; i < glm->Plots(); ++i)
 			{
-				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 				if (probe)
 				{
 					if (m == n)
@@ -1702,6 +1829,26 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 					m++;
 				}
 
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(glm->Plot(i));
+				if (pg)
+				{
+					bool found = false;
+					for (int j = 0; j < pg->Plots(); ++j)
+					{
+						Post::GLMusclePath* mpj = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(j));
+						if (mpj)
+						{
+							if (m == n)
+							{
+								addMusclePathData(mpj);
+								found = true;
+								break;
+							}
+							m++;
+						}
+					}
+					if (found) break;
+				}
 			}
 		}
 	}
@@ -1734,6 +1881,23 @@ void CModelGraphWindow::setDataSource(int n)
 	else
 	{
 		n--;
+
+		Post::FEDataManager* DM = fem.GetDataManager();
+		for (int i = 0; i < DM->DataFields(); ++i)
+		{
+			Post::FEDataFieldPtr pdf = DM->DataField(i);
+			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			{
+				if (n == 0)
+				{
+					SetYDataSelector(new CPlotGlobalDataSelector(pdf));
+					n = -1;
+					break;
+				}
+				else n--;
+			}
+		}
+
 		if ((n >= 0) && (n < fem.PlotObjects()))
 		{
 			SetYDataSelector(new CPlotObjectDataSelector(fem.GetPlotObject(n)));
@@ -1753,7 +1917,7 @@ void CModelGraphWindow::setDataSource(int n)
 			int m = 0;
 			for (int i = 0; i < glm->Plots(); ++i)
 			{
-				Post::GLProbe* probe = dynamic_cast<Post::GLProbe*>(glm->Plot(i));
+				Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(glm->Plot(i));
 				if (probe)
 				{
 					if (m == n)
@@ -1798,6 +1962,27 @@ void CModelGraphWindow::setDataSource(int n)
 					m++;
 				}
 
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(glm->Plot(i));
+				if (pg)
+				{
+					bool found = false;
+					for (int j = 0; j < pg->Plots(); ++j)
+					{
+						Post::GLMusclePath* mpj = dynamic_cast<Post::GLMusclePath*>(pg->GetPlot(j));
+						if (mpj)
+						{
+							if (m == n)
+							{
+								SetYDataSelector(new CMusclePathDataSelector());
+								Update(false, true);
+								found = true;
+								break;
+							}
+							m++;
+						}
+					}
+					if (found) break;
+				}
 			}
 		}
 	}
@@ -1866,6 +2051,41 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 }
 
 //-----------------------------------------------------------------------------
+void CModelGraphWindow::addGlobalData(Post::ModelDataField* pdf, int n)
+{
+	CPostDocument* doc = GetPostDoc();
+	Post::FEPostModel& fem = *doc->GetFSModel();
+
+	int nsteps = m_lastState - m_firstState + 1;
+	vector<float> xdata(nsteps);
+	vector<float> ydata(nsteps, 0.f);
+
+	for (int j = 0; j < nsteps; j++) xdata[j] = fem.GetState(j + m_firstState)->m_time;
+
+	for (int j = 0; j < nsteps; ++j)
+	{
+		Post::FEState* ps = fem.GetState(j);
+		Post::FEMeshData& data = ps->m_Data[n];
+		if (dynamic_cast<Post::FEGlobalData_T<float>*>(&data))
+		{
+			Post::FEGlobalData_T<float>& df = dynamic_cast<Post::FEGlobalData_T<float>&>(data);
+			float val = df.value();
+			ydata[j] = val;
+		}
+		else if (dynamic_cast<Post::FEGlobalArrayData*>(&data))
+		{
+			Post::FEGlobalArrayData& dv = dynamic_cast<Post::FEGlobalArrayData&>(data);
+			float val = dv.eval(m_dataY - 1);
+			ydata[j] = val;
+		}
+	}
+
+	CPlotData* plot = nextData();
+	plot->setLabel(QString::fromStdString(pdf->GetName()));
+	for (int j = 0; j < nsteps; ++j) plot->addPoint(xdata[j], ydata[j]);
+}
+
+//-----------------------------------------------------------------------------
 void CModelGraphWindow::addObjectData(int n)
 {
 	CPostDocument* doc = GetPostDoc();
@@ -1911,7 +2131,7 @@ void CModelGraphWindow::addObjectData(int n)
 }
 
 //-----------------------------------------------------------------------------
-void CModelGraphWindow::addProbeData(Post::GLProbe* probe)
+void CModelGraphWindow::addProbeData(Post::GLPointProbe* probe)
 {
 	CPostDocument* doc = GetPostDoc();
 	Post::FEPostModel& fem = *doc->GetFSModel();
@@ -2081,9 +2301,13 @@ void CModelGraphWindow::addSelectedNodes()
 				state1 = tmp;
 			}
 
+			int ninc = m_incState;
+			if (ninc < 1) ninc = 1;
+
 			int nsteps = state1 - state0 + 1;
-			if (nsteps > 32) nsteps = 32;
-			for (int i = state0; i < state0 + nsteps; ++i)
+			if (nsteps / ninc > 32) nsteps = 32 * ninc;
+
+			for (int i = state0; i < state0 + nsteps; i += ninc)
 			{
 				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
@@ -2100,9 +2324,10 @@ void CModelGraphWindow::addSelectedNodes()
 					// evaluate y-field
 					TrackNodeHistory(sel[i], &ydata[0], m_dataY, state0, state0 + nsteps - 1);
 
-					for (int j = 0; j < nsteps; ++j)
+					int m = 0;
+					for (int j = 0; j < nsteps; j += ninc)
 					{
-						CPlotData& p = GetPlotWidget()->getPlotData(j);
+						CPlotData& p = GetPlotWidget()->getPlotData(m++);
 						p.addPoint(xdata[j], ydata[j]);
 					}
 				}
@@ -2242,8 +2467,13 @@ void CModelGraphWindow::addSelectedFaces()
 		if (sel.empty() == false)
 		{
 			int nsteps = m_lastState - m_firstState + 1;
-			if (nsteps > 32) nsteps = 32;
-			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
+
+			int ninc = m_incState;
+			if (ninc < 1) ninc = 1;
+
+			if (nsteps / ninc > 32) nsteps = 32*ninc;
+
+			for (int i = m_firstState; i < m_firstState + nsteps; i += ninc)
 			{
 				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
@@ -2259,9 +2489,10 @@ void CModelGraphWindow::addSelectedFaces()
 				// evaluate y-field
 				TrackFaceHistory(sel[i], &ydata[0], m_dataY, m_firstState, m_lastState);
 
+				int m = 0;
 				for (int j = 0; j < nsteps; ++j)
 				{
-					CPlotData& p = GetPlotWidget()->getPlotData(j);
+					CPlotData& p = GetPlotWidget()->getPlotData(m++);
 					p.addPoint(xdata[j], ydata[j]);
 				}
 			}
@@ -2363,9 +2594,13 @@ void CModelGraphWindow::addSelectedElems()
 
 		if (sel.empty() == false)
 		{
+			int ninc = m_incState;
+			if (ninc < 1) ninc = 1;
+
 			int nsteps = m_lastState - m_firstState + 1;
-			if (nsteps > 32) nsteps = 32;
-			for (int i = m_firstState; i < m_firstState + nsteps; ++i)
+			if (nsteps / ninc > 32) nsteps = 32 * ninc;
+
+			for (int i = m_firstState; i < m_firstState + nsteps; i += ninc)
 			{
 				CPlotData* plot = nextData();
 				plot->setLabel(QString("%1").arg(fem.GetState(i)->m_time));
@@ -2382,9 +2617,10 @@ void CModelGraphWindow::addSelectedElems()
 					// evaluate y-field
 					TrackElementHistory(sel[i], &ydata[0], m_dataY, m_firstState, m_lastState);
 
-					for (int j = 0; j < nsteps; ++j)
+					int m = 0;
+					for (int j = 0; j < nsteps; j += ninc)
 					{
-						CPlotData& p = GetPlotWidget()->getPlotData(j);
+						CPlotData& p = GetPlotWidget()->getPlotData(m++);
 						p.addPoint(xdata[j], ydata[j]);
 					}
 				}

@@ -37,6 +37,58 @@ namespace Post {
 
 //=============================================================================
 // 
+//    G L O B A L   D A T A
+// 
+//=============================================================================
+
+//-----------------------------------------------------------------------------
+// base class for global data
+class FEGlobalData : public FEMeshData
+{
+public:
+	FEGlobalData(FEState* state, Data_Type ntype) : FEMeshData(state, ntype, DATA_REGION){}
+};
+
+template <typename T> class FEGlobalData_T : public FEGlobalData
+{
+public:
+	FEGlobalData_T(FEState* state, ModelDataField* pdf) : FEGlobalData(state, FEMeshDataTraits<T>::Type()) {}
+	T value() { return m_data; };
+	void setValue(T a) { m_data = a; }
+	bool active(int n) { return true; }
+
+	static Data_Type Type() { return FEMeshDataTraits<T>::Type(); }
+	static Data_Format Format() { return DATA_REGION; }
+	static Data_Class Class() { return CLASS_OBJECT; }
+
+private:
+	T	m_data;
+};
+
+//-----------------------------------------------------------------------------
+class FEGlobalArrayData : public FEGlobalData
+{
+public:
+	FEGlobalArrayData(FEState* state, int nsize) : FEGlobalData(state, Post::DATA_ARRAY)
+	{
+		m_data.resize(nsize, 0.f);
+	}
+
+	float eval(int n) { return m_data[n]; }
+	void setData(std::vector<float>& data)
+	{
+		assert(data.size() == m_data.size());
+		m_data = data;
+	}
+
+	int components() const { return (int)m_data.size(); }
+
+protected:
+	std::vector<float>	m_data;
+};
+
+//=============================================================================
+// 
 //    N O D E   D A T A
 // 
 //=============================================================================
@@ -88,15 +140,17 @@ public:
 	{
 		int N = state->GetFEMesh()->Nodes();
 		m_stride = nsize;
-		m_data.resize(N*nsize, 0.f);
+		m_data.resize(N * nsize, 0.f);
 	}
 
-	float eval(int n, int comp) { return m_data[n*m_stride + comp]; }
+	float eval(int n, int comp) { return m_data[n * m_stride + comp]; }
 	void setData(std::vector<float>& data)
 	{
 		assert(data.size() == m_data.size());
 		m_data = data;
 	}
+
+	int components() const { return m_stride; }
 
 protected:
 	int				m_stride;
@@ -335,6 +389,8 @@ public:
 		}
 	}
 
+	int components() const { return m_stride; }
+
 protected:
 	int					m_stride;
 	std::vector<float>	m_data;
@@ -421,6 +477,8 @@ public:
 			m_elem[m] = m;
 		}
 	}
+
+	int components() const { return m_stride; }
 
 protected:
 	int					m_stride;
@@ -889,6 +947,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// TODO: This should be mat2fs, but that type doesn't exist yet. 
+class InfStrain2D : public FEElemData_T<mat3fs, DATA_ITEM>
+{
+public:
+	InfStrain2D(FEState* state, ModelDataField* pdf) : FEElemData_T<mat3fs, DATA_ITEM>(state, pdf) {}
+	void eval(int n, mat3fs* pv);
+};
+
+//-----------------------------------------------------------------------------
 class BiotStrain : public ElemStrain
 {
 public:
@@ -1015,5 +1082,21 @@ public:
 private:
 	int	m_nstress;	// total stress field
 	int	m_nflp;		// fluid pressure field
+};
+
+//-----------------------------------------------------------------------------
+class FEElementMaterial : public FEElemData_T<float, DATA_ITEM>
+{
+public:
+	FEElementMaterial(FEState* state, ModelDataField* pdf);
+	void eval(int n, float* pv);
+};
+
+//-----------------------------------------------------------------------------
+class FESurfaceNormal : public FEFaceData_T<vec3f, DATA_ITEM>
+{
+public:
+	FESurfaceNormal(FEState* state, ModelDataField* pdf);
+	void eval(int n, vec3f* pv);
 };
 }

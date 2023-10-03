@@ -44,15 +44,15 @@ public:
 
 	void Create(int nx, int ny);
 
-	Byte* GetBytes() { return m_pb; }
+	uint8_t* GetBytes() { return m_pb; }
 
-	Byte* GetPixel(int i, int j) { return m_pb + ((j*m_cx + i) << 2); }
+	uint8_t* GetPixel(int i, int j) { return m_pb + ((j*m_cx + i) << 2); }
 
 	int Width() { return m_cx; }
 	int Height() { return m_cy; }
 
 protected:
-	Byte*	m_pb;	// rgba image data
+	uint8_t*	m_pb;	// rgba image data
 	int		m_cx;
 	int		m_cy;
 };

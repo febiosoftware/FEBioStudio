@@ -94,10 +94,14 @@ bool xpltFileReader::Load(const char* szfile)
 	if (m_xplt) { delete m_xplt; m_xplt = 0; }
 	if (m_hdr.nversion <= 5) m_xplt = new XpltReader(this);
 	else if (m_hdr.nversion <= 0x08) m_xplt = new XpltReader2(this);
+	else if ((m_hdr.nversion >= 0x0030) && (m_hdr.nversion <= 0x0032))
+	{
+		m_xplt = new XpltReader3(this);
+	}
 	else
 	{
-		assert((m_hdr.nversion == 0x0030) || (m_hdr.nversion == 0x0031));
-		m_xplt = new XpltReader3(this);
+		// can't read this version
+		return errf("This plot file requires a newer version of FEBio Studio.");
 	}
 
 	// load the rest of the file

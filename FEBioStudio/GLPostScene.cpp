@@ -50,12 +50,11 @@ void CGLPostScene::Render(CGLContext& rc)
 
 		CGLCamera& cam = *rc.m_cam;
 
-		VIEW_SETTINGS& vs = glview->GetViewSettings();
+		GLViewSettings& vs = glview->GetViewSettings();
 
 		glm->m_nrender = vs.m_nrender + 1;
 		glm->m_bnorm = vs.m_bnorm;
 		glm->m_scaleNormals = vs.m_scaleNormals;
-		glm->m_brenderPlotObjects = vs.m_bjoint;
 		glm->m_doZSorting = vs.m_bzsorting;
 
 		glMatrixMode(GL_MODELVIEW);
@@ -155,7 +154,7 @@ void CGLPostScene::Render(CGLContext& rc)
 		if (glview->TrackModeActive()) glview->RenderTrack();
 
 		// render the tags
-		VIEW_SETTINGS& view = glview->GetViewSettings();
+		GLViewSettings& view = glview->GetViewSettings();
 		if (view.m_bTags) glview->RenderTags();
 	}
 

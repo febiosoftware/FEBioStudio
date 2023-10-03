@@ -35,7 +35,7 @@ namespace Post {
 }
 
 //-----------------------------------------------------------------------------
-// This class reads the XPLT file, version 3.0
+// This class reads the XPLT file, version 3.2
 class XpltReader3 : public xpltParser
 {
 public:
@@ -103,6 +103,26 @@ public:
 				PLT_PART				= 0x01045100,
 				PLT_PART_ID				= 0x01045101,
 				PLT_PART_NAME			= 0x01045102,
+
+			// element set section was added in 4.1
+			PLT_ELEMENTSET_SECTION		= 0x01046000,
+				PLT_ELEMENTSET			= 0x01046100,
+				PLT_ELEMENTSET_HDR		= 0x01046101,
+					PLT_ELEMENTSET_ID	= 0x01046102,
+					PLT_ELEMENTSET_NAME	= 0x01046103,
+					PLT_ELEMENTSET_SIZE	= 0x01046104,
+				PLT_ELEMENTSET_LIST		= 0x01046200,
+
+			// facet set section was added in 4.1
+			PLT_FACETSET_SECTION			= 0x01047000,
+				PLT_FACETSET				= 0x01047100,
+				PLT_FACETSET_HDR			= 0x01047101,
+					PLT_FACETSET_ID			= 0x01047102,
+					PLT_FACETSET_NAME		= 0x01047103,
+					PLT_FACETSET_SIZE		= 0x01047104,
+					PLT_FACETSET_MAXNODES	= 0x01047105,
+				PLT_FACETSET_LIST			= 0x01047200,
+					PLT_FACET				= 0x01047201,
 
 			PLT_OBJECTS_SECTION			= 0x01050000,
 					PLT_OBJECT_ID		= 0x01050001,
@@ -282,14 +302,35 @@ public:
 		NodeSet(const NodeSet& s) { nn = s.nn; node = s.node; strncpy(szname, s.szname, 64); }
 	};
 
+	class ElemSet
+	{
+	public:
+		int		nid;
+		int		ne;
+		char	szname[DI_NAME_SIZE];
+		std::vector<int>	elem;
+
+	public:
+		ElemSet() { nid = -1; ne = 0; szname[0] = 0; }
+		ElemSet(const ElemSet& s) 
+		{ 
+			nid = s.nid; 
+			ne = s.ne; 
+			elem = s.elem; 
+			strncpy(szname, s.szname, DI_NAME_SIZE);
+		}
+	};
+
 	class XMesh
 	{
 	public:
 		std::vector<MATERIAL>	m_Mat;
 		std::vector<NODE>		m_Node;
 		std::vector<Domain>		m_Dom;
-		std::vector<Surface>		m_Surf;
-		std::vector<NodeSet>		m_NodeSet;
+		std::vector<Surface>	m_Surf;
+		std::vector<NodeSet>	m_NodeSet;
+		std::vector<ElemSet>	m_ElemSet;
+		std::vector<Surface>	m_FacetSet;
 
 	public:
 		void Clear();
@@ -313,6 +354,14 @@ public:
 		int nodeSets() const { return (int)m_NodeSet.size(); }
 		void addNodeSet(NodeSet& nset);
 		NodeSet& nodeSet(int i) { return m_NodeSet[i]; }
+
+		int elementSets() const { return (int)m_ElemSet.size(); }
+		void addElementSet(ElemSet& eset);
+		ElemSet& elementSet(int i) { return m_ElemSet[i]; }
+
+		int facetSets() const { return (int)m_FacetSet.size(); }
+		void addFacetSet(Surface& fset);
+		Surface& facetSet(int i) { return m_FacetSet[i]; }
 	};
 
 public:
@@ -341,12 +390,14 @@ protected:
 	bool ReadElemDicItems    ();
 	bool ReadFaceDicItems    ();
 
-	bool ReadNodeSection   (Post::FEPostModel& fem);
-	bool ReadDomainSection (Post::FEPostModel& fem);
-	bool ReadSurfaceSection(Post::FEPostModel& fem);
-	bool ReadNodeSetSection(Post::FEPostModel& fem);
-	bool ReadPartsSection  (Post::FEPostModel& fem);
-	bool ReadObjectsSection(Post::FEPostModel& fem);
+	bool ReadNodeSection      (Post::FEPostModel& fem);
+	bool ReadDomainSection    (Post::FEPostModel& fem);
+	bool ReadSurfaceSection   (Post::FEPostModel& fem);
+	bool ReadNodeSetSection   (Post::FEPostModel& fem);
+	bool ReadElementSetSection(Post::FEPostModel& fem);
+	bool ReadFacetSetSection  (Post::FEPostModel& fem);
+	bool ReadPartsSection     (Post::FEPostModel& fem);
+	bool ReadObjectsSection   (Post::FEPostModel& fem);
 
 	bool ReadGlobalData  (Post::FEPostModel& fem, Post::FEState* pstate);
 	bool ReadMaterialData(Post::FEPostModel& fem, Post::FEState* pstate);

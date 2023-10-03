@@ -32,11 +32,9 @@ SOFTWARE.*/
 
 class QListWidget;
 class CPropertyListView;
-
-namespace Post
-{
-    class CImageModel;
-}
+class CPropertyList;
+class CMainWindow;
+class CImageModel;
 
 class QModelIndex;
 
@@ -73,8 +71,12 @@ class CImageFilterWidget : public QWidget
 
 public:
     CImageFilterWidget();
+    ~CImageFilterWidget();
 
-    void SetImageModel(Post::CImageModel* img);
+    void SetImageModel(CImageModel* img);
+
+private:
+    void Clear();
 
 public slots:
     void Update();
@@ -87,9 +89,11 @@ private slots:
     void on_applyFilters_clicked();
 
 private:
-    Post::CImageModel* m_imgModel;
+    CImageModel* m_imgModel;
     
     QListWidget* m_list;
     CPropertyListView* m_filterProps;
+
+    std::vector<CPropertyList*> m_props;
 
 };

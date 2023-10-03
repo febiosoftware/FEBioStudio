@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "Serializable.h"
 #include "color.h"
-#include <FECore/mat3d.h>
+#include <FSCore/math3d.h>
 #include <vector>
 #include <string.h>
 
@@ -137,6 +137,8 @@ public:
 	void SetLoadCurveID(int lcid);
 	int GetLoadCurveID() const;
 
+	int GetArraySize() const;
+
 	const char* GetShortName() const { return m_szbrev; }
 	const char* GetLongName () const { return m_szname; }
 	const char* GetEnumNames() const { return m_szenum; }
@@ -168,6 +170,7 @@ public:
 	void SetVectorVec2dValue(const std::vector<vec2d>& v) { assert(m_ntype == Param_STD_VECTOR_VEC2D); val<std::vector<vec2d> >() = v; }
 
 	void SetArrayIntValue   (const std::vector<int   >& v);
+	void SetArrayIntValue   (int* pd, int nsize);
 	void SetArrayDoubleValue(const std::vector<double>& v);
 
 	double GetFloatValue () const {assert(m_ntype == Param_FLOAT ); return val<double>(); }
@@ -252,6 +255,7 @@ public:
 protected:
 	int				m_nID;		// parameter ID
 	Param_Type		m_ntype;	// parameter type
+	int				m_nsize;	// size of array parameters (other types should ignore this value)
 	const char*		m_szunit;	// scientific unit (see FECore\units.h)
 	int				m_nstate;	// parameter state
 
@@ -560,6 +564,8 @@ public:
 	int GetIndexValue(int n) const { return m_Param[n]->GetIndexValue(); }
     const char* GetIndexName(int n) { return m_Param[n]->GetIndexName(); }
 
+	void Copy(const ParamBlock& pb);
+
 public:
 	int SetActiveGroup(const char* szgroup);
 	bool SetActiveGroup(int n);
@@ -668,6 +674,7 @@ public:
 	void SetParamString(const char* szparam, const std::string& s) { GetParam(szparam)->SetStringValue(s); }
 	void SetParamVectorInt   (const char* szparam, const std::vector<int   >& a) { GetParam(szparam)->SetVectorIntValue(a); }
 	void SetParamVectorDouble(const char* szparam, const std::vector<double>& a) { GetParam(szparam)->SetVectorDoubleValue(a); }
+	void SetParamIntArray(const char* szparam, int* pd, int n) { GetParam(szparam)->SetArrayIntValue(pd, n); }
 
 	int    GetParamInt  (const char* szparam) { return GetParam(szparam)->GetIntValue(); }
 	double GetParamFloat(const char* szparam) { return GetParam(szparam)->GetFloatValue(); }
@@ -677,10 +684,17 @@ public:
 	std::vector<double> GetParamArrayDouble(const char* szparam) { return GetParam(szparam)->GetArrayDoubleValue(); }
 
 public:
+	int SetActiveGroup(const char* szgroup) { return m_Param.SetActiveGroup(szgroup); }
+
+public:
 	ParamBlock& GetParamBlock() { return m_Param; }
 	const ParamBlock& GetParamBlock() const { return m_Param; }
 
+	// copy parameters: requires a one-to-one match between parameters.
 	void CopyParams(const ParamContainer& pc);
+
+	// maps parameters. Matched are made using the param names. Does not require one-to-one mapping.
+	void MapParams(const ParamContainer& pc);
 
 public:
 	// This is a helper function to assign a loadcurve to a parameter. 

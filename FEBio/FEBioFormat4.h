@@ -68,8 +68,10 @@ private:
 	void ParseGeometryNodes      (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryElements   (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryNodeSet    (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometryEdgeSet    (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometrySurface    (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryElementSet (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometryPartList   (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryPart       (XMLTag& tag);
@@ -77,6 +79,7 @@ private:
 
 	void ParseSolidDomain(XMLTag& tag);
 	void ParseShellDomain(XMLTag& tag);
+	void ParseBeamDomain (XMLTag& tag);
 
 private:
 	// boundary condition input functions

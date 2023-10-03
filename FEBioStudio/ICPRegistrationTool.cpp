@@ -38,7 +38,7 @@
 #include "SelectionBox.h"
 #include <GeomLib/GObject.h>
 #include <MeshTools/ICPRegistration.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include "MainWindow.h"
 #include "Commands.h"
 
@@ -131,7 +131,7 @@ public:
 				FSGroup* pm_new = dynamic_cast<FSGroup*>(items);
 				if (pm_prv && pm_new && (pm_prv->GetMesh() != pm_new->GetMesh())) return false;
 
-				list<int> itemlist = items->CopyItems();
+				vector<int> itemlist = items->CopyItems();
 				pl->Merge(itemlist);
 				delete items;
 			}
@@ -237,7 +237,7 @@ public:
 		default:
 			switch (item->Type())
 			{
-			case FE_PART: type = "Elements"; break;
+			case FE_ELEMSET: type = "Elements"; break;
 			case FE_SURFACE: type = "Facets"; break;
 			case FE_EDGESET: type = "Edges"; break;
 			case FE_NODESET: type = "Nodes"; break;

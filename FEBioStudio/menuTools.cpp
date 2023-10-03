@@ -38,13 +38,14 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <GeomLib/MeshLayer.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "ModelDocument.h"
 #include "PostDocument.h"
 #include "DlgStartThread.h"
 #include <PostLib/FEKinemat.h>
 #include <PostLib/FELSDYNAimport.h>
 #include <PostGL/GLModel.h>
+#include "FEKinematFileReader.h"
 
 void CMainWindow::on_actionCurveEditor_triggered()
 {
@@ -227,6 +228,13 @@ void CMainWindow::on_actionKinemat_triggered()
 			QMessageBox::critical(this, "FEBio Studio", "Failed to apply kinemat tool.");
 			return;
 		}
+
+		// prepare a file reader
+		FEKinematFileReader* kine = new FEKinematFileReader(postDoc);
+		kine->SetModelFile(modelFile);
+		kine->SetKineFile(kineFile);
+		kine->SetRange(dlg.StartIndex(), dlg.EndIndex(), dlg.Increment());
+		postDoc->SetFileReader(kine);
 
 		UpdateModel();
 		Update();

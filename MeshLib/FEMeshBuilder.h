@@ -25,9 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 class FSNode;
+class FSElement;
 class FSMesh;
 class FSEdgeSet;
 class FSNodeSet;
@@ -39,7 +40,7 @@ public:
 	FEMeshBuilder(FSMesh& mesh);
 
 	// Rebuild all mesh data
-	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
+	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false, bool creaseInternal = true);
 
 	// Partition a node (may split an edge)
 	void PartitionNode(int node);
@@ -62,8 +63,12 @@ public:
 	// Add an (isolated) node. The node will be partitioned.
 	FSNode* AddNode(const vec3d& r);
 
+	// Add a triangle
+	FSElement* AddTriangle(int n0, int n1, int n2);
+
 	// Remove nodes that are not attached to anything
-	void RemoveIsolatedNodes();
+	// returns the number of nodes that were removed
+	int RemoveIsolatedNodes();
 
 	// delete selected nodes
 	void DeleteSelectedNodes();

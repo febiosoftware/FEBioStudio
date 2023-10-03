@@ -69,14 +69,14 @@ public:
 	//! return a domain
 	MeshDomain& Domain(int i) { return *m_Dom[i]; }
 
-	//! nr of parts
-	int Parts() const { return (int) m_Part.size(); }
+	//! nr of element sets
+	int ElemSets() const { return (int) m_ESet.size(); }
 
-	//! add a part
-	void AddPart(FSPart* pg) { m_Part.push_back(pg); }
+	//! add a element set
+	void AddElemSet(FSElemSet* pg) { m_ESet.push_back(pg); }
 
-	//! return a part
-	FSPart& Part(int n) { return *m_Part[n]; }
+	//! return an element set
+	FSElemSet& ElemSet(int n) { return *m_ESet[n]; }
 
 	// number of surfaces
 	int Surfaces() const { return (int) m_Surf.size(); }
@@ -105,7 +105,7 @@ protected:
 	void UpdateDomains();
 
 	void ClearDomains();
-	void ClearParts();
+	void ClearElemSets();
 	void ClearSurfaces();
 	void ClearNodeSets();
 
@@ -114,7 +114,7 @@ protected:
 	std::vector<MeshDomain*>	m_Dom;	// domains
 
 	// user-defined partitions
-	std::vector<FSPart*>		m_Part;	// parts
+	std::vector<FSElemSet*>	m_ESet;	// element sets
 	std::vector<FSSurface*>	m_Surf;	// surfaces
 	std::vector<FSNodeSet*>	m_NSet;	// node sets
 

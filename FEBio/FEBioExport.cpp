@@ -32,9 +32,9 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 #include <sstream>
 #include <iomanip>
 
@@ -99,7 +99,7 @@ template <> std::string type_to_string<mat3d>(const mat3d& v)
 }
 
 //=============================================================================
-FEBioExport::FEBioExport(FSProject& prj) : FEFileExport(prj)
+FEBioExport::FEBioExport(FSProject& prj) : FSFileExport(prj)
 {
 	m_compress = false;
 	m_exportSelections = false;

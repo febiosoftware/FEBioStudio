@@ -121,9 +121,6 @@ private:
 	void ParseGeometryNodeSet    (FEBioInputModel::Part& part, XMLTag& tag);
 	void ParseGeometrySurface    (FEBioInputModel::Part& part, XMLTag& tag);
 
-	// helper functions (version 2.5 and up)
-	FSNodeSet* ParseNodeSet(XMLTag& tag);
-
 private:
 	FEBioInputModel::PartInstance& GetInstance() { return *GetFEBioModel().GetInstance(0); }
 	FSMesh& GetFEMesh() { return *GetInstance().GetMesh(); }

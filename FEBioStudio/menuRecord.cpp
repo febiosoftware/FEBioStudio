@@ -60,7 +60,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 		QString fileName = dlg.selectedFiles().first();
 		string sfile = fileName.toStdString();
 		char szfilename[512] = { 0 };
-		sprintf(szfilename, "%s", sfile.c_str());
+		snprintf(szfilename, sizeof szfilename, "%s", sfile.c_str());
 		int l = (int)sfile.length();
 		char* ch = strrchr(szfilename, '.');
 

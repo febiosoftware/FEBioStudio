@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QContextMenuEvent>
 #include "Document.h"
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include "ModelViewer.h"
 #include "ModelTree.h"
 

@@ -129,10 +129,7 @@ bool GCylinder::Update(bool b)
 		n.LocalPosition() = vec3d(x[i], y[i], z[i]);
 	}
 
-	// rebuild the GMesh
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //=============================================================================

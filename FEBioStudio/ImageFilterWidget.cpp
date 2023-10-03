@@ -34,10 +34,12 @@ SOFTWARE.*/
 #include "FEBioStudio.h"
 #include "IconProvider.h"
 #include "ImageFilterWidget.h"
-#include <PostLib/ImageModel.h>
+#include "ImageThread.h"
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DlgImageFilter.h"
 #include <FSCore/ClassDescriptor.h>
+#include "DlgStartThread.h"
 
 CImageFilterWidget::CImageFilterWidget()
     : m_imgModel(nullptr)
@@ -97,17 +99,34 @@ CImageFilterWidget::CImageFilterWidget()
     QMetaObject::connectSlotsByName(this);
 }
 
-void CImageFilterWidget::SetImageModel(Post::CImageModel* img)
+CImageFilterWidget::~CImageFilterWidget()
+{
+    Clear();
+}
+
+void CImageFilterWidget::SetImageModel(CImageModel* img)
 {
     m_imgModel = img;
 
     Update();
 }
 
-void CImageFilterWidget::Update()
+void CImageFilterWidget::Clear()
 {
     m_list->clear();
+    
+    for(auto prop : m_props)
+    {
+        delete prop;
+    }
+    m_props.clear();
+
     m_filterProps->Update(nullptr);
+}
+
+void CImageFilterWidget::Update()
+{
+    Clear();
     
     if(m_imgModel)
     {
@@ -116,8 +135,9 @@ void CImageFilterWidget::Update()
             CImageFilter* current = m_imgModel->GetImageFilter(filter);
             QListWidgetItem* item = new QListWidgetItem(current->GetName().c_str());
             item->setData(1001, filter);
-
             m_list->addItem(item);
+
+            m_props.push_back(new CObjectProps(current));
         }
     }
 }
@@ -132,7 +152,7 @@ void CImageFilterWidget::on_list_itemSelectionChanged()
 
         if(filterIndex < m_imgModel->ImageFilters())
         {
-            m_filterProps->Update(new CObjectProps(m_imgModel->GetImageFilter(filterIndex)));
+            m_filterProps->Update(m_props[filterIndex]);
         }
     }
 }
@@ -183,6 +203,15 @@ void CImageFilterWidget::on_applyFilters_clicked()
 {
     if(m_imgModel)
     {
-        m_imgModel->ApplyFilters();
+        m_imgModel->ClearFilters();
+
+        CDlgStartThread dlg(this, new CImageFilterThread(m_imgModel));
+
+        if(!dlg.exec())
+        {
+            m_imgModel->ClearFilters();
+        }
+
+        m_imgModel->UpdateRenderers();
     }
 }

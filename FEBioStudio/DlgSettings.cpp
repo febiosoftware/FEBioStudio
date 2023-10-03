@@ -44,6 +44,7 @@ SOFTWARE.*/
 #include <QStackedWidget>
 #include <QGroupBox>
 #include <QFileDialog>
+#include <QSplitter>
 #include "PropertyList.h"
 #include "PropertyListForm.h"
 #include "PropertyListView.h"
@@ -864,6 +865,51 @@ void CUpdateSettingsWidget::updateDevButton_clicked()
 	m_wnd->on_actionUpdate_triggered(true);
 }
 
+
+//-----------------------------------------------------------------------------
+CFEBioSettingsWidget::CFEBioSettingsWidget(QWidget* parent) : QWidget(parent)
+{
+	QVBoxLayout* layout = new QVBoxLayout;
+	layout->setAlignment(Qt::AlignTop);
+
+	m_loadConfig = new QCheckBox("Load FEBio config file on startup.");
+	layout->addWidget(m_loadConfig);
+
+	QHBoxLayout* pathLayout = new QHBoxLayout;
+	pathLayout->addWidget(new QLabel("Config file: "));
+	m_configEdit = new QLineEdit;
+	pathLayout->addWidget(m_configEdit);
+
+	QToolButton* pathButton = new QToolButton;
+	pathButton->setIcon(CIconProvider::GetIcon("open"));
+	pathLayout->addWidget(pathButton);
+
+	layout->addLayout(pathLayout);
+
+	this->setLayout(layout);
+
+	QObject::connect(pathButton, SIGNAL(clicked()), this, SLOT(editConfigFilePath()));
+}
+
+bool CFEBioSettingsWidget::GetLoadConfigFlag() { return m_loadConfig->isChecked(); }
+QString CFEBioSettingsWidget::GetConfigFileName() { return m_configEdit->text(); }
+
+void CFEBioSettingsWidget::SetLoadConfigFlag(bool b) { m_loadConfig->setChecked(b); }
+void CFEBioSettingsWidget::SetConfigFileName(QString s) { m_configEdit->setText(s); }
+
+void CFEBioSettingsWidget::editConfigFilePath()
+{
+	QFileDialog dlg(this);
+	dlg.setAcceptMode(QFileDialog::AcceptOpen);
+	dlg.setDirectory(m_configEdit->text());
+	if (dlg.exec())
+	{
+		QStringList files = dlg.selectedFiles();
+		QString fileName = files.first();
+		m_configEdit->setText(fileName);
+	}
+}
+
 //-----------------------------------------------------------------------------
 class Ui::CDlgSettings
 {
@@ -882,6 +928,7 @@ public:
 	CUnitWidget*		m_unit;
 	CRepoSettingsWidget*	m_repo;
 	CUpdateSettingsWidget*	m_update;
+	CFEBioSettingsWidget*	m_febio;
 
 	::CPropertyListView*	bg_panel;
 	::CPropertyListView*	di_panel;
@@ -908,6 +955,7 @@ public:
 		m_unit = new CUnitWidget(wnd);
 		m_repo = new CRepoSettingsWidget;
 		m_update = new CUpdateSettingsWidget(parent, wnd);
+		m_febio = new CFEBioSettingsWidget;
 	}
 
 	void setupUi(::CDlgSettings* pwnd, ::CMainWindow* mwnd)
@@ -929,6 +977,7 @@ public:
 		stack->addWidget(ca_panel); list->addItem("Camera");
 		stack->addWidget(m_map   ); list->addItem("Colormap");
 		stack->addWidget(di_panel); list->addItem("Display");
+		stack->addWidget(m_febio ); list->addItem("FEBio");
 		stack->addWidget(li_panel); list->addItem("Lighting");
 		stack->addWidget(m_pal   ); list->addItem("Palette");
 		stack->addWidget(ph_panel); list->addItem("Physics");
@@ -945,13 +994,14 @@ public:
 		
 		list->setResizeMode(QListView::ResizeMode::Adjust);
 
-		QHBoxLayout* hl = new QHBoxLayout;
-		hl->setContentsMargins(0,0,0,0);
-		hl->addWidget(list);
-		hl->addWidget(stack);
-		
+		QSplitter* split = new QSplitter;
+		split->addWidget(list);
+		split->addWidget(stack);
+		split->setStretchFactor(0, 1);
+		split->setStretchFactor(1, 2);
+
 		QVBoxLayout* pg = new QVBoxLayout(pwnd);
-		pg->addLayout(hl);
+		pg->addWidget(split);
 
 		QHBoxLayout* bl = new QHBoxLayout;
 		bl->setContentsMargins(0,0,0,0);
@@ -1005,7 +1055,7 @@ CDlgSettings::CDlgSettings(CMainWindow* pwnd) : ui(new Ui::CDlgSettings(this, pw
 
 void CDlgSettings::UpdateSettings()
 {
-	VIEW_SETTINGS& view = m_pwnd->GetGLView()->GetViewSettings();
+	GLViewSettings& view = m_pwnd->GetGLView()->GetViewSettings();
 	CGLView* glview = m_pwnd->GetGLView();
 
 	ui->m_bg->m_bg1 = toQColor(view.m_col1);
@@ -1057,6 +1107,9 @@ void CDlgSettings::UpdateSettings()
 	ui->m_cam->m_speed = (cam ? cam->GetCameraSpeed() : 0);
 
 	ui->m_post->m_defrng = Post::CGLColorMap::m_defaultRngType;
+
+	ui->m_febio->SetLoadConfigFlag(m_pwnd->GetLoadConfigFlag());
+	ui->m_febio->SetConfigFileName(m_pwnd->GetConfigFileName());
 }
 
 void CDlgSettings::UpdatePalettes()
@@ -1094,7 +1147,7 @@ void CDlgSettings::apply()
 {
 	CGLDocument* pdoc = m_pwnd->GetGLDocument();
 	CGLView* glview = m_pwnd->GetGLView();
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 
 	view.m_col1 = toGLColor(ui->m_bg->m_bg1);
 	view.m_col2 = toGLColor(ui->m_bg->m_bg2);
@@ -1207,6 +1260,9 @@ void CDlgSettings::apply()
 
 	m_pwnd->GetDatabasePanel()->SetRepositoryFolder(ui->m_repo->repoPathEdit->text());
 
+	m_pwnd->SetLoadConfigFlag(ui->m_febio->GetLoadConfigFlag());
+	m_pwnd->SetConfigFileName(ui->m_febio->GetConfigFileName());
+
 	m_pwnd->RedrawGL();
 }
 
@@ -1225,7 +1281,7 @@ void CDlgSettings::onReset()
 {
 	CGLDocument* pdoc = m_pwnd->GetGLDocument();
 	CGLView* glview = m_pwnd->GetGLView();
-	VIEW_SETTINGS& view = glview->GetViewSettings();
+	GLViewSettings& view = glview->GetViewSettings();
 	int ntheme = m_pwnd->currentTheme();
 	view.Defaults(ntheme);
 	UpdateSettings();

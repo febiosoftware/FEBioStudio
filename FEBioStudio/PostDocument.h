@@ -69,7 +69,8 @@ private:
 		bool	m_bnorm;	// calculate normals or not
 		bool	m_boutline;	// render as outline
 		bool	m_bghost;	// render ghost
-		bool	m_bShell2Hex; // render shells as hexes
+		bool	m_bShell2Solid; // render shells as solids
+		bool	m_bBeam2Solid; // render beams as solids
 		int		m_nshellref;	// shell reference surface
 		int		m_nDivs;	// nr of element subdivisions
 		int		m_nrender;	// render mode
@@ -116,6 +117,8 @@ protected:
 
 class CPostDocument : public CGLDocument
 {
+	Q_OBJECT
+
 public:
 	CPostDocument(CMainWindow* wnd, CModelDocument* parent = nullptr);
 	~CPostDocument();
@@ -182,9 +185,6 @@ public:
 	// get the selection bounding box
 	BOX GetSelectionBox();
 
-	// Get current selection
-	FESelection* GetCurrentSelection() override;
-
 	void SetGLModel(Post::CGLModel* glm);
 
 public:
@@ -201,6 +201,9 @@ public:
 
 private:
 	void ApplyPalette(const Post::CPalette& pal);
+
+signals:
+	void selectionChanged();
 
 private:
 	CModelDocument*	m_doc;

@@ -45,6 +45,10 @@ namespace Ui {
 	class CGraphWindow;
 };
 
+namespace Post {
+	class ModelDataField;
+};
+
 //=================================================================================================
 // Base class for graph tools
 class CPlotTool : public QWidget
@@ -68,8 +72,8 @@ class TimeRangeOptions : public CPlotTool
 
 public:
 	int currentOption();
-	void setUserTimeRange(int imin, int imax);
-	void getUserTimeRange(int& imin, int& imax);
+	void setUserTimeRange(int imin, int imax, int istep);
+	void getUserTimeRange(int& imin, int& imax, int& istep);
 	bool autoRangeUpdate();
 
 public slots:
@@ -194,12 +198,18 @@ public slots:
 	void onColorChanged(QColor c);
 
 private:
+	static double graphdata(double x);
+
+private:
 	CGraphWidget*	m_graph;
 	QLineEdit*		m_edit;
 
 	bool			m_bvalid;
 	std::string		m_math;
 	QColor			m_col;
+
+	static MathPlot* m_pThis;
+	LoadCurve	m_data;
 };
 
 //=================================================================================================
@@ -266,8 +276,8 @@ public:
 
 public:
 	int GetTimeTrackOption();
-	void GetUserTimeRange(int& userMin, int& userMax);
-	void GetTimeRange(int& minTime, int& maxTime);
+	void GetUserTimeRange(int& userMin, int& userMax, int& step);
+	void GetTimeRange(int& minTime, int& maxTime, int& step);
 
 public: // convenience functions for modifying the plot widget
 	// number of data plots
@@ -338,6 +348,8 @@ public:
 protected:
 	void AddToolBarWidget(QWidget* w);
 
+	void AddPanel(QWidget* w);
+
 	virtual void setDataSource(int n) {}
 
 	int currentDataSource();
@@ -368,7 +380,7 @@ private:
 	Ui::CGraphWindow*	ui;
 
 	int		m_nTrackTime;
-	int		m_nUserMin, m_nUserMax;	//!< manual time step range
+	int		m_nUserMin, m_nUserMax, m_nUserStep;	//!< manual time step range
 
 	static QRect	m_preferredSize;
 };
@@ -393,7 +405,7 @@ private:
 // Specialized graph for displaying data from a model's selection
 
 namespace Post {
-	class GLProbe;
+	class GLPointProbe;
 	class GLRuler;
 	class GLMusclePath;
 }
@@ -419,7 +431,8 @@ private:
 	void addSelectedFaces();
 	void addSelectedElems();
 	void addObjectData(int n);
-	void addProbeData(Post::GLProbe* probe);
+	void addGlobalData(Post::ModelDataField* pdf, int n);
+	void addProbeData(Post::GLPointProbe* probe);
 	void addRulerData(Post::GLRuler* ruler);
 	void addMusclePathData(Post::GLMusclePath* musclePath);
 
@@ -429,7 +442,7 @@ private:
 
 private: // temporary variables used during update
 	int	m_xtype, m_xtypeprev;			// x-plot field option (0=time, 1=steps, 2=data field)
-	int	m_firstState, m_lastState;		// first and last time step to be evaluated
+	int	m_firstState, m_lastState, m_incState;		// first, last, and state increment for time steps to be evaluated
 	int	m_dataX, m_dataY;				// X and Y data field IDs
 	int	m_dataXPrev, m_dataYPrev;		// Previous X, Y data fields
 	int	m_pltCounter;

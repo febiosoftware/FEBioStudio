@@ -34,8 +34,8 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QMessageBox>
-#include <MeshTools/FEModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSModel.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FERigidConstraint.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>

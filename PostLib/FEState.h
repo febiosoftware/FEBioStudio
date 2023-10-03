@@ -29,8 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FEElement.h>
 #include <vector>
 #include "ValArray.h"
-#include <FECore/vec3d.h>
-#include <FECore/quatd.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 // forward declaration of the mesh

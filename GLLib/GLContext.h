@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
-#include <FECore/quatd.h>
+#include <FSCore/math3d.h>
+#include "GLViewSettings.h"
 
 class CGLCamera;
 class CGLView;
@@ -41,15 +41,11 @@ public:
 	CGLView*	m_view;
 	CGLCamera*	m_cam;
 	int			m_x, m_y;
-	quatd		m_q;
 
 	// the following is needed by planecuts that track the selection
 	bool	m_btrack;		// tracking is on
 	vec3d	m_track_pos;	// tracked position
 	quatd	m_track_rot;	// tracked orientation
 
-	bool		m_showMesh;
-	bool		m_showOutline;
-	bool		m_bext;
-	float		m_springThick;
+	GLViewSettings	m_settings;
 };

@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GMultiPatch.h>
-#include <MeshTools/FEFileExport.h>
+#include <MeshIO/FSFileExport.h>
 #include <FEMLib/FEUserMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <MeshIO/PRVObjectFormat.h>
@@ -48,12 +48,14 @@ SOFTWARE.*/
 #include <PostGL/GLColorMap.h>
 #include <PostGL/GLModel.h>
 #include <PostLib/GLImageRenderer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
 #include <ImageLib/ImageFilter.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FENodeData.h>
-#include <MeshTools/FESurfaceData.h>
-#include <MeshTools/FEElementData.h>
+#include "ImageThread.h"
+#include <GeomLib/GModel.h>
+#include <MeshLib/FENodeData.h>
+#include <MeshLib/FESurfaceData.h>
+#include <MeshLib/FEElementData.h>
 #include <FSCore/FSDir.h>
 #include <QtCore/QDir>
 #include <QFileInfo>
@@ -63,94 +65,12 @@ SOFTWARE.*/
 #include "Logger.h"
 #include <sstream>
 #include <QTextStream>
+#include "units.h"
 
 using std::stringstream;
 
 // defined in MeshTools\GMaterial.cpp
 extern GLColor col[];
-
-void VIEW_SETTINGS::Defaults(int ntheme)
-{
-	m_bgrid = true;
-	m_bmesh = true;
-	m_bfeat = true;
-	m_bnorm = false;
-	m_nrender = RENDER_SOLID;
-	m_scaleNormals = 1.0;
-//	m_nconv = 0; // Don't reset this, since this is read from settings file. TODO: Put this option elsewhere. 
-
-	m_bjoint = true;
-	m_bwall = true;
-	m_brigid = true;
-	m_bfiber = false;
-	m_fibColor = 0;
-	m_fibLineStyle = 0;
-	m_fiber_scale = 1.0;
-	m_fiber_width = 1.0;
-
-	m_bcontour = false;
-	m_blma = false;
-	m_showHiddenFibers = false;
-	m_showSelectFibersOnly = false;
-
-	m_showDiscrete = true;
-	m_showRigidLabels = true;
-
-	m_bcull = false;
-	m_bconn = false;
-	m_bmax = true;
-	m_bpart = true;
-	m_bhide = false;
-	m_bext = false;
-	m_bsoft = false;
-	m_fconn = 30.f;
-	m_bcullSel = true;
-	m_bselpath = false;
-
-	m_apply = 0;
-
-	m_pos3d = vec3d(0, 0, 0);
-
-	m_bTags = true;
-	m_ntagInfo = 0;
-
-	m_defaultFGColorOption = 0;
-
-	if (ntheme == 0)
-	{
-		m_col1 = GLColor(255, 255, 255);
-		m_col2 = GLColor(128, 128, 255);
-		m_nbgstyle = BG_HORIZONTAL;
-		m_defaultFGColor = GLColor(0, 0, 0);
-	}
-	else
-	{
-		m_col1 = GLColor(83, 83, 83);
-		m_col2 = GLColor(128, 128, 128);
-		m_nbgstyle = BG_HORIZONTAL;
-		m_defaultFGColor = GLColor(255, 255, 255);
-	}
-
-	m_mcol = GLColor(0, 0, 128);
-	m_fgcol = GLColor(0, 0, 0);
-	m_node_size = 7.f;
-	m_line_size = 1.0f;
-	m_bline_smooth = true;
-	m_bpoint_smooth = true;
-	m_bzsorting = true;
-
-	m_snapToGrid = true;
-	m_snapToNode = false;
-
-	m_bLighting = true;
-	m_bShadows = false;
-	m_shadow_intensity = 0.5f;
-	m_ambient = 0.09f;
-	m_diffuse = 0.8f;
-
-	m_transparencyMode = 0; // = off
-	m_objectColor = 0; // = default (by material)
-}
 
 //=============================================================================
 CDocObserver::CDocObserver(CDocument* doc) : m_doc(doc)
@@ -459,6 +379,8 @@ CUndoDocument::CUndoDocument(CMainWindow* wnd) : CDocument(wnd)
 
 	// Clear the command history
 	m_pCmd->Clear();
+
+	QObject::connect(this, SIGNAL(doCommand(QString)), wnd, SLOT(on_doCommand(QString)));
 }
 
 //-----------------------------------------------------------------------------
@@ -519,8 +441,7 @@ const char* CUndoDocument::GetRedoCmdName() { return m_pCmd->GetRedoCmdName(); }
 //-----------------------------------------------------------------------------
 bool CUndoDocument::DoCommand(CCommand* pcmd, bool b)
 {
-	CMainWindow* wnd = GetMainWindow();
-	wnd->AddLogEntry(QString("Executing command: %1\n").arg(pcmd->GetName()));
+	emit doCommand(QString("Executing command: %1\n").arg(pcmd->GetName()));
 	bool ret = m_pCmd->DoCommand(pcmd);
 	SetModifiedFlag();
 	if (b) UpdateSelection();
@@ -604,6 +525,8 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	// set default unit system (0 == no unit system)
 	m_units = 0;
 
+	m_psel = nullptr;
+
 	m_scene = nullptr;
 }
 
@@ -625,6 +548,14 @@ void CGLDocument::SetUnitSystem(int unitSystem)
 int CGLDocument::GetUnitSystem() const
 {
 	return m_units;
+}
+
+FESelection* CGLDocument::GetCurrentSelection() { return m_psel; }
+
+void CGLDocument::SetCurrentSelection(FESelection* psel)
+{
+	if (m_psel) delete m_psel;
+	m_psel = psel;
 }
 
 void CGLDocument::UpdateSelection(bool breport)
@@ -694,7 +625,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";
-	else if (dynamic_cast<FSPart*>(po)) return "element selection";
+	else if (dynamic_cast<FSElemSet*>(po)) return "element selection";
 	else if (dynamic_cast<FSSurface*>(po)) return "face selection";
 	else if (dynamic_cast<FSEdgeSet*>(po)) return "edge selection";
 	else if (dynamic_cast<FSNodeSet*>(po)) return "node selection";
@@ -706,14 +637,14 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<FSGroup*>(po)) return "Named selection";
 	else if (dynamic_cast<GObject*>(po)) return "Object";
 	else if (dynamic_cast<CFEBioJob*>(po)) return "Job";
-	else if (dynamic_cast<Post::CImageModel*>(po)) return "3D Image volume";
+	else if (dynamic_cast<CImageModel*>(po)) return "3D Image volume";
 	else if (dynamic_cast<Post::CGLPlot*>(po)) return "Plot";
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po)) return "Displacement map";
 	else if (dynamic_cast<Post::CGLColorMap*>(po)) return "Color map";
 	else if (dynamic_cast<Post::CGLModel*>(po)) return "post model";
 	else if (dynamic_cast<GModel*>(po)) return "model";
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po)) return "volume image renderer";
-	else if (dynamic_cast<Post::CImageSource*>(po)) return "3D Image source";
+	else if (dynamic_cast<CImageSource*>(po)) return "3D Image source";
     else if (dynamic_cast<CImageFilter*>(po)) return "Image filter";
 	else if (dynamic_cast<FSMaterial*>(po))
 	{
@@ -757,7 +688,7 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		if (elemData) return "Element data";
 
 		FEPartData* partData = dynamic_cast<FEPartData*>(po);
-		if (partData) return "Element data";
+		if (partData) return "Part data";
 
 		assert(false);
 		return "Mesh data";
@@ -803,7 +734,7 @@ void CGLDocument::SaveResources(OArchive& ar)
 {
 	for (int i = 0; i < ImageModels(); ++i)
 	{
-		Post::CImageModel& img = *GetImageModel(i);
+		CImageModel& img = *GetImageModel(i);
 		ar.BeginChunk(CID_RESOURCE_IMAGEMODEL);
 		{
 			img.Save(ar);
@@ -822,7 +753,7 @@ void CGLDocument::LoadResources(IArchive& ar)
 		{
 		case CID_RESOURCE_IMAGEMODEL:
 		{
-			Post::CImageModel* img = new Post::CImageModel(nullptr);
+			CImageModel* img = new CImageModel(nullptr);
 			m_img.Add(img);
 			img->Load(ar);
 		}
@@ -833,98 +764,18 @@ void CGLDocument::LoadResources(IArchive& ar)
 	}
 }
 
-//-----------------------------------------------------------------------------
-// import image data
-Post::CImageModel* CGLDocument::ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box)
-{
-	static int n = 1;
-
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(fileName, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-	if (po->LoadImageData(relFile, nx, ny, nz, box) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITK(const std::string& filename, ImageFileType type)
-{
-	static int n = 1;
-	// we pass the relative path to the image model
-	string relFile = FSDir::makeRelative(filename, "$(ProjectDir)");
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-	if (po->LoadITKData(relFile, type) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
-Post::CImageModel* CGLDocument::ImportITKStack(QStringList& filenames)
-{
-    static int n = 1;
-	
-
-    std::vector<std::string> stdFiles;
-    for(auto filename : filenames)
-    {
-        // we pass the relative path to the image model
-	    stdFiles.push_back(FSDir::makeRelative(filename.toStdString(), "$(ProjectDir)"));
-    }
-
-	Post::CImageModel* po = new Post::CImageModel(nullptr);
-
-	if (po->LoadITKSeries(stdFiles) == false)
-	{
-		delete po;
-		return nullptr;
-	}
-
-	stringstream ss;
-	ss << "ImageModel" << n++;
-	po->SetName(ss.str());
-
-	// add it to the project
-	AddImageModel(po);
-
-	return po;
-}
-
 int CGLDocument::ImageModels() const
 {
 	return (int)m_img.Size();
 }
 
-void CGLDocument::AddImageModel(Post::CImageModel* img)
+void CGLDocument::AddImageModel(CImageModel* img)
 {
 	assert(img);
 	m_img.Add(img);
 }
 
-Post::CImageModel* CGLDocument::GetImageModel(int i)
+CImageModel* CGLDocument::GetImageModel(int i)
 {
 	return m_img[i];
 }
@@ -991,11 +842,20 @@ bool CGLDocument::AutoSaveDocument()
 		bool success = m_fileWriter->Write(m_autoSaveFilePath.c_str());
 
 		CLogger::AddLogEntry(success ? "SUCCESS\n" : "FAILED\n");
-
+		SetModifiedFlag(false);
 		return success;
 	}
 	else
 		return false;
+}
+
+//-----------------------------------------------------------------------------
+void CGLDocument::Activate()
+{
+	CDocument::Activate();
+
+	// make sure the correct unit system is active
+	Units::SetUnitSystem(m_units);
 }
 
 //-----------------------------------------------------------------------------

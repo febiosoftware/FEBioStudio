@@ -46,6 +46,8 @@ class GPart;
 class FSStep;
 class CModelViewer;
 
+class CImageModel;
+
 class FEObjectProps : public CObjectProps
 {
 public:
@@ -217,4 +219,20 @@ public:
 private:
 	GPart*	m_pg;
 	FSModel*	m_fem;
+};
+
+class CImageModelProperties : public CObjectProps
+{
+public:
+    CImageModelProperties(CImageModel* model);
+
+    QVariant GetPropertyValue(int i);
+	void SetPropertyValue(int i, const QVariant& v);
+
+private:
+    enum PropOrder {PIXELTYPE, PXLDIM, SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
+
+private:
+    CImageModel* m_model;
+
 };

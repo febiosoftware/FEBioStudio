@@ -26,8 +26,9 @@ SOFTWARE.*/
 
 #pragma once
 #include "FECoreMesh.h"
-#include <MeshTools/FEGroup.h>
-#include <MeshTools/FEMeshData.h>
+#include <GeomLib/FSGroup.h>
+#include "FEMeshData.h"
+#include "Mesh_Data.h"
 #include <vector>
 #include <set>
 #include <string>
@@ -39,58 +40,7 @@ class FEMeshData;
 class FENodeData;
 class FESurfaceData;
 class FEElementData;
-
-//-----------------------------------------------------------------------------
-class Mesh_Data
-{
-	struct DATA
-	{
-		double	val[FSElement::MAX_NODES];	// nodal values for element
-		int		nval;						// number of nodal values (should equal nr of nodes for corresponding element)
-		int		tag;
-	};
-
-public:
-	Mesh_Data();
-	Mesh_Data(const Mesh_Data& d);
-	void operator = (const Mesh_Data& d);
-
-	void Clear();
-
-	void Init(FSMesh* mesh, double initVal, int initTag);
-
-	bool IsValid() const { return (m_data.empty() == false); }
-
-	DATA& operator[](size_t n) { return m_data[n]; }
-
-	// get the current element value
-	double GetElementValue(int elem, int node) const { return m_data[elem].val[node]; }
-
-	// get the average element value
-	double GetElementAverageValue(int elem);
-
-	// get the data tag
-	int GetElementDataTag(int n) const { return m_data[n].tag; }
-
-	// set the element's node value
-	void SetElementValue(int elem, int node, double v) { m_data[elem].val[node] = v; }
-
-	// set the element (average) value
-	void SetElementValue(int elem, double v);
-
-	// set the data tag
-	void SetElementDataTag(int n, int tag) { m_data[n].tag = tag; }
-
-	// update the range of values
-	void UpdateValueRange();
-
-	// get the value range
-	void GetValueRange(double& vmin, double& vmax) const;
-
-public:
-	std::vector<DATA>		m_data;		//!< element values
-	double	m_min, m_max;				//!< value range of element data
-};
+class FEPartData;
 
 //-----------------------------------------------------------------------------
 class FEMeshBuilder;
@@ -184,6 +134,7 @@ public:
 
 	// extract faces and return as new mesh
 	FSMesh* ExtractFaces(bool selectedOnly);
+    FSSurfaceMesh* ExtractFacesAsSurface(bool selectedOnly);
 
 public:
 	int MeshDataFields() const;
@@ -194,10 +145,10 @@ public:
 	void InsertMeshData(int i, FEMeshData* data);
 	void AddMeshDataField(FEMeshData* data);
 
-	FENodeData* AddNodeDataField(const std::string& name, double v = 0.0);
 	FENodeData*    AddNodeDataField   (const std::string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType);
 	FESurfaceData* AddSurfaceDataField(const std::string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType);
-	FEElementData* AddElementDataField(const std::string& name, FSPart* part, FEMeshData::DATA_TYPE dataType);
+	FEElementData* AddElementDataField(const std::string& name, FSElemSet* part, FEMeshData::DATA_TYPE dataType);
+	FEPartData*    AddPartDataField   (const std::string& name, FSPartSet* part, FEMeshData::DATA_TYPE dataType);
 	void ClearMeshData();
 
 	Mesh_Data& GetMeshData();

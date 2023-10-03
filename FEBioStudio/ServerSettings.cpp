@@ -33,7 +33,7 @@ SOFTWARE.*/
 bool ServerSettings::instantiated = false;
 QString ServerSettings::scheme = "https";
 QString ServerSettings::url = "repo.febio.org";
-int ServerSettings::port = 4433;
+int ServerSettings::port = 443;
 
 void ServerSettings::Instantiate()
 {
