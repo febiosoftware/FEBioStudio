@@ -36,8 +36,8 @@ SOFTWARE.*/
 #include <FEBioStudio/ModelDocument.h>
 #include <FEBioStudio/Commands.h>
 #include <FEBioLink/FEBioClass.h>
-#include <MeshTools/FEModel.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/FSModel.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GBaseObject.h>
 #include <GeomLib/GItem.h>

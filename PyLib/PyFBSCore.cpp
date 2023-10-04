@@ -33,9 +33,9 @@ SOFTWARE.*/
 #include "PyExceptions.h"
 
 #include <MeshLib/FEElementLibrary.h>
-#include <MeshTools/FEProject.h>
-#include <MeshIO/FEVTKExport.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/FSProject.h>
+#include <MeshIO/VTKExport.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GMeshObject.h>
 #include <GeomLib/GPrimitive.h>
 #include <MeshTools/FEShellDisc.h>
@@ -131,7 +131,7 @@ void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, 
 	FSModel& fem = project.GetFSModel();
 	fem.GetModel().AddObject(gmesh);
 
-    FEVTKExport vtk(project);
+    VTKExport vtk(project);
 
     vtk.Write(name.c_str());
 }

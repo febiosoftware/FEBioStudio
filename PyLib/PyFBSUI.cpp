@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include "PySpringFunctions.h"
 #include <GeomLib/GPrimitive.h>
 
-#include <MeshTools/GDiscreteObject.h>
+#include <FEMLib/GDiscreteObject.h>
 
 #include "PyCallBack.h"
 #include "PythonInputHandler.h"

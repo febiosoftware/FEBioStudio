@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FEBioStudio/FEBioStudio.h>
 #include <FEBioStudio/MainWindow.h>
 #include <FEBioStudio/ModelDocument.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
 #include <MeshTools/FEShellDisc.h>
 #include <GeomLib/GMeshObject.h>
