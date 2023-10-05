@@ -46,7 +46,9 @@ GLCurveProbe::GLCurveProbe()
 	SetName(sz);
 
 	m_col = GLColor(255, 0, 0);
+	m_scale = 1.0;
 	AddColorParam(m_col, "color");
+	AddDoubleParam(m_scale, "scale factor");
 }
 
 void GLCurveProbe::Render(CGLContext& rc)
@@ -61,12 +63,12 @@ void GLCurveProbe::Render(CGLContext& rc)
 		glBegin(GL_LINE_STRIP);
 		for (int i = 0; i < m_path.size(); ++i)
 		{
-			vec3d& r = m_path[i];
+			vec3d r = m_path[i]* m_scale;
 			glx::vertex3d(r);
 		}
 		glEnd();
 		glBegin(GL_POINTS);
-		glx::vertex3d(m_path[0]);
+		glx::vertex3d(m_path[0]* m_scale);
 		glEnd();
 		glPopAttrib();
 	}
@@ -100,13 +102,18 @@ void GLCurveProbe::SetColor(const GLColor& c)
 bool GLCurveProbe::SetPoints(const std::vector<vec3d>& points)
 {
 	m_path = points;
-	m_curve.assign(m_path.size(), 0.0);
+	return (m_path.size() > 1);
+}
+
+vector<double> GLCurveProbe::SectionLenghts()
+{
+	vector<double> curve(m_path.size(), 0.0);
 
 	double L = 0.0;
 	for (int i = 1; i < m_path.size(); ++i)
 	{
-		vec3d r0 = m_path[i - 1];
-		vec3d r1 = m_path[i];
+		vec3d r0 = m_path[i - 1] * m_scale;
+		vec3d r1 = m_path[i    ] * m_scale;
 		double li = (r1 - r0).Length();
 		L += li;
 	}
@@ -114,19 +121,19 @@ bool GLCurveProbe::SetPoints(const std::vector<vec3d>& points)
 	double l = 0.0;
 	for (int i = 1; i < m_path.size(); ++i)
 	{
-		vec3d r0 = m_path[i - 1];
-		vec3d r1 = m_path[i];
+		vec3d r0 = m_path[i - 1] * m_scale;
+		vec3d r1 = m_path[i    ] * m_scale;
 		double li = (r1 - r0).Length();
 		l += li;
-		m_curve[i] = l / L;
+		curve[i] = l / L;
 	}
 
-	return (m_path.size() > 1);
+	return curve;
 }
 
-vec2d GLCurveProbe::GetPointValue(int i)
+double GLCurveProbe::GetPointValue(int i)
 {
-	vec2d val(0, 0);
+	double val(0);
 
 	Post::CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return val;
@@ -138,9 +145,9 @@ vec2d GLCurveProbe::GetPointValue(int i)
 	return GetPointValue(i, nstep);
 }
 
-vec2d GLCurveProbe::GetPointValue(int i, int nstep)
+double GLCurveProbe::GetPointValue(int i, int nstep)
 {
-	vec2d val(0, 0);
+	double val(0);
 
 	Post::CGLModel* mdl = GetModel();
 	if (mdl == nullptr) return val;
@@ -152,10 +159,12 @@ vec2d GLCurveProbe::GetPointValue(int i, int nstep)
 	int nfield = cmap->GetEvalField();
 	if (nfield == 0) return val;
 
-	vec3f r0 = to_vec3f(m_path[i]);
+	vec3f r0 = to_vec3f(m_path[i])* m_scale;
 	Post::NODEDATA data;
+	// TODO: This will evaluate the point at the current time step coordinates!
+	//       Not at the mesh coordinates of step "nstep"! If the mesh deforms,
+	//       this will not give the correct answer!! 
 	fem.EvaluateNode(r0, nstep, nfield, data);
-	val.x() = m_curve[i];
-	val.y() = data.m_val;
+	val = data.m_val;
 	return val;
 }

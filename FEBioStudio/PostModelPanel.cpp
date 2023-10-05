@@ -1856,14 +1856,12 @@ void CPostModelPanel::OnCurveProbePlotData()
 	if (po)
 	{
 		int N = po->Points();
-		vector<double> xpoints(N, 0.0);
+		vector<double> xpoints = po->SectionLenghts();
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for
 		for (int i = 0; i < N; ++i)
 		{
-			vec2d p = po->GetPointValue(i);
-			xpoints[i] = p.x();
-			ypoints[i] = p.y();
+			ypoints[i] = po->GetPointValue(i);
 		}
 
 		CPlotData* data = new CPlotData;
@@ -1900,21 +1898,17 @@ void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
 		TIMESETTINGS& time = doc->GetTimeSettings();
 
 		int N = po->Points();
-		vector<double> xpoints(N, 0.0);
+		vector<double> xpoints = po->SectionLenghts();
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for
 		for (int i = 0; i < N; ++i)
 		{
-			double x = 0.0, y = 0.0;
+			double y = 0.0;
 			for (int n = time.m_start; n <= time.m_end; n++)
 			{
-				vec2d p = po->GetPointValue(i);
-				x += p.x();
-				y += p.y();
+				y += po->GetPointValue(i, n);
 			}
-			x /= (time.m_end - time.m_start + 1);
 			y /= (time.m_end - time.m_start + 1);
-			xpoints[i] = x;
 			ypoints[i] = y;
 		}
 

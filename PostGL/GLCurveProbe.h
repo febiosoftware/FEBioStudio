@@ -46,8 +46,10 @@ public:
 
 	size_t Points() const { return m_path.size(); }
 
-	vec2d GetPointValue(int i);
-	vec2d GetPointValue(int i, int nstep);
+	double GetPointValue(int i);
+	double GetPointValue(int i, int nstep);
+
+	vector<double> SectionLenghts();
 
 public:
 	GLColor GetColor() const;
@@ -55,7 +57,7 @@ public:
 
 private:
 	GLColor	m_col;
+	double	m_scale;
 	std::vector<vec3d>	m_path;
-	std::vector<double>	m_curve;
 };
 }
