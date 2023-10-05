@@ -145,6 +145,8 @@ void CPythonTool::addResourceProperty(const std::string& name, std::string value
 
 bool CPythonTool::OnApply()
 {
+    pybind11::gil_scoped_acquire acquire;
+
     kwargs = pybind11::dict();
 
     for(int prop = 0; prop < Properties(); prop++)
@@ -181,8 +183,10 @@ bool CPythonTool::OnApply()
         };
     }
 
-    CPyThread* thread = new CPyThread(m_wnd->GetPythonToolsPanel(), this);
-    thread->start();
+    // CPyThread* thread = new CPyThread(m_wnd->GetPythonToolsPanel(), this);
+    // thread->start();
+
+    m_wnd->GetPythonToolsPanel()->GetThread()->SetTool(this);
 
     return true;
 }
@@ -208,57 +212,6 @@ bool CPythonTool::runFunc()
     return true;
 }
 
-// Dummy tool
-
-CPythonDummyTool::CPythonDummyTool(const char* name, pybind11::function func)
-    : name(name), func(func)
-{
-
-}
-
-void CPythonDummyTool::addBoolProperty(const std::string& name, bool value)
-{
-    propOrder.push_back(CProperty::Bool);
-    boolProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addIntProperty(const std::string& name, int value)
-{
-    propOrder.push_back(CProperty::Int);
-    intProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addEnumProperty(const std::string& name, const std::string& labels, int value)
-{
-    propOrder.push_back(CProperty::Enum);
-    enumProps.emplace(name, value);
-    enumLabels.emplace(labels);
-}
-
-void CPythonDummyTool::addDoubleProperty(const std::string& name, double value)
-{
-    propOrder.push_back(CProperty::Float);
-    dblProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addVec3Property(const std::string& name, vec3d value)
-{
-    propOrder.push_back(CProperty::Vec3);
-    vec3Props.emplace(name, value);
-}
-
-void CPythonDummyTool::addStringProperty(const std::string& name, const char* value)
-{
-    propOrder.push_back(CProperty::String);
-    strProps.emplace(name, value);
-}
-
-void CPythonDummyTool::addResourceProperty(const std::string& name, const char* value)
-{
-    propOrder.push_back(CProperty::Resource);
-    rscProps.emplace(name, value);
-}
-
 #else
 CPythonTool::CPythonTool(CMainWindow* wnd, std::string name, pybind11::function func) : CBasicTool(wnd, name.c_str(), HAS_APPLY_BUTTON) {}
 CPythonTool::~CPythonTool() {}
@@ -271,13 +224,4 @@ void CPythonTool::addStringProperty(const std::string& name, std::string value) 
 void CPythonTool::addResourceProperty(const std::string& name, std::string value) {}
 bool CPythonTool::OnApply() {return false;}
 bool CPythonTool::runFunc() {return false;}
-
-CPythonDummyTool::CPythonDummyTool(const char* name, pybind11::function func) {}
-void CPythonDummyTool::addBoolProperty(const std::string& name, bool value) {}
-void CPythonDummyTool::addIntProperty(const std::string& name, int value) {}
-void CPythonDummyTool::addEnumProperty(const std::string& name, const std::string& labels, int value) {}
-void CPythonDummyTool::addDoubleProperty(const std::string& name, double value) {}
-void CPythonDummyTool::addVec3Property(const std::string& name, vec3d value) {}
-void CPythonDummyTool::addStringProperty(const std::string& name, char* value) {}
-void CPythonDummyTool::addResourceProperty(const std::string& name, char* value) {}
 #endif

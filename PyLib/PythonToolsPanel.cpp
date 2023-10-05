@@ -27,7 +27,9 @@ SOFTWARE.*/
 
 
 #ifdef HAS_PYTHON
-#include "PyFBS.cpp"
+// #include "PyFBS.cpp"
+#include <pybind11/pybind11.h>
+#include <pybind11/embed.h>
 
 #include "PythonToolsPanel.h"
 #include "ui_pythontoolspanel.h"
@@ -46,18 +48,16 @@ CPythonToolsPanel::CPythonToolsPanel(CMainWindow* wnd, QWidget* parent)
 
 void CPythonToolsPanel::initPython()
 {
-	pybind11::initialize_interpreter();
- 
-	// setup output
- 	auto sysm = pybind11::module::import("sys");
-	auto output = pybind11::module::import("fbs").attr("ui").attr("PyOutput");
-	sysm.attr("stdout") = output();
-	sysm.attr("stderr") = output();
+
+    m_pythonThread = new CPyThread(this);
+    connect(m_pythonThread, &CPyThread::ExecDone, this, &CPythonToolsPanel::on_pythonThread_ExecDone);
+
+    m_pythonThread->start();
 }
 
 CPythonToolsPanel::~CPythonToolsPanel()
 {
-    finalizePython();
+    m_pythonThread->quit();
 }
 
 void CPythonToolsPanel::Update(bool breset)
@@ -68,15 +68,6 @@ void CPythonToolsPanel::Update(bool breset)
 	}
 }
 
-CPythonDummyTool* CPythonToolsPanel::addDummyTool(const char* name, pybind11::function func)
-{
-	CPythonDummyTool* tool = new CPythonDummyTool(name, func);
-
-	dummyTools.push_back(tool);
-
-	return tool;
-}
-
 CPythonTool* CPythonToolsPanel::addTool(std::string name, pybind11::function func)
 {
 	CPythonTool* tool = new CPythonTool(GetMainWindow(), name, func);
@@ -84,6 +75,11 @@ CPythonTool* CPythonToolsPanel::addTool(std::string name, pybind11::function fun
 	tools.push_back(tool);
 
 	return tool;
+}
+
+CPyThread* CPythonToolsPanel::GetThread()
+{
+    return m_pythonThread;
 }
 
 void CPythonToolsPanel::runScript(QString filename)
@@ -109,67 +105,14 @@ void CPythonToolsPanel::setProgress(int prog)
 	ui->setProgress(prog);
 }
 
-void CPythonToolsPanel::finalizePython()
+void CPythonToolsPanel::on_pythonThread_ExecDone()
 {
-	pybind11::finalize_interpreter();
-}
+    ui->refreshPanel();
 
-void CPythonToolsPanel::finalizeTools()
-{
-	for(auto dummyTool : dummyTools)
-	{
-		auto tool = addTool(dummyTool->name, dummyTool->func);
-
-		for(auto type : dummyTool->propOrder)
-		{
-			switch (type)
-			{
-			case CProperty::Bool:
-				tool->addBoolProperty(dummyTool->boolProps.front().first, dummyTool->boolProps.front().second);
-				dummyTool->boolProps.pop();
-				break;
-			case CProperty::Int:
-				tool->addIntProperty(dummyTool->intProps.front().first, dummyTool->intProps.front().second);
-				dummyTool->intProps.pop();
-				break;
-			case CProperty::Float:
-				tool->addDoubleProperty(dummyTool->dblProps.front().first, dummyTool->dblProps.front().second);
-				dummyTool->dblProps.pop();
-				break;
-			case CProperty::Enum:
-				tool->addEnumProperty(dummyTool->enumProps.front().first, dummyTool->enumLabels.front(), dummyTool->enumProps.front().second);
-				dummyTool->enumProps.pop();
-				dummyTool->enumLabels.pop();
-				break;
-			case CProperty::Vec3:
-				tool->addVec3Property(dummyTool->vec3Props.front().first, dummyTool->vec3Props.front().second);
-				dummyTool->vec3Props.pop();
-				break;
-			case CProperty::String:
-				tool->addStringProperty(dummyTool->strProps.front().first, dummyTool->strProps.front().second);
-				dummyTool->strProps.pop();
-				break;
-			case CProperty::Resource:
-				tool->addResourceProperty(dummyTool->rscProps.front().first, dummyTool->rscProps.front().second);
-				dummyTool->rscProps.pop();
-				break;
-			default:
-				break;
-			}
-		}
-
-		ui->addTool(tool);
-
-		delete dummyTool;
-	}
-
-	dummyTools.clear();
-}
-
-void CPythonToolsPanel::endThread()
-{
-	pybind11::gil_scoped_acquire acquire;
-	finalizeTools();
+    for(CPythonTool* tool : tools)
+    {
+        ui->addTool(tool);
+    }
 
 	ui->stopRunning();
 
@@ -180,12 +123,10 @@ void CPythonToolsPanel::endThread()
 void CPythonToolsPanel::on_importScript_triggered()
 {
 	QString filename = QFileDialog::getOpenFileName(this, "Python Script", "", "Python scripts (*.py)");
-
+    
 	if(filename.isEmpty()) return;
 
-	pybind11::gil_scoped_release release;
-	CPyThread* thread = new CPyThread(this, filename);
-	thread->start();
+    m_pythonThread->SetFilename(filename);
 }
 
 void CPythonToolsPanel::on_refresh_triggered()
@@ -199,9 +140,6 @@ void CPythonToolsPanel::on_refresh_triggered()
 	tools.clear();
 
 	m_activeTool = nullptr;
-	
-	finalizePython();
-	initPython();
 }
 
 CPythonInputHandler* CPythonToolsPanel::getInputHandler()
@@ -239,7 +177,7 @@ void CPythonToolsPanel::on_buttons_idClicked(int id)
 	m_activeTool = 0;
 
 	// find the tool
-	QList<CPythonTool*>::iterator it = tools.begin();
+	auto it = tools.begin();
 	for (int i = 0; i<id - 1; ++i, ++it);
 
 	// activate the tool

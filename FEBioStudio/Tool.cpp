@@ -153,7 +153,7 @@ QWidget* CBasicTool::createUi()
 		pg->addWidget(pb);
 		pl->addLayout(pg);
 
-		QObject::connect(pb, SIGNAL(clicked(bool)), this, SLOT(on_button_clicked()));
+        connect(pb, &QPushButton::clicked, this, &CBasicTool::on_button_clicked);
 	}
 	pl->addStretch();
 

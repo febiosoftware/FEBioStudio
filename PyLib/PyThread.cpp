@@ -28,37 +28,74 @@ SOFTWARE.*/
 #include "PyThread.h"
 #include "PythonToolsPanel.h"
 
-CPyThread::CPyThread(CPythonToolsPanel* panel, CPythonTool* tool) 
-    : tool(tool), panel(panel)
-{
-    panel->startRunning(QString("Running %1...").arg(tool->name()));
+#include "PyFBS.cpp"
 
-    init();
+#include <QMetaObject>
+
+CPyThread::CPyThread(CPythonToolsPanel* panel) : m_panel(panel), m_tool(nullptr), m_restart(false)
+{
+
 }
 
-CPyThread::CPyThread(CPythonToolsPanel* panel, QString& filename) 
-    : tool(nullptr), panel(panel), filename(filename)
+void CPyThread::initPython()
 {
-    panel->startRunning(QString("Running %1...").arg(filename));
-
-    init();
+	pybind11::initialize_interpreter();
+ 
+	// setup output
+ 	auto sysm = pybind11::module::import("sys");
+	auto output = pybind11::module::import("fbs").attr("ui").attr("PyOutput");
+	sysm.attr("stdout") = output();
+	sysm.attr("stderr") = output();
 }
 
-
-void CPyThread::init()
+void CPyThread::finalizePython()
 {
-    QObject::connect(this, &CPyThread::finished, panel, &CPythonToolsPanel::endThread);
-    QObject::connect(this, &QThread::finished, this, &QThread::deleteLater);
+	pybind11::finalize_interpreter();
 }
 
 void CPyThread::run()
 {
-    if(tool)
+    initPython();
+
+    while(true)
     {
-        tool->runFunc();
+        if(m_restart)
+        {
+            finalizePython();
+            initPython();
+        }
+        else if(m_tool)
+        {
+            m_tool->runFunc();
+            m_tool = nullptr;
+
+            emit ExecDone();
+        }
+        else if(!m_filename.isEmpty())
+        {
+            m_panel->runScript(m_filename);
+            m_filename.clear();
+
+            emit ExecDone();
+        }
+
+        msleep(100);
     }
-    else if(panel)
-    {
-        panel->runScript(filename);
-    }
+
+    finalizePython();
+}
+
+void CPyThread::SetTool(CPythonTool* tool)
+{
+    m_tool = tool;
+}
+    
+void CPyThread::SetFilename(QString& filename)
+{
+    m_filename = filename;
+}   
+
+void CPyThread::Restart()
+{
+    m_restart = true;
 }

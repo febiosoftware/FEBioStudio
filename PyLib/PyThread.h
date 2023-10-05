@@ -38,14 +38,22 @@ class CPyThread : public QThread
 	void run() Q_DECL_OVERRIDE;
 
 public:
-	CPyThread(CPythonToolsPanel* panel, CPythonTool* tool);
-    CPyThread(CPythonToolsPanel* panel, QString& filename);
+    CPyThread(CPythonToolsPanel* panel);
+
+    void SetTool(CPythonTool* tool);
+    void SetFilename(QString& filename);
+    void Restart();
+
+signals:
+    void ExecDone();
 
 private:
-    void init();
+    void initPython();
+    void finalizePython();
 
 private:
-    CPythonTool* tool;
-    CPythonToolsPanel* panel;
-    QString filename;
+    bool m_restart;
+    CPythonTool* m_tool;
+    CPythonToolsPanel* m_panel;
+    QString m_filename;
 };

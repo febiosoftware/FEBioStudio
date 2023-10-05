@@ -52,12 +52,12 @@ void openFile(const char *fileName)
     FBS::getMainWindow()->OpenFile(fileName);
 }
 
-CPythonDummyTool* PythonTool_init(const char* name, pybind11::function func)
+CPythonTool* PythonTool_init(const char* name, pybind11::function func)
 {
     auto wnd = FBS::getMainWindow();
     CPythonToolsPanel* pythonToolsPanel = wnd->GetPythonToolsPanel();
 
-    return pythonToolsPanel->addDummyTool(name, func);
+    return pythonToolsPanel->addTool(name, func);
 }
 
 GBox* GBox_init(vec3d pos, double width, double height, double depth)
@@ -111,15 +111,15 @@ void init_FBSUI(pybind11::module& m)
     ui.def("getUserInt", PyGetInt);
     ui.def("getUserSelection", PyGetSelection);
 
-    pybind11::class_<CPythonDummyTool, std::unique_ptr<CPythonDummyTool, pybind11::nodelete>>(ui, "PythonTool")
+    pybind11::class_<CPythonTool, std::unique_ptr<CPythonTool, pybind11::nodelete>>(ui, "PythonTool")
         .def(pybind11::init(&PythonTool_init))
-        .def("addBoolParameter", &CPythonDummyTool::addBoolProperty, pybind11::arg("name"), pybind11::arg("value") = true)
-        .def("addIntParameter", &CPythonDummyTool::addIntProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
-        .def("addDoubleParameter", &CPythonDummyTool::addDoubleProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
-        .def("addVec3Parameter", &CPythonDummyTool::addVec3Property, pybind11::arg("name"), pybind11::arg("value") = vec3d())
-        .def("addEnumParameter", &CPythonDummyTool::addEnumProperty, pybind11::arg("name"), pybind11::arg("labels"), pybind11::arg("value") = 0)
-        .def("addStringParameter", &CPythonDummyTool::addStringProperty, pybind11::arg("name"), pybind11::arg("value") = "")
-        .def("addResourceParameter", &CPythonDummyTool::addResourceProperty, pybind11::arg("name"), pybind11::arg("value") = "");
+        .def("addBoolParameter", &CPythonTool::addBoolProperty, pybind11::arg("name"), pybind11::arg("value") = true)
+        .def("addIntParameter", &CPythonTool::addIntProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
+        .def("addDoubleParameter", &CPythonTool::addDoubleProperty, pybind11::arg("name"), pybind11::arg("value") = 0)
+        .def("addVec3Parameter", &CPythonTool::addVec3Property, pybind11::arg("name"), pybind11::arg("value") = vec3d())
+        .def("addEnumParameter", &CPythonTool::addEnumProperty, pybind11::arg("name"), pybind11::arg("labels"), pybind11::arg("value") = 0)
+        .def("addStringParameter", &CPythonTool::addStringProperty, pybind11::arg("name"), pybind11::arg("value") = "")
+        .def("addResourceParameter", &CPythonTool::addResourceProperty, pybind11::arg("name"), pybind11::arg("value") = "");
 }
 
 #else

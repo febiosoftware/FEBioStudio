@@ -40,6 +40,7 @@ SOFTWARE.*/
 #include <FEBioStudio/Tool.h>
 #include <FEBioStudio/ToolBox.h>
 #include <QPlainTextEdit>
+#include "PythonTool.h"
 
 class Ui::CPythonToolsPanel
 {
@@ -64,13 +65,10 @@ public:
 		this->parent = parent;
 		running = false;
 
-		QList<CPythonTool*>& tools = parent->tools;
-
 		QVBoxLayout* parentLayout = new QVBoxLayout(parent);
 		
 		QSplitter* splitter = new QSplitter;
 		splitter->setOrientation(Qt::Vertical);
-		
 		
 		splitter->addWidget(parentStack = new QStackedWidget);
 
@@ -143,13 +141,15 @@ public:
 
 		parentLayout->addWidget(splitter);
 
+        numTools = 0;
+
 		QMetaObject::connectSlotsByName(parent);
 	}
 
 
-	void addTool(CAbstractTool* tool)
+	void addTool(CPythonTool* tool)
 	{
-		int i = parent->tools.size() - 1;
+		int i = numTools;
 
 		QPushButton* but = new QPushButton(tool->name());
 		but->setSizePolicy(QSizePolicy::Ignored, QSizePolicy::Fixed);
@@ -166,6 +166,8 @@ public:
 			stack->addWidget(pl);
 		}
 		else stack->addWidget(pw);
+
+        numTools++;
 	}
 
 	void refreshPanel()
@@ -183,6 +185,8 @@ public:
 		}
 
 		txt->clear();
+
+        numTools = 0;
 	}
 
 	void startRunning(const QString& txt)
@@ -232,4 +236,6 @@ public:
 
 private:
 	::CPythonToolsPanel* parent;
+
+    int numTools;
 };
