@@ -133,7 +133,7 @@ using std::stringstream;
 
 void CMainWindow::on_actionOpenProject_triggered()
 {
-	QString projectFile = QFileDialog::getOpenFileName(this, "Open Project", "", QString("FEBioStudio Projects (*.fsp)"));
+	QString projectFile = QFileDialog::getOpenFileName(this, "Open Project", CurrentWorkingDirectory(), QString("FEBioStudio Projects (*.fsp)"));
 	if (projectFile.isEmpty() == false)
 	{
 		OpenProject(projectFile);
@@ -225,7 +225,7 @@ void CMainWindow::on_actionOpen_triggered()
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-	dlg.setDirectory(ui->currentPath);
+	dlg.setDirectory(CurrentWorkingDirectory());
 	dlg.setNameFilters(filters);
 	if (dlg.exec())
 	{
@@ -305,7 +305,7 @@ void CMainWindow::on_actionImportProject_triggered()
 	QFileDialog dlg(this, "Open");
 	dlg.setFileMode(QFileDialog::ExistingFile);
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-	dlg.setDirectory(ui->currentPath);
+	dlg.setDirectory(CurrentWorkingDirectory());
 	dlg.setNameFilters(filters);
 	if (dlg.exec())
 	{
@@ -351,7 +351,7 @@ void CMainWindow::on_actionExportProject_triggered()
 	CDocument* doc = GetDocument();
 	if (doc == nullptr) return;
 
-	QString fileName = QFileDialog::getSaveFileName(this, "Export", ui->currentPath, "FEBio Studio Project (*.prj)");
+	QString fileName = QFileDialog::getSaveFileName(this, "Export", CurrentWorkingDirectory(), "FEBio Studio Project (*.prj)");
 	if (fileName.isEmpty() == false)
 	{
 		// make sure the file has an extension
@@ -422,6 +422,7 @@ void CMainWindow::SaveImage(QImage& image)
 		<< "JPEG files (*.jpg)";
 
 	QFileDialog dlg(this, "Save Image");
+	dlg.setDirectory(CurrentWorkingDirectory());
 	dlg.setNameFilters(filters);
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
@@ -614,6 +615,7 @@ void CMainWindow::ExportPostGeometry()
 
 	QFileDialog dlg(this, "Save");
 	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setDirectory(CurrentWorkingDirectory());
 	dlg.setNameFilters(filters);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
 	if (dlg.exec() == 0) return;
@@ -815,7 +817,7 @@ void CMainWindow::ExportGeometry()
 	QFileDialog dlg(this);
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
-	dlg.setDirectory(ui->currentPath);
+	dlg.setDirectory(CurrentWorkingDirectory());
 	dlg.setNameFilters(filters);
 	dlg.selectFile(QString(sfile.c_str()));
 	if (dlg.exec())
@@ -984,6 +986,7 @@ void CMainWindow::SavePostDoc()
 		<< "Abaqus files (*.inp)";
 
 	QFileDialog dlg(this, "Save");
+	dlg.setDirectory(CurrentWorkingDirectory());
 	dlg.setFileMode(QFileDialog::AnyFile);
 	dlg.setNameFilters(filters);
 	dlg.setAcceptMode(QFileDialog::AcceptSave);
@@ -1136,6 +1139,32 @@ void CMainWindow::SavePostDoc()
 }
 
 //-----------------------------------------------------------------------------
+QString CMainWindow::CurrentWorkingDirectory()
+{
+	QString path = ui->currentPath;
+	if (ui->m_project.GetProjectFileName().isEmpty() == false)
+	{
+		QFileInfo fi(ui->m_project.GetProjectFileName());
+		path = fi.absolutePath();
+	}
+	else
+	{
+		CDocument* doc = GetDocument();
+		if (doc)
+		{
+			string docfile = doc->GetDocFilePath();
+			if (docfile.empty() == false)
+			{
+				QFileInfo fi(QString::fromStdString(docfile));
+				path = fi.absolutePath();
+			}
+		}
+	}
+
+	return path;
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::on_actionSaveAs_triggered()
 {
 	CModelDocument* doc = GetModelDocument();
@@ -1151,7 +1180,7 @@ void CMainWindow::on_actionSaveAs_triggered()
         if(xmlDoc)
         {
             QFileDialog dlg;
-            dlg.setDirectory(ui->currentPath);
+            dlg.setDirectory(CurrentWorkingDirectory());
             dlg.setFileMode(QFileDialog::AnyFile);
             dlg.setNameFilter("FEBio Input files (*.feb)");
             dlg.setDefaultSuffix("feb");
@@ -1167,7 +1196,7 @@ void CMainWindow::on_actionSaveAs_triggered()
 	}
 
 	string fileName = doc->GetDocTitle();
-	QString currentPath = ui->currentPath;
+	QString currentPath = CurrentWorkingDirectory();
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
 	{
 		QFileInfo fi(ui->m_project.GetProjectFileName());
@@ -1301,7 +1330,7 @@ void CMainWindow::on_actionExportFEModel_triggered()
 		".n",
 	};
 
-	QString path = ui->currentPath;
+	QString path = CurrentWorkingDirectory();
 	QString fileName = QString::fromStdString(GetDocument()->GetDocFilePath());
 
 	if (fileName.isEmpty() == false)
@@ -1482,6 +1511,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 
 		// present the file selection dialog box
 		QFileDialog dlg(this);
+		dlg.setDirectory(CurrentWorkingDirectory());
 		dlg.setFileMode(QFileDialog::ExistingFiles);
 		dlg.setAcceptMode(QFileDialog::AcceptOpen);
 		dlg.setNameFilters(filters);
@@ -1489,7 +1519,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 		{
 			// store the current path
 			QDir dir = dlg.directory();
-			SetCurrentFolder(dir.absolutePath());
+//			SetCurrentFolder(dir.absolutePath());
 
 			// get the file names
 			QStringList files = dlg.selectedFiles();
@@ -1505,6 +1535,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 		filters << "VTK (*.vtk)";
 
 		QFileDialog dlg(this);
+		dlg.setDirectory(CurrentWorkingDirectory());
 		dlg.setFileMode(QFileDialog::ExistingFile);
 		dlg.setAcceptMode(QFileDialog::AcceptOpen);
 		dlg.setNameFilters(filters);
@@ -1512,7 +1543,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 		{
 			// store the current path
 			QDir dir = dlg.directory();
-			SetCurrentFolder(dir.absolutePath());
+//			SetCurrentFolder(dir.absolutePath());
 
 			// get the file names
 			QStringList files = dlg.selectedFiles();
@@ -1561,6 +1592,7 @@ void CMainWindow::on_actionImportRawImage_triggered()
 
 	// present the file selection dialog box
 	QFileDialog filedlg(this);
+	filedlg.setDirectory(CurrentWorkingDirectory());
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
@@ -1625,6 +1657,7 @@ void CMainWindow::on_actionImportDICOMImage_triggered()
     }
 
 	QFileDialog filedlg(this);
+	filedlg.setDirectory(CurrentWorkingDirectory());
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
@@ -1671,6 +1704,7 @@ void CMainWindow::on_actionImportTiffImage_triggered()
     }
 
 	QFileDialog filedlg(this);
+	filedlg.setDirectory(CurrentWorkingDirectory());
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
@@ -1729,6 +1763,7 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
     }
 
 	QFileDialog filedlg(this);
+	filedlg.setDirectory(CurrentWorkingDirectory());
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
@@ -1752,6 +1787,7 @@ void CMainWindow::on_actionImportImageOther_triggered()
     }
 
 	QFileDialog filedlg(this);
+	filedlg.setDirectory(CurrentWorkingDirectory());
 	filedlg.setFileMode(QFileDialog::ExistingFile);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
@@ -1771,6 +1807,7 @@ void CMainWindow::on_actionImportImageSequence_triggered()
     }
 
 	QFileDialog filedlg(this);
+	filedlg.setDirectory(CurrentWorkingDirectory());
 	filedlg.setFileMode(QFileDialog::ExistingFiles);
 	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
 
@@ -1936,7 +1973,7 @@ void CMainWindow::on_actionConvertFeb_triggered()
 
 void CMainWindow::on_actionConvertFeb2Fsm_triggered()
 {
-    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", "", "FEBio files (*.feb)");
+    QStringList fileNames = QFileDialog::getOpenFileNames(this, "Select Files", CurrentWorkingDirectory(), "FEBio files (*.feb)");
 	if (fileNames.isEmpty() == false)
 	{
 		QString dir = QFileDialog::getExistingDirectory();
@@ -2127,6 +2164,7 @@ void CMainWindow::on_actionConvertGeo_triggered()
 
 	// present the file selection dialog box
 	QFileDialog dlg(this);
+	dlg.setDirectory(CurrentWorkingDirectory());
 	dlg.setFileMode(QFileDialog::ExistingFiles);
 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
 	dlg.setNameFilters(filters);
