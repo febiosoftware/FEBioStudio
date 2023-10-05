@@ -76,6 +76,7 @@ SOFTWARE.*/
 #include "Commands.h"
 #include <ImageLib/ImageModel.h>
 #include <QFileDialog>
+#include "DlgImportData.h"
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -1729,11 +1730,30 @@ void CPostModelPanel::OnImportCurveProbePoints()
 	QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Import data", "", "All files (*)");
 	if (filename.isEmpty() == false)
 	{
-		string sfile = filename.toStdString();
-		if (po->ImportPoints(sfile) == false)
+		QFile file(filename);
+		if (file.open(QFile::ReadOnly | QFile::Text))
 		{
-			QMessageBox::critical(this, "Import Data", "Failed importing points");
+			QTextStream txt(&file);
+			QString data = txt.readAll();
+
+			CDlgImportData dlg(data, DataType::DOUBLE, 3);
+			if (dlg.exec())
+			{
+				QList<QList<double> > val = dlg.GetDoubleValues();
+				std::vector<vec3d> points;
+				for (QList<double>& row : val)
+				{
+					vector<double> d;
+					for (double di : row) d.push_back(di);
+					assert(d.size() == 3);
+					vec3d p(d[0], d[1], d[2]);
+					points.push_back(p);
+				}
+
+				po->SetPoints(points);
+			}
 		}
+		else QMessageBox::critical(this, "Import data", "Failed importing points");
 
 		Update(true);
 		selectObject(po);

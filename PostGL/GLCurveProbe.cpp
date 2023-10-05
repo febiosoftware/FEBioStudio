@@ -97,25 +97,11 @@ void GLCurveProbe::SetColor(const GLColor& c)
 	m_col = c;
 }
 
-bool GLCurveProbe::ImportPoints(const std::string& fileName)
+bool GLCurveProbe::SetPoints(const std::vector<vec3d>& points)
 {
-	m_path.clear();
-	m_curve.clear();
-	std::ifstream fp(fileName);
-	string line;
-	double s = 1000;
-	while (std::getline(fp, line))
-	{
-		if (line.empty() == false)
-		{
-			if (line[0] != '#')
-			{
-				double x, y, z;
-				int n = sscanf(line.c_str(), "%lg %lg %lg", &x, &y, &z);
-				m_path.push_back(vec3d(s*x, s*y, s*z));
-			}
-		}
-	}
+	m_path = points;
+	m_curve.assign(m_path.size(), 0.0);
+
 	double L = 0.0;
 	for (int i = 1; i < m_path.size(); ++i)
 	{
@@ -126,7 +112,6 @@ bool GLCurveProbe::ImportPoints(const std::string& fileName)
 	}
 	if (L == 0.0) L = 1.0;
 	double l = 0.0;
-	m_curve.assign(m_path.size(), 0.0);
 	for (int i = 1; i < m_path.size(); ++i)
 	{
 		vec3d r0 = m_path[i - 1];
@@ -136,7 +121,7 @@ bool GLCurveProbe::ImportPoints(const std::string& fileName)
 		m_curve[i] = l / L;
 	}
 
-	return true;
+	return (m_path.size() > 1);
 }
 
 vec2d GLCurveProbe::GetPointValue(int i)

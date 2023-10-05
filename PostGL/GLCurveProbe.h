@@ -42,7 +42,7 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
-	bool ImportPoints(const std::string& fileName);
+	bool SetPoints(const std::vector<vec3d>& points);
 
 	size_t Points() const { return m_path.size(); }
 
