@@ -25,41 +25,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QtCore/QThread>
 
-class CPyState;
-class CPythonToolsPanel;
-class CPythonTool;
+#include <unordered_map>
+#include <pybind11/pybind11.h>
 
-class CPyThread : public QThread
+class CPyState
 {
-    Q_OBJECT
-
-	void run() Q_DECL_OVERRIDE;
-
 public:
-    CPyThread(CPythonToolsPanel* panel);
-    ~CPyThread();
+    CPyState();
 
-    void SetTool(CPythonTool* tool);
-    void SetFilename(QString& filename);
-    void Restart();
-
-    CPyState* GetState();
-
-signals:
-    void ExecDone();
-    void Restarted();
+    void AddFunc(int id, pybind11::function func);
+    pybind11::function* GetFunc(int id);
+    void ClearFuncs();
 
 private:
-    void initPython();
-    void finalizePython();
+    std::unordered_map<int, pybind11::function> funcs;
 
-private:
-    bool m_restart;
-    CPythonTool* m_tool;
-    CPythonToolsPanel* m_panel;
-    QString m_filename;
-
-    CPyState* m_state;
 };

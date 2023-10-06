@@ -116,8 +116,6 @@ public:
 
 		pg->addWidget(tool);
 
-		parentStack->addWidget(mainPage);
-
 		QWidget* runningPage = new QWidget;
 		QVBoxLayout* runningLayout = new QVBoxLayout(runningPage);
 		runningLayout->setAlignment(Qt::AlignCenter);

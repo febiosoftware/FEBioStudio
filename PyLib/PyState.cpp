@@ -24,42 +24,24 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#pragma once
-#include <QtCore/QThread>
+#include "PyState.h"
 
-class CPyState;
-class CPythonToolsPanel;
-class CPythonTool;
-
-class CPyThread : public QThread
+CPyState::CPyState()
 {
-    Q_OBJECT
 
-	void run() Q_DECL_OVERRIDE;
+}
 
-public:
-    CPyThread(CPythonToolsPanel* panel);
-    ~CPyThread();
+void CPyState::AddFunc(int id, pybind11::function func)
+{
+    funcs[id] = func;
+}
 
-    void SetTool(CPythonTool* tool);
-    void SetFilename(QString& filename);
-    void Restart();
+pybind11::function* CPyState::GetFunc(int id)
+{
+    return &funcs[id];
+}
 
-    CPyState* GetState();
-
-signals:
-    void ExecDone();
-    void Restarted();
-
-private:
-    void initPython();
-    void finalizePython();
-
-private:
-    bool m_restart;
-    CPythonTool* m_tool;
-    CPythonToolsPanel* m_panel;
-    QString m_filename;
-
-    CPyState* m_state;
-};
+void CPyState::ClearFuncs()
+{
+    funcs.clear();
+}
