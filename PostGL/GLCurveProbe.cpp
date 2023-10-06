@@ -86,6 +86,17 @@ void GLCurveProbe::Update(int ntime, float dt, bool breset)
 
 bool GLCurveProbe::UpdateData(bool bsave)
 {
+	if (bsave)
+	{
+		m_col = GetColorValue(0);
+		m_scale = GetFloatValue(1);
+	}
+	else
+	{
+		SetColorValue(0, m_col);
+		SetFloatValue(1, m_scale);
+	}
+
 	return false;
 }
 
@@ -105,19 +116,26 @@ bool GLCurveProbe::SetPoints(const std::vector<vec3d>& points)
 	return (m_path.size() > 1);
 }
 
-vector<double> GLCurveProbe::SectionLenghts()
+vector<double> GLCurveProbe::SectionLenghts(bool normalized)
 {
 	vector<double> curve(m_path.size(), 0.0);
 
+	// calculate normalize factor
 	double L = 0.0;
-	for (int i = 1; i < m_path.size(); ++i)
+	if (normalized)
 	{
-		vec3d r0 = m_path[i - 1] * m_scale;
-		vec3d r1 = m_path[i    ] * m_scale;
-		double li = (r1 - r0).Length();
-		L += li;
+		for (int i = 1; i < m_path.size(); ++i)
+		{
+			vec3d r0 = m_path[i - 1] * m_scale;
+			vec3d r1 = m_path[i] * m_scale;
+			double li = (r1 - r0).Length();
+			L += li;
+		}
+		if (L == 0.0) L = 1.0;
 	}
-	if (L == 0.0) L = 1.0;
+	else L = 1.0;
+
+	// calculate section lenghts
 	double l = 0.0;
 	for (int i = 1; i < m_path.size(); ++i)
 	{

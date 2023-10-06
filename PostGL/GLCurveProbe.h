@@ -49,7 +49,7 @@ public:
 	double GetPointValue(int i);
 	double GetPointValue(int i, int nstep);
 
-	vector<double> SectionLenghts();
+	vector<double> SectionLenghts(bool normalized);
 
 public:
 	GLColor GetColor() const;
