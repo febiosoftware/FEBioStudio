@@ -289,35 +289,66 @@ void FEPostModel::AddState(float ftime, int nstatus, bool interpolateData)
 }
 
 //-----------------------------------------------------------------------------
-template <typename T> void InterpolateNodeData(FENodeData<T>& d, FENodeData_T<T>& s0, FENodeData_T<T>& s1, float w)
+template <typename T> void InterpolateNodeData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
 {
-	float w0 = 1.f - w;
-	float w1 = w;
-	int N = d.size();
-	for (int i = 0; i < N; ++i)
+	FENodeData<T>* pf = dynamic_cast<FENodeData<T>*>(&data);
+	if (pf)
 	{
-		T v0; s0.eval(i, &v0);
-		T v1; s1.eval(i, &v1);
-		d[i] = v0 * w0 + v1 * w1;
+		FENodeData<T>& d  = dynamic_cast<FENodeData<T>&>(data );
+		FENodeData<T>& s0 = dynamic_cast<FENodeData<T>&>(data0);
+		FENodeData<T>& s1 = dynamic_cast<FENodeData<T>&>(data1);
+
+		float w0 = 1.f - w;
+		float w1 = w;
+		int N = d.size();
+		for (int i = 0; i < N; ++i)
+		{
+			d[i] = s0[i] * w0 + s1[i] * w1;
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
-template <typename T> void InterpolateElementData(FEElementData<T, DATA_ITEM>& d, FEElementData<T, DATA_ITEM>& s0, FEElementData<T, DATA_ITEM>& s1, float w)
+template <typename T, Data_Format F> void InterpolateFaceData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
 {
 	float w0 = 1.f - w;
 	float w1 = w;
-	int N = s0.size();
-	for (int i = 0; i < N; ++i)
+
+	FEFaceData<T, F>* pf = dynamic_cast<FEFaceData<T, F>*>(&data);
+	if (pf)
 	{
-		if (s0.active(i) && s1.active(i))
-		{
-			T v0, v1;
-			s0.eval(i, &v0);
-			s1.eval(i, &v1);
-			T r = v0 * w0 + v1 * w1;
-			d.add(i, r);
-		}
+		FEFaceData<T, F>& d  = dynamic_cast<FEFaceData<T, F>&>(data);
+		FEFaceData<T, F>& s0 = dynamic_cast<FEFaceData<T, F>&>(data0);
+		FEFaceData<T, F>& s1 = dynamic_cast<FEFaceData<T, F>&>(data1);
+
+		// first copy the data from s0 to make sure all data arrays are initialized
+		d.copy(s0);
+
+		// now, interpolate data
+		int N = s0.size();
+		for (int i = 0; i < N; ++i) d[i] = s0[i] * w0 + s1[i] * w1;
+	}
+}
+
+//-----------------------------------------------------------------------------
+template <typename T, Data_Format F> void InterpolateElementData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
+{
+	float w0 = 1.f - w;
+	float w1 = w;
+
+	FEElementData<T, F>* pf = dynamic_cast<FEElementData<T, F>*>(&data);
+	if (pf)
+	{
+		FEElementData<T, F>& d  = dynamic_cast<FEElementData<T, F>&>(data);
+		FEElementData<T, F>& s0 = dynamic_cast<FEElementData<T, F>&>(data0);
+		FEElementData<T, F>& s1 = dynamic_cast<FEElementData<T, F>&>(data1);
+
+		// first copy the data from s0 to make sure all data arrays are initialized
+		d.copy(s0);
+
+		// now, interpolate data
+		int N = s0.size();
+		for (int i = 0; i < N; ++i) d[i] = s0[i] * w0 + s1[i] * w1;
 	}
 }
 
@@ -326,46 +357,78 @@ void InterpolateMeshData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::
 {
 	if (dynamic_cast<FENodeItemData*>(&data))
 	{
-		FENodeData<float>* pf = dynamic_cast<FENodeData<float>*>(&data);
-		if (pf)
+		switch (data.GetType())
 		{
-			FENodeData_T<float>* pf0 = dynamic_cast<FENodeData_T<float>*>(&data0);
-			FENodeData_T<float>* pf1 = dynamic_cast<FENodeData_T<float>*>(&data1);
-			InterpolateNodeData<float>(*pf, *pf0, *pf1, w);
+		case DATA_FLOAT : InterpolateNodeData<float >(data, data0, data1, w); break;
+		case DATA_VEC3F : InterpolateNodeData<vec3f >(data, data0, data1, w); break;
+		case DATA_MAT3F : InterpolateNodeData<mat3f >(data, data0, data1, w); break;
+		case DATA_MAT3FS: InterpolateNodeData<mat3fs>(data, data0, data1, w); break;
 		}
-
-		FENodeData<vec3f>* pv = dynamic_cast<FENodeData<vec3f>*>(&data);
-		if (pv)
+	}
+	else if (dynamic_cast<FEFaceItemData*>(&data))
+	{
+		if (data.GetFormat() == DATA_ITEM)
 		{
-			FENodeData_T<vec3f>* pv0 = dynamic_cast<FENodeData_T<vec3f>*>(&data0);
-			FENodeData_T<vec3f>* pv1 = dynamic_cast<FENodeData_T<vec3f>*>(&data1);
-			InterpolateNodeData<vec3f>(*pv, *pv0, *pv1, w);
+			switch (data.GetType())
+			{
+			case DATA_FLOAT : InterpolateFaceData<float , DATA_ITEM>(data, data0, data1, w); break;
+			case DATA_VEC3F : InterpolateFaceData<vec3f , DATA_ITEM>(data, data0, data1, w); break;
+			case DATA_MAT3F : InterpolateFaceData<mat3f , DATA_ITEM>(data, data0, data1, w); break;
+			case DATA_MAT3FS: InterpolateFaceData<mat3fs, DATA_ITEM>(data, data0, data1, w); break;
+			}
+		}
+		else if (data.GetFormat() == DATA_COMP)
+		{
+			switch (data.GetType())
+			{
+			case DATA_FLOAT : InterpolateFaceData<float , DATA_COMP>(data, data0, data1, w); break;
+			case DATA_VEC3F : InterpolateFaceData<vec3f , DATA_COMP>(data, data0, data1, w); break;
+			case DATA_MAT3F : InterpolateFaceData<mat3f , DATA_COMP>(data, data0, data1, w); break;
+			case DATA_MAT3FS: InterpolateFaceData<mat3fs, DATA_COMP>(data, data0, data1, w); break;
+			}
+		}
+		else if (data.GetFormat() == DATA_NODE)
+		{
+			switch (data.GetType())
+			{
+			case DATA_FLOAT : InterpolateFaceData<float , DATA_NODE>(data, data0, data1, w); break;
+			case DATA_VEC3F : InterpolateFaceData<vec3f , DATA_NODE>(data, data0, data1, w); break;
+			case DATA_MAT3F : InterpolateFaceData<mat3f , DATA_NODE>(data, data0, data1, w); break;
+			case DATA_MAT3FS: InterpolateFaceData<mat3fs, DATA_NODE>(data, data0, data1, w); break;
+			}
 		}
 	}
 	else if (dynamic_cast<FEElemItemData*>(&data))
 	{
-		FEElementData<float, DATA_ITEM>* pf = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&data);
-		if (pf)
+		if (data.GetFormat() == DATA_ITEM)
 		{
-			FEElementData<float, DATA_ITEM>* pf0 = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&data0);
-			FEElementData<float, DATA_ITEM>* pf1 = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&data1);
-			InterpolateElementData<float>(*pf, *pf0, *pf1, w);
+			switch (data.GetType())
+			{
+			case DATA_FLOAT : InterpolateElementData<float , DATA_ITEM>(data, data0, data1, w); break;
+			case DATA_VEC3F : InterpolateElementData<vec3f , DATA_ITEM>(data, data0, data1, w); break;
+			case DATA_MAT3F : InterpolateElementData<mat3f , DATA_ITEM>(data, data0, data1, w); break;
+			case DATA_MAT3FS: InterpolateElementData<mat3fs, DATA_ITEM>(data, data0, data1, w); break;
+			}
 		}
-
-		FEElementData<vec3f, DATA_ITEM>* pv = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&data);
-		if (pv)
+		else if (data.GetFormat() == DATA_COMP)
 		{
-			FEElementData<vec3f, DATA_ITEM>* pv0 = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&data0);
-			FEElementData<vec3f, DATA_ITEM>* pv1 = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&data1);
-			InterpolateElementData<vec3f>(*pv, *pv0, *pv1, w);
+			switch (data.GetType())
+			{
+			case DATA_FLOAT : InterpolateElementData<float , DATA_COMP>(data, data0, data1, w); break;
+			case DATA_VEC3F : InterpolateElementData<vec3f , DATA_COMP>(data, data0, data1, w); break;
+			case DATA_MAT3F : InterpolateElementData<mat3f , DATA_COMP>(data, data0, data1, w); break;
+			case DATA_MAT3FS: InterpolateElementData<mat3fs, DATA_COMP>(data, data0, data1, w); break;
+			}
 		}
-
-		FEElementData<mat3fs, DATA_ITEM>* pm = dynamic_cast<FEElementData<mat3fs, DATA_ITEM>*>(&data);
-		if (pm)
+		else if (data.GetFormat() == DATA_NODE)
 		{
-			FEElementData<mat3fs, DATA_ITEM>* pm0 = dynamic_cast<FEElementData<mat3fs, DATA_ITEM>*>(&data0);
-			FEElementData<mat3fs, DATA_ITEM>* pm1 = dynamic_cast<FEElementData<mat3fs, DATA_ITEM>*>(&data1);
-			InterpolateElementData<mat3fs>(*pm, *pm0, *pm1, w);
+			switch (data.GetType())
+			{
+			case DATA_FLOAT : InterpolateElementData<float , DATA_NODE>(data, data0, data1, w); break;
+			case DATA_VEC3F : InterpolateElementData<vec3f , DATA_NODE>(data, data0, data1, w); break;
+			case DATA_MAT3F : InterpolateElementData<mat3f , DATA_NODE>(data, data0, data1, w); break;
+			case DATA_MAT3FS: InterpolateElementData<mat3fs, DATA_NODE>(data, data0, data1, w); break;
+			}
 		}
 	}
 }
@@ -382,16 +445,26 @@ template <typename T> void CopyNodeData(Post::FEMeshData& data, Post::FEMeshData
 }
 
 //-----------------------------------------------------------------------------
-template <typename T> void CopyElementData(Post::FEMeshData& data, Post::FEMeshData& src)
+template <typename T, Data_Format F> void CopyFaceData(Post::FEMeshData& data, Post::FEMeshData& src)
 {
-	FEElementData<T, DATA_ITEM>* pf = dynamic_cast<FEElementData<T, DATA_ITEM>*>(&data);
+	FEFaceData<T, F>* pf = dynamic_cast<FEFaceData<T, F>*>(&data);
 	if (pf)
 	{
-		FEElementData<T, DATA_ITEM>* pfs = dynamic_cast<FEElementData<T, DATA_ITEM>*>(&src);
+		FEFaceData<T, F>* pfs = dynamic_cast<FEFaceData<T, F>*>(&src);
 		pf->copy(*pfs);
 	}
 }
 
+//-----------------------------------------------------------------------------
+template <typename T, Data_Format F> void CopyElementData(Post::FEMeshData& data, Post::FEMeshData& src)
+{
+	FEElementData<T, F>* pf = dynamic_cast<FEElementData<T, F>*>(&data);
+	if (pf)
+	{
+		FEElementData<T, F>* pfs = dynamic_cast<FEElementData<T, F>*>(&src);
+		pf->copy(*pfs);
+	}
+}
 
 //-----------------------------------------------------------------------------
 void CopyMeshData(Post::FEMeshData& data, Post::FEMeshData& src)
@@ -400,17 +473,76 @@ void CopyMeshData(Post::FEMeshData& data, Post::FEMeshData& src)
 	{
 		switch (data.GetType())
 		{
-		case Post::DATA_FLOAT: CopyNodeData<float>(data, src); break;
-		case Post::DATA_VEC3F: CopyNodeData<vec3f>(data, src); break;
+		case Post::DATA_FLOAT : CopyNodeData<float >(data, src); break;
+		case Post::DATA_VEC3F : CopyNodeData<vec3f >(data, src); break;
+		case Post::DATA_MAT3F : CopyNodeData<mat3f >(data, src); break;
+		case Post::DATA_MAT3FS: CopyNodeData<mat3fs>(data, src); break;
+		}
+	}
+	else if (dynamic_cast<FEFaceItemData*>(&data))
+	{
+		if (data.GetFormat() == DATA_ITEM)
+		{
+			switch (data.GetType())
+			{
+			case Post::DATA_FLOAT : CopyFaceData<float , DATA_ITEM>(data, src); break;
+			case Post::DATA_VEC3F : CopyFaceData<vec3f , DATA_ITEM>(data, src); break;
+			case Post::DATA_MAT3F : CopyFaceData<mat3f , DATA_ITEM>(data, src); break;
+			case Post::DATA_MAT3FS: CopyFaceData<mat3fs, DATA_ITEM>(data, src); break;
+			}
+		}
+		else if (data.GetFormat() == DATA_COMP)
+		{
+			switch (data.GetType())
+			{
+			case Post::DATA_FLOAT : CopyFaceData<float , DATA_COMP>(data, src); break;
+			case Post::DATA_VEC3F : CopyFaceData<vec3f , DATA_COMP>(data, src); break;
+			case Post::DATA_MAT3F : CopyFaceData<mat3f , DATA_COMP>(data, src); break;
+			case Post::DATA_MAT3FS: CopyFaceData<mat3fs, DATA_COMP>(data, src); break;
+			}
+		}
+		else if (data.GetFormat() == DATA_NODE)
+		{
+			switch (data.GetType())
+			{
+			case Post::DATA_FLOAT : CopyFaceData<float , DATA_NODE>(data, src); break;
+			case Post::DATA_VEC3F : CopyFaceData<vec3f , DATA_NODE>(data, src); break;
+			case Post::DATA_MAT3F : CopyFaceData<mat3f , DATA_NODE>(data, src); break;
+			case Post::DATA_MAT3FS: CopyFaceData<mat3fs, DATA_NODE>(data, src); break;
+			}
 		}
 	}
 	else if (dynamic_cast<FEElemItemData*>(&data))
 	{
-		switch (data.GetType())
+		if (data.GetFormat() == DATA_ITEM)
 		{
-		case Post::DATA_FLOAT : CopyElementData<float >(data, src); break;
-		case Post::DATA_VEC3F : CopyElementData<vec3f >(data, src); break;
-		case Post::DATA_MAT3FS: CopyElementData<mat3fs>(data, src); break;
+			switch (data.GetType())
+			{
+			case Post::DATA_FLOAT : CopyElementData<float , DATA_ITEM>(data, src); break;
+			case Post::DATA_VEC3F : CopyElementData<vec3f , DATA_ITEM>(data, src); break;
+			case Post::DATA_MAT3F : CopyElementData<mat3f , DATA_ITEM>(data, src); break;
+			case Post::DATA_MAT3FS: CopyElementData<mat3fs, DATA_ITEM>(data, src); break;
+			}
+		}
+		else if (data.GetFormat() == DATA_COMP)
+		{
+			switch (data.GetType())
+			{
+			case Post::DATA_FLOAT : CopyElementData<float , DATA_COMP>(data, src); break;
+			case Post::DATA_VEC3F : CopyElementData<vec3f , DATA_COMP>(data, src); break;
+			case Post::DATA_MAT3F : CopyElementData<mat3f , DATA_COMP>(data, src); break;
+			case Post::DATA_MAT3FS: CopyElementData<mat3fs, DATA_COMP>(data, src); break;
+			}
+		}
+		else if (data.GetFormat() == DATA_NODE)
+		{
+			switch (data.GetType())
+			{
+			case Post::DATA_FLOAT : CopyElementData<float , DATA_NODE>(data, src); break;
+			case Post::DATA_VEC3F : CopyElementData<vec3f , DATA_NODE>(data, src); break;
+			case Post::DATA_MAT3F : CopyElementData<mat3f , DATA_NODE>(data, src); break;
+			case Post::DATA_MAT3FS: CopyElementData<mat3fs, DATA_NODE>(data, src); break;
+			}
 		}
 	}
 }
