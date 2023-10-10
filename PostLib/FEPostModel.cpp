@@ -257,20 +257,225 @@ void FEPostModel::AddState(FEState* pFEState)
 
 //-----------------------------------------------------------------------------
 // add a state
-void FEPostModel::AddState(float ftime)
+void FEPostModel::AddState(float ftime, int nstatus, bool interpolateData)
 {
+	FEState* psnew = nullptr;
 	vector<FEState*>::iterator it = m_State.begin();
 	for (it = m_State.begin(); it != m_State.end(); ++it)
 		if ((*it)->m_time > ftime)
 		{
-			m_State.insert(it, new FEState(ftime, this, (*it)->GetFEMesh()));
-			return;
+			psnew = new FEState(ftime, this, (*it)->GetFEMesh());
+			psnew->m_ref = (*it)->m_ref;
+			psnew->m_status = nstatus;
+			break;
 		}
 
 	// get last state
-	FEState* ps = GetState(GetStates()-1);
-	ps->SetID((int)m_State.size());
-	m_State.push_back(new FEState(ftime, this, ps->GetFEMesh()));
+	if (psnew == nullptr)
+	{
+		FEState* ps = GetState(GetStates() - 1);
+		ps->SetID((int)m_State.size());
+		psnew = new FEState(ftime, this, ps->GetFEMesh());
+		psnew->m_ref = ps->m_ref;
+		psnew->m_status = nstatus;
+	}
+
+	assert(psnew);
+	if (psnew)
+	{
+		InsertState(psnew, ftime);
+		if (interpolateData) InterpolateStateData(psnew);
+	}
+}
+
+//-----------------------------------------------------------------------------
+template <typename T> void InterpolateNodeData(FENodeData<T>& d, FENodeData_T<T>& s0, FENodeData_T<T>& s1, float w)
+{
+	float w0 = 1.f - w;
+	float w1 = w;
+	int N = d.size();
+	for (int i = 0; i < N; ++i)
+	{
+		T v0; s0.eval(i, &v0);
+		T v1; s1.eval(i, &v1);
+		d[i] = v0 * w0 + v1 * w1;
+	}
+}
+
+//-----------------------------------------------------------------------------
+template <typename T> void InterpolateElementData(FEElementData<T, DATA_ITEM>& d, FEElementData<T, DATA_ITEM>& s0, FEElementData<T, DATA_ITEM>& s1, float w)
+{
+	float w0 = 1.f - w;
+	float w1 = w;
+	int N = s0.size();
+	for (int i = 0; i < N; ++i)
+	{
+		if (s0.active(i) && s1.active(i))
+		{
+			T v0, v1;
+			s0.eval(i, &v0);
+			s1.eval(i, &v1);
+			T r = v0 * w0 + v1 * w1;
+			d.add(i, r);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void InterpolateMeshData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
+{
+	if (dynamic_cast<FENodeItemData*>(&data))
+	{
+		FENodeData<float>* pf = dynamic_cast<FENodeData<float>*>(&data);
+		if (pf)
+		{
+			FENodeData_T<float>* pf0 = dynamic_cast<FENodeData_T<float>*>(&data0);
+			FENodeData_T<float>* pf1 = dynamic_cast<FENodeData_T<float>*>(&data1);
+			InterpolateNodeData<float>(*pf, *pf0, *pf1, w);
+		}
+
+		FENodeData<vec3f>* pv = dynamic_cast<FENodeData<vec3f>*>(&data);
+		if (pv)
+		{
+			FENodeData_T<vec3f>* pv0 = dynamic_cast<FENodeData_T<vec3f>*>(&data0);
+			FENodeData_T<vec3f>* pv1 = dynamic_cast<FENodeData_T<vec3f>*>(&data1);
+			InterpolateNodeData<vec3f>(*pv, *pv0, *pv1, w);
+		}
+	}
+	else if (dynamic_cast<FEElemItemData*>(&data))
+	{
+		FEElementData<float, DATA_ITEM>* pf = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&data);
+		if (pf)
+		{
+			FEElementData<float, DATA_ITEM>* pf0 = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&data0);
+			FEElementData<float, DATA_ITEM>* pf1 = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&data1);
+			InterpolateElementData<float>(*pf, *pf0, *pf1, w);
+		}
+
+		FEElementData<vec3f, DATA_ITEM>* pv = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&data);
+		if (pv)
+		{
+			FEElementData<vec3f, DATA_ITEM>* pv0 = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&data0);
+			FEElementData<vec3f, DATA_ITEM>* pv1 = dynamic_cast<FEElementData<vec3f, DATA_ITEM>*>(&data1);
+			InterpolateElementData<vec3f>(*pv, *pv0, *pv1, w);
+		}
+
+		FEElementData<mat3fs, DATA_ITEM>* pm = dynamic_cast<FEElementData<mat3fs, DATA_ITEM>*>(&data);
+		if (pm)
+		{
+			FEElementData<mat3fs, DATA_ITEM>* pm0 = dynamic_cast<FEElementData<mat3fs, DATA_ITEM>*>(&data0);
+			FEElementData<mat3fs, DATA_ITEM>* pm1 = dynamic_cast<FEElementData<mat3fs, DATA_ITEM>*>(&data1);
+			InterpolateElementData<mat3fs>(*pm, *pm0, *pm1, w);
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+template <typename T> void CopyNodeData(Post::FEMeshData& data, Post::FEMeshData& src)
+{
+	FENodeData<T>* pf = dynamic_cast<FENodeData<T>*>(&data);
+	if (pf)
+	{
+		FENodeData<T>* pfs = dynamic_cast<FENodeData<T>*>(&src);
+		pf->copy(*pfs);
+	}
+}
+
+//-----------------------------------------------------------------------------
+template <typename T> void CopyElementData(Post::FEMeshData& data, Post::FEMeshData& src)
+{
+	FEElementData<T, DATA_ITEM>* pf = dynamic_cast<FEElementData<T, DATA_ITEM>*>(&data);
+	if (pf)
+	{
+		FEElementData<T, DATA_ITEM>* pfs = dynamic_cast<FEElementData<T, DATA_ITEM>*>(&src);
+		pf->copy(*pfs);
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+void CopyMeshData(Post::FEMeshData& data, Post::FEMeshData& src)
+{
+	if (dynamic_cast<FENodeItemData*>(&data))
+	{
+		switch (data.GetType())
+		{
+		case Post::DATA_FLOAT: CopyNodeData<float>(data, src); break;
+		case Post::DATA_VEC3F: CopyNodeData<vec3f>(data, src); break;
+		}
+	}
+	else if (dynamic_cast<FEElemItemData*>(&data))
+	{
+		switch (data.GetType())
+		{
+		case Post::DATA_FLOAT : CopyElementData<float >(data, src); break;
+		case Post::DATA_VEC3F : CopyElementData<vec3f >(data, src); break;
+		case Post::DATA_MAT3FS: CopyElementData<mat3fs>(data, src); break;
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+void FEPostModel::InterpolateStateData(FEState* ps)
+{
+	if (ps == nullptr) return;
+
+	FEState& sd = *ps;
+	int n = ps->GetID();
+	if (n == 0)
+	{
+		// first state, so copy from next
+		FEState& s1 = *GetState(n + 1);
+		Post::FEMeshDataList& dataList1 = s1.m_Data;
+		Post::FEMeshDataList& dataList = sd.m_Data;
+
+		for (int i = 0; i < dataList.size(); ++i)
+		{
+			Post::FEMeshData& data1 = dataList1[i];
+			Post::FEMeshData& data = dataList[i];
+			CopyMeshData(data, data1);
+		}
+	}
+	else if (n == GetStates() - 1)
+	{
+		// last state, so copy from prev
+		FEState& s0 = *GetState(n - 1);
+
+		Post::FEMeshDataList& dataList0 = s0.m_Data;
+		Post::FEMeshDataList& dataList = sd.m_Data;
+
+		for (int i = 0; i < dataList.size(); ++i)
+		{
+			Post::FEMeshData& data0 = dataList0[i];
+			Post::FEMeshData& data = dataList[i];
+			CopyMeshData(data, data0);
+		}
+	}
+	else
+	{
+		// genuine interpolation
+		FEState& s0 = *GetState(n - 1);
+		FEState& s1 = *GetState(n + 1);
+
+		float t0 = s0.m_time;
+		float t1 = s1.m_time;
+		float Dt = t1 - t0; if (Dt == 0.f) Dt = 1.f;
+		float t = sd.m_time;
+		float w = (t - t0) / Dt;
+
+		Post::FEMeshDataList& dataList0 = s0.m_Data;
+		Post::FEMeshDataList& dataList1 = s1.m_Data;
+		Post::FEMeshDataList& dataList  = sd.m_Data;
+
+		for (int i = 0; i < dataList.size(); ++i)
+		{
+			Post::FEMeshData& data0 = dataList0[i];
+			Post::FEMeshData& data1 = dataList1[i];
+			Post::FEMeshData& data  = dataList [i];
+
+			InterpolateMeshData(data, data0, data1, w);
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -295,10 +500,9 @@ void FEPostModel::InsertState(FEState *ps, float f)
 	for (it=m_State.begin(); it != m_State.end(); ++it)
 		if ((*it)->m_time > f) 
 		{
-			m_State.insert(it, ps);
-			return;
+			break;
 		}
-	m_State.push_back(ps);
+	m_State.insert(it, ps);
 
 	// reindex the states
 	for (int i = 0; i<(int)m_State.size(); ++i) m_State[i]->SetID(i);
