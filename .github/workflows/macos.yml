@@ -6,7 +6,7 @@ jobs:
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@reusable-worfklow-macos
     with:
       runTests: ${{ inputs.runTests && true || false }}
-      package-name: febiochem
+      package-name: febiostudio
       requires-sdk: true
       sdk-config: |
         {
