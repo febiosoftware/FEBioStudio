@@ -1,0 +1,18 @@
+on:
+  push:
+    branches: [ ci/* ]
+jobs:
+  call_workflow:
+    uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@reusable-worfklow-macos
+    with:
+      runTests: ${{ inputs.runTests && true || false }}
+      package-name: febiochem
+      requires-sdk: true
+      sdk-config: |
+        {
+          "sdk_path": "ci/reusable-workflow-macos",
+          "package_name": "febio4",
+          "package": "febio4-sdk-v4.3-139-gd56c74e17.tar.gz",
+          "bucket": "febio-packages"
+        }
+    secrets: inherit

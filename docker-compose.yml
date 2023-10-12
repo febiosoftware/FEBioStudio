@@ -10,7 +10,7 @@ services:
   studio-dev:
     <<: *default
     container_name: febio-dev
-    command: sleep infinity
+    command: bash
 
   studio-build:
     <<: *default

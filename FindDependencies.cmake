@@ -347,14 +347,16 @@ if(WIN32)
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "Netgen library path")
 else()
-	find_path(NETGEN_INC include/occgeom.hpp
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/Resources/include
-        PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
+  find_path(NETGEN_INC include/occgeom.hpp
+        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/Resources/include Contents/Resources/include /usr/local/x86_64/Contents/Resources/include
+        PATH_SUFFIXES "include" "netgen/include" "build" "build/include" "occ"
 		DOC "Netgen include directory")
+  message(STATUS "NETGEN_INC: ${NETGEN_INC}")
 	find_library(NETGEN_LIB nglib 
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/MacOS
-        PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug"
+        PATHS /usr/local/x86_64/Contents /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/MacOS Contents/MacOS
+        PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug" "MacOS"
 		DOC "Netgen library path")
+  message(STATUS "NETGEN_LIB: ${NETGEN_LIB}")
 endif()
 
 if(NETGEN_LIB)
@@ -593,22 +595,22 @@ if(WIN32)
 		DOC "FFMPEG library path")
 elseif(APPLE)
 	find_path(FFMPEG_INC libavformat/avformat.h
-        PATHS /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /usr/local/homebrew /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
 		DOC "FFMPEG include directory"
 		NO_DEFAULT_PATH)
 	find_library(FFMPEG_LIB avformat
-        PATHS  /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /usr/local/homebrew /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "ffmpeg/lib" "build" "build/lib" "Release" "Debug"
 		DOC "FFMPEG library path"
 		NO_DEFAULT_PATH)
 else()
 	find_path(FFMPEG_INC libavformat/avformat.h
-        PATHS /usr/include/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /usr/local/x86_64 /usr/include/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "ffmpeg" "ffmpeg/include" "build" "build/include"
 		DOC "FFMPEG include directory")
 	find_library(FFMPEG_LIB avformat
-        PATHS /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
+        PATHS /usr/local/x86_64 /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "ffmpeg/lib" "build" "build/lib" "Release" "Debug"
 		DOC "FFMPEG library path")
 endif()

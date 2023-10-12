@@ -404,6 +404,7 @@ Documentation/htmlManual
 */.DS_Store
 
 febio-sdk
+febio4-sdk
 *.zip
 third-party-deps
 .envrc
