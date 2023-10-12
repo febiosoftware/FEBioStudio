@@ -66,7 +66,7 @@ void CImageSource::ClearFilters()
     }
 }
 
-C3DImage* CImageSource::GetImageToFilter(bool allocate)
+C3DImage* CImageSource::GetImageToFilter(bool allocate, int pixelType)
 {
 
 #ifdef HAS_ITK
@@ -79,7 +79,16 @@ C3DImage* CImageSource::GetImageToFilter(bool allocate)
             int ny = m_originalImage->Height();
             int nz = m_originalImage->Depth();
 
-            m_img = new CImageSITK(nx, ny, nz);
+            if(pixelType == -1)
+            {
+                m_img = new CImageSITK(nx, ny, nz, m_originalImage->PixelType());
+            }
+            else
+            {
+                m_img = new CImageSITK(nx, ny, nz, pixelType);
+            }
+
+            
         }
         else
         {
@@ -97,6 +106,15 @@ C3DImage* CImageSource::GetImageToFilter(bool allocate)
 
         m_img = new C3DImage();
         m_img->Create(nx, ny, nz);
+
+        if(pixelType == -1)
+        {
+            m_img->Create(nx, ny, nz, nullptr, m_originalImage->PixelType());
+        }
+        else
+        {
+            m_img->Create(nx, ny, nz, nullptr, pixelType);
+        }
     }
 
 #endif
@@ -210,6 +228,8 @@ bool CRawImageSource::LoadFromFile(const char* szfile, C3DImage* im)
             for(int i = 0; i < nsize; i++) byteswap16(data[i]);
             break;
         }
+        case CImage::UINT_32:
+        case CImage::INT_32:
         case CImage::REAL_32:
         {
             uint32_t* data = (uint32_t*)buf;

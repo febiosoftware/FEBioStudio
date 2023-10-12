@@ -34,7 +34,7 @@ SOFTWARE.*/
 class CImage  
 {
 public:
-    enum { UINT_8, INT_8, UINT_16, INT_16, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16, REAL_32, REAL_64 };
+    enum { UINT_8, INT_8, UINT_16, INT_16, UINT_32, INT_32, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16, REAL_32, REAL_64 };
 
 public:
 	CImage();

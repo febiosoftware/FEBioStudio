@@ -344,7 +344,10 @@ void CModelViewer::on_syncButton_clicked()
 						GDiscreteElement& de = pds->element(j);
 						if (de.IsSelected())
 						{
-							objList.push_back(&de);
+							// we can't actually show the individual springs,
+							// so we just select the parent.
+							objList.push_back(po);
+							break;
 						}
 					}
 				}
@@ -870,14 +873,14 @@ void CModelViewer::OnChangeDiscreteType()
 	GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(m_currentObject); assert(set);
 	if (set == 0) return;
 
-	QStringList items; items << "Linear" << "Nonlinear" << "Hill" << "General";
+	QStringList items; items << "Linear" << "Nonlinear" << "Hill";
 	QString item = QInputDialog::getItem(this, "Discrete Set Type", "Type:", items, 0, false);
 	if (item.isEmpty() == false)
 	{
 		FSDiscreteMaterial* mat = nullptr;
-		if (item == "Linear"   ) mat = new FSLinearSpringMaterial(fem);
-		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial(fem);
-		if (item == "Hill"     ) mat = new FSHillContractileMaterial(fem);
+		if (item == "Linear"   ) mat = FEBio::CreateDiscreteMaterial("linear spring", fem);
+		if (item == "Nonlinear") mat = FEBio::CreateDiscreteMaterial("nonlinear spring", fem);
+		if (item == "Hill"     ) mat = FEBio::CreateDiscreteMaterial("Hill", fem);
 		if (mat)
 		{
 			delete set->GetMaterial();
@@ -1638,6 +1641,13 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_FACE_GROUP:
 	case MT_EDGE_GROUP:
 	case MT_NODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
+		break;
+	case MT_FEPART_GROUP:
+	case MT_FEELEM_GROUP:
+	case MT_FEFACE_GROUP:
+	case MT_FEEDGE_GROUP:
+	case MT_FENODE_GROUP:
 		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
 		break;
 	case MT_MATERIAL_LIST:

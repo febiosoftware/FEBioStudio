@@ -485,8 +485,11 @@ bool GMeshLegacyFormat::ReadElements()
 		int ntags = n[2];
 		if (ntags == 0) ntags = 2;	// According to the documentation GMesh files should have at least two tags
 
-		// store the entity number (first tag)
-		el.gid = (ntags > 0? n[3] : 0);
+		// TODO: The first tag stores the physical entity, which I think is a user-partition
+		// and requires the physical entities to be defined in the file. The second tag
+		// is the model entity and I think is more similar to the partitioning we use. 
+		// Perhaps in the future we can use the physical entities to create user-partitions
+		el.gid = (ntags > 0? n[4] : 0);
 
 		// store pointer to node numbers (depends on tags)
 		int* m = n + ntags + 3;

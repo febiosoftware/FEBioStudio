@@ -257,7 +257,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			}
 		}
 	}
-	if (IS_FACE_FIELD(m_nvec))
+	else if (IS_FACE_FIELD(m_nvec))
 	{
 		pm->TagAllFaces(0);
 		for (int i = 0; i < pm->Faces(); ++i)
@@ -296,7 +296,7 @@ void CGLVectorPlot::Render(CGLContext& rc)
 			}
 		}
 	}
-	else
+	else if (IS_NODE_FIELD(m_nvec))
 	{
 		pm->TagAllNodes(0);
 		for (int i = 0; i < pm->Elements(); ++i)

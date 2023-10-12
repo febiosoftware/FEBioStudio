@@ -53,7 +53,6 @@ public:
     void SetImageSource(CImageSource* imgSource);
     bool Load();
 
-
 	int ImageRenderers() const { return (int)m_render.Size(); }
 	Post::CGLImageRenderer* GetImageRenderer(int i) { return m_render[i]; }
 	size_t RemoveRenderer(Post::CGLImageRenderer* render);

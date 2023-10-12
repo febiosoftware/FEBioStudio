@@ -290,7 +290,15 @@ void CModelDocument::DeleteObject(FSObject* po)
 */
 		}
 
-		if (dynamic_cast<FSModelComponent*>(po))
+		if (dynamic_cast<FSLoadController*>(po))
+		{
+			FSLoadController* plc = dynamic_cast<FSLoadController*>(po);
+			if (plc->GetReferenceCount() > 0)
+				QMessageBox::warning(m_wnd, "FEBio Studio", "This load controller cannot be deleted since other model components are using it.");
+			else
+				DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
+		}
+		else if (dynamic_cast<FSModelComponent*>(po))
 			DoCommand(new CCmdDeleteFSModelComponent(dynamic_cast<FSModelComponent*>(po)));
 		else
 			DoCommand(new CCmdDeleteFSObject(po));

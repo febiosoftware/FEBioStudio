@@ -380,7 +380,7 @@ elseif(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
     
     if(${OpenMP_C_FOUND})
-        add_compile_options(-Xpreprocessor -fopenmp)
+        add_compile_options(-Xpreprocessor -fopenmp -w)
     endif()
     
 else()

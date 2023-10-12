@@ -640,9 +640,11 @@ void CImageMapTool::OnCreate()
         BOX box = imageModel->GetBoundingBox();
         vec3d origin(box.x0, box.y0, box.z0);
 
-        int imgWidth = imageModel->Get3DImage()->Width();
-        int imgHeight = imageModel->Get3DImage()->Height();
-        int imgDepth = imageModel->Get3DImage()->Depth();
+        auto img = imageModel->Get3DImage();
+
+        int imgWidth = img->Width();
+        int imgHeight = img->Height();
+        int imgDepth = img->Depth();
 
         double xScale = imgWidth/(box.x1 - box.x0);
         double yScale = imgHeight/(box.y1 - box.y0);
@@ -650,8 +652,6 @@ void CImageMapTool::OnCreate()
 
         double min = std::numeric_limits<double>::max();
         double max = std::numeric_limits<double>::min();
-
-        uint8_t* data = imageModel->Get3DImage()->GetBytes();
 
         #pragma omp parallel for
         for (int elID = 0; elID < NE; ++elID)
@@ -732,7 +732,7 @@ void CImageMapTool::OnCreate()
 
                         if(ProjectInsideElement(*mesh, *el, localPixelPos, r))
                         {
-                            val += data[k*imgWidth*imgHeight + j*imgWidth + i];
+                            val += img->Value(i, j, k);
                             numPixels++;
                         }
                     }   

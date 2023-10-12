@@ -57,6 +57,8 @@ CImage::CImage(int nx, int ny, int pixelType)
     case CImage::UINT_8    : m_bps = 1; break;
     case CImage::INT_16    :
     case CImage::UINT_16   : m_bps = 2; break;
+    case CImage::INT_32    :
+    case CImage::UINT_32   : m_bps = 4; break;
     case CImage::INT_RGB8  :
     case CImage::UINT_RGB8 : m_bps = 3; break;
     case CImage::INT_RGB16 :
@@ -142,6 +144,8 @@ void CImage::Create(int nx, int ny, uint8_t* pb, int pixelType)
     case CImage::UINT_8    : m_bps = 1; break;
     case CImage::INT_16    :
     case CImage::UINT_16   : m_bps = 2; break;
+    case CImage::INT_32    :
+    case CImage::UINT_32   : m_bps = 4; break;
     case CImage::INT_RGB8  :
     case CImage::UINT_RGB8 : m_bps = 3; break;
     case CImage::INT_RGB16 :
@@ -202,6 +206,16 @@ double CImage::Value(int i, int j, int channel)
     case CImage::INT_16:
     {
         h = ((int16_t*)m_pb)[m_cx*j + i];
+        break;
+    }
+    case CImage::UINT_32:
+    {
+        h = ((uint32_t*)m_pb)[m_cx*j + i];
+        break;
+    }
+    case CImage::INT_32:
+    {
+        h = ((int32_t*)m_pb)[m_cx*j + i];
         break;
     }
     case CImage::UINT_RGB8:

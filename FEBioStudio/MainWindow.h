@@ -214,6 +214,9 @@ public:
 	//! Update the window content
 	void Update(QWidget* psend = 0, bool breset = false);
 
+	// update the mesh inspector (if it is visible)
+	void UpdateMeshInspector(bool breset);
+
 	//! Update the GL control bar
 	void UpdateGLControlBar();
 
@@ -326,6 +329,8 @@ private:
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
 	bool ImportImage(CImageModel* imgModel);
+
+	QString CurrentWorkingDirectory();
 
 public slots:
 	void on_actionNewModel_triggered();

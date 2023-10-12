@@ -37,60 +37,32 @@ class CImageModel;
 class CImageFilter : public FSObject
 {
 public:
-    enum TYPES
-    {
-        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP, ADAPTHISTEQ
-    };
-
-public:
-    CImageFilter(int type, CImageModel* model);
+    CImageFilter();
 
     virtual void ApplyFilter() = 0;
 
-    int Type() { return m_type; }
-
-    void SetImageModel(CImageModel* model);
+    virtual void SetImageModel(CImageModel* model);
 
 	CImageModel* GetImageModel();
 
 protected:
     CImageModel* m_model;
-
-private:
-    int m_type;
 };
 
 class ThresholdImageFilter : public CImageFilter
 {
 public:
-    ThresholdImageFilter(CImageModel* model = nullptr);
+    ThresholdImageFilter();
 
     void ApplyFilter() override;
+
+    void SetImageModel(CImageModel* model) override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
 };
 
-class MeanImageFilter : public CImageFilter
-{
-public:
-    MeanImageFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class GaussianImageFilter : public CImageFilter
-{
-public:
-    GaussianImageFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class AdaptiveHistogramEqualizationFilter : public CImageFilter
-{
-public:
-    AdaptiveHistogramEqualizationFilter(CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
 
 class WarpImageFilter : public CImageFilter
 {
@@ -99,6 +71,10 @@ class WarpImageFilter : public CImageFilter
 public:
 	WarpImageFilter(Post::CGLModel* glm);
 	void ApplyFilter() override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
 
 private:
 	Post::CGLModel* m_glm;

@@ -246,6 +246,10 @@ void FEMeshBuilder::DeleteSelectedFaces()
 
 	// delete tagged faces
 	DeleteTaggedFaces(1);
+
+	// make sure none of the faces are selected
+	for (int i = 0; i < m_mesh.Faces(); ++i)
+		m_mesh.Face(i).Unselect();
 }
 
 //-----------------------------------------------------------------------------
@@ -1425,7 +1429,39 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 	// repartition the edges and nodes
 	BuildEdges();
 	AutoPartitionEdges();
+
+	// we don't want to lose current nodal partitioning.
+	int N = m_mesh.Nodes();
+	int np = m_mesh.CountNodePartitions();
+	vector<int> idlist(np, -1);
+	for (int i = 0; i < N; ++i)
+	{
+		FSNode& node = m_mesh.Node(i);
+		if (node.m_gid >= 0)
+		{
+			assert(idlist[node.m_gid] == -1);
+			idlist[node.m_gid] = i;
+		}
+	}
+
 	AutoPartitionNodes();
+
+	// restore partitioning
+	int np1 = m_mesh.CountNodePartitions();
+	if (np1 < np) np1 = np;
+	for (int i = 0; i < N; ++i)
+	{
+		FSNode& node = m_mesh.Node(i);
+		if (node.m_gid != -1)
+		{
+			node.m_gid = np1++;
+		}
+	}
+	for (int i = 0; i < np; ++i)
+	{
+		m_mesh.Node(idlist[i]).m_gid = i;
+	}
+	m_mesh.UpdateNodePartitions();
 }
 
 //-----------------------------------------------------------------------------

@@ -50,6 +50,14 @@ FSSurfaceMesh::~FSSurfaceMesh()
 {
 }
 
+void FSSurfaceMesh::Clear()
+{
+	m_Node.clear();
+	m_Edge.clear();
+	m_Face.clear();
+	m_data.Clear();
+}
+
 FSSurfaceMesh::FSSurfaceMesh(TriMesh& dyna)
 {
 	TriMesh::NodeIterator nodePtr(dyna);

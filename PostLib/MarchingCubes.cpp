@@ -123,6 +123,12 @@ CMarchingCubes::CMarchingCubes(CImageModel* img) : CGLImageRenderer(img)
     case CImage::INT_16:
         Create8BitImage<int16_t>();
         break;
+    case CImage::UINT_32:
+        Create8BitImage<uint32_t>();
+        break;
+    case CImage::INT_32:
+        Create8BitImage<int32_t>();
+        break;
     // case CImage::UINT_RGB8:
     //     Create8BitImage<uint8_t>();
     //     break;
@@ -676,8 +682,8 @@ template<class pType> void CMarchingCubes::Create8BitImage()
     m_8bitImage = new C3DImage;
     m_8bitImage->Create(nx, ny, nz);
 
-    double min = oldImg->GetMinValue(true);
-    double max = oldImg->GetMaxValue(true);
+    double min, max;
+    oldImg->GetMinMax(min, max);
     double range = max - min;
 
     pType* oldData = (pType*)oldImg->GetBytes();

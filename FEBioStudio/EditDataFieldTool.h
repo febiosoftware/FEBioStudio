@@ -23,39 +23,28 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
 #include "Tool.h"
+#include <vector>
 
-class GModel;
-class GMeshObject;
+class UIEditDataFieldTool;
+class FEItemListBuilder;
 
-class CImportSpringsTool : public CBasicTool
+class CEditDataFieldTool : public CAbstractTool
 {
-	struct SPRING
-	{
-		vec3d	r0;
-		vec3d	r1;
-	};
+	Q_OBJECT
 
 public:
-	CImportSpringsTool(CMainWindow* wnd);
+	CEditDataFieldTool(CMainWindow* wnd);
 
-	bool OnApply();
+	QWidget* createUi() override;
 
-private:
-	bool ReadFile();
-	bool AddSprings(GModel* fem, GMeshObject* po);
-	void Intersect(GMeshObject* po, SPRING& s);
+	void Activate() override;
 
-	bool ReadTXTFile();
-	bool ReadVTKFile();
+private slots:
+	void OnApply();
 
 private:
-	QString	m_fileName;
-	double	m_tol;
-	bool	m_bintersect;
-	int		m_type;
-
-	std::vector<SPRING>	m_springs;
+	UIEditDataFieldTool* ui;
+	GObject* m_po;
 };

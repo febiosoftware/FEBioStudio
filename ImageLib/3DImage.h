@@ -69,8 +69,7 @@ public:
 	uint8_t* GetBytes() { return m_pb; }
 	void SetBytes(uint8_t* bytes) {m_pb = bytes; }
 
-    double GetMinValue(bool recalc = false);
-    double GetMaxValue(bool recalc = false);
+    void GetMinMax(double& min, double& max, bool recalc = true);
 
 	void Zero();
 
@@ -94,10 +93,7 @@ private:
     void CopySampledSliceZ(pType* dest, double f, int channels = 1);
 
     template <class pType>
-    double CalcMinValue();
-
-    template <class pType>
-    double CalcMaxValue();
+    void CalcMinMaxValue();
 
     template <class pType>
     void ZeroTemplate(int channels = 1);

@@ -23,39 +23,46 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "Tool.h"
 
-class GModel;
-class GMeshObject;
+#include "ImageFilter.h"
 
-class CImportSpringsTool : public CBasicTool
+#ifdef HAS_ITK
+#include <sitkImage.h>
+
+class SITKImageFiler : public CImageFilter
 {
-	struct SPRING
-	{
-		vec3d	r0;
-		vec3d	r1;
-	};
-
 public:
-	CImportSpringsTool(CMainWindow* wnd);
+    SITKImageFiler();
 
-	bool OnApply();
+    itk::simple::Image GetSITKImage();
 
-private:
-	bool ReadFile();
-	bool AddSprings(GModel* fem, GMeshObject* po);
-	void Intersect(GMeshObject* po, SPRING& s);
+    virtual void ApplyFilter() = 0;
 
-	bool ReadTXTFile();
-	bool ReadVTKFile();
-
-private:
-	QString	m_fileName;
-	double	m_tol;
-	bool	m_bintersect;
-	int		m_type;
-
-	std::vector<SPRING>	m_springs;
 };
+
+class MeanImageFilter : public SITKImageFiler
+{
+public:
+    MeanImageFilter();
+
+    void ApplyFilter() override;
+};
+
+class GaussianImageFilter : public SITKImageFiler
+{
+public:
+    GaussianImageFilter();
+
+    void ApplyFilter() override;
+};
+
+class AdaptiveHistogramEqualizationFilter : public SITKImageFiler
+{
+public:
+    AdaptiveHistogramEqualizationFilter();
+
+    void ApplyFilter() override;
+};
+
+#endif

@@ -282,26 +282,28 @@ FSMesh* FETetGenModifier::CreateMesh(FSMesh* pm)
 
 	// associate the FE nodes with the GNodes
 	GObject* po = pm->GetGObject();
-	double R2 = pmesh->GetBoundingBox().GetMaxExtent();
-	if (R2 == 0) R2 = 1.0; else R2 *= R2;	
-	for (int i=0; i<pmesh->Nodes(); ++i)
+	if (po)
 	{
-		FSNode& node = pmesh->Node(i);
-		vec3d& ri = node.r;
-		node.m_gid = -1;
-		for (int j=0; j<po->Nodes(); ++j)
+		double R2 = pmesh->GetBoundingBox().GetMaxExtent();
+		if (R2 == 0) R2 = 1.0; else R2 *= R2;
+		for (int i = 0; i < pmesh->Nodes(); ++i)
 		{
-			GNode& gn = *po->Node(j);
-			vec3d& rj = gn.LocalPosition();
-			double L2 = (ri - rj).SqrLength();
-			if (L2/R2 < 1e-6) 
+			FSNode& node = pmesh->Node(i);
+			vec3d& ri = node.r;
+			node.m_gid = -1;
+			for (int j = 0; j < po->Nodes(); ++j)
 			{
-				node.m_gid = j;
-				break;
+				GNode& gn = *po->Node(j);
+				vec3d& rj = gn.LocalPosition();
+				double L2 = (ri - rj).SqrLength();
+				if (L2 / R2 < 1e-6)
+				{
+					node.m_gid = j;
+					break;
+				}
 			}
 		}
 	}
-
 	return pmesh;
 #else 
 	return 0;

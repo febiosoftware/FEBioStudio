@@ -45,12 +45,12 @@ SOFTWARE.*/
 
 void CustomGraphicsView::mousePressEvent(QMouseEvent* event)
 {
-    emit focusChanged(mapToScene(event->pos()).toPoint());
+    emit focusChanged(mapToScene(event->pos()));
 }
 
 void CustomGraphicsView::mouseMoveEvent(QMouseEvent* event)
 {
-    emit focusChanged(mapToScene(event->pos()).toPoint());
+    emit focusChanged(mapToScene(event->pos()));
 }
 
 CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget)
@@ -70,7 +70,9 @@ CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget
     m_scene->addItem(m_imagePixmapItem);
 
     m_rect = new QGraphicsRectItem;
-    m_rect->setPen(QPen(QColorConstants::Red));
+    QPen pen(QColorConstants::Red);
+    pen.setCosmetic(true);
+    m_rect->setPen(pen);
     m_rect->setVisible(false);
     m_scene->addItem(m_rect);
 
@@ -156,13 +158,22 @@ template<class pType> void CImageSlice::ThresholdAndConvert()
 
     pType* imgData = (pType*)m_imgModel->Get3DImage()->GetBytes();
 
-    double min = m_imgModel->Get3DImage()->GetMinValue();
-    double max = m_imgModel->Get3DImage()->GetMaxValue();
+    double min, max;
+    m_imgModel->Get3DImage()->GetMinMax(min, max, false);
     
     double minThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
     double maxThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
 
-    m_displaySlice.Create(m_orignalSlice.Width(), m_orignalSlice.Height());
+    if(m_orignalSlice.IsRGB())
+    {
+        m_displaySlice.Create(m_orignalSlice.Width(), m_orignalSlice.Height(), nullptr, CImage::UINT_RGB8);
+    }
+    else
+    {
+        m_displaySlice.Create(m_orignalSlice.Width(), m_orignalSlice.Height());
+    }
+    
+    
     pType* data = (pType*)m_orignalSlice.GetBytes();
     uint8_t* outData = m_displaySlice.GetBytes();
 
@@ -252,6 +263,12 @@ void CImageSlice::Update()
     case CImage::INT_16:
         ThresholdAndConvert<int16_t>();
         break;
+    case CImage::UINT_32:
+        ThresholdAndConvert<uint32_t>();
+        break;
+    case CImage::INT_32:
+        ThresholdAndConvert<int32_t>();
+        break;
     case CImage::UINT_RGB8:
         ThresholdAndConvert<uint8_t>();
         break;
@@ -274,8 +291,18 @@ void CImageSlice::Update()
         assert(false);
     }
 
-    QImage qImg(m_displaySlice.GetBytes(), m_displaySlice.Width(), m_displaySlice.Height(), 
-        m_displaySlice.Width(), QImage::Format::Format_Grayscale8);
+    std::unique_ptr<QImage> qImg;
+    
+    if(m_orignalSlice.IsRGB())
+    {
+        qImg = std::make_unique<QImage>(m_displaySlice.GetBytes(), m_displaySlice.Width(), m_displaySlice.Height(), 
+            m_displaySlice.Width()*3, QImage::Format::Format_RGB888);
+    }
+    else
+    {
+        qImg = std::make_unique<QImage>(m_displaySlice.GetBytes(), m_displaySlice.Width(), m_displaySlice.Height(), 
+            m_displaySlice.Width(), QImage::Format::Format_Grayscale8);
+    }
 
     BOX box = m_imgModel->GetBoundingBox();
 
@@ -304,11 +331,13 @@ void CImageSlice::Update()
     }
 
     // Flip the image using QTransform.scale(1,-1)
-    QPixmap pixmap = QPixmap::fromImage(qImg).transformed(QTransform().scale(1,-1));
+    QPixmap pixmap = QPixmap::fromImage(*qImg).transformed(QTransform().scale(1,-1));
     
     m_imagePixmapItem->setPixmap(pixmap);
     m_imagePixmapItem->setTransform(QTransform().scale(m_xScale, m_yScale));
     m_imagePixmapItem->setVisible(true);
+
+    m_rect->setTransform(QTransform().scale(m_xScale, m_yScale));
 
     m_view->fitInView(m_imagePixmapItem, Qt::AspectRatioMode::KeepAspectRatio);
 
@@ -353,11 +382,13 @@ void CImageSlice::on_currentIndexChanged(int index)
     }
 }
 
-void CImageSlice::on_view_focusChanged(QPoint point)
+void CImageSlice::on_view_focusChanged(QPointF point)
 {
-    m_rect->setRect(point.x() - 3, point.y() - 3, 7, 7);
+    m_rect->setRect((int)(point.x()/m_xScale) - 3, (int)(point.y()/m_yScale) - 3, 7, 7);
 
-    emit focusChanged(m_sliceDir, QPoint(point.x()/m_xScale, point.y()/m_yScale));
+    // I'm honestly not sure why, but we need to add one to the y-coordinate in order to get
+    // the box lined up correctly.
+    emit focusChanged(m_sliceDir, QPoint(point.x()/m_xScale, point.y()/m_yScale+1));
 }
 
 void CImageSlice::wheelEvent(QWheelEvent* event)

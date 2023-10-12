@@ -58,6 +58,9 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     m_layout->addWidget(m_zSlice, 1, 0);
 
     m_glView = new CGLView(m_wnd);
+	m_glView->GetViewSettings().m_bgrid = false;
+	m_glView->AllocateDefaultWidgets(false);
+	m_glView->ShowContextMenu(false);
     m_layout->addWidget(m_glView, 1, 1);
 
     setLayout(m_layout);
@@ -114,8 +117,8 @@ void CImageSliceView::ModelTreeSelectionChanged(FSObject* obj)
     // Forces recalc of min and max values on the image
     if(m_imgModel && m_imgModel->Get3DImage())
     {
-        m_imgModel->Get3DImage()->GetMinValue(true);
-        m_imgModel->Get3DImage()->GetMaxValue(true);
+        double min, max;
+        m_imgModel->Get3DImage()->GetMinMax(min, max);
     }
 
     m_xSlicer.SetImageModel(m_imgModel);

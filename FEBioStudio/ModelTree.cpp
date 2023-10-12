@@ -1348,6 +1348,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 {
 	QTreeWidgetItem* t2, *t3, *t4;
 
+	// max nr. of items in a branch
+	const int MAX_BRANCH_ITEM = 10000;
+
 	// get the model
 	GModel& model = fem.GetModel();
 
@@ -1381,7 +1384,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Surfaces", MT_FACE_LIST, po->Faces(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NF = po->Faces();
-		if (NF > 1000) NF = 1000;
+		if (NF > MAX_BRANCH_ITEM) NF = MAX_BRANCH_ITEM;
 		for (int j = 0; j<NF; ++j)
 		{
 			GFace* pg = po->Face(j);
@@ -1392,7 +1395,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Edges", MT_EDGE_LIST, po->Edges(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NE = po->Edges();
-		if (NE > 1000) NE = 1000;
+		if (NE > MAX_BRANCH_ITEM) NE = MAX_BRANCH_ITEM;
 		for (int j=0; j<NE; ++j)
 		{
 			GEdge* pg = po->Edge(j);
@@ -1403,7 +1406,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Nodes", MT_NODE_LIST, po->Nodes(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NN = po->Nodes();
-		if (NN > 1000) NN = 1000;
+		if (NN > MAX_BRANCH_ITEM) NN = MAX_BRANCH_ITEM;
 		for (int j = 0; j<NN; ++j)
 		{
 			GNode* pg = po->Node(j);

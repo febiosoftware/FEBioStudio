@@ -1290,6 +1290,12 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 }
 
 //-----------------------------------------------------------------------------
+void CMainWindow::UpdateMeshInspector(bool breset)
+{
+	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
+}
+
+//-----------------------------------------------------------------------------
 void CMainWindow::UpdateGraphs(bool breset)
 {
 	// update graph windows
@@ -1530,7 +1536,22 @@ void CMainWindow::ReportSelection()
 		{
 			if (N == 1)
 			{
-				msg = QString("1 discrete object selected");
+				GDiscreteSelection& ds = dynamic_cast<GDiscreteSelection&>(*sel);
+				GDiscreteSelection::Iterator it(&ds);
+				GDiscreteSpringSet* dss = dynamic_cast<GDiscreteSpringSet*>(&(*it));
+				if (dss)
+				{
+					for (int i = 0; i < dss->size(); ++i)
+					{
+						GDiscreteElement& de = dss->element(i);
+						if (de.IsSelected())
+						{
+							msg = QString("discrete element [%1, %2] selected.").arg(de.Node(0)).arg(de.Node(1));
+						}
+					}
+				}
+				else msg = QString("1 discrete object selected");
+
 			}
 			else msg = QString("%1 discrete objects selected").arg(N);
 		}
@@ -1940,6 +1961,7 @@ void CMainWindow::writeSettings()
 	settings.setValue("showMaterialAxes", vs.m_blma);
 	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
 	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
+    settings.setValue("showGrid", vs.m_bgrid);
 	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
 	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
@@ -2065,6 +2087,7 @@ void CMainWindow::readSettings()
 //	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
 	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
 	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
+    vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
 	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
 	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
 

@@ -92,7 +92,7 @@ bool CImageSlicer::UpdateData(bool bsave)
 void CImageSlicer::SetImageSlice(CImage* img)
 {
     // This slice needs to be converted to 8 bit before assigned
-    assert(img->PixelType() == CImage::UINT_8);
+    assert(img->PixelType() == CImage::UINT_8 || img->PixelType() == CImage::UINT_RGB8);
 
     m_imageSlice = img; 
     UpdateSlice();
@@ -125,8 +125,8 @@ template<class pType> void CImageSlicer::CreateCRGBAImage(CImage& slice)
 
     pType* imgData = (pType*)imgModel->Get3DImage()->GetBytes();
 
-    double min = imgModel->Get3DImage()->GetMinValue(true);
-    double max = imgModel->Get3DImage()->GetMaxValue(true);
+    double min, max;
+    imgModel->Get3DImage()->GetMinMax(min, max);
 
     // The Image settings panel isn't available in the post view
     // double minThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
@@ -181,8 +181,6 @@ void CImageSlicer::UpdateSlice()
     // It is assumed that this manual slice has already been converted to 8 bit
     if(m_imageSlice)
     {
-        assert(m_imageSlice->PixelType() == CImage::UINT_8);
-
         // get the image dimensions
         int W = m_imageSlice->Width();
         int H = m_imageSlice->Height();
@@ -194,14 +192,34 @@ void CImageSlicer::UpdateSlice()
         int nn = W*H;
         uint8_t* ps = m_imageSlice->GetBytes();
         uint8_t* pd = m_im.GetBytes();
-        for (int i = 0; i<nn; i++, ps++, pd += 4)
+
+        if(m_imageSlice->PixelType() == CImage::UINT_8)
         {
-            int val = *ps;
-            pd[0] = m_LUTC[0][val];
-            pd[1] = m_LUTC[1][val];
-            pd[2] = m_LUTC[2][val];
-            pd[3] = m_LUTC[3][val];
+            for (int i = 0; i<nn; i++, ps++, pd += 4)
+            {
+                int val = *ps;
+                pd[0] = m_LUTC[0][val];
+                pd[1] = m_LUTC[1][val];
+                pd[2] = m_LUTC[2][val];
+                pd[3] = m_LUTC[3][val];
+            }
         }
+        else if(m_imageSlice->PixelType() == CImage::UINT_RGB8)
+        {
+            for (int i = 0; i<nn; i++, ps+=3, pd += 4)
+            {
+                pd[0] = ps[0];
+                pd[1] = ps[1];
+                pd[2] = ps[2];
+                pd[3] = 255;
+            }
+        }
+        else
+        {
+            assert(false);
+        }
+
+        
     }
     else
     {
@@ -240,6 +258,12 @@ void CImageSlicer::UpdateSlice()
             break;
         case CImage::INT_16:
             CreateCRGBAImage<int16_t>(slice);
+            break;
+        case CImage::UINT_32:
+            CreateCRGBAImage<uint32_t>(slice);
+            break;
+        case CImage::INT_32:
+            CreateCRGBAImage<int32_t>(slice);
             break;
         case CImage::UINT_RGB8:
             CreateCRGBAImage<uint8_t>(slice);

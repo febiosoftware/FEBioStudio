@@ -125,7 +125,7 @@ void CDlgPixelInspector::UpdateData()
     for(int i = 0; i < m_radius*2+1; i++)
     {
         horizontalHeaders << QString::number(startIndices.x() + i);
-        verticalHeaders << QString::number(startIndices.y() + i);
+        verticalHeaders << QString::number(startIndices.y() - i);
     }
     ui->table->setHorizontalHeaderLabels(horizontalHeaders);
     ui->table->setVerticalHeaderLabels(verticalHeaders);
