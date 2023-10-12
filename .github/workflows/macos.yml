@@ -12,7 +12,7 @@ jobs:
         {
           "sdk_path": "ci/reusable-workflow-macos",
           "package_name": "febio4",
-          "package": "febio4-sdk-v4.3-139-gd56c74e17.tar.gz",
+          "package": "febio4-sdk-v4.3-165-g9a9fb2c7e.tar.gz",
           "bucket": "febio-packages"
         }
     secrets: inherit
