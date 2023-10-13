@@ -132,7 +132,7 @@ GLMusclePath::GLMusclePath()
 	AddDoubleParam(m_tol, "tol", "Smoothness tol.");
 	AddDoubleParam(m_snaptol, "snap_tol", "Snap tolerance");
 	AddDoubleParam(m_searchRadius, "search_radius", "Search radius");
-	AddChoiceParam(m_pathGuide, "path guide")->SetEnumNames("(none)\0");
+	AddChoiceParam(m_pathGuide, "path_guide", "Path guide")->SetEnumNames("(none)\0");
 	AddDoubleParam(5.0, "size", "Path radius");
 	AddColorParam(GLColor(255, 0, 0), "color");
 	AddColorParam(GLColor(164, 0, 164), "color0", "start point color");
