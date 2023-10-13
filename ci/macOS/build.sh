@@ -9,7 +9,7 @@ main() {
 	run_cmake
 	run_cmake
 	pushd cmbuild
-	make -j 7
+	make -j $(sysctl -n hw.ncpu)
 	popd
 }
 
