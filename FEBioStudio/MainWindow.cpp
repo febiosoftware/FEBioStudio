@@ -1182,6 +1182,10 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			if (doc->GetDocFilePath().empty())
 			{
 				doc->SetDocFilePath(file.m_fileName.toStdString());
+
+				QFileInfo fi(file.m_fileName);
+				QString path = fi.absolutePath();
+				SetCurrentFolder(path);
 			}
 			bool b = doc->Initialize();
 			if (b == false)
