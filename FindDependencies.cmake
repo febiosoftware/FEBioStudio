@@ -1,10 +1,10 @@
 # Qt
-find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
+find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED)
 
 if(Qt_Ver VERSION_EQUAL 6)
   find_package(${Qt_Version} COMPONENTS Core5Compat OpenGLWidgets REQUIRED)
 endif()
-mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR 
+mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR
     ${Qt_Version}Positioning_DIR ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR
     ${Qt_Version}Widgets_DIR ${Qt_Version}Core5Compat_DIR ${Qt_Version}GuiTools_DIR ${Qt_Version}CoreTools_DIR ${Qt_Version}OpenGLWidgets_DIR
     ${Qt_Version}WidgetsTools_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
@@ -16,12 +16,12 @@ if(WIN32)
 else()
     set(TEMP_PATHS ${CMAKE_SOURCE_DIR}/.. ${CMAKE_SOURCE_DIR}/../.. $ENV{HOME}/ $ENV{HOME}/*)
 endif()
-    
+
 find_path(FEBio_SDK FECore/stdafx.h
     PATHS ${TEMP_PATHS}
     PATH_SUFFIXES FEBio
     DOC "Path to the FEBio SDK, or git repo.")
-    
+
 if(NOT FEBio_SDK)
     if(WIN32)
         set(TEMP_PATHS $ENV{PROGRAMFILES}/* ${CMAKE_SOURCE_DIR}/.. $ENV{HOMEPATH}/* )
@@ -29,8 +29,8 @@ if(NOT FEBio_SDK)
         set(TEMP_PATHS /Applications/* ${CMAKE_SOURCE_DIR}/.. $ENV{HOME}/*)
     else()
         set(TEMP_PATHS ${CMAKE_SOURCE_DIR}/.. $ENV{HOME}/*)
-    endif() 
-    
+    endif()
+
     find_path(FEBio_SDK "include/FECore/stdafx.h"
         PATHS ${TEMP_PATHS}
         PATH_SUFFIXES sdk
@@ -42,7 +42,7 @@ if(NOT FEBio_SDK)
     message(FATAL_ERROR "Unable to find path to FEBio SDK or git repo automatically. Please set FEBio_SDK to the path to your FEBio SDK or git repo.")
 endif()
 
-# Only update the include and lib directories if the FEBio_SDK path has been changed. 
+# Only update the include and lib directories if the FEBio_SDK path has been changed.
 if(NOT OLD_SDK)
     set(NEWPATH TRUE)
 else()
@@ -59,7 +59,7 @@ if(NEWPATH)
     set(LIB_SUFFIXES "")
     if(IS_SDK)
         set(FEBio_INC "${FEBio_SDK}/include" CACHE PATH "Path to FEBio include directory." FORCE)
-        
+
         if(WIN32)
             list(APPEND LIB_SUFFIXES "lib" "lib/Release"  "vs2017/Release" "vs2017/Debug")
         else()
@@ -67,7 +67,7 @@ if(NEWPATH)
         endif()
     else()
         set(FEBio_INC ${FEBio_SDK} CACHE PATH "Path to FEBio include directory." FORCE)
-        
+
         if(WIN32)
             list(APPEND LIB_SUFFIXES "lib" "lib/Release" "cmbuild/lib/Release" "cmbuild/lib/Debug" "cbuild/lib/Release" "cbuild/lib/Debug" "build/lib/Release" "build/lib/Debug")
         else()
@@ -78,7 +78,7 @@ if(NEWPATH)
     mark_as_advanced(FEBio_INC)
 
     # Find lib path
-    find_library(FECORE  
+    find_library(FECORE
         NAMES FECore fecore fecore_gcc64 fecore_lnx64
         PATHS ${FEBio_SDK}
         PATH_SUFFIXES ${LIB_SUFFIXES}
@@ -107,14 +107,14 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/teem*" "src" "build" "build/include"
         DOC "Teem include directory")
-	find_library(TEEM_LIB teem 
+	find_library(TEEM_LIB teem
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/bin" "src/build/bin" "Release" "Debug"
 		DOC "Teem library path")
 else()
 	find_path(TEEM_INC teem/nrrd.h
         PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "include/teem" "build" "build/include" "src" 
+        PATH_SUFFIXES "include" "include/teem" "build" "build/include" "src"
 		DOC "Teem include directory")
 	find_library(TEEM_LIB teem
         PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
@@ -138,14 +138,14 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "src" "build" "build/include"
         DOC "LibTiff include directory")
-	find_library(LIBTIFF_LIB tiff 
+	find_library(LIBTIFF_LIB tiff
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
 		DOC "LibTiff library path")
 else()
 	find_path(LIBTIFF_INC tiffio.h
         PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "build" "build/include" "src" 
+        PATH_SUFFIXES "include" "build" "build/include" "src"
 		DOC "LibTiff include directory")
 	find_library(LIBTIFF_LIB tiff
         PATHS /opt/libtiff* $ENV{HOME}/* $ENV{HOME}/*/*
@@ -164,7 +164,7 @@ else()
 endif()
 
 
-if(LIBTIFF_INC AND LIBTIFF_LIB_DIR AND TEEM_INC AND TEEM_LIB_DIR)		
+if(LIBTIFF_INC AND LIBTIFF_LIB_DIR AND TEEM_INC AND TEEM_LIB_DIR)
 	option(USE_TEEM "Required for Teem use" ON)
     mark_as_advanced(TEEM_INC TEEM_LIB_DIR)
 else()
@@ -178,14 +178,14 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/dcmtk*" "src" "build" "build/dcmtk"
         DOC "Dicom include directory")
-	find_library(DCMTK_LIB dcmimgle 
+	find_library(DCMTK_LIB dcmimgle
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "src/build/lib" "Release" "Debug"
 		DOC "Dicom library path")
 else()
 	find_path(DCMTK_INC dcmtk/dcmimgle/dcmimage.h
         PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "include/dcmtk*" "build" "build/include/dcmtk" "src" 
+        PATH_SUFFIXES "include" "include/dcmtk*" "build" "build/include/dcmtk" "src"
 		DOC "Dicom include directory")
 	find_library(DCMTK_LIB dcmimgle
         PATHS /opt/teem* $ENV{HOME}/* $ENV{HOME}/*/*
@@ -203,7 +203,7 @@ else()
     unset(DCMTK_LIB CACHE)
 endif()
 
-if(DCMTK_INC AND DCMTK_LIB_DIR)		
+if(DCMTK_INC AND DCMTK_LIB_DIR)
 	option(USE_DCMTK "Required for Dicom use" ON)
     mark_as_advanced(DCMTK_INC DCMTK_LIB_DIR)
 else()
@@ -217,16 +217,16 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/mmg*" "src" "build" "build/include"
         DOC "MMG include directory")
-	find_library(MMG_LIB mmg3d 
+	find_library(MMG_LIB mmg3d
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "MMG library path")
 else()
 	find_path(MMG_INC mmg/mmg3d/libmmg3d.h
         PATHS /opt/hypre* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "include/mmg" "build" "build/include" "cbuild" "cbuild/include" "src" 
+        PATH_SUFFIXES "include" "include/mmg" "build" "build/include" "cbuild" "cbuild/include" "src"
 		DOC "MMG include directory")
-	find_library(MMG_LIB mmg3d 
+	find_library(MMG_LIB mmg3d
         PATHS /opt/mmg* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "build/lib" "cbuild/lib" "src/build/lib" "src/cbuild/lib" "Release" "Debug"
 		DOC "MMG library path")
@@ -243,7 +243,7 @@ else()
 endif()
 
 
-if(MMG_INC AND MMG_LIB_DIR)		
+if(MMG_INC AND MMG_LIB_DIR)
 	option(USE_MMG "Required for MMG use" ON)
     mark_as_advanced(MMG_INC MMG_LIB_DIR)
 else()
@@ -260,7 +260,7 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
         DOC "TetGen include directory")
-	find_library(TETGEN_LIB tetgen 
+	find_library(TETGEN_LIB tetgen
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "x64/Release" "x64/Debug"
 		DOC "TetGen library path")
@@ -269,7 +269,7 @@ else()
         PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
 		DOC "TetGen include directory")
-	find_library(TETGEN_LIB tet 
+	find_library(TETGEN_LIB tet
         PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "build" "cbuild" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "TetGen library path")
@@ -285,7 +285,7 @@ else()
     unset(TETGEN_LIB CACHE)
 endif()
 
-if(TETGEN_INC AND TETGEN_LIB_DIR)		
+if(TETGEN_INC AND TETGEN_LIB_DIR)
 	option(USE_TETGEN "Required for adaptive remeshing" ON)
     mark_as_advanced(TETGEN_INC TETGEN_LIB_DIR)
 else()
@@ -302,7 +302,7 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "/opencascade" "include/opencascade" "opencascade/include/opencascade" "build/opencascade" "build/include/opencascade"
         DOC "OpenCascade include directory")
-	find_library(OCCT_LIB TKernel 
+	find_library(OCCT_LIB TKernel
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "OpenCascade library path")
@@ -311,7 +311,7 @@ else()
         PATHS /opt/opencascade $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "/opencascade" "include/opencascade" "opencascade/include/opencascade" "build/opencascade" "build/include/opencascade"
 		DOC "OpenCascade include directory")
-	find_library(OCCT_LIB TKernel 
+	find_library(OCCT_LIB TKernel
         PATHS /opt/opencascade $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "opencascade/lib" "build" "build/lib" "Release" "Debug"
 		DOC "OpenCascade library path")
@@ -327,7 +327,7 @@ else()
     unset(OCCT_LIB CACHE)
 endif()
 
-if(OCCT_INC AND OCCT_LIB_DIR)		
+if(OCCT_INC AND OCCT_LIB_DIR)
     mark_as_advanced(OCCT_INC OCCT_LIB_DIR)
 else()
     mark_as_advanced(CLEAR OCCT_INC OCCT_LIB_DIR)
@@ -342,17 +342,17 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "netgen/include" "build" "build/include"
         DOC "Netgen include directory")
-	find_library(NETGEN_LIB nglib 
+	find_library(NETGEN_LIB nglib
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "Netgen library path")
 else()
   find_path(NETGEN_INC include/occgeom.hpp
-        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/Resources/include Contents/Resources/include /usr/local/x86_64/Contents/Resources/include
+        PATHS $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/x86_64/Contents/Resources/include /opt/netgen* /Applications/Netgen.app/Contents/Resources/include Contents/Resources/include
         PATH_SUFFIXES "include" "netgen/include" "build" "build/include" "occ"
 		DOC "Netgen include directory")
   message(STATUS "NETGEN_INC: ${NETGEN_INC}")
-	find_library(NETGEN_LIB nglib 
+	find_library(NETGEN_LIB nglib
         PATHS /usr/local/x86_64/Contents /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/MacOS Contents/MacOS
         PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug" "MacOS"
 		DOC "Netgen library path")
@@ -369,13 +369,13 @@ else()
     unset(NETGEN_LIB CACHE)
 endif()
 
-if(NETGEN_INC AND NETGEN_LIB_DIR)		
+if(NETGEN_INC AND NETGEN_LIB_DIR)
     mark_as_advanced(NETGEN_INC NETGEN_LIB_DIR)
 else()
     mark_as_advanced(CLEAR NETGEN_INC NETGEN_LIB_DIR)
 endif()
 
-if(NETGEN_INC AND NETGEN_LIB_DIR AND OCCT_INC AND OCCT_LIB_DIR)		
+if(NETGEN_INC AND NETGEN_LIB_DIR AND OCCT_INC AND OCCT_LIB_DIR)
 	option(CAD_FEATURES "Required for importing and meshing CAD objects" ON)
 else()
 	SET(CAD_FEATURES OFF CACHE BOOL "Required for importing and meshing CAD objects" FORCE)
@@ -390,7 +390,7 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "libssh/include" "build" "build/include"
         DOC "LibSSH include directory")
-	find_library(SSH_LIB ssh 
+	find_library(SSH_LIB ssh
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "LibSSH library path")
@@ -415,7 +415,7 @@ else()
     unset(SSH_LIB CACHE)
 endif()
 
-if(SSH_INC AND SSH_LIB_DIR)		
+if(SSH_INC AND SSH_LIB_DIR)
 	option(USE_SSH "Required for running jobs on remote machines." ON)
     mark_as_advanced(SSH_INC SSH_LIB_DIR)
 else()
@@ -432,7 +432,7 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
         DOC "OpenSSL include directory")
-	find_library(SSL_LIB ssl 
+	find_library(SSL_LIB ssl
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "OpenSSL library path")
@@ -441,7 +441,7 @@ elseif(APPLE)
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
 		DOC "OpenSSL include directory")
-	find_library(SSL_LIB ssl 
+	find_library(SSL_LIB ssl
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "openssl/lib" "build" "build/lib" "Release" "Debug"
 		DOC "OpenSSL library path"
@@ -451,7 +451,7 @@ else()
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
 		DOC "OpenSSL include directory")
-	find_library(SSL_LIB ssl 
+	find_library(SSL_LIB ssl
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "openssl/lib" "build" "build/lib" "Release" "Debug"
 		DOC "OpenSSL library path")
@@ -467,7 +467,7 @@ else()
     unset(SSL_LIB CACHE)
 endif()
 
-if(SSL_INC AND SSL_LIB_DIR AND USE_SSH)		
+if(SSL_INC AND SSL_LIB_DIR AND USE_SSH)
 	option(USE_SSH "Required for running jobs on remote machines." ON)
     mark_as_advanced(SSL_INC SSL_LIB_DIR)
 else()
@@ -490,8 +490,8 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "/quazip5" "include/quazip5" "quazip/include/quazip5" "build/quazip5" "build/include/quazip5"
         DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB 
-        NAMES ${QUAZIP_NAMES} 
+	find_library(QUAZIP_LIB
+        NAMES ${QUAZIP_NAMES}
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "QuaZip library path")
@@ -500,8 +500,8 @@ elseif(APPLE)
         PATHS /usr/include/* /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "/quazip" "include/quazip" "quazip/include/quazip" "build/quazip" "build/include/quazip"
 		DOC "QuaZip include directory")
-	find_library(QUAZIP_LIB 
-        NAMES ${QUAZIP_NAMES}  
+	find_library(QUAZIP_LIB
+        NAMES ${QUAZIP_NAMES}
         PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "quazip/lib" "build" "build/lib" "Release" "Debug"
 		DOC "QuaZip library path")
@@ -512,7 +512,7 @@ else()
 		DOC "QuaZip include directory")
 	find_library(QUAZIP_LIB
         NAMES ${QUAZIP_NAMES}
-        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/ /usr/local/* 
+        PATHS /opt/quazip $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/ /usr/local/*
         PATH_SUFFIXES "lib" "lib64" "quazip/lib" "quazip/build/quazip" "build" "build/lib" "Release" "Debug"
 		DOC "QuaZip library path")
 endif()
@@ -528,7 +528,7 @@ else()
     unset(QUAZIP_LIB CACHE)
 endif()
 
-if(QUAZIP_INC AND QUAZIP_LIB_DIR)		
+if(QUAZIP_INC AND QUAZIP_LIB_DIR)
     mark_as_advanced(QUAZIP_INC QUAZIP_LIB_DIR)
 else()
     mark_as_advanced(CLEAR QUAZIP_INC QUAZIP_LIB_DIR)
@@ -543,7 +543,7 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "sqlite/include" "build" "build/include"
         DOC "SQLite include directory")
-	find_library(SQLITE_LIB sqlite3 
+	find_library(SQLITE_LIB sqlite3
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "SQLite library path")
@@ -568,13 +568,13 @@ else()
     unset(SQLITE_LIB CACHE)
 endif()
 
-if(SQLITE_INC AND SQLITE_LIB_DIR)		
+if(SQLITE_INC AND SQLITE_LIB_DIR)
     mark_as_advanced(SQLITE_INC SQLITE_LIB_DIR)
 else()
     mark_as_advanced(CLEAR SQLITE_INC SQLITE_LIB_DIR)
 endif()
 
-if(SQLITE_INC AND SQLITE_LIB_DIR AND QUAZIP_INC AND QUAZIP_LIB_DIR)		
+if(SQLITE_INC AND SQLITE_LIB_DIR AND QUAZIP_INC AND QUAZIP_LIB_DIR)
 	option(MODEL_REPO "Build code to connect to the Model Repository." ON)
 else()
     SET(MODEL_REPO OFF CACHE BOOL "Build code to connect to the Model Repository." FORCE)
@@ -589,7 +589,7 @@ if(WIN32)
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
 		PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
         DOC "FFMPEG include directory")
-	find_library(FFMPEG_LIB avformat 
+	find_library(FFMPEG_LIB avformat
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
         PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
 		DOC "FFMPEG library path")
@@ -625,7 +625,7 @@ else()
     unset(FFMPEG_LIB CACHE)
 endif()
 
-if(FFMPEG_INC AND FFMPEG_LIB_DIR)		
+if(FFMPEG_INC AND FFMPEG_LIB_DIR)
 	option(USE_FFMPEG "Required to export mpeg videos." ON)
     mark_as_advanced(FFMPEG_INC FFMPEG_LIB_DIR)
 else()
@@ -642,7 +642,7 @@ find_package(GLEW REQUIRED)
 
 # ZLIB
 find_package(ZLIB)
-if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)		
+if(ZLIB_INCLUDE_DIR AND ZLIB_LIBRARY_RELEASE)
 	option(USE_ZLIB "Required for reading compressed xplt files" ON)
     mark_as_advanced(ZLIB_INCLUDE_DIR ZLIB_LIBRARY_RELEASE)
 else()
