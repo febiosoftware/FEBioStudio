@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <MeshLib/FENodeNodeList.h>
 #include <MeshLib/triangulate.h>
 #include <MeshTools/FESelection.h>
+#include <MeshTools/FSTriMesh.h>
+#include <MeshTools/FEGeodesic.h>
 #include <GLLib/glx.h>
 #include <sstream>
 using namespace Post;
@@ -60,10 +62,6 @@ public:
 	{
 		vec3d	r;
 		int		tag;
-		int		mat;	// material tag of part this point is on
-
-		int nface;
-		vec3d n;	// local surface normal
 
 		// projection onto guided surface
 		int	nproj;
@@ -76,7 +74,7 @@ public:
 
 	void push_back(const vec3d& r, int tag = 0, int mat = -1)
 	{
-		Point p = { r, tag, mat, -1, vec3d(0,0,0), -1, vec2d(0,0)};
+		Point p = { r, tag, -1, vec2d(0,0)};
 		m_points.push_back(p);
 	}
 
@@ -676,243 +674,7 @@ double GLMusclePath::DataValue(int field, int step)
 	return val;
 }
 
-class FaceMesh
-{
-public:
-	struct FACE
-	{
-		vec3d	r[3];
-		vec3d	fn;
-		int		mat;
-	};
-
-	size_t Faces() const { return m_Face.size(); }
-
-	FACE& Face(size_t n) { return m_Face[n]; }
-
-	size_t FindFace(const vec3d r)
-	{
-		for (size_t i = 0; i < m_Face.size(); ++i)
-		{
-			FACE& f = m_Face[i];
-			if ((f.r[0] - r).SqrLength() < 1e-12) return i;
-			if ((f.r[1] - r).SqrLength() < 1e-12) return i;
-			if ((f.r[2] - r).SqrLength() < 1e-12) return i;
-		}
-		return -1;
-	}
-
-public:
-	vector<FACE>	m_Face;
-};
-
-bool ClosestPointOnRing(
-	FaceMesh& mesh, 
-	const vec3d& rc, const vec3d& t, 
-	const vec3d& a, const vec3d& b, const vec3d& na, 
-	GLMusclePath::PathData::Point& pt)
-{
-	const int LUT[8][2] = { {-1,-1}, {0,2},{0,1},{1,2},{1,2},{0,1},{0,2},{-1,-1} };
-
-	int NF = mesh.Faces();
-	int imin = -1;
-	pt.nface = -1;
-	double Dmin = 0.0;
-	for (int i = 0; i < NF; ++i)
-	{
-		// figure out the case for this face
-		// (i.e. decide if the plane (rc, t) intersects this triangle
-		FaceMesh::FACE& face = mesh.Face(i);
-		int ne = 3; // edges!
-		int ncase = 0;
-		vec3d* re = face.r;
-		for (int j = 0; j < ne; ++j)
-		{
-			double s = (re[j] - rc) * t;
-			if (s > 0) ncase |= (1 << j);
-		}
-
-		if ((ncase != 0) && (ncase != 7))
-		{
-			int e[2] = { LUT[ncase][0], LUT[ncase][1] };
-
-			// find the edge intersections
-			vec3d er[2];
-			for (int j = 0; j < 2; ++j)
-			{
-				int n = e[j];
-				int n0 = n;
-				int n1 = (n + 1) % ne;
-				vec3d ra = re[n0];
-				vec3d rb = re[n1];
-				double la = t * (ra - rc);
-				double lb = t * (rb - rc);
-
-				assert(la * lb < 0);
-
-				double l = (t * (rc - ra)) / (t*(rb - ra));
-				vec3d p = ra + (rb - ra) * l;
-
-				// make sure the point lies on the plane
-				double e = t * (p - rc);
-				assert(fabs(e) < 1e-12);
-
-				er[j] = p;
-			}
-
-			// find the point that minimizes (a-p-b)
-			vec3d dr = er[1] - er[0];
-			double D = dr.SqrLength();
-			if (D != 0.0)
-			{
-				// project point c onto the line {er[0], er[1]}
-				vec3d c = rc;// (a + b) * 0.5;
-				double l = (c * dr - er[0] * dr) / D;
-
-				vec3d p;
-				if (l <= 0.0) p = er[0];
-				else if (l >= 1.0) p = er[1];
-				else p = er[0] + (er[1] - er[0]) * l;
-
-				double D2 = (p - c).norm2(); //(p - a).SqrLength() + (p - b).SqrLength();
-				if ((imin == -1) || (D2 < Dmin))
-				{
-					// calculate face normal
-					vec3d fn = face.fn;
-
-					// make sure the normal is not on the wrong side
-					double dot = fn * na;
-	//				if (dot > normalTolerance)
-					{
-						imin = i;
-						Dmin = D2;
-						pt.r = p;
-
-						// make sure the point lies on the plane
-						double e = t * (pt.r - rc);
-						assert(fabs(e) < 1e-12);
-
-						// project normal onto plane
-						fn -= t * (fn * t); fn.Normalize();
-
-						assert(fabs(fn * t) < 1e-12);
-
-						pt.n = fn;
-
-						pt.nface = i;
-					}
-				}
-			}
-		}
-	}
-
-	return (imin != -1);
-}
-
-void StraightenPath(GLMusclePath::PathData& path)
-{
-	const int N = path.Points();
-	if (N <= 2) return;
-
-	int n = 1;
-	while (n < N - 1)
-	{
-		if (path[n].nface == -1)
-		{
-			int m0 = n - 1; assert(m0 >= 0);
-			int m1 = n + 1;
-			while ((m1 < N - 1) && (path[m1].nface == -1)) m1++;
-			assert(m1 < N);
-
-			auto& p0 = path[m0];
-			auto& p1 = path[m1];
-
-			vec3d a = p0.r;
-			vec3d b = p1.r;
-			for (; n < m1; n++)
-			{
-				double l = (double)(n - m0) / (double)(m1 - m0);
-				vec3d r = a + (b - a) * l;
-				path[n].r = r;
-			}
-		}
-		else n++;
-	}
-}
-
-bool SmoothenPath(FaceMesh& mesh, GLMusclePath::PathData& path, int maxIters, double tol, double snaptol)
-{
-	// evaluate the initial length
-	int NP = path.Points();
-	double L0 = 0;
-	for (int i = 0; i < NP - 1; ++i)
-	{
-		auto& ri = path[i];
-		auto& rp = path[i + 1];
-		L0 += (rp.r - ri.r).Length();
-	}
-
-	// see if we can shrink the path
-	int niter = 0;
-	bool done = false;
-	double Lp = L0;
-	do
-	{
-		for (int i = 1; i < NP - 1; ++i)
-		{
-			// next point
-			auto& pi = path[i];
-
-			// approximate tangent
-			vec3d a = path[i - 1].r;
-			vec3d b = path[i + 1].r;
-			vec3d t = b - a; t.Normalize();
-
-			double L0 = (b - pi.r).norm() + (pi.r - a).norm();
-
-			vec3d ri = (a + b) * 0.5;
-
-			// find the closest point to ri on the ring, defined by the intersection
-			// of the mesh with the plane (ri; t)
-			if (ClosestPointOnRing(mesh, ri, t, a, b, path[i - 1].n, pi))
-			{
-				double L1 = (b - pi.r).norm() + (pi.r - a).norm();
-
-				if (((ri - pi.r) * pi.n > 0.0) || (L1 > L0 * snaptol))
-				{
-					pi.r = ri;
-					pi.nface = -1;
-				}
-			}
-			else pi.nface = -1;
-
-			if (pi.nface != -1)
-			{
-				pi.mat = mesh.Face(pi.nface).mat;
-			}
-			else pi.mat = -1;
-		}
-
-		// calculate new length
-		double L1 = 0;
-		for (int i = 0; i < NP - 1; ++i)
-		{
-			auto& ri = path[i];
-			auto& rp = path[i + 1];
-			L1 += (rp.r - ri.r).Length();
-		}
-
-		done = (fabs((L1 - Lp) / L0) < tol);
-		Lp = L1;
-		niter++;
-		if (niter > maxIters) break;
-	} 
-	while (!done);
-
-	return done;
-}
-
-void BuildFaceMesh(FaceMesh& faceMesh, Post::FEPostModel& fem, Post::FEPostMesh& mesh, int ntime, double R, vec3d r0, vec3d r1, int partID[2])
+void BuildFaceMesh(FSTriMesh& faceMesh, Post::FEPostModel& fem, Post::FEPostMesh& mesh, int ntime, double R, vec3d r0, vec3d r1, int partID[2])
 {
 	vec3d t = r1 - r0; t.Normalize();
 
@@ -993,14 +755,14 @@ void BuildFaceMesh(FaceMesh& faceMesh, Post::FEPostModel& fem, Post::FEPostMesh&
 		}
 	}
 
-	faceMesh.m_Face.resize(faces);
+	faceMesh.Create(faces);
 	int n = 0;
 	for (int i = 0; i < NF; ++i)
 	{
 		FSFace& fs = mesh.Face(i);
 		if (Ftag[i] == 1)
 		{
-			FaceMesh::FACE& fd = faceMesh.Face(n++);
+			FSTriMesh::FACE& fd = faceMesh.Face(n++);
 			int ne = 3; // edges!
 			for (int j = 0; j < ne; ++j)
 			{
@@ -1010,7 +772,7 @@ void BuildFaceMesh(FaceMesh& faceMesh, Post::FEPostModel& fem, Post::FEPostMesh&
 			if (fs.m_elem[0].eid >= 0)
 			{
 				FSElement& el = mesh.Element(fs.m_elem[0].eid);
-				fd.mat = el.m_MatID;
+				fd.tag = el.m_MatID;
 			}
 
 			vec3d e1 = fd.r[1] - fd.r[0];
@@ -1039,17 +801,17 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 	// determines which faces will be included. 
 	// (if search radius == 0, all faces will be included)
 	double R = GetFloatValue(SEARCH_RADIUS);
-	FaceMesh faceMesh;
+	FSTriMesh faceMesh;
 	BuildFaceMesh(faceMesh, fem, mesh, ntime, R, r0, r1, m_part);
 
 	// let's get to work!
+	vector<vec3d> pt;
 	if (reset)
 	{
 		if ((ntime == 0) && (m_initPath == nullptr))
 		{
 			// create initial (straight) path
 			const int STEPS = GetIntValue(SUBDIVISIONS);
-			vector<vec3d> pt;
 			pt.push_back(r0);
 			for (int i = 1; i < STEPS; ++i)
 			{
@@ -1058,34 +820,15 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 				pt.push_back(ri);
 			}
 			pt.push_back(r1);
-			path->SetPoints(pt);
-
-			// we need to find the face (and normal) of the initial point
-			int nface = faceMesh.FindFace(r0); assert(nface >= 0);
-			if (nface >= 0)
-			{
-				(*path)[0].nface = nface;
-				(*path)[0].n = faceMesh.Face(nface).fn;
-				(*path)[0].mat = faceMesh.Face(nface).mat;
-			}
 		}
 		else if ((ntime == 0) && m_initPath)
 		{
 			// we'll use this path as an initial guess
-			vector<vec3d> prevPt = m_initPath->GetPoints();
-			(*path) = (*m_initPath);
-
-			// we need to find the face (and normal) of the initial point
-			int nface = faceMesh.FindFace(r0); assert(nface >= 0);
-			if (nface >= 0)
-			{
-				(*path)[0].nface = nface;
-				(*path)[0].n = faceMesh.Face(nface).fn;
-			}
+			pt = m_initPath->GetPoints();
 
 			// we do update the first and last point
-			(*path)[0].r = r0;
-			(*path)[path->Points() - 1].r = r1;
+			pt[0] = r0;
+			pt[pt.size() - 1] = r1;
 		}
 		else
 		{
@@ -1094,88 +837,53 @@ bool GLMusclePath::UpdateWrappingPath(PathData* path, int ntime, bool reset)
 			if (prevPath == nullptr) return false;
 
 			// we'll use this path as an initial guess
-			(*path) = (*prevPath);
+			pt = prevPath->GetPoints();
 
 			// we do update the first and last point
-			(*path)[0].r = r0;
-			(*path)[path->Points() - 1].r = r1;
+			pt[0] = r0;
+			pt[pt.size() - 1] = r1;
 		}
 	}
 	else
 	{
 		// use the current path, but do update the first and last point
-		auto& p0 = (*path)[0];
-		p0.r = r0;
-		path->EndPoint().r = r1;
+		pt = path->GetPoints();
+		pt[0] = r0;
+		pt[pt.size()-1] = r1;
 	}
 
+	// get the parameters
+	int maxIters = GetIntValue(MAX_SMOOTH_ITERS);
 	double snaptol = GetFloatValue(SNAP_TOL);
+	double tol = GetFloatValue(SMOOTH_TOL);
 
 	// we don't use the snap tolerance for the initial time
 	if (ntime == 0) snaptol = 100;
 
 	// process the path
-	for (int i = 1; i < path->Points()-1; ++i)
-	{
-		// next point
-		auto& pi = (*path)[i];
+	PathOnMesh geo = ProjectToGeodesic(faceMesh, pt, maxIters, tol, snaptol);
+	assert(geo.Points() == pt.size());
 
-		// approximate tangent
-		vec3d a = (*path)[i - 1].r;
-		vec3d b = (*path)[i + 1].r;
-		vec3d t = b - a; t.Normalize();
-
-		double L0 = (b - pi.r).norm() + (pi.r - a).norm();
-
-		vec3d ri = (a + b) * 0.5;
-
-		if (ClosestPointOnRing(faceMesh, ri, t, a, b, (*path)[i-1].n, pi))
-		{
-			double L1 = (b - pi.r).norm() + (pi.r - a).norm();
-
-			if (((ri - pi.r) * pi.n > 0.0) || (L1 > L0*snaptol))
-			{
-				pi.r = ri;
-				pi.nface = -1;
-				pi.n = vec3d(0, 0, 0);
-			}
-		}
-
-		if (pi.nface != -1)
-		{
-			pi.mat = faceMesh.Face(pi.nface).mat;
-		}
-		else pi.mat = -1;
-	}
-
-	// smoothen the path
-	int maxIters = GetIntValue(MAX_SMOOTH_ITERS);
-	if (maxIters > 0)
-	{
-		double tol = GetFloatValue(SMOOTH_TOL);
-		SmoothenPath(faceMesh, *path, maxIters, tol, snaptol);
-	}
-
-	// straighten the path
-	if (ntime != 0) StraightenPath(*path);
+	// copy the points
+	for (int i = 0; i < geo.Points(); ++i) pt[i] = geo[i].r;
+	path->SetPoints(pt);
 
 	// tag departure point
 	int mat = m_part[1];	// get material at end-point
 
-	// make sure the end point has its mat tag set
-	path->EndPoint().mat = mat;
-
 	// the first point in contact with this material is the departure point
+	int depart = -1;
 	for (int i = 0; i < path->Points(); ++i)
 	{
+		auto& pi = geo[i];
 		PathData::Point& pt = path->m_points[i];
-		if (pt.mat == mat)
+		pt.tag = (pi.nface == -1 ? 0 : 1);
+		if ((depart==-1) && (pi.nface >= 0))
 		{
-			pt.tag = 2;
-			break;
+			if (faceMesh.Face(pi.nface).tag == mat) depart = i;
 		}
-		else pt.tag = (pt.nface == -1 ? 0 : 1);
 	}
+	if (depart != -1) path->m_points[depart].tag = 2;
 
 	// all done
 	return true;
@@ -1201,7 +909,7 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 	double R = GetFloatValue(SEARCH_RADIUS);
 
 	// build the face mesh
-	FaceMesh faceMesh;
+	FSTriMesh faceMesh;
 	BuildFaceMesh(faceMesh, fem, mesh, ntime, R, r0, r1, m_part);
 
 	if (reset && (ntime == 0))
@@ -1223,15 +931,6 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 		PathData& initPath = *m_initPath;
 		initPath.SetPoints(points);
 
-		// we need to find the face (and normal) of the initial point
-		auto& startPoint = initPath[0];
-		int nface = faceMesh.FindFace(r0); assert(nface >= 0);
-		if (nface >= 0)
-		{
-			startPoint.nface = nface;
-			startPoint.n = faceMesh.Face(nface).fn;
-		}
-
 		// do the rest of the points
 		for (int i = 1; i < STEPS; ++i)
 		{
@@ -1250,15 +949,8 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 		path->SetPoints(m_initPath->GetPoints());
 
 	// we do update the first and last point
-	// we need to find the face (and normal) of the initial point
-	int nface = (*m_initPath)[0].nface;
 	auto& startPoint = (*path)[0];
 	startPoint.r = r0;
-	if (nface >= 0)
-	{
-		startPoint.nface = nface;
-		startPoint.n = faceMesh.Face(nface).fn;
-	}
 	path->EndPoint().r = r1;
 
 	// project other points
@@ -1274,23 +966,6 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 			m_guideMesh.FaceNodePosition(f, r);
 			vec3d q = f.eval(r, p0.q.x(), p0.q.y());
 			p1.r = q;
-		}
-	}
-
-	// tag departure point
-	int mat = m_part[1];	// get material at end-point
-
-	// make sure the end point has its mat tag set
-	path->EndPoint().mat = mat;
-
-	// the first point in contact with this material is the departure point
-	for (int i = 0; i < path->Points(); ++i)
-	{
-		PathData::Point& pt = path->m_points[i];
-		if (pt.mat == mat)
-		{
-			pt.tag = 2;
-			break;
 		}
 	}
 
