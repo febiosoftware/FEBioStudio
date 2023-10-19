@@ -182,5 +182,6 @@
         <file>icons/musclepath.png</file>
         <file>icons/brush.png</file>
         <file>icons/pixelInspector.png</file>
+        <file>icons/geodesic.png</file>
 	</qresource>
 </RCC>
