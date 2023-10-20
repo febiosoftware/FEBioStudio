@@ -26,6 +26,9 @@ SOFTWARE.*/
 #pragma once
 #include "CreatePanel.h"
 
+class QLineEdit;
+class QSpinBox;
+
 //=============================================================================
 class CCreateGeodesicCurvePane : public CCreatePane
 {
@@ -50,13 +53,13 @@ private:
 	void BuildGeodesic();
 
 protected slots:
-	void on_getNode_clicked();
-	void on_newCurve_clicked();
+	void on_divs_editingFinished();
 
 private:
 	GObject* m_tmp;	// temp object
 	vec3d	m_r[2];
 
-	QLineEdit* m_in[2];
+	QLineEdit*	m_in[2];
+	QSpinBox*	m_div;
 	int	m_input;
 };

@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QCheckBox>
 #include <QValidator>
+#include <QSpinBox>
 #include <GeomLib/GCurveMeshObject.h>
 #include <MeshLib/FECurveMesh.h>
 #include "GLHighlighter.h"
@@ -51,6 +52,9 @@ CCreateGeodesicCurvePane::CCreateGeodesicCurvePane(CCreatePanel* parent) : CCrea
 	QFormLayout* form = new QFormLayout;
 	form->addRow("Point 1: ", m_in[0] = new QLineEdit);
 	form->addRow("Point 2: ", m_in[1] = new QLineEdit);
+	form->addRow("Divisions: ", m_div = new QSpinBox);
+	m_div->setRange(1, 100);
+	m_div->setValue(25); m_div->setObjectName("divs");
 
 	QVBoxLayout* l = new QVBoxLayout;
 	l->setContentsMargins(0, 0, 0, 0);
@@ -73,20 +77,18 @@ void CCreateGeodesicCurvePane::hideEvent(QHideEvent* ev)
 	}
 }
 
-void CCreateGeodesicCurvePane::on_newCurve_clicked()
+void CCreateGeodesicCurvePane::on_divs_editingFinished()
 {
-	GLHighlighter::PickActiveItem();
-}
-
-void CCreateGeodesicCurvePane::on_getNode_clicked()
-{
+	if (m_tmp) BuildGeodesic();
 }
 
 void CCreateGeodesicCurvePane::setInput(const vec3d& r)
 {
 	if (m_input == 0)
 	{
-		if (m_tmp) m_tmp->Clear();
+		m_parent->SetTempObject(nullptr);
+		GLHighlighter::ClearHighlights();
+		if (m_tmp) { delete m_tmp; m_tmp = nullptr; }
 		m_r[0] = r;
 		m_in[0]->setText(Vec3dToString(r));
 		m_input = 1;
@@ -153,6 +155,7 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 	GLHighlighter::ClearHighlights();
 	m_parent->SetTempObject(nullptr);
 	if (m_tmp) delete m_tmp;
+	m_tmp = nullptr;
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(m_parent->GetDocument());
 	if (doc == nullptr) return;
@@ -198,7 +201,8 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 	}
 
 	// create initial (straight) path
-	const int STEPS = 25;
+	int STEPS = m_div->value();
+	if (STEPS < 1) STEPS = 1;
 	std::vector<vec3d> pt;
 	pt.push_back(r0);
 	for (int i = 1; i < STEPS; ++i)
@@ -221,6 +225,7 @@ void CCreateGeodesicCurvePane::BuildGeodesic()
 		if (i > 0)
 		{
 			FSEdge& e = pc->Edge(i - 1);
+			e.SetType(FE_EDGE2);
 			e.n[0] = i - 1;
 			e.n[1] = i;
 			e.m_gid = 0;
