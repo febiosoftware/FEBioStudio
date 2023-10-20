@@ -42,6 +42,8 @@ public:
 
 	void setDivisions(int n) { m_ndivs = n; }
 
+	void setSmooth(bool b) { m_bsmooth = b; }
+
 	FSSurfaceMesh* Apply(vector<FECurveMesh*> curve);
 
 private:
@@ -51,4 +53,5 @@ private:
 private:
 	int m_elem;
 	int	m_ndivs;
+	bool m_bsmooth;
 };
