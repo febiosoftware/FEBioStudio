@@ -32,7 +32,7 @@ void FSTriMesh::Create(size_t faces)
 	m_Face.resize(faces);
 }
 
-size_t FSTriMesh::FindFace(const vec3d p) const
+size_t FSTriMesh::FindFace(const vec3d p, double maxD) const
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
@@ -49,7 +49,7 @@ size_t FSTriMesh::FindFace(const vec3d p) const
 		for (int j = 0; j < 3; ++j)
 		{
 			double dj = (p - r[j]).SqrLength();
-			if (dj < Dmin)
+			if ((dj < Dmin) && ((maxD <= 0) || (dj < maxD)))
 			{
 				rmin = r[j];
 				Dmin = dj;
@@ -67,7 +67,7 @@ size_t FSTriMesh::FindFace(const vec3d p) const
 		if (bproject)
 		{
 			double dj = (p - q).SqrLength();
-			if (dj < Dmin)
+			if ((dj < Dmin) && ((maxD <= 0) || (dj < maxD)))
 			{
 				rmin = q;
 				Dmin = dj;

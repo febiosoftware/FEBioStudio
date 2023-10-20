@@ -969,6 +969,25 @@ bool GLMusclePath::UpdateGuidedPath(PathData* path, int ntime, bool reset)
 		}
 	}
 
+	// project all points onto the faceMesh
+	// we need to do this to find out which points 
+	// are in contact with which part
+	// the first point in contact with this material is the departure point
+	double D = 1.5*GetFloatValue(PATH_RADIUS);
+	int mat = m_part[1];
+	int depart = -1;
+	for (int i = 0; i < path->Points(); ++i)
+	{
+		PathData::Point& pt = path->m_points[i];
+		int nface = faceMesh.FindFace(pt.r, D);
+		pt.tag = (nface == -1 ? 0 : 1);
+		if ((depart == -1) && (nface >= 0))
+		{
+			if (faceMesh.Face(nface).tag == mat) depart = i;
+		}
+	}
+	if (depart != -1) path->m_points[depart].tag = 2;
+
 	// all done
 	return true;
 }

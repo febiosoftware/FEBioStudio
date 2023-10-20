@@ -46,7 +46,7 @@ public:
 	const FACE& Face(size_t n) const { return m_Face[n]; }
 
 	// finds the (first) face that has the point r
-	size_t FindFace(const vec3d r) const;
+	size_t FindFace(const vec3d r, double maxD = 0) const;
 
 private:
 	std::vector<FACE>	m_Face;
