@@ -981,9 +981,12 @@ void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)
 			pi->MapParams(*pci);
 
 			// assign it to the correct step
-			FSStep* step = fem.GetStep(pci->GetStep());
-			pi->SetStep(step->GetID());
-			step->ReplaceInterface(pci, pi);
+			FSStep* step = fem.FindStep(pci->GetStep()); assert(step);
+			if (step)
+			{
+				pi->SetStep(step->GetID());
+				step->ReplaceInterface(pci, pi);
+			}
 			UpdateModel(pi);
 		}
 	}
