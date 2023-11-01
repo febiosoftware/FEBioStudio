@@ -616,6 +616,7 @@ public:
 		QAction* actionFEBioTangent  = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 		QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
 		QAction* actionFEBioPlugins = addAction("Manage FEBio plugins ...", "actionFEBioPlugins");
+		QAction* actionCreatePlugin = addAction("Create FEBio plugin ...", "actionCreatePlugin");
 		actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
 #ifdef _DEBUG
@@ -959,6 +960,7 @@ public:
 		menuFEBio->addAction(actionFEBioTangent);
 		menuFEBio->addAction(actionFEBioInfo);
 		menuFEBio->addAction(actionFEBioPlugins);
+		menuFEBio->addAction(actionCreatePlugin);
 
 		// Post menu
 		menuBar->addAction(menuPost->menuAction());
