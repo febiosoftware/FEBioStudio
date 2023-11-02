@@ -136,12 +136,14 @@ const char* szsrc = \
 "}\n\n" \
 "mat3ds $(PLUGIN_NAME)::Stress(FEMaterialPoint& mp)\n" \
 "{\n" \
+"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
 "	// TODO: implement stress\n" \
 "	mat3ds s;\n" \
 "	return s;\n" \
 "}\n\n" \
 "tens4ds $(PLUGIN_NAME)::Tangent(FEMaterialPoint& mp)\n" \
 "{\n" \
+"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
 "	// TODO: implement tangent\n" \
 "	tens4ds c;\n" \
 "	return c;\n" \
