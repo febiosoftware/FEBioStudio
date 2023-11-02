@@ -1974,6 +1974,8 @@ void CMainWindow::writeSettings()
 	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
 	settings.setValue("loadFEBioConfigFile", ui->m_loadFEBioConfigFile);
 	settings.setValue("febioConfigFileName", ui->m_febioConfigFileName);
+	settings.setValue("FEBioSDKInclude", ui->m_FEBioSDKInc);
+	settings.setValue("FEBioSDKLibrary", ui->m_FEBioSDKLib);
 	QRect rt;
 	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
 	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
@@ -2103,6 +2105,8 @@ void CMainWindow::readSettings()
 
 	ui->m_loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
 	ui->m_febioConfigFileName = settings.value("febioConfigFileName", ui->m_febioConfigFileName).toString();
+	ui->m_FEBioSDKInc = settings.value("FEBioSDKInclude", "").toString();
+	ui->m_FEBioSDKLib = settings.value("FEBioSDKLibrary", "").toString();
 
 	if (vs.m_defaultFGColorOption != 0)
 	{
@@ -3727,3 +3731,9 @@ void CMainWindow::on_selectionChanged()
 {
 	ReportSelection();
 }
+
+QString CMainWindow::GetSDKIncludePath() const { return ui->m_FEBioSDKInc; }
+QString CMainWindow::GetSDKLibraryPath() const { return ui->m_FEBioSDKLib; }
+
+void CMainWindow::SetSDKIncludePath(const QString& s) { ui->m_FEBioSDKInc = s; }
+void CMainWindow::SetSDKLibraryPath(const QString& s) { ui->m_FEBioSDKLib = s; }

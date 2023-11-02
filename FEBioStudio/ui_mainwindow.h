@@ -350,6 +350,9 @@ public:
 	bool		m_loadFEBioConfigFile;
 	QString		m_febioConfigFileName;
 
+	QString m_FEBioSDKInc;
+	QString m_FEBioSDKLib;
+
 	bool	m_isAnimating;
 
 	QList<::CGraphWindow*>	graphList;

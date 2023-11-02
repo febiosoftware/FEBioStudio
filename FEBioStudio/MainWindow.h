@@ -287,6 +287,13 @@ public:
 	// the selection was transformed (i.e. translated, rotated, or scaled)
 	void OnSelectionTransformed();
 
+public:
+	QString GetSDKIncludePath() const;
+	void SetSDKIncludePath(const QString& s);
+
+	QString GetSDKLibraryPath() const;
+	void SetSDKLibraryPath(const QString& s);
+
 private:
 	void writeSettings();
 	void readSettings();

@@ -29,6 +29,13 @@ SOFTWARE.*/
 class CMainWindow;
 class CDlgCreatePluginUI;
 
+struct PluginConfig
+{
+	QString name;
+	QString path;
+	QString module;
+};
+
 class CDlgCreatePlugin : public QDialog
 {
 	Q_OBJECT
@@ -37,6 +44,9 @@ public:
 	CDlgCreatePlugin(CMainWindow* parent);
 
 	void accept() override;
+
+private:
+	bool GeneratePlugin(const PluginConfig& config);
 
 private:
 	CDlgCreatePluginUI* ui;

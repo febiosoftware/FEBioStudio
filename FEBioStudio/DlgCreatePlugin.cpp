@@ -51,6 +51,7 @@ public:
 	QComboBox* m_mod;  // FEBio module
 	QLineEdit* m_name; // name of plugin
 	CResourceEdit* m_path; // path to plugin code
+	CMainWindow* m_wnd;
 
 public:
 	void setup(QDialog* dlg)
@@ -89,6 +90,7 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QDialog(parent), ui(ne
 {
 	setWindowTitle("Create FEBio Plugin");
 	setMinimumSize(QSize(600, 300));
+	ui->m_wnd = parent;
 	ui->setup(this);
 }
 
@@ -145,27 +147,18 @@ const char* szsrc = \
 "	return c;\n" \
 "}\n";
 
-// NOTE: This script assumes that the output directory is set to "build"
-//       (see set_property below)
 const char* szcmake = \
-"cmake_minimum_required(VERSION 3.1.0)\n\n" \
+"cmake_minimum_required(VERSION 3.5.0)\n\n" \
 "set(CMAKE_CXX_STANDARD 11)\n" \
 "set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n" \
 "project($(PLUGIN_NAME))\n\n"\
 "add_definitions(-DWIN32 -DFECORE_DLL /wd4251)\n\n"\
-"include_directories(\"C:/Users/Steve/source/repos/FEBio\")\n\n"\
-"link_directories(\"C:/Users/Steve/source/repos/FEBio/cmbuild22/lib/$<CONFIG>\")\n\n"\
+"include_directories(\"$(PLUGIN_SDK_INCLUDE)\")\n\n"\
+"link_directories(\"$(PLUGIN_SDK_LIBS)/$<CONFIG>\")\n\n"\
 "add_library($(PLUGIN_NAME) SHARED $(PLUGIN_NAME).h $(PLUGIN_NAME).cpp main.cpp)\n\n"\
 "target_link_libraries($(PLUGIN_NAME) fecore.lib febiomech.lib)\n\n"\
-"set_property(DIRECTORY build PROPERTY VS_STARTUP_PROJECT $(PLUGIN_NAME))\n\n"\
+"set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT $(PLUGIN_NAME))\n\n"\
 "";
-
-struct PluginConfig
-{
-	QString name;
-	QString path;
-	QString module;
-};
 
 bool GenerateFile(const QString& fileName, const QString& content)
 {
@@ -177,7 +170,7 @@ bool GenerateFile(const QString& fileName, const QString& content)
 	return true;
 }
 
-bool GeneratePlugin(const PluginConfig& config)
+bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 {
 	// create the header file
 	QString header = config.path + "\\" + config.name + ".h";
@@ -195,9 +188,15 @@ bool GeneratePlugin(const PluginConfig& config)
 	mainText = mainText.replace("$(PLUGIN_MODULE)", config.module);
 	if (!GenerateFile(main, mainText)) return false;
 
+	// get the SDK paths
+	QString SDKInclude = ui->m_wnd->GetSDKIncludePath();
+	QString SDKLibs    = ui->m_wnd->GetSDKLibraryPath();
+
 	// create the CMake file
 	QString cmake = config.path + "\\CMakeLists.txt";
 	QString cmakeText = QString(szcmake).replace("$(PLUGIN_NAME)", config.name);
+	cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInclude);
+	cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLibs);
 	if (!GenerateFile(cmake, cmakeText)) return false;
 
 	return true;
