@@ -54,6 +54,8 @@ public:
 	QLineEdit*		m_val;
 	QCheckBox*		m_matAxes;
 	QCheckBox*		m_cross;
+	QLineEdit*		m_otPlane;
+	QLineEdit*		m_inPlane;
 
 	QComboBox*	m_matList;
 
@@ -88,11 +90,16 @@ public:
 		f->addRow("Material:", m_matList = new QComboBox);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
-		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
+		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.8));
 		f->addRow("Generate mat axes:", m_matAxes = new QCheckBox);
 		f->addRow("Generate cross product:", m_cross = new QCheckBox);
 		f->addRow("Normal vector:", m_normal = new QLineEdit);
+		f->addRow("Out-plane rotation (deg):", m_otPlane = new QLineEdit()); m_otPlane->setValidator(new QDoubleValidator());
+		f->addRow("In-plane rotation (deg):", m_inPlane = new QLineEdit()); m_inPlane->setValidator(new QDoubleValidator());
 		m_normal->setText(Vec3dToString(vec3d(0, 0, 1)));
+
+		m_otPlane->setText(QString::number(0));
+		m_inPlane->setText(QString::number(0));
 
 		m_maxIters->setValidator(new QIntValidator());
 		m_tol->setValidator(new QDoubleValidator());
@@ -339,6 +346,29 @@ void CFiberGeneratorTool::OnApply()
 			grad[i] = b;
 		}
 	}
+
+	// do plane rotations
+	double outAngle = ui->m_otPlane->text().toDouble();
+	if (outAngle != 0)
+	{
+		for (int i = 0; i < grad.size(); ++i)
+		{
+			vec3d a = grad[i] ^ N;
+			quatd q(outAngle * PI / 180.0, a);
+			q.RotateVector(grad[i]);
+		}
+	}
+
+	double inAngle  = ui->m_inPlane->text().toDouble();
+	if (inAngle != 0)
+	{
+		quatd q(inAngle* PI / 180.0, N);
+		for (int i = 0; i < grad.size(); ++i)
+		{
+			q.RotateVector(grad[i]);
+		}
+	}
+
 
 	bool matAxes = ui->m_matAxes->isChecked();
 	if (matAxes == false)
