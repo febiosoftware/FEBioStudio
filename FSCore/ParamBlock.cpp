@@ -1366,7 +1366,7 @@ void ParamContainer::CopyParams(const ParamContainer& pc)
 
 void ParamContainer::MapParams(const ParamContainer& pc)
 {
-	for (int i = 0; i < Parameters(); ++i)
+	for (int i = 0; i < pc.Parameters(); ++i)
 	{
 		const Param& pi = pc.GetParam(i);
 		Param* p = GetParam(pi.GetShortName());
