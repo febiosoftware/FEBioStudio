@@ -242,6 +242,9 @@ public:
 	int GetDivisions();
 	void SetDivisions(int n);
 
+	bool SmoothTexture() const;
+	void SetSmoothTexture(bool b);
+
 	float LineThickness() const { return m_lineWidth; }
 	void SetLineThickness(float f) { m_lineWidth = f; }
 

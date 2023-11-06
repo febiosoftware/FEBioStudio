@@ -240,7 +240,7 @@ void GModel::Imp::ValidateNames(GObject* po)
 			while (it.isValid())
 			{
 				GPart* pgi = it;
-				if (pgi->GetName() == newName)
+				if (pgi && (pgi->GetName() == newName))
 				{
 					bok = false;
 					stringstream ss;

@@ -23,35 +23,31 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
+#include <FSCore/math3d.h>
 #include <vector>
-//using namespace std;
 
-using std::vector;
-
-class FSSurfaceMesh;
-class FECurveMesh;
-
-class FELoftMesher
+class FSTriMesh
 {
 public:
-	FELoftMesher();
+	struct FACE
+	{
+		vec3d	r[3];
+		vec3d	fn;
+		int		tag;
+	};
 
-	void setElementType(int elem) { m_elem = elem; }
+public:
+	void Create(size_t faces);
 
-	void setDivisions(int n) { m_ndivs = n; }
+	size_t Faces() const { return m_Face.size(); }
 
-	void setSmooth(bool b) { m_bsmooth = b; }
+	FACE& Face(size_t n) { return m_Face[n]; }
+	const FACE& Face(size_t n) const { return m_Face[n]; }
 
-	FSSurfaceMesh* Apply(vector<FECurveMesh*> curve);
+	// finds the (first) face that has the point r
+	size_t FindFace(const vec3d r, double maxD = 0) const;
 
 private:
-	FSSurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
-	FSSurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
-
-private:
-	int m_elem;
-	int	m_ndivs;
-	bool m_bsmooth;
+	std::vector<FACE>	m_Face;
 };

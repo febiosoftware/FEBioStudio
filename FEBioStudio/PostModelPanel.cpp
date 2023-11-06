@@ -76,6 +76,7 @@ SOFTWARE.*/
 #include "Commands.h"
 #include <ImageLib/ImageModel.h>
 #include <QFileDialog>
+#include "DlgImportData.h"
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -1729,11 +1730,30 @@ void CPostModelPanel::OnImportCurveProbePoints()
 	QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Import data", "", "All files (*)");
 	if (filename.isEmpty() == false)
 	{
-		string sfile = filename.toStdString();
-		if (po->ImportPoints(sfile) == false)
+		QFile file(filename);
+		if (file.open(QFile::ReadOnly | QFile::Text))
 		{
-			QMessageBox::critical(this, "Import Data", "Failed importing points");
+			QTextStream txt(&file);
+			QString data = txt.readAll();
+
+			CDlgImportData dlg(data, DataType::DOUBLE, 3);
+			if (dlg.exec())
+			{
+				QList<QList<double> > val = dlg.GetDoubleValues();
+				std::vector<vec3d> points;
+				for (QList<double>& row : val)
+				{
+					vector<double> d;
+					for (double di : row) d.push_back(di);
+					assert(d.size() == 3);
+					vec3d p(d[0], d[1], d[2]);
+					points.push_back(p);
+				}
+
+				po->SetPoints(points);
+			}
 		}
+		else QMessageBox::critical(this, "Import data", "Failed importing points");
 
 		Update(true);
 		selectObject(po);
@@ -1836,14 +1856,12 @@ void CPostModelPanel::OnCurveProbePlotData()
 	if (po)
 	{
 		int N = po->Points();
-		vector<double> xpoints(N, 0.0);
+		vector<double> xpoints = po->SectionLenghts(false);
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for
 		for (int i = 0; i < N; ++i)
 		{
-			vec2d p = po->GetPointValue(i);
-			xpoints[i] = p.x();
-			ypoints[i] = p.y();
+			ypoints[i] = po->GetPointValue(i);
 		}
 
 		CPlotData* data = new CPlotData;
@@ -1880,21 +1898,17 @@ void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
 		TIMESETTINGS& time = doc->GetTimeSettings();
 
 		int N = po->Points();
-		vector<double> xpoints(N, 0.0);
+		vector<double> xpoints = po->SectionLenghts(false);
 		vector<double> ypoints(N, 0.0);
 #pragma omp parallel for
 		for (int i = 0; i < N; ++i)
 		{
-			double x = 0.0, y = 0.0;
+			double y = 0.0;
 			for (int n = time.m_start; n <= time.m_end; n++)
 			{
-				vec2d p = po->GetPointValue(i);
-				x += p.x();
-				y += p.y();
+				y += po->GetPointValue(i, n);
 			}
-			x /= (time.m_end - time.m_start + 1);
 			y /= (time.m_end - time.m_start + 1);
-			xpoints[i] = x;
 			ypoints[i] = y;
 		}
 

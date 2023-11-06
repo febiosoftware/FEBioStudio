@@ -2949,6 +2949,15 @@ void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm)
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFace(const FSFace& face, FSMeshBase* pm)
 {
+	if (m_bShell2Solid)
+	{
+		FSCoreMesh* pcm = dynamic_cast<FSCoreMesh*>(pm);
+		if (pcm) {
+			RenderThickShell(face, pcm);
+			return;
+		}
+	}
+
 	switch (face.Type())
 	{
 	case FE_FACE_TRI3 : ::RenderTRI3 (pm, face); break;
@@ -2964,7 +2973,7 @@ void GLMeshRender::RenderFEFace(const FSFace& face, FSMeshBase* pm)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void GLMeshRender::RenderThickShell(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickShell(const FSFace &face, FSCoreMesh* pm)
 {
 	switch (face.m_type)
 	{
@@ -2982,7 +2991,7 @@ void GLMeshRender::RenderThickShell(FSFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickQuad(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickQuad(const FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
@@ -3068,7 +3077,7 @@ void GLMeshRender::RenderThickQuad(FSFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickTri(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickTri(const FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;

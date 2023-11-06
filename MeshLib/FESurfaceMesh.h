@@ -44,6 +44,8 @@ public:
 	FSSurfaceMesh(TriMesh& triMesh);
 	virtual ~FSSurfaceMesh();
 
+	void Clear();
+
 	FSSurfaceMesh& operator = (const FSSurfaceMesh& mesh);
 
 public:

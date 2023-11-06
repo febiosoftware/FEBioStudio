@@ -135,9 +135,9 @@ public:
 
 private:
 	// special render routines for thick shells
-	void RenderThickShell(FSFace& face, FSCoreMesh* pm);
-	void RenderThickQuad(FSFace& face, FSCoreMesh* pm);
-	void RenderThickTri(FSFace& face, FSCoreMesh* pm);
+	void RenderThickShell(const FSFace& face, FSCoreMesh* pm);
+	void RenderThickQuad(const FSFace& face, FSCoreMesh* pm);
+	void RenderThickTri(const FSFace& face, FSCoreMesh* pm);
 	void RenderThickShellOutline(FSFace& face, FSCoreMesh* pm);
 
 public:

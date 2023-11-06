@@ -510,9 +510,28 @@ void CMainWindow::on_actionFind_triggered()
 			}
 			else
 			{
-				// make zero-based
+				// convert node IDs to indices
 				items = dlg.m_item;
-				for (int i = 0; i < items.size(); ++i) items[i] -= 1;
+				if (nitem == ITEM_NODE)
+				{
+					for (int i = 0; i < items.size(); ++i)
+					{
+						int n = pm->NodeIndexFromID(items[i]); assert(n >= 0);
+						if ((n >= 0) && (n < pm->Nodes())) items[i] = n;
+					}
+				}
+				else if (nitem == ITEM_ELEM)
+				{
+					for (int i = 0; i < items.size(); ++i)
+					{
+						int n = pm->ElementIndexFromID(items[i]); assert(n >= 0);
+						if ((n >= 0) && (n < pm->Elements())) items[i] = n;
+					}
+				}
+				else
+				{
+					for (int i = 0; i < items.size(); ++i) items[i] = items[i] - 1;
+				}
 			}
 		}
 		else if (dlg.m_method == 1)

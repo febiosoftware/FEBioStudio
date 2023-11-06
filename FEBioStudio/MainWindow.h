@@ -330,6 +330,8 @@ private:
 
 	bool ImportImage(CImageModel* imgModel);
 
+	QString CurrentWorkingDirectory();
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
