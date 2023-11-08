@@ -54,6 +54,7 @@ SOFTWARE.*/
 #include <MeshIO/VTKExport.h>
 #include <MeshIO/VTUImport.h>
 #include <MeshIO/PLYExport.h>
+#include <MeshIO/GMshExport.h>
 #include <GeomLib/GPrimitive.h>
 #include <FEBio/FEBioImport.h>
 #include <Abaqus/AbaqusImport.h>
@@ -791,6 +792,7 @@ void CMainWindow::ExportGeometry()
 	filters << "Mesh files (*.mesh)";
 	filters << "TetGen files (*.ele)";
 	filters << "VTK files (*.vtk)";
+	filters << "GMesh files (*.msh)";
 
 	// default extensions
 	const char* szext[] = {
@@ -803,7 +805,8 @@ void CMainWindow::ExportGeometry()
 		".txt",
 		".mesh",
 		".ele",
-		".vtk"
+		".vtk",
+		".msh"
 	};
 
 	// file name
@@ -925,6 +928,13 @@ void CMainWindow::ExportGeometry()
 				if (!writer.Write(szfile))
 					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save project to vtk file."));
 			}
+		}
+		break;
+		case 10:
+		{
+			GMeshExport writer(fem);
+			if (!writer.Write(szfile))
+				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to GMesh file."));
 		}
 		break;
 		default:

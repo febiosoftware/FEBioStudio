@@ -341,6 +341,7 @@ bool FEBioExport::PrepareExport(FSProject& prj)
 			FSNode& node = pm->Node(j);
 			if ((node.m_nid == -1) || (node.m_nid < nextID)) node.m_nid = nextID++;
 			else if (node.m_nid > nextID) nextID = node.m_nid + 1;
+			else nextID = node.m_nid + 1;
 		}
 		pm->BuildNLT();
 	}

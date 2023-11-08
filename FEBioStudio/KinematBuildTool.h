@@ -23,61 +23,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <list>
-#include <vector>
-#include <FSCore/math3d.h>
+#include "Tool.h"
 
-namespace Post {
-	class FEPostModel;
-}
-
-//-----------------------------------------------------------------------------
-//! This class implements a tool to apply kinematics data to a model
-class FEKinemat
+class CKinematBuildTool : public CBasicTool
 {
 public:
-	struct KINE
-	{
-		double m[16];
+	CKinematBuildTool(CMainWindow* w);
 
-		vec3d translate();
-		mat3d rotate();
+	bool OnApply() override;
 
-		vec3d apply(const vec3d& r);
-	};
-
-	class STATE
-	{
-	public:
-		std::vector<KINE>	D;
-
-	public:
-		STATE(){}
-		STATE(const STATE& s) { D = s.D; }
-		STATE& operator = (const STATE& s) { D = s.D; return (*this); }
-	};
-
-public:
-	FEKinemat();
-
-	bool Apply(Post::FEPostModel* fem, const char* szkine);
-	void SetRange(int n0, int n1, int ni);
-
-	int States() const;
-
-	STATE& GetState(int i) { return m_State[i]; }
-
-	bool IsKineValid() const;
-
-	bool ReadKine(const char* szkine);
-
-protected:
-	bool BuildStates(Post::FEPostModel* glm);
-
-protected:
-	int	m_n0, m_n1, m_ni;
-	std::vector<STATE>	m_State;
-	bool	m_isKineValid;
+private:
+	QString	m_modelFile;
+	QString	m_kineFile;
+	bool	m_btransformFirstState;
 };
