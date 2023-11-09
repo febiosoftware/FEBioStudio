@@ -549,15 +549,14 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
     crossExecProcess(NULL)
 
     if(SUCCESS EQUAL 0)
-        # Get branch name and check if we're on the develop branch
+        # Get branch name and check if we're on the master branch
         set(CMD git rev-parse --abbrev-ref HEAD)
         crossExecProcess(BRANCH_NAME)
 
-        string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
-        string(COMPARE EQUAL ${BRANCH_NAME} "febiostudio2"  ISFEBIO4)
+        string(COMPARE EQUAL ${BRANCH_NAME} "master" ISMASTER)
         
         # Get the commit info and set the DEVCOMMIT macro
-        if(SUCCESS EQUAL 0 AND (ISDEVELOP OR ISFEBIO4))
+        if(SUCCESS EQUAL 0 AND NOT ISMASTER)
             
             set(CMD git rev-parse --short=9 HEAD)
             crossExecProcess(DEVCOMMIT)
