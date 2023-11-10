@@ -166,15 +166,14 @@ void FSMesh::ClearMeshData()
 }
 
 //-----------------------------------------------------------------------------
-// Allocate storage for the mesh data. If bclear is true (default = true) all 
-// existing groups are deleted.
+// Allocate storage for the mesh data. Also clears mesh data!
 void FSMesh::Create(int nodes, int elems, int faces, int edges)
 {
 	// allocate storage
-	if (nodes > 0) { if (nodes) ResizeNodes(nodes); else m_Node.clear(); }
-	if (elems > 0) { if (elems) ResizeElems(elems); else m_Elem.clear(); }
-	if (faces > 0) { if (faces) m_Face.resize(faces); else m_Face.clear(); }
-	if (edges > 0) { if (edges) m_Edge.resize(edges); else m_Edge.clear(); }
+	if (nodes > 0) { if (nodes != m_Node.size()) ResizeNodes(nodes); }
+	if (elems > 0) { if (elems != m_Elem.size()) ResizeElems(elems); }
+	if (faces > 0) { if (faces != m_Face.size()) m_Face.resize(faces); }
+	if (edges > 0) { if (edges != m_Edge.size()) m_Edge.resize(edges); }
 
 	// clear mesh data
 	ClearMeshData();
