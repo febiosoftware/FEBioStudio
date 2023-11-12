@@ -1,6 +1,6 @@
-on:
-  push:
-    branches: [ ci/* ]
+#on:
+#  push:
+#    branches: [ ci/* ]
 jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@reusable-worfklow-macos
