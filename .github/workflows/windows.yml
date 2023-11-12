@@ -12,7 +12,7 @@ jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable.yml@reusable-worfklow-windows
     with:
-      aws-ami-id: ami-03ec355dfb8dfb48a
+      aws-ami-id: ami-0a29d4b08307a935f
       aws-sg-id: sg-0ca7912782cf1538b
       aws-instance-type: c5a.8xlarge
       runTests: false
