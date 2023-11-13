@@ -7,13 +7,14 @@ set FFMPEG_INC="%DEPENDENCIES%\FFmpeg\include"
 set QT_ROOT="%DEPENDENCIES%\qt\6.4.1"
 set OCCT_PATH="%DEPENDENCIES%\opencascade"
 set GLEW_DIR="%DEPENDENCIES%\lib"
+set FEBIO_SDK="febio4-sdk"
 set /a "PROC=%NUMBER_OF_PROCESSORS% - 4"
 cmake -version
 
 REM TODO: Cmake requires 6 runs to generate correctly
 for /l %%a in (1, 1, 6) do (
 cmake -L . -B cmbuild ^
-  -DFEBio_SDK=febio-sdk ^
+  -DFEBio_SDK=%FEBIO_SDK% ^
   -DQt_Root=%QT_ROOT% ^
   -DDEPENDENCIES=%DEPENDENCIES% ^
   -DSSL_LIB_DIR=%LIB_DIR% ^
