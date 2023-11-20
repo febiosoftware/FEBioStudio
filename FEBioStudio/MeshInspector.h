@@ -44,7 +44,7 @@ class CMeshInspector : public QMainWindow
 public:
 	CMeshInspector(CMainWindow* wnd);
 
-	void Update();
+	void Update(bool reset);
 
 	void showEvent(QShowEvent* ev) override;
 	void hideEvent(QHideEvent* ev) override;
@@ -67,5 +67,4 @@ private:
 private:
 	Ui::CMeshInspector*	ui;
 	CMainWindow*	m_wnd;
-	GObject*		m_po;
 };

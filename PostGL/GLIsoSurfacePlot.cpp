@@ -105,21 +105,22 @@ bool CGLIsoSurfacePlot::UpdateData(bool bsave)
 
 	if (bsave)
 	{
-		int oldField = m_nfield;
-		m_nfield = GetIntValue(DATA_FIELD);
-		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
+		bool update = false;
+		if (m_nfield    != GetIntValue  (DATA_FIELD)) { m_nfield    = GetIntValue  (DATA_FIELD); update = true; }
+		if (m_nslices   != GetIntValue  (SLICES    )) { m_nslices   = GetIntValue  (SLICES    ); update = true; }
+		if (m_bsmooth   != GetBoolValue (SMOOTH    )) { m_bsmooth   = GetBoolValue (SMOOTH    ); update = true; }
+		if (m_rangeType != GetIntValue  (RANGE_TYPE)) { m_rangeType = GetIntValue  (RANGE_TYPE); update = true; }
+		if (m_userMax   != GetFloatValue(USER_MAX  )) { m_userMax   = GetFloatValue(USER_MAX  ); update = true; }
+		if (m_userMin   != GetFloatValue(USER_MIN  )) { m_userMin   = GetFloatValue(USER_MIN  ); update = true; }
+		if (m_Col.GetColorMap() != GetIntValue(COLOR_MAP)) { m_Col.SetColorMap(GetIntValue(COLOR_MAP)); update = true; }
+
 		AllowClipping(GetBoolValue(CLIP));
 		m_bcut_hidden = GetBoolValue(HIDDEN);
-		m_nslices = GetIntValue(SLICES);
 		if (GetBoolValue(LEGEND)) bar->show(); else bar->hide();
-		m_bsmooth = GetBoolValue(SMOOTH);
-		m_rangeType = GetIntValue(RANGE_TYPE);
-		m_userMax = GetFloatValue(USER_MAX);
-		m_userMin = GetFloatValue(USER_MIN);
 
 		m_Col.SetDivisions(m_nslices);
 
-		if (oldField != m_nfield) Update();
+		if (update) Update();
 
 		if (m_transparency != GetFloatValue(TRANSPARENCY))
 		{

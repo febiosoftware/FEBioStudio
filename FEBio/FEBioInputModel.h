@@ -292,6 +292,19 @@ public:
 		Part*	m_part;
 	};
 
+	class DomainList
+	{
+	public:
+		DomainList() { m_part = nullptr; }
+		DomainList(const std::string& name, const std::vector<Domain*>& domList) : m_name(name), m_domList(domList) { m_part = nullptr; }
+		void Add(Domain* pg) { m_domList.push_back(pg); }
+
+	public:
+		string	m_name;
+		std::vector<Domain*> m_domList;
+		Part* m_part;
+	};
+
 	class Part
 	{
 	public:
@@ -346,6 +359,12 @@ public:
 		SurfacePair* FindSurfacePair(const std::string& name);
 
 	public:
+		void AddDomainList(DomainList s) { s.m_part = this; m_domlist.push_back(s); }
+		size_t DomainLists() { return m_domlist.size(); }
+		DomainList& GetDomainList(int i) { return m_domlist[i]; }
+		DomainList* FindDomainList(const std::string& name);
+
+	public:
 		FSMesh* GetFEMesh() { return m_mesh.GetFEMesh(); }
 
 		FEBioMesh& GetFEBioMesh() { return m_mesh; }
@@ -364,6 +383,7 @@ public:
 		std::vector<Domain>			m_dom;
 		std::vector<DiscreteSet>	m_des;
 		std::vector<SurfacePair>	m_spr;
+		std::vector<DomainList>		m_domlist;
 
 	private: // don't allow copying
 		Part(const Part& p){}
@@ -543,6 +563,7 @@ public:
 	FSNodeSet* FindNamedNodeSet(const std::string& name);
 	FSSurface* FindNamedSurface(const std::string& name);
 	FSElemSet* FindNamedElementSet(const std::string& name);
+	FSPartSet* FindNamedPartSet(const std::string& name);
 
 public:
 	bool	m_shellNodalNormals;

@@ -40,7 +40,7 @@ public:
 	FEMeshBuilder(FSMesh& mesh);
 
 	// Rebuild all mesh data
-	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
+	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false, bool creaseInternal = true);
 
 	// Partition a node (may split an edge)
 	void PartitionNode(int node);
@@ -67,7 +67,8 @@ public:
 	FSElement* AddTriangle(int n0, int n1, int n2);
 
 	// Remove nodes that are not attached to anything
-	void RemoveIsolatedNodes();
+	// returns the number of nodes that were removed
+	int RemoveIsolatedNodes();
 
 	// delete selected nodes
 	void DeleteSelectedNodes();

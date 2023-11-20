@@ -577,7 +577,9 @@ public:
 
 	QComboBox*	comp;
 
-	QComboBox*	conv;
+	// convert page
+	QComboBox*	convClass;
+	QComboBox*	convFmt;
 
 public:
 	void setupUi(QDialog* parent)
@@ -658,7 +660,8 @@ public:
 		// format conversion
 		QWidget* convPage = new QWidget;
 		pform = new QFormLayout;
-		pform->addRow("Format:", conv = new QComboBox);
+		pform->addRow("Class:", convClass = new QComboBox);
+		pform->addRow("Format:", convFmt = new QComboBox);
 		convPage->setLayout(pform);
 
 		// eigenvectors
@@ -721,9 +724,20 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 	}
 
 	Post::Data_Format frm = pdf->Format();
-	ui->conv->clear();
-	if (frm != Post::DATA_ITEM) ui->conv->addItem("ITEM", (int)Post::DATA_ITEM);
-	if (frm != Post::DATA_NODE) ui->conv->addItem("NODE", (int)Post::DATA_NODE);
+	ui->convFmt->clear();
+	if (frm != Post::DATA_ITEM) ui->convFmt->addItem("ITEM", (int)Post::DATA_ITEM);
+	if (frm != Post::DATA_NODE) ui->convFmt->addItem("NODE", (int)Post::DATA_NODE);
+
+	Post::Data_Class cls = pdf->DataClass();
+	ui->convClass->clear();
+
+	if      (cls == Post::CLASS_FACE) ui->convClass->addItem("Face", (int)Post::CLASS_FACE);
+	else if (cls == Post::CLASS_NODE) ui->convClass->addItem("Node", (int)Post::CLASS_NODE);
+	else if (cls == Post::CLASS_ELEM)
+	{
+		ui->convClass->addItem("Elem", (int)Post::CLASS_ELEM);
+		ui->convClass->addItem("Node", (int)Post::CLASS_NODE);
+	}
 }
 
 int CDlgFilter::getArrayComponent()
@@ -741,9 +755,14 @@ QString CDlgFilter::getNewName()
 	return ui->name->text();
 }
 
-int CDlgFilter::getNewFormat()
+int CDlgFilter::getNewDataFormat()
 {
-	return ui->conv->currentData().toInt();
+	return ui->convFmt->currentData().toInt();
+}
+
+int CDlgFilter::getNewDataClass()
+{
+	return ui->convClass->currentData().toInt();
 }
 
 double CDlgFilter::GetScaleFactor() { return m_scale[0]; }
@@ -1127,10 +1146,11 @@ void CPostDataPanel::on_AddFilter_triggered()
 					bret = DataFractionalAnsisotropy(fem, newData->GetFieldID(), nfield);
 				}
 				break;
-				case 6:
+				case 6: // convert format
 				{
-					int newformat = dlg.getNewFormat();
-					newData = DataConvert(fem, pdf, newformat, sname);
+					int newformat = dlg.getNewDataFormat();
+					int newClass  = dlg.getNewDataClass();
+					newData = DataConvert(fem, pdf, newClass, newformat, sname);
 					bret = (newData != nullptr);
 				}
 				break;
@@ -1171,6 +1191,7 @@ class Ui::CDlgExportData
 {
 public:
 	QCheckBox* cb;
+	QCheckBox* wc;
 	QRadioButton* pb1;
 	QRadioButton* pb2;
 	QRadioButton* pb3;
@@ -1183,6 +1204,9 @@ public:
 
 		cb = new QCheckBox("Selection only");
 		l->addWidget(cb);
+
+		wc = new QCheckBox("Write face/element connectivity");
+		l->addWidget(wc);
 
 		QVBoxLayout* pg = new QVBoxLayout;
 		pg->addWidget(pb1 = new QRadioButton("Write all states"));
@@ -1218,6 +1242,11 @@ CDlgExportData::~CDlgExportData()
 bool CDlgExportData::selectionOnly() const
 {
 	return ui->cb->isChecked();
+}
+
+bool CDlgExportData::writeConnectivity() const
+{
+	return ui->wc->isChecked();
 }
 
 int CDlgExportData::stateOutputOption() const
@@ -1258,6 +1287,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 				if (dlg.exec())
 				{
 					bool selectionOnly = dlg.selectionOnly();
+					bool writeConnect = dlg.writeConnectivity();
 
 					int op = dlg.stateOutputOption();
 					vector<int> states;
@@ -1286,7 +1316,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 					}
 
 					std::string sfile = file.toStdString();
-					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, states) == false)
+					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, writeConnect, states) == false)
 					{
 						QMessageBox::critical(this, "Export Data", "Export Failed!");
 					}

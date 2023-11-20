@@ -459,7 +459,7 @@ U3DBitStreamWrite::~U3DBitStreamWrite()
 
 //-----------------------------------------------------------------------------
 // Write a U8 to the data block
-void U3DBitStreamWrite::WriteU8(Byte uValue)
+void U3DBitStreamWrite::WriteU8(uint8_t uValue)
 {
 	uint32 symbol = (uint32) uValue;
 	SwapBits8(symbol);
@@ -472,8 +472,8 @@ void U3DBitStreamWrite::WriteU8(Byte uValue)
 // Write a U16 to the data block
 void U3DBitStreamWrite::WriteU16(uint16 uValue)
 {
-	WriteU8((Byte)(0x00FF & uValue));
-	WriteU8((Byte)(0x00FF & (uValue >> 8)));
+	WriteU8((uint8_t)(0x00FF & uValue));
+	WriteU8((uint8_t)(0x00FF & (uValue >> 8)));
 }
 
 //-----------------------------------------------------------------------------
@@ -550,7 +550,7 @@ void U3DBitStreamWrite::WriteCompressedU16(uint32 context, uint16 uValue)
 
 //-----------------------------------------------------------------------------
 // Write a compressed U8 to the data block
-void U3DBitStreamWrite::WriteCompressedU8(uint32 context, Byte uValue)
+void U3DBitStreamWrite::WriteCompressedU8(uint32 context, uint8_t uValue)
 {
 	m_compressed = true;
 	bool escape = false;
@@ -588,7 +588,7 @@ void U3DBitStreamWrite::GetDataBlock(U3DFile::BLOCK& dataBlock)
 }
 
 //-----------------------------------------------------------------------------
-// Set the current position to the next Byte boundary
+// Set the current position to the next uint8_t boundary
 void U3DBitStreamWrite::AlignToByte()
 {
 	uint32 uBitCount = 0;
@@ -605,7 +605,7 @@ void U3DBitStreamWrite::AlignToByte()
 }
 
 //-----------------------------------------------------------------------------
-// Set the current position to the next 4 Byte boundary
+// Set the current position to the next 4 uint8_t boundary
 void U3DBitStreamWrite::AlignTo4Byte()
 {
 	if (m_dataBitOffset > 0)
@@ -836,21 +836,21 @@ void U3DBitStreamRead::ReadBlock(U3DFile::BLOCK& block)
 
 //-----------------------------------------------------------------------------
 // Read a U8 from the datablock associated with this bitstream
-void U3DBitStreamRead::ReadU8(Byte& rValue)
+void U3DBitStreamRead::ReadU8(uint8_t& rValue)
 {
 	uint32 uValue = 0;
 	ReadSymbol(U3DConstants::Context8, uValue);
 	uValue--;
 	SwapBits8(uValue);
-	rValue = (Byte) uValue;
+	rValue = (uint8_t) uValue;
 }
 
 //-----------------------------------------------------------------------------
 // Read a U16 from the datablock
 void U3DBitStreamRead::ReadU16(uint16& rValue)
 {
-	Byte low = 0;
-	Byte high = 0;
+	uint8_t low = 0;
+	uint8_t high = 0;
 	ReadU8(low);
 	ReadU8(high);
 
@@ -910,7 +910,7 @@ void U3DBitStreamRead::ReadString(std::string& s)
 		s.resize(stringSize);
 		for (int i=0; i<stringSize; ++i) 
 		{
-			Byte b;
+			uint8_t b;
 			ReadU8(b);
 			s[i] = (char) b;
 		}
@@ -976,7 +976,7 @@ void U3DBitStreamRead::ReadCompressedU16(uint32 context, uint16& rValue)
 
 //-----------------------------------------------------------------------------
 // Read a compressed U8 from the datablock
-void U3DBitStreamRead::ReadCompressedU8(uint32 context, Byte& rValue)
+void U3DBitStreamRead::ReadCompressedU8(uint32 context, uint8_t& rValue)
 {
 	uint32 symbol = 0;
 	if ((context != 0) && (context < U3DConstants::MaxRange))
@@ -986,7 +986,7 @@ void U3DBitStreamRead::ReadCompressedU8(uint32 context, Byte& rValue)
 		if (symbol != 0)
 		{
 			// the symbol is compressed
-			rValue = (Byte)(symbol - 1);
+			rValue = (uint8_t)(symbol - 1);
 		}
 		else
 		{
@@ -1263,7 +1263,7 @@ void U3DBitStreamRead::SeekToBit(uint32 position)
 }
 
 //-----------------------------------------------------------------------------
-// This skips the rest of the dataLocal and moves to the next Byte aligned value
+// This skips the rest of the dataLocal and moves to the next uint8_t aligned value
 // TODO: Do I need to do anything with m_underflow?
 void U3DBitStreamRead::AlignTo4Byte()
 {

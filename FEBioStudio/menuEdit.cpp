@@ -510,9 +510,28 @@ void CMainWindow::on_actionFind_triggered()
 			}
 			else
 			{
-				// make zero-based
+				// convert node IDs to indices
 				items = dlg.m_item;
-				for (int i = 0; i < items.size(); ++i) items[i] -= 1;
+				if (nitem == ITEM_NODE)
+				{
+					for (int i = 0; i < items.size(); ++i)
+					{
+						int n = pm->NodeIndexFromID(items[i]); assert(n >= 0);
+						if ((n >= 0) && (n < pm->Nodes())) items[i] = n;
+					}
+				}
+				else if (nitem == ITEM_ELEM)
+				{
+					for (int i = 0; i < items.size(); ++i)
+					{
+						int n = pm->ElementIndexFromID(items[i]); assert(n >= 0);
+						if ((n >= 0) && (n < pm->Elements())) items[i] = n;
+					}
+				}
+				else
+				{
+					for (int i = 0; i < items.size(); ++i) items[i] = items[i] - 1;
+				}
 			}
 		}
 		else if (dlg.m_method == 1)
@@ -675,19 +694,19 @@ void CMainWindow::on_actionNameSelection_triggered()
 	int item = doc->GetItemMode();
 	switch (item)
 	{
-	case ITEM_ELEM: sprintf(szname, "Part%02d", nparts); break;
-	case ITEM_FACE: sprintf(szname, "Surface%02d", nsurfs); break;
-	case ITEM_EDGE: sprintf(szname, "EdgeSet%02d", nedges); break;
-	case ITEM_NODE: sprintf(szname, "Nodeset%02d", nnodes); break;
+	case ITEM_ELEM: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
+	case ITEM_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+	case ITEM_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
+	case ITEM_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 	case ITEM_MESH:
 	{
 		int nsel = doc->GetSelectionMode();
 		switch (nsel)
 		{
-		case SELECT_PART: sprintf(szname, "Part%02d", nparts); break;
-		case SELECT_FACE: sprintf(szname, "Surface%02d", nsurfs); break;
-		case SELECT_EDGE: sprintf(szname, "EdgeSet%02d", nedges); break;
-		case SELECT_NODE: sprintf(szname, "Nodeset%02d", nnodes); break;
+		case SELECT_PART: snprintf(szname, sizeof szname, "Part%02d", nparts); break;
+		case SELECT_FACE: snprintf(szname, sizeof szname, "Surface%02d", nsurfs); break;
+		case SELECT_EDGE: snprintf(szname, sizeof szname, "EdgeSet%02d", nedges); break;
+		case SELECT_NODE: snprintf(szname, sizeof szname, "Nodeset%02d", nnodes); break;
 		default:
 			return;
 		}

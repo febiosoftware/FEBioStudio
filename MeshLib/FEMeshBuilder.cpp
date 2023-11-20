@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "FEMesh.h"
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEFaceEdgeList.h>
+#include <memory>
 using namespace std;
 
 FEMeshBuilder::FEMeshBuilder(FSMesh& mesh) : m_mesh(mesh)
@@ -71,7 +72,7 @@ FSElement* FEMeshBuilder::AddTriangle(int n0, int n1, int n2)
 
 //-----------------------------------------------------------------------------
 // Remove nodes that are not attached to anything
-void FEMeshBuilder::RemoveIsolatedNodes()
+int FEMeshBuilder::RemoveIsolatedNodes()
 {
 	// find the isolated nodes
 	m_mesh.TagAllNodes(-1);
@@ -80,6 +81,29 @@ void FEMeshBuilder::RemoveIsolatedNodes()
 		FSElement& el = m_mesh.Element(i);
 		int n = el.Nodes();
 		for (int j = 0; j<n; ++j) m_mesh.Node(el.m_node[j]).m_ntag = 1;
+	}
+
+	// exclude any required nodes
+	for (int i = 0; i < m_mesh.Nodes(); ++i)
+	{
+		FSNode& node = m_mesh.Node(i);
+		if ((node.m_gid>=0) || node.IsRequired()) node.m_ntag = 1;
+	}
+
+	// exclude nodes in node sets
+	GObject* po = m_mesh.GetGObject();
+	if (po)
+	{
+		for (int i = 0; i < po->FENodeSets(); ++i)
+		{
+			FSNodeSet* pi = po->GetFENodeSet(i);
+			std::vector<int> items = pi->CopyItems();
+			for (int j = 0; j < items.size(); ++j)
+			{
+				FSNode* pn = m_mesh.NodePtr(items[j]);
+				pn->m_ntag = 1;
+			}
+		}
 	}
 
 	// reindex the nodes
@@ -114,8 +138,26 @@ void FEMeshBuilder::RemoveIsolatedNodes()
 		for (int j = 0; j<n; ++j) edge.n[j] = m_mesh.Node(edge.n[j]).m_ntag;
 	}
 
+	// fix node numbers in node sets
+	if (po)
+	{
+		for (int i = 0; i < po->FENodeSets(); ++i)
+		{
+			FSNodeSet* pi = po->GetFENodeSet(i);
+			std::vector<int> items = pi->CopyItems();
+			for (int j = 0; j < items.size(); ++j)
+			{
+				FSNode* pn = m_mesh.NodePtr(items[j]); assert(pn->m_ntag >= 0);
+				items[j] = pn->m_ntag;
+			}
+			pi->clear();
+			pi->add(items);
+		}
+	}
+
 	// remove the isolated nodes
 	n = 0;
+	int removedNodes = 0;
 	for (int i = 0; i<m_mesh.Nodes(); ++i)
 	{
 		FSNode& n1 = m_mesh.Node(i);
@@ -126,6 +168,7 @@ void FEMeshBuilder::RemoveIsolatedNodes()
 			n2 = n1;
 			++n;
 		}
+		else removedNodes++;
 	}
 
 	// adjust the node container size
@@ -136,6 +179,8 @@ void FEMeshBuilder::RemoveIsolatedNodes()
 
 	// The bounding box may have changed as well
 	m_mesh.UpdateBoundingBox();
+
+	return removedNodes;
 }
 
 //-----------------------------------------------------------------------------
@@ -201,6 +246,10 @@ void FEMeshBuilder::DeleteSelectedFaces()
 
 	// delete tagged faces
 	DeleteTaggedFaces(1);
+
+	// make sure none of the faces are selected
+	for (int i = 0; i < m_mesh.Faces(); ++i)
+		m_mesh.Face(i).Unselect();
 }
 
 //-----------------------------------------------------------------------------
@@ -1380,7 +1429,39 @@ void FEMeshBuilder::PartitionElementSelection(int gid)
 	// repartition the edges and nodes
 	BuildEdges();
 	AutoPartitionEdges();
+
+	// we don't want to lose current nodal partitioning.
+	int N = m_mesh.Nodes();
+	int np = m_mesh.CountNodePartitions();
+	vector<int> idlist(np, -1);
+	for (int i = 0; i < N; ++i)
+	{
+		FSNode& node = m_mesh.Node(i);
+		if (node.m_gid >= 0)
+		{
+			assert(idlist[node.m_gid] == -1);
+			idlist[node.m_gid] = i;
+		}
+	}
+
 	AutoPartitionNodes();
+
+	// restore partitioning
+	int np1 = m_mesh.CountNodePartitions();
+	if (np1 < np) np1 = np;
+	for (int i = 0; i < N; ++i)
+	{
+		FSNode& node = m_mesh.Node(i);
+		if (node.m_gid != -1)
+		{
+			node.m_gid = np1++;
+		}
+	}
+	for (int i = 0; i < np; ++i)
+	{
+		m_mesh.Node(idlist[i]).m_gid = i;
+	}
+	m_mesh.UpdateNodePartitions();
 }
 
 //-----------------------------------------------------------------------------
@@ -1700,7 +1781,7 @@ void FEMeshBuilder::AutoPartitionSurface()
 
 //-----------------------------------------------------------------------------
 // This function builds the surface, edges and node of the mesh
-void FEMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh)
+void FEMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh, bool creaseInternal)
 {
 	// update the element neighbours
 	m_mesh.UpdateElementNeighbors();
@@ -1720,7 +1801,7 @@ void FEMeshBuilder::RebuildMesh(double smoothingAngle, bool partitionMesh)
 	BuildFaces();
 
 	// calculate auto GID's
-	m_mesh.AutoSmooth(smoothingAngle);
+	m_mesh.AutoSmooth(smoothingAngle, creaseInternal);
 
 	// partition the surface based on the smoothing
 	AutoPartitionSurface();

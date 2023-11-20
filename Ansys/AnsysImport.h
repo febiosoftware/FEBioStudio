@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshIO/FileReader.h>
+#include <MeshIO/FSFileImport.h>
 #include <FEMLib/FSProject.h>
 #include <list>
 //using namespace std;

@@ -118,13 +118,13 @@ void CIntegrateWindow::UpdateIntegral()
 		IntegrateSelection(*data);
 
 		int nview = model->GetSelectionMode();
-		sprintf(sztitle, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
+		snprintf(sztitle, 256, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
 	}
 	else 
 	{
 		// update based on plane cut plot
 		IntegratePlaneCut(pp, *data);
-		sprintf(sztitle, "%s of %s", "Integral", pdoc->GetFieldString().c_str());
+		snprintf(sztitle, 256, "%s of %s", "Integral", pdoc->GetFieldString().c_str());
 	}
 	data->setLabel("Value");
 	SetPlotTitle(sztitle);
@@ -292,7 +292,7 @@ void CIntegrateSurfaceWindow::UpdateIntegral()
 	IntegrateSelection(*dataX, *dataY, *dataZ);
 
 	int nview = model->GetSelectionMode();
-	sprintf(sztitle, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
+	snprintf(sztitle, 256, "%s of %s", (nview == Post::SELECT_NODES ? "Sum" : "Integral"), pdoc->GetFieldString().c_str());
 
 	SetPlotTitle(sztitle);
 	dataX->setLabel("X"); AddPlotData(dataX);

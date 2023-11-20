@@ -238,8 +238,18 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// export to FEBio
 		if (modelDoc)
 		{
-			// save the FEBio file
 			string febFile = job->GetFEBFileName(false);
+
+			// see if the feb file already exists
+			QFile file(QString::fromStdString(febFile));
+			if (file.exists())
+			{
+				QString msg = QString("The job \"%1\" was already run. Re-running it may overwrite existing results.\nDo you want to continue?").arg(jobName);
+				int n = QMessageBox::warning(this, "Run FEBio", msg, QMessageBox::Yes, QMessageBox::No);
+				if (n != QMessageBox::Yes) return;
+			}
+
+			// save the FEBio file
 			if (ExportFEBioFile(modelDoc, febFile, lastFEBioFileVersion) == false)
 			{
 				return;

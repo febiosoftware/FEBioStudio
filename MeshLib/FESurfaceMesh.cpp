@@ -50,6 +50,14 @@ FSSurfaceMesh::~FSSurfaceMesh()
 {
 }
 
+void FSSurfaceMesh::Clear()
+{
+	m_Node.clear();
+	m_Edge.clear();
+	m_Face.clear();
+	m_data.Clear();
+}
+
 FSSurfaceMesh::FSSurfaceMesh(TriMesh& dyna)
 {
 	TriMesh::NodeIterator nodePtr(dyna);
@@ -1069,6 +1077,17 @@ void FSSurfaceMesh::RemoveIsolatedEdges()
 		for (int j = 0; j<n; ++j) face.m_edge[j] = Edge(face.m_edge[j]).m_ntag;
 	}
 
+	// update edge neighbors
+	for (int i = 0; i < Edges(); ++i)
+	{
+		FSEdge& e = Edge(i);
+		if (e.m_ntag >= 0)
+		{
+			if (e.m_nbr[0] >= 0) e.m_nbr[0] = Edge(e.m_nbr[0]).m_ntag;
+			if (e.m_nbr[1] >= 0) e.m_nbr[1] = Edge(e.m_nbr[1]).m_ntag;
+		}
+	}
+
 	// remove the isolated edges
 	n = 0;
 	for (int i = 0; i<Edges(); ++i)
@@ -1117,6 +1136,12 @@ void FSSurfaceMesh::AutoPartitionNodes()
 		}
 		else node.m_gid = -1;
 	}
+}
+
+//-----------------------------------------------------------------------------
+Mesh_Data& FSSurfaceMesh::GetMeshData()
+{
+	return m_data;
 }
 
 //-----------------------------------------------------------------------------

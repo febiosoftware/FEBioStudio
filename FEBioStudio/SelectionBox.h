@@ -141,6 +141,7 @@ private slots:
 	void onDelButtonClicked();
 	void onSelButtonClicked();
 	void onClearButtonClicked();
+	void onPickButtonClicked();
 	void onNameChanged(const QString& t);
 
 signals:

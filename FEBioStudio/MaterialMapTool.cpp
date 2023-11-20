@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "MaterialMapTool.h"
-#include <LSDyna/FELSDYNAimport.h>
+#include <LSDyna/LSDYNAimport.h>
 #include "Document.h"
 #include <PostLib/ColorMap.h>
 #include <FEMLib/FEMultiMaterial.h>
@@ -56,7 +56,7 @@ bool CMaterialMapTool::OnApply()
 
 	std::string sfile = m_file.toStdString();
 /*
-	FELSDYNAimport reader;
+	LSDYNAimport reader;
 	if (!pdoc->ImportGeometry(&reader, sfile.c_str()))
 	{
 		SetErrorString(QString::fromStdString(reader.GetErrorMessage()));

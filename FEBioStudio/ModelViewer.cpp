@@ -47,11 +47,57 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
+#include <QPlainTextEdit>
+#include <QDialogButtonBox>
+
+class CDlgWarnings : public QDialog
+{
+public:
+	CDlgWarnings(QWidget* parent) : QDialog(parent)
+	{
+		setMinimumSize(800, 600);
+		setWindowTitle("Model Warnings");
+
+		m_out = new QPlainTextEdit;
+		m_out->setReadOnly(true);
+		m_out->setFont(QFont("Courier", 11));
+		m_out->setWordWrapMode(QTextOption::NoWrap);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(m_out);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	void SetWarnings(QStringList errs)
+	{
+		QString txt;
+		for (int i = 0; i < errs.size(); ++i)
+		{
+			txt += errs[i];
+			txt += QString("\n");
+		}
+
+		txt += "\n====================================\n";
+		txt += QString("Summary : %1 warnings").arg(errs.size());
+
+		m_out->clear();
+		m_out->setPlainText(txt);
+	}
+
+private:
+	QPlainTextEdit* m_out = nullptr;
+};
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -298,7 +344,10 @@ void CModelViewer::on_syncButton_clicked()
 						GDiscreteElement& de = pds->element(j);
 						if (de.IsSelected())
 						{
-							objList.push_back(&de);
+							// we can't actually show the individual springs,
+							// so we just select the parent.
+							objList.push_back(po);
+							break;
 						}
 					}
 				}
@@ -495,6 +544,14 @@ bool CModelViewer::OnDeleteEvent()
 void CModelViewer::on_deleteButton_clicked()
 {
 	OnDeleteItem();
+}
+
+void CModelViewer::on_warnings_clicked()
+{
+	QStringList warnings = ui->tree->GetAllWarnings();
+	CDlgWarnings dlg(GetMainWindow());
+	dlg.SetWarnings(warnings);
+	dlg.exec();
 }
 
 void CModelViewer::on_props_nameChanged(const QString& txt)
@@ -816,14 +873,14 @@ void CModelViewer::OnChangeDiscreteType()
 	GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(m_currentObject); assert(set);
 	if (set == 0) return;
 
-	QStringList items; items << "Linear" << "Nonlinear" << "Hill" << "General";
+	QStringList items; items << "Linear" << "Nonlinear" << "Hill";
 	QString item = QInputDialog::getItem(this, "Discrete Set Type", "Type:", items, 0, false);
 	if (item.isEmpty() == false)
 	{
 		FSDiscreteMaterial* mat = nullptr;
-		if (item == "Linear"   ) mat = new FSLinearSpringMaterial(fem);
-		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial(fem);
-		if (item == "Hill"     ) mat = new FSHillContractileMaterial(fem);
+		if (item == "Linear"   ) mat = FEBio::CreateDiscreteMaterial("linear spring", fem);
+		if (item == "Nonlinear") mat = FEBio::CreateDiscreteMaterial("nonlinear spring", fem);
+		if (item == "Hill"     ) mat = FEBio::CreateDiscreteMaterial("Hill", fem);
 		if (mat)
 		{
 			delete set->GetMaterial();
@@ -1486,6 +1543,22 @@ void CModelViewer::OnRemoveEmptySelections()
 	Update();
 }
 
+void CModelViewer::OnRemoveUnusedSelections()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	GModel& mdl = pdoc->GetFSModel()->GetModel();
+	mdl.RemoveUnusedSelections();
+	Update();
+}
+
+void CModelViewer::OnRemoveUnusedLoadControllers()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel& fem = *pdoc->GetFSModel();
+	fem.RemoveUnusedLoadControllers();
+	Update();
+}
+
 void CModelViewer::OnRemoveAllSelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1570,6 +1643,13 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_NODE_GROUP:
 		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
 		break;
+	case MT_FEPART_GROUP:
+	case MT_FEELEM_GROUP:
+	case MT_FEFACE_GROUP:
+	case MT_FEEDGE_GROUP:
+	case MT_FENODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
+		break;
 	case MT_MATERIAL_LIST:
 	{
 		menu.addAction("Add Material ...", wnd, SLOT(on_actionAddMaterial_triggered()));
@@ -1649,6 +1729,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_NAMED_SELECTION:
 		menu.addAction("Remove empty", this, SLOT(OnRemoveEmptySelections()));
+		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedSelections()));
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
 		break;
 	case MT_MESH_ADAPTOR_LIST:
@@ -1783,6 +1864,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_LOAD_CONTROLLERS:
 		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
+		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedLoadControllers()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
 		break;
 	case MT_LOAD_CONTROLLER:

@@ -140,3 +140,37 @@ FSMeshSelection::FSMeshSelection(FSModel* fem) : FSModelComponent(fem)
 {
 	
 }
+
+
+void FSMeshSelection::Save(OArchive& ar)
+{
+	// write list ID
+	FEItemListBuilder* pl = GetItemList();
+	if (pl) ar.WriteChunk(LIST_ID, pl->GetID());
+}
+
+//-----------------------------------------------------------------------------
+void FSMeshSelection::Load(IArchive& ar)
+{
+	TRACE("FSMeshSelection::Load");
+
+	FSModel* fem = GetFSModel();
+	GModel* pgm = &fem->GetModel();
+
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case LIST_ID:
+		{
+			int nid = 0;
+			ar.read(nid);
+			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			SetItemList(pItem);
+		}
+		break;
+		}
+		ar.CloseChunk();
+	}
+}

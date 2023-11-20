@@ -68,6 +68,36 @@ FEVTKExport::FEVTKExport(void)
 {
 	m_bwriteAllStates = false;
 	m_bselElemsOnly = false;
+	m_bwriteSeriesFile = false;
+	m_bwritePartIDs = false;
+
+	AddBoolParam(m_bwriteAllStates , "write_all_states", "Write all states");
+	AddBoolParam(m_bselElemsOnly   , "sel_elems_only"  , "Selected elements only");
+	AddBoolParam(m_bwriteSeriesFile, "write_series"    , "Write VTK series");
+	AddBoolParam(m_bwritePartIDs   , "write_part_ids"  , "Write element part IDs as cell data");
+
+	m_fp = nullptr;
+	m_nodes = m_elems = 0;
+}
+
+bool FEVTKExport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_bwriteAllStates  = GetBoolValue(0);
+		m_bselElemsOnly    = GetBoolValue(1);
+		m_bwriteSeriesFile = GetBoolValue(2);
+		m_bwritePartIDs    = GetBoolValue(3);
+	}
+	else
+	{
+		SetBoolValue(0, m_bwriteAllStates);
+		SetBoolValue(1, m_bselElemsOnly);
+		SetBoolValue(2, m_bwriteSeriesFile);
+		SetBoolValue(3, m_bwritePartIDs);
+	}
+
+	return false;
 }
 
 FEVTKExport::~FEVTKExport(void)
@@ -82,6 +112,11 @@ void FEVTKExport::ExportAllStates(bool b)
 void FEVTKExport::ExportSelectedElementsOnly(bool b)
 {
 	m_bselElemsOnly = b;
+}
+
+void FEVTKExport::WriteSeriesFile(bool b)
+{
+	m_bwriteSeriesFile = b;
 }
 
 bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
@@ -130,7 +165,7 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 
 	if (m_bwriteAllStates)
 	{
-		char szroot[256] = {0}, szname[256] = {0}, szext[16] = {0};
+		char szroot[256] = { 0 }, szname[256] = { 0 }, szext[16] = { 0 };
 		const char* sz;
 		sz = strrchr(szfile, '.');
 		if (sz == 0) {
@@ -144,14 +179,36 @@ bool FEVTKExport::Save(FEPostModel& fem, const char* szfile)
 			szroot[l] = 0;
 			strcpy(szext, sz);
 		}
+
+		// strip the path of the root
+		const char* szbase = strrchr(szroot, '/');
+		if (szbase == nullptr)
+		{
+			szbase = strrchr(szroot, '\\');
+			if (szbase == nullptr) szbase = szroot; else szbase++;
+		}
+		else szbase++;
+
+		vector<pair<string, float> > series;
     
 		// save each state in a separate file
 		int l0 = (int) log10((double)ns) + 1;
 		for (int is=0; is<ns; ++is) 
 		{
-			if (sprintf(szname, "%st%0*d%s",szroot,l0,is,szext) < 0) return false;
+			if (sprintf(szname, "%st%0*d%s", szroot, l0,is,szext) < 0) return false;
 
-			if (WriteState(szname, fem.GetState(is)) == false) return false;
+			FEState* ps = fem.GetState(is);
+
+			if (WriteState(szname, ps) == false) return false;
+
+			if (sprintf(szname, "%st%0*d%s", szbase, l0, is, szext) < 0) return false;
+			series.push_back(pair<string, float>(szname, ps->m_time));
+		}
+
+		if (m_bwriteSeriesFile)
+		{
+			sprintf(szname, "%svtk.series", szroot);
+			WriteVTKSeriesFile(szname, series);
 		}
 
 		return true;
@@ -180,14 +237,11 @@ bool FEVTKExport::WriteState(const char* szname, FEState* ps)
     // --- E L E M E N T S ---
 	WriteCells(ps);
         
-	if (m_bselElemsOnly == false)
-	{
-		// --- N O D E   D A T A ---
-		WritePointData(ps);
+	// --- N O D E   D A T A ---
+	WritePointData(ps);
 
-		// --- E L E M E N T   C E L L   D A T A ---
-		WriteCellData(ps);
-	}
+	// --- E L E M E N T   C E L L   D A T A ---
+	WriteCellData(ps);
         
     fclose(m_fp);
 	m_fp = nullptr;
@@ -296,8 +350,10 @@ void FEVTKExport::WritePointData(FEState* ps)
 
 	FEPostMesh& mesh = *ps->GetFEMesh();
 	int nodes = mesh.Nodes();
+	vector<int> tag(nodes, 0);
+	for (int i = 0; i < nodes; ++i) tag[i] = (mesh.Node(i).m_ntag >= 0 ? 1 : 0);
 
-	fprintf(m_fp, "\nPOINT_DATA %d\n", nodes);
+	fprintf(m_fp, "\nPOINT_DATA %d\n", m_nodes);
 	FEPostModel& fem = *ps->GetFSModel();
 	FEDataManager& DM = *fem.GetDataManager();
 	FEDataFieldPtr pd = DM.FirstDataField();
@@ -320,27 +376,32 @@ void FEVTKExport::WritePointData(FEState* ps)
 				if (ntype == DATA_FLOAT) {
 					fprintf(m_fp, "%s %s %s\n", "SCALARS", szname, "float");
 					fprintf(m_fp, "%s %s\n", "LOOKUP_TABLE", "default");
-					for (int i = 0; i<val.size(); ++i) fprintf(m_fp, "%g\n", val[i]);
+					for (int i = 0; i<val.size(); ++i) 
+						if (tag[i] != 0)
+							fprintf(m_fp, "%g\n", val[i]);
 				}
 				else if (ntype == DATA_VEC3F) {
 					fprintf(m_fp, "%s %s %s\n", "VECTORS", szname, "float");
-					for (int i = 0; i<val.size(); i += 3) fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
+					for (int i = 0, n = 0; i<val.size(); i += 3, ++n) 
+						if (tag[n] != 0) fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
 				}
 				else if (ntype == DATA_MAT3FS) {
 					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname, "float");
-					for (int i = 0; i<val.size(); i += 6)
-						fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
-							val[i    ], val[i + 3], val[i + 5],
-							val[i + 3], val[i + 1], val[i + 4],
-							val[i + 5], val[i + 4], val[i + 2]);
+					for (int i = 0, n = 0; i<val.size(); i += 6, n++)
+						if (tag[n] != 0)
+							fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
+								val[i    ], val[i + 3], val[i + 5],
+								val[i + 3], val[i + 1], val[i + 4],
+								val[i + 5], val[i + 4], val[i + 2]);
 				}
 				else if (ntype == DATA_MAT3FD) {
 					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname, "float");
-					for (int i = 0; i<val.size(); i += 3)
-						fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
-							val[i], 0.f, 0.f,
-							0.f, val[i + 1], 0.f,
-							0.f, 0.f, val[i + 2]);
+					for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
+						if (tag[n] != 0)
+							fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
+								val[i], 0.f, 0.f,
+								0.f, val[i + 1], 0.f,
+								0.f, 0.f, val[i + 2]);
 				}
 				else if (ntype == DATA_ARRAY) {
 					fprintf(m_fp, "FIELD %s %d\n", szname, data.GetArraySize());
@@ -352,10 +413,11 @@ void FEVTKExport::WritePointData(FEState* ps)
 						Space2_(szname);
 						fprintf(m_fp, "%s %d %d float\n", szname, 1, val.size());
 						for (int i = 0; i < val.size(); ++i)
-						{
-							float f = val[j * nodes + i];
-							fprintf(m_fp, "%g\n", f);
-						}
+							if (tag[i] != 0)
+							{
+								float f = val[j * nodes + i];
+								fprintf(m_fp, "%g\n", f);
+							}
 					}
 				}
 			}
@@ -381,27 +443,33 @@ void FEVTKExport::WritePointData(FEState* ps)
 					if (ntype == DATA_FLOAT) {
 						fprintf(m_fp, "SCALARS %s float\n", szname);
 						fprintf(m_fp, "LOOKUP_TABLE default\n");
-						for (int i = 0; i<val.size(); ++i) fprintf(m_fp, "%g\n", val[i]);
+						for (int i = 0; i<val.size(); ++i) 
+							if (tag[i] != 0)
+								fprintf(m_fp, "%g\n", val[i]);
 					}
 					else if (ntype == DATA_VEC3F) {
 						fprintf(m_fp, "VECTORS %s float\n", szname);
-						for (int i = 0; i<val.size(); i += 3) fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
+						for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
+							if (tag[n] != 0)
+								fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
 					}
 					else if (ntype == DATA_MAT3FS) {
 						fprintf(m_fp, "TENSORS %s float\n", szname);
-						for (int i = 0; i<val.size(); i += 6)
-							fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
-								val[i], val[i + 3], val[i + 5],
-								val[i + 3], val[i + 1], val[i + 4],
-								val[i + 5], val[i + 4], val[i + 2]);
+						for (int i = 0, n = 0; i<val.size(); i += 6, ++n)
+							if (tag[n] != 0)
+								fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
+									val[i], val[i + 3], val[i + 5],
+									val[i + 3], val[i + 1], val[i + 4],
+									val[i + 5], val[i + 4], val[i + 2]);
 					}
 					else if (ntype == DATA_MAT3FD) {
 						fprintf(m_fp, "TENSORS %s float\n", szname);
-						for (int i = 0; i<val.size(); i += 3)
-							fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
-								val[i], 0.f, 0.f,
-								0.f, val[i + 1], 0.f,
-								0.f, 0.f, val[i + 2]);
+						for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
+							if (tag[n] != 0)
+								fprintf(m_fp, "%g %g %g\n%g %g %g\n%g %g %g\n\n",
+									val[i], 0.f, 0.f,
+									0.f, val[i + 1], 0.f,
+									0.f, 0.f, val[i + 2]);
 					}
 				}
 			}
@@ -418,9 +486,19 @@ void FEVTKExport::WriteCellData(FEState* ps)
 
 	FEPostMesh& mesh = *ps->GetFEMesh();
 	int NE = mesh.Elements();
+	vector<int> tag(NE, 0);
+	for (int i = 0; i < NE; ++i) tag[i] = (mesh.Element(i).m_ntag >= 0 ? 1 : 0);
 
     int NDATA = ps->m_Data.size();
-    if (NDATA > 0) fprintf(m_fp, "\nCELL_DATA %d\n" , mesh.Elements());
+    if ((NDATA > 0) || m_bwritePartIDs) fprintf(m_fp, "\nCELL_DATA %d\n" , m_elems);
+
+	if (m_bwritePartIDs)
+	{
+		fprintf(m_fp, "SCALARS part_IDs int\n");
+		fprintf(m_fp, "LOOKUP_TABLE default\n");
+		for (int i = 0; i < NE; ++i)
+			if (tag[i] != 0) fprintf(m_fp, "%d\n", mesh.Element(i).m_gid);
+	}
             
     for (int n=0; n<NDATA; ++n, ++pd)
     {
@@ -445,27 +523,31 @@ void FEVTKExport::WriteCellData(FEState* ps)
 						if (ntype == DATA_FLOAT) {
 							fprintf(m_fp, "%s %s %s\n" ,"SCALARS",szname,"float");
 							fprintf(m_fp, "%s %s\n","LOOKUP_TABLE","default");
-							for (int i=0; i<val.size(); ++i) fprintf(m_fp,"%g\n",val[i]);
+							for (int i=0; i<val.size(); ++i) 
+								if (tag[i] != 0) fprintf(m_fp,"%g\n",val[i]);
 						}
 						else if (ntype == DATA_VEC3F) {
 							fprintf(m_fp, "%s %s %s\n" ,"VECTORS",szname,"float");
-							for (int i=0; i<val.size(); i+=3) fprintf(m_fp,"%g %g %g\n",val[i],val[i+1],val[i+2]);
+							for (int i=0, n = 0; i<val.size(); i+=3, n++)
+								if (tag[n] != 0) fprintf(m_fp,"%g %g %g\n",val[i],val[i+1],val[i+2]);
 						}
 						else if (ntype == DATA_MAT3FS) {
 							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname,"float");
-							for (int i=0; i<val.size(); i+=6)
-								fprintf(m_fp,"%g %g %g\n%g %g %g\n%g %g %g\n\n",
-										val[i  ],val[i+3],val[i+5],
-										val[i+3],val[i+1],val[i+4],
-										val[i+5],val[i+4],val[i+2]);
+							for (int i=0, n = 0; i<val.size(); i+=6, n++)
+								if (tag[n] != 0)
+									fprintf(m_fp,"%g %g %g\n%g %g %g\n%g %g %g\n\n",
+											val[i  ],val[i+3],val[i+5],
+											val[i+3],val[i+1],val[i+4],
+											val[i+5],val[i+4],val[i+2]);
 						}
 						else if (ntype == DATA_MAT3FD) {
 							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname,"float");
-							for (int i=0; i<val.size(); i+=3)
-								fprintf(m_fp,"%g %g %g\n%g %g %g\n%g %g %g\n\n",
-										val[i  ],0.f,0.f,
-										0.f,val[i+1],0.f,
-										0.f,0.f,val[i+2]);
+							for (int i=0, n = 0; i<val.size(); i+=3, ++n)
+								if (tag[n] != 0)
+									fprintf(m_fp,"%g %g %g\n%g %g %g\n%g %g %g\n\n",
+											val[i  ],0.f,0.f,
+											0.f,val[i+1],0.f,
+											0.f,0.f,val[i+2]);
 						}
 						else if (ntype == DATA_ARRAY)
 						{
@@ -478,9 +560,9 @@ void FEVTKExport::WriteCellData(FEState* ps)
 								Space2_(szname);
 								fprintf(m_fp, "%s %d %d float\n", szname, 1, NE);
 								for (int i = 0; i < NE; ++i)
-								{
-									float f = val[j * NE + i];
-									fprintf(m_fp, "%g\n", f);
+									if (tag[i] != 0) {
+										float f = val[j * NE + i];
+										fprintf(m_fp, "%g\n", f);
 								}
 							}
 						}
@@ -495,13 +577,14 @@ void FEVTKExport::WriteCellData(FEState* ps)
 								Space2_(szname);
 								fprintf(m_fp, "%s %d %d float\n", szname, 3, NE);
 								for (int i = 0; i < NE; ++i)
-								{
-									float f[3];
-									f[0] = val[j * (3 * NE) + 3 * i    ];
-									f[1] = val[j * (3 * NE) + 3 * i + 1];
-									f[2] = val[j * (3 * NE) + 3 * i + 2];
-									fprintf(m_fp, "%g %g %g\n", f[0], f[1], f[2]);
-								}
+									if (tag[i] != 0)
+									{
+										float f[3];
+										f[0] = val[j * (3 * NE) + 3 * i    ];
+										f[1] = val[j * (3 * NE) + 3 * i + 1];
+										f[2] = val[j * (3 * NE) + 3 * i + 2];
+										fprintf(m_fp, "%g %g %g\n", f[0], f[1], f[2]);
+									}
 							}
 						}
 					}
@@ -1006,4 +1089,27 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 */	else return false;
 
 	return true;
+}
+
+void FEVTKExport::WriteVTKSeriesFile(const char* szfile, std::vector<std::pair<std::string, float> >& series)
+{
+	FILE* fp = fopen(szfile, "wt");
+	if (fp == nullptr) return;
+
+	fprintf(fp, "{\n");
+	fprintf(fp, "\t\"file-series-version\": \"1.0\",\n");
+	fprintf(fp, "\t\"files\": [\n");
+
+	for (size_t i = 0; i<series.size(); ++i)
+	{
+		auto& it = series[i];
+		fprintf(fp, "\t{ \"name\": \"%s\", \"time\": %g }", it.first.c_str(), it.second);
+		if (i != series.size() - 1) fprintf(fp, ",\n");
+		else fprintf(fp, "\n");
+	}
+
+	fprintf(fp, "\t]\n");
+	fprintf(fp, "}\n");
+
+	fclose(fp);
 }

@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "PropertyListForm.h"
 #include "ObjectProps.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/3DImage.h>
 #include "InputWidgets.h"
 #include "RangeSlider.h"
@@ -297,7 +297,7 @@ public:
 		parent->setLayout(layout);
     }
 
-    void setImageModel(Post::CImageModel* img)
+    void setImageModel(CImageModel* img)
     {
         if(img)
         {
@@ -316,7 +316,7 @@ public:
 			clipz    ->setParams(&settings->GetParam(CImageViewSettings::CLIPZ_MIN), &settings->GetParam(CImageViewSettings::CLIPZ_MAX));
 
 			C3DImage* im = img->Get3DImage();
-			if (im && ((im->PixelType() == C3DImage::INT_RGB8) || (im->PixelType() == C3DImage::UINT_RGB8) || (im->PixelType() == C3DImage::INT_RGB16)))
+			if (im && ((im->PixelType() == CImage::INT_RGB8) || (im->PixelType() == CImage::UINT_RGB8) || (im->PixelType() == CImage::INT_RGB16)))
 			{
 				chue1->setParam(&settings->GetParam(CImageViewSettings::CHANNEL1_HUE));
 				chue2->setParam(&settings->GetParam(CImageViewSettings::CHANNEL2_HUE));
@@ -373,7 +373,7 @@ CImageSettingsPanel::CImageSettingsPanel(CMainWindow* wnd, QWidget* parent)
 
 void CImageSettingsPanel::ModelTreeSelectionChanged(FSObject* obj)
 {
-    Post::CImageModel* model = dynamic_cast<Post::CImageModel*>(obj);
+    CImageModel* model = dynamic_cast<CImageModel*>(obj);
 
     ui->setImageModel(model);
 

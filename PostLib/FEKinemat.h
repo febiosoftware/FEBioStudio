@@ -37,10 +37,13 @@ namespace Post {
 //! This class implements a tool to apply kinematics data to a model
 class FEKinemat
 {
-protected:
+public:
 	struct KINE
 	{
 		double m[16];
+
+		vec3d translate();
+		mat3d rotate();
 
 		vec3d apply(const vec3d& r);
 	};
@@ -64,10 +67,13 @@ public:
 
 	int States() const;
 
+	STATE& GetState(int i) { return m_State[i]; }
+
 	bool IsKineValid() const;
 
-protected:
 	bool ReadKine(const char* szkine);
+
+protected:
 	bool BuildStates(Post::FEPostModel* glm);
 
 protected:

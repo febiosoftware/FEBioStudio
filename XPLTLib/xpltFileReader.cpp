@@ -51,6 +51,11 @@ void xpltParser::addWarning(int n)
 	m_wrng.push_back(n); 
 }
 
+int xpltParser::FileVersion() const 
+{ 
+	return m_xplt->m_hdr.nversion; 
+}
+
 xpltFileReader::xpltFileReader(Post::FEPostModel* fem) : FEFileReader(fem)
 {
 	m_xplt = 0;

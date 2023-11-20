@@ -160,7 +160,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 		ModelDataField& d = *(*pd);
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(m_class);
-		if (dataComponents > 0)
+		if ((dataClass != Post::CLASS_OBJECT) && (dataComponents > 0))
 		{
 			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
 			{
@@ -240,6 +240,49 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 				}
 			}
 		}
+	}
+}
+
+CPlotGlobalDataSelector::CPlotGlobalDataSelector(Post::FEDataFieldPtr pdf) : m_pdf(pdf)
+{
+
+}
+
+void CPlotGlobalDataSelector::BuildMenu(QMenu* menu)
+{
+	switch ((*m_pdf)->Type())
+	{
+	case Post::DATA_FLOAT: {
+		QAction* pa = menu->addAction("value");
+		pa->setData(1);
+	}
+		break;
+	case Post::DATA_VEC3F:
+		break;
+	case Post::DATA_MAT3FS:
+		break;
+	case Post::DATA_MAT3FD:
+		break;
+	case Post::DATA_TENS4FS:
+		break;
+	case Post::DATA_MAT3D:
+		break;
+	case Post::DATA_MAT3F:
+		break;
+	case Post::DATA_ARRAY:
+		{
+			std::vector<std::string> names = (*m_pdf)->GetArrayNames();
+			for (int i = 0; i < names.size(); ++i)
+			{
+				QAction* pa = menu->addAction(QString::fromStdString(names[i]));
+				pa->setData(i + 1);
+			}
+		}
+		break;
+	case Post::DATA_ARRAY_VEC3F:
+		break;
+	default:
+		break;
 	}
 }
 

@@ -27,95 +27,38 @@ SOFTWARE.*/
 #pragma once
 
 #include <QWidget>
+#include <PostLib/ImageSlicer.h>
+#include "PixelInfoSource.h"
 
-class QVBoxLayout;
-class QGraphicsScene;
-class QGraphicsView;
 class QGridLayout;
 class QResizeEvent;
-class QWheelEvent;
-class CIntSlider;
-class QComboBox;
 
 class CGLView;
 class CMainWindow;
 class CGLContext;
 class FSObject;
+class CImageModel;
+class CImageSlice;
 
-namespace Post
-{
-    class CImageModel;
-    class CImageSlicer;
-}
-
-class CImageSlice : public QWidget
+class CImageSliceView : public QWidget, public CSliceInfoSource
 {
     Q_OBJECT
-
-public:
-    enum SliceDir
-    {
-        X, Y, Z
-    };
-
-public:
-    CImageSlice(SliceDir sliceDir, bool constAxis = true, QWidget* extraWidget = nullptr);
-
-    void SetImage(Post::CImageModel* imgModel);
-
-    void Update();
-
-    int GetIndex();
-    void SetIndex(int index);
-    int GetSliceCount();
-
-signals:
-    void updated(int direction, float offset);
-
-private slots:
-    void on_slider_changed(int val);
-    void on_currentIndexChanged(int index);
-
-protected:
-    void wheelEvent(QWheelEvent* event) override;
-
-private:
-    void UpdateSliceCount();
-
-private:
-    Post::CImageModel* m_imgModel;
-    
-    QVBoxLayout* m_layout;
-    QGraphicsScene* m_scene;
-    QGraphicsView* m_view;
-    CIntSlider* m_slider;
-
-    SliceDir m_sliceDir;
-    QComboBox* m_sliceChoice;
-
-};
-
-class CImageSliceView : public QWidget
-{
-    Q_OBJECT
-
 
 public:
     CImageSliceView(CMainWindow* wnd, QWidget* parent = 0);
-    ~CImageSliceView();
 
     void Update();
 
-    Post::CImageModel* GetImageModel() { return m_imgModel; }
+    CImageModel* GetImageModel() { return m_imgModel; }
 
     void RenderSlicers(CGLContext& rc);
 
-private:
-    void CleanSlicers();
+    void SetInspector(CDlgPixelInspector* inspector) override;
 
 public slots:
     void ModelTreeSelectionChanged(FSObject* obj);
     void SliceUpdated(int direction, float offset);
+    void SliceClicked(int direction, QPoint point);
 
 protected:
     void resizeEvent(QResizeEvent* event) override;
@@ -126,15 +69,15 @@ private:
 public:
     QGridLayout* m_layout;
 
-    Post::CImageModel* m_imgModel;
+    CImageModel* m_imgModel;
 
     CImageSlice* m_xSlice;
     CImageSlice* m_ySlice;
     CImageSlice* m_zSlice;
 
-    Post::CImageSlicer* m_xSlicer;
-    Post::CImageSlicer* m_ySlicer;
-    Post::CImageSlicer* m_zSlicer;
+    Post::CImageSlicer m_xSlicer;
+    Post::CImageSlicer m_ySlicer;
+    Post::CImageSlicer m_zSlicer;
 
     CGLView* m_glView;
 };

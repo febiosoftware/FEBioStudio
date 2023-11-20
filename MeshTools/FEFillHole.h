@@ -71,11 +71,10 @@ public:
 	};
 
 public:
-	FEFillHole() : FESurfaceModifier("Fill hole"){}
+	FEFillHole();
+
 	FSSurfaceMesh* Apply(FSSurfaceMesh* pm);
 
-	bool optimize;
-	bool insertNodes;
 	//AFM
 	bool AFM(FSSurfaceMesh& mesh, EdgeRing& ring, std::vector<FACE>& tri_list, std::vector<vec3d> &node_list);
 	//Addd node
@@ -113,4 +112,7 @@ private:
 private:
 	std::vector<vec3d>	m_node_normals;
 	FSNodeEdgeList		m_NEL;
+
+	bool m_optimize;
+	bool m_insertNodes;
 };

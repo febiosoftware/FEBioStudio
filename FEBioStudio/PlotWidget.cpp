@@ -954,7 +954,11 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		double dx = W*0.05;
 		double dy = H*0.05;
 
-    //TODO: Check to see how this feels with MacOS and Linux distros. May need to use angleDelta()
+		bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
+		bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
+		if (bctrl && !bshift) dy = 0;
+		if (bctrl && bshift) dx = 0;
+
 		if ((ev->pixelDelta().y() < 0) || (ev->angleDelta().y() < 0))
 		{
 			m_viewRect.adjust(-dx, -dy, dx, dy);
@@ -963,6 +967,7 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		{
 			m_viewRect.adjust(dx, dy, -dx, -dy);
 		}
+
 		m_xscale = findScale(m_viewRect.left(), m_viewRect.right());
 		m_yscale = findScale(m_viewRect.top(), m_viewRect.bottom());
 		repaint();
@@ -1309,7 +1314,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nydiv != 0)
 		{
 			gy = pow(10.0, nydiv);
-			sprintf(sz, "x 1e%03d", nydiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nydiv);
 			p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), QString(sz));
 		}
 	}
@@ -1322,7 +1327,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nxdiv != 0)
 		{
 			gx = pow(10.0, nxdiv);
-			sprintf(sz, "x 1e%03d", nxdiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nxdiv);
 			p.drawText(x1 + 5, y1, QString(sz));
 		}
 	}
@@ -1350,7 +1355,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fy / gy;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 
 				if (m_data.m_yAxis.labelAlignment == ALIGN_LABEL_LEFT)
@@ -1388,7 +1393,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fx / gx;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 				int w = p.fontMetrics().horizontalAdvance(s);
 				if (m_data.m_xAxis.labelAlignment == ALIGN_LABEL_BOTTOM)

@@ -32,7 +32,8 @@ SOFTWARE.*/
 enum OBJECT_COLOR_MODE {
 	DEFAULT_COLOR,
 	OBJECT_COLOR,
-	MATERIAL_TYPE
+	MATERIAL_TYPE,
+	FSELEMENT_TYPE
 };
 
 //-----------------------------------------------------------------------------
@@ -63,6 +64,9 @@ struct GLViewSettings
 	bool	m_bext;		//!< ignore interior nodes
 	bool	m_bsoft;	//!< soft selection mode
 	bool	m_bcullSel;	//!< ignore backfacing when selecting
+	
+	bool	m_bselbrush;//!< brush selection mode
+	float	m_brushSize;//!< size of brush
 
 	bool	m_bselpath;	//!< select by shortest path
 

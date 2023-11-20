@@ -40,25 +40,20 @@ SOFTWARE.*/
 #include "ModelSearch.h"
 #include "MainWindow.h"
 
-class WarningLabel : public QWidget
+class WarningLabel : public QToolButton
 {
 public:
-	WarningLabel(QWidget* parent = nullptr) : QWidget(parent)
+	WarningLabel(QWidget* parent = nullptr) : QToolButton(parent)
 	{
-		QHBoxLayout* h = new QHBoxLayout;
-		h->setContentsMargins(0, 0, 0, 0);
-		h->addWidget(new QLabel("<img src=\":/icons/warning.png\">"));
-		h->addWidget(m_l = new QLabel);
-		setLayout(h);
+		setIcon(QIcon(":/icons/warning.png"));
 		m_warnings = 0;
-
 		setWarnings(0);
 	}
 
 	void setWarnings(int n)
 	{
 		m_warnings = n;
-		m_l->setText(QString("(%1)").arg(n));
+		setText(QString("(%1)").arg(n));
 		setToolTip(QString("%1 warnings").arg(n));
 		if (n == 0) hide(); else show();
 	}
@@ -69,7 +64,6 @@ public:
 	}
 
 private:
-	QLabel* m_l;
 	int		m_warnings;
 };
 
@@ -131,7 +125,7 @@ public:
 		m_filter->setObjectName("filter");
 		m_filter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
 
-		m_errs = new WarningLabel;
+		m_errs = new WarningLabel; m_errs->setObjectName("warnings");
 
 		QHBoxLayout* hf = new QHBoxLayout;
 		hf->setContentsMargins(0,0,0,0);

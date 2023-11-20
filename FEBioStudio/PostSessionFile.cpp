@@ -4,6 +4,7 @@
 #include <XML/XMLWriter.h>
 #include <XML/XMLReader.h>
 #include <PostGL/GLModel.h>
+#include <PostGL/GLMusclePath.h>
 #include "PostDocument.h"
 #include <PostLib/FEPostMesh.h>
 #include <XPLTLib/xpltFileReader.h>
@@ -14,6 +15,7 @@
 #include <FEBio/FEBioExport.h> // for type_to_string<vec3d>
 #include <FEBio/FEBioFormat.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPlotGroup.h>
 #include <sstream>
 
 template <> std::string type_to_string<GLColor>(const GLColor& v)
@@ -30,6 +32,7 @@ PostSessionFileReader::PostSessionFileReader(CPostDocument* doc) : m_doc(doc)
 {
 	m_openFile = nullptr;
 	m_fem = nullptr;
+	m_pg = nullptr;
 	m_szfile = nullptr;
 }
 
@@ -83,6 +86,7 @@ bool PostSessionFileReader::Load(const char* szfile)
 {
 	if (szfile == nullptr) return false;
 	m_szfile = szfile;
+	m_pg = nullptr;
 
 	XMLReader xml;
 	if (xml.Open(szfile) == false) return errf("Failed opening post session file.");
@@ -458,13 +462,20 @@ bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 bool PostSessionFileReader::parse_plot(XMLTag& tag)
 {
 	const char* sztype = tag.AttributeValue("type");
+
+	// temporary hack
+	if (strcmp(sztype, "muscle-path-group") == 0) sztype = "plot-group";
+
 	Post::CGLPlot* plot = FSCore::CreateClass<Post::CGLPlot>(CLASS_PLOT, sztype);
 
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname) plot->SetName(szname);
 
-	Post::CGLModel* glm = m_doc->GetGLModel();
-	glm->AddPlot(plot);
+	if (m_pg) m_pg->AddPlot(plot);
+	else {
+		Post::CGLModel* glm = m_doc->GetGLModel();
+		glm->AddPlot(plot);
+	}
 
 	++tag;
 	do
@@ -491,6 +502,65 @@ bool PostSessionFileReader::parse_plot(XMLTag& tag)
 				}
 			}
 			else tag.skip();
+		}
+		else if (tag == "init_path")
+		{
+			Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(plot);
+			if (mp)
+			{
+				vector<vec3d> path;
+				++tag;
+				do
+				{
+					vec3d v;
+					tag.value(v);
+					path.push_back(v);
+					++tag;
+				} while (!tag.isend());
+				mp->SetInitPath(path);
+			}
+		}
+		else if (tag == "muscle_path")
+		{
+			// This is obsolete, but we'll read it for now
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+			if (pg)
+			{
+				const char* szname = tag.AttributeValue("name");
+				Post::GLMusclePath* mp = new Post::GLMusclePath();
+				pg->AddPlot(mp);
+				mp->SetName(szname);
+				++tag;
+				do
+				{
+					Param* p = mp->GetParam(tag.Name());
+					if (p)
+					{
+						fsps_read_param(p, tag);
+					}
+					else if (tag == "init_path")
+					{
+						vector<vec3d> path;
+						++tag;
+						do
+						{
+							vec3d v;
+							tag.value(v);
+							path.push_back(v);
+							++tag;
+						} while (!tag.isend());
+						mp->SetInitPath(path);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+			else tag.skip();
+		}
+		else if (tag == "plot")
+		{
+			m_pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+			if (parse_plot(tag) == false) return false;
+			if (dynamic_cast<Post::GLPlotGroup*>(plot)) m_pg = nullptr;
 		}
 		++tag;
 	} while (!tag.isend());
@@ -882,6 +952,53 @@ void PostSessionFileWriter::WritePlots()
 						}
 						xml.close_branch();
 					}
+				}
+			}
+			if (dynamic_cast<Post::GLMusclePath*>(plot))
+			{
+				Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(plot);
+				if (mp->OverrideInitPath())
+				{
+					std::vector<vec3d> path = mp->GetInitPath();
+					if (path.empty() == false)
+						xml.add_branch("init_path");
+					for (vec3d p : path)
+					{
+						xml.add_leaf("point", p);
+					}
+					xml.close_branch();
+				}
+			}
+			if (dynamic_cast<Post::GLPlotGroup*>(plot))
+			{
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+				for (int n = 0; n < pg->Plots(); ++n)
+				{
+					Post::CGLPlot* pn = pg->GetPlot(n);
+
+					string typeStr_n = pn->GetTypeString();
+					string name_n = pn->GetName();
+					XMLElement el("plot");
+					el.add_attribute("type", typeStr_n);
+					if (name_n.empty() == false) el.add_attribute("name", name_n);
+					xml.add_branch(el);
+					{
+						fsps_write_parameters(pn, xml);
+
+						Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(pn);
+						if (mp && mp->OverrideInitPath())
+						{
+							std::vector<vec3d> path = mp->GetInitPath();
+							if (path.empty() == false)
+								xml.add_branch("init_path");
+							for (vec3d p : path)
+							{
+								xml.add_leaf("point", p);
+							}
+							xml.close_branch();
+						}
+					}
+					xml.close_branch();
 				}
 			}
 		}

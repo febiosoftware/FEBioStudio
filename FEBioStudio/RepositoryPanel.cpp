@@ -128,30 +128,7 @@ void CRepositoryPanel::SetModelList()
 
 	dbHandler->GetCategories();
 
-	if(repoHandler->isAuthenticated())
-	{
-		QString category("My Projects");
-		QTreeWidgetItem* item = new QTreeWidgetItem(QStringList(category));
-		item->setIcon(0, QIcon(":/icons/folder.png"));
-		ui->projectTree->addTopLevelItem(item);
-	}
-
 	dbHandler->GetProjects();
-
-	// Delete empty categories.
-	vector<int> empty;
-	for(int item = 0; item < ui->projectTree->topLevelItemCount(); item++)
-	{
-		if(ui->projectTree->topLevelItem(item)->childCount() == 0)
-		{
-			empty.push_back(item);
-		}
-	}
-
-	for(int item : empty)
-	{
-		delete ui->projectTree->topLevelItem(item);
-	}
 
 	// Select the first category
 	if(ui->projectTree->topLevelItemCount() > 0)
@@ -396,9 +373,7 @@ void CRepositoryPanel::AddProject(char **data)
 	{
 		if(repoHandler->getUsername().compare(owner) == 0)
 		{
-			category = "My Projects";
 			owned = true;
-
 			cont = true;
 		}
 	}
@@ -718,7 +693,17 @@ void CRepositoryPanel::on_actionModify_triggered()
 {
 	if(repoHandler->getUploadPermission())
 	{
-		int projID = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0])->getProjectID();
+        ProjectItem* item;
+        if(ui->treeStack->currentIndex() == 0)
+        {
+            item = static_cast<ProjectItem*>(ui->projectTree->selectedItems()[0]);
+        }
+        else
+        {
+            item = static_cast<ProjectItem*>(static_cast<SearchItem*>(ui->searchTree->selectedItems()[0])->getRealItem());
+        }
+
+        int projID = item->getProjectID();
 
 		CWzdUpload dlg(this, repoHandler->getUploadPermission(), dbHandler, repoHandler, projID);
 		dlg.setName(ui->projectName->text());

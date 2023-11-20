@@ -225,6 +225,7 @@ protected:
 	QComboBox*			m_combo;
 	QSpinBox*			m_divs;
 	QListWidget*		m_list;
+	QCheckBox*			m_smooth;
 };
 
 //=============================================================================

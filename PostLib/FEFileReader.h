@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <stdio.h>
 #include <string>
-#include <MeshIO/FileReader.h>
+#include <FSCore/FileReader.h>
 
 #ifdef WIN32
 typedef __int64 off_type;

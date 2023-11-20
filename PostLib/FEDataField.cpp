@@ -80,8 +80,8 @@ int ModelDataField::components(Data_Tensor_Type ntype)
 		{
 		case DATA_FLOAT: return 1; break;
 		case DATA_VEC3F: return 7; break;
-		case DATA_MAT3F: return 9; break;
-		case DATA_MAT3D: return 9; break;
+		case DATA_MAT3F: return 10; break;
+		case DATA_MAT3D: return 10; break;
 		case DATA_MAT3FS: return 18; break;
 		case DATA_MAT3FD: return 3; break;
 		case DATA_TENS4FS: return 21; break;
@@ -208,6 +208,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			else if (ncomp == 6) sprintf(szline, "ZX - %s", sz);
 			else if (ncomp == 7) sprintf(szline, "ZY - %s", sz);
 			else if (ncomp == 8) sprintf(szline, "ZZ - %s", sz);
+			else if (ncomp == 9) sprintf(szline, "%s Magnitude", sz);
 			return szline;
 		}
 		break;
@@ -403,6 +404,7 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 		case DATA_NODE: return new FEElemArrayDataNode(pstate, GetArraySize(), this); break;
 		}
 		break;
+	case CLASS_OBJECT: return new FEGlobalArrayData(pstate, GetArraySize()); break;
 	}
 	assert(false);
 	return 0;
@@ -435,7 +437,7 @@ Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 
 //=================================================================================================
 
-bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, const char* szfile, bool selOnly, const std::vector<int>& states)
+bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, const char* szfile, bool selOnly, bool writeConn, const std::vector<int>& states)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == 0) return false;
@@ -448,11 +450,11 @@ bool Post::ExportDataField(Post::FEPostModel& fem, const ModelDataField& df, con
 	}
 	else if (IS_ELEM_FIELD(nfield))
 	{
-		bret = Post::ExportElementDataField(fem, df, fp, selOnly, states);
+		bret = Post::ExportElementDataField(fem, df, fp, selOnly, writeConn, states);
 	}
 	else if (IS_FACE_FIELD(nfield))
 	{
-		bret = Post::ExportFaceDataField(fem, df, fp, selOnly, states);
+		bret = Post::ExportFaceDataField(fem, df, fp, selOnly, writeConn, states);
 	}
 	fclose(fp);
 
@@ -521,7 +523,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 }
 
 
-bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
+bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, bool writeConn, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -532,6 +534,29 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	int nstates = (int)states.size();
 
 	char buf[8192] = { 0 };
+
+	// write connectivity 
+	if (writeConn)
+	{
+		int NF = mesh.Faces();
+		for (int i = 0; i < NF; ++i)
+		{
+			FSFace& face = mesh.Face(i);
+
+			if ((selOnly == false) || face.IsSelected())
+			{
+				// write the element ID
+				fprintf(fp, "%d,", i + 1);
+				int nf = face.Nodes();
+				for (int j = 0; j < nf; ++j)
+				{
+					fprintf(fp, " %d", face.n[j] + 1);
+					if (j != nf - 1) fprintf(fp, ",");
+				}
+				fprintf(fp, "\n");
+			}
+		}
+	}
 
 	// loop over all elements
 	int NF = mesh.Faces();
@@ -703,7 +728,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 	return true;
 }
 
-bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, const std::vector<int>& states)
+bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FILE* fp, bool selOnly, bool writeConn, const std::vector<int>& states)
 {
 	int nfield = df.GetFieldID();
 	int ndata = FIELD_CODE(nfield);
@@ -712,6 +737,29 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 	FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	int nstates = (int)states.size();
+
+	// write connectivity 
+	if (writeConn)
+	{
+		int NE = mesh.Elements();
+		for (int i = 0; i < NE; ++i)
+		{
+			FEElement_& el = mesh.ElementRef(i);
+
+			if ((selOnly == false) || el.IsSelected())
+			{
+				// write the element ID
+				fprintf(fp, "%d,", i + 1);
+				int ne = el.Nodes();
+				for (int j = 0; j < ne; ++j)
+				{
+					fprintf(fp, " %d", el.m_node[j] + 1);
+					if (j != ne - 1) fprintf(fp, ",");
+				}
+				fprintf(fp, "\n");
+			}
+		}
+	}
 
 	// loop over all elements
 	int NE = mesh.Elements();
@@ -937,6 +985,7 @@ void StandardDataFieldManager::Init()
 	Add<FEAreaCoverage>("Area coverage");
 	Add<FEDataField_T<FEFacetArea> >("Facet area");
 	Add<FEDataField_T<FEElementMaterial> >("Material ID");
+	Add<FEDataField_T<FESurfaceNormal> >("Surface normal");
 }
 
 void Post::InitStandardDataFields()

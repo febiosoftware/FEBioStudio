@@ -35,7 +35,8 @@ namespace Post {
 }
 
 //-----------------------------------------------------------------------------
-// This class reads the XPLT file, version 3.2
+// This class reads the XPLT file, version 3.2 and 3.3
+// (In 3.3. node IDs are stored in Node section)
 class XpltReader3 : public xpltParser
 {
 public:

@@ -848,6 +848,7 @@ GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 	m_ps = pg->GetGModel();
 	GModel& m = *m_ps;
 	m_item = -1;
+	m_comp = 0;
 	m_pn = 0;
 	int N = m.DiscreteObjects();
 	for (int i = 0; i<N; ++i)
@@ -858,6 +859,20 @@ GDiscreteSelection::Iterator::Iterator(GDiscreteSelection* pg)
 			m_pn = pi;
 			m_item = i;
 			break;
+		}
+		GDiscreteElementSet* pds = dynamic_cast<GDiscreteElementSet*>(pi);
+		if (pds)
+		{
+			for (int j = 0; j < pds->size(); ++j)
+			{
+				if (pds->element(j).IsSelected())
+				{
+					m_pn = pds;
+					m_item = i;
+					m_comp = j;
+					break;
+				}
+			}
 		}
 	}
 }
@@ -881,19 +896,16 @@ GDiscreteSelection::Iterator& GDiscreteSelection::Iterator::operator ++()
 	return (*this);
 }
 
+GDiscreteSelection::GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE_OBJECT) 
+{ 
+	m_ps = ps; 
+	m_count = 0;
+	Update(); 
+}
+
 int GDiscreteSelection::Count()
 {
-	if (m_ps == 0) return 0;
-	GModel& m = *m_ps;
-	int n = 0;
-	int N = m.DiscreteObjects();
-	for (int i = 0; i<N; ++i)
-	{
-		GDiscreteObject* pn = m.DiscreteObject(i);
-		assert(pn);
-		if (pn->IsSelected()) ++n;
-	}
-	return n;
+	return m_count;
 }
 
 int GDiscreteSelection::Next()
@@ -940,11 +952,11 @@ void GDiscreteSelection::Update()
 	if (m_ps == 0) return;
 	GModel& model = *m_ps;
 
-	int m = 0;
+	m_count = 0;
 
 	const double LARGE = 1e20;
 
-	m_box = BOX(LARGE, LARGE, LARGE, -LARGE, -LARGE, -LARGE);
+	BOX box;
 
 	int N = model.DiscreteObjects();
 	vec3d r;
@@ -960,16 +972,9 @@ void GDiscreteSelection::Update()
 				{
 					GNode& nj = *model.FindNode(pls->m_node[j]);
 					r = nj.Position();
-
-					if (r.x < m_box.x0) m_box.x0 = r.x;
-					if (r.y < m_box.y0) m_box.y0 = r.y;
-					if (r.z < m_box.z0) m_box.z0 = r.z;
-	
-					if (r.x > m_box.x1) m_box.x1 = r.x;
-					if (r.y > m_box.y1) m_box.y1 = r.y;
-					if (r.z > m_box.z1) m_box.z1 = r.z;
+					box += r;
 				}
-				++m;
+				++m_count;
 			}
 			GGeneralSpring* pgs = dynamic_cast<GGeneralSpring*>(pn);
 			if (pgs)
@@ -978,21 +983,32 @@ void GDiscreteSelection::Update()
 				{
 					GNode& nj = *model.FindNode(pls->m_node[j]);
 					r = nj.Position();
-
-					if (r.x < m_box.x0) m_box.x0 = r.x;
-					if (r.y < m_box.y0) m_box.y0 = r.y;
-					if (r.z < m_box.z0) m_box.z0 = r.z;
-
-					if (r.x > m_box.x1) m_box.x1 = r.x;
-					if (r.y > m_box.y1) m_box.y1 = r.y;
-					if (r.z > m_box.z1) m_box.z1 = r.z;
+					box += r;
 				}
-				++m;
+				++m_count;
+			}
+		}
+		if (dynamic_cast<GDiscreteSpringSet*>(pn))
+		{
+			GDiscreteSpringSet* ps = dynamic_cast<GDiscreteSpringSet*>(pn);
+			for (int i = 0; i < ps->size(); ++i)
+			{
+				GDiscreteElement& d = ps->element(i);
+				if (d.IsSelected())
+				{
+					GNode& n0 = *model.FindNode(d.Node(0));
+					GNode& n1 = *model.FindNode(d.Node(1));
+
+					box += n0.Position();
+					box += n1.Position();
+
+					++m_count;
+				}
 			}
 		}
 	}
 
-	if (m == 0) m_box = BOX(0, 0, 0, 0, 0, 0);
+	m_box = box;
 }
 
 
@@ -1244,6 +1260,12 @@ FEElement_* FEElementSelection::Element(int i)
 {
 	if ((i<0) || (i>=(int) m_item.size())) return 0;
 	return m_pMesh->ElementPtr(m_item[i]);
+}
+
+int FEElementSelection::ElementID(int i)
+{
+    if ((i<0) || (i>=(int) m_item.size())) return -1;
+    return m_item[i];
 }
 
 //////////////////////////////////////////////////////////////////////

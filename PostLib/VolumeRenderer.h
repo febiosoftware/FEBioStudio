@@ -27,9 +27,9 @@ SOFTWARE.*/
 #include "GLImageRenderer.h"
 #include <GLLib/GLMesh.h>
 
-namespace Post {
-
 class CImageModel;
+
+namespace Post {
 
 class CVolumeRenderer : public CGLImageRenderer
 {

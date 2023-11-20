@@ -80,6 +80,14 @@ float component(const mat3d& m, int n)
 	case 6: g = (float) m(2,0); break;
 	case 7: g = (float) m(2,1); break;
 	case 8: g = (float) m(2,2); break;
+	case 9:
+	{
+		g += m(0, 0) * m(0, 0) + m(0, 1) * m(0, 1) + m(0, 2) * m(0, 2);
+		g += m(1, 0) * m(1, 0) + m(1, 1) * m(1, 1) + m(1, 2) * m(1, 2);
+		g += m(2, 0) * m(2, 0) + m(2, 1) * m(2, 1) + m(2, 2) * m(2, 2);
+		g = sqrt(g);
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -102,6 +110,14 @@ float component(const mat3f& m, int n)
 	case 6: g = m(2,0); break;
 	case 7: g = m(2,1); break;
 	case 8: g = m(2,2); break;
+	case 9:
+	{
+		g += m(0, 0) * m(0, 0) + m(0, 1) * m(0, 1) + m(0, 2) * m(0, 2);
+		g += m(1, 0) * m(1, 0) + m(1, 1) * m(1, 1) + m(1, 2) * m(1, 2);
+		g += m(2, 0) * m(2, 0) + m(2, 1) * m(2, 1) + m(2, 2) * m(2, 2);
+		g = sqrt(g);
+	}
+	break;
 	default:
 		assert(false);
 	}

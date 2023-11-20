@@ -171,43 +171,53 @@ void GMeshObject::UpdateSections()
 {
 	FSMesh* pm = GetFEMesh();
 
+#pragma omp parallel for
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);
-		if (pg->GetSection() == nullptr)
+
+		// see if this is a solid part, or shell part
+		bool isSolid = false;
+		bool isShell = false;
+		bool isBeam  = false;
+		bool isOther = false;
+
+		for (int j = 0; j < pm->Elements(); ++j)
 		{
-			// see if this is a solid part, or shell part
-			bool isSolid = false;
-			bool isShell = false;
-			bool isBeam  = false;
-			bool isOther = false;
-
-			for (int j = 0; j < pm->Elements(); ++j)
+			FSElement& el = pm->Element(j);
+			if (el.m_gid == i)
 			{
-				FSElement& el = pm->Element(j);
-				if (el.m_gid == i)
-				{
-					if      (el.IsSolid()) isSolid = true;
-					else if (el.IsShell()) isShell = true;
-					else if (el.IsBeam ()) isBeam  = true;
-					else isOther = true;
-				}
+				if      (el.IsSolid()) isSolid = true;
+				else if (el.IsShell()) isShell = true;
+				else if (el.IsBeam ()) isBeam  = true;
+				else isOther = true;
 			}
-			assert(isOther == false);
+		}
+		assert(isOther == false);
 
-			if (isSolid && (isShell == false) && (isOther == false))
+		GPartSection* currentSection = pg->GetSection();
+
+		if (isSolid && (isShell == false) && (isOther == false))
+		{
+			if (dynamic_cast<GSolidSection*>(currentSection) == nullptr)
 			{
 				GSolidSection* ps = new GSolidSection(pg);
 				pg->SetSection(ps);
 			}
+		}
 
-			if (isShell && (isSolid == false) && (isOther == false))
+		if (isShell && (isSolid == false) && (isOther == false))
+		{
+			if (dynamic_cast<GShellSection*>(currentSection) == nullptr)
 			{
 				GShellSection* ps = new GShellSection(pg);
 				pg->SetSection(ps);
 			}
+		}
 
-			if (isBeam && (isSolid == false) && (isOther == false))
+		if (isBeam && (isSolid == false) && (isOther == false))
+		{
+			if (dynamic_cast<GBeamSection*>(currentSection) == nullptr)
 			{
 				GBeamSection* ps = new GBeamSection(pg);
 				pg->SetSection(ps);

@@ -358,6 +358,7 @@ void AbaqusModel::PART::AddElement(AbaqusModel::ELEMENT& newElem)
 
 vector<AbaqusModel::ELEMENT>::iterator AbaqusModel::PART::FindElement(int id)
 {
+	if ((id < 0) || (id >= m_Elem.size())) return m_Elem.end();
 	return m_Elem.begin() + id;
 }
 

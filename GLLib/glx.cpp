@@ -1262,9 +1262,12 @@ void glx::renderRigidLock(double R)
 	glx::drawCircle(R / 5, 25);
 }
 
-void glx::renderSpring(const vec3d& a, const vec3d& b, double R)
+void glx::renderSpring(const vec3d& a, const vec3d& b, double R, int N)
 {
-	glx::drawHelix(a, b, R / 2, R / 2, 25);
+	double p = R / 2;
+	double L = (b - a).norm();
+	if (L != 0) p = L / N;
+	glx::drawHelix(a, b, R / 2, p, 25);
 }
 
 void glx::renderDamper(const vec3d& a, const vec3d& b, double R)

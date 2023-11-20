@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "GraphWindow.h"
 
 class CMainWindow;
+class CStatsWidget;
 
 class CStatsWindow : public CGraphWindow
 {
@@ -42,4 +43,6 @@ public:
 
 private:
 	void UpdateSelection(bool breset);
+
+	CStatsWidget* w;
 };

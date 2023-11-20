@@ -324,13 +324,14 @@ public:
 		GModel*				m_ps;
 		GDiscreteObject*	m_pn;
 		int					m_item;
+		int					m_comp;
 	};
 
 	int Next();
 	int Prev();
 
 public:
-	GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE_OBJECT) { m_ps = ps; Update(); }
+	GDiscreteSelection(GModel* ps);
 	int Count();
 	void Invert();
 	void Update();
@@ -346,6 +347,7 @@ public:
 
 protected:
 	GModel*	m_ps;
+	int		m_count;
 };
 
 //-----------------------------------------------------------------------------
@@ -384,6 +386,7 @@ public:
 	FEItemListBuilder* CreateItemList();
 
 	FEElement_* Element(int i);
+    int ElementID(int i);
 
 protected:
 	FSMesh*		m_pMesh;

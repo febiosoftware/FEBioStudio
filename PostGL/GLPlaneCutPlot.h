@@ -83,8 +83,12 @@ public:
 	float GetRotation() { return m_rot; }
 
 	void GetNormalizedEquations(double a[4]);
-	vec3d GetPlaneNormal();
+	vec3d GetPlaneNormal() const;
+	void SetPlaneNormal(const vec3d& n);
 	float GetPlaneOffset();
+	void SetPlaneOffset(float a);
+	float GetOffsetScale() const;
+	vec3d GetPlanePosition() const;
 
 	void Render(CGLContext& rc) override;
 	void RenderPlane();
@@ -101,6 +105,13 @@ public:
 
 	bool UpdateData(bool bsave = true) override;
 
+	void UpdatePlaneCut();
+
+public:
+	bool Intersects(Ray& ray, Intersection& q) override;
+	FESelection* SelectComponent(int index) override;
+	void ClearSelection() override;
+
 protected:
 	void RenderSlice();
 	void RenderMesh();
@@ -113,7 +124,6 @@ protected:
 	void AddDomain(FEPostMesh* pm, int n);
 	void AddFaces(FEPostMesh* pm);
 
-	void UpdatePlaneCut();
 	void UpdateTriMesh();
 	void UpdateLineMesh();
 	void UpdateOutlineMesh();

@@ -31,12 +31,12 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QCloseEvent>
 #include "ImageThread.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
-#include <PostLib/ImageSource.h>
+#include <ImageLib/ImageSource.h>
 
 //--------------------------------------------------------------------
-CImageReadThread::CImageReadThread(Post::CImageModel* imgModel) : m_imgModel(imgModel)
+CImageReadThread::CImageReadThread(CImageModel* imgModel) : m_imgModel(imgModel)
 {
 
 }
@@ -48,11 +48,11 @@ void CImageReadThread::run()
 	bool success = true;
 	try
 	{
-		Post::CImageSource* src = m_imgModel->GetImageSource();
+		CImageSource* src = m_imgModel->GetImageSource();
 		if (src)
 		{
 			success = src->Load();
-			if (success == false) SetErrorString(QString::fromStdString(src->getErrorString()));
+			if (success == false) SetErrorString(QString::fromStdString(src->GetErrorString()));
 		}
 		else 
 		{
@@ -72,7 +72,7 @@ void CImageReadThread::run()
 bool CImageReadThread::hasProgress()
 {
 	if (m_imgModel == nullptr) return false;
-	Post::CImageSource* src = m_imgModel->GetImageSource();
+	CImageSource* src = m_imgModel->GetImageSource();
 	if (src) return (src->GetProgress().valid);
 	else return false;
 }
@@ -80,7 +80,7 @@ bool CImageReadThread::hasProgress()
 double CImageReadThread::progress()
 {
 	if (m_imgModel == nullptr) return 0;
-	Post::CImageSource* src = m_imgModel->GetImageSource();
+	CImageSource* src = m_imgModel->GetImageSource();
 	if (src) return src->GetProgress().percent;
 	return 0.0;
 }
@@ -88,7 +88,7 @@ double CImageReadThread::progress()
 const char* CImageReadThread::currentTask()
 {
 	if (m_imgModel == nullptr) return "";
-	Post::CImageSource* src = m_imgModel->GetImageSource();
+	CImageSource* src = m_imgModel->GetImageSource();
 	if (src) return src->GetProgress().task;
 	return "";
 }
@@ -96,13 +96,13 @@ const char* CImageReadThread::currentTask()
 void CImageReadThread::stop()
 {
 	if (m_imgModel == nullptr) return;
-	Post::CImageSource* src = m_imgModel->GetImageSource();
+	CImageSource* src = m_imgModel->GetImageSource();
 	if (src) src->Terminate();
 }
 
 //--------------------------------------------------------------------
 
-CImageFilterThread::CImageFilterThread(Post::CImageModel* imgModel) : m_imgModel(imgModel)
+CImageFilterThread::CImageFilterThread(CImageModel* imgModel) : m_imgModel(imgModel)
 {
 	m_canceled = false;
 }

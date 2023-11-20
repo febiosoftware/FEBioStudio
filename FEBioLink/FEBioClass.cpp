@@ -383,6 +383,14 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FEBEAMDOMAIN_ID      : pc = new FEBeamFormulation(fem); break;
 	case FEDISCRETEMATERIAL_ID: pc = new FEBioDiscreteMaterial(fem); break;
 	case FELINEARSOLVER_ID    : pc = new FSGenericClass(fem); break;
+	case FESURFACE_ID         : 
+	{
+		FSMeshSelection* pms = new FSMeshSelection(fem);
+		pms->SetMeshItemType(FE_FACE_FLAG);
+		pms->SetSuperClassID(FESURFACE_ID);
+		pc = pms;
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -514,11 +522,11 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 				}
 				else if (ndim == 3)
 				{
-					vec3d v(0, 0, 0);
-					v.x = param.value<FEParamDouble>(0).constValue();
-					v.y = param.value<FEParamDouble>(1).constValue();
-					v.z = param.value<FEParamDouble>(2).constValue();
-					p = po->AddVecParam(v, szname, szlongname);
+					double v[3] = { 0 };
+					v[0] = param.value<FEParamDouble>(0).constValue();
+					v[1] = param.value<FEParamDouble>(1).constValue();
+					v[2] = param.value<FEParamDouble>(2).constValue();
+					p = po->AddArrayDoubleParam(v, 3, szname, szlongname)->MakeVariable(true);;
 				}
 				else assert(false);
 			}
@@ -718,12 +726,17 @@ int FEBio::GetModuleId(const std::string& moduleName)
 void FEBio::SetActiveModule(int moduleID)
 {
 	// create a new model
-	delete febioModel; febioModel = new FEBioModel;
+	delete febioModel; febioModel = nullptr;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.SetActiveModule(moduleID);
 
-	fecore.GetActiveModule()->InitModel(febioModel);
+	FEModule* activeMod = fecore.GetActiveModule();
+	if (activeMod)
+	{
+		febioModel = new FEBioModel;
+		activeMod->InitModel(febioModel);
+	}
 }
 
 int FEBio::GetActiveModule()
@@ -919,9 +932,8 @@ mat3d FEBio::GetMaterialAxis(void* mat3dvaluator, const vec3d& p)
 	if (val == nullptr) return mat3d::identity();
 	FEMaterialPoint mp;
 	mp.m_r0 = mp.m_rt = p;
-	mat3d v = (*val)(mp);
-	v.unit();
-	return v;
+	mat3d Q = (*val)(mp);
+	return Q;
 }
 
 void FEBio::DeleteClass(void* p)
@@ -1224,6 +1236,17 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr, fem);
 }
 
+FSGenericClass* FEBio::CreateLinearSolver(const std::string& typeStr, FSModel* fem)
+{
+	if (typeStr.empty())
+	{
+		FSGenericClass* pc = new FSGenericClass(fem);
+		pc->SetSuperClassID(FELINEARSOLVER_ID);
+		return pc;
+	}
+	else return CreateModelComponent<FSGenericClass>(FELINEARSOLVER_ID, typeStr, fem);
+}
+
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
 {
 	return CreateModelComponent<FEShellFormulation>(FESHELLDOMAIN_ID, typeStr, fem);
@@ -1271,6 +1294,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 		return pms;
 	}
 	break;
+	case FELINEARSOLVER_ID: return CreateLinearSolver(typeStr, fem); break;
 	default:
 		assert(false);
 	}

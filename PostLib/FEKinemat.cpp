@@ -43,6 +43,20 @@ vec3d FEKinemat::KINE::apply(const vec3d& r)
 	return vec3d(d[0], d[1], d[2]);
 }
 
+vec3d FEKinemat::KINE::translate()
+{
+	return vec3d(m[3], m[7], m[11]);
+}
+
+mat3d FEKinemat::KINE::rotate()
+{
+	mat3d Q;
+	Q[0][0] = m[0]; Q[0][1] = m[1]; Q[0][2] = m[2];
+	Q[1][0] = m[4]; Q[1][1] = m[5]; Q[1][2] = m[6];
+	Q[2][0] = m[8]; Q[2][1] = m[9]; Q[2][2] = m[10];
+	return Q;
+}
+
 //-----------------------------------------------------------------------------
 FEKinemat::FEKinemat()
 {
