@@ -2,7 +2,7 @@ LIB_DIR="/usr/lib/x86_64-linux-gnu"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$LIB_DIR \
-		-DFEBio_SDK=febio-sdk \
+		-DFEBio_SDK=febio4-sdk \
 		-DFFMPEG_LIB_DIR=$LIB_DIR \
 		-DUSE_FFMPEG=ON \
 		-DTETGEN_LIB_DIR=$LIB_DIR \
