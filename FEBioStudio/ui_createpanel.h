@@ -254,10 +254,12 @@ CCreateLoftSurface::CCreateLoftSurface(CCreatePanel* parent) : CCreatePane(paren
 	m_divs = new QSpinBox;
 	m_divs->setRange(1, 100);
 	m_divs->setValue(1);
+	m_smooth = new QCheckBox("smooth interpolation"); m_smooth->setChecked(true);
 	layout->addWidget(pl);
 	layout->addWidget(m_list);
 	layout->addWidget(m_combo);
 	layout->addWidget(m_divs);
+	layout->addWidget(m_smooth);
 	layout->addStretch();
 
 	setLayout(layout);
@@ -322,7 +324,9 @@ FSObject* CCreateLoftSurface::Create()
 	FELoftMesher loft;
 	loft.setElementType(nelem);
 	loft.setDivisions(m_divs->value());
+	loft.setSmooth(m_smooth->isChecked());
 	FSSurfaceMesh* mesh = loft.Apply(curves);
+	if (mesh == nullptr) return nullptr;
 
 	GSurfaceMeshObject* po = new GSurfaceMeshObject(mesh);
 

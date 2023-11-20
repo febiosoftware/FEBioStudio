@@ -1400,15 +1400,27 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		}
 	}
 
-	// read the nodal coordinates
 	NN = m_xmesh.nodes();
-	for (int i=0; i<NN; i++)
+	// read the nodal coordinates
+	if (FileVersion() < 0x0033)
 	{
-		FSNode& n = pmesh->Node(i);
-		NODE& N = m_xmesh.node(i);
-
-		// assign coordinates
-		n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		for (int i = 0; i < NN; i++)
+		{
+			FSNode& n = pmesh->Node(i);
+			NODE& N = m_xmesh.node(i);
+			n.m_nid = i + 1;
+			n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < NN; i++)
+		{
+			FSNode& n = pmesh->Node(i);
+			NODE& N = m_xmesh.node(i);
+			n.m_nid = N.id;
+			n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		}
 	}
 
 	// set the enabled-ness of the elements and the nodes

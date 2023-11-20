@@ -41,12 +41,13 @@ FERevolveFaces::FERevolveFaces() : FEModifier("Revolve faces")
 
 inline bool pointOnAxis(const vec3d& c, const vec3d& n, const vec3d& p)
 {
+    double tol = 1e-10;
     vec3d q = p - c;
     q = q - n*(q*n);
     double Lp = p.Length();
     double Lq = q.Length();
-    double Lr = (Lp > 0) ? Lq/Lp : Lq;
-    return (Lr < 1e-10);
+    double Lr = (Lp > tol) ? Lq/Lp : Lq;
+    return (Lr < tol);
 }
 
 FSMesh* FERevolveFaces::Apply(FSMesh* pm)

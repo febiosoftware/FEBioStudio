@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/MeshTools.h>
+#include <MeshLib/FEMeshBuilder.h>
 #include <FEBioLink/FEBioClass.h>
 #include <QDir>
 
@@ -39,7 +40,7 @@ CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Impo
 	addResourceProperty(&m_fileName, "Filename");
 	addDoubleProperty(&m_tol, "Snap tolerance");
 	addBoolProperty(&m_bintersect, "Check for intersections");
-	addEnumProperty(&m_type, "Spring type")->setEnumValues(QStringList() << "Linear" << "Nonlinear" << "Hill");
+	addEnumProperty(&m_type, "Element type")->setEnumValues(QStringList() << "Linear spring" << "Nonlinear spring" << "Hill spring" << "Linear truss");
 
 	m_type = 0;
 	m_tol = 1e-6;
@@ -66,7 +67,13 @@ bool CImportSpringsTool::OnApply()
 	if (m_springs.empty()) return SetErrorString("The file did not contain any springs or was not properly formatted.");
 
 	// apply the springs
-	if (mo) return AddSprings(doc->GetGModel(), mo);
+	if (mo)
+	{
+		if (m_type < 3)
+			return AddSprings(doc->GetGModel(), mo);
+		else 
+			return AddTrusses(doc->GetGModel(), mo);
+	}
 
 	return false;
 }
@@ -255,6 +262,87 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 	return true;
 }
 
+bool CImportSpringsTool::AddTrusses(GModel* gm, GMeshObject* po)
+{
+	// set the spring material
+	FSModel* fem = gm->GetFSModel();
+
+	// extract the name from the file name
+	QFileInfo file(m_fileName);
+	QString baseName = file.baseName();
+
+	FSMesh& m = *po->GetFEMesh();
+
+	int notFound = 0;
+	for (size_t i = 0; i < m_springs.size(); ++i)
+	{
+		SPRING& spring = m_springs[i];
+
+		// check for intersections first
+		if (m_bintersect)
+		{
+			Intersect(po, spring);
+		}
+
+		// see if the node exists
+		int na = findNode(po, spring.r0, m_tol);
+		if (na == -1) { notFound++;  na = po->AddNode(spring.r0); }
+		int nb = findNode(po, spring.r1, m_tol);
+		if (nb == -1) { notFound++; nb = po->AddNode(spring.r1); }
+
+		spring.n0 = na;
+		spring.n1 = nb;
+	}
+
+	// add new elements to the mesh
+	int gid = m.CountElementPartitions();
+	int cid = m.CountEdgePartitions();
+	int NE0 = m.Elements();
+	int NC0 = m.Edges();
+	m.Create(m.Nodes(), NE0 + m_springs.size(), 0, NC0 + m_springs.size());
+	for (int i = 0; i < m.Nodes(); ++i) m.Node(i).m_ntag = i;
+	m.Edge(NC0).m_gid = m.CountEdgePartitions();
+	for (int i = 0; i < m_springs.size(); ++i)
+	{
+		SPRING& spring = m_springs[i];
+		FSElement& el = m.Element(NE0 + i);
+		el.SetType(FE_BEAM2);
+		el.m_gid = gid;
+		int na = po->FindNode(spring.n0)->GetLocalID();
+		int nb = po->FindNode(spring.n1)->GetLocalID();
+		na = m.FindNodeFromID(na)->m_ntag;
+		nb = m.FindNodeFromID(nb)->m_ntag;
+		el.m_node[0] = na;
+		el.m_node[1] = nb;
+
+		FSEdge& ed = m.Edge(NC0 + i);
+		ed.SetType(FEEdgeType::FE_EDGE2);
+		ed.SetExterior(true);
+		ed.m_gid = cid++;
+		ed.n[0] = na;
+		ed.n[1] = nb;
+	}
+	po->Update(true);
+	GPart* pg = po->Part(gid);
+	pg->SetName(baseName.toStdString());
+	GBeamSection* pb = dynamic_cast<GBeamSection*>(pg->GetSection()); assert(pb);
+
+	// add a truss material
+	FSMaterial* pmat = FEBio::CreateMaterial("linear truss", fem);
+	GMaterial* gmat = new GMaterial(pmat);
+	fem->AddMaterial(gmat);
+	po->AssignMaterial(pg->GetID(), gmat->GetID());
+
+	FEBeamFormulation* bf = FEBio::CreateBeamFormulation("linear-truss", fem);
+	pb->SetElementFormulation(bf);
+
+	if (notFound > 0)
+	{
+		SetErrorString(QString("%1 new vertices were added to the mesh.").arg(notFound));
+	}
+
+	return true;
+}
 void CImportSpringsTool::Intersect(GMeshObject* po, CImportSpringsTool::SPRING& spring)
 {
 	FSMesh* mesh = po->GetFEMesh();

@@ -462,20 +462,12 @@ void GObject::AssignMaterial(int matid)
 }
 
 //-----------------------------------------------------------------------------
-// Assign a material to a part. The nid parameter is the global ID of the part.
-// The pm parameter is a pointer to the material.
-// Note that we also assign the material ID to the elements of the mesh, if there
-// is a mesh.
+// Assign a material to a part. The partid parameter is the global ID of the part,
+// matId is the global material ID
 void GObject::AssignMaterial(int partid, int matid)
 {
-	GPart* pg = FindPart(partid);
-	assert(pg);
-	int gid = -1;
-	if (pg) 
-	{
-		pg->SetMaterialID(matid);
-		gid = pg->GetLocalID();
-	}
+	GPart* pg = FindPart(partid); assert(pg);
+	if (pg) pg->SetMaterialID(matid);
 }
 
 //-----------------------------------------------------------------------------
