@@ -237,6 +237,14 @@ void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 
+	// special case when n0 == (0,0,-1)
+	// In this case, the quat cannot be determined uniquely
+	// so we need to specify it explicitly. 
+	if (vec3d(0, 0, 1) * n0 == -1)
+	{
+		q0 = quatd(vec3d(PI, 0, 0));
+	}
+
 	const int M = 5;
 	const int N = 16;
 	for (int j = 0; j < M; ++j)
