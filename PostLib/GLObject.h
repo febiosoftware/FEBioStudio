@@ -70,7 +70,7 @@ public:
 	bool IsActive() { return m_bactive; }
 
 	CGLModel* GetModel() { return m_pModel; }
-	void SetModel(CGLModel* pm) { m_pModel = pm; }
+	virtual void SetModel(CGLModel* pm) { m_pModel = pm; }
 
 	virtual void ChangeName(const std::string& name);
 

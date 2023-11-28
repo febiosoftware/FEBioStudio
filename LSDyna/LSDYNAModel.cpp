@@ -169,6 +169,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 		pn->r.x = in->x;
 		pn->r.y = in->y;
 		pn->r.z = in->z;
+		pn->m_nid = in->id;
 	}
 
 	// get pointer to elements
@@ -184,6 +185,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 			ELEMENT_SOLID& ih = m_solid[i];
 			ih.tag = i;
 			int* n = ih.n;
+			pe->m_nid = ih.eid;
 			int pid = ih.pid;
 			pe->m_gid = pid; // temporary assignment
 			if ((n[7] == n[6]) && (n[7] == n[5]) && (n[7] == n[4]) && (n[7] == n[3])) pe->SetType(FE_TET4);
@@ -317,6 +319,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 			if ((n>=0) && (n < m_po->Parts()))
 			{
 				GPart* pg = m_po->Part(n);
+				pg->SetID(p.pid);
 				pg->SetName(p.szname);
 			}
 		}

@@ -36,6 +36,8 @@ class CImportSpringsTool : public CBasicTool
 	{
 		vec3d	r0;
 		vec3d	r1;
+		int n0 = -1;
+		int n1 = -1;
 	};
 
 public:
@@ -46,6 +48,7 @@ public:
 private:
 	bool ReadFile();
 	bool AddSprings(GModel* fem, GMeshObject* po);
+	bool AddTrusses(GModel* fem, GMeshObject* po);
 	void Intersect(GMeshObject* po, SPRING& s);
 
 	bool ReadTXTFile();

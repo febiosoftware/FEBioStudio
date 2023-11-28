@@ -412,7 +412,7 @@ FSMesh* FEAlignNodes::Apply(FSMesh* pm)
 
 FESetShellThickness::FESetShellThickness() : FEModifier("Set shell thickness")
 {
-	AddDoubleParam(0, "h", "h");
+	AddDoubleParam(0, "h", "shell thickness");
 }
 
 FSMesh* FESetShellThickness::Apply(FSMesh *pm)
@@ -422,15 +422,29 @@ FSMesh* FESetShellThickness::Apply(FSMesh *pm)
 	double thick = GetFloatValue(0);
 	double percent = 0;	// TODO: Add a parameter for this
 
+	// tag selected elements
+	int nselect = 0;
+	for (int i = 0; i < pnm->Elements(); ++i)
+	{
+		FSElement& el = pnm->Element(i);
+		if (el.IsSelected()) {
+			el.m_ntag = 1; nselect++;
+		}
+		else el.m_ntag = 0;
+	}
+
+	// if no elements are selected, let's tag the entire mesh
+	if (nselect == 0) pnm->TagAllElements(1);
+
 	if (thick != 0 )
 	{
 		for (int i=0; i<pnm->Elements(); ++i)
 		{
 			FSElement& el = pnm->Element(i);
-			if (el.IsSelected())
+			if (el.m_ntag == 1)
 			{
 				double* h = el.m_h;
-                for (int j=0; j<el.Nodes(); ++j) h[j] = thick;
+				for (int j=0; j<el.Nodes(); ++j) h[j] = thick;
 			}
 		}
 	}
@@ -439,10 +453,10 @@ FSMesh* FESetShellThickness::Apply(FSMesh *pm)
 		for (int i=0; i<pnm->Elements(); ++i)
 		{
 			FSElement& el = pnm->Element(i);
-			if (el.IsSelected())
+			if (el.m_ntag == 1)
 			{
 				double* h = el.m_h;
-                double H = h[0] * percent;
+				double H = h[0] * percent;
 				for (int j=0; j<el.Nodes(); ++j) h[j] = H;
 			}
 		}

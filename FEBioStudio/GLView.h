@@ -302,7 +302,7 @@ private:
 	GMesh* BuildPlaneCut(FSModel& fem);
 
 public:
-	void SetColorMap(Post::CColorMap& map);
+	void SetColorMap(unsigned int n);
 
 	Post::CColorMap& GetColorMap();
 
@@ -390,6 +390,7 @@ protected:
 	GLBox*			m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
+	GLLegendBar*	m_legend;
 
 	CGLWidgetManager*	m_Widget;
 	bool	m_ballocDefaultWidgets;
@@ -420,7 +421,7 @@ private:
 
 	CGLCamera	m_oldCam;
 
-	Post::CColorMap m_colorMap;	// color map used for rendering mesh data
+	Post::CColorTexture m_colorMap;	// color map used for rendering mesh data
 
 	bool		m_showPlaneCut;
 	int			m_planeCutMode;

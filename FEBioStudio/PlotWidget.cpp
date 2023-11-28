@@ -954,7 +954,11 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		double dx = W*0.05;
 		double dy = H*0.05;
 
-    //TODO: Check to see how this feels with MacOS and Linux distros. May need to use angleDelta()
+		bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
+		bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
+		if (bctrl && !bshift) dy = 0;
+		if (bctrl && bshift) dx = 0;
+
 		if ((ev->pixelDelta().y() < 0) || (ev->angleDelta().y() < 0))
 		{
 			m_viewRect.adjust(-dx, -dy, dx, dy);
@@ -963,6 +967,7 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		{
 			m_viewRect.adjust(dx, dy, -dx, -dy);
 		}
+
 		m_xscale = findScale(m_viewRect.left(), m_viewRect.right());
 		m_yscale = findScale(m_viewRect.top(), m_viewRect.bottom());
 		repaint();

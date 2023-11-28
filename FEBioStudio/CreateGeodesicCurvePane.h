@@ -23,35 +23,43 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <vector>
-//using namespace std;
+#include "CreatePanel.h"
 
-using std::vector;
+class QLineEdit;
+class QSpinBox;
 
-class FSSurfaceMesh;
-class FECurveMesh;
-
-class FELoftMesher
+//=============================================================================
+class CCreateGeodesicCurvePane : public CCreatePane
 {
+	Q_OBJECT
+
 public:
-	FELoftMesher();
+	CCreateGeodesicCurvePane(CCreatePanel* parent);
 
-	void setElementType(int elem) { m_elem = elem; }
+	void Activate() override;
+	void Deactivate() override;
 
-	void setDivisions(int n) { m_ndivs = n; }
+	bool Clear() override;
 
-	void setSmooth(bool b) { m_bsmooth = b; }
+	FSObject* Create() override;
 
-	FSSurfaceMesh* Apply(vector<FECurveMesh*> curve);
+	// set the input event for this pane
+	void setInput(const vec3d& r) override;
+
+	void hideEvent(QHideEvent* ev) override;
 
 private:
-	FSSurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
-	FSSurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
+	void BuildGeodesic();
+
+protected slots:
+	void on_divs_editingFinished();
 
 private:
-	int m_elem;
-	int	m_ndivs;
-	bool m_bsmooth;
+	GObject* m_tmp;	// temp object
+	vec3d	m_r[2];
+
+	QLineEdit*	m_in[2];
+	QSpinBox*	m_div;
+	int	m_input;
 };

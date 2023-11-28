@@ -80,8 +80,8 @@ int ModelDataField::components(Data_Tensor_Type ntype)
 		{
 		case DATA_FLOAT: return 1; break;
 		case DATA_VEC3F: return 7; break;
-		case DATA_MAT3F: return 9; break;
-		case DATA_MAT3D: return 9; break;
+		case DATA_MAT3F: return 10; break;
+		case DATA_MAT3D: return 10; break;
 		case DATA_MAT3FS: return 18; break;
 		case DATA_MAT3FD: return 3; break;
 		case DATA_TENS4FS: return 21; break;
@@ -208,6 +208,7 @@ std::string ModelDataField::componentName(int ncomp, Data_Tensor_Type ntype)
 			else if (ncomp == 6) sprintf(szline, "ZX - %s", sz);
 			else if (ncomp == 7) sprintf(szline, "ZY - %s", sz);
 			else if (ncomp == 8) sprintf(szline, "ZZ - %s", sz);
+			else if (ncomp == 9) sprintf(szline, "%s Magnitude", sz);
 			return szline;
 		}
 		break;

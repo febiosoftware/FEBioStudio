@@ -2021,6 +2021,24 @@ void GLMeshRender::RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 	glEnd();
 }
 
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel)
+{
+	assert(pe->IsType(FE_BEAM3));
+	FEElement_& e = *pe;
+	vec3d r[3];
+
+	glBegin(GL_LINES);
+	{
+		r[0] = pm->Node(e.m_node[0]).r;
+		r[1] = pm->Node(e.m_node[1]).r;
+		r[2] = pm->Node(e.m_node[2]).r;
+
+		glx::vertex3d(r[0]); glx::vertex3d(r[2]);
+		glx::vertex3d(r[2]); glx::vertex3d(r[1]);
+	}
+	glEnd();
+}
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
@@ -2949,6 +2967,15 @@ void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm)
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFace(const FSFace& face, FSMeshBase* pm)
 {
+	if (m_bShell2Solid)
+	{
+		FSCoreMesh* pcm = dynamic_cast<FSCoreMesh*>(pm);
+		if (pcm) {
+			RenderThickShell(face, pcm);
+			return;
+		}
+	}
+
 	switch (face.Type())
 	{
 	case FE_FACE_TRI3 : ::RenderTRI3 (pm, face); break;
@@ -2964,7 +2991,7 @@ void GLMeshRender::RenderFEFace(const FSFace& face, FSMeshBase* pm)
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void GLMeshRender::RenderThickShell(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickShell(const FSFace &face, FSCoreMesh* pm)
 {
 	switch (face.m_type)
 	{
@@ -2982,7 +3009,7 @@ void GLMeshRender::RenderThickShell(FSFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickQuad(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickQuad(const FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
@@ -3068,7 +3095,7 @@ void GLMeshRender::RenderThickQuad(FSFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickTri(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickTri(const FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;

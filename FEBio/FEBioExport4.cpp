@@ -1613,11 +1613,11 @@ void FEBioExport4::WriteGeometryNodes()
 		{
 			XMLElement el("node");
 			int nid = el.add_attribute("id", 0);
-			for (int j = 0; j < pm->Nodes(); ++j, ++n)
+			for (int j = 0; j < pm->Nodes(); ++j)
 			{
 				FSNode& node = pm->Node(j);
-				node.m_nid = n;
-				el.set_attribute(nid, n);
+				el.set_attribute(nid, node.m_nid);
+				if (node.m_nid > n) n = node.m_nid + 1;
 				vec3d r = po->GetTransform().LocalToGlobal(node.r);
 				el.value(r);
 				m_xml.add_leaf(el, false);
@@ -1810,15 +1810,13 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 					FEElement_& ej = pm->ElementRef(j);
 					if ((ej.m_ntag == 1) && (ej.Type() == ntype))
 					{
-						int eid = m_ntotelem + ncount + 1;
-						xej.set_attribute(n1, eid);
+						xej.set_attribute(n1, ej.m_nid);
 						int ne = ej.Nodes();
 						assert(ne == el.Nodes());
 						for (int k = 0; k < ne; ++k) nn[k] = pm->Node(ej.m_node[k]).m_nid;
 						xej.value(nn, ne);
 						m_xml.add_leaf(xej, false);
 						ej.m_ntag = -1;	// mark as processed
-						ej.m_nid = eid;
 						ncount++;
 
 						es.m_elem.push_back(j);

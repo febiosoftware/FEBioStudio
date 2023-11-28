@@ -1698,6 +1698,13 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_NODE_GROUP:
 		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
 		break;
+	case MT_FEPART_GROUP:
+	case MT_FEELEM_GROUP:
+	case MT_FEFACE_GROUP:
+	case MT_FEEDGE_GROUP:
+	case MT_FENODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
+		break;
 	case MT_MATERIAL_LIST:
 	{
 		menu.addAction("Add Material ...", wnd, SLOT(on_actionAddMaterial_triggered()));

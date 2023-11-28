@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
 #include <FSCore/FSObjectList.h>
+#include <MeshLib/FESurfaceMesh.h>
 
 class FSMesh;
 
@@ -33,7 +34,7 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
+	enum { START_POINT, END_POINT, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_GUIDE, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
 public:
 	class PathData;
@@ -46,6 +47,8 @@ public:
 
 	void Update() override;
 	void Update(int ntime, float dt, bool breset) override;
+
+	void SetModel(CGLModel* pm) override;
 
 	bool UpdateData(bool bsave = true) override;
 
@@ -68,10 +71,17 @@ public:
 protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
+
+	bool UpdatePath(PathData* path, int ntime, bool reset = true);
 	bool UpdateWrappingPath(PathData* path, int ntime, bool reset = true);
+	bool UpdateGuidedPath(PathData* path, int ntime, bool reset = true);
+
 	void ClearPaths();
 	void ClearInitPath();
 	void Reset();
+
+	void BuildGuideMesh();
+	void UpdateGuideMesh(int ntime);
 
 private:
 	PathData* m_initPath; // used as initial path
@@ -92,6 +102,9 @@ private:
 	double	m_tol;
 	double	m_searchRadius;
 	double	m_snaptol;
+	int		m_pathGuide;
+
+	FSSurfaceMesh	m_guideMesh;
 
 	// the currently selected point
 	int	m_selectedPoint;

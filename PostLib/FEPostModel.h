@@ -161,7 +161,7 @@ public:
 	void AddState(FEState* pFEState);
 
 	//! Add a new state at time
-	void AddState(float ftime);
+	void AddState(float ftime, int nstatus = 0, bool interpolateData = false);
 
 	//! insert a state at a particular time
 	void InsertState(FEState* ps, float f);
@@ -192,6 +192,9 @@ public:
 
 	// Get the field variable name
 	std::string getDataString(int nfield, Data_Tensor_Type ntype);
+
+	// interpolate data between its neighbors
+	void InterpolateStateData(FEState* ps);
 
 public:
 	//! get the bounding box

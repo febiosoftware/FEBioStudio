@@ -94,6 +94,7 @@ public:
 	bool Load() override;
 
 private:
+	bool ReadEntities();
 	bool ReadNodes();
 	bool ReadElements();
 };
@@ -113,6 +114,23 @@ FSMesh* GMeshFormat::BuildMesh()
 	{
 		FSNode& node = pm->Node(i);
 		node.r = m_Node[i].pos;
+	}
+
+	// build th node look-up table
+	int minId = m_Node[0].id;
+	int maxId = m_Node[0].id;
+	for (int i = 1; i < nodes; ++i)
+	{
+		NODE& n = m_Node[i];
+		if (n.id > maxId) maxId = n.id;
+		if (n.id < minId) minId = n.id;
+	}
+	int nltsize = maxId - minId + 1;
+	std::vector<int> NLT(nltsize, -1);
+	for (int i = 0; i < nodes; ++i)
+	{
+		NODE& n = m_Node[i];
+		NLT[n.id - minId] = i;
 	}
 
 	if (elems > 0)
@@ -194,6 +212,8 @@ FSMesh* GMeshFormat::BuildMesh()
 				delete pm;
 				return nullptr;
 			}
+
+			for (int n = 0; n < el.Nodes(); ++n) el.m_node[n] = NLT[el.m_node[n] - minId];
 		}
 
 		for (int i = 0; i < faces; ++i)
@@ -227,6 +247,8 @@ FSMesh* GMeshFormat::BuildMesh()
 				face.n[5] = e.node[5];
 				break;
 			}
+
+			for (int n = 0; n < face.Nodes(); ++n) face.n[n] = NLT[face.n[n] - minId];
 		}
 	}
 	else if (faces > 0)
@@ -262,6 +284,8 @@ FSMesh* GMeshFormat::BuildMesh()
 				el.m_node[5] = e.node[5];
 				break;
 			}
+
+			for (int n = 0; n < el.Nodes(); ++n) el.m_node[n] = NLT[el.m_node[n] - minId];
 		}
 	}
 
@@ -690,8 +714,9 @@ bool GMeshNewFormat::Load()
 	const char* szline = nullptr;
 	while (szline = nextLine())
 	{
-		if      (isKey(szline, "$Nodes"   )) ret = ReadNodes();
-		else if (isKey(szline, "$Elements")) ret = ReadElements();
+		if      (isKey(szline, "$Entities"  )) ret = ReadEntities();
+		else if (isKey(szline, "$Nodes"     )) ret = ReadNodes();
+		else if (isKey(szline, "$Elements"  )) ret = ReadElements();
 		else
 		{
 			// we didn't recognize the section
@@ -700,6 +725,19 @@ bool GMeshNewFormat::Load()
 
 		if (ret == false) return false;
 	}
+
+	return true;
+}
+
+bool GMeshNewFormat::ReadEntities()
+{
+	// get the next line
+	const char* szline = nextLine();
+
+	int npts, ncrvs, nsrfs, nvols;
+	int nread = sscanf(szline, "%d%d%d%d", &npts, &ncrvs, &nsrfs, &nvols);
+
+	while (readLine("$EndEntities") == false);
 
 	return true;
 }
@@ -714,24 +752,34 @@ bool GMeshNewFormat::ReadNodes()
 	int nread = sscanf(szline, "%d%d%d%d", &entities, &nodes, &minNodeTag, &maxNodeTag);
 	if (nread != 4) return false;
 
-	// read the next line (not sure what it represents)
-	nextLine();
-
-	// read the node IDs
+	// allocate nodes
 	m_Node.resize(nodes);
-	for (int i = 0; i < nodes; ++i)
-	{
-		NODE& n = m_Node[i];
-		szline = nextLine();
-		sscanf(szline, "%d", &n.id);
-	}
+	int nodeIndex = 0;
 
-	// read the nodal coordinates
-	for (int i = 0; i < nodes; ++i)
+	// loop over entities
+	for (int n = 0; n < entities; ++n)
 	{
-		vec3d& r = m_Node[i].pos;
+		// read the next line
+		int ndim, ntag, nparam, numNodes;
 		szline = nextLine();
-		sscanf(szline, "%lg%lg%lg", &r.x, &r.y, &r.z);
+		nread = sscanf(szline, "%d%d%d%d", &ndim, &ntag, &nparam, &numNodes);
+		if (nread != 4) return false;
+
+		// read the node IDs
+		for (int i = 0; i < numNodes; ++i)
+		{
+			NODE& n = m_Node[nodeIndex + i];
+			szline = nextLine();
+			sscanf(szline, "%d", &n.id);
+		}
+
+		// read the nodal coordinates
+		for (int i = 0; i < numNodes; ++i)
+		{
+			vec3d& r = m_Node[nodeIndex++].pos;
+			szline = nextLine();
+			sscanf(szline, "%lg%lg%lg", &r.x, &r.y, &r.z);
+		}
 	}
 
 	// read the end of the nodes section
@@ -748,12 +796,6 @@ bool GMeshNewFormat::ReadElements()
 	int nread = sscanf(szline, "%d%d%d%d", &entities, &elems, &minElemTag, &maxElemTag);
 	if (nread != 4) return gmsh->errf("Error while reading Element section");;
 
-	// read the next line
-	nextLine();
-	int entityDim, entityTag, elemType, numElemsInBlock;
-	nread = sscanf(szline, "%d%d%d%d", &entityDim, &entityTag, &elemType, &numElemsInBlock);
-	if (nread != 4) return gmsh->errf("Error while reading Element section");;
-
 	m_Face.reserve(elems);
 	m_Elem.reserve(elems);
 
@@ -762,166 +804,176 @@ bool GMeshNewFormat::ReadElements()
 	const int NMAX = 30;
 	int n[NMAX];
 
-	for (int i = 0; i < elems; ++i)
+	// loop over entities
+	for (int entity = 0; entity < entities; ++entity)
 	{
+		// read the next line
 		szline = nextLine();
-		int nread = scan_line(szline, n, NMAX);
+		int entityDim, entityTag, elemType, numElemsInBlock;
+		nread = sscanf(szline, "%d%d%d%d", &entityDim, &entityTag, &elemType, &numElemsInBlock);
+		if (nread != 4) return gmsh->errf("Error while reading Element section");;
 
-		// store the entity number
-		el.gid = entityTag;
+		for (int i = 0; i < numElemsInBlock; ++i)
+		{
+			szline = nextLine();
+			int nread = scan_line(szline, n, NMAX);
 
-		// surface elements
-		int* m = n + 1;
-		switch (elemType)
-		{
-		case 2: // triangle
-			if (nread != 4) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_TRI3;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			m_Face.push_back(el);
-			break;
-		case 3: // quad
-			if (nread != 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_QUAD4;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			m_Face.push_back(el);
-			break;
-		}
+			// store the entity number
+			el.gid = entityTag;
 
-		// volume elements
-		switch (elemType)
-		{
-		case 4: // tetrahedron
-			if (nread != 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_TET4;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			m_Elem.push_back(el);
-			break;
-		case 5: // hexahedrons
-			if (nread != 9) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_HEX8;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			el.node[6] = m[6] - 1;
-			el.node[7] = m[7] - 1;
-			m_Elem.push_back(el);
-			break;
-		case 6: // pentahedron
-			if (nread != 7) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_PENTA6;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			m_Elem.push_back(el);
-			break;
-		case 7: // 5-node pyramid
-			if (nread != 6) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_PYRA5;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			m_Elem.push_back(el);
-			break;
-		case 11: // 10-node tetrahedron
-			if (nread != 11) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_TET10;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			el.node[6] = m[6] - 1;
-			el.node[7] = m[7] - 1;
-			el.node[8] = m[9] - 1;
-			el.node[9] = m[8] - 1;
-			m_Elem.push_back(el);
-			break;
-		case 14: // 14-node pyramid
-		{
-			if (nread != 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_PYRA13;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			el.node[6] = m[8] - 1;
-			el.node[7] = m[10] - 1;
-			el.node[8] = m[6] - 1;
-			el.node[9] = m[7] - 1;
-			el.node[10] = m[9] - 1;
-			el.node[11] = m[11] - 1;
-			el.node[12] = m[12] - 1;
-			m_Elem.push_back(el);
-		}
-		break;
-		case 19: // 13-node pyramid
-		{
-			if (nread != 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_PYRA13;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			el.node[6] = m[8] - 1;
-			el.node[7] = m[10] - 1;
-			el.node[8] = m[6] - 1;
-			el.node[9] = m[7] - 1;
-			el.node[10] = m[9] - 1;
-			el.node[11] = m[11] - 1;
-			el.node[12] = m[12] - 1;
-			m_Elem.push_back(el);
-		}
-		break;
-		case 29: // 20-tet tehrahedron
-		{
-			if (nread != 21) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
-			el.ntype = FE_TET20;
-			el.node[0] = m[0] - 1;
-			el.node[1] = m[1] - 1;
-			el.node[2] = m[2] - 1;
-			el.node[3] = m[3] - 1;
-			el.node[4] = m[4] - 1;
-			el.node[5] = m[5] - 1;
-			el.node[6] = m[6] - 1;
-			el.node[7] = m[7] - 1;
-			el.node[8] = m[9] - 1;
-			el.node[9] = m[8] - 1;
-			el.node[10] = m[11] - 1;
-			el.node[11] = m[10] - 1;
-			el.node[12] = m[15] - 1;
-			el.node[13] = m[14] - 1;
-			el.node[14] = m[13] - 1;
-			el.node[15] = m[12] - 1;
-			el.node[16] = m[17] - 1;
-			el.node[17] = m[19] - 1;
-			el.node[18] = m[18] - 1;
-			el.node[19] = m[16] - 1;
+			// surface elements
+			int* m = n + 1;
+			switch (elemType)
+			{
+			case 2: // triangle
+				if (nread != 4) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_TRI3;
+				el.node[0] = m[0];
+				el.node[1] = m[1];
+				el.node[2] = m[2];
+				m_Face.push_back(el);
+				break;
+			case 3: // quad
+				if (nread != 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_QUAD4;
+				el.node[0] = m[0];
+				el.node[1] = m[1];
+				el.node[2] = m[2];
+				el.node[3] = m[3];
+				m_Face.push_back(el);
+				break;
+			}
 
-			m_Elem.push_back(el);
-		}
-		break;
+			// volume elements
+			switch (elemType)
+			{
+			case 4: // tetrahedron
+				if (nread != 5) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_TET4;
+				el.node[0] = m[0];
+				el.node[1] = m[1];
+				el.node[2] = m[2];
+				el.node[3] = m[3];
+				m_Elem.push_back(el);
+				break;
+			case 5: // hexahedrons
+				if (nread != 9) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_HEX8;
+				el.node[0] = m[0];
+				el.node[1] = m[1];
+				el.node[2] = m[2];
+				el.node[3] = m[3];
+				el.node[4] = m[4];
+				el.node[5] = m[5];
+				el.node[6] = m[6];
+				el.node[7] = m[7];
+				m_Elem.push_back(el);
+				break;
+			case 6: // pentahedron
+				if (nread != 7) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_PENTA6;
+				el.node[0] = m[0];
+				el.node[1] = m[1];
+				el.node[2] = m[2];
+				el.node[3] = m[3];
+				el.node[4] = m[4];
+				el.node[5] = m[5];
+				m_Elem.push_back(el);
+				break;
+			case 7: // 5-node pyramid
+				if (nread != 6) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_PYRA5;
+				el.node[0] = m[0];
+				el.node[1] = m[1];
+				el.node[2] = m[2];
+				el.node[3] = m[3];
+				el.node[4] = m[4];
+				m_Elem.push_back(el);
+				break;
+			case 11: // 10-node tetrahedron
+				if (nread != 11) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_TET10;
+				el.node[0] = m[0];
+				el.node[1] = m[1];
+				el.node[2] = m[2];
+				el.node[3] = m[3];
+				el.node[4] = m[4];
+				el.node[5] = m[5];
+				el.node[6] = m[6];
+				el.node[7] = m[7];
+				el.node[8] = m[9];
+				el.node[9] = m[8];
+				m_Elem.push_back(el);
+				break;
+			case 14: // 14-node pyramid
+			{
+				if (nread != 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_PYRA13;
+				el.node[ 0] = m[ 0];
+				el.node[ 1] = m[ 1];
+				el.node[ 2] = m[ 2];
+				el.node[ 3] = m[ 3];
+				el.node[ 4] = m[ 4];
+				el.node[ 5] = m[ 5];
+				el.node[ 6] = m[ 8];
+				el.node[ 7] = m[10];
+				el.node[ 8] = m[ 6];
+				el.node[ 9] = m[ 7];
+				el.node[10] = m[ 9];
+				el.node[11] = m[11];
+				el.node[12] = m[12];
+				m_Elem.push_back(el);
+			}
+			break;
+			case 19: // 13-node pyramid
+			{
+				if (nread != 14) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_PYRA13;
+				el.node[ 0] = m[ 0];
+				el.node[ 1] = m[ 1];
+				el.node[ 2] = m[ 2];
+				el.node[ 3] = m[ 3];
+				el.node[ 4] = m[ 4];
+				el.node[ 5] = m[ 5];
+				el.node[ 6] = m[ 8];
+				el.node[ 7] = m[10];
+				el.node[ 8] = m[ 6];
+				el.node[ 9] = m[ 7];
+				el.node[10] = m[ 9];
+				el.node[11] = m[11];
+				el.node[12] = m[12];
+				m_Elem.push_back(el);
+			}
+			break;
+			case 29: // 20-tet tehrahedron
+			{
+				if (nread != 21) return gmsh->errf("Invalid number of entries when reading element %d", n[0]);
+				el.ntype = FE_TET20;
+				el.node[ 0] = m[ 0];
+				el.node[ 1] = m[ 1];
+				el.node[ 2] = m[ 2];
+				el.node[ 3] = m[ 3];
+				el.node[ 4] = m[ 4];
+				el.node[ 5] = m[ 5];
+				el.node[ 6] = m[ 6];
+				el.node[ 7] = m[ 7];
+				el.node[ 8] = m[ 9];
+				el.node[ 9] = m[ 8];
+				el.node[10] = m[11];
+				el.node[11] = m[10];
+				el.node[12] = m[15];
+				el.node[13] = m[14];
+				el.node[14] = m[13];
+				el.node[15] = m[12];
+				el.node[16] = m[17];
+				el.node[17] = m[19];
+				el.node[18] = m[18];
+				el.node[19] = m[16];
+
+				m_Elem.push_back(el);
+			}
+			break;
+			}
 		}
 	}
 
