@@ -268,7 +268,7 @@ void CEditPanel::on_apply_clicked(bool b)
 	}
 	else
 	{
-		CCmdGroup* cmd = new CCmdGroup("Remove mesh");
+		CCmdGroup* cmd = new CCmdGroup("Generate geometry");
 		cmd->AddCommand(new CCmdChangeFEMesh(activeObject, nullptr));
 		cmd->AddCommand(new CCmdChangeObjectParams(activeObject));
 		GetDocument()->DoCommand(cmd, activeObject->GetName());
@@ -386,5 +386,25 @@ void CEditPanel::on_buttons_buttonSelected(int id)
 		}
 
 		ui->showParametersPanel(true);
+	}
+}
+
+void CEditPanel::on_form_dataChanged(bool itemModified, int index)
+{
+	CPropertyList* pl = ui->form->getPropertyList();
+	if (pl == nullptr) return;
+	if ((index >= 0) && (index < pl->Properties()))
+	{
+		CProperty& p = pl->Property(index);
+		CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+		if (doc)
+		{
+			GObject* poa = doc->GetActiveObject(); assert(poa);
+			if (poa == nullptr) return;
+
+			QVariant v = pl->GetPropertyValue(index);
+			QString msg = QString("Object parameter %1 changed to %2 (%3)").arg(p.name).arg(v.toString()).arg(QString::fromStdString(poa->GetName()));
+			doc->AppendChangeLog(msg);
+		}
 	}
 }

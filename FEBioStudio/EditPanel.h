@@ -85,6 +85,7 @@ private slots:
 	void on_posX_editingFinished();
 	void on_posY_editingFinished();
 	void on_posZ_editingFinished();
+	void on_form_dataChanged(bool itemModified, int index);
 
 private:
 	void updateObjectPosition();

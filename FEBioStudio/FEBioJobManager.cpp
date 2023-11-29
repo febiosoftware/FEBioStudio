@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QProcess>
 #include <QMessageBox>
 #include "MainWindow.h"
+#include "ModelDocument.h"
 
 class CFEBioJobManager::Impl
 {
@@ -155,6 +156,9 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 
 		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
 		im->wnd->AddLogEntry(logmsg);
+
+		CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(job->GetDocument());
+		if (modelDoc) modelDoc->AppendChangeLog(logmsg);
 
 		if (exitCode == 0)
 		{

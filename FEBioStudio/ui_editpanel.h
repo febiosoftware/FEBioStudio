@@ -87,6 +87,7 @@ public:
 		QPushButton* applyButton = new QPushButton("Apply");
 		applyButton->setObjectName("apply");
 		pl->addWidget(form = new CPropertyListForm);
+		form->setObjectName("form");
 		pl->addWidget(applyButton);
 		pw->setLayout(pl);
 
