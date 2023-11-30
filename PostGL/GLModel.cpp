@@ -807,6 +807,7 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 	// render un-selected, active elements
 	if (m_pcol->IsActive())
 	{
+		m_pcol->GetColorMap()->GetTexture().MakeCurrent();
 		glEnable(GL_TEXTURE_1D);
 
 		glColor3ub(255, 255, 255);
@@ -917,7 +918,11 @@ void CGLModel::RenderDiscreteElementAsSolid(GLEdge::EDGE& edge, double W)
 		vec3d r1 = mesh.Node(edge.n1).r;
 		float t0 = edge.tex[0];
 		float t1 = edge.tex[1];
-		glx::drawCappedCylinder(r0, r1, W, t0, t1);
+
+		int leftCap  = (pe->m_nbr[0] == -1 ? 1 : 0);
+		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
+
+		glx::drawCappedCylinder(r0, r1, W, t0, t1, 16, leftCap, rightCap);
 	}
 	else if (pe->Type() == FE_BEAM3)
 	{
@@ -934,7 +939,10 @@ void CGLModel::RenderDiscreteElementAsSolid(GLEdge::EDGE& edge, double W)
 			p[n] = r[0] * H[0] + r[1] * H[1] + r[2] * H[2];
 		}
 
-		glx::drawSmoothPath(p, W, edge.tex[0], edge.tex[1]);
+		int leftCap  = (pe->m_nbr[0] == -1 ? 1 : 0);
+		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
+
+		glx::drawSmoothPath(p, W, edge.tex[0], edge.tex[1], leftCap, rightCap);
 	}
 }
 
