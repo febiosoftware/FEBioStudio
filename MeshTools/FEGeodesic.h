@@ -23,35 +23,42 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <vector>
-//using namespace std;
+#include "FSTriMesh.h"
 
-using std::vector;
-
-class FSSurfaceMesh;
-class FECurveMesh;
-
-class FELoftMesher
+class PathOnMesh
 {
 public:
-	FELoftMesher();
+	struct POINT {
+		vec3d	r;		// spatial position of point
+		int		nface;	// face on which the point lies (or -1 if it's not on the mesh)
+		vec2d	q;		// projection coordinates in face
+	};
 
-	void setElementType(int elem) { m_elem = elem; }
+public:
+	PathOnMesh(const FSTriMesh& mesh) : m_mesh(mesh) {}
+	PathOnMesh(const FSTriMesh& mesh, const std::vector<vec3d>& points);
 
-	void setDivisions(int n) { m_ndivs = n; }
+	size_t Points() const { return m_pt.size(); }
 
-	void setSmooth(bool b) { m_bsmooth = b; }
+	POINT& Point(size_t i) { return m_pt[i]; }
+	const POINT& Point(size_t i) const { return m_pt[i]; }
 
-	FSSurfaceMesh* Apply(vector<FECurveMesh*> curve);
+	POINT& operator [] (size_t i) { return m_pt[i]; }
+
+	const FSTriMesh& GetMesh() const { return m_mesh; }
 
 private:
-	FSSurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
-	FSSurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
-
-private:
-	int m_elem;
-	int	m_ndivs;
-	bool m_bsmooth;
+	const FSTriMesh& m_mesh;
+	std::vector<POINT>	m_pt;
 };
+
+// this function takes a curve and projects it onto the mesh. 
+// The projected curve should approximate a geodesic, or the shortest
+// path between the end-points of the initially provided curve.
+PathOnMesh ProjectToGeodesic(
+	const FSTriMesh& mesh,		// the mesh to find the geodesic on
+	const std::vector<vec3d>& path,	// initial guess of path
+	int maxIters,				// max nr of smoothing iterations
+	double tol,					// convergence tolerance
+	double snapTol = 0.0);		// snap tolerance

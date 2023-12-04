@@ -200,7 +200,7 @@ public:
 	}
 	void eval(int n, T* pv) { (*pv) = m_data[m_face[n]]; }
 	bool active(int n) { return (m_face[n] >= 0); }
-	void copy(FEFaceData<T,DATA_ITEM>& d) { m_data = d.m_data; }
+	void copy(FEFaceData<T, DATA_ITEM>& d) { m_data = d.m_data; m_face = d.m_face; }
 	bool add(int n, const T& d)
 	{ 
 		if ((n < 0) || (n >= m_face.size())) return false;
@@ -515,7 +515,7 @@ public:
 	}
 	void eval(int n, T* pv) { assert(m_elem[n] >= 0); (*pv) = m_data[m_elem[n]]; }
 	void set(int n, const T& v) { assert(m_elem[n] >= 0); m_data[m_elem[n]] = v; }
-	void copy(FEElementData<T, DATA_ITEM>& d) { m_data = d.m_data; }
+	void copy(FEElementData<T, DATA_ITEM>& d) { m_elem = d.m_elem; m_data = d.m_data; }
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[n] >= 0); }
 	void add(int n, const T& v)
 	{ 
@@ -600,7 +600,7 @@ public:
 		for (int j=0; j<m; ++j) pv[j] = m_data[n + j];
 	}
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[2 * n + 1] > 0); }
-	void copy(FEElementData<T,DATA_COMP>& d) { m_data = d.m_data; }
+	void copy(FEElementData<T, DATA_COMP>& d) { m_data = d.m_data; m_elem = d.m_elem; }
 	void add(int n, int m, T* d) 
 	{ 
 		if (m_elem[2*n] == -1)
@@ -644,7 +644,7 @@ public:
 		m_data[m_indx[n + j]] = v;
 	}
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[2 * n] >= 0); }
-	void copy(FEElementData<T,DATA_NODE>& d) { m_data = d.m_data; m_indx = d.m_indx; }
+	void copy(FEElementData<T, DATA_NODE>& d) { m_data = d.m_data; m_indx = d.m_indx; m_elem = d.m_elem; }
 	void add(std::vector<T>& d, std::vector<int>& e, std::vector<int>& l, int ne)
 	{ 
 		int n0 = (int) m_data.size();

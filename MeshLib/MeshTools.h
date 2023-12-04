@@ -43,7 +43,8 @@ vec3d projectToEdge(const FSMeshBase& m, const vec3d& p, int gid);
 // - faceID = the ID of the face where the projection occurred
 // Return: a point that falls on the projection
 // 
-vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid = -1, int* faceID = 0);
+struct Intersection; // definde in Intersection.h
+vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid = -1, int* faceID = nullptr, Intersection* intersect = nullptr);
 
 // prjoect to a patch of a surface
 vec3d projectToPatch(const FSMeshBase& m, const vec3d& p, int gid, int faceID, int l);
@@ -69,10 +70,10 @@ vec3d ProjectToFace(FSMesh& mesh, vec3d p, FSFace& f, double& r, double& s, bool
 vec3d ProjectToEdge(vec3d e1, vec3d e2, vec3d p, double& r);
 
 // project to a triangle
-bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const vec3d& r2, vec3d& q);
+bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const vec3d& r2, vec3d& q, Intersection* intersect = nullptr);
 
 // project to a quad
-bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q);
+bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q, Intersection* intersect = nullptr);
 
 bool FindIntersection(FSMeshBase& mesh, const vec3d& x, const vec3d& n, vec3d& q, bool snap = false);
 bool FindIntersection(FSMeshBase& mesh, FSFace& f, const vec3d& x, const vec3d& n, vec3d& q, double& g);

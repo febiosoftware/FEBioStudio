@@ -35,7 +35,9 @@ namespace Post {
 }
 
 //-----------------------------------------------------------------------------
-// This class reads the XPLT file, version 3.2
+// This class reads the XPLT file, version 3.2, 3.3, 3.4
+// 3.3: node IDs are stored in Node section
+// 3.4: Added support for beam elements
 class XpltReader3 : public xpltParser
 {
 public:
@@ -186,7 +188,8 @@ public:
 		PLT_ELEM_TRI10,
 		PLT_ELEM_PYRA5,
 		PLT_ELEM_TET5,
-        PLT_ELEM_PYRA13
+        PLT_ELEM_PYRA13,
+		PLT_ELEM_LINE3			// new in 3.4
 	};
 
 	// size of name variables

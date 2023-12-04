@@ -560,6 +560,7 @@ bool PostSessionFileReader::parse_plot(XMLTag& tag)
 		{
 			m_pg = dynamic_cast<Post::GLPlotGroup*>(plot);
 			if (parse_plot(tag) == false) return false;
+			if (dynamic_cast<Post::GLPlotGroup*>(plot)) m_pg = nullptr;
 		}
 		++tag;
 	} while (!tag.isend());

@@ -1040,6 +1040,7 @@ bool XpltReader3::ReadDomainSection(FEPostModel &fem)
                     case PLT_ELEM_QUAD9  : ne =  9; break;
 					case PLT_ELEM_PYRA5  : ne =  5; break;
                     case PLT_ELEM_PYRA13 : ne = 13; break;
+                    case PLT_ELEM_LINE3  : ne =  3; break;
 					default:
 						assert(false);
 						return errf("Error while reading Domain section");
@@ -1393,6 +1394,7 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 			case PLT_ELEM_QUAD9  : etype = FE_QUAD9 ; break;
 			case PLT_ELEM_PYRA5  : etype = FE_PYRA5 ; break;
             case PLT_ELEM_PYRA13 : etype = FE_PYRA13; break;
+            case PLT_ELEM_LINE3  : etype = FE_BEAM3; break;
 			}
 			el.SetType(etype);
 			int ne = el.Nodes();
@@ -1400,15 +1402,27 @@ bool XpltReader3::BuildMesh(FEPostModel &fem)
 		}
 	}
 
-	// read the nodal coordinates
 	NN = m_xmesh.nodes();
-	for (int i=0; i<NN; i++)
+	// read the nodal coordinates
+	if (FileVersion() < 0x0033)
 	{
-		FSNode& n = pmesh->Node(i);
-		NODE& N = m_xmesh.node(i);
-
-		// assign coordinates
-		n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		for (int i = 0; i < NN; i++)
+		{
+			FSNode& n = pmesh->Node(i);
+			NODE& N = m_xmesh.node(i);
+			n.m_nid = i + 1;
+			n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		}
+	}
+	else
+	{
+		for (int i = 0; i < NN; i++)
+		{
+			FSNode& n = pmesh->Node(i);
+			NODE& N = m_xmesh.node(i);
+			n.m_nid = N.id;
+			n.r = vec3d(N.x[0], N.x[1], N.x[2]);
+		}
 	}
 
 	// set the enabled-ness of the elements and the nodes

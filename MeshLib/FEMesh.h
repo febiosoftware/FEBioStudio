@@ -90,10 +90,33 @@ public:
 	// This assumes that all mesh items are created and partitioned!
 	void BuildMesh() override;
 
+	// update the mesh
+	void UpdateMesh() override;
+
 	// reconstruct the mesh
 	void RebuildMesh(double smoothingAngle = 60.0, bool partitionMesh = false);
 
 	int CountSelectedElements() const;
+
+	// return node index from its nodal ID
+	int NodeIndexFromID(int nid);
+
+	// re-generate nodal IDs (startID must be larger than 0!)
+	// returns one larger than the largets ID that was assigned
+	int GenerateNodalIDs(int startID = 1);
+
+	void BuildNLT();
+	void ClearNLT();
+
+	// return element index from its element ID
+	int ElementIndexFromID(int eid);
+
+	// (re-)generate element IDs (startID must be larger than 0!)
+	// returns one larger than the largets ID that was assigned
+	int GenerateElementIDs(int startID = 1);
+
+	void BuildELT();
+	void ClearELT();
 
 protected: // Helper functions for updating mesh data structures
 	void RebuildElementData();
@@ -171,6 +194,14 @@ protected:
 
 	// data fields
 	std::vector<FEMeshData*>		m_meshData;
+
+	// Node index look up table
+	std::vector<int> m_NLT;	// node ID lookup table
+	int m_nltmin;			// the min ID
+
+	// Element index look up table
+	std::vector<int> m_ELT;	// Element ID lookup table
+	int m_eltmin;			// the min ID
 
 	friend class FEMeshBuilder;
 };

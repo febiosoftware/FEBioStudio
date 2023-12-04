@@ -191,10 +191,6 @@ bool FEBioFileImport::Load(const char* szfile)
 		// parse the file
 		if (ReadFile(tag) == false) return false;
 	}
-	catch (XMLReader::EndOfFile e)
-	{
-		// this is fine. Moving on ...
-	}
 	catch (std::runtime_error e)
 	{
 		SetFileStream(nullptr);
@@ -283,11 +279,6 @@ bool FEBioFileImport::ReadFile(XMLTag& tag)
 			// Read the file
 			try {
 				ReadFile(tag2);
-			}
-			catch (XMLReader::EndOfFile)
-			{
-				// we catch this, since this will always be thrown. 
-				// TODO: I need to fix this. 
 			}
 			catch (...)
 			{
@@ -592,10 +583,6 @@ bool FEBioFileImport::ImportMaterials(const char* szfile)
 
 		// loop over all file sections
 		bret = m_fmt->ParseSection(tag);
-	}
-	catch (XMLReader::EndOfFile e)
-	{
-		// this is fine. Moving on ...
 	}
 	catch (std::runtime_error e)
 	{

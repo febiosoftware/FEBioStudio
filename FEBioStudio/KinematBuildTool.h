@@ -23,35 +23,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include <vector>
-//using namespace std;
+#include "Tool.h"
 
-using std::vector;
-
-class FSSurfaceMesh;
-class FECurveMesh;
-
-class FELoftMesher
+class CKinematBuildTool : public CBasicTool
 {
 public:
-	FELoftMesher();
+	CKinematBuildTool(CMainWindow* w);
 
-	void setElementType(int elem) { m_elem = elem; }
-
-	void setDivisions(int n) { m_ndivs = n; }
-
-	void setSmooth(bool b) { m_bsmooth = b; }
-
-	FSSurfaceMesh* Apply(vector<FECurveMesh*> curve);
+	bool OnApply() override;
 
 private:
-	FSSurfaceMesh* BuildTriMesh(vector<FECurveMesh*> curve);
-	FSSurfaceMesh* BuildQuadMesh(vector<FECurveMesh*> curve);
-
-private:
-	int m_elem;
-	int	m_ndivs;
-	bool m_bsmooth;
+	QString	m_modelFile;
+	QString	m_kineFile;
+	bool	m_btransformFirstState;
 };

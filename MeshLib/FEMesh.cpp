@@ -60,6 +60,7 @@ double gain(double g, double x)
 FSMesh::FSMesh()
 {
 	m_pobj = 0;
+	m_nltmin = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -69,6 +70,8 @@ FSMesh::FSMesh(FSMesh& m)
 	// create the nodes
 	m_Node.resize(m.Nodes());
 	for (int i=0; i<Nodes(); ++i) m_Node[i] = m.m_Node[i];
+	m_NLT = m.m_NLT;
+	m_nltmin = m.m_nltmin;
 
 	// create the elements
 	m_Elem.resize(m.Elements());
@@ -150,7 +153,7 @@ void FSMesh::Clear()
 	m_Face.clear();
 	m_Elem.clear();
 	m_Node.clear();
-
+	ClearNLT();
 	ClearMeshData();
 }
 
@@ -163,15 +166,14 @@ void FSMesh::ClearMeshData()
 }
 
 //-----------------------------------------------------------------------------
-// Allocate storage for the mesh data. If bclear is true (default = true) all 
-// existing groups are deleted.
+// Allocate storage for the mesh data. Also clears mesh data!
 void FSMesh::Create(int nodes, int elems, int faces, int edges)
 {
 	// allocate storage
-	if (nodes > 0) { if (nodes) m_Node.resize(nodes); else m_Node.clear(); }
-	if (elems > 0) { if (elems) m_Elem.resize(elems); else m_Elem.clear(); }
-	if (faces > 0) { if (faces) m_Face.resize(faces); else m_Face.clear(); }
-	if (edges > 0) { if (edges) m_Edge.resize(edges); else m_Edge.clear(); }
+	if (nodes > 0) { if (nodes != m_Node.size()) ResizeNodes(nodes); }
+	if (elems > 0) { if (elems != m_Elem.size()) ResizeElems(elems); }
+	if (faces > 0) { if (faces != m_Face.size()) m_Face.resize(faces); }
+	if (edges > 0) { if (edges != m_Edge.size()) m_Edge.resize(edges); }
 
 	// clear mesh data
 	ClearMeshData();
@@ -181,6 +183,7 @@ void FSMesh::Create(int nodes, int elems, int faces, int edges)
 void FSMesh::ResizeNodes(int newSize)
 {
 	m_Node.resize(newSize);
+	ClearNLT();
 }
 
 //-----------------------------------------------------------------------------
@@ -199,6 +202,7 @@ void FSMesh::ResizeFaces(int newSize)
 void FSMesh::ResizeElems(int newSize)
 {
 	m_Elem.resize(newSize);
+	ClearELT();
 }
 
 //-----------------------------------------------------------------------------
@@ -521,6 +525,16 @@ void FSMesh::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
+void FSMesh::UpdateMesh()
+{
+	FSCoreMesh::UpdateMesh();
+
+	// rebuild the lookup tables
+	BuildNLT();
+	BuildELT();
+}
+
+//-----------------------------------------------------------------------------
 // Convenience function that calls the mesh builder to do all the work
 void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 {
@@ -780,7 +794,7 @@ void FSMesh::UpdateElementNeighbors()
 		}
 
 		// do the beam elements
-		if (pe->IsType(FE_BEAM2))
+		if (pe->IsBeam())
 		{
 			for (int j = 0; j < 2; ++j)
 			{
@@ -793,7 +807,7 @@ void FSMesh::UpdateElementNeighbors()
 					FEElement_* pne = NET.Element(inode, k);
 					if (pne != pe)
 					{
-						if ((pne->IsType(FE_BEAM2)) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
+						if ((pne->IsBeam()) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
 						{
 							pe->m_nbr[j] = NET.ElementIndex(inode, k);
 							break;
@@ -1488,15 +1502,19 @@ void FSMesh::Save(OArchive &ar)
 		// write the nodes
 		ar.BeginChunk(CID_MESH_NODE_SECTION);
 		{
-			vector<int> id(nodes);
+			vector<int> gid(nodes);
+			vector<int> nid(nodes);
 			vector<vec3d> pos(nodes);
 			for (int i = 0; i < nodes; ++i)
 			{
-				id[i] = Node(i).m_gid;
-				pos[i] = Node(i).r;
+				FSNode& node = Node(i);
+				gid[i] = node.m_gid;
+				nid[i] = node.m_nid;
+				pos[i] = node.r;
 			}
 
-			ar.WriteChunk(CID_MESH_NODE_GID, id);
+			ar.WriteChunk(CID_MESH_NODE_GID, gid);
+			ar.WriteChunk(CID_MESH_NODE_NID, nid);
 			ar.WriteChunk(CID_MESH_NODE_POSITION, pos);
 		}
 		ar.EndChunk();
@@ -1508,7 +1526,8 @@ void FSMesh::Save(OArchive &ar)
 			for (int i = 0; i < elems; ++i) elnodes += Element(i).Nodes();
 
 			vector<int> type(elems);
-			vector<int> id(elems);
+			vector<int> gid(elems);
+			vector<int> eid(elems);
 			vector<vec3d> fiber(elems);
 			vector<int> eln(elnodes);
 			vector<int> Qactive(elems);
@@ -1519,7 +1538,8 @@ void FSMesh::Save(OArchive &ar)
 			{
 				FEElement_* pe = ElementPtr(i);
 				type[i] = pe->Type();
-				id[i] = pe->m_gid;
+				gid[i] = pe->m_gid;
+				eid[i] = pe->m_nid;
 				fiber[i] = pe->m_fiber;
 				Qactive[i] = (int)(pe->m_Qactive);
 				if (pe->m_Qactive) qactive++;
@@ -1530,7 +1550,8 @@ void FSMesh::Save(OArchive &ar)
 				for (int j = 0; j < ne; ++j) eln[n++] = pe->m_node[j];
 			}
 			ar.WriteChunk(CID_MESH_ELEMENT_TYPE, type);
-			ar.WriteChunk(CID_MESH_ELEMENT_GID , id);
+			ar.WriteChunk(CID_MESH_ELEMENT_GID , gid);
+			ar.WriteChunk(CID_MESH_ELEMENT_EID , eid);
 			ar.WriteChunk(CID_MESH_ELEMENT_FIBER, fiber);
 			ar.WriteChunk(CID_MESH_ELEMENT_Q_ACTIVE, Qactive);
 			ar.WriteChunk(CID_MESH_ELEMENT_NODES, eln);
@@ -2034,14 +2055,16 @@ void FSMesh::Load(IArchive& ar)
 			case CID_MESH_NODE_SECTION:
 			{
 				// read arrays
-				vector<int> id(nodes);
+				vector<int> gid(nodes, -1);
+				vector<int> nnd(nodes, -1);
 				vector<vec3d> pos(nodes);
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					int nid = ar.GetChunkID();
 					switch (nid)
 					{
-					case CID_MESH_NODE_GID: ar.read(id); break;
+					case CID_MESH_NODE_GID: ar.read(gid); break;
+					case CID_MESH_NODE_NID: ar.read(nnd); break;
 					case CID_MESH_NODE_POSITION: ar.read(pos); break;
 					}
 					ar.CloseChunk();
@@ -2051,14 +2074,16 @@ void FSMesh::Load(IArchive& ar)
 				FSNode* pn = NodePtr();
 				for (int i = 0; i < nodes; ++i, ++pn)
 				{
-					pn->m_gid = id[i];
+					pn->m_gid = gid[i];
+					pn->m_nid = nnd[i];
 					pn->r = pos[i];
 				}
 			}
 			break;
 			case CID_MESH_ELEMENT_SECTION:
 			{
-				vector<int> id(elems);
+				vector<int> gid(elems, -1);
+				vector<int> eid(elems, -1);
 				vector<vec3d> fiber(elems);
 
 				int qactive = 0;
@@ -2083,7 +2108,8 @@ void FSMesh::Load(IArchive& ar)
 						}
 					}
 					break;
-					case CID_MESH_ELEMENT_GID: ar.read(id); break;
+					case CID_MESH_ELEMENT_GID: ar.read(gid); break;
+					case CID_MESH_ELEMENT_EID: ar.read(eid); break;
 					case CID_MESH_ELEMENT_FIBER: ar.read(fiber); break;
 					case CID_MESH_ELEMENT_Q_ACTIVE:
 					{
@@ -2135,7 +2161,8 @@ void FSMesh::Load(IArchive& ar)
 						for (int i = 0, n = 0, m = 0; i < elems; ++i)
 						{
 							FEElement_* pe = ElementPtr(i);
-							pe->m_gid = id[i];
+							pe->m_gid = gid[i];
+							pe->m_nid = eid[i];
 							pe->m_fiber = fiber[i];
 							for (int j = 0; j < pe->Nodes(); ++j) pe->m_node[j] = eln[n++];
 						}
@@ -2542,4 +2569,150 @@ void FSMesh::SetUniformShellThickness(double h)
 		int ne = el.Nodes();
 		for (int j = 0; j < ne; ++j) el.m_h[j] = h;
 	}
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::NodeIndexFromID(int nid)
+{
+	if (m_NLT.empty()) return nid - 1;
+
+	if (nid < m_nltmin) return -1;
+	nid -= m_nltmin;
+	if (nid >= m_NLT.size()) return -1;
+	return m_NLT[nid];
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::GenerateNodalIDs(int startID)
+{
+	assert(startID > 0);
+	if (startID <= 0) startID = 1;
+	int nextID = startID;
+	for (int i = 0; i < Nodes(); ++i) Node(i).m_nid = nextID++;
+	BuildNLT();
+	return nextID;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::BuildNLT()
+{
+	// Do some clean up first
+	m_NLT.clear();
+	m_nltmin = 0;
+	int N = Nodes();
+	if (N == 0) return;
+
+	// Figure out the min and max IDs
+	int minid = Node(0).m_nid;
+	int maxid = minid;
+	for (int i = 1; i < N; ++i)
+	{
+		int nid = Node(i).m_nid;
+		if (nid > maxid) maxid = nid;
+		if (nid < minid) minid = nid;
+	}
+
+	// if node IDs were not assigned yet, they should all be -1
+	// In that case, we're done
+	if (maxid < 0) return;
+
+	// Figure out the size
+	int nsize = maxid - minid + 1;
+	if (nsize < N)
+	{
+		// Hmm, that shouldn't be. 
+		// Let's clear up and get out of here.
+		ClearNLT();
+		return;
+	}
+
+	// Ok, look's like we're good to go
+	m_NLT.assign(nsize, -1);
+	for (int i = 0; i < N; ++i)
+	{
+		int nid = Node(i).m_nid;
+		m_NLT[nid - minid] = i;
+	}
+	m_nltmin = minid;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::ClearNLT()
+{
+	m_NLT.clear();
+	m_nltmin = 0;
+	for (int i = 0; i < Nodes(); ++i) m_Node[i].m_nid = -1;
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::ElementIndexFromID(int eid)
+{
+	if (m_ELT.empty()) return eid - 1;
+
+	if (eid < m_eltmin) return -1;
+	eid -= m_eltmin;
+	if (eid >= m_ELT.size()) return -1;
+	return m_ELT[eid];
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::GenerateElementIDs(int startID)
+{
+	assert(startID > 0);
+	if (startID <= 0) startID = 1;
+	int nextID = startID;
+	for (int i = 0; i < Elements(); ++i) Element(i).m_nid = nextID++;
+	BuildELT();
+	return nextID;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::BuildELT()
+{
+	// Do some clean up first
+	m_ELT.clear();
+	m_eltmin = 0;
+	int NE = Elements();
+	if (NE == 0) return;
+
+	// Figure out the min and max IDs
+	int minid = Element(0).m_nid;
+	int maxid = minid;
+	for (int i = 1; i < NE; ++i)
+	{
+		int nid = Element(i).m_nid;
+		if (nid > maxid) maxid = nid;
+		if (nid < minid) minid = nid;
+	}
+
+	// if node IDs were not assigned yet, they should all be -1
+	// In that case, we're done
+	if (maxid < 0) return;
+
+	// Figure out the size
+	int nsize = maxid - minid + 1;
+	if (nsize < NE)
+	{
+		// Hmm, that shouldn't be. 
+		// Let's clear up and get out of here.
+		ClearELT();
+		return;
+	}
+
+	// Ok, look's like we're good to go
+	m_ELT.assign(nsize, -1);
+	for (int i = 0; i < NE; ++i)
+	{
+		int nid = Element(i).m_nid;
+		m_ELT[nid - minid] = i;
+	}
+	m_eltmin = minid;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::ClearELT()
+{
+	m_ELT.clear();
+	m_eltmin = 0;
+	for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
 }

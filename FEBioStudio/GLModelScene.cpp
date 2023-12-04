@@ -2265,7 +2265,8 @@ void CGLModelScene::RenderSurfaceMeshFaces(CGLContext& rc, GObject* po)
 		double vmin, vmax;
 		data.GetValueRange(vmin, vmax);
 
-		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		// Create a copy so we can change the range
+		Post::CColorMap colorMap = rc.m_view->GetColorMap();
 		colorMap.SetRange((float)vmin, (float)vmax);
 
 		SetMatProps(0);
@@ -2489,7 +2490,8 @@ void CGLModelScene::RenderFEElements(CGLContext& rc, GObject* po)
 		double vmin, vmax;
 		data.GetValueRange(vmin, vmax);
 
-		Post::CColorMap& colorMap = rc.m_view->GetColorMap();
+		// Create a copy so we can change the range
+		Post::CColorMap colorMap = rc.m_view->GetColorMap();
 		colorMap.SetRange((float)vmin, (float)vmax);
 		
 		glEnable(GL_COLOR_MATERIAL);
@@ -2667,7 +2669,7 @@ void CGLModelScene::RenderAllBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}
@@ -2700,7 +2702,7 @@ void CGLModelScene::RenderUnselectedBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}
@@ -2734,7 +2736,7 @@ void CGLModelScene::RenderSelectedBeamElements(CGLContext& rc, GObject* po)
 				switch (el.Type())
 				{
 				case FE_BEAM2: renderer.RenderBEAM2(&el, pm, true); break;
-				case FE_BEAM3: break;
+				case FE_BEAM3: renderer.RenderBEAM3(&el, pm, true); break;
 				}
 			}
 		}

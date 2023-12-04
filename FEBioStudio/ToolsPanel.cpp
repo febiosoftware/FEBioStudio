@@ -43,6 +43,7 @@ SOFTWARE.*/
 #include "ImageMapTool.h"
 #include "DiscreteElementNetworkTool.h"
 #include "SelectNearPlaneTool.h"
+#include "KinematBuildTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -77,6 +78,7 @@ void CToolsPanel::initTools()
     tools.push_back(new CImageMapTool      (wnd));
     tools.push_back(new CDiscreteElementNetworkTool(wnd));
     tools.push_back(new CSelectNearPlaneTool(wnd));
+	tools.push_back(new CKinematBuildTool   (wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

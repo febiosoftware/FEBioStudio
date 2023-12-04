@@ -1182,6 +1182,10 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			if (doc->GetDocFilePath().empty())
 			{
 				doc->SetDocFilePath(file.m_fileName.toStdString());
+
+				QFileInfo fi(file.m_fileName);
+				QString path = fi.absolutePath();
+				SetCurrentFolder(path);
 			}
 			bool b = doc->Initialize();
 			if (b == false)
@@ -1590,8 +1594,10 @@ void CMainWindow::ReportSelection()
 		{
 			if (es->Size() == 1)
 			{
+				FSMesh* pm = es->GetMesh();
 				FEElement_* el = es->Element(0);
-                AddLogEntry("  ID = " + QString::number(es->ElementID(0)) + "\n");
+				int eid = (el->m_nid > 0 ? el->m_nid : es->ElementID(0) + 1);
+				AddLogEntry("  ID = " + QString::number(el->m_nid) + "\n");
 
 				switch (el->Type())
 				{
@@ -1623,11 +1629,14 @@ void CMainWindow::ReportSelection()
 				int n = el->Nodes();
 				for (int i = 0; i < n; ++i)
 				{
-					AddLogEntry(QString::number(el->m_node[i]));
+					int ni = el->m_node[i];
+					FSNode& node = pm->Node(ni);
+					int nid = (node.m_nid > 0 ? node.m_nid : ni + 1);
+					AddLogEntry(QString::number(nid));
 					if (i < n - 1) AddLogEntry(", ");
 					else AddLogEntry("\n");
 				}
-
+#ifdef _DEBUG
 				AddLogEntry("  neighbors: ");
 				n = 0;
 				if (el->IsSolid()) n = el->Faces();
@@ -1639,11 +1648,9 @@ void CMainWindow::ReportSelection()
 					if (i < n - 1) AddLogEntry(", ");
 					else AddLogEntry("\n");
 				}
-
+#endif
                 if(ui->meshWnd && ui->meshWnd->isVisible())
                 {
-
-
                     auto data = es->GetMesh()->GetMeshData();
 
                     int n = el->Nodes();
