@@ -396,7 +396,7 @@ Documentation/htmlManual
 Documentation/doc
 
 # Python stuff
-PyLib
+PyLib/build
 Documentation/htmlManual
 
 # macOS Stuff

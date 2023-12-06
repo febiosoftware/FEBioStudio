@@ -44,7 +44,7 @@ SOFTWARE.*/
 
 #include <FEBio/FEBioExport4.h>
 
-#include "pyFSMesh.h"
+#include "PyFSMesh.h"
 
 
 CModelDocument* GetActiveDocument()

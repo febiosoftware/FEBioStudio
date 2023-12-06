@@ -64,8 +64,11 @@ endif()
 
 add_compile_options(-fPIC)
 
+set(FEBioDir "" CACHE PATH "Path to the FEBio repo")
+
 include_directories(.)
 include_directories(..)
+include_directories(${FEBioDir})
 
 add_definitions(-DHAS_PYTHON -DPY_EXTERNAL)
 
@@ -74,10 +77,20 @@ macro(findHdrSrc name)
 	file(GLOB SRC_${name} "../${name}/*.cpp")
 endmacro()
 
-set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore MathLib)
+macro(findHdrSrcFEBio name)
+	file(GLOB HDR_${name} "${FEBioDir}/${name}/*.h")
+	file(GLOB SRC_${name} "${FEBioDir}/${name}/*.cpp")
+endmacro()
+
+set(FEBIOSTUDIO_LIBS GeomLib MeshIO MeshTools MeshLib FEMLib FSCore PostLib XPLTLib FEBioLink)
+set(FEBIO_LIBS FECore FEBioLib FEBioMech FEBioXML FEBioPlot XML NumCore FEBioTest FEBioFluid FEBioMix)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})
+endforeach(name)
+
+foreach(name IN LISTS FEBIO_LIBS)
+	findHdrSrcFEBio(${name})
 endforeach(name)
 
 macro(addLib name)
@@ -89,10 +102,17 @@ foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	addLib(${name})
 endforeach(name)
 
+foreach(name IN LISTS FEBIO_LIBS)
+	addLib(${name})
+endforeach(name)
+
 add_subdirectory(${PYBIND11_DIR} ./pybind11)
 
-#~ link_libraries(-L/home/mherron/Projects/FEBioStudio/build/Release/lib/ -lMeshTools -lMeshIO -lGeomLib)
+find_package(ZLIB)
 
-pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp)
+target_compile_definitions(XPLTLib PRIVATE HAVE_ZLIB)
+target_link_libraries(XPLTLib PRIVATE ${ZLIB_LIBRARY_RELEASE})
 
-target_link_libraries(fbs PRIVATE -Wl,--start-group ${FEBIOSTUDIO_LIBS} -Wl,--end-group)
+pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp PyFBSPost.cpp)
+
+target_link_libraries(fbs PRIVATE ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS})

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "PyFBSCore.h"
+#include "PyFBSPost.h"
 
 #ifdef HAS_PYTHON
 #include <pybind11/pybind11.h>
@@ -136,9 +137,13 @@ void curveToVTKMesh(std::vector<vec3d> points, double radius, std::string name, 
     vtk.Write(name.c_str());
 }
 
+
+
 void init_FBSCore(pybind11::module& m)
 {
-    pybind11::module core = m.def_submodule("core", "Module used to interact with the FEBio Studio GUI");
+    pybind11::module core = m.def_submodule("core", "Module used to interact with the FEBio and FEBio Studio core classes");
+
+    init_FBSPost(core);
 
     core.def("curveToVTKMesh", curveToVTKMesh);//, pybind11::arg("points"), pybind11::arg("radius"), pybind11::arg("name") = "Curve", 
         // pybind11::arg("divisions") = 6, pybind11::arg("segments") = 6, pybind11::arg("ratio") = 0.5);
@@ -164,8 +169,9 @@ void init_FBSCore(pybind11::module& m)
         .def("__repr__",
             [](const vec3d& v){
                 return "(" + std::to_string(v.x) + ", " + std::to_string(v.y) + ", " + std::to_string(v.z) + ")";
-            }
-    );
+            });
+
+    FSElementLibrary::InitLibrary();
 }
 #else
 void init_FBSCore(pybind11::module_& m) {}
