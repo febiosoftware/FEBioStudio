@@ -34,7 +34,7 @@ SOFTWARE.*/
 #include "GGrid.h"
 #include <MeshLib/Intersect.h>
 #include <GLWLib/GLWidgetManager.h>
-#include <PostLib/Animation.h>
+#include "Animation.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLViewSelector.h"

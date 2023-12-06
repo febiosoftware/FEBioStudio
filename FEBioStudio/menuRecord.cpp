@@ -29,10 +29,10 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include <PostLib/ImgAnimation.h>
-#include <PostLib/AVIAnimation.h>
-#include <PostLib/MPEGAnimation.h>
-#include <PostLib/GIFAnimation.h>
+#include "ImgAnimation.h"
+#include "AVIAnimation.h"
+#include "MPEGAnimation.h"
+#include "GIFAnimation.h"
 
 void CMainWindow::on_actionRecordNew_triggered()
 {
