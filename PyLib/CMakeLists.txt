@@ -115,4 +115,10 @@ target_link_libraries(XPLTLib PRIVATE ${ZLIB_LIBRARY_RELEASE})
 
 pybind11_add_module(fbs PyFBS.cpp PyFBSCore.cpp PyFBSPost.cpp)
 
-target_link_libraries(fbs PRIVATE ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS})
+if(WIN32)
+    target_link_libraries(fbs PRIVATE ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS})
+elseif(APPLE)
+    target_link_libraries(fbs PRIVATE ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS})
+else()
+	target_link_libraries(fbs PRIVATE -Wl,--start-group ${FEBIOSTUDIO_LIBS} ${FEBIO_LIBS} -Wl,--end-group)
+endif()

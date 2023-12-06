@@ -77,11 +77,17 @@ void init_FBSPost(pybind11::module& m)
 
     pybind11::class_<FEPostMesh>(post, "FEPostMesh")
         .def("Surfaces", &FEPostMesh::Surfaces)
-        .def("Surface", &FEPostMesh::Surface, pybind11::return_value_policy::reference);
+        .def("Surface", &FEPostMesh::Surface, pybind11::return_value_policy::reference)
+        .def("NodeSets", &FEPostMesh::NodeSets)
+        .def("NodeSet", &FEPostMesh::NodeSet, pybind11::return_value_policy::reference);
 
     pybind11::class_<Post::FSSurface>(post, "FESurface")
-        .def_readonly("Faces", &Post::FSSurface::m_Face)
+        .def_readonly("Faces", &Post::FSSurface::m_Face, pybind11::return_value_policy::reference)
         .def("GetName", &Post::FSSurface::GetName);
+
+    pybind11::class_<Post::FSNodeSet>(post, "FSNodeSet")
+        .def_readonly("Nodes", &Post::FSNodeSet::m_Node, pybind11::return_value_policy::reference)
+        .def("GetName", &Post::FSNodeSet::GetName);
 
     pybind11::enum_<Data_Tensor_Type>(post, "DataTensorType")
         .value("DATA_SCALAR", DATA_SCALAR)
