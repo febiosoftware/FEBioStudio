@@ -1787,6 +1787,29 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
 	}
 }
 
+void CMainWindow::on_actionImportNrrdImage_triggered()
+{
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "NRRD Files (*.nrrd *.nhdr )" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
+	}
+}
+
 void CMainWindow::on_actionImportImageOther_triggered()
 {
     CGLDocument* doc = GetGLDocument();

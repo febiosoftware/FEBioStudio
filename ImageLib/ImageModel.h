@@ -93,6 +93,7 @@ public:
 
 public:
 	bool ExportRAWImage(const std::string& filename);
+    bool ExportSITKImage(const std::string& filename);
 
 private:
 	// BOX				m_box;						//!< physical dimensions of image

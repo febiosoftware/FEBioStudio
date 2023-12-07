@@ -36,6 +36,7 @@ class CImageSITK : public C3DImage
 {
 public:
     static itk::simple::Image SITKImageFrom3DImage(C3DImage* img);
+    static bool WriteSITKImage(C3DImage* img, const std::string& filename);
 
 public:
     CImageSITK();

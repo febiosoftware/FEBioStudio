@@ -355,3 +355,12 @@ bool CImageModel::ExportRAWImage(const std::string& filename)
 
 	return (nread == 1);
 }
+
+#ifdef HAS_ITK
+bool CImageModel::ExportSITKImage(const std::string& filename)
+{
+    return CImageSITK::WriteSITKImage(Get3DImage(), filename);
+}
+#else
+bool CImageModel::ExportSITKImage(const std::string& filename) { return false; }
+#endif

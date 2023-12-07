@@ -32,6 +32,7 @@ DEALINGS IN THE SOFTWARE.
 
 #ifdef HAS_ITK
 #include <sitkImportImageFilter.h>
+#include <sitkImageFileWriter.h>
 
 
 
@@ -92,6 +93,36 @@ itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
     }
 
     return filter.Execute();
+}
+
+bool CImageSITK::WriteSITKImage(C3DImage* img, const std::string& filename)
+{
+    itk::simple::Image itkImage;
+
+    if(!dynamic_cast<CImageSITK*>(img))
+    {
+        itkImage = SITKImageFrom3DImage(img);
+    }
+    else
+    {
+        itkImage = dynamic_cast<CImageSITK*>(img)->GetSItkImage();
+    }
+
+    sitk::ImageFileWriter writer;
+    writer.SetFileName(filename);
+
+    try
+    {
+        writer.Execute(itkImage);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+
+        return false;
+    }
+    
+    return true;
 }
 
 CImageSITK::CImageSITK()

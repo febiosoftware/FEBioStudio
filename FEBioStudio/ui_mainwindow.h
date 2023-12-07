@@ -520,6 +520,7 @@ public:
 		QAction* actionImportDICOMImage  = addAction("DICOM/DICOM Sequence ...", "actionImportDICOMImage");
 		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
 		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
+        QAction* actionImportNrrdImage  = addAction("NRRD ...", "actionImportNrrdImage");
 		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
         QAction* actionImportImageOther  = addAction("Other ...", "actionImportImageOther");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
@@ -837,6 +838,7 @@ public:
 		menuImportImage->addAction(actionImportRawImage);
 		menuImportImage->addAction(actionImportDICOMImage);
 		menuImportImage->addAction(actionImportTiffImage);
+        menuImportImage->addAction(actionImportNrrdImage);
 //		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 		menuImportImage->addAction(actionImportImageSequence);
         menuImportImage->addAction(actionImportImageOther);
