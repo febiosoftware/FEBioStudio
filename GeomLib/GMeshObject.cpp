@@ -130,8 +130,8 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 		else if (go.IsShell()) g = AddShellPart();
 		else 
 		{ 
-			assert(false); 
-			g = new GPart(this); 
+//			assert(false);
+			g = new GPart(this);
 			m_Part.push_back(g);
 		}
 		g->SetMaterialID(go.GetMaterialID());

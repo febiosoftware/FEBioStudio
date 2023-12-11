@@ -39,7 +39,12 @@ public:
 		MAXELEMSIZE,
 		NROPT2D,
 		NROPT3D,
-		SECONDORDER
+		SECONDORDER,
+        ELEMPEREDGE,
+        ELEMPERCURV,
+        QUADMESH,
+        SURFREFINE,
+        SURFESIZE
 	};
 
 public:

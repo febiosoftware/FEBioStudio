@@ -81,6 +81,7 @@ bool STEPImport::Load(const char* szfile)
 
 			// load each solid as an own object
 			TopExp_Explorer ex;
+            bool found_solid = false;
 			for (ex.Init(shape, TopAbs_SOLID); ex.More(); ex.Next())
 			{
 				// get the shape
@@ -98,7 +99,28 @@ bool STEPImport::Load(const char* szfile)
 				GModel& mdl = m_prj.GetFSModel().GetModel();
 				mdl.AddObject(occ);
 
+                found_solid = true;
 			}
+            if (!found_solid) {
+                for (ex.Init(shape, TopAbs_SHELL); ex.More(); ex.Next())
+                {
+                    // get the shape
+                    TopoDS_Shell shell = TopoDS::Shell(ex.Current());
+                    
+                    GOCCObject* occ = new GOCCObject;
+                    occ->SetShape(shell);
+                    
+                    char szfiletitle[1024] = { 0 }, szname[1024] = { 0 };
+                    FileTitle(szfiletitle);
+                    
+                    sprintf(szname, "%s%02d", szfiletitle, count++);
+                    occ->SetName(szname);
+                    
+                    GModel& mdl = m_prj.GetFSModel().GetModel();
+                    mdl.AddObject(occ);
+                    
+                }
+            }
 		}
 	}
 
