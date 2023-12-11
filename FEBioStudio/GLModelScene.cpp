@@ -1289,8 +1289,8 @@ void CGLModelScene::RenderDiscrete(CGLContext& rc)
 			GGeneralSpring* pg = dynamic_cast<GGeneralSpring*>(po);
 			if (pg)
 			{
-				GNode* pn0 = lut[ps->m_node[0] - minId];
-				GNode* pn1 = lut[ps->m_node[1] - minId];
+				GNode* pn0 = lut[pg->m_node[0] - minId];
+				GNode* pn1 = lut[pg->m_node[1] - minId];
 				if (pn0 && pn1) RenderLine(*pn0, *pn1);
 			}
 
