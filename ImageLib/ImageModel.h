@@ -74,6 +74,8 @@ public:
 
 	void SetBoundingBox(BOX b);
 
+	mat3d GetOrientation();
+
 	bool ShowBox() const;
 
 	void ShowBox(bool b);

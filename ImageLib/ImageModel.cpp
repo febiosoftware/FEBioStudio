@@ -172,6 +172,16 @@ void CImageModel::SetBoundingBox(BOX b)
     }
 }
 
+mat3d CImageModel::GetOrientation()
+{
+	if (m_img && m_img->Get3DImage())
+	{
+		return m_img->Get3DImage()->GetOrientation();
+	}
+
+	return mat3d::identity();
+}
+
 void CImageModel::Save(OArchive& ar)
 {
 	ar.BeginChunk(0);

@@ -513,16 +513,16 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	// get the bounding box
 	BOX box = img.GetBoundingBox();
 	vec3d r0 = box.r0();
-	vec3d r1 = box.r1();
+	vec3d dr = box.r1() - box.r0();
 
 	// activate clipping planes
 	GLdouble clip[6][4] = {
-		{ 1, 0, 0, -(r0.x + g[0][0]*(r1.x - r0.x))},
-		{-1, 0, 0,  (r0.x + g[0][1]*(r1.x - r0.x))},
-		{ 0, 1, 0, -(r0.y + g[1][0]*(r1.y - r0.y))},
-		{ 0,-1, 0,  (r0.y + g[1][1]*(r1.y - r0.y))},
-		{ 0, 0, 1, -(r0.z + g[2][0]*(r1.z - r0.z))},
-		{ 0, 0,-1,  (r0.z + g[2][1]*(r1.z - r0.z))},
+		{ 1, 0, 0, -(g[0][0]*(dr.x))},
+		{-1, 0, 0,  (g[0][1]*(dr.x))},
+		{ 0, 1, 0, -(g[1][0]*(dr.y))},
+		{ 0,-1, 0,  (g[1][1]*(dr.y))},
+		{ 0, 0, 1, -(g[2][0]*(dr.z))},
+		{ 0, 0,-1,  (g[2][1]*(dr.z))},
 	};
 
 	glClipPlane(GL_CLIP_PLANE0, clip[0]); glEnable(GL_CLIP_PLANE0);
@@ -558,7 +558,6 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glDisable(GL_CLIP_PLANE4);
 	glDisable(GL_CLIP_PLANE5);
 
-
 	glPopAttrib();
 }
 
@@ -571,19 +570,18 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 	double W = box.Width();
 	double H = box.Height();
 	double D = box.Depth();
-	vec3d r0 = box.r0();
-	vec3d r1 = box.r1();
+	vec3d dr = box.r1() - box.r0();
 
 	// coordinates of box
 	vec3d c[8];
-	c[0] = vec3d(r0.x, r0.y, r0.z);
-	c[1] = vec3d(r1.x, r0.y, r0.z);
-	c[2] = vec3d(r1.x, r1.y, r0.z);
-	c[3] = vec3d(r0.x, r1.y, r0.z);
-	c[4] = vec3d(r0.x, r0.y, r1.z);
-	c[5] = vec3d(r1.x, r0.y, r1.z);
-	c[6] = vec3d(r1.x, r1.y, r1.z);
-	c[7] = vec3d(r0.x, r1.y, r1.z);
+	c[0] = vec3d(   0,    0, 0);
+	c[1] = vec3d(dr.x,    0, 0);
+	c[2] = vec3d(dr.x, dr.y, 0);
+	c[3] = vec3d(   0, dr.y, 0);
+	c[4] = vec3d(   0,    0, dr.z);
+	c[5] = vec3d(dr.x,    0, dr.z);
+	c[6] = vec3d(dr.x, dr.y, dr.z);
+	c[7] = vec3d(   0, dr.y, dr.z);
 
 	// find the min, max projection distance
 	double tmin = 1e99, tmax = -1e99;
@@ -624,13 +622,15 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 
 				double w = (t - nv[n1]) / (nv[n2] - nv[n1]);
 
+				// position coordinates
 				vr[0] = c[n1].x * (1 - w) + c[n2].x * w;
 				vr[1] = c[n1].y * (1 - w) + c[n2].y * w;
 				vr[2] = c[n1].z * (1 - w) + c[n2].z * w;
 
-				vt[0] = (vr[0] - r0.x) / W;
-				vt[1] = (vr[1] - r0.y) / H;
-				vt[2] = (vr[2] - r0.z) / D;
+				// texture coordinates
+				vt[0] = (vr[0]) / W;
+				vt[1] = (vr[1]) / H;
+				vt[2] = (vr[2]) / D;
 
 				m_mesh.AddVertex(vr, nullptr, vt);
 			}

@@ -40,7 +40,8 @@ SOFTWARE.*/
 C3DImage::C3DImage() : m_pb(nullptr), m_cx(0), m_cy(0), m_cz(0), m_bps(1),
     m_pixelType(CImage::UINT_8), m_box(0, 0, 0, 1, 1, 1), m_orientation(mat3d::identity())
 {
-
+	m_maxValue = 1;
+	m_minValue = 0;
 }
 
 C3DImage::~C3DImage()
