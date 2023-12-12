@@ -541,6 +541,10 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	quatd q = rc.m_cam->GetOrientation();
 	q.Inverse().RotateVector(view);
 
+	mat3d Q = GetImageModel()->GetOrientation();
+	mat3d Qt = Q.transpose();
+	view = Qt * view;
+
 	// the normal will be view direction
 	glNormal3d(view.x, view.y, view.z);
 
