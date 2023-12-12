@@ -110,6 +110,42 @@ bool CITKImageSource::Load()
                 sitkImage.SetOrigin(origin);
             }
 
+            ////// Direction
+            // "Image Orientation (Patient)" tag
+            string imgOrientTag = "0020|0037";
+            if(headerReader.HasMetaDataKey(imgOrientTag))
+            {
+                string val = headerReader.GetMetaData(imgOrientTag);
+
+                std::vector<double> dicomOr(6,0);
+                
+                int pos = 0;
+                for(int i = 0; i < 6; i++)
+                {
+                    int oldPos = pos;
+
+                    pos = val.find('\\', pos);
+
+                    if(pos >= 0) pos++;
+
+                    dicomOr[i] = atof(val.substr(oldPos, pos - oldPos).c_str());
+                    
+                    if(pos == -1)
+                    {
+                        break;
+                    }
+                }
+
+                vec3d a(dicomOr[0], dicomOr[1], dicomOr[2]);
+                vec3d b(dicomOr[3], dicomOr[4], dicomOr[5]);
+
+                vec3d c = a^b;
+
+                std::vector<double> orientation {a.x, b.x, c.x, a.y, b.y, c.y, a.z, b.z, c.z};
+
+                sitkImage.SetDirection(orientation);
+            }
+
             ////// spacing
             // "Pixel Spacing" tag
             string spacingTag = "0028|0030";
