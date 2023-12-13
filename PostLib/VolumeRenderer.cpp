@@ -114,9 +114,9 @@ void CVolumeRenderer::ReloadTexture()
         N *= 3;
     }
 
-    int max8 = 255;
-    int max16 = 65535;
-    uint32_t max32 = 4294967295;
+    constexpr int max8 = std::numeric_limits<unsigned char>::max();
+    constexpr int max16 = std::numeric_limits<unsigned short>::max();
+    constexpr uint32_t max32 = std::numeric_limits<unsigned int>::max();
 
     double min, max;
     im3d.GetMinMax(min, max);
@@ -136,7 +136,6 @@ void CVolumeRenderer::ReloadTexture()
 		min /= max8;
 	}
 	break;
-	case CImage::INT_16:
 	case CImage::INT_RGB16:
 	{
 		max /= max16 / 2;
@@ -150,6 +149,7 @@ void CVolumeRenderer::ReloadTexture()
 		min /= max16;
 	}
 	break;
+	case CImage::INT_16:
 	case CImage::INT_32:
 	case CImage::UINT_32:
 	{
@@ -192,8 +192,19 @@ void CVolumeRenderer::ReloadTexture()
 	switch (im3d.PixelType())
 	{
 	case CImage::INT_8     : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_BYTE , im3d.GetBytes()); break;
-	case CImage::INT_16    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_SHORT, im3d.GetBytes()); break;
-    case CImage::INT_32    : 
+	case CImage::INT_16:
+	{
+		GLbyte* d = new GLbyte[N];
+		short* s = (short*)im3d.GetBytes();
+		for (size_t i = 0; i < N; ++i) d[i] = (GLbyte)(255 * (s[i] - m_IscaleMin) * m_Iscale);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, d);
+		delete[] d;
+
+		m_Iscale = 1.f;
+		m_IscaleMin = 0.f;
+	}
+	break;
+	case CImage::INT_32    :
     case CImage::UINT_32   :
 	{
 		// We're doing the scaling here, because it appears
