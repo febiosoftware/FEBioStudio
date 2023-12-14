@@ -210,7 +210,7 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.stl)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.dyn *.stl)";
 	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
@@ -219,7 +219,7 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
 	filters << "VTK files (*.vtk)";
-	filters << "LSDYNA keyword (*.k)";
+	filters << "LSDYNA keyword (*.k *.dyn)";
 	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
 
@@ -467,6 +467,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	}
 	if (ext.compare("cdb", Qt::CaseInsensitive) == 0) return new AnsysImport(prj);
 	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
+	if (ext.compare("dyn", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
 	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new IDEASimport(prj);
 	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new NASTRANimport(prj);
 	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new DXFimport(prj);
@@ -540,6 +541,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	QString ext = QFileInfo(fileName).suffix();
 	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
 	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
+	else if (ext.compare("dyn", Qt::CaseInsensitive) == 0) reader = new LSDYNAimport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
@@ -1500,7 +1502,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 		filters << "FEBio (*.feb)";
 		filters << "ABAQUS (*.inp)";
 		filters << "ANSYS (*.cdb)";
-		filters << "LSDYNA Keyword (*.k)";
+		filters << "LSDYNA Keyword (*.k *.dyn)";
 		filters << "IDEAS Universal (*.unv)";
 		filters << "NASTRAN (*.nas)";
 		filters << "DXF (*.dxf)";
