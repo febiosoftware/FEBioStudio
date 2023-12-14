@@ -1557,6 +1557,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			FSNodalVelocities* pbc = new FSNodalVelocities(&fem, pg, v, m_pBCStep->GetID());
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialVelocity%02d", CountBCs<FSNodalVelocities>(fem) + 1);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1596,6 +1597,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			FSInitConcentration* pbc = new FSInitConcentration(&fem, pg, bc, c, m_pBCStep->GetID());
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialConcentration%02d", CountBCs<FSInitConcentration>(fem) + 1);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1628,6 +1630,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialFluidPressure%02d", CountBCs<FSInitFluidPressure>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "temperature")	// initial temperature
@@ -1659,6 +1662,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialTemperature%02d", CountBCs<FSInitTemperature>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			m_pBCStep->AddComponent(pbc);
 		}
 		else ParseUnknownTag(tag);
@@ -2415,6 +2419,7 @@ void FEBioFormatOld::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 			FSSurface* ps = new FSSurface(po);
 			pci->SetItemList(ps);
 			if (szn) ps->SetName(szn);
+			po->AddFESurface(ps);
 
 			// read the surface
 			ParseContactSurface(ps, tag);
@@ -2489,6 +2494,8 @@ void FEBioFormatOld::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 			if (sz) sprintf(szbuf, "%s", szname);
 			else sprintf(szbuf, "RigidInterface%02d", i + 1);
 			pi->SetName(szbuf);
+			pn->SetName(szbuf);
+			po->AddFENodeSet(pn);
 			pstep->AddComponent(pi);
 		}
 	}
