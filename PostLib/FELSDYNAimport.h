@@ -97,7 +97,7 @@ protected:
 	bool	m_bshellthick;	// shell thicknesses included?
 	bool	m_bdispl;		// define displacement field?
 
-	char	m_szline[256];
+	char	m_szline[256] = { 0 };
 };
 
 }

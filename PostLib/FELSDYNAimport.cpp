@@ -23,11 +23,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
-// FELSDYNAimport.cpp: implementation of the FELSDYNAimport class.
-//
-//////////////////////////////////////////////////////////////////////
-
 #include "stdafx.h"
 #include "FELSDYNAimport.h"
 #include "FEDataManager.h"
@@ -37,23 +32,21 @@ SOFTWARE.*/
 
 using namespace Post;
 
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-//-----------------------------------------------------------------------------
 FELSDYNAimport::FELSDYNAimport(FEPostModel* fem) : FEFileReader(fem)
 {
 	m_bdispl = false;
+	m_bnresults = false;
+	m_bshellthick = false;
+	
+	m_nltoff = 0;
+	m_pm = nullptr;
 }
 
-//-----------------------------------------------------------------------------
 FELSDYNAimport::~FELSDYNAimport()
 {
 
 }
 
-//-----------------------------------------------------------------------------
 char* FELSDYNAimport::get_line(char* szline)
 {
 	do
@@ -72,7 +65,6 @@ char* FELSDYNAimport::get_line(char* szline)
 	return szline;
 }
 
-//-----------------------------------------------------------------------------
 bool FELSDYNAimport::Load(const char* szfile)
 {
 	// open the file
@@ -89,10 +81,6 @@ bool FELSDYNAimport::Load(const char* szfile)
 
 	m_bnresults = false;
 	m_bshellthick = false;
-
-#ifdef LINUX
-	fprintf(stderr, "\nReading file ...");
-#endif
 
 	// get the next line
 	if (get_line(m_szline) == 0) return errf("FATAL ERROR: Unexpected end of file.");
@@ -134,15 +122,10 @@ bool FELSDYNAimport::Load(const char* szfile)
 	// close the file
 	Close();
 
-#ifdef LINUX
-	fprintf(stderr, "done\n");
-#endif
-
 	// build the mesh
 	return BuildMesh(*m_fem);
 }
 
-//-----------------------------------------------------------------------------
 bool FELSDYNAimport::Read_Element_Solid()
 {
 	if (get_line(m_szline) == 0) return false;
@@ -161,7 +144,6 @@ bool FELSDYNAimport::Read_Element_Solid()
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool FELSDYNAimport::Read_Element_Shell()
 {
 	if (get_line(m_szline) == 0) return false;
@@ -180,7 +162,6 @@ bool FELSDYNAimport::Read_Element_Shell()
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool FELSDYNAimport::Read_Element_Shell_Thickness()
 {
 	if (get_line(m_szline) == 0) return false;
@@ -203,7 +184,6 @@ bool FELSDYNAimport::Read_Element_Shell_Thickness()
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool FELSDYNAimport::Read_Node()
 {
 	if (get_line(m_szline) == 0) return false;
@@ -222,7 +202,6 @@ bool FELSDYNAimport::Read_Node()
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 bool FELSDYNAimport::Read_Nodal_Results()
 {
 	if (get_line(m_szline) == 0) return false;
@@ -242,7 +221,6 @@ bool FELSDYNAimport::Read_Nodal_Results()
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 {
 	int shells = m_shell.size();
@@ -276,13 +254,8 @@ void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 	for (i=0; i<shells; ++i, ++is) is->mid -= nm0;
 }
 
-//-----------------------------------------------------------------------------
 bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 {
-#ifdef LINUX
-	fprintf(stderr, "Building geometry...");
-#endif
-
 	int nodes  = m_node.size();
 	int shells = m_shell.size();
 	int solids = m_solid.size();
@@ -446,16 +419,10 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	m_shell.clear();
 	m_solid.clear();
 
-
-#ifdef LINUX
-	fprintf(stderr, "done\n\n");
-#endif
-
 	// we're good!
 	return true;
 }
 
-//-----------------------------------------------------------------------------
 void FELSDYNAimport::BuildNLT()
 {
 	m_NLT.clear();
@@ -480,7 +447,6 @@ void FELSDYNAimport::BuildNLT()
 	}
 }
 
-//-----------------------------------------------------------------------------
 int FELSDYNAimport::FindNode(int id) const noexcept
 {
 	return m_NLT[id - m_nltoff];
