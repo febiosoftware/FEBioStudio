@@ -279,8 +279,6 @@ void FELSDYNAimport::BuildMaterials(FEPostModel& fem)
 //-----------------------------------------------------------------------------
 bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 {
-	int i;
-
 #ifdef LINUX
 	fprintf(stderr, "Building geometry...");
 #endif
@@ -302,13 +300,13 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	// build the mesh
 	FEPostMesh* pm = m_pm = new FEPostMesh;
 	pm->Create(nodes, elems);
+	BuildNLT();
 
 	// create nodes
 	list<NODE>::iterator in = m_node.begin();
-	for (i=0; i<nodes; ++i, ++in)
+	for (int i=0; i<nodes; ++i, ++in)
 	{
 		FSNode& n = pm->Node(i);
-		in->n = i;
 		n.r.x = (float) in->x;
 		n.r.y = (float) in->y;
 		n.r.z = (float) in->z;
@@ -321,7 +319,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	{
 		list<NODE>::iterator in = m_node.begin();
 		list<ELEMENT_SOLID>::iterator ih = m_solid.begin();
-		for (i=0; i<solids; ++i, ++ih)
+		for (int i=0; i<solids; ++i, ++ih)
 		{
 			FSElement& el = static_cast<FSElement&>(pm->ElementRef(ne++));
 			int* n = ih->n;
@@ -331,14 +329,14 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 
 			el.m_MatID = ih->mid;
 
-			el.m_node[0] = FindNode(ih->n[0], in); if (el.m_node[0] < 0) return false;
-			el.m_node[1] = FindNode(ih->n[1], in); if (el.m_node[1] < 0) return false;
-			el.m_node[2] = FindNode(ih->n[2], in); if (el.m_node[2] < 0) return false;
-			el.m_node[3] = FindNode(ih->n[3], in); if (el.m_node[3] < 0) return false;
-			el.m_node[4] = FindNode(ih->n[4], in); if (el.m_node[4] < 0) return false;
-			el.m_node[5] = FindNode(ih->n[5], in); if (el.m_node[5] < 0) return false;
-			el.m_node[6] = FindNode(ih->n[6], in); if (el.m_node[6] < 0) return false;
-			el.m_node[7] = FindNode(ih->n[7], in); if (el.m_node[7] < 0) return false;
+			el.m_node[0] = FindNode(ih->n[0]); if (el.m_node[0] < 0) return false;
+			el.m_node[1] = FindNode(ih->n[1]); if (el.m_node[1] < 0) return false;
+			el.m_node[2] = FindNode(ih->n[2]); if (el.m_node[2] < 0) return false;
+			el.m_node[3] = FindNode(ih->n[3]); if (el.m_node[3] < 0) return false;
+			el.m_node[4] = FindNode(ih->n[4]); if (el.m_node[4] < 0) return false;
+			el.m_node[5] = FindNode(ih->n[5]); if (el.m_node[5] < 0) return false;
+			el.m_node[6] = FindNode(ih->n[6]); if (el.m_node[6] < 0) return false;
+			el.m_node[7] = FindNode(ih->n[7]); if (el.m_node[7] < 0) return false;
 		}
 	}
 
@@ -347,12 +345,12 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	{
 		list<NODE>::iterator in = m_node.begin();
 		list<ELEMENT_SHELL>::iterator is = m_shell.begin();
-		for (i=0; i<shells; ++i, ++is)
+		for (int i=0; i<shells; ++i, ++is)
 		{
 			FSElement& el = static_cast<FSElement&>(pm->ElementRef(ne++));
-			el.m_node[0] = FindNode(is->n[0], in); if (el.m_node[0] < 0) return false;
-			el.m_node[1] = FindNode(is->n[1], in); if (el.m_node[1] < 0) return false;
-			el.m_node[2] = FindNode(is->n[2], in); if (el.m_node[2] < 0) return false;
+			el.m_node[0] = FindNode(is->n[0]); if (el.m_node[0] < 0) return false;
+			el.m_node[1] = FindNode(is->n[1]); if (el.m_node[1] < 0) return false;
+			el.m_node[2] = FindNode(is->n[2]); if (el.m_node[2] < 0) return false;
 
 			el.m_MatID = is->mid;
 
@@ -364,7 +362,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 			else
 			{
 				el.SetType(FE_QUAD4);
-				el.m_node[3] = FindNode(is->n[3], in); if (el.m_node[3] < 0) return false;
+				el.m_node[3] = FindNode(is->n[3]); if (el.m_node[3] < 0) return false;
 			}
 		}
 	}
@@ -404,7 +402,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	{
 		FENodeData<float>& d = dynamic_cast<FENodeData<float>&>(ps->m_Data[ndata[0]]);
 		list<NODE>::iterator pn = m_node.begin();
-		for (i=0; i<nodes; ++i, ++pn) d[i] = (float) pn->v;
+		for (int i=0; i<nodes; ++i, ++pn) d[i] = (float) pn->v;
 	}
 
 	if (m_bshellthick)
@@ -414,7 +412,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 		ELEMDATA* pd = &ps->m_ELEM[0] + (nel8 + nel2);
 
 		list<ELEMENT_SHELL>::iterator pe = m_shell.begin();
-		for (i=0; i<(int) m_shell.size(); ++i, ++pe)
+		for (int i=0; i<(int) m_shell.size(); ++i, ++pe)
 		{
 			double* h = pe->h;
 			pd[i].m_h[0] = (float) h[0];
@@ -426,7 +424,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 		FEElementData<float,DATA_COMP>& d = dynamic_cast<FEElementData<float,DATA_COMP>&>(ps->m_Data[0]);
 		pe = m_shell.begin();
 		float h[4];
-		for (i=0; i<(int) m_shell.size(); ++i, ++pe)
+		for (int i=0; i<(int) m_shell.size(); ++i, ++pe)
 		{
 			int ne = i;
 			h[0] = (float) pe->h[0];
@@ -440,7 +438,7 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 	if (m_bdispl)
 	{
 		FENodeData<vec3f>& d = dynamic_cast<FENodeData<vec3f>&>(ps->m_Data[ndata[1]]);
-		for (i=0; i<nodes; ++i) d[i] = vec3f(0.f, 0.f, 0.f);
+		for (int i=0; i<nodes; ++i) d[i] = vec3f(0.f, 0.f, 0.f);
 	}
 
 	// clean up
@@ -458,24 +456,32 @@ bool FELSDYNAimport::BuildMesh(FEPostModel& fem)
 }
 
 //-----------------------------------------------------------------------------
-int FELSDYNAimport::FindNode(int id, list<NODE>::iterator& pn)
+void FELSDYNAimport::BuildNLT()
 {
-	int N = m_node.size();
-	int m = 0;
-	do
+	m_NLT.clear();
+	m_nltoff = 0;
+	if (m_node.empty()) return;
+	const auto& it = m_node.begin();
+	int minId = it->id, maxId = it->id;
+	for (auto& node : m_node)
 	{
-		if (id == pn->id) return pn->n;
-		else if (id < pn->id)
-		{
-			if (pn->n > 0) --pn; else return -1;
-		}
-		else
-		{
-			if (pn->n < N-1) ++pn; else return -1;
-		}
-		++m;
+		int nodeId = node.id;
+		if (nodeId < minId) minId = nodeId;
+		if (nodeId > maxId) maxId = nodeId;
 	}
-	while (m <= N);
+	int nsize = maxId - minId + 1;
+	m_nltoff = minId;
+	m_NLT.assign(nsize, -1);
+	int index = 0;
+	for (auto& node : m_node)
+	{
+		int nodeId = node.id;
+		m_NLT[nodeId - m_nltoff] = index++;
+	}
+}
 
-	return -1;
+//-----------------------------------------------------------------------------
+int FELSDYNAimport::FindNode(int id) const noexcept
+{
+	return m_NLT[id - m_nltoff];
 }
