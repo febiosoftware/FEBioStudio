@@ -346,7 +346,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 					QLineEdit* edit = new QLineEdit;
 					edit->setValidator(new QIntValidator);
 					edit->setText(QString::number(v.toInt()));
-					connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(onDataChanged()));
+					connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
 					return edit;
 				}
 			}
@@ -371,7 +371,7 @@ QWidget* CPropertyListForm::createPropertyEditor(CProperty& pi, QVariant v)
 			QLineEdit* edit = new QLineEdit;
 			edit->setValidator(new QDoubleValidator);
 			edit->setText(QString::number(v.toDouble()));
-			connect(edit, SIGNAL(textChanged(const QString&)), this, SLOT(onDataChanged()));
+			connect(edit, SIGNAL(editingFinished()), this, SLOT(onDataChanged()));
 			return edit;
 		}
 		break;
