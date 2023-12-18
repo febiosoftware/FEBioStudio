@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <GLLib/GLMeshRender.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <GeomLib/GSurfaceMeshObject.h>
-#include <MeshLib/MeshMetrics.h>
+#include <FEMLib/FELoad.h>
 
 const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
 const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
@@ -182,18 +182,86 @@ void CGLModelScene::Render(CGLContext& rc)
 	if (view.m_bTags) glview->RenderTags();
 }
 
-//-----------------------------------------------------------------------------
+void TagFaces(GFaceList& faceList, int tag)
+{
+	std::vector<GFace*> faces = faceList.GetFaceList();
+	for (auto pf : faces) pf->m_ntag = tag;
+}
+
+// TODO: This is currently called every time we render the scene (with color mode set to physics)!
+void TagFacesByPhysics(FSModel& fem)
+{
+	GModel& model = fem.GetModel();
+
+	// Clear all the tags
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		GObject* po = model.Object(i);
+		if (po->IsVisible() && po->IsValid())
+		{
+			for (int j = 0; j < po->Faces(); ++j)
+			{
+				GFace* pf = po->Face(j);
+				pf->m_ntag = 0;
+			}
+		}
+	}
+
+	for (int i = 0; i < fem.Steps(); ++i)
+	{
+		FSStep* step = fem.GetStep(i);
+		for (int j = 0; j < step->BCs(); ++j)
+		{
+			FSBoundaryCondition* pbc = step->BC(j);
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pbc->GetItemList());
+			if (faceList) TagFaces(*faceList, 1);
+		}
+		for (int j = 0; j < step->ICs(); ++j)
+		{
+			FSInitialCondition* pic = step->IC(j);
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pic->GetItemList());
+			if (faceList) TagFaces(*faceList, 2);
+		}
+		for (int j = 0; j < step->Loads(); ++j)
+		{
+			FSLoad* pl = step->Load(j);
+			GFaceList* faceList = dynamic_cast<GFaceList*>(pl->GetItemList());
+			if (faceList) TagFaces(*faceList, 3);
+		}
+
+		for (int j = 0; j < step->Interfaces(); ++j)
+		{
+			FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(step->Interface(j));
+			if (pi)
+			{
+				GFaceList* faceList = dynamic_cast<GFaceList*>(pi->GetItemList(0));
+				if (faceList) TagFaces(*faceList, 4);
+
+				faceList = dynamic_cast<GFaceList*>(pi->GetItemList(1));
+				if (faceList) TagFaces(*faceList, 5);
+			}
+		}
+	}
+}
+
 void CGLModelScene::RenderModel(CGLContext& rc)
 {
 	CModelDocument* pdoc = m_doc;
 	if (pdoc == nullptr) return;
+	FSModel* ps = pdoc->GetFSModel();
+	if (ps == nullptr) return;
+	GModel& model = ps->GetModel();
 
 	// we don't use backface culling when drawing
 	glDisable(GL_CULL_FACE);
+	
+	GLViewSettings& view = rc.m_settings;
+	if (view.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+	{
+		// Tag all faces depending on how they are used in a model component
+		TagFacesByPhysics(*ps);
+	}
 
-	// get the model
-	FSModel* ps = pdoc->GetFSModel();
-	GModel& model = ps->GetModel();
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
@@ -1601,7 +1669,22 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				SetMatProps(rc, pg);
+				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				{
+					SetDefaultMatProps();
+					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+					switch (f.m_ntag)
+					{
+					case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; glEnable(GL_POLYGON_STIPPLE); break;
+					case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
+					case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
+					case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
+					case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact primary
+					case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
+					}
+					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+				}
+				else SetMatProps(rc, pg);
 
 				if (vs.m_transparencyMode != 0)
 				{
@@ -1615,7 +1698,9 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 				// render the face
 				renderer.RenderGLMesh(pm, n);
 
-				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
+				if ((vs.m_transparencyMode != 0) ||
+					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
 	}
@@ -1884,7 +1969,22 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 			// make sure we have a part
 			if (pg)
 			{
-				SetMatProps(rc, pg);
+				if (vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE)
+				{
+					SetDefaultMatProps();
+					GLfloat col[] = { 0.f, 0.f, 0.f, 1.f };
+					switch (f.m_ntag)
+					{ 
+					case 0: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.9f; glEnable(GL_POLYGON_STIPPLE); break;
+					case 1: col[0] = 0.9f; col[1] = 0.9f; col[2] = 0.0f; break;	// boundary conditions
+					case 2: col[0] = 0.0f; col[1] = 0.4f; col[2] = 0.0f; break;	// initial conditions
+					case 3: col[0] = 0.0f; col[1] = 0.9f; col[2] = 0.9f; break;	// loads
+					case 4: col[0] = 0.9f; col[1] = 0.0f; col[2] = 0.9f; break;	// contact
+					case 5: col[0] = 0.3f; col[1] = 0.0f; col[2] = 0.3f; break;	// contact secondary
+					}
+					glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+				}
+				else SetMatProps(rc, pg);
 
 				if (vs.m_transparencyMode != 0)
 				{
@@ -1898,7 +1998,9 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 				// render the face
 				renderer.RenderGLMesh(pm, n);
 
-				if (vs.m_transparencyMode != 0) glDisable(GL_POLYGON_STIPPLE);
+				if ((vs.m_transparencyMode != 0) ||
+					(vs.m_objectColor == OBJECT_COLOR_MODE::PHYSICS_TYPE))
+					glDisable(GL_POLYGON_STIPPLE);
 			}
 		}
 	}
@@ -2899,6 +3001,13 @@ void CGLModelScene::SetMatProps(CGLContext& rc, GPart* pg)
 	case OBJECT_COLOR_MODE::FSELEMENT_TYPE:
 	{
 		// We should only get here if the object is not active, or it is not meshed
+		SetDefaultMatProps();
+		GLfloat col[] = { 1.f, 1.f, 1.f, 1.f };
+		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
+	}
+	break;
+	case OBJECT_COLOR_MODE::PHYSICS_TYPE:
+	{
 		SetDefaultMatProps();
 		GLfloat col[] = { 1.f, 1.f, 1.f, 1.f };
 		glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE, col);
