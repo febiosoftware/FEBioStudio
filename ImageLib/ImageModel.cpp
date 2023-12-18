@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
 #include <FSCore/ClassDescriptor.h>
+#include <fstream>
 #include <assert.h>
 
 using namespace Post;
@@ -346,14 +347,12 @@ bool CImageModel::ExportRAWImage(const std::string& filename)
 	int nsize = nx * ny * nz;
 	if (nsize <= 0) return false;
 
-	FILE* fp = fopen(filename.c_str(), "wb");
-	if (fp == nullptr) return false;
+	std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
+	if (!file.is_open()) return false;
+	file.write(reinterpret_cast<char*>(pb), nsize);
+	file.close();
 
-	int nread = fwrite(pb, nsize, 1, fp);
-
-	fclose(fp);
-
-	return (nread == 1);
+	return true;
 }
 
 #ifdef HAS_ITK
