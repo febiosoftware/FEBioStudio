@@ -2691,19 +2691,14 @@ void FSMesh::BuildELT()
 
 	// Figure out the size
 	int nsize = maxid - minid + 1;
-	if (nsize < NE)
-	{
-		// Hmm, that shouldn't be. 
-		// Let's clear up and get out of here.
-		ClearELT();
-		return;
-	}
+	assert(nsize >= NE);
 
 	// Ok, look's like we're good to go
 	m_ELT.assign(nsize, -1);
 	for (int i = 0; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		assert(m_ELT[nid - minid] == -1);
 		m_ELT[nid - minid] = i;
 	}
 	m_eltmin = minid;
