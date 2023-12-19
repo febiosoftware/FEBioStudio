@@ -215,6 +215,7 @@ void CITKImageSource::Save(OArchive& ar)
 {
     ar.WriteChunk(0, m_filename);
     ar.WriteChunk(1, (int)m_type);
+    ar.WriteChunk(2, (int)m_fileType);
 
 	if (m_originalImage)
 	{
@@ -247,6 +248,13 @@ void CITKImageSource::Load(IArchive& ar)
             int type;
             ar.read(type);
             m_type = type;
+            break;
+        }
+        case 2:
+        {
+            int fileType;
+            ar.read(fileType);
+            m_fileType = (ImageFileType)fileType;
             break;
         }
 			
