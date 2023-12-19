@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <QProcess> // for QProcess::ExitStatus
 #include <QThread>
+#include <QtCore>
 
 class CFEBioJob;
 class CMainWindow;
@@ -41,11 +42,18 @@ public:
 
 	void KillThread();
 
+	void appendLog(const char* sz);
+
+	QString GetOutput();
+
 signals:
 	void resultsReady(int exitCode, QProcess::ExitStatus es);
-	void sendLog(const QString& txt);
+	void outputReady();
 
 private:
 	CMainWindow* m_wnd;
 	CFEBioJob* m_job;
+	QString	m_outputBuffer;
+	bool	m_isOutputReady;
+	QMutex	m_mutex;
 };
