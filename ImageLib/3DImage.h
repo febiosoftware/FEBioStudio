@@ -61,6 +61,8 @@ public:
 	double Value(double fx, double fy, int nz, int channel = 0);
 	double Peek(double fx, double fy, double fz, int channel = 0);
 
+    double ValueAtGlobalPos(vec3d pos, int channel = 0);
+
 	void GetSliceX(CImage& im, int n);
 	void GetSliceY(CImage& im, int n);
 	void GetSliceZ(CImage& im, int n);
