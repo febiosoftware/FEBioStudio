@@ -371,7 +371,7 @@ void CImageSlicer::Render(CGLContext& rc)
 	case 2:
 		z[0] = z[1] = z[2] = z[3] = r0.z + off*(r1.z - r0.z);
 		x[0] = x[3] = r1.x;  x[1] = x[2] = r0.x;
-		y[0] = y[1] = r1.y;  y[2] = y[3] = r1.y;
+		y[0] = y[1] = r0.y;  y[2] = y[3] = r1.y;
 		break;
 	}
 

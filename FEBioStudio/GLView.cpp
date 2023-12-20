@@ -2291,67 +2291,42 @@ void CGLView::RenderImageData()
 	CGLDocument* doc = GetDocument();
 	if (doc->IsValid() == false) return;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	for (int i = 0; i < doc->ImageModels(); ++i)
+	{
+		CImageModel* img = doc->GetImageModel(i);
+		BOX box = img->GetBoundingBox();
+		vec3d r0 = box.r0();
+		vec3d r1 = box.r1();
+		glPushMatrix();
+		{
+			glTranslated(r0.x, r0.y, r0.z);
 
-	GLViewSettings& vs = GetViewSettings();
+			mat3d Q = img->GetOrientation();
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	cam.Transform();
+			double q[16] = {
+				Q(0,0), Q(1,0), Q(2,0), 0.0,
+				Q(0,1), Q(1,1), Q(2,1), 0.0,
+				Q(0,2), Q(1,2), Q(2,2), 0.0,
+				0.0, 0.0, 0.0, 1.0
+			};
+			glMultMatrixd(q);
 
-    if(doc->GetView()->imgView == CGView::MODEL_VIEW)
-    {
-        for (int i = 0; i < doc->ImageModels(); ++i)
-        {
-            CImageModel* img = doc->GetImageModel(i);
-            BOX box = img->GetBoundingBox();
-			vec3d r0 = box.r0();
-			vec3d r1 = box.r1();
-			glPushMatrix();
+			BOX localBox(vec3d(0, 0, 0), r1 - r0);
+			GLColor c(255, 128, 128);
+			glColor3ub(c.r, c.g, c.b);
+
+			// If we are in the multi-panel view, throw in the slices as well
+			if(doc->GetView()->imgView == CGView::SLICE_VIEW)
 			{
-				glTranslated(r0.x, r0.y, r0.z);
-
-				mat3d Q = img->GetOrientation();
-
-				double q[16] = { 
-					Q(0,0), Q(1,0), Q(2,0), 0.0,
-					Q(0,1), Q(1,1), Q(2,1), 0.0,
-					Q(0,2), Q(1,2), Q(2,2), 0.0,
-					0.0, 0.0, 0.0, 1.0
-				};
-				glMultMatrixd(q);
-
-				BOX localBox(vec3d(0, 0, 0), r1 - r0);
-
-				GLColor c(255, 128, 128);
-				glColor3ub(c.r, c.g, c.b);
-				if (img->ShowBox()) glx::renderBox(localBox, false);
-				img->Render(m_rc);
+				CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
+				sliceView->RenderSlicers(m_rc);
 			}
-			glPopMatrix();
-        }
-    }
-    else if(doc->GetView()->imgView == CGView::SLICE_VIEW)
-    {
-        CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
 
-        CImageModel* img =  sliceView->GetImageModel();
-        if(img)
-        {
-            BOX box = img->GetBoundingBox();
-            GLColor c(255, 128, 128);
-            glColor3ub(c.r, c.g, c.b);
-            
-            sliceView->RenderSlicers(m_rc);
-
-            if (img->ShowBox()) glx::renderBox(box, false);
-            img->Render(m_rc);
-        }
-    }
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+			if (img->ShowBox()) glx::renderBox(localBox, false);
+			img->Render(m_rc);
+		}
+		glPopMatrix();
+	}
 }
 
 //-----------------------------------------------------------------------------
