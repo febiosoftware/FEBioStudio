@@ -182,7 +182,7 @@ public:
         IMG_SLICE,
 		TIME_VIEW_2D,
 		GL_VIEWER,
-		QML_VIEWER
+		APP_VIEWER
 	};
 
 public:
@@ -457,7 +457,6 @@ public:
 		qml->setObjectName("qmlview");
 		qml->setResizeMode(QQuickWidget::SizeRootObjectToView);
 		qml->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-		qml->setSource(QUrl("main.qml"));
 		stack->addWidget(qml);
 
 		centralLayout->addWidget(tab);
@@ -1663,9 +1662,9 @@ public:
 			timePanel->parentWidget()->hide();
             imageSettingsPanel->parentWidget()->hide();
 		}
-		else if (config == ::CMainWindow::QML_CONFIG)
+		else if (config == ::CMainWindow::APP_CONFIG)
 		{
-			stack->setCurrentIndex(Ui::CMainWindow::QML_VIEWER);
+			stack->setCurrentIndex(Ui::CMainWindow::APP_VIEWER);
 
 			menuEdit->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(true);

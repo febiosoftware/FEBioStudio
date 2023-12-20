@@ -106,6 +106,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
+#include "FEBioAppDocument.h"
 
 extern GLColor col[];
 
@@ -613,9 +614,9 @@ void CMainWindow::OpenFile(const QString& filePath, bool showLoadOptions, bool o
 			OpenFEBioFile(fileName);
 		}
 	}
-	else if (ext.compare("qml", Qt::CaseInsensitive) == 0)
+	else if (ext.compare("fex", Qt::CaseInsensitive) == 0)
 	{
-		OpenQMLFile(fileName);
+		OpenFEBioAppFile(fileName);
 	}
 	else if ((ext.compare("inp", Qt::CaseInsensitive) == 0) ||
 		     (ext.compare("n"  , Qt::CaseInsensitive) == 0) ||
@@ -2361,10 +2362,12 @@ void CMainWindow::UpdateUIConfig()
                 }
                 else
                 {
-					CQMLDocument* qmlDoc = dynamic_cast<CQMLDocument*>(GetDocument());
-					if (qmlDoc)
+					FEBioAppDocument* feappDoc = dynamic_cast<FEBioAppDocument*>(GetDocument());
+					if (feappDoc)
 					{
-						ui->setUIConfig(CMainWindow::QML_CONFIG);
+						ui->setUIConfig(CMainWindow::APP_CONFIG);
+						QUrl url = QUrl::fromLocalFile(QString::fromStdString(feappDoc->GetDocFilePath()));
+						ui->qml->setSource(url);
 					}
 					else ui->setUIConfig(HTML_CONFIG);
                 }

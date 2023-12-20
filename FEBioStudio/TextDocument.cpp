@@ -106,12 +106,3 @@ bool CTextDocument::SaveDocument()
 
 	return true;
 }
-
-//==============================================================================
-// CQMLDocument
-//==============================================================================
-
-CQMLDocument::CQMLDocument(CMainWindow* wnd) : CDocument(wnd)
-{
-
-}

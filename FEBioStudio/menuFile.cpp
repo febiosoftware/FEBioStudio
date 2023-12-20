@@ -125,6 +125,7 @@ SOFTWARE.*/
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
+#include "FEBioAppDocument.h"
 
 using std::stringstream;
 
@@ -598,11 +599,11 @@ void CMainWindow::OpenFEBioFile(const QString& fileName)
 	AddDocument(xml);
 }
 
-void CMainWindow::OpenQMLFile(const QString& fileName)
+void CMainWindow::OpenFEBioAppFile(const QString& fileName)
 {
-	CQMLDocument* qml = new CQMLDocument(this);
-	qml->SetDocFilePath(fileName.toStdString());
-	AddDocument(qml);
+	FEBioAppDocument* feapp = new FEBioAppDocument(this);
+	feapp->SetDocFilePath(fileName.toStdString());
+	AddDocument(feapp);
 }
 
 void CMainWindow::ExportPostGeometry()

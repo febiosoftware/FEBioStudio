@@ -25,31 +25,9 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "Document.h"
-#include <QTextDocument>
 
-//-----------------------------------------------------------------------------
-// Base class for text documents
-class CTextDocument : public CDocument
+class FEBioAppDocument : public CDocument
 {
 public:
-	enum Format {
-		FORMAT_TEXT,
-		FORMAT_HTML
-	};
-
-public:
-	CTextDocument(CMainWindow* wnd);
-
-	void SetFormat(Format format);
-	int GetFormat() const;
-
-	QTextDocument* GetText();
-
-	bool ReadFromFile(const QString& fileName);
-
-	bool SaveDocument() override;
-
-protected:
-	QTextDocument	m_txt;
-	int				m_format;
+	FEBioAppDocument(CMainWindow* wnd);
 };

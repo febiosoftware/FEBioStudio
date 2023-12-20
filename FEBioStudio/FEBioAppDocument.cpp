@@ -23,33 +23,9 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include "Document.h"
-#include <QTextDocument>
+#include "FEBioAppDocument.h"
 
-//-----------------------------------------------------------------------------
-// Base class for text documents
-class CTextDocument : public CDocument
+FEBioAppDocument::FEBioAppDocument(CMainWindow* wnd) : CDocument(wnd)
 {
-public:
-	enum Format {
-		FORMAT_TEXT,
-		FORMAT_HTML
-	};
 
-public:
-	CTextDocument(CMainWindow* wnd);
-
-	void SetFormat(Format format);
-	int GetFormat() const;
-
-	QTextDocument* GetText();
-
-	bool ReadFromFile(const QString& fileName);
-
-	bool SaveDocument() override;
-
-protected:
-	QTextDocument	m_txt;
-	int				m_format;
-};
+}

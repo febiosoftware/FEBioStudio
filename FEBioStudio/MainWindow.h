@@ -83,7 +83,7 @@ public:
 		POST_CONFIG,		// post document	(i.e. xplt file)
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
 		XML_CONFIG,			// text document	(i.e. feb file)
-		QML_CONFIG			// qml document
+		APP_CONFIG			// FEBio app document
 	};
 
 public:
@@ -321,7 +321,7 @@ private:
 	void OpenDocument(const QString& fileName);
 	void OpenFEModel(const QString& fileName);
 	void OpenFEBioFile(const QString& fileName);
-	void OpenQMLFile(const QString& fileName);
+	void OpenFEBioAppFile(const QString& fileName);
 
 	void SavePostDoc();
 
