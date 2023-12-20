@@ -26,9 +26,10 @@ SOFTWARE.*/
 #include "FEModelComponent.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
-#include <MeshTools/FEModel.h>
+#include "FSModel.h"
 #include "FECoreMaterial.h"	// for FEElementRef
 #include "FEMaterial.h" // for fiber generator defines
+#include <MeshLib/FEElementData.h>
 #include <exception>
 #include <sstream>
 
@@ -282,6 +283,11 @@ bool FSVec3dValuator::UpdateData(bool bsave)
 {
 	const char* sztype = GetTypeString();
 	if (sztype && (strcmp(sztype, "user" ) == 0)) m_naopt = FE_FIBER_USER;
+	if (sztype && (strcmp(sztype, "map") == 0))
+	{
+		m_naopt = FE_FIBER_MAP;
+		m_map = GetParam("map")->GetStringValue();
+	}
 	if (sztype && (strcmp(sztype, "local") == 0))
 	{
 		m_naopt = FE_FIBER_LOCAL;
@@ -322,6 +328,116 @@ vec3d FSVec3dValuator::GetFiberVector(const FEElementRef& el)
 		return v;
 	}
 	break;
+	case FE_FIBER_MAP:
+	{
+		FSMesh* pm = dynamic_cast<FSMesh*>(el.m_pmesh);
+		if (pm)
+		{
+			FEMeshData* pmd = pm->FindMeshDataField(m_map);
+			if (pmd)
+			{
+				FEElementData* ped = dynamic_cast<FEElementData*>(pmd);
+				FEPartData* ppd = dynamic_cast<FEPartData*>(pmd);
+				if (ped)
+				{
+					double d[3];
+					ped->get(el.m_nelem, d);
+					return vec3d(d[0], d[1], d[2]);
+				}
+				if (ppd)
+				{
+					int m = ppd->GetElementIndex(el.m_nelem);
+					if (m >= 0)
+					{
+						double d[3];
+						d[0] = ppd->get(3 * m);
+						d[1] = ppd->get(3 * m + 1);
+						d[2] = ppd->get(3 * m + 2);
+						return vec3d(d[0], d[1], d[2]);
+					}
+				}
+			}
+		}
+		return vec3d(0, 0, 0);
+	}
+	break;
 	}
 	return FEBio::GetMaterialFiber(GetFEBioClass(), el.center());
+}
+
+
+//===============================================================================
+FSMat3dValuator::FSMat3dValuator(FSModel* fem) : FSGenericClass(fem)
+{
+	SetSuperClassID(FEMAT3DVALUATOR_ID);
+	m_naopt = -1;
+}
+
+bool FSMat3dValuator::UpdateData(bool bsave)
+{
+	const char* sztype = GetTypeString();
+	if (sztype && (strcmp(sztype, "local") == 0))
+	{
+		m_naopt = FE_AXES_LOCAL;
+		Param* p = GetParam("local"); assert(p);
+		if (p)
+		{
+			std::vector<int> n = p->GetArrayIntValue(); assert(n.size() == 3);
+			if (n.size() == 3)
+			{
+				m_n[0] = n[0];
+				m_n[1] = n[1];
+				m_n[2] = n[2];
+			}
+		}
+	}
+	else m_naopt = -1;
+
+	return FSGenericClass::UpdateData(bsave);
+}
+
+mat3d FSMat3dValuator::GetMatAxis(const FEElementRef& el) const
+{
+	FSCoreMesh* mesh = el.m_pmesh;
+	switch (m_naopt)
+	{
+	case FE_AXES_LOCAL:
+	{
+		vec3d r0[FSElement::MAX_NODES];
+		for (int i = 0; i < el->Nodes(); ++i) r0[i] = mesh->Node(el->m_node[i]).pos();
+
+		vec3d a, b, c, d;
+		mat3d Q;
+
+		a = r0[m_n[1] - 1] - r0[m_n[0] - 1];
+		a.unit();
+
+		if (m_n[2] != m_n[1])
+		{
+			d = r0[m_n[2] - 1] - r0[m_n[0] - 1];
+		}
+		else
+		{
+			d = vec3d(0, 1, 0);
+			if (fabs(d * a) > 0.999) d = vec3d(1, 0, 0);
+		}
+
+		c = a ^ d;
+		b = c ^ a;
+
+		b.unit();
+		c.unit();
+
+		Q[0][0] = a.x; Q[0][1] = b.x; Q[0][2] = c.x;
+		Q[1][0] = a.y; Q[1][1] = b.y; Q[1][2] = c.y;
+		Q[2][0] = a.z; Q[2][1] = b.z; Q[2][2] = c.z;
+
+		return Q;
+	}
+	break;
+	}
+
+	// we have to cast away the const
+	FSMat3dValuator* This = const_cast<FSMat3dValuator*>(this);
+	return FEBio::GetMaterialAxis(This->GetFEBioClass(), el.center());
 }

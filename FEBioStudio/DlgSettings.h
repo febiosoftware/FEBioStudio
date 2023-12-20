@@ -151,6 +151,28 @@ private:
 	CMainWindow* m_wnd;
 };
 
+class CFEBioSettingsWidget : public QWidget
+{
+	Q_OBJECT
+
+public:
+	CFEBioSettingsWidget(QWidget* parent = nullptr);
+
+public:
+	bool GetLoadConfigFlag();
+	QString GetConfigFileName();
+
+	void SetLoadConfigFlag(bool b);
+	void SetConfigFileName(QString s);
+
+protected slots:
+	void editConfigFilePath();
+
+private:
+	QCheckBox* m_loadConfig = nullptr;
+	QLineEdit* m_configEdit = nullptr;
+};
+
 class CDlgSettings : public QDialog
 {
 	Q_OBJECT

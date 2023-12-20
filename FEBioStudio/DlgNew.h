@@ -38,11 +38,19 @@ class CDlgNew : public QDialog
 	Q_OBJECT
 
 public:
+	enum CreateMode {
+		CREATE_NEW_MODEL,
+		CREATE_FROM_TEMPLATE
+	};
+
+public:
 	CDlgNew(CMainWindow* parent);
 
 	void accept();
 
-	int GetModule();
+	int GetSelection();
+
+	int CreateMode();
 
 	void showEvent(QShowEvent* ev);
 

@@ -214,7 +214,14 @@ void CDlgFEBioPlugins::onMenuTriggered(QAction* action)
 
 void CDlgFEBioPlugins::onLoadPlugin()
 {
-	QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
+#ifdef WIN32
+    QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dll)");
+#elif __APPLE__
+    QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.dylib)");
+#else
+    QString fileName = QFileDialog::getOpenFileName(this, "Load Plugin", "", "FEBio Plugins (*.so)");
+#endif
+	
 	if (fileName.isEmpty() == false)
 	{
 		fileName = QDir::toNativeSeparators(fileName);
@@ -229,7 +236,10 @@ void CDlgFEBioPlugins::LoadPlugin(const QString& fileName)
 	// get the currently active module
 	// We need this, since importing the plugin might change this.
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
-	int modId = fecore.GetActiveModule()->GetModuleID();
+
+	FEModule* activeMod = fecore.GetActiveModule();
+	int modId = -1;
+	if (activeMod) modId = activeMod->GetModuleID();
 
 	// try to import the plugin
 	bool bsuccess = febio::ImportPlugin(sfile.c_str());

@@ -29,11 +29,11 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FECurveMesh.h>
-#include <MeshTools/FEMMGRemesh.h>
+#include "FEMMGRemesh.h"
 #include "FECurveMesher.h"
 #include <MeshLib/triangulate.h>
 #include <MeshLib/FESurfaceMesh.h>
-#include "GLMesh.h"
+#include <MeshLib/GMesh.h>
 #include <list>
 //using namespace std;
 
@@ -405,6 +405,48 @@ FSMesh* FEAdvancingFrontMesher2D::BuildMesh()
 }
 
 //================================================================================
+FSSurfaceMesh* GLMeshToSurfaceMesh(GMesh& m)
+{
+	int NN = m.Nodes();
+	int NF = m.Faces();
+	int NE = m.Edges();
+
+	FSSurfaceMesh* sm = new FSSurfaceMesh();
+	sm->Create(NN, NE, NF);
+	for (int i = 0; i < NN; ++i)
+	{
+		FSNode& node = sm->Node(i);
+		GMesh::NODE& gnode = m.Node(i);
+		node.r = gnode.r;
+		node.m_gid = gnode.pid;
+	}
+
+	for (int i = 0; i < NE; ++i)
+	{
+		FSEdge& edge = sm->Edge(i);
+		GMesh::EDGE& gedge = m.Edge(i);
+		edge.n[0] = gedge.n[0];
+		edge.n[1] = gedge.n[1];
+		edge.m_gid = gedge.pid;
+	}
+
+	for (int i = 0; i < NF; ++i)
+	{
+		FSFace& face = sm->Face(i);
+		GMesh::FACE& gface = m.Face(i);
+		face.SetType(FE_FACE_TRI3);
+		face.n[0] = gface.n[0];
+		face.n[1] = gface.n[1];
+		face.n[2] = gface.n[2];
+		face.m_gid = gface.pid;
+	}
+
+	sm->Update();
+
+	return sm;
+}
+
+//================================================================================
 FEMMG2DMesher::FEMMG2DMesher(GObject* po) : m_po(po)
 {
 	AddDoubleParam(0.1, "Element size", "Element size");
@@ -415,10 +457,10 @@ FSMesh* FEMMG2DMesher::BuildMesh()
 	// MMG needs a base mesh, so let's create one by doing a rough triangulation of the shape.
 	assert(m_po->Faces() == 1);
 	GFace& face = *m_po->Face(0);
-	GLMesh* gm = triangulate(face);
+	GMesh* gm = triangulate(face);
 
 	// MMG needs a FSSurfaceMesh, so convert
-	FSSurfaceMesh* pm = new FSSurfaceMesh(*gm);
+	FSSurfaceMesh* pm = GLMeshToSurfaceMesh(*gm);
 
 	// Now, let's use MMG to remesh
 	double h = GetFloatValue(0);

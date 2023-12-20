@@ -80,6 +80,14 @@ float component(const mat3d& m, int n)
 	case 6: g = (float) m(2,0); break;
 	case 7: g = (float) m(2,1); break;
 	case 8: g = (float) m(2,2); break;
+	case 9:
+	{
+		g += m(0, 0) * m(0, 0) + m(0, 1) * m(0, 1) + m(0, 2) * m(0, 2);
+		g += m(1, 0) * m(1, 0) + m(1, 1) * m(1, 1) + m(1, 2) * m(1, 2);
+		g += m(2, 0) * m(2, 0) + m(2, 1) * m(2, 1) + m(2, 2) * m(2, 2);
+		g = sqrt(g);
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -102,6 +110,14 @@ float component(const mat3f& m, int n)
 	case 6: g = m(2,0); break;
 	case 7: g = m(2,1); break;
 	case 8: g = m(2,2); break;
+	case 9:
+	{
+		g += m(0, 0) * m(0, 0) + m(0, 1) * m(0, 1) + m(0, 2) * m(0, 2);
+		g += m(1, 0) * m(1, 0) + m(1, 1) * m(1, 1) + m(1, 2) * m(1, 2);
+		g += m(2, 0) * m(2, 0) + m(2, 1) * m(2, 1) + m(2, 2) * m(2, 2);
+		g = sqrt(g);
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -657,7 +673,8 @@ void FEPostModel::EvalElemField(int ntime, int nfield)
 					fd.value(i, 5) = elemData.value(eid, fn[5]);
 					fd.value(i, 6) = elemData.value(eid, fn[6]);
 					fd.value(i, 7) = elemData.value(eid, fn[7]);
-					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7))*0.125f;
+					fd.value(i, 8) = elemData.value(eid, fn[8]);
+					d.m_val = (fd.value(i, 0)+fd.value(i, 1)+fd.value(i, 2)+fd.value(i, 3)+fd.value(i, 4)+fd.value(i, 5)+fd.value(i, 6)+fd.value(i, 7) + fd.value(i, 8))/9.f;
 				}
 				break;
 			case FE_TRI3:

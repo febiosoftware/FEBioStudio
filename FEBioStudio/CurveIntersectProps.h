@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "PropertyList.h"
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <MeshTools/FECurveIntersect.h>
 
 class CCurveIntersectProps : public CDataPropertyList

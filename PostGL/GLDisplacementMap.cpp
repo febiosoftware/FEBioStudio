@@ -32,8 +32,8 @@ using namespace Post;
 //-----------------------------------------------------------------------------
 CGLDisplacementMap::CGLDisplacementMap(CGLModel* po) : CGLDataMap(po)
 {
-	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
-	AddVecParam(vec3d(1,1,1), "Scale factor");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddVecParam(vec3d(1,1,1), "scale_factor");
 
 	char szname[128] = { 0 };
 	sprintf(szname, "Displacement Map");
@@ -48,13 +48,15 @@ bool CGLDisplacementMap::UpdateData(bool bsave)
 {
 	if (bsave)
 	{
-		FEPostModel* pfem = GetModel()->GetFSModel();
+		Post::CGLModel& glm = *GetModel();
+		FEPostModel* pfem = glm.GetFSModel();
 
 		bool bupdate = false;
 		int dispField = GetIntValue(DATA_FIELD);
 		if (pfem && (pfem->GetDisplacementField() != dispField))
 		{
 			pfem->SetDisplacementField(dispField);
+			glm.UpdateDisplacements(pfem->CurrentTimeIndex(), true);
 			bupdate = true;
 		}
 

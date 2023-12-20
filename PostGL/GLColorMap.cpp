@@ -39,18 +39,18 @@ int CGLColorMap::m_defaultRngType = Range_Type::RANGE_DYNAMIC;
 
 CGLColorMap::CGLColorMap(CGLModel *po) : CGLDataMap(po)
 {
-	AddIntParam (-1, "Data field", "Data field")->SetEnumNames("@data_scalar");
-	AddBoolParam(true, "Gradient smoothing");
-	AddIntParam (0, "Color map")->SetEnumNames("@color_map");
-	AddBoolParam(true, "Nodal smoothing");
-	AddIntParam (10, "Range divisions")->SetIntRange(1, 100);
-	AddBoolParam(true, "Show Legend");
-	AddIntParam (m_defaultRngType, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(0, "User max");
-	AddIntParam (m_defaultRngType, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(0, "User min");
-	AddBoolParam(false, "Show min/max markers");
-	AddColorParam(GLColor(200, 200, 200), "Inactive color");
+	AddIntParam (-1, "data_field", "Data field")->SetEnumNames("@data_scalar");
+	AddBoolParam(true, "gradient_smoothing");
+	AddIntParam (0, "color_map")->SetEnumNames("@color_map");
+	AddBoolParam(true, "nodal_smoothing");
+	AddIntParam (10, "range_divisions")->SetIntRange(1, 100);
+	AddBoolParam(true, "show_legend");
+	AddIntParam (m_defaultRngType, "max_range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "user_max");
+	AddIntParam (m_defaultRngType, "min_range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0, "user_min");
+	AddBoolParam(false, "show_minmax_markers", "Show min/max markers");
+	AddColorParam(GLColor(200, 200, 200), "inactive_color");
 
 	m_range.min = m_range.max = 0;
 	m_range.mintype = m_range.maxtype = m_defaultRngType;

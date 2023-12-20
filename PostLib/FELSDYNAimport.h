@@ -55,7 +55,6 @@ protected:
 	struct NODE
 	{
 		int id;
-		int n;
 		double	x, y, z;
 		double v;
 	};
@@ -66,7 +65,7 @@ public:
 	
 	bool Load(const char* szfile) override;
 
-	int FindNode(int id, std::list<NODE>::iterator& pn);
+	int FindNode(int id) const noexcept;
 
 	void read_displacements(bool b) { m_bdispl = b; }
 
@@ -82,6 +81,8 @@ protected:
 	void BuildMaterials(FEPostModel& fem);
 	bool BuildMesh(FEPostModel& fem);
 
+	void BuildNLT();
+
 protected:
 	std::list<ELEMENT_SOLID>		m_solid;
 	std::list<ELEMENT_SHELL>		m_shell;
@@ -89,11 +90,14 @@ protected:
 
 	FEPostMesh*			m_pm;
 
+	std::vector<int> m_NLT;
+	int m_nltoff;
+
 	bool	m_bnresults;	// nodal results included?
 	bool	m_bshellthick;	// shell thicknesses included?
 	bool	m_bdispl;		// define displacement field?
 
-	char	m_szline[256];
+	char	m_szline[256] = { 0 };
 };
 
 }

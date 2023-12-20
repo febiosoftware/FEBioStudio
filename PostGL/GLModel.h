@@ -30,7 +30,7 @@ SOFTWARE.*/
 #include "GLColorMap.h"
 #include <PostLib/FEPostModel.h>
 #include <GLLib/GDecoration.h>
-#include "GLPlot.h"
+#include "GLPlotGroup.h"
 #include <FSCore/FSObjectList.h>
 #include <GLLib/GLMeshRender.h>
 #include <MeshLib/Intersect.h>
@@ -77,6 +77,8 @@ public:
 
 	FSFace& Face(int i) { return m_Face[i]; }
 
+	const vector<FSFace>& FaceList() const { return m_Face; }
+
 private:
 	vector<FSFace>	m_Face;
 };
@@ -102,7 +104,7 @@ protected:
 	vector<EDGE>	m_Edge;
 };
 
-class CGLModel : public CGLVisual
+class CGLModel : public FSObject
 {
 public:
 	CGLModel(FEPostModel* ps);
@@ -164,6 +166,12 @@ public:
 	int ShellReferenceSurface() const;
 	void ShellReferenceSurface(int n);
 
+	void ShowBeam2Solid(bool b);
+	bool ShowBeam2Solid() const;
+
+	void SolidBeamRadius(float f);
+	float SolidBeamRadius() const;
+
 	void SetSubDivisions(int ndivs);
 	int GetSubDivisions();
 
@@ -181,7 +189,7 @@ public:
 
 public:
 	// call this to render the model
-	void Render(CGLContext& rc) override;
+	void Render(CGLContext& rc);
 
 	void RenderPlots(CGLContext& rc, int renderOrder = 0);
 
@@ -195,10 +203,15 @@ public:
 	void RenderSurface(FEPostModel* ps, CGLContext& rc);
 
 public:
+	void RenderMeshLines(CGLContext& rc);
 	void RenderOutline(CGLContext& rc, int nmat = -1);
 	void RenderNormals(CGLContext& rc);
 	void RenderGhost  (CGLContext& rc);
 	void RenderDiscrete(CGLContext& rc);
+	void RenderDiscreteAsLines(CGLContext& rc);
+	void RenderDiscreteAsSolid(CGLContext& rc);
+	void RenderDiscreteElement(GLEdge::EDGE& e);
+	void RenderDiscreteElementAsSolid(GLEdge::EDGE& e, double W);
 
 	void RenderSelection(CGLContext& rc);
 
@@ -211,6 +224,9 @@ public:
 
 	void AddDecoration(GDecoration* pd);
 	void RemoveDecoration(GDecoration* pd);
+
+	bool RenderInnerSurfaces();
+	void RenderInnerSurfaces(bool b);
 
 protected:
 	void RenderSolidPart(FEPostModel* ps, CGLContext& rc, int mat);
@@ -237,6 +253,8 @@ public: // Selection
 	const vector<FEElement_*>&	GetElementSelection() const { return m_elemSelection; }
 	void UpdateSelectionLists(int mode = -1);
 	void ClearSelectionLists();
+
+	vec3d GetSelectionCenter();
 
 	void SelectNodes(vector<int>& items, bool bclear);
 	void SelectEdges(vector<int>& items, bool bclear);
@@ -334,7 +352,9 @@ public:
 
 public:
 	// edits plots
-	void AddPlot(Post::CGLPlot* pplot);
+	void AddPlot(Post::CGLPlot* pplot, bool update = true);
+	void RemovePlot(Post::CGLPlot* pplot);
+
 	GPlotList& GetPlotList() { return m_pPlot; }
 	void ClearPlots();
 
@@ -357,7 +377,6 @@ public:
 	double		m_scaleNormals;	//!< normal scale factor
 	bool		m_bghost;		//!< render the ghost (undeformed outline)
 	bool		m_brenderInteriorNodes;	//!< render interior nodes or not
-	bool		m_brenderPlotObjects;
 	int			m_nDivs;		//!< nr of element subdivisions
 	int			m_nrender;		//!< render mode
     int         m_nconv;        //!< multiview projection convention
@@ -367,6 +386,7 @@ public:
 	GLColor		m_col_inactive;	//!< color for inactive parts
 	GLColor		m_ghost_color;	//!< color for the "ghost"
 	double		m_stol;			//!< smoothing threshold
+	bool		m_renderInnerSurface;	//!< render the inner surfaces
 
 	bool		m_bshowMesh;
 	bool		m_doZSorting;
@@ -400,4 +420,21 @@ protected:
 	int		m_selectMode;		//!< current selection mode (node, edge, face, elem)
 	int		m_selectStyle;		//!< selection style (box, circle, rect)
 };
+
+// This class provides a convenient way to loop over all the plots in a model, traversing
+// plot-groups recursively. 
+class GLPlotIterator
+{
+public:
+	GLPlotIterator(CGLModel* mdl);
+
+	void operator ++ ();
+
+	operator CGLPlot* ();
+
+private:
+	int	m_n;	// index in plot list
+	std::vector<Post::CGLPlot*>	m_plt;
+};
+
 }

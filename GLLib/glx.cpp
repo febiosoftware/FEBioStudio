@@ -107,6 +107,34 @@ void glx::drawCircle(const vec3d& c, double R, int N)
 }
 
 //-----------------------------------------------------------------------------
+void glx::drawCircle(const vec3d& c, const vec3d& normal, double R, int N)
+{
+	quatd q0(vec3d(0, 0, 1), normal);
+
+	// special case when n0 == (0,0,-1)
+	// In this case, the quat cannot be determined uniquely
+	// so we need to specify it explicitly. 
+	if (vec3d(0, 0, 1) * normal == -1)
+	{
+		q0 = quatd(vec3d(PI, 0, 0));
+	}
+
+	glBegin(GL_TRIANGLE_FAN);
+	{
+		glNormal3d(normal.x, normal.y, normal.z);
+		glVertex3d(c.x, c.y, c.z);
+		for (int i = 0; i <= N; ++i)
+		{
+			double x = R * cos(i * 2 * PI / N);
+			double y = R * sin(i * 2 * PI / N);
+			vec3d p = c + q0 * (vec3d(x, y, 0));
+			glVertex3d(p.x, p.y, p.z);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void glx::drawPoint(const vec3d& r)
 {
 	glBegin(GL_POINTS);
@@ -139,10 +167,31 @@ void glx::drawLine(const vec3d& a, const vec3d& b, const GLColor& colA, const GL
 }
 
 //-----------------------------------------------------------------------------
-void glx::drawLine_(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
+void glx::line(const vec3d& a, const vec3d& b, const GLColor& colA, const GLColor& colB)
 {
 	glColor3ub(colA.r, colA.g, colA.b); glVertex3d(a.x, a.y, a.z);
 	glColor3ub(colB.r, colB.g, colB.b); glVertex3d(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3f& a, const vec3f& b, const GLColor& colA, const GLColor& colB)
+{
+	glColor3ub(colA.r, colA.g, colA.b); glVertex3f(a.x, a.y, a.z);
+	glColor3ub(colB.r, colB.g, colB.b); glVertex3f(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3d& a, const vec3d& b)
+{
+	glVertex3d(a.x, a.y, a.z);
+	glVertex3d(b.x, b.y, b.z);
+}
+
+//-----------------------------------------------------------------------------
+void glx::line(const vec3f& a, const vec3f& b)
+{
+	glVertex3f(a.x, a.y, a.z);
+	glVertex3f(b.x, b.y, b.z);
 }
 
 //-----------------------------------------------------------------------------
@@ -216,6 +265,14 @@ void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 
+	// special case when n0 == (0,0,-1)
+	// In this case, the quat cannot be determined uniquely
+	// so we need to specify it explicitly. 
+	if (vec3d(0, 0, 1) * n0 == -1)
+	{
+		q0 = quatd(vec3d(PI, 0, 0));
+	}
+
 	const int M = 5;
 	const int N = 16;
 	for (int j = 0; j < M; ++j)
@@ -280,7 +337,7 @@ void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 }
 
 //-----------------------------------------------------------------------------
-static vec3d interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
+vec3d glx::interpolate(const vec3d& r0, const vec3d& r1, const vec3d& n0, const vec3d& n1, double t)
 {
 	double ax[4], ay[4], az[4];
 	ax[0] = r0.x; ax[1] = n0.x; ax[2] = 3.0 * (r1.x - r0.x) - 2.0 * n0.x - n1.x; ax[3] = n1.x + n0.x - 2.0 * (r1.x - r0.x);
@@ -342,7 +399,7 @@ void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d&
 	}
 }
 
-void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
+void glx::drawSmoothPath(const std::vector<vec3d>& path, float R, float t0, float t1, int leftCap, int rightCap)
 {
 	int NP = (int)path.size();
 	if (NP < 2) return;
@@ -365,17 +422,89 @@ void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
 			e2 = r1 - r0; e2.Normalize();
 		}
 
+		float tex0 = t0 + (i / (NP - 1.0) * (t1 - t0));
+		float tex1 = t0 + ((i + 1) / (NP - 1.0) * (t1 - t0));
+
 		// render cylinder
-		glx::drawSmoothPath(r0, r1, R, e1, e2, 0.f, 0.f, 32);
+		glx::drawSmoothPath(r0, r1, R, e1, e2, tex0, tex1, 32);
 		
 		// render caps
-		if (i ==    0) glx::drawHalfSphere(r0, R, -e1);
-		if (i == NP-2) glx::drawHalfSphere(r1, R,  e2);
+		if (i == 0)
+		{
+			if (leftCap == 0)
+				glx::drawHalfSphere(r0, R, -e1, tex0);
+			else
+			{
+				glTexCoord1d(tex0);
+				glx::drawCircle(r0, -e1, R, 16);
+			}
+		}
+		if (i == NP - 2)
+		{
+			if (rightCap == 0)
+				glx::drawHalfSphere(r1, R, e2, tex1);
+			else
+			{
+				glTexCoord1d(tex1);
+				glx::drawCircle(r1, e2, R, 16);
+			}
+		}
 
 		// prep for next segment
 		r0 = r1;
 		r1 = r2;
 		e1 = e2;
+	}
+}
+
+void glx::drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N)
+{
+	vec3d n = r1 - r0; n.Normalize();
+	quatd q(vec3d(0, 0, 1), n);
+
+	glBegin(GL_QUAD_STRIP);
+	for (int i = 0; i <= N; ++i)
+	{
+		double w = 2 * PI * i / (double)N;
+		double x = cos(w);
+		double y = sin(w);
+
+		vec3d ri0(R * x, R * y, 0); q.RotateVector(ri0);
+		vec3d ri1(R * x, R * y, 0); q.RotateVector(ri1);
+		vec3d ra = r0 + ri0;
+		vec3d rb = r1 + ri1;
+
+		vec3d na(x, y, 0.0); q.RotateVector(na);
+		vec3d nb(x, y, 0.0); q.RotateVector(nb);
+
+		glTexCoord1d(t1); glNormal3d(nb.x, nb.y, nb.z); glVertex3d(rb.x, rb.y, rb.z);
+		glTexCoord1d(t0); glNormal3d(na.x, na.y, na.z); glVertex3d(ra.x, ra.y, ra.z);
+	}
+	glEnd();
+}
+
+void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N, int leftCap, int rightCap)
+{
+	vec3d n = r1 - r0; n.Normalize();
+
+	// render cylinder
+	glx::drawCylinder(r0, r1, R, t0, t1, N);
+
+	// render caps
+	if (leftCap == 0)
+		glx::drawHalfSphere(r0, R, -n, t0);
+	else
+	{
+		glTexCoord1d(t0);
+		glx::drawCircle(r0, -n, R, 16);
+	}
+
+	if (rightCap == 0)
+		glx::drawHalfSphere(r1, R, n, t1);
+	else
+	{
+		glTexCoord1d(t1);
+		glx::drawCircle(r1, n, R, 16);
 	}
 }
 
@@ -460,7 +589,7 @@ void glx::tri3(vec3d r[3], vec3d n[3])
 	vertex3d(r[2], n[2]);
 }
 
-void glx::tri3(vec3d r[3], vec3f n[3], GLColor c[3])
+void glx::tri3(vec3d r[3], vec3d n[3], GLColor c[3])
 {
 	vertex3d(r[0], n[0], c[0]);
 	vertex3d(r[1], n[1], c[1]);
@@ -583,6 +712,50 @@ void glx::drawLine(double x0, double y0, double z0, double x1, double y1, double
 		glVertex3d(x0, y0, z0);
 		glVertex3d(x1, y1, z1);
 		glVertex3d(x2, y2, z2);
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
+void glx::drawBox(double wx, double wy, double wz)
+{
+	glBegin(GL_QUADS);
+	{
+		glNormal3d(1, 0, 0);
+		glVertex3d(wx, -wy, -wz);
+		glVertex3d(wx,  wy, -wz);
+		glVertex3d(wx,  wy,  wz);
+		glVertex3d(wx, -wy,  wz);
+
+		glNormal3d(-1, 0, 0);
+		glVertex3d(-wx,  wy, -wz);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d(-wx, -wy,  wz);
+		glVertex3d(-wx,  wy,  wz);
+
+		glNormal3d(0, 1, 0);
+		glVertex3d( wx, wy, -wz);
+		glVertex3d(-wx, wy, -wz);
+		glVertex3d(-wx, wy,  wz);
+		glVertex3d( wx, wy,  wz);
+
+		glNormal3d(0, -1, 0);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d( wx, -wy, -wz);
+		glVertex3d( wx, -wy,  wz);
+		glVertex3d(-wx, -wy,  wz);
+
+		glNormal3d(0, 0, 1);
+		glVertex3d(-wx,  wy, wz);
+		glVertex3d( wx,  wy, wz);
+		glVertex3d( wx, -wy, wz);
+		glVertex3d(-wx, -wy, wz);
+
+		glNormal3d(0, 0, -1);
+		glVertex3d( wx,  wy, -wz);
+		glVertex3d(-wx,  wy, -wz);
+		glVertex3d(-wx, -wy, -wz);
+		glVertex3d( wx, -wy, -wz);
 	}
 	glEnd();
 }
@@ -1156,9 +1329,12 @@ void glx::renderRigidLock(double R)
 	glx::drawCircle(R / 5, 25);
 }
 
-void glx::renderSpring(const vec3d& a, const vec3d& b, double R)
+void glx::renderSpring(const vec3d& a, const vec3d& b, double R, int N)
 {
-	glx::drawHelix(a, b, R / 2, R / 2, 25);
+	double p = R / 2;
+	double L = (b - a).norm();
+	if (L != 0) p = L / N;
+	glx::drawHelix(a, b, R / 2, p, 25);
 }
 
 void glx::renderDamper(const vec3d& a, const vec3d& b, double R)
@@ -1169,4 +1345,68 @@ void glx::renderDamper(const vec3d& a, const vec3d& b, double R)
 void glx::renderContractileForce(const vec3d& a, const vec3d& b, double R)
 {
 	glx::drawLine(a, b);
+}
+
+inline void render_triad(double x, double y, double z, double dx, double dy, double dz)
+{
+	glVertex3d(x, y, z); glVertex3d(x + dx, y, z);
+	glVertex3d(x, y, z); glVertex3d(x, y + dy, z);
+	glVertex3d(x, y, z); glVertex3d(x, y, z + dz);
+}
+
+void glx::renderBox(const BOX& bbox, bool partial, double scale)
+{
+	// push attributes
+	glPushAttrib(GL_ENABLE_BIT);
+
+	// set attributes
+	glEnable(GL_LINE_SMOOTH);
+	glDisable(GL_LIGHTING);
+
+	BOX box = bbox;
+	box.Scale(scale);
+
+	if (partial)
+	{
+		double dx = box.Width() * 0.3;
+		double dy = box.Height() * 0.3;
+		double dz = box.Depth() * 0.3;
+		glBegin(GL_LINES);
+		{
+			render_triad(box.x0, box.y0, box.z0, dx, dy, dz);
+			render_triad(box.x1, box.y0, box.z0, -dx, dy, dz);
+			render_triad(box.x1, box.y1, box.z0, -dx, -dy, dz);
+			render_triad(box.x0, box.y1, box.z0, dx, -dy, dz);
+
+			render_triad(box.x0, box.y0, box.z1, dx, dy, -dz);
+			render_triad(box.x1, box.y0, box.z1, -dx, dy, -dz);
+			render_triad(box.x1, box.y1, box.z1, -dx, -dy, -dz);
+			render_triad(box.x0, box.y1, box.z1, dx, -dy, -dz);
+		}
+		glEnd();
+	}
+	else
+	{
+		glBegin(GL_LINES);
+		{
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z0);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y1, box.z0);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z0);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y0, box.z0);
+
+			glVertex3d(box.x0, box.y0, box.z1); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z1); glVertex3d(box.x1, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z1); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x0, box.y1, box.z1); glVertex3d(box.x0, box.y0, box.z1);
+
+			glVertex3d(box.x0, box.y0, box.z0); glVertex3d(box.x0, box.y0, box.z1);
+			glVertex3d(box.x1, box.y0, box.z0); glVertex3d(box.x1, box.y0, box.z1);
+			glVertex3d(box.x0, box.y1, box.z0); glVertex3d(box.x0, box.y1, box.z1);
+			glVertex3d(box.x1, box.y1, box.z0); glVertex3d(box.x1, box.y1, box.z1);
+		}
+		glEnd();
+	}
+
+	// restore attributes
+	glPopAttrib();
 }

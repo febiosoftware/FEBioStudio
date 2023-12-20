@@ -25,20 +25,22 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <MeshTools/FESelection.h>
 #include <FSCore/LoadCurve.h>
 #include <FSCore/Serializable.h>
-#include <MeshIO/FileReader.h>
+#include <FSCore/FileReader.h>
 #include "CommandManager.h"
 #include "FEBioOpt.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <FSCore/FSObjectList.h>
 #include "modelcheck.h"
 #include <QtCore/QString>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
 #include "GLScene.h"
 #include <GLLib/GView.h>
+#include <QObject>
+#include "Command.h"
 
 //-----------------------------------------------------------------------------
 // Transform Modes
@@ -89,7 +91,7 @@ SOFTWARE.*/
 
 //-----------------------------------------------------------------------------
 class CMainWindow;
-class FEFileExport;
+class FSFileExport;
 class CDocument;
 class FEModifier;
 class FESurfaceModifier;
@@ -97,10 +99,7 @@ class GSurfaceMeshObject;
 class FileReader;
 class FileWriter;
 enum class ImageFileType;
-
-namespace Post {
-	class CImageModel;
-}
+class CImageModel;
 
 //-----------------------------------------------------------------------------
 // Class that can be used to monitor changes to the document
@@ -126,8 +125,10 @@ private:
 //-----------------------------------------------------------------------------
 // Document class stores data and implements serialization of data to and from file.
 //
-class CDocument : public CSerializable
+class CDocument : public QObject, public CSerializable
 {
+	Q_OBJECT
+
 public:
 	// --- constructor/destructor ---
 	CDocument(CMainWindow* wnd);
@@ -234,6 +235,8 @@ protected:
 // Base class for documents that use the undo stack
 class CUndoDocument : public CDocument
 {
+	Q_OBJECT
+
 public:
     CUndoDocument(CMainWindow* wnd);
     ~CUndoDocument();
@@ -256,6 +259,9 @@ public:
 
     virtual void UpdateSelection(bool breport = true);
 
+signals:
+	void doCommand(QString s);
+
 protected:
 	// The command manager
 	CCommandManager*	m_pCmd;		// the command manager
@@ -273,6 +279,8 @@ public:
 
 	bool AutoSaveDocument() override;
 
+	void Activate() override;
+
 	// set/get the file reader
 	void SetFileReader(FileReader* fileReader);
 	FileReader* GetFileReader();
@@ -280,11 +288,6 @@ public:
 	// set/get the file writer
 	void SetFileWriter(FileWriter* fileWriter);
 	FileWriter* GetFileWriter();
-
-	Post::CImageModel* ImportImage(const std::string& fileName, int nx, int ny, int nz, BOX box);
-
-    Post::CImageModel* ImportITK(const std::string& filename, ImageFileType type);
-    Post::CImageModel* ImportITKStack(QStringList& filenames);
 
 	// --- view state ---
 	VIEW_STATE GetViewState() { return m_vs; }
@@ -304,6 +307,10 @@ public:
 
 	static std::string GetTypeString(FSObject* po);
 
+	// return the current selection
+	FESelection* GetCurrentSelection();
+	void SetCurrentSelection(FESelection* psel);
+
 	virtual void UpdateSelection(bool breport = true);
 
 	virtual GObject* GetActiveObject();
@@ -312,16 +319,14 @@ public:
 
 	CGLScene* GetScene();
 
-	virtual FESelection* GetCurrentSelection() { return nullptr; }
-
 public:
 	void setModelInfo(const std::string& s) { m_info = s; }
 	std::string getModelInfo() const { return m_info; }
 
 public:
 	int ImageModels() const;
-	virtual void AddImageModel(Post::CImageModel* img);
-	Post::CImageModel* GetImageModel(int i);
+	virtual void AddImageModel(CImageModel* img);
+	CImageModel* GetImageModel(int i);
 	void DeleteAllImageModels();
 
 public:
@@ -339,7 +344,7 @@ protected:
 	void LoadResources(IArchive& ar);
 
 public:
-	void SetUnitSystem(int unitSystem);
+	virtual void SetUnitSystem(int unitSystem);
 	int GetUnitSystem() const;
 
 protected:
@@ -351,7 +356,10 @@ protected:
 	std::string		m_info;
 	int				m_units;
 
-	FSObjectList<Post::CImageModel>	m_img;
+	// current selection
+	FESelection* m_psel;
+
+	FSObjectList<CImageModel>	m_img;
 
 	FileReader*		m_fileReader;
 	FileWriter*		m_fileWriter;

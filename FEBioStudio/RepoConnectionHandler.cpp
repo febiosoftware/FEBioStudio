@@ -175,6 +175,8 @@ void CRepoConnectionHandler::getTables()
 	QNetworkRequest request;
 	request.setUrl(myurl);
 	request.setAttribute(QNetworkRequest::RedirectPolicyAttribute, QNetworkRequest::SameOriginRedirectPolicy);
+    request.setRawHeader(QByteArray("username"), imp->username.toUtf8());
+	request.setRawHeader(QByteArray("token"), imp->token.toUtf8());
 
 	if(NetworkAccessibleCheck())
 	{

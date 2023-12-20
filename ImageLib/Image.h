@@ -25,9 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-typedef unsigned char Byte;
-typedef unsigned short word;
-typedef unsigned int dword;
+
+#include <cstdint>
 
 ////////////////////////////////////////////////////////////////////////
 // CImage - Implements a gray scale image
@@ -35,30 +34,39 @@ typedef unsigned int dword;
 class CImage  
 {
 public:
+    enum { UINT_8, INT_8, UINT_16, INT_16, UINT_32, INT_32, UINT_RGB8, INT_RGB8, UINT_RGB16, INT_RGB16, REAL_32, REAL_64 };
+
+public:
 	CImage();
-	CImage(int nx, int ny);
+	CImage(int nx, int ny, int pixelType = UINT_8);
 	CImage(const CImage& im);
 	virtual ~CImage();
+
+    int PixelType() { return m_pixelType; }
+	int BPS() const { return m_bps; }
+    bool IsRGB();
 
 	CImage& operator = (const CImage& im);
 	CImage& operator -= (const CImage& im);
 
-	void Create(int nx, int ny, Byte* pb = 0);
-	void StretchBlt(CImage& im);
+	void Create(int nx, int ny, uint8_t* pb = 0, int pixelType = UINT_8);
+    void Clear();
 
 	int Width () const { return m_cx; }
 	int Height() const { return m_cy; }
 
-	Byte* GetBytes() const { return m_pb; }
+	uint8_t* GetBytes() const { return m_pb; }
 
-	Byte* GetPixel(int i, int j) { return m_pb + (j*m_cx + i); }
+	uint8_t* GetPixel(int i, int j) { return m_pb + (j*m_cx + i); }
 
-	Byte value(int i, int j) { return m_pb[j*m_cx + i]; }
+    double Value(int i, int j, int channel = 0);
 
 	void Zero() { for (int i=0; i<m_cx*m_cy; i++) m_pb[i] = 0; }
 
 protected:
-	Byte* m_pb;	// rgb image data
+	uint8_t*   m_pb;	// image data
+    int     m_pixelType; // pixel representation
+	int		m_bps;	// bytes per sample
 
 	bool	m_bdel;	// delete image data at clean up ?
 	

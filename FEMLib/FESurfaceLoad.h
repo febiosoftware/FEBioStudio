@@ -451,3 +451,20 @@ public:
     void Save(OArchive& ar);
     void Load(IArchive& ar);
 };
+
+//-----------------------------------------------------------------------------
+// fluid-solutes natural flux surface boundary load
+//
+class FSFluidSolutesNaturalFlux : public FSSurfaceLoad
+{
+public:
+    enum { SID };
+    
+public:
+    FSFluidSolutesNaturalFlux(FSModel* ps, FEItemListBuilder* pi = 0, int nstep = 0);
+    
+    int GetBC() { return GetIntValue(SID); }
+    void SetBC(int n) { SetIntValue(SID, n); }
+    
+};
+

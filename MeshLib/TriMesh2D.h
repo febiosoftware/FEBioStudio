@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <list>
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 // Class that represents a triangle mesh in 2D

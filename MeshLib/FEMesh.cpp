@@ -32,11 +32,10 @@ SOFTWARE.*/
 #include "FENodeElementList.h"
 #include "FENodeFaceList.h"
 #include "FENodeEdgeList.h"
-#include "MeshTools/FENodeData.h"
-#include "MeshTools/FESurfaceData.h"
-#include "MeshTools/FEElementData.h"
+#include "FENodeData.h"
+#include "FESurfaceData.h"
+#include "FEElementData.h"
 #include "FEMeshBuilder.h"
-#include <MeshTools/GLMesh.h>
 #include <algorithm>
 #include <unordered_set>
 #include <map>
@@ -57,118 +56,11 @@ double gain(double g, double x)
 }
 
 //-----------------------------------------------------------------------------
-Mesh_Data::Mesh_Data()
-{
-	m_min = m_max = 0.0;
-}
-
-//-----------------------------------------------------------------------------
-Mesh_Data::Mesh_Data(const Mesh_Data& d)
-{
-	m_data = d.m_data;
-	m_min = d.m_min;
-	m_max = d.m_max;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::operator = (const Mesh_Data& d)
-{
-	m_data = d.m_data;
-	m_min = d.m_min;
-	m_max = d.m_max;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::Clear()
-{
-	m_data.clear();
-	m_min = m_max = 0.0;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::Init(FSMesh* mesh, double initVal, int initTag)
-{
-	int NE = mesh->Elements();
-	m_data.resize(NE);
-	for (int i = 0; i < NE; ++i)
-	{
-		FSElement& el = mesh->Element(i);
-		DATA& di = m_data[i];
-		int ne = el.Nodes();
-		di.nval = ne;
-		di.tag = initTag;
-		for (int j = 0; j < ne; ++j)
-		{
-			di.val[j] = initVal;
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-// get the average element value
-double Mesh_Data::GetElementAverageValue(int elem)
-{
-	double v = 0.0;
-	if (m_data[elem].tag != 0)
-	{
-		for (int i = 0; i < m_data[elem].nval; ++i) v += m_data[elem].val[i];
-		v /= (double)m_data[elem].nval;
-	}
-	return v;
-}
-
-//-----------------------------------------------------------------------------
-// set the element (average) value
-void Mesh_Data::SetElementValue(int elem, double v)
-{
-	int ne = m_data[elem].nval;
-	for (int i = 0; i < ne; ++i) m_data[elem].val[i] = v;
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::UpdateValueRange()
-{
-	m_min = m_max = 0;
-
-	// find the first active value
-	int N = (int)m_data.size();
-	int i = 0;
-	for (i = 0; i<N; ++i)
-	{
-		if (m_data[i].tag != 0)
-		{
-			m_min = m_max = m_data[i].val[0];
-			break;
-		}
-	}
-
-	// update range
-	for (i=0; i<N; ++i)
-	{
-		DATA& di = m_data[i];
-		if (di.tag != 0)
-		{
-			for (int j = 0; j < di.nval; ++j)
-			{
-				if (di.val[j] > m_max) m_max = di.val[j];
-				if (di.val[j] < m_min) m_min = di.val[j];
-			}
-		}
-	}
-}
-
-//-----------------------------------------------------------------------------
-void Mesh_Data::GetValueRange(double& vmin, double& vmax) const
-{
-	vmin = m_min;
-	vmax = m_max;
-}
-
-//-----------------------------------------------------------------------------
 // default constructor
 FSMesh::FSMesh()
 {
 	m_pobj = 0;
+	m_nltmin = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -178,6 +70,8 @@ FSMesh::FSMesh(FSMesh& m)
 	// create the nodes
 	m_Node.resize(m.Nodes());
 	for (int i=0; i<Nodes(); ++i) m_Node[i] = m.m_Node[i];
+	m_NLT = m.m_NLT;
+	m_nltmin = m.m_nltmin;
 
 	// create the elements
 	m_Elem.resize(m.Elements());
@@ -259,7 +153,7 @@ void FSMesh::Clear()
 	m_Face.clear();
 	m_Elem.clear();
 	m_Node.clear();
-
+	ClearNLT();
 	ClearMeshData();
 }
 
@@ -272,15 +166,14 @@ void FSMesh::ClearMeshData()
 }
 
 //-----------------------------------------------------------------------------
-// Allocate storage for the mesh data. If bclear is true (default = true) all 
-// existing groups are deleted.
+// Allocate storage for the mesh data. Also clears mesh data!
 void FSMesh::Create(int nodes, int elems, int faces, int edges)
 {
 	// allocate storage
-	if (nodes > 0) { if (nodes) m_Node.resize(nodes); else m_Node.clear(); }
-	if (elems > 0) { if (elems) m_Elem.resize(elems); else m_Elem.clear(); }
-	if (faces > 0) { if (faces) m_Face.resize(faces); else m_Face.clear(); }
-	if (edges > 0) { if (edges) m_Edge.resize(edges); else m_Edge.clear(); }
+	if (nodes > 0) { if (nodes != m_Node.size()) ResizeNodes(nodes); }
+	if (elems > 0) { if (elems != m_Elem.size()) ResizeElems(elems); }
+	if (faces > 0) { if (faces != m_Face.size()) m_Face.resize(faces); }
+	if (edges > 0) { if (edges != m_Edge.size()) m_Edge.resize(edges); }
 
 	// clear mesh data
 	ClearMeshData();
@@ -290,6 +183,7 @@ void FSMesh::Create(int nodes, int elems, int faces, int edges)
 void FSMesh::ResizeNodes(int newSize)
 {
 	m_Node.resize(newSize);
+	ClearNLT();
 }
 
 //-----------------------------------------------------------------------------
@@ -308,6 +202,7 @@ void FSMesh::ResizeFaces(int newSize)
 void FSMesh::ResizeElems(int newSize)
 {
 	m_Elem.resize(newSize);
+	ClearELT();
 }
 
 //-----------------------------------------------------------------------------
@@ -630,6 +525,16 @@ void FSMesh::BuildMesh()
 }
 
 //-----------------------------------------------------------------------------
+void FSMesh::UpdateMesh()
+{
+	FSCoreMesh::UpdateMesh();
+
+	// rebuild the lookup tables
+	BuildNLT();
+	BuildELT();
+}
+
+//-----------------------------------------------------------------------------
 // Convenience function that calls the mesh builder to do all the work
 void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 {
@@ -778,6 +683,7 @@ void FSMesh::UpdateElementNeighbors()
 	int elems = Elements();
 
 	// reset all element neighbor and face ptrs
+#pragma omp parallel for
 	for (int i = 0; i < elems; i++)
 	{
 		FEElement_& el = ElementRef(i);
@@ -793,16 +699,14 @@ void FSMesh::UpdateElementNeighbors()
 	FSNodeElementList NET;
 	NET.Build(this);
 
-	// set up the element's neighbour pointers
-	FSEdge edge;
-	FSFace f1, f2, f3;
-
 	// loop over all elements
+#pragma omp parallel for shared(NET)
 	for (int i = 0; i < elems; i++)
 	{
 		FEElement_* pe = ElementPtr(i);
 		// do the solid elements first
 		int n = pe->Faces();
+		FSFace f1, f2;
 		for (int j = 0; j < n; j++)
 		{
 			// check if we already have a neighbor assigned
@@ -865,7 +769,7 @@ void FSMesh::UpdateElementNeighbors()
 		{
 			if (pe->m_nbr[j] == -1)
 			{
-				edge = pe->GetEdge(j);
+				FSEdge edge = pe->GetEdge(j);
 
 				// find the neighbour element
 				int inode = edge.n[0];
@@ -890,7 +794,7 @@ void FSMesh::UpdateElementNeighbors()
 		}
 
 		// do the beam elements
-		if (pe->IsType(FE_BEAM2))
+		if (pe->IsBeam())
 		{
 			for (int j = 0; j < 2; ++j)
 			{
@@ -903,7 +807,7 @@ void FSMesh::UpdateElementNeighbors()
 					FEElement_* pne = NET.Element(inode, k);
 					if (pne != pe)
 					{
-						if ((pne->IsType(FE_BEAM2)) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
+						if ((pne->IsBeam()) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
 						{
 							pe->m_nbr[j] = NET.ElementIndex(inode, k);
 							break;
@@ -1307,6 +1211,7 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 	if (selectedOnly)
 	{
 		for (int i=0; i<Faces(); ++i) if (Face(i).IsSelected()) { Face(i).m_ntag = 1; ++faces; }
+		if (faces == 0) return nullptr;
 	}
 	else
 	{
@@ -1391,6 +1296,99 @@ FSMesh* FSMesh::ExtractFaces(bool selectedOnly)
 }
 
 //-----------------------------------------------------------------------------
+// Extract faces as a surface mesh
+FSSurfaceMesh* FSMesh::ExtractFacesAsSurface(bool selectedOnly)
+{
+    // clear face tags
+    TagAllFaces(0);
+    
+    // count selected faces
+    int faces = 0;
+    if (selectedOnly)
+    {
+        for (int i=0; i<Faces(); ++i) if (Face(i).IsSelected()) { Face(i).m_ntag = 1; ++faces; }
+    }
+    else
+    {
+        faces = Faces();
+        for (int i=0; i<Faces(); ++i) Face(i).m_ntag = 1;
+    }
+    
+    // tag nodes that need to be copied
+    for (int i=0; i<Nodes(); ++i) Node(i).m_ntag = -1;
+    for (int i=0; i<Faces(); ++i)
+    {
+        FSFace& f = Face(i);
+        if (f.m_ntag == 1)
+        {
+            int n = f.Nodes();
+            for (int j=0; j<n; ++j) Node(f.n[j]).m_ntag = 1;
+        }
+    }
+    
+    // count nodes
+    int nodes = 0;
+    for (int i=0; i<Nodes(); ++i)
+    {
+        FSNode& node = Node(i);
+        if (node.m_ntag == 1)
+        {
+            node.m_ntag = nodes;
+            ++nodes;
+        }
+    }
+    
+    assert( (nodes>0) && (faces>0));
+    
+    // allocate new mesh
+    FSSurfaceMesh* pm = new FSSurfaceMesh();
+    pm->Create(nodes, 0, faces);
+    
+    // create the nodes
+    FSNode* pn = pm->NodePtr();
+    for (int i=0; i<Nodes(); ++i)
+    {
+        FSNode& node = Node(i);
+        if (node.m_ntag >= 0)
+        {
+            *pn = node;
+            ++pn;
+        }
+    }
+    
+    // create the faces
+    faces = 0;
+    for (int i=0; i<Faces(); ++i)
+    {
+        FSFace& face = Face(i);
+        if (face.m_ntag)
+        {
+            FSFace& f = pm->Face(faces++);
+            int n = face.Nodes();
+            switch (n)
+            {
+                case 3: f.SetType(FE_FACE_TRI3 ); break;
+                case 4: f.SetType(FE_FACE_QUAD4); break;
+                case 6: f.SetType(FE_FACE_TRI6 ); break;
+                case 7: f.SetType(FE_FACE_TRI7 ); break;
+                case 8: f.SetType(FE_FACE_QUAD8); break;
+                case 9: f.SetType(FE_FACE_QUAD9); break;
+                default:
+                    assert(false);
+                    delete pm;
+                    return 0;
+            }
+            for (int j=0; j<n; ++j) f.n[j] = Node(face.n[j]).m_ntag;
+        }
+    }
+    
+    // rebuild the mesh
+    pm->RebuildMesh();
+    
+    return pm;
+}
+
+//-----------------------------------------------------------------------------
 // Save mesh data to archive
 //
 void FSMesh::Save(OArchive &ar)
@@ -1400,6 +1398,8 @@ void FSMesh::Save(OArchive &ar)
 	int faces = Faces();
 	int edges = Edges();
 
+	int meshStorage = 1; // using new, more compact, mesh storage format
+
 	// write the header
 	ar.BeginChunk(CID_MESH_HEADER);
 	{
@@ -1407,108 +1407,278 @@ void FSMesh::Save(OArchive &ar)
 		ar.WriteChunk(CID_MESH_ELEMENTS, elems);
 		ar.WriteChunk(CID_MESH_FACES, faces);
 		ar.WriteChunk(CID_MESH_EDGES, edges);
+		ar.WriteChunk(CID_MESH_STORAGE, meshStorage);
 	}
 	ar.EndChunk();
 
-	// write the nodes
-	ar.BeginChunk(CID_MESH_NODE_SECTION);
+	if (meshStorage == 0)
 	{
-		FSNode* pn = NodePtr();
-		for (int i=0; i<nodes; ++i, ++pn)
+		// write the nodes
+		ar.BeginChunk(CID_MESH_NODE_SECTION);
 		{
-			ar.BeginChunk(CID_MESH_NODE);
+			FSNode* pn = NodePtr();
+			for (int i = 0; i < nodes; ++i, ++pn)
 			{
-				ar.WriteChunk(CID_MESH_NODE_GID, pn->m_gid);
-				ar.WriteChunk(CID_MESH_NODE_POSITION, pn->r);
+				ar.BeginChunk(CID_MESH_NODE);
+				{
+					ar.WriteChunk(CID_MESH_NODE_GID, pn->m_gid);
+					ar.WriteChunk(CID_MESH_NODE_POSITION, pn->r);
+				}
+				ar.EndChunk();
 			}
-			ar.EndChunk();
 		}
-	}
-	ar.EndChunk();
+		ar.EndChunk();
 
-	// write the elements
-	ar.BeginChunk(CID_MESH_ELEMENT_SECTION);
-	{
-		for (int i=0; i<elems; ++i)
+		// write the elements
+		ar.BeginChunk(CID_MESH_ELEMENT_SECTION);
 		{
-			FEElement_* pe = ElementPtr(i);
-
-			ar.BeginChunk(CID_MESH_ELEMENT);
+			for (int i = 0; i < elems; ++i)
 			{
+				FEElement_* pe = ElementPtr(i);
+
+				ar.BeginChunk(CID_MESH_ELEMENT);
+				{
+					int ntype = pe->Type();
+					ar.WriteChunk(CID_MESH_ELEMENT_TYPE, ntype);
+					ar.WriteChunk(CID_MESH_ELEMENT_GID, pe->m_gid);
+					ar.WriteChunk(CID_MESH_ELEMENT_NODES, pe->m_node, pe->Nodes());
+					ar.WriteChunk(CID_MESH_ELEMENT_FIBER, pe->m_fiber);
+					if (pe->m_Qactive)
+					{
+						ar.WriteChunk(CID_MESH_ELEMENT_Q_ACTIVE, pe->m_Qactive);
+						ar.WriteChunk(CID_MESH_ELEMENT_Q, pe->m_Q);
+					}
+					if (pe->IsShell())
+						ar.WriteChunk(CID_MESH_SHELL_THICKNESS, pe->m_h, pe->Nodes());
+					//				ar.WriteChunk(CID_MESH_ELEMENT_MATERIAL, mid);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+
+		// write the faces
+		ar.BeginChunk(CID_MESH_FACE_SECTION);
+		{
+			FSFace* pf = FacePtr();
+			for (int i = 0; i < faces; ++i, ++pf)
+			{
+				ar.BeginChunk(CID_MESH_FACE);
+				{
+					int nn = pf->Nodes();
+					int ntype = pf->Type();
+					assert(ntype != FE_FACE_INVALID_TYPE);
+					ar.WriteChunk(CID_MESH_FACE_TYPE, ntype);
+					ar.WriteChunk(CID_MESH_FACE_GID, pf->m_gid);
+					ar.WriteChunk(CID_MESH_FACE_NODES, pf->n, pf->Nodes());
+					ar.WriteChunk(CID_MESH_FACE_SMOOTHID, pf->m_sid);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+
+		// write the edges
+		ar.BeginChunk(CID_MESH_EDGE_SECTION);
+		{
+			FSEdge* pe = EdgePtr();
+			for (int i = 0; i < edges; ++i, ++pe)
+			{
+				int nn = pe->Nodes();
 				int ntype = pe->Type();
-				ar.WriteChunk(CID_MESH_ELEMENT_TYPE    , ntype);
-				ar.WriteChunk(CID_MESH_ELEMENT_GID     , pe->m_gid);
-				ar.WriteChunk(CID_MESH_ELEMENT_NODES   , pe->m_node, pe->Nodes());
-				ar.WriteChunk(CID_MESH_ELEMENT_FIBER   , pe->m_fiber);
-				ar.WriteChunk(CID_MESH_ELEMENT_Q_ACTIVE, pe->m_Qactive);
-				ar.WriteChunk(CID_MESH_ELEMENT_Q       , pe->m_Q);
-				if (pe->IsShell())
-					ar.WriteChunk(CID_MESH_SHELL_THICKNESS , pe->m_h, pe->Nodes());
-//				ar.WriteChunk(CID_MESH_ELEMENT_MATERIAL, mid);
+				ar.BeginChunk(CID_MESH_EDGE);
+				{
+					ar.WriteChunk(CID_MESH_EDGE_TYPE, ntype);
+					ar.WriteChunk(CID_MESH_EDGE_GID, pe->m_gid);
+					ar.WriteChunk(CID_MESH_EDGE_NODES, pe->n, nn);
+				}
+				ar.EndChunk();
 			}
-			ar.EndChunk();
 		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
-
-	// write the faces
-	ar.BeginChunk(CID_MESH_FACE_SECTION);
+	else // meshFormat == 1
 	{
-		FSFace* pf = FacePtr();
-		for (int i=0; i<faces; ++i, ++pf)
+		// write the nodes
+		ar.BeginChunk(CID_MESH_NODE_SECTION);
 		{
-			ar.BeginChunk(CID_MESH_FACE);
+			vector<int> gid(nodes);
+			vector<int> nid(nodes);
+			vector<vec3d> pos(nodes);
+			for (int i = 0; i < nodes; ++i)
 			{
-				int nn = pf->Nodes();
-				int ntype = pf->Type();
-				assert(ntype != FE_FACE_INVALID_TYPE);
-				ar.WriteChunk(CID_MESH_FACE_TYPE    , ntype);
-				ar.WriteChunk(CID_MESH_FACE_GID     , pf->m_gid);
-				ar.WriteChunk(CID_MESH_FACE_NODES   , pf->n, pf->Nodes());
-				ar.WriteChunk(CID_MESH_FACE_SMOOTHID, pf->m_sid);
+				FSNode& node = Node(i);
+				gid[i] = node.m_gid;
+				nid[i] = node.m_nid;
+				pos[i] = node.r;
 			}
-			ar.EndChunk();
-		}
-	}
-	ar.EndChunk();
 
-	// write the edges
-	ar.BeginChunk(CID_MESH_EDGE_SECTION);
-	{
-		FSEdge* pe = EdgePtr();
-		for (int i=0; i<edges; ++i, ++pe)
+			ar.WriteChunk(CID_MESH_NODE_GID, gid);
+			ar.WriteChunk(CID_MESH_NODE_NID, nid);
+			ar.WriteChunk(CID_MESH_NODE_POSITION, pos);
+		}
+		ar.EndChunk();
+
+		// write the elements
+		ar.BeginChunk(CID_MESH_ELEMENT_SECTION);
 		{
-			int nn = pe->Nodes();
-			int ntype = pe->Type();
-			ar.BeginChunk(CID_MESH_EDGE);
+			int elnodes = 0;
+			for (int i = 0; i < elems; ++i) elnodes += Element(i).Nodes();
+
+			vector<int> type(elems);
+			vector<int> gid(elems);
+			vector<int> eid(elems);
+			vector<vec3d> fiber(elems);
+			vector<int> eln(elnodes);
+			vector<int> Qactive(elems);
+			int qactive = 0;
+			int hcount = 0;
+
+			for (int i = 0, n = 0; i < elems; ++i)
 			{
-				ar.WriteChunk(CID_MESH_EDGE_TYPE, ntype);
-				ar.WriteChunk(CID_MESH_EDGE_GID, pe->m_gid);
-				ar.WriteChunk(CID_MESH_EDGE_NODES, pe->n, nn);
+				FEElement_* pe = ElementPtr(i);
+				type[i] = pe->Type();
+				gid[i] = pe->m_gid;
+				eid[i] = pe->m_nid;
+				fiber[i] = pe->m_fiber;
+				Qactive[i] = (int)(pe->m_Qactive);
+				if (pe->m_Qactive) qactive++;
+
+				if (pe->IsShell()) hcount += pe->Nodes();
+
+				int ne = pe->Nodes();
+				for (int j = 0; j < ne; ++j) eln[n++] = pe->m_node[j];
+			}
+			ar.WriteChunk(CID_MESH_ELEMENT_TYPE, type);
+			ar.WriteChunk(CID_MESH_ELEMENT_GID , gid);
+			ar.WriteChunk(CID_MESH_ELEMENT_EID , eid);
+			ar.WriteChunk(CID_MESH_ELEMENT_FIBER, fiber);
+			ar.WriteChunk(CID_MESH_ELEMENT_Q_ACTIVE, Qactive);
+			ar.WriteChunk(CID_MESH_ELEMENT_NODES, eln);
+
+			if (qactive > 0)
+			{
+				vector<mat3d> Q(qactive);
+				for (int i = 0, n = 0; i < elems; ++i)
+				{
+					FEElement_* pe = ElementPtr(i);
+					if (pe->m_Qactive) Q[n++] = pe->m_Q;
+				}
+				ar.WriteChunk(CID_MESH_ELEMENT_Q, Q);
+			}
+
+			if (hcount > 0)
+			{
+				vector<double> h(hcount);
+				for (int i = 0, n = 0; i < elems; ++i)
+				{
+					FEElement_* pe = ElementPtr(i);
+					if (pe->IsShell())
+					{
+						for (int j = 0; j < pe->Nodes(); ++j) h[n++] = pe->m_h[j];
+					}
+				}
+				ar.WriteChunk(CID_MESH_SHELL_THICKNESS, h);
+			}
+		}
+		ar.EndChunk();
+
+		// write the faces
+		if (faces > 0)
+		{
+			ar.BeginChunk(CID_MESH_FACE_SECTION);
+			{
+				int fnodes = 0;
+				for (int i = 0; i < faces; ++i) fnodes += Face(i).Nodes();
+
+				vector<int> type(faces);
+				vector<int> gid(faces);
+				vector<int> sid(faces);
+				vector<int> fnode(fnodes);
+				FSFace* pf = FacePtr();
+				for (int i = 0, n = 0; i < faces; ++i, ++pf)
+				{
+					type[i] = pf->Type();
+					gid[i] = pf->m_gid;
+					sid[i] = pf->m_sid;
+					for (int j = 0; j < pf->Nodes(); ++j) fnode[n++] = pf->n[j];
+				}
+
+				ar.WriteChunk(CID_MESH_FACE_TYPE, type);
+				ar.WriteChunk(CID_MESH_FACE_GID, gid);
+				ar.WriteChunk(CID_MESH_FACE_SMOOTHID, sid);
+				ar.WriteChunk(CID_MESH_FACE_NODES, fnode);
+			}
+			ar.EndChunk();
+		}
+
+		// write the edges
+		if (edges > 0)
+		{
+			ar.BeginChunk(CID_MESH_EDGE_SECTION);
+			{
+				vector<int> type(edges);
+				vector<int> gid(edges);
+
+				int enodes = 0;
+				for (int i = 0; i < edges; ++i) enodes += Edge(i).Nodes();
+				vector<int> enode(enodes);
+
+				FSEdge* pe = EdgePtr();
+				for (int i = 0, n = 0; i < edges; ++i, ++pe)
+				{
+					type[i] = pe->Type();
+					gid[i] = pe->m_gid;
+					for (int j = 0; j < pe->Nodes(); ++j) enode[n++] = pe->n[j];
+				}
+
+				ar.WriteChunk(CID_MESH_EDGE_TYPE, type);
+				ar.WriteChunk(CID_MESH_EDGE_GID, gid);
+				ar.WriteChunk(CID_MESH_EDGE_NODES, enode);
 			}
 			ar.EndChunk();
 		}
 	}
-	ar.EndChunk();
 
 	// TODO: Move this stuff to the GObject serialization
 	GObject* po = GetGObject();
-	int parts = po->FEParts();
+	int partsets = po->FEPartSets();
+	int elemsets = po->FEElemSets();
 	int surfs = po->FESurfaces();
 	int nsets = po->FENodeSets();
 
-	// write the parts
-	if (parts > 0)
+	// write the element sets
+	if (elemsets > 0)
 	{
-		ar.BeginChunk(CID_MESH_PART_SECTION);
+		ar.BeginChunk(CID_MESH_ELEMSET_SECTION);
 		{
-			for (int i=0; i<parts; ++i)
+			for (int i=0; i< elemsets; ++i)
 			{
 				// get the boundary condition
-				FSPart* pg = po->GetFEPart(i);
+				FSElemSet* pg = po->GetFEElemSet(i);
 
 				// store the group data
-				ar.BeginChunk(CID_MESH_PART);
+				ar.BeginChunk(CID_MESH_ELEMENTSET);
+				{
+					pg->Save(ar);
+				}
+				ar.EndChunk();
+			}
+		}
+		ar.EndChunk();
+	}
+
+	// write the part sets
+	if (partsets > 0)
+	{
+		ar.BeginChunk(CID_MESH_PARTSET_SECTION);
+		{
+			for (int i = 0; i < partsets; ++i)
+			{
+				FSPartSet* pg = po->GetFEPartSet(i);
+
+				// store the group data
+				ar.BeginChunk(CID_MESH_PARTSET);
 				{
 					pg->Save(ar);
 				}
@@ -1625,10 +1795,11 @@ void FSMesh::Load(IArchive& ar)
 {
 	TRACE("FSMesh::Load");
 
-	int nodes;
-	int elems;
-	int faces;
-	int edges;
+	int nodes = 0;
+	int elems = 0;
+	int faces = 0;
+	int edges = 0;
+	int meshStorage = 0;
 
 	GObject* po = GetGObject();
 	vec3d pos;
@@ -1646,6 +1817,7 @@ void FSMesh::Load(IArchive& ar)
 		case CID_MESH_ELEMENTS: ar.read(elems); break;
 		case CID_MESH_FACES: ar.read(faces); break;
 		case CID_MESH_EDGES: ar.read(edges); break;
+		case CID_MESH_STORAGE: ar.read(meshStorage); break;
 		}
 		ar.CloseChunk();
 	}
@@ -1665,9 +1837,14 @@ void FSMesh::Load(IArchive& ar)
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
-		switch(nid)
+
+		// the geometry can be read either as the old format (meshformat == 0, pre 2.1)
+		// or the new format (meshformat == 1)
+		if (meshStorage == 0)
 		{
-		case CID_MESH_NODE_SECTION:
+			switch (nid)
+			{
+			case CID_MESH_NODE_SECTION:
 			{
 				int n = 0;
 				FSNode* pn = NodePtr();
@@ -1694,7 +1871,7 @@ void FSMesh::Load(IArchive& ar)
 				}
 			}
 			break;
-		case CID_MESH_ELEMENT_SECTION:
+			case CID_MESH_ELEMENT_SECTION:
 			{
 				int n = 0;
 				FSElement* pe = &m_Elem[0];
@@ -1711,25 +1888,25 @@ void FSMesh::Load(IArchive& ar)
 							{
 							case CID_MESH_ELEMENT_TYPE: { int ntype; ar.read(ntype); pe->SetType(ntype); }; break;
 							case CID_MESH_ELEMENT_GID: ar.read(pe->m_gid); break;
-							case CID_MESH_ELEMENT_NODES: 
-								{
-									if (ar.Version() < 0x00010008) ar.read(pe->m_node, 8);
-									else ar.read(pe->m_node, pe->Nodes());
-								}
-								break;
-							case CID_MESH_ELEMENT_FIBER   : ar.read(pe->m_fiber); break;
+							case CID_MESH_ELEMENT_NODES:
+							{
+								if (ar.Version() < 0x00010008) ar.read(pe->m_node, 8);
+								else ar.read(pe->m_node, pe->Nodes());
+							}
+							break;
+							case CID_MESH_ELEMENT_FIBER: ar.read(pe->m_fiber); break;
 							case CID_MESH_ELEMENT_Q_ACTIVE: ar.read(pe->m_Qactive); break;
-							case CID_MESH_ELEMENT_Q       :  ar.read(pe->m_Q); break;
+							case CID_MESH_ELEMENT_Q:  ar.read(pe->m_Q); break;
 
 							case CID_MESH_SHELL_THICKNESS:
-								{
-									ar.read(&h[0], pe->Nodes());
-									int n = pe->Nodes();
-									if (n > 9) n = 9;
-									for (int i=0; i<n; ++i) pe->m_h[i] = h[i];
-								}
-								break;
-//							case CID_MESH_ELEMENT_MATERIAL: ar.read(pe->m_matid); break;
+							{
+								ar.read(&h[0], pe->Nodes());
+								int n = pe->Nodes();
+								if (n > 9) n = 9;
+								for (int i = 0; i < n; ++i) pe->m_h[i] = h[i];
+							}
+							break;
+							//							case CID_MESH_ELEMENT_MATERIAL: ar.read(pe->m_matid); break;
 							}
 							ar.CloseChunk();
 						}
@@ -1741,7 +1918,7 @@ void FSMesh::Load(IArchive& ar)
 				}
 			}
 			break;
-		case CID_MESH_FACE_SECTION:
+			case CID_MESH_FACE_SECTION:
 			{
 				int n = 0;
 				FSFace* pf = FacePtr();
@@ -1756,43 +1933,43 @@ void FSMesh::Load(IArchive& ar)
 						int ntype;
 						switch (nid)
 						{
-						case CID_MESH_FACE_TYPE: 
+						case CID_MESH_FACE_TYPE:
+						{
+							ar.read(ntype);
+							if (ar.Version() < 0x00020000)
 							{
-								ar.read(ntype); 
-								if (ar.Version() < 0x00020000)
+								switch (ntype)
 								{
-									switch (ntype)
-									{
-									case FE_TRI3 : pf->SetType(FE_FACE_TRI3 ); break;
-									case FE_QUAD4: pf->SetType(FE_FACE_QUAD4); break;
-									case FE_TRI6 : pf->SetType(FE_FACE_TRI6 ); break;
-									case FE_QUAD8: pf->SetType(FE_FACE_QUAD8); break;
-									case FE_TRI7 : pf->SetType(FE_FACE_TRI7 ); break;
-									case FE_QUAD9: pf->SetType(FE_FACE_QUAD9); break;
-									case FE_TRI10: pf->SetType(FE_FACE_TRI10); break;
-									default:
-										assert(false);
-									}
-								}
-								else
-								{
-									switch (ntype)
-									{
-									case FE_FACE_TRI3 : pf->SetType(FE_FACE_TRI3 ); break;
-									case FE_FACE_QUAD4: pf->SetType(FE_FACE_QUAD4); break;
-									case FE_FACE_TRI6 : pf->SetType(FE_FACE_TRI6 ); break;
-									case FE_FACE_QUAD8: pf->SetType(FE_FACE_QUAD8); break;
-									case FE_FACE_TRI7 : pf->SetType(FE_FACE_TRI7 ); break;
-									case FE_FACE_QUAD9: pf->SetType(FE_FACE_QUAD9); break;
-									case FE_FACE_TRI10: pf->SetType(FE_FACE_TRI10); break;
-									default:
-										assert(false);
-									}
+								case FE_TRI3: pf->SetType(FE_FACE_TRI3); break;
+								case FE_QUAD4: pf->SetType(FE_FACE_QUAD4); break;
+								case FE_TRI6: pf->SetType(FE_FACE_TRI6); break;
+								case FE_QUAD8: pf->SetType(FE_FACE_QUAD8); break;
+								case FE_TRI7: pf->SetType(FE_FACE_TRI7); break;
+								case FE_QUAD9: pf->SetType(FE_FACE_QUAD9); break;
+								case FE_TRI10: pf->SetType(FE_FACE_TRI10); break;
+								default:
+									assert(false);
 								}
 							}
-							break;
-						case CID_MESH_FACE_GID     : ar.read(pf->m_gid); break;
-						case CID_MESH_FACE_NODES   : ar.read(pf->n, pf->Nodes()); break;
+							else
+							{
+								switch (ntype)
+								{
+								case FE_FACE_TRI3: pf->SetType(FE_FACE_TRI3); break;
+								case FE_FACE_QUAD4: pf->SetType(FE_FACE_QUAD4); break;
+								case FE_FACE_TRI6: pf->SetType(FE_FACE_TRI6); break;
+								case FE_FACE_QUAD8: pf->SetType(FE_FACE_QUAD8); break;
+								case FE_FACE_TRI7: pf->SetType(FE_FACE_TRI7); break;
+								case FE_FACE_QUAD9: pf->SetType(FE_FACE_QUAD9); break;
+								case FE_FACE_TRI10: pf->SetType(FE_FACE_TRI10); break;
+								default:
+									assert(false);
+								}
+							}
+						}
+						break;
+						case CID_MESH_FACE_GID: ar.read(pf->m_gid); break;
+						case CID_MESH_FACE_NODES: ar.read(pf->n, pf->Nodes()); break;
 						case CID_MESH_FACE_SMOOTHID: ar.read(pf->m_sid); break;
 						}
 						ar.CloseChunk();
@@ -1806,7 +1983,7 @@ void FSMesh::Load(IArchive& ar)
 				}
 			}
 			break;
-		case CID_MESH_EDGE_SECTION:
+			case CID_MESH_EDGE_SECTION:
 			{
 				int n = 0;
 				FSEdge* pe = EdgePtr();
@@ -1821,9 +1998,9 @@ void FSMesh::Load(IArchive& ar)
 						int nid = ar.GetChunkID();
 						switch (nid)
 						{
-						case CID_MESH_EDGE_TYPE: 
-						{ 
-							ar.read(ntype); 
+						case CID_MESH_EDGE_TYPE:
+						{
+							ar.read(ntype);
 							if (ar.Version() < 0x00020000)
 							{
 								switch (ntype)
@@ -1847,20 +2024,20 @@ void FSMesh::Load(IArchive& ar)
 									throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
 								}
 							}
-						} 
+						}
 						break;
 						case CID_MESH_EDGE_GID: ar.read(pe->m_gid); break;
-						case CID_MESH_EDGE_NODES: 
-							{
-								int nn = pe->Nodes();
-								assert(nn > 0);
-								if (nn <= 0) throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
-								ar.read(pe->n, nn); break;
-							}
+						case CID_MESH_EDGE_NODES:
+						{
+							int nn = pe->Nodes();
+							assert(nn > 0);
+							if (nn <= 0) throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
+							ar.read(pe->n, nn); break;
+						}
 						}
 						ar.CloseChunk();
 					}
-					
+
 					assert(n < edges);
 					++pe;
 					++n;
@@ -1869,22 +2046,283 @@ void FSMesh::Load(IArchive& ar)
 				}
 			}
 			break;
-		case CID_MESH_PART_SECTION:
+			}
+		}
+		else
+		{
+			switch (nid)
+			{
+			case CID_MESH_NODE_SECTION:
+			{
+				// read arrays
+				vector<int> gid(nodes, -1);
+				vector<int> nnd(nodes, -1);
+				vector<vec3d> pos(nodes);
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+					switch (nid)
+					{
+					case CID_MESH_NODE_GID: ar.read(gid); break;
+					case CID_MESH_NODE_NID: ar.read(nnd); break;
+					case CID_MESH_NODE_POSITION: ar.read(pos); break;
+					}
+					ar.CloseChunk();
+				}
+
+				// apply to nodes
+				FSNode* pn = NodePtr();
+				for (int i = 0; i < nodes; ++i, ++pn)
+				{
+					pn->m_gid = gid[i];
+					pn->m_nid = nnd[i];
+					pn->r = pos[i];
+				}
+			}
+			break;
+			case CID_MESH_ELEMENT_SECTION:
+			{
+				vector<int> gid(elems, -1);
+				vector<int> eid(elems, -1);
+				vector<vec3d> fiber(elems);
+
+				int qactive = 0;
+				int hcount = 0;
+				int elnodes = 0;
+
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+					switch (nid)
+					{
+					case CID_MESH_ELEMENT_TYPE:
+					{
+						vector<int> type(elems);
+						ar.read(type);
+						for (int i = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							pe->SetType(type[i]);
+							elnodes += pe->Nodes();
+							if (pe->IsShell()) hcount += pe->Nodes();
+						}
+					}
+					break;
+					case CID_MESH_ELEMENT_GID: ar.read(gid); break;
+					case CID_MESH_ELEMENT_EID: ar.read(eid); break;
+					case CID_MESH_ELEMENT_FIBER: ar.read(fiber); break;
+					case CID_MESH_ELEMENT_Q_ACTIVE:
+					{
+						vector<int> Qactive(elems);
+						ar.read(Qactive);
+						qactive = 0;
+						for (int i = 0; i < elems; ++i)
+							if (Qactive[i] != 0)
+							{
+								ElementPtr(i)->m_Qactive = true;
+								qactive++;
+							}
+							else ElementPtr(i)->m_Qactive = false;
+					}
+					break;
+					case CID_MESH_ELEMENT_Q:
+					{
+						assert(qactive > 0);
+						vector<mat3d> Q(qactive);
+						ar.read(Q);
+						for (int i = 0, n = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							if (pe->m_Qactive) pe->m_Q = Q[n++];
+						}
+					}
+					break;
+					case CID_MESH_SHELL_THICKNESS:
+					{
+						assert(hcount > 0);
+						vector<double> h(hcount);
+						ar.read(h);
+						for (int i = 0, n = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							if (pe->IsShell())
+							{
+								for (int j = 0; j < pe->Nodes(); ++j) pe->m_h[j] = h[n++];
+							}
+						}
+					}
+					break;
+					case CID_MESH_ELEMENT_NODES:
+					{
+						assert(elnodes > 0);
+						vector<int> eln(elnodes);
+						ar.read(eln);
+
+						for (int i = 0, n = 0, m = 0; i < elems; ++i)
+						{
+							FEElement_* pe = ElementPtr(i);
+							pe->m_gid = gid[i];
+							pe->m_nid = eid[i];
+							pe->m_fiber = fiber[i];
+							for (int j = 0; j < pe->Nodes(); ++j) pe->m_node[j] = eln[n++];
+						}
+					}
+					break;
+					}
+
+					ar.CloseChunk();
+				}
+			}
+			break;
+			case CID_MESH_FACE_SECTION:
+			{
+				vector<int> gid(faces);
+				vector<int> sid(faces);
+
+				int fnodes = 0;
+				vector<int> fnode; // need to read the face types first
+
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+
+					switch (nid)
+					{
+					case CID_MESH_FACE_TYPE:
+					{
+						vector<int> type(faces);
+						ar.read(type);
+						FSFace* pf = FacePtr(0);
+						for (int i = 0; i < faces; ++i, ++pf)
+						{
+							switch (type[i])
+							{
+							case FE_FACE_TRI3: pf->SetType(FE_FACE_TRI3); break;
+							case FE_FACE_QUAD4: pf->SetType(FE_FACE_QUAD4); break;
+							case FE_FACE_TRI6: pf->SetType(FE_FACE_TRI6); break;
+							case FE_FACE_QUAD8: pf->SetType(FE_FACE_QUAD8); break;
+							case FE_FACE_TRI7: pf->SetType(FE_FACE_TRI7); break;
+							case FE_FACE_QUAD9: pf->SetType(FE_FACE_QUAD9); break;
+							case FE_FACE_TRI10: pf->SetType(FE_FACE_TRI10); break;
+							default:
+								assert(false);
+							}
+							fnodes += pf->Nodes();
+						}
+						fnode.resize(fnodes);
+					}
+					break;
+					case CID_MESH_FACE_GID: ar.read(gid); break;
+					case CID_MESH_FACE_SMOOTHID: ar.read(sid); break;
+					case CID_MESH_FACE_NODES:
+					{
+						assert(fnodes > 0);
+						ar.read(fnode);
+						fnodes = 0;
+						FSFace* pf = FacePtr(0);
+						for (int i = 0; i < faces; ++i, ++pf)
+						{
+							pf->m_gid = gid[i];
+							pf->m_sid = sid[i];
+							for (int j = 0; j < pf->Nodes(); ++j) pf->n[j] = fnode[fnodes++];
+						}
+					}
+					break;
+					}
+					ar.CloseChunk();
+				}
+			}
+			break;
+			case CID_MESH_EDGE_SECTION:
+			{
+				vector<int> gid(edges);
+				int enodes = 0;
+
+				while (IArchive::IO_OK == ar.OpenChunk())
+				{
+					int nid = ar.GetChunkID();
+
+					switch (nid)
+					{
+					case CID_MESH_EDGE_TYPE:
+					{
+						enodes = 0;
+						vector<int> type(edges);
+						ar.read(type);
+						FSEdge* pe = EdgePtr(0);
+						for (int i = 0; i < edges; ++i, ++pe)
+						{
+							switch (type[i])
+							{
+							case FE_EDGE2: pe->SetType(FE_EDGE2);  break;
+							case FE_EDGE3: pe->SetType(FE_EDGE3);  break;
+							case FE_EDGE4: pe->SetType(FE_EDGE4);  break;
+							default:
+								assert(false);
+								throw ReadError("error parsing CID_MESH_EDGE_SECTION (FSMesh::Load)");
+							}
+							enodes += pe->Nodes();
+						}
+					}
+					break;
+					case CID_MESH_EDGE_GID: ar.read(gid); break;
+					case CID_MESH_EDGE_NODES:
+					{
+						assert(enodes > 0);
+						vector<int> enode(enodes); // need to read types first!
+						ar.read(enode);
+						FSEdge* pe = EdgePtr(0);
+						for (int i = 0, n = 0; i < edges; ++i, ++pe)
+						{
+							pe->m_gid = gid[i];
+							for (int j = 0; j < pe->Nodes(); ++j) pe->n[j] = enode[n++];
+						}
+					}
+					break;
+					}
+
+					ar.CloseChunk();
+				}
+			}
+			break;
+			}
+		}
+
+		// read the rest
+		switch (nid)
+		{
+		case CID_MESH_ELEMSET_SECTION:
 			{
 				// TODO: move to GObject serialization
-				FSPart* pg = 0;
+				FSElemSet* pg = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
 					pg = 0;
-					assert(ar.GetChunkID() == CID_MESH_PART);
-					pg = new FSPart(po);
+					assert(ar.GetChunkID() == CID_MESH_ELEMENTSET);
+					pg = new FSElemSet(po);
 					pg->Load(ar);
-					po->AddFEPart(pg);
+					po->AddFEElemSet(pg);
 
 					ar.CloseChunk();
 				}			
 			}
 			break;
+		case CID_MESH_PARTSET_SECTION:
+		{
+			// TODO: move to GObject serialization
+			FSPartSet* pg = 0;
+			while (IArchive::IO_OK == ar.OpenChunk())
+			{
+				pg = 0;
+				assert(ar.GetChunkID() == CID_MESH_PARTSET);
+				pg = new FSPartSet(po);
+				pg->Load(ar);
+				po->AddFEPartSet(pg);
+
+				ar.CloseChunk();
+			}
+		}
+		break;
 		case CID_MESH_SURF_SECTION:
 			{
 				// TODO: move to GObject serialization
@@ -1926,18 +2364,14 @@ void FSMesh::Load(IArchive& ar)
 					{
 					case CID_MESH_NODE_DATA:
 						{
-							FENodeData* pmap = AddNodeDataField("(unnamed)");
-							int NN = Nodes();
-							pmap->Create(NN);
-							pmap->Load(ar);
+							FENodeData* data = new FENodeData(GetGObject());
+							data->Load(ar);
+							m_meshData.push_back(data);
 						}
 						break;
 					case CID_MESH_SURFACE_DATA:
 						{
 							FESurfaceData* pmap = new FESurfaceData(this);
-//							FESurfaceData* pmap = AddSurfaceDataField("(unnamed)", nullptr, FEMeshData::DATA_TYPE::DATA_SCALAR);
-//							int NF = Faces();
-//							pmap->Create(this, NF);
 							pmap->Load(ar);
 							m_meshData.push_back(pmap);
 						}
@@ -2033,20 +2467,10 @@ void FSMesh::AddMeshDataField(FEMeshData* data)
 }
 
 //-----------------------------------------------------------------------------
-FENodeData* FSMesh::AddNodeDataField(const string& sz, double v)
-{
-	FENodeData* data = new FENodeData(GetGObject());
-	data->Create(v);
-	data->SetName(sz);
-	m_meshData.push_back(data);
-	return data;
-}
-
-//-----------------------------------------------------------------------------
 FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEMeshData::DATA_TYPE dataType)
 {
 	FENodeData* data = new FENodeData(GetGObject());
-	data->Create(nodeset, 0.0);
+	data->Create(nodeset, 0.0, dataType);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
@@ -2056,17 +2480,27 @@ FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, FEM
 FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, FEMeshData::DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
-	data->Create(this, surface, dataType);
+	data->Create(this, surface, dataType, FEMeshData::DATA_ITEM);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
 }
 
 //-----------------------------------------------------------------------------
-FEElementData* FSMesh::AddElementDataField(const string& sz, FSPart* part, FEMeshData::DATA_TYPE dataType)
+FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, FEMeshData::DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
-	map->Create(this, part, dataType);
+	map->Create(this, part, dataType, FEMeshData::DATA_ITEM);
+	map->SetName(sz);
+	m_meshData.push_back(map);
+	return map;
+}
+
+//-----------------------------------------------------------------------------
+FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, FEMeshData::DATA_TYPE dataType)
+{
+	FEPartData* map = new FEPartData(this);
+	map->Create(part, dataType, FEMeshData::DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;
@@ -2135,4 +2569,145 @@ void FSMesh::SetUniformShellThickness(double h)
 		int ne = el.Nodes();
 		for (int j = 0; j < ne; ++j) el.m_h[j] = h;
 	}
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::NodeIndexFromID(int nid)
+{
+	if (m_NLT.empty()) return nid - 1;
+
+	if (nid < m_nltmin) return -1;
+	nid -= m_nltmin;
+	if (nid >= m_NLT.size()) return -1;
+	return m_NLT[nid];
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::GenerateNodalIDs(int startID)
+{
+	assert(startID > 0);
+	if (startID <= 0) startID = 1;
+	int nextID = startID;
+	for (int i = 0; i < Nodes(); ++i) Node(i).m_nid = nextID++;
+	BuildNLT();
+	return nextID;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::BuildNLT()
+{
+	// Do some clean up first
+	m_NLT.clear();
+	m_nltmin = 0;
+	int N = Nodes();
+	if (N == 0) return;
+
+	// Figure out the min and max IDs
+	int minid = Node(0).m_nid;
+	int maxid = minid;
+	for (int i = 1; i < N; ++i)
+	{
+		int nid = Node(i).m_nid;
+		if (nid > maxid) maxid = nid;
+		if (nid < minid) minid = nid;
+	}
+
+	// if node IDs were not assigned yet, they should all be -1
+	// In that case, we're done
+	if (maxid < 0) return;
+
+	// Figure out the size
+	int nsize = maxid - minid + 1;
+	if (nsize < N)
+	{
+		// Hmm, that shouldn't be. 
+		// Let's clear up and get out of here.
+		ClearNLT();
+		return;
+	}
+
+	// Ok, look's like we're good to go
+	m_NLT.assign(nsize, -1);
+	for (int i = 0; i < N; ++i)
+	{
+		int nid = Node(i).m_nid;
+		m_NLT[nid - minid] = i;
+	}
+	m_nltmin = minid;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::ClearNLT()
+{
+	m_NLT.clear();
+	m_nltmin = 0;
+	for (int i = 0; i < Nodes(); ++i) m_Node[i].m_nid = -1;
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::ElementIndexFromID(int eid)
+{
+	if (m_ELT.empty()) return eid - 1;
+
+	if (eid < m_eltmin) return -1;
+	eid -= m_eltmin;
+	if (eid >= m_ELT.size()) return -1;
+	return m_ELT[eid];
+}
+
+//-----------------------------------------------------------------------------
+int FSMesh::GenerateElementIDs(int startID)
+{
+	assert(startID > 0);
+	if (startID <= 0) startID = 1;
+	int nextID = startID;
+	for (int i = 0; i < Elements(); ++i) Element(i).m_nid = nextID++;
+	BuildELT();
+	return nextID;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::BuildELT()
+{
+	// Do some clean up first
+	m_ELT.clear();
+	m_eltmin = 0;
+	int NE = Elements();
+	if (NE == 0) return;
+
+	// Figure out the min and max IDs
+	int minid = Element(0).m_nid;
+	int maxid = minid;
+	for (int i = 1; i < NE; ++i)
+	{
+		int nid = Element(i).m_nid;
+		if (nid > maxid) maxid = nid;
+		if (nid < minid) minid = nid;
+	}
+
+	// if node IDs were not assigned yet, they should all be -1
+	// In that case, we're done
+	if (maxid < 0) return;
+
+	// Figure out the size
+	int nsize = maxid - minid + 1;
+	assert(nsize >= NE);
+
+	// Ok, look's like we're good to go
+	m_ELT.assign(nsize, -1);
+	for (int i = 0; i < NE; ++i)
+	{
+		int nid = Element(i).m_nid;
+		assert(m_ELT[nid - minid] == -1);
+		m_ELT[nid - minid] = i;
+	}
+	m_eltmin = minid;
+}
+
+//-----------------------------------------------------------------------------
+void FSMesh::ClearELT()
+{
+	m_ELT.clear();
+	m_eltmin = 0;
+	for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
 }

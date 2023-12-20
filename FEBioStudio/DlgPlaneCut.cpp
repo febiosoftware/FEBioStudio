@@ -29,11 +29,13 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "GLView.h"
 #include <QBoxLayout>
-#include <QFormLayout>
+#include <QGridLayout>
 #include <QLineEdit>
 #include <QSpinBox>
 #include <QDialogButtonBox>
 #include <QValidator>
+#include <QLabel>
+#include <QPushButton>
 #include "DragBox.h"
 #include <QRadioButton>
 #include <QButtonGroup>
@@ -50,13 +52,26 @@ public:
 	{
 		QVBoxLayout* l = new QVBoxLayout;
 
-		QFormLayout* f = new QFormLayout;
-		f->addRow("X-normal:", w[0] = new CDragBox); w[0]->setRange(-1.0, 1.0); w[0]->setSingleStep(0.01);
-		f->addRow("Y-normal:", w[1] = new CDragBox); w[1]->setRange(-1.0, 1.0); w[1]->setSingleStep(0.01);
-		f->addRow("Z-normal:", w[2] = new CDragBox); w[2]->setRange(-1.0, 1.0); w[2]->setSingleStep(0.01);
-		f->addRow("offset:"  , w[3] = new CDragBox); w[3]->setRange(-1.0, 1.0); w[3]->setSingleStep(0.01);
-		f->addRow("", m_rb[0] = new QRadioButton("plane cut"));
-		f->addRow("", m_rb[1] = new QRadioButton("hide elements"));
+		QGridLayout* g = new QGridLayout;
+		l->addLayout(g);
+
+		QPushButton *pbx, *pby, *pbz;
+
+		g->addWidget(new QLabel("X-normal:"), 0, 0); g->addWidget(w[0] = new CDragBox, 0, 1); g->addWidget(pbx = new QPushButton("X"), 0, 2);
+		g->addWidget(new QLabel("Y-normal:"), 1, 0); g->addWidget(w[1] = new CDragBox, 1, 1); g->addWidget(pby = new QPushButton("Y"), 1, 2);
+		g->addWidget(new QLabel("Z-normal:"), 2, 0); g->addWidget(w[2] = new CDragBox, 2, 1); g->addWidget(pbz = new QPushButton("Z"), 2, 2);
+		g->addWidget(new QLabel("offset:"  ), 3, 0); g->addWidget(w[3] = new CDragBox, 3, 1);
+
+		g->setColumnStretch(1, 2);
+
+		w[0]->setRange(-1.0, 1.0); w[0]->setSingleStep(0.01);
+		w[1]->setRange(-1.0, 1.0); w[1]->setSingleStep(0.01);
+		w[2]->setRange(-1.0, 1.0); w[2]->setSingleStep(0.01);
+		w[3]->setRange(-1.0, 1.0); w[3]->setSingleStep(0.01);
+		
+		g->addWidget(new QLabel("method:"), 4, 0);
+		g->addWidget(m_rb[0] = new QRadioButton("plane cut"), 4, 1);
+		g->addWidget(m_rb[1] = new QRadioButton("hide elements"), 5, 1);
 		m_rb[0]->setChecked(true);
 
 		QButtonGroup* bg = new QButtonGroup;
@@ -67,8 +82,6 @@ public:
 		w[1]->setValue(0.0);
 		w[2]->setValue(0.0);
 		w[3]->setValue(0.0);
-
-		l->addLayout(f);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
 		l->addWidget(bb);
@@ -81,12 +94,17 @@ public:
 		QObject::connect(w[2], SIGNAL(valueChanged(double)), dlg, SLOT(onDataChanged()));
 		QObject::connect(w[3], SIGNAL(valueChanged(double)), dlg, SLOT(onDataChanged()));
 		QObject::connect(bg, SIGNAL(buttonClicked(QAbstractButton*)), dlg, SLOT(onDataChanged()));
+
+		QObject::connect(pbx, SIGNAL(clicked()), dlg, SLOT(onXClicked()));
+		QObject::connect(pby, SIGNAL(clicked()), dlg, SLOT(onYClicked()));
+		QObject::connect(pbz, SIGNAL(clicked()), dlg, SLOT(onZClicked()));
 	}
 };
 
 CDlgPlaneCut::CDlgPlaneCut(CMainWindow* wnd) : QDialog(wnd), ui(new UIDlgPlaneCut)
 {
 	setWindowTitle("Plane cut");
+	setWindowFlags(windowFlags() | Qt::WindowStaysOnTopHint);
 	ui->m_view = wnd->GetGLView();
 	ui->setup(this);
 }
@@ -141,4 +159,36 @@ void CDlgPlaneCut::onDataChanged()
 	if (ui->m_rb[0]->isChecked()) nop = 0;
 	if (ui->m_rb[1]->isChecked()) nop = 1;
 	ui->m_view->SetPlaneCutMode(nop);
+}
+
+void CDlgPlaneCut::setOrientation(double x, double y, double z)
+{
+	ui->w[0]->blockSignals(true);
+	ui->w[1]->blockSignals(true);
+	ui->w[2]->blockSignals(true);
+
+	ui->w[0]->setValue(x);
+	ui->w[1]->setValue(y);
+	ui->w[2]->setValue(z);
+
+	ui->w[0]->blockSignals(false);
+	ui->w[1]->blockSignals(false);
+	ui->w[2]->blockSignals(false);
+
+	onDataChanged();
+}
+
+void CDlgPlaneCut::onXClicked()
+{
+	setOrientation(1, 0, 0);
+}
+
+void CDlgPlaneCut::onYClicked()
+{
+	setOrientation(0, 1, 0);
+}
+
+void CDlgPlaneCut::onZClicked()
+{
+	setOrientation(0, 0, 1);
 }

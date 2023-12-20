@@ -26,10 +26,10 @@ SOFTWARE.*/
 
 #pragma once
 
-#include <MeshTools/GMaterial.h>
+#include <FEMLib/GMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
-#include <MeshTools/FEProject.h>
-#include <MeshIO/FileReader.h>
+#include <FEMLib/FSProject.h>
+#include <MeshIO/FSFileImport.h>
 #include <XML/XMLReader.h>
 #include "FEBioFormat.h"
 

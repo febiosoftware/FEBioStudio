@@ -45,7 +45,7 @@ CGLLinePlot::CGLLinePlot()
 	SetName(szname);
 
 	AddIntParam(0, "data_field")->SetEnumNames("@data_scalar");
-	AddIntParam(0, "color_mode")->SetEnumNames("Solid\0Segments\0Line Data\0Model Data\0");
+	AddIntParam(0, "color_mode")->SetEnumNames("solid\0segments\0line data\0model data\0");
 	AddColorParam(GLColor(255, 0, 0), "solid_color");
 	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
 	AddIntParam(0, "render_mode")->SetEnumNames("lines\0lines 3D\0smooth lines 3D\0");
@@ -121,6 +121,8 @@ bool CGLLinePlot::UpdateData(bool bsave)
 			bool b = (m_showLegend && (m_ncolor != 0));
 			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
 		}
+
+		Update(GetModel()->CurrentTimeIndex(), 0.0, false);
 	}
 	else
 	{
@@ -177,9 +179,6 @@ void CGLLinePlot::Render(CGLContext& rc)
 	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, zero);
 	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 64);
 
-	GLfloat line_old;
-	glGetFloatv(GL_LINE_WIDTH, &line_old);
-	glLineWidth(m_line);
 	if ((ns >= 0) && (ns <fem.GetStates()))
 	{
 		FEState& s = *fem.GetState(ns);
@@ -191,15 +190,14 @@ void CGLLinePlot::Render(CGLContext& rc)
 			{
 				switch (m_nmode)
 				{
-				case 0: RenderLines(s, ns); break;
-				case 1: Render3DLines(s, ns); break;
-				case 2: Render3DSmoothLines(s, ns); break;
+				case 0: RenderLines(); break;
+				case 1: Render3DLines(); break;
+				case 2: Render3DSmoothLines(); break;
 				}
 			}
 			glPopAttrib();
 		}
 	}
-	glLineWidth(line_old);
 }
 
 //-----------------------------------------------------------------------------
@@ -211,110 +209,16 @@ int randomize(int n, int nmax)
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::RenderLines(FEState& s, int ntime)
+void CGLLinePlot::RenderLines()
 {
 	glDisable(GL_LIGHTING);
-	Post::LineData& lineData = m_lineData->GetLineData(ntime);
-	if (m_ncolor == COLOR_SOLID)
-	{
-		glColor3ub(m_col.r, m_col.g, m_col.b);
-		glBegin(GL_LINES);
-		{
-			int NL = lineData.Lines();
-			for (int i = 0; i < NL; ++i)
-			{
-				LINESEGMENT& l = lineData.Line(i);
-				if (m_show || ShowLine(l, s))
-				{
-					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
-				}
-			}
-		}
-		glEnd();
-	}
-	else if (m_ncolor == COLOR_SEGMENT)
-	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+	GLfloat line_old;
+	glGetFloatv(GL_LINE_WIDTH, &line_old);
+	glLineWidth(m_line);
 
-		int maxseg = 0;
-		int NL = lineData.Lines();
-		for (int i = 0; i < NL; ++i)
-		{
-			if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
-		}
-		if (maxseg == 0) maxseg = 1;
+	m_lineMesh.Render();
 
-		glBegin(GL_LINES);
-		{
-			for (int i = 0; i < NL; ++i)
-			{
-				LINESEGMENT& l = lineData.Line(i);
-
-				int n = l.m_segId;// randomize(l.m_segId, maxseg);
-				float f = (float)n / (float)maxseg;
-				GLColor c = map.map(f);
-				glColor3ub(c.r, c.g, c.b);
-				
-				if (m_show || ShowLine(l, s))
-				{
-					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
-				}
-			}
-		}
-		glEnd();
-	}
-	else
-	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-
-		float vmin = m_range.min;
-		float vmax = m_range.max;
-		if (vmin == vmax) vmax++;
-
-		Post::LineData& lineData = m_lineData->GetLineData(ntime);
-		glBegin(GL_LINES);
-		{
-			int NL = lineData.Lines();
-			for (int i = 0; i < NL; ++i)
-			{
-				LINESEGMENT& l = lineData.Line(i);
-				if (m_show || ShowLine(l, s))
-				{
-					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
-					float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
-
-					GLColor c0 = map.map(f0);
-					GLColor c1 = map.map(f1);
-
-					glColor3ub(c0.r, c0.g, c0.b);
-					glVertex3f(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-					glColor3ub(c1.r, c1.g, c1.b);
-					glVertex3f(l.m_r1.x, l.m_r1.y, l.m_r1.z);
-				}
-			}
-		}
-		glEnd();
-
-	}
-}
-
-//-----------------------------------------------------------------------------
-void glxCylinder(float H, float R, float t0 = 0.f, float t1 = 1.f)
-{
-	glBegin(GL_QUAD_STRIP);
-	const int N = 8;
-	for (int i=0; i<=N; ++i)
-	{
-		double w = 2*PI*i/(double)N;
-		double x = cos(w);
-		double y = sin(w);
-		glNormal3d(x, y, 0.0);
-		glTexCoord1d(t1); glVertex3d(R*x, R*y, H);
-		glTexCoord1d(t0); glVertex3d(R*x, R*y, 0);
-	}
-	glEnd();
+	glLineWidth(line_old);
 }
 
 //-----------------------------------------------------------------------------
@@ -330,197 +234,53 @@ bool CGLLinePlot::ShowLine(LINESEGMENT& l, FEState& s)
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render3DLines(FEState& s, int ntime)
+void CGLLinePlot::Render3DLines()
 {
-	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 	if (m_ncolor == COLOR_SOLID)
 	{
+		glDisable(GL_TEXTURE_1D);
 		glColor3ub(m_col.r, m_col.g, m_col.b);
-		int NL = lineData.Lines();
-		for (int i = 0; i < NL; ++i)
-		{
-			LINESEGMENT& l = lineData.Line(i);
-			if (m_show || ShowLine(l, s))
-			{
-				vec3f n = l.m_r1 - l.m_r0;
-				float L = n.Length();
-				n.Normalize();
-
-				glPushMatrix();
-				{
-					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-
-					quatd q(vec3d(0, 0, 1), to_vec3d(n));
-					vec3d r = q.GetVector();
-					double angle = 180 * q.GetAngle() / PI;
-					if ((angle != 0.0) && (r.Length() > 0))
-						glRotated(angle, r.x, r.y, r.z);
-
-					// render cylinder
-					glxCylinder(L, m_line);
-				}
-				glPopMatrix();
-			}
-		}
 	}
 	else
 	{
-		glColor3ub(255, 255, 255);
-
-		glPushAttrib(GL_ENABLE_BIT);
 		glEnable(GL_TEXTURE_1D);
 		m_Col.GetTexture().MakeCurrent();
-
-		float vmin = m_range.min;
-		float vmax = m_range.max;
-		if (vmin == vmax) vmax++;
-
-		int NL = lineData.Lines();
-		for (int i = 0; i < NL; ++i)
-		{
-			LINESEGMENT& l = lineData.Line(i);
-			if (m_show || ShowLine(l, s))
-			{
-				vec3f n = l.m_r1 - l.m_r0;
-				float L = n.Length();
-				n.Normalize();
-
-				glPushMatrix();
-				{
-					glTranslatef(l.m_r0.x, l.m_r0.y, l.m_r0.z);
-
-					quatd q(vec3d(0, 0, 1), to_vec3d(n));
-					vec3d r = q.GetVector();
-					double angle = 180 * q.GetAngle() / PI;
-					if ((angle != 0.0) && (r.Length() > 0))
-						glRotated(angle, r.x, r.y, r.z);
-
-					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
-					float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
-
-					// render cylinder
-					glxCylinder(L, m_line, f0, f1);
-				}
-				glPopMatrix();
-			}
-		}
-
-		glPopAttrib();
+		glColor3ub(255, 255, 255);
 	}
+
+	// render the mesh
+	m_quadMesh.Render();
 }
 
 //-----------------------------------------------------------------------------
-void CGLLinePlot::Render3DSmoothLines(FEState& s, int ntime)
+void CGLLinePlot::Render3DSmoothLines()
 {
-	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 	if (m_ncolor == COLOR_SOLID)
 	{
+		glDisable(GL_TEXTURE_1D);
 		glColor3ub(m_col.r, m_col.g, m_col.b);
-		int NL = lineData.Lines();
-		for (int i = 0; i < NL; ++i)
-		{
-			LINESEGMENT& l = lineData.Line(i);
-			if (m_show || ShowLine(l, s))
-			{
-				vec3f n = l.m_r1 - l.m_r0;
-				float L = n.Length();
-				n.Normalize();
-
-				vec3d e1 = l.m_t0; e1.Normalize();
-				vec3d e2 = l.m_t1; e2.Normalize();
-
-				// render cylinder
-				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
-
-				// render caps
-				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1);
-				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2);
-			}
-		}
 	}
 	else if (m_ncolor == COLOR_SEGMENT)
 	{
-		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-
-		int maxseg = 0;
-		int NL = lineData.Lines();
-		for (int i = 0; i < NL; ++i)
-		{
-			if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
-		}
-		if (maxseg == 0) maxseg = 1;
-
-		for (int i = 0; i < NL; ++i)
-		{
-			LINESEGMENT& l = lineData.Line(i);
-			if (m_show || ShowLine(l, s))
-			{
-				vec3f n = l.m_r1 - l.m_r0;
-				float L = n.Length();
-				n.Normalize();
-
-				vec3d e1 = l.m_t0; e1.Normalize();
-				vec3d e2 = l.m_t1; e2.Normalize();
-
-				int nid = l.m_segId;// randomize(l.m_segId, maxseg);
-				float f = (float)nid / (float)maxseg;
-				GLColor c = map.map(f);
-				glColor3ub(c.r, c.g, c.b);
-
-				// render cylinder
-				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2);
-
-				// render caps
-				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1);
-				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2);
-			}
-		}
+		glDisable(GL_TEXTURE_1D);
 	}
 	else
 	{
 		glColor3ub(255, 255, 255);
-
-		glPushAttrib(GL_ENABLE_BIT);
 		glEnable(GL_TEXTURE_1D);
 		m_Col.GetTexture().MakeCurrent();
-
-		float vmin = m_range.min;
-		float vmax = m_range.max;
-		if (vmin == vmax) vmax++;
-
-		int NL = lineData.Lines();
-		for (int i = 0; i < NL; ++i)
-		{
-			LINESEGMENT& l = lineData.Line(i);
-			if (m_show || ShowLine(l, s))
-			{
-				vec3f n = l.m_r1 - l.m_r0;
-				float L = n.Length();
-				n.Normalize();
-
-				vec3d e1 = l.m_t0; e1.Normalize();
-				vec3d e2 = l.m_t1; e2.Normalize();
-
-				float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
-				float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
-
-				// render cylinder
-				glx::drawSmoothPath(to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1);
-
-				// render caps
-				if (l.m_end[0] == 1) glx::drawHalfSphere(to_vec3d(l.m_r0), m_line, e1, f0);
-				if (l.m_end[1] == 1) glx::drawHalfSphere(to_vec3d(l.m_r1), m_line, e2, f1);
-			}
-		}
-		glPopAttrib();
 	}
+
+	m_triMesh.Render();
 }
 
 void CGLLinePlot::Update(int ntime, float dt, bool breset)
 {
-	if (m_lineData == nullptr) return;
+	if (m_lineData == nullptr) { m_lineMesh.Clear(); return; }
 
-	if ((m_ncolor == COLOR_SOLID) || ((m_ncolor==COLOR_MODEL_DATA)&&(m_nfield == -1))) return;
+	CGLModel& glm = *GetModel();
+	FEPostModel& fem = *glm.GetFSModel();
+	FEState& s = *fem.GetState(ntime);
 
 	float vmax = -1e20f;
 	float vmin = 1e20f;
@@ -547,12 +307,8 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 			if (line.m_val[1] < vmin) vmin = line.m_val[1];
 		}
 	}
-	else if (m_ncolor == COLOR_MODEL_DATA)
+	else if ((m_ncolor == COLOR_MODEL_DATA) && (m_nfield != -1))
 	{
-		CGLModel& glm = *GetModel();
-		FEPostModel& fem = *glm.GetFSModel();
-
-		FEState& s = *fem.GetState(ntime);
 		Post::LineData& lineData = m_lineData->GetLineData(ntime);
 		int NL = lineData.Lines();
 
@@ -572,6 +328,10 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 			if (line.m_val[1] > vmax) vmax = line.m_val[1];
 			if (line.m_val[1] < vmin) vmin = line.m_val[1];
 		}
+	}
+	else
+	{
+		vmin = vmax = 0.f;
 	}
 	if (vmin == vmax) vmax++;
 
@@ -594,388 +354,392 @@ void CGLLinePlot::Update(int ntime, float dt, bool breset)
 	{
 		GetLegendBar()->SetRange(m_range.min, m_range.max);
 	}
-}
 
-//=============================================================================
-PointDataModel::PointDataModel(FEPostModel* fem) : m_fem(fem)
-{
-	int ns = fem->GetStates();
-	if (ns > 0) m_point.resize(ns);
-}
-
-PointDataModel::~PointDataModel()
-{
-	delete m_src;
-}
-
-void PointDataModel::Clear()
-{
-	m_point.clear();
-	int ns = m_fem->GetStates();
-	if (ns > 0) m_point.resize(ns);
-}
-
-void PointDataModel::AddDataField(const std::string& dataName)
-{
-	m_dataNames.push_back(dataName);
-}
-
-bool PointDataModel::Reload()
-{
-	if (m_src) return m_src->Reload();
-	else return false;
-}
-
-//-----------------------------------------------------------------------------
-void PointData::AddPoint(vec3f a, int nlabel)
-{
-	PointData::POINT p;
-	p.m_r = a;
-	p.nlabel = nlabel;
-	m_pt.push_back(p);
-}
-
-//-----------------------------------------------------------------------------
-void PointData::AddPoint(vec3f a, const std::vector<float>& data, int nlabel)
-{
-	PointData::POINT p;
-	p.m_r = a;
-	p.nlabel = nlabel;
-	int n = data.size();
-	if (n > MAX_POINT_DATA_FIELDS) n = MAX_POINT_DATA_FIELDS;
-	for (int i = 0; i < n; ++i) p.val[i] = data[i];
-	m_pt.push_back(p);
-}
-
-//=============================================================================
-
-REGISTER_CLASS(CGLPointPlot, CLASS_PLOT, "points", 0);
-
-//-----------------------------------------------------------------------------
-CGLPointPlot::CGLPointPlot()
-{
-	SetTypeString("points");
-
-	static int n = 1;
-	char szname[128] = { 0 };
-	sprintf(szname, "Points.%02d", n++);
-	SetName(szname);
-
-	AddDoubleParam(8.0, "point size");
-	AddChoiceParam(0, "point size source");
-	AddIntParam(0, "render mode")->SetEnumNames("points\0sphere\0");
-	AddIntParam(0, "color mode")->SetEnumNames("solid\0color map\0");
-	AddColorParam(GLColor::White(), "solid color");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddChoiceParam(0, "Data field");
-	AddBoolParam(true, "Show legend");
-	AddIntParam(0, "Max Range type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(0, "User max");
-	AddIntParam(0, "Min Range type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(0, "User min");
-
-	m_pointSize = 8.f;
-	m_renderMode = 0;
-	m_colorMode = 0;
-	m_solidColor = GLColor(0, 0, 255);
-	m_showLegend = true;
-
-	m_range.min = 0.0; m_range.max = 1.0;
-	m_range.mintype = m_range.maxtype = RANGE_DYNAMIC;
-
-	GLLegendBar* bar = new GLLegendBar(&m_Col, 0, 0, 120, 500);
-	bar->align(GLW_ALIGN_LEFT | GLW_ALIGN_VCENTER);
-	bar->copy_label(szname);
-	bar->ShowTitle(true);
-	bar->hide();
-	SetLegendBar(bar);
-
-	UpdateData(false);
-}
-
-int stringlist_to_szstring(std::vector<std::string>& sl, char* sz)
-{
-	int nsize = 0;
-	for (int i = 0; i < sl.size(); ++i)
+	// update the meshes
+	switch (m_nmode)
 	{
-		nsize += sl[i].length();
-		nsize += 1; // null character
+	case 0: UpdateLineMesh(s, ntime); break;
+	case 1: Update3DLines(s, ntime); break;
+	case 2: UpdateSmooth3DLines(s, ntime); break;
 	}
-	nsize++; // final null character
+}
 
-	if (sz == nullptr) return nsize;
+void CGLLinePlot::UpdateLineMesh(FEState& s, int ntime)
+{
+	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 
-	char* c = sz;
-	for (int i = 0; i < sl.size(); ++i)
+	int NL = lineData.Lines();
+	if (NL == 0) { m_lineMesh.Clear(); return; }
+
+	int maxseg = 0;
+	for (int i = 0; i < NL; ++i)
 	{
-		string& s = sl[i];
-		strcpy(c, s.c_str());
-		c += s.length();
-		*c++ = 0;
+		if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
 	}
-	*c++ = 0;
+	if (maxseg == 0) maxseg = 1;
 
-	return nsize;
-}
+	m_lineMesh.Create(NL, GLMesh::FLAG_COLOR);
 
-void CGLPointPlot::SetPointDataModel(PointDataModel* pointData)
-{
-	m_pointData = pointData;
-
-	// get all data field names
-	std::vector<std::string> dataNames = pointData->GetDataNames();
-
-	// convert to zero-terminated string
-	int nsize = stringlist_to_szstring(dataNames, nullptr);
-	char* buf = new char[nsize];
-	stringlist_to_szstring(dataNames, buf);
-
-	// copy enums
-	Param& dataField = GetParam(DATA_FIELD);
-	dataField.CopyEnumNames(buf);
-	delete buf;
-
-	// for point size data, we do the same, but append
-	dataNames.insert(dataNames.begin(), "(default)");
-	nsize = stringlist_to_szstring(dataNames, nullptr);
-	buf = new char[nsize];
-	stringlist_to_szstring(dataNames, buf);
-
-	// copy enums
-	Param& pointSizeSrc = GetParam(POINT_SIZE_SOURCE);
-	pointSizeSrc.CopyEnumNames(buf);
-	pointSizeSrc.SetIntValue(0);
-	delete buf;
-}
-
-void CGLPointPlot::Reload()
-{
-	m_pointData->Reload();
-}
-
-//-----------------------------------------------------------------------------
-CGLPointPlot::~CGLPointPlot()
-{
-	delete m_pointData;
-}
-
-//-----------------------------------------------------------------------------
-bool CGLPointPlot::UpdateData(bool bsave)
-{
-	if (bsave)
+	if (m_ncolor == COLOR_SOLID)
 	{
-		m_pointSize  = GetFloatValue(POINT_SIZE);
-		m_renderMode = GetIntValue(RENDER_MODE);
-		m_colorMode  = GetIntValue(COLOR_MODE);
-		m_solidColor = GetColorValue(SOLID_COLOR);
-		m_Col.SetColorMap(GetIntValue(COLOR_MAP));
-		m_showLegend = GetBoolValue(SHOW_LEGEND);
-
-		m_range.maxtype = GetIntValue(MAX_RANGE_TYPE);
-		m_range.mintype = GetIntValue(MIN_RANGE_TYPE);
-		if (m_range.maxtype == RANGE_USER) m_range.max = GetFloatValue(USER_MAX);
-		if (m_range.mintype == RANGE_USER) m_range.min = GetFloatValue(USER_MIN);
-
-		if (GetLegendBar())
+		m_lineMesh.BeginMesh();
+		for (int i = 0; i < NL; ++i)
 		{
-			bool b = (m_showLegend && (m_colorMode != 0));
-			if (b) GetLegendBar()->show(); else GetLegendBar()->hide();
+			LINESEGMENT& l = lineData.Line(i);
+			if (m_show || ShowLine(l, s))
+			{
+				m_lineMesh.AddLine(l.m_r0, l.m_r1, m_col);
+			}
 		}
+		m_lineMesh.EndMesh();
+	}
+	else if (m_ncolor == COLOR_SEGMENT)
+	{
+		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+
+	m_lineMesh.Render();
+
+		m_lineMesh.BeginMesh();
+		for (int i = 0; i < NL; ++i)
+		{
+			LINESEGMENT& l = lineData.Line(i);
+
+			int n = l.m_segId;// randomize(l.m_segId, maxseg);
+			float f = (float)n / (float)maxseg;
+			GLColor c = map.map(f);
+			glx::glcolor(c);
+
+			if (m_show || ShowLine(l, s))
+			{
+				m_lineMesh.AddVertex(l.m_r0, c);
+				m_lineMesh.AddVertex(l.m_r1, c);
+			}
+		}
+		m_lineMesh.EndMesh();
 	}
 	else
 	{
-		SetFloatValue(POINT_SIZE , m_pointSize );
-		SetIntValue  (RENDER_MODE, m_renderMode);
-		SetIntValue  (COLOR_MODE , m_colorMode );
-		SetColorValue(SOLID_COLOR, m_solidColor);
-		SetIntValue  (COLOR_MAP  , m_Col.GetColorMap());
-		SetIntValue(MAX_RANGE_TYPE, m_range.maxtype);
-		SetIntValue(MIN_RANGE_TYPE, m_range.mintype);
-		SetFloatValue(USER_MAX, m_range.max);
-		SetFloatValue(USER_MIN, m_range.min);
-	}
+		CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
 
-	return false;
+		float vmin = m_range.min;
+		float vmax = m_range.max;
+		if (vmin == vmax) vmax++;
+
+		m_lineMesh.BeginMesh();
+		{
+			int NL = lineData.Lines();
+			for (int i = 0; i < NL; ++i)
+			{
+				LINESEGMENT& l = lineData.Line(i);
+				if (m_show || ShowLine(l, s))
+				{
+					float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
+					float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
+
+					GLColor c0 = map.map(f0);
+					GLColor c1 = map.map(f1);
+
+					m_lineMesh.AddVertex(l.m_r0, c0);
+					m_lineMesh.AddVertex(l.m_r1, c1);
+				}
+			}
+		}
+		m_lineMesh.EndMesh();
+	}
 }
+
+void CGLLinePlot::Update3DLines(FEState& s, int ntime)
+{
+	Post::LineData& lineData = m_lineData->GetLineData(ntime);
+	if (lineData.Lines() == 0) { m_quadMesh.Clear(); return; }
+
+	const int NSEG = 8;
+	int NL = lineData.Lines();
+
+	int quads = NL * NSEG;
+	m_quadMesh.Create(quads, GLMesh::FLAG_NORMAL | GLMesh::FLAG_TEXTURE);
+
+	m_quadMesh.BeginMesh();
+	for (int i = 0; i < NL; ++i)
+	{
+		LINESEGMENT& l = lineData.Line(i);
+		if (m_show || ShowLine(l, s))
+		{
+			vec3d ra = to_vec3d(l.m_r0);
+			vec3d rb = to_vec3d(l.m_r1);
+			vec3d n = rb - ra;
+			double L = n.Length();
+			n.Normalize();
+
+			float vmin = m_range.min;
+			float vmax = m_range.max;
+			if (vmin == vmax) vmax++;
+
+			float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
+			float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
+
+			quatd q(vec3d(0, 0, 1), n);
+
+			double R = m_line;
+
+			// generate a cylinder
+			for (int i = 0; i < NSEG; ++i)
+			{
+				double w0 = 2 * PI * i / (double)NSEG;
+				double w1 = 2 * PI * (i + 1) / (double)NSEG;
+				double x0 = cos(w0), x1 = cos(w1);
+				double y0 = sin(w0), y1 = sin(w1);
+
+				vec3d r[4] = {
+					vec3d(R*x0, R*y0, 0),
+					vec3d(R*x1, R*y1, 0),
+					vec3d(R*x1, R*y1, L),
+					vec3d(R*x0, R*y0, L)
+				};
+				double tex[4] = { f0, f1, f1, f0 };
+
+				for (int j = 0; j < 4; ++j)
+				{
+					vec3d rj = r[j];
+					q.RotateVector(rj);
+					rj += ra;
+
+					vec3d nj = r[j]; nj.z = 0; nj /= R;
+					q.RotateVector(nj);
+
+					m_quadMesh.AddVertex(rj, nj, tex[j]);
+				}
+			}
+		}
+	}
+	m_quadMesh.EndMesh();
+}
+
 
 //-----------------------------------------------------------------------------
-void CGLPointPlot::Render(CGLContext& rc)
+void tesselateSmoothPath(GLTriMesh& mesh, const vec3d& r0, const vec3d& r1, float R, const vec3d& n0, const vec3d& n1, float t0, float t1, GLColor c, int nsegs, int ndivs)
 {
-	FEPostModel& fem = *GetModel()->GetFSModel();
-	int ns = GetModel()->CurrentTimeIndex();
-	if ((ns < 0) || (ns >= fem.GetStates())) return;
-	if (m_pointData->GetPointData(ns).Points() <= 0) return;
+	quatd q0(vec3d(0, 0, 1), n0);
+	quatd q1(vec3d(0, 0, 1), n1);
 
-	switch (m_renderMode)
+	double L = (r1 - r0).Length();
+	vec3d m0 = n0 * L;
+	vec3d m1 = n1 * L;
+
+	int M = nsegs;
+	if (M < 2) M = 2;
+
+	const int MAX_DIVS = 16;
+	if (ndivs > MAX_DIVS) ndivs = MAX_DIVS;
+	double x[MAX_DIVS+1], y[MAX_DIVS+1];
+	for (int i = 0; i <= ndivs; ++i)
 	{
-	case 0: RenderPoints(); break;
-	case 1: RenderSpheres(); break;
+		double w = 2 * PI * i / (double)ndivs;
+		x[i] = cos(w);
+		y[i] = sin(w);
+	}
+
+	GLMesh::Vertex v;
+	const int N = ndivs;
+	for (int j = 0; j < M; ++j)
+	{
+		quatd qa = quatd::slerp(q0, q1, (double)j / M);
+		quatd qb = quatd::slerp(q0, q1, (double)(j + 1) / M);
+
+		vec3d ra = glx::interpolate(r0, r1, m0, m1, (double)j / M);
+		vec3d rb = glx::interpolate(r0, r1, m0, m1, (double)(j + 1.0) / M);
+
+		float ta = t0 + j * (t1 - t0) / M;
+		float tb = t0 + (j + 1) * (t1 - t0) / M;
+
+		double tex[4] = { ta, tb, tb, ta };
+
+		vec3d r[4], n[4];
+		for (int i = 0; i <= N; ++i)
+		{
+			n[1] = vec3d(x[i], y[i], 0); qa.RotateVector(n[1]);
+			n[2] = vec3d(x[i], y[i], 0); qb.RotateVector(n[2]);
+
+			r[1] = ra + n[1]*R;
+			r[2] = rb + n[2]*R;
+
+			if (i > 0)
+			{
+				int L[2][3] = { {0,1,2}, {2,3,0} };
+				for (int k = 0; k < 2; ++k)
+				{
+					v = { to_vec3f(r[L[k][0]]), to_vec3f(n[L[k][0]]), vec3f(tex[L[k][0]],0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][1]]), to_vec3f(n[L[k][1]]), vec3f(tex[L[k][1]],0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][2]]), to_vec3f(n[L[k][2]]), vec3f(tex[L[k][2]],0,0), c }; mesh.AddVertex(v);
+				}
+			}
+
+			r[0] = r[1]; r[3] = r[2];
+			n[0] = n[1]; n[3] = n[2];
+		}
 	}
 }
 
-void CGLPointPlot::RenderPoints()
+void tesselateHalfSphere(GLTriMesh& mesh, const vec3d& r0, float R, const vec3d& n0, float tex, GLColor c, int ndivs, int nsecs)
 {
-	FEPostModel& fem = *GetModel()->GetFSModel();
-	int ns = fem.CurrentTimeIndex();
-	
-	PointData& pd = m_pointData->GetPointData(ns);
+	GLMesh::Vertex v;
 
-	int ndata = GetIntValue(DATA_FIELD);
-	if (ndata < 0) ndata = 0;
-
-	// evaluate the range
-	float fmin = 1e34f, fmax = -1e34f;
-	int NP = pd.Points();
-	for (int i = 0; i < NP; ++i)
+	quatd q0(vec3d(0, 0, 1), n0);
+	const int M = nsecs;
+	const int N = ndivs;
+	for (int j = 0; j < M; ++j)
 	{
-		PointData::POINT& p = pd.Point(i);
-		float v = p.val[ndata];
+		double th0 = 0.5 * PI * j / (double)M;
+		double th1 = 0.5 * PI * (j + 1) / (double)M;
+		double z1 = sin(th0);
+		double z2 = sin(th1);
 
-		if (v < fmin) fmin = v;
-		if (v > fmax) fmax = v;
-	}
-	if (fmax == fmin) fmax++;
+		double ct0 = cos(th0);
+		double ct1 = cos(th1);
 
-	switch (m_range.mintype)
-	{
-	case 1: if (fmin > m_range.min) fmin = m_range.min; break;
-	case 2: fmin = m_range.min; break;
-	}
+		double r1 = R * ct0;
+		double r2 = R * ct1;
 
-	switch (m_range.maxtype)
-	{
-	case 1: if (fmax < m_range.max) fmax = m_range.max; break;
-	case 2: fmax = m_range.max; break;
-	}
-
-	m_range.min = fmin;
-	m_range.max = fmax;
-
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(fmin, fmax);
-	}
-
-	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-
-	GLfloat size_old;
-	glGetFloatv(GL_POINT_SIZE, &size_old);
-	glPushAttrib(GL_ENABLE_BIT);
-	{
-		glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
-
-		glPointSize(m_pointSize);
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-
-		glBegin(GL_POINTS);
+		if (j < M - 1)
 		{
-			for (int i = 0; i < NP; ++i)
+			for (int i = 0; i < N; ++i)
 			{
-				PointData::POINT& p = pd.Point(i);
+				double w0 = 2 * PI * i / (double)N;
+				double w1 = 2 * PI * (i+1) / (double)N;
+				double x0 = cos(w0), x1 = cos(w1);
+				double y0 = sin(w0), y1 = sin(w1);
 
-				if (m_colorMode == 1)
+				vec3d r[4] = {
+					vec3d(r1 * x0, r1 * y0, R * z1),
+					vec3d(r1 * x1, r1 * y1, R * z1),
+					vec3d(r2 * x1, r2 * y1, R * z2),
+					vec3d(r2 * x0, r2 * y0, R * z2),
+				};
+
+				vec3d n[4] = {
+					vec3d(ct0 * x0, ct0 * y0, z1),
+					vec3d(ct0 * x1, ct0 * y1, z1),
+					vec3d(ct1 * x1, ct1 * y1, z2),
+					vec3d(ct1 * x0, ct1 * y0, z2),
+				};
+
+				for (int k = 0; k < 4; ++k)
 				{
-					double w = (p.val[ndata] - fmin) / (fmax - fmin);
-					GLColor c = map.map(w);
-					glColor3ub(c.r, c.g, c.b);
+					q0.RotateVector(r[k]); r[k] += r0;
+					q0.RotateVector(n[k]);
 				}
 
-				glVertex3f(p.m_r.x, p.m_r.y, p.m_r.z);
+				int L[2][3] = { {0,1,2}, {2,3,0} };
+				for (int k = 0; k < 2; ++k)
+				{
+					v = { to_vec3f(r[L[k][0]]), to_vec3f(n[L[k][0]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][1]]), to_vec3f(n[L[k][1]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
+					v = { to_vec3f(r[L[k][2]]), to_vec3f(n[L[k][2]]), vec3f(tex,0,0), c }; mesh.AddVertex(v);
+				}
 			}
 		}
-		glEnd();
+		else
+		{
+			vec3d ri1(0, 0, R); q0.RotateVector(ri1);
+			vec3d rb = r0 + ri1;
+			vec3d nb(0, 0, 1); q0.RotateVector(nb);
+
+			for (int i = 0; i < N; ++i)
+			{
+				double w0 = 2 * PI * i / (double)N;
+				double w1 = 2 * PI * (i+1) / (double)N;
+				double x0 = cos(w0), x1 = cos(w1);
+				double y0 = sin(w0), y1 = sin(w1);
+
+				vec3d r[2] = {
+					vec3d(r1 * x0, r1 * y0, R * z1),
+					vec3d(r1 * x1, r1 * y1, R * z1)
+				};
+
+				vec3d n[2] = {
+					vec3d(ct0 * x0, ct0 * y0, z1),
+					vec3d(ct0 * x1, ct0 * y1, z1)
+				};
+
+				q0.RotateVector(r[0]); r[0] += r0;
+				q0.RotateVector(r[1]); r[1] += r0;
+				q0.RotateVector(n[0]);
+				q0.RotateVector(n[1]);
+
+				v = { to_vec3f(  rb), to_vec3f(  nb), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
+				v = { to_vec3f(r[0]), to_vec3f(n[0]), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
+				v = { to_vec3f(r[1]), to_vec3f(n[1]), vec3f(tex, 0, 0), c }; mesh.AddVertex(v);
+			}
+		}
 	}
-	glPopAttrib();
-	glPointSize(size_old);
 }
 
-void CGLPointPlot::RenderSpheres()
+
+void CGLLinePlot::UpdateSmooth3DLines(FEState& s, int ntime)
 {
-	FEPostModel& fem = *GetModel()->GetFSModel();
-	int ns = fem.CurrentTimeIndex();
-	PointData& pd = m_pointData->GetPointData(ns);
+	Post::LineData& lineData = m_lineData->GetLineData(ntime);
 
-	int ndata = 0;
-	int colorMode = m_colorMode;
-	if (colorMode == 1)
+	int NL = lineData.Lines();
+	if (NL == 0) { m_triMesh.Clear(); return; }
+
+	int maxseg = 0;
+	for (int i = 0; i < NL; ++i)
 	{
-		if (m_pointData->GetDataFields() == 0) colorMode = 0;
-		else ndata = GetIntValue(DATA_FIELD);
-		if (ndata < 0) {
-			colorMode = 0; ndata = 0;
-		}
+		if (lineData.Line(i).m_segId > maxseg) maxseg = lineData.Line(i).m_segId;
 	}
+	if (maxseg == 0) maxseg = 1;
 
-	// evaluate the range
-	float fmin = 1e34f, fmax = -1e34f;
-	int NP = pd.Points();
-	for (int i = 0; i < NP; ++i)
+	float vmin = m_range.min;
+	float vmax = m_range.max;
+	if (vmin == vmax) vmax++;
+
+	CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
+
+	const int NSEG = 12; // length segments of smooth path
+	const int NDIV = 8; // radial divisions
+	const int NSEC = 4;  // spherical sections for half-sphere
+
+	// allocate mesh
+	unsigned int flags = GLMesh::FLAG_NORMAL;
+	if (m_ncolor == COLOR_SEGMENT) flags |= GLMesh::FLAG_COLOR;
+	if (m_ncolor > COLOR_SEGMENT) flags |= GLMesh::FLAG_TEXTURE;
+	int trisPerLine = NSEG * NDIV * 2 + 2 * ((NSEC - 1) * NDIV * 2 + NDIV);
+	int totalTris = NL * trisPerLine;
+	m_triMesh.Create(totalTris, flags);
+
+	m_triMesh.BeginMesh();
+	for (int i = 0; i < NL; ++i)
 	{
-		PointData::POINT& p = pd.Point(i);
-		float v = p.val[ndata];
-
-		if (v < fmin) fmin = v;
-		if (v > fmax) fmax = v;
-	}
-	if (fmax == fmin) fmax++;
-
-	switch (m_range.mintype)
-	{
-	case 1: if (fmin > m_range.min) fmin = m_range.min; break;
-	case 2: fmin = m_range.min; break;
-	}
-
-	switch (m_range.maxtype)
-	{
-	case 1: if (fmax < m_range.max) fmax = m_range.max; break;
-	case 2: fmax = m_range.max; break;
-	}
-
-	m_range.min = fmin;
-	m_range.max = fmax;
-
-	if (GetLegendBar())
-	{
-		GetLegendBar()->SetRange(fmin, fmax);
-	}
-
-	const CColorMap& map = ColorMapManager::GetColorMap(m_Col.GetColorMap());
-
-	glColor3ub(m_solidColor.r, m_solidColor.g, m_solidColor.b);
-
-	GLUquadricObj* pobj = gluNewQuadric();
-
-	double pointSize = m_pointSize;
-
-	int pointSizeSource = GetIntValue(POINT_SIZE_SOURCE);
-
-	for (int i = 0; i < pd.Points(); ++i)
-	{
-		PointData::POINT& p = pd.Point(i);
-		vec3f& c = p.m_r;
-
-		if (m_colorMode == 1)
+		LINESEGMENT& l = lineData.Line(i);
+		if (m_show || ShowLine(l, s))
 		{
-			double w = (p.val[ndata] - fmin) / (fmax - fmin);
-			GLColor c = map.map(w);
-			glColor3ub(c.r, c.g, c.b);
-		}
+			vec3f n = l.m_r1 - l.m_r0;
+			float L = n.Length();
+			n.Normalize();
 
-		if (pointSizeSource > 0)
-		{
-			pointSize = m_pointSize*fabs(p.val[pointSizeSource - 1]);
-		}
+			vec3d e1 = l.m_t0; e1.Normalize();
+			vec3d e2 = l.m_t1; e2.Normalize();
 
-		if (pointSize > 0)
-		{
-			glPushMatrix();
+			float f0 = (l.m_val[0] - vmin) / (vmax - vmin);
+			float f1 = (l.m_val[1] - vmin) / (vmax - vmin);
+
+			GLColor c(255, 255, 255);
+			if (m_ncolor == COLOR_SOLID) c = m_col;
+			else if (m_ncolor == COLOR_SEGMENT)
 			{
-				glTranslatef(c.x, c.y, c.z);
-				gluSphere(pobj, pointSize, 32, 32);
+				int nid = l.m_segId;// randomize(l.m_segId, maxseg);
+				float f = (float)nid / (float)maxseg;
+//				f = fmod(536.f * f + 0.38756, 1.f);
+				c = map.map(f);
 			}
-			glPopMatrix();
+
+			// render cylinder
+			tesselateSmoothPath(m_triMesh, to_vec3d(l.m_r0), to_vec3d(l.m_r1), m_line, e1, e2, f0, f1, c, NSEG, NDIV);
+
+			// render caps
+			if (l.m_end[0] == 1) tesselateHalfSphere(m_triMesh, to_vec3d(l.m_r0), m_line, e1, f0, c, NDIV, NSEC);
+			if (l.m_end[1] == 1) tesselateHalfSphere(m_triMesh, to_vec3d(l.m_r1), m_line, e2, f1, c, NDIV, NSEC);
 		}
 	}
-	gluDeleteQuadric(pobj);
+	m_triMesh.EndMesh();
 }

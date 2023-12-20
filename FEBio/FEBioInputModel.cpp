@@ -27,8 +27,9 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioInputModel.h"
 #include <GeomLib/GMeshObject.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
 #include "FEBioImport.h"
 #include <string.h>
 #include <stdarg.h>
@@ -73,6 +74,66 @@ FEBioMesh::FEBioMesh()
 //-----------------------------------------------------------------------------
 void FEBioMesh::UpdateMeshData()
 {
+	BuildFaceTable();
+	BuildEdgeTable();
+	BuildElementTable();
+}
+
+//-----------------------------------------------------------------------------
+void FEBioMesh::BuildEdgeTable()
+{
+	int nsize = 0, i, j, n, m, l;
+
+	FSMesh& mesh = m_mesh;
+
+	int nodes = mesh.Nodes();
+	int edges = mesh.Edges();
+
+	m_nEdge.resize(nodes);
+	for (i = 0; i < nodes; ++i) m_nEdge[i] = 0;
+
+	for (i = 0; i < edges; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		n = edge.Nodes();
+		for (j = 0; j < n; ++j) m_nEdge[edge.n[j]]++;
+		nsize += n;
+	}
+
+	m_iEdge.resize(nsize);
+	m_pEdge.resize(nodes);
+
+	if (nsize > 0)
+	{
+		int* pi = &m_iEdge[0];
+		for (i = 0; i < nodes; ++i)
+		{
+			m_pEdge[i] = pi;
+			n = m_nEdge[i];
+			pi += n;
+			m_nEdge[i] = 0;
+		}
+	}
+
+	for (i = 0; i < edges; ++i)
+	{
+		FSEdge& edge = mesh.Edge(i);
+		n = edge.Nodes();
+		for (j = 0; j < n; ++j)
+		{
+			m = edge.n[j];
+
+			l = m_nEdge[m];
+			m_pEdge[m][l] = i;
+			m_nEdge[m]++;
+		}
+	}
+}
+
+
+//-----------------------------------------------------------------------------
+void FEBioMesh::BuildFaceTable()
+{
 	int nsize = 0, i, j, n, m, l;
 
 	FSMesh& mesh = m_mesh;
@@ -81,13 +142,13 @@ void FEBioMesh::UpdateMeshData()
 	int faces = mesh.Faces();
 
 	m_nFace.resize(nodes);
-	for (i = 0; i<nodes; ++i) m_nFace[i] = 0;
+	for (i = 0; i < nodes; ++i) m_nFace[i] = 0;
 
-	for (i = 0; i<faces; ++i)
+	for (i = 0; i < faces; ++i)
 	{
 		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
-		for (j = 0; j<n; ++j) m_nFace[face.n[j]]++;
+		for (j = 0; j < n; ++j) m_nFace[face.n[j]]++;
 		nsize += n;
 	}
 
@@ -96,7 +157,7 @@ void FEBioMesh::UpdateMeshData()
 
 	if (nsize > 0)
 	{
-		int *pi = &m_iFace[0];
+		int* pi = &m_iFace[0];
 		for (i = 0; i < nodes; ++i)
 		{
 			m_pFace[i] = pi;
@@ -106,11 +167,11 @@ void FEBioMesh::UpdateMeshData()
 		}
 	}
 
-	for (i = 0; i<faces; ++i)
+	for (i = 0; i < faces; ++i)
 	{
 		FSFace& face = mesh.Face(i);
 		n = face.Nodes();
-		for (j = 0; j<n; ++j)
+		for (j = 0; j < n; ++j)
 		{
 			m = face.n[j];
 
@@ -119,6 +180,11 @@ void FEBioMesh::UpdateMeshData()
 			m_nFace[m]++;
 		}
 	}
+}
+
+void FEBioMesh::BuildElementTable()
+{
+	FSMesh& mesh = m_mesh;
 
 	// build the element lookup table
 	m_minID = m_maxID = -1;
@@ -133,7 +199,7 @@ void FEBioMesh::UpdateMeshData()
 		}
 	}
 
-	nsize = m_maxID - m_minID + 1;
+	int nsize = m_maxID - m_minID + 1;
 	m_elem.resize(nsize, (FSElement*) 0);
 
 	for (int i = 0; i<NE; ++i)
@@ -179,9 +245,42 @@ int FEBioMesh::FindFace(const int* n, int nn, int noff)
 }
 
 //-----------------------------------------------------------------------------
+int FEBioMesh::FindEdge(const int* n, int nn, int noff)
+{
+	int* pf = m_pEdge[n[0] - noff];
+	int N = m_nEdge[n[0] - noff];
+
+	for (int i = 0; i < N; ++i)
+	{
+		FSEdge& edge = m_mesh.Edge(pf[i]);
+		if (edge.Nodes() == nn)
+		{
+			bool bfound = true;
+			for (int j = 0; j < nn; ++j)
+				if (edge.HasNode(n[j] - noff) == false)
+				{
+					bfound = false;
+					break;
+				}
+
+			if (bfound) return pf[i];
+		}
+	}
+
+	return -1;
+}
+
+
+//-----------------------------------------------------------------------------
 int FEBioMesh::FindFace(const vector<int>& n, int noff)
 {
 	return FindFace(&n[0], (int)n.size(), noff);
+}
+
+//-----------------------------------------------------------------------------
+int FEBioMesh::FindEdge(const vector<int>& n, int noff)
+{
+	return FindEdge(&n[0], (int)n.size(), noff);
 }
 
 //=============================================================================
@@ -287,6 +386,16 @@ FEBioInputModel::NodeSet* FEBioInputModel::Part::FindNodeSet(const std::string& 
 	return 0;
 }
 
+FEBioInputModel::EdgeSet* FEBioInputModel::Part::FindEdgeSet(const std::string& name)
+{
+	for (int i = 0; i < (int)m_edge.size(); ++i)
+	{
+		EdgeSet* ps = &m_edge[i];
+		if (ps->name() == name) return ps;
+	}
+	return 0;
+}
+
 FEBioInputModel::Surface* FEBioInputModel::Part::FindSurface(const std::string& name)
 {
 	for (int i = 0; i<(int)m_surf.size(); ++i)
@@ -299,10 +408,22 @@ FEBioInputModel::Surface* FEBioInputModel::Part::FindSurface(const std::string& 
 
 int FEBioInputModel::Part::FindSurfaceIndex(const std::string& name)
 {
-	for (int i = 0; i<(int)m_surf.size(); ++i)
+	int nsurf = (int)m_surf.size();
+	if (name.compare(0, 11, "@part_list:") == 0)
 	{
-		Surface* ps = &m_surf[i];
-		if (ps->name() == name) return i;
+		string s = name.substr(11);
+		for (int i = 0; i < m_domlist.size(); ++i)
+		{
+			if (m_domlist[i].m_name == s) return nsurf + i;
+		}
+	}
+	else
+	{
+		for (int i = 0; i < nsurf; ++i)
+		{
+			Surface* ps = &m_surf[i];
+			if (ps->name() == name) return i;
+		}
 	}
 	return -1;
 }
@@ -346,6 +467,16 @@ FEBioInputModel::SurfacePair* FEBioInputModel::Part::FindSurfacePair(const std::
 		if (ps->name() == name) return ps;
 	}
 	return 0;
+}
+
+FEBioInputModel::DomainList* FEBioInputModel::Part::FindDomainList(const std::string& name)
+{
+	for (size_t i = 0; i < m_domlist.size(); ++i)
+	{
+		DomainList* ps = &m_domlist[i];
+		if (ps->m_name == name) return ps;
+	}
+	return nullptr;
 }
 
 FEBioInputModel::Domain* FEBioInputModel::Part::FindDomain(const std::string& name)
@@ -420,44 +551,6 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 	return pns;
 }
 
-FSSurface* FEBioInputModel::PartInstance::BuildFESurface(FEBioInputModel::Surface& surf)
-{
-	// create face list
-	vector<int> faceList;
-	int NF = surf.faces();
-	for (int i = 0; i<NF; ++i)
-	{
-		const vector<int>& face = surf.face(i);
-		int faceID = m_part->m_mesh.FindFace(face);
-		if (faceID >= 0) faceList.push_back(faceID);
-		else
-		{
-			stringstream ss;
-			ss << "Cannot find facet: ";
-			for (int j = 0; j < face.size(); ++j)
-			{
-				ss << face[j];
-				if (j != face.size() - 1) ss << ",";
-			}
-			string s = ss.str();
-			AddLogEntry(s.c_str());
-		}
-	}
-
-	// create the surface
-	FSSurface* ps = new FSSurface(m_po, faceList);
-
-	// copy the name
-	std::string name = surf.name();
-	ps->SetName(name.c_str());
-
-	// increment surface reference counter
-	surf.m_refs++;
-
-	// all done
-	return ps;
-}
-
 FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::NodeSet& nset)
 {
 	// create the surface
@@ -470,6 +563,45 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::
 	// all done
 	return pns;
 }
+
+FSEdgeSet* FEBioInputModel::PartInstance::BuildFEEdgeSet(FEBioInputModel::EdgeSet& edge)
+{
+	// create face list
+	vector<int> edgeList;
+	int NE = edge.edges();
+	for (int i = 0; i < NE; ++i)
+	{
+		const vector<int>& el = edge.edge(i);
+		int edgeID = m_part->m_mesh.FindEdge(el);
+		if (edgeID >= 0) edgeList.push_back(edgeID);
+		else
+		{
+			stringstream ss;
+			ss << "Cannot find edge: ";
+			for (int j = 0; j < el.size(); ++j)
+			{
+				ss << el[j];
+				if (j != el.size() - 1) ss << ",";
+			}
+			string s = ss.str();
+			AddLogEntry(s.c_str());
+		}
+	}
+
+	// create the surface
+	FSEdgeSet* ps = new FSEdgeSet(m_po, edgeList);
+
+	// copy the name
+	std::string name = edge.name();
+	ps->SetName(name.c_str());
+
+	// increment surface reference counter
+	edge.m_refs++;
+
+	// all done
+	return ps;
+}
+
 
 bool check_winding(const vector<int>& nodeList, const FSFace& face)
 {
@@ -494,6 +626,19 @@ bool check_winding(const vector<int>& nodeList, const FSFace& face)
 		}
 	}
 	return false;
+}
+
+FSEdgeSet* FEBioInputModel::PartInstance::BuildFEEdgeSet(const char* szname)
+{
+	EdgeSet* edge = m_part->FindEdgeSet(szname);
+	if (edge == 0) return 0;
+
+	FSEdgeSet* feedge = BuildFEEdgeSet(*edge);
+
+	// increase ref counter on surface
+	edge->m_refs++;
+
+	return feedge;
 }
 
 FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const char* szname)
@@ -586,7 +731,7 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const FEBioInputModel::
 	return ps;
 }
 
-FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
+FSElemSet* FEBioInputModel::PartInstance::BuildFEElemSet(const char* szname)
 {
 	vector<int> elemList;
 
@@ -604,6 +749,7 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 	{
 		// could be a domain?
 		Domain* dom = m_part->FindDomain(szname);
+		if (dom == nullptr) return nullptr;
 
 		// get the element list
 		elemList = dom->GetElementIDList();
@@ -611,8 +757,8 @@ FSPart* FEBioInputModel::PartInstance::BuildFEPart(const char* szname)
 
 	if (elemList.empty()) return nullptr;
 
-	// create the part
-	FSPart* pg = new FSPart(m_po, elemList);
+	// create the element set
+	FSElemSet* pg = new FSElemSet(m_po, elemList);
 
 	// copy the name
 	pg->SetName(szname);
@@ -699,27 +845,27 @@ FEBioInputModel::SurfacePair::SurfacePair() : m_part(0)
 {
 }
 
-FEBioInputModel::SurfacePair::SurfacePair(const std::string& name, int masterID, int slaveID) : m_part(0)
+FEBioInputModel::SurfacePair::SurfacePair(const std::string& name, int surf1ID, int surf2ID) : m_part(0)
 {
 	m_name = name;
-	m_masterID = masterID;
-	m_slaveID = slaveID;
+	m_surf1_ID = surf1ID;
+	m_surf2_ID = surf2ID;
 }
 
 FEBioInputModel::SurfacePair::SurfacePair(const SurfacePair& sp)
 {
 	m_part = sp.m_part;
 	m_name = sp.m_name;
-	m_masterID = sp.m_masterID;
-	m_slaveID  = sp.m_slaveID;
+	m_surf1_ID = sp.m_surf1_ID;
+	m_surf2_ID = sp.m_surf2_ID;
 }
 
 void FEBioInputModel::SurfacePair::operator = (const SurfacePair& sp)
 {
 	m_part = sp.m_part;
 	m_name = sp.m_name;
-	m_masterID = sp.m_masterID;
-	m_slaveID = sp.m_slaveID;
+	m_surf1_ID = sp.m_surf1_ID;
+	m_surf2_ID = sp.m_surf2_ID;
 }
 
 //=============================================================================
@@ -943,6 +1089,17 @@ void FEBioInputModel::CopyMeshSelections()
 			po->AddFENodeSet(pns);
 		}
 
+		// create the edges
+		for (int j = 0; j < part->EdgeSets(); ++j)
+		{
+			EdgeSet& s = part->GetEdgeSet(j);
+
+			// create the edge
+			FSEdgeSet* ps = instance.BuildFEEdgeSet(s);
+
+			po->AddFEEdgeSet(ps);
+		}
+
 		// create the surfaces
 		for (int j = 0; j < part->Surfaces(); ++j)
 		{
@@ -967,12 +1124,30 @@ void FEBioInputModel::CopyMeshSelections()
 			for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
 
 			// create the part
-			FSPart* pg = new FSPart(po, elemList);
+			FSElemSet* pg = new FSElemSet(po, elemList);
 
 			// copy the name
 			pg->SetName(es.name());
 
-			po->AddFEPart(pg);
+			po->AddFEElemSet(pg);
+		}
+
+		// create the part lists
+		GModel& gm = GetFSModel().GetModel();
+		for (int j = 0; j < part->DomainLists(); ++j)
+		{
+			DomainList& dl = part->GetDomainList(j);
+			GPartList* partList = new GPartList(&gm);
+			partList->SetName(dl.m_name);
+
+			for (int k = 0; k < dl.m_domList.size(); ++k)
+			{
+				const std::string& s = dl.m_domList[k]->name();
+				GPart* pg = po->FindPartFromName(s.c_str());
+				if (pg) partList->add(pg->GetID());
+			}
+
+			gm.AddPartList(partList);
 		}
 	}
 }
@@ -1002,9 +1177,13 @@ FEItemListBuilder* FEBioInputModel::BuildItemList(const char* szname)
 		{
 			return BuildFESurface(szname + n + 1);
 		}
+		if (strncmp(szname, "@edge", n) == 0)
+		{
+			return BuildFEEdgeSet(szname + n + 1);
+		}
 		else if (strncmp(szname, "@elem_set", n) == 0)
 		{
-			return BuildFEPart(szname + n + 1);
+			return BuildFEElemSet(szname + n + 1);
 		}
 		else return nullptr;
 	}
@@ -1214,6 +1393,42 @@ FEBioInputModel::ElementSet* FEBioInputModel::FindElementSet(const char* szname)
 	return pg;
 }
 
+FSEdgeSet* FEBioInputModel::BuildFEEdgeSet(const char* szname)
+{
+	// see if there is a dot
+	const char* ch = strchr(szname, '.');
+	if (ch)
+	{
+		// if there is, we assume the format is "instance_name.edge_name"
+		int l = strlen(szname);
+		int l1 = ch - szname;
+		int l2 = l - l1 - 1;
+		char* szpart = new char[l1 + 1];
+		char* szset = new char[l2 + 1];
+
+		if (l1 > 0) strncpy(szpart, szname, l1); szpart[l1] = 0;
+		if (l2 > 0) strncpy(szset, ch + 1, l2); szset[l2] = 0;
+
+		// find the instance with this name
+		PartInstance* part = FindInstance(szpart);
+
+		FSEdgeSet* edge = 0;
+		if (part) edge = part->BuildFEEdgeSet(szset);
+
+		delete[] szset;
+		delete[] szpart;
+
+		return edge;
+	}
+	else
+	{
+		// if not, we assume that there is only one instance
+		if (Instances() != 1) return 0;
+
+		PartInstance* part = GetInstance(0);
+		return part->BuildFEEdgeSet(szname);
+	}
+}
 
 FSSurface* FEBioInputModel::BuildFESurface(const char* szname)
 {
@@ -1252,7 +1467,7 @@ FSSurface* FEBioInputModel::BuildFESurface(const char* szname)
 	}
 }
 
-FSPart* FEBioInputModel::BuildFEPart(const char* szname)
+FSElemSet* FEBioInputModel::BuildFEElemSet(const char* szname)
 {
 	// see if there is a dot
 	const char* ch = strchr(szname, '.');
@@ -1271,8 +1486,8 @@ FSPart* FEBioInputModel::BuildFEPart(const char* szname)
 		// find the instance with this name
 		PartInstance* part = FindInstance(szpart);
 
-		FSPart* pg = 0;
-		if (part) pg = part->BuildFEPart(szset);
+		FSElemSet* pg = 0;
+		if (part) pg = part->BuildFEElemSet(szset);
 
 		delete[] szset;
 		delete[] szpart;
@@ -1285,15 +1500,15 @@ FSPart* FEBioInputModel::BuildFEPart(const char* szname)
 		if (Instances() != 1) return 0;
 
 		PartInstance* part = GetInstance(0);
-		return part->BuildFEPart(szname);
+		return part->BuildFEElemSet(szname);
 	}
 }
 
-FSPart* FEBioInputModel::BuildFEPart(FEBioInputModel::Domain* dom)
+FSElemSet* FEBioInputModel::BuildFEElemSet(FEBioInputModel::Domain* dom)
 {
 	PartInstance* part = GetInstance(0);
 
-	FSPart* pg = new FSPart(part->GetGObject(), dom->GetElementIDList());
+	FSElemSet* pg = new FSElemSet(part->GetGObject(), dom->GetElementIDList());
 
 	pg->SetName(dom->name());
 
@@ -1353,4 +1568,137 @@ int FEBioInputModel::GetMaterialIndex(const char* szmat)
 		if (name == szmat) return i;
 	}
 	return -1;
+}
+
+FSNodeSet* FEBioInputModel::FindNamedNodeSet(const std::string& name)
+{
+	return dynamic_cast<FSNodeSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_NODE_FLAG));
+}
+
+FSSurface* FEBioInputModel::FindNamedSurface(const std::string& name)
+{
+	return dynamic_cast<FSSurface*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_FACE_FLAG));
+}
+
+FSElemSet* FEBioInputModel::FindNamedElementSet(const std::string& name)
+{
+	return dynamic_cast<FSElemSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_ELEM_FLAG));
+}
+
+FSPartSet* FEBioInputModel::FindNamedPartSet(const std::string& name)
+{
+	return dynamic_cast<FSPartSet*>(FindNamedSelection(name, MESH_ITEM_FLAGS::FE_PART_FLAG));
+}
+
+//-----------------------------------------------------------------------------
+FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, unsigned int filter)
+{
+	string sname = name;
+	if (filter == MESH_ITEM_FLAGS::FE_ALL_FLAGS)
+	{
+		filter = MESH_ITEM_FLAGS::FE_NODE_FLAG;
+
+		if (name[0] == '@')
+		{
+			size_t p = name.find("@surface:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 9, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_FACE_FLAG;
+			}
+
+			p = name.find("@edge:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 6, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_EDGE_FLAG;
+			}
+
+			p = name.find("@elem_set:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 10, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_ELEM_FLAG;
+			}
+
+			p = name.find("@part:");
+			if (p != string::npos)
+			{
+				sname = name.substr(p + 6, string::npos);
+				filter = MESH_ITEM_FLAGS::FE_PART_FLAG;
+			}
+		}
+	}
+
+	// search all objects
+	for (int n = 0; n < Instances(); ++n)
+	{
+		PartInstance& part = *GetInstance(n);
+
+		GObject* po = part.GetGObject();
+
+/*		// TODO: I think this should grab GPartList
+		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
+		{
+			int N = po->FEParts();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEPart(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+*/
+
+		if (filter & MESH_ITEM_FLAGS::FE_ELEM_FLAG)
+		{
+			int N = po->FEElemSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEElemSet(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_FACE_FLAG)
+		{
+			int N = po->FESurfaces();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFESurface(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_EDGE_FLAG)
+		{
+			int N = po->FEEdgeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEEdgeSet(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_NODE_FLAG)
+		{
+			int N = po->FENodeSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFENodeSet(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+
+		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)
+		{
+			int N = po->FEPartSets();
+			for (int i = 0; i < N; ++i)
+			{
+				FEItemListBuilder* pg = po->GetFEPartSet(i);
+				if (pg->GetName() == sname) return pg;
+			}
+		}
+	}
+
+	return 0;
 }

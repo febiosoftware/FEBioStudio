@@ -200,6 +200,7 @@ public:
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
+	QMenu* menuEditPost;
 	QMenu* menuEditTxt;
     QMenu* menuEditXml;
 	QMenu* menuPhysics;
@@ -264,6 +265,9 @@ public:
 	QAction* actionMeasureTool;
 	QAction* actionPlaneCutTool;
 
+	QAction* actionRotate;
+	QAction* actionTranslate;
+
 	QAction* actionAddNodalBC;
 	QAction* actionAddSurfaceBC;
 	QAction* actionAddGeneralBC;
@@ -321,9 +325,14 @@ public:
     QAction* actionIsometric;
 	QAction* actionOptions;
 	QAction* actionRenderMode;
+
 	QAction* actionShowFibers;
 	QAction* actionShowMatAxes;
 	QAction* actionShowDiscrete;
+	QAction* actionShowRigidBodies;
+	QAction* actionShowRigidJoints;
+	QAction* actionShowRigidLabels;
+
 	QAction* actionToggleLight;
 
 
@@ -341,7 +350,8 @@ public:
 	int			m_theme;	// 0 = default, 1 = dark
 	bool		m_clearUndoOnSave;
 
-	bool	m_showNewDialog;
+	bool		m_loadFEBioConfigFile;
+	QString		m_febioConfigFileName;
 
 	bool	m_isAnimating;
 
@@ -355,6 +365,7 @@ public:
 	int		m_defaultUnits;
 
 	CUpdateWidget m_updateWidget;
+    QString m_serverMessage;
 	bool m_updaterPresent;
 	bool m_updateAvailable;
 	bool m_updateOnClose;
@@ -368,12 +379,14 @@ public:
 		m_theme = 0;
 		m_defaultUnits = 0;
 		m_clearUndoOnSave = true;
+		m_autoSaveInterval = 600;
 
 		measureTool = nullptr;
 		planeCutTool = nullptr;
 		fiberViz = nullptr;
 
-		m_showNewDialog = true;
+		m_loadFEBioConfigFile = true;
+		m_febioConfigFileName = "$(FEBioStudioDir)/febio.xml";
 	}
 
 	void setupUi(::CMainWindow* wnd)
@@ -497,7 +510,7 @@ public:
 		// --- File menu ---
 		QAction* actionNewModel   = addAction("New Model ...", "actionNewModel", "new");
 		QAction* actionNewProject = addAction("New Project ...", "actionNewProject");
-        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
+//        QAction* actionNewImageDoc = addAction("New Image Document ...", "actionNewImageDoc");
 		QAction* actionOpen       = addAction("Open Model File ..."   , "actionOpen"  , "open"); actionOpen->setShortcuts(QKeySequence::Open);
         // QAction* actionReadInfo       = addAction("Read Model Info ..."   , "actionReadInfo"  , "info");;
 		QAction* actionSave       = addAction("Save"       , "actionSave"  , "save"); actionSave->setShortcuts(QKeySequence::Save);
@@ -516,7 +529,9 @@ public:
 		QAction* actionImportDICOMImage  = addAction("DICOM/DICOM Sequence ...", "actionImportDICOMImage");
 		QAction* actionImportTiffImage  = addAction("Tiff ...", "actionImportTiffImage");
 		QAction* actionImportOMETiffImage  = addAction("OME Tiff ...", "actionImportOMETiffImage");
+        QAction* actionImportNrrdImage  = addAction("NRRD ...", "actionImportNrrdImage");
 		QAction* actionImportImageSequence  = addAction("Image Sequence ...", "actionImportImageSequence");
+        QAction* actionImportImageOther  = addAction("Other ...", "actionImportImageOther");
 		QAction* actionConvertFeb    = addAction("FEBio Files ...", "actionConvertFeb");
         QAction* actionConvertFeb2Fsm    = addAction("FEB to FSM ...", "actionConvertFeb2Fsm");
         QAction* actionConvertFsm2Feb    = addAction("FSM to FEB ...", "actionConvertFsm2Feb");
@@ -579,7 +594,6 @@ public:
 		actionAddNodalLoad       = addAction("Add Nodal Load ..."            , "actionAddNodalLoad"); 
 		actionAddSurfLoad        = addAction("Add Surface Load ..."          , "actionAddSurfLoad"); actionAddSurfLoad->setShortcut(Qt::ControlModifier | Qt::Key_L);
 		actionAddBodyLoad        = addAction("Add Body Load ..."             , "actionAddBodyLoad");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddIC              = addAction("Add Initial Condition ..."     , "actionAddIC"); actionAddIC->setShortcut(Qt::ControlModifier | Qt::Key_I);
 		actionAddContact         = addAction("Add Contact ..."               , "actionAddContact");
 		actionAddSurfaceNLC      = addAction("Add Surface Constraint..."     , "actionAddSurfaceNLC");
@@ -587,7 +601,7 @@ public:
 		actionAddGenericNLC      = addAction("Add General Constraint..."     , "actionAddGenericNLC");
 		actionAddRigidBC         = addAction("Add Rigid Constraint ..."      , "actionAddRigidBC");
 		actionAddRigidIC         = addAction("Add Rigid Initial Condition ...", "actionAddRigidIC");
-		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , " actionAddRigidLoad");
+		actionAddRigidLoad       = addAction("Add Rigid Load ..."            , "actionAddRigidLoad");
 		actionAddRigidConnector  = addAction("Add Rigid Connector ..."       , "actionAddRigidConnector");
 		actionAddStep            = addAction("Add Analysis Step ..."         , "actionAddStep");
 		actionAddMaterial        = addAction("Add Material ..."              , "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier | Qt::Key_M);
@@ -629,12 +643,17 @@ public:
 		QAction* actionStreamLinePlot = addAction("Streamlines Plot", "actionStreamLinePlot", "streamlines");
 		QAction* actionParticleFlowPlot = addAction("Particleflow Plot", "actionParticleFlowPlot", "particle");
 		QAction* actionVolumeFlowPlot = addAction("Volumeflow Plot", "actionVolumeFlowPlot", "flow");
-		QAction* actionImageSlicer = addAction("Image Slicer", "actionImageSlicer", "imageslice");
-		QAction* actionVolumeRender = addAction("Volume Render", "actionVolumeRender", "volrender");
+
+		QAction* actionImageSlicer   = addAction("Image Slicer", "actionImageSlicer", "imageslice");
+		QAction* actionVolumeRender  = addAction("Volume Render", "actionVolumeRender", "volrender");
 		QAction* actionMarchingCubes = addAction("Image Isosurface", "actionMarchingCubes", "marching_cubes");
-		QAction* actionAddProbe = addAction("Probe", "actionAddProbe", "probe");
+		QAction* actionImageWarp     = addAction("Image Warp", "actionImageWarp");
+
+		QAction* actionAddProbe = addAction("Point Probe", "actionAddProbe", "probe");
+		QAction* actionAddCurveProbe = addAction("Curve Probe", "actionAddCurveProbe");
 		QAction* actionAddRuler = addAction("Ruler", "actionAddRuler", "ruler");
-		QAction* actionMusclePath = addAction("Muscle Path ...", "actionMusclePath");
+		QAction* actionMusclePath = addAction("Muscle Path", "actionMusclePath", "musclepath");
+		QAction* actionPlotGroup  = addAction("Plot Group", "actionPlotGroup", "folder");
 		QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
 		QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 		QAction* actionStats = addAction("Statistics  ...", "actionStats");
@@ -686,10 +705,14 @@ public:
 		actionShowFibers      = addAction("Show Fibers", "actionShowFibers");
 		actionShowMatAxes     = addAction("Toggle Material Axes", "actionShowMatAxes"); actionShowMatAxes->setCheckable(true);
 		actionShowDiscrete    = addAction("Show Discrete Sets", "actionShowDiscrete"); actionShowDiscrete->setCheckable(true);  actionShowDiscrete->setChecked(true);
+		actionShowRigidBodies = addAction("Show Rigid Bodies", "actionShowRigidBodies"); actionShowRigidBodies->setCheckable(true);  actionShowRigidBodies->setChecked(true);
+		actionShowRigidJoints = addAction("Show Rigid Joints", "actionShowRigidJoints"); actionShowRigidJoints->setCheckable(true);  actionShowRigidJoints->setChecked(true);
+		actionShowRigidLabels = addAction("Show Rigid Labels", "actionShowRigidLabels"); actionShowRigidLabels->setCheckable(true);  actionShowRigidLabels->setChecked(true);
+
 		QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 		QAction* actionTrack  = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
 		QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
-		actionToggleLight     = addAction("Toggle Lighting", "actionToggleLight");
+		actionToggleLight     = addAction("Toggle Lighting", "actionToggleLight", "light");
 		actionFront           = addAction("Front", "actionFront"  ); actionFront ->setShortcut(Qt::Key_8 | Qt::KeypadModifier);
 		actionBack            = addAction("Back" , "actionBack"   ); actionBack  ->setShortcut(Qt::Key_2 | Qt::KeypadModifier);
 		actionRight           = addAction("Right", "actionRight"  ); actionRight ->setShortcut(Qt::Key_6 | Qt::KeypadModifier);
@@ -702,10 +725,15 @@ public:
 		QAction* actionViewVPNext = addAction("Next Viewpoint", "actionViewVPNext"); actionViewVPNext->setShortcut(Qt::Key_L);
 		QAction* actionSyncViews  = addAction("Sync all Views", "actionSyncViews"); actionSyncViews->setShortcut(Qt::Key_S | Qt::AltModifier);
 
+		QAction* actionToggleFPS = addAction("Toggle FPS", "actionToggleFPS"); actionToggleFPS->setShortcut(Qt::Key_F12 | Qt::ControlModifier);
+
 		// --- Help menu ---
 		QAction* actionUpdate = addAction("Check for Updates...", "actionUpdate");
 		QAction* actionFEBioURL = addAction("FEBio Website", "actionFEBioURL");
 		QAction* actionFEBioResources = addAction("FEBio Knowledgebase", "actionFEBioResources");
+		QAction* actionFEBioUM = addAction("FEBio User Manual", "actionFEBioUM");
+		QAction* actionFEBioTM = addAction("FEBio Theory Manual", "actionFEBioTM");
+		QAction* actionFBSManual = addAction("FEBio Studio Manual", "actionFBSManual");
 		QAction* actionFEBioForum = addAction("FEBio Forums", "actionFEBioForum");
 		QAction* actionFEBioPubs = addAction("FEBio Publications", "actionFEBioPubs");
 		QAction* actionWelcome = addAction("Show Welcome Page", "actionWelcome");
@@ -721,8 +749,8 @@ public:
 		actionSelectDiscrete = addAction("Select Discrete", "actionSelectDiscrete", "discrete", true);
 
 		QAction* actionSelect    = addAction("Select"   , "actionSelect"   , "select"   , true); actionSelect->setShortcut(Qt::Key_Q);
-		QAction* actionTranslate = addAction("Translate", "actionTranslate", "translate", true); actionTranslate->setShortcut(Qt::Key_T);
-		QAction* actionRotate    = addAction("Rotate"   , "actionRotate"   , "rotate"   , true); actionRotate->setShortcut(Qt::Key_R);
+		actionTranslate = addAction("Translate", "actionTranslate", "translate", true); actionTranslate->setShortcut(Qt::Key_T);
+		actionRotate    = addAction("Rotate"   , "actionRotate"   , "rotate"   , true); actionRotate->setShortcut(Qt::Key_R);
 		QAction* actionScale     = addAction("Scale"    , "actionScale"    , "scale"    , true); actionScale->setShortcut(Qt::Key_S);
 
 		selectRect   = addAction("Rectangle", "selectRect"  , "selectRect"  , true);
@@ -758,8 +786,9 @@ public:
 		QMenuBar* menuBar = m_wnd->menuBar();
 		menuFile   = new QMenu("File", menuBar);
 		menuEdit   = new QMenu("Edit", menuBar);
+		menuEditPost = new QMenu("Edit", menuBar);
 		menuEditTxt = new QMenu("Edit", menuBar);
-        menuEditXml = new QMenu("Edit", menuBar);
+		menuEditXml = new QMenu("Edit", menuBar);
 		menuPhysics= new QMenu("Physics", menuBar);
 		menuFEBio  = new QMenu("FEBio", menuBar);
 		menuPost   = new QMenu("Post", menuBar);
@@ -791,7 +820,7 @@ public:
 
 		menuFile->addAction(actionNewModel);
 		menuFile->addAction(actionNewProject);
-        menuFile->addAction(actionNewImageDoc);
+//        menuFile->addAction(actionNewImageDoc);
 		menuFile->addSeparator();
 		menuFile->addAction(actionOpen);
         // menuFile->addAction(actionReadInfo);
@@ -818,8 +847,10 @@ public:
 		menuImportImage->addAction(actionImportRawImage);
 		menuImportImage->addAction(actionImportDICOMImage);
 		menuImportImage->addAction(actionImportTiffImage);
-		menuImportImage->addAction(actionImportOMETiffImage);
+        menuImportImage->addAction(actionImportNrrdImage);
+//		menuImportImage->addAction(actionImportOMETiffImage); // NOTE: Commented out because this requires Java!
 		menuImportImage->addAction(actionImportImageSequence);
+        menuImportImage->addAction(actionImportImageOther);
 		
 
 		QMenu* ConvertMenu = new QMenu("Batch convert");
@@ -858,7 +889,6 @@ public:
 		menuEdit->addAction(moreSelection->menuAction());
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionFind);
-		menuEdit->addAction(actionSelectRange);
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionTransform);
 		menuEdit->addAction(actionCollapseTransform);
@@ -869,6 +899,24 @@ public:
 		menuEdit->addAction(actionPasteObject);
 		menuEdit->addSeparator();
 		menuEdit->addAction(actionPurge);
+
+		// Edit Post menu
+		menuBar->addAction(menuEditPost->menuAction());
+		menuEditPost->addAction(actionUndo);
+		menuEditPost->addAction(actionRedo);
+		menuEditPost->addSeparator();
+		menuEditPost->addAction(actionInvertSelection);
+		menuEditPost->addAction(actionClearSelection);
+		menuEditPost->addAction(actionNameSelection);
+		menuEditPost->addSeparator();
+		menuEditPost->addAction(actionHideSelection);
+		menuEditPost->addAction(actionHideUnselected);
+		menuEditPost->addAction(actionUnhideAll);
+		menuEditPost->addAction(actionToggleVisible);
+		menuEditPost->addAction(moreSelection->menuAction());
+		menuEditPost->addSeparator();
+		menuEditPost->addAction(actionFind);
+		menuEditPost->addAction(actionSelectRange);
 
 		// Edit (txt) menu
 		menuBar->addAction(menuEditTxt->menuAction());
@@ -935,13 +983,16 @@ public:
 		menuPost->addAction(actionStreamLinePlot);
 		menuPost->addAction(actionParticleFlowPlot);
 		menuPost->addAction(actionVolumeFlowPlot);
+		menuPost->addAction(actionAddProbe);
+		menuPost->addAction(actionAddCurveProbe);
+		menuPost->addAction(actionAddRuler);
+		menuPost->addAction(actionMusclePath);
+		menuPost->addAction(actionPlotGroup);
 		menuPost->addSeparator();
 		menuPost->addAction(actionImageSlicer);
 		menuPost->addAction(actionVolumeRender);
 		menuPost->addAction(actionMarchingCubes);
-		menuPost->addAction(actionAddProbe);
-		menuPost->addAction(actionAddRuler);
-		menuPost->addAction(actionMusclePath);
+		menuPost->addAction(actionImageWarp);
 		menuPost->addSeparator();
 		menuPost->addAction(actionGraph);
 		menuPost->addSeparator();
@@ -998,6 +1049,7 @@ public:
 		menuView->addAction(actionTrack);
 		menuView->addAction(actionToggleLight);
 		menuView->addAction(actionToggleConnected);
+		menuView->addAction(actionToggleFPS);
 		menuView->addSeparator();
 
 		menuViews = menuView->addMenu("Standard views");
@@ -1029,6 +1081,9 @@ public:
 		menuHelp->addSeparator();
 		menuHelp->addAction(actionFEBioURL);
 		menuHelp->addAction(actionFEBioResources);
+		menuHelp->addAction(actionFEBioUM);
+		menuHelp->addAction(actionFEBioTM);
+		menuHelp->addAction(actionFBSManual);
 		menuHelp->addAction(actionFEBioForum);
 		menuHelp->addAction(actionFEBioPubs);
         menuHelp->addSeparator();
@@ -1197,7 +1252,7 @@ public:
 //		m_wnd->tabifyDockWidget(dock2, dock3);
 
  		QDockWidget* dock4 = new QDockWidget("Output", m_wnd); dock4->setObjectName("dockLog");
-		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea);
+		dock4->setAllowedAreas(Qt::TopDockWidgetArea | Qt::BottomDockWidgetArea | Qt::RightDockWidgetArea);
 		logPanel = new ::CLogPanel(dock4);
 		dock4->setWidget(logPanel);
 		menuWindows->addAction(dock4->toggleViewAction());
@@ -1230,7 +1285,7 @@ public:
 		menuWindows->addAction(dock8->toggleViewAction());
 		m_wnd->tabifyDockWidget(dock4, dock8);
 
-        QDockWidget* dock9 = new QDockWidget("View Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+		QDockWidget* dock9 = new QDockWidget("3D Image Settings", m_wnd); dock8->setObjectName("dockImageSettings");
 		imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
 		dock9->setWidget(imageSettingsPanel);
 		menuWindows->addAction(dock9->toggleViewAction());
@@ -1255,7 +1310,7 @@ public:
 	{
 		if (meshWnd == 0) meshWnd = new ::CMeshInspector(m_wnd);
 
-		meshWnd->Update();
+		meshWnd->Update(true);
 
 		meshWnd->show();
 		meshWnd->raise();
@@ -1266,7 +1321,7 @@ public:
 	{
 		if (meshWnd && meshWnd->isVisible())
 		{
-			meshWnd->Update();
+			meshWnd->Update(true);
 		}
 	}
 
@@ -1483,17 +1538,18 @@ public:
 
 			// no open documents
 			menuEdit->menuAction()->setVisible(false);
+			menuEditPost->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(false);
-            menuEditXml->menuAction()->setVisible(false);
+			menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
 
 			buildToolBar->hide();
 			postToolBar->hide();
-            imageToolBar->hide();
+			imageToolBar->hide();
 			pFontToolBar->hide();
-            xmlToolbar->hide();
+			xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1526,6 +1582,7 @@ public:
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
+			menuEditPost->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(false);
             menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(true);
@@ -1552,7 +1609,8 @@ public:
 			stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
 
 			// post mode
-			menuEdit->menuAction()->setVisible(true);
+			menuEdit->menuAction()->setVisible(false);
+			menuEditPost->menuAction()->setVisible(true);
 			menuEditTxt->menuAction()->setVisible(false);
             menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
@@ -1582,17 +1640,18 @@ public:
 			stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
 
 			menuEdit->menuAction()->setVisible(false);
+			menuEditPost->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(true);
-            menuEditXml->menuAction()->setVisible(false);
+			menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(false);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(false);
 
 			buildToolBar->hide();
 			postToolBar->hide();
-            imageToolBar->hide();
+			imageToolBar->hide();
 			pFontToolBar->hide();
-            xmlToolbar->hide();
+			xmlToolbar->hide();
 
 			glw->glc->hide();
 
@@ -1645,6 +1704,7 @@ public:
                     stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
 
                     menuEdit->menuAction()->setVisible(false);
+                    menuEditPost->menuAction()->setVisible(false);
                     menuEditTxt->menuAction()->setVisible(true);
                     menuEditXml->menuAction()->setVisible(false);
                     menuPhysics->menuAction()->setVisible(false);
@@ -1676,6 +1736,7 @@ public:
                     stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
 
                     menuEdit->menuAction()->setVisible(false);
+                    menuEditPost->menuAction()->setVisible(false);
                     menuEditTxt->menuAction()->setVisible(false);
                     menuEditXml->menuAction()->setVisible(true);
                     menuPhysics->menuAction()->setVisible(false);

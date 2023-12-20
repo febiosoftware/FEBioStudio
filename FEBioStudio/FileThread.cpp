@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FileThread.h"
 #include "MainWindow.h"
-#include <MeshIO/FileReader.h>
+#include <FSCore/FileReader.h>
 
 CFileThread::CFileThread(CMainWindow* wnd, const QueuedFile& file) : m_wnd(wnd), m_file(file)
 {
@@ -47,7 +47,7 @@ void CFileThread::run()
 	else
 	{
 		m_success = m_file.m_fileReader->Load(szfile);
-		std::string err = m_file.m_fileReader->GetErrorMessage();
+		std::string err = m_file.m_fileReader->GetErrorString();
 		emit resultReady(m_success, QString(err.c_str()));
 	}
 }

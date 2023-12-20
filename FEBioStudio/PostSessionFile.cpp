@@ -4,6 +4,7 @@
 #include <XML/XMLWriter.h>
 #include <XML/XMLReader.h>
 #include <PostGL/GLModel.h>
+#include <PostGL/GLMusclePath.h>
 #include "PostDocument.h"
 #include <PostLib/FEPostMesh.h>
 #include <XPLTLib/xpltFileReader.h>
@@ -14,6 +15,7 @@
 #include <FEBio/FEBioExport.h> // for type_to_string<vec3d>
 #include <FEBio/FEBioFormat.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPlotGroup.h>
 #include <sstream>
 
 template <> std::string type_to_string<GLColor>(const GLColor& v)
@@ -30,6 +32,7 @@ PostSessionFileReader::PostSessionFileReader(CPostDocument* doc) : m_doc(doc)
 {
 	m_openFile = nullptr;
 	m_fem = nullptr;
+	m_pg = nullptr;
 	m_szfile = nullptr;
 }
 
@@ -83,14 +86,15 @@ bool PostSessionFileReader::Load(const char* szfile)
 {
 	if (szfile == nullptr) return false;
 	m_szfile = szfile;
+	m_pg = nullptr;
 
 	XMLReader xml;
-	if (xml.Open(szfile) == false) return false;
+	if (xml.Open(szfile) == false) return errf("Failed opening post session file.");
 
 	XMLTag tag;
 	if (xml.FindTag("febiostudio_post_session", tag) == false)
 	{
-		return false;
+		return errf("This is not a valid post session file");
 	}
 
 	m_doc->SetGLModel(nullptr);
@@ -144,6 +148,10 @@ bool PostSessionFileReader::Load(const char* szfile)
 			{
 				if (parse_plot(tag) == false) return false;
 			}
+			else if (tag == "view")
+			{
+				if (parse_view(tag) == false) return false;
+			}
 //			else xml.SkipTag(tag);
 			else return false;
 			++tag;
@@ -194,24 +202,39 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 			m_openFile = kine; // assign this before we load so that we can monitor progress.
 			kine->Load(nullptr); // this class doesn't use the file name passed, so we just pass nullptr.
 		}
-		else return false;
+		else return errf("Don't know type attribute value");
 	}
 	else
 	{
 		const char* szfile = tag.AttributeValue("file");
+		std::string modelFile = currentDir.absoluteFilePath(szfile).toStdString();
 
-		xpltFileReader* xplt = new xpltFileReader(m_fem);
-		m_openFile = xplt; // assign this before we load so that we can monitor progress.
-		if (xplt->Load(szfile) == false)
+		// check the extension
+		const char* szext = strrchr(szfile, '.');
+		if (strcmp(szext, ".xplt") == 0)
 		{
-			return false;
+			xpltFileReader* xplt = new xpltFileReader(m_fem);
+			m_openFile = xplt; // assign this before we load so that we can monitor progress.
+		}
+		else if (strcmp(szext, ".k") == 0)
+		{
+			Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(m_fem);
+			m_openFile = reader;
+		}
+		else return errf("Don't know how to read file.");
+
+		if (m_openFile == nullptr) return errf("No file reader allocated.");
+
+		if (m_openFile->Load(modelFile.c_str()) == false)
+		{
+			return errf("Failed loading model file\n%s", modelFile.c_str());
 		}
 
 		// now create a GL model
 		m_doc->SetGLModel(new Post::CGLModel(m_fem));
 
 		// initialize
-		if (m_doc->Initialize() == false) return false;
+		if (m_doc->Initialize() == false) return errf("Failed initializing document");
 		m_doc->SetInitFlag(true);
 	}
 
@@ -220,20 +243,39 @@ bool PostSessionFileReader::parse_model(XMLTag& tag)
 
 bool PostSessionFileReader::parse_open(XMLTag& tag)
 {
-	const char* szfile = tag.AttributeValue("file");
+	// we'll use this for converting to absolute file paths.
+	QFileInfo fi(m_szfile);
+	QDir currentDir(fi.absolutePath());
 
-	xpltFileReader* xplt = new xpltFileReader(m_fem);
-	m_openFile = xplt; // assign this before we load so that we can monitor progress.
-	if (xplt->Load(szfile) == false)
+	const char* szfile = tag.AttributeValue("file");
+	std::string modelFile = currentDir.absoluteFilePath(szfile).toStdString();
+
+	// check the extension
+	const char* szext = strrchr(szfile, '.');
+	if (strcmp(szext, ".xplt") == 0)
 	{
-		return false;
+		xpltFileReader* xplt = new xpltFileReader(m_fem);
+		m_openFile = xplt; // assign this before we load so that we can monitor progress.
+	}
+	else if (strcmp(szext, ".k") == 0)
+	{
+		Post::FELSDYNAimport* reader = new Post::FELSDYNAimport(m_fem);
+		m_openFile = reader;
+	}
+	else return errf("Don't know how to read file.");
+
+	if (m_openFile == nullptr) return errf("No file reader allocated.");
+
+	if (m_openFile->Load(modelFile.c_str()) == false)
+	{
+		return errf("Failed loading model file\n%s", modelFile.c_str());
 	}
 
 	// now create a GL model
 	m_doc->SetGLModel(new Post::CGLModel(m_fem));
 
 	// initialize
-	if (m_doc->Initialize() == false) return false;
+	if (m_doc->Initialize() == false) return errf("Failed to initialize document");
 	m_doc->SetInitFlag(true);
 
 	return true;
@@ -294,7 +336,7 @@ bool PostSessionFileReader::parse_material(XMLTag& tag)
 			++tag;
 		} while (!tag.isend());
 	}
-	else return false;
+	else return errf("Invalid material ID");
 
 	return true;
 }
@@ -305,7 +347,7 @@ bool PostSessionFileReader::parse_datafield(XMLTag& tag)
 	Post::FEPostModel& fem = *m_doc->GetFSModel();
 	Post::FEDataManager& dm = *fem.GetDataManager();
 	int n = dm.FindDataField(szname);
-	if (n < 0) return false;
+	if (n < 0) return errf("Failed finding data field %s", szname);
 
 	Post::ModelDataField* data = *dm.DataField(n);
 	fsps_read_parameters(data, tag);
@@ -409,9 +451,9 @@ bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 	GObject* po = m_doc->GetActiveObject();
 	if (po)
 	{
-		FSPart* pg = new FSPart(po, elemList);
+		FSElemSet* pg = new FSElemSet(po, elemList);
 		pg->SetName(szname);
-		po->AddFEPart(pg);
+		po->AddFEElemSet(pg);
 	}
 
 	return true;
@@ -420,13 +462,20 @@ bool PostSessionFileReader::parse_mesh_elementset(XMLTag& tag)
 bool PostSessionFileReader::parse_plot(XMLTag& tag)
 {
 	const char* sztype = tag.AttributeValue("type");
+
+	// temporary hack
+	if (strcmp(sztype, "muscle-path-group") == 0) sztype = "plot-group";
+
 	Post::CGLPlot* plot = FSCore::CreateClass<Post::CGLPlot>(CLASS_PLOT, sztype);
 
 	const char* szname = tag.AttributeValue("name", true);
 	if (szname) plot->SetName(szname);
 
-	Post::CGLModel* glm = m_doc->GetGLModel();
-	glm->AddPlot(plot);
+	if (m_pg) m_pg->AddPlot(plot);
+	else {
+		Post::CGLModel* glm = m_doc->GetGLModel();
+		glm->AddPlot(plot);
+	}
 
 	++tag;
 	do
@@ -454,11 +503,122 @@ bool PostSessionFileReader::parse_plot(XMLTag& tag)
 			}
 			else tag.skip();
 		}
+		else if (tag == "init_path")
+		{
+			Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(plot);
+			if (mp)
+			{
+				vector<vec3d> path;
+				++tag;
+				do
+				{
+					vec3d v;
+					tag.value(v);
+					path.push_back(v);
+					++tag;
+				} while (!tag.isend());
+				mp->SetInitPath(path);
+			}
+		}
+		else if (tag == "muscle_path")
+		{
+			// This is obsolete, but we'll read it for now
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+			if (pg)
+			{
+				const char* szname = tag.AttributeValue("name");
+				Post::GLMusclePath* mp = new Post::GLMusclePath();
+				pg->AddPlot(mp);
+				mp->SetName(szname);
+				++tag;
+				do
+				{
+					Param* p = mp->GetParam(tag.Name());
+					if (p)
+					{
+						fsps_read_param(p, tag);
+					}
+					else if (tag == "init_path")
+					{
+						vector<vec3d> path;
+						++tag;
+						do
+						{
+							vec3d v;
+							tag.value(v);
+							path.push_back(v);
+							++tag;
+						} while (!tag.isend());
+						mp->SetInitPath(path);
+					}
+					++tag;
+				} while (!tag.isend());
+			}
+			else tag.skip();
+		}
+		else if (tag == "plot")
+		{
+			m_pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+			if (parse_plot(tag) == false) return false;
+			if (dynamic_cast<Post::GLPlotGroup*>(plot)) m_pg = nullptr;
+		}
 		++tag;
 	} while (!tag.isend());
 
 	plot->UpdateData(true);
 
+	return true;
+}
+
+bool PostSessionFileReader::parse_view(XMLTag& tag)
+{
+	CGView& view = *m_doc->GetView();
+
+	++tag;
+	do
+	{
+		if (tag == "viewpoint")
+		{
+			GLCameraTransform vp;
+			quatd q = vp.rot;
+			float w = q.GetAngle() * 180.f / PI;
+			vec3d v = q.GetVector() * w;
+
+			vec3d r = vp.pos;
+			float d = vp.trg.z;
+
+			const char* szname = tag.AttributeValue("name", true);
+			if (szname) vp.SetName(szname);
+			else
+			{
+				std::stringstream ss; ss << "ViewPoint" << view.CameraKeys();
+				vp.SetName(ss.str());
+			}
+
+			++tag;
+			do {
+				if      (tag == "x-angle") tag.value(v.x);
+				else if (tag == "y-angle") tag.value(v.y);
+				else if (tag == "z-angle") tag.value(v.z);
+				else if (tag == "x-target") tag.value(r.z);
+				else if (tag == "y-target") tag.value(r.y);
+				else if (tag == "z-target") tag.value(r.z);
+				else if (tag == "target_distance") tag.value(d);
+				++tag;
+			} 
+			while (!tag.isend());
+
+			w = PI * v.Length() / 180.f; v.Normalize();
+			q = quatd(w, v);
+			vp.rot = q;
+			vp.pos = r;
+			vp.trg.z = d;
+
+			view.AddCameraKey(vp);
+		}
+		else return false;
+		++tag;
+	} while (!tag.isend());
 	return true;
 }
 
@@ -492,7 +652,12 @@ void fsps_write_parameters(FSObject* po, XMLWriter& xml)
 //-----------------------------------------------------------------------------
 PostSessionFileWriter::PostSessionFileWriter(CPostDocument* doc) : m_doc(doc)
 {
+	m_xml = new XMLWriter;
+}
 
+PostSessionFileWriter::~PostSessionFileWriter()
+{
+	delete m_xml;
 }
 
 bool PostSessionFileWriter::Write(const char* szfile)
@@ -503,51 +668,67 @@ bool PostSessionFileWriter::Write(const char* szfile)
 	Post::FEPostModel* fem = m_doc->GetFSModel();
 	if (fem == nullptr) return false;
 
-	XMLWriter xml;
+	XMLWriter& xml = *m_xml;
 	if (xml.open(szfile) == false) return false;
-
-	// we'll use this for converting to relative file paths.
-	QFileInfo fi(szfile);
-	QDir currentDir(fi.absolutePath());
+	m_fileName = szfile;
 
 	XMLElement root("febiostudio_post_session");
 	root.add_attribute("version", "2.0");
 	xml.add_branch(root);
 	{
-		// we need to see if this document was opended with the PostSessionFileReader
-		FileReader* reader = m_doc->GetFileReader();
-		if (dynamic_cast<PostSessionFileReader*>(reader))
+		WriteModel();
+		WriteMaterials();
+		WriteDataFields();
+		WriteMeshSelections();
+
+		// save post model components
+		Post::CGLModel* glm = m_doc->GetGLModel();
+		if (glm)
 		{
-			PostSessionFileReader* sessionReader = dynamic_cast<PostSessionFileReader*>(reader);
+			WritePlots();
+			WriteView();
+		}
+	}
+	xml.close_branch(); // root
 
-			// see if the data was read from a kinemat reader
-			FileReader* openFileReader = sessionReader->GetOpenFileReader();
-			FEKinematFileReader* kine = dynamic_cast<FEKinematFileReader*>(openFileReader);
-			if (kine)
-			{
-				// create absolute file names for model and kine files
-				std::string modelFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetModelFile())).toStdString();
-				std::string kineFile  = currentDir.relativeFilePath(QString::fromStdString(kine->GetKineFile ())).toStdString();
+	xml.close();
 
-				XMLElement el("model");
-				el.add_attribute("type", "kinemat");
-				xml.add_branch(el);
-				{
-					xml.add_leaf("model_file", modelFile);
-					xml.add_leaf("kine_file", kineFile);
-					int n[3] = { kine->GetMin(), kine->GetMax(), kine->GetStep() };
-					xml.add_leaf("range", n, 3);
-				}
-				xml.close_branch();
-			}
-			else
+	return true;
+}
+
+void PostSessionFileWriter::WriteModel()
+{
+	XMLWriter& xml = *m_xml;
+
+	// we'll use this for converting to relative file paths.
+	QFileInfo fi(QString::fromStdString(m_fileName));
+	QDir currentDir(fi.absolutePath());
+
+	// we need to see if this document was opended with the PostSessionFileReader
+	FileReader* reader = m_doc->GetFileReader();
+	if (dynamic_cast<PostSessionFileReader*>(reader))
+	{
+		PostSessionFileReader* sessionReader = dynamic_cast<PostSessionFileReader*>(reader);
+
+		// see if the data was read from a kinemat reader
+		FileReader* openFileReader = sessionReader->GetOpenFileReader();
+		FEKinematFileReader* kine = dynamic_cast<FEKinematFileReader*>(openFileReader);
+		if (kine)
+		{
+			// create absolute file names for model and kine files
+			std::string modelFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetModelFile())).toStdString();
+			std::string kineFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetKineFile())).toStdString();
+
+			XMLElement el("model");
+			el.add_attribute("type", "kinemat");
+			xml.add_branch(el);
 			{
-				// save plot file
-				std::string plotFile = m_doc->GetDocFilePath();
-				XMLElement plt("model");
-				plt.add_attribute("file", plotFile);
-				xml.add_empty(plt);
+				xml.add_leaf("model_file", modelFile);
+				xml.add_leaf("kine_file", kineFile);
+				int n[3] = { kine->GetMin(), kine->GetMax(), kine->GetStep() };
+				xml.add_leaf("range", n, 3);
 			}
+			xml.close_branch();
 		}
 		else
 		{
@@ -557,183 +738,309 @@ bool PostSessionFileWriter::Write(const char* szfile)
 			plt.add_attribute("file", plotFile);
 			xml.add_empty(plt);
 		}
+	}
+	else if (dynamic_cast<FEKinematFileReader*>(reader))
+	{
+		FEKinematFileReader* kine = dynamic_cast<FEKinematFileReader*>(reader);
 
-		// save material settings
-		for (int i = 0; i < fem->Materials(); ++i)
+		// create absolute file names for model and kine files
+		std::string modelFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetModelFile())).toStdString();
+		std::string kineFile = currentDir.relativeFilePath(QString::fromStdString(kine->GetKineFile())).toStdString();
+
+		XMLElement el("model");
+		el.add_attribute("type", "kinemat");
+		xml.add_branch(el);
 		{
-			Post::Material* mat = fem->GetMaterial(i);
-			XMLElement el("material");
-			el.add_attribute("id", i + 1);
-			el.add_attribute("name", mat->GetName());
+			xml.add_leaf("model_file", modelFile);
+			xml.add_leaf("kine_file", kineFile);
+			int n[3] = { kine->GetMin(), kine->GetMax(), kine->GetStep() };
+			xml.add_leaf("range", n, 3);
+		}
+		xml.close_branch();
+	}
+	else
+	{
+		// save plot file
+		std::string plotFile = m_doc->GetDocFilePath();
+		XMLElement plt("model");
+		plt.add_attribute("file", plotFile);
+		xml.add_empty(plt);
+	}
+}
+
+void PostSessionFileWriter::WriteMaterials()
+{
+	Post::FEPostModel* fem = m_doc->GetFSModel();
+	XMLWriter& xml = *m_xml;
+
+	// save material settings
+	for (int i = 0; i < fem->Materials(); ++i)
+	{
+		Post::Material* mat = fem->GetMaterial(i);
+		XMLElement el("material");
+		el.add_attribute("id", i + 1);
+		el.add_attribute("name", mat->GetName());
+		xml.add_branch(el);
+		{
+			xml.add_leaf("diffuse", mat->diffuse);
+			xml.add_leaf("ambient", mat->ambient);
+			xml.add_leaf("specular", mat->specular);
+			xml.add_leaf("emission", mat->emission);
+			xml.add_leaf("mesh_color", mat->meshcol);
+			xml.add_leaf("shininess", mat->shininess);
+			xml.add_leaf("transparency", mat->transparency);
+		}
+		xml.close_branch(); // material
+	}
+}
+
+void PostSessionFileWriter::WriteDataFields()
+{
+	XMLWriter& xml = *m_xml;
+
+	// save data field settings
+	Post::FEPostModel& fem = *m_doc->GetFSModel();
+	Post::FEDataManager& dm = *fem.GetDataManager();
+	for (int i = 0; i < dm.DataFields(); ++i)
+	{
+		Post::ModelDataField* data = *dm.DataField(i);
+		if (data && (data->Parameters()))
+		{
+			XMLElement el("datafield");
+			el.add_attribute("name", data->GetName());
 			xml.add_branch(el);
-			{
-				xml.add_leaf("diffuse", mat->diffuse);
-				xml.add_leaf("ambient", mat->ambient);
-				xml.add_leaf("specular", mat->specular);
-				xml.add_leaf("emission", mat->emission);
-				xml.add_leaf("mesh_color", mat->meshcol);
-				xml.add_leaf("shininess", mat->shininess);
-				xml.add_leaf("transparency", mat->transparency);
-			}
-			xml.close_branch(); // material
-		}
-
-		// save data field settings
-		Post::FEPostModel& fem = *m_doc->GetFSModel();
-		Post::FEDataManager& dm = *fem.GetDataManager();
-		for (int i = 0; i < dm.DataFields(); ++i)
-		{
-			Post::ModelDataField* data = *dm.DataField(i);
-			if (data && (data->Parameters()))
-			{
-				XMLElement el("datafield");
-				el.add_attribute("name", data->GetName());
-				xml.add_branch(el);
-				fsps_write_parameters(data, xml);
-				xml.close_branch();
-			}
-		}
-
-		// save selections
-		GObject* po = m_doc->GetActiveObject();
-		if (po)
-		{
-			for (int i = 0; i < po->FENodeSets(); ++i)
-			{
-				FSNodeSet* pg = po->GetFENodeSet(i);
-
-				XMLElement el("mesh:nodeset");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("nodes", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-
-			for (int i = 0; i < po->FEEdgeSets(); ++i)
-			{
-				FSEdgeSet* pg = po->GetFEEdgeSet(i);
-
-				XMLElement el("mesh:edgeset");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("edges", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-
-			for (int i = 0; i < po->FESurfaces(); ++i)
-			{
-				FSSurface* pg = po->GetFESurface(i);
-
-				XMLElement el("mesh:surface");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("faces", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-
-			for (int i = 0; i < po->FEParts(); ++i)
-			{
-				FSPart* pg = po->GetFEPart(i);
-
-				XMLElement el("mesh:elementset");
-				el.add_attribute("name", pg->GetName());
-				xml.add_branch(el);
-				{
-					std::list<int> items = pg->CopyItems();
-					std::list<int>::iterator it = items.begin();
-					int N = items.size();
-					int l[16];
-					for (int n = 0; n < N; n += 16)
-					{
-						int m = (n + 16 <= N ? 16 : N - n);
-						for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
-						xml.add_leaf("elems", l, m);
-					}
-				}
-				xml.close_branch();
-			}
-		}
-
-		// save post model components
-		Post::CGLModel* glm = m_doc->GetGLModel();
-		if (glm)
-		{
-			for (int i = 0; i < glm->Plots(); ++i)
-			{
-				Post::CGLPlot* plot = glm->Plot(i);
-
-				std::string typeStr = plot->GetTypeString();
-				std::string name = plot->GetName();
-
-				XMLElement el("plot");
-				el.add_attribute("type", typeStr);
-				if (name.empty() == false) el.add_attribute("name", name);
-				xml.add_branch(el);
-				{
-					fsps_write_parameters(plot, xml);
-
-					if (dynamic_cast<Post::CGLLinePlot*>(plot))
-					{
-						Post::CGLLinePlot* linePlot = dynamic_cast<Post::CGLLinePlot*>(plot);
-
-						Post::LineDataModel* lineData = linePlot->GetLineDataModel();
-						if (lineData)
-						{
-							Post::LineDataSource* src = lineData->GetLineDataSource();
-							if (src)
-							{
-								const char* sztype = src->GetTypeString();
-								XMLElement el("source");
-								el.add_attribute("type", sztype);
-								xml.add_branch(el);
-								{
-									fsps_write_parameters(src, xml);
-								}
-								xml.close_branch();
-							}
-						}
-					}
-				}
-				xml.close_branch();
-			}
+			fsps_write_parameters(data, xml);
+			xml.close_branch();
 		}
 	}
-	xml.close_branch(); // root
 
-	xml.close();
+}
 
-	return true;
+void PostSessionFileWriter::WriteMeshSelections()
+{
+	XMLWriter& xml = *m_xml;
+
+	// save selections
+	GObject* po = m_doc->GetActiveObject();
+	if (po)
+	{
+		for (int i = 0; i < po->FENodeSets(); ++i)
+		{
+			FSNodeSet* pg = po->GetFENodeSet(i);
+
+			XMLElement el("mesh:nodeset");
+			el.add_attribute("name", pg->GetName());
+			xml.add_branch(el);
+			{
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
+				int N = items.size();
+				int l[16];
+				for (int n = 0; n < N; n += 16)
+				{
+					int m = (n + 16 <= N ? 16 : N - n);
+					for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+					xml.add_leaf("nodes", l, m);
+				}
+			}
+			xml.close_branch();
+		}
+
+		for (int i = 0; i < po->FEEdgeSets(); ++i)
+		{
+			FSEdgeSet* pg = po->GetFEEdgeSet(i);
+
+			XMLElement el("mesh:edgeset");
+			el.add_attribute("name", pg->GetName());
+			xml.add_branch(el);
+			{
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
+				int N = items.size();
+				int l[16];
+				for (int n = 0; n < N; n += 16)
+				{
+					int m = (n + 16 <= N ? 16 : N - n);
+					for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+					xml.add_leaf("edges", l, m);
+				}
+			}
+			xml.close_branch();
+		}
+
+		for (int i = 0; i < po->FESurfaces(); ++i)
+		{
+			FSSurface* pg = po->GetFESurface(i);
+
+			XMLElement el("mesh:surface");
+			el.add_attribute("name", pg->GetName());
+			xml.add_branch(el);
+			{
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
+				int N = items.size();
+				int l[16];
+				for (int n = 0; n < N; n += 16)
+				{
+					int m = (n + 16 <= N ? 16 : N - n);
+					for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+					xml.add_leaf("faces", l, m);
+				}
+			}
+			xml.close_branch();
+		}
+
+			for (int i = 0; i < po->FEElemSets(); ++i)
+			{
+				FSElemSet* pg = po->GetFEElemSet(i);
+
+			XMLElement el("mesh:elementset");
+			el.add_attribute("name", pg->GetName());
+			xml.add_branch(el);
+			{
+				std::vector<int> items = pg->CopyItems();
+				std::vector<int>::iterator it = items.begin();
+				int N = items.size();
+				int l[16];
+				for (int n = 0; n < N; n += 16)
+				{
+					int m = (n + 16 <= N ? 16 : N - n);
+					for (int k = 0; k < m; ++k) l[k] = 1 + (*it++);
+					xml.add_leaf("elems", l, m);
+				}
+			}
+			xml.close_branch();
+		}
+	}
+}
+
+void PostSessionFileWriter::WritePlots()
+{
+	XMLWriter& xml = *m_xml;
+	Post::CGLModel* glm = m_doc->GetGLModel();
+
+	for (int i = 0; i < glm->Plots(); ++i)
+	{
+		Post::CGLPlot* plot = glm->Plot(i);
+
+		std::string typeStr = plot->GetTypeString();
+		std::string name = plot->GetName();
+
+		XMLElement el("plot");
+		el.add_attribute("type", typeStr);
+		if (name.empty() == false) el.add_attribute("name", name);
+		xml.add_branch(el);
+		{
+			fsps_write_parameters(plot, xml);
+
+			if (dynamic_cast<Post::CGLLinePlot*>(plot))
+			{
+				Post::CGLLinePlot* linePlot = dynamic_cast<Post::CGLLinePlot*>(plot);
+
+				Post::LineDataModel* lineData = linePlot->GetLineDataModel();
+				if (lineData)
+				{
+					Post::LineDataSource* src = lineData->GetLineDataSource();
+					if (src)
+					{
+						const char* sztype = src->GetTypeString();
+						XMLElement el("source");
+						el.add_attribute("type", sztype);
+						xml.add_branch(el);
+						{
+							fsps_write_parameters(src, xml);
+						}
+						xml.close_branch();
+					}
+				}
+			}
+			if (dynamic_cast<Post::GLMusclePath*>(plot))
+			{
+				Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(plot);
+				if (mp->OverrideInitPath())
+				{
+					std::vector<vec3d> path = mp->GetInitPath();
+					if (path.empty() == false)
+						xml.add_branch("init_path");
+					for (vec3d p : path)
+					{
+						xml.add_leaf("point", p);
+					}
+					xml.close_branch();
+				}
+			}
+			if (dynamic_cast<Post::GLPlotGroup*>(plot))
+			{
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(plot);
+				for (int n = 0; n < pg->Plots(); ++n)
+				{
+					Post::CGLPlot* pn = pg->GetPlot(n);
+
+					string typeStr_n = pn->GetTypeString();
+					string name_n = pn->GetName();
+					XMLElement el("plot");
+					el.add_attribute("type", typeStr_n);
+					if (name_n.empty() == false) el.add_attribute("name", name_n);
+					xml.add_branch(el);
+					{
+						fsps_write_parameters(pn, xml);
+
+						Post::GLMusclePath* mp = dynamic_cast<Post::GLMusclePath*>(pn);
+						if (mp && mp->OverrideInitPath())
+						{
+							std::vector<vec3d> path = mp->GetInitPath();
+							if (path.empty() == false)
+								xml.add_branch("init_path");
+							for (vec3d p : path)
+							{
+								xml.add_leaf("point", p);
+							}
+							xml.close_branch();
+						}
+					}
+					xml.close_branch();
+				}
+			}
+		}
+		xml.close_branch();
+	}
+}
+
+void PostSessionFileWriter::WriteView()
+{
+	XMLWriter& xml = *m_xml;
+	Post::CGLModel* glm = m_doc->GetGLModel();
+
+	CGView& view = *m_doc->GetView();
+	if (view.CameraKeys() > 0)
+	{
+		xml.add_branch("view");
+		{
+			for (int i = 0; i < view.CameraKeys(); ++i)
+			{
+				GLCameraTransform& vp = view.GetKey(i);
+
+				quatd q = vp.rot;
+				float w = q.GetAngle() * 180.f / PI;
+				vec3d v = q.GetVector() * w;
+				vec3d r = vp.pos;
+				float d = vp.trg.z;
+
+				XMLElement el("viewpoint");
+				el.add_attribute("name", vp.GetName());
+				xml.add_branch(el);
+				{
+					xml.add_leaf("x-angle", v.x);
+					xml.add_leaf("y-angle", v.y);
+					xml.add_leaf("z-angle", v.z);
+					xml.add_leaf("x-target", r.x);
+					xml.add_leaf("y-target", r.y);
+					xml.add_leaf("z-target", r.z);
+					xml.add_leaf("target_distance", d);
+				}
+				xml.close_branch();
+			}
+		}
+		xml.close_branch();
+	}
 }

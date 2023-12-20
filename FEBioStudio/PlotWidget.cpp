@@ -60,6 +60,25 @@ SOFTWARE.*/
 
 using namespace std;
 
+#ifdef WIN32
+#include <float.h>
+#define ISNAN(x) _isnan(x)
+#endif
+
+#ifdef LINUX
+#ifdef CENTOS
+#define ISNAN(x) isnan(x)
+#else
+#define ISNAN(x) std::isnan(x)
+#endif
+#endif
+
+#ifdef __APPLE__
+#include <math.h>
+#define ISNAN(x) isnan(x)
+#endif
+
+
 //-----------------------------------------------------------------------------
 class CDlgPlotWidgetProps_Ui
 {
@@ -93,6 +112,7 @@ public:
 
 CDlgPlotWidgetProps::CDlgPlotWidgetProps(QWidget* parent) : QDialog(parent), ui(new CDlgPlotWidgetProps_Ui)
 {
+	setWindowTitle("Map region");
 	ui->setup(this);
 }
 
@@ -737,8 +757,13 @@ void CPlotWidget::fitToData(bool downSize)
 		r = rectUnion(r, ri);
 	}
 
-	if (r.height() == 0.0) r.setBottom(1.0);
-	if (r.height() == 0.0) r.setTop(0.0);
+	if (r.height() == 0.0)
+	{
+		double y = r.top();
+		if (y == 0.0) r = QRectF(r.left(), 0.0, r.width(), 1.0);
+		else if (y > 0) r = QRectF(r.left(), 0, r.width(), y);
+		else if (y < 0) r = QRectF(r.left(), y, r.width(), -y);
+	}
 
 	if (downSize == false)
 	{
@@ -794,7 +819,7 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 	{
 		// first, see if a point is selected
 		QPoint pt = ev->pos();
-		const int eps = 3;
+		const int eps = 3 * devicePixelRatio();
 
 		m_newSelect = false;
 		for (int i = 0; i < (int)m_data.m_data.size(); ++i)
@@ -929,7 +954,11 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		double dx = W*0.05;
 		double dy = H*0.05;
 
-    //TODO: Check to see how this feels with MacOS and Linux distros. May need to use angleDelta()
+		bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
+		bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
+		if (bctrl && !bshift) dy = 0;
+		if (bctrl && bshift) dx = 0;
+
 		if ((ev->pixelDelta().y() < 0) || (ev->angleDelta().y() < 0))
 		{
 			m_viewRect.adjust(-dx, -dy, dx, dy);
@@ -938,6 +967,7 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		{
 			m_viewRect.adjust(dx, dy, -dx, -dy);
 		}
+
 		m_xscale = findScale(m_viewRect.left(), m_viewRect.right());
 		m_yscale = findScale(m_viewRect.top(), m_viewRect.bottom());
 		repaint();
@@ -1284,7 +1314,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nydiv != 0)
 		{
 			gy = pow(10.0, nydiv);
-			sprintf(sz, "x 1e%03d", nydiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nydiv);
 			p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), QString(sz));
 		}
 	}
@@ -1297,7 +1327,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nxdiv != 0)
 		{
 			gx = pow(10.0, nxdiv);
-			sprintf(sz, "x 1e%03d", nxdiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nxdiv);
 			p.drawText(x1 + 5, y1, QString(sz));
 		}
 	}
@@ -1325,7 +1355,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fy / gy;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 
 				if (m_data.m_yAxis.labelAlignment == ALIGN_LABEL_LEFT)
@@ -1363,7 +1393,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fx / gx;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 				int w = p.fontMetrics().horizontalAdvance(s);
 				if (m_data.m_xAxis.labelAlignment == ALIGN_LABEL_BOTTOM)
@@ -1692,6 +1722,7 @@ void CCurvePlotWidget::SetLoadCurve(LoadCurve* lc)
 		data->setFillColor(QColor(92, 255, 164));
 		data->setLineWidth(2);
 		data->setMarkerSize(5);
+		repaint();
 	}
 }
 
@@ -1703,6 +1734,7 @@ LoadCurve* CCurvePlotWidget::GetLoadCurve()
 void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 {
 	if (m_lc == 0) return;
+    m_lc->Update();
 
 	int N = data.size();
 
@@ -1897,6 +1929,7 @@ public:
 	QToolButton* addPoint;
 	QToolButton* snap2grid;
 	QHBoxLayout* pltbutton;
+	QToolButton* map2rect;
 
 public:
 	QPointF					m_dragPt;
@@ -1915,6 +1948,7 @@ public:
 		lineType->addItem("Cubic spline");
 		lineType->addItem("Control points");
 		lineType->addItem("Approximation");
+		lineType->addItem("Smooth step");
 
 		extendMode = new QComboBox; extendMode->setObjectName("extendMode");
 		extendMode->addItem("Constant");
@@ -1998,10 +2032,12 @@ public:
 		zoomy->setIcon(QIcon(":/icons/zoom_y.png"));
 		zoomy->setToolTip("<font color=\"black\">Zoom Y extents");
 
-		QToolButton* map = new QToolButton; map->setObjectName("map");
-		map->setAutoRaise(true);
-		map->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
-		map->setToolTip("<font color=\"black\">Map to rectangle");
+		map2rect = new QToolButton;
+		map2rect->setAutoRaise(true);
+		map2rect->setCheckable(true);
+		map2rect->setChecked(false);
+		map2rect->setIcon(QIcon(":/icons/zoom-fit-best-2.png"));
+		map2rect->setToolTip("<font color=\"black\">Map to rectangle");
 
 		QToolButton* clear = new QToolButton; clear->setObjectName("clear");
 		clear->setAutoRaise(true);
@@ -2017,7 +2053,7 @@ public:
 		pltbutton->addWidget(zoomx);
 		pltbutton->addWidget(zoomy);
 		pltbutton->addWidget(zoom);
-		pltbutton->addWidget(map);
+		pltbutton->addWidget(map2rect);
 		pltbutton->addWidget(clear);
 		pltbutton->addStretch();
 		pltbutton->setSpacing(2);
@@ -2278,15 +2314,19 @@ void CCurveEditWidget::on_plot_doneZoomToRect()
 
 void CCurveEditWidget::on_plot_regionSelected(QRect rt)
 {
-	UpdateSelection();
-}
-
-void CCurveEditWidget::on_plot_doneSelectingRect(QRect rt)
-{
-	CDlgPlotWidgetProps dlg;
-	if (dlg.exec())
+	if (ui->map2rect->isChecked())
 	{
-		ui->plt->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		CDlgPlotWidgetProps dlg;
+		if (dlg.exec())
+		{
+			ui->plt->mapToUserRect(rt, QRectF(dlg.m_xmin, dlg.m_ymin, dlg.m_xmax - dlg.m_xmin, dlg.m_ymax - dlg.m_ymin));
+		}
+		ui->map2rect->setChecked(false);
+	}
+	else
+	{
+		ui->plt->regionSelect(rt);
+		UpdateSelection();
 	}
 }
 
@@ -2646,6 +2686,7 @@ void CCurveEditWidget::on_open_clicked(bool b)
 			{
 				*plc = lc;
 				SetLoadCurve(plc);
+				emit dataChanged();
 			}
 		}
 	}
@@ -2774,6 +2815,7 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 	QPoint p0, p1;
 	int prevRegion = 0;
 	int curRegion = 0;
+	bool newSection = true;
 	for (int i = rt.left(); i < rt.right(); i += 2)
 	{
 		p1.setX(i);
@@ -2791,16 +2833,25 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 			y = m_math.value();
 		}
 
-		p.setY(y);
-		p1 = ViewToScreen(p);
-
-		if (i != rt.left())
+		if (ISNAN(y))
 		{
-			if (curRegion != prevRegion) p0.setY(p1.y());
-			painter.drawLine(p0, p1);
+			newSection = true;
+		}
+		else
+		{
+			p.setY(y);
+			p1 = ViewToScreen(p);
+
+			if (newSection == false)
+			{
+				if (curRegion != prevRegion) p0.setY(p1.y());
+				painter.drawLine(p0, p1);
+			}
+
+			p0 = p1;
+			newSection = false;
 		}
 
-		p0 = p1;
 		prevRegion = curRegion;
 	}
 }
@@ -2811,11 +2862,28 @@ void CMathPlotWidget::SetOrdinate(const std::string& x)
 	else m_ord = x;
 }
 
+void CMathPlotWidget::ClearVariables()
+{
+	m_Var.clear();
+}
+
+void CMathPlotWidget::SetVariable(const QString& name, double val)
+{
+	m_Var.push_back(std::pair<QString, double>(name, val));
+}
+
 void CMathPlotWidget::SetMath(const QString& txt)
 {
 	std::string m = txt.toStdString();
 	m_math.Clear();
 	m_math.AddVariable(m_ord);
+
+	for (int i = 0; i < m_Var.size(); ++i)
+	{
+		std::pair<QString, double>& vi = m_Var[i];
+		std::string mi = vi.first.toStdString();
+		m_math.AddVariable(mi, vi.second);
+	}
 
 	getPlotData(0).clear();
 
@@ -2994,6 +3062,9 @@ void CMathEditWidget::setMinMaxRange(double rmin, double rmax)
 {
 	ui->plot->SetHighlightInterval(rmin, rmax);
 }
+
+void CMathEditWidget::ClearVariables() { ui->plot->ClearVariables(); }
+void CMathEditWidget::SetVariable(const QString& name, double val) { ui->plot->SetVariable(name, val); }
 
 void CMathEditWidget::SetMath(const QString& txt)
 {

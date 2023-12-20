@@ -71,7 +71,16 @@ private slots:
 	void OnHideElements();
 	void OnShowAllElements();
 	void OnMoveUpInRenderingQueue();
+	void OnMoveToGroup();
 	void OnMoveDownInRenderingQueue();
+	void OnExportImage();
+	void OnExportMCSurface();
+	void OnExportProbeData();
+	void OnImportCurveProbePoints();
+	void OnCurveProbePlotData();
+	void OnCurveProbePlotTimeAveragedData();
+	void OnExportMusclePathData();
+	void OnSwapMusclePathEndPoints();
 //	void on_autoUpdate_toggled(bool b);
 //	void on_applyButton_clicked();
 

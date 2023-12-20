@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include <PostLib/Palette.h>
 #include <PostLib/constants.h>
 #include <PostGL/GLModel.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 //---------------------------------------
 // NOTE: We need to include these FEBio files to make sure we get the correct
 //       implementations for the type_to_string and string_to_type functions.
@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include "PostSessionFile.h"
 #include "units.h"
 #include "GLPostScene.h"
+#include "MainWindow.h"
 
 void TIMESETTINGS::Defaults()
 {
@@ -85,7 +86,8 @@ void ModelData::ReadData(Post::CGLModel* po)
 	m_mdl.m_ntime = po->CurrentTimeIndex();
 	m_mdl.m_bnorm = po->m_bnorm;
 	m_mdl.m_bghost = po->m_bghost;
-	m_mdl.m_bShell2Hex = po->ShowShell2Solid();
+	m_mdl.m_bShell2Solid = po->ShowShell2Solid();
+	m_mdl.m_bBeam2Solid = po->ShowBeam2Solid();
 	m_mdl.m_nshellref = po->ShellReferenceSurface();
 	m_mdl.m_nDivs = po->m_nDivs;
 	m_mdl.m_nrender = po->m_nrender;
@@ -134,7 +136,8 @@ void ModelData::WriteData(Post::CGLModel* po)
 	// set model data
 	po->m_bnorm = m_mdl.m_bnorm;
 	po->m_bghost = m_mdl.m_bghost;
-	po->ShowShell2Solid(m_mdl.m_bShell2Hex);
+	po->ShowShell2Solid(m_mdl.m_bShell2Solid);
+	po->ShowBeam2Solid(m_mdl.m_bBeam2Solid);
 	po->ShellReferenceSurface(m_mdl.m_nshellref);
 	po->m_nDivs = m_mdl.m_nDivs;
 	po->m_nrender = m_mdl.m_nrender;
@@ -242,6 +245,8 @@ CPostDocument::CPostDocument(CMainWindow* wnd, CModelDocument* doc) : CGLDocumen
 	m_scene = new CGLPostScene(this);
 
 	SetItemMode(ITEM_ELEM);
+
+	QObject::connect(this, SIGNAL(selectionChanged()), wnd, SLOT(on_selectionChanged()));
 }
 
 CPostDocument::~CPostDocument()
@@ -439,16 +444,16 @@ void CPostDocument::DeleteObject(Post::CGLObject* po)
 		CGView* pview = GetView();
 		pview->DeleteKey(pt);
 	}
-	else if (dynamic_cast<Post::CImageModel*>(po))
+	else if (dynamic_cast<CImageModel*>(po))
 	{
-		Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+		CImageModel* img = dynamic_cast<CImageModel*>(po);
 		m_img.Remove(img);
 		delete img;
 	}
 	else if (dynamic_cast<Post::CGLImageRenderer*>(po))
 	{
 		Post::CGLImageRenderer* ir = dynamic_cast<Post::CGLImageRenderer*>(po);
-		Post::CImageModel* img = ir->GetImageModel();
+		CImageModel* img = ir->GetImageModel();
 		img->RemoveRenderer(ir);
 	}
 	else if (dynamic_cast<Post::CGLDisplacementMap*>(po))
@@ -614,8 +619,8 @@ BOX CPostDocument::GetSelectionBox()
 
 	return box;
 }
-
-FESelection* CPostDocument::GetCurrentSelection()
+/*
+void CPostDocument::UpdateSelection(bool breport)
 {
 	if (m_sel) { delete m_sel; m_sel = nullptr; }
 
@@ -629,9 +634,8 @@ FESelection* CPostDocument::GetCurrentSelection()
 	case ITEM_FACE: m_sel = new FEFaceSelection(nullptr, pm); break;
 	case ITEM_ELEM: m_sel = new FEElementSelection(nullptr, pm); break;
 	}
-
-	return m_sel;
 }
+*/
 
 std::string CPostDocument::GetFileName()
 {
@@ -658,6 +662,8 @@ void CPostDocument::UpdateSelection(bool report)
 {
 	Post::CGLModel* mdl = GetGLModel();
 	if (mdl) mdl->UpdateSelectionLists();
+
+	emit selectionChanged();
 }
 
 void CPostDocument::ApplyPalette(const Post::CPalette& pal)

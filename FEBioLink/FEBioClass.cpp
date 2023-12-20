@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include <FECore/FEModule.h>
 #include <FEBioLib/FEBioModel.h>
 #include <FEBioLib/febio.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <FEMLib/FEStepComponent.h>
 #include <FEMLib/FEBoundaryCondition.h>
 #include <FEMLib/FESurfaceLoad.h>
@@ -47,7 +47,7 @@ SOFTWARE.*/
 #include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
-#include <MeshTools/FEModel.h>
+#include <FEMLib/FSModel.h>
 #include <sstream>
 using namespace FEBio;
 
@@ -159,7 +159,12 @@ std::vector<FEBio::FEBioClassInfo> FEBio::FindAllClasses(int mod, int superId, i
 
 	bool includeModuleDependencies = (flags & ClassSearchFlags::IncludeModuleDependencies);
 	bool includeFECoreClasses = includeModuleDependencies;// (flags & ClassSearchFlags::IncludeFECoreClasses);
-	bool includeExperimentals = (flags & ClassSearchFlags::IncludeExperimentalClasses);
+
+#ifdef FEBIO_EXPERIMENTAL
+	bool includeExperimentals = true;
+#else
+	bool includeExperimentals = false;
+#endif
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	vector<int> mods;
@@ -371,13 +376,21 @@ FSModelComponent* FEBio::CreateFSClass(int superClassID, int baseClassId, FSMode
 	case FECLASS_ID           : pc = new FSGenericClass(fem); break;
 	case FETIMECONTROLLER_ID  : pc = new FSGenericClass(fem); break;
 	case FEVEC3DVALUATOR_ID   : pc = new FSVec3dValuator(fem); break;
-	case FEMAT3DVALUATOR_ID   : pc = new FSGenericClass(fem); break;
+	case FEMAT3DVALUATOR_ID   : pc = new FSMat3dValuator(fem); break;
 	case FEMAT3DSVALUATOR_ID  : pc = new FSGenericClass(fem); break;
 	case FESOLIDDOMAIN_ID     : pc = new FESolidFormulation(fem); break;
 	case FESHELLDOMAIN_ID     : pc = new FEShellFormulation(fem); break;
 	case FEBEAMDOMAIN_ID      : pc = new FEBeamFormulation(fem); break;
 	case FEDISCRETEMATERIAL_ID: pc = new FEBioDiscreteMaterial(fem); break;
 	case FELINEARSOLVER_ID    : pc = new FSGenericClass(fem); break;
+	case FESURFACE_ID         : 
+	{
+		FSMeshSelection* pms = new FSMeshSelection(fem);
+		pms->SetMeshItemType(FE_FACE_FLAG);
+		pms->SetSuperClassID(FESURFACE_ID);
+		pc = pms;
+	}
+	break;
 	default:
 		assert(false);
 	}
@@ -509,11 +522,11 @@ bool BuildModelComponent(FSModelComponent* po, FECoreBase* feb, unsigned int fla
 				}
 				else if (ndim == 3)
 				{
-					vec3d v(0, 0, 0);
-					v.x = param.value<FEParamDouble>(0).constValue();
-					v.y = param.value<FEParamDouble>(1).constValue();
-					v.z = param.value<FEParamDouble>(2).constValue();
-					p = po->AddVecParam(v, szname, szlongname);
+					double v[3] = { 0 };
+					v[0] = param.value<FEParamDouble>(0).constValue();
+					v[1] = param.value<FEParamDouble>(1).constValue();
+					v[2] = param.value<FEParamDouble>(2).constValue();
+					p = po->AddArrayDoubleParam(v, 3, szname, szlongname)->MakeVariable(true);;
 				}
 				else assert(false);
 			}
@@ -676,11 +689,16 @@ vector<FEBio::FEBioModule>	FEBio::GetAllModules()
 	vector<FEBio::FEBioModule> mods;
 	for (int i = 0; i < fecore.Modules(); ++i)
 	{
-		FEBio::FEBioModule mod;
-		mod.m_szname = fecore.GetModuleName(i);
-		mod.m_szdesc = fecore.GetModuleDescription(i);
-		mod.m_id = i + 1;
-		mods.push_back(mod);
+#ifndef FEBIO_EXPERIMENTAL
+		if (fecore.GetModuleStatus(i) > 0)
+#endif
+		{
+			FEBio::FEBioModule mod;
+			mod.m_szname = fecore.GetModuleName(i);
+			mod.m_szdesc = fecore.GetModuleDescription(i);
+			mod.m_id = i + 1;
+			mods.push_back(mod);
+		}
 	}
 
 	return mods;
@@ -708,12 +726,17 @@ int FEBio::GetModuleId(const std::string& moduleName)
 void FEBio::SetActiveModule(int moduleID)
 {
 	// create a new model
-	delete febioModel; febioModel = new FEBioModel;
+	delete febioModel; febioModel = nullptr;
 
 	FECoreKernel& fecore = FECoreKernel::GetInstance();
 	fecore.SetActiveModule(moduleID);
 
-	fecore.GetActiveModule()->InitModel(febioModel);
+	FEModule* activeMod = fecore.GetActiveModule();
+	if (activeMod)
+	{
+		febioModel = new FEBioModel;
+		activeMod->InitModel(febioModel);
+	}
 }
 
 int FEBio::GetActiveModule()
@@ -794,12 +817,54 @@ bool interrup_cb(FEModel* fem, unsigned int nwhen, void* pd)
 	return true;
 }
 
+bool progress_cb(FEModel* pfem, unsigned int nwhen, void* pd)
+{
+	FEBioModel& fem = static_cast<FEBioModel&>(*pfem);
+
+	FEBioProgressTracker* progressTracker = (FEBioProgressTracker*)pd;
+	if (pd == nullptr) return true;
+
+	// get the number of steps
+	int nsteps = fem.Steps();
+
+	// calculate progress
+	double starttime = fem.GetStartTime();
+	double endtime = fem.GetEndTime();
+	double f = 0.0;
+	if (nwhen != CB_INIT)
+	{
+		double ftime = fem.GetCurrentTime();
+		if (endtime != starttime) f = (ftime - starttime) / (endtime - starttime);
+		else
+		{
+			// this only happens (I think) when the model is solved
+			f = 1.0;
+		}
+	}
+
+	double pct = 0.0;
+	if (nsteps > 1)
+	{
+		int N = nsteps;
+		int n = fem.GetCurrentStepIndex();
+		pct = 100.0 * ((double)n  + f) / (double)N;
+	}
+	else
+	{
+		pct = 100.0 * f;
+	}
+
+	progressTracker->SetProgress(pct);
+
+	return true;
+}
+
 void FEBio::TerminateRun()
 {
 	terminateRun = true;
 }
 
-int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
+int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler, FEBioProgressTracker* progressTracker)
 {
 	terminateRun = false;
 
@@ -811,8 +876,11 @@ int FEBio::runModel(const std::string& cmd, FEBioOutputHandler* outputHandler)
 		fem.GetLogFile().SetLogStream(new FBSLogStream(outputHandler));
 	}
 
-	// attach a callback to interrupt
+	// attach a callback to interrupt and measure progress
 	fem.AddCallback(interrup_cb, CB_ALWAYS, nullptr);
+
+	if (progressTracker)
+		fem.AddCallback(progress_cb, CB_MAJOR_ITERS, progressTracker);
 
 	try {
 		febio::CMDOPTIONS ops;
@@ -855,6 +923,17 @@ vec3d FEBio::GetMaterialFiber(void* vec3dvaluator, const vec3d& p)
 	vec3d v = (*val)(mp);
 	v.unit();
 	return v; 
+}
+
+mat3d FEBio::GetMaterialAxis(void* mat3dvaluator, const vec3d& p)
+{
+	FECoreBase* pc = (FECoreBase*)mat3dvaluator;
+	FEMat3dValuator* val = dynamic_cast<FEMat3dValuator*>(pc); assert(val);
+	if (val == nullptr) return mat3d::identity();
+	FEMaterialPoint mp;
+	mp.m_r0 = mp.m_rt = p;
+	mat3d Q = (*val)(mp);
+	return Q;
 }
 
 void FEBio::DeleteClass(void* p)
@@ -1141,6 +1220,11 @@ FSVec3dValuator* FEBio::CreateVec3dValuator(const std::string& typeStr, FSModel*
 	return CreateModelComponent<FSVec3dValuator>(FEVEC3DVALUATOR_ID, typeStr, fem);
 }
 
+FSMat3dValuator* FEBio::CreateMat3dValuator(const std::string& typeStr, FSModel* fem)
+{
+	return CreateModelComponent<FSMat3dValuator>(FEMAT3DVALUATOR_ID, typeStr, fem);
+}
+
 FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* fem)
 {
 	if (typeStr.empty())
@@ -1150,6 +1234,17 @@ FSGenericClass* FEBio::CreateGenericClass(const std::string& typeStr, FSModel* f
 		return pc;
 	}
 	else return CreateModelComponent<FSGenericClass>(FECLASS_ID, typeStr, fem);
+}
+
+FSGenericClass* FEBio::CreateLinearSolver(const std::string& typeStr, FSModel* fem)
+{
+	if (typeStr.empty())
+	{
+		FSGenericClass* pc = new FSGenericClass(fem);
+		pc->SetSuperClassID(FELINEARSOLVER_ID);
+		return pc;
+	}
+	else return CreateModelComponent<FSGenericClass>(FELINEARSOLVER_ID, typeStr, fem);
 }
 
 FEShellFormulation* FEBio::CreateShellFormulation(const std::string& typeStr, FSModel* fem)
@@ -1179,10 +1274,10 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 	case FEFUNCTION1D_ID      : return CreateFunction1D      (typeStr, fem); break;
 	case FEMESHADAPTOR_ID     : return CreateMeshAdaptor     (typeStr, fem); break;
 	case FEVEC3DVALUATOR_ID   : return CreateVec3dValuator   (typeStr, fem); break;
+	case FEMAT3DVALUATOR_ID   : return CreateMat3dValuator   (typeStr, fem); break;
 	case FESOLVER_ID          :
 	case FENEWTONSTRATEGY_ID  :
 	case FETIMECONTROLLER_ID  :
-	case FEMAT3DVALUATOR_ID  :
 	case FEMAT3DSVALUATOR_ID :
 	case FEMESHADAPTORCRITERION_ID:
 	{
@@ -1199,6 +1294,7 @@ FSModelComponent* FEBio::CreateClass(int superClassID, const std::string& typeSt
 		return pms;
 	}
 	break;
+	case FELINEARSOLVER_ID: return CreateLinearSolver(typeStr, fem); break;
 	default:
 		assert(false);
 	}
@@ -1262,12 +1358,29 @@ FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FE
 //			case FE_PARAM_STD_VECTOR_STRING: fp->value<vector<string> >() = pi.GetVectorStringValue(); break;
 			case FE_PARAM_DOUBLE_MAPPED:
 			{
-				FEParamDouble& v = fp->value<FEParamDouble>();
-				if (pi.GetParamType() == Param_FLOAT)
+				if (fp->dim() == 3)
 				{
-					v = pi.GetFloatValue();
+					if (pi.GetParamType() == Param_VEC3D)
+					{
+						FEParamDouble& x = fp->value<FEParamDouble>(0);
+						FEParamDouble& y = fp->value<FEParamDouble>(1);
+						FEParamDouble& z = fp->value<FEParamDouble>(2);
+						vec3d v = pi.GetVec3dValue();
+						x = v.x;
+						y = v.y;
+						z = v.z;
+					}
+					else assert(false);
 				}
-				else assert(false);
+				else
+				{
+					FEParamDouble& v = fp->value<FEParamDouble>();
+					if (pi.GetParamType() == Param_FLOAT)
+					{
+						v = pi.GetFloatValue();
+					}
+					else assert(false);
+				}
 			}
 			break;
 			case FE_PARAM_VEC3D_MAPPED:
@@ -1319,4 +1432,73 @@ FECoreBase* FEBio::CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FE
 	}
 
 	return pc;
+}
+
+FSModelComponent* CreateFSModelComponent(int classId, FSModel* fsm)
+{
+	FECoreKernel& fecore = FECoreKernel::GetInstance();
+
+	const FECoreFactory* fac = fecore.GetFactoryClass(classId); assert(fac);
+	int superClassID = fac->GetSuperClassID();
+
+	int baseClassId = FEBio::GetBaseClassIndex(fac->GetBaseClassName());
+
+	// create the FS model class
+	FSModelComponent* pc = CreateFSClass(superClassID, baseClassId, fsm);
+	pc->SetClassID(classId);
+	pc->SetSuperClassID(superClassID);
+	pc->SetTypeString(fac->GetTypeStr());
+
+	return pc;
+}
+
+FSModelComponent* FEBio::CloneModelComponent(FSModelComponent* pmc, FSModel* fem)
+{
+	FSModelComponent* pd = CreateFSModelComponent(pmc->GetClassID(), fem); assert(pd);
+	if (pd == nullptr) return nullptr;
+
+	// copy parameter groups
+	ParamBlock& PL = pmc->GetParamBlock();
+	ParamBlock& PB = pd->GetParamBlock();
+
+	PB.ClearParamGroups();
+	for (int i = 0; i < PL.ParameterGroups(); ++i)
+	{
+		PB.SetActiveGroup(PL.GetParameterGroupName(i));
+	}
+	PB.SetActiveGroup(nullptr);
+
+	// copy parameters
+	PB = PL;
+
+	// copy the properties
+	for (int i = 0; i < pmc->Properties(); ++i)
+	{
+		FSProperty& prop = pmc->GetProperty(i);
+
+		// copy the property
+		FSProperty* pp = pd->AddProperty(prop.GetName(), prop.GetPropertyType(), prop.maxSize(), prop.GetFlags());
+		pp->SetDefaultType(prop.GetDefaultType());
+		pp->SetSuperClassID(prop.GetSuperClassID());
+		pp->SetLongName(prop.GetLongName());
+
+		// copy the property components
+		pp->Clear();
+		for (int j = 0; j < prop.Size(); ++j)
+		{
+			FSModelComponent* pmj = dynamic_cast<FSModelComponent*>(prop.GetComponent(j));
+			FSModelComponent* pdj = nullptr;
+			if (pmj) pdj = CloneModelComponent(pmj, fem);
+			pp->AddComponent(pdj);
+		}
+	}
+
+	if (dynamic_cast<FSDomainComponent*>(pd))
+	{
+		FSDomainComponent* pc = dynamic_cast<FSDomainComponent*>(pmc); assert(pc);
+		FSDomainComponent* pdc = dynamic_cast<FSDomainComponent*>(pd);
+		pdc->SetMeshItemType(pc->GetMeshItemType());
+	}
+
+	return pd;
 }

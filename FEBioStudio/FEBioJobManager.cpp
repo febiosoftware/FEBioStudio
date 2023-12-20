@@ -57,12 +57,16 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 {
 	// make sure no model is running
 	if (CFEBioJob::GetActiveJob() != nullptr) return false;
-	
+
 	// set this as the active job
 	CFEBioJob::SetActiveJob(job);
 
+	if (job == nullptr) return true;
+
 	// don't forget to reset the kill flag
 	im->bkillJob = false;
+
+	job->ClearProgress();
 
 	// launch the job
 	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
@@ -181,11 +185,17 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 
 void CFEBioJobManager::onReadyRead()
 {
-	if (im->process == nullptr) return;
-
-	QByteArray output = im->process->readAll();
-	QString s(output);
-	im->wnd->AddOutputEntry(s);
+	if (im->process)
+	{
+		QByteArray output = im->process->readAll();
+		QString s(output);
+		im->wnd->AddOutputEntry(s);
+	}
+	else if (im->febThread)
+	{
+		QString s = im->febThread->GetOutput();
+		im->wnd->AddOutputEntry(s);
+	}
 }
 
 void CFEBioJobManager::onErrorOccurred(QProcess::ProcessError err)

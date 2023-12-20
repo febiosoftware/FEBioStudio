@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 enum XPLT_READ_STATE_FLAG { 
 	XPLT_READ_ALL_STATES, 
+	XPLT_READ_ALL_CONVERGED_STATES, 
 	XPLT_READ_LAST_STATE_ONLY, 
 	XPLT_READ_STATES_FROM_LIST,
 	XPLT_READ_FIRST_AND_LAST 
@@ -56,6 +57,8 @@ public:
 	void addWarning(int n);
 	int warnings() const { return (int) m_wrng.size(); }
 	int warning(int n) const { return m_wrng[n]; }
+
+	int FileVersion() const;
 
 protected:
 	xpltFileReader*		m_xplt;

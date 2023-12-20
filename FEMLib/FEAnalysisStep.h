@@ -1,5 +1,5 @@
 #pragma once
-#include <FEMLib/FEModelComponent.h>
+#include "FEModelComponent.h"
 #include <FSCore/LoadCurve.h>
 #include <vector>
 
@@ -34,6 +34,8 @@ class FSMeshAdaptor;
 #define FE_STEP_FEBIO_ANALYSIS		10
 #define FE_STEP_POLAR_FLUID         11
 #define FE_STEP_EXPLICIT_SOLID		12
+#define FE_STEP_FLUID_SOLUTES       13
+#define FE_STEP_THERMO_FLUID        14
 
 //-----------------------------------------------------------------------------
 // This is the base class for step classes
@@ -93,6 +95,7 @@ public:
 	void InsertInterface(int n, FSInterface* pi);
 	int RemoveInterface(FSInterface* pi);
 	void RemoveAllInterfaces();
+	void ReplaceInterface(FSInterface* pold, FSInterface* pnew);
 
 	// non-linear constraints
 	int Constraints();
@@ -239,6 +242,11 @@ struct STEP_SETTINGS
 	// output options
 	int	plot_level;		// plot level
 	int	plot_stride;	// plot stride parameter
+	bool plot_zero;		// plot zero state
+	int	plot_range[2];	// plot range
+	int output_level;	// output level
+
+	bool adapter_re_solve;
 
 	// solute constants
 //	double	Rc;				// universal gas constant
@@ -374,6 +382,20 @@ class FSPolarFluidAnalysis : public FSAnalysisStep
 {
 public:
     FSPolarFluidAnalysis(FSModel* ps);
+};
+
+//-----------------------------------------------------------------------------
+class FSFluidSolutesAnalysis : public FSAnalysisStep
+{
+public:
+    FSFluidSolutesAnalysis(FSModel* ps);
+};
+
+//-----------------------------------------------------------------------------
+class FSThermoFluidAnalysis : public FSAnalysisStep
+{
+public:
+    FSThermoFluidAnalysis(FSModel* ps);
 };
 
 //==============================================================================

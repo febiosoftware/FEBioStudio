@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <unordered_map>
 #include <FEMLib/FEMKernel.h>
-#include "MeshTools/FEProject.h"
+#include <FEMLib/FSProject.h>
 #include "DlgMaterialTest.h"
 #include <FEBioLink/FEBioInterface.h>
 #include <FSCore/FSCore.h>
@@ -151,6 +151,11 @@ void CDlgMaterialTest::onRun()
 	FSMaterial* pm = mat->GetMaterialProperties();
 	if (pm == nullptr) return;
 
+	if (pm->IsRigid())
+	{
+		QMessageBox::critical(this, "Material Test", "Cannot run material test on rigid material.");
+		return;
+	}
 
 	MaterialTest mt;
 	mt.mat = pm;

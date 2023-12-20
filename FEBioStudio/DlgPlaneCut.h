@@ -48,6 +48,13 @@ public:
 public slots:
 	void onDataChanged();
 
+	void onXClicked();
+	void onYClicked();
+	void onZClicked();
+
+private:
+	void setOrientation(double x, double y, double z);
+
 private:
 	UIDlgPlaneCut*	ui;
 };

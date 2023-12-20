@@ -69,4 +69,19 @@ public:
 private:
 	int		m_naopt;
 	int		m_n[2];
+	string	m_map;
+};
+
+class FSMat3dValuator : public FSGenericClass
+{
+public:
+	FSMat3dValuator(FSModel* fem);
+
+	mat3d GetMatAxis(const FEElementRef& el) const;
+
+	bool UpdateData(bool bsave) override;
+
+private:
+	int		m_naopt;
+	int		m_n[3];
 };

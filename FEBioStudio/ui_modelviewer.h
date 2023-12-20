@@ -40,6 +40,33 @@ SOFTWARE.*/
 #include "ModelSearch.h"
 #include "MainWindow.h"
 
+class WarningLabel : public QToolButton
+{
+public:
+	WarningLabel(QWidget* parent = nullptr) : QToolButton(parent)
+	{
+		setIcon(QIcon(":/icons/warning.png"));
+		m_warnings = 0;
+		setWarnings(0);
+	}
+
+	void setWarnings(int n)
+	{
+		m_warnings = n;
+		setText(QString("(%1)").arg(n));
+		setToolTip(QString("%1 warnings").arg(n));
+		if (n == 0) hide(); else show();
+	}
+
+	void increase()
+	{
+		setWarnings(m_warnings + 1);
+	}
+
+private:
+	int		m_warnings;
+};
+
 class Ui::CModelViewer
 {
 public:
@@ -50,6 +77,7 @@ public:
 	::CModelPropsPanel*	props;
 
 	QComboBox*	m_filter;
+	WarningLabel* m_errs;
 
 	QToolButton* srcButton;
 
@@ -85,11 +113,19 @@ public:
 		syncButton->setAutoRaise(true);
 		syncButton->setToolTip("<font color=\"black\">Sync selection");
 
+		QToolButton* refreshButton = new QToolButton;
+		refreshButton->setIcon(QIcon(":/icons/refresh.png"));
+		refreshButton->setObjectName("refreshButton");
+		refreshButton->setAutoRaise(true);
+		refreshButton->setToolTip("<font color=\"black\">Refresh");
+
 		// filter box
 		m_filter = new QComboBox;
 		m_filter->addItems(QStringList() << "All items" << "Geometry" << "Materials" << "Physics" << "Steps" << "Jobs" << "Images");
 		m_filter->setObjectName("filter");
 		m_filter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+
+		m_errs = new WarningLabel; m_errs->setObjectName("warnings");
 
 		QHBoxLayout* hf = new QHBoxLayout;
 		hf->setContentsMargins(0,0,0,0);
@@ -97,6 +133,8 @@ public:
 		l->setBuddy(m_filter);
 		hf->addWidget(l);
 		hf->addWidget(m_filter);
+		hf->addWidget(m_errs);
+		m_errs->hide();
 
 		// model tree
 		tree = new CModelTree(wnd);
@@ -133,6 +171,7 @@ public:
 		buttonLayout->addWidget(deleteButton);
 		buttonLayout->addWidget(srcButton);
 		buttonLayout->addWidget(syncButton);
+		buttonLayout->addWidget(refreshButton);
 		buttonLayout->addStretch();
 		buttonLayout->setContentsMargins(0,0,0,0);
 
@@ -157,5 +196,10 @@ public:
 		{
 			srcButton->setChecked(false);
 		}
+	}
+
+	void setWarningCount(int n)
+	{
+		m_errs->setWarnings(n);
 	}
 };

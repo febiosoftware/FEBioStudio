@@ -25,15 +25,19 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include <QBoxLayout>
+#include <QToolButton>
 #include <QToolBar>
 #include <QAction>
+#include <QLabel>
 #include <QTimer>
 #include <QSpinBox>
 #include "MainWindow.h"
 #include "Document.h"
 #include "IconProvider.h"
-#include "ImageSliceView.h"
+#include "ImageSlice.h"
+#include <ImageLib/3DImage.h>
 #include "2DImageTimeView.h"
+#include "DlgPixelInspector.h"
 
 class Ui::C2DImageTimeView
 {
@@ -55,21 +59,28 @@ public:
         QVBoxLayout* layout = new QVBoxLayout;
 
         QToolBar* toolbar = new QToolBar;
+        toolbar->setContentsMargins(0,0,0,0);
 
         actionPlayPause = new QAction;
         actionPlayPause->setIcon(CIconProvider::GetIcon("play"));
         actionPlayPause->setObjectName("actionPlayPause");
+
         toolbar->addAction(actionPlayPause);
+        toolbar->addSeparator();
+        
+        toolbar->addWidget(new QLabel("Inverval (ms):"));
 
         interval = new QSpinBox;
         interval->setMinimum(1);
         interval->setMaximum(9999);
-        interval->setValue(300);
+        interval->setValue(40);
         toolbar->addWidget(interval);
 
-        layout->addWidget(toolbar);
+        toolbar->addSeparator();
 
-        slice = new CImageSlice(CImageSlice::Z);
+        toolbar->addWidget(new QLabel("Slice Direction:"));
+
+        slice = new CImageSlice(CImageSlice::Z, false, toolbar);
 
         layout->addWidget(slice);
 
@@ -91,8 +102,12 @@ C2DImageTimeView::C2DImageTimeView(CMainWindow* wnd)
 {
     ui->setup(this);
 
+    m_infoSlice = ui->slice;
+
     connect(ui->actionPlayPause, &QAction::triggered, this, &C2DImageTimeView::on_actionPlayPause_triggered);
     connect(ui->timer, &QTimer::timeout, this, &C2DImageTimeView::on_timer_timeout);
+    connect(ui->interval, &QSpinBox::valueChanged, this, &C2DImageTimeView::on_interval_valueChanged);
+    connect(ui->slice, &CImageSlice::focusChanged, this, &C2DImageTimeView::on_slice_clicked);
 }
 
 void C2DImageTimeView::Update()
@@ -110,7 +125,14 @@ void C2DImageTimeView::Update()
 
 void C2DImageTimeView::ModelTreeSelectionChanged(FSObject* obj)
 {
-    Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(obj);
+    CImageModel* img = dynamic_cast<CImageModel*>(obj);
+
+    // Forces recalc of min and max values on the image
+    if(img && img->Get3DImage())
+    {
+        double min, max;
+        img->Get3DImage()->GetMinMax(min, max);
+    }
 
     ui->slice->SetImage(img);
 
@@ -150,6 +172,12 @@ void C2DImageTimeView::on_timer_timeout()
             }
 
             ui->slice->SetIndex(index);
+            
+            if(m_inspector)
+            {
+                UpdatePixelInfo();
+                m_inspector->UpdateData();
+            }
 
             return;
         }
@@ -157,4 +185,24 @@ void C2DImageTimeView::on_timer_timeout()
 
     // stop the animation if this view isn't visible
     on_actionPlayPause_triggered();
+}
+
+void C2DImageTimeView::on_interval_valueChanged()
+{
+    if(ui->running)
+    {
+        ui->timer->stop();
+        ui->timer->start(ui->interval->value());
+    }
+}
+
+void C2DImageTimeView::on_slice_clicked(int direction, QPoint pos)
+{
+    m_infoPoint = pos;
+
+    if(m_inspector)
+    {
+        UpdatePixelInfo();
+        m_inspector->UpdateData();
+    }
 }

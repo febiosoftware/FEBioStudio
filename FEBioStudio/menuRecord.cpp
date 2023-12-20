@@ -29,10 +29,10 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include <PostLib/ImgAnimation.h>
-#include <PostLib/AVIAnimation.h>
-#include <PostLib/MPEGAnimation.h>
-#include <PostLib/GIFAnimation.h>
+#include "ImgAnimation.h"
+#include "AVIAnimation.h"
+#include "MPEGAnimation.h"
+#include "GIFAnimation.h"
 
 void CMainWindow::on_actionRecordNew_triggered()
 {
@@ -60,7 +60,7 @@ void CMainWindow::on_actionRecordNew_triggered()
 		QString fileName = dlg.selectedFiles().first();
 		string sfile = fileName.toStdString();
 		char szfilename[512] = { 0 };
-		sprintf(szfilename, "%s", sfile.c_str());
+		snprintf(szfilename, sizeof szfilename, "%s", sfile.c_str());
 		int l = (int)sfile.length();
 		char* ch = strrchr(szfilename, '.');
 

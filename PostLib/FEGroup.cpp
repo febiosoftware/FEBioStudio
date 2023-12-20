@@ -63,7 +63,7 @@ FEElement_& Post::MeshDomain::Element(int n)
 	return m_pm->ElementRef(m_Elem[n]);
 }
 
-void Post::FSPart::GetNodeList(vector<int>& node, vector<int>& lnode)
+void Post::FSElemSet::GetNodeList(vector<int>& node, vector<int>& lnode)
 {
 	FSCoreMesh& mesh = *GetMesh();
 	int NN = mesh.Nodes();

@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "GLHighlighter.h"
 #include "GLView.h"
+#include <GLLib/GLMeshRender.h>
 #include <GeomLib/GObject.h>
 
 GLHighlighter GLHighlighter::m_This;
@@ -115,7 +116,7 @@ bool GLHighlighter::IsTracking()
 	return m_This.m_btrack;
 }
 
-void drawEdge(CGLView* view, GEdge* edge, GLColor c)
+void drawEdge(GLMeshRender& renderer, GEdge* edge, GLColor c)
 {
 	GObject* po = dynamic_cast<GObject*>(edge->Object());
 	if (po == 0) return;
@@ -125,8 +126,8 @@ void drawEdge(CGLView* view, GEdge* edge, GLColor c)
 	glPushMatrix();
 	SetModelView(po);
 
-	GLMesh& m = *po->GetRenderMesh();
-	view->GetMeshRenderer().RenderGLEdges(&m, edge->GetLocalID());
+	GMesh& m = *po->GetRenderMesh();
+	renderer.RenderGLEdges(&m, edge->GetLocalID());
 
 	GNode* n0 = po->Node(edge->m_node[0]);
 	GNode* n1 = po->Node(edge->m_node[1]);
@@ -139,6 +140,30 @@ void drawEdge(CGLView* view, GEdge* edge, GLColor c)
 			vec3d r1 = n1->LocalPosition();
 			glVertex3d(r0.x, r0.y, r0.z);
 			glVertex3d(r1.x, r1.y, r1.z);
+		}
+		glEnd();
+	}
+	glPopMatrix();
+}
+
+void drawNode(GLMeshRender& renderer, GNode* node, GLColor c)
+{
+	GObject* po = dynamic_cast<GObject*>(node->Object());
+	if (po == 0) return;
+
+	glColor3ub(c.r, c.g, c.b);
+
+	glPushMatrix();
+	SetModelView(po);
+
+	GMesh& m = *po->GetRenderMesh();
+
+	if (node)
+	{
+		glBegin(GL_POINTS);
+		{
+			vec3d r0 = node->LocalPosition();
+			glVertex3d(r0.x, r0.y, r0.z);
 		}
 		glEnd();
 	}
@@ -161,16 +186,24 @@ void GLHighlighter::draw()
 
 	glLineWidth(2.0f);
 
+	GLMeshRender renderer;
+
     for (GItem* item : m_This.m_item)
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(item);
-		if (edge) drawEdge(view, edge, m_This.m_pickColor);
+		if (edge) drawEdge(renderer, edge, m_This.m_pickColor);
+
+		GNode* node = dynamic_cast<GNode*>(item);
+		if (node) drawNode(renderer, node, m_This.m_pickColor);
 	}
 
 	if (m_This.m_activeItem)
 	{
 		GEdge* edge = dynamic_cast<GEdge*>(m_This.m_activeItem);
-		if (edge) drawEdge(view, edge, m_This.m_activeColor);
+		if (edge) drawEdge(renderer, edge, m_This.m_activeColor);
+
+		GNode* node = dynamic_cast<GNode*>(m_This.m_activeItem);
+		if (node) drawNode(renderer, node, m_This.m_activeColor);
 	}
 	glLineWidth(line_old);
 

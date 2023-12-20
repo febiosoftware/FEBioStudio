@@ -29,11 +29,11 @@ SOFTWARE.*/
 #include <FSCore/Archive.h>
 #include "PRVObjectFormat.h"
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 
-PRVObjectExport::PRVObjectExport(FSProject& prj) : FEFileExport(prj)
+PRVObjectExport::PRVObjectExport(FSProject& prj) : FSFileExport(prj)
 {
 	m_selectedObjectsOnly = true;
 	m_exportDiscrete = true;

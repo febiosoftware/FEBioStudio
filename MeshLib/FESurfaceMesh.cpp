@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "FEFaceEdgeList.h"
 #include "FENodeEdgeList.h"
 #include "FENodeFaceList.h"
-#include <MeshTools/GLMesh.h>
+using namespace std;
 
 FSSurfaceMesh::FSSurfaceMesh()
 {
@@ -48,6 +48,14 @@ FSSurfaceMesh::FSSurfaceMesh(const FSSurfaceMesh& mesh)
 
 FSSurfaceMesh::~FSSurfaceMesh()
 {
+}
+
+void FSSurfaceMesh::Clear()
+{
+	m_Node.clear();
+	m_Edge.clear();
+	m_Face.clear();
+	m_data.Clear();
 }
 
 FSSurfaceMesh::FSSurfaceMesh(TriMesh& dyna)
@@ -118,45 +126,6 @@ FSSurfaceMesh::FSSurfaceMesh(TriMesh& dyna)
 
 	// let's update the new nodes
 	AutoPartitionNodes();
-}
-
-//-----------------------------------------------------------------------------
-FSSurfaceMesh::FSSurfaceMesh(GLMesh& m)
-{
-	int NN = m.Nodes();
-	int NF = m.Faces();
-	int NE = m.Edges();
-
-	Create(NN, NE, NF);
-	for (int i = 0; i < NN; ++i)
-	{
-		FSNode& node = Node(i);
-		GMesh::NODE& gnode = m.Node(i);
-		node.r = gnode.r;
-		node.m_gid = gnode.pid;
-	}
-
-	for (int i = 0; i < NE; ++i)
-	{
-		FSEdge& edge = Edge(i);
-		GMesh::EDGE& gedge = m.Edge(i);
-		edge.n[0] = gedge.n[0];
-		edge.n[1] = gedge.n[1];
-		edge.m_gid = gedge.pid;
-	}
-
-	for (int i = 0; i < NF; ++i)
-	{
-		FSFace& face = Face(i);
-		GMesh::FACE& gface = m.Face(i);
-		face.SetType(FE_FACE_TRI3);
-		face.n[0] = gface.n[0];
-		face.n[1] = gface.n[1];
-		face.n[2] = gface.n[2];
-		face.m_gid = gface.pid;
-	}
-
-	Update();
 }
 
 FSSurfaceMesh& FSSurfaceMesh::operator = (const FSSurfaceMesh& mesh)
@@ -1108,6 +1077,17 @@ void FSSurfaceMesh::RemoveIsolatedEdges()
 		for (int j = 0; j<n; ++j) face.m_edge[j] = Edge(face.m_edge[j]).m_ntag;
 	}
 
+	// update edge neighbors
+	for (int i = 0; i < Edges(); ++i)
+	{
+		FSEdge& e = Edge(i);
+		if (e.m_ntag >= 0)
+		{
+			if (e.m_nbr[0] >= 0) e.m_nbr[0] = Edge(e.m_nbr[0]).m_ntag;
+			if (e.m_nbr[1] >= 0) e.m_nbr[1] = Edge(e.m_nbr[1]).m_ntag;
+		}
+	}
+
 	// remove the isolated edges
 	n = 0;
 	for (int i = 0; i<Edges(); ++i)
@@ -1156,6 +1136,12 @@ void FSSurfaceMesh::AutoPartitionNodes()
 		}
 		else node.m_gid = -1;
 	}
+}
+
+//-----------------------------------------------------------------------------
+Mesh_Data& FSSurfaceMesh::GetMeshData()
+{
+	return m_data;
 }
 
 //-----------------------------------------------------------------------------

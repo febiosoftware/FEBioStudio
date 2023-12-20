@@ -44,16 +44,16 @@ CGLStreamLinePlot::CGLStreamLinePlot()
 	sprintf(szname, "StreamLines.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_vec3");
-	AddIntParam(0, "Color map" )->SetEnumNames("@color_map");
-	AddBoolParam(true, "Allow clipping");
-	AddDoubleParam(0, "Step size");
-	AddDoubleParam(0, "Density")->SetFloatRange(0.0, 1.0, 0.01);
-	AddDoubleParam(0, "Velocity threshold");
-	AddIntParam(0, "Range Type")->SetEnumNames("Dynamic\0Static\0User\0");
-	AddIntParam(0, "Range divisions")->SetIntRange(1, 100);
-	AddDoubleParam(0., "User Range Max");
-	AddDoubleParam(0., "User Range Min");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_vec3");
+	AddIntParam(0, "color_map" )->SetEnumNames("@color_map");
+	AddBoolParam(true, "allow_clipping");
+	AddDoubleParam(0, "step_size");
+	AddDoubleParam(0, "density")->SetFloatRange(0.0, 1.0, 0.01);
+	AddDoubleParam(0, "velocity_threshold");
+	AddIntParam(0, "range_type")->SetEnumNames("Dynamic\0Static\0User\0");
+	AddIntParam(0, "range_divisions")->SetIntRange(1, 100);
+	AddDoubleParam(0., "user_range_max");
+	AddDoubleParam(0., "user_range_min");
 
 	m_find = nullptr;
 
@@ -136,26 +136,7 @@ void CGLStreamLinePlot::Render(CGLContext& rc)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_TEXTURE_1D);
 
-	for (int i=0; i<NSL; ++i)
-	{
-		StreamLine& sl = m_streamLines[i];
-
-		int NP = sl.Points();
-		if (NP > 1)
-		{
-			glBegin(GL_LINE_STRIP);
-			for (int j = 0; j<NP; ++j)
-			{
-				StreamPoint& pt = sl[j];
-				GLColor& c = pt.c;
-				vec3f& r = pt.r;
-
-				glColor3ub(c.r, c.g, c.b);
-				glVertex3f(r.x, r.y, r.z);
-			}
-			glEnd();
-		}
-	}
+	m_mesh.Render();
 
 	glPopAttrib();
 }
@@ -258,8 +239,11 @@ void CGLStreamLinePlot::Update(int ntime, float dt, bool breset)
 
 	GetLegendBar()->SetRange(m_crng.x, m_crng.y);
 
-	// update stream lins
+	// update stream lines
 	UpdateStreamLines();
+
+	// update the mesh
+	UpdateMesh();
 }
 
 vec3f CGLStreamLinePlot::Velocity(const vec3f& r, bool& ok)
@@ -442,4 +426,40 @@ void CGLStreamLinePlot::ColorStreamLines()
 			pt.c = col.map(w);
 		}
 	}
+}
+
+void CGLStreamLinePlot::UpdateMesh()
+{
+	int NSL = (int)m_streamLines.size();
+
+	// count vertices
+	int verts = 0;
+	for (int i = 0; i < NSL; ++i)
+	{
+		StreamLine& sl = m_streamLines[i];
+		if (sl.Points() > 1)
+			verts += 2*(sl.Points() - 2) + 2;
+	}
+
+	// allocate mesh
+	m_mesh.Create(verts / 2, GLMesh::FLAG_COLOR);
+
+	// build mesh
+	m_mesh.BeginMesh();
+	for (int i = 0; i < NSL; ++i)
+	{
+		StreamLine& sl = m_streamLines[i];
+		int NP = sl.Points();
+		if (NP > 1)
+		{
+			for (int j = 0; j < NP - 1; ++j)
+			{
+				StreamPoint& p0 = sl[j];
+				StreamPoint& p1 = sl[j+1];
+				m_mesh.AddVertex(p0.r, p0.c);
+				m_mesh.AddVertex(p1.r, p1.c);
+			}
+		}
+	}
+	m_mesh.EndMesh();
 }

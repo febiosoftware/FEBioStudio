@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include "FoamGeneratorTool.h"
 #include "MaterialMapTool.h"
 #include "ScalarFieldTool.h"
+#include "EditDataFieldTool.h"
 #include "PlaneCutTool.h"
 #include "FiberGeneratorTool.h"
 #include "AreaCalculatorTool.h"
@@ -41,6 +42,8 @@ SOFTWARE.*/
 #include "ICPRegistrationTool.h"
 #include "ImageMapTool.h"
 #include "DiscreteElementNetworkTool.h"
+#include "SelectNearPlaneTool.h"
+#include "KinematBuildTool.h"
 
 CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
@@ -65,6 +68,7 @@ void CToolsPanel::initTools()
 	tools.push_back(new CFoamGeneratorTool (wnd));
 	tools.push_back(new CMaterialMapTool   (wnd));
 	tools.push_back(new CScalarFieldTool   (wnd));
+	tools.push_back(new CEditDataFieldTool (wnd));
 	tools.push_back(new CPlaneCutTool      (wnd));
 	tools.push_back(new CFiberGeneratorTool(wnd));
     tools.push_back(new CAreaCalculatorTool(wnd));
@@ -73,6 +77,8 @@ void CToolsPanel::initTools()
 	tools.push_back(new CICPRegistrationTool(wnd));
     tools.push_back(new CImageMapTool      (wnd));
     tools.push_back(new CDiscreteElementNetworkTool(wnd));
+    tools.push_back(new CSelectNearPlaneTool(wnd));
+	tools.push_back(new CKinematBuildTool   (wnd));
 }
 
 void CToolsPanel::on_buttons_idClicked(int id)

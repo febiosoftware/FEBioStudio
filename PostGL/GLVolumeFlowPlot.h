@@ -26,13 +26,14 @@ SOFTWARE.*/
 
 #pragma once
 #include "GLPlot.h"
+#include <GLLib/GLMesh.h>
 #include <vector>
 
 namespace Post {
 
 class GLVolumeFlowPlot : public CGLLegendPlot
 {
-	enum {DATA_FIELD, COLOR_MAP, SMOOTH_COLOR_MAP, RANGE_DIVISIONS, OPACITY_SCALE, MESH_DIVISIONS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
+	enum {DATA_FIELD, COLOR_MAP, SMOOTH_COLOR_MAP, RANGE_DIVISIONS, OPACITY_SCALE, OPACITY_STRENGTH, MESH_DIVISIONS, SHOW_LEGEND, MAX_RANGE_TYPE, USER_MAX, MIN_RANGE_TYPE, USER_MIN};
 
 	enum { MAX_MESH_DIVS = 5};
 
@@ -65,14 +66,17 @@ public:
 	bool UpdateData(bool bsave = true) override;
 
 private:
+	void CreateSlices(std::vector<Slice>& slice, const vec3d& normal);
 	void CreateSlice(Slice& slice, const vec3d& normal, float w);
 	void UpdateNodalData(int ntime, bool breset);
-	void RenderSlices(std::vector<Slice>& slice, int step);
+	void UpdateBoundingBox();
+	void UpdateMesh(std::vector<Slice>& slice, GLTriMesh& mesh);
 
 private:
 	int			m_nfield;
 	float		m_offset;
 	float		m_alpha;
+	float		m_gain;
 	bool		m_bsmooth;
 	int			m_nDivs;
 	int			m_meshDivs;
@@ -80,14 +84,11 @@ private:
 	CColorTexture	m_Col;		// colormap
 
 private:
-	std::vector<Slice>	m_slice_X;
-	std::vector<Slice>	m_slice_Y;
-	std::vector<Slice>	m_slice_Z;
-
-private:
 	vector<vec2f>	m_rng;	// value range
 	DataMap<float>	m_map;	// nodal values map
 	vector<float>	m_val;	// current nodal values
 	BOX				m_box;
+
+	GLTriMesh	m_mesh;
 };
 } // namespace Post

@@ -44,6 +44,9 @@ class FSReactionMaterial;
 class FSMaterial;
 class GPart;
 class FSStep;
+class CModelViewer;
+
+class CImageModel;
 
 class FEObjectProps : public CObjectProps
 {
@@ -164,9 +167,15 @@ private:
 class CLogfileProperties : public CObjectProps
 {
 public:
-	CLogfileProperties(FSProject& prj);
+	CLogfileProperties(CModelViewer* wnd, FSProject& prj);
 	QVariant GetPropertyValue(int i);
 	void SetPropertyValue(int i, const QVariant& v);
+	void Update() override;
+
+private:
+	int	m_actionIndex;
+	CModelViewer* m_wnd;
+	FSProject* m_prj;
 };
 
 
@@ -210,4 +219,20 @@ public:
 private:
 	GPart*	m_pg;
 	FSModel*	m_fem;
+};
+
+class CImageModelProperties : public CObjectProps
+{
+public:
+    CImageModelProperties(CImageModel* model);
+
+    QVariant GetPropertyValue(int i);
+	void SetPropertyValue(int i, const QVariant& v);
+
+private:
+    enum PropOrder {PIXELTYPE, PXLDIM, SHOWBOX, X0, Y0, Z0, X1, Y1, Z1};
+
+private:
+    CImageModel* m_model;
+
 };

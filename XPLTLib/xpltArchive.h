@@ -28,8 +28,7 @@ SOFTWARE.*/
 #include <stdio.h>
 #include <string.h>
 #include <vector>
-#include <FECore/vec3d.h>
-#include <FECore/tens4d.h>
+#include <FSCore/math3d.h>
 #include <FSCore/Archive.h>
 
 //-----------------------------------------------------------------------------
@@ -156,9 +155,6 @@ public: // reading
 	IOResult read(std::vector<mat3f  >& a) { return read(&(a[0].d[0][0]), 9*(int) a.size()); }
 	IOResult read(std::vector<unsigned int>& a) { return read((int*)&a[0], (int)a.size()); }
 
-	// conversion to FILE* 
-//	operator FILE* () { return m_fp; }
-
 	void SetVersion(unsigned int n);
 	unsigned int Version();
 
@@ -166,7 +162,7 @@ public: // reading
 	int GetCompression();
 	void SetCompression(int n);
 
-	int DecompressChunk(unsigned int& nid, unsigned int& nsize);
+	bool DecompressChunk(unsigned int& nid, unsigned int& nsize);
 
 protected:
 	Imp& im;

@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "FETube.h"
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GPrimitive.h>
-#include <MeshTools/FEMultiBlockMesh.h>
+#include "FEMultiBlockMesh.h"
 
 //////////////////////////////////////////////////////////////////////
 // FETube
@@ -61,7 +61,7 @@ FETube::FETube(GTube* po)
 	AddBoolParam(m_bz, "bz", "Z-mirrored bias");
 	AddBoolParam(m_br, "br", "R-mirrored bias");
 
-	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0");
+	AddIntParam(0, "elem", "Element Type")->SetEnumNames("Hex8\0Hex20\0Hex27\0Tet4\0Tet10\0");
 }
 
 FSMesh* FETube::BuildMesh()
@@ -191,10 +191,32 @@ FSMesh* FETube::BuildMultiBlockMesh()
 	case 0: SetElementType(FE_HEX8); break;
 	case 1: SetElementType(FE_HEX20); break;
 	case 2: SetElementType(FE_HEX27); break;
+	case 3: SetElementType(FE_HEX8); break; // we'll convert later
+	case 4: SetElementType(FE_HEX8); break; // we'll convert later
 	}
 
 	// all done
-	return FEMultiBlockMesh::BuildMesh();
+	FSMesh* pm = FEMultiBlockMesh::BuildMesh();
+	if (pm == nullptr) return nullptr;
+
+	if ((nelem == 3) || (nelem == 4))
+	{
+		FEHex2Tet h2t;
+		FSMesh* tetMesh = h2t.Apply(pm);
+		delete pm;
+		pm = tetMesh;
+
+		if (nelem == 4)
+		{
+			FETet4ToTet10 t4t10;
+			// t4t10.SetSmoothing(true); // NOTE: This doesn't give good results.
+			FSMesh* t10Mesh = t4t10.Apply(pm);
+			delete pm;
+			pm = t10Mesh;
+		}
+	}
+
+	return pm;
 }
 
 FSMesh* FETube::BuildMeshLegacy()

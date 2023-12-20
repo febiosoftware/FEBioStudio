@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include "FEItem.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 
 //-----------------------------------------------------------------------------
 // Edge types
@@ -81,6 +81,9 @@ public:
 	//! find a node index
 	int FindNodeIndex(int node) const;
 
+	//! see if the edge has a node
+	bool HasNode(int node) const;
+
 	//! Get the edge type
 	int Type() const { return m_type; }
 
@@ -95,6 +98,7 @@ public:
 
 	// evaluate a vector expression at iso-points (r,s)
 	vec3f eval(vec3f* v, double r);
+	vec3d eval(vec3d* v, double r);
 
 public:
 	int	m_type;				//!< edge type

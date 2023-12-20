@@ -153,12 +153,12 @@ if(USE_TEEM)
   #find_library(teem NAMES teem PATH TEEM_LIB_DIR TEEM_LIB)
 endif()
 
-if(USE_DICOM)
-  set(DICOM_LIB_NAMES dcmdata dcmimage dcmimgle i2d oflog ofstd)
-  foreach(name IN LISTS DICOM_LIB_NAMES)
-    findLib(DICOM_LIB_DIR DICOM_LIB ${name})
-	list(APPEND DICOM_LIBS ${DICOM_LIB})
-	unset(DICOM_LIB)
+if(USE_DCMTK)
+  set(DCMTK_LIB_NAMES dcmdata dcmimage dcmimgle i2d oflog ofstd)
+  foreach(name IN LISTS DCMTK_LIB_NAMES)
+    findLib(DCMTK_LIB_DIR DCMTK_LIB ${name})
+	list(APPEND DCMTK_LIBS ${DCMTK_LIB})
+	unset(DCMTK_LIB)
   endforeach(name)
 endif()
 
@@ -309,6 +309,15 @@ if(USE_FFMPEG)
     
 endif()
 
+if(USE_ZLIB)
+	if(NOT EXISTS ${ZLIB_LIBRARY_RELEASE})
+		message(SEND_ERROR "Could not find ZLIB. Check ZLIB_LIBRARY_RELEASE.")
+	endif()
+	if(NOT EXISTS ${ZLIB_INCLUDE_DIR}/zlib.h)
+		message(SEND_ERROR "Could not find zlib.h. Check ZLIB_INCLUDE_DIR.")
+	endif()
+endif()
+
 # Find FEBio Libs
 if (WIN32)
     set(FEBio_DEBUG_LIBS "")
@@ -364,7 +373,7 @@ elseif(APPLE)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
     
     if(${OpenMP_C_FOUND})
-        add_compile_options(-Xpreprocessor -fopenmp)
+        add_compile_options(-Xpreprocessor -fopenmp -w)
     endif()
     
 else()
@@ -389,9 +398,9 @@ if(USE_TEEM)
   include_directories(${LIBTIFF_INC})
 endif()
 
-if(USE_DICOM)
-  add_definitions(-DHAS_DICOM)
-  include_directories(${DICOM_INC})
+if(USE_DCMTK)
+  add_definitions(-DHAS_DCMTK)
+  include_directories(${DCMTK_INC})
 endif()
 
 if(USE_MMG)
@@ -437,7 +446,11 @@ else()
     include_directories(${GLEW_INCLUDE_DIRS})
 endif()
 
-include_directories(${ZLIB_INCLUDE_DIR})
+# Link ZLIB
+if(USE_ZLIB)
+    add_definitions(-DHAVE_ZLIB)
+    include_directories(${ZLIB_INCLUDE_DIR})
+endif()
 
 if(USE_ITK)
     add_definitions(-DHAS_ITK)
@@ -536,15 +549,14 @@ if(EXISTS ${CMAKE_SOURCE_DIR}/.git)
     crossExecProcess(NULL)
 
     if(SUCCESS EQUAL 0)
-        # Get branch name and check if we're on the develop branch
+        # Get branch name and check if we're on the master branch
         set(CMD git rev-parse --abbrev-ref HEAD)
         crossExecProcess(BRANCH_NAME)
 
-        string(COMPARE EQUAL ${BRANCH_NAME} "develop" ISDEVELOP)
-        string(COMPARE EQUAL ${BRANCH_NAME} "febiostudio2"  ISFEBIO4)
+        string(COMPARE EQUAL ${BRANCH_NAME} "master" ISMASTER)
         
         # Get the commit info and set the DEVCOMMIT macro
-        if(SUCCESS EQUAL 0 AND (ISDEVELOP OR ISFEBIO4))
+        if(SUCCESS EQUAL 0 AND NOT ISMASTER)
             
             set(CMD git rev-parse --short=9 HEAD)
             crossExecProcess(DEVCOMMIT)
@@ -576,8 +588,8 @@ if(USE_TEEM)
   target_link_libraries(${FBS_BIN_NAME} ${LIBTIFF_LIB})
 endif()
 
-if(USE_DICOM)
-  target_link_libraries(${FBS_BIN_NAME} ${DICOM_LIBS})
+if(USE_DCMTK)
+  target_link_libraries(${FBS_BIN_NAME} ${DCMTK_LIBS})
 endif()
 
 if(UNIX)
@@ -676,7 +688,10 @@ if(USE_ITK)
     target_link_libraries(${FBS_BIN_NAME} ${SimpleITK_LIBRARIES})
 endif()
 
-target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
+if(USE_ZLIB)
+    target_link_libraries(${FBS_BIN_NAME} ${ZLIB_LIBRARY_RELEASE})
+endif()
+
 target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
 
 if(APPLE)

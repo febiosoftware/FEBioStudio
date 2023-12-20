@@ -33,17 +33,18 @@ SOFTWARE.*/
 #include "GTriad.h"
 #include "GGrid.h"
 #include <MeshLib/Intersect.h>
-#include <GLLib/GLMeshRender.h>
 #include <GLWLib/GLWidgetManager.h>
-#include <PostLib/Animation.h>
+#include "Animation.h"
 #include <GLLib/GLContext.h>
-#include "ViewSettings.h"
+#include <GLLib/GLViewSettings.h>
+#include "GLViewSelector.h"
 
 class CMainWindow;
 class CGLDocument;
 class GDecoration;
 class CGView;
 class FSModel;
+class CGLView;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -84,6 +85,12 @@ enum Snap_Mode
 	SNAP_GRID
 };
 
+enum Planecut_Mode
+{
+	PLANECUT,
+	HIDE_ELEMENTS
+};
+
 //-----------------------------------------------------------------------------
 // tag structure
 struct GLTAG
@@ -91,61 +98,10 @@ struct GLTAG
 	char	sztag[64];	// name of tag
 	float	wx, wy;		// window coordinates for tag
 	vec3d	r;			// world coordinates of tag
-	int		ntag;		// tag value
+	GLColor	c;			// tag color
 };
 
-//-----------------------------------------------------------------------------
-class SelectRegion
-{
-public:
-	SelectRegion(){}
-	virtual ~SelectRegion(){}
-
-	virtual bool IsInside(int x, int y) const = 0;
-
-	// see if a line intersects this region
-	// default implementation only checks if one of the end points is inside.
-	// derived classes should provide a better implementation.
-	virtual bool LineIntersects(int x0, int y0, int x1, int y1) const;
-
-	// see if a triangle intersects this region
-	// default implementation checks for line intersections
-	virtual bool TriangleIntersect(int x0, int y0, int x1, int y1, int x2, int y2) const;
-};
-
-class BoxRegion : public SelectRegion
-{
-public:
-	BoxRegion(int x0, int x1, int y0, int y1);
-	bool IsInside(int x, int y) const;
-	bool LineIntersects(int x0, int y0, int x1, int y1) const;
-private:
-	int	m_x0, m_x1;
-	int	m_y0, m_y1;
-};
-
-class CircleRegion : public SelectRegion
-{
-public:
-	CircleRegion(int x0, int x1, int y0, int y1);
-	bool IsInside(int x, int y) const;
-	bool LineIntersects(int x0, int y0, int x1, int y1) const;
-private:
-	int	m_xc, m_yc;
-	int	m_R;
-};
-
-class FreeRegion : public SelectRegion
-{
-public:
-	FreeRegion(vector<pair<int, int> >& pl);
-	bool IsInside(int x, int y) const;
-private:
-	vector<pair<int, int> >& m_pl;
-	int m_x0, m_x1;
-	int m_y0, m_y1;
-};
-
+//===================================================================
 class CGLView : public QOpenGLWidget
 {
 	Q_OBJECT
@@ -166,39 +122,10 @@ public:
 
 	void UpdateCamera(bool hitCameraTarget);
 
-	void SelectParts   (int x, int y);
-	void SelectSurfaces(int x, int y);
-	void SelectEdges   (int x, int y);
-	void SelectNodes   (int x, int y);
-	void SelectDiscrete(int x, int y);
-
+	void HighlightNode(int x, int y);
 	void HighlightEdge(int x, int y);
 
-	void SelectObjects   (int x, int y);
 	bool SelectPivot(int x, int y);
-
-	// select items of an FE mesh
-	void SelectFEElements(int x, int y);
-	void SelectFEFaces   (int x, int y);
-	void SelectFEEdges   (int x, int y);
-	void SelectFENodes   (int x, int y);
-
-	// select items of a surface mesh
-	void SelectSurfaceFaces(int x, int y);
-	void SelectSurfaceEdges(int x, int y);
-	void SelectSurfaceNodes(int x, int y);
-
-	void RegionSelectObjects (const SelectRegion& region);
-	void RegionSelectParts   (const SelectRegion& region);
-	void RegionSelectSurfaces(const SelectRegion& region);
-	void RegionSelectEdges   (const SelectRegion& region);
-	void RegionSelectNodes   (const SelectRegion& region);
-	void RegionSelectDiscrete(const SelectRegion& region);
-
-	void RegionSelectFENodes(const SelectRegion& region);
-	void RegionSelectFEFaces(const SelectRegion& region);
-	void RegionSelectFEEdges(const SelectRegion& region);
-	void RegionSelectFEElems(const SelectRegion& region);
 
 	void SetCoordinateSystem(int nmode);
 	
@@ -227,7 +154,7 @@ public:
 	}
 
 	// --- view settings ---
-	VIEW_SETTINGS& GetViewSettings() { return m_view; }
+	GLViewSettings& GetViewSettings() { return m_view; }
 
 	void ShowMeshData(bool b);
 
@@ -238,6 +165,8 @@ public:
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
 
 	std::string GetOGLVersionString();
+
+	void ToggleFPS();
 
 protected:
 	void mousePressEvent  (QMouseEvent* ev);
@@ -266,7 +195,7 @@ public:
 	void ZoomExtents(bool banimate = true);
 
 	// prep the GL view for rendering
-	void PrepModel();
+	void PrepScene();
 
 	// setup the projection matrix
 	void SetupProjection();
@@ -286,6 +215,7 @@ public:
 	void RenderBackground();
 
 	void RenderRubberBand();
+	void RenderBrush();
 	void RenderPivot(bool bpick = false);
 
 	void Render3DCursor(const vec3d& r, double R);
@@ -313,11 +243,12 @@ public:
 	bool GetPivotMode() { return m_bpivot; }
 	void SetPivotMode(bool b) { m_bpivot = b; }
 
-	GLMeshRender& GetMeshRenderer() { return m_renderer; }
-
 	void changeViewMode(View_Mode vm);
 
+	void ShowContextMenu(bool b);
+
 	CGLWidgetManager* GetGLWidgetManager() { return m_Widget; }
+	void AllocateDefaultWidgets(bool b);
 
 	int GetMeshMode();
 
@@ -332,11 +263,6 @@ private:
 
 	// convert from device pixel to physical pixel
 	QPoint DeviceToPhysical(int x, int y);
-
-	void TagBackfacingFaces(FSMeshBase& mesh);
-	void TagBackfacingNodes(FSMeshBase& mesh);
-	void TagBackfacingEdges(FSMeshBase& mesh);
-	void TagBackfacingElements(FSMesh& mesh);
 
 public:
 	QImage CaptureScreen();
@@ -373,10 +299,10 @@ public:
 	void UpdatePlaneCut(bool breset = false);
 
 private:
-	GLMesh* BuildPlaneCut(FSModel& fem);
+	GMesh* BuildPlaneCut(FSModel& fem);
 
 public:
-	void SetColorMap(Post::CColorMap& map);
+	void SetColorMap(unsigned int n);
 
 	Post::CColorMap& GetColorMap();
 
@@ -389,7 +315,9 @@ public:
 
 	bool ShowPlaneCut();
 
-	GLMesh* PlaneCutMesh();
+	GMesh* PlaneCutMesh();
+
+	void DeletePlaneCutMesh();
 
 	int PlaneCutMode();
 
@@ -403,7 +331,6 @@ protected slots:
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window
-	GLMeshRender	m_renderer; // the renderer for this view
 
 	CBasicCmdManager m_Cmd;	// view command history
 
@@ -415,6 +342,8 @@ protected:
 	int			m_dxp, m_dyp;
 	View_Mode	m_nview;
 	Snap_Mode	m_nsnap;
+
+	bool	m_showFPS;
 
 	vec3d	m_rt;	// total translation
 	vec3d	m_rg;
@@ -461,8 +390,12 @@ protected:
 	GLBox*			m_psubtitle;
 	GLTriad*		m_ptriad;
 	GLSafeFrame*	m_pframe;
+	GLLegendBar*	m_legend;
 
 	CGLWidgetManager*	m_Widget;
+	bool	m_ballocDefaultWidgets;
+
+	bool	m_showContextMenu;
 
 private:
 	GLenum	m_videoFormat;
@@ -481,21 +414,22 @@ public:
 	CGLContext	m_rc;
 
 private:
-	VIEW_SETTINGS	m_view;
+	GLViewSettings	m_view;
 	int	m_viewport[4];		//!< store viewport coordinates
+
+	GLViewSelector	m_select;
 
 	CGLCamera	m_oldCam;
 
-	Post::CColorMap m_colorMap;	// color map used for rendering mesh data
+	Post::CColorTexture m_colorMap;	// color map used for rendering mesh data
 
 	bool		m_showPlaneCut;
 	int			m_planeCutMode;
 	double		m_plane[4];
-	GLMesh*		m_planeCut;
+	GMesh*		m_planeCut;
 
 	std::string		m_oglVersionString;
 };
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt);
-void RenderBox(const BOX& bbox, bool partial = true, double scale = 1.0);
 void SetModelView(GObject* po);

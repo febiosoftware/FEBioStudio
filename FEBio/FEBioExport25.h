@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEBodyLoad.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include "FEBioExport.h"
 
 //-----------------------------------------------------------------------------

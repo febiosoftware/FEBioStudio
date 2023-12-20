@@ -363,3 +363,41 @@ bool FEFindElement::FindInCurrentFrame(const vec3f& x, int& nelem, double r[3])
 	nelem = -1;
 	return false;
 }
+
+//================================================================================================
+bool FindElement2D(const vec2d& r, int& elem, double q[2], FSMesh* mesh)
+{
+	vec3d x[FSElement::MAX_NODES];
+	int NE = mesh->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = mesh->Element(i);
+		if (el.IsShell())
+		{
+			int nn = el.Nodes();
+			BOX box;
+			for (int j = 0; j < nn; ++j)
+			{
+				x[j] = mesh->Node(el.m_node[j]).r;
+				box += x[j];
+			}
+
+			double R = box.GetMaxExtent();
+			box.Inflate(R * 1e-5);
+
+			if ((box.x0 < r.x()) && (box.x1 > r.x()) &&
+				(box.y0 < r.y()) && (box.y1 > r.y()))
+			{
+				q[0] = q[1] = 0.0;
+				if (project_inside_element2d(el, x, r, q))
+				{
+					elem = i;
+					return true;
+				}
+			}
+		}
+	}
+
+	elem = -1;
+	return false;
+}

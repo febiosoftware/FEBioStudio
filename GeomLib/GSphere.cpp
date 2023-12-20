@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "GPrimitive.h"
 #include <MeshTools/FESphere.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 //=============================================================================
 // GSphere
@@ -61,15 +61,13 @@ bool GSphere::Update(bool b)
 	m_Node[4]->LocalPosition() = vec3d( 0,  0,-R);
 	m_Node[5]->LocalPosition() = vec3d( 0,  0, R);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------
 void GSphere::Create()
 {
-	SetRenderMesh(new GLMesh());
+	SetRenderMesh(new GMesh());
 
 	// create the nodes
 	assert(m_Node.empty());

@@ -36,17 +36,18 @@ SOFTWARE.*/
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostLib/ImageSlicer.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/MarchingCubes.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLModel.h>
-#include <PostGL/GLProbe.h>
+#include <PostGL/GLPointProbe.h>
+#include <PostGL/GLCurveProbe.h>
 #include <PostGL/GLRuler.h>
 #include <PostGL/GLMusclePath.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPlotGroup.h>
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
@@ -59,6 +60,7 @@ SOFTWARE.*/
 #include "DlgTimeSettings.h"
 #include "PostDocument.h"
 #include "ModelDocument.h"
+#include <ImageLib/ImageFilter.h>
 
 QString warningNoActiveModel = "Please select the view tab to which you want to add this plot.";
 
@@ -188,14 +190,14 @@ void CMainWindow::on_actionImageSlicer_triggered()
 	CDocument* modelDoc = GetModelDocument();
 	CDocument* postDoc = GetPostDocument();
 
-	Post::CImageModel* img = nullptr;
+	CImageModel* img = nullptr;
 	if (modelDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+		img = dynamic_cast<CImageModel*>(ui->modelViewer->GetCurrentObject());
 	}
 	else if (postDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+		img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
 	}
 
 	if (img == nullptr)
@@ -227,14 +229,14 @@ void CMainWindow::on_actionVolumeRender_triggered()
 	CDocument* modelDoc = GetModelDocument();
 	CDocument* postDoc = GetPostDocument();
 
-	Post::CImageModel* img = nullptr;
+	CImageModel* img = nullptr;
 	if (modelDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+		img = dynamic_cast<CImageModel*>(ui->modelViewer->GetCurrentObject());
 	}
 	else if (postDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+		img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
 	}
 
 	if (img == nullptr)
@@ -243,8 +245,7 @@ void CMainWindow::on_actionVolumeRender_triggered()
 		return;
 	}
 
-//	Post::CVolRender* vr = new Post::CVolRender(img);
-	Post::CVolumeRender2* vr = new Post::CVolumeRender2(img);
+	Post::CVolumeRenderer* vr = new Post::CVolumeRenderer(img);
 	vr->Create();
 	img->AddImageRenderer(vr);
 
@@ -267,14 +268,14 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	CDocument* modelDoc = GetModelDocument();
 	CDocument* postDoc = GetPostDocument();
 
-	Post::CImageModel* img = nullptr;
+	CImageModel* img = nullptr;
 	if (modelDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->modelViewer->GetCurrentObject());
+		img = dynamic_cast<CImageModel*>(ui->modelViewer->GetCurrentObject());
 	}
 	else if (postDoc)
 	{
-		img = dynamic_cast<Post::CImageModel*>(ui->postPanel->GetSelectedObject());
+		img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
 	}
 
 	if (img == nullptr)
@@ -299,6 +300,32 @@ void CMainWindow::on_actionMarchingCubes_triggered()
 	RedrawGL();
 }
 
+void CMainWindow::on_actionImageWarp_triggered()
+{
+	// get the document
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr) return;
+
+	// get the selected image model
+	CImageModel* img = nullptr;
+	img = dynamic_cast<CImageModel*>(ui->postPanel->GetSelectedObject());
+	if (img == nullptr)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Please select an image data set first.");
+		return;
+	}
+
+	// create the image warp filter
+	Post::CGLModel& mdl = *postDoc->GetGLModel();
+	WarpImageFilter* warp = new WarpImageFilter(&mdl);
+	img->AddImageFilter(warp);
+	img->ApplyFilters();
+	ui->postPanel->Update(true);
+	ui->postPanel->SelectObject(warp);
+
+	RedrawGL();
+}
+
 void CMainWindow::on_actionAddProbe_triggered()
 {
 	Post::CGLModel* glm = GetCurrentModel();
@@ -308,7 +335,32 @@ void CMainWindow::on_actionAddProbe_triggered()
 		return;
 	}
 
-	Post::GLProbe* probe = new Post::GLProbe();
+	// get the selection center
+	vec3d c = glm->GetSelectionCenter();
+
+	// create the probe and set its initial position
+	Post::GLPointProbe* probe = new Post::GLPointProbe();
+	probe->SetInitialPosition(c);
+
+	// if the current selection is a plot-group, we'll add it there
+	Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(ui->postPanel->GetSelectedObject());
+	if (pg) pg->AddPlot(probe);
+	else glm->AddPlot(probe);
+
+	UpdatePostPanel(true, probe);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionAddCurveProbe_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLCurveProbe* probe = new Post::GLCurveProbe();
 	glm->AddPlot(probe);
 
 	UpdatePostPanel(true, probe);
@@ -340,10 +392,39 @@ void CMainWindow::on_actionMusclePath_triggered()
 		return;
 	}
 
+	// create new muscle path
 	Post::GLMusclePath* musclePath = new Post::GLMusclePath();
-	glm->AddPlot(musclePath);
+
+	// if the current selection is a plot-group, we'll add it there
+	Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(ui->postPanel->GetSelectedObject());
+	if (pg)
+	{
+		// add it to the group
+		pg->AddPlot(musclePath);
+	}
+	else
+	{
+		// just add it to the model
+		glm->AddPlot(musclePath);
+	}
 
 	UpdatePostPanel(true, musclePath);
+	RedrawGL();
+}
+
+void CMainWindow::on_actionPlotGroup_triggered()
+{
+	Post::CGLModel* glm = GetCurrentModel();
+	if (glm == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", warningNoActiveModel);
+		return;
+	}
+
+	Post::GLPlotGroup* mpg = new Post::GLPlotGroup();
+	glm->AddPlot(mpg);
+
+	UpdatePostPanel(true, mpg);
 	RedrawGL();
 }
 
@@ -374,12 +455,12 @@ void CMainWindow::on_actionSlicePlot_triggered()
 
 void CMainWindow::on_actionDisplacementMap_triggered()
 {
-/*	CDocument* doc = GetDocument();
+	CPostDocument* doc = GetPostDocument();
 	if (doc == nullptr) return;
 	if (doc->IsValid() == false) return;
 
-	CGLModel* pm = doc->GetGLModel();
-	if (pm->GetDisplacementMap() == 0)
+	Post::CGLModel* pm = doc->GetGLModel();
+	if (pm->GetDisplacementMap() == nullptr)
 	{
 		if (pm->AddDisplacementMap() == false)
 		{
@@ -388,14 +469,13 @@ void CMainWindow::on_actionDisplacementMap_triggered()
 		else
 		{
 			doc->UpdateFEModel(true);
-			ui->modelViewer->Update(true);
+			ui->postPanel->Update(true);
 		}
 	}
 	else
 	{
 		QMessageBox::information(this, "FEBio Studio", "This model already has a displacement map.");
 	}
-*/
 }
 
 void CMainWindow::on_actionGraph_triggered()

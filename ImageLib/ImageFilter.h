@@ -25,12 +25,14 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <FSCore/FSObject.h>
 
 namespace Post{
-class CImageModel;
+class CGLModel;
 };
+
+class CImageModel;
 
 class CImageFilter : public FSObject
 {
@@ -39,10 +41,12 @@ public:
 
     virtual void ApplyFilter() = 0;
 
-    void SetImageModel(Post::CImageModel* model);
+    virtual void SetImageModel(CImageModel* model);
+
+	CImageModel* GetImageModel();
 
 protected:
-    Post::CImageModel* m_model;
+    CImageModel* m_model;
 };
 
 class ThresholdImageFilter : public CImageFilter
@@ -51,24 +55,27 @@ public:
     ThresholdImageFilter();
 
     void ApplyFilter() override;
+
+    void SetImageModel(CImageModel* model) override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
 };
 
-#ifdef HAS_ITK
 
-class MeanImageFilter : public CImageFilter
+class WarpImageFilter : public CImageFilter
 {
+	enum { SCALE_DIM };
+
 public:
-    MeanImageFilter();
+	WarpImageFilter(Post::CGLModel* glm);
+	void ApplyFilter() override;
 
-    void ApplyFilter() override;
+private:
+    template<class pType>
+    void FitlerTemplate();
+
+private:
+	Post::CGLModel* m_glm;
 };
-
-class GaussianImageFilter : public CImageFilter
-{
-public:
-    GaussianImageFilter();
-
-    void ApplyFilter() override;
-};
-
-#endif

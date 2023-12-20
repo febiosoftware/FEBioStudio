@@ -30,6 +30,8 @@ SOFTWARE.*/
 #include "penta.h"
 #include "hex.h"
 #include "pyra.h"
+#include "tri3.h"
+#include "quad4.h"
 
 //=============================================================================
 // FEElement_
@@ -528,6 +530,9 @@ bool FEElement_::is_equal(FEElement_& e)
 	switch (Type())
 	{
 	case FE_BEAM2:
+		if ((n[0] != m[0]) && (n[0] != m[1]) && (n[0] != m[2])) return false;
+		if ((n[1] != m[0]) && (n[1] != m[1]) && (n[1] != m[2])) return false;
+		break;
 	case FE_TRI3:
     case FE_TRI6:
 		if ((n[0]!=m[0])&&(n[0]!=m[1])&&(n[0]!=m[2])) return false;
@@ -745,6 +750,19 @@ void FEElement_::shape(double *H, double r, double s, double t)
 }
 
 //-----------------------------------------------------------------------------
+//! Calculate the shape function values at the point (r,s)
+void FEElement_::shape_2d(double* H, double r, double s)
+{
+	switch (Type())
+	{
+	case FE_TRI3 : TRI3 ::shape(H, r, s); break;
+	case FE_QUAD4: QUAD4::shape(H, r, s); break;
+	default:
+		assert(false);
+	}
+}
+
+//-----------------------------------------------------------------------------
 double FEElement_::eval(double* d, double r, double s, double t)
 {
 	double H[FSElement::MAX_NODES];
@@ -775,6 +793,16 @@ vec3f FEElement_::eval(vec3f* d, double r, double s, double t)
 }
 
 //-----------------------------------------------------------------------------
+vec3f FEElement_::eval(vec3f* d, double r, double s)
+{
+	double H[FSElement::MAX_NODES];
+	shape_2d(H, r, s);
+	vec3f a(0, 0, 0);
+	for (int i = 0; i < Nodes(); ++i) a += d[i] * ((float)H[i]);
+	return a;
+}
+
+//-----------------------------------------------------------------------------
 void FEElement_::shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t)
 {
 	switch (Type())
@@ -794,6 +822,18 @@ void FEElement_::shape_deriv(double* Hr, double* Hs, double* Ht, double r, doubl
     default:
 		assert(false);
     }
+}
+
+//-----------------------------------------------------------------------------
+void FEElement_::shape_deriv_2d(double* Hr, double* Hs, double r, double s)
+{
+	switch (Type())
+	{
+	case FE_TRI3 : TRI3 ::shape_deriv(Hr, Hs, r, s); break;
+	case FE_QUAD4: QUAD4::shape_deriv(Hr, Hs, r, s); break;
+	default:
+		assert(false);
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -819,6 +859,20 @@ void FEElement_::iso_coord(int n, double q[3])
 	default:
 		assert(false);
     }
+}
+
+//-----------------------------------------------------------------------------
+void FEElement_::iso_coord_2d(int n, double q[2])
+{
+	// for n=-1 return isoparametric coordinates of element center
+	assert((n >= -1) && (n < Nodes()));
+	switch (Type())
+	{
+	case FE_TRI3 : TRI3::iso_coord(n, q); break;
+	case FE_QUAD4: QUAD4::iso_coord(n, q); break;
+	default:
+		assert(false);
+	}
 }
 
 void FEElement_::setAxes(const vec3d& a, const vec3d& d)

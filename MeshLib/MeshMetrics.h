@@ -65,6 +65,9 @@ double TetMaxDihedralAngle(const FSMesh& mesh, const FSElement& e);
 // quality if triangle element
 double TriQuality(const FSMesh& mesh, const FSElement& e);
 
+// max dihedral angle of a triangle
+double TriMaxDihedralAngle(const FSMesh& mesh, const FSElement& e);
+
 // max distance from tet10 mid edges nodes to edge line
 double Tet10MidsideNodeOffset(const FSMesh& mesh, const FSElement& e, bool brel = false);
 
@@ -79,6 +82,12 @@ double MinEdgeLength(const FSMesh& mesh, const FSElement& e);
 
 // get the max edge length of an element
 double MaxEdgeLength(const FSMesh& mesh, const FSElement& e);
+
+// get the min edge length of an face
+double MinEdgeLength(const FSMeshBase& mesh, const FSFace& f);
+
+// get the max edge length of an face
+double MaxEdgeLength(const FSMeshBase& mesh, const FSFace& f);
 
 float eval_curvature(const std::vector<vec3f>& x, const vec3f& r0, vec3f sn, int measure, bool useExtendedFit, int maxIter);
 

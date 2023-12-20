@@ -25,6 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "GLPlot.h"
+#include <FSCore/FSObjectList.h>
+#include <MeshLib/FESurfaceMesh.h>
 
 class FSMesh;
 
@@ -32,8 +34,9 @@ namespace Post {
 
 class GLMusclePath : public CGLPlot
 {
-	enum { START_POINT, END_POINT, METHOD, PERSIST_PATH, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SEARCH_RADIUS, NORMAL_TOL, PATH_RADIUS, COLOR, RENDER_MODE };
+	enum { START_POINT, END_POINT, SUBDIVISIONS, MAX_SMOOTH_ITERS, SMOOTH_TOL, SNAP_TOL, SEARCH_RADIUS, PATH_GUIDE, PATH_RADIUS, COLOR, COLOR0, COLOR1, RENDER_MODE };
 
+public:
 	class PathData;
 
 public:
@@ -45,19 +48,43 @@ public:
 	void Update() override;
 	void Update(int ntime, float dt, bool breset) override;
 
+	void SetModel(CGLModel* pm) override;
+
 	bool UpdateData(bool bsave = true) override;
 
 	double DataValue(int field, int step);
 
+	void SwapEndPoints();
+
+public:
+	bool Intersects(Ray& ray, Intersection& q) override;
+	FESelection* SelectComponent(int index) override;
+	void ClearSelection() override;
+
+	PathData* GetPath(int n) { return m_path[n]; }
+
+	bool OverrideInitPath() const;
+
+	std::vector<vec3d> GetInitPath() const;
+	void SetInitPath(const std::vector<vec3d>& path);
+
 protected:
 	void UpdatePath(int ntime);
 	void UpdatePathData(int ntime);
-	void ClearPaths();
 
-	bool UpdateStraighLine   (PathData* path, int ntime);
-	bool UpdateSpringPath    (PathData* path, int ntime);
+	bool UpdatePath(PathData* path, int ntime, bool reset = true);
+	bool UpdateWrappingPath(PathData* path, int ntime, bool reset = true);
+	bool UpdateGuidedPath(PathData* path, int ntime, bool reset = true);
+
+	void ClearPaths();
+	void ClearInitPath();
+	void Reset();
+
+	void BuildGuideMesh();
+	void UpdateGuideMesh(int ntime);
 
 private:
+	PathData* m_initPath; // used as initial path
 	std::vector<PathData*>	m_path;	// points defining the path
 
 	// information to track motion of origin
@@ -70,13 +97,17 @@ private:
 	// values that require re-evaluation upon change
 	int		m_node0;
 	int		m_node1;
-	int		m_method;
 	int		m_ndiv;
 	int		m_maxIter;
 	double	m_tol;
-	bool	m_persist;
 	double	m_searchRadius;
-	double	m_normalTol;
-};
+	double	m_snaptol;
+	int		m_pathGuide;
 
+	FSSurfaceMesh	m_guideMesh;
+
+	// the currently selected point
+	int	m_selectedPoint;
+	double m_selectionRadius;
+};
 }

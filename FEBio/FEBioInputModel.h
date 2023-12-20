@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <string>
 #include <vector>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <FEMLib/FEElementFormulation.h>
 
 class GMeshObject;
@@ -48,16 +48,32 @@ public:
 	void UpdateMeshData();
 
 	int FindFace(const int* n, int nn, int noff = 0);
+	int FindEdge(const int* n, int nn, int noff = 0);
+
 	int FindFace(const std::vector<int>& n, int noff = 0);
+	int FindEdge(const std::vector<int>& n, int noff = 0);
 
 	FSElement* FindElementFromID(int nid);
 
 private:
+	void BuildFaceTable();
+	void BuildEdgeTable();
+	void BuildElementTable();
+
+private:
 	FSMesh				m_mesh;
+
+	// edge table
+	std::vector<int>	m_iEdge;
+	std::vector<int*>	m_pEdge;
+	std::vector<int>	m_nEdge;
+
+	// face table
 	std::vector<int>	m_iFace;
 	std::vector<int*>	m_pFace;
 	std::vector<int>	m_nFace;
 
+	// element table
 	std::vector<FSElement*>		m_elem;
 	int							m_maxID, m_minID;
 };
@@ -99,6 +115,28 @@ public:
 	private:
 		std::string			m_name;
 		std::vector<int>	m_node;
+	};
+
+	// class for storing edges
+	class EdgeSet
+	{
+	public:
+		EdgeSet() { m_refs = 0; }
+
+		const std::string& name() const { return m_name; }
+
+		int edges() const { return (int)m_edge.size(); }
+
+		const std::vector<int>& edge(int i) const { return m_edge[i]; }
+
+		void addEdge(const std::vector<int>& node) { m_edge.push_back(node); }
+
+		void clear() { m_edge.clear(); }
+
+	public:
+		std::string						m_name;
+		std::vector< std::vector<int> > m_edge;
+		int		m_refs;
 	};
 
 	// class for storing surfaces
@@ -237,21 +275,34 @@ public:
 	public:
 		SurfacePair();
 		SurfacePair(const SurfacePair& sp);
-		SurfacePair(const std::string& name, int masterID, int slaveID);
+		SurfacePair(const std::string& name, int surf1ID, int surf2ID);
 		void operator = (const SurfacePair& sp);
 
 		const std::string& name() const { return m_name; }
 
-		int masterID() const { return m_masterID; }
-		int slaveID() const { return m_slaveID; }
+		int PrimarySurfaceID() const { return m_surf1_ID; }
+		int SecondarySurfaceID() const { return m_surf2_ID; }
 
 		void SetPart(Part* part) { m_part = part; }
 		Part* GetPart() { return m_part; }
 
 	private:
 		std::string m_name;
-		int	m_masterID, m_slaveID;
+		int	m_surf1_ID, m_surf2_ID;
 		Part*	m_part;
+	};
+
+	class DomainList
+	{
+	public:
+		DomainList() { m_part = nullptr; }
+		DomainList(const std::string& name, const std::vector<Domain*>& domList) : m_name(name), m_domList(domList) { m_part = nullptr; }
+		void Add(Domain* pg) { m_domList.push_back(pg); }
+
+	public:
+		string	m_name;
+		std::vector<Domain*> m_domList;
+		Part* m_part;
 	};
 
 	class Part
@@ -268,6 +319,12 @@ public:
 		int NodeSets() const { return (int)m_nset.size(); }
 		NodeSet& GetNodeSet(int i) { return m_nset[i]; }
 		NodeSet* FindNodeSet(const std::string& name);
+
+	public:
+		void AddEdgeSet(const EdgeSet& eset) { m_edge.push_back(eset); }
+		int EdgeSets() const { return (int)m_edge.size(); }
+		EdgeSet& GetEdgeSet(int i) { return m_edge[i]; }
+		EdgeSet* FindEdgeSet(const std::string& name);
 
 	public:
 		Domain* AddDomain(const string& name, int matID);
@@ -302,6 +359,12 @@ public:
 		SurfacePair* FindSurfacePair(const std::string& name);
 
 	public:
+		void AddDomainList(DomainList s) { s.m_part = this; m_domlist.push_back(s); }
+		size_t DomainLists() { return m_domlist.size(); }
+		DomainList& GetDomainList(int i) { return m_domlist[i]; }
+		DomainList* FindDomainList(const std::string& name);
+
+	public:
 		FSMesh* GetFEMesh() { return m_mesh.GetFEMesh(); }
 
 		FEBioMesh& GetFEBioMesh() { return m_mesh; }
@@ -314,11 +377,13 @@ public:
 
 	private:
 		std::vector<NodeSet>		m_nset;
+		std::vector<EdgeSet>		m_edge;
 		std::vector<Surface>		m_surf;
 		std::vector<ElementSet>		m_eset;
 		std::vector<Domain>			m_dom;
 		std::vector<DiscreteSet>	m_des;
 		std::vector<SurfacePair>	m_spr;
+		std::vector<DomainList>		m_domlist;
 
 	private: // don't allow copying
 		Part(const Part& p){}
@@ -356,13 +421,13 @@ public:
 
 	public:
 		FSNodeSet* BuildFENodeSet(const NodeSet& nset);
-		FSSurface* BuildFESurface(Surface& surf);
+		FSEdgeSet* BuildFEEdgeSet(EdgeSet& surf);
+		FSSurface* BuildFESurface(const Surface& surf);
 
 		FSNodeSet* BuildFENodeSet(const char* szname);
+		FSEdgeSet* BuildFEEdgeSet(const char* szname);
 		FSSurface* BuildFESurface(const char* szname);
-		FSPart*    BuildFEPart   (const char* szname);
-
-		FSSurface* BuildFESurface(const Surface& surf);
+		FSElemSet* BuildFEElemSet(const char* szname);
 
 	public:
 		vec3d	m_pos;
@@ -483,15 +548,22 @@ public:
 	FSNodeSet* FindNodeSet(const char* szname);
 	Surface* FindSurface(const char* szname);
 	FSNodeSet* BuildFENodeSet(const char* szname);
+	FSEdgeSet* BuildFEEdgeSet(const char* szname);
 	FSSurface* BuildFESurface(const char* szname);
-	FSPart* BuildFEPart(const char* szname);
-	FSPart* BuildFEPart(Domain* dom);
+	FSElemSet* BuildFEElemSet(const char* szname);
+	FSElemSet* BuildFEElemSet(Domain* dom);
 	GPart* FindGPart(const char* szname);
 	FEItemListBuilder* BuildItemList(const char* szname);
 	SurfacePair* FindSurfacePair(const char* szname);
 	Domain* FindDomain(const char* szname);
 	ElementSet* FindElementSet(const char* szname);
 	bool BuildDiscreteSet(GDiscreteElementSet& set, const char* szset);
+
+	FEItemListBuilder* FindNamedSelection(const std::string& name, unsigned filter = MESH_ITEM_FLAGS::FE_ALL_FLAGS);
+	FSNodeSet* FindNamedNodeSet(const std::string& name);
+	FSSurface* FindNamedSurface(const std::string& name);
+	FSElemSet* FindNamedElementSet(const std::string& name);
+	FSPartSet* FindNamedPartSet(const std::string& name);
 
 public:
 	bool	m_shellNodalNormals;

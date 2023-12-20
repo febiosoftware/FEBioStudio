@@ -96,6 +96,8 @@ public:
 
     void SetFilter(int index);
 
+	void IncWarningCount();
+
 public slots:
 	void on_modelTree_currentItemChanged(QTreeWidgetItem* current, QTreeWidgetItem* prev);
 	void on_modelTree_itemDoubleClicked(QTreeWidgetItem* item, int column);
@@ -103,10 +105,13 @@ public slots:
 	void on_deleteButton_clicked();
 	void on_searchButton_toggled(bool b);
 	void on_syncButton_clicked();
+	void on_refreshButton_clicked();
 	void on_props_nameChanged(const QString& txt);
 	void on_props_selectionChanged();
 	void on_props_dataChanged(bool b);
+	void on_props_modelChanged();
 	void on_filter_currentIndexChanged(int n);
+	void on_warnings_clicked();
 
 public slots:
 	// slots for model tree context menu actions
@@ -152,6 +157,8 @@ public slots:
 	void OnEditOutput();
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();
+	void OnRemoveUnusedSelections();
+	void OnRemoveUnusedLoadControllers();
 	void OnRemoveAllSelections();
 	void OnDeleteAllMeshAdaptors();
 	void OnChangeMaterial();
@@ -162,7 +169,8 @@ public slots:
 	void OnExportAllMaterials();
 	void OnImportMaterials(QAction*);
 	void OnDeleteAllMaterials();
-	void OnSwapMasterSlave();
+	void OnSwapContactSurfaces();
+	void OnReplaceContactInterface();
 	void OnDeleteAllBC();
 	void OnDeleteAllLoads();
 	void OnDeleteAllIC();
@@ -171,6 +179,10 @@ public slots:
 	void OnDeleteAllRigidComponents();
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
+	void OnEditMeshData();
+    void OnExportRawImage();
+    void OnExportTIFF();
+    void OnExportNRRD();
 
 signals:
 	void currentObjectChanged(FSObject* po);

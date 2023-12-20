@@ -30,6 +30,13 @@ void CEditVariableParam::setParam(Param* p)
 		setCurrentIndex(0);
 		setEditText(QString("%1").arg(p->GetFloatValue()));
 	}
+	else if (p->GetParamType() == Param_Type::Param_ARRAY_DOUBLE)
+	{
+		setCurrentIndex(0);
+		std::vector<double> v = p->GetArrayDoubleValue();
+		assert(v.size() == 3);
+		setEditText(QString("%1,%2,%3").arg(v[0]).arg(v[1]).arg(v[2]));
+	}
 	else if (p->GetParamType() == Param_Type::Param_VEC3D)
 	{
 		setCurrentIndex(0);

@@ -25,10 +25,10 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <MeshLib/FEMeshBase.h>
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GMesh.h>
 
 // tools for finding intersections
 struct Ray
@@ -76,8 +76,10 @@ bool FastIntersectQuad(const Ray& ray, const Quad& quad, Intersection& q);
 
 //-----------------------------------------------------------------------------
 bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, Intersection& q);
-bool FindFaceIntersection(const Ray& ray, const GLMesh& mesh, Intersection& q);
+bool FindFaceIntersection(const Ray& ray, const GMesh& mesh, Intersection& q);
 bool FindFaceIntersection(const Ray& ray, const FSMeshBase& mesh, const FSFace& face, Intersection& q);
+
+bool RayIntersectFace(const Ray& ray, int faceType, vec3d* rn, Intersection& q);
 
 //-----------------------------------------------------------------------------
 bool FindElementIntersection(const Ray& ray, const FSMesh& mesh, Intersection& q, bool selectionState = false);

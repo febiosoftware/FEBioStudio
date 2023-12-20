@@ -34,7 +34,9 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QMenu>
 #include <QInputDialog>
+#include <QFileDialog>
 #include "DlgEditOutput.h"
+#include "DlgAddMeshData.h"
 #include "MaterialEditor.h"
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FEMKernel.h>
@@ -43,14 +45,61 @@ SOFTWARE.*/
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/MeshLayer.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "Commands.h"
 #include "PropertyList.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <ImageLib/ImageFilter.h>
 #include "DocManager.h"
 #include "DlgAddPhysicsItem.h"
 #include <FEBioLink/FEBioInterface.h>
+#include <QPlainTextEdit>
+#include <QDialogButtonBox>
+#include <QFileInfo>
+
+class CDlgWarnings : public QDialog
+{
+public:
+	CDlgWarnings(QWidget* parent) : QDialog(parent)
+	{
+		setMinimumSize(800, 600);
+		setWindowTitle("Model Warnings");
+
+		m_out = new QPlainTextEdit;
+		m_out->setReadOnly(true);
+		m_out->setFont(QFont("Courier", 11));
+		m_out->setWordWrapMode(QTextOption::NoWrap);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Close);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(m_out);
+		l->addWidget(bb);
+
+		setLayout(l);
+
+		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
+	}
+
+	void SetWarnings(QStringList errs)
+	{
+		QString txt;
+		for (int i = 0; i < errs.size(); ++i)
+		{
+			txt += errs[i];
+			txt += QString("\n");
+		}
+
+		txt += "\n====================================\n";
+		txt += QString("Summary : %1 warnings").arg(errs.size());
+
+		m_out->clear();
+		m_out->setPlainText(txt);
+	}
+
+private:
+	QPlainTextEdit* m_out = nullptr;
+};
 
 CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
@@ -79,7 +128,13 @@ void CModelViewer::Update(bool breset)
 
 //	FSObject* po = m_currentObject;
 
+	// NOTE: Not sure if this is the best place to do this
+	// update the model
+	FSModel* fem = doc->GetFSModel();
+	fem->UpdateLoadControllerReferenceCounts();
+
 	// rebuild the model tree
+	ui->setWarningCount(0);
 	ui->tree->Build(doc);
 	if (ui->m_search->isVisible()) ui->m_search->Build(doc);
 
@@ -291,7 +346,10 @@ void CModelViewer::on_syncButton_clicked()
 						GDiscreteElement& de = pds->element(j);
 						if (de.IsSelected())
 						{
-							objList.push_back(&de);
+							// we can't actually show the individual springs,
+							// so we just select the parent.
+							objList.push_back(po);
+							break;
 						}
 					}
 				}
@@ -309,6 +367,11 @@ void CModelViewer::on_syncButton_clicked()
     }
 }
 
+void CModelViewer::on_refreshButton_clicked()
+{
+	Update(false);
+}
+
 void CModelViewer::on_selectButton_clicked()
 {
 	// make sure we have an object
@@ -323,10 +386,18 @@ void CModelViewer::on_selectButton_clicked()
 		GObject* pm = dynamic_cast<GObject*>(po);
 		if (pm->IsVisible() && !pm->IsSelected()) pcmd = new CCmdSelectObject(pdoc->GetGModel(), pm, false);
 	}
-	else if (dynamic_cast<IHasItemList*>(po))
+	else if (dynamic_cast<FSPairedInterface*>(po))
 	{
-		IHasItemList* pil = dynamic_cast<IHasItemList*>(po);
-		FEItemListBuilder* pitem = pil->GetItemList();
+		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
+		FEItemListBuilder* ps1 = pci->GetPrimarySurface();
+		FEItemListBuilder* ps2 = pci->GetSecondarySurface();
+		if (ps1) SelectItemList(ps1);
+		if (ps2) SelectItemList(ps2);
+	}
+	else if (dynamic_cast<IHasItemLists*>(po))
+	{
+		IHasItemLists* pil = dynamic_cast<IHasItemLists*>(po);
+		FEItemListBuilder* pitem = pil->GetItemList(0);
 		if (pitem) SelectItemList(pitem);
 	}
 	else if (dynamic_cast<FEItemListBuilder*>(po))
@@ -361,18 +432,6 @@ void CModelViewer::on_selectButton_clicked()
 		GModel& fem = pdoc->GetFSModel()->GetModel();
 		int n = fem.FindDiscreteObjectIndex(ps);
 		pcmd = new CCmdSelectDiscrete(&fem, &n, 1, false);
-	}
-	else if (dynamic_cast<FSPairedInterface*>(po))
-	{
-		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(po);
-		FEItemListBuilder* pml = pci->GetSecondarySurface();
-		FEItemListBuilder* psl = pci->GetPrimarySurface();
-
-		if (pml == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(pml);
-
-		if (psl == 0) QMessageBox::critical(this, "FEBio Studio", "Invalid pointer to FEItemListBuilder object in CModelEditor::OnSelectObject");
-		else SelectItemList(psl, true);
 	}
 	else if (dynamic_cast<GMaterial*>(po))
 	{
@@ -412,7 +471,7 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	case GO_FACE: pdoc->SetSelectionMode(SELECT_FACE); pcmd = new CCmdSelectSurface(mdl, pi, n, badd); break;
 	case GO_EDGE: pdoc->SetSelectionMode(SELECT_EDGE); pcmd = new CCmdSelectEdge(mdl, pi, n, badd); break;
 	case GO_NODE: pdoc->SetSelectionMode(SELECT_NODE); pcmd = new CCmdSelectNode(mdl, pi, n, badd); break;
-	case FE_PART:
+	case FE_ELEMSET:
 		{
 			pdoc->SetSelectionMode(SELECT_OBJECT);
 			pdoc->SetItemMode(ITEM_ELEM);
@@ -489,6 +548,14 @@ void CModelViewer::on_deleteButton_clicked()
 	OnDeleteItem();
 }
 
+void CModelViewer::on_warnings_clicked()
+{
+	QStringList warnings = ui->tree->GetAllWarnings();
+	CDlgWarnings dlg(GetMainWindow());
+	dlg.SetWarnings(warnings);
+	dlg.exec();
+}
+
 void CModelViewer::on_props_nameChanged(const QString& txt)
 {
 	QTreeWidgetItem* item = ui->tree->currentItem();
@@ -516,6 +583,11 @@ void CModelViewer::on_props_dataChanged(bool b)
 		CMainWindow* wnd = GetMainWindow();
 		wnd->RedrawGL();
 	}
+}
+
+void CModelViewer::on_props_modelChanged()
+{
+	Update();
 }
 
 void CModelViewer::on_filter_currentIndexChanged(int n)
@@ -803,14 +875,14 @@ void CModelViewer::OnChangeDiscreteType()
 	GDiscreteSpringSet* set = dynamic_cast<GDiscreteSpringSet*>(m_currentObject); assert(set);
 	if (set == 0) return;
 
-	QStringList items; items << "Linear" << "Nonlinear" << "Hill" << "General";
+	QStringList items; items << "Linear" << "Nonlinear" << "Hill";
 	QString item = QInputDialog::getItem(this, "Discrete Set Type", "Type:", items, 0, false);
 	if (item.isEmpty() == false)
 	{
 		FSDiscreteMaterial* mat = nullptr;
-		if (item == "Linear"   ) mat = new FSLinearSpringMaterial(fem);
-		if (item == "Nonlinear") mat = new FSNonLinearSpringMaterial(fem);
-		if (item == "Hill"     ) mat = new FSHillContractileMaterial(fem);
+		if (item == "Linear"   ) mat = FEBio::CreateDiscreteMaterial("linear spring", fem);
+		if (item == "Nonlinear") mat = FEBio::CreateDiscreteMaterial("nonlinear spring", fem);
+		if (item == "Hill"     ) mat = FEBio::CreateDiscreteMaterial("Hill", fem);
 		if (mat)
 		{
 			delete set->GetMaterial();
@@ -934,11 +1006,9 @@ void CModelViewer::OnShowPart()
 		if (pg) 
 		{
 			m.ShowPart(pg);
-
-			QTreeWidgetItem* item = ui->tree->FindItem(pg);
-			if (item) item->setForeground(0, Qt::black);
 		}
 	}
+	Update();
 	CMainWindow* wnd = GetMainWindow();
 	wnd->RedrawGL();
 }
@@ -1026,8 +1096,12 @@ void CModelViewer::OnCopyMaterial()
 	GMaterial* pmat = dynamic_cast<GMaterial*>(m_currentObject); assert(pmat);
 	if (pmat == 0) return;
 
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel* fem = pdoc->GetFSModel();
+
 	// create a copy of the material
-	GMaterial* pmat2 = pmat->Clone();
+	FEBioMaterial* pm = dynamic_cast<FEBioMaterial*>(FEBio::CloneModelComponent(pmat->GetMaterialProperties(), fem));
+	GMaterial* pmat2 = new GMaterial(pm);
 
 	// add the material to the material deck
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -1052,7 +1126,10 @@ void CModelViewer::OnChangeMaterial()
 	CDlgAddPhysicsItem dlg("Add Material", FEMATERIAL_ID, -1, &fem, false, false, this);
 	if (dlg.exec())
 	{
-		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(dlg.GetClassID(), &fem);
+        int id = dlg.GetClassID();
+        if(id == -1) return;
+
+		FSMaterial* pmat = FEBio::CreateFEBioClass<FSMaterial>(id, &fem);
 		if (pmat)
 		{
 			gmat->SetMaterialProperties(pmat);
@@ -1138,16 +1215,12 @@ void CModelViewer::OnCopyInterface()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the interface
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSInterface* piCopy = dynamic_cast<FSInterface*>(fecore->Create(fem, FESURFACEINTERFACE_ID, pic->Type()));
+	FSInterface* piCopy = dynamic_cast<FSInterface*>(FEBio::CloneModelComponent(pic, fem));
 	assert(piCopy);
 
 	// create a name
 	string name = defaultInterfaceName(fem, pic);
 	piCopy->SetName(name);
-
-	// copy parameters
-	piCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the interface to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
@@ -1167,16 +1240,12 @@ void CModelViewer::OnCopyBC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the bc
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(fecore->Create(fem, FEBC_ID, pbc->Type()));
+	FSBoundaryCondition* pbcCopy = dynamic_cast<FSBoundaryCondition*>(FEBio::CloneModelComponent(pbc, fem));
 	assert(pbcCopy);
 
 	// create a name
 	string name = defaultBCName(fem, pbc);
 	pbcCopy->SetName(name);
-
-	// copy parameters
-	pbcCopy->GetParamBlock() = pbc->GetParamBlock();
 
 	// add the bc to the doc
 	FSStep* step = fem->GetStep(pbc->GetStep());
@@ -1196,16 +1265,12 @@ void CModelViewer::OnCopyIC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the ic
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(fecore->Create(fem, FEIC_ID, pic->Type()));
+	FSInitialCondition* picCopy = dynamic_cast<FSInitialCondition*>(FEBio::CloneModelComponent(pic, fem));
 	assert(picCopy);
 
 	// create a name
 	string name = defaultICName(fem, pic);
 	picCopy->SetName(name);
-
-	// copy parameters
-	picCopy->GetParamBlock() = pic->GetParamBlock();
 
 	// add the ic to the doc
 	FSStep* step = fem->GetStep(pic->GetStep());
@@ -1225,16 +1290,12 @@ void CModelViewer::OnCopyRigidConnector()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
+	FSRigidConnector* pcCopy =  dynamic_cast<FSRigidConnector*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidConnectorName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1253,16 +1314,13 @@ void CModelViewer::OnCopyConstraint()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(fecore->Create(fem, FENLCONSTRAINT_ID, pc->Type()));
+
+	FSModelConstraint* pcCopy = dynamic_cast<FSModelConstraint*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultConstraintName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the constraint to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1282,16 +1340,12 @@ void CModelViewer::OnCopyLoad()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSLoad* plCopy = dynamic_cast<FSLoad*>(fecore->Create(fem, FELOAD_ID, pl->Type()));
+	FSLoad* plCopy = dynamic_cast<FSLoad*>(FEBio::CloneModelComponent(pl, fem));
 	assert(plCopy);
 
 	// create a name
 	string name = defaultLoadName(fem, pl);
 	plCopy->SetName(name);
-
-	// copy parameters
-	plCopy->GetParamBlock() = pl->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pl->GetStep());
@@ -1311,16 +1365,12 @@ void CModelViewer::OnCopyRigidBC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidBC* pcCopy = dynamic_cast<FSRigidBC*>(fecore->Create(fem, FEBC_ID, pc->Type()));
+	FSRigidBC* pcCopy = dynamic_cast<FSRigidBC*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidBCName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1341,16 +1391,12 @@ void CModelViewer::OnCopyRigidIC()
 	FSModel* fem = pdoc->GetFSModel();
 
 	// copy the load
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSRigidIC* pcCopy = dynamic_cast<FSRigidIC*>(fecore->Create(fem, FEIC_ID, pc->Type()));
+	FSRigidIC* pcCopy = dynamic_cast<FSRigidIC*>(FEBio::CloneModelComponent(pc, fem));
 	assert(pcCopy);
 
 	// create a name
 	string name = defaultRigidICName(fem, pc);
 	pcCopy->SetName(name);
-
-	// copy parameters
-	pcCopy->GetParamBlock() = pc->GetParamBlock();
 
 	// add the load to the doc
 	FSStep* step = fem->GetStep(pc->GetStep());
@@ -1364,24 +1410,25 @@ void CModelViewer::OnCopyRigidIC()
 
 void CModelViewer::OnCopyStep()
 {
-	FSAnalysisStep* ps = dynamic_cast<FSAnalysisStep*>(m_currentObject); assert(ps);
+	FSStep* ps = dynamic_cast<FSStep*>(m_currentObject); assert(ps);
 	if (ps == 0) return;
 
+	if (dynamic_cast<FSInitialStep*>(ps)) return;
+
+	// copy the step
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	FSModel* fem = pdoc->GetFSModel();
 
-	// copy the step
-	FEMKernel* fecore = FEMKernel::Instance();
-	FSAnalysisStep* psCopy = dynamic_cast<FSAnalysisStep*>(fecore->Create(fem, FEANALYSIS_ID, ps->GetType()));
-	assert(psCopy);
+	FEBioAnalysisStep* psCopy = dynamic_cast<FEBioAnalysisStep*>(FEBio::CloneModelComponent(ps, fem)); assert(psCopy);
+	if (psCopy == nullptr)
+	{
+		QMessageBox::critical(this, "Copy Step", "Failed to copy step.");
+		return;
+	}
 
 	// create a name
 	string name = defaultStepName(fem, ps);
 	psCopy->SetName(name);
-
-	// copy parameters
-	psCopy->GetParamBlock() = ps->GetParamBlock();
-	psCopy->GetSettings() = ps->GetSettings();
 
 	// add the step to the doc
 	pdoc->DoCommand(new CCmdAddStep(fem, psCopy));
@@ -1485,11 +1532,32 @@ void CModelViewer::SetFilter(int index)
     ui->m_filter->setCurrentIndex(index);
 }
 
+void CModelViewer::IncWarningCount()
+{
+	ui->m_errs->increase();
+}
+
 void CModelViewer::OnRemoveEmptySelections()
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
 	GModel& mdl = pdoc->GetFSModel()->GetModel();
 	mdl.RemoveEmptySelections();
+	Update();
+}
+
+void CModelViewer::OnRemoveUnusedSelections()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	GModel& mdl = pdoc->GetFSModel()->GetModel();
+	mdl.RemoveUnusedSelections();
+	Update();
+}
+
+void CModelViewer::OnRemoveUnusedLoadControllers()
+{
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel& fem = *pdoc->GetFSModel();
+	fem.RemoveUnusedLoadControllers();
 	Update();
 }
 
@@ -1577,10 +1645,17 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_NODE_GROUP:
 		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
 		break;
+	case MT_FEPART_GROUP:
+	case MT_FEELEM_GROUP:
+	case MT_FEFACE_GROUP:
+	case MT_FEEDGE_GROUP:
+	case MT_FENODE_GROUP:
+		menu.addAction("Delete", this, SLOT(OnDeleteNamedSelection()));
+		break;
 	case MT_MATERIAL_LIST:
 	{
 		menu.addAction("Add Material ...", wnd, SLOT(on_actionAddMaterial_triggered()));
-		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
+//		menu.addAction("Export Materials ...", this, SLOT(OnExportAllMaterials()));
 
 		QMenu* sub = new QMenu("Import Materials");
 		QAction* ac = sub->addAction("From FEBio file ...");
@@ -1656,6 +1731,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_NAMED_SELECTION:
 		menu.addAction("Remove empty", this, SLOT(OnRemoveEmptySelections()));
+		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedSelections()));
 		menu.addAction("Remove all", this, SLOT(OnRemoveAllSelections()));
 		break;
 	case MT_MESH_ADAPTOR_LIST:
@@ -1741,8 +1817,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(data->obj);
 		if (pci)
 		{
-			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapMasterSlave()));
+			menu.addAction("Replace ...", this, SLOT(OnReplaceContactInterface()));
+			menu.addAction("Swap Primary/Secondary", this, SLOT(OnSwapContactSurfaces()));
 		}
+
 		del = true;
 	}
 	break;
@@ -1788,13 +1866,19 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_LOAD_CONTROLLERS:
 		menu.addAction("Add Load Controller ...", wnd, SLOT(on_actionAddLoadController_triggered()));
+		menu.addAction("Remove unused", this, SLOT(OnRemoveUnusedLoadControllers()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllLoadControllers()));
 		break;
+	case MT_LOAD_CONTROLLER:
+		del = true;
+		break;
 	case MT_MESH_DATA_LIST:
-		menu.addAction("Add Mesh Data ..."   , wnd, SLOT(on_actionAddMeshData_triggered()));
+		menu.addAction("Add mesh data map ..."   , wnd, SLOT(on_actionAddMeshDataMap_triggered()));
+		menu.addAction("Add mesh data generator ..."   , wnd, SLOT(on_actionAddMeshDataGenerator_triggered()));
 		menu.addAction("Delete All", wnd, SLOT(OnDeleteAllMeshData()));
 		break;
 	case MT_MESH_DATA:
+		menu.addAction("Edit ...", this, SLOT(OnEditMeshData()));
 		del = true;
 		break;
 	case MT_JOBLIST:
@@ -1808,7 +1892,13 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_3DIMAGE:
-		del = true;
+        {
+            QMenu* exportImage = menu.addMenu("Export Image");
+            exportImage->addAction("Raw", this, &CModelViewer::OnExportRawImage);
+            exportImage->addAction("TIFF", this, &CModelViewer::OnExportTIFF);
+            exportImage->addAction("NRRD", this, &CModelViewer::OnExportNRRD);
+            del = true;
+        }
 		break;
 	default:
 		return;
@@ -1870,7 +1960,7 @@ void CModelViewer::OnDeleteAllMaterials()
 	GetMainWindow()->DeleteAllMaterials();
 }
 
-void CModelViewer::OnSwapMasterSlave()
+void CModelViewer::OnSwapContactSurfaces()
 {
 	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
 	if (pci)
@@ -1879,6 +1969,16 @@ void CModelViewer::OnSwapMasterSlave()
 		UpdateObject(m_currentObject);
 	}
 }
+
+void CModelViewer::OnReplaceContactInterface()
+{
+	FSPairedInterface* pci = dynamic_cast<FSPairedInterface*>(m_currentObject);
+	if (pci)
+	{
+		GetMainWindow()->OnReplaceContactInterface(pci);
+	}
+}
+
 
 void CModelViewer::OnDeleteAllBC()
 {
@@ -1921,4 +2021,120 @@ void CModelViewer::OnDeleteAllSteps()
 void CModelViewer::OnDeleteAllJobs()
 {
 	GetMainWindow()->DeleteAllJobs();
+}
+
+void CModelViewer::OnEditMeshData()
+{
+	FEMeshData* data = dynamic_cast<FEMeshData*>(m_currentObject);
+	if (data == nullptr) return;
+
+	CDlgEditMeshData dlg(data, this);
+	dlg.exec();
+}
+
+void CModelViewer::OnExportRawImage()
+{
+    CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export Raw Image", "", "Raw (*.raw)");
+	if (filename.isEmpty() == false)
+	{
+        if (img->ExportRAWImage(filename.toStdString()))
+        {
+            QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+            QMessageBox::information(GetMainWindow(), "Export image", msg);
+        }
+        else
+        {
+            QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+            QMessageBox::critical(GetMainWindow(), "Export image", msg);
+        }
+	}	
+}
+
+void CModelViewer::OnExportTIFF()
+{
+    CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export TIFF", "", "TIFF (*.tiff)");
+	if (filename.isEmpty() == false)
+	{
+        // QFileDialog does not enforce extensions on Linux, and so this check is necessary.
+        QFileInfo info(filename);
+        QString suffix = info.suffix();
+        if(suffix != "tiff")
+        {
+            if(suffix.isEmpty())
+            {
+                filename.append(".tiff");
+            }
+            else
+            {
+                filename.replace(suffix, "tiff");
+            }
+        }
+
+        if(QFileInfo::exists(filename))
+        {
+            auto ans = QMessageBox::question(GetMainWindow(), "File Exists", "%1 already exists.\n\nWould you like to overwrite it?");
+
+            if(ans != QMessageBox::Yes) return;
+        }
+
+        if (img->ExportSITKImage(filename.toStdString()))
+        {
+            QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+            QMessageBox::information(GetMainWindow(), "Export image", msg);
+        }
+        else
+        {
+            QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+            QMessageBox::critical(GetMainWindow(), "Export image", msg);
+        }
+    }
+}
+
+void CModelViewer::OnExportNRRD()
+{
+    CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export NRRD", "", "NRRD (*.nrrd)");
+	if (filename.isEmpty() == false)
+	{
+        // QFileDialog does not enforce extensions on Linux, and so this check is necessary.
+        QFileInfo info(filename);
+        QString suffix = info.suffix();
+        if(suffix != "nrrd")
+        {
+            if(suffix.isEmpty())
+            {
+                filename.append(".nrrd");
+            }
+            else
+            {
+                filename.replace(suffix, "nrrd");
+            }
+        }
+
+        if(QFileInfo::exists(filename))
+        {
+            auto ans = QMessageBox::question(GetMainWindow(), "File Exists", "%1 already exists.\n\nWould you like to overwrite it?");
+
+            if(ans != QMessageBox::Yes) return;
+        }
+
+        if (img->ExportSITKImage(filename.toStdString()))
+        {
+            QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+            QMessageBox::information(GetMainWindow(), "Export image", msg);
+        }
+        else
+        {
+            QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+            QMessageBox::critical(GetMainWindow(), "Export image", msg);
+        }
+    }
 }

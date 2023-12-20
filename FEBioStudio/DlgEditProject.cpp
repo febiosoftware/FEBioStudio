@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DlgEditProject.h"
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
 #include <QListWidget>
 #include <QBoxLayout>
 #include <QDialogButtonBox>

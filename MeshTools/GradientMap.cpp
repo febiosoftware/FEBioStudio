@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "GradientMap.h"
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/MeshMetrics.h>
-#include <MeshTools/FENodeData.h>
+#include <MeshLib/FENodeData.h>
 
 GradientMap::GradientMap()
 {
@@ -49,7 +49,7 @@ void GradientMap::Apply(const FENodeData& data, vector<vec3d>& out, int niter)
 		FSElement& el = pm->Element(i);
 
 		int ne = el.Nodes();
-		for (int j = 0; j<ne; ++j) v[j] = data.get(el.m_node[j]);
+		for (int j = 0; j<ne; ++j) v[j] = data.GetScalar(el.m_node[j]);
 
 		vec3d g(0, 0, 0);
 		for (int j = 0; j<ne; ++j) g += FEMeshMetrics::Gradient(*pm, el, j, v);

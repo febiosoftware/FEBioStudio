@@ -36,12 +36,13 @@ SOFTWARE.*/
 #include <QToolButton>
 #include <QGridLayout>
 #include <QMessageBox>
-#include <MeshTools/FEItemListBuilder.h>
-#include <MeshTools/GGroup.h>
+#include <MeshLib/FEItemListBuilder.h>
+#include <GeomLib/GGroup.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
+#include "DlgPickNamedSelection.h"
 
 class Ui::CSelectionBox
 {
@@ -57,6 +58,7 @@ public:
 
 	QToolButton*	clr;
 	QToolButton*	collapse;
+	QToolButton*	pick;
 
 	bool	m_collapsed;
 
@@ -67,8 +69,15 @@ public:
 
 		m_collapsed = false;
 
+		QHBoxLayout* hb = new QHBoxLayout;
+		hb->setContentsMargins(0, 0, 0, 0);
+		hb->addWidget(name = new QLineEdit);
+		hb->addWidget(pick = new QToolButton); 
+		pick->setObjectName("pick");
+		pick->setText("...");
+
 		QFormLayout* form = new QFormLayout;
-		form->addRow("Name:", name = new QLineEdit); name->setObjectName("name");
+		form->addRow("Name:", hb); name->setObjectName("name");
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0,0,0,0);
@@ -217,6 +226,11 @@ void CSelectionBox::on_toggleCollapse_toggled(bool b)
 			it->setText(m_items[i].m_label);
 		}
 	}
+}
+
+void CSelectionBox::on_pick_clicked(bool b)
+{
+	emit pickClicked();
 }
 
 void CSelectionBox::on_name_textEdited(const QString& t)
@@ -498,7 +512,8 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 	default:
 		switch (item->Type())
 		{
-		case FE_PART   : type = "Elements"; break;
+		case FE_PARTSET: type = "Parts"; break;
+		case FE_ELEMSET: type = "Elements"; break;
 		case FE_SURFACE: type = "Facets"; break;
 		case FE_EDGESET: type = "Edges"; break;
 		case FE_NODESET: type = "Nodes"; break;
@@ -522,14 +537,26 @@ void CItemListSelectionBox::SetItemList(FEItemListBuilder* item)
 		setType(type);
 
 		// set the data
-		vector<int> items;
-		items.insert(items.end(), item->begin(), item->end());
-
-		//		sort(items.begin(), items.end());
-		//		unique(items.begin(), items.end());
-
-		setCollapsed(true);
-		for (int i = 0; i < (int)items.size(); ++i) addData(QString::number(items[i]), items[i], 0, false);
+		if (item->Type() == FE_PARTSET)
+		{
+			setCollapsed(false);
+			FSPartSet* pg = dynamic_cast<FSPartSet*>(item);
+			for (int i = 0; i < pg->size(); ++i)
+			{
+				GPart* part = pg->GetPart(i); assert(part);
+				if (part)
+				{
+					addData(QString::fromStdString(part->GetName()), part->GetLocalID(), 0, false);
+				}
+			}
+		}
+		else
+		{
+			setCollapsed(true);
+			vector<int> items;
+			items.insert(items.end(), item->begin(), item->end());
+			for (int i = 0; i < (int)items.size(); ++i) addData(QString::number(items[i]), items[i], 0, false);
+		}
 	}
 }
 
@@ -543,6 +570,7 @@ CMeshSelectionBox::CMeshSelectionBox(CMainWindow* wnd, QWidget* parent) : CItemL
 	QObject::connect(this, SIGNAL(delButtonClicked()), this, SLOT(onDelButtonClicked()));
 	QObject::connect(this, SIGNAL(selButtonClicked()), this, SLOT(onSelButtonClicked()));
 	QObject::connect(this, SIGNAL(clearButtonClicked()), this, SLOT(onClearButtonClicked()));
+	QObject::connect(this, SIGNAL(pickClicked()), this, SLOT(onPickButtonClicked()));
 	QObject::connect(this, SIGNAL(nameChanged(const QString&)), this, SLOT(onNameChanged(const QString&)));
 }
 
@@ -618,7 +646,7 @@ void CMeshSelectionBox::onAddButtonClicked()
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
+				vector<int> l = pg->CopyItems();
 				pl->Merge(l);
 			}
 			
@@ -648,7 +676,7 @@ void CMeshSelectionBox::onSubButtonClicked()
 	// subtract from the current list
 	if (pg->Type() == pl->Type())
 	{
-		list<int> l = pg->CopyItems();
+		vector<int> l = pg->CopyItems();
 		pl->Subtract(l);
 	}
 
@@ -663,7 +691,7 @@ void CMeshSelectionBox::onDelButtonClicked()
 	FEItemListBuilder* pl = m_pms->GetItemList();
 	if (pl == nullptr) return;
 
-	list<int> items;
+	vector<int> items;
 	getSelectedItems(items);
 
 	pl->Subtract(items);
@@ -703,5 +731,57 @@ void CMeshSelectionBox::onClearButtonClicked()
 		delete pl;
 		SetItemList(nullptr);
 		emit selectionChanged();
+	}
+}
+
+void CMeshSelectionBox::onPickButtonClicked()
+{
+	CModelDocument* pdoc = m_wnd->GetModelDocument();
+	if (pdoc == nullptr) return;
+	if (m_pms == nullptr) return;
+
+	// find the required mesh type
+	int meshType = m_pms->GetMeshItemType();
+
+	GModel& gm = *pdoc->GetGModel();
+
+	// build the candidate list
+	QStringList names;
+	if (meshType & FE_NODE_FLAG)
+	{
+		auto l = gm.AllNamedSelections(GO_NODE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_NODESET);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+	if ((meshType & FE_FACE_FLAG) || (meshType & FE_NODE_FLAG))
+	{
+		auto l = gm.AllNamedSelections(GO_FACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_SURFACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+
+	// get the current selection
+	FEItemListBuilder* pl = m_pms->GetItemList(0);
+
+	CDlgPickNamedSelection dlg(this);
+	dlg.setNameList(names);
+	if (pl) dlg.setSelection(QString::fromStdString(pl->GetName()));
+	if (dlg.exec())
+	{
+		QString qs = dlg.getSelection();
+		if (qs.isEmpty() == false)
+		{
+			std::string s = qs.toStdString();
+			if ((pl == nullptr) || (s != pl->GetName()))
+			{
+				pl = gm.FindNamedSelection(s);
+				m_pms->SetItemList(pl);
+				SetSelection(m_pms);
+			}
+		}
 	}
 }

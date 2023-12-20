@@ -26,133 +26,122 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "DocTemplate.h"
+#include "ModelDocument.h"
 #include <QtCore/QDir>
 #include <XML/XMLReader.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/FSProject.h>
+#include <FEBioLink/FEBioModule.h>
+#include <FEBioLink/FEBioClass.h>
+#include <GeomLib/GModel.h>
+#include <GeomLib/GGroup.h>
+#include <MeshTools/FEBox.h>
+#include <MeshTools/FEMesher.h>
+#include <GeomLib/GPrimitive.h>
 
-vector<DocTemplate> TemplateManager::m_doc;
+vector<DocTemplate*> TemplateManager::m_doc;
 string TemplateManager::m_path = "$(PREVIEW_PATH)\\templates\\";
 
 DocTemplate::DocTemplate()
 {
 }
 
-DocTemplate::DocTemplate(const DocTemplate& doc)
+DocTemplate::~DocTemplate()
 {
-	title = doc.title;
-	description = doc.description;
-	fileName = doc.fileName;
-	module = doc.module;
+
 }
 
-void DocTemplate::operator = (const DocTemplate& doc)
-{
-	title = doc.title;
-	description = doc.description;
-	fileName = doc.fileName;
-	module = doc.module;
-}
 
 string TemplateManager::TemplatePath() { return m_path; }
 
 int TemplateManager::Templates() { return (int) m_doc.size(); }
 
-const DocTemplate& TemplateManager::GetTemplate(int i) { return m_doc[i]; }
+DocTemplate& TemplateManager::GetTemplate(int i) { return *m_doc[i]; }
 
 void TemplateManager::Init()
 {
-	// hard code all templates for now
-	DocTemplate doc;
-	doc.title = "Structural Mechanics";
-	doc.description = "Quasi-static or dynamical structural mechanics analysis.";
-	doc.module = MODULE_MECH;
-	AddTemplate(doc);
-
-	doc.title = "Biphasic Analysis";
-	doc.description = "Transient or quasi-static biphasic analysis";
-	doc.module = MODULE_MECH | MODULE_BIPHASIC;
-	AddTemplate(doc);
-
-	doc.title = "Multiphasic Analysis";
-	doc.description = "Transient or quasi-static analysis with solutes";
-	doc.module = MODULE_MECH | MODULE_BIPHASIC | MODULE_MULTIPHASIC | MODULE_SOLUTES | MODULE_REACTIONS;
-	AddTemplate(doc);
-
-	doc.title = "Heat Transfer Analysis";
-	doc.description = "Transient or steady-state heat conduction analysis.";
-	doc.module = MODULE_HEAT;
-	AddTemplate(doc);
-
-	doc.title = "Fluid Mechanics";
-	doc.description = "Fluid dynamics analysis";
-	doc.module = MODULE_FLUID;
-	AddTemplate(doc);
-
-	doc.title = "Fluid-Structure Interaction";
-	doc.description = "FSI analysis where a fluid interacts with a rigid, solid or biphasic structure";
-	doc.module = MODULE_MECH | MODULE_FLUID | MODULE_FLUID_FSI;
-	AddTemplate(doc);
-
-    doc.title = "Polar Fluid Mechanics";
-    doc.description = "Fluid dynamics using linear and angular momentum balance";
-    doc.module = MODULE_FLUID | MODULE_POLAR_FLUID;
-    AddTemplate(doc);
-    
-	doc.title = "Reaction-Diffusion Analysis";
-	doc.description = "Transient reaction-diffusion analysis";
-	doc.module = MODULE_REACTIONS | MODULE_SOLUTES | MODULE_REACTION_DIFFUSION;
-	AddTemplate(doc);
-
-	doc.title = "All physics";
-	doc.description = "Enable all physics modules.";
-	doc.module = MODULE_ALL;
-	AddTemplate(doc);
-
-/*	// load all doc templates
-	QStringList filters;
-	filters << "*.prvtmp";
-	QDir dir(m_path.c_str());
-	QStringList files = dir.entryList(filters);
-	for (int i=0; i<files.count(); ++i)
-	{
-		string fileName = m_path + files.at(i).toStdString();
-		const char* szfile = fileName.c_str();
-		LoadTemplate(szfile);
-	}
-*/
+	DocTemplate* tmp = new DocTemplateUniAxialStrain;
+	tmp->title = "uniaxial strain";
+	AddTemplate(tmp);
 }
 
-void TemplateManager::AddTemplate(DocTemplate& tmp)
+void TemplateManager::AddTemplate(DocTemplate* tmp)
 {
-	m_doc.push_back(tmp);
+	assert(tmp);
+	if (tmp) m_doc.push_back(tmp);
 }
 
-bool TemplateManager::LoadTemplate(const char* sztmp)
+//================================================================================
+DocTemplateUniAxialStrain::DocTemplateUniAxialStrain()
 {
-	XMLReader xml;
-	if (xml.Open(sztmp) == false) return false;
+	title = "uniaxial strain";
+}
 
-	XMLTag tag;
-	if (xml.FindTag("PreView_Template", tag) == false) return false;
+bool DocTemplateUniAxialStrain::Load(CModelDocument* doc)
+{
+	// First, set the correct module
+	FSProject& prj = doc->GetProject();
+	prj.SetModule(FEBio::GetModuleId("solid"));
 
-	DocTemplate doc;
+	// get the models
+	FSModel& fsm = prj.GetFSModel();
+	GModel& gm = fsm.GetModel();
 
-	char buf[512] = {0};
-	++tag;
-	do
-	{
-		if      (tag == "title"      ) { tag.value(buf); doc.title = buf; }
-		else if (tag == "description") { tag.value(buf); doc.description = buf; } 
-		else if (tag == "file"       ) { tag.value(buf); doc.fileName = buf; }
-		else
-		{
-			return false;
-		}
-		++tag;
-	}
-	while (!tag.isend());
+	// add a box
+	GBox* po = new GBox;
+	po->SetName("box");
+	po->m_w = po->m_h = po->m_d = 1.0;
+	po->Update();
+	gm.AddObject(po);
 
-	AddTemplate(doc);
+	// create unit mesh
+	FEBoxMesher* box = dynamic_cast<FEBoxMesher*>(po->GetFEMesher());
+	box->SetResolution(1, 1, 1);
+	po->BuildMesh();
+
+	// get the surfaces
+	GFace* xn = po->Face(3);
+	GFace* xp = po->Face(1);
+	GFace* yn = po->Face(0);
+	GFace* zn = po->Face(4);
+
+	// add a step
+	FSStep* step = FEBio::CreateStep("solid", &fsm);
+	step->SetName("Step1");
+	FEBio::InitDefaultProps(step);
+	fsm.AddStep(step);
+
+	// add boundary conditions
+	FSBoundaryCondition* bcx = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
+	bcx->SetName("fix-x");
+	bcx->SetParamBool("x_dof", true);
+	bcx->SetItemList(new GFaceList(&gm, xn));
+	step->AddBC(bcx);
+
+	FSBoundaryCondition* bcy = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
+	bcy->SetName("fix-y");
+	bcy->SetParamBool("y_dof", true);
+	bcy->SetItemList(new GFaceList(&gm, yn));
+	step->AddBC(bcy);
+
+	FSBoundaryCondition* bcz = FEBio::CreateBoundaryCondition("zero displacement", &fsm);
+	bcz->SetName("fix-z");
+	bcz->SetParamBool("z_dof", true);
+	bcz->SetItemList(new GFaceList(&gm, zn));
+	step->AddBC(bcz);
+
+	FSBoundaryCondition* dcx = FEBio::CreateBoundaryCondition("prescribed displacement", &fsm);
+	dcx->SetName("displace");
+	dcx->SetParamInt("dof", 0);
+	dcx->SetParamFloat("value", 1.0);
+	dcx->SetItemList(new GFaceList(&gm, xp));
+	step->AddBC(dcx);
+
+	// create load controller and assign to parameter
+	LoadCurve lc;
+	lc.Add(0, 0);
+	lc.Add(1, 1);
+	FSLoadController* plc = fsm.AddLoadCurve(lc);
+	dcx->GetParam("value")->SetLoadCurveID(plc->GetID());
 
 	return true;
 }

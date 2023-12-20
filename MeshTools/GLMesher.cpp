@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLMesher.h"
-#include "GLMesh.h"
+#include <MeshLib/GMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/geom.h>
 #include <MeshLib/FECurveMesh.h>
@@ -35,7 +35,7 @@ GLMesher::GLMesher(GObject* po) : m_po(po)
 
 }
 
-GLMesh* GLMesher::CreateMesh()
+GMesh* GLMesher::CreateMesh()
 {
 	assert(m_po);
 	if (m_po == nullptr) return nullptr;
@@ -43,7 +43,7 @@ GLMesh* GLMesher::CreateMesh()
 	GObject& o = *m_po;
 
 	// create a new mesh
-	GLMesh* gmesh = new GLMesh;
+	GMesh* gmesh = new GMesh;
 
 	// the render mesh is created based of the faces (if there are any)
 	int NF = o.Faces();
@@ -103,7 +103,7 @@ GLMesh* GLMesher::CreateMesh()
 }
 
 //-----------------------------------------------------------------------------
-void GLMesher::BuildEdgeLine(GLMesh* glmsh, GEdge& e)
+void GLMesher::BuildEdgeLine(GMesh* glmsh, GEdge& e)
 {
 	GObject& o = *m_po;
 	vec3d y[2];
@@ -117,7 +117,7 @@ void GLMesher::BuildEdgeLine(GLMesh* glmsh, GEdge& e)
 }
 
 //-----------------------------------------------------------------------------
-void GLMesher::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
+void GLMesher::BuildEdgeMesh(GMesh* glmsh, GEdge& e)
 {
 	GObject& o = *m_po;
 
@@ -143,14 +143,14 @@ void GLMesher::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 	for (int i = 0; i < mesh->Nodes(); ++i)
 		if (mesh->Node(i).m_ntag != -1) mesh->Node(i).m_ntag = NN++;
 
-	GLMesh glMesh;
+	GMesh glMesh;
 	glMesh.Create(NN, 0);
 	for (int i = 0; i < mesh->Nodes(); ++i)
 	{
 		FSNode& node = mesh->Node(i);
 		if (node.m_ntag != -1)
 		{
-			GLMesh::NODE& gnode = glMesh.Node(node.m_ntag);
+			GMesh::NODE& gnode = glMesh.Node(node.m_ntag);
 			gnode.r = node.pos();
 		}
 	}
@@ -176,10 +176,10 @@ void GLMesher::BuildEdgeMesh(GLMesh* glmsh, GEdge& e)
 }
 
 //-----------------------------------------------------------------------------
-void GLMesher::BuildFacePolygon(GLMesh* glmesh, GFace& f)
+void GLMesher::BuildFacePolygon(GMesh* glmesh, GFace& f)
 {
 	// triangulate the face
-	GLMesh* pm = triangulate(f);
+	GMesh* pm = triangulate(f);
 
 	// attach this mesh to our mesh
 	glmesh->Attach(*pm, false);
@@ -193,7 +193,7 @@ void GLMesher::BuildFacePolygon(GLMesh* glmesh, GFace& f)
 // It must be true that the face has four nodes and four edges.
 // Edges 0 and 2 must be of the same type and edges 1 and 3 must be
 // straight lines.
-void GLMesher::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceExtrude(GMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
@@ -215,7 +215,7 @@ void GLMesher::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 	assert(e3.m_ntype == EDGE_LINE);
 
 	// this is the mesh we'll be building
-	GLMesh m;
+	GMesh m;
 
 	// build the face
 	switch (e0.m_ntype)
@@ -540,7 +540,7 @@ void GLMesher::BuildFaceExtrude(GLMesh* glmesh, GFace& f)
 //-----------------------------------------------------------------------------
 // Build a revolved surface
 // The revolved surface has four edges, the two side ones of type EDGE_YARC
-void GLMesher::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceRevolve(GMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
@@ -574,7 +574,7 @@ void GLMesher::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 	else assert(false);
 
 	// allocate mesh
-	GLMesh m;
+	GMesh m;
 	m.Create((M + 1) * (M + 1), 2 * M * M, 4 * M);
 
 	// build nodes
@@ -611,7 +611,7 @@ void GLMesher::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 			p.y *= R;
 			p.z = z;
 
-			GLMesh::NODE& n = m.Node(j * (M + 1) + i);
+			GMesh::NODE& n = m.Node(j * (M + 1) + i);
 			n.r = p;
 			n.pid = -1;
 		}
@@ -677,7 +677,7 @@ void GLMesher::BuildFaceRevolve(GLMesh* glmesh, GFace& f)
 //-----------------------------------------------------------------------------
 // Build a revolved wedge surface
 // The revolved surface has four edges, the two side ones of type EDGE_YARC
-void GLMesher::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
@@ -701,7 +701,7 @@ void GLMesher::BuildFaceRevolveWedge(GLMesh* glmesh, GFace& f)
 	assert((e1.m_ntype == EDGE_YARC) || (e1.m_ntype == EDGE_ZARC));
 
 	// this is the mesh we'll be building
-	GLMesh m;
+	GMesh m;
 
 	// build the mesh
 	switch (e0.m_ntype)
@@ -838,7 +838,7 @@ vec3d GLMesher::EdgePoint(GEdge& edge, double r)
 }
 
 //-----------------------------------------------------------------------------
-void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
+void GLMesher::BuildFaceQuad(GMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
@@ -866,7 +866,7 @@ void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 	}
 
 	// allocate mesh
-	GLMesh m;
+	GMesh m;
 	m.Create((M + 1) * (M + 1), 2 * M * M, 4 * M);
 
 	// see if this face is a sphere
@@ -921,7 +921,7 @@ void GLMesher::BuildFaceQuad(GLMesh* glmesh, GFace& f)
 				p = sphereCenter + t * sphereRadius;
 			}
 
-			GLMesh::NODE& n = m.Node(j * (M + 1) + i);
+			GMesh::NODE& n = m.Node(j * (M + 1) + i);
 			n.r = p;
 			n.pid = -1;
 		}

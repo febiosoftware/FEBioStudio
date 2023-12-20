@@ -80,9 +80,7 @@ bool GSolidArc::Update(bool b)
 	m_Node[8]->LocalPosition() = vec3d(  0, 0, 0);
 	m_Node[9]->LocalPosition() = vec3d(  0, 0, H);
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------

@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 #include <sstream>
 #include <QDialogButtonBox>
 #include <QComboBox>
@@ -64,10 +64,6 @@ CCurveEditor::CCurveEditor(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(
 
 	if (m_preferredSize.isValid())
 	{
-		// copy the x,y coordinates
-		QRect rt = geometry();
-		m_preferredSize.setX(rt.x());
-		m_preferredSize.setY(rt.y());
 		setGeometry(m_preferredSize);
 	}
 }
@@ -332,20 +328,7 @@ void CCurveEditor::BuildLoadCurves()
 	for (int i = 1; i < fem.Steps(); ++i)
 	{
 		FSStep* pstep = fem.GetStep(i);
-		BuildLoadCurves(t1, pstep);
-		for (int j = 0; j < pstep->Properties(); ++j)
-		{
-			FSProperty& prop = pstep->GetProperty(j);
-			if (prop.Size() != 0)
-			{
-				FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(prop.GetComponent());
-				if (pmc)
-				{
-					string name = pstep->GetName() + "." + prop.GetName();
-					BuildLoadCurves(t1, pmc, name);
-				}
-			}
-		}
+		BuildLoadCurves(t1, pstep, pstep->GetName());
 	}
 }
 
@@ -657,6 +640,7 @@ void CCurveEditor::SetActiveLoadController(FSLoadController* plc)
 	{
 		panel = 1;
 		ui->plot->SetLoadCurve(plc->CreateLoadCurve());
+		ui->plot->on_zoomToFit_clicked();
 		ui->plot->repaint();
 	}
 	else if (plc->IsType("math"))

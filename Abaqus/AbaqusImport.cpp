@@ -34,9 +34,10 @@ SOFTWARE.*/
 #include <vector>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FESurfaceLoad.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
 #include <FEBioLink/FEBioModule.h>
+#include <sstream>
 ////using namespace std;
 
 //-----------------------------------------------------------------------------
@@ -51,11 +52,43 @@ AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 	m_bssection = true;
 
 	m_breadPhysics = false;
+
+	AddBoolParam(true, "import_nodesets", "Import nodesets");
+	AddBoolParam(true, "import_elemsets", "Import element sets");
+	AddBoolParam(true, "import_surfaces", "Import surfaces");
+	AddBoolParam(false, "auto_partition", "Auto-partition from element sets");
+	AddBoolParam(true, "auto_partition_surface", "Auto-partition surface");
+	AddBoolParam(true, "process_solid_sections", "Process solid sections");
 }
 
 //-----------------------------------------------------------------------------
 AbaqusImport::~AbaqusImport()
 {
+}
+
+//-----------------------------------------------------------------------------
+bool AbaqusImport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_bnodesets = GetBoolValue(0);
+		m_belemsets = GetBoolValue(1);
+		m_bfacesets = GetBoolValue(2);
+		m_bautopart = GetBoolValue(3);
+		m_bautosurf = GetBoolValue(4);
+		m_bssection = GetBoolValue(5);
+	}
+	else
+	{
+		SetBoolValue(0, m_bnodesets);
+		SetBoolValue(1, m_belemsets);
+		SetBoolValue(2, m_bfacesets);
+		SetBoolValue(3, m_bautopart);
+		SetBoolValue(4, m_bautosurf);
+		SetBoolValue(5, m_bssection);
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -89,8 +122,8 @@ bool AbaqusImport::skip_keyword(char* szline, FILE* fp)
 }
 
 //-----------------------------------------------------------------------------
-// compare two strings, not considering case
-bool szicmp(const char* sz1, const char* sz2)
+// see if sz2 is contained in sz1, ignoring case
+bool szicnt(const char* sz1, const char* sz2)
 {
 	int l1 = (int)strlen(sz1);
 	int l2 = (int)strlen(sz2);
@@ -109,6 +142,30 @@ bool szicmp(const char* sz1, const char* sz2)
 		if (c1 != c2) return false;
 	}
 	while ((n1 < l1) && (n2 < l2));
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+// compare two strings, not considering case
+bool szicmp(const char* sz1, const char* sz2)
+{
+	int l1 = (int)strlen(sz1);
+	int l2 = (int)strlen(sz2);
+	if (l1 != l2) return false;
+	int n1 = 0, n2 = 0;
+
+	char c1, c2;
+
+	do
+	{
+		c1 = sz1[n1++];
+		c2 = sz2[n2++];
+
+		if ((c1 >= 'A') && (c1 <= 'Z')) c1 = 'a' + (c1 - 'A');
+		if ((c2 >= 'A') && (c2 <= 'Z')) c2 = 'a' + (c2 - 'A');
+		if (c1 != c2) return false;
+	} while ((n1 < l1) && (n2 < l2));
 
 	return true;
 }
@@ -145,7 +202,6 @@ bool AbaqusImport::Load(const char* szfile)
 	// build the model
 	if (build_model() == false) return false;
 
-	// we're good!
 	return true;
 }
 
@@ -161,67 +217,71 @@ bool AbaqusImport::parse_file(FILE* fp)
 	while (!feof(fp))
 	{
 		// find what keyword this is
-		if (szicmp(szline, "*HEADING"))	// read the heading
+		if (szicnt(szline, "*HEADING"))	// read the heading
 		{
 			if (!read_heading(szline, fp)) return errf("Error while reading keyword HEADING (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*NODE PRINT"))
+		else if (szicnt(szline, "*NODE PRINT"))
 		{
 			// we need to read this otherwise, the NODE reader gets messed up
 			read_line(szline, fp);
 		}
-		else if (szicmp(szline, "*NODE OUTPUT"))
+		else if (szicnt(szline, "*NODE OUTPUT"))
 		{
 			// we need to read this otherwise, the NODE reader gets messed up
 			read_line(szline, fp);
 		}
-		else if (szicmp(szline, "*NODE")) // read nodes
+		else if (szicnt(szline, "*NODE")) // read nodes
 		{
 			if (!read_nodes(szline, fp)) return errf("Error while reading keyword NODE (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*NGEN")) // read node generation
+		else if (szicnt(szline, "*NGEN")) // read node generation
 		{
 			if (!read_ngen(szline, fp)) return errf("Error while reading keyword NGEN (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*NFILL")) // read nfill
+		else if (szicnt(szline, "*NFILL")) // read nfill
 		{
 			if (!read_nfill(szline, fp)) return errf("Error while reading keyword NFILL (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*ELEMENT OUTPUT"))
+		else if (szicnt(szline, "*ELEMENT OUTPUT"))
 		{
 			// we need to read this otherwise, the ELEMENT reader gets messed up
 			read_line(szline, fp);
 		}
-		else if (szicmp(szline, "*SOLID SECTION"))
+		else if (szicnt(szline, "*SOLID SECTION"))
 		{
 			if (!read_solid_section(szline, fp)) return errf("Error while reading keyword SOLID SECTION (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*ELEMENTSET")) // read element sets
+		else if (szicnt(szline, "*SHELL SECTION"))
+		{
+			if (!read_shell_section(szline, fp)) return errf("Error while reading keyword SHELL SECTION (line %d)", m_nline);
+		}
+		else if (szicnt(szline, "*ELEMENTSET")) // read element sets
 		{
 			if (!read_element_sets(szline, fp)) return errf("Error while reading keyword ELEMENTSET (line %d)", m_nline);			
 		}
-		else if (szicmp(szline, "*ELEMENT")) // read elements
+		else if (szicnt(szline, "*ELEMENT")) // read elements
 		{
 			if (!read_elements(szline, fp)) return errf("Error while reading keyword ELEMENT (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*ELSET")) // read element sets
+		else if (szicnt(szline, "*ELSET")) // read element sets
 		{
 			if (!read_element_sets(szline, fp)) return errf("Error while reading keyword ELSET (line %d)", m_nline);			
 		}
-		else if (szicmp(szline, "*NSET")) // read element sets
+		else if (szicnt(szline, "*NSET")) // read element sets
 		{
 			if (!read_node_sets(szline, fp)) return errf("Error while reading keyword NSET (line %d)", m_nline);			
 		}
-		else if (szicmp(szline, "*SURFACE BEHAVIOR"))
+		else if (szicnt(szline, "*SURFACE BEHAVIOR"))
 		{
 			// read the next line
 			read_line(szline, fp);
 		}
-		else if (szicmp(szline, "*SURFACE INTERACTION"))
+		else if (szicnt(szline, "*SURFACE INTERACTION"))
 		{
 			if (!read_surface_interaction(szline, fp)) return errf("Error while reading keyword SURFACE INTERACTION (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*SURFACE")) // read surfaces
+		else if (szicnt(szline, "*SURFACE")) // read surfaces
 		{
 			if (m_bfacesets)
 			{
@@ -229,54 +289,70 @@ bool AbaqusImport::parse_file(FILE* fp)
 			}
 			else read_line(szline, fp);
 		}
-		else if (szicmp(szline, "*MATERIAL")) // read materials
+		else if (szicnt(szline, "*MATERIAL")) // read materials
 		{
 			if (!read_materials(szline, fp)) return errf("Error while reading keyword MATERIAL (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*PART")) // read parts
+		else if (szicnt(szline, "*PART")) // read parts
 		{
 			if (!read_part(szline, fp)) return errf("Error while reading keyword PART (line %d)", m_nline);
 		}
-		else if (szicmp(szline,"*END PART") || szicmp(szline, "*ENDPART"))
+		else if (szicnt(szline,"*END PART") || szicnt(szline, "*ENDPART"))
 		{
 			if (!read_end_part(szline, fp)) return errf("Error while reading keyword END PART (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*INSTANCE"))
+		else if (szicnt(szline, "*INSTANCE"))
 		{
 			if (!read_instance(szline, fp)) return errf("Error while reading keyword INSTANCE (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*END INSTANCE"))
+		else if (szicnt(szline, "*END INSTANCE"))
 		{
 			if (!read_end_instance(szline, fp)) return errf("Error while reading keyword END INSTANCE (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*STEP"))
+		else if (szicnt(szline, "*ASSEMBLY"))
+		{
+			if (!read_assembly(szline, fp)) return errf("Error while reading keyword INSTANCE (line %d)", m_nline);
+		}
+		else if (szicnt(szline, "*END ASSEMBLY"))
+		{
+			if (!read_end_assembly(szline, fp)) return errf("Error while reading keyword END INSTANCE (line %d)", m_nline);
+		}
+		else if (szicnt(szline, "*STEP"))
 		{
 			if (!read_step(szline, fp)) 
 			{
 				return errf("Error while reading keyword STEP (line %d)", m_nline);
 			}
 		}
-/*		else if (szicmp(szline, "*BOUNDARY"))
+		else if (szicnt(szline, "*BOUNDARY"))
 		{
 			if (!read_boundary(szline, fp)) return errf("Error while reading keyword BOUNDARY (line %d)", m_nline);
 		}
-*/		else if (szicmp(szline, "*DSLOAD"))
+		else if (szicnt(szline, "*DSLOAD"))
 		{
 			if (!read_dsload(szline, fp)) return errf("Error while reading keyword DSLOAD (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*ORIENTATION"))
+		else if (szicnt(szline, "*ORIENTATION"))
 		{
 			if (!read_orientation(szline, fp)) return errf("Error while reading keyword ORIENTATION (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*DISTRIBUTION TABLE"))
+		else if (szicnt(szline, "*DISTRIBUTION TABLE"))
 		{
 			read_line(szline, fp);
 		}
-		else if (szicmp(szline, "*DISTRIBUTION"))
+		else if (szicnt(szline, "*DISTRIBUTION"))
 		{
 			if (!read_distribution(szline, fp)) return errf("Error while reading keyword DISTRIBUTION (line %d)", m_nline);
 		}
-		else if (szicmp(szline, "*INCLUDE")) // include another file
+		else if (szicnt(szline, "*AMPLITUDE"))
+		{
+			if (!read_amplitude(szline, fp)) return errf("Error while reading keyword AMPLITUDE (line %d)", m_nline);
+		}
+		else if (szicnt(szline, "*END STEP"))
+		{
+			read_line(szline, fp);
+		}
+		else if (szicnt(szline, "*INCLUDE")) // include another file
 		{
 			// get the filename
 			char* szfile = strrchr(szline, '=');
@@ -303,6 +379,12 @@ bool AbaqusImport::parse_file(FILE* fp)
 		else
 		{
 			// read the next line
+			if (szline[0] == '*')
+			{
+				char* ch = strchr(szline, ',');
+				if (ch) *ch = 0;
+				errf("Skipping unrecognized keyword \"%s\" (line %d)", szline, m_nline);
+			}
 			read_line(szline, fp);
 		}
 	}
@@ -321,7 +403,7 @@ int AbaqusImport::parse_line(const char* szline, ATTRIBUTE* pa)
 	int k = 0;
 	char* sz = pa[n].szatt;
 	pa[0].szval[0] = 0;
-	while (m<l)
+	while ((m<l) && (n < MAX_ATTRIB))
 	{
 		c = szline[m];
 		switch (c)
@@ -344,6 +426,7 @@ int AbaqusImport::parse_line(const char* szline, ATTRIBUTE* pa)
 			k = 0;
 			sz = pa[n].szval;
 			break;
+		case '\r':
 		case ' ': // skip spaces
 			break;
 		default:	// copy text
@@ -376,7 +459,7 @@ bool AbaqusImport::read_heading(char* szline, FILE* fp)
 	int n = 0;
 	do
 	{
-		fgets(szline, 255, fp);
+		read_line(szline, fp);
 		if (feof(fp)) return false;
 
 		if (n == 0) strncpy(m_szTitle, szline, AbaqusModel::Max_Title);
@@ -392,7 +475,7 @@ bool AbaqusImport::read_heading(char* szline, FILE* fp)
 bool AbaqusImport::read_nodes(char* szline, FILE* fp)
 {
 	// parse the szline for optional parameters
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 
 	// get the active part
@@ -448,17 +531,17 @@ bool AbaqusImport::read_ngen(char* szline, FILE* fp)
 	AbaqusModel::PART& part = *m_inp.GetActivePart();
 
 	// scan the element line for optional parameters
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	// check the parameters
 	int nline = 0;
 	for (i=1; i<natt; ++i)
 	{
-		if (szicmp(att[i].szatt, "LINE"))
+		if (szicnt(att[i].szatt, "LINE"))
 		{
 			const char* sz = att[i].szval;
-			if      (szicmp(sz, "C")) nline = 1;
+			if      (szicnt(sz, "C")) nline = 1;
 			else return errf("line type %s not supported", sz);
 		}
 	}
@@ -540,25 +623,25 @@ bool AbaqusImport::read_nfill(char* szline, FILE* fp)
 	{
 		char* ch1 = strchr(szline, ',');
 		if (ch1) *ch1 = 0; else return false;
-		map<string, AbaqusModel::NODE_SET>::iterator ns1 = part.FindNodeSet(szline);
-		if (ns1 == part.m_NSet.end()) return false;
+		AbaqusModel::NODE_SET* ns1 = part.FindNodeSet(szline);
+		if (ns1 == nullptr) return false;
 		char* ch2 = strchr(ch1+1, ',');
 		if (ch2) *ch2 = 0; else return false;
-		map<string, AbaqusModel::NODE_SET>::iterator ns2 = part.FindNodeSet(ch1 + 1);
-		if (ns2 == part.m_NSet.end()) return false;
+		AbaqusModel::NODE_SET* ns2 = part.FindNodeSet(ch1 + 1);
+		if (ns2 == nullptr) return false;
 
 		int nl, ni;
 		sscanf(ch2+1, "%d,%d", &nl, &ni);
 
-		if (ns1->second.node.size() != ns2->second.node.size()) return false;
+		if (ns1->node.size() != ns2->node.size()) return false;
 
-		int N = (int)ns1->second.node.size();
+		int N = (int)ns1->node.size();
 		AbaqusModel::NODE n;
 		double t;
 		for (int l=1; l<nl; ++l)
 		{
-			list<AbaqusModel::Tnode_itr>::iterator n1 = ns1->second.node.begin();
-			list<AbaqusModel::Tnode_itr>::iterator n2 = ns2->second.node.begin();
+			list<AbaqusModel::Tnode_itr>::iterator n1 = ns1->node.begin();
+			list<AbaqusModel::Tnode_itr>::iterator n2 = ns2->node.begin();
 
 			t = (double) l / (double) nl;
 
@@ -585,7 +668,7 @@ bool AbaqusImport::read_nfill(char* szline, FILE* fp)
 bool AbaqusImport::read_elements(char* szline, FILE* fp)
 {
 	// scan the element line for optional parameters
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	// check the parameters
@@ -600,6 +683,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 			if      (szicmp(sz, "C3D8"  )) ntype = FE_HEX8;
             else if (szicmp(sz, "C3D8H" )) ntype = FE_HEX8;
 			else if (szicmp(sz, "C3D8I" )) ntype = FE_HEX8;
+			else if (szicmp(sz, "C3D8R" )) ntype = FE_HEX8;
             else if (szicmp(sz, "C3D5"  )) ntype = FE_PYRA5;
 			else if (szicmp(sz, "C3D6"  )) ntype = FE_PENTA6;
 			else if (szicmp(sz, "C3D4"  )) ntype = FE_TET4;
@@ -626,7 +710,11 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 				ntype = -1;
 				bsprings = true;
 			}
-			else return errf("Element type %s not supported", sz);
+			else {
+				errf("Element type %s not supported (line %d)", sz, m_nline); 
+				skip_keyword(szline, m_fp); 
+				return true;
+			}
 		}
 		else if (szicmp(att[i].szatt, "ELSET"))
 		{
@@ -647,11 +735,11 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 	AbaqusModel::PART& part = *pg;
 
 	// find the element set
-	list<AbaqusModel::ELEMENT_SET>::iterator ps = part.m_ElSet.end();
+	AbaqusModel::ELEMENT_SET* ps = nullptr;
 	if (szset)
 	{
 		ps = part.FindElementSet(szset);
-		if (ps == part.m_ElSet.end()) ps = part.AddElementSet(szset);
+		if (ps == nullptr) ps = part.AddElementSet(szset);
 	}
 
 	// read the elements
@@ -707,7 +795,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 
 				// if we've reached at the end of the line
 				// then we load the next line
-				if (strlen(ch) == 1)
+				if (strlen(ch) == 1 || strcmp(ch,", ") == 0)
 				{
 					read_line(szline, fp);
 					ch = szline;
@@ -739,7 +827,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
 		part.AddElement(el);
 
 		// add the element to the elementset
-		if (ps != part.m_ElSet.end()) ps->elem.push_back(el.id);
+		if (ps != nullptr) ps->elem.push_back(el.id);
 
 		// read the next line
 		read_line(szline, fp);
@@ -813,7 +901,7 @@ bool AbaqusImport::read_spring_elements(char* szline, FILE* fp)
 		int nc = 0;
 		while (!feof(fp) && (szline[0] != '*'))
 		{
-			ATTRIBUTE att[3];
+			ATTRIBUTE att[MAX_ATTRIB];
 			int natt = parse_line(szline, att);
 			if (natt != 3) return false;
 
@@ -869,7 +957,7 @@ bool AbaqusImport::read_spring_elements(char* szline, FILE* fp)
 bool AbaqusImport::read_element_sets(char* szline, FILE* fp)
 {
 	// read the attributes
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	char szname[256];
@@ -885,7 +973,12 @@ bool AbaqusImport::read_element_sets(char* szline, FILE* fp)
 	else pg = m_inp.GetActivePart();
 
 	// get the part
-	if (pg == 0) return false;
+	if (pg == 0)
+	{
+		errf("Error reading ELSET (line %d)", m_nline);
+		skip_keyword(szline, m_fp);
+		return true;
+	}
 	AbaqusModel::PART& part = *pg;
 
 	// check the attributes
@@ -904,8 +997,8 @@ bool AbaqusImport::read_element_sets(char* szline, FILE* fp)
 	}
 
 	// find the element set or create a new one
-	list<AbaqusModel::ELEMENT_SET>::iterator pset = part.FindElementSet(szname);
-	if (pset == part.m_ElSet.end()) pset = part.AddElementSet(szname);
+	AbaqusModel::ELEMENT_SET* pset = part.FindElementSet(szname);
+	if (pset == nullptr) pset = part.AddElementSet(szname);
 
 	pset->part = pg;
 
@@ -958,7 +1051,7 @@ bool AbaqusImport::read_element_sets(char* szline, FILE* fp)
 bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 {
 	// read the attributes
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	// find the instance part (if any)
@@ -991,11 +1084,10 @@ bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 	// read the lines
 	if (bgen)
 	{
-		map<string, AbaqusModel::NODE_SET>::iterator pset = part.FindNodeSet(szname);
-		if (pset == part.m_NSet.end()) 
+		AbaqusModel::NODE_SET* pset = part.FindNodeSet(szname);
+		if (pset == nullptr) 
 		{
 			pset = part.AddNodeSet(szname);
-			pset->second.part = pg;
 		}
 
 		int n1, n2, n;
@@ -1012,7 +1104,7 @@ bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 			{
 				it = part.FindNode(i);
 				if (it == part.m_Node.end()) return false;
-				pset->second.node.push_back(it);
+				pset->node.push_back(it);
 			}
 
 			// read the next line
@@ -1027,8 +1119,7 @@ bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 		// get/create the node set
 //		list<AbaqusModel::NODE_SET>::iterator pset = part.FindNodeSet(szname);
 //		if (pset == part.m_NSet.end()) pset = part.AddNodeSet(szname);
-		map<string, AbaqusModel::NODE_SET>::iterator pset = part.AddNodeSet(szname);
-		pset->second.part = pg;
+		AbaqusModel::NODE_SET* pset = part.AddNodeSet(szname);
 
 		read_line(szline, fp);
 		while (!feof(fp) && (szline[0] != '*'))
@@ -1041,7 +1132,7 @@ bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 			{
 				it = part.FindNode(n[i]);
 				if (it == part.m_Node.end()) return false;
-				pset->second.node.push_back(it);
+				pset->node.push_back(it);
 			}
 
 			// read the next line
@@ -1057,7 +1148,7 @@ bool AbaqusImport::read_node_sets(char* szline, FILE* fp)
 bool AbaqusImport::read_surface(char* szline, FILE* fp)
 {
 	// read the attributes
-	ATTRIBUTE att[7];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
 	char szname[256];
@@ -1087,19 +1178,19 @@ bool AbaqusImport::read_surface(char* szline, FILE* fp)
 		}
 	}
 
-	if (ntype != AbaqusModel::ST_ELEMENT) return false;
+	if (ntype != AbaqusModel::ST_ELEMENT)
+	{
+		errf("Failed reading SURFACE keyword (line %d)", m_nline);
+		skip_keyword(szline, fp);
+		return true;
+	}
 
 	// find the surface
 	AbaqusModel::SURFACE* ps = 0;
 	if (pg)
 	{
-		list<AbaqusModel::SURFACE>::iterator psi = pg->FindSurface(szname);
-		if (psi == pg->m_Surf.end()) psi = pg->AddSurface(szname);
-
-		ps = &(*psi);
-
-		// store the part this surface belongs to
-		ps->part = pg;
+		ps = pg->FindSurface(szname);
+		if (ps == nullptr) ps = pg->AddSurface(szname);
 	}
 
 	// read the surface
@@ -1137,8 +1228,8 @@ bool AbaqusImport::read_surface(char* szline, FILE* fp)
 			if (ps == 0)
 			{
 				pg = pset->part; if (pg == 0) return false;
-				list<AbaqusModel::SURFACE>::iterator psi = pg->AddSurface(szname);
-				if (psi == pg->m_Surf.end()) return false;
+				AbaqusModel::SURFACE* psi = pg->AddSurface(szname);
+				if (psi == nullptr) return false;
 
 				ps = &(*psi);
 				ps->part = pg;
@@ -1179,7 +1270,7 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 	AbaqusModel::MATERIAL& mat = *m_inp.AddMaterial("");
 	mat.dens = 1.0;
 
-	ATTRIBUTE a[10];
+	ATTRIBUTE a[MAX_ATTRIB];
 	int natt = parse_line(szline, a);
 	const char* szname = find_attribute(a, natt, "NAME");
 	if (szname) strcpy(mat.szname, szname);
@@ -1187,12 +1278,12 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 	read_line(szline, fp);
 	while (!feof(fp))
 	{
-		if (szicmp(szline, "*DENSITY"))
+		if (szicnt(szline, "*DENSITY"))
 		{
 			read_line(szline, fp);
 			sscanf(szline, "%lg", &mat.dens);
 		}
-		else if (szicmp(szline, "*ELASTIC"))
+		else if (szicnt(szline, "*ELASTIC"))
 		{
 			mat.mattype = AbaqusModel::ELASTIC;
 			natt = parse_line(szline, a);
@@ -1213,32 +1304,53 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 			}
 			while (ch && (np < nmax));
 		}
-		else if (szicmp(szline, "*HYPERELASTIC"))
+		else if (szicnt(szline, "*HYPERELASTIC"))
 		{
 			mat.mattype = AbaqusModel::HYPERELASTIC;
+			mat.ntype = -1;
 			natt = parse_line(szline, a);
 			const char* sztype = a[1].szatt;
-			if (sztype && szicmp(sztype, "NEOHOOKE")) mat.ntype = 1;
-
-			read_line(szline, fp);
-			char* sz = szline;
-			char* ch = strchr(sz, ',');
+			int lines = 1;
 			int nmax = 2;
-			int np = 0;
-			do
+			mat.nparam = 0;
+			if (sztype && szicmp(sztype, "NEOHOOKE"))
 			{
-				if (ch) *ch = 0;
-				sscanf(sz, "%lg", &mat.d[np]);
-				if (ch)
+				mat.ntype = 1;
+				mat.nparam = 2;
+			}
+			if (sztype && szicmp(sztype, "OGDEN"))
+			{
+				if (strcmp(a[2].szatt, "N") == 0)
 				{
-					++np;
-					sz = ch + 1;
-					ch = strchr(sz, ',');
+					int N = atoi(a[2].szval);
+					mat.ntype = 2;
+					lines = (N > 2 ? 2 : 1);
+					nmax = N*3;
+					mat.nparam = nmax;
 				}
-				else sz = 0;
-			} while (sz && (np < nmax));
+			}
+
+			int np = 0;
+			for (int l = 0; l < lines; ++l)
+			{
+				read_line(szline, fp);
+				char* sz = szline;
+				char* ch = strchr(sz, ',');
+				do
+				{
+					if (ch) *ch = 0;
+					sscanf(sz, "%lg", &mat.d[np]);
+					if (ch)
+					{
+						++np;
+						sz = ch + 1;
+						ch = strchr(sz, ',');
+					}
+					else sz = 0;
+				} while (sz && (np < nmax));
+			}
 		}
-		else if (szicmp(szline, "*ANISOTROPIC HYPERELASTIC"))
+		else if (szicnt(szline, "*ANISOTROPIC HYPERELASTIC"))
 		{
 			mat.mattype = AbaqusModel::ANI_HYPERELASTIC;
 			natt = parse_line(szline, a);
@@ -1263,6 +1375,11 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 				else sz = 0;
 			} while (sz && (np < nmax));
 		}
+		else if (szicnt(szline, "*TRANSVERSE SHEAR"))
+		{
+			// TODO: do something with this
+			read_line(szline, fp);
+		}
 		else break;
 		read_line(szline, fp);
 	}
@@ -1273,7 +1390,7 @@ bool AbaqusImport::read_materials(char *szline, FILE *fp)
 bool AbaqusImport::read_part(char* szline, FILE* fp)
 {
 	if (m_inp.CurrentPart()) return errf("Error in file: new part was started before END PART was detected. (line %d)", m_nline);
-	ATTRIBUTE att[2];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 	if (natt == 0) return errf("Error: You need to add a NAME attribute when defining a part. (line %d)", m_nline);
 
@@ -1302,14 +1419,18 @@ bool AbaqusImport::read_end_part(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_instance(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int natt = parse_line(szline, att);
 
+	// make sure we have an assembly
+	AbaqusModel::ASSEMBLY* asmbly = m_inp.GetCurrentAssembly();
+	if (asmbly == nullptr) return errf("Instance defined outside Assembly.");
+
 	if (m_inp.CurrentPart()) return errf("Instance encountered while reading part.");
-	if (m_inp.CurrentInstance()) return errf("Instance encountered when other instance not closed.");
+	if (asmbly->CurrentInstance()) return errf("Instance encountered when other instance not finished.");
 
 	// create a new instance
-	AbaqusModel::INSTANCE* pInst = m_inp.AddInstance();
+	AbaqusModel::INSTANCE* pInst = asmbly->AddInstance();
 
 	// set the name
 	pInst->SetName(att[1].szval);
@@ -1390,8 +1511,47 @@ bool AbaqusImport::read_instance(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_end_instance(char* szline, FILE* fp)
 {
-	if (m_inp.CurrentInstance() == 0) return errf("end instance encountered with no active instance.");
-	m_inp.ClearCurrentInstance();
+	AbaqusModel::ASSEMBLY* asmbly = m_inp.GetCurrentAssembly();
+	if (asmbly == nullptr) return errf("end instance encountered without active assembly.");
+
+	if (asmbly->CurrentInstance() == nullptr) return errf("end instance encountered with no active instance.");
+	asmbly->ClearCurrentInstance();
+	read_line(szline, fp);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool AbaqusImport::read_assembly(char* szline, FILE* fp)
+{
+	// make sure we don't have an assembly yet
+	AbaqusModel::ASSEMBLY* asmbly = m_inp.GetAssembly();
+	if (asmbly) return errf("Only one assembly can be defined in a model.");
+
+	// also make sure we don't already read the assembly keyword
+	asmbly = m_inp.GetCurrentAssembly();
+	if (asmbly) return errf("Duplicate assembly keyword.");
+
+	// create an assembly
+	asmbly = m_inp.CreateAssembly();
+	m_inp.SetCurrentAssembly(asmbly);
+
+	ATTRIBUTE att[MAX_ATTRIB];
+	int natt = parse_line(szline, att);
+	const char* szname = find_attribute(att, 2, "name");
+	if (szname == nullptr) return errf("name attribute of ASSEMBLY keyword missing");
+
+	asmbly->m_name = szname;
+
+	read_line(szline, fp);
+
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool AbaqusImport::read_end_assembly(char* szline, FILE* fp)
+{
+	if (m_inp.GetCurrentAssembly() == nullptr) return errf("no assembly was active when END ASSEMBLY was found.");
+	m_inp.SetCurrentAssembly(nullptr);
 	read_line(szline, fp);
 	return true;
 }
@@ -1435,9 +1595,11 @@ bool AbaqusImport::build_mesh()
 	const char* szdefaultName = "Object";
 
 	// if instances are defined, we create the geometry based on the instances
-	list<AbaqusModel::INSTANCE*>& Inst = m_inp.InstanceList();
-	if (Inst.empty() == false)
+	AbaqusModel::ASSEMBLY* asmbly = m_inp.GetAssembly();
+	if (asmbly)
 	{
+		list<AbaqusModel::INSTANCE*>& Inst = asmbly->InstanceList();
+
 		// loop over all instances
 		list<AbaqusModel::INSTANCE*>::iterator pi;
 		for (pi=Inst.begin(); pi!=Inst.end(); ++pi)
@@ -1520,6 +1682,10 @@ bool AbaqusImport::build_physics()
 				pmat->SetFloatValue(FSIsotropicElastic::MP_v, pm->d[1]);
 			}
 			break;
+		case AbaqusModel::ANI_HYPERELASTIC:
+			pmat = new FSTransMooneyRivlin(&fem);
+			pmat->SetFloatValue(FSTransMooneyRivlin::MP_DENSITY, pm->dens);
+			break;
 		case AbaqusModel::HYPERELASTIC:
 			if (pm->ntype == 1)
 			{
@@ -1528,7 +1694,37 @@ bool AbaqusImport::build_physics()
 				pmat->SetFloatValue(FSIncompNeoHookean::MP_G, 2.0*pm->d[0]);
 				pmat->SetFloatValue(FSIncompNeoHookean::MP_K, 1.0 / pm->d[1]);
 			}
+			else if (pm->ntype == 2)
+			{
+				pmat = new FSOgdenMaterial(&fem);
+				if (pm->nparam == 3)
+				{
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C1, pm->d[0]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M1, pm->d[1]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_K, 1.0 / pm->d[2]);
+				}
+				else if (pm->nparam == 6)
+				{
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C1, pm->d[0]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M1, pm->d[1]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C2, pm->d[2]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M2, pm->d[3]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_K, 1.0 / pm->d[4]);
+				}
+				else if (pm->nparam == 9)
+				{
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C1, pm->d[0]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M1, pm->d[1]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C2, pm->d[2]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M2, pm->d[3]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_C3, pm->d[4]*2.0);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_M3, pm->d[5]);
+					pmat->SetFloatValue(FSOgdenMaterial::MP_K, 1.0 / pm->d[6]);
+				}
+			}
 			break;
+		default:
+			assert(false);
 		}
 
 		if (pmat)
@@ -1548,15 +1744,24 @@ bool AbaqusImport::build_physics()
 		GObject* po = pg->m_po;
 		if (po)
 		{
-			int ssections = (int)pg->m_Solid.size();
-			if (po->Parts() == ssections)
+			int sections = (int)pg->m_Solid.size() + (int)pg->m_Shell.size();
+			if (po->Parts() == sections)
 			{
-				list<AbaqusModel::SOLID_SECTION>::iterator ssi = pg->m_Solid.begin();
-				for (int i = 0; i < ssections; ++ssi, ++i)
+				int n = 0;
+				list<AbaqusModel::SOLID_SECTION>::iterator solidSection = pg->m_Solid.begin();
+				for (int i = 0; i < pg->m_Solid.size(); ++solidSection, ++i)
 				{
-					AbaqusModel::SOLID_SECTION& ss = *ssi;
+					AbaqusModel::SOLID_SECTION& ss = *solidSection;
 					GMaterial* pmat = fem.FindMaterial(ss.szmat);
-					if (pmat) po->Part(i)->SetMaterialID(pmat->GetID());
+					if (pmat) po->Part(n++)->SetMaterialID(pmat->GetID());
+				}
+
+				list<AbaqusModel::SHELL_SECTION>::iterator shellSection = pg->m_Shell.begin();
+				for (int i = 0; i < pg->m_Shell.size(); ++shellSection, ++i)
+				{
+					AbaqusModel::SHELL_SECTION& ss = *shellSection;
+					GMaterial* pmat = fem.FindMaterial(ss.szmat);
+					if (pmat) po->Part(n++)->SetMaterialID(pmat->GetID());
 				}
 			}
 		}
@@ -1575,6 +1780,23 @@ bool AbaqusImport::build_physics()
 		fem.AddStep(festep);
 	}
 
+	// add the amplitude curves
+	for (int n = 0; n < m_inp.Amplitudes(); ++n)
+	{
+		const AbaqusModel::Amplitude& amp = m_inp.GetAmplitude(n);
+		LoadCurve lc;
+		lc.Clear();
+		for (int i = 0; i < amp.m_points.size(); ++i)
+		{
+			vec2d p = amp.m_points[i];
+			lc.Add(p.x(), p.y());
+		}
+		if (amp.m_type == AbaqusModel::Amplitude::AMP_TABULAR    ) lc.SetInterpolator(LoadCurve::LINEAR);
+		if (amp.m_type == AbaqusModel::Amplitude::AMP_SMOOTH_STEP) lc.SetInterpolator(LoadCurve::SMOOTH_STEP);
+		FSLoadController* plc = fem.AddLoadCurve(lc);
+		plc->SetName(amp.m_name);
+	}
+
 	// add all boundary conditions
 	list<AbaqusModel::BOUNDARY>& BCs = m_inp.BoundaryConditionList();
 	list<AbaqusModel::BOUNDARY>::iterator bci;
@@ -1586,13 +1808,24 @@ bool AbaqusImport::build_physics()
 		int ns = (int)bc.m_nodeSet.size();
 		for (int i=0; i<ns; ++i, ++n)
 		{
-			FSNodeSet* nset = build_nodeset(bc.m_nodeSet[i].nodeSet);
+			FSNodeSet* nset = find_nodeset(bc.m_nodeSet[i].nodeSet);
 			if (nset)
 			{
 				FSPrescribedDisplacement* pbc = new FSPrescribedDisplacement(&fem, nset, bc.m_nodeSet[i].ndof - 1, bc.m_nodeSet[i].load);
 				char szname[256] = { 0 };
 				sprintf(szname, "bc_%d", n);
 				pbc->SetName(szname);
+
+				if (bc.m_ampl >= 0)
+				{
+					FSLoadController* plc = fem.GetLoadController(bc.m_ampl);
+					if (plc)
+					{
+						Param& p = pbc->GetParam(FSPrescribedDOF::SCALE);
+						p.SetLoadCurveID(plc->GetID());
+					}
+				}
+
 				fem.GetStep(0)->AddComponent(pbc);
 			}
 		}
@@ -1609,24 +1842,39 @@ bool AbaqusImport::build_physics()
 		int ns = (int)p.m_surf.size();
 		for (int i=0; i<ns; ++i, ++n)
 		{
-			FSSurface* surface = build_surface(p.m_surf[i].surf);
-			if (surface)
-			{
-				FSPressureLoad* pl = new FSPressureLoad(&fem, surface);
-				char szname[256] = {0};
-				sprintf(szname, "dsload_%d", n);
-				pl->SetName(szname);
-				pl->SetLoad(p.m_surf[i].load);
+			FSSurface* surface = find_surface(p.m_surf[i].surf);
+			FSPressureLoad* pl = new FSPressureLoad(&fem, surface);
+			char szname[256] = {0};
+			sprintf(szname, "dsload_%d", n);
+			pl->SetName(szname);
+			pl->SetLoad(p.m_surf[i].load);
 
-				// add it to the initial step
-				fem.GetStep(0)->AddComponent(pl);
+			if (p.m_ampl >= 0)
+			{
+				FSLoadController* plc = fem.GetLoadController(p.m_ampl);
+				if (plc)
+				{
+					Param& p = pl->GetParam(FSPressureLoad::LOAD);
+					p.SetLoadCurveID(plc->GetID());
+				}
 			}
-			else return false;
+
+			// add it to the initial step
+			fem.GetStep(0)->AddComponent(pl);
 		}
 	}
 
 	// clean up
 	Mat.clear();
+
+	// The abaqus reader currently still uses the old FE classes, so we need to convert. 
+	std::ostringstream log;
+	m_prj.ConvertToNewFormat(log);
+	std::string s = log.str();
+	if (s.empty() == false)
+	{
+		errf(s.c_str());
+	}
 
 	return true;
 }
@@ -1697,18 +1945,20 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	for (i=0; i<nodes; ++i, ++pn) pn->id = i;
 
 	// auto-partition
-	int elsets = (int)part.m_ElSet.size();
+	int elsets = (int)part.m_ESet.size();
 	vector<int> index; index.assign(elsets, 0);
 
-	int ssections = (int) part.m_Solid.size();
-	if ((ssections > 0) && m_bssection)
+	int solidSections = (int) part.m_Solid.size();
+	int shellSections = (int) part.m_Shell.size();
+	if (((solidSections > 0) || (shellSections > 0)) && m_bssection)
 	{
-		list<AbaqusModel::SOLID_SECTION>::iterator pss = part.m_Solid.begin();
-		for (i = 0; i<ssections; ++i, ++pss)
+		int gid = 0;
+		list<AbaqusModel::SOLID_SECTION>::iterator solidSection = part.m_Solid.begin();
+		for (i = 0; i< solidSections; ++i, ++solidSection, ++gid)
 		{
-			AbaqusModel::SOLID_SECTION& ss = *pss;
-			list<AbaqusModel::ELEMENT_SET>::iterator esi = part.FindElementSet(ss.szelset);
-			if (esi != part.m_ElSet.end())
+			AbaqusModel::SOLID_SECTION& ss = *solidSection;
+			AbaqusModel::ELEMENT_SET* esi = part.FindElementSet(ss.szelset);
+			if (esi != nullptr)
 			{
 				int n = (int)esi->elem.size();
 				vector<int>::iterator pe = esi->elem.begin();
@@ -1717,7 +1967,7 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 					assert(*pe != -1);
 					int eid = part.FindElement(*pe)->lid;
 					FSElement& el = pm->Element(eid);
-					el.m_gid = i;
+					el.m_gid = gid;
 				}
 			}
 
@@ -1753,15 +2003,66 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 			}
 		}
 
+		// now to the shells
+		list<AbaqusModel::SHELL_SECTION>::iterator shellSection = part.m_Shell.begin();
+		for (i = 0; i < shellSections; ++i, ++shellSection, ++gid)
+		{
+			AbaqusModel::SHELL_SECTION& ss = *shellSection;
+			AbaqusModel::ELEMENT_SET* esi = part.FindElementSet(ss.szelset);
+			if (esi != nullptr)
+			{
+				int n = (int)esi->elem.size();
+				vector<int>::iterator pe = esi->elem.begin();
+				for (j = 0; j < n; ++j, ++pe)
+				{
+					assert(*pe != -1);
+					int eid = part.FindElement(*pe)->lid;
+					FSElement& el = pm->Element(eid);
+					el.m_gid = gid;
+				}
+			}
+
+			AbaqusModel::Orientation* orient = part.FindOrientation(ss.szorient);
+			if (orient)
+			{
+				AbaqusModel::Distribution* dist = part.FindDistribution(orient->szdist);
+				if (dist)
+				{
+					// skip the first entry
+					for (int j = 1; j < dist->m_data.size(); ++j)
+					{
+						AbaqusModel::Distribution::ENTRY& e = dist->m_data[j];
+						int eid = part.FindElement(e.elem)->lid;
+
+						vec3d a = vec3d(e.val[0], e.val[1], e.val[2]);
+						vec3d b = vec3d(e.val[3], e.val[4], e.val[5]);
+						FSElement& el = pm->Element(eid);
+
+						vec3d e1 = a; e1.Normalize();
+						vec3d e3 = a ^ b; e3.Normalize();
+						vec3d e2 = e3 ^ e1;
+
+						mat3d Q;
+						Q[0][0] = e1.x; Q[0][1] = e2.x; Q[0][2] = e3.x;
+						Q[1][0] = e1.y; Q[1][1] = e2.y; Q[1][2] = e3.y;
+						Q[2][0] = e1.z; Q[2][1] = e2.z; Q[2][2] = e3.z;
+
+						el.m_Qactive = true;
+						el.m_Q = Q;
+					}
+				}
+			}
+		}
+
 		pm->RebuildMesh(60.0, false);
 	}
 	else if (m_bautopart && (elsets > 0))
 	{
-		list<AbaqusModel::ELEMENT_SET>::iterator pes = part.m_ElSet.begin();
+		map<string, AbaqusModel::ELEMENT_SET*>::iterator pes = part.m_ESet.begin();
 		for (i=0; i<elsets; ++i, ++pes)
 		{
-			int n = (int)pes->elem.size();
-			vector<int>::iterator pe = pes->elem.begin();
+			int n = (int)pes->second->elem.size();
+			vector<int>::iterator pe = pes->second->elem.begin();
 			for (j=0; j<n; ++j, ++pe)
 			{
 				assert(*pe != -1);
@@ -1809,25 +2110,34 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	GMeshObject* po = new GMeshObject(pm);
 
 	// rename the parts to correspond to the element sets
-	if ((ssections > 0) && m_bssection)
+	if (((solidSections > 0) || (shellSections > 0)) && m_bssection)
 	{
-		list<AbaqusModel::SOLID_SECTION>::iterator pss = part.m_Solid.begin();
-		for (i = 0; i<ssections; ++i, ++pss)
+		int n = 0;
+		list<AbaqusModel::SOLID_SECTION>::iterator solidSection = part.m_Solid.begin();
+		for (i = 0; i<solidSections; ++i, ++solidSection)
 		{
-			AbaqusModel::SOLID_SECTION& ss = *pss;
-			po->Part(i)->SetName(ss.szelset);
+			AbaqusModel::SOLID_SECTION& ss = *solidSection;
+			po->Part(n++)->SetName(ss.szelset);
 		}
+
+		list<AbaqusModel::SHELL_SECTION>::iterator shellSection = part.m_Shell.begin();
+		for (i = 0; i < shellSections; ++i, ++shellSection)
+		{
+			AbaqusModel::SHELL_SECTION& ss = *shellSection;
+			po->Part(n++)->SetName(ss.szelset);
+		}
+
 	}
 	else if (m_bautopart)
 	{
-		list<AbaqusModel::ELEMENT_SET>::iterator pes = part.m_ElSet.begin();
+		map<string, AbaqusModel::ELEMENT_SET*>::iterator pes = part.m_ESet.begin();
 		int m = 0;
-		int elsets = (int)part.m_ElSet.size();
+		int elsets = (int)part.m_ESet.size();
 		for (i = 0; i<elsets; ++i, ++pes)
 		{
 			if (index[i] >= 0)
 			{
-				po->Part(m++)->SetName(pes->szname);
+				po->Part(m++)->SetName(pes->second->szname);
 			}
 		}
 	}
@@ -1835,18 +2145,18 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 	// read element sets
 	if (m_belemsets)
 	{
-		int elsets = (int)part.m_ElSet.size();
+		int elsets = (int)part.m_ESet.size();
 		if (elsets)
 		{
-			list<AbaqusModel::ELEMENT_SET>::iterator pes = part.m_ElSet.begin();
+			map<string, AbaqusModel::ELEMENT_SET*>::iterator pes = part.m_ESet.begin();
 			for (i=0; i<elsets; ++i, ++pes)
 			{
-				int n = (int)pes->elem.size();
-				FSPart* pg = new FSPart(po);
-				pg->SetName(pes->szname);
-				vector<int>::iterator pe = pes->elem.begin();
+				int n = (int)pes->second->elem.size();
+				FSElemSet* pg = new FSElemSet(po);
+				pg->SetName(pes->second->szname);
+				vector<int>::iterator pe = pes->second->elem.begin();
 				for (j=0; j<n; ++j, ++pe) pg->add(part.FindElement(*pe)->lid);
-				po->AddFEPart(pg);
+				po->AddFEElemSet(pg);
 			}
 		}
 	}
@@ -1857,14 +2167,14 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 		int nsets = (int)part.m_NSet.size();
 		if (nsets)
 		{
-			map<string, AbaqusModel::NODE_SET>::iterator ns = part.m_NSet.begin();
+			map<string, AbaqusModel::NODE_SET*>::iterator ns = part.m_NSet.begin();
 			int nn;
 			for (i=0; i<nsets; ++i, ++ns)
 			{
 				FSNodeSet* pg = new FSNodeSet(po);
-				pg->SetName(ns->second.szname);
-				list<AbaqusModel::Tnode_itr>::iterator pn = ns->second.node.begin();
-				nn = (int) ns->second.node.size();
+				pg->SetName(ns->second->szname);
+				list<AbaqusModel::Tnode_itr>::iterator pn = ns->second->node.begin();
+				nn = (int) ns->second->node.size();
 				for (j=0; j<nn; ++j, ++pn) pg->add((*pn)->id);
 				po->AddFENodeSet(pg);
 			}
@@ -1880,13 +2190,12 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 		int surfs = (int)part.m_Surf.size();
 		if (surfs)
 		{
-			list<AbaqusModel::SURFACE>::iterator si = part.m_Surf.begin();
+			auto si = part.m_Surf.begin();
 			for (i=0; i<surfs; ++i, ++si)
 			{
-				FSSurface* ps = build_surface(&(*si));
+				FSSurface* ps = build_surface(si->second);
 				if (ps)
 				{
-					ps->SetName(si->szname);
 					po->AddFESurface(ps);
 				}
 			}
@@ -1924,6 +2233,8 @@ GObject* AbaqusImport::build_part(AbaqusModel::PART* pg)
 //-----------------------------------------------------------------------------
 FSSurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 {
+	if (si == nullptr) return nullptr;
+
 	AbaqusModel::PART* part = si->part;
 	if (part == 0) return 0;
 
@@ -1935,6 +2246,7 @@ FSSurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 
 	int nf, n;
 	FSSurface* ps = new FSSurface(part->m_po);
+	ps->SetName(si->szname);
 	nf = (int)si->face.size();
 	list<AbaqusModel::FACE>::iterator pf = si->face.begin();
 	AbaqusModel::Telem_itr pe;
@@ -2028,6 +2340,22 @@ FSSurface* AbaqusImport::build_surface(AbaqusModel::SURFACE* si)
 	return ps;
 }
 
+//-----------------------------------------------------------------------------
+FSSurface* AbaqusImport::find_surface(AbaqusModel::SURFACE* si)
+{
+	if (si == nullptr) return nullptr;
+
+	AbaqusModel::PART* part = si->part;
+	if (part == 0) return 0;
+
+	// make sure the part has an object assigned to it
+	GMeshObject* po = dynamic_cast<GMeshObject*>(part->m_po);
+	if (po == 0) return 0;
+
+	// let's see if we can find it
+	return po->FindFESurface(si->szname);
+}
+
 // build a nodeset
 FSNodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
 {
@@ -2049,10 +2377,26 @@ FSNodeSet* AbaqusImport::build_nodeset(AbaqusModel::NODE_SET* ns)
 	return nset;
 }
 
+// find the nodeset
+FSNodeSet* AbaqusImport::find_nodeset(AbaqusModel::NODE_SET* ns)
+{
+	if (ns == nullptr) return nullptr;
+
+	AbaqusModel::PART* part = ns->part;
+	if (part == 0) return 0;
+
+	// make sure the part has an object assigned to it
+	GMeshObject* po = dynamic_cast<GMeshObject*>(part->m_po);
+	if (po == 0) return 0;
+
+	// let's see if we can find it
+	return po->FindFENodeSet(ns->szname);
+}
+
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_step(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 
 	const char* szname = find_attribute(att, 5, "name");
@@ -2063,28 +2407,28 @@ bool AbaqusImport::read_step(char* szline, FILE* fp)
 	// parse till END STEP
 	while (!feof(fp))
 	{
-		if (szicmp(szline, "*STATIC"))
+		if (szicnt(szline, "*STATIC"))
 		{
 			if (read_static(szline, fp) == false)
 			{
 				errf("Error reading *STATIC keyword (line %d)", m_nline);
 			}
 		}
-		else if (szicmp(szline, "*DSLOAD"))
+		else if (szicnt(szline, "*DSLOAD"))
 		{
 			if (read_dsload(szline, fp) == false)
 			{
 				errf("Error reading *DSLOAD keyword (line %d)", m_nline);
 			}
 		}
-		else if (szicmp(szline, "*BOUNDARY"))
+		else if (szicnt(szline, "*BOUNDARY"))
 		{
 			if (read_boundary(szline, fp) == false)
 			{
 				errf("Error reading *BOUNDARY keyword (line %d)", m_nline);
 			}
 		}
-		else if (szicmp(szline, "*END STEP")) 
+		else if (szicnt(szline, "*END STEP"))
 		{
 			m_inp.SetCurrentStep(0);
 			return true;
@@ -2099,10 +2443,17 @@ bool AbaqusImport::read_step(char* szline, FILE* fp)
 bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 {
 	AbaqusModel::BOUNDARY BC;
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
+	int natt = parse_line(szline, att);
+	const char* szampl = find_attribute(att, 4, "amplitude");
+	if (szampl)
+	{
+		BC.m_ampl = m_inp.FindAmplitude(szampl);
+	}
+	else BC.m_ampl = -1;
+
 	read_line(szline, fp);
 
-	AbaqusModel::NODE_SET* dummy = nullptr;
 	int ndof = -1;
 	double val = 0.0;
 
@@ -2117,25 +2468,35 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 			val = atof(att[3].szatt);
 			if (ns == nullptr)
 			{
-				int nid = atoi(szset);
-
-				AbaqusModel::PART* part = m_inp.CurrentPart();
-				if (part == nullptr) return false;
-
-				if (dummy == nullptr)
+				AbaqusModel::PART* part = nullptr;
+				int nid = -1;
+				const char* ch = strchr(szset, '.');
+				if (ch)
 				{
-					dummy = &part->AddNodeSet("_unnamed")->second;
-					dummy->part = part;
+					char szbuf[256] = { 0 };
+					strncpy(szbuf, szset, ch - szset);
+					AbaqusModel::INSTANCE* inst = m_inp.FindInstance(szbuf);
+					if (inst == nullptr) return false;
+					part = inst->GetPart();
+					nid = atoi(ch + 1);
+				}
+				else
+				{
+					part = m_inp.CurrentPart(); 
+					nid = atoi(szset);
 				}
 
+				
+				if (part == nullptr) return false;
+
+				AbaqusModel::NODE_SET* dummy = part->AddNodeSet(szset);
 				dummy->node.push_back(part->FindNode(nid));
+				BC.add(dummy, ndof, val);
 			}
 			else BC.add(ns, ndof, val);
 		}
 		read_line(szline, fp);
 	}
-
-	if (dummy) BC.add(dummy, ndof, val);
 
 	m_inp.AddBoundaryCondition(BC);
 
@@ -2146,7 +2507,15 @@ bool AbaqusImport::read_boundary(char* szline, FILE* fp)
 bool AbaqusImport::read_dsload(char* szline, FILE* fp)
 {
 	AbaqusModel::DSLOAD P;
-	ATTRIBUTE att[4];
+	ATTRIBUTE att[MAX_ATTRIB];
+
+	int natt = parse_line(szline, att);
+	const char* sza = find_attribute(att, 4, "amplitude");
+	if (sza)
+	{
+		P.m_ampl = m_inp.FindAmplitude(sza);
+	}
+
 	read_line(szline, fp);
 	while (!feof(fp) && (szline[0] != '*'))
 	{
@@ -2155,10 +2524,9 @@ bool AbaqusImport::read_dsload(char* szline, FILE* fp)
 		{
 			const char* szsurf = att[0].szatt;
 			AbaqusModel::SURFACE* s = m_inp.FindSurface(szsurf);
+			if (s == nullptr) errf("Warning: Failed to find surface \"%s\"", szsurf);
 			double val = atof(att[2].szatt);
-
-			if (s) P.add(s, val);
-			else return false;
+			P.add(s, val);
 		}
 		read_line(szline, fp);
 	}
@@ -2171,7 +2539,7 @@ bool AbaqusImport::read_dsload(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_solid_section(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	int n = parse_line(szline, att);
 
 	AbaqusModel::PART* pg = m_inp.GetActivePart(true);
@@ -2189,13 +2557,37 @@ bool AbaqusImport::read_solid_section(char* szline, FILE* fp)
 }
 
 //-----------------------------------------------------------------------------
+bool AbaqusImport::read_shell_section(char* szline, FILE* fp)
+{
+	ATTRIBUTE att[MAX_ATTRIB];
+	int n = parse_line(szline, att);
+
+	AbaqusModel::PART* pg = m_inp.GetActivePart(true);
+	if (pg == 0) return false;
+
+	const char* szelset = find_attribute(att, 5, "elset");
+	if (szelset == 0) return false;
+
+	const char* szmat = find_attribute(att, 5, "material");
+	const char* szorient = find_attribute(att, 5, "orientation");
+	auto it = pg->AddShellSection(szelset, szmat, szorient);
+
+	read_line(szline, fp);
+	n = parse_line(szline, att);
+	it->m_shellThickness = atof(att[0].szatt);
+
+	read_line(szline, fp);
+	return true;
+}
+
+//-----------------------------------------------------------------------------
 bool AbaqusImport::read_static(char* szline, FILE* fp)
 {
 	// read the next line
 	read_line(szline, fp);
 	if (szline[0] == '*') return true;
 	// parse it
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 
 	AbaqusModel::STEP* step = m_inp.CurrentStep();
@@ -2212,13 +2604,18 @@ bool AbaqusImport::read_static(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_orientation(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[5];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 	const char* szname = find_attribute(att, 3, "name");
 	read_line(szline, fp);
 
 	AbaqusModel::PART* pg = m_inp.CurrentPart();
-	if (pg == 0) return false;
+	if (pg == 0)
+	{
+		errf("Failed reading ORIENTATION keyword (line %d)", m_nline);
+		skip_keyword(szline, fp);
+		return true;
+	}
 
 	pg->AddOrientation(szname, szline);
 
@@ -2228,7 +2625,7 @@ bool AbaqusImport::read_orientation(char* szline, FILE* fp)
 //-----------------------------------------------------------------------------
 bool AbaqusImport::read_distribution(char* szline, FILE* fp)
 {
-	ATTRIBUTE att[8];
+	ATTRIBUTE att[MAX_ATTRIB];
 	parse_line(szline, att);
 	const char* szname = find_attribute(att, 5, "name");
 	if (szname == 0) return false;
@@ -2256,6 +2653,58 @@ bool AbaqusImport::read_distribution(char* szline, FILE* fp)
 	if (pg == 0) return false;
 
 	pg->m_Distr.push_back(D);
+
+	return true;
+}
+
+bool AbaqusImport::read_amplitude(char* szline, FILE* fp)
+{
+	ATTRIBUTE att[MAX_ATTRIB];
+	parse_line(szline, att);
+
+	const char* szname = find_attribute(att, 5, "name");
+	if (szname == 0) return false;
+
+	AbaqusModel::Amplitude amp; 
+	amp.m_name = szname;
+
+	const char* szdef = find_attribute(att, 10, "definition");
+	if (szdef)
+	{
+		if (szicmp(szdef, "TABULAR"   )) amp.m_type = AbaqusModel::Amplitude::AMP_TABULAR;
+		if (szicmp(szdef, "SMOOTHSTEP")) amp.m_type = AbaqusModel::Amplitude::AMP_SMOOTH_STEP;
+	}
+	else amp.m_type = AbaqusModel::Amplitude::AMP_TABULAR;
+
+	if (amp.m_type == AbaqusModel::Amplitude::AMP_SMOOTH_STEP)
+	{
+		if (read_line(szline, fp) == false) return false;
+		int count = parse_line(szline, att);
+		for (int n = 0; n < count; n += 2)
+		{
+			double x = atof(att[n  ].szatt);
+			double y = atof(att[n+1].szatt);
+			amp.m_points.push_back(vec2d(x, y));
+		}
+	}
+	else
+	{
+		do
+		{
+			if (read_line(szline, fp) == false) break;
+			if (szline[0] == '*') break;
+
+			int count = parse_line(szline, att);
+			if (count >= 2)
+			{
+				double x = atof(att[0].szatt);
+				double y = atof(att[1].szatt);
+				amp.m_points.push_back(vec2d(x, y));
+			}
+		} while (true);
+	}
+
+	m_inp.AddAmplitude(amp);
 
 	return true;
 }

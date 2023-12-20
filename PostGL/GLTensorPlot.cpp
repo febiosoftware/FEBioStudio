@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "GLWLib/GLWidgetManager.h"
 #include "GLModel.h"
 #include <stdlib.h>
+#include <GLLib/glx.h>
 using namespace Post;
 
 REGISTER_CLASS(GLTensorPlot, CLASS_PLOT, "tensor", 0);
@@ -43,23 +44,23 @@ GLTensorPlot::GLTensorPlot()
 	sprintf(szname, "TensorPlot.%02d", n++);
 	SetName(szname);
 
-	AddIntParam(0, "Data field")->SetEnumNames("@data_mat3");
-	AddIntParam(0, "Calculate")->SetEnumNames("Eigenvectors\0Columns\0Rows\0");
-	AddIntParam(0, "Color map")->SetEnumNames("@color_map");
-	AddIntParam(10, "Range divisions")->SetIntRange(1, 50);
-	AddBoolParam(true, "Allow clipping");
-	AddBoolParam(true, "Show hidden"   );
-	AddDoubleParam(0.0, "Scale");
-	AddDoubleParam(0.0, "Density")->SetFloatRange(0.0, 1.0, 0.0001);
-	AddIntParam(0, "Glyph")->SetEnumNames("Arrow\0Line\0Sphere\0Box\0");
-	AddIntParam(0, "Glyph Color")->SetEnumNames("Solid\0Norm\0Fractional anisotropy\0");
-	AddColorParam(GLColor::White(), "Solid Color");
-	AddBoolParam(true, "Auto-scale");
-	AddBoolParam(true, "Normalize" );
-	AddChoiceParam(0, "Max Range Type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(1.0, "User max");
-	AddChoiceParam(0, "Min Range Type")->SetEnumNames("dynamic\0static\0user\0");
-	AddDoubleParam(0.0, "User min");
+	AddIntParam(0, "data_field")->SetEnumNames("@data_mat3");
+	AddIntParam(0, "calculate")->SetEnumNames("eigenvectors\0columns\0rows\0");
+	AddIntParam(0, "color_map")->SetEnumNames("@color_map");
+	AddIntParam(10, "range_divisions")->SetIntRange(1, 50);
+	AddBoolParam(true, "allow_clipping");
+	AddBoolParam(true, "show_hidden");
+	AddDoubleParam(0.0, "scale");
+	AddDoubleParam(0.0, "density")->SetFloatRange(0.0, 1.0, 0.0001);
+	AddIntParam(0, "glyph")->SetEnumNames("arrow\0line\0sphere\0box\0");
+	AddIntParam(0, "glyph_color")->SetEnumNames("solid\0norm\0fractional anisotropy\0");
+	AddColorParam(GLColor::White(), "solid_color");
+	AddBoolParam(true, "auto-scale");
+	AddBoolParam(true, "normalize" );
+	AddChoiceParam(0, "max_range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(1.0, "user_max");
+	AddChoiceParam(0, "min_range_type")->SetEnumNames("dynamic\0static\0user\0");
+	AddDoubleParam(0.0, "user_min");
 
 	m_scale = 1;
 	m_dens = 1;
@@ -598,7 +599,7 @@ void GLTensorPlot::Render(CGLContext& rc)
 
 		if (m_nglyph == Glyph_Line) glDisable(GL_LIGHTING);
 
-		glColor3ub(m_gcl.r, m_gcl.g, m_gcl.b);
+		glx::glcolor(m_gcl);
 
 		for (int i = 0; i < pm->Nodes(); ++i)
 		{
@@ -613,12 +614,12 @@ void GLTensorPlot::Render(CGLContext& rc)
 				{
 					float w = (t.f  - fmin)/ (fmax - fmin);
 					GLColor c = map.map(w);
-					glColor3ub(c.r, c.g, c.b);
+					glx::glcolor(c);
 				}
 
-				glTranslatef(r.x, r.y, r.z);
+				glx::translate(r);
 				RenderGlyphs(t, scale*auto_scale, pglyph);
-				glTranslatef(-r.x, -r.y, -r.z);
+				glx::translate(-r);
 			}
 		}
 	}
@@ -699,11 +700,8 @@ void GLTensorPlot::RenderLines(GLTensorPlot::TENSOR& t, float scale, GLUquadricO
 			if (p.Length() > 1e-6) glRotatef(w * 180 / PI, p.x, p.y, p.z);
 		}
 
-		glBegin(GL_LINES);
-		glColor3ub(c[i].r, c[i].g, c[i].b);
-		glVertex3f(0.f, 0.f, 0.f);
-		glVertex3f(0.f, 0.f, L);
-		glEnd();
+		glx::glcolor(c[i]);
+		glx::drawLine(0, 0, 0, 0, 0, L);
 
 		glPopMatrix();
 	}
@@ -763,46 +761,6 @@ void GLTensorPlot::RenderBox(TENSOR& t, float scale, GLUquadricObj* glyph)
 	glMultMatrixf(&m[0][0]);
 
 	glScalef(scale*sx, scale*sy, scale*sz);
-	glBegin(GL_QUADS);
-	{
-		float r0 = 0.5f;
-		glNormal3d(1, 0, 0);
-		glVertex3d(r0, -r0, -r0);
-		glVertex3d(r0, r0, -r0);
-		glVertex3d(r0, r0, r0);
-		glVertex3d(r0, -r0, r0);
-
-		glNormal3d(-1, 0, 0);
-		glVertex3d(-r0, r0, -r0);
-		glVertex3d(-r0, -r0, -r0);
-		glVertex3d(-r0, -r0, r0);
-		glVertex3d(-r0, r0, r0);
-
-		glNormal3d(0, 1, 0);
-		glVertex3d(r0, r0, -r0);
-		glVertex3d(-r0, r0, -r0);
-		glVertex3d(-r0, r0, r0);
-		glVertex3d(r0, r0, r0);
-
-		glNormal3d(0, -1, 0);
-		glVertex3d(-r0, -r0, -r0);
-		glVertex3d(r0, -r0, -r0);
-		glVertex3d(r0, -r0, r0);
-		glVertex3d(-r0, -r0, r0);
-
-		glNormal3d(0, 0, 1);
-		glVertex3d(-r0, r0, r0);
-		glVertex3d(r0, r0, r0);
-		glVertex3d(r0, -r0, r0);
-		glVertex3d(-r0, -r0, r0);
-
-		glNormal3d(0, 0, -1);
-		glVertex3d(r0, r0, -r0);
-		glVertex3d(-r0, r0, -r0);
-		glVertex3d(-r0, -r0, -r0);
-		glVertex3d(r0, -r0, -r0);
-	}
-	glEnd();
+	glx::drawBox(0.5, 0.5, 0.5);
 	glPopMatrix();
-
 }

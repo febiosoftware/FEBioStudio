@@ -64,6 +64,7 @@ protected:
 
 private slots:
 	void on_addFiles();
+	void on_addFolder();
 	void on_selectOutPath();
 	void on_removeFile();
 	void on_clearFiles();

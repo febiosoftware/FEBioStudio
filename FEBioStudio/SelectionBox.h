@@ -94,6 +94,7 @@ signals:
 	void selButtonClicked();
 	void clearButtonClicked();
 	void nameChanged(const QString& t);
+	void pickClicked();
 
 private slots:
 	void on_addButton_clicked();
@@ -104,6 +105,7 @@ private slots:
 	void on_list_itemDoubleClicked(QListWidgetItem *item);
 	void on_clearSelection_clicked();
 	void on_toggleCollapse_toggled(bool b);
+	void on_pick_clicked(bool b);
 
 private:
 	Ui::CSelectionBox*	ui;
@@ -139,6 +141,7 @@ private slots:
 	void onDelButtonClicked();
 	void onSelButtonClicked();
 	void onClearButtonClicked();
+	void onPickButtonClicked();
 	void onNameChanged(const QString& t);
 
 signals:

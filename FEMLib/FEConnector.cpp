@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "FEConnector.h"
-#include <MeshTools/FEModel.h>
-#include <MeshTools/GGroup.h>
+#include "FSModel.h"
+#include <GeomLib/GGroup.h>
 #include <set>
 #include <memory>
 //using namespace std;
@@ -40,6 +40,7 @@ FSRigidConnector::FSRigidConnector(int ntype, FSModel* ps, int nstep) : FSStepCo
     m_ntype = ntype;
 	SetStep(nstep);
     m_bActive = true;
+	SetSuperClassID(FENLCONSTRAINT_ID);
 }
 
 //-----------------------------------------------------------------------------
@@ -77,19 +78,20 @@ FEItemListBuilder* FSRigidConnector::LoadList(IArchive& ar)
     FEItemListBuilder* pitem = 0;
 
     FSModel* fem = GetFSModel();
+	GModel* gm = &fem->GetModel();
     
     if (ar.OpenChunk() != IArchive::IO_OK) throw ReadError("error in FSRigidConnector::LoadList");
     unsigned int ntype = ar.GetChunkID();
     switch (ntype)
     {
-        case GO_NODE: pitem = new GNodeList(fem); break;
-        case GO_EDGE: pitem = new GEdgeList(fem); break;
-        case GO_FACE: pitem = new GFaceList(fem); break;
-        case GO_PART: pitem = new GPartList(fem); break;
+        case GO_NODE: pitem = new GNodeList(gm); break;
+        case GO_EDGE: pitem = new GEdgeList(gm); break;
+        case GO_FACE: pitem = new GFaceList(gm); break;
+        case GO_PART: pitem = new GPartList(gm); break;
         case FE_NODESET: pitem = new FSNodeSet((GObject*)0); break;
         case FE_EDGESET: pitem = new FSEdgeSet((GObject*)0); break;
         case FE_SURFACE: pitem = new FSSurface((GObject*)0); break;
-        case FE_PART   : pitem = new FSPart   ((GObject*)0); break;
+        case FE_ELEMSET: pitem = new FSElemSet((GObject*)0); break;
         default:
             assert(false);
     }

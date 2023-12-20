@@ -32,9 +32,9 @@ SOFTWARE.*/
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidLoad.h>
 #include <GeomLib/GObject.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GModel.h>
-#include <MeshTools/FEProject.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GModel.h>
+#include <FEMLib/FSProject.h>
 #include <sstream>
 #include <iomanip>
 
@@ -99,7 +99,7 @@ template <> std::string type_to_string<mat3d>(const mat3d& v)
 }
 
 //=============================================================================
-FEBioExport::FEBioExport(FSProject& prj) : FEFileExport(prj)
+FEBioExport::FEBioExport(FSProject& prj) : FSFileExport(prj)
 {
 	m_compress = false;
 	m_exportSelections = false;
@@ -319,16 +319,46 @@ bool FEBioExport::PrepareExport(FSProject& prj)
 {
 	Clear();
 
+	// get the model
 	FSModel& fem = prj.GetFSModel();
-
-	// set nodal ID's
 	GModel& model = fem.GetModel();
-	int noff = 1;
-	for (int i = 0; i<model.Objects(); ++i)
+
+	// make sure all objects are meshed
+	for (int i = 0; i < model.Objects(); ++i)
 	{
 		FSCoreMesh* pm = model.Object(i)->GetFEMesh();
-		if (pm == 0) return errf("Not all objects are meshed.");
-		for (int j = 0; j<pm->Nodes(); ++j) pm->Node(j).m_nid = noff++;
+		if (pm == nullptr) return errf("Not all objects are meshed.");
+	}
+
+	// verify nodal IDs
+	int nextID = 1;
+	for (int i = 0; i<model.Objects(); ++i)
+	{
+		FSMesh* pm = model.Object(i)->GetFEMesh();
+		int N = pm->Nodes();
+		for (int j = 0; j < N; ++j)
+		{
+			FSNode& node = pm->Node(j);
+			if ((node.m_nid == -1) || (node.m_nid < nextID)) node.m_nid = nextID++;
+			else if (node.m_nid > nextID) nextID = node.m_nid + 1;
+			else nextID = node.m_nid + 1;
+		}
+		pm->BuildNLT();
+	}
+
+	// verify element IDs
+	nextID = 1;
+	for (int i = 0; i < model.Objects(); ++i)
+	{
+		FSMesh* pm = model.Object(i)->GetFEMesh();
+		int NE = pm->Elements();
+		for (int j = 0; j < NE; ++j)
+		{
+			FSElement& el = pm->Element(j);
+			if ((el.m_nid == -1) || (el.m_nid < nextID)) el.m_nid = nextID++;
+			else if (el.m_nid > nextID) nextID = el.m_nid + 1;
+		}
+		pm->BuildELT();
 	}
 
 	// set material tags

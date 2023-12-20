@@ -24,26 +24,26 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "AbaqusExport.h"
-#include <MeshTools/FEProject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/FSProject.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 
-FEAbaqusExport::FEAbaqusExport(FSProject& prj) : FEFileExport(prj)
+AbaqusExport::AbaqusExport(FSProject& prj) : FSFileExport(prj)
 {
 
 }
 
-FEAbaqusExport::~FEAbaqusExport(void)
+AbaqusExport::~AbaqusExport(void)
 {
 
 }
 
-void FEAbaqusExport::SetHeading(const std::string& s)
+void AbaqusExport::SetHeading(const std::string& s)
 {
 	m_heading = s;
 }
 
-bool FEAbaqusExport::Write(const char* szfile)
+bool AbaqusExport::Write(const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == nullptr) return false;

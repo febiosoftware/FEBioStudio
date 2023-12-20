@@ -34,11 +34,11 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <FEMLib/FEModelConstraint.h>
-#include <MeshTools/GDiscreteObject.h>
-#include <MeshTools/GGroup.h>
-#include <MeshTools/FEElementData.h>
-#include <MeshTools/FEProject.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/GDiscreteObject.h>
+#include <GeomLib/GGroup.h>
+#include <MeshLib/FEElementData.h>
+#include <FEMLib/FSProject.h>
+#include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <memory>
 #include <FECore/FETransform.h>
@@ -4920,15 +4920,16 @@ void FEBioExport2::WriteOutputSection()
 			for (int i=0; i<N; ++i)
 			{
 				FSLogData& d = log.LogData(i);
-				switch (d.type)
+				switch (d.Type())
 				{
 				case FSLogData::LD_NODE:
 					{
 						XMLElement e;
 						e.name("node_data");
-						e.add_attribute("data", d.sdata);
+						e.add_attribute("data", d.GetDataString());
 
-						GGroup* pg = dynamic_cast<GGroup*>(mdl.FindNamedSelection(d.groupID));
+						FSLogNodeData& nd = dynamic_cast<FSLogNodeData&>(d);
+						FEItemListBuilder* pg = nd.GetItemList();
 						if (pg)
 						{
 							vector<int> L;
@@ -4945,9 +4946,10 @@ void FEBioExport2::WriteOutputSection()
 					{
 						XMLElement e;
 						e.name("element_data");
-						e.add_attribute("data", d.sdata);
+						e.add_attribute("data", d.GetDataString());
 
-						GGroup* pg = dynamic_cast<GGroup*>(mdl.FindNamedSelection(d.groupID));
+						FSLogElemData& ed = dynamic_cast<FSLogElemData&>(d);
+						FEItemListBuilder* pg = ed.GetItemList();
 						if (pg)
 						{
 							vector<int> L;
@@ -4964,9 +4966,10 @@ void FEBioExport2::WriteOutputSection()
 					{
 						XMLElement e;
 						e.name("rigid_body_data");
-						e.add_attribute("data", d.sdata);
+						e.add_attribute("data", d.GetDataString());
 
-						GMaterial* pm = fem.GetMaterialFromID(d.matID);
+						FSLogRigidData& rd = dynamic_cast<FSLogRigidData&>(d);
+						GMaterial* pm = fem.GetMaterialFromID(rd.GetMatID());
 						if (pm)
 						{
 							e.value(pm->m_ntag);

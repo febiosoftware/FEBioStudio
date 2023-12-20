@@ -43,6 +43,13 @@ bool FEFillHole::EdgeRing::contains(int inode)
 }
 
 //-----------------------------------------------------------------------------
+FEFillHole::FEFillHole() : FESurfaceModifier("Fill hole")
+{
+	m_optimize = false;
+	m_insertNodes = false;
+}
+
+//-----------------------------------------------------------------------------
 // Create a new mesh where the hole is filled. The hole is defined by a node
 // that lies on the edge of the hole.
 FSSurfaceMesh* FEFillHole::Apply(FSSurfaceMesh* pm)
@@ -70,7 +77,7 @@ FSSurfaceMesh* FEFillHole::Apply(FSSurfaceMesh* pm)
 	if (FindEdgeRing(*pm, inode, ring) == false) return 0;
 	if (ring.empty()) return 0;
 
-	if(insertNodes)
+	if (m_insertNodes)
 	{
 		// AFM Method
 		vector<FACE> tri_list;
@@ -117,7 +124,7 @@ FSSurfaceMesh* FEFillHole::Apply(FSSurfaceMesh* pm)
 	{
 		// divide the rings using recursive method
 		vector<FACE> tri_list;
-		if (optimize)
+		if (m_optimize)
 		{
 			if (DivideRing(ring, tri_list) == false) return 0;
 		}

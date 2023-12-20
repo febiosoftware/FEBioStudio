@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBodyLoad.h"
-#include <MeshTools/FEItemListBuilder.h>
+#include <MeshLib/FEItemListBuilder.h>
 #include <FECore/units.h>
 
 FSBodyLoad::FSBodyLoad(int ntype, FSModel* ps, int nstep) : FSLoad(ntype, ps, 0, nstep)

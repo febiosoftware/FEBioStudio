@@ -72,9 +72,7 @@ bool GCylinderInBox::Update(bool b)
 		n.LocalPosition() = vec3d(x[i], y[i], z[i]);
 	}
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update();
 }
 
 //-----------------------------------------------------------------------------

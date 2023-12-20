@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QToolButton>
 #include <QMenu>
+#include <QInputDialog>
 #include "MainWindow.h"
 #include "Document.h"
 #include "PropertyListView.h"
@@ -48,20 +49,24 @@ SOFTWARE.*/
 #include <PostGL/GLSlicePLot.h>
 #include <PostGL/GLIsoSurfacePlot.h>
 #include <PostGL/GLLinePlot.h>
+#include <PostGL/GLPointPlot.h>
 #include <PostGL/GLStreamLinePlot.h>
 #include <PostGL/GLParticleFlowPlot.h>
 #include <PostGL/GLVolumeFlowPlot.h>
 #include <PostGL/GLTensorPlot.h>
 #include <ImageLib/3DImage.h>
-#include <PostLib/VolRender.h>
-#include <PostLib/VolumeRender2.h>
+#include <PostLib/VolumeRenderer.h>
 #include <PostLib/ImageSlicer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <PostLib/MarchingCubes.h>
+#include <MeshIO/STLExport.h>
 #include <PostGL/GLMirrorPlane.h>
 #include <PostGL/GLRuler.h>
-#include <PostGL/GLProbe.h>
+#include <PostGL/GLPointProbe.h>
+#include <PostGL/GLCurveProbe.h>
+#include <PostGL/GLMusclePath.h>
+#include <PostGL/GLPlotGroup.h>
 #include "ObjectProps.h"
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
@@ -69,6 +74,9 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
+#include <ImageLib/ImageModel.h>
+#include <QFileDialog>
+#include "DlgImportData.h"
 
 //-----------------------------------------------------------------------------
 class CModelProps : public CPropertyList
@@ -82,9 +90,12 @@ public:
 		addProperty("Outline color"            , CProperty::Color);
 		addProperty("Node color"               , CProperty::Color);
 		addProperty("Selection color"          , CProperty::Color);
-		addProperty("Shells as hexes"          , CProperty::Bool);
+		addProperty("Render shells as solids"  , CProperty::Bool);
 		addProperty("Shell reference surface"  , CProperty::Enum, "set the shell reference surface")->setEnumValues(QStringList() << "Mid surface" << "bottom surface" << "top surface");
+		addProperty("Render beams as solids"   , CProperty::Bool);
+		addProperty("Solid beam radius"        , CProperty::Float);
 		addProperty("Smoothing angle"          , CProperty::Float);
+		addProperty("Render internal surfaces" , CProperty::Bool);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -100,7 +111,10 @@ public:
 		case 5: v = toQColor(m_fem->m_sel_col); break;
 		case 6: v = m_fem->ShowShell2Solid(); break;
 		case 7: v = m_fem->ShellReferenceSurface(); break;
-		case 8: v = m_fem->GetSmoothingAngle(); break;
+		case 8: v = m_fem->ShowBeam2Solid(); break;
+		case 9: v = m_fem->SolidBeamRadius(); break;
+		case 10: v = m_fem->GetSmoothingAngle(); break;
+		case 11: v = m_fem->RenderInnerSurfaces(); break;
 		}
 		return v;
 	}
@@ -117,7 +131,10 @@ public:
 		case 5: m_fem->m_sel_col = toGLColor(v.value<QColor>()); break;
 		case 6: m_fem->ShowShell2Solid(v.toBool()); break;
 		case 7: m_fem->ShellReferenceSurface(v.toInt()); break;
-		case 8: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 8: m_fem->ShowBeam2Solid(v.toBool()); break;
+		case 9: m_fem->SolidBeamRadius(v.toFloat()); break;
+		case 10: m_fem->SetSmoothingAngle(v.toDouble());  break;
+		case 11: m_fem->RenderInnerSurfaces(v.toBool()); break;
 		}
 	}
 
@@ -321,7 +338,7 @@ private:
 class CImageModelProps : public CPropertyList
 {
 public:
-	CImageModelProps(Post::CImageModel* img)
+	CImageModelProps(CImageModel* img)
 	{
 		m_img = img;
 
@@ -332,6 +349,8 @@ public:
 		addProperty("x-max", CProperty::Float);
 		addProperty("y-max", CProperty::Float);
 		addProperty("z-max", CProperty::Float);
+
+		addProperty("dimensions", CProperty::String)->setFlags(CProperty::Visible);
 	}
 
 	QVariant GetPropertyValue(int i)
@@ -346,6 +365,16 @@ public:
 		case 4: return box.x1; break;
 		case 5: return box.y1; break;
 		case 6: return box.z1; break;
+		case 7: 
+		{
+			C3DImage* im = m_img->Get3DImage();
+			if (im)
+			{
+				return QString("%1,%2,%3").arg(im->Width()).arg(im->Height()).arg(im->Depth());
+			}
+			else return QString("0,0,0");
+		}
+		break;
 		}
 		return QVariant();
 	}
@@ -362,12 +391,13 @@ public:
 		case 4: box.x1 = val.toFloat(); break;
 		case 5: box.y1 = val.toFloat(); break;
 		case 6: box.z1 = val.toFloat(); break;
+		case 7: break; // I don't think we would ever get here
 		}
 		m_img->SetBoundingBox(box);
 	}
 
 private:
-	Post::CImageModel*	m_img;
+	CImageModel*	m_img;
 };
 
 //-----------------------------------------------------------------------------
@@ -557,7 +587,7 @@ public:
 		return po;
 	}
 
-	void ShowImageViewer(Post::CImageModel* img)
+	void ShowImageViewer(CImageModel* img)
 	{
 		if (m_tab->count() == 1)
 		{
@@ -704,6 +734,25 @@ void CPostModelPanel::Update(bool breset)
 	}
 }
 
+void setPlotIcon(Post::CGLPlot* plot, CModelTreeItem* it)
+{
+	if      (dynamic_cast<Post::CGLPlaneCutPlot    *>(plot)) it->setIcon(0, QIcon(QString(":/icons/cut.png")));
+	else if (dynamic_cast<Post::CGLVectorPlot      *>(plot)) it->setIcon(0, QIcon(QString(":/icons/vectors.png")));
+	else if (dynamic_cast<Post::CGLSlicePlot       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/sliceplot.png")));
+	else if (dynamic_cast<Post::CGLIsoSurfacePlot  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/isosurface.png")));
+	else if (dynamic_cast<Post::CGLStreamLinePlot  *>(plot)) it->setIcon(0, QIcon(QString(":/icons/streamlines.png")));
+	else if (dynamic_cast<Post::CGLParticleFlowPlot*>(plot)) it->setIcon(0, QIcon(QString(":/icons/particle.png")));
+	else if (dynamic_cast<Post::GLVolumeFlowPlot   *>(plot)) it->setIcon(0, QIcon(QString(":/icons/flow.png")));
+	else if (dynamic_cast<Post::GLTensorPlot       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/tensor.png")));
+	else if (dynamic_cast<Post::CGLMirrorPlane     *>(plot)) it->setIcon(0, QIcon(QString(":/icons/mirror.png")));
+	else if (dynamic_cast<Post::GLPointProbe       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/probe.png")));
+	else if (dynamic_cast<Post::GLRuler            *>(plot)) it->setIcon(0, QIcon(QString(":/icons/ruler.png")));
+	else if (dynamic_cast<Post::CGLLinePlot        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/wire.png")));
+	else if (dynamic_cast<Post::CGLPointPlot       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
+	else if (dynamic_cast<Post::GLMusclePath       *>(plot)) it->setIcon(0, QIcon(QString(":/icons/musclepath.png")));
+	else if (dynamic_cast<Post::GLPlotGroup        *>(plot)) it->setIcon(0, QIcon(QString(":/icons/folder.png")));
+}
+
 void CPostModelPanel::BuildModelTree()
 {
 	ui->clear();
@@ -773,18 +822,18 @@ void CPostModelPanel::BuildModelTree()
 				}
 
 				// add element sets
-				int eset = mesh.Parts() + (po ? po->FEParts() : 0);
+				int eset = mesh.ElemSets() + (po ? po->FEElemSets() : 0);
 				pi3 = ui->AddItem(pi2, nullptr, QString("Element Sets (%1)").arg(eset), "", nullptr, CModelTreeItem::ALL_FLAGS);
-				for (int i = 0; i < mesh.Parts(); ++i)
+				for (int i = 0; i < mesh.ElemSets(); ++i)
 				{
-					Post::FSPart& part = mesh.Part(i);
+					Post::FSElemSet& part = mesh.ElemSet(i);
 					ui->AddItem(pi3, &part, QString::fromStdString(part.GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
 				}
 				if (po)
 				{
-					for (int i = 0; i < po->FEParts(); ++i)
+					for (int i = 0; i < po->FEElemSets(); ++i)
 					{
-						FSPart* pg = po->GetFEPart(i);
+						FSElemSet* pg = po->GetFEElemSet(i);
 						ui->AddItem(pi3, pg, QString::fromStdString(pg->GetName()), "selElem", nullptr, CModelTreeItem::CANNOT_DISABLE);
 					}
 				}
@@ -817,39 +866,31 @@ void CPostModelPanel::BuildModelTree()
 			{
 				Post::CGLPlot& plot = *pl[n];
 				CModelTreeItem* pi1 = ui->AddItem(nullptr, &plot, QString::fromStdString(plot.GetName()), "", new CObjectProps(&plot));
+				setPlotIcon(&plot, pi1);
 
-				if      (dynamic_cast<Post::CGLPlaneCutPlot    *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/cut.png")));
-				else if (dynamic_cast<Post::CGLVectorPlot      *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/vectors.png")));
-				else if (dynamic_cast<Post::CGLSlicePlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/sliceplot.png")));
-				else if (dynamic_cast<Post::CGLIsoSurfacePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/isosurface.png")));
-				else if (dynamic_cast<Post::CGLStreamLinePlot  *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/streamlines.png")));
-				else if (dynamic_cast<Post::CGLParticleFlowPlot*>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/particle.png")));
-				else if (dynamic_cast<Post::GLVolumeFlowPlot   *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/flow.png")));
-				else if (dynamic_cast<Post::GLTensorPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/tensor.png")));
-				else if (dynamic_cast<Post::CGLMirrorPlane     *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/mirror.png")));
-				else if (dynamic_cast<Post::GLProbe            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/probe.png")));
-				else if (dynamic_cast<Post::GLRuler            *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/ruler.png")));
-				else if (dynamic_cast<Post::CGLLinePlot        *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/wire.png")));
-				else if (dynamic_cast<Post::CGLPointPlot       *>(&plot)) pi1->setIcon(0, QIcon(QString(":/icons/selectNodes.png")));
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(&plot);
+				if (pg)
+				{
+					for (int i = 0; i < pg->Plots(); ++i)
+					{
+						Post::CGLPlot* plt = pg->GetPlot(i);
+						CModelTreeItem* pi2 = ui->AddItem(pi1, plt, QString::fromStdString(plt->GetName()), "", new CObjectProps(plt));
+						setPlotIcon(plt, pi2);
+					}
+				}
 			}
 		}
 
 		for (int i = 0; i < pdoc->ImageModels(); ++i)
 		{
-			Post::CImageModel* img = pdoc->GetImageModel(i);
+			CImageModel* img = pdoc->GetImageModel(i);
 			pi1 = ui->AddItem(nullptr, img, QString::fromStdString(img->GetName()), "image", new CImageModelProps(img));
 
 			for (int j = 0; j < img->ImageRenderers(); ++j)
 			{
 				Post::CGLImageRenderer* render = img->GetImageRenderer(j);
 
-				Post::CVolRender* volRender = dynamic_cast<Post::CVolRender*>(render);
-				if (volRender)
-				{
-					ui->AddItem(pi1, volRender, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender));
-				}
-
-				Post::CVolumeRender2* volRender2 = dynamic_cast<Post::CVolumeRender2*>(render);
+				Post::CVolumeRenderer* volRender2 = dynamic_cast<Post::CVolumeRenderer*>(render);
 				if (volRender2)
 				{
 					ui->AddItem(pi1, volRender2, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender2));
@@ -865,6 +906,15 @@ void CPostModelPanel::BuildModelTree()
 				if (marchCube)
 				{
 					ui->AddItem(pi1, marchCube, QString::fromStdString(render->GetName()), "marching_cubes", new CObjectProps(marchCube));
+				}
+			}
+
+			for (int j = 0; j < img->ImageFilters(); ++j)
+			{
+				CImageFilter* flt = img->GetImageFilter(j);
+				if (flt)
+				{
+					ui->AddItem(pi1, flt, QString::fromStdString(flt->GetName()), "", new CObjectProps(flt));
 				}
 			}
 		}
@@ -893,7 +943,7 @@ void CPostModelPanel::BuildModelTree()
 		}
 	}
 
-	// This can crash PostView if po no longer exists (e.g. after new file is read)
+	// This can crash if po no longer exists (e.g. after new file is read)
 //		if (po) selectObject(po);
 }
 
@@ -914,9 +964,9 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 				ui->enabled->setChecked(glo->IsActive());
 			}
 
-			if (dynamic_cast<Post::CImageModel*>(po))
+			if (dynamic_cast<CImageModel*>(po))
 			{
-				Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+				CImageModel* img = dynamic_cast<CImageModel*>(po);
 				ui->ShowImageViewer(img);
 			}
 			else ui->HideImageViewer();
@@ -973,7 +1023,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSNodeSet* pn = dynamic_cast<FSNodeSet*>(po);
 	if (pn)
 	{
-		std::list<int> items = pn->CopyItems();
+		std::vector<int> items = pn->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_NODE);
 		doc->DoCommand(new CCmdSelectFENodes(pn->GetMesh(), vitems, false));
@@ -990,7 +1040,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSEdgeSet* pe = dynamic_cast<FSEdgeSet*>(po);
 	if (pe)
 	{
-		std::list<int> items = pe->CopyItems();
+		std::vector<int> items = pe->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_EDGE);
 		doc->DoCommand(new CCmdSelectFEEdges(pe->GetMesh(), vitems, false));
@@ -999,7 +1049,7 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 	FSSurface* ps = dynamic_cast<FSSurface*>(po);
 	if (ps)
 	{
-		std::list<int> items = ps->CopyItems();
+		std::vector<int> items = ps->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_FACE);
 		doc->DoCommand(new CCmdSelectFaces(ps->GetMesh(), vitems, false));
@@ -1012,15 +1062,15 @@ void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, 
 		doc->DoCommand(new CCmdSelectFaces(ps2->GetMesh(), items, false));
 	}
 
-	FSPart* pg = dynamic_cast<FSPart*>(po);
+	FSElemSet* pg = dynamic_cast<FSElemSet*>(po);
 	if (pg)
 	{
-		std::list<int> items = pg->CopyItems();
+		std::vector<int> items = pg->CopyItems();
 		std::vector<int> vitems(items.begin(), items.end());
 		doc->SetItemMode(ITEM_ELEM);
 		doc->DoCommand(new CCmdSelectElements(pg->GetMesh(), vitems, false));
 	}
-	Post::FSPart* pg2 = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg2 = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg2)
 	{
 		std::vector<int> items = pg2->GetElementList();
@@ -1108,14 +1158,22 @@ void CPostModelPanel::on_deleteButton_clicked()
 			Update(true);
 		}
 	}
-	else if (dynamic_cast<FSPart*>(po))
+	else if (dynamic_cast<FSElemSet*>(po))
 	{
 		GObject* poa = doc->GetActiveObject();
 		if (poa)
 		{
-			poa->RemoveFEPart(dynamic_cast<FSPart*>(po));
+			poa->RemoveFEElemSet(dynamic_cast<FSElemSet*>(po));
 			Update(true);
 		}
+	}
+	else if (dynamic_cast<CImageFilter*>(pobj))
+	{
+		CImageFilter* imf = dynamic_cast<CImageFilter*>(pobj);
+		CImageModel* mdl = imf->GetImageModel();
+		mdl->RemoveFilter(imf);
+		delete imf;
+		Update(true);
 	}
 	else QMessageBox::information(this, "FEBio Studio", "Cannot delete this object");
 }
@@ -1198,7 +1256,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		return;
 	}
 
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		QMenu menu(this);
@@ -1207,7 +1265,7 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 		menu.exec(ev->globalPos());
 		return;
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
 		QMenu menu(this);
@@ -1221,8 +1279,93 @@ void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)
 	if (plot)
 	{
 		QMenu menu(this);
-		menu.addAction("Move up in rendering queue"  , this, SLOT(OnMoveUpInRenderingQueue()));
-		menu.addAction("Move down in rendering queue", this, SLOT(OnMoveDownInRenderingQueue()));
+		bool addRenderOptions = true;
+
+		bool addGroups = true;
+		std::vector<Post::GLPlotGroup*> groups;
+		Post::CGLModel* mdl = plot->GetModel();
+		if (mdl)
+		{
+			for (int i = 0; i < mdl->Plots(); ++i)
+			{
+				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(mdl->Plot(i));
+				if (pg) groups.push_back(pg);
+			}
+		}
+
+		if (dynamic_cast<Post::GLPointProbe*>(po))
+		{
+			Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(po);
+
+			menu.addSeparator();
+			menu.addAction("Export data ...", this, SLOT(OnExportProbeData()));
+		}
+
+		if (dynamic_cast<Post::GLCurveProbe*>(po))
+		{
+			Post::GLCurveProbe* pc = dynamic_cast<Post::GLCurveProbe*>(po);
+			menu.addSeparator();
+			menu.addAction("Import points ...", this, SLOT(OnImportCurveProbePoints()));
+			if (pc->Points() > 0)
+			{
+				menu.addAction("Plot data ...", this, SLOT(OnCurveProbePlotData()));
+				menu.addAction("Plot time averaged data ...", this, SLOT(OnCurveProbePlotTimeAveragedData()));
+			}
+		}
+
+		if (dynamic_cast<Post::GLMusclePath*>(po))
+		{
+			Post::GLMusclePath* path = dynamic_cast<Post::GLMusclePath*>(po);
+			menu.addSeparator();
+			menu.addAction("Export data ...", this, SLOT(OnExportMusclePathData()));
+			menu.addAction("Swap end points", this, SLOT(OnSwapMusclePathEndPoints()));
+		}
+
+		if (dynamic_cast<Post::GLPlotGroup*>(po))
+		{
+			addGroups = false;
+		}
+
+		if (addGroups && (groups.empty() == false))
+		{
+			QMenu* subMenu = new QMenu("Move to group");
+			Post::GLPlotGroup* pg = plot->GetGroup();
+			if (pg != nullptr) { QAction* pa = subMenu->addAction("(none)", this, SLOT(OnMoveToGroup())); pa->setData(-1); }
+			for (int i = 0; i < groups.size(); ++i) {
+				if (pg != groups[i]) {
+					QAction* pa = subMenu->addAction(QString::fromStdString(groups[i]->GetName()),this, SLOT(OnMoveToGroup()));
+					pa->setData(i);
+				}
+			}
+			if (menu.isEmpty() == false) menu.addSeparator();
+			menu.addMenu(subMenu);
+		}
+
+		if (addRenderOptions)
+		{
+			if (menu.isEmpty() == false) menu.addSeparator();
+			menu.addAction("Move up", this, SLOT(OnMoveUpInRenderingQueue()));
+			menu.addAction("Move down", this, SLOT(OnMoveDownInRenderingQueue()));
+		}
+
+		menu.exec(ev->globalPos());
+		return;
+	}
+
+	CImageModel* img = dynamic_cast<CImageModel*>(po);
+	if (img)
+	{
+		QMenu menu(this);
+		menu.addAction("Export image ...", this, SLOT(OnExportImage()));
+		menu.exec(ev->globalPos());
+		return;
+	}
+
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QMenu menu(this);
+		menu.addAction("Export surface ...", this, SLOT(OnExportMCSurface()));
 		menu.exec(ev->globalPos());
 		return;
 	}
@@ -1249,7 +1392,7 @@ void CPostModelPanel::OnSelectNodes()
 		CPostDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_NODE);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFENodes(mesh, pgl, false));
@@ -1279,7 +1422,7 @@ void CPostModelPanel::OnSelectFaces()
 		CPostDocument* pdoc = GetActiveDocument();
 		FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 		pdoc->SetItemMode(ITEM_FACE);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectFaces(mesh, pgl, false));
@@ -1296,18 +1439,18 @@ void CPostModelPanel::OnSelectElements()
 
 	CPostDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
         vector<int>pgl = pg->GetElementList();
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
 		pdoc->SetItemMode(ITEM_ELEM);
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdSelectElements(mesh, pgl, false));
@@ -1324,15 +1467,15 @@ void CPostModelPanel::OnHideElements()
 	CPostDocument* pdoc = GetActiveDocument();
 	FSMesh* mesh = pdoc->GetFSModel()->GetFEMesh(0);
 
-	Post::FSPart* pg = dynamic_cast<Post::FSPart*>(po);
+	Post::FSElemSet* pg = dynamic_cast<Post::FSElemSet*>(po);
 	if (pg)
 	{
 		pdoc->DoCommand(new CCmdHideElements(mesh, pg->GetElementList()));
 	}
-	::FSPart* pg2 = dynamic_cast<::FSPart*>(po);
+	::FSElemSet* pg2 = dynamic_cast<::FSElemSet*>(po);
 	if (pg2)
 	{
-		list<int> items = pg2->CopyItems();
+		vector<int> items = pg2->CopyItems();
 		vector<int> pgl;
 		pgl.insert(pgl.begin(), items.begin(), items.end());
 		pdoc->DoCommand(new CCmdHideElements(mesh, pgl));
@@ -1357,6 +1500,49 @@ void CPostModelPanel::OnShowAllElements()
 	}
 }
 
+void CPostModelPanel::OnMoveToGroup()
+{
+	QAction* pa = qobject_cast<QAction*>(QObject::sender());
+	if (pa == nullptr) return;
+
+	Post::CGLPlot* plot = dynamic_cast<Post::CGLPlot*>(ui->currentObject());
+	if (plot == nullptr) return;
+
+	Post::CGLModel* mdl = plot->GetModel();
+	if (mdl == nullptr) return;
+
+	Post::GLPlotGroup* currentGroup = plot->GetGroup();
+
+	int n = pa->data().toInt();
+	if (n == -1)
+	{
+		if (currentGroup) {
+			currentGroup->RemovePlot(plot);
+			mdl->AddPlot(plot, false);
+		}
+	}
+	else
+	{
+		std::vector<Post::GLPlotGroup*> groups;
+		for (int i = 0; i < mdl->Plots(); ++i)
+		{
+			Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(mdl->Plot(i));
+			if (pg) groups.push_back(pg);
+		}
+
+		if ((n >= 0) && (n < groups.size()))
+		{
+			if (currentGroup) currentGroup->RemovePlot(plot);
+			else mdl->RemovePlot(plot);
+
+			groups[n]->AddPlot(plot, false);
+		}
+	}
+
+	Update(true);
+	selectObject(plot);
+}
+
 void CPostModelPanel::OnMoveUpInRenderingQueue()
 {
 	FSObject* po = ui->currentObject();
@@ -1368,8 +1554,13 @@ void CPostModelPanel::OnMoveUpInRenderingQueue()
 		CPostDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-		Post::CGLModel* glm = pdoc->GetGLModel();
-		glm->MovePlotUp(plt);
+		Post::GLPlotGroup* pg = plt->GetGroup();
+		if (pg == nullptr)
+		{
+			Post::CGLModel* glm = pdoc->GetGLModel();
+			glm->MovePlotUp(plt);
+		}
+		else pg->MovePlotUp(plt);
 
 		Update(true);
 		selectObject(plt);
@@ -1389,12 +1580,379 @@ void CPostModelPanel::OnMoveDownInRenderingQueue()
 		CPostDocument* pdoc = GetActiveDocument();
 		if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
 
-		Post::CGLModel* glm = pdoc->GetGLModel();
-		glm->MovePlotDown(plt);
+		Post::GLPlotGroup* pg = plt->GetGroup(); 
+		if (pg == nullptr)
+		{
+			Post::CGLModel* glm = pdoc->GetGLModel();
+			glm->MovePlotDown(plt);
+		}
+		else pg->MovePlotDown(plt);
 
 		Update(true);
 		selectObject(plt);
 
 		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnExportImage()
+{
+	FSObject* po = ui->currentObject();
+	if (po == nullptr) return;
+
+	CImageModel* img = dynamic_cast<CImageModel*>(po);
+	if (img == nullptr) return;
+
+    QString filter;
+
+    #ifdef HAS_ITK
+        filter = "TIFF (*.tiff);;Raw image (*.raw)";
+    #else
+        filter = "Raw image (*.raw)";
+    #endif
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export image", "", filter);
+	if (filename.isEmpty() == false)
+	{
+        if(filename.endsWith(".raw"))
+        {
+            if (img->ExportRAWImage(filename.toStdString()))
+            {
+                QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+                QMessageBox::information(GetMainWindow(), "Export image", msg);
+            }
+            else
+            {
+                QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+                QMessageBox::critical(GetMainWindow(), "Export image", msg);
+            }
+        }
+        else
+        {
+            if (img->ExportSITKImage(filename.toStdString()))
+            {
+                QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+                QMessageBox::information(GetMainWindow(), "Export image", msg);
+            }
+            else
+            {
+                QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+                QMessageBox::critical(GetMainWindow(), "Export image", msg);
+            }
+        }
+	}	
+}
+
+void CPostModelPanel::OnExportMCSurface()
+{
+	FSObject* po = ui->currentObject();
+	Post::CMarchingCubes* mc = dynamic_cast<Post::CMarchingCubes*>(po);
+	if (mc)
+	{
+		QFileDialog dlg;
+		QString fileName = dlg.getSaveFileName(this, "Export surface", "", "STL mesh (*.stl)");
+		if (fileName.isEmpty() == false)
+		{
+			string filename = fileName.toStdString();
+			FSMesh mesh;
+			mc->GetMesh(mesh);
+			FSProject dummy;
+			STLExport stl(dummy);
+
+			bool b = stl.Write(filename.c_str(), &mesh);
+			if (b) QMessageBox::information(this, "Export surface", "File written successfully.");
+			else QMessageBox::critical(this, "Export surface", "Failed exporting surface.");
+		}
+	}
+}
+
+void CPostModelPanel::OnExportProbeData()
+{
+	Post::GLPointProbe* probe = dynamic_cast<Post::GLPointProbe*>(ui->currentObject());
+	if (probe == nullptr) return;
+
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	int nfield = glm->GetColorMap()->GetEvalField();
+
+	bool ok = true;
+	QStringList ops = QStringList() << "selected probe" << "all probes";
+	QString op = QInputDialog::getItem(this, "Export data", "Export option", ops, 0, false, &ok);
+	if (op.isEmpty() || (ok == false)) return;
+	int nop = ops.indexOf(op);
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "Text file (*.txt)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		const char* szfile = sfile.c_str();
+		FILE* fp = fopen(szfile, "wt");
+		if (nop == 0) // selected probe
+		{
+			fprintf(fp, "x,y,z,value\n");
+
+			for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+			{
+				vec3d r = probe->Position(nstep);
+				double val = 0.0;
+				if ((nfield > 0) && probe->TrackModelData())
+						val = probe->DataValue(nfield, nstep);
+
+				fprintf(fp, "%lg,%lg,%lg,%lg\n", r.x, r.y, r.z, val);
+			}
+		}
+		else if (nop == 1) // all probes
+		{
+			for (Post::GLPlotIterator it(glm); it != nullptr; ++it)
+			{
+				Post::CGLPlot* po = it;
+				Post::GLPointProbe* probe_i = dynamic_cast<Post::GLPointProbe*>(po);
+				if (probe_i)
+				{
+					string s = probe_i->GetName();
+					fprintf(fp, "%s\n", s.c_str());
+
+					fprintf(fp, "x,y,z,value\n");
+
+					for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+					{
+						vec3d r = probe_i->Position(nstep);
+						double val = 0.0;
+						if ((nfield > 0) && probe_i->TrackModelData())
+							val = probe_i->DataValue(nfield, nstep);
+
+						fprintf(fp, "%lg,%lg,%lg,%lg\n", r.x, r.y, r.z, val);
+					}
+				}
+			}
+		}
+		fclose(fp);
+	}
+
+	QMessageBox::information(GetMainWindow(), "Export", "Data export successful!");
+}
+
+void CPostModelPanel::OnImportCurveProbePoints()
+{
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po == nullptr) return;
+
+	QString filename = QFileDialog::getOpenFileName(GetMainWindow(), "Import data", "", "All files (*)");
+	if (filename.isEmpty() == false)
+	{
+		QFile file(filename);
+		if (file.open(QFile::ReadOnly | QFile::Text))
+		{
+			QTextStream txt(&file);
+			QString data = txt.readAll();
+
+			CDlgImportData dlg(data, DataType::DOUBLE, 3);
+			if (dlg.exec())
+			{
+				QList<QList<double> > val = dlg.GetDoubleValues();
+				std::vector<vec3d> points;
+				for (QList<double>& row : val)
+				{
+					vector<double> d;
+					for (double di : row) d.push_back(di);
+					assert(d.size() == 3);
+					vec3d p(d[0], d[1], d[2]);
+					points.push_back(p);
+				}
+
+				po->SetPoints(points);
+			}
+		}
+		else QMessageBox::critical(this, "Import data", "Failed importing points");
+
+		Update(true);
+		selectObject(po);
+		GetMainWindow()->RedrawGL();
+	}
+}
+
+void CPostModelPanel::OnExportMusclePathData()
+{
+	Post::GLMusclePath* po = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
+	if (po == nullptr) return;
+
+	CPostDocument* pdoc = GetActiveDocument();
+	if ((pdoc == nullptr) || (pdoc->IsValid() == false)) return;
+
+	Post::CGLModel* glm = pdoc->GetGLModel();
+	if (glm == nullptr) return;
+
+	Post::FEPostModel* fem = glm->GetFSModel();
+	if (fem == nullptr) return;
+
+	bool ok = true;
+	QStringList ops = QStringList() << "selected path" << "all paths";
+	QString op = QInputDialog::getItem(this, "Export data", "Export option", ops, 0, false, &ok);
+	if (op.isEmpty() || (ok == false)) return;
+	int nop = ops.indexOf(op);
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export data", "", "CSV file (*.csv)");
+	if (filename.isEmpty() == false)
+	{
+		string sfile = filename.toStdString();
+		const char* szfile = sfile.c_str();
+		FILE* fp = fopen(szfile, "wt");
+		if (fp == nullptr)
+		{
+			QMessageBox::critical(GetMainWindow(), "Export", "Failed to export data!");
+			return;
+		}
+		if (nop == 0) // selected path
+		{
+			fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
+			for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+			{
+				// see double GLMusclePath::DataValue(int field, int step)
+				const int MAX_DATA = 13;
+				for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+				{
+					double v = po->DataValue(ndata, nstep);
+					fprintf(fp, "%lg", v);
+					if (ndata != MAX_DATA) fprintf(fp, ", ");
+				}
+				fprintf(fp, "\n");
+			}
+		}
+		else if (nop == 1) // all paths
+		{
+			for (Post::GLPlotIterator it(glm); it != nullptr; ++it)
+			{
+				Post::CGLPlot* plt = it;
+				Post::GLMusclePath* pm = dynamic_cast<Post::GLMusclePath*>(plt);
+				if (pm)
+				{
+					fprintf(fp, "%s\n", pm->GetName().c_str());
+					fprintf(fp, "length, x0, y0, z0, x1, y1, x1, xd, yd, zd, tx, ty, tz\n");
+					for (int nstep = 0; nstep < fem->GetStates(); ++nstep)
+					{
+						// see double GLMusclePath::DataValue(int field, int step)
+						const int MAX_DATA = 13;
+						for (int ndata = 1; ndata <= MAX_DATA; ++ndata)
+						{
+							double v = pm->DataValue(ndata, nstep);
+							fprintf(fp, "%lg", v);
+							if (ndata != MAX_DATA) fprintf(fp, ", ");
+						}
+						fprintf(fp, "\n");
+					}
+				}
+			}
+		}
+		fclose(fp);
+	}
+
+	QMessageBox::information(GetMainWindow(), "Export", "Data export successful!");
+}
+
+void CPostModelPanel::OnSwapMusclePathEndPoints()
+{
+	Post::GLMusclePath* po = dynamic_cast<Post::GLMusclePath*>(ui->currentObject());
+	if (po == nullptr) return;
+
+	po->SwapEndPoints();
+	Update(true);
+	selectObject(po);
+	GetMainWindow()->RedrawGL();
+}
+
+void CPostModelPanel::OnCurveProbePlotData()
+{
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po)
+	{
+		int N = po->Points();
+		vector<double> xpoints = po->SectionLenghts(false);
+		vector<double> ypoints(N, 0.0);
+#pragma omp parallel for
+		for (int i = 0; i < N; ++i)
+		{
+			ypoints[i] = po->GetPointValue(i);
+		}
+
+		CPlotData* data = new CPlotData;
+		for (int i = 0; i < po->Points(); ++i)
+		{
+			data->addPoint(xpoints[i], ypoints[i]);
+		}
+		data->setLabel(QString::fromStdString(po->GetName()));
+		data->setLineColor(toQColor(po->GetColor()));
+		data->setFillColor(toQColor(po->GetColor()));
+
+		CGraphData* graph = new CGraphData;
+		graph->m_data.push_back(data);
+
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		w->SetData(graph);
+		GetMainWindow()->AddGraph(w);
+		w->setWindowTitle(QString::fromStdString(po->GetName()));
+		w->show();
+	}
+}
+
+void CPostModelPanel::OnCurveProbePlotTimeAveragedData()
+{
+	CPostDocument* doc = dynamic_cast<CPostDocument*>(GetDocument());
+	if (doc == nullptr) return;
+
+	Post::GLCurveProbe* po = dynamic_cast<Post::GLCurveProbe*>(ui->currentObject());
+	if (po)
+	{
+		Post::CGLModel* mdl = po->GetModel();
+		if (mdl == nullptr) return;
+
+		TIMESETTINGS& time = doc->GetTimeSettings();
+
+		int N = po->Points();
+		vector<double> xpoints = po->SectionLenghts(false);
+		vector<double> ypoints(N, 0.0);
+#pragma omp parallel for
+		for (int i = 0; i < N; ++i)
+		{
+			double y = 0.0;
+			for (int n = time.m_start; n <= time.m_end; n++)
+			{
+				y += po->GetPointValue(i, n);
+			}
+			y /= (time.m_end - time.m_start + 1);
+			ypoints[i] = y;
+		}
+
+		CPlotData* data = new CPlotData;
+		for (int i = 0; i < N; ++i)
+		{
+			data->addPoint(xpoints[i], ypoints[i]);
+		}
+
+		data->setLabel(QString::fromStdString(po->GetName()));
+		data->setLineColor(toQColor(po->GetColor()));
+		data->setFillColor(toQColor(po->GetColor()));
+
+		CGraphData* graph = new CGraphData;
+		graph->m_data.push_back(data);
+
+		CDataGraphWindow* w = new CDataGraphWindow(GetMainWindow(), GetActiveDocument());
+		w->SetData(graph);
+		GetMainWindow()->AddGraph(w);
+		w->setWindowTitle(QString::fromStdString(po->GetName()));
+		w->show();
 	}
 }

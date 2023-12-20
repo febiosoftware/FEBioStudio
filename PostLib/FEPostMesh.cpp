@@ -59,7 +59,7 @@ void Post::FEPostMesh::CleanUp()
 	m_NFL.Clear();
 
 	ClearDomains();
-	ClearParts();
+	ClearElemSets();
 	ClearSurfaces();
 	ClearNodeSets();
 }
@@ -85,10 +85,10 @@ void Post::FEPostMesh::ClearDomains()
 
 //-----------------------------------------------------------------------------
 // Clear all the parts
-void Post::FEPostMesh::ClearParts()
+void Post::FEPostMesh::ClearElemSets()
 {
-	for (int i=0; i<(int) m_Part.size(); ++i) delete m_Part[i];
-	m_Part.clear();
+	for (int i=0; i<(int) m_ESet.size(); ++i) delete m_ESet[i];
+	m_ESet.clear();
 }
 
 //-----------------------------------------------------------------------------
@@ -544,6 +544,16 @@ double Post::IntegrateElems(Post::FEPostMesh& mesh, Post::FEState* ps)
 
 			// add to integral
 			res += IntegrateHex(r, v);
+		}
+
+		// TODO: This was done so that discrete element variables can be added, but I don't think that makes sense
+		//       for other element types that are considered "beams", e.g. discrete elements. 
+		//       I think the solution is to distinguish between "beams" and "discrete" elements. 
+		if (e.IsSelected() && (e.IsBeam()) && (ps->m_ELEM[i].m_state & Post::StatusFlags::ACTIVE))
+		{
+			double v0 = ps->m_ElemData.value(i, 0);
+			double v1 = ps->m_ElemData.value(i, 1);
+			res += 0.5 * (v0 + v1);
 		}
 	}
 	return res;

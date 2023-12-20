@@ -176,6 +176,16 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Convert a tri3 mesh to a quad mesh
+//
+class FETri2Quad : public FEModifier
+{
+public:
+	FETri2Quad() : FEModifier("Tri2Quad") {}
+	FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
 // Convert a hex mesh into a tet-mesh
 //
 class FEHex2Tet : public FEModifier
@@ -320,6 +330,27 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Convert a penta6 mesh into a tet4 mesh
+//
+class FEPenta6ToTet4 : public FEModifier
+{
+public:
+    FEPenta6ToTet4() : FEModifier("Penta6-to-Tet4"){}
+    FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
+// Convert a penta6 mesh into a penta15 mesh
+//
+class FEPenta6ToPenta15 : public FEModifier
+{
+public:
+	FEPenta6ToPenta15() : FEModifier("Penta6-to-Penta15") {}
+	FSMesh* Apply(FSMesh* pm);
+};
+
+
+//-----------------------------------------------------------------------------
 // helper class for smoothing a quad8 mesh
 class FEQuad8Smooth
 {
@@ -441,6 +472,15 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+class FEAddTriangle : public FEModifier
+{
+public:
+	FEAddTriangle();
+
+	FSMesh* Apply(FSMesh* pm);
+};
+
+//-----------------------------------------------------------------------------
 class FEInvertMesh : public FEModifier
 {
 public:
@@ -470,7 +510,4 @@ class FEInflateMesh: public FEModifier
 public:
 	FEInflateMesh();
 	FSMesh* Apply(FSMesh* pm);
-
-private:
-	void ShrinkMesh(FSMesh& mesh);
 };

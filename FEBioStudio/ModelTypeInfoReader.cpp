@@ -30,8 +30,8 @@ SOFTWARE.*/
 #include "ModelFileReader.h"
 #include "FEBioStudio.h"
 #include <FEBio/FEBioImport.h>
-#include <MeshTools/FEModel.h>
-#include <MeshTools/GModel.h>
+#include <FEMLib/FSModel.h>
+#include <GeomLib/GModel.h>
 #include <FEMLib/FEAnalysisStep.h>
 #include <FEMLib/FEModelConstraint.h>
 #include <FEMLib/FERigidConstraint.h>
@@ -170,6 +170,8 @@ void ModelTypeInfoReader::ParseFSModel(FSProject& prj)
                 case FE_STEP_REACTION_DIFFUSION: module = "reaction-diffusion"; break;
                 case FE_STEP_POLAR_FLUID       : module = "polar fluid"; break;
 				case FE_STEP_EXPLICIT_SOLID    : module = "explicit-solid"; break;
+                case FE_STEP_FLUID_SOLUTES     : module = "fluid-solutes"; break;
+                case FE_STEP_THERMO_FLUID      : module = "thermo-fluid"; break;
 				case FE_STEP_FEBIO_ANALYSIS    :
                 {
                     int mod = prj.GetModule();

@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "FileReader.h"
-#include <MeshTools/FEProject.h>
+#include <MeshIO/FSFileImport.h>
+#include <FEMLib/FSProject.h>
 
 class XMLTag;
 class VTKDataArray;

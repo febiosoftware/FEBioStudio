@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include "CommandPanel.h"
 #include <QDialog>
 #include "PropertyListForm.h"
-#include <FECore/vec3d.h>
+#include <FSCore/math3d.h>
 #include <vector>
 
 class QLineEdit;
@@ -225,6 +225,7 @@ protected:
 	QComboBox*			m_combo;
 	QSpinBox*			m_divs;
 	QListWidget*		m_list;
+	QCheckBox*			m_smooth;
 };
 
 //=============================================================================

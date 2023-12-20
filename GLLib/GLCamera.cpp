@@ -79,9 +79,15 @@ void CGLCamera::Reset()
 	Update(true);
 
 	m_bdecal = false;
+	m_bortho = false;
 
 	m_depthScale = 0.9999;
 }
+
+//-----------------------------------------------------------------------------
+void CGLCamera::SetOrthoProjection(bool b) { m_bortho = b; }
+
+bool CGLCamera::IsOrtho() const { return m_bortho; }
 
 //-----------------------------------------------------------------------------
 void CGLCamera::SetCameraSpeed(double f)
@@ -269,5 +275,8 @@ vec3d CGLCamera::CamToWorld(vec3d r) const
 // get the position in global coordinates
 vec3d CGLCamera::GlobalPosition() const
 {
-	return WorldToCam(vec3d(0, 0, 0));
+	vec3d r = Target();
+	m_rot.Value().Inverse().RotateVector(r);
+	r += GetPosition();
+	return r;
 }

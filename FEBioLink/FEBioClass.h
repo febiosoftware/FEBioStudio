@@ -63,6 +63,7 @@ class FEShellFormulation;
 class FEBeamFormulation;
 class FSMeshAdaptor;
 class FSVec3dValuator;
+class FSMat3dValuator;
 
 // forward declarations of FECore classes
 class FEModel;
@@ -112,7 +113,6 @@ namespace FEBio {
 	enum ClassSearchFlags {
 		IncludeModuleDependencies  = 0x01,
 		IncludeFECoreClasses       = 0x02,
-		IncludeExperimentalClasses = 0x04,
 		AllFlags = 0xFF
 	};
 
@@ -167,6 +167,8 @@ namespace FEBio {
 	FESolidFormulation*  CreateSolidFormulation (const std::string& typeStr, FSModel* fem);
 	FEBeamFormulation*   CreateBeamFormulation  (const std::string& typeStr, FSModel* fem);
 	FSVec3dValuator*     CreateVec3dValuator    (const std::string& typeStr, FSModel* fem);
+	FSMat3dValuator*     CreateMat3dValuator    (const std::string& typeStr, FSModel* fem);
+	FSGenericClass*      CreateLinearSolver     (const std::string& typeStr, FSModel* fem);
 
 	FSModelComponent* CreateClass(int superClassID, const std::string& typeStr, FSModel* fem, unsigned int flags = FSProperty::TOPLEVEL);
 	FSModelComponent* CreateClass(int classId, FSModel* fem, unsigned int flags = 0);
@@ -200,7 +202,18 @@ namespace FEBio {
 		virtual void write(const char* sztxt) = 0;
 	};
 
-	int runModel(const std::string& fileName, FEBioOutputHandler* outputHandler = nullptr);
+	class FEBioProgressTracker
+	{
+	public:
+		FEBioProgressTracker() {}
+		virtual ~FEBioProgressTracker() {};
+		virtual void SetProgress(double pct) = 0;
+	};
+
+	int runModel(const std::string& fileName, 
+		FEBioOutputHandler* outputHandler = nullptr,
+		FEBioProgressTracker* progressTracker = nullptr);
+
 	void TerminateRun();
 
 	const char* GetSuperClassString(int superClassID);
@@ -208,8 +221,11 @@ namespace FEBio {
 	std::map<unsigned int, const char*> GetSuperClassMap();
 
 	vec3d GetMaterialFiber(void* vec3dvaluator, const vec3d& p);
+	mat3d GetMaterialAxis (void* mat3dvaluator, const vec3d& p);
 
 	void DeleteClass(void* p);
 
 	FECoreBase* CreateFECoreClassFromModelComponent(FSModelComponent* pmc, FEModel* fem);
+
+	FSModelComponent* CloneModelComponent(FSModelComponent* pmc, FSModel* fem);
 }

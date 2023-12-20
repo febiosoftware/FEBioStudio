@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QFormLayout>
 #include <QTabWidget>
+#include <QListWidget>
+#include <QDialogButtonBox>
 #include "ModelDocument.h"
 #include "MainWindow.h"
 #include "ObjectProps.h"
@@ -54,18 +56,20 @@ SOFTWARE.*/
 #include "CColorButton.h"
 #include "MeshInfoPanel.h"
 #include <GLWLib/convert.h>
-#include <MeshTools/GGroup.h>
+#include <GeomLib/GGroup.h>
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
+#include <MeshLib/FEElementData.h>
 #include "Commands.h"
 #include "MaterialPropsView.h"
 #include "FEClassPropsView.h"
 #include "PlotWidget.h"
 #include "DynamicStackedWidget.h"
 #include "ImageFilterWidget.h"
+#include "DlgPickNamedSelection.h"
 
 //=============================================================================
 CObjectPropsPanel::CObjectPropsPanel(QWidget* parent) : QWidget(parent)
@@ -264,12 +268,83 @@ void CGItemPropsPanel::on_name_textEdited(const QString& t)
 }
 
 //=============================================================================
+CMeshDataInfoPanel::CMeshDataInfoPanel(QWidget* parent) : QWidget(parent)
+{
+	QGridLayout* l = new QGridLayout;
+
+	l->addWidget(new QLabel("Name:"), 0, 0, Qt::AlignRight);
+	l->addWidget(m_name = new QLineEdit, 0, 1);
+	m_name->setObjectName("name");
+
+	l->addWidget(new QLabel("Type:"), 1, 0, Qt::AlignRight);
+	l->addWidget(m_type = new QLabel, 1, 1);
+
+	l->addWidget(new QLabel("Data type:"), 2, 0, Qt::AlignRight);
+	l->addWidget(m_dataType = new QLabel, 2, 1);
+
+	l->addWidget(new QLabel("Data format:"), 3, 0, Qt::AlignRight);
+	l->addWidget(m_dataFmt = new QLabel, 3, 1);
+
+	setLayout(l);
+
+	QMetaObject::connectSlotsByName(this);
+}
+
+void CMeshDataInfoPanel::setName(const QString& name)
+{
+	m_name->setText(name);
+}
+
+void CMeshDataInfoPanel::setType(int data)
+{
+	switch (data)
+	{
+	case FEMeshData::NODE_DATA   : m_type->setText("Node data"   ); break;
+	case FEMeshData::SURFACE_DATA: m_type->setText("Surface data"); break;
+	case FEMeshData::ELEMENT_DATA: m_type->setText("Element data"); break;
+	case FEMeshData::PART_DATA   : m_type->setText("Part data"   ); break;
+	default:
+		m_type->setText("(unknown)");
+	}
+}
+
+void CMeshDataInfoPanel::setDataType(int ndatatype)
+{
+	switch (ndatatype)
+	{
+	case FEMeshData::DATA_SCALAR: m_dataType->setText("scalar"); break;
+	case FEMeshData::DATA_VEC3D : m_dataType->setText("vec3"); break;
+	case FEMeshData::DATA_MAT3D : m_dataType->setText("mat3"); break;
+	default:
+		m_dataType->setText("(unknown)");
+	}
+}
+
+void CMeshDataInfoPanel::setDataFormat(int ndataformat)
+{
+	switch (ndataformat)
+	{
+	case FEMeshData::DATA_ITEM: m_dataFmt->setText("item"); break;
+	case FEMeshData::DATA_NODE: m_dataFmt->setText("node"); break;
+	case FEMeshData::DATA_MULT: m_dataFmt->setText("mult"); break;
+	default:
+		m_dataFmt->setText("(unknown)");
+	}
+}
+
+void CMeshDataInfoPanel::on_name_textEdited(const QString& t)
+{
+	emit nameChanged(t);
+}
+
+//=============================================================================
 class Ui::CModelPropsPanel
 {
 	enum {
 		OBJECT_PANEL,
 		BCOBJECT_PANEL,
 		GITEM_PANEL,
+		MESHDATA_PANEL,
 		MESHINFO_PANEL,
 		PARTINFO_PANEL,
 		PROPS_PANEL,
@@ -305,6 +380,7 @@ public:
 	CObjectPropsPanel*	obj;
 	CBCObjectPropsPanel*	bcobj;
 	CGItemPropsPanel*		gitem;
+	CMeshDataInfoPanel*		data;
 	CMeshInfoPanel*	mesh;
 	CPartInfoPanel* part;
 	QTabWidget* imageTab;
@@ -341,6 +417,9 @@ public:
 		gitem = new CGItemPropsPanel;
 		gitem->setObjectName("gitem");
 
+		data = new CMeshDataInfoPanel;
+		data->setObjectName("data");
+
 		propStack = new DynamicStackedWidget;
 		propStack->addWidget(props);
 		propStack->addWidget(form);
@@ -369,6 +448,7 @@ public:
 		tool->addTool("Info", obj);
 		tool->addTool("Info", bcobj);
 		tool->addTool("Info", gitem);
+		tool->addTool("Info", data);
 		tool->addTool("Mesh Info", mesh);
 		tool->addTool("Mesh Info", part);
 		tool->addTool("Properties", propStack);
@@ -381,6 +461,7 @@ public:
 		tool->getToolItem(BCOBJECT_PANEL)->setVisible(false);
 		tool->getToolItem(MESHINFO_PANEL)->setVisible(false);
 		tool->getToolItem(PARTINFO_PANEL)->setVisible(false);
+		tool->getToolItem(MESHDATA_PANEL)->setVisible(false);
 //		tool->getToolItem(PROPS_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION1_PANEL)->setVisible(false);
 		tool->getToolItem(SELECTION2_PANEL)->setVisible(false);
@@ -425,6 +506,26 @@ public:
 			gitem->setID(nid);
 		}
 		tool->getToolItem(GITEM_PANEL)->setVisible(b);
+	}
+
+	void showMeshDataInfo(bool b, FEMeshData* meshdata = nullptr)
+	{
+		if (b && meshdata)
+		{
+			data->setName(QString::fromStdString(meshdata->GetName()));
+			data->setType(meshdata->GetDataClass());
+			data->setDataType(meshdata->GetDataType());
+			data->setDataFormat(meshdata->GetDataFormat());
+		}
+		else
+		{
+			data->setName("");
+			data->setType(-1);
+			data->setDataType(-1);
+			data->setDataFormat(-1);
+		}
+
+		tool->getToolItem(MESHDATA_PANEL)->setVisible(b);
 	}
 
 	void showPropsPanel(bool b) { tool->getToolItem(PROPS_PANEL)->setVisible(b); }
@@ -532,7 +633,7 @@ public:
 	}
 
 
-	void showImagePanel(bool b, Post::CImageModel* img = nullptr, CPropertyList* props = nullptr)
+	void showImagePanel(bool b, CImageModel* img = nullptr, CPropertyList* props = nullptr)
 	{
 		if (b && (m_showImageTools==false))
 		{
@@ -545,10 +646,6 @@ public:
 		else if ((b == false) && m_showImageTools)
 		{
 			m_showImageTools = false;
-
-            imageProps->Update(nullptr);
-            imageFilters->SetImageModel(nullptr);
-			histoView->SetImageModel(nullptr);
 		}
 		tool->getToolItem(IMAGE_PANEL)->setVisible(b);
 	}
@@ -656,10 +753,10 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 	{
 		ui->showProperties(true);
 		ui->showImagePanel(false);
-		// Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
+		// CImageSource* imgSrc = dynamic_cast<CImageSource*>(po);
 		// if (imgSrc)
 		// {
-		// 	Post::CImageModel* img = imgSrc->GetImageModel();
+		// 	CImageModel* img = imgSrc->GetImageModel();
 		// 	if (img)
 		// 	{
 		// 		ui->showPropsPanel(false);
@@ -668,7 +765,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		// 	}
 		// }
 
-        Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+        CImageModel* img = dynamic_cast<CImageModel*>(po);
         if(img)
         {
             ui->showPropsPanel(false);
@@ -682,6 +779,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 
 		ui->showBCObjectInfo(false);
 		ui->showGItemInfo(false);
+		ui->showMeshDataInfo(false);
 
 		if (dynamic_cast<GObject*>(m_currentObject))
 			ui->showMeshInfoPanel(true);
@@ -760,6 +858,12 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 					ui->showObjectInfo(false);
 					ui->showGItemInfo(true, QString::fromStdString(git->GetName()), typeStr, git->GetID());
 				}
+				else if (dynamic_cast<FEMeshData*>(po))
+				{
+					FEMeshData* pd = dynamic_cast<FEMeshData*>(po);
+					ui->showMeshDataInfo(true, pd);
+					ui->showObjectInfo(false);
+				}
 				else ui->showObjectInfo(true, false, nameEditable);
 			}
 			else ui->showObjectInfo(false);
@@ -814,29 +918,32 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showSelectionPanel1(true); ui->setSelection1Title("Selection");
 		ui->showSelectionPanel2(false);
 
-		IHasItemList* hil = dynamic_cast<IHasItemList*>(m_currentObject);
-		if (hil && (hil->GetMeshItemType() != 0))
-		{
-			ui->showSelectionPanel1(true);
-			SetSelection(0, hil->GetItemList());
-			return;
-		}
-
-		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
-		if (pl) { 
-			SetSelection(0, pl); 
-			ui->sel1->showNameType(false);
-			return;
-		}
-
 		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
 		if (pi)
 		{
 			ui->setSelection1Title("Primary");
 			ui->setSelection2Title("Secondary");
 			ui->showSelectionPanel2(true);
-			SetSelection(0, pi->GetPrimarySurface());
-			SetSelection(1, pi->GetSecondarySurface());
+			SetSelection(0, pi->GetPrimarySurface(), true);
+			SetSelection(1, pi->GetSecondarySurface(), true);
+			return;
+		}
+
+		IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
+		if (hil && (hil->GetMeshItemType() != 0))
+		{
+			ui->showSelectionPanel1(true);
+
+			if (dynamic_cast<GMaterial*>(m_currentObject) == nullptr)
+				SetSelection(0, hil->GetItemList(0), true);
+			else
+				SetSelection(0, hil->GetItemList(0), false);
+			return;
+		}
+
+		FEItemListBuilder* pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
+		if (pl) { 
+			SetSelection(0, pl, false); 
 			return;
 		}
 
@@ -855,11 +962,14 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item)
 {
 	CItemListSelectionBox* sel = ui->selectionPanel(n);
-	if (item)
-	{
-		sel->showNameType(true);
-	}
 	sel->SetItemList(item);
+}
+
+void CModelPropsPanel::SetSelection(int n, FEItemListBuilder* item, bool showNameType)
+{
+	CItemListSelectionBox* sel = ui->selectionPanel(n);
+	sel->SetItemList(item);
+	sel->showNameType(showNameType);
 }
 
 void CModelPropsPanel::SetSelection(GDiscreteElementSet* set)
@@ -898,11 +1008,13 @@ void CModelPropsPanel::addSelection(int n)
 	FESelection* ps = pdoc->GetCurrentSelection();
 	if ((ps == 0) || (ps->Size() == 0)) return;
 
+	GModel& mdl = *pdoc->GetGModel();
+
 	assert(m_currentObject);
 	if (m_currentObject == 0) return;
 
-	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-	if (pmc)
+	IHasItemLists* pil = dynamic_cast<IHasItemLists*>(m_currentObject);
+	if (pil)
 	{
 		// create the item list from the selection
 		FEItemListBuilder* pg = ps->CreateItemList();
@@ -913,13 +1025,13 @@ void CModelPropsPanel::addSelection(int n)
 		}
 
 		// get the current item list
-		FEItemListBuilder* pl = pmc->GetItemList();
+		FEItemListBuilder* pl = pil->GetItemList(n);
 
 		// see whether the current list exists or not
 		if (pl == nullptr)
 		{
 			// see if we can assign it
-			int itemType = pmc->GetMeshItemType();
+			int itemType = pil->GetMeshItemType();
 			if (pg->Supports(itemType) == false)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
@@ -927,8 +1039,64 @@ void CModelPropsPanel::addSelection(int n)
 				return;
 			}
 
-			pdoc->DoCommand(new CCmdSetItemList(pmc, pg));
-			SetSelection(0, pmc->GetItemList());
+			// for part data, we need to convert to an FSPartSet
+			FEPartData* pd = dynamic_cast<FEPartData*>(m_currentObject);
+			if (pd)
+			{
+				// make sure it's a part list
+				GPartList* partList = dynamic_cast<GPartList*>(pg);
+				if (partList == nullptr)
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+					delete pg;
+					return;
+				}
+
+				// extract the part set
+				FSPartSet* partSet = partList->BuildPartSet();
+				if (partSet == nullptr)
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+					delete pg;
+					return;
+				}
+
+				// make sure its on the same object
+				if (pd->GetMesh() != partSet->GetMesh())
+				{
+					QMessageBox::critical(this, "FEBio Studio", "You cannot apply the current selection to this model component.");
+					delete pg;
+					return;
+				}
+
+				// don't forget to add it to the object
+				GObject* po = pd->GetMesh()->GetGObject();
+				po->AddFEPartSet(partSet);
+
+				// ok, we're good
+				delete pg;
+				pg = partSet;
+			}
+
+			// for model components and mesh data, we need to give this new list a name and add it to the model
+			FSModelComponent* pmc = dynamic_cast<FSModelComponent*>(m_currentObject);
+			FEMeshData* pmd = dynamic_cast<FEMeshData*>(m_currentObject);
+			if (pmc || pmd)
+			{
+				string s = m_currentObject->GetName();
+				if (pil->ItemLists() == 2)
+				{
+					if (n == 0) s += "Primary";
+					else s += "Secondary";
+				}
+				pg->SetName(s);
+				mdl.AddNamedSelection(pg);
+			}
+
+			pdoc->DoCommand(new CCmdSetItemList(pil, pg, n));
+			SetSelection(n, pil->GetItemList(n));
+
+			emit modelChanged();
 		}
 		else
 		{
@@ -948,62 +1116,23 @@ void CModelPropsPanel::addSelection(int n)
 				}
 				else
 				{
-					list<int> l = pg->CopyItems();
-					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
-				}
-			}
-			SetSelection(0, pl);
-			pmc->SetItemList(pl);
-			delete pg;
-		}
-		emit selectionChanged();
-		return;
-	}
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi)
-	{
-		if ((ps->Type() != SELECT_SURFACES) && (ps->Type() != SELECT_FE_FACES) && (ps->Type() != SELECT_PARTS))
-		{
-			QMessageBox::critical(this, "FEBio Studio", "The selection cannot be assigned to this interface.");
-			return;
-		}
-
-		FEItemListBuilder* pg = ps->CreateItemList();
-
-		FEItemListBuilder* pl = (n==0? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-		if (pl == 0)
-		{
-			if (n == 0) pi->SetPrimarySurface(pg);
-			else pi->SetSecondarySurface(pg);
-			SetSelection(n, pg);
-		}
-		else
-		{
-			// merge with the current list
-			if (pg->Type() != pl->Type())
-			{
-				QMessageBox::critical(this, "FEBio Studio", "The selection is not of the correct type.");
-			}
-			else
-			{
-				// for groups, make sure that they are on the same mesh
-				FSGroup* pg_prv = dynamic_cast<FSGroup*>(pl);
-				FSGroup* pg_new = dynamic_cast<FSGroup*>(pg);
-				if (pg_prv && pg_new && (pg_prv->GetMesh() != pg_new->GetMesh()))
-				{
-					QMessageBox::critical(this, "FEBio Studio", "You cannot assign the current selection.\nThe model component was already assigned to a different mesh.");
-				}
-				else
-				{
-					list<int> l = pg->CopyItems();
+					if (pl->GetReferenceCount() > 1)
+					{
+						const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
+						if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+						{
+							delete pg;
+							return;
+						}
+					}
+					vector<int> l = pg->CopyItems();
 					pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 				}
 			}
 			SetSelection(n, pl);
+			pil->SetItemList(pl, n);
 			delete pg;
 		}
-
 		emit selectionChanged();
 		return;
 	}
@@ -1030,11 +1159,11 @@ void CModelPropsPanel::addSelection(int n)
 			}
 			else
 			{
-				list<int> l = pg->CopyItems();
+				vector<int> l = pg->CopyItems();
 				pdoc->DoCommand(new CCmdAddToItemListBuilder(pl, l));
 			}
 		}
-		SetSelection(0, pl);
+		SetSelection(n, pl);
 
 		// don't forget to clean up
 		delete pg;
@@ -1059,28 +1188,34 @@ void CModelPropsPanel::subSelection(int n)
 	// get the item list
 	FEItemListBuilder* pl = nullptr;
 
-	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-	if (pmc) pl = pmc->GetItemList();
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
+	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+	if (pmc) pl = pmc->GetItemList(n);
 
 	FEItemListBuilder* pil = dynamic_cast<FEItemListBuilder*>(m_currentObject);
 	if (pil) pl = pil;
 
 	if (pl)
 	{
+		if (pl->GetReferenceCount() > 1)
+		{
+			const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
+			if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+
 		// create the item list builder
 		FEItemListBuilder* pg = ps->CreateItemList();
 
 		// subtract from the current list
 		if (pg->Type() == pl->Type())
 		{
-			list<int> l = pg->CopyItems();
+			vector<int> l = pg->CopyItems();
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, l));
 		}
 
-		if (pmc) pmc->SetItemList(pl);
+		if (pmc) pmc->SetItemList(pl, n);
 
 		SetSelection(n, pl);
 		delete pg;
@@ -1098,45 +1233,29 @@ void CModelPropsPanel::delSelection(int n)
 
 	FEItemListBuilder* pl = 0;
 
-	if (dynamic_cast<IHasItemList*>(m_currentObject))
+	if (dynamic_cast<IHasItemLists*>(m_currentObject))
 	{
-		IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-		pl = pmc->GetItemList();
+		IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+		pl = pmc->GetItemList(n);
 		if (pl)
 		{
+			if (pl->GetReferenceCount() > 1)
+			{
+				const char* szmsg = "This selection is used by multiple model components.\nChanging the selection may affect other components.\nDo you wish to continue?";
+				if (QMessageBox::question(this, "FEBio Studio", szmsg, QMessageBox::Yes, QMessageBox::No) != QMessageBox::Yes)
+				{
+					return;
+				}
+			}
+
 			CSelectionBox* sel = ui->selectionPanel(n);
-			list<int> items;
+			vector<int> items;
 			sel->getSelectedItems(items);
 
 			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
 
-			pmc->SetItemList(pl);
+			pmc->SetItemList(pl, n);
 
-			SetSelection(n, pl);
-			emit selectionChanged();
-		}
-	}
-	else
-	{
-		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-		if (pi) pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-
-		CSelectionBox* sel = ui->selectionPanel(n);
-
-		if (pl)
-		{
-			list<int> items;
-			sel->getSelectedItems(items);
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
-			SetSelection(n, pl);
-			emit selectionChanged();
-		}
-		else if (dynamic_cast<FEItemListBuilder*>(m_currentObject))
-		{
-			pl = dynamic_cast<FEItemListBuilder*>(m_currentObject);
-			list<int> items;
-			sel->getSelectedItems(items);
-			pdoc->DoCommand(new CCmdRemoveFromItemListBuilder(pl, items));
 			SetSelection(n, pl);
 			emit selectionChanged();
 		}
@@ -1150,12 +1269,8 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 {
 	FEItemListBuilder* pl = 0;
 
-	IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-	if (pmc) pl = pmc->GetItemList();
-
-	FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-	if (pi) pl = pi->GetPrimarySurface();
-
+	IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+	if (pmc) pl = pmc->GetItemList(0);
 	if (pl == 0) return;
 
 	string sname = t.toStdString();
@@ -1165,30 +1280,83 @@ void CModelPropsPanel::on_select1_nameChanged(const QString& t)
 void CModelPropsPanel::on_select1_clearButtonClicked() { clearSelection(0); }
 void CModelPropsPanel::on_select2_clearButtonClicked() { clearSelection(1); }
 
+void CModelPropsPanel::on_select1_pickClicked() { PickSelection(0); }
+void CModelPropsPanel::on_select2_pickClicked() { PickSelection(1); }
+
+void CModelPropsPanel::PickSelection(int n)
+{
+	CModelDocument* pdoc = m_wnd->GetModelDocument();
+	if (pdoc == nullptr) return;
+
+	IHasItemLists* hil = dynamic_cast<IHasItemLists*>(m_currentObject);
+
+	// find the required mesh type
+	int meshType = -1;
+	if (hil) meshType = hil->GetMeshItemType();
+	else return;
+
+	GModel& gm = *pdoc->GetGModel();
+
+	// build the candidate list
+	QStringList names;
+	if (meshType & FE_NODE_FLAG)
+	{
+		auto l = gm.AllNamedSelections(GO_NODE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_NODESET);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+	if ((meshType & FE_FACE_FLAG) || (meshType & FE_NODE_FLAG))
+	{
+		auto l = gm.AllNamedSelections(GO_FACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_SURFACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+	if (meshType & FE_PART_FLAG)
+	{
+		auto l = gm.AllNamedSelections(DOMAIN_PART);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+
+	// get the current selection
+	FEItemListBuilder* pl = nullptr;
+	if (hil) pl = hil->GetItemList(n);
+
+	CDlgPickNamedSelection dlg(this);
+	dlg.setNameList(names);
+	if (pl) dlg.setSelection(QString::fromStdString(pl->GetName()));
+	if (dlg.exec())
+	{
+		QString qs = dlg.getSelection();
+		if (qs.isEmpty() == false)
+		{
+			std::string s = qs.toStdString();
+			if ((pl == nullptr) || (s != pl->GetName()))
+			{
+				pl = gm.FindNamedSelection(s);
+				if (hil) hil->SetItemList(pl, n);
+				SetSelection(n, pl);
+			}
+		}
+	}
+}
+
 void CModelPropsPanel::clearSelection(int n)
 {
 	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(m_wnd->GetDocument());
 
 	FEItemListBuilder* pl = 0;
 
-	if (dynamic_cast<IHasItemList*>(m_currentObject))
+	if (dynamic_cast<IHasItemLists*>(m_currentObject))
 	{
-		IHasItemList* pmc = dynamic_cast<IHasItemList*>(m_currentObject);
-		pl = pmc->GetItemList();
+		IHasItemLists* pmc = dynamic_cast<IHasItemLists*>(m_currentObject);
+		pl = pmc->GetItemList(n);
 		if (pl)
 		{
-			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc));
-			SetSelection(n, nullptr);
-			emit selectionChanged();
-		}
-	}
-	else if (dynamic_cast<FSPairedInterface*>(m_currentObject))
-	{
-		FSPairedInterface* pi = dynamic_cast<FSPairedInterface*>(m_currentObject);
-		pl = (n == 0 ? pi->GetPrimarySurface() : pi->GetSecondarySurface());
-		if (pl)
-		{
-			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pi, n));
+			pdoc->DoCommand(new CCmdRemoveItemListBuilder(pmc, n));
 			SetSelection(n, nullptr);
 			emit selectionChanged();
 		}
@@ -1255,6 +1423,17 @@ void CModelPropsPanel::on_bcobject_nameChanged(const QString& txt)
 }
 
 void CModelPropsPanel::on_gitem_nameChanged(const QString& txt)
+{
+	if (m_currentObject)
+	{
+		std::string sname = txt.toStdString();
+		m_currentObject->SetName(sname.c_str());
+
+		emit nameChanged(txt);
+	}
+}
+
+void CModelPropsPanel::on_data_nameChanged(const QString& txt)
 {
 	if (m_currentObject)
 	{

@@ -29,8 +29,8 @@ SOFTWARE.*/
 #include <QCloseEvent>
 #include <QtCore/QProcess>
 #include <FSCore/box.h>
-#include <MeshTools/GMaterial.h>
-#include <FECore/vec3d.h>
+#include <FEMLib/GMaterial.h>
+#include <FSCore/math3d.h>
 
 class FSObject;
 class CDocument;
@@ -55,8 +55,12 @@ class CDocManager;
 class QueuedFile;
 class FEBioStudioProject;
 class CGLView;
+class CImageModel;
 class CImageSliceView;
+class C2DImageTimeView;
 class GObject;
+class FSPairedInterface;
+
 enum class ImageFileType;
 
 namespace Ui {
@@ -180,21 +184,25 @@ public:
 	// get the current project
 	FEBioStudioProject* GetProject();
 
-	// show New dialog box option
-	void setShowNewDialog(bool b);
-	bool showNewDialog();
-
 	// autoSave Interval
 	void setAutoSaveInterval(int interval);
 	int autoSaveInterval();
 
 	// autoUpdate Check
+    QString GetServerMessage();
 	bool updaterPresent();
 	bool updateAvailable();
 
 	// set/get default unit system for new models
 	void SetDefaultUnitSystem(int n);
 	int GetDefaultUnitSystem() const;
+
+	// febio config file
+	bool GetLoadConfigFlag();
+	QString GetConfigFileName();
+
+	void SetLoadConfigFlag(bool b);
+	void SetConfigFileName(QString s);
 
 	// --- WINDOW UPDATE ---
 
@@ -206,6 +214,9 @@ public:
 
 	//! Update the window content
 	void Update(QWidget* psend = 0, bool breset = false);
+
+	// update the mesh inspector (if it is visible)
+	void UpdateMeshInspector(bool breset);
 
 	//! Update the GL control bar
 	void UpdateGLControlBar();
@@ -319,6 +330,10 @@ private:
 
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
+	bool ImportImage(CImageModel* imgModel);
+
+	QString CurrentWorkingDirectory();
+
 public slots:
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
@@ -340,7 +355,9 @@ public slots:
 	void on_actionImportDICOMImage_triggered();
 	void on_actionImportTiffImage_triggered();
 	void on_actionImportOMETiffImage_triggered();
+    void on_actionImportNrrdImage_triggered();
 	void on_actionImportImageSequence_triggered();
+    void on_actionImportImageOther_triggered();
 	void on_actionConvertFeb_triggered();
     void on_actionConvertFeb2Fsm_triggered();
     void on_actionConvertFsm2Feb_triggered();
@@ -408,7 +425,8 @@ public slots:
 	void on_actionAddMaterial_triggered();
 	void on_actionAddMeshAdaptor_triggered();
 	void on_actionAddLoadController_triggered();
-	void on_actionAddMeshData_triggered();
+	void on_actionAddMeshDataMap_triggered();
+	void on_actionAddMeshDataGenerator_triggered();
 	void on_actionAddStep_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
@@ -447,9 +465,12 @@ public slots:
 	void on_actionImageSlicer_triggered();
 	void on_actionVolumeRender_triggered();
 	void on_actionMarchingCubes_triggered();
+	void on_actionImageWarp_triggered();
 	void on_actionAddProbe_triggered();
+	void on_actionAddCurveProbe_triggered();
 	void on_actionAddRuler_triggered();
 	void on_actionMusclePath_triggered();
+	void on_actionPlotGroup_triggered();
 	void on_actionGraph_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
@@ -480,6 +501,9 @@ public slots:
 	void on_actionShowFibers_triggered();
 	void on_actionShowMatAxes_toggled(bool b);
 	void on_actionShowDiscrete_toggled(bool b);
+	void on_actionShowRigidBodies_toggled(bool b);
+	void on_actionShowRigidJoints_toggled(bool b);
+	void on_actionShowRigidLabels_toggled(bool b);
 	void on_actionToggleLight_triggered();
 	void on_actionFront_triggered();
 	void on_actionBack_triggered();
@@ -496,9 +520,13 @@ public slots:
 	void on_actionViewVPNext_triggered();
 	void on_actionSyncViews_triggered();
 	void on_actionToggleConnected_triggered();
+	void on_actionToggleFPS_triggered();
 
 	void on_actionUpdate_triggered(bool dev = false);
 	void on_actionFEBioURL_triggered();
+	void on_actionFEBioUM_triggered();
+	void on_actionFEBioTM_triggered();
+	void on_actionFBSManual_triggered();
 	void on_actionFEBioForum_triggered();
 	void on_actionFEBioResources_triggered();
 	void on_actionFEBioPubs_triggered();
@@ -542,6 +570,10 @@ public slots:
 	void on_actionColorMap_toggled(bool bchecked);
 	void on_selectTime_valueChanged(int n);
 
+	// signals from documents
+	void on_doCommand(QString msg);
+	void on_selectionChanged();
+
 	// Font toolbar
 	void on_fontStyle_currentFontChanged(const QFont& font);
 	void on_fontSize_valueChanged(int i);
@@ -573,8 +605,11 @@ public slots:
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
+	void checkJobProgress();
+
 	void OnSelectMeshLayer(QAction* ac);
 	void OnSelectObjectTransparencyMode(QAction* ac);
+	void OnSelectObjectColorMode(QAction* ac);
 
 	void CloseView(int n, bool forceClose = false);
 	void CloseView(CDocument* doc);
@@ -615,8 +650,11 @@ public slots:
 	void OnDeleteAllLoadControllers();
 	void OnDeleteAllMeshData();
 
+	void OnReplaceContactInterface(FSPairedInterface* pci);
+
 	CGLView* GetGLView();
     CImageSliceView* GetImageSliceView();
+    C2DImageTimeView* GetC2DImageTimeView();
 
 	void UpdateGraphs(bool breset);
 

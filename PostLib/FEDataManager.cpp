@@ -131,5 +131,8 @@ bool FEDataManager::IsValid(int fieldId) const
 	if ((ndata < 0) || (ndata >= m_Data.size())) return false;
 
 	ModelDataField* pd = m_Data[ndata];
+
+	// strip the component
+	fieldId = (fieldId & ~0xFF);
 	return (pd->GetFieldID() == fieldId);
 }

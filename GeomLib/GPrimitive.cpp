@@ -38,15 +38,6 @@ FSMeshBase* GPrimitive::GetEditableMesh() { return GetFEMesh(); }
 FSLineMesh* GPrimitive::GetEditableLineMesh() { return GetFEMesh(); }
 
 //-----------------------------------------------------------------------------
-bool GPrimitive::Update(bool b)
-{
-	// I don't think we ever come here anymore
-	// If so, we can delete this function
-	assert(false);
-	return false;
-}
-
-//-----------------------------------------------------------------------------
 extern GObject* BuildObject(int ntype);
 
 //-----------------------------------------------------------------------------

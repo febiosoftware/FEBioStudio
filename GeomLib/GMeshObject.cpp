@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FEMeshBuilder.h>
-#include <MeshTools/GLMesh.h>
+#include <MeshLib/GMesh.h>
 #include <list>
 #include <stack>
 #include <sstream>
@@ -163,9 +163,7 @@ bool GMeshObject::Update(bool b)
 	UpdateNodes();
 	UpdateEdges();
 
-	BuildGMesh();
-
-	return true;
+	return GObject::Update(b);
 }
 
 //-----------------------------------------------------------------------------
@@ -173,43 +171,53 @@ void GMeshObject::UpdateSections()
 {
 	FSMesh* pm = GetFEMesh();
 
+#pragma omp parallel for
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);
-		if (pg->GetSection() == nullptr)
+
+		// see if this is a solid part, or shell part
+		bool isSolid = false;
+		bool isShell = false;
+		bool isBeam  = false;
+		bool isOther = false;
+
+		for (int j = 0; j < pm->Elements(); ++j)
 		{
-			// see if this is a solid part, or shell part
-			bool isSolid = false;
-			bool isShell = false;
-			bool isBeam  = false;
-			bool isOther = false;
-
-			for (int j = 0; j < pm->Elements(); ++j)
+			FSElement& el = pm->Element(j);
+			if (el.m_gid == i)
 			{
-				FSElement& el = pm->Element(j);
-				if (el.m_gid == i)
-				{
-					if      (el.IsSolid()) isSolid = true;
-					else if (el.IsShell()) isShell = true;
-					else if (el.IsBeam ()) isBeam  = true;
-					else isOther = true;
-				}
+				if      (el.IsSolid()) isSolid = true;
+				else if (el.IsShell()) isShell = true;
+				else if (el.IsBeam ()) isBeam  = true;
+				else isOther = true;
 			}
-			assert(isOther == false);
+		}
+		assert(isOther == false);
 
-			if (isSolid && (isShell == false) && (isOther == false))
+		GPartSection* currentSection = pg->GetSection();
+
+		if (isSolid && (isShell == false) && (isOther == false))
+		{
+			if (dynamic_cast<GSolidSection*>(currentSection) == nullptr)
 			{
 				GSolidSection* ps = new GSolidSection(pg);
 				pg->SetSection(ps);
 			}
+		}
 
-			if (isShell && (isSolid == false) && (isOther == false))
+		if (isShell && (isSolid == false) && (isOther == false))
+		{
+			if (dynamic_cast<GShellSection*>(currentSection) == nullptr)
 			{
 				GShellSection* ps = new GShellSection(pg);
 				pg->SetSection(ps);
 			}
+		}
 
-			if (isBeam && (isSolid == false) && (isOther == false))
+		if (isBeam && (isSolid == false) && (isOther == false))
+		{
+			if (dynamic_cast<GBeamSection*>(currentSection) == nullptr)
 			{
 				GBeamSection* ps = new GBeamSection(pg);
 				pg->SetSection(ps);
@@ -495,6 +503,38 @@ void GMeshObject::UpdateEdges()
 			}
 		}
 	}
+
+	// assign edges to beam parts
+	for (int i = 0; i < Parts(); ++i)
+	{
+		GPart* pg = Part(i);
+		if (pg->IsBeam())
+		{
+			pg->m_edge.clear();
+			vector<int> ET(m_Edge.size(), 0);
+			for (int j = 0; j < m.Edges(); ++j)
+			{
+				FSEdge& edge = m.Edge(j);
+				if (edge.m_elem >= 0)
+				{
+					FSElement& el = m.Element(edge.m_elem); assert(el.IsBeam());
+					if (el.m_gid == pg->GetLocalID())
+					{
+						int edgeId = edge.m_gid;
+						ET[edgeId] = 1;
+					}
+				}
+			}
+
+			for (int j=0; j<m_Edge.size(); ++j)
+			{
+				if (ET[j] > 0)
+				{
+					pg->m_edge.push_back(j);
+				}
+			}
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -556,6 +596,7 @@ void GMeshObject::UpdateNodes()
 		{
 			node.m_gid = tag[node.m_gid];
 			GNode* pn = m_Node[node.m_gid];
+			pn->SetNodeIndex(i);
 			pn->LocalPosition() = node.r;
 			node.SetRequired(pn->IsRequired());
 		}
@@ -642,7 +683,7 @@ FSMesh* GMeshObject::BuildMesh()
 void GMeshObject::BuildGMesh()
 {
 	// allocate new GL mesh
-	GLMesh* gmesh = new GLMesh();
+	GMesh* gmesh = new GMesh();
 
 	// we'll extract the data from the FE mesh
 	FSMesh* pm = GetFEMesh();
@@ -803,6 +844,40 @@ void GMeshObject::Save(OArchive &ar)
 					}
 					ar.EndChunk();
 				}
+
+				GPartSection* section = p.GetSection();
+				if (section)
+				{
+					GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
+					if (solid)
+					{
+						ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
+						{
+							solid->Save(ar);
+						}
+						ar.EndChunk();
+					}
+
+					GShellSection* shell = dynamic_cast<GShellSection*>(section);
+					if (shell)
+					{
+						ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
+						{
+							shell->Save(ar);
+						}
+						ar.EndChunk();
+					}
+
+					GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
+					if (beam)
+					{
+						ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
+						{
+							beam->Save(ar);
+						}
+						ar.EndChunk();
+					}
+				}
 			}
 			ar.EndChunk();
 		}
@@ -810,38 +885,44 @@ void GMeshObject::Save(OArchive &ar)
 	ar.EndChunk();
 
 	// save the surfaces
-	ar.BeginChunk(CID_OBJ_FACE_LIST);
+	if (Faces() > 0)
 	{
-		for (int i=0; i<Faces(); ++i)
+		ar.BeginChunk(CID_OBJ_FACE_LIST);
 		{
-			ar.BeginChunk(CID_OBJ_FACE);
+			for (int i = 0; i < Faces(); ++i)
 			{
-				GFace& f = *Face(i);
-				int nid = f.GetID();
-				ar.WriteChunk(CID_OBJ_FACE_ID, nid);
-				ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
+				ar.BeginChunk(CID_OBJ_FACE);
+				{
+					GFace& f = *Face(i);
+					int nid = f.GetID();
+					ar.WriteChunk(CID_OBJ_FACE_ID, nid);
+					ar.WriteChunk(CID_OBJ_FACE_NAME, f.GetName());
+				}
+				ar.EndChunk();
 			}
-			ar.EndChunk();
 		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
 
 	// save the edges
-	ar.BeginChunk(CID_OBJ_EDGE_LIST);
+	if (Edges() > 0)
 	{
-		for (int i=0; i<Edges(); ++i)
+		ar.BeginChunk(CID_OBJ_EDGE_LIST);
 		{
-			ar.BeginChunk(CID_OBJ_EDGE);
+			for (int i = 0; i < Edges(); ++i)
 			{
-				GEdge& e = *Edge(i);
-				int nid = e.GetID();
-				ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
-				ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
+				ar.BeginChunk(CID_OBJ_EDGE);
+				{
+					GEdge& e = *Edge(i);
+					int nid = e.GetID();
+					ar.WriteChunk(CID_OBJ_EDGE_ID, nid);
+					ar.WriteChunk(CID_OBJ_EDGE_NAME, e.GetName());
+				}
+				ar.EndChunk();
 			}
-			ar.EndChunk();
 		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
 
 	// save the nodes
 	// note that it is possible that an object doesn't have any nodes
@@ -976,6 +1057,27 @@ void GMeshObject::Load(IArchive& ar)
 //							p->ParamContainer::Load(ar);
 						}
 						break;
+						case CID_OBJ_PART_SOLIDSECTION:
+						{
+							GSolidSection* solid = new GSolidSection(p);
+							p->SetSection(solid);
+							solid->Load(ar);
+						}
+						break;
+						case CID_OBJ_PART_SHELLSECTION:
+						{
+							GShellSection* shell = new GShellSection(p);
+							p->SetSection(shell);
+							shell->Load(ar);
+						}
+						break;
+						case CID_OBJ_PART_BEAMSECTION:
+						{
+							GBeamSection* beam = new GBeamSection(p);
+							p->SetSection(beam);
+							beam->Load(ar);
+						}
+						break;
 						}
 						ar.CloseChunk();
 					}
@@ -991,8 +1093,7 @@ void GMeshObject::Load(IArchive& ar)
 		// object surfaces
 		case CID_OBJ_FACE_LIST:
 			{
-				assert(nfaces > 0);
-				m_Face.reserve(nfaces);
+				if (nfaces > 0) m_Face.reserve(nfaces);
 				int n = 0;
 				while (IArchive::IO_OK == ar.OpenChunk())
 				{
@@ -1115,7 +1216,7 @@ void GMeshObject::Load(IArchive& ar)
 	UpdateSurfaces(); // we need to call this to update the Surfaces' part IDs, since they are not stored.
 	UpdateEdges(); // we need to call this since the edge nodes are not stored
 	UpdateNodes(); // we need to call this because the GNode::m_fenode is not stored
-	BuildGMesh();
+	GObject::Update(false);
 }
 
 //-----------------------------------------------------------------------------

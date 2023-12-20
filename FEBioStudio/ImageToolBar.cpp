@@ -31,10 +31,12 @@ SOFTWARE.*/
 #include "ImageToolBar.h"
 #include <GLLib/GView.h> 
 #include "Document.h"
-#include "DlgDIC.h"
+#include "DlgPixelInspector.h"
+#include "ImageSliceView.h"
+#include "2DImageTimeView.h"
 
 CImageToolBar::CImageToolBar(CMainWindow* wnd)
-    : m_wnd(wnd)
+    : m_wnd(wnd), m_pixelInspector(nullptr)
 {
     m_showModelView = new QAction(CIconProvider::GetIcon("mesh"), "Model View");
     m_showModelView->setCheckable(true);
@@ -42,7 +44,7 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
     m_showSliceView = new QAction(CIconProvider::GetIcon("Image"), "Slice View");
     m_showSliceView->setCheckable(true);
 
-    m_show2dImageView = new QAction(CIconProvider::GetIcon("Image", "play"), "2D Time View");
+    m_show2dImageView = new QAction(CIconProvider::GetIcon("Image", "play"), "Slice Sequence View");
     m_show2dImageView->setCheckable(true);
 
     QActionGroup* viewGroup = new QActionGroup(this);
@@ -51,15 +53,21 @@ CImageToolBar::CImageToolBar(CMainWindow* wnd)
     viewGroup->addAction(m_show2dImageView);
     
     m_showModelView->setChecked(true);
-
-    connect(viewGroup, &QActionGroup::triggered, this, &CImageToolBar::on_viewAction_triggered);
-
     addActions(viewGroup->actions());
 
-    // QAction* dlgDIC = new QAction("DIC");
-    // connect(dlgDIC, &QAction::triggered, this, &CImageToolBar::on_dlgDIC_triggered);
-    // addAction(dlgDIC);
+    addSeparator();
 
+    m_showPixelInspector = new QAction(CIconProvider::GetIcon("pixelInspector"), "Pixel Inspector");
+    addAction(m_showPixelInspector);
+    // widgetForAction(m_showPixelInspector)->setVisible(false);
+
+    connect(viewGroup, &QActionGroup::triggered, this, &CImageToolBar::on_viewAction_triggered);
+    connect(m_showPixelInspector, &QAction::triggered, this, &CImageToolBar::on_showPixelInspector_triggered);
+}
+
+void CImageToolBar::InspectorClosed()
+{
+    m_pixelInspector = nullptr;
 }
 
 void CImageToolBar::on_viewAction_triggered(QAction* action)
@@ -71,32 +79,66 @@ void CImageToolBar::on_viewAction_triggered(QAction* action)
     if(action == m_showModelView)
     {
         doc->GetView()->imgView = CGView::MODEL_VIEW;
+
+        UpdateToolbar(CGView::MODEL_VIEW);
     }
     else if(action == m_showSliceView)
     {
         doc->GetView()->imgView = CGView::SLICE_VIEW;
+
+        UpdateToolbar(CGView::SLICE_VIEW);
     }
     else if(action == m_show2dImageView)
     {
         doc->GetView()->imgView = CGView::TIME_VIEW_2D;
+
+        UpdateToolbar(CGView::TIME_VIEW_2D);
     }
 
     m_wnd->UpdateUIConfig();
-
-    action->setChecked(true);
 }
 
-// void CImageToolBar::on_dlgDIC_triggered()
-// {
-//     CImageDocument* doc = m_wnd->GetImageDocument();
+void CImageToolBar::on_showPixelInspector_triggered()
+{
+    if(!m_pixelInspector)
+    {
+        if(m_showModelView->isChecked())
+        {
+            return;
+        }
+        else if(m_showSliceView->isChecked())
+        {
+            m_pixelInspector = new CDlgPixelInspector(m_wnd, this, m_wnd->GetImageSliceView());
+        }
+        else if(m_show2dImageView->isChecked())
+        {
+            m_pixelInspector = new CDlgPixelInspector(m_wnd, this, m_wnd->GetC2DImageTimeView());
+        }
+    }
 
-//     if(!doc) return;
+    m_pixelInspector->show();
+}
 
-//     Post::CImageModel* model = doc->GetActiveModel();
+void CImageToolBar::UpdateToolbar(int view)
+{
+    switch (view)
+    {
+    case CGView::MODEL_VIEW:
+        // widgetForAction(m_showPixelInspector)->setVisible(false);
+        if(m_pixelInspector) m_pixelInspector->close();
+        break;
 
-//     if(!model) return;
+    case CGView::SLICE_VIEW:
+        // widgetForAction(m_showPixelInspector)->setVisible(true);
+        if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetImageSliceView());
+        break;
 
-//     CDlgDIC dlg(model);
-
-//     dlg.exec();
-// }
+    case CGView::TIME_VIEW_2D:
+        // widgetForAction(m_showPixelInspector)->setVisible(true);
+        if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetC2DImageTimeView());
+        break;
+    
+    default:
+        break;
+    }
+}

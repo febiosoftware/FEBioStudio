@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 
 #include <assert.h>
-#include <FECore/mat3d.h>
+#include <FSCore/math3d.h>
 #include "FEItem.h"
 #include "FEEdge.h"
 #include "FEFace.h"
@@ -162,14 +162,17 @@ public:
 	// evaluate shape function at iso-parameteric point (r,s,t)
 	void shape(double* H, double r, double s, double t);
 
-	// evaluate a vector expression at iso-points (r,s)
+	// evaluate a vector expression at iso-points (r,s,t)
 	double eval(double* d, double r, double s, double t);
 
-	// evaluate a vector expression at iso-points (r,s)
+	// evaluate a vector expression at iso-points (r,s,t)
 	float eval(float* d, double r, double s, double t);
 
-	// evaluate a vector expression at iso-points (r,s)
+	// evaluate a vector expression at iso-points (r,s,t)
 	vec3f eval(vec3f* v, double r, double s, double t);
+
+	// evaluate a vector expression at iso-points (r,s)
+	vec3f eval(vec3f* v, double r, double s);
 
 	// shape function derivatives
 	void shape_deriv(double* Hr, double* Hs, double* Ht, double r, double s, double t);
@@ -177,8 +180,18 @@ public:
 	// get iso-param coordinates of the nodes
 	void iso_coord(int n, double q[3]);
 
+	// get iso-param coordinates of the nodes
+	void iso_coord_2d(int n, double q[2]);
+
 	// set the material axis
 	void setAxes(const vec3d& a, const vec3d& d);
+
+public:
+	// evaluate shape function at iso-parameteric point (r,s) (for 2D elements only!)
+	void shape_2d(double* H, double r, double s);
+
+	// shape function derivatives (for 2D elements only)
+	void shape_deriv_2d(double* Hr, double* Hs, double r, double s);
 
 protected:
 	// help class for copy-ing element data

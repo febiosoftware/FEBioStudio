@@ -119,7 +119,7 @@ Unit UnitParser::prim()
 	break;
 	case ONE:
 	{
-		u = Unit("1", 1);
+		u = Unit::One();
 		get_token();
 	}
 	break;
@@ -145,7 +145,7 @@ Unit UnitParser::symbol()
 
 	char ch = *sz++;
 
-	const char* s = nullptr;
+	Units::UnitSymbol s;
 	switch (ch)
 	{
 	case 'L': s = Units::GetUnitSymbol(m_unit_system, Units::LENGTH); break;
@@ -160,16 +160,17 @@ Unit UnitParser::symbol()
 	case 'W': s = Units::GetUnitSymbol(m_unit_system, Units::POWER); break;
 	case 'V': s = Units::GetUnitSymbol(m_unit_system, Units::VOLTAGE); break;
 	case 'c': s = Units::GetUnitSymbol(m_unit_system, Units::CONCENTRATION); break;
-	case 'd': s = DEG; break;
-	case 'r': s = RAD; break;
+	case 'R': s = Units::GetUnitSymbol(m_unit_system, Units::RELATIVE_TEMPERATURE); break;
+	case 'd': s = Units::UnitSymbol{ DEG, 0}; break;
+	case 'r': s = Units::UnitSymbol{ RAD, 0}; break;
 	}
 
 	get_token();
 
-	if (s[0] == '[')
+	if (s.s[0] == '[')
 	{
 		UnitParser p(m_unit_system);
-		return p.parseUnitString(s + 1);
+		return p.parseUnitString(s.s + 1);
 	}
 	else
 	{
@@ -202,12 +203,12 @@ QString Unit::toString()
 	int m = 0;
 	for (int i = 0; i < m_f.size(); ++i)
 	{
-		SYMBOL& f = m_f[i]; assert(f.p != 0);
+		Factor& f = m_f[i]; assert(f.p != 0);
 		if (f.p > 0)
 		{
 			if (m != 0) s += ".";
-			if (strcmp(f.s, DEG) == 0) s += QString(QChar(0x00B0));
-			else s += f.s;
+			if (strcmp(f.u.s, DEG) == 0) s += QString(QChar(0x00B0));
+			else s += f.u.s;
 			if (f.p > 1)
 			{
 				switch (f.p)
@@ -231,12 +232,12 @@ QString Unit::toString()
 		m = 0;
 		for (int i = 0; i < m_f.size(); ++i)
 		{
-			SYMBOL& f = m_f[i]; assert(f.p != 0);
+			Factor& f = m_f[i]; assert(f.p != 0);
 			if (f.p < 0)
 			{
 				if (m != 0) s += ".";
-				if (strcmp(f.s, DEG) == 0) s += QString(QChar(0x00B0));
-				else s += f.s;
+				if (strcmp(f.u.s, DEG) == 0) s += QString(QChar(0x00B0));
+				else s += f.u.s;
 				int p = -f.p;
 				if (p > 1)
 				{
@@ -255,5 +256,16 @@ QString Unit::toString()
 		}
 	}
 
+	return s;
+}
+
+double Unit::TotalScaleFactor()
+{
+	double s = 1.0;
+	for (int i = 0; i < m_f.size(); ++i)
+	{
+		Factor& f = m_f[i]; assert(f.p != 0);
+		s *= pow(f.u.f, f.p);
+	}
 	return s;
 }

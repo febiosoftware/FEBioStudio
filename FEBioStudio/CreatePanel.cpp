@@ -36,9 +36,10 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "GLView.h"
 #include "CreateP2PlinePane.h"
+#include "CreateGeodesicCurvePane.h"
 #include "CreateSpringPane.h"
 #include <GeomLib/GOCCObject.h>
-#include <MeshTools/GModel.h>
+#include <GeomLib/GModel.h>
 
 //------------------------------------------------------------------------------------------------------------
 REGISTER_CLASS2(GBox               , CLASS_OBJECT, "Box"            , ":/icons/box.png"          , 0);
@@ -107,8 +108,9 @@ CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wn
 	}
 
 	// CAD objects
-	ui->AddCreateOption(2, "Point-to-point curve", QIcon(":/icons/p2pline.png"), new CCreateP2PLinePane(this));
-	ui->AddCreateOption(2, "Loft surface"        , QIcon(":/icons/loft.png"), new CCreateLoftSurface(this));
+	ui->AddCreateOption(2, "Point-to-point curve", QIcon(":/icons/p2pline.png" ), new CCreateP2PLinePane(this));
+	ui->AddCreateOption(2, "Geodesic curve"      , QIcon(":/icons/geodesic.png"), new CCreateGeodesicCurvePane(this));
+	ui->AddCreateOption(2, "Loft surface"        , QIcon(":/icons/loft.png"    ), new CCreateLoftSurface(this));
 }
 
 GObject* CCreatePanel::GetTempObject()

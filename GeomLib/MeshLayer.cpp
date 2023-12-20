@@ -28,7 +28,7 @@ SOFTWARE.*/
 #include <assert.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FEMesh.h>
-#include <MeshTools/GModel.h>
+#include "GModel.h"
 #include <MeshTools/FEMesher.h>
 #include <MeshTools/FETetGenMesher.h>
 //using namespace std;

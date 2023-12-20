@@ -30,44 +30,41 @@ SOFTWARE.*/
 #include <QComboBox>
 #include <QDialogButtonBox>
 #include <QFormLayout>
+#include <QLineEdit>
+#include <QTableWidget>
+#include <QHeaderView>
+#include <QToolButton>
+#include <QItemDelegate>
 #include <FSCore/FSObject.h>
 #include <QCheckBox>
+#include <QApplication>
+#include <QClipboard>
+#include <QtCore/QMimeData>
+#include <GeomLib/FSGroup.h>
 
 class CDlgAddMeshDataUI
 {
 public:
-	QComboBox*	m_param;
-	QComboBox*	m_type;
-	QCheckBox*	m_custom;
-
-	struct Item
-	{
-		const char*	szname;
-		const char* szparam;
-		Param_Type	type;
-	};
-
-	std::vector<Item>	m_item;
+	QLineEdit* m_name;
+	QComboBox* m_type;
+	QComboBox* m_data;
+	QComboBox* m_fmt;
 
 public:
 	void setup(QDialog* dlg)
 	{
 		QVBoxLayout* layout = new QVBoxLayout;
-		m_param = new QComboBox;
-
-		m_custom = new QCheckBox("custom");
-
-		m_type = new QComboBox;
-		m_type->addItem("scalar");
-		m_type->addItem("vec3");
-		m_type->setDisabled(true);
 
 		QFormLayout* form = new QFormLayout;
-		form->addRow("parameter", m_param);
-		form->addRow("data type", m_type);
-
+		form->addRow("Name:", m_name = new QLineEdit);
+		form->addRow("Type:", m_type = new QComboBox);
+		form->addRow("Data type:", m_data = new QComboBox);
+		form->addRow("Data format:", m_fmt = new QComboBox);
 		layout->addLayout(form);
-		layout->addWidget(m_custom);
+
+		m_type->addItems(QStringList() << "node data" << "surface data" << "element data" << "part data");
+		m_data->addItems(QStringList() << "scalar" << "vec3" << "mat3");
+		m_fmt ->addItems(QStringList() << "item" << "node" << "mult");
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
@@ -76,85 +73,236 @@ public:
 
 		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
-		QObject::connect(m_custom, SIGNAL(clicked(bool)), dlg, SLOT(onCustom()));
-		QObject::connect(m_param, SIGNAL(currentIndexChanged(int)), dlg, SLOT(setItem(int)));
 	}
 };
 
-CDlgAddMeshData::CDlgAddMeshData(FSObject* po, QWidget* pw) : QDialog(pw), ui(new CDlgAddMeshDataUI)
+CDlgAddMeshData::CDlgAddMeshData(QWidget* pw) : QDialog(pw), ui(new CDlgAddMeshDataUI)
 {
 	setMinimumWidth(300);
-
 	ui->setup(this);
+}
 
-	int n = po->Parameters();
-	for (int i=0; i<n; ++i)
+QString CDlgAddMeshData::GetName() { return ui->m_name->text(); }
+FEMeshData::DATA_CLASS CDlgAddMeshData::GetType()
+{ 
+	int n = ui->m_type->currentIndex(); 
+	switch (n)
 	{
-		Param& p = po->GetParam(i);
-		Param_Type type = p.GetParamType();
-		if      ((type == Param_FLOAT) || (type == Param_VEC3D))
+	case FEMeshData::NODE_DATA: return FEMeshData::NODE_DATA; break;
+	case FEMeshData::SURFACE_DATA: return FEMeshData::SURFACE_DATA; break;
+	case FEMeshData::ELEMENT_DATA: return FEMeshData::ELEMENT_DATA; break;
+	case FEMeshData::PART_DATA: return FEMeshData::PART_DATA; break;
+	default:
+		assert(false);
+	}
+	return FEMeshData::NODE_DATA;
+}
+
+FEMeshData::DATA_TYPE CDlgAddMeshData::GetDataType() 
+{ 
+	int n = ui->m_data->currentIndex();
+	switch (n)
+	{
+	case FEMeshData::DATA_SCALAR: return FEMeshData::DATA_SCALAR; break;
+	case FEMeshData::DATA_VEC3D : return FEMeshData::DATA_VEC3D; break;
+	case FEMeshData::DATA_MAT3D : return FEMeshData::DATA_MAT3D; break;
+	default:
+		assert(false);
+	}
+	return FEMeshData::DATA_SCALAR;
+}
+
+FEMeshData::DATA_FORMAT CDlgAddMeshData::GetFormat() 
+{ 
+	int n = ui->m_fmt->currentIndex(); 
+	switch (n)
+	{
+	case FEMeshData::DATA_ITEM: return FEMeshData::DATA_ITEM; break;
+	case FEMeshData::DATA_NODE: return FEMeshData::DATA_NODE; break;
+	case FEMeshData::DATA_MULT: return FEMeshData::DATA_MULT; break;
+	default:
+		assert(false);
+	}
+	return FEMeshData::DATA_NODE;
+}
+
+//==========================================================
+
+class DataTableDelegate : public QItemDelegate
+{
+public:
+	QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option,
+		const QModelIndex& index) const
+	{
+		QLineEdit* lineEdit = new QLineEdit(parent);
+		QDoubleValidator* validator = new QDoubleValidator;
+		lineEdit->setValidator(validator);
+		return lineEdit;
+	}
+};
+
+class CDlgEditMeshDataUI
+{
+public:
+	FEMeshData* m_data;
+	QTableWidget* m_table;
+
+public:
+	void setup(QDialog* dlg)
+	{
+		FEMeshData::DATA_TYPE dataType = m_data->GetDataType();
+		int ncols = 0;
+		switch (dataType)
 		{
-			CDlgAddMeshDataUI::Item item = { p.GetLongName(), p.GetShortName(), type };
-			ui->m_item.push_back(item);
-			ui->m_param->addItem(p.GetLongName());
+		case FEMeshData::DATA_SCALAR: ncols = 1; break;
+		case FEMeshData::DATA_VEC3D : ncols = 3; break;
+		case FEMeshData::DATA_MAT3D : ncols = 9; break;
+		}
+
+		QVBoxLayout* layout = new QVBoxLayout;
+
+		QHBoxLayout* h = new QHBoxLayout;
+		QToolButton* copy = new QToolButton; copy->setIcon(QIcon(":/icons/clipboard.png")); copy->setToolTip("Copy to clipboard");
+		QToolButton* paste = new QToolButton; paste->setIcon(QIcon(":/icons/paste.png")); paste->setToolTip("Paste from clipboard");
+		h->addWidget(copy);
+		h->addWidget(paste);
+		h->addStretch();
+		layout->addLayout(h);
+
+		std::vector<double> data = m_data->GetData();
+		int nrows = data.size() / ncols;
+
+		m_table = new QTableWidget(nrows, ncols);
+		m_table->setItemDelegate(new DataTableDelegate);
+		m_table->setObjectName("dataTable");
+		m_table->horizontalHeader()->setStretchLastSection(true);
+		m_table->setSelectionBehavior(QAbstractItemView::SelectRows);
+		m_table->setSelectionMode(QAbstractItemView::SingleSelection);
+		m_table->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
+
+		if (ncols == 1) m_table->setHorizontalHeaderLabels(QStringList() << "value");
+		if (ncols == 3) m_table->setHorizontalHeaderLabels(QStringList() << "x" << "y" << "z");
+		if (ncols == 9) m_table->setHorizontalHeaderLabels(QStringList() << "xx" << "xy" << "xz" << "yx" << "yy" << "yz" << "zx" << "zy" << "zz");
+
+		FEMeshData::DATA_CLASS dataClass = m_data->GetDataClass();
+		if (dataClass == FEMeshData::NODE_DATA)
+		{
+			FSNodeSet* pg = dynamic_cast<FSNodeSet*>(m_data->GetItemList());
+			if (pg)
+			{
+				std::vector<int> items = pg->CopyItems();
+				QStringList Items;
+				for (int i : items) Items.push_back(QString::number(i));
+				assert(nrows == items.size());
+				m_table->setVerticalHeaderLabels(Items);
+			}
+		}
+
+		for (int i = 0; i < data.size(); ++i)
+		{
+			int r = i / ncols;
+			int c = i % ncols;
+			m_table->setItem(r, c, new QTableWidgetItem(QString::number(data[i])));
+		}
+
+		layout->addWidget(m_table);
+
+		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+		layout->addWidget(bb);
+
+		dlg->setLayout(layout);
+
+		QObject::connect(bb, SIGNAL(accepted()), dlg, SLOT(accept()));
+		QObject::connect(bb, SIGNAL(rejected()), dlg, SLOT(reject()));
+		QObject::connect(copy, SIGNAL(clicked()), dlg, SLOT(OnCopyToClipboard()));
+		QObject::connect(paste, SIGNAL(clicked()), dlg, SLOT(OnPasteFromClipboard()));
+	}
+};
+
+CDlgEditMeshData::CDlgEditMeshData(FEMeshData* pm, QWidget* pw) : QDialog(pw), ui(new CDlgEditMeshDataUI)
+{
+	ui->m_data = pm;
+	ui->setup(this);
+}
+
+CDlgEditMeshData::~CDlgEditMeshData()
+{
+	delete ui;
+}
+
+void CDlgEditMeshData::accept()
+{
+	std::vector<double> data;
+
+	int rows = ui->m_table->rowCount();
+	int cols = ui->m_table->columnCount();
+	int ndata = rows * cols;
+	data.assign(ndata, 0.0);
+
+	for (int i=0; i<rows; ++i)
+		for (int j = 0; j < cols; ++j)
+		{
+			double aij = ui->m_table->item(i, j)->text().toDouble();
+			data[i * cols + j] = aij;
+		}
+
+	ui->m_data->SetData(data);
+
+	QDialog::accept();
+}
+
+void CDlgEditMeshData::OnCopyToClipboard()
+{
+	QString txt;
+	int rows = ui->m_table->rowCount();
+	int cols = ui->m_table->columnCount();
+
+	for (int i = 0; i < rows; ++i)
+	{
+		QString label = ui->m_table->verticalHeaderItem(i)->text();
+		txt += label + "\t";
+		for (int j = 0; j < cols; ++j)
+		{
+			double aij = ui->m_table->item(i, j)->text().toDouble();
+			txt += QString::number(aij);
+			if (j != cols - 1) txt += "\t";
+		}
+		txt += "\n";
+	}
+	QClipboard* clipboard = QApplication::clipboard();
+	clipboard->setText(txt);
+}
+
+void CDlgEditMeshData::OnPasteFromClipboard()
+{
+	QClipboard* clipboard = QApplication::clipboard();
+	if (clipboard == nullptr) return;
+	const QMimeData* mimeData = clipboard->mimeData();
+	if (mimeData == nullptr) return;
+
+	if (mimeData->hasText())
+	{
+		QString text = clipboard->text();
+
+		int nrows = ui->m_table->rowCount();
+		int ncols = ui->m_table->columnCount();
+
+		QStringList lines = text.split("\n");
+		int lineCount = lines.size();
+		if (lineCount > nrows) lineCount = nrows;
+		QString sep = "\t";
+
+		for (int i = 0; i < lineCount; ++i)
+		{
+			QStringList items = lines[i].split(sep);
+			int itemCount = items.size();
+			if (itemCount > ncols) itemCount = ncols;
+			for (int j = 0; j < itemCount; ++j)
+			{
+				QString s = items[j];
+				double aij = s.toDouble();
+				ui->m_table->item(i, j)->setText(QString::number(aij));
+			}
 		}
 	}
-
-	setItem(0);
-}
-
-void CDlgAddMeshData::setItem(int n)
-{
-	if ((n<0) || (n >= (int) ui->m_item.size())) return;
-
-	CDlgAddMeshDataUI::Item item = ui->m_item[n];
-
-	ui->m_param->setEditText(item.szname);
-	switch (item.type)
-	{
-	case Param_FLOAT: ui->m_type->setCurrentIndex(0); break;
-	case Param_VEC3D: ui->m_type->setCurrentIndex(1); break;
-	}
-}
-
-void CDlgAddMeshData::onCustom()
-{
-	bool b = ui->m_custom->isChecked();
-	if (b)
-	{
-		ui->m_param->setEditable(true);
-		ui->m_type->setEnabled(true);
-	}	
-	else
-	{
-		ui->m_param->setEditable(false);
-		ui->m_type->setEnabled(false);
-	}
-}
-
-std::string CDlgAddMeshData::GetMapName()
-{
-	QString txt = ui->m_param->currentText();
-	return txt.toStdString();
-}
-
-std::string CDlgAddMeshData::GetParamName()
-{
-	bool b = ui->m_custom->isChecked();
-	if (b) return GetMapName();
-	else
-	{
-		int n = ui->m_param->currentIndex();
-		return ui->m_item[n].szparam;
-	}
-}
-
-Param_Type CDlgAddMeshData::GetParamType()
-{
-	int n = ui->m_type->currentIndex();
-
-	if (n == 0) return Param_FLOAT;
-	if (n == 1) return Param_VEC3D;
-
-	return Param_UNDEF;
 }

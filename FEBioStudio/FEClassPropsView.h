@@ -36,6 +36,8 @@ class FEClassPropsModel;
 class Param;
 class FSProperty;
 class CMainWindow;
+class GModel;
+class FEItemListBuilder;
 
 class CPropertySelector : public QComboBox
 {
@@ -53,6 +55,25 @@ signals:
 private:
 	FSCoreBase* m_pc;
 	FSProperty* m_pp;
+};
+
+class CSurfacePropertySelector : public QComboBox
+{
+	Q_OBJECT
+
+public:
+	CSurfacePropertySelector(GModel& m, FSProperty* pp, QWidget* parent = nullptr);
+
+public slots:
+	void onSelectionChanged(int n);
+
+signals:
+	void currentDataChanged(int n);
+
+private:
+	GModel&		m_mdl;
+	FSProperty* m_pp;
+	std::vector<FEItemListBuilder*> m_surfList;
 };
 
 class FEClassPropsDelegate : public QStyledItemDelegate
@@ -91,6 +112,8 @@ public:
 	Param* getParam(const QModelIndex& index);
 	FSProperty* getProperty(const QModelIndex& index);
 
+	FSProperty* getSelectedProperty();
+
 protected:
 	void drawBranches(QPainter* painter, const QRect& rect, const QModelIndex& index) const override;
 	void drawRow(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
@@ -113,6 +136,8 @@ public:
 
 	void SetFEClass(FSCoreBase* pc, FSModel* fem);
 	FSProperty* getProperty(const QModelIndex& index);
+
+	FSProperty* getSelectedProperty();
 
 private slots:
 	void on_clicked(const QModelIndex& index);
