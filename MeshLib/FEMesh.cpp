@@ -2707,7 +2707,10 @@ void FSMesh::BuildELT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearELT()
 {
-	m_ELT.clear();
-	m_eltmin = 0;
-	for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	if (m_ELT.empty() == false)
+	{
+		m_ELT.clear();
+		m_eltmin = 0;
+		for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	}
 }
