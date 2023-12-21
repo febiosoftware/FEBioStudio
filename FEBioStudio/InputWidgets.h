@@ -49,15 +49,28 @@ public:
 //-----------------------------------------------------------------------------
 class CFloatInput : public QLineEdit
 {
+	Q_OBJECT
+
 public:
 	CFloatInput(QWidget* parent = 0) : QLineEdit(parent)
 	{
 		QDoubleValidator* pv = new QDoubleValidator;
 		setValidator(pv);
+
+		QObject::connect(this, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 	}
 
 	void setValue(double v) { setText(QString("%1").arg(v)); }
 	double value() const { return text().toDouble(); }
+
+public slots:
+	void onEditingFinished()
+	{
+		emit valueChanged(text().toDouble());
+	}
+
+signals:
+	void valueChanged(double newValue);
 };
 
 //-----------------------------------------------------------------------------

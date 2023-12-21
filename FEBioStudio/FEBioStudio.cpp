@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include <QSplashScreen>
 #include <QDebug>
 #include <QPainter>
-#include <QQuickView>
 #include <FEBioLink/FEBioInit.h>
 
 #ifdef __APPLE__
@@ -142,8 +141,6 @@ int main(int argc, char* argv[])
 
 	// create the application object
 	FBSApplication app(argc, argv);
-
-	QQuickWindow::setGraphicsApi(QSGRendererInterface::OpenGL);
 
 	// set the display name (this will be displayed on all windows and dialogs)
 	QString version = QString("%1.%2.%3").arg(FBS_VERSION).arg(FBS_SUBVERSION).arg(FBS_SUBSUBVERSION);

@@ -24,51 +24,39 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "Document.h"
-#include <FECore/FEParam.h>
-#include <vector>
+#include <QWidget>
 
-class FEBioModel;
-class FEModel;
+class QBoxLayout;
+class XMLTag;
+class FEBioAppDocument;
 
-class CFEBioModelDataSource
+class FEBioAppUIBuilder
 {
 public:
-	CFEBioModelDataSource() {}
-	virtual ~CFEBioModelDataSource() {}
+	FEBioAppUIBuilder();
 
-	virtual void Clear() = 0;
-	virtual void Update(double time) = 0;
-};
-
-class FEBioAppDocument : public CDocument
-{
-	Q_OBJECT
-
-public:
-	FEBioAppDocument(CMainWindow* wnd);
-
-	bool LoadModelFromFile(QString fileName);
-
-	std::vector<FEParamValue> GetFEBioParameterList(const char* szparams);
-	FEParamValue GetFEBioParameter(const char* szparams);
-
-	FEBioModel* GetFEBioModel();
-
-	void AddModelDataSource(CFEBioModelDataSource* dataSrc);
-
-public slots:
-	void runModel();
-
-signals:
-	void modelFinished(bool returnCode);
+	QWidget* BuildUIFromFile(QString filePath, FEBioAppDocument* app);
 
 private:
-	static bool febio_cb(FEModel* fem, unsigned int nevent, void* pd);
-	void ProcessFEBioEvent(int nevent);
+	QWidget* error();
+
+	bool parseModel(XMLTag& tag);
+	bool parseGUI  (XMLTag& tag);
+
+	bool parseGUITags  (XMLTag& tag, QBoxLayout* layout);
+	void parseLabel    (XMLTag& tag, QBoxLayout* layout);
+	void parseButton   (XMLTag& tag, QBoxLayout* layout);
+	void parseGraph    (XMLTag& tag, QBoxLayout* layout);
+	void parseInputList(XMLTag& tag, QBoxLayout* layout);
+	void parseGroup    (XMLTag& tag, QBoxLayout* playout);
+	void parseVGroup   (XMLTag& tag, QBoxLayout* playout);
+	void parseHGroup   (XMLTag& tag, QBoxLayout* playout);
+	void parseStretch  (XMLTag& tag, QBoxLayout* playout);
+	void parseInput    (XMLTag& tag, QBoxLayout* playout);
+	void parseTabGroup (XMLTag& tag, QBoxLayout* playout);
+	void parsePlot3d   (XMLTag& tag, QBoxLayout* playout);
 
 private:
-	FEBioModel* m_fem;
-	bool	m_isFemInitialized;
-	std::vector<CFEBioModelDataSource*>	m_dataSources;
+	QWidget* ui;
+	FEBioAppDocument* app;
 };

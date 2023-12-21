@@ -24,51 +24,61 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "Document.h"
+#include <QWidget>
 #include <FECore/FEParam.h>
-#include <vector>
+#include "InputWidgets.h"
 
-class FEBioModel;
-class FEModel;
+class CMainWindow;
+class FEBioAppDocument;
+class QCheckBox;
 
-class CFEBioModelDataSource
-{
-public:
-	CFEBioModelDataSource() {}
-	virtual ~CFEBioModelDataSource() {}
-
-	virtual void Clear() = 0;
-	virtual void Update(double time) = 0;
-};
-
-class FEBioAppDocument : public CDocument
+class FEBioAppView : public QWidget
 {
 	Q_OBJECT
 
 public:
-	FEBioAppDocument(CMainWindow* wnd);
+	FEBioAppView(CMainWindow* wnd);
 
-	bool LoadModelFromFile(QString fileName);
-
-	std::vector<FEParamValue> GetFEBioParameterList(const char* szparams);
-	FEParamValue GetFEBioParameter(const char* szparams);
-
-	FEBioModel* GetFEBioModel();
-
-	void AddModelDataSource(CFEBioModelDataSource* dataSrc);
+	void setSource(QString filePath, FEBioAppDocument* app);
 
 public slots:
-	void runModel();
-
-signals:
-	void modelFinished(bool returnCode);
+	void onModelFinished(bool returnCode);
 
 private:
-	static bool febio_cb(FEModel* fem, unsigned int nevent, void* pd);
-	void ProcessFEBioEvent(int nevent);
+	CMainWindow* m_wnd;
+	QWidget* ui;
+};
+
+class CFEBioParamEdit : public QObject
+{
+	Q_OBJECT
+
+public:
+	enum class AlignOptions {
+		ALIGN_LEFT,
+		ALIGN_RIGHT,
+		ALIGN_TOP,
+		ALIGN_BOTTOM,
+		ALIGN_TOP_LEFT,
+		ALIGN_TOP_RIGHT,
+		ALIGN_BOTTOM_LEFT,
+		ALIGN_BOTTOM_RIGHT
+	};
+
+public:
+	CFEBioParamEdit(QObject* parent);
+
+	void SetParameter(FEParamValue p) { m_param = p; }
+	void SetEditor(CFloatInput* w);
+	void SetEditor(QCheckBox* w);
+
+	QWidget* GetEditor() const;
+
+public slots:
+	void UpdateFloat(double newValue);
+	void UpdateBool(bool newValue);
 
 private:
-	FEBioModel* m_fem;
-	bool	m_isFemInitialized;
-	std::vector<CFEBioModelDataSource*>	m_dataSources;
+	FEParamValue m_param;
+	QWidget* m_editor;
 };

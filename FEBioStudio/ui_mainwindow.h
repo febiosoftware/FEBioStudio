@@ -52,7 +52,6 @@ SOFTWARE.*/
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMimeData>
-#include <QQuickWidget>
 #include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
@@ -84,6 +83,7 @@ SOFTWARE.*/
 #include "FEBioJobManager.h"
 #include "XMLDocument.h"
 #include "DlgFiberViz.h"
+#include "FEBioAppView.h"
 #include <vector>
 
 class QProcess;
@@ -193,7 +193,7 @@ public:
 	CGLViewer*		glw;
 	QTextBrowser*	htmlViewer;
 	XMLEditor*		xmlEdit;
-	QQuickWidget*		qml;
+	FEBioAppView*	app;
     ::XMLTreeView*  xmlTree;
     CImageSliceView* sliceView;
     ::C2DImageTimeView* timeView2D;
@@ -453,11 +453,10 @@ public:
 		glw = new CGLViewer(wnd);
 		stack->addWidget(glw);
 
-		qml = new QQuickWidget(wnd);
-		qml->setObjectName("qmlview");
-		qml->setResizeMode(QQuickWidget::SizeRootObjectToView);
-		qml->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-		stack->addWidget(qml);
+		app = new FEBioAppView(wnd);
+		app->setObjectName("appview");
+		app->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+		stack->addWidget(app);
 
 		centralLayout->addWidget(tab);
 		centralLayout->addWidget(stack);

@@ -2366,11 +2366,12 @@ void CMainWindow::UpdateUIConfig()
 					if (feappDoc)
 					{
 						ui->setUIConfig(CMainWindow::APP_CONFIG);
-						QUrl url = QUrl::fromLocalFile(QString::fromStdString(feappDoc->GetDocFilePath()));
-						ui->qml->setSource(url);
+						ui->app->setSource(QString::fromStdString(feappDoc->GetDocFilePath()), feappDoc);
+
+						QObject::connect(feappDoc, SIGNAL(modelFinished(bool)), ui->app, SLOT(onModelFinished(bool)));
 					}
 					else ui->setUIConfig(HTML_CONFIG);
-                }
+				}
 			}
 			ui->fileViewer->parentWidget()->raise();
 		}
