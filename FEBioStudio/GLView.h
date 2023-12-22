@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QOpenGLWidget>
+#include "GLSceneView.h"
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
 #include "CommandManager.h"
@@ -103,7 +103,7 @@ struct GLTAG
 };
 
 //===================================================================
-class CGLView : public QOpenGLWidget
+class CGLView : public CGLSceneView
 {
 	Q_OBJECT
 
@@ -114,7 +114,7 @@ public:
 public:
 	CGLDocument* GetDocument();
 
-	CGLScene* GetActiveScene();
+	CGLScene* GetActiveScene() override;
 
 	GObject* GetActiveObject();
 
@@ -152,9 +152,6 @@ public:
 		vp[2] = m_viewport[2];
 		vp[3] = m_viewport[3];
 	}
-
-	// --- view settings ---
-	GLViewSettings& GetViewSettings() { return m_view; }
 
 	void ShowMeshData(bool b);
 
@@ -194,12 +191,6 @@ public:
 	// zoom to the models extents
 	void ZoomExtents(bool banimate = true);
 
-	// prep the GL view for rendering
-	void PrepScene();
-
-	// setup the projection matrix
-	void SetupProjection();
-
 	// get device pixel ration
 	double GetDevicePixelRatio();
 
@@ -212,8 +203,6 @@ public:
 	// render functions
 public:
 	// other rendering functions
-	void RenderBackground();
-
 	void RenderRubberBand();
 	void RenderBrush();
 	void RenderPivot(bool bpick = false);
@@ -251,9 +240,10 @@ public:
 	int GetMeshMode();
 
 protected:
-	void initializeGL();
-	void resizeGL(int w, int h);
-	void paintGL();
+	void initializeGL() override;
+	void resizeGL(int w, int h) override;
+
+	void RenderScene() override;
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
@@ -281,10 +271,6 @@ public:
 
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
-
-	// get/set light position
-	vec3f GetLightPosition() { return m_light; }
-	void SetLightPosition(vec3f lp) { m_light = lp; }
 
 public:
 	void AddDecoration(GDecoration* deco);
@@ -348,8 +334,6 @@ protected:
 	double	m_sa;	// accumulated scale
 	vec3d	m_ds;	// direction of scale
 
-	vec3f	m_light;
-
 	double	m_wt;	// total rotation
 	double	m_wa;	// total accumulated rotation
 
@@ -366,9 +350,6 @@ public:
 	bool	m_bpick;
 
 protected:
-	double	m_ox;
-	double	m_oy;
-
 	bool	m_bsnap;	// snap to grid
 
 	int		m_coord;	// coordinate system
@@ -410,9 +391,6 @@ public:
 	CGLContext	m_rc;
 
 private:
-	GLViewSettings	m_view;
-	int	m_viewport[4];		//!< store viewport coordinates
-
 	GLViewSelector	m_select;
 
 	CGLCamera	m_oldCam;
