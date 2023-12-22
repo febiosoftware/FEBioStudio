@@ -45,6 +45,7 @@ class GDecoration;
 class CGView;
 class FSModel;
 class CGLView;
+class CGLScene;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
@@ -68,14 +69,14 @@ enum View_Mode {
 	VIEW_RIGHT,
 	VIEW_FRONT,
 	VIEW_BACK,
-    VIEW_ISOMETRIC
+	VIEW_ISOMETRIC
 };
 
 // view conventions
 enum View_Convention {
-    CONV_FR_XZ,
-    CONV_FR_XY,
-    CONV_US_XY
+	CONV_FR_XZ,
+	CONV_FR_XY,
+	CONV_US_XY
 };
 
 // snap modes
@@ -111,10 +112,9 @@ public:
 	~CGLView();
 
 public:
-	double GetGridScale() { return m_grid.GetScale(); }
-	quatd GetGridOrientation() { return m_grid.m_q; }
-
 	CGLDocument* GetDocument();
+
+	CGLScene* GetActiveScene();
 
 	GObject* GetActiveObject();
 
@@ -231,8 +231,6 @@ public:
 
 	void showSafeFrame(bool b);
 
-	vec3d WorldToPlane(vec3d r);
-
 	vec3d GetPickPosition();
 
 	vec3d GetPivotPosition();
@@ -333,8 +331,6 @@ protected:
 	CMainWindow*	m_pWnd;	// parent window
 
 	CBasicCmdManager m_Cmd;	// view command history
-
-	GGrid		m_grid;		// the grid object
 
 	vector<pair<int, int> >		m_pl;
 	int			m_x0, m_y0, m_x1, m_y1;

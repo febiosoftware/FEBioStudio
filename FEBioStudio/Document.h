@@ -348,7 +348,6 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	CGView				m_view;
 	CGLScene*			m_scene;
 
 	VIEW_STATE	m_vs;	// the view state

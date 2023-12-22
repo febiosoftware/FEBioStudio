@@ -24,14 +24,31 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
+#include <FSCore/box.h>
+#include <GLLib/GView.h>
+#include "GGrid.h"
 
 class CGLContext;
 
-//-----------------------------------------------------------------------------
 class CGLScene
 {
 public:
 	CGLScene();
 	virtual ~CGLScene();
+
+	CGView& GetView();
+
 	virtual void Render(CGLContext& rc) = 0;
+
+	virtual BOX GetBoundingBox() = 0;
+
+public:
+	GGrid& GetGrid() { return m_grid; }
+	double GetGridScale() { return m_grid.GetScale(); }
+	quatd GetGridOrientation() { return m_grid.m_q; }
+	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
+
+protected:
+	CGView	m_view;
+	GGrid	m_grid;		// the grid object
 };

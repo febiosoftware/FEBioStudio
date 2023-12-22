@@ -28,10 +28,21 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
+#include "PostObject.h"
 
 CGLPostScene::CGLPostScene(CPostDocument* doc) : m_doc(doc)
 {
 
+}
+
+BOX CGLPostScene::GetBoundingBox()
+{
+	BOX box;
+	if (m_doc && m_doc->IsValid())
+	{
+		box = m_doc->GetPostObject()->GetBoundingBox();
+	}
+	return box;
 }
 
 void CGLPostScene::Render(CGLContext& rc)

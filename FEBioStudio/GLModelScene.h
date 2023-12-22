@@ -39,6 +39,8 @@ public:
 
 	GLMeshRender& GetMeshRenderer();
 
+	BOX GetBoundingBox() override;
+
 private:
 	void RenderModel(CGLContext& rc);
 	void RenderGObject(CGLContext& rc, GObject* po);
