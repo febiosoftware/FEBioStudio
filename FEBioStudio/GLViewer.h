@@ -24,54 +24,17 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <QOpenGLWidget>
-#include <GLLib/GLViewSettings.h>
-#include <FSCore/math3d.h>
+#include <QWidget>
+#include "MainWindow.h"
 
-class CGLScene;
+class CGLControlBar;
 
-//! This class is used for rendering CGLScenes
-class CGLSceneView : public QOpenGLWidget
+class CGLViewer : public QWidget
 {
-	Q_OBJECT
+public:
+	CGLViewer(::CMainWindow* wnd);
 
 public:
-	CGLSceneView(QWidget* parent = nullptr);
-
-	GLViewSettings& GetViewSettings() { return m_view; }
-
-	virtual CGLScene* GetActiveScene();
-	virtual void RenderScene();
-
-	//! Setup the projection matrix
-	void SetupProjection();
-
-public: // lighting
-
-	vec3f GetLightPosition() { return m_light; }
-	void SetLightPosition(vec3f lp) { m_light = lp; }
-
-protected:
-	void initializeGL() override;
-	void paintGL() override;
-
-	void PrepScene();
-
-	void RenderBackground();
-
-private:
-	void mousePressEvent(QMouseEvent* ev) override;
-	void mouseMoveEvent(QMouseEvent* ev) override;
-	void mouseReleaseEvent(QMouseEvent* ev) override;
-	void wheelEvent(QWheelEvent* ev) override;
-
-protected:
-	GLViewSettings	m_view;
-	int	m_viewport[4];		//!< store viewport coordinates
-	double	m_ox;
-	double	m_oy;
-
-	QPoint m_prevPos;	//!< last mouse position
-
-	vec3f	m_light;
+	CGLView* glview;
+	CGLControlBar* glc;
 };

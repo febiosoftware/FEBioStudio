@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <GL/glew.h>
 #include "GLSceneView.h"
 #include "GLScene.h"
+#include <QMouseEvent>
 
 static bool initGlew = false;
 
@@ -288,4 +289,143 @@ void CGLSceneView::PrepScene()
 	GLfloat fv[4] = { 0 };
 	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
 	glLightfv(GL_LIGHT0, GL_POSITION, fv);
+}
+
+void CGLSceneView::mousePressEvent(QMouseEvent* ev)
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+	m_prevPos = ev->pos();
+}
+
+void CGLSceneView::mouseMoveEvent(QMouseEvent* ev)
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+	CGLCamera& cam = scene->GetCamera();
+
+	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
+	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
+	bool balt   = (ev->modifiers() & Qt::AltModifier     ? true : false);
+
+	bool but1 = (ev->buttons() & Qt::LeftButton);
+	bool but2 = (ev->buttons() & Qt::MiddleButton);
+	bool but3 = (ev->buttons() & Qt::RightButton);
+
+	// get the mouse position
+	int x1 = ev->pos().x();
+	int y1 = ev->pos().y();
+	int x0 = m_prevPos.x();
+	int y0 = m_prevPos.y();
+
+	if (but1)
+	{
+		if (balt)
+		{
+			quatd qz = quatd((y1 - y0) * 0.01f, vec3d(0, 0, 1));
+			cam.Orbit(qz);
+		}
+		else
+		{
+			quatd qx = quatd((y1 - y0) * 0.01f, vec3d(1, 0, 0));
+			quatd qy = quatd((x1 - x0) * 0.01f, vec3d(0, 1, 0));
+
+			cam.Orbit(qx);
+			cam.Orbit(qy);
+		}
+	}
+	else if (but2 || (but3 && balt))
+	{
+		vec3d r = vec3d(-(double)(x1 - x0), (double)(y1 - y0), 0.f);
+		cam.PanView(r);
+	}
+	else if (but3)
+	{
+		if (bshift)
+		{
+			double D = (double)y0 - y1;
+			double s = cam.GetFinalTargetDistance() * 1e-2;
+			if (D < 0) s = -s;
+			cam.Dolly(s);
+		}
+		else if (bctrl)
+		{
+			quatd qx = quatd((y0 - y1) * 0.001f, vec3d(1, 0, 0));
+			quatd qy = quatd((x0 - x1) * 0.001f, vec3d(0, 1, 0));
+			quatd q = qy * qx;
+			cam.Pan(q);
+		}
+		else
+		{
+			if (y0 > y1) cam.Zoom(0.95f);
+			if (y0 < y1) cam.Zoom(1.0f / 0.95f);
+		}
+	}
+	repaint();
+
+	m_prevPos = ev->pos();
+
+	cam.Update(true);
+
+	ev->accept();
+}
+
+void CGLSceneView::mouseReleaseEvent(QMouseEvent* ev)
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+}
+
+void CGLSceneView::wheelEvent(QWheelEvent* ev)
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+	CGLCamera& cam = scene->GetView().GetCamera();
+
+	Qt::KeyboardModifiers key = ev->modifiers();
+	bool balt = (key & Qt::AltModifier);
+	Qt::MouseEventSource eventSource = ev->source();
+	if (eventSource == Qt::MouseEventSource::MouseEventNotSynthesized)
+	{
+		int y = ev->angleDelta().y();
+		if (y == 0) y = ev->angleDelta().x();
+		if (balt && GetViewSettings().m_bselbrush)
+		{
+			float& R = GetViewSettings().m_brushSize;
+			if (y < 0) R -= 2.f;
+			if (y > 0) R += 2.f;
+			if (R < 2.f) R = 1.f;
+			if (R > 500.f) R = 500.f;
+		}
+		else
+		{
+			if (y > 0) cam.Zoom(0.95f);
+			if (y < 0) cam.Zoom(1.0f / 0.95f);
+		}
+		repaint();
+	}
+	else
+	{
+		if (balt) 
+		{
+			int y = ev->angleDelta().y();
+			if (y > 0) cam.Zoom(0.95f);
+			if (y < 0) cam.Zoom(1.0f / 0.95f);
+		}
+		else 
+		{
+			int dx = ev->pixelDelta().x();
+			int dy = ev->pixelDelta().y();
+			vec3d r = vec3d(-dx, dy, 0.f);
+			cam.PanView(r);
+		}
+	}
+
+	cam.Update(true);
+	ev->accept();
+	repaint();
 }

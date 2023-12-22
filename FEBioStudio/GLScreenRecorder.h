@@ -24,54 +24,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <QOpenGLWidget>
-#include <GLLib/GLViewSettings.h>
-#include <FSCore/math3d.h>
+class CGLView;
 
-class CGLScene;
+class CAnimation;
+class QImage;
 
-//! This class is used for rendering CGLScenes
-class CGLSceneView : public QOpenGLWidget
+// Video recording states
+enum class RECORDING_STATE {
+	RECORDING,
+	PAUSED,
+	STOPPED
+};
+
+class GLScreenRecorder
 {
-	Q_OBJECT
-
 public:
-	CGLSceneView(QWidget* parent = nullptr);
+	GLScreenRecorder();
+	void AttachToView(CGLView* glview);
 
-	GLViewSettings& GetViewSettings() { return m_view; }
+	bool HasRecording() const;
 
-	virtual CGLScene* GetActiveScene();
-	virtual void RenderScene();
+	RECORDING_STATE GetRecordingState() const;
 
-	//! Setup the projection matrix
-	void SetupProjection();
+	void SetVideoFormat(unsigned int fmt);
 
-public: // lighting
+	bool SetVideoStream(CAnimation* panim);
 
-	vec3f GetLightPosition() { return m_light; }
-	void SetLightPosition(vec3f lp) { m_light = lp; }
+	void Start();
+	void Stop();
+	void Pause();
 
-protected:
-	void initializeGL() override;
-	void paintGL() override;
+	bool AddFrame(QImage& im);
 
-	void PrepScene();
-
-	void RenderBackground();
+	bool IsRecording() const;
+	bool IsPaused() const;
+	bool IsStopped() const;
 
 private:
-	void mousePressEvent(QMouseEvent* ev) override;
-	void mouseMoveEvent(QMouseEvent* ev) override;
-	void mouseReleaseEvent(QMouseEvent* ev) override;
-	void wheelEvent(QWheelEvent* ev) override;
+	unsigned int	m_videoFormat;
+	RECORDING_STATE	m_state;
+	CAnimation*		m_video;
 
-protected:
-	GLViewSettings	m_view;
-	int	m_viewport[4];		//!< store viewport coordinates
-	double	m_ox;
-	double	m_oy;
-
-	QPoint m_prevPos;	//!< last mouse position
-
-	vec3f	m_light;
+	CGLView*	m_glview;
 };

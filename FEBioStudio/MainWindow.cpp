@@ -371,15 +371,15 @@ void CMainWindow::UpdateTitle()
 		title = projectName;
 	}
 
-	CGLView* glview = GetGLView();
-	if (glview->HasRecording())
+	GLScreenRecorder& recorder = GetGLView()->GetScreenRecorder();
+	if (recorder.HasRecording())
 	{
-		int nrecord = glview->RecordingMode();
-		switch (nrecord)
+		RECORDING_STATE state = recorder.GetRecordingState();
+		switch (state)
 		{
-		case VIDEO_MODE::VIDEO_PAUSED   : title += " (RECORDING PAUSED)"; break;
-		case VIDEO_MODE::VIDEO_RECORDING: title += " (RECORDING)"; break;
-		case VIDEO_MODE::VIDEO_STOPPED  : title += " (RECORDING STOPPED)"; break;
+		case RECORDING_STATE::PAUSED   : title += " (RECORDING PAUSED)"; break;
+		case RECORDING_STATE::RECORDING: title += " (RECORDING)"; break;
+		case RECORDING_STATE::STOPPED  : title += " (RECORDING STOPPED)"; break;
 		}
 	}
 

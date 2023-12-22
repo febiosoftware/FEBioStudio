@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLViewSelector.h"
+#include "GLScreenRecorder.h"
 
 class CMainWindow;
 class CGLDocument;
@@ -51,14 +52,6 @@ class CGLScene;
 #define COORD_GLOBAL	0
 #define COORD_LOCAL		1
 #define COORD_SCREEN	2
-
-//-----------------------------------------------------------------------------
-// Video recording modes
-enum VIDEO_MODE {
-	VIDEO_RECORDING,
-	VIDEO_PAUSED,
-	VIDEO_STOPPED
-};
 
 // preset views
 enum View_Mode {
@@ -166,13 +159,14 @@ public:
 	void ToggleFPS();
 
 protected:
-	void mousePressEvent  (QMouseEvent* ev);
-	void mouseMoveEvent   (QMouseEvent* ev);
-	void mouseReleaseEvent(QMouseEvent* ev);
-	void mouseDoubleClickEvent(QMouseEvent* ev);
-	void wheelEvent       (QWheelEvent* ev);
+	void mousePressEvent  (QMouseEvent* ev) override;
+	void mouseMoveEvent   (QMouseEvent* ev) override;
+	void mouseReleaseEvent(QMouseEvent* ev) override;
+	void wheelEvent       (QWheelEvent* ev) override;
+	void mouseDoubleClickEvent(QMouseEvent* ev) override;
+
     bool gestureEvent     (QNativeGestureEvent* ev);
-    bool event            (QEvent* event);
+    bool event            (QEvent* event) override;
 
 signals:
 	void pointPicked(const vec3d& p);
@@ -255,15 +249,6 @@ private:
 public:
 	QImage CaptureScreen();
 
-	bool NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt = GL_RGB);
-	void StartAnimation();
-	void StopAnimation();
-	void PauseAnimation();
-	void SetVideoFormat(GLenum fmt) { m_videoFormat = fmt; }
-
-	VIDEO_MODE RecordingMode() const;
-	bool HasRecording() const;
-
 	void UpdateWidgets(bool bposition = true);
 
 	bool isTitleVisible() const;
@@ -282,6 +267,13 @@ public:
 	void SetPlaneCutMode(int nmode);
 	void UpdatePlaneCut(bool breset = false);
 
+	GLScreenRecorder& GetScreenRecorder() { return m_recorder; }
+
+	QSize GetSafeFrameSize() const;
+
+	void LockSafeFrame();
+	void UnlockSafeFrame();
+
 private:
 	GMesh* BuildPlaneCut(FSModel& fem);
 
@@ -289,8 +281,6 @@ public:
 	void SetColorMap(unsigned int n);
 
 	Post::CColorMap& GetColorMap();
-
-	void PanView(vec3d r);
 
 	void AddRegionPoint(int x, int y);
 
@@ -375,11 +365,6 @@ protected:
 	bool	m_showContextMenu;
 
 private:
-	GLenum	m_videoFormat;
-
-	VIDEO_MODE		m_videoMode;	// the current video mode
-	CAnimation*		m_video;		// video object
-
 	// tracking
 	bool	m_btrack;
 	int		m_ntrack[3];
@@ -392,6 +377,8 @@ public:
 
 private:
 	GLViewSelector	m_select;
+
+	GLScreenRecorder	m_recorder;
 
 	CGLCamera	m_oldCam;
 

@@ -42,6 +42,8 @@ public:
 
 	virtual BOX GetBoundingBox() = 0;
 
+	CGLCamera& GetCamera() { return m_view.GetCamera(); }
+
 public:
 	GGrid& GetGrid() { return m_grid; }
 	double GetGridScale() { return m_grid.GetScale(); }

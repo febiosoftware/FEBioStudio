@@ -23,55 +23,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <QOpenGLWidget>
-#include <GLLib/GLViewSettings.h>
-#include <FSCore/math3d.h>
+#include "GLViewer.h"
+#include <QBoxLayout>
+#include "GLView.h"
+#include "GLControlBar.h"
 
-class CGLScene;
-
-//! This class is used for rendering CGLScenes
-class CGLSceneView : public QOpenGLWidget
+CGLViewer::CGLViewer(::CMainWindow* wnd)
 {
-	Q_OBJECT
+	// create the layout for the central widget
+	QVBoxLayout* l = new QVBoxLayout;
+	l->setContentsMargins(0, 0, 0, 0);
 
-public:
-	CGLSceneView(QWidget* parent = nullptr);
+	// create the GL view
+	glview = new CGLView(wnd); glview->setObjectName("glview");
 
-	GLViewSettings& GetViewSettings() { return m_view; }
+	// create the GL control bar
+	glc = new CGLControlBar(wnd);
+	glc->setObjectName("glbar");
+	glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
 
-	virtual CGLScene* GetActiveScene();
-	virtual void RenderScene();
+	// add it all to the layout
+	l->addWidget(glview);
+	l->addWidget(glc);
+	setLayout(l);
 
-	//! Setup the projection matrix
-	void SetupProjection();
-
-public: // lighting
-
-	vec3f GetLightPosition() { return m_light; }
-	void SetLightPosition(vec3f lp) { m_light = lp; }
-
-protected:
-	void initializeGL() override;
-	void paintGL() override;
-
-	void PrepScene();
-
-	void RenderBackground();
-
-private:
-	void mousePressEvent(QMouseEvent* ev) override;
-	void mouseMoveEvent(QMouseEvent* ev) override;
-	void mouseReleaseEvent(QMouseEvent* ev) override;
-	void wheelEvent(QWheelEvent* ev) override;
-
-protected:
-	GLViewSettings	m_view;
-	int	m_viewport[4];		//!< store viewport coordinates
-	double	m_ox;
-	double	m_oy;
-
-	QPoint m_prevPos;	//!< last mouse position
-
-	vec3f	m_light;
-};
+	glc->hide();
+}

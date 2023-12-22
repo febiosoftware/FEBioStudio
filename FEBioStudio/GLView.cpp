@@ -357,6 +357,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	// attach the 3D cursor to this view
 	GLCursor::AttachToView(this);
 
+	m_recorder.AttachToView(this);
+
 	m_showContextMenu = true;
 
 	m_ballocDefaultWidgets = true;
@@ -367,10 +369,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_ptriad = nullptr;
 	m_pframe = nullptr;
 	m_legend = nullptr;
-
-	m_video       = nullptr;
-	m_videoMode   = VIDEO_STOPPED;
-	m_videoFormat = GL_RGB;
 }
 
 CGLView::~CGLView()
@@ -658,7 +656,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		else if ((but2 || (but3 && balt)) && !m_bsel)
 		{
 			vec3d r = vec3d(-(double)(x - m_x1), (double)(y - m_y1), 0.f);
-			PanView(r);
+			cam.PanView(r);
 			repaint();
 		}
 		else if (but3 && !m_bsel)
@@ -1146,7 +1144,7 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 				int dx = ev->pixelDelta().x();
 				int dy = ev->pixelDelta().y();
 				vec3d r = vec3d(-dx, dy, 0.f);
-				PanView(r);
+				cam.PanView(r);
 
 				repaint();
 
@@ -1313,113 +1311,10 @@ QImage CGLView::CaptureScreen()
 		QImage im = grabFramebuffer();
 
 		// crop based on the capture frame
-		double dpr = m_pWnd->devicePixelRatio();
+		double dpr = devicePixelRatio();
 		return im.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
 	}
 	else return grabFramebuffer();
-}
-
-bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
-{
-	m_video = video;
-	SetVideoFormat(fmt);
-
-	// get the width/height of the animation
-	int cx = width();
-	int cy = height();
-	if (m_pframe && m_pframe->visible())
-	{
-		double dpr = m_pWnd->devicePixelRatio();
-		cx = (int) (dpr*m_pframe->w());
-		cy = (int) (dpr*m_pframe->h());
-	}
-
-	// get the frame rate
-	float fps = 10.f;
-	if (m_pWnd->GetPostDocument()) fps = m_pWnd->GetPostDocument()->GetTimeSettings().m_fps;
-	if (fps == 0.f) fps = 10.f;
-
-	// create the animation
-	if (m_video->Create(szfile, cx, cy, fps) == false)
-	{
-		delete m_video;
-		m_video = nullptr;
-		m_videoMode = VIDEO_STOPPED;
-	}
-	else
-	{
-		// lock the frame
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
-
-		// set the animation mode to paused
-		m_videoMode = VIDEO_STOPPED;
-	}
-
-	return (m_video != 0);
-}
-
-bool CGLView::HasRecording() const
-{
-	return (m_video != 0);
-}
-
-VIDEO_MODE CGLView::RecordingMode() const
-{
-	return m_videoMode;
-}
-
-void CGLView::StartAnimation()
-{
-	if (m_video)
-	{
-		// set the animation mode to recording
-		m_videoMode = VIDEO_RECORDING;
-
-		// lock the frame
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::LOCKED);
-		repaint();
-	}
-}
-
-void CGLView::StopAnimation()
-{
-	if (m_video)
-	{
-		// stop the animation
-		m_videoMode = VIDEO_STOPPED;
-
-		// get the nr of frames before we close
-		int nframes = m_video->Frames();
-
-		// close the stream
-		m_video->Close();
-
-		// delete the object
-		delete m_video;
-		m_video = nullptr;
-
-		// say something if frames is 0. 
-		if (nframes == 0)
-		{
-			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
-		}
-
-		// unlock the frame
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::FREE);
-
-		repaint();
-	}
-}
-
-void CGLView::PauseAnimation()
-{
-	if (m_video)
-	{
-		// pause the recording
-		m_videoMode = VIDEO_PAUSED;
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
-		repaint();
-	}
 }
 
 void CGLView::repaintEvent()
@@ -1585,28 +1480,18 @@ void CGLView::RenderScene()
 
 	painter.end();
 
-	if (m_videoMode != VIDEO_STOPPED)
-	{
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		int x = width() - 200;
-		int y = height() - 40;
-		glPopAttrib();
-	}
-
-	if ((m_videoMode == VIDEO_RECORDING) && (m_video != 0))
+	if (m_recorder.IsRecording())
 	{
 		glFlush();
 		QImage im = CaptureScreen();
-		if (m_video->Write(im) == false)
+		if (m_recorder.AddFrame(im) == false)
 		{
-			StopAnimation();
+			m_recorder.Stop();
 			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
 		}
 	}
 
-	if ((m_videoMode == VIDEO_PAUSED) && (m_video != 0))
+	if (m_recorder.IsPaused())
 	{
 		QPainter painter(this);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
@@ -2472,21 +2357,6 @@ void CGLView::SetPlaneCut(double d[4])
 	update();
 }
 
-void CGLView::PanView(vec3d r)
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	CGLCamera& cam = scene->GetView().GetCamera();
-
-	double f = 0.001f*(double)cam.GetFinalTargetDistance();
-	r.x *= f;
-	r.y *= f;
-
-	cam.Truck(r);
-}
-
-//-----------------------------------------------------------------------------
 // Select an arm of the pivot manipulator
 bool CGLView::SelectPivot(int x, int y)
 {
@@ -3382,6 +3252,31 @@ GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 	planeCut->Update();
 
 	return planeCut;
+}
+
+QSize CGLView::GetSafeFrameSize() const
+{
+	int cx = width();
+	int cy = height();
+	if (m_pframe && m_pframe->visible())
+	{
+		double dpr = devicePixelRatio();
+		cx = (int)(dpr * m_pframe->w());
+		cy = (int)(dpr * m_pframe->h());
+	}
+	return QSize(cx, cy);
+}
+
+void CGLView::LockSafeFrame()
+{
+	if (m_pframe) m_pframe->SetState(GLSafeFrame::LOCKED);
+	repaint();
+}
+
+void CGLView::UnlockSafeFrame()
+{
+	if (m_pframe) m_pframe->SetState(GLSafeFrame::FREE);
+	repaint();
 }
 
 void CGLView::UpdatePlaneCut(bool breset)
