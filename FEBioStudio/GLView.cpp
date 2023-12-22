@@ -66,8 +66,6 @@ SOFTWARE.*/
 using namespace std::chrono;
 using dseconds = std::chrono::duration<double>;
 
-static bool initGlew = false;
-
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
 	170, 170, 170, 170,
@@ -243,7 +241,6 @@ bool CircleRegion::IsInside(int x, int y) const
 	return (r <= m_R*m_R);
 }
 
-
 bool CircleRegion::LineIntersects(int x0, int y0, int x1, int y1) const
 {
 	if (IsInside(x0, y0) || IsInside(x1, y1)) return true;
@@ -314,17 +311,9 @@ bool FreeRegion::IsInside(int x, int y) const
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_pWnd(pwnd), m_Ttor(this), m_Rtor(this), m_Stor(this), m_select(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_Ttor(this), m_Rtor(this), m_Stor(this), m_select(this)
 {
-	QSurfaceFormat fmt = format();
-//	fmt.setSamples(4);
-//	setFormat(fmt);
-
-	setFocusPolicy(Qt::StrongFocus);
-	setAttribute(Qt::WA_AcceptTouchEvents, true);
-
 	m_bsnap = false;
-	m_grid.SetView(this);
 
 	m_btrack = false;
 
@@ -332,12 +321,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 
 	Reset();
 
-	m_ox = m_oy = 1;
-
 	m_wa = 0;
 	m_wt = 0;
-
-	m_light = vec3f(0.5, 0.5, 1);
 
 	m_bsel = false;
 
@@ -352,13 +337,9 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_bshift = false;
 	m_bctrl = false;
 
-	m_btooltip = false;
-
 	m_bpick = false;
 
 	m_coord = COORD_GLOBAL;
-
-	setMouseTracking(true);
 
 	m_showPlaneCut = false;
 	m_planeCutMode = Planecut_Mode::PLANECUT;
@@ -374,6 +355,8 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	// attach the 3D cursor to this view
 	GLCursor::AttachToView(this);
 
+	m_recorder.AttachToView(this);
+
 	m_showContextMenu = true;
 
 	m_ballocDefaultWidgets = true;
@@ -384,10 +367,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : QOpenGLWidget(parent), m_
 	m_ptriad = nullptr;
 	m_pframe = nullptr;
 	m_legend = nullptr;
-
-	m_video       = nullptr;
-	m_videoMode   = VIDEO_STOPPED;
-	m_videoFormat = GL_RGB;
 }
 
 CGLView::~CGLView()
@@ -416,10 +395,10 @@ CGLDocument* CGLView::GetDocument()
 
 void CGLView::UpdateCamera(bool hitCameraTarget)
 {
-	CPostDocument* doc = m_pWnd->GetPostDocument();
-	if (doc && doc->IsValid())
+	CGLScene* scene = GetActiveScene();
+	if (scene)
 	{
-		CGLCamera& cam = doc->GetView()->GetCamera();
+		CGLCamera& cam = scene->GetCamera();
 		cam.Update(hitCameraTarget);
 	}
 }
@@ -432,13 +411,13 @@ void CGLView::resizeGL(int w, int h)
 
 void CGLView::changeViewMode(View_Mode vm)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
 	SetViewMode(vm);
 
 	// switch to ortho view if we're not in it
-	bool bortho = doc->GetView()->OrhographicProjection();
+	bool bortho = scene->GetView().OrhographicProjection();
 	if (bortho == false)
 	{
 		m_pWnd->toggleOrtho();
@@ -575,6 +554,9 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
 
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
 	bool bshift = (ev->modifiers() & Qt::ShiftModifier   ? true : false);
 	bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
 	bool balt   = (ev->modifiers() & Qt::AltModifier     ? true : false);
@@ -672,7 +654,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 		else if ((but2 || (but3 && balt)) && !m_bsel)
 		{
 			vec3d r = vec3d(-(double)(x - m_x1), (double)(y - m_y1), 0.f);
-			PanView(r);
+			cam.PanView(r);
 			repaint();
 		}
 		else if (but3 && !m_bsel)
@@ -750,7 +732,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 				m_rg += dr;
 				if (bctrl)
 				{
-					double g = GetGridScale();
+					double g = scene->GetGridScale();
 					vec3d rt;
 					rt.x = g * ((int)(m_rg.x / g));
 					rt.y = g * ((int)(m_rg.y / g));
@@ -821,7 +803,7 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			m_sa *= df;
 			if (bctrl)
 			{
-				double g = GetGridScale();
+				double g = scene->GetGridScale();
 				double st;
 				st = g*((int)((m_sa - 1) / g)) + 1;
 
@@ -1112,13 +1094,13 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 void CGLView::wheelEvent(QWheelEvent* ev)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetView().GetCamera();
 
-    Qt::KeyboardModifiers key = ev->modifiers();
-    bool balt   = (key & Qt::AltModifier);
+	Qt::KeyboardModifiers key = ev->modifiers();
+	bool balt   = (key & Qt::AltModifier);
 	Qt::MouseEventSource eventSource = ev->source();
 	if (eventSource == Qt::MouseEventSource::MouseEventNotSynthesized)
 	{
@@ -1160,7 +1142,7 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 				int dx = ev->pixelDelta().x();
 				int dy = ev->pixelDelta().y();
 				vec3d r = vec3d(-dx, dy, 0.f);
-				PanView(r);
+				cam.PanView(r);
 
 				repaint();
 
@@ -1175,10 +1157,10 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 
 bool CGLView::gestureEvent(QNativeGestureEvent* ev)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return true;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return true;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetView().GetCamera();
 
     if (ev->gestureType() == Qt::ZoomNativeGesture) {
         if (ev->value() < 0) {
@@ -1208,70 +1190,9 @@ bool CGLView::event(QEvent* event)
 
 void CGLView::initializeGL()
 {
-	GLfloat amb1[] = { .09f, .09f, .09f, 1.f };
-	GLfloat dif1[] = { .8f, .8f, .8f, 1.f };
-
-	//	GLfloat amb2[] = {.0f, .0f, .0f, 1.f};
-	//	GLfloat dif2[] = {.3f, .3f, .4f, 1.f};
-
-	if (initGlew == false)
-	{
-		GLenum err = glewInit();
-		if (err != GLEW_OK)
-		{
-			const char* szerr = (const char*)glewGetErrorString(err);
-			assert(err == GLEW_OK);
-		}
-		initGlew = true;
-	}
-
-	glEnable(GL_DEPTH_TEST);
-	//	glEnable(GL_CULL_FACE);
-	glFrontFace(GL_CCW);
-	glDepthFunc(GL_LEQUAL);
-
-	//	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	//	glShadeModel(GL_FLAT);
-
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-	glLineWidth(1.5f);
-
-	// enable lighting and set default options
-	glEnable(GL_LIGHTING);
-	glEnable(GL_NORMALIZE);
-
-	glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, 1);
-
-	glEnable(GL_LIGHT0);
-	glLightfv(GL_LIGHT0, GL_AMBIENT, amb1);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, dif1);
-
-	glEnable(GL_POLYGON_OFFSET_FILL);
-
-	//	glEnable(GL_LIGHT1);
-	//	glLightfv(GL_LIGHT1, GL_AMBIENT, amb2);
-	//	glLightfv(GL_LIGHT1, GL_DIFFUSE, dif2);
-
-	// enable color tracking for diffuse color of materials
-//	glEnable(GL_COLOR_MATERIAL);
-	glColorMaterial(GL_FRONT_AND_BACK, GL_AMBIENT_AND_DIFFUSE);
-
-	// set the texture parameters
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+	CGLSceneView::initializeGL();
 
 	glPolygonStipple(poly_mask);
-
-	glEnable(GL_LINE_SMOOTH);
-	glHint(GL_LINE_SMOOTH_HINT, GL_NICEST);
-
-	glPointSize(7.0f);
-	glEnable(GL_POINT_SMOOTH);
-	glHint(GL_POINT_SMOOTH_HINT, GL_NICEST);
 
 	if (m_ballocDefaultWidgets)
 	{
@@ -1319,7 +1240,6 @@ void CGLView::Reset()
 	repaint();
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::UpdateWidgets(bool bposition)
 {
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
@@ -1354,7 +1274,6 @@ void CGLView::UpdateWidgets(bool bposition)
 	}
 }
 
-//-----------------------------------------------------------------------------
 bool CGLView::isTitleVisible() const
 {
 	return (m_ptitle ? m_ptitle->visible() : false);
@@ -1383,7 +1302,6 @@ void CGLView::showSubtitle(bool b)
 	}
 }
 
-//-----------------------------------------------------------------------------
 QImage CGLView::CaptureScreen()
 {
 	if (m_pframe && m_pframe->visible())
@@ -1391,141 +1309,31 @@ QImage CGLView::CaptureScreen()
 		QImage im = grabFramebuffer();
 
 		// crop based on the capture frame
-		double dpr = m_pWnd->devicePixelRatio();
+		double dpr = devicePixelRatio();
 		return im.copy((int)(dpr*m_pframe->x()), (int)(dpr*m_pframe->y()), (int)(dpr*m_pframe->w()), (int)(dpr*m_pframe->h()));
 	}
 	else return grabFramebuffer();
 }
 
-
-bool CGLView::NewAnimation(const char* szfile, CAnimation* video, GLenum fmt)
-{
-	m_video = video;
-	SetVideoFormat(fmt);
-
-	// get the width/height of the animation
-	int cx = width();
-	int cy = height();
-	if (m_pframe && m_pframe->visible())
-	{
-		double dpr = m_pWnd->devicePixelRatio();
-		cx = (int) (dpr*m_pframe->w());
-		cy = (int) (dpr*m_pframe->h());
-	}
-
-	// get the frame rate
-	float fps = 10.f;
-	if (m_pWnd->GetPostDocument()) fps = m_pWnd->GetPostDocument()->GetTimeSettings().m_fps;
-	if (fps == 0.f) fps = 10.f;
-
-	// create the animation
-	if (m_video->Create(szfile, cx, cy, fps) == false)
-	{
-		delete m_video;
-		m_video = nullptr;
-		m_videoMode = VIDEO_STOPPED;
-	}
-	else
-	{
-		// lock the frame
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
-
-		// set the animation mode to paused
-		m_videoMode = VIDEO_STOPPED;
-	}
-
-	return (m_video != 0);
-}
-
-bool CGLView::HasRecording() const
-{
-	return (m_video != 0);
-}
-
-VIDEO_MODE CGLView::RecordingMode() const
-{
-	return m_videoMode;
-}
-
-void CGLView::StartAnimation()
-{
-	if (m_video)
-	{
-		// set the animation mode to recording
-		m_videoMode = VIDEO_RECORDING;
-
-		// lock the frame
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::LOCKED);
-		repaint();
-	}
-}
-
-void CGLView::StopAnimation()
-{
-	if (m_video)
-	{
-		// stop the animation
-		m_videoMode = VIDEO_STOPPED;
-
-		// get the nr of frames before we close
-		int nframes = m_video->Frames();
-
-		// close the stream
-		m_video->Close();
-
-		// delete the object
-		delete m_video;
-		m_video = nullptr;
-
-		// say something if frames is 0. 
-		if (nframes == 0)
-		{
-			QMessageBox::warning(this, "FEBio Studio", "This animation contains no frames. Only an empty video file was saved.");
-		}
-
-		// unlock the frame
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::FREE);
-
-		repaint();
-	}
-}
-
-void CGLView::PauseAnimation()
-{
-	if (m_video)
-	{
-		// pause the recording
-		m_videoMode = VIDEO_PAUSED;
-		if (m_pframe) m_pframe->SetState(GLSafeFrame::FIXED_SIZE);
-		repaint();
-	}
-}
-
-//-----------------------------------------------------------------------------
 void CGLView::repaintEvent()
 {
 	repaint();
 }
 
-void CGLView::paintGL()
+void CGLView::RenderScene()
 {
 	time_point<steady_clock> startTime;
 	startTime = steady_clock::now();
 
-	// Get the current document
-	CGLDocument* pdoc = GetDocument();
-	if (pdoc == nullptr)
-	{
-		glClearColor(.2f, .2f, .2f, 1.f);
-		glClear(GL_COLOR_BUFFER_BIT);
-		return;
-	}
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
 	GLViewSettings& view = GetViewSettings();
 
+	CGLDocument* pdoc = GetDocument();
 	int nitem = pdoc->GetItemMode();
 
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetView().GetCamera();
 	cam.SetOrthoProjection(GetView()->OrhographicProjection());
 
 	CGLContext& rc = m_rc;
@@ -1533,18 +1341,11 @@ void CGLView::paintGL()
 	rc.m_cam = &cam;
 	rc.m_settings = view;
 
-	// prepare for rendering
-	PrepScene();
-
-	// render the backgound
-	RenderBackground();
+	// position the camera
+	PositionCamera();
 
 	// render the active scene
-	CGLScene* scene = pdoc->GetScene();
 	if (scene) scene->Render(rc);
-
-	// render the grid
-	if (view.m_bgrid && (m_pWnd->GetModelDocument())) m_grid.Render(m_rc);
 
 	// render the image data
 	RenderImageData();
@@ -1577,9 +1378,6 @@ void CGLView::paintGL()
 
 	// render the pivot
 	RenderPivot();
-
-	// render the tooltip
-	if (m_btooltip) RenderTooltip(m_xp, m_yp);
 
 	// render selection
 	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
@@ -1677,28 +1475,18 @@ void CGLView::paintGL()
 
 	painter.end();
 
-	if (m_videoMode != VIDEO_STOPPED)
-	{
-		glPushAttrib(GL_ENABLE_BIT);
-		glDisable(GL_DEPTH_TEST);
-		glDisable(GL_LIGHTING);
-		int x = width() - 200;
-		int y = height() - 40;
-		glPopAttrib();
-	}
-
-	if ((m_videoMode == VIDEO_RECORDING) && (m_video != 0))
+	if (m_recorder.IsRecording())
 	{
 		glFlush();
 		QImage im = CaptureScreen();
-		if (m_video->Write(im) == false)
+		if (m_recorder.AddFrame(im) == false)
 		{
-			StopAnimation();
+			m_recorder.Stop();
 			QMessageBox::critical(this, "FEBio Studio", "An error occurred while writing frame to video stream.");
 		}
 	}
 
-	if ((m_videoMode == VIDEO_PAUSED) && (m_video != 0))
+	if (m_recorder.IsPaused())
 	{
 		QPainter painter(this);
 		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
@@ -1739,7 +1527,6 @@ void CGLView::paintGL()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::Render3DCursor(const vec3d& r, double R)
 {
 	GLViewTransform transform(this);
@@ -1780,74 +1567,12 @@ void CGLView::Render3DCursor(const vec3d& r, double R)
 	glPopAttrib();
 }
 
-//-----------------------------------------------------------------------------
-// get device pixel ration
-double CGLView::GetDevicePixelRatio() { return m_pWnd->devicePixelRatio(); }
-
 QPoint CGLView::DeviceToPhysical(int x, int y)
 {
-	double dpr = m_pWnd->devicePixelRatio();
+	double dpr = devicePixelRatio();
 	return QPoint((int)(dpr*x), m_viewport[3] - (int)(dpr * y));
 }
 
-//-----------------------------------------------------------------------------
-// setup the projection matrix
-void CGLView::SetupProjection()
-{
-	// set up the projection matrix
-	glMatrixMode(GL_PROJECTION);
-	glLoadIdentity();
-
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
-
-	BOX box;
-
-    CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-	if(mdoc)
-    {
-        box = mdoc->GetModelBox();
-    }
-
-	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetDocument());
-    if (postDoc && postDoc->IsValid())
-	{
-		box = postDoc->GetPostObject()->GetBoundingBox();
-	}
-
-	CGView& view = *doc->GetView();
-	CGLCamera& cam = view.GetCamera();
-
-	double R = box.Radius();
-	GLViewSettings& vs = GetViewSettings();
-
-	vec3d p = cam.GlobalPosition();
-	vec3d c = box.Center();
-	double L = (c - p).Length();
-
-	view.m_ffar = (L + R) * 2;
-	view.m_fnear = 0.01f*view.m_ffar;
-
-	double D = 0.5*cam.GetFinalTargetDistance();
-	if ((D > 0) && (D < view.m_fnear)) view.m_fnear = D;
-
-	if (height() == 0) view.m_ar = 1; view.m_ar = (GLfloat)width() / (GLfloat)height();
-
-	// set up projection matrix
-	if (view.m_bortho)
-	{
-		GLdouble f = 0.35*cam.GetTargetDistance();
-		m_ox = f*view.m_ar;
-		m_oy = f;
-		glOrtho(-m_ox, m_ox, -m_oy, m_oy, view.m_fnear, view.m_ffar);
-	}
-	else
-	{
-		gluPerspective(view.m_fov, view.m_ar, view.m_fnear, view.m_ffar);
-	}
-}
-
-//-----------------------------------------------------------------------------
 inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
 {
 	vec3d a;
@@ -1857,14 +1582,13 @@ inline vec3d mult_matrix(GLfloat m[4][4], vec3d r)
 	return a;
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::PositionCamera()
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
 	// position the camera
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetView().GetCamera();
 	cam.Transform();
 
 	CPostDocument* pdoc = m_pWnd->GetPostDocument();
@@ -1927,7 +1651,6 @@ void CGLView::PositionCamera()
 	else m_rc.m_btrack = false;
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::SetTrackingData(int n[3])
 {
 	// store the nodes to track
@@ -1965,7 +1688,6 @@ void CGLView::SetTrackingData(int n[3])
 	m_rot0 = Q;
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::TrackSelection(bool b)
 {
 	if (b == false)
@@ -2012,125 +1734,10 @@ void CGLView::TrackSelection(bool b)
 	}
 }
 
-//-----------------------------------------------------------------------------
-void CGLView::PrepScene()
-{
-	GLfloat specular[] = { 1.f, 1.f, 1.f, 1.f };
-
-	// store the viewport dimensions
-	glGetIntegerv(GL_VIEWPORT, m_viewport);
-
-	glEnable(GL_DEPTH_TEST);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-	// setup projection
-	SetupProjection();
-
-	// reset the modelview matrix mode
-	glMatrixMode(GL_MODELVIEW);
-	glLoadIdentity();
-
-	// clear the model
-	glClearColor(.0f, .0f, .0f, 1.f);
-	glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT);
-
-	// set material properties
-	//	glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, ambient);
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
-	//	glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emission);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 32);
-
-	GLViewSettings& view = GetViewSettings();
-
-	// set the line width
-	glLineWidth(view.m_line_size);
-
-	// turn on/off lighting
-	if (view.m_bLighting)
-		glEnable(GL_LIGHTING);
-	else
-		glDisable(GL_LIGHTING);
-
-	GLfloat d = view.m_diffuse;
-	GLfloat dv[4] = { d, d, d, 1.f };
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, dv);
-
-	// set the ambient lighting intensity
-	GLfloat f = view.m_ambient;
-	GLfloat av[4] = { f, f, f, 1.f };
-	glLightfv(GL_LIGHT0, GL_AMBIENT, av);
-
-	// position the light
-	vec3f lp = GetLightPosition(); lp.Normalize();
-	GLfloat fv[4] = { 0 };
-	fv[0] = lp.x; fv[1] = lp.y; fv[2] = lp.z;
-	glLightfv(GL_LIGHT0, GL_POSITION, fv);
-
-	// position the camera
-	PositionCamera();
-}
-
-CGView* CGLView::GetView()
-{
-	CGLDocument* doc = GetDocument();
-	if (doc) return doc->GetView();
-	return nullptr;
-}
-
-CGLCamera* CGLView::GetCamera()
-{
-	CGLDocument* doc = GetDocument();
-	if (doc) return &doc->GetView()->GetCamera();
-	return nullptr;
-}
-
 void CGLView::ShowMeshData(bool b)
 {
 	GetViewSettings().m_bcontour = b;
 	delete m_planeCut; m_planeCut = nullptr;
-}
-
-void CGLView::RenderTooltip(int x, int y)
-{
-/*	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
-	char sz[] = "Hello, world";
-
-	gl_font(FL_HELVETICA, 12);
-
-	int nw = (int)fl_width(sz) + 10;
-	int nh = (int)fl_height() + 10;
-
-	glColor3ub(255, 255, 128);
-	gl_rectf(x, y, nw, nh);
-
-	glColor3ub(0, 0, 0);
-	gl_rect(x, y, nw, nh);
-
-
-	gl_color(FL_BLACK);
-	gl_draw("Hello, world", x, y, nw, nh, FL_ALIGN_CENTER);
-
-	glPopAttrib();
-
-	glPopMatrix();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-*/
 }
 
 void SetModelView(GObject* po)
@@ -2180,62 +1787,6 @@ void CGLView::ClearCommandStack()
 int CGLView::GetMeshMode()
 {
 	return m_pWnd->GetMeshMode();
-}
-
-void CGLView::RenderBackground()
-{
-	// set up the viewport
-	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D(-1, 1, -1, 1);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-	glDisable(GL_DEPTH_TEST);
-	glDisable(GL_LIGHTING);
-	glDisable(GL_CULL_FACE);
-
-	GLViewSettings& view = GetViewSettings();
-
-	GLColor c[4];
-
-	switch (view.m_nbgstyle)
-	{
-	case BG_COLOR1:
-		c[0] = c[1] = c[2] = c[3] = view.m_col1; break;
-	case BG_COLOR2:
-		c[0] = c[1] = c[2] = c[3] = view.m_col2; break;
-	case BG_HORIZONTAL:
-		c[0] = c[1] = view.m_col2;
-		c[2] = c[3] = view.m_col1;
-		break;
-	case BG_VERTICAL:
-		c[0] = c[3] = view.m_col1;
-		c[1] = c[2] = view.m_col2;
-		break;
-	}
-
-	glBegin(GL_QUADS);
-	{
-		glColor3ub(c[0].r, c[0].g, c[0].b); glVertex2f(-1, -1);
-		glColor3ub(c[1].r, c[1].g, c[1].b); glVertex2f(1, -1);
-		glColor3ub(c[2].r, c[2].g, c[2].b); glVertex2f(1, 1);
-		glColor3ub(c[3].r, c[3].g, c[3].b); glVertex2f(-1, 1);
-	}
-	glEnd();
-
-	glPopAttrib();
-
-	glPopMatrix();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-
-	glMatrixMode(GL_MODELVIEW);
 }
 
 bool CGLView::TrackModeActive()
@@ -2291,48 +1842,42 @@ void CGLView::RenderImageData()
 	CGLDocument* doc = GetDocument();
 	if (doc->IsValid() == false) return;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	for (int i = 0; i < doc->ImageModels(); ++i)
+	{
+		CImageModel* img = doc->GetImageModel(i);
+		BOX box = img->GetBoundingBox();
+		vec3d r0 = box.r0();
+		vec3d r1 = box.r1();
+		glPushMatrix();
+		{
+			glTranslated(r0.x, r0.y, r0.z);
 
-	GLViewSettings& vs = GetViewSettings();
+			mat3d Q = img->GetOrientation();
 
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-	cam.Transform();
+			double q[16] = {
+				Q(0,0), Q(1,0), Q(2,0), 0.0,
+				Q(0,1), Q(1,1), Q(2,1), 0.0,
+				Q(0,2), Q(1,2), Q(2,2), 0.0,
+				0.0, 0.0, 0.0, 1.0
+			};
+			glMultMatrixd(q);
 
-    if(doc->GetView()->imgView == CGView::MODEL_VIEW)
-    {
-        for (int i = 0; i < doc->ImageModels(); ++i)
-        {
-            CImageModel* img = doc->GetImageModel(i);
-            BOX box = img->GetBoundingBox();
-    		// GLColor c = img->GetColor();
-            GLColor c(255, 128, 128);
-            glColor3ub(c.r, c.g, c.b);
-            if (img->ShowBox()) glx::renderBox(box, false);
-            img->Render(m_rc);
-        }
-    }
-    else if(doc->GetView()->imgView == CGView::SLICE_VIEW)
-    {
-        CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
+			BOX localBox(vec3d(0, 0, 0), r1 - r0);
+			GLColor c(255, 128, 128);
+			glColor3ub(c.r, c.g, c.b);
 
-        CImageModel* img =  sliceView->GetImageModel();
-        if(img)
-        {
-            BOX box = img->GetBoundingBox();
-            GLColor c(255, 128, 128);
-            glColor3ub(c.r, c.g, c.b);
-            
-            sliceView->RenderSlicers(m_rc);
+			// If we are in the multi-panel view, throw in the slices as well
+			if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+			{
+				CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
+				sliceView->RenderSlicers(m_rc);
+			}
 
-            if (img->ShowBox()) glx::renderBox(box, false);
-            img->Render(m_rc);
-        }
-    }
-
-	glMatrixMode(GL_MODELVIEW);
-	glPopMatrix();
+			if (img->ShowBox()) glx::renderBox(localBox, false);
+			img->Render(m_rc);
+		}
+		glPopMatrix();
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -2483,33 +2028,7 @@ void CGLView::RenderBrush()
 	glPopAttrib();
 }
 
-void CGLView::ScreenToView(int x, int y, double& fx, double& fy)
-{
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
-
-	double W = (double)width();
-	double H = (double)height();
-
-	if (H == 0.f) H = 0.001f;
-
-	CGView& view = *doc->GetView();
-
-	double ar = W / H;
-
-	double fh = 2.f*view.m_fnear*(double)tan(0.5*view.m_fov*PI / 180);
-	double fw = fh * ar;
-
-	fx = -fw / 2 + x*fw / W;
-	fy = fh / 2 - y*fh / H;
-}
-
-vec3d CGLView::WorldToPlane(vec3d r)
-{
-	return m_grid.m_q.Inverse()*(r - m_grid.m_o);
-}
-
-void CGLView::showSafeFrame(bool b)
+void CGLView::ShowSafeFrame(bool b)
 {
 	if (m_pframe)
 	{
@@ -2520,15 +2039,14 @@ void CGLView::showSafeFrame(bool b)
 
 void CGLView::SetViewMode(View_Mode n)
 {
-    // Get the document
-	CGLDocument* pdoc = GetDocument();
-	if (pdoc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
-    GLViewSettings& view = GetViewSettings();
-    int c = view.m_nconv;
+	GLViewSettings& view = GetViewSettings();
+	int c = view.m_nconv;
 	quatd q;
 
-    switch (c) {
+	switch (c) {
         case CONV_FR_XZ:
         {
             // set the plane orientation
@@ -2547,7 +2065,7 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
             m_nview = n;
-            m_grid.m_q = q;
+            scene->SetGridOrientation(q);
             
             // set the camera orientation
             switch (n)
@@ -2581,7 +2099,7 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
             m_nview = n;
-            m_grid.m_q = q;
+			scene->SetGridOrientation(q);
             
             // set the camera orientation
             switch (n)
@@ -2615,7 +2133,7 @@ void CGLView::SetViewMode(View_Mode n)
             }
             
             m_nview = n;
-            m_grid.m_q = q;
+			scene->SetGridOrientation(q);
             
             // set the camera orientation
             switch (n)
@@ -2633,7 +2151,7 @@ void CGLView::SetViewMode(View_Mode n)
             break;
     }
 
-	pdoc->GetView()->GetCamera().SetOrientation(q);
+	scene->GetCamera().SetOrientation(q);
 
 	// set the camera target
 	//	m_Cam.SetTarget(vec3d(0,0,0));
@@ -2643,22 +2161,14 @@ void CGLView::SetViewMode(View_Mode n)
 
 void CGLView::TogglePerspective(bool b)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
-	CGView& view = *doc->GetView();
+	CGView& view = scene->GetView();
 	view.m_bortho = b;
 	repaint();
 }
 
-void CGLView::ToggleDisplayNormals()
-{
-	GLViewSettings& view = GetViewSettings();
-	view.m_bnorm = !view.m_bnorm;
-	repaint();
-}
-
-//-----------------------------------------------------------------------------
 void CGLView::AddRegionPoint(int x, int y)
 {
 	if (m_pl.empty()) m_pl.push_back(pair<int, int>(x, y));
@@ -2669,7 +2179,6 @@ void CGLView::AddRegionPoint(int x, int y)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::AddDecoration(GDecoration* deco)
 {
 	if (deco == nullptr) return;
@@ -2681,7 +2190,6 @@ void CGLView::AddDecoration(GDecoration* deco)
 	m_deco.push_back(deco);
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::RemoveDecoration(GDecoration* deco)
 {
 	if (deco == nullptr) return;
@@ -2695,7 +2203,6 @@ void CGLView::RemoveDecoration(GDecoration* deco)
 	}
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::ShowPlaneCut(bool b)
 {
 	m_showPlaneCut = b;
@@ -2703,13 +2210,11 @@ void CGLView::ShowPlaneCut(bool b)
 	update();
 }
 
-//-----------------------------------------------------------------------------
 bool CGLView::ShowPlaneCut() const
 {
 	return m_showPlaneCut;
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::SetPlaneCutMode(int nmode)
 {
 	m_planeCutMode = nmode;
@@ -2717,7 +2222,6 @@ void CGLView::SetPlaneCutMode(int nmode)
 	update();
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::SetPlaneCut(double d[4])
 {
 	CModelDocument* doc = m_pWnd->GetModelDocument();
@@ -2760,23 +2264,6 @@ void CGLView::SetPlaneCut(double d[4])
 	update();
 }
 
-//-----------------------------------------------------------------------------
-void CGLView::PanView(vec3d r)
-{
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
-
-	CGLCamera& cam = doc->GetView()->GetCamera();
-
-	double f = 0.001f*(double)cam.GetFinalTargetDistance();
-	r.x *= f;
-	r.y *= f;
-
-	cam.Truck(r);
-}
-
-
-//-----------------------------------------------------------------------------
 // Select an arm of the pivot manipulator
 bool CGLView::SelectPivot(int x, int y)
 {
@@ -2921,7 +2408,13 @@ void CGLView::HighlightNode(int x, int y)
 	else GLHighlighter::SetActiveItem(nullptr);
 }
 
-//-----------------------------------------------------------------------------
+CGLScene* CGLView::GetActiveScene()
+{
+	CGLDocument* doc = m_pWnd->GetGLDocument();
+	if (doc) return doc->GetScene();
+	return nullptr;
+}
+
 GObject* CGLView::GetActiveObject()
 {
 	return m_pWnd->GetActiveObject();
@@ -2935,6 +2428,9 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	if (success) *success = false;
 	CGLDocument* doc = GetDocument();
 	if (doc == nullptr) return vec3d(0,0,0);
+
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return vec3d(0, 0, 0);
 
 	GLViewSettings& view = GetViewSettings();
 
@@ -2983,7 +2479,8 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	else
 	{
 		// pick a point on the grid
-		vec3d r = m_grid.Intersect(ray.origin, ray.direction, view.m_snapToGrid);
+		GGrid& grid = scene->GetGrid();
+		vec3d r = grid.Intersect(ray.origin, ray.direction, view.m_snapToGrid);
 		if (success) *success = true;
 
 		vec3d p = transform.WorldToScreen(r);
@@ -2994,7 +2491,6 @@ vec3d CGLView::PickPoint(int x, int y, bool* success)
 	return vec3d(0,0,0);
 }
 
-//-----------------------------------------------------------------------------
 vec3d CGLView::GetPickPosition()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -3002,7 +2498,6 @@ vec3d CGLView::GetPickPosition()
 	return Get3DCursor();
 }
 
-//-----------------------------------------------------------------------------
 vec3d CGLView::GetPivotPosition()
 {
 	if (m_bpivot) return m_pv;
@@ -3025,14 +2520,12 @@ vec3d CGLView::GetPivotPosition()
 	}
 }
 
-//-----------------------------------------------------------------------------
 void CGLView::SetPivot(const vec3d& r)
 { 
 	m_pv = r;
 	repaint();
 }
 
-//-----------------------------------------------------------------------------
 quatd CGLView::GetPivotRotation()
 {
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
@@ -3045,85 +2538,44 @@ quatd CGLView::GetPivotRotation()
 	return quatd(0.0, 0.0, 0.0, 1.0);
 }
 
-//-----------------------------------------------------------------
 // this function will only adjust the camera if the currently
 // selected object is too close.
 void CGLView::ZoomSelection(bool forceZoom)
 {
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+	// get the selection's bounding box
+	BOX box = scene->GetSelectionBox();
+	if (box.IsValid())
 	{
-		// get the current selection
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		if (mdoc == nullptr) return;
+		double f = box.GetMaxExtent();
+		if (f < 1.0e-8) f = 1.0;
 
-		FESelection* ps = mdoc->GetCurrentSelection();
+		CGLCamera& cam = scene->GetCamera();
 
-		// zoom out on current selection
-		if (ps && ps->Size() != 0)
+		double g = cam.GetFinalTargetDistance();
+		if ((forceZoom == true) || (g < 2.0*f))
 		{
-			// get the selection's bounding box
-			BOX box = ps->GetBoundingBox();
-
-			double f = box.GetMaxExtent();
-			if (f == 0) f = 1;
-
-			CGLCamera& cam = mdoc->GetView()->GetCamera();
-
-			double g = cam.GetFinalTargetDistance();
-			if ((forceZoom == true) || (g < 2.0*f))
-			{
-				cam.SetTarget(box.Center());
-				cam.SetTargetDistance(2.0*f);
-				repaint();
-			}
-		}
-		else ZoomExtents();
-	}
-	else
-	{
-		if (postDoc->IsValid())
-		{
-			BOX box = postDoc->GetSelectionBox();
-
-			if (box.IsValid() == false)
-			{
-				ZoomExtents();
-			}
-			else
-			{
-				if (box.Radius() < 1e-8f)
-				{
-					float L = 1.f;
-					BOX bb = postDoc->GetBoundingBox();
-					float R = bb.GetMaxExtent();
-					if (R < 1e-8f) L = 1.f; else L = 0.05f*R;
-
-					box.InflateTo(L, L, L);
-				}
-
-				CGLCamera& cam = postDoc->GetView()->GetCamera();
-				cam.SetTarget(box.Center());
-				cam.SetTargetDistance(3.f*box.Radius());
-
-				repaint();
-			}
+			cam.SetTarget(box.Center());
+			cam.SetTargetDistance(2.0*f);
+			repaint();
 		}
 	}
+	else ZoomExtents();
 }
 
-//-----------------------------------------------------------------
 void CGLView::ZoomToObject(GObject *po)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
 	BOX box = po->GetGlobalBox();
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -3136,13 +2588,13 @@ void CGLView::ZoomToObject(GObject *po)
 //! zoom in on a box
 void CGLView::ZoomTo(const BOX& box)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -3150,32 +2602,17 @@ void CGLView::ZoomTo(const BOX& box)
 	repaint();
 }
 
-//-----------------------------------------------------------------
 void CGLView::ZoomExtents(bool banimate)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
-	BOX box;
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
-	{
-		CModelDocument* mdoc = m_pWnd->GetModelDocument();
-		if (mdoc == 0) return;
-		box = mdoc->GetModelBox();
-	}
-	else
-	{
-		CPostObject* po = postDoc->GetPostObject();
-		if (po == nullptr) return;
-
-		box = po->GetBoundingBox();
-	}
+	BOX box = scene->GetBoundingBox();
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -3398,7 +2835,7 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 
-	double dpr = GetDevicePixelRatio();
+	double dpr = devicePixelRatio();
 	for (int i = 0; i<nsel; i++)
 		{
 			glBegin(GL_POINTS);
@@ -3668,6 +3105,31 @@ GMesh* CGLView::BuildPlaneCut(FSModel& fem)
 	planeCut->Update();
 
 	return planeCut;
+}
+
+QSize CGLView::GetSafeFrameSize() const
+{
+	int cx = width();
+	int cy = height();
+	if (m_pframe && m_pframe->visible())
+	{
+		double dpr = devicePixelRatio();
+		cx = (int)(dpr * m_pframe->w());
+		cy = (int)(dpr * m_pframe->h());
+	}
+	return QSize(cx, cy);
+}
+
+void CGLView::LockSafeFrame()
+{
+	if (m_pframe) m_pframe->SetState(GLSafeFrame::LOCKED);
+	repaint();
+}
+
+void CGLView::UnlockSafeFrame()
+{
+	if (m_pframe) m_pframe->SetState(GLSafeFrame::FREE);
+	repaint();
 }
 
 void CGLView::UpdatePlaneCut(bool breset)

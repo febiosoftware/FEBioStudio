@@ -24,37 +24,63 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FSCore/box.h>
-#include <GLLib/GView.h>
-#include "GGrid.h"
+#include <QOpenGLWidget>
+#include <GLLib/GLViewSettings.h>
+#include <FSCore/math3d.h>
 
-class CGLContext;
+class CGLScene;
+class CGView;
+class CGLCamera;
 
-class CGLScene
+//! This class is used for rendering CGLScenes
+class CGLSceneView : public QOpenGLWidget
 {
-public:
-	CGLScene();
-	virtual ~CGLScene();
-
-	CGView& GetView();
-
-	virtual void Render(CGLContext& rc) = 0;
-
-	// get the bounding box of the entire scene
-	virtual BOX GetBoundingBox() = 0;
-
-	// get the bounding box of the current selection
-	virtual BOX GetSelectionBox() = 0;
-
-	CGLCamera& GetCamera() { return m_view.GetCamera(); }
+	Q_OBJECT
 
 public:
-	GGrid& GetGrid() { return m_grid; }
-	double GetGridScale() { return m_grid.GetScale(); }
-	quatd GetGridOrientation() { return m_grid.m_q; }
-	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
+	CGLSceneView(QWidget* parent = nullptr);
+
+	GLViewSettings& GetViewSettings() { return m_view; }
+
+	virtual CGLScene* GetActiveScene();
+	virtual void RenderScene();
+
+	CGView* GetView();
+	CGLCamera* GetCamera();
+
+	//! Setup the projection matrix
+	void SetupProjection();
+
+	void GetViewport(int vp[4]) const;
+
+	void ScreenToView(int x, int y, double& fx, double& fy);
+
+public: // lighting
+
+	vec3f GetLightPosition() { return m_light; }
+	void SetLightPosition(vec3f lp) { m_light = lp; }
 
 protected:
-	CGView	m_view;
-	GGrid	m_grid;		// the grid object
+	void initializeGL() override;
+	void paintGL() override;
+
+	void PrepScene();
+
+	void RenderBackground();
+
+private:
+	void mousePressEvent(QMouseEvent* ev) override;
+	void mouseMoveEvent(QMouseEvent* ev) override;
+	void mouseReleaseEvent(QMouseEvent* ev) override;
+	void wheelEvent(QWheelEvent* ev) override;
+
+protected:
+	GLViewSettings	m_view;
+	int	m_viewport[4];		//!< store viewport coordinates
+	double	m_ox;
+	double	m_oy;
+
+	QPoint m_prevPos;	//!< last mouse position
+
+	vec3f	m_light;
 };

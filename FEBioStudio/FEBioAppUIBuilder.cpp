@@ -33,9 +33,10 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QTabWidget>
-#include "GLView.h"
+#include "GLSceneView.h"
 #include "InputWidgets.h"
 #include "PlotWidget.h"
+#include "MainWindow.h"
 #include "FEBioAppDocument.h"
 #include "FEBioAppView.h"
 #include <FECore/FEParam.h>
@@ -699,7 +700,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 		} while (!tag.isend());
 	}
 
-	CGLView* pgl = new CGLView(app->GetMainWindow());
+	CGLSceneView* pgl = new CGLSceneView(app->GetMainWindow());
 	pgl->setMinimumSize(QSize(size[0], size[1]));
 	pgl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	playout->addWidget(pgl);

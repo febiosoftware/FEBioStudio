@@ -23,38 +23,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include <FSCore/box.h>
-#include <GLLib/GView.h>
-#include "GGrid.h"
+#include "GLViewer.h"
+#include <QBoxLayout>
+#include "GLView.h"
+#include "GLControlBar.h"
 
-class CGLContext;
-
-class CGLScene
+CGLViewer::CGLViewer(::CMainWindow* wnd)
 {
-public:
-	CGLScene();
-	virtual ~CGLScene();
+	// create the layout for the central widget
+	QVBoxLayout* l = new QVBoxLayout;
+	l->setContentsMargins(0, 0, 0, 0);
 
-	CGView& GetView();
+	// create the GL view
+	glview = new CGLView(wnd); glview->setObjectName("glview");
 
-	virtual void Render(CGLContext& rc) = 0;
+	// create the GL control bar
+	glc = new CGLControlBar(wnd);
+	glc->setObjectName("glbar");
+	glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
 
-	// get the bounding box of the entire scene
-	virtual BOX GetBoundingBox() = 0;
+	// add it all to the layout
+	l->addWidget(glview);
+	l->addWidget(glc);
+	setLayout(l);
 
-	// get the bounding box of the current selection
-	virtual BOX GetSelectionBox() = 0;
-
-	CGLCamera& GetCamera() { return m_view.GetCamera(); }
-
-public:
-	GGrid& GetGrid() { return m_grid; }
-	double GetGridScale() { return m_grid.GetScale(); }
-	quatd GetGridOrientation() { return m_grid.m_q; }
-	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
-
-protected:
-	CGView	m_view;
-	GGrid	m_grid;		// the grid object
-};
+	glc->hide();
+}

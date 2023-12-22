@@ -903,9 +903,9 @@ void FEBioFormat4::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag
 			// read the node numbers
 			tag.value(nf, N);
 
-			// make zero-based
+			// copy to vector
 			vector<int> node(N);
-			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			for (int j = 0; j < N; ++j) node[j] = nf[j];
 			s.m_face.push_back(node);
 
 			++tag;

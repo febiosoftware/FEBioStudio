@@ -186,7 +186,12 @@ void CGLCamera::Pan(const quatd& q)
 	SetOrientation(Q);
 }
 
-//-----------------------------------------------------------------------------
+void CGLCamera::PanView(const vec3d& r)
+{
+	double f = 0.001f * (double)GetFinalTargetDistance();
+	Truck(r*f);
+}
+
 void CGLCamera::Dolly(double f)
 {
 	vec3d dr(0, 0, -f);
@@ -194,8 +199,7 @@ void CGLCamera::Dolly(double f)
 	SetTarget(FinalPosition() + dr);
 }
 
-//-----------------------------------------------------------------------------
-void CGLCamera::Truck(vec3d& v)
+void CGLCamera::Truck(const vec3d& v)
 {
 	vec3d dr(v);
 	m_rot.Target().Inverse().RotateVector(dr);

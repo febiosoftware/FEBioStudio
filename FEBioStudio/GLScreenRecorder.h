@@ -24,37 +24,46 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <FSCore/box.h>
-#include <GLLib/GView.h>
-#include "GGrid.h"
+class CGLView;
 
-class CGLContext;
+class CAnimation;
+class QImage;
 
-class CGLScene
+// Video recording states
+enum class RECORDING_STATE {
+	RECORDING,
+	PAUSED,
+	STOPPED
+};
+
+class GLScreenRecorder
 {
 public:
-	CGLScene();
-	virtual ~CGLScene();
+	GLScreenRecorder();
+	void AttachToView(CGLView* glview);
 
-	CGView& GetView();
+	bool HasRecording() const;
 
-	virtual void Render(CGLContext& rc) = 0;
+	RECORDING_STATE GetRecordingState() const;
 
-	// get the bounding box of the entire scene
-	virtual BOX GetBoundingBox() = 0;
+	void SetVideoFormat(unsigned int fmt);
 
-	// get the bounding box of the current selection
-	virtual BOX GetSelectionBox() = 0;
+	bool SetVideoStream(CAnimation* panim);
 
-	CGLCamera& GetCamera() { return m_view.GetCamera(); }
+	void Start();
+	void Stop();
+	void Pause();
 
-public:
-	GGrid& GetGrid() { return m_grid; }
-	double GetGridScale() { return m_grid.GetScale(); }
-	quatd GetGridOrientation() { return m_grid.m_q; }
-	void SetGridOrientation(const quatd& q) { m_grid.m_q = q; }
+	bool AddFrame(QImage& im);
 
-protected:
-	CGView	m_view;
-	GGrid	m_grid;		// the grid object
+	bool IsRecording() const;
+	bool IsPaused() const;
+	bool IsStopped() const;
+
+private:
+	unsigned int	m_videoFormat;
+	RECORDING_STATE	m_state;
+	CAnimation*		m_video;
+
+	CGLView*	m_glview;
 };

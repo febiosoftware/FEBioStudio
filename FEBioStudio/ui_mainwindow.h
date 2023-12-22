@@ -83,40 +83,11 @@ SOFTWARE.*/
 #include "FEBioJobManager.h"
 #include "XMLDocument.h"
 #include "DlgFiberViz.h"
+#include "GLViewer.h"
 #include "FEBioAppView.h"
 #include <vector>
 
 class QProcess;
-
-class CGLViewer : public QWidget
-{
-public:
-	CGLViewer(::CMainWindow* wnd)
-	{
-		// create the layout for the central widget
-		QVBoxLayout* l = new QVBoxLayout;
-		l->setContentsMargins(0,0,0,0);
-
-		// create the GL view
-		glview = new CGLView(wnd); glview->setObjectName("glview");
-
-		// create the GL control bar
-		glc = new CGLControlBar(wnd);
-		glc->setObjectName("glbar");
-		glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
-
-		// add it all to the layout
-		l->addWidget(glview);
-		l->addWidget(glc);
-		setLayout(l);
-
-		glc->hide();
-	}
-
-public:
-	CGLView*	glview;
-	CGLControlBar* glc;
-};
 
 class CentralStackedWidget : public QStackedWidget
 {

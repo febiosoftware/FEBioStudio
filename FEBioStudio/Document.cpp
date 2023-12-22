@@ -577,19 +577,16 @@ GObject* CGLDocument::GetActiveObject()
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 CGView* CGLDocument::GetView()
 {
-	return &m_view;
+	return &m_scene->GetView();
 }
 
-//-----------------------------------------------------------------------------
 CGLScene* CGLDocument::GetScene()
 {
 	return m_scene;
 }
 
-//-----------------------------------------------------------------------------
 std::string CGLDocument::GetTypeString(FSObject* po)
 {
 	if (po == 0) return "(null)";

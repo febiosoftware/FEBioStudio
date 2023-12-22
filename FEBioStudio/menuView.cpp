@@ -53,7 +53,7 @@ void CMainWindow::on_actionZoomExtents_triggered()
 
 void CMainWindow::on_actionViewCapture_toggled(bool bchecked)
 {
-	GetGLView()->showSafeFrame(bchecked);
+	GetGLView()->ShowSafeFrame(bchecked);
 	RedrawGL();
 }
 

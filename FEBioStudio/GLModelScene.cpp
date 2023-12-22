@@ -72,6 +72,27 @@ CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
 
+BOX CGLModelScene::GetBoundingBox()
+{
+	BOX box;
+	if (m_doc) box = m_doc->GetModelBox();
+	return box;
+}
+
+BOX CGLModelScene::GetSelectionBox()
+{
+	BOX box;
+	if (m_doc)
+	{
+		FESelection* ps = m_doc->GetCurrentSelection();
+		if (ps && ps->Size() != 0)
+		{
+			box = ps->GetBoundingBox();
+		}
+	}
+	return box;
+}
+
 void CGLModelScene::Render(CGLContext& rc)
 {
 	if (m_doc == nullptr) return;
@@ -180,6 +201,9 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	// render the tags
 	if (view.m_bTags) glview->RenderTags();
+
+	// render the grid
+	if (view.m_bgrid ) m_grid.Render(rc);
 }
 
 void TagFaces(GFaceList& faceList, int tag)

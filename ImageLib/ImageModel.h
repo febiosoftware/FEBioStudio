@@ -74,6 +74,8 @@ public:
 
 	void SetBoundingBox(BOX b);
 
+	mat3d GetOrientation();
+
 	bool ShowBox() const;
 
 	void ShowBox(bool b);
@@ -87,8 +89,6 @@ public:
 
     CImageViewSettings* GetViewSettings() { return &viewSettings; }
 
-    double ValueAtGlobalPos(vec3d pos, int channel = 0);
-
 	C3DImage* Get3DImage();
 
 public:
@@ -96,7 +96,6 @@ public:
     bool ExportSITKImage(const std::string& filename);
 
 private:
-	// BOX				m_box;						//!< physical dimensions of image
 	bool			m_showBox;					//!< show box in Graphics View
 	FSObjectList<Post::CGLImageRenderer>	m_render;	//!< image renderers
 	FSObjectList<CImageFilter> m_filters;

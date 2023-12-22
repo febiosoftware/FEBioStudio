@@ -46,6 +46,9 @@ public:
     BOX GetBoundingBox() override;
     void SetBoundingBox(BOX& box) override;
 
+    mat3d GetOrientation() override;
+    void SetOrientation(mat3d& orientation) override;
+
     std::vector<unsigned int> GetSize();
     std::vector<double> GetOrigin();
     std::vector<double> GetSpacing();

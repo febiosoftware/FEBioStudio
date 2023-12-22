@@ -52,11 +52,16 @@ public:
     virtual BOX GetBoundingBox() { return m_box; }
     virtual void SetBoundingBox(BOX& box) { m_box = box; }
 
+    virtual mat3d GetOrientation() { return m_orientation; }
+    virtual void SetOrientation(mat3d& orientation) { m_orientation = orientation; }
+
 	uint8_t& GetByte(int i, int j, int k) { return m_pb[m_cx*(k*m_cy + j) + i]; }
     
     double Value(int i, int j, int k, int channel = 0);
 	double Value(double fx, double fy, int nz, int channel = 0);
 	double Peek(double fx, double fy, double fz, int channel = 0);
+
+    double ValueAtGlobalPos(vec3d pos, int channel = 0);
 
 	void GetSliceX(CImage& im, int n);
 	void GetSliceY(CImage& im, int n);
@@ -104,9 +109,9 @@ protected:
     int     m_pixelType; // pixel representation
 	int		m_bps;	// bytes per sample
 
-    double m_minValue, m_maxValue; 
+    double m_minValue, m_maxValue;
 
-private:
     BOX     m_box; // physical bounds
+    mat3d m_orientation; // rotation matrix
 };
 
