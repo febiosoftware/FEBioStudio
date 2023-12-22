@@ -337,8 +337,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 	m_bshift = false;
 	m_bctrl = false;
 
-	m_btooltip = false;
-
 	m_bpick = false;
 
 	m_coord = COORD_GLOBAL;
@@ -397,10 +395,10 @@ CGLDocument* CGLView::GetDocument()
 
 void CGLView::UpdateCamera(bool hitCameraTarget)
 {
-	CPostDocument* doc = m_pWnd->GetPostDocument();
-	if (doc && doc->IsValid())
+	CGLScene* scene = GetActiveScene();
+	if (scene)
 	{
-		CGLCamera& cam = doc->GetView()->GetCamera();
+		CGLCamera& cam = scene->GetCamera();
 		cam.Update(hitCameraTarget);
 	}
 }
@@ -1381,9 +1379,6 @@ void CGLView::RenderScene()
 	// render the pivot
 	RenderPivot();
 
-	// render the tooltip
-	if (m_btooltip) RenderTooltip(m_xp, m_yp);
-
 	// render selection
 	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
 
@@ -1572,13 +1567,9 @@ void CGLView::Render3DCursor(const vec3d& r, double R)
 	glPopAttrib();
 }
 
-//-----------------------------------------------------------------------------
-// get device pixel ration
-double CGLView::GetDevicePixelRatio() { return m_pWnd->devicePixelRatio(); }
-
 QPoint CGLView::DeviceToPhysical(int x, int y)
 {
-	double dpr = m_pWnd->devicePixelRatio();
+	double dpr = devicePixelRatio();
 	return QPoint((int)(dpr*x), m_viewport[3] - (int)(dpr * y));
 }
 
@@ -1743,66 +1734,10 @@ void CGLView::TrackSelection(bool b)
 	}
 }
 
-CGView* CGLView::GetView()
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene) return &(scene->GetView());
-	else return nullptr;
-}
-
-CGLCamera* CGLView::GetCamera()
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene) return &(scene->GetView().GetCamera());
-	else return nullptr;
-}
-
 void CGLView::ShowMeshData(bool b)
 {
 	GetViewSettings().m_bcontour = b;
 	delete m_planeCut; m_planeCut = nullptr;
-}
-
-void CGLView::RenderTooltip(int x, int y)
-{
-/*	glMatrixMode(GL_PROJECTION);
-	glPushMatrix();
-	glLoadIdentity();
-	gluOrtho2D(0, width(), height(), 0);
-
-	glMatrixMode(GL_MODELVIEW);
-	glPushMatrix();
-	glLoadIdentity();
-
-	glPushAttrib(GL_ENABLE_BIT);
-
-	glDisable(GL_LIGHTING);
-	glDisable(GL_DEPTH_TEST);
-
-	char sz[] = "Hello, world";
-
-	gl_font(FL_HELVETICA, 12);
-
-	int nw = (int)fl_width(sz) + 10;
-	int nh = (int)fl_height() + 10;
-
-	glColor3ub(255, 255, 128);
-	gl_rectf(x, y, nw, nh);
-
-	glColor3ub(0, 0, 0);
-	gl_rect(x, y, nw, nh);
-
-
-	gl_color(FL_BLACK);
-	gl_draw("Hello, world", x, y, nw, nh, FL_ALIGN_CENTER);
-
-	glPopAttrib();
-
-	glPopMatrix();
-
-	glMatrixMode(GL_PROJECTION);
-	glPopMatrix();
-*/
 }
 
 void SetModelView(GObject* po)
@@ -2093,28 +2028,7 @@ void CGLView::RenderBrush()
 	glPopAttrib();
 }
 
-void CGLView::ScreenToView(int x, int y, double& fx, double& fy)
-{
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	double W = (double)width();
-	double H = (double)height();
-
-	if (H == 0.f) H = 0.001f;
-
-	CGView& view = scene->GetView();
-
-	double ar = W / H;
-
-	double fh = 2.f*view.m_fnear*(double)tan(0.5*view.m_fov*PI / 180);
-	double fw = fh * ar;
-
-	fx = -fw / 2 + x*fw / W;
-	fy = fh / 2 - y*fh / H;
-}
-
-void CGLView::showSafeFrame(bool b)
+void CGLView::ShowSafeFrame(bool b)
 {
 	if (m_pframe)
 	{
@@ -2237,7 +2151,7 @@ void CGLView::SetViewMode(View_Mode n)
             break;
     }
 
-	scene->GetView().GetCamera().SetOrientation(q);
+	scene->GetCamera().SetOrientation(q);
 
 	// set the camera target
 	//	m_Cam.SetTarget(vec3d(0,0,0));
@@ -2252,13 +2166,6 @@ void CGLView::TogglePerspective(bool b)
 
 	CGView& view = scene->GetView();
 	view.m_bortho = b;
-	repaint();
-}
-
-void CGLView::ToggleDisplayNormals()
-{
-	GLViewSettings& view = GetViewSettings();
-	view.m_bnorm = !view.m_bnorm;
 	repaint();
 }
 
@@ -2631,71 +2538,31 @@ quatd CGLView::GetPivotRotation()
 	return quatd(0.0, 0.0, 0.0, 1.0);
 }
 
-//-----------------------------------------------------------------
 // this function will only adjust the camera if the currently
 // selected object is too close.
 void CGLView::ZoomSelection(bool forceZoom)
 {
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+	// get the selection's bounding box
+	BOX box = scene->GetSelectionBox();
+	if (box.IsValid())
 	{
-		// get the current selection
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(GetDocument());
-		if (mdoc == nullptr) return;
+		double f = box.GetMaxExtent();
+		if (f < 1.0e-8) f = 1.0;
 
-		FESelection* ps = mdoc->GetCurrentSelection();
+		CGLCamera& cam = scene->GetCamera();
 
-		// zoom out on current selection
-		if (ps && ps->Size() != 0)
+		double g = cam.GetFinalTargetDistance();
+		if ((forceZoom == true) || (g < 2.0*f))
 		{
-			// get the selection's bounding box
-			BOX box = ps->GetBoundingBox();
-
-			double f = box.GetMaxExtent();
-			if (f == 0) f = 1;
-
-			CGLCamera& cam = mdoc->GetView()->GetCamera();
-
-			double g = cam.GetFinalTargetDistance();
-			if ((forceZoom == true) || (g < 2.0*f))
-			{
-				cam.SetTarget(box.Center());
-				cam.SetTargetDistance(2.0*f);
-				repaint();
-			}
-		}
-		else ZoomExtents();
-	}
-	else
-	{
-		if (postDoc->IsValid())
-		{
-			BOX box = postDoc->GetSelectionBox();
-
-			if (box.IsValid() == false)
-			{
-				ZoomExtents();
-			}
-			else
-			{
-				if (box.Radius() < 1e-8f)
-				{
-					float L = 1.f;
-					BOX bb = postDoc->GetBoundingBox();
-					float R = bb.GetMaxExtent();
-					if (R < 1e-8f) L = 1.f; else L = 0.05f*R;
-
-					box.InflateTo(L, L, L);
-				}
-
-				CGLCamera& cam = postDoc->GetView()->GetCamera();
-				cam.SetTarget(box.Center());
-				cam.SetTargetDistance(3.f*box.Radius());
-
-				repaint();
-			}
+			cam.SetTarget(box.Center());
+			cam.SetTargetDistance(2.0*f);
+			repaint();
 		}
 	}
+	else ZoomExtents();
 }
 
 void CGLView::ZoomToObject(GObject *po)
@@ -2708,7 +2575,7 @@ void CGLView::ZoomToObject(GObject *po)
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = scene->GetView().GetCamera();
+	CGLCamera& cam = scene->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -2727,7 +2594,7 @@ void CGLView::ZoomTo(const BOX& box)
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = scene->GetView().GetCamera();
+	CGLCamera& cam = scene->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -2737,29 +2604,15 @@ void CGLView::ZoomTo(const BOX& box)
 
 void CGLView::ZoomExtents(bool banimate)
 {
-	CGLDocument* doc = GetDocument();
-	if (doc == nullptr) return;
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
-	BOX box;
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
-	{
-		CModelDocument* mdoc = m_pWnd->GetModelDocument();
-		if (mdoc == 0) return;
-		box = mdoc->GetModelBox();
-	}
-	else
-	{
-		CPostObject* po = postDoc->GetPostObject();
-		if (po == nullptr) return;
-
-		box = po->GetBoundingBox();
-	}
+	BOX box = scene->GetBoundingBox();
 
 	double f = box.GetMaxExtent();
 	if (f == 0) f = 1;
 
-	CGLCamera& cam = doc->GetView()->GetCamera();
+	CGLCamera& cam = scene->GetCamera();
 
 	cam.SetTarget(box.Center());
 	cam.SetTargetDistance(2.0*f);
@@ -2982,7 +2835,7 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
 
-	double dpr = GetDevicePixelRatio();
+	double dpr = devicePixelRatio();
 	for (int i = 0; i<nsel; i++)
 		{
 			glBegin(GL_POINTS);

@@ -236,6 +236,28 @@ void CGLSceneView::SetupProjection()
 	}
 }
 
+void CGLSceneView::GetViewport(int vp[4]) const
+{
+	vp[0] = m_viewport[0];
+	vp[1] = m_viewport[1];
+	vp[2] = m_viewport[2];
+	vp[3] = m_viewport[3];
+}
+
+CGView* CGLSceneView::GetView()
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene) return &(scene->GetView());
+	else return nullptr;
+}
+
+CGLCamera* CGLSceneView::GetCamera()
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene) return &(scene->GetView().GetCamera());
+	else return nullptr;
+}
+
 void CGLSceneView::PrepScene()
 {
 	GLfloat specular[] = { 1.f, 1.f, 1.f, 1.f };
@@ -428,4 +450,25 @@ void CGLSceneView::wheelEvent(QWheelEvent* ev)
 	cam.Update(true);
 	ev->accept();
 	repaint();
+}
+
+void CGLSceneView::ScreenToView(int x, int y, double& fx, double& fy)
+{
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
+
+	double W = (double)width();
+	double H = (double)height();
+
+	if (H == 0.f) H = 0.001f;
+
+	CGView& view = scene->GetView();
+
+	double ar = W / H;
+
+	double fh = 2.f * view.m_fnear * (double)tan(0.5 * view.m_fov * PI / 180);
+	double fw = fh * ar;
+
+	fx = -fw / 2 + x * fw / W;
+	fy = fh / 2 - y * fh / H;
 }

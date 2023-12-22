@@ -37,6 +37,8 @@ public:
 
 	BOX GetBoundingBox() override;
 
+	BOX GetSelectionBox() override;
+
 private:
 	CPostDocument* m_doc;
 };

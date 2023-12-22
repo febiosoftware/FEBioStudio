@@ -41,6 +41,8 @@ public:
 
 	BOX GetBoundingBox() override;
 
+	BOX GetSelectionBox() override;
+
 private:
 	void RenderModel(CGLContext& rc);
 	void RenderGObject(CGLContext& rc, GObject* po);

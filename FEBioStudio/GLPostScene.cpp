@@ -45,6 +45,16 @@ BOX CGLPostScene::GetBoundingBox()
 	return box;
 }
 
+BOX CGLPostScene::GetSelectionBox()
+{
+	BOX box;
+	if (m_doc && m_doc->IsValid())
+	{
+		box = m_doc->GetSelectionBox();
+	}
+	return box;
+}
+
 void CGLPostScene::Render(CGLContext& rc)
 {
 	if (m_doc == nullptr) return;

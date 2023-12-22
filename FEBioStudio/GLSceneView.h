@@ -29,6 +29,8 @@ SOFTWARE.*/
 #include <FSCore/math3d.h>
 
 class CGLScene;
+class CGView;
+class CGLCamera;
 
 //! This class is used for rendering CGLScenes
 class CGLSceneView : public QOpenGLWidget
@@ -43,8 +45,15 @@ public:
 	virtual CGLScene* GetActiveScene();
 	virtual void RenderScene();
 
+	CGView* GetView();
+	CGLCamera* GetCamera();
+
 	//! Setup the projection matrix
 	void SetupProjection();
+
+	void GetViewport(int vp[4]) const;
+
+	void ScreenToView(int x, int y, double& fx, double& fy);
 
 public: // lighting
 

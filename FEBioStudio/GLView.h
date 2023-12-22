@@ -128,28 +128,14 @@ public:
 
 	void ClearCommandStack();
 
-	void RenderTooltip(int x, int y);
-
 	vec3d PickPoint(int x, int y, bool* success = 0);
 
 	void SetViewMode(View_Mode n);
 	View_Mode GetViewMode() { return m_nview; }
 
 	void TogglePerspective(bool b);
-	void ToggleDisplayNormals();
-
-	void GetViewport(int vp[4])
-	{
-		vp[0] = m_viewport[0];
-		vp[1] = m_viewport[1];
-		vp[2] = m_viewport[2];
-		vp[3] = m_viewport[3];
-	}
 
 	void ShowMeshData(bool b);
-
-	CGView* GetView();
-	CGLCamera* GetCamera();
 
 	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
@@ -185,9 +171,6 @@ public:
 	// zoom to the models extents
 	void ZoomExtents(bool banimate = true);
 
-	// get device pixel ration
-	double GetDevicePixelRatio();
-
 	// position the camera
 	void PositionCamera();
 
@@ -210,9 +193,7 @@ public:
 
 	bool TrackModeActive();
 
-	void ScreenToView(int x, int y, double& fx, double& fy);
-
-	void showSafeFrame(bool b);
+	void ShowSafeFrame(bool b);
 
 	vec3d GetPickPosition();
 
@@ -331,8 +312,6 @@ protected:
 	bool	m_bctrl;
 	bool	m_bsel;		// selection mode
 	bool	m_bextrude;	// extrusion mode
-
-	bool	m_btooltip;	// show tooltips
 
 	int		m_pivot;	// pivot selection mode
 

@@ -79,6 +79,20 @@ BOX CGLModelScene::GetBoundingBox()
 	return box;
 }
 
+BOX CGLModelScene::GetSelectionBox()
+{
+	BOX box;
+	if (m_doc)
+	{
+		FESelection* ps = m_doc->GetCurrentSelection();
+		if (ps && ps->Size() != 0)
+		{
+			box = ps->GetBoundingBox();
+		}
+	}
+	return box;
+}
+
 void CGLModelScene::Render(CGLContext& rc)
 {
 	if (m_doc == nullptr) return;

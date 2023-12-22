@@ -40,7 +40,11 @@ public:
 
 	virtual void Render(CGLContext& rc) = 0;
 
+	// get the bounding box of the entire scene
 	virtual BOX GetBoundingBox() = 0;
+
+	// get the bounding box of the current selection
+	virtual BOX GetSelectionBox() = 0;
 
 	CGLCamera& GetCamera() { return m_view.GetCamera(); }
 
