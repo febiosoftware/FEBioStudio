@@ -45,29 +45,29 @@ public:
 	{
 		vec3d	r;		// nodal position
 		vec3d	n;		// normal (but not really)
-		int		tag;	// multipurpose tag
-		int		pid;	// GNode parent local ID
-		int		nid;	// Node index of FSNode (in case a mesh object created this GMesh)
+		int		tag = 0;	// multipurpose tag
+		int		pid = 0;	// GNode parent local ID
+		int		nid = 0;	// Node index of FSNode (in case a mesh object created this GMesh)
 	};
 
 	struct EDGE
 	{
 		int		n[2];	// nodes
-		int		pid;	// GEdge parent local id
+		int		pid = 0;	// GEdge parent local id
 	};
 
 	struct FACE
 	{
 		int		n[3];	// nodes
 		int		nbr[3];	// neighbor faces
-		int		pid;	// GFace parent local id
-		int		eid;	// element ID of GFace (or -1 if not applicable)
-		int		sid;	// smoothing groupd ID
-		int		tag;	// multipurpose tag
+		int		pid = 0;	// GFace parent local id
+		int		eid = 0;	// element ID of GFace (or -1 if not applicable)
+		int		sid = 0;	// smoothing groupd ID
+		int		tag = 0;	// multipurpose tag
 		vec3d	fn;		// face normal
 		vec3d	nn[3];	// node normals
 		GLColor	c[3];	// node colors
-		bool	bext;	// external flag
+		bool	bext = true;	// external flag
 	};
 
 public:
@@ -100,6 +100,8 @@ public:
 	void UpdateBoundingBox();
 
 	void Attach(GMesh& m, bool bupdate = true);
+
+	void AutoSmooth(double angleDegrees);
 
 public:
 	int	AddNode(const vec3d& r, int groupID = 0);

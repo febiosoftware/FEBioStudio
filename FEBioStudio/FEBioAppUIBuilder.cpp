@@ -43,6 +43,10 @@ SOFTWARE.*/
 #include <FECore/FECoreKernel.h>
 #include <FECore/ElementDataRecord.h>
 #include <FEBioLib/FEBioModel.h>
+#include <MeshLib/GMesh.h>
+#include <FECore/FEMesh.h>
+#include <FECore/FESurface.h>
+#include <GLLib/GLMeshRender.h>
 
 class CElementDataSource : public CFEBioModelDataSource
 {
@@ -68,6 +72,136 @@ private:
 	CPlotData* m_data;
 };
 
+class GLFEBioScene : public CGLScene, public CFEBioModelDataSource
+{
+public:
+	GLFEBioScene(FEBioModel& fem) : m_fem(fem) 
+	{
+		m_febSurface = nullptr;
+		m_view = nullptr;
+		m_renderMesh = BuildRenderMesh();
+	}
+
+	void SetGLView(CGLSceneView* view) { m_view = view; }
+
+	~GLFEBioScene() 
+	{
+		delete m_febSurface;
+		delete m_renderMesh;
+	}
+
+	void Render(CGLContext& rc) 
+	{
+		GLMeshRender render; 
+		render.RenderGLMesh(m_renderMesh);
+	}
+
+	// get the bounding box of the entire scene
+	BOX GetBoundingBox();
+
+	// get the bounding box of the current selection
+	BOX GetSelectionBox() { return GetBoundingBox(); }
+
+public:
+	void Clear() 
+	{
+		if (m_renderMesh == nullptr) return;
+		for (int i = 0; i < m_renderMesh->Nodes(); ++i)
+		{
+			FENode& feNode = m_febSurface->Node(i);
+			GMesh::NODE& gnode = m_renderMesh->Node(i);
+			gnode.r = feNode.m_r0;
+		}
+		m_renderMesh->UpdateNormals();
+		if (m_view) m_view->repaint();
+	}
+
+	void Update(double time) 
+	{
+		if (m_renderMesh == nullptr) return;
+		for (int i = 0; i < m_renderMesh->Nodes(); ++i)
+		{
+			FENode& feNode = m_febSurface->Node(i);
+			GMesh::NODE& gnode = m_renderMesh->Node(i);
+			gnode.r = feNode.m_rt;
+		}
+		m_renderMesh->UpdateNormals();
+
+		if (m_view) m_view->repaint();
+	}
+
+private:
+	GMesh* BuildRenderMesh();
+
+private:
+	FEBioModel& m_fem;
+	GMesh* m_renderMesh;
+	FESurface* m_febSurface;
+	CGLSceneView* m_view;
+};
+
+GMesh* GLFEBioScene::BuildRenderMesh()
+{
+	FEMesh& febMesh = m_fem.GetMesh();
+	FESurface* surf = febMesh.ElementBoundarySurface();
+	m_febSurface = surf;
+
+	int NN = surf->Nodes();
+
+	// we need number of triangles, so count them
+	int NF = 0;
+	int NE = surf->Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FESurfaceElement& el = surf->Element(i);
+		if (el.Nodes() == 3) NF += 1;
+		if (el.Nodes() == 4) NF += 2;
+	}
+
+	GMesh* mesh = new GMesh;
+	mesh->Create(NN, NF);
+
+	for (int i = 0; i < NN; ++i)
+	{
+		GMesh::NODE& gnode = mesh->Node(i);
+		FENode& fenode = surf->Node(i);
+		gnode.r = fenode.m_r0;
+	}
+
+	NF = 0;
+	for (int i = 0; i < NE; ++i)
+	{
+		FESurfaceElement& el = surf->Element(i);
+		GMesh::FACE& f1 = mesh->Face(NF++);
+		f1.n[0] = el.m_lnode[0];
+		f1.n[1] = el.m_lnode[1];
+		f1.n[2] = el.m_lnode[2];
+
+		if (el.Nodes() == 4)
+		{
+			GMesh::FACE& f2 = mesh->Face(NF++);
+			f2.n[0] = el.m_lnode[2];
+			f2.n[1] = el.m_lnode[3];
+			f2.n[2] = el.m_lnode[0];
+		}
+	}
+	mesh->Update();
+	mesh->AutoSmooth(60.0);
+
+	return mesh;
+}
+
+BOX GLFEBioScene::GetBoundingBox()
+{
+	BOX box;
+	if (m_renderMesh)
+	{
+		for (int i = 0; i < m_renderMesh->Nodes(); ++i) box += m_renderMesh->Node(i).r;
+	}
+	return box;
+}
+
+//====================================================================
 FEBioAppUIBuilder::FEBioAppUIBuilder() : ui(nullptr), app(nullptr)
 {
 
@@ -700,10 +834,16 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 		} while (!tag.isend());
 	}
 
-	CGLSceneView* pgl = new CGLSceneView(app->GetMainWindow());
+	
+	GLFEBioScene* scene = new GLFEBioScene(*app->GetFEBioModel());
+	app->AddModelDataSource(scene);
+
+	CGLManagedSceneView* pgl = new CGLManagedSceneView(scene, app->GetMainWindow());
 	pgl->setMinimumSize(QSize(size[0], size[1]));
 	pgl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	playout->addWidget(pgl);
+
+	scene->SetGLView(pgl);
 
 /*	pgl->SetTimeFormat(timeFormat);
 	pgl->SetSmoothingAngle(smoothingAngle);	// must be set before SetFEModel is called
