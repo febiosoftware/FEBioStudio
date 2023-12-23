@@ -70,6 +70,7 @@ public:
 
 	void SetParameter(FEParamValue p) { m_param = p; }
 	void SetEditor(CFloatInput* w);
+	void SetEditor(CDoubleSlider* w);
 	void SetEditor(QCheckBox* w);
 
 	QWidget* GetEditor() const;

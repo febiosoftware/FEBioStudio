@@ -335,6 +335,10 @@ void FEBioAppUIBuilder::parseButton(XMLTag& tag, QBoxLayout* playout)
 		{
 			QObject::connect(pb, SIGNAL(clicked()), app, SLOT(runModel()));
 		}
+		if (strcmp(szaction, "fem.stop()") == 0)
+		{
+			QObject::connect(pb, SIGNAL(clicked()), app, SLOT(stopModel()));
+		}
 	}
 
 	//if (szaction)
@@ -636,10 +640,10 @@ void FEBioAppUIBuilder::parseInput(XMLTag& tag, QBoxLayout* playout)
 	{
 		if (brange)
 		{
-//			CFloatSlider* slider = new CFloatSlider;
-//			slider->setFloatRange(rng[0], rng[1], rng[2]);
-//			pw = slider;
-//			pi->SetWidget(slider);
+			CDoubleSlider* slider = new CDoubleSlider;
+			slider->setRange(rng[0], rng[1]);
+			slider->setSingleStep(rng[2]);
+			pi->SetEditor(slider);
 		}
 		else
 		{

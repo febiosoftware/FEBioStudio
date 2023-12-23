@@ -31,16 +31,16 @@ SOFTWARE.*/
 FEBioAppDocument::FEBioAppDocument(CMainWindow* wnd) : CDocument(wnd), m_fem(nullptr)
 {
 	m_isFemInitialized = false;
+	m_forceStop = false;
 }
 
 bool FEBioAppDocument::febio_cb(FEModel* fem, unsigned int nevent, void* pd)
 {
 	FEBioAppDocument* doc = (FEBioAppDocument*)(pd);
-	doc->ProcessFEBioEvent(nevent);
-	return true;
+	return doc->ProcessFEBioEvent(nevent);
 }
 
-void FEBioAppDocument::ProcessFEBioEvent(int nevent)
+bool FEBioAppDocument::ProcessFEBioEvent(int nevent)
 {
 	// process all model data sources
 	for (auto data : m_dataSources)
@@ -57,6 +57,8 @@ void FEBioAppDocument::ProcessFEBioEvent(int nevent)
 			break;
 		}
 	}
+	if (m_forceStop) return false;
+	return true;
 }
 
 bool FEBioAppDocument::LoadModelFromFile(QString fileName)
@@ -133,6 +135,7 @@ FEParamValue FEBioAppDocument::GetFEBioParameter(const char* szparams)
 
 void FEBioAppDocument::runModel()
 {
+	m_forceStop = false;
 	bool b = false;
 	if (m_fem)
 	{
@@ -146,4 +149,9 @@ void FEBioAppDocument::runModel()
 		if (b) b = m_fem->Solve();
 	}
 	emit modelFinished(b);
+}
+
+void FEBioAppDocument::stopModel()
+{
+	m_forceStop = true;
 }

@@ -77,6 +77,15 @@ void CFEBioParamEdit::SetEditor(CFloatInput* w)
 	QObject::connect(w, SIGNAL(valueChanged(double)), this, SLOT(UpdateFloat(double)));
 }
 
+void CFEBioParamEdit::SetEditor(CDoubleSlider* w)
+{
+	assert(w);
+	m_editor = w;
+	assert(m_param.isValid() && (m_param.type() == FE_PARAM_DOUBLE));
+	w->setValue(m_param.value<double>());
+	QObject::connect(w, SIGNAL(valueChanged(double)), this, SLOT(UpdateFloat(double)));
+}
+
 void CFEBioParamEdit::SetEditor(QCheckBox* w)
 {
 	assert(w);

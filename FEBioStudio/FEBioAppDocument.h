@@ -59,16 +59,18 @@ public:
 
 public slots:
 	void runModel();
+	void stopModel();
 
 signals:
 	void modelFinished(bool returnCode);
 
 private:
 	static bool febio_cb(FEModel* fem, unsigned int nevent, void* pd);
-	void ProcessFEBioEvent(int nevent);
+	bool ProcessFEBioEvent(int nevent);
 
 private:
 	FEBioModel* m_fem;
 	bool	m_isFemInitialized;
+	bool	m_forceStop;
 	std::vector<CFEBioModelDataSource*>	m_dataSources;
 };
