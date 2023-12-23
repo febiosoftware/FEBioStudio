@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include <GL/glew.h>
 #include "GLSceneView.h"
 #include "GLScene.h"
+#include <GLLib/GLContext.h>
 #include <QMouseEvent>
 
 static bool initGlew = false;
@@ -40,6 +41,8 @@ CGLSceneView::CGLSceneView(QWidget* parent) : QOpenGLWidget(parent)
 	setFocusPolicy(Qt::StrongFocus);
 	setAttribute(Qt::WA_AcceptTouchEvents, true);
 	setMouseTracking(true);
+
+	m_view.Defaults();
 
 	m_ox = m_oy = 1;
 	m_light = vec3f(0.5, 0.5, 1);
@@ -471,4 +474,30 @@ void CGLSceneView::ScreenToView(int x, int y, double& fx, double& fy)
 
 	fx = -fw / 2 + x * fw / W;
 	fy = fh / 2 - y * fh / H;
+}
+
+CGLManagedSceneView::CGLManagedSceneView(CGLScene* scene, QWidget* parent) : CGLSceneView(parent), m_scene(scene) 
+{
+	if (scene)
+	{
+		BOX box = scene->GetBoundingBox();
+		GetCamera()->SetTargetDistance(box.GetMaxExtent()*1.5);
+	}
+}
+
+CGLManagedSceneView::~CGLManagedSceneView() { delete m_scene; }
+
+void CGLManagedSceneView::RenderScene() 
+{ 
+	if (m_scene)
+	{
+		CGLCamera& cam = m_scene->GetCamera();
+		cam.Transform();
+
+		CGLContext rc;
+		rc.m_cam = &cam;
+		rc.m_settings = GetViewSettings();
+		rc.m_view = nullptr;
+		m_scene->Render(rc);
+	}
 }

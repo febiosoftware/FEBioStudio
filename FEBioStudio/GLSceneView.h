@@ -84,3 +84,17 @@ protected:
 
 	vec3f	m_light;
 };
+
+// This class manages its own scene
+class CGLManagedSceneView : public CGLSceneView
+{
+public:
+	CGLManagedSceneView(CGLScene* scene, QWidget* parent = nullptr);
+	~CGLManagedSceneView();
+
+	CGLScene* GetActiveScene() override { return m_scene; }
+	void RenderScene();
+
+private:
+	CGLScene* m_scene;
+};
