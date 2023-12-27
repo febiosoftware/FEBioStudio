@@ -43,6 +43,7 @@ public:
 
 public slots:
 	void onModelFinished(bool returnCode);
+	void onModelStarted();
 
 private:
 	CMainWindow* m_wnd;
@@ -82,4 +83,21 @@ public slots:
 private:
 	FEParamValue m_param;
 	QWidget* m_editor;
+};
+
+
+class FEBioAppUI : public QWidget
+{
+	Q_OBJECT
+public:
+	FEBioAppUI(FEBioAppDocument* doc);
+
+public slots:
+	void onDataChanged();
+
+	void AddRepaintChild(QWidget* w);
+
+private:
+	FEBioAppDocument* m_doc;
+	std::vector<QWidget*>	m_children;
 };

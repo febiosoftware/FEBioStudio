@@ -27,6 +27,8 @@ SOFTWARE.*/
 #include "Document.h"
 #include <FECore/FEParam.h>
 #include <vector>
+#include <QMutex>
+#include <QThread>
 
 class FEBioModel;
 class FEModel;
@@ -39,6 +41,24 @@ public:
 
 	virtual void Clear() = 0;
 	virtual void Update(double time) = 0;
+};
+
+class FEBioAppModel
+{
+public:
+	FEBioAppModel();
+	~FEBioAppModel();
+
+	bool IsRunning() const { return m_isRunning; }
+
+	bool Solve();
+
+	FEBioModel* GetFEBioModel() { return m_fem; }
+
+private:
+	bool	m_isInitialized;
+	bool	m_isRunning;
+	FEBioModel* m_fem;
 };
 
 class FEBioAppDocument : public CDocument
@@ -60,17 +80,35 @@ public:
 public slots:
 	void runModel();
 	void stopModel();
+	void onFEBioFinished(bool b);
 
 signals:
+	void modelStarted();
 	void modelFinished(bool returnCode);
+	void dataChanged();
 
 private:
 	static bool febio_cb(FEModel* fem, unsigned int nevent, void* pd);
 	bool ProcessFEBioEvent(int nevent);
 
 private:
-	FEBioModel* m_fem;
-	bool	m_isFemInitialized;
+	FEBioAppModel*	m_fbm;
 	bool	m_forceStop;
 	std::vector<CFEBioModelDataSource*>	m_dataSources;
+};
+
+class CFEBioAppThread : public QThread
+{
+	Q_OBJECT
+
+public:
+	CFEBioAppThread(FEBioAppModel* fem, FEBioAppDocument* parent);
+
+	void run() Q_DECL_OVERRIDE;
+
+signals:
+	void FEBioFinished(bool);
+
+private:
+	FEBioAppModel* m_fem;
 };

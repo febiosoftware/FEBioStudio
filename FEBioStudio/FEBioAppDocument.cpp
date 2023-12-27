@@ -27,10 +27,52 @@ SOFTWARE.*/
 #include <FEBioLib/FEBioModel.h>
 #include <FEBioLink/FEBioModule.h>
 #include <QWidget>
+#include <QMutex>
+#include <QThread>
+#include <QWaitCondition>
 
-FEBioAppDocument::FEBioAppDocument(CMainWindow* wnd) : CDocument(wnd), m_fem(nullptr)
+FEBioAppModel::FEBioAppModel() : m_fem(new FEBioModel)
 {
-	m_isFemInitialized = false;
+	m_isInitialized = false;
+	m_isRunning = false;
+};
+
+FEBioAppModel::~FEBioAppModel()
+{
+	delete m_fem;
+}
+
+bool FEBioAppModel::Solve()
+{
+	if (m_fem == nullptr) return false;
+	bool b = false;
+	if (m_isInitialized) b = m_fem->Reset();
+	else
+	{
+		m_isInitialized = m_fem->Init();
+		b = m_isInitialized;
+	}
+	if (b) b = m_fem->Solve();
+	return b;
+}
+
+CFEBioAppThread::CFEBioAppThread(FEBioAppModel* fem, FEBioAppDocument* parent) : QThread(parent), m_fem(fem)
+{
+	QObject::connect(this, SIGNAL(finished()), this, SLOT(deleteLater()));
+	QObject::connect(this, SIGNAL(FEBioFinished(bool)), parent, SLOT(onFEBioFinished(bool)));
+}
+
+void CFEBioAppThread::run()
+{
+	if (m_fem && !m_fem->IsRunning())
+	{
+		bool b = m_fem->Solve();
+		emit FEBioFinished(b);
+	}
+}
+
+FEBioAppDocument::FEBioAppDocument(CMainWindow* wnd) : CDocument(wnd), m_fbm(nullptr)
+{
 	m_forceStop = false;
 }
 
@@ -53,19 +95,23 @@ bool FEBioAppDocument::ProcessFEBioEvent(int nevent)
 			data->Update(0.0);
 			break;
 		case CB_MAJOR_ITERS:
-			data->Update(m_fem->GetCurrentTime());
+			data->Update(m_fbm->GetFEBioModel()->GetCurrentTime());
 			break;
 		}
 	}
+
+	emit dataChanged();
+
 	if (m_forceStop) return false;
+
 	return true;
 }
 
 bool FEBioAppDocument::LoadModelFromFile(QString fileName)
 {
-	if (m_fem) delete m_fem;
-	m_fem = new FEBioModel;
-	FEBioModel& fem = *m_fem;
+	if (m_fbm) delete m_fbm;
+	m_fbm = new FEBioAppModel;
+	FEBioModel& fem = *m_fbm->GetFEBioModel();
 	fem.SetName("fem");
 
 	fem.AddCallback(febio_cb, CB_ALWAYS, this);
@@ -78,7 +124,7 @@ bool FEBioAppDocument::LoadModelFromFile(QString fileName)
 
 FEBioModel* FEBioAppDocument::GetFEBioModel()
 {
-	return m_fem;
+	return m_fbm->GetFEBioModel();
 }
 
 void FEBioAppDocument::AddModelDataSource(CFEBioModelDataSource* dataSrc)
@@ -89,8 +135,8 @@ void FEBioAppDocument::AddModelDataSource(CFEBioModelDataSource* dataSrc)
 std::vector<FEParamValue> FEBioAppDocument::GetFEBioParameterList(const char* szparams)
 {
 	std::vector<FEParamValue> paramList;
-	if (m_fem == nullptr) return paramList;
-	FEBioModel& fem = *m_fem;
+	if (m_fbm == nullptr) return paramList;
+	FEBioModel& fem = *m_fbm->GetFEBioModel();
 
 	ParamString ps(szparams);
 
@@ -130,28 +176,26 @@ std::vector<FEParamValue> FEBioAppDocument::GetFEBioParameterList(const char* sz
 FEParamValue FEBioAppDocument::GetFEBioParameter(const char* szparams)
 {
 	ParamString ps(szparams);
-	return m_fem->GetParameterValue(ps);
+	return m_fbm->GetFEBioModel()->GetParameterValue(ps);
 }
 
 void FEBioAppDocument::runModel()
 {
 	m_forceStop = false;
-	bool b = false;
-	if (m_fem)
+	if (m_fbm)
 	{
-		if (m_isFemInitialized) b = m_fem->Reset();
-		else
-		{
-			m_isFemInitialized = m_fem->Init();
-			b = m_isFemInitialized;
-		}
-
-		if (b) b = m_fem->Solve();
+		CFEBioAppThread* thread = new CFEBioAppThread(m_fbm, this);
+		thread->start();
+		emit modelStarted();
 	}
-	emit modelFinished(b);
 }
 
 void FEBioAppDocument::stopModel()
 {
 	m_forceStop = true;
+}
+
+void FEBioAppDocument::onFEBioFinished(bool b)
+{
+	emit modelFinished(b);
 }

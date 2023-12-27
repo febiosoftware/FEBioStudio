@@ -28,9 +28,26 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
+#include <QCoreApplication>
 #include <QCheckBox>
 #include <XML/XMLReader.h>
 #include "FEBioAppUIBuilder.h"
+#include "FEBioAppDocument.h"
+
+FEBioAppUI::FEBioAppUI(FEBioAppDocument* doc) : m_doc(doc)
+{
+	QObject::connect(doc, SIGNAL(dataChanged()), this, SLOT(onDataChanged()));
+}
+
+void FEBioAppUI::onDataChanged()
+{
+	for (auto w : m_children) w->repaint();
+}
+
+void FEBioAppUI::AddRepaintChild(QWidget* w)
+{
+	m_children.push_back(w);
+}
 
 FEBioAppView::FEBioAppView(CMainWindow* wnd) : QWidget(wnd)
 {
@@ -50,6 +67,11 @@ void FEBioAppView::setSource(QString filePath, FEBioAppDocument* app)
 	layout()->addWidget(ui);
 }
 
+void FEBioAppView::onModelStarted()
+{
+	m_wnd->setWindowTitle("[RUNNING]");
+}
+
 void FEBioAppView::onModelFinished(bool returnCode)
 {
 	if (returnCode)
@@ -61,6 +83,7 @@ void FEBioAppView::onModelFinished(bool returnCode)
 		QMessageBox::critical(m_wnd, "FEBio App", "FEBio failed!");
 	}
 	repaint();
+	m_wnd->UpdateTitle();
 }
 
 CFEBioParamEdit::CFEBioParamEdit(QObject* parent) : m_editor(nullptr), QObject(parent)

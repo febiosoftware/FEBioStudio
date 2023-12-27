@@ -33,6 +33,9 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QTabWidget>
+#include <QPaintEvent>
+#include <QMutex>
+#include <QMutexLocker>
 #include "GLSceneView.h"
 #include "InputWidgets.h"
 #include "PlotWidget.h"
@@ -47,6 +50,8 @@ SOFTWARE.*/
 #include <FECore/FEMesh.h>
 #include <FECore/FESurface.h>
 #include <GLLib/GLMeshRender.h>
+#include <PostLib/ColorMap.h>
+#include <algorithm>
 
 class CElementDataSource : public CFEBioModelDataSource
 {
@@ -92,7 +97,9 @@ public:
 
 	void Render(CGLContext& rc) 
 	{
-		GLMeshRender render; 
+		QMutexLocker lock(&m_mutex);
+		GLMeshRender render;
+		glEnable(GL_COLOR_MATERIAL);
 		render.RenderGLMesh(m_renderMesh);
 	}
 
@@ -105,6 +112,7 @@ public:
 public:
 	void Clear() 
 	{
+		QMutexLocker lock(&m_mutex);
 		if (m_renderMesh == nullptr) return;
 		for (int i = 0; i < m_renderMesh->Nodes(); ++i)
 		{
@@ -113,21 +121,38 @@ public:
 			gnode.r = feNode.m_r0;
 		}
 		m_renderMesh->UpdateNormals();
-		if (m_view) m_view->repaint();
 	}
 
 	void Update(double time) 
 	{
+		QMutexLocker lock(&m_mutex);
 		if (m_renderMesh == nullptr) return;
+		vector<double> val(m_renderMesh->Nodes(), 0.0);
 		for (int i = 0; i < m_renderMesh->Nodes(); ++i)
 		{
 			FENode& feNode = m_febSurface->Node(i);
 			GMesh::NODE& gnode = m_renderMesh->Node(i);
 			gnode.r = feNode.m_rt;
+
+			val[i] = (feNode.m_rt - feNode.m_r0).Length();
 		}
 		m_renderMesh->UpdateNormals();
 
-		if (m_view) m_view->repaint();
+		auto rng = std::minmax_element(begin(val), end(val));
+		double vmin = *rng.first;
+		double vmax = *rng.second;
+		if (vmax == vmin) vmax++;
+			
+		Post::CColorMap col;
+		col.SetRange(vmin, vmax);
+		int NF = 0;
+		for (int i = 0; i < m_renderMesh->Faces(); ++i)
+		{
+			GMesh::FACE& f = m_renderMesh->Face(i);
+			f.c[0] = col.map(val[f.n[0]]);
+			f.c[1] = col.map(val[f.n[1]]);
+			f.c[2] = col.map(val[f.n[2]]);
+		}
 	}
 
 private:
@@ -138,6 +163,7 @@ private:
 	GMesh* m_renderMesh;
 	FESurface* m_febSurface;
 	CGLSceneView* m_view;
+	QMutex	m_mutex;
 };
 
 GMesh* GLFEBioScene::BuildRenderMesh()
@@ -266,7 +292,7 @@ bool FEBioAppUIBuilder::parseModel(XMLTag& tag)
 
 bool FEBioAppUIBuilder::parseGUI(XMLTag& tag)
 {
-	ui = new QWidget;
+	ui = new FEBioAppUI(app);
 	QVBoxLayout* layout = new QVBoxLayout(ui);
 	return parseGUITags(tag, layout);
 }
@@ -842,7 +868,8 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 	GLFEBioScene* scene = new GLFEBioScene(*app->GetFEBioModel());
 	app->AddModelDataSource(scene);
 
-	CGLManagedSceneView* pgl = new CGLManagedSceneView(scene, app->GetMainWindow());
+	CGLManagedSceneView* pgl = new CGLManagedSceneView(scene);
+	ui->AddRepaintChild(pgl);
 	pgl->setMinimumSize(QSize(size[0], size[1]));
 	pgl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 	playout->addWidget(pgl);

@@ -2369,6 +2369,7 @@ void CMainWindow::UpdateUIConfig()
 						ui->app->setSource(QString::fromStdString(feappDoc->GetDocFilePath()), feappDoc);
 
 						QObject::connect(feappDoc, SIGNAL(modelFinished(bool)), ui->app, SLOT(onModelFinished(bool)));
+						QObject::connect(feappDoc, SIGNAL(modelStarted()), ui->app, SLOT(onModelStarted()));
 					}
 					else ui->setUIConfig(HTML_CONFIG);
 				}
