@@ -124,11 +124,20 @@ bool FEBioAppUIBuilder::parseModel(XMLTag& tag)
 	const char* szfile = tag.AttributeValue("file");
 
 	const char* sztask = tag.AttributeValue("task", true);
+	const char* szctrl = tag.AttributeValue("task_input", true);
 
 	assert(tag.isleaf());
 
 	// add the new model
 	bool b = app->LoadModelFromFile(szfile);
+
+	if (sztask)
+	{
+		if (szctrl)
+			app->SetTask(sztask, szctrl);
+		else
+			app->SetTask(sztask);
+	}
 
 	return b;
 }
@@ -234,11 +243,9 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 
 	FEBioModel* fem = app->GetFEBioModel();
 
-	int nplt = 0;
-
 	CPlotWidget* plotWidget = new CPlotWidget(0);
 	plotWidget->setTitle(QString(sztxt));
-	plotWidget->showLegend(false);
+//	plotWidget->showLegend(false);
 
 	if (!tag.isleaf())
 	{
@@ -258,19 +265,17 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 			}
 			else if (tag == "data")
 			{
-				nplt++;
+				const char* sztxt = tag.AttributeValue("text", true);
 
-				char szname[256] = { 0 };
-				const char* sz = tag.AttributeValue("title", true);
-				if (sz) strcpy(szname, sz);
-				else sprintf(szname, "plot%d", nplt);
-
-				ElementDataRecord* val_x = nullptr;
-				ElementDataRecord* val_y = nullptr;
+				CPlotData* data = new CPlotData;
+				if (sztxt) data->setLabel(sztxt);
 
 				const char* sztype = tag.AttributeValue("type", true);
 				if (sztype == 0)
 				{
+					ElementDataRecord* val_x = nullptr;
+					ElementDataRecord* val_y = nullptr;
+
 					++tag;
 					do
 					{
@@ -297,32 +302,24 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 						++tag;
 					} while (!tag.isend());
 
-					CPlotData* data = new CPlotData;
 
 					CElementDataSource* src = new CElementDataSource(val_x, val_y, data);
 					app->AddModelDataSource(src);
-
-					plotWidget->addPlotData(data);
-
 					++tag;
 				}
 				else if (strcmp(sztype, "static") == 0)
 				{
-//					CStaticDataSource* src = new CStaticDataSource;
 					++tag;
 					do
 					{
 						double p[2];
 						tag.value(p, 2);
-
-//						src->AddPoint(QPointF(p[0], p[1]));
+						data->addPoint(p[0], p[1]);
 						++tag;
 					} while (!tag.isend());
-
-//					plotWidget->AddData(src, szname);
-
 					++tag;
 				}
+				plotWidget->addPlotData(data);
 			}
 			else xml.SkipTag(tag);
 		} while (!tag.isend());
@@ -331,7 +328,6 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 	plotWidget->setMinimumSize(QSize(size[0], size[1]));
 
 	playout->addWidget(plotWidget, 1);
-//	m_dlg->AddGraph(pg);
 }
 
 void FEBioAppUIBuilder::parseInputList(XMLTag& tag, QBoxLayout* playout)
@@ -359,17 +355,13 @@ void FEBioAppUIBuilder::parseInputList(XMLTag& tag, QBoxLayout* playout)
 			CFEBioParamEdit* paramEdit = new CFEBioParamEdit(ui);
 			paramEdit->SetParameter(pi);
 
-			if (pi.type() == FE_PARAM_DOUBLE)
+			switch (pi.type())
 			{
-				paramEdit->SetEditor(new CFloatInput());
-			}
-			if (pi.type() == FE_PARAM_BOOL)
-			{
-//				pw = new QCheckBox;
-			}
-			if (pi.type() == FE_PARAM_INT)
-			{
-//				pw = new QLineEdit;
+			case FE_PARAM_DOUBLE: paramEdit->SetEditor(new CFloatInput()); break;
+			case FE_PARAM_BOOL  : paramEdit->SetEditor(new QCheckBox  ()); break;
+			case FE_PARAM_INT   : paramEdit->SetEditor(new CIntInput  ()); break;
+			default:
+				assert(false);
 			}
 
 			QWidget* pw = paramEdit->GetEditor();
@@ -379,7 +371,6 @@ void FEBioAppUIBuilder::parseInputList(XMLTag& tag, QBoxLayout* playout)
 
 				// add it to the row
 				pf->addRow(QString::fromStdString(pi.param()->name()), pw);
-//				m_dlg->AddInputParameter(pin);
 			}
 			else delete paramEdit;
 		}

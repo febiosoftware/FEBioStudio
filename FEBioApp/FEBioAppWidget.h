@@ -52,6 +52,7 @@ public:
 
 	void SetParameter(FEParamValue p) { m_param = p; }
 	void SetEditor(CFloatInput* w);
+	void SetEditor(CIntInput* w);
 	void SetEditor(CDoubleSlider* w);
 	void SetEditor(QCheckBox* w);
 
@@ -59,6 +60,7 @@ public:
 
 public slots:
 	void UpdateFloat(double newValue);
+	void UpdateInt(int newValue);
 	void UpdateBool(bool newValue);
 
 private:

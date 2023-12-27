@@ -26,6 +26,8 @@ SOFTWARE.*/
 #include "FEBioAppDocument.h"
 #include <FEBioLib/FEBioModel.h>
 #include <FEBioLink/FEBioModule.h>
+#include <FECore/FECoreTask.h>
+#include <FECore/FECoreKernel.h>
 #include <QWidget>
 #include <QThread>
 
@@ -100,6 +102,12 @@ bool FEBioAppDocument::LoadModelFromFile(QString fileName)
 	bool b = fem.Input(sfile.c_str());
 	FEBio::BlockCreateEvents(false);
 	return b;
+}
+
+void FEBioAppDocument::SetTask(const std::string& taskName, const std::string& taskInputFilename)
+{
+	m_taskName = taskName;
+	m_taskInputFile = taskInputFilename;
 }
 
 FEBioModel* FEBioAppDocument::GetFEBioModel()
@@ -182,17 +190,32 @@ void FEBioAppDocument::onFEBioFinished(bool b)
 void FEBioAppDocument::RunFEBioModel()
 {
 	if (m_fem == nullptr) return;
-	bool b = false;
-	if (m_isInitialized) b = m_fem->Reset();
+
+	if (m_taskName.empty() == false)
+	{
+		std::unique_ptr<FECoreTask> task(fecore_new<FECoreTask>(m_taskName.c_str(), m_fem));
+		if (task == nullptr) emit modelFinished(false);
+
+		const char* sztaskfile = (m_taskInputFile.empty() ? nullptr : m_taskInputFile.c_str());
+		if (task->Init(sztaskfile) == false) emit modelFinished(false);
+
+		bool b = task->Run();
+		emit modelFinished(b);
+	}
 	else
 	{
-		m_isInitialized = m_fem->Init();
-		b = m_isInitialized;
-	}
-	if (b)
-	{
-		emit modelStarted();
-		b = m_fem->Solve();
-		emit modelFinished(b);
+		bool b = false;
+		if (m_isInitialized) b = m_fem->Reset();
+		else
+		{
+			m_isInitialized = m_fem->Init();
+			b = m_isInitialized;
+		}
+		if (b)
+		{
+			emit modelStarted();
+			b = m_fem->Solve();
+			emit modelFinished(b);
+		}
 	}
 }

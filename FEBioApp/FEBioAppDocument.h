@@ -51,6 +51,8 @@ public:
 
 	bool LoadModelFromFile(QString fileName);
 
+	void SetTask(const std::string& taskName, const std::string& taskInputFilename = "");
+
 	std::vector<FEParamValue> GetFEBioParameterList(const char* szparams);
 	FEParamValue GetFEBioParameter(const char* szparams);
 
@@ -81,6 +83,9 @@ private:
 	bool	m_forceStop;
 	FEBioModel* m_fem;
 	std::vector<CFEBioModelDataSource*>	m_dataSources;
+
+	std::string m_taskName;
+	std::string m_taskInputFile;
 
 	friend class CFEBioAppThread;
 };

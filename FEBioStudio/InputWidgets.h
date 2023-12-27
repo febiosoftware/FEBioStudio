@@ -36,14 +36,26 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 class CIntInput : public QLineEdit
 {
+	Q_OBJECT
+
 public:
 	CIntInput(QWidget* parent = 0) : QLineEdit(parent)
 	{
 		setValidator(new QIntValidator);
+		QObject::connect(this, SIGNAL(editingFinished()), this, SLOT(onEditingFinished()));
 	}
 
 	void setValue(int m) { setText(QString("%1").arg(m)); }
 	int value() const { return text().toInt(); }
+
+public slots:
+	void onEditingFinished()
+	{
+		emit valueChanged(text().toInt());
+	}
+
+signals:
+	void valueChanged(int newValue);
 };
 
 //-----------------------------------------------------------------------------

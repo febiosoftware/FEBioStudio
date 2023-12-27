@@ -55,6 +55,15 @@ void CFEBioParamEdit::SetEditor(CFloatInput* w)
 	QObject::connect(w, SIGNAL(valueChanged(double)), this, SLOT(UpdateFloat(double)));
 }
 
+void CFEBioParamEdit::SetEditor(CIntInput* w)
+{
+	assert(w);
+	m_editor = w;
+	assert(m_param.isValid() && (m_param.type() == FE_PARAM_INT));
+	w->setValue(m_param.value<int>());
+	QObject::connect(w, SIGNAL(valueChanged(int)), this, SLOT(UpdateInt(int)));
+}
+
 void CFEBioParamEdit::SetEditor(CDoubleSlider* w)
 {
 	assert(w);
@@ -77,6 +86,12 @@ void CFEBioParamEdit::UpdateFloat(double newValue)
 {
 	assert(m_param.isValid() && (m_param.type() == FE_PARAM_DOUBLE));
 	m_param.value<double>() = newValue;
+}
+
+void CFEBioParamEdit::UpdateInt(int newValue)
+{
+	assert(m_param.isValid() && (m_param.type() == FE_PARAM_INT));
+	m_param.value<int>() = newValue;
 }
 
 void CFEBioParamEdit::UpdateBool(bool newValue)
