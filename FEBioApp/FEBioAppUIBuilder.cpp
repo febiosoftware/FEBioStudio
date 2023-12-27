@@ -109,6 +109,11 @@ public:
 	// get the bounding box of the current selection
 	BOX GetSelectionBox() { return GetBoundingBox(); }
 
+	void SetDataSourceName(const std::string& dataName)
+	{
+		m_dataSource = dataName;
+	}
+
 public:
 	void Clear() 
 	{
@@ -127,6 +132,13 @@ public:
 	{
 		QMutexLocker lock(&m_mutex);
 		if (m_renderMesh == nullptr) return;
+
+		int ndof = -1;
+		if (m_dataSource.empty() == false)
+		{
+			ndof = m_fem.GetDOFIndex(m_dataSource.c_str());
+		}
+
 		vector<double> val(m_renderMesh->Nodes(), 0.0);
 		for (int i = 0; i < m_renderMesh->Nodes(); ++i)
 		{
@@ -134,7 +146,7 @@ public:
 			GMesh::NODE& gnode = m_renderMesh->Node(i);
 			gnode.r = feNode.m_rt;
 
-			val[i] = (feNode.m_rt - feNode.m_r0).Length();
+			if (ndof >= 0) val[i] = feNode.get(ndof);
 		}
 		m_renderMesh->UpdateNormals();
 
@@ -164,6 +176,7 @@ private:
 	FESurface* m_febSurface;
 	CGLSceneView* m_view;
 	QMutex	m_mutex;
+	std::string	m_dataSource;
 };
 
 GMesh* GLFEBioScene::BuildRenderMesh()
@@ -779,7 +792,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 
 	bool brange = false;
 	double rng[2];
-	const char* szmap = "displacement";
+	std::string mapName;
 	XMLReader& xml = *tag.m_preader;
 	double bgc[3] = { 0.8, 0.8, 1.0 };
 	double fgc[3] = { 0.0, 0.0, 0.0 };
@@ -823,7 +836,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 			else if (tag == "map")
 			{
 				const char* sztype = tag.AttributeValue("type");
-				if (sztype) szmap = sztype;
+				if (sztype) mapName = sztype;
 
 				if (tag.isleaf()) ++tag;
 				else
@@ -866,6 +879,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 
 	
 	GLFEBioScene* scene = new GLFEBioScene(*app->GetFEBioModel());
+	scene->SetDataSourceName(mapName);
 	app->AddModelDataSource(scene);
 
 	CGLManagedSceneView* pgl = new CGLManagedSceneView(scene);
