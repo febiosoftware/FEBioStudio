@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/PlotWidget.h"
 #include "MainWindow.h"
 #include "FEBioAppDocument.h"
-#include "FEBioAppView.h"
+#include "FEBioAppWidget.h"
 #include <FECore/FEParam.h>
 #include <FECore/FECoreKernel.h>
 #include <FECore/ElementDataRecord.h>
@@ -292,7 +292,7 @@ bool FEBioAppUIBuilder::parseModel(XMLTag& tag)
 
 bool FEBioAppUIBuilder::parseGUI(XMLTag& tag)
 {
-	ui = new FEBioAppUI(app);
+	ui = new FEBioAppWidget(app);
 	QVBoxLayout* layout = new QVBoxLayout(ui);
 	return parseGUITags(tag, layout);
 }

@@ -29,7 +29,7 @@ SOFTWARE.*/
 class QBoxLayout;
 class XMLTag;
 class FEBioAppDocument;
-class FEBioAppUI;
+class FEBioAppWidget;
 
 class FEBioAppUIBuilder
 {
@@ -58,6 +58,6 @@ private:
 	void parsePlot3d   (XMLTag& tag, QBoxLayout* playout);
 
 private:
-	FEBioAppUI* ui;
+	FEBioAppWidget* ui;
 	FEBioAppDocument* app;
 };

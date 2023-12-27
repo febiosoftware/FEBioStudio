@@ -27,8 +27,6 @@ SOFTWARE.*/
 #include "../FEBioStudio/Document.h"
 #include <FECore/FEParam.h>
 #include <vector>
-#include <QMutex>
-#include <QThread>
 
 class FEBioModel;
 class FEModel;
@@ -43,30 +41,13 @@ public:
 	virtual void Update(double time) = 0;
 };
 
-class FEBioAppModel
-{
-public:
-	FEBioAppModel();
-	~FEBioAppModel();
-
-	bool IsRunning() const { return m_isRunning; }
-
-	bool Solve();
-
-	FEBioModel* GetFEBioModel() { return m_fem; }
-
-private:
-	bool	m_isInitialized;
-	bool	m_isRunning;
-	FEBioModel* m_fem;
-};
-
 class FEBioAppDocument : public CDocument
 {
 	Q_OBJECT
 
 public:
 	FEBioAppDocument(CMainWindow* wnd);
+	~FEBioAppDocument();
 
 	bool LoadModelFromFile(QString fileName);
 
@@ -91,24 +72,15 @@ private:
 	static bool febio_cb(FEModel* fem, unsigned int nevent, void* pd);
 	bool ProcessFEBioEvent(int nevent);
 
+	// this function actuallys run FEBio, but is called from a separate thread
+	void RunFEBioModel();
+
 private:
-	FEBioAppModel*	m_fbm;
+	bool	m_isInitialized;
+	bool	m_isRunning;
 	bool	m_forceStop;
+	FEBioModel* m_fem;
 	std::vector<CFEBioModelDataSource*>	m_dataSources;
-};
 
-class CFEBioAppThread : public QThread
-{
-	Q_OBJECT
-
-public:
-	CFEBioAppThread(FEBioAppModel* fem, FEBioAppDocument* parent);
-
-	void run() Q_DECL_OVERRIDE;
-
-signals:
-	void FEBioFinished(bool);
-
-private:
-	FEBioAppModel* m_fem;
+	friend class CFEBioAppThread;
 };

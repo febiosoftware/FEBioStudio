@@ -28,26 +28,8 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
-#include <QCoreApplication>
-#include <QCheckBox>
-#include <XML/XMLReader.h>
 #include "FEBioAppUIBuilder.h"
 #include "FEBioAppDocument.h"
-
-FEBioAppUI::FEBioAppUI(FEBioAppDocument* doc) : m_doc(doc)
-{
-	QObject::connect(doc, SIGNAL(dataChanged()), this, SLOT(onDataChanged()));
-}
-
-void FEBioAppUI::onDataChanged()
-{
-	for (auto w : m_children) w->repaint();
-}
-
-void FEBioAppUI::AddRepaintChild(QWidget* w)
-{
-	m_children.push_back(w);
-}
 
 FEBioAppView::FEBioAppView(CMainWindow* wnd) : QWidget(wnd)
 {
@@ -84,53 +66,4 @@ void FEBioAppView::onModelFinished(bool returnCode)
 	}
 	repaint();
 	m_wnd->UpdateTitle();
-}
-
-CFEBioParamEdit::CFEBioParamEdit(QObject* parent) : m_editor(nullptr), QObject(parent)
-{
-
-}
-
-void CFEBioParamEdit::SetEditor(CFloatInput* w)
-{
-	assert(w);
-	m_editor = w;
-	assert(m_param.isValid() && (m_param.type() == FE_PARAM_DOUBLE));
-	w->setValue(m_param.value<double>());
-	QObject::connect(w, SIGNAL(valueChanged(double)), this, SLOT(UpdateFloat(double)));
-}
-
-void CFEBioParamEdit::SetEditor(CDoubleSlider* w)
-{
-	assert(w);
-	m_editor = w;
-	assert(m_param.isValid() && (m_param.type() == FE_PARAM_DOUBLE));
-	w->setValue(m_param.value<double>());
-	QObject::connect(w, SIGNAL(valueChanged(double)), this, SLOT(UpdateFloat(double)));
-}
-
-void CFEBioParamEdit::SetEditor(QCheckBox* w)
-{
-	assert(w);
-	m_editor = w;
-	assert(m_param.isValid() && (m_param.type() == FE_PARAM_BOOL));
-	w->setChecked(m_param.value<bool>());
-	QObject::connect(w, SIGNAL(toggled(bool)), this, SLOT(UpdateBool(bool)));
-}
-
-void CFEBioParamEdit::UpdateFloat(double newValue)
-{
-	assert(m_param.isValid() && (m_param.type() == FE_PARAM_DOUBLE));
-	m_param.value<double>() = newValue;
-}
-
-void CFEBioParamEdit::UpdateBool(bool newValue)
-{
-	assert(m_param.isValid() && (m_param.type() == FE_PARAM_BOOL));
-	m_param.value<bool>() = newValue;
-}
-
-QWidget* CFEBioParamEdit::GetEditor() const
-{
-	return m_editor;
 }

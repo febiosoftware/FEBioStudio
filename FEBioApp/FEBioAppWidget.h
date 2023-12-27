@@ -25,24 +25,59 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QWidget>
+#include <QCheckBox>
+#include <FECore/FEParam.h>
+#include "../FEBioStudio/InputWidgets.h"
 
-class CMainWindow;
 class FEBioAppDocument;
 
-class FEBioAppView : public QWidget
+class CFEBioParamEdit : public QObject
 {
 	Q_OBJECT
 
 public:
-	FEBioAppView(CMainWindow* wnd);
+	enum class AlignOptions {
+		ALIGN_LEFT,
+		ALIGN_RIGHT,
+		ALIGN_TOP,
+		ALIGN_BOTTOM,
+		ALIGN_TOP_LEFT,
+		ALIGN_TOP_RIGHT,
+		ALIGN_BOTTOM_LEFT,
+		ALIGN_BOTTOM_RIGHT
+	};
 
-	void setSource(QString filePath, FEBioAppDocument* app);
+public:
+	CFEBioParamEdit(QObject* parent);
+
+	void SetParameter(FEParamValue p) { m_param = p; }
+	void SetEditor(CFloatInput* w);
+	void SetEditor(CDoubleSlider* w);
+	void SetEditor(QCheckBox* w);
+
+	QWidget* GetEditor() const;
 
 public slots:
-	void onModelFinished(bool returnCode);
-	void onModelStarted();
+	void UpdateFloat(double newValue);
+	void UpdateBool(bool newValue);
 
 private:
-	CMainWindow* m_wnd;
-	QWidget* ui;
+	FEParamValue m_param;
+	QWidget* m_editor;
+};
+
+class FEBioAppWidget : public QWidget
+{
+	Q_OBJECT
+public:
+	FEBioAppWidget(FEBioAppDocument* doc);
+
+public slots:
+	void onDataChanged();
+
+	void AddRepaintChild(QWidget* w);
+
+private:
+	FEBioAppDocument* m_doc;
+	std::vector<QWidget*>	m_children;
 };
