@@ -85,6 +85,15 @@ public:
 		m_febSurface = nullptr;
 		m_view = nullptr;
 		m_renderMesh = BuildRenderMesh();
+		UpdateBoundingBox();
+		if (m_box.IsValid())
+		{
+			double f = m_box.GetMaxExtent();
+			if (f == 0) f = 1;
+			CGLCamera& cam = GetCamera();
+			cam.SetTarget(m_box.Center());
+			cam.SetTargetDistance(2.0 * f);
+		}
 	}
 
 	void SetGLView(CGLSceneView* view) { m_view = view; }
@@ -165,7 +174,11 @@ public:
 			f.c[1] = col.map(val[f.n[1]]);
 			f.c[2] = col.map(val[f.n[2]]);
 		}
+
+		UpdateBoundingBox();
 	}
+
+	void UpdateBoundingBox();
 
 private:
 	GMesh* BuildRenderMesh();
@@ -177,6 +190,7 @@ private:
 	CGLSceneView* m_view;
 	QMutex	m_mutex;
 	std::string	m_dataSource;
+	BOX	m_box;
 };
 
 GMesh* GLFEBioScene::BuildRenderMesh()
@@ -232,12 +246,17 @@ GMesh* GLFEBioScene::BuildRenderMesh()
 
 BOX GLFEBioScene::GetBoundingBox()
 {
+	return m_box;
+}
+
+void GLFEBioScene::UpdateBoundingBox()
+{
 	BOX box;
 	if (m_renderMesh)
 	{
 		for (int i = 0; i < m_renderMesh->Nodes(); ++i) box += m_renderMesh->Node(i).r;
 	}
-	return box;
+	m_box = box;
 }
 
 //====================================================================
