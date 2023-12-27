@@ -155,6 +155,9 @@ public:
 	// return the name of a template
 	static string GetColorMapName(int n);
 
+	// return the index of a color map from its name (returns -1 if not found)
+	static int FindColorMapFromName(const std::string& mapName);
+
 	// set the colormap name
 	static void SetColorMapName(int n, const std::string& newName);
 

@@ -33,24 +33,17 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QTabWidget>
-#include <QPaintEvent>
-#include <QMutex>
-#include <QMutexLocker>
 #include "../FEBioStudio/GLSceneView.h"
 #include "../FEBioStudio/InputWidgets.h"
 #include "../FEBioStudio/PlotWidget.h"
-#include "MainWindow.h"
+#include "../FEBioStudio/MainWindow.h"
 #include "FEBioAppDocument.h"
 #include "FEBioAppWidget.h"
+#include "GLFEBioScene.h"
 #include <FECore/FEParam.h>
 #include <FECore/FECoreKernel.h>
 #include <FECore/ElementDataRecord.h>
 #include <FEBioLib/FEBioModel.h>
-#include <MeshLib/GMesh.h>
-#include <FECore/FEMesh.h>
-#include <FECore/FESurface.h>
-#include <GLLib/GLMeshRender.h>
-#include <PostLib/ColorMap.h>
 #include <algorithm>
 
 class CElementDataSource : public CFEBioModelDataSource
@@ -76,188 +69,6 @@ private:
 
 	CPlotData* m_data;
 };
-
-class GLFEBioScene : public CGLScene, public CFEBioModelDataSource
-{
-public:
-	GLFEBioScene(FEBioModel& fem) : m_fem(fem) 
-	{
-		m_febSurface = nullptr;
-		m_view = nullptr;
-		m_renderMesh = BuildRenderMesh();
-		UpdateBoundingBox();
-		if (m_box.IsValid())
-		{
-			double f = m_box.GetMaxExtent();
-			if (f == 0) f = 1;
-			CGLCamera& cam = GetCamera();
-			cam.SetTarget(m_box.Center());
-			cam.SetTargetDistance(2.0 * f);
-		}
-	}
-
-	void SetGLView(CGLSceneView* view) { m_view = view; }
-
-	~GLFEBioScene() 
-	{
-		delete m_febSurface;
-		delete m_renderMesh;
-	}
-
-	void Render(CGLContext& rc) 
-	{
-		QMutexLocker lock(&m_mutex);
-		GLMeshRender render;
-		glEnable(GL_COLOR_MATERIAL);
-		render.RenderGLMesh(m_renderMesh);
-	}
-
-	// get the bounding box of the entire scene
-	BOX GetBoundingBox();
-
-	// get the bounding box of the current selection
-	BOX GetSelectionBox() { return GetBoundingBox(); }
-
-	void SetDataSourceName(const std::string& dataName)
-	{
-		m_dataSource = dataName;
-	}
-
-public:
-	void Clear() 
-	{
-		QMutexLocker lock(&m_mutex);
-		if (m_renderMesh == nullptr) return;
-		for (int i = 0; i < m_renderMesh->Nodes(); ++i)
-		{
-			FENode& feNode = m_febSurface->Node(i);
-			GMesh::NODE& gnode = m_renderMesh->Node(i);
-			gnode.r = feNode.m_r0;
-		}
-		m_renderMesh->UpdateNormals();
-	}
-
-	void Update(double time) 
-	{
-		QMutexLocker lock(&m_mutex);
-		if (m_renderMesh == nullptr) return;
-
-		int ndof = -1;
-		if (m_dataSource.empty() == false)
-		{
-			ndof = m_fem.GetDOFIndex(m_dataSource.c_str());
-		}
-
-		vector<double> val(m_renderMesh->Nodes(), 0.0);
-		for (int i = 0; i < m_renderMesh->Nodes(); ++i)
-		{
-			FENode& feNode = m_febSurface->Node(i);
-			GMesh::NODE& gnode = m_renderMesh->Node(i);
-			gnode.r = feNode.m_rt;
-
-			if (ndof >= 0) val[i] = feNode.get(ndof);
-		}
-		m_renderMesh->UpdateNormals();
-
-		auto rng = std::minmax_element(begin(val), end(val));
-		double vmin = *rng.first;
-		double vmax = *rng.second;
-		if (vmax == vmin) vmax++;
-			
-		Post::CColorMap col;
-		col.SetRange(vmin, vmax);
-		int NF = 0;
-		for (int i = 0; i < m_renderMesh->Faces(); ++i)
-		{
-			GMesh::FACE& f = m_renderMesh->Face(i);
-			f.c[0] = col.map(val[f.n[0]]);
-			f.c[1] = col.map(val[f.n[1]]);
-			f.c[2] = col.map(val[f.n[2]]);
-		}
-
-		UpdateBoundingBox();
-	}
-
-	void UpdateBoundingBox();
-
-private:
-	GMesh* BuildRenderMesh();
-
-private:
-	FEBioModel& m_fem;
-	GMesh* m_renderMesh;
-	FESurface* m_febSurface;
-	CGLSceneView* m_view;
-	QMutex	m_mutex;
-	std::string	m_dataSource;
-	BOX	m_box;
-};
-
-GMesh* GLFEBioScene::BuildRenderMesh()
-{
-	FEMesh& febMesh = m_fem.GetMesh();
-	FESurface* surf = febMesh.ElementBoundarySurface();
-	m_febSurface = surf;
-
-	int NN = surf->Nodes();
-
-	// we need number of triangles, so count them
-	int NF = 0;
-	int NE = surf->Elements();
-	for (int i = 0; i < NE; ++i)
-	{
-		FESurfaceElement& el = surf->Element(i);
-		if (el.Nodes() == 3) NF += 1;
-		if (el.Nodes() == 4) NF += 2;
-	}
-
-	GMesh* mesh = new GMesh;
-	mesh->Create(NN, NF);
-
-	for (int i = 0; i < NN; ++i)
-	{
-		GMesh::NODE& gnode = mesh->Node(i);
-		FENode& fenode = surf->Node(i);
-		gnode.r = fenode.m_r0;
-	}
-
-	NF = 0;
-	for (int i = 0; i < NE; ++i)
-	{
-		FESurfaceElement& el = surf->Element(i);
-		GMesh::FACE& f1 = mesh->Face(NF++);
-		f1.n[0] = el.m_lnode[0];
-		f1.n[1] = el.m_lnode[1];
-		f1.n[2] = el.m_lnode[2];
-
-		if (el.Nodes() == 4)
-		{
-			GMesh::FACE& f2 = mesh->Face(NF++);
-			f2.n[0] = el.m_lnode[2];
-			f2.n[1] = el.m_lnode[3];
-			f2.n[2] = el.m_lnode[0];
-		}
-	}
-	mesh->Update();
-	mesh->AutoSmooth(60.0);
-
-	return mesh;
-}
-
-BOX GLFEBioScene::GetBoundingBox()
-{
-	return m_box;
-}
-
-void GLFEBioScene::UpdateBoundingBox()
-{
-	BOX box;
-	if (m_renderMesh)
-	{
-		for (int i = 0; i < m_renderMesh->Nodes(); ++i) box += m_renderMesh->Node(i).r;
-	}
-	m_box = box;
-}
 
 //====================================================================
 FEBioAppUIBuilder::FEBioAppUIBuilder() : ui(nullptr), app(nullptr)
@@ -819,6 +630,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 	double smoothingAngle = 60.0;
 	int timeFormat = 0;
 	int modelId = -1;
+	std::string colMap;
 	if (!tag.isleaf())
 	{
 		++tag;
@@ -854,24 +666,22 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 			}
 			else if (tag == "map")
 			{
-				const char* sztype = tag.AttributeValue("type");
-				if (sztype) mapName = sztype;
+				const char* szdata = tag.AttributeValue("data");
+				if (szdata) mapName = szdata;
 
-				if (tag.isleaf()) ++tag;
-				else
+				const char* szmin = tag.AttributeValue("rangeMin", true);
+				const char* szmax = tag.AttributeValue("rangeMax", true);
+				if (szmin && szmax)
 				{
-					++tag;
-					do
-					{
-						if (tag == "range")
-						{
-							brange = true;
-							tag.value(rng, 2);
-						}
-						++tag;
-					} while (!tag.isend());
-					++tag;
+					brange = true;
+					rng[0] = atof(szmin);
+					rng[1] = atof(szmax);
 				}
+
+				const char* szcol = tag.AttributeValue("colorMap", true);
+				if (szcol) colMap = szcol;
+
+				++tag;
 			}
 			else if (tag == "rotation")
 			{
@@ -899,6 +709,8 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 	
 	GLFEBioScene* scene = new GLFEBioScene(*app->GetFEBioModel());
 	scene->SetDataSourceName(mapName);
+	if (colMap.empty() == false) scene->SetColorMap(colMap);
+	if (brange) scene->SetDataRange(rng[0], rng[1]);
 	app->AddModelDataSource(scene);
 
 	CGLManagedSceneView* pgl = new CGLManagedSceneView(scene);

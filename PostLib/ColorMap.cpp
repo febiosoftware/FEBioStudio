@@ -468,6 +468,15 @@ string ColorMapManager::GetColorMapName(int n)
 	}
 }
 
+int ColorMapManager::FindColorMapFromName(const std::string& mapName)
+{
+	for (int i=0; i<m_map.size(); ++i)
+	{
+		if (m_map[i].name() == mapName) return i;
+	}
+	return -1;
+}
+
 // set the colormap name
 void ColorMapManager::SetColorMapName(int n, const std::string& newName)
 {
