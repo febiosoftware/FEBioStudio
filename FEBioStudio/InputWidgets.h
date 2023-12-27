@@ -231,7 +231,7 @@ private slots:
     void boxValueChanged(double val)
     {
         slider->blockSignals(true);
-        slider->setValue(100 * (val-m_min)/(m_max-m_min));
+        slider->setValue(m_steps * (val-m_min)/(m_max-m_min));
         slider->blockSignals(false);
 
         emit valueChanged(val);
@@ -239,7 +239,7 @@ private slots:
 
     void sliderValueChanged(int val)
     {
-        double realVal = (double)val/100*(m_max-m_min) + m_min;
+        double realVal = (double)val/ m_steps *(m_max-m_min) + m_min;
 
         box->blockSignals(true);
         box->setValue(realVal);
