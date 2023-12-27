@@ -125,7 +125,7 @@ SOFTWARE.*/
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
-#include "FEBioAppDocument.h"
+#include <FEBioApp/FEBioAppDocument.h>
 
 using std::stringstream;
 

@@ -26,7 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 #include <FECore/FEParam.h>
-#include "InputWidgets.h"
+#include "../FEBioStudio/InputWidgets.h"
 
 class CMainWindow;
 class FEBioAppDocument;

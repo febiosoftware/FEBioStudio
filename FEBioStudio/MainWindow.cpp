@@ -106,7 +106,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInit.h>
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
-#include "FEBioAppDocument.h"
+#include <FEBioApp/FEBioAppDocument.h>
 
 extern GLColor col[];
 

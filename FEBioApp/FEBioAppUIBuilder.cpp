@@ -36,9 +36,9 @@ SOFTWARE.*/
 #include <QPaintEvent>
 #include <QMutex>
 #include <QMutexLocker>
-#include "GLSceneView.h"
-#include "InputWidgets.h"
-#include "PlotWidget.h"
+#include "../FEBioStudio/GLSceneView.h"
+#include "../FEBioStudio/InputWidgets.h"
+#include "../FEBioStudio/PlotWidget.h"
 #include "MainWindow.h"
 #include "FEBioAppDocument.h"
 #include "FEBioAppView.h"

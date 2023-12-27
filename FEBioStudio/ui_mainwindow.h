@@ -84,7 +84,7 @@ SOFTWARE.*/
 #include "XMLDocument.h"
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
-#include "FEBioAppView.h"
+#include <FEBioApp/FEBioAppView.h>
 #include <vector>
 
 class QProcess;
