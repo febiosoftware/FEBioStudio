@@ -310,8 +310,35 @@ bool FreeRegion::IsInside(int x, int y) const
 	return ((nint>0) && (nint % 2));
 }
 
+CGLPivot::CGLPivot(CGLView* view) : m_Ttor(view), m_Rtor(view), m_Stor(view)
+{
+	m_mode = PIVOT_SELECTION_MODE::SELECT_NONE;
+	m_pos = vec3d(0, 0, 0);
+}
+
+void CGLPivot::Render(int ntrans, double scale, bool bact)
+{
+	switch (ntrans)
+	{
+	case TRANSFORM_MOVE  : m_Ttor.SetScale(scale); m_Ttor.Render(m_mode, bact); break;
+	case TRANSFORM_ROTATE: m_Rtor.SetScale(scale); m_Rtor.Render(m_mode, bact); break;
+	case TRANSFORM_SCALE : m_Stor.SetScale(scale); m_Stor.Render(m_mode, bact); break;
+	}
+}
+
+int CGLPivot::Pick(int ntrans, int x, int y)
+{
+	switch (ntrans)
+	{
+	case TRANSFORM_MOVE  : m_mode = m_Ttor.Pick(x, y); break;
+	case TRANSFORM_ROTATE: m_mode = m_Rtor.Pick(x, y); break;
+	case TRANSFORM_SCALE : m_mode = m_Stor.Pick(x, y); break;
+	}
+	return m_mode;
+}
+
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_Ttor(this), m_Rtor(this), m_Stor(this), m_select(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
 {
 	m_bsnap = false;
 
@@ -330,14 +357,12 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 
 	m_nsnap = SNAP_NONE;
 
-	m_pivot = PIVOT_NONE;
-	m_bpivot = false;
-	m_pv = vec3d(0, 0, 0);
-
 	m_bshift = false;
 	m_bctrl = false;
 
 	m_bpick = false;
+
+	m_userPivot = false;
 
 	m_coord = COORD_GLOBAL;
 
@@ -478,6 +503,8 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	m_bextrude = false;
 
+	int pivotMode = m_pivot.GetSelectionMode();
+
 	if (but == Qt::LeftButton)
 	{
 		GLViewSettings& vs = GetViewSettings();
@@ -488,8 +515,8 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 			repaint();
 			return;
 		}
-		if ((m_bshift || m_bctrl) && (m_pivot == PIVOT_NONE)) m_bsel = true;
-		if ((m_pivot != PIVOT_NONE) && m_bshift && (ntrans == TRANSFORM_MOVE))
+		if ((m_bshift || m_bctrl) && (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)) m_bsel = true;
+		if ((pivotMode != PIVOT_SELECTION_MODE::SELECT_NONE) && m_bshift && (ntrans == TRANSFORM_MOVE))
 		{
 			GMeshObject* po = dynamic_cast<GMeshObject*>(pdoc->GetActiveObject());
 			int nmode = pdoc->GetItemMode();
@@ -520,12 +547,12 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 		// determine the direction of scale
 		if (!m_bshift)
 		{
-			if (m_pivot == PIVOT_X) m_ds = vec3d(1, 0, 0);
-			if (m_pivot == PIVOT_Y) m_ds = vec3d(0, 1, 0);
-			if (m_pivot == PIVOT_Z) m_ds = vec3d(0, 0, 1);
-			if (m_pivot == PIVOT_XY) m_ds = vec3d(1, 1, 0);
-			if (m_pivot == PIVOT_YZ) m_ds = vec3d(0, 1, 1);
-			if (m_pivot == PIVOT_XZ) m_ds = vec3d(1, 0, 1);
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) m_ds = vec3d(1, 0, 0);
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) m_ds = vec3d(0, 1, 0);
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) m_ds = vec3d(0, 0, 1);
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_XY) m_ds = vec3d(1, 1, 0);
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_YZ) m_ds = vec3d(0, 1, 1);
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_XZ) m_ds = vec3d(1, 0, 1);
 		}
 		else m_ds = vec3d(1, 1, 1);
 
@@ -621,8 +648,8 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-
-	if (m_pivot == PIVOT_NONE)
+	int pivotMode = m_pivot.GetSelectionMode();
+	if (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)
 	{
 		if (but1 && !m_bsel)
 		{
@@ -720,12 +747,12 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 			{
 				if ((m_coord == COORD_LOCAL) || postDoc) ps->GetOrientation().Inverse().RotateVector(dr);
 
-				if (m_pivot == PIVOT_X) dr.y = dr.z = 0;
-				if (m_pivot == PIVOT_Y) dr.x = dr.z = 0;
-				if (m_pivot == PIVOT_Z) dr.x = dr.y = 0;
-				if (m_pivot == PIVOT_XY) dr.z = 0;
-				if (m_pivot == PIVOT_YZ) dr.x = 0;
-				if (m_pivot == PIVOT_XZ) dr.y = 0;
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) dr.y = dr.z = 0;
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) dr.x = dr.z = 0;
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) dr.x = dr.y = 0;
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_XY) dr.z = 0;
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_YZ) dr.x = 0;
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_XZ) dr.y = 0;
 
 				if ((m_coord == COORD_LOCAL) || postDoc) dr = ps->GetOrientation() * dr;
 
@@ -770,9 +797,9 @@ void CGLView::mouseMoveEvent(QMouseEvent* ev)
 
 			if (f != 0)
 			{
-				if (m_pivot == PIVOT_X) q = quatd(f, vec3d(1, 0, 0));
-				if (m_pivot == PIVOT_Y) q = quatd(f, vec3d(0, 1, 0));
-				if (m_pivot == PIVOT_Z) q = quatd(f, vec3d(0, 0, 1));
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) q = quatd(f, vec3d(1, 0, 0));
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(f, vec3d(0, 1, 0));
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(f, vec3d(0, 0, 1));
 
 				FESelection* ps = nullptr;
 				if (mdoc) ps = mdoc->GetCurrentSelection();
@@ -885,7 +912,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 
 	CGLCamera& cam = pdoc->GetView()->GetCamera();
 
-	if (m_pivot == PIVOT_NONE)
+	int pivotMode = m_pivot.GetSelectionMode();
+	if (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)
 	{
 		if (but == Qt::LeftButton)
 		{
@@ -1054,9 +1082,9 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 			if (m_wt != 0)
 			{
 				quatd q;
-				if (m_pivot == PIVOT_X) q = quatd(m_wt, vec3d(1,0,0));
-				if (m_pivot == PIVOT_Y) q = quatd(m_wt, vec3d(0,1,0));
-				if (m_pivot == PIVOT_Z) q = quatd(m_wt, vec3d(0,0,1));
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_X) q = quatd(m_wt, vec3d(1,0,0));
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Y) q = quatd(m_wt, vec3d(0,1,0));
+				if (pivotMode == PIVOT_SELECTION_MODE::SELECT_Z) q = quatd(m_wt, vec3d(0,0,1));
 
 				if ((m_coord == COORD_LOCAL) || postDoc)
 				{
@@ -1099,6 +1127,8 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 
 	CGLCamera& cam = scene->GetView().GetCamera();
 
+	int pivotMode = m_pivot.GetSelectionMode();
+
 	Qt::KeyboardModifiers key = ev->modifiers();
 	bool balt   = (key & Qt::AltModifier);
 	Qt::MouseEventSource eventSource = ev->source();
@@ -1125,7 +1155,7 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 	else
 	{
 		if (balt) {
-			if (m_pivot == PIVOT_NONE)
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)
 			{
 				int y = ev->angleDelta().y();
 				if (y > 0) cam.Zoom(0.95f);
@@ -1137,7 +1167,7 @@ void CGLView::wheelEvent(QWheelEvent* ev)
 			}
 		}
 		else {
-			if (m_pivot == PIVOT_NONE)
+			if (pivotMode == PIVOT_SELECTION_MODE::SELECT_NONE)
 			{
 				int dx = ev->pixelDelta().x();
 				int dy = ev->pixelDelta().y();
@@ -1380,7 +1410,7 @@ void CGLView::RenderScene()
 	RenderPivot();
 
 	// render selection
-	if (m_bsel && (m_pivot == PIVOT_NONE)) RenderRubberBand();
+	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
 
 	if (view.m_bselbrush) RenderBrush();
 
@@ -1391,19 +1421,6 @@ void CGLView::RenderScene()
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-
-	// Update GLWidget string table for post rendering
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc)
-	{
-		if (postDoc && postDoc->IsValid())
-		{
-			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
-			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
-			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
-			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
-		}
-	}
 
 	// update the triad
 	if (m_ptriad) m_ptriad->setOrientation(cam.GetOrientation());
@@ -1416,6 +1433,7 @@ void CGLView::RenderScene()
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc == nullptr)
 	{
 		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
@@ -1517,13 +1535,6 @@ void CGLView::RenderScene()
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rect(), QString("FPS: %1").arg(1.0 / sec), to);
 		painter.end();
-	}
-
-	// if the camera is animating, we need to redraw
-	if (cam.IsAnimating())
-	{
-		cam.Update();
-		QTimer::singleShot(50, this, SLOT(repaintEvent()));
 	}
 }
 
@@ -1867,7 +1878,7 @@ void CGLView::RenderImageData()
 			glColor3ub(c.r, c.g, c.b);
 
 			// If we are in the multi-panel view, throw in the slices as well
-			if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+			if(doc->GetUIViewMode() == CGLDocument::SLICE_VIEW)
 			{
 				CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
 				sliceView->RenderSlicers(m_rc);
@@ -1929,12 +1940,7 @@ void CGLView::RenderPivot(bool bpick)
 	bool bact = true;
 	if ((nitem == ITEM_MESH) && (nsel != SELECT_OBJECT)) bact = false;
 	int ntrans = pdoc->GetTransformMode();
-	switch (ntrans)
-	{
-	case TRANSFORM_MOVE  : m_Ttor.SetScale(d); m_Ttor.Render(m_pivot, bact); break;
-	case TRANSFORM_ROTATE: m_Rtor.SetScale(d); m_Rtor.Render(m_pivot, bact); break;
-	case TRANSFORM_SCALE : m_Stor.SetScale(d); m_Stor.Render(m_pivot, bact); break;
-	}
+	m_pivot.Render(ntrans, d, bact);
 
 	// restore the modelview matrix
 	glPopMatrix();
@@ -2268,7 +2274,7 @@ void CGLView::SetPlaneCut(double d[4])
 bool CGLView::SelectPivot(int x, int y)
 {
 	// store the old pivot mode
-	int old_mode = m_pivot;
+	int oldMode = m_pivot.GetSelectionMode();
 
 	// get the transformation mode
 	int ntrans = GetDocument()->GetTransformMode();
@@ -2276,13 +2282,8 @@ bool CGLView::SelectPivot(int x, int y)
 	makeCurrent();
 
 	// get a new pivot mode
-	switch (ntrans)
-	{
-	case TRANSFORM_MOVE  : m_pivot = m_Ttor.Pick(x, y); break;
-	case TRANSFORM_ROTATE: m_pivot = m_Rtor.Pick(x, y); break;
-	case TRANSFORM_SCALE : m_pivot = m_Stor.Pick(x, y); break;
-	}
-	return (m_pivot != old_mode);
+	int newMode = m_pivot.Pick(ntrans, x, y);
+	return (newMode != oldMode);
 }
 
 //-----------------------------------------------------------------------------
@@ -2500,8 +2501,7 @@ vec3d CGLView::GetPickPosition()
 
 vec3d CGLView::GetPivotPosition()
 {
-	if (m_bpivot) return m_pv;
-	else
+	if (m_userPivot == false)
 	{
 		CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 		if (pdoc == nullptr) return vec3d(0,0,0);
@@ -2515,14 +2515,16 @@ vec3d CGLView::GetPivotPosition()
 			if (fabs(r.y)<1e-7) r.y = 0;
 			if (fabs(r.z)<1e-7) r.z = 0;
 		}
-		m_pv = r;
-		return r;
+
+		m_pivot.SetPosition(r);
 	}
+
+	return m_pivot.GetPosition();
 }
 
-void CGLView::SetPivot(const vec3d& r)
+void CGLView::SetPivotPosition(const vec3d& r)
 { 
-	m_pv = r;
+	m_pivot.SetPosition(r);
 	repaint();
 }
 
@@ -2537,6 +2539,9 @@ quatd CGLView::GetPivotRotation()
 
 	return quatd(0.0, 0.0, 0.0, 1.0);
 }
+
+bool CGLView::GetPivotUserMode() const { return m_userPivot; }
+void CGLView::SetPivotUserMode(bool b) { m_userPivot = b; }
 
 // this function will only adjust the camera if the currently
 // selected object is too close.

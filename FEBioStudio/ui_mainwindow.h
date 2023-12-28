@@ -1532,28 +1532,31 @@ public:
 		}
 		else if (config == ::CMainWindow::MODEL_CONFIG)
 		{
-            if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::MODEL_VIEW)
-            {
-                stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
-
-                modelViewer->SetFilter(FILTER_NONE);
-            }
-            else if(m_wnd->GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
-            {
-                stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
-                modelViewer->SetFilter(FILTER_IMAGES);
-            }
-            else
-            {
-                modelViewer->SetFilter(FILTER_IMAGES);
-                stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
-            }
+			CGLDocument* doc = m_wnd->GetGLDocument();
+			if (doc)
+			{
+				switch (doc->GetUIViewMode())
+				{
+				case CGLDocument::MODEL_VIEW: 
+					stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+					modelViewer->SetFilter(FILTER_NONE);
+					break;
+				case CGLDocument::SLICE_VIEW:
+					stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
+					modelViewer->SetFilter(FILTER_IMAGES);
+					break;
+				case CGLDocument::TIME_VIEW_2D:
+					stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
+					modelViewer->SetFilter(FILTER_IMAGES);
+					break;
+				}
+			}
 
 			// build mode
 			menuEdit->menuAction()->setVisible(true);
 			menuEditPost->menuAction()->setVisible(false);
 			menuEditTxt->menuAction()->setVisible(false);
-            menuEditXml->menuAction()->setVisible(false);
+			menuEditXml->menuAction()->setVisible(false);
 			menuPhysics->menuAction()->setVisible(true);
 			menuPost->menuAction()->setVisible(false);
 			menuRecord->menuAction()->setVisible(true);

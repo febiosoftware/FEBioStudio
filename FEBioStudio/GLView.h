@@ -85,6 +85,30 @@ enum Planecut_Mode
 	HIDE_ELEMENTS
 };
 
+class CGLPivot
+{
+public:
+	CGLPivot(CGLView* view);
+
+	int GetSelectionMode() const { return m_mode; }
+
+	void SetPosition(const vec3d& r) { m_pos = r; }
+
+	vec3d GetPosition() const { return m_pos; }
+
+	void Render(int ntrans, double scale, bool bact);
+
+	int Pick(int ntrans, int x, int y);
+
+public:
+	GTranslator		m_Ttor;	//!< the translate manipulator
+	GRotator		m_Rtor;	//!< the rotate manipulator
+	GScalor			m_Stor;	//!< the scale manipulator
+
+	int		m_mode;		// pivot selection mode
+	vec3d	m_pos;		// pivot point
+};
+
 //-----------------------------------------------------------------------------
 // tag structure
 struct GLTAG
@@ -197,14 +221,16 @@ public:
 
 	vec3d GetPickPosition();
 
+public:
 	vec3d GetPivotPosition();
 	quatd GetPivotRotation();
 
-	void SetPivot(const vec3d& r);
+	void SetPivotPosition(const vec3d& r);
 
-	bool GetPivotMode() { return m_bpivot; }
-	void SetPivotMode(bool b) { m_bpivot = b; }
+	bool GetPivotUserMode() const;
+	void SetPivotUserMode(bool b);
 
+public:
 	void changeViewMode(View_Mode vm);
 
 	void ShowContextMenu(bool b);
@@ -313,8 +339,6 @@ protected:
 	bool	m_bsel;		// selection mode
 	bool	m_bextrude;	// extrusion mode
 
-	int		m_pivot;	// pivot selection mode
-
 public:
 	bool	m_bpick;
 
@@ -323,13 +347,8 @@ protected:
 
 	int		m_coord;	// coordinate system
 
-	bool	m_bpivot;	// user-pivot = true
-	vec3d	m_pv;		// pivot point
-
-	// manipulators
-	GTranslator		m_Ttor;	//!< the translate manipulator
-	GRotator		m_Rtor;	//!< the rotate manipulator
-	GScalor			m_Stor;	//!< the scale manipulator
+	CGLPivot m_pivot;
+	bool	m_userPivot;
 
 	// triad
 	GLBox*			m_ptitle;

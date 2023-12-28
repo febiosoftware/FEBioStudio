@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "GLScene.h"
 #include <GLLib/GLContext.h>
 #include <QMouseEvent>
+#include <QTimer>
 
 static bool initGlew = false;
 
@@ -188,11 +189,30 @@ void CGLSceneView::paintGL()
 	PrepScene();
 	RenderBackground();
 	RenderScene();
+
+	// if the camera is animating, we need to redraw
+	CGLScene* scene = GetActiveScene();
+	if (scene && scene->GetCamera().IsAnimating())
+	{
+		scene->GetCamera().Update();
+		QTimer::singleShot(50, this, SLOT(repaintEvent()));
+	}
 }
 
 void CGLSceneView::RenderScene()
 {
+	CGLScene* scene = GetActiveScene();
+	if (scene)
+	{
+		CGLCamera& cam = scene->GetCamera();
+		cam.Transform();
 
+		CGLContext rc;
+		rc.m_cam = &cam;
+		rc.m_settings = GetViewSettings();
+		rc.m_view = nullptr;
+		scene->Render(rc);
+	}
 }
 
 // setup the projection matrix
@@ -388,6 +408,8 @@ void CGLSceneView::mouseMoveEvent(QMouseEvent* ev)
 			if (y0 < y1) cam.Zoom(1.0f / 0.95f);
 		}
 	}
+	else return;
+
 	repaint();
 
 	m_prevPos = ev->pos();
@@ -431,7 +453,6 @@ void CGLSceneView::wheelEvent(QWheelEvent* ev)
 			if (y > 0) cam.Zoom(0.95f);
 			if (y < 0) cam.Zoom(1.0f / 0.95f);
 		}
-		repaint();
 	}
 	else
 	{
@@ -486,18 +507,3 @@ CGLManagedSceneView::CGLManagedSceneView(CGLScene* scene, QWidget* parent) : CGL
 }
 
 CGLManagedSceneView::~CGLManagedSceneView() { delete m_scene; }
-
-void CGLManagedSceneView::RenderScene() 
-{ 
-	if (m_scene)
-	{
-		CGLCamera& cam = m_scene->GetCamera();
-		cam.Transform();
-
-		CGLContext rc;
-		rc.m_cam = &cam;
-		rc.m_settings = GetViewSettings();
-		rc.m_view = nullptr;
-		m_scene->Render(rc);
-	}
-}

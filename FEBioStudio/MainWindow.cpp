@@ -1318,19 +1318,17 @@ void CMainWindow::UpdateGraphs(bool breset)
 
 void CMainWindow::UpdateUiView()
 {
-    if(GetGLDocument()->GetView()->imgView == CGView::MODEL_VIEW)
-    {
-        RedrawGL();
-    }
-    if(GetGLDocument()->GetView()->imgView == CGView::SLICE_VIEW)
-    {
-        ui->sliceView->Update();
-        RedrawGL();
-    }
-    else
-    {
-        ui->timeView2D->Update();
-    }  
+	CGLDocument* doc = GetGLDocument();
+	if (doc == nullptr) return;
+
+	switch (doc->GetUIViewMode())
+	{
+	case CGLDocument::MODEL_VIEW  : RedrawGL(); break;
+	case CGLDocument::SLICE_VIEW  : ui->sliceView->Update(); RedrawGL(); break;
+	case CGLDocument::TIME_VIEW_2D: ui->timeView2D->Update(); break;
+	default:
+		break;
+	}
 }
 
 //-----------------------------------------------------------------------------

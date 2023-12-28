@@ -32,12 +32,6 @@ SOFTWARE.*/
 class CGView : public FSObject
 {
 public:
-    enum UiView
-    {
-        MODEL_VIEW, SLICE_VIEW, TIME_VIEW_2D
-    };
-
-public:
 	CGView();
 	~CGView();
 
@@ -74,7 +68,6 @@ public:
 	double	m_ffar;
 	double	m_fov;
 	double	m_ar;
-    UiView imgView;
 
 protected:
 	CGLCamera m_cam;	//!< current camera
