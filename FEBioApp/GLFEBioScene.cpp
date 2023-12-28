@@ -203,8 +203,7 @@ void GLFEBioScene::BuildRenderMesh()
 	mesh->AutoSmooth(60.0);
 
 	m_renderMesh = mesh;
-
-	m_glmesh.CreateFromGMesh(*mesh);
+	Update(0.0);
 }
 
 BOX GLFEBioScene::GetBoundingBox()
