@@ -609,6 +609,8 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 		else if (att.m_name == "rotation") att.value(rot, 3);
 	}
 
+	GLFEBioScene* scene = new GLFEBioScene(*app->GetFEBioModel());
+
 	bool brange = false;
 	double rng[2];
 	std::string mapName;
@@ -637,6 +639,42 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 
 				++tag;
 			}
+			if (tag == "object")
+			{
+				GLSceneObject* po = new GLSceneObject;
+
+				XMLAtt* acol = tag.AttributePtr("color");
+				if (acol)
+				{
+					double v[3];
+					acol->value(v, 3);
+					po->SetColor(GLColor::FromRGBf(v[0], v[1], v[2]));
+				}
+
+				XMLAtt* apos = tag.AttributePtr("position");
+				if (apos)
+				{
+					double v[3];
+					apos->value(v, 3);
+					po->SetPosition(vec3d(v[0], v[1], v[2]));
+				}
+
+				XMLAtt* arot = tag.AttributePtr("rotation");
+				if (arot)
+				{
+					double v[3];
+					arot->value(v, 3);
+					vec3d r(v[0], v[1], v[2]);
+					quatd q(r * DEG2RAD);
+					po->SetRotation(q);
+				}
+
+				const char* szfile = tag.AttributeValue("file");
+				if (po->LoadFromFile(szfile) == false) delete po;
+				else scene->AddSceneObject(po);
+
+				++tag;
+			}
 			else
 			{
 				tag.skip();
@@ -645,7 +683,6 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 		} while (!tag.isend());
 	}
 
-	GLFEBioScene* scene = new GLFEBioScene(*app->GetFEBioModel());
 	scene->SetDataSourceName(mapName);
 	if (colMap.empty() == false) scene->SetColorMap(colMap);
 	if (brange) scene->SetDataRange(rng[0], rng[1]);

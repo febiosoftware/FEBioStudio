@@ -125,10 +125,10 @@ void GLMesh::EndMesh()
 	m_bvalid = ((m_vr != nullptr) && (m_vertexCount != 0));
 }
 
-void GLMesh::CreateFromGMesh(const GMesh& gmsh)
+void GLMesh::CreateFromGMesh(const GMesh& gmsh, unsigned int flags)
 {
 	int faces = gmsh.Faces();
-	AllocVertexBuffers(3 * faces, FLAG_NORMAL | FLAG_COLOR);
+	AllocVertexBuffers(3 * faces, flags);
 
 	BeginMesh();
 	for (int i = 0; i < gmsh.Faces(); ++i)

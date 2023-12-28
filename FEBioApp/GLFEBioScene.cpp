@@ -31,6 +31,55 @@ SOFTWARE.*/
 #include <FECore/FESurface.h>
 #include <FEBioLib/FEBioModel.h>
 #include <PostLib/ColorMap.h>
+#include <MeshIO/STLimport.h>
+#include <FEMLib/FSProject.h>
+#include <GeomLib/GObject.h>
+
+GLSceneObject::GLSceneObject() 
+{
+	m_col = GLColor::White();
+}
+
+void GLSceneObject::Render()
+{
+	glPushMatrix();
+	glColor3ub(m_col.r, m_col.g, m_col.b);
+	glTranslated(m_pos.x, m_pos.y, m_pos.z);
+	double w = m_rot.GetAngle();
+	if (w != 0.0)
+	{
+		vec3d r = m_rot.GetVector();
+		glRotated(w * RAD2DEG, r.x, r.y, r.z);
+	}
+	m_mesh.Render();
+	glPopMatrix();
+}
+
+void GLSceneObject::SetColor(GLColor c)
+{
+	m_col = c;
+}
+
+void GLSceneObject::SetPosition(vec3d v)
+{
+	m_pos = v;
+}
+
+void GLSceneObject::SetRotation(quatd q)
+{
+	m_rot = q;
+}
+
+bool GLSceneObject::LoadFromFile(const std::string& fileName)
+{
+	FSProject tmp;
+	STLimport stl(tmp);
+	if (stl.Load(fileName.c_str()) == false) return false;
+	GObject* po = tmp.GetFSModel().GetModel().Object(0);
+	GMesh* m = po->GetRenderMesh();
+	if (m) m_mesh.CreateFromGMesh(*m, GLMesh::FLAG_NORMAL);
+	return true;
+}
 
 GLFEBioScene::GLFEBioScene(FEBioModel& fem) : m_fem(fem)
 {
@@ -55,6 +104,8 @@ GLFEBioScene::~GLFEBioScene()
 {
 	delete m_febSurface;
 	delete m_renderMesh;
+	for (int i = 0; i < m_obj.size(); ++i) delete m_obj[i];
+	m_obj.clear();
 }
 
 void GLFEBioScene::SetDataRange(double rngMin, double rngMax)
@@ -63,6 +114,11 @@ void GLFEBioScene::SetDataRange(double rngMin, double rngMax)
 	if (rngMin > rngMax) { double tmp = rngMax; rngMax = rngMin; rngMin = tmp; }
 	m_userRange[0] = rngMin;
 	m_userRange[1] = rngMax;
+}
+
+void GLFEBioScene::AddSceneObject(GLSceneObject* po)
+{
+	m_obj.push_back(po);
 }
 
 void GLFEBioScene::SetColorMap(const std::string& colorMapName)
@@ -151,7 +207,10 @@ void GLFEBioScene::Render(CGLContext& rc)
 	glColor3ub(255, 255, 255);
 	m_col.GetTexture().MakeCurrent();
 	m_glmesh.Render();
+	glDisable(GL_TEXTURE_1D);
+	for (auto po : m_obj) po->Render();
 	glPopAttrib();
+
 }
 
 void GLFEBioScene::BuildRenderMesh()

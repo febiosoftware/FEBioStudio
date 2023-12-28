@@ -34,6 +34,27 @@ SOFTWARE.*/
 class GMesh;
 class FESurface;
 
+class GLSceneObject
+{
+public:
+	GLSceneObject();
+	bool LoadFromFile(const std::string& fileName);
+
+	void SetColor(GLColor c);
+
+	void SetPosition(vec3d v);
+
+	void SetRotation(quatd q);
+
+	void Render();
+
+private:
+	GLTriMesh	m_mesh;
+	GLColor		m_col;
+	vec3d		m_pos;
+	quatd		m_rot;
+};
+
 class GLFEBioScene : public CGLScene, public CFEBioModelDataSource
 {
 public:
@@ -56,6 +77,8 @@ public:
 	void SetColorMap(const std::string& colorMapName);
 
 	void SetDataRange(double rngMin, double rngMax);
+
+	void AddSceneObject(GLSceneObject* po);
 
 public: // overrides from CFEBioModelDataSource
 
@@ -82,4 +105,5 @@ private:
 
 	BOX	m_box;
 	Post::CColorTexture m_col;
+	std::vector<GLSceneObject*>	m_obj;
 };
