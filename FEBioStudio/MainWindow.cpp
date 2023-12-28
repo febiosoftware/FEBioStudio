@@ -2366,10 +2366,7 @@ void CMainWindow::UpdateUIConfig()
 					if (feappDoc)
 					{
 						ui->setUIConfig(CMainWindow::APP_CONFIG);
-						ui->app->setSource(QString::fromStdString(feappDoc->GetDocFilePath()), feappDoc);
-
-						QObject::connect(feappDoc, SIGNAL(modelFinished(bool)), ui->app, SLOT(onModelFinished(bool)));
-						QObject::connect(feappDoc, SIGNAL(modelStarted()), ui->app, SLOT(onModelStarted()));
+						ui->app->setActiveDocument(feappDoc);
 					}
 					else ui->setUIConfig(HTML_CONFIG);
 				}
@@ -2555,6 +2552,11 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
 		ui->modelViewer->Clear();
+	}
+
+	if (dynamic_cast<FEBioAppDocument*>(doc))
+	{
+		ui->app->removeDocument(dynamic_cast<FEBioAppDocument*>(doc));
 	}
 
 	// now, remove from the doc manager

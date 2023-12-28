@@ -28,42 +28,67 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLabel>
 #include <QMessageBox>
+#include <QStackedWidget>
 #include "FEBioAppUIBuilder.h"
 #include "FEBioAppDocument.h"
 
-FEBioAppView::FEBioAppView(CMainWindow* wnd) : QWidget(wnd)
+class FEBioAppViewUI
 {
-	m_wnd = wnd;
-	QVBoxLayout* l = new QVBoxLayout;
-	ui = new QLabel("Hello, world!");
-	l->addWidget(ui);
-	setLayout(l);
-}
+public:
+	CMainWindow* wnd;
+	QStackedWidget* stack;
+	QMap<FEBioAppDocument*, QWidget*> widgets;
 
-void FEBioAppView::setSource(QString filePath, FEBioAppDocument* app)
-{
-	delete ui;
-	FEBioAppUIBuilder UIBuilder;
-	ui = UIBuilder.BuildUIFromFile(filePath, app);
-	if (ui == nullptr) ui = new QLabel("FAILED TO READ FILE!!");
-	layout()->addWidget(ui);
-}
-
-void FEBioAppView::onModelStarted()
-{
-	m_wnd->setWindowTitle("[RUNNING]");
-}
-
-void FEBioAppView::onModelFinished(bool returnCode)
-{
-	if (returnCode)
+public:
+	void setup(QWidget* parent)
 	{
-		QMessageBox::information(m_wnd, "FEBio App", "FEBio completed successfully!");
+		QVBoxLayout* l = new QVBoxLayout;
+		stack = new QStackedWidget;
+		stack->addWidget(new QLabel("No UI available"));
+		l->addWidget(stack);
+		parent->setLayout(l);
+	}
+};
+
+FEBioAppView::FEBioAppView(CMainWindow* wnd) : QWidget(wnd), ui(new FEBioAppViewUI)
+{
+	ui->wnd = wnd;
+	ui->setup(this);
+}
+
+void FEBioAppView::setActiveDocument(FEBioAppDocument* app)
+{
+	// see if we already have a UI for this document
+	QWidget* w = nullptr;
+	if (ui->widgets.contains(app))
+	{
+		w = ui->widgets.value(app);
 	}
 	else
 	{
-		QMessageBox::critical(m_wnd, "FEBio App", "FEBio failed!");
+		// build a new widget
+		FEBioAppUIBuilder UIBuilder;
+		w = UIBuilder.BuildUIFromFile(QString::fromStdString(app->GetDocFilePath()), app);
+		if (w == nullptr) QMessageBox::critical(this, "FEBio Studio", "Failed to read file!");
+		else
+		{
+			ui->widgets[app] = w;
+			ui->stack->addWidget(w);
+		}
 	}
-	repaint();
-	m_wnd->UpdateTitle();
+
+	if (w) ui->stack->setCurrentWidget(w);
+	else ui->stack->setCurrentIndex(0);
+}
+
+void FEBioAppView::removeDocument(FEBioAppDocument* app)
+{
+	if (ui->widgets.contains(app))
+	{
+		QWidget* w = ui->widgets.value(app);
+		ui->stack->setCurrentIndex(0);
+		ui->stack->removeWidget(w);
+		ui->widgets.remove(app);
+		delete w;
+	}
 }

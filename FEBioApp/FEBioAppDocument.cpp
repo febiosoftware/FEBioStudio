@@ -48,6 +48,7 @@ private:
 
 FEBioAppDocument::FEBioAppDocument(CMainWindow* wnd) : CDocument(wnd), m_fem(nullptr)
 {
+	SetIcon(":/icons/febiorun.png");
 	m_forceStop = false;
 	m_isInitialized = false;
 	m_isRunning = false;
@@ -182,11 +183,6 @@ void FEBioAppDocument::stopModel()
 	m_forceStop = true;
 }
 
-void FEBioAppDocument::onFEBioFinished(bool b)
-{
-	emit modelFinished(b);
-}
-
 void FEBioAppDocument::RunFEBioModel()
 {
 	if (m_fem == nullptr) return;
@@ -215,6 +211,7 @@ void FEBioAppDocument::RunFEBioModel()
 		{
 			emit modelStarted();
 			b = m_fem->Solve();
+			if (m_forceStop) b = true;
 			emit modelFinished(b);
 		}
 	}

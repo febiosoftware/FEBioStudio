@@ -88,6 +88,8 @@ QWidget* FEBioAppUIBuilder::BuildUIFromFile(QString filePath, FEBioAppDocument* 
 	if (app == nullptr) return nullptr;
 	this->app = app;
 
+	ui = nullptr;
+
 	XMLReader xml;
 	std::string filename = filePath.toStdString();
 	if (xml.Open(filename.c_str()) == false) return nullptr;

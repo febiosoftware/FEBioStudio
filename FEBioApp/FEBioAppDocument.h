@@ -63,7 +63,6 @@ public:
 public slots:
 	void runModel();
 	void stopModel();
-	void onFEBioFinished(bool b);
 
 signals:
 	void modelStarted();

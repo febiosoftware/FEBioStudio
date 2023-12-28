@@ -73,11 +73,12 @@ class FEBioAppWidget : public QWidget
 	Q_OBJECT
 public:
 	FEBioAppWidget(FEBioAppDocument* doc);
+	void AddRepaintChild(QWidget* w);
 
 public slots:
 	void onDataChanged();
-
-	void AddRepaintChild(QWidget* w);
+	void onModelStarted();
+	void onModelFinished(bool returnCode);
 
 private:
 	FEBioAppDocument* m_doc;

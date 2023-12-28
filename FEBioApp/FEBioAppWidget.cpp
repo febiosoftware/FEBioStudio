@@ -25,15 +25,40 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioAppWidget.h"
 #include "FEBioAppDocument.h"
+#include "../FEBioStudio/MainWindow.h"
+#include <QMessageBox>
 
 FEBioAppWidget::FEBioAppWidget(FEBioAppDocument* doc) : m_doc(doc)
 {
 	QObject::connect(doc, SIGNAL(dataChanged()), this, SLOT(onDataChanged()));
+	QObject::connect(doc, SIGNAL(modelFinished(bool)), this, SLOT(onModelFinished(bool)));
+	QObject::connect(doc, SIGNAL(modelStarted()), this, SLOT(onModelStarted()));
 }
 
 void FEBioAppWidget::onDataChanged()
 {
 	for (auto w : m_children) w->repaint();
+}
+
+void FEBioAppWidget::onModelStarted()
+{
+	QString fileName = QString::fromStdString(m_doc->GetDocFileName());
+	window()->setWindowTitle(QString("[RUNNING %1]").arg(fileName));
+}
+
+void FEBioAppWidget::onModelFinished(bool returnCode)
+{
+	if (returnCode)
+	{
+		QMessageBox::information(this, "FEBio App", "FEBio completed successfully!");
+	}
+	else
+	{
+		QMessageBox::critical(this, "FEBio App", "FEBio failed!");
+	}
+	repaint();
+	CMainWindow* wnd = dynamic_cast<CMainWindow*>(window());
+	if (wnd) wnd->UpdateTitle();
 }
 
 void FEBioAppWidget::AddRepaintChild(QWidget* w)

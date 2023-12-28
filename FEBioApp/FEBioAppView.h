@@ -29,6 +29,8 @@ SOFTWARE.*/
 class CMainWindow;
 class FEBioAppDocument;
 
+class FEBioAppViewUI;
+
 class FEBioAppView : public QWidget
 {
 	Q_OBJECT
@@ -36,13 +38,10 @@ class FEBioAppView : public QWidget
 public:
 	FEBioAppView(CMainWindow* wnd);
 
-	void setSource(QString filePath, FEBioAppDocument* app);
+	void setActiveDocument(FEBioAppDocument* app);
 
-public slots:
-	void onModelFinished(bool returnCode);
-	void onModelStarted();
+	void removeDocument(FEBioAppDocument* app);
 
 private:
-	CMainWindow* m_wnd;
-	QWidget* ui;
+	FEBioAppViewUI* ui;
 };
