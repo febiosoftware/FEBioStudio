@@ -232,10 +232,14 @@ void FEBioAppUIBuilder::parseButton(XMLTag& tag, QBoxLayout* playout)
 
 void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 {
-	const char* sztxt = tag.AttributeValue("text");
-
-	// size of graph
+	const char* sztxt = nullptr;
 	int size[2] = { 400, 400 };
+
+	for (XMLAtt& att : tag.m_att)
+	{
+		if      (att.m_name == "text") sztxt = att.cvalue();
+		else if (att.m_name == "size") att.value(size, 2);
+	}
 
 	XMLReader& xml = *tag.m_preader;
 
@@ -244,7 +248,7 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 	FEBioModel* fem = app->GetFEBioModel();
 
 	CPlotWidget* plotWidget = new CPlotWidget(0);
-	plotWidget->setTitle(QString(sztxt));
+	if (sztxt) plotWidget->setTitle(QString(sztxt));
 //	plotWidget->showLegend(false);
 
 	if (!tag.isleaf())
@@ -252,18 +256,7 @@ void FEBioAppUIBuilder::parseGraph(XMLTag& tag, QBoxLayout* playout)
 		++tag;
 		do
 		{
-			if (tag == "size")
-			{
-				int user_size[2];
-				int nread = tag.value(user_size, 2);
-				if (nread == 2)
-				{
-					if (user_size[0] > 100) size[0] = user_size[0];
-					if (user_size[1] > 100) size[1] = user_size[1];
-				}
-				++tag;
-			}
-			else if (tag == "data")
+			if (tag == "data")
 			{
 				const char* sztxt = tag.AttributeValue("text", true);
 
@@ -507,19 +500,16 @@ void FEBioAppUIBuilder::parseInput(XMLTag& tag, QBoxLayout* playout)
 		}
 		else
 		{
-			CFloatInput* edit = new CFloatInput;
-			pi->SetEditor(edit);
+			pi->SetEditor(new CFloatInput);
 		}
 	}
 	if (param.type() == FE_PARAM_BOOL)
 	{
-		QCheckBox* pcheck = new QCheckBox;
-		pi->SetEditor(pcheck);
+		pi->SetEditor(new QCheckBox);
 	}
 	if (param.type() == FE_PARAM_INT)
 	{
-//		QLineEdit* pedit = new QLineEdit; pedit->setValidator(new QIntValidator);
-//		pi->SetWidget(pedit); pw = pedit;
+		pi->SetEditor(new CIntInput);
 	}
 
 	QWidget* pw = pi->GetEditor(); assert(pw);
@@ -605,57 +595,28 @@ void FEBioAppUIBuilder::parseTabGroup(XMLTag& tag, QBoxLayout* playout)
 
 void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 {
-	char sz[256] = { 0 };
-	strcpy(sz, tag.AttributeValue("title"));
-
-	// size of plot view
+	const char* sztxt = nullptr;
 	int size[2] = { 400, 400 };
+	double bgc[3] = { 0.8, 0.8, 1.0 };
+	double rot[3] = { 0, 0, 0 };
+	for (XMLAtt& att : tag.m_att)
+	{
+		if      (att.m_name == "text"    ) sztxt = att.cvalue();
+		else if (att.m_name == "size"    ) att.value(size, 2);
+		else if (att.m_name == "bg_color") att.value(bgc, 3);
+		else if (att.m_name == "rotation") att.value(rot, 3);
+	}
 
 	bool brange = false;
 	double rng[2];
 	std::string mapName;
-	XMLReader& xml = *tag.m_preader;
-	double bgc[3] = { 0.8, 0.8, 1.0 };
-	double fgc[3] = { 0.0, 0.0, 0.0 };
-	double w[3] = { 0, 0, 0 };
-	double smoothingAngle = 60.0;
-	int timeFormat = 0;
-	int modelId = -1;
 	std::string colMap;
 	if (!tag.isleaf())
 	{
 		++tag;
 		do
 		{
-			if (tag == "size")
-			{
-				int user_size[2];
-				int nread = tag.value(user_size, 2);
-				if (nread == 2)
-				{
-					if (user_size[0] > 100) size[0] = user_size[0];
-					if (user_size[1] > 100) size[1] = user_size[1];
-				}
-				++tag;
-			}
-			else if (tag == "model")
-			{
-//				const char* szmodel = tag.szvalue();
-//				modelId = m_data->GetModelIndex(szmodel); assert(modelId >= 0);
-//				if (modelId < 0) throw 1;
-				++tag;
-			}
-			else if (tag == "bg_color")
-			{
-				tag.value(bgc, 3);
-				++tag;
-			}
-			else if (tag == "fg_color")
-			{
-				tag.value(fgc, 3);
-				++tag;
-			}
-			else if (tag == "map")
+			if (tag == "map")
 			{
 				const char* szdata = tag.AttributeValue("data");
 				if (szdata) mapName = szdata;
@@ -674,52 +635,38 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 
 				++tag;
 			}
-			else if (tag == "rotation")
-			{
-				tag.value(w, 3);
-				++tag;
-			}
-			else if (tag == "smoothing_angle")
-			{
-				tag.value(smoothingAngle);
-				++tag;
-			}
-			else if (tag == "time_format")
-			{
-				tag.value(timeFormat);
-				++tag;
-			}
 			else
 			{
-				xml.SkipTag(tag);
+				tag.skip();
 				++tag;
 			}
 		} while (!tag.isend());
 	}
 
-	
 	GLFEBioScene* scene = new GLFEBioScene(*app->GetFEBioModel());
 	scene->SetDataSourceName(mapName);
 	if (colMap.empty() == false) scene->SetColorMap(colMap);
 	if (brange) scene->SetDataRange(rng[0], rng[1]);
+
+	double d2r = PI / 180.0;
+	vec3d R = vec3d(rot[0], rot[1], rot[2])*d2r;
+	if (R.norm2() > 0)
+	{
+		CGLCamera& cam = scene->GetCamera();
+		cam.SetOrientation(quatd(R));
+		cam.Update(true);
+	}
+	
 	app->AddModelDataSource(scene);
 
 	CGLManagedSceneView* pgl = new CGLManagedSceneView(scene);
 	ui->AddRepaintChild(pgl);
 	pgl->setMinimumSize(QSize(size[0], size[1]));
 	pgl->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
+	GLViewSettings& vs = pgl->GetViewSettings();
+	vs.m_col1 = GLColor::FromRGBf(bgc[0], bgc[1], bgc[2]);
+	vs.m_col2 = GLColor::FromRGBf(bgc[0], bgc[1], bgc[2]);
 	playout->addWidget(pgl);
 
 	scene->SetGLView(pgl);
-
-/*	pgl->SetTimeFormat(timeFormat);
-	pgl->SetSmoothingAngle(smoothingAngle);	// must be set before SetFEModel is called
-	pgl->SetFEModel(m_data, modelId);
-	pgl->SetDataSource(szmap);
-	pgl->SetRotation(w[0], w[1], w[2]);
-	if (brange) pgl->SetDataRange(rng[0], rng[1]);
-	pgl->SetBackgroundColor(bgc[0], bgc[1], bgc[2]);
-	pgl->SetForegroundColor(fgc[0], fgc[1], fgc[2]);
-	m_dlg->AddPlot3D(pgl);
-*/
 }
