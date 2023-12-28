@@ -80,7 +80,7 @@ void CImageSliceView::Update()
 
     if(doc)
     {   
-        if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+        if(doc->GetUIViewMode() == CGLDocument::SLICE_VIEW)
         {
             m_xSlice->Update();
             m_ySlice->Update();

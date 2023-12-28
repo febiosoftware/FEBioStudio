@@ -1848,7 +1848,7 @@ void CGLView::RenderImageData()
 			glColor3ub(c.r, c.g, c.b);
 
 			// If we are in the multi-panel view, throw in the slices as well
-			if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+			if(doc->GetUIViewMode() == CGLDocument::SLICE_VIEW)
 			{
 				CImageSliceView* sliceView = m_pWnd->GetImageSliceView();
 				sliceView->RenderSlicers(m_rc);
