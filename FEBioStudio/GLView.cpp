@@ -1392,19 +1392,6 @@ void CGLView::RenderScene()
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Update GLWidget string table for post rendering
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc)
-	{
-		if (postDoc && postDoc->IsValid())
-		{
-			GLWidget::addToStringTable("$(filename)", postDoc->GetDocFileName());
-			GLWidget::addToStringTable("$(datafield)", postDoc->GetFieldString());
-			GLWidget::addToStringTable("$(units)", postDoc->GetFieldUnits());
-			GLWidget::addToStringTable("$(time)", postDoc->GetTimeValue());
-		}
-	}
-
 	// update the triad
 	if (m_ptriad) m_ptriad->setOrientation(cam.GetOrientation());
 
@@ -1416,6 +1403,7 @@ void CGLView::RenderScene()
 	QPainter painter(this);
 	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
 
+	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc == nullptr)
 	{
 		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
@@ -1517,13 +1505,6 @@ void CGLView::RenderScene()
 		to.setAlignment(Qt::AlignRight | Qt::AlignTop);
 		painter.drawText(rect(), QString("FPS: %1").arg(1.0 / sec), to);
 		painter.end();
-	}
-
-	// if the camera is animating, we need to redraw
-	if (cam.IsAnimating())
-	{
-		cam.Update();
-		QTimer::singleShot(50, this, SLOT(repaintEvent()));
 	}
 }
 

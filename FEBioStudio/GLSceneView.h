@@ -93,7 +93,6 @@ public:
 	~CGLManagedSceneView();
 
 	CGLScene* GetActiveScene() override { return m_scene; }
-	void RenderScene();
 
 private:
 	CGLScene* m_scene;
