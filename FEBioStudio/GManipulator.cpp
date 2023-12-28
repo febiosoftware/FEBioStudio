@@ -61,7 +61,7 @@ void GTranslator::Render(int npivot, bool bactive)
 		glRotated(90, 0, 1, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_X) glColor3ub(255,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_X) glColor3ub(255,255,0);
 			else glColor3ub(255,0,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
@@ -78,7 +78,7 @@ void GTranslator::Render(int npivot, bool bactive)
 		glRotated(90, -1, 0, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_Y) glColor3ub(255,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y) glColor3ub(255,255,0);
 			else glColor3ub(0,255,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
@@ -94,7 +94,7 @@ void GTranslator::Render(int npivot, bool bactive)
 	{
 		if (bactive)
 		{
-			if (npivot == PIVOT_Z) glColor3ub(255,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z) glColor3ub(255,255,0);
 			else glColor3ub(0,0,255);
 		}
 		else glColor3ub(g.r, g.g, g.b);
@@ -108,7 +108,7 @@ void GTranslator::Render(int npivot, bool bactive)
 	if (bactive)
 	{
 		// XY-plane
-		if (npivot == PIVOT_XY) glColor4ub(255, 255, 0, 128);
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) glColor4ub(255, 255, 0, 128);
 		else glColor4ub(164, 164, 0, 90);
 	//	glPushMatrix();
 		{
@@ -120,7 +120,7 @@ void GTranslator::Render(int npivot, bool bactive)
 	//	glPopMatrix();
 
 		// YZ-plane
-		if (npivot == PIVOT_YZ) glColor4ub(255, 255, 0, 128);
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) glColor4ub(255, 255, 0, 128);
 		else glColor4ub(164, 164, 0, 90);
 		glPushMatrix();
 		{
@@ -133,7 +133,7 @@ void GTranslator::Render(int npivot, bool bactive)
 		glPopMatrix();
 
 		// XZ-plane
-		if (npivot == PIVOT_XZ) glColor4ub(255, 255, 0, 128);
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) glColor4ub(255, 255, 0, 128);
 		else glColor4ub(164, 164, 0, 90);
 		glPushMatrix();
 		{
@@ -169,12 +169,12 @@ int GTranslator::Pick(int x, int  y)
 	// In this case we need to find the closes point
 
 	Intersection intersect;
-	int pivot = PIVOT_NONE;
+	int pivot = PIVOT_SELECTION_MODE::SELECT_NONE;
 	double dmin = 1e99;
 	Quad qxy = {o, o+ax, o+ax+ay, o+ay};
 	if (FastIntersectQuad(ray, qxy, intersect))
 	{
-		pivot = PIVOT_XY;
+		pivot = PIVOT_SELECTION_MODE::SELECT_XY;
 		dmin = ray.direction*(intersect.point - ray.origin);
 	}
 
@@ -184,7 +184,7 @@ int GTranslator::Pick(int x, int  y)
 		double D = ray.direction*(intersect.point - ray.origin);
 		if (D < dmin)
 		{
-			pivot = PIVOT_YZ;
+			pivot = PIVOT_SELECTION_MODE::SELECT_YZ;
 			dmin = D;
 		}
 	}
@@ -195,12 +195,12 @@ int GTranslator::Pick(int x, int  y)
 		double D = ray.direction*(intersect.point - ray.origin);
 		if (D < dmin)
 		{
-			pivot = PIVOT_XZ;
+			pivot = PIVOT_SELECTION_MODE::SELECT_XZ;
 			dmin = D;
 		}
 	}
 
-	if (pivot != PIVOT_NONE) return pivot;
+	if (pivot != PIVOT_SELECTION_MODE::SELECT_NONE) return pivot;
 
 	// now we'll check the individual axes
 	int S = 4;
@@ -215,11 +215,11 @@ int GTranslator::Pick(int x, int  y)
 	vec3d p2 = transform.WorldToScreen(o + ey);
 	vec3d p3 = transform.WorldToScreen(o + ez);
 
-	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_X;
-	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p2.x, (int)p2.y), rt)) return PIVOT_Y;
-	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p3.x, (int)p3.y), rt)) return PIVOT_Z;
+	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_SELECTION_MODE::SELECT_X;
+	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p2.x, (int)p2.y), rt)) return PIVOT_SELECTION_MODE::SELECT_Y;
+	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p3.x, (int)p3.y), rt)) return PIVOT_SELECTION_MODE::SELECT_Z;
 
-	return PIVOT_NONE;
+	return PIVOT_SELECTION_MODE::SELECT_NONE;
 }
 
 //-----------------------------------------------------------------------------
@@ -242,7 +242,7 @@ void GRotator::Render(int npivot, bool bactive)
 		glRotatef(90.f, 0.f, 1.f, 0.f);
 		if (bactive)
 		{
-			if (npivot == PIVOT_X) 
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_X)
 			{
 				glColor4ub(200,0,0,64);
 				gluDisk(pobj, 0, d, N, 1);
@@ -275,7 +275,7 @@ void GRotator::Render(int npivot, bool bactive)
 		glRotatef(90.f, -1.f, 0.f, 0.f);
 		if (bactive)
 		{
-			if (npivot == PIVOT_Y) 
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y)
 			{
 				glColor4ub(0,200,0,64);
 				gluDisk(pobj, 0, d, N, 1);
@@ -307,7 +307,7 @@ void GRotator::Render(int npivot, bool bactive)
 	{
 		if (bactive)
 		{
-			if (npivot == PIVOT_Z) 
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z)
 			{
 				glColor4ub(0,0,255,64);
 				gluDisk(pobj, 0, d, N, 1);
@@ -377,7 +377,7 @@ int GRotator::Pick(int x, int y)
 		p0 = transform.WorldToScreen(o + r0);
 		p1 = transform.WorldToScreen(o + r1);
 
-		if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_X;
+		if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_SELECTION_MODE::SELECT_X;
 	}
 
 
@@ -398,7 +398,7 @@ int GRotator::Pick(int x, int y)
 		p0 = transform.WorldToScreen(o + r0);
 		p1 = transform.WorldToScreen(o + r1);
 
-		if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_Y;
+		if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_SELECTION_MODE::SELECT_Y;
 	}
 
 	// Z-rotation
@@ -415,11 +415,11 @@ int GRotator::Pick(int x, int y)
 		p0 = transform.WorldToScreen(o + r0);
 		p1 = transform.WorldToScreen(o + r1);
 
-		if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_Z;
+		if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_SELECTION_MODE::SELECT_Z;
 	}
 
 
-	return PIVOT_NONE;
+	return PIVOT_SELECTION_MODE::SELECT_NONE;
 }
 
 //-----------------------------------------------------------------------------
@@ -444,7 +444,7 @@ void GScalor::Render(int npivot, bool bactive)
 		glRotated(90, 0, 1, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_X) glColor3ub(255,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_X) glColor3ub(255,255,0);
 			else glColor3ub(255,0,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
@@ -462,7 +462,7 @@ void GScalor::Render(int npivot, bool bactive)
 		glRotated(90, -1, 0, 0);
 		if (bactive)
 		{
-			if (npivot == PIVOT_Y) glColor3ub(255,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Y) glColor3ub(255,255,0);
 			else glColor3ub(0,255,0);
 		}
 		else glColor3ub(g.r, g.g, g.b);
@@ -479,7 +479,7 @@ void GScalor::Render(int npivot, bool bactive)
 	{
 		if (bactive)
 		{
-			if (npivot == PIVOT_Z) glColor3ub(255,255,0);
+			if (npivot == PIVOT_SELECTION_MODE::SELECT_Z) glColor3ub(255,255,0);
 			else glColor3ub(0,0,255);
 		}
 		else glColor3ub(g.r, g.g, g.b);
@@ -494,7 +494,7 @@ void GScalor::Render(int npivot, bool bactive)
 	if (bactive)
 	{
 		// XY-plane
-		if (npivot == PIVOT_XY) glColor4ub(255, 255, 0, 128);
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XY) glColor4ub(255, 255, 0, 128);
 		else glColor4ub(164, 164, 0, 90);
 	//	glPushMatrix();
 		{
@@ -506,7 +506,7 @@ void GScalor::Render(int npivot, bool bactive)
 	//	glPopMatrix();
 
 		// YZ-plane
-		if (npivot == PIVOT_YZ) glColor4ub(255, 255, 0, 128);
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_YZ) glColor4ub(255, 255, 0, 128);
 		else glColor4ub(164, 164, 0, 90);
 		glPushMatrix();
 		{
@@ -519,7 +519,7 @@ void GScalor::Render(int npivot, bool bactive)
 		glPopMatrix();
 
 		// XZ-plane
-		if (npivot == PIVOT_XZ) glColor4ub(255, 255, 0, 128);
+		if (npivot == PIVOT_SELECTION_MODE::SELECT_XZ) glColor4ub(255, 255, 0, 128);
 		else glColor4ub(164, 164, 0, 90);
 		glPushMatrix();
 		{
@@ -555,12 +555,12 @@ int GScalor::Pick(int x, int y)
 	// In this case we need to find the closes point
 
 	Intersection intersect;
-	int pivot = PIVOT_NONE;
+	int pivot = PIVOT_SELECTION_MODE::SELECT_NONE;
 	double dmin = 1e99;
 	Quad qxy = { o, o + ax, o + ax + ay, o + ay };
 	if (FastIntersectQuad(ray, qxy, intersect))
 	{
-		pivot = PIVOT_XY;
+		pivot = PIVOT_SELECTION_MODE::SELECT_XY;
 		dmin = ray.direction*(intersect.point - ray.origin);
 	}
 
@@ -570,7 +570,7 @@ int GScalor::Pick(int x, int y)
 		double D = ray.direction*(intersect.point - ray.origin);
 		if (D < dmin)
 		{
-			pivot = PIVOT_YZ;
+			pivot = PIVOT_SELECTION_MODE::SELECT_YZ;
 			dmin = D;
 		}
 	}
@@ -581,12 +581,12 @@ int GScalor::Pick(int x, int y)
 		double D = ray.direction*(intersect.point - ray.origin);
 		if (D < dmin)
 		{
-			pivot = PIVOT_XZ;
+			pivot = PIVOT_SELECTION_MODE::SELECT_XZ;
 			dmin = D;
 		}
 	}
 
-	if (pivot != PIVOT_NONE) return pivot;
+	if (pivot != PIVOT_SELECTION_MODE::SELECT_NONE) return pivot;
 
 	// now we'll check the individual axes
 	int S = 4;
@@ -601,9 +601,9 @@ int GScalor::Pick(int x, int y)
 	vec3d p2 = transform.WorldToScreen(o + ey);
 	vec3d p3 = transform.WorldToScreen(o + ez);
 
-	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_X;
-	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p2.x, (int)p2.y), rt)) return PIVOT_Y;
-	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p3.x, (int)p3.y), rt)) return PIVOT_Z;
+	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt)) return PIVOT_SELECTION_MODE::SELECT_X;
+	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p2.x, (int)p2.y), rt)) return PIVOT_SELECTION_MODE::SELECT_Y;
+	if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p3.x, (int)p3.y), rt)) return PIVOT_SELECTION_MODE::SELECT_Z;
 
-	return PIVOT_NONE;
+	return PIVOT_SELECTION_MODE::SELECT_NONE;
 }
