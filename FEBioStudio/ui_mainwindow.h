@@ -136,15 +136,11 @@ private:
 
 };
 
-class Ui::CMainWindow
+// The central widget of the main window
+// This class manages the tab widget and all the view classes. 
+class CMainCentralWidget : public QWidget
 {
-	enum
-	{
-		MAX_RECENT_FILES = 15		// max number of recent files
-	};
-
 public:
-
 	// this is the order in which the view widgets are added to the stack widget
 	enum Viewer {
 		HTML_VIEWER,
@@ -157,7 +153,6 @@ public:
 
 public:
 	CMainTabBar* tab;
-	::CMainWindow* m_wnd;
 
 	CentralStackedWidget* stack;
 	CGLViewer* glw;
@@ -166,6 +161,81 @@ public:
 	::XMLTreeView* xmlTree;
 	CImageSliceView* sliceView;
 	::C2DImageTimeView* timeView2D;
+
+public:
+	CMainCentralWidget(CMainWindow* wnd) : m_wnd(wnd)
+	{
+		QVBoxLayout* centralLayout = new QVBoxLayout;
+		centralLayout->setContentsMargins(0, 0, 0, 0);
+		centralLayout->setSpacing(0);
+
+		tab = new CMainTabBar(wnd);
+		tab->setObjectName("tab");
+
+		stack = new CentralStackedWidget(wnd);
+
+		htmlViewer = new QTextBrowser;
+		htmlViewer->setObjectName("htmlview");
+		htmlViewer->setAlignment(Qt::AlignTop | Qt::AlignLeft);
+
+		stack->addWidget(htmlViewer);
+
+		xmlEdit = new XMLEditor(wnd);
+		xmlEdit->setObjectName("xmledit");
+		stack->addWidget(xmlEdit);
+
+		xmlTree = new ::XMLTreeView(wnd);
+		xmlTree->setObjectName("xmlTree");
+		stack->addWidget(xmlTree);
+
+		sliceView = new ::CImageSliceView(wnd);
+		sliceView->setObjectName("sliceView");
+		stack->addWidget(sliceView);
+
+		timeView2D = new ::C2DImageTimeView(wnd);
+		timeView2D->setObjectName("timeView2D");
+		stack->addWidget(timeView2D);
+
+		// create the GL viewer widget
+		glw = new CGLViewer(wnd);
+
+		stack->addWidget(glw);
+
+		centralLayout->addWidget(tab);
+		centralLayout->addWidget(stack);
+		setLayout(centralLayout);
+	}
+
+	void setActiveView(Viewer viewer)
+	{
+		stack->setCurrentIndex(viewer);
+	}
+
+	void SetDocumentTabText(CDocument* doc, QString text, QString tooltip)
+	{
+		int n = tab->findView(doc); assert(n >= 0);
+		if (n >= 0)
+		{
+			tab->setTabText(n, text);
+			tab->setTabToolTip(n, tooltip);
+		}
+	}
+
+private:
+	CMainWindow* m_wnd;
+};
+
+class Ui::CMainWindow
+{
+	enum
+	{
+		MAX_RECENT_FILES = 15		// max number of recent files
+	};
+
+public:
+	::CMainWindow* m_wnd;
+
+	CMainCentralWidget* centralWidget;
 
 	QMenu* menuFile;
 	QMenu* menuEdit;
@@ -333,7 +403,7 @@ public:
 
 	int		m_defaultUnits;
 
-	CUpdateWidget m_updateWidget;
+	CUpdateWidget m_updateWidget; // TODO: Why is this a widget? It is not used as a widget.
 	QString m_serverMessage;
 	bool m_updaterPresent;
 	bool m_updateAvailable;
@@ -386,48 +456,8 @@ public:
 		//wnd->resize(QSize(screenSize.width() * 1.0f, screenSize.height() * 1.0f));
 //		wnd->resize(800, 600);
 
-		QWidget* centralWidget = new QWidget;
-		QVBoxLayout* centralLayout = new QVBoxLayout;
-		centralLayout->setContentsMargins(0, 0, 0, 0);
-		centralLayout->setSpacing(0);
-
-		tab = new CMainTabBar(wnd);
-		tab->setObjectName("tab");
-
-		stack = new CentralStackedWidget(wnd);
-
-		htmlViewer = new QTextBrowser;
-		htmlViewer->setObjectName("htmlview");
-		htmlViewer->setAlignment(Qt::AlignTop | Qt::AlignLeft);
-
-		stack->addWidget(htmlViewer);
-
-		xmlEdit = new XMLEditor(wnd);
-		xmlEdit->setObjectName("xmledit");
-		stack->addWidget(xmlEdit);
-
-		xmlTree = new ::XMLTreeView(wnd);
-		xmlTree->setObjectName("xmlTree");
-		stack->addWidget(xmlTree);
-
-		sliceView = new ::CImageSliceView(wnd);
-		sliceView->setObjectName("sliceView");
-		stack->addWidget(sliceView);
-
-		timeView2D = new ::C2DImageTimeView(wnd);
-		timeView2D->setObjectName("timeView2D");
-		stack->addWidget(timeView2D);
-
-		// create the GL viewer widget
-		glw = new CGLViewer(wnd);
-
-		stack->addWidget(glw);
-
-		centralLayout->addWidget(tab);
-		centralLayout->addWidget(stack);
-		centralWidget->setLayout(centralLayout);
-
-		// set the central widget
+		// build the central widget
+		centralWidget = new CMainCentralWidget(wnd);
 		wnd->setCentralWidget(centralWidget);
 
 		// build the menu
@@ -454,8 +484,8 @@ public:
 		QMetaObject::connectSlotsByName(wnd);
 
 		QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, imageSettingsPanel, &::CImageSettingsPanel::ModelTreeSelectionChanged);
-		QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
-		QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
+		QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, centralWidget->sliceView, &::CImageSliceView::ModelTreeSelectionChanged);
+		QObject::connect(modelViewer, &::CModelViewer::currentObjectChanged, centralWidget->timeView2D, &::C2DImageTimeView::ModelTreeSelectionChanged);
 	}
 
 	QAction* addAction(const QString& title, const QString& name, const QString& iconFile = QString(), bool bcheckable = false)
@@ -1483,8 +1513,8 @@ private:
 public:
 	void ShowDefaultBackground()
 	{
-		htmlViewer->setDocument(nullptr);
-		htmlViewer->setHtml(QString(" \
+		centralWidget->htmlViewer->setDocument(nullptr);
+		centralWidget->htmlViewer->setHtml(QString(" \
 					<!DOCTYPE html> \
 					<html> \
 					<body style = \"background-color:#808080;\"> \
@@ -1524,7 +1554,7 @@ private:
 		pFontToolBar->hide();
 		xmlToolbar->hide();
 
-		glw->glc->hide();
+		centralWidget->glw->glc->hide();
 
 		modelViewer->parentWidget()->hide();
 		buildPanel->parentWidget()->hide();
@@ -1536,17 +1566,15 @@ private:
 
 		fileViewer->parentWidget()->raise();
 
-		stack->setCurrentIndex(Ui::CMainWindow::HTML_VIEWER);
+		centralWidget->setActiveView(CMainCentralWidget::HTML_VIEWER);
 		ShowDefaultBackground();
 	}
-
 	void setHTMLConfig()
 	{
 		CHTMLDocument* htmlDoc = dynamic_cast<CHTMLDocument*>(m_wnd->GetDocument()); assert(htmlDoc);
 
-		if (htmlDoc) htmlViewer->setDocument(htmlDoc->GetText());
-
-		stack->setCurrentIndex(Ui::CMainWindow::HTML_VIEWER);
+		if (htmlDoc) centralWidget->htmlViewer->setDocument(htmlDoc->GetText());
+		centralWidget->setActiveView(CMainCentralWidget::HTML_VIEWER);
 
 		menuEdit->menuAction()->setVisible(false);
 		menuEditPost->menuAction()->setVisible(false);
@@ -1562,7 +1590,7 @@ private:
 		pFontToolBar->hide();
 		xmlToolbar->hide();
 
-		glw->glc->hide();
+		centralWidget->glw->glc->hide();
 
 		modelViewer->parentWidget()->hide();
 		buildPanel->parentWidget()->hide();
@@ -1582,15 +1610,15 @@ private:
 			switch (doc->GetUIViewMode())
 			{
 			case CGLDocument::MODEL_VIEW:
-				stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+				centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
 				modelViewer->SetFilter(FILTER_NONE);
 				break;
 			case CGLDocument::SLICE_VIEW:
-				stack->setCurrentIndex(Ui::CMainWindow::IMG_SLICE);
+				centralWidget->setActiveView(CMainCentralWidget::IMG_SLICE);
 				modelViewer->SetFilter(FILTER_IMAGES);
 				break;
 			case CGLDocument::TIME_VIEW_2D:
-				stack->setCurrentIndex(Ui::CMainWindow::TIME_VIEW_2D);
+				centralWidget->setActiveView(CMainCentralWidget::TIME_VIEW_2D);
 				modelViewer->SetFilter(FILTER_IMAGES);
 				break;
 			}
@@ -1611,7 +1639,7 @@ private:
 		pFontToolBar->show();
 		xmlToolbar->hide();
 
-		glw->glc->show();
+		centralWidget->glw->glc->show();
 
 		modelViewer->parentWidget()->show();
 		buildPanel->parentWidget()->show();
@@ -1625,7 +1653,7 @@ private:
 	}
 	void setPostConfig()
 	{
-		stack->setCurrentIndex(Ui::CMainWindow::GL_VIEWER);
+		centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
 
 		// post mode
 		menuEdit->menuAction()->setVisible(false);
@@ -1642,7 +1670,7 @@ private:
 		pFontToolBar->show();
 		xmlToolbar->hide();
 
-		glw->glc->show();
+		centralWidget->glw->glc->show();
 
 		modelViewer->parentWidget()->hide();
 		buildPanel->parentWidget()->hide();
@@ -1671,12 +1699,12 @@ private:
 
 		if (txtDoc)
 		{
-			xmlEdit->blockSignals(true);
-			xmlEdit->SetDocument(txtDoc->GetText());
-			xmlEdit->blockSignals(false);
+			centralWidget->xmlEdit->blockSignals(true);
+			centralWidget->xmlEdit->SetDocument(txtDoc->GetText());
+			centralWidget->xmlEdit->blockSignals(false);
 		}
 
-		stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
+		centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
 
 		menuEdit->menuAction()->setVisible(false);
 		menuEditPost->menuAction()->setVisible(false);
@@ -1692,7 +1720,7 @@ private:
 		pFontToolBar->hide();
 		xmlToolbar->hide();
 
-		glw->glc->hide();
+		centralWidget->glw->glc->hide();
 
 		modelViewer->parentWidget()->hide();
 		buildPanel->parentWidget()->hide();
@@ -1707,7 +1735,7 @@ private:
 		CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(m_wnd->GetDocument());
 		if (xmlDoc)
 		{
-			xmlTree->setModel(xmlDoc->GetModel());
+			centralWidget->xmlTree->setModel(xmlDoc->GetModel());
 
 			actionEditXmlAsText->blockSignals(true);
 			actionEditXmlAsText->setChecked(xmlDoc->EditingText());
@@ -1715,7 +1743,7 @@ private:
 
 			if (xmlDoc->EditingText())
 			{
-				stack->setCurrentIndex(Ui::CMainWindow::TEXT_VIEWER);
+				centralWidget->setActiveView(CMainCentralWidget::TEXT_VIEWER);
 
 				menuEdit->menuAction()->setVisible(false);
 				menuEditPost->menuAction()->setVisible(false);
@@ -1730,7 +1758,7 @@ private:
 				pFontToolBar->hide();
 				xmlToolbar->show();
 
-				glw->glc->hide();
+				centralWidget->glw->glc->hide();
 
 				modelViewer->parentWidget()->hide();
 				buildPanel->parentWidget()->hide();
@@ -1747,7 +1775,7 @@ private:
 			}
 			else
 			{
-				stack->setCurrentIndex(Ui::CMainWindow::XML_VIEWER);
+				centralWidget->setActiveView(CMainCentralWidget::XML_VIEWER);
 
 				menuEdit->menuAction()->setVisible(false);
 				menuEditPost->menuAction()->setVisible(false);
@@ -1762,7 +1790,7 @@ private:
 				pFontToolBar->hide();
 				xmlToolbar->show();
 
-				glw->glc->hide();
+				centralWidget->glw->glc->hide();
 
 				modelViewer->parentWidget()->hide();
 				buildPanel->parentWidget()->hide();

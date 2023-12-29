@@ -408,23 +408,15 @@ void CMainWindow::UpdateTab(CDocument* doc)
 {
 	if (doc == nullptr) return;
 
-	int n = ui->tab->findView(doc);
-	assert(n >= 0);
-	if (n >= 0)
-	{
-		QString file = QString::fromStdString(doc->GetDocTitle());
-		if (doc->IsModified()) file += "*";
+	QString tabTitle = QString::fromStdString(doc->GetDocTitle());
+	if (doc->IsModified()) tabTitle += "*";
 
-		QString path = QString::fromStdString(doc->GetDocFilePath());
-		if (path.isEmpty() == false) ui->tab->setTabToolTip(n, path); else ui->tab->setTabToolTip(n, "");
+	CFEBioJob* activeJob = CFEBioJob::GetActiveJob();
+	if (activeJob && (activeJob->GetDocument() == doc)) tabTitle += "[running]";
 
-		CFEBioJob* activeJob = CFEBioJob::GetActiveJob();
-		if (activeJob && (activeJob->GetDocument() == doc))
-		{
-			file += "[running]";
-		}
-		ui->tab->setTabText(n, file);
-	}
+	QString tabTooltip = QString::fromStdString(doc->GetDocFilePath());
+
+	ui->centralWidget->SetDocumentTabText(doc, tabTitle, tabTooltip);
 
 	ui->fileViewer->Update();
 }
@@ -473,7 +465,7 @@ void CMainWindow::on_addToProject(const QString& file)
 //-----------------------------------------------------------------------------
 void CMainWindow::on_xmledit_textChanged()
 {
-	QTextDocument* qtxt = ui->xmlEdit->document();
+	QTextDocument* qtxt = ui->centralWidget->xmlEdit->document();
 	if (qtxt == nullptr) return;
 
 	CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
@@ -842,7 +834,7 @@ void CMainWindow::OpenDocument(const QString& fileName)
 		QString fileName_i = QString::fromStdString(sfile);
 		if (filePath == fileName_i)
 		{
-			ui->tab->setCurrentIndex(i);
+			ui->centralWidget->tab->setCurrentIndex(i);
 			QApplication::alert(this);
 			return;
 		}
@@ -1320,8 +1312,8 @@ void CMainWindow::UpdateUiView()
 	switch (doc->GetUIViewMode())
 	{
 	case CGLDocument::MODEL_VIEW  : RedrawGL(); break;
-	case CGLDocument::SLICE_VIEW  : ui->sliceView->Update(); RedrawGL(); break;
-	case CGLDocument::TIME_VIEW_2D: ui->timeView2D->Update(); break;
+	case CGLDocument::SLICE_VIEW  : ui->centralWidget->sliceView->Update(); RedrawGL(); break;
+	case CGLDocument::TIME_VIEW_2D: ui->centralWidget->timeView2D->Update(); break;
 	default:
 		break;
 	}
@@ -1330,17 +1322,17 @@ void CMainWindow::UpdateUiView()
 //-----------------------------------------------------------------------------
 CGLView* CMainWindow::GetGLView()
 {
-	return ui->glw->glview;
+	return ui->centralWidget->glw->glview;
 }
 
 CImageSliceView* CMainWindow::GetImageSliceView()
 {
-    return ui->sliceView;
+    return ui->centralWidget->sliceView;
 }
 
 C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
 {
-    return ui->timeView2D;
+    return ui->centralWidget->timeView2D;
 }
 
 //-----------------------------------------------------------------------------
@@ -1370,8 +1362,8 @@ CImagePanel* CMainWindow::GetImagePanel()
 void CMainWindow::CloseProject()
 {
 	// close all views first
-	int n = ui->tab->count();
-	for (int i = 0; i < n; ++i) ui->tab->closeView(0);
+	int n = ui->centralWidget->tab->count();
+	for (int i = 0; i < n; ++i) ui->centralWidget->tab->closeView(0);
 }
 
 //-----------------------------------------------------------------------------
@@ -1389,7 +1381,7 @@ void CMainWindow::Reset()
 //! Get the active document
 CDocument* CMainWindow::GetDocument() 
 { 
-	return ui->tab->getActiveDoc();
+	return ui->centralWidget->tab->getActiveDoc();
 }
 
 CGLDocument* CMainWindow::GetGLDocument() { return dynamic_cast<CGLDocument*>(GetDocument()); }
@@ -1457,10 +1449,10 @@ void CMainWindow::autoUpdateCheck(bool update)
 	ui->m_updateAvailable = update;
     ui->m_serverMessage = ui->m_updateWidget.getServerMessage();
 
-	int n = ui->tab->findView("Welcome");
+	int n = ui->centralWidget->tab->findView("Welcome");
 	if (n != -1)
 	{
-		ui->tab->getDocument(n)->Activate();
+		ui->centralWidget->tab->getDocument(n)->Activate();
 	}
 }
 
@@ -1809,11 +1801,11 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 		{
 			ev->accept();
 
-			int docs = ui->tab->count();
+			int docs = ui->centralWidget->tab->count();
 			if (docs > 1)
 			{
 				// activate the next document
-				int i = ui->tab->currentIndex();
+				int i = ui->centralWidget->tab->currentIndex();
 
 				// activate next or prev one 
 				if (ev->key() == Qt::Key_Backtab)
@@ -1826,7 +1818,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 					++i;
 					if (i >= docs) i = 0;
 				}
-				ui->tab->setCurrentIndex(i);
+				ui->centralWidget->tab->setCurrentIndex(i);
 			}
 		}
 	}
@@ -2214,7 +2206,7 @@ void CMainWindow::UpdateUI()
 	m_pCmdWnd->Update();
 	if (m_pCurveEdit->visible()) m_pCurveEdit->Update();
 	 */
-	ui->glw->glc->Update();
+	ui->centralWidget->glw->glc->Update();
 	RedrawGL();
 }
 
@@ -2306,7 +2298,7 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 //! Updates the GLView control bar
 void CMainWindow::UpdateGLControlBar()
 {
-	ui->glw->glc->Update();
+	ui->centralWidget->glw->glc->Update();
 }
 
 //-----------------------------------------------------------------------------
@@ -2355,7 +2347,7 @@ void CMainWindow::UpdatePostToolbar()
 //! set the post doc that will be rendered in the GL view
 void CMainWindow::SetActiveDocument(CDocument* doc)
 {
-	int view = ui->tab->findView(doc);
+	int view = ui->centralWidget->tab->findView(doc);
 	if (view == -1)
 	{
 		AddView(doc->GetDocTitle(), doc);
@@ -2369,13 +2361,13 @@ void CMainWindow::SetActiveDocument(CDocument* doc)
 //-----------------------------------------------------------------
 int CMainWindow::Views()
 {
-	return ui->tab->views();
+	return ui->centralWidget->tab->views();
 }
 
 //-----------------------------------------------------------------
 void CMainWindow::SetActiveView(int n)
 {
-	ui->tab->setActiveView(n);
+	ui->centralWidget->tab->setActiveView(n);
 	GetGLView()->UpdateWidgets(false);
 	UpdateUIConfig();
 }
@@ -2383,7 +2375,7 @@ void CMainWindow::SetActiveView(int n)
 //-----------------------------------------------------------------
 int CMainWindow::FindView(CDocument* doc)
 {
-	return ui->tab->findView(doc);
+	return ui->centralWidget->tab->findView(doc);
 }
 
 //-----------------------------------------------------------------------------
@@ -2398,7 +2390,7 @@ GObject* CMainWindow::GetActiveObject()
 void CMainWindow::AddView(const std::string& viewName, CDocument* doc, bool makeActive)
 {
 	string docIcon = doc->GetIcon();
-	ui->tab->addView(viewName, doc, makeActive, docIcon);
+	ui->centralWidget->tab->addView(viewName, doc, makeActive, docIcon);
 	CGLView* glview = GetGLView();
 	glview->ZoomExtents(false);
 	glview->UpdateWidgets(false);
@@ -2458,7 +2450,7 @@ void CMainWindow::OnPostObjectPropsChanged(FSObject* po)
 //-----------------------------------------------------------------------------
 void CMainWindow::CloseView(int n, bool forceClose)
 {
-	CDocument* doc = ui->tab->getDocument(n);
+	CDocument* doc = ui->centralWidget->tab->getDocument(n);
 
 	// make sure this doc has no active jobs running.
 	CFEBioJob* activeJob = CFEBioJob::GetActiveJob();
@@ -2494,7 +2486,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	}
 
 	ui->ShowDefaultBackground();
-	ui->xmlEdit->setDocument(nullptr);
+	ui->centralWidget->xmlEdit->setDocument(nullptr);
 
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
@@ -2505,7 +2497,7 @@ void CMainWindow::CloseView(int n, bool forceClose)
 	m_DocManager->RemoveDocument(n);
 
 	// close the view and update UI
-	ui->tab->closeView(n);
+	ui->centralWidget->tab->closeView(n);
 	UpdateUIConfig();
 }
 
@@ -3547,7 +3539,7 @@ QString CMainWindow::ProjectName()
 
 void CMainWindow::ShowWelcomePage()
 {
-	int n = ui->tab->findView("Welcome");
+	int n = ui->centralWidget->tab->findView("Welcome");
 	if (n == -1)
 	{
 		AddDocument(new CWelcomePage(this));
@@ -3557,11 +3549,11 @@ void CMainWindow::ShowWelcomePage()
 
 void CMainWindow::CloseWelcomePage()
 {
-	int n = ui->tab->findView("Welcome");
+	int n = ui->centralWidget->tab->findView("Welcome");
 	if (n >= 0)
 	{
 		ui->ShowDefaultBackground();
-		ui->tab->tabCloseRequested(n);
+		ui->centralWidget->tab->tabCloseRequested(n);
 	}
 }
 
@@ -3676,7 +3668,7 @@ void CMainWindow::OnDeleteAllMeshData()
 
 QSize CMainWindow::GetEditorSize()
 {
-    return ui->stack->size();
+	return ui->centralWidget->stack->size();
 }
 
 void CMainWindow::on_doCommand(QString msg)

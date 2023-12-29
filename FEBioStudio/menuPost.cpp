@@ -66,7 +66,7 @@ QString warningNoActiveModel = "Please select the view tab to which you want to 
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(ui->tab->getActiveDoc());
+	CPostDocument* doc = GetPostDocument();
 	if (doc== nullptr) return nullptr;
 	return doc->GetGLModel();
 }

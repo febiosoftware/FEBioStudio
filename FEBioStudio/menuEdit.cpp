@@ -136,9 +136,9 @@ void CMainWindow::on_actionDeleteSelection_triggered()
     if(xmlDoc)
     {
         // see if the focus is on the xml tree
-        if(ui->xmlTree->hasFocus())
+        if(ui->centralWidget->xmlTree->hasFocus())
         {
-            ui->xmlTree->on_removeSelectedRow_triggered();
+            ui->centralWidget->xmlTree->on_removeSelectedRow_triggered();
             return;
         }
     }
@@ -1532,11 +1532,11 @@ void CMainWindow::on_actionFindTxt_triggered()
 	{
 		ui->m_lastFindText = txt;
 
-		if (ui->xmlEdit->find(txt) == false)
+		if (ui->centralWidget->xmlEdit->find(txt) == false)
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
 		}
-		else ui->xmlEdit->centerCursor();
+		else ui->centralWidget->xmlEdit->centerCursor();
 	}
 }
 
@@ -1547,11 +1547,11 @@ void CMainWindow::on_actionFindAgain_triggered()
 
 	if (ui->m_lastFindText.isEmpty() == false)
 	{
-		if (ui->xmlEdit->find(ui->m_lastFindText) == false)
+		if (ui->centralWidget->xmlEdit->find(ui->m_lastFindText) == false)
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(ui->m_lastFindText));
 		}
-		else ui->xmlEdit->centerCursor();
+		else ui->centralWidget->xmlEdit->centerCursor();
 	}
 }
 
@@ -1559,19 +1559,19 @@ void CMainWindow::on_actionToggleComment_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->toggleLineComment();
+	ui->centralWidget->xmlEdit->toggleLineComment();
 }
 
 void CMainWindow::on_actionDuplicateLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->duplicateLine();
+	ui->centralWidget->xmlEdit->duplicateLine();
 }
 
 void CMainWindow::on_actionDeleteLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->deleteLine();
+	ui->centralWidget->xmlEdit->deleteLine();
 }
