@@ -373,7 +373,7 @@ public:
 		meshWnd = 0;
 
 		// Check if updater is present 
-		m_updaterPresent = QFile::exists(QApplication::applicationDirPath() + UPDATER);
+		m_updaterPresent = QFile::exists(m_updateWidget.getUpdaterPath());
 		m_updateAvailable = false;
 		m_updateOnClose = false;
 		m_updateDevChannel = false;

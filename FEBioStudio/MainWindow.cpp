@@ -1778,12 +1778,12 @@ void CMainWindow::closeEvent(QCloseEvent* ev)
 			bool bret = true;
 			if(ui->m_updateDevChannel)
 			{
-				QString s = QApplication::applicationDirPath() + UPDATER;
+				QString s = ui->m_updateWidget.getUpdaterPath();
 				bret = updater->startDetached(s, QStringList() << "--devChannel");	
 			}
 			else
 			{
-				QString s = QApplication::applicationDirPath() + UPDATER;
+				QString s = ui->m_updateWidget.getUpdaterPath();
 				bret = updater->startDetached(s, QStringList());
 			}
 			if (bret == false)
