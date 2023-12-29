@@ -2402,9 +2402,6 @@ void CMainWindow::SetActiveDocument(CDocument* doc)
 	{
 		SetActiveView(view);
 	}
-
-	CGLDocument* gldoc = dynamic_cast<CGLDocument*>(doc);
-	if (gldoc) Units::SetUnitSystem(gldoc->GetUnitSystem());
 }
 
 //-----------------------------------------------------------------
