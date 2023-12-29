@@ -44,7 +44,6 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
-class CImagePanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -78,6 +77,7 @@ class CMainWindow : public QMainWindow
 
 public:
 	enum Config {
+		EMPTY_CONFIG,		// no document open
 		HTML_CONFIG,		// html documument (i.e. welcome page)
 		MODEL_CONFIG,		// model document	(i.e. fsm file)
 		POST_CONFIG,		// post document	(i.e. xplt file)
@@ -146,9 +146,6 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
-
-    // get the image panel
-	CImagePanel* GetImagePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);
