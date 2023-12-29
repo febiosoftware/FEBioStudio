@@ -242,30 +242,6 @@ void CMainWindow::on_actionOpen_triggered()
 	}
 }
 
-// void CMainWindow::on_actionReadInfo_triggered()
-// {
-//     QStringList filters;
-// 	filters << "All supported files (*.fsm *.fsprj *.prv *.feb)";
-// 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
-
-// 	QFileDialog dlg(this, "Open");
-// 	dlg.setFileMode(QFileDialog::ExistingFiles);
-// 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-// 	dlg.setDirectory(ui->currentPath);
-// 	dlg.setNameFilters(filters);
-// 	if (dlg.exec())
-// 	{
-//         QStringList files = dlg.selectedFiles();
-//         files.sort();
-
-//         for(auto filename : files)
-//         {
-//             ModelTypeInfoReader reader;
-//             reader.ReadTypeInfo(filename.toStdString());
-//         }
-// 	}
-// }
-
 void CMainWindow::on_actionSave_triggered()
 {
 	CDocument* doc = GetDocument();
@@ -389,7 +365,7 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 	bool success = doc->SaveDocument(fileName.toStdString());
 
 	// clear the command stack
-	if (ui->m_clearUndoOnSave)
+	if (ui->m_settings.clearUndoOnSave)
 	{
 		CGLDocument* gldoc = dynamic_cast<CGLDocument*>(doc);
 		if (gldoc) gldoc->ClearCommandStack();
@@ -1153,7 +1129,7 @@ void CMainWindow::SavePostDoc()
 //-----------------------------------------------------------------------------
 QString CMainWindow::CurrentWorkingDirectory()
 {
-	QString path = ui->currentPath;
+	QString path = ui->m_currentPath;
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
 	{
 		QFileInfo fi(ui->m_project.GetProjectFileName());

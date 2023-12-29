@@ -44,7 +44,6 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
-class CImagePanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -146,9 +145,6 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
-
-    // get the image panel
-	CImagePanel* GetImagePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);

@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <QtCore/QStandardPaths>
 #include <QMessageBox>
 #include <QDirIterator>
+#include <QPushButton>
 #include <QDesktopServices>
 #include <QtCore/QMimeData>
 #include <FSCore/FSObject.h>
@@ -215,7 +216,7 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		readThemeSetting();
 
 	// activate dark style
-	if (ui->m_theme == 1)
+	if (ui->m_settings.uiTheme == 1)
 	{
 		darkStyle();
 
@@ -230,11 +231,11 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 		GLWidget::set_base_color(GLColor(255, 255, 255));
 	}
 #ifdef LINUX
-	if(ui->m_theme == 2)
+	if(ui->m_settings.uiTheme == 2)
 	{
 		qApp->setStyle(QStyleFactory::create("adwaita"));
 	}
-	else if(ui->m_theme == 3)
+	else if(ui->m_settings.uiTheme == 3)
 	{
 		qApp->setStyle(QStyleFactory::create("adwaita-dark"));
 
@@ -283,9 +284,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	CLogger::Instantiate(this);
 
 	// configure FEBio library
-	if (ui->m_loadFEBioConfigFile)
+	if (ui->m_settings.loadFEBioConfigFile)
 	{
-		std::string fileName = ui->m_febioConfigFileName.toStdString();
+		std::string fileName = ui->m_settings.febioConfigFileName.toStdString();
 		FSDir dir(fileName);
 		std::string filepath = dir.expandMacros();
 		FEBio::ConfigureFEBio(filepath.c_str());
@@ -294,9 +295,9 @@ CMainWindow::CMainWindow(bool reset, QWidget* parent) : QMainWindow(parent), ui(
 	// Start AutoSave Timer
 	ui->m_autoSaveTimer = new QTimer(this);
 	QObject::connect(ui->m_autoSaveTimer, &QTimer::timeout, this, &CMainWindow::autosave);
-	if (ui->m_autoSaveInterval > 0)
+	if (ui->m_settings.autoSaveInterval > 0)
 	{
-		ui->m_autoSaveTimer->start(ui->m_autoSaveInterval * 1000);
+		ui->m_autoSaveTimer->start(ui->m_settings.autoSaveInterval * 1000);
 	}
 
 	// Auto Update Check
@@ -319,7 +320,7 @@ CMainWindow::~CMainWindow()
 // get the current theme
 int CMainWindow::currentTheme() const
 {
-	return ui->m_theme;
+	return ui->m_settings.uiTheme;
 }
 
 //-----------------------------------------------------------------------------
@@ -344,21 +345,21 @@ bool CMainWindow::usingDarkTheme() const
 // clear command stack on save
 bool CMainWindow::clearCommandStackOnSave() const
 {
-	return ui->m_clearUndoOnSave;
+	return ui->m_settings.clearUndoOnSave;
 }
 
 //-----------------------------------------------------------------------------
 // set clear command stack on save
 void CMainWindow::setClearCommandStackOnSave(bool b)
 {
-	ui->m_clearUndoOnSave = b;
+	ui->m_settings.clearUndoOnSave = b;
 }
 
 //-----------------------------------------------------------------------------
 // set the current theme
 void CMainWindow::setCurrentTheme(int n)
 {
-	ui->m_theme = n;
+	ui->m_settings.uiTheme = n;
 }
 
 //-----------------------------------------------------------------------------
@@ -669,9 +670,10 @@ void CMainWindow::ReadFile(QueuedFile& qfile)
 		m_fileThread = new CFileThread(this, qfile);
 		m_fileThread->start();
 		ui->statusBar->showMessage(QString("Reading file %1 ...").arg(qfile.m_fileName));
-		ui->fileProgress->setValue(0);
-		ui->statusBar->addPermanentWidget(ui->fileProgress);
-		ui->fileProgress->show();
+		ui->progressBar->setRange(0, 100);
+		ui->progressBar->setValue(0);
+		ui->statusBar->addPermanentWidget(ui->progressBar);
+		ui->progressBar->show();
 		AddLogEntry(QString("Reading file %1 ... ").arg(qfile.m_fileName));
 		QTimer::singleShot(100, this, SLOT(checkFileProgress()));
 	}
@@ -1000,7 +1002,7 @@ bool CMainWindow::CreateNewProject(QString fileName)
 CModelDocument* CMainWindow::CreateNewDocument()
 {
 	CModelDocument* doc = new CModelDocument(this);
-	doc->SetUnitSystem(ui->m_defaultUnits);
+	doc->SetUnitSystem(ui->m_settings.defaultUnits);
 	return doc;
 }
 
@@ -1090,7 +1092,7 @@ void CMainWindow::checkFileProgress()
 	else return;
 
 	int n = (int)(100.f*f);
-	ui->fileProgress->setValue(n);
+	ui->progressBar->setValue(n);
 	if (f < 1.0f) QTimer::singleShot(100, this, SLOT(checkFileProgress()));
 }
 
@@ -1108,7 +1110,7 @@ void CMainWindow::on_finishedReadingFile(bool success, const QString& errorStrin
 void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QString& errorString)
 {
 	ui->statusBar->clearMessage();
-	ui->statusBar->removeWidget(ui->fileProgress);
+	ui->statusBar->removeWidget(ui->progressBar);
 
 	if (success == false)
 	{
@@ -1350,11 +1352,6 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 CRepositoryPanel* CMainWindow::GetDatabasePanel()
 {
 	return ui->databasePanel;
-}
-
-CImagePanel* CMainWindow::GetImagePanel()
-{
-    return ui->imagePanel;
 }
 
 //-----------------------------------------------------------------------------
@@ -1877,7 +1874,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 
 void CMainWindow::SetCurrentFolder(const QString& folder)
 {
-	ui->currentPath = folder;
+	ui->m_currentPath = folder;
 }
 
 // get the current project
@@ -1888,18 +1885,18 @@ FEBioStudioProject* CMainWindow::GetProject()
 
 void CMainWindow::setAutoSaveInterval(int interval)
 {
-	ui->m_autoSaveInterval = interval;
+	ui->m_settings.autoSaveInterval = interval;
 
 	ui->m_autoSaveTimer->stop();
-	if (ui->m_autoSaveInterval > 0)
+	if (ui->m_settings.autoSaveInterval > 0)
 	{
-		ui->m_autoSaveTimer->start(ui->m_autoSaveInterval * 1000);
+		ui->m_autoSaveTimer->start(ui->m_settings.autoSaveInterval * 1000);
 	}
 }
 
 int CMainWindow::autoSaveInterval()
 {
-	return ui->m_autoSaveInterval;
+	return ui->m_settings.autoSaveInterval;
 }
 
 QString CMainWindow::GetServerMessage()
@@ -1920,19 +1917,19 @@ bool CMainWindow::updateAvailable()
 // set/get default unit system for new models
 void CMainWindow::SetDefaultUnitSystem(int n)
 {
-	ui->m_defaultUnits = n;
+	ui->m_settings.defaultUnits = n;
 }
 
 int CMainWindow::GetDefaultUnitSystem() const
 {
-	return ui->m_defaultUnits;
+	return ui->m_settings.defaultUnits;
 }
 
-bool CMainWindow::GetLoadConfigFlag() { return ui->m_loadFEBioConfigFile; }
-QString CMainWindow::GetConfigFileName() { return ui->m_febioConfigFileName; }
+bool CMainWindow::GetLoadConfigFlag() { return ui->m_settings.loadFEBioConfigFile; }
+QString CMainWindow::GetConfigFileName() { return ui->m_settings.febioConfigFileName; }
 
-void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_loadFEBioConfigFile = b; }
-void CMainWindow::SetConfigFileName(QString s) { ui->m_febioConfigFileName = s; }
+void CMainWindow::SetLoadConfigFlag(bool b) { ui->m_settings.loadFEBioConfigFile = b; }
+void CMainWindow::SetConfigFileName(QString s) { ui->m_settings.febioConfigFileName = s; }
 
 void CMainWindow::writeSettings()
 {
@@ -1943,86 +1940,89 @@ void CMainWindow::writeSettings()
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	settings.setValue("version", version);
 	settings.beginGroup("MainWindow");
-	settings.setValue("geometry", saveGeometry());
-	settings.setValue("state", saveState());
-	settings.setValue("theme", ui->m_theme);
-	settings.setValue("autoSaveInterval", ui->m_autoSaveInterval);
-	settings.setValue("defaultUnits", ui->m_defaultUnits);
-	settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
-	settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
-	settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
-	settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
-	settings.setValue("bgStyle", vs.m_nbgstyle);
-	settings.setValue("lighting", vs.m_bLighting);
-	settings.setValue("shadows", vs.m_bShadows);
-	settings.setValue("multiViewProjection", vs.m_nconv);
-//	settings.setValue("showMaterialFibers", vs.m_bfiber);
-	settings.setValue("showMaterialAxes", vs.m_blma);
-	settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
-	settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
-    settings.setValue("showGrid", vs.m_bgrid);
-	settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
-	settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
-	settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
-	settings.setValue("loadFEBioConfigFile", ui->m_loadFEBioConfigFile);
-	settings.setValue("febioConfigFileName", ui->m_febioConfigFileName);
-	QRect rt;
-	rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
-	rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
+	{
+		settings.setValue("geometry", saveGeometry());
+		settings.setValue("state", saveState());
+
+		settings.setValue("theme", ui->m_settings.uiTheme);
+		settings.setValue("autoSaveInterval", ui->m_settings.autoSaveInterval);
+		settings.setValue("defaultUnits", ui->m_settings.defaultUnits);
+		settings.setValue("loadFEBioConfigFile", ui->m_settings.loadFEBioConfigFile);
+		settings.setValue("febioConfigFileName", ui->m_settings.febioConfigFileName);
+
+		settings.setValue("bgColor1", (int)vs.m_col1.to_uint());
+		settings.setValue("bgColor2", (int)vs.m_col2.to_uint());
+		settings.setValue("fgColor", (int)vs.m_fgcol.to_uint());
+		settings.setValue("meshColor", (int)vs.m_mcol.to_uint());
+		settings.setValue("bgStyle", vs.m_nbgstyle);
+		settings.setValue("lighting", vs.m_bLighting);
+		settings.setValue("shadows", vs.m_bShadows);
+		settings.setValue("multiViewProjection", vs.m_nconv);
+		//	settings.setValue("showMaterialFibers", vs.m_bfiber);
+		settings.setValue("showMaterialAxes", vs.m_blma);
+		settings.setValue("fiberScaleFactor", vs.m_fiber_scale);
+		settings.setValue("showFibersOnHiddenParts", vs.m_showHiddenFibers);
+		settings.setValue("showGrid", vs.m_bgrid);
+		settings.setValue("defaultFGColorOption", vs.m_defaultFGColorOption);
+		settings.setValue("defaultFGColor", (int)vs.m_defaultFGColor.to_uint());
+		settings.setValue("defaultWidgetFont", GLWidget::get_default_font());
+		QRect rt;
+		rt = CCurveEditor::preferredSize(); if (rt.isValid()) settings.setValue("curveEditorSize", rt);
+		rt = CGraphWindow::preferredSize(); if (rt.isValid()) settings.setValue("graphWindowSize", rt);
+	}
 	settings.endGroup();
 
 	settings.beginGroup("PostSettings");
-	settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
-	settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
+	{
+		settings.setValue("defaultMap", Post::ColorMapManager::GetDefaultMap());
+		settings.setValue("defaultColorMapRange", Post::CGLColorMap::m_defaultRngType);
+	}
 	settings.endGroup();
 
 	settings.beginGroup("FolderSettings");
-	settings.setValue("currentPath", ui->currentPath);
+	{
+		settings.setValue("currentPath", ui->m_currentPath);
 
-	settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
-	settings.setValue("repositoryFolder", ui->databasePanel->GetRepositoryFolder());
-	settings.setValue("repoMessageTime", ui->databasePanel->GetLastMessageTime());
+		settings.setValue("defaultProjectFolder", ui->m_defaultProjectParent);
+		settings.setValue("repositoryFolder", ui->databasePanel->GetRepositoryFolder());
+		settings.setValue("repoMessageTime", ui->databasePanel->GetLastMessageTime());
 
-	settings.setValue("recentFiles", ui->m_recentFiles);
-	settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
-	settings.setValue("recentProjects", ui->m_recentProjects);
-	settings.setValue("recentPlugins" , ui->m_recentPlugins);
-
+		settings.setValue("recentFiles", ui->m_recentFiles);
+		settings.setValue("recentGeomFiles", ui->m_recentGeomFiles);
+		settings.setValue("recentProjects", ui->m_recentProjects);
+		settings.setValue("recentPlugins", ui->m_recentPlugins);
+	}
 	settings.endGroup();
 
-	if(!ui->m_updateWidget.UUID.isEmpty())
-	{
-		settings.setValue("UUID", ui->m_updateWidget.UUID);
-	}
-
 	settings.beginGroup("LaunchConfigurations");
-	
-	// Create and save a list of launch config names
-	// NOTE: We do not save the first config, which should be the DEFAULT one
-	assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0].type == launchTypes::DEFAULT));
-	QStringList launch_config_names;
-	for(int i=1; i<ui->m_launch_configs.size(); ++i)
 	{
-		CLaunchConfig& confi = ui->m_launch_configs[i];
-		launch_config_names.append(QString::fromStdString(confi.name));
-	}
-	settings.setValue("launchConfigNames", launch_config_names);
+		// Create and save a list of launch config names
+		// NOTE: We do not save the first config, which should be the DEFAULT one
+		assert((ui->m_launch_configs.size() > 0) && (ui->m_launch_configs[0].type == launchTypes::DEFAULT));
+		QStringList launch_config_names;
+		for (int i = 1; i < ui->m_launch_configs.size(); ++i)
+		{
+			CLaunchConfig& confi = ui->m_launch_configs[i];
+			launch_config_names.append(QString::fromStdString(confi.name));
+		}
+		settings.setValue("launchConfigNames", launch_config_names);
 
-	// Save launch configs
-	for(int i = 0; i < launch_config_names.count(); i++)
-	{
-		CLaunchConfig& confi = ui->m_launch_configs[i+1];
+		// Save launch configs
+		for (int i = 0; i < launch_config_names.count(); i++)
+		{
+			CLaunchConfig& confi = ui->m_launch_configs[i + 1];
 
-		QString configName = "launchConfigs/" + launch_config_names[i];
+			QString configName = "launchConfigs/" + launch_config_names[i];
 
-		settings.setValue(configName + "/type", confi.type);
-		settings.setValue(configName + "/path", confi.path.c_str());
-		settings.setValue(configName + "/server", confi.server.c_str());
-		settings.setValue(configName + "/port", confi.port);
-		settings.setValue(configName + "/userName", confi.userName.c_str());
-		settings.setValue(configName + "/remoteDir", confi.remoteDir.c_str());
-		settings.setValue(configName + "/customFile", confi.customFile.c_str());
-		settings.setValue(configName + "/text", confi.getText().c_str());
+			settings.setValue(configName + "/type", confi.type);
+			settings.setValue(configName + "/path", confi.path.c_str());
+			settings.setValue(configName + "/server", confi.server.c_str());
+			settings.setValue(configName + "/port", confi.port);
+			settings.setValue(configName + "/userName", confi.userName.c_str());
+			settings.setValue(configName + "/remoteDir", confi.remoteDir.c_str());
+			settings.setValue(configName + "/customFile", confi.customFile.c_str());
+			settings.setValue(configName + "/text", confi.getText().c_str());
+		}
 	}
 	settings.endGroup();
 
@@ -2052,16 +2052,20 @@ void CMainWindow::writeSettings()
 		}
 	}
 	settings.endGroup();
+
+	if (!ui->m_updateWidget.UUID.isEmpty())
+	{
+		settings.setValue("UUID", ui->m_updateWidget.UUID);
+	}
 }
 
 void CMainWindow::readThemeSetting()
 {
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	settings.beginGroup("MainWindow");
-	ui->m_theme = settings.value("theme", 0).toInt();
+	ui->m_settings.uiTheme = settings.value("theme", 0).toInt();
 	settings.endGroup();
 }
-
 
 void CMainWindow::readSettings()
 {
@@ -2069,122 +2073,128 @@ void CMainWindow::readSettings()
 	QSettings settings("MRLSoftware", "FEBio Studio");
 	QString versionString = settings.value("version", "").toString();
 	settings.beginGroup("MainWindow");
-	restoreGeometry(settings.value("geometry").toByteArray());
-	restoreState(settings.value("state").toByteArray());
-	ui->m_theme = settings.value("theme", 0).toInt();
-	ui->m_autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
-	ui->m_defaultUnits = settings.value("defaultUnits", 0).toInt();
-	vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
-	vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
-	vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
-	vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
-	vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
-	vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
-	vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
-	vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
-//	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
-//	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
-	vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
-	vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
-    vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
-	vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
-	vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
-
-	QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
-	GLWidget::set_default_font(font);
-
-	ui->m_loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
-	ui->m_febioConfigFileName = settings.value("febioConfigFileName", ui->m_febioConfigFileName).toString();
-
-	if (vs.m_defaultFGColorOption != 0)
 	{
-		GLWidget::set_base_color(vs.m_defaultFGColor);
+		restoreGeometry(settings.value("geometry").toByteArray());
+		restoreState(settings.value("state").toByteArray());
+
+		ui->m_settings.uiTheme = settings.value("theme", 0).toInt();
+		ui->m_settings.autoSaveInterval = settings.value("autoSaveInterval", 600).toInt();
+		ui->m_settings.defaultUnits = settings.value("defaultUnits", 0).toInt();
+		ui->m_settings.loadFEBioConfigFile = settings.value("loadFEBioConfigFile", true).toBool();
+		ui->m_settings.febioConfigFileName = settings.value("febioConfigFileName", ui->m_settings.febioConfigFileName).toString();
+
+		vs.m_col1 = GLColor(settings.value("bgColor1", (int)vs.m_col1.to_uint()).toInt());
+		vs.m_col2 = GLColor(settings.value("bgColor2", (int)vs.m_col2.to_uint()).toInt());
+		vs.m_fgcol = GLColor(settings.value("fgColor", (int)vs.m_fgcol.to_uint()).toInt());
+		vs.m_mcol = GLColor(settings.value("meshColor", (int)vs.m_mcol.to_uint()).toInt());
+		vs.m_nbgstyle = settings.value("bgStyle", vs.m_nbgstyle).toInt();
+		vs.m_bLighting = settings.value("lighting", vs.m_bLighting).toBool();
+		vs.m_bShadows = settings.value("shadows", vs.m_bShadows).toBool();
+		vs.m_nconv = settings.value("multiViewProjection", 0).toInt();
+		//	vs.m_bfiber = settings.value("showMaterialFibers", vs.m_bfiber).toBool();
+		//	vs.m_blma = settings.value("showMaterialAxes", vs.m_blma).toBool();
+		vs.m_fiber_scale = settings.value("fiberScaleFactor", vs.m_fiber_scale).toDouble();
+		vs.m_showHiddenFibers = settings.value("showFibersOnHiddenParts", vs.m_showHiddenFibers).toBool();
+		vs.m_bgrid = settings.value("showGrid", vs.m_bgrid).toBool();
+		vs.m_defaultFGColorOption = settings.value("defaultFGColorOption", vs.m_defaultFGColorOption).toInt();
+		vs.m_defaultFGColor = GLColor(settings.value("defaultFGColor", (int)vs.m_defaultFGColor.to_uint()).toInt());
+
+		QFont font = settings.value("defaultWidgetFont", GLWidget::get_default_font()).value<QFont>();
+		GLWidget::set_default_font(font);
+
+		if (vs.m_defaultFGColorOption != 0)
+		{
+			GLWidget::set_base_color(vs.m_defaultFGColor);
+		}
+
+		Units::SetUnitSystem(ui->m_settings.defaultUnits);
+
+		QRect rt;
+		QRect defaultRect(geometry().center().x() - 400, geometry().center().y() - 300, 800, 600);
+		rt = settings.value("curveEditorSize", defaultRect).toRect();
+		if (rt.isValid()) CCurveEditor::setPreferredSize(rt);
+		rt = settings.value("graphWindowSize", defaultRect).toRect();
+		if (rt.isValid()) CGraphWindow::setPreferredSize(rt);
 	}
-
-	Units::SetUnitSystem(ui->m_defaultUnits);
-
-	QRect rt;
-    QRect defaultRect(geometry().center().x() - 400, geometry().center().y() - 300, 800, 600);
-	rt = settings.value("curveEditorSize", defaultRect).toRect();
-	if (rt.isValid()) CCurveEditor::setPreferredSize(rt);
-	rt = settings.value("graphWindowSize", defaultRect).toRect();
-	if (rt.isValid()) CGraphWindow::setPreferredSize(rt);
-
 	settings.endGroup();
 
 	settings.beginGroup("PostSettings");
-	Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
-	Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
+	{
+		Post::ColorMapManager::SetDefaultMap(settings.value("defaultMap", Post::ColorMapManager::JET).toInt());
+		Post::CGLColorMap::m_defaultRngType = settings.value("defaultColorMapRange").toInt();
+	}
 	settings.endGroup();
 
 	settings.beginGroup("FolderSettings");
-	ui->currentPath = settings.value("currentPath", QDir::homePath()).toString();
+	{
+		ui->m_currentPath = settings.value("currentPath", QDir::homePath()).toString();
 
-	ui->m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
-	QString repositoryFolder = settings.value("repositoryFolder").toString();
-	ui->databasePanel->SetRepositoryFolder(repositoryFolder);
-	qint64 lastMessageTime = settings.value("repoMessageTime", -1).toLongLong();
-	ui->databasePanel->SetLastMessageTime(lastMessageTime);
+		ui->m_defaultProjectParent = settings.value("defaultProjectFolder", QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation)).toString();
+		QString repositoryFolder = settings.value("repositoryFolder").toString();
+		ui->databasePanel->SetRepositoryFolder(repositoryFolder);
+		qint64 lastMessageTime = settings.value("repoMessageTime", -1).toLongLong();
+		ui->databasePanel->SetLastMessageTime(lastMessageTime);
 
-	QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
-	QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
-	QStringList recentProjects = settings.value("recentProjects").toStringList(); ui->setRecentProjects(recentProjects);
-	QStringList recentPlugins = settings.value("recentPlugins").toStringList(); ui->setRecentPlugins(recentPlugins);
-
+		QStringList recentFiles = settings.value("recentFiles").toStringList(); ui->setRecentFiles(recentFiles);
+		QStringList recentGeomFiles = settings.value("recentGeomFiles").toStringList(); ui->setRecentGeomFiles(recentGeomFiles);
+		QStringList recentProjects = settings.value("recentProjects").toStringList(); ui->setRecentProjects(recentProjects);
+		QStringList recentPlugins = settings.value("recentPlugins").toStringList(); ui->setRecentPlugins(recentPlugins);
+	}
 	settings.endGroup();
 
 	settings.beginGroup("LaunchConfigurations");
-
-	QStringList launch_config_names;
-	launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
-
-	// clear launch configurations
-	ui->m_launch_configs.clear();
-
-	// create the default launch configuration
-	ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
-
-
-	for(QString conf : launch_config_names)
 	{
-		QString configName = "launchConfigs/" + conf;
+		QStringList launch_config_names;
+		launch_config_names = settings.value("launchConfigNames", launch_config_names).toStringList();
 
-		ui->m_launch_configs.push_back(CLaunchConfig());
+		// clear launch configurations
+		ui->m_launch_configs.clear();
 
-		ui->m_launch_configs.back().name = conf.toStdString();
-		ui->m_launch_configs.back().type = settings.value(configName + "/type").toInt();
-		ui->m_launch_configs.back().path = settings.value(configName + "/path").toString().toStdString();
-		ui->m_launch_configs.back().server = settings.value(configName + "/server").toString().toStdString();
-		ui->m_launch_configs.back().port = settings.value(configName + "/port").toInt();
-		ui->m_launch_configs.back().userName = settings.value(configName + "/userName").toString().toStdString();
-		ui->m_launch_configs.back().remoteDir = settings.value(configName + "/remoteDir").toString().toStdString();
-		ui->m_launch_configs.back().customFile = settings.value(configName + "/customFile").toString().toStdString();
-		ui->m_launch_configs.back().setText(settings.value(configName + "/text").toString().toStdString());
+		// create the default launch configuration
+		ui->m_launch_configs.push_back(CLaunchConfig(launchTypes::DEFAULT, "Default"));
 
+		for (QString conf : launch_config_names)
+		{
+			QString configName = "launchConfigs/" + conf;
+
+			ui->m_launch_configs.push_back(CLaunchConfig());
+
+			ui->m_launch_configs.back().name = conf.toStdString();
+			ui->m_launch_configs.back().type = settings.value(configName + "/type").toInt();
+			ui->m_launch_configs.back().path = settings.value(configName + "/path").toString().toStdString();
+			ui->m_launch_configs.back().server = settings.value(configName + "/server").toString().toStdString();
+			ui->m_launch_configs.back().port = settings.value(configName + "/port").toInt();
+			ui->m_launch_configs.back().userName = settings.value(configName + "/userName").toString().toStdString();
+			ui->m_launch_configs.back().remoteDir = settings.value(configName + "/remoteDir").toString().toStdString();
+			ui->m_launch_configs.back().customFile = settings.value(configName + "/customFile").toString().toStdString();
+			ui->m_launch_configs.back().setText(settings.value(configName + "/text").toString().toStdString());
+		}
 	}
 	settings.endGroup();
 
 	settings.beginGroup("usercolormaps");
-	QStringList l = settings.childGroups();
-	for (int i = 0; i < l.size(); ++i)
 	{
-		QString name = l.at(i);
-		Post::CColorMap c; c.SetColors(0);
-		settings.beginGroup(name);
+		QStringList l = settings.childGroups();
+		for (int i = 0; i < l.size(); ++i)
 		{
-			int m = settings.value("colors", 0).toInt();
-			c.SetColors(m);
-			for (int j = 0; j < m; ++j)
+			QString name = l.at(i);
+			Post::CColorMap c; c.SetColors(0);
+			settings.beginGroup(name);
 			{
-				QString sj = QString::number(j);
-				float    v = settings.value(sj + "/pos").toFloat();
-				QColor col = settings.value(sj + "/col").value<QColor>();
-				c.SetColorPos(j, v);
-				c.SetColor(j, toGLColor(col));
+				int m = settings.value("colors", 0).toInt();
+				c.SetColors(m);
+				for (int j = 0; j < m; ++j)
+				{
+					QString sj = QString::number(j);
+					float    v = settings.value(sj + "/pos").toFloat();
+					QColor col = settings.value(sj + "/col").value<QColor>();
+					c.SetColorPos(j, v);
+					c.SetColor(j, toGLColor(col));
+				}
 			}
+			settings.endGroup();
+			if (c.Colors() > 0) Post::ColorMapManager::AddColormap(name.toStdString(), c);
 		}
-		settings.endGroup();
-		if (c.Colors() > 0) Post::ColorMapManager::AddColormap(name.toStdString(), c);
 	}
 	settings.endGroup();
 
@@ -3463,13 +3473,15 @@ void CMainWindow::ShowProgress(bool show, QString message)
 	if(show)
 	{
 		ui->statusBar->showMessage(message);
-		ui->statusBar->addPermanentWidget(ui->fileProgress);
-		ui->fileProgress->show();
+		ui->progressBar->setRange(0, 100);
+		ui->progressBar->setValue(0);
+		ui->statusBar->addPermanentWidget(ui->progressBar);
+		ui->progressBar->show();
 	}
 	else
 	{
 		ui->statusBar->clearMessage();
-		ui->statusBar->removeWidget(ui->fileProgress);
+		ui->statusBar->removeWidget(ui->progressBar);
 	}
 }
 
@@ -3478,19 +3490,20 @@ void CMainWindow::ShowIndeterminateProgress(bool show, QString message)
 	if(show)
 	{
 		ui->statusBar->showMessage(message);
-		ui->statusBar->addPermanentWidget(ui->indeterminateProgress);
-		ui->indeterminateProgress->show();
+		ui->progressBar->setRange(0, 0);
+		ui->statusBar->addPermanentWidget(ui->progressBar);
+		ui->progressBar->show();
 	}
 	else
 	{
 		ui->statusBar->clearMessage();
-		ui->statusBar->removeWidget(ui->indeterminateProgress);
+		ui->statusBar->removeWidget(ui->progressBar);
 	}
 }
 
 void CMainWindow::UpdateProgress(int n)
 {
-	ui->fileProgress->setValue(n);
+	ui->progressBar->setValue(n);
 }
 
 
