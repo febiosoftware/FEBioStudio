@@ -170,7 +170,6 @@ FEParamValue FEBioAppDocument::GetFEBioParameter(const char* szparams)
 
 void FEBioAppDocument::runModel()
 {
-	m_forceStop = false;
 	if (m_fem && !m_isRunning)
 	{
 		CFEBioAppThread* thread = new CFEBioAppThread(this);
@@ -183,9 +182,15 @@ void FEBioAppDocument::stopModel()
 	m_forceStop = true;
 }
 
+// This is the actual function that runs the FEBio model. It is called from a
+// separate thread.
 void FEBioAppDocument::RunFEBioModel()
 {
 	if (m_fem == nullptr) return;
+
+	assert(m_isRunning == false);
+	m_isRunning = true;
+	m_forceStop = false;
 
 	if (m_taskName.empty() == false)
 	{
@@ -215,4 +220,5 @@ void FEBioAppDocument::RunFEBioModel()
 			emit modelFinished(b);
 		}
 	}
+	m_isRunning = false;
 }
