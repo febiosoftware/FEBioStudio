@@ -78,6 +78,7 @@ class CMainWindow : public QMainWindow
 
 public:
 	enum Config {
+		EMPTY_CONFIG,		// no document open
 		HTML_CONFIG,		// html documument (i.e. welcome page)
 		MODEL_CONFIG,		// model document	(i.e. fsm file)
 		POST_CONFIG,		// post document	(i.e. xplt file)

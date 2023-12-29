@@ -2312,73 +2312,35 @@ void CMainWindow::UpdateGLControlBar()
 //-----------------------------------------------------------------------------
 void CMainWindow::UpdateUIConfig()
 {
-	CPostDocument* postDoc = GetPostDocument();
-	if (postDoc == nullptr)
+	Update(0, true);
+
+	CDocument* doc = GetDocument();
+
+	if (dynamic_cast<CModelDocument*>(doc))
 	{
-		Update(0, true);
-
-		CModelDocument* modelDoc = GetModelDocument();
-		if (modelDoc)
-		{
-			// Build Mode
-			ui->setUIConfig(CMainWindow::MODEL_CONFIG);
-
-            UpdateUiView();
-
-            ui->modelViewer->parentWidget()->raise();
-		}
-		else
-		{
-			CTextDocument* txtDoc = dynamic_cast<CTextDocument*>(GetDocument());
-			if (txtDoc)
-			{
-				txtDoc->Activate();
-				if (txtDoc->GetFormat() == CTextDocument::FORMAT_HTML)
-				{
-					ui->htmlViewer->setDocument(txtDoc->GetText());
-					ui->setUIConfig(CMainWindow::HTML_CONFIG);
-				}
-				else
-				{
-					ui->xmlEdit->blockSignals(true);
-					ui->xmlEdit->SetDocument(txtDoc->GetText());
-					ui->xmlEdit->blockSignals(false);
-					ui->setUIConfig(CMainWindow::TEXT_CONFIG);
-				}
-			}
-			else
-			{
-                CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
-                if(xmlDoc)
-                {
-                    ui->xmlTree->setModel(xmlDoc->GetModel());
-                    ui->setUIConfig(CMainWindow::XML_CONFIG);
-                }
-                else
-                {
-                    ui->setUIConfig(HTML_CONFIG);
-                }
-			}
-			ui->fileViewer->parentWidget()->raise();
-		}
-		return;
+		ui->setUIConfig(CMainWindow::MODEL_CONFIG);
+	}
+	else if (dynamic_cast<CPostDocument*>(doc))
+	{
+		ui->setUIConfig(CMainWindow::POST_CONFIG);
+	}
+	else if (dynamic_cast<CTextDocument*>(doc))
+	{
+		ui->setUIConfig(CMainWindow::TEXT_CONFIG);
+	}
+	else if (dynamic_cast<CHTMLDocument*>(doc))
+	{
+		ui->setUIConfig(CMainWindow::HTML_CONFIG);
+	}
+	else if (dynamic_cast<CXMLDocument*>(doc))
+	{
+		ui->setUIConfig(CMainWindow::XML_CONFIG);
 	}
 	else
 	{
-		// Post Mode
-		ui->setUIConfig(CMainWindow::POST_CONFIG);
-
-		UpdatePostPanel();
-		if (postDoc->IsValid()) ui->postToolBar->Update();
-		else ui->postToolBar->setDisabled(true);
-
-		if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(true);
-
-		ui->postPanel->parentWidget()->raise();
-
-		RedrawGL();
+		// TODO: Huh?? 
+		ui->setUIConfig(HTML_CONFIG);
 	}
-	UpdateToolbar();
 }
 
 //-----------------------------------------------------------------------------

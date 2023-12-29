@@ -29,26 +29,10 @@ SOFTWARE.*/
 #include <QTextStream>
 #include <QPlainTextDocumentLayout>
 
-//==============================================================================
-// CTextDocument
-//==============================================================================
-
 CTextDocument::CTextDocument(CMainWindow* wnd) : CDocument(wnd)
 {
 	SetIcon(":/icons/febio.png");
-
-	m_format = Format::FORMAT_TEXT;
 	m_txt.setDocumentLayout(new QPlainTextDocumentLayout(&m_txt));
-}
-
-void CTextDocument::SetFormat(Format format)
-{
-	m_format = format;
-}
-
-int CTextDocument::GetFormat() const
-{
-	return m_format;
 }
 
 QTextDocument* CTextDocument::GetText()
@@ -105,4 +89,14 @@ bool CTextDocument::SaveDocument()
 	m_txt.setModified(false);
 
 	return true;
+}
+
+
+CHTMLDocument::CHTMLDocument(CMainWindow* wnd) : CDocument(wnd)
+{
+}
+
+QTextDocument* CHTMLDocument::GetText()
+{
+	return &m_txt;
 }
