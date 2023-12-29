@@ -195,7 +195,7 @@ void CGLSceneView::paintGL()
 	if (scene && scene->GetCamera().IsAnimating())
 	{
 		scene->GetCamera().Update();
-		QTimer::singleShot(50, this, SLOT(repaintEvent()));
+		QTimer::singleShot(50, this, SLOT(repaint()));
 	}
 }
 
