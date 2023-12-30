@@ -2324,32 +2324,32 @@ void CMainWindow::UpdateUIConfig()
 
 	if (dynamic_cast<CModelDocument*>(doc))
 	{
-		ui->setUIConfig(CMainWindow::MODEL_CONFIG);
+		ui->setUIConfig(Ui::Config::MODEL_CONFIG);
 	}
 	else if (dynamic_cast<CPostDocument*>(doc))
 	{
-		ui->setUIConfig(CMainWindow::POST_CONFIG);
+		ui->setUIConfig(Ui::Config::POST_CONFIG);
 	}
 	else if (dynamic_cast<CTextDocument*>(doc))
 	{
-		ui->setUIConfig(CMainWindow::TEXT_CONFIG);
+		ui->setUIConfig(Ui::Config::TEXT_CONFIG);
 	}
 	else if (dynamic_cast<CHTMLDocument*>(doc))
 	{
-		ui->setUIConfig(CMainWindow::HTML_CONFIG);
+		ui->setUIConfig(Ui::Config::HTML_CONFIG);
 	}
 	else if (dynamic_cast<CXMLDocument*>(doc))
 	{
-		ui->setUIConfig(CMainWindow::XML_CONFIG);
+		ui->setUIConfig(Ui::Config::XML_CONFIG);
 	}
 	else if (dynamic_cast<FEBioAppDocument*>(doc))
 	{
-		ui->setUIConfig(CMainWindow::APP_CONFIG);
+		ui->setUIConfig(Ui::Config::APP_CONFIG);
 	}
 	else
 	{
 		// TODO: Huh?? 
-		ui->setUIConfig(HTML_CONFIG);
+		ui->setUIConfig(Ui::Config::HTML_CONFIG);
 	}
 }
 

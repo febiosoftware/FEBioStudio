@@ -1001,31 +1001,13 @@ void GLViewSelector::SelectFEElements(int x, int y)
 	Intersection q;
 	bool bfound = FindElementIntersection(localRay, *pm, q, m_bctrl);
 
+	// see if the intersection with the plane cut is closer
 	if (bfound && m_glv->ShowPlaneCut())
 	{
 		vec3d p = po->GetTransform().LocalToGlobal(q.point);
-
-		// see if the intersection lies behind the plane cut. 
-		double* a = m_glv->PlaneCoordinates();
-		double d = p.x * a[0] + p.y * a[1] + p.z * a[2] + a[3];
-		if (d < 0)
-		{
-			// find the intersection with the plane cut
-			bfound = FindFaceIntersection(ray, *m_glv->PlaneCutMesh(), q);
-
-			if (bfound)
-			{
-				// conver the index from a face index into an element index
-				int nface = q.m_index;
-				if ((nface >= 0) && (nface < m_glv->PlaneCutMesh()->Faces()))
-				{
-					GMesh::FACE& face = m_glv->PlaneCutMesh()->Face(nface);
-					q.m_index = face.eid;
-					if (q.m_index < 0) bfound = false;
-				}
-				else bfound = false;
-			}
-		}
+		GLPlaneCut& planeCut = m_glv->GetPlaneCut();
+		bool bintersect = planeCut.Intersect(p, ray, q);
+		if (bintersect) bfound = bintersect;
 	}
 
 	// the selection command that will be executed
@@ -1234,7 +1216,7 @@ void GLViewSelector::SelectFEEdges(int x, int y)
 			// see if the edge intersects
 			bool bfound = intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt);
 
-			if (bfound && m_glv->PlaneCutMesh())
+			if (bfound && m_glv->ShowPlaneCut())
 			{
 				// make sure one point is in front of plane
 				double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];

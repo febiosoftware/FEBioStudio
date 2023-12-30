@@ -39,19 +39,11 @@ FEMathData::FEMathData(FEState* state, FEMathDataField* pdf) : FENodeData_T<floa
 // evaluate all the nodal data for this state
 void FEMathData::eval(int n, float* pv)
 {
-	FEPostModel& fem = *GetFSModel();
-
-
 	double time = m_state->m_time;
-
-	FEPostMesh& mesh = *m_state->GetFEMesh();
-
 	MSimpleExpression math;
 	math.AddVariable("t", time);
 
-	int ierr;
-	FSNode& node = mesh.Node(n);
-
+	FEPostModel& fem = *GetFSModel();
 	vec3f r = fem.NodePosition(n, m_state->GetID());
 	math.AddVariable("x", (double)r.x);
 	math.AddVariable("y", (double)r.y);
@@ -61,10 +53,8 @@ void FEMathData::eval(int n, float* pv)
 	math.Create(eq);
 
 	double v = math.value();
-
 	if (pv) *pv = (float) v;
 }
-
 
 FEMathVec3Data::FEMathVec3Data(FEState* state, FEMathVec3DataField* pdf) : FENodeData_T<vec3f>(state, pdf)
 {
@@ -74,20 +64,14 @@ FEMathVec3Data::FEMathVec3Data(FEState* state, FEMathVec3DataField* pdf) : FENod
 // evaluate all the nodal data for this state
 void FEMathVec3Data::eval(int n, vec3f* pv)
 {
-	FEPostModel& fem = *GetFSModel();
-
 	FEState& state = *m_state;
 	int ntime = state.GetID();
 	double time = (double)state.m_time;
 
-	FEPostMesh& mesh = *state.GetFEMesh();
-
 	MSimpleExpression math;
 	math.AddVariable("t", time);
 
-	int ierr;
-	FSNode& node = mesh.Node(n);
-
+	FEPostModel& fem = *GetFSModel();
 	vec3f r = fem.NodePosition(n, ntime);
 	math.AddVariable("x", (double)r.x);
 	math.AddVariable("y", (double)r.y);
@@ -115,20 +99,13 @@ void FEMathMat3Data::eval(int n, mat3f* pv)
 {
 	if (pv == nullptr) return;
 
-	FEPostModel& fem = *GetFSModel();
-
 	FEState& state = *m_state;
 	int ntime = state.GetID();
 	double time = (double)state.m_time;
-
-	FEPostMesh& mesh = *state.GetFEMesh();
-
 	MSimpleExpression math;
 	math.AddVariable("t", time);
 
-	int ierr;
-	FSNode& node = mesh.Node(n);
-
+	FEPostModel& fem = *GetFSModel();
 	vec3f r = fem.NodePosition(n, ntime);
 	math.AddVariable("x", (double)r.x);
 	math.AddVariable("y", (double)r.y);

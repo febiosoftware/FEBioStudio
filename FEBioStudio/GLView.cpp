@@ -36,13 +36,11 @@ SOFTWARE.*/
 #include "CreatePanel.h"
 #include "ModelDocument.h"
 #include <GeomLib/GObject.h>
-#include <GeomLib/GPrimitive.h>
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include "GLHighlighter.h"
 #include "GLCursor.h"
 #include <math.h>
-#include <QtCore/QTimer>
 #include <MeshLib/MeshTools.h>
 #include "GLViewTransform.h"
 #include <GLLib/glx.h>
@@ -50,7 +48,6 @@ SOFTWARE.*/
 #include <PostLib/ColorMap.h>
 #include <GLLib/GLCamera.h>
 #include <GLLib/GLContext.h>
-#include <QAction>
 #include <QMenu>
 #include <QMessageBox>
 #include <ImageLib/ImageModel.h>
@@ -100,16 +97,6 @@ static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
 	170, 170, 170, 170
 };
-
-const int HEX_NT[8] = { 0, 1, 2, 3, 4, 5, 6, 7 };
-const int PEN_NT[8] = { 0, 1, 2, 2, 3, 4, 5, 5 };
-const int TET_NT[8] = { 0, 1, 2, 2, 3, 3, 3, 3 };
-const int PYR_NT[8] = { 0, 1, 2, 3, 4, 4, 4, 4 };
-
-// in MeshTools\lut.cpp
-extern int LUT[256][15]; 
-extern int ET_HEX[12][2];
-extern int ET_TET[6][2];
 
 bool intersectsRect(const QPoint& p0, const QPoint& p1, const QRect& rt)
 {
@@ -338,7 +325,7 @@ int CGLPivot::Pick(int ntrans, int x, int y)
 }
 
 //-----------------------------------------------------------------------------
-CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this)
+CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_pWnd(pwnd), m_pivot(this), m_select(this), m_planeCut(this)
 {
 	m_bsnap = false;
 
@@ -368,11 +355,6 @@ CGLView::CGLView(CMainWindow* pwnd, QWidget* parent) : CGLSceneView(parent), m_p
 
 	m_showPlaneCut = false;
 	m_planeCutMode = Planecut_Mode::PLANECUT;
-	m_plane[0] = 1.0;
-	m_plane[1] = 0.0;
-	m_plane[2] = 0.0;
-	m_plane[3] = 0.0;
-	m_planeCut = nullptr;
 
 	// attach the highlighter to this view
 	GLHighlighter::AttachToView(this);
@@ -466,8 +448,8 @@ void CGLView::mousePressEvent(QMouseEvent* ev)
 
 	int ntrans = pdoc->GetTransformMode();
 
-	int x = ev->x();
-	int y = ev->y();
+	int x = (int)ev->position().x();
+	int y = (int)ev->position().y();
 
 	// get the active view
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
@@ -868,8 +850,8 @@ void CGLView::mouseReleaseEvent(QMouseEvent* ev)
 	// get the active view
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 
-	int x = ev->x();
-	int y = ev->y();
+	int x = (int)ev->position().x();
+	int y = (int)ev->position().y();
 
 	// let the widget manager handle it first
 	if (m_Widget && (m_Widget->handle(x, y, CGLWidgetManager::RELEASE) == 1))
@@ -1350,37 +1332,8 @@ void CGLView::repaintEvent()
 	repaint();
 }
 
-void CGLView::RenderScene()
+void CGLView::RenderDecorations()
 {
-	time_point<steady_clock> startTime;
-	startTime = steady_clock::now();
-
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	GLViewSettings& view = GetViewSettings();
-
-	CGLDocument* pdoc = GetDocument();
-	int nitem = pdoc->GetItemMode();
-
-	CGLCamera& cam = scene->GetView().GetCamera();
-	cam.SetOrthoProjection(GetView()->OrhographicProjection());
-
-	CGLContext& rc = m_rc;
-	rc.m_view = this;
-	rc.m_cam = &cam;
-	rc.m_settings = view;
-
-	// position the camera
-	PositionCamera();
-
-	// render the active scene
-	if (scene) scene->Render(rc);
-
-	// render the image data
-	RenderImageData();
-
-	// render the decorations
 	if (m_deco.empty() == false)
 	{
 		glPushAttrib(GL_ENABLE_BIT);
@@ -1393,23 +1346,32 @@ void CGLView::RenderScene()
 		}
 		glPopAttrib();
 	}
+}
 
-	// render the 3D cursor
-	if (m_pWnd->GetModelDocument())
-	{
-		// render the highlights
-		GLHighlighter::draw();
+void CGLView::RenderScene()
+{
+	time_point<steady_clock> startTime;
+	startTime = steady_clock::now();
 
-		if (m_bpick && (nitem == ITEM_MESH))
-		{
-			Render3DCursor(Get3DCursor(), 10.0);
-		}
-	}
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
-	// render the pivot
+	GLViewSettings& view = GetViewSettings();
+
+	CGLCamera& cam = scene->GetView().GetCamera();
+	cam.SetOrthoProjection(GetView()->OrhographicProjection());
+
+	CGLContext& rc = m_rc;
+	rc.m_view = this;
+	rc.m_cam = &cam;
+	rc.m_settings = view;
+
+	PositionCamera();
+
+	if (scene) scene->Render(rc);
+
 	RenderPivot();
 
-	// render selection
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
 
 	if (view.m_bselbrush) RenderBrush();
@@ -1436,7 +1398,7 @@ void CGLView::RenderScene()
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc == nullptr)
 	{
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
+		CModelDocument* mdoc = m_pWnd->GetModelDocument();
 		if (mdoc && m_Widget)
 		{
 			FSModel* ps = mdoc->GetFSModel();
@@ -1538,8 +1500,15 @@ void CGLView::RenderScene()
 	}
 }
 
-void CGLView::Render3DCursor(const vec3d& r, double R)
+void CGLView::Render3DCursor()
 {
+	// only render if the 3D cursor is valid
+	// (i.e. the user picked something on the screen)
+	if (m_bpick == false) return;
+
+	vec3d r = Get3DCursor();
+	constexpr double R = 10.0;
+
 	GLViewTransform transform(this);
 
 	const int W = width();
@@ -1748,7 +1717,7 @@ void CGLView::TrackSelection(bool b)
 void CGLView::ShowMeshData(bool b)
 {
 	GetViewSettings().m_bcontour = b;
-	delete m_planeCut; m_planeCut = nullptr;
+	m_planeCut.Clear();	// TODO: Why do we do this? 
 }
 
 void SetModelView(GObject* po)
@@ -1894,7 +1863,7 @@ void CGLView::RenderImageData()
 //-----------------------------------------------------------------------------
 // This function renders the manipulator at the current pivot
 //
-void CGLView::RenderPivot(bool bpick)
+void CGLView::RenderPivot()
 {
 	CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (pdoc == nullptr) return;
@@ -1909,7 +1878,7 @@ void CGLView::RenderPivot(bool bpick)
 	// this is where we place the manipulator
 	vec3d rp = GetPivotPosition();
 
-	CGLCamera& cam = pdoc->GetView()->GetCamera();
+	CGLCamera& cam = *GetCamera();
 
 	// determine the scale of the manipulator
 	// we make it depend on the target distanceso that the 
@@ -2004,10 +1973,6 @@ void CGLView::RenderRubberBand()
 
 void CGLView::RenderBrush()
 {
-	// Get the document
-	CGLDocument* pdoc = GetDocument();
-	if (pdoc == nullptr) return;
-
 	// set the ortho
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -2261,12 +2226,7 @@ void CGLView::SetPlaneCut(double d[4])
 	}
 
 	double d3 = d0 + 0.5*(d[3] + 1)*(d1 - d0);
-
-	m_plane[0] = d[0];
-	m_plane[1] = d[1];
-	m_plane[2] = d[2];
-	m_plane[3] = -d3;
-	delete m_planeCut; m_planeCut = nullptr;
+	m_planeCut.SetPlaneCoordinates(d[0], d[1], d[2], -d3);
 	update();
 }
 
@@ -2885,233 +2845,6 @@ void CGLView::RenderTags(std::vector<GLTAG>& vtag)
 	glMatrixMode(GL_MODELVIEW);
 }
 
-GMesh* CGLView::BuildPlaneCut(FSModel& fem)
-{
-	GModel& mdl = fem.GetModel();
-	GLViewSettings& vs = GetViewSettings();
-	GObject* poa = m_pWnd->GetActiveObject();
-	double vmin, vmax;
-
-	CModelDocument* doc = m_pWnd->GetModelDocument();
-	if (doc == nullptr) return nullptr;
-
-	if (mdl.Objects() == 0) return nullptr;
-
-	// set the plane normal
-	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
-	double ref = -m_plane[3];
-
-	int edge[15][2], edgeNode[15][2], etag[15];
-
-	GMesh* planeCut = new GMesh;
-
-	Post::CColorMap& colormap = GetColorMap();
-
-	for (int i = 0; i < mdl.Objects(); ++i)
-	{
-		GObject* po = mdl.Object(i);
-		if (po->GetFEMesh())
-		{
-			FSMesh* mesh = po->GetFEMesh();
-
-			vec3d ex[8];
-			int en[8];
-			GLColor ec[8];
-
-			bool showContour = false;
-			Mesh_Data& data = mesh->GetMeshData();
-			if ((po == poa) && (vs.m_bcontour))
-			{
-				showContour = (vs.m_bcontour && data.IsValid());
-				if (showContour) { data.GetValueRange(vmin, vmax); colormap.SetRange((float)vmin, (float)vmax); }
-			}
-
-			// repeat over all elements
-			GLColor defaultColor(200, 200, 200);
-			GLColor c(defaultColor);
-			int matId = -1;
-			int NE = mesh->Elements();
-			for (int i = 0; i < NE; ++i)
-			{
-				// render only when visible
-				FSElement& el = mesh->Element(i);
-				GPart* pg = po->Part(el.m_gid);
-				if (el.IsVisible() && el.IsSolid() && (pg && pg->IsVisible()))
-				{
-					int mid = pg->GetMaterialID();
-					if (mid != matId)
-					{
-						GMaterial* pmat = fem.GetMaterialFromID(mid);
-						if (pmat)
-						{
-							c = fem.GetMaterialFromID(mid)->Diffuse();
-							matId = mid;
-						}
-						else
-						{
-							matId = -1;
-							c = defaultColor;
-						}
-					}
-
-
-					const int* nt = nullptr;
-					switch (el.Type())
-					{
-					case FE_HEX8: nt = HEX_NT; break;
-					case FE_HEX20: nt = HEX_NT; break;
-					case FE_HEX27: nt = HEX_NT; break;
-					case FE_PENTA6: nt = PEN_NT; break;
-					case FE_PENTA15: nt = PEN_NT; break;
-					case FE_TET4: nt = TET_NT; break;
-					case FE_TET5: nt = TET_NT; break;
-					case FE_TET10: nt = TET_NT; break;
-					case FE_TET15: nt = TET_NT; break;
-					case FE_TET20: nt = TET_NT; break;
-					case FE_PYRA5: nt = PYR_NT; break;
-					case FE_PYRA13: nt = PYR_NT; break;
-					default:
-						assert(false);
-					}
-
-						// get the nodal values
-						for (int k = 0; k < 8; ++k)
-						{
-							FSNode& node = mesh->Node(el.m_node[nt[k]]);
-							ex[k] = mesh->LocalToGlobal(node.r);
-							en[k] = el.m_node[nt[k]];
-						}
-
-					if (showContour)
-					{
-						for (int k = 0; k < 8; ++k)
-						{
-							if (data.GetElementDataTag(i) > 0)
-								ec[k] = colormap.map(data.GetElementValue(i, nt[k]));
-							else
-								ec[k] = GLColor(212, 212, 212);
-						}
-					}
-
-						// calculate the case of the element
-						int ncase = 0;
-						for (int k = 0; k < 8; ++k)
-							if (norm*ex[k] > ref*0.999999) ncase |= (1 << k);
-
-					// loop over faces
-					int* pf = LUT[ncase];
-					int ne = 0;
-					for (int l = 0; l < 5; l++)
-					{
-						if (*pf == -1) break;
-
-						// calculate nodal positions
-						vec3d r[3];
-						float w1, w2, w;
-						for (int k = 0; k < 3; k++)
-						{
-							int n1 = ET_HEX[pf[k]][0];
-							int n2 = ET_HEX[pf[k]][1];
-
-							w1 = norm * ex[n1];
-							w2 = norm * ex[n2];
-
-							if (w2 != w1)
-								w = (ref - w1) / (w2 - w1);
-							else
-								w = 0.f;
-
-							r[k] = ex[n1] * (1 - w) + ex[n2] * w;
-						}
-
-						int nf = planeCut->Faces();
-						planeCut->AddFace(r, (el.IsSelected() ? 1 : 0));
-						GMesh::FACE& face = planeCut->Face(nf);
-						if (po == poa)
-						{
-							face.eid = i;
-						}
-
-						if (showContour)
-						{
-							GLColor c;
-							for (int k = 0; k < 3; k++)
-							{
-								int n1 = ET_HEX[pf[k]][0];
-								int n2 = ET_HEX[pf[k]][1];
-
-								w1 = norm * ex[n1];
-								w2 = norm * ex[n2];
-
-								if (w2 != w1)
-									w = (ref - w1) / (w2 - w1);
-								else
-									w = 0.f;
-
-								c.r = (uint8_t)((double)ec[n1].r * (1.0 - w) + (double)ec[n2].r * w);
-								c.g = (uint8_t)((double)ec[n1].g * (1.0 - w) + (double)ec[n2].g * w);
-								c.b = (uint8_t)((double)ec[n1].b * (1.0 - w) + (double)ec[n2].b * w);
-
-								face.c[k] = c;
-							}
-						}
-						else
-						{
-							face.c[0] = face.c[1] = face.c[2] = c;
-						}
-
-						// add edges (for mesh rendering)
-						for (int k = 0; k < 3; ++k)
-						{
-							int n1 = pf[k];
-							int n2 = pf[(k + 1) % 3];
-
-							bool badd = true;
-							for (int m = 0; m < ne; ++m)
-							{
-								int m1 = edge[m][0];
-								int m2 = edge[m][1];
-								if (((n1 == m1) && (n2 == m2)) ||
-									((n1 == m2) && (n2 == m1)))
-								{
-									badd = false;
-									etag[m]++;
-									break;
-								}
-							}
-
-							if (badd)
-							{
-								edge[ne][0] = n1;
-								edge[ne][1] = n2;
-								etag[ne] = 0;
-
-								GMesh::FACE& face = planeCut->Face(planeCut->Faces() - 1);
-								edgeNode[ne][0] = face.n[k];
-								edgeNode[ne][1] = face.n[(k + 1) % 3];
-								++ne;
-							}
-						}
-						pf += 3;
-					}
-
-					for (int k = 0; k < ne; ++k)
-					{
-						if (etag[k] == 0)
-						{
-							planeCut->AddEdge(edgeNode[k], 2, (el.IsSelected() ? 1 : 0));
-						}
-					}
-				}
-			}
-		}
-	}
-
-	planeCut->Update();
-
-	return planeCut;
-}
-
 QSize CGLView::GetSafeFrameSize() const
 {
 	int cx = width();
@@ -3139,7 +2872,7 @@ void CGLView::UnlockSafeFrame()
 
 void CGLView::UpdatePlaneCut(bool breset)
 {
-	if (m_planeCut) delete m_planeCut; m_planeCut = nullptr;
+	m_planeCut.Clear();
 
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
@@ -3150,8 +2883,9 @@ void CGLView::UpdatePlaneCut(bool breset)
 	if (mdl.Objects() == 0) return;
 
 	// set the plane normal
-	vec3d norm(m_plane[0], m_plane[1], m_plane[2]);
-	double ref = -m_plane[3];
+	double* d = m_planeCut.GetPlaneCoordinates();
+	vec3d norm(d[0], d[1], d[2]);
+	double ref = -d[3];
 
 	GLViewSettings& vs = GetViewSettings();
 
@@ -3176,7 +2910,7 @@ void CGLView::UpdatePlaneCut(bool breset)
 
 	if ((m_planeCutMode == Planecut_Mode::PLANECUT) && (m_showPlaneCut))
 	{
-		m_planeCut = BuildPlaneCut(fem);
+		m_planeCut.BuildPlaneCut(fem);
 	}
 	else
 	{
@@ -3239,15 +2973,14 @@ bool CGLView::ShowPlaneCut()
 	return m_showPlaneCut;
 }
 
-GMesh* CGLView::PlaneCutMesh()
+GLPlaneCut& CGLView::GetPlaneCut()
 {
 	return m_planeCut;
 }
 
 void CGLView::DeletePlaneCutMesh()
 {
-	delete m_planeCut; 
-	m_planeCut = nullptr;
+	m_planeCut.Clear();
 }
 
 int CGLView::PlaneCutMode()
@@ -3257,64 +2990,26 @@ int CGLView::PlaneCutMode()
 
 double* CGLView::PlaneCoordinates()
 {
-	return m_plane;
+	return m_planeCut.GetPlaneCoordinates();
 }
 
 void CGLView::RenderPlaneCut()
 {
-	if (m_planeCut == nullptr) return;
-
 	CModelDocument* doc = m_pWnd->GetModelDocument();
 	if (doc == nullptr) return;
+
+	if (m_planeCut.IsValid() == false)
+	{
+		FSModel& fem = *doc->GetFSModel();
+		m_planeCut.BuildPlaneCut(fem);
+	}
 
 	BOX box = doc->GetGModel()->GetBoundingBox();
 
 	glColor3ub(200, 0, 200);
 	glx::renderBox(box, false);
 
-	FSModel& fem = *doc->GetFSModel();
-	int MAT = fem.Materials();
-
-	GLMeshRender mr;
-
-	// turn off specular lighting
-	GLfloat spc[] = { 0.0f, 0.0f, 0.0f, 1.f };
-	glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
-	glMateriali(GL_FRONT_AND_BACK, GL_SHININESS, 0);
-
-	// render the unselected faces
-	glColor3ub(255, 255, 255);
-	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_COLOR_MATERIAL);
-	mr.SetFaceColor(true);
-	mr.RenderGLMesh(m_planeCut, 0);
-
-	// render the selected faces
-	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-	mr.SetRenderMode(GLMeshRender::SelectionMode);
-	glColor3ub(255, 64, 0);
-	mr.SetFaceColor(false);
-	mr.RenderGLMesh(m_planeCut, 1);
-
-	if (GetViewSettings().m_bmesh)
-	{
-		glDisable(GL_LIGHTING);
-		glEnable(GL_COLOR_MATERIAL);
-		glColor3ub(0, 0, 0);
-
-		CGLCamera& cam = doc->GetView()->GetCamera();
-		cam.LineDrawMode(true);
-		cam.Transform();
-		
-		mr.RenderGLEdges(m_planeCut, 0);
-		glDisable(GL_DEPTH_TEST);
-		glColor3ub(255, 255, 0);
-		mr.RenderGLEdges(m_planeCut, 1);
-
-		cam.LineDrawMode(false);
-		cam.Transform();
-	}
-	glPopAttrib();
+	m_planeCut.Render();
 }
 
 void CGLView::ToggleFPS()

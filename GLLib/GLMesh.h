@@ -113,7 +113,7 @@ public:
 	bool IsValid() const { return m_bvalid; }
 
 	// return the number of vertices in the mesh
-	int Vertices() const { return m_vertexCount; }
+	size_t Vertices() const { return m_vertexCount; }
 
 	// return vertex data
 	Vertex GetVertex(size_t i) const;
