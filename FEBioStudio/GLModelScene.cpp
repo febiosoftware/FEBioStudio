@@ -110,8 +110,6 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	if (glview->ShowPlaneCut())
 	{
-		GMesh* planecut = glview->PlaneCutMesh();
-		if (planecut == nullptr) glview->UpdatePlaneCut();
 		if (glview->PlaneCutMode() == 0)
 		{
 			// render the plane cut first

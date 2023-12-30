@@ -32,7 +32,7 @@ SOFTWARE.*/
 #include "GManipulator.h"
 #include "GTriad.h"
 #include "GGrid.h"
-#include <MeshLib/Intersect.h>
+#include "GLPlaneCut.h"
 #include <GLWLib/GLWidgetManager.h>
 #include "Animation.h"
 #include <GLLib/GLContext.h>
@@ -109,7 +109,6 @@ public:
 	vec3d	m_pos;		// pivot point
 };
 
-//-----------------------------------------------------------------------------
 // tag structure
 struct GLTAG
 {
@@ -281,9 +280,6 @@ public:
 	void LockSafeFrame();
 	void UnlockSafeFrame();
 
-private:
-	GMesh* BuildPlaneCut(FSModel& fem);
-
 public:
 	void SetColorMap(unsigned int n);
 
@@ -296,7 +292,7 @@ public:
 
 	bool ShowPlaneCut();
 
-	GMesh* PlaneCutMesh();
+	GLPlaneCut& GetPlaneCut();
 
 	void DeletePlaneCutMesh();
 
@@ -384,8 +380,7 @@ private:
 
 	bool		m_showPlaneCut;
 	int			m_planeCutMode;
-	double		m_plane[4];
-	GMesh*		m_planeCut;
+	GLPlaneCut	m_planeCut;
 
 	std::string		m_oglVersionString;
 };
