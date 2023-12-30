@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QLineEdit>
 #include <QCheckBox>
 #include <QTabWidget>
+#include <QFileInfo>
 #include "../FEBioStudio/GLSceneView.h"
 #include "../FEBioStudio/InputWidgets.h"
 #include "../FEBioStudio/PlotWidget.h"
@@ -97,6 +98,9 @@ QWidget* FEBioAppUIBuilder::BuildUIFromFile(QString filePath, FEBioAppDocument* 
 	XMLTag tag;
 	if (xml.FindTag("febio_app", tag) == false) return nullptr;
 
+	QFileInfo fi(filePath);
+	m_appFolder = fi.absolutePath();
+
 	try {
 		++tag;
 		do
@@ -131,7 +135,8 @@ bool FEBioAppUIBuilder::parseModel(XMLTag& tag)
 	assert(tag.isleaf());
 
 	// add the new model
-	bool b = app->LoadModelFromFile(szfile);
+	QString fileName = m_appFolder + QString("/%1").arg(szfile);
+	bool b = app->LoadModelFromFile(fileName);
 
 	if (sztask)
 	{
@@ -583,6 +588,7 @@ void FEBioAppUIBuilder::parseTabGroup(XMLTag& tag, QBoxLayout* playout)
 
 			QWidget* pw = new QWidget;
 			QVBoxLayout* pl = new QVBoxLayout;
+			pl->setContentsMargins(0, 0, 0, 0);
 			parseGUITags(tag, pl);
 			pw->setLayout(pl);
 			ptab->addTab(pw, s);
@@ -639,7 +645,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 
 				++tag;
 			}
-			if (tag == "object")
+			else if (tag == "object")
 			{
 				GLSceneObject* po = new GLSceneObject;
 
@@ -670,7 +676,10 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 				}
 
 				const char* szfile = tag.AttributeValue("file");
-				if (po->LoadFromFile(szfile) == false) delete po;
+
+				QString fileName = m_appFolder + QString("/%1").arg(szfile);
+
+				if (po->LoadFromFile(fileName.toStdString()) == false) delete po;
 				else scene->AddSceneObject(po);
 
 				++tag;

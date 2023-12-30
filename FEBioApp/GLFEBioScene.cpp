@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <MeshIO/STLimport.h>
 #include <FEMLib/FSProject.h>
 #include <GeomLib/GObject.h>
+#include <PostLib/Palette.h>
 
 GLSceneObject::GLSceneObject() 
 {
@@ -180,7 +181,11 @@ void GLFEBioScene::Update(double time)
 	Post::CColorMap col;
 	col.SetRange(vmin, vmax);
 
-	m_glmesh.Create(m_renderMesh->Faces(), GLMesh::FLAG_NORMAL | GLMesh::FLAG_TEXTURE);
+	unsigned int createFlags = GLMesh::FLAG_NORMAL;
+	if (m_dataSource.empty()) createFlags |= GLMesh::FLAG_COLOR;
+	else createFlags |= GLMesh::FLAG_TEXTURE;
+
+	m_glmesh.Create(m_renderMesh->Faces(), createFlags);
 	m_glmesh.BeginMesh();
 	for (int i = 0; i < m_renderMesh->Faces(); ++i)
 	{
@@ -190,7 +195,7 @@ void GLFEBioScene::Update(double time)
 			GMesh::NODE& node = m_renderMesh->Node(f.n[j]);
 			double t = (val[f.n[j]] - vmin) / (vmax - vmin);
 			if (t < 0.0) t = 0.0; else if (t > 1.0) t = 1.0;
-			GLMesh::Vertex v{ to_vec3f(node.r), to_vec3f(f.nn[j]), vec3f(t,0.f,0.f), GLColor::White() };
+			GLMesh::Vertex v{ to_vec3f(node.r), to_vec3f(f.nn[j]), vec3f(t,0.f,0.f), f.c[j] };
 			m_glmesh.AddVertex(v);
 		}
 	}
@@ -202,10 +207,13 @@ void GLFEBioScene::Render(CGLContext& rc)
 {
 	QMutexLocker lock(&m_mutex);
 	glPushAttrib(GL_ENABLE_BIT);
-	glEnable(GL_TEXTURE_1D);
 	glEnable(GL_COLOR_MATERIAL);
-	glColor3ub(255, 255, 255);
-	m_col.GetTexture().MakeCurrent();
+	if (m_dataSource.empty() == false)
+	{
+		glEnable(GL_TEXTURE_1D);
+		glColor3ub(255, 255, 255);
+		m_col.GetTexture().MakeCurrent();
+	}
 	m_glmesh.Render();
 	glDisable(GL_TEXTURE_1D);
 	for (auto po : m_obj) po->Render();
@@ -241,14 +249,25 @@ void GLFEBioScene::BuildRenderMesh()
 		gnode.r = fenode.m_r0;
 	}
 
+	const Post::CPalette& pal = Post::CPaletteManager::CurrentPalette();
+
 	NF = 0;
 	for (int i = 0; i < NE; ++i)
 	{
 		FESurfaceElement& el = surf->Element(i);
+
+		int mid = 0;
+		FEElement* pe = el.m_elem[0];
+		if (pe) mid = pe->GetMatID();
+		if (mid < 0) mid = 0;
+		GLColor col = pal.Color(mid % pal.Colors());
+
 		GMesh::FACE& f1 = mesh->Face(NF++);
 		f1.n[0] = el.m_lnode[0];
 		f1.n[1] = el.m_lnode[1];
 		f1.n[2] = el.m_lnode[2];
+
+		f1.c[0] = f1.c[1] = f1.c[2] = col;
 
 		if (el.Nodes() == 4)
 		{
@@ -256,6 +275,7 @@ void GLFEBioScene::BuildRenderMesh()
 			f2.n[0] = el.m_lnode[2];
 			f2.n[1] = el.m_lnode[3];
 			f2.n[2] = el.m_lnode[0];
+			f2.c[0] = f2.c[1] = f2.c[2] = col;
 		}
 	}
 	mesh->Update();
