@@ -141,7 +141,10 @@ bool FEBioAppUIBuilder::parseModel(XMLTag& tag)
 	if (sztask)
 	{
 		if (szctrl)
-			app->SetTask(sztask, szctrl);
+		{
+			QString ctrlFile = m_appFolder + QString("/%1").arg(szctrl);
+			app->SetTask(sztask, ctrlFile.toStdString());
+		}
 		else
 			app->SetTask(sztask);
 	}

@@ -102,6 +102,10 @@ bool FEBioAppDocument::LoadModelFromFile(QString fileName)
 	FEBio::BlockCreateEvents(true);
 	bool b = fem.Input(sfile.c_str());
 	FEBio::BlockCreateEvents(false);
+
+	// call this so that the parameter list is initialized
+	if (b) fem.GetParameterList();
+
 	return b;
 }
 
@@ -198,10 +202,15 @@ void FEBioAppDocument::RunFEBioModel()
 		if (task == nullptr) emit modelFinished(false);
 
 		const char* sztaskfile = (m_taskInputFile.empty() ? nullptr : m_taskInputFile.c_str());
-		if (task->Init(sztaskfile) == false) emit modelFinished(false);
-
-		bool b = task->Run();
-		emit modelFinished(b);
+		if (task->Init(sztaskfile) == false)
+		{
+			emit modelFinished(false);
+		}
+		else
+		{
+			bool b = task->Run();
+			emit modelFinished(b);
+		}
 	}
 	else
 	{
