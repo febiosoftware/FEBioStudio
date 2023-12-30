@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "GLModelScene.h"
 #include "GLView.h"
 #include "ModelDocument.h"
+#include "GLHighlighter.h"
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
@@ -192,6 +193,21 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	// render the grid
 	if (view.m_bgrid ) m_grid.Render(rc);
+
+	// render the image data
+	glview->RenderImageData();
+
+	// render the decorations
+	glview->RenderDecorations();
+
+	// render the highlights
+	GLHighlighter::draw();
+
+	// render 3D cursor
+	if (m_doc->GetItemMode() == ITEM_MESH)
+	{
+		glview->Render3DCursor();
+	}
 }
 
 void TagFaces(GFaceList& faceList, int tag)

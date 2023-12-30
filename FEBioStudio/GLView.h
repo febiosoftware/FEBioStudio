@@ -205,14 +205,14 @@ public:
 	// other rendering functions
 	void RenderRubberBand();
 	void RenderBrush();
-	void RenderPivot(bool bpick = false);
+	void RenderPivot();
 
-	void Render3DCursor(const vec3d& r, double R);
+	void Render3DCursor();
 	void RenderTags();
 	void RenderTags(std::vector<GLTAG>& tags);
 	void RenderImageData();
 	void RenderTrack();
-
+	void RenderDecorations();
 
 	bool TrackModeActive();
 

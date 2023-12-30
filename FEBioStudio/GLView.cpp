@@ -1332,37 +1332,8 @@ void CGLView::repaintEvent()
 	repaint();
 }
 
-void CGLView::RenderScene()
+void CGLView::RenderDecorations()
 {
-	time_point<steady_clock> startTime;
-	startTime = steady_clock::now();
-
-	CGLScene* scene = GetActiveScene();
-	if (scene == nullptr) return;
-
-	GLViewSettings& view = GetViewSettings();
-
-	CGLDocument* pdoc = GetDocument();
-	int nitem = pdoc->GetItemMode();
-
-	CGLCamera& cam = scene->GetView().GetCamera();
-	cam.SetOrthoProjection(GetView()->OrhographicProjection());
-
-	CGLContext& rc = m_rc;
-	rc.m_view = this;
-	rc.m_cam = &cam;
-	rc.m_settings = view;
-
-	// position the camera
-	PositionCamera();
-
-	// render the active scene
-	if (scene) scene->Render(rc);
-
-	// render the image data
-	RenderImageData();
-
-	// render the decorations
 	if (m_deco.empty() == false)
 	{
 		glPushAttrib(GL_ENABLE_BIT);
@@ -1375,23 +1346,32 @@ void CGLView::RenderScene()
 		}
 		glPopAttrib();
 	}
+}
 
-	// render the 3D cursor
-	if (m_pWnd->GetModelDocument())
-	{
-		// render the highlights
-		GLHighlighter::draw();
+void CGLView::RenderScene()
+{
+	time_point<steady_clock> startTime;
+	startTime = steady_clock::now();
 
-		if (m_bpick && (nitem == ITEM_MESH))
-		{
-			Render3DCursor(Get3DCursor(), 10.0);
-		}
-	}
+	CGLScene* scene = GetActiveScene();
+	if (scene == nullptr) return;
 
-	// render the pivot
+	GLViewSettings& view = GetViewSettings();
+
+	CGLCamera& cam = scene->GetView().GetCamera();
+	cam.SetOrthoProjection(GetView()->OrhographicProjection());
+
+	CGLContext& rc = m_rc;
+	rc.m_view = this;
+	rc.m_cam = &cam;
+	rc.m_settings = view;
+
+	PositionCamera();
+
+	if (scene) scene->Render(rc);
+
 	RenderPivot();
 
-	// render selection
 	if (m_bsel && (m_pivot.GetSelectionMode() == PIVOT_SELECTION_MODE::SELECT_NONE)) RenderRubberBand();
 
 	if (view.m_bselbrush) RenderBrush();
@@ -1418,7 +1398,7 @@ void CGLView::RenderScene()
 	CPostDocument* postDoc = m_pWnd->GetPostDocument();
 	if (postDoc == nullptr)
 	{
-		CModelDocument* mdoc = dynamic_cast<CModelDocument*>(pdoc);
+		CModelDocument* mdoc = m_pWnd->GetModelDocument();
 		if (mdoc && m_Widget)
 		{
 			FSModel* ps = mdoc->GetFSModel();
@@ -1520,8 +1500,15 @@ void CGLView::RenderScene()
 	}
 }
 
-void CGLView::Render3DCursor(const vec3d& r, double R)
+void CGLView::Render3DCursor()
 {
+	// only render if the 3D cursor is valid
+	// (i.e. the user picked something on the screen)
+	if (m_bpick == false) return;
+
+	vec3d r = Get3DCursor();
+	constexpr double R = 10.0;
+
 	GLViewTransform transform(this);
 
 	const int W = width();
@@ -1876,7 +1863,7 @@ void CGLView::RenderImageData()
 //-----------------------------------------------------------------------------
 // This function renders the manipulator at the current pivot
 //
-void CGLView::RenderPivot(bool bpick)
+void CGLView::RenderPivot()
 {
 	CGLDocument* pdoc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (pdoc == nullptr) return;

@@ -183,4 +183,10 @@ void CGLPostScene::Render(CGLContext& rc)
 	if (view.m_bTags) glview->RenderTags();
 
 	Post::CGLPlaneCutPlot::DisableClipPlanes();
+
+	// render the image data
+	glview->RenderImageData();
+
+	// render the decorations
+	glview->RenderDecorations();
 }
