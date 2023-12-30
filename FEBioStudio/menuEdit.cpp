@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FEFindElement.h>
+#include "TextDocument.h"
 #include <sstream>
 
 using std::stringstream;

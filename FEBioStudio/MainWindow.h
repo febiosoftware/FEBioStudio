@@ -76,16 +76,6 @@ class CMainWindow : public QMainWindow
 	Q_OBJECT
 
 public:
-	enum Config {
-		EMPTY_CONFIG,		// no document open
-		HTML_CONFIG,		// html documument (i.e. welcome page)
-		MODEL_CONFIG,		// model document	(i.e. fsm file)
-		POST_CONFIG,		// post document	(i.e. xplt file)
-		TEXT_CONFIG,		// text document	(i.e. raw feb file)
-        XML_CONFIG,		    // text document	(i.e. feb file)
-	};
-
-public:
 	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
 	~CMainWindow();
 
