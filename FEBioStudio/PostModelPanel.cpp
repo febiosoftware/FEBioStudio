@@ -74,7 +74,6 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
-#include <ImageLib/ImageModel.h>
 #include <QFileDialog>
 #include "DlgImportData.h"
 

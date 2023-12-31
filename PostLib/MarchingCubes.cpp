@@ -25,7 +25,6 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #include "stdafx.h"
-#include "stdafx.h"
 #ifdef WIN32
 #include <Windows.h>
 #include <gl/GL.h>

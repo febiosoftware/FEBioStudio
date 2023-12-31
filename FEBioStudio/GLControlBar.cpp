@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QToolButton>
 #include <QButtonGroup>
-#include <QValidator>
 #include <QDoubleSpinBox>
 #include <QComboBox>
 #include <GeomLib/GCurveMeshObject.h>

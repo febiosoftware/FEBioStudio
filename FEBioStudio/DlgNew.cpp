@@ -40,13 +40,11 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QGuiApplication>
 #include <QPushButton>
-#include <QTabWidget>
 #include <QScreen>
 //#include <QDesktopWidget> removed from Qt6
 #include "DocTemplate.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
-#include "DocTemplate.h"
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <QJsonDocument>

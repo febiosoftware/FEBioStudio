@@ -42,7 +42,6 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "PostDocument.h"
-#include <QComboBox>
 #include <QBoxLayout>
 
 CIntegrateWindow::CIntegrateWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)

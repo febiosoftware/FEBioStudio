@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <PostLib/ImageSlicer.h>
 #include <ImageLib/ImageModel.h>
-#include <ImageLib/3DImage.h>
 #include "DlgPixelInspector.h"
 
 #include "ImageSliceView.h"

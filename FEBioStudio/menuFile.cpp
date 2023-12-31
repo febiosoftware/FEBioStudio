@@ -56,7 +56,6 @@ SOFTWARE.*/
 #include <MeshIO/PLYExport.h>
 #include <MeshIO/GMshExport.h>
 #include <GeomLib/GPrimitive.h>
-#include <FEBio/FEBioImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
 #include <MeshIO/BYUimport.h>
@@ -108,7 +107,6 @@ SOFTWARE.*/
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
-#include "ModelDocument.h"
 #include "XMLDocument.h"
 #include "FileThread.h"
 #include <PostLib/FEFEBioExport.h>

@@ -29,7 +29,6 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "GLView.h"
 #include "ImageSliceView.h"
-#include "ModelDocument.h"
 #include "ModelFileReader.h"
 #include <QApplication>
 #include <QRegularExpression>
@@ -58,7 +57,6 @@ SOFTWARE.*/
 #include <FEBio/FEBioExport3.h>
 #include <FEBio/FEBioExport4.h>
 #include "FEBioJob.h"
-#include <PostLib/ColorMap.h>
 #include <FSCore/FSDir.h>
 #include <QInputDialog>
 #include <QUuid>

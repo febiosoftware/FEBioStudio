@@ -38,8 +38,6 @@ SOFTWARE.*/
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QDoubleSpinBox>
-#include <QCheckBox>
-#include <QMessageBox>
 #include "ImageMapTool.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
