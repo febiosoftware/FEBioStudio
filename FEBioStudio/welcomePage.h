@@ -26,12 +26,11 @@ SOFTWARE.*/
 
 #pragma once
 #include <QString>
-#include <QTextBrowser>
 #include "TextDocument.h"
 
 class CMainWindow;
 
-class CWelcomePage : public CTextDocument
+class CWelcomePage : public CHTMLDocument
 {
 public:
 	CWelcomePage(CMainWindow* wnd);

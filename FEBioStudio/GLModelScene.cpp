@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "GLModelScene.h"
 #include "GLView.h"
 #include "ModelDocument.h"
+#include "GLHighlighter.h"
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GGroup.h>
@@ -72,9 +73,30 @@ CGLModelScene::CGLModelScene(CModelDocument* doc) : m_doc(doc)
 
 GLMeshRender& CGLModelScene::GetMeshRenderer() { return m_renderer; }
 
+BOX CGLModelScene::GetBoundingBox()
+{
+	BOX box;
+	if (m_doc) box = m_doc->GetModelBox();
+	return box;
+}
+
+BOX CGLModelScene::GetSelectionBox()
+{
+	BOX box;
+	if (m_doc)
+	{
+		FESelection* ps = m_doc->GetCurrentSelection();
+		if (ps && ps->Size() != 0)
+		{
+			box = ps->GetBoundingBox();
+		}
+	}
+	return box;
+}
+
 void CGLModelScene::Render(CGLContext& rc)
 {
-	if (m_doc == nullptr) return;
+	if ((m_doc == nullptr) || (m_doc->IsValid() == false)) return;
 
 	CGLView* glview = rc.m_view; assert(glview);
 	if (glview == nullptr) return;
@@ -89,8 +111,6 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	if (glview->ShowPlaneCut())
 	{
-		GMesh* planecut = glview->PlaneCutMesh();
-		if (planecut == nullptr) glview->UpdatePlaneCut();
 		if (glview->PlaneCutMode() == 0)
 		{
 			// render the plane cut first
@@ -102,73 +122,63 @@ void CGLModelScene::Render(CGLContext& rc)
 		}
 	}
 
-	// render the model
-	if (m_doc->IsValid())
+	// render the (solid) model
+	if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH)) RenderModel(rc);
+
+	// render discrete objects
+	if (view.m_showDiscrete)
 	{
-		// render the (solid) model
-		if ((view.m_nrender == RENDER_SOLID) || (nitem != ITEM_MESH)) RenderModel(rc);
-
-		// render discrete objects
-		if (view.m_showDiscrete)
-		{
-			RenderDiscrete(rc);
-		}
-
-		// render selected box
-		RenderSelectionBox(rc);
-
-		cam.LineDrawMode(true);
-		cam.Transform();
-
-		// Render mesh lines
-		//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
-		if (view.m_bmesh) RenderMeshLines(rc);
-
-		if (view.m_bfeat || (view.m_nrender == RENDER_WIREFRAME))
-		{
-			// don't draw feature edges in edge mode, since the edges are the feature edges
-			// (Don't draw feature edges when we are rendering FE edges)
-			int nselect = m_doc->GetSelectionMode();
-			if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges(rc);
-		}
-
-		cam.LineDrawMode(false);
-		cam.Transform();
+		RenderDiscrete(rc);
 	}
+
+	// render selected box
+	RenderSelectionBox(rc);
+
+	cam.LineDrawMode(true);
+	cam.Transform();
+
+	// Render mesh lines
+	//	if ((view.m_nrender == RENDER_SOLID) && (view.m_bmesh || (nitem != ITEM_MESH)))
+	if (view.m_bmesh) RenderMeshLines(rc);
+
+	if (view.m_bfeat || (view.m_nrender == RENDER_WIREFRAME))
+	{
+		// don't draw feature edges in edge mode, since the edges are the feature edges
+		// (Don't draw feature edges when we are rendering FE edges)
+		int nselect = m_doc->GetSelectionMode();
+		if (((nitem != ITEM_MESH) || (nselect != SELECT_EDGE)) && (nitem != ITEM_EDGE)) RenderFeatureEdges(rc);
+	}
+
+	cam.LineDrawMode(false);
+	cam.Transform();
 
 	// render physics
-	if (m_doc->IsValid())
-	{
-		if (view.m_brigid) RenderRigidBodies(rc);
-		if (view.m_bjoint) { RenderRigidJoints(rc); RenderRigidConnectors(rc); }
-		if (view.m_bwall ) RenderRigidWalls(rc);
-		if (view.m_bfiber) RenderMaterialFibers(rc);
-		if (view.m_blma  ) RenderLocalMaterialAxes(rc);
-	}
+	if (view.m_brigid) RenderRigidBodies(rc);
+	if (view.m_bjoint) { RenderRigidJoints(rc); RenderRigidConnectors(rc); }
+	if (view.m_bwall ) RenderRigidWalls(rc);
+	if (view.m_bfiber) RenderMaterialFibers(rc);
+	if (view.m_blma  ) RenderLocalMaterialAxes(rc);
 
 	// render the selected parts
-	if (m_doc->IsValid())
+	GModel& model = *m_doc->GetGModel();
+	int nsel = m_doc->GetSelectionMode();
+	if (nitem == ITEM_MESH)
 	{
-		GModel& model = *m_doc->GetGModel();
-		int nsel = m_doc->GetSelectionMode();
-		if (nitem == ITEM_MESH)
+		for (int i = 0; i < model.Objects(); ++i)
 		{
-			for (int i = 0; i < model.Objects(); ++i)
+			GObject* po = model.Object(i);
+			if (po->IsVisible() && po->IsValid())
 			{
-				GObject* po = model.Object(i);
-				if (po->IsVisible() && po->IsValid())
+				glPushMatrix();
+				SetModelView(po);
+				switch (nsel)
 				{
-					glPushMatrix();
-					SetModelView(po);
-					switch (nsel)
-					{
-					case SELECT_PART: RenderSelectedParts(rc, po); break;
-					case SELECT_FACE: RenderSelectedSurfaces(rc, po); break;
-					case SELECT_EDGE: RenderSelectedEdges(rc, po); break;
-					case SELECT_NODE: RenderSelectedNodes(rc, po); break;
-					}
-					glPopMatrix();
+				case SELECT_PART: RenderSelectedParts(rc, po); break;
+				case SELECT_FACE: RenderSelectedSurfaces(rc, po); break;
+				case SELECT_EDGE: RenderSelectedEdges(rc, po); break;
+				case SELECT_NODE: RenderSelectedNodes(rc, po); break;
 				}
+				glPopMatrix();
 			}
 		}
 	}
@@ -180,6 +190,24 @@ void CGLModelScene::Render(CGLContext& rc)
 
 	// render the tags
 	if (view.m_bTags) glview->RenderTags();
+
+	// render the grid
+	if (view.m_bgrid ) m_grid.Render(rc);
+
+	// render the image data
+	glview->RenderImageData();
+
+	// render the decorations
+	glview->RenderDecorations();
+
+	// render the highlights
+	GLHighlighter::draw();
+
+	// render 3D cursor
+	if (m_doc->GetItemMode() == ITEM_MESH)
+	{
+		glview->Render3DCursor();
+	}
 }
 
 void TagFaces(GFaceList& faceList, int tag)

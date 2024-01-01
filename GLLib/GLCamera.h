@@ -82,11 +82,14 @@ public:
 	// rotate aroun camera's axis
 	void Pan(const quatd& q);
 
+	// TODO: which one is the really pan?
+	void PanView(const vec3d& r);
+
 	// move camera forward or backward
 	void Dolly(double f);
 
 	// move camera in camera plane
-	void Truck(vec3d& v);
+	void Truck(const vec3d& v);
 
 	// rotate around target
 	void Orbit(quatd& q);

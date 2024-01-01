@@ -23,65 +23,47 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
-// pivot selection mode
-enum PIVOT_SELECTION_MODE {
-	SELECT_NONE,
-	SELECT_X,
-	SELECT_Y,
-	SELECT_Z,
-	SELECT_XY,
-	SELECT_YZ,
-	SELECT_XZ
-};
-
 class CGLView;
 
-class GManipulator
-{
-public:
-	GManipulator(CGLView* view);
-	virtual ~GManipulator(void);
+class CAnimation;
+class QImage;
 
-	void SetScale(double s) { m_scale = s; }
-
-	virtual void Render(int npivot, bool bactive) = 0;
-
-	virtual int Pick(int x, int y) = 0;
-
-protected:
-	double	m_scale;
-	CGLView* m_view;
+// Video recording states
+enum class RECORDING_STATE {
+	RECORDING,
+	PAUSED,
+	STOPPED
 };
 
-class GTranslator : public GManipulator
+class GLScreenRecorder
 {
 public:
-	GTranslator(CGLView* view) : GManipulator(view) {}
+	GLScreenRecorder();
+	void AttachToView(CGLView* glview);
 
-	void Render(int npivot, bool bactive);
+	bool HasRecording() const;
 
-	int Pick(int x, int y);
-};
+	RECORDING_STATE GetRecordingState() const;
 
-class GRotator : public GManipulator
-{
-public:
-	GRotator(CGLView* view) : GManipulator(view) {}
+	void SetVideoFormat(unsigned int fmt);
 
-	void Render(int npivot, bool bactive);
+	bool SetVideoStream(CAnimation* panim);
 
-	int Pick(int x, int y);
-};
+	void Start();
+	void Stop();
+	void Pause();
 
-class GScalor : public GManipulator
-{
-public:
-	GScalor(CGLView* view) : GManipulator(view) {}
+	bool AddFrame(QImage& im);
 
-	void Render(int npivot, bool bactive);
+	bool IsRecording() const;
+	bool IsPaused() const;
+	bool IsStopped() const;
 
-	int Pick(int x, int y);
+private:
+	unsigned int	m_videoFormat;
+	RECORDING_STATE	m_state;
+	CAnimation*		m_video;
+
+	CGLView*	m_glview;
 };

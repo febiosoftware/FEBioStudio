@@ -23,65 +23,29 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "GLViewer.h"
+#include <QBoxLayout>
+#include "GLView.h"
+#include "GLControlBar.h"
 
-#pragma once
-
-// pivot selection mode
-enum PIVOT_SELECTION_MODE {
-	SELECT_NONE,
-	SELECT_X,
-	SELECT_Y,
-	SELECT_Z,
-	SELECT_XY,
-	SELECT_YZ,
-	SELECT_XZ
-};
-
-class CGLView;
-
-class GManipulator
+CGLViewer::CGLViewer(::CMainWindow* wnd)
 {
-public:
-	GManipulator(CGLView* view);
-	virtual ~GManipulator(void);
+	// create the layout for the central widget
+	QVBoxLayout* l = new QVBoxLayout;
+	l->setContentsMargins(0, 0, 0, 0);
 
-	void SetScale(double s) { m_scale = s; }
+	// create the GL view
+	glview = new CGLView(wnd); glview->setObjectName("glview");
 
-	virtual void Render(int npivot, bool bactive) = 0;
+	// create the GL control bar
+	glc = new CGLControlBar(wnd);
+	glc->setObjectName("glbar");
+	glc->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Policy::Fixed);
 
-	virtual int Pick(int x, int y) = 0;
+	// add it all to the layout
+	l->addWidget(glview);
+	l->addWidget(glc);
+	setLayout(l);
 
-protected:
-	double	m_scale;
-	CGLView* m_view;
-};
-
-class GTranslator : public GManipulator
-{
-public:
-	GTranslator(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
-};
-
-class GRotator : public GManipulator
-{
-public:
-	GRotator(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
-};
-
-class GScalor : public GManipulator
-{
-public:
-	GScalor(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
-};
+	glc->hide();
+}

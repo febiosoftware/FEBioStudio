@@ -44,7 +44,6 @@ class GMaterial;
 class CCreatePanel;
 class CBuildPanel;
 class CRepositoryPanel;
-class CImagePanel;
 class QMenu;
 class CGraphWindow;
 class CPostDocument;
@@ -75,15 +74,6 @@ namespace Post {
 class CMainWindow : public QMainWindow
 {
 	Q_OBJECT
-
-public:
-	enum Config {
-		HTML_CONFIG,		// html documument (i.e. welcome page)
-		MODEL_CONFIG,		// model document	(i.e. fsm file)
-		POST_CONFIG,		// post document	(i.e. xplt file)
-		TEXT_CONFIG,		// text document	(i.e. raw feb file)
-        XML_CONFIG,		    // text document	(i.e. feb file)
-	};
 
 public:
 	explicit CMainWindow(bool reset = false, QWidget* parent = 0);
@@ -145,9 +135,6 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
-
-    // get the image panel
-	CImagePanel* GetImagePanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);

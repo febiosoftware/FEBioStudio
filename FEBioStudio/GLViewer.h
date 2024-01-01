@@ -23,65 +23,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
+#include <QWidget>
+#include "MainWindow.h"
 
-// pivot selection mode
-enum PIVOT_SELECTION_MODE {
-	SELECT_NONE,
-	SELECT_X,
-	SELECT_Y,
-	SELECT_Z,
-	SELECT_XY,
-	SELECT_YZ,
-	SELECT_XZ
-};
+class CGLControlBar;
 
-class CGLView;
-
-class GManipulator
+class CGLViewer : public QWidget
 {
 public:
-	GManipulator(CGLView* view);
-	virtual ~GManipulator(void);
+	CGLViewer(::CMainWindow* wnd);
 
-	void SetScale(double s) { m_scale = s; }
-
-	virtual void Render(int npivot, bool bactive) = 0;
-
-	virtual int Pick(int x, int y) = 0;
-
-protected:
-	double	m_scale;
-	CGLView* m_view;
-};
-
-class GTranslator : public GManipulator
-{
 public:
-	GTranslator(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
-};
-
-class GRotator : public GManipulator
-{
-public:
-	GRotator(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
-};
-
-class GScalor : public GManipulator
-{
-public:
-	GScalor(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
+	CGLView* glview;
+	CGLControlBar* glc;
 };

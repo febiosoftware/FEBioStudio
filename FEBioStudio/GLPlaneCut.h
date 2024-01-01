@@ -23,65 +23,43 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-
-// pivot selection mode
-enum PIVOT_SELECTION_MODE {
-	SELECT_NONE,
-	SELECT_X,
-	SELECT_Y,
-	SELECT_Z,
-	SELECT_XY,
-	SELECT_YZ,
-	SELECT_XZ
-};
+#include <FSCore/math3d.h>
+#include <MeshLib/Intersect.h>
 
 class CGLView;
+class FSModel;
+class GMesh;
 
-class GManipulator
+// class that creates and renders the plane cut in the CGLView.
+class GLPlaneCut
 {
 public:
-	GManipulator(CGLView* view);
-	virtual ~GManipulator(void);
+	GLPlaneCut(CGLView* glview) : m_glview(glview) {}
 
-	void SetScale(double s) { m_scale = s; }
+	void Clear() { delete m_planeCut; m_planeCut = nullptr; }
 
-	virtual void Render(int npivot, bool bactive) = 0;
+	bool IsValid() const { return (m_planeCut != nullptr); }
 
-	virtual int Pick(int x, int y) = 0;
+	void BuildPlaneCut(FSModel& fem);
 
-protected:
-	double	m_scale;
-	CGLView* m_view;
-};
+	void SetPlaneCoordinates(double d0, double d1, double d2, double d3)
+	{
+		m_plane[0] = d0;
+		m_plane[1] = d1;
+		m_plane[2] = d2;
+		m_plane[3] = d3;
+		Clear();
+	}
 
-class GTranslator : public GManipulator
-{
-public:
-	GTranslator(CGLView* view) : GManipulator(view) {}
+	double* GetPlaneCoordinates() { return m_plane; }
 
-	void Render(int npivot, bool bactive);
+	void Render();
 
-	int Pick(int x, int y);
-};
+	bool Intersect(const vec3d& p, const Ray& ray, Intersection& q);
 
-class GRotator : public GManipulator
-{
-public:
-	GRotator(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
-};
-
-class GScalor : public GManipulator
-{
-public:
-	GScalor(CGLView* view) : GManipulator(view) {}
-
-	void Render(int npivot, bool bactive);
-
-	int Pick(int x, int y);
+private:
+	GMesh* m_planeCut = nullptr;
+	CGLView* m_glview = nullptr;
+	double	m_plane[4] = { 1.0, 0.0, 0.0, 0.0 };
 };
