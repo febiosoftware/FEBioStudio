@@ -51,7 +51,6 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
-#include "PostDocument.h"
 #include "GraphWindow.h"
 #include "SummaryWindow.h"
 #include "StatsWindow.h"

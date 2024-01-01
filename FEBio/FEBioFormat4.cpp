@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBioFormat4.h"
-#include <GeomLib/FSGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>

@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <QFontDatabase>
 #include <QMouseEvent>
 #include <QAction>
-#include <QMessageBox>
 #include <QMenu>
 #include <QApplication>
 #include <QClipboard>

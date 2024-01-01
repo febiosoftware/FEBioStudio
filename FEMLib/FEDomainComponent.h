@@ -1,6 +1,6 @@
 #pragma once
 #include "FEStepComponent.h"
-#include "IHasItemList.h"
+#include <MeshLib/IHasItemList.h>
 
 class FSModel;
 class FEItemListBuilder;

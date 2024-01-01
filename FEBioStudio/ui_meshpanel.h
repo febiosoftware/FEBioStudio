@@ -37,7 +37,6 @@ SOFTWARE.*/
 #include <QGridLayout>
 #include <QPushButton>
 #include <QButtonGroup>
-#include <QGridLayout>
 #include <QMenu>
 #include <QValidator>
 #include <FSCore/ClassDescriptor.h>

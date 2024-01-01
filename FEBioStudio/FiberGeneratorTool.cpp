@@ -42,7 +42,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QLabel>
 #include <QHeaderView>
-#include <QMessageBox>
 #include <QComboBox>
 #include <QCheckBox>
 
