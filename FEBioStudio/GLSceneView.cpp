@@ -210,7 +210,7 @@ void CGLSceneView::RenderScene()
 		CGLContext rc;
 		rc.m_cam = &cam;
 		rc.m_settings = GetViewSettings();
-		rc.m_view = nullptr;
+		rc.m_view = this;
 		scene->Render(rc);
 	}
 }

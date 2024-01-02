@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include "GLViewSettings.h"
 
 class CGLCamera;
-class CGLView;
+class CGLSceneView;
 
 class CGLContext
 {
@@ -38,7 +38,7 @@ public:
 	~CGLContext();
 
 public:
-	CGLView*	m_view;
+	CGLSceneView*	m_view;
 	CGLCamera*	m_cam;
 	int			m_x, m_y;
 
