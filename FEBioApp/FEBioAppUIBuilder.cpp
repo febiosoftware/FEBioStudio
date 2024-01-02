@@ -614,7 +614,16 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 	{
 		if      (att.m_name == "text"    ) sztxt = att.cvalue();
 		else if (att.m_name == "size"    ) att.value(size, 2);
-		else if (att.m_name == "bg_color") att.value(bgc, 3);
+		else if (att.m_name == "bg_color")
+		{
+			if      (strcmp(att.cvalue(), "black") == 0) {bgc[0] = 0.0; bgc[1] = 0.0; bgc[2] = 0.0; }
+			else if (strcmp(att.cvalue(), "white") == 0) {bgc[0] = 1.0; bgc[1] = 1.0; bgc[2] = 1.0; }
+			else if (strcmp(att.cvalue(), "red"  ) == 0) {bgc[0] = 1.0; bgc[1] = 0.0; bgc[2] = 0.0; }
+			else if (strcmp(att.cvalue(), "green") == 0) {bgc[0] = 0.0; bgc[1] = 1.0; bgc[2] = 0.0; }
+			else if (strcmp(att.cvalue(), "blue" ) == 0) {bgc[0] = 0.0; bgc[1] = 0.0; bgc[2] = 1.0; }
+			else
+				att.value(bgc, 3);
+		}
 		else if (att.m_name == "rotation") att.value(rot, 3);
 	}
 
@@ -695,7 +704,7 @@ void FEBioAppUIBuilder::parsePlot3d(XMLTag& tag, QBoxLayout* playout)
 		} while (!tag.isend());
 	}
 
-	scene->SetDataSourceName(mapName);
+	if (!mapName.empty()) scene->SetDataSourceName(mapName);
 	if (colMap.empty() == false) scene->SetColorMap(colMap);
 	if (brange) scene->SetDataRange(rng[0], rng[1]);
 
