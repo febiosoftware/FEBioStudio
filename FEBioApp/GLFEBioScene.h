@@ -33,6 +33,7 @@ SOFTWARE.*/
 
 class GMesh;
 class FESurface;
+class GLLegendBar;
 
 class GLSceneObject
 {
@@ -72,7 +73,7 @@ public:
 	// get the bounding box of the current selection
 	BOX GetSelectionBox() { return GetBoundingBox(); }
 
-	void SetDataSourceName(const std::string& dataName) { m_dataSource = dataName; }
+	void SetDataSourceName(const std::string& dataName);
 
 	void SetColorMap(const std::string& colorMapName);
 
@@ -97,6 +98,7 @@ private:
 	GLTriMesh m_glmesh;
 	FESurface* m_febSurface;
 	CGLSceneView* m_view;
+	GLLegendBar* m_legend;
 	QMutex	m_mutex;
 
 	std::string	m_dataSource;

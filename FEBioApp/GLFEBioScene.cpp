@@ -24,6 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GLFEBioScene.h"
+#include "../FEBioStudio/GLView.h"
 #include <QMutexLocker>
 #include <GLLib/GLMeshRender.h>
 #include <MeshLib/GMesh.h>
@@ -35,6 +36,13 @@ SOFTWARE.*/
 #include <FEMLib/FSProject.h>
 #include <GeomLib/GObject.h>
 #include <PostLib/Palette.h>
+#include <GLWLib/GLWidget.h>
+#include <GLLib/GLContext.h>
+#ifdef __APPLE__
+#include <OpenGL/GLU.h>
+#else
+#include <GL/glu.h>
+#endif
 
 GLSceneObject::GLSceneObject() 
 {
@@ -85,6 +93,9 @@ bool GLSceneObject::LoadFromFile(const std::string& fileName)
 GLFEBioScene::GLFEBioScene(FEBioModel& fem) : m_fem(fem)
 {
 	m_febSurface = nullptr;
+	m_legend = new GLLegendBar(&m_col, 0, 0, 120, 600);
+	m_legend->ShowLabels(true);
+	m_legend->hide();
 	m_view = nullptr;
 	m_useUserRange = false;
 	m_userRange[0] = 0.0;
@@ -109,12 +120,20 @@ GLFEBioScene::~GLFEBioScene()
 	m_obj.clear();
 }
 
+void GLFEBioScene::SetDataSourceName(const std::string& dataName) 
+{ 
+	m_dataSource = dataName;
+	m_legend->copy_label(dataName.c_str());
+	m_legend->show();
+}
+
 void GLFEBioScene::SetDataRange(double rngMin, double rngMax)
 {
 	m_useUserRange = true;
 	if (rngMin > rngMax) { double tmp = rngMax; rngMax = rngMin; rngMin = tmp; }
 	m_userRange[0] = rngMin;
 	m_userRange[1] = rngMax;
+	m_legend->SetRange(rngMin, rngMax);
 }
 
 void GLFEBioScene::AddSceneObject(GLSceneObject* po)
@@ -180,6 +199,7 @@ void GLFEBioScene::Update(double time)
 
 	Post::CColorMap col;
 	col.SetRange(vmin, vmax);
+	m_legend->SetRange(vmin, vmax);
 
 	unsigned int createFlags = GLMesh::FLAG_NORMAL;
 	if (m_dataSource.empty()) createFlags |= GLMesh::FLAG_COLOR;
@@ -219,6 +239,30 @@ void GLFEBioScene::Render(CGLContext& rc)
 	for (auto po : m_obj) po->Render();
 	glPopAttrib();
 
+	// Canvas rendering
+	// set the projection Matrix to ortho2d so we can draw some stuff on the screen
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0, rc.m_view->width(), rc.m_view->height(), 0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// We must turn off culling before we use the QPainter, otherwise
+	// drawing using QPainter doesn't work correctly.
+	glDisable(GL_CULL_FACE);
+
+	// render the GL widgets
+	if (m_legend->visible())
+	{
+		int W = rc.m_view->width();
+		int H = rc.m_view->height();
+		m_legend->resize(W - 150, H/2 - 300, 120, 600);
+		QPainter painter(rc.m_view);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+		m_legend->draw(&painter);
+		painter.end();
+	}
 }
 
 void GLFEBioScene::BuildRenderMesh()
