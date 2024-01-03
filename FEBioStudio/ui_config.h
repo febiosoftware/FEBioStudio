@@ -37,6 +37,7 @@ namespace Ui {
 		TEXT_CONFIG,		// text document	(i.e. raw feb file)
 		XML_CONFIG,			// text document	(i.e. feb file)
 		APP_CONFIG,			// app document	(i.e. fex file)
+		MONITOR_CONFIG,		// febio monitor document
 	};
 
 	// Protected base class for configurations
@@ -111,6 +112,14 @@ namespace Ui {
 	{
 	public:
 		CAPPConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::APP_CONFIG) {}
+		void Apply() override;
+	};
+
+	// Configuration for running the febio monitor
+	class CMonitorConfig : public CUIConfig
+	{
+	public:
+		CMonitorConfig(Ui::CMainWindow* ui) : CUIConfig(ui, Ui::Config::MONITOR_CONFIG) {}
 		void Apply() override;
 	};
 

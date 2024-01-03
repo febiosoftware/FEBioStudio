@@ -466,6 +466,7 @@ void CGLModel::RemoveDisplacementMap()
 void CGLModel::Render(CGLContext& rc)
 {
 	if (GetFSModel() == nullptr) return;
+	if (GetActiveMesh() == nullptr) return;
 
 	// activate all clipping planes
 	CGLPlaneCutPlot::EnableClipPlanes();
@@ -1327,6 +1328,7 @@ void CGLModel::RenderInnerSurface(int m, bool btex)
 {
 //	m_render.SetDivisions(1);
 	Post::FEPostMesh* pm = GetActiveMesh();
+	if ((m < 0) || (m >= m_innerSurface.size())) return;
 	GLSurface& surf = *m_innerSurface[m];
 
 	// render active faces
@@ -1773,6 +1775,7 @@ void CGLModel::RenderOutline(CGLContext& rc, int nmat)
 {
 	FEPostModel* ps = m_ps;
 	Post::FEPostMesh* pm = GetActiveMesh();
+	if (pm == nullptr) return;
 
 	// get the face list
 	vector<int> faceList;

@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include <GL/glew.h>
 #include "GLView.h"
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
 #else
@@ -1327,7 +1328,7 @@ QImage CGLView::CaptureScreen()
 	else return grabFramebuffer();
 }
 
-void CGLView::repaintEvent()
+void CGLView::updateView()
 {
 	repaint();
 }
@@ -1392,12 +1393,11 @@ void CGLView::RenderScene()
 	glDisable(GL_CULL_FACE);
 
 	// render the GL widgets
-	QPainter painter(this);
-	painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
-
-	CPostDocument* postDoc = m_pWnd->GetPostDocument();
-	if (postDoc == nullptr)
+	if (m_Widget)
 	{
+		QPainter painter(this);
+		painter.setRenderHints(QPainter::Antialiasing | QPainter::TextAntialiasing);
+
 		CModelDocument* mdoc = m_pWnd->GetModelDocument();
 		if (mdoc && m_Widget)
 		{
@@ -1434,10 +1434,9 @@ void CGLView::RenderScene()
 				else m_legend->hide();
 			}
 		}
-	}
-	else
-	{
-		if (postDoc->IsValid() && m_Widget)
+
+		CPostDocument* postDoc = m_pWnd->GetPostDocument();
+		if (postDoc && postDoc->IsValid() && m_Widget)
 		{
 			// make sure the model legend bar is hidden
 			m_legend->hide();
@@ -1451,9 +1450,25 @@ void CGLView::RenderScene()
 			m_Widget->SetActiveLayer(layer);
 			m_Widget->DrawWidgets(&painter);
 		}
+
+		FEBioMonitorDoc* febDoc = dynamic_cast<FEBioMonitorDoc*>(m_pWnd->GetDocument());
+		if (febDoc && febDoc->IsValid())
+		{
+			// make sure the model legend bar is hidden
+			m_legend->hide();
+
+			// make sure the titles are visible
+			if (m_ptitle) m_ptitle->show();
+			if (m_psubtitle) m_psubtitle->show();
+
+			// draw the other widgets
+			m_Widget->SetActiveLayer(0);
+			m_Widget->DrawWidgets(&painter);
+		}
+
+		painter.end();
 	}
 
-	painter.end();
 
 	if (m_recorder.IsRecording())
 	{

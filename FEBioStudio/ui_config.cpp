@@ -41,6 +41,7 @@ void Ui::CUIConfig::Apply()
 
 	// disable some FEBio menu items
 	ui->actionFEBioRun->setEnabled(false);
+	ui->actionFEBioMonitor->setEnabled(false);
 	ui->actionFEBioStop->setEnabled(false);
 
 	// disable some Tools menu items
@@ -160,6 +161,7 @@ void Ui::CModelConfig::Apply()
 
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
+	ui->actionFEBioMonitor->setEnabled(true);
 
 	ui->actionCurveEditor->setEnabled(true);
 	ui->actionMeshInspector->setEnabled(true);
@@ -278,6 +280,7 @@ void Ui::CTextConfig::Apply()
 
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
+	ui->actionFEBioMonitor->setEnabled(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -313,6 +316,7 @@ void Ui::CXMLConfig::Apply()
 
 		ui->actionFEBioRun->setEnabled(true);
 		ui->actionFEBioStop->setEnabled(true);
+		ui->actionFEBioMonitor->setEnabled(true);
 
 		if (xmlDoc->EditingText())
 		{
@@ -419,6 +423,45 @@ void Ui::CAPPConfig::Apply()
 	ui->timePanel->parentWidget()->hide();
 
 	ui->centralWidget->appView->setActiveDocument(dynamic_cast<FEBioAppDocument*>(ui->m_wnd->GetDocument()));
+
+	ui->fileViewer->parentWidget()->raise();
+}
+
+// Configure for app document
+void Ui::CMonitorConfig::Apply()
+{
+	CUIConfig::Apply();
+
+	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
+
+	ui->menuEdit->menuAction()->setVisible(false);
+	ui->menuEditPost->menuAction()->setVisible(false);
+	ui->menuEditTxt->menuAction()->setVisible(false);
+	ui->menuEditXml->menuAction()->setVisible(false);
+	ui->menuPhysics->menuAction()->setVisible(false);
+	ui->menuPost->menuAction()->setVisible(false);
+	ui->menuRecord->menuAction()->setVisible(true);
+	ui->menuView->menuAction()->setVisible(false);
+
+	ui->buildToolBar->hide();
+	ui->postToolBar->hide();
+	ui->imageToolBar->hide();
+	ui->pFontToolBar->hide();
+	ui->xmlToolbar->hide();
+
+	ui->centralWidget->glw->glc->hide();
+
+	ui->modelViewer->parentWidget()->hide();
+	ui->buildPanel->parentWidget()->hide();
+	ui->postPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+	ui->infoPanel->parentWidget()->hide();
+	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->timePanel->parentWidget()->hide();
+
+	ui->m_wnd->ClearOutput();
+	ui->m_wnd->ShowLogPanel();
+	ui->logPanel->ShowOutput();
 
 	ui->fileViewer->parentWidget()->raise();
 }

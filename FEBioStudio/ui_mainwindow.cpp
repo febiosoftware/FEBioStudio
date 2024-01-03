@@ -206,6 +206,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	// --- FEBio menu actions ---
 	actionFEBioRun = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
 	actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
+	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor");
 	QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
@@ -558,6 +559,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuBar->addAction(menuFEBio->menuAction());
 	menuFEBio->addAction(actionFEBioRun);
 	menuFEBio->addAction(actionFEBioStop);
+	menuFEBio->addAction(actionFEBioMonitor);
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);
@@ -882,6 +884,7 @@ void Ui::CMainWindow::BuildConfigs()
 	m_configs.push_back(new CTextConfig(this));
 	m_configs.push_back(new CXMLConfig(this));
 	m_configs.push_back(new CAPPConfig(this));
+	m_configs.push_back(new CMonitorConfig(this));
 
 	setUIConfig(Ui::Config::EMPTY_CONFIG);
 }

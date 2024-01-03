@@ -46,6 +46,7 @@ SOFTWARE.*/
 #include <QDragEnterEvent>
 #include <QDropEvent>
 #include <QMimeData>
+#include <QLabel>
 #include "XMLTreeView.h"
 #include "FileViewer.h"
 #include "ModelViewer.h"
@@ -78,6 +79,7 @@ SOFTWARE.*/
 #include "DlgFiberViz.h"
 #include "GLViewer.h"
 #include <FEBioApp/FEBioAppView.h>
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <vector>
 
 class QProcess;
@@ -323,6 +325,7 @@ public:
 
 	// FEBIO menu
 	QAction* actionFEBioRun;
+	QAction* actionFEBioMonitor;
 	QAction* actionFEBioStop;
 
 	// PHYSICS menu

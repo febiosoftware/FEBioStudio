@@ -429,6 +429,7 @@ public slots:
 	void on_actionPlotMix_triggered();
 	void on_actionFEBioRun_triggered();
 	void on_actionFEBioStop_triggered();
+	void on_actionFEBioMonitor_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();

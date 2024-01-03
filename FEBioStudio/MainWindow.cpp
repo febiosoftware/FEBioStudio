@@ -106,6 +106,7 @@ SOFTWARE.*/
 #include <qmenu.h>
 #include <GLLib/GLViewSettings.h>
 #include <FEBioApp/FEBioAppDocument.h>
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 
 extern GLColor col[];
 
@@ -2343,6 +2344,10 @@ void CMainWindow::UpdateUIConfig()
 	else if (dynamic_cast<FEBioAppDocument*>(doc))
 	{
 		ui->setUIConfig(Ui::Config::APP_CONFIG);
+	}
+	else if (dynamic_cast<FEBioMonitorDoc*>(doc))
+	{
+		ui->setUIConfig(Ui::Config::MONITOR_CONFIG);
 	}
 	else
 	{

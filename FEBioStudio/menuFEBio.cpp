@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgFEBioInfo.h"
 #include "DlgFEBioPlugins.h"
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 
 void CMainWindow::on_actionFEBioRun_triggered()
 {
@@ -259,6 +260,41 @@ void CMainWindow::on_actionFEBioRun_triggered()
 		// run the job
 		RunFEBioJob(job);
 	}
+}
+
+void CMainWindow::on_actionFEBioMonitor_triggered()
+{
+	// make sure the current active model can be run
+	CModelDocument* doc = GetModelDocument();
+	if (doc == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "The FEBio Monitor can only be used on an actively open model.");
+		return;
+	}
+
+	// make sure the model is saved
+	if (doc->IsModified())
+	{
+		on_actionSave_triggered();
+	}
+
+	// write the FEBio input file
+	std::string febFilename = doc->GetDocFilePath();
+	size_t n = febFilename.rfind(".fs2");
+	if (n == string::npos) febFilename += ".feb";
+	else febFilename.replace(n, 4, ".feb");
+
+	if (ExportFEBioFile(doc, febFilename, 0x0400) == false)
+	{
+		QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
+		return;
+	}
+
+	FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
+	monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
+	AddDocument(monitorDoc);
+
+	monitorDoc->RunJob();
 }
 
 void CMainWindow::on_actionFEBioStop_triggered()

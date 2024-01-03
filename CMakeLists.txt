@@ -469,7 +469,7 @@ endmacro()
 
 findHdrSrc(FEBioStudio)
 
-set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioApp)
+set(FEBIOSTUDIO_LIBS Abaqus Ansys Comsol CUILib FEBio FEMLib FSCore GeomLib GLLib GLWLib ImageLib LSDyna MeshIO MeshLib MeshTools Nike3D PostGL PostLib XPLTLib FEBioLink FEBioApp FEBioMonitor)
 
 foreach(name IN LISTS FEBIOSTUDIO_LIBS)
 	findHdrSrc(${name})

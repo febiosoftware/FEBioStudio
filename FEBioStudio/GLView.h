@@ -303,8 +303,8 @@ public:
 protected:
 	void SetTrackingData(int n[3]);
 
-protected slots:
-	void repaintEvent();
+public slots:
+	void updateView();
 
 protected:
 	CMainWindow*	m_pWnd;	// parent window
