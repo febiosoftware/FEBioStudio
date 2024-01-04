@@ -43,6 +43,8 @@ void Ui::CUIConfig::Apply()
 	ui->actionFEBioRun->setEnabled(false);
 	ui->actionFEBioMonitor->setEnabled(false);
 	ui->actionFEBioStop->setEnabled(false);
+	ui->actionFEBioPause->setVisible(false);
+	ui->actionFEBioNext->setVisible(false);
 
 	// disable some Tools menu items
 	ui->actionCurveEditor->setEnabled(false);
@@ -433,6 +435,11 @@ void Ui::CMonitorConfig::Apply()
 	CUIConfig::Apply();
 
 	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
+
+	ui->actionFEBioStop->setEnabled(true);
+	ui->actionFEBioMonitor->setEnabled(true);
+	ui->actionFEBioPause->setVisible(true);
+	ui->actionFEBioNext->setVisible(true);
 
 	ui->menuEdit->menuAction()->setVisible(false);
 	ui->menuEditPost->menuAction()->setVisible(false);

@@ -327,6 +327,8 @@ public:
 	QAction* actionFEBioRun;
 	QAction* actionFEBioMonitor;
 	QAction* actionFEBioStop;
+	QAction* actionFEBioPause;
+	QAction* actionFEBioNext;
 
 	// PHYSICS menu
 	QAction* actionAddRigidConnector;

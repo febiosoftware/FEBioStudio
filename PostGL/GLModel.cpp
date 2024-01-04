@@ -1362,12 +1362,15 @@ void CGLModel::RenderInnerSurfaces(bool b)
 void CGLModel::RenderInnerSurfaceOutline(int m, int ndivs)
 {
 	m_render.SetDivisions(ndivs);
-	Post::FEPostMesh* pm = GetActiveMesh();
-	GLSurface& inSurf = *m_innerSurface[m];
-	for (int i = 0; i<inSurf.Faces(); ++i)
+	if (m_innerSurface.empty() == false)
 	{
-		FSFace& facet = inSurf.Face(i);
-		m_render.RenderFaceOutline(facet, pm);
+		Post::FEPostMesh* pm = GetActiveMesh();
+		GLSurface& inSurf = *m_innerSurface[m];
+		for (int i = 0; i < inSurf.Faces(); ++i)
+		{
+			FSFace& facet = inSurf.Face(i);
+			m_render.RenderFaceOutline(facet, pm);
+		}
 	}
 }
 

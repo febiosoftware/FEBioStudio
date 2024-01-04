@@ -28,6 +28,14 @@ SOFTWARE.*/
 #include "../FEBioStudio/MainWindow.h"
 #include "../FEBioStudio/GLView.h"
 #include "GLMonitorScene.h"
+#include <QWaitCondition>
+
+// winbase.h defines a GetCurrentTime macro, 
+// so we need to undef this before we include FEModel.h
+#ifdef GetCurrentTime
+#undef GetCurrentTime
+#endif // GetCurrentTime
+
 #include <FECore/FEModel.h>
 
 
@@ -35,6 +43,8 @@ SOFTWARE.*/
 // otherwise we may get compilation errors related to Qt
 #include <FEBioLib/FEBioModel.h>
 #include <FECore/log.h>
+
+QWaitCondition jobIsPaused;
 
 class FEBLogStream : public LogStream
 {
@@ -88,7 +98,14 @@ void FEBioMonitorThread::run()
 		return;
 	}
 
-	b = fem.Solve();
+	try {
+		b = fem.Solve();
+	}
+	catch (...)
+	{
+		b = false;
+	}
+
 	emit jobFinished(b);
 }
 
@@ -96,6 +113,11 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLDocument(wnd)
 {
 	SetDocTitle("[FEBio Monitor]");
 	m_isOutputReady = false;
+	m_isRunning = false;
+	m_isPaused  = false;
+	m_isStopped = false;
+	m_startPaused = false;
+	m_progressPct = 0.0;
 	m_scene = new CGLMonitorScene(this);
 
 	m_bValid = false;
@@ -123,19 +145,89 @@ QString FEBioMonitorDoc::GetFEBioInputFile() const
 	return m_febFile;
 }
 
+bool FEBioMonitorDoc::IsRunning() const
+{
+	return m_isRunning;
+}
+
+bool FEBioMonitorDoc::IsPaused() const
+{
+	return m_isPaused;
+}
+
+void FEBioMonitorDoc::StartPaused(bool b)
+{
+	m_startPaused = b;
+}
+
 void FEBioMonitorDoc::RunJob()
 {
+	if (m_isRunning)
+	{
+		if (m_isPaused)
+		{
+			m_isPaused = false;
+			jobIsPaused.wakeAll();
+			return;
+		}
+		else assert(false);
+		return;
+	}
+
 	m_isOutputReady = false;
+	m_isRunning = true;
+	m_isPaused  = m_startPaused;
+	m_isStopped = false;
+	m_progressPct = 0.0;
 	FEBioMonitorThread* thread = new FEBioMonitorThread(this);
 	thread->start();
 }
 
+void FEBioMonitorDoc::FEBioMonitorDoc::KillJob()
+{
+	if (m_isRunning) m_isStopped = true;
+	if (m_isPaused)
+	{
+		m_isPaused = false;
+		jobIsPaused.wakeAll();
+	}
+	updateWindowTitle();
+}
+
+void FEBioMonitorDoc::PauseJob()
+{
+	QMutexLocker lock(&m_mutex);
+	if (m_isRunning && !m_isStopped)
+		m_isPaused = true;
+	updateWindowTitle();
+}
+
+void FEBioMonitorDoc::AdvanceJob()
+{
+	QMutexLocker lock(&m_mutex);
+	if (m_isRunning && m_isPaused)
+	{
+		jobIsPaused.wakeAll();
+	}
+	updateWindowTitle();
+}
+
 void FEBioMonitorDoc::onJobFinished(bool b)
 {
-	if (b)
-		QMessageBox::information(m_wnd, "FEBio Studio", "NORMAL TERMINATION");
+	m_isRunning = false;
+
+	if (m_isStopped)
+	{
+		QMessageBox::information(m_wnd, "FEBio Studio", "Job cancelled.");
+	}
 	else
-		QMessageBox::critical(m_wnd, "FEBio Studio", "ERROR TERMINATION");
+	{
+		if (b)
+			QMessageBox::information(m_wnd, "FEBio Studio", "NORMAL TERMINATION");
+		else
+			QMessageBox::critical(m_wnd, "FEBio Studio", "ERROR TERMINATION");
+	}
+	updateWindowTitle();
 }
 
 void FEBioMonitorDoc::appendLog(const char* sz)
@@ -168,8 +260,95 @@ void FEBioMonitorDoc::readOutput()
 	m_outputBuffer.clear();
 	m_isOutputReady = false;
 	m_mutex.unlock();
-	
+
 	m_wnd->AddOutputEntry(s);
+
+	updateWindowTitle();
+}
+
+void FEBioMonitorDoc::updateWindowTitle()
+{
+	double p = m_progressPct;
+	int pn = (int)(10.0 * p);
+	p = pn / 10.0;
+
+	QString status;
+	if      (m_isPaused ) status = "PAUSED";
+	else if (m_isStopped) status = "STOPPED";
+	else if (m_isRunning) status = "RUNNING";
+	else status = "READY";
+
+	m_wnd->setWindowTitle(QString("[%1: %2 %]").arg(status).arg(p));
+}
+
+double calculateFEBioProgressInPercent(FEModel* pfem)
+{
+	FEBioModel& fem = dynamic_cast<FEBioModel&>(*pfem);
+
+	// get the number of steps
+	int nsteps = fem.Steps();
+
+	// calculate progress
+	double starttime = fem.GetStartTime();
+	double endtime = fem.GetEndTime();
+	double f = 0.0;
+	double ftime = pfem->GetCurrentTime();
+	if (endtime != starttime) f = (ftime - starttime) / (endtime - starttime);
+	else
+	{
+		// this only happens (I think) when the model is solved
+		f = 1.0;
+	}
+
+	double pct = 0.0;
+	if (nsteps > 1)
+	{
+		int N = nsteps;
+		int n = fem.GetCurrentStepIndex();
+		pct = 100.0 * ((double)n + f) / (double)N;
+	}
+	else
+	{
+		pct = 100.0 * f;
+	}
+
+	return pct;
+}
+
+double FEBioMonitorDoc::GetTimeValue() const
+{
+	return m_time;
+}
+
+void FEBioMonitorDoc::SetProgress(double p)
+{
+	m_progressPct = p;
+}
+
+QString eventToString(int nevent)
+{
+	QString s = "<unknown>";
+	switch (nevent)
+	{
+	case CB_INIT            : s = "INIT"; break;
+	case CB_STEP_ACTIVE     : s = "STEP_ACTIVE"; break;
+	case CB_MAJOR_ITERS     : s = "MAJOR_ITERS"; break;
+	case CB_MINOR_ITERS     : s = "MINOR_ITERS"; break;
+	case CB_SOLVED          : s = "SOLVED"; break;
+	case CB_UPDATE_TIME     : s = "UPDATE_TIME"; break;
+	case CB_AUGMENT         : s = "AUGMENT"; break;
+	case CB_STEP_SOLVED     : s = "STEP_SOLVED"; break;
+	case CB_MATRIX_REFORM   : s = "MATRIX_REFORM"; break;
+	case CB_REMESH          : s = "REMESH"; break;
+	case CB_PRE_MATRIX_SOLVE: s = "PRE_MATRIX_SOLVE"; break;
+	case CB_RESET           : s = "RESET"; break;
+	case CB_MODEL_UPDATE    : s = "MODEL_UPDATE"; break;
+	case CB_TIMESTEP_SOLVED : s = "TIMESTEP_SOLVED"; break;
+	case CB_SERIALIZE_SAVE  : s = "SERIALIZE_SAVE"; break;
+	case CB_SERIALIZE_LOAD  : s = "SERIALIZE_LOAD"; break;
+	case CB_USER1           : s = "USER1"; break;
+	}
+	return s;
 }
 
 bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
@@ -188,10 +367,24 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 		break;
 	}
 	emit updateView();
-	return true;
-}
 
-double FEBioMonitorDoc::GetTimeValue() const
-{
-	return m_time;
+	// NOTE: Even if we cancel the run,
+	// the CB_SOLVED event is still triggered, which will reset the progress.
+	// so we check for this
+	if (nevent == CB_INIT) SetProgress(0.0);
+	else if (!m_isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
+
+	m_mutex.lock();
+	if (m_isPaused)
+	{
+		m_outputBuffer += "\n[paused in " + eventToString(nevent) + "]\n";
+		emit outputReady();
+
+		jobIsPaused.wait(&m_mutex);
+	}
+	m_mutex.unlock();
+
+	if (m_isStopped) throw std::exception();
+
+	return true;
 }

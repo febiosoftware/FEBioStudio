@@ -24,88 +24,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include <QObject>
-#include <QThread>
-#include <QMutex>
-#include "../FEBioStudio/Document.h"
+#include <QDialog>
 
-class FEModel; // from FEBio
-
-class FEBioMonitorDoc;
-
-class FEBioMonitorThread : public QThread
+class CDlgMonitorSettings : public QDialog
 {
 	Q_OBJECT
 
+	class Ui;
+
 public:
-	FEBioMonitorThread(FEBioMonitorDoc* doc);
+	CDlgMonitorSettings(QWidget* parent = 0);
 
-	void run() override;
+	void SetFEBioInputFile(QString febfile);
 
-signals:
-	void jobFinished(bool);
+	QString GetFEBioInputFile();
+	bool StartPaused();
 
 private:
-	FEBioMonitorDoc* m_doc;
-};
-
-class FEBioMonitorDoc : public CGLDocument
-{
-	Q_OBJECT
-
-public:
-	FEBioMonitorDoc(CMainWindow* wnd);
-	~FEBioMonitorDoc();
-
-	void SetFEBioInputFile(QString febFile);
-
-	QString GetFEBioInputFile() const;
-
-	void StartPaused(bool b);
-
-	void RunJob();
-
-	void KillJob();
-
-	void PauseJob();
-
-	void AdvanceJob();
-
-	void appendLog(const char* sz);
-
-	bool IsRunning() const;
-
-	bool IsPaused() const;
-
-public:
-	double GetTimeValue() const;
-
-public:
-	bool processFEBioEvent(FEModel* fem, int event);
-	void SetProgress(double percent);
-
-private:
-	void updateWindowTitle();
-
-private slots:
-	void onJobFinished(bool b);
-	void readOutput();
-
-signals:
-	void outputReady();
-	void updateView();
-
-private:
-	QString m_febFile;
-	QString	m_outputBuffer;
-	bool	m_startPaused;
-	bool	m_isOutputReady;
-	bool	m_isStopped;
-	bool	m_isRunning;
-	bool	m_isPaused;
-	double	m_progressPct;
-	double	m_time;
-	QMutex	m_mutex;
-
-	friend class FEBioMonitorThread;
+	Ui* ui;
 };

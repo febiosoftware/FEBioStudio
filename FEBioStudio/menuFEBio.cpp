@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgFEBioInfo.h"
 #include "DlgFEBioPlugins.h"
+#include "DlgMonitorSettings.h"
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 
 void CMainWindow::on_actionFEBioRun_triggered()
@@ -264,46 +265,104 @@ void CMainWindow::on_actionFEBioRun_triggered()
 
 void CMainWindow::on_actionFEBioMonitor_triggered()
 {
-	// make sure the current active model can be run
-	CModelDocument* doc = GetModelDocument();
-	if (doc == nullptr)
+	if (dynamic_cast<FEBioMonitorDoc*>(GetDocument()))
 	{
-		QMessageBox::information(this, "FEBio Studio", "The FEBio Monitor can only be used on an actively open model.");
-		return;
+		FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+		if (doc->IsRunning() && !doc->IsPaused())
+		{
+			QMessageBox::information(this, "FEBio Studio", "The current job needs to be stopped first.");
+			return;
+		}
+		else doc->RunJob();
 	}
-
-	// make sure the model is saved
-	if (doc->IsModified())
+	else
 	{
-		on_actionSave_triggered();
+		CModelDocument* doc = GetModelDocument();
+		if (doc == nullptr)
+		{
+			QMessageBox::information(this, "FEBio Studio", "The FEBio Monitor can only be used on an actively open model.");
+			return;
+		}
+
+		// make sure the model is saved
+		if (doc->IsModified())
+		{
+			on_actionSave_triggered();
+		}
+
+		// write the FEBio input file
+		std::string febFilename = doc->GetDocFilePath();
+		size_t n = febFilename.rfind(".fs2");
+		if (n == string::npos) febFilename += ".feb";
+		else febFilename.replace(n, 4, ".feb");
+
+		CDlgMonitorSettings dlg(this);
+		dlg.SetFEBioInputFile(QString::fromStdString(febFilename));
+		if (dlg.exec())
+		{
+			febFilename = dlg.GetFEBioInputFile().toStdString();
+			if (ExportFEBioFile(doc, febFilename, 0x0400) == false)
+			{
+				QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
+				return;
+			}
+
+			FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
+			if (dlg.StartPaused()) monitorDoc->StartPaused(true);
+			monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
+			AddDocument(monitorDoc);
+			monitorDoc->RunJob();
+		}
 	}
-
-	// write the FEBio input file
-	std::string febFilename = doc->GetDocFilePath();
-	size_t n = febFilename.rfind(".fs2");
-	if (n == string::npos) febFilename += ".feb";
-	else febFilename.replace(n, 4, ".feb");
-
-	if (ExportFEBioFile(doc, febFilename, 0x0400) == false)
-	{
-		QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
-		return;
-	}
-
-	FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
-	monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
-	AddDocument(monitorDoc);
-
-	monitorDoc->RunJob();
 }
 
 void CMainWindow::on_actionFEBioStop_triggered()
 {
-	if (ui->m_jobManager->IsJobRunning())
+	// TODO: I want to hook up the febio monitor to the job manager, but not sure how yet
+	//       so until then, I have to do it this way
+	if (dynamic_cast<FEBioMonitorDoc*>(GetDocument()))
 	{
-		ui->m_jobManager->KillJob();
+		FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+		if (doc->IsRunning() == false)
+		{
+			QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
+		}
+		else doc->KillJob();
 	}
-	else QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
+	else
+	{
+		if (ui->m_jobManager->IsJobRunning())
+		{
+			ui->m_jobManager->KillJob();
+		}
+		else QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
+	}
+}
+
+void CMainWindow::on_actionFEBioPause_triggered()
+{
+	if (dynamic_cast<FEBioMonitorDoc*>(GetDocument()))
+	{
+		FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+		if (doc->IsRunning() == false)
+		{
+			QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
+		}
+		else doc->PauseJob();
+	}
+}
+
+void CMainWindow::on_actionFEBioNext_triggered()
+{
+	if (dynamic_cast<FEBioMonitorDoc*>(GetDocument()))
+	{
+		FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+		if (doc->IsRunning() == false)
+		{
+			QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
+		}
+		else doc->AdvanceJob();
+	}
 }
 
 void CMainWindow::on_actionFEBioOptimize_triggered()

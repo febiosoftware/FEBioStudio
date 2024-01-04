@@ -204,9 +204,11 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionEditProject = addAction("Edit Physics Modules ...", "actionEditProject");
 
 	// --- FEBio menu actions ---
-	actionFEBioRun = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
-	actionFEBioStop = addAction("Stop FEBio", "actionFEBioStop");
-	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor");
+	actionFEBioRun   = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
+	actionFEBioStop  = addAction("Stop FEBio", "actionFEBioStop");
+	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor"); actionFEBioMonitor->setShortcut(Qt::ControlModifier | Qt::Key_F5);
+	actionFEBioPause   = addAction("Pause FEBio", "actionFEBioPause"); actionFEBioPause->setShortcut(Qt::ShiftModifier| Qt::Key_F5);
+	actionFEBioNext    = addAction("Next iteration", "actionFEBioNext"); actionFEBioNext->setShortcut(Qt::AltModifier | Qt::Key_F5);
 	QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
@@ -560,6 +562,8 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuFEBio->addAction(actionFEBioRun);
 	menuFEBio->addAction(actionFEBioStop);
 	menuFEBio->addAction(actionFEBioMonitor);
+	menuFEBio->addAction(actionFEBioPause);
+	menuFEBio->addAction(actionFEBioNext);
 	menuFEBio->addAction(actionFEBioOptimize);
 	menuFEBio->addAction(actionFEBioTangent);
 	menuFEBio->addAction(actionFEBioInfo);
