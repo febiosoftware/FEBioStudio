@@ -183,5 +183,6 @@
         <file>icons/brush.png</file>
         <file>icons/pixelInspector.png</file>
         <file>icons/geodesic.png</file>
+        <file>icons/febiomonitor.png</file>
 	</qresource>
 </RCC>

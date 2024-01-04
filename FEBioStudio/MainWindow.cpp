@@ -1340,13 +1340,11 @@ C2DImageTimeView* CMainWindow::GetC2DImageTimeView()
     return ui->centralWidget->timeView2D;
 }
 
-//-----------------------------------------------------------------------------
 CBuildPanel* CMainWindow::GetBuildPanel()
 {
 	return ui->buildPanel;
 }
 
-//-----------------------------------------------------------------------------
 CCreatePanel* CMainWindow::GetCreatePanel()
 {
 	return ui->buildPanel->CreatePanel();
@@ -1355,6 +1353,11 @@ CCreatePanel* CMainWindow::GetCreatePanel()
 CRepositoryPanel* CMainWindow::GetDatabasePanel()
 {
 	return ui->databasePanel;
+}
+
+CFEBioMonitorPanel* CMainWindow::GetFEBioMonitorPanel()
+{
+	return ui->febioMonitor;
 }
 
 //-----------------------------------------------------------------------------

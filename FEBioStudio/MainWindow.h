@@ -59,6 +59,7 @@ class CImageSliceView;
 class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
+class CFEBioMonitorPanel;
 
 enum class ImageFileType;
 
@@ -135,6 +136,9 @@ public:
 
 	// get the database panel
 	CRepositoryPanel* GetDatabasePanel();
+
+	// get the febio monitor panel
+	CFEBioMonitorPanel* GetFEBioMonitorPanel();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);

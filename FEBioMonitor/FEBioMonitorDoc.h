@@ -27,7 +27,7 @@ SOFTWARE.*/
 #include <QObject>
 #include <QThread>
 #include <QMutex>
-#include "../FEBioStudio/Document.h"
+#include "../FEBioStudio/GLModelDocument.h"
 
 class FEModel; // from FEBio
 
@@ -49,7 +49,7 @@ private:
 	FEBioMonitorDoc* m_doc;
 };
 
-class FEBioMonitorDoc : public CGLDocument
+class FEBioMonitorDoc : public CGLModelDocument
 {
 	Q_OBJECT
 
@@ -77,10 +77,12 @@ public:
 
 	bool IsPaused() const;
 
+public: // overrides for CGLModelDocument
+	Post::CGLModel* GetGLModel() override;
+
 public:
 	double GetTimeValue() const;
 
-public:
 	bool processFEBioEvent(FEModel* fem, int event);
 	void SetProgress(double percent);
 
@@ -89,11 +91,13 @@ private:
 
 private slots:
 	void onJobFinished(bool b);
+	void onModelInitialized();
 	void readOutput();
 
 signals:
 	void outputReady();
-	void updateView();
+	void modelInitialized();
+	void updateViews();
 
 private:
 	QString m_febFile;

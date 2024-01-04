@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEBioMonitorDoc.h"
 #include "../FEBioStudio/MainWindow.h"
 #include "../FEBioStudio/GLView.h"
+#include "FEBioMonitorPanel.h"
 #include "GLMonitorScene.h"
 #include <QWaitCondition>
 
@@ -109,9 +110,11 @@ void FEBioMonitorThread::run()
 	emit jobFinished(b);
 }
 
-FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLDocument(wnd)
+FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
 {
 	SetDocTitle("[FEBio Monitor]");
+	SetIcon(":/icons/febiomonitor.png");
+
 	m_isOutputReady = false;
 	m_isRunning = false;
 	m_isPaused  = false;
@@ -126,7 +129,8 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLDocument(wnd)
 	CGLView* view = wnd->GetGLView();
 
 	connect(this, &FEBioMonitorDoc::outputReady, this, &FEBioMonitorDoc::readOutput);
-	connect(this, &FEBioMonitorDoc::updateView, view, &CGLView::updateView);
+	connect(this, &FEBioMonitorDoc::updateViews, view, &CGLView::updateView);
+	connect(this, &FEBioMonitorDoc::modelInitialized, this, &FEBioMonitorDoc::onModelInitialized);
 }
 
 FEBioMonitorDoc::~FEBioMonitorDoc()
@@ -315,6 +319,14 @@ double calculateFEBioProgressInPercent(FEModel* pfem)
 	return pct;
 }
 
+Post::CGLModel* FEBioMonitorDoc::GetGLModel()
+{
+	if (IsValid() == false) return nullptr;
+	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(GetScene());
+	if (scene == nullptr) return nullptr;
+	return scene->GetGLModel();
+}
+
 double FEBioMonitorDoc::GetTimeValue() const
 {
 	return m_time;
@@ -359,6 +371,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	case CB_INIT:
 		scene->InitScene(fem);
 		m_bValid = true;
+		emit modelInitialized();
 		break;
 	case CB_MAJOR_ITERS:
 	case CB_MINOR_ITERS:
@@ -366,7 +379,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 		scene->UpdateScene();
 		break;
 	}
-	emit updateView();
+	emit updateViews();
 
 	// NOTE: Even if we cancel the run,
 	// the CB_SOLVED event is still triggered, which will reset the progress.
@@ -387,4 +400,12 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	if (m_isStopped) throw std::exception();
 
 	return true;
+}
+
+void FEBioMonitorDoc::onModelInitialized()
+{
+	QMutexLocker lock(&m_mutex);
+	CFEBioMonitorPanel* w = GetMainWindow()->GetFEBioMonitorPanel(); assert(w);
+	if (w == nullptr) return;
+	w->Update(true);
 }

@@ -33,8 +33,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QToolButton>
 #include "MainWindow.h"
-#include "Document.h"
-#include "PostDocument.h"
+#include "GLModelDocument.h"
 #include "PropertyListView.h"
 #include <PostLib/FEPostModel.h>
 #include <PostLib/Material.h>
@@ -218,9 +217,16 @@ CMaterialPanel::CMaterialPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPan
 	m_pmat = new MaterialProps;
 }
 
-CPostDocument* CMaterialPanel::GetActiveDocument()
+Post::CGLModel* CMaterialPanel::GetActiveModel()
 {
-	return GetMainWindow()->GetPostDocument();
+	CGLModelDocument* gldoc = dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
+	if ((gldoc == nullptr) || !gldoc->IsValid()) return nullptr;
+
+	// get the model and make sure the model has a valid post model
+	Post::CGLModel* glm = gldoc->GetGLModel();
+	if (glm && (glm->GetFSModel() == nullptr)) return nullptr;
+
+	return glm;
 }
 
 void CMaterialPanel::Update(bool breset)
@@ -231,41 +237,38 @@ void CMaterialPanel::Update(bool breset)
 	ui->m_prop->Update(0);
 	m_pmat->SetMaterial(0);
 
-	CPostDocument* pdoc = GetActiveDocument();
-	if (pdoc == nullptr) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel* fem = glm->GetFSModel();
 
-	Post::FEPostModel* fem = pdoc->GetFSModel();
-	if (fem)
+	QString flt = ui->GetFilterText();
+
+	int nmat = fem->Materials();
+	for (int i=0; i<nmat; ++i)
 	{
-		QString flt = ui->GetFilterText();
+		Post::Material& mat = *fem->GetMaterial(i);
 
-		int nmat = fem->Materials();
-		for (int i=0; i<nmat; ++i)
+		QString name(mat.GetName());
+		if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
 		{
-			Post::Material& mat = *fem->GetMaterial(i);
-
-			QString name(mat.GetName());
-			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
-			{
-				QListWidgetItem* it = new QListWidgetItem(mat.GetName());
-				it->setData(Qt::UserRole, i);
-				ui->m_list->addItem(it);
-				ui->setColor(it, mat.diffuse);
-			}
+			QListWidgetItem* it = new QListWidgetItem(mat.GetName());
+			it->setData(Qt::UserRole, i);
+			ui->m_list->addItem(it);
+			ui->setColor(it, mat.diffuse);
 		}
-
-		if (nmat > 0)
-			ui->m_list->setCurrentRow(0);
-
-		UpdateStates();
 	}
+
+	if (nmat > 0)
+		ui->m_list->setCurrentRow(0);
+
+	UpdateStates();
 }
 
 void CMaterialPanel::UpdateStates()
 {
-	CPostDocument* pdoc = GetActiveDocument();
-	Post::FEPostModel* fem = pdoc->GetFSModel();
-	if (fem == 0) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel* fem = glm->GetFSModel();
 
 	int nmat = fem->Materials();
 	int items = ui->m_list->count();
@@ -288,27 +291,26 @@ void CMaterialPanel::UpdateStates()
 
 void CMaterialPanel::on_materialList_currentRowChanged(int nrow)
 {
-	CPostDocument* doc = GetActiveDocument();
-	if (doc && doc->IsValid())
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
+
+	if ((nrow >= 0) && (nrow < ui->m_list->count()))
 	{
-		if ((nrow >= 0) && (nrow < ui->m_list->count()))
+		QListWidgetItem* pi = ui->m_list->item(nrow);
+		int imat = pi->data(Qt::UserRole).toInt();
+
+		if ((imat >= 0) && (imat < fem.Materials()))
 		{
-			QListWidgetItem* pi = ui->m_list->item(nrow);
-			int imat = pi->data(Qt::UserRole).toInt();
+			Post::Material* pmat = fem.GetMaterial(imat);
+			m_pmat->SetMaterial(pmat);
+			ui->m_prop->Update(m_pmat);
+			ui->name->setText(QString(pmat->GetName()));
 
-			Post::FEPostModel& fem = *doc->GetFSModel();
-			if ((imat >= 0) && (imat < fem.Materials()))
-			{
-				Post::Material* pmat = fem.GetMaterial(imat);
-				m_pmat->SetMaterial(pmat);
-				ui->m_prop->Update(m_pmat);
-				ui->name->setText(QString(pmat->GetName()));
-
-				ui->update = false;
-				ui->pcheck->setChecked(pmat->enabled());
-				ui->pshow->setChecked(pmat->visible());
-				ui->update = true;
-			}
+			ui->update = false;
+			ui->pcheck->setChecked(pmat->enabled());
+			ui->pshow->setChecked(pmat->visible());
+			ui->update = true;
 		}
 	}
 }
@@ -317,11 +319,9 @@ void CMaterialPanel::on_showButton_toggled(bool b)
 {
 	if (ui->update == false) return;
 
-	CPostDocument& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
-
-	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFSModel();
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
@@ -337,12 +337,12 @@ void CMaterialPanel::on_showButton_toggled(bool b)
 		if (b)
 		{
 			mat.show();
-			mdl.ShowMaterial(nmat);
+			glm->ShowMaterial(nmat);
 		}
 		else
 		{
 			mat.hide();
-			mdl.HideMaterial(nmat);
+			glm->HideMaterial(nmat);
 		}
 	}
 
@@ -354,11 +354,9 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 {
 	if (ui->update == false) return;
 
-	CPostDocument& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
-
-	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFSModel();
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	QItemSelectionModel* pselect = ui->m_list->selectionModel();
@@ -375,23 +373,25 @@ void CMaterialPanel::on_enableButton_toggled(bool b)
 		if (b) mat.enable();
 		else mat.disable();
 	}
-	mdl.UpdateMeshState();
-	mdl.ResetAllStates();
-	doc.UpdateFEModel(true);
+	glm->UpdateMeshState();
+	glm->ResetAllStates();
+	glm->Update(true);
 	UpdateStates();
 	GetMainWindow()->RedrawGL();
 }
 
 void CMaterialPanel::on_editName_editingFinished()
 {
-	CPostDocument& doc = *GetActiveDocument();
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
+
 	QModelIndex n = ui->m_list->currentIndex();
 	if (n.isValid())
 	{
 		QListWidgetItem* it = ui->m_list->item(n.row());
 		int nmat = it->data(Qt::UserRole).toInt();
 
-		Post::FEPostModel& fem = *doc.GetFSModel();
 		Post::Material& mat = *fem.GetMaterial(nmat);
 
 		string name = ui->name->text().toStdString();
@@ -414,9 +414,9 @@ void CMaterialPanel::on_filter_textChanged(const QString& txt)
 void CMaterialPanel::on_matprops_dataChanged(int nprop)
 {
 	// Get the model
-	CPostDocument& doc = *GetActiveDocument();
-	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFSModel();
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	Post::FEPostModel& fem = *glm->GetFSModel();
 
 	// get the current material
 	QModelIndex currentIndex = ui->m_list->currentIndex();
@@ -466,6 +466,6 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 		}
 	}
 
-	mdl.Update(false);
+	glm->Update(false);
 	GetMainWindow()->RedrawGL();
 }

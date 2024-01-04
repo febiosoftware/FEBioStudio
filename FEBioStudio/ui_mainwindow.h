@@ -80,6 +80,7 @@ SOFTWARE.*/
 #include "GLViewer.h"
 #include <FEBioApp/FEBioAppView.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
+#include <FEBioMonitor/FEBioMonitorPanel.h>
 #include <vector>
 
 class QProcess;
@@ -279,6 +280,7 @@ public:
 	::CRepositoryPanel* databasePanel;
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
+	CFEBioMonitorPanel* febioMonitor;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;

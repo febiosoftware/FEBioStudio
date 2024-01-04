@@ -82,6 +82,7 @@ void Ui::CEmptyConfig::Apply()
 	ui->infoPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
 
 	ui->fileViewer->parentWidget()->raise();
 
@@ -124,6 +125,7 @@ void Ui::CHTMLConfig::Apply()
 	ui->infoPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
 
 	ui->fileViewer->parentWidget()->raise();
 }
@@ -193,6 +195,7 @@ void Ui::CModelConfig::Apply()
 	ui->logPanel->parentWidget()->show();
 	ui->infoPanel->parentWidget()->show();
 	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
 
 	wnd->UpdateUiView();
 	ui->modelViewer->parentWidget()->raise();
@@ -238,6 +241,7 @@ void Ui::CPostConfig::Apply()
 	ui->logPanel->parentWidget()->show();
 	ui->infoPanel->parentWidget()->show();
 	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
 
 	ui->showTimeline();
 
@@ -299,6 +303,7 @@ void Ui::CTextConfig::Apply()
 	ui->infoPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
 }
 
 // Configure for XML document
@@ -349,6 +354,7 @@ void Ui::CXMLConfig::Apply()
 			ui->infoPanel->parentWidget()->hide();
 			ui->timePanel->parentWidget()->hide();
 			ui->imageSettingsPanel->parentWidget()->hide();
+			ui->febioMonitor->parentWidget()->hide();
 
 			for (int index = 1; index < ui->xmlToolbar->actions().size(); index++)
 			{
@@ -382,6 +388,7 @@ void Ui::CXMLConfig::Apply()
 			ui->infoPanel->parentWidget()->hide();
 			ui->timePanel->parentWidget()->hide();
 			ui->imageSettingsPanel->parentWidget()->hide();
+			ui->febioMonitor->parentWidget()->hide();
 
 			for (auto action : ui->xmlToolbar->actions())
 			{
@@ -423,6 +430,7 @@ void Ui::CAPPConfig::Apply()
 	ui->infoPanel->parentWidget()->hide();
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
+	ui->febioMonitor->parentWidget()->hide();
 
 	ui->centralWidget->appView->setActiveDocument(dynamic_cast<FEBioAppDocument*>(ui->m_wnd->GetDocument()));
 
@@ -466,9 +474,10 @@ void Ui::CMonitorConfig::Apply()
 	ui->imageSettingsPanel->parentWidget()->hide();
 	ui->timePanel->parentWidget()->hide();
 
+	ui->febioMonitor->parentWidget()->show();
+	ui->febioMonitor->parentWidget()->raise();
+
 	ui->m_wnd->ClearOutput();
 	ui->m_wnd->ShowLogPanel();
 	ui->logPanel->ShowOutput();
-
-	ui->fileViewer->parentWidget()->raise();
 }

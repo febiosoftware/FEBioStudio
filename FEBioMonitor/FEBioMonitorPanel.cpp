@@ -23,43 +23,35 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-#pragma once
-#include "../FEBioStudio/GLScene.h"
-#include "../PostGL/GLModel.h"
-#include <GLLib/GLMesh.h>
-#include <QMutex>
+#include "FEBioMonitorPanel.h"
+#include "../FEBioStudio/MaterialPanel.h"
+#include <QBoxLayout>
+#include <QLabel>
 
-class FEBioMonitorDoc;
-
-class FEModel; // from FEBio
-
-class CGLMonitorScene : public CGLScene
+class CFEBioMonitorPanel::Ui
 {
 public:
-	CGLMonitorScene(FEBioMonitorDoc* doc);
-	~CGLMonitorScene();
+	CMainWindow* wnd;
+	CMaterialPanel* matPanel;
 
-	void InitScene(FEModel* fem);
-	void UpdateScene();
+public:
+	void setup(CFEBioMonitorPanel* w)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+//		l->setContentsMargins(0, 0, 0, 0);
 
-	void Render(CGLContext& rc) override;
-
-	// get the bounding box of the entire scene
-	BOX GetBoundingBox() override;
-
-	// get the bounding box of the current selection
-	BOX GetSelectionBox() override;
-
-	// get the post model
-	Post::CGLModel* GetGLModel() { return m_glm; }
-
-private:
-	void BuildMesh();
-
-private:
-	FEBioMonitorDoc* m_doc;
-	Post::FEPostModel* m_postModel;
-	Post::CGLModel* m_glm;
-	FEModel* m_fem;
-	QMutex	m_mutex;
+		l->addWidget(matPanel = new CMaterialPanel(wnd));
+		w->setLayout(l);
+	}
 };
+
+CFEBioMonitorPanel::CFEBioMonitorPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new CFEBioMonitorPanel::Ui)
+{
+	ui->wnd = wnd;
+	ui->setup(this);
+}
+
+void CFEBioMonitorPanel::Update(bool breset)
+{
+	ui->matPanel->Update(breset);
+}

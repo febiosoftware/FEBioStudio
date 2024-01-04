@@ -327,7 +327,13 @@ void CMainWindow::on_actionFEBioStop_triggered()
 		{
 			QMessageBox::information(this, "FEBio Studio", "No FEBio job is running.");
 		}
-		else doc->KillJob();
+		else
+		{
+			if (QMessageBox::question(this, "FEBio Studio", "Are you sure you want to stop the current job?") == QMessageBox::Yes)
+			{
+				doc->KillJob();
+			}
+		}
 	}
 	else
 	{

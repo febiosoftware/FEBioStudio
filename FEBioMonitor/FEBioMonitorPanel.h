@@ -24,42 +24,19 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "../FEBioStudio/GLScene.h"
-#include "../PostGL/GLModel.h"
-#include <GLLib/GLMesh.h>
-#include <QMutex>
+#include "../FEBioStudio/CommandPanel.h"
 
-class FEBioMonitorDoc;
-
-class FEModel; // from FEBio
-
-class CGLMonitorScene : public CGLScene
+class CFEBioMonitorPanel : public CCommandPanel
 {
+	Q_OBJECT
+
+	class Ui;
+
 public:
-	CGLMonitorScene(FEBioMonitorDoc* doc);
-	~CGLMonitorScene();
+	CFEBioMonitorPanel(CMainWindow* wnd, QWidget* parent);
 
-	void InitScene(FEModel* fem);
-	void UpdateScene();
-
-	void Render(CGLContext& rc) override;
-
-	// get the bounding box of the entire scene
-	BOX GetBoundingBox() override;
-
-	// get the bounding box of the current selection
-	BOX GetSelectionBox() override;
-
-	// get the post model
-	Post::CGLModel* GetGLModel() { return m_glm; }
+	void Update(bool breset = false) override;
 
 private:
-	void BuildMesh();
-
-private:
-	FEBioMonitorDoc* m_doc;
-	Post::FEPostModel* m_postModel;
-	Post::CGLModel* m_glm;
-	FEModel* m_fem;
-	QMutex	m_mutex;
+	Ui* ui;
 };
