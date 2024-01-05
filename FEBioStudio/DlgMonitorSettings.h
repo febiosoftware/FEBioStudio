@@ -35,10 +35,15 @@ class CDlgMonitorSettings : public QDialog
 public:
 	CDlgMonitorSettings(QWidget* parent = 0);
 
+	void CanEditFilename(bool b);
+
 	void SetFEBioInputFile(QString febfile);
+	void SetStartPausedOption(bool b);
+	void SetPauseEvents(unsigned int nevents);
 
 	QString GetFEBioInputFile();
-	bool StartPaused();
+	bool GetStartPausedOption();
+	unsigned int GetPauseEvents();
 
 private:
 	Ui* ui;

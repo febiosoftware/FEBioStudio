@@ -328,6 +328,7 @@ public:
 	// FEBIO menu
 	QAction* actionFEBioRun;
 	QAction* actionFEBioMonitor;
+	QAction* actionFEBioMonitorSettings;
 	QAction* actionFEBioStop;
 	QAction* actionFEBioPause;
 	QAction* actionFEBioNext;

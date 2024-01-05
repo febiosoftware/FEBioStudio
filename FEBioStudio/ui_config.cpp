@@ -43,6 +43,7 @@ void Ui::CUIConfig::Apply()
 	ui->actionFEBioRun->setEnabled(false);
 	ui->actionFEBioMonitor->setEnabled(false);
 	ui->actionFEBioStop->setEnabled(false);
+	ui->actionFEBioMonitorSettings->setVisible(false);
 	ui->actionFEBioPause->setVisible(false);
 	ui->actionFEBioNext->setVisible(false);
 
@@ -446,6 +447,7 @@ void Ui::CMonitorConfig::Apply()
 
 	ui->actionFEBioStop->setEnabled(true);
 	ui->actionFEBioMonitor->setEnabled(true);
+	ui->actionFEBioMonitorSettings->setVisible(true);
 	ui->actionFEBioPause->setVisible(true);
 	ui->actionFEBioNext->setVisible(true);
 

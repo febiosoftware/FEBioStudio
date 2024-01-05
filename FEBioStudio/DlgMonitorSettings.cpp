@@ -24,17 +24,20 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "DlgMonitorSettings.h"
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <QBoxLayout>
 #include <QDialogButtonBox>
 #include <QLineEdit>
 #include <QLabel>
 #include <QCheckBox>
+#include <QComboBox>
 
 class CDlgMonitorSettings::Ui
 {
 public:
 	QLineEdit* m_fileInput;
 	QCheckBox* m_startPaused;
+	QComboBox* m_pauseEvents;
 
 public:
 	void setup(CDlgMonitorSettings* dlg)
@@ -44,6 +47,13 @@ public:
 		l->addWidget(new QLabel("FEBio input file:"));
 		l->addWidget(m_fileInput = new QLineEdit());
 		l->addWidget(m_startPaused = new QCheckBox("Start job in paused state."));
+
+		QHBoxLayout* h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("Pause event:"));
+		h->addWidget(m_pauseEvents = new QComboBox);
+		h->addStretch();
+		l->addLayout(h);
 		l->addStretch();
 		l->addWidget(bb);
 		dlg->setLayout(l);
@@ -57,6 +67,20 @@ CDlgMonitorSettings::CDlgMonitorSettings(QWidget* parent) : QDialog(parent), ui(
 	setMinimumSize(600, 300);
 	setWindowTitle("FEBio Monitor Settings");
 	ui->setup(this);
+
+	ui->m_pauseEvents->addItem("(All events)", QVariant(0x0FFFFFFF)); // should match CB_ALWAYS!
+	for (int i = 0; i < 32; ++i)
+	{
+		unsigned int n = (1 << i);
+		QString eventName = eventToString(n);
+		if (eventName.isEmpty() == false)
+			ui->m_pauseEvents->addItem(eventName, QVariant(n));
+	}
+}
+
+void CDlgMonitorSettings::CanEditFilename(bool b)
+{
+	ui->m_fileInput->setEnabled(b);
 }
 
 void CDlgMonitorSettings::SetFEBioInputFile(QString febfile)
@@ -69,7 +93,23 @@ QString CDlgMonitorSettings::GetFEBioInputFile()
 	return ui->m_fileInput->text();
 }
 
-bool CDlgMonitorSettings::StartPaused()
+bool CDlgMonitorSettings::GetStartPausedOption()
 {
 	return ui->m_startPaused->isChecked();
+}
+
+void CDlgMonitorSettings::SetStartPausedOption(bool b)
+{
+	ui->m_startPaused->setChecked(b);
+}
+
+void CDlgMonitorSettings::SetPauseEvents(unsigned int nevents)
+{
+	int n = ui->m_pauseEvents->findData(nevents);
+	ui->m_pauseEvents->setCurrentIndex(n);
+}
+
+unsigned int CDlgMonitorSettings::GetPauseEvents()
+{
+	return (unsigned int)(ui->m_pauseEvents->currentData().toInt());
 }

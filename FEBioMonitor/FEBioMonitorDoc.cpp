@@ -118,10 +118,12 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
 	m_isOutputReady = false;
 	m_isRunning = false;
 	m_isPaused  = false;
+	m_pauseRequested = false;
 	m_isStopped = false;
 	m_startPaused = false;
 	m_progressPct = 0.0;
 	m_scene = new CGLMonitorScene(this);
+	m_pauseEvents = CB_ALWAYS;
 
 	m_bValid = false;
 	m_time = 0.0;
@@ -164,13 +166,28 @@ void FEBioMonitorDoc::StartPaused(bool b)
 	m_startPaused = b;
 }
 
+bool FEBioMonitorDoc::StartPaused() const
+{
+	return m_startPaused;
+}
+
+void FEBioMonitorDoc::SetPauseEvents(unsigned int nevents)
+{
+	m_pauseEvents = nevents;
+}
+
+unsigned int FEBioMonitorDoc::GetPauseEvents() const
+{
+	return m_pauseEvents;
+}
+
 void FEBioMonitorDoc::RunJob()
 {
 	if (m_isRunning)
 	{
 		if (m_isPaused)
 		{
-			m_isPaused = false;
+			m_pauseRequested = false;
 			jobIsPaused.wakeAll();
 			return;
 		}
@@ -180,7 +197,8 @@ void FEBioMonitorDoc::RunJob()
 
 	m_isOutputReady = false;
 	m_isRunning = true;
-	m_isPaused  = m_startPaused;
+	m_isPaused = false;
+	m_pauseRequested = m_startPaused;
 	m_isStopped = false;
 	m_progressPct = 0.0;
 	FEBioMonitorThread* thread = new FEBioMonitorThread(this);
@@ -192,7 +210,7 @@ void FEBioMonitorDoc::FEBioMonitorDoc::KillJob()
 	if (m_isRunning) m_isStopped = true;
 	if (m_isPaused)
 	{
-		m_isPaused = false;
+		m_pauseRequested = false;
 		jobIsPaused.wakeAll();
 	}
 	updateWindowTitle();
@@ -202,7 +220,7 @@ void FEBioMonitorDoc::PauseJob()
 {
 	QMutexLocker lock(&m_mutex);
 	if (m_isRunning && !m_isStopped)
-		m_isPaused = true;
+		m_pauseRequested = true;
 	updateWindowTitle();
 }
 
@@ -347,7 +365,7 @@ bool FEBioMonitorDoc::AddDataField(const std::string& dataField)
 
 QString eventToString(int nevent)
 {
-	QString s = "<unknown>";
+	QString s;
 	switch (nevent)
 	{
 	case CB_INIT            : s = "INIT"; break;
@@ -399,12 +417,13 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	else if (!m_isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
 
 	m_mutex.lock();
-	if (m_isPaused)
+	if (m_pauseRequested && (m_pauseEvents & nevent))
 	{
-		m_outputBuffer += "\n[paused in " + eventToString(nevent) + "]\n";
+		m_outputBuffer += "\n[paused on " + eventToString(nevent) + "]\n";
 		emit outputReady();
-
+		m_isPaused = true;
 		jobIsPaused.wait(&m_mutex);
+		m_isPaused = false;
 	}
 	m_mutex.unlock();
 

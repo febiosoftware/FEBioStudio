@@ -62,7 +62,12 @@ public:
 	QString GetFEBioInputFile() const;
 
 	void StartPaused(bool b);
+	bool StartPaused() const;
 
+	void SetPauseEvents(unsigned int nevents);
+	unsigned int GetPauseEvents() const;
+
+public:
 	void RunJob();
 
 	void KillJob();
@@ -109,9 +114,13 @@ private:
 	bool	m_isStopped;
 	bool	m_isRunning;
 	bool	m_isPaused;
+	bool	m_pauseRequested;
 	double	m_progressPct;
 	double	m_time;
+	unsigned int m_pauseEvents;
 	QMutex	m_mutex;
 
 	friend class FEBioMonitorThread;
 };
+
+QString eventToString(int nevent);

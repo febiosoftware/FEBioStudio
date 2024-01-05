@@ -63,6 +63,8 @@ public:
 	bool AddDataField(const std::string& fieldName);
 
 private:
+	void Clear();
+
 	void BuildMesh();
 	void BuildGLModel();
 	void UpdateModelData();

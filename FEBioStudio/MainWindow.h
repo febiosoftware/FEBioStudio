@@ -436,6 +436,7 @@ public slots:
 	void on_actionFEBioPause_triggered();
 	void on_actionFEBioNext_triggered();
 	void on_actionFEBioMonitor_triggered();
+	void on_actionFEBioMonitorSettings_triggered();
 	void on_actionFEBioOptimize_triggered();
 	void on_actionFEBioTangent_triggered();
 	void on_actionFEBioInfo_triggered();

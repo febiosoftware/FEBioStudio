@@ -308,11 +308,35 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 			}
 
 			FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
-			if (dlg.StartPaused()) monitorDoc->StartPaused(true);
+			if (dlg.GetStartPausedOption()) monitorDoc->StartPaused(true);
+			monitorDoc->SetPauseEvents(dlg.GetPauseEvents());
 			monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
 			AddDocument(monitorDoc);
 			monitorDoc->RunJob();
 		}
+	}
+}
+
+void CMainWindow::on_actionFEBioMonitorSettings_triggered()
+{
+	FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+	if (doc == nullptr) return;
+
+	if (doc->IsRunning() && !doc->IsPaused())
+	{
+		QMessageBox::information(this, "FEBio Studio", "Settings can only be changed when the job is paused.");
+		return;
+	}
+
+	CDlgMonitorSettings dlg(this);
+	dlg.SetFEBioInputFile(doc->GetFEBioInputFile());
+	dlg.CanEditFilename(false);
+	dlg.SetStartPausedOption(doc->StartPaused());
+	dlg.SetPauseEvents(doc->GetPauseEvents());
+	if (dlg.exec())
+	{
+		doc->StartPaused(dlg.GetStartPausedOption());
+		doc->SetPauseEvents(dlg.GetPauseEvents());
 	}
 }
 

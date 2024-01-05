@@ -54,9 +54,17 @@ CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : m_doc(doc)
 
 CGLMonitorScene::~CGLMonitorScene()
 {
+	Clear();
 	delete m_glm;
+}
+
+void CGLMonitorScene::Clear()
+{
+	m_glm->SetFEModel(nullptr);
 	delete m_postModel;
+	m_postModel = nullptr;
 	for (FEPlotData* p : m_dataFields) delete p;
+	m_dataFields.clear();
 }
 
 void CGLMonitorScene::Render(CGLContext& rc)
@@ -205,6 +213,9 @@ void CGLMonitorScene::Render(CGLContext& rc)
 void CGLMonitorScene::InitScene(FEModel* fem)
 {
 	m_fem = fem;
+
+	Clear();
+	m_glm->SetFEModel(m_postModel = new Post::FEPostModel);
 
 	BuildMesh();
 	BuildGLModel();
