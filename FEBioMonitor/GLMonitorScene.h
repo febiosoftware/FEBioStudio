@@ -35,6 +35,8 @@ class FEModel; // from FEBio
 
 class CGLMonitorScene : public CGLScene
 {
+	class DataField;
+
 public:
 	CGLMonitorScene(FEBioMonitorDoc* doc);
 	~CGLMonitorScene();
@@ -56,6 +58,7 @@ public:
 private:
 	void BuildMesh();
 	void BuildGLModel();
+	void UpdateModelData();
 
 private:
 	FEBioMonitorDoc* m_doc;
@@ -63,4 +66,5 @@ private:
 	Post::CGLModel* m_glm;
 	FEModel* m_fem;
 	QMutex	m_mutex;
+	std::vector<DataField*>	m_dataFields;
 };

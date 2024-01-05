@@ -1462,7 +1462,7 @@ void CGLView::RenderScene()
 			if (m_psubtitle) m_psubtitle->show();
 
 			// draw the other widgets
-			m_Widget->SetActiveLayer(0);
+			m_Widget->SetActiveLayer(febDoc->GetGLModel()->m_layer);
 			m_Widget->DrawWidgets(&painter);
 		}
 

@@ -44,6 +44,17 @@ SOFTWARE.*/
 #include <GL/glu.h>
 #endif
 
+class CGLMonitorScene::DataField
+{
+public:
+	DataField(Post::ModelDataField* dataField, FEPlotData* plotData) : m_dataField(dataField), m_plotData(plotData){}
+	~DataField() { delete m_plotData; }
+
+public:
+	Post::ModelDataField* m_dataField = nullptr;
+	FEPlotData* m_plotData = nullptr;
+};
+
 CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : m_doc(doc)
 {
 	m_fem = nullptr;
@@ -55,6 +66,7 @@ CGLMonitorScene::~CGLMonitorScene()
 {
 	delete m_glm;
 	delete m_postModel;
+	for (DataField* p : m_dataFields) delete p;
 }
 
 void CGLMonitorScene::Render(CGLContext& rc)
@@ -64,12 +76,16 @@ void CGLMonitorScene::Render(CGLContext& rc)
 	CGLView* glview = (CGLView*)rc.m_view; assert(glview);
 	if (glview == nullptr) return;
 
+	int nfield = m_glm->GetColorMap()->GetEvalField();
+	std::string dataFieldName = m_postModel->GetDataManager()->getDataString(nfield, Post::DATA_SCALAR);
+
+
 	// Update GLWidget string table for post rendering
 	QString febFile = m_doc->GetFEBioInputFile();
 	QFileInfo fi(febFile);
 	QString filename = fi.fileName();
 	GLWidget::addToStringTable("$(filename)", filename.toStdString());
-	//	GLWidget::addToStringTable("$(datafield)", m_doc->GetFieldString());
+	GLWidget::addToStringTable("$(datafield)", dataFieldName);
 	//	GLWidget::addToStringTable("$(units)", m_doc->GetFieldUnits());
 	GLWidget::addToStringTable("$(time)", m_doc->GetTimeValue());
 
@@ -201,9 +217,7 @@ void CGLMonitorScene::InitScene(FEModel* fem)
 	m_fem = fem;
 
 	BuildMesh();
-	m_mutex.lock();
 	BuildGLModel();
-	m_mutex.unlock();
 	UpdateScene();
 	BOX box = GetBoundingBox();
 	if (box.IsValid())
@@ -347,8 +361,50 @@ void CGLMonitorScene::BuildMesh()
 	m_postModel->UpdateBoundingBox();
 }
 
+Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem)
+{
+	Post::ModelDataField* pdf = nullptr;
+	Var_Type dataType = ps->DataType();
+	Region_Type regionType = ps->RegionType();
+	Storage_Fmt storageFmt = ps->StorageFormat();
+
+	if (regionType == FE_REGION_NODE)
+	{
+		switch (dataType)
+		{
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FENodeData<float  > >(fem, Post::EXPORT_DATA); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fs > >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(fem, Post::EXPORT_DATA); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(fem, Post::EXPORT_DATA); break;
+		default:
+			assert(false);
+			break;
+		}
+	}
+	else if ((regionType == FE_REGION_DOMAIN) && (storageFmt == FMT_ITEM))
+	{
+		switch (dataType)
+		{
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+	return pdf;
+}
+
 void CGLMonitorScene::BuildGLModel()
 {
+	QMutexLocker lock(&m_mutex);
 	Post::FEPostModel& fem = *m_postModel;
 	Post::FEDataManager* DM = m_postModel->GetDataManager();
 	FEPlotDataStore& dataStore = m_fem->GetPlotDataStore();
@@ -357,51 +413,19 @@ void CGLMonitorScene::BuildGLModel()
 		FEPlotVariable& var = dataStore.GetPlotVariable(i);
 		std::string name = var.Name();
 
-		Post::ModelDataField* pdf = nullptr;
-
 		// try to allocate the FEBio plot field
 		FECoreKernel& febio = FECoreKernel::GetInstance();
 		FEPlotData* ps = fecore_new<FEPlotData>(name.c_str(), m_fem);
 		if (ps)
 		{
-			Var_Type dataType = ps->DataType();
-			Region_Type regionType = ps->RegionType();
-			Storage_Fmt storageFmt = ps->StorageFormat();
-
-			if (regionType == FE_REGION_NODE)
+			Post::ModelDataField* pdf = BuildModelDataField(ps, &fem);
+			if (pdf)
 			{
-				switch (dataType)
-				{
-				case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FENodeData<float  > >(&fem, Post::EXPORT_DATA); break;
-				case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(&fem, Post::EXPORT_DATA); break;
-				case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fs > >(&fem, Post::EXPORT_DATA); break;
-				case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(&fem, Post::EXPORT_DATA); break;
-				case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(&fem, Post::EXPORT_DATA); break;
-				case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(&fem, Post::EXPORT_DATA); break;
-				default:
-					assert(false);
-					break;
-				}
+				DM->AddDataField(pdf, name);
+				m_dataFields.push_back(new DataField(pdf, ps));
 			}
-			else if ((regionType == FE_REGION_DOMAIN) && (storageFmt == FMT_ITEM))
-			{
-				switch (dataType)
-				{
-				case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
-				case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
-				case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
-				case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
-				case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
-				case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
-				default:
-					assert(false);
-					break;
-				}
-			}
+			else delete ps;
 		}
-		delete ps;
-		
-		DM->AddDataField(pdf, name);
 	}
 
 	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
@@ -423,9 +447,179 @@ void CGLMonitorScene::UpdateScene()
 		ps->GetFEMesh()->Node(i).r = feNode.m_rt; // TODO: How can I use the states?
 	}
 	m_postModel->UpdateMeshState(0);
-	//	m_renderMesh->UpdateNormals();
+	ps->GetFEMesh()->UpdateNormals();
 
 	m_postModel->UpdateBoundingBox();
+
+	UpdateModelData();
+}
+
+void CGLMonitorScene::UpdateModelData()
+{
+	Post::FEState* ps = m_postModel->GetState(0);
+	for (int n=0; n<m_dataFields.size(); ++n)
+	{
+		DataField* dataField = m_dataFields[n];
+		FEPlotData* pd = dataField->m_plotData;
+		Region_Type rgn = pd->RegionType();
+		Var_Type dataType = pd->DataType();
+		Storage_Fmt storageFmt = pd->StorageFormat();
+
+		int ndata = pd->VarSize(pd->DataType());
+
+		if (rgn == Region_Type::FE_REGION_NODE)
+		{
+			int N = m_fem->GetMesh().Nodes();
+			FEDataStream a; a.reserve(ndata * N);
+			if (pd->Save(m_fem->GetMesh(), a))
+			{
+				// pad mismatches
+				assert(a.size() == N * ndata);
+				if (a.size() != N * ndata) a.resize(N * ndata, 0.f);
+
+				std::vector<float>& data = a.data();
+
+				if      (dataType == Var_Type::PLT_FLOAT)
+				{
+					Post::FENodeData<float>& d = dynamic_cast<Post::FENodeData<float>&>(ps->m_Data[n]);
+					for (int i = 0; i < N; ++i) d[i] = data[i];
+				}
+				else if (dataType == Var_Type::PLT_VEC3F)
+				{
+					Post::FENodeData<vec3f>& d = dynamic_cast<Post::FENodeData<vec3f>&>(ps->m_Data[0]);
+					for (int i = 0; i < N; ++i)
+					{
+						float* p = &data[3 * i];
+						d[i] = vec3f(p[0], p[1], p[2]);
+					}
+				}
+				else if (dataType == Var_Type::PLT_MAT3FS)
+				{
+					Post::FENodeData<mat3fs>& d = dynamic_cast<Post::FENodeData<mat3fs>&>(ps->m_Data[0]);
+					for (int i = 0; i < N; ++i)
+					{
+						float* p = &data[6 * i];
+						d[i] = mat3fs(p[0], p[1], p[2], p[3], p[4], p[5]);
+					}
+				}
+				else assert(false);
+			}
+		}
+		else if ((rgn == Region_Type::FE_REGION_DOMAIN) && (storageFmt == Storage_Fmt::FMT_ITEM))
+		{
+			FEMesh& m = m_fem->GetMesh();
+			int ND = m.Domains();
+			vector<int> item = pd->GetItemList();
+			if (item.empty())
+			{
+				for (int i = 0; i < ND; ++i) item.push_back(i);
+			}
+
+			// get the domain name (if any)
+			string domName;
+			const char* szdom = pd->GetDomainName();
+			if (szdom) domName = szdom;
+
+			// loop over all domains in the item list
+			int elementCounter = 0;
+			for (int i = 0; i < ND; ++i)
+			{
+				// get the domain
+				FEDomain& D = m.Domain(item[i]);
+				int NE = D.Elements();
+
+				if (domName.empty() || (D.GetName() == domName))
+				{
+					// calculate the size of the data vector
+					int nsize = pd->VarSize(pd->DataType());
+					switch (pd->StorageFormat())
+					{
+					case FMT_NODE: nsize *= D.Nodes(); break;
+					case FMT_ITEM: nsize *= D.Elements(); break;
+					case FMT_MULT:
+					{
+						// since all elements have the same type within a domain
+						// we just grab the number of nodes of the first element 
+						// to figure out how much storage we need
+						FEElement& e = D.ElementRef(0);
+						int n = e.Nodes();
+						nsize *= n * D.Elements();
+					}
+					break;
+					case FMT_REGION:
+						// one value for this domain so nsize remains unchanged
+						break;
+					default:
+						assert(false);
+					}
+					assert(nsize > 0);
+
+					// fill data vector and save
+					FEDataStream a;
+					a.reserve(nsize);
+					if (pd->Save(D, a))
+					{
+						assert(a.size() == nsize);
+						if (dataType == Var_Type::PLT_FLOAT)
+						{
+							Post::FEElementData<float, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<float, Post::DATA_ITEM>&>(ps->m_Data[n]);
+							std::vector<float>& data = a.data();
+							for (int i = 0; i < NE; ++i, ++elementCounter)
+							{
+								if (d.active(elementCounter))
+								{
+									d.set(elementCounter, data[i]);
+								}
+								else
+								{
+									d.add(elementCounter, data[i]);
+								}
+							}
+						}
+						else if (dataType == Var_Type::PLT_VEC3F)
+						{
+							Post::FEElementData<vec3f, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<vec3f, Post::DATA_ITEM>&>(ps->m_Data[n]);
+							std::vector<float>& data = a.data();
+							for (int i = 0; i < NE; ++i, ++elementCounter)
+							{
+								float* p = &data[3 * i];
+								vec3f v(p[0], p[1], p[2]);
+								if (d.active(elementCounter))
+								{
+									d.set(elementCounter, v);
+								}
+								else
+								{
+									d.add(elementCounter, v);
+								}
+							}
+						}
+						else if (dataType == Var_Type::PLT_MAT3FS)
+						{
+							Post::FEElementData<mat3fs, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<mat3fs, Post::DATA_ITEM>&>(ps->m_Data[n]);
+							std::vector<float>& data = a.data();
+							for (int i = 0; i < NE; ++i, ++elementCounter)
+							{
+								float* p = &data[6 * i];
+								mat3fs m(p[0], p[1], p[2], p[3], p[4], p[5]);
+								if (d.active(elementCounter))
+								{
+									d.set(elementCounter, m);
+								}
+								else
+								{
+									d.add(elementCounter, m);
+								}
+							}
+						}
+						else assert(false);
+					}
+				}
+				else elementCounter += NE;
+			}
+		}
+	}
+	m_glm->Update(true);
 }
 
 BOX CGLMonitorScene::GetBoundingBox()
