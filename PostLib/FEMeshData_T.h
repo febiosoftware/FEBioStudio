@@ -199,6 +199,7 @@ public:
 			m_face.assign(state->GetFEMesh()->Faces(), -1); 
 	}
 	void eval(int n, T* pv) { (*pv) = m_data[m_face[n]]; }
+	void set(int n, const T& v) { if (active(n)) m_data[m_face[n]] = v; else add(n, v); }
 	bool active(int n) { return (m_face[n] >= 0); }
 	void copy(FEFaceData<T, DATA_ITEM>& d) { m_data = d.m_data; m_face = d.m_face; }
 	bool add(int n, const T& d)

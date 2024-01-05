@@ -26,17 +26,22 @@ SOFTWARE.*/
 #pragma once
 #include "../FEBioStudio/GLScene.h"
 #include "../PostGL/GLModel.h"
+#include "../MeshLib/FENodeFaceList.h"
 #include <GLLib/GLMesh.h>
 #include <QMutex>
 
 class FEBioMonitorDoc;
 
-class FEModel; // from FEBio
+namespace Post {
+	class FEMeshData;
+}
+
+// from FEBio
+class FEModel;
+class FEPlotData;
 
 class CGLMonitorScene : public CGLScene
 {
-	class DataField;
-
 public:
 	CGLMonitorScene(FEBioMonitorDoc* doc);
 	~CGLMonitorScene();
@@ -55,16 +60,23 @@ public:
 	// get the post model
 	Post::CGLModel* GetGLModel() { return m_glm; }
 
+	bool AddDataField(const std::string& fieldName);
+
 private:
 	void BuildMesh();
 	void BuildGLModel();
 	void UpdateModelData();
 
+	void UpdateNodalData(FEPlotData* dataField, Post::FEMeshData& meshData);
+	void UpdateDomainData(FEPlotData* dataField, Post::FEMeshData& meshData);
+	void UpdateSurfaceData(FEPlotData* dataField, Post::FEMeshData& meshData);
+
 private:
 	FEBioMonitorDoc* m_doc;
 	Post::FEPostModel* m_postModel;
 	Post::CGLModel* m_glm;
+	FSNodeFaceList	m_NFT;
 	FEModel* m_fem;
 	QMutex	m_mutex;
-	std::vector<DataField*>	m_dataFields;
+	std::vector<FEPlotData*>	m_dataFields;
 };

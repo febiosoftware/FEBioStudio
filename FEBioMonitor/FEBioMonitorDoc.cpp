@@ -337,6 +337,14 @@ void FEBioMonitorDoc::SetProgress(double p)
 	m_progressPct = p;
 }
 
+bool FEBioMonitorDoc::AddDataField(const std::string& dataField)
+{
+	if (m_isPaused == false) return false;
+	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
+	if (scene == nullptr) return false;
+	return scene->AddDataField(dataField);
+}
+
 QString eventToString(int nevent)
 {
 	QString s = "<unknown>";

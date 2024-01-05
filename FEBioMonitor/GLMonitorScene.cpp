@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <FECore/FEModel.h>
 #include <FECore/FEMesh.h>
 #include <FECore/FEDomain.h>
+#include <FECore/FESurface.h>
 #include <FECore/FEMaterial.h>
 #include <FECore/FEPlotDataStore.h>
 #include <FECore/FEPlotData.h>
@@ -44,17 +45,6 @@ SOFTWARE.*/
 #include <GL/glu.h>
 #endif
 
-class CGLMonitorScene::DataField
-{
-public:
-	DataField(Post::ModelDataField* dataField, FEPlotData* plotData) : m_dataField(dataField), m_plotData(plotData){}
-	~DataField() { delete m_plotData; }
-
-public:
-	Post::ModelDataField* m_dataField = nullptr;
-	FEPlotData* m_plotData = nullptr;
-};
-
 CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : m_doc(doc)
 {
 	m_fem = nullptr;
@@ -66,7 +56,7 @@ CGLMonitorScene::~CGLMonitorScene()
 {
 	delete m_glm;
 	delete m_postModel;
-	for (DataField* p : m_dataFields) delete p;
+	for (FEPlotData* p : m_dataFields) delete p;
 }
 
 void CGLMonitorScene::Render(CGLContext& rc)
@@ -359,6 +349,7 @@ void CGLMonitorScene::BuildMesh()
 	m_postModel->AddMesh(pmesh);
 
 	m_postModel->UpdateBoundingBox();
+	m_NFT.Build(pmesh);
 }
 
 Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem)
@@ -368,7 +359,7 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 	Region_Type regionType = ps->RegionType();
 	Storage_Fmt storageFmt = ps->StorageFormat();
 
-	if (regionType == FE_REGION_NODE)
+	if      (regionType == FE_REGION_NODE)
 	{
 		switch (dataType)
 		{
@@ -398,8 +389,44 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 			break;
 		}
 	}
+	else if ((regionType == FE_REGION_SURFACE) && (storageFmt == FMT_ITEM))
+	{
+		switch (dataType)
+		{
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEFaceData<float  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<vec3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fs ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3fd ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEFaceData<tens4fs,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEFaceData<mat3f  ,Post::DATA_ITEM> >(fem, Post::EXPORT_DATA); break;
+		default:
+			assert(false);
+			break;
+		}
+	}
 
 	return pdf;
+}
+
+bool CGLMonitorScene::AddDataField(const std::string& fieldName)
+{
+	// try to allocate the FEBio plot field
+	FECoreKernel& febio = FECoreKernel::GetInstance();
+	FEPlotData* ps = fecore_new<FEPlotData>(fieldName.c_str(), m_fem);
+	if (ps == nullptr) return false;
+
+	Post::ModelDataField* pdf = BuildModelDataField(ps, m_postModel);
+	if (pdf)
+	{
+		pdf->SetName(fieldName);
+		m_postModel->AddDataField(pdf);
+		m_dataFields.push_back(ps);
+	}
+	else
+	{
+		delete ps;
+	}
+	return (pdf != nullptr);
 }
 
 void CGLMonitorScene::BuildGLModel()
@@ -412,20 +439,7 @@ void CGLMonitorScene::BuildGLModel()
 	{
 		FEPlotVariable& var = dataStore.GetPlotVariable(i);
 		std::string name = var.Name();
-
-		// try to allocate the FEBio plot field
-		FECoreKernel& febio = FECoreKernel::GetInstance();
-		FEPlotData* ps = fecore_new<FEPlotData>(name.c_str(), m_fem);
-		if (ps)
-		{
-			Post::ModelDataField* pdf = BuildModelDataField(ps, &fem);
-			if (pdf)
-			{
-				DM->AddDataField(pdf, name);
-				m_dataFields.push_back(new DataField(pdf, ps));
-			}
-			else delete ps;
-		}
+		AddDataField(name);
 	}
 
 	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
@@ -459,167 +473,265 @@ void CGLMonitorScene::UpdateModelData()
 	Post::FEState* ps = m_postModel->GetState(0);
 	for (int n=0; n<m_dataFields.size(); ++n)
 	{
-		DataField* dataField = m_dataFields[n];
-		FEPlotData* pd = dataField->m_plotData;
-		Region_Type rgn = pd->RegionType();
-		Var_Type dataType = pd->DataType();
-		Storage_Fmt storageFmt = pd->StorageFormat();
-
-		int ndata = pd->VarSize(pd->DataType());
-
-		if (rgn == Region_Type::FE_REGION_NODE)
+		FEPlotData* pd = m_dataFields[n];
+		Post::FEMeshData& meshData = ps->m_Data[n];
+		switch (pd->RegionType())
 		{
-			int N = m_fem->GetMesh().Nodes();
-			FEDataStream a; a.reserve(ndata * N);
-			if (pd->Save(m_fem->GetMesh(), a))
+		case Region_Type::FE_REGION_NODE   : UpdateNodalData  (pd, meshData); break;
+		case Region_Type::FE_REGION_DOMAIN : UpdateDomainData (pd, meshData); break;
+		case Region_Type::FE_REGION_SURFACE: UpdateSurfaceData(pd, meshData); break;
+		default:
+			assert(false);
+		}
+	}
+	m_glm->Update(true);
+}
+
+void CGLMonitorScene::UpdateNodalData(FEPlotData* pd, Post::FEMeshData& meshData)
+{
+	Region_Type rgn = pd->RegionType();
+	Var_Type dataType = pd->DataType();
+	Storage_Fmt storageFmt = pd->StorageFormat();
+	int ndata = pd->VarSize(pd->DataType());
+	int N = m_fem->GetMesh().Nodes();
+	FEDataStream a; a.reserve(ndata * N);
+	if (pd->Save(m_fem->GetMesh(), a))
+	{
+		// pad mismatches
+		assert(a.size() == N * ndata);
+		if (a.size() != N * ndata) a.resize(N * ndata, 0.f);
+
+		if      (dataType == Var_Type::PLT_FLOAT)
+		{
+			Post::FENodeData<float>& d = dynamic_cast<Post::FENodeData<float>&>(meshData);
+			for (int i = 0; i < N; ++i) d[i] = a[i];
+		}
+		else if (dataType == Var_Type::PLT_VEC3F)
+		{
+			Post::FENodeData<vec3f>& d = dynamic_cast<Post::FENodeData<vec3f>&>(meshData);
+			for (int i = 0; i < N; ++i) d[i] = a.get<vec3f>(i);
+		}
+		else if (dataType == Var_Type::PLT_MAT3FS)
+		{
+			Post::FENodeData<mat3fs>& d = dynamic_cast<Post::FENodeData<mat3fs>&>(meshData);
+			for (int i = 0; i < N; ++i) d[i] = a.get<mat3fs>(i);
+		}
+		else assert(false);
+	}
+}
+
+void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshData)
+{
+	Var_Type dataType = pd->DataType();
+
+	FEMesh& m = m_fem->GetMesh();
+	int ND = m.Domains();
+	vector<int> item = pd->GetItemList();
+	if (item.empty())
+	{
+		for (int i = 0; i < ND; ++i) item.push_back(i);
+	}
+
+	// get the domain name (if any)
+	string domName;
+	const char* szdom = pd->GetDomainName();
+	if (szdom) domName = szdom;
+
+	// loop over all domains in the item list
+	int elementCounter = 0;
+	for (int i = 0; i < ND; ++i)
+	{
+		// get the domain
+		FEDomain& D = m.Domain(item[i]);
+		int NE = D.Elements();
+
+		if (domName.empty() || (D.GetName() == domName))
+		{
+			// calculate the size of the data vector
+			int nsize = pd->VarSize(pd->DataType());
+			switch (pd->StorageFormat())
 			{
-				// pad mismatches
-				assert(a.size() == N * ndata);
-				if (a.size() != N * ndata) a.resize(N * ndata, 0.f);
+			case FMT_NODE: nsize *= D.Nodes(); break;
+			case FMT_ITEM: nsize *= D.Elements(); break;
+			case FMT_MULT:
+			{
+				// since all elements have the same type within a domain
+				// we just grab the number of nodes of the first element 
+				// to figure out how much storage we need
+				FEElement& e = D.ElementRef(0);
+				int n = e.Nodes();
+				nsize *= n * D.Elements();
+			}
+			break;
+			case FMT_REGION:
+				// one value for this domain so nsize remains unchanged
+				break;
+			default:
+				assert(false);
+			}
+			assert(nsize > 0);
 
-				std::vector<float>& data = a.data();
-
-				if      (dataType == Var_Type::PLT_FLOAT)
+			// fill data vector and save
+			FEDataStream a;
+			a.reserve(nsize);
+			if (pd->Save(D, a))
+			{
+				assert(a.size() == nsize);
+				if (pd->StorageFormat() == Storage_Fmt::FMT_ITEM)
 				{
-					Post::FENodeData<float>& d = dynamic_cast<Post::FENodeData<float>&>(ps->m_Data[n]);
-					for (int i = 0; i < N; ++i) d[i] = data[i];
-				}
-				else if (dataType == Var_Type::PLT_VEC3F)
-				{
-					Post::FENodeData<vec3f>& d = dynamic_cast<Post::FENodeData<vec3f>&>(ps->m_Data[0]);
-					for (int i = 0; i < N; ++i)
+					if (dataType == Var_Type::PLT_FLOAT)
 					{
-						float* p = &data[3 * i];
-						d[i] = vec3f(p[0], p[1], p[2]);
+						Post::FEElementData<float, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<float, Post::DATA_ITEM>&>(meshData);
+						for (int i = 0; i < NE; ++i, ++elementCounter)
+						{
+							if (d.active(elementCounter))
+							{
+								d.set(elementCounter, a[i]);
+							}
+							else
+							{
+								d.add(elementCounter, a[i]);
+							}
+						}
 					}
-				}
-				else if (dataType == Var_Type::PLT_MAT3FS)
-				{
-					Post::FENodeData<mat3fs>& d = dynamic_cast<Post::FENodeData<mat3fs>&>(ps->m_Data[0]);
-					for (int i = 0; i < N; ++i)
+					else if (dataType == Var_Type::PLT_VEC3F)
 					{
-						float* p = &data[6 * i];
-						d[i] = mat3fs(p[0], p[1], p[2], p[3], p[4], p[5]);
+						Post::FEElementData<vec3f, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<vec3f, Post::DATA_ITEM>&>(meshData);
+						for (int i = 0; i < NE; ++i, ++elementCounter)
+						{
+							vec3f v = a.get<vec3f>(i);
+							if (d.active(elementCounter))
+							{
+								d.set(elementCounter, v);
+							}
+							else
+							{
+								d.add(elementCounter, v);
+							}
+						}
 					}
+					else if (dataType == Var_Type::PLT_MAT3FS)
+					{
+						Post::FEElementData<mat3fs, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<mat3fs, Post::DATA_ITEM>&>(meshData);
+						for (int i = 0; i < NE; ++i, ++elementCounter)
+						{
+							mat3fs m = a.get<mat3fs>(i);
+							if (d.active(elementCounter))
+							{
+								d.set(elementCounter, m);
+							}
+							else
+							{
+								d.add(elementCounter, m);
+							}
+						}
+					}
+					else assert(false);
 				}
 				else assert(false);
 			}
 		}
-		else if ((rgn == Region_Type::FE_REGION_DOMAIN) && (storageFmt == Storage_Fmt::FMT_ITEM))
+		else elementCounter += NE;
+	}
+}
+
+template <class T>
+void mapSurfaceData_ITEM(Post::FEMeshData& meshData, FESurface& surf, FSNodeFaceList& NFT, FEDataStream& a)
+{
+	Post::FEFaceData<T, Post::DATA_ITEM>& d = dynamic_cast<Post::FEFaceData<T, Post::DATA_ITEM>&>(meshData);
+	int NF = surf.Elements();
+	for (int i = 0; i < NF; ++i)
+	{
+		FESurfaceElement& el = surf.Element(i);
+		int m = NFT.FindFace(el.m_node[0], &el.m_node[0], el.Nodes());
+		if (m >= 0) d.set(m, a.get<T>(i));
+	}
+}
+
+void CGLMonitorScene::UpdateSurfaceData(FEPlotData* pd, Post::FEMeshData& meshData)
+{
+	Var_Type dataType = pd->DataType();
+	Storage_Fmt storageFmt = pd->StorageFormat();
+
+	// get the domain name (if any)
+	string domName;
+	const char* szdom = pd->GetDomainName();
+	if (szdom) domName = szdom;
+
+	// loop over all surfaces
+	FEMesh& m = m_fem->GetMesh();
+	for (int i = 0; i <m.Surfaces(); ++i)
+	{
+		FESurface& surf = m.Surface(i);
+		int NF = surf.Elements();
+		int maxNodes = FSFace::MAX_NODES;
+		if (domName.empty() || (domName == surf.GetName()))
 		{
-			FEMesh& m = m_fem->GetMesh();
-			int ND = m.Domains();
-			vector<int> item = pd->GetItemList();
-			if (item.empty())
+			// Determine data size.
+			// Note that for the FMT_MULT case we are 
+			// assuming 9 data entries per facet
+			// regardless of the nr of nodes a facet really has
+			// this is because for surfaces, all elements are not
+			// necessarily of the same type
+			// TODO: Fix the assumption of the FMT_MULT
+			int datasize = pd->VarSize(pd->DataType());
+			int nsize = datasize;
+			switch (pd->StorageFormat())
 			{
-				for (int i = 0; i < ND; ++i) item.push_back(i);
+			case FMT_NODE: nsize *= surf.Nodes(); break;
+			case FMT_ITEM: nsize *= surf.Elements(); break;
+			case FMT_MULT: nsize *= maxNodes * surf.Elements(); break;
+			case FMT_REGION:
+				// one value per surface so nsize remains unchanged
+				break;
+			default:
+				assert(false);
 			}
 
-			// get the domain name (if any)
-			string domName;
-			const char* szdom = pd->GetDomainName();
-			if (szdom) domName = szdom;
-
-			// loop over all domains in the item list
-			int elementCounter = 0;
-			for (int i = 0; i < ND; ++i)
+			// save data
+			FEDataStream a; a.reserve(nsize);
+			if (pd->Save(surf, a))
 			{
-				// get the domain
-				FEDomain& D = m.Domain(item[i]);
-				int NE = D.Elements();
-
-				if (domName.empty() || (D.GetName() == domName))
+				// in FEBio 3.0, the data streams are assumed to have no padding, but for now we still need to pad 
+				// the data stream before we write it to the file
+				if (a.size() != nsize)
 				{
-					// calculate the size of the data vector
-					int nsize = pd->VarSize(pd->DataType());
-					switch (pd->StorageFormat())
+					// this is only needed for FMT_MULT storage
+					assert(pd->StorageFormat() == FMT_MULT);
+
+					// add padding
+					const int M = maxNodes;
+					int m = 0;
+					FEDataStream b; b.assign(nsize, 0.f);
+					for (int n = 0; n < surf.Elements(); ++n)
 					{
-					case FMT_NODE: nsize *= D.Nodes(); break;
-					case FMT_ITEM: nsize *= D.Elements(); break;
-					case FMT_MULT:
-					{
-						// since all elements have the same type within a domain
-						// we just grab the number of nodes of the first element 
-						// to figure out how much storage we need
-						FEElement& e = D.ElementRef(0);
-						int n = e.Nodes();
-						nsize *= n * D.Elements();
+						FESurfaceElement& el = surf.Element(n);
+						int ne = el.Nodes();
+						for (int j = 0; j < ne; ++j)
+						{
+							for (int k = 0; k < datasize; ++k) b[n * M * datasize + j * datasize + k] = a[m++];
+						}
 					}
-					break;
-					case FMT_REGION:
-						// one value for this domain so nsize remains unchanged
-						break;
+					a = b;
+				}
+
+				if (storageFmt == Storage_Fmt::FMT_ITEM)
+				{
+					switch (dataType)
+					{
+					case Var_Type::PLT_FLOAT : mapSurfaceData_ITEM<float> (meshData, surf, m_NFT, a); break;
+					case Var_Type::PLT_VEC3F : mapSurfaceData_ITEM<vec3f> (meshData, surf, m_NFT, a); break;
+					case Var_Type::PLT_MAT3FS: mapSurfaceData_ITEM<mat3fs>(meshData, surf, m_NFT, a); break;
+					case Var_Type::PLT_MAT3F : mapSurfaceData_ITEM<mat3f> (meshData, surf, m_NFT, a); break;
 					default:
 						assert(false);
 					}
-					assert(nsize > 0);
 
-					// fill data vector and save
-					FEDataStream a;
-					a.reserve(nsize);
-					if (pd->Save(D, a))
-					{
-						assert(a.size() == nsize);
-						if (dataType == Var_Type::PLT_FLOAT)
-						{
-							Post::FEElementData<float, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<float, Post::DATA_ITEM>&>(ps->m_Data[n]);
-							std::vector<float>& data = a.data();
-							for (int i = 0; i < NE; ++i, ++elementCounter)
-							{
-								if (d.active(elementCounter))
-								{
-									d.set(elementCounter, data[i]);
-								}
-								else
-								{
-									d.add(elementCounter, data[i]);
-								}
-							}
-						}
-						else if (dataType == Var_Type::PLT_VEC3F)
-						{
-							Post::FEElementData<vec3f, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<vec3f, Post::DATA_ITEM>&>(ps->m_Data[n]);
-							std::vector<float>& data = a.data();
-							for (int i = 0; i < NE; ++i, ++elementCounter)
-							{
-								float* p = &data[3 * i];
-								vec3f v(p[0], p[1], p[2]);
-								if (d.active(elementCounter))
-								{
-									d.set(elementCounter, v);
-								}
-								else
-								{
-									d.add(elementCounter, v);
-								}
-							}
-						}
-						else if (dataType == Var_Type::PLT_MAT3FS)
-						{
-							Post::FEElementData<mat3fs, Post::DATA_ITEM>& d = dynamic_cast<Post::FEElementData<mat3fs, Post::DATA_ITEM>&>(ps->m_Data[n]);
-							std::vector<float>& data = a.data();
-							for (int i = 0; i < NE; ++i, ++elementCounter)
-							{
-								float* p = &data[6 * i];
-								mat3fs m(p[0], p[1], p[2], p[3], p[4], p[5]);
-								if (d.active(elementCounter))
-								{
-									d.set(elementCounter, m);
-								}
-								else
-								{
-									d.add(elementCounter, m);
-								}
-							}
-						}
-						else assert(false);
-					}
 				}
-				else elementCounter += NE;
+				else assert(false);
 			}
 		}
 	}
-	m_glm->Update(true);
 }
 
 BOX CGLMonitorScene::GetBoundingBox()

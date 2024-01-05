@@ -86,6 +86,8 @@ public:
 	bool processFEBioEvent(FEModel* fem, int event);
 	void SetProgress(double percent);
 
+	bool AddDataField(const std::string& dataField);
+
 private:
 	void updateWindowTitle();
 

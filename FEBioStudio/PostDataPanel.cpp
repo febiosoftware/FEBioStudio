@@ -57,10 +57,12 @@ SOFTWARE.*/
 #include <PostLib/FEMathData.h>
 #include "PostDocument.h"
 #include "GLModelDocument.h"
+#include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/FEAreaCoverage.h>
 #include "DlgAddEquation.h"
+#include <FEBioLink/FEBioClass.h>
 
 class CCurvatureProps : public CPropertyList
 {
@@ -870,33 +872,66 @@ void CPostDataPanel::on_AddStandard_triggered()
 	if (glm == nullptr) return;
 
 	QStringList items;
-	Post::InitStandardDataFields();
-	int stdDataFields = Post::StandardDataFields();
-	for (int i = 0; i < stdDataFields; ++i)
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(GetMainWindow()->GetDocument());
+	if (postDoc)
 	{
-		std::string dataFieldName = Post::GetStandarDataFieldName(i);
-		items.push_back(QString::fromStdString(dataFieldName));
+		Post::InitStandardDataFields();
+		int stdDataFields = Post::StandardDataFields();
+		for (int i = 0; i < stdDataFields; ++i)
+		{
+			std::string dataFieldName = Post::GetStandarDataFieldName(i);
+			items.push_back(QString::fromStdString(dataFieldName));
+		}
 	}
-
-	bool ok = false;
-	QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
-	if (ok)
+	FEBioMonitorDoc* febDoc = dynamic_cast<FEBioMonitorDoc*>(GetMainWindow()->GetDocument());
+	if (febDoc)
 	{
-		Post::FEPostModel* fem = glm->GetFSModel();
-		vector<int> L;
-		if (glm->GetSelectionMode() == Post::SELECT_FACES)
+		if (febDoc->IsPaused() == false)
 		{
-			glm->GetSelectionList(L, Post::SELECT_FACES);
+			QMessageBox::information(this, "FEBio Monitor", "You can only add data fields when the job is paused.");
+			return;
 		}
 
-		if (Post::AddStandardDataField(*fem, item.toStdString(), L) == false)
+		auto allPlotClasses = FEBio::FindAllClasses(-1, FEPLOTDATA_ID);
+		for (auto& entry : allPlotClasses)
 		{
-			QMessageBox::critical(this, "Add Data Field", "Failed adding data");
+			items.push_back(entry.sztype);
 		}
+	}
+	
+	if (!items.empty())
+	{
+		items.sort();
+		bool ok = false;
+		QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
+		if (ok)
+		{
+			if (postDoc)
+			{
+				Post::FEPostModel* fem = glm->GetFSModel();
+				vector<int> L;
+				if (glm->GetSelectionMode() == Post::SELECT_FACES)
+				{
+					glm->GetSelectionList(L, Post::SELECT_FACES);
+				}
 
-		// update the data list
-		GetMainWindow()->UpdatePostToolbar();
-		Update(true);
+				if (Post::AddStandardDataField(*fem, item.toStdString(), L) == false)
+				{
+					QMessageBox::critical(this, "Add Data Field", "Failed adding data");
+				}
+			}
+			if (febDoc)
+			{
+				if (febDoc->AddDataField(item.toStdString()) == false)
+				{
+					QMessageBox::critical(this, "Add Data Field", "Failed adding data");
+				}
+			}
+
+			// update the data list
+			GetMainWindow()->UpdatePostToolbar();
+			Update(true);
+		}
 	}
 }
 
