@@ -56,6 +56,7 @@ SOFTWARE.*/
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEMathData.h>
 #include "PostDocument.h"
+#include "GLModelDocument.h"
 #include <PostLib/FEDataField.h>
 #include <PostLib/FEDistanceMap.h>
 #include <PostLib/FEAreaCoverage.h>
@@ -831,23 +832,29 @@ CPostDataPanel::CPostDataPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPan
 	ui->setupUi(this);
 }
 
-CPostDocument* CPostDataPanel::GetActiveDocument()
+Post::CGLModel* CPostDataPanel::GetActiveModel()
 {
-	return GetMainWindow()->GetPostDocument();
+	CGLModelDocument* gldoc = dynamic_cast<CGLModelDocument*>(GetMainWindow()->GetDocument());
+	if (gldoc == nullptr) return nullptr;
+
+	Post::CGLModel* glm = gldoc->GetGLModel();
+	if (glm && (glm->GetFSModel() == nullptr)) glm = nullptr;
+
+	return glm;
 }
 
 void CPostDataPanel::Update(bool breset)
 {
-	CPostDocument* pdoc = GetActiveDocument();
-	if (pdoc)
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm)
 	{
 		Post::FEPostModel* oldFem = ui->data->GetFSModel();
-		Post::FEPostModel* newFem = pdoc->GetFSModel();
+		Post::FEPostModel* newFem = glm->GetFSModel();
 
 		if ((oldFem != newFem) || breset)
 		{
 			ui->m_prop->setPropertyList(nullptr);
-			ui->data->SetFEModel(pdoc->GetFSModel());
+			ui->data->SetFEModel(glm->GetFSModel());
 		}
 	}
 	else
@@ -859,6 +866,9 @@ void CPostDataPanel::Update(bool breset)
 
 void CPostDataPanel::on_AddStandard_triggered()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QStringList items;
 	Post::InitStandardDataFields();
 	int stdDataFields = Post::StandardDataFields();
@@ -872,9 +882,7 @@ void CPostDataPanel::on_AddStandard_triggered()
 	QString item = QInputDialog::getItem(this, "Select new data field", "data:", items, 0, false, &ok);
 	if (ok)
 	{
-		Post::CGLModel* glm = GetActiveDocument()->GetGLModel();
 		Post::FEPostModel* fem = glm->GetFSModel();
-
 		vector<int> L;
 		if (glm->GetSelectionMode() == Post::SELECT_FACES)
 		{
@@ -894,8 +902,8 @@ void CPostDataPanel::on_AddStandard_triggered()
 
 void CPostDataPanel::on_AddFromFile_triggered()
 {
-	CPostDocument* doc = GetActiveDocument();
-	if (doc->IsValid() == false)
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "No model data loaded");
 		return;
@@ -904,7 +912,7 @@ void CPostDataPanel::on_AddFromFile_triggered()
 	CDlgAddDataFile dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel* fem = doc->GetFSModel();
+		Post::FEPostModel* fem = glm->GetFSModel();
 		bool bret = false;
 		switch (dlg.m_nclass)
 		{
@@ -928,13 +936,13 @@ void CPostDataPanel::on_AddFromFile_triggered()
 
 void CPostDataPanel::on_AddEquation_triggered()
 {
-	CPostDocument& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
 
 	CDlgAddEquation dlg(this);
 	if (dlg.exec())
 	{
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 
 		QString name = dlg.GetDataName();
 
@@ -972,7 +980,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 			pd->SetEquationStrings(x.toStdString(), y.toStdString(), z.toStdString());
 
 			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFSModel();
+			Post::FEPostModel& fem = *glm->GetFSModel();
 			fem.AddDataField(pd, name.toStdString());
 		}
 		break;
@@ -986,7 +994,7 @@ void CPostDataPanel::on_AddEquation_triggered()
 			for (int i=0; i<9; ++i) pd->SetEquationString(i, s.at(i).toStdString());
 
 			// add it to the model
-			Post::FEPostModel& fem = *doc.GetFSModel();
+			Post::FEPostModel& fem = *glm->GetFSModel();
 			fem.AddDataField(pd, name.toStdString());
 		}
 		};
@@ -999,13 +1007,15 @@ void CPostDataPanel::on_AddEquation_triggered()
 
 void CPostDataPanel::on_CopyButton_clicked()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1025,13 +1035,16 @@ void CPostDataPanel::on_CopyButton_clicked()
 
 void CPostDataPanel::on_DeleteButton_clicked()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1049,14 +1062,16 @@ void CPostDataPanel::on_DeleteButton_clicked()
 
 void CPostDataPanel::on_AddFilter_triggered()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	CMainWindow* wnd = GetMainWindow();
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1178,7 +1193,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 
 				wnd->UpdatePostToolbar();
 				Update(true);
-				doc.UpdateFEModel(true);
+				glm->Update(true);
 				wnd->RedrawGL();
 			}
 		}
@@ -1269,13 +1284,15 @@ bool string_to_int_list(QString listString, std::vector<int>& list);
 //=============================================================================
 void CPostDataPanel::on_ExportButton_clicked()
 {
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+
 	QItemSelectionModel* select = ui->list->selectionModel();
 	QModelIndexList selRow = select->selectedRows();
 	if (selRow.count() == 1)
 	{
 		int nsel = selRow.at(0).row();
-		CPostDocument& doc = *GetActiveDocument();
-		Post::FEPostModel& fem = *doc.GetFSModel();
+		Post::FEPostModel& fem = *glm->GetFSModel();
 		Post::FEDataManager& dm = *fem.GetDataManager();
 		Post::ModelDataField* pdf = *dm.DataField(nsel);
 		if (pdf)
@@ -1381,15 +1398,14 @@ void CPostDataPanel::on_fieldName_editingFinished()
 	{
 		ui->m_activeField->SetName(t.toStdString());
 		Update(true);
-		CPostDocument& doc = *GetActiveDocument();
-//		doc.GetFSModel()->UpdateDependants();
 	}
 }
 
 void CPostDataPanel::on_props_dataChanged(bool b)
 {
-	CPostDocument* doc = GetActiveDocument();
-	doc->GetGLModel()->ResetAllStates();
-	doc->UpdateFEModel(true);
+	Post::CGLModel* glm = GetActiveModel();
+	if (glm == nullptr) return;
+	glm->ResetAllStates();
+	glm->Update(true);
 	GetMainWindow()->RedrawGL();
 }

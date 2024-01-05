@@ -55,6 +55,7 @@ public:
 
 private:
 	void BuildMesh();
+	void BuildGLModel();
 
 private:
 	FEBioMonitorDoc* m_doc;

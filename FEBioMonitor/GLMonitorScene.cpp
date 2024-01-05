@@ -30,7 +30,11 @@ SOFTWARE.*/
 #include <FECore/FEMesh.h>
 #include <FECore/FEDomain.h>
 #include <FECore/FEMaterial.h>
+#include <FECore/FEPlotDataStore.h>
+#include <FECore/FEPlotData.h>
 #include <PostLib/Palette.h>
+#include <PostLib/FEMeshData_T.h>
+#include <PostLib/FEDataField.h>
 #include <GLLib/GLContext.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include <QtCore/QFileInfo>
@@ -198,8 +202,7 @@ void CGLMonitorScene::InitScene(FEModel* fem)
 
 	BuildMesh();
 	m_mutex.lock();
-	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
-	m_glm->Update(true);
+	BuildGLModel();
 	m_mutex.unlock();
 	UpdateScene();
 	BOX box = GetBoundingBox();
@@ -342,6 +345,67 @@ void CGLMonitorScene::BuildMesh()
 	m_postModel->AddMesh(pmesh);
 
 	m_postModel->UpdateBoundingBox();
+}
+
+void CGLMonitorScene::BuildGLModel()
+{
+	Post::FEPostModel& fem = *m_postModel;
+	Post::FEDataManager* DM = m_postModel->GetDataManager();
+	FEPlotDataStore& dataStore = m_fem->GetPlotDataStore();
+	for (int i = 0; i < dataStore.PlotVariables(); ++i)
+	{
+		FEPlotVariable& var = dataStore.GetPlotVariable(i);
+		std::string name = var.Name();
+
+		Post::ModelDataField* pdf = nullptr;
+
+		// try to allocate the FEBio plot field
+		FECoreKernel& febio = FECoreKernel::GetInstance();
+		FEPlotData* ps = fecore_new<FEPlotData>(name.c_str(), m_fem);
+		if (ps)
+		{
+			Var_Type dataType = ps->DataType();
+			Region_Type regionType = ps->RegionType();
+			Storage_Fmt storageFmt = ps->StorageFormat();
+
+			if (regionType == FE_REGION_NODE)
+			{
+				switch (dataType)
+				{
+				case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FENodeData<float  > >(&fem, Post::EXPORT_DATA); break;
+				case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FENodeData<vec3f  > >(&fem, Post::EXPORT_DATA); break;
+				case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fs > >(&fem, Post::EXPORT_DATA); break;
+				case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FENodeData<mat3fd > >(&fem, Post::EXPORT_DATA); break;
+				case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FENodeData<tens4fs> >(&fem, Post::EXPORT_DATA); break;
+				case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FENodeData<mat3f  > >(&fem, Post::EXPORT_DATA); break;
+				default:
+					assert(false);
+					break;
+				}
+			}
+			else if ((regionType == FE_REGION_DOMAIN) && (storageFmt == FMT_ITEM))
+			{
+				switch (dataType)
+				{
+				case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
+				case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
+				case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
+				case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
+				case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
+				case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  ,Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA); break;
+				default:
+					assert(false);
+					break;
+				}
+			}
+		}
+		delete ps;
+		
+		DM->AddDataField(pdf, name);
+	}
+
+	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
+	m_glm->Update(true);
 }
 
 void CGLMonitorScene::UpdateScene()

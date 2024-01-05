@@ -25,22 +25,31 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEBioMonitorPanel.h"
 #include "../FEBioStudio/MaterialPanel.h"
+#include "../FEBioStudio/PostDataPanel.h"
 #include <QBoxLayout>
 #include <QLabel>
+#include <QTabWidget>
 
 class CFEBioMonitorPanel::Ui
 {
 public:
 	CMainWindow* wnd;
+
+	QTabWidget* tab;
 	CMaterialPanel* matPanel;
+	CPostDataPanel* dataPanel;
 
 public:
 	void setup(CFEBioMonitorPanel* w)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
-//		l->setContentsMargins(0, 0, 0, 0);
+		l->setContentsMargins(0, 0, 0, 0);
 
-		l->addWidget(matPanel = new CMaterialPanel(wnd));
+		tab = new QTabWidget;
+		tab->addTab(matPanel = new CMaterialPanel(wnd), "Materials");
+		tab->addTab(dataPanel = new CPostDataPanel(wnd), "Data");
+
+		l->addWidget(tab);
 		w->setLayout(l);
 	}
 };
@@ -54,4 +63,5 @@ CFEBioMonitorPanel::CFEBioMonitorPanel(CMainWindow* wnd, QWidget* parent) : CCom
 void CFEBioMonitorPanel::Update(bool breset)
 {
 	ui->matPanel->Update(breset);
+	ui->dataPanel->Update(breset);
 }
