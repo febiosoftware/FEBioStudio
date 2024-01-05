@@ -26,6 +26,7 @@ SOFTWARE.*/
 #include "FEBioMonitorPanel.h"
 #include "../FEBioStudio/MaterialPanel.h"
 #include "../FEBioStudio/PostDataPanel.h"
+#include "../FEBioStudio/PostModelPanel.h"
 #include <QBoxLayout>
 #include <QLabel>
 #include <QTabWidget>
@@ -38,6 +39,7 @@ public:
 	QTabWidget* tab;
 	CMaterialPanel* matPanel;
 	CPostDataPanel* dataPanel;
+	CPostModelPanel* modelPanel;
 
 public:
 	void setup(CFEBioMonitorPanel* w)
@@ -46,8 +48,9 @@ public:
 		l->setContentsMargins(0, 0, 0, 0);
 
 		tab = new QTabWidget;
-		tab->addTab(matPanel = new CMaterialPanel(wnd), "Materials");
-		tab->addTab(dataPanel = new CPostDataPanel(wnd), "Data");
+		tab->addTab(modelPanel = new CPostModelPanel(wnd), "Model");
+		tab->addTab(matPanel   = new CMaterialPanel (wnd), "Materials");
+		tab->addTab(dataPanel  = new CPostDataPanel (wnd), "Data");
 
 		l->addWidget(tab);
 		w->setLayout(l);
@@ -62,6 +65,7 @@ CFEBioMonitorPanel::CFEBioMonitorPanel(CMainWindow* wnd, QWidget* parent) : CCom
 
 void CFEBioMonitorPanel::Update(bool breset)
 {
-	ui->matPanel->Update(breset);
-	ui->dataPanel->Update(breset);
+	ui->modelPanel->Update(breset);
+	ui->matPanel  ->Update(breset);
+	ui->dataPanel ->Update(breset);
 }

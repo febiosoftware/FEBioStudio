@@ -365,6 +365,7 @@ QString eventToString(int nevent)
 
 bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 {
+	m_time = fem->GetTime().currentTime;
 	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
 	switch (nevent)
 	{
@@ -372,14 +373,16 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 		scene->InitScene(fem);
 		m_bValid = true;
 		emit modelInitialized();
+		emit updateViews();
+		break;
+	case CB_MODEL_UPDATE:
+		scene->UpdateScene();
+		emit updateViews();
 		break;
 	case CB_MAJOR_ITERS:
 	case CB_MINOR_ITERS:
-		m_time = fem->GetTime().currentTime;
-		scene->UpdateScene();
 		break;
 	}
-	emit updateViews();
 
 	// NOTE: Even if we cancel the run,
 	// the CB_SOLVED event is still triggered, which will reset the progress.
