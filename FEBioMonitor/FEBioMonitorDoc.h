@@ -67,6 +67,10 @@ public:
 	void SetPauseEvents(unsigned int nevents);
 	unsigned int GetPauseEvents() const;
 
+	void SetPauseTime(double ftime, bool benable);
+	bool IsPauseTimeEnabled() const;
+	double GetPauseTime() const;
+
 public:
 	void RunJob();
 
@@ -115,6 +119,8 @@ private:
 	bool	m_isRunning;
 	bool	m_isPaused;
 	bool	m_pauseRequested;
+	bool	m_usePauseTime;
+	double	m_pauseTime;
 	double	m_progressPct;
 	double	m_time;
 	unsigned int m_pauseEvents;

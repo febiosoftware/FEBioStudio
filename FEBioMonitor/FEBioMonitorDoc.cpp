@@ -124,7 +124,8 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
 	m_progressPct = 0.0;
 	m_scene = new CGLMonitorScene(this);
 	m_pauseEvents = CB_ALWAYS;
-
+	m_usePauseTime = false;
+	m_pauseTime = 0.0;
 	m_bValid = false;
 	m_time = 0.0;
 
@@ -180,6 +181,22 @@ unsigned int FEBioMonitorDoc::GetPauseEvents() const
 	return m_pauseEvents;
 }
 
+void FEBioMonitorDoc::SetPauseTime(double ftime, bool benable)
+{
+	m_pauseTime = ftime;
+	m_usePauseTime = benable;
+}
+
+bool FEBioMonitorDoc::IsPauseTimeEnabled() const
+{
+	return m_usePauseTime;
+}
+
+double FEBioMonitorDoc::GetPauseTime() const
+{
+	return m_pauseTime;
+}
+
 void FEBioMonitorDoc::RunJob()
 {
 	if (m_isRunning)
@@ -210,6 +227,7 @@ void FEBioMonitorDoc::FEBioMonitorDoc::KillJob()
 	if (m_isPaused)
 	{
 		m_pauseRequested = false;
+		m_usePauseTime = false;
 		jobIsPaused.wakeAll();
 	}
 	updateWindowTitle();
@@ -416,7 +434,9 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	else if (!m_isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
 
 	m_mutex.lock();
-	if (m_pauseRequested && (m_pauseEvents & nevent))
+	constexpr double eps = std::numeric_limits<double>::epsilon();
+	if ((m_pauseRequested && (m_pauseEvents & nevent)) ||
+		(m_usePauseTime && (m_time + eps >= m_pauseTime)))
 	{
 		m_outputBuffer += "\n[paused on " + eventToString(nevent) + "]\n";
 		emit outputReady();

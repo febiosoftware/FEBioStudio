@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QComboBox>
 #include <QMessageBox>
+#include "../FEBioStudio/InputWidgets.h"
 
 class CDlgMonitorSettings::Ui
 {
@@ -39,6 +40,8 @@ private:
 	QLineEdit* m_fileInput;
 	QCheckBox* m_startPaused;
 	QComboBox* m_pauseEvents;
+	QCheckBox* m_enablePauseTime;
+	CFloatInput* m_pauseTime;
 
 public:
 	void setup(CDlgMonitorSettings* dlg)
@@ -55,6 +58,14 @@ public:
 		h->addStretch();
 		l->addLayout(h);
 		l->addWidget(m_startPaused = new QCheckBox("Start job in paused state."));
+
+		h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(m_enablePauseTime = new QCheckBox("Pause after time: "));
+		h->addWidget(m_pauseTime = new CFloatInput); m_pauseTime->setValue(0.0);
+		h->addStretch();
+		l->addLayout(h);
+
 		l->addStretch();
 		l->addWidget(bb);
 		dlg->setLayout(l);
@@ -80,6 +91,12 @@ public:
 		int n = m_pauseEvents->findData(nevents);
 		m_pauseEvents->setCurrentIndex(n);
 	}
+
+	bool IsPauseTimeEnabled() { return m_enablePauseTime->isChecked(); }
+	void EnablePauseTime(bool b) { m_enablePauseTime->setChecked(b); }
+
+	double GetPauseTime() { return m_pauseTime->value(); }
+	void SetPauseTime(double v) { m_pauseTime->setValue(v); }
 };
 
 CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMonitorSettings::Ui), m_doc(doc)
@@ -100,6 +117,8 @@ CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) 
 	ui->SetFEBioInputFile(doc->GetFEBioInputFile());
 	ui->SetStartPausedOption(doc->StartPaused());
 	ui->SetPauseEvents(doc->GetPauseEvents());
+	ui->SetPauseTime(doc->GetPauseTime());
+	ui->EnablePauseTime(doc->IsPauseTimeEnabled());
 }
 
 void CDlgMonitorSettings::CanEditFilename(bool b)
@@ -110,8 +129,6 @@ void CDlgMonitorSettings::CanEditFilename(bool b)
 void CDlgMonitorSettings::accept()
 {
 	assert(m_doc);
-	m_doc->StartPaused(ui->GetStartPausedOption());
-	m_doc->SetPauseEvents(ui->GetPauseEvents());
 	if (ui->InputIsEnabled())
 	{
 		QString filename = ui->GetInputFilename();
@@ -122,6 +139,10 @@ void CDlgMonitorSettings::accept()
 		}
 		m_doc->SetFEBioInputFile(ui->GetInputFilename());
 	}
+
+	m_doc->StartPaused(ui->GetStartPausedOption());
+	m_doc->SetPauseEvents(ui->GetPauseEvents());
+	m_doc->SetPauseTime(ui->GetPauseTime(), ui->IsPauseTimeEnabled());
 
 	QDialog::accept();
 }
