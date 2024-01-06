@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QComboBox>
 #include <QMessageBox>
+#include <QtCore/QFileInfo>
 #include "../FEBioStudio/InputWidgets.h"
 
 class CDlgMonitorSettings::Ui
@@ -137,6 +138,17 @@ void CDlgMonitorSettings::accept()
 			QMessageBox::critical(this, "FEBio Monitor", "You need to specify a valid filename.");
 			return;
 		}
+
+		QFileInfo fi(filename);
+		if (fi.exists())
+		{
+			QString msg("The FEBio input file already exists and will be overwritten. Continue?");
+			if (QMessageBox::question(this, "FEBio Monitor", msg, QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
+			{
+				return;
+			}
+		}
+
 		m_doc->SetFEBioInputFile(ui->GetInputFilename());
 	}
 
