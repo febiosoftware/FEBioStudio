@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QDialog>
+#include "FEBioMonitorDoc.h"
 
 class CDlgMonitorSettings : public QDialog
 {
@@ -33,18 +34,14 @@ class CDlgMonitorSettings : public QDialog
 	class Ui;
 
 public:
-	CDlgMonitorSettings(QWidget* parent = 0);
+	CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent = 0);
 
 	void CanEditFilename(bool b);
 
-	void SetFEBioInputFile(QString febfile);
-	void SetStartPausedOption(bool b);
-	void SetPauseEvents(unsigned int nevents);
-
-	QString GetFEBioInputFile();
-	bool GetStartPausedOption();
-	unsigned int GetPauseEvents();
+protected:
+	void accept() override;
 
 private:
+	FEBioMonitorDoc* m_doc;
 	Ui* ui;
 };

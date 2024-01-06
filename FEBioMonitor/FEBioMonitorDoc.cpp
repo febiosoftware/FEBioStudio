@@ -142,7 +142,6 @@ FEBioMonitorDoc::~FEBioMonitorDoc()
 
 void FEBioMonitorDoc::SetFEBioInputFile(QString febFile)
 {
-	assert(m_febFile.isEmpty());
 	m_febFile = febFile;
 }
 

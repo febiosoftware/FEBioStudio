@@ -35,7 +35,7 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include "DlgFEBioInfo.h"
 #include "DlgFEBioPlugins.h"
-#include "DlgMonitorSettings.h"
+#include <FEBioMonitor/DlgMonitorSettings.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 
 void CMainWindow::on_actionFEBioRun_triggered()
@@ -296,24 +296,22 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 		if (n == string::npos) febFilename += ".feb";
 		else febFilename.replace(n, 4, ".feb");
 
-		CDlgMonitorSettings dlg(this);
-		dlg.SetFEBioInputFile(QString::fromStdString(febFilename));
+		FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
+		monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
+		CDlgMonitorSettings dlg(monitorDoc, this);
 		if (dlg.exec())
 		{
-			febFilename = dlg.GetFEBioInputFile().toStdString();
+			febFilename = monitorDoc->GetFEBioInputFile().toStdString();
 			if (ExportFEBioFile(doc, febFilename, 0x0400) == false)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
 				return;
 			}
 
-			FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
-			if (dlg.GetStartPausedOption()) monitorDoc->StartPaused(true);
-			monitorDoc->SetPauseEvents(dlg.GetPauseEvents());
-			monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
 			AddDocument(monitorDoc);
 			monitorDoc->RunJob();
 		}
+		else delete monitorDoc;
 	}
 }
 
@@ -328,16 +326,9 @@ void CMainWindow::on_actionFEBioMonitorSettings_triggered()
 		return;
 	}
 
-	CDlgMonitorSettings dlg(this);
-	dlg.SetFEBioInputFile(doc->GetFEBioInputFile());
+	CDlgMonitorSettings dlg(doc, this);
 	dlg.CanEditFilename(false);
-	dlg.SetStartPausedOption(doc->StartPaused());
-	dlg.SetPauseEvents(doc->GetPauseEvents());
-	if (dlg.exec())
-	{
-		doc->StartPaused(dlg.GetStartPausedOption());
-		doc->SetPauseEvents(dlg.GetPauseEvents());
-	}
+	dlg.exec();
 }
 
 void CMainWindow::on_actionFEBioStop_triggered()

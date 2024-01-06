@@ -31,10 +31,11 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QCheckBox>
 #include <QComboBox>
+#include <QMessageBox>
 
 class CDlgMonitorSettings::Ui
 {
-public:
+private:
 	QLineEdit* m_fileInput;
 	QCheckBox* m_startPaused;
 	QComboBox* m_pauseEvents;
@@ -46,7 +47,6 @@ public:
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addWidget(new QLabel("FEBio input file:"));
 		l->addWidget(m_fileInput = new QLineEdit());
-		l->addWidget(m_startPaused = new QCheckBox("Start job in paused state."));
 
 		QHBoxLayout* h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
@@ -54,62 +54,74 @@ public:
 		h->addWidget(m_pauseEvents = new QComboBox);
 		h->addStretch();
 		l->addLayout(h);
+		l->addWidget(m_startPaused = new QCheckBox("Start job in paused state."));
 		l->addStretch();
 		l->addWidget(bb);
 		dlg->setLayout(l);
 		connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
 		connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::reject);
 	}
+
+	void EnableFileInput(bool b) { m_fileInput->setEnabled(b); }
+
+	void AddPauseEvent(QString name, int nevent) { m_pauseEvents->addItem(name, QVariant(nevent)); }
+
+	QString GetInputFilename() { return m_fileInput->text(); }
+	bool InputIsEnabled() const { return m_fileInput->isEnabled(); }
+	unsigned int GetPauseEvents() { return (unsigned int)(m_pauseEvents->currentData().toInt()); }
+	bool GetStartPausedOption() { return m_startPaused->isChecked(); }
+
+	void SetFEBioInputFile(QString febfile) { m_fileInput->setText(febfile); }
+
+	void SetStartPausedOption(bool b) { m_startPaused->setChecked(b); }
+
+	void SetPauseEvents(unsigned int nevents) 
+	{
+		int n = m_pauseEvents->findData(nevents);
+		m_pauseEvents->setCurrentIndex(n);
+	}
 };
 
-CDlgMonitorSettings::CDlgMonitorSettings(QWidget* parent) : QDialog(parent), ui(new CDlgMonitorSettings::Ui)
+CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMonitorSettings::Ui), m_doc(doc)
 {
 	setMinimumSize(600, 300);
 	setWindowTitle("FEBio Monitor Settings");
 	ui->setup(this);
 
-	ui->m_pauseEvents->addItem("(All events)", QVariant(0x0FFFFFFF)); // should match CB_ALWAYS!
+	ui->AddPauseEvent("(All events)", 0x0FFFFFFF); // should match CB_ALWAYS!
 	for (int i = 0; i < 32; ++i)
 	{
 		unsigned int n = (1 << i);
 		QString eventName = eventToString(n);
 		if (eventName.isEmpty() == false)
-			ui->m_pauseEvents->addItem(eventName, QVariant(n));
+			ui->AddPauseEvent(eventName, n);
 	}
+
+	ui->SetFEBioInputFile(doc->GetFEBioInputFile());
+	ui->SetStartPausedOption(doc->StartPaused());
+	ui->SetPauseEvents(doc->GetPauseEvents());
 }
 
 void CDlgMonitorSettings::CanEditFilename(bool b)
 {
-	ui->m_fileInput->setEnabled(b);
+	ui->EnableFileInput(b);
 }
 
-void CDlgMonitorSettings::SetFEBioInputFile(QString febfile)
+void CDlgMonitorSettings::accept()
 {
-	ui->m_fileInput->setText(febfile);
-}
+	assert(m_doc);
+	m_doc->StartPaused(ui->GetStartPausedOption());
+	m_doc->SetPauseEvents(ui->GetPauseEvents());
+	if (ui->InputIsEnabled())
+	{
+		QString filename = ui->GetInputFilename();
+		if (filename.isEmpty())
+		{
+			QMessageBox::critical(this, "FEBio Monitor", "You need to specify a valid filename.");
+			return;
+		}
+		m_doc->SetFEBioInputFile(ui->GetInputFilename());
+	}
 
-QString CDlgMonitorSettings::GetFEBioInputFile()
-{
-	return ui->m_fileInput->text();
-}
-
-bool CDlgMonitorSettings::GetStartPausedOption()
-{
-	return ui->m_startPaused->isChecked();
-}
-
-void CDlgMonitorSettings::SetStartPausedOption(bool b)
-{
-	ui->m_startPaused->setChecked(b);
-}
-
-void CDlgMonitorSettings::SetPauseEvents(unsigned int nevents)
-{
-	int n = ui->m_pauseEvents->findData(nevents);
-	ui->m_pauseEvents->setCurrentIndex(n);
-}
-
-unsigned int CDlgMonitorSettings::GetPauseEvents()
-{
-	return (unsigned int)(ui->m_pauseEvents->currentData().toInt());
+	QDialog::accept();
 }
