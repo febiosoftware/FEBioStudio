@@ -63,6 +63,7 @@ SOFTWARE.*/
 #include <PostLib/FEAreaCoverage.h>
 #include "DlgAddEquation.h"
 #include <FEBioLink/FEBioClass.h>
+#include <FEBioLink/FEBioModule.h>
 
 class CCurvatureProps : public CPropertyList
 {
@@ -892,7 +893,7 @@ void CPostDataPanel::on_AddStandard_triggered()
 			return;
 		}
 
-		auto allPlotClasses = FEBio::FindAllClasses(-1, FEPLOTDATA_ID);
+		auto allPlotClasses = FEBio::FindAllClasses(FEBio::GetActiveModule(), FEPLOTDATA_ID);
 		for (auto& entry : allPlotClasses)
 		{
 			items.push_back(entry.sztype);
