@@ -432,6 +432,13 @@ bool CGLMonitorScene::AddDataField(const std::string& fieldName)
 		pdf->SetName(fieldName);
 		m_postModel->AddDataField(pdf);
 		m_dataFields.push_back(ps);
+		if (m_postModel->GetStates())
+		{
+			Post::FEState* state = m_postModel->GetState(0);
+			int n = state->m_Data.size();
+			Post::FEMeshData& meshData = state->m_Data[n - 1];
+			UpdateDataField(ps, meshData);
+		}
 	}
 	else
 	{
@@ -479,6 +486,18 @@ void CGLMonitorScene::UpdateScene()
 	UpdateModelData();
 }
 
+void CGLMonitorScene::UpdateDataField(FEPlotData* dataField, Post::FEMeshData& meshData)
+{
+	switch (dataField->RegionType())
+	{
+	case Region_Type::FE_REGION_NODE   : UpdateNodalData(dataField, meshData); break;
+	case Region_Type::FE_REGION_DOMAIN : UpdateDomainData(dataField, meshData); break;
+	case Region_Type::FE_REGION_SURFACE: UpdateSurfaceData(dataField, meshData); break;
+	default:
+		assert(false);
+	}
+}
+
 void CGLMonitorScene::UpdateModelData()
 {
 	Post::FEState* ps = m_postModel->GetState(0);
@@ -486,14 +505,7 @@ void CGLMonitorScene::UpdateModelData()
 	{
 		FEPlotData* pd = m_dataFields[n];
 		Post::FEMeshData& meshData = ps->m_Data[n];
-		switch (pd->RegionType())
-		{
-		case Region_Type::FE_REGION_NODE   : UpdateNodalData  (pd, meshData); break;
-		case Region_Type::FE_REGION_DOMAIN : UpdateDomainData (pd, meshData); break;
-		case Region_Type::FE_REGION_SURFACE: UpdateSurfaceData(pd, meshData); break;
-		default:
-			assert(false);
-		}
+		UpdateDataField(pd, meshData);
 	}
 	m_glm->Update(true);
 }

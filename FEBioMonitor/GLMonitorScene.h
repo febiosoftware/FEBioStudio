@@ -68,7 +68,7 @@ private:
 	void BuildMesh();
 	void BuildGLModel();
 	void UpdateModelData();
-
+	void UpdateDataField(FEPlotData* dataField, Post::FEMeshData& meshData);
 	void UpdateNodalData(FEPlotData* dataField, Post::FEMeshData& meshData);
 	void UpdateDomainData(FEPlotData* dataField, Post::FEMeshData& meshData);
 	void UpdateSurfaceData(FEPlotData* dataField, Post::FEMeshData& meshData);
