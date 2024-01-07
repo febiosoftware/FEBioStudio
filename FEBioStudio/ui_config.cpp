@@ -52,6 +52,9 @@ void Ui::CUIConfig::Apply()
 	ui->actionMeshInspector->setEnabled(false);
 	ui->actionMeshDiagnostic->setEnabled(false);
 	ui->actionMaterialTest->setEnabled(false);
+
+	// hide some toolbars
+	ui->monitorToolBar->hide();
 }
 
 // Configure for no active document
@@ -465,6 +468,8 @@ void Ui::CMonitorConfig::Apply()
 	ui->imageToolBar->hide();
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
+	ui->monitorToolBar->show();
+
 
 	ui->centralWidget->glw->glc->hide();
 

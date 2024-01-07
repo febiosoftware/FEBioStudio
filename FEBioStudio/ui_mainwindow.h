@@ -311,6 +311,8 @@ public:
 	QToolBar* xmlToolbar;
 	QAction* actionEditXmlAsText;
 
+	QToolBar* monitorToolBar;
+
 public:
 	QActionGroup* recentFilesActionGroup;
 	QActionGroup* recentProjectsActionGroup;

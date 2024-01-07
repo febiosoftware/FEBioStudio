@@ -205,11 +205,11 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 
 	// --- FEBio menu actions ---
 	actionFEBioRun   = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
-	actionFEBioStop  = addAction("Stop FEBio", "actionFEBioStop");
-	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor"); actionFEBioMonitor->setShortcut(Qt::ControlModifier | Qt::Key_F5);
-	actionFEBioMonitorSettings = addAction("FEBio Monitor Settings ...", "actionFEBioMonitorSettings");
-	actionFEBioPause   = addAction("Pause FEBio", "actionFEBioPause"); actionFEBioPause->setShortcut(Qt::ShiftModifier| Qt::Key_F5);
-	actionFEBioNext    = addAction("Advance FEBio", "actionFEBioNext"); actionFEBioNext->setShortcut(Qt::AltModifier | Qt::Key_F5);
+	actionFEBioStop  = addAction("Stop FEBio", "actionFEBioStop", "stop");
+	actionFEBioMonitor = addAction("Run FEBio Monitor", "actionFEBioMonitor", "play"); actionFEBioMonitor->setShortcut(Qt::ControlModifier | Qt::Key_F5);
+	actionFEBioMonitorSettings = addAction("FEBio Monitor Settings ...", "actionFEBioMonitorSettings", "febiomonitor");
+	actionFEBioPause   = addAction("Pause FEBio", "actionFEBioPause", "pause"); actionFEBioPause->setShortcut(Qt::ShiftModifier | Qt::Key_F5);
+	actionFEBioNext    = addAction("Advance FEBio", "actionFEBioNext", "next"); actionFEBioNext->setShortcut(Qt::AltModifier | Qt::Key_F5);
 	QAction* actionFEBioOptimize = addAction("Generate optimization file ...", "actionFEBioOptimize");
 	QAction* actionFEBioTangent = addAction("Generate tangent diagnostic ...", "actionFEBioTangent");
 	QAction* actionFEBioInfo = addAction("FEBio Info ...", "actionFEBioInfo");
@@ -806,6 +806,18 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	xmlToolbar->addSeparator();
 	xmlToolbar->addAction(actionUndo);
 	xmlToolbar->addAction(actionRedo);
+
+	// FEBio Monitor toolbar
+	monitorToolBar = new QToolBar(mainWindow);
+	monitorToolBar->setObjectName("monitorToolbar");
+	monitorToolBar->setWindowTitle("Monitor Toolbar");
+	monitorToolBar->addAction(actionFEBioMonitorSettings);
+	monitorToolBar->addAction(actionFEBioMonitor);
+	monitorToolBar->addAction(actionFEBioPause);
+	monitorToolBar->addAction(actionFEBioNext);
+	monitorToolBar->addAction(actionFEBioStop);
+	mainWindow->addToolBar(Qt::TopToolBarArea, monitorToolBar);
+
 }
 
 void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
