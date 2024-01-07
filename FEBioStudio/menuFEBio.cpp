@@ -267,13 +267,8 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 {
 	if (dynamic_cast<FEBioMonitorDoc*>(GetDocument()))
 	{
-		FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
-		if (doc->IsRunning() && !doc->IsPaused())
-		{
-			QMessageBox::information(this, "FEBio Studio", "The current job needs to be stopped first.");
-			return;
-		}
-		else doc->RunJob();
+		QMessageBox::information(this, "FEBio Studio", "The FEBio Monitor is already running.");
+		return;
 	}
 	else
 	{
@@ -329,6 +324,20 @@ void CMainWindow::on_actionFEBioMonitorSettings_triggered()
 	CDlgMonitorSettings dlg(doc, this);
 	dlg.CanEditFilename(false);
 	dlg.exec();
+}
+
+void CMainWindow::on_actionFEBioContinue_triggered()
+{
+	if (dynamic_cast<FEBioMonitorDoc*>(GetDocument()))
+	{
+		FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetDocument());
+		if (doc->IsRunning() && !doc->IsPaused())
+		{
+			QMessageBox::information(this, "FEBio Studio", "The current job is already running.");
+			return;
+		}
+		else doc->RunJob();
+	}
 }
 
 void CMainWindow::on_actionFEBioStop_triggered()

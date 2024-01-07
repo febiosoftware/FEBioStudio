@@ -46,6 +46,7 @@ void Ui::CUIConfig::Apply()
 	ui->actionFEBioMonitorSettings->setVisible(false);
 	ui->actionFEBioPause->setVisible(false);
 	ui->actionFEBioNext->setVisible(false);
+	ui->actionFEBioContinue->setVisible(false);
 
 	// disable some Tools menu items
 	ui->actionCurveEditor->setEnabled(false);
@@ -453,6 +454,7 @@ void Ui::CMonitorConfig::Apply()
 	ui->actionFEBioMonitorSettings->setVisible(true);
 	ui->actionFEBioPause->setVisible(true);
 	ui->actionFEBioNext->setVisible(true);
+	ui->actionFEBioContinue->setVisible(true);
 
 	ui->menuEdit->menuAction()->setVisible(false);
 	ui->menuEditPost->menuAction()->setVisible(false);
@@ -484,7 +486,6 @@ void Ui::CMonitorConfig::Apply()
 	ui->febioMonitor->parentWidget()->show();
 	ui->febioMonitor->parentWidget()->raise();
 
-	ui->m_wnd->ClearOutput();
 	ui->m_wnd->ShowLogPanel();
 	ui->logPanel->ShowOutput();
 }
