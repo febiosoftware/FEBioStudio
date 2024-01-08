@@ -78,7 +78,7 @@ void Ui::CEmptyConfig::Apply()
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->HideControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -121,7 +121,7 @@ void Ui::CHTMLConfig::Apply()
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->HideControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -192,7 +192,7 @@ void Ui::CModelConfig::Apply()
 	ui->pFontToolBar->show();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->show();
+	ui->centralWidget->glw->ShowControlBar();
 
 	ui->modelViewer->parentWidget()->show();
 	ui->buildPanel->parentWidget()->show();
@@ -237,7 +237,7 @@ void Ui::CPostConfig::Apply()
 	ui->pFontToolBar->show();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->show();
+	ui->centralWidget->glw->ShowControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -299,7 +299,7 @@ void Ui::CTextConfig::Apply()
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->HideControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -350,7 +350,7 @@ void Ui::CXMLConfig::Apply()
 			ui->xmlToolbar->show();
 			ui->imageToolBar->hide();
 
-			ui->centralWidget->glw->glc->hide();
+			ui->centralWidget->glw->HideControlBar();
 
 			ui->modelViewer->parentWidget()->hide();
 			ui->buildPanel->parentWidget()->hide();
@@ -384,7 +384,7 @@ void Ui::CXMLConfig::Apply()
 			ui->xmlToolbar->show();
 			ui->imageToolBar->hide();
 
-			ui->centralWidget->glw->glc->hide();
+			ui->centralWidget->glw->HideControlBar();
 
 			ui->modelViewer->parentWidget()->hide();
 			ui->buildPanel->parentWidget()->hide();
@@ -425,7 +425,7 @@ void Ui::CAPPConfig::Apply()
 	ui->pFontToolBar->hide();
 	ui->xmlToolbar->hide();
 
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->HideControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();
@@ -457,7 +457,7 @@ void Ui::CMonitorConfig::Apply()
 	ui->actionFEBioContinue->setVisible(true);
 
 	ui->menuEdit->menuAction()->setVisible(false);
-	ui->menuEditPost->menuAction()->setVisible(false);
+	ui->menuEditPost->menuAction()->setVisible(true);
 	ui->menuEditTxt->menuAction()->setVisible(false);
 	ui->menuEditXml->menuAction()->setVisible(false);
 	ui->menuPhysics->menuAction()->setVisible(false);
@@ -472,8 +472,7 @@ void Ui::CMonitorConfig::Apply()
 	ui->xmlToolbar->hide();
 	ui->monitorToolBar->show();
 
-
-	ui->centralWidget->glw->glc->hide();
+	ui->centralWidget->glw->ShowControlBar();
 
 	ui->modelViewer->parentWidget()->hide();
 	ui->buildPanel->parentWidget()->hide();

@@ -362,6 +362,14 @@ Post::CGLModel* FEBioMonitorDoc::GetGLModel()
 	return scene->GetGLModel();
 }
 
+GObject* FEBioMonitorDoc::GetActiveObject()
+{
+	if (!IsValid()) return nullptr;
+	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(GetScene());
+	if (scene == nullptr) return nullptr;
+	return scene->GetPostObject();
+}
+
 double FEBioMonitorDoc::GetTimeValue() const
 {
 	return m_time;
@@ -454,7 +462,9 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 void FEBioMonitorDoc::onModelInitialized()
 {
 	QMutexLocker lock(&m_mutex);
-	CFEBioMonitorPanel* w = GetMainWindow()->GetFEBioMonitorPanel(); assert(w);
-	if (w == nullptr) return;
-	w->Update(true);
+	CMainWindow* wnd = GetMainWindow();
+	CFEBioMonitorPanel* monitorPanel = wnd->GetFEBioMonitorPanel(); assert(monitorPanel);
+	if (monitorPanel == nullptr) return;
+	monitorPanel->Update(true);
+	wnd->UpdateGLControlBar();
 }

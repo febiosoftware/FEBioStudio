@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/GLScene.h"
 #include "../PostGL/GLModel.h"
 #include "../MeshLib/FENodeFaceList.h"
+#include "../FEBioStudio/PostObject.h"
 #include <GLLib/GLMesh.h>
 #include <QMutex>
 
@@ -62,6 +63,8 @@ public:
 
 	bool AddDataField(const std::string& fieldName);
 
+	CPostObject* GetPostObject() { return m_postObj; }
+
 private:
 	void Clear();
 
@@ -78,6 +81,7 @@ private:
 	Post::FEPostModel* m_postModel;
 	Post::CGLModel* m_glm;
 	FSNodeFaceList	m_NFT;
+	CPostObject* m_postObj;
 	FEModel* m_fem;
 	QMutex	m_mutex;
 	std::vector<FEPlotData*>	m_dataFields;

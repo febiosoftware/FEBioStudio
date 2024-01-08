@@ -1327,7 +1327,7 @@ void CMainWindow::UpdateUiView()
 //-----------------------------------------------------------------------------
 CGLView* CMainWindow::GetGLView()
 {
-	return ui->centralWidget->glw->glview;
+	return ui->centralWidget->glw->GetGLView();
 }
 
 CImageSliceView* CMainWindow::GetImageSliceView()
@@ -2222,7 +2222,7 @@ void CMainWindow::UpdateUI()
 	m_pCmdWnd->Update();
 	if (m_pCurveEdit->visible()) m_pCurveEdit->Update();
 	 */
-	ui->centralWidget->glw->glc->Update();
+	ui->centralWidget->glw->Update();
 	RedrawGL();
 }
 
@@ -2314,7 +2314,7 @@ void CMainWindow::UpdateModel(FSObject* po, bool bupdate)
 //! Updates the GLView control bar
 void CMainWindow::UpdateGLControlBar()
 {
-	ui->centralWidget->glw->glc->Update();
+	ui->centralWidget->glw->Update();
 }
 
 //-----------------------------------------------------------------------------

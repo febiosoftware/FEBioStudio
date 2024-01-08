@@ -89,6 +89,8 @@ public:
 public: // overrides for CGLModelDocument
 	Post::CGLModel* GetGLModel() override;
 
+	GObject* GetActiveObject() override;
+
 public:
 	double GetTimeValue() const;
 

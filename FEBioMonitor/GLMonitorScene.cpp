@@ -50,11 +50,13 @@ CGLMonitorScene::CGLMonitorScene(FEBioMonitorDoc* doc) : m_doc(doc)
 	m_fem = nullptr;
 	m_postModel = new Post::FEPostModel;
 	m_glm = new Post::CGLModel(m_postModel);
+	m_postObj = new CPostObject(m_glm);
 }
 
 CGLMonitorScene::~CGLMonitorScene()
 {
 	Clear();
+	delete m_postObj;
 	delete m_glm;
 }
 
@@ -462,6 +464,8 @@ void CGLMonitorScene::BuildGLModel()
 
 	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
 	m_glm->Update(true);
+
+	m_postObj->UpdateMesh();
 }
 
 void CGLMonitorScene::UpdateScene()
@@ -762,8 +766,51 @@ BOX CGLMonitorScene::GetBoundingBox()
 	return m_postModel->GetBoundingBox();
 }
 
-// get the bounding box of the current selection
+
 BOX CGLMonitorScene::GetSelectionBox()
 {
-	return GetBoundingBox();
+	BOX box;
+
+	Post::CGLModel* mdl = GetGLModel();
+	if (mdl == nullptr) return BOX(-1, -1, -1, 1, 1, 1);
+
+	Post::FEPostMesh& mesh = *m_glm->GetActiveMesh();
+	const vector<FEElement_*> selElems = mdl->GetElementSelection();
+	for (int i = 0; i < (int)selElems.size(); ++i)
+	{
+		FEElement_& el = *selElems[i];
+		int nel = el.Nodes();
+		for (int j = 0; j < nel; ++j) box += mesh.Node(el.m_node[j]).r;
+	}
+
+	const vector<FSFace*> selFaces = GetGLModel()->GetFaceSelection();
+	for (int i = 0; i < (int)selFaces.size(); ++i)
+	{
+		FSFace& face = *selFaces[i];
+		int nel = face.Nodes();
+		for (int j = 0; j < nel; ++j) box += mesh.Node(face.n[j]).r;
+	}
+
+	const vector<FSEdge*> selEdges = GetGLModel()->GetEdgeSelection();
+	for (int i = 0; i < (int)selEdges.size(); ++i)
+	{
+		FSEdge& edge = *selEdges[i];
+		int nel = edge.Nodes();
+		for (int j = 0; j < nel; ++j) box += mesh.Node(edge.n[j]).r;
+	}
+
+	const vector<FSNode*> selNodes = GetGLModel()->GetNodeSelection();
+	for (int i = 0; i < (int)selNodes.size(); ++i)
+	{
+		FSNode& node = *selNodes[i];
+		box += node.r;
+	}
+
+	if ((box.Width() < 1e-5) || (box.Height() < 1e-4) || (box.Depth() < 1e-4))
+	{
+		float R = box.Radius();
+		box.InflateTo(R, R, R);
+	}
+
+	return box;
 }
