@@ -26,17 +26,20 @@ SOFTWARE.*/
 #pragma once
 #include "../FEBioStudio/CommandPanel.h"
 
-class CFEBioMonitorPanel : public CCommandPanel
+namespace Ui {
+	class CFEBioModelPanel;
+}
+
+class CFEBioModelPanel : public CCommandPanel
 {
 	Q_OBJECT
 
-	class Ui;
+public:
+	CFEBioModelPanel(CMainWindow* pwnd, QWidget* parent = 0);
 
 public:
-	CFEBioMonitorPanel(CMainWindow* wnd, QWidget* parent);
-
-	void Update(bool breset = false) override;
+	void Update(bool breset) override;
 
 private:
-	Ui* ui;
+	Ui::CFEBioModelPanel* ui;
 };

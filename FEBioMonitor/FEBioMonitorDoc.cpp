@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEBioMonitorDoc.h"
 #include "../FEBioStudio/MainWindow.h"
 #include "../FEBioStudio/GLView.h"
+#include <FECore/FEModelParam.h>
 #include "FEBioMonitorPanel.h"
 #include "GLMonitorScene.h"
 #include <QWaitCondition>
@@ -129,16 +130,14 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
 	m_bValid = false;
 	m_time = 0.0;
 
-	CGLView* view = wnd->GetGLView();
-
 	connect(this, &FEBioMonitorDoc::outputReady, this, &FEBioMonitorDoc::readOutput);
-	connect(this, &FEBioMonitorDoc::updateViews, view, &CGLView::updateView);
+	connect(this, &FEBioMonitorDoc::updateViews, this, &FEBioMonitorDoc::onUpdateViews);
 	connect(this, &FEBioMonitorDoc::modelInitialized, this, &FEBioMonitorDoc::onModelInitialized);
 }
 
 FEBioMonitorDoc::~FEBioMonitorDoc()
 {
-
+	qDeleteAll(m_watches);
 }
 
 void FEBioMonitorDoc::SetFEBioInputFile(QString febFile)
@@ -442,6 +441,8 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	else if (!m_isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
 
 	m_mutex.lock();
+	m_fem = dynamic_cast<FEBioModel*>(fem);
+	UpdateAllWatchVariables();
 	constexpr double eps = std::numeric_limits<double>::epsilon();
 	if ((m_pauseRequested && (m_pauseEvents & nevent)) ||
 		(m_usePauseTime && (m_time + eps >= m_pauseTime)))
@@ -452,6 +453,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 		jobIsPaused.wait(&m_mutex);
 		m_isPaused = false;
 	}
+	m_fem = nullptr;
 	m_mutex.unlock();
 
 	if (m_isStopped) throw std::exception();
@@ -467,4 +469,76 @@ void FEBioMonitorDoc::onModelInitialized()
 	if (monitorPanel == nullptr) return;
 	monitorPanel->Update(true);
 	wnd->UpdateGLControlBar();
+}
+
+void FEBioMonitorDoc::onUpdateViews()
+{
+	CMainWindow* wnd = GetMainWindow();
+	wnd->GetGLView()->updateView();
+	wnd->GetFEBioMonitorPanel()->Update(false);
+}
+
+const FEBioWatchVariable* FEBioMonitorDoc::GetWatchVariable(int n)
+{
+	return m_watches[n];
+}
+
+int FEBioMonitorDoc::GetWatchVariables() const
+{
+	return m_watches.size();
+}
+
+FEBioWatchVariable* FEBioMonitorDoc::AddWatchVariable(const QString& name)
+{
+	QMutexLocker lock(&m_mutex);
+	if (!IsRunning() || !IsPaused()) return nullptr;
+	FEBioWatchVariable* v = new FEBioWatchVariable(name);
+	m_watches.append(v);
+	UpdateWatchVariable(*v);
+	return v;
+}
+
+void FEBioMonitorDoc::SetWatchVariable(int n, const QString& name)
+{
+	QMutexLocker lock(&m_mutex);
+	if (!IsRunning() || !IsPaused()) return;
+	FEBioWatchVariable* var = m_watches[n];
+	var->setName(name);
+	UpdateWatchVariable(*var);
+}
+
+void FEBioMonitorDoc::UpdateAllWatchVariables()
+{
+	if (m_fem == nullptr) return;
+	for (auto w : m_watches) UpdateWatchVariable(*w);
+}
+
+void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
+{
+	if (m_fem == nullptr) return;
+
+	var.setType(FEBioWatchVariable::INVALID);
+	std::string s = var.name().toStdString();
+	ParamString ps(s.c_str());
+	FEParam* p = m_fem->FindParameter(ps);
+	if (p)
+	{
+		QString val("[can't display]");
+		switch (p->type())
+		{
+		case FE_PARAM_DOUBLE: { double a = p->value<double>(); val = QString::number(a); } break;
+		case FE_PARAM_DOUBLE_MAPPED:
+		{
+			FEParamDouble& v = p->value<FEParamDouble>();
+			if (v.isConst())
+			{
+				double a = v.constValue()*v.GetScaleFactor();
+				val = QString::number(a);
+			}
+		}
+		break;
+		}
+		var.setValue(val);
+		var.setType(FEBioWatchVariable::VALID);
+	}
 }

@@ -30,6 +30,7 @@ SOFTWARE.*/
 #include "../FEBioStudio/GLModelDocument.h"
 
 class FEModel; // from FEBio
+class FEBioModel;
 
 class FEBioMonitorDoc;
 
@@ -47,6 +48,32 @@ signals:
 
 private:
 	FEBioMonitorDoc* m_doc;
+};
+
+class FEBioWatchVariable
+{
+public:
+	enum {
+		INVALID,
+		VALID
+	};
+
+public:
+	FEBioWatchVariable(const QString& name) : m_name(name) {}
+
+	QString name() const { return m_name; }
+	void setName(const QString& name) { m_name = name; }
+
+	QString value() const { return m_value; }
+	void setValue(const QString& val) { m_value = val; }
+
+	int type() const { return m_type; }
+	void setType(int type) { m_type = type; }
+
+private:
+	int	m_type = INVALID;
+	QString m_name;
+	QString m_value;
 };
 
 class FEBioMonitorDoc : public CGLModelDocument
@@ -86,6 +113,16 @@ public:
 
 	bool IsPaused() const;
 
+public:
+	FEBioWatchVariable* AddWatchVariable(const QString& name);
+	const FEBioWatchVariable* GetWatchVariable(int n);
+	int GetWatchVariables() const;
+	void SetWatchVariable(int n, const QString& name);
+
+private:
+	void UpdateWatchVariable(FEBioWatchVariable& var);
+	void UpdateAllWatchVariables();
+
 public: // overrides for CGLModelDocument
 	Post::CGLModel* GetGLModel() override;
 
@@ -105,6 +142,7 @@ private:
 private slots:
 	void onJobFinished(bool b);
 	void onModelInitialized();
+	void onUpdateViews();
 	void readOutput();
 
 signals:
@@ -127,6 +165,9 @@ private:
 	double	m_time;
 	unsigned int m_pauseEvents;
 	QMutex	m_mutex;
+	FEBioModel* m_fem = nullptr;
+
+	QVector<FEBioWatchVariable*>	m_watches;
 
 	friend class FEBioMonitorThread;
 };
