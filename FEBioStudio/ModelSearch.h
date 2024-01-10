@@ -31,8 +31,8 @@ SOFTWARE.*/
 
 class CDocument;
 class FSObject;
-class QListWidget;
-class QListWidgetItem;
+class QTableWidget;
+class QTableWidgetItem;
 class QLineEdit;
 class FSModel;
 class CModelViewer;
@@ -58,12 +58,12 @@ private:
 
 protected slots:
 	void onFilterChanged(const QString& t);
-	void onItemDoubleClicked(QListWidgetItem* item);
-	void onItemClicked(QListWidgetItem* item);
+	void onItemDoubleClicked(QTableWidgetItem* item);
+	void onItemClicked(QTableWidgetItem* item);
 
 private:
 	CModelViewer*	m_view;
 	CModelTree*		m_tree;
 	QLineEdit*		m_flt;
-	QListWidget*	m_list;
+	QTableWidget*	m_list;
 };
