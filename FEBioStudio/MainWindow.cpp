@@ -1194,6 +1194,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			{
 				FSDir::setMacro("ProjectDir", ".");
 			}
+			else ui->addToRecentFiles(file.m_fileName);
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{
