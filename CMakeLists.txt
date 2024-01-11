@@ -192,13 +192,13 @@ if(USE_TETGEN)
 endif()
 
 if(CAD_FEATURES)
-    set(NETGEN_LIB_NAMES nglib csg interface occ)
+    set(NETGEN_LIB_NAMES nglib ngcore)
     
     # This NetGen library is called "meshing" on Windows and "mesh" elsewhere.
     if(WIN32)
         list(APPEND NETGEN_LIB_NAMES meshing)
-    else()
-        list(APPEND NETGEN_LIB_NAMES mesh)
+#    else()
+#        list(APPEND NETGEN_LIB_NAMES mesh)
     endif()
     
     foreach(name IN LISTS NETGEN_LIB_NAMES)
