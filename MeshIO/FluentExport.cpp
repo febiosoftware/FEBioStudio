@@ -29,6 +29,9 @@
 #include <GeomLib/GObject.h>
 #include <GeomLib/GModel.h>
 
+// This exporter uses information about Fluent mesh file format given at
+// https://romeo.univ-reims.fr/documents/fluent/tgrid/ug/appb.pdf
+
 FluentExport::FluentExport(FSProject& prj) : FSFileExport(prj)
 {
 }
@@ -118,7 +121,6 @@ bool FluentExport::Write(const char* szfile)
         fprintf(fp, "))\n\n");
         
         std::vector<int> etype(m.Elements(),0);
-        std::vector<std::vector<int>> adjf;
         bool mixed = false;
         for (int j=0; j<m.Elements(); ++j)
         {
@@ -134,16 +136,7 @@ bool FluentExport::Write(const char* szfile)
                     etype[j] = 3;
                     break;
                 case FE_HEX8:
-                {
                     etype[j] = 4;
-                    adjf.assign(6,std::vector<int>(4));
-                    adjf[0][0] = 4; adjf[0][1] = 1; adjf[0][2] = 5; adjf[0][3] = 3;
-                    adjf[1][0] = 4; adjf[1][1] = 2; adjf[1][2] = 5; adjf[1][3] = 0;
-                    adjf[2][0] = 4; adjf[2][1] = 3; adjf[2][2] = 5; adjf[2][3] = 1;
-                    adjf[3][0] = 4; adjf[3][1] = 0; adjf[3][2] = 5; adjf[3][3] = 2;
-                    adjf[4][0] = 3; adjf[4][1] = 2; adjf[4][2] = 1; adjf[4][3] = 0;
-                    adjf[5][0] = 0; adjf[5][1] = 1; adjf[5][2] = 2; adjf[5][3] = 3;
-                }
                     break;
                 case FE_PYRA5:
                     etype[j] = 5;
