@@ -70,13 +70,20 @@ bool FluentExport::Write(const char* szfile)
     // count nr of elements
     int elems = 0;
     int faces = 0;
+    std::vector<int> bfaces;    // boundary faces
+    std::vector<int> ifaces;    // interior faces
     for (int i=0; i<model.Objects(); ++i)
     {
         FSMesh& m = *model.Object(i)->GetFEMesh();
         for (int j=0; j<m.Elements(); ++j) {
             FSElement& e = m.Element(j);
             e.m_ntag = ++elems;
-            faces += e.Faces();
+            for (int k=0; k<e.Faces(); ++k) {
+                FSFace& f = m.Face(e.m_face[k]);
+                f.m_ntag = ++faces;
+                if (f.m_elem[1].eid == -1) bfaces.push_back(f.m_ntag);
+                else ifaces.push_back(f.m_ntag);
+            }
         }
     }
 
@@ -92,7 +99,7 @@ bool FluentExport::Write(const char* szfile)
     fprintf(fp, "(0 \"Mesh info\")\n");
     fprintf(fp, "(12 (0 %X %X 0))\n\n",1, elems);
     fprintf(fp, "(13 (0 %X %X 0))\n\n",1, faces);
-    fprintf(fp, "(10 (0 %X %X 0 3))\n",1, nodes);
+    fprintf(fp, "(10 (0 %X %X 0 3))\n\n",1, nodes);
 
     int zone = 0;
 
@@ -108,7 +115,7 @@ bool FluentExport::Write(const char* szfile)
             FSNode& n = m.Node(j);
             fprintf(fp, "%g %g %g\n", n.r.x, n.r.y, n.r.z);
         }
-        fprintf(fp, "))\n");
+        fprintf(fp, "))\n\n");
         
         std::vector<int> etype(m.Elements(),0);
         std::vector<std::vector<int>> adjf;
@@ -151,33 +158,61 @@ bool FluentExport::Write(const char* szfile)
             if ((j > 0) && (etype[j] != etype[j-1])) mixed = true;
         }
         // save the element nodes
-        fprintf(fp, "(0 \"Elements\")\n");
+        fprintf(fp, "(0 \"Elements\")\n\n");
         if (mixed) {
             fprintf(fp, "(0 \"Mixed mesh\")\n");
             fprintf(fp, "(12 (%d %X %X 1 0) (\n",++zone,m.Element(0).m_ntag, m.Element(m.Elements()-1).m_ntag);
             for (int j=0; j<m.Elements(); j +=9)
                 fprintf(fp, "%d %d %d %d %d %d %d %d %d\n", etype[j], etype[j+1], etype[j+2], etype[j+3],
                         etype[j+4], etype[j+5], etype[j+6], etype[j+7], etype[j+8]);
-            fprintf(fp, "))\n");
+            fprintf(fp, "))\n\n");
         }
         else {
-            fprintf(fp, "(12 (%d %X %X 1 %d))\n",++zone,m.Element(0).m_ntag, m.Element(m.Elements()-1).m_ntag,etype[0]);
+            fprintf(fp, "(12 (%d %X %X 1 %d))\n\n",++zone,m.Element(0).m_ntag, m.Element(m.Elements()-1).m_ntag,etype[0]);
         }
         int et = mixed ? 0 : etype[0];
-        ++zone;
-        for (int j=0; j<m.Elements(); ++j) {
-            FSElement& e = m.Element(j);
-            // penta is the only element type with mixed faces
-            if (etype[j] < 6) {
-                fprintf(fp, "(13 (%d %X %X 3 %d) (\n",zone,1, faces, e.GetFace(0).Nodes());
+
+        if (bfaces.size() > 0) {
+            ++zone;
+            // save boundary faces
+            fprintf(fp, "(13 (%d %X %X 3 0) (\n",zone,1, bfaces.size());
+            for (int j=0; j<m.Elements(); ++j) {
+                FSElement& e = m.Element(j);
                 for (int k=0; k<e.Faces(); ++k) {
-                    FSFace f = e.GetFace(k);
-                    for (int l=0; l<f.Nodes(); ++l) fprintf(fp, "%d ",m.Node(f.n[l]).m_ntag);
-                    fprintf(fp, "%d %d",0,e.m_ntag);
-                    fprintf(fp,"\n");
+                    FSFace& f = m.Face(e.m_face[k]);
+                    if (f.m_elem[1].eid == -1) {
+                        fprintf(fp, "%d ",f.Nodes());
+                        for (int l=0; l<f.Nodes(); ++l) fprintf(fp, "%d ",m.Node(f.n[l]).m_ntag);
+                        FSElement& e = m.Element(f.m_elem[0].eid);
+                        fprintf(fp,"0 %d",e.m_ntag);
+                        fprintf(fp,"\n");
+                    }
                 }
-                fprintf(fp, "))\n");
             }
+            fprintf(fp, "))\n\n");
+        }
+
+        if (ifaces.size() > 0) {
+            ++zone;
+            // save interior faces
+            fprintf(fp, "(13 (%d %X %X 2 0) (\n",zone,bfaces.size()+1, m.Faces());
+            for (int j=0; j<m.Elements(); ++j) {
+                FSElement& e = m.Element(j);
+                for (int k=0; k<e.Faces(); ++k) {
+                    if (e.m_face[k] > -1) {
+                        FSFace& f = m.Face(e.m_face[k]);
+                        if (f.m_elem[1].eid != -1) {
+                            fprintf(fp, "%d ",f.Nodes());
+                            for (int l=0; l<f.Nodes(); ++l) fprintf(fp, "%d ",m.Node(f.n[l]).m_ntag);
+                            FSElement& er = m.Element(f.m_elem[1].eid);
+                            FSElement& el = m.Element(f.m_elem[0].eid);
+                            fprintf(fp,"%d %d",er.m_ntag, el.m_ntag);
+                            fprintf(fp,"\n");
+                        }
+                    }
+                }
+            }
+            fprintf(fp, "))\n\n");
         }
     }
     fclose(fp);
