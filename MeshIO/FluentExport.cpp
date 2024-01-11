@@ -25,9 +25,6 @@
  SOFTWARE.*/
 
 #include "FluentExport.h"
-#include <FEMLib/FSProject.h>
-#include <GeomLib/GObject.h>
-#include <GeomLib/GModel.h>
 
 // This exporter uses information about Fluent mesh file format given at
 // https://romeo.univ-reims.fr/documents/fluent/tgrid/ug/appb.pdf
@@ -73,8 +70,6 @@ bool FluentExport::Write(const char* szfile)
     // count nr of elements
     int elems = 0;
     int faces = 0;
-    std::vector<int> bfaces;    // boundary faces
-    std::vector<int> ifaces;    // interior faces
     for (int i=0; i<model.Objects(); ++i)
     {
         FSMesh& m = *model.Object(i)->GetFEMesh();
@@ -82,27 +77,68 @@ bool FluentExport::Write(const char* szfile)
             FSElement& e = m.Element(j);
             e.m_ntag = ++elems;
             for (int k=0; k<e.Faces(); ++k) {
-                FSFace& f = m.Face(e.m_face[k]);
-                f.m_ntag = ++faces;
-                if (f.m_elem[1].eid == -1) bfaces.push_back(f.m_ntag);
-                else ifaces.push_back(f.m_ntag);
+                FSFace nf;
+                switch (e.Type()) {
+                    case FE_TET4:
+                        nf.m_type = FE_FACE_TRI;
+                        break;
+                    case FE_HEX8:
+                        nf.m_type = FE_FACE_QUAD4;
+                        break;
+                    case FE_PYRA5:
+                        if (k < 4) nf.m_type = FE_FACE_TRI;
+                        else nf.m_type = FE_FACE_QUAD4;
+                        break;
+                    case FE_PENTA6:
+                        if (k > 2) nf.m_type = FE_FACE_TRI;
+                        else nf.m_type = FE_FACE_QUAD4;
+                        break;
+                    default:
+                        return false;
+                        break;
+                }
+                e.GetFace(k, nf);
+                int ief = -1;
+                // check if this face exists already
+                if (FaceExists(nf,ief)) {
+                    FSFace& ef = nface[ief];
+                    ef.m_elem[0].eid = e.m_ntag;
+                    ef.m_elem[0].lid = k;
+                }
+                else {
+                    // if not, add it to the database
+                    nf.m_elem[1].eid = e.m_ntag;
+                    nf.m_elem[1].lid = k;
+                    nf.m_ntag = ++faces;
+                    nface.push_back(nf);
+                }
             }
         }
     }
+    
+    // purge nface of boundary faces
+    std::vector<FSFace> iface;
+    iface.reserve(nface.size());
+    for (int i=0; i<nface.size(); ++i) {
+        FSFace f = nface[i];
+        if (f.m_elem[0].eid >0) iface.push_back(f);
+    }
+    nface = iface;
 
     // --- H E A D E R ---
     // start with comment
-    fprintf(fp, "(0 \"This file was generated with FEBioStudio\")\n");
+    fprintf(fp, "(0 \"This file was generated with FEBioStudio\")\n\n");
     // provide official header of Fluent mesh file
-    fprintf(fp, "(1 \"FEBioStudio 2.4\")\n");
+    fprintf(fp, "(1 \"FEBioStudio 2.4\")\n\n");
     // specify dimensions (always 3D in FEBioStudio)
-    fprintf(fp, "(2 3)\n");
+    fprintf(fp, "(0 \"Dimensions\")\n");
+    fprintf(fp, "(2 3)\n\n");
     
     // --- P A R T ---
     fprintf(fp, "(0 \"Mesh info\")\n");
-    fprintf(fp, "(12 (0 %X %X 0))\n\n",1, elems);
+    fprintf(fp, "(10 (0 %X %X 1 3))\n",1, nodes);
+    fprintf(fp, "(12 (0 %X %X 0))\n",1, elems);
     fprintf(fp, "(13 (0 %X %X 0))\n\n",1, faces);
-    fprintf(fp, "(10 (0 %X %X 0 3))\n\n",1, nodes);
 
     int zone = 0;
 
@@ -113,7 +149,7 @@ bool FluentExport::Write(const char* szfile)
         FSMesh& m = *pm;
         // save the nodal coordinates
         fprintf(fp, "(0 \"Nodes\")\n");
-        fprintf(fp, "(10 (%d %X %X 1 3)(\n",++zone,m.Node(0).m_ntag,m.Node(m.Nodes()-1).m_ntag);
+        fprintf(fp, "(10 (%X %X %X 1 3)(\n",++zone,m.Node(0).m_ntag,m.Node(m.Nodes()-1).m_ntag);
         for (int j=0; j<m.Nodes(); ++j) {
             FSNode& n = m.Node(j);
             fprintf(fp, "%g %g %g\n", n.r.x, n.r.y, n.r.z);
@@ -124,8 +160,8 @@ bool FluentExport::Write(const char* szfile)
         bool mixed = false;
         for (int j=0; j<m.Elements(); ++j)
         {
-            FSElement& f = m.Element(j);
-            switch (f.Type()) {
+            FSElement& e = m.Element(j);
+            switch (e.Type()) {
                 case FE_TRI3:
                     etype[j] = 1;
                     break;
@@ -154,56 +190,44 @@ bool FluentExport::Write(const char* szfile)
         fprintf(fp, "(0 \"Elements\")\n\n");
         if (mixed) {
             fprintf(fp, "(0 \"Mixed mesh\")\n");
-            fprintf(fp, "(12 (%d %X %X 1 0) (\n",++zone,m.Element(0).m_ntag, m.Element(m.Elements()-1).m_ntag);
+            fprintf(fp, "(12 (%X %X %X 1 0) (\n",++zone,m.Element(0).m_ntag, m.Element(m.Elements()-1).m_ntag);
             for (int j=0; j<m.Elements(); j +=9)
-                fprintf(fp, "%d %d %d %d %d %d %d %d %d\n", etype[j], etype[j+1], etype[j+2], etype[j+3],
+                fprintf(fp, "%X %X %X %X %X %X %X %X %X\n", etype[j], etype[j+1], etype[j+2], etype[j+3],
                         etype[j+4], etype[j+5], etype[j+6], etype[j+7], etype[j+8]);
             fprintf(fp, "))\n\n");
         }
         else {
-            fprintf(fp, "(12 (%d %X %X 1 %d))\n\n",++zone,m.Element(0).m_ntag, m.Element(m.Elements()-1).m_ntag,etype[0]);
+            fprintf(fp, "(12 (%X %X %X 1 %X))\n\n",++zone,m.Element(0).m_ntag, m.Element(m.Elements()-1).m_ntag,etype[0]);
         }
         int et = mixed ? 0 : etype[0];
 
-        if (bfaces.size() > 0) {
+        if (m.Faces() > 0) {
+            fprintf(fp, "(0 \"Boundary Faces\")\n\n");
             ++zone;
             // save boundary faces
-            fprintf(fp, "(13 (%d %X %X 3 0) (\n",zone,1, bfaces.size());
-            for (int j=0; j<m.Elements(); ++j) {
-                FSElement& e = m.Element(j);
-                for (int k=0; k<e.Faces(); ++k) {
-                    FSFace& f = m.Face(e.m_face[k]);
-                    if (f.m_elem[1].eid == -1) {
-                        fprintf(fp, "%d ",f.Nodes());
-                        for (int l=0; l<f.Nodes(); ++l) fprintf(fp, "%d ",m.Node(f.n[l]).m_ntag);
-                        FSElement& e = m.Element(f.m_elem[0].eid);
-                        fprintf(fp,"0 %d",e.m_ntag);
-                        fprintf(fp,"\n");
-                    }
-                }
+            fprintf(fp, "(13 (%X %X %X 3 0) (\n",zone,1, m.Faces());
+            for (int k=0; k<m.Faces(); ++k) {
+                FSFace& f = m.Face(k);
+                fprintf(fp, "%X ",f.Nodes());
+                for (int l=f.Nodes()-1; l>-1; --l) fprintf(fp, "%X ",m.Node(f.n[l]).m_ntag);
+                FSElement& e = m.Element(f.m_elem[0].eid);
+                fprintf(fp,"%X 0",e.m_ntag);
+                fprintf(fp,"\n");
             }
             fprintf(fp, "))\n\n");
         }
 
-        if (ifaces.size() > 0) {
+        if (nface.size() > 0) {
+            fprintf(fp, "(0 \"Internal Faces\")\n\n");
             ++zone;
             // save interior faces
-            fprintf(fp, "(13 (%d %X %X 2 0) (\n",zone,bfaces.size()+1, m.Faces());
-            for (int j=0; j<m.Elements(); ++j) {
-                FSElement& e = m.Element(j);
-                for (int k=0; k<e.Faces(); ++k) {
-                    if (e.m_face[k] > -1) {
-                        FSFace& f = m.Face(e.m_face[k]);
-                        if (f.m_elem[1].eid != -1) {
-                            fprintf(fp, "%d ",f.Nodes());
-                            for (int l=0; l<f.Nodes(); ++l) fprintf(fp, "%d ",m.Node(f.n[l]).m_ntag);
-                            FSElement& er = m.Element(f.m_elem[1].eid);
-                            FSElement& el = m.Element(f.m_elem[0].eid);
-                            fprintf(fp,"%d %d",er.m_ntag, el.m_ntag);
-                            fprintf(fp,"\n");
-                        }
-                    }
-                }
+            fprintf(fp, "(13 (%X %X %X 2 0) (\n",zone,m.Faces()+1, m.Faces()+nface.size());
+            for (int j=0; j<nface.size(); ++j) {
+                FSFace& f = nface[j];
+                fprintf(fp, "%X ",f.Nodes());
+                for (int l=f.Nodes()-1; l>-1; --l) fprintf(fp, "%X ",m.Node(f.n[l]).m_ntag);
+                fprintf(fp,"%X %X",f.m_elem[1].eid, f.m_elem[0].eid);
+                fprintf(fp,"\n");
             }
             fprintf(fp, "))\n\n");
         }
@@ -211,4 +235,34 @@ bool FluentExport::Write(const char* szfile)
     fclose(fp);
     
     return true;
+}
+
+bool FluentExport::FaceExists(FSFace nf, int& ief)
+{
+    ief = -1;
+    for (int i=0; i<nface.size(); ++i) {
+        FSFace ef = nface[i];
+        if (nf.Nodes() == ef.Nodes()) {
+            int n = nf.Nodes();
+            std::vector<bool> matched(n,false);
+            for (int j=0; j<n; ++j) {
+                for (int k=0; k<n; ++k) {
+                    if (ef.n[k] == nf.n[j]) {
+                        matched[j] = true;
+                        break;
+                    }
+                }
+            }
+            bool found = true;
+            for (int k=0; k<n; ++k) {
+                found = found && matched[k];
+                if (!found) break;
+            }
+            if (found) {
+                ief = i;
+                return true;
+            }
+        }
+    }
+    return false;
 }

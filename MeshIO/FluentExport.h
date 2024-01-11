@@ -27,6 +27,9 @@
 #pragma once
 
 #include "FSFileExport.h"
+#include <FEMLib/FSProject.h>
+#include <GeomLib/GObject.h>
+#include <GeomLib/GModel.h>
 
 class FluentExport : public FSFileExport
 {
@@ -35,4 +38,8 @@ public:
     ~FluentExport(void);
     
     bool Write(const char* szfile) override;
+    
+    bool FaceExists(FSFace nf, int& ef);
+    
+    std::vector<FSFace> nface;  // new faces
 };
