@@ -244,23 +244,30 @@ bool FluentExport::FaceExists(FSFace nf, int& ief)
         FSFace ef = nface[i];
         if (nf.Nodes() == ef.Nodes()) {
             int n = nf.Nodes();
-            std::vector<bool> matched(n,false);
+            // save some time with the search process
+            // by using a quick method of checking
+            int nn = 0;
             for (int j=0; j<n; ++j) {
-                for (int k=0; k<n; ++k) {
-                    if (ef.n[k] == nf.n[j]) {
-                        matched[j] = true;
-                        break;
+                nn += ef.n[j];
+                nn -= nf.n[j];
+            }
+            if (nn == 0) {
+                // now do the more thorough check
+                std::vector<bool> matched(n,false);
+                for (int j=0; j<n; ++j) {
+                    for (int k=0; k<n; ++k) {
+                        if (ef.n[k] == nf.n[j]) {
+                            matched[j] = true;
+                            break;
+                        }
                     }
                 }
-            }
-            bool found = true;
-            for (int k=0; k<n; ++k) {
-                found = found && matched[k];
-                if (!found) break;
-            }
-            if (found) {
-                ief = i;
-                return true;
+                bool found = true;
+                for (int k=0; k<n; ++k) found = found && matched[k];
+                if (found) {
+                    ief = i;
+                    return true;
+                }
             }
         }
     }
