@@ -1491,10 +1491,12 @@ void CGLModelScene::RenderFeatureEdges(CGLContext& rc)
 			glPushMatrix();
 			SetModelView(po);
 
-			GMesh& m = *po->GetRenderMesh();
-			renderer.RenderGLEdges(&m);
-
-			renderer.RenderOutline(rc, &m, (rc.m_settings.m_nrender == RENDER_WIREFRAME));
+			GMesh* m = po->GetRenderMesh();
+			if (m)
+			{
+				renderer.RenderGLEdges(m);
+				renderer.RenderOutline(rc, m, (rc.m_settings.m_nrender == RENDER_WIREFRAME));
+			}
 
 			glPopMatrix();
 		}
@@ -1578,20 +1580,22 @@ void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 // render non-selected edges
 void CGLModelScene::RenderEdges(CGLContext& rc, GObject* po)
 {
+	GMesh* m = po->GetRenderMesh();
+	if (m == nullptr) return;
+
 	glPushAttrib(GL_ENABLE_BIT | GL_LINE_BIT);
 	glDisable(GL_LIGHTING);
 	glColor3ub(0, 0, 255);
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
 		GEdge& e = *po->Edge(i);
 		if (e.IsSelected() == false)
 		{
-			renderer.RenderGLEdges(&m, i);
+			renderer.RenderGLEdges(m, i);
 		}
 	}
 	glPopAttrib();
@@ -1601,6 +1605,9 @@ void CGLModelScene::RenderEdges(CGLContext& rc, GObject* po)
 // render selected edges
 void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 {
+	GMesh* m = po->GetRenderMesh();
+	if (m == nullptr) return;
+
 	glPushAttrib(GL_ENABLE_BIT);
 	glDisable(GL_DEPTH_TEST);
 	glDisable(GL_LIGHTING);
@@ -1609,14 +1616,13 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	GMesh& m = *po->GetRenderMesh();
 	int N = po->Edges();
 	for (int i = 0; i < N; ++i)
 	{
 		GEdge& e = *po->Edge(i);
 		if (e.IsSelected())
 		{
-			renderer.RenderGLEdges(&m, i);
+			renderer.RenderGLEdges(m, i);
 
 			GNode* n0 = po->Node(e.m_node[0]);
 			GNode* n1 = po->Node(e.m_node[1]);
@@ -1669,8 +1675,8 @@ void CGLModelScene::RenderSurfaces(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
-	assert(pm);
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	if (pm == nullptr) return;
 
 	// render non-selected faces
 	GPart* pgmat = 0; // the part that defines the material
@@ -1742,8 +1748,8 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
-	GMesh* pm = po->GetRenderMesh();
-	assert(pm);
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	if (pm == nullptr) return;
 
 	// render the selected faces
 	glPushAttrib(GL_ENABLE_BIT | GL_POLYGON_BIT);
@@ -1863,8 +1869,8 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
-	assert(pm);
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
+	if (pm == nullptr) return;
 
 	// render non-selected parts
 	GPart* pgmat = 0; // the part that defines the material
@@ -1921,6 +1927,8 @@ void CGLModelScene::RenderParts(CGLContext& rc, GObject* po)
 void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 {
 	if (!po->IsVisible()) return;
+	GMesh* m = po->GetRenderMesh();
+	if (m == nullptr) return;
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
@@ -1929,7 +1937,6 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 		renderer.SetRenderMode(GLMeshRender::SelectionMode);
 		SetMatProps(0);
 		glColor3ub(0, 0, 255);
-		GMesh& m = *po->GetRenderMesh();
 		int NF = po->Faces();
 		for (int i = 0; i < NF; ++i)
 		{
@@ -1939,7 +1946,7 @@ void CGLModelScene::RenderSelectedParts(CGLContext& rc, GObject* po)
 			GPart* p2 = po->Part(pf->m_nPID[2]);
 			if ((p0 && p0->IsSelected()) || (p1 && p1->IsSelected()) || (p2 && p2->IsSelected()))
 			{
-				renderer.RenderGLMesh(&m, i);
+				renderer.RenderGLMesh(m, i);
 			}
 		}
 	}
@@ -1966,9 +1973,8 @@ void CGLModelScene::RenderObject(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == 0) return;
-	assert(pm);
 
 	GLMeshRender& renderer = GetMeshRenderer();
 
@@ -2066,7 +2072,7 @@ void CGLModelScene::RenderBeamParts(CGLContext& rc, GObject* po)
 
 	// get the GMesh
 	FSModel& fem = *doc->GetFSModel();
-	GMesh* pm = po->GetRenderMesh();
+	GMesh* pm = po->GetRenderMesh(); assert(pm);
 	if (pm == 0) return;
 
 	GLMeshRender& renderer = GetMeshRenderer();
