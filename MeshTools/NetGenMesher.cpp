@@ -382,9 +382,9 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
             if (secondOrder == false)
             {
                 el.SetType(FE_TET4);
-                el.m_node[0] = ngel[0] - 1;
+                el.m_node[0] = ngel[2] - 1;
                 el.m_node[1] = ngel[1] - 1;
-                el.m_node[2] = ngel[2] - 1;
+                el.m_node[2] = ngel[0] - 1;
                 el.m_node[3] = ngel[3] - 1;
             }
             else
@@ -392,15 +392,15 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
                 int np = ngel.GetNP();
                 el.SetType(FE_TET10);
                 el.m_node[0] = ngel[0] - 1;
-                el.m_node[1] = ngel[1] - 1;
-                el.m_node[2] = ngel[2] - 1;
+                el.m_node[1] = ngel[2] - 1;
+                el.m_node[2] = ngel[1] - 1;
                 el.m_node[3] = ngel[3] - 1;
-                el.m_node[4] = ngel[4] - 1;
+                el.m_node[4] = ngel[5] - 1;
                 el.m_node[5] = ngel[7] - 1;
-                el.m_node[6] = ngel[5] - 1;
+                el.m_node[6] = ngel[4] - 1;
                 el.m_node[7] = ngel[6] - 1;
-                el.m_node[8] = ngel[8] - 1;
-                el.m_node[9] = ngel[9] - 1;
+                el.m_node[8] = ngel[9] - 1;
+                el.m_node[9] = ngel[8] - 1;
             }
         }
     }
