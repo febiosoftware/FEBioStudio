@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <GeomLib/GOCCObject.h>
 #include <MeshLib/FEMesh.h>
 #include <MeshLib/FESurfaceMesh.h>
+#include <FEBioStudio/Logger.h>
 
 // NOTE: Can't build with Netgen in debug config, so just turning it off for now. 
 #if defined(WIN32) && defined(_DEBUG)
@@ -108,7 +109,7 @@ FSMesh*	NetGenMesher::BuildMesh()
     Ng_Result ng_res;
     
     // Initialise the Netgen Core library
-    cout << "Calling Netgen" << std::endl;
+    CLogger::AddLogEntry("Calling Netgen\n");
     Ng_Init();
     
     // Read in the OCC File
@@ -116,11 +117,11 @@ FSMesh*	NetGenMesher::BuildMesh()
     occ_geom = (Ng_OCC_Geometry *)occgeo;
     if (!occ_geom)
     {
-        cout << "Error converting geometry " << m_occ->GetName() << endl;
+        setErrorString("Error converting geometry " + m_occ->GetName());
         Ng_Exit();
         return nullptr;
     }
-    cout << "Successfully converted geometry " << m_occ->GetName() << endl;
+    CLogger::AddLogEntry(QString("Successfully converted geometry %1\n").arg(m_occ->GetName().c_str()));
     
     multithread.terminate = 0;
     
@@ -128,16 +129,16 @@ FSMesh*	NetGenMesher::BuildMesh()
     
     ng_res = Ng_OCC_GetFMap(occ_geom,occ_fmap);
     
-    cout << "ng_res = " << ng_res << endl;
+    CLogger::AddLogEntry(QString("ng_res = %1\n").arg(ng_res));
     
     if(!FMap.Extent())
     {
-        cout << "Error retrieving Face map...." << endl;
+        setErrorString("Error retrieving Face map....");
         Ng_Exit();
         return nullptr;
     }
     
-    cout << "Successfully extracted the Face Map....:" << FMap.Extent() << endl;
+    CLogger::AddLogEntry(QString("Successfully extracted the Face Map....: 1%\n").arg(FMap.Extent()));
     
     for(int i = 1; i <= FMap.Extent(); i++)
     {
@@ -147,10 +148,8 @@ FSMesh*	NetGenMesher::BuildMesh()
         GProp_GProps faceProps;
         BRepGProp::SurfaceProperties(OCCface,faceProps);
         
-        cout << "Index: " << i
-        << " :: Area: " << faceProps.Mass()
-        << " :: Hash: " << OCCface.HashCode(1e+6)
-        << endl;
+
+        CLogger::AddLogEntry(QString("Index: %1 :: Area: %2 :: Hash: %3\n").arg(i).arg(faceProps.Mass()).arg(OCCface.HashCode(1e+6)));
     }
     
     int gran = GetIntValue(NetGenMesher::GRANULARITY);
@@ -223,52 +222,50 @@ FSMesh*	NetGenMesher::BuildMesh()
     
     
     
-    cout << "Setting Local Mesh size....." << endl;
-    cout << "OCC Mesh Pointer before call = " << occ_mesh << endl;
+    CLogger::AddLogEntry("Setting Local Mesh size.....\n");
     Ng_OCC_SetLocalMeshSize(occ_geom, occ_mesh, &mp);
-    cout << "Local Mesh size successfully set....." << endl;
-    cout << "OCC Mesh Pointer after call = " << occ_mesh << endl;
+    CLogger::AddLogEntry("Local Mesh size successfully set.....\n");
     
-    cout << "Creating Edge Mesh....." << endl;
+    CLogger::AddLogEntry("Creating Edge Mesh.....\n");
     ng_res = Ng_OCC_GenerateEdgeMesh(occ_geom, occ_mesh, &mp);
     if(ng_res != NG_OK)
     {
         Ng_DeleteMesh(occ_mesh);
-        cout << "Error creating Edge Mesh.... Aborting!!" << endl;
+        setErrorString("Error creating Edge Mesh.... Aborting!!");
         Ng_Exit();
         return nullptr;
     }
     else
     {
-        cout << "Edge Mesh successfully created....." << endl;
-        cout << "Number of points = " << Ng_GetNP(occ_mesh) << endl;
+        CLogger::AddLogEntry("Edge Mesh successfully created.....\n");
+        CLogger::AddLogEntry(QString("Number of points =  %1\n").arg(Ng_GetNP(occ_mesh)));
     }
     
-    cout << "Creating Surface Mesh....." << endl;
+    CLogger::AddLogEntry("Creating Surface Mesh.....\n");
     
     ng_res = Ng_OCC_GenerateSurfaceMesh(occ_geom, occ_mesh, &mp);
     if(ng_res != NG_OK)
     {
         //       Ng_DeleteMesh(occ_mesh);
-        cout << "Error creating Surface Mesh..... Aborting!!" << endl;
+        setErrorString("Error creating Surface Mesh..... Aborting!!");
         Ng_Exit();
         return nullptr;
     }
     else
     {
-        cout << "Surface Mesh successfully created....." << endl;
-        cout << "Number of points = " << Ng_GetNP(occ_mesh) << endl;
-        cout << "Number of surface elements = " << Ng_GetNSE(occ_mesh) << endl;
+        CLogger::AddLogEntry("Surface Mesh successfully created.....\n");
+        CLogger::AddLogEntry(QString("Number of points = %1\n").arg(Ng_GetNP(occ_mesh)));
+        CLogger::AddLogEntry(QString("Number of surface elements = %1\n").arg(Ng_GetNSE(occ_mesh)));
     }
     
     if (m_occ->GetShape().ShapeType() == TopAbs_SOLID) {
-        cout << "Creating Volume Mesh....." << endl;
+        CLogger::AddLogEntry("Creating Volume Mesh.....\n");
         
         ng_res = Ng_GenerateVolumeMesh(occ_mesh, &mp);
         
-        cout << "Volume Mesh successfully created....." << endl;
-        cout << "Number of points = " << Ng_GetNP(occ_mesh) << endl;
-        cout << "Number of volume elements = " << Ng_GetNE(occ_mesh) << endl;
+        CLogger::AddLogEntry("Volume Mesh successfully created.....\n");
+        CLogger::AddLogEntry(QString("Number of points = %1\n").arg(Ng_GetNP(occ_mesh)));
+        CLogger::AddLogEntry(QString("Number of volume elements = %1\n").arg(Ng_GetNE(occ_mesh)));
     }
     
     if (mp.second_order)

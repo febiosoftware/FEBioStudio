@@ -35,15 +35,19 @@ void CLogger::Instantiate(CMainWindow* mainWindow)
 	if(!m_instance)
 	{
 		m_instance = new CLogger(mainWindow);
+
+        connect(m_instance, &CLogger::SendLogEntry, mainWindow, &CMainWindow::AddLogEntry);
+        connect(m_instance, &CLogger::SendOutputEntry, mainWindow, &CMainWindow::AddOutputEntry);
 	}
 }
 
 void CLogger::AddLogEntry(const QString& txt)
 {
-	m_mainWindow->AddLogEntry(txt);
+	if(m_instance) m_instance->SendLogEntry(txt);
 }
 
 void CLogger::AddOutputEntry(const QString& txt)
 {
-	m_mainWindow->AddOutputEntry(txt);
+	if(m_instance) m_instance->SendOutputEntry(txt);
 }
+
