@@ -1009,7 +1009,7 @@ void FEBioFormat3::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag
 
 			// make zero-based
 			vector<int> node(N);
-			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			for (int j = 0; j < N; ++j) node[j] = nf[j];// -1;
 			s.m_face.push_back(node);
 
 			++tag;
@@ -1310,6 +1310,13 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+
+	const char* szgen = tag.AttributeValue("generator", true);
+	if (szgen)
+	{
+		tag.skip();
+		return true;
+	}
 
 	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();
