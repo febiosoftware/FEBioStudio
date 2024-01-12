@@ -67,6 +67,7 @@ bool FluentExport::Write(const char* szfile)
         FSMesh& m = *model.Object(i)->GetFEMesh();
         for (int j=0; j<m.Nodes(); ++j) if (m.Node(j).m_ntag == 1) m.Node(j).m_ntag = ++nodes;
     }
+    m_nfc.resize(nodes);
     // count nr of elements
     int elems = 0;
     int faces = 0;
@@ -100,8 +101,8 @@ bool FluentExport::Write(const char* szfile)
                 e.GetFace(k, nf);
                 int ief = -1;
                 // check if this face exists already
-                if (FaceExists(nf,ief)) {
-                    FSFace& ef = nface[ief];
+                if (FaceExists(nf,ief,m)) {
+                    FSFace& ef = m_nface[ief];
                     ef.m_elem[0].eid = e.m_ntag;
                     ef.m_elem[0].lid = k;
                 }
@@ -110,20 +111,22 @@ bool FluentExport::Write(const char* szfile)
                     nf.m_elem[1].eid = e.m_ntag;
                     nf.m_elem[1].lid = k;
                     nf.m_ntag = ++faces;
-                    nface.push_back(nf);
+                    m_nface.push_back(nf);
+                    for (int l=0; l<nf.Nodes(); ++l)
+                        m_nfc[m.Node(nf.n[l]).m_ntag-1].push_back(nf.m_ntag-1);
                 }
             }
         }
     }
     
-    // purge nface of boundary faces
+    // purge m_nface of boundary faces
     std::vector<FSFace> iface;
-    iface.reserve(nface.size());
-    for (int i=0; i<nface.size(); ++i) {
-        FSFace f = nface[i];
+    iface.reserve(m_nface.size());
+    for (int i=0; i<m_nface.size(); ++i) {
+        FSFace f = m_nface[i];
         if (f.m_elem[0].eid >0) iface.push_back(f);
     }
-    nface = iface;
+    m_nface = iface;
 
     // --- H E A D E R ---
     // start with comment
@@ -217,13 +220,13 @@ bool FluentExport::Write(const char* szfile)
             fprintf(fp, "))\n\n");
         }
 
-        if (nface.size() > 0) {
+        if (m_nface.size() > 0) {
             fprintf(fp, "(0 \"Internal Faces\")\n\n");
             ++zone;
             // save interior faces
-            fprintf(fp, "(13 (%X %X %X 2 0) (\n",zone,m.Faces()+1, m.Faces()+nface.size());
-            for (int j=0; j<nface.size(); ++j) {
-                FSFace& f = nface[j];
+            fprintf(fp, "(13 (%X %X %X 2 0) (\n",zone,m.Faces()+1, m.Faces()+m_nface.size());
+            for (int j=0; j<m_nface.size(); ++j) {
+                FSFace& f = m_nface[j];
                 fprintf(fp, "%X ",f.Nodes());
                 for (int l=f.Nodes()-1; l>-1; --l) fprintf(fp, "%X ",m.Node(f.n[l]).m_ntag);
                 fprintf(fp,"%X %X",f.m_elem[1].eid, f.m_elem[0].eid);
@@ -237,36 +240,40 @@ bool FluentExport::Write(const char* szfile)
     return true;
 }
 
-bool FluentExport::FaceExists(FSFace nf, int& ief)
+bool FluentExport::FaceExists(FSFace nf, int& ief, FSMesh& m)
 {
     ief = -1;
-    for (int i=0; i<nface.size(); ++i) {
-        FSFace ef = nface[i];
-        if (nf.Nodes() == ef.Nodes()) {
-            int n = nf.Nodes();
-            // save some time with the search process
-            // by using a quick method of checking
-            int nn = 0;
-            for (int j=0; j<n; ++j) {
-                nn += ef.n[j];
-                nn -= nf.n[j];
-            }
-            if (nn == 0) {
-                // now do the more thorough check
-                std::vector<bool> matched(n,false);
-                for (int j=0; j<n; ++j) {
+    // only search the existing faces that are connected to the nodes of this new face
+    for (int i=0; i<nf.Nodes(); ++i) {
+        int nodeid = m.Node(nf.n[i]).m_ntag - 1;
+        for (int j=0; j<m_nfc[nodeid].size(); ++j) {
+            int fid = m_nfc[nodeid][j];
+            FSFace ef = m_nface[fid];
+            if (nf.Nodes() == ef.Nodes()) {
+                int n = nf.Nodes();
+                // save some time with the search process
+                // by using a quick method of checking
+                int nn = 0;
+                for (int k=0; k<n; ++k)
+                    nn += ef.n[k] - nf.n[k];
+                if (nn == 0) {
+                    // now do the more thorough check
+                    std::vector<bool> matched(n,false);
                     for (int k=0; k<n; ++k) {
-                        if (ef.n[k] == nf.n[j]) {
-                            matched[j] = true;
-                            break;
+                        for (int l=0; l<n; ++l) {
+                            if (ef.n[l] == nf.n[k]) {
+                                matched[k] = true;
+                                break;
+                            }
                         }
+                        if (!matched[k]) break;
                     }
-                }
-                bool found = true;
-                for (int k=0; k<n; ++k) found = found && matched[k];
-                if (found) {
-                    ief = i;
-                    return true;
+                    bool found = true;
+                    for (int k=0; k<n; ++k) found = found && matched[k];
+                    if (found) {
+                        ief = fid;
+                        return true;
+                    }
                 }
             }
         }

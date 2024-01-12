@@ -39,7 +39,8 @@ public:
     
     bool Write(const char* szfile) override;
     
-    bool FaceExists(FSFace nf, int& ef);
+    bool FaceExists(FSFace nf, int& ef, FSMesh& m);
     
-    std::vector<FSFace> nface;  // new faces
+    std::vector<FSFace>             m_nface;    // new faces
+    std::vector<std::vector<int>>   m_nfc;      // node-face connectivity
 };
