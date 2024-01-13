@@ -1031,7 +1031,7 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 2:
 		{
-			Post::FEFEBioExport fr;
+			Post::FEFEBioExport4 fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
