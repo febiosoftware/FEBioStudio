@@ -78,6 +78,7 @@ bool STEPImport::Load(const char* szfile)
 	{
         // empty compound, as nothing has been added yet
         BOPAlgo_MakerVolume aBuilder;
+        TopoDS_ListOfShape aLS;
 		int count = 1;
         int ns = 0;
 		for (int i = 1; i <= nbs; i++)
@@ -92,6 +93,8 @@ bool STEPImport::Load(const char* szfile)
 				// get the shape
 				TopoDS_Solid solid = TopoDS::Solid(ex.Current());
                 aBuilder.AddArgument(solid);
+                aLS.Append(solid);
+                
                 ++ns;
 
 				GOCCObject* occ = new GOCCObject;
@@ -132,6 +135,7 @@ bool STEPImport::Load(const char* szfile)
         // merge all solids
         if (ns > 1) {
             aBuilder.SetIntersect(true);
+            aBuilder.SetAvoidInternalShapes(false);
             aBuilder.Perform();
             TopoDS_Shape solid = aBuilder.Shape();
             GOCCObject* occ = new GOCCObject;
