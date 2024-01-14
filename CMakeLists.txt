@@ -370,7 +370,7 @@ if(WIN32)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
     
     if(${OpenMP_C_FOUND})
         add_compile_options(-Xpreprocessor -fopenmp -w)
