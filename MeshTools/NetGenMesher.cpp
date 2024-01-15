@@ -258,7 +258,7 @@ FSMesh*	NetGenMesher::BuildMesh()
         CLogger::AddLogEntry(QString("Number of surface elements = %1\n").arg(Ng_GetNSE(occ_mesh)));
     }
     
-    if (m_occ->GetShape().ShapeType() == TopAbs_SOLID) {
+    if ((m_occ->GetShape().ShapeType() == TopAbs_SOLID) || (m_occ->GetShape().ShapeType() == TopAbs_COMPOUND)) {
         CLogger::AddLogEntry("Creating Volume Mesh.....\n");
         
         ng_res = Ng_GenerateVolumeMesh(occ_mesh, &mp);
