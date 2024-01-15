@@ -266,21 +266,21 @@ FSMesh* NGMeshToFEMesh(netgen::Mesh* ngmesh, bool secondOrder)
 		if (secondOrder == false)
 		{
 			face.SetType(FE_FACE_TRI3);
-			face.n[0] = sel[2] - 1;
+			face.n[0] = sel[0] - 1;
 			face.n[1] = sel[1] - 1;
-			face.n[2] = sel[0] - 1;
+			face.n[2] = sel[2] - 1;
 			face.n[3] = face.n[2];
 		}
 		else
 		{
 			int np = sel.GetNP();
 			face.SetType(FE_FACE_TRI6);
-			face.n[0] = sel[0] - 1;
-			face.n[1] = sel[2] - 1;
-			face.n[2] = sel[1] - 1;
-			face.n[3] = sel[4] - 1;
-			face.n[4] = sel[3] - 1;
-			face.n[5] = sel[5] - 1;
+            face.n[0] = sel[0] - 1;
+            face.n[1] = sel[1] - 1;
+            face.n[2] = sel[2] - 1;
+            face.n[3] = sel[5] - 1;
+            face.n[4] = sel[3] - 1;
+            face.n[5] = sel[4] - 1;
 		}
 	}
 
