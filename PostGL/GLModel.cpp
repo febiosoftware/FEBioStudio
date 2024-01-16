@@ -2483,7 +2483,7 @@ int CGLModel::GetSubDivisions()
 		if (ndivs > 10) ndivs = 10;
 		if (ndivs <  1) ndivs = 1;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if (ndivs > 2) ndivs = 2;
 #endif
 

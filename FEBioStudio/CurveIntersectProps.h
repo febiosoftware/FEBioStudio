@@ -40,7 +40,7 @@ public:
 		addCurveListProperty(&m_curves, "Curves");
 		addBoolProperty(&m_edge, "Insert Edges");
 		addDoubleProperty(&m_tol, "Tolerance");
-#ifdef _DEBUG
+#ifndef NDEBUG
 		QStringList methods;
 		methods << "method1";
 		methods << "method2";

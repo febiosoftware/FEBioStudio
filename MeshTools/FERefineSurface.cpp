@@ -147,7 +147,7 @@ FSSurfaceMesh* FERefineSurface::Split(FSSurfaceMesh* pm)
 		}
 	}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for (int i=0; i<(int)ELT.size(); ++i)
 	{
 		assert(ELT[i] != -1);

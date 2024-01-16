@@ -222,7 +222,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
 	actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	QAction* actionLayerInfo = addAction("Print Layer Info", "actionLayerInfo"); actionLayerInfo->setShortcut(Qt::Key_F11);
 #endif
 
@@ -660,7 +660,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 
 	menuWindows = menuView->addMenu("Windows");
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	menuView->addAction(actionLayerInfo);
 #endif
 

@@ -212,7 +212,7 @@ GPart* GBaseObject::FindPartFromName(const char* szname)
 //-----------------------------------------------------------------------------
 void GBaseObject::AddFace(GFace* f)
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for (int i = 0; i<m_Face.size(); ++i)
 	{
 		assert(m_Face[i] != f);
@@ -239,7 +239,7 @@ GFace* GBaseObject::AddFace()
 int GBaseObject::AddNode(GNode* n)
 {
 	/*
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for (int i=0; i<m_Node.size(); ++i)
 	{
 		assert(m_Node[i] != n);

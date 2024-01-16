@@ -460,7 +460,7 @@ void FECurveMesh::ReorderNodes(vector<int>& NLT)
 		}
 	}	
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for (int i = 0; i<NN; ++i)
 	{
 		FSNode& n = Node(i);
@@ -517,7 +517,7 @@ void FECurveMesh::ReorderEdges(vector<int>& ELT)
 		}
 	}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for (int i = 0; i<NE; ++i)
 	{
 		FSEdge& e = Edge(i);

@@ -1556,7 +1556,7 @@ void CGLModelScene::RenderSelectedNodes(CGLContext& rc, GObject* po)
 		}
 	}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// Draw FE nodes on top of GMesh nodes to make sure they match
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
@@ -1641,7 +1641,7 @@ void CGLModelScene::RenderSelectedEdges(CGLContext& rc, GObject* po)
 		}
 	}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// Render FE edges onto GMesh edges to make sure they are consistent
 	FSMesh* pm = po->GetFEMesh();
 	if (pm)
@@ -1766,7 +1766,7 @@ void CGLModelScene::RenderSelectedSurfaces(CGLContext& rc, GObject* po)
 			}
 		}
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 		// Render the GFace nodes and the FE surfaces to make sure the 
 		// GMesh and the FE mesh are consisten
 

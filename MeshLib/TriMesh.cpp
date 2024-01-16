@@ -52,7 +52,7 @@ void TriMesh::EDGE::addFace(TriMesh::FACEP f, int lid)
 	else if (nedge[1] == -1) { face[1] = f; nedge[1] = lid; }
 	else { assert(false); }
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	NODEP n[2] = { f->node[lid], f->node[(lid + 1) % 3] };
 	if ((node[0] != n[0]) && (node[0] != n[1])) assert(false);
 	if ((node[1] != n[0]) && (node[1] != n[1])) assert(false);

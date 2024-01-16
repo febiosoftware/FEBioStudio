@@ -1619,7 +1619,7 @@ void CMainWindow::ReportSelection()
 					if (i < n - 1) AddLogEntry(", ");
 					else AddLogEntry("\n");
 				}
-#ifdef _DEBUG
+#ifndef NDEBUG
 				AddLogEntry("  neighbors: ");
 				n = 0;
 				if (el->IsSolid()) n = el->Faces();

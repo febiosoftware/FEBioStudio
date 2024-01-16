@@ -1930,7 +1930,7 @@ void FEMeshBuilder::AutoPartitionElements()
 	}
 	m_mesh.UpdateElementPartitions();
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	for (int i = 0; i<NE; ++i)
 	{
 		FSElement& el = m_mesh.Element(i);

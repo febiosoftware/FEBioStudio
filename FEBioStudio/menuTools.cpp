@@ -253,7 +253,7 @@ void CMainWindow::on_actionOptions_triggered()
 	dlg.exec();
 }
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 void CMainWindow::on_actionLayerInfo_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

@@ -31,7 +31,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "Animation.h"
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 #undef THIS_FILE
 static char THIS_FILE[]=__FILE__;
 #define new DEBUG_NEW

@@ -64,7 +64,7 @@ REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/r
 REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "Extrude", ":/icons/extrude.png", 0);
 REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "Revolve", ":/icons/revolve.png", 0);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "Cylindrical Patch", ":/icons/cylpatch.png"     , 0);
 
 #ifdef HAS_OCC
@@ -72,7 +72,7 @@ REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "Bottle", ":/icons/bottle.png", 0);
 REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png", 0);
 #endif
 
-#endif // _DEBUG
+#endif // NDEBUG
 
 //------------------------------------------------------------------------------------------------------------
 CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CCreatePanel)
