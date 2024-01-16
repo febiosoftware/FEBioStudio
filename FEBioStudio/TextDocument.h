@@ -27,21 +27,10 @@ SOFTWARE.*/
 #include "Document.h"
 #include <QTextDocument>
 
-//-----------------------------------------------------------------------------
-// Base class for text documents
 class CTextDocument : public CDocument
 {
 public:
-	enum Format {
-		FORMAT_TEXT,
-		FORMAT_HTML
-	};
-
-public:
 	CTextDocument(CMainWindow* wnd);
-
-	void SetFormat(Format format);
-	int GetFormat() const;
 
 	QTextDocument* GetText();
 
@@ -51,5 +40,15 @@ public:
 
 protected:
 	QTextDocument	m_txt;
-	int				m_format;
+};
+
+class CHTMLDocument : public CDocument
+{
+public:
+	CHTMLDocument(CMainWindow* wnd);
+
+	QTextDocument* GetText();
+
+protected:
+	QTextDocument	m_txt;
 };

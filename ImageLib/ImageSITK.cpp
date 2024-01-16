@@ -32,6 +32,7 @@ DEALINGS IN THE SOFTWARE.
 
 #ifdef HAS_ITK
 #include <sitkImportImageFilter.h>
+#include <sitkImageFileWriter.h>
 
 
 
@@ -43,11 +44,16 @@ itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
     unsigned int nx = img->Width();
     unsigned int ny = img->Height();
     unsigned int nz = img->Depth();
+    mat3d orientation = img->GetOrientation();
 
     sitk::ImportImageFilter filter;    
     filter.SetSize({nx, ny, nz});
     filter.SetOrigin({box.x0, box.y0, box.z0});
     filter.SetSpacing({(box.x1 - box.x0)/nx, (box.y1 - box.y0)/ny, (box.z1 - box.z0)/nz});
+
+    std::vector<double> orient {*orientation[0], *orientation[1], *orientation[2], *orientation[3], 
+        *orientation[4], *orientation[5], *orientation[6], *orientation[7], *orientation[8]};
+    filter.SetDirection(orient);
 
     switch (img->PixelType())
     {
@@ -92,6 +98,36 @@ itk::simple::Image CImageSITK::SITKImageFrom3DImage(C3DImage* img)
     }
 
     return filter.Execute();
+}
+
+bool CImageSITK::WriteSITKImage(C3DImage* img, const std::string& filename)
+{
+    itk::simple::Image itkImage;
+
+    if(!dynamic_cast<CImageSITK*>(img))
+    {
+        itkImage = SITKImageFrom3DImage(img);
+    }
+    else
+    {
+        itkImage = dynamic_cast<CImageSITK*>(img)->GetSItkImage();
+    }
+
+    sitk::ImageFileWriter writer;
+    writer.SetFileName(filename);
+
+    try
+    {
+        writer.Execute(itkImage);
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << e.what() << '\n';
+
+        return false;
+    }
+    
+    return true;
 }
 
 CImageSITK::CImageSITK()
@@ -184,6 +220,25 @@ void CImageSITK::SetBoundingBox(BOX& box)
 	{
 		// ITK doesn't like zero spacing.
 	}
+
+    C3DImage::SetBoundingBox(box);
+}
+
+mat3d CImageSITK::GetOrientation()
+{
+    std::vector<double> orient = m_sitkImage.GetDirection();
+
+    return mat3d(orient[0], orient[1], orient[2], orient[3], orient[4], orient[5], orient[6], orient[7], orient[8]);
+}
+
+void CImageSITK::SetOrientation(mat3d& orientation)
+{
+    std::vector<double> orient {*orientation[0], *orientation[1], *orientation[2], *orientation[3], 
+        *orientation[4], *orientation[5], *orientation[6], *orientation[7], *orientation[8]};
+
+    m_sitkImage.SetDirection(orient);
+
+    C3DImage::SetOrientation(orientation);
 }
 
 std::vector<unsigned int> CImageSITK::GetSize()
@@ -214,6 +269,10 @@ void CImageSITK::SetItkImage(itk::simple::Image image)
     m_cy = m_sitkImage.GetHeight();
     m_cz = m_sitkImage.GetDepth();
     if(m_cz == 0) m_cz = 1;
+
+    // These 2 functions set these values so that if they're used internally, they're right
+    m_box = GetBoundingBox();
+    m_orientation = GetOrientation();
 
     m_pb = (uint8_t*)m_sitkImage.GetBufferAsVoid();
 

@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include <QScrollBar>
 #include <QBoxLayout>
 #include <QSplitter>
-#include <QToolButton>
 #include <QCheckBox>
 #include <QStackedLayout>
 #include <QStackedWidget>

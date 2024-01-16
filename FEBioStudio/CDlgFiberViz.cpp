@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <QFormLayout>
 #include <QLineEdit>
 #include <QLabel>
-#include <QComboBox>
 #include <QStackedWidget>
 #include <QGridLayout>
 #include <QSlider>

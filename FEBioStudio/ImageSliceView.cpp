@@ -33,7 +33,6 @@ SOFTWARE.*/
 #include <ImageLib/3DImage.h>
 #include <PostLib/ImageSlicer.h>
 #include <ImageLib/ImageModel.h>
-#include <ImageLib/3DImage.h>
 #include "DlgPixelInspector.h"
 
 #include "ImageSliceView.h"
@@ -80,7 +79,7 @@ void CImageSliceView::Update()
 
     if(doc)
     {   
-        if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+        if(doc->GetUIViewMode() == CGLDocument::SLICE_VIEW)
         {
             m_xSlice->Update();
             m_ySlice->Update();

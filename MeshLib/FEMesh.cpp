@@ -794,7 +794,7 @@ void FSMesh::UpdateElementNeighbors()
 		}
 
 		// do the beam elements
-		if (pe->IsType(FE_BEAM2))
+		if (pe->IsBeam())
 		{
 			for (int j = 0; j < 2; ++j)
 			{
@@ -807,7 +807,7 @@ void FSMesh::UpdateElementNeighbors()
 					FEElement_* pne = NET.Element(inode, k);
 					if (pne != pe)
 					{
-						if ((pne->IsType(FE_BEAM2)) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
+						if ((pne->IsBeam()) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
 						{
 							pe->m_nbr[j] = NET.ElementIndex(inode, k);
 							break;
@@ -2691,19 +2691,14 @@ void FSMesh::BuildELT()
 
 	// Figure out the size
 	int nsize = maxid - minid + 1;
-	if (nsize < NE)
-	{
-		// Hmm, that shouldn't be. 
-		// Let's clear up and get out of here.
-		ClearELT();
-		return;
-	}
+	assert(nsize >= NE);
 
 	// Ok, look's like we're good to go
 	m_ELT.assign(nsize, -1);
 	for (int i = 0; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		assert(m_ELT[nid - minid] == -1);
 		m_ELT[nid - minid] = i;
 	}
 	m_eltmin = minid;
@@ -2712,7 +2707,10 @@ void FSMesh::BuildELT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearELT()
 {
-	m_ELT.clear();
-	m_eltmin = 0;
-	for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	if (m_ELT.empty() == false)
+	{
+		m_ELT.clear();
+		m_eltmin = 0;
+		for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	}
 }

@@ -180,6 +180,9 @@ public slots:
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 	void OnEditMeshData();
+    void OnExportRawImage();
+    void OnExportTIFF();
+    void OnExportNRRD();
 
 signals:
 	void currentObjectChanged(FSObject* po);

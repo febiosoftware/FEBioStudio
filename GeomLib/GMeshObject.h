@@ -83,6 +83,7 @@ public:
 	void Attach(GObject* po, bool bweld, double tol);
 
 	bool DeletePart(GPart* pg) override;
+	bool DeleteParts(std::vector<GPart*> pg);
 
 protected:
 	void BuildGMesh() override;

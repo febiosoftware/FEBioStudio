@@ -38,9 +38,10 @@ SOFTWARE.*/
 //////////////////////////////////////////////////////////////////////
 
 C3DImage::C3DImage() : m_pb(nullptr), m_cx(0), m_cy(0), m_cz(0), m_bps(1),
-    m_pixelType(CImage::UINT_8), m_box(0, 0, 0, 1, 1, 1)
+    m_pixelType(CImage::UINT_8), m_box(0, 0, 0, 1, 1, 1), m_orientation(mat3d::identity())
 {
-
+	m_maxValue = 1;
+	m_minValue = 0;
 }
 
 C3DImage::~C3DImage()
@@ -172,6 +173,16 @@ double C3DImage::Value(int i, int j, int k, int channel)
     case CImage::INT_16:
     {
         h = ((int16_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::UINT_32:
+    {
+        h = ((uint32_t*)m_pb)[m_cx*(k*m_cy + j) + i];
+        break;
+    }
+    case CImage::INT_32:
+    {
+        h = ((int32_t*)m_pb)[m_cx*(k*m_cy + j) + i];
         break;
     }
     case CImage::UINT_RGB8:
@@ -464,6 +475,30 @@ double C3DImage::Peek(double r, double s, double t, int channel)
     }
 
     return val;
+}
+
+double C3DImage::ValueAtGlobalPos(vec3d pos, int channel)
+{
+    vec3d locPos = m_orientation.transpose()*(pos - vec3d(m_box.x0, m_box.y0, m_box.z0));
+    double relX = locPos.x/(m_box.x1 - m_box.x0);
+    double relY = locPos.y/(m_box.y1 - m_box.y0);
+    double relZ = locPos.z/(m_box.z1 - m_box.z0);
+
+    if(relX < 0 || relX > 1 ||
+        relY < 0 || relY > 1 ||
+        relZ < 0 || relZ > 1 )
+    {
+        return 0;
+    }
+
+	if (Depth() == 1)
+	{
+		return Value(relX, relY, 0, channel);
+	}
+	else
+	{
+		return Peek(relX, relY, relZ, channel);
+	}
 }
 
 template <class pType> 

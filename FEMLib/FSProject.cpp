@@ -648,6 +648,7 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid rate of deformation", true);
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("nodal fluid flux", true);
 	}
     else if (strcmp(szmod, "fluid-solutes") == 0)
     {

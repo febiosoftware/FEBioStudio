@@ -35,6 +35,10 @@ public:
 
 	void Render(CGLContext& rc) override;
 
+	BOX GetBoundingBox() override;
+
+	BOX GetSelectionBox() override;
+
 private:
 	CPostDocument* m_doc;
 };

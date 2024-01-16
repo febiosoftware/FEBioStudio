@@ -74,7 +74,6 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include "GraphWindow.h"
 #include "Commands.h"
-#include <ImageLib/ImageModel.h>
 #include <QFileDialog>
 #include "DlgImportData.h"
 
@@ -1603,19 +1602,43 @@ void CPostModelPanel::OnExportImage()
 	CImageModel* img = dynamic_cast<CImageModel*>(po);
 	if (img == nullptr) return;
 
-	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export image", "", "Raw image (*.raw)");
+    QString filter;
+
+    #ifdef HAS_ITK
+        filter = "TIFF (*.tiff);;Raw image (*.raw)";
+    #else
+        filter = "Raw image (*.raw)";
+    #endif
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export image", "", filter);
 	if (filename.isEmpty() == false)
 	{
-		if (img->ExportRAWImage(filename.toStdString()) == false)
-		{
-			QString msg = QString("Failed exporting image to file\n%1").arg(filename);
-			QMessageBox::critical(GetMainWindow(), "Export image", msg);
-		}
-		else
-		{
-			QString msg = QString("Image exported successfully to file\n%1").arg(filename);
-			QMessageBox::information(GetMainWindow(), "Export image", msg);
-		}
+        if(filename.endsWith(".raw"))
+        {
+            if (img->ExportRAWImage(filename.toStdString()))
+            {
+                QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+                QMessageBox::information(GetMainWindow(), "Export image", msg);
+            }
+            else
+            {
+                QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+                QMessageBox::critical(GetMainWindow(), "Export image", msg);
+            }
+        }
+        else
+        {
+            if (img->ExportSITKImage(filename.toStdString()))
+            {
+                QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+                QMessageBox::information(GetMainWindow(), "Export image", msg);
+            }
+            else
+            {
+                QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+                QMessageBox::critical(GetMainWindow(), "Export image", msg);
+            }
+        }
 	}	
 }
 
