@@ -1929,14 +1929,6 @@ void FEMeshBuilder::AutoPartitionElements()
 		}
 	}
 	m_mesh.UpdateElementPartitions();
-
-#ifndef NDEBUG
-	for (int i = 0; i<NE; ++i)
-	{
-		FSElement& el = m_mesh.Element(i);
-		assert(el.m_gid >= 0);
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------

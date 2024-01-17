@@ -29,11 +29,7 @@ SOFTWARE.*/
 #include "UnitParser.h"
 #include <FECore/units.h>
 
-#ifndef NDEBUG
 static int unit_system = Units::SI;
-#else
-static int unit_system = Units::NONE;
-#endif
 
 void Units::SetUnitSystem(unsigned int us) { unit_system = us; }
 unsigned int Units::GetUnitSystem() { return unit_system; }

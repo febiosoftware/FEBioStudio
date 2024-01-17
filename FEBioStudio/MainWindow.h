@@ -433,9 +433,8 @@ public slots:
 	void on_actionFEBioInfo_triggered();
 	void on_actionFEBioPlugins_triggered();
 	void on_actionOptions_triggered();
-#ifndef NDEBUG
 	void on_actionLayerInfo_triggered();
-#endif
+
 	// Post menu actions
 	void on_actionPlaneCut_triggered();
 	void on_actionMirrorPlane_triggered();

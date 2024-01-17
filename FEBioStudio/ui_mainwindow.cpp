@@ -222,9 +222,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionPlotMix = addAction("Plotmix ...", "actionPlotMix");
 	actionOptions = addAction("Options ...", "actionOptions"); actionOptions->setShortcut(Qt::Key_F12);
 
-#ifndef NDEBUG
-	QAction* actionLayerInfo = addAction("Print Layer Info", "actionLayerInfo"); actionLayerInfo->setShortcut(Qt::Key_F11);
-#endif
+	QAction* actionLayerInfo = addAction("Print Layer Info", "actionLayerInfo"); actionLayerInfo->setShortcut(Qt::AltModifier | Qt::Key_L);
 
 	// --- Post menu ---
 	QAction* actionPlaneCut = addAction("Planecut", "actionPlaneCut", "cut");
