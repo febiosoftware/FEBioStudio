@@ -192,14 +192,7 @@ if(USE_TETGEN)
 endif()
 
 if(CAD_FEATURES)
-    set(NETGEN_LIB_NAMES nglib ngcore)
-    
-    # This NetGen library is called "meshing" on Windows and "mesh" elsewhere.
-    if(WIN32)
-        list(APPEND NETGEN_LIB_NAMES meshing)
-#    else()
-#        list(APPEND NETGEN_LIB_NAMES mesh)
-    endif()
+    set(NETGEN_LIB_NAMES nglib)
     
     foreach(name IN LISTS NETGEN_LIB_NAMES)
         findLib(NETGEN_LIB_DIR NETGEN_LIB ${name})
