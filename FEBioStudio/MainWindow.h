@@ -115,12 +115,6 @@ public:
 	// show the log panel
 	void ShowLogPanel();
 
-	// add to the log 
-	void AddLogEntry(const QString& txt);
-
-	// add to the output window
-	void AddOutputEntry(const QString& txt);
-
 	// clear the log
 	void ClearLog();
 
@@ -320,6 +314,12 @@ private:
 	QString CurrentWorkingDirectory();
 
 public slots:
+    // add to the log 
+	void AddLogEntry(const QString& txt);
+
+	// add to the output window
+	void AddOutputEntry(const QString& txt);
+
 	void on_actionNewModel_triggered();
 	void on_actionNewProject_triggered();
 	void on_actionOpenProject_triggered();

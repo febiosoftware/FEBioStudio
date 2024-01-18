@@ -192,14 +192,7 @@ if(USE_TETGEN)
 endif()
 
 if(CAD_FEATURES)
-    set(NETGEN_LIB_NAMES nglib csg interface occ)
-    
-    # This NetGen library is called "meshing" on Windows and "mesh" elsewhere.
-    if(WIN32)
-        list(APPEND NETGEN_LIB_NAMES meshing)
-    else()
-        list(APPEND NETGEN_LIB_NAMES mesh)
-    endif()
+    set(NETGEN_LIB_NAMES nglib)
     
     foreach(name IN LISTS NETGEN_LIB_NAMES)
         findLib(NETGEN_LIB_DIR NETGEN_LIB ${name})
@@ -370,7 +363,7 @@ if(WIN32)
     add_compile_options(/MP /openmp)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
     
     if(${OpenMP_C_FOUND})
         add_compile_options(-Xpreprocessor -fopenmp -w)

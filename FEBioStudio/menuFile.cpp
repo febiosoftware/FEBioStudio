@@ -784,7 +784,6 @@ void CMainWindow::ExportGeometry()
 		".mesh",
 		".ele",
 		".vtk",
-        ".msh",
 		".msh"
 	};
 
@@ -916,12 +915,12 @@ void CMainWindow::ExportGeometry()
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to GMesh file."));
 		}
 		break;
-        case 11: // Fluent mesh files
+        case 11:
         {
             FluentExport writer(fem);
             if (!writer.Write(szfile))
                 QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to Fluent file."));
-        }
+            }
         break;
 		default:
 			QMessageBox::critical(this, "FEBio Studio", "Don't know how to save this file.");
