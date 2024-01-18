@@ -236,7 +236,7 @@ void drawPlus(QPainter& painter, const QRect& rt)
 }
 
 //-----------------------------------------------------------------------------
-void drawMarker(QPainter& painter, const QPoint& pt, int nsize, int type)
+void drawMarker(QPainter& painter, const QPointF& pt, int nsize, int type)
 {
 	int n2 = nsize / 2;
 	QRect rect(pt.x() - n2, pt.y() - n2, nsize, nsize);
@@ -827,8 +827,8 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 			for (int j = 0; j < plot.size(); ++j)
 			{
 				QPointF& rj = plot.Point(j);
-				QPoint p = ViewToScreen(rj);
-				if ((abs(p.x() - pt.x()) <= eps) && (abs(p.y() - pt.y()) <= eps))
+				QPointF p = ViewToScreen(rj);
+				if ((fabs(p.x() - pt.x()) <= eps) && (fabs(p.y() - pt.y()) <= eps))
 				{
 					// see if this point is selected
 					if (isSelected(i, j) == false)
@@ -985,8 +985,8 @@ void CPlotWidget::regionSelect(QRect rt)
 		for (int j = 0; j < plot.size(); ++j)
 		{
 			QPointF& rj = plot.Point(j);
-			QPoint p = ViewToScreen(rj);
-			if (rt.contains(p))
+			QPointF p = ViewToScreen(rj);
+			if (rt.contains(QPoint((int)p.x(), (int)p.y())))
 			{
 				addToSelection(i, j);
 			}
@@ -995,7 +995,7 @@ void CPlotWidget::regionSelect(QRect rt)
 }
 
 //-----------------------------------------------------------------------------
-QPointF CPlotWidget::ScreenToView(const QPoint& p)
+QPointF CPlotWidget::ScreenToView(const QPointF& p)
 {
 	qreal x = m_viewRect.left  () + (m_viewRect.width ()*(p.x() - m_plotRect.left())/(m_plotRect.width ()));
 	qreal y = m_viewRect.bottom() + (m_viewRect.height()*(m_plotRect.top() - p.y() )/(m_plotRect.height()));
@@ -1015,23 +1015,23 @@ QRectF CPlotWidget::ScreenToView(const QRect& rt)
 }
 
 //-----------------------------------------------------------------------------
-QPoint CPlotWidget::ViewToScreen(const QPointF& p)
+QPointF CPlotWidget::ViewToScreen(const QPointF& p)
 {
-	int x = ViewToScreenX(p.x());
-	int y = ViewToScreenY(p.y());
-	return QPoint(x, y);
+	double x = ViewToScreenX(p.x());
+	double y = ViewToScreenY(p.y());
+	return QPointF(x, y);
 }
 
 //-----------------------------------------------------------------------------
-int CPlotWidget::ViewToScreenX(double x) const
+double CPlotWidget::ViewToScreenX(double x) const
 {
-	return m_plotRect.left() + (int)(m_plotRect.width() * (x - m_viewRect.left()) / (m_viewRect.width()));
+	return m_plotRect.left() + (m_plotRect.width() * (x - m_viewRect.left()) / (m_viewRect.width()));
 }
 
 //-----------------------------------------------------------------------------
-int CPlotWidget::ViewToScreenY(double y) const
+double CPlotWidget::ViewToScreenY(double y) const
 {
-	return m_plotRect.top() - (int)(m_plotRect.height() * (y - m_viewRect.bottom()) / (m_viewRect.height()));
+	return m_plotRect.top() - (m_plotRect.height() * (y - m_viewRect.bottom()) / (m_viewRect.height()));
 }
 
 //-----------------------------------------------------------------------------
@@ -1211,8 +1211,8 @@ void CPlotWidget::drawSelection(QPainter& p)
 		Selection& si = m_selection[i];
 
 		QPointF pf = dataPoint(si.ndataIndex, si.npointIndex);
-		QPoint pt = ViewToScreen(pf);
-		if (m_plotRect.contains(pt, true))
+		QPointF pt = ViewToScreen(pf);
+		if (m_plotRect.contains(QPoint((int)pt.x(), (int)pt.y()), true))
 		{
 			if ((si.ndataIndex < 0) || (si.ndataIndex >= m_data.m_data.size())) return;
 
@@ -1467,7 +1467,7 @@ void CPlotWidget::drawGrid(QPainter& p)
 void CPlotWidget::drawAxes(QPainter& p)
 {
 	// get the center in screen coordinates
-	QPoint c = ViewToScreen(QPointF(0.0, 0.0));
+	QPointF c = ViewToScreen(QPointF(0.0, 0.0));
 
 	// render the X-axis
 	if (m_data.m_xAxis.visible)
@@ -1529,7 +1529,7 @@ void CPlotWidget::draw_linechart(QPainter& p, CPlotData& data)
 	QPen pen(col, data.lineWidth());
 	p.setPen(pen);
 
-	QPoint p0 = ViewToScreen(data.Point(0)), p1(p0);
+	QPointF p0 = ViewToScreen(data.Point(0)), p1(p0);
 	p.setBrush(Qt::NoBrush);
 	for (int i = 1; i<N; ++i)
 	{
@@ -1568,8 +1568,8 @@ void CPlotWidget::draw_barchart(QPainter& p, CPlotData& data)
 	for (int i = 0; i<N; ++i)
 	{
 		QPointF& pi = data.Point(i);
-		QPoint p0 = ViewToScreen(pi);
-		QPoint p1 = ViewToScreen(QPointF(pi.x(), 0.0));
+		QPointF p0 = ViewToScreen(pi);
+		QPointF p1 = ViewToScreen(QPointF(pi.x(), 0.0));
 		QRect r(p0.x() - w/2, p0.y(), w, p1.y() - p0.y());
 		p.drawRect(r);
 	}
@@ -1740,7 +1740,7 @@ void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 	// draw the line
 	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
 	QRect rt = ScreenRect();
-	QPoint p0, p1;
+	QPointF p0, p1;
 	for (int i = rt.left(); i < rt.right(); i += 2)
 	{
 		p1.setX(i);
@@ -2241,7 +2241,7 @@ void CCurveEditWidget::on_plot_draggingStart(QPoint p)
 			ui->m_p0[i].setY(pt.y());
 
 			QPointF pf(pt.x(), pt.y());
-			QPoint pi = ui->plt->ViewToScreen(pf);
+			QPointF pi = ui->plt->ViewToScreen(pf);
 
 			double dx = fabs(pi.x() - p.x());
 			double dy = fabs(pi.y() - p.y());
@@ -2811,7 +2811,7 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 	// draw the line
 	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
 	QRect rt = ScreenRect();
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int prevRegion = 0;
 	int curRegion = 0;
 	bool newSection = true;
@@ -2920,8 +2920,8 @@ void CMathPlotWidget::onPointClicked(QPointF pt, bool shift)
 	double y = m_math.value();
 
 	QPointF px(pt.x(), y);
-	QPoint p0 = ViewToScreen(pt);
-	QPoint p1 = ViewToScreen(px);
+	QPointF p0 = ViewToScreen(pt);
+	QPointF p1 = ViewToScreen(px);
 
 	CPlotData& data = getPlotData(0);
 	data.clear();
