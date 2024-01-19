@@ -2914,6 +2914,7 @@ FSCDFPower::FSCDFPower(FSModel* fem) : FSMaterialProp(FE_CDF_POWER, fem)
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent alpha");
     AddScienceParam(1, UNIT_NONE, "mu0"   , "constant mu0");
     AddScienceParam(0, UNIT_NONE, "mu1"   , "power coefficient mu1");
+    AddScienceParam(1, UNIT_NONE, "scale" , "scale factor for argument");
 }
 
 //=============================================================================
