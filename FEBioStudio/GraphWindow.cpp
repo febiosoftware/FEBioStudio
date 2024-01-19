@@ -559,7 +559,7 @@ void RegressionUi::draw(QPainter& p)
 
 	int func = m_fnc->currentIndex();
 
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int ierr = 0;
 	for (int i = sr.left(); i < sr.right(); i += 2)
 	{
@@ -696,7 +696,7 @@ void MathPlot::draw(QPainter& p)
 	QRectF vr = m_graph->m_viewRect;
 	QRect sr = m_graph->ScreenRect();
 
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int ierr = 0;
 	for (int i=sr.left(); i < sr.right(); i += 2)
 	{

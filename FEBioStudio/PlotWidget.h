@@ -219,12 +219,12 @@ protected:
 	bool isSelected(int ndata, int npoint);
 
 public:
-	QPointF ScreenToView(const QPoint& p);
+	QPointF ScreenToView(const QPointF& p);
 	QRectF ScreenToView(const QRect& rt);
-	QPoint ViewToScreen(const QPointF& p);
+	QPointF ViewToScreen(const QPointF& p);
 
-	int ViewToScreenX(double x) const;
-	int ViewToScreenY(double x) const;
+	double ViewToScreenX(double x) const;
+	double ViewToScreenY(double x) const;
 
 	void SetBackgroundImage(QImage* img);
 

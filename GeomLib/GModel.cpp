@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "GGroup.h"
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/MeshLayer.h>
+#include <map>
 
 
 using std::stringstream;
@@ -1724,7 +1725,6 @@ void GModel::ShowPart(GPart* pg, bool bshow)
 	}
 }
 
-//-----------------------------------------------------------------------------
 bool GModel::DeletePart(GPart* pg)
 {
 	if (pg == nullptr) return false;
@@ -1733,7 +1733,28 @@ bool GModel::DeletePart(GPart* pg)
 	else return false;
 }
 
-//-----------------------------------------------------------------------------
+bool GModel::DeleteParts(std::vector<GPart*>& partList)
+{
+	if (partList.empty()) return true;
+	if (partList.size() == 1) return DeletePart(partList[0]);
+
+	// sort the parts by object
+	std::map<GMeshObject*, std::vector<GPart*> > objmap;
+	for (GPart* pg : partList)
+	{
+		GMeshObject* po = dynamic_cast<GMeshObject*>(pg->Object());
+		if (po == nullptr) return false;
+		objmap[po].push_back(pg);
+	}
+
+	for (auto it : objmap)
+	{
+		GMeshObject* po = it.first;
+		if (po->DeleteParts(it.second) == false) return false;
+	}
+	return true;
+}
+
 void GModel::ShowAllObjects()
 {
 	for (int i = 0; i<Objects(); ++i) ShowObject(Object(i));

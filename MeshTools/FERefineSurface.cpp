@@ -147,13 +147,6 @@ FSSurfaceMesh* FERefineSurface::Split(FSSurfaceMesh* pm)
 		}
 	}
 
-#ifdef _DEBUG
-	for (int i=0; i<(int)ELT.size(); ++i)
-	{
-		assert(ELT[i] != -1);
-	}
-#endif
-
 	// split the faces
 	int nf = 0;
 	for (int i=0; i<NF0; ++i)

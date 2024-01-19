@@ -308,25 +308,55 @@ void FEMeshBuilder::DeleteTaggedElements(int tag)
 	m_mesh.RebuildMesh();
 }
 
-//-----------------------------------------------------------------------------
-FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
+FSMesh* FEMeshBuilder::DeleteParts(FSMesh& mesh, std::vector<int> partIds)
 {
-	FSMesh* newMesh = new FSMesh(oldMesh);
-	FSMesh& mesh = *newMesh;
-
 	const int TAG = 1;
 
-	// First, figure out all nodes that we will have to remove
-	// This approach ensures that isolated nodes are not removed
-	mesh.TagAllNodes(0);
+	// copy to set for faster lookup
+	std::set<int> partset;
+	for (int id : partIds) partset.insert(id);
+	auto setend = partset.end();
+
 	mesh.TagAllElements(0);
 	int NE = mesh.Elements();
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement& el = mesh.Element(i);
-		if (el.m_gid == partId)
+		if (partset.find(el.m_gid) != setend)
 		{
 			el.m_ntag = TAG;
+		}
+	}
+	return DeleteTaggedParts(mesh, TAG);
+}
+
+FSMesh* FEMeshBuilder::DeletePart(FSMesh& mesh, int partId)
+{
+	const int TAG = 1;
+	mesh.TagAllElements(0);
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = mesh.Element(i);
+		if (el.m_gid == partId) el.m_ntag = TAG;
+	}
+	return DeleteTaggedParts(mesh, TAG);
+}
+
+FSMesh* FEMeshBuilder::DeleteTaggedParts(FSMesh& oldMesh, int TAG)
+{
+	FSMesh* newMesh = new FSMesh(oldMesh);
+	FSMesh& mesh = *newMesh;
+
+	// First, figure out all nodes that we will have to remove
+	// This approach ensures that isolated nodes are not removed
+	mesh.TagAllNodes(0);
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		FSElement& el = mesh.Element(i);
+		if (el.m_ntag == TAG)
+		{
 			int ne = el.Nodes();
 			for (int j = 0; j < ne; ++j)
 			{
@@ -338,7 +368,7 @@ FSMesh* FEMeshBuilder::DeletePart(FSMesh& oldMesh, int partId)
 	for (int i = 0; i < NE; ++i)
 	{
 		FSElement& el = mesh.Element(i);
-		if (el.m_gid != partId)
+		if (el.m_ntag != TAG)
 		{
 			int ne = el.Nodes();
 			for (int j = 0; j < ne; ++j) mesh.Node(el.m_node[j]).m_ntag = 0;
@@ -1899,14 +1929,6 @@ void FEMeshBuilder::AutoPartitionElements()
 		}
 	}
 	m_mesh.UpdateElementPartitions();
-
-#ifdef _DEBUG
-	for (int i = 0; i<NE; ++i)
-	{
-		FSElement& el = m_mesh.Element(i);
-		assert(el.m_gid >= 0);
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------

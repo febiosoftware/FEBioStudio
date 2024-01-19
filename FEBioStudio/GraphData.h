@@ -47,6 +47,17 @@ enum AxisLabelAlignment
 	ALIGN_LABEL_BOTTOM
 };
 
+enum MarkerType
+{
+	NO_MARKER,
+	SQUARE_MARKER,
+	CIRCLE_MARKER,
+	DIAMOND_MARKER,
+	TRIANGLE_MARKER,
+	CROSS_MARKER,
+	PLUS_MARKER
+};
+
 //-----------------------------------------------------------------------------
 // Manages a set of (x,y) value pairs
 // Derived classes must implement drawing function.

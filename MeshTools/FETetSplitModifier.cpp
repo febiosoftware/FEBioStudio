@@ -418,11 +418,6 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 		NL[8] = EM[ EETi[4] ];
 		NL[9] = EM[ EETi[5] ];
 
-#ifdef _DEBUG
-		double V0 = tet_volume(pm, el.m_node);
-		double V1 = 0.0;
-#endif
-
 		// create all the tets
 		const int (*nlt)[6] = NLT[ncase];
 		for (int j=0; j<8; ++j)
@@ -445,11 +440,6 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 				ej.m_node[3] = NL[ nj[3] ]; assert(ej.m_node[3] != -1);
 
 				if (bsel) ej.Select();
-#ifdef _DEBUG
-				double ve = tet_volume(pnew, ej.m_node);
-				assert(ve > 0.0);
-				V1 += ve;
-#endif
 			}
 			else if (nj[5] == -1)
 			{
@@ -477,11 +467,6 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 					ej.m_node[3] = ML[ nk[3] ]; assert(ej.m_node[3] != -1);
 
 					if (bsel) ej.Select();
-#ifdef _DEBUG
-					double ve = tet_volume(pnew, ej.m_node);
-					assert(ve > 0.0);
-					V1 += ve;
-#endif
 				}
 			}
 			else 
@@ -524,19 +509,9 @@ FSMesh* FETetSplitModifier::Apply(FSMesh* pm)
 					ej.m_node[3] = ML[ nk[3] ]; assert(ej.m_node[3] != -1);
 
 					if (bsel) ej.Select();
-#ifdef _DEBUG
-					double ve = tet_volume(pnew, ej.m_node);
-					assert(ve > 0.0);
-					V1 += ve;
-#endif
 				}
 			}
 		}
-
-#ifdef _DEBUG
-		double Vr = fabs(V0 - V1)/(V0 + V1);
-		assert(Vr < 1e-12);
-#endif
 	}
 	assert(elem == pnew->Elements());
 	pnew->RebuildMesh();

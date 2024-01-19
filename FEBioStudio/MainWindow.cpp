@@ -1199,6 +1199,7 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 			{
 				FSDir::setMacro("ProjectDir", ".");
 			}
+			else ui->addToRecentFiles(file.m_fileName);
 		}
 		else if (file.m_flags & QueuedFile::RELOAD_DOCUMENT)
 		{
@@ -1626,7 +1627,7 @@ void CMainWindow::ReportSelection()
 					if (i < n - 1) AddLogEntry(", ");
 					else AddLogEntry("\n");
 				}
-#ifdef _DEBUG
+#ifndef NDEBUG
 				AddLogEntry("  neighbors: ");
 				n = 0;
 				if (el->IsSolid()) n = el->Faces();

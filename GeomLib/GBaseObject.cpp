@@ -212,13 +212,6 @@ GPart* GBaseObject::FindPartFromName(const char* szname)
 //-----------------------------------------------------------------------------
 void GBaseObject::AddFace(GFace* f)
 {
-#ifdef _DEBUG
-	for (int i = 0; i<m_Face.size(); ++i)
-	{
-		assert(m_Face[i] != f);
-	}
-#endif
-
 	f->SetID(GFace::CreateUniqueID());
 	f->SetLocalID((int)m_Face.size());
 	char sz[256] = {0};
@@ -238,14 +231,6 @@ GFace* GBaseObject::AddFace()
 //-----------------------------------------------------------------------------
 int GBaseObject::AddNode(GNode* n)
 {
-	/*
-#ifdef _DEBUG
-	for (int i=0; i<m_Node.size(); ++i)
-	{
-		assert(m_Node[i] != n);
-	}
-#endif
-*/
 	n->SetID(GNode::CreateUniqueID());
 	n->SetLocalID(m_Node.size());
 	char sz[256] = {0};

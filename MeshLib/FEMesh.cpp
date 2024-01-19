@@ -545,7 +545,7 @@ void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildElementData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// make sure element data is valid
 	assert(ValidateElements());
 #endif
@@ -565,7 +565,7 @@ void FSMesh::RebuildElementData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildFaceData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateFaces());
 #endif
 
@@ -584,7 +584,7 @@ void FSMesh::RebuildFaceData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildEdgeData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateEdges());
 #endif
 	// mark the exterior edges

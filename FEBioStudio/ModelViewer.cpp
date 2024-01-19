@@ -605,10 +605,7 @@ void CModelViewer::OnDeleteItem()
 	UpdateSelection();
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	for (int i=0; i<(int)m_selection.size(); ++i)
-	{
-		doc->DeleteObject(m_selection[i]);
-	}
+	doc->DeleteObjects(m_selection);
 	Select(nullptr);
 	Update();
 	GetMainWindow()->RedrawGL();

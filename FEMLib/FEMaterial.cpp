@@ -2914,6 +2914,7 @@ FSCDFPower::FSCDFPower(FSModel* fem) : FSMaterialProp(FE_CDF_POWER, fem)
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent alpha");
     AddScienceParam(1, UNIT_NONE, "mu0"   , "constant mu0");
     AddScienceParam(0, UNIT_NONE, "mu1"   , "power coefficient mu1");
+    AddScienceParam(1, UNIT_NONE, "scale" , "scale factor for argument");
 }
 
 //=============================================================================
@@ -3241,6 +3242,18 @@ FSRelaxPowDistortion::FSRelaxPowDistortion(FSModel* fem) : FSMaterialProp(FE_REL
     AddScienceParam(0, UNIT_NONE, "beta0" , "constant coefficient beta0"); // exponent
     AddScienceParam(0, UNIT_NONE, "beta1" , "power coefficient beta1");
     AddScienceParam(0, UNIT_NONE, "alpha" , "power exponent alpha");
+}
+
+//=============================================================================
+// Relaxation power distortion user
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxPowDistUser, MODULE_MECH, FE_RELAX_POW_DIST_USER, FE_MAT_RV_RELAX, "relaxation-power-dist-user", 0);
+
+FSRelaxPowDistUser::FSRelaxPowDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_POW_DIST_USER, fem)
+{
+	AddProperty("tau", FE_MAT_1DFUNC);
+	AddProperty("beta", FE_MAT_1DFUNC);
 }
 
 //=============================================================================

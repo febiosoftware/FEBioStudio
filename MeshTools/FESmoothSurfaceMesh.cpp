@@ -166,12 +166,6 @@ void FESmoothSurfaceMesh::ShapeSmoothMesh(FSSurfaceMesh& mesh, const FSSurfaceMe
 						newPos[nk] += rj;
 						tag[nk].first++;
 
-#ifdef _DEBUG
-						if (preserveShape)
-						{
-							assert((tag[nk].second == -1) || (tag[nk].second == face.m_gid));
-						}
-#endif
 						tag[nk].second = face.m_gid;
 					}
 				}

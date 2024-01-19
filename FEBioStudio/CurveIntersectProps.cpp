@@ -23,24 +23,38 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#include "CurveIntersectProps.h"
 
-#pragma once
-#include "PropertyList.h"
-#include <GeomLib/GModel.h>
-#include <MeshTools/FECurveIntersect.h>
-
-class CCurveIntersectProps : public CDataPropertyList
+CCurveIntersectProps::CCurveIntersectProps(GModel* geo, FECurveIntersect* pmod) : m_mod(pmod), m_geo(geo)
 {
-public:
-	CCurveIntersectProps(GModel* geo, FECurveIntersect* pmod);
+	m_edge = m_mod->InsertEdges();
+	m_tol = m_mod->Tolerance();
 
-	void SetPropertyValue(int i, const QVariant& v);
+	addCurveListProperty(&m_curves, "Curves");
+	addBoolProperty(&m_edge, "Insert Edges");
+	addDoubleProperty(&m_tol, "Tolerance");
+#ifndef NDEBUG
+	addEnumProperty(&m_method, "Method")->setEnumValues(QStringList() << "method1" << "method2");
+#endif
+}
 
-private:
-	GModel*				m_geo;
-	FECurveIntersect*	m_mod;
-	QStringList			m_curves;
-	int					m_method;
-	bool				m_edge;
-	double				m_tol;
-};
+void CCurveIntersectProps::SetPropertyValue(int i, const QVariant& v)
+{
+	CDataPropertyList::SetPropertyValue(i, v);
+	if (i == 0)
+	{
+		m_mod->ClearCurveList();
+		int N = m_geo->Edges();
+		QStringList curves = v.toStringList();
+		for (int i = 0; i < curves.size(); ++i)
+		{
+			QString curvei = curves.at(i);
+			string name = curvei.toStdString();
+			GEdge* edge = m_geo->FindEdgeFromName(name.c_str());
+			m_mod->AddCurve(edge);
+		}
+	}
+	if (i == 1) m_mod->SetInsertEdges(m_edge);
+	if (i == 2) m_mod->SetTolerance(m_tol);
+	if (i == 3) m_mod->SetMethod(m_method);
+}
