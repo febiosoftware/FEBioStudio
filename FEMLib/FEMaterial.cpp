@@ -3245,6 +3245,18 @@ FSRelaxPowDistortion::FSRelaxPowDistortion(FSModel* fem) : FSMaterialProp(FE_REL
 }
 
 //=============================================================================
+// Relaxation power distortion user
+//=============================================================================
+
+REGISTER_MATERIAL(FSRelaxPowDistUser, MODULE_MECH, FE_RELAX_POW_DIST_USER, FE_MAT_RV_RELAX, "relaxation-power-dist-user", 0);
+
+FSRelaxPowDistUser::FSRelaxPowDistUser(FSModel* fem) : FSMaterialProp(FE_RELAX_POW_DIST_USER, fem)
+{
+	AddProperty("tau", FE_MAT_1DFUNC);
+	AddProperty("beta", FE_MAT_1DFUNC);
+}
+
+//=============================================================================
 // Relaxation Prony
 //=============================================================================
 

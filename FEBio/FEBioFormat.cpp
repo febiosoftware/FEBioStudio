@@ -1264,7 +1264,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 					++tag;
 				}
 			}
-			else ++tag;
+			else { tag.skip(); ++tag; }
 		}
 		while (!tag.isend());
 	}
