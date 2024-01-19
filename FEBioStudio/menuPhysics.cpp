@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "MaterialEditor.h"
 #include "DlgEditProject.h"
 #include "DlgAddMeshData.h"
+#include "DlgStepViewer.h"
 #include <MeshLib/FENodeData.h>
 #include <MeshLib/FESurfaceData.h>
 #include <MeshLib/FEElementData.h>
@@ -899,6 +900,12 @@ void CMainWindow::on_actionAddStep_triggered()
 			UpdateModel(ps);
 		}
 	}
+}
+
+void CMainWindow::on_actionStepViewer_triggered()
+{
+	CDlgStepViewer dlg(this);
+	dlg.exec();
 }
 
 void CMainWindow::on_actionAddReaction_triggered()

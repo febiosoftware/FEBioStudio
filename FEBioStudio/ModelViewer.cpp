@@ -1716,6 +1716,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_STEP_LIST:
 		menu.addAction("Add Analysis Step ...", wnd, SLOT(on_actionAddStep_triggered()));
+		menu.addAction("Step Viewer ...", wnd, SLOT(on_actionStepViewer_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllSteps()));
 		break;

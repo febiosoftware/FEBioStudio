@@ -413,6 +413,7 @@ public slots:
 	void on_actionAddMeshDataMap_triggered();
 	void on_actionAddMeshDataGenerator_triggered();
 	void on_actionAddStep_triggered();
+	void on_actionStepViewer_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();

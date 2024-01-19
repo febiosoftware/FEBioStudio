@@ -196,6 +196,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionAddRigidLoad = addAction("Add Rigid Load ...", "actionAddRigidLoad");
 	QAction* actionAddRigidConnector = addAction("Add Rigid Connector ...", "actionAddRigidConnector");
 	QAction* actionAddStep = addAction("Add Analysis Step ...", "actionAddStep");
+	QAction* actionStepViewer = addAction("Step Viewer ...", "actionStepViewer");
 	QAction* actionAddMaterial = addAction("Add Material ...", "actionAddMaterial", "material"); actionAddMaterial->setShortcut(Qt::ControlModifier | Qt::Key_M);
 	actionSoluteTable = addAction("Solute Table ...", "actionSoluteTable");
 	actionSBMTable = addAction("Solid-bound Molecule Table ...", "actionSBMTable");
@@ -544,6 +545,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuPhysics->addAction(actionAddRigidConnector);
 	menuPhysics->addAction(actionAddMaterial);
 	menuPhysics->addAction(actionAddStep);
+	menuPhysics->addAction(actionStepViewer);
 	menuPhysics->addSeparator();
 	menuPhysics->addAction(actionSoluteTable);
 	menuPhysics->addAction(actionSBMTable);
