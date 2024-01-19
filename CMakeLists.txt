@@ -422,7 +422,7 @@ endif()
 
 if(MODEL_REPO)
 	add_definitions(-DHAS_QUAZIP)
-	include_directories(${QUAZIP_INC})
+	# include_directories(${QUAZIP_INC})
 
 	add_definitions(-DMODEL_REPO)
 	include_directories(${SQLITE_INC})
@@ -474,7 +474,7 @@ endforeach(name)
 link_libraries(${Qt_Version}::Core ${Qt_Version}::Widgets ${Qt_Version}::Gui ${Qt_Version}::Network ${Qt_Version}::OpenGL)
 
 if(Qt_Ver VERSION_EQUAL 6)
-  link_libraries(Qt6::Core5Compat Qt6::OpenGLWidgets)
+  link_libraries(Qt6::OpenGLWidgets)
 endif()
 
 # set the name of the executable
@@ -650,15 +650,17 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
-	target_link_libraries(${FBS_BIN_NAME} optimized ${QUAZIP_LIB})
+	# target_link_libraries(${FBS_BIN_NAME} optimized ${QUAZIP_LIB})
     
-    if(DEFINED QUAZIP_DBG_LIB)
-        target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_DBG_LIB})
-    else()
-        target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_LIB})
-    endif()
+    # if(DEFINED QUAZIP_DBG_LIB)
+    #     target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_DBG_LIB})
+    # else()
+    #     target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_LIB})
+    # endif()
     
-    target_link_libraries(${FBS_BIN_NAME} optimized ${SQLITE_LIB})
+    # target_link_libraries(${FBS_BIN_NAME} optimized ${SQLITE_LIB})
+
+    target_link_libraries(${FBS_BIN_NAME} /usr/lib/x86_64-linux-gnu/libzip.so.4)
     
     if(DEFINED SQLITE_DBG_LIB)
         target_link_libraries(${FBS_BIN_NAME} debug ${SQLITE_DBG_LIB})

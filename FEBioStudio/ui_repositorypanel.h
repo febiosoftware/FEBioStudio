@@ -60,7 +60,6 @@ SOFTWARE.*/
 #include <QUrl>
 #include <QMimeData>
 #include <QFileIconProvider>
-#include <JlCompress.h>
 #include <QStandardPaths>
 #include "ToolBox.h"
 #include "PublicationWidgetView.h"
