@@ -425,12 +425,9 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 		emit modelInitialized();
 		emit updateViews();
 		break;
-	case CB_MODEL_UPDATE:
+	default:
 		scene->UpdateScene();
 		emit updateViews();
-		break;
-	case CB_MAJOR_ITERS:
-	case CB_MINOR_ITERS:
 		break;
 	}
 
