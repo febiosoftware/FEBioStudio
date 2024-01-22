@@ -1440,6 +1440,7 @@ void FEPostModel::AddPointObject(FEPostModel::PointObject* ob)
 
 FEPostModel::PointObject* FEPostModel::GetPointObject(int i)
 {
+	if ((i < 0) || (i >= m_Points.size())) return nullptr;
 	return m_Points[i];
 }
 
