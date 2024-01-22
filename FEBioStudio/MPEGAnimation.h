@@ -53,7 +53,7 @@ public:
 protected:
     FILE *file; // a file pointer
     AVCodecContext *av_codec_context; // save the stream infomation
-    AVCodec *av_codec; // encoder
+    const AVCodec *av_codec; // encoder
     AVPacket av_packet; // all frames will be dumped into avpacket for muxing
     AVOutputFormat *av_output_format; // the output format for muxing
     AVFrame *rgb_frame;
@@ -64,6 +64,7 @@ protected:
     
 private:
     bool Rgb24ToYuv420p(QImage &im);
+    bool EncodeVideo(AVFrame *frame);
 
     int m_repeatFrames;
 };

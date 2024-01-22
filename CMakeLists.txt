@@ -228,11 +228,7 @@ if(MODEL_REPO)
 endif()
 
 if(USE_FFMPEG)
-    if(WIN32)
-        set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
-    else()
-        set(FFMPEG_LIB_NAMES avformat avcodec avresample avutil swresample swscale)
-    endif()
+    set(FFMPEG_LIB_NAMES avformat avcodec avutil swresample swscale)
     
     foreach(name IN LISTS FFMPEG_LIB_NAMES)
         findLib(FFMPEG_LIB_DIR FFMPEG_LIB ${name})
