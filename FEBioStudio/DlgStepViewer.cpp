@@ -102,11 +102,24 @@ public:
 			FSStepComponent* comp = allComponents[i];
 			it = new QTableWidgetItem(QString::fromStdString(comp->GetName()));
 			it->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
+			if (comp->IsActive() == false)
+			{
+				QFont font = it->font();
+				font.setItalic(true);
+				it->setFont(font);
+			}
 			table->setItem(i, 0, it);
 
 			it = new QTableWidgetItem(QString(comp->GetTypeString()));
 			it->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled);
 			table->setItem(i, 1, it);
+			if (comp->IsActive() == false)
+			{
+				QFont font = it->font();
+				font.setItalic(true);
+				it->setFont(font);
+			}
+
 			if (stepIDs.find(comp->GetStep()) != stepIDs.end())
 			{
 				int n = stepIDs[comp->GetStep()];
@@ -116,7 +129,10 @@ public:
 					it->setFlags(Qt::ItemIsEnabled);
 					if ((n == 0) || (n == j))
 					{
-						it->setBackground(QBrush(QColor::fromRgb(0, 164, 0)));
+						if (comp->IsActive())
+							it->setBackground(QBrush(QColor::fromRgb(0, 164, 0)));
+						else
+							it->setBackground(QBrush(QColor::fromRgb(0, 128, 0)));
 					}
 					else
 					{
