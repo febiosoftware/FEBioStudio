@@ -260,12 +260,12 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
-    findLib(QUAZIP_LIB_DIR QUAZIP_LIB ${QUAZIP_NAMES})
+    findLib(LIBZIP_LIB_DIR LIBZIP_LIB zip)
     
-    if(QUAZIP_DBG_LIB_DIR STREQUAL "")
-        unset(QUAZIP_DBG_LIB)
+    if(LIBZIP_DBG_LIB_DIR STREQUAL "")
+        unset(LIBZIP_DBG_LIB)
     else()
-        findLib(QUAZIP_DBG_LIB_DIR QUAZIP_DBG_LIB ${QUAZIP_NAMES})
+        findLib(LIBZIP_DBG_LIB_DIR LIBZIP_DBG_LIB zip)
     endif()
 	
     findLib(SQLITE_LIB_DIR SQLITE_LIB sqlite3)
@@ -421,8 +421,8 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
-	add_definitions(-DHAS_QUAZIP)
-	# include_directories(${QUAZIP_INC})
+	add_definitions(-DHAS_LIBZIP)
+	include_directories(${LIBZIP_INC})
 
 	add_definitions(-DMODEL_REPO)
 	include_directories(${SQLITE_INC})
@@ -650,18 +650,16 @@ if(USE_SSH)
 endif()
 
 if(MODEL_REPO)
-	# target_link_libraries(${FBS_BIN_NAME} optimized ${QUAZIP_LIB})
+	target_link_libraries(${FBS_BIN_NAME} optimized ${LIBZIP_LIB})
     
-    # if(DEFINED QUAZIP_DBG_LIB)
-    #     target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_DBG_LIB})
-    # else()
-    #     target_link_libraries(${FBS_BIN_NAME} debug ${QUAZIP_LIB})
-    # endif()
+    if(DEFINED LIBZIP_DBG_LIB)
+        target_link_libraries(${FBS_BIN_NAME} debug ${LIBZIP_DBG_LIB})
+    else()
+        target_link_libraries(${FBS_BIN_NAME} debug ${LIBZIP_LIB})
+    endif()
     
-    # target_link_libraries(${FBS_BIN_NAME} optimized ${SQLITE_LIB})
+    target_link_libraries(${FBS_BIN_NAME} optimized ${SQLITE_LIB})
 
-    target_link_libraries(${FBS_BIN_NAME} /usr/lib/x86_64-linux-gnu/libzip.so.4)
-    
     if(DEFINED SQLITE_DBG_LIB)
         target_link_libraries(${FBS_BIN_NAME} debug ${SQLITE_DBG_LIB})
     else()

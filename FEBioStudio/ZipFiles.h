@@ -28,8 +28,7 @@ SOFTWARE.*/
 #include <QDir>
 #include <QStringList>
 
-void recurseAddDir(QDir d, QStringList & list);
-bool archive(const QString & filePath, const QDir & dir, const QString & comment = QString(""));
+bool archive(const QString & filePath, const QDir & dir);
 
 QStringList extractAllFiles(const QString& archiveName, const QString& dir);
 
