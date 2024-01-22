@@ -1,0 +1,2 @@
+/usr/bin/ar qc lib/libComsol.a CMakeFiles/Comsol.dir/CMakeFiles/AutoGen/Comsol_autogen/mocs_compilation.cpp.o CMakeFiles/Comsol.dir/Comsol/COMSOLImport.cpp.o
+/usr/bin/ranlib lib/libComsol.a

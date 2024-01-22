@@ -1,0 +1,2 @@
+/usr/bin/ar qc lib/libXPLTLib.a CMakeFiles/XPLTLib.dir/CMakeFiles/AutoGen/XPLTLib_autogen/mocs_compilation.cpp.o CMakeFiles/XPLTLib.dir/XPLTLib/xpltArchive.cpp.o CMakeFiles/XPLTLib.dir/XPLTLib/xpltFileExport.cpp.o CMakeFiles/XPLTLib.dir/XPLTLib/xpltFileReader.cpp.o CMakeFiles/XPLTLib.dir/XPLTLib/xpltReader.cpp.o CMakeFiles/XPLTLib.dir/XPLTLib/xpltReader2.cpp.o CMakeFiles/XPLTLib.dir/XPLTLib/xpltReader3.cpp.o
+/usr/bin/ranlib lib/libXPLTLib.a

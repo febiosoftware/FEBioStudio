@@ -1,0 +1,2 @@
+/usr/bin/ar qc lib/libCUILib.a CMakeFiles/CUILib.dir/CMakeFiles/AutoGen/CUILib_autogen/mocs_compilation.cpp.o CMakeFiles/CUILib.dir/CUILib/HistogramViewer.cpp.o CMakeFiles/CUILib.dir/CUILib/ImageViewer.cpp.o
+/usr/bin/ranlib lib/libCUILib.a

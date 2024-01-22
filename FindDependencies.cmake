@@ -1,13 +1,8 @@
 # Qt
-find_package(${Qt_Version} COMPONENTS Widgets Gui Network OpenGL REQUIRED) 
+find_package(Qt6 COMPONENTS Widgets Gui Network OpenGL OpenGLWidgets REQUIRED) 
 
-if(Qt_Ver VERSION_EQUAL 6)
-  find_package(${Qt_Version} COMPONENTS OpenGLWidgets REQUIRED)
-endif()
-mark_as_advanced(${Qt_Version}_DIR ${Qt_Version}Charts_DIR ${Qt_Version}Core_DIR ${Qt_Version}Gui_DIR ${Qt_Version}Network_DIR ${Qt_Version}OpenGL_DIR 
-    ${Qt_Version}Positioning_DIR ${Qt_Version}PrintSupport_DIR ${Qt_Version}QmlModels_DIR ${Qt_Version}Qml_DIR ${Qt_Version}Quick_DIR
-    ${Qt_Version}Widgets_DIR ${Qt_Version}GuiTools_DIR ${Qt_Version}CoreTools_DIR ${Qt_Version}OpenGLWidgets_DIR
-    ${Qt_Version}WidgetsTools_DIR XKB_INCLUDE_DIR XKB_LIBRARY)
+mark_as_advanced(Qt6_DIR Qt6Core_DIR Qt6CoreTools_DIR Qt6DBusTools_DIR Qt6DBus_DIR Qt6GuiTools_DIR 
+    Qt6Gui_DIR Qt6Network_DIR Qt6OpenGLWidgets_DIR Qt6OpenGL_DIR Qt6WidgetsTools_DIR Qt6Widgets_DIR)
 
 # FEBio
 # Find FEBio SDK or git repo automatically
