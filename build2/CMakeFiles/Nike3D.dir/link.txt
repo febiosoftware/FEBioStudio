@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libNike3D.a CMakeFiles/Nike3D.dir/CMakeFiles/AutoGen/Nike3D_autogen/mocs_compilation.cpp.o CMakeFiles/Nike3D.dir/Nike3D/NIKE3DExport.cpp.o CMakeFiles/Nike3D.dir/Nike3D/NIKE3DImport.cpp.o CMakeFiles/Nike3D.dir/Nike3D/NIKE3DProject.cpp.o
-/usr/bin/ranlib lib/libNike3D.a

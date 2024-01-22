@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libLSDyna.a CMakeFiles/LSDyna.dir/CMakeFiles/AutoGen/LSDyna_autogen/mocs_compilation.cpp.o CMakeFiles/LSDyna.dir/LSDyna/LSDYNAModel.cpp.o CMakeFiles/LSDyna.dir/LSDyna/LSDYNAexport.cpp.o CMakeFiles/LSDyna.dir/LSDyna/LSDYNAimport.cpp.o CMakeFiles/LSDyna.dir/LSDyna/LSDynaFile.cpp.o CMakeFiles/LSDyna.dir/LSDyna/LSDynaFileParser.cpp.o
-/usr/bin/ranlib lib/libLSDyna.a

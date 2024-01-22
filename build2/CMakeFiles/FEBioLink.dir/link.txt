@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libFEBioLink.a CMakeFiles/FEBioLink.dir/CMakeFiles/AutoGen/FEBioLink_autogen/mocs_compilation.cpp.o CMakeFiles/FEBioLink.dir/FEBioLink/FEBioClass.cpp.o CMakeFiles/FEBioLink.dir/FEBioLink/FEBioInit.cpp.o CMakeFiles/FEBioLink.dir/FEBioLink/FEBioInterface.cpp.o CMakeFiles/FEBioLink.dir/FEBioLink/FEBioModule.cpp.o
-/usr/bin/ranlib lib/libFEBioLink.a

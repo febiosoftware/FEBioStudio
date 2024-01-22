@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libAnsys.a CMakeFiles/Ansys.dir/CMakeFiles/AutoGen/Ansys_autogen/mocs_compilation.cpp.o CMakeFiles/Ansys.dir/Ansys/AnsysImport.cpp.o
-/usr/bin/ranlib lib/libAnsys.a

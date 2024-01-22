@@ -1,5 +1,0 @@
-/home/mherron/Projects/FEBioStudio/build2/config.tests/static_link_order/CMakeFiles/objLib.dir
-/home/mherron/Projects/FEBioStudio/build2/config.tests/static_link_order/CMakeFiles/staticLib.dir
-/home/mherron/Projects/FEBioStudio/build2/config.tests/static_link_order/CMakeFiles/rebuild_cache.dir
-/home/mherron/Projects/FEBioStudio/build2/config.tests/static_link_order/CMakeFiles/static_link_order_test.dir
-/home/mherron/Projects/FEBioStudio/build2/config.tests/static_link_order/CMakeFiles/edit_cache.dir

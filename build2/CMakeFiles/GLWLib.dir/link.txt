@@ -1,2 +1,0 @@
-/usr/bin/ar qc lib/libGLWLib.a CMakeFiles/GLWLib.dir/CMakeFiles/AutoGen/GLWLib_autogen/mocs_compilation.cpp.o CMakeFiles/GLWLib.dir/GLWLib/GLWidget.cpp.o CMakeFiles/GLWLib.dir/GLWLib/GLWidgetManager.cpp.o
-/usr/bin/ranlib lib/libGLWLib.a
