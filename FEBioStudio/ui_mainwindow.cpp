@@ -428,7 +428,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuFile->addAction(actionSaveProject);
 	menuFile->addAction(actionExportFE);
 	menuFile->addAction(actionExportGeom);
-#ifdef HAS_QUAZIP
+#ifdef HAS_LIBZIP
 	menuFile->addSeparator();
 	menuFile->addAction(actionImportProject);
 	menuFile->addAction(actionExportProject);

@@ -1,0 +1,2 @@
+/usr/bin/ar qc lib/libAbaqus.a CMakeFiles/Abaqus.dir/CMakeFiles/AutoGen/Abaqus_autogen/mocs_compilation.cpp.o CMakeFiles/Abaqus.dir/Abaqus/AbaqusExport.cpp.o CMakeFiles/Abaqus.dir/Abaqus/AbaqusImport.cpp.o CMakeFiles/Abaqus.dir/Abaqus/AbaqusModel.cpp.o
+/usr/bin/ranlib lib/libAbaqus.a

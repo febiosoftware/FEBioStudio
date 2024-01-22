@@ -127,7 +127,7 @@ SOFTWARE.*/
 
 using std::stringstream;
 
-#ifdef HAS_QUAZIP
+#ifdef HAS_LIBZIP
 #include "ZipFiles.h"
 #endif
 
@@ -272,7 +272,7 @@ void CMainWindow::on_actionSave_triggered()
 }
 
 
-#ifdef HAS_QUAZIP
+#ifdef HAS_LIBZIP
 void CMainWindow::on_actionImportProject_triggered()
 {
 	QStringList filters;
@@ -294,31 +294,6 @@ void CMainWindow::on_actionImportProject_triggered()
 		QString fileName = files.first();
 
 		ImportProjectArchive(fileName);
-
-
-//		QFileInfo fileInfo(fileName);
-//
-//		// get the parent directory's name
-//		QString parentDirName = fileInfo.path();
-//
-//		// create folder in which to unzip
-//		QDir parentDir(parentDirName);
-//		parentDir.mkdir(fileInfo.completeBaseName());
-//		QString destDir = parentDirName + "/" + fileInfo.completeBaseName();
-//
-//		// extract files
-//		QStringList extractedFiles = JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
-//
-//		// open first .fsprj file
-//		for(QString str : extractedFiles)
-//		{
-//			if(QFileInfo(str).suffix().compare("fsprj", Qt::CaseInsensitive) == 0)
-//			{
-//				OpenDocument(str);
-//				break;
-//			}
-//		}
-
 	}
 }
 
