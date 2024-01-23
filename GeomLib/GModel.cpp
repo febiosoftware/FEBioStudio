@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <GeomLib/GCurveMeshObject.h>
 #include <GeomLib/GOCCObject.h>
+#include <GeomLib/GCurveObject.h>
 #include <MeshTools/GModifiedObject.h>
 #include <FSCore/FSObjectList.h>
 #include <FEMLib/GDiscreteObject.h>
@@ -1270,6 +1271,7 @@ GObject* BuildObject(int ntype)
 	case GCYLINDRICAL_PATCH : po = new GCylindricalPatch(); break;
 	case GMULTI_BLOCK       : po = new GMultiBox(); break;
 	case GMULTI_PATCH       : po = new GMultiPatch(); break;
+	case GCURVE_OBJECT      : po = new GCurveObject(); break;
 	}
 
 	assert(po);
