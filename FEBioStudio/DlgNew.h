@@ -60,6 +60,8 @@ public:
 	void setShowDialogOption(bool b);
 	bool showDialogOption();
 
+	int GetUnitSystem();
+
 public:
 	Ui::CDlgNew*	ui;
 };

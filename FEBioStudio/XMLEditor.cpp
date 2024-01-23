@@ -1,7 +1,6 @@
 #include "stdafx.h"
 #include "XMLEditor.h"
 #include <QPainter>
-#include <QTextBlock>
 //#include <QSyntaxHighLighter>
 // I had to change this include statement for it to find the file on linux
 #include <qsyntaxhighlighter.h>

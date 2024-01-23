@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "MaterialEditor.h"
 #include "DlgEditProject.h"
 #include "DlgAddMeshData.h"
+#include "DlgStepViewer.h"
 #include <MeshLib/FENodeData.h>
 #include <MeshLib/FESurfaceData.h>
 #include <MeshLib/FEElementData.h>
@@ -57,6 +58,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <sstream>
 
 void CMainWindow::on_actionAddNodalBC_triggered()
@@ -879,26 +881,33 @@ void CMainWindow::on_actionAddStep_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel* fem = doc->GetFSModel();
-//	CDlgAddStep dlg(prj, this);
-//	if (dlg.exec())
+
+	QStringList stepList;
+	for (int i = 0; i < fem->Steps(); ++i) stepList << QString::fromStdString(fem->GetStep(i)->GetName());
+	QString item = QInputDialog::getItem(this, "FEBio Studio", "Insert new step after:", stepList, fem->Steps() - 1, false);
+
+	FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
+	assert(ps);
+	if (ps)
 	{
-//		FSAnalysisStep* ps = fscore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
+//		std::string name = dlg.m_name;
+//		if (name.empty()) name = defaultStepName(fem, ps);
+		std::string name = defaultStepName(fem, ps);
 
-		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
-		assert(ps);
-		if (ps)
-		{
-//			std::string name = dlg.m_name;
-//			if (name.empty()) name = defaultStepName(fem, ps);
-			std::string name = defaultStepName(fem, ps);
+		FEBio::InitDefaultProps(ps);
 
-			FEBio::InitDefaultProps(ps);
+		int insertPos = stepList.indexOf(item);
 
-			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps, -1));
-			UpdateModel(ps);
-		}
+		ps->SetName(name);
+		doc->DoCommand(new CCmdAddStep(fem, ps, insertPos));
+		UpdateModel(ps);
 	}
+}
+
+void CMainWindow::on_actionStepViewer_triggered()
+{
+	CDlgStepViewer dlg(this);
+	dlg.exec();
 }
 
 void CMainWindow::on_actionAddReaction_triggered()

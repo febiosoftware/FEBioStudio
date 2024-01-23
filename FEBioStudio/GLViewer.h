@@ -23,34 +23,18 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QWidget>
+#include "MainWindow.h"
 
-// Animation.cpp: implementation of the CAnimation class.
-//
-//////////////////////////////////////////////////////////////////////
+class CGLControlBar;
 
-#include "stdafx.h"
-#include "Animation.h"
-
-#ifdef _DEBUG
-#undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
-#define new DEBUG_NEW
-#endif
-
-//////////////////////////////////////////////////////////////////////
-// Construction/Destruction
-//////////////////////////////////////////////////////////////////////
-
-CAnimation::CAnimation()
+class CGLViewer : public QWidget
 {
-}
+public:
+	CGLViewer(::CMainWindow* wnd);
 
-CAnimation::~CAnimation()
-{
-	Close();
-}
-
-void CAnimation::Close()
-{
-
-}
+public:
+	CGLView* glview;
+	CGLControlBar* glc;
+};

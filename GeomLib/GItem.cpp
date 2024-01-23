@@ -176,7 +176,11 @@ bool GEdge::operator==(const GEdge& e)
 	return true;
 }
 
-//-----------------------------------------------------------------------------
+GNode* GEdge::Node(int i)
+{
+	return m_po->Node(m_node[i]);
+}
+
 double GEdge::Length()
 {
 	double L = 0;

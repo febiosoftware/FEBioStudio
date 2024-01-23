@@ -27,14 +27,21 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "ModelSearch.h"
 #include <QLineEdit>
-#include <QListWidget>
+#include <QTableWidget>
 #include <QBoxLayout>
 #include <QLabel>
 #include <QContextMenuEvent>
+#include <QHeaderView>
 #include "Document.h"
 #include <FEMLib/FSModel.h>
+#include <FEMLib/FELoad.h>
 #include "ModelViewer.h"
 #include "ModelTree.h"
+#include "IconProvider.h"
+#include <GeomLib/GObject.h>
+#include <GeomLib/GGroup.h>
+#include <GeomLib/FSGroup.h>
+#include "FEBioJob.h"
 
 CModelSearch::CModelSearch(CModelViewer* view, CModelTree* tree, QWidget* parent) : QWidget(parent), m_view(view), m_tree(tree)
 {
@@ -46,8 +53,10 @@ CModelSearch::CModelSearch(CModelViewer* view, CModelTree* tree, QWidget* parent
 	h->addWidget(m_flt);
 	h->setContentsMargins(0,0,0,0);
 
-	m_list = new QListWidget;
+	m_list = new QTableWidget;
 	m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+	m_list->setSelectionBehavior(QAbstractItemView::SelectRows);
+	m_list->horizontalHeader()->setStretchLastSection(true);
 
 	QVBoxLayout* l = new QVBoxLayout;
 	l->addLayout(h);
@@ -57,8 +66,8 @@ CModelSearch::CModelSearch(CModelViewer* view, CModelTree* tree, QWidget* parent
 	setLayout(l);
 
 	QObject::connect(m_flt, SIGNAL(textEdited(const QString&)), this, SLOT(onFilterChanged(const QString&)));
-	QObject::connect(m_list, SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(onItemDoubleClicked(QListWidgetItem*)));
-	QObject::connect(m_list, SIGNAL(currentItemChanged(QListWidgetItem*, QListWidgetItem*)), this, SLOT(onItemClicked(QListWidgetItem*)));
+	QObject::connect(m_list, SIGNAL(itemDoubleClicked(QTableWidgetItem*)), this, SLOT(onItemDoubleClicked(QTableWidgetItem*)));
+	QObject::connect(m_list, SIGNAL(currentItemChanged(QTableWidgetItem*, QTableWidgetItem*)), this, SLOT(onItemClicked(QTableWidgetItem*)));
 }
 
 void CModelSearch::Build(CDocument* doc)
@@ -72,7 +81,7 @@ void CModelSearch::onFilterChanged(const QString& t)
 	UpdateList();
 }
 
-void CModelSearch::onItemClicked(QListWidgetItem* item)
+void CModelSearch::onItemClicked(QTableWidgetItem* item)
 {
 	if (item)
 	{
@@ -83,7 +92,7 @@ void CModelSearch::onItemClicked(QListWidgetItem* item)
 		m_view->SetCurrentItem(-1);
 }
 
-void CModelSearch::onItemDoubleClicked(QListWidgetItem* item)
+void CModelSearch::onItemDoubleClicked(QTableWidgetItem* item)
 {
 	int n = item->data(Qt::UserRole).toInt();
 	CModelTreeItem& treeItem = m_tree->GetItem(n);
@@ -97,11 +106,11 @@ void CModelSearch::contextMenuEvent(QContextMenuEvent* ev)
 	// clear the selection
 	m_view->ClearSelection();
 
-	QListWidgetItem* item = m_list->currentItem();
+	QTableWidgetItem* item = m_list->currentItem();
 	if (item == 0) return;
 
 	// get the selection
-	QList<QListWidgetItem*> sel = m_list->selectedItems();
+	QList<QTableWidgetItem*> sel = m_list->selectedItems();
 	if (sel.isEmpty()) return;
 
 	if (sel.size() == 1)
@@ -122,7 +131,7 @@ void CModelSearch::contextMenuEvent(QContextMenuEvent* ev)
 
 		// only show the context menu if all objects are the same
 		vector<FSObject*> objList;
-		QList<QListWidgetItem*>::iterator it = sel.begin();
+		QList<QTableWidgetItem*>::iterator it = sel.begin();
 		while (it != sel.end())
 		{
 			index = (*it)->data(Qt::UserRole).toInt();
@@ -144,10 +153,10 @@ void CModelSearch::contextMenuEvent(QContextMenuEvent* ev)
 void CModelSearch::GetSelection(std::vector<FSObject*>& objList)
 {
 	// get the selection
-	QList<QListWidgetItem*> sel = m_list->selectedItems();
+	QList<QTableWidgetItem*> sel = m_list->selectedItems();
 	if (sel.isEmpty()) return;
 
-	QList<QListWidgetItem*>::iterator it = sel.begin();
+	QList<QTableWidgetItem*>::iterator it = sel.begin();
 	while (it != sel.end())
 	{
 		int index = (*it)->data(Qt::UserRole).toInt();
@@ -164,9 +173,9 @@ void CModelSearch::GetSelection(std::vector<FSObject*>& objList)
 
 void CModelSearch::UpdateObject(FSObject* po)
 {
-	for (int i = 0; i < m_list->count(); ++i)
+	for (int i = 0; i < m_list->rowCount(); ++i)
 	{
-		QListWidgetItem* item = m_list->item(i);
+		QTableWidgetItem* item = m_list->item(i, 0);
 		int n = item->data(Qt::UserRole).toInt();
 
 		if ((n >= 0) && (n < m_tree->Items()))
@@ -187,6 +196,36 @@ void CModelSearch::UpdateObject(FSObject* po)
 	}
 }
 
+QString GetIconName(FSObject* po)
+{
+	if (dynamic_cast<GObject*  >(po)) return "selectObject";
+	if (dynamic_cast<GPart*    >(po)) return "selectPart";
+	if (dynamic_cast<GFace*    >(po)) return "selectSurface";
+	if (dynamic_cast<GEdge*    >(po)) return "selectCurves";
+	if (dynamic_cast<GNode*    >(po)) return "selectNodes";
+	if (dynamic_cast<FSElemSet*>(po)) return "selElem";
+	if (dynamic_cast<FSPartSet*>(po)) return "selElem";
+	if (dynamic_cast<FSSurface*>(po)) return "selFace";
+	if (dynamic_cast<FSEdgeSet*>(po)) return "selEdge";
+	if (dynamic_cast<FSNodeSet*>(po)) return "selNode";
+	if (dynamic_cast<GNodeList*>(po)) return "selectNodes";
+	if (dynamic_cast<GFaceList*>(po)) return "selectSurface";
+	if (dynamic_cast<GEdgeList*>(po)) return "selectCurves";
+	if (dynamic_cast<GPartList*>(po)) return "selectPart";
+	if (dynamic_cast<GMaterial*>(po)) return "material";
+	if (dynamic_cast<FSLoadController*>(po)) return "curve";
+	if (dynamic_cast<GDiscreteObject* >(po)) return "spring";
+	if (dynamic_cast<CImageModel*>(po)) return "image";
+	if (dynamic_cast<FSBoundaryCondition*>(po)) return "bc";
+	if (dynamic_cast<FSInitialCondition*>(po)) return "ic";
+	if (dynamic_cast<FSLoad*>(po)) return "load";
+	if (dynamic_cast<FSStep*>(po)) return "step";
+	if (dynamic_cast<FSPairedInterface*>(po)) return "contact";
+	if (dynamic_cast<CFEBioJob*>(po)) return "febiorun";
+
+	return QString("component");
+}
+
 void CModelSearch::UpdateList()
 {
 	m_list->clear();
@@ -195,8 +234,11 @@ void CModelSearch::UpdateList()
 
 	bool nofilter = flt.isEmpty();
 
+	// objects that match the filter
+	QVector<int> objList;
+
 	int N = m_tree->Items();
-	for (int i=0; i<N; ++i)
+	for (int i = 0; i < N; ++i)
 	{
 		CModelTreeItem& item = m_tree->GetItem(i);
 		FSObject* o = item.obj;
@@ -205,31 +247,66 @@ void CModelSearch::UpdateList()
 			((item.flag & CModelTree::DUPLICATE_ITEM) == 0))
 		{
 			QString s = QString::fromStdString(o->GetName());
-
-			// make sure the string is not empty
 			if (s.isEmpty() == false)
 			{
-				if (nofilter || s.contains(flt, Qt::CaseInsensitive))
+				QString typeStr = QString::fromStdString(CGLDocument::GetTypeString(o));
+				if (nofilter || s.contains(flt, Qt::CaseInsensitive) || typeStr.contains(flt, Qt::CaseInsensitive))
 				{
-					QListWidgetItem* it = new QListWidgetItem;
-					it->setText(s);
-					it->setData(Qt::UserRole, i);
-
-					FSStepComponent* pc = dynamic_cast<FSStepComponent*>(o);
-					if (pc)
-					{
-						QFont font = it->font();
-						font.setItalic(pc->IsActive()==false);
-						it->setFont(font);
-					}
-
-					m_list->addItem(it);
+					objList.push_back(i);
 				}
 			}
 		}
 	}
+	if (objList.isEmpty()) return;
 
-	m_list->sortItems();
+	m_list->setRowCount(objList.size());
+	m_list->setColumnCount(2);
+	int W = m_list->rect().width();
+	m_list->setColumnWidth(0, W/2);
+	m_list->setHorizontalHeaderLabels(QStringList() << "Name" << "Type");
+	m_list->verticalHeader()->hide();
+
+	for (int n = 0; n < objList.size(); ++n)
+	{
+		int i = objList[n];
+		CModelTreeItem& item = m_tree->GetItem(i);
+		FSObject* o = item.obj;
+
+		QString s = QString::fromStdString(o->GetName());
+
+		// column 0
+		QTableWidgetItem* it = new QTableWidgetItem;
+		it->setText(s);
+		it->setData(Qt::UserRole, i);
+		it->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
+
+		QString iconName = GetIconName(o);
+		if (!iconName.isEmpty()) it->setIcon(CIconProvider::GetIcon(iconName));
+
+		FSStepComponent* pc = dynamic_cast<FSStepComponent*>(o);
+		if (pc)
+		{
+			QFont font = it->font();
+			font.setItalic(pc->IsActive()==false);
+			it->setFont(font);
+		}
+		m_list->setItem(n, 0, it);
+
+		// column 1
+		it = new QTableWidgetItem;
+		string typeStr = CGLDocument::GetTypeString(o);
+		s = "";
+		if (!typeStr.empty())
+		{
+			s = QString::fromStdString(typeStr);
+		}
+		it->setText(s);
+		it->setData(Qt::UserRole, i);
+		it->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemNeverHasChildren);
+		m_list->setItem(n, 1, it);
+	}
+
+	m_list->sortItems(0);
 
 	m_view->SetCurrentItem(-1);
 }

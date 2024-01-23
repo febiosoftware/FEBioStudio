@@ -45,26 +45,6 @@ class QDialogButtonBox;
 // #define PORT 5236
 // #define SCHEME "http"
 
-#ifdef WIN32
-	#define URL_BASE "/update2/FEBioStudio2/Windows"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/Windows"
-	#define UPDATER_BASE "/update2/Updater2/Windows"
-	#define REL_ROOT "\\..\\"
-	#define UPDATER "/FEBioStudioUpdater.exe"
-#elif __APPLE__
-	#define URL_BASE "/update2/FEBioStudio2/macOS"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/macOS"
-	#define UPDATER_BASE "/update2/Updater2/macOS"
-	#define REL_ROOT "/../../../"
-	#define UPDATER "/FEBioStudioUpdater"
-#else
-	#define URL_BASE "/update2/FEBioStudio2/Linux"
-	#define DEV_BASE "/update2/FEBioStudio2Dev/Linux"
-	#define UPDATER_BASE "/update2/Updater2/Linux"
-	#define REL_ROOT "/../"
-	#define UPDATER "/FEBioStudioUpdater"
-#endif
-
 struct ReleaseFile
 {
 	QString name;
@@ -86,7 +66,6 @@ struct Release
 	std::vector<ReleaseFile> updaterFiles;
 };
 
-
 class CUpdateWidget : public QWidget
 {
     Q_OBJECT
@@ -97,6 +76,8 @@ public:
     void checkForUpdate(bool dev = false, bool updaterUpdateCheck = false);
 
     QString getServerMessage();
+
+	QString getUpdaterPath() const;
 
 public slots:
 	void linkActivated(const QString& link);

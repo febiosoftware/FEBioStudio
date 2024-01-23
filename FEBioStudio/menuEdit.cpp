@@ -47,6 +47,7 @@ SOFTWARE.*/
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FEFindElement.h>
+#include "TextDocument.h"
 #include <sstream>
 
 using std::stringstream;
@@ -136,9 +137,9 @@ void CMainWindow::on_actionDeleteSelection_triggered()
     if(xmlDoc)
     {
         // see if the focus is on the xml tree
-        if(ui->xmlTree->hasFocus())
+        if(ui->centralWidget->xmlTree->hasFocus())
         {
-            ui->xmlTree->on_removeSelectedRow_triggered();
+            ui->centralWidget->xmlTree->on_removeSelectedRow_triggered();
             return;
         }
     }
@@ -200,35 +201,19 @@ void CMainWindow::on_actionDeleteSelection_triggered()
 		if (nanswer == QMessageBox::Yes)
 		{
 			GPartSelection::Iterator it(sel);
-			vector<int> pid(n);
-			for (int i = 0; i < n; ++i, ++it)
+			std::vector<GPart*> partList;
+			for (int i = 0; i < n; ++i, ++it) partList.push_back(it);
+			
+			if (partList.empty() == false)
 			{
-				pid[i] = it->GetID();
-			}
-
-			for (int i = 0; i < n; ++i)
-			{
-				GPart* pg = m.FindPart(pid[i]); assert(pg);
-				if (pg)
+				if (m.DeleteParts(partList) == false)
 				{
-					std::string partName = pg->GetName();
-					if (m.DeletePart(pg) == false)
-					{
-						QString err; err = QString("Failed deleting Part \"%1\" (id = %2)").arg(QString::fromStdString(partName)).arg(pid[i]);
-						QMessageBox::critical(this, "FEBio Studio", err);
-						break;
-					}
+					QMessageBox::critical(this, "FEBio Studio", "There was a problem with deleting these parts.");
 				}
-				else
-				{
-					QString err; err = QString("Cannot find part with ID %1.").arg(pid[i]);
-					QMessageBox::critical(this, "FEBio Studio", err);
-					break;
-				}
-			}
 
-			// TODO: This cannot be undone at the moment
-			doc->ClearCommandStack();
+				// TODO: This cannot be undone at the moment
+				doc->ClearCommandStack();
+			}
 		}
 	}
 	else
@@ -1532,11 +1517,11 @@ void CMainWindow::on_actionFindTxt_triggered()
 	{
 		ui->m_lastFindText = txt;
 
-		if (ui->xmlEdit->find(txt) == false)
+		if (ui->centralWidget->xmlEdit->find(txt) == false)
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(txt));
 		}
-		else ui->xmlEdit->centerCursor();
+		else ui->centralWidget->xmlEdit->centerCursor();
 	}
 }
 
@@ -1547,11 +1532,11 @@ void CMainWindow::on_actionFindAgain_triggered()
 
 	if (ui->m_lastFindText.isEmpty() == false)
 	{
-		if (ui->xmlEdit->find(ui->m_lastFindText) == false)
+		if (ui->centralWidget->xmlEdit->find(ui->m_lastFindText) == false)
 		{
 			QMessageBox::information(this, "FEBio Studio", QString("Cannot find: %1").arg(ui->m_lastFindText));
 		}
-		else ui->xmlEdit->centerCursor();
+		else ui->centralWidget->xmlEdit->centerCursor();
 	}
 }
 
@@ -1559,19 +1544,19 @@ void CMainWindow::on_actionToggleComment_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->toggleLineComment();
+	ui->centralWidget->xmlEdit->toggleLineComment();
 }
 
 void CMainWindow::on_actionDuplicateLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->duplicateLine();
+	ui->centralWidget->xmlEdit->duplicateLine();
 }
 
 void CMainWindow::on_actionDeleteLine_triggered()
 {
 	CTextDocument* doc = dynamic_cast<CTextDocument*>(GetDocument());
 	if (doc == nullptr) return;
-	ui->xmlEdit->deleteLine();
+	ui->centralWidget->xmlEdit->deleteLine();
 }

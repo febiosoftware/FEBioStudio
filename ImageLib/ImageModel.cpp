@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <PostLib/VolumeRenderer.h>
 #include <FSCore/FSDir.h>
 #include <FSCore/ClassDescriptor.h>
+#include <fstream>
 #include <assert.h>
 
 using namespace Post;
@@ -172,6 +173,16 @@ void CImageModel::SetBoundingBox(BOX b)
     }
 }
 
+mat3d CImageModel::GetOrientation()
+{
+	if (m_img && m_img->Get3DImage())
+	{
+		return m_img->Get3DImage()->GetOrientation();
+	}
+
+	return mat3d::identity();
+}
+
 void CImageModel::Save(OArchive& ar)
 {
 	ar.BeginChunk(0);
@@ -214,33 +225,6 @@ void CImageModel::Save(OArchive& ar)
 CImageSource* CImageModel::GetImageSource()
 { 
 	return m_img; 
-}
-
-double CImageModel::ValueAtGlobalPos(vec3d pos, int channel)
-{
-    BOX box = m_img->Get3DImage()->GetBoundingBox();
-
-    if(pos.x < box.x0 || pos.x > box.x1 ||
-        pos.y < box.y0 || pos.y > box.y1 ||
-        pos.z < box.z0 || pos.z > box.z1)
-    {
-        return 0;
-    }
-
-	if (Get3DImage()->Depth() == 1)
-	{
-		double x = (pos.x - box.x0) / (box.x1 - box.x0);
-		double y = (pos.y - box.y0) / (box.y1 - box.y0);
-		return m_img->Get3DImage()->Value(x, y, 0, channel);
-	}
-	else
-	{
-		double x = (pos.x - box.x0) / (box.x1 - box.x0);
-		double y = (pos.y - box.y0) / (box.y1 - box.y0);
-		double z = (pos.z - box.z0) / (box.z1 - box.z0);
-
-		return m_img->Get3DImage()->Peek(x, y, z, channel);
-	}
 }
 
 C3DImage* CImageModel::Get3DImage()
@@ -346,12 +330,19 @@ bool CImageModel::ExportRAWImage(const std::string& filename)
 	int nsize = nx * ny * nz;
 	if (nsize <= 0) return false;
 
-	FILE* fp = fopen(filename.c_str(), "wb");
-	if (fp == nullptr) return false;
+	std::ofstream file(filename.c_str(), std::ios::out | std::ios::binary);
+	if (!file.is_open()) return false;
+	file.write(reinterpret_cast<char*>(pb), nsize);
+	file.close();
 
-	int nread = fwrite(pb, nsize, 1, fp);
-
-	fclose(fp);
-
-	return (nread == 1);
+	return true;
 }
+
+#ifdef HAS_ITK
+bool CImageModel::ExportSITKImage(const std::string& filename)
+{
+    return CImageSITK::WriteSITKImage(Get3DImage(), filename);
+}
+#else
+bool CImageModel::ExportSITKImage(const std::string& filename) { return false; }
+#endif

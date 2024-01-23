@@ -118,6 +118,7 @@ public:
 
 public:
 	void RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 
 private:
 	// drawing routines for faces

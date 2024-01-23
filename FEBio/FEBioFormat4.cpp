@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEBioFormat4.h"
-#include <GeomLib/FSGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
@@ -671,6 +670,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	else if (strcmp(sztype, "TRI6G14"     ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "TRI6G21"     ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "line2"       ) == 0) ntype = FE_BEAM2;
+	else if (strcmp(sztype, "line3"       ) == 0) ntype = FE_BEAM3;
 	else throw XMLReader::InvalidTag(tag);
 
 	// get the optional material attribute
@@ -902,9 +902,9 @@ void FEBioFormat4::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag
 			// read the node numbers
 			tag.value(nf, N);
 
-			// make zero-based
+			// copy to vector
 			vector<int> node(N);
-			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			for (int j = 0; j < N; ++j) node[j] = nf[j];
 			s.m_face.push_back(node);
 
 			++tag;

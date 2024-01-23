@@ -25,19 +25,20 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include <QOpenGLWidget>
+#include "GLSceneView.h"
 #include <QNativeGestureEvent>
 #include <GLLib/GLCamera.h>
 #include "CommandManager.h"
 #include "GManipulator.h"
 #include "GTriad.h"
 #include "GGrid.h"
-#include <MeshLib/Intersect.h>
+#include "GLPlaneCut.h"
 #include <GLWLib/GLWidgetManager.h>
-#include <PostLib/Animation.h>
+#include "Animation.h"
 #include <GLLib/GLContext.h>
 #include <GLLib/GLViewSettings.h>
 #include "GLViewSelector.h"
+#include "GLScreenRecorder.h"
 
 class CMainWindow;
 class CGLDocument;
@@ -45,19 +46,12 @@ class GDecoration;
 class CGView;
 class FSModel;
 class CGLView;
+class CGLScene;
 
 // coordinate system modes
 #define COORD_GLOBAL	0
 #define COORD_LOCAL		1
 #define COORD_SCREEN	2
-
-//-----------------------------------------------------------------------------
-// Video recording modes
-enum VIDEO_MODE {
-	VIDEO_RECORDING,
-	VIDEO_PAUSED,
-	VIDEO_STOPPED
-};
 
 // preset views
 enum View_Mode {
@@ -68,14 +62,14 @@ enum View_Mode {
 	VIEW_RIGHT,
 	VIEW_FRONT,
 	VIEW_BACK,
-    VIEW_ISOMETRIC
+	VIEW_ISOMETRIC
 };
 
 // view conventions
 enum View_Convention {
-    CONV_FR_XZ,
-    CONV_FR_XY,
-    CONV_US_XY
+	CONV_FR_XZ,
+	CONV_FR_XY,
+	CONV_US_XY
 };
 
 // snap modes
@@ -91,7 +85,30 @@ enum Planecut_Mode
 	HIDE_ELEMENTS
 };
 
-//-----------------------------------------------------------------------------
+class CGLPivot
+{
+public:
+	CGLPivot(CGLView* view);
+
+	int GetSelectionMode() const { return m_mode; }
+
+	void SetPosition(const vec3d& r) { m_pos = r; }
+
+	vec3d GetPosition() const { return m_pos; }
+
+	void Render(int ntrans, double scale, bool bact);
+
+	int Pick(int ntrans, int x, int y);
+
+public:
+	GTranslator		m_Ttor;	//!< the translate manipulator
+	GRotator		m_Rtor;	//!< the rotate manipulator
+	GScalor			m_Stor;	//!< the scale manipulator
+
+	int		m_mode;		// pivot selection mode
+	vec3d	m_pos;		// pivot point
+};
+
 // tag structure
 struct GLTAG
 {
@@ -102,7 +119,7 @@ struct GLTAG
 };
 
 //===================================================================
-class CGLView : public QOpenGLWidget
+class CGLView : public CGLSceneView
 {
 	Q_OBJECT
 
@@ -111,10 +128,9 @@ public:
 	~CGLView();
 
 public:
-	double GetGridScale() { return m_grid.GetScale(); }
-	quatd GetGridOrientation() { return m_grid.m_q; }
-
 	CGLDocument* GetDocument();
+
+	CGLScene* GetActiveScene() override;
 
 	GObject* GetActiveObject();
 
@@ -135,31 +151,14 @@ public:
 
 	void ClearCommandStack();
 
-	void RenderTooltip(int x, int y);
-
 	vec3d PickPoint(int x, int y, bool* success = 0);
 
 	void SetViewMode(View_Mode n);
 	View_Mode GetViewMode() { return m_nview; }
 
 	void TogglePerspective(bool b);
-	void ToggleDisplayNormals();
-
-	void GetViewport(int vp[4])
-	{
-		vp[0] = m_viewport[0];
-		vp[1] = m_viewport[1];
-		vp[2] = m_viewport[2];
-		vp[3] = m_viewport[3];
-	}
-
-	// --- view settings ---
-	GLViewSettings& GetViewSettings() { return m_view; }
 
 	void ShowMeshData(bool b);
-
-	CGView* GetView();
-	CGLCamera* GetCamera();
 
 	void Set3DCursor(const vec3d& r) { m_view.m_pos3d = r; }
 	vec3d Get3DCursor() const { return m_view.m_pos3d; }
@@ -169,13 +168,14 @@ public:
 	void ToggleFPS();
 
 protected:
-	void mousePressEvent  (QMouseEvent* ev);
-	void mouseMoveEvent   (QMouseEvent* ev);
-	void mouseReleaseEvent(QMouseEvent* ev);
-	void mouseDoubleClickEvent(QMouseEvent* ev);
-	void wheelEvent       (QWheelEvent* ev);
+	void mousePressEvent  (QMouseEvent* ev) override;
+	void mouseMoveEvent   (QMouseEvent* ev) override;
+	void mouseReleaseEvent(QMouseEvent* ev) override;
+	void wheelEvent       (QWheelEvent* ev) override;
+	void mouseDoubleClickEvent(QMouseEvent* ev) override;
+
     bool gestureEvent     (QNativeGestureEvent* ev);
-    bool event            (QEvent* event);
+    bool event            (QEvent* event) override;
 
 signals:
 	void pointPicked(const vec3d& p);
@@ -194,15 +194,6 @@ public:
 	// zoom to the models extents
 	void ZoomExtents(bool banimate = true);
 
-	// prep the GL view for rendering
-	void PrepScene();
-
-	// setup the projection matrix
-	void SetupProjection();
-
-	// get device pixel ration
-	double GetDevicePixelRatio();
-
 	// position the camera
 	void PositionCamera();
 
@@ -212,37 +203,33 @@ public:
 	// render functions
 public:
 	// other rendering functions
-	void RenderBackground();
-
 	void RenderRubberBand();
 	void RenderBrush();
-	void RenderPivot(bool bpick = false);
+	void RenderPivot();
 
-	void Render3DCursor(const vec3d& r, double R);
+	void Render3DCursor();
 	void RenderTags();
 	void RenderTags(std::vector<GLTAG>& tags);
 	void RenderImageData();
 	void RenderTrack();
-
+	void RenderDecorations();
 
 	bool TrackModeActive();
 
-	void ScreenToView(int x, int y, double& fx, double& fy);
-
-	void showSafeFrame(bool b);
-
-	vec3d WorldToPlane(vec3d r);
+	void ShowSafeFrame(bool b);
 
 	vec3d GetPickPosition();
 
+public:
 	vec3d GetPivotPosition();
 	quatd GetPivotRotation();
 
-	void SetPivot(const vec3d& r);
+	void SetPivotPosition(const vec3d& r);
 
-	bool GetPivotMode() { return m_bpivot; }
-	void SetPivotMode(bool b) { m_bpivot = b; }
+	bool GetPivotUserMode() const;
+	void SetPivotUserMode(bool b);
 
+public:
 	void changeViewMode(View_Mode vm);
 
 	void ShowContextMenu(bool b);
@@ -253,9 +240,10 @@ public:
 	int GetMeshMode();
 
 protected:
-	void initializeGL();
-	void resizeGL(int w, int h);
-	void paintGL();
+	void initializeGL() override;
+	void resizeGL(int w, int h) override;
+
+	void RenderScene() override;
 
 private:
 	void SetSnapMode(Snap_Mode snap) { m_nsnap = snap; }
@@ -267,15 +255,6 @@ private:
 public:
 	QImage CaptureScreen();
 
-	bool NewAnimation(const char* szfile, CAnimation* panim, GLenum fmt = GL_RGB);
-	void StartAnimation();
-	void StopAnimation();
-	void PauseAnimation();
-	void SetVideoFormat(GLenum fmt) { m_videoFormat = fmt; }
-
-	VIDEO_MODE RecordingMode() const;
-	bool HasRecording() const;
-
 	void UpdateWidgets(bool bposition = true);
 
 	bool isTitleVisible() const;
@@ -283,10 +262,6 @@ public:
 
 	bool isSubtitleVisible() const;
 	void showSubtitle(bool b);
-
-	// get/set light position
-	vec3f GetLightPosition() { return m_light; }
-	void SetLightPosition(vec3f lp) { m_light = lp; }
 
 public:
 	void AddDecoration(GDecoration* deco);
@@ -298,15 +273,17 @@ public:
 	void SetPlaneCutMode(int nmode);
 	void UpdatePlaneCut(bool breset = false);
 
-private:
-	GMesh* BuildPlaneCut(FSModel& fem);
+	GLScreenRecorder& GetScreenRecorder() { return m_recorder; }
+
+	QSize GetSafeFrameSize() const;
+
+	void LockSafeFrame();
+	void UnlockSafeFrame();
 
 public:
 	void SetColorMap(unsigned int n);
 
 	Post::CColorMap& GetColorMap();
-
-	void PanView(vec3d r);
 
 	void AddRegionPoint(int x, int y);
 
@@ -315,7 +292,7 @@ public:
 
 	bool ShowPlaneCut();
 
-	GMesh* PlaneCutMesh();
+	GLPlaneCut& GetPlaneCut();
 
 	void DeletePlaneCutMesh();
 
@@ -334,8 +311,6 @@ protected:
 
 	CBasicCmdManager m_Cmd;	// view command history
 
-	GGrid		m_grid;		// the grid object
-
 	vector<pair<int, int> >		m_pl;
 	int			m_x0, m_y0, m_x1, m_y1;
 	int			m_xp, m_yp;
@@ -352,8 +327,6 @@ protected:
 	double	m_sa;	// accumulated scale
 	vec3d	m_ds;	// direction of scale
 
-	vec3f	m_light;
-
 	double	m_wt;	// total rotation
 	double	m_wa;	// total accumulated rotation
 
@@ -362,28 +335,16 @@ protected:
 	bool	m_bsel;		// selection mode
 	bool	m_bextrude;	// extrusion mode
 
-	bool	m_btooltip;	// show tooltips
-
-	int		m_pivot;	// pivot selection mode
-
 public:
 	bool	m_bpick;
 
 protected:
-	double	m_ox;
-	double	m_oy;
-
 	bool	m_bsnap;	// snap to grid
 
 	int		m_coord;	// coordinate system
 
-	bool	m_bpivot;	// user-pivot = true
-	vec3d	m_pv;		// pivot point
-
-	// manipulators
-	GTranslator		m_Ttor;	//!< the translate manipulator
-	GRotator		m_Rtor;	//!< the rotate manipulator
-	GScalor			m_Stor;	//!< the scale manipulator
+	CGLPivot m_pivot;
+	bool	m_userPivot;
 
 	// triad
 	GLBox*			m_ptitle;
@@ -398,11 +359,6 @@ protected:
 	bool	m_showContextMenu;
 
 private:
-	GLenum	m_videoFormat;
-
-	VIDEO_MODE		m_videoMode;	// the current video mode
-	CAnimation*		m_video;		// video object
-
 	// tracking
 	bool	m_btrack;
 	int		m_ntrack[3];
@@ -414,10 +370,9 @@ public:
 	CGLContext	m_rc;
 
 private:
-	GLViewSettings	m_view;
-	int	m_viewport[4];		//!< store viewport coordinates
-
 	GLViewSelector	m_select;
+
+	GLScreenRecorder	m_recorder;
 
 	CGLCamera	m_oldCam;
 
@@ -425,8 +380,7 @@ private:
 
 	bool		m_showPlaneCut;
 	int			m_planeCutMode;
-	double		m_plane[4];
-	GMesh*		m_planeCut;
+	GLPlaneCut	m_planeCut;
 
 	std::string		m_oglVersionString;
 };

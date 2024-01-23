@@ -44,7 +44,9 @@ int CMPEGAnimation::Create(const char *szfile, int cx, int cy, float fps)
 {
 	m_nframe = 0;
     
-    avcodec_register_all();
+    #if LIBAVCODEC_VERSION_INT < AV_VERSION_INT(58, 137, 100)
+        avcodec_register_all();
+    #endif
     
     // find mpeg1 video encoder
     av_codec = avcodec_find_encoder(AV_CODEC_ID_MPEG1VIDEO);
@@ -114,8 +116,37 @@ int CMPEGAnimation::Create(const char *szfile, int cx, int cy, float fps)
 
 	buffer = (uint8_t *)av_malloc(yuv_frame_bytes * sizeof(uint8_t));
 
-	avpicture_fill((AVPicture *)yuv_frame, buffer, AV_PIX_FMT_YUV420P, av_codec_context->width, av_codec_context->height);
+    av_image_fill_arrays(yuv_frame->data, yuv_frame->linesize, buffer, AV_PIX_FMT_YUV420P, av_codec_context->width, av_codec_context->height, 1);
 
+    return true;
+}
+
+bool CMPEGAnimation::EncodeVideo(AVFrame *frame) 
+{
+    int ret;
+
+    ret = avcodec_send_frame(av_codec_context, frame);
+    if (ret < 0) 
+    {
+        return false;
+    }
+
+    while (ret >= 0) 
+    {
+        ret = avcodec_receive_packet(av_codec_context, &av_packet);
+        // Nothing wrong, just done or need more frames
+        if (ret == AVERROR(EAGAIN) || ret == AVERROR_EOF)
+        {
+            return true;
+        }
+        else if (ret < 0) // Presumably unrecoverable errors
+        {
+            return false;
+        }
+
+        fwrite(av_packet.data, 1, av_packet.size, file);
+        av_packet_unref(&av_packet);
+    }
     return true;
 }
 
@@ -131,7 +162,6 @@ int CMPEGAnimation::Write(QImage &im)
 //    for(int index = 0; index < m_repeatFrames; index++)
 //    {
     
-	int ret;
 	int got_packet = 0;
 	av_init_packet(&av_packet);
 	av_packet.data = NULL;
@@ -141,21 +171,10 @@ int CMPEGAnimation::Write(QImage &im)
 
 	yuv_frame->pts = m_nframe++;
 
-	// encode the pix
-	ret = avcodec_encode_video2(av_codec_context, &av_packet, yuv_frame, &got_packet);
-
-	if (ret < 0)
-	{
-		return false;
-	}
-
-	if (got_packet)
-	{
-
-		fwrite(av_packet.data, 1, av_packet.size, file);
-
-		av_free_packet(&av_packet);
-	}
+    if (!EncodeVideo(yuv_frame))
+    {
+        return false;
+    }
 //	}
 
     return true;
@@ -187,24 +206,8 @@ void CMPEGAnimation::Close()
     // get the delayed frames
 	if (m_nframe > 0)
 	{
-		int got_packet;
-		do
-		{
-			fflush(stdout);
-
-			int ret = avcodec_encode_video2(av_codec_context, &av_packet, NULL, &got_packet);
-
-			if (ret < 0)
-			{
-				break;
-			}
-
-			if (got_packet)
-			{
-				fwrite(av_packet.data, 1, av_packet.size, file);
-				av_free_packet(&av_packet);
-			}
-		} while (got_packet);
+        fflush(stdout);
+        EncodeVideo(NULL);
 	}
 
     // add sequence end code to have a real video file

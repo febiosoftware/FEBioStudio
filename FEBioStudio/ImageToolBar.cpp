@@ -78,24 +78,21 @@ void CImageToolBar::on_viewAction_triggered(QAction* action)
 
     if(action == m_showModelView)
     {
-        doc->GetView()->imgView = CGView::MODEL_VIEW;
-
-        UpdateToolbar(CGView::MODEL_VIEW);
+        doc->SetUIViewMode(CGLDocument::MODEL_VIEW);
+        UpdateToolbar(CGLDocument::MODEL_VIEW);
     }
     else if(action == m_showSliceView)
     {
-        doc->GetView()->imgView = CGView::SLICE_VIEW;
-
-        UpdateToolbar(CGView::SLICE_VIEW);
+		doc->SetUIViewMode(CGLDocument::SLICE_VIEW);
+        UpdateToolbar(CGLDocument::SLICE_VIEW);
     }
     else if(action == m_show2dImageView)
     {
-        doc->GetView()->imgView = CGView::TIME_VIEW_2D;
+		doc->SetUIViewMode(CGLDocument::TIME_VIEW_2D);
+		UpdateToolbar(CGLDocument::TIME_VIEW_2D);
+	}
 
-        UpdateToolbar(CGView::TIME_VIEW_2D);
-    }
-
-    m_wnd->UpdateUIConfig();
+	m_wnd->UpdateUIConfig();
 }
 
 void CImageToolBar::on_showPixelInspector_triggered()
@@ -123,17 +120,17 @@ void CImageToolBar::UpdateToolbar(int view)
 {
     switch (view)
     {
-    case CGView::MODEL_VIEW:
+    case CGLDocument::MODEL_VIEW:
         // widgetForAction(m_showPixelInspector)->setVisible(false);
         if(m_pixelInspector) m_pixelInspector->close();
         break;
 
-    case CGView::SLICE_VIEW:
+    case CGLDocument::SLICE_VIEW:
         // widgetForAction(m_showPixelInspector)->setVisible(true);
         if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetImageSliceView());
         break;
 
-    case CGView::TIME_VIEW_2D:
+    case CGLDocument::TIME_VIEW_2D:
         // widgetForAction(m_showPixelInspector)->setVisible(true);
         if(m_pixelInspector) m_pixelInspector->SetInfoSource(m_wnd->GetC2DImageTimeView());
         break;

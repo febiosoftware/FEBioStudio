@@ -36,6 +36,7 @@ class CImageSITK : public C3DImage
 {
 public:
     static itk::simple::Image SITKImageFrom3DImage(C3DImage* img);
+    static bool WriteSITKImage(C3DImage* img, const std::string& filename);
 
 public:
     CImageSITK();
@@ -44,6 +45,9 @@ public:
 
     BOX GetBoundingBox() override;
     void SetBoundingBox(BOX& box) override;
+
+    mat3d GetOrientation() override;
+    void SetOrientation(mat3d& orientation) override;
 
     std::vector<unsigned int> GetSize();
     std::vector<double> GetOrigin();

@@ -263,6 +263,7 @@ public:
 	void ShowAllParts(GObject* po);
 
 	bool DeletePart(GPart* pg);
+	bool DeleteParts(std::vector<GPart*>& partList);
 
 public:
 	int MeshLayers() const; 

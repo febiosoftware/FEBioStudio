@@ -176,11 +176,6 @@ void FSSurfaceMesh::Update()
 // It is assumed that all faces have been assigned to a partition
 void FSSurfaceMesh::BuildMesh()
 {
-#ifdef _DEBUG
-	// Make sure all faces are partitioned
-	for (int i = 0; i < Faces(); ++i) assert(m_Face[i].m_gid >= 0);
-#endif
-
 	// -- Build face data ---
 	// find all the face neighbors
 	UpdateFaceNeighbors();

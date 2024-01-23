@@ -681,7 +681,7 @@ void GLMesher::BuildFaceRevolveWedge(GMesh* glmesh, GFace& f)
 {
 	GObject& o = *m_po;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	const int M = 10;
 #else
 	const int M = 50;

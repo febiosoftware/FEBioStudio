@@ -500,7 +500,7 @@ void FSProject::InitModules()
 	REGISTER_FE_CLASS(FSSoluteNaturalFlux         , MODULE_MULTIPHASIC, FELOAD_ID            , FE_SOLUTE_NATURAL_FLUX      , "Solute natural flux");
 	REGISTER_FE_CLASS(FSMatchingOsmoticCoefficient, MODULE_MULTIPHASIC, FELOAD_ID            , FE_MATCHING_OSM_COEF        , "Matching osmotic coefficient");
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 	REGISTER_FE_CLASS(FSSBMPointSource, MODULE_MULTIPHASIC, FELOAD_ID, FE_SBM_POINT_SOURCE, "SBM point source");
 #endif
 
@@ -648,6 +648,7 @@ void FSProject::SetDefaultPlotVariables()
 		m_plt.AddPlotVariable("fluid rate of deformation", true);
 		m_plt.AddPlotVariable("fluid dilatation", true);
 		m_plt.AddPlotVariable("fluid volume ratio", true);
+        m_plt.AddPlotVariable("nodal fluid flux", true);
 	}
     else if (strcmp(szmod, "fluid-solutes") == 0)
     {
@@ -741,21 +742,21 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 			}
 			else if ((pi->GetParamType() == Param_CHOICE) && (p.GetParamType() == Param_INT))
 			{
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting from int to choice (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				pi->SetIntValue(p.GetIntValue());
 			}
 			else if ((pi->GetParamType() == Param_INT) && (p.GetParamType() == Param_CHOICE))
 			{
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting from choice to int (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				pi->SetIntValue(p.GetIntValue());
 			}
 			else if ((p.GetParamType() == Param_VEC3D) && (pi->GetParamType() == Param_ARRAY_DOUBLE) && (pi->size() == 3))
 			{
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting from vec3d to double[3] (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 				vec3d v = p.GetVec3dValue();
@@ -766,7 +767,7 @@ bool copyParameter(std::ostream& log, FSCoreBase* pc, const Param& p)
 			{
 				string s = p.GetMathString();
 				pi->SetStringValue(s);
-#ifdef _DEBUG
+#ifndef NDEBUG
 				log << "warning: converting math string to string (" << pc->GetName() << "." << pi->GetShortName() << ")\n";
 #endif
 			}

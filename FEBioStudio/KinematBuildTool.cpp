@@ -147,7 +147,7 @@ bool CKinematBuildTool::OnApply()
 				mat3d Q1 = D.rotate();
 
 				mat3d Q = Q1 * Q0i;
-				quatd q(Q.transpose());	// TODO: Why do I need to transpose? 
+				quatd q(Q);
 				R = q.GetRotationVector();
 
 				t = t1 - Q * t0;
@@ -156,7 +156,7 @@ bool CKinematBuildTool::OnApply()
 			{
 				t = D.translate();
 				mat3d Q = D.rotate();
-				quatd q(Q.transpose());	// TODO: Why do I need to transpose? 
+				quatd q(Q);
 				R = q.GetRotationVector();
 			}
 

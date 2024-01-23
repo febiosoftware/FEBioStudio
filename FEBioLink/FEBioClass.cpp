@@ -44,10 +44,8 @@ SOFTWARE.*/
 #include <FEMLib/FEConnector.h>
 #include <FEMLib/FERigidLoad.h>
 #include <FEMLib/FEInitialCondition.h>
-#include <FEMLib/FEDiscreteMaterial.h>
 #include <FEMLib/FEElementFormulation.h>
 #include <FEMLib/FEMeshDataGenerator.h>
-#include <FEMLib/FSModel.h>
 #include <sstream>
 using namespace FEBio;
 

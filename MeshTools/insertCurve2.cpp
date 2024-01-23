@@ -75,8 +75,16 @@ FSSurfaceMesh* InsertCurves2::Apply(FSSurfaceMesh* pm, vector<GEdge*>& curveList
 		}
 		ps->Sort();
 
-		// get the node count for this curve
+		// convert the curve mesh to global coordinates
 		int N = ps->Nodes();
+		for (int i = 0; i < N; ++i)
+		{
+			vec3d r0 = ps->Node(i).r;
+			vec3d r1 = pco->GetTransform().LocalToGlobal(r0);
+			ps->Node(i).r = r1;
+		}
+
+		// get the node count for this curve
 		curve[n].assign(N, -1);
 
 		// create the point list (in local coordinates)

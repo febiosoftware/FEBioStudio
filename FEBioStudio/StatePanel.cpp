@@ -375,7 +375,7 @@ void CStatePanel::on_deleteButton_clicked()
 		if (n >= states - 1) n = states - 1;
 		doc->SetActiveState(n);
 		GetMainWindow()->UpdatePostToolbar();
-		GetMainWindow()->Update(this);
+		GetMainWindow()->Update(this, true);
 	}
 }
 

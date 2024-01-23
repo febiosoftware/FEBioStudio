@@ -637,6 +637,7 @@ SOFTWARE.*/
 #define GCYLINDRICAL_PATCH	0x0027	// from FS 1.0
 #define GBOX_IN_BOX			0x0028	// from FS 1.0
 #define GMULTI_PATCH		0x0029	// from FS 1.7
+#define GCURVE_OBJECT		0x002A	// from FS 2.5
 
 //--------------------------------------------------------
 // Modifier types
