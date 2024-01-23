@@ -124,6 +124,7 @@ SOFTWARE.*/
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
+#include "units.h"
 
 using std::stringstream;
 
@@ -187,6 +188,10 @@ void CMainWindow::on_actionNewModel_triggered()
 		assert(doc);
 		if (doc)
 		{
+			int units = dlg.GetUnitSystem();
+			Units::SetUnitSystem(units);
+			doc->SetUnitSystem(units);
+
 			docTitle = dlg.GetModelName().toStdString();
 			doc->SetDocTitle(docTitle);
 			AddDocument(doc);
