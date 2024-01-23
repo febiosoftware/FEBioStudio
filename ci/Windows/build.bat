@@ -1,44 +1,23 @@
-call "%ONEAPI_ROOT%\setvars.bat"
-set DEPENDENCIES="c:\third-party-deps"
-set LIB_INC="%DEPENDENCIES%\include
-set LIB_DIR="%DEPENDENCIES%\lib"
-set FFMPEG_DIR="%DEPENDENCIES%\FFmpeg"
-set FFMPEG_INC="%DEPENDENCIES%\FFmpeg\include"
-set QT_ROOT="%DEPENDENCIES%\qt\6.4.1"
-set OCCT_PATH="%DEPENDENCIES%\opencascade"
-set GLEW_DIR="%DEPENDENCIES%\lib"
-set FEBIO_SDK="febio4-sdk"
-set /a "PROC=%NUMBER_OF_PROCESSORS% - 4"
-cmake -version
+call "%VS2019INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
-REM TODO: Cmake requires 6 runs to generate correctly
+cmake -version
+set Qt_Root="c:/usr/local/x64-windows"
+:: TODO: Cmake requires 6 runs to generate correctly
 for /l %%a in (1, 1, 6) do (
 cmake -L . -B cmbuild ^
-  -DFEBio_SDK=%FEBIO_SDK% ^
-  -DQt_Root=%QT_ROOT% ^
-  -DDEPENDENCIES=%DEPENDENCIES% ^
-  -DSSL_LIB_DIR=%LIB_DIR% ^
-  -DSSH_INC=%LIB_DIR%\include ^
-  -DTETGEN_LIB_DIR=%LIB_DIR% ^
-  -DSSH_LIB_DIR=%LIB_DIR% ^
-  -DOCCT_INC=%OCCT_PATH%\inc ^
-  -DOCCT_LIB_DIR=%OCCT_PATH%\win64\vc14\lib^
-  -DOCCT_PATH=%OCCT_PATH% ^
-  -DNETGEN_INC=%LIB_ROOT%\netgen\include ^
-  -DNETGEN_LIB_DIR=%LIB_ROOT%\netgen\lib ^
-  -DFFMPEG_INC=%FFMPEG_INC% ^
-  -DFFMPEG_LIB_DIR=%FFMPEG_DIR%\lib ^
+  -DQt_Root=%Qt_Root% ^
   -DUSE_FFMPEG=ON ^
-  -DMODEL_REPO=ON ^
+  -DUSE_TEEM=OFF ^
+  -DUSE_DCMTK=OFF ^
   -DUSE_TETGEN=ON ^
   -DUSE_MMG=ON ^
   -DUSE_SSH=ON ^
   -DUSE_SSL=ON ^
-  -DCAD_FEATURES=OFF ^
+  -DCAD_FEATURES=ON ^
   -DUSE_NETGEN=ON ^
   -DUSE_ITK=ON
 )
 cd cmbuild
-msbuild /P:Configuration=Release /P:WarningLevel=0 /m:%PROC% ALL_BUILD.vcxproj
+msbuild /v:n /P:Configuration=Release /P:WarningLevel=0 /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj
 cd ..
 exit 0

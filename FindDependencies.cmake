@@ -251,23 +251,23 @@ mark_as_advanced(MMG_DBG_LIB_DIR)
 
 # TETGEN
 if(WIN32)
-	find_path(TETGEN_INC tetgen.h
+  find_path(TETGEN_INC tetgen.h
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
+        PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
         DOC "TetGen include directory")
-	find_library(TETGEN_LIB tetgen
+  find_library(TETGEN_LIB tet tetgen
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "x64/Release" "x64/Debug"
-		DOC "TetGen library path")
+        PATH_SUFFIXES "lib" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "x64/Release" "x64/Debug"
+        DOC "TetGen library path")
 else()
 	find_path(TETGEN_INC tetgen.h
         PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "include/tetgen*" "src" "build" "build/include"
-		DOC "TetGen include directory")
+        DOC "TetGen include directory")
 	find_library(TETGEN_LIB tet
         PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "build" "cbuild" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "TetGen library path")
+        DOC "TetGen library path")
 endif()
 
 if(TETGEN_LIB)
@@ -402,7 +402,7 @@ endif()
 
 if(SSH_LIB)
     get_filename_component(SSH_TEMP ${SSH_LIB} DIRECTORY)
-    set(SSH_LIB_DIR ${SSH_TEMP} CACHE PATH "Path to the LibSSH lib directory (e.g. /opt/libssh/lib)")
+    set(SSH_LIB_DIR ${SSH_TEMP} CACHE PATH "Path to the LibSSH lib directory (e.g. /opt/libssh/lib)" FORCE)
     unset(SSH_TEMP)
     unset(SSH_LIB CACHE)
 else()
@@ -423,14 +423,15 @@ mark_as_advanced(SSH_DBG_LIB_DIR)
 
 # OpenSSL
 if(WIN32)
-	find_path(SSL_INC openssl/aes.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
-        DOC "OpenSSL include directory")
-	find_library(SSL_LIB ssl
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "OpenSSL library path")
+  find_path(SSL_INC openssl/aes.h
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "include" "openssl/include" "build" "build/include"
+    DOC "OpenSSL include directory")
+
+  find_library(SSL_LIB libssl ssl
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "lib" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
+    DOC "OpenSSL library path")
 elseif(APPLE)
 	find_path(SSL_INC openssl/aes.h
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
@@ -454,7 +455,7 @@ endif()
 
 if(SSL_LIB)
     get_filename_component(SSL_TEMP ${SSL_LIB} DIRECTORY)
-    set(SSL_LIB_DIR ${SSL_TEMP} CACHE PATH "Path to the OpenSSL lib directory (e.g. /opt/openssl/lib)")
+    set(SSL_LIB_DIR ${SSL_TEMP} CACHE PATH "Path to the OpenSSL lib directory (e.g. /opt/openssl/lib)" FORCE)
     unset(SSL_TEMP)
     unset(SSL_LIB CACHE)
 else()
@@ -475,14 +476,14 @@ mark_as_advanced(SSL_DBG_LIB_DIR)
 
 # LibZip
 if(WIN32)
-	find_path(LIBZIP_INC zip.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "/libzip" "include/libzip" "libzip/include/libzip" "build/libzip" "build/include/libzip"
-        DOC "LibZip include directory")
-	find_library(LIBZIP_LIB zip
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "LibZip library path")
+  find_path(LIBZIP_INC zip.h
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "include" "/libzip" "include/libzip" "libzip/include/libzip" "build/libzip" "build/include/libzip"
+    DOC "LibZip include directory")
+  find_library(LIBZIP_LIB zip
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "lib" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
+    DOC "LibZip library path")
 elseif(APPLE)
 	find_path(LIBZIP_INC zip.h
         PATHS /usr/include/* /opt/libzip $ENV{HOME}/* $ENV{HOME}/*/*
@@ -525,14 +526,14 @@ mark_as_advanced(LIBZIP_DBG_LIB_DIR)
 
 # SQLite
 if(WIN32)
-	find_path(SQLITE_INC sqlite3.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "sqlite/include" "build" "build/include"
-        DOC "SQLite include directory")
-	find_library(SQLITE_LIB sqlite3
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "SQLite library path")
+  find_path(SQLITE_INC sqlite3.h
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "include" "sqlite/include" "build" "build/include"
+    DOC "SQLite include directory")
+  find_library(SQLITE_LIB sqlite3
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug" "lib"
+    DOC "SQLite library path")
 else()
 	find_path(SQLITE_INC sqlite3.h
         PATHS /opt/sqlite $ENV{HOME}/* $ENV{HOME}/*/*
@@ -546,7 +547,7 @@ endif()
 
 if(SQLITE_LIB)
     get_filename_component(SQLITE_TEMP ${SQLITE_LIB} DIRECTORY)
-    set(SQLITE_LIB_DIR ${SQLITE_TEMP} CACHE PATH "Path to the SQLite lib directory (e.g. /opt/sqlite/lib)")
+    set(SQLITE_LIB_DIR ${SQLITE_TEMP} CACHE PATH "Path to the SQLite lib directory (e.g. /opt/sqlite/lib)" FORCE)
     unset(SQLITE_TEMP)
     unset(SQLITE_LIB CACHE)
 else()
@@ -571,14 +572,14 @@ mark_as_advanced(SQLITE_DBG_LIB_DIR)
 
 # FFMPEG
 if(WIN32)
-	find_path(FFMPEG_INC libavformat/libavformat.h
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
-        DOC "FFMPEG include directory")
-	find_library(FFMPEG_LIB avformat
-        PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "FFMPEG library path")
+  find_path(FFMPEG_INC libavformat/libavformat.h libavformat/avformat.h
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
+    DOC "FFMPEG include directory")
+  find_library(FFMPEG_LIB avformat
+    PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
+    PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
+    DOC "FFMPEG library path")
 elseif(APPLE)
 	find_path(FFMPEG_INC libavformat/avformat.h
         PATHS /usr/local/homebrew /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*

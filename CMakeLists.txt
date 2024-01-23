@@ -31,15 +31,16 @@ endif()
 
 if(NOT CMAKE_PREFIX_PATH)
     if(WIN32)
-        find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
-            PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-            PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
-            DOC "Qt CMake Directory"
-            NO_DEFAULT_PATH)
+      find_path(Qt_TEMP Qt6/Qt6Config.cmake
+        PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* C:/Qt/* C:/Qt*/* $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
+        PATH_SUFFIXES "share" "lib/cmake" "msvc2015_64" "msvc2017_64" "msvc2019_64"
+        PATH_SUFFIXES "msvc2015_64" "msvc2017_64" "msvc2019_64"
+        DOC "Qt CMake Directory"
+        NO_DEFAULT_PATH)
     elseif(APPLE)
         find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
-            PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
-                $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
+            PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/*
+              $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt/* /Qt/* /Qt*/*
             PATH_SUFFIXES "clang_64"
             DOC "Qt6 CMake Directory"
             NO_DEFAULT_PATH)
@@ -640,7 +641,7 @@ target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
 if(APPLE)
     target_link_libraries(${FBS_BIN_NAME} ${GLEW_SHARED_LIBRARY_RELEASE} ${GLEW_LIBRARIES})
 else()
-    target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES})
+    target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
 endif()
 
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
