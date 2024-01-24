@@ -248,6 +248,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionMusclePath = addAction("Muscle Path", "actionMusclePath", "musclepath");
 	QAction* actionPlotGroup = addAction("Plot Group", "actionPlotGroup", "folder");
 	QAction* actionGraph = addAction("New Graph ...", "actionGraph", "chart"); actionGraph->setShortcut(Qt::Key_F3);
+	QAction* actionScatter = addAction("Scatter plot ...", "actionScatter");
 	QAction* actionSummary = addAction("Summary ...", "actionSummary"); actionSummary->setShortcut(Qt::Key_F4);
 	QAction* actionStats = addAction("Statistics  ...", "actionStats");
 	QAction* actionIntegrate = addAction("Integrate ...", "actionIntegrate", "integrate");
@@ -587,7 +588,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuPost->addAction(actionImageWarp);
 	menuPost->addSeparator();
 	menuPost->addAction(actionGraph);
-	menuPost->addSeparator();
+	menuPost->addAction(actionScatter);
 	menuPost->addAction(actionSummary);
 	menuPost->addAction(actionStats);
 	menuPost->addAction(actionIntegrate);

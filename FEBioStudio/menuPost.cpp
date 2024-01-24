@@ -55,6 +55,7 @@ SOFTWARE.*/
 #include "SummaryWindow.h"
 #include "StatsWindow.h"
 #include "IntegrateWindow.h"
+#include "ScatterWindow.h"
 #include "DlgImportLines.h"
 #include "DlgTimeSettings.h"
 #include "PostDocument.h"
@@ -489,6 +490,21 @@ void CMainWindow::on_actionGraph_triggered()
 	pg->raise();
 	pg->activateWindow();
 	pg->Update();
+}
+
+void CMainWindow::on_actionScatter_triggered()
+{
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr) return;
+
+	CScatterWindow* scatterWindow = new CScatterWindow(this, postDoc);
+
+	scatterWindow->Update(true);
+	scatterWindow->show();
+	scatterWindow->raise();
+	scatterWindow->activateWindow();
+
+	AddGraph(scatterWindow);
 }
 
 void CMainWindow::on_actionSummary_triggered()

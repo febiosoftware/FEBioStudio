@@ -43,7 +43,8 @@ class LoadCurve;
 enum ChartStyle
 {
 	LINECHART_PLOT,
-	BARCHART_PLOT
+	BARCHART_PLOT,
+	DENSITY_PLOT
 };
 
 //-----------------------------------------------------------------------------
@@ -236,6 +237,7 @@ protected:
 
 	void draw_linechart(QPainter& p, CPlotData& data);
 	void draw_barchart(QPainter& p, CPlotData& data);
+	void draw_densityplot(QPainter& p, CPlotData& data);
 
 public slots:
 	void OnZoomToWidth();
