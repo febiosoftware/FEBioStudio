@@ -122,6 +122,7 @@ void FBSRigidConstraint::Save(OArchive& ar)
 {
 	ar.WriteChunk(NAME, GetName());
 	ar.WriteChunk(MATID, m_matid);
+	ar.WriteChunk(STATUS, m_bActive);
 	ar.BeginChunk(PARAMS);
 	{
 		ParamContainer::Save(ar);
@@ -142,6 +143,7 @@ void FBSRigidConstraint::Load(IArchive& ar)
 		{
 		case NAME: ar.read(sz); SetName(sz); break;
 		case MATID: ar.read(m_matid); break;
+		case STATUS: ar.read(m_bActive); break;
 		case PARAMS:
 		{
 			ParamContainer::Load(ar);

@@ -12,7 +12,7 @@ class FEItemListBuilder;
 class FSDomainComponent : public FSStepComponent, public FSHasOneItemList
 {
 public:
-	enum { NAME, PARAMS, LIST, STEP, SELECTION_TYPE, LIST_ID };
+	enum { NAME, PARAMS, LIST, STEP, SELECTION_TYPE, LIST_ID, STATUS };
 
 public:
 	FSDomainComponent(int ntype, FSModel* ps, int nstep = 0);

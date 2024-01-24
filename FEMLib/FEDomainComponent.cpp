@@ -32,6 +32,8 @@ void FSDomainComponent::Save(OArchive& ar)
 	// write the step
 	ar.WriteChunk(STEP, m_nstepID);
 
+	ar.WriteChunk(STATUS, m_bActive);
+
 	// write the selection type
 	ar.WriteChunk(SELECTION_TYPE, GetMeshItemType());
 
@@ -64,6 +66,7 @@ void FSDomainComponent::Load(IArchive& ar)
 		case NAME: { string name; ar.read(name); SetName(name); } break;
 		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
 		case STEP: ar.read(m_nstepID); break;
+		case STATUS: ar.read(m_bActive); break;
 		case SELECTION_TYPE: { unsigned int itemType = 0; ar.read(itemType); SetMeshItemType(itemType); } break;
 		case PARAMS:
 			ParamContainer::Load(ar);
