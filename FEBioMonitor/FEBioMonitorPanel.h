@@ -37,6 +37,8 @@ public:
 
 	void Update(bool breset = false) override;
 
+	void Clear();
+
 private:
 	Ui* ui;
 };

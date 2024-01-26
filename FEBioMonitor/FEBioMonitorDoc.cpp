@@ -28,6 +28,9 @@ SOFTWARE.*/
 #include "../FEBioStudio/MainWindow.h"
 #include "../FEBioStudio/GLView.h"
 #include <FECore/FEModelParam.h>
+#include <FECore/FEAnalysis.h>
+#include <FECore/FEGlobalMatrix.h>
+#include <FECore/FESolver.h>
 #include "FEBioMonitorPanel.h"
 #include "GLMonitorScene.h"
 #include <QWaitCondition>
@@ -137,6 +140,8 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
 
 FEBioMonitorDoc::~FEBioMonitorDoc()
 {
+	CMainWindow* wnd = GetMainWindow();
+	wnd->GetFEBioMonitorPanel()->Clear();
 	qDeleteAll(m_watches);
 }
 
@@ -538,4 +543,17 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 		var.setValue(val);
 		var.setType(FEBioWatchVariable::VALID);
 	}
+}
+
+FEGlobalMatrix* FEBioMonitorDoc::GetStiffnessMatrix()
+{
+	if (IsPaused() == false) return nullptr;
+	if (m_fem == nullptr) return nullptr;
+
+	FEAnalysis* step = m_fem->GetCurrentStep();
+	if (step == nullptr) return nullptr;
+
+	FESolver* solver = step->GetFESolver();
+	FEGlobalMatrix* K = solver->GetStiffnessMatrix();
+	return K;
 }

@@ -24,31 +24,25 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
-#include "../FEBioStudio/CommandPanel.h"
+#include <QDialog>
 
-namespace Ui {
-	class CFEBioModelPanel;
-}
+class FEGlobalMatrix;
 
-class FEBioMonitorDoc;
-
-class CFEBioModelPanel : public CCommandPanel
+class CDlgMatrixInspector : public QDialog
 {
 	Q_OBJECT
 
-public:
-	CFEBioModelPanel(CMainWindow* pwnd, QWidget* parent = 0);
+	class Ui;
 
 public:
-	void Update(bool breset) override;
+	CDlgMatrixInspector(QWidget* parent = 0);
 
-	void Clear();
-
-	FEBioMonitorDoc* GetCurrentDocument();
+	void SetGlobalMatrix(FEGlobalMatrix* M);
 
 public slots:
-	void launchMatrixInspector();
+	void onViewScroll();
+	void updateView(int x, int y);
 
 private:
-	Ui::CFEBioModelPanel* ui;
+	Ui* ui;
 };

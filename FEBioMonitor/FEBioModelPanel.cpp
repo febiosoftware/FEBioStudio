@@ -32,6 +32,12 @@ SOFTWARE.*/
 #include <QStyledItemDelegate>
 #include <QApplication>
 #include <QPainter>
+#include <QSplitter>
+#include <QLabel>
+#include <QPushButton>
+#include <QMessageBox>
+#include "DlgMatrixInspector.h"
+#include <FECore/SparseMatrix.h>
 
 class MyItemDelegate : public QStyledItemDelegate
 {
@@ -40,6 +46,8 @@ public:
 
 	void paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 	{
+		if (index.isValid() == false) return;
+
 		QStyleOptionViewItem& opt = const_cast<QStyleOptionViewItem&>(option);
 		initStyleOption(&opt, index);
 
@@ -168,14 +176,27 @@ private:
 	CFEBioDataModel* m_data = nullptr;
 
 public:
-	void setup(CCommandPanel* wnd)
+	void setup(::CFEBioModelPanel* wnd)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
 		l->setContentsMargins(0, 0, 0, 0);
-		l->addWidget(m_tree = new QTreeView);
+		QSplitter* splitter = new QSplitter(Qt::Vertical);
+		splitter->addWidget(m_tree = new QTreeView);
+
+		QWidget* bottomPane = new QWidget;
+		QVBoxLayout* bottomLayout = new QVBoxLayout;
+		QPushButton* pb = new QPushButton("Matrix Inspector ...");
+		bottomLayout->addWidget(pb);
+		bottomLayout->addStretch();
+		bottomPane->setLayout(bottomLayout);
+
+		splitter->addWidget(bottomPane);
+		l->addWidget(splitter);
 		m_tree->setUniformRowHeights(true);
 		m_tree->setItemDelegate(new MyItemDelegate);
 		wnd->setLayout(l);
+
+		QObject::connect(pb, &QPushButton::clicked, wnd, &::CFEBioModelPanel::launchMatrixInspector);
 	}
 
 	void reset()
@@ -191,9 +212,16 @@ public:
 
 	void setDocument(FEBioMonitorDoc* doc)
 	{
-		assert(m_data == nullptr);
-		m_data = new CFEBioDataModel(doc);
-		m_tree->setModel(m_data);
+		if (doc)
+		{
+			m_data = new CFEBioDataModel(doc);
+			m_tree->setModel(m_data);
+		}
+		else
+		{
+			m_data = nullptr;
+			m_tree->setModel(nullptr);
+		}
 	}
 };
 
@@ -202,17 +230,46 @@ CFEBioModelPanel::CFEBioModelPanel(CMainWindow* wnd, QWidget* parent) : CCommand
 	ui->setup(this);
 }
 
+FEBioMonitorDoc* CFEBioModelPanel::GetCurrentDocument()
+{
+	return dynamic_cast<FEBioMonitorDoc*>(GetMainWindow()->GetDocument());
+}
+
+void CFEBioModelPanel::Clear()
+{
+	ui->reset();
+	ui->setDocument(nullptr);
+}
+
 void CFEBioModelPanel::Update(bool breset)
 {
 	if (breset)
 	{
 		ui->reset();
 
-		FEBioMonitorDoc* doc = dynamic_cast<FEBioMonitorDoc*>(GetMainWindow()->GetDocument());
+		FEBioMonitorDoc* doc = GetCurrentDocument();
 		if (doc) ui->setDocument(doc);
 	}
 	else
 	{
 		ui->update();
 	}
+}
+
+void CFEBioModelPanel::launchMatrixInspector()
+{
+	FEBioMonitorDoc* doc = GetCurrentDocument();
+	if (doc == nullptr) return;
+	if (doc->IsPaused() == false) return;
+
+	FEGlobalMatrix* M = doc->GetStiffnessMatrix();
+	if (M == nullptr)
+	{
+		QMessageBox::information(this, "FEBio Studio", "No stiffness matrix available.");
+		return;
+	}
+
+	CDlgMatrixInspector dlg(this);
+	dlg.SetGlobalMatrix(M);
+	dlg.exec();
 }

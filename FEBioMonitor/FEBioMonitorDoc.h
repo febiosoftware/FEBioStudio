@@ -31,6 +31,7 @@ SOFTWARE.*/
 
 class FEModel; // from FEBio
 class FEBioModel;
+class FEGlobalMatrix;
 
 class FEBioMonitorDoc;
 
@@ -118,6 +119,9 @@ public:
 	const FEBioWatchVariable* GetWatchVariable(int n);
 	int GetWatchVariables() const;
 	void SetWatchVariable(int n, const QString& name);
+
+public:
+	FEGlobalMatrix* GetStiffnessMatrix();
 
 private:
 	void UpdateWatchVariable(FEBioWatchVariable& var);

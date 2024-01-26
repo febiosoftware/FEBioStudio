@@ -74,3 +74,7 @@ void CFEBioMonitorPanel::Update(bool breset)
 	ui->dataPanel ->Update(breset);
 }
  
+void CFEBioMonitorPanel::Clear()
+{
+	ui->febioPanel->Clear();
+}
