@@ -293,14 +293,14 @@ mark_as_advanced(TETGEN_DBG_LIB_DIR)
 
 # OpenCascade
 if(WIN32)
-	find_path(OCCT_INC gp_Pnt.hxx
+    find_path(OCCT_INC gp_Pnt.hxx
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-		PATH_SUFFIXES "/opencascade" "include/opencascade" "opencascade/include/opencascade" "build/opencascade" "build/include/opencascade"
+        PATH_SUFFIXES "/opencascade" "include/opencascade" "opencascade/include/opencascade" "build/opencascade" "build/include/opencascade" "inc"
         DOC "OpenCascade include directory")
-	find_library(OCCT_LIB TKernel
+    find_library(OCCT_LIB TKernel
         PATHS C:/Program\ Files/* $ENV{HOMEPATH}/* $ENV{HOMEPATH}/*/*
-        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
-		DOC "OpenCascade library path")
+        PATH_SUFFIXES "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug" "win64/vc14/lib"
+        DOC "OpenCascade library path")
 else()
 	find_path(OCCT_INC gp_Pnt.hxx
         PATHS /opt/opencascade $ENV{HOME}/* $ENV{HOME}/*/*

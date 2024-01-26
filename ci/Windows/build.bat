@@ -1,7 +1,7 @@
 call "%VS2019INSTALLDIR%\VC\Auxiliary\Build\vcvars64.bat"
 
 cmake -version
-set Qt_Root="c:/usr/local/x64-windows"
+set Qt_Root="c:/usr/local/febio/vcpkg_installed/x64-windows"
 :: TODO: Cmake requires 6 runs to generate correctly
 for /l %%a in (1, 1, 6) do (
 cmake -L . -B cmbuild ^
