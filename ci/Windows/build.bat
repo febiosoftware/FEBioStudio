@@ -6,6 +6,7 @@ set Qt_Root="c:/usr/local/febio/vcpkg_installed/x64-windows"
 for /l %%a in (1, 1, 6) do (
 cmake -L . -B cmbuild ^
   -DQt_Root=%Qt_Root% ^
+  -DWINDEPLOYQT_EXECUTABLE="%Qt_Root%\tools\Qt6\bin\windeployqt.exe" ^
   -DUSE_FFMPEG=ON ^
   -DUSE_TEEM=OFF ^
   -DUSE_DCMTK=OFF ^
