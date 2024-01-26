@@ -26,14 +26,14 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "ZipFiles.h"
-#ifdef HAS_QUAZIP
-#include <JlCompress.h>
-#include <quazip.h>
-#include <quazipfile.h>
+#ifdef HAS_LIBZIP
+
+#include <zip.h>
+#include <fstream>
+
 
 void recurseAddDir(QDir d, QStringList & list) 
 {
-
 	QStringList qsl = d.entryList(QDir::NoDotAndDotDot | QDir::Dirs | QDir::Files);
 
 	for (QString file : qsl) {
@@ -48,175 +48,102 @@ void recurseAddDir(QDir d, QStringList & list)
 			QDir sd(finfo.filePath());
 
 			recurseAddDir(sd, list);
-
 		}
 		else
 			list << QDir::toNativeSeparators(finfo.filePath());
-
 	}
 }
 
-bool archive(const QString & filePath, const QDir & dir, const QString & comment) 
+bool archive(const QString & filePath, const QDir & dir) 
 {
 	QStringList sl;
 	recurseAddDir(dir, sl);
 
-	QuaZip zip(filePath);
-	zip.setFileNameCodec("IBM866");
-
-	if (!zip.open(QuaZip::mdCreate)) {
-		return false;
-	}
+    int errorp;
+    zip_t* zipper = zip_open(filePath.toStdString().c_str(), ZIP_CREATE | ZIP_TRUNCATE, &errorp);
+    if (!zipper) {
+        return false;
+    }
 
 	if (!dir.exists()) {
 		return false;
 	}
 
-	QFile inFile;
-
 	QFileInfoList files;
 	foreach(QString fn, sl)	files << QFileInfo(fn);
 
-	QuaZipFile outFile(&zip);
-
-	char c;
 	foreach(QFileInfo fileInfo, files) {
 
-		if (!fileInfo.isFile())
-			continue;
-
 		QString fileNameWithRelativePath = fileInfo.filePath().remove(0, dir.absolutePath().length() + 1);
-
-		inFile.setFileName(fileInfo.filePath());
-
-		if (!inFile.open(QIODevice::ReadOnly)) {
-			return false;
-		}
 
 		QString realPath;
 
 		if (fileInfo.isSymLink())
 		{
 			realPath = fileInfo.symLinkTarget();
-
-			//			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.symLinkTarget())), NULL, 0, 0, 0, true) {
-			//				return false;
-			//			}
 		}
 		else
 		{
 			realPath = fileInfo.filePath();
-
-			//			if (!outFile.open(QIODevice::WriteOnly, QuaZipNewInfo(fileNameWithRelativePath, fileInfo.filePath())), NULL, 0, 0, 0, true) {
-			//				return false;
-			//			}
 		}
 
-		QuaZipNewInfo zipFileInfo(fileNameWithRelativePath, realPath);
+        zip_source_t* source = zip_source_file(zipper, realPath.toStdString().c_str(), 0, 0);
+        if(!source) return false;
 
-		// For writing uncompressed files
-		//		zipFileInfo.uncompressedSize = fileInfo.size();
-
-		//		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo, NULL, 0, 0, 0, true)) {
-		//			return false;
-		//		}
-
-		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo)) {
-			return false;
-		}
-
-		while (inFile.getChar(&c) && outFile.putChar(c));
-
-
-		if (outFile.getZipError() != UNZ_OK) {
-			return false;
-		}
-
-		outFile.close();
-
-		if (outFile.getZipError() != UNZ_OK) {
-			return false;
-		}
-
-		inFile.close();
+        if(zip_file_add(zipper, fileNameWithRelativePath.toStdString().c_str(), source, ZIP_FL_ENC_UTF_8) < 0)
+        {
+            zip_source_free(source);
+            return false;
+        }
 	}
 
-	zip.close();
-
-	if (zip.getZipError() != 0) {
-		return false;
-	}
+    zip_close(zipper);
 
 	return true;
 }
 
-QStringList extractAllFiles(QString fileName, QString destDir)
+QStringList extractAllFiles(const QString& archiveName, const QString& dir)
 {
-	return JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
+    QStringList fileList;
+
+    zip_t* archive = zip_open(archiveName.toStdString().c_str(), 0, nullptr);
+    if (archive == nullptr) {
+        return fileList;
+    }
+
+    zip_int64_t count = zip_get_num_entries(archive, 0);
+    zip_stat_t stat;
+    for (zip_int64_t index = 0; index < count; ++index) {
+        
+        zip_stat_index(archive, index, 0, &stat);
+        zip_file_t* file = zip_fopen_index(archive, index, 0);
+        
+        if (file != nullptr) {
+            std::string filePath = dir.toStdString() + "/" + stat.name;
+
+            fileList.append(filePath.c_str());
+
+            // Create path to write to
+            QDir parent = QFileInfo(filePath.c_str()).dir();
+            parent.mkpath(parent.path());
+
+            std::ofstream output(filePath, std::ios::binary);
+            char buffer[4096];
+            zip_int64_t bytesRead;
+
+            while ((bytesRead = zip_fread(file, buffer, sizeof(buffer))) > 0) {
+                output.write(buffer, static_cast<std::streamsize>(bytesRead));
+            }
+
+            zip_fclose(file);
+            output.close();
+        }
+    }
+
+    zip_close(archive);
+
+    return fileList;
 }
-
-
-bool archive(const QString & filePath, const QStringList & filePaths, const QStringList & localFilePaths)
-{
-	QuaZip zip(filePath);
-	zip.setFileNameCodec("IBM866");
-
-	if (!zip.open(QuaZip::mdCreate)) {
-		return false;
-	}
-
-	QFile inFile;
-
-	QuaZipFile outFile(&zip);
-
-	char c;
-	for(int index = 0; index < filePaths.size(); index++)
-	{
-		QFileInfo fileInfo(filePaths.at(index));
-
-
-		if (!fileInfo.isFile())
-					continue;
-
-		QString fileNameWithRelativePath = localFilePaths.at(index);
-
-		inFile.setFileName(fileInfo.filePath());
-
-		if (!inFile.open(QIODevice::ReadOnly)) {
-			return false;
-		}
-
-		QuaZipNewInfo zipFileInfo(fileNameWithRelativePath, filePaths.at(index));
-
-		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo)) {
-			return false;
-		}
-
-		while (inFile.getChar(&c) && outFile.putChar(c));
-
-
-		if (outFile.getZipError() != UNZ_OK) {
-			return false;
-		}
-
-		outFile.close();
-
-		if (outFile.getZipError() != UNZ_OK) {
-			return false;
-		}
-
-		inFile.close();
-	}
-
-	zip.close();
-
-	if (zip.getZipError() != 0) {
-		return false;
-	}
-
-	return true;
-}
-
 
 ZipThread::ZipThread(const QString & zipFile, const QStringList & filePaths, const QStringList & zippedFilePaths)
 	: zipFile(zipFile), filePaths(filePaths), zippedFilePaths(zippedFilePaths), aborted(false)
@@ -226,93 +153,63 @@ ZipThread::ZipThread(const QString & zipFile, const QStringList & filePaths, con
 
 void ZipThread::run()
 {
-	qint64 currentSize = 0;
-	qint64 totalSize = 0;
-	for(auto path : filePaths)
-	{
-		totalSize += QFileInfo(path).size();
-	}
+    int errorp;
+    zip_t* zipper = zip_open(zipFile.toStdString().c_str(), ZIP_CREATE | ZIP_TRUNCATE, &errorp);
+    if (!zipper) {
+        failed();
+        return;
+    }
 
-	QuaZip zip(zipFile);
-	zip.setFileNameCodec("IBM866");
-
-	if (!zip.open(QuaZip::mdCreate)) {
-		failed();
-		return;
-	}
-
-	QFile inFile;
-
-	QuaZipFile outFile(&zip);
-
-	char c;
+    QFileInfoList files;
+	foreach(QString fn, filePaths)	files << QFileInfo(fn);
 	for(int index = 0; index < filePaths.size(); index++)
 	{
-		QFileInfo fileInfo(filePaths.at(index));
+        QFileInfo fileInfo(filePaths.at(index));
 
+        QString fileNameWithRelativePath = zippedFilePaths.at(index);
 
-		if (!fileInfo.isFile())
-			continue;
+		QString realPath;
 
-		QString fileNameWithRelativePath = zippedFilePaths.at(index);
-
-		inFile.setFileName(fileInfo.filePath());
-
-		if (!inFile.open(QIODevice::ReadOnly)) {
-			zip.close();
-			failed();
-			return;
-		}
-
-		QuaZipNewInfo zipFileInfo(fileNameWithRelativePath, filePaths.at(index));
-
-		if (!outFile.open(QIODevice::WriteOnly, zipFileInfo)) {
-			zip.close();
-			failed();
-			return;
-		}
-
-		while (inFile.getChar(&c) && outFile.putChar(c) && !aborted)
+		if (fileInfo.isSymLink())
 		{
-			currentSize++;
-
-			if(currentSize % 1024 == 0)
-			{
-				emit progress(currentSize, totalSize);
-			}
+			realPath = fileInfo.symLinkTarget();
 		}
-
-		if(aborted)
+		else
 		{
-			zip.close();
-			failed();
-			return;
+			realPath = fileInfo.filePath();
 		}
 
-
-		if (outFile.getZipError() != UNZ_OK) {
-			zip.close();
-			failed();
+        zip_source_t* source = zip_source_file(zipper, realPath.toStdString().c_str(), 0, 0);
+        if(!source)
+        {
+            zip_close(zipper);
+            failed();
 			return;
-		}
+        }
 
-		outFile.close();
-
-		if (outFile.getZipError() != UNZ_OK) {
-			zip.close();
-			failed();
+        if(zip_file_add(zipper, fileNameWithRelativePath.toStdString().c_str(), source, ZIP_FL_ENC_UTF_8) < 0)
+        {
+            zip_source_free(source);
+            failed();
 			return;
-		}
-
-		inFile.close();
+        }
 	}
 
-	zip.close();
+    // Gets called periodically to set progress
+    auto progressCallback = [](zip_t* zipper, double val, void* zipThread) { ((ZipThread*)zipThread)->progress(val*100, 100); };
+    zip_register_progress_callback_with_state(zipper, 0.01, progressCallback, nullptr, this);
 
-	if (zip.getZipError() != 0) {
-		failed();
-		return;
-	}
+    // Cancels the run when callback returns non-zero value
+    auto cancelCallback = [](zip_t* zipper, void* zipThread) -> int { return ((ZipThread*)zipThread)->aborted; };
+    zip_register_cancel_callback_with_state(zipper, cancelCallback, nullptr, this);
+
+    zip_close(zipper);
+
+    if(aborted)
+    {
+        failed();
+        return;
+    }
 
 	emit resultReady(true, "");
 }
@@ -332,7 +229,11 @@ void ZipThread::failed()
 	}
 
     // If we manually aborted, don't show an error
-    if(!aborted)
+    if(aborted)
+    {
+        emit resultReady(false, "");
+    }
+    else
     {
         emit resultReady(false, "Failed to zip project files.");
     }
@@ -343,7 +244,6 @@ void ZipThread::failed()
 #else
 void ZipThread::run() {}
 void ZipThread::abort() {}
-void recurseAddDir(QDir d, QStringList & list) {}
-bool archive(const QString & filePath, const QDir & dir, const QString & comment) { return false; }
+bool archive(const QString & filePath, const QDir & dir) { return false; }
 QStringList extractAllFiles(QString fileName, QString destDir) { return QStringList(); }
 #endif

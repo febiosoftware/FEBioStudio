@@ -49,6 +49,8 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioModule.h>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QComboBox>
+#include "units.h"
 
 class Ui::CDlgNew
 {
@@ -58,6 +60,7 @@ public:
 	QListWidget*	m_list;
 	QLineEdit*		m_modelName;
 	QCheckBox*		m_showDialog;
+	QComboBox*		m_unitsBox;
 
 	QTabWidget* tab;
 	QListWidget* templates;
@@ -162,7 +165,12 @@ public:
 
 		f->addRow("Model name:", m_modelName = new QLineEdit);
 		m_modelName->setText("MyModel");
-		
+
+		f->addRow("Unit system:", m_unitsBox = new QComboBox);
+		QStringList units = Units::SupportedUnitSystems();
+		m_unitsBox->addItems(units);
+		m_unitsBox->setCurrentIndex(m_wnd->GetDefaultUnitSystem());
+
 		v->addLayout(f);
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
@@ -184,6 +192,7 @@ public:
 
 		m_list->setWhatsThis("Select the model template. This will adjust the UI to show only relevant features.");
 		m_modelName->setWhatsThis("This is the model's name and the base of the model's filename.");
+		m_unitsBox->setWhatsThis("Select the unit system. (Can be changed later.)");
 		tb->setWhatsThis("Change the model folder.");
 	}
 };
@@ -212,6 +221,11 @@ void CDlgNew::SetModelName(const QString& name)
 QString CDlgNew::GetModelName()
 {
 	return ui->m_modelName->text();
+}
+
+int CDlgNew::GetUnitSystem()
+{
+	return ui->m_unitsBox->currentIndex();
 }
 
 void CDlgNew::showEvent(QShowEvent* ev)

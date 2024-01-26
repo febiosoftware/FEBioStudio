@@ -88,7 +88,7 @@ SOFTWARE.*/
 #include <PostLib/FELSDYNAimport.h>
 #include <PostLib/FESTLimport.h>
 #include "ImageThread.h"
-#ifdef HAS_QUAZIP
+#ifdef HAS_LIBZIP
 #include "ZipFiles.h"
 #endif
 #include "welcomePage.h"
@@ -734,7 +734,7 @@ void CMainWindow::ImportFiles(const QStringList& files)
 		ui->addToRecentGeomFiles(files[i]);
 }
 
-#ifdef HAS_QUAZIP
+#ifdef HAS_LIBZIP
 //-----------------------------------------------------------------------------
 // Import Project
 void CMainWindow::ImportProjectArchive(const QString& fileName)

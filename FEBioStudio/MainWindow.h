@@ -418,6 +418,7 @@ public slots:
 	void on_actionAddMeshDataMap_triggered();
 	void on_actionAddMeshDataGenerator_triggered();
 	void on_actionAddStep_triggered();
+	void on_actionStepViewer_triggered();
 	void on_actionAddReaction_triggered();
     void on_actionAddMembraneReaction_triggered();
 	void on_actionSoluteTable_triggered();
@@ -466,6 +467,7 @@ public slots:
 	void on_actionMusclePath_triggered();
 	void on_actionPlotGroup_triggered();
 	void on_actionGraph_triggered();
+	void on_actionScatter_triggered();
 	void on_actionSummary_triggered();
 	void on_actionStats_triggered();
 	void on_actionIntegrate_triggered();

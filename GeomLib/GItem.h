@@ -240,7 +240,8 @@ public:
 	std::vector<EDGE>	m_edge;		// edges defining face
 };
 
-//-----------------------------------------------------------------------------
+class GNode;
+
 // Defines the edge of the object
 class GEdge : public GItem_T<GEdge>
 {
@@ -252,6 +253,8 @@ public:
 	void operator = (const GEdge& e);
 
 	bool operator == (const GEdge& e);
+
+	GNode* Node(int i);
 
 public:
 	double Length();

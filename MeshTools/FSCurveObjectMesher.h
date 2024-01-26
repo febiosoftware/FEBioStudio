@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2024 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,39 +23,23 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include "FEMesher.h"
 
-#include <QThread>
-#include <QDir>
-#include <QStringList>
+class GCurveObject;
 
-bool archive(const QString & filePath, const QDir & dir);
-
-QStringList extractAllFiles(const QString& archiveName, const QString& dir);
-
-class ZipThread : public QThread
+class FSCurveObjectMesher : public FEMesher
 {
-	Q_OBJECT
+	enum ElemType {
+		LINEAR_ELEM,
+		QUADRATIC_ELEM
+	};
 
 public:
-	ZipThread(const QString & zipFile, const QStringList & filePaths, const QStringList & zippedFilePaths);
+	FSCurveObjectMesher(GCurveObject* po);
 
-	void run() override;
-
-public slots:
-	void abort();
-
-signals:
-	void resultReady(bool success, QString message);
-	void progress(qint64 bytesSent, qint64 bytesTotal);
+	FSMesh* BuildMesh() override;
 
 private:
-	void failed();
-	bool aborted;
-	QString zipFile;
-	QStringList filePaths;
-	QStringList zippedFilePaths;
+	GCurveObject* m_po;
 };
-
-
-
-

@@ -23,39 +23,20 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QDialog>
 
-#include <QThread>
-#include <QDir>
-#include <QStringList>
+class CMainWindow;
 
-bool archive(const QString & filePath, const QDir & dir);
-
-QStringList extractAllFiles(const QString& archiveName, const QString& dir);
-
-class ZipThread : public QThread
+class CDlgStepViewer : public QDialog
 {
 	Q_OBJECT
 
+class Ui;
+
 public:
-	ZipThread(const QString & zipFile, const QStringList & filePaths, const QStringList & zippedFilePaths);
-
-	void run() override;
-
-public slots:
-	void abort();
-
-signals:
-	void resultReady(bool success, QString message);
-	void progress(qint64 bytesSent, qint64 bytesTotal);
+	CDlgStepViewer(CMainWindow* wnd);
 
 private:
-	void failed();
-	bool aborted;
-	QString zipFile;
-	QStringList filePaths;
-	QStringList zippedFilePaths;
+	Ui* ui;
 };
-
-
-
-

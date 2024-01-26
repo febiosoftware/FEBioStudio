@@ -1514,8 +1514,9 @@ void CPlotWidget::DrawPlotData(QPainter& p, CPlotData& data)
 {
 	switch (m_chartStyle)
 	{
-	case LINECHART_PLOT:  draw_linechart(p, data); break;
-	case BARCHART_PLOT: draw_barchart(p, data); break;
+	case LINECHART_PLOT: draw_linechart(p, data); break;
+	case BARCHART_PLOT : draw_barchart(p, data); break;
+	case DENSITY_PLOT  : draw_densityplot(p, data); break;
 	}
 }
 
@@ -1573,6 +1574,58 @@ void CPlotWidget::draw_barchart(QPainter& p, CPlotData& data)
 		QRect r(p0.x() - w/2, p0.y(), w, p1.y() - p0.y());
 		p.drawRect(r);
 	}
+}
+
+void CPlotWidget::draw_densityplot(QPainter& p, CPlotData& data)
+{
+	int W = m_plotRect.width();
+	int H = m_plotRect.height();
+	QRect rt = m_plotRect;
+
+	int NX = W / 5;
+	int NY = H / 5;
+	matrix m(NY, NX); m.zero();
+	int N = data.size();
+	double dmax = 0.0;
+	for (int n = 0; n < N; ++n)
+	{
+		QPointF& pi = data.Point(n);
+		QPointF p0 = ViewToScreen(pi);
+		int i = (NY* (p0.y() - rt.top())) / H;
+		int j = (NX* (p0.x() - rt.left())) / W;
+		if ((i >= 0) && (i < NY) && (j >= 0) && (j < NX))
+		{
+			m[i][j] += 1.0;
+			if (m[i][j] > dmax) dmax = m[i][j];
+		}
+	}
+	if (dmax == 0) return;
+	dmax = log(dmax);
+	if (dmax == 0) dmax = 1;
+
+	QColor c = data.fillColor();
+
+	p.setPen(Qt::NoPen);
+	for (int i=0; i<NY; ++i)
+		for (int j = 0; j < NX; ++j)
+		{
+			if (m[i][j] > 0)
+			{
+				int x0 = rt.left() + (j * W) / NX;
+				int x1 = rt.left() + ((j + 1) * W) / NX;
+
+				int y0 = rt.top() + (i * H) / NY;
+				int y1 = rt.top() + ((i + 1) * H) / NY;
+
+				double w = log(m[i][j]) / dmax;
+				double a = 0.1 + w * 0.9;
+				c.setAlphaF(a);
+				p.setBrush(c);
+
+				QRect r(x0, y0, x1 - x0, y1 - y0);
+				p.drawRect(r);
+			}
+		}
 }
 
 //-----------------------------------------------------------------------------

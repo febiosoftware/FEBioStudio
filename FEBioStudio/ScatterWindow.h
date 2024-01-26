@@ -23,39 +23,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include "GraphWindow.h"
 
-#include <QThread>
-#include <QDir>
-#include <QStringList>
+class CMainWindow;
+class CPostDocument;
 
-bool archive(const QString & filePath, const QDir & dir);
+namespace Post {
+	class FEPostModel;
+}
 
-QStringList extractAllFiles(const QString& archiveName, const QString& dir);
-
-class ZipThread : public QThread
+class CScatterWindow : public CGraphWindow
 {
 	Q_OBJECT
 
 public:
-	ZipThread(const QString & zipFile, const QStringList & filePaths, const QStringList & zippedFilePaths);
+	CScatterWindow(CMainWindow* wnd, CPostDocument* postDoc);
 
-	void run() override;
-
-public slots:
-	void abort();
-
-signals:
-	void resultReady(bool success, QString message);
-	void progress(qint64 bytesSent, qint64 bytesTotal);
+	void Update(bool breset, bool bfit = false) override;
 
 private:
-	void failed();
-	bool aborted;
-	QString zipFile;
-	QStringList filePaths;
-	QStringList zippedFilePaths;
+	int m_xprev, m_yprev;
 };
-
-
-
-
