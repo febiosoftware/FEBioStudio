@@ -31,52 +31,56 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QScrollBar>
 #include <QMouseEvent>
+#include <QLabel>
+#include <QComboBox>
 #include <FECore/FEGlobalMatrix.h>
 
-class MatrixDensityView : public QWidget
+MatrixDensityView::MatrixDensityView(CDlgMatrixInspector* dlg, QWidget* parent) : QWidget(parent), m_dlg(dlg) {}
+
+void MatrixDensityView::paintEvent(QPaintEvent* paintEvent) 
 {
-public:
-	MatrixDensityView(CDlgMatrixInspector* dlg, QWidget* parent = nullptr) : QWidget(parent), m_dlg(dlg) {}
+	QPainter painter(this);
 
-	void paintEvent(QPaintEvent* paintEvent) override
-	{
-		QPainter painter(this);
+	drawBackground(painter);
 
-		drawBackground(painter);
+	drawMatrixProfile(painter);
 
-		drawMatrixProfile(painter);
+	if (m_sel.isValid()) drawSelection(painter);
+}
 
-		if (m_sel.isValid()) drawSelection(painter);
-	}
+void MatrixDensityView::drawBackground(QPainter& painter)
+{
+	QRect rt = rect();
+	painter.fillRect(rt, QColor::fromRgb(200, 200, 200));
+	if ((m.columns() == 0) || (m.rows() == 0)) return;
 
-	void drawBackground(QPainter& painter)
-	{
-		QRect rt = rect();
-		painter.fillRect(rt, QColor::fromRgb(200, 200, 200));
-		if ((m.columns() == 0) || (m.rows() == 0)) return;
+	int N = (rt.width() > rt.height() ? rt.height() : rt.width());
+	painter.fillRect(0, 0, N, N, QColor::fromRgb(255, 255, 255));
+}
 
-		int N = (rt.width() > rt.height() ? rt.height() : rt.width());
-		painter.fillRect(0, 0, N, N, QColor::fromRgb(255, 255, 255));
-	}
+void MatrixDensityView::drawMatrixProfile(QPainter& painter)
+{
+	if ((m.columns() == 0) || (m.rows() == 0)) return;
 
-	void drawMatrixProfile(QPainter& painter)
-	{
-		if ((m.columns() == 0) || (m.rows() == 0)) return;
+	double maxM = m_maxM;
+	if (maxM == 0) maxM = 1;
 
-		int maxM = m_maxM;
-		if (maxM == 0) maxM = 1;
+	double minM = m_minM;
+	if (minM == 0) minM = -1;
 
-		QRect rt = rect();
-		int N = (rt.width() > rt.height() ? rt.height() : rt.width());
-		for (int i = 0; i < m.rows(); ++i)
-			for (int j = 0; j < m.columns(); ++j)
+	QRect rt = rect();
+	int N = (rt.width() > rt.height() ? rt.height() : rt.width());
+	for (int i = 0; i < m.rows(); ++i)
+		for (int j = 0; j < m.columns(); ++j)
+		{
+			size_t x0 = (N * j) / m.columns();
+			size_t y0 = (N * i) / m.rows();
+
+			size_t x1 = (N * (j + 1)) / m.columns();
+			size_t y1 = (N * (i + 1)) / m.rows();
+
+			if ((m_colorMode == 0) || (m_colorMode == 1))
 			{
-				size_t x0 = (N * j) / m.columns();
-				size_t y0 = (N * i) / m.rows();
-
-				size_t x1 = (N * (j + 1)) / m.columns();
-				size_t y1 = (N * (i + 1)) / m.rows();
-
 				if (m[i][j] != 0)
 				{
 					double w = (double)m[i][j] / (double)maxM;
@@ -84,152 +88,175 @@ public:
 					painter.fillRect(x0, y0, x1 - x0, y1 - y0, c);
 				}
 			}
-	}
-
-	void drawSelection(QPainter& painter)
-	{
-		QRect rt = rect();
-		int N = (rt.width() > rt.height() ? rt.height() : rt.width());
-
-		size_t x0 = (N * m_sel.left()) / m.columns();
-		size_t y0 = (N * m_sel.top()) / m.rows();
-
-		size_t x1 = (N * (m_sel.right())) / m.columns();
-		size_t y1 = (N * (m_sel.bottom())) / m.rows();
-
-		painter.setPen(QPen(Qt::green));
-		painter.drawRect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
-	}
-
-	QSize sizeHint() const override
-	{
-		return QSize(300, 300);
-	}
-
-	void resizeEvent(QResizeEvent* ev) override
-	{
-		QRect rt = rect();
-		int M = (rt.width() > rt.height() ? rt.height() : rt.width());
-		int N = M / 2;
-		if (N < 1) N = 1;
-
-		SparseMatrixProfile* P = m_K->GetSparseMatrixProfile();
-		if (P)
-		{
-			int NP = P->Rows();
-			if (N > NP) N = NP;
-			else
+			else if (m_colorMode == 2)
 			{
-				while (NP > N) NP /= 2;
-				N = NP;
-				if (N < 1) N = 1;
+				double mij = m[i][j];
+				if (mij > 0)
+				{
+					double w = (double)m[i][j] / (double)maxM;
+					QColor c = QColor::fromRgbF(1.0, 1.0 - w, 1.0 - w);
+					painter.fillRect(x0, y0, x1 - x0, y1 - y0, c);
+				}
+				else if (mij < 0)
+				{
+					double w = (m[i][j]) / minM;
+					QColor c = QColor::fromRgbF(1.0 - 2, 1.0 - w, 1.0);
+					painter.fillRect(x0, y0, x1 - x0, y1 - y0, c);
+				}
 			}
 		}
+}
 
-		m_sel = QRect();
-		m.resize(N, N); m.zero();
-		Update();
-	}
+void MatrixDensityView::drawSelection(QPainter& painter)
+{
+	QRect rt = rect();
+	int N = (rt.width() > rt.height() ? rt.height() : rt.width());
 
-	void SetGlobalMatrix(FEGlobalMatrix* K)
+	size_t x0 = (N * m_sel.left()) / m.columns();
+	size_t y0 = (N * m_sel.top()) / m.rows();
+
+	size_t x1 = (N * (m_sel.right())) / m.columns();
+	size_t y1 = (N * (m_sel.bottom())) / m.rows();
+
+	painter.setPen(QPen(Qt::green));
+	painter.drawRect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+}
+
+QSize MatrixDensityView::sizeHint() const 
+{
+	return QSize(300, 300);
+}
+
+void MatrixDensityView::resizeEvent(QResizeEvent* ev)
+{
+	QRect rt = rect();
+	int M = (rt.width() > rt.height() ? rt.height() : rt.width());
+	int N = M / 2;
+	if (N < 1) N = 1;
+
+	SparseMatrixProfile* P = m_K->GetSparseMatrixProfile();
+	if (P)
 	{
-		m_K = K;
-		if (K) Update();
+		int NP = P->Rows();
+		if (N > NP) N = NP;
+		else
+		{
+			while (NP > N) NP /= 2;
+			N = NP;
+			if (N < 1) N = 1;
+		}
 	}
 
-	void SetSelection(QRect sel)
-	{
-		if (m_K == nullptr) return;
-		size_t N = m_K->Rows();
-		if (N < 1) return;
+	m_sel = QRect();
+	m.resize(N, N); m.zero();
+	Update();
+}
 
-		size_t x0 = (m.columns() * sel.left()) / N;
-		size_t y0 = (m.rows()    * sel.top()) / N;
+void MatrixDensityView::SetGlobalMatrix(FEGlobalMatrix* K)
+{
+	m_K = K;
+	if (K) Update();
+}
 
-		size_t x1 = (m.columns() * sel.right()) / N;
-		size_t y1 = (m.rows()    * sel.bottom()) / N;
+void MatrixDensityView::SetSelection(QRect sel)
+{
+	if (m_K == nullptr) return;
+	size_t N = m_K->Rows();
+	if (N < 1) return;
 
-		if (x0 < 0) x0 = 0; if (x0 >= m.columns()) x0 = m.columns() - 1;
-		if (x1 < 0) x1 = 0; if (x1 >= m.columns()) x1 = m.columns() - 1;
-		if (y0 < 0) y0 = 0; if (y0 >= m.rows()) y0 = m.rows() - 1;
-		if (y1 < 0) y1 = 0; if (y1 >= m.rows()) y1 = m.rows() - 1;
+	size_t x0 = (m.columns() * sel.left()) / N;
+	size_t y0 = (m.rows()    * sel.top()) / N;
 
-		m_sel = QRect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+	size_t x1 = (m.columns() * sel.right()) / N;
+	size_t y1 = (m.rows()    * sel.bottom()) / N;
 
-		update();
-	}
+	if (x0 < 0) x0 = 0; if (x0 >= m.columns()) x0 = m.columns() - 1;
+	if (x1 < 0) x1 = 0; if (x1 >= m.columns()) x1 = m.columns() - 1;
+	if (y0 < 0) y0 = 0; if (y0 >= m.rows()) y0 = m.rows() - 1;
+	if (y1 < 0) y1 = 0; if (y1 >= m.rows()) y1 = m.rows() - 1;
 
-	void mousePressEvent(QMouseEvent* ev) override
+	m_sel = QRect(x0, y0, x1 - x0 + 1, y1 - y0 + 1);
+
+	update();
+}
+
+void MatrixDensityView::mousePressEvent(QMouseEvent* ev)
+{
+	size_t x = ev->pos().x();
+	size_t y = ev->pos().y();
+	updateView(x, y);
+}
+
+void MatrixDensityView::mouseMoveEvent(QMouseEvent* ev)
+{
+	if ((ev->buttons() & Qt::LeftButton))
 	{
 		size_t x = ev->pos().x();
 		size_t y = ev->pos().y();
 		updateView(x, y);
 	}
+}
 
-	void mouseMoveEvent(QMouseEvent* ev) override
+void MatrixDensityView::updateView(size_t x, size_t y)
+{
+	QRect rt = rect();
+	size_t N = (rt.width() > rt.height() ? rt.height() : rt.width());
+
+	if ((x < 0) || (x >= N) || (y < 0) || (y >= N)) return;
+	if (m_K == nullptr) return;
+
+	int NR = m_K->Rows();
+	x = (NR * x) / N;
+	y = (NR * y) / N;
+	m_dlg->updateView(x, y);
+
+}
+
+void MatrixDensityView::Update()
+{
+	if (m_K == nullptr) return;
+	SparseMatrixProfile* P = m_K->GetSparseMatrixProfile();
+	if (P == nullptr) return;
+	SparseMatrix* A = m_K->GetSparseMatrixPtr();
+
+	int N = m.rows();
+	if (N == 0) return;
+
+	size_t NC = P->Columns();
+	size_t NR = P->Rows();
+	m.zero();
+	m_minM = 0;
+	m_maxM = 0;
+	for (size_t j = 0; j < NC; ++j)
 	{
-		if ((ev->buttons() & Qt::LeftButton))
+		SparseMatrixProfile::ColumnProfile& CP = P->Column(j);
+		for (size_t l = 0; l < CP.size(); ++l)
 		{
-			size_t x = ev->pos().x();
-			size_t y = ev->pos().y();
-			updateView(x, y);
-		}
-	}
-
-	void updateView(size_t x, size_t y)
-	{
-		QRect rt = rect();
-		size_t N = (rt.width() > rt.height() ? rt.height() : rt.width());
-
-		if ((x < 0) || (x >= N) || (y < 0) || (y >= N)) return;
-		if (m_K == nullptr) return;
-
-		int NR = m_K->Rows();
-		x = (NR * x) / N;
-		y = (NR * y) / N;
-		m_dlg->updateView(x, y);
-
-	}
-
-private:
-	void Update()
-	{
-		if (m_K == nullptr) return;
-		SparseMatrixProfile* P = m_K->GetSparseMatrixProfile();
-		if (P == nullptr) return;
-
-		int N = m.rows();
-		if (N == 0) return;
-
-		size_t NC = P->Columns();
-		size_t NR = P->Rows();
-		m.zero();
-		m_maxM = 0;
-		for (size_t j = 0; j < NC; ++j)
-		{
-			SparseMatrixProfile::ColumnProfile& CP = P->Column(j);
-			for (size_t l = 0; l < CP.size(); ++l)
+			SparseMatrixProfile::RowEntry& rowSpan = CP[l];
+			for (size_t i = rowSpan.start; i <= rowSpan.end; ++i)
 			{
-				SparseMatrixProfile::RowEntry& rowSpan = CP[l];
-				for (size_t i = rowSpan.start; i <= rowSpan.end; ++i)
+				int x = (N*i) / NR;
+				int y = (N*j) / NC;
+				switch (m_colorMode)
 				{
-					int x = (N*i) / NR;
-					int y = (N*j) / NC;
-					m[x][y] += 1;
-					if (m[x][y] > m_maxM) m_maxM = m[x][y];
+				case 0: m[x][y] += 1; break;
+				case 1: if (A->get(i, j) != 0.0) m[x][y] += 1; break;
+				case 2: m[x][y] += A->get(i, j); break;
 				}
+						
+				if (m[x][y] > m_maxM) m_maxM = m[x][y];
+				if (m[x][y] < m_minM) m_minM = m[x][y];
 			}
 		}
-		update();
 	}
+	update();
+}
 
-private:
-	CDlgMatrixInspector* m_dlg = nullptr;
-	FEGlobalMatrix* m_K = nullptr;
-	matrix m;
-	QRect	m_sel;
-	int	m_maxM = 0;
-};
+void MatrixDensityView::SetColorMode(int option)
+{
+	m_colorMode = option;
+	Update();
+}
 
 class MatrixModel : public QAbstractTableModel
 {
@@ -310,7 +337,20 @@ public:
 
 		QSplitter* splitter = new QSplitter(Qt::Horizontal);
 		splitter->addWidget(view);
-		splitter->addWidget(densView = new MatrixDensityView(dlg));
+
+		QWidget* matView = new QWidget;
+		QVBoxLayout* matViewLayout = new QVBoxLayout;
+		QHBoxLayout* h = new QHBoxLayout;
+		QComboBox* colorMode = new QComboBox;
+		colorMode->addItems(QStringList() << "sparsity pattern" << "non-zeroes" << "values");
+		h->addWidget(new QLabel("color mode:"));
+		h->addWidget(colorMode);
+		h->addStretch();
+		matViewLayout->addLayout(h);
+		matViewLayout->addWidget(densView = new MatrixDensityView(dlg));
+		matView->setLayout(matViewLayout);
+
+		splitter->addWidget(matView);
 		l->addWidget(splitter);
 		l->addWidget(bb);
 		dlg->setLayout(l);
@@ -322,6 +362,7 @@ public:
 		QObject::connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
 		QObject::connect(vertScroll, &QScrollBar::valueChanged, dlg, &CDlgMatrixInspector::onViewScroll);
 		QObject::connect(horzScroll, &QScrollBar::valueChanged, dlg, &CDlgMatrixInspector::onViewScroll);
+		QObject::connect(colorMode, &QComboBox::currentIndexChanged, densView, &MatrixDensityView::SetColorMode);
 	}
 
 	QRect GetVisibleMatrixRegion()

@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include <QDialog>
+#include <FECore/matrix.h>
 
 class FEGlobalMatrix;
 
@@ -45,4 +46,49 @@ public slots:
 
 private:
 	Ui* ui;
+};
+
+class MatrixDensityView : public QWidget
+{
+	Q_OBJECT
+
+public:
+	MatrixDensityView(CDlgMatrixInspector* dlg, QWidget* parent = nullptr);
+
+	void paintEvent(QPaintEvent* paintEvent) override;
+
+	void drawBackground(QPainter& painter);
+
+	void drawMatrixProfile(QPainter& painter);
+
+	void drawSelection(QPainter& painter);
+
+	QSize sizeHint() const override;
+
+	void resizeEvent(QResizeEvent* ev) override;
+
+	void SetGlobalMatrix(FEGlobalMatrix* K);
+
+	void SetSelection(QRect sel);
+
+	void mousePressEvent(QMouseEvent* ev) override;
+
+	void mouseMoveEvent(QMouseEvent* ev) override;
+
+	void updateView(size_t x, size_t y);
+
+private:
+	void Update();
+
+public slots:
+	void SetColorMode(int option);
+
+private:
+	CDlgMatrixInspector* m_dlg = nullptr;
+	FEGlobalMatrix* m_K = nullptr;
+	matrix m;
+	QRect	m_sel;
+	double m_maxM = 0;
+	double m_minM = 0;
+	int m_colorMode = 0;
 };
