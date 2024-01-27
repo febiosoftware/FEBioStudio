@@ -33,6 +33,7 @@ SOFTWARE.*/
 #include <QMouseEvent>
 #include <QLabel>
 #include <QComboBox>
+#include <QScrollArea>
 #include <FECore/FEGlobalMatrix.h>
 
 MatrixDensityView::MatrixDensityView(CDlgMatrixInspector* dlg, QWidget* parent) : QWidget(parent), m_dlg(dlg) {}
@@ -44,6 +45,8 @@ void MatrixDensityView::paintEvent(QPaintEvent* paintEvent)
 	drawBackground(painter);
 
 	drawMatrixProfile(painter);
+
+	setMinimumSize(300, 300);
 
 	if (m_sel.isValid()) drawSelection(painter);
 }
@@ -197,6 +200,24 @@ void MatrixDensityView::mouseMoveEvent(QMouseEvent* ev)
 	}
 }
 
+void MatrixDensityView::wheelEvent(QWheelEvent* ev)
+{
+	int y = ev->angleDelta().y();
+	QSize widgetSize = size();
+	if (y > 0)
+	{
+		int newWidth  = (10 * widgetSize.width()) / 9;
+		int newHeight = (10 * widgetSize.height()) / 9;
+		resize(newWidth, newHeight);
+	}
+	else if (y < 0)
+	{
+		int newWidth = (9 * widgetSize.width()) / 10;
+		int newHeight = (9 * widgetSize.height()) / 10;
+		resize(newWidth, newHeight);
+	}
+}
+
 void MatrixDensityView::updateView(size_t x, size_t y)
 {
 	QRect rt = rect();
@@ -347,7 +368,10 @@ public:
 		h->addWidget(colorMode);
 		h->addStretch();
 		matViewLayout->addLayout(h);
-		matViewLayout->addWidget(densView = new MatrixDensityView(dlg));
+
+		QScrollArea* scroll = new QScrollArea;
+		scroll->setWidget(densView = new MatrixDensityView(dlg));
+		matViewLayout->addWidget(scroll);
 		matView->setLayout(matViewLayout);
 
 		splitter->addWidget(matView);

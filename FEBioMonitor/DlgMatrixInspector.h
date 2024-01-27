@@ -75,6 +75,8 @@ public:
 
 	void mouseMoveEvent(QMouseEvent* ev) override;
 
+	void wheelEvent(QWheelEvent* ev) override;
+
 	void updateView(size_t x, size_t y);
 
 private:
