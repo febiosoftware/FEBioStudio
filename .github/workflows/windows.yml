@@ -14,7 +14,7 @@ jobs:
     with:
       aws-ami-id: ami-034c4b6918ffa15c1
       aws-sg-id: sg-0ca7912782cf1538b
-      aws-instance-type: c5a.8xlarge
+      aws-instance-type: c4.4xlarge
       runTests: false
       package-name: febio-studio
       requires-sdk: true
