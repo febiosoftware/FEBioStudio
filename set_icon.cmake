@@ -37,11 +37,10 @@ function(set_icon TARGET path_to_icon)
 #	  add_dependencies(${TARGET} icon)
 #	  set(path_to_icon ${icon-output-path})
 #	else ()
-	  set(path_to_icon ${CMAKE_SOURCE_DIR}/${path_to_icon})
+	  set(path_to_icon "\"${CMAKE_SOURCE_DIR}/${path_to_icon}\"")
 #	endif ()
 
 	# Write .res file
-  message(STATUS "Writing res file ${current-output-path}")
 	file(WRITE ${current-output-path}
 	  "IDR_MAINFRAME ICON ${path_to_icon}\nIDI_ICON1 ICON DISCARDABLE ${path_to_icon}")
 	set_source_files_properties(${current-output-path} PROPERTIES GENERATED TRUE)
