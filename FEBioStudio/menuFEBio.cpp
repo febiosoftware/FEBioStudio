@@ -287,17 +287,20 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 
 		// write the FEBio input file
 		std::string febFilename = doc->GetDocFilePath();
+
+		bool exportFEBioFile = true;
 		size_t n = febFilename.rfind(".fs2");
-		if (n == string::npos) febFilename += ".feb";
+		if (n == string::npos) exportFEBioFile = false;
 		else febFilename.replace(n, 4, ".feb");
 
 		FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
 		monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
 		CDlgMonitorSettings dlg(monitorDoc, this);
+		if (exportFEBioFile == false) dlg.CanEditFilename(false);
 		if (dlg.exec())
 		{
 			febFilename = monitorDoc->GetFEBioInputFile().toStdString();
-			if (ExportFEBioFile(doc, febFilename, 0x0400) == false)
+			if (exportFEBioFile && ExportFEBioFile(doc, febFilename, 0x0400) == false)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
 				return;

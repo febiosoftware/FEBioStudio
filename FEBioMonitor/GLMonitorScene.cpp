@@ -302,6 +302,8 @@ void CGLMonitorScene::BuildMesh()
 			case ET_QUAD9: etype = FE_QUAD9; break;
 			case ET_PYRA5: etype = FE_PYRA5; break;
 			case ET_PYRA13: etype = FE_PYRA13; break;
+			case ET_LINE2: etype = FE_BEAM2; break;
+			case ET_LINE3: etype = FE_BEAM3; break;
 			default:
 				assert(false);
 			}
@@ -463,6 +465,7 @@ void CGLMonitorScene::BuildGLModel()
 	}
 
 	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
+	m_glm->UpdateEdge();
 	m_glm->Update(true);
 
 	m_postObj->UpdateMesh();
