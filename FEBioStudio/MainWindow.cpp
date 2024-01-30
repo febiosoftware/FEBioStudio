@@ -1284,9 +1284,10 @@ void CMainWindow::Update(QWidget* psend, bool breset)
 	if (ui->meshWnd && ui->meshWnd->isVisible()) ui->meshWnd->Update(breset);
 
 	if (ui->postPanel && ui->postPanel->isVisible()) ui->postPanel->Update(breset);
+	if (ui->febioMonitor && ui->febioMonitor->isVisible()) ui->febioMonitor->Update(breset);
 
 	if (ui->timePanel && ui->timePanel->isVisible()) ui->timePanel->Update(breset);
-    
+
 	if (ui->measureTool && ui->measureTool->isVisible()) ui->measureTool->Update();
 	if (ui->planeCutTool && ui->planeCutTool->isVisible()) ui->planeCutTool->Update();
 

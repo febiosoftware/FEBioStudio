@@ -461,7 +461,7 @@ void Ui::CMonitorConfig::Apply()
 	ui->menuEditTxt->menuAction()->setVisible(false);
 	ui->menuEditXml->menuAction()->setVisible(false);
 	ui->menuPhysics->menuAction()->setVisible(false);
-	ui->menuPost->menuAction()->setVisible(false);
+	ui->menuPost->menuAction()->setVisible(true);
 	ui->menuRecord->menuAction()->setVisible(true);
 	ui->menuView->menuAction()->setVisible(false);
 
