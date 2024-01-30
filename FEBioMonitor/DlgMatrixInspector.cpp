@@ -46,7 +46,8 @@ void MatrixDensityView::paintEvent(QPaintEvent* paintEvent)
 
 	drawMatrixProfile(painter);
 
-	setMinimumSize(300, 300);
+	setMinimumSize(200, 200);
+	setMaximumSize(2000, 2000);
 
 	if (m_sel.isValid()) drawSelection(painter);
 }
