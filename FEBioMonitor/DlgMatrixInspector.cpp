@@ -91,7 +91,7 @@ void MatrixDensityView::drawMatrixProfile(QPainter& painter)
 					painter.fillRect(x0, y0, x1 - x0, y1 - y0, c);
 				}
 			}
-			else if (m_colorMode == 2)
+			else if ((m_colorMode == 2) || (m_colorMode == 3))
 			{
 				double mij = m[i][j];
 				if (mij > 0)
@@ -103,7 +103,7 @@ void MatrixDensityView::drawMatrixProfile(QPainter& painter)
 				else if (mij < 0)
 				{
 					double w = (m[i][j]) / minM;
-					QColor c = QColor::fromRgbF(1.0 - 2, 1.0 - w, 1.0);
+					QColor c = QColor::fromRgbF(1.0 - w, 1.0 - w, 1.0);
 					painter.fillRect(x0, y0, x1 - x0, y1 - y0, c);
 				}
 			}
@@ -263,6 +263,7 @@ void MatrixDensityView::Update()
 				case 0: m[x][y] += 1; break;
 				case 1: if (A->get(i, j) != 0.0) m[x][y] += 1; break;
 				case 2: m[x][y] += A->get(i, j); break;
+				case 3: m[x][y] += A->get(i, j) - A->get(j, i); break;
 				}
 						
 				if (m[x][y] > m_maxM) m_maxM = m[x][y];
@@ -363,7 +364,7 @@ public:
 		QVBoxLayout* matViewLayout = new QVBoxLayout;
 		QHBoxLayout* h = new QHBoxLayout;
 		QComboBox* colorMode = new QComboBox;
-		colorMode->addItems(QStringList() << "sparsity pattern" << "non-zeroes" << "values");
+		colorMode->addItems(QStringList() << "sparsity pattern" << "non-zeroes" << "values" << "symmetric difference");
 		h->addWidget(new QLabel("color mode:"));
 		h->addWidget(colorMode);
 		h->addStretch();
