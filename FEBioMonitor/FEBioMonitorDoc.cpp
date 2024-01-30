@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "FEBioMonitorDoc.h"
 #include "../FEBioStudio/MainWindow.h"
 #include "../FEBioStudio/GLView.h"
+#include "../FEBioStudio/PropertyList.h"
 #include <FECore/FEModelParam.h>
 #include <FECore/FEAnalysis.h>
 #include <FECore/FEGlobalMatrix.h>
@@ -444,6 +445,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 
 	m_mutex.lock();
 	m_fem = dynamic_cast<FEBioModel*>(fem);
+	if (nevent == CB_INIT) InitDefaultWatchVariables();
 	UpdateAllWatchVariables();
 	constexpr double eps = std::numeric_limits<double>::epsilon();
 	if ((m_pauseRequested && (m_pauseEvents & nevent)) ||
@@ -509,6 +511,21 @@ void FEBioMonitorDoc::SetWatchVariable(int n, const QString& name)
 	UpdateWatchVariable(*var);
 }
 
+void FEBioMonitorDoc::InitDefaultWatchVariables()
+{
+	if (m_fem == nullptr) return;
+	int N = m_fem->LoadParams();
+	for (int i = 0; i < N; ++i)
+	{
+		FEParam* pi = m_fem->GetLoadParam(i);
+		if (pi)
+		{
+			string s = m_fem->GetParamString(pi);
+			if (!s.empty()) m_watches.append(new FEBioWatchVariable(QString::fromStdString(s)));
+		}
+	}
+}
+
 void FEBioMonitorDoc::UpdateAllWatchVariables()
 {
 	if (m_fem == nullptr) return;
@@ -528,7 +545,13 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 		QString val("[can't display]");
 		switch (p->type())
 		{
+		case FE_PARAM_INT   : { int a = p->value<int>(); val = QString::number(a); } break;
+		case FE_PARAM_BOOL  : { bool a = p->value<bool>(); val = (a ? "True" : "False"); } break;
 		case FE_PARAM_DOUBLE: { double a = p->value<double>(); val = QString::number(a); } break;
+		case FE_PARAM_VEC2D : { vec2d v = p->value<vec2d>(); val = Vec2dToString(v); } break;
+		case FE_PARAM_VEC3D : { vec3d v = p->value<vec3d>(); val = Vec3dToString(v); } break;
+		case FE_PARAM_MAT3D : { mat3d v = p->value<mat3d>(); val = Mat3dToString(v); } break;
+		case FE_PARAM_MAT3DS: { mat3ds v = p->value<mat3ds>(); val = Mat3dsToString(v); } break;
 		case FE_PARAM_DOUBLE_MAPPED:
 		{
 			FEParamDouble& v = p->value<FEParamDouble>();
@@ -536,6 +559,36 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 			{
 				double a = v.constValue()*v.GetScaleFactor();
 				val = QString::number(a);
+			}
+		}
+		break;
+		case FE_PARAM_VEC3D_MAPPED:
+		{ 
+			FEParamVec3& v = p->value<FEParamVec3>();
+			if (v.isConst()) 
+			{
+				vec3d a = v.constValue() * v.GetScaleFactor();
+				val = Vec3dToString(a);
+			}
+		}
+		break;
+		case FE_PARAM_MAT3D_MAPPED:
+		{
+			FEParamMat3d& v = p->value<FEParamMat3d>();
+			if (v.isConst())
+			{
+				mat3d a = v.constValue() * v.GetScaleFactor();
+				val = Mat3dToString(a);
+			}
+		}
+		break;
+		case FE_PARAM_MAT3DS_MAPPED:
+		{
+			FEParamMat3ds& v = p->value<FEParamMat3ds>();
+			if (v.isConst())
+			{
+				mat3ds a = v.constValue() * v.GetScaleFactor();
+				val = Mat3dsToString(a);
 			}
 		}
 		break;

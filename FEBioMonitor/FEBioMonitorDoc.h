@@ -126,6 +126,7 @@ public:
 private:
 	void UpdateWatchVariable(FEBioWatchVariable& var);
 	void UpdateAllWatchVariables();
+	void InitDefaultWatchVariables();
 
 public: // overrides for CGLModelDocument
 	Post::CGLModel* GetGLModel() override;
