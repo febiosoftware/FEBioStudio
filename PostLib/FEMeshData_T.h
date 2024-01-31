@@ -600,6 +600,15 @@ public:
 		int m = m_elem[2*i+1];
 		for (int j=0; j<m; ++j) pv[j] = m_data[n + j];
 	}
+	void set(int i, T* pv)
+	{
+		if (active(i))
+		{
+			int n = m_elem[2 * i];
+			int m = m_elem[2 * i + 1];
+			for (int j = 0; j < m; ++j) m_data[n + j] = pv[j];
+		}
+	}
 	bool active(int n) { return (m_elem.empty() == false) && (m_elem[2 * n + 1] > 0); }
 	void copy(FEElementData<T, DATA_COMP>& d) { m_data = d.m_data; m_elem = d.m_elem; }
 	void add(int n, int m, T* d) 

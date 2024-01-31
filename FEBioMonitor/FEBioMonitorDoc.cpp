@@ -513,6 +513,7 @@ void FEBioMonitorDoc::SetWatchVariable(int n, const QString& name)
 
 void FEBioMonitorDoc::InitDefaultWatchVariables()
 {
+	m_watches.clear();
 	if (m_fem == nullptr) return;
 	int N = m_fem->LoadParams();
 	for (int i = 0; i < N; ++i)

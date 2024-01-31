@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include <GLLib/GLContext.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include <QtCore/QFileInfo>
+#include <sstream>
 #ifdef __APPLE__
 #include <OpenGL/GLU.h>
 #else
@@ -404,6 +405,21 @@ Post::ModelDataField* BuildModelDataField(FEPlotData* ps, Post::FEPostModel* fem
 			break;
 		}
 	}
+	else if ((regionType == FE_REGION_DOMAIN) && (storageFmt == FMT_MULT))
+	{
+		switch (dataType)
+		{
+		case PLT_FLOAT  : pdf = new Post::FEDataField_T<Post::FEElementData<float  ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
+		case PLT_VEC3F  : pdf = new Post::FEDataField_T<Post::FEElementData<vec3f  ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FS : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fs ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3FD : pdf = new Post::FEDataField_T<Post::FEElementData<mat3fd ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
+		case PLT_TENS4FS: pdf = new Post::FEDataField_T<Post::FEElementData<tens4fs,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
+		case PLT_MAT3F  : pdf = new Post::FEDataField_T<Post::FEElementData<mat3f  ,Post::DATA_COMP> >(fem, Post::EXPORT_DATA); break;
+		default:
+			assert(false);
+			break;
+		}
+	}
 	else if ((regionType == FE_REGION_SURFACE) && (storageFmt == FMT_ITEM))
 	{
 		switch (dataType)
@@ -427,13 +443,23 @@ bool CGLMonitorScene::AddDataField(const std::string& fieldName)
 {
 	// try to allocate the FEBio plot field
 	FECoreKernel& febio = FECoreKernel::GetInstance();
-	FEPlotData* ps = fecore_new<FEPlotData>(fieldName.c_str(), m_fem);
+
+	FEPlotFieldDescriptor PD(fieldName);
+	if (!PD.isValid()) return false;
+
+	FEPlotData* ps = fecore_new<FEPlotData>(PD.fieldName.c_str(), m_fem);
 	if (ps == nullptr) return false;
+
+	if (PD.HasFilter())
+	{
+		if (PD.IsNumberFilter()) ps->SetFilter(PD.numFilter);
+		else if (PD.IsStringFilter()) ps->SetFilter(PD.strFilter.c_str());
+	}
 
 	Post::ModelDataField* pdf = BuildModelDataField(ps, m_postModel);
 	if (pdf)
 	{
-		pdf->SetName(fieldName);
+		pdf->SetName(PD.alias);
 		m_postModel->AddDataField(pdf);
 		m_dataFields.push_back(ps);
 		if (m_postModel->GetStates())
@@ -456,13 +482,39 @@ void CGLMonitorScene::BuildGLModel()
 	QMutexLocker lock(&m_mutex);
 	Post::FEPostModel& fem = *m_postModel;
 	Post::FEDataManager* DM = m_postModel->GetDataManager();
+
+	// add the primary variables
+	std::set<std::string> varNames;
+	DOFS& dofs = m_fem->GetDOFS();
+	for (int i = 0; i < dofs.Variables(); ++i)
+	{
+		string varName = dofs.GetVariableName(i);
+		stringstream ss;
+		ss << "field[\'" + varName << "\']=" << varName;
+		varNames.insert(ss.str());
+	}
+
+	// add all plot variables
 	FEPlotDataStore& dataStore = m_fem->GetPlotDataStore();
 	for (int i = 0; i < dataStore.PlotVariables(); ++i)
 	{
 		FEPlotVariable& var = dataStore.GetPlotVariable(i);
 		std::string name = var.Name();
-		AddDataField(name);
+		varNames.insert(name);
 	}
+
+	// add all mesh data
+	FEMesh& mesh = m_fem->GetMesh();
+	for (int i = 0; i < mesh.DataMaps(); ++i)
+	{
+		string mapName = mesh.GetDataMap(i)->GetName();
+		stringstream ss;
+		ss << "mesh_data[\'" + mapName << "\']=" << mapName;
+		varNames.insert(ss.str());
+	}
+
+	// add all the plot variables
+	for (auto name : varNames) AddDataField(name);
 
 	m_postModel->AddState(new Post::FEState(0.f, m_postModel, m_postModel->GetFEMesh(0)));
 	m_glm->UpdateEdge();
@@ -657,6 +709,27 @@ void CGLMonitorScene::UpdateDomainData(FEPlotData* pd, Post::FEMeshData& meshDat
 						}
 					}
 					else assert(false);
+				}
+				else if (pd->StorageFormat() == Storage_Fmt::FMT_MULT)
+				{
+					FEElement& e = D.ElementRef(0);
+					int ne = e.Nodes();
+
+					if (dataType == Var_Type::PLT_FLOAT)
+					{
+						Post::FEElementData<float, Post::DATA_COMP>& d = dynamic_cast<Post::FEElementData<float, Post::DATA_COMP>&>(meshData);
+						for (int i = 0; i < NE; ++i, ++elementCounter)
+						{
+							if (d.active(elementCounter))
+							{
+								d.set(elementCounter, &a[i*ne]);
+							}
+							else
+							{
+								d.add(elementCounter, ne, &a[i*ne]);
+							}
+						}
+					}
 				}
 				else assert(false);
 			}
