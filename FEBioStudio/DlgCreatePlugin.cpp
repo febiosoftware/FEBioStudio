@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <QMenu>
 #include "MainWindow.h"
 #include "ResourceEdit.h"
+#include "plugin_templates.h"
 
 //=============================================================================
 class CDlgCreatePluginUI
@@ -65,7 +66,7 @@ public:
 		f->addRow("Plugin type:", m_type = new QComboBox());
 		f->addRow("Path:", m_path = new CResourceEdit());
 
-		m_type->addItems(QStringList() << "Elastic material");
+		m_type->addItems(QStringList() << "Elastic material" << "Element data generator");
 		m_mod->addItems(QStringList() << "solid");
 		m_path->setResourceType(CResourceEdit::FOLDER_RESOURCE);
 
@@ -94,74 +95,6 @@ CDlgCreatePlugin::CDlgCreatePlugin(CMainWindow* parent) : QDialog(parent), ui(ne
 	ui->setup(this);
 }
 
-const char* szmain = \
-"#include <FECore\\FECoreKernel.h>\n" \
-"#include \"$(PLUGIN_NAME).h\"\n\n"\
-"FECORE_EXPORT unsigned int GetSDKVersion()\n" \
-"{\n" \
-"	return FE_SDK_VERSION;\n" \
-"}\n\n"\
-"FECORE_EXPORT void PluginInitialize(FECoreKernel & febio)\n"\
-"{\n"\
-"	FECoreKernel::SetInstance(&febio);\n\n"\
-"	febio.SetActiveModule(\"$(PLUGIN_MODULE)\");\n\n"
-"	REGISTER_FECORE_CLASS($(PLUGIN_NAME), \"$(PLUGIN_NAME)\");\n"\
-"}\n"
-;
-
-const char* szhdr = \
-"#include <FEBioMech\\FEElasticMaterial.h>\n\n" \
-"class $(PLUGIN_NAME) : public FEElasticMaterial\n" \
-"{\n" \
-"public:\n" \
-"	// class constructor\n"
-"	$(PLUGIN_NAME)(FEModel* fem);\n\n"
-"	// evaluate Cauchy stress\n"
-"	mat3ds Stress(FEMaterialPoint& mp) override;\n\n" \
-"	// evaluate spatial elasticity tangent\n"
-"	tens4ds Tangent(FEMaterialPoint& mp) override;\n\n"
-"private:\n"
-"	// TODO: Add member variables here\n\n"\
-"	DECLARE_FECORE_CLASS();\n"
-"};\n";
-
-const char* szsrc = \
-"#include \"$(PLUGIN_NAME).h\"\n\n" \
-"BEGIN_FECORE_CLASS($(PLUGIN_NAME), FEElasticMaterial)\n"\
-"	// TODO: Add parameters\n"\
-"END_FECORE_CLASS();\n\n"\
-"$(PLUGIN_NAME)::$(PLUGIN_NAME)(FEModel* fem) : FEElasticMaterial(fem)\n"\
-"{\n" \
-"	// TODO: initialize all class member variables\n" \
-"}\n\n" \
-"mat3ds $(PLUGIN_NAME)::Stress(FEMaterialPoint& mp)\n" \
-"{\n" \
-"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
-"	// TODO: implement stress\n" \
-"	mat3ds s;\n" \
-"	return s;\n" \
-"}\n\n" \
-"tens4ds $(PLUGIN_NAME)::Tangent(FEMaterialPoint& mp)\n" \
-"{\n" \
-"	FEElasticMaterialPoint& pt = *mp.ExtractData<FEElasticMaterialPoint>();\n\n"\
-"	// TODO: implement tangent\n" \
-"	tens4ds c;\n" \
-"	return c;\n" \
-"}\n";
-
-const char* szcmake = \
-"cmake_minimum_required(VERSION 3.5.0)\n\n" \
-"set(CMAKE_CXX_STANDARD 11)\n" \
-"set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n" \
-"project($(PLUGIN_NAME))\n\n"\
-"add_definitions(-DWIN32 -DFECORE_DLL /wd4251)\n\n"\
-"include_directories(\"$(PLUGIN_SDK_INCLUDE)\")\n\n"\
-"link_directories(\"$(PLUGIN_SDK_LIBS)/$<CONFIG>\")\n\n"\
-"add_library($(PLUGIN_NAME) SHARED $(PLUGIN_NAME).h $(PLUGIN_NAME).cpp main.cpp)\n\n"\
-"target_link_libraries($(PLUGIN_NAME) fecore.lib febiomech.lib)\n\n"\
-"set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT $(PLUGIN_NAME))\n\n"\
-"";
-
 bool GenerateFile(const QString& fileName, const QString& content)
 {
 	QFile file(fileName);
@@ -174,6 +107,17 @@ bool GenerateFile(const QString& fileName, const QString& content)
 
 bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 {
+	const char* szhdr = nullptr;
+	const char* szsrc = nullptr;
+	switch (config.type)
+	{
+	case PluginConfig::ELASTICMATERIAL_PLUGIN  : szhdr = szhdr_mat; szsrc = szsrc_mat; break;
+	case PluginConfig::ELEMDATAGENERATOR_PLUGIN: szhdr = szhdr_mdg; szsrc = szsrc_mdg; break; 
+	default:
+		return false;
+		break;
+	}
+
 	// create the header file
 	QString header = config.path + "\\" + config.name + ".h";
 	QString headerText = QString(szhdr).replace("$(PLUGIN_NAME)", config.name);
@@ -191,14 +135,18 @@ bool CDlgCreatePlugin::GeneratePlugin(const PluginConfig& config)
 	if (!GenerateFile(main, mainText)) return false;
 
 	// get the SDK paths
-	QString SDKInclude = ui->m_wnd->GetSDKIncludePath();
-	QString SDKLibs    = ui->m_wnd->GetSDKLibraryPath();
+	QString SDKInc = ui->m_wnd->GetSDKIncludePath();
+	QString SDKLib = ui->m_wnd->GetSDKLibraryPath();
+	SDKInc.replace("\\", "/");
+	SDKLib.replace("\\", "/");
+	if (SDKLib.last(1) != "/") SDKLib += "/";
+	SDKLib += "$<CONFIG>";
 
 	// create the CMake file
 	QString cmake = config.path + "\\CMakeLists.txt";
 	QString cmakeText = QString(szcmake).replace("$(PLUGIN_NAME)", config.name);
-	cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInclude);
-	cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLibs);
+	cmakeText = cmakeText.replace("$(PLUGIN_SDK_INCLUDE)", SDKInc);
+	cmakeText = cmakeText.replace("$(PLUGIN_SDK_LIBS)", SDKLib);
 	if (!GenerateFile(cmake, cmakeText)) return false;
 
 	return true;
@@ -242,6 +190,15 @@ void CDlgCreatePlugin::accept()
 	config.name   = name;
 	config.module = mod;
 	config.path   = path;
+	switch (type)
+	{
+	case 0: config.type = PluginConfig::PluginType::ELASTICMATERIAL_PLUGIN; break;
+	case 1: config.type = PluginConfig::PluginType::ELEMDATAGENERATOR_PLUGIN; break;
+	default:
+		QMessageBox::critical(this, "FEBio Studio", "Don't know how to build this type of plugin.");
+		return;
+	}
+
 	if (GeneratePlugin(config) == false)
 	{
 		QMessageBox::critical(this, "FEBio Studio", "Failed to create plugin.");

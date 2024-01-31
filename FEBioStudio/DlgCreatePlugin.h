@@ -29,8 +29,16 @@ SOFTWARE.*/
 class CMainWindow;
 class CDlgCreatePluginUI;
 
-struct PluginConfig
+class PluginConfig
 {
+public:
+	enum PluginType {
+		ELASTICMATERIAL_PLUGIN,
+		ELEMDATAGENERATOR_PLUGIN
+	};
+
+public:
+	PluginType type;
 	QString name;
 	QString path;
 	QString module;
