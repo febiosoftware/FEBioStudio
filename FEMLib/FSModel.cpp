@@ -699,19 +699,34 @@ bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 
 		if (strncmp(var, "dof_list", 8) == 0)
 		{
-			const char* szvar = var + 9;
-			FEDOFVariable& var = GetVariable(szvar);
-
-			vector<string> dofList; 
-			GetDOFSymbols(var, dofList);
-
-			char* sz = szbuf;
-			for (int i = 0; i < l.size(); ++i)
+			if (var[8] == 0)
 			{
-				strcat(sz, dofList[l[i]].c_str());
-				int n = strlen(sz);
-				if (i != l.size()-1) sz[n] = ',';
-				sz += n + 1;
+				char* sz = szbuf;
+				for (int i = 0; i < l.size(); ++i)
+				{
+					const char* dofname = GetDOFSymbol(l[i]); assert(dofname);
+					strcat(sz, dofname);
+					int n = strlen(sz);
+					if (i != l.size() - 1) sz[n] = ',';
+					sz += n + 1;
+				}
+			}
+			else
+			{
+				const char* szvar = var + 9;
+				FEDOFVariable& var = GetVariable(szvar);
+
+				vector<string> dofList;
+				GetDOFSymbols(var, dofList);
+
+				char* sz = szbuf;
+				for (int i = 0; i < l.size(); ++i)
+				{
+					strcat(sz, dofList[l[i]].c_str());
+					int n = strlen(sz);
+					if (i != l.size() - 1) sz[n] = ',';
+					sz += n + 1;
+				}
 			}
 
 			return true;

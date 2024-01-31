@@ -676,17 +676,7 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 					if (!pmat->benable) bvisible = false;
 				}
 
-				if (bvisible)
-				{
-					vec3d r0 = mesh.Node(edge.n0).r;
-					vec3d r1 = mesh.Node(edge.n1).r;
-
-					float t0 = edge.tex[0];
-					float t1 = edge.tex[1];
-
-					glTexCoord1d(t0); glVertex3d(r0.x, r0.y, r0.z);
-					glTexCoord1d(t1); glVertex3d(r1.x, r1.y, r1.z);
-				}
+				if (bvisible) RenderDiscreteElement(edge);
 			}
 		}
 		glEnd();
@@ -715,13 +705,7 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
 			}
 
-			if (bvisible)
-			{
-				vec3d r0 = mesh.Node(edge.n0).r;
-				vec3d r1 = mesh.Node(edge.n1).r;
-				glVertex3d(r0.x, r0.y, r0.z);
-				glVertex3d(r1.x, r1.y, r1.z);
-			}
+			if (bvisible) RenderDiscreteElement(edge);
 		}
 	}
 	glEnd();
@@ -735,16 +719,57 @@ void CGLModel::RenderDiscreteAsLines(CGLContext& rc)
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
-			vec3d r0 = mesh.Node(edge.n0).r;
-			vec3d r1 = mesh.Node(edge.n1).r;
-
-			glVertex3d(r0.x, r0.y, r0.z);
-			glVertex3d(r1.x, r1.y, r1.z);
+			RenderDiscreteElement(edge);
 		}
 	}
 	glEnd();
 
 	glPopAttrib();
+}
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteElement(GLEdge::EDGE& edge)
+{
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	FEElement_* pe = mesh.ElementPtr(edge.elem);
+	if (pe == nullptr) return;
+
+	if (pe->Type() == FE_BEAM2)
+	{
+		float t0 = edge.tex[0];
+		float t1 = edge.tex[1];
+		vec3d r0 = mesh.Node(edge.n0).r;
+		vec3d r1 = mesh.Node(edge.n1).r;
+		glTexCoord1d(t0); glVertex3d(r0.x, r0.y, r0.z);
+		glTexCoord1d(t1); glVertex3d(r1.x, r1.y, r1.z);
+	}
+	else if (pe->Type() == FE_BEAM3)
+	{
+		vec3d r[3];
+		r[0] = mesh.Node(pe->m_node[0]).r;
+		r[1] = mesh.Node(pe->m_node[1]).r;
+		r[2] = mesh.Node(pe->m_node[2]).r;
+		float t[3];
+		t[0] = edge.tex[0];
+		t[1] = edge.tex[1];
+		t[2] = 0.5f * (t[0] + t[1]);
+		vec3d rp = r[0];
+		float tp = t[0];
+		const int NDIV = 12;
+		for (int n = 1; n <= NDIV; ++n)
+		{
+			float w = -1.f + (n / (float)NDIV) * 2.f;
+			float H[3] = { 0.5f * w * (w - 1.f), 0.5f * w * (w + 1.f), 1.f - w * w };
+			vec3d rn = r[0] * H[0] + r[1] * H[1] + r[2] * H[2];
+			float tn = t[0] * H[0] + t[1] * H[1] + t[2] * H[2];
+
+			glTexCoord1d(tp); glVertex3d(rp.x, rp.y, rp.z);
+			glTexCoord1d(tn); glVertex3d(rn.x, rn.y, rn.z);
+
+			rp = rn;
+			tp = tn;
+		}
+	}
 }
 
 //-----------------------------------------------------------------------------
@@ -782,6 +807,7 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 	// render un-selected, active elements
 	if (m_pcol->IsActive())
 	{
+		m_pcol->GetColorMap()->GetTexture().MakeCurrent();
 		glEnable(GL_TEXTURE_1D);
 
 		glColor3ub(255, 255, 255);
@@ -800,14 +826,7 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 					if (!pmat->benable) bvisible = false;
 				}
 
-				if (bvisible)
-				{
-					vec3d r0 = mesh.Node(edge.n0).r;
-					vec3d r1 = mesh.Node(edge.n1).r;
-					float t0 = edge.tex[0];
-					float t1 = edge.tex[1];
-					glx::drawCappedCylinder(r0, r1, W, t0, t1);
-				}
+				if (bvisible) RenderDiscreteElementAsSolid(edge, W);
 			}
 		}
 	}
@@ -836,12 +855,7 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 				if (m_pcol->IsActive() && pmat->benable) bvisible = false;
 			}
 
-			if (bvisible)
-			{
-				vec3d r0 = mesh.Node(edge.n0).r;
-				vec3d r1 = mesh.Node(edge.n1).r;
-				glx::drawCappedCylinder(r0, r1, W);
-			}
+			if (bvisible) RenderDiscreteElementAsSolid(edge, W);
 		}
 	}
 
@@ -883,15 +897,54 @@ void CGLModel::RenderDiscreteAsSolid(CGLContext& rc)
 		FEElement_* pe = mesh.ElementPtr(edge.elem);
 		if (pe && pe->IsSelected() && pe->IsVisible())
 		{
-			vec3d r0 = mesh.Node(edge.n0).r;
-			vec3d r1 = mesh.Node(edge.n1).r;
-			glx::drawCappedCylinder(r0, r1, W);
+			RenderDiscreteElementAsSolid(edge, W);
 		}
 	}
 
 	glPopAttrib();
 }
 
+
+//-----------------------------------------------------------------------------
+void CGLModel::RenderDiscreteElementAsSolid(GLEdge::EDGE& edge, double W)
+{
+	Post::FEPostMesh& mesh = *GetActiveMesh();
+	FEElement_* pe = mesh.ElementPtr(edge.elem);
+	if (pe == nullptr) return;
+
+	if (pe->Type() == FE_BEAM2)
+	{
+		vec3d r0 = mesh.Node(edge.n0).r;
+		vec3d r1 = mesh.Node(edge.n1).r;
+		float t0 = edge.tex[0];
+		float t1 = edge.tex[1];
+
+		int leftCap  = (pe->m_nbr[0] == -1 ? 1 : 0);
+		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
+
+		glx::drawCappedCylinder(r0, r1, W, t0, t1, 16, leftCap, rightCap);
+	}
+	else if (pe->Type() == FE_BEAM3)
+	{
+		vec3d r[3];
+		r[0] = mesh.Node(pe->m_node[0]).r;
+		r[1] = mesh.Node(pe->m_node[1]).r;
+		r[2] = mesh.Node(pe->m_node[2]).r;
+		const int NDIV = 12;
+		vector<vec3d> p(NDIV + 1);
+		for (int n = 0; n <= NDIV; ++n)
+		{
+			float w = -1.f + (n / (float)NDIV) * 2.f;
+			float H[3] = { 0.5f * w * (w - 1.f), 0.5f * w * (w + 1.f), 1.f - w * w };
+			p[n] = r[0] * H[0] + r[1] * H[1] + r[2] * H[2];
+		}
+
+		int leftCap  = (pe->m_nbr[0] == -1 ? 1 : 0);
+		int rightCap = (pe->m_nbr[1] == -1 ? 1 : 0);
+
+		glx::drawSmoothPath(p, W, edge.tex[0], edge.tex[1], leftCap, rightCap);
+	}
+}
 
 //-----------------------------------------------------------------------------
 void CGLModel::RenderFaces(FEPostModel* ps, CGLContext& rc)
@@ -2430,7 +2483,7 @@ int CGLModel::GetSubDivisions()
 		if (ndivs > 10) ndivs = 10;
 		if (ndivs <  1) ndivs = 1;
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 		if (ndivs > 2) ndivs = 2;
 #endif
 
@@ -3545,7 +3598,7 @@ void CGLModel::UpdateEdge()
 	for (int i=0; i<mesh->Elements(); ++i)
 	{
 		FEElement_& el = mesh->ElementRef(i);
-		if ((el.Type() == FE_BEAM2)||(el.Type() == FE_BEAM3))
+		if (el.IsBeam())
 		{
 			GLEdge::EDGE edge;
 			edge.n0 = el.m_node[0];

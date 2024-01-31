@@ -77,9 +77,17 @@ int FSCoreMesh::GetMeshType() const
 vec3d FSCoreMesh::ElementCenter(const FEElement_& el) const
 {
 	vec3d r;
-	int N = el.Nodes();
-	for (int i = 0; i<N; i++) r += m_Node[el.m_node[i]].r;
-	return r / (float)N;
+	if (el.Type() == FE_BEAM3)
+	{
+		r = m_Node[el.m_node[2]].r;
+	}
+	else
+	{
+		int N = el.Nodes();
+		for (int i = 0; i < N; i++) r += m_Node[el.m_node[i]].r;
+		r /= (float)N;
+	}
+	return r;
 }
 
 //-----------------------------------------------------------------------------
@@ -1406,10 +1414,9 @@ void FSCoreMesh::MarkExteriorNodes()
 	for (int i = 0; i<elems; ++i)
 	{
 		FEElement_& el = ElementRef(i);
-		if (el.IsType(FE_BEAM2))
+		if (el.IsType(FE_BEAM2) || el.IsType(FE_BEAM3))
 		{
-			Node(el.m_node[0]).SetExterior(true);
-			Node(el.m_node[1]).SetExterior(true);
+			for (int j=0; j<el.Nodes(); ++j) Node(el.m_node[j]).SetExterior(true);
 		}
 	}
 }

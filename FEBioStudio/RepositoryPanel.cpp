@@ -31,7 +31,7 @@ SOFTWARE.*/
 #ifdef MODEL_REPO
 #include <vector>
 #include <map>
-#include <JlCompress.h>
+// #include <JlCompress.h>
 #include <QStandardPaths>
 #include <QDockWidget>
 #include <QDesktopServices>
@@ -289,7 +289,8 @@ void CRepositoryPanel::DownloadFinished(int fileID, int fileType)
 		dir += fileInfo.baseName();
 
 		m_wnd->ShowIndeterminateProgress(true, "Unzipping...");
-		JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
+		// JlCompress::extractFiles(filename, JlCompress::getFileList(filename), dir);
+        extractAllFiles(filename, dir);
 		m_wnd->ShowIndeterminateProgress(false);
 
         // Delete archive

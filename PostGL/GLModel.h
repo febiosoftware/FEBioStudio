@@ -210,6 +210,8 @@ public:
 	void RenderDiscrete(CGLContext& rc);
 	void RenderDiscreteAsLines(CGLContext& rc);
 	void RenderDiscreteAsSolid(CGLContext& rc);
+	void RenderDiscreteElement(GLEdge::EDGE& e);
+	void RenderDiscreteElementAsSolid(GLEdge::EDGE& e, double W);
 
 	void RenderSelection(CGLContext& rc);
 

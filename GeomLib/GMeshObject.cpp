@@ -130,8 +130,8 @@ GMeshObject::GMeshObject(GObject* po) : GObject(GMESH_OBJECT)
 		else if (go.IsShell()) g = AddShellPart();
 		else 
 		{ 
-			assert(false); 
-			g = new GPart(this); 
+//			assert(false);
+			g = new GPart(this);
 			m_Part.push_back(g);
 		}
 		g->SetMaterialID(go.GetMaterialID());
@@ -171,28 +171,36 @@ void GMeshObject::UpdateSections()
 {
 	FSMesh* pm = GetFEMesh();
 
-#pragma omp parallel for
+	constexpr unsigned int SOLID_TAG = 0x0001;
+	constexpr unsigned int SHELL_TAG = 0x0002;
+	constexpr unsigned int BEAM_TAG  = 0x0004;
+	constexpr unsigned int OTHER_TAG = 0x0008;
+	std::vector<int> partTypes(Parts(), 0);
+
+	for (int j = 0; j < pm->Elements(); ++j)
+	{
+		FSElement& el = pm->Element(j);
+		unsigned int elemTag = 0;
+		if (el.m_gid >= 0)
+		{
+			if      (el.IsSolid()) elemTag = SOLID_TAG;
+			else if (el.IsShell()) elemTag = SHELL_TAG;
+			else if (el.IsBeam ()) elemTag = BEAM_TAG;
+			else elemTag = OTHER_TAG;
+			partTypes[el.m_gid] |= elemTag;
+		}
+	}
+
 	for (int i = 0; i < Parts(); ++i)
 	{
 		GPart* pg = Part(i);
 
 		// see if this is a solid part, or shell part
-		bool isSolid = false;
-		bool isShell = false;
-		bool isBeam  = false;
-		bool isOther = false;
-
-		for (int j = 0; j < pm->Elements(); ++j)
-		{
-			FSElement& el = pm->Element(j);
-			if (el.m_gid == i)
-			{
-				if      (el.IsSolid()) isSolid = true;
-				else if (el.IsShell()) isShell = true;
-				else if (el.IsBeam ()) isBeam  = true;
-				else isOther = true;
-			}
-		}
+		unsigned int tag = partTypes[i];
+		bool isSolid = (tag & SOLID_TAG);
+		bool isShell = (tag & SHELL_TAG);
+		bool isBeam  = (tag & BEAM_TAG);
+		bool isOther = (tag & OTHER_TAG);
 		assert(isOther == false);
 
 		GPartSection* currentSection = pg->GetSection();
@@ -1330,6 +1338,52 @@ bool GMeshObject::DeletePart(GPart* pg)
 		// delete the elements of this part
 		FEMeshBuilder meshBuilder(*pm);
 		FSMesh* newMesh = meshBuilder.DeletePart(*pm, partId);
+
+		if (newMesh)
+		{
+			SetFEMesh(newMesh);
+			Update();
+			bret = true;
+		}
+		else
+		{
+			bret = false;
+		}
+	}
+	catch (...)
+	{
+		bret = false;
+	}
+
+	// all done
+	SetValidFlag(true);
+
+	return bret;
+}
+
+bool GMeshObject::DeleteParts(std::vector<GPart*> partList)
+{
+	// make sure these are all parts of this object
+	for (GPart* pg : partList)
+		if (pg->Object() != this) return false;
+
+	// get the mesh
+	FSMesh* pm = GetFEMesh(); assert(pm);
+	if (pm == 0) return false;
+
+	// get the part's local IDs
+	std::vector<int> localIDs;
+	for (GPart* pg : partList) localIDs.push_back(pg->GetLocalID());
+
+	// let's begin
+	SetValidFlag(false);
+
+	bool bret = true;
+	try {
+
+		// delete the elements of this part
+		FEMeshBuilder meshBuilder(*pm);
+		FSMesh* newMesh = meshBuilder.DeleteParts(*pm, localIDs);
 
 		if (newMesh)
 		{

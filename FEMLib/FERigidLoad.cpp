@@ -36,6 +36,41 @@ FSRigidLoad::FSRigidLoad(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps
 	SetSuperClassID(FELOAD_ID);
 }
 
+void FSRigidLoad::Save(OArchive& ar)
+{
+	// save the name if there is one
+	const string& name = GetName();
+	if (name.empty() == false) ar.WriteChunk(CID_FEOBJ_NAME, name);
+
+	const string& info = GetInfo();
+	if (info.empty() == false) ar.WriteChunk(CID_FEOBJ_INFO, info);
+
+	ar.WriteChunk(CID_COMPONENT_ACTIVE, m_bActive);
+
+	ar.BeginChunk(CID_FEOBJ_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FSRigidLoad::Load(IArchive& ar)
+{
+	TRACE("FSRigidLoad::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEOBJ_NAME: { string name; ar.read(name); SetName(name); } break;
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
+		case CID_COMPONENT_ACTIVE: ar.read(m_bActive); break;
+		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
+		}
+		ar.CloseChunk();
+	}
+}
+
 //=============================================================================
 FEBioRigidLoad::FEBioRigidLoad(FSModel* ps, int nstep) : FSRigidLoad(FE_FEBIO_RIGID_LOAD, ps, nstep) 
 {
@@ -104,6 +139,41 @@ FSRigidBC::FSRigidBC(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 	SetSuperClassID(FEBC_ID);
 }
 
+void FSRigidBC::Save(OArchive& ar)
+{
+	// save the name if there is one
+	const string& name = GetName();
+	if (name.empty() == false) ar.WriteChunk(CID_FEOBJ_NAME, name);
+
+	const string& info = GetInfo();
+	if (info.empty() == false) ar.WriteChunk(CID_FEOBJ_INFO, info);
+
+	ar.WriteChunk(CID_COMPONENT_ACTIVE, m_bActive);
+
+	ar.BeginChunk(CID_FEOBJ_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FSRigidBC::Load(IArchive& ar)
+{
+	TRACE("FSRigidBC::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEOBJ_NAME: { string name; ar.read(name); SetName(name); } break;
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
+		case CID_COMPONENT_ACTIVE: ar.read(m_bActive); break;
+		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
+		}
+		ar.CloseChunk();
+	}
+}
+
 //=============================================================================
 FEBioRigidBC::FEBioRigidBC(FSModel* ps, int nstep) : FSRigidBC(FE_FEBIO_RIGID_BC, ps, nstep)
 {
@@ -160,6 +230,41 @@ FSRigidIC::FSRigidIC(int ntype, FSModel* ps, int nstep) : FSStepComponent(ps)
 	m_type = ntype;
 	m_nstepID = nstep;
 	SetSuperClassID(FEIC_ID);
+}
+
+void FSRigidIC::Save(OArchive& ar)
+{
+	// save the name if there is one
+	const string& name = GetName();
+	if (name.empty() == false) ar.WriteChunk(CID_FEOBJ_NAME, name);
+
+	const string& info = GetInfo();
+	if (info.empty() == false) ar.WriteChunk(CID_FEOBJ_INFO, info);
+
+	ar.WriteChunk(CID_COMPONENT_ACTIVE, m_bActive);
+
+	ar.BeginChunk(CID_FEOBJ_PARAMS);
+	{
+		ParamContainer::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FSRigidIC::Load(IArchive& ar)
+{
+	TRACE("FSRigidIC::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case CID_FEOBJ_NAME: { string name; ar.read(name); SetName(name); } break;
+		case CID_FEOBJ_INFO: { string info; ar.read(info); SetInfo(info); } break;
+		case CID_COMPONENT_ACTIVE: ar.read(m_bActive); break;
+		case CID_FEOBJ_PARAMS: ParamContainer::Load(ar); break;
+		}
+		ar.CloseChunk();
+	}
 }
 
 //=============================================================================

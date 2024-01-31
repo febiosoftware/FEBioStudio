@@ -107,6 +107,34 @@ void glx::drawCircle(const vec3d& c, double R, int N)
 }
 
 //-----------------------------------------------------------------------------
+void glx::drawCircle(const vec3d& c, const vec3d& normal, double R, int N)
+{
+	quatd q0(vec3d(0, 0, 1), normal);
+
+	// special case when n0 == (0,0,-1)
+	// In this case, the quat cannot be determined uniquely
+	// so we need to specify it explicitly. 
+	if (vec3d(0, 0, 1) * normal == -1)
+	{
+		q0 = quatd(vec3d(PI, 0, 0));
+	}
+
+	glBegin(GL_TRIANGLE_FAN);
+	{
+		glNormal3d(normal.x, normal.y, normal.z);
+		glVertex3d(c.x, c.y, c.z);
+		for (int i = 0; i <= N; ++i)
+		{
+			double x = R * cos(i * 2 * PI / N);
+			double y = R * sin(i * 2 * PI / N);
+			vec3d p = c + q0 * (vec3d(x, y, 0));
+			glVertex3d(p.x, p.y, p.z);
+		}
+	}
+	glEnd();
+}
+
+//-----------------------------------------------------------------------------
 void glx::drawPoint(const vec3d& r)
 {
 	glBegin(GL_POINTS);
@@ -237,6 +265,14 @@ void glx::drawHalfSphere(const vec3d& r0, float R, const vec3d& n0, float tex)
 {
 	quatd q0(vec3d(0, 0, 1), n0);
 
+	// special case when n0 == (0,0,-1)
+	// In this case, the quat cannot be determined uniquely
+	// so we need to specify it explicitly. 
+	if (vec3d(0, 0, 1) * n0 == -1)
+	{
+		q0 = quatd(vec3d(PI, 0, 0));
+	}
+
 	const int M = 5;
 	const int N = 16;
 	for (int j = 0; j < M; ++j)
@@ -363,7 +399,7 @@ void glx::drawSmoothPath(const vec3d& r0, const vec3d& r1, float R, const vec3d&
 	}
 }
 
-void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
+void glx::drawSmoothPath(const std::vector<vec3d>& path, float R, float t0, float t1, int leftCap, int rightCap)
 {
 	int NP = (int)path.size();
 	if (NP < 2) return;
@@ -386,12 +422,33 @@ void glx::drawSmoothPath(const std::vector<vec3d>& path, float R)
 			e2 = r1 - r0; e2.Normalize();
 		}
 
+		float tex0 = t0 + (i / (NP - 1.0) * (t1 - t0));
+		float tex1 = t0 + ((i + 1) / (NP - 1.0) * (t1 - t0));
+
 		// render cylinder
-		glx::drawSmoothPath(r0, r1, R, e1, e2, 0.f, 0.f, 32);
+		glx::drawSmoothPath(r0, r1, R, e1, e2, tex0, tex1, 32);
 		
 		// render caps
-		if (i ==    0) glx::drawHalfSphere(r0, R, -e1);
-		if (i == NP-2) glx::drawHalfSphere(r1, R,  e2);
+		if (i == 0)
+		{
+			if (leftCap == 0)
+				glx::drawHalfSphere(r0, R, -e1, tex0);
+			else
+			{
+				glTexCoord1d(tex0);
+				glx::drawCircle(r0, -e1, R, 16);
+			}
+		}
+		if (i == NP - 2)
+		{
+			if (rightCap == 0)
+				glx::drawHalfSphere(r1, R, e2, tex1);
+			else
+			{
+				glTexCoord1d(tex1);
+				glx::drawCircle(r1, e2, R, 16);
+			}
+		}
 
 		// prep for next segment
 		r0 = r1;
@@ -426,7 +483,7 @@ void glx::drawCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, floa
 	glEnd();
 }
 
-void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N)
+void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0, float t1, int N, int leftCap, int rightCap)
 {
 	vec3d n = r1 - r0; n.Normalize();
 
@@ -434,8 +491,21 @@ void glx::drawCappedCylinder(const vec3d& r0, const vec3d& r1, float R, float t0
 	glx::drawCylinder(r0, r1, R, t0, t1, N);
 
 	// render caps
-	glx::drawHalfSphere(r0, R, -n, t0);
-	glx::drawHalfSphere(r1, R, n, t1);
+	if (leftCap == 0)
+		glx::drawHalfSphere(r0, R, -n, t0);
+	else
+	{
+		glTexCoord1d(t0);
+		glx::drawCircle(r0, -n, R, 16);
+	}
+
+	if (rightCap == 0)
+		glx::drawHalfSphere(r1, R, n, t1);
+	else
+	{
+		glTexCoord1d(t1);
+		glx::drawCircle(r1, n, R, 16);
+	}
 }
 
 void glx::quad4(vec3d r[4], vec3d n[4])

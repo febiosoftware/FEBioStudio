@@ -107,5 +107,5 @@ void GLViewSettings::Defaults(int ntheme)
 	m_diffuse = 0.8f;
 
 	m_transparencyMode = 0; // = off
-	m_objectColor = 0; // = default (by material)
+	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 }

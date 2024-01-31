@@ -27,7 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include <FSCore/color.h>
-#include "IHasItemList.h"
+#include <MeshLib/IHasItemList.h>
 
 //-----------------------------------------------------------------------------
 class FSModel;

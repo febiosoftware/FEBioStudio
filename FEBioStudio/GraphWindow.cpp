@@ -559,7 +559,7 @@ void RegressionUi::draw(QPainter& p)
 
 	int func = m_fnc->currentIndex();
 
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int ierr = 0;
 	for (int i = sr.left(); i < sr.right(); i += 2)
 	{
@@ -591,6 +591,13 @@ void RegressionUi::Update()
 	for (int i = 0; i < nplots; ++i)
 	{
 		QString l = m_graph->getPlotData(i).label();
+		if (l.isEmpty())
+		{
+			if (nplots == 1)
+				l = QString("<all>");
+			else
+				l = QString("<data%1>").arg(i+1);
+		}
 		m_src->addItem(l);
 	}
 	m_src->addItem("<selection>");
@@ -696,7 +703,7 @@ void MathPlot::draw(QPainter& p)
 	QRectF vr = m_graph->m_viewRect;
 	QRect sr = m_graph->ScreenRect();
 
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int ierr = 0;
 	for (int i=sr.left(); i < sr.right(); i += 2)
 	{
@@ -845,7 +852,13 @@ void DataOptions::Update()
 	for (int i = 0; i < n; ++i)
 	{
 		CPlotData& di = ui->m_graph->getPlotData(i);
-		ui->m_data->addItem(di.label());
+		QString l = di.label();
+		if (l.isEmpty())
+		{
+			if (n == 1) l = QString("<data>");
+			else l = QString("<data%1>").arg(i + 1);
+		}
+		ui->m_data->addItem(l);
 	}
 }
 
@@ -856,7 +869,7 @@ void CGraphWidget::paintEvent(QPaintEvent* pe)
 	CPlotWidget::paintEvent(pe);
 
 	QPainter p(this);
-	p.setClipRect(m_screenRect);
+	p.setClipRect(m_plotRect);
 	p.setRenderHint(QPainter::Antialiasing, true);
 	for (size_t i = 0; i<m_tools.size(); ++i)
 	{
@@ -2645,6 +2658,7 @@ void CModelGraphWindow::addSelectedElems()
 
 //-----------------------------------------------------------------------------
 // Calculate time history of a node
+
 void CModelGraphWindow::TrackNodeHistory(int node, float* pval, int nfield, int nmin, int nmax)
 {
 	CPostDocument* doc = GetPostDoc();

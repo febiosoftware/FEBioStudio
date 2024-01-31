@@ -37,8 +37,6 @@ CGView::CGView()
 	m_fnear = 1.f;
 	m_ffar = 50000.f;
 	m_fov = 45.f;
-
-    imgView = MODEL_VIEW;
 }
 
 CGView::~CGView()

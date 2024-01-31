@@ -228,6 +228,7 @@ bool LSDYNAModel::BuildFEMesh(FSModel& fem)
 
 			pe->SetType(is.n[3] == is.n[2] ? FE_TRI3 : FE_QUAD4);
 			pe->m_gid = is.pid;
+			pe->m_nid = is.eid;
 
 			pe->m_node[0] = NodeIndex(is.n[0]); if (pe->m_node[0] < 0) return false;
 			pe->m_node[1] = NodeIndex(is.n[1]); if (pe->m_node[1] < 0) return false;
@@ -633,7 +634,7 @@ bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 
 	// first, for each spring material, create a discrete spring set
 	auto it = m_Mat.begin();
-	std::unordered_map<int, GDiscreteSpringSet*> map;
+	std::unordered_map<int, GDiscreteSpringSet*> materialMap;
 	int nc = 0;
 	for (int i = 0; i < m_Mat.size(); ++i, ++it)
 	{
@@ -652,21 +653,41 @@ bool LSDYNAModel::BuildDiscrete(FSModel& fem)
 			ps->SetMaterial(sm);
 			ps->SetName(mat->szname);
 			m.AddDiscreteObject(ps);
-			map[mat->mid] = ps;
+			materialMap[mat->mid] = ps;
 		}
 	}
+
+	std::unordered_map<int, PART*> partMap;
+	for (PART& p : m_part) partMap[p.pid] = &p;
 
 	GMeshObject* po = m_po;
 	for (int i = 0; i < m_discrete.size(); ++i)
 	{
 		ELEMENT_DISCRETE& el = m_discrete[i];
-		int n1 = NodeIndex(el.n1);
-		int n2 = NodeIndex(el.n2);
-		int m1 = po->MakeGNode(n1);
-		int m2 = po->MakeGNode(n2);
 
-		GDiscreteSpringSet* ps = map[el.pid];
-		ps->AddElement(m1, m2);
+		if (partMap.find(el.pid) != partMap.end())
+		{
+			PART* part = partMap[el.pid];
+			int mid = part->mid;
+
+			if (materialMap.find(mid) != materialMap.end())
+			{
+				GDiscreteSpringSet* ps = materialMap[mid];
+
+				int n1 = NodeIndex(el.n1);
+				int n2 = NodeIndex(el.n2);
+				int m1 = po->MakeGNode(n1);
+				int m2 = po->MakeGNode(n2);
+
+				GNode* pn1 = po->FindNode(m1); assert(pn1);
+				GNode* pn2 = po->FindNode(m2); assert(pn2);
+
+				if (pn1 && pn2)
+				{
+					ps->AddElement(pn1, pn2);
+				}
+			}
+		}
 	}
 	
 	return true;

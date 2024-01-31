@@ -730,10 +730,10 @@ void PostSessionFileWriter::WriteModel()
 			}
 			xml.close_branch();
 		}
-		else
+		else if (openFileReader)
 		{
 			// save plot file
-			std::string plotFile = m_doc->GetDocFilePath();
+			std::string plotFile = currentDir.relativeFilePath(QString::fromStdString(openFileReader->GetFileName())).toStdString();
 			XMLElement plt("model");
 			plt.add_attribute("file", plotFile);
 			xml.add_empty(plt);

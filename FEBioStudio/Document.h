@@ -272,6 +272,12 @@ protected:
 class CGLDocument : public CUndoDocument
 {
 public:
+	enum UI_VIEW_MODE
+	{
+		MODEL_VIEW, SLICE_VIEW, TIME_VIEW_2D
+	};
+
+public:
 	CGLDocument(CMainWindow* wnd);
 	~CGLDocument();
 
@@ -306,6 +312,9 @@ public:
 	void SetItemMode(int mode) { m_vs.nitem = mode; UpdateSelection(false); }
 
 	static std::string GetTypeString(FSObject* po);
+
+	UI_VIEW_MODE GetUIViewMode() { return m_uiMode; }
+	void SetUIViewMode(UI_VIEW_MODE vm) { m_uiMode = vm; }
 
 	// return the current selection
 	FESelection* GetCurrentSelection();
@@ -348,10 +357,11 @@ public:
 	int GetUnitSystem() const;
 
 protected:
-	CGView				m_view;
 	CGLScene*			m_scene;
 
 	VIEW_STATE	m_vs;	// the view state
+
+	UI_VIEW_MODE m_uiMode;
 
 	std::string		m_info;
 	int				m_units;

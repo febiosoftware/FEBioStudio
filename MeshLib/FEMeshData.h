@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/FSObject.h>
-#include <FEMLib/IHasItemList.h>
+#include "IHasItemList.h"
 #include <string>
 //using namespace std;
 

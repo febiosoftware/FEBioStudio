@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include "Document.h"
 #include "PostDocument.h"
+#include "DocManager.h"
 #include <PostGL/GLModel.h>
 
 void CMainWindow::on_actionUndoViewChange_triggered()
@@ -53,7 +54,7 @@ void CMainWindow::on_actionZoomExtents_triggered()
 
 void CMainWindow::on_actionViewCapture_toggled(bool bchecked)
 {
-	GetGLView()->showSafeFrame(bchecked);
+	GetGLView()->ShowSafeFrame(bchecked);
 	RedrawGL();
 }
 
@@ -318,10 +319,11 @@ void CMainWindow::on_actionSyncViews_triggered()
 	CGLCamera& cam = view.GetCamera();
 	GLCameraTransform transform;
 	cam.GetTransform(transform);
-	int views = ui->tab->views();
-	for (int i = 0; i < views; ++i)
+	CDocManager* DM = GetDocManager();
+	int docs = DM->Documents();
+	for (int i = 0; i < docs; ++i)
 	{
-		CGLDocument* doci = dynamic_cast<CGLDocument*>(ui->tab->getDocument(i));
+		CGLDocument* doci = dynamic_cast<CGLDocument*>(DM->GetDocument(i));
 		if (doci && (doci != doc))
 		{
 			CGView& viewi = *doci->GetView();
@@ -339,7 +341,7 @@ void CMainWindow::on_actionSyncViews_triggered()
 
 void CMainWindow::on_actionToggleConnected_triggered()
 {
-	ui->glw->glc->toggleSelectConnected();
+	ui->centralWidget->glw->glc->toggleSelectConnected();
 }
 
 void CMainWindow::on_actionToggleFPS_triggered()

@@ -522,6 +522,8 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_vs.nitem = ITEM_MESH;
 	m_vs.nstyle = REGION_SELECT_BOX;
 
+	m_uiMode = MODEL_VIEW;
+
 	// set default unit system (0 == no unit system)
 	m_units = 0;
 
@@ -577,19 +579,16 @@ GObject* CGLDocument::GetActiveObject()
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 CGView* CGLDocument::GetView()
 {
-	return &m_view;
+	return &m_scene->GetView();
 }
 
-//-----------------------------------------------------------------------------
 CGLScene* CGLDocument::GetScene()
 {
 	return m_scene;
 }
 
-//-----------------------------------------------------------------------------
 std::string CGLDocument::GetTypeString(FSObject* po)
 {
 	if (po == 0) return "(null)";
@@ -621,7 +620,11 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<FSStep*>(po))
 	{
 		FSStep* step = dynamic_cast<FSStep*>(po);
-		return step->GetTypeString();
+		std::stringstream ss;
+		ss << "Step";
+		const char* sztype = step->GetTypeString();
+		if (sztype) ss << " [" << sztype << "]";
+		return ss.str();
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";

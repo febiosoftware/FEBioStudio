@@ -39,7 +39,7 @@ public:
 
 	void write(const char* sz) override
 	{
-		emit m_thread->sendLog(sz);
+		m_thread->appendLog(sz);
 	}
 
 private:
@@ -58,9 +58,11 @@ private:
 
 CFEBioThread::CFEBioThread(CMainWindow* wnd, CFEBioJob* job, QObject* parent) : m_wnd(wnd), m_job(job)
 {
+	m_isOutputReady = false;
+
 	QObject::connect(this, SIGNAL(finished()), this, SIGNAL(QObject::deleteLater()));
 	QObject::connect(this, SIGNAL(resultsReady(int, QProcess::ExitStatus)), parent, SLOT(onRunFinished(int, QProcess::ExitStatus)));
-	QObject::connect(this, SIGNAL(sendLog(const QString&)), wnd, SLOT(updateOutput(const QString&)));
+	QObject::connect(this, SIGNAL(outputReady()), parent, SLOT(onReadyRead()));
 }
 
 void CFEBioThread::run()
@@ -94,4 +96,37 @@ void CFEBioThread::run()
 void CFEBioThread::KillThread()
 {
 	FEBio::TerminateRun();
+}
+
+void CFEBioThread::appendLog(const char* sz)
+{
+	if ((sz == nullptr) || (sz[0] == 0)) return;
+
+	bool doEmit = false;
+
+	m_mutex.lock();
+	if (m_outputBuffer.isEmpty()) m_outputBuffer = sz;
+	else m_outputBuffer.append(sz);
+	if (m_isOutputReady == false)
+	{
+		m_isOutputReady = true;
+		doEmit = true;
+	}
+	m_mutex.unlock();
+
+	if (doEmit)
+	{
+		emit outputReady();
+	}
+}
+
+QString CFEBioThread::GetOutput()
+{
+	QString s;
+	m_mutex.lock();
+	s = m_outputBuffer;
+	m_outputBuffer.clear();
+	m_isOutputReady = false;
+	m_mutex.unlock();
+	return s;
 }

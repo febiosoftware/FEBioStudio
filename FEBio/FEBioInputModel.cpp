@@ -489,38 +489,50 @@ FEBioInputModel::Domain* FEBioInputModel::Part::FindDomain(const std::string& na
 	return 0;
 }
 
-void FEBioInputModel::Part::Update()
+int FEBioInputModel::Part::GlobalToLocalNodeIndex(int globalID)
 {
-	if (GetFEMesh() == 0) return;
+	assert(m_NLT.empty() == false);
+	assert((globalID - m_nltoff) < m_NLT.size());
+	return m_NLT[globalID - m_nltoff];
+}
 
+void FEBioInputModel::Part::BuildNLT()
+{
 	FSMesh& mesh = *GetFEMesh();
 
-	// build node-index lookup table
-	int noff = -1, maxID = 0;
+	int maxID = 0;
+	m_nltoff = -1;
 	int NN = mesh.Nodes();
-	for (int i = 0; i<NN; ++i)
+	for (int i = 0; i < NN; ++i)
 	{
 		int nid = mesh.Node(i).m_ntag;
 		assert(nid > 0);
-		if ((noff < 0) || (nid < noff)) noff = nid;
+		if ((m_nltoff < 0) || (nid < m_nltoff)) m_nltoff = nid;
 		if (nid > maxID) maxID = nid;
 	}
-	vector<int> NLT(maxID - noff + 1, -1);
-	for (int i = 0; i<NN; ++i)
+	m_NLT.assign(maxID - m_nltoff + 1, -1);
+	for (int i = 0; i < NN; ++i)
 	{
-		int nid = mesh.Node(i).m_ntag - noff;
-		NLT[nid] = i;
+		int nid = mesh.Node(i).m_ntag - m_nltoff;
+		m_NLT[nid] = i;
 	}
+}
 
+void FEBioInputModel::Part::Update()
+{
+	if (GetFEMesh() == nullptr) return;
+
+	BuildNLT();
+
+	FSMesh& mesh = *GetFEMesh();
 	int NE = mesh.Elements();
 	for (int i=0; i<NE; ++i)
 	{
 		FSElement& el = mesh.Element(i);
 		int ne = el.Nodes();
-		for (int j=0; j<ne; ++j) el.m_node[j] = NLT[ el.m_node[j] - noff ];
+		for (int j = 0; j < ne; ++j) el.m_node[j] = GlobalToLocalNodeIndex(el.m_node[j]);
 	}
 }
-
 
 //=============================================================================
 FEBioInputModel::PartInstance::PartInstance(FEBioInputModel::Part* part) : m_part(part), m_po(nullptr)
@@ -668,22 +680,26 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const FEBioInputModel::
 	int NF = surface.faces();
 	for (int i = 0; i < NF; ++i)
 	{
-		const vector<int>& face = surface.face(i);
-		int faceID = m_part->m_mesh.FindFace(face);
+		const vector<int>& globalFace = surface.face(i);
+
+		vector<int> localFace(globalFace.size());
+		for (int j = 0; j < globalFace.size(); ++j) localFace[j] = m_part->GlobalToLocalNodeIndex(globalFace[j]);
+
+		int faceID = m_part->m_mesh.FindFace(localFace);
 		if (faceID >= 0)
 		{
 			// check winding
 			FSFace& meshFace = m_part->m_mesh->Face(faceID);
-			bool winding = check_winding(face, meshFace);
+			bool winding = check_winding(localFace, meshFace);
 			if (winding == false)
 			{
 				if (issuesFound < maxIssues)
 				{
 					serr << "\tfacet has incorrect winding: ";
-					for (int j = 0; j < face.size(); ++j)
+					for (int j = 0; j < globalFace.size(); ++j)
 					{
-						serr << face[j] + 1;
-						if (j != face.size() - 1) serr << ",";
+						serr << globalFace[j];
+						if (j != globalFace.size() - 1) serr << ",";
 					}
 					serr << "\n";
 				}
@@ -698,10 +714,10 @@ FSSurface* FEBioInputModel::PartInstance::BuildFESurface(const FEBioInputModel::
 			if (issuesFound < maxIssues)
 			{
 				serr << "\tCannot find facet: ";
-				for (int j = 0; j < face.size(); ++j)
+				for (int j = 0; j < globalFace.size(); ++j)
 				{
-					serr << face[j] + 1;
-					if (j != face.size() - 1) serr << ",";
+					serr << globalFace[j];
+					if (j != globalFace.size() - 1) serr << ",";
 				}
 				serr << "\n";
 			}

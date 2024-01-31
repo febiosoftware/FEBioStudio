@@ -183,5 +183,12 @@
         <file>icons/brush.png</file>
         <file>icons/pixelInspector.png</file>
         <file>icons/geodesic.png</file>
+        <file>icons/curve.png</file>
+        <file>icons/bc.png</file>
+        <file>icons/load.png</file>
+        <file>icons/component.png</file>
+        <file>icons/step.png</file>
+        <file>icons/contact.png</file>
+        <file>icons/ic.png</file>
 	</qresource>
 </RCC>

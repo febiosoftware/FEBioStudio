@@ -51,11 +51,11 @@ SOFTWARE.*/
 #include <PostLib/FEPostModel.h>
 #include <QMessageBox>
 #include <QTimer>
-#include "PostDocument.h"
 #include "GraphWindow.h"
 #include "SummaryWindow.h"
 #include "StatsWindow.h"
 #include "IntegrateWindow.h"
+#include "ScatterWindow.h"
 #include "DlgImportLines.h"
 #include "DlgTimeSettings.h"
 #include "PostDocument.h"
@@ -66,7 +66,7 @@ QString warningNoActiveModel = "Please select the view tab to which you want to 
 
 Post::CGLModel* CMainWindow::GetCurrentModel()
 {
-	CPostDocument* doc = dynamic_cast<CPostDocument*>(ui->tab->getActiveDoc());
+	CPostDocument* doc = GetPostDocument();
 	if (doc== nullptr) return nullptr;
 	return doc->GetGLModel();
 }
@@ -490,6 +490,21 @@ void CMainWindow::on_actionGraph_triggered()
 	pg->raise();
 	pg->activateWindow();
 	pg->Update();
+}
+
+void CMainWindow::on_actionScatter_triggered()
+{
+	CPostDocument* postDoc = GetPostDocument();
+	if (postDoc == nullptr) return;
+
+	CScatterWindow* scatterWindow = new CScatterWindow(this, postDoc);
+
+	scatterWindow->Update(true);
+	scatterWindow->show();
+	scatterWindow->raise();
+	scatterWindow->activateWindow();
+
+	AddGraph(scatterWindow);
 }
 
 void CMainWindow::on_actionSummary_triggered()

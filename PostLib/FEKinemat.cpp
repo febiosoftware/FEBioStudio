@@ -26,7 +26,6 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEKinemat.h"
-#include "stdafx.h"
 #include <PostLib/FEMeshData_T.h>
 #include <PostLib/FEPostModel.h>
 using namespace Post;

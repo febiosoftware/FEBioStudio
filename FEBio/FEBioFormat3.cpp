@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioFormat3.h"
 #include <FEMLib/FERigidConstraint.h>
-#include <GeomLib/FSGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
@@ -652,7 +651,11 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 			{
 				FSMaterial* pm = gmat->GetMaterialProperties();
 				FEShellFormulation* eform = nullptr;
-				if (pm->IsRigid()) eform = FEBio::CreateShellFormulation("rigid-shell", fem);
+				if (pm->IsRigid())
+				{
+					eform = FEBio::CreateShellFormulation("rigid-shell", fem);
+					if (eform) eform->SetParamFloat("shell_thickness", shellThickness);
+				}
 				else
 				{
 					int baseClass = FEBio::GetBaseClassIndex("FEUncoupledMaterial");
@@ -661,12 +664,13 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 						eform = FEBio::CreateShellFormulation("three-field-shell", fem);
 					}
 					else eform = FEBio::CreateShellFormulation("elastic-shell", fem);
+
+					eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
+					eform->SetParamFloat("shell_thickness", shellThickness);
 				}
 
 				if (eform)
 				{
-					eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
-					eform->SetParamFloat("shell_thickness", shellThickness);
 					dom->SetElementFormulation(eform);
 				}
 			}
@@ -1010,7 +1014,7 @@ void FEBioFormat3::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag
 
 			// make zero-based
 			vector<int> node(N);
-			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			for (int j = 0; j < N; ++j) node[j] = nf[j];// -1;
 			s.m_face.push_back(node);
 
 			++tag;
@@ -1311,6 +1315,13 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+
+	const char* szgen = tag.AttributeValue("generator", true);
+	if (szgen)
+	{
+		tag.skip();
+		return true;
+	}
 
 	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();

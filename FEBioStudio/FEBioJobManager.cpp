@@ -185,11 +185,17 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 
 void CFEBioJobManager::onReadyRead()
 {
-	if (im->process == nullptr) return;
-
-	QByteArray output = im->process->readAll();
-	QString s(output);
-	im->wnd->AddOutputEntry(s);
+	if (im->process)
+	{
+		QByteArray output = im->process->readAll();
+		QString s(output);
+		im->wnd->AddOutputEntry(s);
+	}
+	else if (im->febThread)
+	{
+		QString s = im->febThread->GetOutput();
+		im->wnd->AddOutputEntry(s);
+	}
 }
 
 void CFEBioJobManager::onErrorOccurred(QProcess::ProcessError err)

@@ -210,11 +210,35 @@ BOX CModelDocument::GetModelBox()
 	return box;
 }
 
-//-----------------------------------------------------------------------------
 void CModelDocument::AddObject(GObject* po)
 {
 	DoCommand(new CCmdAddAndSelectObject(GetGModel(), po));
 	GetMainWindow()->Update(0, true);
+}
+
+void CModelDocument::DeleteObjects(std::vector<FSObject*> objList)
+{
+	// get all the parts out since we don't want to process those one by one
+	std::vector<GPart*> partList;
+	for (int i = 0; i < objList.size(); ++i)
+	{
+		GPart* pg = dynamic_cast<GPart*>(objList[i]);
+		if (pg)
+		{
+			partList.push_back(pg);
+			objList[i] = nullptr;
+		}
+	}
+
+	if (!partList.empty())
+	{
+		GetGModel()->DeleteParts(partList);
+	}
+
+	for (int i = 0; i < (int)objList.size(); ++i)
+	{
+		if (objList[i]) DeleteObject(objList[i]);
+	}
 }
 
 void CModelDocument::DeleteObject(FSObject* po)

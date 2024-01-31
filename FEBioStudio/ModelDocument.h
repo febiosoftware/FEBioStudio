@@ -82,6 +82,7 @@ public:
 	void AddObject(GObject* po);
 
 	void DeleteObject(FSObject* po);
+	void DeleteObjects(std::vector<FSObject*> objList);
 
 	// helper function for applying a modifier
 	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel = 0, bool clearSel = true);

@@ -33,7 +33,9 @@ struct MaterialTest
 	double		strain = 0.1;	// strain level
 	FSMaterial* mat = nullptr;	// material to test
 
-	string	test;
+	string	testName;	// name of test
+	string	xvalName;	// name of output value for x axis
+	string	yvalName;	// name of output value for y axis
 
 	// control parameters
 	double	time = 1.0;

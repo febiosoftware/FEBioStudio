@@ -522,6 +522,13 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 
+	if (m_nAnalysis == -1)
+	{
+		int moduleId = FEBio::GetModuleId("solid");
+		if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", "solid"); }
+		FileReader()->GetProject().SetModule(moduleId, false);
+	}
+
 	// create a new analysis step from these control settings
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
 	FSAnalysisStep* pstep = dynamic_cast<FSAnalysisStep*>(m_pstep);
@@ -1118,6 +1125,9 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
 		if (strcmp(szmat, "EFD neo-Hookean2") == 0) pm = FEMaterialFactory::Create(fem, "EFD neo-Hookean");
 
+		// HACK: "St.Venant-Kirchhoff" was renamed to "isotropic elastic"
+		if (strcmp(szmat, "St.Venant-Kirchhoff") == 0) pm = FEMaterialFactory::Create(fem, "isotropic elastic", propType);
+
 		// FBS1 never supported these materials, so we'll just use the FEBio classes.
 		if ((strcmp(szmat, "remodeling solid"      ) == 0) ||
 			(strcmp(szmat, "hyperelastic"          ) == 0) ||
@@ -1254,7 +1264,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 					++tag;
 				}
 			}
-			else ++tag;
+			else { tag.skip(); ++tag; }
 		}
 		while (!tag.isend());
 	}

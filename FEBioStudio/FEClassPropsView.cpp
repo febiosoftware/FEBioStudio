@@ -40,7 +40,6 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include "IconProvider.h"
 #include <FEMLib/FSModel.h>
-#include <FEBioLink/FEBioInterface.h>
 #include <FEMLib/FEBase.h>
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioInterface.h>

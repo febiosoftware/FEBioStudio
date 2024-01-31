@@ -124,13 +124,13 @@ status open
 User's Manual
 \series default
 \emph on
-Version 2.3
+Version 2.5
 \end_layout
 
 \begin_layout Date
 
 \series bold
-Last Updated: August 30, 2023
+Last Updated: January 16, 2024
 \end_layout
 
 \begin_layout Standard
@@ -4293,6 +4293,201 @@ This panel defines a few specialized tools that can be useful for very specific
 \end_layout
 
 \begin_layout Subsubsection
+Conchoid Fit
+\end_layout
+
+\begin_layout Standard
+This tool fits a conchoid to the current selection.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Read Curve
+\end_layout
+
+\begin_layout Standard
+This tool allows users to import a curve from a file that contains a list
+ of points.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Foam Generator
+\end_layout
+
+\begin_layout Standard
+A tool for generating a tetrahedral mesh that emulates a foam-structure,
+ i.e.
+ a cube with randomly distributed holes.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Material Map
+\end_layout
+
+\begin_layout Standard
+This tool reads a .k file with scalar data.
+ It then partitions the mesh given the number of 
+\begin_inset Quotes eld
+\end_inset
+
+materials
+\begin_inset Quotes erd
+\end_inset
+
+, based on the scalar data and assign each element to a partition depending
+ on the associated scalar value.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Scalar Field
+\end_layout
+
+\begin_layout Standard
+With this tool, users can generate scalar data maps on a mesh.
+ These maps can then be used for defining heterogeneous material parameters
+ or other spatially varying model parameters.
+ 
+\end_layout
+
+\begin_layout Standard
+The tool essentially solves a Poisson problem on the mesh, using the provided
+ boundary conditions.
+ The boundary conditions are defined by assigning values to certain selections.
+ 
+\end_layout
+
+\begin_layout Standard
+To use this tool, first give a name to the data map that will be generated.
+ Then, assign values to boundary nodes, edges, or surfaces.
+ Choose the data format of the map and the material (which is used to limit
+ the map to certain parts.) Then, click the Create button.
+ A new map with the user-defined named will be added to the model tree.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Edit Data Field
+\end_layout
+
+\begin_layout Standard
+This tool allows users to assign values to elements for an existing data
+ map.
+ 
+\end_layout
+
+\begin_layout Standard
+To use the tool, first select the elements for which you wish to assign
+ a value.
+ Then, choose the data field and the new value, and click Apply.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Plane cut
+\end_layout
+
+\begin_layout Standard
+With this tool, the user can cut a mesh in two parts along a user-defined
+ plane.
+ (Only works for triangle meshes.) 
+\end_layout
+
+\begin_layout Subsubsection
+Fiber Generator
+\end_layout
+
+\begin_layout Standard
+This tool can be used to generate a vector field on a mesh.
+ The vector field can be stored in a data map, which can then be used to
+ define e.g.
+ material fiber orientations.
+ 
+\end_layout
+
+\begin_layout Standard
+The tool works very similarly to the scalar field tool.
+ It also solves a Poisson problem on the mesh using prescribed boundary
+ conditions.
+ However, it then proceeds by numerically evaluating the gradient of this
+ scalar field.
+ This defines the initial vector field.
+ Then, additional parameters allow further modifications of this vector
+ field.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Generate mat axes
+\series default
+: Generate material axes instead of vectors and assign these to the element
+ local coordinate system.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Generate cross product
+\series default
+: The final vector field will be the cross product of the initial vector
+ field and the user-defined 
+\begin_inset Quotes eld
+\end_inset
+
+normal vector
+\begin_inset Quotes erd
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Normal vector
+\series default
+: The vector that will be used to generate the cross product vector field.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Out-plane rotation (deg)
+\series default
+: Specifies the additional rotation angle (in degrees) to apply to the vector
+ field that rotates it out of the plane that is perpendicular to the normal
+ vector.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+In-plane rotation (deg)
+\series default
+: Specifies an additional rotation angle (in degrees) to apply to the vector
+ field that rotates the vector in the plane that is perpendicular to the
+ normal vector.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Generate map
+\series default
+: Generate a map and define the map's name.
+ (If not checked, the vectors are assigned to the element's fiber property,
+ but this will be deprecated in the future.) 
+\end_layout
+
+\begin_layout Subsubsection
 Area Calculator
 \end_layout
 
@@ -4300,6 +4495,40 @@ Area Calculator
 This tool calculates the surface area A of selected faces.
  It also projects this surface area along the three coordinate directions
  as Ax, Ay and Az.
+\end_layout
+
+\begin_layout Subsubsection
+Import Springs
+\end_layout
+
+\begin_layout Standard
+This tool imports a collection of line elements from a text or VTK file
+ and produces either discrete (i.e.
+ spring) elements, or linear truss elements.
+ 
+\end_layout
+
+\begin_layout Standard
+This tool expects that the user has an object selected (which has to be
+ an editable mesh) to which the new nodes and line elements will be added.
+ When adding new nodes, first the tool will check if a node already exists
+ at that location (within the user-defined tolerance) and if so, pick the
+ existing node.
+ If no node exists at the location, a new node will be added to the object.
+\end_layout
+
+\begin_layout Standard
+The 
+\begin_inset Quotes eld
+\end_inset
+
+Check for intersection
+\begin_inset Quotes erd
+\end_inset
+
+ option will check if the new line elements intersect with the existing
+ mesh, and if so, will truncate the element at the intersection point.
+ 
 \end_layout
 
 \begin_layout Subsubsection
@@ -4993,6 +5222,143 @@ normalized eigenvector
 \end_inset
 
 
+\end_layout
+
+\begin_layout Subsubsection
+ICP Registration
+\end_layout
+
+\begin_layout Standard
+This tool implements the Iterative Closest Point registration method, which
+ can be used to align two objects assuming an affine transformation.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Image Map
+\end_layout
+
+\begin_layout Standard
+This tool can be used to extract a scalar data map from a 3D image data.
+ Before you can use this tool, you must import a 3D image (menu File
+\backslash
+Import Image).
+ Then, give the new data map a name and select the image model.
+ The following options can be set to control how the data is extracted from
+ the image.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Method
+\series default
+: The sampling method that will be used to extract the image data.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Project surface nodes inward
+\series default
+: When checked, surface nodes are evaluated by finding the closest non-zero
+ image data, instead of evaluating the image data directly at the surface.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Normalize
+\series default
+: image data is normalized before sampling.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Filter
+\series default
+: When checked, the user can provide a transfer function that will be applied
+ after sampling the image data.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Discrete Element Network
+\end_layout
+
+\begin_layout Standard
+This tool converts a surface mesh to a mesh composed of discrete elements.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Select Near Plane
+\end_layout
+
+\begin_layout Standard
+This tool can be used to select all nodes that are on or close to a plane
+ defined by the following parameters.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Direction:
+\series default
+ The orientation of the plane
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Position
+\series default
+: The position (i.e.
+ normal displacement) of the plane.
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Threshold
+\series default
+: The max distance to the plane for a node to be included in the selection.
+ 
+\end_layout
+
+\begin_layout Itemize
+
+\series bold
+Add to selection
+\series default
+: Add the plane selection to the current selection, if any.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Kinemat
+\end_layout
+
+\begin_layout Standard
+The Kinemat tool allows users to setup an FEBio problem using only geometry
+ and kinematics data.
+ The geometry is assumed to be rigid bodies, and the kinemat data describes
+ the motion of the rigid parts.
+\end_layout
+
+\begin_layout Standard
+FEBio Studio will read the data and construct a complete FEBio model: Rigid
+ materials are assigned to each bone.
+ The kinemat data is used to apply prescribed displacements and rotations
+ for each rigid body.
+ After import, the model can be saved and run immediately in FEBio.
+ 
 \end_layout
 
 \begin_layout Section

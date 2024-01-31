@@ -166,15 +166,14 @@ void FSMesh::ClearMeshData()
 }
 
 //-----------------------------------------------------------------------------
-// Allocate storage for the mesh data. If bclear is true (default = true) all 
-// existing groups are deleted.
+// Allocate storage for the mesh data. Also clears mesh data!
 void FSMesh::Create(int nodes, int elems, int faces, int edges)
 {
 	// allocate storage
-	if (nodes > 0) { if (nodes) ResizeNodes(nodes); else m_Node.clear(); }
-	if (elems > 0) { if (elems) ResizeElems(elems); else m_Elem.clear(); }
-	if (faces > 0) { if (faces) m_Face.resize(faces); else m_Face.clear(); }
-	if (edges > 0) { if (edges) m_Edge.resize(edges); else m_Edge.clear(); }
+	if (nodes > 0) { if (nodes != m_Node.size()) ResizeNodes(nodes); }
+	if (elems > 0) { if (elems != m_Elem.size()) ResizeElems(elems); }
+	if (faces > 0) { if (faces != m_Face.size()) m_Face.resize(faces); }
+	if (edges > 0) { if (edges != m_Edge.size()) m_Edge.resize(edges); }
 
 	// clear mesh data
 	ClearMeshData();
@@ -546,7 +545,7 @@ void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildElementData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// make sure element data is valid
 	assert(ValidateElements());
 #endif
@@ -566,7 +565,7 @@ void FSMesh::RebuildElementData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildFaceData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateFaces());
 #endif
 
@@ -585,7 +584,7 @@ void FSMesh::RebuildFaceData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildEdgeData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateEdges());
 #endif
 	// mark the exterior edges
@@ -795,7 +794,7 @@ void FSMesh::UpdateElementNeighbors()
 		}
 
 		// do the beam elements
-		if (pe->IsType(FE_BEAM2))
+		if (pe->IsBeam())
 		{
 			for (int j = 0; j < 2; ++j)
 			{
@@ -808,7 +807,7 @@ void FSMesh::UpdateElementNeighbors()
 					FEElement_* pne = NET.Element(inode, k);
 					if (pne != pe)
 					{
-						if ((pne->IsType(FE_BEAM2)) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
+						if ((pne->IsBeam()) && ((pne->m_node[0] == pe->m_node[j]) || (pne->m_node[1] == pe->m_node[j])))
 						{
 							pe->m_nbr[j] = NET.ElementIndex(inode, k);
 							break;
@@ -2692,19 +2691,14 @@ void FSMesh::BuildELT()
 
 	// Figure out the size
 	int nsize = maxid - minid + 1;
-	if (nsize < NE)
-	{
-		// Hmm, that shouldn't be. 
-		// Let's clear up and get out of here.
-		ClearELT();
-		return;
-	}
+	assert(nsize >= NE);
 
 	// Ok, look's like we're good to go
 	m_ELT.assign(nsize, -1);
 	for (int i = 0; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		assert(m_ELT[nid - minid] == -1);
 		m_ELT[nid - minid] = i;
 	}
 	m_eltmin = minid;
@@ -2713,7 +2707,10 @@ void FSMesh::BuildELT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearELT()
 {
-	m_ELT.clear();
-	m_eltmin = 0;
-	for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	if (m_ELT.empty() == false)
+	{
+		m_ELT.clear();
+		m_eltmin = 0;
+		for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	}
 }

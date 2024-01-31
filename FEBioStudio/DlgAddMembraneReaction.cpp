@@ -38,7 +38,6 @@
 #include <QDialogButtonBox>
 #include <QListWidget>
 #include <QPushButton>
-#include <QBoxLayout>
 #include <sstream>
 #include <QMessageBox>
 #include <FEMLib/FEMultiMaterial.h>

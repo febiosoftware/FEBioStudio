@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <PostLib/FEState.h>
 #include <PostLib/FEPostMesh.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
 using namespace std;

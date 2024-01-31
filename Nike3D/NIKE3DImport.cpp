@@ -376,6 +376,7 @@ void NIKE3DImport::build_constraints(NIKE3DProject& nike)
 				FSNodeSet* pg = new FSNodeSet(m_po);
 				sprintf(szname, "FixedNodeset%02d", nfc++);
 				pg->SetName(szname);
+				m_po->AddFENodeSet(pg);
 
 				// count all nodes that have this BC
 				// assign the nodes to this group
@@ -451,6 +452,7 @@ void NIKE3DImport::build_constraints(NIKE3DProject& nike)
 			FSNodeSet* pg = new FSNodeSet(m_po);
 			sprintf(szname, "DisplacementNodeset%02d", nfc);
 			pg->SetName(szname);
+			m_po->AddFENodeSet(pg);
 
 			// assign the nodes to this group
 			pn = nike.m_DC.begin();
@@ -701,6 +703,7 @@ void NIKE3DImport::build_rigidfacets(NIKE3DProject& nike)
 		FSNodeSet* pn = new FSNodeSet(m_po);
 		sprintf(szname, "RigidNodeset%2d", nrns);
 		pn->SetName(szname);
+		m_po->AddFENodeSet(pn);
 
 		int nrb = pf->nrb;
 		GMaterial* pgm = m_pMat[nrb-1];
@@ -1587,9 +1590,16 @@ void NIKE3DImport::UpdateFEModel(FSModel& fem)
 	// set geometry
 //	if (m_io.bgeom && m_po)
 	{
-		string fileName = GetFileName();
-		m_po->SetName(fileName.c_str());
+		char fileTitle[256] = { 0 };
+		FileTitle(fileTitle);
+		m_po->SetName(fileTitle);
 		fem.GetModel().AddObject(m_po);
+	}
+
+	// add the load curves
+	for (int i = 0; i < m_LC.size(); ++i)
+	{
+		fem.AddLoadCurve(m_LC[i]);
 	}
 }
 

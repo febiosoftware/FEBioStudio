@@ -6,6 +6,152 @@
 
 ===========================================================================
 
+ R E L E A S E   2.5   1/16/2024
+
+===========================================================================
+
+New Features:
+* Added "physics" color mode option, which colors each surface depending on how it is used in the model's loads and boundary conditions.
+* Added support for file extension dyn (will read lsdyna input file).
+* Added support for exporting 3D image data to several formats.
+* Added support for reading and writing quadratic beam elements to febio4 format.
+
+Improvements:
+* Inverted faces but not elements in NetGen mesher, to produce correct mesh output upon conversion to editable mesh.
+* Added ability to merge multiple STEP objects into single STEP object upon import, allowing conforming meshing with Netgen
+* Added Fluent mesh exporting capability
+* Added a log message when attempting to export wrong Mesh type to Fluent. Made export distinguish mixed face types versus uniform face types
+* Updated copyright statement on splash and about box.
+* Added febio format 4.0 export for post docs.
+* Added nodal fluid flux plot variable to FSI analyses
+* Deletion of multiple parts will now process much faster.
+* All new documents are now added to the recent files list.
+* Added icons to model search panel, and a column for the type. Filter now also searches type strings.
+* Implemented more efficient way of tracking output when running febio in a thread.
+* Modified mesh building algorithm in post lsdyna importer to speed it up.
+* In the Project panel, added support to load fs2 files via folder import, and fixed bug when moving files to a folder.
+* Added options to set caps when rendering smooth paths and cylinders. Beam ends are now rendered as flat. Fixed issue with rendering colormaps on solid beams.
+
+Bug Fixes:
+* Fixed issue with FSModel::GetEnumValues for getting dof_list.
+* Fixed some issues with reading feb3 files.
+* Added checks when rendering objects to make sure a valid render mesh exists.
+* Timeline panel is now updated when states are deleted.
+* Fixed issue with saving the correct model file name when saving fsps files.
+* Fixed issue with reading surfaces of febio files that uses node numbering that does not start at one.
+* Fixed issue with rendering images with correct orientation in slice view. Also fixed bug in rendering z-slice.
+* Updated ImageMap tool and WarpImageFilter to work with rotated images. Fixed bug caused by missing cases in 3DImage::Value
+* Fixed bug in loading models with DICOM images
+* Fixed issue with volume rendering images with orientation.
+* Image models are now rendered with correct orientation.
+* Fixed issue in kinemat build tool.
+* Fixed problem with input of numbers in a property form.
+* Fixed issue where shell IDs were not copied from lsdyna file.
+* Fixed issue with rare case where elements have duplicate IDs.
+* Fixed string overflow in FEBio import.
+* Fixed issue with importing nodesets from old feb files.
+* Fixed issue with volume rendering of signed int image data.
+* Made some fixes to old febio and nike3d file readers.
+* Fixed bug in rendering of general springs.
+* Fixed problem with reading discrete element sets from LSDYNA file.
+* Fixed bug in curve-projection tool that did not take transform of curves into account.
+* Fixed issue with rendering half-spheres in special case.
+
+
+===========================================================================
+
+ R E L E A S E   2.4   11/15/2023
+
+===========================================================================
+
+New Features:
+* Added option to the import-spring tool to generate linear truss elements instead of springs.
+* Added support to the import-springs tool to read springs from a vtk file.
+* Implemented GMesh (version 4) file export.
+* Added option to fiber generator tool to create a map, instead of assigning to element fiber vectors.
+* Added additional plane rotation parameters to fiber generator tool.
+* Added new geodesic-curve create tool, which can be used to generate geodics, or shortest-path-curves on existing geometry.
+* Added filter to convert element data to node data for types vec3f, mat3fs, and mat3f to the Data tab on the Post panel.
+* Implemented Kinemat tool on the build side, which allows users to use kinematic data to setup a forward FE model.
+* Added panel to Statistics window that shows min, max, mean, std. dev, and std. error.
+* Added option to VTK-export to write the element part IDs as cell data.
+* Added "Magnitude" component to mat3d and mat3f data types when visualizing FEBio plot data.
+* The muscle-paths plots now support a "guided-mesh" feature, which allows the muscle path to move with the deformation of another mesh.
+* Added a legend bar for visualizing data using the mesh inspector. 
+* Added ability to use the plotted data in a math expression in the Math plot tool of the graph window. (use _data as function name.)
+* Added support for 32-bit signed and unsigned pixel types for reading 3D image data.
+* A new tool was added for editing mesh data on the Tools panel of the Build panel. This tool allows you to overwrite values assigned to elements.
+* Added option to write face and element connectivity when exporting data fields from the Post-Data panel.
+
+Improvements:
+* Made the Revolve Faces tool more robust.
+* Expanded support for reading GMsh 4 files.
+* Modified shell thickness modifier so that when no elements are selected, the thickness of all elements is set.
+* Added smoothing option to loft tool.
+* Nodal and element IDs are now serialized and preserved when writing feb files.
+* Node, element, and part IDs are now read from LSDYNA model.
+* Added support for reading node IDs from xplt file version 3.3.
+* Current folder is now set to the path of the last file that was loaded successfully.
+* Added additional support for interpolating state data.
+* About box shows normal size FEBio Studio icon again.
+* Added scale factor to curve probe. Fixed issue with evaluation of time-averaged data.
+* The data import dialog is now used to import the points of the curve probe.
+* Ensured that the default directoy for opening and saving is consistent (and equal to the current working directory).
+* Added context menu for deleting named selections.
+* Added the divisions and smooth options to the legendbar options dialog.
+* Use ctrl or ctrl+shift to zoom a plot in x or y only.
+* The "Source" label in the Graph window is now hidden when the data source widget is not used.
+* Load controllers can no longer be deleted if they are being used in the model.
+* Changed the element selection logic so that it is easier to select discrete elements.
+* Added support for editing scalar part data stored as DATA_MULT.
+* Updated selection report to include nodes of currently selected discrete element.
+* Increased the max number of geometry items that can be displayed in model tree to 10,000.
+* Ensured that node partitioning remains preserved when partitioning elements.
+* Turned off specular lighting when rendering planecut.
+* Elements that are visible because neighbors are hidden can also be region-selected with "ignore interior" option on.
+* Modified help section on Inflate tool in FEBio Studio User manual.
+* Modified Inflate tool for creating boundary layer meshes on existing tetrahedral meshes. The new formulation performs a series of operations that extrude the selected surface inward with a biased mesh, then fills the resulting inner surface with a tetrahedral mesh (TetGen), finally welding the two parts together and returning a rebuilt mesh with no seams.
+
+Bug fixes:
+* Fixed crash in mesh inspector when no object is selected.
+* Fixed issue with verifying nodal IDs when export to febio file.
+* Fixed bug in code that maps parameters between containers.
+* Fixed empty error message.
+* Fixed shell-to-solid rendering option.
+* Fixed bug in option to replace contact interface.
+* Fixed crash in Abaqus reader.
+* Fixed potential crash in GModel::ValidateNames.
+* Fixed some issues where node and element indices were used instead of IDs.
+* Fixed issue in reading session files with plot groups.
+* Fixed parameter name for muscle path.
+* Fixed issues with adding new states. Added support for interpolating data for new states.
+* Fixed issue with curve probe parameters not updating. Arc lenghts are now used as the ordinate axis in the curve probe plots.
+* Fixed typo in job run message box.
+* Fixed bug with Average Intensity Over Elements option in ImageMapTool
+* Fixed logic bug in processing error string from lsdyna import.
+* Fixed bug in scalar field tool when generating constant element data.
+* Fixed issue with importing gmsh file where wrong tag was used to partition the mesh (issue #71)
+* Fixed issue with update of the isosurface plot when users change parameters.
+* Fixed issue with exporting node sets based on part lists.
+* Removed duplicate manual figures
+* Fixed issue with volume rendering 32 bit integer images.
+* Fixed issue with reading very large Tiff files.
+* Fixed crash when exporting a model that has no materials to feb4 file.
+* Fixed GUI slowdown caused by working with medium to large images.
+* Fixed issue with syncing discrete selection to model tree.
+* Fixed issue with updating discrete element selection.
+* Fixed issue with importing partlists from feb4 file.
+* Fixed bug in pixel inspector caused by incorrect scaling. Pixel inspector rectangle is now drawn correctly.
+* Fixed issue where error string of mesh modifier did not propagate to the user.
+* Fixed issue with updating part sections when the mesh is changed.
+* Fixed issue where random faces get selected after deleting a face selection.
+* Fixed crash when purging selections from model components.
+* Fixed bug in render vector plots for element data.
+* Replaced allocation of "old" spring materials with the "new" discrete materials from FEBio.
+
+
+===========================================================================
+
  R E L E A S E   2.3   8/30/2023
 
 ===========================================================================

@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <FEBio/FEBioExport4.h>
 #include <Nike3D/NIKE3DExport.h>
 #include <MeshIO/BYUExport.h>
+#include <MeshIO/FluentExport.h>
 #include <MeshIO/HypersurfaceExport.h>
 #include <LSDyna/LSDYNAexport.h>
 #include <MeshIO/MeshExport.h>
@@ -56,7 +57,6 @@ SOFTWARE.*/
 #include <MeshIO/PLYExport.h>
 #include <MeshIO/GMshExport.h>
 #include <GeomLib/GPrimitive.h>
-#include <FEBio/FEBioImport.h>
 #include <Abaqus/AbaqusImport.h>
 #include <Ansys/AnsysImport.h>
 #include <MeshIO/BYUimport.h>
@@ -108,7 +108,6 @@ SOFTWARE.*/
 #include "DlgExportXPLT.h"
 #include <XPLTLib/xpltFileExport.h>
 #include <iostream>
-#include "ModelDocument.h"
 #include "XMLDocument.h"
 #include "FileThread.h"
 #include <PostLib/FEFEBioExport.h>
@@ -125,10 +124,11 @@ SOFTWARE.*/
 #include "PostObject.h"
 #include "DlgScreenCapture.h"
 #include "ModelFileReader.h"
+#include "units.h"
 
 using std::stringstream;
 
-#ifdef HAS_QUAZIP
+#ifdef HAS_LIBZIP
 #include "ZipFiles.h"
 #endif
 
@@ -188,6 +188,10 @@ void CMainWindow::on_actionNewModel_triggered()
 		assert(doc);
 		if (doc)
 		{
+			int units = dlg.GetUnitSystem();
+			Units::SetUnitSystem(units);
+			doc->SetUnitSystem(units);
+
 			docTitle = dlg.GetModelName().toStdString();
 			doc->SetDocTitle(docTitle);
 			AddDocument(doc);
@@ -210,7 +214,7 @@ void CMainWindow::on_actionNewProject_triggered()
 void CMainWindow::on_actionOpen_triggered()
 {
 	QStringList filters;
-	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.stl)";
+	filters << "All supported files (*.fs2 *.fsm *.feb *.xplt *.n *.inp *.fsprj *.prv *.vtk *.fsps *.k *.dyn *.stl)";
 	filters << "FEBioStudio Model (*.fs2 *.fsm *.fsprj)";
 	filters << "FEBio input files (*.feb)";
 	filters << "FEBio plot files (*.xplt)";
@@ -219,7 +223,7 @@ void CMainWindow::on_actionOpen_triggered()
 	filters << "Abaus files (*.inp)";
 	filters << "Nike3D files (*.n)";
 	filters << "VTK files (*.vtk)";
-	filters << "LSDYNA keyword (*.k)";
+	filters << "LSDYNA keyword (*.k *.dyn)";
 	filters << "STL file (*.stl)";
 	filters << "LSDYNA database (*)";
 
@@ -241,30 +245,6 @@ void CMainWindow::on_actionOpen_triggered()
 		OpenFile(fileName);
 	}
 }
-
-// void CMainWindow::on_actionReadInfo_triggered()
-// {
-//     QStringList filters;
-// 	filters << "All supported files (*.fsm *.fsprj *.prv *.feb)";
-// 	filters << "FEBioStudio Model (*.fsm *.fsprj)";
-
-// 	QFileDialog dlg(this, "Open");
-// 	dlg.setFileMode(QFileDialog::ExistingFiles);
-// 	dlg.setAcceptMode(QFileDialog::AcceptOpen);
-// 	dlg.setDirectory(ui->currentPath);
-// 	dlg.setNameFilters(filters);
-// 	if (dlg.exec())
-// 	{
-//         QStringList files = dlg.selectedFiles();
-//         files.sort();
-
-//         for(auto filename : files)
-//         {
-//             ModelTypeInfoReader reader;
-//             reader.ReadTypeInfo(filename.toStdString());
-//         }
-// 	}
-// }
 
 void CMainWindow::on_actionSave_triggered()
 {
@@ -297,7 +277,7 @@ void CMainWindow::on_actionSave_triggered()
 }
 
 
-#ifdef HAS_QUAZIP
+#ifdef HAS_LIBZIP
 void CMainWindow::on_actionImportProject_triggered()
 {
 	QStringList filters;
@@ -319,31 +299,6 @@ void CMainWindow::on_actionImportProject_triggered()
 		QString fileName = files.first();
 
 		ImportProjectArchive(fileName);
-
-
-//		QFileInfo fileInfo(fileName);
-//
-//		// get the parent directory's name
-//		QString parentDirName = fileInfo.path();
-//
-//		// create folder in which to unzip
-//		QDir parentDir(parentDirName);
-//		parentDir.mkdir(fileInfo.completeBaseName());
-//		QString destDir = parentDirName + "/" + fileInfo.completeBaseName();
-//
-//		// extract files
-//		QStringList extractedFiles = JlCompress::extractFiles(fileName, JlCompress::getFileList(fileName), destDir);
-//
-//		// open first .fsprj file
-//		for(QString str : extractedFiles)
-//		{
-//			if(QFileInfo(str).suffix().compare("fsprj", Qt::CaseInsensitive) == 0)
-//			{
-//				OpenDocument(str);
-//				break;
-//			}
-//		}
-
 	}
 }
 
@@ -389,7 +344,7 @@ bool CMainWindow::SaveDocument(const QString& fileName)
 	bool success = doc->SaveDocument(fileName.toStdString());
 
 	// clear the command stack
-	if (ui->m_clearUndoOnSave)
+	if (ui->m_settings.clearUndoOnSave)
 	{
 		CGLDocument* gldoc = dynamic_cast<CGLDocument*>(doc);
 		if (gldoc) gldoc->ClearCommandStack();
@@ -467,6 +422,7 @@ FileReader* CMainWindow::CreateFileReader(const QString& fileName)
 	}
 	if (ext.compare("cdb", Qt::CaseInsensitive) == 0) return new AnsysImport(prj);
 	if (ext.compare("k", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
+	if (ext.compare("dyn", Qt::CaseInsensitive) == 0) return new LSDYNAimport(prj);
 	if (ext.compare("unv", Qt::CaseInsensitive) == 0) return new IDEASimport(prj);
 	if (ext.compare("nas", Qt::CaseInsensitive) == 0) return new NASTRANimport(prj);
 	if (ext.compare("dxf", Qt::CaseInsensitive) == 0) return new DXFimport(prj);
@@ -540,6 +496,7 @@ void CMainWindow::OpenFEModel(const QString& fileName)
 	QString ext = QFileInfo(fileName).suffix();
 	if (ext.compare("feb", Qt::CaseInsensitive) == 0) reader = new FEBioFileImport(prj);
 	else if (ext.compare("n", Qt::CaseInsensitive) == 0) reader = new NIKE3DImport(prj);
+	else if (ext.compare("dyn", Qt::CaseInsensitive) == 0) reader = new LSDYNAimport(prj);
 	else if (ext.compare("inp", Qt::CaseInsensitive) == 0)
 	{
 		AbaqusImport* abaqusReader = new AbaqusImport(prj);
@@ -793,6 +750,7 @@ void CMainWindow::ExportGeometry()
 	filters << "TetGen files (*.ele)";
 	filters << "VTK files (*.vtk)";
 	filters << "GMesh files (*.msh)";
+    filters << "Fluent files (*.msh)";
 
 	// default extensions
 	const char* szext[] = {
@@ -937,6 +895,13 @@ void CMainWindow::ExportGeometry()
 				QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to GMesh file."));
 		}
 		break;
+        case 11:
+        {
+            FluentExport writer(fem);
+            if (!writer.Write(szfile))
+                QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to Fluent file."));
+            }
+        break;
 		default:
 			QMessageBox::critical(this, "FEBio Studio", "Don't know how to save this file.");
 		}
@@ -1045,7 +1010,7 @@ void CMainWindow::SavePostDoc()
 		break;
 		case 2:
 		{
-			Post::FEFEBioExport fr;
+			Post::FEFEBioExport4 fr;
 			bret = fr.Save(fem, szfilename);
 		}
 		break;
@@ -1151,7 +1116,7 @@ void CMainWindow::SavePostDoc()
 //-----------------------------------------------------------------------------
 QString CMainWindow::CurrentWorkingDirectory()
 {
-	QString path = ui->currentPath;
+	QString path = ui->m_currentPath;
 	if (ui->m_project.GetProjectFileName().isEmpty() == false)
 	{
 		QFileInfo fi(ui->m_project.GetProjectFileName());
@@ -1500,7 +1465,7 @@ void CMainWindow::on_actionImportGeometry_triggered()
 		filters << "FEBio (*.feb)";
 		filters << "ABAQUS (*.inp)";
 		filters << "ANSYS (*.cdb)";
-		filters << "LSDYNA Keyword (*.k)";
+		filters << "LSDYNA Keyword (*.k *.dyn)";
 		filters << "IDEAS Universal (*.unv)";
 		filters << "NASTRAN (*.nas)";
 		filters << "DXF (*.dxf)";
@@ -1784,6 +1749,29 @@ void CMainWindow::on_actionImportOMETiffImage_triggered()
 	if (filedlg.exec())
 	{
 		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OMETIFF);
+	}
+}
+
+void CMainWindow::on_actionImportNrrdImage_triggered()
+{
+    CGLDocument* doc = GetGLDocument();
+    if(!doc)
+    {
+        QMessageBox::critical(this, "FEBio Studio", "You must have a model open in order to import an image.");
+        return;
+    }
+
+	QFileDialog filedlg(this);
+	filedlg.setFileMode(QFileDialog::ExistingFile);
+	filedlg.setAcceptMode(QFileDialog::AcceptOpen);
+
+	QStringList filters;
+	filters << "NRRD Files (*.nrrd *.nhdr )" << "All Files (*)";
+	filedlg.setNameFilters(filters);
+
+	if (filedlg.exec())
+	{
+		ProcessITKImage(filedlg.selectedFiles()[0], ImageFileType::OTHER);
 	}
 }
 
