@@ -50,6 +50,7 @@ private:
 	bool AddSprings(GModel* fem, GMeshObject* po);
 	bool AddTrusses(GModel* fem, GMeshObject* po);
 	void Intersect(GMeshObject* po, SPRING& s);
+	int ProcessSprings(GMeshObject* po);
 
 	bool ReadTXTFile();
 	bool ReadVTKFile();
