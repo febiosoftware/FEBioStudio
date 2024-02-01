@@ -381,6 +381,9 @@ SOFTWARE.*/
 #define CID_PROPERTY_NAME				0x000C1002
 #define CID_PROPERTY_ITEM				0x000C1003
 
+// model components
+#define CID_COMPONENT_ACTIVE			0x000C2001
+
 // --- boundary conditions ---
 #define CID_BC_SECTION					0x000D0000
 #define CID_BC_NAME                     0x000D0001

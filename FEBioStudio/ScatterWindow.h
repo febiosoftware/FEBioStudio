@@ -23,43 +23,25 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "Tool.h"
+#include "GraphWindow.h"
 
-class GModel;
-class GMeshObject;
+class CMainWindow;
+class CPostDocument;
 
-class CImportSpringsTool : public CBasicTool
+namespace Post {
+	class FEPostModel;
+}
+
+class CScatterWindow : public CGraphWindow
 {
-	struct SPRING
-	{
-		vec3d	r0;
-		vec3d	r1;
-		int n0 = -1;
-		int n1 = -1;
-	};
+	Q_OBJECT
 
 public:
-	CImportSpringsTool(CMainWindow* wnd);
+	CScatterWindow(CMainWindow* wnd, CPostDocument* postDoc);
 
-	bool OnApply();
-
-private:
-	bool ReadFile();
-	bool AddSprings(GModel* fem, GMeshObject* po);
-	bool AddTrusses(GModel* fem, GMeshObject* po);
-	void Intersect(GMeshObject* po, SPRING& s);
-	int ProcessSprings(GMeshObject* po);
-
-	bool ReadTXTFile();
-	bool ReadVTKFile();
+	void Update(bool breset, bool bfit = false) override;
 
 private:
-	QString	m_fileName;
-	double	m_tol;
-	bool	m_bintersect;
-	int		m_type;
-
-	std::vector<SPRING>	m_springs;
+	int m_xprev, m_yprev;
 };
