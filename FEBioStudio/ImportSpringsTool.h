@@ -57,6 +57,7 @@ private:
 
 private:
 	QString	m_fileName;
+	bool	m_snap;
 	double	m_tol;
 	bool	m_bintersect;
 	int		m_type;
