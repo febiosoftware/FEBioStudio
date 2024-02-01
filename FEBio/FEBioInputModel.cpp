@@ -1337,8 +1337,8 @@ bool FEBioInputModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szn
 		{
 			const FEBioInputModel::DiscreteSet::DISCRETE_ELEMENT& el = dset->Element(i);
 
-			int n0 = el.n0;
-			int n1 = el.n1;
+			int n0 = part->GetPart()->GlobalToLocalNodeIndex(el.n0);
+			int n1 = part->GetPart()->GlobalToLocalNodeIndex(el.n1);
 			if ((n0 >= 0) && (n0 < NN) && (n1 >= 0) && (n1 < NN))
 			{
 				n0 = po->MakeGNode(n0);
