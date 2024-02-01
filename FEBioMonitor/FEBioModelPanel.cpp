@@ -207,7 +207,7 @@ public:
 
 	void update()
 	{
-		m_data->update();
+		if (m_data) m_data->update();
 	}
 
 	void setDocument(FEBioMonitorDoc* doc)
