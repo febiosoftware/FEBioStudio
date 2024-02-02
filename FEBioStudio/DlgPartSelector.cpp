@@ -28,10 +28,11 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include <QBoxLayout>
 #include <QDialogButtonBox>
-#include <QListWidget>
+#include <QTableWidget>
 #include <QLineEdit>
 #include <QLabel>
 #include <QPushButton>
+#include <QHeaderView>
 #include "ModelDocument.h"
 
 class CDlgPartSelector::UI
@@ -39,18 +40,28 @@ class CDlgPartSelector::UI
 public:
 	CModelDocument* doc = nullptr;
 
+	class Item
+	{
+	public:
+		GPart* pg;
+		QString name;
+		QString type;
+		QString matType;
+	};
+
 private:
 	CMainWindow* wnd = nullptr;
-	QListWidget* list = nullptr;
+	QTableWidget* list = nullptr;
 	QLineEdit* flt = nullptr;
 	GModel* gm = nullptr;
-	std::vector<GPart*> partList;
+	std::vector<Item> partList;
 
 public:
 	void setup(CMainWindow* mainWnd, CDlgPartSelector* dlg)
 	{
 		wnd = mainWnd;
-		list = new QListWidget;
+		list = new QTableWidget;
+		list->setSelectionBehavior(QAbstractItemView::SelectionBehavior::SelectRows);
 
 		flt = new QLineEdit;
 		flt->setPlaceholderText("(filter parts)");
@@ -77,19 +88,22 @@ public:
 
 		connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::reject);
 		connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
-		connect(list, &QListWidget::itemClicked, dlg, &CDlgPartSelector::onItemClicked);
-		connect(list, &QListWidget::itemSelectionChanged, dlg, &CDlgPartSelector::onSelectionChanged);
+		connect(list, &QTableWidget::itemClicked, dlg, &CDlgPartSelector::onItemClicked);
+		connect(list, &QTableWidget::itemSelectionChanged, dlg, &CDlgPartSelector::onSelectionChanged);
 		connect(flt, &QLineEdit::textChanged, dlg, &CDlgPartSelector::onFilterChanged);
 		connect(showAll, &QPushButton::clicked, dlg, &CDlgPartSelector::onShowAll);
 		connect(hideAll, &QPushButton::clicked, dlg, &CDlgPartSelector::onHideAll);
 	}
 
-	void addItem(QString name, int partIndex, bool isVisible)
+	void addItem(Item& it, int index)
 	{
-		QListWidgetItem* wi = new QListWidgetItem(name);
-		wi->setData(Qt::UserRole, partIndex);
+		bool isVisible = it.pg->IsVisible();
+		QTableWidgetItem* wi = new QTableWidgetItem(it.name);
+		wi->setData(Qt::UserRole, index);
 		wi->setCheckState(isVisible ? Qt::Checked : Qt::Unchecked);
-		list->addItem(wi);
+		list->setItem(index, 0, wi);
+		list->setItem(index, 1, new QTableWidgetItem(it.type));
+		list->setItem(index, 2, new QTableWidgetItem(it.matType));
 	}
 
 	void buildList(GModel* geom)
@@ -101,27 +115,65 @@ public:
 	void updateList()
 	{
 		list->clear();
-		if (gm == nullptr) return;
+		list->setColumnCount(3);
+		list->setHorizontalHeaderLabels(QStringList() << "name" << "type" << "material");
+		list->horizontalHeader()->setStretchLastSection(true);
+		int W = list->rect().width();
+		list->setColumnWidth(0, W / 2);
+		list->setColumnWidth(1, W / 4);
 		partList.clear();
+
+		if (gm == nullptr) return;
+
+		FSModel& fem = *doc->GetFSModel();
 
 		QString filter = flt->text();
 		for (GPartIterator it(*gm); it.isValid(); ++it)
 		{
 			GPart* pg = it;
 			QString name = QString::fromStdString(pg->GetName());
-			if (filter.isEmpty() || name.contains(filter, Qt::CaseInsensitive))
+
+			QString type;
+			if      (pg->IsSolid()) type = "solid";
+			else if (pg->IsShell()) type = "shell";
+			else if (pg->IsBeam ()) type = "beam";
+
+			int matID = pg->GetMaterialID();
+			GMaterial* mat = fem.GetMaterialFromID(matID);
+			QString matType;
+			if (mat)
 			{
-				addItem(name, partList.size(), pg->IsVisible());
-				partList.push_back(pg);
+				FSMaterial* pm = mat->GetMaterialProperties();
+				if (pm) matType = QString(pm->GetTypeString());
 			}
+
+			bool addPart = false;
+			if (filter.isEmpty()) addPart = true;
+			else if (name.contains(filter, Qt::CaseInsensitive)) addPart = true;
+			else if (type.contains(filter, Qt::CaseInsensitive)) addPart = true;
+			else if (matType.contains(filter, Qt::CaseInsensitive)) addPart = true;
+
+			if (addPart)
+			{
+				partList.push_back({ pg, name, type, matType });
+			}
+		}
+
+		int N = partList.size();
+		list->setRowCount(N);
+		for (size_t n = 0; n<N; ++n)
+		{
+			addItem(partList[n], n);
 		}
 	}
 
-	GPart* getPart(QListWidgetItem* it)
+	GPart* getPart(QTableWidgetItem* it)
 	{
 		if (it == nullptr) return nullptr;
+		if (it->column() != 0) return nullptr;
+
 		int partIndex = it->data(Qt::UserRole).toInt();
-		if ((partIndex >= 0) && (partIndex < partList.size())) return partList[partIndex];
+		if ((partIndex >= 0) && (partIndex < partList.size())) return partList[partIndex].pg;
 		return nullptr;
 	}
 
@@ -140,25 +192,34 @@ public:
 		wnd->RedrawGL();
 	}
 
+	vector<GPart*> getPartList()
+	{
+		vector<GPart*> parts(partList.size());
+		for (size_t i = 0; i < partList.size(); ++i) parts[i] = partList[i].pg;
+		return parts;
+	}
+
 	void showAllParts()
 	{
-		gm->ShowParts(partList, true);
+		vector<GPart*> parts = getPartList();
+		gm->ShowParts(parts, true);
 		updateList();
 		wnd->RedrawGL();
 	}
 
 	void hideAllParts()
 	{
-		gm->ShowParts(partList, false);
+		vector<GPart*> parts = getPartList();
+		gm->ShowParts(parts, false);
 		updateList();
 		wnd->RedrawGL();
 	}
 
 	void updateSelection()
 	{
-		QList<QListWidgetItem*> selectedItems = list->selectedItems();
 		for (GPartIterator it(*gm); it.isValid(); ++it) it->UnSelect();
 
+		QList<QTableWidgetItem*> selectedItems = list->selectedItems();
 		for (auto it : selectedItems)
 		{
 			GPart* pg = getPart(it);
@@ -173,6 +234,7 @@ public:
 CDlgPartSelector::CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd) : QDialog(wnd), ui(new CDlgPartSelector::UI)
 {
 	setWindowTitle("Part Selector");
+	setMinimumSize(800, 600);
 	ui->setup(wnd, this);
 	ui->doc = doc;
 
@@ -186,9 +248,11 @@ CDlgPartSelector::CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd) : QDia
 	}
 }
 
-void CDlgPartSelector::onItemClicked(QListWidgetItem* it)
+void CDlgPartSelector::onItemClicked(QTableWidgetItem* it)
 {
 	if (it == nullptr) return;
+	if (it->column() != 0) return;
+
 	bool isChecked = (it->checkState() == Qt::Checked);
 	GPart* pg = ui->getPart(it);
 	if (pg) ui->updatePart(pg, isChecked);

@@ -28,7 +28,7 @@ SOFTWARE.*/
 
 class CMainWindow;
 class CModelDocument;
-class QListWidgetItem;
+class QTableWidgetItem;
 
 class CDlgPartSelector : public QDialog
 {
@@ -41,7 +41,7 @@ public:
 	CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd);
 
 private slots:
-	void onItemClicked(QListWidgetItem* it);
+	void onItemClicked(QTableWidgetItem* it);
 	void onFilterChanged();
 	void onShowAll();
 	void onHideAll();
