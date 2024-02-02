@@ -83,6 +83,7 @@ SOFTWARE.*/
 #include "LocalJobProcess.h"
 #include "FEBioThread.h"
 #include "DlgStartThread.h"
+#include "DlgPartSelector.h"
 #include <PostLib/VTKImport.h>
 #include <PostLib/FELSDYNAPlot.h>
 #include <PostLib/FELSDYNAimport.h>
@@ -3397,6 +3398,13 @@ void CMainWindow::RunFEBioJob(CFEBioJob* job)
 
 	// start a time to measure progress
 	QTimer::singleShot(100, this, SLOT(checkJobProgress()));
+}
+
+void CMainWindow::onShowPartSelector()
+{
+	CModelDocument* doc = GetModelDocument();
+	CDlgPartSelector dlg(doc, this);
+	dlg.exec();
 }
 
 void CMainWindow::checkJobProgress()
