@@ -262,19 +262,28 @@ int CImportSpringsTool::ProcessSprings(GMeshObject* po)
 	}
 
 	// add unique nodes to object (only snap end-points)
+	if (m_snap)
+	{
+		for (auto& rt_i : rt)
+		{
+			int n = -1;
+			if (rt_i.second == 1)
+			{
+				// this is an end node, so first try to snap it
+				n = findNode(po, rt_i.first, m_tol);
+			}
+			rt_i.second = n;
+		}
+	}
+
 	int newNodes = 0;
 	for (auto& rt_i : rt)
 	{
-		int n = -1;
-		if (m_snap && (rt_i.second == 1))
+		if (rt_i.second == -1)
 		{
-			// this is an end node, so first try to snap it
-			n = findNode(po, rt_i.first, m_tol);
-			if (n == -1) { n = po->AddNode(rt_i.first); newNodes++; }
+			rt_i.second = po->AddNode(rt_i.first); 
+			newNodes++; 
 		}
-		else { n = po->AddNode(rt_i.first); newNodes++; }
-		assert(n != -1);
-		rt_i.second = n;
 	}
 
 	for (SPRING& s : m_springs)
