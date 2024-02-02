@@ -1791,6 +1791,30 @@ void FEBioFormat4::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 	stringstream defaultName; defaultName << "BodyLoad" << CountLoads<FSBodyLoad>(fem) + 1;
 	string name = tag.AttributeValue("name", defaultName.str());
 
+	// read the (optional) element set
+	GPartList* partList = nullptr;
+	const char* szelemSetName = tag.AttributeValue("elem_set", true);
+	if (szelemSetName)
+	{
+		GModel& gm = fem.GetModel();
+		FEBioInputModel& febio = GetFEBioModel();
+		FEBioInputModel::PartInstance& part = *febio.GetInstance(0);
+		GObject* po = part.GetGObject();
+
+		GPart* pg = po->FindPartFromName(szelemSetName);
+		if (pg)
+		{
+			partList = new GPartList(&gm);
+			partList->SetName(szelemSetName);
+			partList->add(pg->GetID());
+			gm.AddPartList(partList);
+		}
+		else
+		{
+			AddLogEntry("Cannot find part %s for %s", szelemSetName, name.c_str());
+		}
+	}
+
 	// create new body load
 	XMLAtt& att = tag.Attribute("type");
 	FSBodyLoad* pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
@@ -1801,6 +1825,7 @@ void FEBioFormat4::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 	}
 
 	// process body load
+	if (partList) pbl->SetItemList(partList);
 	pbl->SetInfo(comment);
 	if (name.empty() == false) pbl->SetName(name);
 	pstep->AddComponent(pbl);
