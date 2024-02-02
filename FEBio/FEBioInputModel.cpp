@@ -592,8 +592,11 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 	NodeSet* nodeSet = m_part->FindNodeSet(szname);
 	if (nodeSet == 0) return 0;
 
+	vector<int> nodelist = nodeSet->nodeList();
+	GetPart()->GlobalToLocalNodeIndex(nodelist);
+
 	// create the node set
-	FSNodeSet* pns = new FSNodeSet(m_po, nodeSet->nodeList());
+	FSNodeSet* pns = new FSNodeSet(m_po, nodelist);
 
 	// copy the name
 	std::string name = nodeSet->name();
@@ -1141,8 +1144,11 @@ void FEBioInputModel::CopyMeshSelections()
 		{
 			NodeSet& ns = part->GetNodeSet(j);
 
+			vector<int> nodelist = ns.nodeList();
+			part->GlobalToLocalNodeIndex(nodelist);
+
 			// create the node set
-			FSNodeSet* pns = new FSNodeSet(po, ns.nodeList());
+			FSNodeSet* pns = new FSNodeSet(po, nodelist);
 
 			// copy the name
 			pns->SetName(ns.name());
@@ -1181,8 +1187,7 @@ void FEBioInputModel::CopyMeshSelections()
 			vector<int> elemList = es.elemList();
 
 			// these are element IDs. we need to convert them to indices
-			// TODO: implement this!
-			for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+			part->GlobalToLocalElementIndex(elemList);
 
 			// create the part
 			FSElemSet* pg = new FSElemSet(po, elemList);
