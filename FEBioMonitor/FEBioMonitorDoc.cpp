@@ -88,6 +88,7 @@ void FEBioMonitorThread::run()
 
 	FEBioModel fem;
 	fem.GetLogFile().SetLogStream(new FEBLogStream(m_doc));
+	fem.SetDebugLevel(m_doc->GetDebugLevel());
 
 	fem.AddCallback(cb_processEvent, CB_ALWAYS, (void*)m_doc);
 
@@ -133,6 +134,7 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
 	m_pauseTime = 0.0;
 	m_bValid = false;
 	m_time = 0.0;
+	m_debugLevel = 0;
 
 	connect(this, &FEBioMonitorDoc::outputReady, this, &FEBioMonitorDoc::readOutput);
 	connect(this, &FEBioMonitorDoc::updateViews, this, &FEBioMonitorDoc::onUpdateViews);
@@ -200,6 +202,17 @@ bool FEBioMonitorDoc::IsPauseTimeEnabled() const
 double FEBioMonitorDoc::GetPauseTime() const
 {
 	return m_pauseTime;
+}
+
+int FEBioMonitorDoc::GetDebugLevel() const
+{
+	return m_debugLevel;
+}
+
+void FEBioMonitorDoc::SetDebugLevel(int n)
+{
+	m_debugLevel = n;
+	if (m_fem) m_fem->SetDebugLevel(n);
 }
 
 void FEBioMonitorDoc::RunJob()
@@ -322,7 +335,12 @@ void FEBioMonitorDoc::updateWindowTitle()
 	else if (m_isRunning) status = "RUNNING";
 	else status = "READY";
 
-	m_wnd->setWindowTitle(QString("[%1: %2 %]").arg(status).arg(p));
+	QString debugStr;
+	if (m_debugLevel != 0) debugStr = QString("(DEBUG)");
+
+	QString title = QString("[%1: %2 % %3]").arg(status).arg(p).arg(debugStr);
+
+	m_wnd->setWindowTitle(title);
 }
 
 double calculateFEBioProgressInPercent(FEModel* pfem)

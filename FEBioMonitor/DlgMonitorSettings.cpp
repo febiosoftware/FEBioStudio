@@ -43,6 +43,7 @@ private:
 	QComboBox* m_pauseEvents;
 	QCheckBox* m_enablePauseTime;
 	CFloatInput* m_pauseTime;
+	QComboBox* m_debugMode;
 
 public:
 	void setup(CDlgMonitorSettings* dlg)
@@ -66,6 +67,14 @@ public:
 		h->addWidget(m_pauseTime = new CFloatInput); m_pauseTime->setValue(0.0);
 		h->addStretch();
 		l->addLayout(h);
+
+		h = new QHBoxLayout;
+		h->setContentsMargins(0, 0, 0, 0);
+		h->addWidget(new QLabel("Debug level:"));
+		h->addWidget(m_debugMode = new QComboBox);
+		h->addStretch();
+		l->addLayout(h);
+		m_debugMode->addItems(QStringList() << "0 (off)" << "1" << "2");
 
 		l->addStretch();
 		l->addWidget(bb);
@@ -98,6 +107,9 @@ public:
 
 	double GetPauseTime() { return m_pauseTime->value(); }
 	void SetPauseTime(double v) { m_pauseTime->setValue(v); }
+
+	int GetDebugLevel() const { return m_debugMode->currentIndex(); }
+	void SetDebugLevel(int n) { m_debugMode->setCurrentIndex(n); }
 };
 
 CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMonitorSettings::Ui), m_doc(doc)
@@ -120,6 +132,7 @@ CDlgMonitorSettings::CDlgMonitorSettings(FEBioMonitorDoc* doc, QWidget* parent) 
 	ui->SetPauseEvents(doc->GetPauseEvents());
 	ui->SetPauseTime(doc->GetPauseTime());
 	ui->EnablePauseTime(doc->IsPauseTimeEnabled());
+	ui->SetDebugLevel(doc->GetDebugLevel());
 }
 
 void CDlgMonitorSettings::CanEditFilename(bool b)
@@ -155,6 +168,7 @@ void CDlgMonitorSettings::accept()
 	m_doc->StartPaused(ui->GetStartPausedOption());
 	m_doc->SetPauseEvents(ui->GetPauseEvents());
 	m_doc->SetPauseTime(ui->GetPauseTime(), ui->IsPauseTimeEnabled());
+	m_doc->SetDebugLevel(ui->GetDebugLevel());
 
 	QDialog::accept();
 }

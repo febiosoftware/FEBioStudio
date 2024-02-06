@@ -99,6 +99,9 @@ public:
 	bool IsPauseTimeEnabled() const;
 	double GetPauseTime() const;
 
+	int GetDebugLevel() const;
+	void SetDebugLevel(int debugLevel);
+
 public:
 	void RunJob();
 
@@ -169,6 +172,7 @@ private:
 	double	m_progressPct;
 	double	m_time;
 	unsigned int m_pauseEvents;
+	int		m_debugLevel;
 	QMutex	m_mutex;
 	FEBioModel* m_fem = nullptr;
 
