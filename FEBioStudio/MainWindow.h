@@ -591,6 +591,8 @@ public slots:
 
 	void on_modelViewer_currentObjectChanged(FSObject* po);
 
+	void onShowPartSelector();
+
 	void checkJobProgress();
 
 	void OnSelectMeshLayer(QAction* ac);

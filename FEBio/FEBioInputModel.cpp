@@ -496,6 +496,23 @@ int FEBioInputModel::Part::GlobalToLocalNodeIndex(int globalID)
 	return m_NLT[globalID - m_nltoff];
 }
 
+void FEBioInputModel::Part::GlobalToLocalNodeIndex(std::vector<int>& nodeList)
+{
+	for (size_t i = 0; i < nodeList.size(); ++i) nodeList[i] = GlobalToLocalNodeIndex(nodeList[i]);
+}
+
+int FEBioInputModel::Part::GlobalToLocalElementIndex(int globalID)
+{
+	assert(m_ELT.empty() == false);
+	assert((globalID - m_eltoff) < m_ELT.size());
+	return m_NLT[globalID - m_eltoff];
+}
+
+void FEBioInputModel::Part::GlobalToLocalElementIndex(std::vector<int>& elemList)
+{
+	for (size_t i = 0; i < elemList.size(); ++i) elemList[i] = GlobalToLocalElementIndex(elemList[i]);
+}
+
 void FEBioInputModel::Part::BuildNLT()
 {
 	FSMesh& mesh = *GetFEMesh();
@@ -505,7 +522,7 @@ void FEBioInputModel::Part::BuildNLT()
 	int NN = mesh.Nodes();
 	for (int i = 0; i < NN; ++i)
 	{
-		int nid = mesh.Node(i).m_ntag;
+		int nid = mesh.Node(i).m_nid;
 		assert(nid > 0);
 		if ((m_nltoff < 0) || (nid < m_nltoff)) m_nltoff = nid;
 		if (nid > maxID) maxID = nid;
@@ -513,8 +530,30 @@ void FEBioInputModel::Part::BuildNLT()
 	m_NLT.assign(maxID - m_nltoff + 1, -1);
 	for (int i = 0; i < NN; ++i)
 	{
-		int nid = mesh.Node(i).m_ntag - m_nltoff;
+		int nid = mesh.Node(i).m_nid - m_nltoff;
 		m_NLT[nid] = i;
+	}
+}
+
+void FEBioInputModel::Part::BuildELT()
+{
+	FSMesh& mesh = *GetFEMesh();
+
+	int maxID = 0;
+	m_eltoff = -1;
+	int NE = mesh.Elements();
+	for (int i = 0; i < NE; ++i)
+	{
+		int eid = mesh.Element(i).m_nid;
+		assert(eid > 0);
+		if ((m_eltoff < 0) || (eid < m_eltoff)) m_eltoff = eid;
+		if (eid > maxID) maxID = eid;
+	}
+	m_ELT.assign(maxID - m_eltoff + 1, -1);
+	for (int i = 0; i < NE; ++i)
+	{
+		int eid = mesh.Element(i).m_nid - m_eltoff;
+		m_ELT[eid] = i;
 	}
 }
 
@@ -523,6 +562,7 @@ void FEBioInputModel::Part::Update()
 	if (GetFEMesh() == nullptr) return;
 
 	BuildNLT();
+	BuildELT();
 
 	FSMesh& mesh = *GetFEMesh();
 	int NE = mesh.Elements();
@@ -552,8 +592,11 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 	NodeSet* nodeSet = m_part->FindNodeSet(szname);
 	if (nodeSet == 0) return 0;
 
+	vector<int> nodelist = nodeSet->nodeList();
+	GetPart()->GlobalToLocalNodeIndex(nodelist);
+
 	// create the node set
-	FSNodeSet* pns = new FSNodeSet(m_po, nodeSet->nodeList());
+	FSNodeSet* pns = new FSNodeSet(m_po, nodelist);
 
 	// copy the name
 	std::string name = nodeSet->name();
@@ -565,12 +608,14 @@ FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const char* szname)
 
 FSNodeSet* FEBioInputModel::PartInstance::BuildFENodeSet(const FEBioInputModel::NodeSet& nset)
 {
+	vector<int> nodeList = nset.nodeList();
+	GetPart()->GlobalToLocalNodeIndex(nodeList);
+
 	// create the surface
-	FSNodeSet* pns = new FSNodeSet(m_po, nset.nodeList());
+	FSNodeSet* pns = new FSNodeSet(m_po, nodeList);
 
 	// copy the name
-	std::string name = nset.name();
-	pns->SetName(name.c_str());
+	pns->SetName(nset.name());
 
 	// all done
 	return pns;
@@ -583,12 +628,15 @@ FSEdgeSet* FEBioInputModel::PartInstance::BuildFEEdgeSet(FEBioInputModel::EdgeSe
 	int NE = edge.edges();
 	for (int i = 0; i < NE; ++i)
 	{
-		const vector<int>& el = edge.edge(i);
-		int edgeID = m_part->m_mesh.FindEdge(el);
+		vector<int> nodeList = edge.edge(i);
+		GetPart()->GlobalToLocalNodeIndex(nodeList);
+
+		int edgeID = m_part->m_mesh.FindEdge(nodeList);
 		if (edgeID >= 0) edgeList.push_back(edgeID);
 		else
 		{
 			stringstream ss;
+			const vector<int>& el = edge.edge(i);
 			ss << "Cannot find edge: ";
 			for (int j = 0; j < el.size(); ++j)
 			{
@@ -758,8 +806,8 @@ FSElemSet* FEBioInputModel::PartInstance::BuildFEElemSet(const char* szname)
 		elemList = set->elemList();
 
 		// these are element IDs. we need to convert them to indices
-		// TODO: implement this!
-		for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+		FEBioInputModel::Part* part = GetPart();
+		for (size_t i = 0; i < elemList.size(); ++i) elemList[i] = part->GlobalToLocalElementIndex(elemList[i]);
 	}
 	else
 	{
@@ -1096,8 +1144,11 @@ void FEBioInputModel::CopyMeshSelections()
 		{
 			NodeSet& ns = part->GetNodeSet(j);
 
+			vector<int> nodelist = ns.nodeList();
+			part->GlobalToLocalNodeIndex(nodelist);
+
 			// create the node set
-			FSNodeSet* pns = new FSNodeSet(po, ns.nodeList());
+			FSNodeSet* pns = new FSNodeSet(po, nodelist);
 
 			// copy the name
 			pns->SetName(ns.name());
@@ -1136,8 +1187,7 @@ void FEBioInputModel::CopyMeshSelections()
 			vector<int> elemList = es.elemList();
 
 			// these are element IDs. we need to convert them to indices
-			// TODO: implement this!
-			for (size_t i = 0; i < elemList.size(); ++i) elemList[i] -= 1;
+			part->GlobalToLocalElementIndex(elemList);
 
 			// create the part
 			FSElemSet* pg = new FSElemSet(po, elemList);
@@ -1337,8 +1387,8 @@ bool FEBioInputModel::BuildDiscreteSet(GDiscreteElementSet& set, const char* szn
 		{
 			const FEBioInputModel::DiscreteSet::DISCRETE_ELEMENT& el = dset->Element(i);
 
-			int n0 = el.n0;
-			int n1 = el.n1;
+			int n0 = part->GetPart()->GlobalToLocalNodeIndex(el.n0);
+			int n1 = part->GetPart()->GlobalToLocalNodeIndex(el.n1);
 			if ((n0 >= 0) && (n0 < NN) && (n1 >= 0) && (n1 < NN))
 			{
 				n0 = po->MakeGNode(n0);

@@ -45,6 +45,9 @@ SOFTWARE.*/
 #include <sstream>
 using namespace std;
 
+// in GMaterial.cpp
+extern GLColor col[GMaterial::MAX_COLORS];
+
 //-----------------------------------------------------------------------------
 static vector<string> GetDOFList(string sz)
 {
@@ -591,50 +594,32 @@ void FEBioFormat4::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 	{
 		FEBioInputModel::NODE& nd = nodes[i];
 		FSNode& node = mesh.Node(N0 + i);
-		node.m_ntag = nd.id;
 		node.m_nid = nd.id;
 		node.r = nd.r;
 	}
-
-	// create the nodeset 
-/*	if (name.empty() == false)
-	{
-		vector<int> nodeList(nn);
-		for (int i = 0; i < nn; ++i) nodeList[i] = nodes[i].id - 1;
-		FEBioInputModel::NodeSet nset(name, nodeList);
-		part->AddNodeSet(nset);
-	}
-*/
 }
 
-//-----------------------------------------------------------------------------
-void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& tag)
+// helper function for converting the element's type attribute to FEElementType
+FEElementType ConvertStringToElementType(const char* sztype)
 {
-	if (part == 0) throw XMLReader::InvalidTag(tag);
-
-	// first we need to figure out how many elements there are
-	int elems = tag.children();
-
-	// get the required type attribute
-	const char* sztype = tag.AttributeValue("type");
 	FEElementType ntype = FE_INVALID_ELEMENT_TYPE;
-	if      (strcmp(sztype, "hex8"  ) == 0) ntype = FE_HEX8;
-	else if (strcmp(sztype, "hex20" ) == 0) ntype = FE_HEX20;
-	else if (strcmp(sztype, "hex27" ) == 0) ntype = FE_HEX27;
-	else if (strcmp(sztype, "penta6") == 0) ntype = FE_PENTA6;
-	else if (strcmp(sztype, "tet4"  ) == 0) ntype = FE_TET4;
-	else if (strcmp(sztype, "tet5"  ) == 0) ntype = FE_TET5;
-	else if (strcmp(sztype, "tet10" ) == 0) ntype = FE_TET10;
-	else if (strcmp(sztype, "tet15" ) == 0) ntype = FE_TET15;
-	else if (strcmp(sztype, "tet20" ) == 0) ntype = FE_TET20;
-	else if (strcmp(sztype, "quad4" ) == 0) ntype = FE_QUAD4;
-	else if (strcmp(sztype, "quad8" ) == 0) ntype = FE_QUAD8;
-	else if (strcmp(sztype, "quad9" ) == 0) ntype = FE_QUAD9;
-	else if (strcmp(sztype, "tri3"  ) == 0) ntype = FE_TRI3;
-	else if (strcmp(sztype, "tri6"  ) == 0) ntype = FE_TRI6;
-	else if (strcmp(sztype, "pyra5") == 0) ntype = FE_PYRA5;
+	if      (strcmp(sztype, "hex8"   ) == 0) ntype = FE_HEX8;
+	else if (strcmp(sztype, "hex20"  ) == 0) ntype = FE_HEX20;
+	else if (strcmp(sztype, "hex27"  ) == 0) ntype = FE_HEX27;
+	else if (strcmp(sztype, "penta6" ) == 0) ntype = FE_PENTA6;
+	else if (strcmp(sztype, "tet4"   ) == 0) ntype = FE_TET4;
+	else if (strcmp(sztype, "tet5"   ) == 0) ntype = FE_TET5;
+	else if (strcmp(sztype, "tet10"  ) == 0) ntype = FE_TET10;
+	else if (strcmp(sztype, "tet15"  ) == 0) ntype = FE_TET15;
+	else if (strcmp(sztype, "tet20"  ) == 0) ntype = FE_TET20;
+	else if (strcmp(sztype, "quad4"  ) == 0) ntype = FE_QUAD4;
+	else if (strcmp(sztype, "quad8"  ) == 0) ntype = FE_QUAD8;
+	else if (strcmp(sztype, "quad9"  ) == 0) ntype = FE_QUAD9;
+	else if (strcmp(sztype, "tri3"   ) == 0) ntype = FE_TRI3;
+	else if (strcmp(sztype, "tri6"   ) == 0) ntype = FE_TRI6;
+	else if (strcmp(sztype, "pyra5"  ) == 0) ntype = FE_PYRA5;
 	else if (strcmp(sztype, "penta15") == 0) ntype = FE_PENTA15;
-    else if (strcmp(sztype, "pyra13") == 0) ntype = FE_PYRA13;
+	else if (strcmp(sztype, "pyra13" ) == 0) ntype = FE_PYRA13;
 	else if (strcmp(sztype, "TET10G4"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10G8"     ) == 0) ntype = FE_TET10;
 	else if (strcmp(sztype, "TET10GL11"   ) == 0) ntype = FE_TET10;
@@ -671,7 +656,20 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	else if (strcmp(sztype, "TRI6G21"     ) == 0) ntype = FE_TRI6;
 	else if (strcmp(sztype, "line2"       ) == 0) ntype = FE_BEAM2;
 	else if (strcmp(sztype, "line3"       ) == 0) ntype = FE_BEAM3;
-	else throw XMLReader::InvalidTag(tag);
+	return ntype;
+}
+
+void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& tag)
+{
+	if (part == 0) throw XMLReader::InvalidTag(tag);
+
+	// first we need to figure out how many elements there are
+	int elems = tag.children();
+
+	// get the required type attribute
+	const char* sztype = tag.AttributeValue("type");
+	FEElementType elemType = ConvertStringToElementType(sztype);
+	if (elemType == FE_INVALID_ELEMENT_TYPE) throw XMLReader::InvalidAttributeValue(tag, "type", sztype);
 
 	// get the optional material attribute
 	const char* szmat = tag.AttributeValue("mat", true);
@@ -719,7 +717,7 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 	for (int i = NTE; i<elems + NTE; ++i)
 	{
 		FSElement& el = mesh.Element(i);
-		el.SetType(ntype);
+		el.SetType(elemType);
 		el.m_gid = pid;
 		dom->AddElement(i);
 		if ((tag == "e") || (tag == "elem"))
@@ -733,15 +731,8 @@ void FEBioFormat4::ParseGeometryElements(FEBioInputModel::Part* part, XMLTag& ta
 
 		++tag;
 	}
-
-	// create new element set
-/*	FEBioInputModel::ElementSet* set = new FEBioInputModel::ElementSet(szname, elemSet);
-	part->AddElementSet(*set);
-*/
 }
 
-
-//-----------------------------------------------------------------------------
 void FEBioFormat4::ParseGeometryNodeSet(FEBioInputModel::Part* part, XMLTag& tag)
 {
 	// make sure there is a name attribute
@@ -750,9 +741,6 @@ void FEBioFormat4::ParseGeometryNodeSet(FEBioInputModel::Part* part, XMLTag& tag
 	// list to store node numbers
 	vector<int> list;
 	tag.value(list);
-
-	// make zero-based
-	for (size_t i = 0; i < list.size(); ++i) list[i] -= 1;
 
 	// create a new node set
 	part->AddNodeSet(FEBioInputModel::NodeSet(name, list));
@@ -776,7 +764,7 @@ void FEBioFormat4::ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag&
 		{
 			int n[2];
 			tag.value(n, 2);
-			ds.Add(n[0] - 1, n[1] - 1);
+			ds.Add(n[0], n[1]);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -853,9 +841,8 @@ void FEBioFormat4::ParseGeometryEdgeSet(FEBioInputModel::Part* part, XMLTag& tag
 			// read the node numbers
 			tag.value(nf, N);
 
-			// make zero-based
 			vector<int> node(N);
-			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			for (int j = 0; j < N; ++j) node[j] = nf[j];
 			s.m_edge.push_back(node);
 
 			++tag;
@@ -1804,6 +1791,30 @@ void FEBioFormat4::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 	stringstream defaultName; defaultName << "BodyLoad" << CountLoads<FSBodyLoad>(fem) + 1;
 	string name = tag.AttributeValue("name", defaultName.str());
 
+	// read the (optional) element set
+	GPartList* partList = nullptr;
+	const char* szelemSetName = tag.AttributeValue("elem_set", true);
+	if (szelemSetName)
+	{
+		GModel& gm = fem.GetModel();
+		FEBioInputModel& febio = GetFEBioModel();
+		FEBioInputModel::PartInstance& part = *febio.GetInstance(0);
+		GObject* po = part.GetGObject();
+
+		GPart* pg = po->FindPartFromName(szelemSetName);
+		if (pg)
+		{
+			partList = new GPartList(&gm);
+			partList->SetName(szelemSetName);
+			partList->add(pg->GetID());
+			gm.AddPartList(partList);
+		}
+		else
+		{
+			AddLogEntry("Cannot find part %s for %s", szelemSetName, name.c_str());
+		}
+	}
+
 	// create new body load
 	XMLAtt& att = tag.Attribute("type");
 	FSBodyLoad* pbl = FEBio::CreateBodyLoad(att.cvalue(), &fem);
@@ -1814,6 +1825,7 @@ void FEBioFormat4::ParseBodyLoad(FSStep* pstep, XMLTag& tag)
 	}
 
 	// process body load
+	if (partList) pbl->SetItemList(partList);
 	pbl->SetInfo(comment);
 	if (name.empty() == false) pbl->SetName(name);
 	pstep->AddComponent(pbl);
@@ -2096,6 +2108,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 
 	vector<GDiscreteElementSet*> set;
 	++tag;
+	int nc = 0;
 	do
 	{
 		if (tag == "discrete_material")
@@ -2107,6 +2120,7 @@ bool FEBioFormat4::ParseDiscreteSection(XMLTag& tag)
 			if (pdm == nullptr) throw XMLReader::InvalidTag(tag);
 
 			GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
+			pg->SetColor(col[(nc++) % GMaterial::MAX_COLORS]);
 			pg->SetMaterial(pdm);
 			pg->SetName(szname);
 			fem.GetModel().AddDiscreteObject(pg);
@@ -2338,40 +2352,4 @@ bool FEBioFormat4::ParseStep(XMLTag& tag)
 	m_pBCStep = 0;
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-FEBioInputModel::DiscreteSet FEBioFormat4::ParseDiscreteSet(XMLTag& tag)
-{
-	FEBioInputModel& febio = GetFEBioModel();
-
-	const char* szset = tag.AttributeValue("dset", true);
-	if (szset)
-	{
-/*		FEBioInputModel::DiscreteSet* ps = febio.FindDiscreteSet(szset);
-		if (ps) return *ps;
-		else
-*/		{
-			FEBioInputModel::DiscreteSet ds;
-			return ds;
-		}
-	}
-	else
-	{
-		FEBioInputModel::DiscreteSet ds;
-		++tag;
-		do
-		{
-			if (tag == "delem")
-			{
-				int n[2];
-				tag.value(n, 2);
-				ds.Add(n[0] - 1, n[1] - 1);
-			}
-			else ParseUnknownTag(tag);
-			++tag;
-		} while (!tag.isend());
-
-		return ds;
-	}
 }

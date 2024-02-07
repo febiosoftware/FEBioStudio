@@ -2333,21 +2333,23 @@ void GLViewSelector::RegionSelectParts(const SelectRegion& region)
 				{
 					GFace* gface = po->Face(face.pid);
 					GPart* part = po->Part(gface->m_nPID[0]);
-
-					int pid = part->GetID();
-
-					// make sure that this surface is not added yet
-					bool bfound = false;
-					for (int k = 0; k < selectedParts.size(); ++k)
+					if (part && part->IsVisible())
 					{
-						if (selectedParts[k] == pid)
-						{
-							bfound = true;
-							break;
-						}
-					}
+						int pid = part->GetID();
 
-					if (bfound == false) selectedParts.push_back(pid);
+						// make sure that this surface is not added yet
+						bool bfound = false;
+						for (int k = 0; k < selectedParts.size(); ++k)
+						{
+							if (selectedParts[k] == pid)
+							{
+								bfound = true;
+								break;
+							}
+						}
+
+						if (bfound == false) selectedParts.push_back(pid);
+					}
 				}
 			}
 		}

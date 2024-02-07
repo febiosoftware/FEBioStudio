@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2024 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,44 +23,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
-#include "Tool.h"
+#include <QDialog>
 
-class GModel;
-class GMeshObject;
+class CMainWindow;
+class CModelDocument;
+class QTableWidgetItem;
 
-class CImportSpringsTool : public CBasicTool
+class CDlgPartSelector : public QDialog
 {
-	struct SPRING
-	{
-		vec3d	r0;
-		vec3d	r1;
-		int n0 = -1;
-		int n1 = -1;
-	};
+	Q_OBJECT
+
+private:
+	class UI;
 
 public:
-	CImportSpringsTool(CMainWindow* wnd);
+	CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd);
 
-	bool OnApply();
-
-private:
-	bool ReadFile();
-	bool AddSprings(GModel* fem, GMeshObject* po);
-	bool AddTrusses(GModel* fem, GMeshObject* po);
-	void Intersect(GMeshObject* po, SPRING& s);
-	int ProcessSprings(GMeshObject* po);
-
-	bool ReadTXTFile();
-	bool ReadVTKFile();
+private slots:
+	void onItemClicked(QTableWidgetItem* it);
+	void onFilterChanged();
+	void onShowAll();
+	void onHideAll();
+	void onSelectionChanged();
 
 private:
-	QString	m_fileName;
-	bool	m_snap;
-	double	m_tol;
-	bool	m_bintersect;
-	int		m_type;
-
-	std::vector<SPRING>	m_springs;
+	UI* ui;
 };

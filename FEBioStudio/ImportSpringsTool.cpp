@@ -35,13 +35,18 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <QDir>
 
+// in GMaterial.cpp
+extern GLColor col[GMaterial::MAX_COLORS];
+
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
 	addResourceProperty(&m_fileName, "Filename");
+	addBoolProperty(&m_snap, "Snap end-points to geometry");
 	addDoubleProperty(&m_tol, "Snap tolerance");
 	addBoolProperty(&m_bintersect, "Check for intersections");
 	addEnumProperty(&m_type, "Element type")->setEnumValues(QStringList() << "Linear spring" << "Nonlinear spring" << "Hill spring" << "Linear truss");
 
+	m_snap = true;
 	m_type = 0;
 	m_tol = 1e-6;
 	m_bintersect = true;
@@ -192,14 +197,14 @@ int findNode(GMeshObject* po, const vec3d& r, double tol)
 	FSMesh* m = po->GetFEMesh();
 	int N = m->Nodes();
 	imin = -1;
+	vec3d r_local = m->GlobalToLocal(r);
 	for (int i = 0; i < N; ++i)
 	{
 		FSNode& ni = m->Node(i);
 		if (ni.IsExterior())
 		{
-			vec3d ri = m->LocalToGlobal(ni.r);
-
-			double l2 = (r - ri).SqrLength();
+			vec3d dr = r_local - ni.r;
+			double l2 = dr.SqrLength();
 			if ((imin == -1) || (l2 < l2min))
 			{
 				imin = i;
@@ -257,19 +262,28 @@ int CImportSpringsTool::ProcessSprings(GMeshObject* po)
 	}
 
 	// add unique nodes to object (only snap end-points)
+	if (m_snap)
+	{
+		for (auto& rt_i : rt)
+		{
+			int n = -1;
+			if (rt_i.second == 1)
+			{
+				// this is an end node, so first try to snap it
+				n = findNode(po, rt_i.first, m_tol);
+			}
+			rt_i.second = n;
+		}
+	}
+
 	int newNodes = 0;
 	for (auto& rt_i : rt)
 	{
-		int n = -1;
-		if (rt_i.second == 1)
+		if (rt_i.second == -1)
 		{
-			// this is an end node, so first try to snap it
-			n = findNode(po, rt_i.first, m_tol);
-			if (n == -1) { n = po->AddNode(rt_i.first); newNodes++; }
+			rt_i.second = po->AddNode(rt_i.first); 
+			newNodes++; 
 		}
-		else { n = po->AddNode(rt_i.first); newNodes++; }
-		assert(n != -1);
-		rt_i.second = n;
 	}
 
 	for (SPRING& s : m_springs)
@@ -313,6 +327,9 @@ bool CImportSpringsTool::AddSprings(GModel* gm, GMeshObject* po)
 		// add it to the discrete element set
 		dset->AddElement(spring.n0, spring.n1);
 	}
+
+	int n = gm->DiscreteObjects();
+	dset->SetColor(col[n % GMaterial::MAX_COLORS]);
 
 	return true;
 }
