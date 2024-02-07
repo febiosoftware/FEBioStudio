@@ -44,6 +44,8 @@ SOFTWARE.*/
 #include "TetOverlapTool.h"
 #include "ElementVolumeTool.h"
 #include "MeasureVolumeTool.h"
+#include "MeasureCOMTool.h"
+#include "MeasureMOITool.h"
 #include "PlaneTool.h"
 #include "PointCongruencyTool.h"
 
@@ -120,6 +122,8 @@ public:
 		m_tools.push_back(new CMeasureVolumeTool(m_wnd));
 		m_tools.push_back(new CPlaneTool(m_wnd));
 		m_tools.push_back(new CPointCongruencyTool(m_wnd));
+		m_tools.push_back(new CMeasureCOMTool(m_wnd));
+		m_tools.push_back(new CMeasureMOITool(m_wnd));
 	}
 
 	void clearTools()
