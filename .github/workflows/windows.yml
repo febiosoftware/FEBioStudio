@@ -20,7 +20,7 @@ jobs:
       requires-sdk: true
       sdk-config: |
         {
-          "sdk_path": "windows-infrastructure",
-          "version": "v4.3",
+          "sdk_path": "ci/develop",
+          "version": "v4.5",
         }
     secrets: inherit

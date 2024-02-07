@@ -45,10 +45,10 @@ if(NOT CMAKE_PREFIX_PATH)
             DOC "Qt6 CMake Directory"
             NO_DEFAULT_PATH)
     else()
-        find_path(Qt_TEMP lib/cmake/Qt6/Qt6Config.cmake
+        find_path(Qt_TEMP cmake/Qt6/Qt6Config.cmake
             PATHS ${Qt_Root}/ ${Qt_Root}/* ${Qt_Root}/*/* /opt/Qt/* /opt/Qt*/* /usr/local/Qt/* /usr/local/Qt*/* 
                 $ENV{HOME}/Qt/* $ENV{HOME}/*/Qt6 $ENV{HOME}/*/Qt/* /Qt/* /Qt*/* 
-            PATH_SUFFIXES "gcc_64"
+            PATH_SUFFIXES "gcc_64" "lib"
             DOC "Qt CMake Directory"
             NO_DEFAULT_PATH)
     endif()

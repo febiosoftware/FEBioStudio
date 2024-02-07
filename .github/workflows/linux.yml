@@ -1,11 +1,13 @@
 on:
   push:
-    branches: [ ci/develop ]
+    branches:
+      - ci/develop
+      - ci/develop-linux-latest
 jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/linux-reusable.yml@develop
     with:
-      aws-ami-id: ami-0b0e38d12eb5ff011
+      aws-ami-id: ami-098154f774f68e105
       aws-sg-id: sg-0ca7912782cf1538b
       runTests: false
       package-name: febio-studio
@@ -13,6 +15,6 @@ jobs:
       sdk-config: |
         {
           "sdk_path": "ci/develop",
-          "version": "v4.3",
+          "version": "v4.5",
         }
     secrets: inherit
