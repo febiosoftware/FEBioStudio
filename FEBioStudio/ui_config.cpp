@@ -41,7 +41,6 @@ void Ui::CUIConfig::Apply()
 
 	// disable some FEBio menu items
 	ui->actionFEBioRun->setEnabled(false);
-	ui->actionFEBioMonitor->setEnabled(false);
 	ui->actionFEBioStop->setEnabled(false);
 	ui->actionFEBioMonitorSettings->setVisible(false);
 	ui->actionFEBioPause->setVisible(false);
@@ -170,7 +169,6 @@ void Ui::CModelConfig::Apply()
 
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioMonitor->setEnabled(true);
 
 	ui->actionCurveEditor->setEnabled(true);
 	ui->actionMeshInspector->setEnabled(true);
@@ -291,7 +289,6 @@ void Ui::CTextConfig::Apply()
 
 	ui->actionFEBioRun->setEnabled(true);
 	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioMonitor->setEnabled(true);
 
 	ui->buildToolBar->hide();
 	ui->postToolBar->hide();
@@ -328,7 +325,6 @@ void Ui::CXMLConfig::Apply()
 
 		ui->actionFEBioRun->setEnabled(true);
 		ui->actionFEBioStop->setEnabled(true);
-		ui->actionFEBioMonitor->setEnabled(true);
 
 		if (xmlDoc->EditingText())
 		{
@@ -450,7 +446,6 @@ void Ui::CMonitorConfig::Apply()
 	ui->centralWidget->setActiveView(CMainCentralWidget::GL_VIEWER);
 
 	ui->actionFEBioStop->setEnabled(true);
-	ui->actionFEBioMonitor->setEnabled(true);
 	ui->actionFEBioMonitorSettings->setVisible(true);
 	ui->actionFEBioPause->setVisible(true);
 	ui->actionFEBioNext->setVisible(true);

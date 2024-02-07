@@ -32,6 +32,8 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QComboBox>
 #include <QMessageBox>
+#include <QPushButton>
+#include <QFileDialog>
 #include <QtCore/QFileInfo>
 #include "../FEBioStudio/InputWidgets.h"
 
@@ -46,14 +48,23 @@ private:
 	QComboBox* m_debugMode;
 
 public:
+	int m_fileMode = 0;
+
+public:
 	void setup(CDlgMonitorSettings* dlg)
 	{
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addWidget(new QLabel("FEBio input file:"));
-		l->addWidget(m_fileInput = new QLineEdit());
 
 		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(m_fileInput = new QLineEdit());
+		QPushButton* pb = new QPushButton("...");
+		pb->setMaximumWidth(50);
+		h->addWidget(pb);
+		l->addLayout(h);
+
+		h = new QHBoxLayout;
 		h->setContentsMargins(0, 0, 0, 0);
 		h->addWidget(new QLabel("Pause event:"));
 		h->addWidget(m_pauseEvents = new QComboBox);
@@ -81,6 +92,7 @@ public:
 		dlg->setLayout(l);
 		connect(bb, &QDialogButtonBox::accepted, dlg, &QDialog::accept);
 		connect(bb, &QDialogButtonBox::rejected, dlg, &QDialog::reject);
+		connect(pb, &QPushButton::clicked, dlg, &CDlgMonitorSettings::OnClick);
 	}
 
 	void EnableFileInput(bool b) { m_fileInput->setEnabled(b); }
@@ -140,6 +152,11 @@ void CDlgMonitorSettings::CanEditFilename(bool b)
 	ui->EnableFileInput(b);
 }
 
+void CDlgMonitorSettings::SetFileMode(FileMode fileMode)
+{
+	ui->m_fileMode = (int)fileMode;
+}
+
 void CDlgMonitorSettings::accept()
 {
 	assert(m_doc);
@@ -153,7 +170,7 @@ void CDlgMonitorSettings::accept()
 		}
 
 		QFileInfo fi(filename);
-		if (fi.exists())
+		if (fi.exists() && (ui->m_fileMode == CDlgMonitorSettings::SAVE_FILE))
 		{
 			QString msg("The FEBio input file already exists and will be overwritten. Continue?");
 			if (QMessageBox::question(this, "FEBio Monitor", msg, QMessageBox::Yes | QMessageBox::No) != QMessageBox::Yes)
@@ -171,4 +188,24 @@ void CDlgMonitorSettings::accept()
 	m_doc->SetDebugLevel(ui->GetDebugLevel());
 
 	QDialog::accept();
+}
+
+void CDlgMonitorSettings::OnClick()
+{
+	if (ui->m_fileMode == OPEN_FILE)
+	{
+		QString filename = QFileDialog::getOpenFileName(this, "Open File", QString(), "FEBio Files (*.feb)");
+		if (filename.isEmpty() == false)
+		{
+			ui->SetFEBioInputFile(filename);
+		}
+	}
+	else if (ui->m_fileMode == SAVE_FILE)
+	{
+		QString filename = QFileDialog::getOpenFileName(this, "Save File", QString(), "FEBio Files (*.feb)");
+		if (filename.isEmpty() == false)
+		{
+			ui->SetFEBioInputFile(filename);
+		}
+	}
 }

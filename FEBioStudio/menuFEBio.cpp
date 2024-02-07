@@ -272,35 +272,38 @@ void CMainWindow::on_actionFEBioMonitor_triggered()
 	}
 	else
 	{
-		CModelDocument* doc = GetModelDocument();
-		if (doc == nullptr)
-		{
-			QMessageBox::information(this, "FEBio Studio", "The FEBio Monitor can only be used on an actively open model.");
-			return;
-		}
-
-		// make sure the model is saved
-		if (doc->IsModified())
-		{
-			on_actionSave_triggered();
-		}
-
-		// write the FEBio input file
-		std::string febFilename = doc->GetDocFilePath();
-
-		bool exportFEBioFile = true;
-		size_t n = febFilename.rfind(".fs2");
-		if (n == string::npos) exportFEBioFile = false;
-		else febFilename.replace(n, 4, ".feb");
-
+		bool exportFEBioFile = false;
 		FEBioMonitorDoc* monitorDoc = new FEBioMonitorDoc(this);
-		monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
+		CModelDocument* doc = GetModelDocument();
+		if (doc)
+		{
+			// make sure the model is saved
+			if (doc->IsModified())
+			{
+				on_actionSave_triggered();
+			}
+
+			// write the FEBio input file
+			std::string febFilename = doc->GetDocFilePath();
+
+			exportFEBioFile = true;
+			size_t n = febFilename.rfind(".fs2");
+			if (n == string::npos) exportFEBioFile = false;
+			else febFilename.replace(n, 4, ".feb");
+
+			monitorDoc->SetFEBioInputFile(QString::fromStdString(febFilename));
+		}
+
 		CDlgMonitorSettings dlg(monitorDoc, this);
-		if (exportFEBioFile == false) dlg.CanEditFilename(false);
+		if (doc && exportFEBioFile) dlg.SetFileMode(CDlgMonitorSettings::SAVE_FILE);
+		else dlg.SetFileMode(CDlgMonitorSettings::OPEN_FILE);
+
+		if (doc && (exportFEBioFile == false)) dlg.CanEditFilename(false);
+
 		if (dlg.exec())
 		{
-			febFilename = monitorDoc->GetFEBioInputFile().toStdString();
-			if (exportFEBioFile && ExportFEBioFile(doc, febFilename, 0x0400) == false)
+			std::string febFilename = monitorDoc->GetFEBioInputFile().toStdString();
+			if (doc && exportFEBioFile && ExportFEBioFile(doc, febFilename, 0x0400) == false)
 			{
 				QMessageBox::critical(this, "FEBio Studio", "Failed to export model to feb file.");
 				return;

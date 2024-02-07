@@ -305,6 +305,7 @@ void CGLMonitorScene::BuildMesh()
 			case ET_PYRA13: etype = FE_PYRA13; break;
 			case ET_LINE2: etype = FE_BEAM2; break;
 			case ET_LINE3: etype = FE_BEAM3; break;
+			case ET_DISCRETE: etype = FE_BEAM2; break;
 			default:
 				assert(false);
 			}

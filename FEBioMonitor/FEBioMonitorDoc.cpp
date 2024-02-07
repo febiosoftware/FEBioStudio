@@ -229,6 +229,8 @@ void FEBioMonitorDoc::RunJob()
 		return;
 	}
 
+	GetMainWindow()->ClearOutput();
+
 	m_isOutputReady = false;
 	m_isRunning = true;
 	m_isPaused = false;
