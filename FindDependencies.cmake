@@ -223,7 +223,7 @@ else()
 		DOC "MMG include directory")
 	find_library(MMG_LIB mmg3d
         PATHS /opt/mmg* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "build/lib" "cbuild/lib" "src/build/lib" "src/cbuild/lib" "Release" "Debug"
+        PATH_SUFFIXES "build/lib" "cbuild/lib" "src/build/lib" "src/cbuild/lib" "Release" "Debug" "lib"
 		DOC "MMG library path")
 endif()
 
@@ -266,7 +266,7 @@ else()
         DOC "TetGen include directory")
 	find_library(TETGEN_LIB tet
         PATHS /opt/tetgen* $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "build" "cbuild" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug"
+        PATH_SUFFIXES "build" "cbuild" "build/lib" "cmbuild/lib" "src/build/lib" "src/cmbuild/lib" "Release" "Debug" "lib"
         DOC "TetGen library path")
 endif()
 
@@ -343,13 +343,13 @@ if(WIN32)
 		DOC "Netgen library path")
 else()
   find_path(NETGEN_INC include/occgeom.hpp
-        PATHS $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/x86_64/Contents/Resources/include /opt/netgen* /Applications/Netgen.app/Contents/Resources/include Contents/Resources/include
-        PATH_SUFFIXES "include" "netgen/include" "build" "build/include" "occ"
-		DOC "Netgen include directory")
+        PATHS $ENV{HOME}/* $ENV{HOME}/*/* /usr/local/x86_64/Contents/Resources/include /opt/netgen* /Applications/Netgen.app
+        PATH_SUFFIXES "include" "netgen/include" "build" "build/include" "occ" "Contents/Resources/include"
+    DOC "Netgen include directory")
   message(STATUS "NETGEN_INC: ${NETGEN_INC}")
 	find_library(NETGEN_LIB nglib
-        PATHS /usr/local/x86_64/Contents /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app/Contents/MacOS Contents/MacOS
-        PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug" "MacOS"
+        PATHS /opt/netgen* $ENV{HOME}/* $ENV{HOME}/*/* /Applications/Netgen.app
+        PATH_SUFFIXES "lib" "netgen/lib" "build" "build/lib" "Release" "Debug" "MacOS" "Contents/MacOS"
 		DOC "Netgen library path")
   message(STATUS "NETGEN_LIB: ${NETGEN_LIB}")
 endif()
@@ -439,7 +439,7 @@ elseif(APPLE)
 		DOC "OpenSSL include directory")
 	find_library(SSL_LIB ssl
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "lib" "openssl/lib" "build" "build/lib" "Release" "Debug"
+        PATH_SUFFIXES "lib" "openssl/lib" "build" "build/lib" "Release" "Debug" "homebrew/lib"
 		DOC "OpenSSL library path"
 		NO_DEFAULT_PATH)
 else()
@@ -487,7 +487,7 @@ if(WIN32)
 elseif(APPLE)
 	find_path(LIBZIP_INC zip.h
         PATHS /usr/include/* /opt/libzip $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "/libzip" "include/libzip" "libzip/include/libzip" "build/libzip" "build/include/libzip"
+        PATH_SUFFIXES "/libzip" "include/libzip" "libzip/include/libzip" "build/libzip" "build/include/libzip" "include"
 		DOC "LibZip include directory")
 	find_library(LIBZIP_LIB zip
         PATHS /opt/libzip $ENV{HOME}/* $ENV{HOME}/*/*
@@ -583,12 +583,12 @@ if(WIN32)
 elseif(APPLE)
 	find_path(FFMPEG_INC libavformat/avformat.h
         PATHS /usr/local/homebrew /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include"
+        PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include" "homebrew/include"
 		DOC "FFMPEG include directory"
 		NO_DEFAULT_PATH)
 	find_library(FFMPEG_LIB avformat
         PATHS /usr/local/homebrew /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
-        PATH_SUFFIXES "lib" "ffmpeg/lib" "build" "build/lib" "Release" "Debug"
+        PATH_SUFFIXES "lib" "ffmpeg/lib" "build" "build/lib" "Release" "Debug" "homebrew/lib"
 		DOC "FFMPEG library path"
 		NO_DEFAULT_PATH)
 else()
@@ -625,7 +625,7 @@ mark_as_advanced(FFMPEG_DBG_LIB_DIR)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
-find_package(GLEW REQUIRED)
+find_package(GLEW PATH_SUFFIXES glew REQUIRED)
 
 # ZLIB
 find_package(ZLIB)

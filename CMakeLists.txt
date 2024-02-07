@@ -638,11 +638,8 @@ endif()
 
 target_link_libraries(${FBS_BIN_NAME} ${OPENGL_LIBRARY})
 
-if(APPLE)
-    target_link_libraries(${FBS_BIN_NAME} ${GLEW_SHARED_LIBRARY_RELEASE} ${GLEW_LIBRARIES})
-else()
-    target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
-endif()
+
+target_link_libraries(${FBS_BIN_NAME} ${GLEW_LIBRARIES} GLEW::glew)
 
 target_link_libraries(${FBS_BIN_NAME} ${FEBIOSTUDIO_LIBS})
 

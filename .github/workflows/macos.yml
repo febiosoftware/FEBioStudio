@@ -1,6 +1,7 @@
 on:
   push:
-    branches: [ ci/develop ]
+    branches:
+      - ci/develop
 jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/macos-reusable.yml@develop
@@ -10,7 +11,7 @@ jobs:
       requires-sdk: true
       sdk-config: |
         {
-          "sdk_path": "ci/develop",
-          "version": "v4.3",
+          "sdk_path": "macos-infrastructure",
+          "version": "v4.5",
         }
     secrets: inherit
