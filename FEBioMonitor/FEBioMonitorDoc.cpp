@@ -432,6 +432,7 @@ QString eventToString(int nevent)
 	case CB_TIMESTEP_SOLVED : s = "TIMESTEP_SOLVED"; break;
 	case CB_SERIALIZE_SAVE  : s = "SERIALIZE_SAVE"; break;
 	case CB_SERIALIZE_LOAD  : s = "SERIALIZE_LOAD"; break;
+	case CB_TIMESTEP_FAILED : s = "TIMESTEP_FAILED"; break;
 	case CB_USER1           : s = "USER1"; break;
 	}
 	return s;
