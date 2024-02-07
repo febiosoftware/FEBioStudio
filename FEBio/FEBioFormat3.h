@@ -138,9 +138,6 @@ private:
 	void ParseRigidConstraint(FSStep* pstep, XMLTag& tag);
 	void ParseRigidJoint(FSStep* pstep, XMLTag& tag);
 
-	// helper functions (version 2.5 and up)
-	FEBioInputModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);
-
 private:
 	FEBioInputModel::Part* DefaultPart();
 

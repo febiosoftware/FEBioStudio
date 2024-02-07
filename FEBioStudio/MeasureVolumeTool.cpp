@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "MeasureVolumeTool.h"
 #include <MeshLib/FEMesh.h>
+#include <GeomLib/GObject.h>
 
 //-----------------------------------------------------------------------------
 QVariant CMeasureVolumeTool::GetPropertyValue(int i)
@@ -35,6 +36,7 @@ QVariant CMeasureVolumeTool::GetPropertyValue(int i)
 	{
 	case 0: return m_nformula; break;
 	case 1: return m_vol; break;
+	case 2: return m_faceCount; break;
 	}
 	return QVariant();
 }
@@ -42,7 +44,7 @@ QVariant CMeasureVolumeTool::GetPropertyValue(int i)
 //-----------------------------------------------------------------------------
 void CMeasureVolumeTool::SetPropertyValue(int i, const QVariant& v)
 {
-	if (i == 2) m_nformula = v.toInt();
+	if (i == 0) m_nformula = v.toInt();
 }
 
 //-----------------------------------------------------------------------------
@@ -50,9 +52,11 @@ CMeasureVolumeTool::CMeasureVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Surf
 {
 	addProperty("symmetry", CProperty::Enum)->setEnumValues(QStringList() << "(None)" << "X" << "Y" << "Z");
 	addProperty("volume", CProperty::Float)->setFlags(CProperty::Visible);
+	addProperty("faces", CProperty::Int)->setFlags(CProperty::Visible);
 
 	m_vol = 0.0;
 	m_nformula = 0;
+	m_faceCount = 0;
 }
 
 //-----------------------------------------------------------------------------
@@ -63,25 +67,48 @@ bool CMeasureVolumeTool::OnApply()
 	FSMesh* mesh = GetActiveMesh();
 	if (mesh == nullptr) return false;
 
+	GObject* po = mesh->GetGObject();
+	if (po == nullptr) return false;
+
+	const Transform& T = po->GetTransform();
+
+	int selectedFaces = mesh->CountSelectedFaces();
+
 	int NF = mesh->Faces();
+	double z[2] = { 0,0 };
+	m_faceCount = 0;
 	for (int i = 0; i<NF; ++i)
 	{
 		FSFace& f = mesh->Face(i);
-
-		// get the average position, area and normal
-		vec3d r = mesh->FaceCenter(f);
-		double area = mesh->FaceArea(f);
-		vec3d N = to_vec3d(f.m_fn);
-
-		switch (m_nformula)
+		if ((selectedFaces == 0) || (f.IsSelected()))
 		{
-		case 0: m_vol += area*(N*r) / 3.f; break;
-		case 1: m_vol += 2.f*area*(r.x*N.x); break;
-		case 2: m_vol += 2.f*area*(r.y*N.y); break;
-		case 3: m_vol += 2.f*area*(r.z*N.z); break;
+			m_faceCount++;
+
+			std::vector<vec3d> rt(f.Nodes());
+			for (int n = 0; n < f.Nodes(); ++n) rt[n] = T.LocalToGlobal(mesh->Node(f.n[n]).r);
+
+			// get the average position, area and normal
+			double area = mesh->FaceArea(rt, f.Nodes());
+			vec3d r = T.LocalToGlobal(mesh->FaceCenter(f));
+			vec3d N = T.LocalToGlobalNormal(to_vec3d(f.m_fn));
+
+			if (i == 0) z[0] = z[1] = r.z;
+			else
+			{
+				if (r.z < z[0]) z[0] = r.z;
+				if (r.z > z[1]) z[1] = r.z;
+			}
+
+			switch (m_nformula)
+			{
+			case 0: m_vol += area * (N * r) / 3.f; break;
+			case 1: m_vol += 2.f * area * (r.x * N.x); break;
+			case 2: m_vol += 2.f * area * (r.y * N.y); break;
+			case 3: m_vol += 2.f * area * (r.z * N.z); break;
+			}
 		}
 	}
 
-	m_vol = fabs(m_vol);
+	m_vol = -m_vol;	// we want inward facing surfaces to have a positive volume
 	return true;
 }

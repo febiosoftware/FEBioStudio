@@ -1611,6 +1611,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_OBJECT_LIST:
 	{
 		menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
+		menu.addAction("Part selector ...", GetMainWindow(), SLOT(onShowPartSelector()));
 		menu.addSeparator();
 
 		QMenu* sub = new QMenu("Set Active Mesh Layer");

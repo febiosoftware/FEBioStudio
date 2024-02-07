@@ -3,7 +3,7 @@ listed below.
 
 See Copyright-FEBio-Studio.txt for details.
 
-Copyright (c) 2021 University of Utah, The Trustees of Columbia University in
+Copyright (c) 2024 University of Utah, The Trustees of Columbia University in
 the City of New York, and others.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -23,29 +23,30 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include <QDialog>
 
-#include "Tool.h"
+class CMainWindow;
+class CModelDocument;
+class QTableWidgetItem;
 
-//-----------------------------------------------------------------------------
-class CDocument;
-
-//-----------------------------------------------------------------------------
-class CMeasureVolumeTool : public CBasicTool
+class CDlgPartSelector : public QDialog
 {
-public:
-	// constructor
-	CMeasureVolumeTool(CMainWindow* wnd);
-
-	// Apply button
-	bool OnApply() override;
-
-	QVariant GetPropertyValue(int i) override;
-	void SetPropertyValue(int i, const QVariant& v) override;
+	Q_OBJECT
 
 private:
-	double	m_vol;		// volume of selection
-	int		m_nformula;	// choose formula
-	int		m_faceCount;
+	class UI;
 
-	friend class Props;
+public:
+	CDlgPartSelector(CModelDocument* doc, CMainWindow* wnd);
+
+private slots:
+	void onItemClicked(QTableWidgetItem* it);
+	void onFilterChanged();
+	void onShowAll();
+	void onHideAll();
+	void onSelectionChanged();
+
+private:
+	UI* ui;
 };

@@ -725,6 +725,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 		FEBioInputModel::NODE& nd = nodes[i];
 		FSNode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
+		node.m_nid = nd.id;
 		node.r = nd.r;
 	}
 
@@ -4042,40 +4043,4 @@ bool FEBioFormat3::ParseStep(XMLTag& tag)
 	m_pBCStep = 0;
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-FEBioInputModel::DiscreteSet FEBioFormat3::ParseDiscreteSet(XMLTag& tag)
-{
-	FEBioInputModel& febio = GetFEBioModel();
-
-	const char* szset = tag.AttributeValue("dset", true);
-	if (szset)
-	{
-/*		FEBioInputModel::DiscreteSet* ps = febio.FindDiscreteSet(szset);
-		if (ps) return *ps;
-		else
-*/		{
-			FEBioInputModel::DiscreteSet ds;
-			return ds;
-		}
-	}
-	else
-	{
-		FEBioInputModel::DiscreteSet ds;
-		++tag;
-		do
-		{
-			if (tag == "delem")
-			{
-				int n[2];
-				tag.value(n, 2);
-				ds.Add(n[0] - 1, n[1] - 1);
-			}
-			else ParseUnknownTag(tag);
-			++tag;
-		} while (!tag.isend());
-
-		return ds;
-	}
 }
