@@ -1017,7 +1017,7 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 		}
 
 		// write the properties
-		int NC = pm->Properties();
+		int NC = (int)pm->Properties();
 		for (int i = 0; i < NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);
@@ -1027,6 +1027,14 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 				if (pc)
 				{
 					XMLElement eli(mc.GetName().c_str());
+
+					// write the name (this is only used by a few features, such as specifies in the reaction-diffusion module)
+					std::string name = pc->GetName();
+					if (!name.empty())
+					{
+						eli.add_attribute("name", name.c_str());
+					}
+
 					WriteModelComponent(pc, eli);
 				}
 			}
