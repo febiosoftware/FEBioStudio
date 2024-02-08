@@ -57,6 +57,7 @@ public:
 	QListWidget*			m_list;
 	QStackedWidget*			m_stack;
 	vector<CAbstractTool*>	m_tools;
+	QLabel* m_info;
 
 	QRect	m_rt;
 
@@ -80,6 +81,11 @@ public:
 		l1->setContentsMargins(0,0,0,0);
 		l1->addWidget(m_list);
 		l->addLayout(l1);
+
+		// info pane
+		l->addWidget(m_info = new QLabel);
+		m_info->setWordWrap(true);
+		m_info->setFrameShape(QFrame::Box);
 
 		// Results pane
 		m_stack = new QStackedWidget();
@@ -183,5 +189,9 @@ void CDlgMeasure::onMeasureChanged(int n)
 		ui->m_activeTool = ui->m_tools[n];
 		ui->m_activeTool->Activate();
 		ui->m_stack->setCurrentIndex(n + 1);
+
+		QString info = ui->m_activeTool->GetInfo();
+		if (info.isEmpty()) info = ui->m_activeTool->name();
+		ui->m_info->setText(QString("<b>info:</b> %1").arg(info));
 	}
 }

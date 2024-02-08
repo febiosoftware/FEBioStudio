@@ -34,6 +34,8 @@ CMeasureMOITool::CMeasureMOITool(CMainWindow* wnd) : CBasicTool(wnd, "Moment of 
 {
 	m_moi.zero();
 	addMat3Property(&m_moi, "moment of inertia:")->setFlags(CProperty::Visible);
+
+	SetInfo("Calculates the moment of inertia of a meshed object or element selection. The MOI is calculated with respect to the center of mass of the selection.");
 }
 
 // This is called when Apply button is pressed.

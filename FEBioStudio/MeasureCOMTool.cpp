@@ -32,6 +32,8 @@ CMeasureCOMTool::CMeasureCOMTool(CMainWindow* wnd) : CBasicTool(wnd, "Center of 
 {
 	m_com = vec3d(0,0,0);
 	addVec3Property(&m_com, "center of mass:")->setFlags(CProperty::Visible);
+
+	SetInfo("Calculates the center of mass of a meshed object or element selection.");
 }
 
 // This is called when Apply button is pressed.
