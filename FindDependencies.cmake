@@ -625,7 +625,13 @@ mark_as_advanced(FFMPEG_DBG_LIB_DIR)
 
 # OpenGL
 find_package(OpenGL REQUIRED)
-find_package(GLEW PATH_SUFFIXES glew REQUIRED)
+# Use non-standard PATH_SUFFIXES on HOMEBREW macs
+option(HOMEBREW "Did you use HOMEBREW to install dependencies" OFF)
+if(HOMEBREW AND APPLE)
+  find_package(GLEW PATH_SUFFIXES glew REQUIRED)
+else()
+  find_package(GLEW REQUIRED)
+endif()
 
 # ZLIB
 find_package(ZLIB)

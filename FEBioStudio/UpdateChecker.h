@@ -34,16 +34,29 @@ SOFTWARE.*/
 class QNetworkReply;
 class QVBoxLayout;
 class QLabel;
+class QCheckBox;
 class QNetworkAccessManager;
 class QDialogButtonBox;
 
-// #define UPDATE_URL "repo.febio.org"
-// #define PORT 4433
-// #define SCHEME "https"
-
-// #define UPDATE_URL "localhost"
-// #define PORT 5236
-// #define SCHEME "http"
+#ifdef WIN32
+	#define URL_BASE "/update2/FEBioStudio2/Windows"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/Windows"
+	#define UPDATER_BASE "/update2/Updater2/Windows"
+	#define REL_ROOT "\\..\\"
+	#define UPDATER "/FEBioStudioUpdater.exe"
+#elif __APPLE__
+	#define URL_BASE "/update2/FEBioStudio2/macOS"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/macOS"
+	#define UPDATER_BASE "/update2/Updater2/macOS"
+	#define REL_ROOT "/../../../"
+	#define UPDATER "/FEBioStudioUpdater"
+#else
+	#define URL_BASE "/update2/FEBioStudio2/Linux"
+	#define DEV_BASE "/update2/FEBioStudio2Dev/Linux"
+	#define UPDATER_BASE "/update2/Updater2/Linux"
+	#define REL_ROOT "/../"
+	#define UPDATER "/FEBioStudioUpdater"
+#endif
 
 struct ReleaseFile
 {
@@ -61,6 +74,8 @@ struct Release
 	QString FEBioNotes;
 	QString FBSNotes;
 	QString releaseMsg;
+    bool hasSDK = false;
+    ReleaseFile sdk;
 	std::vector<ReleaseFile> files;
 	QStringList deleteFiles;
 	std::vector<ReleaseFile> updaterFiles;
@@ -73,7 +88,7 @@ class CUpdateWidget : public QWidget
 public:
     CUpdateWidget(QWidget* parent = nullptr);
 
-    void checkForUpdate(bool dev = false, bool updaterUpdateCheck = false);
+    void checkForUpdate(bool dev = false, bool checkSDK = false, bool updaterUpdateCheck = false);
 
     QString getServerMessage();
 
@@ -131,6 +146,10 @@ public:
 	QString urlBase;
 	QString updaterBase;
 
+    bool m_askSDK;
+    QCheckBox* m_getSDK;
+    ReleaseFile m_sdk;
+
 	QString UUID;
 
     QString serverMessage;
@@ -146,6 +165,7 @@ public:
 	const QString FEBIONOTES   = "FEBioNotes";
 	const QString FBSNOTES     = "FBSNotes";
 	const QString RELEASEMSG   = "releaseMsg";
+    const QString SDK          = "sdk";
 	const QString FEBFILES     = "files";
 	const QString FEBFILE      = "file";
 	const QString DELETEFILES  = "deleteFiles";

@@ -17,7 +17,8 @@ cmake -L . -B cmbuild ^
   -DUSE_SSL=ON ^
   -DCAD_FEATURES=ON ^
   -DUSE_NETGEN=ON ^
-  -DUSE_ITK=ON
+  -DUSE_ITK=ON ^
+  -DBUILD_UPDATER=ON
 )
 cd cmbuild
 msbuild /v:m /P:Configuration=Release /P:WarningLevel=0 /m:%NUMBER_OF_PROCESSORS% ALL_BUILD.vcxproj

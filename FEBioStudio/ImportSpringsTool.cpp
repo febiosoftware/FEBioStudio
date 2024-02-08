@@ -40,16 +40,16 @@ extern GLColor col[GMaterial::MAX_COLORS];
 
 CImportSpringsTool::CImportSpringsTool(CMainWindow* wnd) : CBasicTool(wnd, "Import Springs", HAS_APPLY_BUTTON)
 {
+	m_snap = true;
+	m_type = 0;
+	m_tol = 1e-6;
+	m_bintersect = false;
+
 	addResourceProperty(&m_fileName, "Filename");
 	addBoolProperty(&m_snap, "Snap end-points to geometry");
 	addDoubleProperty(&m_tol, "Snap tolerance");
 	addBoolProperty(&m_bintersect, "Check for intersections");
 	addEnumProperty(&m_type, "Element type")->setEnumValues(QStringList() << "Linear spring" << "Nonlinear spring" << "Hill spring" << "Linear truss");
-
-	m_snap = true;
-	m_type = 0;
-	m_tol = 1e-6;
-	m_bintersect = true;
 }
 
 bool CImportSpringsTool::OnApply()
@@ -253,12 +253,12 @@ int CImportSpringsTool::ProcessSprings(GMeshObject* po)
 	for (SPRING& s : m_springs)
 	{
 		s.n0 = findPoint(rt, s.r0);
-		if (s.n0 == -1) { rt.push_back({ s.r0, 1 }); s.n0 = rt.size() - 1; }
-		else rt[s.n0].second++;
+		if (s.n0 == -1) { rt.push_back({ s.r0, -1 }); s.n0 = rt.size() - 1; }
+		else rt[s.n0].second -= 1;
 
 		s.n1 = findPoint(rt, s.r1);
 		if (s.n1 == -1) { rt.push_back({ s.r1, 1 }); s.n1 = rt.size() - 1; }
-		else rt[s.n1].second++;
+		else rt[s.n1].second += 1;
 	}
 
 	// add unique nodes to object (only snap end-points)
@@ -267,7 +267,7 @@ int CImportSpringsTool::ProcessSprings(GMeshObject* po)
 		for (auto& rt_i : rt)
 		{
 			int n = -1;
-			if (rt_i.second == 1)
+			if (rt_i.second > 0)
 			{
 				// this is an end node, so first try to snap it
 				n = findNode(po, rt_i.first, m_tol);

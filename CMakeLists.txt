@@ -318,6 +318,7 @@ if(WIN32)
 elseif(APPLE)
     add_definitions(-D__APPLE__)
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
     
     if(${OpenMP_C_FOUND})
         add_compile_options(-Xpreprocessor -fopenmp -w)
@@ -449,6 +450,7 @@ elseif(APPLE)
 	
 	add_executable(${FBS_BIN_NAME} MACOSX_BUNDLE ${FBS_ICON} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
+
 else()
 	add_executable(${FBS_BIN_NAME} ${HDR_FEBioStudio} ${SRC_FEBioStudio} febiostudio.qrc)
 	set_property(TARGET ${FBS_BIN_NAME} PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudio_autogen)
@@ -663,3 +665,53 @@ else()
     target_link_libraries(${FBS_BIN_NAME} -Wl,--end-group)
 endif()
 
+option(BUILD_UPDATER "Build updater" OFF)
+if(BUILD_UPDATER)
+    if(WIN32)
+        add_definitions(-DWIN32)
+    elseif(APPLE)
+        add_definitions(-D__APPLE__)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-deprecated-declarations")
+    else()
+        add_definitions(-DLINUX)
+
+        set(CMAKE_BUILD_RPATH_USE_LINK_PATH FALSE)
+        set(CMAKE_BUILD_RPATH $ORIGIN/../lib/)
+    endif()
+
+    set(UPDATER_SOURCES Updater/FEBioStudioUpdater.cpp Updater/MainWindow.cpp Updater/ZipThread.cpp
+        Updater/getapppath.cpp Updater/FEBioStudioUpdater.qrc FEBioStudio/UpdateChecker.cpp 
+        FEBioStudio/ServerSettings.cpp)
+
+    add_executable(FEBioStudioUpdater ${UPDATER_SOURCES})
+    set_property(TARGET FEBioStudioUpdater PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/FEBioStudioUpdater_autogen)
+
+    add_executable(mvUtil "Updater/mvUtil.cpp")
+    set_property(TARGET mvUtil PROPERTY AUTOGEN_BUILD_DIR ${CMAKE_BINARY_DIR}/CMakeFiles/AutoGen/mvUtil_autogen)
+
+    if(WIN32)
+        SET_TARGET_PROPERTIES(FEBioStudioUpdater PROPERTIES LINK_FLAGS "/MANIFESTUAC:\"level='requireAdministrator' uiAccess='false'\" /SUBSYSTEM:WINDOWS")
+        SET_TARGET_PROPERTIES(mvUtil PROPERTIES LINK_FLAGS "/MANIFESTUAC:\"level='requireAdministrator'\"")
+        target_link_options(FEBioStudioUpdater PRIVATE "/entry:mainCRTStartup")
+    endif()
+
+    target_include_directories(FEBioStudioUpdater PRIVATE "Updater")
+
+    findLib(FEBio_LIB_DIR XML_LIB xml)
+
+    target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB} ${LIBZIP_LIB})
+
+    if (APPLE)
+        set(MACOS_SHARED_BINARIES bin/FEBioStudioUpdater bin/mvUtil PARENT_SCOPE)
+    endif()
+
+    if(APPLE)
+        message(STATUS "MACOS_SHARED_BINARIES: ${MACOS_SHARED_BINARIES}")
+
+        add_custom_command(
+            TARGET ${FBS_BIN_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+                    ${MACOS_SHARED_BINARIES}
+                    $<TARGET_FILE_DIR:${FBS_BIN_NAME}> ./bin/${FBS_BIN_NAME}.app/Contents/MacOS)
+    endif()
+endif()

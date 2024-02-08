@@ -11,7 +11,7 @@ jobs:
       requires-sdk: true
       sdk-config: |
         {
-          "sdk_path": "macos-infrastructure",
+          "sdk_path": "ci/develop",
           "version": "v4.5",
         }
     secrets: inherit

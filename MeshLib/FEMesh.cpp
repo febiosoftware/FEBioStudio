@@ -2681,6 +2681,7 @@ void FSMesh::BuildELT()
 	for (int i = 1; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		if (nid < 1) return;
 		if (nid > maxid) maxid = nid;
 		if (nid < minid) minid = nid;
 	}

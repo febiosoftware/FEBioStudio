@@ -725,6 +725,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 		FEBioInputModel::NODE& nd = nodes[i];
 		FSNode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
+		node.m_nid = nd.id;
 		node.r = nd.r;
 	}
 
