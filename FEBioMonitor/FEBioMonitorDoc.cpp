@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <FECore/FEAnalysis.h>
 #include <FECore/FEGlobalMatrix.h>
 #include <FECore/FESolver.h>
+#include <FECore/LinearSolver.h>
 #include "FEBioMonitorPanel.h"
 #include "GLMonitorScene.h"
 #include <QWaitCondition>
@@ -631,4 +632,23 @@ FEGlobalMatrix* FEBioMonitorDoc::GetStiffnessMatrix()
 	FESolver* solver = step->GetFESolver();
 	FEGlobalMatrix* K = solver->GetStiffnessMatrix();
 	return K;
+}
+
+double FEBioMonitorDoc::GetConditionNumber()
+{
+	if (IsPaused() == false) return 0.0;
+	if (m_fem == nullptr) return 0.0;
+
+	FEAnalysis* step = m_fem->GetCurrentStep();
+	if (step == nullptr) return 0.0;
+
+	FESolver* solver = step->GetFESolver();
+	if (solver == nullptr) return 0.0;
+
+	LinearSolver* ls = solver->GetLinearSolver();
+	if (ls)
+	{
+		return ls->ConditionNumber();
+	}
+	return 0.0;
 }

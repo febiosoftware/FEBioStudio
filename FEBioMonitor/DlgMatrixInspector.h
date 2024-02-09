@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include <FECore/matrix.h>
 
 class FEGlobalMatrix;
+class FEBioMonitorDoc;
 
 class CDlgMatrixInspector : public QDialog
 {
@@ -36,12 +37,13 @@ class CDlgMatrixInspector : public QDialog
 	class Ui;
 
 public:
-	CDlgMatrixInspector(QWidget* parent = 0);
+	CDlgMatrixInspector(FEBioMonitorDoc* doc, QWidget* parent = 0);
 
 	void SetGlobalMatrix(FEGlobalMatrix* M);
 
 public slots:
 	void onViewScroll();
+	void onAnalyze();
 	void updateView(int x, int y);
 
 private:

@@ -269,7 +269,6 @@ void CFEBioModelPanel::launchMatrixInspector()
 		return;
 	}
 
-	CDlgMatrixInspector dlg(this);
-	dlg.SetGlobalMatrix(M);
+	CDlgMatrixInspector dlg(doc, this);
 	dlg.exec();
 }

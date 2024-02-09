@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "DlgMatrixInspector.h"
 #include <QLayout>
+#include <QFormLayout>
 #include <QDialogButtonBox>
 #include <QTableView>
 #include <QPainter>
@@ -34,7 +35,10 @@ SOFTWARE.*/
 #include <QLabel>
 #include <QComboBox>
 #include <QScrollArea>
+#include <QPushButton>
+#include <QLineEdit>
 #include <FECore/FEGlobalMatrix.h>
+#include "FEBioMonitorDoc.h"
 
 MatrixDensityView::MatrixDensityView(CDlgMatrixInspector* dlg, QWidget* parent) : QWidget(parent), m_dlg(dlg) {}
 
@@ -348,8 +352,10 @@ private:
 class CDlgMatrixInspector::Ui 
 {
 public:
+	FEBioMonitorDoc* doc;
 	QTableView* view;
 	MatrixDensityView* densView;
+	QLineEdit* m_condNumber;
 
 public:
 	void setup(CDlgMatrixInspector* dlg)
@@ -374,6 +380,15 @@ public:
 		QScrollArea* scroll = new QScrollArea;
 		scroll->setWidget(densView = new MatrixDensityView(dlg));
 		matViewLayout->addWidget(scroll);
+
+		QPushButton* pb = new QPushButton("Analyze...");
+		matViewLayout->addWidget(pb);
+
+		QFormLayout* pf = new QFormLayout();
+		pf->addRow("Condition Number (est.):", m_condNumber = new QLineEdit());
+		m_condNumber->setReadOnly(true);
+		matViewLayout->addLayout(pf);
+
 		matView->setLayout(matViewLayout);
 
 		splitter->addWidget(matView);
@@ -389,6 +404,7 @@ public:
 		QObject::connect(vertScroll, &QScrollBar::valueChanged, dlg, &CDlgMatrixInspector::onViewScroll);
 		QObject::connect(horzScroll, &QScrollBar::valueChanged, dlg, &CDlgMatrixInspector::onViewScroll);
 		QObject::connect(colorMode, &QComboBox::currentIndexChanged, densView, &MatrixDensityView::SetColorMode);
+		QObject::connect(pb, &QPushButton::clicked, dlg, &CDlgMatrixInspector::onAnalyze);
 	}
 
 	QRect GetVisibleMatrixRegion()
@@ -402,11 +418,16 @@ public:
 	}
 };
 
-CDlgMatrixInspector::CDlgMatrixInspector(QWidget* parent) : QDialog(parent), ui(new CDlgMatrixInspector::Ui)
+CDlgMatrixInspector::CDlgMatrixInspector(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMatrixInspector::Ui)
 {
+	FEGlobalMatrix* M = doc->GetStiffnessMatrix();
+
 	setWindowTitle("Matrix Inspector");
 	setMinimumSize(900, 600);
 	ui->setup(this);
+	ui->doc = doc;
+
+	SetGlobalMatrix(M);
 }
 
 void CDlgMatrixInspector::SetGlobalMatrix(FEGlobalMatrix* M)
@@ -424,4 +445,14 @@ void CDlgMatrixInspector::onViewScroll()
 void CDlgMatrixInspector::updateView(int x, int y)
 {
 	ui->view->scrollTo(ui->view->model()->index(y, x));
+}
+
+void CDlgMatrixInspector::onAnalyze()
+{
+	ui->m_condNumber->clear();
+	if (ui->doc)
+	{
+		double k = ui->doc->GetConditionNumber();
+		ui->m_condNumber->setText(QString::number(k));
+	}
 }

@@ -126,6 +126,8 @@ public:
 public:
 	FEGlobalMatrix* GetStiffnessMatrix();
 
+	double GetConditionNumber();
+
 private:
 	void UpdateWatchVariable(FEBioWatchVariable& var);
 	void UpdateAllWatchVariables();
