@@ -1812,12 +1812,16 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 			{
 				XMLElement xej("elem");
 				int n1 = xej.add_attribute("id", (int)0);
+				int lastElemID = 0;
 
 				for (int j = i; j < NE; ++j)
 				{
 					FEElement_& ej = pm->ElementRef(j);
 					if ((ej.m_ntag == 1) && (ej.Type() == ntype))
 					{
+						if (ej.m_nid <= lastElemID) throw FEBioExportError();
+						lastElemID = ej.m_nid;
+
 						xej.set_attribute(n1, ej.m_nid);
 						int ne = ej.Nodes();
 						assert(ne == el.Nodes());
