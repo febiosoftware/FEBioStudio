@@ -81,6 +81,7 @@ SOFTWARE.*/
 #include <FEBioApp/FEBioAppView.h>
 #include <FEBioMonitor/FEBioMonitorDoc.h>
 #include <FEBioMonitor/FEBioMonitorPanel.h>
+#include <FEBioMonitor/FEBioMonitorView.h>
 #include <vector>
 
 class QProcess;
@@ -281,6 +282,7 @@ public:
 	::CTimelinePanel* timePanel;
 	::CImageSettingsPanel* imageSettingsPanel;
 	CFEBioMonitorPanel* febioMonitor;
+	CFEBioMonitorView* febioMonitorView;
 
 	// additional windows
 	::CDlgFiberViz* fiberViz = nullptr;

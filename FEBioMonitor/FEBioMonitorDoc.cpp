@@ -33,7 +33,9 @@ SOFTWARE.*/
 #include <FECore/FEGlobalMatrix.h>
 #include <FECore/FESolver.h>
 #include <FECore/LinearSolver.h>
+#include <FECore/FENewtonSolver.h>
 #include "FEBioMonitorPanel.h"
+#include "FEBioMonitorView.h"
 #include "GLMonitorScene.h"
 #include <QWaitCondition>
 
@@ -52,6 +54,7 @@ SOFTWARE.*/
 #include <FECore/log.h>
 
 QWaitCondition jobIsPaused;
+QWaitCondition modelIsUpdating;
 
 class FEBLogStream : public LogStream
 {
@@ -131,6 +134,7 @@ FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
 	m_progressPct = 0.0;
 	m_scene = new CGLMonitorScene(this);
 	m_pauseEvents = CB_ALWAYS;
+	m_currentEvent = 0;
 	m_usePauseTime = false;
 	m_pauseTime = 0.0;
 	m_bValid = false;
@@ -167,6 +171,11 @@ bool FEBioMonitorDoc::IsRunning() const
 bool FEBioMonitorDoc::IsPaused() const
 {
 	return m_isPaused;
+}
+
+int FEBioMonitorDoc::GetCurrentEvent() const
+{
+	return m_currentEvent;
 }
 
 void FEBioMonitorDoc::StartPaused(bool b)
@@ -445,17 +454,16 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 {
 	m_time = fem->GetTime().currentTime;
 	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
+	m_currentEvent = nevent;
 	switch (nevent)
 	{
 	case CB_INIT:
 		scene->InitScene(fem);
 		m_bValid = true;
 		emit modelInitialized();
-		emit updateViews();
 		break;
 	default:
 		scene->UpdateScene();
-		emit updateViews();
 		break;
 	}
 
@@ -466,9 +474,14 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	else if (!m_isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
 
 	m_mutex.lock();
+
 	m_fem = dynamic_cast<FEBioModel*>(fem);
+
 	if (nevent == CB_INIT) InitDefaultWatchVariables();
 	UpdateAllWatchVariables();
+	emit updateViews();
+	modelIsUpdating.wait(&m_mutex);
+
 	constexpr double eps = std::numeric_limits<double>::epsilon();
 	if ((m_pauseRequested && (m_pauseEvents & nevent)) ||
 		(m_usePauseTime && (m_time + eps >= m_pauseTime)))
@@ -483,7 +496,7 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	m_mutex.unlock();
 
 	if (m_isStopped) throw std::exception();
-
+	m_currentEvent = 0;
 	return true;
 }
 
@@ -502,6 +515,9 @@ void FEBioMonitorDoc::onUpdateViews()
 	CMainWindow* wnd = GetMainWindow();
 	wnd->GetGLView()->updateView();
 	wnd->GetFEBioMonitorPanel()->Update(false);
+	wnd->GetFEBioMonitorView()->Update(false);
+
+	modelIsUpdating.wakeAll();
 }
 
 const FEBioWatchVariable* FEBioMonitorDoc::GetWatchVariable(int n)
@@ -651,4 +667,31 @@ double FEBioMonitorDoc::GetConditionNumber()
 		return ls->ConditionNumber();
 	}
 	return 0.0;
+}
+
+FSConvergenceInfo FEBioMonitorDoc::GetConvergenceInfo()
+{
+	FSConvergenceInfo info = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+
+	QMutexLocker lock(&m_mutex);
+	if (m_fem == nullptr) return info;
+
+	FEAnalysis* step = m_fem->GetCurrentStep();
+	if (step == nullptr) return info;
+
+	FENewtonSolver* solver = dynamic_cast<FENewtonSolver*>(step->GetFESolver());
+	if (solver == nullptr) return info;
+
+	ConvergenceInfo Rnorm = solver->GetResidualConvergence();
+	ConvergenceInfo Enorm = solver->GetEnergyConvergence();
+	ConvergenceInfo Unorm = solver->GetSolutionConvergence(0);
+
+	info.m_R0 = Rnorm.norm0;
+	info.m_Rt = Rnorm.norm;
+	info.m_E0 = Enorm.norm0;
+	info.m_Et = Enorm.norm;
+	info.m_U0 = Unorm.norm0;
+	info.m_Ut = Unorm.norm;
+
+	return info;
 }

@@ -35,6 +35,13 @@ class FEGlobalMatrix;
 
 class FEBioMonitorDoc;
 
+struct FSConvergenceInfo
+{
+	double	m_R0, m_Rt;
+	double	m_E0, m_Et;
+	double	m_U0, m_Ut;
+};
+
 class FEBioMonitorThread : public QThread
 {
 	Q_OBJECT
@@ -117,6 +124,8 @@ public:
 
 	bool IsPaused() const;
 
+	int GetCurrentEvent() const;
+
 public:
 	FEBioWatchVariable* AddWatchVariable(const QString& name);
 	const FEBioWatchVariable* GetWatchVariable(int n);
@@ -127,6 +136,8 @@ public:
 	FEGlobalMatrix* GetStiffnessMatrix();
 
 	double GetConditionNumber();
+
+	FSConvergenceInfo GetConvergenceInfo();
 
 private:
 	void UpdateWatchVariable(FEBioWatchVariable& var);
@@ -174,6 +185,7 @@ private:
 	double	m_progressPct;
 	double	m_time;
 	unsigned int m_pauseEvents;
+	int		m_currentEvent;
 	int		m_debugLevel;
 	QMutex	m_mutex;
 	FEBioModel* m_fem = nullptr;

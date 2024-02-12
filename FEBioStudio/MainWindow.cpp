@@ -1363,6 +1363,11 @@ CFEBioMonitorPanel* CMainWindow::GetFEBioMonitorPanel()
 	return ui->febioMonitor;
 }
 
+CFEBioMonitorView* CMainWindow::GetFEBioMonitorView()
+{
+	return ui->febioMonitorView;
+}
+
 //-----------------------------------------------------------------------------
 //! close the current open project
 void CMainWindow::CloseProject()

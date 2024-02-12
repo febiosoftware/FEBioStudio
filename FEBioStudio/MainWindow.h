@@ -60,6 +60,7 @@ class C2DImageTimeView;
 class GObject;
 class FSPairedInterface;
 class CFEBioMonitorPanel;
+class CFEBioMonitorView;
 
 enum class ImageFileType;
 
@@ -133,6 +134,9 @@ public:
 
 	// get the febio monitor panel
 	CFEBioMonitorPanel* GetFEBioMonitorPanel();
+
+	// get the febio monitor graphs view
+	CFEBioMonitorView* GetFEBioMonitorView();
 
 	// sets the current folder
 	void SetCurrentFolder(const QString& folder);

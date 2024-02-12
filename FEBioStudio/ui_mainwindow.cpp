@@ -897,6 +897,12 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	menuWindows->addAction(dock10->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock1, dock10);
 
+	QDockWidget* dock11 = new QDockWidget("FEBio Monitor Graphs", m_wnd); dock11->setObjectName("dockFEBioMonitorView");
+	febioMonitorView = new CFEBioMonitorView(wnd, dock11);
+	dock11->setWidget(febioMonitorView);
+	menuWindows->addAction(dock11->toggleViewAction());
+	m_wnd->tabifyDockWidget(dock4, dock11);
+
 	// make sure the file viewer is the visible tab
 	dock1->raise();
 }
