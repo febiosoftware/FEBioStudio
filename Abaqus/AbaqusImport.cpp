@@ -196,8 +196,11 @@ bool AbaqusImport::Load(const char* szfile)
 	}
 	catch (...)
 	{
+		Close();
 		return false;
 	}
+
+	Close();
 
 	// build the model
 	if (build_model() == false) return false;
