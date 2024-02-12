@@ -74,6 +74,9 @@ $bins = @(
     # GLEW
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\glew32.dll'
 
+    # SQLite
+    'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\sqlite3.dll'
+
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\zstd.dll'
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\brotlidec.dll'
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\brotlicommon.dll'
@@ -86,8 +89,6 @@ $bins = @(
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\harfbuzz.dll'
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\freetype.dll'
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\bz2.dll'
-
-
 )
 
 Foreach ($i in $bins)
