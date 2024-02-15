@@ -1,14 +1,8 @@
 on:
+  workflow_dispatch:
   push:
     branches:
       - ci/develop
-  workflow_dispatch:
-    inputs:
-      runTests:
-        description: "Run tests?"
-        required: false
-        type: boolean
-        default: false
 jobs:
   call_workflow:
     uses: febiosoftware/febio-workflows/.github/workflows/windows-reusable.yml@develop
