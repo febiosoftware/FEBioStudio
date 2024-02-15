@@ -1,14 +1,20 @@
+mkdir release
+mkdir release\bin
+
+$FEBioRepo = 'C:\Users\Administrator\FEBio\'
+$FBSRepo = 'C:\Users\Administrator\FEBioStudio\'
+
 $bins = @(
     # FEBio
-    'C:\Users\Administrator\FEBio\cmbuild\bin\Release\febio4.exe'
-    'C:\Users\Administrator\FEBio\cmbuild\bin\Release\febio.xml'
-    'C:\Users\Administrator\FEBio\cmbuild\bin\Release\*.dll'
+    $FEBioRepo + 'cmbuild\bin\Release\febio4.exe'
+    $FEBioRepo + 'cmbuild\bin\Release\febio.xml'
+    $FEBioRepo + 'cmbuild\bin\Release\*.dll'
     'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler\libiomp5md.dll'
 
     #FEBio Studio
-    'C:\Users\Administrator\FEBioStudio\cmbuild\bin\Release\FEBioStudio2.exe'
-    'C:\Users\Administrator\FEBioStudio\cmbuild\bin\Release\FEBioStudioUpdater.exe'
-    'C:\Users\Administrator\FEBioStudio\cmbuild\bin\Release\mvUtil.exe'
+    $FBSRepo + 'cmbuild\bin\Release\FEBioStudio2.exe'
+    $FBSRepo + 'cmbuild\bin\Release\FEBioStudioUpdater.exe'
+    $FBSRepo + 'cmbuild\bin\Release\mvUtil.exe'
 
     # Qt
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Core.dll'
@@ -101,3 +107,58 @@ cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\platforms\qwindows
 
 mkdir release/bin/styles
 cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\styles\qwindowsvistastyle.dll release\bin\styles
+
+# Create docs
+$docs = @(
+    $FEBioRepo + 'Documentation\FEBio_EULA_4.pdf'
+    $FEBioRepo + 'Documentation\FEBio_Theory_Manual.pdf'
+    $FEBioRepo + 'Documentation\FEBio_User_Manual.pdf'
+    $FEBioRepo + 'Documentation\FEBio_User_Manual.pdf'
+    $FEBioRepo + 'Documentation\ReleaseNotes.txt'
+    $FBSRepo + 'Documentation\FEBioStudio_User_Manual.pdf'
+    $FBSRepo + 'Documentation\FEBioStudioReleaseNotes.txt'
+    $FBSRepo + 'icons/febiostudio.ico'
+)
+
+mkdir release/doc
+
+Foreach ($i in $docs)
+{
+    cp $i release/doc
+}
+
+# Create SDK
+$sdkLibs = @(
+    'FECore'
+    'FEBioMech'
+    'FEBioMix'
+    'FEBioFluid'
+    'FEBioRVE'
+    'FEBioPlot'
+    'FEBioXML'
+    'FEBioLib'
+)
+
+mkdir release\sdk
+mkdir release\sdk\include
+mkdir release\sdk\lib\Release
+mkdir release\sdk\lib\Debug
+
+Foreach ($i in $sdkLibs)
+{
+    mkdir release\sdk\include\$i
+    cp C:\Users\Administrator\FEBio\$i\*.h release\sdk\include\$i
+    cp C:\Users\Administrator\FEBio\$i\*.hpp release\sdk\include\$i
+
+    cp C:\Users\Administrator\FEBio\cmbuild\lib\Release\$i.lib release\sdk\lib\Release
+    cp C:\Users\Administrator\FEBio\cmbuild\lib\Debug\$i.lib release\sdk\lib\Debug
+}
+
+mkdir release\sdk\bin
+mkdir release\sdk\bin\Debug
+
+cp C:\Users\Administrator\FEBio\cmbuild\bin\Debug\febio4.exe release\sdk\bin\Debug
+cp C:\Users\Administrator\FEBio\cmbuild\bin\Debug\*.dll release\sdk\bin\Debug
+
+
+Compress-Archive -Path release\sdk\* -DestinationPath release\sdk.zip
