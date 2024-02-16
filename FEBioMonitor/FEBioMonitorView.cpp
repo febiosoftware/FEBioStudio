@@ -28,18 +28,97 @@ SOFTWARE.*/
 #include "../FEBioStudio/PlotWidget.h"
 #include "FEBioMonitorDoc.h"
 #include <FECore/Callback.h>
+#include <QSplitter>
+#include <QTimer>
+#ifdef WIN32
+#include <windows.h>
+#include <psapi.h>
+#endif
+
+size_t GetProcessMemory()
+{
+#ifdef WIN32
+	PROCESS_MEMORY_COUNTERS memCounters;
+	GetProcessMemoryInfo(GetCurrentProcess(), &memCounters, sizeof(memCounters));
+	return (size_t)memCounters.WorkingSetSize;
+#else
+	return 0;
+#endif
+}
+
+CMemoryWidget::CMemoryWidget(QWidget* parent) : CPlotWidget(parent)
+{
+	m_duration = 500;
+	m_maxPoints = 120;
+
+	CPlotData* pd = new CPlotData();
+	pd->setMarkerType(MarkerType::NO_MARKER);
+	addPlotData(pd);
+	setBackgroundColor(QColor(64, 64, 64));
+	setXAxisColor(QColor(255, 255, 255));
+	setYAxisColor(QColor(255, 255, 255));
+	setViewRect(QRectF(0, 0, m_maxPoints, 1));
+	setViewLocked(true);
+	setBoxColor(QColor(255, 255, 255));
+	showLegend(false);
+
+	QTimer::singleShot(m_duration, this, &CMemoryWidget::onTimer);
+}
+
+void CMemoryWidget::onTimer()
+{
+	static double n = 0;
+	CPlotData& data = getPlotData(0);
+
+	size_t memInMb = GetProcessMemory() / (1024*1024);
+	if (data.size() < m_maxPoints)
+	{
+		data.addPoint(n++, memInMb);
+	}
+	else
+	{
+		for (int i = 0; i < m_maxPoints-1; ++i)
+		{
+			QPointF& p0 = data.Point(i);
+			QPointF& p1 = data.Point(i + 1);
+			p0 = p1;
+		}
+		data.Point(m_maxPoints - 1) = QPointF(n++, memInMb);
+	}
+
+	int N = data.size();
+	double minx = data.Point(0).x();
+	double miny = 0;
+	double maxx = (N < m_maxPoints ? m_maxPoints - 1 : data.Point(m_maxPoints - 1).x());
+	double maxy = 0;
+	for (int i = 0; i < N; ++i)
+		if (data.Point(i).y() > maxy) maxy = data.Point(i).y();
+	if (maxy == 0) maxy = 1;
+
+	setViewRect(QRectF(minx, miny, maxx - minx, maxy-miny));
+	repaint();
+
+	QTimer::singleShot(m_duration, this, &CMemoryWidget::onTimer);
+}
 
 class CFEBioMonitorView::Ui 
 {
 public:
 	CPlotWidget* plot;
+	CMemoryWidget* memview;
 
 public:
 	void setup(CFEBioMonitorView* view)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
+
+		QSplitter* splitter = new QSplitter(Qt::Horizontal);
+		splitter->addWidget(plot = new CPlotWidget);
+		splitter->addWidget(memview = new CMemoryWidget);
+		splitter->setStretchFactor(0, 3);
+		splitter->setStretchFactor(1, 1);
 		l->setContentsMargins(0, 0, 0, 0);
-		l->addWidget(plot = new CPlotWidget);
+		l->addWidget(splitter);
 		view->setLayout(l);
 	}
 };

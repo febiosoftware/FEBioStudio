@@ -25,9 +25,27 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #pragma once
 #include "../FEBioStudio/CommandPanel.h"
+#include "../FEBioStudio/PlotWidget.h"
+
+class CMemoryWidget : public CPlotWidget
+{
+	Q_OBJECT
+
+public:
+	CMemoryWidget(QWidget* parent = nullptr);
+
+private slots:
+	void onTimer();
+
+private:
+	int m_duration; // duration in millisec
+	int	m_maxPoints;
+};
 
 class CFEBioMonitorView : public CCommandPanel
 {
+	Q_OBJECT
+
 	class Ui;
 
 public:
