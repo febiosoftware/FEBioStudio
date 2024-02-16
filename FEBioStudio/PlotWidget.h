@@ -141,6 +141,8 @@ public:
 	bool drawAxesLabels() const { return m_data.m_bdrawAxesLabels; }
 	void setDrawAxesLabels(bool b) { m_data.m_bdrawAxesLabels = b; }
 
+	void setBoxColor(const QColor& c) { m_data.m_boxColor = c; }
+
 	void scaleAxisLabels(bool b) { m_bscaleAxisLabels = b; }
 
 	bool autoRangeUpdate() const { return m_bautoRngUpdate; }
