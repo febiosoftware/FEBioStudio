@@ -2639,6 +2639,7 @@ void FSMesh::BuildNLT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearNLT()
 {
+	if (m_NLT.empty()) return;
 	m_NLT.clear();
 	m_nltmin = 0;
 	for (int i = 0; i < Nodes(); ++i) m_Node[i].m_nid = -1;

@@ -84,7 +84,7 @@ class CModelProps : public CPropertyList
 public:
 	CModelProps(Post::CGLModel* fem) : m_fem(fem) 
 	{
-		addProperty("Element subdivions"       , CProperty::Int)->setIntRange(0, 100).setAutoValue(true);
+		addProperty("Element subdivisions"       , CProperty::Int)->setIntRange(0, 10).setAutoValue(true);
 		addProperty("Render undeformed outline", CProperty::Bool);
 		addProperty("Undeformed outline color" , CProperty::Color);
 		addProperty("Outline color"            , CProperty::Color);

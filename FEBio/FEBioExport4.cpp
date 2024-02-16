@@ -1017,7 +1017,7 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 		}
 
 		// write the properties
-		int NC = pm->Properties();
+		int NC = (int)pm->Properties();
 		for (int i = 0; i < NC; ++i)
 		{
 			FSProperty& mc = pm->GetProperty(i);
@@ -1027,6 +1027,14 @@ void FEBioExport4::WriteModelComponent(FSModelComponent* pm, XMLElement& el)
 				if (pc)
 				{
 					XMLElement eli(mc.GetName().c_str());
+
+					// write the name (this is only used by a few features, such as specifies in the reaction-diffusion module)
+					std::string name = pc->GetName();
+					if (!name.empty())
+					{
+						eli.add_attribute("name", name.c_str());
+					}
+
 					WriteModelComponent(pc, eli);
 				}
 			}
@@ -1804,12 +1812,16 @@ void FEBioExport4::WriteGeometryPart(Part* part, GPart* pg, bool writeMats, bool
 			{
 				XMLElement xej("elem");
 				int n1 = xej.add_attribute("id", (int)0);
+				int lastElemID = 0;
 
 				for (int j = i; j < NE; ++j)
 				{
 					FEElement_& ej = pm->ElementRef(j);
 					if ((ej.m_ntag == 1) && (ej.Type() == ntype))
 					{
+						if (ej.m_nid <= lastElemID) throw FEBioExportError();
+						lastElemID = ej.m_nid;
+
 						xej.set_attribute(n1, ej.m_nid);
 						int ne = ej.Nodes();
 						assert(ne == el.Nodes());

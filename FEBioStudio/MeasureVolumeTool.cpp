@@ -57,6 +57,8 @@ CMeasureVolumeTool::CMeasureVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Surf
 	m_vol = 0.0;
 	m_nformula = 0;
 	m_faceCount = 0;
+
+	SetInfo("Calculates the enclosed volume of the selected surface faces.");
 }
 
 //-----------------------------------------------------------------------------
