@@ -35,15 +35,22 @@ SOFTWARE.*/
 #include <psapi.h>
 #endif
 
-size_t GetProcessMemory()
+struct MemInfo
 {
+	size_t currentMemory = 0;
+	size_t peakMemory = 0;
+};
+
+MemInfo GetProcessMemory()
+{
+	MemInfo mi;
 #ifdef WIN32
 	PROCESS_MEMORY_COUNTERS memCounters;
 	GetProcessMemoryInfo(GetCurrentProcess(), &memCounters, sizeof(memCounters));
-	return (size_t)memCounters.WorkingSetSize;
-#else
-	return 0;
+	mi.currentMemory = memCounters.WorkingSetSize;
+	mi.peakMemory = memCounters.PeakWorkingSetSize;
 #endif
+	return mi;
 }
 
 CMemoryWidget::CMemoryWidget(QWidget* parent) : CPlotWidget(parent)
@@ -52,14 +59,22 @@ CMemoryWidget::CMemoryWidget(QWidget* parent) : CPlotWidget(parent)
 	m_maxPoints = 120;
 
 	CPlotData* pd = new CPlotData();
-	pd->setMarkerType(MarkerType::NO_MARKER);
 	addPlotData(pd);
+	pd->setMarkerType(MarkerType::NO_MARKER);
+	pd->setLineColor(QColor(128, 255, 128));
+	pd = new CPlotData();
+	addPlotData(pd);
+	pd->setMarkerType(MarkerType::NO_MARKER);
+	pd->setLineColor(QColor(255, 128, 128));
 	setBackgroundColor(QColor(64, 64, 64));
 	setXAxisColor(QColor(255, 255, 255));
 	setYAxisColor(QColor(255, 255, 255));
 	setViewRect(QRectF(0, 0, m_maxPoints, 1));
 	setViewLocked(true);
 	setBoxColor(QColor(255, 255, 255));
+	scaleAxisLabels(false);
+	setCustomXAxisLabel("sec");
+	setCustomYAxisLabel("MB");
 	showLegend(false);
 
 	QTimer::singleShot(m_duration, this, &CMemoryWidget::onTimer);
@@ -68,31 +83,43 @@ CMemoryWidget::CMemoryWidget(QWidget* parent) : CPlotWidget(parent)
 void CMemoryWidget::onTimer()
 {
 	static double n = 0;
-	CPlotData& data = getPlotData(0);
+	CPlotData& data0 = getPlotData(0);
+	CPlotData& data1 = getPlotData(1);
 
-	size_t memInMb = GetProcessMemory() / (1024*1024);
-	if (data.size() < m_maxPoints)
+	MemInfo mi = GetProcessMemory();
+	size_t memInMb = mi.currentMemory / (1024*1024);
+	size_t peakInMb = mi.peakMemory / (1024*1024);
+
+	double t = n * m_duration / 1000.0;
+	if (data0.size() < m_maxPoints)
 	{
-		data.addPoint(n++, memInMb);
+		data0.addPoint(t, memInMb);
+		data1.addPoint(t, peakInMb);
 	}
 	else
 	{
 		for (int i = 0; i < m_maxPoints-1; ++i)
 		{
-			QPointF& p0 = data.Point(i);
-			QPointF& p1 = data.Point(i + 1);
+			QPointF& m0 = data0.Point(i);
+			QPointF& m1 = data0.Point(i + 1);
+			m0 = m1;
+
+			QPointF& p0 = data1.Point(i);
+			QPointF& p1 = data1.Point(i + 1);
 			p0 = p1;
 		}
-		data.Point(m_maxPoints - 1) = QPointF(n++, memInMb);
+		data0.Point(m_maxPoints - 1) = QPointF(t, memInMb);
+		data1.Point(m_maxPoints - 1) = QPointF(t, peakInMb);
 	}
+	n++;
 
-	int N = data.size();
-	double minx = data.Point(0).x();
+	double maxDurationInSeconds = (m_maxPoints*m_duration) / 1000.0;
+
+	int N = data0.size();
+	double minx = data0.Point(0).x();
 	double miny = 0;
-	double maxx = (N < m_maxPoints ? m_maxPoints - 1 : data.Point(m_maxPoints - 1).x());
-	double maxy = 0;
-	for (int i = 0; i < N; ++i)
-		if (data.Point(i).y() > maxy) maxy = data.Point(i).y();
+	double maxx = (t < maxDurationInSeconds ? maxDurationInSeconds : t);
+	double maxy = 1.1*data1.Point(N-1).y();
 	if (maxy == 0) maxy = 1;
 
 	setViewRect(QRectF(minx, miny, maxx - minx, maxy-miny));
