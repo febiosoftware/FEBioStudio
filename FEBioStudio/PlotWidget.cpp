@@ -1318,6 +1318,11 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), QString(sz));
 		}
 	}
+	else if (m_customYAxisLabel.isEmpty() == false)
+	{
+		p.setPen(QPen(m_data.m_yAxisCol));
+		p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), m_customYAxisLabel);
+	}
 
 	// determine the x-scale
 	double gx = 1;
@@ -1331,6 +1336,11 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			p.setPen(QPen(m_data.m_xAxisCol));
 			p.drawText(x1 + 5, y1, QString(sz));
 		}
+	}
+	else if (m_customXAxisLabel.isEmpty() == false)
+	{
+		p.setPen(QPen(m_data.m_xAxisCol));
+		p.drawText(x1 + 5, y1, m_customXAxisLabel);
 	}
 
 	// draw the y-labels

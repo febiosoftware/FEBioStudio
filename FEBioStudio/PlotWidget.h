@@ -174,6 +174,9 @@ public:
 	void setXAxisLabel(const QString& label) { m_data.m_xAxis.label = label; }
 	void setYAxisLabel(const QString& label) { m_data.m_yAxis.label = label; }
 
+	void setCustomXAxisLabel(QString s) { m_customXAxisLabel = s; }
+	void setCustomYAxisLabel(QString s) { m_customYAxisLabel = s; }
+
 	void selectPoint(int ndata, int npoint);
 
 	QRect ScreenRect() const { return m_screenRect; }
@@ -283,6 +286,9 @@ public:
 	bool		m_bautoRngUpdate;
 	bool		m_newSelect;
 	bool		m_bdragging;
+
+	QString		m_customXAxisLabel;
+	QString		m_customYAxisLabel;
 
 	bool		m_bregionSelect;
 
