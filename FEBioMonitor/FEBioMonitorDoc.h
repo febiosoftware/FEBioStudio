@@ -88,6 +88,8 @@ class FEBioMonitorDoc : public CGLModelDocument
 {
 	Q_OBJECT
 
+	class Imp;
+
 public:
 	FEBioMonitorDoc(CMainWindow* wnd);
 	~FEBioMonitorDoc();
@@ -172,25 +174,7 @@ signals:
 	void updateViews();
 
 private:
-	QString m_febFile;
-	QString	m_outputBuffer;
-	bool	m_startPaused;
-	bool	m_isOutputReady;
-	bool	m_isStopped;
-	bool	m_isRunning;
-	bool	m_isPaused;
-	bool	m_pauseRequested;
-	bool	m_usePauseTime;
-	double	m_pauseTime;
-	double	m_progressPct;
-	double	m_time;
-	unsigned int m_pauseEvents;
-	int		m_currentEvent;
-	int		m_debugLevel;
-	QMutex	m_mutex;
-	FEBioModel* m_fem = nullptr;
-
-	QVector<FEBioWatchVariable*>	m_watches;
+	Imp* m;
 
 	friend class FEBioMonitorThread;
 };

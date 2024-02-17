@@ -46,6 +46,7 @@ SOFTWARE.*/
 #endif // GetCurrentTime
 
 #include <FECore/FEModel.h>
+#include <FECore/Timer.h>
 
 
 // NOTE: make sure this is included last, 
@@ -120,26 +121,52 @@ void FEBioMonitorThread::run()
 	emit jobFinished(b);
 }
 
-FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd)
+class FEBioMonitorDoc::Imp
+{
+public:
+	QString febFile;
+	QString	outputBuffer;
+	bool	startPaused;
+	bool	isOutputReady;
+	bool	isStopped;
+	bool	isRunning;
+	bool	isPaused;
+	bool	pauseRequested;
+	bool	usePauseTime;
+	double	pauseTime;
+	double	progressPct;
+	double	time;
+	unsigned int pauseEvents;
+	int		currentEvent;
+	int		debugLevel;
+	QMutex	mutex;
+	Timer	timer;
+	FEBioModel* fem = nullptr;
+
+	QVector<FEBioWatchVariable*>	watches;
+};
+
+FEBioMonitorDoc::FEBioMonitorDoc(CMainWindow* wnd) : CGLModelDocument(wnd), m(new FEBioMonitorDoc::Imp)
 {
 	SetDocTitle("[FEBio Monitor]");
 	SetIcon(":/icons/febiomonitor.png");
 
-	m_isOutputReady = false;
-	m_isRunning = false;
-	m_isPaused  = false;
-	m_pauseRequested = false;
-	m_isStopped = false;
-	m_startPaused = false;
-	m_progressPct = 0.0;
+	m->isOutputReady = false;
+	m->isRunning = false;
+	m->isPaused  = false;
+	m->pauseRequested = false;
+	m->isStopped = false;
+	m->startPaused = false;
+	m->progressPct = 0.0;
+	m->pauseEvents = CB_ALWAYS;
+	m->currentEvent = 0;
+	m->usePauseTime = false;
+	m->pauseTime = 0.0;
+	m->time = 0.0;
+	m->debugLevel = 0;
+
 	m_scene = new CGLMonitorScene(this);
-	m_pauseEvents = CB_ALWAYS;
-	m_currentEvent = 0;
-	m_usePauseTime = false;
-	m_pauseTime = 0.0;
 	m_bValid = false;
-	m_time = 0.0;
-	m_debugLevel = 0;
 
 	connect(this, &FEBioMonitorDoc::outputReady, this, &FEBioMonitorDoc::readOutput);
 	connect(this, &FEBioMonitorDoc::updateViews, this, &FEBioMonitorDoc::onUpdateViews);
@@ -150,88 +177,89 @@ FEBioMonitorDoc::~FEBioMonitorDoc()
 {
 	CMainWindow* wnd = GetMainWindow();
 	wnd->GetFEBioMonitorPanel()->Clear();
-	qDeleteAll(m_watches);
+	qDeleteAll(m->watches);
+	delete m;
 }
 
 void FEBioMonitorDoc::SetFEBioInputFile(QString febFile)
 {
-	m_febFile = febFile;
+	m->febFile = febFile;
 }
 
 QString FEBioMonitorDoc::GetFEBioInputFile() const
 {
-	return m_febFile;
+	return m->febFile;
 }
 
 bool FEBioMonitorDoc::IsRunning() const
 {
-	return m_isRunning;
+	return m->isRunning;
 }
 
 bool FEBioMonitorDoc::IsPaused() const
 {
-	return m_isPaused;
+	return m->isPaused;
 }
 
 int FEBioMonitorDoc::GetCurrentEvent() const
 {
-	return m_currentEvent;
+	return m->currentEvent;
 }
 
 void FEBioMonitorDoc::StartPaused(bool b)
 {
-	m_startPaused = b;
+	m->startPaused = b;
 }
 
 bool FEBioMonitorDoc::StartPaused() const
 {
-	return m_startPaused;
+	return m->startPaused;
 }
 
 void FEBioMonitorDoc::SetPauseEvents(unsigned int nevents)
 {
-	m_pauseEvents = nevents;
+	m->pauseEvents = nevents;
 }
 
 unsigned int FEBioMonitorDoc::GetPauseEvents() const
 {
-	return m_pauseEvents;
+	return m->pauseEvents;
 }
 
 void FEBioMonitorDoc::SetPauseTime(double ftime, bool benable)
 {
-	m_pauseTime = ftime;
-	m_usePauseTime = benable;
+	m->pauseTime = ftime;
+	m->usePauseTime = benable;
 }
 
 bool FEBioMonitorDoc::IsPauseTimeEnabled() const
 {
-	return m_usePauseTime;
+	return m->usePauseTime;
 }
 
 double FEBioMonitorDoc::GetPauseTime() const
 {
-	return m_pauseTime;
+	return m->pauseTime;
 }
 
 int FEBioMonitorDoc::GetDebugLevel() const
 {
-	return m_debugLevel;
+	return m->debugLevel;
 }
 
 void FEBioMonitorDoc::SetDebugLevel(int n)
 {
-	m_debugLevel = n;
-	if (m_fem) m_fem->SetDebugLevel(n);
+	m->debugLevel = n;
+	if (m->fem) m->fem->SetDebugLevel(n);
 }
 
 void FEBioMonitorDoc::RunJob()
 {
-	if (m_isRunning)
+	if (m->isRunning)
 	{
-		if (m_isPaused)
+		if (m->isPaused)
 		{
-			m_pauseRequested = false;
+			m->pauseRequested = false;
 			jobIsPaused.wakeAll();
 			return;
 		}
@@ -241,23 +269,25 @@ void FEBioMonitorDoc::RunJob()
 
 	GetMainWindow()->ClearOutput();
 
-	m_isOutputReady = false;
-	m_isRunning = true;
-	m_isPaused = false;
-	m_pauseRequested = m_startPaused;
-	m_isStopped = false;
-	m_progressPct = 0.0;
+	m->isOutputReady = false;
+	m->isRunning = true;
+	m->isPaused = false;
+	m->pauseRequested = m->startPaused;
+	m->isStopped = false;
+	m->progressPct = 0.0;
+	m->timer.reset();
+	m->timer.start();
 	FEBioMonitorThread* thread = new FEBioMonitorThread(this);
 	thread->start();
 }
 
 void FEBioMonitorDoc::FEBioMonitorDoc::KillJob()
 {
-	if (m_isRunning) m_isStopped = true;
-	if (m_isPaused)
+	if (m->isRunning) m->isStopped = true;
+	if (m->isPaused)
 	{
-		m_pauseRequested = false;
-		m_usePauseTime = false;
+		m->pauseRequested = false;
+		m->usePauseTime = false;
 		jobIsPaused.wakeAll();
 	}
 	updateWindowTitle();
@@ -265,16 +295,16 @@ void FEBioMonitorDoc::FEBioMonitorDoc::KillJob()
 
 void FEBioMonitorDoc::PauseJob()
 {
-	QMutexLocker lock(&m_mutex);
-	if (m_isRunning && !m_isStopped)
-		m_pauseRequested = true;
+	QMutexLocker lock(&m->mutex);
+	if (m->isRunning && !m->isStopped)
+		m->pauseRequested = true;
 	updateWindowTitle();
 }
 
 void FEBioMonitorDoc::AdvanceJob()
 {
-	QMutexLocker lock(&m_mutex);
-	if (m_isRunning && m_isPaused)
+	QMutexLocker lock(&m->mutex);
+	if (m->isRunning && m->isPaused)
 	{
 		jobIsPaused.wakeAll();
 	}
@@ -283,9 +313,10 @@ void FEBioMonitorDoc::AdvanceJob()
 
 void FEBioMonitorDoc::onJobFinished(bool b)
 {
-	m_isRunning = false;
+	m->timer.stop();
+	m->isRunning = false;
 
-	if (m_isStopped)
+	if (m->isStopped)
 	{
 		QMessageBox::information(m_wnd, "FEBio Studio", "Job cancelled.");
 	}
@@ -305,15 +336,15 @@ void FEBioMonitorDoc::appendLog(const char* sz)
 
 	bool doEmit = false;
 
-	m_mutex.lock();
-	if (m_outputBuffer.isEmpty()) m_outputBuffer = sz;
-	else m_outputBuffer.append(sz);
-	if (m_isOutputReady == false)
+	m->mutex.lock();
+	if (m->outputBuffer.isEmpty()) m->outputBuffer = sz;
+	else m->outputBuffer.append(sz);
+	if (m->isOutputReady == false)
 	{
-		m_isOutputReady = true;
+		m->isOutputReady = true;
 		doEmit = true;
 	}
-	m_mutex.unlock();
+	m->mutex.unlock();
 
 	if (doEmit)
 	{
@@ -324,11 +355,11 @@ void FEBioMonitorDoc::appendLog(const char* sz)
 void FEBioMonitorDoc::readOutput()
 {
 	QString s;
-	m_mutex.lock();
-	s = m_outputBuffer;
-	m_outputBuffer.clear();
-	m_isOutputReady = false;
-	m_mutex.unlock();
+	m->mutex.lock();
+	s = m->outputBuffer;
+	m->outputBuffer.clear();
+	m->isOutputReady = false;
+	m->mutex.unlock();
 
 	m_wnd->AddOutputEntry(s);
 
@@ -337,18 +368,18 @@ void FEBioMonitorDoc::readOutput()
 
 void FEBioMonitorDoc::updateWindowTitle()
 {
-	double p = m_progressPct;
+	double p = m->progressPct;
 	int pn = (int)(10.0 * p);
 	p = pn / 10.0;
 
 	QString status;
-	if      (m_isPaused ) status = "PAUSED";
-	else if (m_isStopped) status = "STOPPED";
-	else if (m_isRunning) status = "RUNNING";
+	if      (m->isPaused ) status = "PAUSED";
+	else if (m->isStopped) status = "STOPPED";
+	else if (m->isRunning) status = "RUNNING";
 	else status = "READY";
 
 	QString debugStr;
-	if (m_debugLevel != 0) debugStr = QString("(DEBUG)");
+	if (m->debugLevel != 0) debugStr = QString("(DEBUG)");
 
 	QString title = QString("[%1: %2 % %3]").arg(status).arg(p).arg(debugStr);
 
@@ -407,17 +438,17 @@ GObject* FEBioMonitorDoc::GetActiveObject()
 
 double FEBioMonitorDoc::GetTimeValue() const
 {
-	return m_time;
+	return m->time;
 }
 
 void FEBioMonitorDoc::SetProgress(double p)
 {
-	m_progressPct = p;
+	m->progressPct = p;
 }
 
 bool FEBioMonitorDoc::AddDataField(const std::string& dataField)
 {
-	if (m_isPaused == false) return false;
+	if (m->isPaused == false) return false;
 	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
 	if (scene == nullptr) return false;
 	return scene->AddDataField(dataField);
@@ -452,9 +483,9 @@ QString eventToString(int nevent)
 
 bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 {
-	m_time = fem->GetTime().currentTime;
+	m->time = fem->GetTime().currentTime;
 	CGLMonitorScene* scene = dynamic_cast<CGLMonitorScene*>(m_scene);
-	m_currentEvent = nevent;
+	m->currentEvent = nevent;
 	switch (nevent)
 	{
 	case CB_INIT:
@@ -471,38 +502,38 @@ bool FEBioMonitorDoc::processFEBioEvent(FEModel* fem, int nevent)
 	// the CB_SOLVED event is still triggered, which will reset the progress.
 	// so we check for this
 	if (nevent == CB_INIT) SetProgress(0.0);
-	else if (!m_isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
+	else if (!m->isStopped) SetProgress(calculateFEBioProgressInPercent(fem));
 
-	m_mutex.lock();
+	m->mutex.lock();
 
-	m_fem = dynamic_cast<FEBioModel*>(fem);
+	m->fem = dynamic_cast<FEBioModel*>(fem);
 
 	if (nevent == CB_INIT) InitDefaultWatchVariables();
 	UpdateAllWatchVariables();
 	emit updateViews();
-	modelIsUpdating.wait(&m_mutex);
+	modelIsUpdating.wait(&m->mutex);
 
 	constexpr double eps = std::numeric_limits<double>::epsilon();
-	if ((m_pauseRequested && (m_pauseEvents & nevent)) ||
-		(m_usePauseTime && (m_time + eps >= m_pauseTime)))
+	if ((m->pauseRequested && (m->pauseEvents & nevent)) ||
+		(m->usePauseTime && (m->time + eps >= m->pauseTime)))
 	{
-		m_outputBuffer += "\n[paused on " + eventToString(nevent) + "]\n";
+		m->outputBuffer += "\n[paused on " + eventToString(nevent) + "]\n";
 		emit outputReady();
-		m_isPaused = true;
-		jobIsPaused.wait(&m_mutex);
-		m_isPaused = false;
+		m->isPaused = true;
+		jobIsPaused.wait(&m->mutex);
+		m->isPaused = false;
 	}
-	m_fem = nullptr;
-	m_mutex.unlock();
+	m->fem = nullptr;
+	m->mutex.unlock();
 
-	if (m_isStopped) throw std::exception();
-	m_currentEvent = 0;
+	if (m->isStopped) throw std::exception();
+	m->currentEvent = 0;
 	return true;
 }
 
 void FEBioMonitorDoc::onModelInitialized()
 {
-	QMutexLocker lock(&m_mutex);
+	QMutexLocker lock(&m->mutex);
 	CMainWindow* wnd = GetMainWindow();
 	CFEBioMonitorPanel* monitorPanel = wnd->GetFEBioMonitorPanel(); assert(monitorPanel);
 	if (monitorPanel == nullptr) return;
@@ -522,63 +553,63 @@ void FEBioMonitorDoc::onUpdateViews()
 
 const FEBioWatchVariable* FEBioMonitorDoc::GetWatchVariable(int n)
 {
-	return m_watches[n];
+	return m->watches[n];
 }
 
 int FEBioMonitorDoc::GetWatchVariables() const
 {
-	return m_watches.size();
+	return m->watches.size();
 }
 
 FEBioWatchVariable* FEBioMonitorDoc::AddWatchVariable(const QString& name)
 {
-	QMutexLocker lock(&m_mutex);
+	QMutexLocker lock(&m->mutex);
 	if (!IsRunning() || !IsPaused()) return nullptr;
 	FEBioWatchVariable* v = new FEBioWatchVariable(name);
-	m_watches.append(v);
+	m->watches.append(v);
 	UpdateWatchVariable(*v);
 	return v;
 }
 
 void FEBioMonitorDoc::SetWatchVariable(int n, const QString& name)
 {
-	QMutexLocker lock(&m_mutex);
+	QMutexLocker lock(&m->mutex);
 	if (!IsRunning() || !IsPaused()) return;
-	FEBioWatchVariable* var = m_watches[n];
+	FEBioWatchVariable* var = m->watches[n];
 	var->setName(name);
 	UpdateWatchVariable(*var);
 }
 
 void FEBioMonitorDoc::InitDefaultWatchVariables()
 {
-	m_watches.clear();
-	if (m_fem == nullptr) return;
-	int N = m_fem->LoadParams();
+	m->watches.clear();
+	if (m->fem == nullptr) return;
+	int N = m->fem->LoadParams();
 	for (int i = 0; i < N; ++i)
 	{
-		FEParam* pi = m_fem->GetLoadParam(i);
+		FEParam* pi = m->fem->GetLoadParam(i);
 		if (pi)
 		{
-			string s = m_fem->GetParamString(pi);
-			if (!s.empty()) m_watches.append(new FEBioWatchVariable(QString::fromStdString(s)));
+			string s = m->fem->GetParamString(pi);
+			if (!s.empty()) m->watches.append(new FEBioWatchVariable(QString::fromStdString(s)));
 		}
 	}
 }
 
 void FEBioMonitorDoc::UpdateAllWatchVariables()
 {
-	if (m_fem == nullptr) return;
-	for (auto w : m_watches) UpdateWatchVariable(*w);
+	if (m->fem == nullptr) return;
+	for (auto w : m->watches) UpdateWatchVariable(*w);
 }
 
 void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 {
-	if (m_fem == nullptr) return;
+	if (m->fem == nullptr) return;
 
 	var.setType(FEBioWatchVariable::INVALID);
 	std::string s = var.name().toStdString();
 	ParamString ps(s.c_str());
-	FEParam* p = m_fem->FindParameter(ps);
+	FEParam* p = m->fem->FindParameter(ps);
 	if (p)
 	{
 		QString val("[can't display]");
@@ -640,9 +671,9 @@ void FEBioMonitorDoc::UpdateWatchVariable(FEBioWatchVariable& var)
 FEGlobalMatrix* FEBioMonitorDoc::GetStiffnessMatrix()
 {
 	if (IsPaused() == false) return nullptr;
-	if (m_fem == nullptr) return nullptr;
+	if (m->fem == nullptr) return nullptr;
 
-	FEAnalysis* step = m_fem->GetCurrentStep();
+	FEAnalysis* step = m->fem->GetCurrentStep();
 	if (step == nullptr) return nullptr;
 
 	FESolver* solver = step->GetFESolver();
@@ -653,9 +684,9 @@ FEGlobalMatrix* FEBioMonitorDoc::GetStiffnessMatrix()
 double FEBioMonitorDoc::GetConditionNumber()
 {
 	if (IsPaused() == false) return 0.0;
-	if (m_fem == nullptr) return 0.0;
+	if (m->fem == nullptr) return 0.0;
 
-	FEAnalysis* step = m_fem->GetCurrentStep();
+	FEAnalysis* step = m->fem->GetCurrentStep();
 	if (step == nullptr) return 0.0;
 
 	FESolver* solver = step->GetFESolver();
@@ -673,10 +704,10 @@ FSConvergenceInfo FEBioMonitorDoc::GetConvergenceInfo()
 {
 	FSConvergenceInfo info = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 
-	QMutexLocker lock(&m_mutex);
-	if (m_fem == nullptr) return info;
+	QMutexLocker lock(&m->mutex);
+	if (m->fem == nullptr) return info;
 
-	FEAnalysis* step = m_fem->GetCurrentStep();
+	FEAnalysis* step = m->fem->GetCurrentStep();
 	if (step == nullptr) return info;
 
 	FENewtonSolver* solver = dynamic_cast<FENewtonSolver*>(step->GetFESolver());
