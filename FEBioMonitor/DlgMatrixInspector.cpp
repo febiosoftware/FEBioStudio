@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <QPushButton>
 #include <QLineEdit>
 #include <FECore/FEGlobalMatrix.h>
+#include <FECore/CompactMatrix.h>
 #include "FEBioMonitorDoc.h"
 
 MatrixDensityView::MatrixDensityView(CDlgMatrixInspector* dlg, QWidget* parent) : QWidget(parent), m_dlg(dlg) {}
@@ -352,10 +353,18 @@ private:
 class CDlgMatrixInspector::Ui 
 {
 public:
+	FEGlobalMatrix* m_K = nullptr;
 	FEBioMonitorDoc* doc;
 	QTableView* view;
 	MatrixDensityView* densView;
+
+	// matrix info
+	QLineEdit* m_matrixSize;
+	QLineEdit* m_nrNonZeroes;
+	QLineEdit* m_nrActualNonZeroes;
+	QLineEdit* m_oneNorm;
 	QLineEdit* m_condNumber;
+	QLineEdit* m_bandWidth;
 
 public:
 	void setup(CDlgMatrixInspector* dlg)
@@ -385,7 +394,16 @@ public:
 		matViewLayout->addWidget(pb);
 
 		QFormLayout* pf = new QFormLayout();
-		pf->addRow("Condition Number (est.):", m_condNumber = new QLineEdit());
+		pf->addRow("Matrix size:"            , m_matrixSize        = new QLineEdit());
+		pf->addRow("Nr. Nonzeroes:"          , m_nrNonZeroes       = new QLineEdit());
+		pf->addRow("Actual nonzeroes:"       , m_nrActualNonZeroes = new QLineEdit());
+		pf->addRow("One-norm:"               , m_oneNorm           = new QLineEdit());
+		pf->addRow("Condition Number (est.):", m_condNumber        = new QLineEdit());
+		pf->addRow("Bandwidth:"              , m_bandWidth         = new QLineEdit());
+		m_matrixSize->setReadOnly(true);
+		m_nrNonZeroes->setReadOnly(true);
+		m_nrActualNonZeroes->setReadOnly(true);
+		m_oneNorm->setReadOnly(true);
 		m_condNumber->setReadOnly(true);
 		matViewLayout->addLayout(pf);
 
@@ -416,6 +434,15 @@ public:
 		int col1 = view->columnAt(boundingRect.right());
 		return QRect(col0, row0, col1 - col0 + 1, row1 - row0 + 1);
 	}
+
+	void ClearStats()
+	{
+		m_matrixSize->clear();
+		m_nrNonZeroes->clear();
+		m_nrActualNonZeroes->clear();
+		m_oneNorm->clear();
+		m_condNumber->clear();
+	}
 };
 
 CDlgMatrixInspector::CDlgMatrixInspector(FEBioMonitorDoc* doc, QWidget* parent) : QDialog(parent), ui(new CDlgMatrixInspector::Ui)
@@ -432,6 +459,7 @@ CDlgMatrixInspector::CDlgMatrixInspector(FEBioMonitorDoc* doc, QWidget* parent) 
 
 void CDlgMatrixInspector::SetGlobalMatrix(FEGlobalMatrix* M)
 {
+	ui->m_K = M;
 	ui->view->setModel(new MatrixModel(M));
 	ui->densView->SetGlobalMatrix(M);
 	ui->densView->SetSelection(ui->GetVisibleMatrixRegion());
@@ -449,10 +477,26 @@ void CDlgMatrixInspector::updateView(int x, int y)
 
 void CDlgMatrixInspector::onAnalyze()
 {
-	ui->m_condNumber->clear();
-	if (ui->doc)
+	ui->ClearStats();
+	if ((ui->doc == nullptr) || (ui->m_K == nullptr)) return;
+
+	SparseMatrix* K = ui->m_K->GetSparseMatrixPtr();
+	if (K == nullptr) return;
+
+	double k = ui->doc->GetConditionNumber();
+	ui->m_condNumber->setText(QString::number(k));
+	ui->m_matrixSize->setText(QString::number(K->Rows()));
+	ui->m_nrNonZeroes->setText(QString::number(K->NonZeroes()));
+
+	CompactMatrix* M = dynamic_cast<CompactMatrix*>(K);
+	if (M)
 	{
-		double k = ui->doc->GetConditionNumber();
-		ui->m_condNumber->setText(QString::number(k));
+		ui->m_oneNorm->setText(QString::number(M->oneNorm()));
+		ui->m_bandWidth->setText(QString::number(M->bandWidth()));
+		
+		int nnz = M->NonZeroes();
+		int actualNnz = M->actualNonZeroes();
+		double r = (double)actualNnz / (double)nnz;
+		ui->m_nrActualNonZeroes->setText(QString("%1 (%2)").arg(actualNnz).arg(r));
 	}
 }
