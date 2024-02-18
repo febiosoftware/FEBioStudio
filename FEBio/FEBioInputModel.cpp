@@ -1753,6 +1753,23 @@ FEItemListBuilder* FEBioInputModel::FindNamedSelection(const std::string& name, 
 				FEItemListBuilder* pg = po->GetFENodeSet(i);
 				if (pg->GetName() == sname) return pg;
 			}
+
+			// In the past, when a component was assigned to an entire object
+			// a nodeset of all the nodes of the object was generated, but that approach is deprecated. 
+			// Instead, there should be an object with that name
+			if (name == po->GetName())
+			{
+				GModel& gm = GetFSModel().GetModel();
+				GPartList* pg = gm.FindPartList(name);
+				if (pg == nullptr)
+				{
+					pg = new GPartList(&gm);
+					gm.AddPartList(pg);
+					pg->Create(po);
+					pg->SetName(name);
+				}
+				return pg;
+			}
 		}
 
 		if (filter & MESH_ITEM_FLAGS::FE_PART_FLAG)

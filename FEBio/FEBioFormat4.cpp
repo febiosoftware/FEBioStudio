@@ -1151,30 +1151,33 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-	FSNodeSet* nodeSet = feb.FindNamedNodeSet(nset->cvalue());
-	if (nodeSet)
+	const char* szgen = tag.AttributeValue("type", true);
+
+	if (szgen)
 	{
-		FSMesh* feMesh = nodeSet->GetMesh();
-
-		const char* szgen = tag.AttributeValue("type", true);
-		if (szgen)
+		FSModel* fem = &feb.GetFSModel();
+		// allocate mesh data generator
+		FSMeshDataGenerator* gen = FEBio::CreateNodeDataGenerator(szgen, fem);
+		if (gen)
 		{
-			FSModel* fem = &feb.GetFSModel();
-			// allocate mesh data generator
-			FSMeshDataGenerator* gen = FEBio::CreateNodeDataGenerator(szgen, fem);
-			if (gen)
-			{
-				gen->SetName(name->cvalue());
-				gen->SetItemList(nodeSet);
+			FEItemListBuilder* nodeSet = feb.FindNamedSelection(nset->cvalue(), MESH_ITEM_FLAGS::FE_NODE_FLAG);
 
-				ParseModelComponent(gen, tag);
+			gen->SetName(name->cvalue());
+			gen->SetItemList(nodeSet);
 
-				fem->AddMeshDataGenerator(gen);
-			}
-			else ParseUnknownAttribute(tag, "type");
+			ParseModelComponent(gen, tag);
+
+			fem->AddMeshDataGenerator(gen);
 		}
-		else
-		{
+		else ParseUnknownAttribute(tag, "type");
+	}
+	else
+	{
+		FSNodeSet* nodeSet = feb.FindNamedNodeSet(nset->cvalue());
+		if (nodeSet)
+		{	
+			FSMesh* feMesh = nodeSet->GetMesh();
+
 			FENodeData* nodeData = feMesh->AddNodeDataField(name->cvalue(), nodeSet, dataType);
 
 			++tag;
@@ -1205,8 +1208,8 @@ bool FEBioFormat4::ParseNodeDataSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
+		else tag.skip();
 	}
-	else tag.skip();
 
 	return true;
 
@@ -1870,6 +1873,7 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 				const char* szset = tag.AttributeValue("node_set");
 				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) AddLogEntry("Failed to create nodeset %s for %s", szset, szname);
+				if (pg->GetName().empty()) pg->SetName(szbuf);
 
 				// process initial condition
 				pic->SetItemList(pg);

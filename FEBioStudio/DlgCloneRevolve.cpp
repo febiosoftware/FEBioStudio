@@ -90,8 +90,8 @@ CDlgCloneRevolve::CDlgCloneRevolve(QWidget* parent) : QDialog(parent), ui(new Ui
 void CDlgCloneRevolve::accept()
 {
 	m_count = ui->count->text().toInt();
-	m_range = ui->range->text().toInt();
-	m_spiral = ui->spiral->text().toInt();
+	m_range = ui->range->text().toDouble();
+	m_spiral = ui->spiral->text().toDouble();
 
 	m_center.x = ui->center[0]->text().toDouble();
 	m_center.y = ui->center[1]->text().toDouble();

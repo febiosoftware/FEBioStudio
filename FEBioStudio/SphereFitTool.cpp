@@ -46,6 +46,8 @@ CSphereFitTool::CSphereFitTool(CMainWindow* wnd) : CBasicTool(wnd, "Sphere Fit",
 	addDoubleProperty(&m_obj, "obj")->setFlags(CProperty::Visible);
 
 	SetApplyButtonText("Fit");
+
+	SetInfo("Fits the selected nodes to a sphere.");
 }
 
 bool CSphereFitTool::OnApply()
