@@ -217,6 +217,7 @@ void FSPartSet::Copy(FSPartSet* pg)
 
 GPart* FSPartSet::GetPart(size_t n)
 {
+	if ((n < 0) || (n >= m_Item.size())) return nullptr;
 	return m_pObj->Part(m_Item[n]);
 }
 

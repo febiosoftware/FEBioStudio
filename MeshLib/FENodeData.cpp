@@ -30,15 +30,13 @@ SOFTWARE.*/
 FENodeData::FENodeData(GObject* po) : FEMeshData(FEMeshData::NODE_DATA)
 {
 	m_po = po;
-	m_dataSize = 0;
 	if (po) SetMesh(po->GetFEMesh());
 }
 
 FENodeData::FENodeData(GObject* po, FEMeshData::DATA_TYPE dataType) : FEMeshData(FEMeshData::NODE_DATA)
 {
 	m_po = po;
-	m_dataSize = 0;
-	m_dataType = dataType;
+	SetDataType(dataType);
 	if (po) SetMesh(po->GetFEMesh());
 }
 
@@ -56,16 +54,7 @@ FENodeData& FENodeData::operator=(const FENodeData& d)
 void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataType)
 {
 	FSHasOneItemList::SetItemList(nset);
-	m_dataType = dataType;
-	m_dataSize = 0;
-	switch (dataType)
-	{
-	case FEMeshData::DATA_SCALAR: m_dataSize = 1; break;
-	case FEMeshData::DATA_VEC3D : m_dataSize = 3; break;
-	case FEMeshData::DATA_MAT3D : m_dataSize = 9; break;
-	default:
-		assert(false);
-	}
+	SetDataType(dataType);
 
 	if (nset == nullptr)
 	{
@@ -79,22 +68,23 @@ void FENodeData::Create(FSNodeSet* nset, double v, FEMeshData::DATA_TYPE dataTyp
 
 		int nodes = nset->size();
 
-		int bufsize = nodes * m_dataSize;
+		int bufsize = nodes * ItemSize();
 		m_data.assign(bufsize, v);
 	}
 }
 
 void FENodeData::SetItemList(FEItemListBuilder* pl, int n)
 {
-	Create(dynamic_cast<FSNodeSet*>(pl), 0.0, m_dataType);
+	Create(dynamic_cast<FSNodeSet*>(pl), 0.0, GetDataType());
 }
 
 void FENodeData::Save(OArchive& ar)
 {
+	int dataType = (int)GetDataType();
 	const string& dataName = GetName();
 	const char* szname = dataName.c_str();
 	ar.WriteChunk(CID_MESH_DATA_NAME, szname);
-	ar.WriteChunk(CID_MESH_DATA_TYPE, (int)m_dataType);
+	ar.WriteChunk(CID_MESH_DATA_TYPE, dataType);
 	FEItemListBuilder* pi = GetItemList();
 	if (pi) ar.WriteChunk(CID_MESH_DATA_ITEMLIST_ID, pi->GetID());
 	if (m_data.empty()==false) ar.WriteChunk(CID_MESH_DATA_VALUES, &m_data[0], (int)m_data.size());
@@ -116,16 +106,7 @@ void FENodeData::Load(IArchive& ar)
 		{
 			int dataType = 0;
 			ar.read(dataType);
-			m_dataType = (FEMeshData::DATA_TYPE) dataType;
-
-			switch (m_dataType)
-			{
-			case FEMeshData::DATA_SCALAR: m_dataSize = 1; break;
-			case FEMeshData::DATA_VEC3D : m_dataSize = 3; break;
-			case FEMeshData::DATA_MAT3D : m_dataSize = 9; break;
-			default:
-				assert(false);
-			}
+			SetDataType((FEMeshData::DATA_TYPE) dataType);
 		}
 		else if (nid == CID_MESH_DATA_ITEMLIST_ID)
 		{

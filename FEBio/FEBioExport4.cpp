@@ -1459,12 +1459,11 @@ void FEBioExport4::WriteGeometryPartLists()
 			else if (dynamic_cast<FSPartSet*>(pl))
 			{
 				FSPartSet* ps = dynamic_cast<FSPartSet*>(pl);
-				std::vector<int> partIDs = pl->CopyItems();
 				bool bfirst = true;
-				for (int id : partIDs)
+				for (int n = 0; n<ps->size(); ++n)
 				{
 					if (bfirst == false) ss << ","; else bfirst = false;
-					GPart* pg = ps->GetPart(id); assert(pg);
+					GPart* pg = ps->GetPart(n); assert(pg);
 					if (pg) ss << pg->GetName();
 				}
 			}
@@ -2494,8 +2493,8 @@ void FEBioExport4::WriteNodeDataSection()
 					{
 						el.set_attribute(n1, nid++);
 
-						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.GetScalar(i));
-						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.GetVec3d (i));
+						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.getScalar(i));
+						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.getVec3d (i));
 
 						m_xml.add_leaf(el, false);
 					}

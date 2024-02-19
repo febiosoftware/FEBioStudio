@@ -342,7 +342,7 @@ void CFiberGeneratorTool::OnApply()
 	// create node data
 	FENodeData data(m_po);
 	data.Create(&nodeSet, 0.0);
-	for (int i = 0; i < NN; i++) data.SetScalar(i, val[i]);
+	for (int i = 0; i < NN; i++) data.setScalar(i, val[i]);
 
 	// calculate gradient and assign to element fiber
 	vector<vec3d> grad;

@@ -2506,6 +2506,16 @@ FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, FEMeshDa
 	return map;
 }
 
+FEPartData* FSMesh::FindPartDataField(const std::string& name)
+{
+	for (FEMeshData* pd : m_meshData)
+	{
+		FEPartData* partData = dynamic_cast<FEPartData*>(pd);
+		if (pd && (pd->GetName() == name)) return partData;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh)
 {
