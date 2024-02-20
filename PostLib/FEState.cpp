@@ -263,7 +263,7 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 	{
 		ModelDataField& d = *(*pn);
 		FEMeshData& md = m_Data[i];
-		if (d.DataClass() == CLASS_NODE)
+		if (d.DataClass() == NODE_DATA)
 		{
 			switch (md.GetType())
 			{
@@ -277,7 +277,7 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 				assert(false);
 			}
 		}
-		else if (d.DataClass() == CLASS_FACE)
+		else if (d.DataClass() == FACE_DATA)
 		{
 			switch (md.GetType())
 			{
@@ -291,7 +291,7 @@ FEState::FEState(float time, FEPostModel* pfem, FEState* pstate) : m_fem(pfem)
 				assert(false);
 			}
 		}
-		else if (d.DataClass() == CLASS_ELEM)
+		else if (d.DataClass() == ELEM_DATA)
 		{
 			switch (md.GetType())
 			{
@@ -384,7 +384,7 @@ void FEState::RebuildData()
 }
 
 //-----------------------------------------------------------------------------
-OBJECT_DATA& FEState::GetObjectData(int n)
+OBJECTDATA& FEState::GetObjectData(int n)
 {
 	if (n < m_objPt.size()) return m_objPt[n];
 	else return m_objLn[n - m_objPt.size()];

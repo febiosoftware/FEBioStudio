@@ -28,12 +28,12 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 
-FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA)
+FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FACE_DATA)
 {
 	SetMesh(mesh);
 }
 
-FESurfaceData::FESurfaceData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::SURFACE_DATA)
+FESurfaceData::FESurfaceData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFormat) : FEMeshData(FACE_DATA)
 {
 	SetMesh(mesh);
 	SetDataFormat(dataFormat);
@@ -46,7 +46,7 @@ FESurfaceData::~FESurfaceData()
 	
 }
 
-FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FEMeshData::SURFACE_DATA) {}
+FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FACE_DATA) {}
 void FESurfaceData::operator = (const FESurfaceData& d) {}
 
 void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, DATA_TYPE dataType, DATA_FORMAT dataFormat)

@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FEAreaCoverage.h"
 using namespace Post;
 
-ModelDataField::ModelDataField(FEPostModel* fem, DATA_TYPE ntype, DATA_FORMAT nfmt, Data_Class ncls, unsigned int flag)
+ModelDataField::ModelDataField(FEPostModel* fem, DATA_TYPE ntype, DATA_FORMAT nfmt, DATA_CLASS ncls, unsigned int flag)
 {
 	m_fem = fem;
 	m_ntype = ntype;
@@ -368,7 +368,7 @@ const char* ModelDataField::GetUnits() const
 }
 
 //=================================================================================================
-FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, DATA_FORMAT f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
+FEArrayDataField::FEArrayDataField(FEPostModel* fem, DATA_CLASS c, DATA_FORMAT f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
 {
 }
 
@@ -386,22 +386,22 @@ Post::FEMeshData* FEArrayDataField::CreateData(FEState* pstate)
 {
 	switch (DataClass())
 	{
-	case CLASS_NODE: return new FENodeArrayData(pstate, GetArraySize()); break;
-	case CLASS_ELEM: 
+	case NODE_DATA: return new FENodeArrayData(pstate, GetArraySize()); break;
+	case ELEM_DATA: 
 		switch (Format())
 		{
 		case DATA_ITEM: return new FEElemArrayDataItem(pstate, GetArraySize(), this); break;
 		case DATA_NODE: return new FEElemArrayDataNode(pstate, GetArraySize(), this); break;
 		}
 		break;
-	case CLASS_OBJECT: return new FEGlobalArrayData(pstate, GetArraySize()); break;
+	case OBJECT_DATA: return new FEGlobalArrayData(pstate, GetArraySize()); break;
 	}
 	assert(false);
 	return 0;
 }
 
 //=================================================================================================
-FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, Data_Class c, unsigned int flag) : ModelDataField(fem, DATA_ARRAY_VEC3, DATA_ITEM, c, flag)
+FEArrayVec3DataField::FEArrayVec3DataField(FEPostModel* fem, DATA_CLASS c, unsigned int flag) : ModelDataField(fem, DATA_ARRAY_VEC3, DATA_ITEM, c, flag)
 {
 }
 
@@ -419,7 +419,7 @@ Post::FEMeshData* FEArrayVec3DataField::CreateData(FEState* pstate)
 {
 	switch (DataClass())
 	{
-	case CLASS_ELEM: return new FEElemArrayVec3Data(pstate, GetArraySize(), this); break;
+	case ELEM_DATA: return new FEElemArrayVec3Data(pstate, GetArraySize(), this); break;
 	}
 	assert(false);
 	return 0;

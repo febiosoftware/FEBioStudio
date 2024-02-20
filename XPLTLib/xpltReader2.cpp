@@ -325,7 +325,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 		case MAT3F  : pdf = new FEDataField_T<Post::FENodeData<mat3f  > >(&fem, EXPORT_DATA); break;
 		case ARRAY:
 		{
-			FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_NODE, DATA_ITEM, EXPORT_DATA);
+			FEArrayDataField* data = new FEArrayDataField(&fem, NODE_DATA, DATA_ITEM, EXPORT_DATA);
 			data->SetArraySize(it.arraySize);
 			data->SetArrayNames(it.arrayNames);
 			pdf = data;
@@ -361,7 +361,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_NODE> >(&fem, EXPORT_DATA); break;
 				case ARRAY:
 				{
-					FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_ELEM, DATA_NODE, EXPORT_DATA);
+					FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_NODE, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -385,7 +385,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 				case MAT3F  : pdf = new FEDataField_T<Post::FEElementData<mat3f  ,DATA_ITEM> >(&fem, EXPORT_DATA); break;
 				case ARRAY:
 				{
-					FEArrayDataField* data = new FEArrayDataField(&fem, CLASS_ELEM, DATA_ITEM, EXPORT_DATA);
+					FEArrayDataField* data = new FEArrayDataField(&fem, ELEM_DATA, DATA_ITEM, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;
@@ -393,7 +393,7 @@ bool XpltReader2::ReadDictionary(FEPostModel& fem)
 				break;
 				case ARRAY_VEC3F:
 				{
-					FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, CLASS_ELEM, EXPORT_DATA);
+					FEArrayVec3DataField* data = new FEArrayVec3DataField(&fem, ELEM_DATA, EXPORT_DATA);
 					data->SetArraySize(it.arraySize);
 					data->SetArrayNames(it.arrayNames);
 					pdf = data;

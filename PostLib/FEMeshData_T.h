@@ -59,7 +59,7 @@ public:
 
 	static DATA_TYPE Type() { return FEMeshDataTraits<T>::Type(); }
 	static DATA_FORMAT Format() { return DATA_REGION; }
-	static Data_Class Class() { return CLASS_OBJECT; }
+	static DATA_CLASS Class() { return OBJECT_DATA; }
 
 private:
 	T	m_data;
@@ -112,7 +112,7 @@ public:
 
 	static DATA_TYPE Type  () { return FEMeshDataTraits<T>::Type  (); }
 	static DATA_FORMAT Format() { return DATA_ITEM; }
-	static Data_Class Class() { return CLASS_NODE; }
+	static DATA_CLASS Class() { return NODE_DATA; }
 };
 
 //-----------------------------------------------------------------------------
@@ -182,7 +182,7 @@ public:
 
 	static DATA_TYPE Type  () { return FEMeshDataTraits<T>::Type  (); }
 	static DATA_FORMAT Format() { return fmt; }
-	static Data_Class Class() { return CLASS_FACE; }
+	static DATA_CLASS Class() { return FACE_DATA; }
 };
 
 //-----------------------------------------------------------------------------
@@ -498,7 +498,7 @@ public:
 
 	static DATA_TYPE Type  () { return FEMeshDataTraits<T>::Type  (); }
 	static DATA_FORMAT Format() { return fmt; }
-	static Data_Class Class() { return CLASS_ELEM; }
+	static DATA_CLASS Class() { return ELEM_DATA; }
 };
 
 //-----------------------------------------------------------------------------
@@ -728,7 +728,7 @@ public:
 	};
 
 public:
-	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, CLASS_FACE, 0)
+	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, FACE_DATA, 0)
 	{
 		m_measure = measure;
 		m_nlevels = 1;
@@ -868,7 +868,7 @@ public:
 	enum { MP_REF_STATE };
 
 public:
-	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3S, DATA_ITEM, CLASS_ELEM, 0)
+	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3S, DATA_ITEM, ELEM_DATA, 0)
 	{
 		m_measure = measure;
 

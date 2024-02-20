@@ -1601,7 +1601,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				sourceNames << QString::fromStdString((*pdf)->GetName());
 			}
@@ -1786,7 +1786,7 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				if (n == 0)
 				{
@@ -1899,7 +1899,7 @@ void CModelGraphWindow::setDataSource(int n)
 		for (int i = 0; i < DM->DataFields(); ++i)
 		{
 			Post::FEDataFieldPtr pdf = DM->DataField(i);
-			if ((*pdf)->DataClass() == Post::CLASS_OBJECT)
+			if ((*pdf)->DataClass() == OBJECT_DATA)
 			{
 				if (n == 0)
 				{
@@ -2028,7 +2028,7 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 	for (int j = 0; j < nsteps; ++j)
 	{
 		Post::FEState* state = fem.GetState(j + m_firstState);
-		Post::OBJECT_DATA& pointData = state->GetObjectData(nobj);
+		Post::OBJECTDATA& pointData = state->GetObjectData(nobj);
 
 		Post::ObjectData* data = pointData.data;
 

@@ -27,20 +27,20 @@ SOFTWARE.*/
 #include <MeshLib/FEMesh.h>
 #include <GeomLib/GObject.h>
 
-FENodeData::FENodeData(GObject* po) : FEMeshData(FEMeshData::NODE_DATA)
+FENodeData::FENodeData(GObject* po) : FEMeshData(NODE_DATA)
 {
 	m_po = po;
 	if (po) SetMesh(po->GetFEMesh());
 }
 
-FENodeData::FENodeData(GObject* po, DATA_TYPE dataType) : FEMeshData(FEMeshData::NODE_DATA)
+FENodeData::FENodeData(GObject* po, DATA_TYPE dataType) : FEMeshData(NODE_DATA)
 {
 	m_po = po;
 	SetDataType(dataType);
 	if (po) SetMesh(po->GetFEMesh());
 }
 
-FENodeData::FENodeData(const FENodeData& d) : FEMeshData(FEMeshData::NODE_DATA)
+FENodeData::FENodeData(const FENodeData& d) : FEMeshData(NODE_DATA)
 {
 	assert(false);
 }

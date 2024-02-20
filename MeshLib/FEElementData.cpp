@@ -30,14 +30,14 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(ELEM_DATA)
 {
 	m_scale = 1.0;
 	SetMesh(mesh);
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFormat) : FEMeshData(ELEM_DATA)
 {
 	SetMesh(mesh);
 	SetDataFormat(dataFormat);
@@ -98,7 +98,7 @@ void FEElementData::AllocateData()
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(const FEElementData& d) : FEMeshData(FEMeshData::ELEMENT_DATA) {}
+FEElementData::FEElementData(const FEElementData& d) : FEMeshData(ELEM_DATA) {}
 void FEElementData::operator = (const FEElementData& d) {}
 
 //-----------------------------------------------------------------------------
@@ -215,13 +215,13 @@ void FEElementData::Load(IArchive& ar)
 }
 
 //=============================================================================
-FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(PART_DATA)
 {
 	SetMesh(mesh);
 	m_maxElemItems = 1;
 }
 
-FEPartData::FEPartData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFmt) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFmt) : FEMeshData(PART_DATA)
 {
 	SetMesh(mesh);
 	SetDataFormat(dataFmt);
@@ -229,7 +229,7 @@ FEPartData::FEPartData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFmt) : 
 	m_maxElemItems = 0;
 }
 
-FEPartData::FEPartData(const FEPartData& d) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(const FEPartData& d) : FEMeshData(PART_DATA)
 {
 
 }

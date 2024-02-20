@@ -367,9 +367,9 @@ public:
 			{
 				switch (pd->DataClass())
 				{
-				case Post::CLASS_NODE: return QString("NODE"); break;
-				case Post::CLASS_FACE: return QString("FACE"); break;
-				case Post::CLASS_ELEM: return QString("ELEM"); break;
+				case NODE_DATA: return QString("NODE"); break;
+				case FACE_DATA: return QString("FACE"); break;
+				case ELEM_DATA: return QString("ELEM"); break;
 				default:
 					assert(false);
 					return QString("(unknown");
@@ -741,15 +741,15 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 	if (frm != DATA_ITEM) ui->convFmt->addItem("ITEM", (int)DATA_ITEM);
 	if (frm != DATA_NODE) ui->convFmt->addItem("NODE", (int)DATA_NODE);
 
-	Post::Data_Class cls = pdf->DataClass();
+	DATA_CLASS cls = pdf->DataClass();
 	ui->convClass->clear();
 
-	if      (cls == Post::CLASS_FACE) ui->convClass->addItem("Face", (int)Post::CLASS_FACE);
-	else if (cls == Post::CLASS_NODE) ui->convClass->addItem("Node", (int)Post::CLASS_NODE);
-	else if (cls == Post::CLASS_ELEM)
+	if      (cls == FACE_DATA) ui->convClass->addItem("Face", (int)FACE_DATA);
+	else if (cls == NODE_DATA) ui->convClass->addItem("Node", (int)NODE_DATA);
+	else if (cls == ELEM_DATA)
 	{
-		ui->convClass->addItem("Elem", (int)Post::CLASS_ELEM);
-		ui->convClass->addItem("Node", (int)Post::CLASS_NODE);
+		ui->convClass->addItem("Elem", (int)ELEM_DATA);
+		ui->convClass->addItem("Node", (int)NODE_DATA);
 	}
 }
 

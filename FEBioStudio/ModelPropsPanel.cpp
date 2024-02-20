@@ -299,10 +299,10 @@ void CMeshDataInfoPanel::setType(int data)
 {
 	switch (data)
 	{
-	case FEMeshData::NODE_DATA   : m_type->setText("Node data"   ); break;
-	case FEMeshData::SURFACE_DATA: m_type->setText("Surface data"); break;
-	case FEMeshData::ELEMENT_DATA: m_type->setText("Element data"); break;
-	case FEMeshData::PART_DATA   : m_type->setText("Part data"   ); break;
+	case NODE_DATA: m_type->setText("Node data"   ); break;
+	case FACE_DATA: m_type->setText("Surface data"); break;
+	case ELEM_DATA: m_type->setText("Element data"); break;
+	case PART_DATA: m_type->setText("Part data"   ); break;
 	default:
 		m_type->setText("(unknown)");
 	}

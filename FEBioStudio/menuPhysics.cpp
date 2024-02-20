@@ -826,10 +826,10 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		FEMeshData* data = nullptr;
 		switch (dlg.GetType())
 		{
-		case FEMeshData::NODE_DATA   : data = new FENodeData   (po, dlg.GetDataType()); break;
-		case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::PART_DATA   : data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
+		case NODE_DATA: data = new FENodeData   (po, dlg.GetDataType()); break;
+		case FACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+		case ELEM_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+		case PART_DATA: data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
 		}
 
 		if (data)

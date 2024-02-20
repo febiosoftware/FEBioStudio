@@ -178,7 +178,7 @@ bool xpltFileExport::WriteDictionary(FEPostModel& fem)
 	for (int i=0; i<NDATA; ++i, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == CLASS_NODE) && (data.Flags() & EXPORT_DATA)) m_nodeData++;
+		if ((data.DataClass() == NODE_DATA) && (data.Flags() & EXPORT_DATA)) m_nodeData++;
 	}
 
 	if (m_nodeData > 0)
@@ -189,7 +189,7 @@ bool xpltFileExport::WriteDictionary(FEPostModel& fem)
 			for (int i=0; i<NDATA; ++i, ++pd)
 			{
 				ModelDataField& data = *(*pd);
-				if ((data.DataClass() == CLASS_NODE) && (data.Flags() & EXPORT_DATA))
+				if ((data.DataClass() == NODE_DATA) && (data.Flags() & EXPORT_DATA))
 					if (WriteDataField(data) == false) return false;
 			}
 		}
@@ -202,7 +202,7 @@ bool xpltFileExport::WriteDictionary(FEPostModel& fem)
 	for (int i=0; i<NDATA; ++i, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == CLASS_ELEM) && (data.Flags() & EXPORT_DATA)) m_elemData++;
+		if ((data.DataClass() == ELEM_DATA) && (data.Flags() & EXPORT_DATA)) m_elemData++;
 	}
 
 	if (m_elemData > 0)
@@ -213,7 +213,7 @@ bool xpltFileExport::WriteDictionary(FEPostModel& fem)
 			for (int i=0; i<NDATA; ++i, ++pd)
 			{
 				ModelDataField& data = *(*pd);
-				if ((data.DataClass() == CLASS_ELEM) && (data.Flags() & EXPORT_DATA))
+				if ((data.DataClass() == ELEM_DATA) && (data.Flags() & EXPORT_DATA))
 					if (WriteDataField(data) == false) return false;
 			}
 		}
@@ -226,7 +226,7 @@ bool xpltFileExport::WriteDictionary(FEPostModel& fem)
 	for (int i=0; i<NDATA; ++i, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == CLASS_FACE) && (data.Flags() & EXPORT_DATA)) m_faceData++;
+		if ((data.DataClass() == FACE_DATA) && (data.Flags() & EXPORT_DATA)) m_faceData++;
 	}
 
 	if (m_faceData > 0)
@@ -237,7 +237,7 @@ bool xpltFileExport::WriteDictionary(FEPostModel& fem)
 			for (int i=0; i<NDATA; ++i, ++pd)
 			{
 				ModelDataField& data = *(*pd);
-				if ((data.DataClass() == CLASS_FACE) && (data.Flags() & EXPORT_DATA))
+				if ((data.DataClass() == FACE_DATA) && (data.Flags() & EXPORT_DATA))
 					if (WriteDataField(data) == false) return false;
 			}
 		}
@@ -568,7 +568,7 @@ bool xpltFileExport::WriteNodeData(FEPostModel& fem, FEState& state)
 	for (int n=0; n<NDATA; ++n, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == CLASS_NODE) && (data.Flags() & EXPORT_DATA))
+		if ((data.DataClass() == NODE_DATA) && (data.Flags() & EXPORT_DATA))
 		{
 			FEMeshData& meshData = state.m_Data[n];
 			m_ar.BeginChunk(PLT_STATE_VARIABLE);
@@ -605,7 +605,7 @@ bool xpltFileExport::WriteElemData(FEPostModel& fem, FEState& state)
 	for (int n=0; n<NDATA; ++n, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == CLASS_ELEM) && (data.Flags() & EXPORT_DATA))
+		if ((data.DataClass() == ELEM_DATA) && (data.Flags() & EXPORT_DATA))
 		{
 			FEMeshData& data = state.m_Data[n];
 			m_ar.BeginChunk(PLT_STATE_VARIABLE);
@@ -646,7 +646,7 @@ bool xpltFileExport::WriteFaceData(FEPostModel& fem, FEState& state)
 	for (int n=0; n<NDATA; ++n, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == CLASS_FACE) && (data.Flags() & EXPORT_DATA))
+		if ((data.DataClass() == FACE_DATA) && (data.Flags() & EXPORT_DATA))
 		{
 			FEMeshData& data = state.m_Data[n];
 			m_ar.BeginChunk(PLT_STATE_VARIABLE);

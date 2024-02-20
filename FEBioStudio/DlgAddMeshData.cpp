@@ -83,19 +83,10 @@ CDlgAddMeshData::CDlgAddMeshData(QWidget* pw) : QDialog(pw), ui(new CDlgAddMeshD
 }
 
 QString CDlgAddMeshData::GetName() { return ui->m_name->text(); }
-FEMeshData::DATA_CLASS CDlgAddMeshData::GetType()
+DATA_CLASS CDlgAddMeshData::GetType()
 { 
 	int n = ui->m_type->currentIndex(); 
-	switch (n)
-	{
-	case FEMeshData::NODE_DATA: return FEMeshData::NODE_DATA; break;
-	case FEMeshData::SURFACE_DATA: return FEMeshData::SURFACE_DATA; break;
-	case FEMeshData::ELEMENT_DATA: return FEMeshData::ELEMENT_DATA; break;
-	case FEMeshData::PART_DATA: return FEMeshData::PART_DATA; break;
-	default:
-		assert(false);
-	}
-	return FEMeshData::NODE_DATA;
+	return (DATA_CLASS)n;
 }
 
 DATA_TYPE CDlgAddMeshData::GetDataType() 
@@ -168,8 +159,8 @@ public:
 		if (ncols == 3) m_table->setHorizontalHeaderLabels(QStringList() << "x" << "y" << "z");
 		if (ncols == 9) m_table->setHorizontalHeaderLabels(QStringList() << "xx" << "xy" << "xz" << "yx" << "yy" << "yz" << "zx" << "zy" << "zz");
 
-		FEMeshData::DATA_CLASS dataClass = m_data->GetDataClass();
-		if (dataClass == FEMeshData::NODE_DATA)
+		DATA_CLASS dataClass = m_data->GetDataClass();
+		if (dataClass == NODE_DATA)
 		{
 			FSNodeSet* pg = dynamic_cast<FSNodeSet*>(m_data->GetItemList());
 			if (pg)

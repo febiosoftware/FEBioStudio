@@ -768,12 +768,12 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 {
 	Post::FEPostModel* fem = pd->GetModel();
 
-	Data_Class nclass = pd->DataClass();
+	DATA_CLASS nclass = pd->DataClass();
 	DATA_TYPE ntype = pd->Type();
 	DATA_FORMAT nfmt = pd->Format();
 
 	ModelDataField* newField = 0;
-	if (nclass == CLASS_NODE)
+	if (nclass == NODE_DATA)
 	{
 		if      (ntype == DATA_SCALAR ) newField = new FEDataField_T<FENodeData<float > >(fem);
 		else if (ntype == DATA_VEC3  ) newField = new FEDataField_T<FENodeData<vec3f > >(fem);
@@ -782,7 +782,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		else if (ntype == DATA_MAT3SD) newField = new FEDataField_T<FENodeData<mat3fd> >(fem);
 		else assert(false);
 	}
-	else if (nclass == CLASS_ELEM)
+	else if (nclass == ELEM_DATA)
 	{
 		if (ntype == DATA_SCALAR)
 		{
@@ -810,7 +810,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		}
 		else assert(false);
 	}
-	else if (nclass == CLASS_FACE)
+	else if (nclass == FACE_DATA)
 	{
 		if (ntype == DATA_SCALAR)
 		{
@@ -1019,7 +1019,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 	int nsrc = FIELD_CODE(pd->GetFieldID());
 
 	// get the data info
-	Data_Class nclass = pd->DataClass();
+	DATA_CLASS nclass = pd->DataClass();
 	DATA_TYPE ntype = pd->Type();
 	DATA_FORMAT nfmt = pd->Format();
 
@@ -1036,7 +1036,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 		FEMeshData& src = DL[nsrc];
 
 		// copy data
-		if (nclass == CLASS_NODE)
+		if (nclass == NODE_DATA)
 		{
 			int NN = mesh.Nodes();
 			if      (ntype == DATA_SCALAR ) cached_copy_node_data<float >(dst, src, NN);
@@ -1045,7 +1045,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 			else if (ntype == DATA_MAT3SD) cached_copy_node_data<mat3fd>(dst, src, NN);
 			else assert(false);
 		}
-		else if (nclass == CLASS_FACE)
+		else if (nclass == FACE_DATA)
 		{
 			int NF = mesh.Faces();
 			if (nfmt == DATA_ITEM)
@@ -1074,7 +1074,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 			}
 			else assert(false);
 		}
-		else if (nclass == CLASS_ELEM)
+		else if (nclass == ELEM_DATA)
 		{
 			int NE = mesh.Elements();
 			if (nfmt == DATA_ITEM)
@@ -1177,7 +1177,7 @@ void FEPostModel::AddDataField(ModelDataField* pd, const std::string& name)
 // Add an data field to all states of the model
 void FEPostModel::AddDataField(ModelDataField* pd, vector<int>& L)
 {
-	assert(pd->DataClass() == CLASS_FACE);
+	assert(pd->DataClass() == FACE_DATA);
 
 	// add the data field to the data manager
 	m_pDM->AddDataField(pd);

@@ -360,7 +360,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 	for (int n = 0; n<NDATA; ++n, ++pd)
 	{
 		ModelDataField& data = *(*pd);
-		if ((data.DataClass() == CLASS_NODE) && (data.Flags() & EXPORT_DATA))
+		if ((data.DataClass() == NODE_DATA) && (data.Flags() & EXPORT_DATA))
 		{
 			FEMeshData& meshData = ps->m_Data[n];
 			char szname[256];
@@ -424,7 +424,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 		}
 
 		// --- E L E M E N T   P O I N T   D A T A ---
-		if ((data.DataClass() == CLASS_ELEM) && (data.Flags() & EXPORT_DATA))
+		if ((data.DataClass() == ELEM_DATA) && (data.Flags() & EXPORT_DATA))
 		{
 			FEMeshData& meshData = ps->m_Data[n];
 			DATA_FORMAT dfmt = meshData.GetFormat();
@@ -503,7 +503,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
     for (int n=0; n<NDATA; ++n, ++pd)
     {
         ModelDataField& data = *(*pd);
-        if ((data.DataClass() == CLASS_ELEM))// && (data.Flags() & EXPORT_DATA))
+        if ((data.DataClass() == ELEM_DATA))// && (data.Flags() & EXPORT_DATA))
         {
             FEMeshData& meshData = ps->m_Data[n];
             DATA_FORMAT dfmt = meshData.GetFormat();

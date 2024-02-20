@@ -1741,7 +1741,7 @@ void FSMesh::Save(OArchive &ar)
 				FEMeshData* meshData = m_meshData[n];
 				switch (meshData->GetDataClass())
 				{
-				case FEMeshData::NODE_DATA:
+				case NODE_DATA:
 				{
 					FENodeData* map = dynamic_cast<FENodeData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_NODE_DATA);
@@ -1751,7 +1751,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::SURFACE_DATA:
+				case FACE_DATA:
 				{
 					FESurfaceData* map = dynamic_cast<FESurfaceData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_SURFACE_DATA);
@@ -1761,7 +1761,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::ELEMENT_DATA:
+				case ELEM_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_ELEM_DATA);
@@ -1771,7 +1771,7 @@ void FSMesh::Save(OArchive &ar)
 					ar.EndChunk();
 				}
 				break;
-				case FEMeshData::PART_DATA:
+				case PART_DATA:
 				{
 					FEPartData* map = dynamic_cast<FEPartData*>(meshData); assert(map);
 					ar.BeginChunk(CID_MESH_PART_DATA);

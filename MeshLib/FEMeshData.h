@@ -36,14 +36,6 @@ class FSMesh;
 class FEMeshData : public FSObject, public FSHasOneItemList
 {
 public:
-	enum DATA_CLASS {
-		NODE_DATA,
-		SURFACE_DATA,
-		ELEMENT_DATA,
-		PART_DATA
-	};
-
-public:
 	FEMeshData(DATA_CLASS);
 	virtual ~FEMeshData();
 

@@ -157,7 +157,7 @@ void FEMeshValuator::Evaluate(int nfield)
 			FEMeshData* meshData = m_mesh.GetMeshDataField(nfield);
 			switch (meshData->GetDataClass())
 			{
-			case FEMeshData::NODE_DATA:
+			case NODE_DATA:
 			{
 				FENodeData& nodeData = dynamic_cast<FENodeData&>(*meshData);
 				if (nodeData.GetDataType() == DATA_SCALAR)
@@ -177,10 +177,10 @@ void FEMeshValuator::Evaluate(int nfield)
 				}
 			}
 			break;
-			case FEMeshData::SURFACE_DATA:
+			case FACE_DATA:
 				// TODO: Not sure what to do here. 
 				break;
-			case FEMeshData::ELEMENT_DATA:
+			case ELEM_DATA:
 			{
 				FEElementData& elemData = dynamic_cast<FEElementData&>(*meshData);
 				const FSElemSet* pg = elemData.GetElementSet();
@@ -194,7 +194,7 @@ void FEMeshValuator::Evaluate(int nfield)
 				}
 			}
 			break;
-			case FEMeshData::PART_DATA:
+			case PART_DATA:
 			{
 				FEPartData& partData = dynamic_cast<FEPartData&>(*meshData);
 				if (partData.GetDataType() == DATA_SCALAR)

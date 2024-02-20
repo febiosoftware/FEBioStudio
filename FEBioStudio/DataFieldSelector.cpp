@@ -160,7 +160,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 		ModelDataField& d = *(*pd);
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(m_class);
-		if ((dataClass != Post::CLASS_OBJECT) && (dataComponents > 0))
+		if ((dataClass != OBJECT_DATA) && (dataComponents > 0))
 		{
 			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
 			{

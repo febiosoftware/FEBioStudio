@@ -1228,7 +1228,7 @@ ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int n
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	ModelDataField* newField = 0;
-	if (nclass == CLASS_NODE)
+	if (nclass == NODE_DATA)
 	{
 		newField = new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA);
 		fem.AddDataField(newField, sname);
@@ -1242,11 +1242,11 @@ ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int n
 			extractNodeDataComponent(ntype, state->m_Data[nscl], state->m_Data[nvec], ncomp, mesh);
 		}
 	}
-	else if (nclass == CLASS_FACE)
+	else if (nclass == FACE_DATA)
 	{
 		
 	}
-	else if (nclass == CLASS_ELEM)
+	else if (nclass == ELEM_DATA)
 	{
 		if (nfmt == DATA_ITEM)
 		{
@@ -1364,7 +1364,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 	ModelDataField* newField = nullptr;
 	if (ntype == DATA_SCALAR)
 	{
-		if ((nclass == CLASS_ELEM) && (newClass == CLASS_ELEM))
+		if ((nclass == ELEM_DATA) && (newClass == ELEM_DATA))
 		{
 			if ((nfmt == DATA_ITEM) && (newFormat == DATA_NODE))
 			{
@@ -1576,7 +1576,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 				}
 			}
 		}
-		else if ((nclass == CLASS_ELEM) && (newClass == CLASS_NODE))
+		else if ((nclass == ELEM_DATA) && (newClass == NODE_DATA))
 		{
 			int NN = mesh.Nodes();
 			int NE = mesh.Elements();
@@ -1708,7 +1708,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 	}
 	else if (ntype == DATA_VEC3)
 	{
-		if ((nclass == CLASS_ELEM) && (newClass == CLASS_NODE))
+		if ((nclass == ELEM_DATA) && (newClass == NODE_DATA))
 		{
 			int NN = mesh.Nodes();
 			int NE = mesh.Elements();
@@ -1758,7 +1758,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 	}
 	else if (ntype == DATA_MAT3S)
 	{
-		if ((nclass == CLASS_ELEM) && (newClass == CLASS_NODE))
+		if ((nclass == ELEM_DATA) && (newClass == NODE_DATA))
 		{
 			int NN = mesh.Nodes();
 			int NE = mesh.Elements();
@@ -1808,7 +1808,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 	}
 	else if (ntype == DATA_MAT3)
 	{
-		if ((nclass == CLASS_ELEM) && (newClass == CLASS_NODE))
+		if ((nclass == ELEM_DATA) && (newClass == NODE_DATA))
 		{
 			int NN = mesh.Nodes();
 			int NE = mesh.Elements();
@@ -1866,7 +1866,7 @@ ModelDataField* Post::DataEigenTensor(FEPostModel& fem, ModelDataField* dataFiel
 	int nclass = dataField->DataClass();
 
 	if (dataType != DATA_MAT3S) return nullptr;
-	if (nclass != CLASS_ELEM) return nullptr;
+	if (nclass != ELEM_DATA) return nullptr;
 	if (nfmt != DATA_ITEM) return nullptr;
 
 	ModelDataField* newField = new FEDataField_T<FEElementData<mat3f, DATA_ITEM> >(&fem, EXPORT_DATA);
@@ -1919,7 +1919,7 @@ ModelDataField* Post::DataTimeRate(FEPostModel& fem, ModelDataField* dataField, 
 	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
 
 	ModelDataField* newField = 0;
-	if (nclass == CLASS_NODE)
+	if (nclass == NODE_DATA)
 	{
 		if (ntype == DATA_SCALAR)
 		{

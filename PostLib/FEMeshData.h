@@ -36,16 +36,6 @@ class FEState;
 class FEPostMesh;
 
 //-----------------------------------------------------------------------------
-// Data class: defines possible class types for data fields
-// TODO: Why is this implemented as a binary flag
-enum Data_Class {
-	CLASS_NODE   = 1,
-	CLASS_FACE   = 2,
-	CLASS_ELEM   = 4,
-	CLASS_OBJECT = 8
-};
-
-//-----------------------------------------------------------------------------
 enum Data_Tensor_Type {
 	TENSOR_SCALAR,
 	TENSOR_VECTOR,

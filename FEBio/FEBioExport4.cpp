@@ -502,7 +502,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 
 				switch (data->GetDataClass())
 				{
-				case FEMeshData::NODE_DATA:
+				case NODE_DATA:
 				{
 					FENodeData* map = dynamic_cast<FENodeData*>(data); assert(map);
 					FEItemListBuilder* pg = map->GetItemList();
@@ -514,7 +514,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 					}
 				}
 				break;
-				case FEMeshData::ELEMENT_DATA:
+				case ELEM_DATA:
 				{
 					FEElementData* map = dynamic_cast<FEElementData*>(data); assert(map);
 					FSElemSet* pg = map->GetElementSet();
@@ -540,7 +540,7 @@ void FEBioExport4::BuildItemLists(FSProject& prj)
 					}
 				}
 				break;
-				case FEMeshData::PART_DATA:
+				case PART_DATA:
 				{
 					// We don't create element sets for part data since we already have the corresponding element sets
 					// in the mesh. 

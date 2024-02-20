@@ -50,3 +50,14 @@ enum DATA_FORMAT {
 	// from post namespace
 	DATA_REGION // one value for all the items of the region
 };
+
+// Data class 
+enum DATA_CLASS {
+	NODE_DATA,
+	FACE_DATA,
+	ELEM_DATA,
+	PART_DATA,
+
+	// from post namespace
+	OBJECT_DATA
+};
