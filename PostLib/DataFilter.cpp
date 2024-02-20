@@ -911,7 +911,7 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 }
 
 //-----------------------------------------------------------------------------
-bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
+bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config)
 {
 	int nvec = FIELD_CODE(vecField);
 	int nscl = FIELD_CODE(sclField);
@@ -1040,7 +1040,10 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField)
 				el.iso_coord(j, q);
 
 				// evaluate the gradient at the node
-				shape_grad(fem, i, q, n, eg);
+				if (config == 1)
+					shape_grad(fem, i, q, n, eg);
+				else 
+					shape_grad_ref(fem, i, q, n, eg);
 
 				vec3f grad(0.f, 0.f, 0.f);
 				for (int k=0; k<el.Nodes(); ++k) grad += eg[k] * ed[k];
