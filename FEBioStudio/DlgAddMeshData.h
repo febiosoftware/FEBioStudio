@@ -41,7 +41,7 @@ public:
 
 	QString GetName();
 	FEMeshData::DATA_CLASS GetType();
-	FEMeshData::DATA_TYPE GetDataType();
+	DATA_TYPE GetDataType();
 	FEMeshData::DATA_FORMAT GetFormat();
 
 private:

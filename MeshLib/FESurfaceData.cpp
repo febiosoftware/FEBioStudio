@@ -33,7 +33,7 @@ FESurfaceData::FESurfaceData(FSMesh* mesh) : FEMeshData(FEMeshData::SURFACE_DATA
 	SetMesh(mesh);
 }
 
-FESurfaceData::FESurfaceData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::SURFACE_DATA)
+FESurfaceData::FESurfaceData(FSMesh* mesh, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::SURFACE_DATA)
 {
 	SetMesh(mesh);
 	SetDataFormat(dataFormat);
@@ -49,7 +49,7 @@ FESurfaceData::~FESurfaceData()
 FESurfaceData::FESurfaceData(const FESurfaceData& d) : FEMeshData(FEMeshData::SURFACE_DATA) {}
 void FESurfaceData::operator = (const FESurfaceData& d) {}
 
-void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
+void FESurfaceData::Create(FSMesh* mesh, FSSurface* surface, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
 {
 	SetMesh(mesh);
 	FSHasOneItemList::SetItemList(surface);
@@ -138,7 +138,7 @@ void FESurfaceData::Load(IArchive& ar)
 		{
 			int dType;
 			ar.read(dType);
-			SetDataType((FEMeshData::DATA_TYPE) dType);
+			SetDataType((DATA_TYPE) dType);
 		}
 		else if (nid == CID_MESH_DATA_FORMAT)
 		{

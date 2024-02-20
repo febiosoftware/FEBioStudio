@@ -88,7 +88,7 @@ void FEAreaCoverage::Surface::Create(Post::FEPostMesh& mesh)
 }
 
 //-----------------------------------------------------------------------------
-FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+FEAreaCoverage::FEAreaCoverage(Post::FEPostModel* fem, int flags) : Post::ModelDataField(fem, DATA_SCALAR, DATA_NODE, CLASS_FACE, 0)
 {
 	m_ballowBackIntersections = false;
 	m_angleThreshold = 0.0;

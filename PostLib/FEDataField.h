@@ -49,7 +49,7 @@ enum DataFieldFlags {
 class ModelDataField : public FSObject
 {
 public:
-	ModelDataField(FEPostModel* glm, Data_Type ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
+	ModelDataField(FEPostModel* glm, DATA_TYPE ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
 
 	virtual ~ModelDataField();
 
@@ -60,7 +60,7 @@ public:
 	virtual FEMeshData* CreateData(FEState* pstate) = 0;
 
 	//! type identifier
-	Data_Type Type() { return m_ntype; }
+	DATA_TYPE Type() { return m_ntype; }
 
 	// Format identifier
 	Data_Format Format() const { return m_nfmt; }
@@ -104,7 +104,7 @@ public:
 
 protected:
 	int				m_nfield;	//!< field ID
-	Data_Type		m_ntype;	//!< data type
+	DATA_TYPE		m_ntype;	//!< data type
 	Data_Format		m_nfmt;		//!< data format
 	Data_Class		m_nclass;	//!< data class
 	unsigned int	m_flag;		//!< flags
@@ -180,7 +180,7 @@ bool AddElemDataFromFile(FEPostModel& fem, const char* szfile, const char* sznam
 class PlotObjectData : public ModelDataField
 {
 public:
-	PlotObjectData(FEPostModel* fem, Data_Type ntype) : ModelDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
+	PlotObjectData(FEPostModel* fem, DATA_TYPE ntype) : ModelDataField(fem, ntype, DATA_ITEM, CLASS_OBJECT, 0) {}
 
 	ModelDataField* Clone() const override { assert(false); return nullptr; };
 	FEMeshData* CreateData(FEState* pstate) override { assert(false); return nullptr; }

@@ -46,7 +46,7 @@ namespace Post {
 class FEGlobalData : public FEMeshData
 {
 public:
-	FEGlobalData(FEState* state, Data_Type ntype) : FEMeshData(state, ntype, DATA_REGION){}
+	FEGlobalData(FEState* state, DATA_TYPE ntype) : FEMeshData(state, ntype, DATA_REGION){}
 };
 
 template <typename T> class FEGlobalData_T : public FEGlobalData
@@ -57,7 +57,7 @@ public:
 	void setValue(T a) { m_data = a; }
 	bool active(int n) { return true; }
 
-	static Data_Type Type() { return FEMeshDataTraits<T>::Type(); }
+	static DATA_TYPE Type() { return FEMeshDataTraits<T>::Type(); }
 	static Data_Format Format() { return DATA_REGION; }
 	static Data_Class Class() { return CLASS_OBJECT; }
 
@@ -69,7 +69,7 @@ private:
 class FEGlobalArrayData : public FEGlobalData
 {
 public:
-	FEGlobalArrayData(FEState* state, int nsize) : FEGlobalData(state, Post::DATA_ARRAY)
+	FEGlobalArrayData(FEState* state, int nsize) : FEGlobalData(state, DATA_ARRAY)
 	{
 		m_data.resize(nsize, 0.f);
 	}
@@ -98,7 +98,7 @@ protected:
 class FENodeItemData : public FEMeshData
 {
 public:
-	FENodeItemData(FEState* state, Data_Type ntype, Data_Format nfmt) : FEMeshData(state, ntype, nfmt){}
+	FENodeItemData(FEState* state, DATA_TYPE ntype, Data_Format nfmt) : FEMeshData(state, ntype, nfmt){}
 };
 
 //-----------------------------------------------------------------------------
@@ -110,7 +110,7 @@ public:
 	virtual void eval(int n, T* pv) = 0;
 	virtual bool active(int n) { return true; }
 
-	static Data_Type Type  () { return FEMeshDataTraits<T>::Type  (); }
+	static DATA_TYPE Type  () { return FEMeshDataTraits<T>::Type  (); }
 	static Data_Format Format() { return DATA_ITEM; }
 	static Data_Class Class() { return CLASS_NODE; }
 };
@@ -168,7 +168,7 @@ protected:
 class FEFaceItemData : public FEMeshData
 {
 public:
-	FEFaceItemData(FEState* state, Data_Type ntype, Data_Format nfmt) : FEMeshData(state, ntype, nfmt){}
+	FEFaceItemData(FEState* state, DATA_TYPE ntype, Data_Format nfmt) : FEMeshData(state, ntype, nfmt){}
 };
 
 //-----------------------------------------------------------------------------
@@ -180,7 +180,7 @@ public:
 	virtual void eval(int n, T* pv) = 0;
 	virtual bool active(int n) { return true; }
 
-	static Data_Type Type  () { return FEMeshDataTraits<T>::Type  (); }
+	static DATA_TYPE Type  () { return FEMeshDataTraits<T>::Type  (); }
 	static Data_Format Format() { return fmt; }
 	static Data_Class Class() { return CLASS_FACE; }
 };
@@ -351,7 +351,7 @@ protected:
 class FEElemItemData : public FEMeshData
 {
 public:
-	FEElemItemData(FEState* state, Data_Type ntype, Data_Format nfmt) : FEMeshData(state, ntype, nfmt){}
+	FEElemItemData(FEState* state, DATA_TYPE ntype, Data_Format nfmt) : FEMeshData(state, ntype, nfmt){}
 };
 
 //-----------------------------------------------------------------------------
@@ -443,7 +443,7 @@ protected:
 class FEElemArrayVec3Data : public FEElemItemData
 {
 public:
-	FEElemArrayVec3Data(FEState* state, int nsize, ModelDataField* pdf) : FEElemItemData(state, DATA_ARRAY_VEC3F, DATA_ITEM)
+	FEElemArrayVec3Data(FEState* state, int nsize, ModelDataField* pdf) : FEElemItemData(state, DATA_ARRAY_VEC3, DATA_ITEM)
 	{
 		int NE = state->GetFEMesh()->Elements();
 		m_stride = nsize;
@@ -496,7 +496,7 @@ public:
 	virtual void eval(int n, T* pv) = 0;
 	virtual bool active(int n) { return true; }
 
-	static Data_Type Type  () { return FEMeshDataTraits<T>::Type  (); }
+	static DATA_TYPE Type  () { return FEMeshDataTraits<T>::Type  (); }
 	static Data_Format Format() { return fmt; }
 	static Data_Class Class() { return CLASS_ELEM; }
 };
@@ -728,7 +728,7 @@ public:
 	};
 
 public:
-	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_FACE, 0)
+	CurvatureField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, CLASS_FACE, 0)
 	{
 		m_measure = measure;
 		m_nlevels = 1;
@@ -840,11 +840,11 @@ protected:
 //=============================================================================
 
 //-----------------------------------------------------------------------------
-class DeformationGradient : public FEElemData_T<mat3d, DATA_COMP>
+class DeformationGradient : public FEElemData_T<mat3f, DATA_COMP>
 {
 public:
 	DeformationGradient(FEState* pstate, ModelDataField* pdf);
-	void eval(int n, mat3d* pv);
+	void eval(int n, mat3f* pv);
 };
 
 //-----------------------------------------------------------------------------
@@ -868,7 +868,7 @@ public:
 	enum { MP_REF_STATE };
 
 public:
-	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3FS, DATA_ITEM, CLASS_ELEM, 0)
+	StrainDataField(FEPostModel* fem, int measure) : ModelDataField(fem, DATA_MAT3S, DATA_ITEM, CLASS_ELEM, 0)
 	{
 		m_measure = measure;
 

@@ -1231,14 +1231,14 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 	XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 	XMLAtt* nset = tag.AttributePtr("node_set");
 
-	FEMeshData::DATA_TYPE dataType;
+	DATA_TYPE dataType;
 	if (dataTypeAtt)
 	{
-		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		if      (*dataTypeAtt == "scalar") dataType = DATA_SCALAR;
+		else if (*dataTypeAtt == "vec3"  ) dataType = DATA_VEC3;
 		else return false;
 	}
-	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+	else dataType = DATA_SCALAR;
 
 	FSNodeSet* nodeSet = feb.FindNamedNodeSet(nset->cvalue());
 	if (nodeSet)
@@ -1272,14 +1272,14 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 				tag.AttributePtr("lid")->value(lid);
 				switch (dataType)
 				{
-				case FEMeshData::DATA_SCALAR: 
+				case DATA_SCALAR: 
 				{
 					double val = 0.0;
 					tag.value(val);
 					nodeData->setScalar(lid - 1, val);
 				}
 				break;
-				case FEMeshData::DATA_VEC3D:
+				case DATA_VEC3:
 				{
 					vec3d val;
 					tag.value(val);
@@ -1308,14 +1308,14 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
 	XMLAtt* surf = tag.AttributePtr("surface");
 
-	FEMeshData::DATA_TYPE dataType;
+	DATA_TYPE dataType;
 	if (dataTypeAtt)
 	{
-		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vector") dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+		if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+		else if (*dataTypeAtt == "vector") dataType = DATA_TYPE::DATA_VEC3;
 		else return false;
 	}
-	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+	else dataType = DATA_TYPE::DATA_SCALAR;
 
 	const char* szgen = tag.AttributeValue("generator", true);
 	if (szgen)
@@ -1552,15 +1552,15 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 		XMLAtt* dataTypeAtt = tag.AttributePtr("datatype");
 		XMLAtt* set = tag.AttributePtr("elem_set");
 
-		FEMeshData::DATA_TYPE dataType;
+		DATA_TYPE dataType;
 		if (dataTypeAtt)
 		{
-			if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-			else if (*dataTypeAtt == "mat3"  ) dataType = FEMeshData::DATA_TYPE::DATA_MAT3D;
+			if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+			else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
+			else if (*dataTypeAtt == "mat3"  ) dataType = DATA_TYPE::DATA_MAT3;
 			else return false;
 		}
-		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+		else dataType = DATA_TYPE::DATA_SCALAR;
 
 		GObject* po = feb.GetInstance(0)->GetGObject();
 		FSMesh* mesh = po->GetFEMesh();
@@ -1601,7 +1601,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 			meshData = mesh->AddElementDataField(sname, pg, dataType);
 		}
 
-		if (dataType == FEMeshData::DATA_SCALAR)
+		if (dataType == DATA_SCALAR)
 		{
 			double val;
 			int lid;
@@ -1616,7 +1616,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else if (dataType == FEMeshData::DATA_VEC3D)
+		else if (dataType == DATA_VEC3)
 		{
 			vec3d val;
 			int lid;
@@ -1629,7 +1629,7 @@ bool FEBioFormat3::ParseElementDataSection(XMLTag& tag)
 				++tag;
 			} while (!tag.isend());
 		}
-		else if (dataType == FEMeshData::DATA_MAT3D)
+		else if (dataType == DATA_MAT3)
 		{
 			mat3d val;
 			int lid;

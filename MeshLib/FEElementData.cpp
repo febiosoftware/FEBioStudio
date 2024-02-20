@@ -37,7 +37,7 @@ FEElementData::FEElementData(FSMesh* mesh) : FEMeshData(FEMeshData::ELEMENT_DATA
 }
 
 //-----------------------------------------------------------------------------
-FEElementData::FEElementData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::ELEMENT_DATA)
+FEElementData::FEElementData(FSMesh* mesh, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat) : FEMeshData(FEMeshData::ELEMENT_DATA)
 {
 	SetMesh(mesh);
 	SetDataFormat(dataFormat);
@@ -46,7 +46,7 @@ FEElementData::FEElementData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMes
 }
 
 //-----------------------------------------------------------------------------
-void FEElementData::Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
+void FEElementData::Create(FSMesh* pm, FSElemSet* part, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat)
 {
 	SetMesh(pm);
 	SetDataFormat(dataFormat);
@@ -173,7 +173,7 @@ void FEElementData::Load(IArchive& ar)
 		{
 			int dType;
 			ar.read(dType);
-			SetDataType((FEMeshData::DATA_TYPE) dType);
+			SetDataType((DATA_TYPE) dType);
 		}
 		else if (nid == CID_MESH_DATA_FORMAT)
 		{
@@ -221,7 +221,7 @@ FEPartData::FEPartData(FSMesh* mesh) : FEMeshData(FEMeshData::PART_DATA)
 	m_maxElemItems = 1;
 }
 
-FEPartData::FEPartData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt) : FEMeshData(FEMeshData::PART_DATA)
+FEPartData::FEPartData(FSMesh* mesh, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt) : FEMeshData(FEMeshData::PART_DATA)
 {
 	SetMesh(mesh);
 	SetDataFormat(dataFmt);
@@ -240,7 +240,7 @@ FEPartData& FEPartData::operator = (const FEPartData& d)
 }
 
 // create a data field
-bool FEPartData::Create(FSPartSet* partList, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
+bool FEPartData::Create(FSPartSet* partList, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt)
 {
 	FSMesh* mesh = GetMesh();
 	assert(mesh);
@@ -378,7 +378,7 @@ void FEPartData::Load(IArchive& ar)
 		{
 			int dType;
 			ar.read(dType);
-			SetDataType((FEMeshData::DATA_TYPE)dType);
+			SetDataType((DATA_TYPE)dType);
 		}
 		else if (nid == CID_MESH_DATA_FORMAT)
 		{

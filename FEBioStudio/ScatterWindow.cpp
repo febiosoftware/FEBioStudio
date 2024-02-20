@@ -50,8 +50,8 @@ void CScatterWindow::Update(bool breset, bool bfit)
 	{
 		if (doc->IsValid())
 		{
-			SetXDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::DATA_SCALAR));
-			SetYDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::DATA_SCALAR));
+			SetXDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::TENSOR_SCALAR));
+			SetYDataSelector(new CModelDataSelector(doc->GetFSModel(), Post::TENSOR_SCALAR));
 		}
 		else return;
 	}

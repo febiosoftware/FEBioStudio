@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include <FSCore/FSObject.h>
 #include "IHasItemList.h"
+#include "enums.h"
 #include <string>
 //using namespace std;
 
@@ -40,13 +41,6 @@ public:
 		SURFACE_DATA,
 		ELEMENT_DATA,
 		PART_DATA
-	};
-
-	// NOTE: this is serialized. Don't change order!
-	enum DATA_TYPE {
-		DATA_SCALAR,
-		DATA_VEC3D,
-		DATA_MAT3D
 	};
 
 	// NOTE: this is serialized. Don't change order!
@@ -124,7 +118,7 @@ inline void FEMeshData::set(size_t i, double v)
 
 inline void FEMeshData::set(size_t i, const vec3d& v)
 {
-	assert(m_dataType == FEMeshData::DATA_VEC3D);
+	assert(m_dataType == DATA_VEC3);
 	m_data[3*i  ] = v.x;
 	m_data[3*i+1] = v.y;
 	m_data[3*i+2] = v.z;
@@ -132,7 +126,7 @@ inline void FEMeshData::set(size_t i, const vec3d& v)
 
 inline void FEMeshData::set(size_t i, const mat3d& v)
 {
-	assert(m_dataType == FEMeshData::DATA_MAT3D);
+	assert(m_dataType == DATA_MAT3);
 	m_data[9 * i    ] = v(0,0); m_data[9 * i + 1] = v(0,1); m_data[9 * i + 2] = v(0,2);
 	m_data[9 * i + 3] = v(1,0); m_data[9 * i + 4] = v(1,1); m_data[9 * i + 5] = v(1,2);
 	m_data[9 * i + 6] = v(2,0); m_data[9 * i + 7] = v(2,1); m_data[9 * i + 8] = v(2,2);
@@ -140,13 +134,13 @@ inline void FEMeshData::set(size_t i, const mat3d& v)
 
 inline void FEMeshData::setScalar(size_t i, double v)
 {
-	assert(m_dataType == FEMeshData::DATA_SCALAR);
+	assert(m_dataType == DATA_SCALAR);
 	m_data[i] = v;
 }
 
 inline void FEMeshData::setVec3d(size_t i, const vec3d& v)
 {
-	assert(m_dataType == FEMeshData::DATA_VEC3D);
+	assert(m_dataType == DATA_VEC3);
 	m_data[3*i + 0] = v.x;
 	m_data[3*i + 1] = v.y;
 	m_data[3*i + 2] = v.z;
@@ -154,19 +148,19 @@ inline void FEMeshData::setVec3d(size_t i, const vec3d& v)
 
 inline double FEMeshData::getScalar(size_t i) const 
 {
-	assert(m_dataType == FEMeshData::DATA_SCALAR);
+	assert(m_dataType == DATA_SCALAR);
 	return m_data[i];
 }
 
 inline vec3d FEMeshData::getVec3d(size_t i) const
 {
-	assert(m_dataType == FEMeshData::DATA_VEC3D);
+	assert(m_dataType == DATA_VEC3);
 	return vec3d(m_data[3*i], m_data[3*i+1], m_data[3*i+2]);
 }
 
 inline mat3d FEMeshData::getMat3d(size_t i) const
 {
-	assert(m_dataType == FEMeshData::DATA_MAT3D);
+	assert(m_dataType == DATA_MAT3);
 	const double* d = &m_data[0] + 9 * i;
 	return mat3d(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8]);
 }

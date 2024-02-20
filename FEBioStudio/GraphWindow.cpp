@@ -1654,9 +1654,9 @@ void CModelGraphWindow::Update(bool breset, bool bfit)
 		if (plot == LINE_PLOT)
 			SetXDataSelector(new CTimeStepSelector(), 0);
 		else
-			SetXDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
+			SetXDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
-		SetYDataSelector(new CModelDataSelector(fem, Post::DATA_SCALAR));
+		SetYDataSelector(new CModelDataSelector(fem, Post::TENSOR_SCALAR));
 
 		m_dataXPrev = -1;
 		m_dataYPrev = -1;
@@ -1937,7 +1937,7 @@ void CModelGraphWindow::setDataSource(int n)
 					{
 						if (probe->TrackModelData())
 						{
-							SetYDataSelector(new CModelDataSelector(&fem, Post::DATA_SCALAR));
+							SetYDataSelector(new CModelDataSelector(&fem, Post::TENSOR_SCALAR));
 						}
 						else
 						{
@@ -2044,12 +2044,12 @@ void CModelGraphWindow::TrackObjectHistory(int nobj, float* pval, int nfield)
 
 		switch (dataField->Type())
 		{
-		case Post::DATA_FLOAT:
+		case DATA_SCALAR:
 		{
 			val = data->get<float>(ndata);
 		}
 		break;
-		case Post::DATA_VEC3F:
+		case DATA_VEC3:
 		{
 			vec3f v = data->get<vec3f>(ndata);
 			val = component(v, ncomp);

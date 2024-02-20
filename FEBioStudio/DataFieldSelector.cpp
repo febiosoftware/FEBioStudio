@@ -182,7 +182,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 					QAction* pa = sub->addAction(QString::fromStdString(s));
 					pa->setData(QVariant(nfield));
 
-					if (d.Type() == DATA_ARRAY_VEC3F)
+					if (d.Type() == DATA_ARRAY_VEC3)
 					{
 						if ((n > 0) && ((n + 1) % 4 == 0))
 						{
@@ -207,7 +207,7 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 	{
 		ModelDataField& d = *data[i];
 		int dataClass = d.DataClass();
-		int dataComponents = d.components(DATA_SCALAR);
+		int dataComponents = d.components(TENSOR_SCALAR);
 		if (dataComponents > 0)
 		{
 			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
@@ -225,12 +225,12 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 				for (int n = 0; n < dataComponents; ++n)
 				{
 					int nfield = BUILD_FIELD(dataClass, i, n);
-					std::string s = d.componentName(n, DATA_SCALAR);
+					std::string s = d.componentName(n, TENSOR_SCALAR);
 
 					QAction* pa = sub->addAction(QString::fromStdString(s));
 					pa->setData(QVariant(nfield));
 
-					if (d.Type() == DATA_ARRAY_VEC3F)
+					if (d.Type() == DATA_ARRAY_VEC3)
 					{
 						if ((n > 0) && ((n + 1) % 4 == 0))
 						{
@@ -252,24 +252,22 @@ void CPlotGlobalDataSelector::BuildMenu(QMenu* menu)
 {
 	switch ((*m_pdf)->Type())
 	{
-	case Post::DATA_FLOAT: {
+	case DATA_SCALAR: {
 		QAction* pa = menu->addAction("value");
 		pa->setData(1);
 	}
 		break;
-	case Post::DATA_VEC3F:
+	case DATA_VEC3:
 		break;
-	case Post::DATA_MAT3FS:
+	case DATA_MAT3S:
 		break;
-	case Post::DATA_MAT3FD:
+	case DATA_MAT3SD:
 		break;
-	case Post::DATA_TENS4FS:
+	case DATA_TENS4S:
 		break;
-	case Post::DATA_MAT3D:
+	case DATA_MAT3:
 		break;
-	case Post::DATA_MAT3F:
-		break;
-	case Post::DATA_ARRAY:
+	case DATA_ARRAY:
 		{
 			std::vector<std::string> names = (*m_pdf)->GetArrayNames();
 			for (int i = 0; i < names.size(); ++i)
@@ -279,7 +277,7 @@ void CPlotGlobalDataSelector::BuildMenu(QMenu* menu)
 			}
 		}
 		break;
-	case Post::DATA_ARRAY_VEC3F:
+	case DATA_ARRAY_VEC3:
 		break;
 	default:
 		break;

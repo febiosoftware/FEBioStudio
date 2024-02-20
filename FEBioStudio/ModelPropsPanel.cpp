@@ -312,9 +312,9 @@ void CMeshDataInfoPanel::setDataType(int ndatatype)
 {
 	switch (ndatatype)
 	{
-	case FEMeshData::DATA_SCALAR: m_dataType->setText("scalar"); break;
-	case FEMeshData::DATA_VEC3D : m_dataType->setText("vec3"); break;
-	case FEMeshData::DATA_MAT3D : m_dataType->setText("mat3"); break;
+	case DATA_SCALAR: m_dataType->setText("scalar"); break;
+	case DATA_VEC3 : m_dataType->setText("vec3"); break;
+	case DATA_MAT3 : m_dataType->setText("mat3"); break;
 	default:
 		m_dataType->setText("(unknown)");
 	}

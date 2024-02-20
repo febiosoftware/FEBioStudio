@@ -725,14 +725,14 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 {
 	ui->src->setText(QString::fromStdString(pdf->GetName()));
 
-	m_nsc = pdf->dataComponents(Post::DATA_SCALAR);
+	m_nsc = pdf->dataComponents(Post::TENSOR_SCALAR);
 	for (int i = 0; i < 9; ++i) m_scale[i] = 1.0;
 
 	ui->comp->clear();
-	int n = pdf->components(Post::DATA_SCALAR);
+	int n = pdf->components(Post::TENSOR_SCALAR);
 	for (int i = 0; i<n; ++i)
 	{
-		std::string cname = pdf->componentName(i, Post::DATA_SCALAR);
+		std::string cname = pdf->componentName(i, Post::TENSOR_SCALAR);
 		ui->comp->addItem(QString::fromStdString(cname));
 	}
 
@@ -1089,7 +1089,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				if ((pdi != pdf) &&
 					(pdi->DataClass() == pdf->DataClass()) &&
 					(pdi->Format() == pdf->Format()) &&
-					((pdi->Type() == pdf->Type()) || (pdi->Type() == Post::DATA_FLOAT)))
+					((pdi->Type() == pdf->Type()) || (pdi->Type() == DATA_SCALAR)))
 				{
 					dataNames.push_back(name);
 					dataIds.push_back(i);
@@ -1117,7 +1117,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				case 0:
 				{
 					newData = fem.CreateCachedCopy(pdf, sname.c_str());
-					if (pdf->Type() == Post::DATA_VEC3F)
+					if (pdf->Type() == DATA_VEC3)
 						bret = DataScaleVec3(fem, newData->GetFieldID(), dlg.GetVecScaleFactor());
 					else
 						bret = DataScale(fem, newData->GetFieldID(), dlg.GetScaleFactor());

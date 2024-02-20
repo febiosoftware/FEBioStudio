@@ -373,19 +373,19 @@ void FEVTKExport::WritePointData(FEState* ps)
 			{
 				// write the value array
 				int ntype = meshData.GetType();
-				if (ntype == DATA_FLOAT) {
+				if (ntype == DATA_SCALAR) {
 					fprintf(m_fp, "%s %s %s\n", "SCALARS", szname, "float");
 					fprintf(m_fp, "%s %s\n", "LOOKUP_TABLE", "default");
 					for (int i = 0; i<val.size(); ++i) 
 						if (tag[i] != 0)
 							fprintf(m_fp, "%g\n", val[i]);
 				}
-				else if (ntype == DATA_VEC3F) {
+				else if (ntype == DATA_VEC3) {
 					fprintf(m_fp, "%s %s %s\n", "VECTORS", szname, "float");
 					for (int i = 0, n = 0; i<val.size(); i += 3, ++n) 
 						if (tag[n] != 0) fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
 				}
-				else if (ntype == DATA_MAT3FS) {
+				else if (ntype == DATA_MAT3S) {
 					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname, "float");
 					for (int i = 0, n = 0; i<val.size(); i += 6, n++)
 						if (tag[n] != 0)
@@ -394,7 +394,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 								val[i + 3], val[i + 1], val[i + 4],
 								val[i + 5], val[i + 4], val[i + 2]);
 				}
-				else if (ntype == DATA_MAT3FD) {
+				else if (ntype == DATA_MAT3SD) {
 					fprintf(m_fp, "%s %s %s\n", "TENSORS", szname, "float");
 					for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
 						if (tag[n] != 0)
@@ -440,20 +440,20 @@ void FEVTKExport::WritePointData(FEState* ps)
 				{
 					// write the value array
 					int ntype = meshData.GetType();
-					if (ntype == DATA_FLOAT) {
+					if (ntype == DATA_SCALAR) {
 						fprintf(m_fp, "SCALARS %s float\n", szname);
 						fprintf(m_fp, "LOOKUP_TABLE default\n");
 						for (int i = 0; i<val.size(); ++i) 
 							if (tag[i] != 0)
 								fprintf(m_fp, "%g\n", val[i]);
 					}
-					else if (ntype == DATA_VEC3F) {
+					else if (ntype == DATA_VEC3) {
 						fprintf(m_fp, "VECTORS %s float\n", szname);
 						for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
 							if (tag[n] != 0)
 								fprintf(m_fp, "%g %g %g\n", val[i], val[i + 1], val[i + 2]);
 					}
-					else if (ntype == DATA_MAT3FS) {
+					else if (ntype == DATA_MAT3S) {
 						fprintf(m_fp, "TENSORS %s float\n", szname);
 						for (int i = 0, n = 0; i<val.size(); i += 6, ++n)
 							if (tag[n] != 0)
@@ -462,7 +462,7 @@ void FEVTKExport::WritePointData(FEState* ps)
 									val[i + 3], val[i + 1], val[i + 4],
 									val[i + 5], val[i + 4], val[i + 2]);
 					}
-					else if (ntype == DATA_MAT3FD) {
+					else if (ntype == DATA_MAT3SD) {
 						fprintf(m_fp, "TENSORS %s float\n", szname);
 						for (int i = 0, n = 0; i<val.size(); i += 3, ++n)
 							if (tag[n] != 0)
@@ -520,18 +520,18 @@ void FEVTKExport::WriteCellData(FEState* ps)
 					// write the value array
 					if (val.empty() == false) {
 						int ntype = meshData.GetType();
-						if (ntype == DATA_FLOAT) {
+						if (ntype == DATA_SCALAR) {
 							fprintf(m_fp, "%s %s %s\n" ,"SCALARS",szname,"float");
 							fprintf(m_fp, "%s %s\n","LOOKUP_TABLE","default");
 							for (int i=0; i<val.size(); ++i) 
 								if (tag[i] != 0) fprintf(m_fp,"%g\n",val[i]);
 						}
-						else if (ntype == DATA_VEC3F) {
+						else if (ntype == DATA_VEC3) {
 							fprintf(m_fp, "%s %s %s\n" ,"VECTORS",szname,"float");
 							for (int i=0, n = 0; i<val.size(); i+=3, n++)
 								if (tag[n] != 0) fprintf(m_fp,"%g %g %g\n",val[i],val[i+1],val[i+2]);
 						}
-						else if (ntype == DATA_MAT3FS) {
+						else if (ntype == DATA_MAT3S) {
 							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname,"float");
 							for (int i=0, n = 0; i<val.size(); i+=6, n++)
 								if (tag[n] != 0)
@@ -540,7 +540,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
 											val[i+3],val[i+1],val[i+4],
 											val[i+5],val[i+4],val[i+2]);
 						}
-						else if (ntype == DATA_MAT3FD) {
+						else if (ntype == DATA_MAT3SD) {
 							fprintf(m_fp, "%s %s %s\n" ,"TENSORS",szname,"float");
 							for (int i=0, n = 0; i<val.size(); i+=3, ++n)
 								if (tag[n] != 0)
@@ -566,7 +566,7 @@ void FEVTKExport::WriteCellData(FEState* ps)
 								}
 							}
 						}
-						else if (ntype == DATA_ARRAY_VEC3F)
+						else if (ntype == DATA_ARRAY_VEC3)
 						{
 							fprintf(m_fp, "FIELD %s %d\n", szname, data.GetArraySize());
 							std::vector<string> arrayNames = data.GetArrayNames();
@@ -628,25 +628,25 @@ bool FEVTKExport::FillNodeDataArray(vector<float>& val, Post::FEMeshData& meshDa
 	int ntype = meshData.GetType();
 	int NN = mesh.Nodes();
 
-	if (ntype == DATA_FLOAT)
+	if (ntype == DATA_SCALAR)
 	{
 		FENodeData<float>& data = dynamic_cast<FENodeData<float>&>(meshData);
 		val.assign(NN, 0.f);
 		for (int i=0; i<NN; ++i) val[i] = data[i];
 	}
-	else if (ntype == DATA_VEC3F)
+	else if (ntype == DATA_VEC3)
 	{
 		FENodeData<vec3f>& data = dynamic_cast<FENodeData<vec3f>&>(meshData);
 		val.assign(NN*3, 0.f);
 		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
 	}
-	else if (ntype == DATA_MAT3FS)
+	else if (ntype == DATA_MAT3S)
 	{
 		FENodeData<mat3fs>& data = dynamic_cast<FENodeData<mat3fs>&>(meshData);
 		val.assign(NN*6, 0.f);
 		for (int i=0; i<NN; ++i) write_data(val, i, data[i]);
 	}
-	else if (ntype == DATA_MAT3FD)
+	else if (ntype == DATA_MAT3SD)
 	{
 		FENodeData<mat3fd>& data = dynamic_cast<FENodeData<mat3fd>&>(meshData);
 		val.assign(NN*3, 0.f);
@@ -681,10 +681,10 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 	int nstride = 0;
 	switch (ntype)
 	{
-	case DATA_FLOAT: nstride = 1; break;
-	case DATA_VEC3F: nstride = 3; break;
-	case DATA_MAT3FS: nstride = 6; break;
-	case DATA_MAT3FD: nstride = 3; break;
+	case DATA_SCALAR: nstride = 1; break;
+	case DATA_VEC3: nstride = 3; break;
+	case DATA_MAT3S: nstride = 6; break;
+	case DATA_MAT3SD: nstride = 3; break;
 	default:
 		return false;
 	}
@@ -696,7 +696,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 
 	if (nfmt == DATA_NODE)
 	{
-		if (ntype == DATA_FLOAT)
+		if (ntype == DATA_SCALAR)
 		{
 			FEElementData<float, DATA_NODE>& data = dynamic_cast<FEElementData<float, DATA_NODE>&>(meshData);
 			float v[FSElement::MAX_NODES];
@@ -711,7 +711,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 				}
 			}
 		}
-		else if (ntype == DATA_VEC3F)
+		else if (ntype == DATA_VEC3)
 		{
 			FEElementData<vec3f, DATA_NODE>& data = dynamic_cast<FEElementData<vec3f, DATA_NODE>&>(meshData);
 			vec3f v[FSElement::MAX_NODES];
@@ -726,7 +726,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FS)
+		else if (ntype == DATA_MAT3S)
 		{
 			FEElementData<mat3fs, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fs, DATA_NODE>&>(meshData);
 			val.assign(NN * 6, 0.f);
@@ -743,7 +743,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FD)
+		else if (ntype == DATA_MAT3SD)
 		{
 			FEElementData<mat3fd, DATA_NODE>& data = dynamic_cast<FEElementData<mat3fd, DATA_NODE>&>(meshData);
 			val.assign(NN * 3, 0.f);
@@ -764,7 +764,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 	}
 	else if (nfmt == DATA_COMP)
 	{
-		if (ntype == DATA_FLOAT)
+		if (ntype == DATA_SCALAR)
 		{
 			FEElementData<float, DATA_COMP>& data = dynamic_cast<FEElementData<float, DATA_COMP>&>(meshData);
 			float v[FSElement::MAX_NODES];
@@ -779,7 +779,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 				}
 			}
 		}
-		else if (ntype == DATA_VEC3F)
+		else if (ntype == DATA_VEC3)
 		{
 			FEElementData<vec3f, DATA_COMP>& data = dynamic_cast<FEElementData<vec3f, DATA_COMP>&>(meshData);
 			vec3f v[FSElement::MAX_NODES];
@@ -794,7 +794,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FS)
+		else if (ntype == DATA_MAT3S)
 		{
 			FEElementData<mat3fs, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fs, DATA_COMP>&>(meshData);
 			val.assign(NN * 6, 0.f);
@@ -811,7 +811,7 @@ bool FEVTKExport::FillElementNodeDataArray(vector<float>& val, Post::FEMeshData&
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FD)
+		else if (ntype == DATA_MAT3SD)
 		{
 			FEElementData<mat3fd, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fd, DATA_COMP>&>(meshData);
 			val.assign(NN * 3, 0.f);
@@ -851,7 +851,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 
 	if (nfmt == DATA_ITEM)
 	{
-		if (ntype == DATA_FLOAT)
+		if (ntype == DATA_SCALAR)
 		{
 			FEElemData_T<float, DATA_ITEM>& data = dynamic_cast<FEElemData_T<float, DATA_ITEM>&>(meshData);
 			val.assign(NE, 0.f);
@@ -860,7 +860,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				if (data.active(i)) { data.eval(i, &val[i]); nval++; }
 			}
 		}
-		else if (ntype == DATA_VEC3F)
+		else if (ntype == DATA_VEC3)
 		{
 			FEElemData_T<vec3f, DATA_ITEM>& data = dynamic_cast<FEElemData_T<vec3f, DATA_ITEM>&>(meshData);
 			val.assign(3*NE, 0.f);
@@ -875,7 +875,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FS)
+		else if (ntype == DATA_MAT3S)
 		{
 			FEElemData_T<mat3fs, DATA_ITEM>& data = dynamic_cast<FEElemData_T<mat3fs, DATA_ITEM>&>(meshData);
 			val.assign(6*NE, 0.f);
@@ -891,7 +891,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FD)
+		else if (ntype == DATA_MAT3SD)
 		{
 			FEElemData_T<mat3fd, DATA_ITEM>& data = dynamic_cast<FEElemData_T<mat3fd, DATA_ITEM>&>(meshData);
 			val.assign(3*NE, 0.f);
@@ -925,7 +925,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_ARRAY_VEC3F)
+		else if (ntype == DATA_ARRAY_VEC3)
 		{
 			FEElemArrayVec3Data& data = dynamic_cast<FEElemArrayVec3Data&>(meshData);
 			int nc = data.components();
@@ -948,7 +948,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 	}
 /*	else if (nfmt == DATA_COMP)
 	{
-		if (ntype == DATA_FLOAT)
+		if (ntype == DATA_SCALAR)
 		{
 			FEElemData_T<float, DATA_COMP>& data = dynamic_cast<FEElemData_T<float, DATA_COMP>&>(meshData);
 			val.assign(NE*ne, 0.f);
@@ -963,7 +963,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_VEC3F)
+		else if (ntype == DATA_VEC3)
 		{
 			FEElemData_T<vec3f, DATA_COMP>& data = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>&>(meshData);
 			val.assign(NE*ne*3, 0.f);
@@ -978,7 +978,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FS)
+		else if (ntype == DATA_MAT3S)
 		{
 			FEElemData_T<mat3fs, DATA_COMP>& data = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>&>(meshData);
 			val.assign(NE*ne*6, 0.f);
@@ -993,7 +993,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FD)
+		else if (ntype == DATA_MAT3SD)
 		{
 			FEElemData_T<mat3fd, DATA_COMP>& data = dynamic_cast<FEElemData_T<mat3fd, DATA_COMP>&>(meshData);
 			val.assign(NE*ne*3, 0.f);
@@ -1016,7 +1016,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 		part.GetNodeList(node, lnode);
 		int NN = (int) node.size();
 
-		if (ntype == DATA_FLOAT)
+		if (ntype == DATA_SCALAR)
 		{
 			FEElemData_T<float, DATA_NODE>& data = dynamic_cast<FEElemData_T<float, DATA_NODE>&>(meshData);
 			val.assign(NN, 0.f);
@@ -1033,7 +1033,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_VEC3F)
+		else if (ntype == DATA_VEC3)
 		{
 			FEElemData_T<vec3f, DATA_NODE>& data = dynamic_cast<FEElemData_T<vec3f, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);
@@ -1050,7 +1050,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FS)
+		else if (ntype == DATA_MAT3S)
 		{
 			FEElemData_T<mat3fs, DATA_NODE>& data = dynamic_cast<FEElemData_T<mat3fs, DATA_NODE>&>(meshData);
 			val.assign(NN*6, 0.f);
@@ -1067,7 +1067,7 @@ bool FEVTKExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& meshDa
 				}
 			}
 		}
-		else if (ntype == DATA_MAT3FD)
+		else if (ntype == DATA_MAT3SD)
 		{
 			FEElemData_T<mat3fd, DATA_NODE>& data = dynamic_cast<FEElemData_T<mat3fd, DATA_NODE>&>(meshData);
 			val.assign(NN*3, 0.f);

@@ -296,11 +296,11 @@ void CImageMapTool::OnCreate()
     
     if(ui->methodBox->currentIndex() == SAMPLE_NODES)
     {
-        pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+        pdata->Create(partSet, DATA_SCALAR, FEMeshData::DATA_MULT);
     }
     else
     {
-        pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+        pdata->Create(partSet, DATA_SCALAR, FEMeshData::DATA_ITEM);
     }
     pm->AddMeshDataField(pdata);
 

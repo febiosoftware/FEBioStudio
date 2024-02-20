@@ -3744,8 +3744,8 @@ void FEBioExport3::WriteSurfaceDataSection()
 				XMLElement tag("SurfaceData");
 				tag.add_attribute("name", sd.GetName().c_str());
 
-				if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (sd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D) tag.add_attribute("datatype", "vector");
+				if (sd.GetDataType() == DATA_SCALAR) tag.add_attribute("datatype", "scalar");
+				else if (sd.GetDataType() == DATA_VEC3) tag.add_attribute("datatype", "vector");
 
 				tag.add_attribute("surface", sd.GetSurface()->GetName().c_str());
 
@@ -3797,8 +3797,8 @@ void FEBioExport3::WriteNodeDataSection()
 				XMLElement tag("NodeData");
 				tag.add_attribute("name", nd.GetName().c_str());
 
-				if      (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_SCALAR) tag.add_attribute("datatype", "scalar");
-				else if (nd.GetDataType() == FEMeshData::DATA_TYPE::DATA_VEC3D ) tag.add_attribute("datatype", "vector");
+				if      (nd.GetDataType() == DATA_SCALAR) tag.add_attribute("datatype", "scalar");
+				else if (nd.GetDataType() == DATA_VEC3 ) tag.add_attribute("datatype", "vector");
 
 				FEItemListBuilder* pitem = nd.GetItemList();
 				tag.add_attribute("node_set", GetNodeSetName(pitem));
@@ -3813,8 +3813,8 @@ void FEBioExport3::WriteNodeDataSection()
 					{
 						el.set_attribute(n1, nid++);
 
-						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.getScalar(i));
-						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.getVec3d (i));
+						if      (nd.GetDataType() == DATA_SCALAR) el.value(nd.getScalar(i));
+						else if (nd.GetDataType() == DATA_VEC3 ) el.value(nd.getVec3d (i));
 
 						m_xml.add_leaf(el, false);
 					}

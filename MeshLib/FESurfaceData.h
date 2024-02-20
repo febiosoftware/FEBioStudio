@@ -33,10 +33,10 @@ class FESurfaceData : public FEMeshData
 {
 public:
 	FESurfaceData(FSMesh* mesh = nullptr);
-	FESurfaceData(FSMesh* mesh, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
+	FESurfaceData(FSMesh* mesh, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
 	~FESurfaceData();
 
-	void Create(FSMesh* mesh, FSSurface* surface, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
+	void Create(FSMesh* mesh, FSSurface* surface, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
 
 	FSSurface* GetSurface() {return dynamic_cast<FSSurface*>(GetItemList());}
 

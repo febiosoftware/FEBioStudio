@@ -72,7 +72,7 @@ private:
 class FEMathDataField : public ModelDataField
 {
 public:
-	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_FLOAT, DATA_NODE, CLASS_NODE, flag)
+	FEMathDataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_SCALAR, DATA_NODE, CLASS_NODE, flag)
 	{
 		m_eq = "";
 	}
@@ -102,7 +102,7 @@ private:
 class FEMathVec3DataField : public ModelDataField
 {
 public:
-	FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_VEC3F, DATA_NODE, CLASS_NODE, flag)
+	FEMathVec3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_VEC3, DATA_NODE, CLASS_NODE, flag)
 	{
 		m_eq[0] = "";
 		m_eq[1] = "";
@@ -143,7 +143,7 @@ private:
 class FEMathMat3DataField : public ModelDataField
 {
 public:
-	FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_MAT3F, DATA_NODE, CLASS_NODE, flag)
+	FEMathMat3DataField(Post::FEPostModel* fem, unsigned int flag = 0) : ModelDataField(fem, DATA_MAT3, DATA_NODE, CLASS_NODE, flag)
 	{
 	}
 

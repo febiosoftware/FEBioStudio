@@ -803,12 +803,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 						m_ar.CloseChunk();
 					}
 
-					Data_Type dataType;
-					switch (ndataType)
-					{
-					case DATA_FLOAT: dataType = DATA_FLOAT; break;
-					case DATA_VEC3F: dataType = DATA_VEC3F; break;
-					}
+					DATA_TYPE dataType = (DATA_TYPE) ndataType;
 
 					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
@@ -862,12 +857,7 @@ bool XpltReader3::ReadObjectsSection(Post::FEPostModel& fem)
 						m_ar.CloseChunk();
 					}
 
-					Data_Type dataType;
-					switch (ndataType)
-					{
-					case DATA_FLOAT: dataType = DATA_FLOAT; break;
-					case DATA_VEC3F: dataType = DATA_VEC3F; break;
-					}
+					DATA_TYPE dataType = (DATA_TYPE) ndataType;
 
 					PlotObjectData* data = new PlotObjectData(&fem, dataType);
 					data->SetName(szdata);
@@ -1718,8 +1708,8 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 
 									switch (po->m_data[nv]->Type())
 									{
-									case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
-									case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+									case DATA_SCALAR: { float v; m_ar.read(v); pd->set(nv, v); } break;
+									case DATA_VEC3 : { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
 									}
 								}
 
@@ -1778,8 +1768,8 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 
 								switch (po->m_data[nv]->Type())
 								{
-								case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
-								case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+								case DATA_SCALAR: { float v; m_ar.read(v); pd->set(nv, v); } break;
+								case DATA_VEC3 : { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
 								}
 
 								m_ar.CloseChunk();

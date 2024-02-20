@@ -98,18 +98,10 @@ FEMeshData::DATA_CLASS CDlgAddMeshData::GetType()
 	return FEMeshData::NODE_DATA;
 }
 
-FEMeshData::DATA_TYPE CDlgAddMeshData::GetDataType() 
+DATA_TYPE CDlgAddMeshData::GetDataType() 
 { 
 	int n = ui->m_data->currentIndex();
-	switch (n)
-	{
-	case FEMeshData::DATA_SCALAR: return FEMeshData::DATA_SCALAR; break;
-	case FEMeshData::DATA_VEC3D : return FEMeshData::DATA_VEC3D; break;
-	case FEMeshData::DATA_MAT3D : return FEMeshData::DATA_MAT3D; break;
-	default:
-		assert(false);
-	}
-	return FEMeshData::DATA_SCALAR;
+	return (DATA_TYPE)n;
 }
 
 FEMeshData::DATA_FORMAT CDlgAddMeshData::GetFormat() 
@@ -150,13 +142,13 @@ public:
 public:
 	void setup(QDialog* dlg)
 	{
-		FEMeshData::DATA_TYPE dataType = m_data->GetDataType();
+		DATA_TYPE dataType = m_data->GetDataType();
 		int ncols = 0;
 		switch (dataType)
 		{
-		case FEMeshData::DATA_SCALAR: ncols = 1; break;
-		case FEMeshData::DATA_VEC3D : ncols = 3; break;
-		case FEMeshData::DATA_MAT3D : ncols = 9; break;
+		case DATA_SCALAR: ncols = 1; break;
+		case DATA_VEC3 : ncols = 3; break;
+		case DATA_MAT3 : ncols = 9; break;
 		}
 
 		QVBoxLayout* layout = new QVBoxLayout;
