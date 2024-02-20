@@ -3696,11 +3696,11 @@ void FEBioExport3::WriteElementDataFields()
 								{
 									el.set_attribute(nid, lid++);
 
-									if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+									if (data.GetDataFormat() == DATA_ITEM)
 									{
 										el.value(data[j]);
 									}
-									else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+									else if (data.GetDataFormat() == DATA_MULT)
 									{
 										int nn = pe->Nodes();
 										for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);

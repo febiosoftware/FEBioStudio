@@ -314,7 +314,7 @@ mat2d deform_grad_2d(FEPostModel& fem, int n, double r, double s, int nstate, in
 
 //-----------------------------------------------------------------------------
 // Deformation gradient
-DeformationGradient::DeformationGradient(FEState* pm, ModelDataField* pdf) : FEElemData_T<mat3f, DATA_COMP>(pm, pdf)
+DeformationGradient::DeformationGradient(FEState* pm, ModelDataField* pdf) : FEElemData_T<mat3f, DATA_MULT>(pm, pdf)
 {
 }
 
@@ -2049,7 +2049,7 @@ void ElemPressure::eval(int n, float* pv)
 //=============================================================================
 // Element nodal pressure
 //-----------------------------------------------------------------------------
-ElemNodalPressure::ElemNodalPressure(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_COMP>(state, pdf)
+ElemNodalPressure::ElemNodalPressure(FEState* state, ModelDataField* pdf) : FEElemData_T<float, DATA_MULT>(state, pdf)
 {
 	// find the stress field
 	FEPostModel& fem = *state->GetFSModel();
@@ -2065,7 +2065,7 @@ void ElemNodalPressure::eval(int n, float* pv)
 
 	// get stress field
 	FEMeshData& rd = state.m_Data[m_nstress];
-	FEElemData_T<mat3fs,DATA_COMP>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_COMP>&>(rd);
+	FEElemData_T<mat3fs,DATA_MULT>& dm = dynamic_cast<FEElemData_T<mat3fs,DATA_MULT>&>(rd);
 
 	// get number of nodes for this element
 	int neln = state.GetFEMesh()->ElementRef(n).Nodes();

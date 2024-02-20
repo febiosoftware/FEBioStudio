@@ -209,12 +209,12 @@ void FEMeshValuator::Evaluate(int nfield)
 							int elemId = it->m_lid;
 							data.SetElementDataTag(elemId, 1);
 
-							if (partData.GetDataFormat() == FEMeshData::DATA_ITEM)
+							if (partData.GetDataFormat() == DATA_ITEM)
 							{
 								double val = partData.GetValue(i, 0);
 								data.SetElementValue(elemId, val);
 							}
-							else if (partData.GetDataFormat() == FEMeshData::DATA_MULT)
+							else if (partData.GetDataFormat() == DATA_MULT)
 							{
 								FEElement_* pe = it->m_pi;
 								int nn = pe->Nodes();

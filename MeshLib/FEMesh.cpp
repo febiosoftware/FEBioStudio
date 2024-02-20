@@ -2480,7 +2480,7 @@ FENodeData* FSMesh::AddNodeDataField(const string& name, FSNodeSet* nodeset, DAT
 FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surface, DATA_TYPE dataType)
 {
 	FESurfaceData* data = new FESurfaceData;
-	data->Create(this, surface, dataType, FEMeshData::DATA_ITEM);
+	data->Create(this, surface, dataType, DATA_ITEM);
 	data->SetName(name);
 	m_meshData.push_back(data);
 	return data;
@@ -2490,7 +2490,7 @@ FESurfaceData* FSMesh::AddSurfaceDataField(const string& name, FSSurface* surfac
 FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, DATA_TYPE dataType)
 {
 	FEElementData* map = new FEElementData;
-	map->Create(this, part, dataType, FEMeshData::DATA_ITEM);
+	map->Create(this, part, dataType, DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;
@@ -2500,7 +2500,7 @@ FEElementData* FSMesh::AddElementDataField(const string& sz, FSElemSet* part, DA
 FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, DATA_TYPE dataType)
 {
 	FEPartData* map = new FEPartData(this);
-	map->Create(part, dataType, FEMeshData::DATA_ITEM);
+	map->Create(part, dataType, DATA_ITEM);
 	map->SetName(sz);
 	m_meshData.push_back(map);
 	return map;

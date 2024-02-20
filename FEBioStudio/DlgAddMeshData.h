@@ -42,7 +42,7 @@ public:
 	QString GetName();
 	FEMeshData::DATA_CLASS GetType();
 	DATA_TYPE GetDataType();
-	FEMeshData::DATA_FORMAT GetFormat();
+	DATA_FORMAT GetFormat();
 
 private:
 	CDlgAddMeshDataUI*	ui;

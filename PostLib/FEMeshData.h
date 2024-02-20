@@ -46,19 +46,6 @@ enum Data_Class {
 };
 
 //-----------------------------------------------------------------------------
-// Data storage formats:
-// - DATA_NODE: store data at the nodes of the region
-// - DATA_ITEM: store data for each item of the region
-// - DATA_COMP: store data at each node of each item of the region
-// - DATA_REGION: store one data value for the entire region
-enum Data_Format {
-	DATA_NODE,
-	DATA_ITEM,
-	DATA_COMP,
-	DATA_REGION
-};
-
-//-----------------------------------------------------------------------------
 enum Data_Tensor_Type {
 	TENSOR_SCALAR,
 	TENSOR_VECTOR,
@@ -71,11 +58,11 @@ enum Data_Tensor_Type {
 class FEMeshData
 {
 public:
-	FEMeshData(FEState* state, DATA_TYPE ntype, Data_Format nfmt) { m_state = state; m_ntype = ntype; m_nfmt = nfmt; }
+	FEMeshData(FEState* state, DATA_TYPE ntype, DATA_FORMAT nfmt) { m_state = state; m_ntype = ntype; m_nfmt = nfmt; }
 	virtual ~FEMeshData() { m_state = 0; }
 
 	DATA_TYPE GetType() { return m_ntype; }
-	Data_Format GetFormat() { return m_nfmt; }
+	DATA_FORMAT GetFormat() { return m_nfmt; }
 
 	FEState* GetFEState() { return m_state; }
 
@@ -86,7 +73,7 @@ public:
 protected:
 	FEState*	m_state;
 	DATA_TYPE	m_ntype;
-	Data_Format	m_nfmt;
+	DATA_FORMAT	m_nfmt;
 };
 
 //-----------------------------------------------------------------------------

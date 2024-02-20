@@ -49,7 +49,7 @@ enum DataFieldFlags {
 class ModelDataField : public FSObject
 {
 public:
-	ModelDataField(FEPostModel* glm, DATA_TYPE ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag);
+	ModelDataField(FEPostModel* glm, DATA_TYPE ntype, DATA_FORMAT nfmt, Data_Class ncls, unsigned int flag);
 
 	virtual ~ModelDataField();
 
@@ -63,7 +63,7 @@ public:
 	DATA_TYPE Type() { return m_ntype; }
 
 	// Format identifier
-	Data_Format Format() const { return m_nfmt; }
+	DATA_FORMAT Format() const { return m_nfmt; }
 
 	// Class Identifier
 	Data_Class DataClass() const { return m_nclass; }
@@ -105,7 +105,7 @@ public:
 protected:
 	int				m_nfield;	//!< field ID
 	DATA_TYPE		m_ntype;	//!< data type
-	Data_Format		m_nfmt;		//!< data format
+	DATA_FORMAT		m_nfmt;		//!< data format
 	Data_Class		m_nclass;	//!< data class
 	unsigned int	m_flag;		//!< flags
 	std::string		m_units;	//!< units
@@ -141,7 +141,7 @@ typedef std::vector<ModelDataField*>::iterator FEDataFieldPtr;
 class FEArrayDataField : public ModelDataField
 {
 public:
-	FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag = 0);
+	FEArrayDataField(FEPostModel* fem, Data_Class c, DATA_FORMAT f, unsigned int flag = 0);
 
 	ModelDataField* Clone() const override;
 

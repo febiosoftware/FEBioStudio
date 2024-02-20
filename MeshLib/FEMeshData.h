@@ -43,13 +43,6 @@ public:
 		PART_DATA
 	};
 
-	// NOTE: this is serialized. Don't change order!
-	enum DATA_FORMAT {
-		DATA_ITEM,	// one value per mesh item
-		DATA_NODE,	// one value for each node of selection
-		DATA_MULT	// n values for each mesh item, where n is the nr. of nodes of that item
-	};
-
 public:
 	FEMeshData(DATA_CLASS);
 	virtual ~FEMeshData();

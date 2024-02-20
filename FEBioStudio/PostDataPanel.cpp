@@ -379,10 +379,10 @@ public:
 			{
 				switch (pd->Format())
 				{
-				case Post::DATA_NODE: return QString("NODE"); break;
-				case Post::DATA_ITEM: return QString("ITEM"); break;
-				case Post::DATA_COMP: return QString("MIXED"); break;
-				case Post::DATA_REGION: return QString("REGION"); break;
+				case DATA_NODE  : return QString("NODE"); break;
+				case DATA_ITEM  : return QString("ITEM"); break;
+				case DATA_MULT  : return QString("MIXED"); break;
+				case DATA_REGION: return QString("REGION"); break;
 				default:
 					assert(false);
 					return QString("(unknown)");
@@ -736,10 +736,10 @@ void CDlgFilter::setDataField(Post::ModelDataField* pdf)
 		ui->comp->addItem(QString::fromStdString(cname));
 	}
 
-	Post::Data_Format frm = pdf->Format();
+	DATA_FORMAT frm = pdf->Format();
 	ui->convFmt->clear();
-	if (frm != Post::DATA_ITEM) ui->convFmt->addItem("ITEM", (int)Post::DATA_ITEM);
-	if (frm != Post::DATA_NODE) ui->convFmt->addItem("NODE", (int)Post::DATA_NODE);
+	if (frm != DATA_ITEM) ui->convFmt->addItem("ITEM", (int)DATA_ITEM);
+	if (frm != DATA_NODE) ui->convFmt->addItem("NODE", (int)DATA_NODE);
 
 	Post::Data_Class cls = pdf->DataClass();
 	ui->convClass->clear();
@@ -1158,7 +1158,7 @@ void CPostDataPanel::on_AddFilter_triggered()
 				break;
 				case 5:
 				{
-					newData = new Post::FEDataField_T<Post::FEElementData<float, Post::DATA_ITEM> >(&fem, Post::EXPORT_DATA);
+					newData = new Post::FEDataField_T<Post::FEElementData<float, DATA_ITEM> >(&fem, Post::EXPORT_DATA);
 					newData->SetName(sname);
 					fem.AddDataField(newData);
 

@@ -104,18 +104,10 @@ DATA_TYPE CDlgAddMeshData::GetDataType()
 	return (DATA_TYPE)n;
 }
 
-FEMeshData::DATA_FORMAT CDlgAddMeshData::GetFormat() 
+DATA_FORMAT CDlgAddMeshData::GetFormat() 
 { 
 	int n = ui->m_fmt->currentIndex(); 
-	switch (n)
-	{
-	case FEMeshData::DATA_ITEM: return FEMeshData::DATA_ITEM; break;
-	case FEMeshData::DATA_NODE: return FEMeshData::DATA_NODE; break;
-	case FEMeshData::DATA_MULT: return FEMeshData::DATA_MULT; break;
-	default:
-		assert(false);
-	}
-	return FEMeshData::DATA_NODE;
+	return (DATA_FORMAT)n;
 }
 
 //==========================================================

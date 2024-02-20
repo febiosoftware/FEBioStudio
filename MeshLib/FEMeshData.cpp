@@ -58,7 +58,7 @@ DATA_TYPE FEMeshData::GetDataType() const
 	return m_dataType;
 }
 
-FEMeshData::DATA_FORMAT FEMeshData::GetDataFormat() const
+DATA_FORMAT FEMeshData::GetDataFormat() const
 {
 	return m_dataFmt;
 }

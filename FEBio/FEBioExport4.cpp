@@ -2364,11 +2364,11 @@ void FEBioExport4::WriteElementDataFields()
 
 										if (partData->GetDataType() == DATA_SCALAR)
 										{
-											if (data.GetDataFormat() == FEMeshData::DATA_ITEM)
+											if (data.GetDataFormat() == DATA_ITEM)
 											{
 												el.value(data[j]);
 											}
-											else if (data.GetDataFormat() == FEMeshData::DATA_MULT)
+											else if (data.GetDataFormat() == DATA_MULT)
 											{
 												int nn = pe->Nodes();
 												for (int k = 0; k < nn; ++k) v[k] = data.GetValue(j, k);
@@ -2378,14 +2378,14 @@ void FEBioExport4::WriteElementDataFields()
 										else if (partData->GetDataType() == DATA_VEC3)
 										{
 											// we only support DATA_ITEM format
-											assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
+											assert(data.GetDataFormat() == DATA_ITEM);
 											vec3d v = data.getVec3d(j);
 											el.value(v);
 										}
 										else if (partData->GetDataType() == DATA_MAT3)
 										{
 											// we only support DATA_ITEM format
-											assert(data.GetDataFormat() == FEMeshData::DATA_ITEM);
+											assert(data.GetDataFormat() == DATA_ITEM);
 											mat3d v = data.getMat3d(j);
 											el.value(v);
 										}

@@ -33,7 +33,7 @@ SOFTWARE.*/
 #include "FEAreaCoverage.h"
 using namespace Post;
 
-ModelDataField::ModelDataField(FEPostModel* fem, DATA_TYPE ntype, Data_Format nfmt, Data_Class ncls, unsigned int flag)
+ModelDataField::ModelDataField(FEPostModel* fem, DATA_TYPE ntype, DATA_FORMAT nfmt, Data_Class ncls, unsigned int flag)
 {
 	m_fem = fem;
 	m_ntype = ntype;
@@ -368,7 +368,7 @@ const char* ModelDataField::GetUnits() const
 }
 
 //=================================================================================================
-FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, Data_Format f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
+FEArrayDataField::FEArrayDataField(FEPostModel* fem, Data_Class c, DATA_FORMAT f, unsigned int flag) : ModelDataField(fem, DATA_ARRAY, f, c, flag)
 {
 }
 
@@ -478,7 +478,7 @@ bool Post::ExportNodeDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				FEState& s = *fem.GetState( states[n] );
 
 				FEMeshData& d = s.m_Data[ndata];
-				Data_Format fmt = d.GetFormat();
+				DATA_FORMAT fmt = d.GetFormat();
 				switch (d.GetType())
 				{
 				case DATA_SCALAR:
@@ -567,7 +567,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				FEState& s = *fem.GetState( states[n] );
 
 				FEMeshData& d = s.m_Data[ndata];
-				Data_Format fmt = d.GetFormat();
+				DATA_FORMAT fmt = d.GetFormat();
 				if (fmt == DATA_ITEM)
 				{
 					switch (d.GetType())
@@ -607,7 +607,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 					break;
 					}
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
 					int nn = face.Nodes();
 
@@ -615,7 +615,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				{
 				case DATA_SCALAR:
 				{
-					FEFaceData_T<float, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<float, DATA_COMP>*>(&d);
+					FEFaceData_T<float, DATA_MULT>* pf = dynamic_cast<FEFaceData_T<float, DATA_MULT>*>(&d);
 					if (pf->active(i))
 					{
 						float v[FSElement::MAX_NODES]; pf->eval(i, v);
@@ -628,7 +628,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				break;
 				case DATA_VEC3:
 				{
-					FEFaceData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_COMP>*>(&d);
+					FEFaceData_T<vec3f, DATA_MULT>* pf = dynamic_cast<FEFaceData_T<vec3f, DATA_MULT>*>(&d);
 					if (pf->active(i))
 					{
 						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
@@ -641,7 +641,7 @@ bool Post::ExportFaceDataField(FEPostModel& fem, const ModelDataField& df, FILE*
 				break;
 				case DATA_MAT3S:
 				{
-					FEFaceData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_COMP>*>(&d);
+					FEFaceData_T<mat3fs, DATA_MULT>* pf = dynamic_cast<FEFaceData_T<mat3fs, DATA_MULT>*>(&d);
 					if (pf->active(i))
 					{
 						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
@@ -768,7 +768,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 				FEState& s = *fem.GetState(states[n]);
 
 				FEMeshData& d = s.m_Data[ndata];
-				Data_Format fmt = d.GetFormat();
+				DATA_FORMAT fmt = d.GetFormat();
 				if (fmt == DATA_ITEM)
 				{
 					switch (d.GetType())
@@ -814,7 +814,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 						assert(false);
 					}
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
 					int nn = el.Nodes();
 
@@ -822,7 +822,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					{
 					case DATA_SCALAR:
 					{
-						FEElemData_T<float, DATA_COMP>* pf = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&d);
+						FEElemData_T<float, DATA_MULT>* pf = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&d);
 						float v[FSElement::MAX_NODES]; pf->eval(i, v);
 						float f = 0.0f;
 						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
@@ -831,7 +831,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					break;
 					case DATA_VEC3:
 					{
-						FEElemData_T<vec3f, DATA_COMP>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_COMP>*>(&d);
+						FEElemData_T<vec3f, DATA_MULT>* pf = dynamic_cast<FEElemData_T<vec3f, DATA_MULT>*>(&d);
 						vec3f v[FSElement::MAX_NODES]; pf->eval(i, v);
 						vec3f f(0.f, 0.f, 0.f);
 						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;
@@ -840,7 +840,7 @@ bool Post::ExportElementDataField(FEPostModel& fem, const ModelDataField& df, FI
 					break;
 					case DATA_MAT3S:
 					{
-						FEElemData_T<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_COMP>*>(&d);
+						FEElemData_T<mat3fs, DATA_MULT>* pf = dynamic_cast<FEElemData_T<mat3fs, DATA_MULT>*>(&d);
 						mat3fs v[FSElement::MAX_NODES]; pf->eval(i, v);
 						mat3fs f(0.f, 0.f, 0.f, 0.f, 0.f, 0.f);
 						for (int i = 0; i < nn; ++i) f += v[i]; f /= (float)nn;

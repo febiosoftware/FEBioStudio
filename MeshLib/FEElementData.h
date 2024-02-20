@@ -44,10 +44,10 @@ public:
 
 public:
 	FEElementData(FSMesh* mesh = nullptr);
-	FEElementData(FSMesh* mesh, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
+	FEElementData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFormat);
 
 	// create a data field
-	void Create(FSMesh* pm, FSElemSet* part, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
+	void Create(FSMesh* pm, FSElemSet* part, DATA_TYPE dataType, DATA_FORMAT dataFormat);
 
 	void SetItemList(FEItemListBuilder* item, int n = 0) override;
 
@@ -80,10 +80,10 @@ class FEPartData : public FEMeshData
 {
 public:
 	FEPartData(FSMesh* mesh = nullptr);
-	FEPartData(FSMesh* mesh, DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFmt);
+	FEPartData(FSMesh* mesh, DATA_TYPE dataType, DATA_FORMAT dataFmt);
 
 	// create a data field
-	bool Create(FSPartSet* partList, DATA_TYPE dataType = DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
+	bool Create(FSPartSet* partList, DATA_TYPE dataType = DATA_SCALAR, DATA_FORMAT dataFmt = DATA_ITEM);
 
 	// add a part (returns false if part is already a member or part set is empty)
 	bool AddPart(int localPartID);

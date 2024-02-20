@@ -270,7 +270,7 @@ bool xpltFileExport::WriteDataField(ModelDataField& data)
 	{
 	case DATA_NODE  : nfmt = FMT_NODE; break;
 	case DATA_ITEM  : nfmt = FMT_ITEM; break;
-	case DATA_COMP  : nfmt = FMT_MULT; break;
+	case DATA_MULT  : nfmt = FMT_MULT; break;
 	case DATA_REGION: nfmt = FMT_REGION; break;
 	default:
 		return error("Unknown data format in WriteDataField");
@@ -824,11 +824,11 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else return error("Unknown data type in FillElemDataArray");
 	}
-	else if (nfmt == DATA_COMP)
+	else if (nfmt == DATA_MULT)
 	{
 		if (ntype == DATA_SCALAR)
 		{
-			FEElementData<float, DATA_COMP>& data = dynamic_cast<FEElementData<float, DATA_COMP>&>(meshData);
+			FEElementData<float, DATA_MULT>& data = dynamic_cast<FEElementData<float, DATA_MULT>&>(meshData);
 			val.assign(NE*ne, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
@@ -844,7 +844,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else if (ntype == DATA_VEC3)
 		{
-			FEElementData<vec3f, DATA_COMP>& data = dynamic_cast<FEElementData<vec3f, DATA_COMP>&>(meshData);
+			FEElementData<vec3f, DATA_MULT>& data = dynamic_cast<FEElementData<vec3f, DATA_MULT>&>(meshData);
 			val.assign(NE*ne*3, 0.f);
 			for (int i=0; i<NE; ++i)
 			{
@@ -860,7 +860,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else if (ntype == DATA_MAT3S)
 		{
-			FEElementData<mat3fs, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fs, DATA_COMP>&>(meshData);
+			FEElementData<mat3fs, DATA_MULT>& data = dynamic_cast<FEElementData<mat3fs, DATA_MULT>&>(meshData);
 			val.assign(NE*ne*6, 0.f);
 			mat3fs v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
@@ -876,7 +876,7 @@ bool xpltFileExport::FillElemDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else if (ntype == DATA_MAT3SD)
 		{
-			FEElementData<mat3fd, DATA_COMP>& data = dynamic_cast<FEElementData<mat3fd, DATA_COMP>&>(meshData);
+			FEElementData<mat3fd, DATA_MULT>& data = dynamic_cast<FEElementData<mat3fd, DATA_MULT>&>(meshData);
 			val.assign(NE*ne*3, 0.f);
 			mat3fd v[FSElement::MAX_NODES];
 			for (int i=0; i<NE; ++i)
@@ -1053,11 +1053,11 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else return error("Unknown data type in FillFaceDataArray");
 	}
-	else if (nfmt == DATA_COMP)
+	else if (nfmt == DATA_MULT)
 	{
 		if (ntype == DATA_SCALAR)
 		{
-			FEFaceData<float, DATA_COMP>& data = dynamic_cast<FEFaceData<float, DATA_COMP>&>(meshData);
+			FEFaceData<float, DATA_MULT>& data = dynamic_cast<FEFaceData<float, DATA_MULT>&>(meshData);
 			val.assign(NF*PLT_MAX_FACET_NODES, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
@@ -1076,7 +1076,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else if (ntype == DATA_VEC3)
 		{
-			FEFaceData<vec3f, DATA_COMP>& data = dynamic_cast<FEFaceData<vec3f, DATA_COMP>&>(meshData);
+			FEFaceData<vec3f, DATA_MULT>& data = dynamic_cast<FEFaceData<vec3f, DATA_MULT>&>(meshData);
 			val.assign(NF*PLT_MAX_FACET_NODES*3, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
@@ -1094,7 +1094,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else if (ntype == DATA_MAT3S)
 		{
-			FEFaceData<mat3fs, DATA_COMP>& data = dynamic_cast<FEFaceData<mat3fs, DATA_COMP>&>(meshData);
+			FEFaceData<mat3fs, DATA_MULT>& data = dynamic_cast<FEFaceData<mat3fs, DATA_MULT>&>(meshData);
 			val.assign(NF*PLT_MAX_FACET_NODES*6, 0.f);
 			for (int i=0; i<NF; ++i)
 			{
@@ -1112,7 +1112,7 @@ bool xpltFileExport::FillFaceDataArray(vector<float>& val, Post::FEMeshData& mes
 		}
 		else if (ntype == DATA_MAT3SD)
 		{
-			FEFaceData<mat3fd, DATA_COMP>& data = dynamic_cast<FEFaceData<mat3fd, DATA_COMP>&>(meshData);
+			FEFaceData<mat3fd, DATA_MULT>& data = dynamic_cast<FEFaceData<mat3fd, DATA_MULT>&>(meshData);
 			val.assign(NF*PLT_MAX_FACET_NODES*3, 0.f);
 			for (int i=0; i<NF; ++i)
 			{

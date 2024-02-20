@@ -45,7 +45,7 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 		FEState& s = *fem.GetState(i);
 		FEMeshData& d = s.m_Data[ndata];
 		DATA_TYPE type = d.GetType();
-		Data_Format fmt = d.GetFormat();
+		DATA_FORMAT fmt = d.GetFormat();
 		if (IS_NODE_FIELD(nfield))
 		{
 			switch (type)
@@ -96,9 +96,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEElementData<float, DATA_COMP>* pf = dynamic_cast<FEElementData<float, DATA_COMP>*>(&d);
+					FEElementData<float, DATA_MULT>* pf = dynamic_cast<FEElementData<float, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -124,9 +124,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEElementData<vec3f, DATA_COMP>* pf = dynamic_cast<FEElementData<vec3f, DATA_COMP>*>(&d);
+					FEElementData<vec3f, DATA_MULT>* pf = dynamic_cast<FEElementData<vec3f, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -152,9 +152,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEElementData<mat3fs, DATA_COMP>* pf = dynamic_cast<FEElementData<mat3fs, DATA_COMP>*>(&d);
+					FEElementData<mat3fs, DATA_MULT>* pf = dynamic_cast<FEElementData<mat3fs, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -180,9 +180,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEElementData<mat3f, DATA_COMP>* pf = dynamic_cast<FEElementData<mat3f, DATA_COMP>*>(&d);
+					FEElementData<mat3f, DATA_MULT>* pf = dynamic_cast<FEElementData<mat3f, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -217,9 +217,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEFaceData<float, DATA_COMP>* pf = dynamic_cast<FEFaceData<float, DATA_COMP>*>(&d);
+					FEFaceData<float, DATA_MULT>* pf = dynamic_cast<FEFaceData<float, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -245,9 +245,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEFaceData<vec3f, DATA_COMP>* pf = dynamic_cast<FEFaceData<vec3f, DATA_COMP>*>(&d);
+					FEFaceData<vec3f, DATA_MULT>* pf = dynamic_cast<FEFaceData<vec3f, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -273,9 +273,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEFaceData<mat3fs, DATA_COMP>* pf = dynamic_cast<FEFaceData<mat3fs, DATA_COMP>*>(&d);
+					FEFaceData<mat3fs, DATA_MULT>* pf = dynamic_cast<FEFaceData<mat3fs, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= fscale;
 				}
@@ -301,9 +301,9 @@ bool Post::DataScale(FEPostModel& fem, int nfield, double scale)
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= (float) scale;
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEFaceData<mat3f, DATA_COMP>* pf = dynamic_cast<FEFaceData<mat3f, DATA_COMP>*>(&d);
+					FEFaceData<mat3f, DATA_MULT>* pf = dynamic_cast<FEFaceData<mat3f, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n<N; ++n) (*pf)[n] *= (float) scale;
 				}
@@ -344,7 +344,7 @@ bool Post::DataScaleVec3(FEPostModel& fem, int nfield, vec3d scale)
 		FEState& s = *fem.GetState(i);
 		FEMeshData& d = s.m_Data[ndata];
 		DATA_TYPE type = d.GetType();
-		Data_Format fmt = d.GetFormat();
+		DATA_FORMAT fmt = d.GetFormat();
 		if (IS_NODE_FIELD(nfield))
 		{
 			switch (type)
@@ -395,9 +395,9 @@ bool Post::DataScaleVec3(FEPostModel& fem, int nfield, vec3d scale)
 						v.z *= fscale.z;
 					}
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEElementData<vec3f, DATA_COMP>* pf = dynamic_cast<FEElementData<vec3f, DATA_COMP>*>(&d);
+					FEElementData<vec3f, DATA_MULT>* pf = dynamic_cast<FEElementData<vec3f, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n < N; ++n)
 					{
@@ -456,9 +456,9 @@ bool Post::DataScaleVec3(FEPostModel& fem, int nfield, vec3d scale)
 						v.z *= fscale.z;
 					}
 				}
-				else if (fmt == DATA_COMP)
+				else if (fmt == DATA_MULT)
 				{
-					FEFaceData<vec3f, DATA_COMP>* pf = dynamic_cast<FEFaceData<vec3f, DATA_COMP>*>(&d);
+					FEFaceData<vec3f, DATA_MULT>* pf = dynamic_cast<FEFaceData<vec3f, DATA_MULT>*>(&d);
 					int N = pf->size();
 					for (int n = 0; n < N; ++n)
 					{
@@ -666,7 +666,7 @@ bool Post::DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand)
 		FEMeshData& d = state.m_Data[ndst];
 		FEMeshData& s = state.m_Data[nsrc];
 
-		Data_Format fmt = d.GetFormat();
+		DATA_FORMAT fmt = d.GetFormat();
 		if (d.GetFormat() != s.GetFormat()) return false;
 		if ((d.GetType() != s.GetType()) && (s.GetType() != DATA_SCALAR)) return false;
 
@@ -935,10 +935,10 @@ bool Post::DataGradient(FEPostModel& fem, int vecField, int sclField, int config
 					for (int i = 0; i<NN; ++i)
 						if (tag[i] > 0) d[i] /= (double)tag[i];
 				}
-				else if (s.GetFormat() == DATA_COMP)
+				else if (s.GetFormat() == DATA_MULT)
 				{
 					vector<int> tag(NN, 0);
-					FEElemData_T<float, DATA_COMP>* ps = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&s);
+					FEElemData_T<float, DATA_MULT>* ps = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&s);
 
 					float ed[FSElement::MAX_NODES] = { 0.f };
 					for (int i = 0; i<mesh->Elements(); ++i)
@@ -1182,8 +1182,8 @@ void extractElemDataComponentNODE(DATA_TYPE ntype, Post::FEMeshData& dst, Post::
 
 template <typename T> void extractElemDataComponentCOMP_T(Post::FEMeshData& dst, Post::FEMeshData& src, int ncomp, Post::FEPostMesh& mesh)
 {
-	FEElemData_T<T, DATA_COMP>& vec = dynamic_cast<FEElemData_T<T, DATA_COMP>&>(src);
-	Post::FEElementData<float, DATA_COMP>& scl = dynamic_cast<Post::FEElementData<float, DATA_COMP>&>(dst);
+	FEElemData_T<T, DATA_MULT>& vec = dynamic_cast<FEElemData_T<T, DATA_MULT>&>(src);
+	Post::FEElementData<float, DATA_MULT>& scl = dynamic_cast<Post::FEElementData<float, DATA_MULT>&>(dst);
 
 	int NE = mesh.Elements();
 	T val[FSElement::MAX_NODES];
@@ -1276,9 +1276,9 @@ ModelDataField* Post::DataComponent(FEPostModel& fem, ModelDataField* pdf, int n
 				extractElemDataComponentNODE(ntype, state->m_Data[nscl], state->m_Data[nvec], ncomp, mesh);
 			}
 		}
-		else if (nfmt == DATA_COMP)
+		else if (nfmt == DATA_MULT)
 		{
-			newField = new FEDataField_T<FEElementData<float, DATA_COMP> >(&fem, EXPORT_DATA);
+			newField = new FEDataField_T<FEElementData<float, DATA_MULT> >(&fem, EXPORT_DATA);
 			fem.AddDataField(newField, sname);
 
 			int nvec = pdf->GetFieldID(); nvec = FIELD_CODE(nvec);
@@ -1461,7 +1461,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					}
 				}
 			}
-			else if ((nfmt == DATA_COMP) && (newFormat == DATA_ITEM))
+			else if ((nfmt == DATA_MULT) && (newFormat == DATA_ITEM))
 			{
 				newField = new FEDataField_T<FEElementData<float, DATA_ITEM> >(&fem, EXPORT_DATA);
 				fem.AddDataField(newField, name);
@@ -1479,7 +1479,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					vector<float> data(NN, 0.f);
 					vector<int> tag(NN, 0);
 
-					FEElemData_T<float, DATA_COMP>* pold = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&state->m_Data[nold]);
+					FEElemData_T<float, DATA_MULT>* pold = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&state->m_Data[nold]);
 					FEElementData<float, DATA_ITEM>* pnew = dynamic_cast<FEElementData<float, DATA_ITEM>*>(&state->m_Data[nnew]);
 
 					for (int i = 0; i < NE; ++i)
@@ -1500,7 +1500,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					}
 				}
 			}
-			else if ((nfmt == DATA_COMP) && (newFormat == DATA_NODE))
+			else if ((nfmt == DATA_MULT) && (newFormat == DATA_NODE))
 			{
 				newField = new FEDataField_T<FEElementData<float, DATA_NODE> >(&fem, EXPORT_DATA);
 				fem.AddDataField(newField, name);
@@ -1519,7 +1519,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					vector<int> tag(NN, 0);
 					vector<int> elem;
 
-					FEElemData_T<float, DATA_COMP>* pold = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&state->m_Data[nold]);
+					FEElemData_T<float, DATA_MULT>* pold = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&state->m_Data[nold]);
 					FEElementData<float, DATA_NODE>* pnew = dynamic_cast<FEElementData<float, DATA_NODE>*>(&state->m_Data[nnew]);
 
 					for (int i = 0; i < NE; ++i)
@@ -1663,7 +1663,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					for (int i = 0; i < NN; ++i) (*pnew)[i] = data[i];
 				}
 			}
-			else if (nfmt == DATA_COMP)
+			else if (nfmt == DATA_MULT)
 			{
 				newField = new FEDataField_T<FENodeData<float> >(&fem, EXPORT_DATA);
 				fem.AddDataField(newField, name);
@@ -1678,7 +1678,7 @@ ModelDataField* Post::DataConvert(FEPostModel& fem, ModelDataField* dataField, i
 					vector<float> data(NN, 0.f);
 					vector<int> tag(NN, 0);
 
-					FEElemData_T<float, DATA_COMP>* pold = dynamic_cast<FEElemData_T<float, DATA_COMP>*>(&state->m_Data[nold]);
+					FEElemData_T<float, DATA_MULT>* pold = dynamic_cast<FEElemData_T<float, DATA_MULT>*>(&state->m_Data[nold]);
 					FENodeData<float>* pnew = dynamic_cast<FENodeData<float>*>(&state->m_Data[nnew]);
 
 					for (int i = 0; i < NE; ++i)

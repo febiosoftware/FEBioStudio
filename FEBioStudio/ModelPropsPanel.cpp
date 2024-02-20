@@ -324,9 +324,9 @@ void CMeshDataInfoPanel::setDataFormat(int ndataformat)
 {
 	switch (ndataformat)
 	{
-	case FEMeshData::DATA_ITEM: m_dataFmt->setText("item"); break;
-	case FEMeshData::DATA_NODE: m_dataFmt->setText("node"); break;
-	case FEMeshData::DATA_MULT: m_dataFmt->setText("mult"); break;
+	case DATA_ITEM: m_dataFmt->setText("item"); break;
+	case DATA_NODE: m_dataFmt->setText("node"); break;
+	case DATA_MULT: m_dataFmt->setText("mult"); break;
 	default:
 		m_dataFmt->setText("(unknown)");
 	}

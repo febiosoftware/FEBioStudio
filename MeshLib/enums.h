@@ -32,10 +32,21 @@ enum DATA_TYPE {
 	DATA_VEC3,			// 3D vector (3 comp)
 	DATA_MAT3,			// 3D Matrix (9 comp)
 
-	// these values are added for the post data
+	// from post namespace
 	DATA_MAT3S,			// 3D symmetric Matrix (6 comp)
 	DATA_MAT3SD,		// 3D diagonal Matrix (3 comp)
 	DATA_TENS4S,		// 6D symmetric Matrix (21 comp)
 	DATA_ARRAY,			// variable array (see ModelDataField::GetArraySize())
 	DATA_ARRAY_VEC3		// variable array of 3D vectors (comp =  3*ModelDataField::GetArraySize())
+};
+
+// Data format enum
+// NOTE: this is serialized. Don't change order!
+enum DATA_FORMAT {
+	DATA_ITEM,	// one value per mesh item
+	DATA_NODE,	// one value for each node of selection
+	DATA_MULT,	// multiple values for each mesh item: one value for each node of that item
+
+	// from post namespace
+	DATA_REGION // one value for all the items of the region
 };

@@ -309,7 +309,7 @@ template <typename T> void InterpolateNodeData(Post::FEMeshData& data, Post::FEM
 }
 
 //-----------------------------------------------------------------------------
-template <typename T, Data_Format F> void InterpolateFaceData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
+template <typename T, DATA_FORMAT F> void InterpolateFaceData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
 {
 	float w0 = 1.f - w;
 	float w1 = w;
@@ -331,7 +331,7 @@ template <typename T, Data_Format F> void InterpolateFaceData(Post::FEMeshData& 
 }
 
 //-----------------------------------------------------------------------------
-template <typename T, Data_Format F> void InterpolateElementData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
+template <typename T, DATA_FORMAT F> void InterpolateElementData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::FEMeshData& data1, float w)
 {
 	float w0 = 1.f - w;
 	float w1 = w;
@@ -377,14 +377,14 @@ void InterpolateMeshData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::
 			case DATA_MAT3S: InterpolateFaceData<mat3fs, DATA_ITEM>(data, data0, data1, w); break;
 			}
 		}
-		else if (data.GetFormat() == DATA_COMP)
+		else if (data.GetFormat() == DATA_MULT)
 		{
 			switch (data.GetType())
 			{
-			case DATA_SCALAR : InterpolateFaceData<float , DATA_COMP>(data, data0, data1, w); break;
-			case DATA_VEC3 : InterpolateFaceData<vec3f , DATA_COMP>(data, data0, data1, w); break;
-			case DATA_MAT3 : InterpolateFaceData<mat3f , DATA_COMP>(data, data0, data1, w); break;
-			case DATA_MAT3S: InterpolateFaceData<mat3fs, DATA_COMP>(data, data0, data1, w); break;
+			case DATA_SCALAR : InterpolateFaceData<float , DATA_MULT>(data, data0, data1, w); break;
+			case DATA_VEC3 : InterpolateFaceData<vec3f , DATA_MULT>(data, data0, data1, w); break;
+			case DATA_MAT3 : InterpolateFaceData<mat3f , DATA_MULT>(data, data0, data1, w); break;
+			case DATA_MAT3S: InterpolateFaceData<mat3fs, DATA_MULT>(data, data0, data1, w); break;
 			}
 		}
 		else if (data.GetFormat() == DATA_NODE)
@@ -410,14 +410,14 @@ void InterpolateMeshData(Post::FEMeshData& data, Post::FEMeshData& data0, Post::
 			case DATA_MAT3S: InterpolateElementData<mat3fs, DATA_ITEM>(data, data0, data1, w); break;
 			}
 		}
-		else if (data.GetFormat() == DATA_COMP)
+		else if (data.GetFormat() == DATA_MULT)
 		{
 			switch (data.GetType())
 			{
-			case DATA_SCALAR : InterpolateElementData<float , DATA_COMP>(data, data0, data1, w); break;
-			case DATA_VEC3 : InterpolateElementData<vec3f , DATA_COMP>(data, data0, data1, w); break;
-			case DATA_MAT3 : InterpolateElementData<mat3f , DATA_COMP>(data, data0, data1, w); break;
-			case DATA_MAT3S: InterpolateElementData<mat3fs, DATA_COMP>(data, data0, data1, w); break;
+			case DATA_SCALAR : InterpolateElementData<float , DATA_MULT>(data, data0, data1, w); break;
+			case DATA_VEC3 : InterpolateElementData<vec3f , DATA_MULT>(data, data0, data1, w); break;
+			case DATA_MAT3 : InterpolateElementData<mat3f , DATA_MULT>(data, data0, data1, w); break;
+			case DATA_MAT3S: InterpolateElementData<mat3fs, DATA_MULT>(data, data0, data1, w); break;
 			}
 		}
 		else if (data.GetFormat() == DATA_NODE)
@@ -445,7 +445,7 @@ template <typename T> void CopyNodeData(Post::FEMeshData& data, Post::FEMeshData
 }
 
 //-----------------------------------------------------------------------------
-template <typename T, Data_Format F> void CopyFaceData(Post::FEMeshData& data, Post::FEMeshData& src)
+template <typename T, DATA_FORMAT F> void CopyFaceData(Post::FEMeshData& data, Post::FEMeshData& src)
 {
 	FEFaceData<T, F>* pf = dynamic_cast<FEFaceData<T, F>*>(&data);
 	if (pf)
@@ -456,7 +456,7 @@ template <typename T, Data_Format F> void CopyFaceData(Post::FEMeshData& data, P
 }
 
 //-----------------------------------------------------------------------------
-template <typename T, Data_Format F> void CopyElementData(Post::FEMeshData& data, Post::FEMeshData& src)
+template <typename T, DATA_FORMAT F> void CopyElementData(Post::FEMeshData& data, Post::FEMeshData& src)
 {
 	FEElementData<T, F>* pf = dynamic_cast<FEElementData<T, F>*>(&data);
 	if (pf)
@@ -491,14 +491,14 @@ void CopyMeshData(Post::FEMeshData& data, Post::FEMeshData& src)
 			case DATA_MAT3S: CopyFaceData<mat3fs, DATA_ITEM>(data, src); break;
 			}
 		}
-		else if (data.GetFormat() == DATA_COMP)
+		else if (data.GetFormat() == DATA_MULT)
 		{
 			switch (data.GetType())
 			{
-			case DATA_SCALAR : CopyFaceData<float , DATA_COMP>(data, src); break;
-			case DATA_VEC3 : CopyFaceData<vec3f , DATA_COMP>(data, src); break;
-			case DATA_MAT3 : CopyFaceData<mat3f , DATA_COMP>(data, src); break;
-			case DATA_MAT3S: CopyFaceData<mat3fs, DATA_COMP>(data, src); break;
+			case DATA_SCALAR : CopyFaceData<float , DATA_MULT>(data, src); break;
+			case DATA_VEC3 : CopyFaceData<vec3f , DATA_MULT>(data, src); break;
+			case DATA_MAT3 : CopyFaceData<mat3f , DATA_MULT>(data, src); break;
+			case DATA_MAT3S: CopyFaceData<mat3fs, DATA_MULT>(data, src); break;
 			}
 		}
 		else if (data.GetFormat() == DATA_NODE)
@@ -524,14 +524,14 @@ void CopyMeshData(Post::FEMeshData& data, Post::FEMeshData& src)
 			case DATA_MAT3S: CopyElementData<mat3fs, DATA_ITEM>(data, src); break;
 			}
 		}
-		else if (data.GetFormat() == DATA_COMP)
+		else if (data.GetFormat() == DATA_MULT)
 		{
 			switch (data.GetType())
 			{
-			case DATA_SCALAR : CopyElementData<float , DATA_COMP>(data, src); break;
-			case DATA_VEC3 : CopyElementData<vec3f , DATA_COMP>(data, src); break;
-			case DATA_MAT3 : CopyElementData<mat3f , DATA_COMP>(data, src); break;
-			case DATA_MAT3S: CopyElementData<mat3fs, DATA_COMP>(data, src); break;
+			case DATA_SCALAR : CopyElementData<float , DATA_MULT>(data, src); break;
+			case DATA_VEC3 : CopyElementData<vec3f , DATA_MULT>(data, src); break;
+			case DATA_MAT3 : CopyElementData<mat3f , DATA_MULT>(data, src); break;
+			case DATA_MAT3S: CopyElementData<mat3fs, DATA_MULT>(data, src); break;
 			}
 		}
 		else if (data.GetFormat() == DATA_NODE)
@@ -649,7 +649,7 @@ template <typename Type> void copy_node_data(FEMeshData& d, FEMeshData& s)
 }
 
 //-----------------------------------------------------------------------------
-template <typename Type, Data_Format Fmt> void copy_elem_data(FEMeshData& d, FEMeshData& s)
+template <typename Type, DATA_FORMAT Fmt> void copy_elem_data(FEMeshData& d, FEMeshData& s)
 {
 	FEElementData<Type, Fmt>& dt = dynamic_cast<FEElementData<Type, Fmt>&>(d);
 	FEElementData<Type, Fmt>& st = dynamic_cast<FEElementData<Type, Fmt>&>(s);
@@ -657,7 +657,7 @@ template <typename Type, Data_Format Fmt> void copy_elem_data(FEMeshData& d, FEM
 }
 
 //-----------------------------------------------------------------------------
-template <typename Type, Data_Format Fmt> void copy_face_data(FEMeshData& d, FEMeshData& s)
+template <typename Type, DATA_FORMAT Fmt> void copy_face_data(FEMeshData& d, FEMeshData& s)
 {
 	FEFaceData<Type, Fmt>& dt = dynamic_cast<FEFaceData<Type, Fmt>&>(d);
 	FEFaceData<Type, Fmt>& st = dynamic_cast<FEFaceData<Type, Fmt>&>(s);
@@ -722,11 +722,11 @@ ModelDataField* FEPostModel::CopyDataField(ModelDataField* pd, const char* sznew
 					else if (pd->Type() == DATA_MAT3S) copy_face_data<mat3fs, DATA_NODE>(dst, src);
 				}
 				break;
-			case DATA_COMP:
+			case DATA_MULT:
 				{
-					if      (pd->Type() == DATA_SCALAR ) copy_face_data<float , DATA_COMP>(dst, src);
-					else if (pd->Type() == DATA_VEC3 ) copy_face_data<vec3f , DATA_COMP>(dst, src);
-					else if (pd->Type() == DATA_MAT3S) copy_face_data<mat3fs, DATA_COMP>(dst, src);
+					if      (pd->Type() == DATA_SCALAR ) copy_face_data<float , DATA_MULT>(dst, src);
+					else if (pd->Type() == DATA_VEC3 ) copy_face_data<vec3f , DATA_MULT>(dst, src);
+					else if (pd->Type() == DATA_MAT3S) copy_face_data<mat3fs, DATA_MULT>(dst, src);
 				}
 				break;
 			}
@@ -749,11 +749,11 @@ ModelDataField* FEPostModel::CopyDataField(ModelDataField* pd, const char* sznew
 					else if (pd->Type() == DATA_MAT3S) copy_elem_data<mat3fs, DATA_NODE>(dst, src);
 				}
 				break;
-			case DATA_COMP:
+			case DATA_MULT:
 				{
-					if      (pd->Type() == DATA_SCALAR ) copy_elem_data<float , DATA_COMP>(dst, src);
-					else if (pd->Type() == DATA_VEC3 ) copy_elem_data<vec3f , DATA_COMP>(dst, src);
-					else if (pd->Type() == DATA_MAT3S) copy_elem_data<mat3fs, DATA_COMP>(dst, src);
+					if      (pd->Type() == DATA_SCALAR ) copy_elem_data<float , DATA_MULT>(dst, src);
+					else if (pd->Type() == DATA_VEC3 ) copy_elem_data<vec3f , DATA_MULT>(dst, src);
+					else if (pd->Type() == DATA_MAT3S) copy_elem_data<mat3fs, DATA_MULT>(dst, src);
 				}
 				break;
 			}
@@ -770,7 +770,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 
 	Data_Class nclass = pd->DataClass();
 	DATA_TYPE ntype = pd->Type();
-	Data_Format nfmt = pd->Format();
+	DATA_FORMAT nfmt = pd->Format();
 
 	ModelDataField* newField = 0;
 	if (nclass == CLASS_NODE)
@@ -788,7 +788,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		{
 			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<float, DATA_NODE  > >(fem);
 			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<float, DATA_ITEM  > >(fem);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<float, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_MULT  ) newField = new FEDataField_T<FEElementData<float, DATA_MULT  > >(fem);
 			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<float, DATA_REGION> >(fem);
 			else assert(false);
 		}
@@ -796,7 +796,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		{
 			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_NODE  > >(fem);
 			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_ITEM  > >(fem);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_MULT  ) newField = new FEDataField_T<FEElementData<vec3f, DATA_MULT  > >(fem);
 			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<vec3f, DATA_REGION> >(fem);
 			else assert(false);
 		}
@@ -804,7 +804,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		{
 			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_NODE  > >(fem);
 			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_ITEM  > >(fem);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_MULT  ) newField = new FEDataField_T<FEElementData<mat3fs, DATA_MULT  > >(fem);
 			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEElementData<mat3fs, DATA_REGION> >(fem);
 			else assert(false);
 		}
@@ -816,7 +816,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		{
 			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<float, DATA_NODE  > >(fem);
 			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<float, DATA_ITEM  > >(fem);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<float, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_MULT  ) newField = new FEDataField_T<FEFaceData<float, DATA_MULT  > >(fem);
 			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<float, DATA_REGION> >(fem);
 			else assert(false);
 		}
@@ -824,7 +824,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		{
 			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_NODE  > >(fem);
 			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_ITEM  > >(fem);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_MULT  ) newField = new FEDataField_T<FEFaceData<vec3f, DATA_MULT  > >(fem);
 			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<vec3f, DATA_REGION> >(fem);
 			else assert(false);
 		}
@@ -832,7 +832,7 @@ ModelDataField* createCachedDataField(ModelDataField* pd)
 		{
 			if      (nfmt == DATA_NODE  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_NODE  > >(fem);
 			else if (nfmt == DATA_ITEM  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_ITEM  > >(fem);
-			else if (nfmt == DATA_COMP  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_COMP  > >(fem);
+			else if (nfmt == DATA_MULT  ) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_MULT  > >(fem);
 			else if (nfmt == DATA_REGION) newField = new FEDataField_T<FEFaceData<mat3fs, DATA_REGION> >(fem);
 			else assert(false);
 		}
@@ -870,8 +870,8 @@ template <typename T> void cached_copy_face_data_ITEM(FEMeshData& dst, FEMeshDat
 
 template <typename T> void cached_copy_face_data_COMP(FEMeshData& dst, FEMeshData& src, FEPostMesh& mesh)
 {
-	FEFaceData<T, DATA_COMP>& d = dynamic_cast<FEFaceData<T, DATA_COMP>&>(dst);
-	FEFaceData_T<T, DATA_COMP>& s = dynamic_cast<FEFaceData_T<T, DATA_COMP>&>(src);
+	FEFaceData<T, DATA_MULT>& d = dynamic_cast<FEFaceData<T, DATA_MULT>&>(dst);
+	FEFaceData_T<T, DATA_MULT>& s = dynamic_cast<FEFaceData_T<T, DATA_MULT>&>(src);
 
 	int NF = mesh.Faces();
 	T f[FSFace::MAX_NODES];
@@ -954,8 +954,8 @@ template <typename T> void cached_copy_elem_data_REGION(FEMeshData& dst, FEMeshD
 
 template <typename T> void cached_copy_elem_data_COMP(FEMeshData& dst, FEMeshData& src, FEPostMesh& mesh)
 {
-	FEElementData<T, DATA_COMP>& d = dynamic_cast<FEElementData<T, DATA_COMP>&>(dst);
-	FEElemData_T<T, DATA_COMP>& s = dynamic_cast<FEElemData_T<T, DATA_COMP>&>(src);
+	FEElementData<T, DATA_MULT>& d = dynamic_cast<FEElementData<T, DATA_MULT>&>(dst);
+	FEElemData_T<T, DATA_MULT>& s = dynamic_cast<FEElemData_T<T, DATA_MULT>&>(src);
 
 	int NE = mesh.Elements();
 	T f[FSElement::MAX_NODES];
@@ -1021,7 +1021,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 	// get the data info
 	Data_Class nclass = pd->DataClass();
 	DATA_TYPE ntype = pd->Type();
-	Data_Format nfmt = pd->Format();
+	DATA_FORMAT nfmt = pd->Format();
 
 	// loop over all the states
 	FEPostMesh& mesh = *GetFEMesh(0);
@@ -1056,7 +1056,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 				else if (ntype == DATA_MAT3SD) cached_copy_face_data_ITEM<mat3fd>(dst, src, NF);
 				else assert(false);
 			}
-			else if (nfmt == DATA_COMP)
+			else if (nfmt == DATA_MULT)
 			{
 				if      (ntype == DATA_SCALAR ) cached_copy_face_data_COMP<float >(dst, src, mesh);
 				else if (ntype == DATA_SCALAR ) cached_copy_face_data_COMP<vec3f >(dst, src, mesh);
@@ -1085,7 +1085,7 @@ ModelDataField* FEPostModel::CreateCachedCopy(ModelDataField* pd, const char* sz
 				else if (ntype == DATA_MAT3SD) cached_copy_elem_data_ITEM<mat3fd>(dst, src, NE);
 				else assert(false);
 			}
-			else if (nfmt == DATA_COMP)
+			else if (nfmt == DATA_MULT)
 			{
 				if      (ntype == DATA_SCALAR ) cached_copy_elem_data_COMP<float >(dst, src, mesh);
 				else if (ntype == DATA_SCALAR ) cached_copy_elem_data_COMP<vec3f >(dst, src, mesh);

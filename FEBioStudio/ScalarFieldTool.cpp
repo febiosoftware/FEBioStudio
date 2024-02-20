@@ -339,7 +339,7 @@ void CScalarFieldTool::OnApply()
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partSet, DATA_SCALAR, FEMeshData::DATA_MULT);
+		pdata->Create(partSet, DATA_SCALAR, DATA_MULT);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -375,7 +375,7 @@ void CScalarFieldTool::OnApply()
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partSet, DATA_SCALAR, FEMeshData::DATA_ITEM);
+		pdata->Create(partSet, DATA_SCALAR, DATA_ITEM);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
