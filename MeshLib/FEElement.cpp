@@ -711,7 +711,7 @@ bool FEElement_::is_equal(FEElement_& e)
 // to simplify copying the common element data.
 void FEElement_::copy(const FEElement_& el)
 {
-	SetFEState(el.GetFEState());
+	SetState(el.GetState());
 
 	m_gid = el.m_gid;
 	m_traits = el.m_traits;
