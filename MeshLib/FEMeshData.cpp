@@ -31,7 +31,7 @@ FEMeshData::FEMeshData(FEMeshData::DATA_CLASS dataClass)
 	: m_dataClass(dataClass), m_pMesh(0), m_dataType(FEMeshData::DATA_TYPE::DATA_SCALAR)
 {
 	m_dataFmt = DATA_ITEM;
-	m_dataSize = 0;
+	m_itemSize = 0;
 
 	switch (m_dataClass)
 	{
@@ -61,6 +61,41 @@ FEMeshData::DATA_TYPE FEMeshData::GetDataType() const
 FEMeshData::DATA_FORMAT FEMeshData::GetDataFormat() const
 {
 	return m_dataFmt;
+}
+
+int FEMeshData::DataSize() const
+{
+	return (int)m_data.size();
+}
+
+// nr of data items
+int FEMeshData::DataItems() const
+{
+	assert(m_itemSize > 0);
+	if (m_itemSize == 0) return 0;
+	return (int)m_data.size() / m_itemSize;
+}
+
+int FEMeshData::ItemSize() const
+{
+	return m_itemSize;
+}
+
+void FEMeshData::SetDataFormat(DATA_FORMAT dataFormat)
+{
+	m_dataFmt = dataFormat;
+}
+
+void FEMeshData::SetDataType(FEMeshData::DATA_TYPE dataType)
+{
+	assert(m_itemSize == 0);
+	m_dataType = dataType;
+	switch (dataType)
+	{
+	case DATA_SCALAR: m_itemSize = 1; break;
+	case DATA_VEC3D : m_itemSize = 3; break;
+	case DATA_MAT3D : m_itemSize = 9; break;
+	}
 }
 
 FSMesh* FEMeshData::GetMesh() const

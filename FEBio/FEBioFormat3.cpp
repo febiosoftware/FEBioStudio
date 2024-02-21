@@ -1276,14 +1276,14 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 				{
 					double val = 0.0;
 					tag.value(val);
-					nodeData->SetScalar(lid - 1, val);
+					nodeData->setScalar(lid - 1, val);
 				}
 				break;
 				case FEMeshData::DATA_VEC3D:
 				{
 					vec3d val;
 					tag.value(val);
-					nodeData->SetVec3d(lid - 1, val);
+					nodeData->setVec3d(lid - 1, val);
 				}
 				break;
 				default:
