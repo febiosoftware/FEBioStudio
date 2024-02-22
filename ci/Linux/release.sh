@@ -1,30 +1,64 @@
 #!/bin/bash
 
+# Get necessary packages
+sudo apt install -y patchelf zip
+
+FEBioRepo=$HOME/FEBio
+ChemRepo=$HOME/FEBioChem
+HeatRepo=$HOME/FEBioHeat
+FBSRepo=$HOME/FEBioStudio
+
+# Clone and build repos
+git clone https://github.com/febiosoftware/FEBio.git $FEBioRepo
+git -C $FEBioRepo checkout ci/develop
+cd $FEBioRepo
+./ci/Linux/build.sh
+./ci/Linux/create-sdk.sh
+
+
+git clone https://github.com/febiosoftware/FEBioChem.git $ChemRepo
+ln -s $FEBioRepo/febio4-sdk $ChemRepo/
+git -C $ChemRepo checkout ci/develop
+cd $ChemRepo
+./ci/Linux/build.sh
+
+git clone https://github.com/febiosoftware/FEBioHeat.git $HeatRepo
+ln -s $FEBioRepo/febio4-sdk $HeatRepo/
+git -C $HeatRepo checkout ci/develop
+cd $HeatRepo
+./ci/Linux/build.sh
+
+git clone https://github.com/febiosoftware/FEBioStudio.git $FBSRepo
+ln -s $FEBioRepo/febio4-sdk $FBSRepo/
+git -C $FBSRepo checkout ci/develop
+cd $FBSRepo
+./ci/Linux/build.sh
+
+cd $HOME
+
 mkdir release
-cd release
-mkdir bin
-mkdir lib
-mkdir sdk
+mkdir release/bin
+mkdir release/lib
 
 bins=(
-    /home/ubuntu/FEBio/cmbuild/bin/febio4
-    /home/ubuntu/FEBioStudio/cmbuild/bin/FEBioStudio
-    /home/ubuntu/FEBioStudio/cmbuild/bin/FEBioStudioUpdater
-    /home/ubuntu/FEBioStudio/cmbuild/bin/mvUtil
+    $FEBioRepo/cmbuild/bin/febio4
+    $FBSRepo/cmbuild/bin/FEBioStudio
+    $FBSRepo/cmbuild/bin/FEBioStudioUpdater
+    $FBSRepo/cmbuild/bin/mvUtil
 )
 
 libs=(
     # FEBio
-    /home/ubuntu/FEBio/cmbuild/lib/libfebiolib.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfecore.so
-    /home/ubuntu/FEBio/cmbuild/lib/libnumcore.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfebioopt.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfebiofluid.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfeamr.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfebiorve.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfeimglib.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfebiomix.so
-    /home/ubuntu/FEBio/cmbuild/lib/libfebiomech.so
+    $FEBioRepo/cmbuild/lib/libfebiolib.so
+    $FEBioRepo/cmbuild/lib/libfecore.so
+    $FEBioRepo/cmbuild/lib/libnumcore.so
+    $FEBioRepo/cmbuild/lib/libfebioopt.so
+    $FEBioRepo/cmbuild/lib/libfebiofluid.so
+    $FEBioRepo/cmbuild/lib/libfeamr.so
+    $FEBioRepo/cmbuild/lib/libfebiorve.so
+    $FEBioRepo/cmbuild/lib/libfeimglib.so
+    $FEBioRepo/cmbuild/lib/libfebiomix.so
+    $FEBioRepo/cmbuild/lib/libfebiomech.so
 
     # IOMP
     /lib/x86_64-linux-gnu/libiomp5.so
@@ -113,115 +147,98 @@ libs=(
     /lib/x86_64-linux-gnu/libsqlite3.so.0
 
     # FFMPEG
-    /lib/x86_64-linux-gnu/libavcodec.so.58
-        /lib/x86_64-linux-gnu/libswresample.so.3
-            /lib/x86_64-linux-gnu/libsoxr.so.0
-        /lib/x86_64-linux-gnu/libvpx.so.7
-        /lib/x86_64-linux-gnu/libwebpmux.so.3
-        /lib/x86_64-linux-gnu/libwebp.so.7
-        /lib/x86_64-linux-gnu/liblzma.so.5
-        /lib/x86_64-linux-gnu/libdav1d.so.5
-        /lib/x86_64-linux-gnu/librsvg-2.so.2
-            /lib/x86_64-linux-gnu/libcairo-gobject.so.2
-            /lib/x86_64-linux-gnu/libgdk_pixbuf-2.0.so.0
-                /lib/x86_64-linux-gnu/libgmodule-2.0.so.0
-                /lib/x86_64-linux-gnu/libpng16.so.16
-                /lib/x86_64-linux-gnu/libjpeg.so.8
-            /lib/x86_64-linux-gnu/libgio-2.0.so.0
-                /lib/x86_64-linux-gnu/libmount.so.1
-                    /lib/x86_64-linux-gnu/libblkid.so.1
-                /lib/x86_64-linux-gnu/libselinux.so.1
-                    /lib/x86_64-linux-gnu/libpcre2-8.so.0
-            /lib/x86_64-linux-gnu/libxml2.so.2
-                /lib/x86_64-linux-gnu/libicuuc.so.70
-                    /lib/x86_64-linux-gnu/libicudata.so.70
-            /lib/x86_64-linux-gnu/libpangocairo-1.0.so.0
-                /lib/x86_64-linux-gnu/libpangoft2-1.0.so.0
-                    /lib/x86_64-linux-gnu/libfreetype.so.6
-                        /lib/x86_64-linux-gnu/libbrotlidec.so.1
-                            /lib/x86_64-linux-gnu/libbrotlicommon.so.1
-                /lib/x86_64-linux-gnu/libharfbuzz.so.0
-                    /lib/x86_64-linux-gnu/libgraphite2.so.3
-                /lib/x86_64-linux-gnu/libfontconfig.so.1
-                    /lib/x86_64-linux-gnu/libexpat.so.1
-                    /lib/x86_64-linux-gnu/libuuid.so.1
-            /lib/x86_64-linux-gnu/libpango-1.0.so.0
-                /lib/x86_64-linux-gnu/libfribidi.so.0
-                /lib/x86_64-linux-gnu/libthai.so.0
-                    /lib/x86_64-linux-gnu/libdatrie.so.1
-        /lib/x86_64-linux-gnu/libgobject-2.0.so.0
-            /lib/x86_64-linux-gnu/libffi.so.8
-        /lib/x86_64-linux-gnu/libglib-2.0.so.0
-            /lib/x86_64-linux-gnu/libpcre.so.3
-        /lib/x86_64-linux-gnu/libcairo.so.2
-            /lib/x86_64-linux-gnu/libpixman-1.so.0
-            /lib/x86_64-linux-gnu/libxcb-shm.so.0
-            /lib/x86_64-linux-gnu/libxcb.so.1
-                /lib/x86_64-linux-gnu/libXau.so.6
-                /lib/x86_64-linux-gnu/libXdmcp.so.6
-                    /lib/x86_64-linux-gnu/libbsd.so.0
-                        /lib/x86_64-linux-gnu/libmd.so.0
-            /lib/x86_64-linux-gnu/libxcb-render.so.0
-            /lib/x86_64-linux-gnu/libXrender.so.1
-            /lib/x86_64-linux-gnu/libX11.so.6
-            /lib/x86_64-linux-gnu/libXext.so.6
-        /lib/x86_64-linux-gnu/libzvbi.so.0
-        /lib/x86_64-linux-gnu/libsnappy.so.1
-        /lib/x86_64-linux-gnu/libaom.so.3
-        /lib/x86_64-linux-gnu/libcodec2.so.1.0
-        /lib/x86_64-linux-gnu/libgsm.so.1
-        /lib/x86_64-linux-gnu/libmp3lame.so.0
-        /lib/x86_64-linux-gnu/libopenjp2.so.7
-        /lib/x86_64-linux-gnu/libopus.so.0
-        /lib/x86_64-linux-gnu/libshine.so.3
-        /lib/x86_64-linux-gnu/libspeex.so.1
-        /lib/x86_64-linux-gnu/libtheoraenc.so.1
-            /lib/x86_64-linux-gnu/libogg.so.0
-        /lib/x86_64-linux-gnu/libtheoradec.so.1
-        /lib/x86_64-linux-gnu/libtwolame.so.0
-        /lib/x86_64-linux-gnu/libvorbis.so.0
-        /lib/x86_64-linux-gnu/libvorbisenc.so.2
-        /lib/x86_64-linux-gnu/libx264.so.163
-        /lib/x86_64-linux-gnu/libx265.so.199
-            /lib/x86_64-linux-gnu/libnuma.so.1
-        /lib/x86_64-linux-gnu/libxvidcore.so.4
-            /lib/x86_64-linux-gnu/libpthread.so.0
-        /lib/x86_64-linux-gnu/libva.so.2
-        /lib/x86_64-linux-gnu/libmfx.so.1
-    /lib/x86_64-linux-gnu/libavutil.so.56
-        /lib/x86_64-linux-gnu/libva-drm.so.2
-        /lib/x86_64-linux-gnu/libva-x11.so.2
-            /lib/x86_64-linux-gnu/libXfixes.so.3
-        /lib/x86_64-linux-gnu/libvdpau.so.1
-        /lib/x86_64-linux-gnu/libdrm.so.2
-        /lib/x86_64-linux-gnu/libOpenCL.so.1
-    /lib/x86_64-linux-gnu/libswscale.so.5
+    /usr/local/lib/libavcodec.so.60
+    /usr/local/lib/libavutil.so.58
+    /usr/local/lib/libswscale.so.7
 
     # GLEW
     /lib/x86_64-linux-gnu/libGLEW.so.2.2
 )
 
 for item in ${bins[@]}; do
-    cp $item bin
+    cp $item release/bin
 done
 
 
 for item in ${libs[@]}; do
-    cp $item lib
+    cp $item release/lib
 done
 
-# Get xcbglintegrations
-cp -r /lib/x86_64-linux-gnu/qt6/plugins/xcbglintegrations ./lib/
+# Get Qt plugins
+cp -r /lib/x86_64-linux-gnu/qt6/plugins/xcbglintegrations release/lib/
+cp -r /lib/x86_64-linux-gnu/qt6/plugins/tls release/lib/
 
 # Get Qt platforms
-mkdir lib/platforms
-cp /lib/x86_64-linux-gnu/qt6/plugins/platforms/libqxcb.so lib/platforms
-cp /lib/x86_64-linux-gnu/libQt6XcbQpa.so.6 lib
-patchelf --set-rpath '$ORIGIN/..' lib/platforms/libqxcb.so
+mkdir release/lib/platforms
+cp /lib/x86_64-linux-gnu/qt6/plugins/platforms/libqxcb.so release/lib/platforms
+cp /lib/x86_64-linux-gnu/libQt6XcbQpa.so.6 release/lib
+
+patchelf --set-rpath '$ORIGIN/..' release/lib/platforms/libqxcb.so
 
 # Fix up OCCT rpaths
-patchelf --set-rpath '$ORIGIN/../lib' lib/libTK*
+patchelf --set-rpath '$ORIGIN/../lib' release/lib/libTK*
 
 # Create qt.conf
 echo "[Paths]
-Plugins = ../lib" > bin/qt.conf
+Plugins = ../lib" > release/bin/qt.conf
+
+# Create docs
+docs=(
+    $FEBioRepo/Documentation/FEBio_EULA_4.pdf
+    $FEBioRepo/Documentation/FEBio_Theory_Manual.pdf
+    $FEBioRepo/Documentation/FEBio_User_Manual.pdf
+    $FEBioRepo/Documentation/FEBio_User_Manual.pdf
+    $FEBioRepo/Documentation/ReleaseNotes.txt
+    $FBSRepo/Documentation/FEBioStudio_User_Manual.pdf
+    $FBSRepo/Documentation/FEBioStudioReleaseNotes.txt
+    $FBSRepo/icons/febiostudio.ico
+)
+
+mkdir release/doc
+
+for item in ${docs[@]}; do
+    cp $item release/doc
+done
+
+# Create SDK
+sdkDirs=(
+    FECore
+    FEBioMech
+    FEBioMix
+    FEBioFluid
+    FEBioRVE
+    FEBioPlot
+    FEBioXML
+    FEBioLib
+)
+
+sdkLibs=(
+    libfecore.so
+    libfebiomech.so
+    libfebiomix.so
+    libfebiofluid.so
+    libfebiorve.so
+    libfebioplot.a
+    libxml.a
+    libfebiolib.so
+)
+
+mkdir release/sdk
+mkdir release/sdk/include
+mkdir release/sdk/lib
+
+for item in ${sdkDirs[@]}; do
+    mkdir release/sdk/include/$item
+    cp $FEBioRepo/$item/*.h release/sdk/include/$item
+    cp $FEBioRepo/$item/*.hpp release/sdk/include/$item
+done
+
+for item in ${sdkLibs[@]}; do
+    cp $FEBioRepo/cmbuild/lib/$item release/sdk/lib
+done
+
+zip -r release/sdk.zip release/sdk
+
+
+# Create installer
+builder build $FBSRepo/ci/installBuilder.xml --license license.xml
