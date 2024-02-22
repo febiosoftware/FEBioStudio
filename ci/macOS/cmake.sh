@@ -1,4 +1,4 @@
-QT_ROOT="~/local/x86_64/homebrew"
+QT_ROOT="~/local/x86_64/Qt"
 run_cmake() {
 	cmake -L . -B cmbuild \
 		-DQt_Root=$QT_ROOT \

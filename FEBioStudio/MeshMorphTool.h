@@ -23,55 +23,37 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
+#pragma once
+#include "Tool.h"
+#include <vector>
 
-#include "stdafx.h"
-#include "MeasureAreaTool.h"
-#include <MeshLib/FEMesh.h>
+class GObject;
+class FEItemListBuilder;
 
-//-----------------------------------------------------------------------------
-CMeasureAreaTool::CMeasureAreaTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure Area")
+class CMeshMorphTool : public CAbstractTool
 {
-	addProperty("selected faces", CProperty::Int)->setFlags(CProperty::Visible);
-	addProperty("area", CProperty::Float)->setFlags(CProperty::Visible);
+	Q_OBJECT
 
-	m_nsel = 0;
-	m_area = 0.0;
+	class Ui;
 
-	SetInfo("Calculates the total area of the selected faces.");
-}
+public:
+	CMeshMorphTool(CMainWindow* wnd);
 
-//-----------------------------------------------------------------------------
-QVariant CMeasureAreaTool::GetPropertyValue(int i)
-{
-	switch (i)
-	{
-	case 0: return m_nsel; break;
-	case 1: return m_area; break;
-	}
-	return QVariant();
-}
+	QWidget* createUi() override;
 
-//-----------------------------------------------------------------------------
-void CMeasureAreaTool::SetPropertyValue(int i, const QVariant& v)
-{
-}
+	void Activate() override;
 
-//-----------------------------------------------------------------------------
-void CMeasureAreaTool::Update()
-{
-	m_nsel = 0;
-	m_area = 0.0;
-	FSMesh* mesh = GetActiveMesh();
-	if (mesh == nullptr) return;
+private slots:
+	void OnAddClicked();
+	void OnRemoveClicked();
+	void OnClearClicked();
+	void OnApply();
 
-	int NF = mesh->Faces();
-	for (int i = 0; i<NF; ++i)
-	{
-		FSFace& f = mesh->Face(i);
-		if (f.IsSelected())
-		{
-			++m_nsel;
-			m_area += mesh->FaceArea(f);
-		}
-	}
-}
+private:
+	void Clear();
+
+private:
+	GObject* m_po;
+	std::vector<FEItemListBuilder*>	m_data;
+	Ui* ui;
+};

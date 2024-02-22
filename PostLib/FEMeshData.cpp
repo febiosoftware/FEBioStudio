@@ -108,6 +108,56 @@ void Post::shape_grad(FEPostModel& fem, int elem, double q[3], int nstate, vec3f
 }
 
 //-----------------------------------------------------------------------------
+// evaluate the spatial gradient of the shape functions in elem at point q at state
+void Post::shape_grad_ref(FEPostModel& fem, int elem, double q[3], int nstate, vec3f* G)
+{
+	// get the mesh
+	FEState& state = *fem.GetState(nstate);
+	FEPostMesh& m = *state.GetFEMesh();
+
+	// get the element
+	FEElement_& el = m.ElementRef(elem);
+	int N = el.Nodes();
+
+	// we can only define this for solid elements
+	if (el.IsSolid() == false) return;
+
+	// get the (reference) nodal positions
+	const int MN = FSElement::MAX_NODES;
+	vec3f x[MN];
+	for (int i = 0; i < N; i++)
+	{
+		int node = el.m_node[i];
+		x[i] = fem.NodePosition(node, 0);
+	}
+
+	// get the shape function derivatives
+	double Hr[MN], Hs[MN], Ht[MN];
+	el.shape_deriv(Hr, Hs, Ht, q[0], q[1], q[2]);
+
+	// evaluate jacobian
+	mat3d J; J.zero();
+	for (int i = 0; i < N; i++)
+	{
+		J[0][0] += x[i].x * Hr[i]; J[0][1] += x[i].x * Hs[i]; J[0][2] += x[i].x * Ht[i];
+		J[1][0] += x[i].y * Hr[i]; J[1][1] += x[i].y * Hs[i]; J[1][2] += x[i].y * Ht[i];
+		J[2][0] += x[i].z * Hr[i]; J[2][1] += x[i].z * Hs[i]; J[2][2] += x[i].z * Ht[i];
+	}
+
+	// invert jacobian
+	J.invert();
+
+	// evaluate dH/dX = J^(-T)*dH/dr
+	double HX[MN], HY[MN], HZ[MN];
+	for (int i = 0; i < N; i++)
+	{
+		G[i].x = J[0][0] * Hr[i] + J[1][0] * Hs[i] + J[2][0] * Ht[i];
+		G[i].y = J[0][1] * Hr[i] + J[1][1] * Hs[i] + J[2][1] * Ht[i];
+		G[i].z = J[0][2] * Hr[i] + J[1][2] * Hs[i] + J[2][2] * Ht[i];
+	}
+}
+
+//-----------------------------------------------------------------------------
 // This function calculates the deformation gradient for a given state with respect to a user-
 // defined reference state.
 mat3d deform_grad(FEPostModel& fem, int n, double r, double s, double t, int nstate, int nref = 0)

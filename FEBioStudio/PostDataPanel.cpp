@@ -581,6 +581,9 @@ public:
 	QComboBox*	convClass;
 	QComboBox*	convFmt;
 
+	// gradient page
+	QComboBox* gradConfig = new QComboBox;
+
 public:
 	void setupUi(QDialog* parent)
 	{
@@ -645,8 +648,18 @@ public:
 		poperation->addItem("divide");
 		poperation->addItem("least-square difference");
 
-		// gradient page (doesn't need options)
-		QWidget* gradPage = new QLabel("");
+		// gradient page
+		QWidget* gradPage = new QWidget;
+		QVBoxLayout* gradLayout = new QVBoxLayout;
+		QHBoxLayout* gradRow = new QHBoxLayout;
+		gradConfig = new QComboBox;
+		gradRow->addWidget(new QLabel("Configuration:"));
+		gradRow->addWidget(gradConfig);
+		gradRow->addStretch();
+		gradLayout->addLayout(gradRow);
+		gradPage->setLayout(gradLayout);
+		gradConfig->addItems(QStringList() << "Material" << "Spatial");
+		gradConfig->setCurrentIndex(1);
 
 		// fractional anisotropy (doesn't need options)
 		QWidget* faPage = new QLabel("");
@@ -767,6 +780,11 @@ int CDlgFilter::getNewDataClass()
 
 double CDlgFilter::GetScaleFactor() { return m_scale[0]; }
 vec3d  CDlgFilter::GetVecScaleFactor() { return vec3d(m_scale[0], m_scale[1], m_scale[2]); }
+
+int CDlgFilter::GetGradientConfiguration()
+{
+	return ui->gradConfig->currentIndex();
+}
 
 int processScale(std::string& s, double* a, int maxa)
 {
@@ -1125,8 +1143,10 @@ void CPostDataPanel::on_AddFilter_triggered()
 					newData->SetName(sname);
 					fem.AddDataField(newData);
 
+					int config = dlg.GetGradientConfiguration();
+
 					// now, calculate gradient from scalar field
-					bret = DataGradient(fem, newData->GetFieldID(), nfield);
+					bret = DataGradient(fem, newData->GetFieldID(), nfield, config);
 				}
 				break;
 				case 4:

@@ -24,54 +24,22 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
-#include "stdafx.h"
-#include "MeasureAreaTool.h"
-#include <MeshLib/FEMesh.h>
+#include "Tool.h"
 
-//-----------------------------------------------------------------------------
-CMeasureAreaTool::CMeasureAreaTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure Area")
+class CMainWindow;
+
+//! This tool calculates the center of mass of an element selection
+class CMeasureCOMTool : public CBasicTool
 {
-	addProperty("selected faces", CProperty::Int)->setFlags(CProperty::Visible);
-	addProperty("area", CProperty::Float)->setFlags(CProperty::Visible);
+public:
+	// constructor
+	CMeasureCOMTool(CMainWindow* wnd);
 
-	m_nsel = 0;
-	m_area = 0.0;
+	// Apply button
+	bool OnApply() override;
 
-	SetInfo("Calculates the total area of the selected faces.");
-}
+private:
+	vec3d	m_com;
+};
 
-//-----------------------------------------------------------------------------
-QVariant CMeasureAreaTool::GetPropertyValue(int i)
-{
-	switch (i)
-	{
-	case 0: return m_nsel; break;
-	case 1: return m_area; break;
-	}
-	return QVariant();
-}
-
-//-----------------------------------------------------------------------------
-void CMeasureAreaTool::SetPropertyValue(int i, const QVariant& v)
-{
-}
-
-//-----------------------------------------------------------------------------
-void CMeasureAreaTool::Update()
-{
-	m_nsel = 0;
-	m_area = 0.0;
-	FSMesh* mesh = GetActiveMesh();
-	if (mesh == nullptr) return;
-
-	int NF = mesh->Faces();
-	for (int i = 0; i<NF; ++i)
-	{
-		FSFace& f = mesh->Face(i);
-		if (f.IsSelected())
-		{
-			++m_nsel;
-			m_area += mesh->FaceArea(f);
-		}
-	}
-}
+vec3d CalculateCOM(FSMesh& mesh);

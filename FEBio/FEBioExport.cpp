@@ -357,6 +357,7 @@ bool FEBioExport::PrepareExport(FSProject& prj)
 			FSElement& el = pm->Element(j);
 			if ((el.m_nid == -1) || (el.m_nid < nextID)) el.m_nid = nextID++;
 			else if (el.m_nid > nextID) nextID = el.m_nid + 1;
+			else nextID = el.m_nid + 1;
 		}
 		pm->BuildELT();
 	}
