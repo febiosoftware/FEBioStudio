@@ -1,8 +1,41 @@
+
+$FEBioRepo = 'C:\Users\Administrator\FEBio\'
+$ChemRepo = 'C:\Users\Administrator\FEBioChem\'
+$HeatRepo = 'C:\Users\Administrator\FEBioHeat\'
+$FBSRepo = 'C:\Users\Administrator\FEBioStudio\'
+
+# Clone and build repos
+# Clone and build repos
+#git clone https://github.com/febiosoftware/FEBio.git $FEBioRepo
+#git -C $FEBioRepo checkout ci/develop
+cd $FEBioRepo
+#.\ci\Windows\build.bat
+.\ci\Windows\create-sdk-wrapped.sh
+
+
+git clone https://github.com/febiosoftware/FEBioChem.git $ChemRepo
+New-Item -Path $ChemRepo\febio4-sdk -ItemType SymbolicLink -Value $FEBioRepo\febio4-sdk
+git -C $ChemRepo checkout ci/develop
+cd $ChemRepo
+.\ci\Windows\build.bat
+
+git clone https://github.com/febiosoftware/FEBioHeat.git $HeatRepo
+New-Item -Path $HeatRepo\febio4-sdk -ItemType SymbolicLink -Value $FEBioRepo\febio4-sdk
+git -C $HeatRepo checkout ci/develop
+cd $HeatRepo
+.\ci\Windows\build.bat
+
+git clone https://github.com/febiosoftware/FEBioStudio.git $FBSRepo
+New-Item -Path $FBSRepo\febio4-sdk -ItemType SymbolicLink -Value $FEBioRepo\febio4-sdk
+git -C $FBSRepo checkout ci/develop
+cd $FBSRepo
+.\ci\Windows\build.bat
+
+
+cd $Home
 mkdir release
 mkdir release\bin
 
-$FEBioRepo = 'C:\Users\Administrator\FEBio\'
-$FBSRepo = 'C:\Users\Administrator\FEBioStudio\'
 
 $bins = @(
     # FEBio
@@ -10,6 +43,10 @@ $bins = @(
     $FEBioRepo + 'cmbuild\bin\Release\febio.xml'
     $FEBioRepo + 'cmbuild\bin\Release\*.dll'
     'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler\libiomp5md.dll'
+
+    # Plugins
+    $ChemRepo + 'cmbuild\Release\FEBioChem.dll'
+    $HeatRepo + 'cmbuild\Release\FEBioHeat.dll'
 
     #FEBio Studio
     $FBSRepo + 'cmbuild\bin\Release\FEBioStudio2.exe'
@@ -160,5 +197,9 @@ mkdir release\sdk\bin\Debug
 cp C:\Users\Administrator\FEBio\cmbuild\bin\Debug\febio4.exe release\sdk\bin\Debug
 cp C:\Users\Administrator\FEBio\cmbuild\bin\Debug\*.dll release\sdk\bin\Debug
 
-
+# zip sdk
 Compress-Archive -Path release\sdk\* -DestinationPath release\sdk.zip
+
+# Create installer
+cd $Home
+builder-cli.exe build $FBSRepo\ci\installBuilder.xml windows --license license.xml
