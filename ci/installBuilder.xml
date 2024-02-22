@@ -99,61 +99,19 @@
                 </folder>
                 <!-- Program Files - Linux -->
                 <folder>
-                    <description>Install Dir</description>
+                    <description>Program Files</description>
                     <destination>${installdir}</destination>
-                    <name>rootLinux</name>
+                    <name>filesLin</name>
                     <platforms>linux-x64</platforms>
                     <distributionFileList>
                         <distributionDirectory>
-                            <origin>/home/sci/mherron/Projects/FEBioStudio/Release/lib</origin>
+                            <origin>${releaseDir}/doc</origin>
                         </distributionDirectory>
-                    </distributionFileList>
-                </folder>
-                <folder>
-                    <description>Bin</description>
-                    <destination>${installdir}/bin</destination>
-                    <name>binLin</name>
-                    <platforms>linux-x64</platforms>
-                    <distributionFileList>
-                        <distributionFile>
-                            <origin>${FBSRepo}/build/bin/FEBioStudio</origin>
-                        </distributionFile>
-                        <distributionFile>
-                            <origin>${FBSRepo}/Release/bin/qt.conf</origin>
-                        </distributionFile>
-                        <distributionFile>
-                            <origin>${FBSRepo}/Release/bin/febio.xml</origin>
-                        </distributionFile>
-                        <distributionFile>
-                            <origin>${FEBioRepo}/cbuild/Release/bin/febio4</origin>
-                        </distributionFile>
-                        <distributionFile>
-                            <origin>${FBSRepo}Updater/build/bin/FEBioStudioUpdater</origin>
-                        </distributionFile>
-                        <distributionFile>
-                            <origin>${FBSRepo}Updater/build/bin/mvUtil</origin>
-                        </distributionFile>
-                        <distributionFile>
-                            <origin>${autoUpdate.xml}</origin>
-                        </distributionFile>
-                    </distributionFileList>
-                </folder>
-                <folder>
-                    <description>Lib</description>
-                    <destination>${installdir}/lib</destination>
-                    <name>libLin</name>
-                    <platforms>linux-x64</platforms>
-                    <distributionFileList>
-                        <distributionFile>
-                            <origin>/home/sci/mherron/Projects/Plugins/FEBioChem/cbuild/lib/libFEBioChem.so</origin>
-                        </distributionFile>
-                        <distributionFile>
-                            <origin>/home/sci/mherron/Projects/Plugins/FEBioHeat/cbuild/lib/libFEBioHeat.so</origin>
-                        </distributionFile>
                         <distributionDirectory>
-                            <allowWildcards>1</allowWildcards>
-                            <includeFiles>*.so</includeFiles>
-                            <origin>${FEBioRepo}/cbuild/Release/lib/*</origin>
+                            <origin>${releaseDir}/bin</origin>
+                        </distributionDirectory>
+                        <distributionDirectory>
+                            <origin>${releaseDir}/lib</origin>
                         </distributionDirectory>
                     </distributionFileList>
                 </folder>
@@ -205,6 +163,8 @@
         <!-- Windows -->
         <actionGroup>
             <actionList>
+                <setInstallerVariable name="febiorepo" value="C:/Users/Administrator/FEBio"/>
+                <setInstallerVariable name="fbsrepo" value="C:/Users/Administrator/FEBioStudio"/>
                 <setInstallerVariable name="releaseDir" value="C:/Users/Administrator/release"/>
                 <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
             </actionList>
@@ -225,6 +185,8 @@
         <!-- Linux -->
         <actionGroup>
             <actionList>
+                <setInstallerVariable name="febiorepo" value="/home/ubuntu/FEBio"/>
+                <setInstallerVariable name="fbsrepo" value="/home/ubuntu/FEBioStudio"/>
                 <setInstallerVariable name="releaseDir" value="/home/ubuntu/release"/>
                 <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
             </actionList>
