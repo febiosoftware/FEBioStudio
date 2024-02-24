@@ -1222,33 +1222,60 @@ bool FEBioFormat4::ParseSurfaceDataSection(XMLTag& tag)
 	XMLAtt* name = tag.AttributePtr("name");
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
 	XMLAtt* surf = tag.AttributePtr("surface");
+	XMLAtt* type = tag.AttributePtr("type");
 
-	FEMeshData::DATA_TYPE dataType;
-	if (dataTypeAtt)
+	if (type)
 	{
-		if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
-		else return false;
+		FEBioInputModel& feb = GetFEBioModel();
+		FSModel* fem = &feb.GetFSModel();
+		// allocate mesh data generator
+		const char* sztype = type->cvalue();
+		FSMeshDataGenerator* gen = FEBio::CreateFaceDataGenerator(sztype, fem);
+		if (gen)
+		{
+			XMLAtt* name = tag.AttributePtr("name");
+			gen->SetName(name->cvalue());
+
+			const char* szset = surf->cvalue();
+			GMeshObject* po = feb.GetInstance(0)->GetGObject();
+			FSSurface* ps = feb.FindNamedSurface(surf->cvalue());
+
+			gen->SetItemList(ps);
+
+			ParseModelComponent(gen, tag);
+			fem->AddMeshDataGenerator(gen);
+		}
+		else ParseUnknownAttribute(tag, "type");
 	}
-	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
-
-	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
-	FSMesh* feMesh = feSurf->GetMesh();
-
-	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
-
-	double val;
-	int lid;
-	++tag;
-	do
+	else
 	{
-		tag.AttributePtr("lid")->value(lid);
-		tag.value(val);
+		FEMeshData::DATA_TYPE dataType;
+		if (dataTypeAtt)
+		{
+			if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+			else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+			else return false;
+		}
+		else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
 
-		(*sd)[lid - 1] = val;
+		FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
+		FSMesh* feMesh = feSurf->GetMesh();
 
+		FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+
+		double val;
+		int lid;
 		++tag;
-	} while (!tag.isend());
+		do
+		{
+			tag.AttributePtr("lid")->value(lid);
+			tag.value(val);
+
+			(*sd)[lid - 1] = val;
+
+			++tag;
+		} while (!tag.isend());
+	}
 
 	return true;
 }
