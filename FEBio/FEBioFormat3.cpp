@@ -1303,6 +1303,7 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 {
 	FEBioInputModel& feb = GetFEBioModel();
+	FSModel* fem = &feb.GetFSModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
@@ -1320,7 +1321,33 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 	const char* szgen = tag.AttributeValue("generator", true);
 	if (szgen)
 	{
-		tag.skip();
+		if (strcmp(szgen, "const") == 0)
+		{
+			// "const" data generator needs to be handled differently
+			FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+			if (dataTypeAtt)
+			{
+				if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+				else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+				else return false;
+			}
+			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
+
+			gen->SetName(name->cvalue());
+
+			const char* szset = surf->cvalue();
+			GMeshObject* po = feb.GetInstance(0)->GetGObject();
+			FSSurface* ps = feb.FindNamedSurface(surf->cvalue());
+
+			gen->SetItemList(ps);
+
+			ParseModelComponent(gen, tag);
+			fem->AddMeshDataGenerator(gen);
+		}
+		else
+		{
+			tag.skip();
+		}
 		return true;
 	}
 

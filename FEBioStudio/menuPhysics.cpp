@@ -823,22 +823,39 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		QString name = dlg.GetName();
 		if (name.isEmpty()) name = QString("MeshData%1").arg(fem->CountMeshDataFields() + 1);
 
-		FEMeshData* data = nullptr;
-		switch (dlg.GetType())
+		if (dlg.GetDataInitializer() == CDlgAddMeshData::INITIALIZER_CONST)
 		{
-		case FEMeshData::NODE_DATA   : data = new FENodeData   (po, dlg.GetDataType()); break;
-		case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::PART_DATA   : data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		}
+			if (dlg.GetType() != FEMeshData::SURFACE_DATA)
+			{
+				QMessageBox::critical(this, "Create Data", "The const initializer option is only supported for surface data.");
+				return;
+			}
 
-		if (data)
+			FEMeshData::DATA_TYPE dataType = dlg.GetDataType();
+			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
+			gen->SetName(name.toStdString());
+			fem->AddMeshDataGenerator(gen);
+			UpdateModel(gen);
+		}
+		else
 		{
-			data->SetName(name.toStdString());
-			pm->AddMeshDataField(data);
-		}
+			FEMeshData* data = nullptr;
+			switch (dlg.GetType())
+			{
+			case FEMeshData::NODE_DATA   : data = new FENodeData   (po, dlg.GetDataType()); break;
+			case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case FEMeshData::PART_DATA   : data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			}
 
-		UpdateModel(data);
+			if (data)
+			{
+				data->SetName(name.toStdString());
+				pm->AddMeshDataField(data);
+			}
+
+			UpdateModel(data);
+		}
 	}
 }
 
