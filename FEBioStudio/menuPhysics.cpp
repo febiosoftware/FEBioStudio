@@ -901,23 +901,27 @@ void CMainWindow::on_actionAddStep_triggered()
 
 	QStringList stepList;
 	for (int i = 0; i < fem->Steps(); ++i) stepList << QString::fromStdString(fem->GetStep(i)->GetName());
-	QString item = QInputDialog::getItem(this, "FEBio Studio", "Insert new step after:", stepList, fem->Steps() - 1, false);
 
-	FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
-	assert(ps);
-	if (ps)
+	bool ok;
+	QString item = QInputDialog::getItem(this, "FEBio Studio", "Insert new step after:", stepList, fem->Steps() - 1, false, &ok);
+	if (ok && !item.isEmpty())
 	{
-//		std::string name = dlg.m_name;
-//		if (name.empty()) name = defaultStepName(fem, ps);
-		std::string name = defaultStepName(fem, ps);
+		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
+		assert(ps);
+		if (ps)
+		{
+			//		std::string name = dlg.m_name;
+			//		if (name.empty()) name = defaultStepName(fem, ps);
+			std::string name = defaultStepName(fem, ps);
 
-		FEBio::InitDefaultProps(ps);
+			FEBio::InitDefaultProps(ps);
 
-		int insertPos = stepList.indexOf(item);
+			int insertPos = stepList.indexOf(item);
 
-		ps->SetName(name);
-		doc->DoCommand(new CCmdAddStep(fem, ps, insertPos));
-		UpdateModel(ps);
+			ps->SetName(name);
+			doc->DoCommand(new CCmdAddStep(fem, ps, insertPos));
+			UpdateModel(ps);
+		}
 	}
 }
 
