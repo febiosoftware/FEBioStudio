@@ -1,8 +1,8 @@
 <project>
     <shortName>FEBioStudio</shortName>
     <fullName>FEBioStudio</fullName>
-    <version>2.5</version>
-    <installerFilename>${product_shortname}_${platform_name}_${product_version}_febio_${febio_version}.${platform_exec_suffix}</installerFilename>
+    <version>${env(FBS_VER)}</version>
+    <installerFilename>installer.${platform_exec_suffix}</installerFilename>
     <licenseFile>${FEBioRepo}/Documentation/FEBio_EULA_4.txt</licenseFile>
     <leftImage>${FBSRepo}/Documentation/InstallerImages/Left Side Image.png</leftImage>
     <logoImage>${FBSRepo}/Documentation/InstallerImages/Logo.png</logoImage>
@@ -167,6 +167,7 @@
                 <setInstallerVariable name="fbsrepo" value="C:/Users/Administrator/FEBioStudio"/>
                 <setInstallerVariable name="releaseDir" value="C:/Users/Administrator/release"/>
                 <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
+                <setInstallerVariable name="defaultInstall" value="${platform_install_prefix}/${product_shortname}2"/>
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
@@ -177,6 +178,7 @@
             <actionList>
                 <setInstallerVariable name="releaseDir" value="Users/gitRunner/release"/>
                 <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/FEBioStudio.app/Contents/MacOS/autoUpdate.xml"/>
+                <setInstallerVariable name="defaultInstall" value="${platform_install_prefix}/${product_shortname}"/>
             </actionList>
             <ruleList>
                 <platformTest type="osx"/>
@@ -189,6 +191,7 @@
                 <setInstallerVariable name="fbsrepo" value="/home/ubuntu/FEBioStudio"/>
                 <setInstallerVariable name="releaseDir" value="/home/ubuntu/release"/>
                 <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
+                <setInstallerVariable name="defaultInstall" value="${platform_install_prefix}/${product_shortname}"/>
             </actionList>
             <ruleList>
                 <platformTest type="linux"/>
@@ -519,7 +522,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
             <description>Installer.Parameter.installdir.description</description>
             <explanation>Installer.Parameter.installdir.explanation</explanation>
             <value></value>
-            <default>${platform_install_prefix}/${product_shortname}2</default>
+            <default>${defaultInstall}</default>
             <allowEmptyValue>0</allowEmptyValue>
             <cliOptionName>prefix</cliOptionName>
             <mustBeWritable>1</mustBeWritable>
@@ -530,7 +533,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
             <name>febio_version</name>
             <description></description>
             <explanation></explanation>
-            <value>4.5</value>
+            <value>${env(FEBIO_VER)}</value>
             <default></default>
             <allowEmptyValue>1</allowEmptyValue>
             <ask>0</ask>
@@ -540,7 +543,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
             <name>febio_sdk_version</name>
             <description></description>
             <explanation></explanation>
-            <value>4.5</value>
+            <value>${env(SDK_VER)}</value>
             <default></default>
             <allowEmptyValue>1</allowEmptyValue>
             <ask>0</ask>

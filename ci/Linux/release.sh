@@ -9,26 +9,23 @@ HeatRepo=$HOME/FEBioHeat
 FBSRepo=$HOME/FEBioStudio
 
 # Clone and build repos
-git clone https://github.com/febiosoftware/FEBio.git $FEBioRepo
-git -C $FEBioRepo checkout ci/develop
+git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBio.git $FEBioRepo
 cd $FEBioRepo
 ./ci/Linux/build.sh
 ./ci/Linux/create-sdk.sh
 
 
-git clone https://github.com/febiosoftware/FEBioChem.git $ChemRepo
+git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBioChem.git $ChemRepo
 ln -s $FEBioRepo/febio4-sdk $ChemRepo/
-git -C $ChemRepo checkout ci/develop
 cd $ChemRepo
 ./ci/Linux/build.sh
 
-git clone https://github.com/febiosoftware/FEBioHeat.git $HeatRepo
+git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBioHeat.git $HeatRepo
 ln -s $FEBioRepo/febio4-sdk $HeatRepo/
-git -C $HeatRepo checkout ci/develop
 cd $HeatRepo
 ./ci/Linux/build.sh
 
-git clone https://github.com/febiosoftware/FEBioStudio.git $FBSRepo
+# git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBioStudio.git $FBSRepo
 ln -s $FEBioRepo/febio4-sdk $FBSRepo/
 git -C $FBSRepo checkout ci/develop
 cd $FBSRepo
@@ -45,6 +42,7 @@ bins=(
     $FBSRepo/cmbuild/bin/FEBioStudio
     $FBSRepo/cmbuild/bin/FEBioStudioUpdater
     $FBSRepo/cmbuild/bin/mvUtil
+    $FBSRepo/ci/Linux/febio.xml
 )
 
 libs=(
@@ -242,3 +240,5 @@ zip -r release/sdk.zip release/sdk
 
 # Create installer
 builder build $FBSRepo/ci/installBuilder.xml --license license.xml
+
+cp /opt/installbuilder-23.11.0/output/installer.run $HOME/

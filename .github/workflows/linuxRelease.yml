@@ -1,0 +1,18 @@
+on:
+  workflow_dispatch:
+    inputs:
+      fbsVer:
+        required: true
+        type: string
+      febioVer:
+        required: true
+        type: string
+jobs:
+  call_workflow:
+    uses: febiosoftware/febio-workflows/.github/workflows/linux-release.yml@develop
+    with:
+      febioVer: ${{inputs.febioVer}}
+      fbsVer: ${{inputs.fbsVer}}
+      aws-ami-id: ami-0590ebdb5afffb782
+      aws-sg-id: sg-0ca7912782cf1538b
+    secrets: inherit
