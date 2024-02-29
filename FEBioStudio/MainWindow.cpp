@@ -2439,6 +2439,7 @@ void CMainWindow::OnPostObjectStateChanged()
 	if (mdl == nullptr) return;
 	bool b = mdl->GetColorMap()->IsActive();
 	ui->postToolBar->CheckColorMap(b);
+	mdl->Update(false);
 	RedrawGL();
 }
 
