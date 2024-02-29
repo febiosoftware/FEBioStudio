@@ -109,7 +109,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionSaveAs = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
 	QAction* actionSaveAll = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
 	QAction* actionCloseAll = addAction("Close All", "actionCloseAll");
-	actionSnapShot = addAction("Snapshot ...", "actionSnapShot", "snapshot");
+	actionSnapShot = addAction("Snapshot ...", "actionSnapShot", "snapshot"); actionSnapShot->setShortcut(Qt::AltModifier | Qt::Key_F2);
 	QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
 	actionExportFE = addAction("Export FE model ...", "actionExportFEModel");
 	actionImportGeom = addAction("Import Geometry ...", "actionImportGeometry");
