@@ -143,16 +143,15 @@ public:
 		m_list = new QTableWidget;
 		m_list->setColumnCount(3);
 		QHeaderView* hh = m_list->horizontalHeader();
-		hh->setDefaultSectionSize(14);
-		hh->setMinimumSectionSize(14);
+		hh->setDefaultSectionSize(24);
+		hh->setMinimumSectionSize(24);
 		hh->setSectionResizeMode(0, QHeaderView::Stretch);
-		hh->setSectionResizeMode(1, QHeaderView::Fixed);
-		hh->setSectionResizeMode(2, QHeaderView::Fixed);
+		hh->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+		hh->setSectionResizeMode(2, QHeaderView::ResizeToContents);
 		hh->hide();
 		m_list->verticalHeader()->hide();
 		m_list->setObjectName(QStringLiteral("materialList"));
-		m_list->setSelectionMode(QAbstractItemView::SingleSelection);
-//		m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+		m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
 		m_list->setSelectionBehavior(QAbstractItemView::SelectRows);
 
 		QWidget* w = new QWidget;
@@ -307,7 +306,16 @@ void CMaterialPanel::UpdateStates()
 			font.setItalic(!mat.visible());
 			font.setBold(mat.enabled());
 			pi->setFont(font);
-//			pi->setBackgroundColor((mat.enabled() ? Qt::white : Qt::yellow));
+
+			if (mat.bvisible)
+				ui->m_list->item(i, 1)->setIcon(QIcon(":/icons/show.png"));
+			else
+				ui->m_list->item(i, 1)->setIcon(QIcon(":/icons/hide.png"));
+		
+			if (mat.benable)
+				ui->m_list->item(i, 2)->setIcon(QIcon(":/icons/check.png"));
+			else
+				ui->m_list->item(i, 2)->setIcon(QIcon(":/icons/disabled.png"));
 		}
 	}
 }
@@ -347,33 +355,38 @@ void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
 			if (ncol == 1)
 			{
 				mat.bvisible = !mat.bvisible;
-				if (mat.bvisible)
-				{
-					mdl.ShowMaterial(imat);
-					item->setIcon(QIcon(":/icons/show.png"));
-				}
-				else
-				{
-					mdl.HideMaterial(imat);
-					item->setIcon(QIcon(":/icons/hide.png"));
-				}
 			}
 			else if (ncol == 2)
 			{
 				mat.benable = !mat.benable;
-				if (mat.benable)
-					item->setIcon(QIcon(":/icons/check.png"));
-				else
-					item->setIcon(QIcon(":/icons/clear.png"));
+			}
 
+			// update all the other selected materials
+			QItemSelectionModel* pselect = ui->m_list->selectionModel();
+			QModelIndexList selection = pselect->selectedRows();
+			int ncount = selection.count();
+			for (int i = 0; i < ncount; ++i)
+			{
+				QModelIndex index = selection.at(i);
+				if (index.row() != nrow)
+				{
+					int imat = ui->m_list->item(index.row(), 0)->data(Qt::UserRole).toInt();
+					Post::Material& mati = *fem.GetMaterial(imat);
+					mati.bvisible = mat.bvisible;
+					mati.benable = mat.benable;
+				}
+			}
+
+			UpdateStates();
+			if      (ncol == 1) mdl.UpdateMeshVisibility();
+			else if (ncol == 2)
+			{
 				mdl.UpdateMeshState();
 				mdl.ResetAllStates();
 				doc->UpdateFEModel(true);
 			}
+			GetMainWindow()->RedrawGL();
 		}
-
-		UpdateStates();
-		GetMainWindow()->RedrawGL();
 	}
 }
 

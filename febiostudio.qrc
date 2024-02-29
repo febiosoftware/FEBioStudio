@@ -190,5 +190,6 @@
         <file>icons/step.png</file>
         <file>icons/contact.png</file>
         <file>icons/ic.png</file>
+        <file>icons/disabled.png</file>
 	</qresource>
 </RCC>
