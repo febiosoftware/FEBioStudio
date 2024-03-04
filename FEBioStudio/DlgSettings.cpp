@@ -185,7 +185,7 @@ public:
 	CSelectionProps()
 	{
 		addBoolProperty(&m_bconnect, "Select connected");
-		addEnumProperty(&m_ntagInfo, "Tag info")->setEnumValues(QStringList() << "Item numbers" << "Item numbers and connecting nodes");
+		addEnumProperty(&m_ntagInfo, "Tag info")->setEnumValues(QStringList() << "Off" << "Item numbers" << "Item numbers and connecting nodes");
 		addBoolProperty(&m_backface, "Ignore backfacing items");
 		addBoolProperty(&m_binterior, "Ignore interior items");
 		addBoolProperty(&m_bpart    , "Respect partitions");

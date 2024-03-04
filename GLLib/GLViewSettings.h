@@ -53,6 +53,14 @@ enum BackgroundStyle {
 	BG_VERTICAL = 3
 };
 
+
+// Tag Info options
+enum TagInfoOption {
+	NO_TAG_INFO,
+	TAG_ITEM,
+	TAG_ITEM_AND_NODES
+};
+
 //-----------------------------------------------------------------------------
 //! view settings
 struct GLViewSettings

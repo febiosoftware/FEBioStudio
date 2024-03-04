@@ -302,7 +302,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionShowRigidBodies = addAction("Show Rigid Bodies", "actionShowRigidBodies"); actionShowRigidBodies->setCheckable(true);  actionShowRigidBodies->setChecked(true);
 	actionShowRigidJoints = addAction("Show Rigid Joints", "actionShowRigidJoints"); actionShowRigidJoints->setCheckable(true);  actionShowRigidJoints->setChecked(true);
 	actionShowRigidLabels = addAction("Show Rigid Labels", "actionShowRigidLabels"); actionShowRigidLabels->setCheckable(true);  actionShowRigidLabels->setChecked(true);
-
+	actionToggleTagInfo = addAction("Toggle Tag info", "actionToggleTagInfo"); actionToggleTagInfo->setShortcut(Qt::Key_I);
 	QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
 	QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
@@ -636,6 +636,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuView->addAction(actionShowFibers);
 	menuView->addAction(actionShowMatAxes);
 	menuView->addAction(actionShowDiscrete);
+	menuView->addAction(actionToggleTagInfo);
 	menuView->addAction(actionSnap3D);
 	menuView->addAction(actionTrack);
 	menuView->addAction(actionToggleLight);
