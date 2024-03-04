@@ -245,9 +245,6 @@ public:
 	// build the context menu for the GLView
 	void BuildContextMenu(QMenu& menu);
 
-	// Update the physics menu based on active modules
-	void UpdatePhysicsUi();
-
 	// clear the recent files list
 	void ClearRecentFilesList();
 

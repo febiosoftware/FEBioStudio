@@ -976,7 +976,10 @@ void CMainWindow::on_actionEditProject_triggered()
 
 	CDlgEditProject dlg(doc->GetProject(), this);
 	dlg.exec();
-	UpdatePhysicsUi();
+
+	// TODO: we should check if there are any features already used in the model
+	// that are not available in the new module
+	UpdateModel();
 }
 
 void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)
