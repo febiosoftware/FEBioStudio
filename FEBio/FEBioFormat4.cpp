@@ -1933,10 +1933,11 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 				const char* szset = tag.AttributeValue("node_set");
 				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) AddLogEntry("Failed to create nodeset %s for %s", szset, szname);
-				if (pg->GetName().empty()) pg->SetName(szbuf);
-
-				// process initial condition
-				pic->SetItemList(pg);
+				else
+				{
+					if (pg->GetName().empty()) pg->SetName(szname);
+					pic->SetItemList(pg);
+				}
 				pic->SetName(szname);
 				m_pBCStep->AddComponent(pic);
 				ParseModelComponent(pic, tag);
