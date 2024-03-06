@@ -149,45 +149,45 @@ void GLViewSelector::RegionSelectFENodes(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	FSMeshBase* pm = po->GetEditableMesh();
-	FSLineMesh* lineMesh = po->GetEditableLineMesh();
-	if (lineMesh == 0) return;
+	FSMeshBase* pm = nullptr;
+	switch (m_glv->GetMeshMode())
+	{
+	case MESH_MODE_VOLUME: pm = po->GetFEMesh(); break;
+	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
+	}
+	if (pm == nullptr) return;
 
 	m_glv->makeCurrent();
 	GLViewTransform transform(m_glv);
 
-	if (pm)
+	// ignore exterior option for surface meshes
+	if (view.m_bext || (dynamic_cast<FSSurfaceMesh*>(pm)))
 	{
-		// ignore exterior option for surface meshes
-		if (view.m_bext || (dynamic_cast<FSSurfaceMesh*>(pm)))
+		if (view.m_bcullSel)
 		{
-			if (view.m_bcullSel)
-			{
-				// NOTE: This tags front facing nodes. Should rename function. 
-				TagBackfacingNodes(*pm);
-			}
-			else
-			{
-				// tag all exterior nodes
-				for (int i = 0; i < pm->Nodes(); ++i)
-				{
-					FSNode& node = pm->Node(i);
-					if (node.IsExterior()) node.m_ntag = 0;
-					else node.m_ntag = -1;
-				}
-			}
+			// NOTE: This tags front facing nodes. Should rename function. 
+			TagBackfacingNodes(*pm);
 		}
 		else
-			pm->TagAllNodes(0);
+		{
+			// tag all exterior nodes
+			for (int i = 0; i < pm->Nodes(); ++i)
+			{
+				FSNode& node = pm->Node(i);
+				if (node.IsExterior()) node.m_ntag = 0;
+				else node.m_ntag = -1;
+			}
+		}
 	}
-	else lineMesh->TagAllNodes(0);
+	else
+		pm->TagAllNodes(0);
 
 	double* a = m_glv->PlaneCoordinates();
 
 	vector<int> selectedNodes;
-	for (int i = 0; i < lineMesh->Nodes(); ++i)
+	for (int i = 0; i < pm->Nodes(); ++i)
 	{
-		FSNode& node = lineMesh->Node(i);
+		FSNode& node = pm->Node(i);
 		if (node.IsVisible() && (node.m_ntag == 0))
 		{
 			vec3d r = po->GetTransform().LocalToGlobal(node.r);
@@ -500,7 +500,13 @@ void GLViewSelector::RegionSelectFEFaces(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	FSMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = nullptr;
+	switch (m_glv->GetMeshMode())
+	{
+	case MESH_MODE_VOLUME: pm = po->GetFEMesh(); break;
+	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
+	}
+	if (pm == nullptr) return;
 
 	// activate the gl rendercontext
 	m_glv->makeCurrent();
@@ -600,7 +606,13 @@ void GLViewSelector::RegionSelectFEEdges(const SelectRegion& region)
 	GObject* po = m_glv->GetActiveObject();
 	if (po == 0) return;
 
-	FSMeshBase* pm = po->GetEditableMesh();
+	FSMeshBase* pm = nullptr;
+	switch (m_glv->GetMeshMode())
+	{
+	case MESH_MODE_VOLUME : pm = po->GetFEMesh(); break;
+	case MESH_MODE_SURFACE: pm = po->GetEditableMesh(); break;
+	}
+	if (pm == nullptr) return;
 
 	// activate the gl rendercontext
 	m_glv->makeCurrent();
