@@ -94,6 +94,8 @@ public:
 	bool Load() override;
 
 private:
+	bool ReadPhysicalNames();
+	bool ReadParametrizations();
 	bool ReadEntities();
 	bool ReadNodes();
 	bool ReadElements();
@@ -714,9 +716,11 @@ bool GMeshNewFormat::Load()
 	const char* szline = nullptr;
 	while (szline = nextLine())
 	{
-		if      (isKey(szline, "$Entities"  )) ret = ReadEntities();
-		else if (isKey(szline, "$Nodes"     )) ret = ReadNodes();
-		else if (isKey(szline, "$Elements"  )) ret = ReadElements();
+		if      (isKey(szline, "$PhysicalNames"   )) ret = ReadEntities();
+		else if (isKey(szline, "$Entities"        )) ret = ReadEntities();
+		else if (isKey(szline, "$Nodes"           )) ret = ReadNodes();
+		else if (isKey(szline, "$Elements"        )) ret = ReadElements();
+		else if (isKey(szline, "$Parametrizations")) ret = ReadParametrizations();
 		else
 		{
 			// we didn't recognize the section
@@ -726,6 +730,18 @@ bool GMeshNewFormat::Load()
 		if (ret == false) return false;
 	}
 
+	return true;
+}
+
+bool GMeshNewFormat::ReadPhysicalNames()
+{
+	while (readLine("$EndPhysicalNames") == false);
+	return true;
+}
+
+bool GMeshNewFormat::ReadParametrizations()
+{
+	while (readLine("$EndParametrizations") == false);
 	return true;
 }
 
