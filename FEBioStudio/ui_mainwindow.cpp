@@ -203,6 +203,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionAddReaction = addAction("Chemical Reaction Editor ...", "actionAddReaction");
 	actionAddMembraneReaction = addAction("Membrane Reaction Editor ...", "actionAddMembraneReaction");
 	QAction* actionEditProject = addAction("Edit Physics Modules ...", "actionEditProject");
+	QAction* assignSelection = addAction("Assign current selection", "actionAssignSelection"); assignSelection->setShortcut(Qt::ControlModifier | Qt::Key_A);
 
 	// --- FEBio menu actions ---
 	actionFEBioRun = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
@@ -529,6 +530,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 
 	// Physics menu
 	menuBar->addAction(menuPhysics->menuAction());
+	menuPhysics->addAction(assignSelection);
 	menuPhysics->addAction(actionAddNodalBC);
 	menuPhysics->addAction(actionAddSurfaceBC);
 	menuPhysics->addAction(actionAddGeneralBC);

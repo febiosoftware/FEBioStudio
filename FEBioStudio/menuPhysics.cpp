@@ -982,6 +982,11 @@ void CMainWindow::on_actionEditProject_triggered()
 	UpdateModel();
 }
 
+void CMainWindow::on_actionAssignSelection_triggered()
+{
+	ui->modelViewer->AssignCurrentSelection();
+}
+
 void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)
 {
 	if (pci == nullptr) return;
