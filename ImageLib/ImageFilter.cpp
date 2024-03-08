@@ -249,7 +249,7 @@ template<class pType> void WarpImageFilter::FitlerTemplate()
 
 					// sample 
 					vec3f s = el.eval(r, q[0], q[1]);
-					pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
+					pType b = im->ValueAtGlobalPos(to_vec3d(s));
 					dst[index+i] = b;
 				}
 				else
@@ -295,7 +295,7 @@ template<class pType> void WarpImageFilter::FitlerTemplate()
 
 						// sample 
 						vec3f s = el.eval(p, q[0], q[1], q[2]);
-						pType b = mdl->ValueAtGlobalPos(to_vec3d(s));
+						pType b = im->ValueAtGlobalPos(to_vec3d(s));
 						dst[index+i] = b;
 					}
 					else

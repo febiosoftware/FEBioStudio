@@ -175,6 +175,8 @@ public:
 	FEPartData*    AddPartDataField   (const std::string& name, FSPartSet* part, FEMeshData::DATA_TYPE dataType);
 	void ClearMeshData();
 
+	FEPartData* FindPartDataField(const std::string& name);
+
 	Mesh_Data& GetMeshData();
 
 public: // --- M E S H   Q U E R I E S ---

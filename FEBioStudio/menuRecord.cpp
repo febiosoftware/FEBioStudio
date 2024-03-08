@@ -29,27 +29,32 @@ SOFTWARE.*/
 #include "ui_mainwindow.h"
 #include <QFileDialog>
 #include <QMessageBox>
-#include <PostLib/ImgAnimation.h>
-#include <PostLib/AVIAnimation.h>
-#include <PostLib/MPEGAnimation.h>
-#include <PostLib/GIFAnimation.h>
+#include "ImgAnimation.h"
+#include "AVIAnimation.h"
+#include "MPEGAnimation.h"
+#include "GIFAnimation.h"
+#include "PostDocument.h"
 
 void CMainWindow::on_actionRecordNew_triggered()
 {
-	QStringList filters;
-#ifdef WIN32
-	int noff = 1;
-	filters << "Windows AVI files (*.avi)";
-#else
-	int noff = 0;
-#endif
+	// Make sure a recording is not in progress
+	CGLView* glview = GetGLView();
+	GLScreenRecorder& recorder = glview->GetScreenRecorder();
+	if (recorder.HasRecording())
+	{
+		QMessageBox::information(this, "FEBio Studio", "A recording is already in progres.");
+		return;
+	}
 
+	QStringList filters;
 	filters << "MPG files (*.mpg)"
 			<< "GIF files (*.gif)"
 			<< "PNG files (*.png)"
 			<< "Bitmap files (*.bmp)"
 			<< "JPG files (*.jpg)";
-
+#ifdef WIN32
+	filters << "Windows AVI files (*.avi)";
+#endif
 
 	QFileDialog dlg(this, "Save");
 	dlg.setNameFilters(filters);
@@ -62,65 +67,78 @@ void CMainWindow::on_actionRecordNew_triggered()
 		char szfilename[512] = { 0 };
 		snprintf(szfilename, sizeof szfilename, "%s", sfile.c_str());
 		int l = (int)sfile.length();
-		char* ch = strrchr(szfilename, '.');
+		char* fileExtenion = strrchr(szfilename, '.');
 
 		int nfilter = filters.indexOf(dlg.selectedNameFilter());
 
-		CGLView* glview = GetGLView();
-
 		bool bret = false;
-		CAnimation* panim = 0;
-#ifdef WIN32
-		if (nfilter == 0)
+		CAnimation* panim = nullptr;
+		switch (nfilter)
 		{
-			panim = new CAVIAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".avi");
-			bret = glview->NewAnimation(szfilename, panim, GL_BGR_EXT);
-		}
-		else if (nfilter == noff)
-#else
-		if (nfilter == noff)
-#endif
+		case 0:
 		{
 #ifdef FFMPEG
 			panim = new CMPEGAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".mpg");
-			bret = glview->NewAnimation(szfilename, panim);
+			if (fileExtenion == nullptr) sprintf(szfilename + l, ".mpg");
 #else
 			QMessageBox::critical(this, "FEBio Studio", "This video format is not supported in this version");
 #endif
 		}
-		else if (nfilter == noff + 1)
+		break;
+		case 1:
 		{
 			panim = new CGIFAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".gif");
-			bret = glview->NewAnimation(szfilename, panim);
+			if (fileExtenion == nullptr) sprintf(szfilename + l, ".gif");
 		}
-		else if (nfilter == noff + 2)
+		break;
+		case 2:
 		{
 			panim = new CPNGAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".png");
-			bret = glview->NewAnimation(szfilename, panim);
-
+			if (fileExtenion == nullptr) sprintf(szfilename + l, ".png");
 		}
-		else if (nfilter == noff + 3)
+		break;
+		case 3:
 		{
 			panim = new CBmpAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".bmp");
-			bret = glview->NewAnimation(szfilename, panim);
+			if (fileExtenion == nullptr) sprintf(szfilename + l, ".bmp");
 		}
-		else if (nfilter == noff + 4)
+		break;
+		case 4:
 		{
 			panim = new CJpgAnimation;
-			if (ch == 0) sprintf(szfilename + l, ".jpg");
-			bret = glview->NewAnimation(szfilename, panim);
+			if (fileExtenion == nullptr) sprintf(szfilename + l, ".jpg");
+		}
+		break;
+#ifdef WIN32
+		case 5:
+		{
+			panim = new CAVIAnimation;
+			if (fileExtenion == nullptr) sprintf(szfilename + l, ".avi");
+		}
+		break;
+#endif	
 		}
 
-		if (bret)
+		// get the video dimensions
+		QSize size = glview->GetSafeFrameSize();
+
+		// get the frame rate
+		float fps = 10.f;
+		if (GetPostDocument()) fps = GetPostDocument()->GetTimeSettings().m_fps;
+		if (fps == 0.f) fps = 10.f;
+
+		// try to create the new animation
+		if (panim && 
+			panim->Create(szfilename, size.width(), size.height(), fps) &&
+			recorder.SetVideoStream(panim))
 		{
 			UpdateTitle();
 		}
-		else bret = QMessageBox::critical(this, "FEBio Studio", "Failed creating animation stream.");
+		else
+		{
+			delete panim;
+			QMessageBox::critical(this, "FEBio Studio", "Failed creating video stream.");
+		}
 
 		RedrawGL();
 	}
@@ -128,9 +146,11 @@ void CMainWindow::on_actionRecordNew_triggered()
 
 void CMainWindow::on_actionRecordStart_triggered()
 {
-	if (GetGLView()->HasRecording())
+	GLScreenRecorder& recorder = GetGLView()->GetScreenRecorder();
+	if (recorder.HasRecording())
 	{
-		GetGLView()->StartAnimation();
+		recorder.Start();
+		GetGLView()->LockSafeFrame();
 		UpdateTitle();
 	}
 	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file before you can start recording");
@@ -138,11 +158,12 @@ void CMainWindow::on_actionRecordStart_triggered()
 
 void CMainWindow::on_actionRecordPause_triggered()
 {
-	if (GetGLView()->HasRecording())
+	GLScreenRecorder& recorder = GetGLView()->GetScreenRecorder();
+	if (recorder.HasRecording())
 	{
-		if (GetGLView()->RecordingMode() == VIDEO_RECORDING)
+		if (recorder.IsRecording())
 		{
-			GetGLView()->PauseAnimation();
+			recorder.Pause();
 			UpdateTitle();
 		}
 	}
@@ -151,13 +172,12 @@ void CMainWindow::on_actionRecordPause_triggered()
 
 void CMainWindow::on_actionRecordStop_triggered()
 {
-	if (GetGLView()->HasRecording())
+	GLScreenRecorder& recorder = GetGLView()->GetScreenRecorder();
+	if (!recorder.IsStopped())
 	{
-		if (GetGLView()->RecordingMode() != VIDEO_STOPPED)
-		{
-			GetGLView()->StopAnimation();
-			UpdateTitle();
-		}
+		recorder.Stop();
+		UpdateTitle();
+		GetGLView()->UnlockSafeFrame();
 	}
 	else QMessageBox::information(this, "FEBio Studio", "You need to create a new video file first.");
 }

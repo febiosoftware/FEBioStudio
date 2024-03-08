@@ -288,6 +288,7 @@
 #define FE_RELAX_MALKIN_DIST_USER   811
 #define FE_RELAX_CSEXP_DIST_USER    812
 #define FE_RELAX_EXP_DIST_USER      813
+#define FE_RELAX_POW_DIST_USER      814
 
 // elastic damage materials
 #define FE_DMG_MATERIAL             900
@@ -2475,6 +2476,17 @@ public:
 public:
     FSRelaxPowDistortion(FSModel* fem);
     DECLARE_REGISTERED(FSRelaxPowDistortion);
+};
+
+//-----------------------------------------------------------------------------
+class FSRelaxPowDistUser : public FSMaterialProp
+{
+public:
+	enum { MP_TAU, M_BETA };
+
+public:
+	FSRelaxPowDistUser(FSModel* fem);
+	DECLARE_REGISTERED(FSRelaxPowDistUser);
 };
 
 //-----------------------------------------------------------------------------

@@ -46,7 +46,6 @@ SOFTWARE.*/
 #include "DataFieldSelector.h"
 #include "PropertyListView.h"
 #include "units.h"
-#include "InputWidgets.h"
 
 //=================================================================================================
 

@@ -36,6 +36,8 @@ CMeasureAreaTool::CMeasureAreaTool(CMainWindow* wnd) : CBasicTool(wnd, "Measure 
 
 	m_nsel = 0;
 	m_area = 0.0;
+
+	SetInfo("Calculates the total area of the selected faces.");
 }
 
 //-----------------------------------------------------------------------------

@@ -403,7 +403,7 @@ void CScalarFieldTool::OnApply()
 
 		// create node data
 		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, FEMeshData::DATA_SCALAR);
-		for (int i = 0; i < NN; i++) pdata->SetScalar(i, val[i]);
+		for (int i = 0; i < NN; i++) pdata->setScalar(i, val[i]);
 	}
 
 	Clear();

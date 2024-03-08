@@ -3813,8 +3813,8 @@ void FEBioExport3::WriteNodeDataSection()
 					{
 						el.set_attribute(n1, nid++);
 
-						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.GetScalar(i));
-						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.GetVec3d (i));
+						if      (nd.GetDataType() == FEMeshData::DATA_SCALAR) el.value(nd.getScalar(i));
+						else if (nd.GetDataType() == FEMeshData::DATA_VEC3D ) el.value(nd.getVec3d (i));
 
 						m_xml.add_leaf(el, false);
 					}

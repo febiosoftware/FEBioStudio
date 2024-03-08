@@ -6,6 +6,60 @@
 
 ===========================================================================
 
+ R E L E A S E   2.5   1/16/2024
+
+===========================================================================
+
+New Features:
+* Added "physics" color mode option, which colors each surface depending on how it is used in the model's loads and boundary conditions.
+* Added support for file extension dyn (will read lsdyna input file).
+* Added support for exporting 3D image data to several formats.
+* Added support for reading and writing quadratic beam elements to febio4 format.
+
+Improvements:
+* Inverted faces but not elements in NetGen mesher, to produce correct mesh output upon conversion to editable mesh.
+* Added ability to merge multiple STEP objects into single STEP object upon import, allowing conforming meshing with Netgen
+* Added Fluent mesh exporting capability
+* Added a log message when attempting to export wrong Mesh type to Fluent. Made export distinguish mixed face types versus uniform face types
+* Updated copyright statement on splash and about box.
+* Added febio format 4.0 export for post docs.
+* Added nodal fluid flux plot variable to FSI analyses
+* Deletion of multiple parts will now process much faster.
+* All new documents are now added to the recent files list.
+* Added icons to model search panel, and a column for the type. Filter now also searches type strings.
+* Implemented more efficient way of tracking output when running febio in a thread.
+* Modified mesh building algorithm in post lsdyna importer to speed it up.
+* In the Project panel, added support to load fs2 files via folder import, and fixed bug when moving files to a folder.
+* Added options to set caps when rendering smooth paths and cylinders. Beam ends are now rendered as flat. Fixed issue with rendering colormaps on solid beams.
+
+Bug Fixes:
+* Fixed issue with FSModel::GetEnumValues for getting dof_list.
+* Fixed some issues with reading feb3 files.
+* Added checks when rendering objects to make sure a valid render mesh exists.
+* Timeline panel is now updated when states are deleted.
+* Fixed issue with saving the correct model file name when saving fsps files.
+* Fixed issue with reading surfaces of febio files that uses node numbering that does not start at one.
+* Fixed issue with rendering images with correct orientation in slice view. Also fixed bug in rendering z-slice.
+* Updated ImageMap tool and WarpImageFilter to work with rotated images. Fixed bug caused by missing cases in 3DImage::Value
+* Fixed bug in loading models with DICOM images
+* Fixed issue with volume rendering images with orientation.
+* Image models are now rendered with correct orientation.
+* Fixed issue in kinemat build tool.
+* Fixed problem with input of numbers in a property form.
+* Fixed issue where shell IDs were not copied from lsdyna file.
+* Fixed issue with rare case where elements have duplicate IDs.
+* Fixed string overflow in FEBio import.
+* Fixed issue with importing nodesets from old feb files.
+* Fixed issue with volume rendering of signed int image data.
+* Made some fixes to old febio and nike3d file readers.
+* Fixed bug in rendering of general springs.
+* Fixed problem with reading discrete element sets from LSDYNA file.
+* Fixed bug in curve-projection tool that did not take transform of curves into account.
+* Fixed issue with rendering half-spheres in special case.
+
+
+===========================================================================
+
  R E L E A S E   2.4   11/15/2023
 
 ===========================================================================

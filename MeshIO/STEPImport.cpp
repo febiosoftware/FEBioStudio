@@ -37,6 +37,8 @@ SOFTWARE.*/
 #include <IGESControl_Reader.hxx>
 #include <TopExp_Explorer.hxx>
 #include <TopoDS.hxx>
+#include <BOPAlgo_Builder.hxx>
+#include <BOPAlgo_MakerVolume.hxx>
 #endif
 
 
@@ -57,7 +59,7 @@ bool STEPImport::Load(const char* szfile)
 	IFSelect_ReturnStatus status = aReader.ReadFile(szfile);
 	if (status != IFSelect_RetDone)
 	{
-		return errf("Failed readering STEP file.");
+		return errf("Failed reading STEP file.");
 	}
 
 	//Interface_TraceFile::SetDefault();
@@ -74,17 +76,24 @@ bool STEPImport::Load(const char* szfile)
 	int nbs = aReader.NbShapes();
 	if (nbs > 0)
 	{
+        // empty compound, as nothing has been added yet
+        BOPAlgo_MakerVolume aBuilder;
 		int count = 1;
+        int ns = 0;
 		for (int i = 1; i <= nbs; i++)
 		{
 			TopoDS_Shape shape = aReader.Shape(i);
 
 			// load each solid as an own object
 			TopExp_Explorer ex;
+            bool found_solid = false;
 			for (ex.Init(shape, TopAbs_SOLID); ex.More(); ex.Next())
 			{
 				// get the shape
 				TopoDS_Solid solid = TopoDS::Solid(ex.Current());
+                aBuilder.AddArgument(solid);
+                
+                ++ns;
 
 				GOCCObject* occ = new GOCCObject;
 				occ->SetShape(solid);
@@ -98,8 +107,47 @@ bool STEPImport::Load(const char* szfile)
 				GModel& mdl = m_prj.GetFSModel().GetModel();
 				mdl.AddObject(occ);
 
+                found_solid = true;
 			}
+            if (!found_solid) {
+                for (ex.Init(shape, TopAbs_SHELL); ex.More(); ex.Next())
+                {
+                    // get the shape
+                    TopoDS_Shell shell = TopoDS::Shell(ex.Current());
+                    
+                    GOCCObject* occ = new GOCCObject;
+                    occ->SetShape(shell);
+                    
+                    char szfiletitle[1024] = { 0 }, szname[1024] = { 0 };
+                    FileTitle(szfiletitle);
+                    
+                    sprintf(szname, "%s%02d", szfiletitle, count++);
+                    occ->SetName(szname);
+                    
+                    GModel& mdl = m_prj.GetFSModel().GetModel();
+                    mdl.AddObject(occ);
+                    
+                }
+            }
 		}
+        // merge all solids
+        if (ns > 1) {
+            aBuilder.SetIntersect(true);
+            aBuilder.SetAvoidInternalShapes(false);
+            aBuilder.Perform();
+            TopoDS_Shape solid = aBuilder.Shape();
+            GOCCObject* occ = new GOCCObject;
+            occ->SetShape(solid);
+            
+            char szfiletitle[1024] = { 0 }, szname[1024] = { 0 };
+            FileTitle(szfiletitle);
+            
+            sprintf(szname, "%s_merged", szfiletitle);
+            occ->SetName(szname);
+            
+            GModel& mdl = m_prj.GetFSModel().GetModel();
+            mdl.AddObject(occ);
+        }
 	}
 
 	return true;

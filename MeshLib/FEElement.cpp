@@ -716,6 +716,7 @@ void FEElement_::copy(const FEElement_& el)
 	m_gid = el.m_gid;
 	m_traits = el.m_traits;
 	m_nid = el.m_nid;
+	m_ntag = el.m_ntag;
 
 	m_fiber = el.m_fiber;
 	m_Q = el.m_Q;

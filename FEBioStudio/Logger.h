@@ -43,6 +43,10 @@ public slots:
 	static void AddLogEntry(const QString& txt);
 	static void AddOutputEntry(const QString& txt);
 
+signals:
+    void SendLogEntry(const QString& txt);
+    void SendOutputEntry(const QString& txt);
+
 private:
 	CLogger() {}
 	CLogger(CMainWindow* mainWindow) {m_mainWindow = mainWindow;}

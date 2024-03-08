@@ -51,7 +51,8 @@ bool DataArithmetic(FEPostModel& fem, int nfield, int nop, int noperand);
 
 //-----------------------------------------------------------------------------
 // Calculate the gradient of a scale field
-bool DataGradient(FEPostModel& fem, int vecField, int sclField);
+// (set config to 0 for material, to 1 for spatial gradient)
+bool DataGradient(FEPostModel& fem, int vecField, int sclField, int config = 1);
 
 //-----------------------------------------------------------------------------
 // Calculate the fractional anisotropy of a tensor field

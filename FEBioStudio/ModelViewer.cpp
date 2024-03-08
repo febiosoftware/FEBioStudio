@@ -34,6 +34,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QMenu>
 #include <QInputDialog>
+#include <QFileDialog>
 #include "DlgEditOutput.h"
 #include "DlgAddMeshData.h"
 #include "MaterialEditor.h"
@@ -54,6 +55,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <QPlainTextEdit>
 #include <QDialogButtonBox>
+#include <QFileInfo>
 #include "PropertyList.h"
 
 class CDlgWarnings : public QDialog
@@ -518,6 +520,11 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	delete[] pi;
 }
 
+void CModelViewer::AssignCurrentSelection()
+{
+	ui->props->AssignCurrentSelection();
+}
+
 void CModelViewer::UpdateSelection()
 {
 	if (ui->m_search->isVisible())
@@ -648,10 +655,7 @@ void CModelViewer::OnDeleteItem()
 	UpdateSelection();
 
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	for (int i=0; i<(int)m_selection.size(); ++i)
-	{
-		doc->DeleteObject(m_selection[i]);
-	}
+	doc->DeleteObjects(m_selection);
 	Select(nullptr);
 	Update();
 	GetMainWindow()->RedrawGL();
@@ -1665,6 +1669,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 	case MT_OBJECT_LIST:
 	{
 		menu.addAction("Show All Objects", this, SLOT(OnUnhideAllObjects()));
+		menu.addAction("Part selector ...", GetMainWindow(), SLOT(onShowPartSelector()));
 		menu.addSeparator();
 
 		QMenu* sub = new QMenu("Set Active Mesh Layer");
@@ -1772,6 +1777,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_STEP_LIST:
 		menu.addAction("Add Analysis Step ...", wnd, SLOT(on_actionAddStep_triggered()));
+		menu.addAction("Step Viewer ...", wnd, SLOT(on_actionStepViewer_triggered()));
 		menu.addSeparator();
 		menu.addAction("Delete All", this, SLOT(OnDeleteAllSteps()));
 		break;
@@ -1945,7 +1951,13 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		del = true;
 		break;
 	case MT_3DIMAGE:
-		del = true;
+        {
+            QMenu* exportImage = menu.addMenu("Export Image");
+            exportImage->addAction("Raw", this, &CModelViewer::OnExportRawImage);
+            exportImage->addAction("TIFF", this, &CModelViewer::OnExportTIFF);
+            exportImage->addAction("NRRD", this, &CModelViewer::OnExportNRRD);
+            del = true;
+        }
 		break;
 	default:
 		return;
@@ -2077,4 +2089,111 @@ void CModelViewer::OnEditMeshData()
 
 	CDlgEditMeshData dlg(data, this);
 	dlg.exec();
+}
+
+void CModelViewer::OnExportRawImage()
+{
+    CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export Raw Image", "", "Raw (*.raw)");
+	if (filename.isEmpty() == false)
+	{
+        if (img->ExportRAWImage(filename.toStdString()))
+        {
+            QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+            QMessageBox::information(GetMainWindow(), "Export image", msg);
+        }
+        else
+        {
+            QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+            QMessageBox::critical(GetMainWindow(), "Export image", msg);
+        }
+	}	
+}
+
+void CModelViewer::OnExportTIFF()
+{
+    CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export TIFF", "", "TIFF (*.tiff)");
+	if (filename.isEmpty() == false)
+	{
+        // QFileDialog does not enforce extensions on Linux, and so this check is necessary.
+        QFileInfo info(filename);
+        QString suffix = info.suffix();
+        if(suffix != "tiff")
+        {
+            if(suffix.isEmpty())
+            {
+                filename.append(".tiff");
+            }
+            else
+            {
+                filename.replace(suffix, "tiff");
+            }
+        }
+
+        if(QFileInfo::exists(filename))
+        {
+            auto ans = QMessageBox::question(GetMainWindow(), "File Exists", "%1 already exists.\n\nWould you like to overwrite it?");
+
+            if(ans != QMessageBox::Yes) return;
+        }
+
+        if (img->ExportSITKImage(filename.toStdString()))
+        {
+            QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+            QMessageBox::information(GetMainWindow(), "Export image", msg);
+        }
+        else
+        {
+            QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+            QMessageBox::critical(GetMainWindow(), "Export image", msg);
+        }
+    }
+}
+
+void CModelViewer::OnExportNRRD()
+{
+    CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject);
+	if (img == nullptr) return;
+
+	QString filename = QFileDialog::getSaveFileName(GetMainWindow(), "Export NRRD", "", "NRRD (*.nrrd)");
+	if (filename.isEmpty() == false)
+	{
+        // QFileDialog does not enforce extensions on Linux, and so this check is necessary.
+        QFileInfo info(filename);
+        QString suffix = info.suffix();
+        if(suffix != "nrrd")
+        {
+            if(suffix.isEmpty())
+            {
+                filename.append(".nrrd");
+            }
+            else
+            {
+                filename.replace(suffix, "nrrd");
+            }
+        }
+
+        if(QFileInfo::exists(filename))
+        {
+            auto ans = QMessageBox::question(GetMainWindow(), "File Exists", "%1 already exists.\n\nWould you like to overwrite it?");
+
+            if(ans != QMessageBox::Yes) return;
+        }
+
+        if (img->ExportSITKImage(filename.toStdString()))
+        {
+            QString msg = QString("Image exported successfully to file\n%1").arg(filename);
+            QMessageBox::information(GetMainWindow(), "Export image", msg);
+        }
+        else
+        {
+            QString msg = QString("Failed exporting image to file\n%1").arg(filename);
+            QMessageBox::critical(GetMainWindow(), "Export image", msg);
+        }
+    }
 }

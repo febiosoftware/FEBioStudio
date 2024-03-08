@@ -103,6 +103,12 @@ bool FEBioFormatOld::ParseModuleSection(XMLTag &tag)
 		assert(false);
 	}
 */
+
+	const char* sztype = atype.cvalue();
+	int moduleId = FEBio::GetModuleId(sztype);
+	if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", sztype); }
+	FileReader()->GetProject().SetModule(moduleId, false);
+
 	return (m_nAnalysis != -1);}
 
 //=============================================================================
@@ -484,6 +490,7 @@ void FEBioFormatOld::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 
 			// create a nodeset of this BC
 			FSNodeSet* pg = new FSNodeSet(po);
+			po->AddFENodeSet(pg);
 
 			// assign the nodes to this group
 			for (int i = 0; i<N; ++i) if (BC[i] & ntype) { pg->add(i); BC[i] &= (~ntype); }
@@ -494,6 +501,7 @@ void FEBioFormatOld::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 				FSFixedDisplacement* pbc = new FSFixedDisplacement(&fem, pg, ntype, pstep->GetID());
 				sprintf(szname, "FixedDisplacement%02d", CountBCs<FSFixedDisplacement>(fem)+1);
 				pbc->SetName(szname);
+				pg->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
 			else if (ntype < 64)
@@ -502,6 +510,7 @@ void FEBioFormatOld::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 				FSFixedRotation* pbc = new FSFixedRotation(&fem, pg, ntype, pstep->GetID());
 				sprintf(szname, "FixedRotation%02d", CountBCs<FSFixedRotation>(fem)+1);
 				pbc->SetName(szname);
+				pg->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
 			else if (ntype == 64)
@@ -509,6 +518,7 @@ void FEBioFormatOld::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 				FSFixedTemperature* pbc = new FSFixedTemperature(&fem, pg, 1, pstep->GetID());
 				sprintf(szname, "FixedTemperature%02d", CountBCs<FSFixedTemperature>(fem)+1);
 				pbc->SetName(szname);
+				pg->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
 			else if (ntype == 128)
@@ -516,6 +526,7 @@ void FEBioFormatOld::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 				FSFixedFluidPressure* pbc = new FSFixedFluidPressure(&fem, pg, 1, pstep->GetID());
 				sprintf(szname, "FixedFluidPressure%02d", CountBCs<FSFixedFluidPressure>(fem)+1);
 				pbc->SetName(szname);
+				pg->SetName(szname);
 				pstep->AddComponent(pbc);
 			}
 			else
@@ -526,6 +537,7 @@ void FEBioFormatOld::ParseBCFixed(FSStep* pstep, XMLTag &tag)
 					FSFixedConcentration* pbc = new FSFixedConcentration(&fem, pg, ntype, pstep->GetID());
 					sprintf(szname, "FixedConcentration%02d", CountBCs<FSFixedConcentration>(fem)+1);
 					pbc->SetName(szname);
+					pg->SetName(szname);
 					pstep->AddComponent(pbc);
 				}
 			}
@@ -612,6 +624,7 @@ void FEBioFormatOld::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 	}
 
 	// create the prescribed BC
+	FEBioInputModel& feb = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 	char szname[256];
 	vector<FSPrescribedDOF*> pBC(nns);
@@ -628,6 +641,7 @@ void FEBioFormatOld::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 			FSNodeSet* pg = new FSNodeSet(po);
 			sprintf(szname, "Nodeset%02d", i + 1);
 			pg->SetName(szname);
+			po->AddFENodeSet(pg);
 
 			// make a new boundary condition
 			FSPrescribedDOF* pbc = 0;
@@ -706,12 +720,17 @@ void FEBioFormatOld::ParseBCPrescribed(FSStep* pstep, XMLTag& tag)
 		FSPrescribedDOF* pbc = pBC[ng];
 //		pbc->GetLoadCurve()->SetID(lc);
 		pbc->SetScaleFactor(DC[i].s);
+		if (DC[i].lc >= 0)
+		{
+			feb.AddParamCurve(pbc->GetParam("scale"), DC[i].lc);
+		}
 	}
 }
 
 //-----------------------------------------------------------------------------
 void FEBioFormatOld::ParseForceLoad(FSStep *pstep, XMLTag &tag)
 {
+	FEBioInputModel& feb = GetFEBioModel();
 	FSModel& fem = GetFSModel();
 
 	// count how many prescibed nodes there are
@@ -790,6 +809,7 @@ void FEBioFormatOld::ParseForceLoad(FSStep *pstep, XMLTag &tag)
 		if (cc[j][i] >= 0)
 		{
 			FSNodeSet* pg = new FSNodeSet(po);
+			po->AddFENodeSet(pg);
 			sprintf(szname, "ForceNodeset%02d", i + 1);
 			pg->SetName(szname);
 
@@ -799,6 +819,11 @@ void FEBioFormatOld::ParseForceLoad(FSStep *pstep, XMLTag &tag)
 			pFC[cc[j][i]] = pbc;
 			pNS[cc[j][i]] = pg;
 			pstep->AddComponent(pbc);
+
+			if (FC[i].lc >= 0)
+			{
+				feb.AddParamCurve(pbc->GetParam("scale"), FC[i].lc);
+			}
 		}
 	}
 
@@ -1532,6 +1557,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			FSNodalVelocities* pbc = new FSNodalVelocities(&fem, pg, v, m_pBCStep->GetID());
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialVelocity%02d", CountBCs<FSNodalVelocities>(fem) + 1);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1571,6 +1597,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			FSInitConcentration* pbc = new FSInitConcentration(&fem, pg, bc, c, m_pBCStep->GetID());
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialConcentration%02d", CountBCs<FSInitConcentration>(fem) + 1);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			pbc->SetName(szname);
 			m_pBCStep->AddComponent(pbc);
 		}
@@ -1603,6 +1630,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialFluidPressure%02d", CountBCs<FSInitFluidPressure>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			m_pBCStep->AddComponent(pbc);
 		}
 		else if (tag == "temperature")	// initial temperature
@@ -1634,6 +1662,7 @@ bool FEBioFormatOld::ParseInitialSection(XMLTag& tag)
 			char szname[64] = { 0 };
 			sprintf(szname, "InitialTemperature%02d", CountBCs<FSInitTemperature>(fem) + 1);
 			pbc->SetName(szname);
+			if (pg) { pg->SetName(szname); po->AddFENodeSet(pg); }
 			m_pBCStep->AddComponent(pbc);
 		}
 		else ParseUnknownTag(tag);
@@ -1764,16 +1793,25 @@ void FEBioFormatOld::ParseContactSliding(FSStep* pstep, XMLTag& tag)
 
 				// create a new surface
 				FSSurface* ps = new FSSurface(po);
+				po->AddFESurface(ps);
 				if (ntype == 1)
 				{
 					pms = ps;
 					if (szn) ps->SetName(szn);
+					else {
+						sprintf(szbuf, "SecondarySurface%02d", CountInterfaces<FSSlidingWithGapsInterface>(fem) + 1);
+						ps->SetName(szbuf);
+					}
 					pi->SetSecondarySurface(ps);
 				}
 				else
 				{
 					pss = ps;
 					if (szn) ps->SetName(szn);
+					else {
+						sprintf(szbuf, "PrimarySurface%02d", CountInterfaces<FSSlidingWithGapsInterface>(fem) + 1);
+						ps->SetName(szbuf);
+					}
 					pi->SetPrimarySurface(ps);
 				}
 
@@ -2381,6 +2419,7 @@ void FEBioFormatOld::ParseRigidWall(FSStep* pstep, XMLTag& tag)
 			FSSurface* ps = new FSSurface(po);
 			pci->SetItemList(ps);
 			if (szn) ps->SetName(szn);
+			po->AddFESurface(ps);
 
 			// read the surface
 			ParseContactSurface(ps, tag);
@@ -2455,6 +2494,8 @@ void FEBioFormatOld::ParseContactRigid(FSStep *pstep, XMLTag &tag)
 			if (sz) sprintf(szbuf, "%s", szname);
 			else sprintf(szbuf, "RigidInterface%02d", i + 1);
 			pi->SetName(szbuf);
+			pn->SetName(szbuf);
+			po->AddFENodeSet(pn);
 			pstep->AddComponent(pi);
 		}
 	}

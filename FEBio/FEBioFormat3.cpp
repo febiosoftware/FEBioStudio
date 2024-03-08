@@ -27,7 +27,6 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "FEBioFormat3.h"
 #include <FEMLib/FERigidConstraint.h>
-#include <GeomLib/FSGroup.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEInitialCondition.h>
 #include <FEMLib/FEBodyLoad.h>
@@ -652,7 +651,11 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 			{
 				FSMaterial* pm = gmat->GetMaterialProperties();
 				FEShellFormulation* eform = nullptr;
-				if (pm->IsRigid()) eform = FEBio::CreateShellFormulation("rigid-shell", fem);
+				if (pm->IsRigid())
+				{
+					eform = FEBio::CreateShellFormulation("rigid-shell", fem);
+					if (eform) eform->SetParamFloat("shell_thickness", shellThickness);
+				}
 				else
 				{
 					int baseClass = FEBio::GetBaseClassIndex("FEUncoupledMaterial");
@@ -661,12 +664,13 @@ bool FEBioFormat3::ParseShellDomainSection(XMLTag& tag)
 						eform = FEBio::CreateShellFormulation("three-field-shell", fem);
 					}
 					else eform = FEBio::CreateShellFormulation("elastic-shell", fem);
+
+					eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
+					eform->SetParamFloat("shell_thickness", shellThickness);
 				}
 
 				if (eform)
 				{
-					eform->SetParamBool("shell_normal_nodal", shellNodalNormals);
-					eform->SetParamFloat("shell_thickness", shellThickness);
 					dom->SetElementFormulation(eform);
 				}
 			}
@@ -721,6 +725,7 @@ void FEBioFormat3::ParseGeometryNodes(FEBioInputModel::Part* part, XMLTag& tag)
 		FEBioInputModel::NODE& nd = nodes[i];
 		FSNode& node = mesh.Node(N0 + i);
 		node.m_ntag = nd.id;
+		node.m_nid = nd.id;
 		node.r = nd.r;
 	}
 
@@ -926,7 +931,7 @@ void FEBioFormat3::ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag&
 		{
 			int n[2];
 			tag.value(n, 2);
-			ds.Add(n[0] - 1, n[1] - 1);
+			ds.Add(n[0], n[1]);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -1010,7 +1015,7 @@ void FEBioFormat3::ParseGeometrySurface(FEBioInputModel::Part* part, XMLTag& tag
 
 			// make zero-based
 			vector<int> node(N);
-			for (int j = 0; j < N; ++j) node[j] = nf[j] - 1;
+			for (int j = 0; j < N; ++j) node[j] = nf[j];// -1;
 			s.m_face.push_back(node);
 
 			++tag;
@@ -1271,14 +1276,14 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 				{
 					double val = 0.0;
 					tag.value(val);
-					nodeData->SetScalar(lid - 1, val);
+					nodeData->setScalar(lid - 1, val);
 				}
 				break;
 				case FEMeshData::DATA_VEC3D:
 				{
 					vec3d val;
 					tag.value(val);
-					nodeData->SetVec3d(lid - 1, val);
+					nodeData->setVec3d(lid - 1, val);
 				}
 				break;
 				default:
@@ -1298,6 +1303,7 @@ bool FEBioFormat3::ParseNodeDataSection(XMLTag& tag)
 bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 {
 	FEBioInputModel& feb = GetFEBioModel();
+	FSModel* fem = &feb.GetFSModel();
 
 	XMLAtt* name = tag.AttributePtr("name");
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
@@ -1311,6 +1317,39 @@ bool FEBioFormat3::ParseSurfaceDataSection(XMLTag& tag)
 		else return false;
 	}
 	else dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+
+	const char* szgen = tag.AttributeValue("generator", true);
+	if (szgen)
+	{
+		if (strcmp(szgen, "const") == 0)
+		{
+			// "const" data generator needs to be handled differently
+			FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+			if (dataTypeAtt)
+			{
+				if      (*dataTypeAtt == "scalar") dataType = FEMeshData::DATA_TYPE::DATA_SCALAR;
+				else if (*dataTypeAtt == "vec3"  ) dataType = FEMeshData::DATA_TYPE::DATA_VEC3D;
+				else return false;
+			}
+			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
+
+			gen->SetName(name->cvalue());
+
+			const char* szset = surf->cvalue();
+			GMeshObject* po = feb.GetInstance(0)->GetGObject();
+			FSSurface* ps = feb.FindNamedSurface(surf->cvalue());
+
+			gen->SetItemList(ps);
+
+			ParseModelComponent(gen, tag);
+			fem->AddMeshDataGenerator(gen);
+		}
+		else
+		{
+			tag.skip();
+		}
+		return true;
+	}
 
 	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
 	FSMesh* feMesh = feSurf->GetMesh();
@@ -4031,40 +4070,4 @@ bool FEBioFormat3::ParseStep(XMLTag& tag)
 	m_pBCStep = 0;
 
 	return true;
-}
-
-//-----------------------------------------------------------------------------
-FEBioInputModel::DiscreteSet FEBioFormat3::ParseDiscreteSet(XMLTag& tag)
-{
-	FEBioInputModel& febio = GetFEBioModel();
-
-	const char* szset = tag.AttributeValue("dset", true);
-	if (szset)
-	{
-/*		FEBioInputModel::DiscreteSet* ps = febio.FindDiscreteSet(szset);
-		if (ps) return *ps;
-		else
-*/		{
-			FEBioInputModel::DiscreteSet ds;
-			return ds;
-		}
-	}
-	else
-	{
-		FEBioInputModel::DiscreteSet ds;
-		++tag;
-		do
-		{
-			if (tag == "delem")
-			{
-				int n[2];
-				tag.value(n, 2);
-				ds.Add(n[0] - 1, n[1] - 1);
-			}
-			else ParseUnknownTag(tag);
-			++tag;
-		} while (!tag.isend());
-
-		return ds;
-	}
 }

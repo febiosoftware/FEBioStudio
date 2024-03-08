@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "MaterialEditor.h"
 #include "DlgEditProject.h"
 #include "DlgAddMeshData.h"
+#include "DlgStepViewer.h"
 #include <MeshLib/FENodeData.h>
 #include <MeshLib/FESurfaceData.h>
 #include <MeshLib/FEElementData.h>
@@ -792,20 +793,37 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		QString name = dlg.GetName();
 		if (name.isEmpty()) name = QString("MeshData%1").arg(fem->CountMeshDataFields() + 1);
 
-		FEMeshData* data = nullptr;
-		switch (dlg.GetType())
+		if (dlg.GetDataInitializer() == CDlgAddMeshData::INITIALIZER_CONST)
 		{
-		case FEMeshData::NODE_DATA   : data = new FENodeData   (po, dlg.GetDataType()); break;
-		case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::PART_DATA   : data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		}
+			if (dlg.GetType() != FEMeshData::SURFACE_DATA)
+			{
+				QMessageBox::critical(this, "Create Data", "The const initializer option is only supported for surface data.");
+				return;
+			}
 
-		if (data)
+			FEMeshData::DATA_TYPE dataType = dlg.GetDataType();
+			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
+			gen->SetName(name.toStdString());
+			fem->AddMeshDataGenerator(gen);
+			UpdateModel(gen);
+		}
+		else
 		{
-			data->SetName(name.toStdString());
-			doc->DoCommand(new CCmdAddMeshDataField(pm, data), data->GetNameAndType());
-			UpdateModel(data);
+			FEMeshData* data = nullptr;
+			switch (dlg.GetType())
+			{
+			case FEMeshData::NODE_DATA   : data = new FENodeData   (po, dlg.GetDataType()); break;
+			case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case FEMeshData::PART_DATA   : data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			}
+
+			if (data)
+			{
+				data->SetName(name.toStdString());
+				doc->DoCommand(new CCmdAddMeshDataField(pm, data), data->GetNameAndType());
+				UpdateModel(data);
+			}
 		}
 	}
 }
@@ -850,24 +868,36 @@ void CMainWindow::on_actionAddStep_triggered()
 	FSProject& prj = doc->GetProject();
 	FSModel* fem = doc->GetFSModel();
 
-	QString stepName = QString("Step%1").arg(fem->Steps());
-	bool ok = false;
-	stepName = QInputDialog::getText(this, "Add Step", "Name:", QLineEdit::Normal, stepName, &ok);
+	QStringList stepList;
+	for (int i = 0; i < fem->Steps(); ++i) stepList << QString::fromStdString(fem->GetStep(i)->GetName());
 
-	if (ok && (stepName.isEmpty()==false))
+	bool ok;
+	QString item = QInputDialog::getItem(this, "FEBio Studio", "Insert new step after:", stepList, fem->Steps() - 1, false, &ok);
+	if (ok && !item.isEmpty())
 	{
 		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
 		assert(ps);
 		if (ps)
 		{
+			//		std::string name = dlg.m_name;
+			//		if (name.empty()) name = defaultStepName(fem, ps);
+			std::string name = defaultStepName(fem, ps);
+
 			FEBio::InitDefaultProps(ps);
 
-			string name = stepName.toStdString();
+			int insertPos = stepList.indexOf(item);
+
 			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps, -1), ps->GetNameAndType());
+			doc->DoCommand(new CCmdAddStep(fem, ps, insertPos));
 			UpdateModel(ps);
 		}
 	}
+}
+
+void CMainWindow::on_actionStepViewer_triggered()
+{
+	CDlgStepViewer dlg(this);
+	dlg.exec();
 }
 
 void CMainWindow::on_actionAddReaction_triggered()
@@ -915,7 +945,15 @@ void CMainWindow::on_actionEditProject_triggered()
 
 	CDlgEditProject dlg(doc->GetProject(), this);
 	dlg.exec();
-	UpdatePhysicsUi();
+
+	// TODO: we should check if there are any features already used in the model
+	// that are not available in the new module
+	UpdateModel();
+}
+
+void CMainWindow::on_actionAssignSelection_triggered()
+{
+	ui->modelViewer->AssignCurrentSelection();
 }
 
 void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)

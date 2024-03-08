@@ -26,21 +26,24 @@ SOFTWARE.*/
 
 #pragma once
 #include <FSCore/math3d.h>
-#include <GLLib/GLContext.h>
-class CGLView;
+
+class CGLContext;
 
 class GGrid
 {
 public:
 	GGrid();
 
-	void SetView(CGLView* pv) { m_pview = pv; }
-
 	vec3d Intersect(vec3d r, vec3d t, bool bsnap);
 
 	double GetScale() { return m_scale; }
 
 	void Render(CGLContext& rc);
+
+	vec3d WorldToPlane(const vec3d& r) const
+	{
+		return m_q.Inverse() * (r - m_o);
+	}
 
 protected:
 	vec3d Snap(vec3d r);
@@ -50,7 +53,4 @@ public:
 	quatd	m_q;	// plane orientation
 
 	double	m_scale;	// scale of grid (ie. distance between lines)
-
-protected:
-	CGLView*	m_pview;
 };

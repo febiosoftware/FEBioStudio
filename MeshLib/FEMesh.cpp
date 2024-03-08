@@ -545,7 +545,7 @@ void FSMesh::RebuildMesh(double smoothingAngle, bool partitionMesh)
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildElementData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	// make sure element data is valid
 	assert(ValidateElements());
 #endif
@@ -565,7 +565,7 @@ void FSMesh::RebuildElementData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildFaceData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateFaces());
 #endif
 
@@ -584,7 +584,7 @@ void FSMesh::RebuildFaceData()
 //-----------------------------------------------------------------------------
 void FSMesh::RebuildEdgeData()
 {
-#ifdef _DEBUG
+#ifndef NDEBUG
 	assert(ValidateEdges());
 #endif
 	// mark the exterior edges
@@ -2513,6 +2513,16 @@ FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, FEMeshDa
 	return map;
 }
 
+FEPartData* FSMesh::FindPartDataField(const std::string& name)
+{
+	for (FEMeshData* pd : m_meshData)
+	{
+		FEPartData* partData = dynamic_cast<FEPartData*>(pd);
+		if (pd && (pd->GetName() == name)) return partData;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh)
 {
@@ -2646,6 +2656,7 @@ void FSMesh::BuildNLT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearNLT()
 {
+	if (m_NLT.empty()) return;
 	m_NLT.clear();
 	m_nltmin = 0;
 	for (int i = 0; i < Nodes(); ++i) m_Node[i].m_nid = -1;
@@ -2688,6 +2699,7 @@ void FSMesh::BuildELT()
 	for (int i = 1; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		if (nid < 1) return;
 		if (nid > maxid) maxid = nid;
 		if (nid < minid) minid = nid;
 	}
@@ -2698,19 +2710,14 @@ void FSMesh::BuildELT()
 
 	// Figure out the size
 	int nsize = maxid - minid + 1;
-	if (nsize < NE)
-	{
-		// Hmm, that shouldn't be. 
-		// Let's clear up and get out of here.
-		ClearELT();
-		return;
-	}
+	assert(nsize >= NE);
 
 	// Ok, look's like we're good to go
 	m_ELT.assign(nsize, -1);
 	for (int i = 0; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		assert(m_ELT[nid - minid] == -1);
 		m_ELT[nid - minid] = i;
 	}
 	m_eltmin = minid;
@@ -2719,7 +2726,10 @@ void FSMesh::BuildELT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearELT()
 {
-	m_ELT.clear();
-	m_eltmin = 0;
-	for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	if (m_ELT.empty() == false)
+	{
+		m_ELT.clear();
+		m_eltmin = 0;
+		for (int i = 0; i < Elements(); ++i) m_Elem[i].m_nid = -1;
+	}
 }

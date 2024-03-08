@@ -46,7 +46,7 @@ private:
 class FSRigidConstraint : public FSStepComponent
 {
 protected:
-	enum { MATID, NAME, PARAMS };
+	enum { MATID, NAME, PARAMS, STATUS };
 
 protected:
 	FSRigidConstraint(int ntype, int nstep, FSModel* fem = nullptr);

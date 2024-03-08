@@ -39,7 +39,7 @@ bool FEBio::RunMaterialTest(MaterialTest test, std::vector<pair<double, double> 
 	FEMaterial* febmat = dynamic_cast<FEMaterial*>(FEBio::CreateFECoreClassFromModelComponent(test.mat, &fem));
 
 	// run the test
-	bool b = febio::RunMaterialTest(febmat, test.time, test.steps, test.strain, test.test.c_str(), out);
+	bool b = febio::RunMaterialTest(febmat, test.time, test.steps, test.strain, test.testName.c_str(), out);
 
 	delete febmat;
 

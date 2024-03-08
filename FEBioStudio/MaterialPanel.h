@@ -34,7 +34,7 @@ namespace Ui {
 }
 
 class MaterialProps;
-class QListWidgetItem;
+class QTableWidgetItem;
 
 class CMaterialPanel : public CCommandPanel
 {
@@ -53,10 +53,8 @@ private:
 	void SetItemColor(int item, GLColor c);
 
 private slots:
-	void on_materialList_currentRowChanged(int nrow);
-	void on_showButton_toggled(bool b);
-	void on_enableButton_toggled(bool b);
-	void on_editName_editingFinished();
+	void on_materialList_currentItemChanged(QTableWidgetItem* current, QTableWidgetItem* prev);
+	void on_materialList_itemClicked(QTableWidgetItem* item);
 	void on_matprops_dataChanged(int nprop);
 	void on_filter_textChanged(const QString& txt);
 

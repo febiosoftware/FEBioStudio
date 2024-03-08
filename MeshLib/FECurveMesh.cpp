@@ -459,14 +459,6 @@ void FECurveMesh::ReorderNodes(vector<int>& NLT)
 			tmp[i] = m0;
 		}
 	}	
-
-#ifdef _DEBUG
-	for (int i = 0; i<NN; ++i)
-	{
-		FSNode& n = Node(i);
-		assert(n.m_ntag == i);
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -516,14 +508,6 @@ void FECurveMesh::ReorderEdges(vector<int>& ELT)
 			tmp[i] = m0;
 		}
 	}
-
-#ifdef _DEBUG
-	for (int i = 0; i<NE; ++i)
-	{
-		FSEdge& e = Edge(i);
-		assert(e.m_ntag == i);
-	}
-#endif
 }
 
 //-----------------------------------------------------------------------------

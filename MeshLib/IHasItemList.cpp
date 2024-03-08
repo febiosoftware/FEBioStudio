@@ -1,4 +1,3 @@
-#include "stdafx.h"
 #include "IHasItemList.h"
 #include <MeshLib/FEItemListBuilder.h>
 

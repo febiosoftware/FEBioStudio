@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <PostLib/FEState.h>
 #include <PostLib/FEPostMesh.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
 using namespace std;
@@ -1670,6 +1669,7 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 					int objId = -1;
 
 					FEPostModel::PlotObject* po = nullptr;
+					Post::OBJ_POINT_DATA* pd = nullptr;
 
 					while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 					{
@@ -1681,42 +1681,46 @@ bool XpltReader3::ReadStateSection(FEPostModel& fem)
 							objId -= 1;
 
 							po = fem.GetPointObject(objId);
+							if ((objId >= 0) && (objId < ps->m_objPt.size()))
+								pd = &(ps->m_objPt[objId]);
 						}
 						else if (nid == PLT_OBJECT_POS)
 						{
 							assert(objId != -1);
 							float r[3];
 							m_ar.read(r, 3);
-							ps->m_objPt[objId].pos = vec3d(r[0], r[1], r[2]);
+							if (pd) pd->pos = vec3d(r[0], r[1], r[2]);
 						}
 						else if (nid == PLT_OBJECT_ROT)
 						{
 							assert(objId != -1);
 							float q[4];
 							m_ar.read(q, 4);
-							ps->m_objPt[objId].rot = quatd(q[0], q[1], q[2], q[3]);
+							if (pd) pd->rot = quatd(q[0], q[1], q[2], q[3]);
 						}
 						else if (nid == PLT_POINT_COORD)
 						{
 							assert(objId != -1);
 							float r[3];
 							m_ar.read(r, 3);
-							ps->m_objPt[objId].m_rt = vec3d(r[0], r[1], r[2]);
+							if (pd) pd->m_rt = vec3d(r[0], r[1], r[2]);
 						}
 						else if (nid == PLT_OBJECT_DATA)
 						{
 							while (m_ar.OpenChunk() == xpltArchive::IO_OK)
 							{
 								int nv = m_ar.GetChunkID();
-
-								assert((nv >= 0) && (nv < po->m_data.size()));
-
-								ObjectData* pd = m_pstate->m_objPt[objId].data;
-
-								switch (po->m_data[nv]->Type())
+								if (po)
 								{
-								case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
-								case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+									assert((nv >= 0) && (nv < po->m_data.size()));
+
+									ObjectData* pd = m_pstate->m_objPt[objId].data;
+
+									switch (po->m_data[nv]->Type())
+									{
+									case DATA_FLOAT: { float v; m_ar.read(v); pd->set(nv, v); } break;
+									case DATA_VEC3F: { vec3f v; m_ar.read(v); pd->set(nv, v); } break;
+									}
 								}
 
 								m_ar.CloseChunk();

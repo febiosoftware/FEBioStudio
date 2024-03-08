@@ -742,6 +742,11 @@ void CModelPropsPanel::Refresh()
 	}
 }
 
+void CModelPropsPanel::AssignCurrentSelection()
+{
+	addSelection(0);
+}
+
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
 {
 	if ((po == 0) && (props == 0))

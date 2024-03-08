@@ -44,7 +44,6 @@ SOFTWARE.*/
 #include <QTabWidget>
 #include <QTableWidget>
 #include <QHeaderView>
-#include <QMessageBox>
 #include <QInputDialog>
 #include <QCompleter>
 #include "CustomLineEdit.h"

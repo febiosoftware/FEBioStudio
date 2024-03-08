@@ -38,8 +38,6 @@ SOFTWARE.*/
 #include <QScrollArea>
 #include <QScrollBar>
 #include <QDoubleSpinBox>
-#include <QCheckBox>
-#include <QMessageBox>
 #include "ImageMapTool.h"
 #include "MainWindow.h"
 #include "ModelDocument.h"
@@ -325,6 +323,7 @@ void CImageMapTool::OnCreate()
     vec3d spacing((box.x1-box.x0)/imageModel->Get3DImage()->Width(), 
         (box.y1-box.y0)/imageModel->Get3DImage()->Height(),
         (box.z1-box.z0)/imageModel->Get3DImage()->Depth());
+    mat3d orientation = imageModel->Get3DImage()->GetOrientation();
 
     switch(ui->methodBox->currentIndex())
     {
@@ -416,14 +415,16 @@ void CImageMapTool::OnCreate()
         for(int i = 0; i < numNodes; i++)
         {
             vec3d pos = mesh->LocalToGlobal(mesh->Node(i).pos());
-            double val = imageModel->ValueAtGlobalPos(pos);
+            double val = imageModel->Get3DImage()->ValueAtGlobalPos(pos);
 
             // see if the node belongs to one of the external faces
             if(projectSurface && normals.count(i) > 0)
             {
-                int voxelIndexX = (pos.x - origin.x)/spacing.x;
-                int voxelIndexY = (pos.y - origin.y)/spacing.y;
-                int voxelIndexZ = (pos.z - origin.z)/spacing.z;
+                vec3d locPos = orientation.transpose()*(pos - origin);
+
+                int voxelIndexX = locPos.x/spacing.x;
+                int voxelIndexY = locPos.y/spacing.y;
+                int voxelIndexZ = locPos.z/spacing.z;
 
                 double discreteVal = imageModel->Get3DImage()->Value(voxelIndexX, voxelIndexY, voxelIndexZ);
                 if(discreteVal >= threshold)
@@ -432,20 +433,20 @@ void CImageMapTool::OnCreate()
                 }
                 else
                 {
-                    vec3f normal = normals[i];
-                    
+                    vec3d normal = orientation.transpose()*to_vec3d(normals[i]);
+
                     int xSign = normal.x > 0 ? 1 : -1;
                     int ySign = normal.y > 0 ? 1 : -1;
                     int zSign = normal.z > 0 ? 1 : -1;
 
                     int iter = 0;
                     int maxDepth = ui->maxDepth->value();
-                    vec3d currentPos = pos;
+                    vec3d currentPos = locPos;
                     while(iter < maxDepth)
                     {
-                        vec3d voxelCenter(origin.x + voxelIndexX*spacing.x + spacing.x/2,
-                        origin.y + voxelIndexY*spacing.y + spacing.y/2,
-                        origin.z + voxelIndexZ*spacing.z + spacing.z/2);
+                        vec3d voxelCenter(voxelIndexX*spacing.x + spacing.x/2,
+                        voxelIndexY*spacing.y + spacing.y/2,
+                        voxelIndexZ*spacing.z + spacing.z/2);
 
                         double vFarthestX = voxelCenter.x + spacing.x/2*xSign;
                         double vFarthestY = voxelCenter.y + spacing.y/2*ySign;
@@ -599,7 +600,7 @@ void CImageMapTool::OnCreate()
             }
             pos /= ne;
 
-            double val = imageModel->ValueAtGlobalPos(pos);
+            double val = imageModel->Get3DImage()->ValueAtGlobalPos(pos);
 
             #pragma omp critical
             {
@@ -637,9 +638,6 @@ void CImageMapTool::OnCreate()
     }
     case AVERAGE_ELEMS:
     {
-        BOX box = imageModel->GetBoundingBox();
-        vec3d origin(box.x0, box.y0, box.z0);
-
         auto img = imageModel->Get3DImage();
 
         int imgWidth = img->Width();
@@ -660,7 +658,7 @@ void CImageMapTool::OnCreate()
 
             // find bounding box of element
             double minX, maxX, minY, maxY, minZ, maxZ;
-            vec3d firstPos = mesh->LocalToGlobal(mesh->Node(el->m_node[0]).pos());
+            vec3d firstPos = orientation*(mesh->LocalToGlobal(mesh->Node(el->m_node[0]).pos()) - origin);
             minX = maxX = firstPos.x;
             minY = maxY = firstPos.y;
             minZ = maxZ = firstPos.z;
@@ -668,7 +666,7 @@ void CImageMapTool::OnCreate()
             int ne = el->Nodes();
             for(int nodeID = 1; nodeID < ne; nodeID++)
             {
-                vec3d pos = mesh->LocalToGlobal(mesh->Node(el->m_node[nodeID]).pos());
+                vec3d pos = orientation*(mesh->LocalToGlobal(mesh->Node(el->m_node[nodeID]).pos()) - origin);
 
                 if(pos.x < minX)
                 {
@@ -699,12 +697,12 @@ void CImageMapTool::OnCreate()
             }
 
             // find section of image that corresponds to bounding box
-            int minXPixel = (minX - origin.x)*xScale - 1;
-            int maxXPixel = (maxX - origin.x)*xScale + 1;
-            int minYPixel = (minY - origin.y)*yScale - 1;
-            int maxYPixel = (maxY - origin.y)*yScale + 1;
-            int minZPixel = (minZ - origin.z)*zScale - 1;
-            int maxZPixel = (maxZ - origin.z)*zScale + 1;
+            int minXPixel = minX*xScale - 1;
+            int maxXPixel = maxX*xScale + 1;
+            int minYPixel = minY*yScale - 1;
+            int maxYPixel = maxY*yScale + 1;
+            int minZPixel = minZ*zScale - 1;
+            int maxZPixel = maxZ*zScale + 1;
 
             if(minXPixel < 0) minXPixel = 0;
             if(maxXPixel > imgWidth) maxXPixel = imgWidth;
@@ -719,14 +717,14 @@ void CImageMapTool::OnCreate()
             int numPixels = 0;
             for(int k = minZPixel; k < maxZPixel; k++)
             {
-                vec3d pixelPos(0,0,k/zScale+origin.z);
+                vec3d pixelPos(0,0,k/zScale);
 
                 for(int j = minYPixel; j < maxYPixel; j++)
                 {
-                    pixelPos.y = j/yScale+origin.y;
+                    pixelPos.y = j/yScale;
                     for(int i = minXPixel; i < maxXPixel; i++)
                     {
-                        pixelPos.x = i/xScale+origin.x;
+                        pixelPos.x = i/xScale;
 
                         vec3f localPixelPos = to_vec3f(mesh->GlobalToLocal(pixelPos));
 

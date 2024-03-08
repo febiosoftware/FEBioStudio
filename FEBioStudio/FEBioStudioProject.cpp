@@ -540,15 +540,7 @@ bool FEBioStudioProject::Open(const QString& file)
 	delete m_rootItem;
 	FEBioStudioProject::ProjectItem::m_count = 0;
 	m_rootItem = new ProjectItem(PROJECT_GROUP, "root");
-
-	try {
-		ParseTags(tag, *this, *m_rootItem);
-	}
-	catch (XMLReader::EndOfFile e)
-	{
-		// no worries, all good
-	}
-
+	ParseTags(tag, *this, *m_rootItem);
 	xml.Close();
 
 	return true;

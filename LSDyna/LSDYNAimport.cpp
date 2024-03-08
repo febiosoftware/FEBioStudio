@@ -28,6 +28,7 @@ SOFTWARE.*/
 #include "LSDynaFileParser.h"
 #include "GeomLib/GMeshObject.h"
 #include <GeomLib/GModel.h>
+#include <FEBioLink/FEBioModule.h>
 #include <vector>
 #include <sstream>
 
@@ -53,6 +54,11 @@ bool LSDYNAimport::Load(const char* szfile)
 		return errf(lsparser.GetErrorString());
 	}
 	else if (lsparser.GetErrorString()) errf(lsparser.GetErrorString());
+
+	// Make sure the solid module is set
+	int moduleId = FEBio::GetModuleId("solid"); assert(moduleId >= 0);
+	if (m_prj.GetModule() != moduleId)
+		m_prj.SetModule(moduleId, false);
 
 	// build the model
 	FSModel& fem = m_prj.GetFSModel();

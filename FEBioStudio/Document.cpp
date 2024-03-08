@@ -595,6 +595,8 @@ CGLDocument::CGLDocument(CMainWindow* wnd) : CUndoDocument(wnd)
 	m_vs.nitem = ITEM_MESH;
 	m_vs.nstyle = REGION_SELECT_BOX;
 
+	m_uiMode = MODEL_VIEW;
+
 	// set default unit system (0 == no unit system)
 	m_units = 0;
 
@@ -650,19 +652,16 @@ GObject* CGLDocument::GetActiveObject()
 	return nullptr;
 }
 
-//-----------------------------------------------------------------------------
 CGView* CGLDocument::GetView()
 {
-	return &m_view;
+	return &m_scene->GetView();
 }
 
-//-----------------------------------------------------------------------------
 CGLScene* CGLDocument::GetScene()
 {
 	return m_scene;
 }
 
-//-----------------------------------------------------------------------------
 std::string CGLDocument::GetTypeString(FSObject* po)
 {
 	if (po == 0) return "(null)";
@@ -694,7 +693,11 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 	else if (dynamic_cast<FSStep*>(po))
 	{
 		FSStep* step = dynamic_cast<FSStep*>(po);
-		return step->GetTypeString();
+		std::stringstream ss;
+		ss << "Step";
+		const char* sztype = step->GetTypeString();
+		if (sztype) ss << " [" << sztype << "]";
+		return ss.str();
 	}
 	else if (dynamic_cast<GDiscreteSpringSet*>(po)) return "Discrete element set";
 	else if (dynamic_cast<GDiscreteElement*>(po)) return "discrete element";
@@ -740,13 +743,49 @@ std::string CGLDocument::GetTypeString(FSObject* po)
 		ss << "Load controller" << " [" << sztype << "]";
 		return ss.str();
 	}
+	else if (dynamic_cast<FSNodeDataGenerator*>(po))
+	{
+		FSNodeDataGenerator* plc = dynamic_cast<FSNodeDataGenerator*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Node data generator" << " [" << sztype << "]";
+		return ss.str();
+	}
+	else if (dynamic_cast<FSEdgeDataGenerator*>(po))
+	{
+		FSEdgeDataGenerator* plc = dynamic_cast<FSEdgeDataGenerator*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Edge data generator" << " [" << sztype << "]";
+		return ss.str();
+	}
+	else if (dynamic_cast<FSFaceDataGenerator*>(po))
+	{
+		FSFaceDataGenerator* plc = dynamic_cast<FSFaceDataGenerator*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Face data generator" << " [" << sztype << "]";
+		return ss.str();
+	}
+	else if (dynamic_cast<FSElemDataGenerator*>(po))
+	{
+		FSElemDataGenerator* plc = dynamic_cast<FSElemDataGenerator*>(po);
+		std::stringstream ss;
+		const char* sztype = plc->GetTypeString();
+		if (sztype == 0) sztype = "";
+		ss << "Element data generator" << " [" << sztype << "]";
+		return ss.str();
+	}
 	else if (dynamic_cast<FSMeshDataGenerator*>(po))
 	{
 		FSMeshDataGenerator* plc = dynamic_cast<FSMeshDataGenerator*>(po);
 		std::stringstream ss;
 		const char* sztype = plc->GetTypeString();
 		if (sztype == 0) sztype = "";
-		ss << "Mesh data" << " [" << sztype << "]";
+		ss << "Mesh data generator" << " [" << sztype << "]";
 		return ss.str();
 	}
 	else if (dynamic_cast<FEMeshData*>(po))
