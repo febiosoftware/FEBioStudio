@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <QPlainTextEdit>
 #include <FEBioLink/FEBioModule.h>
 #include <GeomLib/GPrimitive.h>
+#include <FECore/MathObject.h>
 #include <sstream>
 
 class CommandProcessor
@@ -54,12 +55,13 @@ public:
 	CommandProcessor(CMainWindow* wnd) : m_wnd(wnd) 
 	{
 		m_cmds.push_back({ "close" , "closes the current model", &CommandProcessor::RunCloseCmd });
+		m_cmds.push_back({ "cmd"   , "run a command script", &CommandProcessor::RunCmdCmd });
 		m_cmds.push_back({ "create", "add a primitive to the current model", &CommandProcessor::RunCreateCmd });
 		m_cmds.push_back({ "exit"  , "closes FEBio Studio", &CommandProcessor::RunExitCmd });
+		m_cmds.push_back({ "job"   , "run the model in FEBio", &CommandProcessor::RunJobCmd });
 		m_cmds.push_back({ "help"  , "show help", &CommandProcessor::RunHelpCmd });
 		m_cmds.push_back({ "new"   , "create a new model", &CommandProcessor::RunNewCmd });
 		m_cmds.push_back({ "open"  , "open a file", &CommandProcessor::RunOpenCmd });
-		m_cmds.push_back({ "run"   , "run a command script", &CommandProcessor::RunRunCmd });
 		m_cmds.push_back({ "save"  , "save the current model", &CommandProcessor::RunSaveCmd });
 	}
 
@@ -88,6 +90,17 @@ public:
 			}
 		}
 		return Error(QString("Unknown command: %1").arg(cmd));
+	}
+
+public: // command functions
+	bool RunJobCmd(QStringList ops)
+	{
+		if (ops.empty())
+		{
+			m_wnd->on_actionFEBioRun_triggered();
+			return true;
+		}
+		return Error("Invalid number of arguments.");
 	}
 
 	bool RunCloseCmd(QStringList ops)
@@ -153,7 +166,7 @@ public:
 		return true;
 	}
 
-	bool RunRunCmd(QStringList ops)
+	bool RunCmdCmd(QStringList ops)
 	{
 		QString cmdFile;
 		if (ops.empty())
@@ -332,6 +345,25 @@ void CCommandWindow::showEvent(QShowEvent* ev)
 void CCommandWindow::OnEnter()
 {
 	QString str = ui->getCommand();
+	if (str[0] == '=')
+	{
+		MSimpleExpression m;
+		str.remove(0, 1);
+		std::string sstr = str.toStdString();
+		if (m.Create(sstr) == false)
+		{
+			ui->Log("syntax error", 1);
+		}
+		else
+		{
+			double v = m.value();
+			QString ans = QString("%1 = %2").arg(QString::fromStdString(sstr)).arg(v, 0, 'g', 15);
+			ui->Log(ans);
+			ui->input->clear();
+		}
+		return;
+	}
+
 	bool b = ui->cmd->ProcessCommandLine(str);
 	if (b)
 	{
