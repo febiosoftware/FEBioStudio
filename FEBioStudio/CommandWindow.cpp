@@ -31,6 +31,7 @@ SOFTWARE.*/
 #include "units.h"
 #include <QBoxLayout>
 #include <QLineEdit>
+#include <QFileDialog>
 #include <FEBioLink/FEBioModule.h>
 
 class Ui::CCommandWindow
@@ -59,6 +60,7 @@ public:
 		QStringList ops = cmdAndOps; ops.pop_front();
 		if      (cmd == "new" ) RunNewCmd(ops);
 		else if (cmd == "open") RunOpenCmd(ops);
+		else if (cmd == "run" ) RunRunCmd(ops);
 		else if (cmd == "save") RunSaveCmd(ops);
 		else if (cmd == "exit") RunExitCmd(ops);
 		input->clear();
@@ -104,6 +106,56 @@ public:
 	{
 		m_wnd->on_actionExit_triggered();
 	}
+
+	void RunRunCmd(QStringList ops)
+	{
+		QString cmdFile;
+		if (ops.empty())
+		{
+			QStringList filters; filters << "FEBio Studio Command File (*.fsc)";
+
+			QFileDialog dlg(m_wnd, "Open");
+			dlg.setFileMode(QFileDialog::ExistingFile);
+			dlg.setAcceptMode(QFileDialog::AcceptOpen);
+			dlg.setDirectory(m_wnd->CurrentWorkingDirectory());
+			dlg.setNameFilters(filters);
+			if (dlg.exec())
+			{
+				// get the file name
+				QStringList files = dlg.selectedFiles();
+				cmdFile = files.first();
+			}
+		}
+		else cmdFile = ops[0];
+		if (!cmdFile.isEmpty())
+		{
+			RunCommandFile(cmdFile);
+		}
+	}
+
+	QStringList ParseCommandLine(QString cmd)
+	{
+		return cmd.split(" ", Qt::SkipEmptyParts);
+	}
+
+	void RunCommandFile(QString cmdFile)
+	{
+		QFile file(cmdFile);
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+
+		while (!file.atEnd())
+		{
+			QByteArray line = file.readLine();
+			string s = line.toStdString();
+			if (s[0] != '#')
+			{
+				if (s.rfind('\n') != string::npos) s.pop_back();
+				QString cmdLine = QString::fromStdString(s);
+				QStringList cmd = ParseCommandLine(cmdLine);
+				ProcessCommand(cmd);
+			}
+		}
+	}
 };
 
 CCommandWindow::CCommandWindow(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new Ui::CCommandWindow)
@@ -127,6 +179,6 @@ void CCommandWindow::showEvent(QShowEvent* ev)
 void CCommandWindow::OnEnter()
 {
 	QString str = ui->getCommand();
-	QStringList cmd = str.split(" ", Qt::SkipEmptyParts);
+	QStringList cmd = ui->ParseCommandLine(str);
 	ui->ProcessCommand(cmd);
 }

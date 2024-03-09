@@ -290,6 +290,8 @@ public:
 
 	bool CreateNewProject(QString fileName);
 
+	QString CurrentWorkingDirectory();
+
 private:
 	void ReadFile(QueuedFile& qfile);
 
@@ -305,8 +307,6 @@ private:
 	void ProcessITKImage(const QString& fileName, ImageFileType type);
 
 	bool ImportImage(CImageModel* imgModel);
-
-	QString CurrentWorkingDirectory();
 
 public slots:
     // add to the log 
