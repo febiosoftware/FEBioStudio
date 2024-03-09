@@ -868,11 +868,17 @@ void Ui::CMainWindow::buildDockWidgets(::CMainWindow* wnd)
 	menuWindows->addAction(dock8->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock8);
 
-	QDockWidget* dock9 = new QDockWidget("3D Image Settings", m_wnd); dock8->setObjectName("dockImageSettings");
+	QDockWidget* dock9 = new QDockWidget("3D Image Settings", m_wnd); dock9->setObjectName("dockImageSettings");
 	imageSettingsPanel = new ::CImageSettingsPanel(wnd, dock9);
 	dock9->setWidget(imageSettingsPanel);
 	menuWindows->addAction(dock9->toggleViewAction());
 	m_wnd->tabifyDockWidget(dock4, dock9);
+
+	QDockWidget* dock10 = new QDockWidget("Command Window", m_wnd); dock10->setObjectName("dockImageSettings");
+	commandWnd = new ::CCommandWindow(wnd, dock10);
+	dock10->setWidget(commandWnd);
+	menuWindows->addAction(dock10->toggleViewAction());
+	m_wnd->tabifyDockWidget(dock4, dock10);
 
 	// make sure the file viewer is the visible tab
 	dock1->raise();
