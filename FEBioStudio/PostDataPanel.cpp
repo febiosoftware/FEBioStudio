@@ -844,7 +844,7 @@ void CDlgFilter::accept()
 }
 
 //=================================================================================================
-CPostDataPanel::CPostDataPanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CPostDataPanel)
+CPostDataPanel::CPostDataPanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CPostDataPanel)
 {
 	ui->setupUi(this);
 }

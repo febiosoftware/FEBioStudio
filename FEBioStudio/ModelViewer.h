@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <vector>
 
 class QTreeWidgetItem;
@@ -39,7 +39,7 @@ namespace Ui {
 	class CModelViewer;
 }
 
-class CModelViewer : public CCommandPanel
+class CModelViewer : public CWindowPanel
 {
 	Q_OBJECT
 

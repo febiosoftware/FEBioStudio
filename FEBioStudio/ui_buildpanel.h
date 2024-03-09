@@ -72,8 +72,8 @@ public:
 		QMetaObject::connectSlotsByName(parent);
 	}
 
-	CCommandPanel* currentPanel()
+	CWindowPanel* currentPanel()
 	{
-		return dynamic_cast<CCommandPanel*>(tab->currentWidget());
+		return dynamic_cast<CWindowPanel*>(tab->currentWidget());
 	}
 };

@@ -75,7 +75,7 @@ REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png",
 #endif // NDEBUG
 
 //------------------------------------------------------------------------------------------------------------
-CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CCreatePanel)
+CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CCreatePanel)
 {
 	ui->setupUi(this);
 	m_tmpObject = 0;

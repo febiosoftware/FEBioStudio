@@ -102,7 +102,7 @@ private:
 	QPlainTextEdit* m_out = nullptr;
 };
 
-CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CModelViewer)
+CModelViewer::CModelViewer(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CModelViewer)
 {
 	ui->setupUi(wnd, this);
 	m_currentObject = 0;

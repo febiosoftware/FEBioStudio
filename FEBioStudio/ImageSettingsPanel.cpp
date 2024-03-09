@@ -366,7 +366,7 @@ private:
 };
 
 CImageSettingsPanel::CImageSettingsPanel(CMainWindow* wnd, QWidget* parent)
-    : CCommandPanel(wnd, parent), ui(new Ui::CImageSettingsPanel)
+    : CWindowPanel(wnd, parent), ui(new Ui::CImageSettingsPanel)
 {
     ui->setup(this);
 }

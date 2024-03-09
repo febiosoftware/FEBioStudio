@@ -264,7 +264,7 @@ public:
 	}
 };
 
-CStatePanel::CStatePanel(CMainWindow* pwnd, QWidget* parent) : CCommandPanel(pwnd, parent), ui(new Ui::CStatePanel)
+CStatePanel::CStatePanel(CMainWindow* pwnd, QWidget* parent) : CWindowPanel(pwnd, parent), ui(new Ui::CStatePanel)
 {
 	ui->setupUi(this);
 }

@@ -138,7 +138,7 @@ public:
 	FESurfacePartitionSelection*	m_mod;
 };
 
-CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CEditPanel)
+CEditPanel::CEditPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CEditPanel)
 {
 	ui->setupUi(this, wnd);
 }

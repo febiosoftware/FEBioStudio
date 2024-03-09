@@ -27,20 +27,16 @@ SOFTWARE.*/
 #pragma once
 #include <QWidget>
 
-//-----------------------------------------------------------------------------
 // forward declarations
 class CMainWindow;
 class CGLDocument;
 
-//-----------------------------------------------------------------------------
-//! Base class for command panels.
-//! A command panel provides tools for displaying and modifying parts of the FE 
-//! model.  
-class CCommandPanel : public QWidget
+//! Base class for window panels.
+class CWindowPanel : public QWidget
 {
 public:
 	//! constructor
-	CCommandPanel(CMainWindow* wnd, QWidget* parent = 0);
+	CWindowPanel(CMainWindow* wnd, QWidget* parent = 0);
 
 	//! get the main window
 	CMainWindow* GetMainWindow() { return m_wnd; }

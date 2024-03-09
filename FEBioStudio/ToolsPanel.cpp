@@ -46,7 +46,7 @@ SOFTWARE.*/
 #include "KinematBuildTool.h"
 #include "MeshMorphTool.h"
 
-CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CToolsPanel)
+CToolsPanel::CToolsPanel(CMainWindow* wnd, QWidget* parent) : CWindowPanel(wnd, parent), ui(new Ui::CToolsPanel)
 {
 	m_activeTool = 0;
 	initTools();

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #pragma once
 
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 
 namespace Ui
 {
@@ -83,7 +83,7 @@ private:
 	Ui::CImageParam2* ui;
 };
 
-class CImageSettingsPanel : public CCommandPanel
+class CImageSettingsPanel : public CWindowPanel
 {
     Q_OBJECT
 

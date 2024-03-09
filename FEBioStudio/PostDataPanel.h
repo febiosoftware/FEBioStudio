@@ -25,7 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-#include "CommandPanel.h"
+#include "WindowPanel.h"
 #include <QDialog>
 #include <string>
 #include <vector>
@@ -62,7 +62,7 @@ private:
 	Ui::CDlgExportData* ui;
 };
 
-class CPostDataPanel : public CCommandPanel
+class CPostDataPanel : public CWindowPanel
 {
 	Q_OBJECT
 
