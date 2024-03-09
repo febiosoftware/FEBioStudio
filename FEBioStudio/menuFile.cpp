@@ -144,56 +144,35 @@ void CMainWindow::on_actionOpenProject_triggered()
 void CMainWindow::on_actionNewModel_triggered()
 {
 	// create a unique name for this model
-	int n = 1;
-	string docTitle;
 	CDocManager* dm = m_DocManager;
-	bool bok = true;
-	do
-	{
-		stringstream ss;
-		ss << "Model" << n++;
-		docTitle = ss.str();
-		bok = true;
-		for (int i = 0; i < dm->Documents(); ++i)
-		{
-			CDocument* doci = dm->GetDocument(i);
-			if ((doci->GetDocTitle() == docTitle) || (doci->GetDocFileBase() == docTitle))
-			{
-				bok = false;
-				break;
-			}
-		}
-	} while (bok == false);
+	string docName = dm->GenerateNewDocName();
 
 	// show the dialog box
 	CDlgNew dlg(this);
-	dlg.SetModelName(QString::fromStdString(docTitle));
+	dlg.SetModelName(QString::fromStdString(docName));
 	if (dlg.exec())
 	{
-		CModelDocument* doc = CreateNewDocument();
+		int units = dlg.GetUnitSystem();
+		docName = dlg.GetModelName().toStdString();
+		CModelDocument* doc = nullptr;
 		if (dlg.CreateMode() == CDlgNew::CREATE_NEW_MODEL)
 		{
-			int nmodule = dlg.GetSelection();
-			doc->GetProject().SetModule(nmodule);
+			doc = dm->CreateNewDocument(dlg.GetSelection(), docName, units);
 		}
 		else if (dlg.CreateMode() == CDlgNew::CREATE_FROM_TEMPLATE)
 		{
-			if (doc->LoadTemplate(dlg.GetSelection()) == false)
+			doc = dm->CreateDocumentFromTemplate(dlg.GetSelection(), docName, units);
+			if (doc == nullptr)
 			{
 				QMessageBox::critical(this, "New", "Failed to initialize template.");
-				delete doc;
-				doc = nullptr;
+				return;
 			}
 		}
 		assert(doc);
 		if (doc)
 		{
-			int units = dlg.GetUnitSystem();
+			int units = doc->GetUnitSystem();
 			Units::SetUnitSystem(units);
-			doc->SetUnitSystem(units);
-
-			docTitle = dlg.GetModelName().toStdString();
-			doc->SetDocTitle(docTitle);
 			AddDocument(doc);
 		}
 	}

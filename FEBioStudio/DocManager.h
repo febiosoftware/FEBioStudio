@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 class CDocument;
 class CMainWindow;
+class CModelDocument;
 
 // This class manages the currently open documents
 class CDocManager
@@ -50,6 +51,13 @@ public:
 
 	// get a document
 	CDocument* GetDocument(int i);
+
+	// create a unique default document name 
+	std::string GenerateNewDocName();
+
+	// create a new model document
+	CModelDocument* CreateNewDocument(int moduleID, std::string name = "", int units = -1);
+	CModelDocument* CreateDocumentFromTemplate(int templateID, std::string name, int units = -1);
 
 private:
 	CMainWindow*	m_wnd;
