@@ -29,16 +29,43 @@ SOFTWARE.*/
 #include "DocManager.h"
 #include "ModelDocument.h"
 #include "units.h"
+#include "Commands.h"
 #include <QBoxLayout>
 #include <QLineEdit>
 #include <QFileDialog>
 #include <QPlainTextEdit>
 #include <FEBioLink/FEBioModule.h>
+#include <GeomLib/GPrimitive.h>
+#include <sstream>
 
 class CommandProcessor
 {
+private:
+	struct CCommandDescriptor
+	{
+		QString name;	// name of command
+		QString brief;	// brief description
+		bool(CommandProcessor::*f)(QStringList);
+	};
+
+	std::vector<CCommandDescriptor> m_cmds;
+
 public:
-	CommandProcessor(CMainWindow* wnd) : m_wnd(wnd) {}
+	CommandProcessor(CMainWindow* wnd) : m_wnd(wnd) 
+	{
+		m_cmds.push_back({ "close" , "closes the current model", &CommandProcessor::RunCloseCmd });
+		m_cmds.push_back({ "create", "add a primitive to the current model", &CommandProcessor::RunCreateCmd });
+		m_cmds.push_back({ "exit"  , "closes FEBio Studio", &CommandProcessor::RunExitCmd });
+		m_cmds.push_back({ "help"  , "show help", &CommandProcessor::RunHelpCmd });
+		m_cmds.push_back({ "new"   , "create a new model", &CommandProcessor::RunNewCmd });
+		m_cmds.push_back({ "open"  , "open a file", &CommandProcessor::RunOpenCmd });
+		m_cmds.push_back({ "run"   , "run a command script", &CommandProcessor::RunRunCmd });
+		m_cmds.push_back({ "save"  , "save the current model", &CommandProcessor::RunSaveCmd });
+	}
+
+	QString GetErrorString() { return m_error; }
+
+	QString GetCommandOutput() { return m_output; }
 
 	bool ProcessCommandLine(QString cmdLine)
 	{
@@ -53,12 +80,29 @@ public:
 	{
 		m_error.clear();
 		m_output.clear();
-		if      (cmd == "new" ) return RunNewCmd (ops);
-		else if (cmd == "open") return RunOpenCmd(ops);
-		else if (cmd == "run" ) return RunRunCmd (ops);
-		else if (cmd == "save") return RunSaveCmd(ops);
-		else if (cmd == "exit") return RunExitCmd(ops);
-		else return Error(QString("Unknown command: %1").arg(cmd));
+		for (auto& entry : m_cmds)
+		{
+			if (cmd == entry.name)
+			{
+				return (*this.*(entry.f))(ops);
+			}
+		}
+		return Error(QString("Unknown command: %1").arg(cmd));
+	}
+
+	bool RunCloseCmd(QStringList ops)
+	{
+		m_wnd->CloseView(m_wnd->GetDocument());
+		return true;
+	}
+
+	bool RunHelpCmd(QStringList ops)
+	{
+		m_output = "available commands:\n";
+		for (auto& entry : m_cmds)
+		{
+			m_output += QString("  %1 - %2\n").arg(entry.name, -7).arg(entry.brief);
+		}
 		return true;
 	}
 
@@ -137,9 +181,48 @@ public:
 		return Error("Failed to run command file.");
 	}
 
-	QStringList ParseCommandLine(QString cmd)
+	bool RunCreateCmd(QStringList ops)
 	{
-		return cmd.split(" ", Qt::SkipEmptyParts);
+		if (ops.empty()) return Error("Missing command arguments.");
+
+		CModelDocument* doc = m_wnd->GetModelDocument();
+		if (doc == nullptr) return Error("No active model.");
+
+		QString type = ops[0];
+		GObject* po = nullptr;
+		if (type == "box") po = new GBox(); 
+		if (po == nullptr) return Error(QString("Can create %1").arg(type));
+
+		// set default name
+		std::stringstream ss;
+		ss << "Object" << po->GetID();
+		po->SetName(ss.str());
+
+		// apply parameters
+		if (ops.size() > 1)
+		{
+			int N = ops.size() - 1;
+			if (N > po->Parameters())
+			{
+				delete po;
+				return Error("Invalid number of arguments.");
+			}
+
+			for (int i = 1; i < ops.size(); ++i)
+			{
+				Param& pp = po->GetParam(i - 1);
+				switch (pp.GetParamType())
+				{
+				case Param_INT  : pp.SetIntValue(ops[i].toInt()); break;
+				case Param_FLOAT: pp.SetFloatValue(ops[i].toDouble()); break;
+				}
+			}
+			po->Update();
+		}
+
+		doc->DoCommand(new CCmdAddAndSelectObject(doc->GetGModel(), po), po->GetNameAndType());
+		m_wnd->UpdateModel(po);
+		return true;
 	}
 
 	bool RunCommandFile(QString cmdFile)
@@ -165,15 +248,17 @@ public:
 				}
 			}
 		}
-		return true;
+		return Success(QString("run %1").arg(cmdFile));
 	}
-
-	QString GetErrorString() { return m_error; }
-
-	QString GetCommandOutput() { return m_output; }
 
 private:
 	bool Error(QString msg) { m_error = msg; return false; }
+	bool Success(QString msg) { m_output = msg; return true; }
+
+	QStringList ParseCommandLine(QString cmd)
+	{
+		return cmd.split(" ", Qt::SkipEmptyParts);
+	}
 
 private:
 	CMainWindow* m_wnd;
@@ -253,7 +338,10 @@ void CCommandWindow::OnEnter()
 		QString msg = ui->cmd->GetCommandOutput();
 		if (msg.isEmpty()) msg = str;
 		ui->Log(msg);
+		ui->input->clear();
 	}
-	else ui->Log(ui->cmd->GetErrorString(), 1);
-	ui->input->clear();
+	else
+	{
+		ui->Log(ui->cmd->GetErrorString(), 1);
+	}
 }
