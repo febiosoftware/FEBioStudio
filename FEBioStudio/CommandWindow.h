@@ -39,6 +39,10 @@ class CCommandWindow : public QWidget
 public:
 	CCommandWindow(CMainWindow* wnd, QWidget* parent = 0);
 
+	void Show();
+
+	void showEvent(QShowEvent* ev) override;
+
 public slots:
 	void OnEnter();
 

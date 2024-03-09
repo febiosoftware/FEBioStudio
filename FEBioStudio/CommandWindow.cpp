@@ -26,28 +26,84 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include "CommandWindow.h"
 #include "MainWindow.h"
+#include "DocManager.h"
+#include "ModelDocument.h"
+#include "units.h"
 #include <QBoxLayout>
 #include <QLineEdit>
+#include <FEBioLink/FEBioModule.h>
 
 class Ui::CCommandWindow
 {
 public:
 	::CMainWindow* m_wnd;
 
-	QLineEdit* cmd;
+	QLineEdit* input;
 
 public:
 	void setup(::CCommandWindow* w)
 	{
 		QVBoxLayout* l = new QVBoxLayout;
-		l->addWidget(cmd = new QLineEdit);
+		l->addWidget(input = new QLineEdit);
 		l->addStretch();
 		w->setLayout(l);
 
-		QObject::connect(cmd, &QLineEdit::returnPressed, w, &::CCommandWindow::OnEnter);
+		QObject::connect(input, &QLineEdit::returnPressed, w, &::CCommandWindow::OnEnter);
 	}
 
-	QString getCommand() { return cmd->text(); }
+	QString getCommand() { return input->text(); }
+
+	void ProcessCommand(QStringList cmdAndOps)
+	{
+		QString cmd = cmdAndOps[0];
+		QStringList ops = cmdAndOps; ops.pop_front();
+		if      (cmd == "new" ) RunNewCmd(ops);
+		else if (cmd == "open") RunOpenCmd(ops);
+		else if (cmd == "save") RunSaveCmd(ops);
+		else if (cmd == "exit") RunExitCmd(ops);
+		input->clear();
+	}
+
+	void RunNewCmd(QStringList ops)
+	{
+		if (ops.empty())
+			m_wnd->on_actionNewModel_triggered();
+		else
+		{
+			CDocManager* dm = m_wnd->GetDocManager();
+			int moduleID = FEBio::GetModuleId(ops[0].toStdString());
+			if (moduleID != -1)
+			{
+				CModelDocument* doc = dm->CreateNewDocument(moduleID);
+				if (doc)
+				{
+					int units = doc->GetUnitSystem();
+					Units::SetUnitSystem(units);
+					m_wnd->AddDocument(doc);
+				}
+			}
+		}
+	}
+
+	void RunOpenCmd(QStringList ops)
+	{
+		if (ops.empty())
+			m_wnd->on_actionOpen_triggered();
+		else
+		{
+			m_wnd->OpenFile(ops[0]);
+		}
+	}
+
+	void RunSaveCmd(QStringList ops)
+	{
+		m_wnd->on_actionSave_triggered();
+	}
+
+	void RunExitCmd(QStringList ops)
+	{
+		m_wnd->on_actionExit_triggered();
+	}
 };
 
 CCommandWindow::CCommandWindow(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new Ui::CCommandWindow)
@@ -56,17 +112,21 @@ CCommandWindow::CCommandWindow(CMainWindow* wnd, QWidget* parent) : QWidget(pare
 	ui->setup(this);
 }
 
+void CCommandWindow::Show()
+{
+	parentWidget()->show();
+	parentWidget()->raise();
+	ui->input->setFocus();
+}
+
+void CCommandWindow::showEvent(QShowEvent* ev)
+{
+	ui->input->setFocus();
+}
+
 void CCommandWindow::OnEnter()
 {
 	QString str = ui->getCommand();
 	QStringList cmd = str.split(" ", Qt::SkipEmptyParts);
-	if (cmd[0] == "new")
-	{
-		ui->m_wnd->on_actionNewModel_triggered();
-	}
-	else if (cmd[0] == "open")
-	{
-		ui->m_wnd->on_actionOpen_triggered();
-	}
-	ui->cmd->clear();
+	ui->ProcessCommand(cmd);
 }

@@ -998,14 +998,6 @@ bool CMainWindow::CreateNewProject(QString fileName)
 }
 
 //-----------------------------------------------------------------------------
-CModelDocument* CMainWindow::CreateNewDocument()
-{
-	CModelDocument* doc = new CModelDocument(this);
-	doc->SetUnitSystem(ui->m_settings.defaultUnits);
-	return doc;
-}
-
-//-----------------------------------------------------------------------------
 //! Open a plot file
 void CMainWindow::OpenPostFile(const QString& fileName, CModelDocument* modelDoc, bool showLoadOptions)
 {

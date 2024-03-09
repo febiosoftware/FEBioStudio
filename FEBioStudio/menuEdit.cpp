@@ -161,6 +161,11 @@ void CMainWindow::on_actionChangeLog_triggered()
 	}
 }
 
+void CMainWindow::on_actionShowCmdWnd_triggered()
+{
+	ui->commandWnd->Show();
+}
+
 void CMainWindow::on_actionInvertSelection_triggered()
 {
 	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());

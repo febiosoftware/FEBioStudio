@@ -290,8 +290,6 @@ public:
 
 	bool CreateNewProject(QString fileName);
 
-	CModelDocument* CreateNewDocument();
-
 private:
 	void ReadFile(QueuedFile& qfile);
 
@@ -353,6 +351,7 @@ public slots:
 	void on_actionUndo_triggered();
 	void on_actionRedo_triggered();
 	void on_actionChangeLog_triggered();
+	void on_actionShowCmdWnd_triggered();
 	void on_actionInvertSelection_triggered();
 	void on_actionClearSelection_triggered();
 	void on_actionDeleteSelection_triggered();
