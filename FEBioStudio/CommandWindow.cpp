@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLineEdit>
 #include <QFileDialog>
+#include <QPlainTextEdit>
 #include <FEBioLink/FEBioModule.h>
 
 class CommandProcessor
@@ -39,25 +40,29 @@ class CommandProcessor
 public:
 	CommandProcessor(CMainWindow* wnd) : m_wnd(wnd) {}
 
-	void ProcessCommandLine(QString cmdLine)
+	bool ProcessCommandLine(QString cmdLine)
 	{
 		QStringList cmdAndOps = ParseCommandLine(cmdLine);
-		if (cmdAndOps.empty()) return;
+		if (cmdAndOps.empty()) return false;
 		QString cmd = cmdAndOps[0];
 		QStringList ops = cmdAndOps; ops.pop_front();
-		RunCommand(cmd, ops);
+		return RunCommand(cmd, ops);
 	}
 
-	void RunCommand(QString cmd, QStringList ops)
+	bool RunCommand(QString cmd, QStringList ops)
 	{
-		if      (cmd == "new" ) RunNewCmd (ops);
-		else if (cmd == "open") RunOpenCmd(ops);
-		else if (cmd == "run" ) RunRunCmd (ops);
-		else if (cmd == "save") RunSaveCmd(ops);
-		else if (cmd == "exit") RunExitCmd(ops);
+		m_error.clear();
+		m_output.clear();
+		if      (cmd == "new" ) return RunNewCmd (ops);
+		else if (cmd == "open") return RunOpenCmd(ops);
+		else if (cmd == "run" ) return RunRunCmd (ops);
+		else if (cmd == "save") return RunSaveCmd(ops);
+		else if (cmd == "exit") return RunExitCmd(ops);
+		else return Error(QString("Unknown command: %1").arg(cmd));
+		return true;
 	}
 
-	void RunNewCmd(QStringList ops)
+	bool RunNewCmd(QStringList ops)
 	{
 		if (ops.empty())
 			m_wnd->on_actionNewModel_triggered();
@@ -74,11 +79,14 @@ public:
 					Units::SetUnitSystem(units);
 					m_wnd->AddDocument(doc);
 				}
+				else return Error("Failed creating new model.");
 			}
+			else return Error(QString("Don't know module \"%1\"").arg(ops[0]));
 		}
+		return true;
 	}
 
-	void RunOpenCmd(QStringList ops)
+	bool RunOpenCmd(QStringList ops)
 	{
 		if (ops.empty())
 			m_wnd->on_actionOpen_triggered();
@@ -86,19 +94,22 @@ public:
 		{
 			m_wnd->OpenFile(ops[0]);
 		}
+		return true;
 	}
 
-	void RunSaveCmd(QStringList ops)
+	bool RunSaveCmd(QStringList ops)
 	{
 		m_wnd->on_actionSave_triggered();
+		return true;
 	}
 
-	void RunExitCmd(QStringList ops)
+	bool RunExitCmd(QStringList ops)
 	{
 		m_wnd->on_actionExit_triggered();
+		return true;
 	}
 
-	void RunRunCmd(QStringList ops)
+	bool RunRunCmd(QStringList ops)
 	{
 		QString cmdFile;
 		if (ops.empty())
@@ -116,12 +127,14 @@ public:
 				QStringList files = dlg.selectedFiles();
 				cmdFile = files.first();
 			}
+			else return true;
 		}
 		else cmdFile = ops[0];
 		if (!cmdFile.isEmpty())
 		{
-			RunCommandFile(cmdFile);
+			return RunCommandFile(cmdFile);
 		}
+		return Error("Failed to run command file.");
 	}
 
 	QStringList ParseCommandLine(QString cmd)
@@ -129,26 +142,43 @@ public:
 		return cmd.split(" ", Qt::SkipEmptyParts);
 	}
 
-	void RunCommandFile(QString cmdFile)
+	bool RunCommandFile(QString cmdFile)
 	{
 		QFile file(cmdFile);
-		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) return;
+		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) 
+			return Error(QString("Failed to open command file: %1").arg(cmdFile));
 
+		int lineCount = 0;
 		while (!file.atEnd())
 		{
 			QByteArray line = file.readLine();
+			lineCount++;
 			string s = line.toStdString();
 			if (s[0] != '#')
 			{
 				if (s.rfind('\n') != string::npos) s.pop_back();
 				QString cmdLine = QString::fromStdString(s);
-				ProcessCommandLine(cmdLine);
+				if (ProcessCommandLine(cmdLine) == false)
+				{
+					QString msg = QString("Error at line %1:\n%2").arg(lineCount).arg(m_error);
+					return Error(msg);
+				}
 			}
 		}
+		return true;
 	}
+
+	QString GetErrorString() { return m_error; }
+
+	QString GetCommandOutput() { return m_output; }
+
+private:
+	bool Error(QString msg) { m_error = msg; return false; }
 
 private:
 	CMainWindow* m_wnd;
+	QString m_error;
+	QString m_output;
 };
 
 class Ui::CCommandWindow
@@ -157,6 +187,8 @@ public:
 	::CMainWindow* m_wnd;
 
 	QLineEdit* input = nullptr;
+	QPlainTextEdit* out = nullptr;
+
 	CommandProcessor* cmd = nullptr;
 
 public:
@@ -164,7 +196,12 @@ public:
 	{
 		QVBoxLayout* l = new QVBoxLayout;
 		l->addWidget(input = new QLineEdit);
-		l->addStretch();
+
+		out = new QPlainTextEdit;
+		out->setReadOnly(true);
+		out->setFont(QFont("Courier", 11));
+		out->setWordWrapMode(QTextOption::NoWrap);
+		l->addWidget(out);
 		w->setLayout(l);
 
 		QObject::connect(input, &QLineEdit::returnPressed, w, &::CCommandWindow::OnEnter);
@@ -172,6 +209,20 @@ public:
 
 	QString getCommand() { return input->text(); }
 
+	void Log(QString msg, int level = 0)
+	{
+		out->clear();
+		QTextDocument* document = out->document();
+		QTextCursor cursor(document);
+		QTextCharFormat fmt = cursor.charFormat();
+		switch (level)
+		{
+		case 0: fmt.setForeground(Qt::black); break;
+		case 1: fmt.setForeground(Qt::red); break;
+		}
+		cursor.movePosition(QTextCursor::End);
+		cursor.insertText(msg, fmt);
+	}
 };
 
 CCommandWindow::CCommandWindow(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new Ui::CCommandWindow)
@@ -196,6 +247,13 @@ void CCommandWindow::showEvent(QShowEvent* ev)
 void CCommandWindow::OnEnter()
 {
 	QString str = ui->getCommand();
-	ui->cmd->ProcessCommandLine(str);
+	bool b = ui->cmd->ProcessCommandLine(str);
+	if (b)
+	{
+		QString msg = ui->cmd->GetCommandOutput();
+		if (msg.isEmpty()) msg = str;
+		ui->Log(msg);
+	}
+	else ui->Log(ui->cmd->GetErrorString(), 1);
 	ui->input->clear();
 }
