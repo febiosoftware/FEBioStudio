@@ -34,36 +34,27 @@ SOFTWARE.*/
 #include <QFileDialog>
 #include <FEBioLink/FEBioModule.h>
 
-class Ui::CCommandWindow
+class CommandProcessor
 {
 public:
-	::CMainWindow* m_wnd;
+	CommandProcessor(CMainWindow* wnd) : m_wnd(wnd) {}
 
-	QLineEdit* input;
-
-public:
-	void setup(::CCommandWindow* w)
+	void ProcessCommandLine(QString cmdLine)
 	{
-		QVBoxLayout* l = new QVBoxLayout;
-		l->addWidget(input = new QLineEdit);
-		l->addStretch();
-		w->setLayout(l);
-
-		QObject::connect(input, &QLineEdit::returnPressed, w, &::CCommandWindow::OnEnter);
-	}
-
-	QString getCommand() { return input->text(); }
-
-	void ProcessCommand(QStringList cmdAndOps)
-	{
+		QStringList cmdAndOps = ParseCommandLine(cmdLine);
+		if (cmdAndOps.empty()) return;
 		QString cmd = cmdAndOps[0];
 		QStringList ops = cmdAndOps; ops.pop_front();
-		if      (cmd == "new" ) RunNewCmd(ops);
+		RunCommand(cmd, ops);
+	}
+
+	void RunCommand(QString cmd, QStringList ops)
+	{
+		if      (cmd == "new" ) RunNewCmd (ops);
 		else if (cmd == "open") RunOpenCmd(ops);
-		else if (cmd == "run" ) RunRunCmd(ops);
+		else if (cmd == "run" ) RunRunCmd (ops);
 		else if (cmd == "save") RunSaveCmd(ops);
 		else if (cmd == "exit") RunExitCmd(ops);
-		input->clear();
 	}
 
 	void RunNewCmd(QStringList ops)
@@ -151,16 +142,42 @@ public:
 			{
 				if (s.rfind('\n') != string::npos) s.pop_back();
 				QString cmdLine = QString::fromStdString(s);
-				QStringList cmd = ParseCommandLine(cmdLine);
-				ProcessCommand(cmd);
+				ProcessCommandLine(cmdLine);
 			}
 		}
 	}
+
+private:
+	CMainWindow* m_wnd;
+};
+
+class Ui::CCommandWindow
+{
+public:
+	::CMainWindow* m_wnd;
+
+	QLineEdit* input = nullptr;
+	CommandProcessor* cmd = nullptr;
+
+public:
+	void setup(::CCommandWindow* w)
+	{
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addWidget(input = new QLineEdit);
+		l->addStretch();
+		w->setLayout(l);
+
+		QObject::connect(input, &QLineEdit::returnPressed, w, &::CCommandWindow::OnEnter);
+	}
+
+	QString getCommand() { return input->text(); }
+
 };
 
 CCommandWindow::CCommandWindow(CMainWindow* wnd, QWidget* parent) : QWidget(parent), ui(new Ui::CCommandWindow)
 {
 	ui->m_wnd = wnd;
+	ui->cmd = new CommandProcessor(wnd);
 	ui->setup(this);
 }
 
@@ -179,6 +196,6 @@ void CCommandWindow::showEvent(QShowEvent* ev)
 void CCommandWindow::OnEnter()
 {
 	QString str = ui->getCommand();
-	QStringList cmd = ui->ParseCommandLine(str);
-	ui->ProcessCommand(cmd);
+	ui->cmd->ProcessCommandLine(str);
+	ui->input->clear();
 }
