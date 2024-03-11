@@ -68,7 +68,7 @@ public:
 	void SelectItemList(FEItemListBuilder *pitem, bool badd = false);
 
 	// assign the current selection to the currently selected item in the tree
-	void AssignCurrentSelection();
+	void AssignCurrentSelection(int ntarget = 0);
 
 	// set the current item
 	void SetCurrentItem(int item);

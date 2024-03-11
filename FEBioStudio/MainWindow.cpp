@@ -1345,6 +1345,11 @@ CRepositoryPanel* CMainWindow::GetDatabasePanel()
 	return ui->databasePanel;
 }
 
+CModelViewer* CMainWindow::GetModelViewer()
+{
+	return ui->modelViewer;
+}
+
 //-----------------------------------------------------------------------------
 //! close the current open project
 void CMainWindow::CloseProject()

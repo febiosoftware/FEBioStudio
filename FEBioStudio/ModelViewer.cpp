@@ -520,9 +520,9 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	delete[] pi;
 }
 
-void CModelViewer::AssignCurrentSelection()
+void CModelViewer::AssignCurrentSelection(int ntarget)
 {
-	ui->props->AssignCurrentSelection();
+	ui->props->AssignCurrentSelection(ntarget);
 }
 
 void CModelViewer::UpdateSelection()

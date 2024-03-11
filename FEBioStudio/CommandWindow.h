@@ -45,6 +45,8 @@ public:
 
 public slots:
 	void OnEnter();
+	void OnSave();
+	void OnClear();
 
 private:
 	Ui::CCommandWindow* ui;

@@ -742,9 +742,9 @@ void CModelPropsPanel::Refresh()
 	}
 }
 
-void CModelPropsPanel::AssignCurrentSelection()
+void CModelPropsPanel::AssignCurrentSelection(int ntarget)
 {
-	addSelection(0);
+	addSelection(ntarget);
 }
 
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
