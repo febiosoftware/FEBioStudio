@@ -138,6 +138,9 @@ public:
 	// find a surface based on its ID
 	GFace* FindSurface(int nid);
 
+	// find a surface from its name
+	GFace* FindSurfaceFromName(const std::string& name);
+
 	// --- edge functions ---
 
 	// return total nr of edges

@@ -632,6 +632,21 @@ GFace* GModel::FindSurface(int nid)
 	return 0;
 }
 
+GFace* GModel::FindSurfaceFromName(const string& name)
+{
+	for (int i = 0; i < Objects(); ++i)
+	{
+		GObject* po = Object(i);
+		int NF = po->Faces();
+		for (int j = 0; j < NF; ++j)
+		{
+			GFace* pg = po->Face(j);
+			if (pg->GetName() == name) return pg;
+		}
+	}
+	return 0;
+}
+
 //-----------------------------------------------------------------------------
 
 int GModel::Edges()
