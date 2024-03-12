@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include <FEMLib/FESurfaceLoad.h>
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshTools/FEMesher.h>
+#include <FEBio/FEBioExport4.h>
 #include "version.h"
 #include <sstream>
 #include <map>
@@ -233,12 +234,13 @@ public:
 		m_cmds.push_back({ "cmd"    , "run a command script", &CommandProcessor::RunCmdCmd });
 		m_cmds.push_back({ "create" , "add a primitive to the current model", &CommandProcessor::RunCreateCmd });
 		m_cmds.push_back({ "exit"   , "closes FEBio Studio", &CommandProcessor::RunExitCmd });
+		m_cmds.push_back({ "export" , "Export model to file", &CommandProcessor::RunExportCmd });
 		m_cmds.push_back({ "fgcol"  , "sets the foreground color", &CommandProcessor::RunFgcolCmd });
 		m_cmds.push_back({ "grid"   , "turn the grid in the Graphics View on or off", &CommandProcessor::RunGridCmd });
 		m_cmds.push_back({ "help"   , "show help", &CommandProcessor::RunHelpCmd });
 		m_cmds.push_back({ "import" , "import a geometry file", &CommandProcessor::RunImportCmd });
 		m_cmds.push_back({ "job"    , "run the model in FEBio", &CommandProcessor::RunJobCmd });
-		m_cmds.push_back({ "mesh"   , "generate mesh for currently selected object.", &CommandProcessor::RunMeshCmd });
+		m_cmds.push_back({ "genmesh", "generate mesh for currently selected object.", &CommandProcessor::RunGenmeshCmd });
 		m_cmds.push_back({ "new"    , "create a new model", &CommandProcessor::RunNewCmd });
 		m_cmds.push_back({ "open"   , "open a file", &CommandProcessor::RunOpenCmd });
 		m_cmds.push_back({ "reset"  , "reset all options to their defaults.", &CommandProcessor::RunResetCmd });
@@ -313,7 +315,7 @@ public: // command functions
 	bool RunAddBCCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 
 		if (ops.isEmpty()) m_wnd->on_actionAddNodalBC_triggered();
 		else
@@ -344,7 +346,7 @@ public: // command functions
 	bool RunAddMaterialCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 		if (ops.empty()) m_wnd->on_actionAddMaterial_triggered();
 		else
 		{
@@ -366,7 +368,7 @@ public: // command functions
 	bool RunAddBodyLoadCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 
 		if (ops.isEmpty()) m_wnd->on_actionAddBodyLoad_triggered();
 		else
@@ -397,7 +399,7 @@ public: // command functions
 	bool RunAddContactCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 
 		if (ops.isEmpty()) m_wnd->on_actionAddContact_triggered();
 		else
@@ -428,7 +430,7 @@ public: // command functions
 	bool RunAddNodalLoadCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 
 		if (ops.isEmpty()) m_wnd->on_actionAddNodalLoad_triggered();
 		else
@@ -459,7 +461,7 @@ public: // command functions
 	bool RunAddStepCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 
 		FSModel* fem = doc->GetFSModel();
 		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
@@ -475,7 +477,7 @@ public: // command functions
 	bool RunAddSurfaceLoadCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 
 		if (ops.isEmpty()) m_wnd->on_actionAddSurfLoad_triggered();
 		else
@@ -528,7 +530,7 @@ public: // command functions
 
 	bool RunBgcolCmd(QStringList ops)
 	{
-		if (m_wnd->GetGLView() == nullptr) return Error("Graphics View not available.");
+		if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 		GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
 		if (!ValidateArgs(ops, { 1, 3 })) return false;
 		GLColor newCol;
@@ -540,7 +542,7 @@ public: // command functions
 
 	bool RunBgcol1Cmd(QStringList ops)
 	{
-		if (m_wnd->GetGLView() == nullptr) return Error("Graphics View not available.");
+		if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 		GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
 		if (!ValidateArgs(ops, { 1, 3 })) return false;
 		GLColor newCol;
@@ -552,7 +554,7 @@ public: // command functions
 
 	bool RunBgcol2Cmd(QStringList ops)
 	{
-		if (m_wnd->GetGLView() == nullptr) return Error("Graphics View not available.");
+		if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 		GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
 		if (!ValidateArgs(ops, { 1, 3 })) return false;
 		GLColor newCol;
@@ -564,7 +566,7 @@ public: // command functions
 
 	bool RunBgstyleCmd(QStringList ops)
 	{
-		if (m_wnd->GetGLView() == nullptr) return Error("Graphics View not available.");
+		if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 		GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
 		if (!ValidateArgs(ops, 1, 1)) return false;
 		QString style = ops[0];
@@ -594,7 +596,7 @@ public: // command functions
 			m_wnd->on_actionFEBioRun_triggered();
 			return true;
 		}
-		return Error("Invalid number of arguments.");
+		return InvalidArgsCount();
 	}
 
 	bool RunCloseCmd(QStringList ops)
@@ -630,7 +632,7 @@ public: // command functions
 		return true;
 	}
 
-	bool RunMeshCmd(QStringList ops)
+	bool RunGenmeshCmd(QStringList ops)
 	{
 		GObject* po = m_wnd->GetActiveObject();
 		if (po == nullptr) return Error("No active object.");
@@ -693,7 +695,7 @@ public: // command functions
 				QString fileName = ops[0];
 				m_wnd->OpenFile(fileName);
 			}
-			else return Error("Invalid number of arguments.");
+			else return InvalidArgsCount();
 		}
 		return true;
 	}
@@ -701,7 +703,7 @@ public: // command functions
 	bool RunResetCmd(QStringList ops)
 	{
 		CGLView* glview = m_wnd->GetGLView();
-		if (glview == nullptr) return Error("Graphics view not available.");
+		if (glview == nullptr) return GLViewIsNull();
 		GLViewSettings& view = glview->GetViewSettings();
 		int ntheme = m_wnd->currentTheme();
 		view.Defaults(ntheme);
@@ -717,7 +719,7 @@ public: // command functions
 		else
 		{
 			CDocument* doc = m_wnd->GetDocument();
-			if (doc == nullptr) return Error("No document open.");
+			if (doc == nullptr) return NoActiveDoc();
 			string filename = ops[0].toStdString();
 			if (!doc->SaveDocument(filename)) return Error("Failed to save document.");
 			m_wnd->UpdateTab(doc);
@@ -728,7 +730,7 @@ public: // command functions
 	bool RunSelectPartCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 		if (!ValidateArgs(ops, 1, 1)) return false;
 
 		GModel* gm = doc->GetGModel();
@@ -747,7 +749,7 @@ public: // command functions
 	bool RunSelectSurfCmd(QStringList ops)
 	{
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No model active");
+		if (doc == nullptr) return NoActiveDoc();
 		if (!ValidateArgs(ops, 1, 1)) return false;
 
 		GModel* gm = doc->GetGModel();
@@ -780,9 +782,31 @@ public: // command functions
 		return true;
 	}
 
+	bool RunExportCmd(QStringList ops)
+	{
+		CModelDocument* doc = m_wnd->GetModelDocument();
+		if (doc == nullptr) return NoActiveDoc();
+		if (ValidateArgs(ops, { 0, 2 }) == false) return false;
+		if (ops.empty()) m_wnd->on_actionExportFEModel_triggered();
+		else
+		{
+			FSProject& prj = doc->GetProject();
+			QString fmt = ops[0];
+			if (fmt == "feb4")
+			{
+				string filename = ops[1].toStdString();
+				FEBioExport4 writer(prj);
+				bool bsuccess = writer.Write(filename.c_str());
+				if (!bsuccess) return Error(QString::fromStdString(writer.GetErrorMessage()));
+			}
+			else return Error("Unrecognized format.");
+		}
+		return true;
+	}
+
 	bool RunFgcolCmd(QStringList ops)
 	{
-		if (m_wnd->GetGLView() == nullptr) return Error("Graphics View not available.");
+		if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
 		GLViewSettings& vs = m_wnd->GetGLView()->GetViewSettings();
 		if (!ValidateArgs(ops, { 1, 3 })) return false;
 		GLColor newCol;
@@ -826,7 +850,7 @@ public: // command functions
 		if (ValidateArgs(ops, 1, -1) == false) return false;
 
 		CModelDocument* doc = m_wnd->GetModelDocument();
-		if (doc == nullptr) return Error("No active model.");
+		if (doc == nullptr) return NoActiveDoc();
 
 		QString type = ops[0];
 		GObject* po = nullptr;
@@ -876,9 +900,15 @@ private:
 		return Success(QString("cmd %1").arg(cmdFile));
 	}
 
+private: // error messages
 	bool Error(const QString& msg) { m_output = msg; return false; }
 	bool Success(const QString& msg) { m_output = msg; return true; }
 
+	bool NoActiveDoc() { return Error("No model active."); }
+	bool GLViewIsNull() { return Error("Graphics View not available."); }
+	bool InvalidArgsCount() { return Error("Invalid number of arguments."); }
+
+private:
 	bool ValidateArgs(const QStringList& ops, int minargs = -1, int maxargs = -1)
 	{
 		int N = ops.size();
@@ -910,7 +940,7 @@ private:
 	bool SetParameters(FSObject* pc, const QStringList& ops)
 	{
 		int N = ops.size();
-		if (N > pc->Parameters()) return Error("Invalid number of arguments.");
+		if (N > pc->Parameters()) return InvalidArgsCount();
 		for (int i = 0; i < ops.size(); ++i)
 		{
 			Param& pp = pc->GetParam(i);
