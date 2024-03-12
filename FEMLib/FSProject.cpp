@@ -305,6 +305,7 @@ void FSProject::Load(IArchive &ar)
 {
 	TRACE("FSProject::Load");
 
+	int moduleId = FEBio::GetModuleId("solid");
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -314,21 +315,24 @@ void FSProject::Load(IArchive &ar)
 		case CID_PRJ_MODULES: { 
 			int oldModuleId = 0;  
 			ar.read(oldModuleId); 
-			int moduleId = MapOldToNewModules(oldModuleId);
-			// if the moduleID == -1, then this file likely requires a plugin
-			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
-			SetModule(moduleId);
+			moduleId = MapOldToNewModules(oldModuleId);
 		} 
 		break;
 		case CID_PRJ_MODULE_NAME:
 		{
 			string modName;
 			ar.read(modName);
-			int moduleId = FEBio::GetModuleId(modName); assert(moduleId > 0);
-			SetModule(moduleId);
+			moduleId = FEBio::GetModuleId(modName); assert(moduleId > 0);
 		}
 		break;
-		case CID_FEM        : m_fem.Load(ar); break;
+		case CID_FEM        : 
+		{
+			// if the moduleID == -1, then this file likely requires a plugin
+			if (moduleId == -1) throw std::runtime_error("Invalid module ID.");
+			SetModule(moduleId);
+			m_fem.Load(ar);
+		}
+		break;
 		case CID_PRJ_OUTPUT : m_plt.Load(ar); break;
 		case CID_PRJ_LOGDATA: m_log.Load(ar); break;
 		}
