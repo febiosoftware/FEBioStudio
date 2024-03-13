@@ -12,7 +12,6 @@ cd $FEBIO_REPO
 ./ci/Linux/build.sh
 ./ci/Linux/create-sdk.sh
 
-
 ln -s $FEBIO_REPO/febio4-sdk $CHEM_REPO/
 cd $CHEM_REPO
 ./ci/Linux/build.sh
