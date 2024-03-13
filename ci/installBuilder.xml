@@ -2,7 +2,7 @@
     <shortName>FEBioStudio</shortName>
     <fullName>FEBioStudio</fullName>
     <version>${env(FBS_VER)}</version>
-    <installerFilename>installer.${platform_exec_suffix}</installerFilename>
+    <installerFilename>${product_shortname}_${platform_name}_${product_version}_FEBio_${febio_version}.${platform_exec_suffix}</installerFilename>
     <licenseFile>${FEBioRepo}/Documentation/FEBio_EULA_4.txt</licenseFile>
     <leftImage>${FBSRepo}/Documentation/InstallerImages/Left Side Image.png</leftImage>
     <logoImage>${FBSRepo}/Documentation/InstallerImages/Logo.png</logoImage>
@@ -147,7 +147,7 @@
             <folderList>
                 <folder>
                     <description>sdk</description>
-                    <destination>${installdir}/sdk</destination>
+                    <destination>${installdir}</destination>
                     <name>sdk</name>
                     <platforms>all</platforms>
                     <distributionFileList>
@@ -160,14 +160,18 @@
         </component>
     </componentList>
     <preBuildActionList>
+        <!-- All -->
+        <actionGroup>
+            <actionList>
+                <setInstallerVariable name="febiorepo" value="${env(FEBIO_REPO)}"/>
+                <setInstallerVariable name="fbsrepo" value="${env(FBS_REPO)}"/>
+                <setInstallerVariable name="releaseDir" value="${env(RELEASE_DIR)}"/>
+            </actionList>
+        </actionGroup>
         <!-- Windows -->
         <actionGroup>
             <actionList>
-                <setInstallerVariable name="febiorepo" value="C:/Users/Administrator/FEBio"/>
-                <setInstallerVariable name="fbsrepo" value="C:/Users/Administrator/FEBioStudio"/>
-                <setInstallerVariable name="releaseDir" value="C:/Users/Administrator/release"/>
                 <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
-                <setInstallerVariable name="defaultInstall" value="${platform_install_prefix}/${product_shortname}2"/>
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
@@ -176,9 +180,7 @@
         <!-- macOS -->
         <actionGroup>
             <actionList>
-                <setInstallerVariable name="releaseDir" value="Users/gitRunner/release"/>
-                <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/FEBioStudio.app/Contents/MacOS/autoUpdate.xml"/>
-                <setInstallerVariable name="defaultInstall" value="${platform_install_prefix}/${product_shortname}"/>
+                <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/FEBioStudio.app/Contents/MacOS/autoUpdate.xml"/>
             </actionList>
             <ruleList>
                 <platformTest type="osx"/>
@@ -187,12 +189,8 @@
         <!-- Linux -->
         <actionGroup>
             <actionList>
-                <setInstallerVariable name="febiorepo" value="/home/ubuntu/FEBio"/>
-                <setInstallerVariable name="fbsrepo" value="/home/ubuntu/FEBioStudio"/>
-                <setInstallerVariable name="releaseDir" value="/home/ubuntu/release"/>
                 <setInstallerVariable name="autoUpdate.xml" value="${releaseDir}/bin/autoUpdate.xml"/>
-                <setInstallerVariable name="defaultInstall" value="${platform_install_prefix}/${product_shortname}"/>
-            </actionList>
+            </actionList> 
             <ruleList>
                 <platformTest type="linux"/>
             </ruleList>
@@ -280,19 +278,25 @@
                     <type>REG_SZ</type>
                     <value>"${installdir}\bin\FEBioStudio2.exe" "%1"</value>
                 </registrySet>
+                <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio2.exe"/>
             </actionList>
             <ruleList>
                 <platformTest type="windows"/>
             </ruleList>
         </actionGroup>
         <!-- macOS -->
-        <addDirectoryToPath>
-            <insertAt>end</insertAt>
-            <path>${installdir}/FEBioStudio.app/Contents/MacOS</path>
+        <actionGroup>
+            <actionList>
+                <addDirectoryToPath>
+                    <insertAt>end</insertAt>
+                    <path>${installdir}/FEBioStudio.app/Contents/MacOS</path>
+                </addDirectoryToPath>
+                <setInstallerVariable name="FBSbin" value="${installdir}/FEBioStudio.app/Contents/MacOS/FEBioStudio"/>
+            </actionList>
             <ruleList>
                 <platformTest type="osx"/>
             </ruleList>
-        </addDirectoryToPath>
+        </actionGroup>
         <!-- Linux -->
         <actionGroup>
             <actionList>
@@ -399,6 +403,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
                     <insertAt>end</insertAt>
                     <path>${installdir}/bin</path>
                 </addDirectoryToPath>
+                <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio"/>
             </actionList>
             <ruleList>
                 <platformTest type="linux"/>
@@ -492,25 +497,6 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
         </actionGroup>
     </preUninstallationActionList>
     <finalPageActionList>
-        <!-- Windows -->
-        <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio2.exe">
-            <ruleList>
-                <platformTest type="windows"/>
-            </ruleList>
-        </setInstallerVariable>
-        <!-- macOS -->
-        <setInstallerVariable name="FBSbin" value="${installdir}/FEBioStudio.app/Contents/MacOS/FEBioStudio">
-            <ruleList>
-                <platformTest type="osx"/>
-            </ruleList>
-        </setInstallerVariable>
-        <!-- Linux -->
-        <setInstallerVariable name="FBSbin" value="${installdir}/bin/FEBioStudio">
-            <ruleList>
-                <platformTest type="linux"/>
-            </ruleList>
-        </setInstallerVariable>
-        <!-- All -->
         <runProgram>
             <program>${FBSbin}</program>
             <progressText>Launch FEBio Studio?</progressText>
@@ -522,7 +508,7 @@ MimeType=application/x-febiostudioproject;application/x-febiostudiomodel;applica
             <description>Installer.Parameter.installdir.description</description>
             <explanation>Installer.Parameter.installdir.explanation</explanation>
             <value></value>
-            <default>${defaultInstall}</default>
+            <default>${platform_install_prefix}/${product_shortname}</default>
             <allowEmptyValue>0</allowEmptyValue>
             <cliOptionName>prefix</cliOptionName>
             <mustBeWritable>1</mustBeWritable>

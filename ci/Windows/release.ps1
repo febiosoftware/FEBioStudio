@@ -1,57 +1,63 @@
-
-$FEBioRepo = 'C:\Users\Administrator\FEBio\'
-$ChemRepo = 'C:\Users\Administrator\FEBioChem\'
-$HeatRepo = 'C:\Users\Administrator\FEBioHeat\'
-$FBSRepo = 'C:\Users\Administrator\FEBioStudio\'
+$FEBIO_REPO = $env:GITHUB_WORKSPACE + '\FEBio\'
+$CHEM_REPO = $env:GITHUB_WORKSPACE + '\FEBioChem\'
+$HEAT_REPO = $env:GITHUB_WORKSPACE + '\FEBioHeat\'
+$FBS_REPO = $env:GITHUB_WORKSPACE + '\FEBioStudio\'
 
 # Clone and build repos
-# Clone and build repos
-#git clone https://github.com/febiosoftware/FEBio.git $FEBioRepo
-#git -C $FEBioRepo checkout ci/develop
-cd $FEBioRepo
-#.\ci\Windows\build.bat
-.\ci\Windows\create-sdk-wrapped.sh
+cd $FEBIO_REPO
+.\ci\Windows\build.bat
+.\ci\Windows\build.bat -d # build the debug version too
+sh --login -i -c ci/Windows/create-sdk-wrapped.sh
 
-
-git clone https://github.com/febiosoftware/FEBioChem.git $ChemRepo
-New-Item -Path $ChemRepo\febio4-sdk -ItemType SymbolicLink -Value $FEBioRepo\febio4-sdk
-git -C $ChemRepo checkout ci/develop
-cd $ChemRepo
+# FEBioChem
+New-Item -Path $CHEM_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
+cd $CHEM_REPO
 .\ci\Windows\build.bat
 
-git clone https://github.com/febiosoftware/FEBioHeat.git $HeatRepo
-New-Item -Path $HeatRepo\febio4-sdk -ItemType SymbolicLink -Value $FEBioRepo\febio4-sdk
-git -C $HeatRepo checkout ci/develop
-cd $HeatRepo
+# FEBioHeat
+New-Item -Path $HEAT_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
+cd $HEAT_REPO
 .\ci\Windows\build.bat
 
-git clone https://github.com/febiosoftware/FEBioStudio.git $FBSRepo
-New-Item -Path $FBSRepo\febio4-sdk -ItemType SymbolicLink -Value $FEBioRepo\febio4-sdk
-git -C $FBSRepo checkout ci/develop
-cd $FBSRepo
+# FEBioStudio
+New-Item -Path $FBS_REPO\febio4-sdk -ItemType SymbolicLink -Value $FEBIO_REPO\febio4-sdk
+cd $FBS_REPO
 .\ci\Windows\build.bat
 
 
-cd $Home
+cd $env:GITHUB_WORKSPACE
 mkdir release
 mkdir release\bin
 
+mkdir upload
+mkdir upload\bin
+mkdir upload\doc
+mkdir upload\updater
 
-$bins = @(
+$febioBins = @(
     # FEBio
-    $FEBioRepo + 'cmbuild\bin\Release\febio4.exe'
-    $FEBioRepo + 'cmbuild\bin\Release\febio.xml'
-    $FEBioRepo + 'cmbuild\bin\Release\*.dll'
-    'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler\libiomp5md.dll'
+    $FEBIO_REPO + 'cmbuild\bin\Release\febio4.exe'
+    $FEBIO_REPO + 'cmbuild\bin\Release\*.dll'
+
+    $FBS_REPO + 'ci\Windows\febio.xml'
 
     # Plugins
-    $ChemRepo + 'cmbuild\Release\FEBioChem.dll'
-    $HeatRepo + 'cmbuild\Release\FEBioHeat.dll'
+    $CHEM_REPO + 'cmbuild\Release\FEBioChem.dll'
+    $HEAT_REPO + 'cmbuild\Release\FEBioHeat.dll'
 
     #FEBio Studio
-    $FBSRepo + 'cmbuild\bin\Release\FEBioStudio2.exe'
-    $FBSRepo + 'cmbuild\bin\Release\FEBioStudioUpdater.exe'
-    $FBSRepo + 'cmbuild\bin\Release\mvUtil.exe'
+    $FBS_REPO + 'cmbuild\bin\Release\FEBioStudio2.exe'
+)
+
+$updater = @(
+    #Updater
+    $FBS_REPO + 'cmbuild\bin\Release\FEBioStudioUpdater.exe'
+    $FBS_REPO + 'cmbuild\bin\Release\mvUtil.exe'
+)
+
+$bins = @(
+    # OMP
+    'C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler\libiomp5md.dll'
 
     # Qt
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\Qt6Core.dll'
@@ -134,27 +140,45 @@ $bins = @(
     'C:\usr\local\febio\vcpkg_installed\x64-windows\bin\bz2.dll'
 )
 
+Foreach ($i in $febioBins)
+{
+    cp $i release/bin
+    cp $i upload/bin
+}
+
+Foreach ($i in $updater)
+{
+    cp $i release/bin
+    cp $i upload/updater
+}
+
 Foreach ($i in $bins)
 {
     cp $i release/bin
 }
 
-mkdir release/bin/platforms
+mkdir release\bin\platforms
 cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\platforms\qwindows.dll release\bin\platforms
 
-mkdir release/bin/styles
+mkdir release\bin\styles
 cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\styles\qwindowsvistastyle.dll release\bin\styles
+
+mkdir release\bin\tls
+cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\tls\*.dll release\bin\tls
+
+mkdir release\bin\imageformats
+cp C:\usr\local\febio\vcpkg_installed\x64-windows\Qt6\plugins\imageformats\*.dll release\bin\imageformats
 
 # Create docs
 $docs = @(
-    $FEBioRepo + 'Documentation\FEBio_EULA_4.pdf'
-    $FEBioRepo + 'Documentation\FEBio_Theory_Manual.pdf'
-    $FEBioRepo + 'Documentation\FEBio_User_Manual.pdf'
-    $FEBioRepo + 'Documentation\FEBio_User_Manual.pdf'
-    $FEBioRepo + 'Documentation\ReleaseNotes.txt'
-    $FBSRepo + 'Documentation\FEBioStudio_User_Manual.pdf'
-    $FBSRepo + 'Documentation\FEBioStudioReleaseNotes.txt'
-    $FBSRepo + 'icons/febiostudio.ico'
+    $FEBIO_REPO + 'Documentation\FEBio_EULA_4.pdf'
+    $FEBIO_REPO + 'Documentation\FEBio_Theory_Manual.pdf'
+    $FEBIO_REPO + 'Documentation\FEBio_User_Manual.pdf'
+    $FEBIO_REPO + 'Documentation\FEBio_User_Manual.pdf'
+    $FEBIO_REPO + 'Documentation\ReleaseNotes.txt'
+    $FBS_REPO + 'Documentation\FEBioStudio_User_Manual.pdf'
+    $FBS_REPO + 'Documentation\FEBioStudioReleaseNotes.txt'
+    $FBS_REPO + 'icons/febiostudio.ico'
 )
 
 mkdir release/doc
@@ -162,6 +186,7 @@ mkdir release/doc
 Foreach ($i in $docs)
 {
     cp $i release/doc
+    cp $i upload/doc
 }
 
 # Create SDK
@@ -184,22 +209,28 @@ mkdir release\sdk\lib\Debug
 Foreach ($i in $sdkLibs)
 {
     mkdir release\sdk\include\$i
-    cp C:\Users\Administrator\FEBio\$i\*.h release\sdk\include\$i
-    cp C:\Users\Administrator\FEBio\$i\*.hpp release\sdk\include\$i
+    cp $FEBIO_REPO\$i\*.h release\sdk\include\$i
+    cp $FEBIO_REPO\$i\*.hpp release\sdk\include\$i
 
-    cp C:\Users\Administrator\FEBio\cmbuild\lib\Release\$i.lib release\sdk\lib\Release
-    cp C:\Users\Administrator\FEBio\cmbuild\lib\Debug\$i.lib release\sdk\lib\Debug
+    cp $FEBIO_REPO\cmbuild\lib\Release\$i.lib release\sdk\lib\Release
+    cp $FEBIO_REPO\cmbuild\lib\Debug\$i.lib release\sdk\lib\Debug
 }
 
 mkdir release\sdk\bin
 mkdir release\sdk\bin\Debug
 
-cp C:\Users\Administrator\FEBio\cmbuild\bin\Debug\febio4.exe release\sdk\bin\Debug
-cp C:\Users\Administrator\FEBio\cmbuild\bin\Debug\*.dll release\sdk\bin\Debug
+cp $FEBIO_REPO\cmbuild\bin\Debug\febio4.exe release\sdk\bin\Debug
+cp $FEBIO_REPO\cmbuild\bin\Debug\*.dll release\sdk\bin\Debug
 
 # zip sdk
-Compress-Archive -Path release\sdk\* -DestinationPath release\sdk.zip
+Compress-Archive -Path release\sdk\* -DestinationPath upload\sdk.zip
 
 # Create installer
-cd $Home
-builder-cli.exe build $FBSRepo\ci\installBuilder.xml windows --license license.xml
+cd $env:GITHUB_WORKSPACE
+$env:FEBIO_REPO = $FEBIO_REPO
+$env:FBS_REPO = $FBS_REPO
+$env:RELEASE_DIR = $env:GITHUB_WORKSPACE + '\release'
+builder-cli.exe build $FBS_REPO\ci\installBuilder.xml windows --license $env:GITHUB_WORKSPACE\license.xml
+
+mkdir upload\installer
+cp C:\Users\Administrator\Documents\InstallBuilder\output\* upload\installer

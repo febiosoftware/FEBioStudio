@@ -3,6 +3,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include <iostream>
+#include <fstream>
 
 #ifdef WIN32
 #include <Windows.h>
@@ -24,6 +25,18 @@ int main(int argc, char* argv[])
 
     if((argc - start) % 2 != 0) return -1;
 
+    std::ofstream myfile;
+    myfile.open ("mvUtil.log");
+
+    myfile << "Args:" << std::endl;
+
+    for(int index = 0; index < argc; index++)
+    {
+        myfile << argv[index] << std::endl;
+    }
+
+    myfile << std::endl;
+
 	for (int index = start; index < argc; index += 2)
 	{
 
@@ -34,7 +47,11 @@ int main(int argc, char* argv[])
         int n = 0;
 		while (std::remove(argv[index + 1]) != 0)
 		{
-			std::cout << "Let's try again\n";
+            // If the file just doesn't exist, break
+            if(errno == ENOENT) break;
+
+            myfile << "Failed to delete " << argv[index + 1] << ". Error: " << errno << std::endl;
+
 			_sleep(500);
 			n++;
 			if (n > 10) break;
@@ -49,15 +66,17 @@ int main(int argc, char* argv[])
 #endif
     }
 
-    char command[100];
+    myfile.close();
+
+    char command[1000];
 
     if(dev)
     {
-        sprintf(command, "%s --noUpdaterCheck --devChannel", argv[1]);
+        sprintf(command, "\"%s\" --noUpdaterCheck --devChannel", argv[1]);
     }
     else
     {
-        sprintf(command, "%s --noUpdaterCheck", argv[1]);
+        sprintf(command, "\"%s\" --noUpdaterCheck", argv[1]);
     }
 
     std::system(command);

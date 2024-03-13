@@ -1,62 +1,70 @@
 #!/bin/bash
 
-# Get necessary packages
-sudo apt install -y patchelf zip
-
-FEBioRepo=$HOME/FEBio
-ChemRepo=$HOME/FEBioChem
-HeatRepo=$HOME/FEBioHeat
-FBSRepo=$HOME/FEBioStudio
+export FEBIO_REPO=$GITHUB_WORKSPACE/FEBio
+CHEM_REPO=$GITHUB_WORKSPACE/FEBioChem
+HEAT_REPO=$GITHUB_WORKSPACE/FEBioHeat
+export FBS_REPO=$GITHUB_WORKSPACE/FEBioStudio
+export RELEASE_DIR=$GITHUB_WORKSPACE/release
+UPLOAD_DIR=$GITHUB_WORKSPACE/upload
 
 # Clone and build repos
-git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBio.git $FEBioRepo
-cd $FEBioRepo
+cd $FEBIO_REPO
 ./ci/Linux/build.sh
 ./ci/Linux/create-sdk.sh
 
 
-git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBioChem.git $ChemRepo
-ln -s $FEBioRepo/febio4-sdk $ChemRepo/
-cd $ChemRepo
+ln -s $FEBIO_REPO/febio4-sdk $CHEM_REPO/
+cd $CHEM_REPO
 ./ci/Linux/build.sh
 
-git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBioHeat.git $HeatRepo
-ln -s $FEBioRepo/febio4-sdk $HeatRepo/
-cd $HeatRepo
+ln -s $FEBIO_REPO/febio4-sdk $HEAT_REPO/
+cd $HEAT_REPO
 ./ci/Linux/build.sh
 
-# git --depth 1 --branch ci/develop clone https://github.com/febiosoftware/FEBioStudio.git $FBSRepo
-ln -s $FEBioRepo/febio4-sdk $FBSRepo/
-git -C $FBSRepo checkout ci/develop
-cd $FBSRepo
+ln -s $FEBIO_REPO/febio4-sdk $FBS_REPO/
+cd $FBS_REPO
 ./ci/Linux/build.sh
 
-cd $HOME
+cd $GITHUB_WORKSPACE
 
-mkdir release
-mkdir release/bin
-mkdir release/lib
+mkdir $RELEASE_DIR
+mkdir $RELEASE_DIR/bin
+mkdir $RELEASE_DIR/lib
+
+mkdir $UPLOAD_DIR
+mkdir $UPLOAD_DIR/bin
+mkdir $UPLOAD_DIR/lib
+mkdir $UPLOAD_DIR/doc
+mkdir $UPLOAD_DIR/updater
 
 bins=(
-    $FEBioRepo/cmbuild/bin/febio4
-    $FBSRepo/cmbuild/bin/FEBioStudio
-    $FBSRepo/cmbuild/bin/FEBioStudioUpdater
-    $FBSRepo/cmbuild/bin/mvUtil
-    $FBSRepo/ci/Linux/febio.xml
+    $FEBIO_REPO/cmbuild/bin/febio4
+    $FBS_REPO/cmbuild/bin/FEBioStudio
+    $FBS_REPO/ci/Linux/febio.xml
+)
+
+updater=(
+    $FBS_REPO/cmbuild/bin/FEBioStudioUpdater
+    $FBS_REPO/cmbuild/bin/mvUtil
+)
+
+febioLibs=(
+    $FEBIO_REPO/cmbuild/lib/libfebiolib.so
+    $FEBIO_REPO/cmbuild/lib/libfecore.so
+    $FEBIO_REPO/cmbuild/lib/libnumcore.so
+    $FEBIO_REPO/cmbuild/lib/libfebioopt.so
+    $FEBIO_REPO/cmbuild/lib/libfebiofluid.so
+    $FEBIO_REPO/cmbuild/lib/libfeamr.so
+    $FEBIO_REPO/cmbuild/lib/libfebiorve.so
+    $FEBIO_REPO/cmbuild/lib/libfeimglib.so
+    $FEBIO_REPO/cmbuild/lib/libfebiomix.so
+    $FEBIO_REPO/cmbuild/lib/libfebiomech.so
+
+    $CHEM_REPO/cmbuild/lib/*.so
+    $HEAT_REPO/cmbuild/lib/*.so
 )
 
 libs=(
-    # FEBio
-    $FEBioRepo/cmbuild/lib/libfebiolib.so
-    $FEBioRepo/cmbuild/lib/libfecore.so
-    $FEBioRepo/cmbuild/lib/libnumcore.so
-    $FEBioRepo/cmbuild/lib/libfebioopt.so
-    $FEBioRepo/cmbuild/lib/libfebiofluid.so
-    $FEBioRepo/cmbuild/lib/libfeamr.so
-    $FEBioRepo/cmbuild/lib/libfebiorve.so
-    $FEBioRepo/cmbuild/lib/libfeimglib.so
-    $FEBioRepo/cmbuild/lib/libfebiomix.so
-    $FEBioRepo/cmbuild/lib/libfebiomech.so
 
     # IOMP
     /lib/x86_64-linux-gnu/libiomp5.so
@@ -154,48 +162,59 @@ libs=(
 )
 
 for item in ${bins[@]}; do
-    cp $item release/bin
+    cp $item $RELEASE_DIR/bin
+    cp $item $UPLOAD_DIR/bin
 done
 
+for item in ${updater[@]}; do
+    cp $item $RELEASE_DIR/bin
+    cp $item $UPLOAD_DIR/updater
+done
+
+for item in ${febioLibs[@]}; do
+    cp $item $RELEASE_DIR/lib
+    cp $item $UPLOAD_DIR/lib
+done
 
 for item in ${libs[@]}; do
-    cp $item release/lib
+    cp $item $RELEASE_DIR/lib
 done
 
 # Get Qt plugins
-cp -r /lib/x86_64-linux-gnu/qt6/plugins/xcbglintegrations release/lib/
-cp -r /lib/x86_64-linux-gnu/qt6/plugins/tls release/lib/
+cp -r /lib/x86_64-linux-gnu/qt6/plugins/xcbglintegrations $RELEASE_DIR/lib/
+cp -r /lib/x86_64-linux-gnu/qt6/plugins/tls $RELEASE_DIR/lib/
 
 # Get Qt platforms
-mkdir release/lib/platforms
-cp /lib/x86_64-linux-gnu/qt6/plugins/platforms/libqxcb.so release/lib/platforms
-cp /lib/x86_64-linux-gnu/libQt6XcbQpa.so.6 release/lib
+mkdir $RELEASE_DIR/lib/platforms
+cp /lib/x86_64-linux-gnu/qt6/plugins/platforms/libqxcb.so $RELEASE_DIR/lib/platforms
+cp /lib/x86_64-linux-gnu/libQt6XcbQpa.so.6 $RELEASE_DIR/lib
 
-patchelf --set-rpath '$ORIGIN/..' release/lib/platforms/libqxcb.so
+patchelf --set-rpath '$ORIGIN/..' $RELEASE_DIR/lib/platforms/libqxcb.so
 
 # Fix up OCCT rpaths
-patchelf --set-rpath '$ORIGIN/../lib' release/lib/libTK*
+patchelf --set-rpath '$ORIGIN/../lib' $RELEASE_DIR/lib/libTK*
 
 # Create qt.conf
 echo "[Paths]
-Plugins = ../lib" > release/bin/qt.conf
+Plugins = ../lib" > $RELEASE_DIR/bin/qt.conf
 
 # Create docs
 docs=(
-    $FEBioRepo/Documentation/FEBio_EULA_4.pdf
-    $FEBioRepo/Documentation/FEBio_Theory_Manual.pdf
-    $FEBioRepo/Documentation/FEBio_User_Manual.pdf
-    $FEBioRepo/Documentation/FEBio_User_Manual.pdf
-    $FEBioRepo/Documentation/ReleaseNotes.txt
-    $FBSRepo/Documentation/FEBioStudio_User_Manual.pdf
-    $FBSRepo/Documentation/FEBioStudioReleaseNotes.txt
-    $FBSRepo/icons/febiostudio.ico
+    $FEBIO_REPO/Documentation/FEBio_EULA_4.pdf
+    $FEBIO_REPO/Documentation/FEBio_Theory_Manual.pdf
+    $FEBIO_REPO/Documentation/FEBio_User_Manual.pdf
+    $FEBIO_REPO/Documentation/FEBio_User_Manual.pdf
+    $FEBIO_REPO/Documentation/ReleaseNotes.txt
+    $FBS_REPO/Documentation/FEBioStudio_User_Manual.pdf
+    $FBS_REPO/Documentation/FEBioStudioReleaseNotes.txt
+    $FBS_REPO/icons/febiostudio.ico
 )
 
-mkdir release/doc
+mkdir $RELEASE_DIR/doc
 
 for item in ${docs[@]}; do
-    cp $item release/doc
+    cp $item $RELEASE_DIR/doc
+    cp $item $UPLOAD_DIR/doc
 done
 
 # Create SDK
@@ -221,24 +240,27 @@ sdkLibs=(
     libfebiolib.so
 )
 
-mkdir release/sdk
-mkdir release/sdk/include
-mkdir release/sdk/lib
+mkdir $RELEASE_DIR/sdk
+mkdir $RELEASE_DIR/sdk/include
+mkdir $RELEASE_DIR/sdk/lib
 
 for item in ${sdkDirs[@]}; do
-    mkdir release/sdk/include/$item
-    cp $FEBioRepo/$item/*.h release/sdk/include/$item
-    cp $FEBioRepo/$item/*.hpp release/sdk/include/$item
+    mkdir $RELEASE_DIR/sdk/include/$item
+    cp $FEBIO_REPO/$item/*.h $RELEASE_DIR/sdk/include/$item
+    cp $FEBIO_REPO/$item/*.hpp $RELEASE_DIR/sdk/include/$item
 done
 
 for item in ${sdkLibs[@]}; do
-    cp $FEBioRepo/cmbuild/lib/$item release/sdk/lib
+    cp $FEBIO_REPO/cmbuild/lib/$item $RELEASE_DIR/sdk/lib
 done
 
-zip -r release/sdk.zip release/sdk
-
+cd $RELEASE_DIR/sdk
+zip -r $UPLOAD_DIR/sdk.zip include
+zip -r $UPLOAD_DIR/sdk.zip lib
+cd $GITHUB_WORKSPACE
 
 # Create installer
-builder build $FBSRepo/ci/installBuilder.xml --license license.xml
+builder build $FBS_REPO/ci/installBuilder.xml --license $GITHUB_WORKSPACE/license.xml
 
-cp /opt/installbuilder-23.11.0/output/installer.run $HOME/
+mkdir $UPLOAD_DIR/installer
+cp /opt/installbuilder-23.11.0/output/*.run $UPLOAD_DIR/installer

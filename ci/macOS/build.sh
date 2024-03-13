@@ -10,6 +10,8 @@ main() {
 	pushd cmbuild
 	make -j $(sysctl -n hw.ncpu)
 	popd
+
+	./$(dirname $0)/postBuild.sh
 }
 
 main

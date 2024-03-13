@@ -426,9 +426,6 @@ endforeach(name)
 
 ##### Add binaries #####
 
-# Linking the Qt libraries also pulls in the include files
-link_libraries(Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
-
 # set the name of the executable
 if (WIN32)
     set(FBS_BIN_NAME FEBioStudio2)
@@ -518,6 +515,17 @@ endif()
 
 
 ##### Link Libraries #####
+
+# Linking the Qt libraries also pulls in the include files
+target_link_libraries(${FBS_BIN_NAME} Qt6::Core Qt6::Widgets Qt6::Gui Qt6::Network Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(CUILib Qt6::Widgets)
+target_link_libraries(GLWLib Qt6::Gui Qt6::OpenGLWidgets)
+target_link_libraries(PostGL Qt6::Gui)
+target_link_libraries(GLLib Qt6::OpenGL Qt6::OpenGLWidgets)
+target_link_libraries(FSCore Qt6::Core)
+target_link_libraries(MeshIO Qt6::Core)
+target_link_libraries(MeshTools Qt6::Core)
+target_link_libraries(ImageLib Qt6::Core Qt6::Gui)
 
 if(WIN32)
 elseif(APPLE)
@@ -700,18 +708,4 @@ if(BUILD_UPDATER)
     findLib(FEBio_LIB_DIR XML_LIB xml)
 
     target_link_libraries(FEBioStudioUpdater Qt6::Widgets Qt6::Network ${XML_LIB} ${LIBZIP_LIB})
-
-    if (APPLE)
-        set(MACOS_SHARED_BINARIES bin/FEBioStudioUpdater bin/mvUtil PARENT_SCOPE)
-    endif()
-
-    if(APPLE)
-        message(STATUS "MACOS_SHARED_BINARIES: ${MACOS_SHARED_BINARIES}")
-
-        add_custom_command(
-            TARGET ${FBS_BIN_NAME} POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy
-                    ${MACOS_SHARED_BINARIES}
-                    $<TARGET_FILE_DIR:${FBS_BIN_NAME}> ./bin/${FBS_BIN_NAME}.app/Contents/MacOS)
-    endif()
 endif()

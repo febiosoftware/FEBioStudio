@@ -440,8 +440,7 @@ elseif(APPLE)
 	find_library(SSL_LIB ssl
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "openssl/lib" "build" "build/lib" "Release" "Debug" "homebrew/lib"
-		DOC "OpenSSL library path"
-		NO_DEFAULT_PATH)
+		DOC "OpenSSL library path")
 else()
 	find_path(SSL_INC openssl/aes.h
         PATHS /opt/openssl /usr/local/opt/ $ENV{HOME}/* $ENV{HOME}/*/*
@@ -584,13 +583,11 @@ elseif(APPLE)
 	find_path(FFMPEG_INC libavformat/avformat.h
         PATHS /usr/local/homebrew /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "include" "ffmpeg/include" "build" "build/include" "homebrew/include"
-		DOC "FFMPEG include directory"
-		NO_DEFAULT_PATH)
+		DOC "FFMPEG include directory")
 	find_library(FFMPEG_LIB avformat
         PATHS /usr/local/homebrew /usr/local/opt/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*
         PATH_SUFFIXES "lib" "ffmpeg/lib" "build" "build/lib" "Release" "Debug" "homebrew/lib"
-		DOC "FFMPEG library path"
-		NO_DEFAULT_PATH)
+		DOC "FFMPEG library path")
 else()
 	find_path(FFMPEG_INC libavformat/avformat.h
         PATHS /usr/local/x86_64 /usr/include/ /opt/ffmpeg $ENV{HOME}/* $ENV{HOME}/*/*

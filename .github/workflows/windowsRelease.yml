@@ -9,10 +9,10 @@ on:
         type: string
 jobs:
   call_workflow:
-    uses: febiosoftware/febio-workflows/.github/workflows/linux-release.yml@ci/develop
+    uses: febiosoftware/febio-workflows/.github/workflows/windows-release.yml@ci/develop
     with:
       febioVer: ${{inputs.febioVer}}
       fbsVer: ${{inputs.fbsVer}}
-      aws-ami-id: ami-0b97a2de37c43b9ba
+      aws-ami-id: ami-0b18c665dbe9efa75
       aws-sg-id: sg-0ca7912782cf1538b
     secrets: inherit
