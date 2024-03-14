@@ -29,6 +29,10 @@ SOFTWARE.*/
 class CGLView;
 class FSMeshBase;
 class FSMesh;
+class GObject;
+class GLViewTransform;
+class QRect;
+class GEdge;
 
 //-----------------------------------------------------------------------------
 class SelectRegion
@@ -134,6 +138,8 @@ private:
 	void TagBackfacingEdges(FSMeshBase& mesh);
 	void TagBackfacingFaces(FSMeshBase& mesh);
 	void TagBackfacingElements(FSMesh& mesh);
+
+	GEdge* SelectClosestEdge(GObject* po, GLViewTransform& transform, QRect& rt, double& zmin);
 
 private:
 	CGLView* m_glv;

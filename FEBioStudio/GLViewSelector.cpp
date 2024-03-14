@@ -1435,19 +1435,40 @@ void GLViewSelector::SelectObjects(int x, int y)
 	GLViewTransform transform(m_glv);
 	Ray ray = transform.PointToRay(x, y);
 
+	int X = x;
+	int Y = y;
+	int S = 4;
+	QRect rt(X - S, Y - S, 2 * S, 2 * S);
+
 	GObject* closestObject = 0;
 	Intersection q;
 	double minDist = 0;
 	for (int i = 0; i < model.Objects(); ++i)
 	{
 		GObject* po = model.Object(i);
-		if (po->IsVisible() && IntersectObject(po, ray, q))
+		if (po->IsVisible())
 		{
-			double distance = ray.direction * (q.point - ray.origin);
-			if ((closestObject == 0) || ((distance >= 0.0) && (distance < minDist)))
+			if (IntersectObject(po, ray, q))
 			{
-				closestObject = po;
-				minDist = distance;
+				double distance = ray.direction * (q.point - ray.origin);
+				if ((closestObject == 0) || ((distance >= 0.0) && (distance < minDist)))
+				{
+					closestObject = po;
+					minDist = distance;
+				}
+			}
+			else
+			{
+				// if this is a line object, we'll need to use a different strategy
+				double zmin;
+				if (SelectClosestEdge(po, transform, rt, zmin))
+				{
+					if ((closestObject == nullptr) || (zmin < minDist))
+					{
+						closestObject = po;
+						minDist = zmin;
+					}
+				}
 			}
 		}
 	}
@@ -1658,6 +1679,47 @@ void GLViewSelector::SelectSurfaces(int x, int y)
 	if (pcmd) pdoc->DoCommand(pcmd, surfName);
 }
 
+GEdge* GLViewSelector::SelectClosestEdge(GObject* po, GLViewTransform& transform, QRect& rt, double& zmin)
+{
+	GMesh* mesh = po->GetRenderMesh(); assert(mesh);
+	if (mesh == nullptr) return nullptr;
+
+	Transform& T = po->GetTransform();
+
+	double* a = m_glv->PlaneCoordinates();
+
+	GEdge* closestEdge = nullptr;
+	zmin = 0.0;
+
+	int edges = mesh->Edges();
+	for (int j = 0; j < edges; ++j)
+	{
+		GMesh::EDGE& edge = mesh->Edge(j);
+
+		vec3d r0 = T.LocalToGlobal(mesh->Node(edge.n[0]).r);
+		vec3d r1 = T.LocalToGlobal(mesh->Node(edge.n[1]).r);
+
+		double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
+		double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
+
+		if ((m_glv->ShowPlaneCut() == false) || ((d0 > 0) || (d1 > 0)))
+		{
+			vec3d p0 = transform.WorldToScreen(r0);
+			vec3d p1 = transform.WorldToScreen(r1);
+
+			if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
+			{
+				if ((closestEdge == nullptr) || (p0.z < zmin))
+				{
+					closestEdge = po->Edge(edge.pid);
+					zmin = p0.z;
+				}
+			}
+		}
+	}
+	return closestEdge;
+}
+
 //-----------------------------------------------------------------------------
 // select edges
 void GLViewSelector::SelectEdges(int x, int y)
@@ -1692,34 +1754,14 @@ void GLViewSelector::SelectEdges(int x, int y)
 		GObject* po = model.Object(i);
 		if (po->IsVisible())
 		{
-			GMesh* mesh = po->GetRenderMesh(); assert(mesh);
-			if (mesh)
+			double z;
+			GEdge* pe = SelectClosestEdge(po, transform, rt, z);
+			if (pe)
 			{
-				int edges = mesh->Edges();
-				for (int j = 0; j < edges; ++j)
+				if ((closestEdge == nullptr) || (z < zmin))
 				{
-					GMesh::EDGE& edge = mesh->Edge(j);
-
-					vec3d r0 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[0]).r);
-					vec3d r1 = po->GetTransform().LocalToGlobal(mesh->Node(edge.n[1]).r);
-
-					double d0 = r0.x * a[0] + r0.y * a[1] + r0.z * a[2] + a[3];
-					double d1 = r1.x * a[0] + r1.y * a[1] + r1.z * a[2] + a[3];
-
-					if ((m_glv->ShowPlaneCut() == false) || ((d0 > 0) || (d1 > 0)))
-					{
-						vec3d p0 = transform.WorldToScreen(r0);
-						vec3d p1 = transform.WorldToScreen(r1);
-
-						if (intersectsRect(QPoint((int)p0.x, (int)p0.y), QPoint((int)p1.x, (int)p1.y), rt))
-						{
-							if ((closestEdge == 0) || (p0.z < zmin))
-							{
-								closestEdge = po->Edge(edge.pid);
-								zmin = p0.z;
-							}
-						}
-					}
+					closestEdge = pe;
+					zmin = z;
 				}
 			}
 		}
@@ -1727,7 +1769,7 @@ void GLViewSelector::SelectEdges(int x, int y)
 
 	CCommand* pcmd = 0;
 	string edgeName = "<Empty>";
-	if (closestEdge != 0)
+	if (closestEdge != nullptr)
 	{
 		int index = closestEdge->GetID();
 		if (m_bctrl) pcmd = new CCmdUnSelectEdge(&model, &index, 1);
