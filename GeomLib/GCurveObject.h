@@ -30,4 +30,7 @@ class GCurveObject : public GObject
 {
 public:
 	GCurveObject();
+	GCurveObject(GCurveObject* co);
+
+	GObject* Clone() override;
 };

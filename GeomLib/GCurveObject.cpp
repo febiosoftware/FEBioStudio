@@ -30,3 +30,69 @@ GCurveObject::GCurveObject() : GObject(GCURVE_OBJECT)
 {
 	SetFEMesher(new FSCurveObjectMesher(this));
 }
+
+GCurveObject::GCurveObject(GCurveObject* po) : GObject(GCURVE_OBJECT)
+{
+	SetFEMesher(new FSCurveObjectMesher(this));
+
+	// copy transform
+	GetTransform() = po->GetTransform();
+
+	// next, we copy the geometry info
+	// --- Nodes ---
+	int NN = po->Nodes();
+	m_Node.reserve(NN);
+	for (int i = 0; i < NN; ++i)
+	{
+		GNode* n = new GNode(this);
+		GNode& no = *po->Node(i);
+		n->LocalPosition() = no.LocalPosition();
+		n->SetID(no.GetID());
+		n->SetLocalID(i);
+		n->SetType(no.Type());
+		assert(n->GetLocalID() == no.GetLocalID());
+		n->SetName(no.GetName());
+		m_Node.push_back(n);
+	}
+
+	// --- Edges ---
+	int NE = po->Edges();
+	m_Edge.reserve(NE);
+	for (int i = 0; i < NE; ++i)
+	{
+		GEdge* e = new GEdge(this);
+		GEdge& eo = *po->Edge(i);
+		e->m_node[0] = eo.m_node[0];
+		e->m_node[1] = eo.m_node[1];
+		e->SetID(eo.GetID());
+		e->SetLocalID(i);
+		e->SetName(eo.GetName());
+		e->m_ntype = eo.Type();
+		assert(e->GetLocalID() == eo.GetLocalID());
+		m_Edge.push_back(e);
+	}
+
+	// --- Parts ---
+	int NP = po->Parts();
+	m_Part.reserve(NP);
+	for (int i = 0; i < NP; ++i)
+	{
+		GPart* g = new GPart(this);
+		GPart& go = *po->Part(i);
+		g->SetMaterialID(go.GetMaterialID());
+		g->SetID(go.GetID());
+		g->SetLocalID(i);
+		g->SetName(go.GetName());
+		assert(g->GetLocalID() == go.GetLocalID());
+		m_Part.push_back(g);
+	}
+
+	// update the object
+	Update();
+}
+
+GObject* GCurveObject::Clone()
+{
+	GCurveObject* po = new GCurveObject(this);
+	return po;
+}
