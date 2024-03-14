@@ -277,8 +277,8 @@ public:
 		operator GNode* () { return m_pn; }
 
 	protected:
-		GModel*	m_ps;
 		GNode*	m_pn;
+		std::vector<GNode*> m_sel;
 		int		m_node;
 	};
 

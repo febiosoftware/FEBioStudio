@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GCurveObject.h"
 #include <MeshTools/FSCurveObjectMesher.h>
+#include <MeshTools/FESelection.h>
 #include <map>
 
 GCurveObject::GCurveObject() : GObject(GCURVE_OBJECT)
@@ -112,5 +113,77 @@ void GCurveObject::Merge(GCurveObject* po)
 		int n1 = nodemap[eold->m_node[1]];
 		AddLine(n0, n1);
 	}
+	Update();
+}
+
+void GCurveObject::MergeNodes(GNodeSelection* sel)
+{
+	double eps = 1e-6;
+	for (int i = 0; i < Nodes(); ++i) Node(i)->m_ntag = -1;
+	GNodeSelection::Iterator it1(sel);
+	int N = sel->Count();
+	for (int i = 0; i < N; ++i, ++it1)
+	{
+		vec3d r1 = it1->LocalPosition();
+		GNodeSelection::Iterator it2(sel);
+		double dmin = 0;
+		int nmin = -1;
+		for (int j = 0; j < N; ++j, ++it2)
+		{
+			if ((j != i) && (it2->m_ntag == -1))
+			{
+				vec3d r2 = it2->LocalPosition();
+				double D = (r2 - r1).Length();
+				if (D < eps)
+				{
+					if ((nmin == -1) || (D < dmin))
+					{
+						nmin = it2->GetLocalID();
+						dmin = D;
+					}
+				}
+			}
+		}
+		it1->m_ntag = nmin;
+	}
+
+	for (int i = 0; i < Edges(); ++i)
+	{
+		GEdge* pe = Edge(i);
+		GNode* n0 = Node(pe->m_node[0]);
+		if (n0->m_ntag != -1) pe->m_node[0] = n0->m_ntag;
+		GNode* n1 = Node(pe->m_node[1]);
+		if (n1->m_ntag != -1) pe->m_node[1] = n1->m_ntag;
+	}
+
+	// reindex nodes
+	int nc = 0;
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		GNode* pn = Node(i);
+		if (pn->m_ntag == -1) pn->m_ntag = nc++;
+		else pn->m_ntag = -1;
+	}
+
+	// reindex edges
+	for (int i = 0; i < Edges(); ++i)
+	{
+		GEdge* pe = Edge(i);
+		GNode* n0 = Node(pe->m_node[0]);
+		pe->m_node[0] = n0->m_ntag;
+		GNode* n1 = Node(pe->m_node[1]);
+		pe->m_node[1] = n1->m_ntag;
+	}
+
+	// remove the tagged nodes
+	vector<GNode*> newNodes;
+	for (int i = 0; i < Nodes(); ++i)
+	{
+		GNode* pn = Node(i);
+		if (pn->m_ntag != -1) newNodes.push_back(pn);
+		else delete pn;
+	}
+	assert(newNodes.size() == nc);
+	m_Node = newNodes;
 	Update();
 }
