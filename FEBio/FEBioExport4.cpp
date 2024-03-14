@@ -2059,6 +2059,8 @@ void FEBioExport4::WriteEdgeDataGenerator(FSEdgeDataGenerator* map)
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteFaceDataGenerator(FSFaceDataGenerator* map)
 {
+	const char* szsurf = GetSurfaceName(map->GetItemList());
+	if (szsurf == nullptr) throw InvalidItemListBuilder(map);
 	XMLElement meshData("SurfaceData");
 	meshData.add_attribute("name", map->GetName());
 	meshData.add_attribute("surface", GetSurfaceName(map->GetItemList()));
