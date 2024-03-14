@@ -709,6 +709,7 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
             else if (szicmp(sz, "M3D3"  )) ntype = FE_TRI3;
             else if (szicmp(sz, "T3D2"  )) ntype = FE_BEAM2;
             else if (szicmp(sz, "CPS3"  )) ntype = FE_TRI3;
+            else if (szicmp(sz, "CPS4"  )) ntype = FE_QUAD4;
 			else if (szicmp(sz, "SPRINGA"))
 			{
 				ntype = -1;
