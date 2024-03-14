@@ -33,4 +33,6 @@ public:
 	GCurveObject(GCurveObject* co);
 
 	GObject* Clone() override;
+
+	void Merge(GCurveObject* po);
 };

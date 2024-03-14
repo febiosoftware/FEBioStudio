@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "GCurveObject.h"
 #include <MeshTools/FSCurveObjectMesher.h>
+#include <map>
 
 GCurveObject::GCurveObject() : GObject(GCURVE_OBJECT)
 {
@@ -73,19 +74,7 @@ GCurveObject::GCurveObject(GCurveObject* po) : GObject(GCURVE_OBJECT)
 	}
 
 	// --- Parts ---
-	int NP = po->Parts();
-	m_Part.reserve(NP);
-	for (int i = 0; i < NP; ++i)
-	{
-		GPart* g = new GPart(this);
-		GPart& go = *po->Part(i);
-		g->SetMaterialID(go.GetMaterialID());
-		g->SetID(go.GetID());
-		g->SetLocalID(i);
-		g->SetName(go.GetName());
-		assert(g->GetLocalID() == go.GetLocalID());
-		m_Part.push_back(g);
-	}
+	AddBeamPart();
 
 	// update the object
 	Update();
@@ -95,4 +84,33 @@ GObject* GCurveObject::Clone()
 {
 	GCurveObject* po = new GCurveObject(this);
 	return po;
+}
+
+void GCurveObject::Merge(GCurveObject* po)
+{
+	// TODO: Should we merge the mesh as well?
+	// delete the existing mesh
+	delete GetFEMesh();
+	SetFEMesh(nullptr);
+
+	Transform& T = GetTransform();
+
+	std::map<int, int> nodemap;
+
+	for (int i = 0; i < po->Nodes(); ++i)
+	{
+		GNode* pold = po->Node(i);
+		vec3d r = T.GlobalToLocal(pold->Position());
+		GNode* pn = AddNode(r);
+		nodemap[pold->GetLocalID()] = pn->GetLocalID();
+	}
+
+	for (int i = 0; i < po->Edges(); ++i)
+	{
+		GEdge* eold = po->Edge(i);
+		int n0 = nodemap[eold->m_node[0]];
+		int n1 = nodemap[eold->m_node[1]];
+		AddLine(n0, n1);
+	}
+	Update();
 }
