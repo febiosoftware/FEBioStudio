@@ -26,6 +26,7 @@ SOFTWARE.*/
 #pragma once
 #include <QObject>
 #include <QProcess>
+#include <QDialog>
 
 class CMainWindow;
 class CFEBioJob;
@@ -51,4 +52,21 @@ public slots:
 
 private:
 	Impl* im;
+};
+
+namespace Ui {
+	class CDlgJobMonitor;
+}
+
+class CDlgJobMonitor : public QDialog
+{
+	Q_OBJECT
+
+public:
+	CDlgJobMonitor(CMainWindow* wnd);
+
+	void SetFEBioJob(CFEBioJob* job);
+
+private:
+	Ui::CDlgJobMonitor* ui;
 };

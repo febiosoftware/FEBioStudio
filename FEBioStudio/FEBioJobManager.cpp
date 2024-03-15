@@ -34,7 +34,15 @@ SOFTWARE.*/
 #endif
 #include <QProcess>
 #include <QMessageBox>
+#include <QBoxLayout>
+#include <QLabel>
+#include <QPushButton>
+#include <QPlainTextEdit.h>
 #include "MainWindow.h"
+
+#ifdef WIN32
+#include <Windows.h>
+#endif
 
 class CFEBioJobManager::Impl
 {
@@ -67,6 +75,7 @@ bool CFEBioJobManager::StartJob(CFEBioJob* job)
 	im->bkillJob = false;
 
 	job->ClearProgress();
+	job->StartTimer();
 
 	// launch the job
 	if (job->GetLaunchConfig()->type == launchTypes::DEFAULT)
@@ -146,27 +155,20 @@ void CFEBioJobManager::onRunFinished(int exitCode, QProcess::ExitStatus es)
 	CFEBioJob* job = CFEBioJob::GetActiveJob();
 	if (job)
 	{
+		job->StopTimer();
 		job->SetStatus(exitCode == 0 ? CFEBioJob::COMPLETED : CFEBioJob::FAILED);
 		CFEBioJob::SetActiveJob(nullptr);
 
 		QString sret = (exitCode == 0 ? "NORMAL TERMINATION" : "ERROR TERMINATION");
 		QString jobName = QString::fromStdString(job->GetName());
-		QString msg = QString("FEBio job \"%1 \" has finished:\n\n%2\n").arg(jobName).arg(sret);
-
 		QString logmsg = QString("FEBio job \"%1 \" has finished: %2\n").arg(jobName).arg(sret);
 		im->wnd->AddLogEntry(logmsg);
 
-		if (exitCode == 0)
+		CDlgJobMonitor dlg(im->wnd);
+		dlg.SetFEBioJob(job);
+		if (dlg.exec())
 		{
-			msg += "\nDo you wish to load the results?";
-			if (QMessageBox::question(im->wnd, "Run FEBio", msg) == QMessageBox::Yes)
-			{
-				im->wnd->OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
-			}
-		}
-		else
-		{
-			QMessageBox::critical(im->wnd, "Run FEBio", msg);
+			im->wnd->OpenFile(QString::fromStdString(job->GetPlotFileName()), false, false);
 		}
 
 		im->wnd->UpdateTab(job->GetDocument());
@@ -233,4 +235,119 @@ void CFEBioJobManager::onErrorOccurred(QProcess::ProcessError err)
 		im->wnd->AddLogEntry(t);
 		QMessageBox::critical(im->wnd, "Run FEBio", t);
 	}
+}
+
+//==================================================================================
+class Ui::CDlgJobMonitor
+{
+public:
+	QLabel* jobName;
+	QLabel* jobStatus;
+	QPlainTextEdit* log;
+
+	QPushButton* openPlt;
+	QPushButton* close;
+
+public:
+	void setup(::CDlgJobMonitor* dlg)
+	{
+		QHBoxLayout* h = new QHBoxLayout;
+		h->addWidget(new QLabel("Job:"));
+		h->addWidget(jobName = new QLabel()); jobName->setMinimumWidth(200);
+		QFont font = jobName->font();
+		font.setBold(true);
+		jobName->setAlignment(Qt::AlignLeft);
+		jobName->setFrameShape(QFrame::Shape::Box);
+		jobName->setFont(font);
+		h->addWidget(new QLabel("Status:"));
+		h->addWidget(jobStatus = new QLabel()); jobStatus->setMinimumWidth(200);
+		jobStatus->setAlignment(Qt::AlignLeft);
+		jobStatus->setFrameShape(QFrame::Shape::Box);
+		jobStatus->setFont(font);
+
+		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(h);
+
+		openPlt = new QPushButton("Open results");
+		log = new QPlainTextEdit;
+		log->setFont(QFont("Courier", 12));
+		log->setReadOnly(true);
+
+		l->addWidget(log);
+		l->addWidget(openPlt);
+
+		l->addStretch();
+		QHBoxLayout* hc = new QHBoxLayout;
+		hc->addStretch();
+		hc->addWidget(close = new QPushButton("Close"));
+		l->addLayout(hc);
+
+		dlg->setLayout(l);
+
+		QObject::connect(openPlt, &QPushButton::clicked, dlg, &QDialog::accept);
+		QObject::connect(close, &QPushButton::clicked, dlg, &QDialog::reject);
+
+#ifdef WIN32
+		MessageBeep(MB_ICONASTERISK);
+#endif
+	}
+
+	void setJob(CFEBioJob* job)
+	{
+		log->clear();
+		if (job == nullptr)
+		{
+			jobName->setText("");
+			jobStatus->setText("");
+			return;
+		}
+
+		jobName->setText(QString::fromStdString(job->GetName()));
+		int status = job->GetStatus();
+		switch (status)
+		{
+		case CFEBioJob::NONE     : jobStatus->setText("N/A"); break;
+		case CFEBioJob::COMPLETED: jobStatus->setText("Normal termination"); break;
+		case CFEBioJob::FAILED   : jobStatus->setText("Error termination"); break;
+		case CFEBioJob::CANCELLED: jobStatus->setText("Cancelled"); break;
+		case CFEBioJob::RUNNING  : jobStatus->setText("Running"); break;
+		default: jobStatus->setText("(Unknown)"); break;
+		}
+
+		QTextCharFormat fmt = log->currentCharFormat();
+		if (status == CFEBioJob::COMPLETED)
+		{
+			fmt.setForeground(Qt::black);
+			log->setCurrentCharFormat(fmt);
+			log->setPlainText("Job completed successfully!");
+		}
+		else
+		{
+			QString msg("Job error terminated!");
+			if (job->HasProgress())
+			{
+				double pct = job->GetProgress();
+				msg += QString("\nFailed at %1 percent.").arg(pct);
+			}
+			fmt.setForeground(Qt::red);
+			log->setCurrentCharFormat(fmt);
+			log->setPlainText(msg);
+		}
+
+		fmt.setForeground(Qt::black);
+		log->setCurrentCharFormat(fmt);
+		double elapsedTime = job->m_toc - job->m_tic;
+		log->appendPlainText(QString("\n\nElapsed time: %1 sec").arg(elapsedTime));
+	}
+};
+
+CDlgJobMonitor::CDlgJobMonitor(CMainWindow* wnd) : QDialog(wnd), ui(new Ui::CDlgJobMonitor())
+{
+	setWindowTitle("Job Monitor");
+	ui->setup(this);
+}
+
+void CDlgJobMonitor::SetFEBioJob(CFEBioJob* job)
+{
+	ui->setJob(job);
 }
