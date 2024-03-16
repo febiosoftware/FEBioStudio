@@ -37,7 +37,7 @@ SOFTWARE.*/
 #include <QBoxLayout>
 #include <QLabel>
 #include <QPushButton>
-#include <QPlainTextEdit.h>
+#include <QPlainTextEdit>
 #include "MainWindow.h"
 
 #ifdef WIN32
