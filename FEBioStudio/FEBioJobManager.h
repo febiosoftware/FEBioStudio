@@ -67,6 +67,9 @@ public:
 
 	void SetFEBioJob(CFEBioJob* job);
 
+public slots:
+	void UpdateReport();
+
 private:
 	Ui::CDlgJobMonitor* ui;
 };

@@ -113,6 +113,8 @@ public:
 	bool	m_bhasProgress;
 	double	m_pct;
 
+	std::string	m_jobReport;
+
 	double	m_tic, m_toc;
 
 public:

@@ -34,10 +34,12 @@ SOFTWARE.*/
 #endif
 #include <QProcess>
 #include <QMessageBox>
+#include <QToolButton>
 #include <QBoxLayout>
 #include <QLabel>
 #include <QPushButton>
 #include <QPlainTextEdit>
+#include <QFormLayout>
 #include "MainWindow.h"
 
 #ifdef WIN32
@@ -238,34 +240,91 @@ void CFEBioJobManager::onErrorOccurred(QProcess::ProcessError err)
 }
 
 //==================================================================================
+
+QString FormatTimeString(double sec)
+{
+	int nsec = (int)sec;
+	int nhr  = (nsec / 3600);
+	nsec -= nhr * 3600;
+	int nmin = (nsec / 60);
+	nsec -= 60 * nmin;
+
+	return QString("%1:%2:%3").arg(nhr).arg(nmin, 2, 10, QChar('0')).arg(nsec, 2, 10, QChar('0'));
+}
+
 class Ui::CDlgJobMonitor
 {
 public:
 	QLabel* jobName;
 	QLabel* jobStatus;
+	QLabel* runTime;
+	QLabel* completion;
 	QPlainTextEdit* log;
 
 	QPushButton* openPlt;
 	QPushButton* close;
+	QToolButton* showWarnings;
+	QToolButton* showErrors;
+
+	struct LogEntry
+	{
+		int	 ntype;
+		QString	msg;
+		int	count;
+	};
+
+	QList<LogEntry> m_log;
 
 public:
 	void setup(::CDlgJobMonitor* dlg)
 	{
-		QHBoxLayout* h = new QHBoxLayout;
-		h->addWidget(new QLabel("Job:"));
-		h->addWidget(jobName = new QLabel()); jobName->setMinimumWidth(200);
+		QGridLayout* g = new QGridLayout;
+		g->addWidget(new QLabel("Job:"), 0, 0);
+		g->addWidget(jobName = new QLabel(), 0, 1); jobName->setMinimumWidth(200);
 		QFont font = jobName->font();
 		font.setBold(true);
 		jobName->setAlignment(Qt::AlignLeft);
 		jobName->setFrameShape(QFrame::Shape::Box);
 		jobName->setFont(font);
-		h->addWidget(new QLabel("Status:"));
-		h->addWidget(jobStatus = new QLabel()); jobStatus->setMinimumWidth(200);
+
+		g->addWidget(new QLabel("Status:"), 0, 2);
+		g->addWidget(jobStatus = new QLabel(), 0, 3); jobStatus->setMinimumWidth(200);
 		jobStatus->setAlignment(Qt::AlignLeft);
 		jobStatus->setFrameShape(QFrame::Shape::Box);
 		jobStatus->setFont(font);
 
+		g->addWidget(new QLabel("Runtime :"), 1, 0);
+		g->addWidget(runTime = new QLabel, 1, 1);
+		runTime->setAlignment(Qt::AlignLeft);
+		runTime->setFrameShape(QFrame::Box);
+		g->addWidget(new QLabel("Completion :"), 1, 2);
+		g->addWidget(completion = new QLabel, 1, 3); 
+		completion->setAlignment(Qt::AlignLeft);
+		completion->setFrameShape(QFrame::Box);
+
 		QVBoxLayout* l = new QVBoxLayout;
+		l->addLayout(g);
+
+		QHBoxLayout* h = new QHBoxLayout;
+		showWarnings = new QToolButton;
+		showWarnings->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+		showWarnings->setText("Warnings (0)");
+		showWarnings->setIcon(QIcon(":/icons/warning.png"));
+		showWarnings->setCheckable(true);
+		showWarnings->setChecked(true);
+		showWarnings->setAutoRaise(true);
+
+		showErrors = new QToolButton;
+		showErrors->setToolButtonStyle(Qt::ToolButtonTextBesideIcon);
+		showErrors->setText("Errors (0)");
+		showErrors->setIcon(QIcon(":/icons/clear.png"));
+		showErrors->setCheckable(true);
+		showErrors->setChecked(true);
+		showErrors->setAutoRaise(true);
+
+		h->addWidget(showWarnings);
+		h->addWidget(showErrors);
+		h->addStretch();
 		l->addLayout(h);
 
 		openPlt = new QPushButton("Open results");
@@ -286,6 +345,8 @@ public:
 
 		QObject::connect(openPlt, &QPushButton::clicked, dlg, &QDialog::accept);
 		QObject::connect(close, &QPushButton::clicked, dlg, &QDialog::reject);
+		QObject::connect(showWarnings, &QPushButton::toggled, dlg, &::CDlgJobMonitor::UpdateReport);
+		QObject::connect(showErrors, &QPushButton::toggled, dlg, &::CDlgJobMonitor::UpdateReport);
 
 #ifdef WIN32
 		MessageBeep(MB_ICONASTERISK);
@@ -295,6 +356,7 @@ public:
 	void setJob(CFEBioJob* job)
 	{
 		log->clear();
+		m_log.clear();
 		if (job == nullptr)
 		{
 			jobName->setText("");
@@ -314,30 +376,88 @@ public:
 		default: jobStatus->setText("(Unknown)"); break;
 		}
 
-		QTextCharFormat fmt = log->currentCharFormat();
-		if (status == CFEBioJob::COMPLETED)
+		double elapsedTime = job->m_toc - job->m_tic;
+		QString timeStr = FormatTimeString(elapsedTime);
+		runTime->setText(timeStr);
+
+		// get the job progress.
+		double pct = job->GetProgress();
+		if (status == CFEBioJob::COMPLETED) pct = 100.0;
+		else pct = (int)(pct * 10 + 0.5) / 10.0;
+		completion->setText(QString("%1 pct.").arg(pct));
+
+		QString report = QString::fromStdString(job->m_jobReport);
+		QStringList warningsAndErrors = report.split(QChar('\n'));
+		QString last;
+		int count = 0;
+		for (QString next : warningsAndErrors)
 		{
-			fmt.setForeground(Qt::black);
-			log->setCurrentCharFormat(fmt);
-			log->setPlainText("Job completed successfully!");
-		}
-		else
-		{
-			QString msg("Job error terminated!");
-			if (job->HasProgress())
+			if (next != last)
 			{
-				double pct = job->GetProgress();
-				msg += QString("\nFailed at %1 percent.").arg(pct);
+				if (!last.isEmpty())
+				{
+					QString s = last;
+					if (count > 1) s += QString("(x %1)").arg(count);
+					AppendLog(s, count);
+				}
+				count = 1;
+				last = next;
 			}
-			fmt.setForeground(Qt::red);
-			log->setCurrentCharFormat(fmt);
-			log->setPlainText(msg);
+			else count++;
+		}
+		if (!last.isEmpty())
+		{
+			QString s = last;
+			if (count > 1) s += QString("(x %1)").arg(count);
+			AppendLog(s, count);
 		}
 
-		fmt.setForeground(Qt::black);
-		log->setCurrentCharFormat(fmt);
-		double elapsedTime = job->m_toc - job->m_tic;
-		log->appendPlainText(QString("\n\nElapsed time: %1 sec").arg(elapsedTime));
+		UpdateLog();
+	}
+
+	void AppendLog(QString& s, int count)
+	{
+		if      (s.contains("Warning:", Qt::CaseInsensitive)) m_log.push_back({ 1, s, count });
+		else if (s.contains("Error:"  , Qt::CaseInsensitive)) m_log.push_back({ 2, s, count });
+		else m_log.push_back({ 0, s, count });
+	}
+
+	void UpdateLog()
+	{
+		int warningCount = 0;
+		int errorCount = 0;
+		log->clear();
+		bool warnings = showWarnings->isChecked();
+		bool errors = showErrors->isChecked();
+		for (auto& item : m_log)
+		{
+			if (item.ntype == 1) warningCount += item.count;
+			if (item.ntype == 2) errorCount += item.count;
+
+			if (((item.ntype == 1) && warnings) ||
+				((item.ntype == 2) && errors) ||
+				(item.ntype == 0))
+			{
+				if (item.ntype == 2)
+				{
+					QTextCharFormat defaultFmt = log->currentCharFormat();
+					QTextCharFormat fmt(defaultFmt);
+					fmt.setForeground(Qt::red);
+					log->setCurrentCharFormat(fmt);
+					log->appendPlainText(item.msg);
+					log->setCurrentCharFormat(defaultFmt);
+				}
+				else if (item.ntype == 1)
+				{
+					log->appendPlainText(item.msg);
+				}
+				else
+					log->appendPlainText(item.msg);
+			}
+		}
+
+		showWarnings->setText(QString("Warnings (%1)").arg(warningCount));
+		showErrors->setText(QString("Errors (%1)").arg(errorCount));
 	}
 };
 
@@ -350,4 +470,9 @@ CDlgJobMonitor::CDlgJobMonitor(CMainWindow* wnd) : QDialog(wnd), ui(new Ui::CDlg
 void CDlgJobMonitor::SetFEBioJob(CFEBioJob* job)
 {
 	ui->setJob(job);
+}
+
+void CDlgJobMonitor::UpdateReport()
+{
+	ui->UpdateLog();
 }
