@@ -62,6 +62,7 @@ SOFTWARE.*/
 #include "GLCursor.h"
 #include <GeomLib/GSurfaceMeshObject.h>
 #include <MeshTools/GModifier.h>
+#include <FSCore/FSCore.h>
 #include <sstream>
 
 using std::stringstream;
@@ -83,7 +84,9 @@ void CCreateButtonPanel::AddCreateButton(const QString& txt, const QIcon& icon, 
 	tb->setIcon(icon);
 	tb->setIconSize(tb->size());
 	tb->setAutoRaise(true);
-	tb->setToolTip(QString("<font color=\"black\">") + txt);
+	std::string tmp = txt.toStdString();
+	std::string tip = FSCore::beautify_string(tmp.c_str());
+	tb->setToolTip(QString("<font color=\"black\">") + QString::fromStdString(tip));
 
 	int ncount = (int)buttonGroup->buttons().size();
 	int y = ncount % 5;

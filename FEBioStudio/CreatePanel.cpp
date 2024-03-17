@@ -42,35 +42,35 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 
 //------------------------------------------------------------------------------------------------------------
-REGISTER_CLASS2(GBox               , CLASS_OBJECT, "Box"            , ":/icons/box.png"          , 0);
-REGISTER_CLASS2(GCylinder          , CLASS_OBJECT, "Cylinder "      , ":/icons/cylinder.png"     , 0);
-REGISTER_CLASS2(GTube              , CLASS_OBJECT, "Tube"           , ":/icons/tube.png"         , 0);
-REGISTER_CLASS2(GSphere            , CLASS_OBJECT, "Sphere"         , ":/icons/sphere.png"       , 0);
-REGISTER_CLASS2(GCone              , CLASS_OBJECT, "Cone"           , ":/icons/cone.png"         , 0);
-REGISTER_CLASS2(GTruncatedEllipsoid, CLASS_OBJECT, "Ellipsoid"      , ":/icons/ellipsoid.png"    , 0);
-REGISTER_CLASS2(GTorus             , CLASS_OBJECT, "Torus"          , ":/icons/torus.png"        , 0);
-REGISTER_CLASS2(GSlice             , CLASS_OBJECT, "Slice"          , ":/icons/slice.png"        , 0);
-REGISTER_CLASS2(GSolidArc          , CLASS_OBJECT, "Solid Arc"      , ":/icons/solidarc.png"     , 0);
-REGISTER_CLASS2(GHexagon           , CLASS_OBJECT, "Hexagon"        , ":/icons/hexagon.png"      , 0);
-REGISTER_CLASS2(GQuartDogBone      , CLASS_OBJECT, "Dog bone"       , ":/icons/dogbone.png"      , 0);
-REGISTER_CLASS2(GCylinderInBox     , CLASS_OBJECT, "Cylinder in Box", ":/icons/cylinderinbox.png", 0);
-REGISTER_CLASS2(GSphereInBox       , CLASS_OBJECT, "Sphere in Box"  , ":/icons/sphereinbox.png"  , 0);
-REGISTER_CLASS2(GHollowSphere      , CLASS_OBJECT, "Hollow Sphere"  , ":/icons/hollowsphere.png" , 0);
-REGISTER_CLASS2(GBoxInBox          , CLASS_OBJECT, "Box in box"     , ":/icons/boxinbox.png"     , 0);
-REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "Thin Tube"      , ":/icons/thintube.png"     , 0);
-REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "Patch"          , ":/icons/square.png"       , 0);
-REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/disc.png"         , 0);
-REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/ring.png"         , 0);
-REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "Extrude", ":/icons/extrude.png", 0);
-REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "Revolve", ":/icons/revolve.png", 0);
-REGISTER_CLASS2(GBendModifier      , CLASS_MODIFIER, "Bend"   , ":/icons/bend.png", 0);
+REGISTER_CLASS2(GBox               , CLASS_OBJECT, "box"            , ":/icons/box.png"          , 0);
+REGISTER_CLASS2(GCylinder          , CLASS_OBJECT, "cylinder"       , ":/icons/cylinder.png"     , 0);
+REGISTER_CLASS2(GTube              , CLASS_OBJECT, "tube"           , ":/icons/tube.png"         , 0);
+REGISTER_CLASS2(GSphere            , CLASS_OBJECT, "sphere"         , ":/icons/sphere.png"       , 0);
+REGISTER_CLASS2(GCone              , CLASS_OBJECT, "cone"           , ":/icons/cone.png"         , 0);
+REGISTER_CLASS2(GTruncatedEllipsoid, CLASS_OBJECT, "ellipsoid"      , ":/icons/ellipsoid.png"    , 0);
+REGISTER_CLASS2(GTorus             , CLASS_OBJECT, "torus"          , ":/icons/torus.png"        , 0);
+REGISTER_CLASS2(GSlice             , CLASS_OBJECT, "slice"          , ":/icons/slice.png"        , 0);
+REGISTER_CLASS2(GSolidArc          , CLASS_OBJECT, "solid_arc"      , ":/icons/solidarc.png"     , 0);
+REGISTER_CLASS2(GHexagon           , CLASS_OBJECT, "hexagon"        , ":/icons/hexagon.png"      , 0);
+REGISTER_CLASS2(GQuartDogBone      , CLASS_OBJECT, "dog_bone"       , ":/icons/dogbone.png"      , 0);
+REGISTER_CLASS2(GCylinderInBox     , CLASS_OBJECT, "cylinder_in_box", ":/icons/cylinderinbox.png", 0);
+REGISTER_CLASS2(GSphereInBox       , CLASS_OBJECT, "sphere_in_box"  , ":/icons/sphereinbox.png"  , 0);
+REGISTER_CLASS2(GHollowSphere      , CLASS_OBJECT, "hollow_sphere"  , ":/icons/hollowsphere.png" , 0);
+REGISTER_CLASS2(GBoxInBox          , CLASS_OBJECT, "box_in_box"     , ":/icons/boxinbox.png"     , 0);
+REGISTER_CLASS2(GThinTube          , CLASS_OBJECT, "thin_tube"      , ":/icons/thintube.png"     , 0);
+REGISTER_CLASS2(GPatch             , CLASS_OBJECT, "patch"          , ":/icons/square.png"       , 0);
+REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "disc"           , ":/icons/disc.png"         , 0);
+REGISTER_CLASS2(GRing              , CLASS_OBJECT, "ring"           , ":/icons/ring.png"         , 0);
+REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "extrude", ":/icons/extrude.png", 0);
+REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "revolve", ":/icons/revolve.png", 0);
+REGISTER_CLASS2(GBendModifier      , CLASS_MODIFIER, "bend"   , ":/icons/bend.png"   , 0);
 
 #ifndef NDEBUG
-REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "Cylindrical Patch", ":/icons/cylpatch.png"     , 0);
+REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "cylindrical_patch", ":/icons/cylpatch.png"     , 0);
 
 #ifdef HAS_OCC
-REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "Bottle", ":/icons/bottle.png", 0);
-REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png", 0);
+REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "bottle", ":/icons/bottle.png", 0);
+REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "occ_box"   , ":/icons/box.png", 0);
 #endif
 
 #endif // NDEBUG

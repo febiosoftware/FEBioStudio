@@ -852,10 +852,9 @@ public: // command functions
 		CModelDocument* doc = m_wnd->GetModelDocument();
 		if (doc == nullptr) return NoActiveDoc();
 
-		QString type = ops[0];
-		GObject* po = nullptr;
-		if (type == "box") po = new GBox(); 
-		if (po == nullptr) return Error(QString("Can't create %1").arg(type));
+		std::string type = ops[0].toStdString();
+		GObject* po = FSCore::CreateClass<GObject>(CLASS_OBJECT, type.c_str());
+		if (po == nullptr) return Error(QString("Can't create %1").arg(ops[0]));
 
 		// set default name
 		std::stringstream ss;
