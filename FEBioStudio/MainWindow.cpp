@@ -1246,7 +1246,6 @@ void CMainWindow::finishedReadingFile(bool success, QueuedFile& file, const QStr
 	else
 	{
 		if ((file.m_flags & QueuedFile::RELOAD_DOCUMENT) == 0) Reset();
-		UpdatePhysicsUi();
 		UpdateModel();
 		UpdateToolbar();
 		UpdatePostToolbar();
@@ -2461,6 +2460,7 @@ void CMainWindow::OnPostObjectStateChanged()
 	if (mdl == nullptr) return;
 	bool b = mdl->GetColorMap()->IsActive();
 	ui->postToolBar->CheckColorMap(b);
+	mdl->Update(false);
 	RedrawGL();
 }
 
@@ -2871,24 +2871,6 @@ void CMainWindow::OnSelectObjectColorMode(QAction* ac)
 	else if (ac->text() == "By physics"      ) vs.m_objectColor = OBJECT_COLOR_MODE::PHYSICS_TYPE;
 
 	RedrawGL();
-}
-
-//-----------------------------------------------------------------------------
-// Update the physics menu based on active modules
-void CMainWindow::UpdatePhysicsUi()
-{
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
-	if (doc == nullptr) return;
-
-	FSProject& prj = doc->GetProject();
-	int module = prj.GetModule();
-
-//	ui->actionAddRigidConstraint->setVisible(module & MODULE_MECH);
-//	ui->actionAddRigidConnector->setVisible(module & MODULE_MECH);
-//	ui->actionSoluteTable->setVisible(module & MODULE_SOLUTES);
-//	ui->actionSBMTable->setVisible(module & MODULE_SOLUTES);
-//	ui->actionAddReaction->setVisible(module & MODULE_REACTIONS);
-//	ui->actionAddMembraneReaction->setVisible(module & MODULE_REACTIONS);
 }
 
 //-----------------------------------------------------------------------------

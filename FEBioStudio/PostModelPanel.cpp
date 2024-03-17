@@ -408,7 +408,8 @@ public:
 		CANNOT_RENAME = 0x01,
 		CANNOT_DELETE = 0x02,
 		CANNOT_DISABLE = 0x04,
-		ALL_FLAGS = 0x07
+		IS_ENABLED = 0x08,
+		ALL_FLAGS = 0x0F
 	};
 
 	struct Flags
@@ -424,6 +425,12 @@ public:
 			newFlags.m_flags = m_flags;
 			newFlags.m_flags |= flags.m_flags;
 			return newFlags;
+		}
+
+		Flags operator |= (const Flags& flags)
+		{
+			m_flags |= flags.m_flags;
+			return *this;
 		}
 
 		bool HasFlag(Flag flag) const { return (m_flags & flag); }
@@ -453,6 +460,8 @@ public:
 	bool CanDelete() { return (m_flags.HasFlag(CANNOT_DELETE) == false); }
 	bool CanRename() { return (m_flags.HasFlag(CANNOT_RENAME) == false); }
 	bool CanDisable() { return (m_flags.HasFlag(CANNOT_DISABLE) == false); }
+
+	bool IsEnabled() const { return (m_flags.HasFlag(IS_ENABLED)); }
 
 private:
 	FSObject* m_po;
@@ -494,7 +503,6 @@ public:
 
 
 	QLineEdit* name;
-	QCheckBox* enabled;
 
 	QPushButton* autoUpdate;
 	QPushButton* apply;
@@ -511,9 +519,17 @@ public:
 		pg->addWidget(psplitter);
 
 		m_tree = new CPostModelTree(parent);
+		m_tree->setUniformRowHeights(true);
 		m_tree->setObjectName(QStringLiteral("postModel"));
 		m_tree->setColumnCount(1);
 		m_tree->setHeaderHidden(true);
+		m_tree->setColumnCount(2);
+//		m_tree->setStyleSheet("QTreeView::item { border: 1px solid #d9d9d9; border-left-color: transparent; border-top-color: transparent; border-bottom-color: transparent;}");
+		m_tree->header()->setDefaultSectionSize(16);
+		m_tree->header()->setMinimumSectionSize(16);
+		m_tree->header()->setSectionResizeMode(0, QHeaderView::ResizeMode::Stretch);
+		m_tree->header()->setSectionResizeMode(1, QHeaderView::ResizeMode::ResizeToContents);
+		m_tree->header()->setStretchLastSection(false);
 
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
@@ -521,14 +537,10 @@ public:
     pvl->setContentsMargins(0,0,0,0);
 		
 		QHBoxLayout* phl = new QHBoxLayout;
-		enabled = new QCheckBox; enabled->setObjectName("enabled");
-
-		phl->addWidget(enabled);
+		phl->addWidget(new QLabel("name:"));
 		phl->addWidget(name = new QLineEdit); name->setObjectName("nameEdit");
-
 		delButton = new QPushButton("Delete"); delButton->setObjectName("deleteButton");
 		phl->addWidget(delButton);
-		phl->addStretch();
 
 		/*		autoUpdate = new QPushButton; autoUpdate->setObjectName("autoUpdate"); autoUpdate->setToolTip("Auto-update");
 				autoUpdate->setIcon(QIcon(":/icons/auto.png")); autoUpdate->setFixedWidth(20);
@@ -621,12 +633,20 @@ public:
 		if (parent == nullptr) pi1 = new CModelTreeItem(po, m_tree);
 		else pi1 = new CModelTreeItem(po, parent);
 
+		pi1->SetFlags(flags);
 		pi1->setText(0, txt);
 		if (icon.isEmpty() == false) pi1->setIcon(0, QIcon(QString(":/icons/") + icon + ".png"));
 
+		if (pi1->CanDisable())
+		{
+			if (pi1->IsEnabled())
+				pi1->setIcon(1, QIcon(":/icons/check.png"));
+			else
+				pi1->setIcon(1, QIcon(":/icons/disabled.png"));
+		}
+
 		pi1->SetPropertyList(props);
 
-		pi1->SetFlags(flags);
 
 		updateItem(pi1);
 
@@ -635,25 +655,26 @@ public:
 
 	void setCurrentObject(FSObject* po)
 	{
-		if (po == 0) m_tree->clearSelection();
-		else
+		m_tree->clearSelection();
+		m_tree->setCurrentItem(nullptr);
+		if (po == nullptr) return;
+
+		std::string name = po->GetName();
+		QString s(name.c_str());
+		QTreeWidgetItemIterator it(m_tree);
+		while (*it)
 		{
-			std::string name = po->GetName();
-			QString s(name.c_str());
-			QTreeWidgetItemIterator it(m_tree);
-			while (*it)
+			QString t = (*it)->text(0);
+			string st = t.toStdString();
+			if ((*it)->text(0) == s)
 			{
-				QString t = (*it)->text(0);
-				string st = t.toStdString();
-				if ((*it)->text(0) == s)
-				{
-					(*it)->setSelected(true);
-					m_tree->setCurrentItem(*it);
-					break;
-				}
-				++it;
+				(*it)->setSelected(true);
+				m_tree->setCurrentItem(*it);
+				break;
 			}
+			++it;
 		}
+//		m_props->Refresh();
 	}
 
 	void clear()
@@ -680,12 +701,14 @@ public:
 			QFont font = item->font(0);
 			font.setItalic(false);
 			item->setFont(0, font);
+			item->setIcon(1, QIcon(":/icons/check.png"));
 		}
 		else
 		{
 			QFont font = item->font(0);
 			font.setItalic(true);
 			item->setFont(0, font);
+			item->setIcon(1, QIcon(":/icons/disabled.png"));
 		}
 	}
 };
@@ -842,13 +865,17 @@ void CPostModelPanel::BuildModelTree()
 			Post::CGLDisplacementMap* map = mdl->GetDisplacementMap();
 			if (map)
 			{
-				ui->AddItem(pi1, map, QString::fromStdString(map->GetName()), "distort", new CObjectProps(map), CModelTreeItem::CANNOT_RENAME);
+				CModelTreeItem::Flags flags = CModelTreeItem::CANNOT_RENAME;
+				if (map->IsActive()) flags |= CModelTreeItem::IS_ENABLED;
+				ui->AddItem(pi1, map, QString::fromStdString(map->GetName()), "distort", new CObjectProps(map), flags);
 			}
 
 			Post::CGLColorMap* col = mdl->GetColorMap();
 			if (col)
 			{
-				ui->AddItem(pi1, col, QString::fromStdString(col->GetName()), "colormap", new CObjectProps(col), CModelTreeItem::CANNOT_RENAME);
+				CModelTreeItem::Flags flags = CModelTreeItem::CANNOT_RENAME;
+				if (col->IsActive()) flags |= CModelTreeItem::IS_ENABLED;
+				ui->AddItem(pi1, col, QString::fromStdString(col->GetName()), "colormap", new CObjectProps(col), flags);
 			}
 
 			if (fem && fem->PlotObjects())
@@ -857,7 +884,9 @@ void CPostModelPanel::BuildModelTree()
 				for (int i = 0; i < npo; ++i)
 				{
 					Post::FEPostModel::PlotObject* po = fem->GetPlotObject(i);
-					ui->AddItem(pi1, po, QString::fromStdString(po->GetName()), "", new CObjectProps(po));
+					CModelTreeItem::Flags flags;
+					if (po->IsActive()) flags |= CModelTreeItem::IS_ENABLED;
+					ui->AddItem(pi1, po, QString::fromStdString(po->GetName()), "", new CObjectProps(po), flags);
 				}
 			}
 
@@ -865,7 +894,9 @@ void CPostModelPanel::BuildModelTree()
 			for (int n = 0; n < pl.Size(); ++n)
 			{
 				Post::CGLPlot& plot = *pl[n];
-				CModelTreeItem* pi1 = ui->AddItem(nullptr, &plot, QString::fromStdString(plot.GetName()), "", new CObjectProps(&plot));
+				CModelTreeItem::Flags flags;
+				if (plot.IsActive()) flags |= CModelTreeItem::IS_ENABLED;
+				CModelTreeItem* pi1 = ui->AddItem(nullptr, &plot, QString::fromStdString(plot.GetName()), "", new CObjectProps(&plot), flags);
 				setPlotIcon(&plot, pi1);
 
 				Post::GLPlotGroup* pg = dynamic_cast<Post::GLPlotGroup*>(&plot);
@@ -890,22 +921,25 @@ void CPostModelPanel::BuildModelTree()
 			{
 				Post::CGLImageRenderer* render = img->GetImageRenderer(j);
 
+				CModelTreeItem::Flags flags;
+				if (render->IsActive()) flags |= CModelTreeItem::IS_ENABLED;
+
 				Post::CVolumeRenderer* volRender2 = dynamic_cast<Post::CVolumeRenderer*>(render);
 				if (volRender2)
 				{
-					ui->AddItem(pi1, volRender2, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender2));
+					ui->AddItem(pi1, volRender2, QString::fromStdString(render->GetName()), "volrender", new CObjectProps(volRender2), flags);
 				}
 
 				Post::CImageSlicer* imgSlice = dynamic_cast<Post::CImageSlicer*>(render);
 				if (imgSlice)
 				{
-					ui->AddItem(pi1, imgSlice, QString::fromStdString(render->GetName()), "imageslice", new CObjectProps(imgSlice));
+					ui->AddItem(pi1, imgSlice, QString::fromStdString(render->GetName()), "imageslice", new CObjectProps(imgSlice), flags);
 				}
 
 				Post::CMarchingCubes* marchCube = dynamic_cast<Post::CMarchingCubes*>(render);
 				if (marchCube)
 				{
-					ui->AddItem(pi1, marchCube, QString::fromStdString(render->GetName()), "marching_cubes", new CObjectProps(marchCube));
+					ui->AddItem(pi1, marchCube, QString::fromStdString(render->GetName()), "marching_cubes", new CObjectProps(marchCube), flags);
 				}
 			}
 
@@ -960,14 +994,6 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 		if (po)
 		{
 			ui->delButton->setEnabled(item->CanDelete());
-
-			ui->enabled->setEnabled(item->CanDisable());
-			Post::CGLObject* glo = dynamic_cast<Post::CGLObject*>(po);
-			if (glo)
-			{
-				ui->enabled->setChecked(glo->IsActive());
-			}
-
 			if (dynamic_cast<CImageModel*>(po))
 			{
 				CImageModel* img = dynamic_cast<CImageModel*>(po);
@@ -978,25 +1004,43 @@ void CPostModelPanel::on_postModel_currentItemChanged(QTreeWidgetItem* current, 
 		else 
 		{
 			ui->HideImageViewer();
-			ui->enabled->setEnabled(false);
-			ui->enabled->setChecked(true);
 			ui->delButton->setEnabled(false);
 		}
 
 		ui->name->setText(item->text(0));
 		ui->name->setEnabled(item->CanRename());
 		ui->m_props->Update(item->GetPropertyList());
+
+		Post::CGLObject* pglo = dynamic_cast<Post::CGLObject*>(po);
+		if (pglo)
+		{
+			if (pglo->IsActive()) item->setIcon(1, QIcon(":/icons/check.png"));
+			else item->setIcon(1, QIcon(":/icons/disabled.png"));
+		}
 	}
 	else
 	{
 		ui->HideImageViewer();
 		ui->m_props->Update(0);
-		ui->enabled->setEnabled(false);
-		ui->enabled->setChecked(false);
 		ui->delButton->setEnabled(false);
 		ui->name->setText("");
 		ui->name->setEnabled(false);
 	}
+}
+
+void CPostModelPanel::on_postModel_itemClicked(QTreeWidgetItem* treeItem, int column)
+{
+	if (column != 1) return;
+	CModelTreeItem* item = dynamic_cast<CModelTreeItem*>(treeItem);
+	if (item->CanDisable() == false) return;
+	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(item->Object());
+	if (po == nullptr) return;
+	if (po->IsActive())
+		po->Activate(false);
+	else 
+		po->Activate(true);
+	ui->updateItem(item);
+	emit postObjectStateChanged();
 }
 
 void CPostModelPanel::on_postModel_itemDoubleClicked(QTreeWidgetItem* treeItem, int column)
@@ -1190,28 +1234,6 @@ void CPostModelPanel::on_props_dataChanged()
 	if (po) po->Update();
 
 	emit postObjectPropsChanged(po);
-}
-
-void CPostModelPanel::on_enabled_stateChanged(int nstate)
-{
-	CModelTreeItem* item = ui->currentItem();
-	if (item == 0) return;
-
-	Post::CGLObject* po = dynamic_cast<Post::CGLObject*>(item->Object());
-	if (po == 0) return;
-
-	if (nstate == Qt::Unchecked)
-	{
-		po->Activate(false);
-	}
-	else if (nstate == Qt::Checked)
-	{
-		po->Activate(true);
-	}
-
-	ui->updateItem(item);
-
-	emit postObjectStateChanged();
 }
 
 void CPostModelPanel::ShowContextMenu(QContextMenuEvent* ev)

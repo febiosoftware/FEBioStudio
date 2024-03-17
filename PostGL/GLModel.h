@@ -298,6 +298,9 @@ public: // Selection
 	//! show elements by material ID
 	void ShowMaterial(int nmat);
 
+	//! update visibility of all materials
+	void UpdateMeshVisibility();
+
 	//! enable or disable mesh items based on material's state
 	void UpdateMeshState();
 

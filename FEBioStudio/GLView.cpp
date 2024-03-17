@@ -62,7 +62,6 @@ SOFTWARE.*/
 #include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
 using namespace std::chrono;
-using dseconds = std::chrono::duration<double>;
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -1351,8 +1350,7 @@ void CGLView::RenderDecorations()
 
 void CGLView::RenderScene()
 {
-	time_point<steady_clock> startTime;
-	startTime = steady_clock::now();
+	time_point<steady_clock> startTime = steady_clock::now();
 
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
@@ -1496,10 +1494,9 @@ void CGLView::RenderScene()
 	}
 
 	// stop time
-	time_point<steady_clock> stopTime;
-	stopTime = steady_clock::now();
+	time_point<steady_clock> stopTime = steady_clock::now();
 
-	double sec = duration_cast<dseconds>(stopTime - startTime).count();
+	double sec = duration_cast< duration<double> >(stopTime - startTime).count();
 	if (m_showFPS)
 	{
 		QPainter painter(this);
@@ -2638,101 +2635,106 @@ void CGLView::RenderTags()
 	GLColor intcol(255, 0, 0);
 
 	// process elements
-	if ((mode == ITEM_ELEM) && pm)
+	if (view.m_ntagInfo > TagInfoOption::NO_TAG_INFO)
 	{
-		int NE = pm->Elements();
-		for (int i = 0; i < NE; i++)
+		if ((mode == ITEM_ELEM) && pm)
 		{
-			FEElement_& el = pm->Element(i);
-			if (el.IsSelected())
+			int NE = pm->Elements();
+			for (int i = 0; i < NE; i++)
 			{
-				tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
-				tag.c = extcol;
-				int nid = el.GetID();
-				if (nid < 0) nid = i + 1;
-				snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
-				vtag.push_back(tag);
+				FEElement_& el = pm->Element(i);
+				if (el.IsSelected())
+				{
+					tag.r = pm->LocalToGlobal(pm->ElementCenter(el));
+					tag.c = extcol;
+					int nid = el.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "E%d", nid);
+					vtag.push_back(tag);
 
-				int ne = el.Nodes();
-				for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+					int ne = el.Nodes();
+					for (int j = 0; j < ne; ++j) pm->Node(el.m_node[j]).m_ntag = 1;
+				}
 			}
 		}
-	}
 
-	// process faces
-	if (mode == ITEM_FACE)
-	{
-		int NF = pmb->Faces();
-		for (int i = 0; i < NF; ++i)
+		// process faces
+		if (mode == ITEM_FACE)
 		{
-			FSFace& f = pmb->Face(i);
-			if (f.IsSelected())
+			int NF = pmb->Faces();
+			for (int i = 0; i < NF; ++i)
 			{
-				tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
-				tag.c = (f.IsExternal() ? extcol : intcol);
-				int nid = f.GetID();
-				if (nid < 0) nid = i + 1;
-				snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
-				vtag.push_back(tag);
+				FSFace& f = pmb->Face(i);
+				if (f.IsSelected())
+				{
+					tag.r = pmb->LocalToGlobal(pmb->FaceCenter(f));
+					tag.c = (f.IsExternal() ? extcol : intcol);
+					int nid = f.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "F%d", nid);
+					vtag.push_back(tag);
 
-				int nf = f.Nodes();
-				for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
+					int nf = f.Nodes();
+					for (int j = 0; j < nf; ++j) pmb->Node(f.n[j]).m_ntag = 1;
+				}
 			}
 		}
-	}
 
-	// process edges
-	if (mode == ITEM_EDGE)
-	{
-		int NC = pmb->Edges();
-		for (int i = 0; i < NC; i++)
+		// process edges
+		if (mode == ITEM_EDGE)
 		{
-			FSEdge& edge = pmb->Edge(i);
-			if (edge.IsSelected())
+			int NC = pmb->Edges();
+			for (int i = 0; i < NC; i++)
 			{
-				tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
-				tag.c = extcol;
-				int nid = edge.GetID();
-				if (nid < 0) nid = i + 1;
-				snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
-				vtag.push_back(tag);
+				FSEdge& edge = pmb->Edge(i);
+				if (edge.IsSelected())
+				{
+					tag.r = pmb->LocalToGlobal(pmb->EdgeCenter(edge));
+					tag.c = extcol;
+					int nid = edge.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "L%d", nid);
+					vtag.push_back(tag);
 
-				int ne = edge.Nodes();
-				for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
+					int ne = edge.Nodes();
+					for (int j = 0; j < ne; ++j) pmb->Node(edge.n[j]).m_ntag = 1;
+				}
 			}
 		}
-	}
 
-	// process nodes
-	if (mode == ITEM_NODE)
-	{
-		for (int i = 0; i < NN; i++)
+		// process nodes
+		if (mode == ITEM_NODE)
 		{
-			FSNode& node = pmb->Node(i);
-			if (node.IsSelected())
+			for (int i = 0; i < NN; i++)
 			{
-				tag.r = pmb->LocalToGlobal(node.r);
-				tag.c = (node.IsExterior() ? extcol : intcol);
-				int nid = node.GetID();
-				if (nid < 0) nid = i + 1;
-				snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
-				vtag.push_back(tag);
+				FSNode& node = pmb->Node(i);
+				if (node.IsSelected())
+				{
+					tag.r = pmb->LocalToGlobal(node.r);
+					tag.c = (node.IsExterior() ? extcol : intcol);
+					int nid = node.GetID();
+					if (nid < 0) nid = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "N%d", nid);
+					vtag.push_back(tag);
+				}
 			}
 		}
-	}
 
-	// add additional nodes
-	if (view.m_ntagInfo == 1)
-	{
-		for (int i = 0; i < NN; i++)
+		// add additional nodes
+		if (view.m_ntagInfo == TagInfoOption::TAG_ITEM_AND_NODES)
 		{
-			FSNode& node = pmb->Node(i);
-			if (node.m_ntag == 1)
+			for (int i = 0; i < NN; i++)
 			{
-				tag.r = pmb->LocalToGlobal(node.r);
-				tag.c = (node.IsExterior() ? extcol : intcol);
-				snprintf(tag.sztag, sizeof tag.sztag, "N%d", node.GetID());
-				vtag.push_back(tag);
+				FSNode& node = pmb->Node(i);
+				if (node.m_ntag == 1)
+				{
+					tag.r = pmb->LocalToGlobal(node.r);
+					tag.c = (node.IsExterior() ? extcol : intcol);
+					int n = node.GetID();
+					if (n < 0) n = i + 1;
+					snprintf(tag.sztag, sizeof tag.sztag, "N%d", n);
+					vtag.push_back(tag);
+				}
 			}
 		}
 	}

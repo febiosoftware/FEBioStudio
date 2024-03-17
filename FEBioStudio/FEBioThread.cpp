@@ -86,9 +86,12 @@ void CFEBioThread::run()
 	string cmd = Cmd.toStdString();
 
 	// go!
+	std::string report;
 	FEBioThreadOutput threadOutput(this);
 	FEBioThreadProgress progressTracker(m_job);
-	int n = FEBio::runModel(cmd, &threadOutput, &progressTracker);
+	int n = FEBio::runModel(cmd, &threadOutput, &progressTracker, report);
+
+	m_job->m_jobReport = report;
 
 	emit resultsReady(n, QProcess::ExitStatus::NormalExit);
 }

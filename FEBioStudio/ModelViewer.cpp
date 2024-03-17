@@ -521,6 +521,11 @@ void CModelViewer::SelectItemList(FEItemListBuilder *pitem, bool badd)
 	delete[] pi;
 }
 
+void CModelViewer::AssignCurrentSelection()
+{
+	ui->props->AssignCurrentSelection();
+}
+
 void CModelViewer::UpdateSelection()
 {
 	if (ui->m_search->isVisible())

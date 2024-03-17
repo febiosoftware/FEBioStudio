@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEDiscardMesh.h"
+#include <GeomLib/GMeshObject.h>
 
 FEDiscardMesh::FEDiscardMesh() : FEModifier("Discard mesh")
 {
@@ -33,5 +34,8 @@ FEDiscardMesh::FEDiscardMesh() : FEModifier("Discard mesh")
 
 FSMesh* FEDiscardMesh::Apply(FSMesh* pm)
 {
-	return pm->ExtractFaces(false);
+	if (pm == nullptr) return nullptr;
+	GMeshObject* po = dynamic_cast<GMeshObject*>(pm->GetGObject());
+	if (po) return pm->ExtractFaces(false);
+	else return nullptr;
 }

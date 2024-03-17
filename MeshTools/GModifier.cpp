@@ -609,8 +609,10 @@ FSMesh* GPinchModifier::BuildFEMesh(GObject* po)
 //=============================================================================
 // GBendModifier
 //-----------------------------------------------------------------------------
-GBendModifier::GBendModifier(FSModel* ps)
+GBendModifier::GBendModifier()
 {
+	SetName("Bend");
+
 	AddIntParam(2, "orientation", "orientation")->SetEnumNames("X\0Y\0Z\0");
 	AddDoubleParam(0, "angle", "angle");
 	AddDoubleParam(0, "min", "min");

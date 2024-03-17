@@ -49,22 +49,6 @@ public:
 	// create a data field
 	void Create(FSMesh* pm, FSElemSet* part, FEMeshData::DATA_TYPE dataType, FEMeshData::DATA_FORMAT dataFormat);
 
-	// size of data field
-	int Size() { return (int)m_data.size(); }
-
-	// get/set
-	double get(int i) { return m_data[i]; }
-	void get(int n, double* d);
-	void set(int i, double v) { m_data[i] = v; }
-	void set(int i, const vec3d& v) 
-	{ 
-		assert(m_dataType == DATA_VEC3D);
-		m_data[3*i  ] = v.x; 
-		m_data[3*i+1] = v.y; 
-		m_data[3*i+2] = v.z; 
-	}
-	void set(int i, const mat3d& v);
-
 	void SetItemList(FEItemListBuilder* item, int n = 0) override;
 
 	// Get the element set
@@ -74,8 +58,6 @@ public:
 
 	void SetScaleFactor(double s);
 	double GetScaleFactor() const;
-
-	int ItemSize() const;
 
 public:
 	void Save(OArchive& ar);
@@ -103,13 +85,9 @@ public:
 	// create a data field
 	bool Create(FSPartSet* partList, FEMeshData::DATA_TYPE dataType = FEMeshData::DATA_SCALAR, FEMeshData::DATA_FORMAT dataFmt = FEMeshData::DATA_ITEM);
 
-	// size of data field
-	int Size() const;
-
-	// get/set
-	double get(int i) { return m_data[i]; }
-	void set(int i, double v) { m_data[i] = v; }
-
+	// add a part (returns false if part is already a member or part set is empty)
+	bool AddPart(int localPartID);
+	
 	void SetValue(int item, int lid, double v);
 	double GetValue(int item, int lid);
 

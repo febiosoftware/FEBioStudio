@@ -459,7 +459,7 @@ void FEBioFormat25::ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag
 		{
 			int n[2];
 			tag.value(n, 2);
-			ds.Add(n[0] - 1, n[1] - 1);
+			ds.Add(n[0], n[1]);
 		}
 		else ParseUnknownTag(tag);
 		++tag;
@@ -781,7 +781,7 @@ bool FEBioFormat25::ParseNodeData(XMLTag& tag)
 		tag.AttributePtr("lid")->value(lid);
 		tag.value(val);
 
-		pd->SetScalar(lid - 1, val);
+		pd->setScalar(lid - 1, val);
 
 		++tag;
 	} while (!tag.isend());

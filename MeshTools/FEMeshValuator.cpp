@@ -169,7 +169,7 @@ void FEMeshValuator::Evaluate(int nfield)
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
 						{
-							double val = nodeData.GetScalar(el.m_node[j]);
+							double val = nodeData.getScalar(el.m_node[j]);
 							data.SetElementValue(i, j, val);
 						}
 						data.SetElementDataTag(i, 1);

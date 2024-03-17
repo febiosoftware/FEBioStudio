@@ -109,7 +109,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	QAction* actionSaveAs = addAction("Save As ...", "actionSaveAs"); actionSaveAs->setShortcuts(QKeySequence::SaveAs);
 	QAction* actionSaveAll = addAction("Save All", "actionSaveAll"); actionSaveAll->setShortcut(Qt::CTRL | Qt::SHIFT | Qt::Key_S);
 	QAction* actionCloseAll = addAction("Close All", "actionCloseAll");
-	actionSnapShot = addAction("Snapshot ...", "actionSnapShot", "snapshot");
+	actionSnapShot = addAction("Snapshot ...", "actionSnapShot", "snapshot"); actionSnapShot->setShortcut(Qt::AltModifier | Qt::Key_F2);
 	QAction* actionSaveProject = addAction("Save Project As ...", "actionSaveProject");
 	actionExportFE = addAction("Export FE model ...", "actionExportFEModel");
 	actionImportGeom = addAction("Import Geometry ...", "actionImportGeometry");
@@ -203,6 +203,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionAddReaction = addAction("Chemical Reaction Editor ...", "actionAddReaction");
 	actionAddMembraneReaction = addAction("Membrane Reaction Editor ...", "actionAddMembraneReaction");
 	QAction* actionEditProject = addAction("Edit Physics Modules ...", "actionEditProject");
+	QAction* assignSelection = addAction("Assign current selection", "actionAssignSelection"); assignSelection->setShortcut(Qt::ControlModifier | Qt::Key_A);
 
 	// --- FEBio menu actions ---
 	actionFEBioRun   = addAction("Run FEBio ...", "actionFEBioRun", "febiorun"); actionFEBioRun->setShortcut(Qt::Key_F5);
@@ -307,7 +308,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	actionShowRigidBodies = addAction("Show Rigid Bodies", "actionShowRigidBodies"); actionShowRigidBodies->setCheckable(true);  actionShowRigidBodies->setChecked(true);
 	actionShowRigidJoints = addAction("Show Rigid Joints", "actionShowRigidJoints"); actionShowRigidJoints->setCheckable(true);  actionShowRigidJoints->setChecked(true);
 	actionShowRigidLabels = addAction("Show Rigid Labels", "actionShowRigidLabels"); actionShowRigidLabels->setCheckable(true);  actionShowRigidLabels->setChecked(true);
-
+	actionToggleTagInfo = addAction("Toggle Tag info", "actionToggleTagInfo"); actionToggleTagInfo->setShortcut(Qt::Key_I);
 	QAction* actionSnap3D = addAction("3D Cursor to Selection", "actionSnap3D"); actionSnap3D->setShortcut(Qt::Key_X);
 	QAction* actionTrack = addAction("Track Selection", "actionTrack"); actionTrack->setCheckable(true); actionTrack->setShortcut(Qt::Key_Y);
 	QAction* actionToggleConnected = addAction("Toggle select connected", "actionToggleConnected"); actionToggleConnected->setShortcut(Qt::Key_E);
@@ -534,6 +535,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 
 	// Physics menu
 	menuBar->addAction(menuPhysics->menuAction());
+	menuPhysics->addAction(assignSelection);
 	menuPhysics->addAction(actionAddNodalBC);
 	menuPhysics->addAction(actionAddSurfaceBC);
 	menuPhysics->addAction(actionAddGeneralBC);
@@ -646,6 +648,7 @@ void Ui::CMainWindow::buildMenu(::CMainWindow* mainWindow)
 	menuView->addAction(actionShowFibers);
 	menuView->addAction(actionShowMatAxes);
 	menuView->addAction(actionShowDiscrete);
+	menuView->addAction(actionToggleTagInfo);
 	menuView->addAction(actionSnap3D);
 	menuView->addAction(actionTrack);
 	menuView->addAction(actionToggleLight);
