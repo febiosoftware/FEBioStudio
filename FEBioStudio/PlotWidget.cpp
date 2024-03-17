@@ -2600,6 +2600,7 @@ void CCurveEditWidget::on_paste_clicked(bool b)
     {
         QList<QStringList> values = dlg.GetValues();
 
+		plc->Clear();
         for(auto row : values)
         {
             plc->Add(row[0].toDouble(), row[1].toDouble());

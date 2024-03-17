@@ -342,7 +342,7 @@ void CFiberGeneratorTool::OnApply()
 	// create node data
 	FENodeData data(m_po);
 	data.Create(&nodeSet, 0.0);
-	for (int i = 0; i < NN; i++) data.SetScalar(i, val[i]);
+	for (int i = 0; i < NN; i++) data.setScalar(i, val[i]);
 
 	// calculate gradient and assign to element fiber
 	vector<vec3d> grad;
@@ -411,6 +411,11 @@ void CFiberGeneratorTool::OnApply()
 			pdata->Create(partSet, FEMeshData::DATA_VEC3D, FEMeshData::DATA_ITEM);
 			pm->AddMeshDataField(pdata);
 
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				pm->Element(i).m_ntag = i;
+			}
+
 			FEElemList* elemList = pdata->BuildElemList();
 			int NE = elemList->Size();
 			auto it = elemList->First();
@@ -418,10 +423,7 @@ void CFiberGeneratorTool::OnApply()
 			for (int i = 0; i < NE; ++i, ++it)
 			{
 				FEElement_& el = *it->m_pi;
-				if (el.m_ntag == 1)
-				{
-					pdata->FEMeshData::set(n++, grad[i]);
-				}
+				pdata->FEMeshData::set(n++, grad[el.m_ntag]);
 			}
 			delete elemList;
 

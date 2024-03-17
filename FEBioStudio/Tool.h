@@ -51,6 +51,9 @@ public:
 	const QString& name() { return m_name; }
 	void setName(const QString& s) { m_name = s; }
 
+	QString GetInfo() const { return m_info; }
+	void SetInfo(const QString& info) { m_info = info; }
+
 	// get the main window
 	CMainWindow* GetMainWindow();
 
@@ -89,6 +92,7 @@ public:
 
 private:
 	QString			m_name;
+	QString			m_info;
 	CMainWindow*	m_wnd;
 	GDecoration*	m_deco;
 };

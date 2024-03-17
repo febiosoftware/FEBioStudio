@@ -26,8 +26,17 @@ SOFTWARE.*/
 #pragma once
 #include "GObject.h"
 
+class GNodeSelection;
+
 class GCurveObject : public GObject
 {
 public:
 	GCurveObject();
+	GCurveObject(GCurveObject* co);
+
+	GObject* Clone() override;
+
+	void Merge(GCurveObject* po);
+
+	void MergeNodes(GNodeSelection* sel);
 };

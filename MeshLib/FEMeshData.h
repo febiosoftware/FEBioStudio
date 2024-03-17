@@ -69,6 +69,15 @@ public:
 	// get the data format
 	DATA_FORMAT GetDataFormat() const;
 
+	// size of data field
+	int DataSize() const;
+
+	// nr of data items
+	int DataItems() const;
+
+	// size of each data item
+	int ItemSize() const;
+
 	// return mesh this data field belongs to
 	FSMesh* GetMesh() const;
 
@@ -83,25 +92,33 @@ public:
 	void set(size_t i, const vec3d& v);
 	void set(size_t i, const mat3d& v);
 
+	double get(size_t i) const;
+	void get(size_t i, double* d);
+
+	void setScalar(size_t i, double v);
+	void setVec3d(size_t i, const vec3d& v);
+
 	double getScalar(size_t i) const;
 	vec3d getVec3d(size_t i) const;
 	mat3d getMat3d(size_t i) const;
 
 protected:
 	void SetMesh(FSMesh* mesh);
-	DATA_TYPE		m_dataType;
-	DATA_FORMAT		m_dataFmt;
-	int				m_dataSize;	// size of each data item
+	void SetDataType(DATA_TYPE dataType);
+	void SetDataFormat(DATA_FORMAT dataFormat);
+
 	std::vector<double>	m_data;
 
 private:
 	DATA_CLASS		m_dataClass;
+	DATA_TYPE		m_dataType;
+	DATA_FORMAT		m_dataFmt;
+	int				m_itemSize;	// size of each data item
 	FSMesh*			m_pMesh;
 };
 
 inline void FEMeshData::set(size_t i, double v)
 {
-	assert(m_dataType == FEMeshData::DATA_SCALAR);
 	m_data[i] = v;
 }
 
@@ -121,6 +138,20 @@ inline void FEMeshData::set(size_t i, const mat3d& v)
 	m_data[9 * i + 6] = v(2,0); m_data[9 * i + 7] = v(2,1); m_data[9 * i + 8] = v(2,2);
 }
 
+inline void FEMeshData::setScalar(size_t i, double v)
+{
+	assert(m_dataType == FEMeshData::DATA_SCALAR);
+	m_data[i] = v;
+}
+
+inline void FEMeshData::setVec3d(size_t i, const vec3d& v)
+{
+	assert(m_dataType == FEMeshData::DATA_VEC3D);
+	m_data[3*i + 0] = v.x;
+	m_data[3*i + 1] = v.y;
+	m_data[3*i + 2] = v.z;
+}
+
 inline double FEMeshData::getScalar(size_t i) const 
 {
 	assert(m_dataType == FEMeshData::DATA_SCALAR);
@@ -138,4 +169,15 @@ inline mat3d FEMeshData::getMat3d(size_t i) const
 	assert(m_dataType == FEMeshData::DATA_MAT3D);
 	const double* d = &m_data[0] + 9 * i;
 	return mat3d(d[0], d[1], d[2], d[3], d[4], d[5], d[6], d[7], d[8]);
+}
+
+inline double FEMeshData::get(size_t i) const 
+{ 
+	return m_data[i];
+}
+
+inline void FEMeshData::get(size_t n, double* d)
+{
+	for (int i = 0; i < m_itemSize; ++i)
+		d[i] = m_data[m_itemSize * n + i];
 }

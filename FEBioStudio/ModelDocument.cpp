@@ -1005,10 +1005,10 @@ bool CModelDocument::ApplyFEModifier(FEModifier& modifier, GObject* po, FESelect
 	}
 
 	// make sure the modifier succeeded
-	if (newMesh == 0) return false;
+	if ((newMesh == nullptr) && !modifier.AllowNullMesh()) return false;
 
 	// clear the selection
-	if (clearSel) newMesh->ClearFaceSelection();
+	if (clearSel && newMesh) newMesh->ClearFaceSelection();
 
 	// swap the meshes
 	string ss = modifier.GetName();

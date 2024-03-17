@@ -134,6 +134,8 @@ public:
 	double GetScaleFactor();
 	vec3d  GetVecScaleFactor();
 
+	int GetGradientConfiguration();
+
 public:
 	int	m_nflt;
 

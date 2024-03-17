@@ -148,9 +148,6 @@ private:
 	// connector input functions
 	void ParseConnector(FSStep* pstep, XMLTag& tag, const int rc);
 
-	// helper functions (version 2.5 and up)
-	FEBioInputModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);
-
 private:
 	FEBioInputModel::Part* DefaultPart();
 

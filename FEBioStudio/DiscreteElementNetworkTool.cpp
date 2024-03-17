@@ -33,6 +33,7 @@
 #include <GeomLib/GModel.h>
 #include <GeomLib/GMeshObject.h>
 #include <FEMLib/FEDiscreteMaterial.h>
+#include <MeshLib/FENodeNodeList.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
 #include "Commands.h"
@@ -90,50 +91,131 @@ void CDiscreteElementNetworkTool::OnApply()
 
 	GModel& gm = fem->GetModel();
 
-	int nodes = po->Nodes();
-	int edges = po->Edges();
-	if ((nodes == 0) || (edges == 0))
-	{
-		QMessageBox::critical(GetMainWindow(), "Discrete Element Network tool", "The object is not valid.");
-		return;
-	}
-
-	FSMesh* pm = new FSMesh;
-	pm->Create(nodes, 0);
-
-	for (int i=0; i<nodes; ++i)
-	{
-		FSNode& node = pm->Node(i);
-		node.r = po->Node(i)->LocalPosition();
-		node.m_gid = po->Node(i)->GetLocalID();
-	}
-
-	GMeshObject* pmo = new GMeshObject(pm);
-
-	string s = po->GetName();
-	s += "_nodes";
-	pmo->SetName(s);
-
 	FSLinearSpringMaterial* mat = new FSLinearSpringMaterial(fem);
 	GDiscreteSpringSet* pg = new GDiscreteSpringSet(&gm);
 	pg->SetMaterial(mat);
 	pg->SetName(po->GetName());
 
-	for (int i = 0; i < edges; ++i)
+	GMeshObject* pmo = nullptr;
+
+	if (po->GetFEMesh() == nullptr)
 	{
-		GEdge* edge = po->Edge(i);
-		GNode* pn0 = pmo->Node(edge->m_node[0]);
-		GNode* pn1 = pmo->Node(edge->m_node[1]);
+		int nodes = po->Nodes();
+		int edges = po->Edges();
+		if ((nodes == 0) || (edges == 0))
+		{
+			QMessageBox::critical(GetMainWindow(), "Discrete Element Network tool", "The object is not valid.");
+			return;
+		}
 
-		pg->AddElement(pn0, pn1);
+		FSMesh* pm = new FSMesh;
+		pm->Create(nodes, 0);
+
+		for (int i = 0; i < nodes; ++i)
+		{
+			FSNode& node = pm->Node(i);
+			node.r = po->Node(i)->LocalPosition();
+			node.m_gid = po->Node(i)->GetLocalID();
+		}
+
+		pmo = new GMeshObject(pm);
+
+		string s = po->GetName();
+		s += "_nodes";
+		pmo->SetName(s);
+
+		for (int i = 0; i < edges; ++i)
+		{
+			GEdge* edge = po->Edge(i);
+			GNode* pn0 = pmo->Node(edge->m_node[0]);
+			GNode* pn1 = pmo->Node(edge->m_node[1]);
+
+			pg->AddElement(pn0, pn1);
+		}
+		pmo->CopyTransform(po);
+
+		CCmdGroup* cmd = new CCmdGroup("Create Discrete Element Network");
+		cmd->AddCommand(new CCmdAddDiscreteObject(&gm, pg));
+		cmd->AddCommand(new CCmdSwapObjects(&gm, po, pmo));
+
+		doc->DoCommand(cmd);
+
+		GetMainWindow()->UpdateModel(pg);
 	}
-	pmo->CopyTransform(po);
+	else
+	{
+		FSMesh* pms = po->GetFEMesh();
+		int nodes = pms->Nodes();
+		FSNodeNodeList NNL(pms);
+		for (int i = 0; i < nodes; ++i) pms->Node(i).m_ntag = i;
 
+		int edges = 0;
+		for (int i = 0; i < nodes; ++i)
+		{
+			FSNode& nodei = pms->Node(i);
+			int nn = NNL.Valence(i);
+			for (int j = 0; j < nn; ++j)
+			{
+				int nj = NNL.Node(i, j);
+				FSNode& nodej = pms->Node(nj);
+				if (nodei.m_ntag < nodej.m_ntag) edges++;
+			}
+		}
+		
+		FSMesh* pm = new FSMesh;
+		pm->Create(nodes, 0);
+
+		for (int i = 0; i < nodes; ++i)
+		{
+			FSNode& node = pm->Node(i);
+			node.r = pms->Node(i).r;
+			node.m_gid = i;
+		}
+
+
+		pmo = new GMeshObject(pm);
+
+		string s = po->GetName();
+		s += "_nodes";
+		pmo->SetName(s);
+
+		edges = 0;
+		for (int i = 0; i < nodes; ++i)
+		{
+			FSNode& nodei = pms->Node(i);
+			int nn = NNL.Valence(i);
+			for (int j = 0; j < nn; ++j)
+			{
+				int nj = NNL.Node(i, j);
+				FSNode& nodej = pms->Node(nj);
+				if (nodei.m_ntag < nodej.m_ntag)
+				{
+					GNode* pn0 = pmo->Node(nodei.m_ntag);
+					GNode* pn1 = pmo->Node(nodej.m_ntag);
+
+					pg->AddElement(pn0, pn1);
+
+					edges++;
+				}
+			}
+		}
+
+		// copy node sets
+		for (int i = 0; i < po->FENodeSets(); ++i)
+		{
+			FSNodeSet* pns = po->GetFENodeSet(i);
+
+			FSNodeSet* pnewSet = new FSNodeSet(pmo);
+			pnewSet->SetName(pns->GetName());
+			pnewSet->add(pns->CopyItems());
+			pmo->AddFENodeSet(pnewSet);
+		}
+	}
+
+	pmo->CopyTransform(po);
 	CCmdGroup* cmd = new CCmdGroup("Create Discrete Element Network");
 	cmd->AddCommand(new CCmdAddDiscreteObject(&gm, pg));
 	cmd->AddCommand(new CCmdSwapObjects(&gm, po, pmo));
-
 	doc->DoCommand(cmd);
-
 	GetMainWindow()->UpdateModel(pg);
 }

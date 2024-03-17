@@ -2506,6 +2506,16 @@ FEPartData* FSMesh::AddPartDataField(const string& sz, FSPartSet* part, FEMeshDa
 	return map;
 }
 
+FEPartData* FSMesh::FindPartDataField(const std::string& name)
+{
+	for (FEMeshData* pd : m_meshData)
+	{
+		FEPartData* partData = dynamic_cast<FEPartData*>(pd);
+		if (pd && (pd->GetName() == name)) return partData;
+	}
+	return nullptr;
+}
+
 //-----------------------------------------------------------------------------
 FSMesh* ConvertSurfaceToMesh(FSSurfaceMesh* surfaceMesh)
 {
@@ -2639,6 +2649,7 @@ void FSMesh::BuildNLT()
 //-----------------------------------------------------------------------------
 void FSMesh::ClearNLT()
 {
+	if (m_NLT.empty()) return;
 	m_NLT.clear();
 	m_nltmin = 0;
 	for (int i = 0; i < Nodes(); ++i) m_Node[i].m_nid = -1;
@@ -2681,6 +2692,7 @@ void FSMesh::BuildELT()
 	for (int i = 1; i < NE; ++i)
 	{
 		int nid = Element(i).m_nid;
+		if (nid < 1) return;
 		if (nid > maxid) maxid = nid;
 		if (nid < minid) minid = nid;
 	}

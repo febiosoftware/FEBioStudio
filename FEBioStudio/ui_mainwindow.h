@@ -361,6 +361,7 @@ public:
 	QAction* actionShowRigidJoints;
 	QAction* actionShowRigidLabels;
 	QAction* actionToggleLight;
+	QAction* actionToggleTagInfo;
 
 	// other actions
 	QAction* actionSelectObjects;

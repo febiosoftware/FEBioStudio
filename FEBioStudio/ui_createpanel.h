@@ -45,6 +45,7 @@ SOFTWARE.*/
 #include "InputWidgets.h"
 #include <FSCore/math3d.h>
 #include <GeomLib/GObject.h>
+#include <GeomLib/GCurveObject.h>
 #include <FEMLib/GDiscreteObject.h>
 #include "ToolBox.h"
 #include <FSCore/ClassDescriptor.h>
@@ -358,6 +359,7 @@ CGeoModifierPane::CGeoModifierPane(CCreatePanel* parent, ClassDescriptor* pcd) :
 	setCreatePolicy(CCreatePane::REPLACE_ACTIVE_OBJECT);
 
 	m_pcd = pcd;
+	m_mod = nullptr;
 
 	m_params = new CPropertyListForm;
 
@@ -403,8 +405,12 @@ FSObject* CGeoModifierPane::Create()
 	if (m_mod == nullptr) return nullptr;
 
 	// create a clone of this object
-	GPLCObject* newObject = new GPLCObject;
-	newObject->Copy(activeObject);
+	GObject* newObject = nullptr;
+	if (dynamic_cast<GCurveObject*>(activeObject)) newObject = activeObject->Clone();
+	else {
+		newObject = new GPLCObject;
+		newObject->Copy(activeObject);
+	}
 
 	m_mod->Apply(newObject);
 

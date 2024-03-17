@@ -92,6 +92,8 @@ C3PointAngleTool::C3PointAngleTool(CMainWindow* wnd) : CBasicTool(wnd, "3 Point 
 	m_node[1] = 0;
 	m_node[2] = 0;
 	m_angle = 0.0;
+
+	SetInfo("Calculates the angle (in degrees) defined by 3 nodes.");
 }
 
 //-----------------------------------------------------------------------------

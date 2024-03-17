@@ -157,6 +157,9 @@ template <> class FEDataTypeTraits<DATA_MAT3FS> { public: typedef mat3fs dataTyp
 template <> class FEDataTypeTraits<DATA_MAT3FD> { public: typedef mat3fd dataType; };
 template <> class FEDataTypeTraits<DATA_TENS4FS>{ public: typedef tens4fs dataType; };
 
-
+// spatial gradient of shape functions
 void shape_grad(FEPostModel& fem, int elem, double q[3], int nstate, vec3f* G);
+
+// material gradient of shape functions
+void shape_grad_ref(FEPostModel& fem, int elem, double q[3], int nstate, vec3f* G);
 }

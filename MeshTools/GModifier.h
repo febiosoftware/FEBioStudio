@@ -82,7 +82,7 @@ public:
 	enum { ORIENT, ANGLE, SMIN, SMAX, XPIVOT, YPIVOT, ZPIVOT };
 
 public:
-	GBendModifier(FSModel* ps = 0);
+	GBendModifier();
 	void Apply(GObject* po);
 	virtual GMesh* BuildGMesh(GObject* po);
 	FSMesh* BuildFEMesh(GObject* po);

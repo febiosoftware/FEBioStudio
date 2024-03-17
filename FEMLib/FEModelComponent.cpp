@@ -120,6 +120,9 @@ void LoadClassMetaData(FSModelComponent* pc, IArchive& ar)
 {
 	TRACE("LoadClassMetaData");
 	int superClassId = pc->GetSuperClassID(); assert(superClassId > 0);
+
+	string error;
+
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
@@ -138,15 +141,16 @@ void LoadClassMetaData(FSModelComponent* pc, IArchive& ar)
 				ss << "Failed to allocate model component:\n";
 				ss << "super class : " << szsuperclass << std::endl;
 				ss << "type string : \"" << typeStr << "\"";
-				ss << "\n\nIt is possible that this file requires an FEBio plugin before it can be loaded.";
-				string s = ss.str();
-                throw std::runtime_error(s);
+//				ss << "\n\nIt is possible that this file requires an FEBio plugin before it can be loaded.";
+				error = ss.str();
 			}
 		}
 		break;
 		}
 		ar.CloseChunk();
 	}
+
+	if (!error.empty()) throw std::runtime_error(error);
 }
 
 

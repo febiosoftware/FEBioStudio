@@ -33,4 +33,6 @@ public:
 	FEDiscardMesh();
 
 	FSMesh* Apply(FSMesh* pm);
+
+	bool AllowNullMesh() override { return true; }
 };

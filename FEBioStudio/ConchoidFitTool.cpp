@@ -53,6 +53,7 @@ CConchoidFitTool::CConchoidFitTool(CMainWindow* wnd) : CBasicTool(wnd, "Conchoid
 	addDoubleProperty(&m_obj, "obj")->setFlags(CProperty::Visible);
 
 	SetApplyButtonText("Fit");
+	SetInfo("Fits the selected faces to a conchoid.");
 }
 
 bool CConchoidFitTool::OnApply()

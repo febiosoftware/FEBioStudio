@@ -36,6 +36,8 @@ CElementVolumeTool::CElementVolumeTool(CMainWindow* wnd) : CBasicTool(wnd, "Elem
 
 	m_nsel = 0;
 	m_vol = 0.0;
+
+	SetInfo("Calculates the volume of the selected elements.");
 }
 
 //-----------------------------------------------------------------------------

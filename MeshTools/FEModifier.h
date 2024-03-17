@@ -44,6 +44,10 @@ public:
 
 	virtual FSMeshBase* ApplyModifier(FSMeshBase* pm);
 
+	// derived classes can return true if a nullptr return from Apply is allowed
+	// (see e.g. FEDiscardMesh)
+	virtual bool AllowNullMesh() { return false; }
+
 	static bool SetError(const char* szerr, ...);
 
 	static std::string GetErrorString();
