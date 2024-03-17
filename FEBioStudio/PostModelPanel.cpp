@@ -873,7 +873,7 @@ void CPostModelPanel::BuildModelTree()
 			if (col)
 			{
 				CModelTreeItem::Flags flags = CModelTreeItem::CANNOT_RENAME;
-				if (map->IsActive()) flags |= CModelTreeItem::IS_ENABLED;
+				if (col->IsActive()) flags |= CModelTreeItem::IS_ENABLED;
 				ui->AddItem(pi1, col, QString::fromStdString(col->GetName()), "colormap", new CObjectProps(col), flags);
 			}
 
