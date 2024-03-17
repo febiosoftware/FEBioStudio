@@ -63,6 +63,7 @@ REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/d
 REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/ring.png"         , 0);
 REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "Extrude", ":/icons/extrude.png", 0);
 REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "Revolve", ":/icons/revolve.png", 0);
+REGISTER_CLASS2(GBendModifier      , CLASS_MODIFIER, "Bend"   , ":/icons/bend.png", 0);
 
 #ifndef NDEBUG
 REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "Cylindrical Patch", ":/icons/cylpatch.png"     , 0);

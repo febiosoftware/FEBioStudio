@@ -81,6 +81,9 @@ public:
 
 	CDocument* GetDocument();
 
+	void StartTimer();
+	void StopTimer();
+
 public:
 	void SetProgress(double pct);
 	double GetProgress() const;
@@ -109,6 +112,10 @@ public:
 	// progress management
 	bool	m_bhasProgress;
 	double	m_pct;
+
+	std::string	m_jobReport;
+
+	double	m_tic, m_toc;
 
 public:
 	CDocument*	m_doc;

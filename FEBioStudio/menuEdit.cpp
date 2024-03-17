@@ -48,6 +48,7 @@ SOFTWARE.*/
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <GeomLib/GPrimitive.h>
+#include <GeomLib/GCurveObject.h>
 #include <PostGL/GLModel.h>
 #include <MeshTools/FEMeshOverlap.h>
 #include <MeshLib/FEFindElement.h>
@@ -1202,49 +1203,89 @@ void CMainWindow::on_actionMerge_triggered()
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
-	// make sure we have an object selection
+	// make sure we have an object or a node selection
 	FESelection* currentSelection = doc->GetCurrentSelection();
-	if (currentSelection->Type() != SELECT_OBJECTS)
+	if ((currentSelection->Type() != SELECT_OBJECTS) && (currentSelection->Type() != SELECT_NODES))
 	{
-		QMessageBox::critical(this, "Merge Objects", "Cannot merge objects");
+		QMessageBox::critical(this, "Merge", "Cannot merge selection.");
 		return;
 	}
+
 	GObjectSelection* sel = dynamic_cast<GObjectSelection*>(currentSelection);
-	if ((sel == nullptr) || (sel->Count() < 2))
+	if (sel)
 	{
-		QMessageBox::critical(this, "Merge Objects", "You need to select at least two objects.");
-		return;
+		if (sel->Count() < 2)
+		{
+			QMessageBox::critical(this, "Merge Objects", "You need to select at least two objects.");
+			return;
+		}
+
+		CDlgMergeObjects dlg(this);
+		if (dlg.exec() == QDialog::Rejected) return;
+
+		// merge the objects
+		GModel& m = *doc->GetGModel();
+		GObject* newObject = m.MergeSelectedObjects(sel, dlg.m_name, dlg.m_weld, dlg.m_tol);
+		if (newObject == 0)
+		{
+			QMessageBox::critical(this, "Merge Objects", "Cannot merge objects");
+			return;
+		}
+
+		// we need to delete the selected objects and add the new object
+		// create the command that will do the attaching
+		CCmdGroup* pcmd = new CCmdGroup("Attach");
+		for (int i = 0; i < sel->Count(); ++i)
+		{
+			// remove the old object
+			GObject* po = sel->Object(i);
+			pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
+		}
+		// add the new object
+		pcmd->AddCommand(new CCmdAddAndSelectObject(&m, newObject));
+
+		// perform the operation
+		doc->DoCommand(pcmd);
+
+		// update UI
+		Update(0, true);
 	}
 
-	CDlgMergeObjects dlg(this);
-	if (dlg.exec() == QDialog::Rejected) return;
-
-	// merge the objects
-	GModel& m = *doc->GetGModel();
-	GObject* newObject = m.MergeSelectedObjects(sel, dlg.m_name, dlg.m_weld, dlg.m_tol);
-	if (newObject == 0)
+	GNodeSelection* nodeSel = dynamic_cast<GNodeSelection*>(currentSelection);
+	if (nodeSel)
 	{
-		QMessageBox::critical(this, "Merge Objects", "Cannot merge objects");
-		return;
-	}
+		// make sure there is work to do
+		if (nodeSel->Count() == 1)
+		{
+			QMessageBox::critical(this, "Merge", "More than one need needs to be selected.");
+			return;
+		}
 
-	// we need to delete the selected objects and add the new object
-	// create the command that will do the attaching
-	CCmdGroup* pcmd = new CCmdGroup("Attach");
-	for (int i = 0; i<sel->Count(); ++i)
-	{
-		// remove the old object
-		GObject* po = sel->Object(i);
+		// make sure all nodes belong to the same object
+		GObject* po = GetActiveObject();
+		GNodeSelection::Iterator it(nodeSel);
+		for (int i = 0; i < nodeSel->Count(); ++i, ++it)
+		{
+			GNode* pn = it;
+			if (pn->Object() != po)
+			{
+				QMessageBox::critical(this, "Merge", "Cannot merge selection.");
+				return;
+			}
+		}
+
+		// we can only do this for curve objects for now
+		GCurveObject* pco = dynamic_cast<GCurveObject*>(po);
+		if (pco == nullptr) { QMessageBox::critical(this, "Merge", "Cannot merge selection."); return; }
+
+		GCurveObject* pco_new(pco);
+		pco_new->MergeNodes(nodeSel);
+
+		GModel& m = *doc->GetGModel();
+		CCmdGroup* pcmd = new CCmdGroup("Merge");
 		pcmd->AddCommand(new CCmdDeleteGObject(&m, po));
+		pcmd->AddCommand(new CCmdAddAndSelectObject(&m, pco_new));
 	}
-	// add the new object
-	pcmd->AddCommand(new CCmdAddAndSelectObject(&m, newObject));
-
-	// perform the operation
-	doc->DoCommand(pcmd);
-
-	// update UI
-	Update(0, true);
 }
 
 void CMainWindow::on_actionDetach_triggered()

@@ -61,7 +61,6 @@ SOFTWARE.*/
 #include <MeshTools/FEExtrudeFaces.h>
 #include <chrono>
 using namespace std::chrono;
-using dseconds = std::chrono::duration<double>;
 
 static GLubyte poly_mask[128] = {
 	85, 85, 85, 85,
@@ -1350,8 +1349,7 @@ void CGLView::RenderDecorations()
 
 void CGLView::RenderScene()
 {
-	time_point<steady_clock> startTime;
-	startTime = steady_clock::now();
+	time_point<steady_clock> startTime = steady_clock::now();
 
 	CGLScene* scene = GetActiveScene();
 	if (scene == nullptr) return;
@@ -1481,10 +1479,9 @@ void CGLView::RenderScene()
 	}
 
 	// stop time
-	time_point<steady_clock> stopTime;
-	stopTime = steady_clock::now();
+	time_point<steady_clock> stopTime = steady_clock::now();
 
-	double sec = duration_cast<dseconds>(stopTime - startTime).count();
+	double sec = duration_cast< duration<double> >(stopTime - startTime).count();
 	if (m_showFPS)
 	{
 		QPainter painter(this);

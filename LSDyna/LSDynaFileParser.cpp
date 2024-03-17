@@ -661,7 +661,10 @@ bool LSDynaFileParser::Read_Set_Node_List_Title()
 	while (!card.IsKeyword())
 	{
 		int nid;
-		while (card.nexti(nid)) nl.m_nodelist.push_back(nid);
+		while (card.nexti(nid))
+		{
+			if (nid != 0) nl.m_nodelist.push_back(nid);
+		}
 		if (m_ls.NextCard(card) == false) return false;
 	}
 
