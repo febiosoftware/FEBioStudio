@@ -144,7 +144,7 @@ bool LSDYNAexport::write_NODE()
 //-----------------------------------------------------------------------------
 bool LSDYNAexport::write_ELEMENT_SOLID()
 {
-	int nn[8];
+	int nn[FSElement::MAX_NODES];
 	int n = 1;
 
 	FSModel* ps = &(m_prj.GetFSModel());
@@ -176,6 +176,8 @@ bool LSDYNAexport::write_ELEMENT_SOLID()
 				case FE_TET4:
 					fprintf(m_fp, "%8d%8d%8d%8d%8d%8d%8d%8d%8d%8d\n", n, npart, nn[0], nn[1], nn[2], nn[3], nn[3], nn[3], nn[3], nn[3]);
 					break;
+				default:
+					return errf("Unsupported element type.");
 				}
 				++n;
 			}

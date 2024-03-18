@@ -821,7 +821,11 @@ void CMainWindow::ExportGeometry()
 			if (dlg.exec())
 			{
 				if (!writer.Write(szfile))
-					QMessageBox::critical(this, "FEBio Studio", QString("Couldn't save model to LSDYNA keyword file."));
+				{
+					QString errMessage = QString::fromStdString(writer.GetErrorMessage());
+					QString msg = QString("Couldn't save model to LSDYNA keyword file:\n%1").arg(errMessage);
+					QMessageBox::critical(this, "FEBio Studio", msg);
+				}
 			}
 		}
 		break;
