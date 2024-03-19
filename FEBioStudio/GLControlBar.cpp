@@ -441,6 +441,7 @@ void CGLControlBar::onBrushSelect(bool b)
 {
 	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
 	view.m_bselbrush = b;
+	ui->m_wnd->RedrawGL();
 }
 
 void CGLControlBar::toggleSelectConnected()
