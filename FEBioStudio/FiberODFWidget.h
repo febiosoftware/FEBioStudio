@@ -63,7 +63,6 @@ protected:
 private:
     CFiberODFAnalysis* m_analysis;
     CODF* m_ODF;
-    // GLMesh m_mesh;
     GLMeshRender m_renderer;
     CGLCamera m_cam;
 

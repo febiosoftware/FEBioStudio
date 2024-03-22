@@ -701,10 +701,8 @@ void CFiberODFAnalysis::normalizeODF(CODF* odf)
 	}
 }
 
-void RenderEllipsoid(GLUquadricObj* po, float scale, float* l, vec3f* e)
+void RenderEllipsoid(GLUquadricObj* po, float* l, vec3f* e)
 {
-	if (scale <= 0.f) return;
-
 	float smax = 0.f;
 	float sx = fabs(l[0]); if (sx > smax) smax = sx;
 	float sy = fabs(l[1]); if (sy > smax) smax = sy;
@@ -725,7 +723,7 @@ void RenderEllipsoid(GLUquadricObj* po, float scale, float* l, vec3f* e)
 	m[2][0] = e[2].x; m[2][1] = e[2].y; m[2][2] = e[2].z;
 	glMultMatrixf(&m[0][0]);
 
-	glScalef(scale * sx, scale * sy, scale * sz);
+	glScalef(sx, sy, sz);
 	gluSphere(po, 1.f, 32, 32);
 	glPopMatrix();
 }
@@ -750,75 +748,28 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
 	// render the meshes (and selection box)
 	bool showSelBox = GetBoolValue(SHOW_SELBOX);
 	CODF* sel = nullptr;
+    int showMesh = GetIntValue(SHOW_MESH);
 
-	int showMesh = GetIntValue(SHOW_MESH);
-	if (showMesh == 3)
-	{
-		glEnable(GL_COLOR_MATERIAL);
+    for (auto odf : m_ODFs)
+    {
+        glPushMatrix();
+        glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
 
-		GLUquadricObj* pglyph = gluNewQuadric();
-		gluQuadricNormals(pglyph, GLU_SMOOTH);
+        if (odf->m_selected) sel = odf;
 
-		for (auto odf : m_ODFs)
-		{
-			glPushMatrix();
-			glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
+        if (odf->m_active && odf->IsValid())
+        {
+            glPushMatrix();
+            glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
+            renderODFMesh(odf, cam);
+            glPopMatrix();
+        }
 
-			if (odf->m_selected) sel = odf;
+        glColor3ub(255, 128, 128);
+        glx::renderBox(odf->m_box, false, 1);
 
-			if (odf->m_active && odf->IsValid())
-			{
-				GLColor c = m_map.map(odf->m_FA);
-				glColor3ub(c.r, c.g, c.b);
-
-				float l[3] = { 0.f }, lmax = -1e34;
-				vec3f e[3];
-				for (int i = 0; i < 3; ++i)
-				{
-					l[i] = (float)(odf->m_el[i] * odf->m_EFD_alpha(i));
-					if (l[i] > lmax) lmax = l[i];
-					e[i] = to_vec3f(odf->m_ev[i]);
-				}
-				if (lmax > 0.f)
-				{
-					l[0] /= lmax;
-					l[1] /= lmax;
-					l[2] /= lmax;
-					RenderEllipsoid(pglyph, odf->m_radius * m_renderScale, l, e);
-				}
-			}
-
-			glColor3ub(255, 128, 128);
-			glx::renderBox(odf->m_box, false, 1);
-
-			glPopMatrix();
-		}
-
-		gluDeleteQuadric(pglyph);
-	}
-	else
-	{
-		for (auto odf : m_ODFs)
-		{
-			glPushMatrix();
-			glTranslated(odf->m_position.x, odf->m_position.y, odf->m_position.z);
-
-			if (odf->m_selected) sel = odf;
-
-			if (odf->m_active && odf->IsValid())
-			{
-				glPushMatrix();
-				glScaled(odf->m_radius * m_renderScale, odf->m_radius * m_renderScale, odf->m_radius * m_renderScale);
-				renderODFMesh(odf, cam);
-				glPopMatrix();
-			}
-
-			glColor3ub(255, 128, 128);
-			glx::renderBox(odf->m_box, false, 1);
-
-			glPopMatrix();
-		}
-	}
+        glPopMatrix();
+    }
 
 	// show selected box
 	if (sel && showSelBox)
@@ -840,9 +791,43 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 	int showMesh = GetIntValue(SHOW_MESH);
 	int ncolor = GetIntValue(COLOR_MODE);
 
-	GMesh* mesh = nullptr;
+	
+    if (showMesh == 3)
+    {
+        glEnable(GL_COLOR_MATERIAL);
+
+		GLUquadricObj* pglyph = gluNewQuadric();
+		gluQuadricNormals(pglyph, GLU_SMOOTH);
+
+        if (odf->m_active && odf->IsValid())
+        {
+            GLColor c = m_map.map(odf->m_FA);
+            glColor3ub(c.r, c.g, c.b);
+
+            float l[3] = { 0.f }, lmax = -1e34;
+            vec3f e[3];
+            for (int i = 0; i < 3; ++i)
+            {
+                l[i] = (float)(odf->m_el[i] * odf->m_EFD_alpha(i));
+                if (l[i] > lmax) lmax = l[i];
+                e[i] = to_vec3f(odf->m_ev[i]);
+            }
+            if (lmax > 0.f)
+            {
+                l[0] /= lmax;
+                l[1] /= lmax;
+                l[2] /= lmax;
+                RenderEllipsoid(pglyph, l, e);
+            }
+        }
+
+		gluDeleteQuadric(pglyph);
+
+        return;
+    }
+
+    GMesh* mesh = nullptr;
 	if (showMesh == 1) mesh = &odf->m_remesh;
-	else if (showMesh == 3) return;
 	else mesh = &odf->m_mesh;
 
 	if (ncolor == 0) glEnable(GL_COLOR_MATERIAL);
