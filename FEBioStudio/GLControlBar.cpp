@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QToolButton>
 #include <QButtonGroup>
-#include <QValidator>
 #include <QDoubleSpinBox>
 #include <QComboBox>
 #include <GeomLib/GCurveMeshObject.h>
@@ -54,11 +53,13 @@ public:
 
 	QToolButton*	but[4];
 	QToolButton*	selConnect;
+	QToolButton*	selBrush;
 	QDoubleSpinBox*	maxAngle;
 	QToolButton*	selPath;
 	QToolButton*	cull;
 	QToolButton*	noint;
 	QToolButton*	showMesh;
+	QToolButton*	toggleLight;
 
 public:
 	void setup(CGLControlBar* bar)
@@ -75,6 +76,7 @@ public:
 		QToolButton* b6 = addButton(QIcon(":/icons/zoom_select.png"), "Zoom to selection", false); 
 		QToolButton* b7 = addButton(QIcon(":/icons/zoom_all.png"), "Zoom to extents", false);
 		showMesh = addButton(QIcon(":/icons/show_mesh.png"), "Toggle mesh lines", true);
+		toggleLight = addButton(QIcon(":/icons/light.png"), "Toggle light", true);
 
 		// mesh editing tool buttons
 		edit = new QWidget;
@@ -89,6 +91,7 @@ public:
 		maxAngle = new QDoubleSpinBox; maxAngle->setRange(0.0, 180); maxAngle->setSingleStep(0.5);
 		maxAngle->setMaximumWidth(60);
 
+		selBrush = addButton(QIcon(":/icons/brush.png"), "Brush Select");
 		selPath = addButton(QIcon(":/icons/select_path.png"), "Select by closest path");
 		cull    = addButton(QIcon(":/icons/backface.png"), "Select backfacing");
 		noint   = addButton(QIcon(":/icons/ignore.png"), "Ignore interior");
@@ -107,6 +110,7 @@ public:
 		hl->addWidget(but[3]);
 		hl->addWidget(selConnect);
 		hl->addWidget(maxAngle);
+		hl->addWidget(selBrush);
 		hl->addWidget(selPath);
 		hl->addWidget(cull);
 		hl->addWidget(noint);
@@ -136,6 +140,7 @@ public:
 		h->addWidget(b6);
 		h->addWidget(b7);
 		h->addWidget(showMesh);
+		h->addWidget(toggleLight);
 		h->addWidget(edit);
 		h->addStretch();
 
@@ -153,9 +158,11 @@ public:
 		QObject::connect(b6, SIGNAL(clicked(bool)), bar, SLOT(onZoomSelectClicked(bool)));
 		QObject::connect(b7, SIGNAL(clicked(bool)), bar, SLOT(onZoomAllClicked(bool)));
 		QObject::connect(showMesh, SIGNAL(clicked(bool)), bar, SLOT(onToggleMesh(bool)));
+		QObject::connect(toggleLight, SIGNAL(clicked(bool)), bar, SLOT(onToggleLight(bool)));
 		QObject::connect(bg, SIGNAL(idClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
 		QObject::connect(selConnect, SIGNAL(toggled(bool)), bar, SLOT(onSelectConnected(bool)));
 		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
+		QObject::connect(selBrush, SIGNAL(clicked(bool)), bar, SLOT(onBrushSelect(bool)));
 		QObject::connect(maxAngle, SIGNAL(valueChanged(double)), bar, SLOT(onMaxAngleChanged(double)));
 		QObject::connect(cull, SIGNAL(clicked(bool)), bar, SLOT(onSelectBackfacing(bool)));
 		QObject::connect(noint, SIGNAL(clicked(bool)), bar, SLOT(onIgnoreInterior(bool)));
@@ -236,7 +243,7 @@ void CGLControlBar::Update()
 	ui->y->setText(QString::number(pivot.y));
 	ui->z->setText(QString::number(pivot.z));
 
-	bool pivotMode = view->GetPivotMode();
+	bool pivotMode = view->GetPivotUserMode();
 
 	ui->x->setReadOnly(!pivotMode);
 	ui->y->setReadOnly(!pivotMode);
@@ -273,6 +280,7 @@ void CGLControlBar::Update()
 			}
 
 			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selBrush->setChecked(vs.m_bselbrush);
 			ui->selPath->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
@@ -299,6 +307,7 @@ void CGLControlBar::Update()
 			}
 
 			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selBrush->setChecked(vs.m_bselbrush);
 			ui->selPath->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
@@ -323,6 +332,7 @@ void CGLControlBar::Update()
 			}
 
 			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selBrush->setChecked(vs.m_bselbrush);
 			ui->selPath->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
@@ -339,13 +349,13 @@ void CGLControlBar::onPivotChanged()
 {
 	vec3d p = ui->getPivot();
 	CGLView* view = ui->m_wnd->GetGLView();
-	view->SetPivot(p);
+	view->SetPivotPosition(p);
 }
 
 void CGLControlBar::onPivotClicked(bool b)
 {
 	CGLView* view = ui->m_wnd->GetGLView();
-	view->SetPivotMode(b);
+	view->SetPivotUserMode(b);
 	Update();
 }
 
@@ -391,6 +401,11 @@ void CGLControlBar::onToggleMesh(bool b)
 	ui->m_wnd->on_actionShowMeshLines_toggled(b);
 }
 
+void CGLControlBar::onToggleLight(bool b)
+{
+	ui->m_wnd->on_actionToggleLight_triggered();
+}
+
 void CGLControlBar::onMeshButtonClicked(int id)
 {
 	CGLDocument* pdoc = ui->m_wnd->GetGLDocument();
@@ -422,9 +437,21 @@ void CGLControlBar::onSelectConnected(bool b)
 	view.m_bconn = b;
 }
 
+void CGLControlBar::onBrushSelect(bool b)
+{
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	view.m_bselbrush = b;
+	ui->m_wnd->RedrawGL();
+}
+
 void CGLControlBar::toggleSelectConnected()
 {
 	ui->selConnect->toggle();
+}
+
+void CGLControlBar::toggleBrushSelect()
+{
+	ui->selBrush->toggle();
 }
 
 void CGLControlBar::onSelectClosestPath(bool b)

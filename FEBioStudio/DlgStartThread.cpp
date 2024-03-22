@@ -165,6 +165,7 @@ void CDlgStartThread::checkProgress()
 		if (ui->m_breturn == false)
 		{
 			QString err = ui->m_thread->GetErrorString();
+			if (err.isEmpty()) err = "An unknown error has occurred.";
 			QMessageBox::critical(this, "Error", err);
 		}
 		ui->m_thread->deleteLater();

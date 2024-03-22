@@ -83,6 +83,7 @@ public:
 	void Attach(GObject* po, bool bweld, double tol);
 
 	bool DeletePart(GPart* pg) override;
+	bool DeleteParts(std::vector<GPart*> pg);
 
 protected:
 	void BuildGMesh() override;
@@ -92,7 +93,7 @@ protected:
 	void UpdateSurfaces();
 	void UpdateEdges();
 	void UpdateNodes();
-	void UpdateSections();
+	virtual void UpdateSections(); // TODO: made this virtual so I can override it in PostObject. Probably need to find better solution.
 };
 
 GMeshObject* ExtractSelection(GObject* po);

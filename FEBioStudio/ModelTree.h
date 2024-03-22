@@ -128,6 +128,7 @@ struct CModelTreeItem
 	CObjectValidator*	val;	// the validator
 	int					flag;	// 0 = list view, 1 = form view
 	int					type;	// the object type
+	const char*			szicon = nullptr;	// the icon
 };
 
 class CModelTree : public QTreeWidget
@@ -168,10 +169,12 @@ public:
 
 	bool GetSelection(std::vector<FSObject*>& sel);
 
+	QStringList GetAllWarnings();
+
 protected:
 	void ClearData();
 
-	QTreeWidgetItem* AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype = 0, int ncount = 0, FSObject* po = 0, CPropertyList* props = 0, CObjectValidator* val = 0, int flags = 0);
+	QTreeWidgetItem* AddTreeItem(QTreeWidgetItem* parent, const QString& name, int ntype = 0, int ncount = 0, FSObject* po = 0, CPropertyList* props = 0, CObjectValidator* val = 0, int flags = 0, const char* szicon = nullptr);
 
 	void UpdateModelData      (QTreeWidgetItem* t1, FSModel& fem);
 	void UpdateObjects        (QTreeWidgetItem* t1, FSModel& fem);

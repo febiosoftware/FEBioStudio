@@ -27,6 +27,7 @@ SOFTWARE.*/
 #include "stdafx.h"
 #include <string.h>
 #include "ClassDescriptor.h"
+#include "FSObject.h"
 
 ClassKernel* ClassKernel::m_pInst = 0;
 
@@ -44,6 +45,14 @@ ClassDescriptor::ClassDescriptor(Class_Type ntype, int cid, const char* szname, 
 //-----------------------------------------------------------------------------
 ClassDescriptor::~ClassDescriptor()
 {
+}
+
+//-----------------------------------------------------------------------------
+FSObject* ClassDescriptor::Create()
+{
+	FSObject* po = CreateInstance();
+	po->SetTypeString(GetName());
+	return po;
 }
 
 //-----------------------------------------------------------------------------

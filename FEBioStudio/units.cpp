@@ -29,11 +29,7 @@ SOFTWARE.*/
 #include "UnitParser.h"
 #include <FECore/units.h>
 
-#ifdef _DEBUG
 static int unit_system = Units::SI;
-#else
-static int unit_system = Units::NONE;
-#endif
 
 void Units::SetUnitSystem(unsigned int us) { unit_system = us; }
 unsigned int Units::GetUnitSystem() { return unit_system; }
@@ -41,7 +37,7 @@ unsigned int Units::GetUnitSystem() { return unit_system; }
 QStringList Units::SupportedUnitSystems()
 {
 	QStringList s;
-	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "µm-nN-s" << "CGS";
+	s << "None" << "Dimensions only" << "SI" << "mm-N-s" << "mm-kg-s" << "um-nN-s" << "CGS" << "mm-g-s";
 
 	return s;
 }
@@ -54,7 +50,7 @@ int Units::FindUnitSytemFromName(const char* sz)
 	return n;
 }
 
-static Units::UnitSymbol unit_table[][13] = {
+static Units::UnitSymbol unit_table[][14] = {
 	// dimensions
     {{"L", 1},{"M", 1},{"t", 1},{"T", 1},{"I", 1},{"n", 1},{"F", 1},{"P", 1},{"E", 1},{"W",1},{"V",1},{"c", 1},{"R", 1}},
 
@@ -71,7 +67,10 @@ static Units::UnitSymbol unit_table[][13] = {
     {{"µm", 1e-6},{"g",1e-3},{"s",1},{"K",1},{"pA",1e-12},{"amol",1e-18},{"nN",1e-9},{"kPa",1e3},{"fJ",1e-15},{"fW",1e-15}, {"mV",1e-3},{"mM",1}, {"℃", 1}},
 
 	// CGS units
-    {{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"[F/L^2]",0.1}, {"erg",1e-7},{"[E/t]",1e-7},{"mV",1e-3},{"mM", 1}, {"℃", 1}}
+    {{"cm",1e-2},{"g",1e-3},{"s",1},{"K",1},{"cA",1e-2},{"µmol",1e-6},{"dyn",1e-5},{"[F/L^2]",0.1}, {"erg",1e-7},{"[E/t]",1e-7},{"mV",1e-3},{"mM", 1}, {"℃", 1}},
+
+    // MMGS units
+    {{"mm",1e-3},{"g",1e-3},{"s",1},{"K",1},{"µA",1e-6},{"nmol",1e-9},{"µN",1e-6},{"Pa",1.0}, {"nJ",1e-9},{"nW",1e-9},{"mV",1e-3},{"mM", 1}, {"℃", 1}}
 };
 
 QString Units::GetUnitString(const char* szunit)

@@ -36,19 +36,39 @@ SOFTWARE.*/
 CMeshInspector::CMeshInspector(CMainWindow* wnd) : m_wnd(wnd), QMainWindow(wnd), ui(new Ui::CMeshInspector)
 {
 	setWindowTitle("Mesh Inspector");
-	m_po = 0;
 	ui->setupUi(this);
 	ui->plot->setChartStyle(ChartStyle::BARCHART_PLOT);
 
 	ui->m_map = Post::ColorMapManager::GetDefaultMap();
 }
 
-void CMeshInspector::Update()
+void CMeshInspector::Update(bool reset)
 {
-	m_po = m_wnd->GetActiveObject();
-	ui->setMesh(m_po);
+	GObject* pa = m_wnd->GetActiveObject();
+	if (reset == false)
+	{
+		if (ui->m_po != pa) reset = true;
+		else if (ui->m_po)
+		{
+			FSMeshBase* pm = ui->m_po->GetFEMesh();
+			if (pm == nullptr)
+			{
+				GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(pa);
+				pm = pso->GetSurfaceMesh();
+			}
+			if (ui->m_pm != pm) reset = true;
+		}
+	}
 
-	UpdateData(ui->var->currentIndex());
+	if (reset)
+	{
+		// if the object hasn't changed, we want to restore the current datafield
+		int n = (ui->m_po == pa ? ui->var->currentIndex() : -1);
+		if ((ui->m_po == nullptr) && pa) n = 0;
+		ui->m_po = pa;
+		ui->setMesh(ui->m_po);
+		if (n != -1) UpdateData(n);
+	}
 }
 
 void CMeshInspector::showEvent(QShowEvent* ev)
@@ -63,7 +83,7 @@ void CMeshInspector::showEvent(QShowEvent* ev)
 	ui->col->setCurrentIndex(ui->m_map);
 	ui->col->blockSignals(false);
 
-	m_wnd->GetGLView()->SetColorMap(Post::ColorMapManager::GetColorMap(ui->m_map));
+	m_wnd->GetGLView()->SetColorMap(ui->m_map);
 	m_wnd->GetGLView()->ShowMeshData(true);
 	m_wnd->RedrawGL();
 }
@@ -76,7 +96,7 @@ void CMeshInspector::hideEvent(QHideEvent* ev)
 
 void CMeshInspector::on_var_currentIndexChanged(int n)
 {
-	if ((n == Ui::CMeshInspector::PRINC_CURVE_1) || (n == Ui::CMeshInspector::PRINC_CURVE_2)) ui->propsWidget->show();
+	if ((n == FEMeshValuator::PRINC_CURVE_1) || (n == FEMeshValuator::PRINC_CURVE_2)) ui->propsWidget->show();
 	else ui->propsWidget->hide();
 
 	UpdateData(n);
@@ -86,7 +106,7 @@ void CMeshInspector::on_var_currentIndexChanged(int n)
 
 void CMeshInspector::on_col_currentIndexChanged(int n)
 {
-	m_wnd->GetGLView()->SetColorMap(Post::ColorMapManager::GetColorMap(n));
+	m_wnd->GetGLView()->SetColorMap(n);
 	m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
 	m_wnd->RedrawGL();
 }
@@ -97,14 +117,15 @@ void CMeshInspector::UpdateData(int ndata)
 
 	// We added a separator between eval fields and data fields
 	// so we need to subtract one if ndata is larger than the number of eval fields
-	if (ndata > ui->MAX_EVAL_FIELDS) ndata--;
+	if (ndata > FEMeshValuator::MAX_DEFAULT_FIELDS) ndata--;
 
-	FSMesh* pm = (m_po ? m_po->GetFEMesh() : 0);
+	GObject* po = ui->m_po;
+	FSMesh* pm = (po ? po->GetFEMesh() : 0);
 	if (pm == 0)
 	{
-		if (dynamic_cast<GSurfaceMeshObject*>(m_po))
+		if (dynamic_cast<GSurfaceMeshObject*>(po))
 		{
-			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(m_po);
+			GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
 			FSSurfaceMesh* psm = pso->GetSurfaceMesh();
 			if (psm == nullptr) return;
 
@@ -249,7 +270,7 @@ void CMeshInspector::UpdateSurfaceMeshData(FSSurfaceMesh* pm, int ndata)
 	int NF = pm->Faces();
 	vector<double> v; v.reserve(NF * FSElement::MAX_NODES);
 	double vmax = -1e99, vmin = 1e99, vavg = 0;
-	Mesh_Data data;
+	Mesh_Data& data = pm->GetMeshData();
 	data.Init(pm, 0, 0);
 	eval.Evaluate(ndata, data);
 	if (data.IsValid())
@@ -337,9 +358,6 @@ void CMeshInspector::on_select_clicked()
 	GObject* po = pdoc->GetActiveObject();
 	if (po == 0) return;
 
-	FSMesh* pm = po->GetFEMesh();
-	if (pm == 0) return;
-
 	double smin, smax;
 	ui->sel->getRange(smin, smax);
 
@@ -354,35 +372,65 @@ void CMeshInspector::on_select_clicked()
 		etype = ui->table->item(index.row(), 0)->data(Qt::UserRole).toInt();
 	}
 
-	int NE = pm->Elements();
-	vector<int> elem; elem.reserve(NE);
-	Mesh_Data& data = pm->GetMeshData();
-	for (int i = 0; i<NE; ++i)
+	FSMesh* pm = po->GetFEMesh();
+	if (pm == 0)
 	{
-		FSElement& e = pm->Element(i);
-		if ((etype == -1) || (e.Type() == etype))
+		GSurfaceMeshObject* pso = dynamic_cast<GSurfaceMeshObject*>(po);
+		if (pso && pso->GetSurfaceMesh())
 		{
-			if (data.GetElementDataTag(i) > 0)
+			FSSurfaceMesh* psm = pso->GetSurfaceMesh();
+			int NF = psm->Faces();
+			vector<int> faceList; faceList.reserve(NF);
+			Mesh_Data& data = psm->GetMeshData();
+			for (int i = 0; i < NF; ++i)
 			{
-				double v = data.GetElementAverageValue(i);
-				if ((v + eps >= smin) && (v - eps <= smax)) elem.push_back(i);
+				FSFace& f = psm->Face(i);
+				if (data.GetElementDataTag(i) > 0)
+				{
+					double v = data.GetElementAverageValue(i);
+					if ((v + eps >= smin) && (v - eps <= smax)) faceList.push_back(i);
+				}
+			}
+
+			if (faceList.empty() == false)
+			{
+				CCommand* pcmd = new CCmdSelectFaces(psm, faceList, false);
+				pdoc->DoCommand(pcmd);
+				m_wnd->RedrawGL();
 			}
 		}
 	}
-
-	if (elem.empty() == false)
+	else
 	{
-		CCommand* pcmd = new CCmdSelectElements(pm, elem, false);
-		pdoc->DoCommand(pcmd);
-		m_wnd->Update(this);
-		m_wnd->RedrawGL();
+		int NE = pm->Elements();
+		vector<int> elem; elem.reserve(NE);
+		Mesh_Data& data = pm->GetMeshData();
+		for (int i = 0; i < NE; ++i)
+		{
+			FSElement& e = pm->Element(i);
+			if ((etype == -1) || (e.Type() == etype))
+			{
+				if (data.GetElementDataTag(i) > 0)
+				{
+					double v = data.GetElementAverageValue(i);
+					if ((v + eps >= smin) && (v - eps <= smax)) elem.push_back(i);
+				}
+			}
+		}
+
+		if (elem.empty() == false)
+		{
+			CCommand* pcmd = new CCmdSelectElements(pm, elem, false);
+			pdoc->DoCommand(pcmd);
+			m_wnd->RedrawGL();
+		}
 	}
 }
 
 void CMeshInspector::on_curvatureLevels_valueChanged(int n)
 {
 	int nvar = ui->var->currentIndex();
-	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
@@ -393,7 +441,7 @@ void CMeshInspector::on_curvatureLevels_valueChanged(int n)
 void CMeshInspector::on_curvatureMaxIters_valueChanged(int n)
 {
 	int nvar = ui->var->currentIndex();
-	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
@@ -405,7 +453,7 @@ void CMeshInspector::on_curvatureMaxIters_valueChanged(int n)
 void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
 {
 	int nvar = ui->var->currentIndex();
-	if ((nvar == Ui::CMeshInspector::PRINC_CURVE_1) || (nvar == Ui::CMeshInspector::PRINC_CURVE_2))
+	if ((nvar == FEMeshValuator::PRINC_CURVE_1) || (nvar == FEMeshValuator::PRINC_CURVE_2))
 	{
 		UpdateData(nvar);
 		m_wnd->GetGLView()->ShowMeshData(true); // this is called so the planecut gets updated
@@ -415,10 +463,10 @@ void CMeshInspector::on_curvatureExtQuad_stateChanged(int n)
 
 void CMeshInspector::on_table_cellChanged(int r, int c)
 {
-	if (c == 0) Update();
+	if (c == 0) Update(true);
 }
 
 void CMeshInspector::on_logScale_clicked()
 {
-	Update();
+	Update(true);
 }

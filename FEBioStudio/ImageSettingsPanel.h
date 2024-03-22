@@ -36,11 +36,7 @@ namespace Ui
     class CImageSettingsPanel;
 }
 
-namespace Post
-{
-    class CImageModel;
-}
-
+class CImageModel;
 class CMainWindow;
 class FSObject;
 class Param;
@@ -97,7 +93,7 @@ public:
     CImageSettingsWidget(QWidget* parent = nullptr);
 
 public slots:
-    void ImageModelChanged(Post::CImageModel* model);
+    void ImageModelChanged(CImageModel* model);
 
 signals:
     void ParamChanged();

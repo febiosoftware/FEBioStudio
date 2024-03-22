@@ -253,7 +253,6 @@ void CMainWindow::on_actionOptions_triggered()
 	dlg.exec();
 }
 
-#ifdef _DEBUG
 void CMainWindow::on_actionLayerInfo_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
@@ -402,4 +401,3 @@ void CMainWindow::on_actionLayerInfo_triggered()
 	log->AddText(QString("Edge counter: %1\n").arg(GEdge::GetCounter()));
 	log->AddText(QString("Node counter: %1\n").arg(GNode::GetCounter()));
 }
-#endif

@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <PostLib/FEState.h>
 #include <PostLib/FEPostMesh.h>
 #include <PostLib/FEPostModel.h>
-#include <PostLib/FEMeshData_T.h>
 
 using namespace Post;
 using namespace std;
@@ -117,7 +116,7 @@ bool XpltReader::Load(FEPostModel& fem)
 	// read the root section
 	// (This section was already opened by xpltFileReader)
 	if (ReadRootSection(fem) == false) return false;
-	if (m_xplt->IsCancelled()) return false;
+	if (m_xplt->IsCanceled()) return false;
 
 	// Clear the end-flag of the root section
 	m_ar.CloseChunk();
@@ -125,7 +124,7 @@ bool XpltReader::Load(FEPostModel& fem)
 
 	// Build the mesh
 	if (BuildMesh(fem) == false) return false;
-	if (m_xplt->IsCancelled()) return false;
+	if (m_xplt->IsCanceled()) return false;
 
 	// read the state sections (these could be compressed)
 	const xpltFileReader::HEADER& hdr = m_xplt->GetHeader();
@@ -165,7 +164,8 @@ bool XpltReader::Load(FEPostModel& fem)
 					}
 				}
 			}
-			else errf("Error while reading state data.");
+			else 
+				errf("Error while reading state data.");
 			m_ar.CloseChunk();
 		
 			// clear end-flag
@@ -176,7 +176,7 @@ bool XpltReader::Load(FEPostModel& fem)
 
 			++nstate;
 
-			if (m_xplt->IsCancelled())
+			if (m_xplt->IsCanceled())
 			{
 				break;
 			}
@@ -508,7 +508,9 @@ bool XpltReader::ReadDictionary(FEPostModel& fem)
 		pdm->AddDataField(new FEDataField_T<ElemPressure>(&fem), "pressure");
 
 		if (m_bHasFluidPressure) {
-			pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
+			// make sure the "solid stress" field was not added to the plot file
+			if (pdm->FindDataField("solid stress") == -1)
+				pdm->AddDataField(new FEDataField_T<SolidStress>(&fem), "solid stress");
 		}
 	}
 
@@ -863,7 +865,7 @@ bool XpltReader::ReadSurfaceSection(FEPostModel &fem)
 						{
 						case PLT_SURFACE_ID   : m_ar.read(S.sid); break;
 						case PLT_SURFACE_FACES: m_ar.read(S.nf); break;
-						case PLT_SURFACE_NAME : m_ar.read(S.szname); break;
+						case PLT_SURFACE_NAME : m_ar.read(S.szname, 64); break;
 						default:
 							assert(false);
 							return errf("Error while reading Surface section");

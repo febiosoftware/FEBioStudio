@@ -33,9 +33,16 @@ SOFTWARE.*/
 
 class GLLegendBar;
 
+// used for intersection testing
+// defined in MeshLib/Intersect.h
+struct Ray;
+struct Intersection;
+class FESelection;
+
 namespace Post {
 
 class CGLModel;
+class GLPlotGroup;
 
 class CGLPlot : public CGLVisual
 {
@@ -57,8 +64,19 @@ public:
 
 	virtual void Reload();
 
+	void SetGroup(GLPlotGroup* pg);
+	GLPlotGroup* GetGroup();
+
+public:
+	virtual bool Intersects(Ray& ray, Intersection& q);
+
+	virtual FESelection* SelectComponent(int index);
+
+	virtual void ClearSelection();
+
 private:
 	int	m_renderOrder;
+	GLPlotGroup* m_pgroup;	// parent group the plot belongs to
 };
 
 class CGLLegendPlot : public CGLPlot

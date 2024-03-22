@@ -73,6 +73,8 @@ public:
 	int		m_nstates;
 	double	m_minTime;
 	double	m_maxTime;
+	int		m_status;
+	bool	m_interpolate;
 
 private:
 	Ui::CDlgAddState* ui;

@@ -27,7 +27,8 @@ SOFTWARE.*/
 #include "MaterialPanel.h"
 #include <QBoxLayout>
 #include <QTreeWidget>
-#include <QListWidget>
+#include <QTableWidget>
+#include <QHeaderView>
 #include <QSplitter>
 #include <QLabel>
 #include <QCheckBox>
@@ -116,11 +117,8 @@ private:
 class Ui::CMaterialPanel
 {
 public:
-	QListWidget*			m_list;
+	QTableWidget*			m_list;
 	::CPropertyListView*	m_prop;
-	QLineEdit*	name;
-	QToolButton* pshow;
-	QToolButton* pcheck;
 	QLineEdit* m_flt;
 
 	bool update;
@@ -142,32 +140,24 @@ public:
 		psplitter->setOrientation(Qt::Vertical);
 		pg->addWidget(psplitter);
 
-		m_list = new QListWidget;
+		m_list = new QTableWidget;
+		m_list->setColumnCount(3);
+		QHeaderView* hh = m_list->horizontalHeader();
+		hh->setDefaultSectionSize(24);
+		hh->setMinimumSectionSize(24);
+		hh->setSectionResizeMode(0, QHeaderView::Stretch);
+		hh->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+		hh->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+		hh->hide();
+		m_list->verticalHeader()->hide();
 		m_list->setObjectName(QStringLiteral("materialList"));
 		m_list->setSelectionMode(QAbstractItemView::ExtendedSelection);
+		m_list->setSelectionBehavior(QAbstractItemView::SelectRows);
 
 		QWidget* w = new QWidget;
 		QVBoxLayout* pvl = new QVBoxLayout;
 		pvl->setContentsMargins(0,0,0,0);
 
-		pshow = new QToolButton; pshow->setObjectName("showButton");
-		pshow->setIcon(QIcon(":/icons/eye.png"));
-		pshow->setCheckable(true);
-		pshow->setToolTip("<font color=\"black\">Show or hide material");
-
-		pcheck = new QToolButton; pcheck->setObjectName("enableButton");
-		pcheck->setIcon(QIcon(":/icons/check.png"));
-		pcheck->setCheckable(true);
-		pcheck->setToolTip("<font color=\"black\">Enable or disable material");
-
-
-		QHBoxLayout* ph = new QHBoxLayout;
-//		ph->setSpacing(0);
-		ph->addWidget(name = new QLineEdit, 2); name->setObjectName("editName");
-		ph->addWidget(pshow);
-		ph->addWidget(pcheck);
-		ph->addStretch();
-		pvl->addLayout(ph);
 
 		m_prop = new ::CPropertyListView;
 		m_prop->setObjectName("matprops");
@@ -187,7 +177,7 @@ public:
 		return m_flt->text();
 	}
 
-	void setColor(QListWidgetItem* item, GLColor c)
+	void setColor(QTableWidgetItem* item, GLColor c)
 	{
 		QColor c2 = QColor::fromRgb(c.r, c.g, c.b);
 		QColor c1 = c2.lighter();
@@ -227,7 +217,7 @@ void CMaterialPanel::Update(bool breset)
 {
 	if (breset == false) return;
 
-	ui->m_list->clear();
+	ui->m_list->setRowCount(0);
 	ui->m_prop->Update(0);
 	m_pmat->SetMaterial(0);
 
@@ -239,7 +229,21 @@ void CMaterialPanel::Update(bool breset)
 	{
 		QString flt = ui->GetFilterText();
 
+
 		int nmat = fem->Materials();
+		int nrows = 0;
+		for (int i = 0; i < nmat; ++i)
+		{
+			Post::Material& mat = *fem->GetMaterial(i);
+
+			QString name(mat.GetName());
+			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
+			{
+				nrows++;
+			}
+		}
+		ui->m_list->setRowCount(nrows);
+		nrows = 0;
 		for (int i=0; i<nmat; ++i)
 		{
 			Post::Material& mat = *fem->GetMaterial(i);
@@ -247,15 +251,36 @@ void CMaterialPanel::Update(bool breset)
 			QString name(mat.GetName());
 			if (flt.isEmpty() || name.contains(flt, Qt::CaseInsensitive))
 			{
-				QListWidgetItem* it = new QListWidgetItem(mat.GetName());
+				QTableWidgetItem* it = new QTableWidgetItem(mat.GetName());
+				it->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
 				it->setData(Qt::UserRole, i);
-				ui->m_list->addItem(it);
+				ui->m_list->setItem(nrows, 0, it);
 				ui->setColor(it, mat.diffuse);
+
+				it = new QTableWidgetItem();
+				it->setTextAlignment(Qt::AlignRight);
+				if (mat.bvisible)
+					it->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
+				else
+					it->setFlags(Qt::ItemFlag::ItemIsSelectable);
+				it->setIcon(QIcon(":/icons/eye.png"));
+				it->setTextAlignment(Qt::AlignHCenter);
+				ui->m_list->setItem(nrows, 1, it);
+
+				it = new QTableWidgetItem();
+				if (mat.benable)
+					it->setFlags(Qt::ItemFlag::ItemIsSelectable | Qt::ItemFlag::ItemIsEnabled);
+				else
+					it->setFlags(Qt::ItemFlag::ItemIsSelectable);
+				it->setIcon(QIcon(":/icons/check.png"));
+				it->setTextAlignment(Qt::AlignHCenter);
+				ui->m_list->setItem(nrows, 2, it);
+				nrows++;
 			}
 		}
 
-		if (nmat > 0)
-			ui->m_list->setCurrentRow(0);
+		if (nrows > 0)
+			ui->m_list->setCurrentItem(ui->m_list->item(0, 0));
 
 		UpdateStates();
 	}
@@ -268,10 +293,10 @@ void CMaterialPanel::UpdateStates()
 	if (fem == 0) return;
 
 	int nmat = fem->Materials();
-	int items = ui->m_list->count();
+	int items = ui->m_list->rowCount();
 	for (int i=0; i<items; ++i)
 	{
-		QListWidgetItem* pi = ui->m_list->item(i);
+		QTableWidgetItem* pi = ui->m_list->item(i, 0);
 
 		int imat = pi->data(Qt::UserRole).toInt();
 		if ((imat >= 0) && (imat < nmat))
@@ -281,128 +306,93 @@ void CMaterialPanel::UpdateStates()
 			font.setItalic(!mat.visible());
 			font.setBold(mat.enabled());
 			pi->setFont(font);
-//			pi->setBackgroundColor((mat.enabled() ? Qt::white : Qt::yellow));
+
+			if (mat.bvisible)
+				ui->m_list->item(i, 1)->setIcon(QIcon(":/icons/show.png"));
+			else
+				ui->m_list->item(i, 1)->setIcon(QIcon(":/icons/hide.png"));
+		
+			if (mat.benable)
+				ui->m_list->item(i, 2)->setIcon(QIcon(":/icons/check.png"));
+			else
+				ui->m_list->item(i, 2)->setIcon(QIcon(":/icons/disabled.png"));
 		}
 	}
 }
 
-void CMaterialPanel::on_materialList_currentRowChanged(int nrow)
+void CMaterialPanel::on_materialList_currentItemChanged(QTableWidgetItem* current, QTableWidgetItem* prev)
 {
 	CPostDocument* doc = GetActiveDocument();
-	if (doc && doc->IsValid())
+	if (doc && doc->IsValid() && current)
 	{
-		if ((nrow >= 0) && (nrow < ui->m_list->count()))
-		{
-			QListWidgetItem* pi = ui->m_list->item(nrow);
-			int imat = pi->data(Qt::UserRole).toInt();
+		int imat = current->data(Qt::UserRole).toInt();
 
-			Post::FEPostModel& fem = *doc->GetFSModel();
-			if ((imat >= 0) && (imat < fem.Materials()))
+		Post::FEPostModel& fem = *doc->GetFSModel();
+		if ((imat >= 0) && (imat < fem.Materials()))
+		{
+			Post::Material* pmat = fem.GetMaterial(imat);
+			m_pmat->SetMaterial(pmat);
+			ui->m_prop->Update(m_pmat);
+		}
+	}
+}
+
+void CMaterialPanel::on_materialList_itemClicked(QTableWidgetItem* item)
+{
+	CPostDocument* doc = GetActiveDocument();
+	if (doc && doc->IsValid() && item)
+	{
+		int nrow = item->row();
+		int ncol = item->column();
+		int imat = ui->m_list->item(nrow, 0)->data(Qt::UserRole).toInt();
+
+		Post::CGLModel& mdl = *doc->GetGLModel();
+		Post::FEPostModel& fem = *doc->GetFSModel();
+		if ((imat >= 0) && (imat < fem.Materials()) && (ncol > 0))
+		{
+			Post::Material& mat = *fem.GetMaterial(imat);
+
+			if (ncol == 1)
 			{
-				Post::Material* pmat = fem.GetMaterial(imat);
-				m_pmat->SetMaterial(pmat);
-				ui->m_prop->Update(m_pmat);
-				ui->name->setText(QString(pmat->GetName()));
-
-				ui->update = false;
-				ui->pcheck->setChecked(pmat->enabled());
-				ui->pshow->setChecked(pmat->visible());
-				ui->update = true;
+				mat.bvisible = !mat.bvisible;
 			}
+			else if (ncol == 2)
+			{
+				mat.benable = !mat.benable;
+			}
+
+			// update all the other selected materials
+			QItemSelectionModel* pselect = ui->m_list->selectionModel();
+			QModelIndexList selection = pselect->selectedRows();
+			int ncount = selection.count();
+			for (int i = 0; i < ncount; ++i)
+			{
+				QModelIndex index = selection.at(i);
+				if (index.row() != nrow)
+				{
+					int imat = ui->m_list->item(index.row(), 0)->data(Qt::UserRole).toInt();
+					Post::Material& mati = *fem.GetMaterial(imat);
+					mati.bvisible = mat.bvisible;
+					mati.benable = mat.benable;
+				}
+			}
+
+			UpdateStates();
+			if      (ncol == 1) mdl.UpdateMeshVisibility();
+			else if (ncol == 2)
+			{
+				mdl.UpdateMeshState();
+				mdl.ResetAllStates();
+				doc->UpdateFEModel(true);
+			}
+			GetMainWindow()->RedrawGL();
 		}
-	}
-}
-
-void CMaterialPanel::on_showButton_toggled(bool b)
-{
-	if (ui->update == false) return;
-
-	CPostDocument& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
-
-	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
-
-	QItemSelectionModel* pselect = ui->m_list->selectionModel();
-	QModelIndexList selection = pselect->selectedRows();
-	int ncount = selection.count();
-	for (int i=0; i<ncount; ++i)
-	{
-		QModelIndex index = selection.at(i);
-		QListWidgetItem* it = ui->m_list->item(index.row());
-		int nmat = it->data(Qt::UserRole).toInt();
-
-		Post::Material& mat = *fem.GetMaterial(nmat);
-		if (b)
-		{
-			mat.show();
-			mdl.ShowMaterial(nmat);
-		}
-		else
-		{
-			mat.hide();
-			mdl.HideMaterial(nmat);
-		}
-	}
-
-	UpdateStates();
-	GetMainWindow()->RedrawGL();
-}
-
-void CMaterialPanel::on_enableButton_toggled(bool b)
-{
-	if (ui->update == false) return;
-
-	CPostDocument& doc = *GetActiveDocument();
-	if (doc.IsValid() == false) return;
-
-	Post::CGLModel& mdl = *doc.GetGLModel();
-	Post::FEPostModel& fem = *doc.GetFSModel();
-	Post::FEPostMesh& mesh = *fem.GetFEMesh(0);
-
-	QItemSelectionModel* pselect = ui->m_list->selectionModel();
-	QModelIndexList selection = pselect->selectedRows();
-	int ncount = selection.count();
-	for (int i=0; i<ncount; ++i)
-	{
-		QModelIndex index = selection.at(i);
-		QListWidgetItem* it = ui->m_list->item(index.row());
-		int nmat = it->data(Qt::UserRole).toInt();
-
-		Post::Material& mat = *fem.GetMaterial(nmat);
-
-		if (b) mat.enable();
-		else mat.disable();
-	}
-	mdl.UpdateMeshState();
-	mdl.ResetAllStates();
-	doc.UpdateFEModel(true);
-	UpdateStates();
-	GetMainWindow()->RedrawGL();
-}
-
-void CMaterialPanel::on_editName_editingFinished()
-{
-	CPostDocument& doc = *GetActiveDocument();
-	QModelIndex n = ui->m_list->currentIndex();
-	if (n.isValid())
-	{
-		QListWidgetItem* it = ui->m_list->item(n.row());
-		int nmat = it->data(Qt::UserRole).toInt();
-
-		Post::FEPostModel& fem = *doc.GetFSModel();
-		Post::Material& mat = *fem.GetMaterial(nmat);
-
-		string name = ui->name->text().toStdString();
-		mat.SetName(name.c_str());
-		it->setText(ui->name->text());
 	}
 }
 
 void CMaterialPanel::SetItemColor(int index, GLColor c)
 {
-	QListWidgetItem* item = ui->m_list->item(index);
+	QTableWidgetItem* item = ui->m_list->item(index, 0);
 	ui->setColor(item, c);
 }
 
@@ -423,7 +413,7 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 	if (currentIndex.isValid() == false) return;
 
 	// get the current material
-	int nmat = ui->m_list->item(currentIndex.row())->data(Qt::UserRole).toInt();
+	int nmat = ui->m_list->item(currentIndex.row(), 0)->data(Qt::UserRole).toInt();
 	Post::Material& currentMat = *fem.GetMaterial(nmat);
 
 	// update color of corresponding item in material list
@@ -438,7 +428,7 @@ void CMaterialPanel::on_matprops_dataChanged(int nprop)
 		QModelIndex index = selection.at(i);
 		if (index.row() != currentIndex.row())
 		{
-			int imat = ui->m_list->item(index.row())->data(Qt::UserRole).toInt();
+			int imat = ui->m_list->item(index.row(), 0)->data(Qt::UserRole).toInt();
 			Post::Material& mati = *fem.GetMaterial(imat);
 
 			switch (nprop)

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "FiberODFAnalysis.h"
 #include <qopengl.h>
-#include <PostLib/ImageModel.h>
+#include "ImageModel.h"
 #include <FEAMR/sphericalHarmonics.h>
 #include <FEAMR/spherePoints.h>
 #include <MeshTools/FENNQuery.h>
@@ -81,7 +81,7 @@ CODF::CODF() : m_odf(NPTS, 0.0), m_meanIntensity(0)
 };
 
 //==================================================================
-CFiberODFAnalysis::CFiberODFAnalysis(Post::CImageModel* img)
+CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
     : CImageAnalysis(CImageAnalysis::FIBERODF, img), m_lengthScale(10), m_hausd(0.05), 
         m_grad(1.3)
 {

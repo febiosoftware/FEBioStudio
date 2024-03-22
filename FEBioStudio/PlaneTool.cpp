@@ -239,7 +239,7 @@ public:
 
 CPlaneTool::CPlaneTool(CMainWindow* wnd) : CAbstractTool(wnd, "Plane")
 {
-
+	SetInfo("Tool to calculate plane based on three nodes.");
 }
 
 void CPlaneTool::onEditToggled(bool b)

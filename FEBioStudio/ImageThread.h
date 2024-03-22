@@ -27,15 +27,12 @@ SOFTWARE.*/
 #include "CustomThread.h"
 #include <QDialog>
 
-namespace Post
-{
-    class CImageModel;
-}
+class CImageModel;
 
 class CImageReadThread : public CustomThread
 {
 public:
-    CImageReadThread(Post::CImageModel* imgModel);
+    CImageReadThread(CImageModel* imgModel);
     
     void run() override;
 
@@ -48,19 +45,19 @@ public:
 	void stop() override;
 
 private:
-	Post::CImageModel* m_imgModel;
+	CImageModel* m_imgModel;
 };
 
 class CImageFilterThread : public CustomThread
 {
 public:
-    CImageFilterThread(Post::CImageModel* imgModel);
+    CImageFilterThread(CImageModel* imgModel);
     
     void run() override;
 
     void stop() override;
 
 private:
-	Post::CImageModel* m_imgModel;
+	CImageModel* m_imgModel;
 	bool	m_canceled;
 };

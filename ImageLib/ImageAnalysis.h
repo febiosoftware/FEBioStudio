@@ -29,11 +29,7 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 #include <FSCore/FSThreadedTask.h>
 
-namespace Post
-{
-    class CImageModel;
-};
-
+class CImageModel;
 class CGLCamera;
 
 class CImageAnalysis : public FSThreadedTask
@@ -45,7 +41,7 @@ public:
     };
 
 public:
-    CImageAnalysis(int type, Post::CImageModel* img);
+    CImageAnalysis(int type, CImageModel* img);
 
     int Type() { return m_type; }
 
@@ -56,10 +52,10 @@ public:
 	bool IsActive() const { return m_active; }
 	void Activate(bool b) { m_active = b; }
 
-	Post::CImageModel* GetImageModel() { return m_img; }
+	CImageModel* GetImageModel() { return m_img; }
 
 protected:
-    Post::CImageModel* m_img;
+    CImageModel* m_img;
 
 private:
     int m_type;

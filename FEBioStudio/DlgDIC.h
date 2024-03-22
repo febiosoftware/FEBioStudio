@@ -27,14 +27,10 @@ SOFTWARE.*/
 #include <QDialog>
 #include <QWidget>
 
-namespace Post
-{
-    class CImageModel;
-}
-
 class QGraphicsView;
 class QPixmap;
 class CDrawROI;
+class CImageModel;
 
 class CROIShape
 {
@@ -91,7 +87,7 @@ class CDrawROI : public QWidget
     Q_OBJECT
 
 public:
-    CDrawROI(Post::CImageModel* model);
+    CDrawROI(CImageModel* model);
     ~CDrawROI();
 
     QSize PixmapSize();
@@ -117,7 +113,7 @@ protected:
     void mouseReleaseEvent(QMouseEvent* event) override;
 
 private:
-    Post::CImageModel* m_model;
+    CImageModel* m_model;
     QPixmap m_slice;
     QRect m_bounds;
     float m_scale;
@@ -137,14 +133,14 @@ class CDlgDIC : public QDialog
     Q_OBJECT
 
 public:
-    CDlgDIC(Post::CImageModel* model);
+    CDlgDIC(CImageModel* model);
     ~CDlgDIC();
 
 public slots:
     void inputDone();
 
 private:
-    Post::CImageModel* m_model;
+    CImageModel* m_model;
     CDrawROI* drawROI;
     QGraphicsView* m_mask;
     QPixmap* m_maskPix;

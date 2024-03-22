@@ -23,19 +23,22 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
-
 #pragma once
+#include <FSCore/FSObject.h>
+#include <string>
 
 namespace Post {
 
 	class FEPostModel;
 
-class FEASCIIExport
+	// TODO: inherit from FileWriter?
+class FEASCIIExport : public FSBase
 {
-
 public:
 	FEASCIIExport();
 	bool Save(FEPostModel* pfem, int n0, int n1, const char* szfile);
+
+	bool UpdateData(bool bsave) override;
 
 public:
 	bool	m_bselonly;	// export selection only
@@ -45,6 +48,7 @@ public:
 	bool	m_bndata;	// export nodal values
 	bool	m_bedata;	// export element data
 	bool	m_bfnormals;	// export facet normals
-	char	m_szfmt[256];	// format string
+	int		m_alltimes;
+	std::string m_fmt;	// format string
 };
 }

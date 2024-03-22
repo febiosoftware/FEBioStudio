@@ -25,8 +25,8 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "VolumeRenderer.h"
 #include <GL/glew.h>
-#include "ImageModel.h"
-#include "ImageSource.h"
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/ImageSource.h>
 #include <GLLib/GLContext.h>
 #include <GLLib/GLProgram.h>
 #include <GLLib/GLCamera.h>
@@ -109,56 +109,70 @@ void CVolumeRenderer::ReloadTexture()
 
 	// find the min and max values
     size_t N  = nx * ny * nz;
-    if(pType == C3DImage::INT_RGB8 || pType == C3DImage::UINT_RGB8 || pType == C3DImage::INT_RGB16 || pType == C3DImage::UINT_RGB16)
+    if(pType == CImage::INT_RGB8 || pType == CImage::UINT_RGB8 || pType == CImage::INT_RGB16 || pType == CImage::UINT_RGB16)
     {
         N *= 3;
     }
 
-    int max8 = 255;
-    int max16 = 65535;
+    constexpr int max8 = std::numeric_limits<unsigned char>::max();
+    constexpr int max16 = std::numeric_limits<unsigned short>::max();
+    constexpr uint32_t max32 = std::numeric_limits<unsigned int>::max();
 
-    float max = 1.f;
-    float min = 0.f;
-	if (pType == C3DImage::INT_8 || pType == C3DImage::INT_RGB8)
+    double min, max;
+    im3d.GetMinMax(min, max);
+	switch (pType)
 	{
-        int8_t* data = (int8_t*)im3d.GetBytes();
-
-		max = (float)*std::max_element(data, data+N)/(max8/2);
-        min = (float)*std::min_element(data, data+N)/(max8/2);
-    }
-    else if(pType == C3DImage::UINT_8 || pType == C3DImage::UINT_RGB8)
-    {
-        uint8_t* data = (uint8_t*)im3d.GetBytes();
-
-        max = (float)*std::max_element(data, data+N)/max8;
-        min = (float)*std::min_element(data, data+N)/max8;
-    }
-    else if( pType == C3DImage::INT_16 || pType == C3DImage::INT_RGB16)
-    {
-		int16_t* data = (int16_t*)im3d.GetBytes();
-
-		max = (float)*std::max_element(data, data+N)/(max16/2);
-        min = (float)*std::min_element(data, data+N)/(max16/2);
+	case CImage::INT_8:
+	case CImage::INT_RGB8:
+	{
+		max /= max8 / 2;
+		min /= max8 / 2;
 	}
-    else if(pType == C3DImage::UINT_16 || pType == C3DImage::UINT_RGB16)
-    {
-        uint16_t* data = (uint16_t*)im3d.GetBytes();
-
-		max = (float)*std::max_element(data, data+N)/max16;
-        min = (float)*std::min_element(data, data+N)/max16;
-    }
-	else if ((pType == C3DImage::REAL_32) || (pType == C3DImage::REAL_64))
+	break;
+	case CImage::UINT_8:
+	case CImage::UINT_RGB8:
+	{
+		max /= max8;
+		min /= max8;
+	}
+	break;
+	case CImage::INT_RGB16:
+	{
+		max /= max16 / 2;
+		min /= max16 / 2;
+	}
+	break;
+	case CImage::UINT_16:
+	case CImage::UINT_RGB16:
+	{
+		max /= max16;
+		min /= max16;
+	}
+	break;
+	case CImage::INT_16:
+	case CImage::INT_32:
+	case CImage::UINT_32:
+	{
+		// Don't do anything for these cases since we scale the data
+		// before we send it to OpenGL
+	}
+	break;
+	case CImage::REAL_32:
+	case CImage::REAL_64:
 	{
 		// floating point images are copied and scaled when calling glTexImage3D, so we can just 
 		// set the range to [0,1]
 		max = 1.f;
 		min = 0.f;
 	}
+	break;
+	default:
+		assert(false);
+	}
+
 	if (max == min) max++;
-
-    m_Iscale = 1.f /(max - min);
-    m_IscaleMin = min;
-
+	m_Iscale = 1.f /(max - min);
+	m_IscaleMin = min;
 
 	glBindTexture(GL_TEXTURE_3D, m_texID);
 
@@ -177,15 +191,42 @@ void CVolumeRenderer::ReloadTexture()
 	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 	switch (im3d.PixelType())
 	{
-	case C3DImage::INT_8     : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_BYTE , im3d.GetBytes()); break;
-	case C3DImage::INT_16    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_SHORT, im3d.GetBytes()); break;
-	case C3DImage::INT_RGB8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_BYTE , im3d.GetBytes()); break;
-	case C3DImage::INT_RGB16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_SHORT, im3d.GetBytes()); break;
-	case C3DImage::UINT_8    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
-	case C3DImage::UINT_16   : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-	case C3DImage::UINT_RGB8 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
-	case C3DImage::UINT_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
-	case C3DImage::REAL_32: 
+	case CImage::INT_8     : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_BYTE , im3d.GetBytes()); break;
+	case CImage::INT_16:
+	{
+		GLbyte* d = new GLbyte[N];
+		short* s = (short*)im3d.GetBytes();
+		for (size_t i = 0; i < N; ++i) d[i] = (GLbyte)(255 * (s[i] - m_IscaleMin) * m_Iscale);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, d);
+		delete[] d;
+
+		m_Iscale = 1.f;
+		m_IscaleMin = 0.f;
+	}
+	break;
+	case CImage::INT_32    :
+    case CImage::UINT_32   :
+	{
+		// We're doing the scaling here, because it appears
+		// that OpenGL only maps the upper 16 bits to the range [0,1].
+		// If the image only fills the lower 16 bits, we won't see anything 
+		GLbyte* d = new GLbyte[N];
+		int* s = (int*)im3d.GetBytes();
+		for (size_t i = 0; i < N; ++i) d[i] = (GLbyte)(255*(s[i] - m_IscaleMin) * m_Iscale);
+		glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE, d);
+		delete[] d;
+
+		m_Iscale = 1.f;
+		m_IscaleMin = 0.f;
+	}
+	break;
+	case CImage::INT_RGB8  : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_BYTE , im3d.GetBytes()); break;
+	case CImage::INT_RGB16 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_SHORT, im3d.GetBytes()); break;
+	case CImage::UINT_8    : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case CImage::UINT_16   : glTexImage3D(GL_TEXTURE_3D, 0, GL_RED, nx, ny, nz, 0, GL_RED, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
+	case CImage::UINT_RGB8 : glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_BYTE , im3d.GetBytes()); break;
+	case CImage::UINT_RGB16: glTexImage3D(GL_TEXTURE_3D, 0, GL_RGB, nx, ny, nz, 0, GL_RGB, GL_UNSIGNED_SHORT, im3d.GetBytes()); break;
+	case CImage::REAL_32: 
 	{
 		// Opengl expects that values between 0 and 1, so we need to scale the buffer
 		float* d = new float[N];
@@ -196,7 +237,7 @@ void CVolumeRenderer::ReloadTexture()
 		delete[] d;
 	}
 	break;
-	case C3DImage::REAL_64: 
+	case CImage::REAL_64: 
 	{
 		// OpenGL doesn't have a 64-bit real (i.e. double precision), so we need to make a float copy.
 		float* d = new float[N];
@@ -336,16 +377,18 @@ void CVolumeRenderer::InitShaders()
 	const char* shadertxt = nullptr;
 	switch (im3d.PixelType())
 	{
-    case C3DImage::UINT_8  : shadertxt = shadertxt_8bit; break;
-	case C3DImage::INT_8  : shadertxt = shadertxt_8bit; break;
-	case C3DImage::UINT_16  : shadertxt = shadertxt_8bit; break;
-    case C3DImage::INT_16 : shadertxt = shadertxt_8bit; break;
-	case C3DImage::UINT_RGB8  : shadertxt = shadertxt_rgb; break;
-    case C3DImage::INT_RGB8: shadertxt = shadertxt_rgb; break;
-	case C3DImage::UINT_RGB16  : shadertxt = shadertxt_rgb; break;
-    case C3DImage::INT_RGB16: shadertxt = shadertxt_rgb; break;
-	case C3DImage::REAL_32: shadertxt = shadertxt_8bit; break;
-	case C3DImage::REAL_64: shadertxt = shadertxt_8bit; break;
+    case CImage::UINT_8  : shadertxt = shadertxt_8bit; break;
+	case CImage::INT_8  : shadertxt = shadertxt_8bit; break;
+	case CImage::UINT_16  : shadertxt = shadertxt_8bit; break;
+    case CImage::INT_16 : shadertxt = shadertxt_8bit; break;
+    case CImage::UINT_32  : shadertxt = shadertxt_8bit; break;
+    case CImage::INT_32 : shadertxt = shadertxt_8bit; break;
+	case CImage::UINT_RGB8  : shadertxt = shadertxt_rgb; break;
+    case CImage::INT_RGB8: shadertxt = shadertxt_rgb; break;
+	case CImage::UINT_RGB16  : shadertxt = shadertxt_rgb; break;
+    case CImage::INT_RGB16: shadertxt = shadertxt_rgb; break;
+	case CImage::REAL_32: shadertxt = shadertxt_8bit; break;
+	case CImage::REAL_64: shadertxt = shadertxt_8bit; break;
 	default:
 		return;
 	}
@@ -452,8 +495,8 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	VRprg.SetFloat("Iscl"   , m_Iscale);
 	VRprg.SetFloat("IsclMin", m_IscaleMin);
 
-	if ((im3d.PixelType() == C3DImage::INT_RGB8) || (im3d.PixelType() == C3DImage::UINT_RGB8) 
-        || (im3d.PixelType() == C3DImage::INT_RGB16) || (im3d.PixelType() == C3DImage::UINT_RGB16))
+	if ((im3d.PixelType() == CImage::INT_RGB8) || (im3d.PixelType() == CImage::UINT_RGB8) 
+        || (im3d.PixelType() == CImage::INT_RGB16) || (im3d.PixelType() == CImage::UINT_RGB16))
 	{
 		float hue1 = vs->GetFloatValue(CImageViewSettings::CHANNEL1_HUE);
 		float hue2 = vs->GetFloatValue(CImageViewSettings::CHANNEL2_HUE);
@@ -481,16 +524,16 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	// get the bounding box
 	BOX box = img.GetBoundingBox();
 	vec3d r0 = box.r0();
-	vec3d r1 = box.r1();
+	vec3d dr = box.r1() - box.r0();
 
 	// activate clipping planes
 	GLdouble clip[6][4] = {
-		{ 1, 0, 0, -(r0.x + g[0][0]*(r1.x - r0.x))},
-		{-1, 0, 0,  (r0.x + g[0][1]*(r1.x - r0.x))},
-		{ 0, 1, 0, -(r0.y + g[1][0]*(r1.y - r0.y))},
-		{ 0,-1, 0,  (r0.y + g[1][1]*(r1.y - r0.y))},
-		{ 0, 0, 1, -(r0.z + g[2][0]*(r1.z - r0.z))},
-		{ 0, 0,-1,  (r0.z + g[2][1]*(r1.z - r0.z))},
+		{ 1, 0, 0, -(g[0][0]*(dr.x))},
+		{-1, 0, 0,  (g[0][1]*(dr.x))},
+		{ 0, 1, 0, -(g[1][0]*(dr.y))},
+		{ 0,-1, 0,  (g[1][1]*(dr.y))},
+		{ 0, 0, 1, -(g[2][0]*(dr.z))},
+		{ 0, 0,-1,  (g[2][1]*(dr.z))},
 	};
 
 	glClipPlane(GL_CLIP_PLANE0, clip[0]); glEnable(GL_CLIP_PLANE0);
@@ -509,6 +552,10 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	quatd q = rc.m_cam->GetOrientation();
 	q.Inverse().RotateVector(view);
 
+	mat3d Q = GetImageModel()->GetOrientation();
+	mat3d Qt = Q.transpose();
+	view = Qt * view;
+
 	// the normal will be view direction
 	glNormal3d(view.x, view.y, view.z);
 
@@ -526,7 +573,6 @@ void CVolumeRenderer::Render(CGLContext& rc)
 	glDisable(GL_CLIP_PLANE4);
 	glDisable(GL_CLIP_PLANE5);
 
-
 	glPopAttrib();
 }
 
@@ -539,19 +585,18 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 	double W = box.Width();
 	double H = box.Height();
 	double D = box.Depth();
-	vec3d r0 = box.r0();
-	vec3d r1 = box.r1();
+	vec3d dr = box.r1() - box.r0();
 
 	// coordinates of box
 	vec3d c[8];
-	c[0] = vec3d(r0.x, r0.y, r0.z);
-	c[1] = vec3d(r1.x, r0.y, r0.z);
-	c[2] = vec3d(r1.x, r1.y, r0.z);
-	c[3] = vec3d(r0.x, r1.y, r0.z);
-	c[4] = vec3d(r0.x, r0.y, r1.z);
-	c[5] = vec3d(r1.x, r0.y, r1.z);
-	c[6] = vec3d(r1.x, r1.y, r1.z);
-	c[7] = vec3d(r0.x, r1.y, r1.z);
+	c[0] = vec3d(   0,    0, 0);
+	c[1] = vec3d(dr.x,    0, 0);
+	c[2] = vec3d(dr.x, dr.y, 0);
+	c[3] = vec3d(   0, dr.y, 0);
+	c[4] = vec3d(   0,    0, dr.z);
+	c[5] = vec3d(dr.x,    0, dr.z);
+	c[6] = vec3d(dr.x, dr.y, dr.z);
+	c[7] = vec3d(   0, dr.y, dr.z);
 
 	// find the min, max projection distance
 	double tmin = 1e99, tmax = -1e99;
@@ -592,13 +637,15 @@ void CVolumeRenderer::UpdateGeometry(const vec3d& view)
 
 				double w = (t - nv[n1]) / (nv[n2] - nv[n1]);
 
+				// position coordinates
 				vr[0] = c[n1].x * (1 - w) + c[n2].x * w;
 				vr[1] = c[n1].y * (1 - w) + c[n2].y * w;
 				vr[2] = c[n1].z * (1 - w) + c[n2].z * w;
 
-				vt[0] = (vr[0] - r0.x) / W;
-				vt[1] = (vr[1] - r0.y) / H;
-				vt[2] = (vr[2] - r0.z) / D;
+				// texture coordinates
+				vt[0] = (vr[0]) / W;
+				vt[1] = (vr[1]) / H;
+				vt[2] = (vr[2]) / D;
 
 				m_mesh.AddVertex(vr, nullptr, vt);
 			}

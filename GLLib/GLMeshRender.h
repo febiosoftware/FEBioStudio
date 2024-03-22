@@ -97,6 +97,8 @@ public:
 
 	void RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
 
+	void RenderFESurfaceMeshFaces(FSMeshBase* pm, std::function<bool(const FSFace& face, GLColor* c)> f);
+
 	void RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList);
 	void RenderFEFacesOutline(FSCoreMesh* pm, const std::vector<FSFace*>& faceList);
 	void RenderFEFacesOutline(FSMeshBase* pm, std::function<bool(const FSFace& face)> f);
@@ -117,12 +119,15 @@ public:
 
 public:
 	void RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel);
+	void RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel);
 
 private:
 	// drawing routines for faces
 	void RenderFEFace(const FSFace& face, FSMeshBase* pm);
 	void RenderFace(FSFace& face, FSCoreMesh* pm);
 	void RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4]);
+
+	void RenderFESurfaceMeshFace(FSFace& face, FSMeshBase* pm, GLColor c[4]);
 
 public:
 	void RenderFaceOutline(FSFace& face, FSCoreMesh* pm);
@@ -132,9 +137,9 @@ public:
 
 private:
 	// special render routines for thick shells
-	void RenderThickShell(FSFace& face, FSCoreMesh* pm);
-	void RenderThickQuad(FSFace& face, FSCoreMesh* pm);
-	void RenderThickTri(FSFace& face, FSCoreMesh* pm);
+	void RenderThickShell(const FSFace& face, FSCoreMesh* pm);
+	void RenderThickQuad(const FSFace& face, FSCoreMesh* pm);
+	void RenderThickTri(const FSFace& face, FSCoreMesh* pm);
 	void RenderThickShellOutline(FSFace& face, FSCoreMesh* pm);
 
 public:

@@ -26,7 +26,7 @@ SOFTWARE.*/
 
 #include "ImageAnalysis.h"
 
-CImageAnalysis::CImageAnalysis(int type, Post::CImageModel* img)
+CImageAnalysis::CImageAnalysis(int type, CImageModel* img)
     : m_img(img), m_type(type)
 {
 	m_active = true;

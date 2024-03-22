@@ -73,6 +73,18 @@ public:
 	virtual bool IsCanceled() const;
 
 	std::string getErrorString() const;
+    
+    std::string GetErrorString() const;
+
+	// get the number of errors
+	int Errors() const;
+
+	// reset the task to a valid initial state
+	void Reset();
+
+	// helper functions that sets the error string
+	bool errf(const char* szerr, ...);
+	bool error(const std::string& err);
 
 	void SetTaskLogger(TaskLogger* logger);
 
@@ -90,10 +102,12 @@ protected:
 
 	void setErrorString(const std::string& s);
 
-	bool error(const std::string& s);
+	// clear error
+	void ClearErrors();
 
 private:
-	FSTaskProgress m_progress;
-	std::string	m_error;
+	FSTaskProgress	m_progress;
+	std::string		m_err;		//!< error messages (separated by \n)
+	int				m_nerrors;	//!< number of errors
 	TaskLogger* m_log;
 };

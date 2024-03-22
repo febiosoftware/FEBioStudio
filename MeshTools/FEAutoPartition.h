@@ -43,4 +43,6 @@ class FERebuildMesh : public FEModifier
 public:
 	FERebuildMesh();
 	FSMesh* Apply(FSMesh* pm);
+    void SetRepartition(bool repart) {SetBoolValue(0, repart); }
+    void SetCreaseAngle(double angle) { SetFloatValue(1, angle); }
 };

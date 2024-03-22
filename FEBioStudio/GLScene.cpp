@@ -29,3 +29,4 @@ SOFTWARE.*/
 CGLScene::CGLScene() {}
 CGLScene::~CGLScene() {}
 
+CGView& CGLScene::GetView() { return m_view; }

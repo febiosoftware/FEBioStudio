@@ -59,7 +59,7 @@ SOFTWARE.*/
 #include <GeomLib/GGroup.h>
 #include <CUILib/ImageViewer.h>
 #include <CUILib/HistogramViewer.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostGL/GLPlot.h>
 #include <GeomLib/GModel.h>
 #include <MeshLib/FEElementData.h>
@@ -69,6 +69,7 @@ SOFTWARE.*/
 #include "PlotWidget.h"
 #include "DynamicStackedWidget.h"
 #include "ImageFilterWidget.h"
+#include "DlgPickNamedSelection.h"
 #include "FiberODFWidget.h"
 #include <ImageLib/FiberODFAnalysis.h>
 
@@ -336,43 +337,6 @@ void CMeshDataInfoPanel::setDataFormat(int ndataformat)
 void CMeshDataInfoPanel::on_name_textEdited(const QString& t)
 {
 	emit nameChanged(t);
-}
-
-//=============================================================================
-CDlgPickNamedSelection::CDlgPickNamedSelection(QWidget* parent) : QDialog(parent)
-{
-	setWindowTitle("Choose Selection");
-
-	QVBoxLayout* l = new QVBoxLayout;
-
-	l->addWidget(m_list = new QListWidget);
-
-	QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
-	l->addWidget(bb);
-
-	setLayout(l);
-
-	QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
-	QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
-}
-
-void CDlgPickNamedSelection::setNameList(const QStringList& names)
-{
-	m_list->clear();
-	m_list->addItems(names);
-}
-
-void CDlgPickNamedSelection::setSelection(const QString& name)
-{
-	auto l = m_list->findItems(name, Qt::MatchExactly);
-	if (l.empty() == false) m_list->setCurrentItem(l.at(0));
-}
-
-QString CDlgPickNamedSelection::getSelection()
-{
-	QListWidgetItem* it = m_list->currentItem();
-	if (it == nullptr) return QString();
-	else return it->text();
 }
 
 //=============================================================================
@@ -689,7 +653,7 @@ public:
         tool->getToolItem(FIBERODF_PANEL)->setVisible(b);
     }
 
-	void showImagePanel(bool b, Post::CImageModel* img = nullptr, CPropertyList* props = nullptr)
+	void showImagePanel(bool b, CImageModel* img = nullptr, CPropertyList* props = nullptr)
 	{
 		if (b && (m_showImageTools==false))
 		{
@@ -702,10 +666,6 @@ public:
 		else if ((b == false) && m_showImageTools)
 		{
 			m_showImageTools = false;
-
-            imageProps->Update(nullptr);
-            imageFilters->SetImageModel(nullptr);
-			histoView->SetImageModel(nullptr);
 		}
 		tool->getToolItem(IMAGE_PANEL)->setVisible(b);
 	}
@@ -802,6 +762,11 @@ void CModelPropsPanel::Refresh()
 	}
 }
 
+void CModelPropsPanel::AssignCurrentSelection()
+{
+	addSelection(0);
+}
+
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
 {
 	if ((po == 0) && (props == 0))
@@ -814,10 +779,10 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		ui->showProperties(true);
 		ui->showImagePanel(false);
         ui->showFiberODFWidget(false);
-		// Post::CImageSource* imgSrc = dynamic_cast<Post::CImageSource*>(po);
+		// CImageSource* imgSrc = dynamic_cast<CImageSource*>(po);
 		// if (imgSrc)
 		// {
-		// 	Post::CImageModel* img = imgSrc->GetImageModel();
+		// 	CImageModel* img = imgSrc->GetImageModel();
 		// 	if (img)
 		// 	{
 		// 		ui->showPropsPanel(false);
@@ -826,7 +791,7 @@ void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int fl
 		// 	}
 		// }
 
-        Post::CImageModel* img = dynamic_cast<Post::CImageModel*>(po);
+        CImageModel* img = dynamic_cast<CImageModel*>(po);
         if(img)
         {
             ui->showPropsPanel(false);
@@ -1387,6 +1352,11 @@ void CModelPropsPanel::PickSelection(int n)
 		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
 
 		l = gm.AllNamedSelections(FE_SURFACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+	if (meshType & FE_PART_FLAG)
+	{
+		auto l = gm.AllNamedSelections(DOMAIN_PART);
 		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
 	}
 

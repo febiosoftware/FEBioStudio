@@ -62,7 +62,7 @@ bool CFoamGeneratorTool::OnApply()
 		if (pa) strcpy(szname, pa->GetName().c_str());
 		else
 		{
-			sprintf(szname, "Foam%02d", n++);
+			snprintf(szname, sizeof szname, "Foam%02d", n++);
 		}
 
 		// if this is the last selected object, delete it so we can replace it

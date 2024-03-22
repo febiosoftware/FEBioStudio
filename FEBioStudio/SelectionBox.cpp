@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include "MainWindow.h"
 #include "ModelDocument.h"
+#include "DlgPickNamedSelection.h"
 
 class Ui::CSelectionBox
 {
@@ -569,6 +570,7 @@ CMeshSelectionBox::CMeshSelectionBox(CMainWindow* wnd, QWidget* parent) : CItemL
 	QObject::connect(this, SIGNAL(delButtonClicked()), this, SLOT(onDelButtonClicked()));
 	QObject::connect(this, SIGNAL(selButtonClicked()), this, SLOT(onSelButtonClicked()));
 	QObject::connect(this, SIGNAL(clearButtonClicked()), this, SLOT(onClearButtonClicked()));
+	QObject::connect(this, SIGNAL(pickClicked()), this, SLOT(onPickButtonClicked()));
 	QObject::connect(this, SIGNAL(nameChanged(const QString&)), this, SLOT(onNameChanged(const QString&)));
 }
 
@@ -729,5 +731,57 @@ void CMeshSelectionBox::onClearButtonClicked()
 		delete pl;
 		SetItemList(nullptr);
 		emit selectionChanged();
+	}
+}
+
+void CMeshSelectionBox::onPickButtonClicked()
+{
+	CModelDocument* pdoc = m_wnd->GetModelDocument();
+	if (pdoc == nullptr) return;
+	if (m_pms == nullptr) return;
+
+	// find the required mesh type
+	int meshType = m_pms->GetMeshItemType();
+
+	GModel& gm = *pdoc->GetGModel();
+
+	// build the candidate list
+	QStringList names;
+	if (meshType & FE_NODE_FLAG)
+	{
+		auto l = gm.AllNamedSelections(GO_NODE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_NODESET);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+	if ((meshType & FE_FACE_FLAG) || (meshType & FE_NODE_FLAG))
+	{
+		auto l = gm.AllNamedSelections(GO_FACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+
+		l = gm.AllNamedSelections(FE_SURFACE);
+		for (auto i : l) names.push_back(QString::fromStdString(i->GetName()));
+	}
+
+	// get the current selection
+	FEItemListBuilder* pl = m_pms->GetItemList(0);
+
+	CDlgPickNamedSelection dlg(this);
+	dlg.setNameList(names);
+	if (pl) dlg.setSelection(QString::fromStdString(pl->GetName()));
+	if (dlg.exec())
+	{
+		QString qs = dlg.getSelection();
+		if (qs.isEmpty() == false)
+		{
+			std::string s = qs.toStdString();
+			if ((pl == nullptr) || (s != pl->GetName()))
+			{
+				pl = gm.FindNamedSelection(s);
+				m_pms->SetItemList(pl);
+				SetSelection(m_pms);
+			}
+		}
 	}
 }

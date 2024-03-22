@@ -59,9 +59,13 @@ private:
 	void WriteVTKSeriesFile(const char* szfile, std::vector<std::pair<std::string, float> >& series);
 
 private:
+	bool UpdateData(bool bsave) override;
+
+private:
 	bool	m_bwriteAllStates;	// write all states
 	bool	m_bselElemsOnly;	// only output selected elements
 	bool	m_bwriteSeriesFile;	// write the vtk.series file (only for writeAllStates)
+	bool	m_bwritePartIDs;	// write the element part IDs as cell data
 
 private:
 	FILE*	m_fp;

@@ -28,22 +28,22 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/GObject.h>
 
-FEAbaqusExport::FEAbaqusExport(FSProject& prj) : FSFileExport(prj)
+AbaqusExport::AbaqusExport(FSProject& prj) : FSFileExport(prj)
 {
 
 }
 
-FEAbaqusExport::~FEAbaqusExport(void)
+AbaqusExport::~AbaqusExport(void)
 {
 
 }
 
-void FEAbaqusExport::SetHeading(const std::string& s)
+void AbaqusExport::SetHeading(const std::string& s)
 {
 	m_heading = s;
 }
 
-bool FEAbaqusExport::Write(const char* szfile)
+bool AbaqusExport::Write(const char* szfile)
 {
 	FILE* fp = fopen(szfile, "wt");
 	if (fp == nullptr) return false;

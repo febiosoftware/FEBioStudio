@@ -143,7 +143,7 @@ void FSMeshBase::RemoveEdges(int ntag)
 // This function assignes group ID's to the mesh' faces based on a smoothing
 // angle.
 //
-void FSMeshBase::AutoSmooth(double angleDegrees)
+void FSMeshBase::AutoSmooth(double angleDegrees, bool creaseInternal)
 {
 	int NF = Faces();
 
@@ -199,10 +199,24 @@ void FSMeshBase::AutoSmooth(double angleDegrees)
 					FSFace* pf2 = FacePtr(pf->m_nbr[j]);
 
 					// push unprocessed neighbour
-					if (pf2 && (pf2->m_sid == -1) && (pf->m_fn*pf2->m_fn >= eps))
+					if (pf2 && (pf2->m_sid == -1))
 					{
-						pf2->m_sid = -2;
-						stack[ns++] = pf2;
+						bool badd = false;
+						if ((pf->IsExternal() == false) && (pf2->IsExternal() == false))
+						{
+							if ((creaseInternal == false) || (pf->m_fn * pf2->m_fn >= eps))
+								badd = true;
+						}
+						else if (pf->m_fn * pf2->m_fn >= eps)
+						{
+							badd = true;
+						}
+
+						if (badd)
+						{
+							pf2->m_sid = -2;
+							stack[ns++] = pf2;
+						}
 					}
 				}
 			}

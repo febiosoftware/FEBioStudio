@@ -26,10 +26,11 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FESoluteData.h"
+#include <FECore/units.h>
 
 SoluteData::SoluteData()
 {
-	AddIntParam   (  0, "charge_number", "Charge Number");
-	AddDoubleParam(0.0, "molar_mass", "Molar Mass");
-	AddDoubleParam(0.0, "density", "Density");
+	AddIntParam   (  0, "charge_number", "Charge Number")->SetUnit(UNIT_NONE);
+	AddDoubleParam(0.0, "molar_mass", "Molar Mass")->SetUnit(UNIT_MOLAR_MASS);
+	AddDoubleParam(0.0, "density", "Density")->SetUnit(UNIT_DENSITY);
 }

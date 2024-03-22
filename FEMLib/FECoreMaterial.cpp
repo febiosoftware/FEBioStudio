@@ -31,6 +31,8 @@ SOFTWARE.*/
 #include <FECore/fecore_enum.h>
 #include <FECore/units.h>
 #include <FEBioLink/FEBioInterface.h>
+#include <exception>
+#include <sstream>
 
 //=============================================================================
 // FSAxisMaterial
@@ -725,8 +727,14 @@ void FSMaterial::Load(IArchive &ar)
 								if (prop)
 								{
 									FSModelComponent* pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, fem); assert(pmc);
-									pmc->Load(ar);
-									prop->AddComponent(pmc);
+									try {
+										pmc->Load(ar);
+										prop->AddComponent(pmc);
+									}
+									catch (...)
+									{
+										delete pmc;
+									}
 								}
 								break;
 							}
@@ -859,35 +867,38 @@ void FSMaterialProperty::Load(IArchive& ar)
 				{
 					string name; 
 					ar.read(name);
-					prop = FindProperty(name); assert(prop);
-					prop->Clear();
+					prop = FindProperty(name);
+					if (prop == nullptr) ar.log("WARNING: Property %s could not be found\n", name.c_str());
+					if (prop) prop->Clear();
 				}
 				break;
 				case CID_MATERIAL_COMPONENT:
 				{
-					assert(prop);
-					FSModelComponent* pmc = nullptr;
-					while (IArchive::IO_OK == ar.OpenChunk())
+					if (prop)
 					{
-						switch (ar.GetChunkID())
+						FSModelComponent* pmc = nullptr;
+						while (IArchive::IO_OK == ar.OpenChunk())
 						{
-						case CID_MATERIAL_COMPONENT_TYPE:
-						{
-							string type; ar.read(type);
-							pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, GetFSModel()); assert(pmc);
-						}
-						break;
-						case CID_MATERIAL_COMPONENT_DATA:
-						{
-							if (pmc)
+							switch (ar.GetChunkID())
 							{
-								pmc->Load(ar);
-								if (prop) prop->AddComponent(pmc);
+							case CID_MATERIAL_COMPONENT_TYPE:
+							{
+								string type; ar.read(type);
+								pmc = FEBio::CreateFSClass(prop->GetSuperClassID(), -1, GetFSModel()); assert(pmc);
 							}
+							break;
+							case CID_MATERIAL_COMPONENT_DATA:
+							{
+								if (pmc)
+								{
+									pmc->Load(ar);
+									if (prop) prop->AddComponent(pmc);
+								}
+							}
+							break;
+							}
+							ar.CloseChunk();
 						}
-						break;
-						}
-						ar.CloseChunk();
 					}
 				}
 				break;
@@ -925,18 +936,35 @@ void FEBioMaterialProperty::Save(OArchive& ar)
 void FEBioMaterialProperty::Load(IArchive& ar)
 {
 	TRACE("FEBioMaterial::Load");
+	bool errorFlag = false;
 	while (IArchive::IO_OK == ar.OpenChunk())
 	{
 		int nid = ar.GetChunkID();
 		switch (nid)
 		{
-		case CID_FEBIO_META_DATA: LoadClassMetaData(this, ar); break;
-		case CID_FEBIO_BASE_DATA: FSMaterialProperty::Load(ar); break;
+		case CID_FEBIO_META_DATA:
+		{
+			try {
+				LoadClassMetaData(this, ar);
+			}
+			catch (std::runtime_error e)
+			{
+				ar.log(e.what());
+				errorFlag = true;
+			}
+		}
+		break;
+		case CID_FEBIO_BASE_DATA:
+			if (!errorFlag) FSMaterialProperty::Load(ar); 
+			break;
 		default:
 			assert(false);
 		}
 		ar.CloseChunk();
 	}
+
+	if (errorFlag) throw std::runtime_error("Failed to load component");
+
 	// We call this to make sure that the FEBio class has the same parameters
 	UpdateData(true);
 }

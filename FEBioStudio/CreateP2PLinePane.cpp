@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include <MeshLib/FECurveMesh.h>
 #include "GLHighlighter.h"
 #include <MeshTools/GObject2D.h>
+#include <GeomLib/GCurveObject.h>
 
 //=============================================================================
 CCreateP2PLinePane::CCreateP2PLinePane(CCreatePanel* parent) : CCreatePane(parent)
@@ -277,10 +278,30 @@ FSObject* CCreateP2PLinePane::Create()
 	}
 	else
 	{
-		m_tmp->Update();
+		// create new object
+		GCurveObject* po = new GCurveObject;
 
-		newObject = m_tmp;
-		
+		// add nodes
+		for (int i = 0; i < m_tmp->Nodes(); ++i) po->AddNode(m_tmp->Node(i)->LocalPosition());
+
+		// add edges
+		for (int i = 0; i < m_tmp->Edges(); ++i)
+		{
+			GEdge* edge = new GEdge(po);
+			edge->m_node[0] = m_tmp->Edge(i)->m_node[0];
+			edge->m_node[1] = m_tmp->Edge(i)->m_node[1];
+			edge->m_cnode = m_tmp->Edge(i)->m_cnode;
+			edge->m_ntype = m_tmp->Edge(i)->m_ntype;
+			edge->m_orient = m_tmp->Edge(i)->m_orient;
+			po->AddEdge(edge);
+		}
+
+		po->AddBeamPart();
+		po->Update();
+
+		newObject = po;
+
+		delete m_tmp;
 		m_tmp = 0;
 		m_lastNode = -1;
 	}
@@ -288,7 +309,7 @@ FSObject* CCreateP2PLinePane::Create()
 	if (newObject)
 	{
 		char sz[256] = { 0 };
-		sprintf(sz, "PointCurve%d", n++);
+		snprintf(sz, 256, "PointCurve%d", n++);
 		newObject->SetName(sz);
 	}
 

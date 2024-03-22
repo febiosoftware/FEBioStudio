@@ -172,3 +172,14 @@ public:
 private:
 	Post::FEPostModel::PlotObject*	m_po;
 };
+
+class CPlotGlobalDataSelector : public CDataSelector
+{
+public:
+	CPlotGlobalDataSelector(Post::FEDataFieldPtr pdf);
+
+	void BuildMenu(QMenu* menu) override;
+
+private:
+	Post::FEDataFieldPtr	m_pdf;
+};

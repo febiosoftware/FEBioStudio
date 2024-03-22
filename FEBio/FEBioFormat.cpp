@@ -72,9 +72,9 @@ template <> void string_to_type<GLColor>(const std::string& s, GLColor& v)
 {
 	int c[3];
 	sscanf(s.c_str(), "%d,%d,%d", &c[0], &c[1], &c[2]);
-	v.r = (Byte)c[0];
-	v.g = (Byte)c[1];
-	v.b = (Byte)c[2];
+	v.r = (uint8_t)c[0];
+	v.g = (uint8_t)c[1];
+	v.b = (uint8_t)c[2];
 }
 
 //=============================================================================
@@ -521,6 +521,13 @@ bool FEBioFormat::ParseControlSection(XMLTag& tag)
 
 	FEBioInputModel& febio = GetFEBioModel();
 	FSModel& fem = GetFSModel();
+
+	if (m_nAnalysis == -1)
+	{
+		int moduleId = FEBio::GetModuleId("solid");
+		if (moduleId < 0) { throw XMLReader::InvalidAttributeValue(tag, "type", "solid"); }
+		FileReader()->GetProject().SetModule(moduleId, false);
+	}
 
 	// create a new analysis step from these control settings
 	if (m_pstep == 0) m_pstep = NewStep(fem, m_nAnalysis);
@@ -1118,6 +1125,9 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 		// HACK: a little hack to read in the "EFD neo-Hookean2" materials of the old datamap plugin. 
 		if (strcmp(szmat, "EFD neo-Hookean2") == 0) pm = FEMaterialFactory::Create(fem, "EFD neo-Hookean");
 
+		// HACK: "St.Venant-Kirchhoff" was renamed to "isotropic elastic"
+		if (strcmp(szmat, "St.Venant-Kirchhoff") == 0) pm = FEMaterialFactory::Create(fem, "isotropic elastic", propType);
+
 		// FBS1 never supported these materials, so we'll just use the FEBio classes.
 		if ((strcmp(szmat, "remodeling solid"      ) == 0) ||
 			(strcmp(szmat, "hyperelastic"          ) == 0) ||
@@ -1254,7 +1264,7 @@ FSMaterial* FEBioFormat::ParseMaterial(XMLTag& tag, const char* szmat, int propT
 					++tag;
 				}
 			}
-			else ++tag;
+			else { tag.skip(); ++tag; }
 		}
 		while (!tag.isend());
 	}
@@ -2729,26 +2739,42 @@ void FEBioFormat::ParseModelComponent(FSModelComponent* pmc, XMLTag& tag)
 				}
 				else
 				{
-					// see if the type attribute is defined
-					const char* sztype = tag.AttributeValue("type", true);
-					if (sztype == 0)
+					// handle special case first
+					if (prop->GetSuperClassID() == FESURFACE_ID)
 					{
-						// if not, get the default type. If none specified, we'll use the tag itself.
-						const std::string& defType = prop->GetDefaultType();
-						if (defType.empty() == false) sztype = defType.c_str();
-						else sztype = tag.Name();
+						const char* surfName = tag.szvalue();
+						FSMeshSelection* pms = dynamic_cast<FSMeshSelection*>(prop->GetComponent());
+
+						GMeshObject* po = GetFEBioModel().GetInstance(0)->GetGObject();
+						if (po)
+						{
+							FSSurface* surf = po->FindFESurface(surfName);
+							pms->SetItemList(surf);
+						}
 					}
-
-					// some classes allow names for their properties (e.g. chemical reactions)
-					const char* szname = tag.AttributeValue("name", true);
-
-					FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
-					assert(pc->GetSuperClassID() == prop->GetSuperClassID());
-					if (pc)
+					else
 					{
-						if (szname) pc->SetName(szname);
-						prop->AddComponent(pc);
-						ParseModelComponent(pc, tag);
+						// see if the type attribute is defined
+						const char* sztype = tag.AttributeValue("type", true);
+						if (sztype == 0)
+						{
+							// if not, get the default type. If none specified, we'll use the tag itself.
+							const std::string& defType = prop->GetDefaultType();
+							if (defType.empty() == false) sztype = defType.c_str();
+							else sztype = tag.Name();
+						}
+
+						// some classes allow names for their properties (e.g. chemical reactions)
+						const char* szname = tag.AttributeValue("name", true);
+
+						FSModelComponent* pc = FEBio::CreateClass(prop->GetSuperClassID(), sztype, &fem);
+						assert(pc->GetSuperClassID() == prop->GetSuperClassID());
+						if (pc)
+						{
+							if (szname) pc->SetName(szname);
+							prop->AddComponent(pc);
+							ParseModelComponent(pc, tag);
+						}
 					}
 				}
 			}

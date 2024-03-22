@@ -38,7 +38,8 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioInterface.h>
 #include <FEBioLink/FEBioClass.h>
 #include "ModelViewer.h"
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
+#include <ImageLib/3DImage.h>
 
 //=======================================================================================
 FEObjectProps::FEObjectProps(FSObject* po, FSModel* fem) : CObjectProps(nullptr)
@@ -989,9 +990,11 @@ void CPartProperties::SetPropertyValue(int i, const QVariant& v)
 }
 
 //=======================================================================================
-CImageModelProperties::CImageModelProperties(Post::CImageModel* model)
+CImageModelProperties::CImageModelProperties(CImageModel* model)
     : m_model(model), CObjectProps(nullptr)
 {
+    addProperty("Pixel Type", CProperty::String)->setFlags(CProperty::Visible);
+    addProperty("Dimensions (voxels)", CProperty::String)->setFlags(CProperty::Visible);
     addProperty("Show Box", CProperty::Bool);
     addProperty("x0", CProperty::Float);
     addProperty("y0", CProperty::Float);
@@ -1008,6 +1011,30 @@ QVariant CImageModelProperties::GetPropertyValue(int i)
 
     switch (i)
     {
+    case PIXELTYPE:
+    {
+        if(!m_model->Get3DImage())
+        {
+            return "";
+        }
+        else
+        {
+            return m_model->Get3DImage()->PixelTypeString().c_str();
+        }
+        
+    }
+    case PXLDIM:
+    {
+        C3DImage* img = m_model->Get3DImage();
+        if(!img)
+        {
+            return "";
+        }
+        else
+        {
+            return QString("%1, %2, %3").arg(img->Width()).arg(img->Height()).arg(img->Depth());
+        }
+    }
     case SHOWBOX:
         return m_model->ShowBox();
     case X0:

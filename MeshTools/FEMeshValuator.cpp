@@ -43,6 +43,29 @@ FEMeshValuator::FEMeshValuator(FSMesh& mesh) : m_mesh(mesh)
 }
 
 //-----------------------------------------------------------------------------
+//! Returns the string names of the data fields.
+//! When adding a new field, make sure to update the DataFields enum.
+std::vector< std::string > FEMeshValuator::GetDataFieldNames()
+{
+	std::vector< std::string > names;
+	names.push_back("Element Volume");
+	names.push_back("Jacobian");
+	names.push_back("Shell thickness");
+	names.push_back("Shell area");
+	names.push_back("Tet quality");
+	names.push_back("Tet minimal dihedral angle");
+	names.push_back("Tet maximal dihedral angle");
+	names.push_back("Triangle quality");
+	names.push_back("Triangle max dihedral angle");
+	names.push_back("Tet10 midside node offset");
+	names.push_back("Minimum element edge length");
+	names.push_back("Maximum element edge length");
+	names.push_back("1-Principal curvature");
+	names.push_back("2-Principal curvature");
+	return names;
+}
+
+//-----------------------------------------------------------------------------
 void FEMeshValuator::SetCurvatureLevels(int levels)
 {
 	m_curvature_levels = levels;
@@ -71,7 +94,7 @@ void FEMeshValuator::Evaluate(int nfield)
 	data.Init(&m_mesh, 0.0, 0);
 	if (nfield < MAX_DEFAULT_FIELDS)
 	{
-		if ((nfield == 11) || (nfield == 12))
+		if ((nfield == PRINC_CURVE_1) || (nfield == PRINC_CURVE_2))
 		{
 			if (m_mesh.IsShell())
 			{
@@ -146,7 +169,7 @@ void FEMeshValuator::Evaluate(int nfield)
 						int ne = el.Nodes();
 						for (int j = 0; j < ne; ++j)
 						{
-							double val = nodeData.GetScalar(el.m_node[j]);
+							double val = nodeData.getScalar(el.m_node[j]);
 							data.SetElementValue(i, j, val);
 						}
 						data.SetElementDataTag(i, 1);
@@ -177,30 +200,33 @@ void FEMeshValuator::Evaluate(int nfield)
 				if (partData.GetDataType() == FEMeshData::DATA_SCALAR)
 				{
 					FEElemList* pg = partData.BuildElemList();
-					auto it = pg->First();
-					int N = pg->Size();
-					for (int i = 0; i < N; ++i, ++it)
+					if (pg)
 					{
-						int elemId = it->m_lid;
-						data.SetElementDataTag(elemId, 1);
+						auto it = pg->First();
+						int N = pg->Size();
+						for (int i = 0; i < N; ++i, ++it)
+						{
+							int elemId = it->m_lid;
+							data.SetElementDataTag(elemId, 1);
 
-						if (partData.GetDataFormat() == FEMeshData::DATA_ITEM)
-						{
-							double val = partData.GetValue(i, 0);
-							data.SetElementValue(elemId, val);
-						}
-						else if (partData.GetDataFormat() == FEMeshData::DATA_MULT)
-						{
-							FEElement_* pe = it->m_pi;
-							int nn = pe->Nodes();
-							for (int j = 0; j < nn; ++j)
+							if (partData.GetDataFormat() == FEMeshData::DATA_ITEM)
 							{
-								double val = partData.GetValue(i, j);
-								data.SetElementValue(elemId, j, val);
+								double val = partData.GetValue(i, 0);
+								data.SetElementValue(elemId, val);
+							}
+							else if (partData.GetDataFormat() == FEMeshData::DATA_MULT)
+							{
+								FEElement_* pe = it->m_pi;
+								int nn = pe->Nodes();
+								for (int j = 0; j < nn; ++j)
+								{
+									double val = partData.GetValue(i, j);
+									data.SetElementValue(elemId, j, val);
+								}
 							}
 						}
+						delete pg;
 					}
-					delete pg;
 				}
 			}
 			break;
@@ -221,14 +247,14 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 	const FSElement& el = m_mesh.Element(n);
 	switch (nfield)
 	{
-	case 0: // element volume
+	case ELEMENT_VOLUME:
 		val = FEMeshMetrics::ElementVolume(m_mesh, el);
 		break;
-	case 1: // jacobian
+	case JACOBIAN:
 		if (el.IsShell()) val = FEMeshMetrics::ShellJacobian(m_mesh, el, 1);
 		else val = FEMeshMetrics::SolidJacobian(m_mesh, el);
 		break;
-	case 2: // shell thickness
+	case SHELL_THICKNESS:
 		if (el.IsShell())
 		{
 			int n = el.Nodes();
@@ -236,37 +262,40 @@ double FEMeshValuator::EvaluateElement(int n, int nfield, int* err)
 			for (int i = 1; i<n; ++i) if (el.m_h[i] < val) val = el.m_h[i];
 		}
 		break;
-	case 3: // shell area
+	case SHELL_AREA:
 		if (el.IsShell()) val = FEMeshMetrics::ShellArea(m_mesh, el);
 		break;
-	case 4: // element quality
+	case TET_QUALITY:
 		val = FEMeshMetrics::TetQuality(m_mesh, el);
 		break;
-	case 5: // min dihedral angle
+	case TET_MIN_DIHEDRAL_ANGLE:
 		val = FEMeshMetrics::TetMinDihedralAngle(m_mesh, el);
 		break;
-	case 6: // max dihedral angle
+	case TET_MAX_DIHEDRAL_ANGLE:
 		val = FEMeshMetrics::TetMaxDihedralAngle(m_mesh, el);
 		break;
-	case 7:
+	case TRIANGLE_QUALITY:
 		val = FEMeshMetrics::TriQuality(m_mesh, el);
 		break;
-	case 8:
+	case TRIANGLE_MAX_DIHEDRAL_ANGLE:
+		val = FEMeshMetrics::TriMaxDihedralAngle(m_mesh, el);
+		break;
+	case TET10_MID_NODE_OFFSET:
 		val = FEMeshMetrics::Tet10MidsideNodeOffset(m_mesh, el, true);
 		break;
-	case 9:
+	case MIN_EDGE_LENGTH:
 		val = FEMeshMetrics::MinEdgeLength(m_mesh, el);
 		break;
-	case 10:
+	case MAX_EDGE_LENGTH:
 		val = FEMeshMetrics::MaxEdgeLength(m_mesh, el);
 		break;
-	case 11:
+	case PRINC_CURVE_1:
 		if (el.IsShell())
 		{
 			val = 0.0;
 		}
 		break;
-	case 12:
+	case PRINC_CURVE_2:
 		if (el.IsShell())
 		{
 			val = 0.0;
@@ -287,10 +316,10 @@ double FEMeshValuator::EvaluateNode(int n, int nfield, int* err)
 	double val = 0, sum = 0;
 	switch (nfield)
 	{
-	case 11:
+	case PRINC_CURVE_1:
 		val = FEMeshMetrics::Curvature(m_mesh, n, 2, m_curvature_levels, m_curvature_maxiters, m_curvature_extquad);
 		break;
-	case 12:
+	case PRINC_CURVE_2:
 		val = FEMeshMetrics::Curvature(m_mesh, n, 3, m_curvature_levels, m_curvature_maxiters, m_curvature_extquad);
 		break;
 	}
@@ -306,6 +335,20 @@ FESurfaceMeshValuator::FESurfaceMeshValuator(FSSurfaceMesh& mesh) : m_mesh(mesh)
 	m_curvature_levels = 1;
 	m_curvature_maxiters = 10;
 	m_curvature_extquad = false;
+}
+
+//-----------------------------------------------------------------------------
+//! Returns the string names of the data fields.
+//! When adding a new field, make sure to update the DataFields enum.
+std::vector< std::string > FESurfaceMeshValuator::GetDataFieldNames()
+{
+	std::vector< std::string > names;
+	names.push_back("Face area");
+	names.push_back("Triangle quality");
+	names.push_back("Triangle max dihedral angle");
+	names.push_back("Minimum element edge length");
+	names.push_back("Maximum element edge length");
+	return names;
 }
 
 //-----------------------------------------------------------------------------
@@ -375,16 +418,19 @@ double FESurfaceMeshValuator::EvaluateFace(int n, int nfield, int* err)
 
 	switch (nfield)
 	{
-	case 0: // face area
+	case FACE_AREA: // face area
 		val = m_mesh.FaceArea(face);
 		break;
-	case 1:
+	case TRIANGLE_QUALITY:
 		if (face.Type() == FE_FACE_TRI3) val = TriangleQuality(r);
 		break;
-	case 2:
+	case TRIANGLE_MAX_DIHEDRAL_ANGLE:
+		if (face.Type() == FE_FACE_TRI3) val = TriMaxDihedralAngle(m_mesh, face);
+		break;
+	case MIN_EDGE_LENGTH:
 		val = FEMeshMetrics::MinEdgeLength(m_mesh, face);
 		break;
-	case 3:
+	case MAX_EDGE_LENGTH:
 		val = FEMeshMetrics::MaxEdgeLength(m_mesh, face);
 		break;
 	default:

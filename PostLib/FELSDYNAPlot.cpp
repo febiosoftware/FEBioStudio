@@ -39,20 +39,20 @@ void byteswap(int* pi, int n)
 	union
 	{
 		int m;
-		unsigned char Byte[4];
+		unsigned char uint8_t[4];
 	};
 
 	for (int i=0; i<n; i++)
 	{
 		m = pi[i];
 
-		Byte[0] ^= Byte[3];
-		Byte[3] ^= Byte[0];
-		Byte[0] ^= Byte[3];
+		uint8_t[0] ^= uint8_t[3];
+		uint8_t[3] ^= uint8_t[0];
+		uint8_t[0] ^= uint8_t[3];
 
-		Byte[1] ^= Byte[2];
-		Byte[2] ^= Byte[1];
-		Byte[1] ^= Byte[2];
+		uint8_t[1] ^= uint8_t[2];
+		uint8_t[2] ^= uint8_t[1];
+		uint8_t[1] ^= uint8_t[2];
 
 		pi[i] = m;
 	}
@@ -130,7 +130,7 @@ int FELSDYNAPlotImport::ReadData(void* pd, size_t nsize, size_t ncnt, bool bdump
 		assert(nread <= ncnt);
 	}
 
-	// do a Byte swap if necessary
+	// do a byte swap if necessary
 	if (m_bswap) byteswap((int*)pd, (int)ncnt);
 
 	return nread;

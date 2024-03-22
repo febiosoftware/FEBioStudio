@@ -42,6 +42,7 @@ private:
 	{
 	public:
 		std::string			m_name;
+		std::string			m_extName;
 		FEItemListBuilder* m_list;
 		FSObject* m_parent;
 		bool				m_duplicate;	// this list is defined more than once, and should not be written to Mesh section.
@@ -120,13 +121,14 @@ private:
 	class Domain
 	{
 	public:
-		Domain() { m_pg = nullptr; }
+		Domain() {}
 
 	public:
 		string	m_name;
 		string	m_matName;
-		int		m_elemClass;
-		GPart* m_pg;
+		int		m_elemClass = 0;
+		int		m_elemType = 0;
+		GPart* m_pg = nullptr;
 	};
 
 	class Part
@@ -223,6 +225,7 @@ protected:
 	void WriteGeometryEdges();
 	void WriteGeometrySurfaces();
 	void WriteGeometryElementSets();
+	void WriteGeometryPartLists();
 	void WriteGeometrySurfacePairs();
 	void WriteGeometryNodeSets();
 	void WriteGeometryDiscreteSets();
@@ -232,7 +235,7 @@ protected:
 	void WriteLoadsSection(FSStep& s);
 	void WriteContactSection(FSStep& s);
 	void WriteDiscreteSection(FSStep& s);
-	void WriteInitialSection();
+	void WriteInitialSection(FSStep& s);
 	void WriteGlobalsSection();
 	void WriteLoadDataSection();
 	void WriteOutputSection();
@@ -287,7 +290,7 @@ protected:
 	bool	m_writeControlSection;	// write Control section for single step analysis
 
 protected:
-	const char* GetSurfaceName(FEItemListBuilder* pl);
+	const char* GetSurfaceName(FEItemListBuilder* pl, bool allowPartLists = false);
 	string GetNodeSetName(FEItemListBuilder* pl);
 	string GetElementSetName(FEItemListBuilder* pl);
 
@@ -295,6 +298,7 @@ protected:
 	void AddEdgeSet(const std::string& name, FEItemListBuilder* pl);
 	void AddSurface(const std::string& name, FEItemListBuilder* pl);
 	void AddElemSet(const std::string& name, FEItemListBuilder* pl);
+	void AddPartList(const std::string& name, FEItemListBuilder* pl);
 
 	bool WriteNodeSet(const string& name, FSNodeList* pl);
 
@@ -306,6 +310,7 @@ protected:
 	std::vector<NamedItemList>		m_pNSet;	//!< list of named node sets
 	std::vector<NamedItemList>		m_pESet;	//!< list of named element sets
 	std::vector<NamedItemList>		m_pEdge;	//!< list of named edges
+	std::vector<NamedItemList>		m_pPSet;	//!< list of named part lists
 
 	std::vector<ElementSet>		m_ElSet;	//!< the element sets
 

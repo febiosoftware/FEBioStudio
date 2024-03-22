@@ -62,13 +62,15 @@ void GLViewSettings::Defaults(int ntheme)
 	m_fconn = 30.f;
 	m_bcullSel = true;
 	m_bselpath = false;
+	m_bselbrush = false;
+	m_brushSize = 50.f;
 
 	m_apply = 0;
 
 	m_pos3d = vec3d(0, 0, 0);
 
 	m_bTags = true;
-	m_ntagInfo = 0;
+	m_ntagInfo = TagInfoOption::TAG_ITEM;
 
 	m_defaultFGColorOption = 0;
 
@@ -105,5 +107,5 @@ void GLViewSettings::Defaults(int ntheme)
 	m_diffuse = 0.8f;
 
 	m_transparencyMode = 0; // = off
-	m_objectColor = 0; // = default (by material)
+	m_objectColor = OBJECT_COLOR_MODE::DEFAULT_COLOR;
 }

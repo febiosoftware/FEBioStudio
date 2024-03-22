@@ -36,7 +36,7 @@ SOFTWARE.*/
 #include <GL/gl.h>
 #endif
 #include "ImageSlicer.h"
-#include "ImageModel.h"
+#include <ImageLib/ImageModel.h>
 #include <assert.h>
 #include <sstream>
 
@@ -44,7 +44,7 @@ using std::stringstream;
 using namespace Post;
 
 
-CImageSlicer::CImageSlicer(CImageModel* img) : CGLImageRenderer(img)
+CImageSlicer::CImageSlicer(CImageModel* img) : m_imageSlice(nullptr), CGLImageRenderer(img)
 {
 	static int n = 1;
 	stringstream ss;
@@ -89,6 +89,15 @@ bool CImageSlicer::UpdateData(bool bsave)
 	return false;
 }
 
+void CImageSlicer::SetImageSlice(CImage* img)
+{
+    // This slice needs to be converted to 8 bit before assigned
+    assert(img->PixelType() == CImage::UINT_8 || img->PixelType() == CImage::UINT_RGB8);
+
+    m_imageSlice = img; 
+    UpdateSlice();
+}
+
 void CImageSlicer::Create()
 {
 	C3DImage* img = GetImageModel()->Get3DImage();
@@ -104,68 +113,192 @@ void CImageSlicer::Update()
 	UpdateSlice();
 }
 
+template<class pType> void CImageSlicer::CreateCRGBAImage(CImage& slice)
+{
+    auto imgModel = GetImageModel();
+
+    size_t N  = slice.Width() * slice.Height();
+    if(slice.IsRGB())
+    {
+        N *= 3;
+    }
+
+    pType* imgData = (pType*)imgModel->Get3DImage()->GetBytes();
+
+    double min, max;
+    imgModel->Get3DImage()->GetMinMax(min, max);
+
+    // The Image settings panel isn't available in the post view
+    // double minThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
+    // double maxThresh = m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
+
+	// create the 2D image
+	m_im.Create(slice.Width(), slice.Height());
+
+	// colorize the image
+	pType* ps = (pType*)slice.GetBytes();
+	uint8_t* pd = m_im.GetBytes();
+
+    if(slice.IsRGB())
+    {
+        for (int i = 0; i<N; i++, ps+=3, pd += 4)
+        {
+            int val1 = 255*(((double)ps[0])-min)/(max-min);
+            int val2 = 255*(((double)ps[1])-min)/(max-min);
+            int val3 = 255*(((double)ps[2])-min)/(max-min);
+
+            pd[0] = m_LUTC[0][val1];
+            pd[1] = m_LUTC[1][val2];
+            pd[2] = m_LUTC[2][val3];
+            pd[3] = m_LUTC[3][255];
+        }
+    }
+    else
+    {
+        for (int i = 0; i<N; i++, ps++, pd += 4)
+        {
+            int val = 255*(((double)*ps)-min)/(max-min);
+            pd[0] = m_LUTC[0][val];
+            pd[1] = m_LUTC[1][val];
+            pd[2] = m_LUTC[2][val];
+            pd[3] = m_LUTC[3][val];
+        }
+    }
+	
+}
+
 void CImageSlicer::UpdateSlice()
 {
 	C3DImage& im3d = *GetImageModel()->Get3DImage();
 
+    // build the looktp table
+	BuildLUT();
+
 	int nop = GetOrientation();
 	double off = GetOffset();
 
-	// For 2D images, the X, Y options shouldn't do anything
-	if (im3d.Depth() == 1)
-	{
-		nop = 2;
-	}
+    // If a manual slice has been passed in, use it. Otherwise create one from the 3DImage
+    // It is assumed that this manual slice has already been converted to 8 bit
+    if(m_imageSlice)
+    {
+        // get the image dimensions
+        int W = m_imageSlice->Width();
+        int H = m_imageSlice->Height();
 
-	// get the 2D image
-	CImage im2d;
-	switch (nop)
-	{
-	case 0: // X
-		im3d.GetSampledSliceX(im2d, off);
-		break;
-	case 1: // Y
-		im3d.GetSampledSliceY(im2d, off);
-		break;
-	case 2: // Z
-		im3d.GetSampledSliceZ(im2d, off);
-		break;
-	default:
-		assert(false);
-	}
+        // create the 2D image
+        m_im.Create(W, H);
 
-	// get the image dimensions
-	int W = im2d.Width();
-	int H = im2d.Height();
+        // colorize the image
+        int nn = W*H;
+        uint8_t* ps = m_imageSlice->GetBytes();
+        uint8_t* pd = m_im.GetBytes();
 
-	// build the looktp table
-	BuildLUT();
+        if(m_imageSlice->PixelType() == CImage::UINT_8)
+        {
+            for (int i = 0; i<nn; i++, ps++, pd += 4)
+            {
+                int val = *ps;
+                pd[0] = m_LUTC[0][val];
+                pd[1] = m_LUTC[1][val];
+                pd[2] = m_LUTC[2][val];
+                pd[3] = m_LUTC[3][val];
+            }
+        }
+        else if(m_imageSlice->PixelType() == CImage::UINT_RGB8)
+        {
+            for (int i = 0; i<nn; i++, ps+=3, pd += 4)
+            {
+                pd[0] = ps[0];
+                pd[1] = ps[1];
+                pd[2] = ps[2];
+                pd[3] = 255;
+            }
+        }
+        else
+        {
+            assert(false);
+        }
 
-	// create the 2D image
-	m_im.Create(W, H);
+        
+    }
+    else
+    {
+        // For 2D images, the X, Y options shouldn't do anything
+        if (im3d.Depth() == 1)
+        {
+            nop = 2;
+        }
 
-	// colorize the image
-	int nn = W*H;
-	Byte* ps = im2d.GetBytes();
-	Byte* pd = m_im.GetBytes();
-	for (int i = 0; i<nn; i++, ps++, pd += 4)
-	{
-		int val = *ps;
-		pd[0] = m_LUTC[0][val];
-		pd[1] = m_LUTC[1][val];
-		pd[2] = m_LUTC[2][val];
-		pd[3] = m_LUTC[3][val];
-	}
+        CImage slice;
+        switch (nop)
+        {
+        case 0: // X
+            im3d.GetSampledSliceX(slice, off);
+            break;
+        case 1: // Y
+            im3d.GetSampledSliceY(slice, off);
+            break;
+        case 2: // Z
+            im3d.GetSampledSliceZ(slice, off);
+            break;
+        default:
+            assert(false);
+        }
+
+        switch (im3d.PixelType())
+        {
+        case CImage::UINT_8:
+            CreateCRGBAImage<uint8_t>(slice);
+            break;
+        case CImage::INT_8:
+            CreateCRGBAImage<int8_t>(slice);
+            break;
+        case CImage::UINT_16:
+            CreateCRGBAImage<uint16_t>(slice);
+            break;
+        case CImage::INT_16:
+            CreateCRGBAImage<int16_t>(slice);
+            break;
+        case CImage::UINT_32:
+            CreateCRGBAImage<uint32_t>(slice);
+            break;
+        case CImage::INT_32:
+            CreateCRGBAImage<int32_t>(slice);
+            break;
+        case CImage::UINT_RGB8:
+            CreateCRGBAImage<uint8_t>(slice);
+            break;
+        case CImage::INT_RGB8:
+            CreateCRGBAImage<int8_t>(slice);
+            break;
+        case CImage::UINT_RGB16:
+            CreateCRGBAImage<uint16_t>(slice);
+            break;
+        case CImage::INT_RGB16:
+            CreateCRGBAImage<int16_t>(slice);
+            break;
+        case CImage::REAL_32:
+            CreateCRGBAImage<float>(slice);
+            break;
+        case CImage::REAL_64:
+            CreateCRGBAImage<double>(slice);
+            break;
+        default:
+            assert(false);
+        }
+    }
 
 	m_reloadTexture = true;
 }
+
+
 
 void CImageSlicer::BuildLUT()
 {
 	CColorMap& map = m_Col.ColorMap();
 
 	float f = GetFloatValue(TRANSPARENCY);
-	Byte a = Byte(255.f * f);
+	uint8_t a = uint8_t(255.f * f);
 
 	// build the LUT
 	for (int i = 0; i<256; ++i)
@@ -219,23 +352,26 @@ void CImageSlicer::Render(CGLContext& rc)
 	//	glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glColor4d(1, 1, 1, 1);
 
-	double x[4], y[4], z[4];
+	vec3d r0(0,0,0);
+	vec3d r1 = box.r1() - box.r0();
+
+	double x[4] = { 0 }, y[4] = { 0 }, z[4] = { 0 };
 	switch (nop)
 	{
 	case 0:
-		x[0] = x[1] = x[2] = x[3] = box.x0 + off*(box.x1 - box.x0);
-		y[0] = y[3] = box.y1;  y[1] = y[2] = box.y0;
-		z[0] = z[1] = box.z0;  z[2] = z[3] = box.z1;
+		x[0] = x[1] = x[2] = x[3] = r0.x + off*(r1.x - r0.x);
+		y[0] = y[3] = r1.y;  y[1] = y[2] = r0.y;
+		z[0] = z[1] = r0.z;  z[2] = z[3] = r1.z;
 		break;
 	case 1:
-		y[0] = y[1] = y[2] = y[3] = box.y0 + off*(box.y1 - box.y0);
-		x[0] = x[3] = box.x1;  x[1] = x[2] = box.x0;
-		z[0] = z[1] = box.z0;  z[2] = z[3] = box.z1;
+		y[0] = y[1] = y[2] = y[3] = r0.y + off*(r1.y - r0.y);
+		x[0] = x[3] = r1.x;  x[1] = x[2] = r0.x;
+		z[0] = z[1] = r0.z;  z[2] = z[3] = r1.z;
 		break;
 	case 2:
-		z[0] = z[1] = z[2] = z[3] = box.z0 + off*(box.z1 - box.z0);
-		x[0] = x[3] = box.x1;  x[1] = x[2] = box.x0;
-		y[0] = y[1] = box.y0;  y[2] = y[3] = box.y1;
+		z[0] = z[1] = z[2] = z[3] = r0.z + off*(r1.z - r0.z);
+		x[0] = x[3] = r1.x;  x[1] = x[2] = r0.x;
+		y[0] = y[1] = r0.y;  y[2] = y[3] = r1.y;
 		break;
 	}
 

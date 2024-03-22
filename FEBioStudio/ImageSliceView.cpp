@@ -27,241 +27,16 @@ SOFTWARE.*/
 #include <QGridLayout>
 #include <QBoxLayout>
 #include <QLabel>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-#include <QPixmap>
-#include <QTransform>
-#include <QGraphicsPixmapItem>
-#include <QSlider>
-#include <QComboBox>
-#include <QToolBar>
 #include "MainWindow.h"
 #include "Document.h"
 #include "GLView.h"
 #include <ImageLib/3DImage.h>
 #include <PostLib/ImageSlicer.h>
-#include <PostLib/ImageModel.h>
-#include <ImageLib/3DImage.h>
-#include "ImageViewSettings.h"
-#include "InputWidgets.h"
-
+#include <ImageLib/ImageModel.h>
+#include "DlgPixelInspector.h"
 
 #include "ImageSliceView.h"
-
-CImageSlice::CImageSlice(SliceDir sliceDir, bool constAxis, QWidget* extraWidget)
-    : m_imgModel(nullptr)
-{
-    m_sliceDir = sliceDir;
-
-    m_layout = new QVBoxLayout;
-    m_layout->setContentsMargins(0,0,0,0);
-
-    m_scene = new QGraphicsScene;
-    m_view = new QGraphicsView;
-    m_view->setScene(m_scene);
-
-    m_layout->addWidget(m_view);
-
-    QHBoxLayout* sliderLayout = new QHBoxLayout;
-    sliderLayout->setContentsMargins(0,0,0,0);
-
-    if(extraWidget)
-    {
-        sliderLayout->addWidget(extraWidget);
-    }
-
-    if(constAxis)
-    {
-        QString txt;
-        switch (m_sliceDir)
-        {
-        case X:
-            txt = "X:";
-            break;
-        case Y:
-            txt = "Y:";
-            break;
-        case Z:
-            txt = "Z:";
-            break;
-        default:
-            break;
-        }
-        
-        sliderLayout->addWidget(new QLabel(txt));
-    }
-    else
-    {
-        m_sliceChoice = new QComboBox;
-        m_sliceChoice->addItem("X");
-        m_sliceChoice->addItem("Y");
-        m_sliceChoice->addItem("Z");
-        m_sliceChoice->setCurrentIndex(m_sliceDir);
-
-        sliderLayout->addWidget(m_sliceChoice);
-
-        connect(m_sliceChoice, &QComboBox::currentIndexChanged, this, &CImageSlice::on_currentIndexChanged);
-    }    
-
-    m_slider = new CIntSlider;
-    sliderLayout->addWidget(m_slider);
-
-
-
-    m_layout->addLayout(sliderLayout);
-
-    setLayout(m_layout);
-
-    connect(m_slider, &CIntSlider::valueChanged, this, &CImageSlice::on_slider_changed);
-}
-
-void CImageSlice::SetImage(Post::CImageModel* imgModel)
-{
-    if(m_imgModel == imgModel) return;
-
-    m_imgModel = imgModel;
-
-    if(!m_imgModel) return;
-
-    UpdateSliceCount();
-}
-
-void CImageSlice::UpdateSliceCount()
-{
-    C3DImage* img = m_imgModel->Get3DImage();
-	if (img == nullptr) return;
-
-    int n;
-    switch (m_sliceDir)
-    {
-    case X:
-        n = img->Width();
-        break;
-    case Y:
-        n = img->Height();
-        break;
-    case Z:
-        n = img->Depth();
-        break;        
-    default:
-        break;
-    }
-
-    m_slider->setRange(0, n-1);
-    m_slider->setValue(n/2);
-}
-
-void CImageSlice::Update()
-{
-    m_scene->clear();
-
-    if(!m_imgModel) return;
-
-    int slice = m_slider->getValue();
-
-    C3DImage* img = m_imgModel->Get3DImage();
-	if (img == nullptr) return;
-
-    int min = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MIN_INTENSITY);
-    int max = 255 * m_imgModel->GetViewSettings()->GetFloatValue(CImageViewSettings::MAX_INTENSITY);
-
-    CImage imgSlice;
-    switch (m_sliceDir)
-    {
-    case X:
-        img->GetThresholdedSliceX(imgSlice, slice, min, max);
-        break;
-    case Y:
-        img->GetThresholdedSliceY(imgSlice, slice, min, max);
-        break;
-    case Z:
-        img->GetThresholdedSliceZ(imgSlice, slice, min, max);
-        break;
-    default:
-        break;
-    }
-
-    m_slider->setToolTip(QString::number(slice));
-
-    QImage qImg(imgSlice.GetBytes(), imgSlice.Width(), imgSlice.Height(), imgSlice.Width(), QImage::Format::Format_Grayscale8);
-
-    BOX box = m_imgModel->GetBoundingBox();
-    double xScale, yScale;
-
-    switch (m_sliceDir)
-    {
-    case X:
-        xScale = box.Height()/img->Height();
-        yScale = box.Depth()/img->Depth();
-        
-        m_scene->setSceneRect(0, 0, box.Height(), box.Depth());
-        break;
-    case Y:
-        xScale = box.Width()/img->Width();
-        yScale = box.Depth()/img->Depth();
-        
-        m_scene->setSceneRect(0, 0, box.Width(), box.Depth());
-        break;
-    case Z:
-        xScale = box.Width()/img->Width();
-        yScale = box.Height()/img->Height();
-
-        m_scene->setSceneRect(0, 0, box.Width(), box.Height());
-        break;
-    default:
-        break;
-    }
-
-    // Flip the image using QTransform.scale(1,-1)
-    QPixmap pixmap = QPixmap::fromImage(qImg).transformed(QTransform().scale(1,-1));
-    
-    QGraphicsPixmapItem* item = m_scene->addPixmap(pixmap);
-    item->setTransform(QTransform().scale(xScale, yScale));
-
-    m_view->fitInView(item, Qt::AspectRatioMode::KeepAspectRatio);
-
-    float sliceOffset = float(slice)/float(m_slider->maximum());
-    emit updated(m_sliceDir, sliceOffset);
-}
-
-int CImageSlice::GetIndex()
-{
-    return m_slider->getValue();
-}
-
-void CImageSlice::SetIndex(int index)
-{
-    m_slider->setValue(index);
-}
-
-int CImageSlice::GetSliceCount()
-{
-    return m_slider->maximum() + 1;
-}
-
-void CImageSlice::on_slider_changed(int val)
-{
-    Update();
-}
-
-void CImageSlice::on_currentIndexChanged(int index)
-{
-    bool same = index == m_sliceDir;
-    m_sliceDir = (SliceDir)index;
-
-    if(!same)
-    {
-        UpdateSliceCount();
-        Update();
-    }
-}
-
-void CImageSlice::wheelEvent(QWheelEvent* event)
-{
-    m_slider->passEvent(event);
-}
-
-///////
+#include "ImageSlice.h"
 
 CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     : QWidget(parent), m_wnd(wnd), m_imgModel(nullptr), m_xSlicer(nullptr), m_ySlicer(nullptr), m_zSlicer(nullptr)
@@ -271,47 +46,31 @@ CImageSliceView::CImageSliceView(CMainWindow* wnd, QWidget* parent)
     m_xSlice = new CImageSlice(CImageSlice::X);
     m_ySlice = new CImageSlice(CImageSlice::Y);
     m_zSlice = new CImageSlice(CImageSlice::Z);
+    m_infoSlice = m_xSlice;
+
+    m_xSlicer.SetOrientation(0);
+    m_ySlicer.SetOrientation(1);
+    m_zSlicer.SetOrientation(2);
 
     m_layout->addWidget(m_xSlice, 0, 0);
     m_layout->addWidget(m_ySlice, 0, 1);
     m_layout->addWidget(m_zSlice, 1, 0);
 
     m_glView = new CGLView(m_wnd);
+	m_glView->GetViewSettings().m_bgrid = false;
+	m_glView->AllocateDefaultWidgets(false);
+	m_glView->ShowContextMenu(false);
     m_layout->addWidget(m_glView, 1, 1);
 
     setLayout(m_layout);
 
-    connect(m_xSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
-    connect(m_ySlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
-    connect(m_zSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
-}
+    QObject::connect(m_xSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
+    QObject::connect(m_ySlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
+    QObject::connect(m_zSlice, &CImageSlice::updated, this, &CImageSliceView::SliceUpdated);
 
-CImageSliceView::~CImageSliceView()
-{
-    CleanSlicers();
-
-    delete m_xSlice;
-    delete m_ySlice;
-    delete m_zSlice;
-}
-
-void CImageSliceView::CleanSlicers()
-{
-    if(m_xSlicer)
-    {
-        delete m_xSlicer;
-        m_xSlicer = nullptr;
-    }
-    if(m_ySlicer)
-    {
-        delete m_ySlicer;
-        m_ySlicer = nullptr;
-    }
-    if(m_zSlicer)
-    {
-        delete m_zSlicer;
-        m_zSlicer = nullptr;
-    }
+    QObject::connect(m_xSlice, &CImageSlice::focusChanged, this, &CImageSliceView::SliceClicked);
+    QObject::connect(m_ySlice, &CImageSlice::focusChanged, this, &CImageSliceView::SliceClicked);
+    QObject::connect(m_zSlice, &CImageSlice::focusChanged, this, &CImageSliceView::SliceClicked);
 }
 
 void CImageSliceView::Update()
@@ -320,7 +79,7 @@ void CImageSliceView::Update()
 
     if(doc)
     {   
-        if(doc->GetView()->imgView == CGView::SLICE_VIEW)
+        if(doc->GetUIViewMode() == CGLDocument::SLICE_VIEW)
         {
             m_xSlice->Update();
             m_ySlice->Update();
@@ -331,39 +90,51 @@ void CImageSliceView::Update()
 
 void CImageSliceView::RenderSlicers(CGLContext& rc)
 {
-    if(!m_xSlicer || !m_ySlicer || !m_zSlicer) return;
+    if(!m_xSlicer.GetImageModel() || !m_ySlicer.GetImageModel() || !m_zSlicer.GetImageModel()) return;
  
-    m_xSlicer->Render(rc);
-    m_ySlicer->Render(rc);
-    m_zSlicer->Render(rc);
+    m_xSlicer.Render(rc);
+    m_ySlicer.Render(rc);
+    m_zSlicer.Render(rc);
+}
+
+void CImageSliceView::SetInspector(CDlgPixelInspector* inspector)
+{
+    if(!inspector)
+    {
+        m_xSlice->DrawRect(false);
+        m_ySlice->DrawRect(false);
+        m_zSlice->DrawRect(false);
+    }
+
+    CPixelInfoSource::SetInspector(inspector);
 }
 
 void CImageSliceView::ModelTreeSelectionChanged(FSObject* obj)
 {
-    m_imgModel = dynamic_cast<Post::CImageModel*>(obj);
+    m_imgModel = dynamic_cast<CImageModel*>(obj);
+
+    // Forces recalc of min and max values on the image
+    if(m_imgModel && m_imgModel->Get3DImage())
+    {
+        double min, max;
+        m_imgModel->Get3DImage()->GetMinMax(min, max);
+    }
+
+    m_xSlicer.SetImageModel(m_imgModel);
+    m_ySlicer.SetImageModel(m_imgModel);
+    m_zSlicer.SetImageModel(m_imgModel);
 
     m_xSlice->SetImage(m_imgModel);
     m_ySlice->SetImage(m_imgModel);
     m_zSlice->SetImage(m_imgModel);
 
-    CleanSlicers();
-
-    if(m_imgModel)
-    {
-        m_xSlicer = new Post::CImageSlicer(m_imgModel);
-        m_ySlicer = new Post::CImageSlicer(m_imgModel);
-        m_zSlicer = new Post::CImageSlicer(m_imgModel);
-        
-        m_xSlicer->SetOrientation(0);
-        m_ySlicer->SetOrientation(1);
-        m_zSlicer->SetOrientation(2);
-
-        m_xSlicer->Create();
-        m_ySlicer->Create();
-        m_zSlicer->Create();
-    }
-
     Update();
+
+    if(m_inspector) 
+    {
+        UpdatePixelInfo();
+        m_inspector->UpdateData();
+    }
 }
 
 void CImageSliceView::resizeEvent(QResizeEvent* event)
@@ -382,29 +153,58 @@ void CImageSliceView::SliceUpdated(int direction, float offset)
     switch (direction)
     {
     case CImageSlice::X:
-        if(m_xSlicer)
-        {
-            m_xSlicer->SetOffset(offset);
-            m_xSlicer->Update();
-        }
+        m_xSlicer.SetOffset(offset);
+        m_xSlicer.SetImageSlice(m_xSlice->GetDisplaySlice());
         break;
     case CImageSlice::Y:
-        if(m_ySlicer)
-        {
-            m_ySlicer->SetOffset(offset);
-            m_ySlicer->Update();
-        }
+        m_ySlicer.SetOffset(offset);
+        m_ySlicer.SetImageSlice(m_ySlice->GetDisplaySlice());
         break;
     case CImageSlice::Z:
-        if(m_zSlicer)
-        {
-            m_zSlicer->SetOffset(offset);
-            m_zSlicer->Update();
-        }
+        m_zSlicer.SetOffset(offset);
+        m_zSlicer.SetImageSlice(m_zSlice->GetDisplaySlice());
         break;
     default:
         break;
     }
 
     m_glView->repaint();
+
+    if(m_inspector) 
+    {
+        UpdatePixelInfo();
+        m_inspector->UpdateData();
+    }
+}
+
+void CImageSliceView::SliceClicked(int direction, QPoint point)
+{
+    m_infoPoint = point;
+
+    switch (direction)
+    {
+    case CImageSlice::X:
+        m_infoSlice = m_xSlice;
+        break;
+    case CImageSlice::Y:
+        m_infoSlice = m_ySlice;
+        break;
+    case CImageSlice::Z:
+        m_infoSlice = m_zSlice;
+        break;
+    default:
+        break;
+    }
+
+    if(m_inspector)
+    {
+        m_xSlice->DrawRect(false);
+        m_ySlice->DrawRect(false);
+        m_zSlice->DrawRect(false);
+
+        m_infoSlice->DrawRect(true);
+
+        UpdatePixelInfo();
+        m_inspector->UpdateData();
+    }
 }

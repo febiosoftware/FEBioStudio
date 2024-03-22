@@ -25,8 +25,17 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "FEModifier.h"
 #include "FEExtrudeFaces.h"
+#include "FEDiscardMesh.h"
+#include "FEFillHole.h"
+#include "FEMMGRemesh.h"
+#include "FETetGenModifier.h"
+#include "FEAutoPartition.h"
 #include <MeshLib/FEMeshBuilder.h>
 #include <MeshLib/FENodeNodeList.h>
+#include <MeshLib/FESurfaceMesh.h>
+#include <MeshLib/MeshTools.h>
+#include <GeomLib/GMeshObject.h>
+#include <GeomLib/GSurfaceMeshObject.h>
 using namespace std;
 
 FEInflateMesh::FEInflateMesh() : FEModifier("Inflate")
@@ -35,208 +44,94 @@ FEInflateMesh::FEInflateMesh() : FEModifier("Inflate")
 	AddIntParam(1, "segments");
 	AddDoubleParam(1, "mesh bias");
 	AddBoolParam(false, "symmetric mesh bias");
+    AddDoubleParam(1e-6, "weld tolerance");
+    AddDoubleParam(70, "crease angle");
 }
 
 FSMesh* FEInflateMesh::Apply(FSMesh* pm)
 {
-	// First, create a temp mesh that will be squised
-	FSMesh tmp(*pm);
-
-	// shrink the mesh
-	ShrinkMesh(tmp);
-
-	// Apply extrusion
-	double d = GetFloatValue(0);
-	int nseg = GetIntValue(1);
-	double rbias = GetFloatValue(2);
-	bool symmBias = GetBoolValue(3);
-	FEExtrudeFaces extrude;
-	extrude.SetExtrusionDistance(d);
-	extrude.SetUseNormalLocal(true);
-	extrude.SetSegments(nseg);
-	extrude.SetMeshBiasFactor(rbias);
-	extrude.SetSymmetricBias(symmBias);
-	FSMesh* newMesh = extrude.Apply(&tmp);
-
-	// all done, good to go
-	return newMesh;
-}
-
-// TODO: The algorithm above could invert elements. We should try to prevent this
-void FEInflateMesh::ShrinkMesh(FSMesh& mesh)
-{
-	// figure out which nodes to move
-	mesh.TagAllNodes(-1);
-	int nsel = 0;
-	for (int i = 0; i < mesh.Faces(); ++i)
-	{
-		FSFace& face = mesh.Face(i);
-		if (face.IsSelected())
-		{
-			nsel++;
-			int nn = face.Nodes();
-			for (int j = 0; j < nn; ++j) mesh.Node(face.n[j]).m_ntag = 1;
-		}
+    // Keep track of the selected surface
+    FSMesh* hollow = pm->ExtractFaces(true);
+	if (hollow == nullptr) {
+		SetError("Failed to extract surface mesh."); return nullptr;
 	}
 
-	// count the number of tagged nodes
-	int NN0 = mesh.Nodes();
-	vector<int> taggedNodes;
-	for (int i = 0; i < NN0; ++i)
-	{
-		FSNode& node = mesh.Node(i);
-		if (node.m_ntag == 1)
-		{
-			node.m_ntag = taggedNodes.size();
-			taggedNodes.push_back(i);
-		}
-	}
+    int nnode = hollow->Nodes();
+    for (int i=0; i < hollow->Faces(); ++i) hollow->Face(i).Select();
+    
+    // Apply extrusion to create biased mesh
+    double d = -fabs(GetFloatValue(0));
+    int nseg = GetIntValue(1);
+    double rbias = GetFloatValue(2);
+    bool symmBias = GetBoolValue(3);
+    double tol = GetFloatValue(4);
+    double angle = GetFloatValue(5);
+    FEExtrudeFaces extrude;
+    extrude.SetExtrusionDistance(d);
+    extrude.SetUseNormalLocal(true);
+    extrude.SetSegments(nseg);
+    extrude.SetMeshBiasFactor(rbias);
+    extrude.SetSymmetricBias(symmBias);
+    FSMesh* biasedMesh = extrude.Apply(hollow);
 
-	// setup the extrusion directions
-	vector<vec3d> normal(taggedNodes.size());
-	for (int i = 0; i < mesh.Faces(); ++i)
-	{
-		FSFace& face = mesh.Face(i);
-		if (face.IsSelected())
-		{
-			int nn = face.Nodes();
-			for (int j = 0; j < nn; ++j)
-			{
-				vec3d fn = to_vec3d(face.m_nn[j]);
-				int ntag = mesh.Node(face.n[j]).m_ntag; assert(ntag >= 0);
-				normal[ntag] += fn;
-			}
-		}
-	}
-	for (int i = 0; i < taggedNodes.size(); ++i) normal[i].Normalize();
+    // invert the solid mesh (since it was extruded inward)
+    FEInvertMesh invert;
+    biasedMesh = invert.Apply(biasedMesh);
+    GMeshObject gbm(biasedMesh);
+    // delete original shell elements
+    gbm.DeletePart(gbm.Part(0));
 
-	// setup nodal-displacement vector
-	vector<vec3d> displacement(NN0, vec3d(0, 0, 0));
+    // extract the inner surface of this hollow solid
+    FSMesh* inner = biasedMesh->ExtractFaces(true);
+    inner = invert.Apply(inner);
+    FSSurfaceMesh* innerSurf = inner->ExtractFacesAsSurface(false);
+    // select all the faces of this mesh
+    for (int i=0; i<innerSurf->Faces(); ++i) innerSurf->Face(i).Select();
+    // set the element size
+    double h = fabs(d);
 
-	// re-position tagged nodes
-	double d = GetFloatValue(0);
-	for (int i = 0; i < taggedNodes.size(); ++i)
-	{
-		FSNode& node = mesh.Node(taggedNodes[i]);
-		displacement[taggedNodes[i]] = -normal[i] * d;
-	}
+    // check if this surface is closed
+    bool isClosed = MeshTools::IsMeshClosed(*innerSurf);
+    
+    // if not closed, close it a remesh the faces
+    if (!isClosed) {
+        FEFillHole fill;
+        fill.FillAllHoles(innerSurf);
+        // select the newly formed faces
+        for (int i=0; i<innerSurf->Faces(); ++i) {
+            if (innerSurf->Face(i).IsSelected())
+                innerSurf->Face(i).Unselect();
+            else
+                innerSurf->Face(i).Select();
+        }
+        // MMG remesh the selected (new) faces
+        MMGSurfaceRemesh remesh;
+        remesh.SetElementSize(h);
+        remesh.SetElementSize(h);
+        remesh.SetHausdorf(h/10.);
+        remesh.SetGradation(1.3);
+        innerSurf = remesh.Apply(innerSurf);
+    }
+    
+    // Use Tetgen to mesh this surface
+    FETetGenModifier mytg;
+    mytg.SetElementSize(h);
+    mytg.SetSplitFaces(false);
+    FSMesh* lumen = ConvertSurfaceToMesh(innerSurf);
+	if (lumen == nullptr) { SetError("Failed to convert surface to mesh."); return nullptr; }
+    lumen = mytg.Apply(lumen);
+	if (lumen == nullptr) { SetError("Failed to create tetmesh."); return nullptr; }
 
-	// smooth the nodal displacements
-	FSNodeNodeList NNL(&mesh, true);
-	mesh.TagAllNodes(0);
-	for (int i = 0; i < taggedNodes.size(); ++i) mesh.Node(taggedNodes[i]).m_ntag = 1;
-
-	const int MAX_ITER = 100;
-	double eps = 0.001*d;
-	for (int n = 0; n < MAX_ITER; ++n)
-	{
-		double dmax = 0;
-		for (int i = 0; i < mesh.Nodes(); ++i)
-		{
-			FSNode& nodei = mesh.Node(i);
-			if (nodei.m_ntag == 0)
-			{
-				int nn = NNL.Valence(i);
-				if (nn != 0)
-				{
-					vec3d u0 = displacement[i];
-
-					vec3d ua(0, 0, 0);
-					for (int j = 0; j < nn; ++j)
-					{
-						int nj = NNL.Node(i, j);
-						vec3d uj = displacement[nj];
-						ua += uj;
-					}
-					ua /= nn;
-
-					double d = (u0 - ua).SqrLength();
-					if (d > dmax) dmax = d;
-
-					displacement[i] = ua;
-				}
-			}
-		}
-		dmax = sqrt(dmax);
-
-#ifdef _DEBUG
-		fprintf(stderr, "%d - dmax = %lg\n", n, dmax);
-#endif
-		if (dmax < eps) break;
-	}
-
-	// keep original positions
-	vector<vec3d> r0(mesh.Nodes());
-	for (int i = 0; i < mesh.Nodes(); ++i) r0[i] = mesh.Node(i).r;
-
-	// calculate the initial element volume
-	vector<double> elemVol(mesh.Elements(), 0.0);
-	for (int i = 0; i < mesh.Elements(); ++i)
-	{
-		elemVol[i] = mesh.ElementVolume(i);
-	}
-
-	// apply nodal displacements
-	for (int i = 0; i < mesh.Nodes(); ++i)
-	{
-		FSNode& node = mesh.Node(i);
-		node.r += displacement[i];
-	}
-
-	// tag nodes, so we know which nodes cannot be moved
-	mesh.TagAllNodes(0);
-	for (int i = 0; i < mesh.Nodes(); ++i)
-		if (mesh.Node(i).m_gid >= 0) mesh.Node(i).m_ntag = 1;
-	for (int i = 0; i < mesh.Edges(); ++i)
-	{
-		FSEdge& edge = mesh.Edge(i);
-		if (edge.m_gid >= 0)
-		{
-			int nn = edge.Nodes();
-			for (int j = 0; j < nn; ++j) mesh.Node(edge.n[j]).m_ntag = 1;
-		}
-	}
-	for (int i = 0; i < mesh.Faces(); ++i)
-	{
-		FSFace& face = mesh.Face(i);
-		if (face.m_gid >= 0)
-		{
-			int nn = face.Nodes();
-			for (int j = 0; j < nn; ++j) mesh.Node(face.n[j]).m_ntag = 1;
-		}
-	}
-
-	// this may have created some bad or even inverted elements, so check for that
-	// TODO: Not sure if this actually works.
-	double alpha = 0.5;
-	for (int i = 0; i < mesh.Elements(); ++i)
-	{
-		FSElement& el = mesh.Element(i);
-		double Vi = mesh.ElementVolume(el);
-		double J0 = Vi / elemVol[i];
-		if (el.IsType(FE_TET4) && ((Vi < 0) || (J0 < 0.001)))
-		{
-			vec3d ud[4];
-			for (int j = 0; j < 4; ++j) ud[j] = displacement[el.m_node[j]];
-
-			vec3d uc = (ud[0] + ud[1] + ud[2] + ud[3])*0.25;
-			
-			for (int j = 0; j < 4; ++j)
-			{
-				if (mesh.Node(el.m_node[j]).m_ntag == 0)
-					displacement[el.m_node[j]] = ud[j] * alpha + uc * (1.0 - alpha);
-			}
-
-			for (int j = 0; j < 4; ++j)
-			{
-				mesh.Node(el.m_node[j]).r = r0[el.m_node[j]] + displacement[el.m_node[j]];
-			}
-
-			Vi = mesh.ElementVolume(el);
-			assert(Vi > 0);
-			double J1 = Vi / elemVol[i];
-
-			SetError("element %d: old J = %lg, new J = %lg", i+1, J0, J1);
-		}
-	}
+    // combine the two domains together into one
+    GObject obj(GMESH_OBJECT);
+    obj.SetFEMesh(lumen);
+    gbm.Attach(&obj, true, tol);
+    FSMesh* mymesh = gbm.GetFEMesh();
+	if (mymesh == nullptr) { SetError("Object has no mesh."); return nullptr; }
+    FERebuildMesh rebuild;
+    rebuild.SetRepartition(true);
+    rebuild.SetCreaseAngle(angle);
+    mymesh = rebuild.Apply(mymesh);
+    
+    return mymesh;
 }

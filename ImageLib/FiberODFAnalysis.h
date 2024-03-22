@@ -87,7 +87,7 @@ public:
 	};
 
 public:
-    CFiberODFAnalysis(Post::CImageModel* img);
+    CFiberODFAnalysis(CImageModel* img);
     ~CFiberODFAnalysis();
 
 	// generate the subvolumes

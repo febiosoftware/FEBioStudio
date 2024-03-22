@@ -50,6 +50,8 @@ public:
 
     QList<QStringList> GetValues();
 
+	QList<QList<double> > GetDoubleValues();
+
     void accept() override;
 private:
     void calcValues();

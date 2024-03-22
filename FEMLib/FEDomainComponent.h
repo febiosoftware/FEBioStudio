@@ -1,6 +1,6 @@
 #pragma once
 #include "FEStepComponent.h"
-#include "IHasItemList.h"
+#include <MeshLib/IHasItemList.h>
 
 class FSModel;
 class FEItemListBuilder;
@@ -12,7 +12,7 @@ class FEItemListBuilder;
 class FSDomainComponent : public FSStepComponent, public FSHasOneItemList
 {
 public:
-	enum { NAME, PARAMS, LIST, STEP, SELECTION_TYPE, LIST_ID };
+	enum { NAME, PARAMS, LIST, STEP, SELECTION_TYPE, LIST_ID, STATUS };
 
 public:
 	FSDomainComponent(int ntype, FSModel* ps, int nstep = 0);
@@ -33,6 +33,11 @@ protected:
 // This class is used to select mesh selections properties
 class FSMeshSelection : public FSModelComponent, public FSHasOneItemList
 {
+	enum {LIST_ID};
+
 public:
 	FSMeshSelection(FSModel* fem);
+
+	void Save(OArchive& ar);
+	void Load(IArchive& ar);
 };

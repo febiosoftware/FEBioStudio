@@ -94,12 +94,9 @@ QString elide(const QString& s, int l)
 }
 
 //=======================================================================================
-CWelcomePage::CWelcomePage(CMainWindow* wnd) : CTextDocument(wnd)
+CWelcomePage::CWelcomePage(CMainWindow* wnd) : CHTMLDocument(wnd)
 {
 	SetDocTitle("Welcome");
-	SetIcon("");
-	SetFormat(CTextDocument::FORMAT_HTML);
-	m_txt.setDocumentLayout(nullptr);
 }
 
 void CWelcomePage::Activate()

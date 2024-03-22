@@ -100,7 +100,7 @@ public:
 		f->addRow("Material:", m_matList = new QComboBox);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
-		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
+		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.8));
 
 		m_maxIters->setValidator(new QIntValidator());
 		m_tol->setValidator(new QDoubleValidator());
@@ -387,6 +387,7 @@ void CScalarFieldTool::OnApply()
 			int ne = el.Nodes();
 			double v = 0.0;
 			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
+			v /= (double)ne;
 
 			pdata->set(i, v);
 		}
@@ -402,7 +403,7 @@ void CScalarFieldTool::OnApply()
 
 		// create node data
 		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, FEMeshData::DATA_SCALAR);
-		for (int i = 0; i < NN; i++) pdata->SetScalar(i, val[i]);
+		for (int i = 0; i < NN; i++) pdata->setScalar(i, val[i]);
 	}
 
 	Clear();

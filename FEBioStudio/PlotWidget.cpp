@@ -31,7 +31,6 @@ SOFTWARE.*/
 #include <QFontDatabase>
 #include <QMouseEvent>
 #include <QAction>
-#include <QMessageBox>
 #include <QMenu>
 #include <QApplication>
 #include <QClipboard>
@@ -237,7 +236,7 @@ void drawPlus(QPainter& painter, const QRect& rt)
 }
 
 //-----------------------------------------------------------------------------
-void drawMarker(QPainter& painter, const QPoint& pt, int nsize, int type)
+void drawMarker(QPainter& painter, const QPointF& pt, int nsize, int type)
 {
 	int n2 = nsize / 2;
 	QRect rect(pt.x() - n2, pt.y() - n2, nsize, nsize);
@@ -828,8 +827,8 @@ void CPlotWidget::mousePressEvent(QMouseEvent* ev)
 			for (int j = 0; j < plot.size(); ++j)
 			{
 				QPointF& rj = plot.Point(j);
-				QPoint p = ViewToScreen(rj);
-				if ((abs(p.x() - pt.x()) <= eps) && (abs(p.y() - pt.y()) <= eps))
+				QPointF p = ViewToScreen(rj);
+				if ((fabs(p.x() - pt.x()) <= eps) && (fabs(p.y() - pt.y()) <= eps))
 				{
 					// see if this point is selected
 					if (isSelected(i, j) == false)
@@ -954,7 +953,11 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		double dx = W*0.05;
 		double dy = H*0.05;
 
-    //TODO: Check to see how this feels with MacOS and Linux distros. May need to use angleDelta()
+		bool bctrl  = (ev->modifiers() & Qt::ControlModifier ? true : false);
+		bool bshift = (ev->modifiers() & Qt::ShiftModifier ? true : false);
+		if (bctrl && !bshift) dy = 0;
+		if (bctrl && bshift) dx = 0;
+
 		if ((ev->pixelDelta().y() < 0) || (ev->angleDelta().y() < 0))
 		{
 			m_viewRect.adjust(-dx, -dy, dx, dy);
@@ -963,6 +966,7 @@ void CPlotWidget::wheelEvent(QWheelEvent* ev)
 		{
 			m_viewRect.adjust(dx, dy, -dx, -dy);
 		}
+
 		m_xscale = findScale(m_viewRect.left(), m_viewRect.right());
 		m_yscale = findScale(m_viewRect.top(), m_viewRect.bottom());
 		repaint();
@@ -981,8 +985,8 @@ void CPlotWidget::regionSelect(QRect rt)
 		for (int j = 0; j < plot.size(); ++j)
 		{
 			QPointF& rj = plot.Point(j);
-			QPoint p = ViewToScreen(rj);
-			if (rt.contains(p))
+			QPointF p = ViewToScreen(rj);
+			if (rt.contains(QPoint((int)p.x(), (int)p.y())))
 			{
 				addToSelection(i, j);
 			}
@@ -991,7 +995,7 @@ void CPlotWidget::regionSelect(QRect rt)
 }
 
 //-----------------------------------------------------------------------------
-QPointF CPlotWidget::ScreenToView(const QPoint& p)
+QPointF CPlotWidget::ScreenToView(const QPointF& p)
 {
 	qreal x = m_viewRect.left  () + (m_viewRect.width ()*(p.x() - m_plotRect.left())/(m_plotRect.width ()));
 	qreal y = m_viewRect.bottom() + (m_viewRect.height()*(m_plotRect.top() - p.y() )/(m_plotRect.height()));
@@ -1011,23 +1015,23 @@ QRectF CPlotWidget::ScreenToView(const QRect& rt)
 }
 
 //-----------------------------------------------------------------------------
-QPoint CPlotWidget::ViewToScreen(const QPointF& p)
+QPointF CPlotWidget::ViewToScreen(const QPointF& p)
 {
-	int x = ViewToScreenX(p.x());
-	int y = ViewToScreenY(p.y());
-	return QPoint(x, y);
+	double x = ViewToScreenX(p.x());
+	double y = ViewToScreenY(p.y());
+	return QPointF(x, y);
 }
 
 //-----------------------------------------------------------------------------
-int CPlotWidget::ViewToScreenX(double x) const
+double CPlotWidget::ViewToScreenX(double x) const
 {
-	return m_plotRect.left() + (int)(m_plotRect.width() * (x - m_viewRect.left()) / (m_viewRect.width()));
+	return m_plotRect.left() + (m_plotRect.width() * (x - m_viewRect.left()) / (m_viewRect.width()));
 }
 
 //-----------------------------------------------------------------------------
-int CPlotWidget::ViewToScreenY(double y) const
+double CPlotWidget::ViewToScreenY(double y) const
 {
-	return m_plotRect.top() - (int)(m_plotRect.height() * (y - m_viewRect.bottom()) / (m_viewRect.height()));
+	return m_plotRect.top() - (m_plotRect.height() * (y - m_viewRect.bottom()) / (m_viewRect.height()));
 }
 
 //-----------------------------------------------------------------------------
@@ -1207,8 +1211,8 @@ void CPlotWidget::drawSelection(QPainter& p)
 		Selection& si = m_selection[i];
 
 		QPointF pf = dataPoint(si.ndataIndex, si.npointIndex);
-		QPoint pt = ViewToScreen(pf);
-		if (m_plotRect.contains(pt, true))
+		QPointF pt = ViewToScreen(pf);
+		if (m_plotRect.contains(QPoint((int)pt.x(), (int)pt.y()), true))
 		{
 			if ((si.ndataIndex < 0) || (si.ndataIndex >= m_data.m_data.size())) return;
 
@@ -1309,7 +1313,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nydiv != 0)
 		{
 			gy = pow(10.0, nydiv);
-			sprintf(sz, "x 1e%03d", nydiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nydiv);
 			p.drawText(x0 - 30, y0 - fm.height() + fm.descent(), QString(sz));
 		}
 	}
@@ -1322,7 +1326,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 		if (nxdiv != 0)
 		{
 			gx = pow(10.0, nxdiv);
-			sprintf(sz, "x 1e%03d", nxdiv);
+			snprintf(sz, sizeof sz, "x 1e%03d", nxdiv);
 			p.drawText(x1 + 5, y1, QString(sz));
 		}
 	}
@@ -1350,7 +1354,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fy / gy;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 
 				if (m_data.m_yAxis.labelAlignment == ALIGN_LABEL_LEFT)
@@ -1388,7 +1392,7 @@ void CPlotWidget::drawAxesTicks(QPainter& p)
 			{
 				double g = fx / gx;
 				if (fabs(g) < 1e-7) g = 0;
-				sprintf(sz, "%lg", g);
+				snprintf(sz, sizeof sz, "%lg", g);
 				QString s(sz);
 				int w = p.fontMetrics().horizontalAdvance(s);
 				if (m_data.m_xAxis.labelAlignment == ALIGN_LABEL_BOTTOM)
@@ -1463,7 +1467,7 @@ void CPlotWidget::drawGrid(QPainter& p)
 void CPlotWidget::drawAxes(QPainter& p)
 {
 	// get the center in screen coordinates
-	QPoint c = ViewToScreen(QPointF(0.0, 0.0));
+	QPointF c = ViewToScreen(QPointF(0.0, 0.0));
 
 	// render the X-axis
 	if (m_data.m_xAxis.visible)
@@ -1510,8 +1514,9 @@ void CPlotWidget::DrawPlotData(QPainter& p, CPlotData& data)
 {
 	switch (m_chartStyle)
 	{
-	case LINECHART_PLOT:  draw_linechart(p, data); break;
-	case BARCHART_PLOT: draw_barchart(p, data); break;
+	case LINECHART_PLOT: draw_linechart(p, data); break;
+	case BARCHART_PLOT : draw_barchart(p, data); break;
+	case DENSITY_PLOT  : draw_densityplot(p, data); break;
 	}
 }
 
@@ -1525,7 +1530,7 @@ void CPlotWidget::draw_linechart(QPainter& p, CPlotData& data)
 	QPen pen(col, data.lineWidth());
 	p.setPen(pen);
 
-	QPoint p0 = ViewToScreen(data.Point(0)), p1(p0);
+	QPointF p0 = ViewToScreen(data.Point(0)), p1(p0);
 	p.setBrush(Qt::NoBrush);
 	for (int i = 1; i<N; ++i)
 	{
@@ -1564,11 +1569,63 @@ void CPlotWidget::draw_barchart(QPainter& p, CPlotData& data)
 	for (int i = 0; i<N; ++i)
 	{
 		QPointF& pi = data.Point(i);
-		QPoint p0 = ViewToScreen(pi);
-		QPoint p1 = ViewToScreen(QPointF(pi.x(), 0.0));
+		QPointF p0 = ViewToScreen(pi);
+		QPointF p1 = ViewToScreen(QPointF(pi.x(), 0.0));
 		QRect r(p0.x() - w/2, p0.y(), w, p1.y() - p0.y());
 		p.drawRect(r);
 	}
+}
+
+void CPlotWidget::draw_densityplot(QPainter& p, CPlotData& data)
+{
+	int W = m_plotRect.width();
+	int H = m_plotRect.height();
+	QRect rt = m_plotRect;
+
+	int NX = W / 5;
+	int NY = H / 5;
+	matrix m(NY, NX); m.zero();
+	int N = data.size();
+	double dmax = 0.0;
+	for (int n = 0; n < N; ++n)
+	{
+		QPointF& pi = data.Point(n);
+		QPointF p0 = ViewToScreen(pi);
+		int i = (NY* (p0.y() - rt.top())) / H;
+		int j = (NX* (p0.x() - rt.left())) / W;
+		if ((i >= 0) && (i < NY) && (j >= 0) && (j < NX))
+		{
+			m[i][j] += 1.0;
+			if (m[i][j] > dmax) dmax = m[i][j];
+		}
+	}
+	if (dmax == 0) return;
+	dmax = log(dmax);
+	if (dmax == 0) dmax = 1;
+
+	QColor c = data.fillColor();
+
+	p.setPen(Qt::NoPen);
+	for (int i=0; i<NY; ++i)
+		for (int j = 0; j < NX; ++j)
+		{
+			if (m[i][j] > 0)
+			{
+				int x0 = rt.left() + (j * W) / NX;
+				int x1 = rt.left() + ((j + 1) * W) / NX;
+
+				int y0 = rt.top() + (i * H) / NY;
+				int y1 = rt.top() + ((i + 1) * H) / NY;
+
+				double w = log(m[i][j]) / dmax;
+				double a = 0.1 + w * 0.9;
+				c.setAlphaF(a);
+				p.setBrush(c);
+
+				QRect r(x0, y0, x1 - x0, y1 - y0);
+				p.drawRect(r);
+			}
+		}
 }
 
 //-----------------------------------------------------------------------------
@@ -1736,7 +1793,7 @@ void CCurvePlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 	// draw the line
 	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
 	QRect rt = ScreenRect();
-	QPoint p0, p1;
+	QPointF p0, p1;
 	for (int i = rt.left(); i < rt.right(); i += 2)
 	{
 		p1.setX(i);
@@ -2237,7 +2294,7 @@ void CCurveEditWidget::on_plot_draggingStart(QPoint p)
 			ui->m_p0[i].setY(pt.y());
 
 			QPointF pf(pt.x(), pt.y());
-			QPoint pi = ui->plt->ViewToScreen(pf);
+			QPointF pi = ui->plt->ViewToScreen(pf);
 
 			double dx = fabs(pi.x() - p.x());
 			double dy = fabs(pi.y() - p.y());
@@ -2543,6 +2600,7 @@ void CCurveEditWidget::on_paste_clicked(bool b)
     {
         QList<QStringList> values = dlg.GetValues();
 
+		plc->Clear();
         for(auto row : values)
         {
             plc->Add(row[0].toDouble(), row[1].toDouble());
@@ -2807,7 +2865,7 @@ void CMathPlotWidget::DrawPlotData(QPainter& painter, CPlotData& data)
 	// draw the line
 	painter.setPen(QPen(data.lineColor(), data.lineWidth()));
 	QRect rt = ScreenRect();
-	QPoint p0, p1;
+	QPointF p0, p1;
 	int prevRegion = 0;
 	int curRegion = 0;
 	bool newSection = true;
@@ -2916,8 +2974,8 @@ void CMathPlotWidget::onPointClicked(QPointF pt, bool shift)
 	double y = m_math.value();
 
 	QPointF px(pt.x(), y);
-	QPoint p0 = ViewToScreen(pt);
-	QPoint p1 = ViewToScreen(px);
+	QPointF p0 = ViewToScreen(pt);
+	QPointF p1 = ViewToScreen(px);
 
 	CPlotData& data = getPlotData(0);
 	data.clear();

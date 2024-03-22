@@ -25,24 +25,23 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
-
-typedef unsigned char Byte;
+#include <cstdint>
 
 class GLColor
 {
 public:
-	Byte	a, b, g, r;
+	uint8_t	a, b, g, r;
 
 public:
 	GLColor() : a(255), b(0), g(0), r(0) {}
-	GLColor(Byte ur, Byte ug, Byte ub, Byte ua = 255)
+	GLColor(uint8_t ur, uint8_t ug, uint8_t ub, uint8_t ua = 255)
 	{
 		r = ur;	g = ug;	b = ub;	a = ua;
 	}
 
 	GLColor operator * (double f)
 	{
-		return GLColor((Byte)(r*f), (Byte)(g*f), (Byte)(b*f));
+		return GLColor((uint8_t)(r*f), (uint8_t)(g*f), (uint8_t)(b*f));
 	}
 
 	GLColor operator + (GLColor& c)
@@ -61,5 +60,5 @@ public:
 	unsigned int to_uint() { return (int)(((((r << 8) | g) << 8) | b) << 8); }
 
 	static GLColor White() { return GLColor(255, 255, 255); }
-	static GLColor FromRGBf(float r, float g, float b) { return GLColor((Byte)(r*255.f), (Byte)(g*255.f), (Byte)(b*255.f)); }
+	static GLColor FromRGBf(float r, float g, float b) { return GLColor((uint8_t)(r*255.f), (uint8_t)(g*255.f), (uint8_t)(b*255.f)); }
 };

@@ -148,6 +148,15 @@ void FEItemListBuilder::Subtract(std::vector<int>& o)
 	}
 }
 
+bool FEItemListBuilder::HasItem(int n) const
+{
+	for (int m : m_Item)
+	{
+		if (m == n) return true;
+	}
+	return false;
+}
+
 int FEItemListBuilder::GetReferenceCount() const { return m_refs; }
 void FEItemListBuilder::IncRef() { m_refs++; }
 void FEItemListBuilder::DecRef() { m_refs--; assert(m_refs >= 0); }

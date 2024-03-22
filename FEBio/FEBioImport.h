@@ -29,7 +29,7 @@ SOFTWARE.*/
 #include <FEMLib/GMaterial.h>
 #include <FEMLib/FEMultiMaterial.h>
 #include <FEMLib/FSProject.h>
-#include <MeshIO/FileReader.h>
+#include <MeshIO/FSFileImport.h>
 #include <XML/XMLReader.h>
 #include "FEBioFormat.h"
 

@@ -581,6 +581,9 @@ public:
 	QComboBox*	convClass;
 	QComboBox*	convFmt;
 
+	// gradient page
+	QComboBox* gradConfig = new QComboBox;
+
 public:
 	void setupUi(QDialog* parent)
 	{
@@ -645,8 +648,18 @@ public:
 		poperation->addItem("divide");
 		poperation->addItem("least-square difference");
 
-		// gradient page (doesn't need options)
-		QWidget* gradPage = new QLabel("");
+		// gradient page
+		QWidget* gradPage = new QWidget;
+		QVBoxLayout* gradLayout = new QVBoxLayout;
+		QHBoxLayout* gradRow = new QHBoxLayout;
+		gradConfig = new QComboBox;
+		gradRow->addWidget(new QLabel("Configuration:"));
+		gradRow->addWidget(gradConfig);
+		gradRow->addStretch();
+		gradLayout->addLayout(gradRow);
+		gradPage->setLayout(gradLayout);
+		gradConfig->addItems(QStringList() << "Material" << "Spatial");
+		gradConfig->setCurrentIndex(1);
 
 		// fractional anisotropy (doesn't need options)
 		QWidget* faPage = new QLabel("");
@@ -767,6 +780,11 @@ int CDlgFilter::getNewDataClass()
 
 double CDlgFilter::GetScaleFactor() { return m_scale[0]; }
 vec3d  CDlgFilter::GetVecScaleFactor() { return vec3d(m_scale[0], m_scale[1], m_scale[2]); }
+
+int CDlgFilter::GetGradientConfiguration()
+{
+	return ui->gradConfig->currentIndex();
+}
 
 int processScale(std::string& s, double* a, int maxa)
 {
@@ -1125,8 +1143,10 @@ void CPostDataPanel::on_AddFilter_triggered()
 					newData->SetName(sname);
 					fem.AddDataField(newData);
 
+					int config = dlg.GetGradientConfiguration();
+
 					// now, calculate gradient from scalar field
-					bret = DataGradient(fem, newData->GetFieldID(), nfield);
+					bret = DataGradient(fem, newData->GetFieldID(), nfield, config);
 				}
 				break;
 				case 4:
@@ -1191,6 +1211,7 @@ class Ui::CDlgExportData
 {
 public:
 	QCheckBox* cb;
+	QCheckBox* wc;
 	QRadioButton* pb1;
 	QRadioButton* pb2;
 	QRadioButton* pb3;
@@ -1203,6 +1224,9 @@ public:
 
 		cb = new QCheckBox("Selection only");
 		l->addWidget(cb);
+
+		wc = new QCheckBox("Write face/element connectivity");
+		l->addWidget(wc);
 
 		QVBoxLayout* pg = new QVBoxLayout;
 		pg->addWidget(pb1 = new QRadioButton("Write all states"));
@@ -1238,6 +1262,11 @@ CDlgExportData::~CDlgExportData()
 bool CDlgExportData::selectionOnly() const
 {
 	return ui->cb->isChecked();
+}
+
+bool CDlgExportData::writeConnectivity() const
+{
+	return ui->wc->isChecked();
 }
 
 int CDlgExportData::stateOutputOption() const
@@ -1278,6 +1307,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 				if (dlg.exec())
 				{
 					bool selectionOnly = dlg.selectionOnly();
+					bool writeConnect = dlg.writeConnectivity();
 
 					int op = dlg.stateOutputOption();
 					vector<int> states;
@@ -1306,7 +1336,7 @@ void CPostDataPanel::on_ExportButton_clicked()
 					}
 
 					std::string sfile = file.toStdString();
-					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, states) == false)
+					if (Post::ExportDataField(fem, *pdf, sfile.c_str(), selectionOnly, writeConnect, states) == false)
 					{
 						QMessageBox::critical(this, "Export Data", "Export Failed!");
 					}

@@ -1,0 +1,26 @@
+/** 
+\page post_add_datafield Adding a new post datafield
+
+This article describes how to add a new datafield to the Post side. 
+
+The datafield classes define the data that can be visualized using the colormap, vector plots, and other plot types. 
+
+There are typically two classes involved. The first class is a class derived from ModelDataField, which is used to store information of the datafield, such as its name, type, format, class, etc. In most cases, a custom ModelDataField class does not need to be derived. Instead, the template class FEDataField_T can be used. The only situation where a custom class is needed is where the algorithm for the datafield requires user-input. 
+
+The second class that needs to be created is a class derived from FEMeshData, or more precisely, one the many specialized classes derived from the FEMeshData. Again, template classes are used to define the specific base class that is needed. 
+
+\section sec1 creating the new mesh data class
+
+Currently, all datafields are defined in PostLib\FEMeshData_T.h. 
+
+Add a new class in this file, derived from the correct base class. (The available base classes are also defined in this file.)
+
+The implementation of the class can be placed in FEMeshData.cpp. 
+
+\section sec2 Adding it to the list
+
+The list of standard datafields is maintained in void StandardDataFieldManager::Init() (PostLib\FEDataField.cpp).
+
+Add the new field to the bottom of this list. Note that the function StandardDataFieldManager::Add requires a class derived from ModelDataField. In most situations, the template class FEDataField_T can be used for this. 
+
+*/

@@ -36,7 +36,6 @@ SOFTWARE.*/
 #include <QSplitter>
 #include <QLineEdit>
 #include <QHeaderView>
-#include <QLabel>
 #include <FECore/FECoreKernel.h>
 #include <FEBioLib/febio.h>
 #include <map>

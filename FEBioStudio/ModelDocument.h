@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "Document.h"
 #include "FEBioJob.h"
+#include <MeshIO/FSFileImport.h>
 #include <vector>
 
 //-----------------------------------------------------------------------------
@@ -81,13 +82,13 @@ public:
 	void AddObject(GObject* po);
 
 	void DeleteObject(FSObject* po);
+	void DeleteObjects(std::vector<FSObject*> objList);
 
 	// helper function for applying a modifier
 	bool ApplyFEModifier(FEModifier& modifier, GObject* po, FESelection* sel = 0, bool clearSel = true);
 	bool ApplyFESurfaceModifier(FESurfaceModifier& modifier, GSurfaceMeshObject* po, FSGroup* sel = 0);
 
 public: // selection
-	FESelection* GetCurrentSelection() override;
 	void UpdateSelection(bool report = true) override;
 
 	void HideCurrentSelection();
@@ -129,9 +130,6 @@ private:
 
 	// the job list
 	CFEBioJobList	m_JobList;
-
-	// current selection
-	FESelection*	m_psel;
 
 	CModelContext*	m_context;
 };

@@ -71,6 +71,7 @@ private:
 	void ParseGeometryEdgeSet    (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometrySurface    (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryElementSet (FEBioInputModel::Part* part, XMLTag& tag);
+	void ParseGeometryPartList   (FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryDiscreteSet(FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometrySurfacePair(FEBioInputModel::Part* part, XMLTag& tag);
 	void ParseGeometryPart       (XMLTag& tag);
@@ -113,9 +114,6 @@ private:
 	void ParseRigidBC(FSStep* pstep, XMLTag& tag);
 	void ParseRigidIC(FSStep* pstep, XMLTag& tag);
 	void ParseRigidLoad(FSStep* pstep, XMLTag& tag);
-
-	// helper functions (version 2.5 and up)
-	FEBioInputModel::DiscreteSet ParseDiscreteSet(XMLTag& tag);
 
 private:
 	FEBioInputModel::Part* DefaultPart();

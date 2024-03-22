@@ -31,7 +31,8 @@ SOFTWARE.*/
 
 namespace Post {
 
-class FELSDYNAExport
+	// TODO: Can we inherit from FileWriter?
+class FELSDYNAExport : public FSBase
 {
 public:
 	FELSDYNAExport();
@@ -41,6 +42,8 @@ protected:
 	bool ExportMesh(FEPostModel& fem, int ntime, const char* szfile);
 	bool ExportSurface(FEPostModel& fem, int ntime, const char* szfile);
 	bool ExportSelectedSurface(FEPostModel& fem, int ntime, const char* szfile);
+
+	bool UpdateData(bool bsave) override;
 
 protected:
 	void NodalResults(FEPostModel& fem, int ntime, FILE* fp);
