@@ -46,6 +46,8 @@ SOFTWARE.*/
 #include <FEMLib/FEBodyLoad.h>
 #include <MeshTools/FEMesher.h>
 #include <FEBio/FEBioExport4.h>
+#include <PostLib/FEFEBioExport.h>
+#include "PostDocument.h"
 #include "version.h"
 #include <sstream>
 #include <map>
@@ -235,14 +237,19 @@ public:
 		m_cmds.push_back({ "create" , "add a primitive to the current model", &CommandProcessor::RunCreateCmd });
 		m_cmds.push_back({ "exit"   , "closes FEBio Studio", &CommandProcessor::RunExitCmd });
 		m_cmds.push_back({ "export" , "Export model to file", &CommandProcessor::RunExportCmd });
+		m_cmds.push_back({ "expgeo" , "Export selected geometry model to file", &CommandProcessor::RunExpgeoCmd });
 		m_cmds.push_back({ "fgcol"  , "sets the foreground color", &CommandProcessor::RunFgcolCmd });
+		m_cmds.push_back({ "first"  , "Display the first timestep", &CommandProcessor::RunFirstCmd });
 		m_cmds.push_back({ "grid"   , "turn the grid in the Graphics View on or off", &CommandProcessor::RunGridCmd });
 		m_cmds.push_back({ "help"   , "show help", &CommandProcessor::RunHelpCmd });
 		m_cmds.push_back({ "import" , "import a geometry file", &CommandProcessor::RunImportCmd });
 		m_cmds.push_back({ "job"    , "run the model in FEBio", &CommandProcessor::RunJobCmd });
 		m_cmds.push_back({ "genmesh", "generate mesh for currently selected object.", &CommandProcessor::RunGenmeshCmd });
+		m_cmds.push_back({ "last"   , "Display the last timestep", &CommandProcessor::RunLastCmd });
 		m_cmds.push_back({ "new"    , "create a new model", &CommandProcessor::RunNewCmd });
+		m_cmds.push_back({ "next"   , "Display the next timestep", &CommandProcessor::RunNextCmd });
 		m_cmds.push_back({ "open"   , "open a file", &CommandProcessor::RunOpenCmd });
+		m_cmds.push_back({ "prev"   , "Display the previous timestep", &CommandProcessor::RunPrevCmd });
 		m_cmds.push_back({ "reset"  , "reset all options to their defaults.", &CommandProcessor::RunResetCmd });
 		m_cmds.push_back({ "save"   , "save the current model", &CommandProcessor::RunSaveCmd });
 		m_cmds.push_back({ "selpart", "select a part", &CommandProcessor::RunSelectPartCmd });
@@ -644,6 +651,13 @@ public: // command functions
 		return true;
 	}
 
+	bool RunLastCmd(QStringList ops)
+	{
+		if (!ValidateArgs(ops, 0, 0)) return false;
+		m_wnd->on_actionLast_triggered();
+		return true;
+	}
+
 	bool RunNewCmd(QStringList ops)
 	{
 		if (ValidateArgs(ops, 0, 1) == false) return false;
@@ -669,6 +683,13 @@ public: // command functions
 		return true;
 	}
 
+	bool RunNextCmd(QStringList ops)
+	{
+		if (!ValidateArgs(ops, 0, 0)) return false;
+		m_wnd->on_actionNext_triggered();
+		return true;
+	}
+
 	bool RunOpenCmd(QStringList ops)
 	{
 		if (ValidateArgs(ops, 0, 2) == false) return false;
@@ -685,7 +706,7 @@ public: // command functions
 				if ((n >= 0) || (n < recentFiles.size()))
 				{
 					QString fileName = recentFiles.at(n);
-					m_wnd->OpenFile(fileName);
+					m_wnd->OpenFile(fileName, false, false, false);
 					m_output = "open \"" + fileName + "\"";
 				}
 				else return Error(QString("Can't open recent file %d").arg(n + 1));
@@ -693,10 +714,17 @@ public: // command functions
 			else if (ops.size() == 1)
 			{
 				QString fileName = ops[0];
-				m_wnd->OpenFile(fileName);
+				m_wnd->OpenFile(fileName, false, false, false);
 			}
 			else return InvalidArgsCount();
 		}
+		return true;
+	}
+
+	bool RunPrevCmd(QStringList ops)
+	{
+		if (!ValidateArgs(ops, 0, 0)) return false;
+		m_wnd->on_actionPrev_triggered();
 		return true;
 	}
 
@@ -804,6 +832,33 @@ public: // command functions
 		return true;
 	}
 
+	bool RunExpgeoCmd(QStringList ops)
+	{
+		if (ValidateArgs(ops, { 0, 2 }) == false) return false;
+		if (ops.empty()) m_wnd->on_actionExportGeometry_triggered();
+		else
+		{
+			CPostDocument* doc = m_wnd->GetPostDocument();
+			if (doc)
+			{
+				Post::FEPostModel& fem = *doc->GetFSModel();
+
+				QString fmt = ops[0];
+				if (fmt == "feb4")
+				{
+					string filename = ops[1].toStdString();
+					Post::FEFEBioExport4 fr;
+					bool bsuccess = fr.Save(fem, filename.c_str());
+					if (!bsuccess) return Error("Failed to export geometry to feb4 format.");
+				}
+				else return Error("Unrecognized format.");
+			}
+			else return Error("Can't export to geometry.");
+		}
+
+		return true;
+	}
+
 	bool RunFgcolCmd(QStringList ops)
 	{
 		if (m_wnd->GetGLView() == nullptr) return GLViewIsNull();
@@ -813,6 +868,13 @@ public: // command functions
 		if (!CmdToColor(ops, newCol)) return false;
 		vs.m_fgcol = newCol;
 		m_wnd->RedrawGL();
+		return true;
+	}
+
+	bool RunFirstCmd(QStringList ops)
+	{
+		if (!ValidateArgs(ops, 0, 0)) return false;
+		m_wnd->on_actionFirst_triggered();
 		return true;
 	}
 
