@@ -261,7 +261,7 @@ public:
 	bool ProcessCommandLine(QString cmdLine)
 	{
 		QStringList cmdAndOps = ParseCommandLine(cmdLine);
-		if (cmdAndOps.empty()) return true;
+		if (cmdAndOps.empty()) return (m_output.isEmpty());
 		QString cmd = cmdAndOps[0];
 		QStringList ops = cmdAndOps; ops.pop_front();
 		return RunCommand(cmd, ops);
@@ -282,6 +282,7 @@ public:
 
 	QStringList ParseCommandLine(QString cmd)
 	{
+		m_output.clear();
 		QStringList out;
 		QString tmp;
 		bool insideQuotes = false;
@@ -302,6 +303,11 @@ public:
 			else if (c == '\"')
 			{
 				insideQuotes = !insideQuotes;
+			}
+			else if (c == '%')
+			{
+				m_output = QString("Unexpected character (%) at position %1").arg(i);
+				return QStringList();
 			}
 			else if ((c == '#') || (c == '\n') || (c == '\r'))
 			{
@@ -880,7 +886,6 @@ public: // command functions
 
 	bool RunCmdCmd(QStringList ops)
 	{
-		if (ValidateArgs(ops, 0, 1) == false) return false;
 		QString cmdFile;
 		if (ops.empty())
 		{
@@ -902,7 +907,8 @@ public: // command functions
 		else cmdFile = ops[0];
 		if (!cmdFile.isEmpty())
 		{
-			return RunCommandFile(cmdFile);
+			if (!ops.empty()) ops.pop_front();
+			return RunCommandFile(cmdFile, ops);
 		}
 		return Error("Failed to run command file.");
 	}
@@ -939,7 +945,7 @@ public: // command functions
 	}
 
 private:
-	bool RunCommandFile(QString cmdFile)
+	bool RunCommandFile(QString cmdFile, QStringList ops)
 	{
 		QFile file(cmdFile);
 		if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) 
@@ -952,6 +958,13 @@ private:
 			lineCount++;
 			string s = line.toStdString();
 			QString cmdLine = QString::fromStdString(s);
+			int n = 1;
+			for (QString& arg : ops)
+			{
+				QString s = "\"" + arg + "\"";
+				QString r = "%" + QString("%1").arg(n++);
+				cmdLine.replace(r, s);
+			}
 			if (ProcessCommandLine(cmdLine) == false)
 			{
 				QString msg = QString("Error at line %1:\n%2").arg(lineCount).arg(m_output);
@@ -1179,6 +1192,20 @@ void CCommandWindow::OnEnter()
 		{
 			msg = "ERROR: " + msg;
 			ui->Output(msg, 1);
+		}
+	}
+	else
+	{
+		QString msg = ui->cmd->GetCommandOutput();
+		if (!msg.isEmpty())
+		{
+			msg = "ERROR: " + msg;
+			ui->Output(msg, 1);
+		}
+		else
+		{
+			ui->Output(str);
+			ui->input->clear();
 		}
 	}
 }
