@@ -30,6 +30,23 @@ SOFTWARE.*/
 #include <vector>
 
 class CMainWindow;
+class CDocument;
+class CModelDocument;
+class CPostDocument;
+
+//! The command input class is used to provide a mechanism for the command processor
+//! to interact with the user. In GUI mode, this will ofen result in a dialog box
+//! being presented. In CLI mode, the user can add the inputs on the command line. 
+class CommandInput
+{
+public:
+	CommandInput() {}
+	virtual ~CommandInput() {}
+
+	virtual QString GetOpenModelFilename() = 0; // return the filename of the model file to open
+	virtual QString GetSaveModelFilename() = 0; // return the filename of the model file to save
+	virtual QString GetExportGeometryFilename(QString& formatOption) = 0; // return the filename of the model file to save
+};
 
 class CommandProcessor
 {
@@ -42,7 +59,7 @@ private:
 	};
 
 public:
-	CommandProcessor(CMainWindow* wnd);
+	CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput);
 	QString GetCommandOutput() { return m_output; }
 	bool ProcessCommandLine(QString cmdLine);
 	bool RunCommand(QString cmd, QStringList ops);
@@ -92,6 +109,7 @@ private: // error messages
 	bool NoActiveDoc() { return Error("No model active."); }
 	bool GLViewIsNull() { return Error("Graphics View not available."); }
 	bool InvalidArgsCount() { return Error("Invalid number of arguments."); }
+	bool CommandCancelled() { return Error("Command was cancelled."); }
 
 private:
 	bool ValidateArgs(const QStringList& ops, int minargs = -1, int maxargs = -1);
@@ -100,7 +118,13 @@ private:
 	bool RunCommandFile(QString cmdFile, QStringList ops);
 
 private:
-	CMainWindow* m_wnd;
+	CDocument* GetActiveDocument();
+	CModelDocument* GetModelDocument();
+	CPostDocument* GetPostDocument();
+
+private:
+	CommandInput* m_cmdInput;
+	CMainWindow* m_wnd; // TODO: remove
 	QString m_output;
 	std::vector<CCommandDescriptor> m_cmds;
 };

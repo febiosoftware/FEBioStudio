@@ -312,6 +312,11 @@ private:
 
 	bool ImportImage(CImageModel* imgModel);
 
+public:
+	QString GetOpenModelFilename();
+	QString GetSaveModelFilename(QString currentPath = QString(), QString fileName = QString());
+	QString GetExportGeometryFilename(QString& formatOption);
+
 public slots:
     // add to the log 
 	void AddLogEntry(const QString& txt);

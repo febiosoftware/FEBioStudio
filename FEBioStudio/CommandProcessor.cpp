@@ -218,7 +218,7 @@ static bool SetParameters(FSObject* pc, const QStringList& ops)
 	return true;
 }
 
-CommandProcessor::CommandProcessor(CMainWindow* wnd) : m_wnd(wnd)
+CommandProcessor::CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput) : m_wnd(wnd), m_cmdInput(cmdinput)
 {
 	m_cmds.push_back({ "addbc"  , &CommandProcessor::cmd_addbc  , "adds a boundary condition to the current model" });
 	m_cmds.push_back({ "addbl"  , &CommandProcessor::cmd_addbl  , "adds a body load to the current model" });
@@ -255,6 +255,21 @@ CommandProcessor::CommandProcessor(CMainWindow* wnd) : m_wnd(wnd)
 	m_cmds.push_back({ "save"   , &CommandProcessor::cmd_save   , "save the current model" });
 	m_cmds.push_back({ "selpart", &CommandProcessor::cmd_selpart, "select a part",  });
 	m_cmds.push_back({ "selsurf", &CommandProcessor::cmd_selsurf, "select a surface" });
+}
+
+CDocument* CommandProcessor::GetActiveDocument()
+{
+	return m_wnd->GetDocument();
+}
+
+CModelDocument* CommandProcessor::GetModelDocument()
+{
+	return dynamic_cast<CModelDocument*>(GetActiveDocument());
+}
+
+CPostDocument* CommandProcessor::GetPostDocument()
+{
+	return dynamic_cast<CPostDocument*>(GetActiveDocument());
 }
 
 bool CommandProcessor::ProcessCommandLine(QString cmdLine)
@@ -325,7 +340,7 @@ QStringList CommandProcessor::ParseCommandLine(QString cmd)
 
 bool CommandProcessor::cmd_addbc(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
 	if (ops.isEmpty()) m_wnd->on_actionAddNodalBC_triggered();
@@ -356,7 +371,7 @@ bool CommandProcessor::cmd_addbc(QStringList ops)
 
 bool CommandProcessor::cmd_addbl(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
 	if (ops.isEmpty()) m_wnd->on_actionAddBodyLoad_triggered();
@@ -387,7 +402,7 @@ bool CommandProcessor::cmd_addbl(QStringList ops)
 
 bool CommandProcessor::cmd_addci(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
 	if (ops.isEmpty()) m_wnd->on_actionAddContact_triggered();
@@ -418,7 +433,7 @@ bool CommandProcessor::cmd_addci(QStringList ops)
 
 bool CommandProcessor::cmd_addmat(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 	if (ops.empty()) m_wnd->on_actionAddMaterial_triggered();
 	else
@@ -444,7 +459,7 @@ bool CommandProcessor::cmd_addmat(QStringList ops)
 
 bool CommandProcessor::cmd_addnl(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
 	if (ops.isEmpty()) m_wnd->on_actionAddNodalLoad_triggered();
@@ -475,7 +490,7 @@ bool CommandProcessor::cmd_addnl(QStringList ops)
 
 bool CommandProcessor::cmd_addsl(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
 	if (ops.isEmpty()) m_wnd->on_actionAddSurfLoad_triggered();
@@ -506,7 +521,7 @@ bool CommandProcessor::cmd_addsl(QStringList ops)
 
 bool CommandProcessor::cmd_addstep(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
 	FSModel* fem = doc->GetFSModel();
@@ -596,7 +611,7 @@ bool CommandProcessor::cmd_bgstyle(QStringList ops)
 bool CommandProcessor::cmd_close(QStringList ops)
 {
 	if (ValidateArgs(ops, 0, 0) == false) return false;
-	m_wnd->CloseView(m_wnd->GetDocument());
+	m_wnd->CloseView(GetActiveDocument());
 	return true;
 }
 
@@ -633,7 +648,7 @@ bool CommandProcessor::cmd_create(QStringList ops)
 {
 	if (ValidateArgs(ops, 1, -1) == false) return false;
 
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 
 	std::string type = ops[0].toStdString();
@@ -669,7 +684,7 @@ bool CommandProcessor::cmd_exit(QStringList ops)
 
 bool CommandProcessor::cmd_export(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 	if (ValidateArgs(ops, { 0, 2 }) == false) return false;
 	if (ops.empty()) m_wnd->on_actionExportFEModel_triggered();
@@ -692,26 +707,32 @@ bool CommandProcessor::cmd_export(QStringList ops)
 bool CommandProcessor::cmd_expgeo(QStringList ops)
 {
 	if (ValidateArgs(ops, { 0, 2 }) == false) return false;
-	if (ops.empty()) m_wnd->on_actionExportGeometry_triggered();
+	CPostDocument* doc = GetPostDocument();
+	if (doc == nullptr) return NoActiveDoc();
+
+	QString fileName;
+	QString fmt = "feb";
+	if (ops.empty())
+	{
+		fileName = m_cmdInput->GetExportGeometryFilename(fmt);
+		if (fileName.isEmpty()) return CommandCancelled();
+	}
 	else
 	{
-		CPostDocument* doc = m_wnd->GetPostDocument();
-		if (doc)
-		{
-			Post::FEPostModel& fem = *doc->GetFSModel();
-
-			QString fmt = ops[0];
-			if (fmt == "feb4")
-			{
-				string filename = ops[1].toStdString();
-				Post::FEFEBioExport4 fr;
-				bool bsuccess = fr.Save(fem, filename.c_str());
-				if (!bsuccess) return Error("Failed to export geometry to feb4 format.");
-			}
-			else return Error("Unrecognized format.");
-		}
-		else return Error("Can't export to geometry.");
+		fmt = ops[0];
+		fileName = ops[1];
 	}
+
+	if (fmt == "feb")
+	{
+		Post::FEPostModel& fem = *doc->GetFSModel();
+		string filename = fileName.toStdString();
+		Post::FEFEBioExport4 fr;
+		bool bsuccess = fr.Save(fem, filename.c_str());
+		if (!bsuccess) return Error("Failed to export geometry to feb4 format.");
+		m_output = "expgeo feb \"" + fileName + "\"";
+	}
+	else return Error("Unrecognized format.");
 
 	return true;
 }
@@ -849,31 +870,30 @@ bool CommandProcessor::cmd_next(QStringList ops)
 bool CommandProcessor::cmd_open(QStringList ops)
 {
 	if (ValidateArgs(ops, 0, 2) == false) return false;
+
+	QString fileName;
 	if (ops.empty())
-		m_wnd->on_actionOpen_triggered();
-	else 
 	{
-		QString sub = ops[0];
-		if (sub == "recent")
-		{
-			int n = 0;
-			if (ops.size() > 1) n = ops[1].toInt() - 1;
-			QStringList recentFiles = m_wnd->GetRecentFileList();
-			if ((n >= 0) || (n < recentFiles.size()))
-			{
-				QString fileName = recentFiles.at(n);
-				m_wnd->OpenFile(fileName, false, false, false);
-				m_output = "open \"" + fileName + "\"";
-			}
-			else return Error(QString("Can't open recent file %d").arg(n + 1));
-		}
-		else if (ops.size() == 1)
-		{
-			QString fileName = ops[0];
-			m_wnd->OpenFile(fileName, false, false, false);
-		}
-		else return InvalidArgsCount();
+		fileName = m_cmdInput->GetOpenModelFilename();
+		if (fileName.isEmpty()) return CommandCancelled();
 	}
+	else fileName = ops[0];
+
+	if (fileName == "recent")
+	{
+		int n = 0;
+		if (ops.size() > 1) n = ops[1].toInt() - 1;
+		QStringList recentFiles = m_wnd->GetRecentFileList();
+		if ((n >= 0) || (n < recentFiles.size()))
+		{
+			fileName = recentFiles.at(n);
+		}
+		else return Error(QString("Can't open recent file %d").arg(n + 1));
+	}
+	else if (ops.size() > 1) return InvalidArgsCount();
+
+	m_output = "open \"" + fileName + "\"";
+	m_wnd->OpenFile(fileName, false, false, false);
 	return true;
 }
 
@@ -898,22 +918,28 @@ bool CommandProcessor::cmd_reset(QStringList ops)
 bool CommandProcessor::cmd_save(QStringList ops)
 {
 	if (ValidateArgs(ops, 0, 1) == false) return false;
+	QString fileName;
 	if (ops.empty())
-		m_wnd->on_actionSave_triggered();
-	else
 	{
-		CDocument* doc = m_wnd->GetDocument();
-		if (doc == nullptr) return NoActiveDoc();
-		string filename = ops[0].toStdString();
-		if (!doc->SaveDocument(filename)) return Error("Failed to save document.");
-		m_wnd->UpdateTab(doc);
+		fileName = m_cmdInput->GetSaveModelFilename();
+		if (fileName.isEmpty()) return CommandCancelled();
 	}
+	else
+		fileName = ops[0];
+
+	CDocument* doc = GetActiveDocument();
+	if (doc == nullptr) return NoActiveDoc();
+	string filename = fileName.toStdString();
+	if (!doc->SaveDocument(filename)) return Error("Failed to save document.");
+	m_wnd->UpdateTab(doc);
+	m_output = "save \"" + fileName + "\"";
+
 	return true;
 }
 
 bool CommandProcessor::cmd_selpart(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 	if (!ValidateArgs(ops, 1, 1)) return false;
 
@@ -932,7 +958,7 @@ bool CommandProcessor::cmd_selpart(QStringList ops)
 
 bool CommandProcessor::cmd_selsurf(QStringList ops)
 {
-	CModelDocument* doc = m_wnd->GetModelDocument();
+	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 	if (!ValidateArgs(ops, 1, 1)) return false;
 
