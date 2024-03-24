@@ -268,6 +268,10 @@ PathOnMesh ProjectToGeodesic(
 	// process the path
 	ProjectPath(path, snapTol);
 
+	// also project the last point
+	PathOnMesh::POINT& lastPoint = path[points.size() - 1];
+	lastPoint.nface = mesh.FindFace(lastPoint.r); assert(lastPoint.nface >= 0);
+
 	// smoothen the path
 	if (maxIters > 0)
 	{

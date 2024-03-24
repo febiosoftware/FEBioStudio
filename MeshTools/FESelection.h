@@ -372,7 +372,7 @@ public:
 	};
 
 public:
-	FEElementSelection(GModel* ps, FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEElementSelection(FSMesh* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -390,7 +390,6 @@ public:
 
 protected:
 	FSMesh*		m_pMesh;
-	GModel*		m_ps;
 	vector<int>	m_item;
 };
 
@@ -416,7 +415,7 @@ public:
 	};
 
 public:
-	FEFaceSelection(GModel* ps, FSMeshBase* pm) : FESelection(SELECT_FE_FACES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEFaceSelection(FSMeshBase* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -433,7 +432,6 @@ public:
 
 protected:
 	FSMeshBase*		m_pMesh;
-	GModel*		m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -458,7 +456,7 @@ public:
 	};
 
 public:
-	FEEdgeSelection(GModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_EDGES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEEdgeSelection(FSLineMesh* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -473,7 +471,6 @@ public:
 
 protected:
 	FSLineMesh*		m_pMesh;
-	GModel*		m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -498,7 +495,7 @@ public:
 	};
 
 public:
-	FENodeSelection(GModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_NODES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FENodeSelection(FSLineMesh* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -515,5 +512,4 @@ public:
 
 protected:
 	FSLineMesh*	m_pMesh;
-	GModel*	m_ps;
 };

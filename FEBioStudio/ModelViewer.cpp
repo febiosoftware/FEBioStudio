@@ -1457,6 +1457,31 @@ void CModelViewer::OnCopyRigidIC()
 	Select(pcCopy);
 }
 
+void CModelViewer::OnCopyRigidLoad()
+{
+	FSRigidLoad* pc = dynamic_cast<FSRigidLoad*>(m_currentObject); assert(pc);
+	if (pc == 0) return;
+
+	CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+	FSModel* fem = pdoc->GetFSModel();
+
+	// copy the load
+	FSRigidLoad* pcCopy = dynamic_cast<FSRigidLoad*>(FEBio::CloneModelComponent(pc, fem));
+	assert(pcCopy);
+
+	// create a name
+	string name = defaultRigidLoadName(fem, pc);
+	pcCopy->SetName(name);
+
+	// add the load to the doc
+	FSStep* step = fem->GetStep(pc->GetStep());
+	step->AddRigidLoad(pcCopy);
+
+	// update the model viewer
+	Update();
+	Select(pcCopy);
+}
+
 void CModelViewer::OnCopyStep()
 {
 	FSStep* ps = dynamic_cast<FSStep*>(m_currentObject); assert(ps);
@@ -1905,6 +1930,10 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 		break;
 	case MT_RIGID_IC:
 		menu.addAction("Copy", this, SLOT(OnCopyRigidIC()));
+		del = true;
+		break;
+	case MT_RIGID_LOAD:
+		menu.addAction("Copy", this, SLOT(OnCopyRigidLoad()));
 		del = true;
 		break;
 	case MT_CONSTRAINT:

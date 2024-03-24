@@ -781,20 +781,20 @@ void CModelDocument::UpdateSelection(bool report)
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
-			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(gm, pm); break;
-			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(gm, pm); break;
-			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(gm, pm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(pm); break;
+			case ITEM_FACE: if (pm) m_psel = new FEFaceSelection(pm); break;
+			case ITEM_EDGE: if (pm) m_psel = new FEEdgeSelection(pm); break;
+			case ITEM_NODE: if (pm) m_psel = new FENodeSelection(pm); break;
 			}
 		}
 		else
 		{
 			switch (m_vs.nitem)
 			{
-			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(gm, pm); break;
-			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(gm, pmb); break;
-			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(gm, plm); break;
-			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(gm, plm); break;
+			case ITEM_ELEM: if (pm) m_psel = new FEElementSelection(pm); break;
+			case ITEM_FACE: if (pmb) m_psel = new FEFaceSelection(pmb); break;
+			case ITEM_EDGE: if (plm) m_psel = new FEEdgeSelection(plm); break;
+			case ITEM_NODE: if (plm) m_psel = new FENodeSelection(plm); break;
 			}
 		}
 	}

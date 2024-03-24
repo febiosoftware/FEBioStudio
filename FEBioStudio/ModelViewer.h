@@ -155,6 +155,7 @@ public slots:
 	void OnCopyConstraint();
 	void OnCopyRigidBC();
 	void OnCopyRigidIC();
+	void OnCopyRigidLoad();
 	void OnCopyStep();
 	void OnStepMoveUp();
 	void OnStepMoveDown();
