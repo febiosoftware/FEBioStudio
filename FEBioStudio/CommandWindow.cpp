@@ -57,6 +57,11 @@ public:
 		return m_wnd->GetExportGeometryFilename(formatOption);
 	}
 
+	QString GetExportFEModelFilename(QString& formatOption)
+	{
+		return m_wnd->GetExportFEModelFilename(formatOption);
+	}
+
 private:
 	CMainWindow* m_wnd;
 };

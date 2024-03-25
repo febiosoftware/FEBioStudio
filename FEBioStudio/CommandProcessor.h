@@ -45,7 +45,8 @@ public:
 
 	virtual QString GetOpenModelFilename() = 0; // return the filename of the model file to open
 	virtual QString GetSaveModelFilename() = 0; // return the filename of the model file to save
-	virtual QString GetExportGeometryFilename(QString& formatOption) = 0; // return the filename of the model file to save
+	virtual QString GetExportGeometryFilename(QString& formatOption) = 0;
+	virtual QString GetExportFEModelFilename(QString& formatOption) = 0;
 };
 
 class CommandProcessor

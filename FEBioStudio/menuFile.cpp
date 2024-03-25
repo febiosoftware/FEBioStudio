@@ -1313,6 +1313,40 @@ void CMainWindow::on_actionSaveProject_triggered()
 	}
 }
 
+QString CMainWindow::GetExportFEModelFilename(QString& formatOption)
+{
+	// supported file formats
+	QStringList filters;
+	filters << "FEBio files (*.feb)";
+	filters << "NIKE3D files (*.n)";
+
+	QFileDialog dlg(this);
+	dlg.setFileMode(QFileDialog::AnyFile);
+	dlg.setAcceptMode(QFileDialog::AcceptSave);
+	dlg.setNameFilters(filters);
+	if (dlg.exec())
+	{
+		QStringList files = dlg.selectedFiles();
+		QString fileName = QDir::toNativeSeparators(files.at(0));
+
+		// get the filter
+		QString flt = dlg.selectedNameFilter();
+		int nflt = filters.indexOf(flt);
+		switch (nflt)
+		{
+		case 0: formatOption = "feb"; break;
+		case 1: formatOption = "n"; break;
+		default:
+			assert(false);
+			formatOption.clear();
+			break;
+		}
+
+		return fileName;
+	}
+	return QString();
+}
+
 void CMainWindow::on_actionExportFEModel_triggered()
 {
 	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());

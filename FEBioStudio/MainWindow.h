@@ -316,6 +316,7 @@ public:
 	QString GetOpenModelFilename();
 	QString GetSaveModelFilename(QString currentPath = QString(), QString fileName = QString());
 	QString GetExportGeometryFilename(QString& formatOption);
+	QString GetExportFEModelFilename(QString& formatOption);
 
 public slots:
     // add to the log 

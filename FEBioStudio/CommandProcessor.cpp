@@ -687,20 +687,32 @@ bool CommandProcessor::cmd_export(QStringList ops)
 	CModelDocument* doc = GetModelDocument();
 	if (doc == nullptr) return NoActiveDoc();
 	if (ValidateArgs(ops, { 0, 2 }) == false) return false;
-	if (ops.empty()) m_wnd->on_actionExportFEModel_triggered();
+
+	QString fileName;
+	QString format = "feb";
+
+	if (ops.empty())
+	{
+		fileName = m_cmdInput->GetExportFEModelFilename(format);
+		if (fileName.isEmpty()) return CommandCancelled();
+	}
 	else
 	{
-		FSProject& prj = doc->GetProject();
-		QString fmt = ops[0];
-		if (fmt == "feb4")
-		{
-			string filename = ops[1].toStdString();
-			FEBioExport4 writer(prj);
-			bool bsuccess = writer.Write(filename.c_str());
-			if (!bsuccess) return Error(QString::fromStdString(writer.GetErrorMessage()));
-		}
-		else return Error("Unrecognized format.");
+		format = ops[0];
+		fileName = ops[1];
 	}
+
+	if (format == "feb")
+	{
+		FSProject& prj = doc->GetProject();
+		string filename = fileName.toStdString();
+		FEBioExport4 writer(prj);
+		bool bsuccess = writer.Write(filename.c_str());
+		if (!bsuccess) return Error(QString::fromStdString(writer.GetErrorMessage()));
+
+		m_output = "export feb \"" + fileName + "\"";
+	}
+	else return Error("Unrecognized format.");
 	return true;
 }
 
