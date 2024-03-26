@@ -115,17 +115,17 @@ CFiberODFAnalysis::CFiberODFAnalysis(CImageModel* img)
     AddIntParam(1, "Z Divisions")->SetState(Param_HIDDEN);
     AddDoubleParam(m_overlapFraction, "Overlap Fraction")->SetState(Param_HIDDEN);
     AddBoolParam(true, "Do fitting analysis")->SetState(Param_HIDDEN);
-    AddBoolParam(true, "Display in graphics view");
     AddDoubleParam(m_renderScale, "renderScale", "Render Scale")->SetFloatRange(0,1);
     AddBoolParam(false, "Render Mesh Lines");
     AddBoolParam(m_bshowRadial, "Show Radial Mesh");
 	AddIntParam(m_nshowMesh, "Show ODF")->SetEnumNames("ODF\0ODF remeshed\0EFD\0EFD (glyph)\0VM3\0");
-	AddBoolParam(m_nshowSelectionBox, "Show Selection box");
+	AddBoolParam(true, "Show Bounding boxes");
+    AddBoolParam(m_nshowSelectionBox, "Show Selection box");
 	AddIntParam(m_ncolormode, "Coloring mode")->SetEnumNames("ODF\0Fractional anisotropy\0");
-	AddIntParam(m_ndivs, "Divisions")->SetIntRange(1,100);
-	AddIntParam(m_rangeOption, "Range")->SetEnumNames("automatic\0user\0");
-	AddDoubleParam(m_userMin, "User min");
-	AddDoubleParam(m_userMax, "User max");
+	AddIntParam(m_ndivs, "Divisions", "Legend Divisions")->SetIntRange(1,100);
+	AddIntParam(m_rangeOption, "Range", "Legend Range")->SetEnumNames("automatic\0user\0");
+	AddDoubleParam(m_userMin, "User min", "Legend Min");
+	AddDoubleParam(m_userMax, "User max", "Legend Max");
 	AddDoubleParam(0.2, "Butterworth fraction")->SetState(Param_HIDDEN);
 	AddDoubleParam(10., "Butterworth steepness")->SetState(Param_HIDDEN);
 
@@ -746,6 +746,7 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
     glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, spc);
 
 	// render the meshes (and selection box)
+    bool showBoundingBoxes = GetBoolValue(SHOW_BOUND_BOX);
 	bool showSelBox = GetBoolValue(SHOW_SELBOX);
 	CODF* sel = nullptr;
     int showMesh = GetIntValue(SHOW_MESH);
@@ -765,9 +766,12 @@ void CFiberODFAnalysis::render(CGLCamera* cam)
             glPopMatrix();
         }
 
-        glColor3ub(255, 128, 128);
-        glx::renderBox(odf->m_box, false, 1);
-
+        if(showBoundingBoxes)
+        {
+            glColor3ub(255, 128, 128);
+            glx::renderBox(odf->m_box, false, 1);
+        }
+        
         glPopMatrix();
     }
 
@@ -861,12 +865,6 @@ void CFiberODFAnalysis::renderODFMesh(CODF* odf, CGLCamera* cam)
 		cam->Transform();
 */
 	}
-}
-
-
-bool CFiberODFAnalysis::display()
-{
-    return GetBoolValue(DISP);
 }
 
 void CFiberODFAnalysis::OnDelete()

@@ -81,8 +81,8 @@ class CFiberODFAnalysis : public CImageAnalysis
 public:
 	enum ODF_PARAMS {
 		ORDER, T_LOW, T_HIGH, XDIV, YDIV, ZDIV, OVERLAP, FITTING,
-		DISP, RENDERSCALE, MESHLINES, RADIAL,
-		SHOW_MESH, SHOW_SELBOX, COLOR_MODE,
+		RENDERSCALE, MESHLINES, RADIAL,
+		SHOW_MESH, SHOW_BOUND_BOX, SHOW_SELBOX, COLOR_MODE,
 		DIVS, RANGE, USERMIN, USERMAX, BW_FRACTION, BW_STEEPNESS
 	};
 
@@ -102,7 +102,6 @@ public:
     bool renderMeshLines();
     bool showRadial();
 
-    bool display() override;
     void OnDelete() override;
 
 	void SelectODF(int n);

@@ -1832,11 +1832,7 @@ void CGLView::RenderImageData()
             {
                 for(int j = 0; j < img->ImageAnalyses(); j++)
                 {
-                    auto current = img->GetImageAnalysis(j);
-                    if(current->display())
-                    {
-                        current->render(&doc->GetView()->GetCamera());
-                    }
+                    img->GetImageAnalysis(j)->render(&doc->GetView()->GetCamera());
                 }
             }
            
