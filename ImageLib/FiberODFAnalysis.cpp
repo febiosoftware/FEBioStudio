@@ -520,8 +520,12 @@ void CFiberODFAnalysis::UpdateAllMeshes()
 {
 	bool bradial = GetBoolValue(RADIAL);
 	int nshow = GetIntValue(SHOW_MESH);
-	for (auto odf : m_ODFs)
+    int odfs = m_ODFs.size();
+    #pragma omp parallel for
+	for (int index = 0; index < odfs; index++)
 	{
+        auto odf = m_ODFs[index];
+
 		if (odf->IsValid())
 		{
 			switch (nshow)
