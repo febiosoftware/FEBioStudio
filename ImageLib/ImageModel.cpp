@@ -149,6 +149,7 @@ void CImageModel::AddImageRenderer(CGLImageRenderer* render)
 
 size_t CImageModel::RemoveFilter(CImageFilter* filter)
 {
+    delete filter;
     return m_filters.Remove(filter);
 }
 

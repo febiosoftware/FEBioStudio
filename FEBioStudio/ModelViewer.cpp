@@ -2076,8 +2076,10 @@ void CModelViewer::OnAddFiberODFAnalysis()
     CImageModel* img = dynamic_cast<CImageModel*>(m_currentObject); assert(img);
 	if (img == 0) return;
 
+    CModelDocument* pdoc = dynamic_cast<CModelDocument*>(GetDocument());
+
 	CFiberODFAnalysis* po = new CFiberODFAnalysis(img);
-    img->AddImageAnalysis(po);
+    pdoc->DoCommand(new CCmdAddImageAnalysis(po));
 
     Update();
 	Select(po);

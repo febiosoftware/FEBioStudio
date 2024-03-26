@@ -54,6 +54,11 @@ public:
 
 	CImageModel* GetImageModel() { return m_img; }
 
+    // Called when a Command removes the analysis from the ImageModel
+    // used to hide GLWidgets being rendered by the GLWidgetManager
+    // amoung other things
+    virtual void OnDelete() {}
+
 protected:
     CImageModel* m_img;
 

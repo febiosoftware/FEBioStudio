@@ -816,6 +816,11 @@ void CGLDocument::AddImageModel(CImageModel* img)
 	m_img.Add(img);
 }
 
+void CGLDocument::RemoveImageModel(CImageModel* img)
+{
+    m_img.Remove(img);
+}
+
 CImageModel* CGLDocument::GetImageModel(int i)
 {
 	return m_img[i];

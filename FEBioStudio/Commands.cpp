@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include <GeomLib/GModel.h>
 #include <GeomLib/MeshLayer.h>
 #include <MeshLib/FEMeshBuilder.h>
+#include <ImageLib/ImageAnalysis.h>
 
 //////////////////////////////////////////////////////////////////////
 // CCmdAddObject
@@ -3611,4 +3612,61 @@ void CCmdRemoveMeshData::UnExecute()
 	mesh->InsertMeshData(m_index, m_data);
 	if (m_data->GetItemList()) m_data->GetItemList()->IncRef();
 	m_index = -1;
+}
+
+//-----------------------------------------------------------------------------
+// CCmdAddImageAnalysis
+//-----------------------------------------------------------------------------
+
+CCmdAddImageAnalysis::CCmdAddImageAnalysis(CImageAnalysis* analysis)
+    : CCommand("Add image analysis"), m_analysis(analysis), m_del(false)
+{
+
+}
+
+CCmdAddImageAnalysis::~CCmdAddImageAnalysis()
+{
+    if(m_analysis && m_del) delete m_analysis;
+}
+
+void CCmdAddImageAnalysis::Execute()
+{
+    m_analysis->GetImageModel()->AddImageAnalysis(m_analysis);
+    m_del = false;
+}
+
+void CCmdAddImageAnalysis::UnExecute()
+{
+    m_analysis->GetImageModel()->RemoveAnalysis(m_analysis);
+    m_analysis->OnDelete();
+    m_del = true;
+}
+
+
+//-----------------------------------------------------------------------------
+// CCmdDeleteImageAnalysis
+//-----------------------------------------------------------------------------
+
+CCmdDeleteImageAnalysis::CCmdDeleteImageAnalysis(CImageAnalysis* analysis)
+    : CCommand("Delete image analysis"), m_analysis(analysis), m_del(false)
+{
+
+}
+
+CCmdDeleteImageAnalysis::~CCmdDeleteImageAnalysis()
+{
+    if(m_analysis && m_del) delete m_analysis;
+}
+
+void CCmdDeleteImageAnalysis::Execute()
+{
+    m_analysis->GetImageModel()->RemoveAnalysis(m_analysis);
+    m_analysis->OnDelete();
+    m_del = true;
+}
+
+void CCmdDeleteImageAnalysis::UnExecute()
+{
+    m_analysis->GetImageModel()->AddImageAnalysis(m_analysis);
+    m_del = false;
 }

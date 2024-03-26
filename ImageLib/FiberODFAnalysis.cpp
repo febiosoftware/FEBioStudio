@@ -869,6 +869,11 @@ bool CFiberODFAnalysis::display()
     return GetBoolValue(DISP);
 }
 
+void CFiberODFAnalysis::OnDelete()
+{
+    m_pbar->hide();
+}
+
 int CFiberODFAnalysis:: ODFs() const 
 { 
 	return (int) m_ODFs.size(); 

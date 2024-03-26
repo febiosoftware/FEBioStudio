@@ -103,6 +103,7 @@ public:
     bool showRadial();
 
     bool display() override;
+    void OnDelete() override;
 
 	void SelectODF(int n);
 
