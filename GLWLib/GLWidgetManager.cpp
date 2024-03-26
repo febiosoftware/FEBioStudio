@@ -262,7 +262,7 @@ void CGLWidgetManager::DrawWidgetsInLayer(QPainter* painter, int layer)
 	for (int i = 0; i < (int)m_Widget.size(); ++i)
 	{
 		GLWidget* pw = m_Widget[i];
-		if (pw->layer() == layer) DrawWidget(pw, painter);
+		if (pw->visible() && pw->layer() == layer) DrawWidget(pw, painter);
 	}
 }
 
