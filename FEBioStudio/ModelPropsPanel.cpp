@@ -432,6 +432,7 @@ public:
 		propStack->addWidget(plt);
 		propStack->addWidget(math);
 		propStack->addWidget(math2);
+        propStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
 		sel1 = new CItemListSelectionBox;
 		sel1->setObjectName("select1");

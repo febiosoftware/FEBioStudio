@@ -1697,7 +1697,7 @@ void CModelViewer::ShowContextMenu(CModelTreeItem* data, QPoint pt)
 			CModelDocument* doci = dynamic_cast<CModelDocument*>(docMng->GetDocument(i));
 			if (doci && (doc != doci))
 			{
-				QAction* ac = sub->addAction(QString::fromStdString(doci->GetDocFileName()));
+				QAction* ac = sub->addAction(QString::fromStdString(doci->GetDocTitle()));
 				ac->setData(i);
 			}
 		}
