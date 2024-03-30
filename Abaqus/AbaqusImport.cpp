@@ -52,11 +52,43 @@ AbaqusImport::AbaqusImport(FSProject& prj) : FSFileImport(prj)
 	m_bssection = true;
 
 	m_breadPhysics = false;
+
+	AddBoolParam(true, "import_nodesets", "Import nodesets");
+	AddBoolParam(true, "import_elemsets", "Import element sets");
+	AddBoolParam(true, "import_surfaces", "Import surfaces");
+	AddBoolParam(false, "auto_partition", "Auto-partition from element sets");
+	AddBoolParam(true, "auto_partition_surface", "Auto-partition surface");
+	AddBoolParam(true, "process_solid_sections", "Process solid sections");
 }
 
 //-----------------------------------------------------------------------------
 AbaqusImport::~AbaqusImport()
 {
+}
+
+//-----------------------------------------------------------------------------
+bool AbaqusImport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_bnodesets = GetBoolValue(0);
+		m_belemsets = GetBoolValue(1);
+		m_bfacesets = GetBoolValue(2);
+		m_bautopart = GetBoolValue(3);
+		m_bautosurf = GetBoolValue(4);
+		m_bssection = GetBoolValue(5);
+	}
+	else
+	{
+		SetBoolValue(0, m_bnodesets);
+		SetBoolValue(1, m_belemsets);
+		SetBoolValue(2, m_bfacesets);
+		SetBoolValue(3, m_bautopart);
+		SetBoolValue(4, m_bautosurf);
+		SetBoolValue(5, m_bssection);
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -164,20 +196,14 @@ bool AbaqusImport::Load(const char* szfile)
 	}
 	catch (...)
 	{
+		Close();
 		return false;
 	}
 
+	Close();
+
 	// build the model
 	if (build_model() == false) return false;
-
-	// The abaqus reader currently still uses the old FE classes, so we need to convert. 
-	std::ostringstream log;
-	m_prj.ConvertToNewFormat(log);
-	std::string s = log.str();
-	if (s.empty() == false)
-	{
-		errf(s.c_str());
-	}
 
 	return true;
 }
@@ -682,6 +708,8 @@ bool AbaqusImport::read_elements(char* szline, FILE* fp)
             else if (szicmp(sz, "S9R5"  )) ntype = FE_QUAD9;
             else if (szicmp(sz, "M3D3"  )) ntype = FE_TRI3;
             else if (szicmp(sz, "T3D2"  )) ntype = FE_BEAM2;
+            else if (szicmp(sz, "CPS3"  )) ntype = FE_TRI3;
+            else if (szicmp(sz, "CPS4"  )) ntype = FE_QUAD4;
 			else if (szicmp(sz, "SPRINGA"))
 			{
 				ntype = -1;
@@ -1520,6 +1548,8 @@ bool AbaqusImport::read_assembly(char* szline, FILE* fp)
 	asmbly->m_name = szname;
 
 	read_line(szline, fp);
+
+	return true;
 }
 
 //-----------------------------------------------------------------------------
@@ -1841,6 +1871,15 @@ bool AbaqusImport::build_physics()
 
 	// clean up
 	Mat.clear();
+
+	// The abaqus reader currently still uses the old FE classes, so we need to convert. 
+	std::ostringstream log;
+	m_prj.ConvertToNewFormat(log);
+	std::string s = log.str();
+	if (s.empty() == false)
+	{
+		errf(s.c_str());
+	}
 
 	return true;
 }

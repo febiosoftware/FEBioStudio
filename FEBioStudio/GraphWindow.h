@@ -45,6 +45,10 @@ namespace Ui {
 	class CGraphWindow;
 };
 
+namespace Post {
+	class ModelDataField;
+};
+
 //=================================================================================================
 // Base class for graph tools
 class CPlotTool : public QWidget
@@ -194,12 +198,18 @@ public slots:
 	void onColorChanged(QColor c);
 
 private:
+	static double graphdata(double x);
+
+private:
 	CGraphWidget*	m_graph;
 	QLineEdit*		m_edit;
 
 	bool			m_bvalid;
 	std::string		m_math;
 	QColor			m_col;
+
+	static MathPlot* m_pThis;
+	LoadCurve	m_data;
 };
 
 //=================================================================================================
@@ -338,6 +348,8 @@ public:
 protected:
 	void AddToolBarWidget(QWidget* w);
 
+	void AddPanel(QWidget* w);
+
 	virtual void setDataSource(int n) {}
 
 	int currentDataSource();
@@ -393,7 +405,7 @@ private:
 // Specialized graph for displaying data from a model's selection
 
 namespace Post {
-	class GLProbe;
+	class GLPointProbe;
 	class GLRuler;
 	class GLMusclePath;
 }
@@ -419,7 +431,8 @@ private:
 	void addSelectedFaces();
 	void addSelectedElems();
 	void addObjectData(int n);
-	void addProbeData(Post::GLProbe* probe);
+	void addGlobalData(Post::ModelDataField* pdf, int n);
+	void addProbeData(Post::GLPointProbe* probe);
 	void addRulerData(Post::GLRuler* ruler);
 	void addMusclePathData(Post::GLMusclePath* musclePath);
 

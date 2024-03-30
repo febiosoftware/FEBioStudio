@@ -267,6 +267,7 @@ public:
 	void ClearFEGroups();
 
 	void RemoveEmptyFEGroups();
+	void RemoveUnusedFEGroups();
 
 	GNode* FindNodeFromTag(int ntag);
 

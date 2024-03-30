@@ -28,9 +28,7 @@ SOFTWARE.*/
 #include <QWidget>
 #include <PostLib/FEPostModel.h>
 
-namespace Post {
-	class CImageModel;
-}
+class CImageModel;
 
 class CImageViewer : public QWidget, public Post::FEModelDependant
 {
@@ -42,7 +40,7 @@ protected:
 public:
 	CImageViewer(QWidget* parent = nullptr);
 
-	void SetImageModel(Post::CImageModel* img);
+	void SetImageModel(CImageModel* img);
 
 	void Update();
 

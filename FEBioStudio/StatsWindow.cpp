@@ -37,11 +37,50 @@ SOFTWARE.*/
 #include <QCheckBox>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QGridLayout>
+#include <QLineEdit>
 #include <PostLib/constants.h>
 #include <PostGL/GLDataMap.h>
 #include <PostGL/GLModel.h>
 #include <PostGL/GLPlaneCutPlot.h>
 #include "PostDocument.h"
+
+class CStatsWidget : public QWidget
+{
+	QLineEdit* m_min;
+	QLineEdit* m_max;
+	QLineEdit* m_avg;
+	QLineEdit* m_std;
+	QLineEdit* m_ste;
+
+public:
+	CStatsWidget(QWidget* parent) : QWidget(parent)
+	{
+		QGridLayout* l = new QGridLayout;
+		l->addWidget(new QLabel("Min:"), 0, 0); l->addWidget(m_min = new QLineEdit, 0, 1);
+		l->addWidget(new QLabel("Max:"), 0, 2); l->addWidget(m_max = new QLineEdit, 0, 3);
+
+		l->addWidget(new QLabel("Mean:"), 1, 0); l->addWidget(m_avg = new QLineEdit, 1, 1);
+		l->addWidget(new QLabel("std. dev.:"), 1, 2); l->addWidget(m_std = new QLineEdit, 1, 3);
+		l->addWidget(new QLabel("std. err.:"), 1, 4); l->addWidget(m_ste = new QLineEdit, 1, 5);
+
+		m_min->setReadOnly(true);
+		m_max->setReadOnly(true);
+		m_avg->setReadOnly(true);
+		m_std->setReadOnly(true);
+		m_ste->setReadOnly(true);
+
+		setLayout(l);
+
+		setSizePolicy(QSizePolicy::Preferred, QSizePolicy::Maximum);
+	}
+
+	void SetMin(double v) { m_min->setText(QString::number(v)); }
+	void SetMax(double v) { m_max->setText(QString::number(v)); }
+	void SetAvg(double v) { m_avg->setText(QString::number(v)); }
+	void SetStd(double v) { m_std->setText(QString::number(v)); }
+	void SetSte(double v) { m_ste->setText(QString::number(v)); }
+};
 
 CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWindow(wnd, postDoc, 0)
 {
@@ -49,6 +88,10 @@ CStatsWindow::CStatsWindow(CMainWindow* wnd, CPostDocument* postDoc) : CGraphWin
 	wndTitle += ":Stats";
 	if (postDoc) wndTitle += QString(" [%1]").arg(QString::fromStdString(postDoc->GetDocTitle()));
 	setWindowTitle(wndTitle);
+
+	AddPanel(w = new CStatsWidget(this));
+
+	GetPlotWidget()->showLegend(false);
 
 	setMinimumWidth(500);
 	resize(600, 500);
@@ -60,87 +103,74 @@ void CStatsWindow::Update(bool breset, bool bfit)
 	CPostDocument* doc = GetPostDoc();
 	if (doc->IsValid() == false) return;
 
+	Post::FEState* ps = doc->GetGLModel()->GetActiveState();
+
 	Post::FEPostMesh* pm = doc->GetFSModel()->GetFEMesh(0);
-	int N, i, n;
 
 	bool belemfield = IS_ELEM_FIELD(doc->GetEvalField());
 
-	N = 0;
+	// collect the data
+	std::vector<double> data;
+
 	if (belemfield)
 	{
-		for (i=0; i<pm->Elements(); ++i) if (pm->ElementRef(i).IsEnabled()) ++N;
+		data.reserve(pm->Elements());
+		for (int i = 0; i < pm->Elements(); ++i)
+		{
+			if (pm->ElementRef(i).IsEnabled())
+			{
+				double v = ps->m_ELEM[i].m_val;
+				data.push_back(v);
+			}
+		}
 	}
 	else
 	{
-		for (i=0; i<pm->Nodes(); ++i) if (pm->Node(i).IsEnabled()) ++N;
+		data.reserve(pm->Nodes());
+		for (int i = 0; i < pm->Nodes(); ++i)
+		{
+			if (pm->Node(i).IsEnabled())
+			{
+				double v = ps->m_NODE[i].m_val;
+				data.push_back(v);
+			}
+		}
+	}
+	size_t N = data.size();
+	if (N == 0) return;
+
+	// evaluate the statistics
+	double minv = data[0], maxv = data[0], sum = 0, sum2 = 0;
+	for (double v : data)
+	{
+		if (v < minv) minv = v;
+		if (v > maxv) maxv = v;
+
+		sum += v;
+		sum2 += v*v;
 	}
 
-	int nbins = (int) sqrt((double)N);
+	double M = (double)N;
+	double avg = sum / M;
+	double std = sqrt((sum2 - sum * sum / M) / M);
+	double ste = std / M;
 
+	// bin the data
+	int nbins = (int)sqrt((double)N);
 	std::vector<int> bin(nbins, 0);
-
-	Post::FEState* ps = doc->GetGLModel()->GetActiveState();
-	double v, minv = 0, maxv = 0;
-	N = 0;
-	if (belemfield)
+	double D = (minv != maxv ? 1.0 / (maxv - minv) : 1.0);
+	for (double v : data)
 	{
-		for (i=0; i<pm->Elements(); ++i)
-		{
-			FEElement_& elem = pm->ElementRef(i);
-			if (elem.IsEnabled())
-			{
-				v = ps->m_ELEM[i].m_val;
-				if (N==0) minv = maxv = v;
-				if (v < minv) minv = v;
-				if (v > maxv) maxv = v;
-				++N;
-			}
-		}
-	}
-	else
-	{
-		for (i=0; i<pm->Nodes(); ++i)
-		{	
-			FSNode& node = pm->Node(i);
-			if (node.IsEnabled())
-			{
-				v = ps->m_NODE[i].m_val;
-				if (N==0) minv = maxv = v;
-				if (v < minv) minv = v;
-				if (v > maxv) maxv = v;
-				++N;
-			}
-		}
+		int n = (int) ((nbins-1)*((v - minv)*D));
+		if ((n>=0) && (n<nbins)) bin[n]++;
 	}
 
-	if (minv == maxv) ++maxv;
-
-	if (belemfield)
-	{
-		for (i=0; i<pm->Elements(); ++i)
-		{
-			FEElement_& elem = pm->ElementRef(i);
-			if (elem.IsEnabled())
-			{
-				v = ps->m_ELEM[i].m_val;
-				n = (int) ((nbins-1)*((v - minv)/(maxv - minv)));
-				if ((n>=0) && (n<nbins)) bin[n]++;
-			}
-		}
-	}
-	else
-	{
-		for (i=0; i<pm->Nodes(); ++i)
-		{
-			FSNode& node = pm->Node(i);
-			if (node.IsEnabled())
-			{
-				v = ps->m_NODE[i].m_val;
-				n = (int) ((nbins-1)*((v - minv)/(maxv - minv)));
-				if ((n>=0) && (n<nbins)) bin[n]++;
-			}
-		}
-	}
+	// output new stats
+	w->SetMin(minv);
+	w->SetMax(maxv);
+	w->SetAvg(avg);
+	w->SetStd(std);
+	w->SetSte(ste);
 
 	ClearPlots();
 	

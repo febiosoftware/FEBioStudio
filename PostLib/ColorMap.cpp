@@ -103,10 +103,10 @@ GLColor CColorMap::map(float fval) const
 	GLColor c2 = m_col[l-1];
 
 	GLColor col;
-	col.r = Byte(((w - m_pos[l-1])*c1.r + (m_pos[l]-w)*c2.r) * dp);
-	col.g = Byte(((w - m_pos[l-1])*c1.g + (m_pos[l]-w)*c2.g) * dp);
-	col.b = Byte(((w - m_pos[l-1])*c1.b + (m_pos[l]-w)*c2.b) * dp);
-	col.a = Byte(((w - m_pos[l-1])*c1.a + (m_pos[l]-w)*c2.a) * dp);
+	col.r = uint8_t(((w - m_pos[l-1])*c1.r + (m_pos[l]-w)*c2.r) * dp);
+	col.g = uint8_t(((w - m_pos[l-1])*c1.g + (m_pos[l]-w)*c2.g) * dp);
+	col.b = uint8_t(((w - m_pos[l-1])*c1.b + (m_pos[l]-w)*c2.b) * dp);
+	col.a = uint8_t(((w - m_pos[l-1])*c1.a + (m_pos[l]-w)*c2.a) * dp);
 
 	return col;
 }

@@ -3,7 +3,7 @@
 #include <MeshLib/FEItemListBuilder.h>
 #include "GMaterial.h"
 #include <list>
-#include "IHasItemList.h"
+#include <MeshLib/IHasItemList.h>
 //using namespace std;
 
 using std::list;

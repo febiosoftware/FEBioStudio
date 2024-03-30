@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "MeshTools.h"
 #include "FENodeNodeList.h"
+#include "Intersect.h"
 using namespace std;
 
 // calculate the closest-fitting circle of a triangle
@@ -491,7 +492,7 @@ bool projectToLine(const vec3d& p, const vec3d& r0, const vec3d& r1, vec3d& q)
 	else return false;
 }
 
-bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const vec3d& r2, vec3d& q)
+bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const vec3d& r2, vec3d& q, Intersection* intersect)
 {
 	vec3d e1 = r1 - r0;
 	vec3d e2 = r2 - r0;
@@ -521,6 +522,13 @@ bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const v
 		double rp = E1 * (q - r0);
 		double sp = E2 * (q - r0);
 
+		if (intersect)
+		{
+			intersect->r[0] = rp;
+			intersect->r[1] = sp;
+			intersect->point = q;
+		}
+
 		return ((rp >= 0) && (sp >= 0) && (rp + sp <= 1.0));
 
 		//		vec3d s = q - r0;
@@ -533,7 +541,7 @@ bool projectToTriangle(const vec3d& p, const vec3d& r0, const vec3d& r1, const v
 //-----------------------------------------------------------------------------
 // Project a point to the surface of a FE mesh
 //
-bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q)
+bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q, Intersection* intersect)
 {
 	double R[2], u[2], D;
 
@@ -603,6 +611,13 @@ bool projectToQuad(const vec3d& p, const vec3d y[4], vec3d& q)
 	}
 	while ((normu > 1e-7) && (n < NMAX));
 
+	if (intersect)
+	{
+		intersect->r[0] = r;
+		intersect->r[1] = s;
+		intersect->point = q;
+	}
+
 	const double eps = 0.001;
 	return ((r > -1.0 - eps) && (r < 1.0 + eps) && (s > -1.0 - eps) && (s < 1.0 + eps));
 }
@@ -646,12 +661,13 @@ vec3d projectToEdge(const FSMeshBase& m, const vec3d& p, int gid)
 	return rmin;
 }
 
-vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID)
+vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID, Intersection* intersect)
 {
 	double Dmin = 1e99;
 	vec3d rmin = p;
 	vec3d r[4];
 	if (faceID) *faceID = -1;
+	if (intersect) intersect->m_faceIndex = -1;
 	for (int i = 0; i<m.Faces(); ++i)
 	{
 		const FSFace& face = m.Face(i);
@@ -674,8 +690,9 @@ vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID
 			// try to project it on the face
 			vec3d q(0, 0, 0);
 			bool bproject = false;
-			if (nf == 3) bproject = projectToTriangle(p, r[0], r[1], r[2], q);
-			else if (nf == 4) bproject = projectToQuad(p, r, q);
+			Intersection is;
+			if (nf == 3) bproject = projectToTriangle(p, r[0], r[1], r[2], q, &is);
+			else if (nf == 4) bproject = projectToQuad(p, r, q, &is);
 
 			if (bproject)
 			{
@@ -685,6 +702,11 @@ vec3d projectToSurface(const FSMeshBase& m, const vec3d& p, int gid, int* faceID
 					rmin = q;
 					Dmin = dj;
 					if (faceID) *faceID = i;
+					if (intersect)
+					{
+						*intersect = is;
+						intersect->m_faceIndex = i;
+					}
 				}
 			}
 		}
@@ -963,6 +985,24 @@ double TriangleQuality(vec3d r[3])
 	return sqrt(Q2);
 }
 
+//-----------------------------------------------------------------------------
+double TriMaxDihedralAngle(const FSMeshBase& mesh, const FSFace& face)
+{
+	if (face.Type() != FE_FACE_TRI3) return 0.;
+
+	double maxAngle = 0;
+	for (int i = 0; i < 3; ++i)
+	{
+		if (face.m_nbr[i] >= 0)
+		{
+			const FSFace& fi = mesh.Face(face.m_nbr[i]);
+			double a = acos(face.m_fn * fi.m_fn);
+			if (a > maxAngle) maxAngle = a;
+		}
+	}
+	return maxAngle * 180.0 / PI;
+}
+
 
 //-----------------------------------------------------------------------------
 bool FindElementRef(FSCoreMesh& m, const vec3f& p, int& nelem, double r[3])
@@ -1030,6 +1070,23 @@ bool ProjectInsideElement(FSCoreMesh& m, FEElement_& el, const vec3f& p, double 
 	return IsInsideElement(el, r, 0.001);
 }
 
+//-----------------------------------------------------------------------------
+bool ProjectToElement(FSElement& el, const vec3f& p, vec3f* x0, vec3f* xt, vec3f& q)
+{
+	int ne = el.Nodes();
+	BOX box;
+	for (int i = 0; i < ne; ++i) box += to_vec3d(x0[i]);
+	if (box.IsInside(to_vec3d(p)) == false) return false;
+
+	double r[3] = { 0,0,0 };
+	project_inside_element(el, p, r, x0);
+	if (IsInsideElement(el, r, 0.001))
+	{
+		q = el.eval(xt, r[0], r[1], r[2]);
+		return true;
+	}
+	return false;
+}
 
 //-----------------------------------------------------------------------------
 bool IsInsideElement(FEElement_& el, double r[3], const double tol)

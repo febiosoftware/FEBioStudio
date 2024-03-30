@@ -27,6 +27,7 @@ SOFTWARE.*/
 #pragma once
 #include "FEElement.h"
 #include "FEMeshBase.h"
+#include "Mesh_Data.h"
 #include <FSCore/Archive.h>
 #include <vector>
 
@@ -42,6 +43,8 @@ public:
 	FSSurfaceMesh(const FSSurfaceMesh& mesh);
 	FSSurfaceMesh(TriMesh& triMesh);
 	virtual ~FSSurfaceMesh();
+
+	void Clear();
 
 	FSSurfaceMesh& operator = (const FSSurfaceMesh& mesh);
 
@@ -125,6 +128,12 @@ public:
 
 	void AutoPartitionEdges();
 	void AutoPartitionNodes();
+
+	Mesh_Data& GetMeshData();
+
+private:
+	// mesh data (used for data evaluation)
+	Mesh_Data	m_data;
 };
 
 // Create a TriMesh from a surface mesh

@@ -160,7 +160,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 		ModelDataField& d = *(*pd);
 		int dataClass = d.DataClass();
 		int dataComponents = d.components(m_class);
-		if (dataComponents > 0)
+		if ((dataClass != OBJECT_DATA) && (dataComponents > 0))
 		{
 			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
 			{
@@ -182,7 +182,7 @@ void CModelDataSelector::BuildMenu(QMenu* menu)
 					QAction* pa = sub->addAction(QString::fromStdString(s));
 					pa->setData(QVariant(nfield));
 
-					if (d.Type() == DATA_ARRAY_VEC3F)
+					if (d.Type() == DATA_ARRAY_VEC3)
 					{
 						if ((n > 0) && ((n + 1) % 4 == 0))
 						{
@@ -207,7 +207,7 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 	{
 		ModelDataField& d = *data[i];
 		int dataClass = d.DataClass();
-		int dataComponents = d.components(DATA_SCALAR);
+		int dataComponents = d.components(TENSOR_SCALAR);
 		if (dataComponents > 0)
 		{
 			if ((dataComponents == 1) && (d.Type() != DATA_ARRAY))
@@ -225,12 +225,12 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 				for (int n = 0; n < dataComponents; ++n)
 				{
 					int nfield = BUILD_FIELD(dataClass, i, n);
-					std::string s = d.componentName(n, DATA_SCALAR);
+					std::string s = d.componentName(n, TENSOR_SCALAR);
 
 					QAction* pa = sub->addAction(QString::fromStdString(s));
 					pa->setData(QVariant(nfield));
 
-					if (d.Type() == DATA_ARRAY_VEC3F)
+					if (d.Type() == DATA_ARRAY_VEC3)
 					{
 						if ((n > 0) && ((n + 1) % 4 == 0))
 						{
@@ -240,6 +240,47 @@ void CPlotObjectDataSelector::BuildMenu(QMenu* menu)
 				}
 			}
 		}
+	}
+}
+
+CPlotGlobalDataSelector::CPlotGlobalDataSelector(Post::FEDataFieldPtr pdf) : m_pdf(pdf)
+{
+
+}
+
+void CPlotGlobalDataSelector::BuildMenu(QMenu* menu)
+{
+	switch ((*m_pdf)->Type())
+	{
+	case DATA_SCALAR: {
+		QAction* pa = menu->addAction("value");
+		pa->setData(1);
+	}
+		break;
+	case DATA_VEC3:
+		break;
+	case DATA_MAT3S:
+		break;
+	case DATA_MAT3SD:
+		break;
+	case DATA_TENS4S:
+		break;
+	case DATA_MAT3:
+		break;
+	case DATA_ARRAY:
+		{
+			std::vector<std::string> names = (*m_pdf)->GetArrayNames();
+			for (int i = 0; i < names.size(); ++i)
+			{
+				QAction* pa = menu->addAction(QString::fromStdString(names[i]));
+				pa->setData(i + 1);
+			}
+		}
+		break;
+	case DATA_ARRAY_VEC3:
+		break;
+	default:
+		break;
 	}
 }
 

@@ -502,6 +502,27 @@ double TriQuality(const FSMesh& mesh, const FSElement& el)
 }
 
 //-----------------------------------------------------------------------------
+double TriMaxDihedralAngle(const FSMesh& mesh, const FSElement& el)
+{
+	if (el.IsType(FE_TRI3) == false) return 0.;
+
+	if (el.m_face[0] < 0) return 0;
+	const FSFace& f = mesh.Face(el.m_face[0]);
+
+	double maxAngle = 0;
+	for (int i = 0; i < 3; ++i)
+	{
+		if (f.m_nbr[i] >= 0)
+		{
+			const FSFace& fi = mesh.Face(f.m_nbr[i]);
+			double a = acos(f.m_fn * fi.m_fn);
+			if (a > maxAngle) maxAngle = a;
+		}
+	}
+	return maxAngle * 180.0 / PI;
+}
+
+//-----------------------------------------------------------------------------
 //! Calculate tet-element quality
 //! This calculates the radius-edge ratio
 double TetQuality(const FSMesh& mesh, const FSElement& el)

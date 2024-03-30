@@ -32,6 +32,7 @@ SOFTWARE.*/
 #include <MeshTools/LaplaceSolver.h>
 #include <GeomLib/GObject.h>
 #include <MeshLib/FENodeData.h>
+#include <MeshLib/FEElementData.h>
 #include <QLineEdit>
 #include <QBoxLayout>
 #include <QFormLayout>
@@ -41,7 +42,6 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QLabel>
 #include <QHeaderView>
-#include <QMessageBox>
 #include <QComboBox>
 #include <QCheckBox>
 
@@ -54,6 +54,8 @@ public:
 	QLineEdit*		m_val;
 	QCheckBox*		m_matAxes;
 	QCheckBox*		m_cross;
+	QLineEdit*		m_otPlane;
+	QLineEdit*		m_inPlane;
 
 	QComboBox*	m_matList;
 
@@ -62,6 +64,9 @@ public:
 	QLineEdit*	m_sor;
 
 	QLineEdit* m_normal;
+
+	QCheckBox* m_genMap;
+	QLineEdit* m_mapName;
 
 public:
 	UIFiberGeneratorTool(CFiberGeneratorTool* w)
@@ -88,11 +93,17 @@ public:
 		f->addRow("Material:", m_matList = new QComboBox);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
-		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
+		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.8));
 		f->addRow("Generate mat axes:", m_matAxes = new QCheckBox);
 		f->addRow("Generate cross product:", m_cross = new QCheckBox);
 		f->addRow("Normal vector:", m_normal = new QLineEdit);
+		f->addRow("Out-plane rotation (deg):", m_otPlane = new QLineEdit()); m_otPlane->setValidator(new QDoubleValidator());
+		f->addRow("In-plane rotation (deg):", m_inPlane = new QLineEdit()); m_inPlane->setValidator(new QDoubleValidator());
+		f->addRow(m_genMap = new QCheckBox("Generate map"), m_mapName = new QLineEdit()); m_mapName->setDisabled(true);
 		m_normal->setText(Vec3dToString(vec3d(0, 0, 1)));
+
+		m_otPlane->setText(QString::number(0));
+		m_inPlane->setText(QString::number(0));
 
 		m_maxIters->setValidator(new QIntValidator());
 		m_tol->setValidator(new QDoubleValidator());
@@ -109,6 +120,7 @@ public:
 		QObject::connect(m_add, SIGNAL(clicked()), w, SLOT(OnAddClicked()));
 		QObject::connect(m_apply, SIGNAL(clicked()), w, SLOT(OnApply()));
 		QObject::connect(m_normal, SIGNAL(editingFinished()), w, SLOT(validateNormal()));
+		QObject::connect(m_genMap, SIGNAL(toggled(bool)), m_mapName, SLOT(setEnabled(bool)));
 	}
 };
 
@@ -227,6 +239,18 @@ void CFiberGeneratorTool::OnApply()
 		return;
 	}
 
+	bool genMap = ui->m_genMap->isChecked();
+	QString mapName;
+	if (genMap)
+	{
+		mapName = ui->m_mapName->text();
+		if (mapName.isEmpty())
+		{
+			QMessageBox::critical(GetMainWindow(), "Tool", "Please provide a name for the map.");
+			return;
+		}
+	}
+
 	int NN = pm->Nodes();
 	vector<int> bn(NN, 0);
 	vector<double> val(NN, 0.0);
@@ -260,6 +284,7 @@ void CFiberGeneratorTool::OnApply()
 	// tag all elements that should be included in the solve
 	pm->TagAllElements(-1);
 	int n = ui->m_matList->currentIndex();
+	int matId = -1;
 	if (n >= 0)
 	{
 		CModelDocument* doc = GetMainWindow()->GetModelDocument();
@@ -271,7 +296,7 @@ void CFiberGeneratorTool::OnApply()
 				GMaterial* mat = fem->GetMaterial(n);
 				if (mat)
 				{
-					int matId = mat->GetID();
+					matId = mat->GetID();
 
 					int NE = pm->Elements();
 					for (int i = 0; i < NE; ++i)
@@ -317,7 +342,7 @@ void CFiberGeneratorTool::OnApply()
 	// create node data
 	FENodeData data(m_po);
 	data.Create(&nodeSet, 0.0);
-	for (int i = 0; i < NN; i++) data.SetScalar(i, val[i]);
+	for (int i = 0; i < NN; i++) data.setScalar(i, val[i]);
 
 	// calculate gradient and assign to element fiber
 	vector<vec3d> grad;
@@ -340,17 +365,81 @@ void CFiberGeneratorTool::OnApply()
 		}
 	}
 
+	// do plane rotations
+	double outAngle = ui->m_otPlane->text().toDouble();
+	if (outAngle != 0)
+	{
+		for (int i = 0; i < grad.size(); ++i)
+		{
+			vec3d a = grad[i] ^ N;
+			quatd q(outAngle * PI / 180.0, a);
+			q.RotateVector(grad[i]);
+		}
+	}
+
+	double inAngle  = ui->m_inPlane->text().toDouble();
+	if (inAngle != 0)
+	{
+		quatd q(inAngle* PI / 180.0, N);
+		for (int i = 0; i < grad.size(); ++i)
+		{
+			q.RotateVector(grad[i]);
+		}
+	}
+
+
 	bool matAxes = ui->m_matAxes->isChecked();
 	if (matAxes == false)
 	{
-		// assign to element fibers
-		int NE = pm->Elements();
-		for (int i = 0; i < NE; ++i)
+		if (genMap)
 		{
-			FSElement& el = pm->Element(i);
-			if (el.m_ntag == 1)
+			int parts = po->Parts();
+			FSPartSet* partSet = new FSPartSet(po);
+			partSet->SetName(mapName.toStdString());
+			for (int i = 0; i < parts; ++i)
 			{
-				el.m_fiber = grad[i];
+				GPart* pg = po->Part(i);
+				if (pg->GetMaterialID() == matId)
+				{
+					partSet->add(i);
+				}
+			}
+			po->AddFEPartSet(partSet);
+
+			FEPartData* pdata = new FEPartData(po->GetFEMesh());
+			pdata->SetName(mapName.toStdString());
+			pdata->Create(partSet, DATA_VEC3, DATA_ITEM);
+			pm->AddMeshDataField(pdata);
+
+			for (int i = 0; i < pm->Elements(); ++i)
+			{
+				pm->Element(i).m_ntag = i;
+			}
+
+			FEElemList* elemList = pdata->BuildElemList();
+			int NE = elemList->Size();
+			auto it = elemList->First();
+			int n = 0;
+			for (int i = 0; i < NE; ++i, ++it)
+			{
+				FEElement_& el = *it->m_pi;
+				pdata->FEMeshData::set(n++, grad[el.m_ntag]);
+			}
+			delete elemList;
+
+			GetMainWindow()->UpdateModel(pdata);
+		}
+		else
+		{
+			// assign to element fibers
+			int NE = pm->Elements();
+			for (int i = 0; i < NE; ++i)
+			{
+				FSElement& el = pm->Element(i);
+				if (el.m_ntag == 1)
+				{
+					el.m_fiber = grad[i];
+				}
 			}
 		}
 	}

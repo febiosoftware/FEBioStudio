@@ -62,6 +62,8 @@ CPointDistanceTool::CPointDistanceTool(CMainWindow* wnd) : CBasicTool(wnd, "Poin
 	addProperty("Dy", CProperty::Float)->setFlags(CProperty::Visible);
 	addProperty("Dz", CProperty::Float)->setFlags(CProperty::Visible);
 	addProperty("Length", CProperty::Float)->setFlags(CProperty::Visible);
+
+	SetInfo("Calculates the distance between two nodes.");
 }
 
 void CPointDistanceTool::Activate()

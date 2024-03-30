@@ -44,6 +44,10 @@ public:
 
 	virtual FSMeshBase* ApplyModifier(FSMeshBase* pm);
 
+	// derived classes can return true if a nullptr return from Apply is allowed
+	// (see e.g. FEDiscardMesh)
+	virtual bool AllowNullMesh() { return false; }
+
 	static bool SetError(const char* szerr, ...);
 
 	static std::string GetErrorString();
@@ -340,6 +344,17 @@ public:
 };
 
 //-----------------------------------------------------------------------------
+// Convert a penta6 mesh into a penta15 mesh
+//
+class FEPenta6ToPenta15 : public FEModifier
+{
+public:
+	FEPenta6ToPenta15() : FEModifier("Penta6-to-Penta15") {}
+	FSMesh* Apply(FSMesh* pm);
+};
+
+
+//-----------------------------------------------------------------------------
 // helper class for smoothing a quad8 mesh
 class FEQuad8Smooth
 {
@@ -499,7 +514,4 @@ class FEInflateMesh: public FEModifier
 public:
 	FEInflateMesh();
 	FSMesh* Apply(FSMesh* pm);
-
-private:
-	void ShrinkMesh(FSMesh& mesh);
 };

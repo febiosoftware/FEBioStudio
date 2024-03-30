@@ -38,6 +38,7 @@ SOFTWARE.*/
 #include <QMessageBox>
 #include <QInputDialog>
 #include <QFormLayout>
+#include <QCheckBox>
 #include <QDialogButtonBox>
 #include "PostDocument.h"
 
@@ -136,16 +137,21 @@ public:
 	QLineEdit* pstates;
 	QLineEdit* pstart;
 	QLineEdit* pend;
+	QLineEdit* pstatus;
+	QCheckBox* pinter;
 
 public:
 	void setupUi(QDialog *parent)
 	{
-		QVBoxLayout* pv = new QVBoxLayout(parent);
+		QVBoxLayout* pv = new QVBoxLayout(parent); 
 
 		QFormLayout* pform = new QFormLayout;
 		pform->addRow("states:"    , pstates = new QLineEdit); pstates->setValidator(new QIntValidator(1, 1000));
 		pform->addRow("start time:", pstart  = new QLineEdit); pstart ->setValidator(new QDoubleValidator(-1e99, 1e99, 6));
-		pform->addRow("end time"   , pend    = new QLineEdit); pend   ->setValidator(new QDoubleValidator(-1e99, 1e99, 6));
+		pform->addRow("end time:"   , pend    = new QLineEdit); pend   ->setValidator(new QDoubleValidator(-1e99, 1e99, 6));
+		pform->addRow("status flag:", pstatus = new QLineEdit); pstatus->setValidator(new QIntValidator(0, 100));
+		pform->addRow("", pinter = new QCheckBox("Interpolate data")); pinter->setChecked(true);
+		pstatus->setText(QString::number(0));
 
 		pv->addLayout(pform);
 
@@ -159,14 +165,21 @@ public:
 
 CDlgAddState::CDlgAddState(QWidget* parent) : QDialog(parent), ui(new Ui::CDlgAddState)
 {
+	m_nstates = 0;
+	m_minTime = 0;
+	m_maxTime = 1;
+	m_status = 0;
+	m_interpolate = true;
 	ui->setupUi(this);
 }
 
 void CDlgAddState::accept()
 {
 	m_nstates = ui->pstates->text().toInt();
-	m_minTime = ui->pstart->text().toDouble();
-	m_maxTime = ui->pend  ->text().toDouble();
+	m_minTime = ui->pstart ->text().toDouble();
+	m_maxTime = ui->pend   ->text().toDouble();
+	m_status  = ui->pstatus->text().toInt();
+	m_interpolate = ui->pinter->isChecked();
 
 	QDialog::accept();
 }
@@ -292,8 +305,14 @@ void CStatePanel::on_addButton_clicked()
 		for (int i=0; i<N; ++i)
 		{
 			double f = t0 + i*(t1 - t0)/M;
-			fem.AddState(f);
+			fem.AddState(f, dlg.m_status, dlg.m_interpolate);
 		}
+
+		// reset everything that depends on the number of states
+		TIMESETTINGS& ts = doc->GetTimeSettings();
+		ts.m_end = fem.GetStates() - 1;
+		GetMainWindow()->UpdatePostToolbar();
+		GetMainWindow()->Update(this, true);
 		Update(true);
 	}
 }
@@ -356,7 +375,7 @@ void CStatePanel::on_deleteButton_clicked()
 		if (n >= states - 1) n = states - 1;
 		doc->SetActiveState(n);
 		GetMainWindow()->UpdatePostToolbar();
-		GetMainWindow()->Update(this);
+		GetMainWindow()->Update(this, true);
 	}
 }
 

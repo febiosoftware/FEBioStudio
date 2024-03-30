@@ -39,6 +39,7 @@ SOFTWARE.*/
 #include "MaterialEditor.h"
 #include "DlgEditProject.h"
 #include "DlgAddMeshData.h"
+#include "DlgStepViewer.h"
 #include <MeshLib/FENodeData.h>
 #include <MeshLib/FESurfaceData.h>
 #include <MeshLib/FEElementData.h>
@@ -57,6 +58,7 @@ SOFTWARE.*/
 #include <FEBioLink/FEBioClass.h>
 #include <FEBioLink/FEBioModule.h>
 #include <QMessageBox>
+#include <QInputDialog>
 #include <sstream>
 
 void CMainWindow::on_actionAddNodalBC_triggered()
@@ -821,22 +823,39 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		QString name = dlg.GetName();
 		if (name.isEmpty()) name = QString("MeshData%1").arg(fem->CountMeshDataFields() + 1);
 
-		FEMeshData* data = nullptr;
-		switch (dlg.GetType())
+		if (dlg.GetDataInitializer() == CDlgAddMeshData::INITIALIZER_CONST)
 		{
-		case FEMeshData::NODE_DATA   : data = new FENodeData   (po, dlg.GetDataType()); break;
-		case FEMeshData::SURFACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::ELEMENT_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case FEMeshData::PART_DATA   : data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		}
+			if (dlg.GetType() != FACE_DATA)
+			{
+				QMessageBox::critical(this, "Create Data", "The const initializer option is only supported for surface data.");
+				return;
+			}
 
-		if (data)
+			DATA_TYPE dataType = dlg.GetDataType();
+			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
+			gen->SetName(name.toStdString());
+			fem->AddMeshDataGenerator(gen);
+			UpdateModel(gen);
+		}
+		else
 		{
-			data->SetName(name.toStdString());
-			pm->AddMeshDataField(data);
-		}
+			FEMeshData* data = nullptr;
+			switch (dlg.GetType())
+			{
+			case NODE_DATA: data = new FENodeData   (po, dlg.GetDataType()); break;
+			case FACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case ELEM_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case PART_DATA: data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			}
 
-		UpdateModel(data);
+			if (data)
+			{
+				data->SetName(name.toStdString());
+				pm->AddMeshDataField(data);
+			}
+
+			UpdateModel(data);
+		}
 	}
 }
 
@@ -879,26 +898,37 @@ void CMainWindow::on_actionAddStep_triggered()
 
 	FSProject& prj = doc->GetProject();
 	FSModel* fem = doc->GetFSModel();
-//	CDlgAddStep dlg(prj, this);
-//	if (dlg.exec())
-	{
-//		FSAnalysisStep* ps = fscore_new<FSAnalysisStep>(fem, FE_ANALYSIS, dlg.m_ntype); 
 
+	QStringList stepList;
+	for (int i = 0; i < fem->Steps(); ++i) stepList << QString::fromStdString(fem->GetStep(i)->GetName());
+
+	bool ok;
+	QString item = QInputDialog::getItem(this, "FEBio Studio", "Insert new step after:", stepList, fem->Steps() - 1, false, &ok);
+	if (ok && !item.isEmpty())
+	{
 		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
 		assert(ps);
 		if (ps)
 		{
-//			std::string name = dlg.m_name;
-//			if (name.empty()) name = defaultStepName(fem, ps);
+			//		std::string name = dlg.m_name;
+			//		if (name.empty()) name = defaultStepName(fem, ps);
 			std::string name = defaultStepName(fem, ps);
 
 			FEBio::InitDefaultProps(ps);
 
+			int insertPos = stepList.indexOf(item);
+
 			ps->SetName(name);
-			doc->DoCommand(new CCmdAddStep(fem, ps, -1));
+			doc->DoCommand(new CCmdAddStep(fem, ps, insertPos));
 			UpdateModel(ps);
 		}
 	}
+}
+
+void CMainWindow::on_actionStepViewer_triggered()
+{
+	CDlgStepViewer dlg(this);
+	dlg.exec();
 }
 
 void CMainWindow::on_actionAddReaction_triggered()
@@ -946,7 +976,15 @@ void CMainWindow::on_actionEditProject_triggered()
 
 	CDlgEditProject dlg(doc->GetProject(), this);
 	dlg.exec();
-	UpdatePhysicsUi();
+
+	// TODO: we should check if there are any features already used in the model
+	// that are not available in the new module
+	UpdateModel();
+}
+
+void CMainWindow::on_actionAssignSelection_triggered()
+{
+	ui->modelViewer->AssignCurrentSelection();
 }
 
 void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)
@@ -981,9 +1019,12 @@ void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)
 			pi->MapParams(*pci);
 
 			// assign it to the correct step
-			FSStep* step = fem.GetStep(pci->GetStep());
-			pi->SetStep(step->GetID());
-			step->ReplaceInterface(pci, pi);
+			FSStep* step = fem.FindStep(pci->GetStep()); assert(step);
+			if (step)
+			{
+				pi->SetStep(step->GetID());
+				step->ReplaceInterface(pci, pi);
+			}
 			UpdateModel(pi);
 		}
 	}

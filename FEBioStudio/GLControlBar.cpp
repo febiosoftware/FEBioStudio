@@ -34,7 +34,6 @@ SOFTWARE.*/
 #include <QValidator>
 #include <QToolButton>
 #include <QButtonGroup>
-#include <QValidator>
 #include <QDoubleSpinBox>
 #include <QComboBox>
 #include <GeomLib/GCurveMeshObject.h>
@@ -54,6 +53,7 @@ public:
 
 	QToolButton*	but[4];
 	QToolButton*	selConnect;
+	QToolButton*	selBrush;
 	QDoubleSpinBox*	maxAngle;
 	QToolButton*	selPath;
 	QToolButton*	cull;
@@ -91,6 +91,7 @@ public:
 		maxAngle = new QDoubleSpinBox; maxAngle->setRange(0.0, 180); maxAngle->setSingleStep(0.5);
 		maxAngle->setMaximumWidth(60);
 
+		selBrush = addButton(QIcon(":/icons/brush.png"), "Brush Select");
 		selPath = addButton(QIcon(":/icons/select_path.png"), "Select by closest path");
 		cull    = addButton(QIcon(":/icons/backface.png"), "Select backfacing");
 		noint   = addButton(QIcon(":/icons/ignore.png"), "Ignore interior");
@@ -109,6 +110,7 @@ public:
 		hl->addWidget(but[3]);
 		hl->addWidget(selConnect);
 		hl->addWidget(maxAngle);
+		hl->addWidget(selBrush);
 		hl->addWidget(selPath);
 		hl->addWidget(cull);
 		hl->addWidget(noint);
@@ -160,6 +162,7 @@ public:
 		QObject::connect(bg, SIGNAL(idClicked(int)), bar, SLOT(onMeshButtonClicked(int)));
 		QObject::connect(selConnect, SIGNAL(toggled(bool)), bar, SLOT(onSelectConnected(bool)));
 		QObject::connect(selPath, SIGNAL(clicked(bool)), bar, SLOT(onSelectClosestPath(bool)));
+		QObject::connect(selBrush, SIGNAL(clicked(bool)), bar, SLOT(onBrushSelect(bool)));
 		QObject::connect(maxAngle, SIGNAL(valueChanged(double)), bar, SLOT(onMaxAngleChanged(double)));
 		QObject::connect(cull, SIGNAL(clicked(bool)), bar, SLOT(onSelectBackfacing(bool)));
 		QObject::connect(noint, SIGNAL(clicked(bool)), bar, SLOT(onIgnoreInterior(bool)));
@@ -240,7 +243,7 @@ void CGLControlBar::Update()
 	ui->y->setText(QString::number(pivot.y));
 	ui->z->setText(QString::number(pivot.z));
 
-	bool pivotMode = view->GetPivotMode();
+	bool pivotMode = view->GetPivotUserMode();
 
 	ui->x->setReadOnly(!pivotMode);
 	ui->y->setReadOnly(!pivotMode);
@@ -277,6 +280,7 @@ void CGLControlBar::Update()
 			}
 
 			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selBrush->setChecked(vs.m_bselbrush);
 			ui->selPath->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
@@ -303,6 +307,7 @@ void CGLControlBar::Update()
 			}
 
 			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selBrush->setChecked(vs.m_bselbrush);
 			ui->selPath->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
@@ -327,6 +332,7 @@ void CGLControlBar::Update()
 			}
 
 			ui->selConnect->setChecked(vs.m_bconn);
+			ui->selBrush->setChecked(vs.m_bselbrush);
 			ui->selPath->setChecked(vs.m_bselpath);
 			ui->maxAngle->setValue(vs.m_fconn);
 			ui->cull->setChecked(!vs.m_bcullSel);
@@ -343,13 +349,13 @@ void CGLControlBar::onPivotChanged()
 {
 	vec3d p = ui->getPivot();
 	CGLView* view = ui->m_wnd->GetGLView();
-	view->SetPivot(p);
+	view->SetPivotPosition(p);
 }
 
 void CGLControlBar::onPivotClicked(bool b)
 {
 	CGLView* view = ui->m_wnd->GetGLView();
-	view->SetPivotMode(b);
+	view->SetPivotUserMode(b);
 	Update();
 }
 
@@ -431,9 +437,21 @@ void CGLControlBar::onSelectConnected(bool b)
 	view.m_bconn = b;
 }
 
+void CGLControlBar::onBrushSelect(bool b)
+{
+	GLViewSettings& view = ui->m_wnd->GetGLView()->GetViewSettings();
+	view.m_bselbrush = b;
+	ui->m_wnd->RedrawGL();
+}
+
 void CGLControlBar::toggleSelectConnected()
 {
 	ui->selConnect->toggle();
+}
+
+void CGLControlBar::toggleBrushSelect()
+{
+	ui->selBrush->toggle();
 }
 
 void CGLControlBar::onSelectClosestPath(bool b)

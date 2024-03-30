@@ -51,6 +51,11 @@ void xpltParser::addWarning(int n)
 	m_wrng.push_back(n); 
 }
 
+int xpltParser::FileVersion() const 
+{ 
+	return m_xplt->m_hdr.nversion; 
+}
+
 xpltFileReader::xpltFileReader(Post::FEPostModel* fem) : FEFileReader(fem)
 {
 	m_xplt = 0;
@@ -94,7 +99,7 @@ bool xpltFileReader::Load(const char* szfile)
 	if (m_xplt) { delete m_xplt; m_xplt = 0; }
 	if (m_hdr.nversion <= 5) m_xplt = new XpltReader(this);
 	else if (m_hdr.nversion <= 0x08) m_xplt = new XpltReader2(this);
-	else if ((m_hdr.nversion >= 0x0030) && (m_hdr.nversion <= 0x0032))
+	else if ((m_hdr.nversion >= 0x0030) && (m_hdr.nversion <= 0x0034))
 	{
 		m_xplt = new XpltReader3(this);
 	}

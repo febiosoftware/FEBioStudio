@@ -30,12 +30,13 @@ SOFTWARE.*/
 #include <MeshLib/MeshMetrics.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/FENodeFaceList.h>
+#include <MeshLib/FEMeshBuilder.h>
 using namespace std;
 
 //-----------------------------------------------------------------------------
 FEFixMesh::FEFixMesh() : FEModifier("Fix mesh")
 {
-	AddIntParam(0, "Task:", "Task:")->SetEnumNames("Remove duplicate edges\0");
+	AddIntParam(0, "Task:", "Task:")->SetEnumNames("Remove duplicate edges\0Remove isolated vertices\0");
 }
 
 //-----------------------------------------------------------------------------
@@ -43,6 +44,7 @@ FSMesh* FEFixMesh::Apply(FSMesh* pm)
 {
 	// create a copy of the mesh
 	FSMesh* pnew = new FSMesh(*pm);
+	pnew->SetGObject(pm->GetGObject());
 
 	// apply the task on this mesh
 	int task = GetIntValue(0);
@@ -50,6 +52,7 @@ FSMesh* FEFixMesh::Apply(FSMesh* pm)
 	switch (task)
 	{
 	case 0: ret = RemoveDuplicateEdges  (pnew); break;
+	case 1: ret = RemoveIsolatedVertices(pnew); break;
 	}
 
 	if (ret == false)
@@ -164,5 +167,14 @@ bool FEFixMesh::RemoveDuplicateEdges(FSMesh* pm)
 	// the node partitioning. Should I repartition nodes here? 
 
 	//all done
+	return true;
+}
+
+//-----------------------------------------------------------------------------
+bool FEFixMesh::RemoveIsolatedVertices(FSMesh* pm)
+{
+	FEMeshBuilder mb(*pm);
+	int n = mb.RemoveIsolatedNodes();
+	SetError("%d vertices removed.", n);
 	return true;
 }

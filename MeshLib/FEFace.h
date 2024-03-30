@@ -141,6 +141,7 @@ public:
 
 	// evaluate a vector expression at iso-points (r,s)
 	vec3f eval(vec3f* v, double r, double s);
+	vec3d eval(vec3d* v, double r, double s);
 
     // evaluate the derivative of a scalar expression at iso-points (r,s)
     double eval_deriv1(double* d, double r, double s);

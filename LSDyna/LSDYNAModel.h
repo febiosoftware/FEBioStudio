@@ -70,7 +70,14 @@ public:
         
         DOMAIN_SHELL() { h[0] = h[1] = h[2] = h[3] = 0; }
     };
-    
+
+	struct ELEMENT_DISCRETE
+	{
+		int eid;
+		int pid;
+		int n1, n2;
+	};
+
 	struct NODE
 	{
 		NODE() { id = n = 0; x = y = z = 0; }
@@ -188,6 +195,15 @@ public:
 		double    v3;
 	};
 
+	class MAT_SPRING_NONLINEAR_ELASTIC : public MATERIAL
+	{
+	public:
+		MAT_SPRING_NONLINEAR_ELASTIC() { lcd = -1; }
+
+	public:
+		int	lcd;
+	};
+
 	class SET_SEGMENT_TITLE
 	{
 	public:
@@ -205,6 +221,17 @@ public:
 		int				m_nsid;	// segment ID
 		vector<FACE>	m_face;	// face list
 		char			m_szname[256];
+	};
+
+	class SET_NODE_LIST_TITLE
+	{
+	public:
+		SET_NODE_LIST_TITLE() {}
+
+	public:
+		int				m_nid = -1;
+		vector<int>		m_nodelist;
+		std::string		m_name;
 	};
 
 	class LOAD_CURVE
@@ -245,6 +272,8 @@ public:
 	void addShellElement(const ELEMENT_SHELL& el) { m_shell.push_back(el); }
 
     void addShellDomain(const DOMAIN_SHELL& ds) { m_dshell.push_back(ds); }
+
+	void addDiscrete(const ELEMENT_DISCRETE& el) { m_discrete.push_back(el); }
     
 	int parts() const { return (int) m_part.size(); }
 	void addPart(const PART& p) { m_part.push_back(p); }
@@ -252,6 +281,8 @@ public:
 	void addMaterial(MATERIAL* m) { m_Mat.push_back(m); }
 
 	void addSetSegmentTitle(const SET_SEGMENT_TITLE& s) { m_set.push_back(s); }
+
+	void addNodeList(const SET_NODE_LIST_TITLE& nl) { m_nodelist.push_back(nl); }
 
 	void addLoadCurve(const LOAD_CURVE& lc) { m_lc.push_back(lc); }
 
@@ -278,15 +309,21 @@ protected:
 	bool BuildMaterials(FSModel& fem);
 	bool BuildLoadCurves(FSModel& fem);
 	bool BuildParameters(FSModel& fem);
+	bool BuildDiscrete(FSModel& fem);
+	void BuildNLT();
+
+	int NodeIndex(int nodeId) { return m_NLT[nodeId - m_off]; }
 
 public:
 	vector<ELEMENT_SOLID>		m_solid;
 	vector<ELEMENT_SHELL>		m_shell;
     vector<DOMAIN_SHELL>        m_dshell;
+    vector<ELEMENT_DISCRETE>	m_discrete;
 	vector<NODE>				m_node;
 	vector<PART>				m_part;
 	list<MATERIAL*>       		m_Mat;
-	list<SET_SEGMENT_TITLE>	m_set;
+	list<SET_SEGMENT_TITLE>		m_set;
+	list<SET_NODE_LIST_TITLE>	m_nodelist;
 	vector<LOAD_CURVE>	m_lc;
 	vector<PARAMETER>	m_param;
 	GMeshObject*	m_po; 
@@ -294,4 +331,12 @@ public:
 	vector<int*>	m_pFace;
 	vector<int>		m_nFace;
 	vector< vector<double> >	m_Data;	// nodal data
+
+	// node lookup table
+	vector<int> m_NLT;
+	int m_off;
+
+	// load curve lookup table
+	vector<int> m_LCT;
+	int m_lct_off;
 };

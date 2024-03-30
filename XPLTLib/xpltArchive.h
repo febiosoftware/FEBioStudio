@@ -155,9 +155,6 @@ public: // reading
 	IOResult read(std::vector<mat3f  >& a) { return read(&(a[0].d[0][0]), 9*(int) a.size()); }
 	IOResult read(std::vector<unsigned int>& a) { return read((int*)&a[0], (int)a.size()); }
 
-	// conversion to FILE* 
-//	operator FILE* () { return m_fp; }
-
 	void SetVersion(unsigned int n);
 	unsigned int Version();
 

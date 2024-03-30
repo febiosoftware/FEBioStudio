@@ -498,19 +498,19 @@ void GLVolumeFlowPlot::UpdateMesh(std::vector<GLVolumeFlowPlot::Slice>& slice, G
 				double v = face.v[0];
 				double a = (v > 0 ? (v < 1 ? v : 1) : 0);
 				a = m_alpha * gain(m_gain, a);
-				c.a = (Byte)(255 * a);
+				c.a = (uint8_t)(255 * a);
 				mesh.AddVertex(face.r[0], face.v[0], c);
 
 				v = face.v[1];
 				a = (v > 0 ? (v < 1 ? v : 1) : 0);
 				a = m_alpha * gain(m_gain, a);
-				c.a = (Byte)(255 * a);
+				c.a = (uint8_t)(255 * a);
 				mesh.AddVertex(face.r[1], face.v[1], c);
 
 				v = face.v[2];
 				a = (v > 0 ? (v < 1 ? v : 1) : 0);
 				a = m_alpha * gain(m_gain, a);
-				c.a = (Byte)(255 * a);
+				c.a = (uint8_t)(255 * a);
 				mesh.AddVertex(face.r[2], face.v[2], c);
 			}
 		}

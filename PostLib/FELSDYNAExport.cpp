@@ -33,7 +33,31 @@ using namespace Post;
 FELSDYNAExport::FELSDYNAExport()
 {
 	m_bsel = false;
+	m_bsurf = false;
 	m_bnode = false;
+
+	AddBoolParam(m_bsel , "sel_only", "Selection only");
+	AddBoolParam(m_bsurf, "export_surface", "Export surface");
+	AddBoolParam(m_bnode, "export_nodal_results", "Export nodal results");
+}
+
+//-----------------------------------------------------------------------------
+bool FELSDYNAExport::UpdateData(bool bsave)
+{
+	if (bsave)
+	{
+		m_bsel  = GetBoolValue(0);
+		m_bsurf = GetBoolValue(1);
+		m_bnode = GetBoolValue(2);
+	}
+	else
+	{
+		SetBoolValue(0, m_bsel);
+		SetBoolValue(1, m_bsurf);
+		SetBoolValue(2, m_bnode);
+	}
+
+	return false;
 }
 
 //-----------------------------------------------------------------------------

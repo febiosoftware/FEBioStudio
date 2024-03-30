@@ -29,11 +29,11 @@ SOFTWARE.*/
 class FSProject;
 
 //-----------------------------------------------------------------------------
-class FEAbaqusExport : public FSFileExport
+class AbaqusExport : public FSFileExport
 {
 public:
-	FEAbaqusExport(FSProject& prj);
-	~FEAbaqusExport(void);
+	AbaqusExport(FSProject& prj);
+	~AbaqusExport(void);
 
 	bool Write(const char* szfile) override;
 

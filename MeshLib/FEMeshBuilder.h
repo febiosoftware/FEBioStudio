@@ -67,7 +67,8 @@ public:
 	FSElement* AddTriangle(int n0, int n1, int n2);
 
 	// Remove nodes that are not attached to anything
-	void RemoveIsolatedNodes();
+	// returns the number of nodes that were removed
+	int RemoveIsolatedNodes();
 
 	// delete selected nodes
 	void DeleteSelectedNodes();
@@ -92,6 +93,7 @@ public:
 
 	// delete all elements of a part
 	FSMesh* DeletePart(FSMesh& mesh, int partId);
+	FSMesh* DeleteParts(FSMesh& mesh, std::vector<int> partIds);
 
 	// Attach another mesh to this mesh
 	void Attach(FSMesh& fem);
@@ -124,6 +126,7 @@ private:
 	void AutoPartitionSurface();
 	void AutoPartitionEdges();
 	void AutoPartitionNodes();
+	FSMesh* DeleteTaggedParts(FSMesh& mesh, int tag);
 
 private:
 	FSMesh&	m_mesh;

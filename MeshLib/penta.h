@@ -69,15 +69,17 @@ namespace PENTA6
     // gauss coordinates and gauss weights
     inline void gauss_data(double *gr, double *gs, double *gt, double *gw)
     {
-        const double a = 1.0 / sqrt(3.0);
-        gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
-        gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
-        gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
-        gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
-        gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
-        gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
-        gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
-        gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
+		const double a = 1.0 / 6.0;
+		const double b = 2.0 / 3.0;
+		const double c = 1.0 / sqrt(3.0);
+		const double w = 1.0 / 6.0;
+
+		gr[0] = a; gs[0] = a; gt[0] = -c; gw[0] = w;
+		gr[1] = b; gs[1] = a; gt[1] = -c; gw[1] = w;
+		gr[2] = a; gs[2] = b; gt[2] = -c; gw[2] = w;
+		gr[3] = a; gs[3] = a; gt[3] = c; gw[3] = w;
+		gr[4] = b; gs[4] = a; gt[4] = c; gw[4] = w;
+		gr[5] = a; gs[5] = b; gt[5] = c; gw[5] = w;
     }
     }
 
@@ -185,14 +187,17 @@ namespace PENTA15
     // gauss coordinates and gauss weights
     inline void gauss_data(double *gr, double *gs, double *gt, double *gw)
     {
-        const double a = 1.0 / sqrt(3.0);
-        gr[0] = -a; gs[0] = -a; gt[0] = -a; gw[0] = 1;
-        gr[1] = a; gs[1] = -a; gt[1] = -a; gw[1] = 1;
-        gr[2] = a; gs[2] = a; gt[2] = -a; gw[2] = 1;
-        gr[3] = -a; gs[3] = a; gt[3] = -a; gw[3] = 1;
-        gr[4] = -a; gs[4] = -a; gt[4] = a; gw[4] = 1;
-        gr[5] = a; gs[5] = -a; gt[5] = a; gw[5] = 1;
-        gr[6] = a; gs[6] = a; gt[6] = a; gw[6] = 1;
-        gr[7] = -a; gs[7] = a; gt[7] = a; gw[7] = 1;
+		const double a = 1.0 / 3.0;
+		const double b = 1.0 / 5.0;
+		const double c = 3.0 / 5.0;
+		const double d = sqrt(a);
+		gr[0] = a; gs[0] = a; gt[0] = -d; gw[0] = -27.0 / 96.0;
+		gr[1] = c; gs[1] = b; gt[1] = -d; gw[1] = 25.0 / 96.0;
+		gr[2] = b; gs[2] = b; gt[2] = -d; gw[2] = 25.0 / 96.0;
+		gr[3] = b; gs[3] = c; gt[3] = -d; gw[3] = 25.0 / 96.0;
+		gr[4] = a; gs[4] = a; gt[4] = d; gw[4] = -27.0 / 96.0;
+		gr[5] = c; gs[5] = b; gt[5] = d; gw[5] = 25.0 / 96.0;
+		gr[6] = b; gs[6] = b; gt[6] = d; gw[6] = 25.0 / 96.0;
+		gr[7] = b; gs[7] = c; gt[7] = d; gw[7] = 25.0 / 96.0;
     }
     }

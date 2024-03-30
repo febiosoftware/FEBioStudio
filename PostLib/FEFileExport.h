@@ -25,6 +25,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 
 #pragma once
+#include <FSCore/FSObject.h>
 
 namespace Post {
 
@@ -32,7 +33,7 @@ namespace Post {
 
 //-----------------------------------------------------------------------------
 // Base class for file exporters
-class FEFileExport
+class FEFileExport : public FSBase
 {
 public:
 	FEFileExport(void);

@@ -30,6 +30,7 @@ SOFTWARE.*/
 
 class QAction;
 class CMainWindow;
+class CDlgPixelInspector;
 
 class CImageToolBar : public QToolBar
 {
@@ -38,9 +39,14 @@ class CImageToolBar : public QToolBar
 public:
     CImageToolBar(CMainWindow* wnd);
 
+    void InspectorClosed();
+
 private slots:
     void on_viewAction_triggered(QAction* action);
-    // void on_dlgDIC_triggered();
+    void on_showPixelInspector_triggered();
+
+private:
+    void UpdateToolbar(int view);
 
 private:
     CMainWindow* m_wnd;
@@ -48,4 +54,7 @@ private:
     QAction* m_showModelView;
     QAction* m_showSliceView;
     QAction* m_show2dImageView;
+    QAction* m_showPixelInspector;
+
+    CDlgPixelInspector* m_pixelInspector;
 };

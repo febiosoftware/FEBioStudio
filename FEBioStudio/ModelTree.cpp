@@ -41,7 +41,7 @@ SOFTWARE.*/
 #include "PostDocument.h"
 #include <GeomLib/GObject.h>
 #include <PostGL/GLModel.h>
-#include <PostLib/ImageModel.h>
+#include <ImageLib/ImageModel.h>
 #include <PostLib/GLImageRenderer.h>
 #include <QMessageBox>
 #include <QtCore/QFileInfo>
@@ -329,7 +329,7 @@ private:
 class CImageModelValidator : public CObjectValidator
 {
 public:
-	CImageModelValidator(Post::CImageModel* img) : m_img(img) {}
+	CImageModelValidator(CImageModel* img) : m_img(img) {}
 
 	QString GetErrorString() const override
 	{
@@ -346,7 +346,7 @@ public:
 	}
 
 private:
-	Post::CImageModel* m_img;
+	CImageModel* m_img;
 };
 
 //=============================================================================
@@ -500,7 +500,7 @@ class CModelProps : public CPropertyList
 public:
 	CModelProps(Post::CGLModel* fem) : m_fem(fem)
 	{
-		addProperty("Element subdivions", CProperty::Int)->setIntRange(0, 100).setAutoValue(true);
+		addProperty("Element subdivisions", CProperty::Int)->setIntRange(0, 10).setAutoValue(true);
 		addProperty("Render mode", CProperty::Enum, "Render mode")->setEnumValues(QStringList() << "default" << "wireframe" << "solid");
 		addProperty("Render undeformed outline", CProperty::Bool);
 		addProperty("Outline color", CProperty::Color);
@@ -554,30 +554,6 @@ public:
 private:
 	Post::CGLModel*	m_fem;
 };
-
-//-----------------------------------------------------------------------------
-QIcon createIcon(GLColor c)
-{
-	QColor c2 = QColor::fromRgb(c.r, c.g, c.b);
-	QColor c1 = c2.lighter();
-	QColor c3 = c2.darker();
-
-	QRadialGradient g(QPointF(8, 8), 12);
-	g.setColorAt(0.0, c1);
-	g.setColorAt(0.2, c2);
-	g.setColorAt(1.0, c3);
-
-	QPixmap pix(24, 24);
-	pix.fill(Qt::transparent);
-	QPainter p(&pix);
-	p.setRenderHint(QPainter::Antialiasing);
-	p.setPen(Qt::PenStyle::NoPen);
-	p.setBrush(QBrush(g));
-	p.drawEllipse(2, 2, 20, 20);
-	p.end();
-
-	return QIcon(pix);
-}
 
 //=============================================================================
 
@@ -740,7 +716,9 @@ QTreeWidgetItem* CModelTree::AddTreeItem(QTreeWidgetItem* parent, const QString&
 
 	if (val && (val->IsValid() == false))
 	{
-		t2->setIcon(0, QIcon(":/icons/warning.png"));
+		if (szicon) t2->setIcon(0, CIconProvider::GetIcon(szicon, Emblem::Caution));
+		else t2->setIcon(0, QIcon(":/icons/warning.png"));
+
 		t2->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 		if (parent) parent->setExpanded(true);
 		if (m_view) m_view->IncWarningCount();
@@ -835,7 +813,18 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 	{
 		if (val->IsValid() == false)
 		{
-			item->setIcon(0, QIcon(":/icons/warning.png"));
+			if (dynamic_cast<GMaterial*>(po))
+			{
+				GMaterial* m = dynamic_cast<GMaterial*>(po);
+				QIcon icon = CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24);
+				item->setIcon(0, CIconProvider::CreateIcon(icon, Emblem::Caution));
+			}
+			else
+			{
+				if (m_data[n].szicon) item->setIcon(0, CIconProvider::GetIcon(m_data[n].szicon, Emblem::Caution));
+				else item->setIcon(0, QIcon(":/icons/warning.png"));
+			}
+
 			item->setToolTip(0, QString("<font color=\"black\">") + val->GetErrorString());
 			return;
 		}
@@ -858,7 +847,7 @@ void CModelTree::UpdateItem(QTreeWidgetItem* item)
 		if (dynamic_cast<GMaterial*>(po))
 		{
 			GMaterial* m = dynamic_cast<GMaterial*>(po);
-			item->setIcon(0, createIcon(m->Diffuse()));
+			item->setIcon(0, CIconProvider::BuildPixMap(toQColor(m->Diffuse()), ::Shape::Circle, 24));
 		}
 		else if (m_data[n].szicon)
 		{
@@ -1290,7 +1279,7 @@ void CModelTree::UpdateImages(QTreeWidgetItem* t1, CModelDocument* doc)
 {
 	for (int i = 0; i < doc->ImageModels(); ++i)
 	{
-		Post::CImageModel* img = doc->GetImageModel(i);
+		CImageModel* img = doc->GetImageModel(i);
 		QTreeWidgetItem* t2 = AddTreeItem(t1, QString::fromStdString(img->GetName()), MT_3DIMAGE, 0, img, new CImageModelProperties(img), new CImageModelValidator(img));
 	}
 }
@@ -1359,6 +1348,9 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 {
 	QTreeWidgetItem* t2, *t3, *t4;
 
+	// max nr. of items in a branch
+	const int MAX_BRANCH_ITEM = 10000;
+
 	// get the model
 	GModel& model = fem.GetModel();
 
@@ -1392,7 +1384,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Surfaces", MT_FACE_LIST, po->Faces(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NF = po->Faces();
-		if (NF > 1000) NF = 1000;
+		if (NF > MAX_BRANCH_ITEM) NF = MAX_BRANCH_ITEM;
 		for (int j = 0; j<NF; ++j)
 		{
 			GFace* pg = po->Face(j);
@@ -1403,7 +1395,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Edges", MT_EDGE_LIST, po->Edges(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NE = po->Edges();
-		if (NE > 1000) NE = 1000;
+		if (NE > MAX_BRANCH_ITEM) NE = MAX_BRANCH_ITEM;
 		for (int j=0; j<NE; ++j)
 		{
 			GEdge* pg = po->Edge(j);
@@ -1414,7 +1406,7 @@ void CModelTree::UpdateObjects(QTreeWidgetItem* t1, FSModel& fem)
 
 		t3 = AddTreeItem(t2, "Nodes", MT_NODE_LIST, po->Nodes(), po, 0, 0, OBJECT_NOT_EDITABLE);
 		int NN = po->Nodes();
-		if (NN > 1000) NN = 1000;
+		if (NN > MAX_BRANCH_ITEM) NN = MAX_BRANCH_ITEM;
 		for (int j = 0; j<NN; ++j)
 		{
 			GNode* pg = po->Node(j);

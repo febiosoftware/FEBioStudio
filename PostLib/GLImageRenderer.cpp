@@ -32,6 +32,11 @@ CGLImageRenderer::CGLImageRenderer(CImageModel* img) : m_img(img)
 {
 }
 
+void CGLImageRenderer::SetImageModel(CImageModel* img)
+{
+    m_img = img;
+}
+
 CImageModel* CGLImageRenderer::GetImageModel()
 { 
 	return m_img; 

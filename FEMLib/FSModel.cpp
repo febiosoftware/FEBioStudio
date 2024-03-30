@@ -699,19 +699,34 @@ bool FSModel::GetEnumValues(char* szbuf, std::vector<int>& l, const char* szenum
 
 		if (strncmp(var, "dof_list", 8) == 0)
 		{
-			const char* szvar = var + 9;
-			FEDOFVariable& var = GetVariable(szvar);
-
-			vector<string> dofList; 
-			GetDOFSymbols(var, dofList);
-
-			char* sz = szbuf;
-			for (int i = 0; i < l.size(); ++i)
+			if (var[8] == 0)
 			{
-				strcat(sz, dofList[l[i]].c_str());
-				int n = strlen(sz);
-				if (i != l.size()-1) sz[n] = ',';
-				sz += n + 1;
+				char* sz = szbuf;
+				for (int i = 0; i < l.size(); ++i)
+				{
+					const char* dofname = GetDOFSymbol(l[i]); assert(dofname);
+					strcat(sz, dofname);
+					int n = strlen(sz);
+					if (i != l.size() - 1) sz[n] = ',';
+					sz += n + 1;
+				}
+			}
+			else
+			{
+				const char* szvar = var + 9;
+				FEDOFVariable& var = GetVariable(szvar);
+
+				vector<string> dofList;
+				GetDOFSymbols(var, dofList);
+
+				char* sz = szbuf;
+				for (int i = 0; i < l.size(); ++i)
+				{
+					strcat(sz, dofList[l[i]].c_str());
+					int n = strlen(sz);
+					if (i != l.size() - 1) sz[n] = ',';
+					sz += n + 1;
+				}
 			}
 
 			return true;
@@ -1623,6 +1638,7 @@ void FSModel::LoadMeshDataGenerators(IArchive& ar)
 		case FE_FEBIO_EDGEDATA_GENERATOR: pmd = new FEBioEdgeDataGenerator(this); break;
 		case FE_FEBIO_FACEDATA_GENERATOR: pmd = new FEBioFaceDataGenerator(this); break;
 		case FE_FEBIO_ELEMDATA_GENERATOR: pmd = new FEBioElemDataGenerator(this); break;
+		case FE_CONST_FACEDATA_GENERATOR: pmd = new FSConstFaceDataGenerator(this); break;
 		default:
 			assert(false);
 		}
@@ -1909,6 +1925,21 @@ void FSModel::DeleteAllLoadControllers()
 }
 
 //-----------------------------------------------------------------------------
+void FSModel::RemoveUnusedLoadControllers()
+{
+	int NLC = m_LC.Size();
+	int n = 0;
+	for (int i = 0; i < NLC; ++i)
+	{
+		FSLoadController* plc = m_LC[n];
+		if (plc->GetReferenceCount() == 0) {
+			m_LC.Remove(plc); delete plc;
+		}
+		else n++;
+	}
+}
+
+//-----------------------------------------------------------------------------
 void FSModel::DeleteAllMeshDataGenerators()
 {
 	m_MD.Clear();
@@ -1961,7 +1992,7 @@ void FSModel::Purge(int ops)
 	if (ops == 0)
 	{
 		// clear all groups
-		m_pModel->ClearGroups();
+		m_pModel->RemoveNamedSelections();
 
 		// remove discrete objects
 		m_pModel->ClearDiscrete();
@@ -1971,6 +2002,9 @@ void FSModel::Purge(int ops)
 
 		// remove all materials
 		DeleteAllMaterials();
+
+		// remove all load controllers
+		m_LC.Clear();
 
 		// add an initial step
 		m_pStep.Add(new FSInitialStep(this));
@@ -1992,22 +2026,20 @@ void FSModel::ClearSelections()
 		for (int i=0; i<step->BCs(); ++i)
 		{
 			FSBoundaryCondition* pbc = step->BC(i);
-			FEItemListBuilder* pi = pbc->GetItemList();
-			pbc->SetItemList(0); delete pi;
+			pbc->SetItemList(nullptr);
 		}
 
 		for (int i=0; i<step->Loads(); ++i)
 		{
 			FSLoad* pl = step->Load(i);
-			FEItemListBuilder* pi = pl->GetItemList();
-			pl->SetItemList(0); delete pi;
+			pl->SetItemList(nullptr);
 		}
 
 		for (int i = 0; i<step->ICs(); ++i)
 		{
 			FSInitialCondition* pic = step->IC(i);
 			FEItemListBuilder* pi = pic->GetItemList();
-			pic->SetItemList(0); delete pi;
+			pic->SetItemList(nullptr);
 		}
 
 		for (int i=0; i<step->Interfaces(); ++i)
@@ -2017,24 +2049,24 @@ void FSModel::ClearSelections()
 			if (dynamic_cast<FSSoloInterface*>(pi))
 			{
 				FSSoloInterface* pc = dynamic_cast<FSSoloInterface*>(pi);
-				FEItemListBuilder* pi = pc->GetItemList();
-				pc->SetItemList(0); delete pi;
+				pc->SetItemList(nullptr);
 			}
 			else if (dynamic_cast<FSPairedInterface*>(pi))
 			{
 				FSPairedInterface* pc = dynamic_cast<FSPairedInterface*>(pi);
-				FEItemListBuilder* pi1 = pc->GetPrimarySurface(); pc->SetPrimarySurface(0); delete pi1;
-				FEItemListBuilder* pi2 = pc->GetSecondarySurface(); pc->SetSecondarySurface(0); delete pi2;
+				pc->SetPrimarySurface(nullptr);
+				pc->SetSecondarySurface(nullptr);
 			}
 		}
 
 		for (int i = 0; i < step->Constraints(); ++i)
 		{
 			FSModelConstraint* mc = step->Constraint(i);
-			FEItemListBuilder* pi = mc->GetItemList();
-			mc->SetItemList(0); delete pi;
+			mc->SetItemList(nullptr);
 		}
 	}
+
+	GetModel().RemoveNamedSelections();
 }
 
 //-----------------------------------------------------------------------------

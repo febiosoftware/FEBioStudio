@@ -180,5 +180,17 @@
         <file>icons/replaceAll_neg.png</file>
         <file>icons/light.png</file>
         <file>icons/musclepath.png</file>
+        <file>icons/brush.png</file>
+        <file>icons/pixelInspector.png</file>
+        <file>icons/geodesic.png</file>
+        <file>icons/curve.png</file>
+        <file>icons/bc.png</file>
+        <file>icons/load.png</file>
+        <file>icons/component.png</file>
+        <file>icons/step.png</file>
+        <file>icons/contact.png</file>
+        <file>icons/ic.png</file>
+        <file>icons/disabled.png</file>
+        <file>icons/bend.png</file>
 	</qresource>
 </RCC>

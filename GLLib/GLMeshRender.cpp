@@ -40,18 +40,18 @@ SOFTWARE.*/
 void RenderQUAD4(FSMeshBase* pm, const FSFace& f);
 void RenderQUAD8(FSMeshBase* pm, const FSFace& f);
 void RenderQUAD9(FSMeshBase* pm, const FSFace& f);
-void RenderTRI3(FSMeshBase* pm, const FSFace& f);
-void RenderTRI6(FSMeshBase* pm, const FSFace& f);
-void RenderTRI7(FSMeshBase* pm, const FSFace& f);
+void RenderTRI3 (FSMeshBase* pm, const FSFace& f);
+void RenderTRI6 (FSMeshBase* pm, const FSFace& f);
+void RenderTRI7 (FSMeshBase* pm, const FSFace& f);
 void RenderTRI10(FSMeshBase* pm, const FSFace& f);
 
-void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI3(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI6(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI7(FSCoreMesh* pm, FSFace& face, int ndivs);
-void RenderSmoothTRI10(FSCoreMesh* pm, FSFace& face, int ndivs);
+void RenderSmoothQUAD4(FSMeshBase* pm, const FSFace& face, int ndivs);
+void RenderSmoothQUAD8(FSMeshBase* pm, const FSFace& face, int ndivs);
+void RenderSmoothQUAD9(FSMeshBase* pm, const FSFace& face, int ndivs);
+void RenderSmoothTRI3 (FSMeshBase* pm, const FSFace& face, int ndivs);
+void RenderSmoothTRI6 (FSMeshBase* pm, const FSFace& face, int ndivs);
+void RenderSmoothTRI7 (FSMeshBase* pm, const FSFace& face, int ndivs);
+void RenderSmoothTRI10(FSMeshBase* pm, const FSFace& face, int ndivs);
 
 void RenderFace1Outline(FSCoreMesh* pm, FSFace& face);
 void RenderFace2Outline(FSCoreMesh* pm, FSFace& face, int ndivs);
@@ -2021,6 +2021,24 @@ void GLMeshRender::RenderBEAM2(FEElement_* pe, FSCoreMesh* pm, bool bsel)
 	glEnd();
 }
 
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderBEAM3(FEElement_* pe, FSCoreMesh* pm, bool bsel)
+{
+	assert(pe->IsType(FE_BEAM3));
+	FEElement_& e = *pe;
+	vec3d r[3];
+
+	glBegin(GL_LINES);
+	{
+		r[0] = pm->Node(e.m_node[0]).r;
+		r[1] = pm->Node(e.m_node[1]).r;
+		r[2] = pm->Node(e.m_node[2]).r;
+
+		glx::vertex3d(r[0]); glx::vertex3d(r[2]);
+		glx::vertex3d(r[2]); glx::vertex3d(r[1]);
+	}
+	glEnd();
+}
 
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderGLMesh(GMesh* pm, int surfID)
@@ -2716,6 +2734,24 @@ void GLMeshRender::RenderFEFaces(FSCoreMesh* pm, std::function<bool(const FSFace
 }
 
 //-----------------------------------------------------------------------------
+void GLMeshRender::RenderFESurfaceMeshFaces(FSMeshBase* pm, std::function<bool(const FSFace& face, GLColor* c)> f)
+{
+	GLColor c[FSFace::MAX_NODES];
+	glBegin(GL_TRIANGLES);
+	{
+		size_t faces = pm->Faces();
+		for (size_t i = 0; i < faces; ++i)
+		{
+			FSFace& face = pm->Face(i);
+			face.m_ntag = i;
+			if (f(face, c)) RenderFESurfaceMeshFace(face, pm, c);
+		}
+	}
+	glEnd();
+
+}
+
+//-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFacesOutline(FSMeshBase* pm, const std::vector<int>& faceList)
 {
 	glBegin(GL_LINES);
@@ -2837,6 +2873,12 @@ void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4])
 		}
 	}
 
+	RenderFESurfaceMeshFace(face, pm, c);
+}
+
+//-----------------------------------------------------------------------------
+void GLMeshRender::RenderFESurfaceMeshFace(FSFace& face, FSMeshBase* pm, GLColor c[4])
+{
 	vec3d& r1 = pm->Node(face.n[0]).r;
 	vec3d& r2 = pm->Node(face.n[1]).r;
 	vec3d& r3 = pm->Node(face.n[2]).r;
@@ -2852,7 +2894,7 @@ void GLMeshRender::RenderFace(FSFace& face, FSCoreMesh* pm, GLColor c[4])
 	float t[FSFace::MAX_NODES];
 	pm->FaceNodeTexCoords(face, t);
 
-		switch (face.m_type)
+	switch (face.m_type)
 	{
 	case FE_FACE_QUAD4:
 	case FE_FACE_QUAD8:
@@ -2925,22 +2967,50 @@ void GLMeshRender::RenderFaceOutline(FSFace& face, FSCoreMesh* pm)
 //-----------------------------------------------------------------------------
 void GLMeshRender::RenderFEFace(const FSFace& face, FSMeshBase* pm)
 {
-	switch (face.Type())
+	if (m_bShell2Solid)
 	{
-	case FE_FACE_TRI3 : ::RenderTRI3 (pm, face); break;
-	case FE_FACE_TRI6 : ::RenderTRI6 (pm, face); break;
-	case FE_FACE_TRI7 : ::RenderTRI7 (pm, face); break;
-	case FE_FACE_TRI10: ::RenderTRI10(pm, face); break;
-	case FE_FACE_QUAD4: ::RenderQUAD4(pm, face); break;
-	case FE_FACE_QUAD8: ::RenderQUAD8(pm, face); break;
-	case FE_FACE_QUAD9: ::RenderQUAD9(pm, face); break;
-	default:
-		assert(false);
+		FSCoreMesh* pcm = dynamic_cast<FSCoreMesh*>(pm);
+		if (pcm) {
+			RenderThickShell(face, pcm);
+			return;
+		}
+	}
+
+	if (m_ndivs == 1)
+	{
+		switch (face.Type())
+		{
+		case FE_FACE_TRI3 : ::RenderTRI3 (pm, face); break;
+		case FE_FACE_TRI6 : ::RenderTRI6 (pm, face); break;
+		case FE_FACE_TRI7 : ::RenderTRI7 (pm, face); break;
+		case FE_FACE_TRI10: ::RenderTRI10(pm, face); break;
+		case FE_FACE_QUAD4: ::RenderQUAD4(pm, face); break;
+		case FE_FACE_QUAD8: ::RenderQUAD8(pm, face); break;
+		case FE_FACE_QUAD9: ::RenderQUAD9(pm, face); break;
+		default:
+			assert(false);
+		}
+	}
+	else
+	{
+		// Render the facet
+		switch (face.m_type)
+		{
+		case FE_FACE_QUAD4: RenderSmoothQUAD4(pm, face, m_ndivs); break;
+		case FE_FACE_QUAD8: RenderSmoothQUAD8(pm, face, m_ndivs); break;
+		case FE_FACE_QUAD9: RenderSmoothQUAD9(pm, face, m_ndivs); break;
+		case FE_FACE_TRI3 : RenderSmoothTRI3 (pm, face, m_ndivs); break;
+		case FE_FACE_TRI6 : RenderSmoothTRI6 (pm, face, m_ndivs); break;
+		case FE_FACE_TRI7 : RenderSmoothTRI7 (pm, face, m_ndivs); break;
+		case FE_FACE_TRI10: RenderSmoothTRI10(pm, face, m_ndivs); break;
+		default:
+			assert(false);
+		}
 	}
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-void GLMeshRender::RenderThickShell(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickShell(const FSFace &face, FSCoreMesh* pm)
 {
 	switch (face.m_type)
 	{
@@ -2958,7 +3028,7 @@ void GLMeshRender::RenderThickShell(FSFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickQuad(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickQuad(const FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
@@ -3044,7 +3114,7 @@ void GLMeshRender::RenderThickQuad(FSFace &face, FSCoreMesh* pm)
 	}
 }
 
-void GLMeshRender::RenderThickTri(FSFace &face, FSCoreMesh* pm)
+void GLMeshRender::RenderThickTri(const FSFace &face, FSCoreMesh* pm)
 {
 	FEElement_& el = pm->ElementRef(face.m_elem[0].eid);
 	double* h = el.m_h;
@@ -3381,7 +3451,7 @@ void RenderTRI10(FSMeshBase* pm, const FSFace& f)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 4-noded quadrilateral
-void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs)
+void RenderSmoothQUAD4(FSMeshBase* pm, const FSFace& face, int ndivs)
 {
 	vec3d r[4] = {
 		pm->Node(face.n[0]).r,
@@ -3400,7 +3470,7 @@ void RenderSmoothQUAD4(FSCoreMesh* pm, FSFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 8-noded quadrilateral
-void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs)
+void RenderSmoothQUAD8(FSMeshBase* pm, const FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_QUAD8);
 
@@ -3433,7 +3503,7 @@ void RenderSmoothQUAD8(FSCoreMesh* pm, FSFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 9-noded quadrilateral
-void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs)
+void RenderSmoothQUAD9(FSMeshBase* pm, const FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_QUAD9);
 
@@ -3467,14 +3537,14 @@ void RenderSmoothQUAD9(FSCoreMesh* pm, FSFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 6-noded triangle
-void RenderSmoothTRI3(FSCoreMesh* pm, FSFace& face, int ndivs)
+void RenderSmoothTRI3(FSMeshBase* pm, const FSFace& face, int ndivs)
 {
 	RenderTRI3(pm, face);
 }
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 6-noded triangle
-void RenderSmoothTRI6(FSCoreMesh* pm, FSFace& face, int ndivs)
+void RenderSmoothTRI6(FSMeshBase* pm, const FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_TRI6);
 
@@ -3502,7 +3572,7 @@ void RenderSmoothTRI6(FSCoreMesh* pm, FSFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 7-noded triangle
-void RenderSmoothTRI7(FSCoreMesh* pm, FSFace& face, int ndivs)
+void RenderSmoothTRI7(FSMeshBase* pm, const FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_TRI7);
 
@@ -3532,7 +3602,7 @@ void RenderSmoothTRI7(FSCoreMesh* pm, FSFace& face, int ndivs)
 
 //-----------------------------------------------------------------------------
 // Render a sub-divided 10-noded triangle
-void RenderSmoothTRI10(FSCoreMesh* pm, FSFace& face, int ndivs)
+void RenderSmoothTRI10(FSMeshBase* pm, const FSFace& face, int ndivs)
 {
 	assert(face.m_type == FE_FACE_TRI10);
 

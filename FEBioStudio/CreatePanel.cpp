@@ -36,6 +36,7 @@ SOFTWARE.*/
 #include "MainWindow.h"
 #include "GLView.h"
 #include "CreateP2PlinePane.h"
+#include "CreateGeodesicCurvePane.h"
 #include "CreateSpringPane.h"
 #include <GeomLib/GOCCObject.h>
 #include <GeomLib/GModel.h>
@@ -62,8 +63,9 @@ REGISTER_CLASS2(GDisc              , CLASS_OBJECT, "Disc"           , ":/icons/d
 REGISTER_CLASS2(GRing              , CLASS_OBJECT, "Ring"           , ":/icons/ring.png"         , 0);
 REGISTER_CLASS2(GExtrudeModifier   , CLASS_MODIFIER, "Extrude", ":/icons/extrude.png", 0);
 REGISTER_CLASS2(GRevolveModifier   , CLASS_MODIFIER, "Revolve", ":/icons/revolve.png", 0);
+REGISTER_CLASS2(GBendModifier      , CLASS_MODIFIER, "Bend"   , ":/icons/bend.png", 0);
 
-#ifdef _DEBUG
+#ifndef NDEBUG
 REGISTER_CLASS2(GCylindricalPatch  , CLASS_OBJECT, "Cylindrical Patch", ":/icons/cylpatch.png"     , 0);
 
 #ifdef HAS_OCC
@@ -71,7 +73,7 @@ REGISTER_CLASS2(GOCCBottle			, CLASS_OBJECT, "Bottle", ":/icons/bottle.png", 0);
 REGISTER_CLASS2(GOCCBox             , CLASS_OBJECT, "Box"   , ":/icons/box.png", 0);
 #endif
 
-#endif // _DEBUG
+#endif // NDEBUG
 
 //------------------------------------------------------------------------------------------------------------
 CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wnd, parent), ui(new Ui::CCreatePanel)
@@ -107,8 +109,9 @@ CCreatePanel::CCreatePanel(CMainWindow* wnd, QWidget* parent) : CCommandPanel(wn
 	}
 
 	// CAD objects
-	ui->AddCreateOption(2, "Point-to-point curve", QIcon(":/icons/p2pline.png"), new CCreateP2PLinePane(this));
-	ui->AddCreateOption(2, "Loft surface"        , QIcon(":/icons/loft.png"), new CCreateLoftSurface(this));
+	ui->AddCreateOption(2, "Point-to-point curve", QIcon(":/icons/p2pline.png" ), new CCreateP2PLinePane(this));
+	ui->AddCreateOption(2, "Geodesic curve"      , QIcon(":/icons/geodesic.png"), new CCreateGeodesicCurvePane(this));
+	ui->AddCreateOption(2, "Loft surface"        , QIcon(":/icons/loft.png"    ), new CCreateLoftSurface(this));
 }
 
 GObject* CCreatePanel::GetTempObject()

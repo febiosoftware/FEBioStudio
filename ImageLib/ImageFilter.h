@@ -29,67 +29,40 @@ SOFTWARE.*/
 #include <FSCore/FSObject.h>
 
 namespace Post{
-class CImageModel;
 class CGLModel;
 };
+
+class CImageModel;
 
 class CImageFilter : public FSObject
 {
 public:
-    enum TYPES
-    {
-        THRESHOLD = 0, MEAN, GAUSSBLUR, WARP, ADAPTHISTEQ
-    };
-
-public:
-    CImageFilter(int type, Post::CImageModel* model);
+    CImageFilter();
 
     virtual void ApplyFilter() = 0;
 
-    int Type() { return m_type; }
+    virtual void SetImageModel(CImageModel* model);
 
-    void SetImageModel(Post::CImageModel* model);
-
-	Post::CImageModel* GetImageModel();
+	CImageModel* GetImageModel();
 
 protected:
-    Post::CImageModel* m_model;
-
-private:
-    int m_type;
+    CImageModel* m_model;
 };
 
 class ThresholdImageFilter : public CImageFilter
 {
 public:
-    ThresholdImageFilter(Post::CImageModel* model = nullptr);
+    ThresholdImageFilter();
 
     void ApplyFilter() override;
+
+    void SetImageModel(CImageModel* model) override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
 };
 
-class MeanImageFilter : public CImageFilter
-{
-public:
-    MeanImageFilter(Post::CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class GaussianImageFilter : public CImageFilter
-{
-public:
-    GaussianImageFilter(Post::CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
-
-class AdaptiveHistogramEqualizationFilter : public CImageFilter
-{
-public:
-    AdaptiveHistogramEqualizationFilter(Post::CImageModel* model = nullptr);
-
-    void ApplyFilter() override;
-};
 
 class WarpImageFilter : public CImageFilter
 {
@@ -98,6 +71,10 @@ class WarpImageFilter : public CImageFilter
 public:
 	WarpImageFilter(Post::CGLModel* glm);
 	void ApplyFilter() override;
+
+private:
+    template<class pType>
+    void FitlerTemplate();
 
 private:
 	Post::CGLModel* m_glm;

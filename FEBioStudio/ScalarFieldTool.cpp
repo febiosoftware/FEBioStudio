@@ -100,7 +100,7 @@ public:
 		f->addRow("Material:", m_matList = new QComboBox);
 		f->addRow("Max iterations:", m_maxIters = new QLineEdit); m_maxIters->setText(QString::number(1000));
 		f->addRow("Tolerance:", m_tol = new QLineEdit); m_tol->setText(QString::number(1e-4));
-		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.0));
+		f->addRow("SOR parameter:", m_sor = new QLineEdit); m_sor->setText(QString::number(1.8));
 
 		m_maxIters->setValidator(new QIntValidator());
 		m_tol->setValidator(new QDoubleValidator());
@@ -339,7 +339,7 @@ void CScalarFieldTool::OnApply()
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_MULT);
+		pdata->Create(partSet, DATA_SCALAR, DATA_MULT);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -375,7 +375,7 @@ void CScalarFieldTool::OnApply()
 
 		FEPartData* pdata = new FEPartData(po->GetFEMesh());
 		pdata->SetName(name.toStdString());
-		pdata->Create(partSet, FEMeshData::DATA_SCALAR, FEMeshData::DATA_ITEM);
+		pdata->Create(partSet, DATA_SCALAR, DATA_ITEM);
 		pm->AddMeshDataField(pdata);
 
 		FEElemList* elemList = pdata->BuildElemList();
@@ -387,6 +387,7 @@ void CScalarFieldTool::OnApply()
 			int ne = el.Nodes();
 			double v = 0.0;
 			for (int j = 0; j < ne; ++j) v += val[el.m_node[j]];
+			v /= (double)ne;
 
 			pdata->set(i, v);
 		}
@@ -401,8 +402,8 @@ void CScalarFieldTool::OnApply()
 		po->AddFENodeSet(nodeSet);
 
 		// create node data
-		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, FEMeshData::DATA_SCALAR);
-		for (int i = 0; i < NN; i++) pdata->SetScalar(i, val[i]);
+		FENodeData* pdata = pm->AddNodeDataField(name.toStdString(), nodeSet, DATA_SCALAR);
+		for (int i = 0; i < NN; i++) pdata->setScalar(i, val[i]);
 	}
 
 	Clear();

@@ -277,8 +277,8 @@ public:
 		operator GNode* () { return m_pn; }
 
 	protected:
-		GModel*	m_ps;
 		GNode*	m_pn;
+		std::vector<GNode*> m_sel;
 		int		m_node;
 	};
 
@@ -324,13 +324,14 @@ public:
 		GModel*				m_ps;
 		GDiscreteObject*	m_pn;
 		int					m_item;
+		int					m_comp;
 	};
 
 	int Next();
 	int Prev();
 
 public:
-	GDiscreteSelection(GModel* ps) : FESelection(SELECT_DISCRETE_OBJECT) { m_ps = ps; Update(); }
+	GDiscreteSelection(GModel* ps);
 	int Count();
 	void Invert();
 	void Update();
@@ -346,6 +347,7 @@ public:
 
 protected:
 	GModel*	m_ps;
+	int		m_count;
 };
 
 //-----------------------------------------------------------------------------
@@ -370,7 +372,7 @@ public:
 	};
 
 public:
-	FEElementSelection(GModel* ps, FSMesh* pm) : FESelection(SELECT_FE_ELEMENTS) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEElementSelection(FSMesh* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -384,10 +386,10 @@ public:
 	FEItemListBuilder* CreateItemList();
 
 	FEElement_* Element(int i);
+    int ElementID(int i);
 
 protected:
 	FSMesh*		m_pMesh;
-	GModel*		m_ps;
 	vector<int>	m_item;
 };
 
@@ -413,7 +415,7 @@ public:
 	};
 
 public:
-	FEFaceSelection(GModel* ps, FSMeshBase* pm) : FESelection(SELECT_FE_FACES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEFaceSelection(FSMeshBase* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -430,7 +432,6 @@ public:
 
 protected:
 	FSMeshBase*		m_pMesh;
-	GModel*		m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -455,7 +456,7 @@ public:
 	};
 
 public:
-	FEEdgeSelection(GModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_EDGES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FEEdgeSelection(FSLineMesh* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -470,7 +471,6 @@ public:
 
 protected:
 	FSLineMesh*		m_pMesh;
-	GModel*		m_ps;
 };
 
 //-----------------------------------------------------------------------------
@@ -495,7 +495,7 @@ public:
 	};
 
 public:
-	FENodeSelection(GModel* ps, FSLineMesh* pm) : FESelection(SELECT_FE_NODES) { m_ps = ps; m_pMesh = pm; Update(); }
+	FENodeSelection(FSLineMesh* pm);
 	int Count();
 	virtual void Invert();
 	virtual void Update();
@@ -512,5 +512,4 @@ public:
 
 protected:
 	FSLineMesh*	m_pMesh;
-	GModel*	m_ps;
 };

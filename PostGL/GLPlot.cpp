@@ -26,12 +26,14 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "GLPlot.h"
+#include "GLPlotGroup.h"
 #include <GLWLib/GLWidgetManager.h>
 using namespace Post;
 
 CGLPlot::CGLPlot(CGLModel* po) : CGLVisual(po)
 {
 	m_renderOrder = 0;
+	m_pgroup = nullptr;
 }
 
 CGLPlot::~CGLPlot()
@@ -42,6 +44,16 @@ void CGLPlot::Reload()
 {
 
 }
+
+void CGLPlot::SetGroup(GLPlotGroup* pg) { m_pgroup = pg; }
+
+GLPlotGroup* CGLPlot::GetGroup() { return m_pgroup; }
+
+bool CGLPlot::Intersects(Ray& ray, Intersection& q) { return false; }
+
+FESelection* CGLPlot::SelectComponent(int index) { return nullptr; }
+
+void CGLPlot::ClearSelection() {}
 
 void CGLPlot::UpdateTexture() 
 {

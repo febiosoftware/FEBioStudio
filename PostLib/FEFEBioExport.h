@@ -28,8 +28,8 @@ SOFTWARE.*/
 #include "FEFileExport.h"
 
 namespace Post {
-//-----------------------------------------------------------------------------
-// Export model to a FEBio file
+
+// Export model to a FEBio file (version 2.5)
 class FEFEBioExport : public FEFileExport
 {
 public:
@@ -38,4 +38,15 @@ public:
 
 	bool Save(FEPostModel& fem, const char* szfile);
 };
+
+// Export model to a FEBio file (version 4.0)
+class FEFEBioExport4 : public FEFileExport
+{
+public:
+	FEFEBioExport4(void) {}
+	~FEFEBioExport4(void) {}
+
+	bool Save(FEPostModel& fem, const char* szfile);
+};
+
 }

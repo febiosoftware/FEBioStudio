@@ -35,6 +35,7 @@ SOFTWARE.*/
 #include "GLView.h"
 #include <PostGL/GLModel.h>
 #include <GeomLib/GObject.h>
+#include "Logger.h"
 
 //-----------------------------------------------------------------------------
 CAbstractTool::CAbstractTool(CMainWindow* wnd, const QString& s) : m_name(s)
@@ -163,6 +164,11 @@ QWidget* CBasicTool::createUi()
 //-----------------------------------------------------------------------------
 bool CBasicTool::SetErrorString(const QString& err)
 {
+	if (err.isEmpty() == false)
+	{
+		QString msg = QString("[%1]%2\n").arg(name()).arg(err);
+		CLogger::AddLogEntry(msg);
+	}
 	m_err = err;
 	return err.isEmpty();
 }

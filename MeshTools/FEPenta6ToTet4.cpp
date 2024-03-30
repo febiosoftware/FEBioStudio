@@ -26,6 +26,7 @@ SOFTWARE.*/
 
 #include "stdafx.h"
 #include "FEModifier.h"
+#include "FELinearToQuadratic.h"
 
 //-----------------------------------------------------------------------------
 //! Convert a penta6 to a tet4 mesh by converting each penta to 3 tets
@@ -257,4 +258,12 @@ FSMesh* FEPenta6ToTet4::Apply(FSMesh* pm)
     mesh->BuildMesh();
     
     return mesh;
+}
+
+//-----------------------------------------------------------------------------
+//! Convert a penta6 to a penta15 mesh by converting each penta to 3 tets
+FSMesh* FEPenta6ToPenta15::Apply(FSMesh* pm)
+{
+	FELinearToQuadratic mod;
+	return mod.Apply(pm);
 }

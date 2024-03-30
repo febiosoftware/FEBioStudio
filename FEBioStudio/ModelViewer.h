@@ -65,6 +65,9 @@ public:
 	// select an item list
 	void SelectItemList(FEItemListBuilder *pitem, bool badd = false);
 
+	// assign the current selection to the currently selected item in the tree
+	void AssignCurrentSelection();
+
 	// set the current item
 	void SetCurrentItem(int item);
 	void SetCurrentItem(CModelTreeItem& item);
@@ -149,6 +152,7 @@ public slots:
 	void OnCopyConstraint();
 	void OnCopyRigidBC();
 	void OnCopyRigidIC();
+	void OnCopyRigidLoad();
 	void OnCopyStep();
 	void OnStepMoveUp();
 	void OnStepMoveDown();
@@ -157,6 +161,8 @@ public slots:
 	void OnEditOutput();
 	void OnEditOutputLog();
 	void OnRemoveEmptySelections();
+	void OnRemoveUnusedSelections();
+	void OnRemoveUnusedLoadControllers();
 	void OnRemoveAllSelections();
 	void OnDeleteAllMeshAdaptors();
 	void OnChangeMaterial();
@@ -178,6 +184,9 @@ public slots:
 	void OnDeleteAllSteps();
 	void OnDeleteAllJobs();
 	void OnEditMeshData();
+    void OnExportRawImage();
+    void OnExportTIFF();
+    void OnExportNRRD();
 
 signals:
 	void currentObjectChanged(FSObject* po);

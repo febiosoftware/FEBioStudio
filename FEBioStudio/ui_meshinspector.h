@@ -42,6 +42,7 @@ SOFTWARE.*/
 #include <MeshLib/FESurfaceMesh.h>
 #include <GeomLib/GObject.h>
 #include <GeomLib/GSurfaceMeshObject.h>
+#include <MeshTools/FEMeshValuator.h>
 
 class CMeshInfo : public QGroupBox
 {
@@ -160,26 +161,6 @@ public:
 class Ui::CMeshInspector
 {
 public:
-	enum { MAX_EVAL_FIELDS = 13 };
-
-	// NOTE: 
-	enum DataFields {
-		ELEMENT_VOLUME,
-		JACOBIAN,
-		SHELL_THICKNESS,
-		SHELL_AREA,
-		TET_QUALITY,
-		TET_MIN_DIHEDRAL_ANGLE,
-		TET_MAX_DIHEDRAL_ANGLE,
-		TRIANGLE_QUALITY,
-		TET10_MID_NODE_OFFSET,
-		MIN_EDGE_LENGTH,
-		MAX_EDGE_LENGTH,
-		PRINC_CURVE_1,
-		PRINC_CURVE_2
-	};
-
-public:
 	CMeshInfo*		info;
 	QTableWidget*	table;
 	CPlotWidget*	plot;
@@ -194,15 +175,15 @@ public:
 	QSpinBox* curvatureMaxIters;
 	QCheckBox* curvatureExtQuad;
 
+	GObject*		m_po;
 	FSMeshBase*		m_pm;
-
-	
 
 	int		m_map;
 
 public:
 	void setupUi(QMainWindow* wnd)
 	{
+		m_po = nullptr;
 		m_pm = nullptr;
 
 		m_map = -1;
@@ -315,21 +296,10 @@ public:
 			return;
 		}
 
-		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
+		std::vector< std::string> names = FEMeshValuator::GetDataFieldNames();
+		
 		QStringList items;
-		items << "Element Volume";
-		items << "Jacobian";
-		items << "Shell thickness";
-		items << "Shell area";
-		items << "Tet quality";
-		items << "Tet minimal dihedral angle";
-		items << "Tet maximal dihedral angle";
-		items << "Triangle quality";
-		items << "Tet10 midside node offset";
-		items << "Minimum element edge length";
-		items << "Maximum element edge length";
-		items << "1-Principal curvature";
-		items << "2-Principal curvature";
+		for (string& s : names) items << QString::fromStdString(s);
 		var->clear();
 		var->addItems(items);
 
@@ -425,12 +395,9 @@ public:
 		static const char* FN[] = {
 			"(unknown)", "TRI3", "QUAD4", "TRI6", "TRI7", "QUAD8", "QUAD9", "TRI10" };
 
-		// NOTE: If a new field is added, make sure to update the MAX_EVAL_FIELDS enum above as well as the DataFields enum.
+		std::vector< std::string> names = FESurfaceMeshValuator::GetDataFieldNames();
 		QStringList items;
-		items << "Face area";
-		items << "Triangle quality";
-		items << "Minimum element edge length";
-		items << "Maximum element edge length";
+		for (string& s : names) items << QString::fromStdString(s);
 		var->clear();
 		var->addItems(items);
 

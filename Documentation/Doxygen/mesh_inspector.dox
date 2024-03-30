@@ -1,0 +1,32 @@
+/** 
+\page mesh_inspector Adding a data field to the Mesh Inspector
+
+This article describes how to add a new data field to the Mesh Inspector. 
+
+First, note that there is a difference depending on whether the field is for a volume mesh (FSMesh) or a surface mesh (FSSurfaceMesh). 
+
+Also note that the Mesh Inspector itself usually does not need to be modified. 
+
+\section volume_mesh Adding a new field for a volume mesh
+
+The volume data field is evaluated in CMeshInspector::UpdateFEMeshData. In this function, an object of type FEMeshValuator is created. 
+The FEMeshValuator class does most of the work. It has a member called FEMeshValuator::Evaluate that takes as a parameter the field that should evaluated. 
+
+To add a new data field, follow these steps:
+
+1. First, add a new enum value in FEMeshValuator::DataFields. Make sure to add it before the MAX_DEFAULT_FIELDS value!
+2. Update the FEMeshValuator::GetDataFieldNames function and add a new string for the new data field. Make sure to insert it in the same position as the enum value. 
+3. Finally, update the FEMeshValuator::Evaluate function. 
+
+\section surf_mesh Adding a new field for a surface mesh
+
+The surface mesh data field is evaluated in CMeshInspector::UpdateSurfaceMeshData. In this function, an object of type FESurfaceMeshValuator is created. 
+The FESurfaceMeshValuator class does most of the work. It has a member called FESurfaceMeshValuator::Evaluate that takes as a parameter the field that should evaluated. 
+
+To add a new data field, follow these steps:
+
+1. First, add a new enum value in FESurfaceMeshValuator::DataFields. Make sure to add it before the MAX_DEFAULT_FIELDS value!
+2. Update the FESurfaceMeshValuator::GetDataFieldNames function and add a new string for the new data field. Make sure to insert it in the same position as the enum value. 
+3. Finally, update the FESurfaceMeshValuator::Evaluate function. 
+
+*/

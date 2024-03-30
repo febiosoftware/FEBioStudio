@@ -164,7 +164,7 @@ void CGLSlicePlot::Render(CGLContext& rc)
 
 	GLTexture1D& tex = m_Col.GetTexture();
 
-	Byte a = Byte(255.0*GetFloatValue(TRANSPARENCY));
+	uint8_t a = uint8_t(255.0*GetFloatValue(TRANSPARENCY));
 
 	glPushAttrib(GL_ENABLE_BIT);
 	glEnable(GL_TEXTURE_1D);

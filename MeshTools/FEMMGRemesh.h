@@ -63,6 +63,10 @@ class MMGSurfaceRemesh : public FESurfaceModifier
 public:
 	MMGSurfaceRemesh();
 	FSSurfaceMesh* Apply(FSSurfaceMesh* pm) override;
+    void SetElementSize(double h) { SetFloatValue(ELEM_SIZE, h); }
+    void SetElementMinSize(double hmin) { SetFloatValue(HMIN, hmin); }
+    void SetHausdorf(double haus) { SetFloatValue(HAUSDORFF, haus); }
+    void SetGradation(double hgrad) { SetFloatValue(HGRAD, hgrad); }
 };
 
 //-----------------------------------------------------------------------------

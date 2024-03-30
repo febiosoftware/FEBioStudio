@@ -29,32 +29,33 @@ SOFTWARE.*/
 #include <QtCore/QString>
 #include <vector>
 
+class FSBase;
 class FSObject;
 
 class CObjectProps : public CPropertyList
 {
 public:
-	CObjectProps(FSObject* po);
+	CObjectProps(FSBase* po);
 
 	QVariant GetPropertyValue(int i);
 
 	void SetPropertyValue(int i, const QVariant& v);
 
-	virtual FSObject* GetFEObject() { return m_po; }
+	virtual FSBase* GetFEObject() { return m_po; }
 
 	int Params() const { return (int) m_params.size(); }
 
 protected:
-	void BuildParamList(FSObject* po, bool showNonPersistent = false);
+	void BuildParamList(FSBase* po, bool showNonPersistent = false);
 
 	void AddParameter(Param& p);
-	void AddParameterList(FSObject* po);
+	void AddParameterList(FSBase* po);
 	QVariant GetPropertyValue(Param& p);
 	void SetPropertyValue(Param& p, const QVariant& v);
 
 	virtual QStringList GetEnumValues(const char* ch);
 
 protected:
-	FSObject*			m_po;
+	FSBase*			m_po;
 	std::vector<Param*>	m_params;
 };

@@ -536,6 +536,16 @@ vec3f FSFace::eval(vec3f* d, double r, double s)
 }
 
 //-----------------------------------------------------------------------------
+vec3d FSFace::eval(vec3d* d, double r, double s)
+{
+	double H[FSFace::MAX_NODES];
+	shape(H, r, s);
+	vec3d a(0, 0, 0);
+	for (int i = 0; i < Nodes(); ++i) a += d[i] * H[i];
+	return a;
+}
+
+//-----------------------------------------------------------------------------
 double FSFace::eval_deriv1(double* d, double r, double s)
 {
     double Hr[FSFace::MAX_NODES], Hs[FSFace::MAX_NODES];

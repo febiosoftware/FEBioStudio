@@ -31,38 +31,28 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionEditXmlAsText_triggered(bool checked)
 {
-    CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
-
-    if(!xmlDoc) return;
-
-    xmlDoc->EditAsText(checked);
-
-    if(checked)
-    {
-        ui->xmlEdit->SetDocument(xmlDoc->GetTextDocument());
-    }
-    else
-    {
-        ui->xmlTree->setModel(xmlDoc->GetModel());
-    }
-
-    ui->setUIConfig(::CMainWindow::XML_CONFIG);
+	CXMLDocument* xmlDoc = dynamic_cast<CXMLDocument*>(GetDocument());
+	if (xmlDoc)
+	{
+		xmlDoc->EditAsText(checked);
+		UpdateUIConfig();
+	}
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionAddAttribute_triggered()
 {
-    ui->xmlTree->on_addAttribute_triggered();
+    ui->centralWidget->xmlTree->on_addAttribute_triggered();
 }
 
 //-----------------------------------------------------------------------------
 void CMainWindow::on_actionAddElement_triggered()
 {
-    ui->xmlTree->on_addElement_triggered();
+    ui->centralWidget->xmlTree->on_addElement_triggered();
 }
 
 //-----------------------------------------------------------------------------   
 void CMainWindow::on_actionRemoveRow_triggered()
 {
-    ui->xmlTree->on_removeSelectedRow_triggered();
+    ui->centralWidget->xmlTree->on_removeSelectedRow_triggered();
 }

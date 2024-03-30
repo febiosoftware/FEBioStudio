@@ -29,8 +29,8 @@ SOFTWARE.*/
 //-----------------------------------------------------------------------------
 // VERSION INFORMATION
 #define FBS_VERSION			2
-#define FBS_SUBVERSION		1
-#define FBS_SUBSUBVERSION	2
+#define FBS_SUBVERSION		6
+#define FBS_SUBSUBVERSION	0
 
 //-----------------------------------------------------------------------------
 // FSM FILE VERSION
@@ -51,8 +51,9 @@ SOFTWARE.*/
 // 3.14: Added additional meshing parameters to FEQuartDogBone.
 // 4.0: new version starting with FEBio Studio 2.
 // 4.1: Item components are no longer stored on the model components. Added FSPartSet. New mesh storage format.
+// 4.2: Node and element IDs are now stored in the fs2 file. 
 #define FBS2_FILE		0x00040000	// first version number used by FBS2. Don't change!
-#define SAVE_VERSION	0x00040001
+#define SAVE_VERSION	0x00040002
 
 // lowest supported version number
 #define MIN_FSM_VERSION	0x0001000D

@@ -54,6 +54,8 @@ CPointCongruencyTool::CPointCongruencyTool(CMainWindow* wnd) : CBasicTool(wnd, "
 	addDoubleProperty(&m_Kemin, "Ke_min")->setFlags(CProperty::Visible);
 	addDoubleProperty(&m_Kemax, "Ke_max")->setFlags(CProperty::Visible);
 	addDoubleProperty(&m_cong, "Congruency")->setFlags(CProperty::Visible);
+
+	SetInfo("Calculates the congruency at a point.");
 }
 
 bool CPointCongruencyTool::OnApply()

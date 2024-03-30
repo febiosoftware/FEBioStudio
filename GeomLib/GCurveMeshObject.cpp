@@ -177,7 +177,7 @@ FECurveMesh* GCurveMeshObject::GetFECurveMesh(int edgeId)
 		{
 			node.m_ntag = nn++;
 			vec3d r = GetTransform().LocalToGlobal(node.r);
-			curve->AddNode(r);
+			curve->AddNode(r, false);
 		}
 	}
 

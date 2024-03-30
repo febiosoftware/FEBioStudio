@@ -32,10 +32,12 @@ class FSProject;
 
 //-----------------------------------------------------------------------------
 // Output variable for plot file
+// TODO: inherit from IHasItemList?
 class CPlotVariable
 {
 public:
 	CPlotVariable(const string& name, bool bactive, bool bshow, DOMAIN_TYPE type);
+	~CPlotVariable();
 	CPlotVariable(const CPlotVariable& v);
 	void operator = (const CPlotVariable& v);
 

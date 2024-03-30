@@ -29,6 +29,7 @@ SOFTWARE.*/
 #include <MeshLib/FECurveMesh.h>
 #include <MeshLib/FESurfaceMesh.h>
 #include <MeshLib/triangulate.h>
+#include <FSCore/LoadCurve.h>
 
 int closestNode(FECurveMesh& c, const vec3d& r)
 {
@@ -53,6 +54,7 @@ FELoftMesher::FELoftMesher()
 {
 	m_elem = 0;
 	m_ndivs = 1;
+	m_bsmooth = true;
 }
 
 struct LOFT_FACET
@@ -98,7 +100,7 @@ FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 {
 	// number of curves to loft
 	int NC = (int)curve.size();
-	if (NC <= 1) return 0;
+	if (NC <= 1) return nullptr;
 
 	// curves must be sorted
 	for (int i = 0; i<NC; ++i) curve[i]->Sort();
@@ -134,30 +136,114 @@ FSSurfaceMesh* FELoftMesher::BuildQuadMesh(vector<FECurveMesh*> curve)
 
 	// create nodes
 	NN = 0;
-	for (int i = 0; i<NC; ++i)
+	if ((m_bsmooth == false) || (NC == 2))
 	{
-		if (i < NC-1)
+		for (int i = 0; i < NC; ++i)
 		{
-			FECurveMesh* curve0 = curve[i    ];
-			FECurveMesh* curve1 = curve[i + 1];
-
-			for (int l=0; l<ND; ++l)
+			if (i < NC - 1)
 			{
-				double w = (double) l / (double) ND;
-				for (int j = 0; j<NCN; ++j)
+				FECurveMesh* curve0 = curve[i];
+				FECurveMesh* curve1 = curve[i + 1];
+
+				for (int l = 0; l < ND; ++l)
 				{
-					vec3d r0 = curve0->Node(j).r;
-					vec3d r1 = curve1->Node(j).r;
-					mesh->Node(NN++).r = r1*w + r0*(1.0 - w);
+					double w = (double)l / (double)ND;
+					for (int j = 0; j < NCN; ++j)
+					{
+						vec3d r0 = curve0->Node(j).r;
+						vec3d r1 = curve1->Node(j).r;
+						mesh->Node(NN++).r = r1 * w + r0 * (1.0 - w);
+					}
+				}
+			}
+			else
+			{
+				FECurveMesh* curvei = curve[i];
+				int nn = curvei->Nodes();
+				for (int j = 0; j < nn; ++j) mesh->Node(NN++).r = curvei->Node(j).r;
+			}
+		}
+	}
+	else if (NC == 3)
+	{
+		FECurveMesh* curve0 = curve[0];
+		FECurveMesh* curve1 = curve[1];
+		FECurveMesh* curve2 = curve[2];
+
+		// quadratic interpolation
+		for (int l = 0; l <= 2 * ND; ++l)
+		{
+			double w = (double)l / (double)(2*ND);
+			for (int j = 0; j < NCN; ++j)
+			{
+				vec3d r0 = curve0->Node(j).r;
+				vec3d r1 = curve1->Node(j).r;
+				vec3d r2 = curve2->Node(j).r;
+
+				double h0 = 2 * (1 - w) * (0.5 - w);
+				double h1 = 4*w*(1 - w);
+				double h2 = 2 * w * (w - 0.5);
+				mesh->Node(NN++).r = r0 * h0 + r1 * h1 + r2*h2;
+			}
+		}
+	}
+	else
+	{
+		for (int i = 0; i < NC - 1; ++i)
+		{
+			// cubic interpolation
+			FECurveMesh* c[4];
+			int l0, l1;
+			if (i == 0)
+			{
+				c[0] = curve[0];
+				c[1] = curve[1];
+				c[2] = curve[2];
+				c[3] = curve[3];
+				l0 = 0;
+				l1 = ND;
+			}
+			else if (i == NC - 2)
+			{
+				c[0] = curve[i-2];
+				c[1] = curve[i-1];
+				c[2] = curve[i  ];
+				c[3] = curve[i+1];
+				l0 = 2*ND;
+				l1 = 3*ND;
+			}
+			else
+			{
+				c[0] = curve[i - 1];
+				c[1] = curve[i    ];
+				c[2] = curve[i + 1];
+				c[3] = curve[i + 2];
+				l0 = ND;
+				l1 = 2 * ND;
+			}
+
+			// cubic interpolation
+			for (int l = l0; l < l1; ++l)
+			{
+				double w = (double)l / (double)(3 * ND);
+				for (int j = 0; j < NCN; ++j)
+				{
+					vec3d r0 = c[0]->Node(j).r;
+					vec3d r1 = c[1]->Node(j).r;
+					vec3d r2 = c[2]->Node(j).r;
+					vec3d r3 = c[3]->Node(j).r;
+
+					double h0 = -9.0 * (w - 1. / 3.) * (w - 2. / 3.) * (w - 1.) * 0.5;
+					double h1 = 27.0 * w * (w - 2. / 3.) * (w - 1.) * 0.5;
+					double h2 = -27.0 * w * (w - 1. / 3.) * (w - 1.) * 0.5;
+					double h3 = 9.0 * w * (w - 1. / 3.) * (w - 2. / 3.) * 0.5;
+					mesh->Node(NN++).r = r0 * h0 + r1 * h1 + r2 * h2 + r3 * h3;
 				}
 			}
 		}
-		else
-		{
-			FECurveMesh* curvei = curve[i];
-			int nn = curvei->Nodes();
-			for (int j = 0; j<nn; ++j) mesh->Node(NN++).r = curvei->Node(j).r;
-		}
+		FECurveMesh* curvei = curve[NC-1];
+		int nn = curvei->Nodes();
+		for (int j = 0; j < nn; ++j) mesh->Node(NN++).r = curvei->Node(j).r;
 	}
 
 	// create edges

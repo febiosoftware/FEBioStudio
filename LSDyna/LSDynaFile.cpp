@@ -24,7 +24,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.*/
 #include "LSDynaFile.h"
-#include <MeshIO/FileReader.h>
+#include <FSCore/FileReader.h>
 #include <assert.h>
 
 //-----------------------------------------------------------------------------
@@ -131,7 +131,7 @@ bool LSDynaFile::CARD::nexti(int& n, int nwidth)
 
 bool LSDynaFile::CARD::operator == (const char* sz)
 {
-	return (szcmp(m_szline, sz) == 0);
+	return (strcmp(m_szline, sz) == 0);
 }
 
 bool LSDynaFile::CARD::contains(const char* sz)
@@ -201,8 +201,9 @@ char* LSDynaFile::get_line(char* szline)
 		++m_lineno;
 	} while (szline[0] == '$');
 
-	char* ch = strrchr(szline, '\n');
-	if (ch) *ch = 0;
+	// remove line endings
+	char* ch = strrchr(szline, '\n'); if (ch) *ch = 0;
+	ch = strrchr(szline, '\r'); if (ch) *ch = 0;
 
 	return szline;
 }
