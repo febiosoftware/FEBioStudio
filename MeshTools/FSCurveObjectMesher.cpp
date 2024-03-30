@@ -67,7 +67,7 @@ FSMesh* FSCurveObjectMesher::BuildMesh()
 
 	// allocate mesh
 	FSMesh* mesh = new FSMesh;
-	mesh->Create(totalNodes, totalElems);
+	mesh->Create(totalNodes, totalElems, 0, totalElems);
 	mesh->TagAllNodes(-1);
 
 	// process geometry nodes
@@ -136,6 +136,32 @@ FSMesh* FSCurveObjectMesher::BuildMesh()
 			m0 = m1;
 		}
 	}
+
+	// update edges
+	for (int i = 0; i < totalElems; ++i)
+	{
+		FSElement& el = mesh->Element(i);
+		FSEdge& ed = mesh->Edge(i);
+		if (el.Type() == FE_BEAM2)
+		{
+			ed.SetType(FEEdgeType::FE_EDGE2);
+			ed.n[0] = el.m_node[0];
+			ed.n[1] = el.m_node[1];
+			ed.n[2] = ed.n[3] = -1;
+			ed.m_gid = el.m_gid;
+		}
+		else if (el.Type() == FE_BEAM3)
+		{
+			ed.SetType(FEEdgeType::FE_EDGE3);
+			ed.n[0] = el.m_node[0];
+			ed.n[1] = el.m_node[1];
+			ed.n[2] = el.m_node[2];
+			ed.n[3] = -1;
+			ed.m_gid = el.m_gid;
+		}
+	}
+
+	mesh->UpdateEdgeNeighbors();
 	mesh->UpdateMesh();
 
 	return mesh;

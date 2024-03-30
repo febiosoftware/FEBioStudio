@@ -118,7 +118,7 @@ public:
 	void BuildELT();
 	void ClearELT();
 
-protected: // Helper functions for updating mesh data structures
+public: // Helper functions for updating mesh data structures
 	void RebuildElementData();
 	void RebuildFaceData();
 	void RebuildEdgeData();
