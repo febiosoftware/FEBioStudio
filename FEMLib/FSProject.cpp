@@ -2093,13 +2093,17 @@ void FSProject::ConvertStepSettings(std::ostream& log, FEBioAnalysisStep& febSte
 					switch (qnmethod)
 					{
 					case 0: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "BFGS", febStep.GetFSModel()); break;
-					case 1: qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
+					case 1: 
+					case 2: 
+						qnSolver = FEBio::CreateClass(FENEWTONSTRATEGY_ID, "Broyden", febStep.GetFSModel()); break;
 					default:
 						assert(false);
 					}
-					qnProp->SetComponent(qnSolver);
-
-					qnSolver->SetParamInt("max_ups", ops.ilimit);
+					if (qnSolver)
+					{
+						qnProp->SetComponent(qnSolver);
+						qnSolver->SetParamInt("max_ups", ops.ilimit);
+					}
 				}
 				else
 				{

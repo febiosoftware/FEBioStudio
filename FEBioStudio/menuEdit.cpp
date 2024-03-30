@@ -94,15 +94,18 @@ void CMainWindow::on_actionInvertSelection_triggered()
 
 void CMainWindow::on_actionClearSelection_triggered()
 {
-	CModelDocument* doc = dynamic_cast<CModelDocument*>(GetDocument());
+	CGLDocument* doc = dynamic_cast<CGLDocument*>(GetDocument());
 	if (doc == nullptr) return;
 
 	FESelection* ps = doc->GetCurrentSelection();
-	if (ps && ps->Size())
+	if ((ps == nullptr) || (ps->Size() == 0)) return;
+
+	CModelDocument* modelDoc = dynamic_cast<CModelDocument*>(doc);
+	if (modelDoc)
 	{
 		int item = doc->GetItemMode();
 		int nsel = doc->GetSelectionMode();
-		GModel* mdl = doc->GetGModel();
+		GModel* mdl = modelDoc->GetGModel();
 		GObject* po = doc->GetActiveObject();
 		FSMesh* pm = (po ? po->GetFEMesh() : 0);
 		FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
@@ -127,9 +130,25 @@ void CMainWindow::on_actionClearSelection_triggered()
 		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pml, 0, 0, false)); break;
 		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pml, 0, 0, false)); break;
 		}
-
-		Update();
 	}
+
+	CPostDocument* postDoc = dynamic_cast<CPostDocument*>(doc);
+	if (postDoc)
+	{
+		int item = doc->GetItemMode();
+		GObject* po = doc->GetActiveObject();
+		FSMesh* pm = (po ? po->GetFEMesh() : 0);
+		FSMeshBase* pmb = (po ? po->GetEditableMesh() : 0);
+		FSLineMesh* pml = (po ? po->GetEditableLineMesh() : 0);
+		switch (item)
+		{
+		case ITEM_ELEM: doc->DoCommand(new CCmdSelectElements(pm, 0, 0, false)); break;
+		case ITEM_FACE: doc->DoCommand(new CCmdSelectFaces(pmb, 0, 0, false)); break;
+		case ITEM_EDGE: doc->DoCommand(new CCmdSelectFEEdges(pml, 0, 0, false)); break;
+		case ITEM_NODE: doc->DoCommand(new CCmdSelectFENodes(pml, 0, 0, false)); break;
+		}
+	}
+	Update();
 }
 
 void CMainWindow::on_actionDeleteSelection_triggered()
