@@ -2018,6 +2018,7 @@ void FEBioExport4::WriteMeshDataSection()
 		case FE_FEBIO_EDGEDATA_GENERATOR: WriteEdgeDataGenerator(dynamic_cast<FSEdgeDataGenerator*>(pdm)); break;
 		case FE_FEBIO_FACEDATA_GENERATOR: WriteFaceDataGenerator(dynamic_cast<FSFaceDataGenerator*>(pdm)); break;
 		case FE_FEBIO_ELEMDATA_GENERATOR: WriteElemDataGenerator(dynamic_cast<FSElemDataGenerator*>(pdm)); break;
+		case FE_CONST_FACEDATA_GENERATOR: WriteFaceDataGenerator(dynamic_cast<FSFaceDataGenerator*>(pdm)); break;
 		default:
 			assert(false);
 		}
@@ -2058,6 +2059,8 @@ void FEBioExport4::WriteEdgeDataGenerator(FSEdgeDataGenerator* map)
 //-----------------------------------------------------------------------------
 void FEBioExport4::WriteFaceDataGenerator(FSFaceDataGenerator* map)
 {
+	const char* szsurf = GetSurfaceName(map->GetItemList());
+	if (szsurf == nullptr) throw InvalidItemListBuilder(map);
 	XMLElement meshData("SurfaceData");
 	meshData.add_attribute("name", map->GetName());
 	meshData.add_attribute("surface", GetSurfaceName(map->GetItemList()));

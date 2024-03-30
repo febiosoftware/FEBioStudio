@@ -70,7 +70,7 @@ void GLViewSettings::Defaults(int ntheme)
 	m_pos3d = vec3d(0, 0, 0);
 
 	m_bTags = true;
-	m_ntagInfo = 0;
+	m_ntagInfo = TagInfoOption::TAG_ITEM;
 
 	m_defaultFGColorOption = 0;
 

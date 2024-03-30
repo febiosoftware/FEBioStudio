@@ -245,9 +245,6 @@ public:
 	// build the context menu for the GLView
 	void BuildContextMenu(QMenu& menu);
 
-	// Update the physics menu based on active modules
-	void UpdatePhysicsUi();
-
 	// clear the recent files list
 	void ClearRecentFilesList();
 
@@ -377,6 +374,7 @@ public slots:
 	void on_actionDetach_triggered();
 	void on_actionExtract_triggered();
 	void on_actionEditProject_triggered();
+	void on_actionAssignSelection_triggered();
 	void on_actionFaceToElem_triggered();
 	void on_actionSurfaceToFaces_triggered();
 	void on_actionSelectOverlap_triggered();
@@ -490,6 +488,7 @@ public slots:
 	void on_actionShowRigidBodies_toggled(bool b);
 	void on_actionShowRigidJoints_toggled(bool b);
 	void on_actionShowRigidLabels_toggled(bool b);
+	void on_actionToggleTagInfo_triggered();
 	void on_actionToggleLight_triggered();
 	void on_actionFront_triggered();
 	void on_actionBack_triggered();

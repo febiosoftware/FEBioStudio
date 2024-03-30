@@ -831,66 +831,69 @@ void GMeshObject::Save(OArchive &ar)
 	}
 
 	// save the parts
-	ar.BeginChunk(CID_OBJ_PART_LIST);
+	if (Parts() > 0)
 	{
-		for (int i=0; i<Parts(); ++i)
+		ar.BeginChunk(CID_OBJ_PART_LIST);
 		{
-			ar.BeginChunk(CID_OBJ_PART);
+			for (int i = 0; i < Parts(); ++i)
 			{
-				GPart& p = *Part(i);
-				int nid = p.GetID();
-				int mid = p.GetMaterialID();
-				ar.WriteChunk(CID_OBJ_PART_ID, nid);
-				ar.WriteChunk(CID_OBJ_PART_MAT, mid);
-				ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
-
-				if (p.Parameters() > 0)
+				ar.BeginChunk(CID_OBJ_PART);
 				{
-					ar.BeginChunk(CID_OBJ_PART_PARAMS);
+					GPart& p = *Part(i);
+					int nid = p.GetID();
+					int mid = p.GetMaterialID();
+					ar.WriteChunk(CID_OBJ_PART_ID, nid);
+					ar.WriteChunk(CID_OBJ_PART_MAT, mid);
+					ar.WriteChunk(CID_OBJ_PART_NAME, p.GetName());
+
+					if (p.Parameters() > 0)
 					{
-						p.ParamContainer::Save(ar);
+						ar.BeginChunk(CID_OBJ_PART_PARAMS);
+						{
+							p.ParamContainer::Save(ar);
+						}
+						ar.EndChunk();
 					}
-					ar.EndChunk();
+
+					GPartSection* section = p.GetSection();
+					if (section)
+					{
+						GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
+						if (solid)
+						{
+							ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
+							{
+								solid->Save(ar);
+							}
+							ar.EndChunk();
+						}
+
+						GShellSection* shell = dynamic_cast<GShellSection*>(section);
+						if (shell)
+						{
+							ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
+							{
+								shell->Save(ar);
+							}
+							ar.EndChunk();
+						}
+
+						GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
+						if (beam)
+						{
+							ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
+							{
+								beam->Save(ar);
+							}
+							ar.EndChunk();
+						}
+					}
 				}
-
-				GPartSection* section = p.GetSection();
-				if (section)
-				{
-					GSolidSection* solid = dynamic_cast<GSolidSection*>(section);
-					if (solid)
-					{
-						ar.BeginChunk(CID_OBJ_PART_SOLIDSECTION);
-						{
-							solid->Save(ar);
-						}
-						ar.EndChunk();
-					}
-
-					GShellSection* shell = dynamic_cast<GShellSection*>(section);
-					if (shell)
-					{
-						ar.BeginChunk(CID_OBJ_PART_SHELLSECTION);
-						{
-							shell->Save(ar);
-						}
-						ar.EndChunk();
-					}
-
-					GBeamSection* beam = dynamic_cast<GBeamSection*>(section);
-					if (beam)
-					{
-						ar.BeginChunk(CID_OBJ_PART_BEAMSECTION);
-						{
-							beam->Save(ar);
-						}
-						ar.EndChunk();
-					}
-				}
+				ar.EndChunk();
 			}
-			ar.EndChunk();
 		}
+		ar.EndChunk();
 	}
-	ar.EndChunk();
 
 	// save the surfaces
 	if (Faces() > 0)

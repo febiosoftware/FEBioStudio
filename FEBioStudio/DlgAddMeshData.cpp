@@ -49,6 +49,7 @@ public:
 	QComboBox* m_type;
 	QComboBox* m_data;
 	QComboBox* m_fmt;
+	QComboBox* m_init;
 
 public:
 	void setup(QDialog* dlg)
@@ -60,11 +61,13 @@ public:
 		form->addRow("Type:", m_type = new QComboBox);
 		form->addRow("Data type:", m_data = new QComboBox);
 		form->addRow("Data format:", m_fmt = new QComboBox);
+		form->addRow("Data initializer:", m_init = new QComboBox);
 		layout->addLayout(form);
 
 		m_type->addItems(QStringList() << "node data" << "surface data" << "element data" << "part data");
 		m_data->addItems(QStringList() << "scalar" << "vec3" << "mat3");
 		m_fmt ->addItems(QStringList() << "item" << "node" << "mult");
+		m_init->addItems(QStringList() << "list" << "constant");
 
 		QDialogButtonBox* bb = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
 		layout->addWidget(bb);
@@ -99,6 +102,18 @@ DATA_FORMAT CDlgAddMeshData::GetFormat()
 { 
 	int n = ui->m_fmt->currentIndex(); 
 	return (DATA_FORMAT)n;
+}
+
+CDlgAddMeshData::DataInitializer CDlgAddMeshData::GetDataInitializer()
+{
+	int n = ui->m_init->currentIndex();
+	switch (n)
+	{
+	case 0: return CDlgAddMeshData::INITIALIZER_LIST; break;
+	case 1: return CDlgAddMeshData::INITIALIZER_CONST; break;
+	}
+	assert(false);
+	return CDlgAddMeshData::INITIALIZER_CONST;
 }
 
 //==========================================================

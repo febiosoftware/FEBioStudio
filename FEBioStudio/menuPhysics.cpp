@@ -823,22 +823,39 @@ void CMainWindow::on_actionAddMeshDataMap_triggered()
 		QString name = dlg.GetName();
 		if (name.isEmpty()) name = QString("MeshData%1").arg(fem->CountMeshDataFields() + 1);
 
-		FEMeshData* data = nullptr;
-		switch (dlg.GetType())
+		if (dlg.GetDataInitializer() == CDlgAddMeshData::INITIALIZER_CONST)
 		{
-		case NODE_DATA: data = new FENodeData   (po, dlg.GetDataType()); break;
-		case FACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case ELEM_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		case PART_DATA: data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
-		}
+			if (dlg.GetType() != FACE_DATA)
+			{
+				QMessageBox::critical(this, "Create Data", "The const initializer option is only supported for surface data.");
+				return;
+			}
 
-		if (data)
+			DATA_TYPE dataType = dlg.GetDataType();
+			FSConstFaceDataGenerator* gen = new FSConstFaceDataGenerator(fem, dataType);
+			gen->SetName(name.toStdString());
+			fem->AddMeshDataGenerator(gen);
+			UpdateModel(gen);
+		}
+		else
 		{
-			data->SetName(name.toStdString());
-			pm->AddMeshDataField(data);
-		}
+			FEMeshData* data = nullptr;
+			switch (dlg.GetType())
+			{
+			case NODE_DATA: data = new FENodeData   (po, dlg.GetDataType()); break;
+			case FACE_DATA: data = new FESurfaceData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case ELEM_DATA: data = new FEElementData(pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			case PART_DATA: data = new FEPartData   (pm, dlg.GetDataType(), dlg.GetFormat()); break;
+			}
 
-		UpdateModel(data);
+			if (data)
+			{
+				data->SetName(name.toStdString());
+				pm->AddMeshDataField(data);
+			}
+
+			UpdateModel(data);
+		}
 	}
 }
 
@@ -884,23 +901,27 @@ void CMainWindow::on_actionAddStep_triggered()
 
 	QStringList stepList;
 	for (int i = 0; i < fem->Steps(); ++i) stepList << QString::fromStdString(fem->GetStep(i)->GetName());
-	QString item = QInputDialog::getItem(this, "FEBio Studio", "Insert new step after:", stepList, fem->Steps() - 1, false);
 
-	FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
-	assert(ps);
-	if (ps)
+	bool ok;
+	QString item = QInputDialog::getItem(this, "FEBio Studio", "Insert new step after:", stepList, fem->Steps() - 1, false, &ok);
+	if (ok && !item.isEmpty())
 	{
-//		std::string name = dlg.m_name;
-//		if (name.empty()) name = defaultStepName(fem, ps);
-		std::string name = defaultStepName(fem, ps);
+		FSStep* ps = FEBio::CreateStep(FEBio::GetActiveModuleName(), fem);
+		assert(ps);
+		if (ps)
+		{
+			//		std::string name = dlg.m_name;
+			//		if (name.empty()) name = defaultStepName(fem, ps);
+			std::string name = defaultStepName(fem, ps);
 
-		FEBio::InitDefaultProps(ps);
+			FEBio::InitDefaultProps(ps);
 
-		int insertPos = stepList.indexOf(item);
+			int insertPos = stepList.indexOf(item);
 
-		ps->SetName(name);
-		doc->DoCommand(new CCmdAddStep(fem, ps, insertPos));
-		UpdateModel(ps);
+			ps->SetName(name);
+			doc->DoCommand(new CCmdAddStep(fem, ps, insertPos));
+			UpdateModel(ps);
+		}
 	}
 }
 
@@ -955,7 +976,15 @@ void CMainWindow::on_actionEditProject_triggered()
 
 	CDlgEditProject dlg(doc->GetProject(), this);
 	dlg.exec();
-	UpdatePhysicsUi();
+
+	// TODO: we should check if there are any features already used in the model
+	// that are not available in the new module
+	UpdateModel();
+}
+
+void CMainWindow::on_actionAssignSelection_triggered()
+{
+	ui->modelViewer->AssignCurrentSelection();
 }
 
 void CMainWindow::OnReplaceContactInterface(FSPairedInterface* pci)

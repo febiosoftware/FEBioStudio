@@ -10,6 +10,45 @@ FSMeshDataGenerator::FSMeshDataGenerator(FSModel* fem, int ntype) : FSModelCompo
 
 int FSMeshDataGenerator::Type() const { return m_ntype; }
 
+void FSMeshDataGenerator::Save(OArchive& ar)
+{
+	// write list ID
+	FEItemListBuilder* pl = GetItemList();
+	if (pl) ar.WriteChunk(LIST_ID, pl->GetID());
+
+	ar.BeginChunk(PARAMS);
+	{
+		FSModelComponent::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FSMeshDataGenerator::Load(IArchive& ar)
+{
+	TRACE("FSMeshDataGenerator::Load");
+
+	FSModel* fem = GetFSModel();
+	GModel* pgm = &fem->GetModel();
+
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case LIST_ID:
+		{
+			int nid = 0;
+			ar.read(nid);
+			FEItemListBuilder* pItem = pgm->FindNamedSelection(nid);
+			SetItemList(pItem);
+		}
+		break;
+		case PARAMS: FSModelComponent::Load(ar);
+		}
+		ar.CloseChunk();
+	}
+}
+
 //=============================================================================
 int FSNodeDataGenerator::m_nref = 1;
 
@@ -133,6 +172,69 @@ void FSFaceDataGenerator::SetID(int nid) { m_nUID = nid; if (nid >= m_nref) m_nr
 void FSFaceDataGenerator::ResetCounter() { m_nref = 1; }
 void FSFaceDataGenerator::SetCounter(int n) { m_nref = n; }
 int FSFaceDataGenerator::GetCounter() { return m_nref; }
+
+//=============================================================================
+FSConstFaceDataGenerator::FSConstFaceDataGenerator(FSModel* fem) : FSFaceDataGenerator(fem, FE_CONST_FACEDATA_GENERATOR)
+{
+	SetTypeString("const");
+	SetMeshItemType(FE_FACE_FLAG);
+}
+
+FSConstFaceDataGenerator::FSConstFaceDataGenerator(FSModel* fem, DATA_TYPE dataType) : FSFaceDataGenerator(fem, FE_CONST_FACEDATA_GENERATOR)
+{
+	SetTypeString("const");
+	SetMeshItemType(FE_FACE_FLAG);
+
+	BuildParameterList((int)dataType);
+}
+
+void FSConstFaceDataGenerator::BuildParameterList(int dataType)
+{
+	Param* p = AddIntParam((int)dataType, "data_type");
+	p->SetFlags(FS_PARAM_ATTRIBUTE);
+	p->SetVisible(false);
+	p->SetEnumNames("scalar\0vec3\0mat3\0");
+
+	switch (dataType)
+	{
+	case DATA_SCALAR: AddDoubleParam(0.0, "value"); break;
+	case DATA_VEC3  : AddVecParam(vec3d(0, 0, 0), "value"); break;
+	case DATA_MAT3  : AddMat3dParam(mat3d(), "value"); break;
+	default:
+		assert(false);
+	}
+}
+
+void FSConstFaceDataGenerator::Save(OArchive& ar)
+{
+	int dataType = GetIntValue(0);
+	ar.WriteChunk(0, dataType);
+	ar.BeginChunk(1);
+	{
+		FSFaceDataGenerator::Save(ar);
+	}
+	ar.EndChunk();
+}
+
+void FSConstFaceDataGenerator::Load(IArchive& ar)
+{
+	TRACE("FSConstFaceDataGenerator::Load");
+	while (IArchive::IO_OK == ar.OpenChunk())
+	{
+		int nid = ar.GetChunkID();
+		switch (nid)
+		{
+		case 0: {
+			int dataType = 0;
+			ar.read(dataType);
+			BuildParameterList(dataType);
+		}
+		break;
+		case 1: FSFaceDataGenerator::Load(ar); break;
+		}
+		ar.CloseChunk();
+	}
+}
 
 //=============================================================================
 FEBioFaceDataGenerator::FEBioFaceDataGenerator(FSModel* fem) : FSFaceDataGenerator(fem, FE_FEBIO_FACEDATA_GENERATOR)

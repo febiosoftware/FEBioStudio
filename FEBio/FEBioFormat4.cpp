@@ -1222,33 +1222,80 @@ bool FEBioFormat4::ParseSurfaceDataSection(XMLTag& tag)
 	XMLAtt* name = tag.AttributePtr("name");
 	XMLAtt* dataTypeAtt = tag.AttributePtr("data_type");
 	XMLAtt* surf = tag.AttributePtr("surface");
+	XMLAtt* type = tag.AttributePtr("type");
 
-	DATA_TYPE dataType;
-	if (dataTypeAtt)
+	if (type)
 	{
-		if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
-		else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
-		else return false;
+		FEBioInputModel& feb = GetFEBioModel();
+		FSModel* fem = &feb.GetFSModel();
+		// allocate mesh data generator
+		FSMeshDataGenerator* gen = nullptr;
+		const char* sztype = type->cvalue();
+		if (strcmp(sztype, "const") == 0)
+		{
+			// "const" data generator needs to be handled differently
+			DATA_TYPE dataType = DATA_TYPE::DATA_SCALAR;
+			if (dataTypeAtt)
+			{
+				if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+				else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
+				else if (*dataTypeAtt == "mat3"  ) dataType = DATA_TYPE::DATA_MAT3;
+				else return false;
+			}
+			FSConstFaceDataGenerator* constGen = new FSConstFaceDataGenerator(fem, dataType);
+			gen = constGen;
+		}
+		else
+		{
+			// allocate febio data generator
+			gen = FEBio::CreateFaceDataGenerator(sztype, fem);
+		}
+
+		if (gen)
+		{
+			XMLAtt* name = tag.AttributePtr("name");
+			gen->SetName(name->cvalue());
+
+			const char* szset = surf->cvalue();
+			GMeshObject* po = feb.GetInstance(0)->GetGObject();
+			FSSurface* ps = feb.FindNamedSurface(surf->cvalue());
+
+			gen->SetItemList(ps);
+
+			ParseModelComponent(gen, tag);
+			fem->AddMeshDataGenerator(gen);
+		}
+		else ParseUnknownAttribute(tag, "type");
 	}
-	else dataType = DATA_TYPE::DATA_SCALAR;
-
-	FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
-	FSMesh* feMesh = feSurf->GetMesh();
-
-	FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
-
-	double val;
-	int lid;
-	++tag;
-	do
+	else
 	{
-		tag.AttributePtr("lid")->value(lid);
-		tag.value(val);
+		DATA_TYPE dataType;
+		if (dataTypeAtt)
+		{
+			if      (*dataTypeAtt == "scalar") dataType = DATA_TYPE::DATA_SCALAR;
+			else if (*dataTypeAtt == "vec3"  ) dataType = DATA_TYPE::DATA_VEC3;
+			else return false;
+		}
+		else dataType = DATA_TYPE::DATA_SCALAR;
 
-		(*sd)[lid - 1] = val;
+		FSSurface* feSurf = feb.FindNamedSurface(surf->cvalue());
+		FSMesh* feMesh = feSurf->GetMesh();
 
+		FESurfaceData* sd = feMesh->AddSurfaceDataField(name->cvalue(), feSurf, dataType);
+
+		double val;
+		int lid;
 		++tag;
-	} while (!tag.isend());
+		do
+		{
+			tag.AttributePtr("lid")->value(lid);
+			tag.value(val);
+
+			(*sd)[lid - 1] = val;
+
+			++tag;
+		} while (!tag.isend());
+	}
 
 	return true;
 }
@@ -1886,10 +1933,11 @@ bool FEBioFormat4::ParseInitialSection(XMLTag& tag)
 				const char* szset = tag.AttributeValue("node_set");
 				FEItemListBuilder* pg = febio.FindNamedSelection(szset);
 				if (pg == 0) AddLogEntry("Failed to create nodeset %s for %s", szset, szname);
-				if (pg->GetName().empty()) pg->SetName(szbuf);
-
-				// process initial condition
-				pic->SetItemList(pg);
+				else
+				{
+					if (pg->GetName().empty()) pg->SetName(szname);
+					pic->SetItemList(pg);
+				}
 				pic->SetName(szname);
 				m_pBCStep->AddComponent(pic);
 				ParseModelComponent(pic, tag);

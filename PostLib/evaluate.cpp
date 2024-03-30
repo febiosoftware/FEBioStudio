@@ -1563,6 +1563,9 @@ bool FEPostModel::EvaluateElement(int n, int ntime, int nfield, float* data, flo
 	// make sure the element is not eroded
 	if (el.IsEroded()) return false;
 
+	// make sure the material is enabled
+	if (el.IsDisabled()) return false;
+
 	// the return value
 	val = 0.f;
 	for (int i=0; i<ne; ++i) data[i] = 0.f;

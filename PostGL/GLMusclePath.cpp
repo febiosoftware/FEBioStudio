@@ -273,6 +273,9 @@ void GLMusclePath::Render(CGLContext& rc)
 
 	int renderMode = GetIntValue(RENDER_MODE);
 
+	GLUquadricObj* pglyph = gluNewQuadric();
+	gluQuadricNormals(pglyph, GLU_SMOOTH);
+
 	// draw the path
 	int N = (int) path->m_points.size();
 	if (N > 1)
@@ -295,7 +298,8 @@ void GLMusclePath::Render(CGLContext& rc)
 
 			for (int i = 0; i < N; ++i)
 			{
-				int ntag = path->m_points[i].tag;
+				auto& pt = path->m_points[i];
+				int ntag = pt.tag;
 				if ((ntag == 2) || (renderMode == 0))
 				{
 					float sphereRadius = 1.5f * R;
@@ -307,7 +311,7 @@ void GLMusclePath::Render(CGLContext& rc)
 					default:
 						glColor3ub(0, 0, 0);
 					}
-					vec3d r0 = path->m_points[i].r;
+					vec3d r0 = pt.r;
 
 					if (i == m_selectedPoint)
 					{
@@ -317,9 +321,42 @@ void GLMusclePath::Render(CGLContext& rc)
 
 					glx::drawSphere(r0, sphereRadius);
 				}
+
+				// draw the tangent vector
+				if ((ntag == 2) && (renderMode < 2))
+				{
+					double L = 0.1*path->m_data.pathLength;
+					if (L == 0) L = 1;
+					vec3d r = pt.r;
+					vec3d t = path->m_data.tng;
+
+					glPushMatrix();
+
+					glTranslatef(r.x, r.y, r.z);
+					quatd q;
+					if (t * vec3d(0, 0, 1) == -1.0) q = quatd(PI, vec3d(1, 0, 0));
+					else q = quatd(vec3d(0, 0, 1), t);
+					float w = q.GetAngle();
+					if (fabs(w) > 1e-6)
+					{
+						vec3d p = q.GetVector();
+						if (p.Length() > 1e-6) glRotated(w * 180 / PI, p.x, p.y, p.z);
+						else glRotated(w * 180 / PI, 1, 0, 0);
+					}
+
+					double D = 1.25 * R;
+
+					gluCylinder(pglyph, D, D, L, 20, 1);
+					glTranslatef(0.f, 0.f, (float)L * 0.9f);
+					gluCylinder(pglyph, 2*D, 0, 0.5*L, 20, 1);
+
+					glPopMatrix();
+				}
 			}
 		}
 	}
+
+	gluDeleteQuadric(pglyph);
 }
 
 bool GLMusclePath::Intersects(Ray& ray, Intersection& q)

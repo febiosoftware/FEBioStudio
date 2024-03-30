@@ -65,7 +65,7 @@ const char* ModelDataField::TypeStr() const
 	case DATA_MAT3S     : return "mat3fs"; break;
 	case DATA_MAT3SD    : return "mat3fd"; break;
 	case DATA_TENS4S    : return "tens4fs"; break;
-	case DATA_ARRAY      : return "array"; break;
+	case DATA_ARRAY      : return "array<float>"; break;
 	case DATA_ARRAY_VEC3: return "array<vec3>"; break;
 	};
 	return "unknown";

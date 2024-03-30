@@ -37,12 +37,20 @@ class CDlgAddMeshData : public QDialog
 	Q_OBJECT
 
 public:
+	enum DataInitializer {
+		INITIALIZER_LIST,
+		INITIALIZER_CONST,
+	};
+
+public:
 	CDlgAddMeshData(QWidget* parent);
 
 	QString GetName();
 	DATA_CLASS GetType();
 	DATA_TYPE GetDataType();
 	DATA_FORMAT GetFormat();
+
+	DataInitializer GetDataInitializer();
 
 private:
 	CDlgAddMeshDataUI*	ui;

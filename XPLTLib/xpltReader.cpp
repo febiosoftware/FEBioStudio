@@ -164,7 +164,8 @@ bool XpltReader::Load(FEPostModel& fem)
 					}
 				}
 			}
-			else errf("Error while reading state data.");
+			else 
+				errf("Error while reading state data.");
 			m_ar.CloseChunk();
 		
 			// clear end-flag
@@ -864,7 +865,7 @@ bool XpltReader::ReadSurfaceSection(FEPostModel &fem)
 						{
 						case PLT_SURFACE_ID   : m_ar.read(S.sid); break;
 						case PLT_SURFACE_FACES: m_ar.read(S.nf); break;
-						case PLT_SURFACE_NAME : m_ar.read(S.szname); break;
+						case PLT_SURFACE_NAME : m_ar.read(S.szname, 64); break;
 						default:
 							assert(false);
 							return errf("Error while reading Surface section");

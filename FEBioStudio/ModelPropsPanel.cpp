@@ -428,6 +428,7 @@ public:
 		propStack->addWidget(plt);
 		propStack->addWidget(math);
 		propStack->addWidget(math2);
+        propStack->setSizePolicy(QSizePolicy::Preferred, QSizePolicy::MinimumExpanding);
 
 		sel1 = new CItemListSelectionBox;
 		sel1->setObjectName("select1");
@@ -740,6 +741,11 @@ void CModelPropsPanel::Refresh()
 		m_currentObject->UpdateData(false);
 		ui->props->Refresh();
 	}
+}
+
+void CModelPropsPanel::AssignCurrentSelection()
+{
+	addSelection(0);
 }
 
 void CModelPropsPanel::SetObjectProps(FSObject* po, CPropertyList* props, int flags)
