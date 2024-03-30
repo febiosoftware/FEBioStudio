@@ -100,6 +100,7 @@ public: // command functions
 	bool cmd_prev   (QStringList ops);
 	bool cmd_reset  (QStringList ops);
 	bool cmd_save   (QStringList ops);
+	bool cmd_stop   (QStringList ops);
 	bool cmd_selpart(QStringList ops);
 	bool cmd_selsurf(QStringList ops);
 

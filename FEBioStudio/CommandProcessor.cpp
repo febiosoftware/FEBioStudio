@@ -253,6 +253,7 @@ CommandProcessor::CommandProcessor(CMainWindow* wnd, CommandInput* cmdinput) : m
 	m_cmds.push_back({ "prev"   , &CommandProcessor::cmd_prev   , "Display the previous timestep" });
 	m_cmds.push_back({ "reset"  , &CommandProcessor::cmd_reset  , "reset all options to their defaults." });
 	m_cmds.push_back({ "save"   , &CommandProcessor::cmd_save   , "save the current model" });
+	m_cmds.push_back({ "stop"   , &CommandProcessor::cmd_stop   , "Stops the animation." });
 	m_cmds.push_back({ "selpart", &CommandProcessor::cmd_selpart, "select a part",  });
 	m_cmds.push_back({ "selsurf", &CommandProcessor::cmd_selsurf, "select a surface" });
 }
@@ -946,6 +947,13 @@ bool CommandProcessor::cmd_save(QStringList ops)
 	m_wnd->UpdateTab(doc);
 	m_output = "save \"" + fileName + "\"";
 
+	return true;
+}
+
+bool CommandProcessor::cmd_stop(QStringList ops)
+{
+	if (!ValidateArgs(ops, 0, 0)) return false;
+	m_wnd->on_actionPlay_toggled(false);
 	return true;
 }
 
