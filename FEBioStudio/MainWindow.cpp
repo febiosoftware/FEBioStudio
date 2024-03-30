@@ -1837,7 +1837,7 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 		// give the build panels a chance to react first
 		if (ui->buildPanel->OnEscapeEvent()) return;
 
-		CModelDocument* doc = GetModelDocument();
+		CGLDocument* doc = GetGLDocument();
 		if (doc)
 		{
 			// if the build panel didn't process it, clear selection
@@ -1846,6 +1846,12 @@ void CMainWindow::keyPressEvent(QKeyEvent* ev)
 			{
 				if (doc->GetItemMode() != ITEM_MESH) doc->SetItemMode(ITEM_MESH);
 				else ui->SetSelectionMode(SELECT_OBJECT);
+				CGLView* glv = GetGLView();
+				if (glv)
+				{
+					GLViewSettings& vs = glv->GetViewSettings();
+					vs.m_bselbrush = false;
+				}
 				Update();
 				UpdateUI();
 			}

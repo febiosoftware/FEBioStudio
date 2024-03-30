@@ -324,6 +324,7 @@ void CImageMapTool::OnCreate()
         (box.y1-box.y0)/imageModel->Get3DImage()->Height(),
         (box.z1-box.z0)/imageModel->Get3DImage()->Depth());
     mat3d orientation = imageModel->Get3DImage()->GetOrientation();
+    mat3d invOrientation = orientation.inverse();
 
     switch(ui->methodBox->currentIndex())
     {
@@ -726,7 +727,7 @@ void CImageMapTool::OnCreate()
                     {
                         pixelPos.x = i/xScale;
 
-                        vec3f localPixelPos = to_vec3f(mesh->GlobalToLocal(pixelPos));
+                        vec3f localPixelPos = to_vec3f(mesh->GlobalToLocal(invOrientation*pixelPos + origin));
 
                         if(ProjectInsideElement(*mesh, *el, localPixelPos, r))
                         {

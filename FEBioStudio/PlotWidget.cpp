@@ -2637,6 +2637,10 @@ private:
 	QLineEdit* m_xColumn;
 	QLineEdit* m_yColumn;
 
+	static int	m_nskip;
+	static int	m_ndelim;
+	static int	m_nx;
+	static int	m_ny;
 
 public:
 	CDlgImportCurve(QWidget* parent) : QDialog(parent)
@@ -2664,6 +2668,12 @@ public:
 
 		setLayout(v);
 
+		// set initial values
+		m_skip->setText(QString::number(m_nskip));
+		m_delim->setCurrentIndex(m_ndelim);
+		m_xColumn->setText(QString::number(m_nx));
+		m_yColumn->setText(QString::number(m_ny));
+
 		QObject::connect(bb, SIGNAL(accepted()), this, SLOT(accept()));
 		QObject::connect(bb, SIGNAL(rejected()), this, SLOT(reject()));
 	}
@@ -2684,7 +2694,21 @@ public:
 
 	int GetXColumnIndex() { return m_xColumn->text().toInt(); }
 	int GetYColumnIndex() { return m_yColumn->text().toInt(); }
+
+	void accept() override
+	{
+		m_nskip = m_skip->text().toInt();
+		m_ndelim = m_delim->currentIndex();
+		m_nx = m_xColumn->text().toInt();
+		m_ny = m_yColumn->text().toInt();
+		QDialog::accept();
+	}
 };
+
+int CDlgImportCurve::m_nskip = 0;
+int CDlgImportCurve::m_ndelim = 0;
+int CDlgImportCurve::m_nx = 0;
+int CDlgImportCurve::m_ny = 1;
 
 bool ReadLoadCurve(LoadCurve& lc, const char* szfile, char delim = ' ', int nskip = 0, int xColumnIndex = 0, int yColumnIndex = 1)
 {
